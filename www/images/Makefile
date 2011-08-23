@@ -1,5 +1,7 @@
 include ../../defines.mk
 
+all:
+
 GNOME_IMAGES = 			\
 	display.png		\
 	keyboard.png		\

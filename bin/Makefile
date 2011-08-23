@@ -18,6 +18,8 @@ MANS = 				\
 	pveversion.1		\
 	pveperf.1
 
+all: ${MANS}
+
 %.1: %
 	pod2man -n $* -s 1 -r "proxmox ${VERSION}" -c "Proxmox Documentation" <$* >$*.1
 
