@@ -1,0 +1,119 @@
+#!/usr/bin/perl -T -w
+
+$ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
+
+delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};  
+
+use strict;
+use Getopt::Long;
+use POSIX ":sys_wait_h";
+use Socket;
+use PVE::SafeSyslog;
+# use PVE::Config; # fixme
+use PVE::APIDaemon;
+
+my $pidfile = "/var/run/pvedaemon.pid";
+my $opt_debug;
+
+initlog ('pvedaemon');
+
+if (!GetOptions ('debug' => \$opt_debug)) {
+    die "usage: $0 [--debug]\n";
+}
+
+$SIG{'__WARN__'} = sub {
+    my $err = $@;
+    my $t = $_[0];
+    chomp $t;
+    syslog('warning', "WARNING: %s", $t);
+    $@ = $err;
+};
+
+$0 = "pvedaemon";
+
+my $cpid;
+my $daemon;
+eval {
+    $daemon = PVE::APIDaemon->new(
+	LocalAddr => "127.0.0.1",
+        LocalPort => 85,
+        Listen => SOMAXCONN,
+        ReuseAddr => 1,
+	);
+};
+
+my $err = $@;
+
+if ($err) {
+    syslog ('err' , "unable to start server: $err");
+    print STDERR $err;
+    exit (-1);
+}
+
+if ($opt_debug || !($cpid = fork ())) {
+
+    $SIG{PIPE} = 'IGNORE';
+    $SIG{INT} = 'IGNORE' if !$opt_debug;
+
+    $SIG{TERM} = $SIG{QUIT} = sub { 
+	syslog ('info' , "server closing");
+
+	$SIG{INT} = 'DEFAULT';
+
+	unlink "$pidfile";
+
+	exit (0);
+    };
+
+    syslog ('info' , "starting server");
+
+    if (!$opt_debug) {
+	# redirect STDIN/STDOUT/SDTERR to /dev/null
+	open STDIN,  '</dev/null' || die "can't read /dev/null  [$!]";
+	open STDOUT, '>/dev/null' || die "can't write /dev/null [$!]";
+	open STDERR, '>&STDOUT' || die "can't open STDERR to STDOUT [$!]";
+    }
+
+    POSIX::setsid(); 
+
+    system ("echo > /var/lib/pve-manager/vmops"); # init vmops file
+
+    eval {
+	$daemon->start_server();
+    };
+    my $err = $@;
+
+    if ($err) {
+	syslog ('err' , "unexpected server error: $err");
+	print STDERR $err if $opt_debug;
+	exit (-1);
+    }
+
+} else {
+
+    open (PIDFILE, ">$pidfile") || 
+	die "cant write '$pidfile' - $! :ERROR";
+    print PIDFILE "$cpid\n";
+    close (PIDFILE) || 
+	die "cant write '$pidfile' - $! :ERROR";
+}
+
+exit (0);
+
+__END__
+
+=head1 NAME
+                                          
+pvedaemon - the PVE configuration server
+
+=head1 SYNOPSIS
+
+pvedaemon [--debug]
+
+=head1 DESCRIPTION
+
+All configuration is done using this Server. The Server only
+listens to a local address 127.0.0.1 port 85 for security
+reasons.
+
+

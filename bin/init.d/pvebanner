@@ -1,0 +1,31 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:        pvebanner
+# Required-Start:  $all
+# Required-Stop:
+# Default-Start:   2 3 4 5
+# Default-Stop:
+# Short-Description: print PVE banner
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+PATH=/sbin:/bin:/usr/bin:/usr/sbin
+
+test -f $PVEDAEMON || exit 0
+
+case "$1" in
+    start)
+	pvebanner
+	;;
+    stop|restart|force-reload)
+	exit 1
+	;;
+    *)
+	echo "Usage: /etc/init.d/pvebanner {start}"
+	exit 1
+	;;
+esac
+
+exit 0

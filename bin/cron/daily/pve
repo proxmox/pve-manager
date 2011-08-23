@@ -1,0 +1,68 @@
+#!/usr/bin/perl -w
+
+use strict;
+#use PVE::APLInfo;
+use PVE::SafeSyslog;
+use IO::File;
+use File::Find;
+use File::stat;
+
+initlog ('pvedailycron', 'daemon');
+
+# fixme: update APL info?
+#my $pvecfg = PVE::Config::read_file('pvecfg');
+#my $proxy = ($pvecfg && $pvecfg->{http_proxy}) ? $pvecfg->{http_proxy} : undef;
+
+## update appliance info
+#if (!PVE::APLInfo::update()) {
+#    syslog ('err', "update appliance info failed - see /var/log/pveam.log for details");
+#}
+
+sub cleanup_tasks {
+
+    my $taskdir = "/var/log/pve/tasks";
+    my $filename = "$taskdir/index.1";
+
+    my $fh = IO::File->new($filename, O_RDONLY);
+    return if !$fh;
+
+    my $endtime = 0;
+    while (defined(my $line = <$fh>)) {
+	if ($line =~ m/^(\S+)(\s([0-9A-Za-z]{8})(\s(\S.*))?)?$/) {
+	    $endtime = hex($3);
+	    last;
+	}
+    }
+    close($fh);
+
+    return if !$endtime;
+
+    # print "delete task older that $endtime\n" . localtime($endtime) . "\n";
+
+    my $count = 0;
+
+    my $wanted = sub {
+	my $filename = $_;
+
+	return if $filename !~ m/^UPID:/;
+
+	my $st;
+	if (($st = stat($filename)) && ($st->mtime < $endtime)) {
+	    unlink($filename);
+	    $count++;
+	}
+    };
+
+    foreach my $subdir (qw(0 1 2 3 4 5 6 7 8 9 A B C F E F)) {
+	my $path = "$taskdir/$subdir";
+	find($wanted, $path);
+    }
+
+    if ($count) {
+	syslog('info', "cleanup removed $count task logs");
+    }
+}
+
+cleanup_tasks();
+
+exit (0);

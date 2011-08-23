@@ -1,0 +1,150 @@
+/* force same grid cell heigh */
+.x-grid-cell-inner {
+    line-height: 13px;
+}
+
+.x-grid-row-loading {
+    background-color: #fff;
+    background: no-repeat center center;
+    background-image:url(../ext4/resources/themes/images/default/shared/loading-balls.gif);
+}
+
+.x-selectable, .x-selectable * {
+    -moz-user-select: text!important;
+    -khtml-user-select: text!important;
+}
+
+.pve-itype-icon-display,
+.pve-itype-icon-memory,
+.pve-itype-icon-processor,
+.pve-itype-icon-network,
+.pve-itype-icon-keyboard,
+.pve-itype-icon-cdrom,
+.pve-itype-icon-qemu,
+.pve-itype-icon-qemu-running,
+.pve-itype-icon-openvz,
+.pve-itype-icon-openvz-running,
+.pve-itype-icon-node,
+.pve-itype-icon-storage,
+.pve-itype-icon-itype
+{
+    background-repeat: no-repeat;
+    background-position:3px center;
+    padding-left: 20px;
+}
+
+.pve-itype-icon-qemu,
+.pve-itype-icon-openvz,
+.x-tree-node-computer,
+.x-grid-tree-node-expanded .x-tree-node-computer
+{
+    background-image:url(../images/computer.png);
+}
+
+.pve-itype-icon-qemu-running,
+.pve-itype-icon-openvz-running,
+.x-tree-node-computer-running,
+.x-grid-tree-node-expanded .x-tree-node-computer-running
+{
+    background-image:url(../images/computer-on.png);
+}
+
+.pve-itype-icon-node,
+.x-tree-node-server,
+.x-grid-tree-node-expanded .x-tree-node-server
+{
+    background-image:url(../images/network-server.png);
+}
+
+.pve-itype-icon-storage,
+.x-tree-node-harddisk,
+.x-grid-tree-node-expanded .x-tree-node-harddisk
+{
+    background-image:url(../images/drive-harddisk.png);
+}
+
+.pve-itype-icon-itype
+{
+    background-image:url(../ext4/resources/themes/images/default/tree/folder.gif);
+}
+
+.pve-itype-icon-network
+{
+    background-image:url(../images/network.png);
+}
+
+.pve-itype-icon-keyboard
+{
+    background-image:url(../images/keyboard.png);
+}
+
+.pve-itype-icon-cdrom
+{
+    background-image:url(../images/cdrom.png);
+}
+
+.pve-itype-icon-memory
+{
+    background-image:url(../images/memory.png);
+}
+
+.pve-itype-icon-processor
+{
+    background-image:url(../images/processor.png);
+}
+
+.pve-itype-icon-display
+{
+    background-image:url(../images/display.png);
+}
+
+.pve-bar-wrap
+{
+
+}
+
+.pve-bar-border
+{
+    padding: 0px;
+    background-color: #C0C0C0;
+    border: 1px solid #000000;
+    width: 50px;
+    height: 6px;
+}
+
+.pve-bar-inner
+{
+    background-color: #00C000;
+    border:0px;
+    height:6px;
+}
+
+.pve-largebar-border
+{
+    position:relative;
+    padding:0px;
+    background-color:#C0C0C0;
+    border:1px solid #000000;
+    width:200px;
+    height:12px;
+}
+
+.pve-largebar-inner
+{
+    background-color: #00C000;
+    border:0px;
+    height:12px;
+}
+
+.pve-largebar-text
+{
+    position:absolute;
+    top:0px;
+    left:0px;
+    text-align:center; 
+    line-height: 12px;
+    font-size: 11px;
+    border:0px;
+    width:200px;
+    height:12px;
+}

@@ -1,0 +1,33 @@
+PROXMOX VIRTUAL ENVIRONMENT (PVE)
+=================================
+
+TODO:
+
+  * improve API Dokumentation viewer
+
+    - include CLI Tool docs
+
+    - write a widget to render a JSON Schema (parameters, returns)
+
+  * use nginx/fastcgi instead of apache2 to save resources?
+ 	
+  * impl. logfile search (like pmg tracking center)
+
+
+RELATED TASKS:
+
+  * vncterm: 
+	implement all vt220/xterm commands, 
+	add regression test suite, 
+
+  * qemu image resize tool?
+
+  * vmware image importer
+
+  * vnc client: the java implementation takes long time to load
+	- can we speedup that?
+	- test http://www.wizhelp.com/flashlight-vnc/ with vncterm
+	- test http://novnc.com/novnc/ novnc
+	- provide custom controls to select 'cdrom'?
+
+  * generate appliances

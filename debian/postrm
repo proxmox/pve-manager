@@ -1,0 +1,16 @@
+#! /bin/sh
+
+# Abort if any command returns an error value
+set -e
+
+if [ "$1" = purge ]; then
+    update-rc.d pvedaemon remove >/dev/null 2>&1
+    update-rc.d pvestatd remove >/dev/null 2>&1
+    update-rc.d pvebanner remove >/dev/null 2>&1
+    update-rc.d pvenetcommit remove >/dev/null 2>&1
+
+    if [ -e /usr/share/debconf/confmodule ]; then
+	. /usr/share/debconf/confmodule
+	db_purge
+    fi
+fi

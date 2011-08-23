@@ -1,0 +1,3 @@
+Template: pve-manager/country
+Description: for internal use - this is set by the pve-installer
+Type: string

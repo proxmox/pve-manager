@@ -1,0 +1,60 @@
+Package sources
+===============
+
+debian and ubuntu packages are built using 'dab'
+
+
+Other packages are from:
+
+http://download.openvz.org/template/precreated/contrib/
+
+centos-4-i386-default-4.7-20090117.tar.gz => centos-4-standard_4.7-1_i386.tar.gz
+centos-5-i386-default-5.2-20090117.tar.gz => centos-5-standard_5.2-1_i386.tar.gz
+
+fedora-9-i386-default-20090108.tar.gz => fedora-9-standard_9-2_i386.tar.gz
+
+
+PVE Package description format
+==============================
+
+We basically use a debian like format - see:
+
+http://www.debian.org/doc/debian-policy/ch-controlfields.html
+
+The following (debian) field are used:
+
+Package, Section, Version, Maintainer, Description
+
+Additionally we define the following fields:
+
+Type: openvz | qemu
+OS: Operating system type
+Location: download url
+Infopage: url to additional info
+ManageUrl: url to connect to management interface
+md5sum: md5sum of the package
+
+Here is an example:
+
+Package: proxmox-mailgateway
+Version: 2.4-2
+Type: openvz
+OS: debian-4.0
+Section: mail
+Certified: yes
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/mail/debian-4.0-proxmox-mailgateway_2.4-2_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Proxmox_Mail_Gateway
+ManageUrl: https://__IPADDRESS__/
+md5sum: 3b48ffe08347229a854bc8d5ee161e1f
+Description: Proxmox Mail Gateway
+  A full featured mail proxy for spam an virus filtering.
+
+
+The filename is automatically generated from the above description:
+
+${OS}-${Package}_${VERSION}_i386.tar.gz
+
+If ${Package} starts with "${OS}-", the filename is:
+
+${Package}_${VERSION}_i386.tar.gz

@@ -1,0 +1,148 @@
+package PVE::API2Client;
+
+use strict;
+use warnings;
+use URI;
+use HTTP::Cookies;
+use LWP::UserAgent;
+use JSON;
+use PVE::API2;
+use Data::Dumper; # fixme: remove
+use HTTP::Request::Common;
+
+sub get {
+    my ($self, $path, $param) = @_;
+
+    return $self->call('GET', $path, $param);
+}
+
+sub post {
+    my ($self, $path, $param) = @_;
+
+    return $self->call('POST', $path, $param);
+}
+
+sub put {
+    my ($self, $path, $param) = @_;
+
+    return $self->call('PUT', $path, $param);
+}
+
+sub delete {
+    my ($self, $path, $param) = @_;
+
+    return $self->call('DELETE', $path, $param);
+}
+
+sub call {
+    my ($self, $method, $path, $param) = @_;
+	
+    #print "wrapper called\n";
+
+    my $ticket;
+
+    my $ua = $self->{useragent};
+    my $cj = $self->{cookie_jar};
+
+    $cj->scan(sub {
+	my ($version, $key, $val) = @_;
+	$ticket = $val if $key eq 'PVEAuthCookie';
+    });
+    
+    if (!$ticket && $self->{username} && $self->{password}) {
+	my $uri = URI->new();
+	$uri->scheme($self->{protocol});
+	$uri->host($self->{host});
+	$uri->port($self->{port});
+	$uri->path('/api2/json/ticket');
+
+	my $response = $ua->post($uri, { 
+	    username => $self->{username},
+	    password => $self->{password}});
+
+	if (!$response->is_success) {
+	    die $response->status_line . "\n";
+	}
+	# the auth cookie should be set now
+    }
+
+    my $uri = URI->new();
+    $uri->scheme($self->{protocol});
+    $uri->host($self->{host});
+    $uri->port($self->{port});
+    $uri->path($path);
+
+    # print $ua->{cookie_jar}->as_string;
+
+    #print "CALL $method : " .  $uri->as_string() . "\n";
+ 
+    my $response;
+    if ($method eq 'GET') {
+	$uri->query_form($param);
+	$response = $ua->request(HTTP::Request::Common::GET($uri));			   
+    } elsif ($method eq 'POST') {
+	$response = $ua->request(HTTP::Request::Common::POST($uri, Content => $param));
+    } elsif ($method eq 'PUT') {
+	$response = $ua->request(HTTP::Request::Common::PUT($uri, Content => $param));
+    } elsif ($method eq 'DELETE') {
+	$response = $ua->request(HTTP::Request::Common::DELETE($uri));
+    } else {
+	die "method $method not implemented\n";
+    }
+			      
+    #print "RESP: " . Dumper($response) . "\n";
+
+    if ($response->is_success) {
+	my $ct = $response->header('Content-Type');
+
+	die "got unexpected content type" if $ct ne 'application/json';
+
+	return from_json($response->decoded_content, {utf8 => 1, allow_nonref => 1});
+
+    } else {
+
+	die $response->status_line . "\n";
+
+    }
+}
+
+sub new {
+    my ($class, %param) = @_;
+
+    my $self = { 
+	ticket => $param{ticket},
+	username => $param{username},
+	password => $param{password},
+	host => $param{host} || 'localhost',
+	port => $param{port},
+	timeout => $param{timeout} || 60,
+    };
+    bless $self;
+
+    if (!$self->{port}) {
+	$self->{port} = $self->{host} eq 'localhost' ? 85 : 8006;
+    }
+    if (!$self->{protocol}) {
+	$self->{protocol} = $self->{host} eq 'localhost' ? 'http' : 'https';
+    }
+
+    $self->{cookie_jar} = HTTP::Cookies->new (ignore_discard => 1);
+
+    if ($self->{ticket}) {
+	my $domain = "$self->{host}.local" unless  $self->{host} =~ /\./;
+	$self->{cookie_jar}->set_cookie(0, 'PVEAuthCookie', $self->{ticket},  
+					'/', $domain);
+    }
+
+    $self->{useragent} = LWP::UserAgent->new(
+	cookie_jar => $self->{cookie_jar},
+	protocols_allowed => [ 'http', 'https'],
+	timeout => $self->{timeout},
+	);
+
+     $self->{useragent}->default_header('Accept-Encoding' => 'gzip'); # allow gzip
+  
+    return $self;
+}
+
+1;

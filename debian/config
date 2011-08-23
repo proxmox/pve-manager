@@ -1,0 +1,10 @@
+#!/bin/sh	
+
+# Abort if any command returns an error value 
+set -e
+
+. /usr/share/debconf/confmodule
+
+# we do nothing here
+
+exit 0

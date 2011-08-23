@@ -1,0 +1,19 @@
+package PVE::pvecfg;
+
+use strict;
+use vars qw(@ISA);
+use Carp;
+
+sub package {
+	return '@PACKAGE@';
+}
+
+sub version {
+	return '@VERSION@';
+}
+
+sub repoid {
+	return '@REPOID@';
+}
+
+1;

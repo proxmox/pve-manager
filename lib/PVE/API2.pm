@@ -1,0 +1,75 @@
+package PVE::API2;
+
+use strict;
+use warnings;
+
+use Apache2::Const qw(:http);
+use PVE::RESTHandler;
+
+use base qw(PVE::RESTHandler);
+
+# preload classes
+use PVE::API2::Cluster;
+use PVE::API2::Nodes;
+use PVE::API2::AccessControl;
+use PVE::API2::Storage::Config;
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Cluster",  
+    path => 'cluster',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Nodes",  
+    path => 'nodes',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Storage::Config",  
+    path => 'storage',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::AccessControl",  
+    path => 'access',
+});
+
+__PACKAGE__->register_method ({
+    name => 'index', 
+    path => '',
+    method => 'GET',
+    permissions => { user => 'all' },
+    description => "Directory index.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {
+		subdir => { type => 'string' },
+	    },
+	},
+	links => [ { rel => 'child', href => "{subdir}" } ],
+    },
+    code => sub {
+	my ($resp, $param) = @_;
+    
+	my $res = [];
+
+	my $ma = PVE::API2->method_attributes();
+
+	foreach my $info (@$ma) {
+	    next if !$info->{subclass};
+
+	    my $subpath = $info->{match_re}->[0];
+
+	    push @$res, { subdir => $subpath };
+	}
+
+	return $res;
+    }});
+
+1;

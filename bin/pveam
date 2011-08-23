@@ -1,0 +1,22 @@
+#!/usr/bin/perl -w
+
+use strict;
+use PVE::APLInfo;
+use PVE::Config;
+
+if (scalar (@ARGV) != 1) {
+    print STDERR "usage: $0 CMD\n";
+    exit (-1);
+}
+
+my $cmd = shift;
+
+if ($cmd eq 'update') {
+    my $pvecfg = PVE::Config::read_file('pvecfg'); 
+    exit (0) if PVE::APLInfo::update($pvecfg->{http_proxy});
+    print STDERR "update failed - see /var/log/pveam.log for details\n";
+    exit (-1);
+} else {
+    print STDERR "unknown CMD '$cmd'\n";
+    exit (-1);
+}

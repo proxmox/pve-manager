@@ -1,0 +1,21 @@
+<VirtualHost *:80>
+    #RewriteLog "/root/rewrite.log"
+    #RewriteLogLevel 10
+    RewriteEngine on
+    RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+    RewriteRule .* - [F]
+    RewriteRule ^/(.*) https://%{HTTP_HOST}:8006/$1 [L,R]
+</VirtualHost>
+
+<VirtualHost *:443>
+    SSLEngine on
+    SSLProtocol all -SSLv2
+    SSLCertificateFile @PROXMOX_ETC@/local/pve-ssl.pem
+    SSLCertificateKeyFile @PROXMOX_ETC@/local/pve-ssl.key
+
+    RewriteEngine on
+    RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+    RewriteRule .* - [F]
+    RewriteRule ^/(.*) https://%{HTTP_HOST}:8006/$1 [L,R]
+</VirtualHost>
+

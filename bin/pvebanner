@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+
+use strict;
+use PVE::INotify;
+use PVE::Cluster;
+
+my $nodename = PVE::INotify::nodename();
+my $localip = PVE::Cluster::remote_node_ip($nodename, 1);
+
+exit (0) if !$localip;
+
+my $xline = '-' x 80;
+
+print <<__EOBANNER;
+
+$xline
+
+Welcome to the Proxmox Virtual Environment. Please use your web browser to 
+configure this server - connect to:
+
+  https://${localip}:8006/
+
+$xline
+
+__EOBANNER
+
+exit (0);

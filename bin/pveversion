@@ -1,0 +1,120 @@
+#!/usr/bin/perl -w
+
+use strict;
+use Getopt::Long;
+use PVE::pvecfg;
+
+sub read_pkglist {
+
+    my $pkglist = {};
+
+    open (TMP, "dpkg-query --show -f '\${PACKAGE} \${VERSION} \${STATUS}\n'|") ||
+	die "cant exec dpkg-query\n";
+
+    while (defined (my $line = <TMP>)) {
+	if ($line =~ m/^(\S+)\s+(\S+)\s+install\s+ok\s+installed$/) {
+	    my ($pkg, $version) = ($1, $2);
+	    $pkglist->{$pkg} = $version;
+	}
+    }
+    
+    return $pkglist;
+}
+
+my $pkglist = read_pkglist();
+
+sub print_status {
+    my ($pkg, $repoid) = @_;
+
+    my $version = "not correctly installed";
+    if ($pkglist->{$pkg}) {
+	$version = $pkglist->{$pkg};
+    }
+
+    if ($repoid) {
+	print "$pkg: $version ($repoid)\n";
+    } else {
+	print "$pkg: $version\n";
+    }
+}
+
+sub print_usage {
+    my $msg = shift;
+
+    print STDERR "ERROR: $msg\n" if $msg;
+    print STDERR "USAGE: pveversion [--verbose]\n";
+
+}
+
+my $opt_verbose;
+
+if (!GetOptions ('verbose' => \$opt_verbose)) {
+    print_usage ();
+    exit (-1);
+} 
+
+if (scalar (@ARGV) != 0) {
+    print_usage ();
+    exit (-1);
+}
+
+my $ver =  PVE::pvecfg::package();
+$ver .= '/';
+$ver .= PVE::pvecfg::version();
+$ver .= '/';
+$ver .= PVE::pvecfg::repoid();
+
+my $kver = `uname -r`;
+chomp $kver;
+
+if (!$opt_verbose) {
+    print "$ver\n";
+    exit (0);
+}
+
+print_status ("pve-manager", $ver);
+print "running kernel: $kver\n";
+
+my @list = qw(corosync-pve openais-pve libqb redhat-cluster-pve pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl vncterm vzctl vzdump vzprocps vzquota);
+
+my $pkg = 'proxmox-ve-2.6.18';
+if (my $v = $pkglist->{$pkg}) {
+    print "$pkg: $v\n";
+    push @list, 'pve-qemu-kvm-2.6.18';
+    
+}
+$pkg = 'proxmox-ve-2.6.24';
+if (my $v = $pkglist->{$pkg}) {
+    print "$pkg: $v\n";
+    push @list, 'pve-qemu-kvm';
+}
+$pkg = 'proxmox-ve-2.6.32';
+if (my $v = $pkglist->{$pkg}) {
+    print "$pkg: $v\n";
+    push @list, 'pve-qemu-kvm';
+    push @list, 'ksm-control-daemon';
+}
+
+foreach $pkg (grep { m/^pve-kernel-/ } keys %$pkglist) {
+    print "$pkg: $pkglist->{$pkg}\n";    
+}
+ 
+foreach my $p (@list) {
+    print_status ($p);
+}
+
+exit 0;
+
+__END__
+
+=head1 NAME
+
+pveversion - Proxmox  VE version info
+
+=head1 SYNOPSIS
+
+pveversion [--verbose]
+
+=head1 DESCRIPTION
+
+Print version information for Proxmox VE packages.

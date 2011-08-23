@@ -1,0 +1,506 @@
+#!/usr/bin/perl -w
+
+# TODO:
+# implement persistent history ?
+ 
+use strict;
+use Term::ReadLine;
+use File::Basename;
+use Getopt::Long;
+use HTTP::Status qw(:constants :is status_message);
+use Text::ParseWords;
+use PVE::JSONSchema;
+use PVE::Cluster;
+use PVE::INotify;
+use PVE::RPCEnvironment;
+use PVE::API2;
+use JSON;
+ 
+use Data::Dumper; # fixme: remove
+
+PVE::INotify::inotify_init();
+
+my $rpcenv = PVE::RPCEnvironment->init('cli');
+
+$rpcenv->set_language($ENV{LANG});
+$rpcenv->set_user('root@pam'); 
+
+my $basedir = '/api2/json';
+
+my $cdir = '';
+
+my $cmd = shift;
+
+if ($cmd && $cmd eq 'verifyapi') {
+    PVE::RESTHandler::validate_method_schemas();
+    exit 0;
+}
+
+sub print_usage {
+    my $msg = shift;
+
+    print STDERR "ERROR: $msg\n" if $msg;
+    print STDERR "USAGE: pvesh [verifyapi]\n";
+
+}
+
+if (scalar (@ARGV) != 0) {
+    print_usage ();
+    exit (-1);
+}
+
+print "entering PVE shell - type 'help' for help\n";
+
+my $term = new Term::ReadLine ('pvesh');
+my $attribs = $term->Attribs;
+
+sub complete_path {
+    my($text) = @_;
+
+    my ($dir, undef, $rest) = $text =~ m|^(.*/)?(([^/]*))?$|;
+    my $path = abs_path($cdir, $dir);
+
+    my @res = ();
+
+    my $di = dir_info($path);
+    if (my $children = $di->{children}) {
+	foreach my $c (@$children) {
+	    if ($c =~ /^\Q$rest/) {
+		my $new =  $dir ? "$dir$c" : $c;
+		push @res, $new; 
+	    }
+	}
+    }
+
+    if (scalar(@res) == 0) {
+	return undef;
+    } elsif (scalar(@res) == 1) {
+	return ($res[0], $res[0], "$res[0]/");
+    } 
+
+    # lcd : lowest common denominator
+    my $lcd = '';
+    my $tmp = $res[0];
+    for (my $i = 1; $i <= length($tmp); $i++) {
+	my $found = 1;
+	foreach my $p (@res) {
+	    if (substr($tmp, 0, $i) ne substr($p, 0, $i)) {
+		$found = 0;
+		last;
+	    }
+	}
+	if ($found) {
+	    $lcd = substr($tmp, 0, $i);
+	} else {
+	    last;
+	}
+    }
+
+    return ($lcd, @res);
+};
+
+# just to avoid an endless loop (called by attempted_completion_function)
+$attribs->{completion_entry_function} = sub {
+    my($text, $state) = @_;
+    return undef;
+};
+
+$attribs->{attempted_completion_function} = sub {
+    my ($text, $line, $start) = @_;
+
+    my $prefix = substr($line, 0, $start);
+    if ($prefix =~ /^\s*$/) { # first word (command completeion)
+	$attribs->{completion_word} = [qw(help ls cd get set create delete quit)];
+	return $term->completion_matches($text, $attribs->{list_completion_function});
+    }
+
+    if ($prefix =~ /^\s*\S+\s+$/) { # second word (path completion)
+	return complete_path($text);
+    }
+
+    return ();   
+};
+
+sub abs_path {
+    my ($current, $path) = @_;
+
+    my $ret = $current;
+
+    return $current if !defined($path);
+
+    $ret = '' if $path =~ m|^\/|;
+
+    foreach my $d (split (/\/+/ , $path)) {
+	if ($d eq '.') {
+	    next;
+	} elsif ($d eq '..') {
+	    $ret = dirname($ret);
+	    $ret = '' if $ret eq '.';
+	} else {
+	    $ret = "$ret/$d";
+	}
+    }
+
+    $ret =~ s|\/+|\/|g;
+    $ret =~ s|^\/||;
+    $ret =~ s|\/$||;
+
+    return $ret;
+}
+
+my $read_password = sub {
+    my $attribs = $term->Attribs;
+    my $old = $attribs->{redisplay_function};
+    $attribs->{redisplay_function} = $attribs->{shadow_redisplay};
+    my $input = $term->readline('password: ');
+    my $conf = $term->readline('Retype new password: ');
+    $attribs->{redisplay_function} = $old;
+    die "Passwords do not match.\n" if ($input ne $conf);
+    return $input;
+};
+
+sub reverse_map_cmd {
+    my $method = shift;
+
+    my $mmap = {
+	GET => 'get',
+	PUT => 'set',
+	POST => 'create',
+	DELETE => 'delete',
+    };
+
+    my $cmd = $mmap->{$method};
+
+    die "got strange value for method ('$method') - internal error" if !$cmd;
+
+    return $cmd;
+}
+
+sub map_cmd {
+    my $cmd = shift;
+
+    my $mmap = {
+	create => 'POST',
+	set => 'PUT',
+	get => 'GET',
+	ls => 'GET',
+	delete => 'DELETE',
+    };
+
+    my $method = $mmap->{$cmd};
+
+    die "unable to map method" if !$method;
+
+    return $method;
+}
+
+sub check_proxyto {
+    my ($info, $uri_param) = @_;
+
+    if ($info->{proxyto}) {
+	my $pn = $info->{proxyto};
+	my $node = $uri_param->{$pn};
+
+	if ($node ne 'localhost' && ($node ne PVE::INotify::nodename())) {
+	    die "can't proxy to remote node - not implemented";
+	}
+    }
+}
+
+sub call_method {
+    my ($dir, $cmd, $args) = @_;
+
+    my $method = map_cmd($cmd);
+
+    my $uri_param = {};
+    my ($handler, $info) = PVE::API2->find_handler($method, $dir, $uri_param);
+    if (!$handler || !$info) {
+	die "no '$cmd' handler for '$dir'\n";
+    }
+
+    check_proxyto($info, $uri_param);
+
+    my $data = $handler->cli_handler("$cmd $dir", $info->{name}, $args, [], $uri_param, $read_password);
+
+    warn "200 OK\n"; # always print OK status if successful
+
+    return if $info && $info->{returns} && 
+	$info->{returns}->{type} && $info->{returns}->{type} eq 'null';
+
+    print to_json($data, {allow_nonref => 1, canonical => 1, pretty => 1 });
+
+    return $data;
+}
+
+sub find_resource_methods {
+    my ($path, $ihash) = @_;
+
+    for my $method (qw(GET POST PUT DELETE)) {
+	my $uri_param = {};
+	my ($handler, $info, $pm) = PVE::API2->find_handler($method, $path, $uri_param);
+	if ($handler && $info && !$ihash->{$info}) {
+	    $ihash->{$info} = {
+		path => $pm,
+		handler => $handler, 
+		info => $info, 
+		uri_param => $uri_param,
+	    };
+	}
+    }
+}
+
+sub print_help {
+    my ($path, $opts) = @_;
+
+    my $ihash = {};
+
+    find_resource_methods($path, $ihash);
+
+    if (!scalar(keys(%$ihash))) {
+	die "no such resource\n";
+    }
+
+    my $di = dir_info($path);
+    if (my $children = $di->{children}) {
+	foreach my $c (@$children) {
+	    my $cp = abs_path($path, $c);
+	    find_resource_methods($cp, $ihash);
+	}
+    }
+
+    foreach my $mi (sort { $a->{path} cmp $b->{path} } values %$ihash) {
+	my $method = $mi->{info}->{method};
+
+	# we skip index methods for now.
+	next if ($method eq 'GET') && PVE::JSONSchema::method_get_child_link($mi->{info});
+
+	my $path = $mi->{path};
+	$path =~ s|/+$||; # remove trailing slash
+
+	my $cmd = reverse_map_cmd($method);
+
+	print $mi->{handler}->usage_str($mi->{info}->{name}, "$cmd $path", [], $mi->{uri_param}, 
+					$opts->{verbose} ? 'full' : 'short', 1);
+	print "\n\n" if $opts->{verbose};
+    }
+ 
+};
+
+sub resource_cap {
+    my ($path) = @_;
+
+    my $res = '';
+
+    my ($handler, $info) = PVE::API2->find_handler('GET', $path);
+    if (!($handler && $info)) {
+	$res .= '--';
+    } else {
+	if (PVE::JSONSchema::method_get_child_link($info)) {
+	    $res .= 'Dr';
+	} else {
+	    $res .= '-r';
+	}
+    }
+
+    ($handler, $info) = PVE::API2->find_handler('PUT', $path);
+    if (!($handler && $info)) {
+	$res .= '-';
+    } else {
+	$res .= 'w';
+    }
+
+    ($handler, $info) = PVE::API2->find_handler('POST', $path);
+    if (!($handler && $info)) {
+	$res .= '-';
+    } else {
+	$res .= 'c';
+    }
+
+    ($handler, $info) = PVE::API2->find_handler('DELETE', $path);
+    if (!($handler && $info)) {
+	$res .= '-';
+    } else {
+	$res .= 'd';
+    }
+
+    return $res;
+}
+
+sub extract_children {
+    my ($lnk, $data) = @_;
+
+    my $res = [];
+
+    return $res if !($lnk && $data);
+
+    my $href = $lnk->{href};
+    if ($href =~ m/^\{(\S+)\}$/) {
+	my $prop = $1;
+
+	foreach my $elem (sort {$a->{$prop} cmp $b->{$prop}} @$data) {
+	    next if !ref($elem);
+	    my $value = $elem->{$prop};
+	    push @$res, $value;
+	}
+    }
+
+    return $res;
+}
+
+sub dir_info {
+    my ($path) = @_;
+
+    my $res = { path => $path };
+    my $uri_param = {};
+    my ($handler, $info, $pm) = PVE::API2->find_handler('GET', $path, $uri_param);
+    if ($handler && $info) {
+	eval {
+	    my $data = $handler->handle($info, $uri_param);
+	    my $lnk = PVE::JSONSchema::method_get_child_link($info);
+	    $res->{children} = extract_children($lnk, $data);
+	}; # ignore errors ?
+    }
+    return $res;
+}
+
+sub list_dir {
+    my ($dir, $args) = @_;
+
+    my $uri_param = {};
+    my ($handler, $info) = PVE::API2->find_handler('GET', $dir, $uri_param);
+    if (!$handler || !$info) {
+	die "no such resource\n";
+    }
+
+    check_proxyto($info, $uri_param);
+
+    if (!PVE::JSONSchema::method_get_child_link($info)) {
+	die "resource does not define child links\n";
+    }
+
+    my $data = $handler->cli_handler("ls $dir", $info->{name}, $args, [], $uri_param, $read_password); 
+    my $lnk = PVE::JSONSchema::method_get_child_link($info);
+    my $children = extract_children($lnk, $data);
+
+    foreach my $c (@$children) {
+	my $cap = resource_cap(abs_path($dir, $c));
+	print "$cap $c\n";
+    }
+}
+
+sub pve_command {
+    my $input = shift;
+
+    PVE::Cluster::cfs_update();
+
+    $rpcenv->init_request();
+
+    my $args = [ shellwords($input) ];
+
+    my $cmd = shift @$args;
+
+    if ($cmd eq 'cd') {
+
+	my $path =  shift @$args;
+
+	die "usage: cd [dir]\n" if scalar(@$args);
+
+	if (!defined($path)) {
+	    $cdir = '';
+	    return;
+	} else {
+	    my $new_dir = abs_path($cdir, $path);
+	    my ($handler, $info) = PVE::API2->find_handler('GET', $new_dir);
+	    die "no such resource\n" if !$handler;
+	    $cdir = $new_dir;
+	}
+
+    } elsif ($cmd eq 'help') {
+
+	my $help_usage_error = sub {
+	    die "usage: help [path] [--verbose]\n";
+	};
+
+	my $opts = {};
+
+	&$help_usage_error() if !Getopt::Long::GetOptionsFromArray($args, $opts, 'verbose');
+
+	my $path;
+	if (scalar(@$args) && $args->[0] !~ m/^\-/)  {
+	    $path = shift @$args;
+	}
+
+	&$help_usage_error() if scalar(@$args);
+
+	print "help [path] [--verbose]\n";
+	print "cd [path]\n";
+	print "ls [path]\n\n";
+
+	print_help(abs_path($cdir, $path), $opts);
+
+    } elsif ($cmd eq 'ls') {
+	my $path;
+	if (scalar(@$args) && $args->[0] !~ m/^\-/)  {
+	    $path = shift @$args;
+	}
+
+	list_dir(abs_path($cdir, $path), $args);
+
+    } elsif ($cmd eq 'get') {
+
+	my $path;
+	if (scalar(@$args) && $args->[0] !~ m/^\-/)  {
+	    $path = shift @$args;
+	}
+
+	call_method(abs_path($cdir, $path), $cmd, $args);
+
+    } elsif ($cmd eq 'create') {
+
+	my $path;
+	if (scalar(@$args) && $args->[0] !~ m/^\-/)  {
+	    $path = shift @$args;
+	}
+
+	call_method(abs_path($cdir, $path), $cmd, $args);
+
+    } elsif ($cmd eq 'delete') {
+
+	my $path = shift @$args;
+
+	die "usage: delete [path]\n" if scalar(@$args);
+
+	call_method(abs_path($cdir, $path), $cmd, $args);
+
+    } elsif ($cmd eq 'set') {
+
+	my $path;
+	if (scalar(@$args) && $args->[0] !~ m/^\-/)  {
+	    $path = shift @$args;
+	}
+
+	call_method(abs_path($cdir, $path), $cmd, $args);
+
+    } else {
+	die "unknown command '$cmd'\n";
+    }
+
+}
+
+my $input;
+while (defined ($input = $term->readline("pve:/$cdir> "))) {
+    chomp $input;
+
+    next if $input =~ m/^\s*$/;
+
+    if ($input =~ m/^\s*q(uit)?\s*$/) {
+	exit (0);
+    }
+
+    $term->addhistory($input);
+
+    eval {
+	pve_command ($input);
+    };
+    warn $@ if $@;
+}

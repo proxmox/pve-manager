@@ -1,0 +1,254 @@
+Package: pve-web-news
+Description: News displayed on the admin interface
+  <b>Welcome</b> to the Proxmox Virtual Environment!<br><br>
+  For more information please visit our homepage at
+  <a href='http://www.proxmox.com' target='_blank'>www.proxmox.com</a>
+
+Package: debian-4.0-standard
+Version: 4.0-5
+Type: openvz
+OS: debian-4.0
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/system/debian-4.0-standard_4.0-5_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Debian_4.0_Standard
+md5sum: 57d47231719f2117514dffbeb736440e
+Description: Debian 4.0 (standard)
+  A small Debian Etch system including all standard packages.
+
+Package: debian-5.0-standard
+Version: 5.0-2
+Type: openvz
+OS: debian-5.0
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/system/debian-5.0-standard_5.0-2_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Debian_5.0_Standard
+md5sum: 1b7b57208bfa486cb84e39f765e0c1bb
+Description: Debian 5.0 (standard)
+  A small Debian Lenny system including all standard packages.
+
+Package: debian-6.0-standard
+Version: 6.0-1
+Type: openvz
+OS: debian-6.0
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/system/debian-6.0-standard_6.0-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Debian_6.0_Standard
+md5sum: 08a616ab67ab618f2528b654ef2b28c2
+Description: Debian 6.0 (standard)
+  A small Debian Squeeze system including all standard packages.
+
+Package: centos-4-standard
+Version: 4.7-1
+Type: openvz
+OS: centos-4
+Section: system
+Location: http://download.proxmox.com/appliances/system/centos-4-standard_4.7-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/CentOS_4_Standard
+md5sum: 49ff5ac1ae0f03e8ab28eafdc050e85f
+Description: CentOS 4 (standard)
+  A small CentOS system.
+
+Package: centos-5-standard
+Version: 5.2-1
+Type: openvz
+OS: centos-5
+Section: system
+Location: http://download.proxmox.com/appliances/system/centos-5-standard_5.2-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/CentOS_5_Standard
+md5sum: 5d3ef1bda953b7e9c832236413d9c048
+Description: CentOS 5 (standard)
+  A small CentOS system.
+
+Package: fedora-9-standard
+Version: 9-2
+Type: openvz
+OS: fedora-9
+Section: system
+Location: http://download.proxmox.com/appliances/system/fedora-9-standard_9-2_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Fedora_9_Standard
+md5sum: c5f127253345fb693ab0271bba94a82f
+Description: Fedora 9 (standard)
+  A small Fedora system.
+
+Package: proxmox-mailgateway
+Version: 2.4-2
+Type: openvz
+OS: debian-4.0
+Section: mail
+Certified: yes
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/mail/debian-4.0-proxmox-mailgateway_2.4-2_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Proxmox_Mail_Gateway
+ManageUrl: https://__IPADDRESS__/
+md5sum: 3b48ffe08347229a854bc8d5ee161e1f
+Description: Proxmox Mail Gateway
+  A full featured mail proxy for spam an virus filtering.
+
+Package: mediawiki
+Version: 1.15-1
+Type: openvz
+OS: debian-5.0
+Section: www
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/www/debian-5.0-mediawiki_1.15-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/MediaWiki
+ManageUrl: http://__IPADDRESS__/
+md5sum: acc4957cc8494d9be842ab5b82c9072c
+Description: MediaWiki
+ MediaWiki is a wiki engine (a program for creating a collaboratively
+ edited website). It is designed to handle heavy websites containing
+ library-like document collections, and supports user uploads of
+ images/sounds, multilingual content, TOC autogeneration, ISBN links,
+ etc.
+
+Package: cyan-sweb
+Version: 1.7.16-1
+Type: openvz
+OS:  ubuntu-8.04
+Section: www
+Certified: yes
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/www/ubuntu-8.04-cyan-sweb_1.7.16-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/CYAN_Secure_Web
+ManageUrl: https://__IPADDRESS__:9992/
+md5sum: 34fc1858472d743c82ae3146f7e21758
+Description: CYAN Secure Web
+ CYAN Secure Web is a high performance proxy server,
+ which is designed to provide adaptive security and
+ to meet scalable web filtering needs. The powerful
+ all-in-one solution protects your company from the
+ already existing, as well as from the continually
+ emerging web-based threats and inappropriate web
+ usage.
+
+Package: joomla
+Version: 1.5.15-1
+Type: openvz
+OS: debian-5.0
+Section: www
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/www/debian-5.0-joomla_1.5.15-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Joomla!
+ManageUrl: http://__IPADDRESS__/
+md5sum: 351668b0fc5021484cde465cfd5d30c9
+Description: Joomla! Content Management
+ Joomla! is one of the most powerful Open Source Content Management 
+ Systems on the planet. It is used all over the world for everything from 
+ simple websites to complex corporate applications. Joomla! is easy to 
+ install, simple to manage, and reliable.
+
+Package: ubuntu-8.04-standard
+Version: 8.04-3
+Type: openvz
+OS: ubuntu-8.04
+Section: system
+Location: http://download.proxmox.com/appliances/system/ubuntu-8.04-standard_8.04-3_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Hardy_Standard
+md5sum: 2c8ba5f36e94d95f3d0d535489f60e77
+Description: Ubuntu Hardy (standard)
+  A small Ubuntu Hardy system including all standard packages.
+
+Package: drupal
+Version: 6.14-1
+Type: openvz
+OS: debian-5.0
+Section: www
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/www/debian-5.0-drupal_6.14-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Drupal
+ManageUrl: http://__IPADDRESS__/
+md5sum: 557a4ab4d0adb998bf7fcd31219e9a0a
+Description: Drupal Content Management
+ Drupal is a free software package that allows an individual or a
+ community of users to easily publish, manage and organize a wide
+ variety of content on a website. Tens of thousands of people and
+ organizations are using Drupal to power scores of different web sites,
+ including community web portals, discussion sites, corporate web sites,
+ intranet applications, personal web sites or blogs, ... 
+
+Package: acquia
+Version: 1.2.21-1
+Type: openvz
+OS: debian-5.0
+Section: www
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/www/debian-5.0-acquia_1.2.21-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Acquia_Drupal
+ManageUrl: http://__IPADDRESS__/
+md5sum: 495c16fae7a3ebaff24cdad6538ca0c9
+Description: Acquia Drupal Content Management
+ Acquia Drupal is a commercially supported distribution of the open
+ source Drupal social publishing system. A packaged collection of some
+ of the best software from the Drupal community, Acquia Drupal offers
+ you an advanced starting point to quickly begin building Drupal
+ websites.
+
+Package: sugarcrm
+Version: 5.5.0-1
+Type: openvz
+OS: debian-5.0
+Section: www
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/www/debian-5.0-sugarcrm_5.5.0-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/SugarCRM
+ManageUrl: http://__IPADDRESS__/
+md5sum: 84b25f39d70ff4b72e155a3f4cd96cf0
+Description: SugarCRM customer relationship management
+ SugarCRM is the world's leading provider of commercial open source
+ customer relationship management (CRM) software for companies of all
+ sizes. Sugar easily adapts to any business environment by offering a
+ more flexible, cost-effective alternative than proprietary
+ applications. SugarCRM's open source architecture allows companies to
+ more easily customize and integrate customer-facing business processes
+ in order to build and maintain more profitable relationships.
+
+Package: zenoss
+Version: 2.5.1-1
+Type: openvz
+OS: ubuntu-8.04
+Section: admin
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/admin/ubuntu-8.04-zenoss_2.5.1-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Zenoss
+ManageUrl: http://__IPADDRESS__:8080/
+md5sum: 025957c3e99267623c168331a57fee8f
+Description: Zenoss Core IT monitoring
+ Zenoss Core is an award-winning open source IT monitoring product
+ that delivers the functionality to effectively manage the
+ configuration, health and performance of networks, servers and
+ applications through a single, integrated software package.
+
+Package: request-tracker
+Version: 3.8.7-1
+Type: openvz
+OS: debian-6.0
+Section: admin
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/admin/debian-6.0-request-tracker_3.8.7-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/RT_Request_Tracker
+ManageUrl: http://__IPADDRESS__/rt/
+md5sum: 155f824dce64337d04678b3bc2fa41ef
+Description:  Extensible trouble-ticket tracking system
+ Request Tracker (RT) is an enterprise-grade ticketing system which
+ enables a group of people to intelligently and efficiently manage
+ tasks, issues, and requests submitted by a community of users. It
+ features a web, email and command-line interfaces.
+
+Package: wordpress
+Version: 2.9-1
+Type: openvz
+OS: debian-5.0
+Section: www
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/www/debian-5.0-wordpress_2.9-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Wordpress
+ManageUrl: http://__IPADDRESS__/
+md5sum: 362697bfa8821f6c736320544cbb9232
+Description: Wordpress
+ WordPress is a state-of-the-art publishing platform with a
+ focus on aesthetics, web standards, and usability.
+ WordPress is both free and priceless at the same time.
+

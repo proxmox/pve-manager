@@ -1,0 +1,56 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:        pvestatd
+# Required-Start:  $remote_fs $network $syslog pve-cluster pvedaemon
+# Required-Stop:   $remote_fs $network $syslog pve-cluster pvedaemon
+# Default-Start:   2 3 4 5
+# Default-Stop:    0 1 6
+# Short-Description: PVE Status Daemon
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+PATH=/sbin:/bin:/usr/bin:/usr/sbin
+NAME=pvestatd
+DAEMON=/usr/bin/pvestatd
+DESC="PVE Status Daemon" 
+
+PIDFILE=/var/run/pvestatd.pid
+
+test -f $DAEMON || exit 0
+
+case "$1" in
+	start)
+		log_daemon_msg "Starting $DESC" "$NAME"
+  		start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON
+		log_end_msg $?
+  		;;
+	stop)
+		log_daemon_msg "Stopping $DESC" "$NAME"
+  		start-stop-daemon --stop  --quiet --retry TERM/5/TERM/10/KILL/2 --pidfile $PIDFILE
+		log_end_msg $?
+  		;;
+	reload)
+		log_daemon_msg "Reloading $DESC" "$NAME"
+		if ( [ -e $PIDFILE ] && kill -0 `cat $PIDFILE`) then
+		    start-stop-daemon --stop --quiet --pidfile $PIDFILE --signal HUP
+		else
+		    start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON
+		fi
+		log_end_msg $?
+  		;;
+	restart|force-reload)
+		log_daemon_msg "Restarting $DESC" "$NAME"
+  		start-stop-daemon --stop --quiet --retry TERM/5/TERM/10/KILL/2 --pidfile $PIDFILE
+  		start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON
+		log_end_msg $?
+  		;;
+	*)
+	        N=/etc/init.d/$NAME
+  		echo "Usage: $N {start|stop|reload|restart|force-reload}" >&2
+  		exit 1
+		;;
+esac
+
+exit 0

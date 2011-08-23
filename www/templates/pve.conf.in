@@ -1,0 +1,72 @@
+<IfModule mpm_prefork_module>
+    StartServers 2
+    MinSpareServers 1 
+    MaxSpareServers 2
+    MaxClients          50
+    MaxRequestsPerChild 200
+</IfModule>
+
+ServerName localhost
+ServerSignature Off
+ServerTokens Prod
+ServerAdmin root
+AddDefaultCharset On
+
+# Hint: Ajax use KeepAlive, which in effect disables MaxRequestsPerChild,
+# so we need to disable KeepAlive to prevent exhaustive memory usage, or
+# at least make sure that periodic updaters interval > KeepAliveTimeout 
+# or maybe we should set "MaxKeepAliveRequests 20"
+
+KeepAlive Off
+
+<IfModule mod_deflate.c>
+	AddOutputFilterByType DEFLATE application/json
+</IfModule>
+
+CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+Listen 8006
+<VirtualHost *:8006>
+    SSLEngine on
+    SSLProtocol all -SSLv2
+    SSLCertificateFile @PROXMOX_ETC@/local/pve-ssl.pem
+    SSLCertificateKeyFile @PROXMOX_ETC@/local/pve-ssl.key
+
+    RewriteEngine on
+    RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK)
+    RewriteRule .* - [F]
+
+    DocumentRoot @WWW_ROOTDIR@
+    <Directory />
+	Options FollowSymLinks
+	AllowOverride None
+    </Directory>
+
+    <Directory @WWW_ROOTDIR@>
+	Options FollowSymLinks MultiViews
+	AllowOverride None
+	Order allow,deny
+	allow from all
+    </Directory>
+
+    Alias /pve2/ @WWW_BASEDIR@/
+    Alias /vncterm/ /usr/share/vncterm/
+ 
+    # avoid authentication when accessing favicon
+    Alias /favicon.ico @WWW_IMAGEDIR@/favicon.ico
+
+    PerlRequire @WWW_BASEDIR@/startup.pl
+
+    <Location /index.pl>
+        SetHandler perl-script	
+        PerlHandler ModPerl::Registry
+        Options ExecCGI		
+    </Location>
+
+    <Location /api2/>
+        SetHandler perl-script
+        PerlHandler PVE::REST 
+    </Location>
+
+</VirtualHost>
+

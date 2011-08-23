@@ -1,0 +1,250 @@
+pve-manager (2.0-4) unstable; urgency=low
+
+  * fixes in pvestatd
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 05 Aug 2011 08:56:07 +0200
+
+pve-manager (2.0-3) unstable; urgency=low
+
+  * implemented storage configuration interface
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 29 Jul 2011 08:59:14 +0200
+
+pve-manager (2.0-2) unstable; urgency=low
+
+  * fix console size
+  
+  * fix dns network editor
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 27 Jun 2011 12:39:18 +0200
+
+pve-manager (2.0-1) unstable; urgency=low
+
+  * prototype for 2.0
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 16 Feb 2010 10:17:25 +0100
+
+pve-manager (1.5-7) unstable; urgency=low
+
+  * correctly display cpu usage and avoid warning about undefined values.
+
+  * display 'used' bytes in storage browser.
+  
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 11 Feb 2010 10:30:14 +0100
+
+pve-manager (1.5-6) unstable; urgency=low
+
+  * correctly display uptime for kernel 2.6.18
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 08 Feb 2010 14:22:10 +0100
+
+pve-manager (1.5-5) unstable; urgency=low
+
+  * updated russian translation
+
+  * updated japanese translation
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 15 Jan 2010 10:18:58 +0100
+
+pve-manager (1.5-4) unstable; urgency=low
+
+  * fix small bug in template list
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 14 Jan 2010 14:40:12 +0100
+
+pve-manager (1.5-3) unstable; urgency=low
+
+  * updated appliance template list
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 14 Jan 2010 10:22:24 +0100
+
+pve-manager (1.5-2) unstable; urgency=low
+
+  * add CPUs settings for OpenVZ (work now withe kernel 2.6.18)
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 12 Jan 2010 09:42:08 +0100
+
+pve-manager (1.5-1) unstable; urgency=low
+
+  * updated vietnamese translations
+  
+  * show all bridges (0-999) when creating KVM VMs
+
+  * show all installed pve kernels with pveversion
+  
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 18 Dec 2009 09:52:36 +0100
+
+pve-manager (1.4-10) unstable; urgency=low
+
+  * updated brasilian translation
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 02 Nov 2009 12:04:02 +0100
+
+pve-manager (1.4-9) unstable; urgency=low
+
+  * minor GUI updates
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 09 Oct 2009 09:41:26 +0200
+
+pve-manager (1.4-8) unstable; urgency=low
+
+  * updated italian translation
+  
+  * list backup files on web interface
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 08 Oct 2009 13:36:52 +0200
+
+pve-manager (1.4-7) unstable; urgency=low
+
+  * separate page/memu for ISO uploads (for new storage model)
+  
+  * fix pveversion bug
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 07 Oct 2009 13:10:30 +0200
+
+pve-manager (1.4-6) unstable; urgency=low
+
+  * support new storage model for backup configuration
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 21 Sep 2009 12:54:55 +0200
+
+pve-manager (1.4-5) unstable; urgency=low
+
+  * updated Vietnamese translations 
+  
+  * support up to 1000 bridges
+  
+  *  avoid excessive logs in pevtunnel
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 18 Sep 2009 10:34:31 +0200
+
+pve-manager (1.4-4) unstable; urgency=low
+
+  * updated Vietnamese translations 
+
+  * fix SOAP serializer bug 
+  
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 17 Sep 2009 13:07:39 +0200
+
+pve-manager (1.4-3) unstable; urgency=low
+
+  * added Vietnamese and Polish translations 
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 16 Sep 2009 11:05:31 +0200
+
+pve-manager (1.4-2) unstable; urgency=low
+
+  * support new socket/cores feature
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 15 Sep 2009 11:48:32 +0200
+
+pve-manager (1.4-1) unstable; urgency=low
+
+  * use new storage manager framework
+  
+  * implemented SOAP authentication framework (use tickets)
+
+  * depend on libterm-readline-gnu-perl
+  
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 03 Jul 2009 14:44:30 +0200
+
+pve-manager (1.3-1) unstable; urgency=low
+
+  * recompile for 1.3
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 02 Jun 2009 14:26:25 +0200
+
+pve-manager (1.2-2) unstable; urgency=low
+
+  * depend on  netcat-traditional, conflict with netcat-openbsd
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 13 May 2009 10:13:11 +0200
+
+pve-manager (1.2-1) unstable; urgency=low
+
+  * prepare for debian lenny
+  
+  * move /var/www/* to /usr/share/pve-manager/*
+  
+  * use externale libjs-prototype library
+  
+  * remove NoCachePNG.pm (we do not use it)
+  
+  * use 'configure' instead of hardcoded paths in makefile
+  
+  * pve.conf.in - substitute paths with configure 
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 24 Apr 2009 08:07:53 +0200
+
+pve-manager (1.1-4) unstable; urgency=low
+
+  * add 'stardate' option for kvm
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon,  2 Feb 2009 09:51:40 +0100
+
+pve-manager (1.1-3) unstable; urgency=low
+
+  * set max memory to 64GB
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 27 Jan 2009 08:18:53 +0100
+
+pve-manager (1.1-1) unstable; urgency=low
+
+  * do not start container when setting passwords
+
+  *  Avoids ghost tasks when PIDs are recycled
+  
+  * logfile viewer: filter some terminal escape codes
+  
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 12 Jan 2009 13:03:17 +0100
+
+pve-manager (1.0-11) unstable; urgency=low
+
+  * added chinese translation
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 18 Dec 2008 09:31:45 +0100
+
+pve-manager (1.0-10) unstable; urgency=low
+
+  * fix broken vznetaddbr script
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 24 Nov 2008 12:50:50 +0100
+
+pve-manager (1.0-9) unstable; urgency=low
+
+  * fix shell metacharacter problem
+  
+  * new vznetaddbr script
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 19 Nov 2008 12:53:18 +0100
+
+pve-manager (1.0-8) unstable; urgency=low
+
+  * fix RFB protocol problems
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 13 Nov 2008 13:16:54 +0100
+
+pve-manager (1.0-7) unstable; urgency=low
+
+  * small fixes
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 11 Nov 2008 11:04:22 +0100
+
+pve-manager (1.0-1) unstable; urgency=low
+
+  * many update, bug fixes, new languages
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 22 Oct 2008 10:58:58 +0200
+
+pve-manager (0.9-4) unstable; urgency=low
+
+  * updates for new kvm, bug fixes
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 22 Jul 2008 10:23:10 +0200
+
+pve-manager (0.9-1) unstable; urgency=low
+
+  * initial import
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Nov 2007 13:15:54 +0100
+
