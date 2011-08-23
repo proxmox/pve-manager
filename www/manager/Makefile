@@ -1,4 +1,4 @@
-include $(top_builddir)/common.mk
+include ../../defines.mk
 
 JSSRC= 				                 	\
 	Utils.js					\
@@ -107,24 +107,24 @@ pvemanagerlib.js: ${JSSRC}
 	cat ${JSSRC} >$@.tmp
 	mv $@.tmp $@
 
-pvelib_DATA = pvemanagerlib.js
-pvelibdir = ${WWW_EXTDIR}
+all: pvemanagerlib.js
 
-privatedir = ${WWW_BASEDIR}
-private_SCRIPTS = 		\
-	startup.pl
+.PHONY: install 
+install: pvemanagerlib.js startup.pl index.pl
+	install -d ${WWWBASEDIR}
+	install -m 0755 -o www-data -g www-data startup.pl ${WWWBASEDIR}
+	install -d ${WWWROOTDIR}
+	install -m 0755 -o www-data -g www-data index.pl ${WWWROOTDIR}
+	install -d ${WWWEXT4DIR}
+	install -m 0644 -o www-data -g www-data pvemanagerlib.js ${WWWEXT4DIR}
 
-managerdir = ${WWW_ROOTDIR}
-manager_SCRIPTS = 		\
-	index.pl
+.PHONY: distclean
+distclean: clean
 
-install-data-hook: 
-	chown -R www-data:www-data ${DESTDIR}/${privatedir}
-	chown -R www-data:www-data ${DESTDIR}/${managerdir}
-	chown -R www-data:www-data ${DESTDIR}/${pvelibdir}
-
-clean-local:
+.PHONY: clean
+clean:
 	find . -name '*~' -exec rm {} ';'	
-	-rm -rf pvemanagerlib.js
+	rm -rf pvemanagerlib.js
+
 
 

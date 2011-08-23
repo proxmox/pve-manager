@@ -1,6 +1,5 @@
 #!/usr/bin/perl -w
 
-use lib qw (./lib);
 use strict;
 use PVE::Tools;
 
