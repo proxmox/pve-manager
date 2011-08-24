@@ -34,10 +34,13 @@ use PVE::RPCEnvironment;
 
 sub childinit {
     syslog ('info', "Starting new child $$");
-    PVE::INotify::inotify_init();
-    PVE::RPCEnvironment->init('pub');
 
-    PVE::Config::inotify_init();
+    eval {
+	PVE::INotify::inotify_init();
+	PVE::RPCEnvironment->init('pub');
+    };
+    my $err = $@;
+    syslog('err', $err) if $err;
 }
 
 sub childexit {
