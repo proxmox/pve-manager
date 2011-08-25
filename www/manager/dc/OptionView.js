@@ -1,3 +1,28 @@
+Ext.define('PVE.dc.HttpProxyEdit', {
+    extend: 'PVE.window.Edit',
+
+    initComponent : function() {
+	var me = this;
+
+	Ext.applyIf(me, {
+	    title: "Edit HTTP proxy settings",
+	    items: {
+		xtype: 'pvetextfield',
+		name: 'http_proxy',
+		vtype: 'HttpProxy',
+		emptyText: 'Do not use any proxy',
+		deleteEmpty: true,
+		value: '',
+		fieldLabel: 'HTTP proxy'
+	    }
+	});
+
+	me.callParent();
+
+	me.load();
+    }
+});
+
 Ext.define('PVE.dc.LanguageEdit', {
     extend: 'PVE.window.Edit',
 
@@ -67,8 +92,15 @@ Ext.define('PVE.dc.OptionView', {
 		required: true 
 	    },
 	    http_proxy: { 
-		header: 'HTTP proxy', 
-		required: true 
+		header: 'HTTP proxy',
+		editor: 'PVE.dc.HttpProxyEdit', 
+		required: true,
+		renderer: function(value) {
+		    if (!value) {
+			return "Do not use any proxy";
+		    }
+		    return value;
+		}
 	    }
 	};
 

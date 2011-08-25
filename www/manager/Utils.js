@@ -25,7 +25,7 @@ Ext.Ajax.on('beforerequest', function(conn, options) {
     }
 });
 
-// custom Vtype for vtype:'IPAddress'
+// custom Vtypes
 Ext.apply(Ext.form.field.VTypes, {
     IPAddress:  function(v) {
         return (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/).test(v);
@@ -57,7 +57,12 @@ Ext.apply(Ext.form.field.VTypes, {
     StorageId:  function(v) {
         return (/^[a-z][a-z0-9\-\_\.]*[a-z0-9]$/i).test(v);
     },
-    StorageIdText: "ID contains illegal characters (allowed characters: 'a-z', '0-9', '-', '_' and '.')"
+    StorageIdText: "ID contains illegal characters (allowed characters: 'a-z', '0-9', '-', '_' and '.')",
+
+    HttpProxy:  function(v) {
+        return (/^http:\/\/.*$/).test(v);
+    },
+    HttpProxyText: "Must confirm to schema 'http://.*' (example: 'http://username:password\@host:port/')"
 });
 
 // we dont want that a displayfield set the form dirty flag! 
