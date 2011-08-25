@@ -32,6 +32,7 @@ JSSRC= 				                 	\
 	form/BridgeSelector.js				\
 	form/CPUModelSelector.js			\
 	form/VNCKeyboardSelector.js			\
+	form/LanguageSelector.js			\
 	form/DisplaySelector.js				\
 	form/CacheTypeSelector.js			\
 	form/ContentTypeSelector.js			\

@@ -175,6 +175,31 @@ Ext.define('PVE.Utils', { statics: {
 	return data;
     },
 
+    language_map: {
+	en: 'English',
+	de: 'German'
+    },
+
+    render_language: function (value) {
+	if (!value) {
+	    return 'Default (English)';
+	}
+	var text = PVE.Utils.language_map[value];
+	if (text) {
+	    return text + ' (' + value + ')';
+	}
+	return value;
+    },
+
+    language_array: function() {
+	var data = [['', PVE.Utils.render_language('')]];
+	Ext.Object.each(PVE.Utils.language_map, function(key, value) {
+	    data.push([key, PVE.Utils.render_language(value)]);
+	});
+
+	return data;
+    },
+
     render_kvm_vga_driver: function (value) {
 	if (!value) {
 	    return 'Default';

@@ -1,3 +1,25 @@
+Ext.define('PVE.dc.LanguageEdit', {
+    extend: 'PVE.window.Edit',
+
+    initComponent : function() {
+	var me = this;
+
+	Ext.applyIf(me, {
+	    title: "Edit language settings",
+	    items: {
+		xtype: 'pveLanguageSelector',
+		name: 'language',
+		value: '',
+		fieldLabel: 'Language'
+	    }
+	});
+
+	me.callParent();
+
+	me.load();
+    }
+});
+
 Ext.define('PVE.dc.KeyboardEdit', {
     extend: 'PVE.window.Edit',
 
@@ -40,6 +62,8 @@ Ext.define('PVE.dc.OptionView', {
 	    },
 	    language: { 
 		header: 'GUI language', 
+		editor: 'PVE.dc.LanguageEdit',
+		renderer: PVE.Utils.render_language,
 		required: true 
 	    },
 	    http_proxy: { 
