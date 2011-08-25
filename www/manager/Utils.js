@@ -62,7 +62,7 @@ Ext.apply(Ext.form.field.VTypes, {
     HttpProxy:  function(v) {
         return (/^http:\/\/.*$/).test(v);
     },
-    HttpProxyText: "Must confirm to schema 'http://.*' (example: 'http://username:password\@host:port/')"
+    HttpProxyText: "Must confirm to schema 'http://.*' (example: 'http://username:password@host:port/')"
 });
 
 // we dont want that a displayfield set the form dirty flag! 

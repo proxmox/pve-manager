@@ -120,7 +120,7 @@ Ext.define('PVE.dc.AuthEdit', {
         if (!me.create) {
             me.load({
                 success: function(response, options) {
-		    var data = response.result.data;
+		    var data = response.result.data || {};
                     var count = 1;
                     while (data['server' + count.toString()]) {
 			if (data.servers) {
