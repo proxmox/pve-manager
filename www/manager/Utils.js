@@ -207,7 +207,7 @@ Ext.define('PVE.Utils', { statics: {
 
     render_kvm_vga_driver: function (value) {
 	if (!value) {
-	    return 'Default';
+	    return 'OS default';
 	}
 	var text = PVE.Utils.kvm_vga_drivers[value];
 	if (text) { 
