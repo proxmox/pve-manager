@@ -24,7 +24,7 @@ my $service_list = {
     syslog => { name => 'Syslog', desc => 'Syslog daemon' },
     cron => { name => 'CRON', desc => 'Daemon to execute scheduled commands' },
     pvedaemon => { name => 'NodeManager', desc => 'PVE node manager daemon' },
-    corosync => { name => 'Corosync', desc => 'Corosync cluster daemon' },
+    corosync => { name => 'CMan', desc => 'CMan/Corosync cluster daemon' },
     pvecluster => { name => 'PVECluster', desc => 'Proxmox VE cluster file system' },
 };
 
