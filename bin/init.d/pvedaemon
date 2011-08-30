@@ -2,8 +2,10 @@
 
 ### BEGIN INIT INFO
 # Provides:        pvedaemon
-# Required-Start:  $remote_fs $network $syslog pve-cluster
-# Required-Stop:   $remote_fs $network $syslog pve-cluster
+# Required-Start:  $remote_fs $network $syslog pve-cluster cman
+# Required-Stop:   $remote_fs $network $syslog pve-cluster cman
+# X-Start-Before:  apache2
+# X-Stop-After:    apache2
 # Default-Start:   2 3 4 5
 # Default-Stop:    0 1 6
 # Short-Description: PVE Daemon
