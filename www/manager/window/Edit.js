@@ -71,6 +71,10 @@ Ext.define('PVE.window.Edit', {
 	    }
 	});
 
+	if (me.digest) {
+	    values.digest = me.digest;
+	}
+
 	PVE.Utils.API2Request({
 	    url: me.url,
 	    waitMsgTarget: me,
@@ -105,6 +109,7 @@ Ext.define('PVE.window.Edit', {
 		method: 'GET',
 		success: function(response, opts) {
 		    form.clearInvalid();
+		    me.digest = response.result.data.digest;
 		    if (successFn) {
 			successFn(response, opts);
 		    } else {
