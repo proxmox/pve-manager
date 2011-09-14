@@ -179,11 +179,7 @@ __PACKAGE__->register_method({
 	die "Permission check failed\n"
 	    if !($sysadmin || $user eq $task->{user});
 
-	my $pstart = PVE::ProcFSTools::read_proc_starttime($task->{pid});
-	$task->{status} = ($pstart && ($pstart == $task->{pstart})) ?
-	    'running' : 'stopped';
-
-	die "not implemented - fixme"; 
+	PVE::RPCEnvironment::check_worker($param->{upid}, 1);
 
 	return undef;
     }});
