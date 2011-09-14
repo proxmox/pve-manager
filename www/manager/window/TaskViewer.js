@@ -75,6 +75,9 @@ Ext.define('PVE.window.TaskViewer', {
 		method: 'DELETE',
 		failure: function(response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
+		},
+		callback: function() {
+		    store.load();
 		}
 	    });
 	};
@@ -105,6 +108,9 @@ Ext.define('PVE.window.TaskViewer', {
 	    if (status === 'stopped') {
 		statstore.stopUpdate();
 	    }
+	    if (status === 'running') {
+		store.load();
+	    }
 
 	    stop_btn1.setDisabled(status !== 'running');
 	    stop_btn2.setDisabled(status !== 'running');
@@ -131,12 +137,11 @@ Ext.define('PVE.window.TaskViewer', {
 			features: [ {ftype: 'selectable'}],
 			store: store,
 			stateful: false,
-			//tbar: [ 'test' ],
 			verticalScrollerType: 'paginggridscroller',
-			loadMask: true,
 			disableSelection: true,
 			invalidateScrollerOnRefresh: false,
 			viewConfig: {
+			    loadMask: false,
 			    trackOver: false,
 			    stripeRows: false
 			},
