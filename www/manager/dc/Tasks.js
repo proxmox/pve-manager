@@ -16,7 +16,7 @@ Ext.define('PVE.dc.Tasks', {
 	    sorters: [
 		{
 		    property : 'starttime',
-		    direction: 'ASC'
+		    direction: 'DESC'
 		}
 	    ]
 	});
