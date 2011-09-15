@@ -44,6 +44,7 @@ ${DEB} deb:
 
 .PHONY: upload
 upload: ${DEB}
+	./repoid.pl .git check
 	umount /pve/${RELEASE}; mount /pve/${RELEASE} -o rw 
 	mkdir -p /pve/${RELEASE}/extra
 	rm -f /pve/${RELEASE}/extra/${PACKAGE}_*.deb
