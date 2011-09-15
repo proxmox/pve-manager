@@ -60,6 +60,17 @@ Ext.define('PVE.qemu.Summary', {
 		    }
 		},
 		{ 
+		    itemId: 'migrate',
+		    text: 'Migrate',
+		    handler: function() {
+			var win = Ext.create('PVE.qemu.Migrate', { 
+			    pveSelNode: me.pveSelNode,
+			    workspace: me.up('pveStdWorkspace')
+			});
+			win.show();
+		    }    
+		}, 
+		{ 
 		    text: 'Reset',
 		    itemId: 'reset',
 		    handler: function() { 
