@@ -330,6 +330,18 @@ Ext.define('PVE.tree.ResourceTree', {
 		pdata.dataIndex = {};
 		me.getSelectionModel().deselectAll();
 	    },
+	    selectExpand: function(node) {
+		var sm = me.getSelectionModel();
+		if (!sm.isSelected(node)) {
+		    sm.select(node);
+		    var cn = node;
+		    while (!!(cn = cn.parentNode)) {
+			if (!cn.isExpanded()) {
+			    cn.expand();
+			}
+		    }
+		}
+	    },
 	    selectById: function(nodeid) {
 		var rootnode = me.store.getRootNode();
 		var sm = me.getSelectionModel();
@@ -340,15 +352,21 @@ Ext.define('PVE.tree.ResourceTree', {
 		    node = rootnode.findChild('id', nodeid, true);
 		}
 		if (node) {
-		    if (!sm.isSelected(node)) {
-			sm.select(node);
-			var cn = node;
-			while (!!(cn = cn.parentNode)) {
-			    if (!cn.isExpanded()) {
-				cn.expand();
-			    }
-			}
-		    }
+		    me.selectExpand(node);
+		}
+	    },
+	    check_vm_migration: function(record) {
+		if (!(record.data.type === 'qemu' || record.data.type === 'openvz')) {
+		    throw "not a vm type";
+		}
+
+		var rootnode = me.store.getRootNode();
+		var node = rootnode.findChild('id', record.data.id, true);
+
+		if (node && node.data.type === record.data.type &&
+		    node.data.node !== record.data.node) {
+		    // defer select (else we get strange errors)
+		    Ext.defer(function() { me.selectExpand(node)}, 100, me);
 		}
 	    },
 	    applyState : function(state) {

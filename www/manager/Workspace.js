@@ -188,6 +188,12 @@ Ext.define('PVE.StdWorkspace', {
 	tree.selectById(nodeid);
     },
 
+    check_vm_migration: function(record) {
+	var me = this;
+	var tree = me.down('pveResourceTree');
+	tree.check_vm_migration(record);
+    },
+
     onLogin: function(loginData) {
 	var me = this;
 
@@ -257,6 +263,7 @@ Ext.define('PVE.StdWorkspace', {
 				showSearch: (n.data.id === 'root') ||
 				    Ext.isDefined(n.data.groupbyid),
 				pveSelNode: n,
+				workspace: me,
 				viewFilter: selview.getViewFilter()
 			    };
 			}

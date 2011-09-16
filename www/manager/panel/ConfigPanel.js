@@ -22,10 +22,11 @@ Ext.define('PVE.panel.Config', {
 	    defaults: {} 
 	});
 
-	// pass rstore, pveSelNode and viewFilter to all children
+	// pass workspace, pveSelNode and viewFilter to all children
 	Ext.apply(me.defaults, {
 	    pveSelNode: me.pveSelNode,
 	    viewFilter: me.viewFilter,
+	    workspace: me.workspace,
 	    border: false
 	});
 

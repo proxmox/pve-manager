@@ -21,8 +21,6 @@ Ext.define('PVE.qemu.Migrate', {
 		});
 		win.show();
 		me.close();
-
-		me.workspace.selectById('root');
 	    }
 	});
     },
@@ -38,10 +36,6 @@ Ext.define('PVE.qemu.Migrate', {
 	var vmid = me.pveSelNode.data.vmid;
 	if (!vmid) {
 	    throw "no VM ID specified";
-	}
-
-	if (!me.workspace) {
-	    throw "no Workspace specified";
 	}
 
 	me.formPanel = Ext.create('Ext.form.Panel', {

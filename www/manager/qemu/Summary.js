@@ -15,6 +15,10 @@ Ext.define('PVE.qemu.Summary', {
 	    throw "no VM ID specified";
 	}
 
+	if (!me.workspace) {
+	    throw "no workspace specified";
+	}
+
 	var statusview = Ext.create('PVE.qemu.StatusView', {
 	    title: 'Status',
 	    pveSelNode: me.pveSelNode,
@@ -65,7 +69,6 @@ Ext.define('PVE.qemu.Summary', {
 		    handler: function() {
 			var win = Ext.create('PVE.qemu.Migrate', { 
 			    pveSelNode: me.pveSelNode,
-			    workspace: me.up('pveStdWorkspace')
 			});
 			win.show();
 		    }    
@@ -138,8 +141,14 @@ Ext.define('PVE.qemu.Summary', {
 	});
 
 	me.mon(rstore, 'load', function(s, records, success) {
-	    var rec = s.data.get('status');
-	    var status = rec ? rec.data.value : 'unknown';
+	    var status;
+	    if (!success) {
+		me.workspace.check_vm_migration(me.pveSelNode);
+		status = 'unknown';
+	    } else {
+		var rec = s.data.get('status');
+		status = rec ? rec.data.value : 'unknown';
+	    }
 
 	    tbar.down('#start').setDisabled(status === 'running');
 	    tbar.down('#reset').setDisabled(status !== 'running');
