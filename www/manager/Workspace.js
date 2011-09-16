@@ -188,10 +188,10 @@ Ext.define('PVE.StdWorkspace', {
 	tree.selectById(nodeid);
     },
 
-    check_vm_migration: function(record) {
+    checkVmMigration: function(record) {
 	var me = this;
 	var tree = me.down('pveResourceTree');
-	tree.check_vm_migration(record);
+	tree.checkVmMigration(record);
     },
 
     onLogin: function(loginData) {

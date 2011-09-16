@@ -69,7 +69,6 @@ Ext.define('PVE.qemu.Migrate', {
 	    text: 'Migrate',
 	    handler: function() {
 		var values = form.getValues();
-		console.log("STARTMIGRATE " + vmid + " " + values.target + " " + values.online);
 		me.migrate(vmid, nodename, values.target, values.online);
 	    }
 	});

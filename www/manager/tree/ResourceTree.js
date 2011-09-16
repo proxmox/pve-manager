@@ -231,8 +231,9 @@ Ext.define('PVE.tree.ResourceTree', {
 			    }
 			}
 			if ((item.data.text !== olditem.data.text) ||
+			    (item.data.node !== olditem.data.node) ||
 			    (item.data.running !== olditem.data.running)) {
-			    //console.log("changed text/running");
+			    //console.log("changed node/text/running " + olditem.data.id);
 			    changed = true;
 			}
 
@@ -355,7 +356,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		    me.selectExpand(node);
 		}
 	    },
-	    check_vm_migration: function(record) {
+	    checkVmMigration: function(record) {
 		if (!(record.data.type === 'qemu' || record.data.type === 'openvz')) {
 		    throw "not a vm type";
 		}
@@ -366,7 +367,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		if (node && node.data.type === record.data.type &&
 		    node.data.node !== record.data.node) {
 		    // defer select (else we get strange errors)
-		    Ext.defer(function() { me.selectExpand(node)}, 100, me);
+		    Ext.defer(function() { me.selectExpand(node) }, 100, me);
 		}
 	    },
 	    applyState : function(state) {

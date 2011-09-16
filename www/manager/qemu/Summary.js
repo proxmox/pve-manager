@@ -143,7 +143,7 @@ Ext.define('PVE.qemu.Summary', {
 	me.mon(rstore, 'load', function(s, records, success) {
 	    var status;
 	    if (!success) {
-		me.workspace.check_vm_migration(me.pveSelNode);
+		me.workspace.checkVmMigration(me.pveSelNode);
 		status = 'unknown';
 	    } else {
 		var rec = s.data.get('status');
