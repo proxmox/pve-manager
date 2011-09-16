@@ -28,7 +28,7 @@ Ext.define('PVE.grid.ResourceGrid', {
     alias: ['widget.pveResourceGrid'],
 
     //fixme: this makes still problems with the scrollbar
-    features: [ {ftype: 'chunking'}],
+    //features: [ {ftype: 'chunking'}],
     
     initComponent : function() {
 	var me = this;
