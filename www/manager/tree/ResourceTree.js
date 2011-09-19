@@ -81,8 +81,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	}
     },
 
-    // private
-    addChildSorted: function(node, info) {
+    setIconCls: function(info) {
 	var me = this;
 
 	var defaults = PVE.tree.ResourceTree.typeDefaults[info.type];
@@ -93,7 +92,15 @@ Ext.define('PVE.tree.ResourceTree', {
 		info.iconCls = defaults.iconCls;
 	    }
 	}
+    },
 
+    // private
+    addChildSorted: function(node, info) {
+	var me = this;
+
+	me.setIconCls(info);
+
+	var defaults;
 	if (info.groupbyid) {
 	    info.text = info.groupbyid;	    
 	    if (info.type === 'type') {
@@ -242,14 +249,20 @@ Ext.define('PVE.tree.ResourceTree', {
 
 		    if (!item || changed) {
 			//console.log("REM UID: " + key + " ITEM " + olditem.data.id);
-			delete index[key];
-			var parentNode = olditem.parentNode;
-			//var expanded = parentNode.isExpanded();
-			//if (expanded)
-			//parentNode.collapse();		    
-			parentNode.removeChild(olditem, true);
-			//if (expanded) 
-			//parentNode.expand();
+			if (olditem.isLeaf()) {
+			    delete index[key];
+			    var parentNode = olditem.parentNode;
+			    parentNode.removeChild(olditem, true);
+			} else {
+			    if (item && changed) {
+				olditem.beginEdit();
+				//console.log("REM UPDATE UID: " + key + " ITEM " + item.data.running);
+				var info = olditem.data;
+				Ext.apply(info, item.data);
+				me.setIconCls(info);
+				olditem.commit();
+			    }
+			}
 		    }
 		}
 	    }

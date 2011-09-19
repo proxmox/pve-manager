@@ -16,6 +16,8 @@ IMAGES = ${GNOME_IMAGES}	\
 	memory.png		\
 	processor.png		\
 	proxmox_logo.png	\
+	network-server-on.png	\
+	network-server-off.png	\
 	blank.gif
 
 .PHONY: install 

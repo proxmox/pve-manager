@@ -25,6 +25,7 @@
 .pve-itype-icon-openvz,
 .pve-itype-icon-openvz-running,
 .pve-itype-icon-node,
+.pve-itype-icon-node-running,
 .pve-itype-icon-storage,
 .pve-itype-icon-itype
 {
@@ -53,7 +54,14 @@
 .x-tree-node-server,
 .x-grid-tree-node-expanded .x-tree-node-server
 {
-    background-image:url(../images/network-server.png);
+    background-image:url(../images/network-server-off.png);
+}
+
+.pve-itype-icon-node-running,
+.x-tree-node-server-running,
+.x-grid-tree-node-expanded .x-tree-node-server-running
+{
+    background-image:url(../images/network-server-on.png);
 }
 
 .pve-itype-icon-storage,
