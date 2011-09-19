@@ -118,12 +118,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	    pos = cs[me.findInsertIndex(node, child, 0, cs.length)];
 	}
 
-	//var expanded = node.isExpanded();
-	//if (expanded)
-	//node.collapse();		    
 	node.insertBefore(child, pos);
-	//if (expanded)
-	//node.expand();
 
 	return child;
     },
