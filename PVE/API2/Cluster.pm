@@ -151,15 +151,15 @@ __PACKAGE__->register_method({
 
 	    if (my $d = $rrd->{"pve2-vm/$vmid"}) {
 
-		$entry->{uptime} = $d->[0] + 0;
+		$entry->{uptime} = ($d->[0] || 0) + 0;
 		$entry->{name} = $d->[1];
 
-		$entry->{maxcpu} = $d->[3] + 0;
-		$entry->{cpu} = $d->[4] + 0;
-		$entry->{maxmem} = $d->[5] + 0;
-		$entry->{mem} = $d->[6] + 0;
-		$entry->{maxdisk} = $d->[7] + 0;
-		$entry->{disk} = $d->[8] + 0;
+		$entry->{maxcpu} = ($d->[3] || 0) + 0;
+		$entry->{cpu} = ($d->[4] || 0) + 0;
+		$entry->{maxmem} = ($d->[5] || 0) + 0;
+		$entry->{mem} = ($d->[6] || 0) + 0;
+		$entry->{maxdisk} = ($d->[7] || 0) + 0;
+		$entry->{disk} = ($d->[8] || 0) + 0;
 	    }
 
 	    push @$res, $entry;
@@ -173,13 +173,13 @@ __PACKAGE__->register_method({
 	    };
 	    if (my $d = $rrd->{"pve2-node/$node"}) {
 
-		$entry->{uptime} = $d->[0] + 0;
-		$entry->{maxcpu} = $d->[3] + 0;
-		$entry->{cpu} = $d->[4] + 0;
-		$entry->{maxmem} = $d->[6] + 0;
-		$entry->{mem} = $d->[7] + 0;
-		$entry->{maxdisk} = $d->[10] + 0;
-		$entry->{disk} = $d->[11] + 0;
+		$entry->{uptime} = ($d->[0] || 0) + 0;
+		$entry->{maxcpu} = ($d->[3] || 0) + 0;
+		$entry->{cpu} = ($d->[4] || 0) + 0;
+		$entry->{maxmem} = ($d->[6] || 0) + 0;
+		$entry->{mem} = ($d->[7] || 0) + 0;
+		$entry->{maxdisk} = ($d->[10] || 0) + 0;
+		$entry->{disk} = ($d->[11] || 0) + 0;
 	    }
 
 	    push @$res, $entry;
@@ -202,8 +202,8 @@ __PACKAGE__->register_method({
 		}; 
 
 		if (my $d = $rrd->{"pve2-storage/$node/$storeid"}) {
-		    $entry->{maxdisk} = $d->[1] + 0;
-		    $entry->{disk} = $d->[2] + 0;
+		    $entry->{maxdisk} = ($d->[1] || 0) + 0;
+		    $entry->{disk} = ($d->[2] || 0) + 0;
 		}
 
 		push @$res, $entry;
