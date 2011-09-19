@@ -1,22 +1,52 @@
 PVE_vnc_console_event = function(appletid, action, err) {
     //console.log("TESTINIT param1 " + appletid + " action " + action);
 
-    return;
-/*
-    var el = Ext.get(appletid);
-    if (!el)
-	return;
+    if (action === "error") {
+	var compid = appletid.replace("-vncapp", "");
+	var comp = Ext.getCmp(compid);
 
-    if (action === "close") {
-//	el.remove();
-    } else if (action === "error") {
-//	console.log("TESTERROR: " + err);
-//	var compid = appletid.replace("-vncapp", "");
-//	var comp = Ext.getCmp(compid);
+	if (!comp || !comp.vmid || !comp.toplevel) {
+	    return;
+	}
+
+	// try to detect migrated VM
+	PVE.Utils.API2Request({
+	    url: '/cluster/resources',
+	    method: 'GET',
+	    success: function(response) {
+		var list = response.result.data;
+		Ext.Array.each(list, function(item) {
+		    if (item.type === 'qemu' && item.vmid == comp.vmid) {
+			if (item.node !== comp.nodename) {
+			    //console.log("MOVED VM to node " + item.node);
+			    comp.nodename = item.node;
+			    comp.url = "/nodes/" + comp.nodename + "/" + item.type + "/" + comp.vmid + "/vncproxy";
+			    //console.log("NEW URL " + comp.url);
+			    comp.reloadApplet();
+			}
+			return false; // break
+		    }
+		});
+	    }
+	});
     }
 
-    //Ext.get('mytestid').remove();
-*/
+    return;
+    /*
+      var el = Ext.get(appletid);
+      if (!el)
+      return;
+
+      if (action === "close") {
+      //	el.remove();
+      } else if (action === "error") {
+      //	console.log("TESTERROR: " + err);
+      //	var compid = appletid.replace("-vncapp", "");
+      //	var comp = Ext.getCmp(compid);
+      }
+
+      //Ext.get('mytestid').remove();
+      */
 
 };
 
