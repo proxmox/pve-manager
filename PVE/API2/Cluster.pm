@@ -128,7 +128,8 @@ __PACKAGE__->register_method({
 
 	my $res = [];
 
-	my $nodes = PVE::Cluster::get_nodelist();
+	my $nodelist = PVE::Cluster::get_nodelist();
+	my $members = PVE::Cluster::get_members();
 
 	my $rrd = PVE::Cluster::rrd_dump();
 
@@ -165,7 +166,7 @@ __PACKAGE__->register_method({
 	    push @$res, $entry;
 	}
 
-	foreach my $node (@$nodes) {
+	foreach my $node (@$nodelist) {
 	    my $entry = {
 		id => "node/$node",
 		node => $node,
@@ -173,14 +174,18 @@ __PACKAGE__->register_method({
 	    };
 	    if (my $d = $rrd->{"pve2-node/$node"}) {
 
-		$entry->{uptime} = ($d->[0] || 0) + 0;
+		if ($members->{$node} && $members->{$node}->{online}) {
+		    $entry->{uptime} = ($d->[0] || 0) + 0;
+		    $entry->{cpu} = ($d->[4] || 0) + 0;
+		    $entry->{mem} = ($d->[7] || 0) + 0;
+		    $entry->{disk} = ($d->[11] || 0) + 0;
+		}
+
 		$entry->{maxcpu} = ($d->[3] || 0) + 0;
-		$entry->{cpu} = ($d->[4] || 0) + 0;
 		$entry->{maxmem} = ($d->[6] || 0) + 0;
-		$entry->{mem} = ($d->[7] || 0) + 0;
 		$entry->{maxdisk} = ($d->[10] || 0) + 0;
-		$entry->{disk} = ($d->[11] || 0) + 0;
 	    }
+
 
 	    push @$res, $entry;
 	}
@@ -192,7 +197,7 @@ __PACKAGE__->register_method({
 	    my $scfg =  PVE::Storage::storage_config($cfg, $storeid);
 	    next if !$rpcenv->check($user, "/storage/$storeid", [ 'Datastore.Audit' ]);
 	    # we create a entry for each node
-	    foreach my $node (@$nodes) {
+	    foreach my $node (@$nodelist) {
 		next if !PVE::Storage::storage_check_enabled($cfg, $storeid, $node, 1);
 		my $entry = {
 		    id => "storage/$node/$storeid",
