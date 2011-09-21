@@ -21,8 +21,8 @@ if ($arg1) {
 
     my $testfunc = sub {
 	my $line = shift;
-	next if $line =~ m/^#/;
-	next if $line =~ m/^\?\?/;
+	return if $line =~ m/^#/;
+	return if $line =~ m/^\?\?/;
 
 	die "detected modified content: $line\n";
     };
