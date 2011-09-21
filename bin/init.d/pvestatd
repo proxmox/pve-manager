@@ -2,8 +2,8 @@
 
 ### BEGIN INIT INFO
 # Provides:        pvestatd
-# Required-Start:  $remote_fs $network $syslog pve-cluster pvedaemon cman
-# Required-Stop:   $remote_fs $network $syslog pve-cluster pvedaemon cman
+# Required-Start:  $remote_fs $network $syslog pve-cluster pvedaemon cman clvm
+# Required-Stop:   $remote_fs $network $syslog pve-cluster pvedaemon cman clvm
 # Default-Start:   2 3 4 5
 # Default-Stop:    0 1 6
 # Short-Description: PVE Status Daemon
