@@ -383,7 +383,7 @@ Ext.define('PVE.Utils', { statics: {
     parse_task_upid: function(upid) {
 	var task = {};
 
-	var res = upid.match(/^UPID:(\w+):([0-9A-Fa-f]{8}):([0-9A-Fa-f]{8}):([0-9A-Fa-f]{8}):([^:\s]+):([^:\s]*):([^:\s]+):$/);
+	var res = upid.match(/^UPID:(\S+):([0-9A-Fa-f]{8}):([0-9A-Fa-f]{8}):([0-9A-Fa-f]{8}):([^:\s]+):([^:\s]*):([^:\s]+):$/);
 	if (!res) {
 	    throw "unable to parse upid '" + upid + "'";
 	}
