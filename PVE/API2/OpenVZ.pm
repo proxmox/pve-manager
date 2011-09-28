@@ -3,6 +3,7 @@ package PVE::API2::OpenVZ;
 use strict;
 use warnings;
 use File::Basename;
+use POSIX qw (LONG_MAX);
 
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param);
@@ -52,12 +53,6 @@ QUOTAUGIDLIMIT="0"
 CPUUNITS="1000"
 CPUS="1"
 __EOD
-
-
-my $get_config_path = sub {
-    my $vmid = shift;
-    return "/etc/pve/openvz/${vmid}.conf";
-};
 
 __PACKAGE__->register_method({
     name => 'vmlist', 
@@ -131,7 +126,7 @@ __PACKAGE__->register_method({
 
 	my $code = sub {
 
-	    my $basecfg_fn = &$get_config_path($vmid);
+	    my $basecfg_fn = PVE::OpenVZ::get_config_path($vmid);
 
 	    die "container $vmid already exists\n" if -f $basecfg_fn;
 
@@ -209,12 +204,7 @@ __PACKAGE__->register_method({
 
 	my $code = sub {
 
-	    my $basecfg_fn = &$get_config_path($vmid);
-
-	    my $basecfg = PVE::Tools::file_get_contents($basecfg_fn);
-	    die "container $vmid does not exists\n" if !$basecfg;
-
-	    my $conf = PVE::OpenVZ::parse_ovz_config($basecfg_fn, $basecfg);
+	    my $conf = PVE::OpenVZ::load_config($vmid);
 	    die "checksum missmatch (file change by other user?)\n" 
 		if $digest && $digest ne $conf->{digest};
 
@@ -230,6 +220,58 @@ __PACKAGE__->register_method({
 	PVE::OpenVZ::lock_container($vmid, $code);
 
 	return undef;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'vm_config', 
+    path => '{vmid}/config', 
+    method => 'GET',
+    proxyto => 'node',
+    description => "Get virtual machine configuration.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	},
+    },
+    returns => { 
+	type => "object",
+	properties => {
+	    digest => {
+		type => 'string',
+		description => 'SHA1 digest of configuration file. This can be used to prevent concurrent modifications.',
+	    }
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $veconf = PVE::OpenVZ::load_config($param->{vmid});
+
+	# we only return selected/converted values
+	my $conf = { digest => $veconf->{digest} };
+
+	my $properties = PVE::OpenVZ::json_config_properties();
+
+	foreach my $k (keys %$properties) {
+	    next if $k eq 'memory';
+	    next if $k eq 'swap';
+	    next if $k eq 'disk';
+	    $conf->{$k} = $veconf->{$k}->{value} if $veconf->{$k} && defined($veconf->{$k}->{value});
+	}
+
+	$conf->{memory} = $veconf->{physpages}->{lim} ? 
+	    int($veconf->{physpages}->{lim} * 4096) : 512*1024*1024;
+	$conf->{swap} = $veconf->{swappages}->{lim} ? 
+	    int($veconf->{swappages}->{lim} * 4096) : 0;
+	my $diskspace = $veconf->{diskspace}->{bar} || LONG_MAX;
+	if ($diskspace == LONG_MAX) {
+	    $conf->{disk} = 0;
+	} else {
+	    $conf->{disk} = int($diskspace*1024);
+	}
+	return $conf;
     }});
 
 __PACKAGE__->register_method({

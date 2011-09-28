@@ -39,6 +39,24 @@ sub cfs_config_path {
     return "nodes/$node/openvz/$vmid.conf";
 }
 
+sub get_config_path {
+    my $vmid = shift;
+    return "/etc/pve/openvz/${vmid}.conf";
+};
+
+sub load_config {
+    my ($vmid) = @_;
+
+    my $basecfg_fn = get_config_path($vmid);
+
+    my $basecfg = PVE::Tools::file_get_contents($basecfg_fn);
+    die "container $vmid does not exists\n" if !$basecfg;
+
+    my $conf = PVE::OpenVZ::parse_ovz_config($basecfg_fn, $basecfg);
+
+    return wantarray ? ($conf, $basecfg) : $conf;
+}
+
 my $last_proc_vestat = {};
 
 sub vmstatus {
@@ -214,8 +232,8 @@ my $confdesc = {
     disk => {
 	optional => 1,
 	type => 'number',
-	description => "Amount of disk space for the VM in GB.",
-	minimum => 0.5,
+	description => "Amount of disk space for the VM in GB. A zero indicates no limits.",
+	minimum => 0,
 	default => 2,
     },
     quotatime => {
@@ -696,11 +714,12 @@ sub update_ovz_config {
 	}
     };
 
-    my $mem = int (($veconf->{physpages}->{lim} * 4) / 1024) || 512;
-    my $swap = int (($veconf->{swappages}->{lim} * 4) / 1024) || 0;
+    my $mem = $veconf->{physpages}->{lim} ? 
+	int (($veconf->{physpages}->{lim} * 4) / 1024) : 512;
+    my $swap = $veconf->{swappages}->{lim} ?
+	int (($veconf->{swappages}->{lim} * 4) / 1024) : 0;
  
-
-    my $disk = ($veconf->{diskspace}->{bar} / (1024*1024)) || $res_unlimited;
+    my $disk = ($veconf->{diskspace}->{bar} || $res_unlimited) / (1024*1024);
     my $cpuunits = $veconf->{cpuunits}->{value} || 1000;
     my $quotatime = $veconf->{quotatime}->{value} || 0;
     my $quotaugidlimit = $veconf->{quotaugidlimit}->{value} || 0;
@@ -758,7 +777,7 @@ sub update_ovz_config {
 
 
     # disk quota parameters
-    if (($disk * 1.1) >= ($res_unlimited / (1024 * 1024))) {
+    if (!$disk || ($disk * 1.1) >= ($res_unlimited / (1024 * 1024))) {
 	&$push_bl_changes('diskspace', $res_unlimited, $res_unlimited);
 	&$push_bl_changes('diskinodes', $res_unlimited, $res_unlimited);
     } else {

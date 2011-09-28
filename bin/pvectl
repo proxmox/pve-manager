@@ -37,7 +37,7 @@ my $cmddef = {
 
 		 exit 0 if (!scalar(@$vmlist));
 
-		 printf "%10s %-20s %-10s %-10s %12s %-10s\n", 
+		 printf "%10s %-20s %-10s %-10s %-12s %-10s\n", 
 		 qw(VMID NAME STATUS MEM(MB)  DISK(GB));
 
 		 foreach my $rec (sort { $a->{vmid} <=> $b->{vmid} } @$vmlist) {
@@ -53,6 +53,18 @@ my $cmddef = {
 
     set => [ "PVE::API2::OpenVZ", 'update_vm', ['vmid'], { node => $nodename } ],
 
+    config => [ "PVE::API2::OpenVZ", 'vm_config', ['vmid'], 
+		{ node => $nodename }, sub {
+		    my $config = shift;
+		    foreach my $k (sort (keys %$config)) {
+			next if $k eq 'digest';
+			my $v = $config->{$k};
+			if ($k eq 'description') {
+			    $v = PVE::Tools::encode_text($v);
+			}
+			print "$k: $v\n";
+		    }
+		}],
 
 };
 
