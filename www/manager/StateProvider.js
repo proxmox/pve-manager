@@ -41,6 +41,7 @@ Ext.define('PVE.StateProvider', {
 	['nodetab', ''],
 	['storagetab', ''],
 	['kvmtab', ''],
+	['ovztab', ''],
 	['dctab', '']
     ],
 

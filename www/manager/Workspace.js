@@ -251,6 +251,7 @@ Ext.define('PVE.StdWorkspace', {
 			    root: 'PVE.dc.Config',
 			    node: 'PVE.node.Config',
 			    qemu: 'PVE.qemu.Config',
+			    openvz: 'PVE.openvz.Config',
 			    storage: 'PVE.storage.Browser'
 			};
 			
