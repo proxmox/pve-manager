@@ -163,11 +163,73 @@ __PACKAGE__->register_method({
 	    # hack: vzctl '--userpasswd' starts the CT, but we want 
 	    # to avoid that for create
 	    PVE::OpenVZ::set_rootpasswd($vmid, $password) if defined($password);
-
-	    return undef;
 	};
 
 	PVE::OpenVZ::lock_container($vmid, $code);
+
+	return undef;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'update_vm', 
+    path => '{vmid}/config', 
+    method => 'PUT',
+    protected => 1,
+    proxyto => 'node',
+    description => "Set virtual machine options.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => PVE::OpenVZ::json_config_properties(
+	    {
+		node => get_standard_option('pve-node'),
+		vmid => get_standard_option('pve-vmid'),
+		digest => {
+		    type => 'string',
+		    description => 'Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.',
+		    maxLength => 40,
+		    optional => 1,		    
+		}
+	    }),
+    },
+    returns => { type => 'null'},
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $user = $rpcenv->get_user();
+
+	my $node = extract_param($param, 'node');
+
+	my $vmid = extract_param($param, 'vmid');
+
+	my $digest = extract_param($param, 'digest');
+
+	die "no options specified\n" if !scalar(keys %$param);
+
+	my $code = sub {
+
+	    my $basecfg_fn = &$get_config_path($vmid);
+
+	    my $basecfg = PVE::Tools::file_get_contents($basecfg_fn);
+	    die "container $vmid does not exists\n" if !$basecfg;
+
+	    my $conf = PVE::OpenVZ::parse_ovz_config($basecfg_fn, $basecfg);
+	    die "checksum missmatch (file change by other user?)\n" 
+		if $digest && $digest ne $conf->{digest};
+
+	    my $changes = PVE::OpenVZ::update_ovz_config($conf, $param);
+
+	    return if scalar (@$changes) <= 0;
+
+	    my $cmd = ['vzctl', '--skiplock', 'set', $vmid, @$changes, '--save'];
+
+	    PVE::Tools::run_command($cmd);
+	};
+
+	PVE::OpenVZ::lock_container($vmid, $code);
+
+	return undef;
     }});
 
 __PACKAGE__->register_method({

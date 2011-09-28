@@ -51,6 +51,9 @@ my $cmddef = {
     create => [ 'PVE::API2::OpenVZ', 'create_vm', ['vmid', 'ostemplate'], { node => $nodename } ],
     destroy => [ 'PVE::API2::OpenVZ', 'destroy_vm', ['vmid'], { node => $nodename } ],
 
+    set => [ "PVE::API2::OpenVZ", 'update_vm', ['vmid'], { node => $nodename } ],
+
+
 };
 
 my $cmd = shift;

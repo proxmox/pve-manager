@@ -891,8 +891,7 @@ sub update_ovz_config {
 	$veconf->{'nameserver'}->{value} = join(' ', keys %$nshash);
     }
 
-
-    foreach my $nv (@$changes) { print "CHANGE: $nv\n"; }
+    # foreach my $nv (@$changes) { print "CHANGE: $nv\n"; }
 
     return $changes;
 }
