@@ -7,6 +7,7 @@ PERLSOURCE = 			\
 	API2Client.pm		\
 	APIDaemon.pm		\
 	REST.pm			\
+	OpenVZ.pm		\
 	APLInfo.pm
 
 all: pvecfg.pm ${SUBDIRS}

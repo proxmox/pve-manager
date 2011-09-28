@@ -1,530 +1,76 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Getopt::Long;
-use PVE::Config;
-use PVE::Utils;
-use PVE::Storage;
-use POSIX qw (LONG_MAX);
-use File::stat;
-use File::Basename;
 
-# fixme: log actions with syslog
-# fixme: lock ve
+use PVE::Tools qw(extract_param);
+use PVE::Cluster qw(cfs_register_file cfs_read_file);
+use PVE::SafeSyslog;
+use PVE::INotify;
+use PVE::RPCEnvironment;
+use PVE::CLIHandler;
+use PVE::API2::OpenVZ;
 
-my $vzdir = "/etc/vz";
-my $vzconf = "$vzdir/vz.conf";
-my $confdir = "$vzdir/conf";
+use Data::Dumper; # fixme: remove
 
-my $global_vzconf =  read_glogal_vz_config ();
+use base qw(PVE::CLIHandler);
 
-# read global vz.conf
-sub read_glogal_vz_config {
- 
-    local $/;
+$ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
 
-    my $res = {
-	rootdir => '/var/lib/vz/root/$VEID',
-	privatedir => '/var/lib/vz/private/$VEID',
-    };
-        
-    return $res if ! -f $vzconf;
+initlog('pvectl');
 
-    open (TMP, "<$vzconf");
-    my $data = <TMP> || '';
-    close (TMP);
+die "please run as root\n" if $> != 0;
 
-    if ($data =~ m/^\s*VE_PRIVATE=\s*(.*\S)\s*$/m) {
-	my $dir = $1;
-	$dir =~ s/^\"(.*)\"/$1/;
-	$res->{privatedir} = $dir;
-    }
-    if ($data =~ m/^\s*VE_ROOT=\s*(.*\S)\s*$/m) {
-	my $dir = $1;
-	$dir =~ s/^\"(.*)\"/$1/;
-	$res->{rootdir} = $dir;
-    }
+PVE::INotify::inotify_init();
+my $nodename = PVE::INotify::nodename();
 
-    return $res;
-}
+my $rpcenv = PVE::RPCEnvironment->init('cli');
 
-sub get_private_dir {
-    my $veid = shift;
+$rpcenv->init_request();
+$rpcenv->set_language($ENV{LANG});
+$rpcenv->set_user('root@pam'); 
 
-    my $res = $global_vzconf->{privatedir};
+my $cmddef = {
 
-    $res =~ s/\$VEID/$veid/;
+    list => [ "PVE::API2::OpenVZ", 'vmlist', [],
+	     { node => $nodename }, sub {
+		 my $vmlist = shift;
 
-    return $res;
-}
+		 exit 0 if (!scalar(@$vmlist));
 
-sub replacepw {
-    my ($file, $epw) = @_;
+		 printf "%10s %-20s %-10s %-10s %12s %-10s\n", 
+		 qw(VMID NAME STATUS MEM(MB)  DISK(GB));
 
-    my $tmpfile = "$file.$$";
+		 foreach my $rec (sort { $a->{vmid} <=> $b->{vmid} } @$vmlist) {
+		     printf "%10s %-20s %-10s %-10s %-12.2f\n", $rec->{vmid}, $rec->{name} || '', 
+		     $rec->{status}, 
+		     ($rec->{maxmem} || 0)/(1024*1024), 
+		     ($rec->{maxdisk} || 0)/(1024*1024*1024);
+		 }		 
+	      } ],
 
-    eval  {
-	open (SRC, "<$file") ||
-	    die "unable to open file '$file' - $!";
+    create => [ 'PVE::API2::OpenVZ', 'create_vm', ['vmid', 'ostemplate'], { node => $nodename } ],
+    destroy => [ 'PVE::API2::OpenVZ', 'destroy_vm', ['vmid'], { node => $nodename } ],
 
-	my $st = stat (\*SRC) ||
-	    die "unable to stat file - $!";
+};
 
-	open (DST, ">$tmpfile") ||
-	    die "unable to open file '$tmpfile' - $!";
+my $cmd = shift;
 
-	# copy owner and permissions
-	chmod $st->mode, \*DST;
-	chown $st->uid, $st->gid, \*DST;
-	
-	while (defined (my $line = <SRC>)) {
-	    $line =~ s/^root:[^:]*:/root:${epw}:/;
-	    print DST $line;
-	}
-    };
+PVE::CLIHandler::handle_cmd($cmddef, "pvectl", $cmd, \@ARGV, undef, $0);
 
-    my $err = $@;
+exit 0;
 
-    close (SRC);
-    close (DST);
+__END__
 
-    if ($err) {
-	unlink $tmpfile;
-    } else {
-	rename $tmpfile, $file;
-	unlink $tmpfile; # in case rename fails
-    }	
-}
+=head1 NAME
 
-sub set_rootpasswd {
-    my ($vmdir, $opt_rootpasswd) = @_;
+pvectl - vzctl wrapper to manage OpenVZ containers
 
-    my $pwfile = "$vmdir/etc/passwd";
+=head1 SYNOPSIS
 
-    return if ! -f $pwfile;
+=include synopsis
 
-    my $shadow = "$vmdir/etc/shadow";
+=head1 DESCRIPTION
 
-    if (-f $shadow) {
-	replacepw ($shadow, $opt_rootpasswd);
-	replacepw ($pwfile, 'x');
-    } else {
-	replacepw ($pwfile, $opt_rootpasswd);
-    }
-}
+This is a small wrapper around vztl.
 
-sub print_usage {
-    my ($msg) = @_;
-
-    if ($msg) {
-	print STDERR "ERROR: $msg\n";
-    }
-    print STDERR "pvectl <command> <vmid> [parameters]\n";
-    print STDERR "pvectl [vzcreate|vzset] <vmid>     (openvz commands)\n";
-    print STDERR "        --ostemplate NAME          specify OS template\n";
-    print STDERR "        --mem  MBYTES              memory in MB (64 - 8192)\n";
-    print STDERR "        --swap  MBYTES             swap memory in MB (0 - 8192)\n";
-    print STDERR "        --disk GBYTE               disk space in GB (0.5 - 1024)\n";
-    print STDERR "        --cpus  N                  cpus (1 - 4)\n";
-    print STDERR "        --cpuunits  N              cpu units (8 - 500000)\n";
-    print STDERR "        --onboot [yes|no]          start at boot\n";
-    print STDERR "pvectl print <vmid>\n";
-}
-
-if (scalar (@ARGV) == 0) {
-    print_usage ();
-    exit (-1);
-}
-
-my $cmd = shift @ARGV;
-
-if (scalar (@ARGV) == 0) {
-    print_usage ();
-    exit (-1);
-}
-
-my $vmid = shift @ARGV;
-
-if ($vmid !~ m/^\d+$/) {
-    print_usage ("unable to parse <vmid>");
-    exit (-1);
-}
-
-# test if barrier or limit changed
-sub push_bl_changes {
-    my ($veconf, $changes, $name, $bar, $lim) = @_;
-
-    if (!defined ($veconf->{$name}->{bar}) || $veconf->{$name}->{bar} != $bar || 
-	!defined ($veconf->{$name}->{lim}) || $veconf->{$name}->{lim} != $lim) {
-	$veconf->{$name}->{bar} = $bar; 
-	$veconf->{$name}->{lim} = $lim;
-	push @$changes, "--$name", "$bar:$lim";
-    }
-
-}
-
-# we use lockedpages to store 'swap' settings - this is not really correct,
-# but its better than nothing.
-
-sub change_veconfig {
-    my ($veconf, $param) = @_;
-
-    my $changes = [];
-
-    my $mem = int (($veconf->{vmguarpages}->{bar} * 4) / 1024);
-    my $disk = $veconf->{diskspace}->{bar} / (1024*1024);
-    my $cpuunits = $veconf->{cpuunits}->{value} || 1000;
-    my $quotatime = $veconf->{quotatime}->{value} || 0;
-    my $quotaugidlimit = $veconf->{quotaugidlimit}->{value} || 0;
-    my $cpus = $veconf->{cpus}->{value} || 1;
-
-    my $swdiff = $veconf->{vmguarpages}->{bar} - $veconf->{lockedpages}->{bar};
-    my $swap = $swdiff > 0 ? int (($swdiff * 4) / 1024) : 0;
-    my $phymem = $mem - $swap;
-
-    if ($param->{mem}) {
-	$phymem = $param->{mem};
-    }
-    if (defined ($param->{swap})) {
-	$swap = $param->{swap};
-    }
-
-    if ($param->{disk}) {
-	$disk = $param->{disk};
-    }
-
-    if ($param->{cpuunits}) {
-	$cpuunits = $param->{cpuunits};
-    }
-
-    if (defined($param->{quotatime})) {
-	$quotatime = $param->{quotatime};
-    }
-
-    if (defined($param->{quotaugidlimit})) {
-	$quotaugidlimit = $param->{quotaugidlimit};
-    }
-
-    if ($param->{cpus}) {
-	$cpus = $param->{cpus};
-    }
-
-    $mem = $phymem + $swap;
-
-    # memory related parameter 
-
-    my $vmguarpages = int ($mem*1024/4);
-    push_bl_changes ($veconf, $changes, 'vmguarpages', $vmguarpages, LONG_MAX);
-    
-    my $privmax = int ($vmguarpages*1.1);
-    $privmax = $vmguarpages + 12500 if ($privmax - $vmguarpages) > 12500;
-
-    push_bl_changes ($veconf, $changes, 'oomguarpages', $vmguarpages, LONG_MAX);
-    push_bl_changes ($veconf, $changes, 'privvmpages', $vmguarpages, $privmax);
-
-    my $lockedpages;
-    if ($swap) {
-	$lockedpages = int (($mem - $swap)*1024/4);
-    } else {
-	$lockedpages = LONG_MAX;
-    }
-
-    push_bl_changes ($veconf, $changes, 'lockedpages', $lockedpages, $lockedpages);
-
-    # disk quota parameters
-
-    my $diskspace = int ($disk * 1024 * 1024);
-    my $diskspace_lim = int ($diskspace * 1.1);
-    push_bl_changes ($veconf, $changes, 'diskspace', $diskspace, $diskspace_lim);
-  
-    my $diskinodes = int ($disk * 200000);
-    my $diskinodes_lim = int ($disk * 220000);
-    push_bl_changes ($veconf, $changes, 'diskinodes', $diskinodes, $diskinodes_lim);
-
-    # cpu settings
-
-    if ($veconf->{'cpuunits'}->{value} != $cpuunits) {
-	push @$changes, '--cpuunits', "$cpuunits";
-    }
-
-    if ($veconf->{'quotatime'}->{value} != $quotatime) {
-	push @$changes, '--quotatime', "$quotatime";
-    }
-
-    if ($veconf->{'quotaugidlimit'}->{value} != $quotaugidlimit) {
-	push @$changes, '--quotaugidlimit', "$quotaugidlimit";
-    }
-
-    if ($veconf->{'cpus'}->{value} != $cpus) {
-	push @$changes, '--cpus', "$cpus";
-    }
-
-    #foreach my $nv (@$changes) {
-    #print "CHANGE: $nv\n";
-    #}
-
-    return $changes;
-}
-
-sub test_pve_config {
-    my ($veconf) = @_;
-
-    my $osample = $veconf->{origin_sample}->{value} || 'not set';
-    if ($osample ne 'pve.auto') {
-	print STDERR "VE $vmid is not managed by PVE (origin sample is $osample)\n";
-	exit (-1);
-    }
-}
-
-my $opt_mem;
-my $opt_swap;
-my $opt_disk;
-my $opt_cpus;
-my $opt_cpuunits;
-my $opt_quotatime;
-my $opt_quotaugidlimit;
-my $opt_ostemplate;
-my $opt_ipset;
-my $opt_hostname;
-my $opt_nameserver;
-my $opt_searchdomain;
-my $opt_onboot;
-my $opt_netif;
-my $opt_rootpasswd;
-my $opt_description;
-
-my $stcfg = PVE::Storage::load_config();
-
-if ($cmd eq 'vzcreate' || $cmd eq 'vzset') {
-
-    if (!GetOptions ('mem=i' => \$opt_mem,
-		     'swap=i' => \$opt_swap,
-		     'disk=f' => \$opt_disk,
-		     'cpus=i' => \$opt_cpus,
-		     'cpuunits=i' => \$opt_cpuunits,
-		     'quotatime=i' => \$opt_quotatime,
-		     'quotaugidlimit=i' => \$opt_quotaugidlimit,
-		     'ipset=s' => \$opt_ipset,
-		     'hostname=s' => \$opt_hostname,
-		     'description=s' => \$opt_description,
-		     'searchdomain=s' => \$opt_searchdomain,
-		     'nameserver=s@' => \$opt_nameserver,
-		     'onboot=s' => \$opt_onboot,
-		     'netif=s' => \$opt_netif,
-		     'rootpasswd=s' => \$opt_rootpasswd,
-		     'ostemplate=s' => \$opt_ostemplate)) {
-
-	print_usage ();
-	exit (-1);
-    }
-
-    PVE::Utils::check_vm_settings ({
-	mem => $opt_mem,
-	swap => $opt_swap,
-	disk => $opt_disk,
-	onboot => $opt_onboot,
-	cpuunits => $opt_cpuunits,
-	cpus => $opt_cpus });
-
-    if ($cmd eq 'vzcreate') {
-
-	if (!$opt_ostemplate) {
-	    die "no --ostemplate specified\n";
-	}
-
-	if ($opt_ostemplate !~ m![/:]!) {
-	    $opt_ostemplate = "local:vztmpl/${opt_ostemplate}";
-	}
-
-	my (undef, $volid) = PVE::Storage::path_to_volume_id ($stcfg, $opt_ostemplate);
-	die "can't find OS template '$opt_ostemplate'\n" if !$volid;
-
-	my $tpath = PVE::Storage::path ($stcfg, $volid);
-
-	die "can't find OS template '$opt_ostemplate'\n" if ! -f $tpath;
-
-	# hack: openvz does not support full paths
-	$tpath = basename ($tpath);
-	$tpath =~ s/\.tar\.gz$//;
-	
-	if (-f "$confdir/${vmid}.conf") {
-	    print STDERR "VE $vmid already exists\n";
-	    exit (-1);
-	}
-
-	my $cmd = ['vzctl', 'create', $vmid, '--ostemplate', $tpath,
-		   '--config', 'pve.auto'];
-	eval {
-	    my $out = PVE::Utils::run_command ($cmd);
-	};
-
-	my $err = $@;
-
-	if ($err) {
-	    print STDERR "unable to create VE $vmid: $err\n";
-	    exit (-1);
-	}
-
-    } else {
-
-	if (defined ($opt_ostemplate)) {
-	    print_usage ("unable to set --ostemplate");
-	    exit (-1);
-	}
-
-	# test existence
-	if (! -f "$confdir/${vmid}.conf") {
-	    print STDERR "VE $vmid does not exist\n";
-	    exit (-1);
-	}
-
-	if (defined ($opt_rootpasswd)) {
-	    print_usage ("option --rootpasswd not allowed");
-	    exit (-1);
-	}
-    }
-
-    my $veconf = PVE::Config::get_veconfig ($vmid);
-
-    test_pve_config ($veconf);
-
-    my $changes = change_veconfig ($veconf, {
-	mem => $opt_mem, 
-	swap => $opt_swap, 
-	cpus => $opt_cpus, 
-	cpuunits => $opt_cpuunits, 
-	quotatime => $opt_quotatime, 
-	quotaugidlimit => $opt_quotaugidlimit, 
-	disk => $opt_disk});
-
-    if ($opt_hostname) {
-	push @$changes, '--hostname', $opt_hostname;
-    }
-
-    if (defined ($opt_description)) {
-	push @$changes, '--description', $opt_description;
-    }
-
-    if ($opt_searchdomain) {
-	push @$changes, '--searchdomain', $opt_searchdomain;
-    }
-
-    if (defined ($opt_ipset)) {
-	my $iphash = {};
-	if (defined ($veconf->{ip_address}) && 
-	    $veconf->{ip_address}->{value}) {
-	    foreach my $ip (split (/\s+/, $veconf->{ip_address}->{value})) {
-		$iphash->{$ip} = 1;
-	    }
-	}
-	my $newhash = {};
-	foreach my $ip (split (/\s*[,;\s]\s*/, $opt_ipset)) {
-	    next if $ip !~ m/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
-	    $newhash->{$ip} = 1;
-	    if (!$iphash->{$ip}) {
-		push @$changes, '--ipadd', $ip;
-		$iphash->{$ip} = 1; # only add once
-	    }
-	}
-	foreach my $ip (keys %$iphash) {
-	    if (!$newhash->{$ip}) {
-		push @$changes, '--ipdel', $ip;
-	    }
-	}
-    }
-
-    if (defined ($opt_netif)) {
-	my $ifaces = {};
-	if (defined ($veconf->{netif}) && 
-	    $veconf->{netif}->{value}) {
-
-	    $ifaces = PVE::Config::parse_netif ($veconf->{netif}->{value});
-	}
-	my $newif =  PVE::Config::parse_netif ($opt_netif);
-
-	foreach my $ifname (sort keys %$ifaces) {
-	    if (!$newif->{$ifname}) {
-		push @$changes, '--netif_del', $ifname;
-	    }
-	}
-
-	foreach my $ifname (sort keys %$newif) {
-	    my $param = $ifname;
-	    $param .= $newif->{$ifname}->{mac} ? ",$newif->{$ifname}->{mac}" : ',';
-	    $param .= $newif->{$ifname}->{host_ifname} ? ",$newif->{$ifname}->{host_ifname}" : ',';
-	    $param .= $newif->{$ifname}->{host_mac} ? ",$newif->{$ifname}->{host_mac}" : ',';
-	    $param .= $newif->{$ifname}->{bridge} ? ",$newif->{$ifname}->{bridge}" : '';
-
-	    if (!$ifaces->{$ifname} || ($ifaces->{$ifname}->{raw} ne $newif->{$ifname}->{raw})) {
-		push @$changes, '--netif_add', $param;
-	    }
-	}
-    }
-
-    if ($opt_onboot) {
-	push @$changes, '--onboot', $opt_onboot;
-    }
-
-    foreach my $ns (@$opt_nameserver) {
-	push @$changes, '--nameserver', $ns;
-    }
-
-    if ($opt_rootpasswd) {
-	# hack: vzctl '--userpasswd' starts the CT, but we want to avoid that
-	# for create
-	if ($cmd eq 'vzcreate') {
-	    my $vmdir = get_private_dir ($vmid);
-	    set_rootpasswd ($vmdir, $opt_rootpasswd);
-	} else {
-	    die "internal error"; # should not be reached
-	}
-    }
-
-    if (scalar (@$changes) <= 0) {
-	exit (0);
-    }
-	
-    my @cmd = ('vzctl', 'set', $vmid, @$changes, '--save');
-
-    my $cmdstr = join (' ', @cmd);
-    print "$cmdstr\n";
-
-    if (system (@cmd) != 0) {
-	print STDERR "unable to set parameters - command failed - $?\n";
-	exit (-1);
-    }
-
-} elsif ($cmd eq 'print') {
-
-    if (scalar (@ARGV) != 0) {
-	print_usage ();
-	exit (-1);
-    }
-
-    my $veconf = PVE::Config::get_veconfig ($vmid);
-
-    test_pve_config ($veconf);
-
-    print "Resource settings for VE $vmid:\n";
-    my $mem = int (($veconf->{vmguarpages}->{bar} * 4) / 1024);
-
-    my $swdiff = $veconf->{vmguarpages}->{bar} - $veconf->{lockedpages}->{bar};
-    my $swap = $swdiff > 0 ? int (($swdiff * 4) / 1024) : 0;
-    $mem = $mem - $swap;
-
-    print "Memory: $mem MB\n";
-
-    print "SWAP: $swap MB\n";
-
-    my $disk = $veconf->{diskspace}->{bar} / (1024*1024);
-
-    printf "Disk Space: %0.2f GB\n", $disk;
-
-    my $cpu = $veconf->{cpuunits}->{value};
-
-    print "CPU Units: $cpu\n";
-        
-} else {
-    print_usage ("no such command '$cmd'");
-    exit (-1);
-}
+=include pve_copyright

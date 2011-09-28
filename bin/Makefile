@@ -13,6 +13,7 @@ SCRIPTS =  			\
 	pveperf
 
 MANS = 				\
+	pvectl.1		\
 	pvestatd.1		\
 	pvedaemon.1		\
 	pveversion.1		\
@@ -20,8 +21,15 @@ MANS = 				\
 
 all: ${MANS}
 
-%.1: %
-	pod2man -n $* -s 1 -r "proxmox ${VERSION}" -c "Proxmox Documentation" <$* >$*.1
+%.1: %.1.pod
+	rm -f $@
+	cat $<|pod2man -n $* -s 1 -r ${VERSION} -c "Proxmox Documentation" >$@
+
+%.1.pod: %
+	podselect $*>$@
+
+pvectl.1.pod: pvectl
+	perl -I.. ./pvectl printmanpod >$@
 
 .PHONY: install 
 install: ${SCRIPTS} ${MANS}
@@ -38,5 +46,5 @@ distclean: clean
 
 .PHONY: clean
 clean:
-	rm -rf *~ ${MANS}
+	rm -rf *~ ${MANS} *.1.pod
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done

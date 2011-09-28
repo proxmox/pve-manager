@@ -5,7 +5,8 @@ PERLSOURCE = 			\
 	Nodes.pm		\
 	Tasks.pm		\
 	Network.pm		\
-	Services.pm
+	Services.pm		\
+	OpenVZ.pm
 
 all:
 
