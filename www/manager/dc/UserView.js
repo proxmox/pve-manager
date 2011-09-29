@@ -23,6 +23,75 @@ Ext.define('PVE.dc.UserView', {
 	    store.load();
 	};
 
+ 	var remove_btn = new Ext.Button({
+	    text: 'Delete',
+	    disabled: true,
+	    handler: function() {
+		var msg;
+		var sm = me.getSelectionModel();
+		var rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+
+		var userid = rec.data.userid;
+
+		msg = 'Are you sure you want to permanently delete the user: ' + userid;
+		Ext.Msg.confirm('Deletion Confirmation', msg, function(btn) {
+		    if (btn !== 'yes') {
+			return;
+		    }
+
+		    PVE.Utils.API2Request({
+			url: '/access/users/' + userid,
+			method: 'DELETE',
+			waitMsgTarget: me,
+			callback: function() {
+			    reload();
+			},
+			failure: function (response, opts) {
+			    Ext.Msg.alert('Error',response.htmlStatus);
+			}
+		    });
+		});
+	    }
+        });
+ 
+	var run_editor = function() {
+	    var sm = me.getSelectionModel();
+	    var rec = sm.getSelection()[0];
+	    if (!rec) {
+		return;
+	    }
+
+            var win = Ext.create('PVE.dc.UserEdit',{
+                userid: rec.data.userid
+            });
+            win.on('destroy', reload);
+            win.show();
+	};
+
+	var edit_btn = new Ext.Button({
+	    text: 'Modify',
+	    disabled: true,
+	    handler: run_editor
+	});
+
+	var set_button_status = function() {
+	    var sm = me.getSelectionModel();
+	    var rec = sm.getSelection()[0];
+
+	    if (!rec) {
+		remove_btn.disable();
+		edit_btn.disable();
+		return;
+	    }
+
+	    edit_btn.setDisabled(false);
+
+	    remove_btn.setDisabled(rec.data.userid === 'root@pam');
+	};
+
         var tbar = [
             {
 		text: 'Create',
@@ -33,61 +102,7 @@ Ext.define('PVE.dc.UserView', {
                     win.show();
 		}
             },
-            {
-		text: 'Modify',
-		handler: function() {
-		    var sm = me.getSelectionModel();
-		    var rec = sm.getSelection()[0];
-		    if (!rec) {
-			return;
-		    }
-
-		    var userid = rec.data.userid;
-
-                    var win = Ext.create('PVE.dc.UserEdit',{
-                        userid: userid
-                    });
-                    win.on('destroy', reload);
-                    win.show();
-		}
-            },
-            {
-		text: 'Delete',
-		handler: function() {
-		    var msg;
-		    var sm = me.getSelectionModel();
-		    var rec = sm.getSelection()[0];
-		    if (!rec) {
-			return;
-		    }
-
-		    var userid = rec.data.userid;
-
-		    if (userid !== 'root@pam') {
-			msg = 'Are you sure you want to permanently delete the user: ' + userid;
-			Ext.Msg.confirm('Deletion Confirmation', msg, function(btn) {
-			    if (btn !== 'yes') {
-				return;
-			    }
-
-			    PVE.Utils.API2Request({
-				url: '/access/users/' + userid,
-				method: 'DELETE',
-				waitMsgTarget: me,
-				callback: function() {
-				    reload();
-				},
-				failure: function (response, opts) {
-				    Ext.Msg.alert('Error',response.htmlStatus);
-				}
-			    });
-			});
-		    } else {
-			msg = 'You are not permitted to delete the user: root@pam';
-			Ext.Msg.alert('Error', msg);
-		    }
-		}
-            }
+  	    edit_btn, remove_btn
         ];
 	   
 	var render_expire = function(date) {
@@ -165,7 +180,9 @@ Ext.define('PVE.dc.UserView', {
 		}
 	    ],
 	    listeners: {
-		show: reload
+		show: reload,
+		itemdblclick: run_editor,
+		selectionchange: set_button_status
 	    }
 	});
 
