@@ -174,7 +174,8 @@ __PACKAGE__->register_method({
 	    };
 	    if (my $d = $rrd->{"pve2-node/$node"}) {
 
-		if ($members->{$node} && $members->{$node}->{online}) {
+		if (!$members || # no cluster
+		    ($members->{$node} && $members->{$node}->{online})) {
 		    $entry->{uptime} = ($d->[0] || 0) + 0;
 		    $entry->{cpu} = ($d->[4] || 0) + 0;
 		    $entry->{mem} = ($d->[7] || 0) + 0;
