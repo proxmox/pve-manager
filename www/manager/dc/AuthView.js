@@ -88,7 +88,7 @@ Ext.define('PVE.dc.AuthView', {
 	Ext.apply(me, {
 	    store: store,
 	    stateful: false,
-            tbar: tbar,
+            //tbar: tbar,
 	    viewConfig: {
 		trackOver: false
 	    },
