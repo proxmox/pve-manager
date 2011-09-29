@@ -75,7 +75,7 @@ if (!$opt_verbose) {
 print_status ("pve-manager", $ver);
 print "running kernel: $kver\n";
 
-my @list = qw(corosync-pve openais-pve libqb redhat-cluster-pve pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl vncterm vzctl vzdump vzprocps vzquota);
+my @list = qw(lvm2 clvm corosync-pve openais-pve libqb redhat-cluster-pve pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl vncterm vzctl vzdump vzprocps vzquota);
 
 my $pkg = 'proxmox-ve-2.6.18';
 if (my $v = $pkglist->{$pkg}) {
