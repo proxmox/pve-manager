@@ -28,6 +28,16 @@ my $baseuri = "/api2";
 
 # http://perl.apache.org/docs/2.0/api/Apache2/SubProcess.html
 
+my $debug_enabled;
+sub enable_debug {
+    $debug_enabled = 1;
+}
+
+sub debug_msg {
+    return if !$debug_enabled;
+    syslog('info', @_);
+}
+
 sub extract_auth_cookie {
     my ($cookie) = @_;
 
@@ -181,7 +191,7 @@ sub create_http_request {
 sub proxy_handler {
     my($r, $clientip, $host, $method, $abs_uri, $ticket, $token, $params) = @_;
 
-    syslog('info', "proxy start $method $host:$abs_uri");
+    debug_msg("proxy start $method $host:$abs_uri");
 
     my $ua = LWP::UserAgent->new(
 	protocols_allowed => [ 'http', 'https' ],
@@ -243,7 +253,7 @@ sub proxy_handler {
     $r->headers_out()->add('Content-Length' , length($raw));
     $r->print($raw);
 
-    syslog('info', "proxy end $method $host:$abs_uri ($code)");
+    debug_msg("proxy end $method $host:$abs_uri ($code)");
 
     return OK;
 }
@@ -433,7 +443,7 @@ my $known_methods = {
 sub handler {
      my($r) = @_;
 
-     #syslog('info', "perl handler called");
+     debug_msg("perl handler called");
 
      my $method = $r->method;
      my $clientip = $r->connection->remote_ip();
@@ -492,7 +502,7 @@ sub handler {
      $r->headers_out()->add('Content-Length', length($raw));
      $r->print($raw);
     
-     #syslog('info', "perl handler end $res->{status}");
+     debug_msg("perl handler end $res->{status}");
 
      return OK;
 }

@@ -34,15 +34,8 @@ my $max_requests = 500; # max requests per worker
 my $child_terminate = 0;
 my $child_reload_config = 0;
 
-my $debug_enabled;
-sub enable_debug {
-    $debug_enabled = 1;
-}
-
-sub debug_msg {
-    return if !$debug_enabled;
-    syslog('info', @_);
-}
+sub enable_debug { PVE::REST::enable_debug(); }
+sub debug_msg { PVE::REST::debug_msg(@_); }
 
 sub worker_finished {
     my $cpid = shift;
