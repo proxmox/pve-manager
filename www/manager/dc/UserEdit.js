@@ -60,49 +60,40 @@ Ext.define('PVE.dc.UserEdit', {
 		format: 'Y-m-d',
 		submitFormat: 'U',
                 fieldLabel: 'Expiration'
-            }
+            },
+	    {
+		xtype: 'pvecheckbox',
+		fieldLabel: 'Enable',
+		name: 'enable',
+		uncheckedValue: 0,
+		defaultValue: 1
+	    }
         ];
 
         var column2 = [
-            {
-                xtype: 'fieldset',
-                title: 'Personal Information',
-                defaultType: 'textfield',
-                layout: 'anchor',
-                defaults: {
-                    anchor: '100%'
-                },
-                items: [
-		    {
-			name: 'firstname',
-			fieldLabel: 'First Name'
-		    },
-		    {
-			name: 'lastname',
-			fieldLabel: 'Last Name'
-		    },
-		    {
-			name: 'email',
-			fieldLabel: 'Email',
-			vtype: 'email'
-		    },
-		    {
-			name: 'comment',
-			fieldLabel: 'Comment'
-		    }
-	        ]
-            }
-        ];
-
-        if (!me.create) {
-            column1.push({
-                xtype: 'pvecheckbox',
-                fieldLabel: 'Enable',
-                name: 'enable',
-                uncheckedValue: 0
-            });
-        }
-
+ 	    {
+		xtype: 'textfield',
+		name: 'firstname',
+		fieldLabel: 'First Name'
+	    },
+	    {
+		xtype: 'textfield',
+		name: 'lastname',
+		fieldLabel: 'Last Name'
+	    },
+	    {
+		xtype: 'textfield',
+		name: 'email',
+		fieldLabel: 'Email',
+		vtype: 'email'
+	    },
+	    {
+		xtype: 'textfield',
+		name: 'comment',
+		fieldLabel: 'Comment'
+	    }
+	];
+ 
         if (me.create) {
             column1.splice(1,0,{
                 xtype: 'pveRealmComboBox',
@@ -121,7 +112,7 @@ Ext.define('PVE.dc.UserEdit', {
 
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
 	    column1: column1,
-	    column2: column2,
+	    column2:  column2,
 	    onGetValues: function(values) {
 		// hack: ExtJS datefield does not submit 0, so we need to set that
 		if (!values.expire) {
