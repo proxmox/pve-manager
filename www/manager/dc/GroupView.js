@@ -22,7 +22,38 @@ Ext.define('PVE.dc.GroupView', {
             store.load();
         };
 
-        var tbar = [
+  	var remove_btn = new Ext.Button({
+	    text: 'Delete',
+	    disabled: true,
+	    handler: function() {
+		var sm = me.getSelectionModel();
+		var rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+		var groupid = rec.data.groupid;
+
+		var msg = 'Are you sure you want to permanently delete the group: ' + groupid;
+		Ext.Msg.confirm('Deletion Confirmation', msg, function(btn) {
+		    if (btn !== 'yes') {
+			return;
+		    }
+		    PVE.Utils.API2Request({
+			url: '/access/groups/' + groupid,
+			method: 'DELETE',
+			waitMsgTarget: me,
+			callback: function() {
+			    reload();
+			},
+			failure: function (response, opts) {
+			    Ext.Msg.alert('Error',response.htmlStatus);
+			}
+		    });
+		});
+	    }
+	});
+
+	var tbar = [
             {
 		text: 'Create',
 		handler: function() {
@@ -32,43 +63,19 @@ Ext.define('PVE.dc.GroupView', {
 		    win.show();
 		}
             },
-            {
-		text: 'Delete',
-		handler: function() {
-		    var sm = me.getSelectionModel();
-		    var rec = sm.getSelection()[0];
-		    if (!rec) {
-			return;
-		    }
-		    var groupid = rec.data.groupid;
-
-		    var msg = 'Are you sure you want to permanently delete the group: ' + groupid;
-		    Ext.Msg.confirm('Deletion Confirmation', msg, function(btn) {
-			if (btn !== 'yes') {
-			    return;
-			}
-			PVE.Utils.API2Request({
-			    url: '/access/groups/' + groupid,
-			    method: 'DELETE',
-			    waitMsgTarget: me,
-			    callback: function() {
-				reload();
-			    },
-			    failure: function (response, opts) {
-				Ext.Msg.alert('Error',response.htmlStatus);
-			    }
-			});
-		    });
-		}
-            }
+	    remove_btn
         ];
 
+	var set_button_status = function() {
+	    var sm = me.getSelectionModel();
+	    var rec = sm.getSelection()[0];
+	    remove_btn.setDisabled(!rec);
+	};
 
 	Ext.apply(me, {
 	    store: store,
 	    stateful: false,
 	    tbar: tbar,
-
 	    viewConfig: {
 		trackOver: false
 	    },
@@ -87,9 +94,8 @@ Ext.define('PVE.dc.GroupView', {
 		}
 	    ],
 	    listeners: {
-		show: function() {
-		    store.load();
-		}
+		show: reload,
+		selectionchange: set_button_status
 	    }
 	});
 
