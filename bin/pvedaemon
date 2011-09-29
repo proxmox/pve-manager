@@ -31,6 +31,8 @@ $SIG{'__WARN__'} = sub {
 
 $0 = "pvedaemon";
 
+PVE::APIDaemon::enable_debug() if $opt_debug;
+
 my $cpid;
 my $daemon;
 eval {

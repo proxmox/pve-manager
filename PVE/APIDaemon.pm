@@ -34,6 +34,16 @@ my $max_requests = 500; # max requests per worker
 my $child_terminate = 0;
 my $child_reload_config = 0;
 
+my $debug_enabled;
+sub enable_debug {
+    $debug_enabled = 1;
+}
+
+sub debug_msg {
+    return if !$debug_enabled;
+    syslog('info', @_);
+}
+
 sub worker_finished {
     my $cpid = shift;
 
@@ -265,7 +275,7 @@ sub handle_requests {
 			
 		    my $method =  $r->method();
 
-		    syslog('info', "perl method $method");
+		    debug_msg("perl method $method");
 
 		    if (!$known_methods->{$method}) {
 			$c->send_error(HTTP_NOT_IMPLEMENTED);			
@@ -273,7 +283,7 @@ sub handle_requests {
 		    }
 
 		    my $uri = $r->uri->path();
-		    syslog('info', "start $method $uri");
+		    debug_msg("start $method $uri");
 
 		    my ($rel_uri, $format) = PVE::REST::split_abs_uri($uri);
 		    if (!$format) {
@@ -318,7 +328,7 @@ sub handle_requests {
 			    $c->send_response($response);
 			}
 
-			syslog('info', "end $method $uri ($res->{status})");
+			debug_msg("end $method $uri ($res->{status})");
 		    }
 		}
 		$rcount++;
