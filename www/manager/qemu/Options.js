@@ -62,13 +62,13 @@ Ext.define('PVE.qemu.Options', {
 	    },
 	    boot: {
 		header: 'Boot order',
-		defaultValue: 'cad',
+		defaultValue: 'cdn',
 		editor: 'PVE.qemu.BootOrderEdit',
 		renderer: function(order) {
 		    var i;
 		    var text = '';
 		    var bootdisk = me.getObjectValue('bootdisk');
-		    order = order || 'cad';
+		    order = order || 'cdn';
 		    for (i = 0; i < order.length; i++) {
 			var sel = order.substring(i, i + 1);
 			if (text) {

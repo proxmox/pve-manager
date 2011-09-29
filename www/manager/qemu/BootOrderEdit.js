@@ -38,7 +38,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 
 	me.vmconfig = vmconfig;
 
-	var order = me.vmconfig.boot || 'cad';
+	var order = me.vmconfig.boot || 'cdn';
 	me.bootdisk = me.vmconfig.bootdisk;
 	if (!me.vmconfig[me.bootdisk]) {
 	    me.bootdisk = undefined;
@@ -73,9 +73,9 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	if (sel1 !== 'n' && (sel2 !== 'n')) {
 	    list.push(['n', 'Network']);
 	}
-	if (sel1 !== 'a' && (sel2 !== 'a')) {
-	    list.push(['a', 'Floppy']);
-	}
+	//if (sel1 !== 'a' && (sel2 !== 'a')) {
+	//    list.push(['a', 'Floppy']);
+	//}
 	
 	if (includeNone) {
 	    list.push(['', 'None']);
