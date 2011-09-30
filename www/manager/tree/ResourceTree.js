@@ -21,7 +21,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		text: 'Virtual machines'
 	    },
 	    openvz: {
-		iconCls: 'x-tree-node-computer',
+		iconCls: 'x-tree-node-openvz',
 		text: 'OpenVZ containers'
 	    } 
 	}

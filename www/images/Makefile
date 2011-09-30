@@ -18,6 +18,8 @@ IMAGES = ${GNOME_IMAGES}	\
 	proxmox_logo.png	\
 	network-server-on.png	\
 	network-server-off.png	\
+	openvz-on.png		\
+	openvz-off.png		\
 	blank.gif
 
 .PHONY: install 
