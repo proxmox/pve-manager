@@ -264,12 +264,12 @@ my $confdesc = {
     searchdomain => {
 	optional => 1,
 	type => 'string',
-	description => "Sets DNS search domains for a container.",
+	description => "Sets DNS search domains for a container. Create will automatically use the setting from the host if you neither set searchdomain or nameserver.",
     },
     nameserver => {
 	optional => 1,
 	type => 'string',
-	description => "Sets DNS server IP address for a container.",
+	description => "Sets DNS server IP address for a container. Create will automatically use the setting from the host if you neither set searchdomain or nameserver.",
     },
     ip_address => {
 	optional => 1,

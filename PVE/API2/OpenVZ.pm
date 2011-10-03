@@ -145,6 +145,21 @@ __PACKAGE__->register_method({
 	    $tpath = basename($tpath);
 	    $tpath =~ s/\.tar\.gz$//;
 
+	    if (!defined($param->{searchdomain}) && 
+		!defined($param->{nameserver})) {
+	
+		my $resolv = PVE::INotify::read_file('resolvconf');
+
+		$param->{searchdomain} = $resolv->{search} if $resolv->{search};
+
+		my @ns = ();
+		push @ns, $resolv->{dns1} if  $resolv->{dns1};
+		push @ns, $resolv->{dns2} if  $resolv->{dns2};
+		push @ns, $resolv->{dns3} if  $resolv->{dns3};
+
+		$param->{nameserver} = join(' ', @ns) if scalar(@ns);
+	    }
+
 	    PVE::OpenVZ::update_ovz_config($conf, $param);
 
 	    my $rawconf = PVE::OpenVZ::generate_raw_config($pve_base_ovz_config, $conf);
