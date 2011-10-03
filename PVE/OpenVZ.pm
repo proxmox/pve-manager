@@ -300,11 +300,15 @@ my $read_global_vz_config  = sub {
     my $res = {
 	rootdir => '/var/lib/vz/root/$VEID', # note '$VEID' is a place holder
 	privatedir => '/var/lib/vz/private/$VEID', # note '$VEID' is a place holder
-	dumpdir => '/var/lib//vz/dump',
+	dumpdir => '/var/lib/vz/dump',
 	lockdir => '/var/lib/vz/lock',
     };
     
-    my $data = PVE::Tools::file_get_contents("/etc/vz/vz.conf");
+    my $filename = "/etc/vz/vz.conf";
+
+    return $res if ! -f $filename;
+
+    my $data = PVE::Tools::file_get_contents($filename);
 
     if ($data =~ m/^\s*VE_PRIVATE=(.*)$/m) {
 	my $dir = $1;
