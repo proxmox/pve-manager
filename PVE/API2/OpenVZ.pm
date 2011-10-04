@@ -279,6 +279,95 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
+    name => 'rrd', 
+    path => '{vmid}/rrd', 
+    method => 'GET',
+    protected => 1, # fixme: can we avoid that?
+    permissions => {
+	path => '/vms/{vmid}',
+	privs => [ 'VM.Audit' ],
+    },
+    description => "Read VM RRD statistics (returns PNG)",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	    timeframe => {
+		description => "Specify the time frame you are interested in.",
+		type => 'string',
+		enum => [ 'hour', 'day', 'week', 'month', 'year' ],
+	    },
+	    ds => {
+		description => "The list of datasources you want to display.",
+ 		type => 'string', format => 'pve-configid-list',
+	    },
+	    cf => {
+		description => "The RRD consolidation function",
+ 		type => 'string',
+		enum => [ 'AVERAGE', 'MAX' ],
+		optional => 1,
+	    },
+	},
+    },
+    returns => {
+	type => "object",
+	properties => {
+	    filename => { type => 'string' },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	return PVE::Cluster::create_rrd_graph(
+	    "pve2-vm/$param->{vmid}", $param->{timeframe}, 
+	    $param->{ds}, $param->{cf});
+					      
+    }});
+
+__PACKAGE__->register_method({
+    name => 'rrddata', 
+    path => '{vmid}/rrddata', 
+    method => 'GET',
+    protected => 1, # fixme: can we avoid that?
+    permissions => {
+	path => '/vms/{vmid}',
+	privs => [ 'VM.Audit' ],
+    },
+    description => "Read VM RRD statistics",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	    timeframe => {
+		description => "Specify the time frame you are interested in.",
+		type => 'string',
+		enum => [ 'hour', 'day', 'week', 'month', 'year' ],
+	    },
+	    cf => {
+		description => "The RRD consolidation function",
+ 		type => 'string',
+		enum => [ 'AVERAGE', 'MAX' ],
+		optional => 1,
+	    },
+	},
+    },
+    returns => {
+	type => "array",
+	items => {
+	    type => "object",
+	    properties => {},
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	return PVE::Cluster::create_rrd_data(
+	    "pve2-vm/$param->{vmid}", $param->{timeframe}, $param->{cf});
+    }});
+
+__PACKAGE__->register_method({
     name => 'vm_config', 
     path => '{vmid}/config', 
     method => 'GET',
