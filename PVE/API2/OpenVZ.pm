@@ -314,7 +314,15 @@ __PACKAGE__->register_method({
 	    next if $k eq 'memory';
 	    next if $k eq 'swap';
 	    next if $k eq 'disk';
-	    $conf->{$k} = $veconf->{$k}->{value} if $veconf->{$k} && defined($veconf->{$k}->{value});
+
+	    next if !$veconf->{$k};
+	    next if !defined($veconf->{$k}->{value});
+
+	    if ($k eq 'description') {
+		$conf->{$k} = PVE::Tools::decode_text($veconf->{$k}->{value});
+	    } else {
+		$conf->{$k} = $veconf->{$k}->{value};
+	    }
 	}
 
 	$conf->{memory} = $veconf->{physpages}->{lim} ? 
