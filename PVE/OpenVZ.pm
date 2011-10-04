@@ -39,31 +39,34 @@ sub cfs_config_path {
     return "nodes/$node/openvz/$vmid.conf";
 }
 
-sub get_config_path {
-    my $vmid = shift;
-    return "/etc/pve/openvz/${vmid}.conf";
-};
+sub config_file {
+    my ($vmid, $node) = @_;
+
+    my $cfspath = cfs_config_path($vmid, $node);
+    return "/etc/pve/$cfspath";
+}
 
 sub load_config {
     my ($vmid) = @_;
 
-    my $basecfg_fn = get_config_path($vmid);
+    my $cfspath = cfs_config_path($vmid);
 
-    my $basecfg = PVE::Tools::file_get_contents($basecfg_fn);
-    die "container $vmid does not exists\n" if !$basecfg;
+    my $conf = PVE::Cluster::cfs_read_file($cfspath);
+    die "container $vmid does not exists\n" if !defined($conf);
 
-    my $conf = PVE::OpenVZ::parse_ovz_config($basecfg_fn, $basecfg);
-
-    return wantarray ? ($conf, $basecfg) : $conf;
+    return $conf;
 }
 
 my $last_proc_vestat = {};
 
 sub vmstatus {
+    my ($opt_vmid) = @_;
 
     my $list = config_list();
 
     foreach my $vmid (keys %$list) {
+	next if $opt_vmid && ($vmid ne $opt_vmid);
+
 	my $d = $list->{$vmid};
 	$d->{status} = 'stopped';
 

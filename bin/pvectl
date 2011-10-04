@@ -29,6 +29,12 @@ $rpcenv->init_request();
 $rpcenv->set_language($ENV{LANG});
 $rpcenv->set_user('root@pam'); 
 
+my $upid_exit = sub {
+    my $upid = shift;
+    my $status = PVE::Tools::upid_read_status($upid);
+    exit($status eq 'OK' ? 0 : -1);
+};
+
 my $cmddef = {
 
     list => [ "PVE::API2::OpenVZ", 'vmlist', [],
@@ -65,6 +71,9 @@ my $cmddef = {
 			print "$k: $v\n";
 		    }
 		}],
+
+    start => [ 'PVE::API2::OpenVZ', 'vm_start', ['vmid'], { node => $nodename }, $upid_exit],
+    stop => [ 'PVE::API2::OpenVZ', 'vm_stop', ['vmid'], { node => $nodename }, $upid_exit],
 
 };
 

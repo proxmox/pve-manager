@@ -126,7 +126,7 @@ __PACKAGE__->register_method({
 
 	my $code = sub {
 
-	    my $basecfg_fn = PVE::OpenVZ::get_config_path($vmid);
+	    my $basecfg_fn = PVE::OpenVZ::config_file($vmid);
 
 	    die "container $vmid already exists\n" if -f $basecfg_fn;
 
@@ -238,6 +238,47 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
+    name => 'vmdiridx',
+    path => '{vmid}', 
+    method => 'GET',
+    proxyto => 'node',
+    description => "Directory index",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {
+		subdir => { type => 'string' },
+	    },
+	},
+	links => [ { rel => 'child', href => "{subdir}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	# test if VM exists
+	my $conf = PVE::OpenVZ::load_config($param->{vmid});
+
+	my $res = [
+	    { subdir => 'config' },
+	    { subdir => 'status' },
+	    { subdir => 'vncproxy' },
+	    { subdir => 'migrate' },
+	    { subdir => 'rrd' },
+	    { subdir => 'rrddata' },
+	    ];
+	
+	return $res;
+    }});
+
+__PACKAGE__->register_method({
     name => 'vm_config', 
     path => '{vmid}/config', 
     method => 'GET',
@@ -313,11 +354,175 @@ __PACKAGE__->register_method({
 
 	my $vmid = $param->{vmid};
 
+	# test if VM exists
+	my $conf = PVE::OpenVZ::load_config($param->{vmid});
+
 	my $cmd = ['vzctl', 'destroy', $vmid ];
 
 	PVE::Tools::run_command($cmd);
 
 	return undef;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'vmcmdidx',
+    path => '{vmid}/status', 
+    method => 'GET',
+    proxyto => 'node',
+    description => "Directory index",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {
+		subdir => { type => 'string' },
+	    },
+	},
+	links => [ { rel => 'child', href => "{subdir}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	# test if VM exists
+	my $conf = PVE::OpenVZ::load_config($param->{vmid});
+
+	my $res = [
+	    { subdir => 'current' },
+	    { subdir => 'start' },
+	    { subdir => 'stop' },
+	    ];
+	
+	return $res;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'vm_status', 
+    path => '{vmid}/status/current',
+    method => 'GET',
+    proxyto => 'node',
+    protected => 1, # openvz /proc entries are only readable by root
+    description => "Get virtual machine status.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	},
+    },
+    returns => { type => 'object' },
+    code => sub {
+	my ($param) = @_;
+
+	# test if VM exists
+	my $conf = PVE::OpenVZ::load_config($param->{vmid});
+
+	my $vmstatus =  PVE::OpenVZ::vmstatus($param->{vmid});
+
+	return $vmstatus->{$param->{vmid}};
+    }});
+
+__PACKAGE__->register_method({
+    name => 'vm_start', 
+    path => '{vmid}/status/start',
+    method => 'POST',
+    protected => 1,
+    proxyto => 'node',
+    description => "Start the container.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	},
+    },
+    returns => { 
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $user = $rpcenv->get_user();
+
+	my $node = extract_param($param, 'node');
+
+	my $vmid = extract_param($param, 'vmid');
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    syslog('info', "starting container $vmid: $upid\n");
+
+	    my $cmd = ['vzctl', 'start', $vmid];
+	    
+	    PVE::Tools::run_command($cmd);
+	    
+	    return;
+	};
+
+	my $upid = $rpcenv->fork_worker('vzstart', $vmid, $user, $realcmd);
+
+	return $upid;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'vm_stop', 
+    path => '{vmid}/status/stop',
+    method => 'POST',
+    protected => 1,
+    proxyto => 'node',
+    description => "Stop the container.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	    fast => {
+		type => 'boolean',
+		description => "This is faster but can lead to unclean container shutdown.",
+		optional => 1,
+	    }
+	},
+    },
+    returns => { 
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $user = $rpcenv->get_user();
+
+	my $node = extract_param($param, 'node');
+
+	my $vmid = extract_param($param, 'vmid');
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    syslog('info', "stoping container $vmid: $upid\n");
+
+	    my $cmd = ['vzctl', 'stop', $vmid];
+
+	    push @$cmd, '--fast' if $param->{fast};
+	    
+	    PVE::Tools::run_command($cmd);
+	    
+	    return;
+	};
+
+	my $upid = $rpcenv->fork_worker('vzstop', $vmid, $user, $realcmd);
+
+	return $upid;
     }});
 
 1;
