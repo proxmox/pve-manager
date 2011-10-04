@@ -24,9 +24,8 @@ Ext.define('PVE.openvz.Config', {
 	    items: [
 		{
 		    title: 'Summary',
-		    //xtype: 'pveOpenvzSummary',
+		    xtype: 'pveOpenVZSummary',
 		    itemId: 'summary',
-		    html: 'OpenVZ summary - not inplemented!'
 		},
 		{
 		    title: 'Options',
