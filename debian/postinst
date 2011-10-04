@@ -21,6 +21,10 @@ case "$1" in
     # We don't print a status message here, as dpkg already said
     # "Processing triggers for ...".
 
+    # test if /etc/pve is mounted; else simple exit to avoid
+    # error during updates
+    test -f /etc/pve/local/pve-ssl.pem || exit 0;
+
     test -e /proxmox_install_mode || invoke-rc.d pvedaemon restart
     test -e /proxmox_install_mode || invoke-rc.d pvestatd restart    
     test -e /proxmox_install_mode || invoke-rc.d apache2 restart
