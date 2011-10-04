@@ -1,4 +1,4 @@
-Ext.define('PVE.qemu.NotesView', {
+Ext.define('PVE.panel.NotesView', {
     extend: 'Ext.panel.Panel',
 
     load: function() {
@@ -50,7 +50,7 @@ Ext.define('PVE.qemu.NotesView', {
 	    listeners: {
 		render: function(c) {
 		    c.el.on('dblclick', function() { 
-			var win = Ext.create('PVE.qemu.NotesEdit', {
+			var win = Ext.create('PVE.window.NotesEdit', {
 			    pveSelNode: me.pveSelNode,
 			    url: me.url
 			});

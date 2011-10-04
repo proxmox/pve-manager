@@ -134,7 +134,7 @@ Ext.define('PVE.openvz.Summary', {
 	    tbar.down('#remove').setDisabled(status !== 'stopped');
 	});
 
-	var notesview = Ext.create('PVE.qemu.NotesView', {
+	var notesview = Ext.create('PVE.panel.NotesView', {
 	    pveSelNode: me.pveSelNode,
 	    flex: 1
 	});

@@ -45,6 +45,8 @@ JSSRC= 				                 	\
 	window/LoginWindow.js				\
 	window/TaskViewer.js				\
 	window/Wizard.js				\
+	window/NotesEdit.js				\
+	panel/NotesView.js				\
 	grid/SelectFeature.js				\
 	grid/ObjectGrid.js				\
 	grid/ResourceGrid.js				\
@@ -73,8 +75,6 @@ JSSRC= 				                 	\
 	qemu/CDEdit.js					\
 	qemu/HDEdit.js					\
 	qemu/DisplayEdit.js				\
-	qemu/NotesEdit.js				\
-	qemu/NotesView.js				\
 	qemu/KeyboardEdit.js				\
 	qemu/HardwareView.js				\
 	qemu/Options.js					\

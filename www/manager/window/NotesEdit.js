@@ -1,4 +1,4 @@
-Ext.define('PVE.qemu.NotesEdit', {
+Ext.define('PVE.window.NotesEdit', {
     extend: 'PVE.window.Edit',
 
     initComponent : function() {
