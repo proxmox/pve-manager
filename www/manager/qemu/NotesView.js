@@ -30,9 +30,19 @@ Ext.define('PVE.qemu.NotesView', {
 	    throw "no VM ID specified";
 	}
 
+	var vmtype = me.pveSelNode.data.type;
+	var url;
+
+	if (vmtype === 'qemu') {
+	    me.url = '/api2/extjs/nodes/' + nodename + '/qemu/' + vmid + '/config';
+	} else if (vmtype === 'openvz') {
+	    me.url = '/api2/extjs/nodes/' + nodename + '/openvz/' + vmid + '/config';
+	} else {
+	    throw "unknown vm type '" + vmtype + "'";
+	}
+
 	Ext.apply(me, {
 	    title: "Notes",
-	    url: '/api2/extjs/nodes/' + nodename + '/qemu/' + vmid + '/config',
 	    style: 'padding-left:10px',
 	    bodyStyle: 'white-space:pre',
 	    bodyPadding: 10,
