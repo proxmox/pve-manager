@@ -461,6 +461,91 @@ __PACKAGE__->register_method({
 	return undef;
     }});
 
+my $sslcert;
+
+__PACKAGE__->register_method ({
+    name => 'vncproxy', 
+    path => '{vmid}/vncproxy', 
+    method => 'POST',
+    protected => 1,
+    permissions => {
+	path => '/vms/{vmid}',
+	privs => [ 'VM.Console' ],
+    },
+    description => "Creates a TCP VNC proxy connections.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	},
+    },
+    returns => { 
+    	additionalProperties => 0,
+	properties => {
+	    user => { type => 'string' },
+	    ticket => { type => 'string' },
+	    cert => { type => 'string' },
+	    port => { type => 'integer' },
+	    upid => { type => 'string' },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $user = $rpcenv->get_user();
+	my $ticket = PVE::AccessControl::assemble_ticket($user);
+
+	my $vmid = $param->{vmid};
+	my $node = $param->{node};
+
+	$sslcert = PVE::Tools::file_get_contents("/etc/pve/pve-root-ca.pem", 8192)
+	    if !$sslcert;
+
+	my $port = PVE::Tools::next_vnc_port();
+
+	my $remip;
+	
+	if ($node ne PVE::INotify::nodename()) {
+	    $remip = PVE::Cluster::remote_node_ip($node);
+	}
+
+	# NOTE: vncterm VNC traffic is already TLS encrypted,
+	# so we select the fastest chipher here (or 'none'?)
+	my $remcmd = $remip ? 
+	    ['/usr/bin/ssh', '-c', 'blowfish-cbc', '-t', $remip] : [];
+
+	my $shcmd = [ '/usr/sbin/vzctl', 'enter', $vmid ];
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    syslog ('info', "starting openvz vnc proxy $upid\n");
+
+	    my $timeout = 10; 
+
+	    my $cmd = ['/usr/bin/vncterm', '-rfbport', $port,
+		       '-timeout', $timeout, '-authpath', "/vms/$vmid", 
+		       '-perm', 'VM.Console', '-c', @$remcmd, @$shcmd];
+
+	    PVE::Tools::run_command($cmd);
+
+	    return;
+	};
+
+	my $upid = $rpcenv->fork_worker('vncproxy', $vmid, $user, $realcmd);
+
+	return {
+	    user => $user,
+	    ticket => $ticket,
+	    port => $port, 
+	    upid => $upid, 
+	    cert => $sslcert, 
+	};
+    }});
+
 __PACKAGE__->register_method({
     name => 'vmcmdidx',
     path => '{vmid}/status', 
