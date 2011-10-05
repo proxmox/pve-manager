@@ -219,8 +219,11 @@ Ext.define('PVE.openvz.CreateWizard', {
 			bridgesel
 		    ],
 		    onGetValues: function(values) {
-			delete values.networkmode;
-			return values;
+			if (values.networkmode === 'bridge') {
+			    return { netif: 'ifname=eth0,bridge=' + values.bridge };
+			} else {
+			    return { ip_address: values.ip_address };
+			}
 		    }
 		},
 		{

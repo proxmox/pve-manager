@@ -371,12 +371,25 @@ sub parse_netif {
 	    }
 	}
 	if ($d->{ifname}) {
-	    $d->{raw} = $data;
+	    $d->{mac} = PVE::Tools::random_ether_addr() if !$d->{mac};
+	    $d->{raw} = print_netif($d);
 	    $res->{$d->{ifname}} = $d;
 	} else {
 	    return undef;
 	}
     }
+
+    return $res;
+}
+
+sub print_netif {
+    my $net = shift;
+
+    my $res = "ifname=$net->{ifname}";
+    $res .= ",mac=$net->{mac}" if $net->{mac};
+    $res .= ",host_ifname=$net->{host_ifname}" if $net->{host_ifname};
+    $res .= ",host_mac=$net->{host_mac}" if $net->{host_mac};
+    $res .= ",bridge=$net->{bridge}" if $net->{bridge};
 
     return $res;
 }
@@ -901,14 +914,17 @@ sub update_ovz_config {
 	my $newvalue = '';
 	foreach my $ifname (sort keys %$newif) {
 	    $newvalue .= ';' if $newvalue;
-	    $newvalue .= $ifname;
-	    $newvalue .= $newif->{$ifname}->{mac} ? ",$newif->{$ifname}->{mac}" : ',';
-	    $newvalue .= $newif->{$ifname}->{host_ifname} ? ",$newif->{$ifname}->{host_ifname}" : ',';
-	    $newvalue .= $newif->{$ifname}->{host_mac} ? ",$newif->{$ifname}->{host_mac}" : ',';
-	    $newvalue .= $newif->{$ifname}->{bridge} ? ",$newif->{$ifname}->{bridge}" : '';
+
+	    $newvalue .= print_netif($newif->{$ifname});
+
+	    my $ifadd = $ifname;
+	    $ifadd .= $newif->{$ifname}->{mac} ? ",$newif->{$ifname}->{mac}" : ',';
+	    $ifadd .= $newif->{$ifname}->{host_ifname} ? ",$newif->{$ifname}->{host_ifname}" : ',';
+	    $ifadd .= $newif->{$ifname}->{host_mac} ? ",$newif->{$ifname}->{host_mac}" : ',';
+	    $ifadd .= $newif->{$ifname}->{bridge} ? ",$newif->{$ifname}->{bridge}" : '';
 
 	    if (!$ifaces->{$ifname} || ($ifaces->{$ifname}->{raw} ne $newif->{$ifname}->{raw})) {
-		push @$changes, '--netif_add', $newvalue;
+		push @$changes, '--netif_add', $ifadd;
 	    }
 	}
 	$veconf->{netif}->{value} = $newvalue;
