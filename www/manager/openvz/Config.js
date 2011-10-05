@@ -35,7 +35,7 @@ Ext.define('PVE.openvz.Config', {
 		{
 		    title: 'Options',
 		    itemId: 'options',
-		    html: 'OpenVZ options - not inplemented!'
+		    xtype: 'pveOpenVZOptions'
 		},
 		{
 		    xtype: 'pveOpenVZConsole',

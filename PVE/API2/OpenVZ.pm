@@ -372,7 +372,7 @@ __PACKAGE__->register_method({
     path => '{vmid}/config', 
     method => 'GET',
     proxyto => 'node',
-    description => "Get virtual machine configuration.",
+    description => "Get container configuration.",
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -396,6 +396,10 @@ __PACKAGE__->register_method({
 
 	# we only return selected/converted values
 	my $conf = { digest => $veconf->{digest} };
+
+	if ($veconf->{ostemplate} && $veconf->{ostemplate}->{value}) {
+	    $conf->{ostemplate} = $veconf->{ostemplate}->{value};
+	}
 
 	my $properties = PVE::OpenVZ::json_config_properties();
 

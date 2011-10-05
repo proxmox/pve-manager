@@ -74,7 +74,7 @@ sub vmstatus {
 
 	my $cfspath = cfs_config_path($vmid);
 	if (my $conf = PVE::Cluster::cfs_read_file($cfspath)) {
-	    $d->{name} = $conf->{hostname}->{value} || "VM$vmid";
+	    $d->{name} = $conf->{hostname}->{value} || "CT$vmid";
 	    $d->{name} =~ s/[\s]//g;
 
 	    $d->{cpus} = $conf->{cpus}->{value} || 1;
@@ -552,8 +552,8 @@ sub parse_res_ignore_pages {
 sub parse_boolean {
     my ($key, $text) = @_;
 
-    return { value => "yes" } if $text =~ m/^(yes|true|on|1)$/i;
-    return { value => "no" } if $text =~ m/^(no|false|off|0)$/i;
+    return { value => 1 } if $text =~ m/^(yes|true|on|1)$/i;
+    return { value => 0 } if $text =~ m/^(no|false|off|0)$/i;
 
     return undef;
 };
@@ -843,11 +843,11 @@ sub update_ovz_config {
 
 	return if !defined($param->{$name});
 
-	my $newvalue = $param->{$name} ? 'yes' : 'no';
+	my $newvalue = $param->{$name} ? 1 : 0;
 	my $oldvalue = $veconf->{$name}->{value};
 	if (!defined($oldvalue) || ($oldvalue ne $newvalue)) {
 	    $veconf->{$name}->{value} = $newvalue;
-	    push @$changes, "--$name", $newvalue;
+	    push @$changes, "--$name", $newvalue ? 'yes' : 'no';
 	}
     };
 

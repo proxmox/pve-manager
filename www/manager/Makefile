@@ -84,6 +84,7 @@ JSSRC= 				                 	\
 	openvz/Summary.js				\
 	openvz/RessourceEdit.js				\
 	openvz/RessourceView.js				\
+	openvz/Options.js				\
 	openvz/Config.js				\
 	openvz/CreateWizard.js				\
 	storage/ContentView.js				\
