@@ -33,11 +33,11 @@ Ext.define('PVE.openvz.Config', {
 		    html: 'OpenVZ options - not inplemented!'
 		},
 		{
+		    xtype: 'pveOpenVZConsole',
 		    title: 'Console',
 		    itemId: 'console',
 		    nodename: nodename,
-		    vmid: vmid,
-		    html: 'OpenVZ console - not inplemented!'
+		    vmid: vmid
 		},
 		{
 		    title: 'Backup',

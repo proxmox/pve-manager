@@ -102,7 +102,7 @@ Ext.define('PVE.openvz.Summary', {
 		    text: 'Console',
 		    handler: function() {
 			var url = Ext.urlEncode({
-			    console: 'kvm',
+			    console: 'openvz',
 			    vmid: vmid,
 			    node: nodename
 			});

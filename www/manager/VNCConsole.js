@@ -337,6 +337,107 @@ Ext.define('PVE.KVMConsole', {
     }
 });
 
+Ext.define('PVE.OpenVZConsole', {
+    extend: 'PVE.VNCConsole',
+    alias: ['widget.pveOpenVZConsole'],
+
+    initComponent : function() {
+	var me = this;
+ 
+	if (!me.nodename) { 
+	    throw "no node name specified";
+	}
+
+	if (!me.vmid) {
+	    throw "no VM ID specified";
+	}
+
+	var vm_command = function(cmd, params, reload_applet) {
+	    PVE.Utils.API2Request({
+		params: params,
+		url: '/nodes/' + me.nodename + '/openvz/' + me.vmid + "/status/" + cmd,
+		waitMsgTarget: me,
+		method: 'POST',
+		failure: function(response, opts) {
+		    Ext.Msg.alert('Error', response.htmlStatus);
+		},
+		success: function() {
+		    if (reload_applet) {
+			Ext.Function.defer(me.reloadApplet, 1000, me);
+		    }
+		}
+	    });
+	};
+
+	var tbar = [ 
+	    { 
+		text: 'Start',
+		handler: function() { 
+		    vm_command("start", {}, 1);
+		}
+	    },
+	    { 
+		text: 'Stop',
+		handler: function() {
+		    var msg = "Do you really want to stop the VM?";
+		    Ext.Msg.confirm('Confirm', msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+			vm_command("stop", { fast: 1 });
+		    }); 
+		}
+	    },
+	    { 
+		text: 'Shutdown',
+		handler: function() {
+		    var msg = "Do you really want to shutdown the VM?";
+		    Ext.Msg.confirm('Confirm', msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+			vm_command("stop");
+		    }); 
+		}
+	    },
+            '->',
+	    {
+                text: 'Refresh',
+		handler: function() { 
+		    var applet = Ext.getDom(me.appletID);
+		    applet.sendRefreshRequest();
+		}
+	    },
+	    {
+                text: 'Reload',
+                handler: function () { 
+		    me.reloadApplet(); 
+		}
+	    },
+            { 
+                text: 'Console',
+                handler: function() {
+		    var url = Ext.urlEncode({
+			console: 'openvz',
+			vmid: me.vmid,
+			node: me.nodename
+		    });
+                    var nw = window.open("?" + url, '_blank', 
+					 "innerWidth=745,innerheight=427");
+                    nw.focus();
+		}
+            }
+	];
+
+	Ext.apply(me, {
+	    tbar: tbar,
+	    url: "/nodes/" + me.nodename + "/openvz/" + me.vmid + "/vncproxy"
+	});
+
+	me.callParent();
+    }
+});
+
 Ext.define('PVE.Shell', {
     extend: 'PVE.VNCConsole',
     alias: ['widget.pveShell'],

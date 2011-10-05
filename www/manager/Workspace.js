@@ -125,6 +125,14 @@ Ext.define('PVE.ConsoleWorkspace', {
 		nodename: param.node,
 		toplevel: true
 	    };
+	} else if (consoleType === 'openvz') {
+	    me.title = "CT " + param.vmid;
+	    content = {
+		xtype: 'pveOpenVZConsole',
+		vmid: param.vmid,
+		nodename: param.node,
+		toplevel: true
+	    };
 	} else if (consoleType === 'shell') {
 	    me.title = "node " + param.node + " - Proxmox Shell";
 	    content = {
