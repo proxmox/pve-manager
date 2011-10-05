@@ -1,3 +1,11 @@
+pve-manager (2.0-6) unstable; urgency=low
+
+  * implemented openvz vnc console
+  
+  * fix bug #4, #5, #6 and #8
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 05 Oct 2011 10:52:53 +0200
+
 pve-manager (2.0-5) unstable; urgency=low
 
   * implemented openvz create wizard
