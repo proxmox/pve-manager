@@ -15,7 +15,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	} else {
 	    me.network.bridge = undefined;
 	}
-	me.network.mac = values.mac;
+	me.network.macaddr = values.macaddr;
 
 	if (values.rate) {
 	    me.network.rate = values.rate;
@@ -115,7 +115,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    },
 	    {
 		xtype: 'textfield',
-		name: 'mac',
+		name: 'macaddr',
 		fieldLabel: 'MAC address',
 		vtype: 'MacAddress',
 		allowBlank: true,
