@@ -12,6 +12,8 @@ use PVE::Cluster qw(cfs_register_file cfs_read_file);
 use PVE::SafeSyslog;
 use PVE::INotify;
 use PVE::JSONSchema;
+use Digest::SHA1;
+use Encode;
 
 my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
 my $nodename = PVE::INotify::nodename();
@@ -1044,6 +1046,11 @@ sub set_rootpasswd {
     return if ! -f $pwfile;
 
     my $shadow = "$vmdir/etc/shadow";
+
+    if ($opt_rootpasswd !~ m/^\$/) {
+	my $time = substr (Digest::SHA1::sha1_base64 (time), 0, 8);
+	$opt_rootpasswd = crypt(encode("utf8", $opt_rootpasswd), "\$1\$$time\$");
+    };
 
     if (-f $shadow) {
 	replacepw ($shadow, $opt_rootpasswd);
