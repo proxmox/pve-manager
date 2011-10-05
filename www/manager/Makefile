@@ -82,6 +82,8 @@ JSSRC= 				                 	\
 	qemu/CreateWizard.js				\
 	openvz/StatusView.js				\
 	openvz/Summary.js				\
+	openvz/RessourceEdit.js				\
+	openvz/RessourceView.js				\
 	openvz/Config.js				\
 	openvz/CreateWizard.js				\
 	storage/ContentView.js				\

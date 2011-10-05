@@ -415,14 +415,15 @@ __PACKAGE__->register_method({
 	}
 
 	$conf->{memory} = $veconf->{physpages}->{lim} ? 
-	    int($veconf->{physpages}->{lim} * 4096) : 512*1024*1024;
+	    int(($veconf->{physpages}->{lim} * 4)/ 1024) : 512;
 	$conf->{swap} = $veconf->{swappages}->{lim} ? 
-	    int($veconf->{swappages}->{lim} * 4096) : 0;
+	    int(($veconf->{swappages}->{lim} * 4)/1024) : 0;
+
 	my $diskspace = $veconf->{diskspace}->{bar} || LONG_MAX;
 	if ($diskspace == LONG_MAX) {
 	    $conf->{disk} = 0;
 	} else {
-	    $conf->{disk} = int($diskspace*1024);
+	    $conf->{disk} = $diskspace/(1024*1024);
 	}
 	return $conf;
     }});

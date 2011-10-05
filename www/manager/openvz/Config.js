@@ -28,6 +28,11 @@ Ext.define('PVE.openvz.Config', {
 		    itemId: 'summary',
 		},
 		{
+		    title: 'Ressources',
+		    itemId: 'ressources',
+		    xtype: 'pveOpenVZRessourceView'
+		},
+		{
 		    title: 'Options',
 		    itemId: 'options',
 		    html: 'OpenVZ options - not inplemented!'
