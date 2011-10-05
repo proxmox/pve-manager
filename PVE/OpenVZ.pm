@@ -85,8 +85,14 @@ sub vmstatus {
 	    $d->{nproc} = 0;
 
 	    $d->{uptime} = 0;
-	    $d->{pctcpu} = 0;
+	    $d->{cpu} = 0;
 	    $d->{relcpu} = 0;
+
+	    $d->{netout} = 0;
+	    $d->{netin} = 0;
+
+	    $d->{diskread} = 0;
+	    $d->{diskwrite} = 0;
 
 	    if (my $ip = $conf->{ip_address}->{value}) {
 		$ip =~ s/,;/ /g;
@@ -168,23 +174,23 @@ sub vmstatus {
 
 		if (!defined ($last_proc_vestat->{$vmid}) ||
 		    ($last_proc_vestat->{$vmid}->{sum} > $sum)) {
-		    $last_proc_vestat->{$vmid} = { used => 0, sum => 0, pctcpu => 0, relcpu => 0};
+		    $last_proc_vestat->{$vmid} = { used => 0, sum => 0, cpu => 0, relcpu => 0};
 		}
 
 		my $diff = $sum - $last_proc_vestat->{$vmid}->{sum};
 
 		if ($diff > 1000) { # don't update too often
 		    my $useddiff = $used - $last_proc_vestat->{$vmid}->{used};
-		    my $pctcpu = int ($useddiff*100/$diff);
+		    my $cpu = int ($useddiff*100/$diff);
 		    $last_proc_vestat->{$vmid}->{sum} = $sum;
 		    $last_proc_vestat->{$vmid}->{used} = $used;
-		    $last_proc_vestat->{$vmid}->{pctcpu} = $d->{pctcpu} = $pctcpu;
+		    $last_proc_vestat->{$vmid}->{cpu} = $d->{cpu} = $cpu;
 
-		    my $relcpu = $pctcpu;
+		    my $relcpu = $cpu;
 		    $last_proc_vestat->{$vmid}->{relcpu} = $d->{relcpu} = $relcpu;
 
 		} else {
-		    $d->{pctcpu} = $last_proc_vestat->{$vmid}->{pctcpu};
+		    $d->{cpu} = $last_proc_vestat->{$vmid}->{cpu};
 		    $d->{relcpu} = $last_proc_vestat->{$vmid}->{relcpu};
 		}
 	    }
