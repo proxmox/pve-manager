@@ -5,7 +5,10 @@ Ext.define('PVE.OpenVZ.NetIfEdit', {
 	var me = this;
 
 	var values = me.formPanel.getValues();
-	console.dir(values);
+
+	if (!me.create) {
+	    values.ifname = me.ifname;
+	}
 
 	var newdata = Ext.clone(me.netif);
 	newdata[values.ifname] = values;
