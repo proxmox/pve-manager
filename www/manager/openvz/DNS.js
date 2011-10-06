@@ -1,7 +1,7 @@
 /*jslint confusion: true */
-Ext.define('PVE.openvz.Options', {
+Ext.define('PVE.openvz.DNS', {
     extend: 'PVE.grid.ObjectGrid',
-    alias: ['widget.pveOpenVZOptions'],
+    alias: ['widget.pveOpenVZDNS'],
 
     initComponent : function() {
 	var me = this;
@@ -18,75 +18,48 @@ Ext.define('PVE.openvz.Options', {
 	}
 
 	var rows = {
-	    onboot: {
-		header: 'Start at boot',
+	    hostname: {
+		required: true,
+		defaultValue: me.pveSelNode.data.name,
+		header: 'Hostname',
+		editor: {
+		    xtype: 'pveWindowEdit',
+		    title: 'Container Hostname',
+		    items: {
+			xtype: 'textfield',
+			name: 'hostname',
+			value: '',
+			fieldLabel: 'Hostname',
+			allowBlank: true,
+			emptyText: me.pveSelNode.data.name
+		    }
+		}
+	    },
+	    searchdomain: {
+		header: 'DNS domain',
 		defaultValue: '',
-		renderer: PVE.Utils.format_boolean,
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'Start at boot',
+		    title: 'DNS domain',
 		    items: {
-			xtype: 'pvecheckbox',
-			name: 'onboot',
-			uncheckedValue: 0,
-			defaultValue: 0,
-			fieldLabel: 'Start at boot'
-		    }
-		}
-	    },
-	    ostemplate: {
-		header: 'Template',
-		defaultValue: 'no set'
-	    },
-	    cpuunits: {
-		header: 'CPU units',
-		defaultValue: '1000',
-		editor: {
-		    xtype: 'pveWindowEdit',
-		    title: 'CPU units',
-		    items: {
-			xtype: 'numberfield',
-			name: 'cpuunits',
-			fieldLabel: 'CPU units',
-			minValue: 8,
-			maxValue: 500000,
+			xtype: 'pvetextfield',
+			name: 'searchdomain',
+			fieldLabel: 'DNS domain',
 			allowBlank: false
 		    }
 		}
 	    },
-	    quotaugidlimit: {
-		header: 'Quota UGID limit',
-		defaultValue: '0',
-		renderer: function(value) {
-		    if (value == 0) {
-			return 'User quotas disabled.'
-		    }
-		    return value;
-		},
+	    nameserver: {
+		header: 'DNS servers',
+		defaultValue: '',
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'Quota UGID limit (0 to disable user quotas)',
+		    title: 'DNS servers',
 		    items: {
-			xtype: 'numberfield',
-			name: 'quotaugidlimit',
-			fieldLabel: 'UGID limit',
-			minValue: 0,
+			xtype: 'pvetextfield',
+			name: 'nameserver',
+			fieldLabel: 'DNS servers',
 			allowBlank: false
-		    }
-		}
-	    },
-	    quotatime: {
-		header: 'Quota Grace period',
-		defaultValue: '0',
-		editor: {
-		    xtype: 'pveWindowEdit',
-		    title: 'Quota Grace period (seconds)',
-		    items: {
-			xtype: 'numberfield',
-			name: 'quotatime',
-			minValue: 0,
-			allowBlank: false,
-			fieldLabel: 'Grace period'
 		    }
 		}
 	    }

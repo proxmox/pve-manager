@@ -38,6 +38,11 @@ Ext.define('PVE.openvz.Config', {
 		    xtype: 'pveOpenVZNetworkView'
 		},
 		{
+		    title: 'DNS',
+		    itemId: 'dns',
+		    xtype: 'pveOpenVZDNS'
+		},
+		{
 		    title: 'Options',
 		    itemId: 'options',
 		    xtype: 'pveOpenVZOptions'
