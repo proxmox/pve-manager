@@ -87,6 +87,7 @@ Ext.define('PVE.form.ComboGrid', {
 		form.setLoading(false);
 	    }
 	    if (success) {
+		me.clearInvalid();
 		var def = me.getValue();
 		if (def) {
 		    me.setValue(def, true); // sync with grid
