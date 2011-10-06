@@ -33,6 +33,11 @@ Ext.define('PVE.openvz.Config', {
 		    xtype: 'pveOpenVZRessourceView'
 		},
 		{
+		    title: 'Network',
+		    itemId: 'network',
+		    xtype: 'pveOpenVZNetworkView'
+		},
+		{
 		    title: 'Options',
 		    itemId: 'options',
 		    xtype: 'pveOpenVZOptions'

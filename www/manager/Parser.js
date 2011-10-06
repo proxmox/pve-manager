@@ -124,6 +124,61 @@ Ext.define('PVE.Parser', { statics: {
 	});
 
 	return drivestr;
-    }
+    },
 
+    parseOpenVZNetIf: function(value) {
+	if (!value) {
+	    return;
+	}
+
+	var res = {};
+
+	var errors = false;
+	Ext.Array.each(value.split(';'), function(item) {
+	    if (!item || item.match(/^\s*$/)) {
+		return; // continue
+	    }
+
+	    var data = {};
+	    Ext.Array.each(item.split(','), function(p) {
+		if (!p || p.match(/^\s*$/)) {
+		    return; // continue
+		}
+		var match_res = p.match(/^(ifname|mac|bridge|host_ifname|host_mac)=(\S+)$/);
+		if (!match_res) {
+		    errors = true;
+		    return false; // break
+		}
+		data[match_res[1]] = match_res[2];
+	    });
+
+	    if (errors || !data.ifname) {
+		errors = true;
+		return false; // break
+	    }
+
+	    data.raw = item;
+
+	    res[data.ifname] = data;
+	});
+
+	return errors ? undefined: res;
+    },
+
+    printOpenVZNetIf: function(netif) {
+	var netarray = [];
+
+	Ext.Object.each(netif, function(iface, data) {
+	    var tmparray = [];
+	    Ext.Array.each(['ifname', 'mac', 'bridge', 'host_ifname' , 'host_mac'], function(key) {
+		var value = data[key];
+		if (value) {
+		    tmparray.push(key + '=' + value);
+		}
+	    });
+	    netarray.push(tmparray.join(','));
+	});
+
+	return netarray.join(';');
+    }
 }});
