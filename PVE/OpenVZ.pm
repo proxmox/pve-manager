@@ -201,11 +201,11 @@ sub vmstatus {
 		my $d = $list->{$vmid};
 		if ($d && defined($d->{status})) {
 		    $d->{failcnt} += $failcnt;
-		    if ($name eq 'physpages') {
-			$d->{mem} += int($held * 4096);
-		    } elsif ($name eq 'swappages') {
-			$d->{mem} += int($held * 4096);
-			$d->{swap} += int($held * 4096);
+		    if ($name eq 'privvmpages') { # mem + swap - really?
+			$d->{mem} = int($held * 4096);
+		    } elsif ($name eq 'physpages') {
+			my $phy = int($held * 4096);
+			$d->{swap} = $phy > $d->{maxmem} ? $phy - $d->{maxmem} : 0;
 		    } elsif ($name eq 'numproc') {
 			$d->{nproc} = $held;
 		    }
