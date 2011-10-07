@@ -129,6 +129,9 @@ sub vmstatus {
 
 	    $d->{mem} = 0;
 	    $d->{maxmem} = int((($conf->{physpages}->{lim} + $conf->{swappages}->{lim})* 4096));
+	    $d->{swap} = 0;
+	    $d->{maxswap} = int((($conf->{swappages}->{lim})* 4096));
+
 	    $d->{nproc} = 0;
 	    $d->{failcnt} = 0;
 
@@ -176,6 +179,7 @@ sub vmstatus {
 			$d->{mem} += int($held * 4096);
 		    } elsif ($name eq 'swappages') {
 			$d->{mem} += int($held * 4096);
+			$d->{swap} += int($held * 4096);
 		    } elsif ($name eq 'numproc') {
 			$d->{nproc} = $held;
 		    }
