@@ -171,6 +171,20 @@ Ext.define('PVE.openvz.Summary', {
 		    datasource: 'mem,maxmem',
 		    rrdurl: rrdurl
 		},
+		{
+		    xtype: 'pveRRDView',
+		    title: "Network traffic",
+		    pveSelNode: me.pveSelNode,
+		    datasource: 'netin,netout',
+		    rrdurl: rrdurl
+		},
+		{
+		    xtype: 'pveRRDView',
+		    title: "Disk IO",
+		    pveSelNode: me.pveSelNode,
+		    datasource: 'diskread,diskwrite',
+		    rrdurl: rrdurl
+		}
 	    ]
 	});
 
