@@ -41,7 +41,7 @@ Ext.define('PVE.OpenVZ.NetIfEdit', {
 	}
 
 	Ext.apply(me, {
-	    title: me.create ? 'Add ethernet device' : 'Edit ethernet device',
+	    title: me.create ? 'Add ethernet device (veth)' : 'Edit ethernet device (veth)',
 	    digest: me.dataCache.digest,
 	    width: 350,
 	    fieldDefaults: {
@@ -127,7 +127,7 @@ Ext.define('PVE.OpenVZ.IPAdd', {
 	}
 
 	Ext.apply(me, {
-	    title: "Add IP address",
+	    title: "Add IP address (venet)",
 	    digest: me.dataCache.digest,
 	    width: 350,
 	    items: {
@@ -345,7 +345,7 @@ Ext.define('PVE.openvz.NetworkView', {
 		    menu: new Ext.menu.Menu({
 			items: [
 			    {
-				text: 'IP address',
+				text: 'IP address (venet)',
 				//plain: true,
 				//iconCls: 'pve-itype-icon-storage',
 				handler: function() {
@@ -358,7 +358,7 @@ Ext.define('PVE.openvz.NetworkView', {
 				}
 			    },
 			    {
-				text: 'Ethernet device',
+				text: 'Ethernet device (veth)',
 				//plain: true,
 				//iconCls: 'pve-itype-icon-storage',
 				handler: function() {
