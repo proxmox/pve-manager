@@ -59,6 +59,32 @@ sub load_config {
     return $conf;
 }
 
+sub read_container_beancounters {
+    my ($vmid) = @_;
+
+    my $ubc = {};
+    if (my $fh = IO::File->new ("/proc/user_beancounters", "r")) {
+	my $cid;
+	while (defined (my $line = <$fh>)) {
+	    if ($line =~ m|\s*((\d+):\s*)?([a-z]+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$|) {
+		$cid = $2 if defined($2);
+		next if !$cid || $cid != $vmid;
+		my ($name, $held, $maxheld, $bar, $lim, $failcnt) = (lc($3), $4, $5, $6, $7, $8);
+		$ubc->{$name} = {
+		    held => $held,
+		    maxheld => $maxheld,
+		    bar => $bar,
+		    lim => $lim,
+		    failcnt => $failcnt,
+		};
+	    }
+	}
+	close($fh);
+    }
+
+    return $ubc;
+}
+
 sub read_container_network_usage {
     my ($vmid) = @_;
 

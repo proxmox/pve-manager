@@ -582,6 +582,7 @@ __PACKAGE__->register_method({
 
 	my $res = [
 	    { subdir => 'current' },
+	    { subdir => 'ubc' },
 	    { subdir => 'start' },
 	    { subdir => 'stop' },
 	    ];
@@ -613,6 +614,45 @@ __PACKAGE__->register_method({
 	my $vmstatus =  PVE::OpenVZ::vmstatus($param->{vmid});
 
 	return $vmstatus->{$param->{vmid}};
+    }});
+
+__PACKAGE__->register_method({
+    name => 'vm_user_beancounters', 
+    path => '{vmid}/status/ubc',
+    method => 'GET',
+    proxyto => 'node',
+    protected => 1, # openvz /proc entries are only readable by root
+    description => "Get container user_beancounters.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {
+		id => { type => 'string' },
+		held => { type => 'number' },
+		maxheld => { type => 'number' },
+		bar => { type => 'number' },
+		lim => { type => 'number' },
+		failcnt => { type => 'number' },
+	    },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	# test if VM exists
+	my $conf = PVE::OpenVZ::load_config($param->{vmid});
+
+	my $ubc =  PVE::OpenVZ::read_container_beancounters($param->{vmid});
+
+	return PVE::RESTHandler::hash_to_array($ubc, 'id');
     }});
 
 __PACKAGE__->register_method({
