@@ -64,7 +64,7 @@ my $last_proc_vestat = {};
 sub vmstatus {
     my ($opt_vmid) = @_;
 
-    my $list = config_list();
+    my $list = $opt_vmid ? { $opt_vmid => { type => 'openvz' }} : config_list();
 
     foreach my $vmid (keys %$list) {
 	next if $opt_vmid && ($vmid ne $opt_vmid);
@@ -102,6 +102,8 @@ sub vmstatus {
 	    } else {
 		$d->{ip} = '-';
 	    }
+	} else {
+	    delete $list->{$vmid};
 	}
     }
 
@@ -121,7 +123,8 @@ sub vmstatus {
 		$vmid = $2 if defined($2);
 		next if !$vmid;
 		my ($name, $held, $maxheld, $bar, $lim, $failcnt) = ($3, $4, $5, $6, $7, $8);
-		if (my $d = $list->{$vmid}) {
+		my $d = $list->{$vmid};
+		if ($d && defined($d->{status})) {
 		    if ($name eq 'physpages') {
 			$d->{mem} += int($held * 4096);
 		    } elsif ($name eq 'swappages') {
@@ -138,7 +141,9 @@ sub vmstatus {
     if (my $fh = IO::File->new ("/proc/vz/vzquota", "r")) {
 	while (defined (my $line = <$fh>)) {
 	    if ($line =~ m|^(\d+):\s+/var/lib/vz/private/\d+$|) {
-		if (my $d = $list->{$1}) {
+		my $vmid = $1;
+		my $d = $list->{$vmid};
+		if ($d && defined($d->{status})) {
 		    $line = <$fh>;
 		    if ($line =~ m|^\s*1k-blocks\s+(\d+)\s+(\d+)\s|) {
 			$d->{disk} = int ($1 * 1024);
@@ -169,7 +174,7 @@ sub vmstatus {
 		my $uptime = int ($ut / $hz);
 
 		my $d = $list->{$vmid};
-		next if !$d;
+		next if !($d && defined($d->{status}));
 
 		$d->{status} = 'running';
 		$d->{uptime} = $uptime;
