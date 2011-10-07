@@ -59,6 +59,51 @@ sub load_config {
     return $conf;
 }
 
+sub read_container_network_usage {
+    my ($vmid) = @_;
+
+    my $recv = 0;
+    my $trmt = 0;
+
+    my $netparser = sub {
+	my $line = shift;
+	if ($line =~ m/^\s*(.*):\s*(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+(\d+)\s+/) {
+	    return if $1 eq 'lo';
+	    $recv += $2;
+	    $trmt += $3;
+	}
+    };
+
+    # fixme: can we get that info directly (with vzctl exec)?
+    my $cmd = ['/usr/sbin/vzctl', 'exec', $vmid, '/bin/cat', '/proc/net/dev'];
+    eval { PVE::Tools::run_command($cmd, outfunc => $netparser); };
+    my $err = $@;
+    syslog('err', $err) if $err;
+
+    return ($recv, $trmt);
+};
+
+sub read_container_blkio_stat {
+    my ($vmid) = @_;
+
+    my $read = 0;
+    my $write = 0;
+
+    my $filename = "/proc/vz/beancounter/$vmid/blkio.io_service_bytes";
+    if (my $fh = IO::File->new ($filename, "r")) {
+       
+	while (defined (my $line = <$fh>)) {
+	    if ($line =~ m/^\S+\s+Read\s+(\d+)$/) {
+		$read += $1;
+	    } elsif ($line =~ m/^\S+\s+Write\s+(\d+)$/) {
+		$write += $1;
+	    }
+	}
+    }
+
+    return ($read, $write);
+};
+
 my $last_proc_vestat = {};
 
 sub vmstatus {
@@ -85,6 +130,7 @@ sub vmstatus {
 	    $d->{mem} = 0;
 	    $d->{maxmem} = int((($conf->{physpages}->{lim} + $conf->{swappages}->{lim})* 4096));
 	    $d->{nproc} = 0;
+	    $d->{failcnt} = 0;
 
 	    $d->{uptime} = 0;
 	    $d->{cpu} = 0;
@@ -125,6 +171,7 @@ sub vmstatus {
 		my ($name, $held, $maxheld, $bar, $lim, $failcnt) = ($3, $4, $5, $6, $7, $8);
 		my $d = $list->{$vmid};
 		if ($d && defined($d->{status})) {
+		    $d->{failcnt} += $failcnt;
 		    if ($name eq 'physpages') {
 			$d->{mem} += int($held * 4096);
 		    } elsif ($name eq 'swappages') {
@@ -205,8 +252,14 @@ sub vmstatus {
 	close($fh);
     }
 
-    return $list;
+    foreach my $vmid (keys %$list) {
+	my $d = $list->{$vmid};
+	next if !$d || !$d->{status} || $d->{status} ne 'running';
+	($d->{netin}, $d->{netout}) = read_container_network_usage($vmid);
+	($d->{diskread}, $d->{diskwrite}) = read_container_blkio_stat($vmid); 
+    }
 
+    return $list;
 }
 
 my $confdesc = {
