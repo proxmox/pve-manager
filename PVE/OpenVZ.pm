@@ -59,18 +59,18 @@ sub load_config {
     return $conf;
 }
 
-sub read_container_beancounters {
-    my ($vmid) = @_;
-
+sub read_user_beancounters {
     my $ubc = {};
     if (my $fh = IO::File->new ("/proc/user_beancounters", "r")) {
-	my $cid;
+	my $vmid;
 	while (defined (my $line = <$fh>)) {
 	    if ($line =~ m|\s*((\d+):\s*)?([a-z]+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$|) {
-		$cid = $2 if defined($2);
-		next if !$cid || $cid != $vmid;
+		$vmid = $2 if defined($2);
+		next if !defined($vmid);
 		my ($name, $held, $maxheld, $bar, $lim, $failcnt) = (lc($3), $4, $5, $6, $7, $8);
-		$ubc->{$name} = {
+		next if $name eq 'dummy';
+		$ubc->{$vmid}->{failcntsum} += $failcnt;
+		$ubc->{$vmid}->{$name} = {
 		    held => $held,
 		    maxheld => $maxheld,
 		    bar => $bar,
@@ -191,28 +191,17 @@ sub vmstatus {
 	close($fh);
     }
 
-    if (my $fh = IO::File->new ("/proc/user_beancounters", "r")) {
-	my $vmid;
-	while (defined (my $line = <$fh>)) {
-	    if ($line =~ m|\s*((\d+):\s*)?([a-z]+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$|) {
-		$vmid = $2 if defined($2);
-		next if !$vmid;
-		my ($name, $held, $maxheld, $bar, $lim, $failcnt) = ($3, $4, $5, $6, $7, $8);
-		my $d = $list->{$vmid};
-		if ($d && defined($d->{status})) {
-		    $d->{failcnt} += $failcnt;
-		    if ($name eq 'privvmpages') { # mem + swap - really?
-			$d->{mem} = int($held * 4096);
-		    } elsif ($name eq 'physpages') {
-			my $phy = int($held * 4096);
-			$d->{swap} = $phy > $d->{maxmem} ? $phy - $d->{maxmem} : 0;
-		    } elsif ($name eq 'numproc') {
-			$d->{nproc} = $held;
-		    }
-		}
-	    }
+    my $ubchash = read_user_beancounters();
+    foreach my $vmid (keys %$ubchash) {
+	my $d = $list->{$vmid};
+	my $ubc = $ubchash->{$vmid};
+	if ($d && defined($d->{status}) && $ubc) {
+	    $d->{failcnt} = $ubc->{failcntsum};
+	    $d->{mem} = int($ubc->{privvmpages}->{held} * 4096);
+	    my $phy = int($ubc->{physpages}->{held} * 4096);
+	    $d->{swap} = $phy > $d->{maxmem} ? $phy - $d->{maxmem} : 0;
+	    $d->{nproc} = $ubc->{numproc}->{held};
 	}
-	close($fh);
     }
 
     if (my $fh = IO::File->new ("/proc/vz/vzquota", "r")) {

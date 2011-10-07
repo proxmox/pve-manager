@@ -48,6 +48,11 @@ Ext.define('PVE.node.Config', {
 		    title: 'Task History',
 		    itemId: 'tasks',
 		    xtype: 'pveNodeTasks'
+		},
+		{
+		    title: 'UBC',
+		    itemId: 'ubc',
+		    xtype: 'pveNodeBCFailCnt'
 		}
 	    ]
 	});

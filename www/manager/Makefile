@@ -57,6 +57,7 @@ JSSRC= 				                 	\
 	node/TimeView.js				\
 	node/TimeEdit.js				\
 	node/StatusView.js				\
+	node/BCFailCnt.js				\
 	node/Summary.js					\
 	node/ServiceView.js				\
 	node/NetworkEdit.js				\
@@ -87,6 +88,7 @@ JSSRC= 				                 	\
 	openvz/Options.js				\
 	openvz/Network.js				\
 	openvz/DNS.js					\
+	openvz/BeanCounterGrid.js				\
 	openvz/Config.js				\
 	openvz/CreateWizard.js				\
 	storage/ContentView.js				\

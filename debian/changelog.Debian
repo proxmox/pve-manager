@@ -1,3 +1,9 @@
+pve-manager (2.0-7) unstable; urgency=low
+
+  * imlement openvz GUI 
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 07 Oct 2011 13:56:03 +0200
+
 pve-manager (2.0-6) unstable; urgency=low
 
   * implemented openvz vnc console

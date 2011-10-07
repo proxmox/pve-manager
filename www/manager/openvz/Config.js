@@ -48,6 +48,12 @@ Ext.define('PVE.openvz.Config', {
 		    xtype: 'pveOpenVZOptions'
 		},
 		{
+		    title: 'UBC',
+		    itemId: 'ubc',
+		    xtype: 'pveBeanCounterGrid',
+		    url: '/api2/json/nodes/' + nodename + '/openvz/' + vmid + '/status/ubc'
+		},
+		{
 		    xtype: 'pveOpenVZConsole',
 		    title: 'Console',
 		    itemId: 'console',

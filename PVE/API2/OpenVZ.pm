@@ -650,7 +650,9 @@ __PACKAGE__->register_method({
 	# test if VM exists
 	my $conf = PVE::OpenVZ::load_config($param->{vmid});
 
-	my $ubc =  PVE::OpenVZ::read_container_beancounters($param->{vmid});
+	my $ubchash = PVE::OpenVZ::read_user_beancounters();
+	my $ubc = $ubchash->{$param->{vmid}} || {};
+	delete $ubc->{failcntsum};
 
 	return PVE::RESTHandler::hash_to_array($ubc, 'id');
     }});

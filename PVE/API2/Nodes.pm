@@ -15,6 +15,7 @@ use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::AccessControl;
+use PVE::OpenVZ;
 use PVE::API2::Services;
 use PVE::API2::Network;
 use PVE::API2::Tasks;
@@ -99,11 +100,53 @@ __PACKAGE__->register_method ({
 	    { name => 'upload' },
 	    { name => 'qemu' },
 	    { name => 'openvz' },
+	    { name => 'ubcfailcnt' },
 	    { name => 'network' },
 	    { name => 'network_changes' },
 	    ];
 
 	return $result;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'beancounters_failcnt', 
+    path => 'ubcfailcnt',
+    permissions => {
+	path => '/nodes/{node}',
+	privs => [ 'Sys.Audit' ],
+    },
+    method => 'GET',
+    proxyto => 'node',
+    protected => 1, # openvz /proc entries are only readable by root
+    description => "Get user_beancounters failcnt for all active containers.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {
+		id => { type => 'string' },
+		failcnt => { type => 'number' },
+	    },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $ubchash = PVE::OpenVZ::read_user_beancounters();
+
+	my $res = [];
+	foreach my $vmid (keys %$ubchash) {
+	    next if !$vmid;
+	    push @$res, { id => $vmid, failcnt => $ubchash->{$vmid}->{failcntsum} };
+
+	}
+	return $res;
     }});
 
 __PACKAGE__->register_method({
