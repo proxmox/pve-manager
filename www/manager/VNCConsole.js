@@ -211,9 +211,8 @@ Ext.define('PVE.KVMConsole', {
 
 	var vm_command = function(cmd, reload_applet) {
 	    PVE.Utils.API2Request({
-		params: { command: cmd },
-		url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + "/status",
-		method: 'PUT',
+		url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + "/status/" + cmd,
+		method: 'POST',
 		waitMsgTarget: me,
 		failure: function(response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
@@ -246,16 +245,9 @@ Ext.define('PVE.KVMConsole', {
 		}
 	    },
 	    { 
-		text: 'CAD',
-		handler: function() { 
-		    var msg = "Send CAD (Ctrl-Alt-Delete) to the VM?";
-		    Ext.Msg.confirm('Confirm', msg, function(btn) {
-			if (btn !== 'yes') {
-			    return;
-			}
-			vm_command("cad");
-		    });
-		}
+		xtype: 'pveQemuSendKeyMenu',
+		nodename: me.nodename,
+		vmid: me.vmid
 	    },
 	    { 
 		text: 'Reset',

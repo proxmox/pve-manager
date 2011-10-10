@@ -29,12 +29,12 @@ Ext.define('PVE.qemu.Summary', {
 
 	var rrdurl = "/api2/png/nodes/" + nodename + "/qemu/" + vmid + "/rrd";
 
-	var vm_command = function(cmd) {
+	var vm_command = function(cmd, params) {
 	    PVE.Utils.API2Request({
-		params: { command: cmd },
-		url: '/nodes/' + nodename + '/qemu/' + vmid + "/status",
+		params: params,
+		url: '/nodes/' + nodename + '/qemu/' + vmid + "/status/" + cmd,
 		waitMsgTarget: me,
-		method: 'PUT',
+		method: 'POST',
 		failure: function(response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
 		}

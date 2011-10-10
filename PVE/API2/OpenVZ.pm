@@ -120,8 +120,6 @@ __PACKAGE__->register_method({
 
 	my $node = extract_param($param, 'node');
 
-	# fixme: fork worker?
-
 	my $vmid = extract_param($param, 'vmid');
 
 	my $password = extract_param($param, 'password');
