@@ -5,5 +5,4 @@
 /etc/cron.daily/pve
 /etc/apache2/sites-available/pve.conf
 /etc/apache2/sites-available/pve-redirect.conf
-/etc/vz/conf/ve-pve.auto.conf-sample
 /etc/vz/vznet.conf
