@@ -369,11 +369,31 @@ Ext.define('PVE.Utils', { statics: {
     format_task_description: function(type, id) {
 
 	if (type == 'vncproxy') {
-	    return "VNC connection to VM " + id;
+	    return "VNC connection to VM/CT " + id;
 	}
 
 	if (type == 'vncshell') {
 	    return "VNC shell";
+	}
+
+	if (type == 'qmigrate') {
+	    return "Migrate VM " + id;
+	}
+
+	if (type == 'vzcreate') {
+	    return "Create CT " + id;
+	}
+
+	if (type == 'vzdestroy') {
+	    return "Destroy CT " + id;
+	}
+
+	if (type == 'vzstart') {
+	    return "Start CT " + id;
+	}
+
+	if (type == 'vzstop') {
+	    return "Stop CT " + id;
 	}
 
 	return type;
