@@ -237,6 +237,8 @@ __PACKAGE__->register_method({
 
 	    my $cmd = ['vzctl', '--skiplock', 'set', $vmid, @$changes, '--save'];
 
+	    PVE::Cluster::log_msg('info', $user, "update CT $vmid: " . join(' ', @$changes));
+ 
 	    PVE::Tools::run_command($cmd);
 	};
 
