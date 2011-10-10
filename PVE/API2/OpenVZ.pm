@@ -454,7 +454,9 @@ __PACKAGE__->register_method({
 	    vmid => get_standard_option('pve-vmid'),
 	},
     },
-    returns => { type => 'null' },
+    returns => { 
+	type => 'string',
+    },
     code => sub {
 	my ($param) = @_;
 
@@ -467,11 +469,13 @@ __PACKAGE__->register_method({
 	# test if VM exists
 	my $conf = PVE::OpenVZ::load_config($param->{vmid});
 
-	my $cmd = ['vzctl', 'destroy', $vmid ];
+	my $realcmd = sub {
+	    my $cmd = ['vzctl', 'destroy', $vmid ];
 
-	PVE::Tools::run_command($cmd);
+	    PVE::Tools::run_command($cmd);
+	};
 
-	return undef;
+	return $rpcenv->fork_worker('vzdestroy', $vmid, $user, $realcmd);
     }});
 
 my $sslcert;
