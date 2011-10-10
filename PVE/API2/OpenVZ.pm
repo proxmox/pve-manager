@@ -108,9 +108,15 @@ __PACKAGE__->register_method({
 	    },
 	}),
     },
-    returns => { type => 'null'},
+    returns => { 
+	type => 'string',
+    },
     code => sub {
 	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $user = $rpcenv->get_user();
 
 	my $node = extract_param($param, 'node');
 
@@ -164,20 +170,22 @@ __PACKAGE__->register_method({
 
 	    my $rawconf = PVE::OpenVZ::generate_raw_config($pve_base_ovz_config, $conf);
 
-	    PVE::Tools::file_set_contents($basecfg_fn, $rawconf);
+	    my $realcmd = sub {
+		PVE::Tools::file_set_contents($basecfg_fn, $rawconf);
 
-	    my $cmd = ['vzctl', '--skiplock', 'create', $vmid, '--ostemplate', $tpath ];
+		my $cmd = ['vzctl', '--skiplock', 'create', $vmid, '--ostemplate', $tpath ];
 
-	    PVE::Tools::run_command($cmd);
+		PVE::Tools::run_command($cmd);
 
-	    # hack: vzctl '--userpasswd' starts the CT, but we want 
-	    # to avoid that for create
-	    PVE::OpenVZ::set_rootpasswd($vmid, $password) if defined($password);
+		# hack: vzctl '--userpasswd' starts the CT, but we want 
+		# to avoid that for create
+		PVE::OpenVZ::set_rootpasswd($vmid, $password) if defined($password);
+	    };
+
+	    return $rpcenv->fork_worker('vzcreate', $vmid, $user, $realcmd);
 	};
 
-	PVE::OpenVZ::lock_container($vmid, $code);
-
-	return undef;
+	return PVE::OpenVZ::lock_container($vmid, $code);
     }});
 
 __PACKAGE__->register_method({
