@@ -27,15 +27,20 @@ Ext.define('PVE.node.ServiceView', {
 	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 	    PVE.Utils.API2Request({
-		url: "/nodes/" + nodename + "/services/" + rec.data.service,
-		params: { command: cmd },
-		method: 'PUT',
+		url: "/nodes/" + nodename + "/services/" + rec.data.service + "/" + cmd,
+		method: 'POST',
 		failure: function(response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
 		    me.loading = true;
 		},
 		success: function(response, opts) {
 		    rstore.startUpdate();
+		    var upid = response.result.data;
+
+		    var win = Ext.create('PVE.window.TaskViewer', { 
+			upid: upid
+		    });
+		    win.show();
 		}
 	    });
 	};

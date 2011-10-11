@@ -25,7 +25,14 @@ my $service_list = {
     cron => { name => 'CRON', desc => 'Daemon to execute scheduled commands' },
     pvedaemon => { name => 'NodeManager', desc => 'PVE node manager daemon' },
     corosync => { name => 'CMan', desc => 'CMan/Corosync cluster daemon' },
+    clvm => { name => 'CLVM', desc => 'LVM cluster locking daemon' },
     pvecluster => { name => 'PVECluster', desc => 'Proxmox VE cluster file system' },
+};
+
+my $service_prop_desc = {
+    description => "Service ID",
+    type => 'string',
+    enum => [ keys %{$service_list} ],
 };
 
 my $service_cmd = sub {
@@ -35,8 +42,6 @@ my $service_cmd = sub {
 
     die "unknown service command '$cmd'\n"
 	if $cmd !~ m/^(start|stop|restart|reload)$/;
-
-    $cmd = $1; # untaint
 
     if ($service eq 'postfix') {
 	$initd_cmd = '/etc/init.d/postfix';
@@ -54,6 +59,7 @@ my $service_cmd = sub {
 	}
     } elsif  ($service eq 'apache') {
 	if ($cmd eq 'restart') {    
+	    print "graceful apache restart\n";
 	    $initd_cmd = '/usr/sbin/apache2ctl';
 	    $cmd = 'graceful';
 	} else {
@@ -80,8 +86,11 @@ my $service_cmd = sub {
     } elsif  ($service eq 'cron') {
 	$initd_cmd = '/etc/init.d/cron';
     } elsif  ($service eq 'corosync') {
+	$cmd = 'start' if $cmd eq 'restart';
 	$initd_cmd = '/etc/init.d/cman';
-    } elsif  ($service eq 'sshd') {
+    } elsif  ($service eq 'clvm') {
+	$initd_cmd = '/etc/init.d/clvm';
+     } elsif  ($service eq 'sshd') {
 	$initd_cmd = '/etc/init.d/ssh';
     } else {
 	die "unknown service '$service': ERROR";
@@ -111,6 +120,8 @@ my $service_state = sub {
 	$pid_file = '/var/run/crond.pid';
     } elsif  ($service eq 'corosync') {
 	$pid_file = '/var/run/corosync.pid';
+    } elsif  ($service eq 'clvm') {
+	$pid_file = '/var/run/clvmd.pid';
     } elsif  ($service eq 'syslog') {
 	$pid_file = '/var/run/rsyslogd.pid';
     } else {
@@ -174,9 +185,45 @@ __PACKAGE__->register_method ({
 	return $res;
     }});
 
-__PACKAGE__->register_method ({
-    name => 'state', 
+__PACKAGE__->register_method({
+    name => 'srvcmdidx',
     path => '{service}', 
+    method => 'GET',
+    description => "Directory index",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    service => $service_prop_desc,
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {
+		subdir => { type => 'string' },
+	    },
+	},
+	links => [ { rel => 'child', href => "{subdir}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $res = [
+	    { subdir => 'state' },
+	    { subdir => 'start' },
+	    { subdir => 'stop' },
+	    { subdir => 'restart' },
+	    { subdir => 'reload' },
+	    ];
+	
+	return $res;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'service_state', 
+    path => '{service}/state', 
     method => 'GET',
     permissions => {
 	path => '/nodes/{node}',
@@ -189,11 +236,7 @@ __PACKAGE__->register_method ({
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-	    service => {
-		description => "Service ID",
-		type => 'string',
-		enum => [ keys %{$service_list} ],
-	    },
+	    service => $service_prop_desc,
 	},
     },
     returns => {
@@ -213,34 +256,153 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
-    name => 'cmd', 
-    path => '{service}', 
-    method => 'PUT',
-    description => "Execute service commands.",
+    name => 'service_start', 
+    path => '{service}/start', 
+    method => 'POST',
+    description => "Start service.",
     proxyto => 'node',
     protected => 1,
     parameters => {
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-	    service => {
-		description => "Service ID",
-		type => 'string',
-		enum => [ keys %{$service_list} ],
-	    },
-	    command => {
-		description => "The command to execute. The only valid command for service 'apache' and 'pvedaemon' is 'restart', because both services are required by this API.",
-		type => 'string',
-		enum => [qw(start stop restart reload)],
-	    },
+	    service => $service_prop_desc,
 	},
     },
-    returns => { type => 'null'},
+    returns => { 
+	type => 'string',
+    },
     code => sub {
 	my ($param) = @_;
   
-	my $si = $service_list->{$param->{service}};
-	&$service_cmd($param->{service}, $param->{command});
+	my $rpcenv = PVE::RPCEnvironment::get();
 
-	return undef;
+	my $user = $rpcenv->get_user();
+
+	my $si = $service_list->{$param->{service}};
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    syslog('info', "starting service $param->{service}: $upid\n");
+
+	    &$service_cmd($param->{service}, 'start');
+
+	};
+
+	return $rpcenv->fork_worker('srvstart', $param->{service}, $user, $realcmd);
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'service_stop', 
+    path => '{service}/stop', 
+    method => 'POST',
+    description => "Stop service.",
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    service => $service_prop_desc,
+	},
+    },
+    returns => { 
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+  
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $user = $rpcenv->get_user();
+
+	my $si = $service_list->{$param->{service}};
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    syslog('info', "stoping service $param->{service}: $upid\n");
+
+	    &$service_cmd($param->{service}, 'stop');
+
+	};
+
+	return $rpcenv->fork_worker('srvstop', $param->{service}, $user, $realcmd);
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'service_restart', 
+    path => '{service}/restart', 
+    method => 'POST',
+    description => "Restart service.",
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    service => $service_prop_desc,
+	},
+    },
+    returns => { 
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+  
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $user = $rpcenv->get_user();
+
+	my $si = $service_list->{$param->{service}};
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    syslog('info', "re-starting service $param->{service}: $upid\n");
+
+	    &$service_cmd($param->{service}, 'restart');
+
+	};
+
+	return $rpcenv->fork_worker('srvrestart', $param->{service}, $user, $realcmd);
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'service_reload', 
+    path => '{service}/reload', 
+    method => 'POST',
+    description => "Reload service.",
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    service => $service_prop_desc,
+	},
+    },
+    returns => { 
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+  
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $user = $rpcenv->get_user();
+
+	my $si = $service_list->{$param->{service}};
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    syslog('info', "reloading service $param->{service}: $upid\n");
+
+	    &$service_cmd($param->{service}, 'reload');
+
+	};
+
+	return $rpcenv->fork_worker('srvreload', $param->{service}, $user, $realcmd);
     }});

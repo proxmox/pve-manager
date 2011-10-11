@@ -705,13 +705,9 @@ __PACKAGE__->register_method({
 	    my $cmd = ['vzctl', 'start', $vmid];
 	    
 	    PVE::Tools::run_command($cmd);
-	    
-	    return;
 	};
 
-	my $upid = $rpcenv->fork_worker('vzstart', $vmid, $user, $realcmd);
-
-	return $upid;
+	return $rpcenv->fork_worker('vzstart', $vmid, $user, $realcmd);
     }});
 
 __PACKAGE__->register_method({
