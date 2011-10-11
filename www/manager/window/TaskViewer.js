@@ -103,20 +103,14 @@ Ext.define('PVE.window.TaskViewer', {
 	    border: false
 	});
 
-	var lastStatus = 'unknown';
-
 	me.mon(statstore, 'load', function() {
 	    var status = statgrid.getObjectValue('status');
 	    
+	    store.load();
+
 	    if (status === 'stopped') {
 		statstore.stopUpdate();
 	    }
-
-	    if (status === 'running' || lastStatus === 'running') {
-		store.load();
-	    }
-
-	    lastStatus = status;
 
 	    stop_btn1.setDisabled(status !== 'running');
 	    stop_btn2.setDisabled(status !== 'running');
