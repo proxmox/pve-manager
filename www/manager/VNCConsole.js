@@ -209,8 +209,9 @@ Ext.define('PVE.KVMConsole', {
 	    throw "no VM ID specified";
 	}
 
-	var vm_command = function(cmd, reload_applet) {
+	var vm_command = function(cmd, params, reload_applet) {
 	    PVE.Utils.API2Request({
+		params: params,
 		url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + "/status/" + cmd,
 		method: 'POST',
 		waitMsgTarget: me,
@@ -229,7 +230,7 @@ Ext.define('PVE.KVMConsole', {
 	    { 
 		text: 'Start',
 		handler: function() { 
-		    vm_command("start", 1);
+		    vm_command("start", {}, 1);
 		}
 	    },
 	    { 
@@ -240,7 +241,7 @@ Ext.define('PVE.KVMConsole', {
 			if (btn !== 'yes') {
 			    return;
 			}
-			vm_command("stop");
+			vm_command("stop", { timeout: 30});
 		    }); 
 		}
 	    },
@@ -269,7 +270,7 @@ Ext.define('PVE.KVMConsole', {
 			if (btn !== 'yes') {
 			    return;
 			}
-			vm_command('shutdown');
+			vm_command('shutdown', {timeout: 30});
 		    });
 		}			    
 	    }, 

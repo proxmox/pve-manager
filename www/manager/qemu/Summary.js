@@ -59,7 +59,7 @@ Ext.define('PVE.qemu.Summary', {
 			    if (btn !== 'yes') {
 				return;
 			    }
-			    vm_command("stop");
+			    vm_command("stop", { timeout: 30 });
 			}); 
 		    }
 		},
@@ -95,7 +95,7 @@ Ext.define('PVE.qemu.Summary', {
 			    if (btn !== 'yes') {
 				return;
 			    }
-			    vm_command('shutdown');
+			    vm_command('shutdown', { timeout: 30 });
 			});
 		    }			    
 		}, 
