@@ -366,39 +366,33 @@ Ext.define('PVE.Utils', { statics: {
 	}
     },
 
-    format_task_description: function(type, id) {
-
-	if (type == 'vncproxy') {
-	    return "VNC connection to VM/CT " + id;
-	}
-
-	if (type == 'vncshell') {
-	    return "VNC shell";
-	}
-
-	if (type == 'qmigrate') {
-	    return "Migrate VM " + id;
-	}
-
-	if (type == 'vzcreate') {
-	    return "Create CT " + id;
-	}
-
-	if (type == 'vzdestroy') {
-	    return "Destroy CT " + id;
-	}
-
-	if (type == 'vzstart') {
-	    return "Start CT " + id;
-	}
-
-	if (type == 'vzstop') {
-	    return "Stop CT " + id;
-	}
-
-	return type;
+    task_desc_table: {
+	vncproxy: 'VNC connection to VM/CT {0}',
+	vncshell: 'VNC shell',
+	qmigrate: 'Migrate VM {0}',
+	qmstart: 'Start VM {0}',
+	qmstop: 'Stop VM {0}',
+	qmreset: 'Reset VM {0}',
+	qmshutdown: 'Shutdown VM {0}',
+	qmsuspend: 'Suspend VM {0}',
+	qmresume: 'Resume VM {0}',
+	vzcreate: 'Create CT {0}',
+	vzdestroy: 'Destroy CT {0}',
+	vzstart: 'Start CT {0}',
+	vzstop: 'Stop CT {0}',
+	srvstart: 'Start service {0}',
+	srvstop: 'Stop service {0}',
+	srvrestart: 'Restart service {0}',
+	srvreload: 'Reload service {0}'
     },
 
+    format_task_description: function(type, id) {	
+	var format = PVE.Utils.task_desc_table[type];
+	if (format) {
+	    return Ext.String.format(format, id);
+	}
+	return type;
+    },
 
     parse_task_upid: function(upid) {
 	var task = {};
