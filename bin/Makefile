@@ -3,6 +3,8 @@ include ../defines.mk
 SUBDIRS = init.d cron test
 
 SCRIPTS =  			\
+	vzdump			\
+	vzrestore		\
 	pvestatd		\
 	pvesh			\
 	pveam			\

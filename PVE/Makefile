@@ -1,6 +1,6 @@
 include ../defines.mk
 
-SUBDIRS=API2
+SUBDIRS=API2 VZDump
 
 PERLSOURCE = 			\
 	API2.pm			\
@@ -8,6 +8,7 @@ PERLSOURCE = 			\
 	APIDaemon.pm		\
 	REST.pm			\
 	OpenVZ.pm		\
+	VZDump.pm		\
 	APLInfo.pm
 
 all: pvecfg.pm ${SUBDIRS}

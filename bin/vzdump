@@ -1,0 +1,399 @@
+#!/usr/bin/perl -w
+#
+#    Copyright (C) 2007-2009 Proxmox Server Solutions GmbH
+#
+#    Copyright: vzdump is under GNU GPL, the GNU General Public License.
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; version 2 dated June, 1991.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the
+#    Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+#    MA 02110-1301, USA.
+#
+#    Author: Dietmar Maurer <dietmar@proxmox.com>
+#
+
+use strict;
+use Getopt::Long;
+use Sys::Syslog;
+use PVE::VZDump;
+
+$ENV{LANG} = "C"; # avoid locale related issues/warnings
+
+# by default we set --rsyncable for gzip
+$ENV{GZIP} = "--rsyncable" if !$ENV{GZIP};
+
+# just to be sure that we have a resonable path
+$ENV{PATH} = "/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin";
+
+my $cmdline = join (' ', 'vzdump', @ARGV);
+
+openlog ('vzdump', 'cons,pid', 'daemon');
+
+$SIG{INT} = $SIG{TERM} = $SIG{QUIT} = $SIG{HUP} = $SIG{PIPE} = sub {
+    die "interrupted by signal\n";
+};
+
+my @std_opts = (
+		'all',
+		'exclude=s@',
+		'exclude-path=s@',
+		'stdexcludes',
+		'compress',
+		'mailto=s@',
+		'quiet',
+		'stop',
+		'suspend',
+		'snapshot',
+		'size=i',
+		'node=i',
+		'bwlimit=i',
+		'ionice=i',
+		'lockwait=i',
+		'stopwait=i',
+		'tmpdir=s',
+		'dumpdir=s',
+		'maxfiles=i',
+		'script=s',
+		'storage=s',
+                'stdout',
+		);
+
+sub print_usage {
+    my $msg = shift;
+
+    print STDERR "ERROR: $msg\n\n" if $msg;
+
+    print STDERR "usage: $0 OPTIONS [--all | VMID]\n\n";
+    print STDERR "\t--exclude VMID\t\texclude VMID (assumes --all)\n";
+    print STDERR "\t--exclude-path REGEX\texclude certain files/directories\n";     print STDERR "\t--stdexcludes\t\texclude temorary files and logs\n\n";
+ 
+    print STDERR "\t--compress\t\tcompress dump file (gzip)\n";
+    print STDERR "\t--dumpdir DIR\t\tstore resulting files in DIR\n";
+    print STDERR "\t--maxfiles N\t\tmaximal number of backup files per VM\n";
+    print STDERR "\t--script FILENAME\texecute hook script\n"; 
+    print STDERR "\t--stdout write to stdout, not to a file\n"; 
+    print STDERR "\t--storage STORAGE_ID\tstore resulting files to STORAGE_ID (PVE only)\n";
+    print STDERR "\t--tmpdir DIR\t\tstore temporary files in DIR\n\n";
+
+    print STDERR "\t--mailto EMAIL\t\tsend notification mail to EMAIL.\n";
+    print STDERR "\t--quiet\t\t\tbe quiet.\n";
+    print STDERR "\t--stop\t\t\tstop/start VM if running\n";
+    print STDERR "\t--suspend\t\tsuspend/resume VM when running\n";
+    print STDERR "\t--snapshot\t\tuse LVM snapshot when running\n";
+    print STDERR "\t--size MB\t\tLVM snapshot size\n\n";
+
+    print STDERR "\t--node CID\t\tonly run on pve cluster node CID\n";
+    print STDERR "\t--lockwait MINUTES\tmaximal time to wait for the global lock\n";
+    print STDERR "\t--stopwait MINUTES\tmaximal time to wait until a VM is stopped\n";
+    print STDERR "\t--bwlimit KBPS\t\tlimit I/O bandwidth; KBytes per second\n";
+    print STDERR "\t--ionice PRI\t\tset ionice priority (0-8)\n\n";
+
+    print STDERR "\n";
+}
+
+my $opts = {};
+if (!GetOptions ($opts, @std_opts)) {
+    print_usage ();
+    exit (-1);
+}
+
+if ($opts->{node}) {
+    PVE::VZDump::check_bin ('pveca');
+
+    my $info = `pveca -i`;
+    chomp $info;
+    die "unable to parse pveca info" if $info !~ m/^(\d+)\s+\S+\s+\S+\s+\S+$/;
+    my $cid = $1;
+
+    # silent exit if we run on wrong node
+    exit (0) if $cid != $opts->{node};
+}
+
+$opts->{all} = 1 if $opts->{exclude};
+
+if ($opts->{all} && $#ARGV >= 0) {
+    print_usage ();
+    exit (-1);
+} 
+
+if (!$opts->{all} && $#ARGV == -1) {
+    print_usage ();
+    exit (-1);
+}
+
+open STDOUT, '>/dev/null' if $opts->{quiet} && !$opts->{stdout};
+open STDERR, '>/dev/null' if $opts->{quiet};
+
+if ($opts->{stdout}) {
+
+    open my $saved_stdout, ">&STDOUT"
+	|| die "can't dup STDOUT: $!\n";
+
+    open STDOUT, '>&STDERR' ||
+	die "unable to redirect STDOUT: $!\n";
+
+    $opts->{stdout} = $saved_stdout;
+
+    die "you can only backup a single VM with option --stdout\n"
+	if scalar(@ARGV) != 1;
+}
+
+$opts->{vmids} = PVE::VZDump::check_vmids (@ARGV) if !$opts->{all};
+
+$opts->{exclude} =  PVE::VZDump::check_vmids (@{$opts->{exclude}}) if $opts->{exclude};
+
+my $vzdump = PVE::VZDump->new ($cmdline, $opts);
+
+$vzdump->getlock (); # only one process allowed
+
+# parameters are OK - now start real work and log everything
+
+eval {
+    if (defined($opts->{ionice})) {
+	if ($opts->{ionice} > 7) {
+	    PVE::VZDump::run_command (undef, "ionice -c3 -p $$");
+	} else {
+	    PVE::VZDump::run_command (undef, "ionice -c2 -n$opts->{ionice} -p $$");
+	}
+    }
+    $vzdump->exec_backup(); 
+};
+my $err = $@;
+
+if ($err) {
+    PVE::VZDump::debugmsg ('err', $err, undef, 1);
+    exit (-1);
+}
+
+exit 0;
+
+__END__
+
+=head1 NAME
+                                          
+vzdump - backup utility for virtual machine
+
+=head1 SYNOPSIS
+
+vzdump OPTIONS [--all | <VMID>]
+
+--exclude VMID          exclude VMID (assumes --all)
+
+--exclude-path REGEX    exclude certain files/directories. You 
+                        can use this option more than once to specify 
+                        multiple exclude paths
+
+--stdexcludes           exclude temporary files and logs
+
+--compress              compress dump file (gzip)
+
+--storage STORAGE_ID    store resulting files to STORAGE_ID (PVE only)
+
+--script                execute hook script
+
+--dumpdir DIR           store resulting files in DIR
+
+--stdout                write to stdout, not to a file. You can only
+                        backup a single VM when using this mode. 
+
+--maxfiles N            maximal number of backup files per VM.
+
+--tmpdir DIR            store temporary files in DIR. --suspend and --stop
+                        are using this directory to store a copy of the VM.
+
+--mailto EMAIL          send notification mail to EMAIL. You can use 
+                        this option more than once to specify multiple 
+                        receivers
+
+--stop                  stop/start VM if running
+
+--suspend               suspend/resume VM when running
+
+--snapshot              use LVM snapshot when running
+
+--size MB               LVM snapshot size (default 1024)
+    
+--bwlimit KBPS          limit I/O bandwidth; KBytes per second
+
+--ionice PRI            set ionice priority (0-8). default is 7 (lowest 'best
+                        effort' priority). Value 8 uses the ionice
+                        'idle' scheduling class.
+
+--lockwait MINUTES      maximal time to wait for the global
+                        lock. vzdump uses a global lock file to make
+                        sure that only one instance is running
+                        (running several instance puts too much load
+                        on a server). Default is 180 (3 hours).
+
+--stopwait MINUTES      maximal time to wait until a VM is stopped.
+
+=head1 DESCRIPTION
+
+vzdump is an utility to make consistent snapshots of running virtual
+machines (VMs). It basically creates a tar archive of the VM private area,
+which also includes the VM configuration files. vzdump currently
+supports OpenVZ and QemuServer VMs.
+
+There are several ways to provide consistency:
+
+=over 2
+
+=item C<stop> mode
+
+Stop the VM during backup. This results in a very long downtime.
+
+=item C<suspend> mode
+
+For OpenVZ, this mode uses rsync to copy the VM to a temporary
+location (see option --tmpdir). Then the VM is suspended and a second
+rsync copies changed files. After that, the VM is started (resume)
+again. This results in a minimal downtime, but needs additional space
+to hold the VM copy.
+
+For QemuServer, this mode work like C<stop> mode, but uses
+suspend/resume instead of stop/start.
+
+=item C<snapshot> mode
+
+This mode uses LVM2 snapshots. There is no downtime, but snapshot mode
+needs LVM2 and some free space on the corresponding volume group to
+create the LVM snapshot.
+
+=back 
+
+=head1 BACKUP FILE NAMES
+
+Newer version of vzdump encodes the virtual machine type and the
+backup time into the filename, for example
+
+ vzdump-openvz-105-2009_10_09-11_04_43.tar
+
+That way it is possible to store several backup into the same
+directory. The parameter C<maxfiles> can be used to specify the maximal
+number of backups to keep.
+
+=head1 RESTORE
+
+The resulting tar files can be restored with the following programs.
+
+=over 1
+
+=item vzrestore: OpenVZ restore utility
+
+=item qmrestore: QemuServer restore utility
+
+=back
+
+For details see the corresponding manual pages.
+
+=head1 CONFIGURATION
+
+Global configuration is stored in /etc/vzdump.conf. 
+
+ tmpdir: DIR
+ dumpdir: DIR
+ storage: STORAGE_ID
+ mode: snapshot|suspend|stop
+ bwlimit: KBPS
+ ionize: PRI
+ lockwait: MINUTES 
+ stopwait: MINUTES 
+ size: MB
+ maxfiles: N
+ script: FILENAME
+
+=head1 HOOK SCRIPT
+
+You can specify a hook script with option C<--script>. This script is called at various phases of the backup process, with parameters accordingly set. You can find an example in the documentation directory (C<hook-script.pl>). 
+
+=head1 EXCLUSIONS (OpenVZ only)
+
+vzdump skips the following files wit option --stdexcludes
+
+ /var/log/.+
+ /tmp/.+
+ /var/tmp/.+
+ /var/run/.+pid
+
+You can manually specify exclude paths, for example:
+
+> vzdump --exclude-path C</tmp/.+> --exclude-path C</var/tmp/.+> 777
+
+(only excludes tmp directories)
+
+Configuration files are also stored inside the backup archive (/etc/vzdump), and will be correctly restored.
+
+=head1 LIMITATIONS
+
+VZDump does not save ACLs.
+
+=head1 EXAMPLES
+
+Simply dump VM 777 - no snapshot, just archive the VM private area and configuration files to the default dump directory (usually /vz/dump/).
+
+> vzdump 777
+
+Use rsync and suspend/resume to create an snapshot (minimal downtime).
+
+> vzdump --suspend 777
+
+Backup all VMs and send notification mails to root.
+
+> vzdump --suspend --all --mailto root
+
+Use LVM2 to create snapshots (no downtime).
+
+> vzdump --dumpdir /mnt/backup --snapshot 777
+
+Backup all VMs excluding VM 101 and 102
+
+> vzdump --suspend --exclude 101 --exclude 102
+
+Restore an OpenVZ machine to VM 600
+
+> vzrestore /mnt/backup/vzdump-openvz-777.tar 600
+
+Restore an Qemu/KVM machine to VM 601
+
+> qmrestore /mnt/backup/vzdump-qemu-888.tar 601
+
+=head1 SEE ALSO
+
+    vzrestore(1) qmrestore(1)
+
+=head1 AUTHOR
+
+Dietmar Maurer <dietmar@proxmox.com>
+
+Many thanks to Proxmox Server Solutions (www.proxmox.com) for sponsoring 
+this work.
+
+=head1 COPYRIGHT AND DISCLAIMER
+
+Copyright (C) 2007-2009 Proxmox Server Solutions GmbH
+
+Copyright: vzdump is under GNU GPL, the GNU General Public License.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; version 2 dated June, 1991.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the
+Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+MA 02110-1301, USA.
+
