@@ -383,7 +383,7 @@ sub json_config_properties {
 }
 
 # read global vz.conf
-my $read_global_vz_config  = sub {
+sub read_global_vz_config {
 
     my $res = {
 	rootdir => '/var/lib/vz/root/$VEID', # note '$VEID' is a place holder
@@ -431,7 +431,7 @@ my $read_global_vz_config  = sub {
     return $res;
 };
 
-my $global_vzconf =  &$read_global_vz_config();
+my $global_vzconf = read_global_vz_config();
 my $res_unlimited = LONG_MAX;
 
 sub parse_netif {
@@ -1065,6 +1065,15 @@ sub generate_raw_config {
     return $text;
 }
 
+sub create_lock_manager {
+    return LockFile::Simple->make(-format => '%f',
+				  -autoclean => 1,
+				  -max => 30, 
+				  -delay => 2, 
+				  -stale => 1,
+				  -nfs => 0);
+}
+
 sub lock_container {
     my ($vmid, $code, @param) = @_;
 
@@ -1074,12 +1083,7 @@ sub lock_container {
 
     eval {
 
-	my $lockmgr = LockFile::Simple->make(-format => '%f',
-					     -autoclean => 1,
-					     -max => 30, 
-					     -delay => 2, 
-					     -stale => 1,
-					     -nfs => 0);
+	my $lockmgr = create_lock_manager();
 
 	$lock = $lockmgr->lock($filename) || die "can't lock container $vmid\n";
 

@@ -1,35 +1,16 @@
 package PVE::VZDump;
 
-#    Copyright (C) 2007-2009 Proxmox Server Solutions GmbH
-#
-#    Copyright: vzdump is under GNU GPL, the GNU General Public License.
-#
-#    This program is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; version 2 dated June, 1991.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program; if not, write to the
-#    Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-#    MA 02110-1301, USA.
-#
-#    Author: Dietmar Maurer <dietmar@proxmox.com>
-
 use strict;
 use warnings;
 use Fcntl ':flock';
-use Sys::Hostname;
-use Sys::Syslog;
+use PVE::SafeSyslog;
 use IO::File;
 use IO::Select;
 use IPC::Open3;
 use POSIX qw(strftime);
 use File::Path;
+use PVE::Storage;
+use PVE::Cluster qw(cfs_read_file);
 use PVE::VZDump::OpenVZ;
 use Time::localtime;
 use Time::Local;
@@ -84,112 +65,32 @@ sub debugmsg {
 sub run_command {
     my ($logfd, $cmdstr, %param) = @_;
 
-    my $timeout;
-    my $input;
-    my $output;
+    my $returnstdout = $param{returnstdout};
+    delete $param{returnstdout};
 
-    foreach my $p (keys %param) {
-	if ($p eq 'timeout') {
-	    $timeout = $param{$p};
-	} elsif ($p eq 'input') {
-	    $input = $param{$p};
-	} elsif ($p eq 'output') {
-	    $output = $param{$p};
-	} else {
-	    die "got unknown parameter '$p' for run_command\n";
-	}
-    }
+    my $ostream = 0;
 
-    my $reader = $output && $output =~ m/^>&/ ? $output : IO::File->new();
-    my $writer = $input && $input =~ m/^<&/ ? $input : IO::File->new();
-    my $error  = IO::File->new();
-
-    my $orig_pid = $$;
-
-    my $pid;
-    eval {
-	# suppress LVM warnings like: "File descriptor 3 left open";
-	local $ENV{LVM_SUPPRESS_FD_WARNINGS} = "1";
-
-	$pid = open3 ($writer, $reader, $error, ($cmdstr)) || die $!;
+    my $outfunc = sub {
+	my $line = shift;
+	$ostream .= "$line\n" if $returnstdout;
+	debugmsg ('info', $line, $logfd);
     };
 
-    my $err = $@;
+    my $errfunc = sub {
+	my $line = shift;
+	debugmsg ('info', $line, $logfd);
+    };
 
-    # catch exec errors
-    if ($orig_pid != $$) {
-	debugmsg ('err', "command '$cmdstr' failed - fork failed: $!", $logfd);
-	POSIX::_exit (1); 
-	kill ('KILL', $$); 
-    }
+    PVE::Tools::run_command($cmdstr, %param, outfunc => $outfunc, errfunc => $errfunc);
 
-    die $err if $err;
-
-    if (ref($writer)) {
-	print $writer $input if defined $input;
-	close $writer;
-    }
-
-    my $select = new IO::Select;
-    $select->add ($reader) if ref($reader);
-    $select->add ($error);
-
-    my ($ostream, $estream, $logout, $logerr) = ('', '', '', '');
-
-    while ($select->count) {
-	my @handles = $select->can_read ($timeout);
-
-	if (defined ($timeout) && (scalar (@handles) == 0)) {
-	    die "command '$cmdstr' failed: timeout\n";
-	}
-
-	foreach my $h (@handles) {
-	    my $buf = '';
-	    my $count = sysread ($h, $buf, 4096);
-	    if (!defined ($count)) {
-		waitpid ($pid, 0);
-		die "command '$cmdstr' failed: $!\n";
-	    }
-	    $select->remove ($h) if !$count;
-
-	    if ($h eq $reader) {
-		$ostream .= $buf;
-		$logout .= $buf;
-		while ($logout =~ s/^([^\n]*\n)//s) {
-		    my $line = $1;
-		    debugmsg ('info', $line, $logfd);
-		}
-	    } elsif ($h eq $error) {
-		$estream .= $buf;
-		$logerr .= $buf;
-		while ($logerr =~  s/^([^\n]*\n)//s) {
-		    my $line = $1;
-		    debugmsg ('info', $line, $logfd);
-		}
-	    }
-	}
-    }
-
-    debugmsg ('info', $logout, $logfd);
-    debugmsg ('info', $logerr, $logfd);
-
-    waitpid ($pid, 0);
-    my $ec = ($? >> 8);
-
-    return $ostream if $ec == 24 && ($cmdstr =~ m|^(\S+/)?rsync\s|);
-
-    die "command '$cmdstr' failed with exit code $ec\n" if $ec;
-
-    return $ostream;
+    return $returnstdout ? $ostream : undef;
 }
 
 sub storage_info {
     my $storage = shift;
 
-    eval { require PVE::Storage; };
-    die "unable to query storage info for '$storage' - $@\n" if $@;
-    my $cfg = PVE::Storage::load_config();
-    my $scfg = PVE::Storage::storage_config ($cfg, $storage);
+    my $cfg = cfs_read_file('storage.cfg');
+    my $scfg = PVE::Storage::storage_config($cfg, $storage);
     my $type = $scfg->{type};
  
     die "can't use storage type '$type' for backup\n" 
@@ -197,7 +98,7 @@ sub storage_info {
     die "can't use storage for backups - wrong content type\n" 
 	if (!$scfg->{content}->{backup});
 
-    PVE::Storage::activate_storage ($cfg, $storage);
+    PVE::Storage::activate_storage($cfg, $storage);
 
     return {
 	dumpdir => $scfg->{path},
@@ -272,7 +173,7 @@ sub check_vmids {
     foreach my $vmid (@vmids) {
 	die "ERROR: strange VM ID '${vmid}'\n" if $vmid !~ m/^\d+$/;
 	$vmid = int ($vmid); # remove leading zeros
-	die "ERROR: got reserved VM ID '${vmid}'\n" if $vmid < 100;
+	next if !$vmid;
 	push @$res, $vmid;
     }
 
@@ -374,7 +275,7 @@ my $sendmail = sub {
 
     my $mailto = $opts->{mailto};
 
-    return if !$mailto;
+    return if !($mailto && scalar(@$mailto));
 
     my $cmdline = $self->{cmdline};
 
@@ -394,9 +295,8 @@ my $sendmail = sub {
 
     my $stat = $ecount ? 'backup failed' : 'backup successful';
 
-    my $hostname = `hostname -f` || hostname();
+    my $hostname = `hostname -f` || PVE::INotify::nodename();
     chomp $hostname;
-
 
     my $boundary = "----_=_NextPart_001_".int(time).$$;
 
@@ -539,6 +439,7 @@ my $sendmail = sub {
     # end html part
     print MAIL "\n--$boundary--\n";
 
+    close(MAIL);
 };
 
 sub new {
@@ -1136,6 +1037,10 @@ sub exec_backup {
 
     eval { $self->$sendmail ($tasklist, $totaltime); };
     debugmsg ('err', $@) if $@;
+
+    die $err if $err;
+
+    die "job errors\n" if $errcount; 
 }
 
 1;

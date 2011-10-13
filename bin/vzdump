@@ -1,240 +1,283 @@
 #!/usr/bin/perl -w
-#
-#    Copyright (C) 2007-2009 Proxmox Server Solutions GmbH
-#
-#    Copyright: vzdump is under GNU GPL, the GNU General Public License.
-#
-#    This program is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; version 2 dated June, 1991.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program; if not, write to the
-#    Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-#    MA 02110-1301, USA.
-#
-#    Author: Dietmar Maurer <dietmar@proxmox.com>
-#
 
 use strict;
-use Getopt::Long;
-use Sys::Syslog;
+
+use PVE::Exception qw(raise_param_exc);;
+use PVE::Tools qw(extract_param);
+use PVE::Cluster qw(cfs_register_file cfs_read_file);
+use PVE::SafeSyslog;
+use PVE::INotify;
+use PVE::RPCEnvironment;
+use PVE::CLIHandler;
+use PVE::JSONSchema qw(get_standard_option);
+use PVE::Storage;
 use PVE::VZDump;
 
-$ENV{LANG} = "C"; # avoid locale related issues/warnings
+use Data::Dumper; # fixme: remove
 
-# by default we set --rsyncable for gzip
-$ENV{GZIP} = "--rsyncable" if !$ENV{GZIP};
+use base qw(PVE::CLIHandler);
 
-# just to be sure that we have a resonable path
-$ENV{PATH} = "/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin";
+$ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
 
-my $cmdline = join (' ', 'vzdump', @ARGV);
+initlog('vzdump');
 
-openlog ('vzdump', 'cons,pid', 'daemon');
+die "please run as root\n" if $> != 0;
 
-$SIG{INT} = $SIG{TERM} = $SIG{QUIT} = $SIG{HUP} = $SIG{PIPE} = sub {
-    die "interrupted by signal\n";
-};
+PVE::INotify::inotify_init();
+my $nodename = PVE::INotify::nodename();
 
-my @std_opts = (
-		'all',
-		'exclude=s@',
-		'exclude-path=s@',
-		'stdexcludes',
-		'compress',
-		'mailto=s@',
-		'quiet',
-		'stop',
-		'suspend',
-		'snapshot',
-		'size=i',
-		'node=i',
-		'bwlimit=i',
-		'ionice=i',
-		'lockwait=i',
-		'stopwait=i',
-		'tmpdir=s',
-		'dumpdir=s',
-		'maxfiles=i',
-		'script=s',
-		'storage=s',
-                'stdout',
-		);
+my $rpcenv = PVE::RPCEnvironment->init('cli');
 
-sub print_usage {
-    my $msg = shift;
+$rpcenv->init_request();
+$rpcenv->set_language($ENV{LANG});
+$rpcenv->set_user('root@pam'); 
 
-    print STDERR "ERROR: $msg\n\n" if $msg;
+__PACKAGE__->register_method ({
+    name => 'vzdump', 
+    path => 'vzdump',
+    method => 'PUT',
+    description => "Create backup.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    vmid => {
+		type => 'string', format => 'pve-vmid-list',		
+		description => "The ID of the VM you want to backup.",
+		optional => 1,
+	    },
+	    node => get_standard_option('pve-node', { 
+		description => "Only run if executed on this node.",
+		optional => 1,
+	    }),
+	    all => {
+		type => 'boolean',
+		description => "Backup all known VMs on this host.",
+		optional => 1,
+		default => 0,
+	    },
+	    stdexcludes => {
+		type => 'boolean',
+		description => "Exclude temorary files and logs.",
+		optional => 1,
+		default => 1,
+	    },
+	    compress => {
+		type => 'boolean',
+		description => "Compress dump file (gzip).",
+		optional => 1,
+		default => 0,
+	    },
+	    quiet => {
+		type => 'boolean',
+		description => "Be quiet.",
+		optional => 1,
+		default => 0,
+	    },
+	    stop => {
+		type => 'boolean',
+		description => "Stop/Restart VM when running.",
+		optional => 1,
+	    },
+	    snapshot => {
+		type => 'boolean',
+		description => "Try to use (LVM) snapshots when running.",
+		optional => 1,
+	    },
+	    suspend => {
+		type => 'boolean',
+		description => "Suspend/resume VM when running",
+		optional => 1,
+	    },
+	    stdout => {
+		type => 'boolean',
+		description => "Write tar to stdout, not to a file.",
+		optional => 1,
+	    },
+	    exclude => {
+		type => 'string', format => 'pve-vmid-list',
+		description => "exclude specified VMs (assumes --all)",
+		optional => 1,
+	    },
+	    'exclude-path' => {
+		type => 'string', format => 'string-list',
+		description => "exclude certain files/directories (regex).",
+		optional => 1,
+	    },
+	    mailto => {
+		type => 'string', format => 'string-list',
+		description => "",
+		optional => 1,
+	    },
+	    tmpdir => {
+		type => 'string',
+		description => "Store temporary files to specified directory.",
+		optional => 1,
+	    },
+	    dumpdir => {
+		type => 'string',
+		description => "Store resulting files to specified directory.",
+		optional => 1,
+	    },
+	    script => {
+		type => 'string',
+		description => "Use specified hook script.",
+		optional => 1,
+	    },
+	    storage => get_standard_option('pve-storage-id', {
+		description => "Store resulting file to this storage.",
+		optional => 1,
+	    }),
+	    size => {
+		type => 'integer',
+		description => "LVM snapshot size im MB.",
+		optional => 1,
+		minimum => 500,
+	    },
+	    bwlimit => {
+		type => 'integer',
+		description => "Limit I/O bandwidth (KBytes per second).",
+		optional => 1,
+		minimum => 0,
+	    },
+	    ionice => {
+		type => 'integer',
+		description => "Set CFQ ionice priority.",
+		optional => 1,
+		minimum => 0,
+		maximum => 8,
+	    },
+	    lockwait => {
+		type => 'integer',
+		description => "Maximal time to wait for the global lock (minutes).",
+		optional => 1,
+		minimum => 0,
+	    },
+	    stopwait => {
+		type => 'integer',
+		description => "Maximal time to wait until a VM is stopped (minutes).",
+		optional => 1,
+		minimum => 0,
+	    },
+	    maxfiles => {
+		type => 'integer',
+		description => "Maximal number of backup files per VM.",
+		optional => 1,
+		minimum => 1,
+	    },
+	},
+    },
+    returns => { type => 'string' },
+    code => sub {
+	my ($param) = @_;
 
-    print STDERR "usage: $0 OPTIONS [--all | VMID]\n\n";
-    print STDERR "\t--exclude VMID\t\texclude VMID (assumes --all)\n";
-    print STDERR "\t--exclude-path REGEX\texclude certain files/directories\n";     print STDERR "\t--stdexcludes\t\texclude temorary files and logs\n\n";
- 
-    print STDERR "\t--compress\t\tcompress dump file (gzip)\n";
-    print STDERR "\t--dumpdir DIR\t\tstore resulting files in DIR\n";
-    print STDERR "\t--maxfiles N\t\tmaximal number of backup files per VM\n";
-    print STDERR "\t--script FILENAME\texecute hook script\n"; 
-    print STDERR "\t--stdout write to stdout, not to a file\n"; 
-    print STDERR "\t--storage STORAGE_ID\tstore resulting files to STORAGE_ID (PVE only)\n";
-    print STDERR "\t--tmpdir DIR\t\tstore temporary files in DIR\n\n";
-
-    print STDERR "\t--mailto EMAIL\t\tsend notification mail to EMAIL.\n";
-    print STDERR "\t--quiet\t\t\tbe quiet.\n";
-    print STDERR "\t--stop\t\t\tstop/start VM if running\n";
-    print STDERR "\t--suspend\t\tsuspend/resume VM when running\n";
-    print STDERR "\t--snapshot\t\tuse LVM snapshot when running\n";
-    print STDERR "\t--size MB\t\tLVM snapshot size\n\n";
-
-    print STDERR "\t--node CID\t\tonly run on pve cluster node CID\n";
-    print STDERR "\t--lockwait MINUTES\tmaximal time to wait for the global lock\n";
-    print STDERR "\t--stopwait MINUTES\tmaximal time to wait until a VM is stopped\n";
-    print STDERR "\t--bwlimit KBPS\t\tlimit I/O bandwidth; KBytes per second\n";
-    print STDERR "\t--ionice PRI\t\tset ionice priority (0-8)\n\n";
-
-    print STDERR "\n";
-}
-
-my $opts = {};
-if (!GetOptions ($opts, @std_opts)) {
-    print_usage ();
-    exit (-1);
-}
-
-if ($opts->{node}) {
-    PVE::VZDump::check_bin ('pveca');
-
-    my $info = `pveca -i`;
-    chomp $info;
-    die "unable to parse pveca info" if $info !~ m/^(\d+)\s+\S+\s+\S+\s+\S+$/;
-    my $cid = $1;
-
-    # silent exit if we run on wrong node
-    exit (0) if $cid != $opts->{node};
-}
-
-$opts->{all} = 1 if $opts->{exclude};
-
-if ($opts->{all} && $#ARGV >= 0) {
-    print_usage ();
-    exit (-1);
-} 
-
-if (!$opts->{all} && $#ARGV == -1) {
-    print_usage ();
-    exit (-1);
-}
-
-open STDOUT, '>/dev/null' if $opts->{quiet} && !$opts->{stdout};
-open STDERR, '>/dev/null' if $opts->{quiet};
-
-if ($opts->{stdout}) {
-
-    open my $saved_stdout, ">&STDOUT"
-	|| die "can't dup STDOUT: $!\n";
-
-    open STDOUT, '>&STDERR' ||
-	die "unable to redirect STDOUT: $!\n";
-
-    $opts->{stdout} = $saved_stdout;
-
-    die "you can only backup a single VM with option --stdout\n"
-	if scalar(@ARGV) != 1;
-}
-
-$opts->{vmids} = PVE::VZDump::check_vmids (@ARGV) if !$opts->{all};
-
-$opts->{exclude} =  PVE::VZDump::check_vmids (@{$opts->{exclude}}) if $opts->{exclude};
-
-my $vzdump = PVE::VZDump->new ($cmdline, $opts);
-
-$vzdump->getlock (); # only one process allowed
-
-# parameters are OK - now start real work and log everything
-
-eval {
-    if (defined($opts->{ionice})) {
-	if ($opts->{ionice} > 7) {
-	    PVE::VZDump::run_command (undef, "ionice -c3 -p $$");
-	} else {
-	    PVE::VZDump::run_command (undef, "ionice -c2 -n$opts->{ionice} -p $$");
+	my $cmdline = 'vzdump';
+	foreach my $p (keys %$param) {
+	    $cmdline .= " --$p $param->{$p}";
 	}
-    }
-    $vzdump->exec_backup(); 
-};
-my $err = $@;
 
-if ($err) {
-    PVE::VZDump::debugmsg ('err', $err, undef, 1);
-    exit (-1);
-}
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $user = $rpcenv->get_user();
+
+	if ($rpcenv->{type} ne 'cli') {
+	    raise_param_exc({ node => "option is only allowed on the command line interface."})
+		if $param->{node};
+
+	    raise_param_exc({ stdout => "option is only allowed on the command line interface."})
+		if $param->{stdout};
+	}
+
+	# by default we set --rsyncable for gzip
+	local $ENV{GZIP} = "--rsyncable" if !$ENV{GZIP};
+
+	$param->{all} = 1 if defined($param->{exclude});
+
+	raise_param_exc({ all => "option conflicts with option 'vmid'"})
+	    if $param->{all} && defined($param->{vmid});
+
+	raise_param_exc({ vmid => "property is missing"})
+	    if !$param->{all} && !defined($param->{vmid});
+
+	# silent exit if we run on wrong node
+	my $nodename = PVE::INotify::nodename();
+	exit(0) if $param->{node} && $param->{node} ne $nodename;
+
+	# convert string lists to arrays
+	my @vmids = PVE::Tools::split_list(extract_param($param, 'vmid'));
+	$param->{vmids} = PVE::VZDump::check_vmids(@vmids) if !$param->{all};
+	my @exclude = PVE::Tools::split_list(extract_param($param, 'exclude'));
+	$param->{exclude} = PVE::VZDump::check_vmids(@exclude);
+	
+	# exclude-path list need to be 0 separated
+	my @expaths = split(/\0/, $param->{'exclude-path'} || '');
+	$param->{'exclude-path'} = @expaths;
+
+	my @mailto = PVE::Tools::split_list(extract_param($param, 'mailto'));
+	$param->{mailto} = [ @mailto ];
+
+	die "you can only backup a single VM with option --stdout\n"
+	    if $param->{stdout} && scalar(@vmids) != 1;
+
+	my $vzdump = PVE::VZDump->new($cmdline, $param);
+
+	my $worker = sub {
+	    $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = $SIG{HUP} = $SIG{PIPE} = sub {
+		die "interrupted by signal\n";
+	    };
+
+	    $vzdump->getlock (); # only one process allowed
+
+	    if (defined($param->{ionice})) {
+		if ($param->{ionice} > 7) {
+		    PVE::VZDump::run_command(undef, "ionice -c3 -p $$");
+		} else {
+		    PVE::VZDump::run_command(undef, "ionice -c2 -n$param->{ionice} -p $$");
+		}
+	    }
+	    $vzdump->exec_backup(); 
+	}; 
+
+	open STDOUT, '>/dev/null' if $param->{quiet} && !$param->{stdout};
+	open STDERR, '>/dev/null' if $param->{quiet};
+
+	if ($rpcenv->{type} eq 'cli') {
+	    if ($param->{stdout}) {
+
+		open my $saved_stdout, ">&STDOUT"
+		    || die "can't dup STDOUT: $!\n";
+
+		open STDOUT, '>&STDERR' ||
+		    die "unable to redirect STDOUT: $!\n";
+
+		$param->{stdout} = $saved_stdout;
+	    }
+	}
+
+	return $rpcenv->fork_worker('vzdump', undef, $user, $worker);
+   }});
+
+my $cmddef = [ __PACKAGE__, 'vzdump', undef, undef, 
+	       sub {
+		   my $upid = shift;
+		   my $status = PVE::Tools::upid_read_status($upid);
+		   exit($status eq 'OK' ? 0 : -1);
+	       }];
+
+push @ARGV, 'help' if !scalar(@ARGV);
+
+PVE::CLIHandler::handle_simple_cmd($cmddef, \@ARGV, undef, $0);
 
 exit 0;
 
 __END__
 
 =head1 NAME
-                                          
+
 vzdump - backup utility for virtual machine
 
 =head1 SYNOPSIS
 
-vzdump OPTIONS [--all | <VMID>]
-
---exclude VMID          exclude VMID (assumes --all)
-
---exclude-path REGEX    exclude certain files/directories. You 
-                        can use this option more than once to specify 
-                        multiple exclude paths
-
---stdexcludes           exclude temporary files and logs
-
---compress              compress dump file (gzip)
-
---storage STORAGE_ID    store resulting files to STORAGE_ID (PVE only)
-
---script                execute hook script
-
---dumpdir DIR           store resulting files in DIR
-
---stdout                write to stdout, not to a file. You can only
-                        backup a single VM when using this mode. 
-
---maxfiles N            maximal number of backup files per VM.
-
---tmpdir DIR            store temporary files in DIR. --suspend and --stop
-                        are using this directory to store a copy of the VM.
-
---mailto EMAIL          send notification mail to EMAIL. You can use 
-                        this option more than once to specify multiple 
-                        receivers
-
---stop                  stop/start VM if running
-
---suspend               suspend/resume VM when running
-
---snapshot              use LVM snapshot when running
-
---size MB               LVM snapshot size (default 1024)
-    
---bwlimit KBPS          limit I/O bandwidth; KBytes per second
-
---ionice PRI            set ionice priority (0-8). default is 7 (lowest 'best
-                        effort' priority). Value 8 uses the ionice
-                        'idle' scheduling class.
-
---lockwait MINUTES      maximal time to wait for the global
-                        lock. vzdump uses a global lock file to make
-                        sure that only one instance is running
-                        (running several instance puts too much load
-                        on a server). Default is 180 (3 hours).
-
---stopwait MINUTES      maximal time to wait until a VM is stopped.
+=include synopsis
 
 =head1 DESCRIPTION
 
@@ -326,7 +369,7 @@ vzdump skips the following files wit option --stdexcludes
 
 You can manually specify exclude paths, for example:
 
-> vzdump --exclude-path C</tmp/.+> --exclude-path C</var/tmp/.+> 777
+ # vzdump --exclude-path C</tmp/.+> --exclude-path C</var/tmp/.+> 777
 
 (only excludes tmp directories)
 
@@ -340,60 +383,34 @@ VZDump does not save ACLs.
 
 Simply dump VM 777 - no snapshot, just archive the VM private area and configuration files to the default dump directory (usually /vz/dump/).
 
-> vzdump 777
+ # vzdump --vmid 777
 
 Use rsync and suspend/resume to create an snapshot (minimal downtime).
 
-> vzdump --suspend 777
+ # vzdump --suspend --vmid 777
 
-Backup all VMs and send notification mails to root.
+Backup all VMs and send notification mails to root and admin.
 
-> vzdump --suspend --all --mailto root
+ # vzdump --suspend --all --mailto root --mailto admin
 
 Use LVM2 to create snapshots (no downtime).
 
-> vzdump --dumpdir /mnt/backup --snapshot 777
+ # vzdump --dumpdir /mnt/backup --snapshot --vmid 777
 
 Backup all VMs excluding VM 101 and 102
 
-> vzdump --suspend --exclude 101 --exclude 102
+ # vzdump --suspend --exclude 101 --exclude 102
 
 Restore an OpenVZ machine to VM 600
 
-> vzrestore /mnt/backup/vzdump-openvz-777.tar 600
+ # vzrestore /mnt/backup/vzdump-openvz-777.tar 600
 
 Restore an Qemu/KVM machine to VM 601
 
-> qmrestore /mnt/backup/vzdump-qemu-888.tar 601
+ # qmrestore /mnt/backup/vzdump-qemu-888.tar 601
 
 =head1 SEE ALSO
 
-    vzrestore(1) qmrestore(1)
+vzrestore(1) qmrestore(1)
 
-=head1 AUTHOR
-
-Dietmar Maurer <dietmar@proxmox.com>
-
-Many thanks to Proxmox Server Solutions (www.proxmox.com) for sponsoring 
-this work.
-
-=head1 COPYRIGHT AND DISCLAIMER
-
-Copyright (C) 2007-2009 Proxmox Server Solutions GmbH
-
-Copyright: vzdump is under GNU GPL, the GNU General Public License.
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; version 2 dated June, 1991.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the
-Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-MA 02110-1301, USA.
-
+=include pve_copyright

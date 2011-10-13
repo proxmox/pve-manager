@@ -383,7 +383,8 @@ Ext.define('PVE.Utils', { statics: {
 	srvstart: 'Start service {0}',
 	srvstop: 'Stop service {0}',
 	srvrestart: 'Restart service {0}',
-	srvreload: 'Reload service {0}'
+	srvreload: 'Reload service {0}',
+	vzdump: 'Backup'
     },
 
     format_task_description: function(type, id) {	

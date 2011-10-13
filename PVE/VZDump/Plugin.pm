@@ -1,27 +1,8 @@
 package PVE::VZDump::Plugin;
 
-#    Copyright (C) 2007-2009 Proxmox Server Solutions GmbH
-#
-#    Copyright: vzdump is under GNU GPL, the GNU General Public License.
-#
-#    This program is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; version 2 dated June, 1991.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program; if not, write to the
-#    Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-#    MA 02110-1301, USA.
-#
-#    Author: Dietmar Maurer <dietmar@proxmox.com>
-
 use strict;
 use warnings;
+use PVE::VZDump;
 
 sub set_logfd {
     my ($self, $logfd) = @_;
@@ -47,13 +28,13 @@ sub cmd_noerr {
 sub loginfo {
     my ($self, $msg) = @_;
 
-    PVE::VZDump::debugmsg ('info', $msg, $self->{logfd}, 0);
+    PVE::VZDump::debugmsg('info', $msg, $self->{logfd}, 0);
 }
 
 sub logerr {
     my ($self, $msg) = @_;
 
-    PVE::VZDump::debugmsg ('err', $msg, $self->{logfd}, 0);
+    PVE::VZDump::debugmsg('err', $msg, $self->{logfd}, 0);
 }
 
 sub type {

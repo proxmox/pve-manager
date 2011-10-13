@@ -16,6 +16,7 @@ SCRIPTS =  			\
 
 MANS = 				\
 	pvectl.1		\
+	vzdump.1		\
 	pvestatd.1		\
 	pvedaemon.1		\
 	pveversion.1		\
@@ -32,6 +33,9 @@ all: ${MANS}
 
 pvectl.1.pod: pvectl
 	perl -I.. ./pvectl printmanpod >$@
+
+vzdump.1.pod: vzdump
+	perl -I.. ./vzdump printmanpod >$@
 
 .PHONY: install 
 install: ${SCRIPTS} ${MANS}

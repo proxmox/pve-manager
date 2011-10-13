@@ -24,116 +24,32 @@ use strict;
 use warnings;
 use File::Path;
 use File::Basename;
+use PVE::INotify;
 use PVE::VZDump;
-use Sys::Hostname;
-use LockFile::Simple;
+use PVE::OpenVZ;
 
 use base qw (PVE::VZDump::Plugin);
 
 use constant SCRIPT_EXT => qw (start stop mount umount);
-use constant VZDIR => '/etc/vz';
-
-my $remove_quotes = sub {
-    my $str = shift;
-
-    $str =~ s/^\s*\"?//;
-    $str =~ s/\"?\s*$//;
-
-    return $str;
-};
-
-# read global vz.conf
-sub read_global_vz_config {
-
-    local $/;
-
-    my $res = {
-	rootdir => '/vz/root/$VEID', # note '$VEID' is a place holder
-	privatedir => '/vz/private/$VEID', # note '$VEID' is a place holder
-	dumpdir => '/vz/dump',
-	lockdir => '/var/lib/vz/lock',
-    };
-    
-    my $filename = VZDIR . "/vz.conf";
-
-    my $fh = IO::File->new ($filename, "r");
-    return $res if !$fh;
-    my $data = <$fh> || '';
-    $fh->close();
-
-    if ($data =~ m/^\s*VE_PRIVATE=(.*)$/m) {
-	my $dir = &$remove_quotes ($1);
-	if ($dir !~ m/\$VEID/) {
-	    warn "VE_PRIVATE does not contain '\$VEID' ('$dir')\n";
-	} else {
-	    $res->{privatedir} = $dir;
-	}
-    }
-    if ($data =~ m/^\s*VE_ROOT=(.*)$/m) {
-	my $dir = &$remove_quotes ($1);
-	if ($dir !~ m/\$VEID/) {
-	    warn "VE_ROOT does not contain '\$VEID' ('$dir')\n";
-	} else {
-	    $res->{rootdir} = $dir;
-	}
-    }
-    if ($data =~ m/^\s*DUMPDIR=(.*)$/m) {
-	my $dir = &$remove_quotes ($1);
-	$dir =~ s|/\$VEID$||;
-	$res->{dumpdir} = $dir;
-    }
-    if ($data =~ m/^\s*LOCKDIR=(.*)$/m) {
-	my $dir = &$remove_quotes ($1);
-	$res->{lockdir} = $dir;
-    }
-
-    return $res;
-}
 
 my $load_vz_conf = sub {
     my ($self, $vmid) = @_;
 
-    local $/;
+    my $conf = PVE::OpenVZ::load_config($vmid);
 
-    my $conf = $self->{vmlist}->{$vmid}->{conffile};
-
-    my $fh = IO::File->new ($conf, "r") ||
-	die "unable to open config file '$conf'\n";
-    my $data = <$fh>;
-    $fh->close();
-
-    my $dir;
-    if ($data =~ m/^\s*VE_PRIVATE=(.*)$/m) {
-	$dir = &$remove_quotes ($1);
-    } else {
-	$dir = $self->{privatedir};
+    my $dir = $self->{privatedir};
+    if ($conf->{ve_private} && $conf->{ve_private}->{value}) {
+	$dir = $conf->{ve_private}->{value};
     }
     $dir =~ s/\$VEID/$vmid/;
     $self->{vmlist}->{$vmid}->{dir} = $dir;
 
-    if ($data =~ m/^\s*HOSTNAME=(.*)/m) {
-	$self->{vmlist}->{$vmid}->{hostname} = &$remove_quotes ($1);
-    } else {
-	$self->{vmlist}->{$vmid}->{hostname} = "VM $vmid";
+    my $hostname = "CT $vmid";
+    if ($conf->{hostname} && $conf->{hostname}->{value}) {
+	$hostname = $conf->{hostname}->{value};
     }
+    $self->{vmlist}->{$vmid}->{hostname} = $hostname;
 };
-
-sub read_vz_list {
-
-    my $vmlist = {};
-
-    my $dir = VZDIR . "/conf";
-    foreach my $conf (<$dir/*.conf>) {
-
-	next if $conf !~ m|/(\d\d\d+)\.conf$|;
-
-	my $vmid = $1;
-
-	$vmlist->{$vmid}->{conffile} = $conf;
-    }
-
-    return $vmlist;
-}
 
 my $rsync_vm = sub {
     my ($self, $task, $from, $to, $text) = @_;
@@ -160,11 +76,11 @@ sub new {
     
     PVE::VZDump::check_bin ('vzctl');
 
-    my $self = bless read_global_vz_config ();
+    my $self = bless PVE::OpenVZ::read_global_vz_config ();
 
     $self->{vzdump} = $vzdump;
 
-    $self->{vmlist} = read_vz_list ();
+    $self->{vmlist} = PVE::OpenVZ::config_list();
 
     return $self;
 };
@@ -176,12 +92,12 @@ sub type {
 sub vm_status {
     my ($self, $vmid) = @_;
 
-    my $status_text = $self->cmd ("vzctl status $vmid");
+    my $status_text = $self->cmd ("vzctl status $vmid", returnstdout => 1);
     chomp $status_text;
 
     my $running = $status_text =~ m/running/ ? 1 : 0;
    
-    return wantarray ? ($running, $status_text) : $running; 
+    return wantarray ? ($running, $running ? 'running' : 'stopped') : $running; 
 }
 
 sub prepare {
@@ -197,7 +113,7 @@ sub prepare {
 
     $task->{diskinfo} = $diskinfo;
 
-    my $hostname = hostname(); 
+    my $hostname = PVE::INotify::nodename(); 
 
     if ($mode eq 'snapshot') {
 
@@ -236,12 +152,7 @@ sub lock_vm {
 
     my $filename = "$self->{lockdir}/103.lck";
 
-    my $lockmgr = LockFile::Simple->make(-format => '%f',
-					 -autoclean => 1,
-					 -max => 30, 
-					 -delay => 2, 
-					 -stale => 1,
-					 -nfs => 0);
+    my $lockmgr = PVE::OpenVZ::create_lock_manager();
 
     $self->{lock} = $lockmgr->lock($filename) || die "can't lock VM $vmid\n";
 }
@@ -325,7 +236,7 @@ sub resume_vm {
 sub assemble {
     my ($self, $task, $vmid) = @_;
 
-    my $conffile = $self->{vmlist}->{$vmid}->{conffile};
+    my $conffile = PVE::OpenVZ::config_file($vmid);
 
     my $dir = $task->{snapdir};
 
@@ -354,9 +265,13 @@ sub archive {
 
     my $taropts = "--totals --sparse --numeric-owner --no-recursion --ignore-failed-read --one-file-system";
 
-    if ($snapdir eq $task->{tmpdir} && $snapdir =~ m|^$opts->{dumpdir}/|) {
-	$taropts .= " --remove-files"; # try to save space
-    }
+    # note: --remove-files does not work because we do not 
+    # backup all files (filters). tar complains:
+    # Cannot rmdir: Directory not empty
+    # we we disable this optimization for now
+    #if ($snapdir eq $task->{tmpdir} && $snapdir =~ m|^$opts->{dumpdir}/|) {
+    #       $taropts .= " --remove-files"; # try to save space
+    #}
 
     my $cmd = "(";
     $cmd .= "cd $snapdir;find . $findargs|sed 's/\\\\/\\\\\\\\/g'|";
