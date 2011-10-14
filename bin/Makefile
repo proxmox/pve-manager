@@ -44,6 +44,9 @@ install: ${SCRIPTS} ${MANS}
 	install -m 0755 ${SCRIPTS} ${BINDIR}
 	install -d ${MAN1DIR}
 	install -m 0644 ${MANS} ${MAN1DIR}
+	install -d ${PODDIR}
+	install -m 0644 pvectl.1.pod ${PODDIR}
+	install -m 0644 vzdump.1.pod ${PODDIR}
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
 .PHONY: distclean

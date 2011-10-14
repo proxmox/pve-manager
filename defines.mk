@@ -10,6 +10,7 @@ MAN1DIR=${DESTDIR}/usr/share/man/man1
 CRONDAILYDIR=${DESTDIR}/etc/cron.daily
 INITDBINDIR=${DESTDIR}/etc/init.d/
 DOCDIR=${DESTDIR}/usr/share/doc/${PACKAGE}
+PODDIR=${DESTDIR}/usr/share/doc/${PACKAGE}/pod
 WWWBASEDIR=${DESTDIR}/usr/share/${PACKAGE}
 WWWROOTDIR=${WWWBASEDIR}/root
 WWWIMAGEDIR=${WWWBASEDIR}/images
