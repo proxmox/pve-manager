@@ -170,11 +170,6 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $cmdline = 'vzdump';
-	foreach my $p (keys %$param) {
-	    $cmdline .= " --$p $param->{$p}";
-	}
-
 	my $rpcenv = PVE::RPCEnvironment::get();
 
 	my $user = $rpcenv->get_user();
@@ -193,10 +188,10 @@ __PACKAGE__->register_method ({
 	$param->{all} = 1 if defined($param->{exclude});
 
 	raise_param_exc({ all => "option conflicts with option 'vmid'"})
-	    if $param->{all} && defined($param->{vmid});
+	    if $param->{all} && $param->{vmid};
 
 	raise_param_exc({ vmid => "property is missing"})
-	    if !$param->{all} && !defined($param->{vmid});
+	    if !$param->{all} && !$param->{vmid};
 
 	# silent exit if we run on wrong node
 	my $nodename = PVE::INotify::nodename();
@@ -204,6 +199,13 @@ __PACKAGE__->register_method ({
 
 	# convert string lists to arrays
 	my @vmids = PVE::Tools::split_list(extract_param($param, 'vmid'));
+
+	my $cmdline = 'vzdump';
+	$cmdline .= ' ' . join(' ', @vmids) if scalar(@vmids);
+	foreach my $p (keys %$param) {
+	    $cmdline .= " --$p $param->{$p}";
+	}
+
 	$param->{vmids} = PVE::VZDump::check_vmids(@vmids) if !$param->{all};
 	my @exclude = PVE::Tools::split_list(extract_param($param, 'exclude'));
 	$param->{exclude} = PVE::VZDump::check_vmids(@exclude);
@@ -256,7 +258,7 @@ __PACKAGE__->register_method ({
 	return $rpcenv->fork_worker('vzdump', undef, $user, $worker);
    }});
 
-my $cmddef = [ __PACKAGE__, 'vzdump', undef, undef, 
+my $cmddef = [ __PACKAGE__, 'vzdump', 'vmid', undef, 
 	       sub {
 		   my $upid = shift;
 		   my $status = PVE::Tools::upid_read_status($upid);
@@ -369,7 +371,7 @@ vzdump skips the following files wit option --stdexcludes
 
 You can manually specify exclude paths, for example:
 
- # vzdump --exclude-path C</tmp/.+> --exclude-path C</var/tmp/.+> 777
+ # vzdump 777 --exclude-path C</tmp/.+> --exclude-path C</var/tmp/.+>
 
 (only excludes tmp directories)
 
@@ -383,23 +385,27 @@ VZDump does not save ACLs.
 
 Simply dump VM 777 - no snapshot, just archive the VM private area and configuration files to the default dump directory (usually /vz/dump/).
 
- # vzdump --vmid 777
+ # vzdump 777
 
 Use rsync and suspend/resume to create an snapshot (minimal downtime).
 
- # vzdump --suspend --vmid 777
+ # vzdump 777 --suspend
 
 Backup all VMs and send notification mails to root and admin.
 
- # vzdump --suspend --all --mailto root --mailto admin
+ # vzdump --all --suspend --mailto root --mailto admin
 
 Use LVM2 to create snapshots (no downtime).
 
- # vzdump --dumpdir /mnt/backup --snapshot --vmid 777
+ # vzdump 777 --dumpdir /mnt/backup --snapshot
+
+Backup more than one VM (selectively)
+
+ # vzdump 101 102 103 --mailto root
 
 Backup all VMs excluding VM 101 and 102
 
- # vzdump --suspend --exclude 101 --exclude 102
+ # vzdump --suspend --exclude 101,102
 
 Restore an OpenVZ machine to VM 600
 
