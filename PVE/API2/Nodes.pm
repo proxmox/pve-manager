@@ -23,6 +23,7 @@ use PVE::API2::Storage::Scan;
 use PVE::API2::Storage::Status;
 use PVE::API2::Qemu;
 use PVE::API2::OpenVZ;
+use PVE::API2::VZDump;
 use JSON;
 
 use base qw(PVE::RESTHandler);
@@ -35,6 +36,11 @@ __PACKAGE__->register_method ({
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::OpenVZ",  
     path => 'openvz',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::VZDump",  
+    path => 'vzdump',
 });
 
 __PACKAGE__->register_method ({
@@ -100,6 +106,7 @@ __PACKAGE__->register_method ({
 	    { name => 'upload' },
 	    { name => 'qemu' },
 	    { name => 'openvz' },
+	    { name => 'vzdump' },
 	    { name => 'ubcfailcnt' },
 	    { name => 'network' },
 	    { name => 'network_changes' },
