@@ -65,25 +65,12 @@ sub debugmsg {
 sub run_command {
     my ($logfd, $cmdstr, %param) = @_;
 
-    my $returnstdout = $param{returnstdout};
-    delete $param{returnstdout};
-
-    my $ostream = 0;
-
-    my $outfunc = sub {
-	my $line = shift;
-	$ostream .= "$line\n" if $returnstdout;
-	debugmsg ('info', $line, $logfd);
-    };
-
-    my $errfunc = sub {
+    my $logfunc = sub {
 	my $line = shift;
 	debugmsg ('info', $line, $logfd);
     };
 
-    PVE::Tools::run_command($cmdstr, %param, outfunc => $outfunc, errfunc => $errfunc);
-
-    return $returnstdout ? $ostream : undef;
+    PVE::Tools::run_command($cmdstr, %param, logfunc => $logfunc);
 }
 
 sub storage_info {

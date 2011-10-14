@@ -92,7 +92,8 @@ sub type {
 sub vm_status {
     my ($self, $vmid) = @_;
 
-    my $status_text = $self->cmd ("vzctl status $vmid", returnstdout => 1);
+    my $status_text = '';
+    $self->cmd ("vzctl status $vmid", outfunc => sub {$status_text .= shift; });
     chomp $status_text;
 
     my $running = $status_text =~ m/running/ ? 1 : 0;
