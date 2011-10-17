@@ -369,6 +369,9 @@ Ext.define('PVE.Utils', { statics: {
     task_desc_table: {
 	vncproxy: 'VNC connection to VM/CT {0}',
 	vncshell: 'VNC shell',
+	qmcreate: 'Create VM {0}',
+	qmrestore: 'Restore VM {0}',
+	qmdestroy: 'Destroy VM {0}',
 	qmigrate: 'Migrate VM {0}',
 	qmstart: 'Start VM {0}',
 	qmstop: 'Stop VM {0}',
