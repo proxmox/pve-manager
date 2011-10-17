@@ -3,10 +3,12 @@ package PVE::API2::OpenVZ;
 use strict;
 use warnings;
 use File::Basename;
+use File::Path;
 use POSIX qw (LONG_MAX);
+use Cwd 'abs_path';
 
 use PVE::SafeSyslog;
-use PVE::Tools qw(extract_param);
+use PVE::Tools qw(extract_param run_command);
 use PVE::Cluster qw(cfs_lock_file cfs_read_file);
 use PVE::Storage;
 use PVE::RESTHandler;
@@ -84,11 +86,94 @@ __PACKAGE__->register_method({
 
     }});
 
+my $restore_openvz = sub {
+    my ($archive, $vmid, $force) = @_;
+
+    my $vzconf = PVE::OpenVZ::read_global_vz_config ();
+    my $conffile = PVE::OpenVZ::config_file($vmid);
+    my $cfgdir = dirname($conffile);
+
+    my $private = $vzconf->{privatedir};
+    $private =~ s/\$VEID/$vmid/;
+    my $root = $vzconf->{rootdir};
+    $root =~ s/\$VEID/$vmid/;
+
+    print "you choose to force overwriting VPS config file, private and root directories.\n" if $force;
+
+    die "unable to create CT $vmid - container already exists\n"
+	if !$force && -f $conffile;
+ 
+    die "unable to create CT $vmid - directory '$private' already exists\n"
+	if !$force && -d $private;
+   
+    die "unable to create CT $vmid - directory '$root' already exists\n"
+	if !$force && -d $root;
+
+    my $conf;
+
+    eval {
+	rmtree $private if -d $private;
+	rmtree $root if -d $root;
+
+	mkpath $private || die "unable to create private dir '$private'";
+	mkpath $root || die "unable to create private dir '$private'";
+	
+	my $cmd = ['tar', 'xpf', $archive, '--totals', '--sparse', '-C', $private];
+
+	if ($archive eq '-') {
+	    print "extracting archive from STDIN\n";
+	    run_command($cmd, input => "<&STDIN");
+	} else {
+	    print "extracting archive '$archive'\n";
+	    run_command($cmd);
+	}
+
+	my $backup_cfg = "$private/etc/vzdump/vps.conf";
+	if (-f $backup_cfg) {
+	    print "restore configuration to '$conffile'\n";
+
+	    $conf = PVE::Tools::file_get_contents($backup_cfg);
+
+	    $conf =~ s/VE_ROOT=.*/VE_ROOT=\"$root\"/;
+	    $conf =~ s/VE_PRIVATE=.*/VE_PRIVATE=\"$private\"/;
+	    $conf =~ s/host_ifname=veth[0-9]+\./host_ifname=veth${vmid}\./g;
+
+	    PVE::Tools::file_set_contents($conffile, $conf);
+		
+	    foreach my $s (PVE::OpenVZ::SCRIPT_EXT) {
+		my $tfn = "$cfgdir/${vmid}.$s";
+		my $sfn = "$private/etc/vzdump/vps.$s";
+		if (-f $sfn) {
+		    my $sc = PVE::Tools::file_get_contents($sfn);
+		    PVE::Tools::file_set_contents($tfn, $sc);
+		}
+	    }
+	}
+
+	rmtree "$private/etc/vzdump";
+    };
+
+    my $err = $@;
+
+    if ($err) {
+	rmtree $private;
+	rmtree $root;
+	unlink $conffile;
+	foreach my $s (PVE::OpenVZ::SCRIPT_EXT) {
+	    unlink "$cfgdir/${vmid}.$s";
+	}
+	die $err;
+    }
+
+    return $conf;
+};
+
+# create_vm is also used by vzrestore
 __PACKAGE__->register_method({
     name => 'create_vm', 
     path => '', 
     method => 'POST',
-    description => "Create new container.",
+    description => "Create or restore a container.",
     protected => 1,
     proxyto => 'node',
     parameters => {
@@ -97,7 +182,7 @@ __PACKAGE__->register_method({
 	    node => get_standard_option('pve-node'),
 	    vmid => get_standard_option('pve-vmid'),
 	    ostemplate => {
-		description => "The OS template.",
+		description => "The OS template or backup file.",
 		type => 'string', 
 		maxLength => 255,
 	    },
@@ -105,6 +190,16 @@ __PACKAGE__->register_method({
 		optional => 1, 
 		type => 'string',
 		description => "Sets root password inside container.",
+	    },
+	    force => {
+		optional => 1, 
+		type => 'boolean',
+		description => "Allow to overwrite existing container.",
+	    },
+	    restore => {
+		optional => 1, 
+		type => 'boolean',
+		description => "Mark this as restore task.",
 	    },
 	}),
     },
@@ -132,22 +227,28 @@ __PACKAGE__->register_method({
 
 	    my $basecfg_fn = PVE::OpenVZ::config_file($vmid);
 
-	    die "container $vmid already exists\n" if -f $basecfg_fn;
+	    if ($param->{force}) {
+		die "cant overwrite mounted container\n" if PVE::OpenVZ::check_mounted($vmid);
+	    } else {
+		die "container $vmid already exists\n" if -f $basecfg_fn;
+	    }
 
 	    my $ostemplate = extract_param($param, 'ostemplate');
 
-	    $ostemplate =~ s|^/var/lib/vz/template/cache/|local:vztmpl/|;
+	    my $archive;
 
-	    if ($ostemplate !~ m|^local:vztmpl/|) {
-		$ostemplate = "local:vztmpl/${ostemplate}";
+	    if ($ostemplate eq '-') {
+		die "pipe requires cli environment\n" 
+		    if $rpcenv->{type} ne 'cli'; 
+		$archive = '-';
+	    } else {
+		if (PVE::Storage::parse_volume_id($ostemplate, 1)) {
+		    $archive = PVE::Storage::path($stcfg, $ostemplate);
+		} else {
+		    $archive = abs_path($ostemplate);
+		}
+		die "can't find file '$archive'\n" if ! -f $archive;
 	    }
-
-	    my $tpath = PVE::Storage::path($stcfg, $ostemplate);
-	    die "can't find OS template '$ostemplate'\n" if ! -f $tpath;
-
-	    # hack: openvz does not support full paths
-	    $tpath = basename($tpath);
-	    $tpath =~ s/\.tar\.gz$//;
 
 	    if (!defined($param->{searchdomain}) && 
 		!defined($param->{nameserver})) {
@@ -168,19 +269,21 @@ __PACKAGE__->register_method({
 
 	    my $rawconf = PVE::OpenVZ::generate_raw_config($pve_base_ovz_config, $conf);
 
+	    PVE::Cluster::check_cfs_quorum();
+
 	    my $realcmd = sub {
-		PVE::Tools::file_set_contents($basecfg_fn, $rawconf);
+		&$restore_openvz($archive, $vmid, $param->{force});
 
-		my $cmd = ['vzctl', '--skiplock', 'create', $vmid, '--ostemplate', $tpath ];
-
-		PVE::Tools::run_command($cmd);
+		PVE::Tools::file_set_contents($basecfg_fn, $rawconf)
+		    if !$param->{restore};
 
 		# hack: vzctl '--userpasswd' starts the CT, but we want 
 		# to avoid that for create
 		PVE::OpenVZ::set_rootpasswd($vmid, $password) if defined($password);
 	    };
 
-	    return $rpcenv->fork_worker('vzcreate', $vmid, $user, $realcmd);
+	    return $rpcenv->fork_worker($param->{restore} ? 'vzrestore' : 'vzcreate', 
+					$vmid, $user, $realcmd);
 	};
 
 	return PVE::OpenVZ::lock_container($vmid, $code);

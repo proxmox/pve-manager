@@ -377,6 +377,7 @@ Ext.define('PVE.Utils', { statics: {
 	qmsuspend: 'Suspend VM {0}',
 	qmresume: 'Resume VM {0}',
 	vzcreate: 'Create CT {0}',
+	vzrestore: 'Restore CT {0}',
 	vzdestroy: 'Destroy CT {0}',
 	vzstart: 'Start CT {0}',
 	vzstop: 'Stop CT {0}',

@@ -1,182 +1,99 @@
 #!/usr/bin/perl -w
-#
-#    Copyright (C) 2007-2009 Proxmox Server Solutions GmbH
-#
-#    Copyright: vzdump is under GNU GPL, the GNU General Public License.
-#
-#    This program is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; version 2 dated June, 1991.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program; if not, write to the
-#    Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
-#    MA 02110-1301, USA.
-#
-#    Author: Dietmar Maurer <dietmar@proxmox.com>
-#
 
 use strict;
-use Getopt::Long;
-use Sys::Syslog;
-use File::Path;
-use PVE::VZDump;
-use PVE::VZDump::OpenVZ;
+use PVE::SafeSyslog;
+use PVE::Tools qw(extract_param);
+use PVE::INotify;
+use PVE::RPCEnvironment;
+use PVE::CLIHandler;
+use PVE::JSONSchema qw(get_standard_option);
+use PVE::API2::OpenVZ;
 
-$ENV{LANG} = "C"; # avoid locale related issues/warnings
+use Data::Dumper; # fixme: remove
 
-openlog ('vzdump', 'cons,pid', 'daemon');
+use base qw(PVE::CLIHandler);
 
-my $force = 0;
+$ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
 
-sub print_usage {
-    my $msg = shift;
+initlog('vzrestore');
 
-    print STDERR "ERROR: $msg\n\n" if $msg;
+die "please run as root\n" if $> != 0;
 
-    print STDERR "usage: $0 [OPTIONS] <ARCHIVE> <VMID>\n";
-    print STDERR "\n";
-    print STDERR "\t--force      overwrite existing conf file, private and root directory\n\n";
-}
+PVE::INotify::inotify_init();
 
-if (!GetOptions ('force' => \$force)) {
-    print_usage ();
-    exit (-1);
-}
+my $rpcenv = PVE::RPCEnvironment->init('cli');
 
-if ($#ARGV != 1) {
-    print_usage ();
-    exit (-1);
-} 
+$rpcenv->init_request();
+$rpcenv->set_language($ENV{LANG});
+$rpcenv->set_user('root@pam'); 
 
-my $archive = shift;
-my $vmid = PVE::VZDump::check_vmids ((shift))->[0];
+__PACKAGE__->register_method({
+    name => 'vzrestore', 
+    path => 'vzrestore', 
+    method => 'POST',
+    description => "Restore OpenVZ containers.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    vmid => get_standard_option('pve-vmid'),
+	    backup => {
+		description => "The backup file.",
+		type => 'string', 
+		maxLength => 255,
+	    },
+	    force => {
+		optional => 1, 
+		type => 'boolean',
+		description => "Allow to overwrite existing container.",
+	    },
+	},
+    },
+    returns => { 
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
 
-$SIG{INT} = $SIG{TERM} = $SIG{QUIT} = $SIG{HUP} = $SIG{PIPE} = sub {
-    die "interrupted by signal\n";
-};
+	my $backup = extract_param($param, 'backup');
 
-sub debugmsg { PVE::VZDump::debugmsg (@_); } # just a shortcut
+	$param->{ostemplate} = $backup;
 
-sub run_command { PVE::VZDump::run_command (undef, @_); } # just a shortcut
+	$param->{node} = PVE::INotify::nodename();
 
-sub restore_openvz {
-    my ($archive, $vmid) = @_;
+	$param->{restore} = 1;
 
-    my $vzconf =  PVE::VZDump::OpenVZ::read_global_vz_config ();
-    my $cfgdir = PVE::VZDump::OpenVZ::VZDIR . "/conf";
+	return PVE::API2::OpenVZ->create_vm($param);
+    }});    
 
-    my $conffile = "$cfgdir/${vmid}.conf";
-    my $private = $vzconf->{privatedir};
-    $private =~ s/\$VEID/$vmid/;
-    my $root = $vzconf->{rootdir};
-    $root =~ s/\$VEID/$vmid/;
+my $cmddef = [ __PACKAGE__, 'vzrestore', ['backup', 'vmid'], undef, 
+	       sub {
+		   my $upid = shift;
+		   my $status = PVE::Tools::upid_read_status($upid);
+		   exit($status eq 'OK' ? 0 : -1);
+	       }];
 
-    print "you choose to force overwriting VPS config file, private and root directories.\n" if $force;
+push @ARGV, 'help' if !scalar(@ARGV);
 
-    die "unable to restore VM '$vmid' - VM already exists\n"
-	if !$force && -f $conffile;              ;
- 
-    die "unable to restore VPS '${vmid}' - " .
-    	"directory '$private' already exists\n"
-	if !$force && -d $private;
-   
-    die "unable to restore VPS '${vmid}' - " .
-	"directory '$root' already exists\n"
-	if !$force && -d $root;
+PVE::CLIHandler::handle_simple_cmd($cmddef, \@ARGV, undef, $0);
 
-    eval {
-	mkpath $private || die "unable to create private dir '$private'";
-	mkpath $root || die "unable to create private dir '$private'";
-
-	my $cmd = "tar xpf $archive --totals --sparse -C $private";
-
-	if ($archive eq '-') {
-	    debugmsg ('info', "extracting archive from STDIN");
-	    run_command ($cmd, input => "<&STDIN");
-	} else {
-	    debugmsg ('info', "extracting archive '$archive'");
-	    run_command ($cmd);
-	}
-
-	debugmsg ('info', "extracting configuration to '$conffile'");
-
-	my $qroot = $vzconf->{rootdir};
-	$qroot =~ s|/|\\\/|g;
-	my $qprivate = $vzconf->{privatedir};
-	$qprivate =~ s|/|\\\/|g;
-
-	my $scmd = "sed -r -e 's/VE_ROOT=.*/VE_ROOT=\\\"$qroot\\\"/' -e 's/VE_PRIVATE=.*/VE_PRIVATE=\\\"$qprivate\\\"/' -e 's/host_ifname=veth[0-9]+\./host_ifname=veth${vmid}./' <'$private/etc/vzdump/vps.conf' >'$conffile'";
-
-	run_command ($scmd);
-
-	foreach my $s (PVE::VZDump::OpenVZ::SCRIPT_EXT) {
-	    my $tfn = "$cfgdir/${vmid}.$s";
-	    my $sfn = "$private/etc/vzdump/vps.$s";
-	    if (-f $sfn) {
-		run_command ("cp '$sfn' '$tfn'");
-	    }
-	}
-
-	rmtree "$private/etc/vzdump";
-    };
-
-    my $err = $@;
-
-    if ($err) {
-	rmtree $private;
-	rmtree $root;
-	unlink $conffile;
-	die $err;
-    }
-}
-
-my $plugin = PVE::VZDump::OpenVZ->new();
-
-if ($archive ne '-') {
-    my $firstfile = PVE::VZDump::read_firstfile ($archive);
-    if ($firstfile eq 'qemu-server.conf') {
-	die "ERROR: please use 'qmrestore' to restore QemuServer VMs\n";
-    }
-}
-
-my $lock = $plugin->lock_vm ($vmid);
-
-eval {
-    debugmsg ('info', "restore openvz backup '$archive' using ID $vmid", undef, 1);
-    restore_openvz ($archive, $vmid);
-    debugmsg ('info', "restore openvz backup '$archive' successful", undef, 1);
-};
-my $err = $@;
-
-$plugin->unlock_vm ($vmid);
-
-if ($err) {
-    debugmsg ('err', "restore openvz backup '$archive' failed - $err", undef, 1);
-    exit (-1);
-}
-
-exit (0);
+exit 0;
 
 __END__
 
 =head1 NAME
-                                          
+
 vzrestore - restore OpenVZ vzdump backups
 
 =head1 SYNOPSIS
 
-vzrestore <archive> <VMID>
+=include synopsis
 
 =head1 DESCRIPTION
 
-Restore the OpenVZ vzdump backup <archive> to virtual machine <VMID>.
+Restores OpenVZ vzdump backups.
 
 =head1 SEE ALSO
 
-    vzdump(1) qmrestore(1)
+vzdump(1) qmrestore(1)
+
+=include pve_copyright

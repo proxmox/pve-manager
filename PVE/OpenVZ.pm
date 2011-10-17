@@ -15,8 +15,12 @@ use PVE::JSONSchema;
 use Digest::SHA1;
 use Encode;
 
+use constant SCRIPT_EXT => qw (start stop mount umount);
+
 my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
 my $nodename = PVE::INotify::nodename();
+my $global_vzconf = read_global_vz_config();
+my $res_unlimited = LONG_MAX;
 
 sub config_list {
     my $vmlist = PVE::Cluster::get_vmlist();
@@ -57,6 +61,15 @@ sub load_config {
     die "container $vmid does not exists\n" if !defined($conf);
 
     return $conf;
+}
+
+sub check_mounted {
+    my ($vmid) = @_;
+
+    my $root = $global_vzconf->{rootdir};
+    $root =~ s/\$VEID/$vmid/;
+
+    return (-d "$root/etc" || -d "$root/proc");
 }
 
 sub read_user_beancounters {
@@ -430,9 +443,6 @@ sub read_global_vz_config {
 
     return $res;
 };
-
-my $global_vzconf = read_global_vz_config();
-my $res_unlimited = LONG_MAX;
 
 sub parse_netif {
     my ($data) = @_;
