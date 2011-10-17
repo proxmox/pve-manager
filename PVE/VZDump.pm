@@ -237,24 +237,6 @@ sub find_add_exclude {
     }
 }
 
-sub read_firstfile {
-    my $archive = shift;
-    
-    die "ERROR: file '$archive' does not exist\n" if ! -f $archive;
-
-    # try to detect archive type first
-    my $pid = open (TMP, "tar tf '$archive'|") ||
-	die "unable to open file '$archive'\n";
-    my $firstfile = <TMP>;
-    kill 15, $pid;
-    close TMP;
-
-    die "ERROR: archive contaions no data\n" if !$firstfile;
-    chomp $firstfile;
-
-    return $firstfile;
-}
-
 my $sendmail = sub {
     my ($self, $tasklist, $totaltime) = @_;
 
