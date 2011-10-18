@@ -46,9 +46,9 @@ Ext.define('PVE.qemu.Config', {
 		    vmid: vmid
 		},
 		{
+		    xtype: 'pveQemuBackup',
 		    title: 'Backup',
-		    itemId: 'backup',
-		    html: 'Backup and restore - not implemented!'
+		    itemId: 'backup'
 		},
 		{
 		    title: 'Permissions',

@@ -88,7 +88,7 @@ sub storage_info {
     PVE::Storage::activate_storage($cfg, $storage);
 
     return {
-	dumpdir => $scfg->{path},
+	dumpdir => PVE::Storage::get_backup_dir($cfg, $storage),
     };
 }
 
@@ -828,7 +828,7 @@ sub exec_backup_task {
 
 	if ($opts->{stdout}) {
 	    debugmsg ('info', "sending archive to stdout", $logfd);
-	    $plugin->archive ($task, $vmid, $task->{tmptar});
+	    $plugin->archive($task, $vmid, $task->{tmptar});
 	    $self->run_hook_script ('backup-end', $task, $logfd);
 	    return;
 	}
@@ -853,8 +853,9 @@ sub exec_backup_task {
 	    my $dir = $opts->{dumpdir};
 	    foreach my $fn (<$dir/${bkname}-*>) {
 		next if $fn eq $task->{tarfile};
-		if ($fn =~ m!/${bkname}-(\d{4})_(\d{2})_(\d{2})-(\d{2})_(\d{2})_(\d{2})\.(tgz|tar)$!) {
-		    my $t = timelocal ($6, $5, $4, $3, $2 - 1, $1 - 1900);
+		if ($fn =~ m!/(${bkname}-(\d{4})_(\d{2})_(\d{2})-(\d{2})_(\d{2})_(\d{2})\.(tgz|tar))$!) {
+		    $fn = "$dir/$1"; # untaint
+		    my $t = timelocal ($7, $6, $5, $4, $3 - 1, $2 - 1900);
 		    push @bklist, [$fn, $t];
 		}
 	    }

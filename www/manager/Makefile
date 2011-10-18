@@ -80,6 +80,7 @@ JSSRC= 				                 	\
 	qemu/KeyboardEdit.js				\
 	qemu/HardwareView.js				\
 	qemu/Options.js					\
+	qemu/Backup.js					\
 	qemu/Config.js					\
 	qemu/CreateWizard.js				\
 	openvz/StatusView.js				\

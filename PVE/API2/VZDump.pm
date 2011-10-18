@@ -22,6 +22,7 @@ __PACKAGE__->register_method ({
     path => '',
     method => 'POST',
     description => "Create backup.",
+    protected => 1,
     parameters => {
     	additionalProperties => 0,
 	properties => {
