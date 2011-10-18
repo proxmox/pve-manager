@@ -421,6 +421,10 @@ Ext.define('PVE.Utils', { statics: {
 
     format_size: function(size) {
 
+	if (size < 1024) {
+	    return size;
+	}
+
 	var kb = size / 1024;
 
 	if (kb < 1024) {
