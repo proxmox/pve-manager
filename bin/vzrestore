@@ -36,7 +36,7 @@ __PACKAGE__->register_method({
     	additionalProperties => 0,
 	properties => {
 	    vmid => get_standard_option('pve-vmid'),
-	    backup => {
+	    archive => {
 		description => "The backup file.",
 		type => 'string', 
 		maxLength => 255,
@@ -54,9 +54,7 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	my $backup = extract_param($param, 'backup');
-
-	$param->{ostemplate} = $backup;
+	$param->{ostemplate} = extract_param($param, 'archive');
 
 	$param->{node} = PVE::INotify::nodename();
 
@@ -65,7 +63,7 @@ __PACKAGE__->register_method({
 	return PVE::API2::OpenVZ->create_vm($param);
     }});    
 
-my $cmddef = [ __PACKAGE__, 'vzrestore', ['backup', 'vmid'], undef, 
+my $cmddef = [ __PACKAGE__, 'vzrestore', ['archive', 'vmid'], undef, 
 	       sub {
 		   my $upid = shift;
 		   my $status = PVE::Tools::upid_read_status($upid);
