@@ -36,14 +36,14 @@ Ext.define('PVE.qemu.Backup', {
 		    xtype: 'pvecheckbox',
 		    name: 'compress',
 		    uncheckedValue: 0,
-		    value: 1,
+		    checked: true,
 		    fieldLabel: 'Compress'
 		},
 		{
 		    xtype: 'pvecheckbox',
 		    name: 'snapshot',
 		    uncheckedValue: 0,
-		    value: 1,
+		    checked: true,
 		    fieldLabel: 'Snapshot mode'
 		}
 	    ]
