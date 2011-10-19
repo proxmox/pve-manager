@@ -183,6 +183,10 @@ Restore an Qemu/KVM machine to VM 601
 
  # qmrestore /mnt/backup/vzdump-qemu-888.tar 601
 
+Clone an existing container 101 to container 300 using pipes
+
+ # vzdump 101 --stdout|vzrestore - 300
+
 =head1 SEE ALSO
 
 vzrestore(1) qmrestore(1)
