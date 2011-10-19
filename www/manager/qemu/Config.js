@@ -46,7 +46,7 @@ Ext.define('PVE.qemu.Config', {
 		    vmid: vmid
 		},
 		{
-		    xtype: 'pveQemuBackup',
+		    xtype: 'pveQemuBackupView',
 		    title: 'Backup',
 		    itemId: 'backup'
 		},
