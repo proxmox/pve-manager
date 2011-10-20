@@ -130,16 +130,56 @@ Ext.define('PVE.grid.BackupView', {
 	    }
 	});
 
+	var delete_btn = new Ext.Button({
+	    text: 'Delete',
+	    disabled: true,
+	    handler: function(){
+		var sm = me.getSelectionModel();
+		var rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+
+		var storage = storagesel.getValue();
+		if (!storage) {
+		    return;
+		}
+
+		var volid = rec.data.volid;
+
+		msg = 'Are you sure you want to delete "' + volid + '"? ' +
+		    'This will permanently erase all data.';
+		Ext.Msg.confirm('Delete Confirmation', msg, function(btn) {
+		    if (btn !== 'yes') {
+			return;
+		    }
+
+		    PVE.Utils.API2Request({
+			url: "/nodes/" + nodename + "/storage/" + storage + "/content/" + volid,
+			method: 'DELETE',
+			waitMsgTarget: me,
+			failure: function(response, opts) {
+			    Ext.Msg.alert('Error', response.htmlStatus);
+			},
+			success: function(response, options) {
+			    reload();
+			}
+		    });
+		});
+	    }
+	});
+
 	var set_button_status = function() {
 	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 
 	    restore_btn.setDisabled(!(rec && rec.data.volid));
+	    delete_btn.setDisabled(!(rec && rec.data.volid));
 	}
 
 	Ext.apply(me, {
 	    stateful: false,
-	    tbar: [ backup_btn, restore_btn, '->', storagesel ],
+	    tbar: [ backup_btn, restore_btn, delete_btn, '->', storagesel ],
 	    columns: [
 		{
 		    header: 'Name',
