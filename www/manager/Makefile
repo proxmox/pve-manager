@@ -47,12 +47,14 @@ JSSRC= 				                 	\
 	window/TaskViewer.js				\
 	window/Wizard.js				\
 	window/NotesEdit.js				\
+	window/Backup.js				\
 	panel/NotesView.js				\
 	grid/SelectFeature.js				\
 	grid/ObjectGrid.js				\
 	grid/ResourceGrid.js				\
 	tree/ResourceTree.js				\
 	panel/ConfigPanel.js				\
+	grid/BackupView.js				\
 	node/DNSEdit.js					\
 	node/DNSView.js					\
 	node/TimeView.js				\
@@ -80,7 +82,6 @@ JSSRC= 				                 	\
 	qemu/KeyboardEdit.js				\
 	qemu/HardwareView.js				\
 	qemu/Options.js					\
-	qemu/Backup.js					\
 	qemu/Config.js					\
 	qemu/CreateWizard.js				\
 	openvz/StatusView.js				\

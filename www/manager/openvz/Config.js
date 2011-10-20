@@ -61,9 +61,9 @@ Ext.define('PVE.openvz.Config', {
 		    vmid: vmid
 		},
 		{
+		    xtype: 'pveBackupView',
 		    title: 'Backup',
-		    itemId: 'backup',
-		    html: 'Backup and restore - not implemented!'
+		    itemId: 'backup'
 		},
 		{
 		    title: 'Permissions',

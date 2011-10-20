@@ -42,7 +42,7 @@ Ext.define('PVE.storage.DirInputPanel', {
 		xtype: 'pveContentTypeSelector',
 		name: 'content',
 		value: 'images',
-		multiSelect: me.storageId === 'local',
+		multiSelect: true,
 		fieldLabel: 'Content',
 		allowBlank: false
 	    }
@@ -114,9 +114,8 @@ Ext.define('PVE.storage.DirEdit', {
 		    var values = response.result.data;
 		    var ctypes = values.content || '';
 
-		    if (values.storage === 'local') {
-			values.content = ctypes.split(',');
-		    }
+		    values.content = ctypes.split(',');
+
 		    if (values.nodes) {
 			values.nodes = values.nodes.split(',');
 		    }
