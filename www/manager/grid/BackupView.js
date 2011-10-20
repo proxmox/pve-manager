@@ -86,7 +86,47 @@ Ext.define('PVE.grid.BackupView', {
 
 		var volid = rec.data.volid;
 
-		console.log("RESRORE " + volid);
+		msg = 'Are you sure you want to restore from "' + volid + '"? ' +
+		    'This will permanently erase current VM data.';
+		Ext.Msg.confirm('Restore Confirmation', msg, function(btn) {
+		    if (btn !== 'yes') {
+			return;
+		    }
+
+		    var url;
+		    var params = {
+			vmid: vmid, 
+			force: 1
+		    };
+
+		    if (vmtype === 'openvz') {
+			url = '/nodes/' + nodename + '/openvz';
+			params.ostemplate = volid;
+		    } else if (vmtype === 'qemu') {
+			url = '/nodes/' + nodename + '/qemu';
+			params.archive = volid;
+		    } else {
+			throw 'unknown VM type';
+		    }
+
+		    PVE.Utils.API2Request({
+			url: url,
+			params: params,
+			method: 'POST',
+			waitMsgTarget: me,
+			failure: function(response, opts) {
+			    Ext.Msg.alert('Error', response.htmlStatus);
+			},
+			success: function(response, options) {
+			    var upid = response.result.data;
+			
+			    var win = Ext.create('PVE.window.TaskViewer', { 
+				upid: upid
+			    });
+			    win.show();
+			}
+		    });
+		});
 	    }
 	});
 

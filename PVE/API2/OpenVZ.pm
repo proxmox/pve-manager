@@ -245,6 +245,9 @@ __PACKAGE__->register_method({
 		if (PVE::Storage::parse_volume_id($ostemplate, 1)) {
 		    $archive = PVE::Storage::path($stcfg, $ostemplate);
 		} else {
+		    raise_param_exc({ archive => "Only root can pass arbitrary paths." }) 
+			if $user ne 'root@pam';
+
 		    $archive = abs_path($ostemplate);
 		}
 		die "can't find file '$archive'\n" if ! -f $archive;
