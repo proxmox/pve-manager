@@ -445,24 +445,49 @@ sub read_global_vz_config {
 };
 
 sub parse_netif {
-    my ($data) = @_;
+    my ($data, $vmid) = @_;
 
     my $res = {};
     return $res if !$data;
+
+    my $host_ifnames = {};
+
+    my $find_next_hostif_name = sub {
+	for (my $i = 0; $i < 100; $i++) {
+	    my $name = "veth${vmid}.$i";
+	    if (!$host_ifnames->{$name}) {
+		$host_ifnames->{$name} = 1;
+		return $name;
+	    }
+	}
+
+	die "unable to find free host_ifname"; # should not happen
+    };
 
     foreach my $iface (split (/;/, $data)) {
 	my $d = {};
 	foreach my $pv (split (/,/, $iface)) {
 	    if ($pv =~ m/^(ifname|mac|bridge|host_ifname|host_mac)=(.+)$/) {
 		$d->{$1} = $2;
+		if ($1 eq 'host_ifname') {
+		    $host_ifnames->{$2} = $1;
+		}
 	    }
 	}
 	if ($d->{ifname}) {
 	    $d->{mac} = PVE::Tools::random_ether_addr() if !$d->{mac};
+	    $d->{host_mac} = PVE::Tools::random_ether_addr() if !$d->{host_mac};
 	    $d->{raw} = print_netif($d);
 	    $res->{$d->{ifname}} = $d;
 	} else {
 	    return undef;
+	}
+    }
+
+    foreach my $iface (keys %$res) {
+	my $d = $res->{$iface};
+	if ($vmid && !$d->{host_ifname}) {
+	    $d->{host_ifname} = &$find_next_hostif_name($iface);
 	}
     }
 
@@ -817,7 +842,7 @@ sub create_config_line {
 }
 
 sub update_ovz_config {
-    my ($veconf, $param) = @_;
+    my ($vmid, $veconf, $param) = @_;
 
     my $changes = [];
 
@@ -993,9 +1018,9 @@ sub update_ovz_config {
     if (defined($param->{netif})) {
 	my $ifaces = {};
 	if (defined ($veconf->{netif}) && $veconf->{netif}->{value}) {
-	    $ifaces = parse_netif($veconf->{netif}->{value});
+	    $ifaces = parse_netif($veconf->{netif}->{value}, $vmid);
 	}
-	my $newif = parse_netif($param->{netif});
+	my $newif = parse_netif($param->{netif}, $vmid);
 
 	foreach my $ifname (sort keys %$ifaces) {
 	    if (!$newif->{$ifname}) {
