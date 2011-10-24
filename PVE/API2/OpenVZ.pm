@@ -240,6 +240,8 @@ __PACKAGE__->register_method({
 	    if ($ostemplate eq '-') {
 		die "pipe requires cli environment\n" 
 		    if $rpcenv->{type} ne 'cli'; 
+		die "pipe can only be used with restore tasks\n" 
+		    if !$param->{restore};
 		$archive = '-';
 	    } else {
 		if (PVE::Storage::parse_volume_id($ostemplate, 1)) {
@@ -268,7 +270,12 @@ __PACKAGE__->register_method({
 		$param->{nameserver} = join(' ', @ns) if scalar(@ns);
 	    }
 
-	    PVE::OpenVZ::update_ovz_config($conf, $param);
+	    PVE::OpenVZ::update_ovz_config($vmid, $conf, $param);
+	    if (!$param->{restore}) {
+		$conf->{ostemplate}->{value} = $archive;
+		$conf->{ostemplate}->{value} =~ s|^.*/||;
+		$conf->{ostemplate}->{value} =~ s/\.tar\.(gz|bz2)$//;
+	    }
 
 	    my $rawconf = PVE::OpenVZ::generate_raw_config($pve_base_ovz_config, $conf);
 
@@ -335,7 +342,7 @@ __PACKAGE__->register_method({
 	    die "checksum missmatch (file change by other user?)\n" 
 		if $digest && $digest ne $conf->{digest};
 
-	    my $changes = PVE::OpenVZ::update_ovz_config($conf, $param);
+	    my $changes = PVE::OpenVZ::update_ovz_config($vmid, $conf, $param);
 
 	    return if scalar (@$changes) <= 0;
 
