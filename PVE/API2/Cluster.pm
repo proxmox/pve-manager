@@ -5,9 +5,11 @@ use warnings;
 
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param);
-use PVE::Cluster qw(cfs_lock_file cfs_read_file cfs_write_file);
+use PVE::Cluster qw(cfs_register_file cfs_lock_file cfs_read_file cfs_write_file);
 use PVE::Storage;
 use JSON;
+use PVE::API2::VZDump;
+
 
 use Data::Dumper; # fixme: remove
 
@@ -56,6 +58,7 @@ __PACKAGE__->register_method ({
 	    { name => 'options' },
 	    { name => 'resources' },
 	    { name => 'tasks' },
+	    { name => 'vzdump' },
 	    ];
 
 	return $result;
@@ -323,6 +326,190 @@ __PACKAGE__->register_method({
 	die $@ if $@;
 
 	return undef;
+    }});
+
+cfs_register_file ('vzdump', 
+		   \&parse_config, 
+		   \&write_config); 
+
+my $vzdump_method_info = PVE::API2::VZDump->map_method_by_name('vzdump');
+
+my $dowhash_to_dow = sub {
+    my ($d, $num) = @_;
+
+    my @da = ();
+    push @da, $num ? 1 : 'mon' if $d->{mon};
+    push @da, $num ? 2 : 'tue' if $d->{tue};
+    push @da, $num ? 3 : 'wed' if $d->{wed};
+    push @da, $num ? 4 : 'thu' if $d->{thu};
+    push @da, $num ? 5 : 'fri' if $d->{fri};
+    push @da, $num ? 6 : 'sat' if $d->{sat};
+    push @da, $num ? 7 : 'sun' if $d->{sun};
+
+    return join ',', @da;
+};
+
+sub parse_dow {
+    my ($dowstr, $noerr) = @_;
+
+    my $dowmap = {mon => 1, tue => 2, wed => 3, thu => 4,
+		  fri => 5, sat => 6, sun => 7};
+    my $rdowmap = { '1' => 'mon', '2' => 'tue', '3' => 'wed', '4' => 'thu',
+		    '5' => 'fri', '6' => 'sat', '7' => 'sun', '0' => 'sun'};
+
+    my $res = {};
+
+    $dowstr = '1,2,3,4,5,6,7' if $dowstr eq '*';
+
+    foreach my $day (split (/,/, $dowstr)) {
+	if ($day =~ m/^(mon|tue|wed|thu|fri|sat|sun)-(mon|tue|wed|thu|fri|sat|sun)$/i) {
+	    for (my $i = $dowmap->{lc($1)}; $i <= $dowmap->{lc($2)}; $i++) {
+		my $r = $rdowmap->{$i};
+		$res->{$r} = 1;	
+	    }
+	} elsif ($day =~ m/^(mon|tue|wed|thu|fri|sat|sun|[0-7])$/i) {
+	    $day = $rdowmap->{$day} if $day =~ m/\d/;
+	    $res->{lc($day)} = 1;
+	} else {
+	    return undef if $noerr;
+	    die "unable to parse day of week '$dowstr'\n";
+	}
+    }
+
+    return $res;
+};
+
+sub parse_config {
+    my ($filename, $raw) = @_;
+
+    my $jobs = []; # correct jobs
+
+    my $ejobs = []; # mailfomerd lines
+
+    my $jid = 1; # we start at 1
+    
+    my $digest = Digest::SHA1::sha1_hex(defined($raw) ? $raw : '');
+
+    while ($raw && $raw =~ s/^(.*?)(\n|$)//) {
+	my $line = $1;
+
+	next if $line =~ m/^\#/;
+	next if $line =~ m/^\s*$/;
+	next if $line =~ m/^PATH\s*=/; # we always overwrite path
+
+	if ($line =~ m|^(\d+)\s+(\d+)\s+\*\s+\*\s+(\S+)\s+root\s+(/\S+/)?vzdump(\s+(.*))?$|) {
+	    eval {
+		my $minute = int($1);
+		my $hour = int($2);
+		my $dow = $3;
+		my $param = $6;
+
+		my $dowhash = parse_dow($dow, 1);
+		die "unable to parse day of week '$dow' in '$filename'\n" if !$dowhash;
+
+		my $args = [ split(/\s+/, $param)];
+
+		my $opts = PVE::JSONSchema::get_options($vzdump_method_info->{parameters}, 
+							$args, undef, undef, 'vmid');
+
+		$opts->{id} = "$digest:$jid";
+		$jid++;
+		$opts->{hour} = $hour;
+		$opts->{minute} = $minute;
+		$opts->{dow} = &$dowhash_to_dow($dowhash);
+
+		push @$jobs, $opts;
+	    };
+	    my $err = $@;
+	    if ($err) {
+		syslog ('err', "parse error in '$filename': $err");
+		push @$ejobs, { line => $line };
+	    }
+	} elsif ($line =~ m|^\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S.*)$|) {
+	    syslog ('err', "warning: malformed line in '$filename'");
+	    push @$ejobs, { line => $line };
+	} else {
+	    syslog ('err', "ignoring malformed line in '$filename'");
+	}
+    }
+
+    my $res = {};
+    $res->{digest} = $digest;
+    $res->{jobs} = $jobs;
+    $res->{ejobs} = $ejobs;
+
+    return $res;
+}
+
+sub write_config {
+    my ($filename, $cfg) = @_;
+
+    my $out = "# cluster wide vzdump cron schedule\n";
+    $out .= "# Atomatically generated file - do not edit\n\n";
+    $out .= "PATH=\"/usr/sbin:/usr/bin:/sbin:/bin\"\n\n";
+
+    my $jobs = $cfg->{jobs} || [];
+    foreach my $job (@$jobs) {
+	my $dh = parse_dow($job->{dow});
+	my $dow;
+	if ($dh->{mon} && $dh->{tue} && $dh->{wed} && $dh->{thu} &&
+	    $dh->{fri} && $dh->{sat} && $dh->{sun}) {
+	    $dow = '*';
+	} else {
+	    $dow = &$dowhash_to_dow($dh, 1);
+	    $dow = '*' if !$dow;
+	}
+
+	my $param = "";
+	foreach my $p (keys %$job) {
+	    next if $p eq 'id' || $p eq 'vmid' || $p eq 'hour' || 
+		$p eq 'minute' || $p eq 'dow';
+	    $param .= " --$p " . $job->{$p};
+	}
+
+	$param .= $job->{vmid} if $job->{vmid};
+
+	$out .= sprintf "$job->{minute} $job->{hour} * * %-11s root vzdump$param\n", $dow;
+    }
+
+    my $ejobs = $cfg->{ejobs} || [];
+    foreach my $job (@$ejobs) {
+	$out .= "$job->{line}\n" if $job->{line};
+    }
+
+    return $out;
+}
+
+__PACKAGE__->register_method({
+    name => 'vzdump', 
+    path => 'vzdump', 
+    method => 'GET',
+    description => "List vzdump backup schedule.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {
+		id => { type => 'string' },
+	    },
+	},
+	links => [ { rel => 'child', href => "{id}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+
+	my $data = cfs_read_file('vzdump');
+
+	my $res = $data->{jobs} || [];
+
+	return $res;
     }});
 
 1;
