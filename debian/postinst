@@ -44,9 +44,6 @@ case "$1" in
     update-rc.d pvebanner start 99 2 3 4 5 >/dev/null
     update-rc.d pvenetcommit start 15 S . >/dev/null
 
-    # make sure we have a crontab for vzdump
-    touch /etc/cron.d/vzdump
-
     test -e /proxmox_install_mode || invoke-rc.d pvedaemon restart
     test -e /proxmox_install_mode || invoke-rc.d pvestatd restart
 
