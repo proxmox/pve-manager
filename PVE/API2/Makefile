@@ -2,6 +2,7 @@ include ../../defines.mk
 
 PERLSOURCE = 			\
 	VZDump.pm		\
+	Backup.pm		\
 	Cluster.pm		\
 	Nodes.pm		\
 	Tasks.pm		\

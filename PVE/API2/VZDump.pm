@@ -25,132 +25,13 @@ __PACKAGE__->register_method ({
     protected => 1,
     parameters => {
     	additionalProperties => 0,
-	properties => {
-	    vmid => {
-		type => 'string', format => 'pve-vmid-list',		
-		description => "The ID of the VM you want to backup.",
-		optional => 1,
-	    },
-	    node => get_standard_option('pve-node', { 
-		description => "Only run if executed on this node.",
-		optional => 1,
-	    }),
-	    all => {
-		type => 'boolean',
-		description => "Backup all known VMs on this host.",
-		optional => 1,
-		default => 0,
-	    },
-	    stdexcludes => {
-		type => 'boolean',
-		description => "Exclude temorary files and logs.",
-		optional => 1,
-		default => 1,
-	    },
-	    compress => {
-		type => 'boolean',
-		description => "Compress dump file (gzip).",
-		optional => 1,
-		default => 0,
-	    },
-	    quiet => {
-		type => 'boolean',
-		description => "Be quiet.",
-		optional => 1,
-		default => 0,
-	    },
-	    stop => {
-		type => 'boolean',
-		description => "Stop/Restart VM when running.",
-		optional => 1,
-	    },
-	    snapshot => {
-		type => 'boolean',
-		description => "Try to use (LVM) snapshots when running.",
-		optional => 1,
-	    },
-	    suspend => {
-		type => 'boolean',
-		description => "Suspend/resume VM when running",
-		optional => 1,
-	    },
+	properties => PVE::VZDump::json_config_properties({
 	    stdout => {
 		type => 'boolean',
 		description => "Write tar to stdout, not to a file.",
 		optional => 1,
 	    },
-	    exclude => {
-		type => 'string', format => 'pve-vmid-list',
-		description => "exclude specified VMs (assumes --all)",
-		optional => 1,
-	    },
-	    'exclude-path' => {
-		type => 'string', format => 'string-list',
-		description => "exclude certain files/directories (regex).",
-		optional => 1,
-	    },
-	    mailto => {
-		type => 'string', format => 'string-list',
-		description => "",
-		optional => 1,
-	    },
-	    tmpdir => {
-		type => 'string',
-		description => "Store temporary files to specified directory.",
-		optional => 1,
-	    },
-	    dumpdir => {
-		type => 'string',
-		description => "Store resulting files to specified directory.",
-		optional => 1,
-	    },
-	    script => {
-		type => 'string',
-		description => "Use specified hook script.",
-		optional => 1,
-	    },
-	    storage => get_standard_option('pve-storage-id', {
-		description => "Store resulting file to this storage.",
-		optional => 1,
-	    }),
-	    size => {
-		type => 'integer',
-		description => "LVM snapshot size im MB.",
-		optional => 1,
-		minimum => 500,
-	    },
-	    bwlimit => {
-		type => 'integer',
-		description => "Limit I/O bandwidth (KBytes per second).",
-		optional => 1,
-		minimum => 0,
-	    },
-	    ionice => {
-		type => 'integer',
-		description => "Set CFQ ionice priority.",
-		optional => 1,
-		minimum => 0,
-		maximum => 8,
-	    },
-	    lockwait => {
-		type => 'integer',
-		description => "Maximal time to wait for the global lock (minutes).",
-		optional => 1,
-		minimum => 0,
-	    },
-	    stopwait => {
-		type => 'integer',
-		description => "Maximal time to wait until a VM is stopped (minutes).",
-		optional => 1,
-		minimum => 0,
-	    },
-	    maxfiles => {
-		type => 'integer',
-		description => "Maximal number of backup files per VM.",
-		optional => 1,
-		minimum => 1,
-	    },
-	},
+        }),
     },
     returns => { type => 'string' },
     code => sub {

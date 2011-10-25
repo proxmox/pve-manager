@@ -1,0 +1,437 @@
+package PVE::API2::Backup;
+
+use strict;
+use warnings;
+
+use PVE::SafeSyslog;
+use PVE::Tools qw(extract_param);
+use PVE::Cluster qw(cfs_register_file cfs_lock_file cfs_read_file cfs_write_file);
+use PVE::RESTHandler;
+use PVE::RPCEnvironment;
+use PVE::JSONSchema;
+use PVE::Storage;
+use PVE::Exception qw(raise_param_exc);
+use PVE::VZDump;
+
+use base qw(PVE::RESTHandler);
+
+cfs_register_file ('vzdump', 
+		   \&parse_vzdump_cron_config, 
+		   \&write_vzdump_cron_config); 
+
+PVE::JSONSchema::register_format('pve-day-of-week', \&verify_day_of_week);
+sub verify_day_of_week {
+    my ($value, $noerr) = @_;
+
+    return $value if $value =~ m/^(mon|tue|wed|thu|fri|sat|sun)$/;
+
+    return undef if $noerr;
+
+    die "invalid day '$value'\n";
+}
+
+
+my $dowhash_to_dow = sub {
+    my ($d, $num) = @_;
+
+    my @da = ();
+    push @da, $num ? 1 : 'mon' if $d->{mon};
+    push @da, $num ? 2 : 'tue' if $d->{tue};
+    push @da, $num ? 3 : 'wed' if $d->{wed};
+    push @da, $num ? 4 : 'thu' if $d->{thu};
+    push @da, $num ? 5 : 'fri' if $d->{fri};
+    push @da, $num ? 6 : 'sat' if $d->{sat};
+    push @da, $num ? 7 : 'sun' if $d->{sun};
+
+    return join ',', @da;
+};
+
+# parse crontab style day of week
+sub parse_dow {
+    my ($dowstr, $noerr) = @_;
+
+    my $dowmap = {mon => 1, tue => 2, wed => 3, thu => 4,
+		  fri => 5, sat => 6, sun => 7};
+    my $rdowmap = { '1' => 'mon', '2' => 'tue', '3' => 'wed', '4' => 'thu',
+		    '5' => 'fri', '6' => 'sat', '7' => 'sun', '0' => 'sun'};
+
+    my $res = {};
+
+    $dowstr = '1,2,3,4,5,6,7' if $dowstr eq '*';
+
+    foreach my $day (split (/,/, $dowstr)) {
+	if ($day =~ m/^(mon|tue|wed|thu|fri|sat|sun)-(mon|tue|wed|thu|fri|sat|sun)$/i) {
+	    for (my $i = $dowmap->{lc($1)}; $i <= $dowmap->{lc($2)}; $i++) {
+		my $r = $rdowmap->{$i};
+		$res->{$r} = 1;	
+	    }
+	} elsif ($day =~ m/^(mon|tue|wed|thu|fri|sat|sun|[0-7])$/i) {
+	    $day = $rdowmap->{$day} if $day =~ m/\d/;
+	    $res->{lc($day)} = 1;
+	} else {
+	    return undef if $noerr;
+	    die "unable to parse day of week '$dowstr'\n";
+	}
+    }
+
+    return $res;
+};
+
+my $vzdump_propetries = {
+    additionalProperties => 0,
+    properties => PVE::VZDump::json_config_properties({}),
+};
+
+sub parse_vzdump_cron_config {
+    my ($filename, $raw) = @_;
+
+    my $jobs = []; # correct jobs
+
+    my $ejobs = []; # mailfomerd lines
+
+    my $jid = 1; # we start at 1
+    
+    my $digest = Digest::SHA1::sha1_hex(defined($raw) ? $raw : '');
+
+    while ($raw && $raw =~ s/^(.*?)(\n|$)//) {
+	my $line = $1;
+
+	next if $line =~ m/^\#/;
+	next if $line =~ m/^\s*$/;
+	next if $line =~ m/^PATH\s*=/; # we always overwrite path
+
+	if ($line =~ m|^(\d+)\s+(\d+)\s+\*\s+\*\s+(\S+)\s+root\s+(/\S+/)?vzdump(\s+(.*))?$|) {
+	    eval {
+		my $minute = int($1);
+		my $hour = int($2);
+		my $dow = $3;
+		my $param = $6;
+
+		my $dowhash = parse_dow($dow, 1);
+		die "unable to parse day of week '$dow' in '$filename'\n" if !$dowhash;
+
+		my $args = [ split(/\s+/, $param)];
+
+		my $opts = PVE::JSONSchema::get_options($vzdump_propetries, $args, undef, undef, 'vmid');
+
+		$opts->{id} = "$digest:$jid";
+		$jid++;
+		$opts->{hour} = $hour;
+		$opts->{minute} = $minute;
+		$opts->{dow} = &$dowhash_to_dow($dowhash);
+
+		push @$jobs, $opts;
+	    };
+	    my $err = $@;
+	    if ($err) {
+		syslog ('err', "parse error in '$filename': $err");
+		push @$ejobs, { line => $line };
+	    }
+	} elsif ($line =~ m|^\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S.*)$|) {
+	    syslog ('err', "warning: malformed line in '$filename'");
+	    push @$ejobs, { line => $line };
+	} else {
+	    syslog ('err', "ignoring malformed line in '$filename'");
+	}
+    }
+
+    my $res = {};
+    $res->{digest} = $digest;
+    $res->{jobs} = $jobs;
+    $res->{ejobs} = $ejobs;
+
+    return $res;
+}
+
+sub write_vzdump_cron_config {
+    my ($filename, $cfg) = @_;
+
+    my $out = "# cluster wide vzdump cron schedule\n";
+    $out .= "# Atomatically generated file - do not edit\n\n";
+    $out .= "PATH=\"/usr/sbin:/usr/bin:/sbin:/bin\"\n\n";
+
+    my $jobs = $cfg->{jobs} || [];
+    foreach my $job (@$jobs) {
+	my $dh = parse_dow($job->{dow});
+	my $dow;
+	if ($dh->{mon} && $dh->{tue} && $dh->{wed} && $dh->{thu} &&
+	    $dh->{fri} && $dh->{sat} && $dh->{sun}) {
+	    $dow = '*';
+	} else {
+	    $dow = &$dowhash_to_dow($dh, 1);
+	    $dow = '*' if !$dow;
+	}
+
+	my $param = "";
+	foreach my $p (keys %$job) {
+	    next if $p eq 'id' || $p eq 'vmid' || $p eq 'hour' || 
+		$p eq 'minute' || $p eq 'dow';
+	    $param .= " --$p " . $job->{$p};
+	}
+
+	$param .= " $job->{vmid}" if $job->{vmid};
+
+	$out .= sprintf "$job->{minute} $job->{hour} * * %-11s root vzdump$param\n", $dow;
+    }
+
+    my $ejobs = $cfg->{ejobs} || [];
+    foreach my $job (@$ejobs) {
+	$out .= "$job->{line}\n" if $job->{line};
+    }
+
+    return $out;
+}
+
+__PACKAGE__->register_method({
+    name => 'index', 
+    path => '', 
+    method => 'GET',
+    description => "List vzdump backup schedule.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {
+		id => { type => 'string' },
+	    },
+	},
+	links => [ { rel => 'child', href => "{id}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+
+	my $data = cfs_read_file('vzdump');
+
+	my $res = $data->{jobs} || [];
+
+	return $res;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'create_job', 
+    path => '', 
+    method => 'POST',
+    protected => 1,
+    description => "Create new vzdump backup job.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => PVE::VZDump::json_config_properties({
+	    hour => {
+		type => 'integer',
+		description => "Start time (hour).",
+		minimum => 0,
+		maximum => 23,
+	    },
+	    minute => {
+		type => 'integer',
+		optional => 1,
+		description => "Start time (minute).",
+		minimum => 0,
+		maximum => 59,
+		default => 0,
+	    },
+	    dow => {
+		type => 'string', format => 'pve-day-of-week-list',
+		optional => 1,
+		description => "Day of week selection.",
+		default => 'mon,tue,wed,thu,fri,sat,sun',
+	    },
+       }),
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+
+	my $data = cfs_read_file('vzdump');
+
+	$param->{minute} = 0 if !defined($param->{minute});
+	$param->{dow} = 'mon,tue,wed,thu,fri,sat,sun' if !defined($param->{dow});
+
+	$param->{all} = 1 if defined($param->{exclude});
+	raise_param_exc({ all => "option conflicts with option 'vmid'"})
+	    if $param->{all} && $param->{vmid};
+
+	raise_param_exc({ vmid => "property is missing"})
+	    if !$param->{all} && !$param->{vmid};
+
+	push @{$data->{jobs}}, $param;
+
+	cfs_write_file('vzdump', $data);
+
+	return undef;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'read_job', 
+    path => '{id}', 
+    method => 'GET',
+    description => "Read vzdump backup job definition.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    id => {
+		type => 'string',
+		description => "The job ID.",
+		maxLength => 50,
+	    }
+	},
+    },
+    returns => {
+	type => 'object',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+
+	my $data = cfs_read_file('vzdump');
+
+	my $jobs = $data->{jobs} || [];
+
+	foreach my $job (@$jobs) {
+	    return $job if $job->{id} eq $param->{id};
+	}
+
+	raise_param_exc({ id => "No such job '$param->{id}'" });
+
+    }});
+
+__PACKAGE__->register_method({
+    name => 'delete_job', 
+    path => '{id}', 
+    method => 'DELETE',
+    description => "Delete vzdump backup job definition.",
+    protected => 1,
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    id => {
+		type => 'string',
+		description => "The job ID.",
+		maxLength => 50,
+	    }
+	},
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+
+	my $data = cfs_read_file('vzdump');
+
+	my $jobs = $data->{jobs} || [];
+	my $newjobs = [];
+
+	my $found;
+	foreach my $job (@$jobs) {
+	    if ($job->{id} eq $param->{id}) {
+		$found = 1;
+	    } else {
+		push @$newjobs, $job;
+	    }
+	}
+
+	raise_param_exc({ id => "No such job '$param->{id}'" }) if !$found;
+
+	$data->{jobs} = $newjobs;
+
+	cfs_write_file('vzdump', $data);
+
+	return undef;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'update_job', 
+    path => '{id}', 
+    method => 'PUT',
+    protected => 1,
+    description => "Update vzdump backup job definition.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => PVE::VZDump::json_config_properties({
+	    id => {
+		type => 'string',
+		description => "The job ID.",
+		maxLength => 50,
+	    },
+	    hour => {
+		type => 'integer',
+		optional => 1,
+		description => "Start time (hour).",
+		minimum => 0,
+		maximum => 23,
+	    },
+	    minute => {
+		type => 'integer',
+		optional => 1,
+		description => "Start time (minute).",
+		minimum => 0,
+		maximum => 59,
+	    },
+	    dow => {
+		type => 'string', format => 'pve-day-of-week-list',
+		optional => 1,
+		description => "Day of week selection.",
+	    },
+       }),
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+
+	my $data = cfs_read_file('vzdump');
+
+	my $jobs = $data->{jobs} || [];
+
+	raise_param_exc({ all => "option conflicts with option 'vmid'"})
+	    if $param->{all} && $param->{vmid};
+
+	foreach my $job (@$jobs) {
+	    if ($job->{id} eq $param->{id}) {
+
+		foreach my $k (keys %$param) {
+		    $job->{$k} = $param->{$k};
+		}
+
+		$job->{all} = 1 if defined($job->{exclude});
+
+		if ($param->{vmid}) {
+		    delete $job->{all};
+		    delete $job->{exclude};
+		} elsif ($param->{all}) {
+		    delete $job->{vmid};
+		}
+
+		raise_param_exc({ all => "option conflicts with option 'vmid'"})
+		    if $job->{all} && $job->{vmid};
+
+		raise_param_exc({ vmid => "property is missing"})
+		    if !$job->{all} && !$job->{vmid};
+
+		cfs_write_file('vzdump', $data);
+
+		return undef;
+	    }
+	}
+
+	raise_param_exc({ id => "No such job '$param->{id}'" });
+
+    }});
+
+1;
