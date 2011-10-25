@@ -110,8 +110,7 @@ sub parse_vzdump_cron_config {
 		my $dowhash = parse_dow($dow, 1);
 		die "unable to parse day of week '$dow' in '$filename'\n" if !$dowhash;
 
-		my $args = [ split(/\s+/, $param)];
-
+		my $args = PVE::Tools::split_args($param);
 		my $opts = PVE::JSONSchema::get_options($vzdump_propetries, $args, undef, undef, 'vmid');
 
 		$opts->{id} = "$digest:$jid";
@@ -166,7 +165,8 @@ sub write_vzdump_cron_config {
 	foreach my $p (keys %$job) {
 	    next if $p eq 'id' || $p eq 'vmid' || $p eq 'hour' || 
 		$p eq 'minute' || $p eq 'dow';
-	    $param .= " --$p " . $job->{$p};
+	    my $v = $job->{$p};
+	    $param .= " --$p " . PVE::Tools::shellquote($v) if defined($v) && $v ne '';
 	}
 
 	$param .= " $job->{vmid}" if $job->{vmid};
