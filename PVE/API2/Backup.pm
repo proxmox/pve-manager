@@ -59,7 +59,7 @@ sub parse_dow {
 
     $dowstr = '1,2,3,4,5,6,7' if $dowstr eq '*';
 
-    foreach my $day (split (/,/, $dowstr)) {
+    foreach my $day (PVE::Tools::split_list($dowstr)) {
 	if ($day =~ m/^(mon|tue|wed|thu|fri|sat|sun)-(mon|tue|wed|thu|fri|sat|sun)$/i) {
 	    for (my $i = $dowmap->{lc($1)}; $i <= $dowmap->{lc($2)}; $i++) {
 		my $r = $rdowmap->{$i};
@@ -115,8 +115,7 @@ sub parse_vzdump_cron_config {
 
 		$opts->{id} = "$digest:$jid";
 		$jid++;
-		$opts->{hour} = $hour;
-		$opts->{minute} = $minute;
+		$opts->{starttime} = sprintf "%02d:%02d", $hour, $minute;
 		$opts->{dow} = &$dowhash_to_dow($dowhash);
 
 		push @$jobs, $opts;
@@ -161,17 +160,27 @@ sub write_vzdump_cron_config {
 	    $dow = '*' if !$dow;
 	}
 
+	my ($hour, $minute);
+
+	die "no job start time specified\n" if !$job->{starttime};
+	if ($job->{starttime} =~ m/^(\d{1,2}):(\d{1,2})$/) {
+	    ($hour, $minute) = (int($1), int($2));
+	    die "hour '$hour' out of range\n" if $hour < 0 || $hour > 23;
+	    die "minute '$minute' out of range\n" if $minute < 0 || $minute > 59;
+	} else {
+	    die "unable to parse job start time\n";
+	}
+
 	my $param = "";
 	foreach my $p (keys %$job) {
-	    next if $p eq 'id' || $p eq 'vmid' || $p eq 'hour' || 
-		$p eq 'minute' || $p eq 'dow';
+	    next if $p eq 'id' || $p eq 'vmid' || $p eq 'starttime' || $p eq 'dow';
 	    my $v = $job->{$p};
 	    $param .= " --$p " . PVE::Tools::shellquote($v) if defined($v) && $v ne '';
 	}
 
 	$param .= " $job->{vmid}" if $job->{vmid};
 
-	$out .= sprintf "$job->{minute} $job->{hour} * * %-11s root vzdump$param\n", $dow;
+	$out .= sprintf "$minute $hour * * %-11s root vzdump$param\n", $dow;
     }
 
     my $ejobs = $cfg->{ejobs} || [];
@@ -223,19 +232,11 @@ __PACKAGE__->register_method({
     parameters => {
     	additionalProperties => 0,
 	properties => PVE::VZDump::json_config_properties({
-	    hour => {
-		type => 'integer',
-		description => "Start time (hour).",
-		minimum => 0,
-		maximum => 23,
-	    },
-	    minute => {
-		type => 'integer',
-		optional => 1,
-		description => "Start time (minute).",
-		minimum => 0,
-		maximum => 59,
-		default => 0,
+	    starttime => {
+		type => 'string',
+		description => "Job Start time.",
+		pattern => '\d{1,2}:\d{1,2}',
+		typetext => 'HH:MM',
 	    },
 	    dow => {
 		type => 'string', format => 'pve-day-of-week-list',
@@ -367,19 +368,11 @@ __PACKAGE__->register_method({
 		description => "The job ID.",
 		maxLength => 50,
 	    },
-	    hour => {
-		type => 'integer',
-		optional => 1,
-		description => "Start time (hour).",
-		minimum => 0,
-		maximum => 23,
-	    },
-	    minute => {
-		type => 'integer',
-		optional => 1,
-		description => "Start time (minute).",
-		minimum => 0,
-		maximum => 59,
+	    starttime => {
+		type => 'string',
+		description => "Job Start time.",
+		pattern => '\d{1,2}:\d{1,2}',
+		typetext => 'HH:MM',
 	    },
 	    dow => {
 		type => 'string', format => 'pve-day-of-week-list',
