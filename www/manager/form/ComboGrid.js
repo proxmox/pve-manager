@@ -13,6 +13,20 @@ Ext.define('PVE.form.ComboGrid', {
 	return (count > 10) ? 10*lh : 26+count*lh;
     },
 
+    // hack: allow to select empty value
+    // seems extjs does not allow that when 'editable == false'
+    onKeyUp: function(e, t) {
+        var me = this;
+        var key = e.getKey();
+
+        if (!me.editable && me.allowBlank && !me.multiSelect &&
+	    (key == e.BACKSPACE || key == e.DELETE)) {
+	    me.setValue('');
+	}
+
+        me.callParent(arguments);	
+    },
+
     // copied from ComboBox 
     createPicker: function() {
         var me = this,
