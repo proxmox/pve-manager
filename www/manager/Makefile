@@ -37,6 +37,8 @@ JSSRC= 				                 	\
 	form/DisplaySelector.js				\
 	form/CacheTypeSelector.js			\
 	form/ContentTypeSelector.js			\
+	form/DayOfWeekSelector.js			\
+	form/BackupModeSelector.js			\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
@@ -112,6 +114,7 @@ JSSRC= 				                 	\
 	dc/ACLView.js					\
 	dc/AuthView.js					\
 	dc/AuthEdit.js					\
+	dc/Backup.js					\
 	dc/Config.js					\
 	Workspace.js
 

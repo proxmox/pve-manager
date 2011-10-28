@@ -20,9 +20,9 @@ Ext.define('PVE.dc.Config', {
 		    itemId: 'storage'
 		},
 		{
+		    xtype: 'pveDcBackupView',
 		    title: 'Backup',
-		    itemId: 'backup',
-		    html: 'Backup/vzdump Configuration - not implemented!'
+		    itemId: 'backup'
 		},
 		{
 		    xtype: 'pveUserView',
