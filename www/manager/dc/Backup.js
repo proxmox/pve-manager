@@ -47,35 +47,32 @@ Ext.define('PVE.dc.BackupEdit', {
 	    }
 	});
 
-	var column1 = [
-	    {
-		xtype: 'PVE.form.NodeSelector',
-		name: 'node',
-		fieldLabel: 'Node',
-		allowBlank: true,
-		editable: true,
-		autoSelect: false,
-		emptyText: '-- any --',
-		listeners: {
-		    change: function(f, value) {
-			storagesel.setNodename(value || 'localhost');
-			var mode = selModeField.getValue();
-			sm.setLocked(false); // else selection gets confused
-			store.clearFilter();
-			if (value) {
-			    store.filterBy(function(rec) {
-				if (rec.get('node') === value) {
-				    return true;
-				}
-			    });
-			}
-			if (mode === 'all') {
-			    sm.selectAll(true);
-			    sm.setLocked(true);
-			}
+	var nodesel = Ext.create('PVE.form.NodeSelector', {
+	    name: 'node',
+	    fieldLabel: 'Node',
+	    allowBlank: true,
+	    editable: true,
+	    autoSelect: false,
+	    emptyText: '-- any --',
+	    listeners: {
+		change: function(f, value) {
+		    storagesel.setNodename(value || 'localhost');
+		    var mode = selModeField.getValue();
+		    sm.setLocked(false); // else selection gets confused
+		    store.clearFilter();
+		    store.filterBy(function(rec) {
+			return (!value || rec.get('node') === value);
+		    });
+		    if (mode === 'all') {
+			sm.selectAll(true);
+			sm.setLocked(true);
 		    }
 		}
-	    },
+	    }
+	});
+
+	var column1 = [
+	    nodesel,
 	    storagesel,
 	    {
 		xtype: 'pveDayOfWeekSelector',
@@ -179,7 +176,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	});
 
 	var update_vmid_selection = function(list, mode) {
-	    if (!insideUpdate) {
+	    if (insideUpdate) {
 		return; // should not happen - just to be sure
 	    }
 	    insideUpdate = true;
@@ -218,9 +215,15 @@ Ext.define('PVE.dc.BackupEdit', {
 	});
 		 
 	var reload = function() {
+	    sm.setLocked(false);
 	    store.load({
 		params: { type: 'vm' },
 		callback: function() {
+		    var node = nodesel.getValue();
+		    store.clearFilter();
+		    store.filterBy(function(rec) {
+			return (!node || rec.get('node') === node);
+		    });
 		    var list = vmidField.getValue();
 		    var mode = selModeField.getValue();
 		    if (mode === 'all') {
