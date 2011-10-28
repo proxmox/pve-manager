@@ -178,7 +178,9 @@ sub write_vzdump_cron_config {
 	    $param .= " --$p " . PVE::Tools::shellquote($v) if defined($v) && $v ne '';
 	}
 
-	$param .= " $job->{vmid}" if $job->{vmid};
+	if ($job->{vmid}) {
+	    $param .= " " . join(' ', PVE::Tools::split_list($job->{vmid}));
+	}
 
 	$out .= sprintf "$minute $hour * * %-11s root vzdump$param\n", $dow;
     }
@@ -255,7 +257,6 @@ __PACKAGE__->register_method({
 
 	my $data = cfs_read_file('vzdump');
 
-	$param->{minute} = 0 if !defined($param->{minute});
 	$param->{dow} = 'mon,tue,wed,thu,fri,sat,sun' if !defined($param->{dow});
 
 	$param->{all} = 1 if defined($param->{exclude});
@@ -379,6 +380,11 @@ __PACKAGE__->register_method({
 		optional => 1,
 		description => "Day of week selection.",
 	    },
+	    delete => {
+		type => 'string', format => 'pve-configid-list',
+		description => "A list of settings you want to delete.",
+		optional => 1,
+	    },
        }),
     },
     returns => { type => 'null' },
@@ -392,11 +398,23 @@ __PACKAGE__->register_method({
 
 	my $jobs = $data->{jobs} || [];
 
+	die "no options specified\n" if !scalar(keys %$param);
+
 	raise_param_exc({ all => "option conflicts with option 'vmid'"})
 	    if $param->{all} && $param->{vmid};
 
+	my $delete = extract_param($param, 'delete');
+
 	foreach my $job (@$jobs) {
 	    if ($job->{id} eq $param->{id}) {
+
+		foreach my $k (PVE::Tools::split_list($delete)) {
+		    if (!PVE::VZDump::option_exists($k)) {
+			raise_param_exc({ delete => "unknown option '$k'" });
+		    }
+
+		    delete $job->{$k};
+		}
 
 		foreach my $k (keys %$param) {
 		    $job->{$k} = $param->{$k};
