@@ -427,7 +427,7 @@ sub new {
     check_bin ('cstream');
     check_bin ('ionice');
 
-    if ($opts->{snapshot}) {
+    if ($opts->{mode} && $opts->{mode} eq 'snapshot') {
 	check_bin ('lvcreate');
 	check_bin ('lvs');
 	check_bin ('lvremove');
@@ -443,10 +443,6 @@ sub new {
 	    $opts->{$k} = $defaults->{$k} if !defined ($opts->{$k});
 	}
     }
-
-    $opts->{mode} = 'stop' if $opts->{stop};
-    $opts->{mode} = 'suspend' if $opts->{suspend};
-    $opts->{mode} = 'snapshot' if $opts->{snapshot};
 
     $opts->{dumpdir} =~ s|/+$|| if ($opts->{dumpdir});
     $opts->{tmpdir} =~ s|/+$|| if ($opts->{tmpdir});
@@ -1048,20 +1044,12 @@ my $confdesc = {
 	optional => 1,
 	default => 0,
     },
-    stop => {
-	type => 'boolean',
-	description => "Stop/Restart VM when running.",
+    mode => {
+	type => 'string',
+	description => "Backup mode.",
 	optional => 1,
-    },
-    snapshot => {
-	type => 'boolean',
-	description => "Try to use (LVM) snapshots when running.",
-	optional => 1,
-    },
-    suspend => {
-	type => 'boolean',
-	description => "Suspend/resume VM when running",
-	optional => 1,
+	default => 'stop',
+	enum => [ 'snapshot', 'suspend', 'stop' ],
     },
     exclude => {
 	type => 'string', format => 'pve-vmid-list',
@@ -1135,6 +1123,11 @@ my $confdesc = {
 	minimum => 1,
     },
 };
+
+sub option_exists {
+    my $key = shift;
+    return defined($confdesc->{$key});
+}
 
 # add JSON properties for create and set function
 sub json_config_properties {

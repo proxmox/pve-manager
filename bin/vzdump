@@ -56,7 +56,7 @@ machines (VMs). It basically creates a tar archive of the VM private area,
 which also includes the VM configuration files. vzdump currently
 supports OpenVZ and QemuServer VMs.
 
-There are several ways to provide consistency:
+There are several ways to provide consistency (option C<mode>):
 
 =over 2
 
@@ -157,15 +157,15 @@ Simply dump VM 777 - no snapshot, just archive the VM private area and configura
 
 Use rsync and suspend/resume to create an snapshot (minimal downtime).
 
- # vzdump 777 --suspend
+ # vzdump 777 --mode suspend
 
 Backup all VMs and send notification mails to root and admin.
 
- # vzdump --all --suspend --mailto root --mailto admin
+ # vzdump --all --mode suspend --mailto root --mailto admin
 
 Use LVM2 to create snapshots (no downtime).
 
- # vzdump 777 --dumpdir /mnt/backup --snapshot
+ # vzdump 777 --dumpdir /mnt/backup --mode snapshot
 
 Backup more than one VM (selectively)
 
@@ -173,7 +173,7 @@ Backup more than one VM (selectively)
 
 Backup all VMs excluding VM 101 and 102
 
- # vzdump --suspend --exclude 101,102
+ # vzdump --mode suspend --exclude 101,102
 
 Restore an OpenVZ machine to VM 600
 
