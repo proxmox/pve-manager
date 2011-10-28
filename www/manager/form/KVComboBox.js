@@ -1,6 +1,7 @@
 Ext.define('PVE.form.KVComboBox', {
     extend: 'Ext.form.field.ComboBox',
-  
+    alias: 'widget.pveKVComboBox',
+
     deleteEmpty: true,
     
     getSubmitData: function() {
