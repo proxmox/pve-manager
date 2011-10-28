@@ -7,7 +7,7 @@ Ext.define('PVE.dc.BackupEdit', {
 
         me.create = !me.jobid;
 
-       if (me.create) {
+	if (me.create) {
             url = '/api2/extjs/cluster/backup';
             method = 'POST';
         } else {
@@ -31,6 +31,24 @@ Ext.define('PVE.dc.BackupEdit', {
 	    value: ''
 	});
 
+	var insideUpdate = false;
+	
+	var sm = Ext.create('Ext.selection.CheckboxModel', {
+	    mode: 'SIMPLE',
+	    listeners: {
+		selectionchange: function(model, selected) {
+		    if (!insideUpdate) { // avoid endless loop
+			var sel = [];
+			Ext.Array.each(selected, function(record) {
+			    sel.push(record.data.vmid);
+			});
+
+			vmidField.setValue(sel);
+		    }
+		}
+	    }
+	});
+
 	var storagesel = Ext.create('PVE.form.StorageSelector', {
 	    fieldLabel: 'Storage',
 	    nodename: 'localhost',
@@ -47,6 +65,46 @@ Ext.define('PVE.dc.BackupEdit', {
 	    }
 	});
 
+	var vmgrid = Ext.createWidget('grid', {
+	    store: store,
+	    border: true,
+	    height: 300,
+	    selModel: sm,
+	    disabled: true,
+	    columns: [
+		{ 
+		    header: 'VMID',
+		    dataIndex: 'vmid',
+		    width: 60
+		},
+		{ 
+		    header: 'Node',
+		    dataIndex: 'node'
+		},
+		{ 
+		    header: 'Status',
+		    dataIndex: 'vmid',
+		    dataIndex: 'uptime',
+		    renderer: function(value) {
+			if (value) {
+			    return 'running';
+			} else {
+			    return 'stopped';
+			}
+		    }
+		},
+		{ 
+		    header: 'Name', 
+		    dataIndex: 'name',
+		    flex: 1 
+		},
+		{ 
+		    header: 'VM Type', 
+		    dataIndex: 'type'
+		}
+	    ]
+	});
+
 	var nodesel = Ext.create('PVE.form.NodeSelector', {
 	    name: 'node',
 	    fieldLabel: 'Node',
@@ -58,14 +116,12 @@ Ext.define('PVE.dc.BackupEdit', {
 		change: function(f, value) {
 		    storagesel.setNodename(value || 'localhost');
 		    var mode = selModeField.getValue();
-		    sm.setLocked(false); // else selection gets confused
 		    store.clearFilter();
 		    store.filterBy(function(rec) {
 			return (!value || rec.get('node') === value);
 		    });
 		    if (mode === 'all') {
 			sm.selectAll(true);
-			sm.setLocked(true);
 		    }
 		}
 	    }
@@ -157,24 +213,6 @@ Ext.define('PVE.dc.BackupEdit', {
 	    }
 	});
 
-	var insideUpdate = false;
-	
-	var sm = Ext.create('Ext.selection.CheckboxModel', {
-	    mode: 'SIMPLE',
-	    listeners: {
-		selectionchange: function(model, selected) {
-		    if (!insideUpdate) { // avoid endless loop
-			var sel = [];
-			Ext.Array.each(selected, function(record) {
-			    sel.push(record.data.vmid);
-			});
-
-			vmidField.setValue(sel);
-		    }
-		}
-	    }
-	});
-
 	var update_vmid_selection = function(list, mode) {
 	    if (insideUpdate) {
 		return; // should not happen - just to be sure
@@ -202,9 +240,9 @@ Ext.define('PVE.dc.BackupEdit', {
 	selModeField.on('change', function(f, value, oldValue) {
 	    if (value === 'all') {
 		sm.selectAll(true);
-		sm.setLocked(true);
+		vmgrid.setDisabled(true);
 	    } else {
-		sm.setLocked(false);
+		vmgrid.setDisabled(false);
 	    }
 	    if (oldValue === 'all') {
 		sm.deselectAll(true);
@@ -215,7 +253,6 @@ Ext.define('PVE.dc.BackupEdit', {
 	});
 		 
 	var reload = function() {
-	    sm.setLocked(false);
 	    store.load({
 		params: { type: 'vm' },
 		callback: function() {
@@ -227,9 +264,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		    var list = vmidField.getValue();
 		    var mode = selModeField.getValue();
 		    if (mode === 'all') {
-			sm.setLocked(false);
 			sm.selectAll(true);
-			sm.setLocked(true);
 		    } else {
 			update_vmid_selection(list, mode);
 		    }
@@ -241,48 +276,7 @@ Ext.define('PVE.dc.BackupEdit', {
             title: me.create ? "Create Backup Job" : "Edit Backup Job",
             url: url,
             method: method,
-	    items: [ 
-		ipanel,
-		{
-		    xtype: 'grid',
-		    store: store,
-		    border: true,
-		    height: 300,
-		    selModel: sm,
-		    columns: [
-			{ 
-			    header: 'VMID',
-			    dataIndex: 'vmid',
-			    width: 60
-			},
-			{ 
-			    header: 'Node',
-			    dataIndex: 'node'
-			},
-			{ 
-			    header: 'Status',
-			    dataIndex: 'vmid',
-			    dataIndex: 'uptime',
-			    renderer: function(value) {
-				if (value) {
-				    return 'running';
-				} else {
-				    return 'stopped';
-				}
-			    }
-			},
-			{ 
-			    header: 'Name', 
-			    dataIndex: 'name',
-			    flex: 1 
-			},
-			{ 
-			    header: 'VM Type', 
-			    dataIndex: 'type'
-			}
-		    ]
-		}
-	    ]
+	    items: [ ipanel, vmgrid ]
         });
 
         me.callParent();
