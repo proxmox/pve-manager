@@ -15,7 +15,7 @@ use PVE::VZDump;
 
 use base qw(PVE::RESTHandler);
 
-cfs_register_file ('vzdump', 
+cfs_register_file ('vzdump.cron', 
 		   \&parse_vzdump_cron_config, 
 		   \&write_vzdump_cron_config); 
 
@@ -218,7 +218,7 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	my $data = cfs_read_file('vzdump');
+	my $data = cfs_read_file('vzdump.cron');
 
 	my $res = $data->{jobs} || [];
 
@@ -255,7 +255,7 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	my $data = cfs_read_file('vzdump');
+	my $data = cfs_read_file('vzdump.cron');
 
 	$param->{dow} = 'mon,tue,wed,thu,fri,sat,sun' if !defined($param->{dow});
 
@@ -268,7 +268,7 @@ __PACKAGE__->register_method({
 
 	push @{$data->{jobs}}, $param;
 
-	cfs_write_file('vzdump', $data);
+	cfs_write_file('vzdump.cron', $data);
 
 	return undef;
     }});
@@ -297,7 +297,7 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	my $data = cfs_read_file('vzdump');
+	my $data = cfs_read_file('vzdump.cron');
 
 	my $jobs = $data->{jobs} || [];
 
@@ -332,7 +332,7 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	my $data = cfs_read_file('vzdump');
+	my $data = cfs_read_file('vzdump.cron');
 
 	my $jobs = $data->{jobs} || [];
 	my $newjobs = [];
@@ -350,7 +350,7 @@ __PACKAGE__->register_method({
 
 	$data->{jobs} = $newjobs;
 
-	cfs_write_file('vzdump', $data);
+	cfs_write_file('vzdump.cron', $data);
 
 	return undef;
     }});
@@ -394,7 +394,7 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	my $data = cfs_read_file('vzdump');
+	my $data = cfs_read_file('vzdump.cron');
 
 	my $jobs = $data->{jobs} || [];
 
@@ -435,7 +435,7 @@ __PACKAGE__->register_method({
 		raise_param_exc({ vmid => "property is missing"})
 		    if !$job->{all} && !$job->{vmid};
 
-		cfs_write_file('vzdump', $data);
+		cfs_write_file('vzdump.cron', $data);
 
 		return undef;
 	    }
