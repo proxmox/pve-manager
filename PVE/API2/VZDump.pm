@@ -2,7 +2,7 @@ package PVE::API2::VZDump;
 
 use strict;
 use warnings;
-use PVE::Exception qw(raise_param_exc);;
+use PVE::Exception qw(raise_param_exc);
 use PVE::Tools qw(extract_param);
 use PVE::Cluster qw(cfs_register_file cfs_read_file);
 use PVE::INotify;
@@ -54,25 +54,15 @@ __PACKAGE__->register_method ({
 	# by default we set --rsyncable for gzip
 	local $ENV{GZIP} = "--rsyncable" if !$ENV{GZIP};
 
-	$param->{all} = 1 if defined($param->{exclude});
-
-	raise_param_exc({ all => "option conflicts with option 'vmid'"})
-	    if $param->{all} && $param->{vmid};
-
-	raise_param_exc({ vmid => "property is missing"})
-	    if !$param->{all} && !$param->{vmid};
+	PVE::VZDump::verify_vzdump_parameters($param, 1);
 
 	# silent exit if we run on wrong node
 	exit(0) if $param->{node} && $param->{node} ne $nodename;
 
+	my $cmdline = PVE::VZDump::command_line($param);
+
 	# convert string lists to arrays
 	my @vmids = PVE::Tools::split_list(extract_param($param, 'vmid'));
-
-	my $cmdline = 'vzdump';
-	$cmdline .= ' ' . join(' ', @vmids) if scalar(@vmids);
-	foreach my $p (keys %$param) {
-	    $cmdline .= " --$p $param->{$p}";
-	}
 
 	$param->{vmids} = PVE::VZDump::check_vmids(@vmids) if !$param->{all};
 	my @exclude = PVE::Tools::split_list(extract_param($param, 'exclude'));

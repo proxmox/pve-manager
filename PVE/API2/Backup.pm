@@ -170,19 +170,12 @@ sub write_vzdump_cron_config {
 	} else {
 	    die "unable to parse job start time\n";
 	}
+	
+	$job->{quiet} = 1; # we do not want messages from cron
 
-	my $param = "";
-	foreach my $p (keys %$job) {
-	    next if $p eq 'id' || $p eq 'vmid' || $p eq 'starttime' || $p eq 'dow';
-	    my $v = $job->{$p};
-	    $param .= " --$p " . PVE::Tools::shellquote($v) if defined($v) && $v ne '';
-	}
+	my $cmd = PVE::VZDump::command_line($job);
 
-	if ($job->{vmid}) {
-	    $param .= " " . join(' ', PVE::Tools::split_list($job->{vmid}));
-	}
-
-	$out .= sprintf "$minute $hour * * %-11s root vzdump$param\n", $dow;
+	$out .= sprintf "$minute $hour * * %-11s root $cmd\n", $dow;
     }
 
     my $ejobs = $cfg->{ejobs} || [];
@@ -259,12 +252,7 @@ __PACKAGE__->register_method({
 
 	$param->{dow} = 'mon,tue,wed,thu,fri,sat,sun' if !defined($param->{dow});
 
-	$param->{all} = 1 if defined($param->{exclude});
-	raise_param_exc({ all => "option conflicts with option 'vmid'"})
-	    if $param->{all} && $param->{vmid};
-
-	raise_param_exc({ vmid => "property is missing"})
-	    if !$param->{all} && !$param->{vmid};
+	PVE::VZDump::verify_vzdump_parameters($param, 1);
 
 	push @{$data->{jobs}}, $param;
 
@@ -400,15 +388,14 @@ __PACKAGE__->register_method({
 
 	die "no options specified\n" if !scalar(keys %$param);
 
-	raise_param_exc({ all => "option conflicts with option 'vmid'"})
-	    if $param->{all} && $param->{vmid};
+	PVE::VZDump::verify_vzdump_parameters($param);
 
-	my $delete = extract_param($param, 'delete');
+	my @delete = PVE::Tools::split_list(extract_param($param, 'delete'));
 
 	foreach my $job (@$jobs) {
 	    if ($job->{id} eq $param->{id}) {
 
-		foreach my $k (PVE::Tools::split_list($delete)) {
+		foreach my $k (@delete) {
 		    if (!PVE::VZDump::option_exists($k)) {
 			raise_param_exc({ delete => "unknown option '$k'" });
 		    }
@@ -422,18 +409,14 @@ __PACKAGE__->register_method({
 
 		$job->{all} = 1 if defined($job->{exclude});
 
-		if ($param->{vmid}) {
+		if (defined($param->{vmid})) {
 		    delete $job->{all};
 		    delete $job->{exclude};
 		} elsif ($param->{all}) {
 		    delete $job->{vmid};
 		}
 
-		raise_param_exc({ all => "option conflicts with option 'vmid'"})
-		    if $job->{all} && $job->{vmid};
-
-		raise_param_exc({ vmid => "property is missing"})
-		    if !$job->{all} && !$job->{vmid};
+		PVE::VZDump::verify_vzdump_parameters($job, 1);
 
 		cfs_write_file('vzdump.cron', $data);
 

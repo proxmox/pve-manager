@@ -3,6 +3,7 @@ package PVE::VZDump;
 use strict;
 use warnings;
 use Fcntl ':flock';
+use PVE::Exception qw(raise_param_exc);
 use PVE::SafeSyslog;
 use IO::File;
 use IO::Select;
@@ -1138,6 +1139,43 @@ sub json_config_properties {
     }
 
     return $prop;
+}
+
+sub verify_vzdump_parameters {
+    my ($param, $check_missing) = @_;
+
+    raise_param_exc({ all => "option conflicts with option 'vmid'"})
+	if $param->{all} && $param->{vmid};
+
+    raise_param_exc({ exclude => "option conflicts with option 'vmid'"})
+	if $param->{exclude} && $param->{vmid};
+
+    $param->{all} = 1 if defined($param->{exclude});
+
+    return if !$check_missing;
+
+    raise_param_exc({ vmid => "property is missing"})
+	if !$param->{all} && !$param->{vmid};
+
+}
+
+sub command_line {
+    my ($param) = @_;
+
+    my $cmd = "vzdump";
+
+    if ($param->{vmid}) {
+	$cmd .= " " . join(' ', PVE::Tools::split_list($param->{vmid}));
+    }
+
+    foreach my $p (keys %$param) {
+	next if $p eq 'id' || $p eq 'vmid' || $p eq 'starttime' || $p eq 'dow';
+	my $v = $param->{$p};
+	my $pd = $confdesc->{$p} || die "no such vzdump option '$p'\n";
+	$cmd .= " --$p " . PVE::Tools::shellquote($v) if defined($v) && $v ne '';
+    }
+
+    return $cmd;
 }
 
 1;

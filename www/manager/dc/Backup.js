@@ -202,13 +202,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		    values.all = 1;
 		    values.exclude = values.vmid;
 		    delete values.vmid;
-		} else {
-		    if (!me.create) {
-			PVE.Utils.assemble_field_data(values, { 'delete': 'all' }); 
-			PVE.Utils.assemble_field_data(values, { 'delete': 'exclude' });
-		    }
 		}
-
 		return values;
 	    }
 	});
