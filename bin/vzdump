@@ -126,7 +126,7 @@ Global configuration is stored in /etc/vzdump.conf.
 
 =head1 HOOK SCRIPT
 
-You can specify a hook script with option C<--script>. This script is called at various phases of the backup process, with parameters accordingly set. You can find an example in the documentation directory (C<hook-script.pl>). 
+You can specify a hook script with option C<--script>. This script is called at various phases of the backup process, with parameters accordingly set. You can find an example in the documentation directory (C<vzdump-hook-script.pl>). 
 
 =head1 EXCLUSIONS (OpenVZ only)
 

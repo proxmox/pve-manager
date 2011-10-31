@@ -65,10 +65,10 @@ upload: ${DEB}
 #	scp aplinfo/aplinfo.dat aplinfo.dat.gz aplinfo/aplinfo.dat.asc pve.proxmox.com:/home/ftp/appliances/
 
 .PHONY: install
-install: country.dat vznet.conf vzdump.conf
+install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl
 	install -d ${DESTDIR}/usr/share/${PACKAGE}
 	install -d ${DESTDIR}/usr/share/man/man1
-	install -d ${DESTDIR}/usr/share/doc/${PACKAGE}
+	install -d ${DOCDIR}/examples
 	install -d ${DESTDIR}/var/lib/${PACKAGE}
 	install -d ${DESTDIR}/var/lib/vz/images
 	install -d ${DESTDIR}/var/lib/vz/template/cache
@@ -76,8 +76,9 @@ install: country.dat vznet.conf vzdump.conf
 	install -d ${DESTDIR}/var/lib/vz/template/qemu
 	install -D -m 0644 vzdump.conf ${DESTDIR}/etc/vzdump.conf
 	install -D -m 0755 vznet.conf ${DESTDIR}/etc/vz/vznet.conf
-	install -m 0644 copyright ${DESTDIR}/usr/share/doc/${PACKAGE}
-	install -m 0644 debian/changelog.Debian ${DESTDIR}/usr/share/doc/${PACKAGE}
+	install -m 0644 vzdump-hook-script.pl ${DOCDIR}/examples/vzdump-hook-script.pl
+	install -m 0644 copyright ${DOCDIR}
+	install -m 0644 debian/changelog.Debian ${DOCDIR}
 	install -m 0644 country.dat ${DESTDIR}/usr/share/${PACKAGE}
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
