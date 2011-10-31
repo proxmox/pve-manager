@@ -6,3 +6,4 @@
 /etc/apache2/sites-available/pve.conf
 /etc/apache2/sites-available/pve-redirect.conf
 /etc/vz/vznet.conf
+/etc/vzdump.conf
