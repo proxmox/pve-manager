@@ -8,7 +8,6 @@ use PVE::SafeSyslog;
 use PVE::Tools;
 use PVE::API2;
 use Apache2::Const;
-use CGI;
 use mod_perl2;
 use JSON;
 use Digest::SHA;
@@ -285,16 +284,13 @@ my $check_permissions = sub {
 };
 
 sub rest_handler {
-    my ($clientip, $method, $abs_uri, $rel_uri, $ticket, $token, $params) = @_;
+    my ($rpcenv, $clientip, $method, $abs_uri, $rel_uri, $ticket, $token) = @_;
 
-    my $rpcenv = PVE::RPCEnvironment::get();
+    # set environment variables
+    $rpcenv->set_language('C'); # fixme:
+    $rpcenv->set_client_ip($clientip);
+    $rpcenv->set_result_count(undef);
 
-    eval { $rpcenv->init_request(); };
-    if (my $err = $@) {
-	syslog('err', $err);
-	return { status => HTTP_INTERNAL_SERVER_ERROR, message => $err };
-    }
- 
     my $euid = $>;
 
     my $require_auth = 1;
@@ -307,6 +303,8 @@ sub rest_handler {
 
     my ($username, $age);
 
+    my $isUpload = 0;
+
     if ($require_auth) {
 
 	eval {
@@ -314,8 +312,23 @@ sub rest_handler {
 
 	    ($username, $age) = PVE::AccessControl::verify_ticket($ticket);
 
+	    $rpcenv->set_user($username);
+
+	    if ($method eq 'POST' && $rel_uri =~ m|^/nodes/([^/]+)/storage/([^/]+)/upload$|) {
+		my ($node, $storeid) = ($1, $2);
+		my $perm = {
+		    path => "/storage/$storeid",
+		    privs => [ 'abc' ],
+		};
+		&$check_permissions($rpcenv, $perm, $username, {});
+		$isUpload = 1;
+	    }
+
+	    # we skip CSRF check for file upload, because it is
+	    # difficult to pass CSRF HTTP headers with native html forms,
+	    # and it should not be necessary at all.
 	    PVE::AccessControl::verify_csrf_prevention_token($username, $token)
-		if ($euid != 0) && ($method ne 'GET');
+		if !$isUpload && ($euid != 0) && ($method ne 'GET');
 	};
 	if (my $err = $@) {
 	    return { 
@@ -324,7 +337,9 @@ sub rest_handler {
 	    };
 	}
     }
-    
+
+    # we are authenticated now
+
     my $uri_param = {};
     my ($handler, $info) = PVE::API2->find_handler($method, $rel_uri, $uri_param);
     if (!$handler || !$info) {
@@ -332,6 +347,18 @@ sub rest_handler {
 	    status => HTTP_NOT_IMPLEMENTED,
 	    message => "Method '$method $abs_uri' not implemented",
 	};
+    }
+
+    # Note: we need to delay CGI parameter parsing until
+    # we are authenticated (avoid DOS (file upload) attacs)
+
+    my $params;
+    eval { $params = $rpcenv->parse_params($isUpload); };
+    if (my $err = $@) {
+	return { 
+	    status => HTTP_BAD_REQUEST, 
+	    message => "parameter parser failed: $err",
+	};   
     }
 
     delete $params->{_dc}; # remove disable cache parameter
@@ -362,8 +389,8 @@ sub rest_handler {
 	    my $node = $uri_param->{$pn};
 	    die "proxy parameter '$pn' does not exists" if !$node;
 
-	    if ($node ne 'localhost' && 
-		$node ne PVE::INotify::nodename()) {
+	    if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
+		die "unable to proxy file uploads" if $isUpload; 
 		$remip = PVE::Cluster::remote_node_ip($node);
 	    }
 	};
@@ -374,19 +401,17 @@ sub rest_handler {
 	    };
 	}
 	if ($remip) {
-	    return { proxy => $remip };
+	    return { proxy => $remip, proxy_params => $params };
 	}
     } 
 
-    # fixme: not sure if we should do that here, because we can't proxy those
-    # methods to other hosts?
-    return { proxy => 'localhost' } if $info->{protected} && ($euid != 0);
-
-    # set environment variables
-    $rpcenv->set_language('C'); # fixme:
-    $rpcenv->set_user($username);
-    $rpcenv->set_client_ip($clientip);
-    $rpcenv->set_result_count(undef);
+    if ($info->{protected} && ($euid != 0)) {
+	if ($isUpload) {
+	    my $uinfo = $rpcenv->get_upload_info('filename');
+	    $params->{tmpfilename} = $uinfo->{tmpfilename};
+	}
+	return { proxy => 'localhost' , proxy_params => $params }
+    }
 
     my $resp = { 
 	info => $info, # useful to format output
@@ -451,10 +476,6 @@ sub handler {
      return HTTP_NOT_IMPLEMENTED
 	 if !$known_methods->{$method};
 
-     my $cgi = CGI->new ($r);
-
-     my $params = $cgi->Vars();
-
      my $cookie = $r->headers_in->{Cookie};
      my $token = $r->headers_in->{CSRFPreventionToken};
 
@@ -466,8 +487,20 @@ sub handler {
      my ($rel_uri, $format) = split_abs_uri($abs_uri);
      return HTTP_NOT_IMPLEMENTED if !$format;
 
-     my $res = rest_handler($clientip, $method, $abs_uri, $rel_uri, 
-			    $ticket, $token, $params);
+     my $rpcenv;
+     my $res;
+
+     eval { 
+	 $rpcenv = PVE::RPCEnvironment::get();
+	 $rpcenv->init_request(request_rec => $r); 
+     };
+     if (my $err = $@) {
+	 syslog('err', $err);
+	 $res = { status => HTTP_INTERNAL_SERVER_ERROR, message => $err };
+     } else {
+	 $res = rest_handler($rpcenv, $clientip, $method, $abs_uri, $rel_uri, 
+			     $ticket, $token);
+     }
 
      if ($res->{proxy}) {
 	 if (($res->{proxy} ne 'localhost') && $r->headers_in->{'PVEDisableProxy'}) {
@@ -477,7 +510,7 @@ sub handler {
 	     return $res->{status};	     
 	 } 
 	 return proxy_handler($r, $clientip, $res->{proxy}, $method, 
-			      $abs_uri, $ticket, $token, $params);
+			      $abs_uri, $ticket, $token, $res->{proxy_params});
      }
 
      prepare_response_data($format, $res);

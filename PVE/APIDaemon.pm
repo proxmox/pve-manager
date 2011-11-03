@@ -22,6 +22,10 @@ use JSON;
 
 @ISA = qw(HTTP::Daemon);
 
+# DOS attack prevention
+$CGI::DISABLE_UPLOADS = 1; # no uploads
+$CGI::POST_MAX = 1024 * 10; # max 10K posts
+
 my $documentroot = "/usr/share/pve-api/root";
 
 my $workers = {};
@@ -295,8 +299,9 @@ sub handle_requests {
 
 			my $clientip = $headers->header('PVEClientIP');
 
-			my $res = PVE::REST::rest_handler($clientip, $method, $uri, $rel_uri, 
-							  $ticket, undef, $params);
+			$rpcenv->init_request(params => $params); 
+
+			my $res = PVE::REST::rest_handler($rpcenv, $clientip, $method, $uri, $rel_uri, $ticket);
 
 			if ($res->{proxy}) {
 
