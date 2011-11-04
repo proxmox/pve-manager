@@ -52,6 +52,7 @@ JSSRC= 				                 	\
 	window/Wizard.js				\
 	window/NotesEdit.js				\
 	window/Backup.js				\
+	window/Restore.js				\
 	panel/NotesView.js				\
 	grid/SelectFeature.js				\
 	grid/ObjectGrid.js				\

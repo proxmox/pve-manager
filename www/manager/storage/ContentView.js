@@ -223,7 +223,32 @@ Ext.define('PVE.storage.ContentView', {
 	    features: [ groupingFeature ],
 	    tbar: [
 		{
-		    text: 'Restore'
+		    xtype: 'pveButton',
+		    text: 'Restore',
+		    selModel: sm,
+		    disabled: true,
+		    enableFn: function(rec) {
+			return rec && rec.data.content === 'backup';
+		    },
+		    handler: function(b, e, rec) {
+			var vmtype;
+			if (rec.data.volid.match(/vzdump-qemu-/)) {
+			    vmtype = 'qemu';
+			} else if (rec.data.volid.match(/vzdump-openvz-/)) {
+			    vmtype = 'openvz';
+			} else {
+			    return;
+			}
+
+			var win = Ext.create('PVE.window.Restore', {
+			    nodename: nodename,
+			    volid: rec.data.volid,
+			    volidText: PVE.Utils.render_storage_content(rec.data.volid, {}, rec),
+			    vmtype: vmtype
+			});
+			win.show();
+			win.on('destroy', reload);
+		    }
 		},
 		{
 		    xtype: 'pveButton',
