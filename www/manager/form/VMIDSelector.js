@@ -1,6 +1,8 @@
 Ext.define('PVE.form.VMIDSelector', {
     extend: 'Ext.form.field.Number',
     alias: 'widget.pveVMIDSelector',
+
+    allowBlank: false,
   
     minValue: 100,
 
@@ -31,8 +33,7 @@ Ext.define('PVE.form.VMIDSelector', {
         var me = this;
 
 	Ext.applyIf(me, {
-	    fieldLabel: 'VM ID',
-	    allowBlank: false
+	    fieldLabel: 'VM ID'
 	});
 
         me.callParent();
