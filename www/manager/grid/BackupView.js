@@ -61,7 +61,9 @@ Ext.define('PVE.grid.BackupView', {
 	    }
 	});
 
-	var backup_btn = new Ext.Button({
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
+	var backup_btn = Ext.create('Ext.button.Button', {
 	    text: 'Backup now',
 	    handler: function() {
 		var win = Ext.create('PVE.window.Backup', { 
@@ -74,111 +76,91 @@ Ext.define('PVE.grid.BackupView', {
 	    }
 	});
 
-	var restore_btn = new Ext.Button({
+	var restore_btn = Ext.create('PVE.button.Button', {
 	    text: 'Restore',
 	    disabled: true,
-	    handler: function(){
-		var sm = me.getSelectionModel();
-		var rec = sm.getSelection()[0];
-		if (!rec) {
-		    return;
-		}
-
+	    selModel: sm,
+	    confirmMsg: function(rec) {
+		return 'Are you sure you want to restore from "' + rec.data.volid + '"? ' +
+		    'This will permanently erase current VM data.';
+	    },
+	    enableFn: function(rec) {
+		return !!rec;
+	    },
+	    handler: function(b, e, rec) {
 		var volid = rec.data.volid;
 
-		msg = 'Are you sure you want to restore from "' + volid + '"? ' +
-		    'This will permanently erase current VM data.';
-		Ext.Msg.confirm('Restore Confirmation', msg, function(btn) {
-		    if (btn !== 'yes') {
-			return;
-		    }
+		var url;
+		var params = {
+		    vmid: vmid, 
+		    force: 1
+		};
 
-		    var url;
-		    var params = {
-			vmid: vmid, 
-			force: 1
-		    };
+		if (vmtype === 'openvz') {
+		    url = '/nodes/' + nodename + '/openvz';
+		    params.ostemplate = volid;
+		} else if (vmtype === 'qemu') {
+		    url = '/nodes/' + nodename + '/qemu';
+		    params.archive = volid;
+		} else {
+		    throw 'unknown VM type';
+		}
 
-		    if (vmtype === 'openvz') {
-			url = '/nodes/' + nodename + '/openvz';
-			params.ostemplate = volid;
-		    } else if (vmtype === 'qemu') {
-			url = '/nodes/' + nodename + '/qemu';
-			params.archive = volid;
-		    } else {
-			throw 'unknown VM type';
-		    }
-
-		    PVE.Utils.API2Request({
-			url: url,
-			params: params,
-			method: 'POST',
-			waitMsgTarget: me,
-			failure: function(response, opts) {
-			    Ext.Msg.alert('Error', response.htmlStatus);
-			},
-			success: function(response, options) {
-			    var upid = response.result.data;
+		PVE.Utils.API2Request({
+		    url: url,
+		    params: params,
+		    method: 'POST',
+		    waitMsgTarget: me,
+		    failure: function(response, opts) {
+			Ext.Msg.alert('Error', response.htmlStatus);
+		    },
+		    success: function(response, options) {
+			var upid = response.result.data;
 			
-			    var win = Ext.create('PVE.window.TaskViewer', { 
-				upid: upid
-			    });
-			    win.show();
-			}
-		    });
+			var win = Ext.create('PVE.window.TaskViewer', { 
+			    upid: upid
+			});
+			win.show();
+		    }
 		});
 	    }
 	});
 
-	var delete_btn = new Ext.Button({
+	var delete_btn = Ext.create('PVE.button.Button', {
 	    text: 'Delete',
 	    disabled: true,
-	    handler: function(){
-		var sm = me.getSelectionModel();
-		var rec = sm.getSelection()[0];
-		if (!rec) {
-		    return;
-		}
-
+	    selModel: sm,
+	    confirmMsg: function(rec) {
+		return 'Are you sure you want to delete "' + rec.data.volid + '"? ' +
+		    'This will permanently erase all data.';
+	    },
+	    enableFn: function(rec) {
+		return !!rec;
+	    },
+	    handler: function(b, e, rec){
 		var storage = storagesel.getValue();
 		if (!storage) {
 		    return;
 		}
 
 		var volid = rec.data.volid;
-
-		msg = 'Are you sure you want to delete "' + volid + '"? ' +
-		    'This will permanently erase all data.';
-		Ext.Msg.confirm('Delete Confirmation', msg, function(btn) {
-		    if (btn !== 'yes') {
-			return;
+		PVE.Utils.API2Request({
+		    url: "/nodes/" + nodename + "/storage/" + storage + "/content/" + volid,
+		    method: 'DELETE',
+		    waitMsgTarget: me,
+		    failure: function(response, opts) {
+			Ext.Msg.alert('Error', response.htmlStatus);
+		    },
+		    success: function(response, options) {
+			reload();
 		    }
-
-		    PVE.Utils.API2Request({
-			url: "/nodes/" + nodename + "/storage/" + storage + "/content/" + volid,
-			method: 'DELETE',
-			waitMsgTarget: me,
-			failure: function(response, opts) {
-			    Ext.Msg.alert('Error', response.htmlStatus);
-			},
-			success: function(response, options) {
-			    reload();
-			}
-		    });
 		});
 	    }
 	});
 
-	var set_button_status = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
-
-	    restore_btn.setDisabled(!(rec && rec.data.volid));
-	    delete_btn.setDisabled(!(rec && rec.data.volid));
-	}
-
 	Ext.apply(me, {
 	    stateful: false,
+	    selModel: sm,
 	    tbar: [ backup_btn, restore_btn, delete_btn, '->', storagesel ],
 	    columns: [
 		{
@@ -201,8 +183,7 @@ Ext.define('PVE.grid.BackupView', {
 		}
 	    ],
 	    listeners: {
-		show: reload,
-		selectionchange: set_button_status
+		show: reload
 	    }
 	});
 
