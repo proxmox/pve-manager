@@ -206,7 +206,7 @@ Ext.define('PVE.storage.ContentView', {
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
 	var groupingFeature = Ext.create('Ext.grid.feature.Grouping',{
-            groupHeaderTpl: 'ContentType: {name} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})'
+            groupHeaderTpl: '{[ PVE.Utils.format_content_types(values.name) ]} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})'
 	});
 
 	var reload = function() {
