@@ -4,6 +4,7 @@ JSSRC= 				                 	\
 	Utils.js					\
 	Parser.js					\
 	StateProvider.js				\
+	button/Button.js				\
 	qemu/SendKeyMenu.js				\
 	VNCConsole.js					\
 	data/TimezoneStore.js				\
