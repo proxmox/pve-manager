@@ -21,6 +21,7 @@ JSSRC= 				                 	\
 	form/ComboGrid.js				\
 	form/KVComboBox.js				\
 	form/Boolean.js					\
+	form/VMIDSelector.js				\
 	form/NetworkCardSelector.js			\
 	form/DiskFormatSelector.js			\
 	form/BusTypeSelector.js				\

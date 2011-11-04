@@ -61,20 +61,10 @@ Ext.define('PVE.qemu.CreateWizard', {
 			    }
 			},
 			{
-			    xtype: 'numberfield',
+			    xtype: 'pveVMIDSelector',
 			    name: 'vmid',
 			    value: nextvmid,
-			    minValue: 100,
-			    maxValue: 999999999,
-			    fieldLabel: 'VM ID',
-			    allowBlank: false,
-			    validator: function(value) {
-				/*jslint confusion: true */
-				if (!PVE.data.ResourceStore.findVMID(value)) {
-				    return true;
-				}
-				return "This VM ID is already in use.";
-			    }
+			    validateExists: false
 			},
 			{
 			    xtype: 'textfield',
