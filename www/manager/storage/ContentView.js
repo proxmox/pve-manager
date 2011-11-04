@@ -203,6 +203,8 @@ Ext.define('PVE.storage.ContentView', {
 	    }
 	});
 
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
 	var groupingFeature = Ext.create('Ext.grid.feature.Grouping',{
             groupHeaderTpl: 'ContentType: {name} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})'
 	});
@@ -211,53 +213,9 @@ Ext.define('PVE.storage.ContentView', {
 	    store.load();
 	};
 
- 	var remove_btn = new Ext.Button({
-	    text: 'Delete',
-	    disabled: true,
-	    handler: function() {
-		var sm = me.getSelectionModel();
-		var rec = sm.getSelection()[0];
-		if (!rec) {
-		    return;
-		}
-
-		var volid = rec.data.volid;
-
-		var msg = 'Are you sure you want to delete volume "' + volid + '"';
-		Ext.Msg.confirm('Deletion Confirmation', msg, function(btn) {
-		    if (btn !== 'yes') {
-			return;
-		    }
-
-		    PVE.Utils.API2Request({
-			url: baseurl + '/' + volid,
-			method: 'DELETE',
-			waitMsgTarget: me,
-			callback: function() {
-			    reload();
-			},
-			failure: function (response, opts) {
-			    Ext.Msg.alert('Error', response.htmlStatus);
-			}
-		    });
-		});
-	    }
-        });
-
-	var set_button_status = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
-
-	    if (!rec || rec.data.content === 'images') {
-		remove_btn.setDisabled(true);
-		return;
-	    }
-
-	    remove_btn.setDisabled(false);
-	};
- 
-	Ext.apply(me, {
+ 	Ext.apply(me, {
 	    store: store,
+	    selModel: sm,
 	    stateful: false,
 	    viewConfig: {
 		trackOver: false
@@ -267,7 +225,31 @@ Ext.define('PVE.storage.ContentView', {
 		{
 		    text: 'Restore'
 		},
-		remove_btn,
+		{
+		    xtype: 'pveButton',
+		    text: 'Delete',
+		    selModel: sm,
+		    disabled: true,
+		    confirmMsg: function(rec) {
+			return 'Are you sure you want to delete volume "' + rec.data.volid + '"';
+		    },
+		    enableFn: function(rec) {
+			return rec && rec.data.content !== 'images';
+		    },
+		    handler: function(b, e, rec) {
+			PVE.Utils.API2Request({
+			    url: baseurl + '/' + rec.data.volid,
+			    method: 'DELETE',
+			    waitMsgTarget: me,
+			    callback: function() {
+				reload();
+			    },
+			    failure: function (response, opts) {
+				Ext.Msg.alert('Error', response.htmlStatus);
+			    }
+			});
+		    }
+		},
 		{
 		    text: 'Upload',
 		    handler: function() {
@@ -301,8 +283,7 @@ Ext.define('PVE.storage.ContentView', {
 		}
 	    ],
 	    listeners: {
-		show: reload,
-		selectionchange: set_button_status
+		show: reload
 	    }
 	});
 
