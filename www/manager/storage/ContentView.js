@@ -189,13 +189,13 @@ Ext.define('PVE.storage.ContentView', {
 	    throw "no storage ID specified";
 	}
 
-	var url = "/api2/json/nodes/" + nodename + "/storage/" + storage + "/content";
+	var baseurl = "/nodes/" + nodename + "/storage/" + storage + "/content";
 	var store = new Ext.data.Store({
 	    model: 'pve-storage-content',
 	    groupField: 'content',
 	    proxy: {
                 type: 'pve',
-		url: url
+		url: '/api2/json' + baseurl,
 	    },
 	    sorters: { 
 		property: 'volid', 
@@ -211,6 +211,51 @@ Ext.define('PVE.storage.ContentView', {
 	    store.load();
 	};
 
+ 	var remove_btn = new Ext.Button({
+	    text: 'Delete',
+	    disabled: true,
+	    handler: function() {
+		var sm = me.getSelectionModel();
+		var rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+
+		var volid = rec.data.volid;
+
+		var msg = 'Are you sure you want to delete volume "' + volid + '"';
+		Ext.Msg.confirm('Deletion Confirmation', msg, function(btn) {
+		    if (btn !== 'yes') {
+			return;
+		    }
+
+		    PVE.Utils.API2Request({
+			url: baseurl + '/' + volid,
+			method: 'DELETE',
+			waitMsgTarget: me,
+			callback: function() {
+			    reload();
+			},
+			failure: function (response, opts) {
+			    Ext.Msg.alert('Error', response.htmlStatus);
+			}
+		    });
+		});
+	    }
+        });
+
+	var set_button_status = function() {
+	    var sm = me.getSelectionModel();
+	    var rec = sm.getSelection()[0];
+
+	    if (!rec || rec.data.content === 'images') {
+		remove_btn.setDisabled(true);
+		return;
+	    }
+
+	    remove_btn.setDisabled(false);
+	};
+ 
 	Ext.apply(me, {
 	    store: store,
 	    stateful: false,
@@ -222,9 +267,7 @@ Ext.define('PVE.storage.ContentView', {
 		{
 		    text: 'Restore'
 		},
-		{
-		    text: 'Delete'
-		},
+		remove_btn,
 		{
 		    text: 'Upload',
 		    handler: function() {
@@ -258,7 +301,8 @@ Ext.define('PVE.storage.ContentView', {
 		}
 	    ],
 	    listeners: {
-		show: reload
+		show: reload,
+		selectionchange: set_button_status
 	    }
 	});
 
