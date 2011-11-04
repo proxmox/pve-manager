@@ -19,7 +19,7 @@ Ext.define('PVE.storage.Upload', {
 	    throw "no storage ID specified";
 	}
 
-	var url = "/api2/htmljs/nodes/" + me.nodename + "/storage/" + me.storage + "/upload";
+	var baseurl = "/nodes/" + me.nodename + "/storage/" + me.storage + "/upload";
 
 	var pbar = Ext.create('Ext.ProgressBar', {
             text: 'Ready',
@@ -27,7 +27,6 @@ Ext.define('PVE.storage.Upload', {
  	});
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
-	    url: url,
 	    method: 'POST',
 	    waitMsgTarget: true,
 	    bodyPadding: 10,
@@ -64,7 +63,7 @@ Ext.define('PVE.storage.Upload', {
 
 	var doStandardSubmit = function() {
 	    form.submit({
-		url: me.url,
+		url: "/api2/htmljs" + baseurl,
 		waitMsg: 'Uploading file...',
 		success: function(f, action) {
 		    me.close();
@@ -121,10 +120,10 @@ Ext.define('PVE.storage.Upload', {
 		xhr = new XMLHttpRequest();
 
 		xhr.addEventListener("load", function(e) {   
-		    if (xhr.status == 200) {  
+		    if (xhr.status == 200) {
 			me.close();
 		    } else {  
-			var msg = "Error " + xhr.status + " occurred uploading your file.";  
+			var msg = "Error " + xhr.status + ": " + Ext.htmlEncode(xhr.statusText);
 			Ext.Msg.alert('Upload failed', msg, function(btn) {
 			    me.close();
 			});
@@ -146,7 +145,7 @@ Ext.define('PVE.storage.Upload', {
 		    } 
 		}, false);
 
-		xhr.open("POST", url);
+		xhr.open("POST", "/api2/json" + baseurl, true);
 		xhr.send(fd);		
 	    }
 	});
