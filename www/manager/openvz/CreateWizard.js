@@ -278,7 +278,13 @@ Ext.define('PVE.openvz.CreateWizard', {
 			    waitMsgTarget: me,
 			    method: 'POST',
 			    params: kv,
-			    success: function(response){
+			    success: function(response, opts){
+				var upid = response.result.data;
+		    
+				var win = Ext.create('PVE.window.TaskViewer', { 
+				    upid: upid
+				});
+				win.show();
 				me.close();
 			    },
 			    failure: function(response, opts) {
