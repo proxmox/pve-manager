@@ -564,6 +564,8 @@ Ext.define('PVE.Utils', { statics: {
 		cta.push('Templates');
 	    } else if (ct === 'iso') {
 		cta.push('ISO');
+	    } else if (ct === 'rootdir') {
+		cta.push('Containers');
 	    }
 	});
 

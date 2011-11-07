@@ -87,16 +87,16 @@ __PACKAGE__->register_method({
     }});
 
 my $restore_openvz = sub {
-    my ($archive, $vmid, $force) = @_;
+    my ($private, $archive, $vmid, $force) = @_;
 
     my $vzconf = PVE::OpenVZ::read_global_vz_config ();
     my $conffile = PVE::OpenVZ::config_file($vmid);
     my $cfgdir = dirname($conffile);
 
-    my $private = $vzconf->{privatedir};
-    $private =~ s/\$VEID/$vmid/;
     my $root = $vzconf->{rootdir};
     $root =~ s/\$VEID/$vmid/;
+    my $default_private = $vzconf->{privatedir};
+    $default_private =~ s/\$VEID/$vmid/;
 
     print "you choose to force overwriting VPS config file, private and root directories.\n" if $force;
 
@@ -112,8 +112,15 @@ my $restore_openvz = sub {
     my $conf;
 
     eval {
-	rmtree $private if -d $private;
-	rmtree $root if -d $root;
+	if ($force && -f $conffile) {
+	    my $conf = PVE::OpenVZ::load_config($vmid);
+
+	    my $oldprivate = $conf->{ve_private} ? $conf->{ve_private}->{value} : $default_private;
+	    rmtree $oldprivate if -d $oldprivate;
+	   
+	    my $oldroot = $conf->{ve_root} ? $conf->{ve_root}->{value} : $root;
+	    rmtree $oldroot if -d $oldroot;
+	};
 
 	mkpath $private || die "unable to create private dir '$private'";
 	mkpath $root || die "unable to create private dir '$private'";
@@ -191,6 +198,11 @@ __PACKAGE__->register_method({
 		type => 'string',
 		description => "Sets root password inside container.",
 	    },
+	    storage => get_standard_option('pve-storage-id', {
+		description => "Target storage.",
+		default => 'local',
+		optional => 1,
+	    }),
 	    force => {
 		optional => 1, 
 		type => 'boolean',
@@ -219,7 +231,18 @@ __PACKAGE__->register_method({
 
 	my $password = extract_param($param, 'password');
 
-	my $stcfg = cfs_read_file("storage.cfg");
+	my $storage = extract_param($param, 'storage') || 'local';
+
+	my $storage_cfg = cfs_read_file("storage.cfg");
+
+	my $scfg = PVE::Storage::storage_check_node($storage_cfg, $storage, $node);
+
+	raise_param_exc({ storage => "storage '$storage' does not support openvz root directories"})
+	    if !$scfg->{content}->{rootdir};
+
+	my $private = PVE::Storage::get_private_dir($storage_cfg, $storage, $vmid);
+
+	PVE::Storage::activate_storage($storage_cfg, $storage);
 
 	my $conf = PVE::OpenVZ::parse_ovz_config("/tmp/openvz/$vmid.conf", $pve_base_ovz_config);
 
@@ -245,7 +268,7 @@ __PACKAGE__->register_method({
 		$archive = '-';
 	    } else {
 		if (PVE::Storage::parse_volume_id($ostemplate, 1)) {
-		    $archive = PVE::Storage::path($stcfg, $ostemplate);
+		    $archive = PVE::Storage::path($storage_cfg, $ostemplate);
 		} else {
 		    raise_param_exc({ archive => "Only root can pass arbitrary paths." }) 
 			if $user ne 'root@pam';
@@ -275,6 +298,7 @@ __PACKAGE__->register_method({
 		$conf->{ostemplate}->{value} = $archive;
 		$conf->{ostemplate}->{value} =~ s|^.*/||;
 		$conf->{ostemplate}->{value} =~ s/\.tar\.(gz|bz2)$//;
+		$conf->{ve_private}->{value} = $private;
 	    }
 
 	    my $rawconf = PVE::OpenVZ::generate_raw_config($pve_base_ovz_config, $conf);
@@ -282,14 +306,14 @@ __PACKAGE__->register_method({
 	    PVE::Cluster::check_cfs_quorum();
 
 	    my $realcmd = sub {
-		&$restore_openvz($archive, $vmid, $param->{force});
+		&$restore_openvz($private, $archive, $vmid, $param->{force});
 
 		PVE::Tools::file_set_contents($basecfg_fn, $rawconf)
 		    if !$param->{restore};
 
 		# hack: vzctl '--userpasswd' starts the CT, but we want 
 		# to avoid that for create
-		PVE::OpenVZ::set_rootpasswd($vmid, $password) if defined($password);
+		PVE::OpenVZ::set_rootpasswd($private, $password) if defined($password);
 	    };
 
 	    return $rpcenv->fork_worker($param->{restore} ? 'vzrestore' : 'vzcreate', 

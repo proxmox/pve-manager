@@ -20,6 +20,14 @@ Ext.define('PVE.openvz.CreateWizard', {
 	    ]
 	});
 
+	var storagesel = Ext.create('PVE.form.StorageSelector', {
+	    name: 'storage',
+	    fieldLabel: 'Storage',
+	    storageContent: 'rootdir',
+	    autoSelect: true,
+	    allowBlank: false
+	});
+
 	var tmplsel = Ext.create('PVE.form.FileSelector', {
 	    name: 'ostemplate',
 	    storageContent: 'vztmpl',
@@ -53,6 +61,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 				change: function(f, value) {
 				    tmplsel.setStorage('local', value);
 				    bridgesel.setNodename(value);
+				    storagesel.setNodename(value);
 				}
 			    }
 			},
@@ -72,6 +81,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 			}
 		    ],
 		    column2: [
+			storagesel,
 			{
 			    xtype: 'textfield',
 			    inputType: 'password',

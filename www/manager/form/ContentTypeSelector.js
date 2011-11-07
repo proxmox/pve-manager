@@ -5,12 +5,12 @@ Ext.define('PVE.form.ContentTypeSelector', {
     initComponent: function() {
 	var me = this;
 
-	me.data = [
-	    ['images', 'Images'],
-	    ['iso', 'ISO'],
-	    ['vztmpl', 'Templates'],
-	    ['backup', 'Backups']
-	];
+	me.data = [];
+
+	var cts = ['images', 'iso', 'vztmpl', 'backup', 'rootdir'];
+	Ext.Array.each(cts, function(ct) {
+	    me.data.push([ct, PVE.Utils.format_content_types(ct)]);
+	});
 
 	me.callParent();
     }

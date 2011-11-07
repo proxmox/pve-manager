@@ -80,15 +80,22 @@ Ext.define('PVE.grid.BackupView', {
 	    text: 'Restore',
 	    disabled: true,
 	    selModel: sm,
-	    confirmMsg: function(rec) {
-		return 'Are you sure you want to restore from "' + rec.data.volid + '"? ' +
-		    'This will permanently erase current VM data.';
-	    },
 	    enableFn: function(rec) {
 		return !!rec;
 	    },
 	    handler: function(b, e, rec) {
 		var volid = rec.data.volid;
+
+		var win = Ext.create('PVE.window.Restore', {
+		    nodename: nodename,
+		    vmid: vmid,
+		    volid: rec.data.volid,
+		    volidText: PVE.Utils.render_storage_content(rec.data.volid, {}, rec),
+		    vmtype: vmtype
+		});
+		win.show();
+		win.on('destroy', reload);
+		return;
 
 		var url;
 		var params = {

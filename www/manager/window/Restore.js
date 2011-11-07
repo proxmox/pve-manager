@@ -42,9 +42,10 @@ Ext.define('PVE.window.Restore', {
 		},
 		storagesel,
 		{
-		    xtype: 'pveVMIDSelector',
+		    xtype: me.vmid ? 'displayfield' : 'pveVMIDSelector',
 		    name: 'vmid',
-		    value: PVE.data.ResourceStore.findNextVMID(),
+		    fieldLabel: 'VM ID',
+		    value: me.vmid || PVE.data.ResourceStore.findNextVMID(),
 		    validateExists: false
 		}
 	    ]
@@ -56,6 +57,26 @@ Ext.define('PVE.window.Restore', {
 	    submitBtn.setDisabled(!valid);
 	});
 
+	var doRestore = function(url, params) {
+	    PVE.Utils.API2Request({
+		url: url,
+		params: params,
+		method: 'POST',
+		failure: function (response, opts) {
+		    Ext.Msg.alert('Error', response.htmlStatus);
+		},
+		success: function(response, options) {
+		    var upid = response.result.data;
+		    
+		    var win = Ext.create('PVE.window.TaskViewer', { 
+			upid: upid
+		    });
+		    win.show();
+		    me.close();
+		}
+	    });
+	};
+
 	var submitBtn = Ext.create('Ext.Button', {
 	    text: 'Restore',
 	    handler: function(){
@@ -64,36 +85,33 @@ Ext.define('PVE.window.Restore', {
 
 		var params = {
 		    storage: storage,
-		    vmid: values.vmid
+		    vmid: me.vmid ? me.vmid : values.vmid,
+		    force: me.vmid ? 1 : 0
 		};
 
 		if (me.vmtype === 'openvz') {
 		    url = '/nodes/' + me.nodename + '/openvz';
 		    params.ostemplate = me.volid;
+		    params.restore = 1;
 		} else if (me.vmtype === 'qemu') {
 		    url = '/nodes/' + me.nodename + '/qemu';
 		    params.archive = me.volid;
 		} else {
 		    throw 'unknown VM type';
 		}
-		
-		PVE.Utils.API2Request({
-		    url: url,
-		    params: params,
-		    method: 'POST',
-		    failure: function (response, opts) {
-			Ext.Msg.alert('Error',response.htmlStatus);
-		    },
-		    success: function(response, options) {
-			var upid = response.result.data;
-			
-			var win = Ext.create('PVE.window.TaskViewer', { 
-			    upid: upid
-			});
-			win.show();
-			me.close();
-		    }
-		});
+
+		if (me.vmid) {
+		    var msg = 'Are you sure you want to restore this VM"? ' +
+			'This will permanently erase current VM data.';
+		    Ext.Msg.confirm('Confirmation', msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+			doRestore(url, params);
+		    });
+		} else {
+		    doRestore(url, params);
+		}
 	    }
 	});
 

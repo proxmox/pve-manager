@@ -197,7 +197,7 @@ sub vmstatus {
 
     if (my $fh = IO::File->new ("/proc/mounts", "r")) {
 	while (defined (my $line = <$fh>)) {
-	    if ($line =~ m|^/var/lib/vz/private/(\d+)\s+/var/lib/vz/root/|) {
+	    if ($line =~ m|/private/(\d+)\s+/var/lib/vz/root/\d+\s|) {
 		$list->{$1}->{status} = 'mounted' if defined($list->{$1});
 	    }
 	}
@@ -219,7 +219,7 @@ sub vmstatus {
 
     if (my $fh = IO::File->new ("/proc/vz/vzquota", "r")) {
 	while (defined (my $line = <$fh>)) {
-	    if ($line =~ m|^(\d+):\s+/var/lib/vz/private/\d+$|) {
+	    if ($line =~ m|^(\d+):\s+\S+/private/\d+$|) {
 		my $vmid = $1;
 		my $d = $list->{$vmid};
 		if ($d && defined($d->{status})) {
@@ -1173,16 +1173,13 @@ sub replacepw {
 }
 
 sub set_rootpasswd {
-    my ($vmid, $opt_rootpasswd) = @_;
+    my ($privatedir, $opt_rootpasswd) = @_;
 
-    my $vmdir = $global_vzconf->{privatedir};
-    $vmdir =~ s/\$VEID/$vmid/;
-
-    my $pwfile = "$vmdir/etc/passwd";
+    my $pwfile = "$privatedir/etc/passwd";
 
     return if ! -f $pwfile;
 
-    my $shadow = "$vmdir/etc/shadow";
+    my $shadow = "$privatedir/etc/shadow";
 
     if ($opt_rootpasswd !~ m/^\$/) {
 	my $time = substr (Digest::SHA1::sha1_base64 (time), 0, 8);
