@@ -37,18 +37,17 @@ Ext.define('PVE.window.Backup', {
 	    items: [
 		storagesel,
 		{
+		    xtype: 'pveBackupModeSelector',
+		    fieldLabel: 'Mode',
+		    value: 'snapshot',
+		    name: 'mode'
+		},
+		{
 		    xtype: 'pvecheckbox',
 		    name: 'compress',
 		    uncheckedValue: 0,
 		    checked: true,
 		    fieldLabel: 'Compress'
-		},
-		{
-		    xtype: 'pvecheckbox',
-		    name: 'snapshot',
-		    uncheckedValue: 0,
-		    checked: true,
-		    fieldLabel: 'Snapshot mode'
 		}
 	    ]
 	});
@@ -68,7 +67,7 @@ Ext.define('PVE.window.Backup', {
 			storage: storage,
 			vmid: me.vmid,
 			compress: values.compress,
-			snapshot: values.snapshot
+			mode: values.mode
 		    },
 		    method: 'POST',
 		    failure: function (response, opts) {
