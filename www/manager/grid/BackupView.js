@@ -22,12 +22,26 @@ Ext.define('PVE.grid.BackupView', {
 	    throw "no VM type specified";
 	}
 
+	var filterFn;
+	if (vmtype === 'openvz') {
+	    filterFn = function(item) {
+		return item.data.volid.match(':backup/vzdump-openvz-');
+	    };
+	} else if (vmtype === 'qemu') {
+	    filterFn = function(item) {
+		return item.data.volid.match(':backup/vzdump-qemu-');
+	    };
+	} else {
+	    throw "unsupported VM type '" + vmtype + "'";
+	}
+
 	me.store = Ext.create('Ext.data.Store', {
 	    model: 'pve-storage-content',
 	    sorters: { 
 		property: 'volid', 
 		order: 'DESC' 
-	    }
+	    },
+	    filters: { filterFn: filterFn }
 	});
 
 	var reload = Ext.Function.createBuffered(function() {
