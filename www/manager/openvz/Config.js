@@ -53,6 +53,7 @@ Ext.define('PVE.openvz.Config', {
 		    xtype: 'pveBeanCounterGrid',
 		    url: '/api2/json/nodes/' + nodename + '/openvz/' + vmid + '/status/ubc'
 		},
+/*
 		{
 		    xtype: 'pveOpenVZConsole',
 		    title: 'Console',
@@ -60,6 +61,7 @@ Ext.define('PVE.openvz.Config', {
 		    nodename: nodename,
 		    vmid: vmid
 		},
+*/
 		{
 		    xtype: 'pveBackupView',
 		    title: 'Backup',

@@ -37,6 +37,7 @@ Ext.define('PVE.qemu.Config', {
 		    itemId: 'options',
 		    xtype: 'PVE.qemu.Options'
 		},
+/*
 		{
 		    xtype: 'pveKVMConsole',
 		    title: 'Console',
@@ -45,6 +46,7 @@ Ext.define('PVE.qemu.Config', {
 		    nodename: nodename,
 		    vmid: vmid
 		},
+*/
 		{
 		    xtype: 'pveBackupView',
 		    title: 'Backup',
