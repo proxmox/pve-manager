@@ -53,8 +53,11 @@ Ext.define('PVE.grig.LogView', {
 
 	    // invalidate last page by removing last entry from cache
 	    store.prefetchData.removeAtKey(store.totalCount - 1);
-	    store.guaranteeRange(store.totalCount - store.pageSize, 
-				 store.totalCount - 1);
+	    var start = store.totalCount - store.pageSize;
+	    if (start < 0) {
+		start = 0;
+	    }
+	    store.guaranteeRange(start, start + store.pageSize - 1);
 	};
 
 	var onScroll = function() {
@@ -110,11 +113,17 @@ Ext.define('PVE.grig.LogView', {
 	    load_task.delay(1000, run_load_task);
 	};
 
-	if (me.scrollToEnd) {
-	    run_load_task();
-	} else {
-	    store.guaranteeRange(0, store.pageSize - 1);
-	}
+	me.on('show', function() {
+	    if (me.scrollToEnd) {
+		run_load_task();
+	    } else {
+		store.guaranteeRange(0, store.pageSize - 1);
+	    }
+	});
+
+	me.on('hide', function() {
+	    load_task.cancel();
+	});
 
 	me.on('destroy', function() {
 	    load_task.cancel();
