@@ -72,6 +72,18 @@ sub check_mounted {
     return (-d "$root/etc" || -d "$root/proc");
 }
 
+sub get_privatedir {
+    my ($conf, $vmid) = @_;
+
+    my $private = $global_vzconf->{privatedir};
+    if ($conf->{ve_private} && $conf->{ve_private}->{value}) {
+	$private = $conf->{ve_private}->{value};
+    }
+    $private =~ s/\$VEID/$vmid/;
+
+    return $private;
+}
+
 sub read_user_beancounters {
     my $ubc = {};
     if (my $fh = IO::File->new ("/proc/user_beancounters", "r")) {
@@ -1193,4 +1205,3 @@ sub set_rootpasswd {
 	replacepw ($pwfile, $opt_rootpasswd);
     }
 }
-

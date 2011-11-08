@@ -95,8 +95,6 @@ my $restore_openvz = sub {
 
     my $root = $vzconf->{rootdir};
     $root =~ s/\$VEID/$vmid/;
-    my $default_private = $vzconf->{privatedir};
-    $default_private =~ s/\$VEID/$vmid/;
 
     print "you choose to force overwriting VPS config file, private and root directories.\n" if $force;
 
@@ -115,7 +113,7 @@ my $restore_openvz = sub {
 	if ($force && -f $conffile) {
 	    my $conf = PVE::OpenVZ::load_config($vmid);
 
-	    my $oldprivate = $conf->{ve_private} ? $conf->{ve_private}->{value} : $default_private;
+	    my $oldprivate = PVE::OpenVZ::get_privatedir($conf, $vmid);
 	    rmtree $oldprivate if -d $oldprivate;
 	   
 	    my $oldroot = $conf->{ve_root} ? $conf->{ve_root}->{value} : $root;
@@ -416,6 +414,7 @@ __PACKAGE__->register_method({
 	    { subdir => 'status' },
 	    { subdir => 'vncproxy' },
 	    { subdir => 'migrate' },
+	    { subdir => 'initlog' },
 	    { subdir => 'rrd' },
 	    { subdir => 'rrddata' },
 	    ];
@@ -510,6 +509,70 @@ __PACKAGE__->register_method({
 
 	return PVE::Cluster::create_rrd_data(
 	    "pve2-vm/$param->{vmid}", $param->{timeframe}, $param->{cf});
+    }});
+
+__PACKAGE__->register_method({
+    name => 'initlog', 
+    path => '{vmid}/initlog', 
+    method => 'GET',
+    protected => 1,
+    permissions => {
+	path => '/vms/{vmid}',
+	privs => [ 'VM.Audit' ],
+    },
+    description => "Read init log.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	    start => {
+		type => 'integer',
+		minimum => 0,
+		optional => 1,
+	    },
+	    limit => {
+		type => 'integer',
+		minimum => 0,
+		optional => 1,
+	    },
+	},
+    },
+    returns => {
+	type => 'array',
+	items => { 
+	    type => "object",
+	    properties => {
+		n => {
+		  description=>  "Line number",
+		  type=> 'integer',
+		},
+		t => {
+		  description=>  "Line text",
+		  type => 'string',
+		}
+	    }
+	}
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+
+	my $vmid = $param->{vmid};
+
+	my $conf = PVE::OpenVZ::load_config($vmid);
+
+	my $privatedir = PVE::OpenVZ::get_privatedir($conf, $vmid);
+
+	my $logfn = "$privatedir/var/log/init.log";
+
+	my ($count, $lines) = PVE::Tools::dump_logfile($logfn, $param->{start}, $param->{limit});
+
+	$rpcenv->set_result_count($count);
+	    
+	return $lines; 
     }});
 
 __PACKAGE__->register_method({
