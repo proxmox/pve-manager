@@ -42,7 +42,8 @@ Ext.define('PVE.node.Config', {
 		{
 		    title: 'Syslog',
 		    itemId: 'syslog',
-		    xtype: 'pveNodeSyslog'
+		    xtype: 'pveLogView',
+		    url: "/api2/json/nodes/" + nodename + "/syslog"
 		},
 		{
 		    title: 'Task History',

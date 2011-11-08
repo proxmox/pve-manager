@@ -53,6 +53,12 @@ Ext.define('PVE.openvz.Config', {
 		    xtype: 'pveBeanCounterGrid',
 		    url: '/api2/json/nodes/' + nodename + '/openvz/' + vmid + '/status/ubc'
 		},
+		{
+		    title: "InitLog",
+		    itemId: 'initlog',
+		    xtype: 'pveLogView',
+		    url: '/api2/json/nodes/' + nodename + '/openvz/' + vmid + '/initlog'
+		},
 /*
 		{
 		    xtype: 'pveOpenVZConsole',

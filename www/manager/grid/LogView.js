@@ -1,14 +1,13 @@
-Ext.define('PVE.node.Syslog', {
+Ext.define('PVE.grig.LogView', {
     extend: 'Ext.grid.GridPanel',
 
-    alias: ['widget.pveNodeSyslog'],
+    alias: ['widget.pveLogView'],
 
     initComponent : function() {
 	var me = this;
 
-	var nodename = me.pveSelNode.data.node;
-	if (!nodename) {
-	    throw "no node name specified";
+	if (!me.url) {
+	    throw "no url specified";
 	}
 
 	var store = Ext.create('Ext.data.Store', {
@@ -19,7 +18,7 @@ Ext.define('PVE.node.Syslog', {
                 type: 'pve',
 		startParam: 'start',
 		limitParam: 'limit',
-                url: "/api2/json/nodes/" + nodename + "/syslog"
+                url: me.url
 	    }
 	});
 

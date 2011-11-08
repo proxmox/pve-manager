@@ -60,6 +60,7 @@ JSSRC= 				                 	\
 	tree/ResourceTree.js				\
 	panel/ConfigPanel.js				\
 	grid/BackupView.js				\
+	grid/LogView.js					\
 	node/DNSEdit.js					\
 	node/DNSView.js					\
 	node/TimeView.js				\
@@ -70,7 +71,6 @@ JSSRC= 				                 	\
 	node/ServiceView.js				\
 	node/NetworkEdit.js				\
 	node/NetworkView.js				\
-	node/Syslog.js					\
 	node/Tasks.js					\
 	node/Config.js					\
 	qemu/StatusView.js				\
