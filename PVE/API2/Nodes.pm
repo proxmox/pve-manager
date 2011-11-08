@@ -450,35 +450,11 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	my $lines = [];
-
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 	my $node = $param->{node};
 
-	my $fh = IO::File->new("/var/log/syslog", "r");
-	die "unable to open file - $!" if !$fh;
-
-	my $start = $param->{start} || 0;
-	my $limit = $param->{limit} || 50;
-	my $count = 0;
-	my $line;
-	while (defined ($line = <$fh>)) {
-	    next if $count++ < $start;
-	    next if $limit <= 0;
-	    chomp $line;
-	    push @$lines, { n => $count, t => $line};
-	    $limit--;
-	}
-
-	close($fh);
-
-	# HACK: ExtJS store.guaranteeRange() does not like empty array
-	# so we add a line
-	if (!$count) {
-	    $count++;
-	    push @$lines, { n => $count, t => "no content"};
-	}
+	my ($count, $lines) = PVE::Tools::dump_logfile("/var/log/syslog", $param->{start}, $param->{limit});
 
 	$rpcenv->set_result_count($count);
 	    
