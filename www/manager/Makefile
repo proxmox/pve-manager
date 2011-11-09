@@ -75,6 +75,7 @@ JSSRC= 				                 	\
 	node/Config.js					\
 	qemu/StatusView.js				\
 	qemu/Migrate.js					\
+	qemu/Monitor.js					\
 	qemu/Summary.js					\
 	qemu/OSTypeEdit.js				\
 	qemu/ProcessorEdit.js				\

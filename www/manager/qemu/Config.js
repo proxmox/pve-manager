@@ -37,6 +37,11 @@ Ext.define('PVE.qemu.Config', {
 		    itemId: 'options',
 		    xtype: 'PVE.qemu.Options'
 		},
+		{
+		    title: 'Monitor',
+		    itemId: 'monitor',
+		    xtype: 'pveQemuMonitor'
+		},
 /*
 		{
 		    xtype: 'pveKVMConsole',
