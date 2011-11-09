@@ -71,7 +71,7 @@ Ext.define('PVE.dc.UserEdit', {
         ];
 
         var column2 = [
- 	    {
+	    {
 		xtype: 'textfield',
 		name: 'firstname',
 		fieldLabel: 'First Name'

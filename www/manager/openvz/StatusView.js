@@ -55,10 +55,11 @@ Ext.define('PVE.openvz.StatusView', {
 	var render_status = function(value, metaData, record, rowIndex, colIndex, store) {
 	    var failcnt = me.getObjectValue('failcnt', 0);
 	    if (failcnt > 0) {
-		return value + " (failure count " + failcnt + ")";
+		return value + " (failure count " + failcnt.toString() + ")";
 	    }
 	    return value;
-	}
+	};
+
 	var rows = {
 	    name: { header: 'Name', defaultValue: 'no name specified' },
 	    status: { header: 'Status', defaultValue: 'unknown', renderer: render_status },

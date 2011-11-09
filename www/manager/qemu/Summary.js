@@ -68,7 +68,7 @@ Ext.define('PVE.qemu.Summary', {
 		    text: 'Migrate',
 		    handler: function() {
 			var win = Ext.create('PVE.qemu.Migrate', { 
-			    pveSelNode: me.pveSelNode,
+			    pveSelNode: me.pveSelNode
 			});
 			win.show();
 		    }    

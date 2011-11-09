@@ -39,7 +39,7 @@ Ext.define('PVE.openvz.RessourceView', {
 		header: 'Processors',
 		never_delete: true,
 		editor: 'PVE.openvz.RessourceEdit',
-		defaultValue: 1,
+		defaultValue: 1
 	    },
 	    disk: {
 		header: 'Disk space',

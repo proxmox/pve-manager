@@ -22,7 +22,7 @@ Ext.define('PVE.dc.GroupView', {
             store.load();
         };
 
-  	var remove_btn = new Ext.Button({
+	var remove_btn = new Ext.Button({
 	    text: 'Delete',
 	    disabled: true,
 	    handler: function() {

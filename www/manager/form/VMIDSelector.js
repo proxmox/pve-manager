@@ -11,6 +11,7 @@ Ext.define('PVE.form.VMIDSelector', {
     validateExists: undefined,
 
     validator: function(value) {
+	/*jslint confusion: true */
         var me = this;
 
 	if (!Ext.isDefined(me.validateExists)) {

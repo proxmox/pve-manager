@@ -420,6 +420,7 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     format_size: function(size) {
+	/*jslint confusion: true */
 
 	if (size < 1024) {
 	    return size;
@@ -606,6 +607,7 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     render_size: function(value, metaData, record, rowIndex, colIndex, store) {
+	/*jslint confusion: true */
 
 	if (!Ext.isNumeric(value)) {
 	    return '';

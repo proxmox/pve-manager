@@ -49,8 +49,7 @@ Ext.define('PVE.node.BCFailCnt', {
 		itemdblclick: function(v, record) {
 		    var ws = me.up('pveStdWorkspace');
 		    ws.selectById('openvz/' + record.data.id);
-		},
-
+		}
 	    }
 	});
 

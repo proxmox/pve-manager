@@ -33,7 +33,7 @@ Ext.define('PVE.qemu.Monitor', {
 	    var el = textbox.getTargetEl();
 	    var dom = Ext.getDom(el);
 	    dom.scrollTop = dom.scrollHeight - dom.clientHeight;	    
-	}
+	};
 
 	var refresh = function() {
 	    textbox.update(lines.join('\n'));

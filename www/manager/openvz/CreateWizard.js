@@ -1,3 +1,4 @@
+/*jslint confusion: true */
 Ext.define('PVE.openvz.CreateWizard', {
     extend: 'PVE.window.Wizard',
     requires: [    
@@ -125,7 +126,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 		},
 		{
 		    xtype: 'pveOpenVZResourceInputPanel',
-		    title: 'Resources',
+		    title: 'Resources'
 		},
 		{
 		    xtype: 'inputpanel',
@@ -200,10 +201,10 @@ Ext.define('PVE.openvz.CreateWizard', {
 				    if (!me.rendered) {
 					return;
 				    }
-				    var field =  me.down('#dns1');
+				    var field = me.down('#dns1');
 				    field.setDisabled(!value);
 				    field.clearInvalid();
-				    var field =  me.down('#dns2');
+				    field = me.down('#dns2');
 				    field.setDisabled(!value);
 				    field.clearInvalid();
 				}

@@ -375,7 +375,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		if (node && node.data.type === record.data.type &&
 		    node.data.node !== record.data.node) {
 		    // defer select (else we get strange errors)
-		    Ext.defer(function() { me.selectExpand(node) }, 100, me);
+		    Ext.defer(function() { me.selectExpand(node); }, 100, me);
 		}
 	    },
 	    applyState : function(state) {

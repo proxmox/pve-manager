@@ -59,7 +59,7 @@ Ext.define('PVE.openvz.Options', {
 		defaultValue: '0',
 		renderer: function(value) {
 		    if (value == 0) {
-			return 'User quotas disabled.'
+			return 'User quotas disabled.';
 		    }
 		    return value;
 		},

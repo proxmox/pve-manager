@@ -10,10 +10,10 @@ Ext.define('PVE.openvz.BeanCounterGrid', {
 	}
 
 	if (record.id.match(/pages$/)) {
-	    	return PVE.Utils.format_size(value*4096);
+	    return PVE.Utils.format_size(value*4096);
 	}
 	if (record.id.match(/(size|buf)$/)) {
-	    	return PVE.Utils.format_size(value);
+	    return PVE.Utils.format_size(value);
 	}
 
 	return value;

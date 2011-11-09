@@ -80,7 +80,7 @@ Ext.define('PVE.qemu.Migrate', {
 	    layout: 'auto',
 	    border: false,
 	    items: [ me.formPanel ],
-	    buttons: [ submitBtn ],
+	    buttons: [ submitBtn ]
 	});
 
 	me.callParent();

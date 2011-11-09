@@ -53,10 +53,6 @@ Ext.define('PVE.window.Restore', {
 
 	var form = me.formPanel.getForm();
 
-	form.on('validitychange', function(f, valid) {
-	    submitBtn.setDisabled(!valid);
-	});
-
 	var doRestore = function(url, params) {
 	    PVE.Utils.API2Request({
 		url: url,
@@ -85,10 +81,11 @@ Ext.define('PVE.window.Restore', {
 
 		var params = {
 		    storage: storage,
-		    vmid: me.vmid ? me.vmid : values.vmid,
+		    vmid: me.vmid || values.vmid,
 		    force: me.vmid ? 1 : 0
 		};
 
+		var url;
 		if (me.vmtype === 'openvz') {
 		    url = '/nodes/' + me.nodename + '/openvz';
 		    params.ostemplate = me.volid;
@@ -115,6 +112,10 @@ Ext.define('PVE.window.Restore', {
 	    }
 	});
 
+	form.on('validitychange', function(f, valid) {
+	    submitBtn.setDisabled(!valid);
+	});
+
 	var title = (me.vmtype === 'openvz') ? "Restore CT" : "Restore VM";
 
 	Ext.apply(me, {
@@ -124,7 +125,7 @@ Ext.define('PVE.window.Restore', {
 	    layout: 'auto',
 	    border: false,
 	    items: [ me.formPanel ],
-	    buttons: [ submitBtn ],
+	    buttons: [ submitBtn ]
 	});
 
 	me.callParent();

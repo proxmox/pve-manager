@@ -97,7 +97,7 @@ Ext.define('PVE.window.Backup', {
 	    layout: 'auto',
 	    border: false,
 	    items: [ me.formPanel ],
-	    buttons: [ submitBtn ],
+	    buttons: [ submitBtn ]
 	});
 
 	me.callParent();

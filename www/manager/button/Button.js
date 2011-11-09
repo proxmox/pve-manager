@@ -16,6 +16,8 @@ Ext.define('PVE.button.Button', {
     confirmMsg: false,
 
     initComponent: function() {
+	/*jslint confusion: true */
+
         var me = this;
 
 	if (me.handler) {
@@ -31,7 +33,7 @@ Ext.define('PVE.button.Button', {
 		}
 
 		if (me.confirmMsg) {
-		    var msg = me.confirmMsg;
+		    msg = me.confirmMsg;
 		    if (Ext.isFunction(me.confirmMsg)) {
 			msg = me.confirmMsg(rec);
 		    } 

@@ -3,9 +3,13 @@ Ext.define('PVE.dc.BackupEdit', {
     alias: ['widget.pveDcBackupEdit'],
 
     initComponent : function() {
-        var me = this;
+	/*jslint confusion: true */
+         var me = this;
 
         me.create = !me.jobid;
+
+	var url;
+	var method;
 
 	if (me.create) {
             url = '/api2/extjs/cluster/backup';
@@ -83,7 +87,6 @@ Ext.define('PVE.dc.BackupEdit', {
 		},
 		{ 
 		    header: 'Status',
-		    dataIndex: 'vmid',
 		    dataIndex: 'uptime',
 		    renderer: function(value) {
 			if (value) {
@@ -136,7 +139,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		fieldLabel: 'Day of week',
 		multiSelect: true,
 		value: ['sat'],
-		allowBlank: false,
+		allowBlank: false
 	    },
 	    {
 		xtype: 'timefield',
@@ -163,12 +166,12 @@ Ext.define('PVE.dc.BackupEdit', {
 		uncheckedValue: 0
 	    },
 	    {
-	    	xtype: 'numberfield',
+		xtype: 'numberfield',
 		fieldLabel: 'Max files',
 		name: 'maxfiles',
 		minValue: 1,
 		maxValue: 365,
-		value: 1,
+		value: '1',
 		allowBlank: false
 	    },
 	    {
@@ -398,7 +401,7 @@ Ext.define('PVE.dc.BackupView', {
 	    viewConfig: {
 		trackOver: false
 	    },
-	    tbar: [ 	    
+	    tbar: [
 		{
 		    text: 'Add',
 		    handler: function() {
@@ -433,7 +436,7 @@ Ext.define('PVE.dc.BackupView', {
 		    header: 'Start time',
 		    width: 60,
 		    sortable: true,
-		    dataIndex: 'starttime',
+		    dataIndex: 'starttime'
 		},
 		{
 		    header: 'Storage ID',

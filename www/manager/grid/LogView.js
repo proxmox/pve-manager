@@ -96,7 +96,7 @@ Ext.define('PVE.grig.LogView', {
 			return;
 		    }
 		    autoscroll = false;	    
-		},
+		}
 	    }
 	});
 

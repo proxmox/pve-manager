@@ -7,6 +7,7 @@ Ext.define('PVE.storage.Upload', {
     modal: true,
 
     initComponent : function() {
+	/*jslint confusion: true */
         var me = this;
 
 	var xhr;
@@ -24,7 +25,7 @@ Ext.define('PVE.storage.Upload', {
 	var pbar = Ext.create('Ext.ProgressBar', {
             text: 'Ready',
 	    hidden: true
- 	});
+	});
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
 	    method: 'POST',
@@ -95,8 +96,9 @@ Ext.define('PVE.storage.Upload', {
 	    text: 'Upload',
 	    disabled: true,
 	    handler: function(button) {
+		var fd;
 		try {
-		    var fd = new FormData();
+		    fd = new FormData();
 		} catch (err) {
 		    doStandardSubmit();
 		    return;
@@ -109,7 +111,7 @@ Ext.define('PVE.storage.Upload', {
 		fd.append("content", field.getValue());
 		field.setDisabled(true);
 
-		var field = form.findField('filename');
+		field = form.findField('filename');
 		var file = field.fileInputEl.dom;
 		fd.append("filename", file.files[0]);
 		field.setDisabled(true);
@@ -123,7 +125,7 @@ Ext.define('PVE.storage.Upload', {
 		    if (xhr.status == 200) {
 			me.close();
 		    } else {  
-			var msg = "Error " + xhr.status + ": " + Ext.htmlEncode(xhr.statusText);
+			var msg = "Error " + xhr.status.toString() + ": " + Ext.htmlEncode(xhr.statusText);
 			Ext.Msg.alert('Upload failed', msg, function(btn) {
 			    me.close();
 			});
@@ -132,7 +134,7 @@ Ext.define('PVE.storage.Upload', {
 		}, false);
 
 		xhr.addEventListener("error", function(e) {  
-		    var msg = "Error " + e.target.status + " occurred while receiving the document.";  
+		    var msg = "Error " + e.target.status.toString() + " occurred while receiving the document.";  
 		    Ext.Msg.alert('Upload failed', msg, function(btn) {
 			me.close();
 		    });
@@ -155,8 +157,8 @@ Ext.define('PVE.storage.Upload', {
 	});
 
         Ext.applyIf(me, {
-            title: 'Upload',
- 	    items: me.formPanel,
+           title: 'Upload',
+	    items: me.formPanel,
 	    buttons: [ abortBtn, submitBtn ],
 	    listeners: {
 		close: function() {
@@ -195,7 +197,7 @@ Ext.define('PVE.storage.ContentView', {
 	    groupField: 'content',
 	    proxy: {
                 type: 'pve',
-		url: '/api2/json' + baseurl,
+		url: '/api2/json' + baseurl
 	    },
 	    sorters: { 
 		property: 'volid', 
@@ -213,7 +215,7 @@ Ext.define('PVE.storage.ContentView', {
 	    store.load();
 	};
 
- 	Ext.apply(me, {
+	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
 	    stateful: false,

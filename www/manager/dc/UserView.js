@@ -23,7 +23,7 @@ Ext.define('PVE.dc.UserView', {
 	    store.load();
 	};
 
- 	var remove_btn = new Ext.Button({
+	var remove_btn = new Ext.Button({
 	    text: 'Delete',
 	    disabled: true,
 	    handler: function() {
@@ -102,7 +102,7 @@ Ext.define('PVE.dc.UserView', {
                     win.show();
 		}
             },
-  	    edit_btn, remove_btn
+	    edit_btn, remove_btn
         ];
 	   
 	var render_expire = function(date) {

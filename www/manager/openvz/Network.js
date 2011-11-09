@@ -1,3 +1,4 @@
+/*jslint confusion: true */
 Ext.define('PVE.OpenVZ.NetIfEdit', {
     extend: 'PVE.window.Edit',
 
@@ -116,7 +117,7 @@ Ext.define('PVE.OpenVZ.IPAdd', {
 	    return { ip_address: me.dataCache.ip_address + ' ' + values.ipaddress };
 	} else {  
 	    return { ip_address: values.ipaddress };
-	};
+	}
     },
 
     initComponent : function() {
@@ -147,7 +148,7 @@ Ext.define('PVE.OpenVZ.IPAdd', {
 Ext.define('PVE.openvz.NetworkView', {
     extend: 'Ext.grid.GridPanel',
     requires: [
-	'Ext.grid.*',
+	'Ext.grid.*'
     ],
     alias: ['widget.pveOpenVZNetworkView'],
 
@@ -223,12 +224,12 @@ Ext.define('PVE.openvz.NetworkView', {
     initComponent : function() {
 	var me = this;
 
-	nodename = me.pveSelNode.data.node;
+	var nodename = me.pveSelNode.data.node;
 	if (!nodename) {
 	    throw "no node name specified";
 	}
 
-	vmid = me.pveSelNode.data.vmid;
+	var vmid = me.pveSelNode.data.vmid;
 	if (!vmid) {
 	    throw "no VM ID specified";
 	}
@@ -313,7 +314,7 @@ Ext.define('PVE.openvz.NetworkView', {
 	    });
 	    win.on('destroy', me.load, me);
 	    win.show();
-	}
+	};
 
 	var edit_btn = new Ext.Button({
 	    text: 'Edit',
@@ -419,7 +420,7 @@ Ext.define('PVE.openvz.NetworkView', {
 	    }
 	});
 
- 	me.callParent();
+	me.callParent();
 
 	me.load();
    }

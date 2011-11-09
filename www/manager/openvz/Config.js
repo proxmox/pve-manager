@@ -25,7 +25,7 @@ Ext.define('PVE.openvz.Config', {
 		{
 		    title: 'Summary',
 		    xtype: 'pveOpenVZSummary',
-		    itemId: 'summary',
+		    itemId: 'summary'
 		},
 		{
 		    title: 'Ressources',
