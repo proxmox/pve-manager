@@ -16,7 +16,7 @@ Ext.define('PVE.window.LoginWindow', {
 		    me.el.unmask();
 		    Ext.MessageBox.alert('Failure', "Login failed. Please try again", function() {
 			var uf = form.findField('username');
-			uf.focus(true);
+			uf.focus(true, true);
 		    });
 		},
 		success: function(f, resp){
@@ -50,7 +50,7 @@ Ext.define('PVE.window.LoginWindow', {
 
 		fieldDefaults: {
 		    labelWidth: 70,
-		    labelAlign  : 'right'
+		    labelAlign: 'right'
 		},
 
 		defaults: {
@@ -65,8 +65,9 @@ Ext.define('PVE.window.LoginWindow', {
 			name: 'username',
 			blankText: "Enter your user name",
 			listeners: {
-			    render: function(f) {
-				f.focus(true);
+			    afterrender: function(f) {
+				// Note: only works if we pass delay 1000
+				f.focus(true, 1000);
 			    },
 			    specialkey: function(f, e) {
 				if (e.getKey() === e.ENTER) {
@@ -85,7 +86,7 @@ Ext.define('PVE.window.LoginWindow', {
 			inputType: 'password',
 			fieldLabel: 'Password', 
 			name: 'password',
-			blankText:"Enter your password",
+			blankText: "Enter your password",
 			listeners: {
 			    specialkey: function(field, e) {
 				if (e.getKey() === e.ENTER) {
