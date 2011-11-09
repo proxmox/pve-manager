@@ -1,3 +1,11 @@
+pve-manager (2.0-8) unstable; urgency=low
+
+  * implement vzdump and backup/restore GUI
+  
+  * implement qemu monitor
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 09 Nov 2011 09:58:56 +0100
+
 pve-manager (2.0-7) unstable; urgency=low
 
   * imlement openvz GUI 
