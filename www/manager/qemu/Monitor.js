@@ -26,17 +26,24 @@ Ext.define('PVE.qemu.Monitor', {
 	    autoScroll: true,
 	    border: true,
 	    margins: '5 5 5 5',
-	    bodyStyle: 'font-family: monospace;white-space: pre;'
+	    bodyStyle: 'font-family: monospace;'
 	});
 
 	var scrollToEnd = function() {
 	    var el = textbox.getTargetEl();
 	    var dom = Ext.getDom(el);
-	    dom.scrollTop = dom.scrollHeight - dom.clientHeight;	    
+
+	    var clientHeight = dom.clientHeight;
+	    // BrowserBug: clientHeight reports 0 in IE9 StrictMode
+            // Instead we are using offsetHeight and hardcoding borders
+            if (Ext.isIE9 && Ext.isStrict) {
+		clientHeight = dom.offsetHeight + 2;
+            }
+	    dom.scrollTop = dom.scrollHeight - clientHeight;
 	};
 
 	var refresh = function() {
-	    textbox.update(lines.join('\n'));
+	    textbox.update('<pre>' + lines.join('\n') + '</pre>');
 	    scrollToEnd();
 	};
 
