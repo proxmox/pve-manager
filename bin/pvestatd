@@ -312,7 +312,7 @@ for (;;) { # forever
 	    my ($ccsec, $cusec) = gettimeofday ();
 	    eval {
 		$reload_config = 0;
-		syslog('info', "start status update");
+		# syslog('info', "start status update");
 		PVE::Cluster::cfs_update();
 		update_status();
 	    };
@@ -325,7 +325,8 @@ for (;;) { # forever
 	    my ($ccsec_end, $cusec_end) = gettimeofday ();
 	    my $cptime = ($ccsec_end-$ccsec) + ($cusec_end - $cusec)/1000000;
 
-	    syslog('info', sprintf("status update finished (%.3f seconds)", $cptime));
+	    syslog('info', sprintf("status update time (%.3f seconds)", $cptime))
+		if ($cptime > 5);
 	}
 
 	$cycle++;
