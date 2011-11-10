@@ -21,6 +21,8 @@ use PVE::RPCEnvironment;
 
 use Data::Dumper; # fixme: remove
 
+# my $MaxRequestsPerChild = 200;
+
 my $cookie_name = 'PVEAuthCookie';
 
 my $baseuri = "/api2";
@@ -465,10 +467,16 @@ my $known_methods = {
     DELETE => 1,
 };
 
+my $request_count = 0;
+
 sub handler {
      my($r) = @_;
 
      debug_msg("perl handler called");
+
+     $request_count++;
+     # we do not use KeepAlive, so this is not necessary
+     # $r->child_terminate() if $request_count >= $MaxRequestsPerChild;
 
      my $method = $r->method;
      my $clientip = $r->connection->remote_ip();

@@ -44,6 +44,7 @@ sub childinit {
 }
 
 sub childexit {
+    # BUG: seems this is not called if we do $r->child_terminate()
     syslog ('info', "Finish child $$");
 }
 
