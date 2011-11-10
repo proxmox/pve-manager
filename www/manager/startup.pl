@@ -33,7 +33,7 @@ use PVE::INotify;
 use PVE::RPCEnvironment;
 
 sub childinit {
-    syslog ('info', "Starting new child $$");
+    # syslog ('info', "Starting new child $$");
 
     eval {
 	PVE::INotify::inotify_init();
@@ -45,7 +45,7 @@ sub childinit {
 
 sub childexit {
     # BUG: seems this is not called if we do $r->child_terminate()
-    syslog ('info', "Finish child $$");
+    # syslog ('info', "Finish child $$");
 }
 
 my $s = Apache2::ServerUtil->server;
