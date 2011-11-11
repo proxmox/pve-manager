@@ -160,34 +160,24 @@ Ext.define('PVE.ConsoleWorkspace', {
 
 Ext.define('PVE.StdWorkspace', {
     extend: 'PVE.Workspace',
-    requires: [	  
-	'Ext.History',
-	'Ext.state.*',
-	'Ext.selection.*',
-	'PVE.form.ViewSelector', 
-	'PVE.data.ResourceStore',
-	'PVE.tree.ResourceTree'
-    ],
 
     alias: ['widget.pveStdWorkspace'],
 
     // private
-    defaultContent: {
-	title: 'Nothing selected',
-	region: 'center'
-    },
-
     setContent: function(comp) {
 	var me = this;
 	
-	if (!comp) { 
-	    comp = me.defaultContent;
-	}
-
 	var cont = me.child('#content');
 	cont.removeAll(true);
-	cont.add(comp);
-	cont.doLayout();
+
+	if (comp) {
+	    cont.setLoading(false);
+	    comp.border = false;
+	    cont.add(comp);
+	    cont.doLayout();
+	} else {
+	    cont.setLoading('nothing selected');
+	}
     },
 
     selectById: function(nodeid) {
@@ -231,26 +221,11 @@ Ext.define('PVE.StdWorkspace', {
 	Ext.History.init();
 	Ext.state.Manager.setProvider(Ext.create('PVE.StateProvider'));
 
-	//document.title = ;
-
-	var selview = new PVE.form.ViewSelector({
-	    listeners: {
-		select: function(combo, records) { 
-		    if (records && records.length) {
-			var view = combo.getViewFilter();
-			combo.up('pveResourceTree').setViewFilter(view);
-		    }
-		}
-	    }
-	});
+	var selview = new PVE.form.ViewSelector({});
 
 	var rtree = Ext.createWidget('pveResourceTree', {
-	    width: 200,
-	    region: 'west',
-	    margins: '0 0 0 5',
-	    split: true,
 	    viewFilter: selview.getViewFilter(),
-	    tbar: [ ' ', selview ],
+	    flex: 1,
 	    selModel: new Ext.selection.TreeModel({
 		listeners: {
 		    selectionchange: function(sm, selected) {
@@ -281,6 +256,13 @@ Ext.define('PVE.StdWorkspace', {
 		    }
 		}
 	    })
+	});
+
+	selview.on('select', function(combo, records) { 
+	    if (records && records.length) {
+		var view = combo.getViewFilter();
+		rtree.setViewFilter(view);
+	    }
 	});
 
 	Ext.apply(me, {
@@ -358,14 +340,23 @@ Ext.define('PVE.StdWorkspace', {
 		{
 		    region: 'center',
 		    id: 'content',
-		    xtype: 'panel',
+		    xtype: 'container',
 		    layout: { type: 'fit' },
 		    border: false,
 		    stateful: false,
-		    margins:'0 5 0 0',
-		    items: [ me.defaultContent ]
+		    margins: '0 5 0 0',
+		    items: []
 		},
-		rtree,
+		{
+		    region: 'west',
+		    xtype: 'container',
+		    border: false,
+		    layout: { type: 'vbox', align: 'stretch' },
+		    margins: '0 0 0 5',
+		    split: true,
+		    width: 200,
+		    items: [ selview, rtree ]
+		},
 		{
 		    xtype: 'pveStatusPanel',
 		    region: 'south',

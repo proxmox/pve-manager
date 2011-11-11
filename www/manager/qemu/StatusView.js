@@ -50,10 +50,8 @@ Ext.define('PVE.qemu.StatusView', {
 	};
 
 	Ext.applyIf(me, {
-	    url: "/api2/json/nodes/" + nodename + "/qemu/" + vmid + "/status/current",
 	    cwidth1: 150,
 	    height: 145,
-	    interval: 1000,
 	    rows: rows
 	});
 

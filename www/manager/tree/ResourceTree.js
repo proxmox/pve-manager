@@ -320,7 +320,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	    },
 	    //useArrows: true,
             //rootVisible: false,
-            title: 'Resource Tree',
+            //title: 'Resource Tree',
 	    listeners: {
 		destroy: function() {
 		    rstore.un("load", updateTree);

@@ -44,9 +44,7 @@ Ext.define('PVE.node.StatusView', {
 	};
 
 	Ext.applyIf(me, {
-	    url: "/api2/json/nodes/" + nodename + "/status",
 	    cwidth1: 150,
-	    interval: 1000,
 	    //height: 276,
 	    rows: rows
 	});

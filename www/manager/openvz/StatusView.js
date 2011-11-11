@@ -74,10 +74,8 @@ Ext.define('PVE.openvz.StatusView', {
 	};
 
 	Ext.applyIf(me, {
-	    url: "/api2/json/nodes/" + nodename + "/openvz/" + vmid + "/status/current",
 	    cwidth1: 150,
 	    height: 179,
-	    interval: 1000,
 	    rows: rows
 	});
 

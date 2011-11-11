@@ -1,10 +1,5 @@
 Ext.define('PVE.panel.Config', {
-    extend: 'Ext.tab.Panel',
-    requires: [
-	'Ext.state.Manager',
-	'PVE.grid.ResourceGrid'
-    ],
-    alias: 'widget.PVE.panel.Config',
+    extend: 'Ext.panel.Panel',
 
     initComponent: function() {
         var me = this;
@@ -13,22 +8,33 @@ Ext.define('PVE.panel.Config', {
 
 	var sp = Ext.state.Manager.getProvider();
 
+	var activeTab;
+
+	if (stateid) {
+	    var state = sp.get(stateid);
+	    if (state && state.value) {
+		activeTab = state.value;
+	    }
+	}
+
 	var items = me.items || [];
-	me.items = null;
+	me.items = undefined;
 
-	Ext.applyIf(me, {
-	    title: me.pveSelNode.data.text,
-	    showSearch: true,
-	    defaults: {} 
+	var tbar = me.tbar || [];
+	me.tbar = undefined;
+
+	var title = me.title || me.pveSelNode.data.text;
+	me.title = undefined;
+
+	tbar.unshift('->');
+	tbar.unshift({
+	    xtype: 'tbtext',
+	    text: title,
+	    baseCls: 'x-panel-header-text',
+	    padding: '0 0 5 0'
 	});
 
-	// pass workspace, pveSelNode and viewFilter to all children
-	Ext.apply(me.defaults, {
-	    pveSelNode: me.pveSelNode,
-	    viewFilter: me.viewFilter,
-	    workspace: me.workspace,
-	    border: false
-	});
+	Ext.applyIf(me, { showSearch: true });
 
 	if (me.showSearch) {
 	    items.unshift({
@@ -37,8 +43,27 @@ Ext.define('PVE.panel.Config', {
 	    });
 	}
 
-	Ext.apply(me, {
+	var toolbar = Ext.create('Ext.toolbar.Toolbar', {
+	    items: tbar,
+	    style: 'border:0px;',
+	    height: 28
+	});
+
+	var tab = Ext.create('Ext.tab.Panel', {
+	    flex: 1,
+	    border: true,
+	    activeTab: activeTab,
+	    defaults: Ext.apply(me.defaults ||  {}, {
+		pveSelNode: me.pveSelNode,
+		viewFilter: me.viewFilter,
+		workspace: me.workspace,
+		border: false
+	    }),
+	    items: items,
 	    listeners: {
+		afterrender: function(tp) {
+		    tp.items.get(0).fireEvent('show', tp.items.get(0));
+		},
 		tabchange: function(tp, newcard, oldcard) {
 		    var ntab = newcard.itemId;
 		    // Note: '' is alias for first tab.
@@ -51,36 +76,29 @@ Ext.define('PVE.panel.Config', {
 			sp.set(stateid, state);
 		    }
 		}
-	    },
-	    items: items
+	    }
 	});
 
-	if (stateid) {
-	    var state = sp.get(stateid);
-	    if (state && state.value) {
-		me.activeTab = state.value;
-	    }
-	}
+	Ext.apply(me, {
+	    layout: { type: 'vbox', align: 'stretch' },
+	    items: [ toolbar, tab]
+	});
 
 	me.callParent();
 
-	me.items.get(0).fireEvent('show', me.items.get(0));
-
 	var statechange = function(sp, key, state) {
 	    if (stateid && key === stateid) {
-		var atab = me.getActiveTab().itemId;
+		console.log("scanhge");
+		var atab = tab.getActiveTab().itemId;
 		var ntab = state.value || items[0].itemId;
 		if (state && ntab && (atab != ntab)) {
-		    me.setActiveTab(ntab);
+		    tab.setActiveTab(ntab);
 		}
 	    }
 	};
 
 	if (stateid) {
-	    sp.on('statechange', statechange);
-	    me.on('destroy', function() {
-		sp.un('statechange', statechange);		    
-	    });
+	    me.mon(sp, 'statechange', statechange);
 	}
     }
 });
