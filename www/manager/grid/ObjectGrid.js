@@ -88,6 +88,12 @@ Ext.define('PVE.grid.ObjectGrid', {
 
 	var load_count = 0;
 
+	me.mon(rstore, 'beforeload', function(s, operation, eOpts) {
+	    if (!load_count) {
+		me.setLoading(true);
+	    } 
+	});
+
 	me.mon(rstore, 'load', function(s, records, success) {
 
 	    load_count++;
@@ -118,12 +124,6 @@ Ext.define('PVE.grid.ObjectGrid', {
 		    renderer: me.renderValue
 		}
 	    ]
-	});
-
-	me.on('afterlayout', function() {
-	    if (!load_count) {
-		me.setLoading(true);
-	    }
 	});
 
 	me.callParent();
