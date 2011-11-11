@@ -48,6 +48,9 @@ Ext.define('PVE.StateProvider', {
     hprefix: 'v1',
 
     compDict: {
+	ubc: 24,
+	initlog: 23,
+	openvz: 22,
 	backup: 21,
 	ressources: 20,
 	content: 19,
