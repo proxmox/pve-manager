@@ -1,3 +1,9 @@
+pve-manager (2.0-9) unstable; urgency=low
+
+  * improved GUI
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 11 Nov 2011 13:42:04 +0100
+
 pve-manager (2.0-8) unstable; urgency=low
 
   * implement vzdump and backup/restore GUI
