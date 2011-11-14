@@ -609,6 +609,15 @@ __PACKAGE__->register_method({
 	    $conf->{ostemplate} = $veconf->{ostemplate}->{value};
 	}
 
+	my $stcfg = cfs_read_file("storage.cfg");
+
+	if ($veconf->{ve_private} && $veconf->{ve_private}->{value}) {
+	    my $path = $veconf->{ve_private}->{value};
+	    my ($vtype, $volid) = PVE::Storage::path_to_volume_id($stcfg, $path);
+	    my ($sid, $volname) = PVE::Storage::parse_volume_id($volid, 1) if $volid;
+	    $conf->{storage} = $sid || $path;
+	}
+
 	my $properties = PVE::OpenVZ::json_config_properties();
 
 	foreach my $k (keys %$properties) {

@@ -38,6 +38,10 @@ Ext.define('PVE.openvz.Options', {
 		header: 'Template',
 		defaultValue: 'no set'
 	    },
+	    storage: {
+		header: 'Storage',
+		defaultValue: 'no set'
+	    },
 	    cpuunits: {
 		header: 'CPU units',
 		defaultValue: '1000',
