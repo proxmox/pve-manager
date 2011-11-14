@@ -538,7 +538,7 @@ sub get_mount_info {
 
     return undef if !$out;
    
-    my @res = split (/\s+/, $out);
+    my @res = $out =~ m/^(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)%\s+(.*)$/;
 
     return undef if scalar (@res) != 7;
 
@@ -552,7 +552,7 @@ sub get_mount_info {
 sub get_lvm_device {
     my ($dir, $mapping) = @_;
 
-    my $info = get_mount_info ($dir);
+    my $info = get_mount_info($dir);
 
     return undef if !$info;
    
@@ -682,7 +682,7 @@ sub exec_backup_task {
 	    $task->{tmpdir} = "$opts->{tmpdir}/vzdumptmp$$"; 
 	} else {
 	    # dumpdir is posix? then use it as temporary dir
-	    my $info = get_mount_info ($opts->{dumpdir});
+	    my $info = get_mount_info($opts->{dumpdir});
 	    if ($vmtype eq 'qemu' || 
 		grep ($_ eq $info->{fstype}, @posix_filesystems)) {
 		$task->{tmpdir} = "$opts->{dumpdir}/$basename.tmp";
