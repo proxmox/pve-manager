@@ -322,6 +322,27 @@ Ext.define('PVE.tree.ResourceTree', {
             //rootVisible: false,
             //title: 'Resource Tree',
 	    listeners: {
+		itemcontextmenu: function(v, record, item, index, event) {
+		    event.stopEvent();
+		    //v.select(record);
+		    var menu;
+		    
+		    if (record.data.type === 'qemu') {
+			menu = Ext.create('PVE.qemu.CmdMenu', {
+			    vmid: record.data.vmid,
+			    nodename: record.data.node
+			});
+		    } else if (record.data.type === 'openvz') {
+			menu = Ext.create('PVE.openvz.CmdMenu', {
+			    vmid: record.data.vmid,
+			    nodename: record.data.node
+			});
+		    } else {
+			return;
+		    }
+
+		    menu.showAt(event.getXY());
+		},
 		destroy: function() {
 		    rstore.un("load", updateTree);
 		}

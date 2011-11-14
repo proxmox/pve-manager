@@ -74,14 +74,7 @@ Ext.define('PVE.openvz.Config', {
 	var consoleBtn = Ext.create('Ext.Button', {
 	    text: 'Console',
 	    handler: function() {
-		var url = Ext.urlEncode({
-		    console: 'openvz',
-		    vmid: vmid,
-		    node: nodename
-		});
-		var nw = window.open("?" + url, '_blank', 
-				     "innerWidth=745,innerheight=427");
-		nw.focus();
+		PVE.Utils.openConoleWindow('openvz', vmid, nodename);
 	    }
 	});
 

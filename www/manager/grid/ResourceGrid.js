@@ -194,10 +194,30 @@ Ext.define('PVE.grid.ResourceGrid', {
 		}
 	    ],
 	    viewConfig: {
-		stripeRows: true,
-		trackOver: false
+		stripeRows: true
             },
 	    listeners: {
+		itemcontextmenu: function(v, record, item, index, event) {
+		    event.stopEvent();
+		    v.select(record);
+		    var menu;
+		    
+		    if (record.data.type === 'qemu') {
+			menu = Ext.create('PVE.qemu.CmdMenu', {
+			    vmid: record.data.vmid,
+			    nodename: record.data.node
+			});
+		    } else if (record.data.type === 'openvz') {
+			menu = Ext.create('PVE.openvz.CmdMenu', {
+			    vmid: record.data.vmid,
+			    nodename: record.data.node
+			});
+		    } else {
+			return;
+		    }
+
+		    menu.showAt(event.getXY());
+		},
 		itemdblclick: function(v, record) {
 		    var ws = me.up('pveStdWorkspace');
 		    ws.selectById(record.data.id);

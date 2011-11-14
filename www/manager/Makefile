@@ -6,6 +6,8 @@ JSSRC= 				                 	\
 	StateProvider.js				\
 	button/Button.js				\
 	qemu/SendKeyMenu.js				\
+	qemu/CmdMenu.js					\
+	openvz/CmdMenu.js				\
 	VNCConsole.js					\
 	data/TimezoneStore.js				\
 	data/reader/JsonObject.js			\

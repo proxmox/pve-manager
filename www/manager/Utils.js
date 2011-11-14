@@ -686,6 +686,18 @@ Ext.define('PVE.Utils', { statics: {
 	var id = record.data.id;
 
 	return PVE.Utils.format_task_description(type, id);
+    },
+
+    openConoleWindow: function(vmtype, vmid, nodename) {
+	var url = Ext.urlEncode({
+	    console: vmtype, // kvm or openvz
+	    vmid: vmid,
+	    node: nodename
+	});
+	var nw = window.open("?" + url, '_blank', 
+			     "innerWidth=745,innerheight=427");
+	nw.focus();
     }
+
 }});
 

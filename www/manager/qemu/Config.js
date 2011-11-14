@@ -92,14 +92,7 @@ Ext.define('PVE.qemu.Config', {
 	var consoleBtn = Ext.create('Ext.Button', {
 	    text: 'Console',
 	    handler: function() {
-		var url = Ext.urlEncode({
-		    console: 'kvm',
-		    vmid: vmid,
-		    node: nodename
-		});
-		var nw = window.open("?" + url, '_blank', 
-				     "innerWidth=745,innerheight=427");
-		nw.focus();
+		PVE.Utils.openConoleWindow('kvm', vmid, nodename);
 	    }
 	});
 
