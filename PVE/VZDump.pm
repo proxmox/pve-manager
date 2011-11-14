@@ -997,7 +997,7 @@ sub exec_backup {
 	if ($errcount) {
 	    debugmsg ('info', "Backup job finished with errors", undef, 1);
 	} else {
-	    debugmsg ('info', "Backup job finished successfuly", undef, 1);
+	    debugmsg ('info', "Backup job finished successfully", undef, 1);
 	}
     }
 
