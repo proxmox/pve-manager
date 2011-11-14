@@ -280,7 +280,20 @@ sub cleanup {
     }
 
     if ($task->{cleanup}->{lvm_snapshot}) {
-	$self->cmd_noerr ("lvremove -f $di->{snapdev}") if -b $di->{snapdev};
+	# loop, because we often get 'LV in use: not deactivating'
+	my $wait = 1;
+	while(-b $di->{snapdev}) {
+	    eval { $self->cmd("lvremove -f $di->{snapdev}"); };
+	    last if !$@;
+	    if ($wait >= 64) {
+		$self->logerr($@);
+		last;
+	    }
+	    $self->loginfo("lvremove failed - trying again in $wait seconds");
+	    sleep($wait);
+	    $wait = $wait*2;
+	}
+
     }
 
     if ($task->{cleanup}->{etc_vzdump}) {
