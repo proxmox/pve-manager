@@ -2,7 +2,11 @@ include ../../defines.mk
 
 all:
 
+# start.png /usr/share/icons/gnome/16x16/actions/media-playback-start.png
+# stop.png /usr/share/icons/gnome/16x16/actions/media-playback-stop.png
 GNOME_IMAGES = 			\
+	start.png		\
+	stop.png		\
 	display.png		\
 	keyboard.png		\
 	cdrom.png		\
