@@ -155,7 +155,6 @@ Ext.define('PVE.qemu.Config', {
 	    resetBtn.setDisabled(status !== 'running');
 	    shutdownBtn.setDisabled(status !== 'running');
 	    stopBtn.setDisabled(status === 'stopped');
-	    consoleBtn.setDisabled(status !== 'running');
 	    removeBtn.setDisabled(status !== 'stopped');
 	});
 
