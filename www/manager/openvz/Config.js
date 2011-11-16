@@ -122,7 +122,7 @@ Ext.define('PVE.openvz.Config', {
 		    title: "InitLog",
 		    itemId: 'initlog',
 		    xtype: 'pveLogView',
-		    url: '/api2/json/nodes/' + nodename + '/openvz/' + vmid + '/initlog'
+		    url: '/api2/extjs/nodes/' + nodename + '/openvz/' + vmid + '/initlog'
 		},
 		{
 		    xtype: 'pveBackupView',

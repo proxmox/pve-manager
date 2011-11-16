@@ -62,7 +62,7 @@ JSSRC= 				                 	\
 	tree/ResourceTree.js				\
 	panel/ConfigPanel.js				\
 	grid/BackupView.js				\
-	grid/LogView.js					\
+	panel/LogView.js					\
 	node/DNSEdit.js					\
 	node/DNSView.js					\
 	node/TimeView.js				\
