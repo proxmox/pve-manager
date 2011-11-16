@@ -7,8 +7,9 @@ Ext.define('PVE.panel.StatusPanel', {
     ],
     alias: 'widget.pveStatusPanel',
 
-    title: "Realtime logfile viewer",
-    tabPosition: 'bottom',
+    
+    //title: "Logs",
+    //tabPosition: 'bottom',
 
     initComponent: function() {
         var me = this;
@@ -31,14 +32,14 @@ Ext.define('PVE.panel.StatusPanel', {
 	    },
 	    items: [
 		{
-		    itemId: 'clog',
-		    title: 'Cluster log',
-		    xtype: 'pveClusterLog'
-		},
-		{
 		    itemId: 'tasks',
 		    title: 'Recent tasks',
 		    xtype: 'pveClusterTasks'
+		},
+		{
+		    itemId: 'clog',
+		    title: 'Cluster log',
+		    xtype: 'pveClusterLog'
 		}
 	    ]
 	});

@@ -362,7 +362,6 @@ Ext.define('PVE.StdWorkspace', {
 		    region: 'south',
 		    margins:'0 5 5 5',
 		    height: 200,       
-		    collapsible: true,
 		    split:true
 		}
 	    ]

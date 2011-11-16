@@ -37,7 +37,7 @@ Ext.define('PVE.StateProvider', {
 	// [ name, default ]
 	['view', 'server'],
 	['rid', 'root'],
-	['ltab', 'clog'],
+	['ltab', 'tasks'],
 	['nodetab', ''],
 	['storagetab', ''],
 	['kvmtab', ''],
