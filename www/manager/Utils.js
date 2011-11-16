@@ -319,8 +319,10 @@ Ext.define('PVE.Utils', { statics: {
 		    if (options.waitMsgTarget) {
 			options.waitMsgTarget.setLoading(false);
 		    }
-		    var result = Ext.decode(response.responseText);
-		    response.result = result || {};
+		    response.result = {};
+		    try {
+			response.result = Ext.decode(response.responseText);
+		    } catch(e) {};
 		    var msg = "Connection error - server offline?";
 		    if (response.aborted) {
 			msg = 'Transaction aborted.';
