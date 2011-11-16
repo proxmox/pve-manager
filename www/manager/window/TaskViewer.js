@@ -48,18 +48,6 @@ Ext.define('PVE.window.TaskViewer', {
 	    }
 	};
 
-	var store = Ext.create('Ext.data.Store', {
-	    model: 'pve-string-list',
-            pageSize: 200,
-	    buffered: true,
-	    proxy: {
-                type: 'pve',
-		startParam: 'start',
-		limitParam: 'limit',
-                url: "/api2/json/nodes/" + task.node + "/tasks/" + me.upid + "/log"
-	    }
-	});
-
 	var statstore = Ext.create('PVE.data.ObjectStore', {
             url: "/api2/json/nodes/" + task.node + "/tasks/" + me.upid + "/status",
 	    interval: 1000,
@@ -75,9 +63,6 @@ Ext.define('PVE.window.TaskViewer', {
 		method: 'DELETE',
 		failure: function(response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
-		},
-		callback: function() {
-		    store.load();
 		}
 	    });
 	};
@@ -103,12 +88,19 @@ Ext.define('PVE.window.TaskViewer', {
 	    border: false
 	});
 
+	var logView = Ext.create('PVE.panel.LogView', {
+	    title: 'Output',
+	    tbar: [ stop_btn2 ],
+	    border: false,
+	    url: "/api2/extjs/nodes/" + task.node + "/tasks/" + me.upid + "/log"
+	});
+
 	me.mon(statstore, 'load', function() {
 	    var status = statgrid.getObjectValue('status');
 	    
-	    store.load();
-
 	    if (status === 'stopped') {
+		logView.requestUpdate(undefined, true);
+		logView.scrollToEnd = false;
 		statstore.stopUpdate();
 	    }
 
@@ -128,37 +120,11 @@ Ext.define('PVE.window.TaskViewer', {
 	    items: [{
 		xtype: 'tabpanel',
 		region: 'center',
-		items: [
-		    {
-			title: 'Output',
-			tbar: [ stop_btn2 ],
-			border: false,
-			xtype: 'gridpanel',
-			features: [ {ftype: 'selectable'}],
-			store: store,
-			stateful: false,
-			verticalScrollerType: 'paginggridscroller',
-			disableSelection: true,
-			invalidateScrollerOnRefresh: false,
-			viewConfig: {
-			    loadMask: false,
-			    trackOver: false,
-			    stripeRows: false
-			},
-			hideHeaders: true,
-			columns: [ 
-			    //{ header: "Line", dataIndex: 'n', width: 50 },
-			    { header: "Text", dataIndex: 't', flex: 1 } 
-			]
-		    },
-		    statgrid
-		]
+		items: [ logView, statgrid ]
 	    }]
         });
 
         me.callParent();
-
-	store.guaranteeRange(0, store.pageSize - 1);
     }
 });
 

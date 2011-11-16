@@ -1,4 +1,4 @@
-Ext.define('PVE.LogView', {
+Ext.define('PVE.panel.LogView', {
     extend: 'Ext.panel.Panel',
 
     alias: ['widget.pveLogView'],
@@ -102,6 +102,32 @@ Ext.define('PVE.LogView', {
         me.loadTask.delay(200, me.doAttemptLoad, me, [start]);
     },
 
+    requestUpdate: function(top, force) {
+	var me = this;
+
+	if (top === undefined) {
+	    var target = me.getTargetEl();
+	    top = target.dom.scrollTop;
+	}
+
+	var viewStart = parseInt((top / me.lineHeight) - 1);
+	if (viewStart < 0) {
+	    viewStart = 0;
+	}
+	var viewEnd = parseInt(((top + me.getHeight())/ me.lineHeight) + 1);
+	var info = me.viewInfo;
+	if (info && !force) {
+	    if (viewStart >= info.start && viewEnd <= info.end) {
+		return;
+	    }
+	}
+	var line = parseInt((top / me.lineHeight) - (me.pageSize / 2) + 10);
+	if (line < 0) {
+	    line = 0;
+	}
+
+	me.attemptLoad(line);
+    },
 
     initComponent : function() {
 	var me = this;
@@ -115,25 +141,6 @@ Ext.define('PVE.LogView', {
 		'line-height: ' + me.lineHeight + 'px; white-space: pre;'
 	});
 
-	var requestUpdate = function(top, force) {
-	    var viewStart = parseInt((top / me.lineHeight) - 1);
-	    if (viewStart < 0) {
-		viewStart = 0;
-	    }
-	    var viewEnd = parseInt(((top + me.getHeight())/ me.lineHeight) + 1);
-	    var info = me.viewInfo;
-	    if (info && !force) {
-		if (viewStart >= info.start && viewEnd <= info.end) {
-		    return;
-		}
-	    }
-	    var line = parseInt((top / me.lineHeight) - (me.pageSize / 2) + 10);
-	    if (line < 0) {
-		line = 0;
-	    }
-
-	    me.attemptLoad(line);
-	};
 
 	var autoScrollTask = {
 	    run: function() {
@@ -141,16 +148,12 @@ Ext.define('PVE.LogView', {
 		    return;
 		}
 
-		var target = me.getTargetEl();
-		var dom = target.dom;
-		var maxDown = dom.scrollHeight - dom.clientHeight - 
-		    dom.scrollTop;
-
+		var maxDown = me.getMaxDown();
 		if (maxDown > 0) {
 		    return;
 		}
 
-		requestUpdate(dom.scrollTop, true);
+		me.requestUpdate(undefined, true);
 	    },
 	    interval: 1000
 	};
@@ -167,9 +170,9 @@ Ext.define('PVE.LogView', {
 		afterrender: Ext.Function.createDelayed(function() {
 		    var target = me.getTargetEl();
 		    target.on('scroll',  function(e) {
-			requestUpdate(target.dom.scrollTop);
+			me.requestUpdate();
 		    });
-		    requestUpdate(0);
+		    me.requestUpdate(0);
 		}, 20),
 		show: function() {
 		    var target = me.getTargetEl();
