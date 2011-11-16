@@ -110,18 +110,18 @@ Ext.define('PVE.panel.LogView', {
 	    top = target.dom.scrollTop;
 	}
 
-	var viewStart = parseInt((top / me.lineHeight) - 1);
+	var viewStart = parseInt((top / me.lineHeight) - 1, 10);
 	if (viewStart < 0) {
 	    viewStart = 0;
 	}
-	var viewEnd = parseInt(((top + me.getHeight())/ me.lineHeight) + 1);
+	var viewEnd = parseInt(((top + me.getHeight())/ me.lineHeight) + 1, 10);
 	var info = me.viewInfo;
 	if (info && !force) {
 	    if (viewStart >= info.start && viewEnd <= info.end) {
 		return;
 	    }
 	}
-	var line = parseInt((top / me.lineHeight) - (me.pageSize / 2) + 10);
+	var line = parseInt((top / me.lineHeight) - (me.pageSize / 2) + 10, 10);
 	if (line < 0) {
 	    line = 0;
 	}
@@ -138,7 +138,7 @@ Ext.define('PVE.panel.LogView', {
 
 	me.dataCmp = Ext.create('Ext.Component', {
 	    style: 'font:normal 11px tahoma, arial, verdana, sans-serif;' +
-		'line-height: ' + me.lineHeight + 'px; white-space: pre;'
+		'line-height: ' + me.lineHeight.toString() + 'px; white-space: pre;'
 	});
 
 
@@ -175,6 +175,7 @@ Ext.define('PVE.panel.LogView', {
 		    me.requestUpdate(0);
 		}, 20),
 		show: function() {
+		    /*jslint confusion: true */
 		    var target = me.getTargetEl();
 		    target.dom.scrollTop = savedScrollTop;
 		    task = Ext.TaskManager.start(autoScrollTask);
