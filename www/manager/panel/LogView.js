@@ -129,20 +129,30 @@ Ext.define('PVE.panel.LogView', {
 	me.attemptLoad(line);
     },
 
-    initComponent : function() {
+    afterRender: function() {
 	var me = this;
 
-	if (!me.url) {
-	    throw "no url specified";
-	}
+        me.callParent(arguments);
+ 
+	Ext.Function.defer(function() {
+	    var target = me.getTargetEl();
+	    target.on('scroll',  function(e) {
+		me.requestUpdate();
+	    });
+	    me.requestUpdate(0);
+	}, 20);
+    },
 
-	me.dataCmp = Ext.create('Ext.Component', {
-	    style: 'font:normal 11px tahoma, arial, verdana, sans-serif;' +
-		'line-height: ' + me.lineHeight.toString() + 'px; white-space: pre;'
-	});
+    onShow: function() {
+	/*jslint confusion: true */
+	var me = this;
 
+        me.callParent(arguments);
+ 
+	var target = me.getTargetEl();
+	target.dom.scrollTop = me.savedScrollTop;
 
-	var autoScrollTask = {
+	me.task = Ext.TaskManager.start({
 	    run: function() {
 		if (!me.scrollToEnd || !me.viewInfo) {
 		    return;
@@ -156,44 +166,49 @@ Ext.define('PVE.panel.LogView', {
 		me.requestUpdate(undefined, true);
 	    },
 	    interval: 1000
-	};
+	});
+    },
 
-	var task;
-	var savedScrollTop = 0;
+    onHide: function() {
+	var me = this;
+
+	var target = me.getTargetEl();
+	// Hack: chrome reset scrollTop to 0, so we save/restore
+	me.savedScrollTop = target.dom.scrollTop;
+	if (me.task) {
+	    Ext.TaskManager.stop(me.task);
+	}
+
+        me.callParent(arguments);
+    },
+
+    onDestroy: function() {
+	var me = this;
+
+	if (me.task) {
+	    Ext.TaskManager.stop(me.task);
+	}
+
+        me.callParent(arguments);
+    },
+
+    initComponent : function() {
+	var me = this;
+
+	if (!me.url) {
+	    throw "no url specified";
+	}
+
+	me.dataCmp = Ext.create('Ext.Component', {
+	    style: 'font:normal 11px tahoma, arial, verdana, sans-serif;' +
+		'line-height: ' + me.lineHeight.toString() + 'px; white-space: pre;'
+	});
 
 	Ext.apply(me, {
 	    autoScroll: true,
 	    layout: 'auto',
 	    items: me.dataCmp,
-	    bodyStyle: 'padding: 5px;',
-	    listeners: {
-		afterrender: Ext.Function.createDelayed(function() {
-		    var target = me.getTargetEl();
-		    target.on('scroll',  function(e) {
-			me.requestUpdate();
-		    });
-		    me.requestUpdate(0);
-		}, 20),
-		show: function() {
-		    /*jslint confusion: true */
-		    var target = me.getTargetEl();
-		    target.dom.scrollTop = savedScrollTop;
-		    task = Ext.TaskManager.start(autoScrollTask);
-		},
-		beforehide: function() {
-		    var target = me.getTargetEl();
-		    // Hack: chrome reset scrollTop to 0, so we save/restore
-		    savedScrollTop = target.dom.scrollTop;
-		    if (task) {
-			Ext.TaskManager.stop(task);
-		    }
-		},
-		destroy: function() {
-		    if (task) {
-			Ext.TaskManager.stop(task);
-		    }
-		}
-	    }
+	    bodyStyle: 'padding: 5px;'
 	});
 
 	me.callParent();
