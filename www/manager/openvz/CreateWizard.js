@@ -36,6 +36,19 @@ Ext.define('PVE.openvz.CreateWizard', {
 	    allowBlank: false
 	});
 
+	var tmplstoragesel = Ext.create('PVE.form.StorageSelector', {
+	    name: 'tmplstorage',
+	    fieldLabel: 'Storage',
+	    storageContent: 'vztmpl',
+	    autoSelect: true,
+	    allowBlank: false,
+	    listeners: {
+		change: function(f, value) {
+		    tmplsel.setStorage(value);
+		}
+	    }
+	});
+
 	var bridgesel = Ext.create('PVE.form.BridgeSelector', {
 	    name: 'bridge',
 	    fieldLabel: 'Bridge',
@@ -60,7 +73,8 @@ Ext.define('PVE.openvz.CreateWizard', {
 			    onlineValidator: true,
 			    listeners: {
 				change: function(f, value) {
-				    tmplsel.setStorage('local', value);
+				    tmplstoragesel.setNodename(value);
+				    tmplsel.setStorage(undefined, value);
 				    bridgesel.setNodename(value);
 				    storagesel.setNodename(value);
 				}
@@ -122,7 +136,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 		{
 		    xtype: 'inputpanel',
 		    title: 'Template',
-		    items: tmplsel
+		    column1: [ tmplstoragesel, tmplsel]
 		},
 		{
 		    xtype: 'pveOpenVZResourceInputPanel',
@@ -250,7 +264,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 			    var kv = me.getValues();
 			    var data = [];
 			    Ext.Object.each(kv, function(key, value) {
-				if (key === 'delete') { // ignore
+				if (key === 'delete' || key === 'tmplstorage') { // ignore
 				    return;
 				}
 				if (key === 'password') { // don't show pw
@@ -273,6 +287,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 
 			var nodename = kv.nodename;
 			delete kv.nodename;
+			delete kv.tmplstorage;
 
 			PVE.Utils.API2Request({
 			    url: '/nodes/' + nodename + '/openvz',
