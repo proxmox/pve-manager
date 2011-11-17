@@ -9,6 +9,8 @@ use Cwd 'abs_path';
 
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param run_command);
+use PVE::Exception qw(raise raise_param_exc);
+use PVE::INotify;
 use PVE::Cluster qw(cfs_lock_file cfs_read_file);
 use PVE::Storage;
 use PVE::RESTHandler;
@@ -372,7 +374,7 @@ __PACKAGE__->register_method({
 
 	    PVE::Cluster::log_msg('info', $user, "update CT $vmid: " . join(' ', @$changes));
  
-	    PVE::Tools::run_command($cmd);
+	    run_command($cmd);
 	};
 
 	PVE::OpenVZ::lock_container($vmid, $code);
@@ -681,7 +683,7 @@ __PACKAGE__->register_method({
 	my $realcmd = sub {
 	    my $cmd = ['vzctl', 'destroy', $vmid ];
 
-	    PVE::Tools::run_command($cmd);
+	    run_command($cmd);
 	};
 
 	return $rpcenv->fork_worker('vzdestroy', $vmid, $user, $realcmd);
@@ -756,7 +758,7 @@ __PACKAGE__->register_method ({
 		       '-timeout', $timeout, '-authpath', "/vms/$vmid", 
 		       '-perm', 'VM.Console', '-c', @$remcmd, @$shcmd];
 
-	    PVE::Tools::run_command($cmd);
+	    run_command($cmd);
 
 	    return;
 	};
@@ -913,7 +915,9 @@ __PACKAGE__->register_method({
 
 	    my $cmd = ['vzctl', 'start', $vmid];
 	    
-	    PVE::Tools::run_command($cmd);
+	    run_command($cmd);
+
+	    return;
 	};
 
 	return $rpcenv->fork_worker('vzstart', $vmid, $user, $realcmd);
@@ -961,12 +965,83 @@ __PACKAGE__->register_method({
 
 	    push @$cmd, '--fast' if $param->{fast};
 	    
-	    PVE::Tools::run_command($cmd);
+	    run_command($cmd);
 	    
 	    return;
 	};
 
 	my $upid = $rpcenv->fork_worker('vzstop', $vmid, $user, $realcmd);
+
+	return $upid;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'migrate_vm', 
+    path => '{vmid}/migrate',
+    method => 'POST',
+    protected => 1,
+    proxyto => 'node',
+    description => "Migrate the container to another node. Creates a new migration task.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	    target => get_standard_option('pve-node', { description => "Target node." }),
+	    online => {
+		type => 'boolean',
+		description => "Use online/live migration.",
+		optional => 1,
+	    },
+	},
+    },
+    returns => { 
+	type => 'string',
+	description => "the task ID.",
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $user = $rpcenv->get_user();
+
+	my $target = extract_param($param, 'target');
+
+	my $localnode = PVE::INotify::nodename();
+	raise_param_exc({ target => "target is local node."}) if $target eq $localnode;
+
+	PVE::Cluster::check_cfs_quorum();
+
+	PVE::Cluster::check_node_exists($target);
+
+	my $targetip = PVE::Cluster::remote_node_ip($target);
+
+	my $vmid = extract_param($param, 'vmid');
+
+	# test if VM exists
+	PVE::OpenVZ::load_config($vmid);
+
+	# try to detect errors early
+	if (PVE::OpenVZ::check_running($vmid)) {
+	    die "cant migrate running container without --online\n" 
+		if !$param->{online};
+	}
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    my $cmd = ['/usr/sbin/vzmigrate'];
+	    push @$cmd, '--online' if $param->{online};
+	    push @$cmd, $targetip;
+	    push @$cmd, $vmid;
+
+	    run_command($cmd);
+
+	    return;
+	};
+
+	my $upid = $rpcenv->fork_worker('vzmigrate', $vmid, $user, $realcmd);
 
 	return $upid;
     }});

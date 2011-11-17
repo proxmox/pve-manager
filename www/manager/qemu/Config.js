@@ -50,8 +50,10 @@ Ext.define('PVE.qemu.Config', {
 	var migrateBtn = Ext.create('Ext.Button', { 
 	    text: 'Migrate',
 	    handler: function() {
-		var win = Ext.create('PVE.qemu.Migrate', { 
-		    pveSelNode: me.pveSelNode
+		var win = Ext.create('PVE.window.Migrate', {
+		    vmtype: 'qemu',
+		    nodename: nodename,
+		    vmid: vmid
 		});
 		win.show();
 	    }    
@@ -102,7 +104,8 @@ Ext.define('PVE.qemu.Config', {
 	    title: "Virtual machine " + descr + "'KVM " + vmid + 
 		"' on node '" + nodename + "'",
 	    hstateid: 'kvmtab',
-	    tbar: [ startBtn, stopBtn, migrateBtn, resetBtn, shutdownBtn, removeBtn, consoleBtn ],
+	    tbar: [ startBtn, stopBtn, resetBtn, shutdownBtn, 
+		    migrateBtn, removeBtn, consoleBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{

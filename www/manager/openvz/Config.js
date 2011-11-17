@@ -55,6 +55,18 @@ Ext.define('PVE.openvz.Config', {
 	    }			    
 	});
  
+	var migrateBtn = Ext.create('Ext.Button', { 
+	    text: 'Migrate',
+	    handler: function() {
+		var win = Ext.create('PVE.window.Migrate', { 
+		    vmtype: 'openvz',
+		    nodename: nodename,
+		    vmid: vmid
+		});
+		win.show();
+	    }
+	});
+
 	var removeBtn = Ext.create('PVE.button.Button', {
 	    text: 'Remove',
 	    confirmMsg: 'Are you sure you want to remove VM ' + 
@@ -84,7 +96,8 @@ Ext.define('PVE.openvz.Config', {
 	    title: "OpenVZ container " + vmid + descr +  
 		" on node '" + nodename + "'",
 	    hstateid: 'ovztab',
-	    tbar: [ startBtn, stopBtn, shutdownBtn, removeBtn, consoleBtn ],
+	    tbar: [ startBtn, stopBtn, shutdownBtn, migrateBtn, 
+		    removeBtn, consoleBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{

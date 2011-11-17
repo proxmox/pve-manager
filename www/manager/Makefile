@@ -62,7 +62,7 @@ JSSRC= 				                 	\
 	tree/ResourceTree.js				\
 	panel/ConfigPanel.js				\
 	grid/BackupView.js				\
-	panel/LogView.js					\
+	panel/LogView.js				\
 	node/DNSEdit.js					\
 	node/DNSView.js					\
 	node/TimeView.js				\
@@ -76,7 +76,7 @@ JSSRC= 				                 	\
 	node/Tasks.js					\
 	node/Config.js					\
 	qemu/StatusView.js				\
-	qemu/Migrate.js					\
+	window/Migrate.js				\
 	qemu/Monitor.js					\
 	qemu/Summary.js					\
 	qemu/OSTypeEdit.js				\

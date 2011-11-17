@@ -72,6 +72,24 @@ sub check_mounted {
     return (-d "$root/etc" || -d "$root/proc");
 }
 
+# warning: this is slow
+sub check_running {
+    my ($vmid) = @_;
+
+    if (my $fh = new IO::File ("/proc/vz/vestat", "r")) {
+	while (defined (my $line = <$fh>)) {
+	    if ($line =~ m/^\s*(\d+)\s+/) {
+		if ($vmid == $1) {
+		    close($fh);
+		    return 1;
+		}
+	    }
+	}
+	close($fh);
+    }
+    return undef;
+}
+
 sub get_privatedir {
     my ($conf, $vmid) = @_;
 

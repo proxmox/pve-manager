@@ -1,13 +1,13 @@
-Ext.define('PVE.qemu.Migrate', {
+Ext.define('PVE.window.Migrate', {
     extend: 'Ext.window.Window',
 
     resizable: false,
 
-    migrate: function(vmid, nodename, target, online) {
+    migrate: function(target, online) {
 	var me = this;
 	PVE.Utils.API2Request({
 	    params: { target: target, online: online },
-	    url: '/nodes/' + nodename + '/qemu/' + vmid + "/migrate",
+	    url: '/nodes/' + me.nodename + '/' + me.vmtype + '/' + me.vmid + "/migrate",
 	    waitMsgTarget: me,
 	    method: 'POST',
 	    failure: function(response, opts) {
@@ -28,14 +28,16 @@ Ext.define('PVE.qemu.Migrate', {
     initComponent : function() {
 	var me = this;
 
-	var nodename = me.pveSelNode.data.node;
-	if (!nodename) {
+	if (!me.nodename) {
 	    throw "no node name specified";
 	}
 
-	var vmid = me.pveSelNode.data.vmid;
-	if (!vmid) {
+	if (!me.vmid) {
 	    throw "no VM ID specified";
+	}
+
+	if (!me.vmtype) {
+	    throw "no VM type specified";
 	}
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
@@ -69,12 +71,12 @@ Ext.define('PVE.qemu.Migrate', {
 	    text: 'Migrate',
 	    handler: function() {
 		var values = form.getValues();
-		me.migrate(vmid, nodename, values.target, values.online);
+		me.migrate(values.target, values.online);
 	    }
 	});
 
 	Ext.apply(me, {
-	    title: "Migrate KVM " + vmid,
+	    title: "Migrate VM " + me.vmid,
 	    width: 350,
 	    modal: true,
 	    layout: 'auto',
