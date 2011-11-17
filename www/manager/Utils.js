@@ -558,7 +558,7 @@ Ext.define('PVE.Utils', { statics: {
     format_content_types: function(value) {
 	var cta = [];
 
-	Ext.each(value.split(','), function(ct) {
+	Ext.each(value.split(',').sort(), function(ct) {
 	    if (ct === 'images') {
 		cta.push('Images');
 	    } else if (ct === 'backup') {
