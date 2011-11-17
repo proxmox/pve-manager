@@ -23,6 +23,7 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => "Create backup.",
     protected => 1,
+    proxyto => 'node',
     parameters => {
     	additionalProperties => 0,
 	properties => PVE::VZDump::json_config_properties({
