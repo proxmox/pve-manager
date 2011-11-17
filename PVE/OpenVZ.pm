@@ -841,7 +841,7 @@ sub create_config_line {
     my $text;
 
     if (defined($data->{value})) {
-	if ($confdesc->{$key}->{type} eq 'boolean') {
+	if ($confdesc->{$key} && $confdesc->{$key}->{type} eq 'boolean') {
 	    my $txt = $data->{value} ? 'yes' : 'no';
 	    $text .= uc($key) . "=\"$txt\"\n";
 	} else {
