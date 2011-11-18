@@ -518,6 +518,7 @@ __PACKAGE__->register_method({
     path => '{vmid}/initlog', 
     method => 'GET',
     protected => 1,
+    proxyto => 'node',
     permissions => {
 	path => '/vms/{vmid}',
 	privs => [ 'VM.Audit' ],
