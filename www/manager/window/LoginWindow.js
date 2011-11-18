@@ -41,7 +41,7 @@ Ext.define('PVE.window.LoginWindow', {
 	    closable: false,
 	    resizable: false,
 	    layout: 'auto',
-	    title: 'Proxmox VE Login',
+	    title: gettext('Proxmox VE Login'),
 
 	    items: [{
 		xtype: 'form',
@@ -49,7 +49,6 @@ Ext.define('PVE.window.LoginWindow', {
 		url: '/api2/extjs/access/ticket',
 
 		fieldDefaults: {
-		    labelWidth: 70,
 		    labelAlign: 'right'
 		},
 
@@ -61,9 +60,9 @@ Ext.define('PVE.window.LoginWindow', {
 		items: [
 		    { 
 			xtype: 'textfield', 
-			fieldLabel: 'User name', 
+			fieldLabel: gettext('User name'), 
 			name: 'username',
-			blankText: "Enter your user name",
+			blankText: gettext("Enter your user name"),
 			listeners: {
 			    afterrender: function(f) {
 				// Note: only works if we pass delay 1000
@@ -84,9 +83,9 @@ Ext.define('PVE.window.LoginWindow', {
 		    { 
 			xtype: 'textfield', 
 			inputType: 'password',
-			fieldLabel: 'Password', 
+			fieldLabel: gettext('Password'), 
 			name: 'password',
-			blankText: "Enter your password",
+			blankText: gettext("Enter your password"),
 			listeners: {
 			    specialkey: function(field, e) {
 				if (e.getKey() === e.ENTER) {
@@ -98,11 +97,25 @@ Ext.define('PVE.window.LoginWindow', {
 		    {
 			xtype: 'pveRealmComboBox',
 			name: 'realm'
+		    },
+		    {   
+			xtype: 'pveLanguageSelector',
+			fieldLabel: gettext('Language'), 
+			value: Ext.util.Cookies.get('PVELangCookie') || 'en',
+			name: 'lang',
+			submitValue: false,
+			listeners: {
+			    change: function(t, value) {
+				var dt = Ext.Date.add(new Date(), Ext.Date.YEAR, 10);
+				Ext.util.Cookies.set('PVELangCookie', value, dt);
+				window.location.reload();
+			    }
+			}
 		    }
 		],
 		buttons: [
 		    {
-			text: 'Login',
+			text: gettext('Login'),
 			handler: function(){
 			    me.onLogon();
 			}

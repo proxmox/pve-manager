@@ -182,7 +182,8 @@ Ext.define('PVE.Utils', { statics: {
 
     language_map: {
 	en: 'English',
-	de: 'German'
+	de: 'German',
+	fr: 'French'
     },
 
     render_language: function (value) {

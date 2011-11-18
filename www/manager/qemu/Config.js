@@ -68,7 +68,7 @@ Ext.define('PVE.qemu.Config', {
 	});
 
 	var shutdownBtn = Ext.create('PVE.button.Button', {
-	    text: 'Shutdown',
+	    text: gettext('Shutdown'),
 	    confirmMsg: "Do you really want to shutdown the VM?",
 	    handler: function() {
 		vm_command('shutdown', { timeout: 30 });

@@ -3,7 +3,7 @@ include defines.mk
 DESTDIR=
 
 #SUBDIRS = bin lib www aplinfo
-SUBDIRS = aplinfo PVE bin www
+SUBDIRS = aplinfo PVE bin www po
 
 DEB=${PACKAGE}_${VERSION}-${PACKAGERELEASE}_all.deb
 

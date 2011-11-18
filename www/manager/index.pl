@@ -25,10 +25,19 @@ sub send_output {
 # NOTE: Requests to this page are not authenticated
 # so we must be very careful here 
 
+my $lang = 'en';
+
 my $r = Apache2::RequestUtil->request();
 my $username;
 my $token = 'null';
 if (my $cookie = $r->headers_in->{Cookie}) {
+
+    if (my $newlang = ($cookie =~ /(?:^|\s)PVELangCookie=([^;]*)/)[0]) {
+	if ($newlang =~ m/^[a-f]{2,3}(_A-F{2,3})?$/) {
+	    $lang = $newlang;
+	}
+    }
+
     my $ticket = PVE::REST::extract_auth_cookie($cookie);
     if (($username = PVE::AccessControl::verify_ticket($ticket, 1))) {
 	$token = PVE::AccessControl::assemble_csrf_prevention_token($username);
@@ -48,6 +57,20 @@ if (!PVE) PVE = {};
 PVE.GUIVersion = '$version';
 PVE.UserName = '$username';
 PVE.CSRFPreventionToken = '$token';
+_EOJS
+
+my $langfile = "/usr/share/pve-manager/ext4/locale/ext-lang-${lang}.js";
+$jssrc .= PVE::Tools::file_get_contents($langfile) if -f $langfile;
+
+my $i18nsrc;
+$langfile = "/usr/share/pve-manager/root/pve-lang-${lang}.js";
+if (-f $langfile) {
+    $i18nsrc = PVE::Tools::file_get_contents($langfile);
+} else {
+    $i18nsrc = 'function gettext(buf) { return buf; }';
+}
+
+$jssrc .= <<_EOJS;
 
 Ext.require(['*', '$workspace']);
 
@@ -60,8 +83,6 @@ Ext.onReady(function() { Ext.create('$workspace');});
 
 _EOJS
 
-$jssrc .= "";
-
 my $page = <<_EOD;
 <html>
   <head>
@@ -72,9 +93,9 @@ my $page = <<_EOD;
     <link rel="stylesheet" type="text/css" href="/pve2/ext4/resources/css/ext-all.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/css/ext-pve.css" />
  
+    <script type="text/javascript">$i18nsrc</script>
     <script type="text/javascript" src="/pve2/ext4/ext-all-debug.js"></script>
     <script type="text/javascript" src="/pve2/ext4/pvemanagerlib.js"></script>
-    
     <script type="text/javascript">$jssrc</script>
     
   </head>

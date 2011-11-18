@@ -57,21 +57,19 @@ my $ctime = scalar localtime;
 
 my $header = << '.';
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2008 Proxmox Server Solutions GmbH
+# Copyright (C) 2011 Proxmox Server Solutions GmbH
 # This file is distributed under the same license as the pve-manager package.
-# Proxmox Support Team <support@proxmox.com>, 2008.
+# Proxmox Support Team <support@proxmox.com>, 2011.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: pve-manager 2\n"
 .
 
 $header .= "\"Report-Msgid-Bugs-To: $opts{'msgid-bugs-address'}\\n\"\n" if  $opts{'msgid-bugs-address'};
 $header .= "\"POT-Creation-Date: $ctime\\n\"\n";
 
 $header .= << '.';
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <support@proxmox.com>\n"
 "MIME-Version: 1.0\n"
