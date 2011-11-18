@@ -25,9 +25,9 @@ Ext.define('PVE.openvz.StatusView', {
 		return '-';
 	    }
 
-	    var per = (value * 100) / maxcpu;
+	    var cpu = value * 100;
+	    return cpu.toFixed(1) + '% of ' + maxcpu.toString() + (maxcpu > 1 ? 'CPUs' : 'CPU');
 
-	    return per.toFixed(1) + '% of ' + maxcpu.toString() + (maxcpu > 1 ? 'CPUs' : 'CPU');
 	};
 
 	var render_mem = function(value, metaData, record, rowIndex, colIndex, store) {

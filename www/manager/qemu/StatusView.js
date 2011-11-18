@@ -26,7 +26,7 @@ Ext.define('PVE.qemu.StatusView', {
 		return '-';
 	    }
 
-	    var per = (value * 100) / maxcpu;
+	    var per = (value * 100);
 
 	    return per.toFixed(1) + '% of ' + maxcpu.toString() + (maxcpu > 1 ? 'CPUs' : 'CPU');
 	};

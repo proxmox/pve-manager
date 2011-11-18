@@ -593,17 +593,17 @@ Ext.define('PVE.Utils', { statics: {
 
     render_cpu: function(value, metaData, record, rowIndex, colIndex, store) {
 
-	var maxcpu = record.data.maxcpu;
-
-	if (!record.data.uptime) {
+	if (!(record.data.uptime && Ext.isNumeric(value))) {
 	    return '';
 	}
 
-	if (!(Ext.isNumeric(value) && Ext.isNumeric(maxcpu) && (maxcpu >= 1))) {
+	var maxcpu = record.data.maxcpu || 1;
+
+	if (!Ext.isNumeric(maxcpu) && (maxcpu >= 1)) {
 	    return '';
 	}
-
-	var per = (value * 100) / maxcpu;
+	
+	var per = value * 100;
 
 	return per.toFixed(1) + '% of ' + maxcpu.toString() + (maxcpu > 1 ? 'CPUs' : 'CPU');
     },

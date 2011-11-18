@@ -180,6 +180,8 @@ sub vmstatus {
 
     my $list = $opt_vmid ? { $opt_vmid => { type => 'openvz' }} : config_list();
 
+    my $cpucount = $cpuinfo->{cpus} || 1;
+
     foreach my $vmid (keys %$list) {
 	next if $opt_vmid && ($vmid ne $opt_vmid);
 
@@ -192,6 +194,7 @@ sub vmstatus {
 	    $d->{name} =~ s/[\s]//g;
 
 	    $d->{cpus} = $conf->{cpus}->{value} || 1;
+	    $d->{cpus} = $cpucount if $d->{cpus} > $cpucount;
 
 	    $d->{disk} = 0;
 	    $d->{maxdisk} = int($conf->{diskspace}->{bar} * 1024);
@@ -206,7 +209,6 @@ sub vmstatus {
 
 	    $d->{uptime} = 0;
 	    $d->{cpu} = 0;
-	    $d->{relcpu} = 0;
 
 	    $d->{netout} = 0;
 	    $d->{netin} = 0;
@@ -264,7 +266,6 @@ sub vmstatus {
 	close($fh);
     }
 
-    my $cpus = $cpuinfo->{cpus} || 1;
     # Note: OpenVZ does not use POSIX::_SC_CLK_TCK
     my $hz = 1000;
 
@@ -277,7 +278,7 @@ sub vmstatus {
 		my $nice = $3;
 		my $system = $4;
 		my $ut = $5;
-		my $sum = $8*$cpus; # uptime in jiffies * cpus = available jiffies
+		my $sum = $8*$cpucount; # uptime in jiffies * cpus = available jiffies
 		my $used = $9; # used time in jiffies
 
 		my $uptime = int ($ut / $hz);
@@ -290,24 +291,19 @@ sub vmstatus {
 
 		if (!defined ($last_proc_vestat->{$vmid}) ||
 		    ($last_proc_vestat->{$vmid}->{sum} > $sum)) {
-		    $last_proc_vestat->{$vmid} = { used => 0, sum => 0, cpu => 0, relcpu => 0};
+		    $last_proc_vestat->{$vmid} = { used => 0, sum => 0, cpu => 0 };
 		}
 
 		my $diff = $sum - $last_proc_vestat->{$vmid}->{sum};
 
 		if ($diff > 1000) { # don't update too often
 		    my $useddiff = $used - $last_proc_vestat->{$vmid}->{used};
-		    my $cpu = int ($useddiff*100/$diff);
+		    my $cpu = (($useddiff/$diff) * $cpucount) / $d->{cpus};
 		    $last_proc_vestat->{$vmid}->{sum} = $sum;
 		    $last_proc_vestat->{$vmid}->{used} = $used;
 		    $last_proc_vestat->{$vmid}->{cpu} = $d->{cpu} = $cpu;
-
-		    my $relcpu = $cpu;
-		    $last_proc_vestat->{$vmid}->{relcpu} = $d->{relcpu} = $relcpu;
-
 		} else {
 		    $d->{cpu} = $last_proc_vestat->{$vmid}->{cpu};
-		    $d->{relcpu} = $last_proc_vestat->{$vmid}->{relcpu};
 		}
 	    }
 	}
