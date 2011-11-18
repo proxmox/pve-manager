@@ -142,7 +142,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    });
 	}
 
-	if (!me.unused) {
+	if (me.create && !me.unused) {
 	    me.column2.push({
 		xtype: 'PVE.form.DiskFormatSelector',
 		name: 'diskformat',
