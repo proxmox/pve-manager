@@ -8,15 +8,15 @@ Ext.define('PVE.form.ViewSelector', {
 
 	var default_views = {
 	    server: {
-		text: 'Server View',
+		text: gettext('Server View'),
 		groups: ['node']
 	    },
 	    folder: {
-		text: 'Folder View',
+		text: gettext('Folder View'),
 		groups: ['type']
 	    },
 	    storage: {
-		text: 'Storage View',
+		text: gettext('Storage View'),
 		groups: ['node'],
 		filterfn: function(node) {
 		    return node.data.type === 'storage';

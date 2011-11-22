@@ -12,14 +12,13 @@ use PVE::REST;
 sub send_output {
     my ($r, $data) = @_;
 
-    my $encdata = encode('UTF-8', $data);
     $r->no_cache (1);
-    my $x = length ($encdata);
+    my $x = length ($data);
     $r->content_type ("text/html;charset=UTF-8");
     $r->headers_out->set ("Content-length", "$x");
     $r->headers_out->set ("Pragma", "no-cache");
 
-    $r->print ($encdata);
+    $r->print ($data);
 }
 
 # NOTE: Requests to this page are not authenticated

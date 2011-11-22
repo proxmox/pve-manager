@@ -54,7 +54,7 @@ Ext.define('PVE.node.Tasks', {
 	};
 
 	var view_btn = new Ext.Button({
-	    text: 'View',
+	    text: gettext('View'),
 	    disabled: true,
 	    handler: run_task_viewer
 	});
@@ -79,7 +79,7 @@ Ext.define('PVE.node.Tasks', {
 		}
 	    },
 	    tbar: [
-		view_btn, '->', 'User:', ' ',
+		view_btn, '->', gettext('User name') +':', ' ',
 		{
 		    xtype: 'textfield',
 		    width: 200,
@@ -91,7 +91,7 @@ Ext.define('PVE.node.Tasks', {
 			    reload_task.delay(500);
 			}
 		    }
-		}, ' ', 'Only Errors:', ' ',
+		}, ' ', gettext('Only Errors') + ':', ' ',
 		{
 		    xtype: 'checkbox',
 		    hideLabel: true,
@@ -107,34 +107,40 @@ Ext.define('PVE.node.Tasks', {
 	    sortableColumns: false,
 	    columns: [
 		{ 
-		    header: "Start Time", dataIndex: 'starttime',
+		    header: gettext("Start Time"), 
+		    dataIndex: 'starttime',
 		    width: 100,
 		    renderer: function(value) { 
 			return Ext.Date.format(value, "M d H:i:s"); 
 		    }
 		},
 		{ 
-		    header: "End Time", dataIndex: 'endtime',
+		    header: gettext("End Time"), 
+		    dataIndex: 'endtime',
 		    width: 100,
 		    renderer: function(value, metaData, record) {
 			return  Ext.Date.format(value,"M d H:i:s"); 
 		    }
 		},
 		{ 
-		    header: "Node", dataIndex: 'node',
+		    header: gettext("Node"), 
+		    dataIndex: 'node',
 		    width: 100
 		},
 		{ 
-		    header: "User", dataIndex: 'user',
+		    header: gettext("User name"), 
+		    dataIndex: 'user',
 		    width: 150
 		},
 		{ 
-		    header: "Description", dataIndex: 'upid', 
+		    header: gettext("Description"), 
+		    dataIndex: 'upid', 
 		    flex: 1,
 		    renderer: PVE.Utils.render_upid
 		},
 		{ 
-		    header: "Status", dataIndex: 'status', 
+		    header: gettext("Status"), 
+		    dataIndex: 'status', 
 		    width: 200,
 		    renderer: function(value, metaData, record) { 
 			if (value == 'OK') {

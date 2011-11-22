@@ -27,18 +27,18 @@ Ext.define('PVE.qemu.CmdMenu', {
 
 	me.items = [
 	    {
-		text: 'Start',
+		text: gettext('Start'),
 		icon: '/pve2/images/start.png',
 		handler: function() {
 		    vm_command('start');
 		}
 	    },
 	    {
-		text: 'Shutdown',
+		text: gettext('Shutdown'),
 		icon: '/pve2/images/stop.png',
 		handler: function() {
-		    var msg = "Do you really want to shutdown the VM?";
-		    Ext.Msg.confirm('Confirmation', msg, function(btn) {
+		    var msg = Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), me.vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
 			}
@@ -48,7 +48,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		}			    
 	    },
 	    {
-		text: 'Console',
+		text: gettext('Console'),
 		icon: '/pve2/images/display.png',
 		handler: function() {
 		    PVE.Utils.openConoleWindow('kvm', me.vmid, me.nodename);

@@ -6,47 +6,47 @@ Ext.define('PVE.dc.Config', {
         var me = this;
 
 	Ext.apply(me, {
-	    title: "Datacenter",
+	    title: gettext("Datacenter"),
 	    hstateid: 'dctab',
 	    items: [
 		{
 		    xtype: 'pveDcOptionView',
-		    title: 'Options',
+		    title: gettext('Options'),
 		    itemId: 'options'
 		},
 		{
 		    xtype: 'pveStorageView',
-		    title: 'Storage',
+		    title: gettext('Storage'),
 		    itemId: 'storage'
 		},
 		{
 		    xtype: 'pveDcBackupView',
-		    title: 'Backup',
+		    title: gettext('Backup'),
 		    itemId: 'backup'
 		},
 		{
 		    xtype: 'pveUserView',
-		    title: 'Users',
+		    title: gettext('Users'),
 		    itemId: 'users'
 		},
 		{
 		    xtype: 'pveGroupView',
-		    title: 'Groups',
+		    title: gettext('Groups'),
 		    itemId: 'groups'
 		},
 		{
 		    xtype: 'pveACLView',
-		    title: 'Permissions',
+		    title: gettext('Permissions'),
 		    itemId: 'permissions'
 		},
 		{
 		    xtype: 'pveRoleView',
-		    title: 'Roles',
+		    title: gettext('Roles'),
 		    itemId: 'roles'
 		},
 		{
 		    xtype: 'pveAuthView',
-		    title: 'Authentication',
+		    title: gettext('Authentication'),
 		    itemId: 'domains'
 		}
 	    ]

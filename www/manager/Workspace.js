@@ -208,7 +208,8 @@ Ext.define('PVE.StdWorkspace', {
 	var ui = me.query('#userinfo')[0];
 
 	if (PVE.UserName) {
-	    ui.update('<div class="x-unselectable" style="white-space:nowrap;">You are logged in as "' + PVE.UserName + '"</div>');
+	    var msg =  Ext.String.format(gettext("You are logged in as {0}"), "'" + PVE.UserName + "'");
+	    ui.update('<div class="x-unselectable" style="white-space:nowrap;">' + msg + '</div>');
 	} else {
 	    ui.update('');
 	}
@@ -304,7 +305,7 @@ Ext.define('PVE.StdWorkspace', {
 			    margins: '3 5 0 0',
 			    xtype: 'button',
 			    baseCls: 'x-btn',
-			    text: "Logout",
+			    text: gettext("Logout"),
 			    handler: function() { 
 				PVE.data.ResourceStore.stopUpdate();
 				me.showLogin(); 
@@ -318,7 +319,7 @@ Ext.define('PVE.StdWorkspace', {
 			    margins: '3 5 0 0',
 			    xtype: 'button',
 			    baseCls: 'x-btn',
-			    text: "Create VM",
+			    text: gettext("Create VM"),
 			    handler: function() {
 				var wiz = Ext.create('PVE.qemu.CreateWizard', {});
 				wiz.show();
@@ -329,7 +330,7 @@ Ext.define('PVE.StdWorkspace', {
 			    margins: '3 5 0 0',
 			    xtype: 'button',
 			    baseCls: 'x-btn',
-			    text: "Create CT",
+			    text: gettext("Create CT"),
 			    handler: function() {
 				var wiz = Ext.create('PVE.openvz.CreateWizard', {});
 				wiz.show();

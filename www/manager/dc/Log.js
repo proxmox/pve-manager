@@ -39,7 +39,7 @@ Ext.define('PVE.dc.Log', {
 	    sortableColumns: false,
 	    columns: [
 		{ 
-		    header: "Start Time", 
+		    header: gettext("Time"), 
 		    dataIndex: 'time',
 		    width: 100,
 		    renderer: function(value) { 
@@ -47,12 +47,12 @@ Ext.define('PVE.dc.Log', {
 		    }
 		},
 		{ 
-		    header: "Node", 
+		    header: gettext("Node"), 
 		    dataIndex: 'node',
 		    width: 100
 		},
 		{ 
-		    header: "Tag", 
+		    header: gettext("Service"), 
 		    dataIndex: 'tag',
 		    width: 100
 		},
@@ -62,18 +62,18 @@ Ext.define('PVE.dc.Log', {
 		    width: 100 
 		},
 		{ 
-		    header: "User", 
+		    header: gettext("User name"), 
 		    dataIndex: 'user',
 		    width: 150
 		},
 		{ 
-		    header: "Severity", 
+		    header: gettext("Severity"), 
 		    dataIndex: 'pri',
 		    renderer: PVE.Utils.render_serverity,
 		    width: 100 
 		},
 		{ 
-		    header: "Message", 
+		    header: gettext("Message"), 
 		    dataIndex: 'msg',
 		    flex: 1	  
 		}

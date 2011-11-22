@@ -58,7 +58,7 @@ Ext.define('PVE.dc.Tasks', {
 	    sortableColumns: false,
 	    columns: [
 		{ 
-		    header: "Start Time", 
+		    header: gettext("Start Time"), 
 		    dataIndex: 'starttime',
 		    width: 100,
 		    renderer: function(value) { 
@@ -66,7 +66,7 @@ Ext.define('PVE.dc.Tasks', {
 		    }
 		},
 		{ 
-		    header: "End Time", 
+		    header: gettext("End Time"), 
 		    dataIndex: 'endtime',
 		    width: 100,
 		    renderer: function(value, metaData, record) {
@@ -78,23 +78,23 @@ Ext.define('PVE.dc.Tasks', {
 		    }
 		},
 		{ 
-		    header: "Node", 
+		    header: gettext("Node"), 
 		    dataIndex: 'node',
 		    width: 100
 		},
 		{ 
-		    header: "User", 
+		    header: gettext("User name"), 
 		    dataIndex: 'user',
 		    width: 150
 		},
 		{ 
-		    header: "Description", 
+		    header: gettext("Description"), 
 		    dataIndex: 'upid', 
 		    flex: 1,		  
 		    renderer: PVE.Utils.render_upid
 		},
 		{ 
-		    header: "Status", 
+		    header: gettext("Status"), 
 		    dataIndex: 'status', 
 		    width: 200,
 		    renderer: function(value, metaData, record) { 

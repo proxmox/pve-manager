@@ -33,12 +33,12 @@ Ext.define('PVE.panel.StatusPanel', {
 	    items: [
 		{
 		    itemId: 'tasks',
-		    title: 'Recent tasks',
+		    title: gettext('Tasks'),
 		    xtype: 'pveClusterTasks'
 		},
 		{
 		    itemId: 'clog',
-		    title: 'Cluster log',
+		    title: gettext('Cluster log'),
 		    xtype: 'pveClusterLog'
 		}
 	    ]

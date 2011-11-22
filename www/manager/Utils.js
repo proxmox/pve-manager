@@ -30,39 +30,39 @@ Ext.apply(Ext.form.field.VTypes, {
     IPAddress:  function(v) {
         return (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/).test(v);
     },
-    IPAddressText: 'Must be a numeric IP address',
+    IPAddressText:  gettext('Example') + ': 192.168.1.1',
     IPAddressMask: /[\d\.]/i,
 
     MacAddress: function(v) {
 	return (/^([a-fA-F0-9]{2}:){5}[a-fA-F0-9]{2}$/).test(v);
     },
     MacAddressMask: /[a-fA-F0-9:]/,
-    MacAddressText: 'Must be a valid MAC address (example: "01:23:45:67:89:ab")',
+    MacAddressText: gettext('Example') + ': 01:23:45:67:89:ab',
 
     BridgeName: function(v) {
         return (/^vmbr\d{1,4}$/).test(v);
     },
-    BridgeNameText: 'Allowable bridge names: vmbr<b>N</b>, where 0 <= <b>N</b> <= 9999',
+    BridgeNameText: gettext('Format') + ': vmbr<b>N</b>, where 0 <= <b>N</b> <= 9999',
 
     BondName: function(v) {
         return (/^bond\d{1,4}$/).test(v);
     },
-    BondNameText: 'Allowable bond names: bond<b>N</b>, where 0 <= <b>N</b> <= 9999',
+    BondNameText: gettext('Format') + ': bond<b>N</b>, where 0 <= <b>N</b> <= 9999',
 
     QemuStartDate: function(v) {
 	return (/^(now|\d{4}-\d{1,2}-\d{1,2}(T\d{1,2}:\d{1,2}:\d{1,2})?)$/).test(v);
     },
-    QemuStartDateText: 'Valid format for date are: "now" or "2006-06-17T16:01:21" or "2006-06-17"',
+    QemuStartDateText: gettext('Format') + ': "now" or "2006-06-17T16:01:21" or "2006-06-17"',
 
     StorageId:  function(v) {
         return (/^[a-z][a-z0-9\-\_\.]*[a-z0-9]$/i).test(v);
     },
-    StorageIdText: "ID contains illegal characters (allowed characters: 'a-z', '0-9', '-', '_' and '.')",
+    StorageIdText: gettext("Allowed characters") + ": 'a-z', '0-9', '-', '_', '.'",
 
     HttpProxy:  function(v) {
         return (/^http:\/\/.*$/).test(v);
     },
-    HttpProxyText: "Must confirm to schema 'http://.*' (example: 'http://username:password@host:port/')"
+    HttpProxyText: gettext('Example') + ": http://username:password&#64;host:port/"
 });
 
 // we dont want that a displayfield set the form dirty flag! 
@@ -244,10 +244,10 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     extractRequestError: function(result, verbose) {
-	var msg = 'Successful';
+	var msg = gettext('Successful');
 
 	if (!result.success) {
-	    msg = "Unknown error";
+	    msg = gettext("Unknown error");
 	    if (result.message) {
 		msg = result.message;
 		if (result.status) {
@@ -270,10 +270,10 @@ Ext.define('PVE.Utils', { statics: {
 	var msg;
 	switch (action.failureType) {
 	case Ext.form.action.Action.CLIENT_INVALID:
-	    msg = 'Form fields may not be submitted with invalid values';
+	    msg = gettext('Form fields may not be submitted with invalid values');
 	    break;
 	case Ext.form.action.Action.CONNECT_FAILURE:
-	    msg = 'Connect failure';
+	    msg = gettext('Connection error');
 	    var resp = action.response;
 	    if (resp.status && resp.statusText) {
 		msg += " " + resp.status + ": " + resp.statusText;
@@ -291,7 +291,7 @@ Ext.define('PVE.Utils', { statics: {
     API2Request: function(reqOpts) {
 
 	var newopts = Ext.apply({
-	    waitMsg: 'Please wait...'
+	    waitMsg: gettext('Please wait...')
 	}, reqOpts);
 
 	if (!newopts.url.match(/^\/api2/)) {
@@ -324,13 +324,13 @@ Ext.define('PVE.Utils', { statics: {
 		    try {
 			response.result = Ext.decode(response.responseText);
 		    } catch(e) {}
-		    var msg = "Connection error - server offline?";
+		    var msg = gettext('Connection error') + ' - server offline?';
 		    if (response.aborted) {
-			msg = 'Transaction aborted.';
+			msg = gettext('Connection error') + ' - aborted.';
 		    } else if (response.timedout) {
-			msg = 'Communication failure: Timeout.';
+			msg = gettext('Connection error') + ' - Timeout.';
 		    } else if (response.status && response.statusText) {
-			msg = 'Connection error ' + response.status + ': ' + response.statusText;
+			msg = gettext('Connection error') + ' ' + response.status + ': ' + response.statusText;
 		    }
 		    response.htmlStatus = msg;
 		    Ext.callback(callbackFn, options.scope, [options, false, response]);
@@ -541,19 +541,23 @@ Ext.define('PVE.Utils', { statics: {
 	}
     },
 
+    yesText: gettext('Yes'),
+    noText: gettext('No'),
+    defaultText: gettext('Default'),
+
     format_boolean_with_default: function(value) {
 	if (Ext.isDefined(value) && value !== '') {
-	    return value ? 'Yes' : 'No';
+	    return value ? PVE.Utils.yesText : PVE.Utils.noText;
 	}
-	return 'Default';
+	return PVE.Utils.defaultText;
     },
 
     format_boolean: function(value) {
-	return value ? 'Yes' : 'No';
+	return value ? PVE.Utils.yesText : PVE.Utils.noText;
     },
 
     format_neg_boolean: function(value) {
-	return !value ? 'Yes' : 'No';
+	return !value ? PVE.Utils.yesText : PVE.Utils.noText;
     },
 
     format_content_types: function(value) {

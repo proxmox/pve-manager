@@ -174,11 +174,11 @@ Ext.define('PVE.grid.ResourceGrid', {
 	};
 
 	Ext.apply(me, {
-	    title: 'Search',
+	    title: gettext('Search'),
 	    store: store,
 	    tbar: [
 		'->', 
-		'Search:', ' ',
+		gettext('Search') + ':', ' ',
 		{
 		    xtype: 'textfield',
 		    width: 200,

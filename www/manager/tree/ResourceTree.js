@@ -10,19 +10,19 @@ Ext.define('PVE.tree.ResourceTree', {
 	typeDefaults: {
 	    node: { 
 		iconCls: 'x-tree-node-server',
-		text: 'Node list'
+		text: gettext('Node list')
 	    },
 	    storage: {
 		iconCls: 'x-tree-node-harddisk',
-		text: 'Storage list'
+		text: gettext('Storage list')
 	    },
 	    qemu: {
 		iconCls: 'x-tree-node-computer',
-		text: 'Virtual machines'
+		text: gettext('Virtual machines')
 	    },
 	    openvz: {
 		iconCls: 'x-tree-node-openvz',
-		text: 'OpenVZ containers'
+		text: gettext('OpenVZ containers')
 	    } 
 	}
     },
@@ -182,7 +182,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	    root: {
 		expanded: true,
 		id: 'root',
-		text: "Datacenter"
+		text: gettext('Datacenter')
 	    }
 	});
 

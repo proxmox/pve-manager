@@ -33,22 +33,22 @@ Ext.define('PVE.qemu.Config', {
 	};
 
 	var startBtn = Ext.create('Ext.Button', { 
-	    text: 'Start',
+	    text: gettext('Start'),
 	    handler: function() {
 		vm_command('start');
 	    }			    
 	}); 
  
 	var stopBtn = Ext.create('PVE.button.Button', {
-	    text: 'Stop',
-	    confirmMsg: "Do you really want to stop the VM?",
+	    text: gettext('Stop'),
+	    confirmMsg: Ext.String.format(gettext("Do you really want to stop VM {0}?"), vmid),
 	    handler: function() {
 		vm_command("stop", { timeout: 30 });
 	    }
 	});
 
 	var migrateBtn = Ext.create('Ext.Button', { 
-	    text: 'Migrate',
+	    text: gettext('Migrate'),
 	    handler: function() {
 		var win = Ext.create('PVE.window.Migrate', {
 		    vmtype: 'qemu',
@@ -60,8 +60,8 @@ Ext.define('PVE.qemu.Config', {
 	});
  
 	var resetBtn = Ext.create('PVE.button.Button', {
-	    text: 'Reset',
-	    confirmMsg: "Do you really want to reset the VM?",
+	    text: gettext('Reset'),
+	    confirmMsg: Ext.String.format(gettext("Do you really want to reset VM {0}?"), vmid),
 	    handler: function() { 
 		vm_command("reset");
 	    }
@@ -69,16 +69,15 @@ Ext.define('PVE.qemu.Config', {
 
 	var shutdownBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Shutdown'),
-	    confirmMsg: "Do you really want to shutdown the VM?",
+	    confirmMsg: Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), vmid),
 	    handler: function() {
 		vm_command('shutdown', { timeout: 30 });
 	    }			    
 	});
 
 	var removeBtn = Ext.create('PVE.button.Button', {
-	    text: 'Remove',
-	    confirmMsg: 'Are you sure you want to remove VM ' + 
-		vmid + '? This will permanently erase all VM data.',
+	    text: gettext('Remove'),
+	    confirmMsg: Ext.String.format(gettext('Are you sure you want to remove VM {0}? This will permanently erase all VM data.'), vmid),
 	    handler: function() {
 		PVE.Utils.API2Request({
 		    url: '/nodes/' + nodename + '/qemu/' + vmid,
@@ -92,49 +91,49 @@ Ext.define('PVE.qemu.Config', {
 	});
 
 	var consoleBtn = Ext.create('Ext.Button', {
-	    text: 'Console',
+	    text: gettext('Console'),
 	    handler: function() {
 		PVE.Utils.openConoleWindow('kvm', vmid, nodename);
 	    }
 	});
 
 	var vmname = me.pveSelNode.data.name;
-	var descr = vmname ? "'" + vmname + "' " : '';
+	var descr = vmid + " (" + (vmname ? "'" + vmname + "' " : "'VM " + vmid + "'") + ")";
+
 	Ext.apply(me, {
-	    title: "Virtual machine " + descr + "'KVM " + vmid + 
-		"' on node '" + nodename + "'",
+	    title: Ext.String.format(gettext("Virtual machine {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'kvmtab',
 	    tbar: [ startBtn, stopBtn, resetBtn, shutdownBtn, 
 		    migrateBtn, removeBtn, consoleBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
-		    title: 'Summary',
+		    title: gettext('Summary'),
 		    xtype: 'pveQemuSummary',
 		    itemId: 'summary'
 		},
 		{
-		    title: 'Hardware',
+		    title: gettext('Hardware'),
 		    itemId: 'hardware',
 		    xtype: 'PVE.qemu.HardwareView'
 		},
 		{
-		    title: 'Options',
+		    title: gettext('Options'),
 		    itemId: 'options',
 		    xtype: 'PVE.qemu.Options'
 		},
 		{
-		    title: 'Monitor',
+		    title: gettext('Monitor'),
 		    itemId: 'monitor',
 		    xtype: 'pveQemuMonitor'
 		},
 		{
+		    title: gettext('Backup'),
 		    xtype: 'pveBackupView',
-		    title: 'Backup',
 		    itemId: 'backup'
 		},
 		{
-		    title: 'Permissions',
+		    title: gettext('Permissions'),
 		    itemId: 'permissions',
 		    html: 'permissions ' + vmid
 		}

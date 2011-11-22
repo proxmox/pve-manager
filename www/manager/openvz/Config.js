@@ -33,30 +33,30 @@ Ext.define('PVE.openvz.Config', {
 	};
 
 	var startBtn = Ext.create('Ext.Button', { 
-	    text: 'Start',
+	    text: gettext('Start'),
 	    handler: function() {
 		vm_command('start');
 	    }			    
 	}); 
  
 	var stopBtn = Ext.create('PVE.button.Button', {
-	    text: 'Stop',
-	    confirmMsg: "Do you really want to stop the VM?",
+	    text: gettext('Stop'),
+	    confirmMsg: Ext.String.format(gettext("Do you really want to stop VM {0}?"), vmid),
 	    handler: function() {
 		vm_command("stop", { fast: 1 });
 	    }
 	});
  
 	var shutdownBtn = Ext.create('PVE.button.Button', {
-	    text: 'Shutdown',
-	    confirmMsg: "Do you really want to shutdown the VM?",
+	    text: gettext('Shutdown'),
+	    confirmMsg: Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), vmid),
 	    handler: function() {
 		vm_command('stop');
 	    }			    
 	});
  
 	var migrateBtn = Ext.create('Ext.Button', { 
-	    text: 'Migrate',
+	    text: gettext('Migrate'),
 	    handler: function() {
 		var win = Ext.create('PVE.window.Migrate', { 
 		    vmtype: 'openvz',
@@ -68,9 +68,8 @@ Ext.define('PVE.openvz.Config', {
 	});
 
 	var removeBtn = Ext.create('PVE.button.Button', {
-	    text: 'Remove',
-	    confirmMsg: 'Are you sure you want to remove VM ' + 
-		vmid + '? This will permanently erase all VM data.',
+	    text: gettext('Remove'),
+	    confirmMsg: Ext.String.format(gettext('Are you sure you want to remove VM {0}? This will permanently erase all VM data.'), vmid),
 	    handler: function() {
 		PVE.Utils.API2Request({
 		    url: '/nodes/' + nodename + '/openvz/' + vmid,
@@ -84,34 +83,34 @@ Ext.define('PVE.openvz.Config', {
 	});
 
 	var consoleBtn = Ext.create('Ext.Button', {
-	    text: 'Console',
+	    text: gettext('Console'),
 	    handler: function() {
 		PVE.Utils.openConoleWindow('openvz', vmid, nodename);
 	    }
 	});
 
 	var vmname = me.pveSelNode.data.name;
-	var descr = vmname ? " '" + vmname + "'" : '';
+	var descr = vmid + " (" + (vmname ? "'" + vmname + "' " : "'CT " + vmid + "'") + ")";
+
 	Ext.apply(me, {
-	    title: "OpenVZ container " + vmid + descr +  
-		" on node '" + nodename + "'",
+	    title: Ext.String.format(gettext("Container {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'ovztab',
 	    tbar: [ startBtn, stopBtn, shutdownBtn, migrateBtn, 
 		    removeBtn, consoleBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
-		    title: 'Summary',
+		    title: gettext('Summary'),
 		    xtype: 'pveOpenVZSummary',
 		    itemId: 'summary'
 		},
 		{
-		    title: 'Ressources',
-		    itemId: 'ressources',
+		    title: gettext('Resources'),
+		    itemId: 'resources',
 		    xtype: 'pveOpenVZRessourceView'
 		},
 		{
-		    title: 'Network',
+		    title: gettext('Network'),
 		    itemId: 'network',
 		    xtype: 'pveOpenVZNetworkView'
 		},
@@ -121,7 +120,7 @@ Ext.define('PVE.openvz.Config', {
 		    xtype: 'pveOpenVZDNS'
 		},
 		{
-		    title: 'Options',
+		    title: gettext('Options'),
 		    itemId: 'options',
 		    xtype: 'pveOpenVZOptions'
 		},
@@ -138,12 +137,12 @@ Ext.define('PVE.openvz.Config', {
 		    url: '/api2/extjs/nodes/' + nodename + '/openvz/' + vmid + '/initlog'
 		},
 		{
+		    title: gettext('Backup'),
 		    xtype: 'pveBackupView',
-		    title: 'Backup',
 		    itemId: 'backup'
 		},
 		{
-		    title: 'Permissions',
+		    title: gettext('Permissions'),
 		    itemId: 'permissions',
 		    html: 'permissions ' + vmid
 		}

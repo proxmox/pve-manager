@@ -27,24 +27,24 @@ Ext.define('PVE.node.Config', {
 	    });
 	};
 
-	var rebootBtn = Ext.create('PVE.button.Button', {
-	    text: 'Reboot',
-	    confirmMsg: "Do you really want to reboot node '" + nodename + "'?",
+	var restartBtn = Ext.create('PVE.button.Button', {
+	    text: gettext('Restart'),
+	    confirmMsg: Ext.String.format(gettext("Do you really want to restart node {0}?"), nodename),
 	    handler: function() { 
 		node_command('reboot');
 	    }
 	});
 
 	var shutdownBtn = Ext.create('PVE.button.Button', {
-	    text: 'Shutdown',
-	    confirmMsg: "Do you really want to shutdown node '" + nodename + "'?",
+	    text: gettext('Shutdown'),
+	    confirmMsg: Ext.String.format(gettext("Do you really want to shutdown node {0}?"), nodename),
 	    handler: function() { 
 		node_command('shutdown');
 	    }
 	});
 
 	var shellBtn = Ext.create('Ext.Button', { 
-	    text: 'Shell',
+	    text: gettext('Shell'),
 	    handler: function() {
 		var url = Ext.urlEncode({
 		    console: 'shell',
@@ -57,23 +57,23 @@ Ext.define('PVE.node.Config', {
 	}); 
 
 	Ext.apply(me, {
-	    title: "Node '" + nodename + "'",
+	    title: gettext('Node') + " '" + nodename + "'",
 	    hstateid: 'nodetab',
 	    defaults: { statusStore: me.statusStore },
-	    tbar: [ rebootBtn, shutdownBtn, shellBtn ],
+	    tbar: [ restartBtn, shutdownBtn, shellBtn ],
 	    items: [
 		{
-		    title: 'Summary',
+		    title: gettext('Summary'),
 		    itemId: 'summary',
 		    xtype: 'pveNodeSummary'
 		},
 		{
-		    title: 'Services',
+		    title: gettext('Services'),
 		    itemId: 'services',
 		    xtype: 'pveNodeServiceView'
 		},
 		{
-		    title: 'Network',
+		    title: gettext('Network'),
 		    itemId: 'network',
 		    xtype: 'pveNodeNetworkView'
 		},
@@ -83,7 +83,7 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveNodeDNSView'
 		},
 		{
-		    title: 'Time',
+		    title: gettext('Time'),
 		    itemId: 'time',
 		    xtype: 'pveNodeTimeView'
 		},
@@ -112,7 +112,7 @@ Ext.define('PVE.node.Config', {
 	    var uptimerec = s.data.get('uptime');
 	    var uptime = uptimerec ? uptimerec.data.value : false;
 
-	    rebootBtn.setDisabled(!uptime);
+	    restartBtn.setDisabled(!uptime);
 	    shutdownBtn.setDisabled(!uptime);
 	    shellBtn.setDisabled(!uptime);
 	});

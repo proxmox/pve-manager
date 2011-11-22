@@ -37,7 +37,7 @@ Ext.define('PVE.button.Button', {
 		    if (Ext.isFunction(me.confirmMsg)) {
 			msg = me.confirmMsg(rec);
 		    } 
-		    Ext.Msg.confirm('Confirmation', msg, function(btn) {
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
 			}

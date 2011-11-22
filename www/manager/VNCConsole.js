@@ -228,16 +228,16 @@ Ext.define('PVE.KVMConsole', {
 
 	var tbar = [ 
 	    { 
-		text: 'Start',
+		text: gettext('Start'),
 		handler: function() { 
 		    vm_command("start", {}, 1);
 		}
 	    },
 	    { 
-		text: 'Stop',
+		text: gettext('Stop'),
 		handler: function() {
-		    var msg = "Do you really want to stop the VM?";
-		    Ext.Msg.confirm('Confirm', msg, function(btn) {
+		    var msg = Ext.String.format(gettext("Do you really want to stop VM {0}?"), me.vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
 			}
@@ -251,10 +251,10 @@ Ext.define('PVE.KVMConsole', {
 		vmid: me.vmid
 	    },
 	    { 
-		text: 'Reset',
+		text: gettext('Reset'),
 		handler: function() { 
-		    var msg = "Do you really want to reset the VM?";
-		    Ext.Msg.confirm('Confirm', msg, function(btn) {
+		    var msg = Ext.String.format(gettext("Do you really want to reset VM {0}?"), me.vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
 			}
@@ -263,10 +263,10 @@ Ext.define('PVE.KVMConsole', {
 		}
 	    },
 	    { 
-		text: 'Shutdown',
+		text: gettext('Shutdown'),
 		handler: function() {
-		    var msg = "Do you really want to shutdown the VM?";
-		    Ext.Msg.confirm('Confirm', msg, function(btn) {
+		    var msg = Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), me.vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
 			}
@@ -275,10 +275,10 @@ Ext.define('PVE.KVMConsole', {
 		}			    
 	    }, 
 	    { 
-		text: 'Suspend',
+		text: gettext('Suspend'),
 		handler: function() {
-		    var msg = "Do you really want to suspend the VM?";
-		    Ext.Msg.confirm('Confirm', msg, function(btn) {
+		    var msg = Ext.String.format(gettext("Do you really want to suspend VM {0}?"), me.vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
 			}
@@ -287,27 +287,27 @@ Ext.define('PVE.KVMConsole', {
 		}
 	    },
 	    { 
-		text: 'Resume',
+		text: gettext('Resume'),
 		handler: function() {
 		    vm_command("resume"); 
 		}
 	    },
             '->',
 	    {
-                text: 'Refresh',
+                text: gettext('Refresh'),
 		handler: function() { 
 		    var applet = Ext.getDom(me.appletID);
 		    applet.sendRefreshRequest();
 		}
 	    },
 	    {
-                text: 'Reload',
+                text: gettext('Reload'),
                 handler: function () { 
 		    me.reloadApplet(); 
 		}
 	    },
             { 
-                text: 'Console',
+                text: gettext('Console'),
                 handler: function() {
 		    var url = Ext.urlEncode({
 			console: 'kvm',
@@ -364,16 +364,16 @@ Ext.define('PVE.OpenVZConsole', {
 
 	var tbar = [ 
 	    { 
-		text: 'Start',
+		text: gettext('Start'),
 		handler: function() { 
 		    vm_command("start", {}, 1);
 		}
 	    },
 	    { 
-		text: 'Stop',
+		text: gettext('Stop'),
 		handler: function() {
-		    var msg = "Do you really want to stop the VM?";
-		    Ext.Msg.confirm('Confirm', msg, function(btn) {
+		    var msg = Ext.String.format(gettext("Do you really want to stop VM {0}?"), me.vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
 			}
@@ -382,10 +382,10 @@ Ext.define('PVE.OpenVZConsole', {
 		}
 	    },
 	    { 
-		text: 'Shutdown',
+		text: gettext('Shutdown'),
 		handler: function() {
-		    var msg = "Do you really want to shutdown the VM?";
-		    Ext.Msg.confirm('Confirm', msg, function(btn) {
+		    var msg = Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), me.vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
 			}
@@ -395,20 +395,20 @@ Ext.define('PVE.OpenVZConsole', {
 	    },
             '->',
 	    {
-                text: 'Refresh',
+                text: gettext('Refresh'),
 		handler: function() { 
 		    var applet = Ext.getDom(me.appletID);
 		    applet.sendRefreshRequest();
 		}
 	    },
 	    {
-                text: 'Reload',
+                text: gettext('Reload'),
                 handler: function () { 
 		    me.reloadApplet(); 
 		}
 	    },
             { 
-                text: 'Console',
+                text: gettext('Console'),
                 handler: function() {
 		    var url = Ext.urlEncode({
 			console: 'openvz',
@@ -445,18 +445,18 @@ Ext.define('PVE.Shell', {
 	var tbar = [ 
            '->',
 	    {
-                text: 'Refresh',
+                text: gettext('Refresh'),
 		handler: function() { 
 		    var applet = Ext.getDom(me.appletID);
 		    applet.sendRefreshRequest();
 		}
 	    },
 	    {
-                text: 'Reload',
+                text: gettext('Reload'),
                 handler: function () { me.reloadApplet(); }
 	    },
 	    { 
-		text: 'Shell',
+		text: gettext('Shell'),
 		handler: function() {
 		    var url = Ext.urlEncode({
 			console: 'shell',

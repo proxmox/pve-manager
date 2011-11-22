@@ -16,21 +16,22 @@ Ext.define('PVE.storage.Browser', {
 	}
 
 	Ext.apply(me, {
-	    title: "Storage '" + storeid + "'" + "' on node '" + nodename + "'",
+	    title: Ext.String.format(gettext("Storage {0} on node {1}"), 
+				     "'" + storeid + "'", "'" + nodename + "'"),
 	    hstateid: 'storagetab',
 	    items: [
 		{
-		    title: 'Summary',
+		    title: gettext('Summary'),
 		    xtype: 'pveStorageSummary',
 		    itemId: 'summary'
 		},
 		{
 		    xtype: 'pveStorageContentView',
-		    title: 'Content',
+		    title: gettext('Content'),
 		    itemId: 'content'
 		},
 		{
-		    title: 'Permissions',
+		    title: gettext('Permissions'),
 		    itemId: 'permissions',
 		    html: 'Permissions '
 		}
