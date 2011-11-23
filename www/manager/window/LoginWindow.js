@@ -9,12 +9,14 @@ Ext.define('PVE.window.LoginWindow', {
 	var form = me.getComponent(0).getForm();
 
 	if(form.isValid()){
-            me.el.mask('Please wait...', 'x-mask-loading');
+            me.el.mask(gettext('Please wait...'), 'x-mask-loading');
 
 	    form.submit({
 		failure: function(f, resp){
 		    me.el.unmask();
-		    Ext.MessageBox.alert('Failure', "Login failed. Please try again", function() {
+		    Ext.MessageBox.alert(gettext('Error'), 
+					 gettext("Login failed. Please try again"), 
+					 function() {
 			var uf = form.findField('username');
 			uf.focus(true, true);
 		    });
@@ -108,6 +110,7 @@ Ext.define('PVE.window.LoginWindow', {
 			    change: function(t, value) {
 				var dt = Ext.Date.add(new Date(), Ext.Date.YEAR, 10);
 				Ext.util.Cookies.set('PVELangCookie', value, dt);
+				me.el.mask(gettext('Please wait...'), 'x-mask-loading');
 				window.location.reload();
 			    }
 			}
