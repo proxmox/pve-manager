@@ -30,7 +30,7 @@ Ext.define('PVE.data.ResourceStore', {
 
 	var field_defaults = {
 	    type: {
-		header: 'Type',
+		header: gettext('Type'),
 		type: 'text',
 		renderer: PVE.Utils.render_resource_type,
 		sortable: true,
@@ -45,6 +45,7 @@ Ext.define('PVE.data.ResourceStore', {
 		width: 80
 	    },
 	    running: {
+		header: gettext('Online'),
 		type: 'boolean',
 		hidden: true,
 		convert: function(value, record) {
@@ -57,7 +58,7 @@ Ext.define('PVE.data.ResourceStore', {
 		}
 	    },
 	    text: {
-		header: 'Text',
+		header: gettext('Description'),
 		type: 'text',
 		sortable: true,
 		width: 200,
@@ -92,20 +93,20 @@ Ext.define('PVE.data.ResourceStore', {
 		width: 80
 	    },
 	    name: {
-		header: 'Name',
+		header: gettext('Name'),
 		hidden: true,
 		sortable: true,
 		type: 'text'
 	    },
 	    disk: {
-		header: 'Disk usage',
+		header: gettext('Disk usage'),
 		type: 'integer',
 		renderer: PVE.Utils.render_disk_usage,
 		sortable: true,
 		width: 100
 	    },
 	    maxdisk: {
-		header: 'Disk size',
+		header: gettext('Disk size'),
 		type: 'integer',
 		renderer: PVE.Utils.render_size,
 		sortable: true,
@@ -113,22 +114,22 @@ Ext.define('PVE.data.ResourceStore', {
 		width: 100
 	    },
 	    mem: {
-		header: 'Memory usage',
+		header: gettext('Memory usage'),
 		type: 'integer',
 		renderer: PVE.Utils.render_mem_usage,
 		sortable: true,
 		width: 100
 	    },
 	    maxmem: {
-		header: 'Mem size',
-		type:'integer',
+		header: gettext('Memory size'),
+		type: 'integer',
 		renderer: PVE.Utils.render_size,
 		hidden: true,
 		sortable: true,
 		width: 100
 	    },
 	    cpu: {
-		header: 'CPU usage',
+		header: gettext('CPU usage'),
 		type: 'float',
 		renderer: PVE.Utils.render_cpu,
 		sortable: true,
@@ -142,21 +143,21 @@ Ext.define('PVE.data.ResourceStore', {
 		width: 60
 	    },
 	    uptime: {
-		header: 'Uptime',
+		header: gettext('Uptime'),
 		type: 'integer',
 		renderer: PVE.Utils.render_uptime,
 		sortable: true,
 		width: 110
 	    }, 
 	    node: {
-		header: 'Node',
+		header: gettext('Node'),
 		type: 'text',
 		hidden: true,
 		sortable: true,
 		width: 110
 	    },
 	    storage: {
-		header: 'Storage',
+		header: gettext('Storage'),
 		type: 'text',
 		hidden: true,
 		sortable: true,

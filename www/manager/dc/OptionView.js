@@ -5,12 +5,12 @@ Ext.define('PVE.dc.HttpProxyEdit', {
 	var me = this;
 
 	Ext.applyIf(me, {
-	    title: "Edit HTTP proxy settings",
+	    title: gettext("Edit HTTP proxy settings"),
 	    items: {
 		xtype: 'pvetextfield',
 		name: 'http_proxy',
 		vtype: 'HttpProxy',
-		emptyText: 'Do not use any proxy',
+		emptyText: gettext('Do not use any proxy'),
 		deleteEmpty: true,
 		value: '',
 		fieldLabel: 'HTTP proxy'
@@ -30,12 +30,12 @@ Ext.define('PVE.dc.LanguageEdit', {
 	var me = this;
 
 	Ext.applyIf(me, {
-	    title: "Edit language settings",
+	    title: gettext("Edit language settings"),
 	    items: {
 		xtype: 'pveLanguageSelector',
 		name: 'language',
 		value: '',
-		fieldLabel: 'Language'
+		fieldLabel: gettext('Language')
 	    }
 	});
 
@@ -52,12 +52,12 @@ Ext.define('PVE.dc.KeyboardEdit', {
 	var me = this;
 
 	Ext.applyIf(me, {
-	    title: "Edit keyboard settings",
+	    title: gettext("Edit keyboard settings"),
 	    items: {
 		xtype: 'VNCKeyboardSelector',
 		name: 'keyboard',
 		value: '',
-		fieldLabel: 'Keyboard Layout'
+		fieldLabel: gettext('Keyboard Layout')
 	    }
 	});
 
@@ -71,6 +71,8 @@ Ext.define('PVE.dc.OptionView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveDcOptionView'],
 
+    noProxyText: gettext('Do not use any proxy'),
+
     initComponent : function() {
 	var me = this;
 
@@ -80,13 +82,13 @@ Ext.define('PVE.dc.OptionView', {
 
 	var rows = {
 	    keyboard: { 
-		header: 'Keyboard', 
+		header: gettext('Keyboard'), 
 		editor: 'PVE.dc.KeyboardEdit',
 		renderer: PVE.Utils.render_kvm_language,
 		required: true 
 	    },
 	    language: { 
-		header: 'GUI language', 
+		header: gettext('GUI language'), 
 		editor: 'PVE.dc.LanguageEdit',
 		renderer: PVE.Utils.render_language,
 		required: true 
@@ -97,7 +99,7 @@ Ext.define('PVE.dc.OptionView', {
 		required: true,
 		renderer: function(value) {
 		    if (!value) {
-			return "Do not use any proxy";
+			return me.noProxyText;
 		    }
 		    return value;
 		}
@@ -125,7 +127,7 @@ Ext.define('PVE.dc.OptionView', {
 	};
 
 	var edit_btn = new Ext.Button({
-	    text: 'Edit',
+	    text: gettext('Edit'),
 	    disabled: true,
 	    handler: run_editor
 	});
