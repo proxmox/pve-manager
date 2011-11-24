@@ -111,7 +111,7 @@ sub parse_vzdump_cron_config {
 		die "unable to parse day of week '$dow' in '$filename'\n" if !$dowhash;
 
 		my $args = PVE::Tools::split_args($param);
-		my $opts = PVE::JSONSchema::get_options($vzdump_propetries, $args, undef, undef, 'vmid');
+		my $opts = PVE::JSONSchema::get_options($vzdump_propetries, $args, 'vmid');
 
 		$opts->{id} = "$digest:$jid";
 		$jid++;
