@@ -295,7 +295,7 @@ Ext.define('PVE.storage.ContentView', {
 		    flex: 1,
 		    sortable: true,
 		    renderer: PVE.Utils.render_storage_content,
-		    dataIndex: 'volid'
+		    dataIndex: 'text'
 		},
 		{
 		    header: 'Format',
@@ -322,7 +322,16 @@ Ext.define('PVE.storage.ContentView', {
 	extend: 'Ext.data.Model',
 	fields: [ 
 	    'volid', 'content', 'format', 'size', 'used', 'vmid', 
-	    'channel', 'id', 'lun'
+	    'channel', 'id', 'lun',
+	    {	
+		name: 'text', 
+		convert: function(value, record) {
+		    if (value) {
+			return value;
+		    }
+		    return PVE.Utils.render_storage_content(value, {}, record);
+		}
+	    }
 	],
 	idProperty: 'volid'
     });

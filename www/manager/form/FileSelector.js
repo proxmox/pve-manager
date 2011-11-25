@@ -41,19 +41,7 @@ Ext.define('PVE.form.FileSelector', {
 	var me = this;
 
 	var store = Ext.create('Ext.data.Store', {
-	    fields: [ 
-		'volid', 'format', 'size', 'used', 'vmid',
-		'channel', 'id', 'lun',
-		{	
-		    name: 'text', 
-		    convert: function(value, record) {
-			if (value) {
-			    return value;
-			}
-			return PVE.Utils.render_storage_content(value, {}, record);
-		    }
-		}
-	    ]
+	    model: 'pve-storage-content'
 	});
 
 	Ext.apply(me, {
