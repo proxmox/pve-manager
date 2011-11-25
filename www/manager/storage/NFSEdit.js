@@ -83,7 +83,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		name: 'storage',
 		height: 22, // hack: set same height as text fields
 		value: me.storageId || '',
-		fieldLabel: 'Storage ID',
+		fieldLabel: 'ID',
 		vtype: 'StorageId',
 		allowBlank: false
 	    },
@@ -92,7 +92,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		height: 22, // hack: set same height as text fields
 		name: 'server',
 		value: '',
-		fieldLabel: 'Server',
+		fieldLabel: gettext('Server'),
 		allowBlank: false,
 		listeners: {
 		    change: function(f, value) {
@@ -117,7 +117,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		name: 'content',
 		value: 'images',
 		multiSelect: true,
-		fieldLabel: 'Content',
+		fieldLabel: gettetx('Content'),
 		allowBlank: false
 	    }
 	];
@@ -126,8 +126,9 @@ Ext.define('PVE.storage.NFSInputPanel', {
 	    {
 		xtype: 'PVE.form.NodeSelector',
 		name: 'nodes',
-		fieldLabel: 'Nodes',
-		emptyText: 'All (no restrictions)',
+		fieldLabel: gettext('Nodes'),
+		emptyText: gettext('All') + ' (' + 
+		    gettext('No restrictions') +')',
 		multiSelect: true,
 		autoSelect: false
 	    },
@@ -136,7 +137,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,
-		fieldLabel: 'Enable'
+		fieldLabel: gettext('Enable')
 	    }
 	];
 
@@ -165,11 +166,14 @@ Ext.define('PVE.storage.NFSEdit', {
 	    storageId: me.storageId
 	});
 	
-	Ext.apply(me, {
-	    title: me.create ? "Create NFS storage" :
-		"Edit NFS storage '" + me.storageId + "'",
-	    items: [ ipanel ]
-	});
+	me.items = [ ipanel ];
+
+	if (me.create) {
+	    me.title = gettext('Create NFS storage');
+	} else {
+	    me.title = Ext.String.format(gettext('Edit NFS storage {0}'),
+					 "'" + me.storageId + "'");
+	}
 
 	me.callParent();
 

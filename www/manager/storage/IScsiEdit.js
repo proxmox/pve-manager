@@ -86,7 +86,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		name: 'storage',
 		height: 22, // hack: set same height as text fields
 		value: me.storageId || '',
-		fieldLabel: 'Storage ID',
+		fieldLabel: 'ID',
 		vtype: 'StorageId',
 		allowBlank: false
 	    },
@@ -121,8 +121,9 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 	    {
 		xtype: 'PVE.form.NodeSelector',
 		name: 'nodes',
-		fieldLabel: 'Nodes',
-		emptyText: 'All (no restrictions)',
+		fieldLabel: gettext('Nodes'),
+		emptyText: gettext('All') + ' (' + 
+		    gettext('No restrictions') +')',
 		multiSelect: true,
 		autoSelect: false
 	    },
@@ -131,13 +132,13 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,
-		fieldLabel: 'Enable'
+		fieldLabel: gettext('Enable')
 	    },
 	    {
 		xtype: 'checkbox',
 		name: 'luns',
 		checked: true,
-		fieldLabel: 'Use LUNs directly'
+		fieldLabel: gettext('Use LUNs directly')
 	    }
 	];
 
@@ -166,11 +167,14 @@ Ext.define('PVE.storage.IScsiEdit', {
 	    storageId: me.storageId
 	});
 	
-	Ext.apply(me, {
-	    title: me.create ? "Create iSCSI storage" :
-		"Edit iSCSI storage '" + me.storageId + "'",
-	    items: [ ipanel ]
-	});
+	me.items = [ ipanel ];
+
+	if (me.create) {
+	    me.title = gettext('Create iSCSI storage');
+	} else {
+	    me.title = Ext.String.format(gettext('Edit iSCSI storage {0}'),
+					 "'" + me.storageId + "'");
+	}
 
 	me.callParent();
 

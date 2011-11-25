@@ -37,6 +37,8 @@ Ext.define('PVE.storage.BaseStorageSelector', {
     extend: 'Ext.form.field.ComboBox',
     alias: 'widget.pveBaseStorageSelector',
 
+    existingGroupsText: gettext("Existing volume groups"),
+
     initComponent : function() {
 	var me = this;
 
@@ -54,7 +56,7 @@ Ext.define('PVE.storage.BaseStorageSelector', {
 			      if (record.data.storage) {
 				  return record.data.storage + " (iSCSI)";
 			      } else {
-				  return "Existing volume groups";
+				  return me.existingGroupsText;
 			      }
 			  }
 		      }],
@@ -107,7 +109,7 @@ Ext.define('PVE.storage.LVMInputPanel', {
 		name: 'storage',
 		height: 22, // hack: set same height as text fields
 		value: me.storageId || '',
-		fieldLabel: 'Storage ID',
+		fieldLabel: 'ID',
 		vtype: 'StorageId',
 		submitValue: !!me.create,
 		allowBlank: false
@@ -120,14 +122,14 @@ Ext.define('PVE.storage.LVMInputPanel', {
 	    hidden: !!me.create,
 	    disabled: !!me.create,
 	    value: '',
-	    fieldLabel: 'VG name',
+	    fieldLabel: gettext('Volume group'),
 	    allowBlank: false
 	});
 
 	if (me.create) {
 	    var vgField = Ext.create('PVE.storage.VgSelector', {
 		name: 'vgname',
-		fieldLabel: 'Volume group',
+		fieldLabel: gettext('Volume group'),
 		allowBlank: false
 	    });
 
@@ -137,14 +139,14 @@ Ext.define('PVE.storage.LVMInputPanel', {
 		disabled: true,
 		nodename: 'localhost',
 		storageContent: 'images',
-		fieldLabel: 'Base volume',
+		fieldLabel: gettext('Base volume'),
 		allowBlank: false
 	    });
 
 	    me.column1.push({
 		xtype: 'pveBaseStorageSelector',
 		name: 'basesel',
-		fieldLabel: 'Base storage',
+		fieldLabel: gettext('Base storage'),
 		submitValue: false,
 		listeners: {
 		    change: function(f, value) {
@@ -179,8 +181,9 @@ Ext.define('PVE.storage.LVMInputPanel', {
 	    {
 		xtype: 'PVE.form.NodeSelector',
 		name: 'nodes',
-		fieldLabel: 'Nodes',
-		emptyText: 'All (no restrictions)',
+		fieldLabel: gettext('Nodes'),
+		emptyText: gettext('All') + ' (' + 
+		    gettext('No restrictions') +')',
 		multiSelect: true,
 		autoSelect: false
 	    },
@@ -189,13 +192,13 @@ Ext.define('PVE.storage.LVMInputPanel', {
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,
-		fieldLabel: 'Enable'
+		fieldLabel: gettext('Enable')
 	    },
 	    {
 		xtype: 'pvecheckbox',
 		name: 'shared',
 		uncheckedValue: 0,
-		fieldLabel: 'Shared'
+		fieldLabel: gettext('Shared')
 	    }
 	];
 
@@ -224,11 +227,14 @@ Ext.define('PVE.storage.LVMEdit', {
 	    storageId: me.storageId
 	});
 	
-	Ext.apply(me, {
-	    title: me.create ? "Create LVM storage" :
-		"Edit LVM storage '" + me.storageId + "'",
-	    items: [ ipanel ]
-	});
+	me.items = [ ipanel ];
+
+	if (me.create) {
+	    me.title = gettext('Create LVM storage');
+	} else {
+	    me.title = Ext.String.format(gettext('Edit LVM storage {0}'),
+					 "'" + me.storageId + "'");
+	}
 
 	me.callParent();
 
