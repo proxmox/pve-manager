@@ -26,7 +26,7 @@ Ext.define('PVE.storage.DirInputPanel', {
 		name: 'storage',
 		height: 22, // hack: set same height as text fields
 		value: me.storageId || '',
-		fieldLabel: 'Storage ID',
+		fieldLabel: 'ID',
 		vtype: 'StorageId',
 		allowBlank: false
 	    },
@@ -35,7 +35,7 @@ Ext.define('PVE.storage.DirInputPanel', {
 		height: 22, // hack: set same height as text fields
 		name: 'path',
 		value: '',
-		fieldLabel: 'Directory',
+		fieldLabel: gettext('Directory'),
 		allowBlank: false
 	    },
 	    {
@@ -43,7 +43,7 @@ Ext.define('PVE.storage.DirInputPanel', {
 		name: 'content',
 		value: 'images',
 		multiSelect: true,
-		fieldLabel: 'Content',
+		fieldLabel: gettext('Content'),
 		allowBlank: false
 	    }
 	];
@@ -54,13 +54,13 @@ Ext.define('PVE.storage.DirInputPanel', {
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,
-		fieldLabel: 'Enable'
+		fieldLabel: gettext('Enable')
 	    },
 	    {
 		xtype: 'pvecheckbox',
 		name: 'shared',
 		uncheckedValue: 0,
-		fieldLabel: 'Shared'
+		fieldLabel: gettext('Shared')
 	    }
 	];
 
@@ -68,8 +68,9 @@ Ext.define('PVE.storage.DirInputPanel', {
 	    me.column2.unshift({
 		xtype: 'PVE.form.NodeSelector',
 		name: 'nodes',
-		fieldLabel: 'Nodes',
-		emptyText: 'All (no restrictions)',
+		fieldLabel: gettext('Nodes'),
+		emptyText: gettext('All') + ' (' + 
+		    gettext('No restrictions') +')',
 		multiSelect: true,
 		autoSelect: false
 	    });
@@ -99,13 +100,16 @@ Ext.define('PVE.storage.DirEdit', {
 	    create: me.create,
 	    storageId: me.storageId
 	});
-	
-	Ext.apply(me, {
-	    title: me.create ? "Create directory storage" :
-		"Edit directory storage '" + me.storageId + "'",
-	    items: [ ipanel ]
-	});
 
+	me.items = [ ipanel ];
+
+	if (me.create) {
+	    me.title = gettext('Create directory storage');
+	} else {
+	    me.title = Ext.String.format(gettext('Edit directory storage {0}'),
+					 "'" + me.storageId + "'");
+	}
+	
 	me.callParent();
 
 	if (!me.create) {

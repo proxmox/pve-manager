@@ -1,3 +1,9 @@
+pve-manager (2.0-11) unstable; urgency=low
+
+  * start i18n support
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 25 Nov 2011 09:23:00 +0100
+
 pve-manager (2.0-10) unstable; urgency=low
 
   * add context menus

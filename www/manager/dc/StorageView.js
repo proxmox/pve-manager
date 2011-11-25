@@ -51,13 +51,13 @@ Ext.define('PVE.dc.StorageView', {
 	};
 	
 	var edit_btn = new Ext.Button({
-	    text: 'Edit',
+	    text: gettext('Edit'),
 	    disabled: true,
 	    handler: run_editor
 	});
 
 	var remove_btn = new Ext.Button({
-	    text: 'Remove',
+	    text: gettext('Remove'),
 	    disabled: true,
 	    handler: function(){
 		var sm = me.getSelectionModel();
@@ -67,10 +67,9 @@ Ext.define('PVE.dc.StorageView', {
 		    return;
 		}
 
-		var msg = "Are you sure you want to remove storage: '" + 
-		    rec.data.storage + "'";
+		var msg = Ext.String.format(gettext('Are you sure you want to remove storage {0}?'), "'" + rec.data.storage + "'");
 
-		Ext.Msg.confirm('Deletion Confirmation', msg, function(btn) {
+		Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 		    if (btn !== 'yes') {
 			return;
 		    }
@@ -82,7 +81,7 @@ Ext.define('PVE.dc.StorageView', {
 			    reload();
 			},
 			failure: function (response, opts) {
-			    Ext.Msg.alert('Error', response.htmlStatus);
+			    Ext.Msg.alert(gettetx('Error'), response.htmlStatus);
 			}
 		    });
 		});
@@ -112,7 +111,7 @@ Ext.define('PVE.dc.StorageView', {
 	    },
 	    tbar: [ 
 		{
-		    text: 'Add',
+		    text: gettext('Add'),
 		    menu: new Ext.menu.Menu({
 			items: [
 			    {
@@ -159,20 +158,20 @@ Ext.define('PVE.dc.StorageView', {
 	    ],
 	    columns: [
 		{
-		    header: 'Storage ID',
+		    header: 'ID',
 		    width: 100,
 		    sortable: true,
 		    dataIndex: 'storage'
 		},
 		{
-		    header: 'Type',
+		    header: gettext('Type'),
 		    width: 60,
 		    sortable: true,
 		    dataIndex: 'type',
 		    renderer: PVE.Utils.format_storage_type
 		},
 		{
-		    header: 'Content',
+		    header: gettext('Content'),
 		    width: 150,
 		    sortable: true,
 		    dataIndex: 'content',
@@ -191,14 +190,14 @@ Ext.define('PVE.dc.StorageView', {
 		    }
 		},
 		{
-		    header: 'Shared',
+		    header: gettext('Shared'),
 		    width: 80,
 		    sortable: true,
 		    dataIndex: 'shared',
 		    renderer: PVE.Utils.format_boolean
 		},
 		{
-		    header: 'Enable',
+		    header: gettext('Enable'),
 		    width: 80,
 		    sortable: true,
 		    dataIndex: 'disable',

@@ -84,7 +84,7 @@ Ext.define('PVE.window.Edit', {
 		if (response.result.errors) {
 		    form.markInvalid(response.result.errors);
 		}
-		Ext.Msg.alert('Error', response.htmlStatus);
+		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 	    },
 	    success: function(response, options) {
 		me.close();
@@ -121,7 +121,7 @@ Ext.define('PVE.window.Edit', {
 		    });
 		},
 		failure: function(response, opts) {
-		    Ext.Msg.alert('Error', response.htmlStatus, function() {
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus, function() {
 			me.close();
 		    });
 		}
@@ -163,7 +163,7 @@ Ext.define('PVE.window.Edit', {
 	var form = me.formPanel.getForm();
 
 	var submitBtn = Ext.create('Ext.Button', {
-	    text: me.create ? 'Create' : 'OK',
+	    text: me.create ? gettext('Create') : gettext('OK'),
 	    disabled: !me.create,
 	    handler: function() {
 		me.submit();
