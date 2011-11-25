@@ -245,6 +245,17 @@ Ext.define('PVE.KVMConsole', {
 		    }); 
 		}
 	    },
+	    {
+		text: gettext('Migrate'),
+		handler: function() {
+		    var win = Ext.create('PVE.window.Migrate', {
+			vmtype: 'qemu',
+			nodename: me.nodename,
+			vmid: me.vmid
+		    });
+		    win.show();
+		}
+	    },
 	    { 
 		xtype: 'pveQemuSendKeyMenu',
 		nodename: me.nodename,
