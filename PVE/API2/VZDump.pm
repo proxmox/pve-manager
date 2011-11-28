@@ -65,7 +65,27 @@ __PACKAGE__->register_method ({
 	# convert string lists to arrays
 	my @vmids = PVE::Tools::split_list(extract_param($param, 'vmid'));
 
-	$param->{vmids} = PVE::VZDump::check_vmids(@vmids) if !$param->{all};
+	my $skiplist = [];
+	if (!$param->{all}) {
+	    if (!$param->{node}) {
+		my $vmlist = PVE::Cluster::get_vmlist();
+		my @localvmids = ();
+		foreach my $vmid (@vmids) {
+		    my $d = $vmlist->{ids}->{$vmid};
+		    if ($d && ($d->{node} ne $nodename)) {
+			push @$skiplist, $vmid;
+		    } else {
+			push @localvmids, $vmid;
+		    }
+		}
+		@vmids = @localvmids;
+		# silent exit if specified VMs run on other nodes
+		exit(0) if !scalar(@vmids);
+	    }
+
+	    $param->{vmids} = PVE::VZDump::check_vmids(@vmids)
+	}
+
 	my @exclude = PVE::Tools::split_list(extract_param($param, 'exclude'));
 	$param->{exclude} = PVE::VZDump::check_vmids(@exclude);
 	
@@ -79,7 +99,7 @@ __PACKAGE__->register_method ({
 	die "you can only backup a single VM with option --stdout\n"
 	    if $param->{stdout} && scalar(@vmids) != 1;
 
-	my $vzdump = PVE::VZDump->new($cmdline, $param);
+	my $vzdump = PVE::VZDump->new($cmdline, $param, $skiplist);
 
 	my $worker = sub {
 	    $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = $SIG{HUP} = $SIG{PIPE} = sub {

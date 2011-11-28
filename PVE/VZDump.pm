@@ -416,7 +416,7 @@ my $sendmail = sub {
 };
 
 sub new {
-    my ($class, $cmdline, $opts) = @_;
+    my ($class, $cmdline, $opts, $skiplist) = @_;
 
     mkpath $logdir;
 
@@ -450,7 +450,8 @@ sub new {
     $opts->{dumpdir} =~ s|/+$|| if ($opts->{dumpdir});
     $opts->{tmpdir} =~ s|/+$|| if ($opts->{tmpdir});
 
-    my $self = bless { cmdline => $cmdline, opts => $opts };
+    $skiplist = [] if !$skiplist;
+    my $self = bless { cmdline => $cmdline, opts => $opts, skiplist => $skiplist };
 
     #always skip '.'
     push @{$self->{findexcl}}, "'('", '-regex' , "'^\\.\$'", "')'", '-o';
@@ -957,7 +958,9 @@ sub exec_backup {
     my $opts = $self->{opts};
 
     debugmsg ('info', "starting new backup job: $self->{cmdline}", undef, 1);
-
+    debugmsg ('info', "skip external VMs: " . join(', ', @{$self->{skiplist}}))
+	if scalar(@{$self->{skiplist}});
+ 
     my $tasklist = [];
 
     if ($opts->{all}) {
