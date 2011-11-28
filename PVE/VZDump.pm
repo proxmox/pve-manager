@@ -212,6 +212,8 @@ sub read_vzdump_defaults {
 	    $res->{size} = int($1);
 	} elsif ($line =~ m/maxfiles:\s*(\d+)\s*$/) {
 	    $res->{maxfiles} = int($1);
+	} elsif ($line =~ m/exclude-path:\s*(.*)\s*$/) {
+	    $res->{'exclude-path'} = PVE::Tools::split_args($1); 
 	} elsif ($line =~ m/mode:\s*(stop|snapshot|suspend)\s*$/) {
 	    $res->{mode} = $1;
 	} else {
@@ -454,6 +456,12 @@ sub new {
     push @{$self->{findexcl}}, "'('", '-regex' , "'^\\.\$'", "')'", '-o';
 
     $self->find_add_exclude ('-type', 's'); # skip sockets
+
+    if ($defaults->{'exclude-path'}) {
+	foreach my $path (@{$defaults->{'exclude-path'}}) {
+	    $self->find_add_exclude ('-regex', $path);
+	}
+    }
 
     if ($opts->{'exclude-path'}) {
 	foreach my $path (@{$opts->{'exclude-path'}}) {
@@ -1172,7 +1180,13 @@ sub command_line {
 	next if $p eq 'id' || $p eq 'vmid' || $p eq 'starttime' || $p eq 'dow';
 	my $v = $param->{$p};
 	my $pd = $confdesc->{$p} || die "no such vzdump option '$p'\n";
-	$cmd .= " --$p " . PVE::Tools::shellquote($v) if defined($v) && $v ne '';
+	if ($p eq 'exclude-path') {
+	    foreach my $path (split(/\0/, $v || '')) {
+		$cmd .= " --$p " . PVE::Tools::shellquote($path);
+	    }
+	} else {
+	    $cmd .= " --$p " . PVE::Tools::shellquote($v) if defined($v) && $v ne '';
+	}
     }
 
     return $cmd;

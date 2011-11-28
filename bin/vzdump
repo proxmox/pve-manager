@@ -123,6 +123,7 @@ Global configuration is stored in /etc/vzdump.conf.
  size: MB
  maxfiles: N
  script: FILENAME
+ exclude-path: PATHLIST
 
 =head1 HOOK SCRIPT
 

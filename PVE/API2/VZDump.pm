@@ -71,7 +71,7 @@ __PACKAGE__->register_method ({
 	
 	# exclude-path list need to be 0 separated
 	my @expaths = split(/\0/, $param->{'exclude-path'} || '');
-	$param->{'exclude-path'} = @expaths;
+	$param->{'exclude-path'} = [ @expaths ];
 
 	my @mailto = PVE::Tools::split_list(extract_param($param, 'mailto'));
 	$param->{mailto} = [ @mailto ];
