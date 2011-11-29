@@ -23,28 +23,6 @@ Ext.define('PVE.dc.HttpProxyEdit', {
     }
 });
 
-Ext.define('PVE.dc.LanguageEdit', {
-    extend: 'PVE.window.Edit',
-
-    initComponent : function() {
-	var me = this;
-
-	Ext.applyIf(me, {
-	    title: gettext("Edit language settings"),
-	    items: {
-		xtype: 'pveLanguageSelector',
-		name: 'language',
-		value: '',
-		fieldLabel: gettext('Language')
-	    }
-	});
-
-	me.callParent();
-
-	me.load();
-    }
-});
-
 Ext.define('PVE.dc.KeyboardEdit', {
     extend: 'PVE.window.Edit',
 
@@ -85,12 +63,6 @@ Ext.define('PVE.dc.OptionView', {
 		header: gettext('Keyboard'), 
 		editor: 'PVE.dc.KeyboardEdit',
 		renderer: PVE.Utils.render_kvm_language,
-		required: true 
-	    },
-	    language: { 
-		header: gettext('GUI language'), 
-		editor: 'PVE.dc.LanguageEdit',
-		renderer: PVE.Utils.render_language,
 		required: true 
 	    },
 	    http_proxy: { 
