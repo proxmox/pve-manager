@@ -234,6 +234,18 @@ Ext.define('PVE.KVMConsole', {
 		}
 	    },
 	    { 
+		text: gettext('Shutdown'),
+		handler: function() {
+		    var msg = Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), me.vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+			vm_command('shutdown', {timeout: 30});
+		    });
+		}			    
+	    }, 
+	    { 
 		text: gettext('Stop'),
 		handler: function() {
 		    var msg = Ext.String.format(gettext("Do you really want to stop VM {0}?"), me.vmid);
@@ -243,17 +255,6 @@ Ext.define('PVE.KVMConsole', {
 			}
 			vm_command("stop", { timeout: 30});
 		    }); 
-		}
-	    },
-	    {
-		text: gettext('Migrate'),
-		handler: function() {
-		    var win = Ext.create('PVE.window.Migrate', {
-			vmtype: 'qemu',
-			nodename: me.nodename,
-			vmid: me.vmid
-		    });
-		    win.show();
 		}
 	    },
 	    { 
@@ -274,18 +275,6 @@ Ext.define('PVE.KVMConsole', {
 		}
 	    },
 	    { 
-		text: gettext('Shutdown'),
-		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), me.vmid);
-		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
-			if (btn !== 'yes') {
-			    return;
-			}
-			vm_command('shutdown', {timeout: 30});
-		    });
-		}			    
-	    }, 
-	    { 
 		text: gettext('Suspend'),
 		handler: function() {
 		    var msg = Ext.String.format(gettext("Do you really want to suspend VM {0}?"), me.vmid);
@@ -303,6 +292,23 @@ Ext.define('PVE.KVMConsole', {
 		    vm_command("resume"); 
 		}
 	    },
+	    {
+		text: gettext('Migrate'),
+		handler: function() {
+		    var win = Ext.create('PVE.window.Migrate', {
+			vmtype: 'qemu',
+			nodename: me.nodename,
+			vmid: me.vmid
+		    });
+		    win.show();
+		}
+	    },
+            { 
+                text: gettext('Console'),
+                handler: function() {
+		    PVE.Utils.openConoleWindow('kvm', me.vmid, me.nodename, me.vmname);
+		}
+            },
             '->',
 	    {
                 text: gettext('Refresh'),
@@ -317,12 +323,6 @@ Ext.define('PVE.KVMConsole', {
 		    me.reloadApplet(); 
 		}
 	    },
-            { 
-                text: gettext('Console'),
-                handler: function() {
-		    PVE.Utils.openConoleWindow('kvm', me.vmid, me.nodename, me.vmname);
-		}
-            }
 	];
 
 	Ext.apply(me, {
@@ -374,18 +374,6 @@ Ext.define('PVE.OpenVZConsole', {
 		}
 	    },
 	    { 
-		text: gettext('Stop'),
-		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to stop VM {0}?"), me.vmid);
-		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
-			if (btn !== 'yes') {
-			    return;
-			}
-			vm_command("stop", { fast: 1 });
-		    }); 
-		}
-	    },
-	    { 
 		text: gettext('Shutdown'),
 		handler: function() {
 		    var msg = Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), me.vmid);
@@ -397,6 +385,35 @@ Ext.define('PVE.OpenVZConsole', {
 		    }); 
 		}
 	    },
+	    { 
+		text: gettext('Stop'),
+		handler: function() {
+		    var msg = Ext.String.format(gettext("Do you really want to stop VM {0}?"), me.vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+			vm_command("stop", { fast: 1 });
+		    }); 
+		}
+	    },
+	    {
+		text: gettext('Migrate'),
+		handler: function() {
+		    var win = Ext.create('PVE.window.Migrate', { 
+			vmtype: 'openvz',
+			nodename: me.nodename,
+			vmid: me.vmid
+		    });
+		    win.show();
+		}
+	    },
+            { 
+		text: gettext('Console'),
+                handler: function() {
+		    PVE.Utils.openConoleWindow('openvz', me.vmid, me.nodename, me.vmname);
+		}
+            },
             '->',
 	    {
                 text: gettext('Refresh'),
@@ -410,14 +427,8 @@ Ext.define('PVE.OpenVZConsole', {
                 handler: function () { 
 		    me.reloadApplet(); 
 		}
-	    },
-            { 
-                text: gettext('Console'),
-                handler: function() {
-		    PVE.Utils.openConoleWindow('openvz', me.vmid, me.nodename, me.vmname);
-		}
-            }
-	];
+	    }
+ 	];
 
 	Ext.apply(me, {
 	    tbar: tbar,

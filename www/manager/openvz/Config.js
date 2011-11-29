@@ -96,8 +96,8 @@ Ext.define('PVE.openvz.Config', {
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Container {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'ovztab',
-	    tbar: [ startBtn, stopBtn, shutdownBtn, migrateBtn, 
-		    removeBtn, consoleBtn ],
+	    tbar: [ startBtn, shutdownBtn, stopBtn, removeBtn, 
+		    migrateBtn, consoleBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{

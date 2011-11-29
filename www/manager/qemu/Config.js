@@ -104,8 +104,8 @@ Ext.define('PVE.qemu.Config', {
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Virtual machine {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'kvmtab',
-	    tbar: [ startBtn, stopBtn, resetBtn, shutdownBtn, 
-		    migrateBtn, removeBtn, consoleBtn ],
+	    tbar: [ startBtn, shutdownBtn, stopBtn, resetBtn, 
+		    removeBtn, migrateBtn, consoleBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
