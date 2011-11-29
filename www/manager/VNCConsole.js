@@ -320,14 +320,7 @@ Ext.define('PVE.KVMConsole', {
             { 
                 text: gettext('Console'),
                 handler: function() {
-		    var url = Ext.urlEncode({
-			console: 'kvm',
-			vmid: me.vmid,
-			node: me.nodename
-		    });
-                    var nw = window.open("?" + url, '_blank', 
-					 "innerWidth=745,innerheight=427");
-                    nw.focus();
+		    PVE.Utils.openConoleWindow('kvm', me.vmid, me.nodename);
 		}
             }
 	];
@@ -421,14 +414,7 @@ Ext.define('PVE.OpenVZConsole', {
             { 
                 text: gettext('Console'),
                 handler: function() {
-		    var url = Ext.urlEncode({
-			console: 'openvz',
-			vmid: me.vmid,
-			node: me.nodename
-		    });
-                    var nw = window.open("?" + url, '_blank', 
-					 "innerWidth=745,innerheight=427");
-                    nw.focus();
+		    PVE.Utils.openConoleWindow('openvz', me.vmid, me.nodename);
 		}
             }
 	];
@@ -469,13 +455,7 @@ Ext.define('PVE.Shell', {
 	    { 
 		text: gettext('Shell'),
 		handler: function() {
-		    var url = Ext.urlEncode({
-			console: 'shell',
-			node: me.nodename
-		    });
-		    var nw = window.open("?" + url, '_blank', 
-					 "innerWidth=745,innerheight=427");
-		    nw.focus();
+		    PVE.Utils.openConoleWindow('shell', undefined, me.nodename);
 		}
 	    }
 	];
