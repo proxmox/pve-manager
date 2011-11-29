@@ -281,15 +281,19 @@ sub cleanup {
 
     if ($task->{cleanup}->{lvm_snapshot}) {
 	# loop, because we often get 'LV in use: not deactivating'
+	# we use run_command() because we do not want to log errors here
 	my $wait = 1;
 	while(-b $di->{snapdev}) {
-	    eval { $self->cmd("lvremove -f $di->{snapdev}"); };
+	    eval { 
+		my $cmd = ['lvremove', '-f', $di->{snapdev}];
+		PVE::Tools::run_command($cmd, outfunc => sub {}, errfunc => {});
+	    };
 	    last if !$@;
 	    if ($wait >= 64) {
 		$self->logerr($@);
 		last;
 	    }
-	    $self->loginfo("lvremove failed - trying again in $wait seconds");
+	    $self->loginfo("lvremove failed - trying again in $wait seconds") if $wait >= 8;
 	    sleep($wait);
 	    $wait = $wait*2;
 	}
