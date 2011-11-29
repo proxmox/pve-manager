@@ -90,14 +90,15 @@ Ext.define('PVE.qemu.Config', {
 	    } 
 	});
 
+	var vmname = me.pveSelNode.data.name;
+
 	var consoleBtn = Ext.create('Ext.Button', {
 	    text: gettext('Console'),
 	    handler: function() {
-		PVE.Utils.openConoleWindow('kvm', vmid, nodename);
+		PVE.Utils.openConoleWindow('kvm', vmid, nodename, vmname);
 	    }
 	});
 
-	var vmname = me.pveSelNode.data.name;
 	var descr = vmid + " (" + (vmname ? "'" + vmname + "' " : "'VM " + vmid + "'") + ")";
 
 	Ext.apply(me, {

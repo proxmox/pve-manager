@@ -119,22 +119,30 @@ Ext.define('PVE.ConsoleWorkspace', {
 	var content;
 	if (consoleType === 'kvm') {
 	    me.title = "VM " + param.vmid;
+	    if (param.vmname) {
+		me.title += " ('" + param.vmname + "')";
+	    }
 	    content = {
 		xtype: 'pveKVMConsole',
 		vmid: param.vmid,
 		nodename: param.node,
+		vmname: param.vmname,
 		toplevel: true
 	    };
 	} else if (consoleType === 'openvz') {
 	    me.title = "CT " + param.vmid;
+	    if (param.vmname) {
+		me.title += " ('" + param.vmname + "')";
+	    }
 	    content = {
 		xtype: 'pveOpenVZConsole',
 		vmid: param.vmid,
 		nodename: param.node,
+		vmname: param.vmname,
 		toplevel: true
 	    };
 	} else if (consoleType === 'shell') {
-	    me.title = "node " + param.node + " - Proxmox Shell";
+	    me.title = "node '" + param.node + "' - Proxmox Shell";
 	    content = {
 		xtype: 'pveShell',
 		nodename: param.node,

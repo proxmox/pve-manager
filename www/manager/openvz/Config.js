@@ -82,14 +82,15 @@ Ext.define('PVE.openvz.Config', {
 	    }
 	});
 
+	var vmname = me.pveSelNode.data.name;
+
 	var consoleBtn = Ext.create('Ext.Button', {
 	    text: gettext('Console'),
 	    handler: function() {
-		PVE.Utils.openConoleWindow('openvz', vmid, nodename);
+		PVE.Utils.openConoleWindow('openvz', vmid, nodename, vmname);
 	    }
 	});
 
-	var vmname = me.pveSelNode.data.name;
 	var descr = vmid + " (" + (vmname ? "'" + vmname + "' " : "'CT " + vmid + "'") + ")";
 
 	Ext.apply(me, {

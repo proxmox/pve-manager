@@ -320,7 +320,7 @@ Ext.define('PVE.KVMConsole', {
             { 
                 text: gettext('Console'),
                 handler: function() {
-		    PVE.Utils.openConoleWindow('kvm', me.vmid, me.nodename);
+		    PVE.Utils.openConoleWindow('kvm', me.vmid, me.nodename, me.vmname);
 		}
             }
 	];
@@ -414,7 +414,7 @@ Ext.define('PVE.OpenVZConsole', {
             { 
                 text: gettext('Console'),
                 handler: function() {
-		    PVE.Utils.openConoleWindow('openvz', me.vmid, me.nodename);
+		    PVE.Utils.openConoleWindow('openvz', me.vmid, me.nodename, me.vmname);
 		}
             }
 	];

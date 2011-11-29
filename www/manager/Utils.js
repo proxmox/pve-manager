@@ -695,10 +695,11 @@ Ext.define('PVE.Utils', { statics: {
 	return PVE.Utils.format_task_description(type, id);
     },
 
-    openConoleWindow: function(vmtype, vmid, nodename) {
+    openConoleWindow: function(vmtype, vmid, nodename, vmname) {
 	var url = Ext.urlEncode({
-	    console: vmtype, // kvm or openvz
+	    console: vmtype, // kvm, openvz or shell
 	    vmid: vmid,
+	    vmname: vmname,
 	    node: nodename
 	});
 	var nw = window.open("?" + url, '_blank', 
