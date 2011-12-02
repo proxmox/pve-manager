@@ -54,8 +54,8 @@ my $cmddef = {
 		 }		 
 	      } ],
 
-    create => [ 'PVE::API2::OpenVZ', 'create_vm', ['vmid', 'ostemplate'], { node => $nodename } ],
-    destroy => [ 'PVE::API2::OpenVZ', 'destroy_vm', ['vmid'], { node => $nodename } ],
+    create => [ 'PVE::API2::OpenVZ', 'create_vm', ['vmid', 'ostemplate'], { node => $nodename }, $upid_exit ],
+    destroy => [ 'PVE::API2::OpenVZ', 'destroy_vm', ['vmid'], { node => $nodename }, $upid_exit ],
 
     set => [ "PVE::API2::OpenVZ", 'update_vm', ['vmid'], { node => $nodename } ],
 
@@ -74,6 +74,7 @@ my $cmddef = {
 
     start => [ 'PVE::API2::OpenVZ', 'vm_start', ['vmid'], { node => $nodename }, $upid_exit],
     stop => [ 'PVE::API2::OpenVZ', 'vm_stop', ['vmid'], { node => $nodename }, $upid_exit],
+    migrate => [ "PVE::API2::OpenVZ", 'migrate_vm', ['target', 'vmid'], { node => $nodename }, $upid_exit],
 
 };
 

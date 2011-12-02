@@ -1,3 +1,9 @@
+pve-manager (2.0-13) unstable; urgency=low
+
+  * implemente openvz migration ('pvectl migrate')
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 02 Dec 2011 10:37:28 +0100
+
 pve-manager (2.0-12) unstable; urgency=low
 
   * minor bug fixes

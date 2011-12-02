@@ -8,6 +8,7 @@ PERLSOURCE = 			\
 	APIDaemon.pm		\
 	REST.pm			\
 	OpenVZ.pm		\
+	OpenVZMigrate.pm	\
 	VZDump.pm		\
 	APLInfo.pm
 

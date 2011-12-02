@@ -15,7 +15,7 @@ use PVE::JSONSchema;
 use Digest::SHA1;
 use Encode;
 
-use constant SCRIPT_EXT => qw (start stop mount umount);
+use constant SCRIPT_EXT => qw (start stop mount umount premount postumount);
 
 my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
 my $nodename = PVE::INotify::nodename();
@@ -64,11 +64,9 @@ sub load_config {
 }
 
 sub check_mounted {
-    my ($vmid) = @_;
+    my ($conf, $vmid) = @_;
 
-    my $root = $global_vzconf->{rootdir};
-    $root =~ s/\$VEID/$vmid/;
-
+    my $root = get_rootdir($conf, $vmid);
     return (-d "$root/etc" || -d "$root/proc");
 }
 
@@ -100,6 +98,18 @@ sub get_privatedir {
     $private =~ s/\$VEID/$vmid/;
 
     return $private;
+}
+
+sub get_rootdir {
+    my ($conf, $vmid) = @_;
+
+    my $root = $global_vzconf->{rootdir};
+    if ($conf->{ve_root} && $conf->{ve_root}->{value}) {
+	$root = $conf->{ve_root}->{value};
+    }
+    $root =~ s/\$VEID/$vmid/;
+
+    return $root;
 }
 
 sub read_user_beancounters {
@@ -222,18 +232,12 @@ sub vmstatus {
 	    } else {
 		$d->{ip} = '-';
 	    }
+
+	    $d->{status} = 'mounted' if check_mounted($conf, $vmid);
+
 	} else {
 	    delete $list->{$vmid};
 	}
-    }
-
-    if (my $fh = IO::File->new ("/proc/mounts", "r")) {
-	while (defined (my $line = <$fh>)) {
-	    if ($line =~ m|/private/(\d+)\s+/var/lib/vz/root/\d+\s|) {
-		$list->{$1}->{status} = 'mounted' if defined($list->{$1});
-	    }
-	}
-	close($fh);
     }
 
     my $ubchash = read_user_beancounters();
@@ -731,7 +735,7 @@ my $ovz_ressources = {
     dgramrcvbuf => \&parse_res_bytes_bytes,
     dcachesize => \&parse_res_bytes_bytes,
 
-    diskquota => \&parse_boolean,
+    disk_quota => \&parse_boolean,
     diskspace => \&parse_res_block_block,
     diskinodes => \&parse_res_num_num,
     quotatime => \&parse_integer,

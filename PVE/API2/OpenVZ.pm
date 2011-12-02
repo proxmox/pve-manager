@@ -16,6 +16,7 @@ use PVE::Storage;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::OpenVZ;
+use PVE::OpenVZMigrate;
 use PVE::JSONSchema qw(get_standard_option);
 
 use base qw(PVE::RESTHandler);
@@ -139,7 +140,7 @@ my $restore_openvz = sub {
 	if (-f $backup_cfg) {
 	    print "restore configuration to '$conffile'\n";
 
-	    $conf = PVE::Tools::file_get_contents($backup_cfg);
+	    my $conf = PVE::Tools::file_get_contents($backup_cfg);
 
 	    $conf =~ s/VE_ROOT=.*/VE_ROOT=\"$root\"/;
 	    $conf =~ s/VE_PRIVATE=.*/VE_PRIVATE=\"$private\"/;
@@ -251,7 +252,7 @@ __PACKAGE__->register_method({
 	    my $basecfg_fn = PVE::OpenVZ::config_file($vmid);
 
 	    if ($param->{force}) {
-		die "cant overwrite mounted container\n" if PVE::OpenVZ::check_mounted($vmid);
+		die "cant overwrite mounted container\n" if PVE::OpenVZ::check_mounted($conf, $vmid);
 	    } else {
 		die "container $vmid already exists\n" if -f $basecfg_fn;
 	    }
@@ -314,6 +315,11 @@ __PACKAGE__->register_method({
 		# hack: vzctl '--userpasswd' starts the CT, but we want 
 		# to avoid that for create
 		PVE::OpenVZ::set_rootpasswd($private, $password) if defined($password);
+
+		# is this really needed?
+		my $cmd = ['vzctl', '--skiplock', '--quiet', 'set', $vmid, 
+			   '--applyconfig_map', 'name', '--save'];
+		run_command($cmd);
 	    };
 
 	    return $rpcenv->fork_worker($param->{restore} ? 'vzrestore' : 'vzcreate', 
@@ -614,8 +620,8 @@ __PACKAGE__->register_method({
 
 	my $stcfg = cfs_read_file("storage.cfg");
 
-	if ($veconf->{ve_private} && $veconf->{ve_private}->{value}) {
-	    my $path = $veconf->{ve_private}->{value};
+	if ($veconf->{ve_private} && $conf->{ve_private}->{value}) {
+	    my $path = PVE::OpenVZ::get_privatedir($veconf, $param->{vmid});
 	    my ($vtype, $volid) = PVE::Storage::path_to_volume_id($stcfg, $path);
 	    my ($sid, $volname) = PVE::Storage::parse_volume_id($volid, 1) if $volid;
 	    $conf->{storage} = $sid || $path;
@@ -1031,14 +1037,7 @@ __PACKAGE__->register_method({
 
 	my $realcmd = sub {
 	    my $upid = shift;
-
-	    my $cmd = ['/usr/sbin/vzmigrate'];
-	    push @$cmd, '--online' if $param->{online};
-	    push @$cmd, $targetip;
-	    push @$cmd, $vmid;
-
-	    run_command($cmd);
-
+	    PVE::OpenVZMigrate::migrate($target, $targetip, $vmid, $param->{online});
 	    return;
 	};
 
