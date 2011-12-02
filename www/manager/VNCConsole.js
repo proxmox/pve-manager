@@ -292,17 +292,7 @@ Ext.define('PVE.KVMConsole', {
 		    vm_command("resume"); 
 		}
 	    },
-	    {
-		text: gettext('Migrate'),
-		handler: function() {
-		    var win = Ext.create('PVE.window.Migrate', {
-			vmtype: 'qemu',
-			nodename: me.nodename,
-			vmid: me.vmid
-		    });
-		    win.show();
-		}
-	    },
+	    // Note: no migrate here, because we can't display migrate log
             { 
                 text: gettext('Console'),
                 handler: function() {
@@ -397,17 +387,8 @@ Ext.define('PVE.OpenVZConsole', {
 		    }); 
 		}
 	    },
-	    {
-		text: gettext('Migrate'),
-		handler: function() {
-		    var win = Ext.create('PVE.window.Migrate', { 
-			vmtype: 'openvz',
-			nodename: me.nodename,
-			vmid: me.vmid
-		    });
-		    win.show();
-		}
-	    },
+	    // Note: no migrate here, because we can't display migrate log
+	    // and openvz migrate does not work if console is open
             { 
 		text: gettext('Console'),
                 handler: function() {

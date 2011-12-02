@@ -320,6 +320,16 @@ __PACKAGE__->register_method({
 		my $cmd = ['vzctl', '--skiplock', '--quiet', 'set', $vmid, 
 			   '--applyconfig_map', 'name', '--save'];
 		run_command($cmd);
+
+		# reload config
+		my $conf = PVE::OpenVZ::load_config($vmid);
+
+		# and initialize quota
+		my $disk_quota = $conf->{disk_quota}->{value};
+		if (!defined($disk_quota) || ($disk_quota != 0)) {
+		    my $cmd = ['vzctl', '--skiplock', 'quotainit', $vmid];
+		    run_command($cmd);
+		}
 	    };
 
 	    return $rpcenv->fork_worker($param->{restore} ? 'vzrestore' : 'vzcreate', 
@@ -1037,7 +1047,9 @@ __PACKAGE__->register_method({
 
 	my $realcmd = sub {
 	    my $upid = shift;
-	    PVE::OpenVZMigrate::migrate($target, $targetip, $vmid, $param->{online});
+
+	    PVE::OpenVZMigrate->migrate($target, $targetip, $vmid, $param);
+
 	    return;
 	};
 
