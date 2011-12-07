@@ -96,7 +96,7 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     kvm_ostypes: {
-	other: 'Other',
+	other: gettext('Other OS types'),
 	wxp: 'Microsoft Windows XP/2003',
 	w2k: 'Microsoft Windows 2000',
 	w2k8: 'Microsoft Windows Vista/2008',
@@ -107,7 +107,7 @@ Ext.define('PVE.Utils', { statics: {
 
     render_kvm_ostype: function (value) {
 	if (!value) {
-	    return 'Other';
+	    return gettext('Other OS types');
 	}
 	var text = PVE.Utils.kvm_ostypes[value];
 	if (text) {
@@ -162,7 +162,7 @@ Ext.define('PVE.Utils', { statics: {
 
     render_kvm_language: function (value) {
 	if (!value) {
-	    return 'Default';
+	    return PVE.Utils.defaultText;
 	}
 	var text = PVE.Utils.kvm_keymaps[value];
 	if (text) {
@@ -208,7 +208,7 @@ Ext.define('PVE.Utils', { statics: {
 
     render_kvm_vga_driver: function (value) {
 	if (!value) {
-	    return 'OS default';
+	    return PVE.Utils.defaultText;
 	}
 	var text = PVE.Utils.kvm_vga_drivers[value];
 	if (text) { 
@@ -370,36 +370,41 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     task_desc_table: {
-	vncproxy: 'VNC connection to VM/CT {0}',
-	vncshell: 'VNC shell',
-	qmcreate: 'Create VM {0}',
-	qmrestore: 'Restore VM {0}',
-	qmdestroy: 'Destroy VM {0}',
-	qmigrate: 'Migrate VM {0}',
-	qmstart: 'Start VM {0}',
-	qmstop: 'Stop VM {0}',
-	qmreset: 'Reset VM {0}',
-	qmshutdown: 'Shutdown VM {0}',
-	qmsuspend: 'Suspend VM {0}',
-	qmresume: 'Resume VM {0}',
-	vzcreate: 'Create CT {0}',
-	vzrestore: 'Restore CT {0}',
-	vzdestroy: 'Destroy CT {0}',
-	vzstart: 'Start CT {0}',
-	vzstop: 'Stop CT {0}',
-	srvstart: 'Start service {0}',
-	srvstop: 'Stop service {0}',
-	srvrestart: 'Restart service {0}',
-	srvreload: 'Reload service {0}',
-	vzdump: 'Backup'
+	vncproxy: [ 'VM/CT', gettext('VNC connection to {0}') ],
+	vncshell: [ '', gettext('Shell') ],
+	qmcreate: [ 'VM', gettext('Create {0}') ],
+	qmrestore: [ 'VM', gettext('Restore {0}') ],
+	qmdestroy: [ 'VM', gettext('Destroy {0}') ],
+	qmigrate: [ 'VM', gettext('Migrate {0}') ],
+	qmstart: [ 'VM', gettext('Start {0}') ],
+	qmstop: [ 'VM', gettext('Stop {0}') ],
+	qmreset: [ 'VM', gettext('Reset {0}') ],
+	qmshutdown: [ 'VM', gettext('Shutdown {0}') ],
+	qmsuspend: [ 'VM', gettext('Suspend {0}') ],
+	qmresume: [ 'VM', gettext('Resume {0}') ],
+	vzcreate: ['CT', gettext('Create {0}') ],
+	vzrestore: ['CT', gettext('Restore {0}') ],
+	vzdestroy: ['CT', gettext('Destroy {0}') ],
+	vzstart: ['CT', gettext('Start {0}') ],
+	vzstop: ['CT', gettext('Stop {0}') ],
+	srvstart: ['SRV', gettext('Start {0}') ],
+	srvstop: ['SRV', gettext('Stop {0}') ],
+	srvrestart: ['SRV', gettext('Restart {0}') ],
+	srvreload: ['SRV', gettext('Reload {0}') ],
+	vzdump: ['', gettext('Backup') ]
     },
 
     format_task_description: function(type, id) {	
-	var format = PVE.Utils.task_desc_table[type];
-	if (format) {
-	    return Ext.String.format(format, id);
+	var farray = PVE.Utils.task_desc_table[type];
+	if (!farray) {
+	    return type;
 	}
-	return type;
+	var prefix = farray[0];
+	var format = farray[1];
+	if (prefix) {
+	    return Ext.String.format(format, prefix + ' ' + id);
+	}
+	return Ext.String.format(format, id);
     },
 
     parse_task_upid: function(upid) {
