@@ -32,7 +32,7 @@ my $token = 'null';
 if (my $cookie = $r->headers_in->{Cookie}) {
 
     if (my $newlang = ($cookie =~ /(?:^|\s)PVELangCookie=([^;]*)/)[0]) {
-	if ($newlang =~ m/^[a-f]{2,3}(_A-F{2,3})?$/) {
+	if ($newlang =~ m/^[a-z]{2,3}(_A-Z{2,3})?$/) {
 	    $lang = $newlang;
 	}
     }
