@@ -18,9 +18,11 @@ Ext.define('PVE.dc.AuthView', {
 	    store.load();
 	};
 
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
         var tbar = [
             {
-		text: 'Create',
+		text: gettext('Create'),
 		handler: function() {
                     var win = Ext.create('PVE.dc.AuthEdit',{
                     });
@@ -29,14 +31,10 @@ Ext.define('PVE.dc.AuthView', {
 		}
             },
             {
-		text: 'Modify',
-		handler: function() {
-		    var sm = me.getSelectionModel();
-		    var rec = sm.getSelection()[0];
-		    if (!rec) {
-			return;
-		    }
-
+		xtype: 'pveButton',
+		text: gettext('Edit'),
+		selModel: sm,
+		handler: function(btn, event, rec) {
 		    var realm = rec.data.realm;
 
                     var win = Ext.create('PVE.dc.AuthEdit',{
@@ -47,46 +45,38 @@ Ext.define('PVE.dc.AuthView', {
 		}
             },
             {
-		text: 'Delete',
-		handler: function() {
-		    var msg;
-		    var sm = me.getSelectionModel();
-		    var rec = sm.getSelection()[0];
-		    if (!rec) {
-			return;
-		    }
-
+		xtype: 'pveButton',
+		text: gettext('Remove'),
+		selModel: sm,
+		confirmMsg: function (rec) {
+		    return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
+					     "'" + rec.data.realm + "'");
+		},
+		enableFn: function(rec) {
+		    var realm = rec.data.realm;
+		    return realm !== 'pam' && realm != 'pve';
+		},
+		handler: function(btn, event, rec) {
 		    var realm = rec.data.realm;
 
-		    if (realm !== 'pam' && realm != 'pve') {
-			msg = 'Are you sure you want to permanently the authentication realm: ' + realm;
-			Ext.Msg.confirm('Deletion Confirmation', msg, function(btn) {
-			    if (btn !== 'yes') {
-				return;
-			    }
-
-			    PVE.Utils.API2Request({
-				url: '/access/domains/' + realm,
-				method: 'DELETE',
-				waitMsgTarget: me,
-				callback: function() {
-				    reload();
-				},
-				failure: function (response, opts) {
-				    Ext.Msg.alert('Error',response.htmlStatus);
-				}
-			    });
-			});
-		    } else {
-			msg = 'You are not permitted to delete the auth method: pam';
-			Ext.Msg.alert('Error', msg);
-		    }
+		    PVE.Utils.API2Request({
+			url: '/access/domains/' + realm,
+			method: 'DELETE',
+			waitMsgTarget: me,
+			callback: function() {
+			    reload();
+			},
+			failure: function (response, opts) {
+			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+			}
+		    });
 		}
             }
         ];
 
 	Ext.apply(me, {
 	    store: store,
+	    selModel: sm,
 	    stateful: false,
             //tbar: tbar,
 	    viewConfig: {
@@ -94,20 +84,20 @@ Ext.define('PVE.dc.AuthView', {
 	    },
 	    columns: [
 		{
-		    header: 'Realm',
+		    header: gettext('Realm'),
 		    width: 100,
 		    sortable: true,
 		    dataIndex: 'realm'
 		},
 		{
-		    header: 'Type',
+		    header: gettext('Type'),
 		    width: 100,
 		    sortable: true,
 		    dataIndex: 'type'
 		},
 		{
 		    id: 'comment',
-		    header: 'Comment',
+		    header: gettext('Comment'),
 		    sortable: false,
 		    dataIndex: 'comment',
 		    flex: 1

@@ -174,7 +174,7 @@ Ext.define('PVE.VNCConsole', {
 		    params: me.params,
 		    method: me.method || 'POST',
 		    failure: function(response, opts) {
-			box.update("Error " + response.htmlStatus);
+			box.update(gettext('Error') + ' ' + response.htmlStatus);
 		    },
 		    success: function(response, opts) {
 			start_vnc_viewer(response.result.data);

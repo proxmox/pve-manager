@@ -108,7 +108,7 @@ Ext.define('PVE.ConsoleWorkspace', {
 
     alias: ['widget.pveConsoleWorkspace'],
 
-    title: 'Proxmox Console',
+    title: gettext('Console'),
 
     initComponent : function() {
 	var me = this;
@@ -142,7 +142,7 @@ Ext.define('PVE.ConsoleWorkspace', {
 		toplevel: true
 	    };
 	} else if (consoleType === 'shell') {
-	    me.title = "node '" + param.node + "' - Proxmox Shell";
+	    me.title = "node '" + param.node;
 	    content = {
 		xtype: 'pveShell',
 		nodename: param.node,
@@ -300,7 +300,7 @@ Ext.define('PVE.StdWorkspace', {
 			{
 			    minWidth: 200,
 			    flex: 1,
-			    html: '<span class="x-panel-header-text">Proxmox Virtual Environment<br>Version ' + PVE.GUIVersion + "</span>"
+			    html: '<span class="x-panel-header-text">Proxmox Virtual Environment<br>' + gettext('Version') + ' ' + PVE.GUIVersion + "</span>"
 			},
 			{
 			    pack: 'end',

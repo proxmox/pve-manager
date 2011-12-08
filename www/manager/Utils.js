@@ -189,7 +189,7 @@ Ext.define('PVE.Utils', { statics: {
 
     render_language: function (value) {
 	if (!value) {
-	    return 'Default (English)';
+	    return PVE.Utils.defaultText + ' (English)';
 	}
 	var text = PVE.Utils.language_map[value];
 	if (text) {
@@ -506,7 +506,7 @@ Ext.define('PVE.Utils', { statics: {
 	ut_str = ut_str.substr(ut_str.length - 2);
 
 	if (days) {
-	    var ds = days > 1 ? 'days' : 'day';
+	    var ds = days > 1 ? PVE.Utils.daysText : PVE.Utils.dayText;
 	    return days.toString() + ' ' + ds + ' ' + 
 		hours_str + ':' + mins_str + ':' + ut_str;
 	} else {
@@ -534,6 +534,13 @@ Ext.define('PVE.Utils', { statics: {
 	return days.toFixed(0) + 'd';	
     },
 
+    yesText: gettext('Yes'),
+    noText: gettext('No'),
+    unknownText: gettext('Unknown'),
+    defaultText: gettext('Default'),
+    daysText: gettext('days'),
+    dayText: gettext('day'),
+
     format_storage_type: function(value) {
 	if (value === 'dir') {
 	    return 'Directory';
@@ -544,13 +551,9 @@ Ext.define('PVE.Utils', { statics: {
 	} else if (value === 'iscsi') {
 	    return 'iSCSI';
 	} else {
-	    return 'unknown';
+	    return PVE.Utils.unknownText;
 	}
     },
-
-    yesText: gettext('Yes'),
-    noText: gettext('No'),
-    defaultText: gettext('Default'),
 
     format_boolean_with_default: function(value) {
 	if (Ext.isDefined(value) && value !== '') {

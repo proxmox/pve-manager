@@ -45,15 +45,14 @@ Ext.define('PVE.storage.Upload', {
 			['backup', 'VZDump backup file'],
 			['vztmpl', 'OpenVZ template']
 		    ],
-		    fieldLabel: 'Content type',
+		    fieldLabel: gettext('Content'),
 		    name: 'content',
 		    value: 'iso'
 		},
 		{
 		    xtype: 'filefield',
 		    name: 'filename',
-		    filedLabel: 'File',
-		    buttonText: 'Select File...',
+		    buttonText: gettext('Select File...'),
 		    allowBlank: false
 		},
 		pbar
@@ -65,13 +64,13 @@ Ext.define('PVE.storage.Upload', {
 	var doStandardSubmit = function() {
 	    form.submit({
 		url: "/api2/htmljs" + baseurl,
-		waitMsg: 'Uploading file...',
+		waitMsg: gettext('Uploading file...'),
 		success: function(f, action) {
 		    me.close();
 		},
 		failure: function(f, action) {
 		    var msg = PVE.Utils.extractFormActionError(action);
-                    Ext.Msg.alert('Failed', msg);
+                    Ext.Msg.alert(gettext('Error'), msg);
 		}
 	    });
 	};
@@ -85,7 +84,7 @@ Ext.define('PVE.storage.Upload', {
 	};
  
 	var abortBtn = Ext.create('Ext.Button', {
-	    text: 'Abort',
+	    text: gettext('Abort'),
 	    disabled: true,
 	    handler: function() {
 		me.close();
@@ -93,7 +92,7 @@ Ext.define('PVE.storage.Upload', {
 	});
 
 	var submitBtn = Ext.create('Ext.Button', {
-	    text: 'Upload',
+	    text: gettext('Upload'),
 	    disabled: true,
 	    handler: function(button) {
 		var fd;
@@ -126,7 +125,7 @@ Ext.define('PVE.storage.Upload', {
 			me.close();
 		    } else {  
 			var msg = "Error " + xhr.status.toString() + ": " + Ext.htmlEncode(xhr.statusText);
-			Ext.Msg.alert('Upload failed', msg, function(btn) {
+			Ext.Msg.alert(gettext('Error'), msg, function(btn) {
 			    me.close();
 			});
 
@@ -135,7 +134,7 @@ Ext.define('PVE.storage.Upload', {
 
 		xhr.addEventListener("error", function(e) {  
 		    var msg = "Error " + e.target.status.toString() + " occurred while receiving the document.";  
-		    Ext.Msg.alert('Upload failed', msg, function(btn) {
+		    Ext.Msg.alert(gettext('Error'), msg, function(btn) {
 			me.close();
 		    });
 		});
@@ -157,7 +156,7 @@ Ext.define('PVE.storage.Upload', {
 	});
 
         Ext.applyIf(me, {
-           title: 'Upload',
+            title: gettext('Upload'),
 	    items: me.formPanel,
 	    buttons: [ abortBtn, submitBtn ],
 	    listeners: {
@@ -226,7 +225,7 @@ Ext.define('PVE.storage.ContentView', {
 	    tbar: [
 		{
 		    xtype: 'pveButton',
-		    text: 'Restore',
+		    text: gettext('Restore'),
 		    selModel: sm,
 		    disabled: true,
 		    enableFn: function(rec) {
@@ -254,11 +253,12 @@ Ext.define('PVE.storage.ContentView', {
 		},
 		{
 		    xtype: 'pveButton',
-		    text: 'Delete',
+		    text: gettext('Remove'),
 		    selModel: sm,
 		    disabled: true,
 		    confirmMsg: function(rec) {
-			return 'Are you sure you want to delete volume "' + rec.data.volid + '"';
+			return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
+						 "'" + rec.data.volid + "'");
 		    },
 		    enableFn: function(rec) {
 			return rec && rec.data.content !== 'images';
@@ -272,13 +272,13 @@ Ext.define('PVE.storage.ContentView', {
 				reload();
 			    },
 			    failure: function (response, opts) {
-				Ext.Msg.alert('Error', response.htmlStatus);
+				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 			    }
 			});
 		    }
 		},
 		{
-		    text: 'Upload',
+		    text: gettext('Upload'),
 		    handler: function() {
 			var win = Ext.create('PVE.storage.Upload', {
 			    nodename: nodename,
@@ -291,19 +291,19 @@ Ext.define('PVE.storage.ContentView', {
 	    ],
 	    columns: [
 		{
-		    header: 'Name',
+		    header: gettext('Name'),
 		    flex: 1,
 		    sortable: true,
 		    renderer: PVE.Utils.render_storage_content,
 		    dataIndex: 'text'
 		},
 		{
-		    header: 'Format',
+		    header: gettext('Format'),
 		    width: 100,
 		    dataIndex: 'format'
 		},
 		{
-		    header: 'Size',
+		    header: gettext('Size'),
 		    width: 100,
 		    renderer: PVE.Utils.format_size,
 		    dataIndex: 'size'

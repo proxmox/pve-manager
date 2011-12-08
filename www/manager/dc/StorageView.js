@@ -22,8 +22,9 @@ Ext.define('PVE.dc.StorageView', {
 	    store.load();
 	};
 
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
 	var run_editor = function() {
-	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
@@ -50,46 +51,37 @@ Ext.define('PVE.dc.StorageView', {
 	    win.on('destroy', reload);
 	};
 	
-	var edit_btn = new Ext.Button({
+	var edit_btn = new PVE.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
+	    selModel: sm,
 	    handler: run_editor
 	});
 
-	var remove_btn = new Ext.Button({
+	var remove_btn = new PVE.button.Button({
 	    text: gettext('Remove'),
 	    disabled: true,
-	    handler: function(){
-		var sm = me.getSelectionModel();
-		var rec = sm.getSelection()[0];
-
-		if (!rec) {
-		    return;
-		}
-
-		var msg = Ext.String.format(gettext('Are you sure you want to remove storage {0}?'), "'" + rec.data.storage + "'");
-
-		Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
-		    if (btn !== 'yes') {
-			return;
+	    selModel: sm,
+	    confirmMsg: function (rec) {
+		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
+					 "'" + rec.data.storage + "'");
+	    },
+	    handler: function(btn, event, rec){
+		PVE.Utils.API2Request({
+		    url: '/storage/' + rec.data.storage,
+		    method: 'DELETE',
+		    waitMsgTarget: me,
+		    callback: function() {
+			reload();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert(gettetx('Error'), response.htmlStatus);
 		    }
-		    PVE.Utils.API2Request({
-			url: '/storage/' + rec.data.storage,
-			method: 'DELETE',
-			waitMsgTarget: me,
-			callback: function() {
-			    reload();
-			},
-			failure: function (response, opts) {
-			    Ext.Msg.alert(gettetx('Error'), response.htmlStatus);
-			}
-		    });
 		});
 	    }
 	});
 
 	var set_button_status = function() {
-	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 
 	    if (!rec) {
@@ -105,6 +97,7 @@ Ext.define('PVE.dc.StorageView', {
 
 	Ext.apply(me, {
 	    store: store,
+	    selModel: sm,
 	    stateful: false,
 	    viewConfig: {
 		trackOver: false

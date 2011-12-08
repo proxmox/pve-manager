@@ -34,26 +34,26 @@ Ext.define('PVE.dc.ACLView', {
 	    },
 	    columns: [
 		{
-		    header: 'Path',
+		    header: gettext('Path'),
 		    width: 200,
 		    sortable: true,
 		    dataIndex: 'path'
 		},
 		{
-		    header: 'User/Group',
+		    header: gettext('User') + '/' + gettext('Group'),
 		    width: 200,
 		    sortable: true,
 		    renderer: render_ugid,
 		    dataIndex: 'ugid'
 		},
 		{
-		    header: 'Role',
+		    header: gettext('Role'),
 		    width: 150,
 		    sortable: true,
 		    dataIndex: 'roleid'
 		},
 		{
-		    header: 'Propagate',
+		    header: gettext('Propagate'),
 		    width: 80,
 		    sortable: true,
 		    dataIndex: 'propagate'

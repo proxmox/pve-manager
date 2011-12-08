@@ -23,7 +23,7 @@ Ext.define('PVE.dc.AuthEdit', {
             {
                 xtype: me.create ? 'textfield' : 'displayfield',
                 name: 'realm',
-                fieldLabel: 'Realm',
+                fieldLabel: gettext('Realm'),
                 value: me.realm,
                 emptyText: 'company.net',
                 allowBlank: false
@@ -45,13 +45,13 @@ Ext.define('PVE.dc.AuthEdit', {
             {
                 xtype: 'textfield',
                 name: 'comment',
-                fieldLabel: 'Comment',
+                fieldLabel: gettext('Comment'),
                 emptyText: 'Enterprise Directory Server',
                 allowBlank: false
             },
             {
                 xtype: 'pvecheckbox',
-                fieldLabel: 'Default Realm',
+                fieldLabel: gettext('Default'),
                 name: 'default',
                 uncheckedValue: 0
             }
@@ -68,7 +68,7 @@ Ext.define('PVE.dc.AuthEdit', {
 	    }),
             {
                 xtype: 'textfield',
-                fieldLabel: 'Server Address',
+                fieldLabel: gettext('Server Address'),
                 name: 'servers',
                 emptyText: '192.168.2.23,ldap.company.net',
                 listeners: {
@@ -82,7 +82,7 @@ Ext.define('PVE.dc.AuthEdit', {
             {
                 xtype: 'numberfield',
                 name: 'port',
-                fieldLabel: 'Server Port',
+                fieldLabel: gettext('Server Port'),
                 minValue: 1,
                 maxValue: 65535,
                 allowBlank: false
@@ -108,8 +108,13 @@ Ext.define('PVE.dc.AuthEdit', {
 	    }
 	});
 
-        Ext.applyIf(me, {
-            title: me.create ? "Create Auth" : "Edit Auth '" + me.realm + "'",
+ 	if (me.create) {
+	    me.title = gettext('Create realm');
+	} else {
+	    me.title = Ext.String.format(gettext('Edit realm {0}'), "'" + me.realm + "'");
+	}
+
+	Ext.applyIf(me, {
             url: url,
             method: method,
 	    items: [ ipanel ]
