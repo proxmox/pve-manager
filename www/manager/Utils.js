@@ -371,27 +371,28 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     task_desc_table: {
-	vncproxy: [ 'VM/CT', gettext('VNC connection to {0}') ],
+	vncproxy: [ 'VM/CT', gettext('Console') ],
 	vncshell: [ '', gettext('Shell') ],
-	qmcreate: [ 'VM', gettext('Create {0}') ],
-	qmrestore: [ 'VM', gettext('Restore {0}') ],
-	qmdestroy: [ 'VM', gettext('Destroy {0}') ],
-	qmigrate: [ 'VM', gettext('Migrate {0}') ],
-	qmstart: [ 'VM', gettext('Start {0}') ],
-	qmstop: [ 'VM', gettext('Stop {0}') ],
-	qmreset: [ 'VM', gettext('Reset {0}') ],
-	qmshutdown: [ 'VM', gettext('Shutdown {0}') ],
-	qmsuspend: [ 'VM', gettext('Suspend {0}') ],
-	qmresume: [ 'VM', gettext('Resume {0}') ],
-	vzcreate: ['CT', gettext('Create {0}') ],
-	vzrestore: ['CT', gettext('Restore {0}') ],
-	vzdestroy: ['CT', gettext('Destroy {0}') ],
-	vzstart: ['CT', gettext('Start {0}') ],
-	vzstop: ['CT', gettext('Stop {0}') ],
-	srvstart: ['SRV', gettext('Start {0}') ],
-	srvstop: ['SRV', gettext('Stop {0}') ],
-	srvrestart: ['SRV', gettext('Restart {0}') ],
-	srvreload: ['SRV', gettext('Reload {0}') ],
+	qmcreate: [ 'VM', gettext('Create') ],
+	qmrestore: [ 'VM', gettext('Restore') ],
+	qmdestroy: [ 'VM', gettext('Destroy') ],
+	qmigrate: [ 'VM', gettext('Migrate') ],
+	qmstart: [ 'VM', gettext('Start') ],
+	qmstop: [ 'VM', gettext('Stop') ],
+	qmreset: [ 'VM', gettext('Reset') ],
+	qmshutdown: [ 'VM', gettext('Shutdown') ],
+	qmsuspend: [ 'VM', gettext('Suspend') ],
+	qmresume: [ 'VM', gettext('Resume') ],
+	vzcreate: ['CT', gettext('Create') ],
+	vzrestore: ['CT', gettext('Restore') ],
+	vzdestroy: ['CT', gettext('Destroy') ],
+	vzmigrate: [ 'CT', gettext('Migrate') ],
+	vzstart: ['CT', gettext('Start') ],
+	vzstop: ['CT', gettext('Stop') ],
+	srvstart: ['SRV', gettext('Start') ],
+	srvstop: ['SRV', gettext('Stop') ],
+	srvrestart: ['SRV', gettext('Restart') ],
+	srvreload: ['SRV', gettext('Reload') ],
 	vzdump: ['', gettext('Backup') ]
     },
 
@@ -401,11 +402,11 @@ Ext.define('PVE.Utils', { statics: {
 	    return type;
 	}
 	var prefix = farray[0];
-	var format = farray[1];
+	var text = farray[1];
 	if (prefix) {
-	    return Ext.String.format(format, prefix + ' ' + id);
+	    return prefix + ' ' + id + ' - ' + text; 
 	}
-	return Ext.String.format(format, id);
+	return text
     },
 
     parse_task_upid: function(upid) {
