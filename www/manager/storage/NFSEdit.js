@@ -117,7 +117,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		name: 'content',
 		value: 'images',
 		multiSelect: true,
-		fieldLabel: gettetx('Content'),
+		fieldLabel: gettext('Content'),
 		allowBlank: false
 	    }
 	];

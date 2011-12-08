@@ -75,7 +75,7 @@ Ext.define('PVE.dc.StorageView', {
 			reload();
 		    },
 		    failure: function (response, opts) {
-			Ext.Msg.alert(gettetx('Error'), response.htmlStatus);
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		    }
 		});
 	    }

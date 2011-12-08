@@ -406,7 +406,7 @@ Ext.define('PVE.Utils', { statics: {
 	if (prefix) {
 	    return prefix + ' ' + id + ' - ' + text; 
 	}
-	return text
+	return text;
     },
 
     parse_task_upid: function(upid) {

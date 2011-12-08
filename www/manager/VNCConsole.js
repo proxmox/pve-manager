@@ -312,7 +312,7 @@ Ext.define('PVE.KVMConsole', {
                 handler: function () { 
 		    me.reloadApplet(); 
 		}
-	    },
+	    }
 	];
 
 	Ext.apply(me, {
@@ -409,7 +409,7 @@ Ext.define('PVE.OpenVZConsole', {
 		    me.reloadApplet(); 
 		}
 	    }
- 	];
+	];
 
 	Ext.apply(me, {
 	    tbar: tbar,
