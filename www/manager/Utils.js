@@ -536,10 +536,13 @@ Ext.define('PVE.Utils', { statics: {
 
     yesText: gettext('Yes'),
     noText: gettext('No'),
+    errorText: gettext('Error'),
     unknownText: gettext('Unknown'),
     defaultText: gettext('Default'),
     daysText: gettext('days'),
     dayText: gettext('day'),
+    runningText: gettext('running'),
+    stoppedText: gettext('stopped'),
 
     format_storage_type: function(value) {
 	if (value === 'dir') {

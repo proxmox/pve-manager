@@ -106,7 +106,7 @@ Ext.define('PVE.dc.Tasks', {
 			    return 'OK';
 			}
 			// metaData.attr = 'style="color:red;"'; 
-			return "ERROR: " + value;
+			return PVE.Utils.errorText + ': ' + value;
 		    }
 		}
 	    ],

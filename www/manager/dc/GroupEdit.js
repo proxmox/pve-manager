@@ -19,20 +19,21 @@ Ext.define('PVE.dc.GroupEdit', {
         }
 
         Ext.applyIf(me, {
-            title: me.create ? "Create Group" :  "Edit Group '" + me.groupid + "'",
+            title: me.create ? gettext('Create Group') : 
+		Ext.String.format(gettext('Edit Group {0}'), "'" + me.groupid + "'"),
             url: url,
             method: method,
             items: [
                 {
 		    xtype: 'pvetextfield',
-		    fieldLabel: 'GroupID',
+		    fieldLabel: 'ID',
 		    name: 'groupid',
 		    value: me.groupid,
 		    allowBlank: false
 		},
                 {
 		    xtype: 'pvetextfield',
-		    fieldLabel: 'Comment',
+		    fieldLabel: gettext('Comment'),
 		    name: 'comment',
 		    value: me.groupid,
 		    allowBlank: false

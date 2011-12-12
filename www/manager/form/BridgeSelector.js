@@ -47,7 +47,7 @@ Ext.define('PVE.form.BridgeSelector', {
 			flex: 1
 		    },
 		    {
-			header: 'Active',  
+			header: gettext('Active'),  
 			width: 60, 
 			dataIndex: 'active', 
 			renderer: PVE.Utils.format_boolean

@@ -66,7 +66,7 @@ Ext.define('PVE.dc.StorageView', {
 		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
 					 "'" + rec.data.storage + "'");
 	    },
-	    handler: function(btn, event, rec){
+	    handler: function(btn, event, rec) {
 		PVE.Utils.API2Request({
 		    url: '/storage/' + rec.data.storage,
 		    method: 'DELETE',
@@ -80,20 +80,6 @@ Ext.define('PVE.dc.StorageView', {
 		});
 	    }
 	});
-
-	var set_button_status = function() {
-	    var rec = sm.getSelection()[0];
-
-	    if (!rec) {
-		remove_btn.disable();
-		edit_btn.disable();
-		return;
-	    }
-
-	    edit_btn.setDisabled(false);
-
-	    remove_btn.setDisabled(rec.data.storage === 'local');
-	};
 
 	Ext.apply(me, {
 	    store: store,
@@ -199,8 +185,7 @@ Ext.define('PVE.dc.StorageView', {
 	    ],
 	    listeners: {
 		show: reload,
-		itemdblclick: run_editor,
-		selectionchange: set_button_status
+		itemdblclick: run_editor
 	    }
 	});
 

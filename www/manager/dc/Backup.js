@@ -26,11 +26,11 @@ Ext.define('PVE.dc.BackupEdit', {
 	var selModeField =  Ext.create('PVE.form.KVComboBox', {
 	    xtype: 'pveKVComboBox',
 	    data: [
-		['include', 'Include selected VMs'],
-		['all', 'All VMs'],
-		['exclude', 'Exclude selected VMs']
+		['include', gettext('Include selected VMs')],
+		['all', gettext('All')],
+		['exclude', gettext('Exclude selected VMs')]
 	    ],
-	    fieldLabel: 'Selection mode',
+	    fieldLabel: gettext('Selection mode'),
 	    name: 'selMode',
 	    value: ''
 	});
@@ -54,7 +54,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	});
 
 	var storagesel = Ext.create('PVE.form.StorageSelector', {
-	    fieldLabel: 'Storage',
+	    fieldLabel: gettext('Storage'),
 	    nodename: 'localhost',
 	    storageContent: 'backup',
 	    allowBlank: false,
@@ -77,32 +77,32 @@ Ext.define('PVE.dc.BackupEdit', {
 	    disabled: true,
 	    columns: [
 		{ 
-		    header: 'VMID',
+		    header: 'ID',
 		    dataIndex: 'vmid',
 		    width: 60
 		},
 		{ 
-		    header: 'Node',
+		    header: gettext('Node'),
 		    dataIndex: 'node'
 		},
 		{ 
-		    header: 'Status',
+		    header: gettext('Status'),
 		    dataIndex: 'uptime',
 		    renderer: function(value) {
 			if (value) {
-			    return 'running';
+			    return PVE.Utils.runningText;
 			} else {
-			    return 'stopped';
+			    return PVE.Utils.stoppedText;
 			}
 		    }
 		},
 		{ 
-		    header: 'Name', 
+		    header: gettext('Name'), 
 		    dataIndex: 'name',
 		    flex: 1 
 		},
 		{ 
-		    header: 'VM Type', 
+		    header: gettext('Type'), 
 		    dataIndex: 'type'
 		}
 	    ]
@@ -110,11 +110,11 @@ Ext.define('PVE.dc.BackupEdit', {
 
 	var nodesel = Ext.create('PVE.form.NodeSelector', {
 	    name: 'node',
-	    fieldLabel: 'Node',
+	    fieldLabel: gettext('Node'),
 	    allowBlank: true,
 	    editable: true,
 	    autoSelect: false,
-	    emptyText: '-- any --',
+	    emptyText: '-- ' + gettext('All') + ' --',
 	    listeners: {
 		change: function(f, value) {
 		    storagesel.setNodename(value || 'localhost');
@@ -136,14 +136,14 @@ Ext.define('PVE.dc.BackupEdit', {
 	    {
 		xtype: 'pveDayOfWeekSelector',
 		name: 'dow',
-		fieldLabel: 'Day of week',
+		fieldLabel: gettext('Day of week'),
 		multiSelect: true,
 		value: ['sat'],
 		allowBlank: false
 	    },
 	    {
 		xtype: 'timefield',
-		fieldLabel: 'Start time',
+		fieldLabel: gettext('Start Time'),
 		name: 'starttime',
 		format: 'H:i',
 		value: '00:00',
@@ -155,19 +155,19 @@ Ext.define('PVE.dc.BackupEdit', {
 	var column2 = [
 	    {
 		xtype: 'textfield',
-		fieldLabel: 'Send email to',
+		fieldLabel: gettext('Send email to'),
 		name: 'mailto'
 	    },
 	    {
 		xtype: 'pvecheckbox',
-		fieldLabel: 'Compression',
+		fieldLabel: gettext('Compression'),
 		name: 'compress',
 		checked: true,
 		uncheckedValue: 0
 	    },
 	    {
 		xtype: 'numberfield',
-		fieldLabel: 'Max files',
+		fieldLabel: gettext('Max files'),
 		name: 'maxfiles',
 		minValue: 1,
 		maxValue: 365,
@@ -176,7 +176,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    },
 	    {
 		xtype: 'pveBackupModeSelector',
-		fieldLabel: 'Mode',
+		fieldLabel: gettext('Mode'),
 		value: 'snapshot',
 		name: 'mode'
 	    },
@@ -270,7 +270,8 @@ Ext.define('PVE.dc.BackupEdit', {
 	};
 
         Ext.applyIf(me, {
-            title: me.create ? "Create Backup Job" : "Edit Backup Job",
+            title: me.create ? gettext("Create Backup Job") : 
+		gettext("Edit Backup Job"),
             url: url,
             method: method,
 	    items: [ ipanel, vmgrid ]
@@ -314,6 +315,9 @@ Ext.define('PVE.dc.BackupView', {
 
     alias: ['widget.pveDcBackupView'],
 
+    allText: '-- ' + gettext('All') + ' --',
+    allExceptText: gettext('All except {0}'),
+
     initComponent : function() {
 	var me = this;
 
@@ -329,8 +333,9 @@ Ext.define('PVE.dc.BackupView', {
 	    store.load();
 	};
 
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
 	var run_editor = function() {
-	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
@@ -343,67 +348,43 @@ Ext.define('PVE.dc.BackupView', {
             win.show();
 	};
 
-	var edit_btn = new Ext.Button({
-	    text: 'Edit',
+	var edit_btn = new PVE.button.Button({
+	    text: gettext('Edit'),
 	    disabled: true,
+	    selModel: sm,
 	    handler: run_editor
 	});
 
-	var remove_btn = new Ext.Button({
-	    text: 'Remove',
+	var remove_btn = new PVE.button.Button({
+	    text: gettext('Remove'),
 	    disabled: true,
-	    handler: function(){
-		var sm = me.getSelectionModel();
-		var rec = sm.getSelection()[0];
-
-		if (!rec) {
-		    return;
-		}
-
-		var msg = "Are you sure you want to delete this backup job?";
-
-		Ext.Msg.confirm('Deletion Confirmation', msg, function(btn) {
-		    if (btn !== 'yes') {
-			return;
+	    selModel: sm,
+	    confirmMsg: gettext('Are you sure you want to remove this entry'),
+	    handler: function(btn, event, rec) {
+		PVE.Utils.API2Request({
+		    url: '/cluster/backup/' + rec.data.id,
+		    method: 'DELETE',
+		    waitMsgTarget: me,
+		    callback: function() {
+			reload();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		    }
-		    PVE.Utils.API2Request({
-			url: '/cluster/backup/' + rec.data.id,
-			method: 'DELETE',
-			waitMsgTarget: me,
-			callback: function() {
-			    reload();
-			},
-			failure: function (response, opts) {
-			    Ext.Msg.alert('Error', response.htmlStatus);
-			}
-		    });
 		});
 	    }
 	});
 
-	var set_button_status = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
-
-	    if (!rec) {
-		remove_btn.disable();
-		edit_btn.disable();
-		return;
-	    }
-
-	    edit_btn.setDisabled(false);
-	    remove_btn.setDisabled(false);
-	};
-
 	Ext.apply(me, {
 	    store: store,
+	    selModel: sm,
 	    stateful: false,
 	    viewConfig: {
 		trackOver: false
 	    },
 	    tbar: [
 		{
-		    text: 'Add',
+		    text: gettext('Add'),
 		    handler: function() {
 			var win = Ext.create('PVE.dc.BackupEdit',{});
 			win.on('destroy', reload);
@@ -415,7 +396,7 @@ Ext.define('PVE.dc.BackupView', {
 	    ],		
 	    columns: [
 		{
-		    header: 'Node',
+		    header: gettext('Node'),
 		    width: 100,
 		    sortable: true,
 		    dataIndex: 'node',
@@ -423,51 +404,51 @@ Ext.define('PVE.dc.BackupView', {
 			if (value) {
 			    return value;
 			}
-			return '-- all --';
+			return me.allText;
 		    }
 		},
 		{
-		    header: 'Day of week',
+		    header: gettext('Day of week'),
 		    width: 200,
 		    sortable: false,
 		    dataIndex: 'dow'
 		},
 		{
-		    header: 'Start time',
+		    header: gettext('Start Time'),
 		    width: 60,
 		    sortable: true,
 		    dataIndex: 'starttime'
 		},
 		{
-		    header: 'Storage ID',
+		    header: gettext('Storage'),
 		    width: 100,
 		    sortable: true,
 		    dataIndex: 'storage'
 		},
 		{
-		    header: 'Selection',
+		    header: gettext('Selection'),
 		    flex: 1,
 		    sortable: false,
 		    dataIndex: 'vmid',
 		    renderer: function(value, metaData, record) {
+			/*jslint confusion: true */
 			if (record.data.all) {
 			    if (record.data.exclude) {
-				return "all except " + record.data.exclude;
+				return Ext.String.format(me.allExceptText, record.data.exclude);
 			    }
-			    return "-- all --";
+			    return me.allText;
 			}
 			if (record.data.vmid) {
 			    return record.data.vmid;
 			}
 
-			return "nothing selected";
+			return "-";
 		    }
 		}
 	    ],
 	    listeners: {
 		show: reload,
-		itemdblclick: run_editor,
-		selectionchange: set_button_status
+		itemdblclick: run_editor
 	    }
 	});
 	

@@ -78,8 +78,9 @@ Ext.define('PVE.dc.OptionView', {
 	    }
 	};
 
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
 	var run_editor = function() {
-	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
@@ -98,33 +99,22 @@ Ext.define('PVE.dc.OptionView', {
 	    win.on('destroy', reload);
 	};
 
-	var edit_btn = new Ext.Button({
+	var edit_btn = new PVE.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
+	    selModel: sm,
 	    handler: run_editor
 	});
-
-	var set_button_status = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
-
-	    if (!rec) {
-		edit_btn.disable();
-		return;
-	    }
-	    var rowdef = rows[rec.data.key];
-	    edit_btn.setDisabled(!rowdef.editor);
-	};
 
 	Ext.applyIf(me, {
 	    url: "/api2/extjs/cluster/options",
 	    cwidth1: 130,
 	    interval: 1000,
+	    selModel: sm,
 	    tbar: [ edit_btn ],
 	    rows: rows,
 	    listeners: {
-		itemdblclick: run_editor,
-		selectionchange: set_button_status
+		itemdblclick: run_editor
 	    }
 	});
 

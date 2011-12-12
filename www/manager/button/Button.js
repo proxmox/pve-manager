@@ -56,8 +56,10 @@ Ext.define('PVE.button.Button', {
 	    me.mon(me.selModel, "selectionchange", function() {
 		var rec = me.selModel.getSelection()[0];
 		var enable = me.enableFn(rec);
-		if (Ext.isDefined(enable)) {
-		    me.setDisabled(!enable);
+		if (Ext.isDefined(enable) && enable === false) {
+		    me.setDisabled(true);
+		} else  {
+		    me.setDisabled(false);
 		}
 	    });
 	}
