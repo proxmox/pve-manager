@@ -1,0 +1,465 @@
+#!/usr/bin/perl -w
+
+# Resource Agent for managing PVE VMs (openvz and qemu-kvm)
+#
+# License: GNU Affero General Public License (AGPL3)
+# Copyright (C) 2011 Proxmox Server Solutions GmbH
+
+use strict;
+use PVE::Tools;
+use PVE::ProcFSTools;
+use PVE::Cluster;
+use PVE::INotify;
+use PVE::RPCEnvironment;
+use PVE::OpenVZ;
+use PVE::API2::OpenVZ;
+use PVE::QemuServer;
+use PVE::API2::Qemu;
+
+use constant OCF_SUCCESS => 0;
+use constant OCF_ERR_GENERIC => 1;
+use constant OCF_ERR_ARGS => 2;
+use constant OCF_ERR_UNIMPLEMENTED => 3;
+use constant OCF_ERR_PERM => 4;
+use constant OCF_ERR_INSTALLED => 5;
+use constant OCF_ERR_CONFIGURED => 6;
+use constant OCF_NOT_RUNNING => 7;
+use constant OCF_RUNNING_MASTER => 8;
+use constant OCF_FAILED_MASTER => 9;
+
+$ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
+
+$SIG{__DIE__} = sub {
+    die @_ if $^S; # skip if inside eval
+    $! = OCF_ERR_GENERIC;
+};
+
+if ($> != 0) {
+    print STDERR "Cannot control VMs. as non-root user.\n";
+    exit(OCF_ERR_PERM);
+}
+
+PVE::INotify::inotify_init();
+
+my $rpcenv = PVE::RPCEnvironment->init('ha');
+
+$rpcenv->init_request();
+$rpcenv->set_language($ENV{LANG});
+$rpcenv->set_user('root@pam'); 
+
+my $nodename = PVE::INotify::nodename();
+
+my @ssh_opts = ('-o', 'BatchMode=yes');
+my @ssh_cmd = ('ssh', @ssh_opts);
+
+sub ocf_log {
+    my ($level, $msg) = @_;
+
+    # fixme:
+    
+    chomp $msg;
+    
+    print "$level: $msg\n";
+}
+
+sub check_running {
+    my ($status, $verbose) = @_;
+
+    if ($status->{type} eq 'qemu') {
+	$status->{running} = PVE::QemuServer::check_running($status->{vmid}, 1);
+    } elsif ($status->{type} eq 'openvz') {
+	$status->{running} = PVE::OpenVZ::check_running($status->{vmid});
+    } else {
+	die "got strange VM type '$status->{type}'\n";
+    }
+}
+
+sub validate_all {
+    my $status = {};
+
+    eval {
+
+	my $vmid = $ENV{OCF_RESKEY_vmid};
+	die "no VMID specified\n" if !defined($vmid);
+	die "got invalid VMID '$vmid'\n" if $vmid !~ m/^[1-9]\d*$/;
+
+	my $vmlist = PVE::Cluster::get_vmlist();
+	die "got empty cluster VM list\n" if !$vmlist || !$vmlist->{ids};
+	my $data = $vmlist->{ids}->{$vmid};
+	die "VM $vmid does not exist\n" if !$data;
+
+	$status->{vmid} = $vmid;
+	$status->{type} = $data->{type};
+	$status->{node} = $data->{node};
+
+	ocf_log('debug', "VM $vmid ($status->{type}) on node $status->{node}\n");
+
+	check_running($status);
+    };
+    if (my $err = $@) {
+	ocf_log('err', $err);
+	exit(OCF_ERR_ARGS);
+    }
+
+    return $status;
+}
+
+sub upid_wait {
+    my ($upid) = @_;
+
+    my $task = PVE::Tools::upid_decode($upid);
+
+    sleep(1);
+    while (PVE::ProcFSTools::check_process_running($task->{pid}, $task->{pstart})) {
+	ocf_log('debug', "Task still active, waiting");
+	sleep(1);
+    }
+}
+
+my $cmd = shift || '';
+my $migratetarget = shift if $cmd eq 'migrate';
+
+die "too many arguments\n" if scalar (@ARGV) != 0;
+
+if ($cmd eq 'start') {
+    my $status = validate_all();
+    if ($status->{running}) {
+	ocf_log('info', "Resource is already running");
+	exit(OCF_SUCCESS);
+    }
+
+    if ($status->{node} ne $nodename) {
+	ocf_log('info', "Move config to local node");
+	my ($oldconfig, $newconfig);
+	if ($status->{type} eq 'qemu') {
+	    $oldconfig = PVE::QemuServer::config_file($status->{vmid}, $status->{node});
+	    $newconfig = PVE::QemuServer::config_file($status->{vmid}, $nodename);
+	} else {
+	    $oldconfig = PVE::OpenVZ::config_file($status->{vmid}, $status->{node});
+	    $newconfig = PVE::OpenVZ::config_file($status->{vmid}, $nodename);
+	}
+	if (!rename($oldconfig, $newconfig)) {
+	    ocf_log('err', "unable to move config file from '$oldconfig' to '$newconfig' - $!");
+	    exit(OCF_ERR_GENERIC);
+	}
+    }
+
+    my $upid;
+    
+    if ($status->{type} eq 'qemu') {
+	$upid = PVE::API2::Qemu->vm_start({node => $nodename, vmid => $status->{vmid}});
+    } else {
+	$upid = PVE::API2::OpenVZ->vm_start({node => $nodename, vmid => $status->{vmid}});
+    }
+
+    upid_wait($upid);
+
+    check_running($status);
+
+    exit($status->{running} ? OCF_SUCCESS : OCF_ERR_GENERIC);
+
+} elsif($cmd eq 'stop') {
+    my $status = validate_all();
+
+    if (!$status->{running}) {
+	ocf_log('info', "Resource is already stopped");
+	exit(OCF_SUCCESS);
+    }
+
+    my $upid;
+    
+    if ($status->{type} eq 'qemu') {
+	$upid = PVE::API2::Qemu->vm_stop({node => $nodename, vmid => $status->{vmid}});
+    } else {
+	$upid = PVE::API2::OpenVZ->vm_stop({node => $nodename, vmid => $status->{vmid}, fast => 1});
+    }
+
+    upid_wait($upid);
+
+    check_running($status);
+
+    exit($status->{running} ? OCF_ERR_GENERIC : OCF_SUCCESS);
+
+} elsif($cmd eq 'recover' || $cmd eq 'restart' || $cmd eq 'reload') {
+
+    exit(OCF_SUCCESS);
+
+} elsif($cmd eq 'status' || $cmd eq 'monitor') {
+
+    my $status = validate_all();
+    if ($status->{running}) {
+	ocf_log('debug', "Resource is running");
+	exit(OCF_SUCCESS);
+    } else {
+	ocf_log('debug', "Resource is not running");
+	exit(OCF_NOT_RUNNING);
+    }
+
+} elsif($cmd eq 'migrate') {
+    my $status = validate_all();
+    if (!$status->{running}) {
+	ocf_log('err', "Resource is not running");
+	exit(OCF_ERR_GENERIC);
+    }
+
+    if (!$migratetarget) {
+	ocf_log('err', "No target specified");
+	exit(OCF_ERR_ARGS);
+
+    };
+
+    # test ssh connection and try to detect node name
+    my @rem_ssh = (@ssh_cmd, "root\@$migratetarget");
+    my $cmd = [ @rem_ssh, '/bin/hostname' ];
+    my $targetnode = '';
+    eval {
+	PVE::Tools::run_command($cmd, outfunc => sub {
+	    $targetnode = shift if !$targetnode; 
+	});
+    };
+    if (my $err = $@) {
+	ocf_log('err', "can't connect to target '$migratetarget' - $err");
+	exit(OCF_ERR_GENERIC);	
+    }
+    if (!PVE::Cluster::check_node_exists($targetnode, 1)) {
+	ocf_log('err', "target hostname '$targetnode' is no cluster member");
+	exit(OCF_ERR_GENERIC);
+    }
+
+    my $upid;
+    my $params = {
+	node => $nodename, 
+	vmid => $status->{vmid},
+	target => $targetnode,
+	online => 1,
+    };
+
+    my $oldconfig;
+    if ($status->{type} eq 'qemu') {
+	$oldconfig = PVE::QemuServer::config_file($status->{vmid}, $status->{node});
+	$upid = PVE::API2::Qemu->migrate_vm($params);
+    } else {
+	$oldconfig = PVE::OpenVZ::config_file($status->{vmid}, $status->{node});
+	$upid = PVE::API2::OpenVZ->migrate_vm($params);
+    }
+
+    upid_wait($upid);
+
+    # something went wrong if old config file is still there
+    exit((-f $oldconfig) ? OCF_ERR_GENERIC : OCF_SUCCESS);
+
+} elsif($cmd eq 'stop') {
+    my $status = validate_all();
+
+    if (!$status->{running}) {
+	ocf_log('info', "Resource is already stopped");
+	exit(OCF_SUCCESS);
+    }
+
+    my $upid;
+    
+    if ($status->{type} eq 'qemu') {
+	$upid = PVE::API2::Qemu->vm_stop({node => $nodename, vmid => $status->{vmid}});
+    } else {
+	$upid = PVE::API2::OpenVZ->vm_stop({node => $nodename, vmid => $status->{vmid}, fast => 1});
+    }
+
+    upid_wait($upid);
+
+    die "implement me";
+
+} elsif($cmd eq 'reconfig') {
+    # Reconfigure a running VM
+    my $status = validate_all();
+
+    # we do nothing here
+
+} elsif($cmd eq 'meta-data') {
+    while(<DATA>) {
+	print;
+    }
+} elsif($cmd eq 'validate-all') {
+    my $status = validate_all();
+} else {
+    die "usage: $0 {start|stop|restart|status|reload|reconfig|meta-data|validate-all}\n";
+}
+			
+exit(OCF_SUCCESS);
+
+__DATA__
+<?xml version="1.0"?>
+<resource-agent version="rgmanager 2.0" name="pvevm">
+    <version>1.0</version>
+
+    <longdesc lang="en">
+	Defines a PVE Virtual Machine
+    </longdesc>
+    <shortdesc lang="en">
+        Defines a PVE Virtual Machine
+    </shortdesc>
+
+    <parameters>
+        <parameter name="vmid" primary="1">
+            <longdesc lang="en">
+                This is the VMID of the virtual machine.
+            </longdesc>
+            <shortdesc lang="en">
+                VMID
+            </shortdesc>
+            <content type="string"/>
+        </parameter>
+    
+        <parameter name="domain" reconfig="1">
+            <longdesc lang="en">
+                Failover domains define lists of cluster members
+                to try in the event that the host of the virtual machine
+		fails.
+            </longdesc>
+            <shortdesc lang="en">
+                Cluster failover Domain
+            </shortdesc>
+            <content type="string"/>
+        </parameter>
+
+        <parameter name="autostart" reconfig="1">
+            <longdesc lang="en">
+	    	If set to yes, this resource group will automatically be started
+		after the cluster forms a quorum.  If set to no, this virtual
+		machine will start in the 'disabled' state after the cluster
+		forms a quorum.
+            </longdesc>
+            <shortdesc lang="en">
+	    	Automatic start after quorum formation
+            </shortdesc>
+            <content type="boolean" default="1"/>
+        </parameter>
+
+        <parameter name="exclusive" reconfig="1">
+            <longdesc lang="en">
+	    	If set, this resource group will only relocate to
+		nodes which have no other resource groups running in the
+		event of a failure.  If no empty nodes are available,
+		this resource group will not be restarted after a failure.
+		Additionally, resource groups will not automatically
+		relocate to the node running this resource group.  This
+		option can be overridden by manual start and/or relocate
+		operations.
+            </longdesc>
+            <shortdesc lang="en">
+	        Exclusive resource group
+            </shortdesc>
+            <content type="boolean" default="0"/>
+        </parameter>
+
+        <parameter name="recovery" reconfig="1">
+            <longdesc lang="en">
+	        This currently has three possible options: "restart" tries
+		to restart this virtual machine locally before
+		attempting to relocate (default); "relocate" does not bother
+		trying to restart the VM locally; "disable" disables
+		the VM if it fails.
+            </longdesc>
+            <shortdesc lang="en">
+	    	Failure recovery policy
+            </shortdesc>
+            <content type="string"/>
+        </parameter>
+
+        <parameter name="depend">
+            <longdesc lang="en">
+		Service dependency; will not start without the specified
+		service running.
+            </longdesc>
+            <shortdesc lang="en">
+		Top-level service this depends on, in service:name format.
+            </shortdesc>
+            <content type="string"/>
+        </parameter>
+
+        <parameter name="depend_mode">
+            <longdesc lang="en">
+		Service dependency mode.
+		hard - This service is stopped/started if its dependency
+		       is stopped/started
+		soft - This service only depends on the other service for
+		       initial startip.  If the other service stops, this
+		       service is not stopped.
+            </longdesc>
+            <shortdesc lang="en">
+	    	Service dependency mode (soft or hard).
+            </shortdesc>
+            <content type="string" default="hard"/>
+        </parameter>
+
+        <parameter name="max_restarts" reconfig="1">
+            <longdesc lang="en">
+	    	Maximum restarts for this service.
+            </longdesc>
+            <shortdesc lang="en">
+	    	Maximum restarts for this service.
+            </shortdesc>
+            <content type="string" default="0"/>
+        </parameter>
+
+        <parameter name="restart_expire_time" reconfig="1">
+            <longdesc lang="en">
+	    	Restart expiration time.  A restart is forgotten
+		after this time.  When combined with the max_restarts
+		option, this lets administrators specify a threshold
+		for when to fail over services.  If max_restarts
+		is exceeded in this given expiration time, the service
+		is relocated instead of restarted again.
+            </longdesc>
+            <shortdesc lang="en">
+	    	Restart expiration time; amount of time before a restart
+		is forgotten.
+            </shortdesc>
+            <content type="string" default="0"/>
+        </parameter>
+
+        <parameter name="status_program" reconfig="1">
+            <longdesc lang="en">
+	    	Ordinarily, only the presence/health of a virtual machine
+		is checked.  If specified, the status_program value is
+		executed during a depth 10 check.  The intent of this 
+		program is to ascertain the status of critical services
+		within a virtual machine.
+            </longdesc>
+            <shortdesc lang="en">
+	    	Additional status check program
+            </shortdesc>
+            <content type="string" default=""/>
+        </parameter>
+    </parameters>
+
+    <actions>
+        <action name="start" timeout="75"/>
+        <action name="stop" timeout="75"/>
+	
+        <action name="status" timeout="10" interval="30"/>
+        <action name="monitor" timeout="10" interval="30"/>
+
+	<!-- depth 10 calls the status_program -->
+        <action name="status" depth="10" timeout="20" interval="60"/>
+        <action name="monitor" depth="10" timeout="20" interval="60"/>
+
+	<!-- reconfigure - reconfigure with new OCF parameters.
+	     NOT OCF COMPATIBLE AT ALL -->
+	<action name="reconfig" timeout="10"/>
+
+	<action name="migrate" timeout="10m"/>
+
+        <action name="meta-data" timeout="5"/>
+        <action name="validate-all" timeout="5"/>
+
+    </actions>
+    
+    <special tag="rgmanager">
+    	<!-- Destroy_on_delete / init_on_add are currently only
+	     supported for migratory resources (no children
+	     and the 'migrate' action; see above.  Do not try this
+	     with normal services -->
+        <attributes maxinstances="1" destroy_on_delete="0" init_on_add="0"/>
+    </special>
+</resource-agent>
+

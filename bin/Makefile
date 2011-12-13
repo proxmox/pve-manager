@@ -1,6 +1,6 @@
 include ../defines.mk
 
-SUBDIRS = init.d cron test
+SUBDIRS = init.d cron ocf test
 
 SCRIPTS =  			\
 	vzdump			\
