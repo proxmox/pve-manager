@@ -254,7 +254,7 @@ __PACKAGE__->register_method({
 	    if ($param->{force}) {
 		die "cant overwrite mounted container\n" if PVE::OpenVZ::check_mounted($conf, $vmid);
 	    } else {
-		die "container $vmid already exists\n" if -f $basecfg_fn;
+		die "CT $vmid already exists\n" if -f $basecfg_fn;
 	    }
 
 	    my $ostemplate = extract_param($param, 'ostemplate');
@@ -925,10 +925,12 @@ __PACKAGE__->register_method({
 
 	my $vmid = extract_param($param, 'vmid');
 
+	die "CT $vmid already running\n" if PVE::OpenVZ::check_running($vmid);
+
 	my $realcmd = sub {
 	    my $upid = shift;
 
-	    syslog('info', "starting container $vmid: $upid\n");
+	    syslog('info', "starting CT $vmid: $upid\n");
 
 	    my $cmd = ['vzctl', 'start', $vmid];
 	    
@@ -952,10 +954,64 @@ __PACKAGE__->register_method({
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    vmid => get_standard_option('pve-vmid'),
-	    fast => {
-		type => 'boolean',
-		description => "This is faster but can lead to unclean container shutdown.",
+	},
+    },
+    returns => { 
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $user = $rpcenv->get_user();
+
+	my $node = extract_param($param, 'node');
+
+	my $vmid = extract_param($param, 'vmid');
+
+	die "CT $vmid not running\n" if !PVE::OpenVZ::check_running($vmid);
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    syslog('info', "stoping CT $vmid: $upid\n");
+
+	    my $cmd = ['vzctl', 'stop', $vmid, '--fast'];
+	    run_command($cmd);
+	    
+	    return;
+	};
+
+	my $upid = $rpcenv->fork_worker('vzstop', $vmid, $user, $realcmd);
+
+	return $upid;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'vm_shutdown', 
+    path => '{vmid}/status/shutdown',
+    method => 'POST',
+    protected => 1,
+    proxyto => 'node',
+    description => "Shutdown the container.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	    timeout => {
+		description => "Wait maximal timeout seconds.",
+		type => 'integer',
+		minimum => 0,
 		optional => 1,
+		default => 60,
+	    },
+	    forceStop => {
+		description => "Make sure the Container stops.",
+		type => 'boolean',
+		optional => 1,
+		default => 0,
 	    }
 	},
     },
@@ -973,21 +1029,34 @@ __PACKAGE__->register_method({
 
 	my $vmid = extract_param($param, 'vmid');
 
+	my $timeout = extract_param($param, 'timeout');
+
+	die "CT $vmid not running\n" if !PVE::OpenVZ::check_running($vmid);
+
 	my $realcmd = sub {
 	    my $upid = shift;
 
-	    syslog('info', "stoping container $vmid: $upid\n");
+	    syslog('info', "shutdown CT $vmid: $upid\n");
 
 	    my $cmd = ['vzctl', 'stop', $vmid];
 
-	    push @$cmd, '--fast' if $param->{fast};
-	    
+	    $timeout = 60 if !defined($timeout);
+
+	    eval { run_command($cmd, timeout => $timeout); };
+	    my $err = $@;
+	    return if !$err;
+
+	    die $err if !$param->{forceStop};
+
+	    warn "shutdown failed - forcing stop now\n";
+
+	    push @$cmd, '--fast';
 	    run_command($cmd);
 	    
 	    return;
 	};
 
-	my $upid = $rpcenv->fork_worker('vzstop', $vmid, $user, $realcmd);
+	my $upid = $rpcenv->fork_worker('vzshutdown', $vmid, $user, $realcmd);
 
 	return $upid;
     }});

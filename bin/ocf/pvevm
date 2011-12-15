@@ -29,9 +29,19 @@ use constant OCF_FAILED_MASTER => 9;
 
 $ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
 
+my $ocf_ressource_type = $0;
+my $prio_hash = {
+    err => 3,
+    note => 5,
+    info => 6,
+    debug => 7,
+};
+
 $SIG{__DIE__} = sub {
     die @_ if $^S; # skip if inside eval
     $! = OCF_ERR_GENERIC;
+    ocf_log('err', @_);
+    exit($!);
 };
 
 if ($> != 0) {
@@ -55,11 +65,30 @@ my @ssh_cmd = ('ssh', @ssh_opts);
 sub ocf_log {
     my ($level, $msg) = @_;
 
-    # fixme:
-    
-    chomp $msg;
-    
+    chomp $msg;    
     print "$level: $msg\n";
+
+    my $level_n = $prio_hash->{$level};
+    $level_n = $prio_hash->{note} if !defined($level_n);
+
+    my $cmd = ['clulog', '-m', $ocf_ressource_type, '-s', $level_n, $msg];
+
+    eval { PVE::Tools::run_command($cmd); }; # ignore errors
+}
+
+sub get_timeout {
+    my $default_timeout = 60;
+    my $tout = $default_timeout;
+
+    if ($ENV{OCF_RESKEY_RGMANAGER_meta_timeout}) {
+	$tout = $ENV{OCF_RESKEY_RGMANAGER_meta_timeout};
+    } elsif ($ENV{OCF_RESKEY_CRM_meta_timeout}) {
+	$tout = $ENV{OCF_RESKEY_CRM_meta_timeout};
+    }
+
+    return $default_timeout if $tout <= 0;
+
+    return $tout;
 }
 
 sub check_running {
@@ -91,8 +120,6 @@ sub validate_all {
 	$status->{vmid} = $vmid;
 	$status->{type} = $data->{type};
 	$status->{node} = $data->{node};
-
-	ocf_log('debug', "VM $vmid ($status->{type}) on node $status->{node}\n");
 
 	check_running($status);
     };
@@ -156,7 +183,25 @@ if ($cmd eq 'start') {
 
     check_running($status);
 
-    exit($status->{running} ? OCF_SUCCESS : OCF_ERR_GENERIC);
+    exit(OCF_ERR_GENERIC) if !$status->{running};
+
+    if (my $testprog = $ENV{OCF_RESKEY_status_program}) {
+
+	my $timeout = get_timeout();
+
+	my $wait_func = sub {
+	    while (system($testprog) != 0) { sleep(3); }
+	};
+
+	eval { PVE::Tools::run_with_timeout($timeout, $wait_func); };
+	if (my $err = $@) {
+	    ocf_log('err', "Start of VM $status->{vmid} has failed");
+	    ocf_log('err', "error while waiting for '$testprog' - $err");
+	    exit(OCF_ERR_GENERIC);
+	}
+    }
+
+    exit(OCF_SUCCESS);
 
 } elsif($cmd eq 'stop') {
     my $status = validate_all();
@@ -166,12 +211,21 @@ if ($cmd eq 'start') {
 	exit(OCF_SUCCESS);
     }
 
+    my $timeout = get_timeout();
+
     my $upid;
-    
+
+    my $param = {
+	node => $nodename, 
+	vmid => $status->{vmid}, 
+	timeout => $timeout,
+	forceStop => 1,
+    };
+
     if ($status->{type} eq 'qemu') {
-	$upid = PVE::API2::Qemu->vm_stop({node => $nodename, vmid => $status->{vmid}});
+	$upid = PVE::API2::Qemu->vm_shutdown($param);
     } else {
-	$upid = PVE::API2::OpenVZ->vm_stop({node => $nodename, vmid => $status->{vmid}, fast => 1});
+	$upid = PVE::API2::OpenVZ->vm_shutdown($param);
     }
 
     upid_wait($upid);
@@ -187,13 +241,24 @@ if ($cmd eq 'start') {
 } elsif($cmd eq 'status' || $cmd eq 'monitor') {
 
     my $status = validate_all();
-    if ($status->{running}) {
-	ocf_log('debug', "Resource is running");
-	exit(OCF_SUCCESS);
-    } else {
+
+    if (!$status->{running}) {
 	ocf_log('debug', "Resource is not running");
 	exit(OCF_NOT_RUNNING);
     }
+
+    ocf_log('debug', "Resource is running");
+
+    my $testprog = $ENV{OCF_RESKEY_status_program};
+    my $checklevel = $ENV{OCF_CHECK_LEVEL};
+
+    if ($testprog && $checklevel && $checklevel >= 10) {
+	if (system($testprog) != 0) {
+	    exit(OCF_NOT_RUNNING);
+	}
+    }
+
+    exit(OCF_SUCCESS);
 
 } elsif($cmd eq 'migrate') {
     my $status = validate_all();
@@ -208,29 +273,11 @@ if ($cmd eq 'start') {
 
     };
 
-    # test ssh connection and try to detect node name
-    my @rem_ssh = (@ssh_cmd, "root\@$migratetarget");
-    my $cmd = [ @rem_ssh, '/bin/hostname' ];
-    my $targetnode = '';
-    eval {
-	PVE::Tools::run_command($cmd, outfunc => sub {
-	    $targetnode = shift if !$targetnode; 
-	});
-    };
-    if (my $err = $@) {
-	ocf_log('err', "can't connect to target '$migratetarget' - $err");
-	exit(OCF_ERR_GENERIC);	
-    }
-    if (!PVE::Cluster::check_node_exists($targetnode, 1)) {
-	ocf_log('err', "target hostname '$targetnode' is no cluster member");
-	exit(OCF_ERR_GENERIC);
-    }
-
     my $upid;
     my $params = {
 	node => $nodename, 
 	vmid => $status->{vmid},
-	target => $targetnode,
+	target => $migratetarget,
 	online => 1,
     };
 
@@ -363,6 +410,16 @@ __DATA__
 	    	Failure recovery policy
             </shortdesc>
             <content type="string"/>
+        </parameter>
+
+	<parameter name="migrate">
+	    <longdesc lang="en">
+	    	Migration type (live or pause, default = live).
+	    </longdesc>
+	    <shortdesc lang="en">
+	    	Migration type (live or pause, default = live).
+	    </shortdesc>
+            <content type="string" default="live"/>
         </parameter>
 
         <parameter name="depend">

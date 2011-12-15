@@ -47,7 +47,7 @@ Ext.define('PVE.openvz.CmdMenu', {
 			    return;
 			}
 
-			vm_command('stop');
+			vm_command('shutdown');
 		    });
 		}			    
 	    },

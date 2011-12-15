@@ -43,7 +43,7 @@ Ext.define('PVE.openvz.Config', {
 	    text: gettext('Stop'),
 	    confirmMsg: Ext.String.format(gettext("Do you really want to stop VM {0}?"), vmid),
 	    handler: function() {
-		vm_command("stop", { fast: 1 });
+		vm_command("stop");
 	    }
 	});
  
@@ -51,7 +51,7 @@ Ext.define('PVE.openvz.Config', {
 	    text: gettext('Shutdown'),
 	    confirmMsg: Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), vmid),
 	    handler: function() {
-		vm_command('stop');
+		vm_command('shutdown');
 	    }			    
 	});
  
