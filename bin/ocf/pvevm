@@ -29,7 +29,8 @@ use constant OCF_FAILED_MASTER => 9;
 
 $ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
 
-my $ocf_ressource_type = $0;
+my $ocf_ressource_type = 'pvevm';
+
 my $prio_hash = {
     err => 3,
     note => 5,
@@ -121,6 +122,12 @@ sub validate_all {
 	$status->{type} = $data->{type};
 	$status->{node} = $data->{node};
 
+	if ($status->{type} eq 'qemu') {
+	    $status->{name} = "VM $vmid";
+	} else {
+	    $status->{name} = "CT $vmid";
+	}
+
 	check_running($status);
     };
     if (my $err = $@) {
@@ -151,12 +158,12 @@ die "too many arguments\n" if scalar (@ARGV) != 0;
 if ($cmd eq 'start') {
     my $status = validate_all();
     if ($status->{running}) {
-	ocf_log('info', "Resource is already running");
+	ocf_log('info', "$status->{name} is already running");
 	exit(OCF_SUCCESS);
     }
 
     if ($status->{node} ne $nodename) {
-	ocf_log('info', "Move config to local node");
+	ocf_log('info', "Move config for $status->{name} to local node");
 	my ($oldconfig, $newconfig);
 	if ($status->{type} eq 'qemu') {
 	    $oldconfig = PVE::QemuServer::config_file($status->{vmid}, $status->{node});
@@ -195,7 +202,7 @@ if ($cmd eq 'start') {
 
 	eval { PVE::Tools::run_with_timeout($timeout, $wait_func); };
 	if (my $err = $@) {
-	    ocf_log('err', "Start of VM $status->{vmid} has failed");
+	    ocf_log('err', "Start of $status->{name} has failed");
 	    ocf_log('err', "error while waiting for '$testprog' - $err");
 	    exit(OCF_ERR_GENERIC);
 	}
@@ -207,7 +214,7 @@ if ($cmd eq 'start') {
     my $status = validate_all();
 
     if (!$status->{running}) {
-	ocf_log('info', "Resource is already stopped");
+	ocf_log('info', "$status->{name} is already stopped");
 	exit(OCF_SUCCESS);
     }
 
@@ -243,11 +250,11 @@ if ($cmd eq 'start') {
     my $status = validate_all();
 
     if (!$status->{running}) {
-	ocf_log('debug', "Resource is not running");
+	ocf_log('debug', "$status->{name} is not running");
 	exit(OCF_NOT_RUNNING);
     }
 
-    ocf_log('debug', "Resource is running");
+    ocf_log('debug', "$status->{name} is running");
 
     my $testprog = $ENV{OCF_RESKEY_status_program};
     my $checklevel = $ENV{OCF_CHECK_LEVEL};
@@ -263,7 +270,7 @@ if ($cmd eq 'start') {
 } elsif($cmd eq 'migrate') {
     my $status = validate_all();
     if (!$status->{running}) {
-	ocf_log('err', "Resource is not running");
+	ocf_log('err', "$status->{name} is not running");
 	exit(OCF_ERR_GENERIC);
     }
 
@@ -299,7 +306,7 @@ if ($cmd eq 'start') {
     my $status = validate_all();
 
     if (!$status->{running}) {
-	ocf_log('info', "Resource is already stopped");
+	ocf_log('info', "$status->{name} is already stopped");
 	exit(OCF_SUCCESS);
     }
 
