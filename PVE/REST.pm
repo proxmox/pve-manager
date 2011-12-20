@@ -157,6 +157,10 @@ sub prepare_response_data {
 	$new->{total} = $res->{total};
     }
 
+    if ($success && $res->{changes}) {
+	$new->{changes} = $res->{changes};
+    }
+
     $res->{data} = $new;
 }
 
@@ -291,7 +295,6 @@ sub rest_handler {
     # set environment variables
     $rpcenv->set_language('C'); # fixme:
     $rpcenv->set_client_ip($clientip);
-    $rpcenv->set_result_count(undef);
 
     my $euid = $>;
 
@@ -425,6 +428,9 @@ sub rest_handler {
 
 	if (my $count = $rpcenv->get_result_count()) {
 	    $resp->{total} = $count;
+	}
+	if (my $diff = $rpcenv->get_result_changes()) {
+	    $resp->{changes} = $diff;
 	}
     };
     my $err = $@;
