@@ -92,6 +92,7 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
     
 	my $result = [
+	    { name => 'version' },
 	    { name => 'syslog' },
 	    { name => 'status' },
 	    { name => 'tasks' },
@@ -113,6 +114,33 @@ __PACKAGE__->register_method ({
 	    ];
 
 	return $result;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'version', 
+    path => 'version',
+    method => 'GET',
+    proxyto => 'node',
+    permissions => { user => 'all' },
+    description => "API version details",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => "object",
+	properties => {
+	    version => { type => 'string' },
+	    release => { type => 'string' },
+	    repoid => { type => 'string' },
+	},
+    },
+    code => sub {
+	my ($resp, $param) = @_;
+    
+	return PVE::pvecfg::version_info();
     }});
 
 __PACKAGE__->register_method({
@@ -266,8 +294,7 @@ __PACKAGE__->register_method({
 	};
 
 	$res->{pveversion} = PVE::pvecfg::package() . "/" .
-	    PVE::pvecfg::version() . "/" .
-	    PVE::pvecfg::repoid();
+	    PVE::pvecfg::version_text();
 
 	my $dinfo = df('/', 1);     # output is bytes
 

@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Apache2::Const qw(:http);
+use PVE::pvecfg;
 use PVE::RESTHandler;
 
 use base qw(PVE::RESTHandler);
@@ -57,7 +58,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($resp, $param) = @_;
     
-	my $res = [];
+	my $res = [ { subdir => 'version' } ];
 
 	my $ma = PVE::API2->method_attributes();
 
@@ -72,4 +73,27 @@ __PACKAGE__->register_method ({
 	return $res;
     }});
 
+__PACKAGE__->register_method ({
+    name => 'version', 
+    path => 'version',
+    method => 'GET',
+    permissions => { user => 'all' },
+    description => "API version details",
+    parameters => {
+	additionalProperties => 0,
+	properties => {},
+    },
+    returns => {
+	type => "object",
+	properties => {
+	    version => { type => 'string' },
+	    release => { type => 'string' },
+	    repoid => { type => 'string' },
+	},
+    },
+    code => sub {
+	my ($resp, $param) = @_;
+    
+	return PVE::pvecfg::version_info();
+    }});
 1;

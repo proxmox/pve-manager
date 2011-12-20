@@ -42,7 +42,7 @@ if (my $cookie = $r->headers_in->{Cookie}) {
 	$token = PVE::AccessControl::assemble_csrf_prevention_token($username);
     }
 }
-my $version = PVE::pvecfg::version() . "/" . PVE::pvecfg::repoid();
+my $version = PVE::pvecfg::version_text();
 $username = '' if !$username;
 
 my $cgi = CGI->new($r);

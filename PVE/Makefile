@@ -17,7 +17,7 @@ all: pvecfg.pm ${SUBDIRS}
 REPOID=`../repoid.pl ../.git`
 
 pvecfg.pm: pvecfg.pm.in
-	sed -e s/@VERSION@/${VERSION}/ -e s/@PACKAGE@/${PACKAGE}/ -e s/@REPOID@/${REPOID}/ $< >$@.tmp
+	sed -e s/@VERSION@/${VERSION}/ -e s/@PACKAGERELEASE@/${PACKAGERELEASE}/ -e s/@PACKAGE@/${PACKAGE}/ -e s/@REPOID@/${REPOID}/ $< >$@.tmp
 	mv $@.tmp $@
 
 %:
