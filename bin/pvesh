@@ -230,7 +230,7 @@ sub call_method {
 	return if $rtype eq 'null';
 
 	if ($rtype eq 'string') {
-	    print $data;
+	    print $data if $data;
 	    return $data;
 	}
     }
