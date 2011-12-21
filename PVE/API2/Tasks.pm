@@ -113,7 +113,7 @@ __PACKAGE__->register_method({
 	    $bw->close();
 	}
 
-	$rpcenv->set_result_count($count);
+	$rpcenv->set_result_attrib('total', $count);
 
 	return $res;
     }});
@@ -265,7 +265,7 @@ __PACKAGE__->register_method({
 	    push @$lines, { n => $count, t => "no content"};
 	}
 
-	$rpcenv->set_result_count($count);
+	$rpcenv->set_result_attrib('total', $count);
 	    
 	return $lines;
     }});

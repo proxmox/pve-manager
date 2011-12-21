@@ -426,10 +426,10 @@ sub rest_handler {
     eval {
 	$resp->{data} = $handler->handle($info, $uri_param);
 
-	if (my $count = $rpcenv->get_result_count()) {
+	if (my $count = $rpcenv->get_result_attrib('total')) {
 	    $resp->{total} = $count;
 	}
-	if (my $diff = $rpcenv->get_result_changes()) {
+	if (my $diff = $rpcenv->get_result_attrib('changes')) {
 	    $resp->{changes} = $diff;
 	}
     };
