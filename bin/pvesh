@@ -224,8 +224,16 @@ sub call_method {
 
     warn "200 OK\n"; # always print OK status if successful
 
-    return if $info && $info->{returns} && 
-	$info->{returns}->{type} && $info->{returns}->{type} eq 'null';
+    if ($info && $info->{returns} && $info->{returns}->{type}) {
+	my $rtype = $info->{returns}->{type};
+
+	return if $rtype eq 'null';
+
+	if ($rtype eq 'string') {
+	    print $data;
+	    return $data;
+	}
+    }
 
     print to_json($data, {allow_nonref => 1, canonical => 1, pretty => 1 });
 
