@@ -4,6 +4,7 @@ PERLSOURCE = 			\
 	VZDump.pm		\
 	Backup.pm		\
 	Cluster.pm		\
+	HAConfig.pm		\
 	Nodes.pm		\
 	Tasks.pm		\
 	Network.pm		\

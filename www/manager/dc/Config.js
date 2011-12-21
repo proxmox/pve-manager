@@ -48,6 +48,11 @@ Ext.define('PVE.dc.Config', {
 		    xtype: 'pveAuthView',
 		    title: gettext('Authentication'),
 		    itemId: 'domains'
+		},
+		{
+		    xtype: 'pveDcHAConfig',
+		    title: 'HA',
+		    itemId: 'ha'
 		}
 	    ]
 	});

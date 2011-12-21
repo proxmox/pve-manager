@@ -121,6 +121,7 @@ JSSRC= 				                 	\
 	dc/AuthView.js					\
 	dc/AuthEdit.js					\
 	dc/Backup.js					\
+	dc/HAConfig.js					\
 	dc/Config.js					\
 	Workspace.js
 

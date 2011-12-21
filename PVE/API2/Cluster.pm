@@ -5,9 +5,11 @@ use warnings;
 
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param);
+use PVE::INotify;
 use PVE::Cluster qw(cfs_register_file cfs_lock_file cfs_read_file cfs_write_file);
 use PVE::Storage;
 use PVE::API2::Backup;
+use PVE::API2::HAConfig;
 use JSON;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
@@ -17,6 +19,11 @@ use base qw(PVE::RESTHandler);
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Backup",  
     path => 'backup',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::HAConfig",  
+    path => 'ha',
 });
 
 my $dc_schema = PVE::Cluster::get_datacenter_schema();
@@ -58,6 +65,7 @@ __PACKAGE__->register_method ({
 	    { name => 'resources' },
 	    { name => 'tasks' },
 	    { name => 'backup' },
+	    { name => 'ha' },
 	    ];
 
 	return $result;
