@@ -1,3 +1,4 @@
+/*jslint confusion: true */
 Ext.define('PVE.dc.vmHAServiceEdit', {
     extend: 'PVE.window.Edit',
 
@@ -39,7 +40,7 @@ Ext.define('PVE.dc.vmHAServiceEdit', {
 	me.callParent();
 
 	if (!me.create) {
-	    me.load()
+	    me.load();
 	}
     }
 });
@@ -170,10 +171,6 @@ Ext.define('PVE.dc.HAConfig', {
 		    {
 			text: gettext('HA managed VM/CT'),
 			handler: function() {
-			    if (false && !me.clusterInfo.fenceDevices) {
-				Ext.Msg.alert(gettext('Error'), gettext("Please configure fencing first!"));
-				return;
-			    }
 			    var win = Ext.create('PVE.dc.vmHAServiceEdit', {});
 			    win.show();
 			    win.on('destroy', me.reload, me);
@@ -296,7 +293,7 @@ Ext.define('PVE.dc.HAConfig', {
 	});
 
 	me.treePanel.on("itemdblclick", function(v, record) {
-	    run_editor()
+	    run_editor();
 	});
     }
 });
