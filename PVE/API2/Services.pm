@@ -25,7 +25,8 @@ my $service_list = {
     cron => { name => 'CRON', desc => 'Daemon to execute scheduled commands' },
     pvedaemon => { name => 'NodeManager', desc => 'PVE node manager daemon' },
     corosync => { name => 'CMan', desc => 'CMan/Corosync cluster daemon' },
-    clvm => { name => 'CLVM', desc => 'LVM cluster locking daemon' },
+    # clvm => { name => 'CLVM', desc => 'LVM cluster locking daemon' },
+    rgmanager => { name => 'RGManager', desc => 'Resource Group Manager daemon' },
     pvecluster => { name => 'PVECluster', desc => 'Proxmox VE cluster file system' },
 };
 
@@ -90,7 +91,9 @@ my $service_cmd = sub {
 	$initd_cmd = '/etc/init.d/cman';
     } elsif  ($service eq 'clvm') {
 	$initd_cmd = '/etc/init.d/clvm';
-     } elsif  ($service eq 'sshd') {
+    } elsif  ($service eq 'rgmanager') {
+	$initd_cmd = '/etc/init.d/rgmanager';
+    } elsif  ($service eq 'sshd') {
 	$initd_cmd = '/etc/init.d/ssh';
     } else {
 	die "unknown service '$service': ERROR";
@@ -122,6 +125,8 @@ my $service_state = sub {
 	$pid_file = '/var/run/corosync.pid';
     } elsif  ($service eq 'clvm') {
 	$pid_file = '/var/run/clvmd.pid';
+    } elsif  ($service eq 'rgmanager') {
+	$pid_file = '/var/run/rgmanager.pid';
     } elsif  ($service eq 'syslog') {
 	$pid_file = '/var/run/rsyslogd.pid';
     } else {
