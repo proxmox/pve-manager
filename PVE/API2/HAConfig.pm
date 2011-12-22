@@ -175,17 +175,34 @@ __PACKAGE__->register_method({
     	additionalProperties => 0,
 	properties => {},
     },
-    returns => {
-	type => "object",
-	properties => {},
-    },
+    returns => { type => "null" },
     code => sub {
 	my ($param) = @_;
 
-	my $rpcenv = PVE::RPCEnvironment::get();
+	my $cmd = ['ccs_config_validate', '-l', '/etc/pve/cluster.conf.new'];
+	my $out = '';
+	eval {
+	    # first line on stderr contains error message
+	    PVE::Tools::run_command($cmd, errfunc => sub { $out .= shift if !$out; });
+	};
+	if (my $err = $@) {
+	    chomp $out;
+	    $out = "unknown error" if !$out;
+	    die "config validation failed: $out\n";
+	}
 
-	die "not implemented";
+	PVE::Cluster::check_cfs_quorum();
 
+	my $code = sub {
+	    if (!rename('/etc/pve/cluster.conf.new', '/etc/pve/cluster.conf')) {
+		die "commit failed - $!\n";
+	    }
+	};
+
+	cfs_lock_file('cluster.conf', undef, $code);
+	die $@ if $@;
+
+	return;
     }});
 
 my $read_cluster_conf_new = sub {
@@ -332,6 +349,8 @@ __PACKAGE__->register_method({
 	my $vmlist = PVE::Cluster::get_vmlist();
 	raise_param_exc({ id => "no such vmid '$param->{vmid}'"})
 	    if !($vmlist && $vmlist->{ids} && $vmlist->{ids}->{$param->{vmid}});
+
+	PVE::Cluster::check_cfs_quorum();
  
 	my $code = sub {
 
@@ -385,6 +404,8 @@ __PACKAGE__->register_method({
 	} else {
 	    raise_param_exc({ id => "unsupported group type '$param->{id}'"});
 	}
+
+	PVE::Cluster::check_cfs_quorum();
 
 	my $code = sub {
 
@@ -474,6 +495,8 @@ __PACKAGE__->register_method({
     returns => { type => "null" },
     code => sub {
 	my ($param) = @_;
+
+	PVE::Cluster::check_cfs_quorum();
 
 	my $code = sub {
 	    my $conf = &$read_cluster_conf_new();

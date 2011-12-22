@@ -170,7 +170,7 @@ Ext.define('PVE.dc.HAConfig', {
 		    {
 			text: gettext('HA managed VM/CT'),
 			handler: function() {
-			    if (!me.clusterInfo.fenceDevices) {
+			    if (false && !me.clusterInfo.fenceDevices) {
 				Ext.Msg.alert(gettext('Error'), gettext("Please configure fencing first!"));
 				return;
 			    }
