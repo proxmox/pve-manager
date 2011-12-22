@@ -46,12 +46,13 @@ Ext.define('PVE.qemu.StatusView', {
 	    cpus: { visible: false },
 	    mem: { header: 'Memory usage', required: true,  renderer: render_mem },
 	    maxmem: { visible: false },
-	    uptime: { header: 'Uptime', required: true, renderer: PVE.Utils.render_uptime }
+	    uptime: { header: 'Uptime', required: true, renderer: PVE.Utils.render_uptime },
+	    ha: { header: 'Managed by HA', defaultValue: false, renderer: PVE.Utils.format_boolean }
 	};
 
 	Ext.applyIf(me, {
 	    cwidth1: 150,
-	    height: 145,
+	    height: 166,
 	    rows: rows
 	});
 

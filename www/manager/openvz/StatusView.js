@@ -70,12 +70,13 @@ Ext.define('PVE.openvz.StatusView', {
 	    maxmem: { visible: false },
 	    swap: { header: 'VSwap usage', required: true,  renderer: render_swap },
 	    maxswap: { visible: false },
-	    uptime: { header: 'Uptime', required: true, renderer: PVE.Utils.render_uptime }
+	    uptime: { header: 'Uptime', required: true, renderer: PVE.Utils.render_uptime },
+	    ha: { header: 'Managed by HA', defaultValue: false, renderer: PVE.Utils.format_boolean }
 	};
 
 	Ext.applyIf(me, {
 	    cwidth1: 150,
-	    height: 179,
+	    height: 200,
 	    rows: rows
 	});
 

@@ -220,64 +220,6 @@ my $update_cluster_conf_new = sub {
     cfs_write_file('cluster.conf.new', $conf);
 };
 
-my $lookup_cluster_sec = sub {
-    my ($conf) = @_;
-
-    die "no cluster defined\n" if !PVE::Cluster::cluster_conf_version($conf);
-    
-    my $cluster = $conf->{children}->[0];
-    die "invalid root node\n" if $cluster->{text} ne 'cluster';
-
-    return $cluster;
-};
-
-my $lookup_rm_sec = sub {
-    my ($conf, $create, $noerr) = @_;
-
-    my $cluster = &$lookup_cluster_sec($conf);
-
-    my $rmsec;
-    foreach my $child (@{$cluster->{children}}) {
-	if ($child->{text} eq 'rm') {
-	    $rmsec = $child;
-	}
-    }
-    if (!$rmsec) {
-	if (!$create) {
-	    return undef if $noerr;
-	    die "no resource manager section\n";
-	}
-	$rmsec = { text => 'rm' };
-	push @{$cluster->{children}}, $rmsec;
-    }
-
-    return $rmsec;
-};
-
-my $lookup_pvevm  = sub {
-    my ($conf, $create, $vmid) = @_;
-
-    my $rmsec = &$lookup_rm_sec($conf, $create);
-
-    my $vmref;
-    foreach my $child (@{$rmsec->{children}}) {
-	if ($child->{text} eq 'pvevm' && $child->{vmid} eq $vmid) {
-	    $vmref = $child;
-	}
-    }
-
-    return $vmref if !$create;
-
-    if (!$vmref) {
-	$vmref = { text => 'pvevm', vmid => $vmid };
-	push @{$rmsec->{children}}, $vmref;
-    } else {
-	die "resource group 'pvevm:$vmid' already exists\n";
-    }
-
-    return $vmref;
-};
-
 __PACKAGE__->register_method({
     name => 'list_groups', 
     path => 'groups', 
@@ -307,7 +249,7 @@ __PACKAGE__->register_method({
 
 	my $res = [];
 
-	my $rmsec = &$lookup_rm_sec($conf, 0, 1);
+	my $rmsec = PVE::Cluster::cluster_conf_lookup_rm_section($conf, 0, 1);
 	return $res if !$rmsec;
 
 	foreach my $child (@{$rmsec->{children}}) {
@@ -356,7 +298,7 @@ __PACKAGE__->register_method({
 
 	    my $conf = &$read_cluster_conf_new();
 
-	    my $pvevm = &$lookup_pvevm($conf, 1, $param->{vmid});
+	    my $pvevm = PVE::Cluster::cluster_conf_lookup_pvevm($conf, 1, $param->{vmid});
 
 	    $pvevm->{autostart} = $param->{autostart} ? 1 : 0;
 
@@ -411,7 +353,7 @@ __PACKAGE__->register_method({
 
 	    my $conf = &$read_cluster_conf_new();
 
-	    my $pvevm = &$lookup_pvevm($conf, 0, $vmid);
+	    my $pvevm = PVE::Cluster::cluster_conf_lookup_pvevm($conf, 0, $vmid);
 
 	    $pvevm->{autostart} = $param->{autostart} ? 1 : 0;
 
@@ -452,7 +394,7 @@ __PACKAGE__->register_method({
 
 	my $conf = &$read_cluster_conf_new();
 
-	if (my $rmsec = &$lookup_rm_sec($conf, 0, 1)) {
+	if (my $rmsec = PVE::Cluster::cluster_conf_lookup_rm_section($conf, 0, 1)) {
 	    foreach my $child (@{$rmsec->{children}}) {
 		if ($child->{text} eq 'pvevm') {
 		    my $id = "$child->{text}:$child->{vmid}";
@@ -502,7 +444,7 @@ __PACKAGE__->register_method({
 	    my $conf = &$read_cluster_conf_new();
 
 	    my $found;
-	    if (my $rmsec = &$lookup_rm_sec($conf, 0, 1)) {
+	    if (my $rmsec = PVE::Cluster::cluster_conf_lookup_rm_section($conf, 0, 1)) {
 		my $oldlist = $rmsec->{children};
 		$rmsec->{children} = [];
 		foreach my $child (@$oldlist) {
