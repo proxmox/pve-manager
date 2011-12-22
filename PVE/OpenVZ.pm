@@ -104,7 +104,7 @@ sub get_rootdir {
     my ($conf, $vmid) = @_;
 
     my $root = $global_vzconf->{rootdir};
-    if ($conf->{ve_root} && $conf->{ve_root}->{value}) {
+    if ($conf && $conf->{ve_root} && $conf->{ve_root}->{value}) {
 	$root = $conf->{ve_root}->{value};
     }
     $root =~ s/\$VEID/$vmid/;

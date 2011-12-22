@@ -295,40 +295,40 @@ __PACKAGE__->register_method({
 	    }
 
 	    PVE::OpenVZ::update_ovz_config($vmid, $conf, $param);
-	    if (!$param->{restore}) {
-		$conf->{ostemplate}->{value} = $archive;
-		$conf->{ostemplate}->{value} =~ s|^.*/||;
-		$conf->{ostemplate}->{value} =~ s/\.tar\.(gz|bz2)$//;
-		$conf->{ve_private}->{value} = $private;
-	    }
 
 	    my $rawconf = PVE::OpenVZ::generate_raw_config($pve_base_ovz_config, $conf);
 
 	    PVE::Cluster::check_cfs_quorum();
 
 	    my $realcmd = sub {
-		&$restore_openvz($private, $archive, $vmid, $param->{force});
+		if ($param->{restore}) {
+		    &$restore_openvz($private, $archive, $vmid, $param->{force});
 
-		PVE::Tools::file_set_contents($basecfg_fn, $rawconf)
-		    if !$param->{restore};
-
-		# hack: vzctl '--userpasswd' starts the CT, but we want 
-		# to avoid that for create
-		PVE::OpenVZ::set_rootpasswd($private, $password) if defined($password);
-
-		# is this really needed?
-		my $cmd = ['vzctl', '--skiplock', '--quiet', 'set', $vmid, 
-			   '--applyconfig_map', 'name', '--save'];
-		run_command($cmd);
-
-		# reload config
-		my $conf = PVE::OpenVZ::load_config($vmid);
-
-		# and initialize quota
-		my $disk_quota = $conf->{disk_quota}->{value};
-		if (!defined($disk_quota) || ($disk_quota != 0)) {
-		    my $cmd = ['vzctl', '--skiplock', 'quotainit', $vmid];
+		    # is this really needed?
+		    my $cmd = ['vzctl', '--skiplock', '--quiet', 'set', $vmid, 
+			       '--applyconfig_map', 'name', '--save'];
 		    run_command($cmd);
+
+		    # reload config
+		    $conf = PVE::OpenVZ::load_config($vmid);
+
+		    # and initialize quota
+		    my $disk_quota = $conf->{disk_quota}->{value};
+		    if (!defined($disk_quota) || ($disk_quota != 0)) {
+			$cmd = ['vzctl', '--skiplock', 'quotainit', $vmid];
+			run_command($cmd);
+		    }
+
+		} else {
+		    PVE::Tools::file_set_contents($basecfg_fn, $rawconf);
+		    my $cmd = ['vzctl', '--skiplock', 'create', $vmid,
+			       '--ostemplate', $archive, '--private', $private];
+		    run_command($cmd);
+
+		    # hack: vzctl '--userpasswd' starts the CT, but we want 
+		    # to avoid that for create
+		    PVE::OpenVZ::set_rootpasswd($private, $password) 
+			if defined($password);
 		}
 	    };
 
