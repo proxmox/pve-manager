@@ -172,7 +172,7 @@ Ext.define('PVE.dc.HAServiceView', {
 		    flex: 1,
 		    sortable: true,
 		    dataIndex: 'last_owner'
-		},
+		}
 	    ], 
 	    listeners: {
 		show: rstore.startUpdate,
@@ -222,7 +222,8 @@ Ext.define('PVE.dc.HAServiceView', {
 
 Ext.define('PVE.dc.Summary', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.pveDcSummary',
+
+    alias: ['widget.pveDcSummary'],
 
     initComponent: function() {
         var me = this;
@@ -236,7 +237,7 @@ Ext.define('PVE.dc.Summary', {
 	});
 
 	var nodegrid = Ext.create('PVE.dc.NodeView', {
- 	    title: gettext('Nodes'),
+	    title: gettext('Nodes'),
 	    border: false,
 	    region: 'center',
 	    flex: 3
@@ -256,6 +257,7 @@ Ext.define('PVE.dc.Summary', {
 		}
 	    }
 	});
- 	me.callParent();
+
+	me.callParent();
     }
 });
