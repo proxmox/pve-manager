@@ -10,6 +10,11 @@ Ext.define('PVE.dc.Config', {
 	    hstateid: 'dctab',
 	    items: [
 		{
+		    title: gettext('Summary'),
+		    xtype: 'pveDcSummary',
+		    itemId: 'summary'
+		},
+		{
 		    xtype: 'pveDcOptionView',
 		    title: gettext('Options'),
 		    itemId: 'options'

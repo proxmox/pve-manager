@@ -110,6 +110,7 @@ JSSRC= 				                 	\
 	storage/NFSEdit.js				\
 	storage/IScsiEdit.js				\
 	storage/LVMEdit.js				\
+	dc/Summary.js					\
 	dc/OptionView.js				\
 	dc/StorageView.js				\
 	dc/UserEdit.js					\
