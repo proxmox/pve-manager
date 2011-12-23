@@ -63,6 +63,9 @@ Ext.define('PVE.storage.NFSInputPanel', {
 
 	if (me.create) {
 	    values.type = 'nfs';
+	    // hack: for now we always create nvf v3
+	    // fixme: make this configurable
+	    values.options = 'vers=3';
 	} else {
 	    delete values.storage;
 	}

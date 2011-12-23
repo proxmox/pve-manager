@@ -1,6 +1,8 @@
 pve-manager (2.0-18) unstable; urgency=low
 
   * add Datacenter summary
+  
+  * use NFS version 3 by default when creating a new NFS storage.
 
  -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Dec 2011 10:39:34 +0100
 
