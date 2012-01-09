@@ -120,7 +120,7 @@ Ext.define('PVE.Utils', { statics: {
     // for now, please keep in sync with PVE::Tools::kvmkeymaps
     kvm_keymaps: {
 	//ar: 'Arabic',
-	dk: 'Danish',
+	da: 'Danish',
 	de: 'German', 
 	'de-ch': 'German (Swiss)', 
 	'en-gb': 'English (UK)', 

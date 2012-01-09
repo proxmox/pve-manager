@@ -3,6 +3,8 @@ pve-manager (2.0-19) unstable; urgency=low
   * depend on resource-agents-pve
   
   * depend on fence-agents-pve
+  
+  * fix Danish kvm keyboard name (use 'da' instead of 'dk')
 
  -- Proxmox Support Team <support@proxmox.com>  Mon, 09 Jan 2012 10:13:00 +0100
 
