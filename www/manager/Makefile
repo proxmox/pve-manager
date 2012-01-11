@@ -23,6 +23,9 @@ JSSRC= 				                 	\
 	form/ComboGrid.js				\
 	form/KVComboBox.js				\
 	form/Boolean.js					\
+	form/GroupSelector.js				\
+	form/UserSelector.js				\
+	form/RoleSelector.js				\
 	form/VMIDSelector.js				\
 	form/NetworkCardSelector.js			\
 	form/DiskFormatSelector.js			\

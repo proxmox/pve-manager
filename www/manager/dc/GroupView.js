@@ -8,10 +8,6 @@ Ext.define('PVE.dc.GroupView', {
 
 	var store = new Ext.data.Store({
 	    model: 'pve-groups',
-	    proxy: {
-                type: 'pve',
-		url: "/api2/json/access/groups"
-	    },
 	    sorters: { 
 		property: 'groupid', 
 		order: 'DESC' 
@@ -89,12 +85,4 @@ Ext.define('PVE.dc.GroupView', {
 
 	me.callParent();
     }
-}, function() {
-
-    Ext.define('pve-groups', {
-	extend: 'Ext.data.Model',
-	fields: [ 'groupid', 'comment' ],
-	idProperty: 'groupid'
-    });
-
 });

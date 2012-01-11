@@ -1,3 +1,70 @@
+Ext.define('PVE.dc.ACLAdd', {
+    extend: 'PVE.window.Edit',
+    alias: ['widget.pveACLAdd'],
+
+    initComponent : function() {
+        var me = this;
+
+	me.create = true;
+
+	var items = [
+	    {
+		xtype: me.path ? 'hiddenfield' : 'textfield',
+		name: 'path',
+		value: me.path,
+		allowBlank: false,
+		fieldLabel: gettext('Path')
+	    }
+	];
+
+	if (me.aclType === 'group') {
+	    me.title = gettext('Add') + ': ' + gettext("Group Permission");
+	    items.push({
+		xtype: 'pveGroupSelector',
+		name: 'groups',
+		fieldLabel: gettext('Group')
+	    });
+	} else if (me.aclType === 'user') {
+	    me.title = gettext('Add') + ': ' + gettext("User Permission");
+	    items.push({
+		xtype: 'pveUserSelector',
+		name: 'users',
+		fieldLabel: gettext('User')
+	    });
+	} else {
+	    throw "unknown ACL type";
+	}
+
+	items.push({
+	    xtype: 'pveRoleSelector',
+	    name: 'roles',
+	    value: 'NoAccess',
+	    fieldLabel: gettext('Role')
+	});
+
+	if (!me.path) {
+	    items.push({
+		xtype: 'pvecheckbox',
+		name: 'propagate',
+		checked: true,
+		fieldLabel: gettext('Propagate')
+	    });
+	}
+
+	var ipanel = Ext.create('PVE.panel.InputPanel', {
+	    items: items
+	});
+
+	Ext.applyIf(me, {
+	    url: '/access/acl',
+	    method: 'PUT',
+	    items: [ ipanel ]
+	});
+	    
+	me.callParent();
+    }
+});
+
 Ext.define('PVE.dc.ACLView', {
     extend: 'Ext.grid.GridPanel',
 
@@ -76,23 +143,6 @@ Ext.define('PVE.dc.ACLView', {
 	    store.load();
 	};
 
-
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
-		return;
-	    }
-
-	    console.dir(rec);
-	};
-
-	var edit_btn = new PVE.button.Button({
-	    text: gettext('Edit'),
-	    disabled: true,
-	    selModel: sm,
-	    handler: run_editor
-	});
-
 	var remove_btn = new PVE.button.Button({
 	    text: gettext('Remove'),
 	    disabled: true,
@@ -133,34 +183,42 @@ Ext.define('PVE.dc.ACLView', {
 	    stateful: false,
 	    tbar: [
 		{
-		    text: 'Add',
+		    text: gettext('Add'),
 		    menu: new Ext.menu.Menu({
 			items: [
 			    {
-				text: gettext('Group'),
+				text: gettext('Group Permission'),
 				handler: function() {
-				    console.log("add group");
+				    var win = Ext.create('PVE.dc.ACLAdd',{
+					aclType: 'group',
+					path: me.path
+				    });
+				    win.on('destroy', reload);
+				    win.show();
 				}
 			    },
 			    {
-				text: gettext('User'),
+				text: gettext('User Permission'),
 				handler: function() {
-				    console.log("add user");
+				    var win = Ext.create('PVE.dc.ACLAdd',{
+					aclType: 'user',
+					path: me.path
+				    });
+				    win.on('destroy', reload);
+				    win.show();
 				}
 			    }
 			]
 		    })
 		},
-		remove_btn,
-		edit_btn
+		remove_btn
 	    ],
 	    viewConfig: {
 		trackOver: false
 	    },
 	    columns: columns,
 	    listeners: {
-		show: reload,
-		itemdblclick: run_editor
+		show: reload
 	    }
 	});
 

@@ -8,10 +8,6 @@ Ext.define('PVE.dc.RoleView', {
 
 	var store = new Ext.data.Store({
 	    model: 'pve-roles',
-	    proxy: {
-                type: 'pve',
-		url: "/api2/json/access/roles"
-	    },
 	    sorters: { 
 		property: 'roleid', 
 		order: 'DESC' 
@@ -62,12 +58,4 @@ Ext.define('PVE.dc.RoleView', {
 
 	me.callParent();
     }
-}, function() {
-
-    Ext.define('pve-roles', {
-	extend: 'Ext.data.Model',
-	fields: [ 'roleid', 'privs' ],
-	idProperty: 'roleid'
-    });
-
 });

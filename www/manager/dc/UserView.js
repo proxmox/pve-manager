@@ -9,10 +9,6 @@ Ext.define('PVE.dc.UserView', {
 	var store = new Ext.data.Store({
             id: "users",
 	    model: 'pve-users',
-	    proxy: {
-                type: 'pve',
-		url: "/api2/json/access/users"
-	    },
 	    sorters: { 
 		property: 'userid', 
 		order: 'DESC' 
@@ -188,16 +184,4 @@ Ext.define('PVE.dc.UserView', {
 
 	me.callParent();
     }
-}, function() {
-
-    Ext.define('pve-users', {
-	extend: 'Ext.data.Model',
-	fields: [ 
-	    'userid', 'firstname', 'lastname' , 'email', 'comment',
-	    { type: 'boolean', name: 'enable' }, 
-	    { type: 'date', dateFormat: 'timestamp', name: 'expire' }
-	],
-	idProperty: 'userid'
-    });
-
 });
