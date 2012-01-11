@@ -134,11 +134,11 @@ Ext.define('PVE.qemu.Config', {
 		    itemId: 'backup'
 		},
 		{
+		    xtype: 'pveACLView',
 		    title: gettext('Permissions'),
 		    itemId: 'permissions',
-		    html: 'permissions ' + vmid
+		    path: '/vms/' + vmid
 		}
-
 	    ]
 	});
 
