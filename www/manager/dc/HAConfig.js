@@ -92,7 +92,6 @@ Ext.define('PVE.dc.HAConfig', {
 	    },
 	    success: function(response, opts) {
 		me.clusterInfo = getClusterInfo(response.result.data);
-		console.dir(me.clusterInfo);
 
 		me.setDisabled(!me.clusterInfo.version);
 
