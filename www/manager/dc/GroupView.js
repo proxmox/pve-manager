@@ -43,6 +43,25 @@ Ext.define('PVE.dc.GroupView', {
 	    }
 	});
 
+	var run_editor = function() {
+	    var rec = sm.getSelection()[0];
+	    if (!rec) {
+		return;
+	    }
+
+            var win = Ext.create('PVE.dc.GroupEdit',{
+                groupid: rec.data.groupid
+            });
+            win.on('destroy', reload);
+            win.show();
+	};
+
+	var edit_btn = new Ext.Button({
+	    text: gettext('Edit'),
+	    disabled: true,
+	    handler: run_editor
+	});
+
 	var tbar = [
             {
 		text: gettext('Create'),
@@ -53,7 +72,7 @@ Ext.define('PVE.dc.GroupView', {
 		    win.show();
 		}
             },
-	    remove_btn
+	    edit_btn, remove_btn
         ];
 
 	Ext.apply(me, {
@@ -79,7 +98,8 @@ Ext.define('PVE.dc.GroupView', {
 		}
 	    ],
 	    listeners: {
-		show: reload
+		show: reload,
+		itemdblclick: run_editor
 	    }
 	});
 

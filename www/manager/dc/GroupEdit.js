@@ -24,8 +24,8 @@ Ext.define('PVE.dc.GroupEdit', {
             method: method,
             items: [
                 {
-		    xtype: 'pvetextfield',
-		    fieldLabel: 'ID',
+		    xtype: me.create ? 'pvetextfield' : 'displayfield',
+		    fieldLabel: gettext('Name'),
 		    name: 'groupid',
 		    value: me.groupid,
 		    allowBlank: false
