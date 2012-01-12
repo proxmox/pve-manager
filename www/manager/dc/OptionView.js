@@ -5,7 +5,7 @@ Ext.define('PVE.dc.HttpProxyEdit', {
 	var me = this;
 
 	Ext.applyIf(me, {
-	    title: gettext("Edit HTTP proxy settings"),
+	    subject: 'HTTP proxy',
 	    items: {
 		xtype: 'pvetextfield',
 		name: 'http_proxy',
@@ -30,7 +30,7 @@ Ext.define('PVE.dc.KeyboardEdit', {
 	var me = this;
 
 	Ext.applyIf(me, {
-	    title: gettext("Edit keyboard settings"),
+	    subject: gettext('Keyboard Layout'),
 	    items: {
 		xtype: 'VNCKeyboardSelector',
 		name: 'keyboard',
@@ -60,7 +60,7 @@ Ext.define('PVE.dc.OptionView', {
 
 	var rows = {
 	    keyboard: { 
-		header: gettext('Keyboard'), 
+		header: gettext('Keyboard Layout'), 
 		editor: 'PVE.dc.KeyboardEdit',
 		renderer: PVE.Utils.render_kvm_language,
 		required: true 
