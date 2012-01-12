@@ -42,7 +42,7 @@ Ext.define('PVE.panel.NotesView', {
 	}
 
 	Ext.apply(me, {
-	    title: "Notes",
+	    title: gettext("Notes"),
 	    style: 'padding-left:10px',
 	    bodyStyle: 'white-space:pre',
 	    bodyPadding: 10,

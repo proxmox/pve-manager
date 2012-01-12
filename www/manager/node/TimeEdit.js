@@ -12,7 +12,7 @@ Ext.define('PVE.node.TimeEdit', {
 	}
 
 	Ext.applyIf(me, {
-	    title: "Set time zone",
+	    subject: gettext('Time zone'),
 	    url: "/api2/extjs/nodes/" + nodename + "/time",
 	    fieldDefaults: {
 		labelWidth: 70
@@ -20,7 +20,7 @@ Ext.define('PVE.node.TimeEdit', {
 	    width: 400,
 	    items: {
 		xtype: 'combo',
-		fieldLabel: 'Time zone',
+		fieldLabel: gettext('Time zone'),
 		name: 'timezone',
 		queryMode: 'local',
 		store: new PVE.data.TimezoneStore({autoDestory: true}),

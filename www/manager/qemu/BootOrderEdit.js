@@ -181,10 +181,10 @@ Ext.define('PVE.qemu.BootOrderEdit', {
 
 	me.items = [ ipanel ];
 
+	me.subject = 'Boot order';
+
 	me.callParent();
 	
-	me.title = 'Boot order';
-
 	me.load({
 	    success: function(response, options) {
 		ipanel.setVMConfig(response.result.data);

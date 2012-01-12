@@ -85,7 +85,7 @@ Ext.define('PVE.qemu.OSTypeEdit', {
 	var me = this;
 	
 	Ext.apply(me, {
-	    title: 'OS Type',
+	    subject: 'OS Type',
 	    items: Ext.create('PVE.qemu.OSTypeInputPanel')
 	});
 

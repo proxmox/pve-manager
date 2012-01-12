@@ -46,7 +46,7 @@ Ext.define('PVE.node.ServiceView', {
 	};
 
 	var start_btn = new Ext.Button({
-	    text: 'Start',
+	    text: gettext('Start'),
 	    disabled: true,
 	    handler: function(){
 		service_cmd("start");
@@ -54,7 +54,7 @@ Ext.define('PVE.node.ServiceView', {
 	});
 
 	var stop_btn = new Ext.Button({
-	    text: 'Stop',
+	    text: gettext('Stop'),
 	    disabled: true,
 	    handler: function(){
 		service_cmd("stop");
@@ -62,7 +62,7 @@ Ext.define('PVE.node.ServiceView', {
 	});
 
 	var restart_btn = new Ext.Button({
-	    text: 'Restart',
+	    text: gettext('Restart'),
 	    disabled: true,
 	    handler: function(){
 		service_cmd("restart");
@@ -122,19 +122,19 @@ Ext.define('PVE.node.ServiceView', {
 	    tbar: [ start_btn, stop_btn, restart_btn ],
 	    columns: [
 		{
-		    header: 'Name',
+		    header: gettext('Name'),
 		    width: 100,
 		    sortable: true,
 		    dataIndex: 'name'
 		},
 		{
-		    header: 'State',
+		    header: gettext('Status'),
 		    width: 100,
 		    sortable: true,
 		    dataIndex: 'state'
 		},
 		{
-		    header: 'Description',
+		    header: gettext('Description'),
 		    dataIndex: 'desc',
 		    flex: 1
 		}
@@ -158,4 +158,3 @@ Ext.define('PVE.node.ServiceView', {
     });
 
 });
-    

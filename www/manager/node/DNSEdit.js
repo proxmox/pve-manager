@@ -45,7 +45,7 @@ Ext.define('PVE.node.DNSEdit', {
 	];
 
 	Ext.applyIf(me, {
-	    title: "Edit DNS settings",
+	    subject: 'DNS',
 	    url: "/api2/extjs/nodes/" + nodename + "/dns",
 	    fieldDefaults: {
 		labelWidth: 120

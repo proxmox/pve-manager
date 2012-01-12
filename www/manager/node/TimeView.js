@@ -29,18 +29,18 @@ Ext.define('PVE.node.TimeView', {
 	    interval: 1000,
 	    rows: {
 		timezone: { 
-		    header: 'Time zone', 
+		    header: gettext('Time zone'), 
 		    required: true
 		},
 		localtime: { 
-		    header: 'Server time', 
+		    header: gettext('Server time'), 
 		    required: true, 
 		    renderer: renderlocaltime 
 		}
 	    },
 	    tbar: [ 
 		{
-		    text: "Edit",
+		    text: gettext("Edit"),
 		    handler: run_editor
 		}
 	    ],

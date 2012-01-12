@@ -19,7 +19,7 @@ Ext.define('PVE.window.TaskViewer', {
 
 	var rows = {
 	    status: {
-		header: 'Status',
+		header: gettext('Status'),
 		defaultValue: 'unknown'
 	    },
 	    type: {
@@ -27,11 +27,11 @@ Ext.define('PVE.window.TaskViewer', {
 		required: true
 	    },
 	    user: {
-		header: 'User name',
+		header: gettext('User name'),
 		required: true 
 	    },
 	    node: {
-		header: 'Node',
+		header: gettext('Node'),
 		required: true 
 	    },
 	    pid: {
@@ -39,7 +39,7 @@ Ext.define('PVE.window.TaskViewer', {
 		required: true
 	    },
 	    starttime: {
-		header: 'Start time',
+		header: gettext('Start Time'),
 		required: true, 
 		renderer: PVE.Utils.render_timestamp
 	    },
@@ -68,19 +68,19 @@ Ext.define('PVE.window.TaskViewer', {
 	};
 
 	var stop_btn1 = new Ext.Button({
-	    text: 'Stop',
+	    text: gettext('Stop'),
 	    disabled: true,
 	    handler: stop_task
 	});
 
 	var stop_btn2 = new Ext.Button({
-	    text: 'Stop',
+	    text: gettext('Stop'),
 	    disabled: true,
 	    handler: stop_task
 	});
 
 	var statgrid = Ext.create('PVE.grid.ObjectGrid', {
-	    title: 'Status',
+	    title: gettext('Status'),
 	    layout: 'fit',
 	    tbar: [ stop_btn1 ],
 	    rstore: statstore,
@@ -89,7 +89,7 @@ Ext.define('PVE.window.TaskViewer', {
 	});
 
 	var logView = Ext.create('PVE.panel.LogView', {
-	    title: 'Output',
+	    title: gettext('Output'),
 	    tbar: [ stop_btn2 ],
 	    border: false,
 	    url: "/api2/extjs/nodes/" + task.node + "/tasks/" + me.upid + "/log"

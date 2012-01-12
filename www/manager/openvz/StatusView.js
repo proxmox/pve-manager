@@ -61,8 +61,8 @@ Ext.define('PVE.openvz.StatusView', {
 	};
 
 	var rows = {
-	    name: { header: 'Name', defaultValue: 'no name specified' },
-	    status: { header: 'Status', defaultValue: 'unknown', renderer: render_status },
+	    name: { header: gettext('Name'), defaultValue: 'no name specified' },
+	    status: { header: gettext('Status'), defaultValue: 'unknown', renderer: render_status },
 	    failcnt: { visible: false },
 	    cpu: { header: 'CPU usage', required: true,  renderer: render_cpu },
 	    cpus: { visible: false },
@@ -70,7 +70,7 @@ Ext.define('PVE.openvz.StatusView', {
 	    maxmem: { visible: false },
 	    swap: { header: 'VSwap usage', required: true,  renderer: render_swap },
 	    maxswap: { visible: false },
-	    uptime: { header: 'Uptime', required: true, renderer: PVE.Utils.render_uptime },
+	    uptime: { header: gettext('Uptime'), required: true, renderer: PVE.Utils.render_uptime },
 	    ha: { header: 'Managed by HA', required: true, renderer: PVE.Utils.format_boolean }
 	};
 

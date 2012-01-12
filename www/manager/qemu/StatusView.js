@@ -40,13 +40,13 @@ Ext.define('PVE.qemu.StatusView', {
 	};
 
 	var rows = {
-	    name: { header: 'Name', defaultValue: 'no name specified' },
-	    status: { header: 'Status', defaultValue: 'unknown' },
+	    name: { header: gettext('Name'), defaultValue: 'no name specified' },
+	    status: { header: gettext('Status'), defaultValue: 'unknown' },
 	    cpu: { header: 'CPU usage', required: true,  renderer: render_cpu },
 	    cpus: { visible: false },
 	    mem: { header: 'Memory usage', required: true,  renderer: render_mem },
 	    maxmem: { visible: false },
-	    uptime: { header: 'Uptime', required: true, renderer: PVE.Utils.render_uptime },
+	    uptime: { header: gettext('Uptime'), required: true, renderer: PVE.Utils.render_uptime },
 	    ha: { header: 'Managed by HA', required: true, renderer: PVE.Utils.format_boolean }
 	};
 

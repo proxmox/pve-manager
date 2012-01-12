@@ -21,15 +21,15 @@ Ext.define('PVE.qemu.Options', {
 	    name: {
 		required: true,
 		defaultValue: me.pveSelNode.data.name,
-		header: 'Name',
+		header: gettext('Name'),
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'VM name',
+		    subject: gettext('Name'),
 		    items: {
 			xtype: 'textfield',
 			name: 'name',
 			value: '',
-			fieldLabel: 'VM name',
+			fieldLabel: gettext('Name'),
 			allowBlank: true
 		    }
 		}
@@ -40,7 +40,7 @@ Ext.define('PVE.qemu.Options', {
 		renderer: PVE.Utils.format_boolean,
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'Start at boot',
+		    subject: 'Start at boot',
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'onboot',
@@ -99,7 +99,7 @@ Ext.define('PVE.qemu.Options', {
 		renderer: PVE.Utils.format_boolean,
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'ACPI support',
+		    subject: 'ACPI support',
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'acpi',
@@ -107,7 +107,7 @@ Ext.define('PVE.qemu.Options', {
 			uncheckedValue: 0,
 			defaultValue: 1,
 			deleteDefaultValue: true,
-			fieldLabel: 'Enable'
+			fieldLabel: gettext('Enabled')
 		    }
 		}
 	    },
@@ -117,7 +117,7 @@ Ext.define('PVE.qemu.Options', {
 		renderer: PVE.Utils.format_boolean,
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'KVM hardware virtualization',
+		    subject: 'KVM hardware virtualization',
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'kvm',
@@ -125,7 +125,7 @@ Ext.define('PVE.qemu.Options', {
 			uncheckedValue: 0,
 			defaultValue: 1,
 			deleteDefaultValue: true,
-			fieldLabel: 'Enable'
+			fieldLabel: gettext('Enabled')
 		    }
 		}
 	    },
@@ -135,7 +135,7 @@ Ext.define('PVE.qemu.Options', {
 		renderer: PVE.Utils.format_boolean,
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'Freeze CPU at startup',
+		    subject: 'Freeze CPU at startup',
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'freeze',
@@ -153,7 +153,7 @@ Ext.define('PVE.qemu.Options', {
 		renderer: PVE.Utils.format_boolean,
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'Use local time for RTC',
+		    subject: 'Use local time for RTC',
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'localtime',
@@ -171,7 +171,7 @@ Ext.define('PVE.qemu.Options', {
 		defaultValue: 'now',
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'RTC start date',
+		    subject: 'RTC start date',
 		    items: {
 			xtype: 'pvetextfield',
 			name: 'startdate',
@@ -225,7 +225,7 @@ Ext.define('PVE.qemu.Options', {
 	};
 
 	var edit_btn = new Ext.Button({
-	    text: 'Edit',
+	    text: gettext('Edit'),
 	    disabled: true,
 	    handler: run_editor
 	});

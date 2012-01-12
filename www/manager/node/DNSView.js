@@ -29,7 +29,7 @@ Ext.define('PVE.node.DNSView', {
 	    },
 	    tbar: [ 
 		{
-		    text: "Edit",
+		    text: gettext("Edit"),
 		    handler: run_editor
 		}
 	    ],
