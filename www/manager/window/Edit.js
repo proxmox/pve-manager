@@ -6,9 +6,16 @@ Ext.define('PVE.window.Edit', {
  
     resizable: false,
 
-    // set create to true if you want a CREAT button (instead 
+    // use this tio atimatically generate a title like
+    // Create: <subject>
+    subject: undefined,
+
+    // set create to true if you want a Create button (instead 
     // OK and RESET) 
     create: false, 
+
+    // set to true if you want an Add button (instead of Create)
+    isAdd: false,
 
     isValid: function() {
 	var me = this;
@@ -163,7 +170,7 @@ Ext.define('PVE.window.Edit', {
 	var form = me.formPanel.getForm();
 
 	var submitBtn = Ext.create('Ext.Button', {
-	    text: me.create ? gettext('Create') : gettext('OK'),
+	    text: me.create ? (me.isAdd ? gettext('Add') : gettext('Create')) : gettext('OK'),
 	    disabled: !me.create,
 	    handler: function() {
 		me.submit();
@@ -195,6 +202,10 @@ Ext.define('PVE.window.Edit', {
 	
 
 	var twoColumn = items[0].column1 || items[0].column2;
+
+	if (me.subject && !me.title) {
+	    me.title = PVE.Utils.dialog_title(me.subject, me.create, me.isAdd);
+	}
 
 	Ext.applyIf(me, {
 	    modal: true,

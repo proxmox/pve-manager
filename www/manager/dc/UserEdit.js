@@ -23,47 +23,29 @@ Ext.define('PVE.dc.UserEdit', {
             {
                 xtype: me.create ? 'textfield' : 'displayfield',
                 name: 'userid',
-                fieldLabel: 'Userid',
+                fieldLabel: gettext('User name'),
                 value: me.userid,
                 allowBlank: false,
                 submitValue: me.create ? true : false
             },
-	    new Ext.form.field.ComboBox({
-		fieldLabel: 'Group',
+	    {
+		xtype: 'pveGroupSelector',
 		name: 'groups',
 		multiSelect: true,
-		hiddenName: 'groupid',
-		store: new Ext.data.Store({
-                    autoLoad: true,
-		    model: 'pve-groups',
-		    proxy: {
-			type: 'pve',
-			url: "/api2/json/access/groups"
-		    },
-		    sorters: {
-			property: 'groupid',
-			order: 'DESC'
-		    }
-		}),
-		valueField: 'groupid',
-		displayField: 'groupid',
-		typeAhead: true,
-		queryMode: 'local',
-		triggerAction: 'all',
-		emptyText: 'No Groups Selected',
-		selectOnFocus: true
-	    }),
+		allowBlank: true,
+		fieldLabel: gettext('Group')
+	    },
             {
                 xtype: 'datefield',
                 name: 'expire',
 		emptyText: 'never',
 		format: 'Y-m-d',
 		submitFormat: 'U',
-                fieldLabel: 'Expiration'
+                fieldLabel: gettext('Expire')
             },
 	    {
 		xtype: 'pvecheckbox',
-		fieldLabel: 'Enable',
+		fieldLabel: gettext('Enabled'),
 		name: 'enable',
 		uncheckedValue: 0,
 		defaultValue: 1
@@ -74,23 +56,23 @@ Ext.define('PVE.dc.UserEdit', {
 	    {
 		xtype: 'textfield',
 		name: 'firstname',
-		fieldLabel: 'First Name'
+		fieldLabel: gettext('First Name')
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'lastname',
-		fieldLabel: 'Last Name'
+		fieldLabel: gettext('Last Name')
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'email',
-		fieldLabel: 'Email',
+		fieldLabel: 'E-Mail',
 		vtype: 'email'
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'comment',
-		fieldLabel: 'Comment'
+		fieldLabel: gettext('Comment')
 	    }
 	];
  
@@ -98,7 +80,7 @@ Ext.define('PVE.dc.UserEdit', {
             column1.splice(1,0,{
                 xtype: 'pveRealmComboBox',
                 name: 'realm',
-                fieldLabel: 'Realm',
+                fieldLabel: gettext('Realm'),
                 allowBlank: false,
                 listeners: {
                     change: function(combo, newValue){
@@ -127,8 +109,8 @@ Ext.define('PVE.dc.UserEdit', {
 	    }
 	});
 
-        Ext.applyIf(me, {
-            title: me.create ? "Create User" : "Edit User '" + me.userid + "'",
+	Ext.applyIf(me, {
+            subject: gettext('User'),
             url: url,
             method: method,
 	    items: [ ipanel ]

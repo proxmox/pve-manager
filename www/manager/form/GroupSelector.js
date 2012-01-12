@@ -2,6 +2,8 @@ Ext.define('PVE.form.GroupSelector', {
     extend: 'PVE.form.ComboGrid',
     alias: ['widget.pveGroupSelector'],
 
+    allowBlank: false,
+
     initComponent: function() {
 	var me = this;
 
@@ -11,7 +13,6 @@ Ext.define('PVE.form.GroupSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    allowBlank: false,
 	    autoSelect: false,
 	    valueField: 'groupid',
 	    displayField: 'groupid',

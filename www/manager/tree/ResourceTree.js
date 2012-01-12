@@ -18,11 +18,11 @@ Ext.define('PVE.tree.ResourceTree', {
 	    },
 	    qemu: {
 		iconCls: 'x-tree-node-computer',
-		text: gettext('Virtual machines')
+		text: gettext('Virtual Machine')
 	    },
 	    openvz: {
 		iconCls: 'x-tree-node-openvz',
-		text: gettext('OpenVZ containers')
+		text: gettext('OpenVZ Container')
 	    } 
 	}
     },

@@ -101,14 +101,11 @@ Ext.define('PVE.storage.DirEdit', {
 	    storageId: me.storageId
 	});
 
-	me.items = [ ipanel ];
-
-	if (me.create) {
-	    me.title = gettext('Create directory storage');
-	} else {
-	    me.title = Ext.String.format(gettext('Edit directory storage {0}'),
-					 "'" + me.storageId + "'");
-	}
+	Ext.apply(me, {
+            subject: 'Directory',
+	    isAdd: true,
+	    items: [ ipanel ]
+	});
 	
 	me.callParent();
 

@@ -59,7 +59,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 	});
 
 	Ext.applyIf(me, {
-	    title: 'Create new container',
+	    subject: gettext('OpenVZ Container'),
 	    items: [
 		{
 		    xtype: 'inputpanel',

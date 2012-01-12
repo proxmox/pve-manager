@@ -227,14 +227,11 @@ Ext.define('PVE.storage.LVMEdit', {
 	    storageId: me.storageId
 	});
 	
-	me.items = [ ipanel ];
-
-	if (me.create) {
-	    me.title = gettext('Create LVM storage');
-	} else {
-	    me.title = Ext.String.format(gettext('Edit LVM storage {0}'),
-					 "'" + me.storageId + "'");
-	}
+	Ext.apply(me, {
+            subject: 'LVM group',
+	    isAdd: true,
+	    items: [ ipanel ]
+	});
 
 	me.callParent();
 

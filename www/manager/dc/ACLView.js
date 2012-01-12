@@ -18,14 +18,14 @@ Ext.define('PVE.dc.ACLAdd', {
 	];
 
 	if (me.aclType === 'group') {
-	    me.title = gettext('Add') + ': ' + gettext("Group Permission");
+	    me.subject = gettext("Group Permission");
 	    items.push({
 		xtype: 'pveGroupSelector',
 		name: 'groups',
 		fieldLabel: gettext('Group')
 	    });
 	} else if (me.aclType === 'user') {
-	    me.title = gettext('Add') + ': ' + gettext("User Permission");
+	    me.subject = gettext("User Permission");
 	    items.push({
 		xtype: 'pveUserSelector',
 		name: 'users',
@@ -55,9 +55,10 @@ Ext.define('PVE.dc.ACLAdd', {
 	    items: items
 	});
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    url: '/access/acl',
 	    method: 'PUT',
+	    isAdd: true,
 	    items: [ ipanel ]
 	});
 	    

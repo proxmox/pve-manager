@@ -40,7 +40,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 	});
 
 	Ext.applyIf(me, {
-	    title: 'Create new virtual machine',
+	    subject: gettext('Virtual Machine'),
 	    items: [
 		{
 		    xtype: 'inputpanel',

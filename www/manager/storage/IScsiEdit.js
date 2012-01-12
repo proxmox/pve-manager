@@ -167,14 +167,11 @@ Ext.define('PVE.storage.IScsiEdit', {
 	    storageId: me.storageId
 	});
 	
-	me.items = [ ipanel ];
-
-	if (me.create) {
-	    me.title = gettext('Create iSCSI storage');
-	} else {
-	    me.title = Ext.String.format(gettext('Edit iSCSI storage {0}'),
-					 "'" + me.storageId + "'");
-	}
+	Ext.apply(me, {
+            subject: 'iSCSI target',
+	    isAdd: true,
+	    items: [ ipanel ]
+	});
 
 	me.callParent();
 

@@ -709,6 +709,18 @@ Ext.define('PVE.Utils', { statics: {
 	return PVE.Utils.format_task_description(type, id);
     },
 
+    dialog_title: function(subject, create, isAdd) {
+	if (create) {
+	    if (isAdd) {
+		return gettext('Add') + ': ' + subject;
+	    } else {
+		return gettext('Create') + ': ' + subject;
+	    }
+	} else {
+	    return gettext('Edit') + ': ' + subject;
+	}
+    },
+ 
     openConoleWindow: function(vmtype, vmid, nodename, vmname) {
 	var url = Ext.urlEncode({
 	    console: vmtype, // kvm, openvz or shell

@@ -270,8 +270,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	};
 
         Ext.applyIf(me, {
-            title: me.create ? gettext("Create Backup Job") : 
-		gettext("Edit Backup Job"),
+            subject: gettext("Backup Job"),
             url: url,
             method: method,
 	    items: [ ipanel, vmgrid ]

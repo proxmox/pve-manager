@@ -108,13 +108,8 @@ Ext.define('PVE.dc.AuthEdit', {
 	    }
 	});
 
-	if (me.create) {
-	    me.title = gettext('Create realm');
-	} else {
-	    me.title = Ext.String.format(gettext('Edit realm {0}'), "'" + me.realm + "'");
-	}
-
 	Ext.applyIf(me, {
+	    subject: gettext('Realm'),
             url: url,
             method: method,
 	    items: [ ipanel ]

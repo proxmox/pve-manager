@@ -150,7 +150,7 @@ Ext.define('PVE.dc.HAServiceView', {
 		    dataIndex: 'owner'
 		},
 		{
-		    header: gettext('State'),
+		    header: gettext('Status'),
 		    width: 80,
 		    sortable: true,
 		    dataIndex: 'state_str'

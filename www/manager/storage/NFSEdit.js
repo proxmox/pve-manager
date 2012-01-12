@@ -169,14 +169,11 @@ Ext.define('PVE.storage.NFSEdit', {
 	    storageId: me.storageId
 	});
 	
-	me.items = [ ipanel ];
-
-	if (me.create) {
-	    me.title = gettext('Create NFS storage');
-	} else {
-	    me.title = Ext.String.format(gettext('Edit NFS storage {0}'),
-					 "'" + me.storageId + "'");
-	}
+	Ext.apply(me, {
+            subject: 'NFS share',
+	    isAdd: true,
+	    items: [ ipanel ]
+	});
 
 	me.callParent();
 

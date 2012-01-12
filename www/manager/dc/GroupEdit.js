@@ -19,8 +19,7 @@ Ext.define('PVE.dc.GroupEdit', {
         }
 
         Ext.applyIf(me, {
-            title: me.create ? gettext('Create Group') : 
-		Ext.String.format(gettext('Edit Group {0}'), "'" + me.groupid + "'"),
+            subject: gettext('Group'),
             url: url,
             method: method,
             items: [
@@ -48,4 +47,3 @@ Ext.define('PVE.dc.GroupEdit', {
         }
     }
 });
-

@@ -121,10 +121,10 @@ Ext.define('PVE.dc.HAConfig', {
         var me = this;
 
 	me.commitBtn = new PVE.button.Button({
-	    text: gettext('Commit'),
+	    text: gettext('Activate'),
 	    disabled: true,
 	    confirmMsg: function () {
-		return gettext('Are you sure you want to commit your changes');
+		return gettext('Are you sure you want to activate your changes');
 	    },
 	    handler: function(btn, event) {
 		PVE.Utils.API2Request({
@@ -145,7 +145,7 @@ Ext.define('PVE.dc.HAConfig', {
 	    text: gettext('Revert changes'),
 	    disabled: true,
 	    confirmMsg: function () {
-		return gettext('Are you sure you want to revert (undo) your changes');
+		return gettext('Are you sure you want to revert your changes');
 	    },
 	    handler: function(btn, event) {
 		PVE.Utils.API2Request({

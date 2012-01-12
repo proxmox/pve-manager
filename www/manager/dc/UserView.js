@@ -20,7 +20,7 @@ Ext.define('PVE.dc.UserView', {
 	};
 
 	var remove_btn = new Ext.Button({
-	    text: 'Delete',
+	    text: gettext('Remove'),
 	    disabled: true,
 	    handler: function() {
 		var msg;
@@ -68,7 +68,7 @@ Ext.define('PVE.dc.UserView', {
 	};
 
 	var edit_btn = new Ext.Button({
-	    text: 'Modify',
+	    text: gettext('Edit'),
 	    disabled: true,
 	    handler: run_editor
 	});
@@ -90,7 +90,7 @@ Ext.define('PVE.dc.UserView', {
 
         var tbar = [
             {
-		text: 'Create',
+		text: gettext('Create'),
 		handler: function() {
                     var win = Ext.create('PVE.dc.UserEdit',{
                     });
@@ -134,34 +134,34 @@ Ext.define('PVE.dc.UserView', {
 
 	    columns: [
 		{
-		    header: 'User name',
+		    header: gettext('User name'),
 		    width: 200,
 		    sortable: true,
 		    renderer: render_username,
 		    dataIndex: 'userid'
 		},
 		{
-		    header: 'Realm',
+		    header: gettext('Realm'),
 		    width: 100,
 		    sortable: true,
 		    renderer: render_realm,
 		    dataIndex: 'userid'
 		},
 		{
-		    header: 'Enabled',
+		    header: gettext('Enabled'),
 		    width: 80,
 		    sortable: true,
 		    dataIndex: 'enable'
 		},
 		{
-		    header: 'Expire',
+		    header: gettext('Expire'),
 		    width: 80,
 		    sortable: true,
 		    renderer: render_expire, 
 		    dataIndex: 'expire'
 		},
 		{
-		    header: 'Name',
+		    header: gettext('Name'),
 		    width: 150,
 		    sortable: true,
 		    renderer: render_full_name,
@@ -169,7 +169,7 @@ Ext.define('PVE.dc.UserView', {
 		},
 		{
 		    id: 'comment',
-		    header: 'Comment',
+		    header: gettext('Comment'),
 		    sortable: false,
 		    dataIndex: 'comment',
 		    flex: 1

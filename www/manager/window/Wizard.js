@@ -70,7 +70,7 @@ Ext.define('PVE.window.Wizard', {
 	    items: [  
 		'->', 
 		{ 
-		    text: 'Back',
+		    text: gettext('Back'),
 		    disabled: true,
 		    itemId: 'back',
 		    minWidth: 60,
@@ -90,7 +90,7 @@ Ext.define('PVE.window.Wizard', {
 		    }
 		},
 		{
-		    text: 'Next',
+		    text: gettext('Next'),
 		    disabled: true,
 		    itemId: 'next',
 		    minWidth: 60,
@@ -114,7 +114,7 @@ Ext.define('PVE.window.Wizard', {
 		    }
 		},
 		{
-		    text: 'Finish',
+		    text: gettext('Finish'),
 		    minWidth: 60,
 		    hidden: true,
 		    itemId: 'submit',
@@ -170,6 +170,10 @@ Ext.define('PVE.window.Wizard', {
 	    }
 	};
 
+	if (me.subject && !me.title) {
+	    me.title = PVE.Utils.dialog_title(me.subject, true, false);
+	}
+
 	Ext.applyIf(me, {
 	    width: 620,
 	    height: 400,
@@ -179,7 +183,6 @@ Ext.define('PVE.window.Wizard', {
 	    closable: true,
 	    resizable: false,
 	    layout: 'border',
-	    title: 'Proxmox VE Wizard',
 	    items: [
 		{
 		    // disabled for now - not really needed
