@@ -31,9 +31,10 @@ Ext.define('PVE.storage.Browser', {
 		    itemId: 'content'
 		},
 		{
+		    xtype: 'pveACLView',
 		    title: gettext('Permissions'),
 		    itemId: 'permissions',
-		    html: 'Permissions '
+		    path: '/storage/' + storeid
 		}
 	    ]
 	});
