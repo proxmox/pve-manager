@@ -37,7 +37,7 @@ Ext.define('PVE.dc.GroupView', {
 			reload();
 		    },
 		    failure: function (response, opts) {
-			Ext.Msg.alert(gettext('Error'),response.htmlStatus);
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		    }
 		});
 	    }
@@ -56,9 +56,10 @@ Ext.define('PVE.dc.GroupView', {
             win.show();
 	};
 
-	var edit_btn = new Ext.Button({
+	var edit_btn = new PVE.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
+	    selModel: sm,
 	    handler: run_editor
 	});
 
@@ -66,8 +67,7 @@ Ext.define('PVE.dc.GroupView', {
             {
 		text: gettext('Create'),
 		handler: function() {
-		    var win = Ext.create('PVE.dc.GroupEdit', {
-		    });
+		    var win = Ext.create('PVE.dc.GroupEdit', {});
 		    win.on('destroy', reload);
 		    win.show();
 		}

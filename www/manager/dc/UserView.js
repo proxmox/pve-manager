@@ -19,42 +19,37 @@ Ext.define('PVE.dc.UserView', {
 	    store.load();
 	};
 
-	var remove_btn = new Ext.Button({
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
+	var remove_btn = new PVE.button.Button({
 	    text: gettext('Remove'),
 	    disabled: true,
-	    handler: function() {
-		var msg;
-		var sm = me.getSelectionModel();
-		var rec = sm.getSelection()[0];
-		if (!rec) {
-		    return;
-		}
-
+	    selModel: sm,
+	    enableFn: function(rec) {
+		return rec.data.userid !== 'root@pam';
+	    },
+	    confirmMsg: function (rec) {
+		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
+					 "'" + rec.data.userid + "'");
+	    },
+	    handler: function(btn, event, rec) {
 		var userid = rec.data.userid;
 
-		msg = 'Are you sure you want to permanently delete the user: ' + userid;
-		Ext.Msg.confirm('Deletion Confirmation', msg, function(btn) {
-		    if (btn !== 'yes') {
-			return;
+		PVE.Utils.API2Request({
+		    url: '/access/users/' + userid,
+		    method: 'DELETE',
+		    waitMsgTarget: me,
+		    callback: function() {
+			reload();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		    }
-
-		    PVE.Utils.API2Request({
-			url: '/access/users/' + userid,
-			method: 'DELETE',
-			waitMsgTarget: me,
-			callback: function() {
-			    reload();
-			},
-			failure: function (response, opts) {
-			    Ext.Msg.alert('Error',response.htmlStatus);
-			}
-		    });
 		});
 	    }
         });
  
 	var run_editor = function() {
-	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
@@ -67,26 +62,12 @@ Ext.define('PVE.dc.UserView', {
             win.show();
 	};
 
-	var edit_btn = new Ext.Button({
+	var edit_btn = new PVE.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
+	    selModel: sm,
 	    handler: run_editor
 	});
-
-	var set_button_status = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
-
-	    if (!rec) {
-		remove_btn.disable();
-		edit_btn.disable();
-		return;
-	    }
-
-	    edit_btn.setDisabled(false);
-
-	    remove_btn.setDisabled(rec.data.userid === 'root@pam');
-	};
 
         var tbar = [
             {
@@ -125,13 +106,12 @@ Ext.define('PVE.dc.UserView', {
 
 	Ext.apply(me, {
 	    store: store,
+	    selModel: sm,
 	    stateful: false,
 	    tbar: tbar,
-
 	    viewConfig: {
 		trackOver: false
 	    },
-
 	    columns: [
 		{
 		    header: gettext('User name'),
@@ -177,8 +157,7 @@ Ext.define('PVE.dc.UserView', {
 	    ],
 	    listeners: {
 		show: reload,
-		itemdblclick: run_editor,
-		selectionchange: set_button_status
+		itemdblclick: run_editor
 	    }
 	});
 
