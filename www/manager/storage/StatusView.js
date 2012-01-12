@@ -17,37 +17,37 @@ Ext.define('PVE.storage.StatusView', {
 
 	var rows = {
 	    disable: {
-		header: 'Enabled', 
+		header: gettext('Enabled'), 
 		required: true,
 		renderer: PVE.Utils.format_neg_boolean	
 	    },
 	    active: {
-		header: 'Active', 
+		header: gettext('Active'), 
 		required: true,		
 		renderer: PVE.Utils.format_boolean
 	    },
 	    content: {
-		header: 'Content', 
+		header: gettext('Content'), 
 		required: true,
 		renderer: PVE.Utils.format_content_types
 	    },
 	    type: {
-		header: 'Type', 
+		header: gettext('Type'), 
 		required: true,
 		renderer: PVE.Utils.format_storage_type
 	    },
 	    shared: {
-		header: 'Shared', 
+		header: gettext('Shared'), 
 		required: true,
 		renderer: PVE.Utils.format_boolean
 	    },
 	    total: {
-		header: 'Size', 
+		header: gettext('Size'), 
 		required: true, 
 		renderer: PVE.Utils.render_size
 	    },
 	    used: {
-		header: 'Used', 
+		header: gettext('Used'), 
 		required: true, 
 		renderer: function(value) {
 		    // do not confuse users with filesystem details
@@ -57,13 +57,14 @@ Ext.define('PVE.storage.StatusView', {
 		}
 	    },
 	    avail: {
-		header: 'Avail', 
+		header: gettext('Avail'), 
 		required: true, 
 		renderer: PVE.Utils.render_size
 	    }
 	};
 
 	Ext.applyIf(me, {
+	    title: gettext('Status'),
 	    url: "/api2/json/nodes/" + nodename + "/storage/" + storage + "/status",
 	    cwidth1: 150,
 	    interval: 30000,

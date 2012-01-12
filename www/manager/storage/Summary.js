@@ -16,7 +16,6 @@ Ext.define('PVE.storage.Summary', {
 	}
 
 	var statusview = Ext.create('PVE.storage.StatusView', {
-	    title: 'Status',
 	    pveSelNode: me.pveSelNode,
 	    style: 'padding-top:0px'
 	});
