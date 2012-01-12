@@ -544,6 +544,14 @@ Ext.define('PVE.Utils', { statics: {
     dayText: gettext('day'),
     runningText: gettext('running'),
     stoppedText: gettext('stopped'),
+    neverText: gettext('never'),
+
+    format_expire: function(date) {
+	if (!date) {
+	    return PVE.Utils.neverText;
+	}
+	return Ext.Date.format(date, "Y-m-d");
+    },
 
     format_storage_type: function(value) {
 	if (value === 'dir') {
