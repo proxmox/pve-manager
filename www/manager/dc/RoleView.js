@@ -35,7 +35,7 @@ Ext.define('PVE.dc.RoleView', {
 	    },
 	    columns: [
 		{
-		    header: gettext('Role'),
+		    header: gettext('Name'),
 		    width: 150,
 		    sortable: true,
 		    dataIndex: 'roleid'
