@@ -22,6 +22,7 @@ Ext.define('PVE.dc.UserEdit', {
         var column1 = [
             {
                 xtype: me.create ? 'textfield' : 'displayfield',
+		height: 22, // hack: set same height as text fields
                 name: 'userid',
                 fieldLabel: gettext('User name'),
                 value: me.userid,
@@ -82,6 +83,8 @@ Ext.define('PVE.dc.UserEdit', {
                 name: 'realm',
                 fieldLabel: gettext('Realm'),
                 allowBlank: false,
+		matchFieldWidth: false,
+		listConfig: { width: 300 },
                 listeners: {
                     change: function(combo, newValue){
                         realm = newValue;
