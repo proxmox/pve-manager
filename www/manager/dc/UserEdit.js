@@ -19,6 +19,48 @@ Ext.define('PVE.dc.UserEdit', {
             method = 'PUT';
         }
 
+	var validate_pw = function() {
+	    if (verifypw.getValue() !== pwfield.getValue()) {
+		return gettext("Passwords does not match");
+	    }
+	    return true;
+	};
+
+	var verifypw = Ext.createWidget('textfield', { 
+	    inputType: 'password',
+	    fieldLabel: gettext('Verify Password'), 
+	    name: 'verifypassword',
+	    submitValue: false,
+	    disabled: true,
+	    hidden: true,
+	    validator: validate_pw
+	});
+
+	var pwfield = Ext.createWidget('textfield', { 
+	    inputType: 'password',
+	    fieldLabel: gettext('Password'), 
+	    minLength: 5,
+	    allowBlank: false,
+ 	    name: 'password',
+	    disabled: true,
+	    hidden: true,
+	    validator: validate_pw
+	});
+
+	var update_passwd_field = function(realm) {
+	    if (realm === 'pve' || realm === 'pam') {
+		pwfield.setVisible(true);
+		pwfield.setDisabled(false);
+		verifypw.setVisible(true);
+		verifypw.setDisabled(false);
+	    } else {
+		pwfield.setVisible(false);
+		pwfield.setDisabled(true);
+		verifypw.setVisible(false);
+		verifypw.setDisabled(true);
+	    }
+	};
+
         var column1 = [
             {
                 xtype: me.create ? 'textfield' : 'displayfield',
@@ -29,6 +71,7 @@ Ext.define('PVE.dc.UserEdit', {
                 allowBlank: false,
                 submitValue: me.create ? true : false
             },
+	    pwfield, verifypw,
 	    {
 		xtype: 'pveGroupSelector',
 		name: 'groups',
@@ -88,16 +131,16 @@ Ext.define('PVE.dc.UserEdit', {
                 listeners: {
                     change: function(combo, newValue){
                         realm = newValue;
+			update_passwd_field(realm);
                     }
                 },
                 submitValue: false
             });
         }
 
-
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
 	    column1: column1,
-	    column2:  column2,
+	    column2: column2,
 	    onGetValues: function(values) {
 		// hack: ExtJS datefield does not submit 0, so we need to set that
 		if (!values.expire) {
@@ -134,7 +177,9 @@ Ext.define('PVE.dc.UserEdit', {
 			}
 		    }
 
-		    me.setValues(data);
+		    update_passwd_field(data.realm);
+
+ 		    me.setValues(data);
                 }
             });
         }
