@@ -275,7 +275,7 @@ my $check_permissions = sub {
     return 1 if $perm->{user} && $perm->{user} eq 'all';
 
     return 1 if $perm->{user} && $perm->{user} eq 'arg' && 
-	$username eq $param->{username};
+	($username eq $param->{username} || $username eq $param->{userid});
 
     if ($perm->{path} && $perm->{privs}) {
 	my $path = PVE::Tools::template_replace($perm->{path}, $param);

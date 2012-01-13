@@ -17,7 +17,7 @@ Ext.define('PVE.dc.UserEdit', {
         } else {
             url = '/api2/extjs/access/users/' + me.userid;
             method = 'PUT';
-        }
+	}
 
 	var validate_pw = function() {
 	    if (verifypw.getValue() !== pwfield.getValue()) {
@@ -40,8 +40,7 @@ Ext.define('PVE.dc.UserEdit', {
 	    inputType: 'password',
 	    fieldLabel: gettext('Password'), 
 	    minLength: 5,
-	    allowBlank: false,
- 	    name: 'password',
+	    name: 'password',
 	    disabled: true,
 	    hidden: true,
 	    validator: validate_pw
@@ -59,6 +58,7 @@ Ext.define('PVE.dc.UserEdit', {
 		verifypw.setVisible(false);
 		verifypw.setDisabled(true);
 	    }
+
 	};
 
         var column1 = [
@@ -136,7 +136,9 @@ Ext.define('PVE.dc.UserEdit', {
                 },
                 submitValue: false
             });
-        }
+        } else {
+	    update_passwd_field(me.userid.match(/@([^@]+)$/)[1]);
+ 	}
 
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
 	    column1: column1,
@@ -149,6 +151,10 @@ Ext.define('PVE.dc.UserEdit', {
 
 		if (realm) {
 		    values.userid = values.userid + '@' + realm;
+		}
+
+		if (!values.password) {
+		    delete values.password;
 		}
 
 		return values;
@@ -176,10 +182,7 @@ Ext.define('PVE.dc.UserEdit', {
 			    data.expire = null;
 			}
 		    }
-
-		    update_passwd_field(data.realm);
-
- 		    me.setValues(data);
+		    me.setValues(data);
                 }
             });
         }
