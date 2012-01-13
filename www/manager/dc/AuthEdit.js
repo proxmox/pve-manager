@@ -2,6 +2,8 @@ Ext.define('PVE.dc.AuthEdit', {
     extend: 'PVE.window.Edit',
     alias: ['widget.pveDcAuthEdit'],
 
+    isAdd: true,
+
     initComponent : function() {
         var me = this;
 
@@ -22,70 +24,83 @@ Ext.define('PVE.dc.AuthEdit', {
         var column1 = [
             {
                 xtype: me.create ? 'textfield' : 'displayfield',
+		height: 22, // hack: set same height as text fields
                 name: 'realm',
                 fieldLabel: gettext('Realm'),
                 value: me.realm,
+                allowBlank: false
+            }
+	];
+
+	if (me.authType === 'ad') {
+
+	    me.subject = 'Active Directory Server';
+
+            column1.push({
+                xtype: 'textfield',
+                name: 'domain',
+                fieldLabel: 'Domain',
                 emptyText: 'company.net',
                 allowBlank: false
-            },
-            {
+            });
+
+	} else if (me.authType === 'ldap') {
+
+	    me.subject = 'LDAP Server';
+
+            column1.push({
                 xtype: 'textfield',
                 name: 'base_dn',
                 fieldLabel: 'Base Domain Name',
-                emptyText: 'CN=Users,DC=Company,DC=net',
+		emptyText: 'CN=Users,DC=Company,DC=net',
                 allowBlank: false
-            },
-            {
+            });
+
+            column1.push({
                 xtype: 'textfield',
                 name: 'user_attr',
                 emptyText: 'uid / sAMAccountName',
                 fieldLabel: 'User Attribute Name',
                 allowBlank: false
-            },
-            {
-                xtype: 'textfield',
-                name: 'comment',
-                fieldLabel: gettext('Comment'),
-                emptyText: 'Enterprise Directory Server',
-                allowBlank: false
-            },
-            {
-                xtype: 'pvecheckbox',
-                fieldLabel: gettext('Default'),
-                name: 'default',
-                uncheckedValue: 0
-            }
-        ];
+            });
+
+	} else {
+	    throw 'unknown auth type ';
+	}
+
+        column1.push({
+            xtype: 'textfield',
+            name: 'comment',
+            fieldLabel: gettext('Comment')
+        });
+
+        column1.push({
+            xtype: 'pvecheckbox',
+            fieldLabel: gettext('Default'),
+            name: 'default',
+            uncheckedValue: 0
+        });
 
         var column2 = [
-	    Ext.create('PVE.form.KVComboBox', {
-		fieldLabel: 'Server Type',
-                name: 'type',
-		data: [
-		    ['ad', 'Active Directory Server'],
-		    ['ldap', 'LDAP/LDAPs Server']
-		]
-	    }),
             {
                 xtype: 'textfield',
-                fieldLabel: gettext('Server Address'),
-                name: 'servers',
-                emptyText: '192.168.2.23,ldap.company.net',
-                listeners: {
-                    change: function(combo, newValue){
-                        serverlist = newValue.split(',');
-                    }
-                },
-                submitValue: false,
+                fieldLabel: gettext('Server'),
+                name: 'server1',
                 allowBlank: false
+            },
+            {
+                xtype: 'textfield',
+                fieldLabel: gettext('Fallback Server'),
+                name: 'server2'
             },
             {
                 xtype: 'numberfield',
                 name: 'port',
-                fieldLabel: gettext('Server Port'),
+                fieldLabel: gettext('Port'),
                 minValue: 1,
                 maxValue: 65535,
-                allowBlank: false
+		emptyText: gettext('Default'),
+		submitEmptyText: false
             },
             {
                 xtype: 'pvecheckbox',
@@ -99,19 +114,23 @@ Ext.define('PVE.dc.AuthEdit', {
 	    column1: column1,
 	    column2: column2,
 	    onGetValues: function(values) {
-                var i;
-                for (i=0; i<serverlist.length; i++) {
-                    var num = i + 1;
-                    values['server' + num.toString()] = serverlist[i];
-                }
+		if (!values.port) {
+		    values.port = 0;
+		}
+		if (me.create) {
+		    values.type = me.authType;
+		}
+
 		return values;
 	    }
 	});
 
 	Ext.applyIf(me, {
-	    subject: gettext('Realm'),
             url: url,
             method: method,
+	    fieldDefaults: {
+		labelWidth: 120
+	    },
 	    items: [ ipanel ]
         });
 
@@ -121,14 +140,11 @@ Ext.define('PVE.dc.AuthEdit', {
             me.load({
                 success: function(response, options) {
 		    var data = response.result.data || {};
-                    var count = 1;
-                    while (data['server' + count.toString()]) {
-			if (data.servers) {
-			    data.servers += ',';
-			}
-                        data.servers += data['server' + count.toString()];
-			count++;
-                    }
+		    // just to be sure (should not happen)
+		    if (data.type !== me.authType) {
+			me.close();
+			throw "got wrong auth type";
+		    }
                     me.setValues(data);
                 }
             });

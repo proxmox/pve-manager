@@ -20,65 +20,98 @@ Ext.define('PVE.dc.AuthView', {
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
+	var run_editor = function() {
+	    var rec = sm.getSelection()[0];
+	    if (!rec) {
+		return;
+	    }
+
+	    if (rec.data.type === 'builtin') {
+		return;
+	    }
+
+            var win = Ext.create('PVE.dc.AuthEdit',{
+                realm: rec.data.realm,
+		authType: rec.data.type
+            });
+            win.on('destroy', reload);
+            win.show();
+	};
+
+	var edit_btn = new PVE.button.Button({
+	    text: gettext('Edit'),
+	    disabled: true,
+	    selModel: sm,
+	    enableFn: function(rec) {
+		return rec.data.type !== 'builtin';
+	    },
+	    handler: run_editor
+	});
+
+	var remove_btn = new PVE.button.Button({
+ 	    text: gettext('Remove'),
+	    disabled: true,
+	    selModel: sm,
+	    confirmMsg: function (rec) {
+		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
+					 "'" + rec.data.realm + "'");
+	    },
+	    enableFn: function(rec) {
+		return rec.data.type !== 'builtin';
+	    },
+	    handler: function(btn, event, rec) {
+		var realm = rec.data.realm;
+
+		PVE.Utils.API2Request({
+		    url: '/access/domains/' + realm,
+		    method: 'DELETE',
+		    waitMsgTarget: me,
+		    callback: function() {
+			reload();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    }
+		});
+	    }
+        });
+
         var tbar = [
-            {
-		text: gettext('Create'),
-		handler: function() {
-                    var win = Ext.create('PVE.dc.AuthEdit',{
-                    });
-                    win.on('destroy', reload);
-                    win.show();
-		}
-            },
-            {
-		xtype: 'pveButton',
-		text: gettext('Edit'),
-		selModel: sm,
-		handler: function(btn, event, rec) {
-		    var realm = rec.data.realm;
-
-                    var win = Ext.create('PVE.dc.AuthEdit',{
-                        realm: realm
-                    });
-                    win.on('destroy', reload);
-                    win.show();
-		}
-            },
-            {
-		xtype: 'pveButton',
-		text: gettext('Remove'),
-		selModel: sm,
-		confirmMsg: function (rec) {
-		    return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
-					     "'" + rec.data.realm + "'");
-		},
-		enableFn: function(rec) {
-		    var realm = rec.data.realm;
-		    return realm !== 'pam' && realm != 'pve';
-		},
-		handler: function(btn, event, rec) {
-		    var realm = rec.data.realm;
-
-		    PVE.Utils.API2Request({
-			url: '/access/domains/' + realm,
-			method: 'DELETE',
-			waitMsgTarget: me,
-			callback: function() {
-			    reload();
+	    {
+		text: gettext('Add'),
+		menu: new Ext.menu.Menu({
+		    items: [
+			{
+			    text: 'Active Directory Server',
+			    handler: function() {
+				var win = Ext.create('PVE.dc.AuthEdit', {
+				    authType: 'ad'
+				});
+				win.on('destroy', reload);
+				win.show();
+			    }
 			},
-			failure: function (response, opts) {
-			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+			{
+			    text: 'LDAP Server',
+			    handler: function() {
+				var win = Ext.create('PVE.dc.AuthEdit',{
+				    authType: 'ldap'
+				});
+				win.on('destroy', reload);
+				win.show();
+			    }
 			}
-		    });
-		}
-            }
+		    ]
+		})
+	    },
+	    edit_btn, remove_btn
         ];
 
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
 	    stateful: false,
-            //tbar: tbar,
+            tbar: tbar,
 	    viewConfig: {
 		trackOver: false
 	    },
@@ -104,9 +137,8 @@ Ext.define('PVE.dc.AuthView', {
 		}
 	    ],
 	    listeners: {
-		show: function() {
-		    store.load();
-		}
+		show: reload,
+		itemdblclick: run_editor
 	    }
 	});
 
