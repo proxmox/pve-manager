@@ -59,7 +59,12 @@ Ext.define('PVE.node.Summary', {
 		    datasource: 'netin,netout',
 		    rrdurl: rrdurl
 		}
-	    ]
+	    ],
+	    listeners: {
+		show: rstore.startUpdate,
+		hide: rstore.stopUpdate,
+		destroy: rstore.stopUpdate
+	    }
 	});
 
 	me.callParent();
