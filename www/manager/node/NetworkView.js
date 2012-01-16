@@ -111,14 +111,7 @@ Ext.define('PVE.node.NetworkView', {
 	    del_btn.setDisabled(!rec);
 	};
 
-	me.mon(rstore, 'load', function(s, records, success) {
-	    if (!success) {
-		me.setLoading("Data load error");
-		return;
-	    } else {
-		me.setLoading(false);
-	    }
-	});
+	PVE.Utils.monStoreErrors(me, rstore);
 
 	var render_ports = function(value, metaData, record) {
 	    if (value === 'bridge') {

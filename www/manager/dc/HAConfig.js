@@ -88,7 +88,7 @@ Ext.define('PVE.dc.HAConfig', {
 	    method: 'GET',
 	    failure: function(response, opts) {
 		me.clusterInfo = {};
-		me.setLoading(response.htmlStatus);
+		PVE.Utils.setErrorMask(me, response.htmlStatus);
 	    },
 	    success: function(response, opts) {
 		me.clusterInfo = getClusterInfo(response.result.data);

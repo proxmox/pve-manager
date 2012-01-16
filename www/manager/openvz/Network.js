@@ -178,15 +178,15 @@ Ext.define('PVE.openvz.NetworkView', {
     load: function() {
 	var me = this;
 
-	me.setLoading(true);
+	PVE.Utils.setErrorMask(me, true);
 
 	PVE.Utils.API2Request({
 	    url: me.url,
 	    failure: function(response, opts) {
-		me.setLoading('Error: ' + response.htmlStatus);
+		PVE.Utils.setErrorMask(me, 'Error: ' + response.htmlStatus);
 	    },
 	    success: function(response, opts) {
-		me.setLoading(false);
+		PVE.Utils.setErrorMask(me, false);
 		var result = Ext.decode(response.responseText);
 		var data = result.data || {};
 		me.dataCache = data;

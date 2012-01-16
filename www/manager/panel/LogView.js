@@ -66,7 +66,7 @@ Ext.define('PVE.panel.LogView', {
 	    },
 	    method: 'GET',
 	    success: function(response) {
-		me.setLoading(false);
+		PVE.Utils.setErrorMask(me, false);
 		var list = response.result.data;
 		var total = response.result.total;
 		var first = 0, last = 0;
@@ -89,7 +89,7 @@ Ext.define('PVE.panel.LogView', {
 	    },
 	    failure: function(response) {
 		var msg = response.htmlStatus;
-		me.setLoading(msg);
+		PVE.Utils.setErrorMask(me, msg);
 	    }
 	});			      
     },

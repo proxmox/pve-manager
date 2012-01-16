@@ -107,32 +107,7 @@ Ext.define('PVE.node.ServiceView', {
 
 	me.mon(store, 'datachanged', set_button_status);
 
-	var load_count = 0;
-
-	me.mon(rstore, 'beforeload', function(s, operation, eOpts) {
-	    if (!load_count) {
-		me.setLoading(true);
-	    }
-	});
-
-	me.mon(rstore.proxy, 'afterload', function(proxy, request, success) {
-	    load_count++;
-	    me.setLoading(false);
-
-	    if (success) {
-		return;
-	    }
-
-	    var msg;
-	    var operation = request.operation;
-	    var error = operation.getError();
-	    if (error.statusText) {
-		msg = error.statusText + ' (' + error.status + ')';
-	    } else {
-		msg = gettext('Connection error');
-	    }
-	    me.setLoading(msg);
-	});
+	PVE.Utils.monStoreErrors(me, rstore);
 
 	Ext.apply(me, {
 	    store: store,

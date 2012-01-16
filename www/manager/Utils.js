@@ -739,6 +739,53 @@ Ext.define('PVE.Utils', { statics: {
 	var nw = window.open("?" + url, '_blank', 
 			     "innerWidth=745,innerheight=427");
 	nw.focus();
+    },
+
+    // comp.setLoading() is buggy in ExtJS 4.0.7, so we 
+    // use el.mask() instead
+    setErrorMask: function(comp, msg) {
+	var el = comp.el;
+	if (!el) {
+	    return;
+	}
+	if (!msg) {
+	    el.unmask();
+	} else {
+	    if (msg === true) {
+		el.mask(gettext("Loading..."));
+	    } else {
+		el.mask(msg);
+	    }
+	}
+    },
+
+    monStoreErrors: function(me, store) {
+	me.mon(store, 'beforeload', function(s, operation, eOpts) {
+	    if (!me.loadCount) {
+		me.loadCount = 0; // make sure it is numeric
+		PVE.Utils.setErrorMask(me, true);
+	    }
+	});
+
+	// only works with 'pve' proxy
+	me.mon(store.proxy, 'afterload', function(proxy, request, success) {
+	    me.loadCount++;
+
+	    if (success) {
+		PVE.Utils.setErrorMask(me, false);
+		return;
+	    }
+
+	    var msg;
+	    var operation = request.operation;
+	    var error = operation.getError();
+	    if (error.statusText) {
+		msg = error.statusText + ' (' + error.status + ')';
+	    } else {
+		msg = gettext('Connection error');
+	    }
+	    PVE.Utils.setErrorMask(me, msg);
+	});
     }
 
 }});
