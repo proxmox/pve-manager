@@ -91,19 +91,26 @@ Ext.define('PVE.grid.ObjectGrid', {
 	me.mon(rstore, 'beforeload', function(s, operation, eOpts) {
 	    if (!load_count) {
 		me.setLoading(true);
-	    } 
+	    }
 	});
 
-	me.mon(rstore, 'load', function(s, records, success) {
-
+	me.mon(rstore.proxy, 'afterload', function(proxy, request, success) {
 	    load_count++;
-
 	    me.setLoading(false);
 
-	    if (!success) {
-		me.setLoading("Data load error");
+	    if (success) {
 		return;
-	    }	    
+	    }
+
+	    var msg;
+	    var operation = request.operation;
+	    var error = operation.getError();
+	    if (error.statusText) {
+		msg = error.statusText + ' (' + error.status + ')';
+	    } else {
+		msg = gettext('Connection error');
+	    }
+	    me.setLoading(msg);
 	});
 
 	Ext.applyIf(me, {

@@ -18,6 +18,10 @@ Ext.define('PVE.RestProxy', {
 	    reader: {
 		type: 'json',
 		root: 'data'
+	    },
+	    afterRequest: function(request, success) {
+		me.fireEvent('afterload', me, request, success);
+		return;
 	    }
 	});
 

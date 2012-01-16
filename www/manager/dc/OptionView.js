@@ -107,7 +107,7 @@ Ext.define('PVE.dc.OptionView', {
 	});
 
 	Ext.applyIf(me, {
-	    url: "/api2/extjs/cluster/options",
+	    url: "/api2/json/cluster/options",
 	    cwidth1: 130,
 	    interval: 1000,
 	    selModel: sm,
