@@ -268,6 +268,8 @@ my $check_permissions = sub {
 
     return 1 if !$username && $perm->{user} eq 'world';
 
+    return 0 if !$username;
+
     return 1 if $username eq 'root@pam';
 
     die "permission check failed (user != root)\n" if !$perm;
@@ -447,13 +449,6 @@ sub rest_handler {
 
     $rpcenv->set_user(undef);
 
-    if ($rel_uri eq '/access/ticket') {
-	$resp->{ticket} = $resp->{data}->{ticket};
-    }
-
-    # fixme: update ticket if too old
-    # $resp->{ticket} = update_ticket($ticket);
-
     return $resp;
 }
 
@@ -528,11 +523,6 @@ sub handler {
      }
 
      prepare_response_data($format, $res);
-
-     if ($res->{ticket}) {
-	 my $cookie = create_auth_cookie($res->{ticket});
-	 $r->err_headers_out()->add("Set-Cookie" => $cookie);
-     }
 
      $r->status($res->{status} || HTTP_OK);
  

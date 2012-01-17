@@ -317,10 +317,6 @@ sub handle_requests {
 			    $response->header("Content-Type" => $ct);
 			    $response->header("Pragma", "no-cache");
 
-			    if ($res->{ticket}) {
-				my $cookie = PVE::REST::create_auth_cookie($res->{ticket});
-				$response->header("Set-Cookie" => $cookie);
-			    }
 			    $response->content($raw);
 
 			    $c->send_response($response);
