@@ -34,6 +34,13 @@ sub delete {
     return $self->call('DELETE', $path, $param);
 }
 
+sub update_ticket {
+    my ($self, $ticket) = @_;
+
+    my $domain = "$self->{host}.local" unless  $self->{host} =~ /\./;
+    $self->{cookie_jar}->set_cookie(0, 'PVEAuthCookie', $ticket, '/', $domain);
+}
+
 sub call {
     my ($self, $method, $path, $param) = @_;
 	
@@ -54,7 +61,7 @@ sub call {
 	$uri->scheme($self->{protocol});
 	$uri->host($self->{host});
 	$uri->port($self->{port});
-	$uri->path('/api2/json/ticket');
+	$uri->path('/api2/json/access/ticket');
 
 	my $response = $ua->post($uri, { 
 	    username => $self->{username},
@@ -63,7 +70,11 @@ sub call {
 	if (!$response->is_success) {
 	    die $response->status_line . "\n";
 	}
-	# the auth cookie should be set now
+
+	my $data = from_json($response->decoded_content, {utf8 => 1, allow_nonref => 1});
+
+	$self->update_ticket($data->{data}->{ticket});
+	$self->{csrftoken} = $data->{data}->{CSRFPreventionToken};
     }
 
     my $uri = URI->new();
@@ -75,7 +86,11 @@ sub call {
     # print $ua->{cookie_jar}->as_string;
 
     #print "CALL $method : " .  $uri->as_string() . "\n";
- 
+
+    if ($self->{csrftoken}) {
+	$self->{useragent}->default_header('CSRFPreventionToken' => $self->{csrftoken});
+    }
+
     my $response;
     if ($method eq 'GET') {
 	$uri->query_form($param);
@@ -111,6 +126,7 @@ sub new {
 
     my $self = { 
 	ticket => $param{ticket},
+	csrftoken => $param{csrftoken},
 	username => $param{username},
 	password => $param{password},
 	host => $param{host} || 'localhost',
@@ -128,11 +144,7 @@ sub new {
 
     $self->{cookie_jar} = HTTP::Cookies->new (ignore_discard => 1);
 
-    if ($self->{ticket}) {
-	my $domain = "$self->{host}.local" unless  $self->{host} =~ /\./;
-	$self->{cookie_jar}->set_cookie(0, 'PVEAuthCookie', $self->{ticket},  
-					'/', $domain);
-    }
+    $self->update_ticket($self->{ticket}) if $self->{ticket};
 
     $self->{useragent} = LWP::UserAgent->new(
 	cookie_jar => $self->{cookie_jar},
@@ -140,7 +152,7 @@ sub new {
 	timeout => $self->{timeout},
 	);
 
-     $self->{useragent}->default_header('Accept-Encoding' => 'gzip'); # allow gzip
+    $self->{useragent}->default_header('Accept-Encoding' => 'gzip'); # allow gzip
   
     return $self;
 }

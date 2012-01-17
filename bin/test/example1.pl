@@ -11,13 +11,15 @@ use Data::Dumper;
 my $hostname = PVE::INotify::read_file("hostname");
 
 # normally you use username/password,
-# but we can simply create a ticket if we are root
-my $ticket = PVE::AccessControl::assemble_ticket('root');
+# but we can simply create a ticket and CRSF token if we are root
+my $ticket = PVE::AccessControl::assemble_ticket('root@pam');
+my $csrftoken = PVE::AccessControl::assemble_csrf_prevention_token('root@pam');
 
 my $conn = PVE::API2Client->new(
-#    username => 'root',
-#    password => 'yourpassword',
+    #username => 'root@pam',
+    #password => 'yourpassword',
     ticket => $ticket,
+    csrftoken => $csrftoken,
     host => $hostname,
     );
 

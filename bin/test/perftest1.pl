@@ -12,7 +12,7 @@ my $hostname = PVE::INotify::read_file("hostname");
 
 # normally you use username/password,
 # but we can simply create a ticket if we are root
-my $ticket = PVE::AccessControl::assemble_ticket('root');
+my $ticket = PVE::AccessControl::assemble_ticket('root@pam');
 
 my $wcount = 4;
 my $qcount = 500;
@@ -21,7 +21,7 @@ sub test_rpc {
     my ($host) = @_;
 
     my $conn = PVE::API2Client->new(
-	#username => 'root',
+	#username => 'root@pam',
 	#password => 'yourpassword',
 	ticket => $ticket,
 	host => $host,
