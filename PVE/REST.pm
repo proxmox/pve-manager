@@ -18,6 +18,7 @@ use HTML::Entities;
 use PVE::JSONSchema;
 use PVE::AccessControl;
 use PVE::RPCEnvironment;
+use URI::Escape;
 
 use Data::Dumper; # fixme: remove
 
@@ -44,7 +45,13 @@ sub extract_auth_cookie {
 
     return undef if !$cookie;
 
-    return ($cookie =~ /(?:^|\s)$cookie_name=([^;]*)/)[0];
+    my $ticket = ($cookie =~ /(?:^|\s)$cookie_name=([^;]*)/)[0];
+
+    if ($ticket && $ticket =~ m/^PVE%3A/) {
+	$ticket = uri_unescape($ticket);
+    }
+
+    return $ticket;
 }
 
 sub create_auth_cookie {

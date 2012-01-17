@@ -26,6 +26,8 @@ Ext.define('PVE.Workspace', {
 	me.loginData = loginData;
 	PVE.CSRFPreventionToken = loginData.CSRFPreventionToken;
 	PVE.UserName = loginData.username;
+	var expire = Ext.Date.add(new Date(), Ext.Date.HOUR, 2);
+	Ext.util.Cookies.set('PVEAuthCookie', loginData.ticket, expire);
 	me.onLogin(loginData);
     },
 
@@ -88,7 +90,6 @@ Ext.define('PVE.Workspace', {
 		    url: '/api2/json/access/ticket',
 		    method: 'POST',
 		    success: function(response, opts) {
-			// cookie is automatically updated
 			var obj = Ext.decode(response.responseText);
 			me.updateLoginData(obj.data);
 		    }
