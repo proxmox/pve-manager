@@ -38,7 +38,16 @@ case "$1" in
     mkdir /etc/pve 2>/dev/null || true
 
     test -e /var/lib/pve-manager/apl-available || cp /usr/share/doc/pve-manager/aplinfo.dat /var/lib/pve-manager/apl-available
-    
+
+    if test -f /root/.forward; then
+	if ! grep -q '|/usr/bin/pvemailforward' /root/.forward; then 
+	    echo "|/usr/bin/pvemailforward\n$(cat /root/.forward)" >/root/.forward.tmp
+	    mv /root/.forward.tmp /root/.forward
+	fi
+    else
+	echo '|/usr/bin/pvemailforward' >/root/.forward
+    fi
+	
     update-rc.d pvedaemon defaults 21 79 >/dev/null
     update-rc.d pvestatd defaults 21 79 >/dev/null
     update-rc.d pvebanner start 99 2 3 4 5 >/dev/null

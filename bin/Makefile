@@ -42,10 +42,11 @@ vzrestore.1.pod: vzrestore
 	perl -I.. ./vzrestore printmanpod >$@
 
 .PHONY: install 
-install: ${SCRIPTS} ${MANS}
+install: ${SCRIPTS} ${MANS} pvemailforward
 	perl -I.. ./pvesh verifyapi
 	install -d ${BINDIR}
 	install -m 0755 ${SCRIPTS} ${BINDIR}
+	install -m 2755 -g www-data pvemailforward ${BINDIR}
 	install -d ${MAN1DIR}
 	install -m 0644 ${MANS} ${MAN1DIR}
 	install -d ${PODDIR}
