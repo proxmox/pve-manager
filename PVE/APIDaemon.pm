@@ -237,7 +237,7 @@ my $extract_params = sub {
 	$params->{$k} = $query_params->{$k};
     }
 
-    return $params;
+    return PVE::Tools::decode_utf8_parameters($params);
 };
 
 sub handle_requests {

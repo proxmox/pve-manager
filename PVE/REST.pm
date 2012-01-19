@@ -69,10 +69,10 @@ sub format_response_data {
     my ($ct, $raw);
 
     if ($format eq 'json') {
-	$ct = 'application/json';
+	$ct = 'application/json;charset=UTF-8';
 	$raw = to_json($data, {utf8 => 1, allow_nonref => 1});
     } elsif ($format eq 'html') {
-	$ct = 'text/html';
+	$ct = 'text/html;charset=UTF-8';
 	$raw = "<html><body>";
 	if (!is_success($res->{status})) {
 	    my $msg = $res->{message} || '';
@@ -102,7 +102,7 @@ sub format_response_data {
 	    }
 	} else {
 	    $raw .= "<pre>";
-	    $raw .= encode_entities(to_json($data, {utf8 => 1, allow_nonref => 1, pretty => 1}));
+	    $raw .= encode_entities(to_json($data, {allow_nonref => 1, pretty => 1}));
 	    $raw .= "</pre>";
 	}
 	$raw .= "</body></html>";
@@ -122,14 +122,14 @@ sub format_response_data {
 	}
 	    
     } elsif ($format eq 'extjs') {
-	$ct = 'application/json';
+	$ct = 'application/json;charset=UTF-8';
 	$raw = to_json($data, {utf8 => 1, allow_nonref => 1});
     } elsif ($format eq 'htmljs') {
 	# we use this for extjs file upload forms
-	$ct = 'text/html';
-	$raw = encode_entities(to_json($data, {utf8 => 1, allow_nonref => 1}));
+	$ct = 'text/html;charset=UTF-8';
+	$raw = encode_entities(to_json($data, {allow_nonref => 1}));
     } else {
-	$ct = 'text/plain';
+	$ct = 'text/plain;charset=UTF-8';
 	$raw = to_json($data, {utf8 => 1, allow_nonref => 1, pretty => 1});
     }
 
@@ -462,7 +462,7 @@ sub rest_handler {
 sub split_abs_uri {
     my ($abs_uri) = @_;
 
-    my ($format, $rel_uri) = $abs_uri =~ m/^\Q$baseuri\E\/+(html|json|extjs|png|htmljs)(\/.*)?$/;
+    my ($format, $rel_uri) = $abs_uri =~ m/^\Q$baseuri\E\/+(html|text|json|extjs|png|htmljs)(\/.*)?$/;
     $rel_uri = '/' if !$rel_uri;
  
     return wantarray ? ($rel_uri, $format) : $rel_uri;
