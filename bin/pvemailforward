@@ -5,21 +5,22 @@ use warnings;
 use PVE::Tools;
 use PVE::SafeSyslog;
 use PVE::AccessControl;
+use PVE::Cluster qw (cfs_read_file);
 
 # NOTE: we need to run this with setgid www-data
 # else we cant read /etc/pve/user.cfg
+
+$( = $); # $GID = $EGID
 
 $ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
 
 initlog('pvemailforward');
 
-eval {
-    # note: that fails because we run with wrong uid (nobody)
-    #my $usercfg = cfs_read_file("user.cfg");
-    my $filename = "/etc/pve/user.cfg";
-    my $raw = PVE::Tools::file_get_contents($filename);
-    my $usercfg = PVE::AccessControl::parse_user_config($filename, $raw);
 
+PVE::Cluster::cfs_update();
+
+eval {
+    my $usercfg = cfs_read_file("user.cfg");
     my $rootcfg = $usercfg->{users}->{'root@pam'} || {};
     my $mailto = $rootcfg->{email};
 
