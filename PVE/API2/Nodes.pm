@@ -523,9 +523,11 @@ __PACKAGE__->register_method ({
 
 	my $user = $rpcenv->get_user();
 
-	my $ticket = PVE::AccessControl::assemble_ticket($user);
-
 	my $node = $param->{node};
+
+	my $authpath = "/nodes/$node";
+
+	my $ticket = PVE::AccessControl::assemble_vnc_ticket($user, $authpath);
 
 	$sslcert = PVE::Tools::file_get_contents("/etc/pve/pve-root-ca.pem", 8192)
 	    if !$sslcert;
@@ -547,10 +549,8 @@ __PACKAGE__->register_method ({
 
 	my $timeout = 10; 
 
-	# fixme: do we want to require special auth permissions?
-	# example "-perm Shell"
 	my @cmd = ('/usr/bin/vncterm', '-rfbport', $port,
-		   '-timeout', $timeout, '-authpath', "/nodes/$node", 
+		   '-timeout', $timeout, '-authpath', $authpath, 
 		   '-perm', 'Sys.Console', '-c', @$remcmd, @$shcmd);
 
 	my $realcmd = sub {
