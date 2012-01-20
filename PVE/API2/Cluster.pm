@@ -106,7 +106,7 @@ __PACKAGE__->register_method({
 	my $max = $param->{max} || 0;
 	my $user = $rpcenv->get_user();
 
-	my $admin = $rpcenv->check($user, "/", [ 'Sys.Syslog' ]);
+	my $admin = $rpcenv->check($user, "/", [ 'Sys.Syslog' ], 1);
 
 	my $loguser = $admin ? '' : $user;
 
@@ -162,7 +162,7 @@ __PACKAGE__->register_method({
 		my $data = $idlist->{$vmid};
 
 
-		next if !$rpcenv->check($user, "/vms/$vmid", [ 'VM.Audit' ]);
+		next if !$rpcenv->check($user, "/vms/$vmid", [ 'VM.Audit' ], 1);
 
 		my $entry = {
 		    id => "$data->{type}/$vmid",
@@ -221,7 +221,7 @@ __PACKAGE__->register_method({
 
 	    foreach my $storeid (@sids) {
 		my $scfg =  PVE::Storage::storage_config($cfg, $storeid);
-		next if !$rpcenv->check($user, "/storage/$storeid", [ 'Datastore.Audit' ]);
+		next if !$rpcenv->check($user, "/storage/$storeid", [ 'Datastore.Audit' ], 1);
 		# we create a entry for each node
 		foreach my $node (@$nodelist) {
 		    next if !PVE::Storage::storage_check_enabled($cfg, $storeid, $node, 1);
@@ -276,7 +276,7 @@ __PACKAGE__->register_method({
 
 	return $res if !$tlist;
 
-	my $all = $rpcenv->check($user, "/", [ 'Sys.Audit' ]);
+	my $all = $rpcenv->check($user, "/", [ 'Sys.Audit' ], 1);
 
 	foreach my $task (@$tlist) {
 	    push @$res, $task if $all || ($task->{user} eq $user);

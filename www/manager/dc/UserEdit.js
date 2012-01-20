@@ -136,9 +136,7 @@ Ext.define('PVE.dc.UserEdit', {
                 },
                 submitValue: false
             });
-        } else {
-	    update_passwd_field(me.userid.match(/@([^@]+)$/)[1]);
- 	}
+        }
 
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
 	    column1: column1,

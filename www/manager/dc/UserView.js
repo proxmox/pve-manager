@@ -1,3 +1,53 @@
+Ext.define('PVE.window.PasswordEdit', {
+    extend: 'PVE.window.Edit',
+
+    initComponent : function() {
+	var me = this;
+
+	if (!me.userid) {
+	    throw "no userid specified";
+	}
+
+	var validate_pw = function() {
+	    if (verifypw.getValue() !== pwfield.getValue()) {
+		return gettext("Passwords does not match");
+	    }
+	    return true;
+	};
+
+	var verifypw = Ext.createWidget('textfield', { 
+	    inputType: 'password',
+	    fieldLabel: gettext('Verify Password'), 
+	    name: 'verifypassword',
+	    submitValue: false,
+	    validator: validate_pw
+	});
+
+	var pwfield = Ext.createWidget('textfield', { 
+	    inputType: 'password',
+	    fieldLabel: gettext('Password'), 
+	    minLength: 5,
+	    name: 'password',
+	    validator: validate_pw
+	});
+
+	Ext.apply(me, {
+	    subject: gettext('Password'),
+	    url: '/api2/extjs/access/password',
+	    items: [
+		pwfield, verifypw,
+		{
+		    xtype: 'hiddenfield',
+		    name: 'userid',
+		    value: me.userid,
+		}
+	    ]
+	});
+
+	me.callParent();
+    }
+});
+
 Ext.define('PVE.dc.UserView', {
     extend: 'Ext.grid.GridPanel',
 
@@ -69,6 +119,19 @@ Ext.define('PVE.dc.UserView', {
 	    handler: run_editor
 	});
 
+	var pwchange_btn = new PVE.button.Button({
+	    text: gettext('Password'),
+	    disabled: true,
+	    selModel: sm,
+	    handler: function(btn, event, rec) {
+		var win = Ext.create('PVE.window.PasswordEdit',{
+                    userid: rec.data.userid
+		});
+		win.on('destroy', reload);
+		win.show();
+	    }
+	});
+
         var tbar = [
             {
 		text: gettext('Create'),
@@ -79,7 +142,7 @@ Ext.define('PVE.dc.UserView', {
                     win.show();
 		}
             },
-	    edit_btn, remove_btn
+	    edit_btn, remove_btn, pwchange_btn
         ];
 
 	var render_full_name = function(firstname, metaData, record) {

@@ -5,7 +5,7 @@ Ext.define('PVE.window.NotesEdit', {
 	var me = this;
 
 	Ext.apply(me, {
-	    title: "Notes",
+	    title: gettext('Notes'),
 	    width: 600,
 	    layout: 'fit',
 	    items: {

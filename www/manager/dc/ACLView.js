@@ -178,6 +178,8 @@ Ext.define('PVE.dc.ACLView', {
 	    }
 	});
 
+	PVE.Utils.monStoreErrors(me, store);
+
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,

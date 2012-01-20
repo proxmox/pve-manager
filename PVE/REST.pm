@@ -15,6 +15,7 @@ use LWP::UserAgent;
 use HTTP::Request::Common;
 use HTTP::Status qw(:constants :is status_message);
 use HTML::Entities;
+use PVE::Exception qw(raise raise_perm_exc);
 use PVE::JSONSchema;
 use PVE::AccessControl;
 use PVE::RPCEnvironment;
@@ -275,11 +276,11 @@ my $check_permissions = sub {
 
     return 1 if !$username && $perm->{user} eq 'world';
 
-    return 0 if !$username;
+    raise_perm_exc("user != null") if !$username;
 
     return 1 if $username eq 'root@pam';
 
-    die "permission check failed (user != root)\n" if !$perm;
+    raise_perm_exc('user != root@pam') if !$perm;
 
     return 1 if $perm->{user} && $perm->{user} eq 'all';
 
@@ -288,14 +289,11 @@ my $check_permissions = sub {
 
     if ($perm->{path} && $perm->{privs}) {
 	my $path = PVE::Tools::template_replace($perm->{path}, $param);
-	if (!$rpcenv->check($username, $path, $perm->{privs})) {
-	    my $privstr = join(',', @{$perm->{privs}});
-	    die "Permission check failed ($path, $privstr)\n";
-	}
+	$rpcenv->check($username, $path, $perm->{privs});
 	return 1;
     }
 
-    die "Permission check failed\n";
+    raise_perm_exc();
 };
 
 sub rest_handler {
@@ -332,7 +330,7 @@ sub rest_handler {
 		my ($node, $storeid) = ($1, $2);
 		my $perm = {
 		    path => "/storage/$storeid",
-		    privs => [ 'abc' ],
+		    privs => [ 'Datastore.AllocateSpace' ],
 		};
 		&$check_permissions($rpcenv, $perm, $username, {});
 		$isUpload = 1;
@@ -347,7 +345,7 @@ sub rest_handler {
 	if (my $err = $@) {
 	    return { 
 		status => HTTP_UNAUTHORIZED, 
-		message => $err,
+		message => "$err", # always convert exception to string
 	    };
 	}
     }
@@ -392,7 +390,7 @@ sub rest_handler {
     if (my $err = $@) {
 	return { 
 	    status => HTTP_FORBIDDEN, 
-	    message => $err,
+	    message => "$err", # always convert exception to string
 	};
     }
 
@@ -411,7 +409,7 @@ sub rest_handler {
 	if (my $err = $@) {
 	    return {
 		status => HTTP_INTERNAL_SERVER_ERROR,
-		message => $err,
+		message => "$err", # always convert exception to string
 	    };
 	}
 	if ($remip) {
@@ -446,11 +444,11 @@ sub rest_handler {
     if ($err) {
 	if (ref($err) eq "PVE::Exception") {
 	    $resp->{status} = $err->{code} || HTTP_INTERNAL_SERVER_ERROR;
-	    $resp->{message} = $err->{msg} || $@;
 	    $resp->{errors} = $err->{errors} if $err->{errors};
+	    $resp->{message} = $err->{msg};
 	} else {
 	    $resp->{status} = HTTP_INTERNAL_SERVER_ERROR;
-	    $resp->{message} = $@;
+	    $resp->{message} = "$err";
 	}
     }
 

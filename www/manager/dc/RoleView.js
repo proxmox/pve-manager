@@ -26,6 +26,8 @@ Ext.define('PVE.dc.RoleView', {
 	    return value.replace(/\,/g, ' ');
 	};
 
+	PVE.Utils.monStoreErrors(me, store);
+
 	Ext.apply(me, {
 	    store: store,
 	    stateful: false,

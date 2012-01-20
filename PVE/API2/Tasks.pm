@@ -75,7 +75,7 @@ __PACKAGE__->register_method({
 	my $count = 0;
 	my $line;
 
-	my $auditor = $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ]);
+	my $auditor = $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ], 1);
 
 	my $parse_line = sub {
 	    if ($line =~ m/^(\S+)(\s([0-9A-Za-z]{8})(\s(\S.*))?)?$/) {
@@ -175,9 +175,9 @@ __PACKAGE__->register_method({
 	my $user = $rpcenv->get_user();
 	my $node = $param->{node};
 
-	my $sysadmin = $rpcenv->check($user, "/nodes/$node", [ 'Sys.Console' ]);
-	die "Permission check failed\n"
-	    if !($sysadmin || $user eq $task->{user});
+	if ($user ne $task->{user}) {
+	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Console' ]);
+	}
 
 	PVE::RPCEnvironment::check_worker($param->{upid}, 1);
 
@@ -237,9 +237,9 @@ __PACKAGE__->register_method({
 	my $user = $rpcenv->get_user();
 	my $node = $param->{node};
 
-	my $auditor = $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ]);
-	die "Permission check failed\n"
-	    if !($auditor || $user eq $task->{user});
+	if ($user ne $task->{user})  {
+	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ]);
+	}
 
 	my $fh = IO::File->new($filename, "r");
 	raise_param_exc({ upid => "no such task - unable to open file - $!" }) if !$fh;
@@ -309,9 +309,9 @@ __PACKAGE__->register_method({
 	my $user = $rpcenv->get_user();
 	my $node = $param->{node};
 
-	my $auditor = $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ]);
-	die "Permission check failed\n"
-	    if !($auditor || $user eq $task->{user});
+	if ($user ne $task->{user}) {
+	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ]);
+	}
 
 	my $pstart = PVE::ProcFSTools::read_proc_starttime($task->{pid});
 	$task->{status} = ($pstart && ($pstart == $task->{pstart})) ?
