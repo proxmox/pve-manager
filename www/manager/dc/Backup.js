@@ -374,6 +374,8 @@ Ext.define('PVE.dc.BackupView', {
 	    }
 	});
 
+	PVE.Utils.monStoreErrors(me, store);
+
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
