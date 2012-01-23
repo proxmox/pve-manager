@@ -291,8 +291,7 @@ __PACKAGE__->register_method({
     method => 'GET',
     description => "Get datacenter options.",
     permissions => {
-	path => '/',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/', [ 'Sys.Audit' ]],
     },
     parameters => {
     	additionalProperties => 0,
@@ -313,8 +312,7 @@ __PACKAGE__->register_method({
     method => 'PUT',
     description => "Set datacenter options.",
     permissions => {
-	path => '/',
-	privs => [ 'Sys.Modify' ],
+	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     protected => 1,
     parameters => {

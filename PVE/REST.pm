@@ -271,6 +271,64 @@ sub proxy_handler {
     return OK;
 }
 
+sub exec_perm_check {
+    my ($rpcenv, $check, $username, $param, $noerr) = @_;
+
+    my $test = shift @$check;
+    die "no permission test specified" if !$test;
+ 
+    if ($test eq 'and') {
+	while (my $subcheck = shift @$check) {
+	    exec_perm_check($rpcenv, $subcheck, $username, $param); 
+	}
+	return 1;
+    } elsif ($test eq 'or') {
+	while (my $subcheck = shift @$check) {
+	    return 1 if exec_perm_check($rpcenv, $subcheck, $username, $param, 1); 
+	}
+	return 0 if $noerr;
+	raise_perm_exc();
+    } elsif ($test eq 'perm') {
+	my ($tmplpath, $privs, %options) = @$check;
+	my $any = $options{any};
+	die "missing parameters" if !($tmplpath && $privs);
+	my $path = PVE::Tools::template_replace($tmplpath, $param);
+	if ($any) {
+	    return $rpcenv->check_any($username, $path, $privs, $noerr);
+	} else {
+	    return $rpcenv->check($username, $path, $privs, $noerr);
+	}
+    } elsif ($test eq 'userid-group') {
+	my $userid = $param->{userid};
+	return if !$rpcenv->check_user_exist($userid, $noerr);
+	my ($privs, %options) = @$check;
+	if (!$rpcenv->check_any($username, "/access", $privs, 1)) {
+	    my $groups = $rpcenv->filter_groups($username, $privs, 1);
+	    my $allowed_users = $rpcenv->group_member_join([keys %$groups]);
+ 	    if (!$allowed_users->{$userid}) {
+		return 0 if $noerr;
+		raise_perm_exc();
+	    }
+	}
+	return 1;
+    } elsif ($test eq 'userid-param') {
+	my $userid = $param->{userid};
+	return if !$rpcenv->check_user_exist($userid, $noerr);
+	my ($subtest) = @$check;
+	die "missing parameters" if !$subtest;
+	if ($subtest eq 'self') {
+	    syslog("info", "TESTASQAS");
+	    return 1 if $username eq 'userid';
+	    return 0 if $noerr;
+	    raise_perm_exc();
+	} else {
+	    die "unknown userid-param test";
+	}
+    } else {
+	die "unknown permission test";
+    }
+};
+
 my $check_permissions = sub {
     my ($rpcenv, $perm, $username, $param) = @_;
 
@@ -284,14 +342,7 @@ my $check_permissions = sub {
 
     return 1 if $perm->{user} && $perm->{user} eq 'all';
 
-    return 1 if $perm->{user} && $perm->{user} eq 'arg' && 
-	($username eq $param->{username} || $username eq $param->{userid});
-
-    if ($perm->{path} && $perm->{privs}) {
-	my $path = PVE::Tools::template_replace($perm->{path}, $param);
-	$rpcenv->check($username, $path, $perm->{privs});
-	return 1;
-    }
+    return exec_perm_check($rpcenv, $perm->{check}, $username, $param) if $perm->{check};
 
     raise_perm_exc();
 };

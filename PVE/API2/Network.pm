@@ -135,8 +135,7 @@ __PACKAGE__->register_method({
     path => '', 
     method => 'POST',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Modify' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
     },
     description => "Create network device configuration",
     protected => 1,
@@ -181,8 +180,7 @@ __PACKAGE__->register_method({
     path => '{iface}', 
     method => 'PUT',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Modify' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
     },
     description => "Update network device configuration",
     protected => 1,
@@ -239,8 +237,7 @@ __PACKAGE__->register_method({
     path => '{iface}', 
     method => 'GET',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
     },
     description => "Read network device configuration",
     proxyto => 'node',
@@ -278,8 +275,7 @@ __PACKAGE__->register_method({
     path => '{iface}', 
     method => 'DELETE',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Modify' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
     },
     description => "Delete network device configuration",
     protected => 1,

@@ -147,8 +147,7 @@ __PACKAGE__->register_method({
     name => 'beancounters_failcnt', 
     path => 'ubcfailcnt',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
     },
     method => 'GET',
     proxyto => 'node',
@@ -189,8 +188,7 @@ __PACKAGE__->register_method({
     path => 'network_changes', 
     method => 'GET',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
     },
     description => "Get network configuration changes (diff) since last boot.",
     proxyto => 'node',
@@ -214,8 +212,7 @@ __PACKAGE__->register_method({
     path => 'network_changes', 
     method => 'DELETE',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Modify' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
     },
     protected => 1,
     description => "Revert network configuration changes.",
@@ -240,8 +237,7 @@ __PACKAGE__->register_method({
     path => 'status', 
     method => 'GET',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
     },
     description => "Read node status",
     proxyto => 'node',
@@ -313,8 +309,7 @@ __PACKAGE__->register_method({
     path => 'status', 
     method => 'POST',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.PowerMgmt' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.PowerMgmt' ]],
     },
     protected => 1,
     description => "Reboot or shutdown a node.",
@@ -350,8 +345,7 @@ __PACKAGE__->register_method({
     method => 'GET',
     protected => 1, # fixme: can we avoid that?
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
     },
     description => "Read node RRD statistics (returns PNG)",
     parameters => {
@@ -396,8 +390,7 @@ __PACKAGE__->register_method({
     method => 'GET',
     protected => 1, # fixme: can we avoid that?
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
     },
     description => "Read node RRD statistics",
     parameters => {
@@ -438,8 +431,7 @@ __PACKAGE__->register_method({
     description => "Read system log",
     proxyto => 'node',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Syslog' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Syslog' ]],
     },
     protected => 1,
     parameters => {
@@ -496,8 +488,7 @@ __PACKAGE__->register_method ({
     method => 'POST',
     protected => 1,
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Console' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Console' ]],
     },
     description => "Creates a VNC Shell proxy.",
     parameters => {
@@ -586,8 +577,7 @@ __PACKAGE__->register_method({
     path => 'dns', 
     method => 'GET',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
     },
     description => "Read DNS settings.",
     proxyto => 'node',
@@ -677,9 +667,8 @@ __PACKAGE__->register_method({
     path => 'time', 
     method => 'GET',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Audit' ],
-    },
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
+   },
     description => "Read server time and time zone settings.",
     proxyto => 'node',
     parameters => {
@@ -753,8 +742,7 @@ __PACKAGE__->register_method ({
     path => 'upload',
     method => 'POST',
     permissions => {
-	path => '/storage/{storage}',
-	privs => [ 'Datastore.AllocateSpace' ],
+	check => ['perm', '/storage/{storage}', [ 'Datastore.AllocateSpace' ]],
     },
     description => "Upload content.",
     parameters => {

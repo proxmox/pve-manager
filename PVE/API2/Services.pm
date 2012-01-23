@@ -153,8 +153,7 @@ __PACKAGE__->register_method ({
     path => '', 
     method => 'GET',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
     },
     description => "Service list.",
     proxyto => 'node',
@@ -231,8 +230,7 @@ __PACKAGE__->register_method ({
     path => '{service}/state', 
     method => 'GET',
     permissions => {
-	path => '/nodes/{node}',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
     },
     description => "Read service properties",
     proxyto => 'node',

@@ -19,8 +19,7 @@ __PACKAGE__->register_method({
     method => 'GET',
     description => "Directory index.",
     permissions => {
-	path => '/',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/', [ 'Sys.Audit' ]],
     },
     parameters => {
     	additionalProperties => 0,
@@ -90,8 +89,7 @@ __PACKAGE__->register_method({
     description => "Read cluster configuartion (cluster.conf). If you have any uncommitted changes in cluster.conf.new that content is returned instead.",
     protected => 1,
     permissions => {
-	path => '/',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/', [ 'Sys.Audit' ]],
     },
     parameters => {
     	additionalProperties => 0,
@@ -120,8 +118,7 @@ __PACKAGE__->register_method({
     description => "Get pending changes (unified diff between cluster.conf and cluster.conf.new",
     protected => 1,
     permissions => {
-	path => '/',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/', [ 'Sys.Audit' ]],
     },
     parameters => {
     	additionalProperties => 0,
@@ -143,8 +140,7 @@ __PACKAGE__->register_method({
     description => "Revert pending changes (remove cluster.conf.new)",
     protected => 1,
     permissions => {
-	path => '/',
-	privs => [ 'Sys.Modify' ],
+	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
     	additionalProperties => 0,
@@ -168,8 +164,7 @@ __PACKAGE__->register_method({
     description => "Commit cluster configuartion. Pending changes from cluster.conf.new are written to cluster.conf. This triggers a CMan reload on all nodes.",
     protected => 1,
     permissions => {
-	path => '/',
-	privs => [ 'Sys.Modify' ],
+	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
     	additionalProperties => 0,
@@ -227,8 +222,7 @@ __PACKAGE__->register_method({
     description => "List resource groups.",
     protected => 1,
     permissions => {
-	path => '/',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/', [ 'Sys.Audit' ]],
     },
     parameters => {
     	additionalProperties => 0,
@@ -270,8 +264,7 @@ __PACKAGE__->register_method({
     description => "Create a new resource groups.",
     protected => 1,
     permissions => {
-	path => '/',
-	privs => [ 'Sys.Modify' ],
+	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
     	additionalProperties => 0,
@@ -318,8 +311,7 @@ __PACKAGE__->register_method({
     description => "Update resource groups settings.",
     protected => 1,
     permissions => {
-	path => '/',
-	privs => [ 'Sys.Modify' ],
+	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
     	additionalProperties => 0,
@@ -373,8 +365,7 @@ __PACKAGE__->register_method({
     description => "List resource groups.",
     protected => 1,
     permissions => {
-	path => '/',
-	privs => [ 'Sys.Audit' ],
+	check => ['perm', '/', [ 'Sys.Audit' ]],
     },
     parameters => {
     	additionalProperties => 0,
@@ -422,8 +413,7 @@ __PACKAGE__->register_method({
     description => "Delete resource group.",
     protected => 1,
     permissions => {
-	path => '/',
-	privs => [ 'Sys.Modify' ],
+	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
     	additionalProperties => 0,
