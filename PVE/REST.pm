@@ -274,22 +274,25 @@ sub proxy_handler {
 sub exec_perm_check {
     my ($rpcenv, $check, $username, $param, $noerr) = @_;
 
-    my $test = shift @$check;
+    # syslog("info", "CHECK " . join(', ', @$check));
+
+    my $ind = 0;
+    my $test = $check->[$ind++];
     die "no permission test specified" if !$test;
  
     if ($test eq 'and') {
-	while (my $subcheck = shift @$check) {
+	while (my $subcheck = $check->[$ind++]) {
 	    exec_perm_check($rpcenv, $subcheck, $username, $param); 
 	}
 	return 1;
     } elsif ($test eq 'or') {
-	while (my $subcheck = shift @$check) {
+	while (my $subcheck = $check->[$ind++]) {
 	    return 1 if exec_perm_check($rpcenv, $subcheck, $username, $param, 1); 
 	}
 	return 0 if $noerr;
 	raise_perm_exc();
     } elsif ($test eq 'perm') {
-	my ($tmplpath, $privs, %options) = @$check;
+	my ($t, $tmplpath, $privs, %options) = @$check;
 	my $any = $options{any};
 	die "missing parameters" if !($tmplpath && $privs);
 	my $path = PVE::Tools::template_replace($tmplpath, $param);
@@ -300,24 +303,32 @@ sub exec_perm_check {
 	}
     } elsif ($test eq 'userid-group') {
 	my $userid = $param->{userid};
-	return if !$rpcenv->check_user_exist($userid, $noerr);
-	my ($privs, %options) = @$check;
+	my ($t, $privs, %options) = @$check;
+	return if !$options{groups_param} && !$rpcenv->check_user_exist($userid, $noerr);
 	if (!$rpcenv->check_any($username, "/access", $privs, 1)) {
 	    my $groups = $rpcenv->filter_groups($username, $privs, 1);
-	    my $allowed_users = $rpcenv->group_member_join([keys %$groups]);
- 	    if (!$allowed_users->{$userid}) {
-		return 0 if $noerr;
-		raise_perm_exc();
+	    if ($options{groups_param}) {
+		my @group_param = PVE::Tools::split_list($param->{groups});
+		raise_perm_exc("/access, " . join("|", @$privs)) if !scalar(@group_param);
+		foreach my $pg (@group_param) {
+		    raise_perm_exc("/access/groups/$pg, " . join("|", @$privs))
+			if !$groups->{$pg};
+		}
+	    } else {
+		my $allowed_users = $rpcenv->group_member_join([keys %$groups]);
+		if (!$allowed_users->{$userid}) {
+		    return 0 if $noerr;
+		    raise_perm_exc();
+		}
 	    }
 	}
 	return 1;
     } elsif ($test eq 'userid-param') {
 	my $userid = $param->{userid};
 	return if !$rpcenv->check_user_exist($userid, $noerr);
-	my ($subtest) = @$check;
+	my ($t, $subtest) = @$check;
 	die "missing parameters" if !$subtest;
 	if ($subtest eq 'self') {
-	    syslog("info", "TESTASQAS");
 	    return 1 if $username eq 'userid';
 	    return 0 if $noerr;
 	    raise_perm_exc();
