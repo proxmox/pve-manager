@@ -39,7 +39,8 @@ sub print_usage {
 my $disable_proxy = 0;
 
 my $cmd = shift;
-if ($cmd eq '--noproxy') {
+
+if ($cmd && $cmd eq '--noproxy') {
     $cmd = shift;
     $disable_proxy = 1;
 }
