@@ -214,6 +214,8 @@ Ext.define('PVE.storage.ContentView', {
 	    store.load();
 	};
 
+	PVE.Utils.monStoreErrors(me, store);
+
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
