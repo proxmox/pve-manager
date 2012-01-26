@@ -271,6 +271,24 @@ sub proxy_handler {
     return OK;
 }
 
+my $exc_to_res = sub {
+    my ($err, $status) = @_;
+
+    $status = $status || HTTP_INTERNAL_SERVER_ERROR;
+
+    my $resp = {};
+    if (ref($err) eq "PVE::Exception") {
+	$resp->{status} = $err->{code} || $status;
+	$resp->{errors} = $err->{errors} if $err->{errors};
+	$resp->{message} = $err->{msg};
+    } else {
+	$resp->{status} = $status;
+	$resp->{message} = $err;
+    }
+
+    return $resp;
+};
+
 sub rest_handler {
     my ($rpcenv, $clientip, $method, $abs_uri, $rel_uri, $ticket, $token) = @_;
 
@@ -318,10 +336,7 @@ sub rest_handler {
 		if !$isUpload && ($euid != 0) && ($method ne 'GET');
 	};
 	if (my $err = $@) {
-	    return { 
-		status => HTTP_UNAUTHORIZED, 
-		message => "$err", # always convert exception to string
-	    };
+	    return &$exc_to_res($err, HTTP_UNAUTHORIZED);
 	}
     }
 
@@ -363,10 +378,7 @@ sub rest_handler {
     # check access permissions
     eval { $rpcenv->check_api2_permissions($info->{permissions}, $username, $uri_param); };
     if (my $err = $@) {
-	return { 
-	    status => HTTP_FORBIDDEN, 
-	    message => "$err", # always convert exception to string
-	};
+	return &$exc_to_res($err, HTTP_FORBIDDEN);
     }
 
     if ($info->{proxyto}) {
@@ -382,10 +394,7 @@ sub rest_handler {
 	    }
 	};
 	if (my $err = $@) {
-	    return {
-		status => HTTP_INTERNAL_SERVER_ERROR,
-		message => "$err", # always convert exception to string
-	    };
+	    return &$exc_to_res($err);
 	}
 	if ($remip) {
 	    return { proxy => $remip, proxy_params => $params };
@@ -415,16 +424,8 @@ sub rest_handler {
 	    $resp->{changes} = $diff;
 	}
     };
-    my $err = $@;
-    if ($err) {
-	if (ref($err) eq "PVE::Exception") {
-	    $resp->{status} = $err->{code} || HTTP_INTERNAL_SERVER_ERROR;
-	    $resp->{errors} = $err->{errors} if $err->{errors};
-	    $resp->{message} = $err->{msg};
-	} else {
-	    $resp->{status} = HTTP_INTERNAL_SERVER_ERROR;
-	    $resp->{message} = "$err";
-	}
+    if (my $err = $@) {
+	return &$exc_to_res($err);
     }
 
     $rpcenv->set_user(undef);
