@@ -23,6 +23,7 @@ JSSRC= 				                 	\
 	form/ComboGrid.js				\
 	form/KVComboBox.js				\
 	form/Boolean.js					\
+	form/PoolSelector.js				\
 	form/GroupSelector.js				\
 	form/UserSelector.js				\
 	form/RoleSelector.js				\
@@ -118,6 +119,8 @@ JSSRC= 				                 	\
 	dc/StorageView.js				\
 	dc/UserEdit.js					\
 	dc/UserView.js					\
+	dc/PoolView.js					\
+	dc/PoolEdit.js					\
 	dc/GroupView.js					\
 	dc/GroupEdit.js					\
 	dc/RoleView.js					\

@@ -40,6 +40,11 @@ Ext.define('PVE.dc.Config', {
 		    itemId: 'groups'
 		},
 		{
+		    xtype: 'pvePoolView',
+		    title: gettext('Pools'),
+		    itemId: 'pools'
+		},
+		{
 		    xtype: 'pveACLView',
 		    title: gettext('Permissions'),
 		    itemId: 'permissions'
