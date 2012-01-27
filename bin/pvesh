@@ -15,7 +15,7 @@ use PVE::INotify;
 use PVE::RPCEnvironment;
 use PVE::API2;
 use JSON;
- 
+
 PVE::INotify::inotify_init();
 
 my $rpcenv = PVE::RPCEnvironment->init('cli');
@@ -265,7 +265,7 @@ sub call_method {
 	}
     }
 
-    print to_json($data, {allow_nonref => 1, canonical => 1, pretty => 1 });
+    print to_json($data, {utf8 => 1, allow_nonref => 1, canonical => 1, pretty => 1 });
 
     return;
 }
