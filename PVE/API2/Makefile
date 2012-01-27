@@ -6,6 +6,7 @@ PERLSOURCE = 			\
 	Cluster.pm		\
 	HAConfig.pm		\
 	Nodes.pm		\
+	Pool.pm			\
 	Tasks.pm		\
 	Network.pm		\
 	Services.pm		\

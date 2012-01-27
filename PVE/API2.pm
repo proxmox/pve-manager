@@ -12,6 +12,7 @@ use base qw(PVE::RESTHandler);
 # preload classes
 use PVE::API2::Cluster;
 use PVE::API2::Nodes;
+use PVE::API2::Pool;
 use PVE::API2::AccessControl;
 use PVE::API2::Storage::Config;
 
@@ -33,6 +34,11 @@ __PACKAGE__->register_method ({
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::AccessControl",  
     path => 'access',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Pool",  
+    path => 'pools',
 });
 
 __PACKAGE__->register_method ({
