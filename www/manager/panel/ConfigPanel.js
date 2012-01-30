@@ -92,7 +92,6 @@ Ext.define('PVE.panel.Config', {
 
 	var statechange = function(sp, key, state) {
 	    if (stateid && key === stateid) {
-		console.log("scanhge");
 		var atab = tab.getActiveTab().itemId;
 		var ntab = state.value || items[0].itemId;
 		if (state && ntab && (atab != ntab)) {

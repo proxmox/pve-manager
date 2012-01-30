@@ -245,7 +245,8 @@ Ext.define('PVE.StdWorkspace', {
 			    node: 'PVE.node.Config',
 			    qemu: 'PVE.qemu.Config',
 			    openvz: 'PVE.openvz.Config',
-			    storage: 'PVE.storage.Browser'
+			    storage: 'PVE.storage.Browser',
+			    pool: 'pvePoolConfig'
 			};
 			
 			if (selected.length > 0) {

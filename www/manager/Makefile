@@ -103,9 +103,12 @@ JSSRC= 				                 	\
 	openvz/Options.js				\
 	openvz/Network.js				\
 	openvz/DNS.js					\
-	openvz/BeanCounterGrid.js				\
+	openvz/BeanCounterGrid.js			\
 	openvz/Config.js				\
 	openvz/CreateWizard.js				\
+	pool/StatusView.js				\
+	pool/Summary.js					\
+	pool/Config.js					\
 	storage/ContentView.js				\
 	storage/StatusView.js				\
 	storage/Summary.js				\

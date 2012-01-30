@@ -40,6 +40,7 @@ Ext.define('PVE.StateProvider', {
 	['ltab', 'tasks'],
 	['nodetab', ''],
 	['storagetab', ''],
+	['pooltab', ''],
 	['kvmtab', ''],
 	['ovztab', ''],
 	['dctab', '']
@@ -48,6 +49,7 @@ Ext.define('PVE.StateProvider', {
     hprefix: 'v1',
 
     compDict: {
+	pool: 26,
 	syslog: 25,
 	ubc: 24,
 	initlog: 23,
