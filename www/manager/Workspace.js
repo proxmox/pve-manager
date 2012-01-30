@@ -180,12 +180,12 @@ Ext.define('PVE.StdWorkspace', {
 	cont.removeAll(true);
 
 	if (comp) {
-	    cont.setLoading(false);
+	    PVE.Utils.setErrorMask(cont, false);
 	    comp.border = false;
 	    cont.add(comp);
 	    cont.doLayout();
 	} else {
-	    cont.setLoading('nothing selected');
+	    PVE.Utils.setErrorMask(cont, 'nothing selected');
 	}
     },
 
@@ -252,7 +252,7 @@ Ext.define('PVE.StdWorkspace', {
 			    var n = selected[0];
 			    comp = { 
 				xtype: tlckup[n.data.type || 'root'] || 
-				    'PVE.panel.Config',
+				    'pvePanelConfig',
 				layout: { type: 'fit' },
 				showSearch: (n.data.id === 'root') ||
 				    Ext.isDefined(n.data.groupbyid),

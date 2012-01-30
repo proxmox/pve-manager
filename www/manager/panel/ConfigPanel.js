@@ -1,5 +1,6 @@
 Ext.define('PVE.panel.Config', {
     extend: 'Ext.panel.Panel',
+    alias: 'widget.pvePanelConfig',
 
     initComponent: function() {
         var me = this;
@@ -62,7 +63,10 @@ Ext.define('PVE.panel.Config', {
 	    items: items,
 	    listeners: {
 		afterrender: function(tp) {
-		    tp.items.get(0).fireEvent('show', tp.items.get(0));
+		    var first =  tp.items.get(0);
+		    if (first) {
+			first.fireEvent('show', first);
+		    }
 		},
 		tabchange: function(tp, newcard, oldcard) {
 		    var ntab = newcard.itemId;
