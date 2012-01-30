@@ -173,8 +173,11 @@ Ext.define('PVE.grid.ResourceGrid', {
 	    updateGrid(); 
 	};
 
+	Ext.applyIf(me, {
+	    title: gettext('Search')
+	});
+
 	Ext.apply(me, {
-	    title: gettext('Search'),
 	    store: store,
 	    tbar: [
 		'->', 

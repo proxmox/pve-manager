@@ -18,7 +18,7 @@ Ext.define('PVE.dc.vmHAServiceEdit', {
 	}
 
 	Ext.apply(me, {
-	    title: gettext('HA managed VM/CT'),
+	    subject: gettext('HA managed VM/CT'),
 	    width: 350,
 	    items: [
 		{

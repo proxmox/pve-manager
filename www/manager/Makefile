@@ -63,6 +63,7 @@ JSSRC= 				                 	\
 	grid/SelectFeature.js				\
 	grid/ObjectGrid.js				\
 	grid/ResourceGrid.js				\
+	grid/PoolMembers.js				\
 	tree/ResourceTree.js				\
 	panel/ConfigPanel.js				\
 	grid/BackupView.js				\

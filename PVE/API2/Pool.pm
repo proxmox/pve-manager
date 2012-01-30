@@ -3,13 +3,16 @@ package PVE::API2::Pool;
 use strict;
 use warnings;
 use PVE::Exception qw(raise_param_exc);
+use PVE::INotify;
 use PVE::Cluster qw (cfs_read_file cfs_write_file);
 use PVE::AccessControl;
+use PVE::Storage;
 
 use PVE::SafeSyslog;
 
 use Data::Dumper; # fixme: remove
 
+use PVE::API2Tools;
 use PVE::RESTHandler;
 
 use base qw(PVE::RESTHandler);
@@ -207,10 +210,11 @@ __PACKAGE__->register_method ({
 		type => 'array',
 		items => {
 		    type => "object",
-		    additionalProperties => 0,
+		    additionalProperties => 1,
 		    properties => {
-			type => { type => 'string', enum => ['vm', 'storage'] },
+			type => { type => 'string', enum => ['qemu', 'openvz', 'storage'] },
 			id => { type => 'string' },
+			node => { type => 'string' },
 			vmid => { type => 'integer', optional => 1 },
 			storage => { type => 'string', optional => 1 },
 		    },
@@ -223,6 +227,11 @@ __PACKAGE__->register_method ({
 
 	my $usercfg = cfs_read_file("user.cfg");
 
+	my $vmlist = PVE::Cluster::get_vmlist() || {};
+	my $idlist = $vmlist->{ids} || {};
+
+	my $rrd = PVE::Cluster::rrd_dump();
+
 	my $pool = $param->{poolid};
 	
 	my $data = $usercfg->{pools}->{$pool};
@@ -233,19 +242,23 @@ __PACKAGE__->register_method ({
 	my $members = [];
 
 	foreach my $vmid (keys %{$data->{vms}}) {
-	    push @$members, {
-		id => "vm/$vmid",
-		vmid => $vmid + 0, 
-		type => 'vm',
-	    };
+	    my $vmdata = $idlist->{$vmid};
+	    next if !$vmdata;
+	    my $entry = PVE::API2Tools::extract_vm_stats($vmid, $vmdata, $rrd);
+	    push @$members, $entry;
 	}
 
-	foreach my $storage (keys %{$data->{storage}}) {
-	    push @$members, {
-		id => "storage/$storage",
-		storage => $storage, 
-		type => 'storage',
-	    };
+	my $nodename = PVE::INotify::nodename();
+	my $cfg = PVE::Storage::config();
+	foreach my $storeid (keys %{$data->{storage}}) {
+	    my $scfg = PVE::Storage::storage_config ($cfg, $storeid, 1);
+	    next if !$scfg;
+
+	    my $firstnode = $scfg->{nodes} && $scfg->{nodes}->[0];
+	    my $node = $firstnode || $nodename;
+
+	    my $entry = PVE::API2Tools::extract_storage_stats($storeid, $scfg, $node, $rrd);
+	    push @$members, $entry;
 	}
 
 	my $res = { members => $members	};

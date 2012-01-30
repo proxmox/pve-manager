@@ -10,6 +10,7 @@ use PVE::Tools qw(extract_param);
 use PVE::INotify;
 use PVE::Cluster qw(cfs_register_file cfs_lock_file cfs_read_file cfs_write_file);
 use PVE::Storage;
+use PVE::API2Tools;
 use PVE::API2::Backup;
 use PVE::API2::HAConfig;
 use JSON;
@@ -178,30 +179,12 @@ __PACKAGE__->register_method({
 	# we try to generate 'numbers' by using "$X + 0"
 	if (!$param->{type} || $param->{type} eq 'vm') {
 	    foreach my $vmid (keys %$idlist) {
-		my $data = $idlist->{$vmid};
-
 
 		next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ], 1);
 
-		my $entry = {
-		    id => "$data->{type}/$vmid",
-		    vmid => $vmid + 0, 
-		    node => $data->{node},
-		    type => $data->{type},
-		};
-
-		if (my $d = $rrd->{"pve2-vm/$vmid"}) {
-
-		    $entry->{uptime} = ($d->[0] || 0) + 0;
-		    $entry->{name} = $d->[1];
-
-		    $entry->{maxcpu} = ($d->[3] || 0) + 0;
-		    $entry->{cpu} = ($d->[4] || 0) + 0;
-		    $entry->{maxmem} = ($d->[5] || 0) + 0;
-		    $entry->{mem} = ($d->[6] || 0) + 0;
-		    $entry->{maxdisk} = ($d->[7] || 0) + 0;
-		    $entry->{disk} = ($d->[8] || 0) + 0;
-
+		my $data = $idlist->{$vmid};
+		my $entry = PVE::API2Tools::extract_vm_stats($vmid, $data, $rrd);
+		if (defined($entry->{uptime})) {
 		    if (my $pool = $usercfg->{vms}->{$vmid}) {
 			if (my $pe = $pooldata->{$pool}) {
 			    $pe->{uptime} = $entry->{uptime} if !$pe->{uptime} || $entry->{uptime} > $pe->{uptime};
@@ -216,7 +199,6 @@ __PACKAGE__->register_method({
 			}
 		    }
 		}
-
 		
 		push @$res, $entry;
 	    }
@@ -254,23 +236,14 @@ __PACKAGE__->register_method({
 	    my @sids =  PVE::Storage::storage_ids ($cfg);
 
 	    foreach my $storeid (@sids) {
-		my $scfg =  PVE::Storage::storage_config($cfg, $storeid);
 		next if !$rpcenv->check($authuser, "/storage/$storeid", [ 'Datastore.Audit' ], 1);
+
+		my $scfg =  PVE::Storage::storage_config($cfg, $storeid);
 		# we create a entry for each node
 		foreach my $node (@$nodelist) {
 		    next if !PVE::Storage::storage_check_enabled($cfg, $storeid, $node, 1);
-		    my $entry = {
-			id => "storage/$node/$storeid",
-			storage => $storeid, 
-			node => $node, 
-			type => 'storage', 
-		    }; 
 
-		    if (my $d = $rrd->{"pve2-storage/$node/$storeid"}) {
-			$entry->{maxdisk} = ($d->[1] || 0) + 0;
-			$entry->{disk} = ($d->[2] || 0) + 0;
-		    }
-
+		    my $entry = PVE::API2Tools::extract_storage_stats($storeid, $scfg, $node, $rrd);
 		    push @$res, $entry;
 		}
 	    }

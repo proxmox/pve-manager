@@ -4,6 +4,7 @@ SUBDIRS=API2 VZDump
 
 PERLSOURCE = 			\
 	API2.pm			\
+	API2Tools.pm		\
 	API2Client.pm		\
 	APIDaemon.pm		\
 	REST.pm			\

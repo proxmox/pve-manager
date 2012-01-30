@@ -17,7 +17,7 @@ Ext.define('PVE.RestProxy', {
 	    noCache : false,
 	    reader: {
 		type: 'json',
-		root: 'data'
+		root: config.root || 'data'
 	    },
 	    afterRequest: function(request, success) {
 		me.fireEvent('afterload', me, request, success);

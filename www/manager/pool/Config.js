@@ -20,6 +20,12 @@ Ext.define('PVE.pool.Config', {
 		    itemId: 'summary'
 		},
 		{
+		    title: gettext('Members'),
+		    xtype: 'pvePoolMembers',
+		    pool: pool,
+		    itemId: 'members'
+		},
+		{
 		    xtype: 'pveACLView',
 		    title: gettext('Permissions'),
 		    itemId: 'permissions',
