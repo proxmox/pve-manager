@@ -27,6 +27,7 @@
 .pve-itype-icon-node,
 .pve-itype-icon-node-running,
 .pve-itype-icon-storage,
+.pve-itype-icon-pool,
 .pve-itype-icon-itype
 {
     background-repeat: no-repeat;
@@ -81,6 +82,13 @@
 .x-grid-tree-node-expanded .x-tree-node-harddisk
 {
     background-image:url(../images/drive-harddisk.png);
+}
+
+.pve-itype-icon-pool,
+.x-tree-node-pool,
+.x-grid-tree-pool-expanded .x-tree-node-pool
+{
+    background-image:url(../images/connect_established.png);
 }
 
 .pve-itype-icon-itype

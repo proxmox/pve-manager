@@ -72,6 +72,8 @@ Ext.define('PVE.data.ResourceStore', {
 
 		    if (info.type === 'node') {
 			text = info.node;
+		    } else if (info.type === 'pool') {
+			text = info.pool;
 		    } else if (info.type === 'storage') {
 			text = info.storage + ' (' + info.node + ')';
 		    } else if (info.type === 'qemu' || info.type === 'openvz') {
@@ -158,6 +160,13 @@ Ext.define('PVE.data.ResourceStore', {
 	    },
 	    storage: {
 		header: gettext('Storage'),
+		type: 'text',
+		hidden: true,
+		sortable: true,
+		width: 110
+	    },
+	    pool: {
+		header: gettext('Pool'),
 		type: 'text',
 		hidden: true,
 		sortable: true,

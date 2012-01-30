@@ -143,7 +143,8 @@ __PACKAGE__->register_method({
 	my ($param) = @_;
 
 	my $rpcenv = PVE::RPCEnvironment::get();
-	my $user = $rpcenv->get_user();
+	my $authuser = $rpcenv->get_user();
+	my $usercfg = $rpcenv->{user_cfg};
 
 	my $res = [];
 
@@ -155,6 +156,24 @@ __PACKAGE__->register_method({
 	my $vmlist = PVE::Cluster::get_vmlist() || {};
 	my $idlist = $vmlist->{ids} || {};
 
+	my $pooldata = {};
+	if (!$param->{type} || $param->{type} eq 'pool') {
+	    foreach my $pool (keys %{$usercfg->{pools}}) {
+		my $d = $usercfg->{pools}->{$pool};
+
+		next if !$rpcenv->check($authuser, "/pool/$pool", [ 'VM.Audit' ], 1);
+
+		my $entry = {
+		    id => "/pool/$pool",
+		    pool => $pool, 
+		    type => 'pool',
+		};
+
+		$pooldata->{$pool} = $entry;
+
+		push @$res, $entry;
+	    }
+	}
 
 	# we try to generate 'numbers' by using "$X + 0"
 	if (!$param->{type} || $param->{type} eq 'vm') {
@@ -162,7 +181,7 @@ __PACKAGE__->register_method({
 		my $data = $idlist->{$vmid};
 
 
-		next if !$rpcenv->check($user, "/vms/$vmid", [ 'VM.Audit' ], 1);
+		next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ], 1);
 
 		my $entry = {
 		    id => "$data->{type}/$vmid",
@@ -182,7 +201,22 @@ __PACKAGE__->register_method({
 		    $entry->{mem} = ($d->[6] || 0) + 0;
 		    $entry->{maxdisk} = ($d->[7] || 0) + 0;
 		    $entry->{disk} = ($d->[8] || 0) + 0;
+
+		    if (my $pool = $usercfg->{vms}->{$vmid}) {
+			if (my $pe = $pooldata->{$pool}) {
+			    $pe->{uptime} = $entry->{uptime} if !$pe->{uptime} || $entry->{uptime} > $pe->{uptime};
+			    $pe->{mem} = 0 if !$pe->{mem};
+			    $pe->{mem} += $entry->{mem};
+			    $pe->{maxmem} = 0 if !$pe->{maxmem};
+			    $pe->{maxmem} += $entry->{maxmem};
+			    $pe->{cpu} = 0 if !$pe->{cpu};
+			    $pe->{cpu} += $entry->{cpu};
+			    $pe->{maxcpu} = 0 if !$pe->{maxcpu};
+			    $pe->{maxcpu} += $entry->{maxcpu};
+			}
+		    }
 		}
+
 		
 		push @$res, $entry;
 	    }
@@ -221,7 +255,7 @@ __PACKAGE__->register_method({
 
 	    foreach my $storeid (@sids) {
 		my $scfg =  PVE::Storage::storage_config($cfg, $storeid);
-		next if !$rpcenv->check($user, "/storage/$storeid", [ 'Datastore.Audit' ], 1);
+		next if !$rpcenv->check($authuser, "/storage/$storeid", [ 'Datastore.Audit' ], 1);
 		# we create a entry for each node
 		foreach my $node (@$nodelist) {
 		    next if !PVE::Storage::storage_check_enabled($cfg, $storeid, $node, 1);
@@ -268,7 +302,7 @@ __PACKAGE__->register_method({
 	my ($param) = @_;
 
 	my $rpcenv = PVE::RPCEnvironment::get();
-	my $user = $rpcenv->get_user();
+	my $authuser = $rpcenv->get_user();
 
 	my $tlist = PVE::Cluster::get_tasklist();
 
@@ -276,10 +310,10 @@ __PACKAGE__->register_method({
 
 	return $res if !$tlist;
 
-	my $all = $rpcenv->check($user, "/", [ 'Sys.Audit' ], 1);
+	my $all = $rpcenv->check($authuser, "/", [ 'Sys.Audit' ], 1);
 
 	foreach my $task (@$tlist) {
-	    push @$res, $task if $all || ($task->{user} eq $user);
+	    push @$res, $task if $all || ($task->{user} eq $authuser);
 	}
    
 	return $res;

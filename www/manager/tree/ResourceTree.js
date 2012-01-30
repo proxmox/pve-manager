@@ -12,6 +12,10 @@ Ext.define('PVE.tree.ResourceTree', {
 		iconCls: 'x-tree-node-server',
 		text: gettext('Node list')
 	    },
+	    pool: { 
+		iconCls: 'x-tree-node-pool',
+		text: gettext('Resource Pool')
+	    },
 	    storage: {
 		iconCls: 'x-tree-node-harddisk',
 		text: gettext('Storage list')

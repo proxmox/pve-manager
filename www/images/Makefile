@@ -13,6 +13,7 @@ GNOME_IMAGES = 			\
 	network.png		\
 	drive-harddisk.png	\
 	network-server.png	\
+	connect_established.png	\
 	computer.png
 
 IMAGES = ${GNOME_IMAGES}	\
