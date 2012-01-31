@@ -8,11 +8,6 @@
 
 Ext.define('PVE.Workspace', {
     extend: 'Ext.container.Viewport',
-    requires: [	     
-	'Ext.tip.*',   
-	'PVE.Utils', 
-	'PVE.window.LoginWindow'
-    ],
 
     title: 'Proxmox Virtual Environment',
 
@@ -103,9 +98,6 @@ Ext.define('PVE.Workspace', {
 
 Ext.define('PVE.ConsoleWorkspace', {
     extend: 'PVE.Workspace',
-    requires: [	  
-	'PVE.KVMConsole'
-    ],
 
     alias: ['widget.pveConsoleWorkspace'],
 

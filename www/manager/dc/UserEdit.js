@@ -19,6 +19,9 @@ Ext.define('PVE.dc.UserEdit', {
             method = 'PUT';
 	}
 
+	var verifypw;
+	var pwfield;
+
 	var validate_pw = function() {
 	    if (verifypw.getValue() !== pwfield.getValue()) {
 		return gettext("Passwords does not match");
@@ -26,7 +29,7 @@ Ext.define('PVE.dc.UserEdit', {
 	    return true;
 	};
 
-	var verifypw = Ext.createWidget('textfield', { 
+	verifypw = Ext.createWidget('textfield', { 
 	    inputType: 'password',
 	    fieldLabel: gettext('Verify Password'), 
 	    name: 'verifypassword',
@@ -36,7 +39,7 @@ Ext.define('PVE.dc.UserEdit', {
 	    validator: validate_pw
 	});
 
-	var pwfield = Ext.createWidget('textfield', { 
+	pwfield = Ext.createWidget('textfield', { 
 	    inputType: 'password',
 	    fieldLabel: gettext('Password'), 
 	    minLength: 5,

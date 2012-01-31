@@ -8,6 +8,9 @@ Ext.define('PVE.window.PasswordEdit', {
 	    throw "no userid specified";
 	}
 
+	var verifypw;
+	var pwfield;
+
 	var validate_pw = function() {
 	    if (verifypw.getValue() !== pwfield.getValue()) {
 		return gettext("Passwords does not match");
@@ -15,7 +18,7 @@ Ext.define('PVE.window.PasswordEdit', {
 	    return true;
 	};
 
-	var verifypw = Ext.createWidget('textfield', { 
+	verifypw = Ext.createWidget('textfield', { 
 	    inputType: 'password',
 	    fieldLabel: gettext('Verify Password'), 
 	    name: 'verifypassword',
@@ -23,7 +26,7 @@ Ext.define('PVE.window.PasswordEdit', {
 	    validator: validate_pw
 	});
 
-	var pwfield = Ext.createWidget('textfield', { 
+	pwfield = Ext.createWidget('textfield', { 
 	    inputType: 'password',
 	    fieldLabel: gettext('Password'), 
 	    minLength: 5,
@@ -39,7 +42,7 @@ Ext.define('PVE.window.PasswordEdit', {
 		{
 		    xtype: 'hiddenfield',
 		    name: 'userid',
-		    value: me.userid,
+		    value: me.userid
 		}
 	    ]
 	});

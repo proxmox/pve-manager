@@ -1,9 +1,5 @@
 Ext.define('PVE.form.FileSelector', {
     extend: 'PVE.form.ComboGrid',
-    requires: [
-	'Ext.data.Store', 
-	'PVE.RestProxy'
-    ],
     alias: ['widget.pveFileSelector'],
 
     setStorage: function(storage, nodename) {

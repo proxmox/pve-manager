@@ -15,16 +15,6 @@ Ext.override(Ext.grid.feature.Chunking, {
 
 Ext.define('PVE.grid.ResourceGrid', {
     extend: 'Ext.grid.GridPanel',
-    requires: [
-	'Ext.grid.*',
-	'Ext.grid.feature.Chunking',
-	'Ext.state.Manager',
-	'Ext.data.*',
-	'Ext.data.Store',
-	'Ext.util.*',
-	'PVE.Utils', 
-	'PVE.data.ResourceStore'
-    ],
     alias: ['widget.pveResourceGrid'],
 
     //fixme: this makes still problems with the scrollbar

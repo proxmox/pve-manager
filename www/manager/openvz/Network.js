@@ -147,9 +147,6 @@ Ext.define('PVE.OpenVZ.IPAdd', {
 
 Ext.define('PVE.openvz.NetworkView', {
     extend: 'Ext.grid.GridPanel',
-    requires: [
-	'Ext.grid.*'
-    ],
     alias: ['widget.pveOpenVZNetworkView'],
 
     dataCache: {}, // used to store result of last load

@@ -1,9 +1,5 @@
 Ext.define('PVE.tree.ResourceTree', {
     extend: 'Ext.tree.TreePanel',
-    requires: ['Ext.tree.*', 
-	       'Ext.state.Manager',
-	       'PVE.Utils', 
-	       'PVE.data.ResourceStore'],
     alias: ['widget.pveResourceTree'],
 
     statics: {

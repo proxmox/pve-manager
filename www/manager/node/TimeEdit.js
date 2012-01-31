@@ -1,6 +1,5 @@
 Ext.define('PVE.node.TimeEdit', {
     extend: 'PVE.window.Edit',
-    requires: ['PVE.data.TimezoneStore'],
     alias: ['widget.pveNodeTimeEdit'],
 
     initComponent : function() {

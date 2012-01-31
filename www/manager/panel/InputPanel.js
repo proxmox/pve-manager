@@ -1,8 +1,5 @@
 Ext.define('PVE.panel.InputPanel', {
     extend: 'Ext.panel.Panel',
-    requires: [
-	'PVE.Utils'
-    ],
     alias: ['widget.inputpanel'],
 
     border: false,

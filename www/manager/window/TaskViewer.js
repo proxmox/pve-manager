@@ -3,9 +3,6 @@
 
 Ext.define('PVE.window.TaskViewer', {
     extend: 'Ext.window.Window',
-    requires: [
-        'PVE.Utils'
-    ],
     alias: 'widget.pveTaskViewer',
 
     initComponent: function() {

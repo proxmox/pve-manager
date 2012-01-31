@@ -1,6 +1,5 @@
 Ext.define('PVE.form.ViewSelector', {
     extend: 'Ext.form.field.ComboBox',
-    requires: ['Ext.data.Store'],
     alias: ['widget.pveViewSelector'],
 
     initComponent: function() {

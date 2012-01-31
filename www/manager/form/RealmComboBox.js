@@ -1,6 +1,5 @@
 Ext.define('PVE.form.RealmComboBox', {
     extend: 'Ext.form.field.ComboBox',
-    requires: ['Ext.data.Store', 'PVE.RestProxy'],
     alias: ['widget.pveRealmComboBox'],
 
     initComponent: function() {

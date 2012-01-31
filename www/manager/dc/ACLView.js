@@ -3,6 +3,7 @@ Ext.define('PVE.dc.ACLAdd', {
     alias: ['widget.pveACLAdd'],
 
     initComponent : function() {
+	/*jslint confusion: true */
         var me = this;
 
 	me.create = true;

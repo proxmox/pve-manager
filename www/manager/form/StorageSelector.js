@@ -1,9 +1,5 @@
 Ext.define('PVE.form.StorageSelector', {
     extend: 'PVE.form.ComboGrid',
-    requires: [
-	'Ext.data.Store', 
-	'PVE.RestProxy'
-    ],
     alias: ['widget.PVE.form.StorageSelector'],
 
     setNodename: function(nodename) {

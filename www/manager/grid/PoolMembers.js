@@ -2,6 +2,7 @@ Ext.define('PVE.pool.AddVM', {
     extend: 'PVE.window.Edit',
 
     initComponent : function() {
+	/*jslint confusion: true */
 	var me = this;
 
 	if (!me.pool) {
@@ -35,6 +36,7 @@ Ext.define('PVE.pool.AddStorage', {
     extend: 'PVE.window.Edit',
 
     initComponent : function() {
+	/*jslint confusion: true */
 	var me = this;
 
 	if (!me.pool) {

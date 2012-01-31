@@ -1,9 +1,5 @@
 Ext.define('PVE.node.DNSEdit', {
     extend: 'PVE.window.Edit',
-    requires: [
-	'PVE.Utils'
-    ],
-
     alias: ['widget.pveNodeDNSEdit'],
 
     initComponent : function() {

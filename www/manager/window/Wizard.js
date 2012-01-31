@@ -1,8 +1,5 @@
 Ext.define('PVE.window.Wizard', {
     extend: 'Ext.window.Window',
-    requires: [
-	'PVE.Utils'
-    ],
     
     getValues: function(dirtyOnly) {
 	var me = this;

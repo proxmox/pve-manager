@@ -1,10 +1,6 @@
 /*jslint confusion: true */
 Ext.define('PVE.openvz.CreateWizard', {
     extend: 'PVE.window.Wizard',
-    requires: [    
-	'Ext.form.*',
-	'PVE.data.ResourceStore'
-    ],
 
     initComponent: function() {
 	var me = this;

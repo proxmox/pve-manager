@@ -71,8 +71,6 @@ if (-f $langfile) {
 
 $jssrc .= <<_EOJS;
 
-Ext.require(['*', '$workspace']);
-
 // we need this (the java applet ignores the zindex)
 Ext.useShims = true;
 

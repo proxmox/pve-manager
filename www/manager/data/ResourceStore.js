@@ -1,6 +1,5 @@
 Ext.define('PVE.data.ResourceStore', {
     extend: 'PVE.data.UpdateStore',
-    requires: ['PVE.Utils'],
     singleton: true,
 
     findNextVMID: function() {

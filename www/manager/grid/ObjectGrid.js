@@ -1,9 +1,5 @@
 Ext.define('PVE.grid.ObjectGrid', {
     extend: 'Ext.grid.GridPanel',
-    requires: [
-	'Ext.grid.*',
-	'PVE.data.ObjectStore'
-    ],
     alias: ['widget.pveObjectGrid'],
 
     getObjectValue: function(key, defaultValue) {

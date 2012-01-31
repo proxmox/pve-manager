@@ -1,9 +1,5 @@
 Ext.define('PVE.form.BridgeSelector', {
     extend: 'PVE.form.ComboGrid',
-    requires: [
-	'Ext.data.Store', 
-	'PVE.RestProxy'
-    ],
     alias: ['widget.PVE.form.BridgeSelector'],
 
     setNodename: function(nodename) {

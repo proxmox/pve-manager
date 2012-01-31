@@ -1,9 +1,5 @@
 Ext.define('PVE.form.RRDTypeSelector', {
     extend: 'Ext.form.field.ComboBox',
-    requires: [
-	'Ext.state.Manager'
-    ],
-
     alias: ['widget.pveRRDTypeSelector'],
   
     initComponent: function() {

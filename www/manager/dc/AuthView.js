@@ -49,7 +49,7 @@ Ext.define('PVE.dc.AuthView', {
 	});
 
 	var remove_btn = new PVE.button.Button({
- 	    text: gettext('Remove'),
+	    text: gettext('Remove'),
 	    disabled: true,
 	    selModel: sm,
 	    confirmMsg: function (rec) {

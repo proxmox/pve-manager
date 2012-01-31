@@ -1,9 +1,5 @@
 Ext.define('PVE.form.NodeSelector', {
     extend: 'PVE.form.ComboGrid',
-    requires: [
-	'Ext.data.Store', 
-	'PVE.RestProxy'
-    ],
     alias: ['widget.PVE.form.NodeSelector'],
 
     // invalidate nodes which are offline

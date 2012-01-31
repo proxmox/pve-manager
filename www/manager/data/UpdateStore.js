@@ -1,10 +1,5 @@
 Ext.define('PVE.data.UpdateStore', {
     extend: 'Ext.data.Store',
-    requires: [
-	'PVE.Utils', 
-	'Ext.util.*', 
-	'PVE.data.UpdateQueue'
-    ],
 
     constructor: function(config) {
 	var me = this;

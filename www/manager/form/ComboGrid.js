@@ -1,9 +1,5 @@
 Ext.define('PVE.form.ComboGrid', {
     extend: 'Ext.form.field.ComboBox',
-    requires: [
-	'Ext.grid.Panel',
-	'PVE.Utils'
-    ],
     alias: ['widget.PVE.form.ComboGrid'],
 
     computeHeight: function() {

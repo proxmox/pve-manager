@@ -1,10 +1,5 @@
 Ext.define('PVE.panel.StatusPanel', {
     extend: 'Ext.tab.Panel',
-    requires: [
-	'Ext.state.Manager',
-	'PVE.dc.Log',
-	'PVE.dc.Tasks'
-    ],
     alias: 'widget.pveStatusPanel',
 
     
