@@ -11,10 +11,10 @@ Ext.define('PVE.dc.PoolEdit', {
         var method;
 
         if (me.create) {
-            url = '/api2/extjs/access/pools';
+            url = '/api2/extjs/pools';
             method = 'POST';
         } else {
-            url = '/api2/extjs/access/pools/' + me.poolid;
+            url = '/api2/extjs/pools/' + me.poolid;
             method = 'PUT';
         }
 

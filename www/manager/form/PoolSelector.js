@@ -47,7 +47,7 @@ Ext.define('PVE.form.PoolSelector', {
 	fields: [ 'poolid', 'comment' ],
 	proxy: {
             type: 'pve',
-	    url: "/api2/json/access/pools"
+	    url: "/api2/json/pools"
 	},
 	idProperty: 'poolid'
     });

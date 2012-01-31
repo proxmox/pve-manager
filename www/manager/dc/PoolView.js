@@ -30,7 +30,7 @@ Ext.define('PVE.dc.PoolView', {
 	    },
 	    handler: function(btn, event, rec) {
 		PVE.Utils.API2Request({
-		    url: '/access/pools/' + rec.data.poolid,
+		    url: '/pools/' + rec.data.poolid,
 		    method: 'DELETE',
 		    waitMsgTarget: me,
 		    callback: function() {
