@@ -23,6 +23,7 @@ __PACKAGE__->register_method ({
     method => 'GET',
     description => "Pool index.",
     permissions => { 
+	description => "List all pools where you have Pool.Allocate permissions on /pool/<pool>.",
 	user => 'all',
     },
     parameters => {
@@ -43,12 +44,15 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
     
 	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
 
 	my $res = [];
 
 	my $usercfg = $rpcenv->{user_cfg};
 
 	foreach my $pool (keys %{$usercfg->{pools}}) {
+	    next if !$rpcenv->check($authuser, "/pool/$pool", [ 'Pool.Allocate' ], 1);
+
 	    my $entry = { poolid => $pool };
 	    my $data = $usercfg->{pools}->{$pool};
 	    $entry->{comment} = $data->{comment} if defined($data->{comment});
@@ -64,7 +68,7 @@ __PACKAGE__->register_method ({
     path => '', 
     method => 'POST',
     permissions => { 
-	check => ['perm', '/access', ['Sys.Modify']],
+	check => ['perm', '/pool/{poolid}', ['Pool.Allocate']],
     },
     description => "Create new pool.",
     parameters => {
@@ -104,7 +108,8 @@ __PACKAGE__->register_method ({
     path => '{poolid}', 
     method => 'PUT',
     permissions => { 
-	check => ['perm', '/access', ['Sys.Modify']],
+	description => "You aslo need the right to modify permissions on any object you add/delete.",
+	check => ['perm', '/pool/{poolid}', ['Pool.Allocate']],
     },
     description => "Update pool data.",
     parameters => {
@@ -133,6 +138,9 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+
 	PVE::AccessControl::lock_user_config(
 	    sub {
 			
@@ -149,6 +157,7 @@ __PACKAGE__->register_method ({
 		
 		if (defined($param->{vms})) {
 		    foreach my $vmid (PVE::Tools::split_list($param->{vms})) {
+			$rpcenv->check_perm_modify($authuser, "/vms/$vmid");
 			if ($param->{delete}) {
 			    die "VM $vmid is not a pool member\n"
 				if !$data->{vms}->{$vmid};
@@ -168,6 +177,7 @@ __PACKAGE__->register_method ({
 
 		if (defined($param->{storage})) {
 		    foreach my $storeid (PVE::Tools::split_list($param->{storage})) {
+			$rpcenv->check_perm_modify($authuser, "/storage/$storeid");
 			if ($param->{delete}) {
 			    die "Storage '$storeid' is not a pool member\n"
 				if !$data->{storage}->{$storeid};
@@ -192,9 +202,9 @@ __PACKAGE__->register_method ({
     path => '{poolid}', 
     method => 'GET',
     permissions => { 
-	check => ['perm', '/access', ['Sys.Audit']],
+	check => ['perm', '/pool/{poolid}', ['Pool.Allocate']],
     },
-    description => "Get group configuration.",
+    description => "Get pool configuration.",
     parameters => {
    	additionalProperties => 0,
 	properties => {
@@ -274,9 +284,10 @@ __PACKAGE__->register_method ({
     path => '{poolid}', 
     method => 'DELETE',
     permissions => { 
-	check => ['perm', '/access', ['Sys.Modify']],
+	description => "You can only delete empty pools (no members).",
+	check => ['perm', '/pool/{poolid}', ['Pool.Allocate']],
     },
-    description => "Delete group.",
+    description => "Delete pool.",
     parameters => {
    	additionalProperties => 0,
 	properties => {
@@ -286,6 +297,9 @@ __PACKAGE__->register_method ({
     returns => { type => 'null' },
     code => sub {
 	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
 
 	PVE::AccessControl::lock_user_config(
 	    sub {
@@ -298,7 +312,10 @@ __PACKAGE__->register_method ({
 		
 		die "pool '$pool' does not exist\n" 
 		    if !$data;
-	
+
+		die "pool '$pool' is not empty\n"
+		    if scalar (keys %{$data->{vms}}) || scalar(keys %{$data->{storage}});
+
 		delete ($usercfg->{pools}->{$pool});
 
 		PVE::AccessControl::delete_pool_acl($pool, $usercfg);

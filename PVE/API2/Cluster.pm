@@ -162,7 +162,7 @@ __PACKAGE__->register_method({
 	    foreach my $pool (keys %{$usercfg->{pools}}) {
 		my $d = $usercfg->{pools}->{$pool};
 
-		next if !$rpcenv->check($authuser, "/pool/$pool", [ 'VM.Audit' ], 1);
+		next if !$rpcenv->check($authuser, "/pool/$pool", [ 'Pool.Allocate' ], 1);
 
 		my $entry = {
 		    id => "/pool/$pool",
@@ -179,8 +179,6 @@ __PACKAGE__->register_method({
 	# we try to generate 'numbers' by using "$X + 0"
 	if (!$param->{type} || $param->{type} eq 'vm') {
 	    foreach my $vmid (keys %$idlist) {
-
-		next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ], 1);
 
 		my $data = $idlist->{$vmid};
 		my $entry = PVE::API2Tools::extract_vm_stats($vmid, $data, $rrd);
@@ -200,6 +198,8 @@ __PACKAGE__->register_method({
 		    }
 		}
 		
+		next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ], 1);
+
 		push @$res, $entry;
 	    }
 	}
