@@ -83,21 +83,23 @@ Ext.define('PVE.form.ComboGrid', {
 
         me.callParent();
 
-	me.store.on('beforeload', function() {
-	    var form = me.up('form');
-	    if (form) {
-		form.setLoading(true, true);
+	me.store.on('beforeload', function() {	 
+	    if (!me.isDisabled()) {
+		me.setDisabled(true);
+		me.enableAfterLoad = true;
 	    }
 	});
 
 	// hack: autoSelect does not work
 	me.store.on('load', function(store, r, success, o) {
-	    var form = me.up('form');
-	    if (form) {
-		form.setLoading(false);
-	    }
 	    if (success) {
 		me.clearInvalid();
+		
+		if (me.enableAfterLoad) {
+		    delete me.enableAfterLoad;
+ 		    me.setDisabled(false);
+		}
+
 		var def = me.getValue();
 		if (def) {
 		    me.setValue(def, true); // sync with grid
