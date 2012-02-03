@@ -70,9 +70,21 @@ Ext.define('PVE.qemu.CreateWizard', {
 			    allowBlank: true
 			}
 		    ],
+		    column2: [
+			{
+			    xtype: 'pvePoolSelector',
+			    fieldLabel: gettext('Resource Pool'),
+			    name: 'pool',
+			    value: '',
+			    allowBlank: true
+			},
+		    ],
 		    onGetValues: function(values) {
 			if (!values.name) {
 			    delete values.name;
+			}
+			if (!values.pool) {
+			    delete values.pool;
 			}
 			return values;
 		    }

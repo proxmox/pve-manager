@@ -170,7 +170,7 @@ __PACKAGE__->register_method ({
 				if $usercfg->{vms}->{$vmid};
 
 			    $data->{vms}->{$vmid} = 1;
-			    $usercfg->{vms}->{$vmid} = 1;
+			    $usercfg->{vms}->{$vmid} = $pool;
 			}
 		    }
 		}
