@@ -170,11 +170,12 @@ Ext.define('PVE.grid.PoolMembers', {
 	    viewConfig: {
 		stripeRows: true
             },
-            columns: coldef
+            columns: coldef,
+	    listeners: {
+		show: reload
+	    }
 	});
 
 	me.callParent();
-
-	reload();
     }
 });
