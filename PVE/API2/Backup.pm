@@ -191,6 +191,9 @@ __PACKAGE__->register_method({
     path => '', 
     method => 'GET',
     description => "List vzdump backup schedule.",
+    permissions => {
+	check => ['perm', '/', ['Sys.Audit']],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {},
@@ -224,6 +227,9 @@ __PACKAGE__->register_method({
     method => 'POST',
     protected => 1,
     description => "Create new vzdump backup job.",
+    permissions => {
+	check => ['perm', '/', ['Sys.Modify']],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => PVE::VZDump::json_config_properties({
@@ -266,6 +272,9 @@ __PACKAGE__->register_method({
     path => '{id}', 
     method => 'GET',
     description => "Read vzdump backup job definition.",
+    permissions => {
+	check => ['perm', '/', ['Sys.Audit']],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -302,6 +311,9 @@ __PACKAGE__->register_method({
     path => '{id}', 
     method => 'DELETE',
     description => "Delete vzdump backup job definition.",
+    permissions => {
+	check => ['perm', '/', ['Sys.Modify']],
+    },
     protected => 1,
     parameters => {
     	additionalProperties => 0,
@@ -349,6 +361,9 @@ __PACKAGE__->register_method({
     method => 'PUT',
     protected => 1,
     description => "Update vzdump backup job definition.",
+    permissions => {
+	check => ['perm', '/', ['Sys.Modify']],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => PVE::VZDump::json_config_properties({
