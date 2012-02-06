@@ -10,6 +10,7 @@ use IO::Select;
 use IPC::Open3;
 use POSIX qw(strftime);
 use File::Path;
+use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Cluster qw(cfs_read_file);
 use PVE::VZDump::OpenVZ;
@@ -953,7 +954,7 @@ sub exec_backup_task {
 }
 
 sub exec_backup {
-    my ($self) = @_;
+    my ($rpcenv, $authuser, $self) = @_;
 
     my $opts = $self->{opts};
 
@@ -968,6 +969,7 @@ sub exec_backup {
 	    my $vmlist = $plugin->vmlist();
 	    foreach my $vmid (sort @$vmlist) {
 		next if grep { $_ eq  $vmid } @{$opts->{exclude}};
+		next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Backup' ], 1);
 	        push @$tasklist, { vmid => $vmid,  state => 'todo', plugin => $plugin };
 	    }
 	}
@@ -981,6 +983,7 @@ sub exec_backup {
 		    last;
 		}
 	    }
+	    $rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Backup' ]);
 	    push @$tasklist, { vmid => $vmid,  state => 'todo', plugin => $plugin };
 	}
     }

@@ -22,6 +22,10 @@ __PACKAGE__->register_method ({
     path => '',
     method => 'POST',
     description => "Create backup.",
+    permissions => {
+	description => "The user needs VM.Backup permissions on any VM.",
+	user => 'all',
+    },
     protected => 1,
     proxyto => 'node',
     parameters => {
@@ -99,6 +103,11 @@ __PACKAGE__->register_method ({
 	die "you can only backup a single VM with option --stdout\n"
 	    if $param->{stdout} && scalar(@vmids) != 1;
 
+	foreach my $key (qw(maxfiles tmpdir dumpdir script size bwlimit ionice)) {
+	    raise_param_exc({ $key => "Only root may set this option."})
+		if defined($param->{$key}) && ($user ne 'root@pam');	    
+	}
+
 	my $vzdump = PVE::VZDump->new($cmdline, $param, $skiplist);
 
 	my $worker = sub {
@@ -115,7 +124,7 @@ __PACKAGE__->register_method ({
 		    PVE::VZDump::run_command(undef, "ionice -c2 -n$param->{ionice} -p $$");
 		}
 	    }
-	    $vzdump->exec_backup(); 
+	    $vzdump->exec_backup($rpcenv, $user); 
 	}; 
 
 	open STDOUT, '>/dev/null' if $param->{quiet} && !$param->{stdout};
