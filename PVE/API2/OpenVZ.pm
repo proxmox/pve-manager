@@ -64,6 +64,10 @@ __PACKAGE__->register_method({
     path => '', 
     method => 'GET',
     description => "OpenVZ container index (per node).",
+    permissions => {
+	description => "Only list VMs where you have VM.Audit permissons on /vms/<vmid>.",
+	user => 'all',
+    },
     proxyto => 'node',
     protected => 1, # openvz proc files are only readable by root
     parameters => {
@@ -83,10 +87,22 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+
 	my $vmstatus = PVE::OpenVZ::vmstatus();
 
-	return PVE::RESTHandler::hash_to_array($vmstatus, 'vmid');
+	my $res = [];
+	foreach my $vmid (keys %$vmstatus) {
+	    next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ], 1);
 
+	    my $data = $vmstatus->{$vmid};
+	    $data->{vmid} = $vmid;
+	    push @$res, $data;
+	}
+
+	return $res;
+  
     }});
 
 my $restore_openvz = sub {
@@ -404,6 +420,9 @@ __PACKAGE__->register_method({
     method => 'GET',
     proxyto => 'node',
     description => "Directory index",
+    permissions => {
+	user => 'all',
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -597,6 +616,9 @@ __PACKAGE__->register_method({
     method => 'GET',
     proxyto => 'node',
     description => "Get container configuration.",
+    permissions => {
+	check => ['perm', '/vms/{vmid}', [ 'VM.Audit' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -672,6 +694,9 @@ __PACKAGE__->register_method({
     protected => 1,
     proxyto => 'node',
     description => "Destroy the container (also delete all uses files).",
+    permissions => {
+	check => [ 'perm', '/vms/{vmid}', ['VM.Allocate']],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -796,6 +821,9 @@ __PACKAGE__->register_method({
     method => 'GET',
     proxyto => 'node',
     description => "Directory index",
+    permissions => {
+	user => 'all',
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -836,6 +864,9 @@ __PACKAGE__->register_method({
     proxyto => 'node',
     protected => 1, # openvz /proc entries are only readable by root
     description => "Get virtual machine status.",
+    permissions => {
+	check => ['perm', '/vms/{vmid}', [ 'VM.Audit' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -870,6 +901,9 @@ __PACKAGE__->register_method({
     proxyto => 'node',
     protected => 1, # openvz /proc entries are only readable by root
     description => "Get container user_beancounters.",
+    permissions => {
+	check => ['perm', '/vms/{vmid}', [ 'VM.Audit' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -911,6 +945,9 @@ __PACKAGE__->register_method({
     protected => 1,
     proxyto => 'node',
     description => "Start the container.",
+    permissions => {
+	check => ['perm', '/vms/{vmid}', [ 'VM.PowerMgmt' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -956,6 +993,9 @@ __PACKAGE__->register_method({
     protected => 1,
     proxyto => 'node',
     description => "Stop the container.",
+    permissions => {
+	check => ['perm', '/vms/{vmid}', [ 'VM.PowerMgmt' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -1002,6 +1042,9 @@ __PACKAGE__->register_method({
     protected => 1,
     proxyto => 'node',
     description => "Shutdown the container.",
+    permissions => {
+	check => ['perm', '/vms/{vmid}', [ 'VM.PowerMgmt' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -1075,6 +1118,9 @@ __PACKAGE__->register_method({
     protected => 1,
     proxyto => 'node',
     description => "Migrate the container to another node. Creates a new migration task.",
+    permissions => {
+	check => ['perm', '/vms/{vmid}', [ 'VM.Migrate' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
