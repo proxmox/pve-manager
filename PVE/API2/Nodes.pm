@@ -104,7 +104,6 @@ __PACKAGE__->register_method ({
 	    { name => 'services' },
 	    { name => 'scan' },
 	    { name => 'storage' },
-	    { name => 'upload' },
 	    { name => 'qemu' },
 	    { name => 'openvz' },
 	    { name => 'vzdump' },
@@ -488,6 +487,7 @@ __PACKAGE__->register_method ({
     method => 'POST',
     protected => 1,
     permissions => {
+	description => "Restricted to users on realm 'pam'",
 	check => ['perm', '/nodes/{node}', [ 'Sys.Console' ]],
     },
     description => "Creates a VNC Shell proxy.",
@@ -512,7 +512,9 @@ __PACKAGE__->register_method ({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
-	my $user = $rpcenv->get_user();
+	my ($user, undef, $realm) = verify_username($rpcenv->get_user());
+
+	raise_perm_exc("realm != pam") if $realm ne 'pam'; 
 
 	my $node = $param->{node};
 
@@ -626,6 +628,9 @@ __PACKAGE__->register_method({
     path => 'dns', 
     method => 'PUT',
     description => "Write DNS settings.",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
     proxyto => 'node',
     protected => 1,
     parameters => {
@@ -716,6 +721,9 @@ __PACKAGE__->register_method({
     path => 'time', 
     method => 'PUT',
     description => "Set time zone.",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
     proxyto => 'node',
     protected => 1,
     parameters => {
@@ -735,78 +743,6 @@ __PACKAGE__->register_method({
 	PVE::INotify::write_file('timezone', $param->{timezone});
 
 	return undef;
-    }});
-
-__PACKAGE__->register_method ({
-    name => 'upload', 
-    path => 'upload',
-    method => 'POST',
-    permissions => {
-	check => ['perm', '/storage/{storage}', [ 'Datastore.AllocateSpace' ]],
-    },
-    description => "Upload content.",
-    parameters => {
-    	additionalProperties => 0,
-	properties => { 
-	    node => get_standard_option('pve-node'),
-	    storage => get_standard_option('pve-storage-id'),
-	    filename => { 
-		description => "The name of the file to create/upload.",
-		type => 'string',
-	    },
-	    vmid => get_standard_option
-		('pve-vmid', { 
-		    description => "Specify owner VM",
-		    optional => 1,
-		 }),
-	},
-    },
-    returns => {
-	description => "Volume identifier",
-	type => 'string',
-    },
-    code => sub {
-	my ($param) = @_;
-
-	# todo: can we proxy file uploads to remote nodes?
-	if ($param->{node} ne PVE::INotify::nodename()) {
-	    raise_param_exc({ node => "can't upload content to remote node" });
-	}
-
-	my $node = $param->{node};
-	my $storeid = $param->{storage};
-	my $name = $param->{filename};
-
-	my $fh = CGI::upload('filename') || die "unable to get file handle\n";
-
-	syslog ('info', "UPLOAD $name to $node $storeid");
-	
-	# fixme:
-	die "upload not implemented\n";
-
-	my $buffer = "";
-	my $tmpname = "/tmp/proxmox_upload-$$.bin";
-
-	eval {
-	    open FILE, ">$tmpname" || die "can't open temporary file '$tmpname' - $!\n";
-	    while (read($fh, $buffer, 32768)) {
-		die "write failed - $!" unless print FILE $buffer;
-	    }
-	    close FILE || die " can't close temporary file '$tmpname' - $!\n";
-	};
-	my $err = $@;
-
-	if ($err) {
-	    unlink $tmpname;
-	    die $err;
-	}
-
-	unlink $tmpname; # fixme: proxy to local host import
-
-	# fixme: return volid
-
-	return undef;
-
     }});
 
 package PVE::API2::Nodes;
