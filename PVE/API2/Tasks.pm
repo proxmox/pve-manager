@@ -19,7 +19,10 @@ __PACKAGE__->register_method({
     name => 'node_tasks', 
     path => '', 
     method => 'GET',
-    permissions => { user => 'all' },
+    permissions => { 
+	description => "List task associated with the current user, or all task the user has 'Sys.Audit' permissions on /nodes/<node> (the <node> the task runs on).",
+	user => 'all' 
+    },
     description => "Read task list for one node (finished tasks).",
     proxyto => 'node',
     parameters => {
@@ -153,7 +156,10 @@ __PACKAGE__->register_method({
     path => '{upid}', 
     method => 'DELETE',
     description => 'Stop a task.',
-    permissions => { user => 'all' },
+    permissions => { 
+	description => "The user needs 'Sys.Modify' permissions on '/nodes/<node>' if the task does not belong to him.",
+	user => 'all', 
+    },
     protected => 1,
     proxyto => 'node',
     parameters => {
@@ -176,7 +182,7 @@ __PACKAGE__->register_method({
 	my $node = $param->{node};
 
 	if ($user ne $task->{user}) {
-	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Console' ]);
+	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Modify' ]);
 	}
 
 	PVE::RPCEnvironment::check_worker($param->{upid}, 1);
@@ -188,7 +194,10 @@ __PACKAGE__->register_method({
     name => 'read_task_log', 
     path => '{upid}/log', 
     method => 'GET',
-    permissions => { user => 'all' },
+    permissions => { 
+	description => "The user needs 'Sys.Audit' permissions on '/nodes/<node>' if the task does not belong to him.",
+	user => 'all',
+    },
     protected => 1,
     description => "Read task log.",
     proxyto => 'node',
@@ -274,7 +283,10 @@ __PACKAGE__->register_method({
     name => 'read_task_status', 
     path => '{upid}/status', 
     method => 'GET',
-    permissions => { user => 'all' },
+    permissions => { 
+	description => "The user needs 'Sys.Audit' permissions on '/nodes/<node>' if the task does not belong to him.",
+	user => 'all',
+    },
     protected => 1,
     description => "Read task status.",
     proxyto => 'node',
