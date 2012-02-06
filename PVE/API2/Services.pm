@@ -194,6 +194,9 @@ __PACKAGE__->register_method({
     path => '{service}', 
     method => 'GET',
     description => "Directory index",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -263,6 +266,9 @@ __PACKAGE__->register_method ({
     path => '{service}/start', 
     method => 'POST',
     description => "Start service.",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
     proxyto => 'node',
     protected => 1,
     parameters => {
@@ -301,6 +307,9 @@ __PACKAGE__->register_method ({
     path => '{service}/stop', 
     method => 'POST',
     description => "Stop service.",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
     proxyto => 'node',
     protected => 1,
     parameters => {
@@ -339,6 +348,9 @@ __PACKAGE__->register_method ({
     path => '{service}/restart', 
     method => 'POST',
     description => "Restart service.",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
     proxyto => 'node',
     protected => 1,
     parameters => {
@@ -377,6 +389,9 @@ __PACKAGE__->register_method ({
     path => '{service}/reload', 
     method => 'POST',
     description => "Reload service.",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
     proxyto => 'node',
     protected => 1,
     parameters => {
