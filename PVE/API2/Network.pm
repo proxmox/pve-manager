@@ -307,6 +307,3 @@ __PACKAGE__->register_method({
 
 	return undef;
     }});
-
-
-

@@ -310,6 +310,7 @@ __PACKAGE__->register_method({
     },
     code => sub {
 	my ($param) = @_;
+
 	return PVE::Cluster::cfs_read_file('datacenter.cfg');
     }});
 
@@ -440,7 +441,9 @@ __PACKAGE__->register_method({
     path => 'status', 
     method => 'GET',
     description => "Get cluster status informations.",
-    permissions => { user => 'all' },
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit' ]],
+    },
     protected => 1,
     parameters => {
     	additionalProperties => 0,
