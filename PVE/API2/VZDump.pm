@@ -23,7 +23,7 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => "Create backup.",
     permissions => {
-	description => "The user needs VM.Backup permissions on any VM.",
+	description => "The user needs 'VM.Backup' permissions on any VM, and 'Datastore.AllocateSpace' on the backup storage.",
 	user => 'all',
     },
     protected => 1,
@@ -107,6 +107,9 @@ __PACKAGE__->register_method ({
 	    raise_param_exc({ $key => "Only root may set this option."})
 		if defined($param->{$key}) && ($user ne 'root@pam');	    
 	}
+
+	$rpcenv->check($user, "/storage/$param->{storage}", [ 'Datastore.AllocateSpace' ])
+	    if $param->{storage};
 
 	my $vzdump = PVE::VZDump->new($cmdline, $param, $skiplist);
 
