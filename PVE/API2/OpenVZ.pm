@@ -5,13 +5,13 @@ use warnings;
 use File::Basename;
 use File::Path;
 use POSIX qw (LONG_MAX);
-use Cwd 'abs_path';
 
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param run_command);
 use PVE::Exception qw(raise raise_param_exc);
 use PVE::INotify;
-use PVE::Cluster qw(cfs_lock_file cfs_read_file);
+use PVE::Cluster qw(cfs_lock_file cfs_read_file cfs_write_file);
+use PVE::AccessControl;
 use PVE::Storage;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
@@ -58,6 +58,30 @@ QUOTAUGIDLIMIT="0"
 CPUUNITS="1000"
 CPUS="1"
 __EOD
+
+my $check_ct_modify_config_perm = sub {
+    my ($rpcenv, $authuser, $vmid, $pool, $key_list) = @_;
+    
+    return 1 if $authuser ne 'root@pam';
+
+    foreach my $opt (@$key_list) {
+
+	if ($opt eq 'cpus' || $opt eq 'cpuunits' || $opt eq 'cpulimit') {
+	    $rpcenv->check_vm_perm($authuser, $vmid, $pool, ['VM.Config.CPU']);
+	} elsif ($opt eq 'disk' || $opt eq 'quotatime' || $opt eq 'quotaugidlimit') {
+	    $rpcenv->check_vm_perm($authuser, $vmid, $pool, ['VM.Config.Disk']);
+	} elsif ($opt eq 'memory' || $opt eq 'swap') {
+	    $rpcenv->check_vm_perm($authuser, $vmid, $pool, ['VM.Config.Memory']);
+	} elsif ($opt eq 'netif' || $opt eq 'ip_address' || $opt eq 'nameserver' || 
+		 $opt eq 'searchdomain' || $opt eq 'hostname') {
+	    $rpcenv->check_vm_perm($authuser, $vmid, $pool, ['VM.Config.Network']);
+	} else {
+	    $rpcenv->check_vm_perm($authuser, $vmid, $pool, ['VM.Config.Options']);
+	}
+    }
+
+    return 1;
+};
 
 __PACKAGE__->register_method({
     name => 'vmlist', 
@@ -198,6 +222,13 @@ __PACKAGE__->register_method({
     path => '', 
     method => 'POST',
     description => "Create or restore a container.",
+    permissions => {
+	description => "You need 'VM.Allocate' permissions on /vms/{vmid} or on the VM pool /pool/{pool}, and 'Datastore.AllocateSpace' on the storage.",
+	check => [ 'or', 
+		   [ 'perm', '/vms/{vmid}', ['VM.Allocate']],
+		   [ 'perm', '/pool/{pool}', ['VM.Allocate'], require_param => 'pool'],
+	    ],
+    },
     protected => 1,
     proxyto => 'node',
     parameters => {
@@ -230,6 +261,11 @@ __PACKAGE__->register_method({
 		type => 'boolean',
 		description => "Mark this as restore task.",
 	    },
+	    pool => { 
+		optional => 1,
+		type => 'string', format => 'pve-poolid',
+		description => "Add the VM to the specified pool.",
+	    },
 	}),
     },
     returns => { 
@@ -240,7 +276,7 @@ __PACKAGE__->register_method({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
-	my $user = $rpcenv->get_user();
+	my $authuser = $rpcenv->get_user();
 
 	my $node = extract_param($param, 'node');
 
@@ -250,6 +286,8 @@ __PACKAGE__->register_method({
 
 	my $storage = extract_param($param, 'storage') || 'local';
 
+	my $pool = extract_param($param, 'pool');
+	
 	my $storage_cfg = cfs_read_file("storage.cfg");
 
 	my $scfg = PVE::Storage::storage_check_node($storage_cfg, $storage, $node);
@@ -259,9 +297,27 @@ __PACKAGE__->register_method({
 
 	my $private = PVE::Storage::get_private_dir($storage_cfg, $storage, $vmid);
 
+	if (defined($pool)) {
+	    $rpcenv->check_pool_exist($pool);
+	    $rpcenv->check_perm_modify($authuser, "/pool/$pool");
+	} 
+
+	$rpcenv->check($authuser, "/storage/$storage", ['Datastore.AllocateSpace']);
+
+	&$check_ct_modify_config_perm($rpcenv, $authuser, $vmid, $pool, [ keys %$param]);
+
 	PVE::Storage::activate_storage($storage_cfg, $storage);
 
 	my $conf = PVE::OpenVZ::parse_ovz_config("/tmp/openvz/$vmid.conf", $pve_base_ovz_config);
+
+	my $addVMtoPoolFn = sub {		       
+	    my $usercfg = cfs_read_file("user.cfg");
+	    if (my $data = $usercfg->{pools}->{$pool}) {
+		$data->{vms}->{$vmid} = 1;
+		$usercfg->{vms}->{$vmid} = $pool;
+		cfs_write_file("user.cfg", $usercfg);
+	    }
+	};
 
 	my $code = sub {
 
@@ -284,14 +340,7 @@ __PACKAGE__->register_method({
 		    if !$param->{restore};
 		$archive = '-';
 	    } else {
-		if (PVE::Storage::parse_volume_id($ostemplate, 1)) {
-		    $archive = PVE::Storage::path($storage_cfg, $ostemplate);
-		} else {
-		    raise_param_exc({ archive => "Only root can pass arbitrary paths." }) 
-			if $user ne 'root@pam';
-
-		    $archive = abs_path($ostemplate);
-		}
+		$archive = $rpcenv->check_volume_access($authuser, $storage_cfg, $vmid, $ostemplate);
 		die "can't find file '$archive'\n" if ! -f $archive;
 	    }
 
@@ -346,14 +395,24 @@ __PACKAGE__->register_method({
 		    PVE::OpenVZ::set_rootpasswd($private, $password) 
 			if defined($password);
 		}
+
+		PVE::AccessControl::lock_user_config($addVMtoPoolFn, "can't add VM to pool") if $pool;
 	    };
 
 	    return $rpcenv->fork_worker($param->{restore} ? 'vzrestore' : 'vzcreate', 
-					$vmid, $user, $realcmd);
+					$vmid, $authuser, $realcmd);
 	};
 
 	return PVE::OpenVZ::lock_container($vmid, $code);
     }});
+
+my $vm_config_perm_list = [
+	    'VM.Config.Disk', 
+	    'VM.Config.CPU', 
+	    'VM.Config.Memory', 
+	    'VM.Config.Network', 
+	    'VM.Config.Options',
+    ];
 
 __PACKAGE__->register_method({
     name => 'update_vm', 
@@ -362,6 +421,9 @@ __PACKAGE__->register_method({
     protected => 1,
     proxyto => 'node',
     description => "Set virtual machine options.",
+    permissions => {
+	check => ['perm', '/vms/{vmid}', $vm_config_perm_list, any => 1],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => PVE::OpenVZ::json_config_properties(
@@ -382,7 +444,7 @@ __PACKAGE__->register_method({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
-	my $user = $rpcenv->get_user();
+	my $authuser = $rpcenv->get_user();
 
 	my $node = extract_param($param, 'node');
 
@@ -391,6 +453,8 @@ __PACKAGE__->register_method({
 	my $digest = extract_param($param, 'digest');
 
 	die "no options specified\n" if !scalar(keys %$param);
+
+	&$check_ct_modify_config_perm($rpcenv, $authuser, $vmid, undef, [keys %$param]);
 
 	my $code = sub {
 
@@ -404,7 +468,7 @@ __PACKAGE__->register_method({
 
 	    my $cmd = ['vzctl', '--skiplock', 'set', $vmid, @$changes, '--save'];
 
-	    PVE::Cluster::log_msg('info', $user, "update CT $vmid: " . join(' ', @$changes));
+	    PVE::Cluster::log_msg('info', $authuser, "update CT $vmid: " . join(' ', @$changes));
  
 	    run_command($cmd);
 	};
@@ -593,7 +657,7 @@ __PACKAGE__->register_method({
 	my ($param) = @_;
 
 	my $rpcenv = PVE::RPCEnvironment::get();
-	my $user = $rpcenv->get_user();
+	my $authuser = $rpcenv->get_user();
 
 	my $vmid = $param->{vmid};
 
@@ -712,7 +776,7 @@ __PACKAGE__->register_method({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
-	my $user = $rpcenv->get_user();
+	my $authuser = $rpcenv->get_user();
 
 	my $vmid = $param->{vmid};
 
@@ -725,7 +789,7 @@ __PACKAGE__->register_method({
 	    run_command($cmd);
 	};
 
-	return $rpcenv->fork_worker('vzdestroy', $vmid, $user, $realcmd);
+	return $rpcenv->fork_worker('vzdestroy', $vmid, $authuser, $realcmd);
     }});
 
 my $sslcert;
@@ -761,14 +825,14 @@ __PACKAGE__->register_method ({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
-	my $user = $rpcenv->get_user();
+	my $authuser = $rpcenv->get_user();
 
 	my $vmid = $param->{vmid};
 	my $node = $param->{node};
 
 	my $authpath = "/vms/$vmid";
 
-	my $ticket = PVE::AccessControl::assemble_vnc_ticket($user, $authpath);
+	my $ticket = PVE::AccessControl::assemble_vnc_ticket($authuser, $authpath);
 
 	$sslcert = PVE::Tools::file_get_contents("/etc/pve/pve-root-ca.pem", 8192)
 	    if !$sslcert;
@@ -804,10 +868,10 @@ __PACKAGE__->register_method ({
 	    return;
 	};
 
-	my $upid = $rpcenv->fork_worker('vncproxy', $vmid, $user, $realcmd);
+	my $upid = $rpcenv->fork_worker('vncproxy', $vmid, $authuser, $realcmd);
 
 	return {
-	    user => $user,
+	    user => $authuser,
 	    ticket => $ticket,
 	    port => $port, 
 	    upid => $upid, 
@@ -963,7 +1027,7 @@ __PACKAGE__->register_method({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
-	my $user = $rpcenv->get_user();
+	my $authuser = $rpcenv->get_user();
 
 	my $node = extract_param($param, 'node');
 
@@ -983,7 +1047,7 @@ __PACKAGE__->register_method({
 	    return;
 	};
 
-	return $rpcenv->fork_worker('vzstart', $vmid, $user, $realcmd);
+	return $rpcenv->fork_worker('vzstart', $vmid, $authuser, $realcmd);
     }});
 
 __PACKAGE__->register_method({
@@ -1011,7 +1075,7 @@ __PACKAGE__->register_method({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
-	my $user = $rpcenv->get_user();
+	my $authuser = $rpcenv->get_user();
 
 	my $node = extract_param($param, 'node');
 
@@ -1030,7 +1094,7 @@ __PACKAGE__->register_method({
 	    return;
 	};
 
-	my $upid = $rpcenv->fork_worker('vzstop', $vmid, $user, $realcmd);
+	my $upid = $rpcenv->fork_worker('vzstop', $vmid, $authuser, $realcmd);
 
 	return $upid;
     }});
@@ -1073,7 +1137,7 @@ __PACKAGE__->register_method({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
-	my $user = $rpcenv->get_user();
+	my $authuser = $rpcenv->get_user();
 
 	my $node = extract_param($param, 'node');
 
@@ -1106,7 +1170,7 @@ __PACKAGE__->register_method({
 	    return;
 	};
 
-	my $upid = $rpcenv->fork_worker('vzshutdown', $vmid, $user, $realcmd);
+	my $upid = $rpcenv->fork_worker('vzshutdown', $vmid, $authuser, $realcmd);
 
 	return $upid;
     }});
@@ -1143,7 +1207,7 @@ __PACKAGE__->register_method({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
-	my $user = $rpcenv->get_user();
+	my $authuser = $rpcenv->get_user();
 
 	my $target = extract_param($param, 'target');
 
@@ -1175,7 +1239,7 @@ __PACKAGE__->register_method({
 	    return;
 	};
 
-	my $upid = $rpcenv->fork_worker('vzmigrate', $vmid, $user, $realcmd);
+	my $upid = $rpcenv->fork_worker('vzmigrate', $vmid, $authuser, $realcmd);
 
 	return $upid;
     }});
