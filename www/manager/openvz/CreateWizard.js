@@ -92,6 +92,13 @@ Ext.define('PVE.openvz.CreateWizard', {
 			}
 		    ],
 		    column2: [
+			{
+			    xtype: 'pvePoolSelector',
+			    fieldLabel: gettext('Resource Pool'),
+			    name: 'pool',
+			    value: '',
+			    allowBlank: true
+			},
 			storagesel,
 			{
 			    xtype: 'textfield',
@@ -126,6 +133,9 @@ Ext.define('PVE.openvz.CreateWizard', {
 		    ],
 		    onGetValues: function(values) {
 			delete values.confirmpw;
+			if (!values.pool) {
+			    delete values.pool;
+			}
 			return values;
 		    }
 		},
