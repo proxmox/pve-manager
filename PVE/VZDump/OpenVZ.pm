@@ -231,7 +231,7 @@ sub assemble {
 }
 
 sub archive {
-    my ($self, $task, $vmid, $filename) = @_;
+    my ($self, $task, $vmid, $filename, $comp) = @_;
     
     my $findexcl = $self->{vzdump}->{findexcl};
     my $findargs = join (' ', @$findexcl) . ' -print0';
@@ -239,8 +239,6 @@ sub archive {
 
     my $srcdir = $self->{vmlist}->{$vmid}->{dir};
     my $snapdir = $task->{snapdir};
-
-    my $zflag = $opts->{compress} ? 'z' : '';
 
     my $taropts = "--totals --sparse --numeric-owner --no-recursion --ignore-failed-read --one-file-system";
 
@@ -253,13 +251,12 @@ sub archive {
     #}
 
     my $cmd = "(";
-    $cmd .= "cd $snapdir;find . $findargs|sed 's/\\\\/\\\\\\\\/g'|";
-    $cmd .= "tar c${zflag}pf - $taropts --null -T -";
 
-    if ($opts->{bwlimit}) {
-	my $bwl = $opts->{bwlimit}*1024; # bandwidth limit for cstream
-	$cmd .= "|cstream -t $bwl";
-    }
+    $cmd .= "cd $snapdir;find . $findargs|sed 's/\\\\/\\\\\\\\/g'|";
+    $cmd .= "tar cpf - $taropts --null -T -";
+    my $bwl = $opts->{bwlimit}*1024; # bandwidth limit for cstream
+    $cmd .= "|cstream -t $bwl" if $opts->{bwlimit};
+    $cmd .= "|$comp" if $comp;
 
     $cmd .= ")";
 

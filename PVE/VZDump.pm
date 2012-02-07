@@ -643,6 +643,20 @@ sub run_hook_script {
     run_command ($logfd, $cmd);
 }
 
+sub compressor_info {
+    my ($opt_compress) = @_;
+
+    if (!$opt_compress || $opt_compress eq '0') {
+	return undef;
+    } elsif ($opt_compress eq '1' || $opt_compress eq 'lzo') {
+	return ('lzop', 'lzo');
+    } elsif ($opt_compress eq 'gzip') {
+	return ('gzip', 'gz');
+    } else {
+	die "internal error - unknown compression option '$opt_compress'";
+    }
+}
+ 
 sub exec_backup_task {
     my ($self, $task) = @_;
 	 
@@ -675,7 +689,11 @@ sub exec_backup_task {
 
 	my $logfile = $task->{logfile} = "$opts->{dumpdir}/$basename.log";
 
-	my $ext = $opts->{compress} ? '.tgz' : '.tar';
+	my $ext = '.tar';
+	my ($comp, $comp_ext) = compressor_info($opts->{compress});
+	if ($comp && $comp_ext) {
+	    $ext .= ".${comp_ext}";
+	}
 
 	if ($opts->{stdout}) {
 	    $task->{tarfile} = '-';
@@ -836,13 +854,13 @@ sub exec_backup_task {
 
 	if ($opts->{stdout}) {
 	    debugmsg ('info', "sending archive to stdout", $logfd);
-	    $plugin->archive($task, $vmid, $task->{tmptar});
+	    $plugin->archive($task, $vmid, $task->{tmptar}, $comp);
 	    $self->run_hook_script ('backup-end', $task, $logfd);
 	    return;
 	}
 
 	debugmsg ('info', "creating archive '$task->{tarfile}'", $logfd);
-	$plugin->archive ($task, $vmid, $task->{tmptar});
+	$plugin->archive($task, $vmid, $task->{tmptar}, $comp);
 
 	rename ($task->{tmptar}, $task->{tarfile}) ||
 	    die "unable to rename '$task->{tmptar}' to '$task->{tarfile}'\n";
@@ -861,7 +879,7 @@ sub exec_backup_task {
 	    my $dir = $opts->{dumpdir};
 	    foreach my $fn (<$dir/${bkname}-*>) {
 		next if $fn eq $task->{tarfile};
-		if ($fn =~ m!/(${bkname}-(\d{4})_(\d{2})_(\d{2})-(\d{2})_(\d{2})_(\d{2})\.(tgz|tar))$!) {
+		if ($fn =~ m!/(${bkname}-(\d{4})_(\d{2})_(\d{2})-(\d{2})_(\d{2})_(\d{2})\.(tgz|(tar(\.(gz|lzo))?)))$!) {
 		    $fn = "$dir/$1"; # untaint
 		    my $t = timelocal ($7, $6, $5, $4, $3 - 1, $2 - 1900);
 		    push @bklist, [$fn, $t];
@@ -877,7 +895,7 @@ sub exec_backup_task {
 		debugmsg ('info', "delete old backup '$d->[0]'", $logfd);
 		unlink $d->[0];
 		my $logfn = $d->[0];
-		$logfn =~ s/\.(tgz|tar)$/\.log/;
+		$logfn =~ s/\.(tgz|(tar(\.(gz|lzo))?))$/\.log/;
 		unlink $logfn;
 	    }
 	}
@@ -954,7 +972,7 @@ sub exec_backup_task {
 }
 
 sub exec_backup {
-    my ($rpcenv, $authuser, $self) = @_;
+    my ($self, $rpcenv, $authuser) = @_;
 
     my $opts = $self->{opts};
 
@@ -1048,10 +1066,11 @@ my $confdesc = {
 	default => 1,
     },
     compress => {
-	type => 'boolean',
-	description => "Compress dump file (gzip).",
+	type => 'string',
+	description => "Compress dump file.",
 	optional => 1,
-	default => 0,
+	enum => ['0', '1', 'gzip', 'lzo'],
+	default => 'lzo',
     },
     quiet => {
 	type => 'boolean',

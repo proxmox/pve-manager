@@ -116,7 +116,7 @@ sub assemble {
 }
 
 sub archive {
-    my ($self, $task, $vmid, $filename) = @_;
+    my ($self, $task, $vmid, $filename, $comp) = @_;
 
     die "internal error"; # implement in subclass
 }
