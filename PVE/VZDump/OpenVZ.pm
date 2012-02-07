@@ -286,7 +286,7 @@ sub cleanup {
 	while(-b $di->{snapdev}) {
 	    eval { 
 		my $cmd = ['lvremove', '-f', $di->{snapdev}];
-		PVE::Tools::run_command($cmd, outfunc => sub {}, errfunc => {});
+		PVE::Tools::run_command($cmd, outfunc => sub {}, errfunc => sub {});
 	    };
 	    last if !$@;
 	    if ($wait >= 64) {
