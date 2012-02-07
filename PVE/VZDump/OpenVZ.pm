@@ -197,7 +197,7 @@ sub snapshot {
 
     $task->{cleanup}->{snapshot_mount} = 1;
 
-    $self->cmd ("mount -t $di->{fstype} $mopts $di->{snapdev} $di->{mountpoint}");
+    $self->cmd ("mount -n -t $di->{fstype} $mopts $di->{snapdev} $di->{mountpoint}");
 }
 
 sub copy_data_phase2 {
