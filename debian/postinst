@@ -41,7 +41,7 @@ case "$1" in
 
     if test -f /root/.forward; then
 	if ! grep -q '|/usr/bin/pvemailforward' /root/.forward; then 
-	    echo "|/usr/bin/pvemailforward\n$(cat /root/.forward)" >/root/.forward.tmp
+	    echo -e "|/usr/bin/pvemailforward\n$(cat /root/.forward)" >/root/.forward.tmp
 	    mv /root/.forward.tmp /root/.forward
 	fi
     else

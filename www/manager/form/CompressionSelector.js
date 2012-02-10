@@ -1,6 +1,6 @@
-Ext.define('PVE.form.CPUModelSelector', {
+Ext.define('PVE.form.CompressionSelector', {
     extend: 'PVE.form.KVComboBox',
-    alias: ['widget.CPUModelSelector'],
+    alias: ['widget.pveCompressionSelector'],
   
     initComponent: function() {
 	var me = this;
