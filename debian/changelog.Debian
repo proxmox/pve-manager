@@ -1,3 +1,11 @@
+pve-manager (2.0-22) unstable; urgency=low
+
+  * fix lint errors
+  
+  * fix compression selector
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 10 Feb 2012 12:26:39 +0100
+
 pve-manager (2.0-21) unstable; urgency=low
 
   * fix postinst script (write correct /root/.forward)

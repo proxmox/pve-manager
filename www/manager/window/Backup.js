@@ -43,10 +43,9 @@ Ext.define('PVE.window.Backup', {
 		    name: 'mode'
 		},
 		{
-		    xtype: 'pvecheckbox',
+		    xtype: 'pveCompressionSelector',
 		    name: 'compress',
-		    uncheckedValue: 0,
-		    checked: true,
+		    value: 'lzo',
 		    fieldLabel: 'Compress'
 		}
 	    ]
@@ -59,16 +58,18 @@ Ext.define('PVE.window.Backup', {
 	    handler: function(){
 		var storage = storagesel.getValue();
 		var values = form.getValues();
-		console.dir(me.vmid, me.nodename, values.online);
-		
-		PVE.Utils.API2Request({
-		    url: '/nodes/' + me.nodename + '/vzdump',
-		    params: {
+		var params = {
 			storage: storage,
 			vmid: me.vmid,
-			compress: values.compress,
 			mode: values.mode
-		    },
+		};
+		if (values.compress) {
+		    params.compress = values.compress;
+		}
+
+		PVE.Utils.API2Request({
+		    url: '/nodes/' + me.nodename + '/vzdump',
+		    params: params,
 		    method: 'POST',
 		    failure: function (response, opts) {
 			Ext.Msg.alert('Error',response.htmlStatus);

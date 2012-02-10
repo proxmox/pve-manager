@@ -97,7 +97,7 @@ Ext.define('PVE.form.ComboGrid', {
 		
 		if (me.enableAfterLoad) {
 		    delete me.enableAfterLoad;
- 		    me.setDisabled(false);
+		    me.setDisabled(false);
 		}
 
 		var def = me.getValue();

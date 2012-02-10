@@ -77,7 +77,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 			    name: 'pool',
 			    value: '',
 			    allowBlank: true
-			},
+			}
 		    ],
 		    onGetValues: function(values) {
 			if (!values.name) {
