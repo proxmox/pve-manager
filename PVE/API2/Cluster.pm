@@ -182,7 +182,7 @@ __PACKAGE__->register_method({
 
 		my $data = $idlist->{$vmid};
 		my $entry = PVE::API2Tools::extract_vm_stats($vmid, $data, $rrd);
-		if (defined($entry->{uptime})) {
+		if ($entry->{uptime}) {
 		    if (my $pool = $usercfg->{vms}->{$vmid}) {
 			if (my $pe = $pooldata->{$pool}) {
 			    $pe->{uptime} = $entry->{uptime} if !$pe->{uptime} || $entry->{uptime} > $pe->{uptime};
