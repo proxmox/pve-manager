@@ -1,5 +1,13 @@
 pve-manager (2.0-20) unstable; urgency=low
 
+  * improve user management
+  
+  * implement permission checks
+  
+  * improve backup GUI (allow to select lzo/gzip)
+
+  * add pools to resource list
+  
   * fix bug #85: allow root@pam to generate tickets for other users
 
   * fix bug #86: correctly decode cookie
