@@ -21,8 +21,9 @@ Ext.define('PVE.Workspace', {
 	me.loginData = loginData;
 	PVE.CSRFPreventionToken = loginData.CSRFPreventionToken;
 	PVE.UserName = loginData.username;
-	var expire = Ext.Date.add(new Date(), Ext.Date.HOUR, 2);
-	Ext.util.Cookies.set('PVEAuthCookie', loginData.ticket, expire);
+	// creates a session cookie (expire = null) 
+	// that way the cookie gets deleted after browser window close
+	Ext.util.Cookies.set('PVEAuthCookie', loginData.ticket, null, '/', null, true);
 	me.onLogin(loginData);
     },
 
