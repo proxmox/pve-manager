@@ -23,6 +23,7 @@ JSSRC= 				                 	\
 	form/ComboGrid.js				\
 	form/KVComboBox.js				\
 	form/Boolean.js					\
+	form/CompressionSelector.js			\
 	form/PoolSelector.js				\
 	form/GroupSelector.js				\
 	form/UserSelector.js				\

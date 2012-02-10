@@ -159,11 +159,10 @@ Ext.define('PVE.dc.BackupEdit', {
 		name: 'mailto'
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'pveCompressionSelector',
 		fieldLabel: gettext('Compression'),
 		name: 'compress',
-		checked: true,
-		uncheckedValue: 0
+		value: me.create ? 'lzo' : ''
 	    },
 	    {
 		xtype: 'numberfield',
