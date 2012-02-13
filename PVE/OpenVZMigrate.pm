@@ -189,6 +189,7 @@ sub phase1 {
 	$cmd = [ 'vzctl', '--skiplock', 'chkpnt', $vmid, '--kill' ];
 	$self->cmd_quiet($cmd, errmsg => "Failed to kill container");
 	$cmd = [ 'vzctl', '--skiplock', 'umount', $vmid ];
+	sleep(1); # hack: wait - else there are open files 
 	$self->cmd_quiet($cmd, errmsg => "Failed to umount container");
     }
 
