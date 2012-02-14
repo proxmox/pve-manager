@@ -1,3 +1,9 @@
+pve-manager (2.0-25) unstable; urgency=low
+
+  * pveversion: display status of resource-agents-pve and fence-agents-pve
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 14 Feb 2012 12:57:11 +0100
+
 pve-manager (2.0-24) unstable; urgency=low
 
   * fix log viewer (correctly refresh display)
