@@ -121,7 +121,9 @@ Ext.define('PVE.window.TaskViewer', {
 	    }]
         });
 
-        me.callParent();
+	me.callParent();
+
+	logView.fireEvent('show', logView);
     }
 });
 

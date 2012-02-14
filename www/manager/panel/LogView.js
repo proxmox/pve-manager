@@ -116,11 +116,13 @@ Ext.define('PVE.panel.LogView', {
 	}
 	var viewEnd = parseInt(((top + me.getHeight())/ me.lineHeight) + 1, 10);
 	var info = me.viewInfo;
+
 	if (info && !force) {
 	    if (viewStart >= info.start && viewEnd <= info.end) {
 		return;
 	    }
 	}
+
 	var line = parseInt((top / me.lineHeight) - (me.pageSize / 2) + 10, 10);
 	if (line < 0) {
 	    line = 0;
@@ -143,55 +145,6 @@ Ext.define('PVE.panel.LogView', {
 	}, 20);
     },
 
-    onShow: function() {
-	/*jslint confusion: true */
-	var me = this;
-
-        me.callParent(arguments);
- 
-	var target = me.getTargetEl();
-	target.dom.scrollTop = me.savedScrollTop;
-
-	me.task = Ext.TaskManager.start({
-	    run: function() {
-		if (!me.scrollToEnd || !me.viewInfo) {
-		    return;
-		}
-
-		var maxDown = me.getMaxDown();
-		if (maxDown > 0) {
-		    return;
-		}
-
-		me.requestUpdate(undefined, true);
-	    },
-	    interval: 1000
-	});
-    },
-
-    onHide: function() {
-	var me = this;
-
-	var target = me.getTargetEl();
-	// Hack: chrome reset scrollTop to 0, so we save/restore
-	me.savedScrollTop = target.dom.scrollTop;
-	if (me.task) {
-	    Ext.TaskManager.stop(me.task);
-	}
-
-        me.callParent(arguments);
-    },
-
-    onDestroy: function() {
-	var me = this;
-
-	if (me.task) {
-	    Ext.TaskManager.stop(me.task);
-	}
-
-        me.callParent(arguments);
-    },
-
     initComponent : function() {
 	var me = this;
 
@@ -204,11 +157,45 @@ Ext.define('PVE.panel.LogView', {
 		'line-height: ' + me.lineHeight.toString() + 'px; white-space: pre;'
 	});
 
+	me.task = Ext.TaskManager.start({
+	    run: function() {
+		if (!me.isVisible() || !me.scrollToEnd || !me.viewInfo) {
+		    return;
+		}
+		
+		var maxDown = me.getMaxDown();
+		if (maxDown > 0) {
+		    return;
+		}
+
+		me.requestUpdate(undefined, true);
+	    },
+	    interval: 1000
+	});
+
 	Ext.apply(me, {
 	    autoScroll: true,
 	    layout: 'auto',
 	    items: me.dataCmp,
-	    bodyStyle: 'padding: 5px;'
+	    bodyStyle: 'padding: 5px;',
+	    listeners: {
+		show: function() {
+		    var target = me.getTargetEl();
+		    if (target && target.dom) {
+			target.dom.scrollTop = me.savedScrollTop;
+		    }
+		},
+		beforehide: function() {
+		    // Hack: chrome reset scrollTop to 0, so we save/restore
+		    var target = me.getTargetEl();
+		    if (target && target.dom) {
+			me.savedScrollTop = target.dom.scrollTop;
+		    }
+		},
+		destroy: function() {
+		    Ext.TaskManager.stop(me.task);
+		}
+	    }
 	});
 
 	me.callParent();

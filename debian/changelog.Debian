@@ -1,3 +1,9 @@
+pve-manager (2.0-24) unstable; urgency=low
+
+  * fix log viewer (correctly refresh display)
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 14 Feb 2012 09:01:07 +0100
+
 pve-manager (2.0-23) unstable; urgency=low
 
   * fix openvz live migration
