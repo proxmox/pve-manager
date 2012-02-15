@@ -1,3 +1,9 @@
+pve-manager (2.0-26) unstable; urgency=low
+
+  * fix bug #1: allow to use iscsi devices directly
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 15 Feb 2012 10:54:50 +0100
+
 pve-manager (2.0-25) unstable; urgency=low
 
   * pveversion: display status of resource-agents-pve and fence-agents-pve

@@ -31,7 +31,7 @@ Ext.define('PVE.form.StorageSelector', {
 	me.nodename = undefined; 
 
 	var store = Ext.create('Ext.data.Store', {
-	    fields: [ 'storage', 'active', 'type', 'avail', 'total' ],
+	    model: 'pve-storage-status',
 	    sorters: {
 		property: 'storage', 
 		order: 'DESC' 
@@ -78,4 +78,12 @@ Ext.define('PVE.form.StorageSelector', {
 	    me.setNodename(nodename);
 	}
     }
+}, function() {
+
+    Ext.define('pve-storage-status', {
+	extend: 'Ext.data.Model',
+	fields: [ 'storage', 'active', 'type', 'avail', 'total' ],
+	idProperty: 'storage'
+    });
+
 });

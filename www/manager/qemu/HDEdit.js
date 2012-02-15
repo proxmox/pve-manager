@@ -19,7 +19,11 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.drive.file = me.vmconfig[values.unusedId];
 	    confid = values.controller + values.deviceid;
 	} else if (me.create) {
-	    me.drive.file = values.hdstorage + ":" + values.disksize;
+	    if (values.hdimage) {
+		me.drive.file = values.hdimage;
+	    } else {
+		me.drive.file = values.hdstorage + ":" + values.disksize;
+	    }
 	    me.drive.format = values.diskformat;
 	}
 	
@@ -84,6 +88,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
     setNodename: function(nodename) {
 	var me = this;
 	me.hdstoragesel.setNodename(nodename);
+	me.hdfilesel.setStorage(undefined, nodename);
     },
 
     initComponent : function() {
@@ -114,18 +119,17 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    });
 	    me.column1.push(me.unusedDisks);
 	} else if (me.create) {
-	    me.hdstoragesel = Ext.create('PVE.form.StorageSelector', {
-		name: 'hdstorage',
+	    me.hdfilesel = Ext.create('PVE.form.FileSelector', {
+		name: 'hdimage',
 		nodename: me.nodename,
-		fieldLabel: 'Storage',
 		storageContent: 'images',
-		autoSelect: me.insideWizard,
+		fieldLabel: 'Disk image',
+		disabled: true,
+		hidden: true,
 		allowBlank: false
 	    });
-	    me.column1.push(me.hdstoragesel);
 
-	    me.column1.push({
-		xtype: 'numberfield',
+	    me.hdsizesel = Ext.createWidget('numberfield', {
 		name: 'disksize',
 		minValue: 1,
 		maxValue: 128*1024,
@@ -133,6 +137,35 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		fieldLabel: 'Disk size (GB)',
 		allowBlank: false
 	    });
+
+	    me.hdstoragesel = Ext.create('PVE.form.StorageSelector', {
+		name: 'hdstorage',
+		nodename: me.nodename,
+		fieldLabel: 'Storage',
+		storageContent: 'images',
+		autoSelect: me.insideWizard,
+		allowBlank: false,
+		listeners: {
+		    change: function(f, value) {
+			var rec = f.store.getById(value);
+			if (rec.data.type === 'iscsi') {
+			    me.hdfilesel.setStorage(value);
+			    me.hdfilesel.setDisabled(false);
+			    me.hdfilesel.setVisible(true);
+			    me.hdsizesel.setDisabled(true);
+			    me.hdsizesel.setVisible(false);
+			} else {
+			    me.hdfilesel.setDisabled(true);
+			    me.hdfilesel.setVisible(false);
+			    me.hdsizesel.setDisabled(false);
+			    me.hdsizesel.setVisible(true);
+			}			
+		    }
+		}
+	    });
+	    me.column1.push(me.hdstoragesel);
+	    me.column1.push(me.hdfilesel);
+	    me.column1.push(me.hdsizesel);
 	} else {
 	    me.column1.push({
 		xtype: 'displayfield',
