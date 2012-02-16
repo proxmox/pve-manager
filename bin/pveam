@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 
 use strict;
-use PVE::APLInfo;
-use PVE::Config;
+use PVE::Cluster;
+#use PVE::APLInfo;
 
 if (scalar (@ARGV) != 1) {
     print STDERR "usage: $0 CMD\n";
@@ -12,9 +12,10 @@ if (scalar (@ARGV) != 1) {
 my $cmd = shift;
 
 if ($cmd eq 'update') {
-    my $pvecfg = PVE::Config::read_file('pvecfg'); 
-    exit (0) if PVE::APLInfo::update($pvecfg->{http_proxy});
-    print STDERR "update failed - see /var/log/pveam.log for details\n";
+    my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
+    die "sorry, this is currently not implemented\n";
+    #exit (0) if PVE::APLInfo::update($dccfg->{http_proxy});
+    #print STDERR "update failed - see /var/log/pveam.log for details\n";
     exit (-1);
 } else {
     print STDERR "unknown CMD '$cmd'\n";
