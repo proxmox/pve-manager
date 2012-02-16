@@ -1,3 +1,9 @@
+pve-manager (2.0-27) unstable; urgency=low
+
+  * fix vnc shell to nodes
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 16 Feb 2012 08:21:00 +0100
+
 pve-manager (2.0-26) unstable; urgency=low
 
   * fix bug #1: allow to use iscsi devices directly

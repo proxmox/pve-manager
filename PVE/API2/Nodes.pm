@@ -512,7 +512,7 @@ __PACKAGE__->register_method ({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
-	my ($user, undef, $realm) = verify_username($rpcenv->get_user());
+	my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
 
 	raise_perm_exc("realm != pam") if $realm ne 'pam'; 
 
