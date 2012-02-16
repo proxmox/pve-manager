@@ -146,6 +146,8 @@ Ext.define('PVE.panel.LogView', {
     },
 
     initComponent : function() {
+	/*jslint confusion: true */
+
 	var me = this;
 
 	if (!me.url) {
