@@ -232,7 +232,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 			},
 			{
 			    xtype: 'pvetextfield',
-			    fieldLabel: 'DNS server 1',
+			    fieldLabel: gettext('DNS server') + " 1",
 			    vtype: 'IPAddress',
 			    allowBlank: true,
 			    disabled: true,
@@ -241,7 +241,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 			},
 			{
 			    xtype: 'pvetextfield',
-			    fieldLabel: 'DNS server 2',
+			    fieldLabel: gettext('DNS server') + " 2",
 			    vtype: 'IPAddress',
 			    skipEmptyText: true,
 			    disabled: true,

@@ -50,15 +50,15 @@ Ext.define('PVE.openvz.DNS', {
 		}
 	    },
 	    nameserver: {
-		header: 'DNS servers',
+		header: gettext('DNS server'),
 		defaultValue: '',
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'DNS servers',
+		    title: gettext('DNS server'),
 		    items: {
 			xtype: 'pvetextfield',
 			name: 'nameserver',
-			fieldLabel: 'DNS servers',
+			fieldLabel: gettext('DNS server'),
 			allowBlank: false
 		    }
 		}

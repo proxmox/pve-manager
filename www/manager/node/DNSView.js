@@ -23,9 +23,9 @@ Ext.define('PVE.node.DNSView', {
 	    interval: 1000,
 	    rows: {
 		search: { header: 'Search domain', required: true },
-		dns1: { header: 'First DNS server', required: true },
-		dns2: { header: 'Second DNS server' },
-		dns3: { header: 'Third DNS server' }
+		dns1: { header: gettext('DNS server') + " 1", required: true },
+		dns2: { header: gettext('DNS server') + " 2" },
+		dns3: { header: gettext('DNS server') + " 3" }
 	    },
 	    tbar: [ 
 		{

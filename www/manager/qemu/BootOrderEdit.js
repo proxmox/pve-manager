@@ -71,14 +71,14 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	    list.push(['d', 'CD-ROM']);
 	}
 	if (sel1 !== 'n' && (sel2 !== 'n')) {
-	    list.push(['n', 'Network']);
+	    list.push(['n', gettext('Network')]);
 	}
 	//if (sel1 !== 'a' && (sel2 !== 'a')) {
 	//    list.push(['a', 'Floppy']);
 	//}
 	
 	if (includeNone) {
-	    list.push(['', 'None']);
+	    list.push(['', 'none']);
 	}
 
 	return list;
@@ -111,7 +111,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	var me = this;
 
 	me.kv1 = Ext.create('PVE.form.KVComboBox', {
-	    fieldLabel: 'First boot device',
+	    fieldLabel: gettext('Boot device') + " 1",
 	    labelWidth: 120,
 	    name: 'bd1',
 	    allowBlank: false,
@@ -119,7 +119,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	});
 
 	me.kv2 = Ext.create('PVE.form.KVComboBox', {
-	    fieldLabel: 'Second boot device',
+	    fieldLabel: gettext('Boot device') + " 2",
 	    labelWidth: 120,
 	    name: 'bd2',
 	    allowBlank: false,
@@ -127,7 +127,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	});
 
 	me.kv3 = Ext.create('PVE.form.KVComboBox', {
-	    fieldLabel: 'Third boot device',
+	    fieldLabel: gettext('Boot device') + " 3",
 	    labelWidth: 120,
 	    name: 'bd3',
 	    allowBlank: false,
