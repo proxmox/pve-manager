@@ -11,6 +11,7 @@ use PVE::ProcFSTools;
 use PVE::SafeSyslog;
 use PVE::Cluster;
 use PVE::INotify;
+use PVE::Exception qw(raise raise_perm_exc);
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
