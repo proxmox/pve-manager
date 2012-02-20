@@ -1100,6 +1100,102 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
+    name => 'vm_mount', 
+    path => '{vmid}/status/mount',
+    method => 'POST',
+    protected => 1,
+    proxyto => 'node',
+    description => "Mounts container private area.",
+    permissions => {
+	check => ['perm', '/vms/{vmid}', [ 'VM.PowerMgmt' ]],
+    },
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	},
+    },
+    returns => { 
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
+
+	my $node = extract_param($param, 'node');
+
+	my $vmid = extract_param($param, 'vmid');
+
+	die "CT $vmid is running\n" if PVE::OpenVZ::check_running($vmid);
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    syslog('info', "mount CT $vmid: $upid\n");
+
+	    my $cmd = ['vzctl', 'mount', $vmid];
+	    
+	    run_command($cmd);
+
+	    return;
+	};
+
+	return $rpcenv->fork_worker('vzmount', $vmid, $authuser, $realcmd);
+    }});
+
+__PACKAGE__->register_method({
+    name => 'vm_umount', 
+    path => '{vmid}/status/umount',
+    method => 'POST',
+    protected => 1,
+    proxyto => 'node',
+    description => "Unmounts container private area.",
+    permissions => {
+	check => ['perm', '/vms/{vmid}', [ 'VM.PowerMgmt' ]],
+    },
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	},
+    },
+    returns => { 
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
+
+	my $node = extract_param($param, 'node');
+
+	my $vmid = extract_param($param, 'vmid');
+
+	die "CT $vmid is running\n" if PVE::OpenVZ::check_running($vmid);
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    syslog('info', "umount CT $vmid: $upid\n");
+
+	    my $cmd = ['vzctl', 'umount', $vmid];
+	    
+	    run_command($cmd);
+
+	    return;
+	};
+
+	return $rpcenv->fork_worker('vzumount', $vmid, $authuser, $realcmd);
+    }});
+
+__PACKAGE__->register_method({
     name => 'vm_shutdown', 
     path => '{vmid}/status/shutdown',
     method => 'POST',

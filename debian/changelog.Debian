@@ -1,3 +1,9 @@
+pve-manager (2.0-30) unstable; urgency=low
+
+  * add unmount button to openvz GUI
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 20 Feb 2012 10:11:13 +0100
+
 pve-manager (2.0-29) unstable; urgency=low
 
   * fix datacenter options GUI

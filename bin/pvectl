@@ -75,6 +75,8 @@ my $cmddef = {
     start => [ 'PVE::API2::OpenVZ', 'vm_start', ['vmid'], { node => $nodename }, $upid_exit],
     shutdown => [ 'PVE::API2::OpenVZ', 'vm_shutdown', ['vmid'], { node => $nodename }, $upid_exit],
     stop => [ 'PVE::API2::OpenVZ', 'vm_stop', ['vmid'], { node => $nodename }, $upid_exit],
+    mount => [ 'PVE::API2::OpenVZ', 'vm_mount', ['vmid'], { node => $nodename }, $upid_exit],
+    umount => [ 'PVE::API2::OpenVZ', 'vm_umount', ['vmid'], { node => $nodename }, $upid_exit],
     migrate => [ "PVE::API2::OpenVZ", 'migrate_vm', ['vmid', 'target'], { node => $nodename }, $upid_exit],
 
 };

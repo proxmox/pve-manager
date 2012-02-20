@@ -38,6 +38,15 @@ Ext.define('PVE.openvz.Config', {
 		vm_command('start');
 	    }			    
 	}); 
+
+	var umountBtn = Ext.create('Ext.Button', { 
+	    text: gettext('Unmount'),
+	    disabled: true,
+	    hidden: true,
+	    handler: function() {
+		vm_command('umount');
+	    }			    
+	}); 
  
 	var stopBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Stop'),
@@ -96,7 +105,7 @@ Ext.define('PVE.openvz.Config', {
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Container {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'ovztab',
-	    tbar: [ startBtn, shutdownBtn, stopBtn, removeBtn, 
+	    tbar: [ startBtn, shutdownBtn, umountBtn, stopBtn, removeBtn, 
 		    migrateBtn, consoleBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
@@ -166,6 +175,16 @@ Ext.define('PVE.openvz.Config', {
 	    shutdownBtn.setDisabled(status !== 'running');
 	    stopBtn.setDisabled(status === 'stopped');
 	    removeBtn.setDisabled(status !== 'stopped');
+
+	    if (status === 'mounted') {
+		umountBtn.setDisabled(false);
+		umountBtn.setVisible(true);
+		stopBtn.setVisible(false);
+	    } else {
+		umountBtn.setDisabled(true);
+		umountBtn.setVisible(false);
+		stopBtn.setVisible(true);
+	    }
 	});
 
 	me.on('afterrender', function() {

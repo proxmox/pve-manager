@@ -389,6 +389,8 @@ Ext.define('PVE.Utils', { statics: {
 	vzmigrate: [ 'CT', gettext('Migrate') ],
 	vzstart: ['CT', gettext('Start') ],
 	vzstop: ['CT', gettext('Stop') ],
+	vzmount: ['CT', gettext('Mount') ],
+	vzumount: ['CT', gettext('Unmount') ],
 	vzshutdown: ['CT', gettext('Shutdown') ],
 	srvstart: ['SRV', gettext('Start') ],
 	srvstop: ['SRV', gettext('Stop') ],
