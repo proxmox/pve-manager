@@ -92,7 +92,7 @@ Ext.define('PVE.dc.OptionView', {
 	    }
 	    
 	    var win = Ext.create(rowdef.editor, {
-		url: me.url,
+		url: "/api2/extjs/cluster/options",
 		confid: rec.data.key
 	    });
 	    win.show();
