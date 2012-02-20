@@ -1,3 +1,11 @@
+pve-manager (2.0-29) unstable; urgency=low
+
+  * fix datacenter options GUI
+  
+  * fix German translation
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 20 Feb 2012 06:52:32 +0100
+
 pve-manager (2.0-28) unstable; urgency=low
 
   * another fix for vnc shell to nodes
