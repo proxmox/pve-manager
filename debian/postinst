@@ -37,7 +37,8 @@ case "$1" in
 
     mkdir /etc/pve 2>/dev/null || true
 
-    test -e /var/lib/pve-manager/apl-available || cp /usr/share/doc/pve-manager/aplinfo.dat /var/lib/pve-manager/apl-available
+    # remove old APL dir
+    rm -rf /var/lib/pve-manager/apl-available
 
     if test -f /root/.forward; then
 	if ! grep -q '|/usr/bin/pvemailforward' /root/.forward; then 

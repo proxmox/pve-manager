@@ -10,6 +10,7 @@ PERLSOURCE = 			\
 	REST.pm			\
 	OpenVZ.pm		\
 	OpenVZMigrate.pm	\
+	APLInfo.pm		\
 	VZDump.pm
 
 all: pvecfg.pm ${SUBDIRS}

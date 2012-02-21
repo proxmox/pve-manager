@@ -1,3 +1,146 @@
+Ext.define('PVE.grid.TemplateSelector', {
+    extend: 'Ext.grid.GridPanel',
+
+    alias: ['widget.pveTemplateSelector'],
+
+    initComponent : function() {
+	var me = this;
+
+	if (!me.nodename) {
+	    throw "no node name specified";
+	}
+
+	var baseurl = "/nodes/" + me.nodename + "/aplinfo";
+	var store = new Ext.data.Store({
+	    model: 'pve-aplinfo',
+	    groupField: 'section',
+	    proxy: {
+                type: 'pve',
+		url: '/api2/json' + baseurl
+	    }
+	});
+
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
+	var groupingFeature = Ext.create('Ext.grid.feature.Grouping',{
+            groupHeaderTpl: '{[ "Section: " + values.name ]} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})'
+	});
+
+	var reload = function() {
+	    store.load();
+	};
+
+	PVE.Utils.monStoreErrors(me, store);
+
+	Ext.apply(me, {
+	    store: store,
+	    selModel: sm,
+	    stateful: false,
+	    viewConfig: {
+		trackOver: false
+	    },
+	    features: [ groupingFeature ],
+	    columns: [
+		{
+		    header: gettext('Type'),
+		    width: 80,
+		    dataIndex: 'type'
+		},
+		{
+		    header: gettext('Package'),
+		    flex: 1,
+		    dataIndex: 'package'
+		},
+		{
+		    header: gettext('Version'),
+		    width: 80,
+		    dataIndex: 'version'
+		},
+		{
+		    header: gettext('Description'),
+		    flex: 1.5,
+		    dataIndex: 'headline'
+		}
+	    ],
+	    listeners: {
+		afterRender: reload
+	    }
+	});
+
+	me.callParent();
+    }
+
+}, function() {
+
+    Ext.define('pve-aplinfo', {
+	extend: 'Ext.data.Model',
+	fields: [ 
+	    'template', 'type', 'package', 'version', 'headline', 'infopage', 
+	    'description', 'os', 'section'
+	],
+	idProperty: 'template'
+    });
+
+});
+
+Ext.define('PVE.storage.TemplateDownload', {
+    extend: 'Ext.window.Window',
+    alias: ['widget.pveTemplateDownload'],
+
+    modal: true,
+
+    initComponent : function() {
+	/*jslint confusion: true */
+        var me = this;
+
+	var grid = Ext.create('PVE.grid.TemplateSelector', {
+	    width: 600,
+	    height: 400,
+	    border: false,
+	    autoScroll: true,
+	    nodename: me.nodename
+	});
+
+	var sm = grid.getSelectionModel();
+
+	var submitBtn = Ext.create('PVE.button.Button', {
+	    text: gettext('Download'),
+	    disabled: true,
+	    selModel: sm,
+	    handler: function(button, event, rec) {
+		PVE.Utils.API2Request({
+		    url: '/nodes/' + me.nodename + '/aplinfo',
+		    params: { 
+			storage: me.storage, 
+			template: rec.data.template
+		    },
+		    method: 'POST',
+		    failure: function (response, opts) {
+			Ext.Msg.alert('Error', response.htmlStatus);
+		    },
+		    success: function(response, options) {
+			var upid = response.result.data;
+			
+			var win = Ext.create('PVE.window.TaskViewer', { 
+			    upid: upid
+			});
+			win.show();
+			me.close();
+		    }
+		});
+	    }
+	});
+
+        Ext.applyIf(me, {
+            title: gettext('Template download'),
+	    items: grid,
+	    buttons: [ submitBtn ]
+	});
+
+	me.callParent();
+    }
+});
+
 Ext.define('PVE.storage.Upload', {
     extend: 'Ext.window.Window',
     alias: ['widget.pveStorageUpload'],
@@ -277,6 +420,17 @@ Ext.define('PVE.storage.ContentView', {
 				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 			    }
 			});
+		    }
+		},
+		{
+		    text: gettext('Templates'),
+		    handler: function() {
+			var win = Ext.create('PVE.storage.TemplateDownload', {
+			    nodename: nodename,
+			    storage: storage
+			});
+			win.show();
+			win.on('destroy', reload);
 		    }
 		},
 		{

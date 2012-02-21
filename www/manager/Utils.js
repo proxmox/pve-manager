@@ -396,6 +396,8 @@ Ext.define('PVE.Utils', { statics: {
 	srvstop: ['SRV', gettext('Stop') ],
 	srvrestart: ['SRV', gettext('Restart') ],
 	srvreload: ['SRV', gettext('Reload') ],
+	imgcopy: ['', gettext('Copy data') ],
+	download: ['', gettext('Download') ],
 	vzdump: ['', gettext('Backup') ]
     },
 

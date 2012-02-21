@@ -2,7 +2,7 @@
 
 use strict;
 use PVE::Cluster;
-#use PVE::APLInfo;
+use PVE::APLInfo;
 
 if (scalar (@ARGV) != 1) {
     print STDERR "usage: $0 CMD\n";
@@ -13,9 +13,8 @@ my $cmd = shift;
 
 if ($cmd eq 'update') {
     my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
-    die "sorry, this is currently not implemented\n";
-    #exit (0) if PVE::APLInfo::update($dccfg->{http_proxy});
-    #print STDERR "update failed - see /var/log/pveam.log for details\n";
+    exit (0) if PVE::APLInfo::update($dccfg->{http_proxy});
+    print STDERR "update failed - see /var/log/pveam.log for details\n";
     exit (-1);
 } else {
     print STDERR "unknown CMD '$cmd'\n";

@@ -3,30 +3,37 @@ package PVE::APLInfo;
 use strict;
 use IO::File;
 use PVE::SafeSyslog;
-use PVE::I18N;
 use LWP::UserAgent;
-use PVE::Config;
 use POSIX qw(strftime);
 
 my $logfile = "/var/log/pveam.log";
+my $aplinfodir = "/var/lib/pve-manager/apl-info";
 
 # Default list of GPG keys allowed to sign aplinfo
 #
 #pub   1024D/5CAC72FE 2004-06-24
 #      Key fingerprint = 9ABD 7E02 AD24 3AD3 C2FB  BCCC B0C1 CC22 5CAC 72FE
 #uid                  Proxmox Support Team <support@proxmox.com>
+#pub   2048R/A16EB94D 2008-08-15 [expires: 2023-08-12]
+#      Key fingerprint = 694C FF26 795A 29BA E07B  4EB5 85C2 5E95 A16E B94D
+#uid                  Turnkey Linux Release Key <release@turnkeylinux.com>
 
 my $valid_keys = {
     '9ABD7E02AD243AD3C2FBBCCCB0C1CC225CAC72FE' => 1, # fingerprint support@proxmox.com
     '25CAC72FE' => 1,                                # keyid support@proxmox.com
+    '694CFF26795A29BAE07B4EB585C25E95A16EB94D' => 1, # fingerprint release@turnkeylinux.com
+    'A16EB94D' => 1,                                 # keyid release@turnkeylinux.com
 };
 
 sub import_gpg_keys {
 
-    my $keyfile = '/usr/share/doc/pve-manager/support@proxmox.com.pubkey';
+    my @keyfiles = ('support@proxmox.com.pubkey', 'release@turnkeylinux.com.pubkey');
 
-    return system ("/usr/bin/gpg --batch --no-tty --status-fd=1 -q " .
-		   "--logger-fd=1 --import $keyfile >>$logfile");
+    foreach my $key (@keyfiles) {
+	my $fn = "/usr/share/doc/pve-manager/$key";
+	system ("/usr/bin/gpg --batch --no-tty --status-fd=1 -q " .
+		"--logger-fd=1 --import $fn >>$logfile");
+    }
 }
 
 sub logmsg {
@@ -39,6 +46,91 @@ sub logmsg {
     foreach my $line (split (/\n/, $msg)) {
 	print $logfd "$tstr $line\n";
     }
+}
+
+sub read_aplinfo {
+    my ($filename, $list, $source, $update) = @_;
+
+    my $fh = IO::File->new("<$filename") ||
+	die "unable to open file '$filename' - $!\n";
+
+    local $/ = "";
+
+    eval { 
+	while (my $rec = <$fh>) {
+	    chomp $rec;
+	
+	    my $res = {};
+
+	    while ($rec) {
+
+		if ($rec =~ s/^Description:\s*([^\n]*)(\n\s+.*)*$//si) {
+		    $res->{headline} = $1;
+		    my $long = $2;
+		    $long =~ s/\n\s+/ /g;
+		    $long =~ s/^\s+//g;
+		    $long =~ s/\s+$//g;
+		    $res->{description} = $long;
+		} elsif ($rec =~ s/^Version:\s*(.*\S)\s*\n//i) {
+		    my $version = $1;
+		    if ($version =~ m/^(\d[a-zA-Z0-9\.\+\-\:\~]*)-(\d+)$/) {
+			$res->{version} = $version;
+		    } else {
+			my $msg = "unable to parse appliance record: version = '$version'\n";
+			$update ? die $msg : warn $msg;
+		    }
+		} elsif ($rec =~ s/^Type:\s*(.*\S)\s*\n//i) {
+		    my $type = $1;
+		    if ($type =~ m/^(openvz)$/) {
+			$res->{type} = $type;
+		    } else {
+			my $msg = "unable to parse appliance record: unknown type '$type'\n";
+			$update ? die $msg : warn $msg;
+		    }
+		} elsif ($rec =~ s/^([^:]+):\s*(.*\S)\s*\n//) {
+		    $res->{lc $1} = $2;
+		} else {
+		    my $msg = "unable to parse appliance record: $rec\n";
+		    $update ? die $msg : warn $msg;		
+		    $res = {};
+		    last;
+		}
+	    }
+
+	    if ($res->{'package'} eq 'pve-web-news' && $res->{description}) {
+		$list->{'all'}->{$res->{'package'}} = $res;	    
+		next;
+	    }
+
+	    $res->{section} = 'unknown' if !$res->{section};
+
+	    if ($res->{'package'} && $res->{type} && $res->{os} && $res->{version} &&
+		$res->{infopage}) {
+		my $template;
+		if ($res->{location}) {
+		    $template = $res->{location};
+		    $template =~ s|.*/([^/]+.tar.gz)|$1|;
+		} else {
+		    $template = "$res->{os}-$res->{package}_$res->{version}_i386.tar.gz";
+		    $template =~ s/$res->{os}-$res->{os}-/$res->{os}-/;
+		}
+		$res->{source} = $source;
+		$res->{template} = $template;
+		$list->{$res->{section}}->{$template} = $res;
+		$list->{'all'}->{$template} = $res;
+	    } else {
+		my $msg = "found incomplete appliance records\n";
+		$update ? die $msg : warn $msg;		
+	    }
+	}
+    };
+    my $err = $@;
+
+    close($fh);
+
+    die $err if $err;
+    
+    return $list;
 }
 
 sub url_get {
@@ -59,64 +151,43 @@ sub url_get {
     return 1;
 }
 
-sub update {
-    my ($proxy) = @_;
+sub download_aplinfo {
+    my ($ua, $aplurl, $host, $logfd) = @_;
 
-    my $aplurl = "http://download.proxmox.com/appliances";
     my $aplsrcurl = "$aplurl/aplinfo.dat.gz";
     my $aplsigurl = "$aplurl/aplinfo.dat.asc";
 
-    my $size;
-    if (($size = (-s $logfile) || 0) > (1024*50)) {
-	system ("mv $logfile $logfile.0");
-    }
-    my $logfd = IO::File->new (">>$logfile");
-    logmsg ($logfd, "starting update");
-
-    import_gpg_keys();
-
-    my $tmp = "/tmp/pveam.tmp.$$";
+    my $tmp = "$aplinfodir/pveam-${host}.tmp.$$";
     my $tmpgz = "$tmp.gz";
     my $sigfn = "$tmp.asc";
 
-    # this code works for ftp and http
-    # always use passive ftp
-    local $ENV{FTP_PASSIVE} = 1;
-    my $ua = LWP::UserAgent->new;
-    $ua->agent("PVE/1.0");
-
-    if ($proxy) {
-	$ua->proxy(['http'], $proxy);
-    } else {
-	$ua->env_proxy;
-    }
-
     eval {
-	if (url_get ($ua, $aplsigurl, $sigfn, $logfd) != 0) {
-	    die "update failed - no signature\n";
+
+	if (url_get($ua, $aplsigurl, $sigfn, $logfd) != 0) {
+	    die "update failed - no signature file '$sigfn'\n";
 	}
 
-	if (url_get ($ua, $aplsrcurl, $tmpgz, $logfd) != 0) {
-	    die "update failed - no data\n";
+	if (url_get($ua, $aplsrcurl, $tmpgz, $logfd) != 0) {
+	    die "update failed - no data file '$aplsrcurl'\n";
 	}
  
-	if (system ("zcat -f $tmpgz >$tmp 2>/dev/null") != 0) {
+	if (system("zcat -f $tmpgz >$tmp 2>/dev/null") != 0) {
 	    die "update failed: unable to unpack '$tmpgz'\n";
 	} 
 
 	# verify signature
 
-	my $cmd = "/usr/bin/gpg --verify --batch --no-tty --status-fd=1 -q " .
+	my $cmd = "/usr/bin/gpg --verify --trust-model always --batch --no-tty --status-fd=1 -q " .
 	    "--logger-fd=1 $sigfn $tmp";
 
-	open (CMD, "$cmd|") ||
+	open(CMD, "$cmd|") ||
 	    die "unable to execute '$cmd': $!\n";
 
 	my $line;
 	my $signer = '';
-	while (defined ($line = <CMD>)) {
+	while (defined($line = <CMD>)) {
 	    chomp $line;
-	    logmsg ($logfd, $line);
+	    logmsg($logfd, $line);
 
 	    # code borrowed from SA
 	    next if $line !~ /^\Q[GNUPG:]\E (?:VALID|GOOD)SIG (\S{8,40})/;
@@ -130,26 +201,26 @@ sub update {
 	    $signer = $key if (length $key > length $signer) && $valid_keys->{$key};
 	}
 
-	close (CMD);
+	close(CMD);
 
 	die "unable to verify signature\n" if !$signer;
 
-	logmsg ($logfd, "signature valid: $signer");
+	logmsg($logfd, "signature valid: $signer");
 
 	# test syntax
 	eval { 
-	    my $fh = IO::File->new ("<$tmp") ||
+	    my $fh = IO::File->new("<$tmp") ||
 		die "unable to open file '$tmp' - $!\n";
-	    PVE::Config::read_aplinfo ($tmp, $fh, 1);
-	    close ($fh);
+	    read_aplinfo($tmp, {}, $aplurl, 1);
+	    close($fh);
 	};
 	die "update failed: $@" if $@;
 
-	if (system ("mv $tmp /var/lib/pve-manager/apl-available 2>/dev/null") != 0) { 
+	if (system("mv $tmp $aplinfodir/$host 2>/dev/null") != 0) { 
 	    die "update failed: unable to store data\n";
 	}
 
-	logmsg ($logfd, "update sucessful");
+	logmsg($logfd, "update sucessful");
     };
 
     my $err = $@;
@@ -158,78 +229,90 @@ sub update {
     unlink $tmpgz;
     unlink $sigfn;
 
-    if ($err) {
-	logmsg ($logfd, $err);
-	close ($logfd);
+    die $err if $err;
+}
 
-	return 0;
+sub get_apl_sources {
+ 
+    my $urls = [];
+    push @$urls, "http://download.proxmox.com/appliances";
+    push @$urls, "http://releases.turnkeylinux.org/pve";
+
+    return $urls;
+}
+
+sub update {
+    my ($proxy) = @_;
+
+    my $size;
+    if (($size = (-s $logfile) || 0) > (1024*50)) {
+	system ("mv $logfile $logfile.0");
+    }
+    my $logfd = IO::File->new (">>$logfile");
+    logmsg($logfd, "starting update");
+
+    import_gpg_keys();
+
+    # this code works for ftp and http
+    # always use passive ftp
+    local $ENV{FTP_PASSIVE} = 1;
+    my $ua = LWP::UserAgent->new;
+    $ua->agent("PVE/1.0");
+
+    if ($proxy) {
+	$ua->proxy(['http'], $proxy);
+    } else {
+	$ua->env_proxy;
+    }
+
+    my $urls = get_apl_sources();
+
+    mkdir $aplinfodir;
+
+    my @dlerr = ();
+    foreach my $aplurl (@$urls) {
+	eval { 
+	    my $uri = URI->new($aplurl);
+	    my $host = $uri->host();
+	    download_aplinfo($ua, $aplurl, $host, $logfd); 
+	};
+	if (my $err = $@) {
+	    logmsg ($logfd, $err);
+	    push @dlerr, $aplurl; 
+	}
     } 
 
-    close ($logfd);
+    close($logfd);
+
+    return 0 if scalar(@dlerr);
 
     return 1;
 }
 
 sub load_data {
 
-    my $filename = "/var/lib/pve-manager/apl-available";
-
+    my $filename = "$aplinfodir/download.proxmox.com";
     if (! -f $filename) {
-	system ("cp /usr/share/doc/pve-manager/aplinfo.dat /var/lib/pve-manager/apl-available");
+	mkdir $aplinfodir;
+	system("cp /usr/share/doc/pve-manager/aplinfo.dat $filename");
     }
 
-    return PVE::Config::read_file ('aplinfo');
-}
+    my $urls = get_apl_sources();
 
-sub display_name {
-    my ($template) = @_;
+    my $list = {};
 
-    my $templates = load_data ();
+    foreach my $aplurl (@$urls) {
 
-    return $template if !$templates;
+	eval { 
 
-    my $d =  $templates->{'all'}->{$template};
+	    my $uri = URI->new($aplurl);
+	    my $host = $uri->host();
+	    read_aplinfo("$aplinfodir/$host", $list, $aplurl);
+	};
+	warn $@ if $@;
+    }
 
-    $template =~ s/\.tar\.gz$//;
-    $template =~ s/_i386$//;
-
-    return $template if !$d;
-
-    return "$d->{package}_$d->{version}";
-}
-
-sub pkginfo {
-    my ($template) = @_;
-
-    my $templates = load_data ();
-
-    return undef if !$templates;
-
-    my $d =  $templates->{'all'}->{$template};
-
-    return $d;
-}
-
-sub webnews {
-    my ($lang) = @_;
-
-    my $templates = load_data ();
-
-    my $html = '';
-
-    $html .= __("<b>Welcome</b> to the Proxmox Virtual Environment!");
-    $html .= "<br><br>";
-    $html .= __("For more information please visit our homepage at");
-    $html .= " <a href='http://www.proxmox.com' target='_blank'>www.proxmox.com</a>.";
-
-    return $html if !$templates;
-
-    # my $d = $templates->{'all'}->{"pve-web-news-$lang"} ||
-    my $d = $templates->{all}->{'pve-web-news'};
-
-    return $html if !$d;
-
-    return $d->{description};
+    return $list;
 }
 
 1;

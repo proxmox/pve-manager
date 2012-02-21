@@ -1,7 +1,8 @@
 #!/usr/bin/perl -w
 
 use strict;
-#use PVE::APLInfo;
+use PVE::Cluster;
+use PVE::APLInfo;
 use PVE::SafeSyslog;
 use IO::File;
 use File::Find;
@@ -9,14 +10,11 @@ use File::stat;
 
 initlog ('pvedailycron', 'daemon');
 
-# fixme: update APL info?
-#my $pvecfg = PVE::Config::read_file('pvecfg');
-#my $proxy = ($pvecfg && $pvecfg->{http_proxy}) ? $pvecfg->{http_proxy} : undef;
-
-## update appliance info
-#if (!PVE::APLInfo::update()) {
-#    syslog ('err', "update appliance info failed - see /var/log/pveam.log for details");
-#}
+my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
+eval { PVE::APLInfo::update($dccfg->{http_proxy}); };
+if (my $err = $@) {
+   syslog ('err', "update appliance info failed - see /var/log/pveam.log for details");
+}
 
 sub cleanup_tasks {
 
