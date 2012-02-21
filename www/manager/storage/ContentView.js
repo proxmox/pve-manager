@@ -94,8 +94,6 @@ Ext.define('PVE.storage.TemplateDownload', {
         var me = this;
 
 	var grid = Ext.create('PVE.grid.TemplateSelector', {
-	    width: 600,
-	    height: 400,
 	    border: false,
 	    autoScroll: true,
 	    nodename: me.nodename
@@ -133,6 +131,9 @@ Ext.define('PVE.storage.TemplateDownload', {
 
         Ext.applyIf(me, {
             title: gettext('Template download'),
+	    layout: 'fit',
+	    width: 600,
+	    height: 400,
 	    items: grid,
 	    buttons: [ submitBtn ]
 	});
