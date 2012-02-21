@@ -40,6 +40,12 @@ case "$1" in
     # remove old APL dir
     rm -rf /var/lib/pve-manager/apl-available
 
+    if test ! -e /var/lib/pve-manager/apl-info/download.proxmox.com; then
+	mkdir -p /var/lib/pve-manager/apl-info
+	cp /usr/share/doc/pve-manager/aplinfo.dat /var/lib/pve-manager/apl-info/download.proxmox.com
+	pveam update || true
+    fi
+
     if test -f /root/.forward; then
 	if ! grep -q '|/usr/bin/pvemailforward' /root/.forward; then 
 	    echo -e "|/usr/bin/pvemailforward\n$(cat /root/.forward)" >/root/.forward.tmp

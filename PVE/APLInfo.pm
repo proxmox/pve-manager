@@ -291,13 +291,7 @@ sub update {
 
 sub load_data {
 
-    my $filename = "$aplinfodir/download.proxmox.com";
-    if (! -f $filename) {
-	mkdir $aplinfodir;
-	system("cp /usr/share/doc/pve-manager/aplinfo.dat $filename");
-    }
-
-    my $urls = get_apl_sources();
+   my $urls = get_apl_sources();
 
     my $list = {};
 
