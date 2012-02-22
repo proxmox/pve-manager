@@ -1,3 +1,13 @@
+pve-manager (2.0-32) unstable; urgency=low
+
+  * added French translation
+  
+  * expose all ne CPU models on the GUI
+  
+  * skip fuzzy translations (avoid wrong translation on GUI)
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 22 Feb 2012 07:23:21 +0100
+
 pve-manager (2.0-31) unstable; urgency=low
 
   * add template download GUI
