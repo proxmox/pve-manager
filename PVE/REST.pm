@@ -321,10 +321,9 @@ sub rest_handler {
 
 	    if ($method eq 'POST' && $rel_uri =~ m|^/nodes/([^/]+)/storage/([^/]+)/upload$|) {
 		my ($node, $storeid) = ($1, $2);
-		my $perm = {
-		    path => "/storage/$storeid",
-		    privs => [ 'Datastore.AllocateSpace' ],
-		};
+		# we disable CSRF checks if $isUpload is set,
+		# to improve security we check user upload permission here
+		my $perm = { check => ['perm', "/storage/$storeid", ['Datastore.AllocateTemplate']] };
 		$rpcenv->check_api2_permissions($perm, $username, {});
 		$isUpload = 1;
 	    }

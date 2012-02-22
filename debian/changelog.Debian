@@ -1,3 +1,9 @@
+pve-manager (2.0-33) unstable; urgency=low
+
+  * fix file upload permission checks
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 22 Feb 2012 09:14:05 +0100
+
 pve-manager (2.0-32) unstable; urgency=low
 
   * added French translation
