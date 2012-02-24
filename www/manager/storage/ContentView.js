@@ -130,7 +130,7 @@ Ext.define('PVE.storage.TemplateDownload', {
 	});
 
         Ext.applyIf(me, {
-            title: gettext('Template download'),
+            title: gettext('Templates'),
 	    layout: 'fit',
 	    width: 600,
 	    height: 400,

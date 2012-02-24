@@ -109,7 +109,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    {
 		xtype: 'PVE.form.NetworkCardSelector',
 		name: 'model',
-		fieldLabel: 'Network card',
+		fieldLabel: 'Model',
 		value: 'rtl8139',
 		allowBlank: false
 	    },
@@ -140,6 +140,8 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 Ext.define('PVE.qemu.NetworkEdit', {
     extend: 'PVE.window.Edit',
 
+    isAdd: true,
+
     initComponent : function() {
 	/*jslint confusion: true */
 
@@ -158,8 +160,7 @@ Ext.define('PVE.qemu.NetworkEdit', {
 	});
 
 	Ext.applyIf(me, {
-	    title: me.create ? "Add network device" : 
-		"Edit network device settings",
+	    subject: gettext('Network Device'),
 	    items: ipanel
 	});
 

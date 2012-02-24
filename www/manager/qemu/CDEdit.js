@@ -108,7 +108,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	me.cdstoragesel = Ext.create('PVE.form.StorageSelector', {
 	    name: 'cdstorage',
 	    nodename: me.nodename,
-	    fieldLabel: 'Storage',
+	    fieldLabel: gettext('Storage'),
 	    labelAlign: 'right',
 	    storageContent: 'iso',
 	    allowBlank: false,
@@ -166,8 +166,7 @@ Ext.define('PVE.qemu.CDEdit', {
 	});
 
 	Ext.applyIf(me, {
-	    title: me.create ? 'Add CD/DVD Drive' : 
-		'Change CD/DVD settings (' + me.confid + ')',
+	    subject: 'CD/DVD Drive',
 	    items: [ ipanel ]
 	});
 

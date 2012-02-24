@@ -5,13 +5,13 @@ Ext.define('PVE.qemu.DisplayEdit', {
 	var me = this;
 
 	Ext.apply(me, {
-	    title: "Edit display settings",
+	    subject: gettext('Display'),
 	    width: 350,
 	    items: {
 		xtype: 'DisplaySelector',
 		name: 'vga',
 		value: '',
-		fieldLabel: 'Graphic card'
+		fieldLabel: gettext('Graphic card')
 	    }
 	});
 

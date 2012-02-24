@@ -5,12 +5,12 @@ Ext.define('PVE.qemu.KeyboardEdit', {
 	var me = this;
 
 	Ext.applyIf(me, {
-	    title: "Edit keyboard settings",
+	    subject: gettext('Keyboard Layout'),
 	    items: {
 		xtype: 'VNCKeyboardSelector',
 		name: 'keyboard',
 		value: '',
-		fieldLabel: 'Keyboard Layout'
+		fieldLabel: gettext('Keyboard Layout')
 	    }
 	});
 

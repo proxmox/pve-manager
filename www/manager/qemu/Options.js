@@ -61,7 +61,7 @@ Ext.define('PVE.qemu.Options', {
 		visible: false
 	    },
 	    boot: {
-		header: 'Boot order',
+		header: gettext('Boot order'),
 		defaultValue: 'cdn',
 		editor: 'PVE.qemu.BootOrderEdit',
 		renderer: function(order) {

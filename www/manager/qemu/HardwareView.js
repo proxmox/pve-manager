@@ -14,7 +14,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    if (rowdef.tdCls == 'pve-itype-icon-storage') { 
 		if (record.data.value.match(/media=cdrom/)) {
 		    metaData.tdCls = 'pve-itype-icon-cdrom';
-		    return rowdef.header.replace(/Hard Disk/, 'CD/DVD');
+		    return rowdef.cdheader;
 		}
 	    }
 	}
@@ -37,7 +37,7 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	var rows = {
 	    memory: {
-		header: 'Memory',
+		header: gettext('Memory'),
 		editor: 'PVE.qemu.MemoryEdit',
 		never_delete: true,
 		tdCls: 'pve-itype-icon-memory',
@@ -46,7 +46,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		}
 	    },
 	    sockets: {
-		header: 'Processors',
+		header: gettext('Processors'),
 		never_delete: true,
 		editor: 'PVE.qemu.ProcessorEdit',
 		tdCls: 'pve-itype-icon-processor',
@@ -67,7 +67,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		}
 	    },
 	    keyboard: {
-		header: 'Keyboard',
+		header: gettext('Keyboard Layout'),
 		never_delete: true,
 		editor: 'PVE.qemu.KeyboardEdit',
 		tdCls: 'pve-itype-icon-keyboard',
@@ -75,7 +75,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		renderer: PVE.Utils.render_kvm_language
 	    },
 	    vga: {
-		header: 'Display',
+		header: gettext('Display'),
 		editor: 'PVE.qemu.DisplayEdit',
 		never_delete: true,
 		tdCls: 'pve-itype-icon-display',
@@ -96,7 +96,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
 		editor: 'PVE.qemu.HDEdit',
-		header: 'Hard Disk ' + '(' + confid +')'
+		header: gettext('Hard Disk') + ' (' + confid +')',
+		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')'
 	    };
 	}
 	for (i = 0; i < 16; i++) {
@@ -105,7 +106,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
 		editor: 'PVE.qemu.HDEdit',
-		header: 'Hard Disk ' + '(' + confid +')'
+		header: gettext('Hard Disk') + ' (' + confid +')',
+		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')'
 	    };
 	}
 	for (i = 0; i < 16; i++) {
@@ -114,7 +116,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
 		editor: 'PVE.qemu.HDEdit',
-		header: 'Hard Disk ' + '(' + confid +')'
+		header: gettext('Hard Disk') + ' (' + confid +')',
+		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')'
 	    };
 	}
 	for (i = 0; i < 32; i++) {
@@ -123,7 +126,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 2,
 		tdCls: 'pve-itype-icon-network',
 		editor: 'PVE.qemu.NetworkEdit',
-		header: 'Network Adapter '+ '(' + confid +')'
+		header: gettext('Network Device') + ' (' + confid +')'
 	    };
 	}
 	for (i = 0; i < 8; i++) {
@@ -131,7 +134,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 3,
 		tdCls: 'pve-itype-icon-storage',
 		editor: 'PVE.qemu.HDEdit',
-		header: 'Unused Disk'
+		header: gettext('Unused Disk') + ' ' + i
 	    };
 	}
 
@@ -151,8 +154,9 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	var baseurl = 'nodes/' + nodename + '/qemu/' + vmid + '/config';
 
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
 	var run_editor = function() {
-	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
@@ -180,80 +184,70 @@ Ext.define('PVE.qemu.HardwareView', {
 	    win.on('destroy', reload);
 	};
 
-	var edit_btn = new Ext.Button({
-	    text: 'Edit',
+	var edit_btn = new PVE.button.Button({
+	    text: gettext('Edit'),
+	    selModel: sm,
 	    disabled: true,
+	    enableFn: function(rec) {
+		if (!rec) {
+		    return false;
+		}
+		var rowdef = rows[rec.data.key];
+		return !!rowdef.editor;
+	    },
 	    handler: run_editor
 	});
 
-	var remove_btn = new Ext.Button({
-	    text: 'Remove',
+	var remove_btn = new PVE.button.Button({
+	    text: gettext('Remove'),
+	    selModel: sm,
 	    disabled: true,
-	    handler: function(){
-		var sm = me.getSelectionModel();
-		var rec = sm.getSelection()[0];
-
-		if (!rec) {
-		    return;
-		}
-
-		var msg = 'Are you sure you want to remove: ' + 
-		    me.renderKey(rec.data.key, {}, rec);
+	    confirmMsg: function(rec) {
+		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
+					    "'" + me.renderKey(rec.data.key, {}, rec) + "'");
 		if (rec.data.key.match(/^unused\d+$/)) {
-		    msg = 'Are you sure you want to remove image "' +
-			rec.data.value + '"? This will permanently erase ' +
-			'all image data.';
+		    msg += " " + gettext('This will permanently erase all image data.');
 		}
 
-		Ext.Msg.confirm('Deletion Confirmation', msg, function(btn) {
-		    if (btn !== 'yes') {
-			return;
+		return msg;
+	    },
+	    enableFn: function(rec) {
+		if (!rec) {
+		    return false;
+		}
+		var rowdef = rows[rec.data.key];
+
+		return rowdef.never_delete !== true;    
+	    },
+	    handler: function(b, e, rec) {
+		PVE.Utils.API2Request({
+		    url: '/api2/extjs/' + baseurl,
+		    waitMsgTarget: me,
+		    method: 'PUT',
+		    params: {
+			'delete': rec.data.key
+		    },
+		    callback: function() {
+			reload();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert('Error',response.htmlStatus);
 		    }
-		    PVE.Utils.API2Request({
-			url: '/api2/extjs/' + baseurl,
-			waitMsgTarget: me,
-			method: 'PUT',
-			params: {
-			    'delete': rec.data.key
-			},
-			callback: function() {
-			    reload();
-			},
-			failure: function (response, opts) {
-			    Ext.Msg.alert('Error',response.htmlStatus);
-			}
-		    });
 		});
 	    }
 	});
 
-	var set_button_status = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
-
-	    if (!rec) {
-		remove_btn.disable();
-		edit_btn.disable();
-		return;
-	    }
-
-	    var rowdef = rows[rec.data.key];
-
-	    edit_btn.setDisabled(!rowdef.editor);
-
-	    remove_btn.setDisabled(rowdef.never_delete === true);
-	};
-
 	Ext.applyIf(me, {
 	    url: '/api2/json/' + baseurl,
+	    selModel: sm,
 	    cwidth1: 170,
 	    tbar: [ 
 		{
-		    text: 'Add',
+		    text: gettext('Add'),
 		    menu: new Ext.menu.Menu({
 			items: [
 			    {
-				text: 'Hard Disk',
+				text: gettext('Hard Disk'),
 				iconCls: 'pve-itype-icon-storage',
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.HDEdit', {
@@ -265,7 +259,7 @@ Ext.define('PVE.qemu.HardwareView', {
 				}
 			    },
 			    {
-				text: 'CD/DVD Drive',
+				text: gettext('CD/DVD Drive'),
 				iconCls: 'pve-itype-icon-cdrom',
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.CDEdit', {
@@ -277,7 +271,7 @@ Ext.define('PVE.qemu.HardwareView', {
 				}
 			    },
 			    {
-				text: 'Network Device',
+				text: gettext('Network Device'),
 				iconCls: 'pve-itype-icon-network',
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.NetworkEdit', {
@@ -298,8 +292,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    sorterFn: sorterFn,
 	    listeners: {
 		show: reload,
-		itemdblclick: run_editor,
-		selectionchange: set_button_status
+		itemdblclick: run_editor
 	    }
 	});
 

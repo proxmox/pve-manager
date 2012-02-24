@@ -14,7 +14,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 	    maxValue: 128*1024,
 	    value: '512',
 	    step: 32,
-	    fieldLabel: 'Memory (MB)',
+	    fieldLabel: gettext('Memory') + ' (MB)',
 	    allowBlank: false
 	};
 
@@ -35,7 +35,8 @@ Ext.define('PVE.qemu.MemoryEdit', {
 	var me = this;
 	
 	Ext.apply(me, {
-	    title: "Edit memory settings",
+	    subject: gettext('Memory'),
+	    fieldDefaults: { labelWidth: 120 },
 	    items: Ext.create('PVE.qemu.MemoryInputPanel')
 	});
 

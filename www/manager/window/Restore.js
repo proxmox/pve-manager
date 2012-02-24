@@ -22,7 +22,7 @@ Ext.define('PVE.window.Restore', {
 	    nodename: me.nodename,
 	    name: 'storage',
 	    value: '',
-	    fieldLabel: 'Storage',
+	    fieldLabel: gettext('Storage'),
 	    storageContent: (me.vmtype === 'openvz') ? 'rootdir' : 'images',
 	    allowBlank: true
 	});
@@ -38,7 +38,7 @@ Ext.define('PVE.window.Restore', {
 		{
 		    xtype: 'displayfield',
 		    value: me.volidText || me.volid,
-		    fieldLabel: 'Source'
+		    fieldLabel: gettext('Source')
 		},
 		storagesel,
 		{
@@ -74,7 +74,7 @@ Ext.define('PVE.window.Restore', {
 	};
 
 	var submitBtn = Ext.create('Ext.Button', {
-	    text: 'Restore',
+	    text: gettext('Restore'),
 	    handler: function(){
 		var storage = storagesel.getValue();
 		var values = form.getValues();
@@ -98,8 +98,8 @@ Ext.define('PVE.window.Restore', {
 		}
 
 		if (me.vmid) {
-		    var msg = 'Are you sure you want to restore this VM"? ' +
-			'This will permanently erase current VM data.';
+		    var msg = gettext('Are you sure you want to restore this VM?') + ' ' +
+			gettext('This will permanently erase current VM data.');
 		    Ext.Msg.confirm('Confirmation', msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;

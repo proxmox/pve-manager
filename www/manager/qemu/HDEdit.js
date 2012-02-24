@@ -109,7 +109,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	if (me.unused) {
 	    me.unusedDisks = Ext.create('PVE.form.KVComboBox', {
 		name: 'unusedId',	
-		fieldLabel: 'Disk image',
+		fieldLabel: gettext('Disk image'),
 		matchFieldWidth: false,
 		listConfig: {
 		    width: 350
@@ -123,7 +123,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		name: 'hdimage',
 		nodename: me.nodename,
 		storageContent: 'images',
-		fieldLabel: 'Disk image',
+		fieldLabel: gettext('Disk image'),
 		disabled: true,
 		hidden: true,
 		allowBlank: false
@@ -134,14 +134,14 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		minValue: 1,
 		maxValue: 128*1024,
 		value: '32',
-		fieldLabel: 'Disk size (GB)',
+		fieldLabel: gettext('Disk size') + ' (GB)',
 		allowBlank: false
 	    });
 
 	    me.hdstoragesel = Ext.create('PVE.form.StorageSelector', {
 		name: 'hdstorage',
 		nodename: me.nodename,
-		fieldLabel: 'Storage',
+		fieldLabel: gettext('Storage'),
 		storageContent: 'images',
 		autoSelect: me.insideWizard,
 		allowBlank: false,
@@ -169,8 +169,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	} else {
 	    me.column1.push({
 		xtype: 'displayfield',
-                fieldLabel: 'Image',
-		labelWidth: 50,
+ 		fieldLabel: gettext('Disk image'),
+ 		labelWidth: 50,
                 name: 'hdimage'
 	    });
 	}
@@ -179,7 +179,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.column2.push({
 		xtype: 'PVE.form.DiskFormatSelector',
 		name: 'diskformat',
-		fieldLabel: 'Image format',
+		fieldLabel: gettext('Format'),
 		value: 'raw',
 		allowBlank: false
 	    });
@@ -195,7 +195,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	if (!me.insideWizard) {
 	    me.column2.push({
 		xtype: 'pvecheckbox',
-		fieldLabel: 'No backup',
+		fieldLabel: gettext('No backup'),
 		name: 'nobackup'
 	    });
 	}
@@ -206,6 +206,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 Ext.define('PVE.qemu.HDEdit', {
     extend: 'PVE.window.Edit',
+
+    isAdd: true,
 
     initComponent : function() {
 	var me = this;
@@ -226,13 +228,13 @@ Ext.define('PVE.qemu.HDEdit', {
 	    create: me.create
 	});
 
-	var title;
+	var subject;
 	if (unused) {
-	    me.title = 'Add (previously unused) Harddisk';
+	    me.subject = gettext('Unused Disk');
 	} else if (me.create) {
-            me.title = 'Add Harddisk';
+            me.subject = gettext('Hard Disk');
 	} else {
-	    me.title = 'Edit Harddisk settings (' + me.confid + ')';
+           me.subject = gettext('Hard Disk') + ' (' + me.confid + ')';
 	}
 
 	me.items = [ ipanel ];

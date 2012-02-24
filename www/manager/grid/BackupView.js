@@ -64,7 +64,7 @@ Ext.define('PVE.grid.BackupView', {
 
 	var storagesel = Ext.create('PVE.form.StorageSelector', {
 	    nodename: nodename,
-	    fieldLabel: 'Storage',
+	    fieldLabel: gettext('Storage'),
 	    labelAlign: 'right',
 	    storageContent: 'backup',
 	    allowBlank: false,
@@ -78,7 +78,7 @@ Ext.define('PVE.grid.BackupView', {
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
 	var backup_btn = Ext.create('Ext.button.Button', {
-	    text: 'Backup now',
+	    text: gettext('Backup now'),
 	    handler: function() {
 		var win = Ext.create('PVE.window.Backup', { 
 		    nodename: nodename,
@@ -91,7 +91,7 @@ Ext.define('PVE.grid.BackupView', {
 	});
 
 	var restore_btn = Ext.create('PVE.button.Button', {
-	    text: 'Restore',
+	    text: gettext('Restore'),
 	    disabled: true,
 	    selModel: sm,
 	    enableFn: function(rec) {
@@ -113,12 +113,15 @@ Ext.define('PVE.grid.BackupView', {
 	});
 
 	var delete_btn = Ext.create('PVE.button.Button', {
-	    text: 'Delete',
+	    text: gettext('Remove'),
 	    disabled: true,
 	    selModel: sm,
 	    confirmMsg: function(rec) {
-		return 'Are you sure you want to delete "' + rec.data.volid + '"? ' +
-		    'This will permanently erase all data.';
+		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
+					    "'" + rec.data.volid + "'");
+		msg += " " + gettext('This will permanently erase all image data.');
+
+		return msg;
 	    },
 	    enableFn: function(rec) {
 		return !!rec;
@@ -150,19 +153,19 @@ Ext.define('PVE.grid.BackupView', {
 	    tbar: [ backup_btn, restore_btn, delete_btn, '->', storagesel ],
 	    columns: [
 		{
-		    header: 'Name',
+		    header: gettext('Name'),
 		    flex: 1,
 		    sortable: true,
 		    renderer: PVE.Utils.render_storage_content,
 		    dataIndex: 'volid'
 		},
 		{
-		    header: 'Format',
+		    header: gettext('Format'),
 		    width: 100,
 		    dataIndex: 'format'
 		},
 		{
-		    header: 'Size',
+		    header: gettext('Size'),
 		    width: 100,
 		    renderer: PVE.Utils.format_size,
 		    dataIndex: 'size'

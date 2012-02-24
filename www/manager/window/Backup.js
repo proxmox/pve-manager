@@ -22,7 +22,7 @@ Ext.define('PVE.window.Backup', {
 	    nodename: me.nodename,
 	    name: 'storage',
 	    value: me.storage,
-	    fieldLabel: 'Storage',
+	    fieldLabel: gettext('Storage'),
 	    storageContent: 'backup',
 	    allowBlank: false
 	});
@@ -38,7 +38,7 @@ Ext.define('PVE.window.Backup', {
 		storagesel,
 		{
 		    xtype: 'pveBackupModeSelector',
-		    fieldLabel: 'Mode',
+		    fieldLabel: gettext('Mode'),
 		    value: 'snapshot',
 		    name: 'mode'
 		},
@@ -46,7 +46,7 @@ Ext.define('PVE.window.Backup', {
 		    xtype: 'pveCompressionSelector',
 		    name: 'compress',
 		    value: 'lzo',
-		    fieldLabel: 'Compress'
+		    fieldLabel: gettext('Compression')
 		}
 	    ]
 	});
@@ -54,7 +54,7 @@ Ext.define('PVE.window.Backup', {
 	var form = me.formPanel.getForm();
 
 	var submitBtn = Ext.create('Ext.Button', {
-	    text: 'Backup',
+	    text: gettext('Backup'),
 	    handler: function(){
 		var storage = storagesel.getValue();
 		var values = form.getValues();
@@ -87,9 +87,9 @@ Ext.define('PVE.window.Backup', {
 	    }
 	});
 
-	var title = (me.vmtype === 'openvz') ? 
-	    "Backup CT " + me.vmid :
-	    "Backup VM " + me.vmid;
+	var title = gettext('Backup') + " " + 
+	    ((me.vmtype === 'openvz') ? "CT" : "VM") +
+	    " " + me.vmid;
 
 	Ext.apply(me, {
 	    title: title,

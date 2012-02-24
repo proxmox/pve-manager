@@ -181,7 +181,7 @@ Ext.define('PVE.qemu.BootOrderEdit', {
 
 	me.items = [ ipanel ];
 
-	me.subject = 'Boot order';
+	me.subject = gettext('Boot order');
 
 	me.callParent();
 	

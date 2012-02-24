@@ -68,7 +68,7 @@ Ext.define('PVE.qemu.ProcessorEdit', {
 	var me = this;
 	
 	Ext.apply(me, {
-	    title: "Edit processor settings",
+	    subject: gettext('Processors'),
 	    items: Ext.create('PVE.qemu.ProcessorInputPanel')
 	});
 

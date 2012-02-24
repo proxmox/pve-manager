@@ -6,9 +6,9 @@ Ext.define('PVE.form.CompressionSelector', {
 	var me = this;
 
         me.data = [ 
-	    ['', 'none'],
-	    ['lzo', 'LZO (fast)'],
-	    ['gzip', 'GZIP (good)']
+	    ['', gettext('none')],
+	    ['lzo', 'LZO (' + gettext('fast') + ')'],
+	    ['gzip', 'GZIP (' + gettext('good') + ')']
 	];
 
 	me.callParent();
