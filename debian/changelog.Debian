@@ -1,3 +1,9 @@
+pve-manager (2.0-35) unstable; urgency=low
+
+  * avoid warning in pvestatd for containers with old config files
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 27 Feb 2012 11:37:48 +0100
+
 pve-manager (2.0-34) unstable; urgency=low
 
   * add Swedish keyboard layout

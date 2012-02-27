@@ -209,10 +209,18 @@ sub vmstatus {
 	    $d->{disk} = 0;
 	    $d->{maxdisk} = int($conf->{diskspace}->{bar} * 1024);
 
-	    $d->{mem} = 0;
-	    $d->{maxmem} = int((($conf->{physpages}->{lim} + $conf->{swappages}->{lim})* 4096));
-	    $d->{swap} = 0;
-	    $d->{maxswap} = int((($conf->{swappages}->{lim})* 4096));
+	    if (defined($conf->{swappages})) {
+		$d->{mem} = 0;
+		$d->{maxmem} = int((($conf->{physpages}->{lim} + 
+				     $conf->{swappages}->{lim})* 4096));
+		$d->{swap} = 0;
+		$d->{maxswap} = int((($conf->{swappages}->{lim})* 4096));
+	    } else {
+		$d->{mem} = 0;
+		$d->{maxmem} = int($conf->{vmguarpages}->{bar} * 4096);
+		$d->{swap} = 0;
+		$d->{maxswap} = 0;
+	    }
 
 	    $d->{nproc} = 0;
 	    $d->{failcnt} = 0;
