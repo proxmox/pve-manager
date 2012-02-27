@@ -737,10 +737,16 @@ __PACKAGE__->register_method({
 	    }
 	}
 
-	$conf->{memory} = $veconf->{physpages}->{lim} ? 
-	    int(($veconf->{physpages}->{lim} * 4)/ 1024) : 512;
-	$conf->{swap} = $veconf->{swappages}->{lim} ? 
-	    int(($veconf->{swappages}->{lim} * 4)/1024) : 0;
+	if (defined($conf->{swappages})) {
+	    $conf->{memory} = $veconf->{physpages}->{lim} ? 
+		int(($veconf->{physpages}->{lim} * 4)/ 1024) : 512;
+	    $conf->{swap} = $veconf->{swappages}->{lim} ? 
+		int(($veconf->{swappages}->{lim} * 4)/1024) : 0;
+	} else {
+	    $conf->{memory} = $veconf->{vmguarpages}->{bar} ? 
+		int(($veconf->{vmguarpages}->{bar} * 4)/ 1024) : 512;
+	    $conf->{swap} = 0;
+	}
 
 	my $diskspace = $veconf->{diskspace}->{bar} || LONG_MAX;
 	if ($diskspace == LONG_MAX) {
