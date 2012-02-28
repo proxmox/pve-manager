@@ -31,7 +31,7 @@ Ext.define('PVE.dc.UserEdit', {
 
 	verifypw = Ext.createWidget('textfield', { 
 	    inputType: 'password',
-	    fieldLabel: gettext('Verify Password'), 
+	    fieldLabel: gettext('Confirm password'), 
 	    name: 'verifypassword',
 	    submitValue: false,
 	    disabled: true,

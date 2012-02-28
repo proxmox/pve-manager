@@ -35,19 +35,19 @@ Ext.define('PVE.qemu.Options', {
 		}
 	    },
 	    onboot: {
-		header: 'Start at boot',
+		header: gettext('Start at boot'),
 		defaultValue: '',
 		renderer: PVE.Utils.format_boolean,
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    subject: 'Start at boot',
+		    subject: gettext('Start at boot'),
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'onboot',
 			uncheckedValue: 0,
 			defaultValue: 0,
 			deleteDefaultValue: true,
-			fieldLabel: 'Start at boot'
+			fieldLabel: gettext('Start at boot')
 		    }
 		}
 	    },

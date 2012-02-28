@@ -19,27 +19,27 @@ Ext.define('PVE.openvz.Options', {
 
 	var rows = {
 	    onboot: {
-		header: 'Start at boot',
+		header: gettext('Start at boot'),
 		defaultValue: '',
 		renderer: PVE.Utils.format_boolean,
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'Start at boot',
+		    subject: gettext('Start at boot'),
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'onboot',
 			uncheckedValue: 0,
 			defaultValue: 0,
-			fieldLabel: 'Start at boot'
+			fieldLabel: gettext('Start at boot')
 		    }
 		}
 	    },
 	    ostemplate: {
-		header: 'Template',
+		header: gettext('Template'),
 		defaultValue: 'no set'
 	    },
 	    storage: {
-		header: 'Storage',
+		header: gettext('Storage'),
 		defaultValue: 'no set'
 	    },
 	    cpuunits: {
@@ -47,7 +47,7 @@ Ext.define('PVE.openvz.Options', {
 		defaultValue: '1000',
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'CPU units',
+		    subject: 'CPU units',
 		    items: {
 			xtype: 'numberfield',
 			name: 'cpuunits',
@@ -69,7 +69,7 @@ Ext.define('PVE.openvz.Options', {
 		},
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'Quota UGID limit (0 to disable user quotas)',
+		    subject: 'Quota UGID limit (0 to disable user quotas)',
 		    items: {
 			xtype: 'numberfield',
 			name: 'quotaugidlimit',
@@ -84,7 +84,7 @@ Ext.define('PVE.openvz.Options', {
 		defaultValue: '0',
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'Quota Grace period (seconds)',
+		    subject: 'Quota Grace period (seconds)',
 		    items: {
 			xtype: 'numberfield',
 			name: 'quotatime',
@@ -102,8 +102,9 @@ Ext.define('PVE.openvz.Options', {
 	    me.rstore.load();
 	};
 
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
 	var run_editor = function() {
-	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
@@ -126,32 +127,25 @@ Ext.define('PVE.openvz.Options', {
 	    win.on('destroy', reload);
 	};
 
-	var edit_btn = new Ext.Button({
-	    text: 'Edit',
+	var edit_btn = new PVE.button.Button({
+	    text: gettext('Edit'),
 	    disabled: true,
+	    selModel: sm,
+	    enableFn: function(rec) {
+		var rowdef = rows[rec.data.key];
+		return !!rowdef.editor;
+	    },
 	    handler: run_editor
 	});
 
-	var set_button_status = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
-
-	    if (!rec) {
-		edit_btn.disable();
-		return;
-	    }
-	    var rowdef = rows[rec.data.key];
-	    edit_btn.setDisabled(!rowdef.editor);
-	};
-
 	Ext.applyIf(me, {
 	    url: "/api2/json/nodes/" + nodename + "/openvz/" + vmid + "/config",
+	    selModel: sm,
 	    cwidth1: 150,
 	    tbar: [ edit_btn ],
 	    rows: rows,
 	    listeners: {
-		itemdblclick: run_editor,
-		selectionchange: set_button_status
+		itemdblclick: run_editor
 	    }
 	});
 

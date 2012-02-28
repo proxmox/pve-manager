@@ -20,7 +20,7 @@ Ext.define('PVE.openvz.RessourceView', {
 
 	var rows = {
 	    memory: {
-		header: 'Memory',
+		header: gettext('Memory'),
 		editor: 'PVE.openvz.RessourceEdit',
 		never_delete: true,
 		renderer: function(value) {
@@ -28,7 +28,7 @@ Ext.define('PVE.openvz.RessourceView', {
 		}
 	    },
 	    swap: {
-		header: 'Swap',
+		header: gettext('Swap'),
 		editor: 'PVE.openvz.RessourceEdit',
 		never_delete: true,
 		renderer: function(value) {
@@ -36,13 +36,13 @@ Ext.define('PVE.openvz.RessourceView', {
 		}
 	    },
 	    cpus: {
-		header: 'Processors',
+		header: gettext('Processors'),
 		never_delete: true,
 		editor: 'PVE.openvz.RessourceEdit',
 		defaultValue: 1
 	    },
 	    disk: {
-		header: 'Disk space',
+		header: gettext('Disk size'),
 		editor: 'PVE.openvz.RessourceEdit',
 		never_delete: true,
 		renderer: function(value) {
@@ -57,8 +57,9 @@ Ext.define('PVE.openvz.RessourceView', {
 
 	var baseurl = 'nodes/' + nodename + '/openvz/' + vmid + '/config';
 
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
 	var run_editor = function() {
-	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
@@ -81,36 +82,29 @@ Ext.define('PVE.openvz.RessourceView', {
 	    win.on('destroy', reload);
 	};
 
-	var edit_btn = new Ext.Button({
-	    text: 'Edit',
+	var edit_btn = new PVE.button.Button({
+	    text: gettext('Edit'),
+	    selModel: sm,
 	    disabled: true,
+	    enableFn: function(rec) {
+		if (!rec) {
+		    return false;
+		}
+		var rowdef = rows[rec.data.key];
+		return !!rowdef.editor;
+	    },
 	    handler: run_editor
 	});
 
-
-	var set_button_status = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
-
-	    if (!rec) {
-		edit_btn.disable();
-		return;
-	    }
-
-	    var rowdef = rows[rec.data.key];
-
-	    edit_btn.setDisabled(!rowdef.editor);
-	};
-
 	Ext.applyIf(me, {
 	    url: '/api2/json/' + baseurl,
+	    selModel: sm,
 	    cwidth1: 170,
 	    tbar: [ edit_btn ],
 	    rows: rows,
 	    listeners: {
 		show: reload,
-		itemdblclick: run_editor,
-		selectionchange: set_button_status
+		itemdblclick: run_editor
 	    }
 	});
 

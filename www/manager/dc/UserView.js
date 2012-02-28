@@ -20,7 +20,7 @@ Ext.define('PVE.window.PasswordEdit', {
 
 	verifypw = Ext.createWidget('textfield', { 
 	    inputType: 'password',
-	    fieldLabel: gettext('Verify Password'), 
+	    fieldLabel: gettext('Confirm password'), 
 	    name: 'verifypassword',
 	    submitValue: false,
 	    validator: validate_pw

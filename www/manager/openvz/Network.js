@@ -2,6 +2,8 @@
 Ext.define('PVE.OpenVZ.NetIfEdit', {
     extend: 'PVE.window.Edit',
 
+    isAdd: true,
+
     getValues: function() {
 	var me = this;
 
@@ -42,7 +44,7 @@ Ext.define('PVE.OpenVZ.NetIfEdit', {
 	}
 
 	Ext.apply(me, {
-	    title: me.create ? 'Add ethernet device (veth)' : 'Edit ethernet device (veth)',
+	    subject: gettext('Network Device') + ' (veth)',
 	    digest: me.dataCache.digest,
 	    width: 350,
 	    fieldDefaults: {
@@ -53,7 +55,7 @@ Ext.define('PVE.OpenVZ.NetIfEdit', {
 		    xtype: me.create ? 'textfield' : 'displayfield',
 		    name: 'ifname',
 		    height: 22, // hack: set same height as text fields
-		    fieldLabel: 'Device name',
+		    fieldLabel: gettext('Name') + ' (i.e. eth0)',
 		    allowBlank: false,
 		    value: cdata.ifname,
 		    validator: function(value) {
@@ -66,7 +68,7 @@ Ext.define('PVE.OpenVZ.NetIfEdit', {
 		{
 		    xtype: 'textfield',
 		    name: 'mac',
-		    fieldLabel: 'MAC address',
+		    fieldLabel: 'MAC',
 		    vtype: 'MacAddress',
 		    value: cdata.mac,
 		    allowBlank: me.create,
@@ -107,6 +109,10 @@ Ext.define('PVE.OpenVZ.NetIfEdit', {
 Ext.define('PVE.OpenVZ.IPAdd', {
     extend: 'PVE.window.Edit',
 
+    isAdd: true,
+
+    create: true, 
+
     getValues: function() {
 	var me = this;
 
@@ -128,13 +134,13 @@ Ext.define('PVE.OpenVZ.IPAdd', {
 	}
 
 	Ext.apply(me, {
-	    title: "Add IP address (venet)",
+	    subject: gettext('IP address') + ' (venet)',
 	    digest: me.dataCache.digest,
 	    width: 350,
 	    items: {
 		xtype: 'textfield',
 		name: 'ipaddress',
-		fieldLabel: 'IP Address',
+		fieldLabel: gettext('IP address'),
 		vtype: 'IPAddress',
 		allowBlank: false
 	    }
@@ -151,13 +157,18 @@ Ext.define('PVE.openvz.NetworkView', {
 
     dataCache: {}, // used to store result of last load
 
+    ipAddressText: gettext('IP address'),
+    networkText: gettext('Network'),
+    networkDeviceText: gettext('Network Device'),
+
     renderType: function(value, metaData, record, rowIndex, colIndex, store) {
+	var me = this;
 	if (value === 'ip') {
-	    return 'IP address';
+	    return me.ipAddressText;
 	} else if (value === 'net') {
-	    return 'IP network';
+	    return me.networkText;
 	} else if (value === 'veth') {
-	    return 'Ethernet device';
+	    return me.networkDeviceText;
 	} else {
 	    return value;
 	}
@@ -180,7 +191,7 @@ Ext.define('PVE.openvz.NetworkView', {
 	PVE.Utils.API2Request({
 	    url: me.url,
 	    failure: function(response, opts) {
-		PVE.Utils.setErrorMask(me, 'Error: ' + response.htmlStatus);
+		PVE.Utils.setErrorMask(me, gettext('Error') + ': ' + response.htmlStatus);
 	    },
 	    success: function(response, opts) {
 		PVE.Utils.setErrorMask(me, false);
@@ -237,67 +248,57 @@ Ext.define('PVE.openvz.NetworkView', {
 	    model: 'pve-openvz-network'
 	});
 
-	var remove_btn = new Ext.Button({
-	    text: 'Remove',
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
+	var remove_btn = new PVE.button.Button({
+	    text: gettext('Remove'),
 	    disabled: true,
-	    handler: function(){
-		var sm = me.getSelectionModel();
-		var rec = sm.getSelection()[0];
-
-		if (!rec) {
-		    return;
-		}
-
-		var msg;
+	    selModel: sm,
+	    confirmMsg: function (rec) {
+		var idtext = rec.id;
 		if (rec.data.type === 'ip') {
-		    msg = 'Are you sure you want to remove IP address "' + rec.data.value + '"';
+		    idtext = rec.data.value;
 		} else if (rec.data.type === 'veth') {
-		    msg = 'Are you sure you want to remove device "' + rec.data.id + '"';
-		} else {
-		    msg = 'Are you sure you want to remove this item';		    
+		    idtext = rec.data.id;
 		}
+		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
+					 "'" + idtext + "'");
+	    },
+	    handler: function(btn, event, rec) {
+		var values = { digest: me.dataCache.digest };
 
-		Ext.Msg.confirm('Deletion Confirmation', msg, function(btn) {
-		    if (btn !== 'yes') {
-			return;
-		    }
-
-		    var values = { digest: me.dataCache.digest };
-
-		    if (rec.data.type === 'ip') {
-			var ipa = [];
-			Ext.Array.each(me.dataCache.ip_address.split(' '), function(value) {
-			    if (value && value !== rec.data.value) {
-				ipa.push(value);
-			    }
-			});
-			values.ip_address = ipa.join(' ');
-		    } else if (rec.data.type === 'veth') {
-			var netif = PVE.Parser.parseOpenVZNetIf(me.dataCache.netif);
-			delete netif[rec.data.id];
-			values.netif = PVE.Parser.printOpenVZNetIf(netif);
-		    } else {
-			return; // not implemented
-		    }
-
-		    PVE.Utils.API2Request({
-			url: me.url,
-			waitMsgTarget: me,
-			method: 'PUT',
-			params: values,
-			callback: function() {
-			    me.load();
-			},
-			failure: function (response, opts) {
-			    Ext.Msg.alert('Error', response.htmlStatus);
+		if (rec.data.type === 'ip') {
+		    var ipa = [];
+		    Ext.Array.each(me.dataCache.ip_address.split(' '), function(value) {
+			if (value && value !== rec.data.value) {
+			    ipa.push(value);
 			}
 		    });
+		    values.ip_address = ipa.join(' ');
+		} else if (rec.data.type === 'veth') {
+		    var netif = PVE.Parser.parseOpenVZNetIf(me.dataCache.netif);
+		    delete netif[rec.data.id];
+		    values.netif = PVE.Parser.printOpenVZNetIf(netif);
+		} else {
+		    return; // not implemented
+		}
+
+		PVE.Utils.API2Request({
+		    url: me.url,
+		    waitMsgTarget: me,
+		    method: 'PUT',
+		    params: values,
+		    callback: function() {
+			me.load();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    }
 		});
 	    }
 	});
 
 	var run_editor = function() {
-	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 	    if (!rec || rec.data.type !== 'veth') {
 		return;
@@ -313,37 +314,28 @@ Ext.define('PVE.openvz.NetworkView', {
 	    win.show();
 	};
 
-	var edit_btn = new Ext.Button({
-	    text: 'Edit',
+	var edit_btn = new PVE.button.Button({
+	    text: gettext('Edit'),
+	    selModel: sm,
 	    disabled: true,
+	    enableFn: function(rec) {
+		return rec.data.type === 'veth';
+	    },
 	    handler: run_editor
 	});
 
-	var set_button_status = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
-
-	    if (!rec) {
-		remove_btn.disable();
-		edit_btn.disable();
-		return;
-	    }
-
-	    edit_btn.setDisabled(rec.data.type !== 'veth');
-	    remove_btn.setDisabled(false);
-	};
 
 	Ext.applyIf(me, {
 	    store: store,
+	    selModel: sm,
 	    stateful: false,
-	    //hideHeaders: true,
 	    tbar: [
 		{
-		    text: 'Add',
+		    text: gettext('Add'),
 		    menu: new Ext.menu.Menu({
 			items: [
 			    {
-				text: 'IP address (venet)',
+				text: gettext('IP address') + ' (venet)',
 				//plain: true,
 				//iconCls: 'pve-itype-icon-storage',
 				handler: function() {
@@ -356,7 +348,7 @@ Ext.define('PVE.openvz.NetworkView', {
 				}
 			    },
 			    {
-				text: 'Ethernet device (veth)',
+				text: gettext('Network Device') + ' (veth)',
 				//plain: true,
 				//iconCls: 'pve-itype-icon-storage',
 				handler: function() {
@@ -378,13 +370,13 @@ Ext.define('PVE.openvz.NetworkView', {
 	    ],
 	    columns: [
 		{
-		    header: 'Type',
+		    header: gettext('Type'),
 		    width: 110,
 		    dataIndex: 'type',
 		    renderer: me.renderType
 		},
 		{
-		    header: 'IP/Name',
+		    header: gettext('IP address') +'/' + gettext('Name'),
 		    width: 110,
 		    dataIndex: 'value',
 		    renderer: me.renderValue
@@ -412,8 +404,7 @@ Ext.define('PVE.openvz.NetworkView', {
 	    ],
 	    listeners: {
 		show: me.load,
-		itemdblclick: run_editor,
-		selectionchange: set_button_status
+		itemdblclick: run_editor
 	    }
 	});
 

@@ -7,6 +7,8 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
     initComponent : function() {
 	var me = this;
 
+	var labelWidth = 120;
+
 	var items = {
 	    xtype: 'numberfield',
 	    name: 'memory',
@@ -15,6 +17,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 	    value: '512',
 	    step: 32,
 	    fieldLabel: gettext('Memory') + ' (MB)',
+	    labelWidth: labelWidth,
 	    allowBlank: false
 	};
 
@@ -36,7 +39,6 @@ Ext.define('PVE.qemu.MemoryEdit', {
 	
 	Ext.apply(me, {
 	    subject: gettext('Memory'),
-	    fieldDefaults: { labelWidth: 120 },
 	    items: Ext.create('PVE.qemu.MemoryInputPanel')
 	});
 

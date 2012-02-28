@@ -19,7 +19,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 
 	var storagesel = Ext.create('PVE.form.StorageSelector', {
 	    name: 'storage',
-	    fieldLabel: 'Storage',
+	    fieldLabel: gettext('Storage'),
 	    storageContent: 'rootdir',
 	    autoSelect: true,
 	    allowBlank: false
@@ -28,13 +28,13 @@ Ext.define('PVE.openvz.CreateWizard', {
 	var tmplsel = Ext.create('PVE.form.FileSelector', {
 	    name: 'ostemplate',
 	    storageContent: 'vztmpl',
-	    fieldLabel: 'OS template',
+	    fieldLabel: gettext('Template'),
 	    allowBlank: false
 	});
 
 	var tmplstoragesel = Ext.create('PVE.form.StorageSelector', {
 	    name: 'tmplstorage',
-	    fieldLabel: 'Storage',
+	    fieldLabel: gettext('Storage'),
 	    storageContent: 'vztmpl',
 	    autoSelect: true,
 	    allowBlank: false,
@@ -59,12 +59,12 @@ Ext.define('PVE.openvz.CreateWizard', {
 	    items: [
 		{
 		    xtype: 'inputpanel',
-		    title: 'General',
+		    title: gettext('General'),
 		    column1: [
 			{
 			    xtype: 'PVE.form.NodeSelector',
 			    name: 'nodename',
-			    fieldLabel: 'Node',
+			    fieldLabel: gettext('Node'),
 			    allowBlank: false,
 			    onlineValidator: true,
 			    listeners: {
@@ -105,7 +105,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 			    inputType: 'password',
 			    name: 'password',
 			    value: '',
-			    fieldLabel: 'Password',
+			    fieldLabel: gettext('Password'),
 			    allowBlank: false,
 			    minLength: 5,
 			    change: function(f, value) {
@@ -120,7 +120,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 			    inputType: 'password',
 			    name: 'confirmpw',
 			    value: '',
-			    fieldLabel: 'Confirm password',
+			    fieldLabel: gettext('Confirm password'),
 			    allowBlank: false,
 			    validator: function(value) {
 				var pw = me.down('field[name=password]').getValue();
@@ -141,16 +141,16 @@ Ext.define('PVE.openvz.CreateWizard', {
 		},
 		{
 		    xtype: 'inputpanel',
-		    title: 'Template',
+		    title: gettext('Template'),
 		    column1: [ tmplstoragesel, tmplsel]
 		},
 		{
 		    xtype: 'pveOpenVZResourceInputPanel',
-		    title: 'Resources'
+		    title: gettext('Resources')
 		},
 		{
 		    xtype: 'inputpanel',
-		    title: 'Network',
+		    title: gettext('Network'),
 		    column1: [
 			{
 			    xtype: 'radiofield',
@@ -173,7 +173,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 			    name: 'ip_address',
 			    vtype: 'IPAddress',
 			    value: '',
-			    fieldLabel: 'IP address',
+			    fieldLabel: gettext('IP address'),
 			    labelAlign: 'right',
 			    allowBlank: false
 			}
@@ -251,11 +251,11 @@ Ext.define('PVE.openvz.CreateWizard', {
 		    ]
 		},
 		{
-		    title: 'Confirm',
+		    title: gettext('Confirm'),
 		    layout: 'fit',
 		    items: [
 			{
-			    title: 'Settings',
+			    title: gettext('Settings'),
 			    xtype: 'grid',
 			    store: summarystore,
 			    columns: [
@@ -310,7 +310,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 				me.close();
 			    },
 			    failure: function(response, opts) {
-				Ext.Msg.alert('Error', response.htmlStatus);
+				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 			    }
 			});
 		    }

@@ -24,7 +24,7 @@ Ext.define('PVE.openvz.DNS', {
 		header: 'Hostname',
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'Container Hostname',
+		    subject: 'Hostname',
 		    items: {
 			xtype: 'textfield',
 			name: 'hostname',
@@ -40,7 +40,7 @@ Ext.define('PVE.openvz.DNS', {
 		defaultValue: '',
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: 'DNS domain',
+		    subject: 'DNS domain',
 		    items: {
 			xtype: 'pvetextfield',
 			name: 'searchdomain',
@@ -54,7 +54,7 @@ Ext.define('PVE.openvz.DNS', {
 		defaultValue: '',
 		editor: {
 		    xtype: 'pveWindowEdit',
-		    title: gettext('DNS server'),
+		    subject: gettext('DNS server'),
 		    items: {
 			xtype: 'pvetextfield',
 			name: 'nameserver',
@@ -71,8 +71,9 @@ Ext.define('PVE.openvz.DNS', {
 	    me.rstore.load();
 	};
 
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
 	var run_editor = function() {
-	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
@@ -95,9 +96,14 @@ Ext.define('PVE.openvz.DNS', {
 	    win.on('destroy', reload);
 	};
 
-	var edit_btn = new Ext.Button({
-	    text: 'Edit',
+	var edit_btn = new PVE.button.Button({
+	    text: gettext('Edit'),
 	    disabled: true,
+	    selModel: sm,
+	    enableFn: function(rec) {
+		var rowdef = rows[rec.data.key];
+		return !!rowdef.editor;
+	    },
 	    handler: run_editor
 	});
 
@@ -115,6 +121,7 @@ Ext.define('PVE.openvz.DNS', {
 
 	Ext.applyIf(me, {
 	    url: "/api2/json/nodes/" + nodename + "/openvz/" + vmid + "/config",
+	    selModel: sm,
 	    cwidth1: 150,
 	    tbar: [ edit_btn ],
 	    rows: rows,

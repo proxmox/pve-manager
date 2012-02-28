@@ -19,19 +19,19 @@ Ext.define('PVE.qemu.CreateWizard', {
 	});
 
 	var cdpanel = Ext.create('PVE.qemu.CDInputPanel', {
-	    title: 'Installation Media',
+	    title: 'CD/DVD',
 	    confid: 'ide2',
 	    insideWizard: true
 	});
 
 	var hdpanel = Ext.create('PVE.qemu.HDInputPanel', {
-	    title: 'Harddisk',
+	    title: gettext('Hard Disk'),
 	    create: true,
 	    insideWizard: true
 	});
 
 	var networkpanel =  Ext.create('PVE.qemu.NetworkInputPanel', {
-	    title: 'Network',
+	    title: gettext('Network'),
 	    insideWizard: true
 	});
 
@@ -40,12 +40,12 @@ Ext.define('PVE.qemu.CreateWizard', {
 	    items: [
 		{
 		    xtype: 'inputpanel',
-		    title: 'General',
+		    title: gettext('General'),
 		    column1: [
 			{
 			    xtype: 'PVE.form.NodeSelector',
 			    name: 'nodename',
-			    fieldLabel: 'Node',
+			    fieldLabel: gettext('Node'),
 			    allowBlank: false,
 			    onlineValidator: true,
 			    listeners: {
@@ -66,7 +66,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 			    xtype: 'textfield',
 			    name: 'name',
 			    value: '',
-			    fieldLabel: 'VM name',
+			    fieldLabel: gettext('Name'),
 			    allowBlank: true
 			}
 		    ],
@@ -90,7 +90,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    }
 		},
 		{
-		    title: 'OS Type',
+		    title: 'OS',
 		    xtype: 'PVE.qemu.OSTypeInputPanel'
 		},
 		cdpanel,
@@ -102,15 +102,15 @@ Ext.define('PVE.qemu.CreateWizard', {
 		{
 		    xtype: 'PVE.qemu.MemoryInputPanel',
 		    insideWizard: true,
-		    title: 'Memory'
+		    title: gettext('Memory')
 		},
 		networkpanel,
 		{
-		    title: 'Confirm',
+		    title: gettext('Confirm'),
 		    layout: 'fit',
 		    items: [
 			{
-			    title: 'Settings',
+			    title: gettext('Settings'),
 			    xtype: 'grid',
 			    store: summarystore,
 			    columns: [
@@ -156,7 +156,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 				me.close();
 			    },
 			    failure: function(response, opts) {
-				Ext.Msg.alert('Error', response.htmlStatus);
+				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 			    }
 			});
 		    }

@@ -7,6 +7,8 @@ Ext.define('PVE.openvz.RessourceInputPanel', {
     initComponent : function() {
 	var me = this;
 
+	var labelWidth = 120;
+
 	me.column1 = [
 	    {
 		xtype: 'numberfield',
@@ -15,7 +17,8 @@ Ext.define('PVE.openvz.RessourceInputPanel', {
 		maxValue: 128*1024,
 		value: '512',
 		step: 32,
-		fieldLabel: 'Memory (MB)',
+		fieldLabel: gettext('Memory') + ' (MB)',
+		labelWidth: labelWidth,
 		allowBlank: false
 	    },
 	    {
@@ -25,7 +28,8 @@ Ext.define('PVE.openvz.RessourceInputPanel', {
 		maxValue: 128*1024,
 		value: '512',
 		step: 32,
-		fieldLabel: 'Swap (MB)',
+		fieldLabel: gettext('Swap') + ' (MB)',
+		labelWidth: labelWidth,
 		allowBlank: false
 	    }
 	];
@@ -37,7 +41,8 @@ Ext.define('PVE.openvz.RessourceInputPanel', {
 		minValue: 0.5,
 		value: '4',
 		step: 1,
-		fieldLabel: 'Disk space (GB)',
+		fieldLabel: gettext('Disk size') + ' (GB)',
+		labelWidth: labelWidth,
 		allowBlank: false
 	    },
 	    {
@@ -47,6 +52,7 @@ Ext.define('PVE.openvz.RessourceInputPanel', {
 		value: '1',
 		step: 1,
 		fieldLabel: 'CPUs',
+		labelWidth: labelWidth,
 		allowBlank: false
 	    }
 	];
@@ -62,7 +68,7 @@ Ext.define('PVE.openvz.RessourceEdit', {
 	var me = this;
 	
 	Ext.apply(me, {
-	    title: "Edit ressource settings",
+	    subject: gettext('Resources'),
 	    items: Ext.create('PVE.openvz.RessourceInputPanel')
 	});
 
