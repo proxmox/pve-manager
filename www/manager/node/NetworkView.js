@@ -11,9 +11,7 @@ Ext.define('PVE.node.NetworkView', {
 	    throw "no node name specified";
 	}
 
-	var rstore = Ext.create('PVE.data.UpdateStore', {
-	    interval: 1000,
-	    storeid: 'pve-networks',
+	var store = Ext.create('Ext.data.Store', {
 	    model: 'pve-networks',
 	    proxy: {
                 type: 'pve',
@@ -27,29 +25,24 @@ Ext.define('PVE.node.NetworkView', {
 	    ]
 	});
 
-	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
-
-	var view_changes = function() {
+	var reload = function() {
 	    var changeitem = me.down('#changes');
 	    PVE.Utils.API2Request({
-		url: '/nodes/' + nodename + '/network_changes',
+		url: '/nodes/' + nodename + '/network',
 		failure: function(response, opts) {
 		    changeitem.update('Error: ' + response.htmlStatus);
+		    store.loadData({});
 		},
 		success: function(response, opts) {
 		    var result = Ext.decode(response.responseText);
-		    var data = result.data;
-		    if (data === '') {
-			data = "no changes";
+		    store.loadData(result.data);
+		    var changes = result.changes;
+		    if (changes === undefined || changes === '') {
+			changes = gettext("No changes");
 		    }
-		    changeitem.update("<pre>" + Ext.htmlEncode(data) + "</pre>");
+		    changeitem.update("<pre>" + Ext.htmlEncode(changes) + "</pre>");
 		}
 	    });
-	};
-
-	var reload = function() {
-	    rstore.load();
-	    view_changes();
 	};
 
 	var run_editor = function() {
@@ -70,13 +63,13 @@ Ext.define('PVE.node.NetworkView', {
 	};
 
 	var edit_btn = new Ext.Button({
-	    text: 'Edit',
+	    text: gettext('Edit'),
 	    disabled: true,
 	    handler: run_editor
 	});
 
 	var del_btn = new Ext.Button({
-	    text: 'Delete',
+	    text: gettext('Remove'),
 	    disabled: true,
 	    handler: function(){
 		var grid = me.down('gridpanel');
@@ -111,7 +104,7 @@ Ext.define('PVE.node.NetworkView', {
 	    del_btn.setDisabled(!rec);
 	};
 
-	PVE.Utils.monStoreErrors(me, rstore);
+	PVE.Utils.monStoreErrors(me, store);
 
 	var render_ports = function(value, metaData, record) {
 	    if (value === 'bridge') {
@@ -125,7 +118,7 @@ Ext.define('PVE.node.NetworkView', {
 	    layout: 'border',
 	    tbar: [
 		{
-		    text: 'Create',
+		    text: gettext('Create'),
 		    menu: new Ext.menu.Menu({
 			items: [
 			    {
@@ -133,7 +126,7 @@ Ext.define('PVE.node.NetworkView', {
 				handler: function() {
 				    var next;
 				    for (next = 0; next <= 9999; next++) {
-					if (!rstore.data.get('vmbr' + next.toString())) {
+					if (!store.data.get('vmbr' + next.toString())) {
 					    break;
 					}
 				    }
@@ -152,7 +145,7 @@ Ext.define('PVE.node.NetworkView', {
 				handler: function() {
 				    var next;
 				    for (next = 0; next <= 9999; next++) {
-					if (!rstore.data.get('bond' + next.toString())) {
+					if (!store.data.get('bond' + next.toString())) {
 					    break;
 					}
 				    }
@@ -169,17 +162,17 @@ Ext.define('PVE.node.NetworkView', {
 		    })
 		}, ' ', 
 		{
-		    text: 'Revert changes',
+		    text: gettext('Revert changes'),
 		    handler: function() {
 			PVE.Utils.API2Request({
-			    url: '/nodes/' + nodename + '/network_changes',
+			    url: '/nodes/' + nodename + '/network',
 			    method: 'DELETE',
 			    waitMsgTarget: me,
 			    callback: function() {
 				reload();
 			    },
 			    failure: function(response, opts) {
-				Ext.Msg.alert('Error', response.htmlStatus);
+				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 			    }
 			});
 		    }
@@ -196,14 +189,14 @@ Ext.define('PVE.node.NetworkView', {
 		    border: false,
 		    columns: [
 			{
-			    header: 'Interface Name',
+			    header: gettext('Name'),
 			    width: 100,
 			    sortable: true,
 			    dataIndex: 'iface'
 			},
 			{
 			    xtype: 'booleancolumn', 
-			    header: 'Active',
+			    header: gettext('Active'),
 			    width: 80,
 			    sortable: true,
 			    dataIndex: 'active',
@@ -227,12 +220,12 @@ Ext.define('PVE.node.NetworkView', {
 			    renderer: render_ports
 			},
 			{
-			    header: 'IP address',
+			    header: gettext('IP address'),
 			    sortable: true,
 			    dataIndex: 'address'
 			},
 			{
-			    header: 'Subnet mask',
+			    header: gettext('Subnet mask'),
 			    sortable: true,
 			    dataIndex: 'netmask'
 			},
@@ -253,12 +246,13 @@ Ext.define('PVE.node.NetworkView', {
 		    autoScroll: true,
 		    itemId: 'changes',
 		    tbar: [ 
-			'Pending changes (please reboot to activate changes)'
+			gettext('Pending changes') + ' (' +
+			    gettext('Please reboot to activate changes') + ')'
 		    ],
 		    split: true, 
 		    bodyPadding: 5,
 		    flex: 0.6,
-		    html: "no changes"
+		    html: gettext("No changes")
 		}
 	    ],
 	    listeners: {

@@ -16,21 +16,16 @@ Ext.define('PVE.node.NetworkEdit', {
 
 	me.create = !me.iface;
 
-	var title;
 	var iface_vtype;
 
-	if (me.create) {
-	    if (me.iftype === 'bridge') {
-		title = "Create Bridge";
-		iface_vtype = 'BridgeName';
-	    } else if (me.iftype === 'bond') {
-		title = "Create Bond";
-		iface_vtype = 'BondName';
-	    } else {
-		throw "can't create unknown device type";
-	    }
+	if (me.iftype === 'bridge') {
+	    me.subject = "Bridge";
+	    iface_vtype = 'BridgeName';
+	} else if (me.iftype === 'bond') {
+	    me.subject = "Bond";
+	    iface_vtype = 'BondName';
 	} else {
-	    title = "Edit network device '" + me.iface + "'";
+	    throw "no known network device type specified";
 	}
 
 	var column2 = [
@@ -78,7 +73,7 @@ Ext.define('PVE.node.NetworkEdit', {
 	var column1 = [
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
-		fieldLabel: 'Name',
+		fieldLabel: gettext('Name'),
 		height: 22, // hack: set same height as text fields
 		name: 'iface',
 		value: me.iface,
@@ -88,14 +83,14 @@ Ext.define('PVE.node.NetworkEdit', {
 	    {
 		xtype: 'pvetextfield',
 		deleteEmpty: !me.create,
-		fieldLabel: 'IP address',
+		fieldLabel: gettext('IP address'),
 		vtype: 'IPAddress',
 		name: 'address'
 	    },
 	    {
 		xtype: 'pvetextfield',
 		deleteEmpty: !me.create,
-		fieldLabel: 'Subnet mask',
+		fieldLabel: gettext('Subnet mask'),
 		vtype: 'IPAddress',
 		name: 'netmask',
 		validator: function(value) {
@@ -127,7 +122,6 @@ Ext.define('PVE.node.NetworkEdit', {
 	];
 
 	Ext.applyIf(me, {
-	    title: title,
 	    url: url,
 	    method: method,
 	    items: {
@@ -147,12 +141,13 @@ Ext.define('PVE.node.NetworkEdit', {
 		    var data = response.result.data;
 		    if (data.type !== me.iftype) {
 			var msg = "Got unexpected device type";
-			Ext.Msg.alert("Load failed", msg, function() {
+			Ext.Msg.alert(gettext('Error'), msg, function() {
 			    me.close();
 			});
 			return;
 		    }
 		    me.setValues(data);
+		    me.isValid(); // trigger validation
 		}
 	    });
 	}

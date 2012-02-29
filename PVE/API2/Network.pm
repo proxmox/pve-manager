@@ -106,7 +106,13 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	my $config = PVE::INotify::read_file('interfaces');
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $tmp = PVE::INotify::read_file('interfaces', 1);
+	my $config = $tmp->{data};
+	my $changes = $tmp->{changes};
+
+	$rpcenv->set_result_attrib('changes', $changes) if $changes;
 
 	delete $config->{lo}; # do not list the loopback device
 
@@ -119,6 +125,30 @@ __PACKAGE__->register_method({
 	return PVE::RESTHandler::hash_to_array($config, 'iface');
    }});
 
+__PACKAGE__->register_method({
+    name => 'revert_network_changes', 
+    path => '', 
+    method => 'DELETE',
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
+    protected => 1,
+    description => "Revert network configuration changes.",
+    proxyto => 'node',
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => { type => "null" },
+    code => sub {
+	my ($param) = @_;
+
+	unlink "/etc/network/interfaces.new";
+
+	return undef;
+    }});
 
 my $check_duplicate_gateway = sub {
     my ($config, $newiface) = @_;

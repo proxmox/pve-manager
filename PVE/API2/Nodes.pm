@@ -112,7 +112,6 @@ __PACKAGE__->register_method ({
 	    { name => 'vzdump' },
 	    { name => 'ubcfailcnt' },
 	    { name => 'network' },
-	    { name => 'network_changes' },
 	    { name => 'aplinfo' },
 	    ];
 
@@ -185,55 +184,6 @@ __PACKAGE__->register_method({
 	}
 	return $res;
     }});
-
-__PACKAGE__->register_method({
-    name => 'network_changes', 
-    path => 'network_changes', 
-    method => 'GET',
-    permissions => {
-	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
-    },
-    description => "Get network configuration changes (diff) since last boot.",
-    proxyto => 'node',
-    parameters => {
-    	additionalProperties => 0,
-	properties => {
-	    node => get_standard_option('pve-node'),
-	},
-    },
-    returns => { type => "string" },
-    code => sub {
-	my ($param) = @_;
-
-	my $res = PVE::INotify::read_file('interfaces', 1);
-
-	return $res->{changes} || '';
-   }});
-
-__PACKAGE__->register_method({
-    name => 'revert_network_changes', 
-    path => 'network_changes', 
-    method => 'DELETE',
-    permissions => {
-	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
-    },
-    protected => 1,
-    description => "Revert network configuration changes.",
-    proxyto => 'node',
-    parameters => {
-    	additionalProperties => 0,
-	properties => {
-	    node => get_standard_option('pve-node'),
-	},
-    },
-    returns => { type => "null" },
-    code => sub {
-	my ($param) = @_;
-
-	unlink "/etc/network/interfaces.new";
-
-	return undef;
-   }});
 
 __PACKAGE__->register_method({
     name => 'status', 
