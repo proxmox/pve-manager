@@ -713,7 +713,7 @@ __PACKAGE__->register_method({
 
 	my $stcfg = cfs_read_file("storage.cfg");
 
-	if ($veconf->{ve_private} && $conf->{ve_private}->{value}) {
+	if ($veconf->{ve_private} && $veconf->{ve_private}->{value}) {
 	    my $path = PVE::OpenVZ::get_privatedir($veconf, $param->{vmid});
 	    my ($vtype, $volid) = PVE::Storage::path_to_volume_id($stcfg, $path);
 	    my ($sid, $volname) = PVE::Storage::parse_volume_id($volid, 1) if $volid;
@@ -737,16 +737,7 @@ __PACKAGE__->register_method({
 	    }
 	}
 
-	if (defined($conf->{swappages})) {
-	    $conf->{memory} = $veconf->{physpages}->{lim} ? 
-		int(($veconf->{physpages}->{lim} * 4)/ 1024) : 512;
-	    $conf->{swap} = $veconf->{swappages}->{lim} ? 
-		int(($veconf->{swappages}->{lim} * 4)/1024) : 0;
-	} else {
-	    $conf->{memory} = $veconf->{vmguarpages}->{bar} ? 
-		int(($veconf->{vmguarpages}->{bar} * 4)/ 1024) : 512;
-	    $conf->{swap} = 0;
-	}
+	($conf->{memory}, $conf->{swap}) = PVE::OpenVZ::ovz_config_extract_mem_swap($veconf, 1024*1024);
 
 	my $diskspace = $veconf->{diskspace}->{bar} || LONG_MAX;
 	if ($diskspace == LONG_MAX) {

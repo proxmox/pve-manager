@@ -209,18 +209,10 @@ sub vmstatus {
 	    $d->{disk} = 0;
 	    $d->{maxdisk} = int($conf->{diskspace}->{bar} * 1024);
 
-	    if (defined($conf->{swappages})) {
-		$d->{mem} = 0;
-		$d->{maxmem} = int((($conf->{physpages}->{lim} + 
-				     $conf->{swappages}->{lim})* 4096));
-		$d->{swap} = 0;
-		$d->{maxswap} = int((($conf->{swappages}->{lim})* 4096));
-	    } else {
-		$d->{mem} = 0;
-		$d->{maxmem} = int($conf->{vmguarpages}->{bar} * 4096);
-		$d->{swap} = 0;
-		$d->{maxswap} = 0;
-	    }
+	    $d->{mem} = 0;
+	    $d->{swap} = 0;
+	    
+	    ($d->{maxmem}, $d->{maxswap}) = ovz_config_extract_mem_swap($conf);
 
 	    $d->{nproc} = 0;
 	    $d->{failcnt} = 0;
@@ -365,7 +357,7 @@ my $confdesc = {
 	optional => 1,
 	type => 'integer',
 	description => "Amount of SWAP for the VM in MB.",
-	minimum => 16,
+	minimum => 0,
 	default => 512,
     },
     disk => {
@@ -879,29 +871,52 @@ sub create_config_line {
     }
 }
 
+sub ovz_config_extract_mem_swap {
+    my ($veconf, $unit) = @_;
+
+    $unit = 1 if !$unit;
+
+    my ($mem, $swap) = (int((512*1024*1024 + $unit - 1)/$unit), 0);
+
+    my $maxpages = ($res_unlimited / 4096);
+
+    if ($veconf->{swappages}) {
+	if ($veconf->{physpages} && $veconf->{physpages}->{lim} && 
+	    ($veconf->{physpages}->{lim} < $maxpages)) { 
+	    $mem = int(($veconf->{physpages}->{lim} * 4096 + $unit - 1) / $unit);
+	}
+	if ($veconf->{swappages}->{lim} && ($veconf->{swappages}->{lim} < $maxpages)) {
+	    $swap = int (($veconf->{swappages}->{lim} * 4096 + $unit - 1) / $unit);
+	}
+    } else {
+	if ($veconf->{vmguarpages} && $veconf->{vmguarpages}->{bar} &&
+	    ($veconf->{vmguarpages}->{bar} < $maxpages)) {
+	    $mem = int(($veconf->{vmguarpages}->{bar} * 4096 + $unit - 1) / $unit);
+	}
+    }
+
+    return ($mem, $swap);
+}
+
 sub update_ovz_config {
     my ($vmid, $veconf, $param) = @_;
 
     my $changes = [];
-
+	
     # test if barrier or limit changed
     my $push_bl_changes = sub {
 	my ($name, $bar, $lim) = @_;
-
-	my $old = format_res_bar_lim($name, $veconf->{$name});
+	my $old = format_res_bar_lim($name, $veconf->{$name}) 
+	    if $veconf->{$name} && defined($veconf->{$name}->{bar});
 	my $new = format_res_bar_lim($name, { bar => $bar, lim => $lim });
-	if ($old ne $new) {
+	if (!$old || ($old ne $new)) {
 	    $veconf->{$name}->{bar} = $bar; 
 	    $veconf->{$name}->{lim} = $lim;
 	    push @$changes, "--$name", $new;
 	}
     };
 
-    my $mem = $veconf->{physpages}->{lim} ? 
-	int (($veconf->{physpages}->{lim} * 4) / 1024) : 512;
-    my $swap = $veconf->{swappages}->{lim} ?
-	int (($veconf->{swappages}->{lim} * 4) / 1024) : 0;
- 
+    my ($mem, $swap) = ovz_config_extract_mem_swap($veconf, 1024*1024);
     my $disk = ($veconf->{diskspace}->{bar} || $res_unlimited) / (1024*1024);
     my $cpuunits = $veconf->{cpuunits}->{value} || 1000;
     my $quotatime = $veconf->{quotatime}->{value} || 0;
