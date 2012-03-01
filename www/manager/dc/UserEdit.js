@@ -52,7 +52,7 @@ Ext.define('PVE.dc.UserEdit', {
 	});
 
 	var update_passwd_field = function(realm) {
-	    if (realm === 'pve' || realm === 'pam') {
+	    if (realm === 'pve') {
 		pwfield.setVisible(true);
 		pwfield.setDisabled(false);
 		verifypw.setVisible(true);
@@ -97,7 +97,8 @@ Ext.define('PVE.dc.UserEdit', {
 		fieldLabel: gettext('Enabled'),
 		name: 'enable',
 		uncheckedValue: 0,
-		defaultValue: 1
+		defaultValue: 1,
+		checked: true
 	    }
         ];
 
