@@ -1,3 +1,9 @@
+pve-manager (2.0-38) unstable; urgency=low
+
+  * fix bug 101: vzdump use run_command to avoid locale errors
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 01 Mar 2012 10:45:40 +0100
+
 pve-manager (2.0-37) unstable; urgency=low
 
   * updated fr translation

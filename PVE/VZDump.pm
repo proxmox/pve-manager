@@ -516,22 +516,25 @@ sub get_lvm_mapping {
 
     my $devmapper;
 
-    my $cmd = "lvs --units m --separator ':' --noheadings -o vg_name,lv_name,lv_size";
-    if (my $fd = IO::File->new ("$cmd 2>/dev/null|")) {
-	while (my $line = <$fd>) {
-	    if ($line =~ m|^\s*(\S+):(\S+):(\d+(\.\d+))[Mm]$|) {
-		my $vg = $1;
-		my $lv = $2;
-		$devmapper->{"/dev/$vg/$lv"} = [$vg, $lv];
-		my $qlv = $lv;
-		$qlv =~ s/-/--/g;
-		my $qvg = $vg;
-		$qvg =~ s/-/--/g;
-		$devmapper->{"/dev/mapper/$qvg-$qlv"} = [$vg, $lv];
-	    }
-	}
-	close ($fd);
-    }
+    my $cmd = ['lvs', '--units', 'm', '--separator', ':', '--noheadings',
+	       '-o', 'vg_name,lv_name,lv_size' ];
+
+    my $parser = sub {
+	my $line = shift;
+	if ($line =~ m|^\s*(\S+):(\S+):(\d+(\.\d+))[Mm]$|) {
+	    my $vg = $1;
+	    my $lv = $2;
+	    $devmapper->{"/dev/$vg/$lv"} = [$vg, $lv];
+	    my $qlv = $lv;
+	    $qlv =~ s/-/--/g;
+	    my $qvg = $vg;
+	    $qvg =~ s/-/--/g;
+	    $devmapper->{"/dev/mapper/$qvg-$qlv"} = [$vg, $lv];
+	}			
+    };
+
+    eval { PVE::Tools::run_command($cmd, errfunc => sub {}, outfunc => $parser); };
+    warn $@ if $@;
 
     return $devmapper;
 }
@@ -539,24 +542,26 @@ sub get_lvm_mapping {
 sub get_mount_info {
     my ($dir) = @_;
 
-    my $out;
-    if (my $fd = IO::File->new ("df -P -T '$dir' 2>/dev/null|")) {
-	<$fd>; #skip first line
-	$out = <$fd>;
-	close ($fd);
-    }
+    my $cmd = [ 'df', '-P', '-T', '-B', '1', $dir];
 
-    return undef if !$out;
-   
-    my @res = $out =~ m/^(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)%\s+(.*)$/;
+    my $res;
 
-    return undef if scalar (@res) != 7;
-
-    return {
-	device => $res[0],
-	fstype => $res[1],
-	mountpoint => $res[6]
+    my $parser = sub {
+	my $line = shift;
+	if (my ($fsid, $fstype, $mp) = $line =~
+	    m|^(\S+.*)\s+(\S+)\s+\d+\s+\d+\s+\d+\s+\d+%\s+(/.*)$|) {
+	    $res = {
+		device => $fsid,
+		fstype => $fstype,
+		mountpoint => $mp,
+	    };
+	}
     };
+
+    eval { PVE::Tools::run_command($cmd, errfunc => sub {}, outfunc => $parser); };
+    warn $@ if $@;
+
+    return $res;
 }
 
 sub get_lvm_device {
