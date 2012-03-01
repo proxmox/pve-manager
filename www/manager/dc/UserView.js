@@ -137,7 +137,7 @@ Ext.define('PVE.dc.UserView', {
 
         var tbar = [
             {
-		text: gettext('Create'),
+		text: gettext('Add'),
 		handler: function() {
                     var win = Ext.create('PVE.dc.UserEdit',{
                     });

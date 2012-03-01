@@ -2,6 +2,8 @@ Ext.define('PVE.dc.UserEdit', {
     extend: 'PVE.window.Edit',
     alias: ['widget.pveDcUserEdit'],
 
+    isAdd: true,
+
     initComponent : function() {
         var me = this;
 
