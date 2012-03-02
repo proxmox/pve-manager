@@ -1,3 +1,12 @@
+pve-manager (2.0-39) unstable; urgency=low
+
+  * add Spanish translation
+  
+  * Do not allow to select SCSI inside the VM creation wizard, 
+  because booting from SCSI does not work with current kvm version
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 02 Mar 2012 10:49:12 +0100
+
 pve-manager (2.0-38) unstable; urgency=low
 
   * fix bug 101: vzdump use run_command to avoid locale errors

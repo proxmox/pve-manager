@@ -10,7 +10,7 @@ Ext.define('PVE.form.ControllerSelector', {
 	}
     },
 
-    noVirtio: false,
+    noVirtIO: false,
 
     noScsi: false,
 
@@ -35,7 +35,7 @@ Ext.define('PVE.form.ControllerSelector', {
 
 	    Ext.Array.each(clist, function(controller) {
 		var confid, i;
-		if ((controller === 'virtio' && me.noVirtio) ||
+		if ((controller === 'virtio' && me.noVirtIO) ||
 		    (controller === 'scsi' && me.noScsi)) {
 		    return; //continue
 		}
@@ -68,7 +68,8 @@ Ext.define('PVE.form.ControllerSelector', {
 		    xtype: 'PVE.form.BusTypeSelector',
 		    name: 'controller',
 		    value: 'ide',
-		    noVirtIO: me.noVirtio,
+		    noVirtIO: me.noVirtIO,
+		    noScsi: me.noScsi,
 		    allowBlank: false,
 		    listeners: {
 			change: function(t, value) {
