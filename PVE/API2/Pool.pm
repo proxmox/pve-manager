@@ -264,8 +264,15 @@ __PACKAGE__->register_method ({
 	    my $scfg = PVE::Storage::storage_config ($cfg, $storeid, 1);
 	    next if !$scfg;
 
-	    my $firstnode = $scfg->{nodes} && $scfg->{nodes}->[0];
-	    my $node = $firstnode || $nodename;
+	    my $node = $nodename;
+	    if ($scfg->{nodes}) {
+		if (!$scfg->{nodes}->{$node}) {
+		    foreach my $n (sort keys(%{$scfg->{nodes}})) {
+			$node = $n;
+			last;
+		    }
+		}
+	    }
 
 	    my $entry = PVE::API2Tools::extract_storage_stats($storeid, $scfg, $node, $rrd);
 	    push @$members, $entry;
