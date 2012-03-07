@@ -32,15 +32,9 @@ Ext.define('PVE.openvz.StatusView', {
 
 	var render_mem = function(value, metaData, record, rowIndex, colIndex, store) {
 	    var maxmem = me.getObjectValue('maxmem', 0);
-	    var maxswap = me.getObjectValue('maxswap', 0);	    
-	    var swap = me.getObjectValue('swap', 0);
-
-	    var max = maxmem - maxswap;
-	    var used = value-swap;
-
-	    var per = (used / max)*100;
-	    var text = "<div>Total: " + PVE.Utils.format_size(max) + "</div>" + 
-		"<div>Used: " + PVE.Utils.format_size(used) + "</div>";
+	    var per = (value / maxmem)*100;
+	    var text = "<div>Total: " + PVE.Utils.format_size(maxmem) + "</div>" + 
+		"<div>Used: " + PVE.Utils.format_size(value) + "</div>";
 	    return text;
 	};
 
