@@ -185,7 +185,8 @@ Ext.define('PVE.Utils', { statics: {
 	en: 'English',
 	de: 'German',
 	es: 'Spanish',
-	fr: 'French'
+	fr: 'French',
+	sv: 'Swedish'
     },
 
     render_language: function (value) {
@@ -398,6 +399,7 @@ Ext.define('PVE.Utils', { statics: {
 	srvrestart: ['SRV', gettext('Restart') ],
 	srvreload: ['SRV', gettext('Reload') ],
 	imgcopy: ['', gettext('Copy data') ],
+	imgdel: ['', gettext('Erase data') ],
 	download: ['', gettext('Download') ],
 	vzdump: ['', gettext('Backup') ]
     },
