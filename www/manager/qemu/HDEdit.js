@@ -121,6 +121,13 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    });
 	    me.column1.push(me.unusedDisks);
 	} else if (me.create) {
+	    me.formatsel = Ext.create('PVE.form.DiskFormatSelector', {
+		name: 'diskformat',
+		fieldLabel: gettext('Format'),
+		value: 'raw',
+		allowBlank: false
+	    });
+
 	    me.hdfilesel = Ext.create('PVE.form.FileSelector', {
 		name: 'hdimage',
 		nodename: me.nodename,
@@ -153,12 +160,22 @@ Ext.define('PVE.qemu.HDInputPanel', {
 			if (rec.data.type === 'iscsi') {
 			    me.hdfilesel.setStorage(value);
 			    me.hdfilesel.setDisabled(false);
+			    me.formatsel.setValue('raw');
+			    me.formatsel.setDisabled(true);
 			    me.hdfilesel.setVisible(true);
 			    me.hdsizesel.setDisabled(true);
 			    me.hdsizesel.setVisible(false);
+			} else if (rec.data.type === 'lvm') {
+			    me.hdfilesel.setDisabled(true);
+			    me.hdfilesel.setVisible(false);
+			    me.formatsel.setValue('raw');
+			    me.formatsel.setDisabled(true);
+			    me.hdsizesel.setDisabled(false);
+			    me.hdsizesel.setVisible(true);
 			} else {
 			    me.hdfilesel.setDisabled(true);
 			    me.hdfilesel.setVisible(false);
+			    me.formatsel.setDisabled(false);
 			    me.hdsizesel.setDisabled(false);
 			    me.hdsizesel.setVisible(true);
 			}			
@@ -168,22 +185,14 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.column1.push(me.hdstoragesel);
 	    me.column1.push(me.hdfilesel);
 	    me.column1.push(me.hdsizesel);
+	    me.column2.push(me.formatsel);
+
 	} else {
 	    me.column1.push({
 		xtype: 'displayfield',
  		fieldLabel: gettext('Disk image'),
  		labelWidth: 50,
                 name: 'hdimage'
-	    });
-	}
-
-	if (me.create && !me.unused) {
-	    me.column2.push({
-		xtype: 'PVE.form.DiskFormatSelector',
-		name: 'diskformat',
-		fieldLabel: gettext('Format'),
-		value: 'raw',
-		allowBlank: false
 	    });
 	}
 
