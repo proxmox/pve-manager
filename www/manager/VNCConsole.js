@@ -371,7 +371,7 @@ Ext.define('PVE.OpenVZConsole', {
 			if (btn !== 'yes') {
 			    return;
 			}
-			vm_command("stop");
+			vm_command("shutdown");
 		    }); 
 		}
 	    },
@@ -383,7 +383,7 @@ Ext.define('PVE.OpenVZConsole', {
 			if (btn !== 'yes') {
 			    return;
 			}
-			vm_command("stop", { fast: 1 });
+			vm_command("stop");
 		    }); 
 		}
 	    },
