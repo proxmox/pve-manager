@@ -62,7 +62,12 @@ Ext.apply(Ext.form.field.VTypes, {
     HttpProxy:  function(v) {
         return (/^http:\/\/.*$/).test(v);
     },
-    HttpProxyText: gettext('Example') + ": http://username:password&#64;host:port/"
+    HttpProxyText: gettext('Example') + ": http://username:password&#64;host:port/",
+
+    DnsName: function(v) {
+	return (/^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/).test(v);
+    },
+    DnsNameText: gettext('This is not a valid DNS name')
 });
 
 // we dont want that a displayfield set the form dirty flag! 

@@ -28,6 +28,7 @@ Ext.define('PVE.qemu.Options', {
 		    items: {
 			xtype: 'textfield',
 			name: 'name',
+			vtype: 'DnsName',
 			value: '',
 			fieldLabel: gettext('Name'),
 			allowBlank: true
