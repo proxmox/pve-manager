@@ -114,7 +114,8 @@ sub get_rootdir {
 
 sub read_user_beancounters {
     my $ubc = {};
-    if (my $fh = IO::File->new ("/proc/user_beancounters", "r")) {
+
+    if (my $fh = IO::File->new ("/proc/bc/resources", "r")) {
 	my $vmid;
 	while (defined (my $line = <$fh>)) {
 	    if ($line =~ m|\s*((\d+):\s*)?([a-z]+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)$|) {
@@ -240,15 +241,17 @@ sub vmstatus {
 	}
     }
 
+    my $maxpages = ($res_unlimited / 4096);
     my $ubchash = read_user_beancounters();
     foreach my $vmid (keys %$ubchash) {
 	my $d = $list->{$vmid};
 	my $ubc = $ubchash->{$vmid};
 	if ($d && defined($d->{status}) && $ubc) {
 	    $d->{failcnt} = $ubc->{failcntsum};
-	    $d->{mem} = int($ubc->{privvmpages}->{held} * 4096);
-	    my $phy = int($ubc->{physpages}->{held} * 4096);
-	    $d->{swap} = $phy > $d->{maxmem} ? $phy - $d->{maxmem} : 0;
+	    $d->{mem} = $ubc->{physpages}->{held} * 4096;
+	    if ($ubc->{swappages}->{held} < $maxpages) {
+		$d->{swap} = $ubc->{swappages}->{held} * 4096
+	    }
 	    $d->{nproc} = $ubc->{numproc}->{held};
 	}
     }
