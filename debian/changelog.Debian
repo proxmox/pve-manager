@@ -1,3 +1,9 @@
+pve-manager (2.0-41) unstable; urgency=low
+
+  * add Chinese translation
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 15 Mar 2012 10:51:11 +0100
+
 pve-manager (2.0-40) unstable; urgency=low
 
   * fix bug 22: correctly display openvz swap usage
