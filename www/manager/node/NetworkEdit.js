@@ -24,6 +24,8 @@ Ext.define('PVE.node.NetworkEdit', {
 	} else if (me.iftype === 'bond') {
 	    me.subject = "Bond";
 	    iface_vtype = 'BondName';
+	} else if (me.iftype === 'eth' && !me.create) {
+	    me.subject = gettext("Network Device");
 	} else {
 	    throw "no known network device type specified";
 	}
