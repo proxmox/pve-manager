@@ -3,7 +3,7 @@ Version: @VERSION@-@PACKAGERELEASE@
 Section: admin
 Priority: optional
 Architecture: all
-Depends: perl5, libtimedate-perl, apache2-mpm-prefork, libauthen-pam-perl, libintl-perl, rsync, libapache2-request-perl, libjson-perl, libdigest-sha1-perl, liblockfile-simple-perl, vncterm, qemu-server (>= 1.1-1), libwww-perl, wget, libnet-dns-perl, vlan, ifenslave-2.6 (>= 1.1.0-10), liblinux-inotify2-perl, debconf (>= 0.5) | debconf-2.0, netcat-traditional, pve-cluster, libpve-common-perl, libpve-storage-perl, libterm-readline-gnu-perl, libpve-access-control, libio-socket-ssl-perl, libfilesys-df-perl, libfile-readbackwards-perl, libfile-sync-perl, redhat-cluster-pve, resource-agents-pve, fence-agents-pve, cstream, mail-transport-agent, libxml-parser-perl, perl-suid, lzop
+Depends: perl5, libtimedate-perl, apache2-mpm-prefork, libauthen-pam-perl, libintl-perl, rsync, libapache2-request-perl, libjson-perl, liblockfile-simple-perl, vncterm, qemu-server (>= 1.1-1), libwww-perl, wget, libnet-dns-perl, vlan, ifenslave-2.6 (>= 1.1.0-10), liblinux-inotify2-perl, debconf (>= 0.5) | debconf-2.0, netcat-traditional, pve-cluster, libpve-common-perl, libpve-storage-perl, libterm-readline-gnu-perl, libpve-access-control, libio-socket-ssl-perl, libfilesys-df-perl, libfile-readbackwards-perl, libfile-sync-perl, redhat-cluster-pve, resource-agents-pve, fence-agents-pve, cstream, mail-transport-agent, libxml-parser-perl, perl-suid, lzop
 Conflicts: netcat-openbsd, vzdump
 Replaces: vzdump
 Provides: vzdump

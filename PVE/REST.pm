@@ -2,7 +2,6 @@ package PVE::REST;
 
 use warnings;
 use strict;
-use Digest::SHA1 qw(sha1_base64);
 use PVE::Cluster;
 use PVE::SafeSyslog;
 use PVE::Tools;
@@ -10,7 +9,6 @@ use PVE::API2;
 use Apache2::Const;
 use mod_perl2;
 use JSON;
-use Digest::SHA;
 use LWP::UserAgent;
 use HTTP::Request::Common;
 use HTTP::Status qw(:constants :is status_message);

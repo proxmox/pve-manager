@@ -12,7 +12,7 @@ use PVE::Cluster qw(cfs_register_file cfs_read_file);
 use PVE::SafeSyslog;
 use PVE::INotify;
 use PVE::JSONSchema;
-use Digest::SHA1;
+use Digest::SHA;
 use Encode;
 
 use constant SCRIPT_EXT => qw (start stop mount umount premount postumount);
@@ -783,7 +783,7 @@ sub parse_ovz_config {
     return undef if !defined($raw);
 
     my $data = {
-	digest => Digest::SHA1::sha1_hex($raw),
+	digest => Digest::SHA::sha1_hex($raw),
     };
 
     $filename =~ m|/openvz/(\d+)\.conf$|
@@ -1238,7 +1238,7 @@ sub set_rootpasswd {
     my $shadow = "$privatedir/etc/shadow";
 
     if ($opt_rootpasswd !~ m/^\$/) {
-	my $time = substr (Digest::SHA1::sha1_base64 (time), 0, 8);
+	my $time = substr (Digest::SHA::sha1_base64 (time), 0, 8);
 	$opt_rootpasswd = crypt(encode("utf8", $opt_rootpasswd), "\$1\$$time\$");
     };
 

@@ -2,6 +2,7 @@ package PVE::API2::Backup;
 
 use strict;
 use warnings;
+use Digest::SHA;
 
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param);
@@ -91,7 +92,7 @@ sub parse_vzdump_cron_config {
 
     my $jid = 1; # we start at 1
     
-    my $digest = Digest::SHA1::sha1_hex(defined($raw) ? $raw : '');
+    my $digest = Digest::SHA::sha1_hex(defined($raw) ? $raw : '');
 
     while ($raw && $raw =~ s/^(.*?)(\n|$)//) {
 	my $line = $1;
