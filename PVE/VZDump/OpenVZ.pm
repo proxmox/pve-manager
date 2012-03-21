@@ -240,7 +240,7 @@ sub archive {
     my $srcdir = $self->{vmlist}->{$vmid}->{dir};
     my $snapdir = $task->{snapdir};
 
-    my $taropts = "--totals --sparse --numeric-owner --no-recursion --ignore-failed-read --one-file-system";
+    my $taropts = "--totals --sparse --numeric-owner --no-recursion --one-file-system";
 
     # note: --remove-files does not work because we do not 
     # backup all files (filters). tar complains:
