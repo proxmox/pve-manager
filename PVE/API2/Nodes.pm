@@ -19,6 +19,7 @@ use PVE::AccessControl;
 use PVE::Storage;
 use PVE::OpenVZ;
 use PVE::APLInfo;
+use PVE::API2::Subscription;
 use PVE::API2::Services;
 use PVE::API2::Network;
 use PVE::API2::Tasks;
@@ -49,6 +50,11 @@ __PACKAGE__->register_method ({
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Services",  
     path => 'services',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Subscription",  
+    path => 'subscription',
 });
 
 __PACKAGE__->register_method ({
@@ -98,6 +104,7 @@ __PACKAGE__->register_method ({
 	    { name => 'version' },
 	    { name => 'syslog' },
 	    { name => 'status' },
+	    { name => 'subscription' },
 	    { name => 'tasks' },
 	    { name => 'rrd' }, # fixme: remove?
 	    { name => 'rrddata' },# fixme: remove?

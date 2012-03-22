@@ -1,0 +1,65 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+use PVE::Tools;
+use PVE::SafeSyslog;
+use PVE::INotify;
+use PVE::RPCEnvironment;
+use PVE::CLIHandler;
+use PVE::API2::Subscription;
+
+
+use base qw(PVE::CLIHandler);
+
+$ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
+
+initlog('pvesubscription');
+
+die "please run as root\n" if $> != 0;
+
+PVE::INotify::inotify_init();
+
+my $rpcenv = PVE::RPCEnvironment->init('cli');
+
+$rpcenv->init_request();
+$rpcenv->set_language($ENV{LANG});
+$rpcenv->set_user('root@pam'); 
+
+my $nodename = PVE::INotify::nodename();
+
+
+
+my $cmddef = {
+    update => [ 'PVE::API2::Subscription', 'update', undef, { node => $nodename } ],
+    get => [ 'PVE::API2::Subscription', 'get', undef, { node => $nodename }, 
+	     sub {
+		 my $info = shift;
+		 foreach my $k (sort keys %$info) {
+		     print "$k: $info->{$k}\n";
+		 }
+	     }],
+    set => [ 'PVE::API2::Subscription', 'set', ['key'], { node => $nodename } ],
+};
+
+my $cmd = shift;
+
+PVE::CLIHandler::handle_cmd($cmddef, "pvesubscription", $cmd, \@ARGV, undef, $0);
+
+exit 0;
+
+__END__
+
+=head1 NAME
+
+pvesubscription - Proxmox VE subscription mamager
+
+=head1 SYNOPSIS
+
+=include synopsis
+
+=head1 DESCRIPTION
+
+This tool is used to handle pve subscriptions.
+
+=include pve_copyright

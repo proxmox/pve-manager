@@ -12,6 +12,7 @@ SCRIPTS =  			\
 	pvectl			\
 	pvedaemon		\
 	pveversion		\
+	pvesubscription		\
 	pveperf
 
 MANS = 				\
@@ -21,6 +22,7 @@ MANS = 				\
 	pvestatd.1		\
 	pvedaemon.1		\
 	pveversion.1		\
+	pvesubscription.1	\
 	pveperf.1
 
 all: ${MANS}
@@ -38,6 +40,9 @@ pvectl.1.pod: pvectl
 vzdump.1.pod: vzdump
 	perl -I.. -T ./vzdump printmanpod >$@
 
+pvesubscription.1.pod: pvesubscription
+	perl -I.. -T ./pvesubscription printmanpod >$@
+
 vzrestore.1.pod: vzrestore
 	perl -I.. ./vzrestore printmanpod >$@
 
@@ -52,6 +57,7 @@ install: ${SCRIPTS} ${MANS} pvemailforward
 	install -d ${PODDIR}
 	install -m 0644 pvectl.1.pod ${PODDIR}
 	install -m 0644 vzdump.1.pod ${PODDIR}
+	install -m 0644 pvesubscription.1.pod ${PODDIR}
 	install -m 0644 vzrestore.1.pod ${PODDIR}
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 

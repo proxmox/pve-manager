@@ -1,6 +1,7 @@
 include ../../defines.mk
 
 PERLSOURCE = 			\
+	Subscription.pm		\
 	VZDump.pm		\
 	Backup.pm		\
 	Cluster.pm		\
