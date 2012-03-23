@@ -439,6 +439,9 @@ sub new {
 
     my $defaults = read_vzdump_defaults();
 
+    my $maxfiles = $opts->{maxfiles};
+    $opts->{remove} = 1 if !defined($opts->{remove});
+
     foreach my $k (keys %$defaults) {
 	if ($k eq 'dumpdir' || $k eq 'storage') {
 	    $opts->{$k} = $defaults->{$k} if !defined ($opts->{dumpdir}) &&
@@ -497,6 +500,7 @@ sub new {
     if ($opts->{storage}) {
 	my $info = storage_info ($opts->{storage});
 	$opts->{dumpdir} = $info->{dumpdir};
+	$maxfiles = $info->{maxfiles} if !$maxfiles && $info->{maxfiles};
     } elsif ($opts->{dumpdir}) {
 	die "dumpdir '$opts->{dumpdir}' does not exist\n"
 	    if ! -d $opts->{dumpdir};
@@ -507,6 +511,8 @@ sub new {
     if ($opts->{tmpdir} && ! -d $opts->{tmpdir}) {
 	die "tmpdir '$opts->{tmpdir}' does not exist\n";
     }
+
+    $opts->{maxfiles} = $maxfiles if $maxfiles;
 
     return $self;
 
@@ -661,6 +667,22 @@ sub compressor_info {
 	die "internal error - unknown compression option '$opt_compress'";
     }
 }
+
+sub get_backup_file_list {
+    my ($dir, $bkname, $exclude_fn) = @_;
+
+    my $bklist = [];
+    foreach my $fn (<$dir/${bkname}-*>) {
+	next if $exclude_fn && $fn eq $exclude_fn;
+	if ($fn =~ m!/(${bkname}-(\d{4})_(\d{2})_(\d{2})-(\d{2})_(\d{2})_(\d{2})\.(tgz|(tar(\.(gz|lzo))?)))$!) {
+	    $fn = "$dir/$1"; # untaint
+	    my $t = timelocal ($7, $6, $5, $4, $3 - 1, $2 - 1900);
+	    push @$bklist, [$fn, $t];
+	}
+    }
+
+    return $bklist;
+}
  
 sub exec_backup_task {
     my ($self, $task) = @_;
@@ -691,6 +713,14 @@ sub exec_backup_task {
 	my $basename = sprintf "${bkname}-%04d_%02d_%02d-%02d_%02d_%02d", 
 	$lt->year + 1900, $lt->mon + 1, $lt->mday, 
 	$lt->hour, $lt->min, $lt->sec;
+
+	my $maxfiles = $opts->{maxfiles};
+
+	if ($maxfiles && !$opts->{remove}) {
+	    my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname);
+	    die "only $maxfiles backup(s) allowed - please consider to remove old backup files.\n" 
+		if scalar(@$bklist) >= $maxfiles;
+	}
 
 	my $logfile = $task->{logfile} = "$opts->{dumpdir}/$basename.log";
 
@@ -877,26 +907,12 @@ sub exec_backup_task {
 
 	# purge older backup
 
-	my $maxfiles = $opts->{maxfiles};
+	if ($maxfiles && $opts->{remove}) {
+	    my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname, $task->{tarfile});
+	    $bklist = [ sort { $b->[1] <=> $a->[1] } @$bklist ];
 
-	if ($maxfiles) {
-	    my @bklist = ();
-	    my $dir = $opts->{dumpdir};
-	    foreach my $fn (<$dir/${bkname}-*>) {
-		next if $fn eq $task->{tarfile};
-		if ($fn =~ m!/(${bkname}-(\d{4})_(\d{2})_(\d{2})-(\d{2})_(\d{2})_(\d{2})\.(tgz|(tar(\.(gz|lzo))?)))$!) {
-		    $fn = "$dir/$1"; # untaint
-		    my $t = timelocal ($7, $6, $5, $4, $3 - 1, $2 - 1900);
-		    push @bklist, [$fn, $t];
-		}
-	    }
-	
-	    @bklist = sort { $b->[1] <=> $a->[1] } @bklist;
-
-	    my $ind = scalar (@bklist);
-
-	    while (scalar (@bklist) >= $maxfiles) {
-		my $d = pop @bklist;
+	    while (scalar (@$bklist) >= $maxfiles) {
+		my $d = pop @$bklist;
 		debugmsg ('info', "delete old backup '$d->[0]'", $logfd);
 		unlink $d->[0];
 		my $logfn = $d->[0];
@@ -1160,6 +1176,12 @@ my $confdesc = {
 	description => "Maximal number of backup files per VM.",
 	optional => 1,
 	minimum => 1,
+    },
+    remove => {
+	type => 'boolean',
+	description => "Remove old backup files if there are more than 'maxfiles' backup files.",
+	optional => 1,
+	default => 1,
     },
 };
 

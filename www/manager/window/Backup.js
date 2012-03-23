@@ -59,9 +59,10 @@ Ext.define('PVE.window.Backup', {
 		var storage = storagesel.getValue();
 		var values = form.getValues();
 		var params = {
-			storage: storage,
-			vmid: me.vmid,
-			mode: values.mode
+		    storage: storage,
+		    vmid: me.vmid,
+		    mode: values.mode,
+		    remove: 0
 		};
 		if (values.compress) {
 		    params.compress = values.compress;

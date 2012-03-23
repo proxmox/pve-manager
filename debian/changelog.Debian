@@ -1,3 +1,12 @@
+pve-manager (2.0-44) unstable; urgency=low
+
+  * Disable automatic file removal on 'Backup now'
+  
+  * Option 'maxfiles' is now a storage option (to specify the maximal
+    number of allowed backups per VM)
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Mar 2012 10:03:23 +0100
+
 pve-manager (2.0-43) unstable; urgency=low
 
   * vzdump: do not use tar flag --ignore-failed-read

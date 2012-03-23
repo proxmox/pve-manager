@@ -165,15 +165,6 @@ Ext.define('PVE.dc.BackupEdit', {
 		value: me.create ? 'lzo' : ''
 	    },
 	    {
-		xtype: 'numberfield',
-		fieldLabel: gettext('Max files'),
-		name: 'maxfiles',
-		minValue: 1,
-		maxValue: 365,
-		value: '1',
-		allowBlank: false
-	    },
-	    {
 		xtype: 'pveBackupModeSelector',
 		fieldLabel: gettext('Mode'),
 		value: 'snapshot',

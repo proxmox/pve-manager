@@ -61,6 +61,15 @@ Ext.define('PVE.storage.DirInputPanel', {
 		name: 'shared',
 		uncheckedValue: 0,
 		fieldLabel: gettext('Shared')
+	    },
+	    {
+		xtype: 'numberfield',
+		fieldLabel: gettext('Max Backups'),
+		name: 'maxfiles',
+		minValue: 0,
+		maxValue: 365,
+		value: me.create ? '1' : undefined,
+		allowBlank: false
 	    }
 	];
 
