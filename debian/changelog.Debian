@@ -1,3 +1,12 @@
+pve-manager (2.0-45) unstable; urgency=low
+
+  * fix bug 124: correctly return maxfiles flag
+  
+  * vzdump: use storage 'local' as default backup target (instead of using
+    Openvz dump directory settings)
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Mar 2012 12:36:15 +0100
+
 pve-manager (2.0-44) unstable; urgency=low
 
   * Disable automatic file removal on 'Backup now'

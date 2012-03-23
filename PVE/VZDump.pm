@@ -92,6 +92,7 @@ sub storage_info {
 
     return {
 	dumpdir => PVE::Storage::get_backup_dir($cfg, $storage),
+	maxfiles => $scfg->{maxfiles},
     };
 }
 
@@ -486,15 +487,10 @@ sub new {
 	my $pd = $p->new ($self);
 
 	push @{$self->{plugins}}, $pd;
-
-	if (!$opts->{dumpdir} && !$opts->{storage} && 
-	    ($p eq 'PVE::VZDump::OpenVZ')) {
-	    $opts->{dumpdir} = $pd->{dumpdir};
-	}
     }
 
     if (!$opts->{dumpdir} && !$opts->{storage}) {
-	die "no dumpdir/storage specified - use option '--dumpdir' or option '--storage'\n";
+	$opts->{storage} = 'local';
     }
 
     if ($opts->{storage}) {
