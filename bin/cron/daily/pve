@@ -1,14 +1,36 @@
 #!/usr/bin/perl -w
 
 use strict;
-use PVE::Cluster;
-use PVE::APLInfo;
-use PVE::SafeSyslog;
 use IO::File;
 use File::Find;
 use File::stat;
 
+use PVE::Cluster;
+use PVE::APLInfo;
+use PVE::SafeSyslog;
+use PVE::RPCEnvironment;
+use PVE::API2::Subscription;
+
 initlog ('pvedailycron', 'daemon');
+
+die "please run as root\n" if $> != 0;
+
+$ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
+
+PVE::INotify::inotify_init();
+
+my $rpcenv = PVE::RPCEnvironment->init('cli');
+
+$rpcenv->init_request();
+$rpcenv->set_language($ENV{LANG});
+$rpcenv->set_user('root@pam'); 
+
+my $nodename = PVE::INotify::nodename();
+
+eval { PVE::API2::Subscription->update({ node => $nodename }); };
+if (my $err = $@) {
+   syslog ('err', "update subscription info failed: $err");
+}
 
 my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
 eval { PVE::APLInfo::update($dccfg->{http_proxy}); };
