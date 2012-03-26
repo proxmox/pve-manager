@@ -9,6 +9,7 @@ use LWP::UserAgent;
 use JSON; 
 
 use PVE::Tools;
+use PVE::ProcFSTools;
 use PVE::Exception qw(raise_param_exc);
 use PVE::INotify;
 use PVE::Cluster qw (cfs_read_file cfs_write_file);
@@ -47,29 +48,9 @@ sub get_hwaddress {
     return $hwaddress;
 }
 
-my $hwsockets;
-
 sub get_sockets {
-    return $hwsockets if $hwsockets;
-
-    my $fh = IO::File->new ('/proc/cpuinfo', "r") ||
-	die "can't read cpu info - $!\n";
-
-    my $sockets = 0;
-    while (defined(my $line = <$fh>)) {
-	if ($line =~ m/^physical id\s*:\s*(\d+)\s*$/i) {
-	    my $sid = $1 + 1;
-	    $sockets = $sid if $sid > $sockets;
-	}
-    }
-
-    close($fh);
-
-    die "unable to get socket count\n" if !$sockets;
-
-    $hwsockets = $sockets;
-
-    return $hwsockets;
+    my $info = PVE::ProcFSTools::read_cpuinfo();
+    return $info->{sockets};
 }
 
 sub parse_key {
