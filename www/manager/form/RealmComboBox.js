@@ -22,7 +22,7 @@ Ext.define('PVE.form.RealmComboBox', {
 	    autoSelect: false,
 	    triggerAction: 'all',
 	    valueField: 'realm',
-	    displayField: 'comment',
+	    displayField: 'descr',
 	    getState: function() {
 		return { value: this.getValue() };
 	    },

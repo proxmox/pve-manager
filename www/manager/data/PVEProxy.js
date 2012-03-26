@@ -32,7 +32,23 @@ Ext.define('PVE.RestProxy', {
 
     Ext.define('pve-domains', {
 	extend: "Ext.data.Model",
-	fields: [ 'realm', 'type', 'comment', 'default' ],
+	fields: [ 'realm', 'type', 'comment', 'default',
+		  { 
+		      name: 'descr',
+		      // Note: We use this in the RealmComboBox.js
+		      // (see Bug #125)
+		      convert: function(value, record) {
+			  var info = record.data;
+			  var text;
+
+			  if (value) {
+			      return value;
+			  }
+			  // return realm if there is no comment
+			  return info.comment || info.realm;
+		      }
+		  }
+		],
 	proxy: {
 	    type: 'pve',
 	    url: "/api2/json/access/domains"
