@@ -3,6 +3,32 @@ package PVE::API2Tools;
 use strict;
 use warnings;
 
+sub extract_node_stats {
+    my ($node, $members, $rrd) = @_;
+
+    my $entry = {
+	id => "node/$node",
+	node => $node,
+	type => "node",
+    };
+
+    if (my $d = $rrd->{"pve2-node/$node"}) {
+		    
+	if (!$members || # no cluster
+	    ($members->{$node} && $members->{$node}->{online})) {
+	    $entry->{uptime} = ($d->[0] || 0) + 0;
+	    $entry->{cpu} = ($d->[5] || 0) + 0;
+	    $entry->{mem} = ($d->[8] || 0) + 0;
+	    $entry->{disk} = ($d->[12] || 0) + 0;
+	}
+	$entry->{level} = $d->[1];
+	$entry->{maxcpu} = ($d->[4] || 0) + 0;
+	$entry->{maxmem} = ($d->[7] || 0) + 0;
+	$entry->{maxdisk} = ($d->[11] || 0) + 0;
+    }
+
+    return $entry;
+}
 
 sub extract_vm_stats {
     my ($vmid, $data, $rrd) = @_;

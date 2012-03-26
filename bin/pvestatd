@@ -15,6 +15,7 @@ use PVE::Storage;
 use PVE::QemuServer;
 use PVE::OpenVZ;
 use PVE::RPCEnvironment;
+use PVE::API2::Subscription;
 
 $SIG{'__WARN__'} = sub {
     my $err = $@;
@@ -144,6 +145,9 @@ sub update_node_status {
 
     my $maxcpu = $cpuinfo->{cpus}; 
 
+    my $subinfo = PVE::INotify::read_file('subscription');
+    my $sublevel = $subinfo->{level} || '';
+
     # traffic from/to physical interface cards
     my $netin = 0;
     my $netout = 0;
@@ -162,7 +166,7 @@ sub update_node_status {
     # everything not free is considered to be used
     my $dused = $dinfo->{blocks} - $dinfo->{bfree};
 
-    my $data = "$uptime:$ctime:$avg1:$maxcpu:$stat->{cpu}:$stat->{wait}:" .
+    my $data = "$uptime:$sublevel:$ctime:$avg1:$maxcpu:$stat->{cpu}:$stat->{wait}:" .
 	"$meminfo->{memtotal}:$meminfo->{memused}:" .
 	"$meminfo->{swaptotal}:$meminfo->{swapused}:" .
 	"$dinfo->{blocks}:$dused:$netin:$netout";

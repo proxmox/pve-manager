@@ -46,6 +46,13 @@ Ext.define('PVE.dc.NodeView', {
 		    renderer: PVE.Utils.format_boolean
 		},
 		{
+		    header: gettext('Support'),
+		    width: 100,
+		    sortable: true,
+		    dataIndex: 'level',
+		    renderer: PVE.Utils.render_support_level
+		},
+		{
 		    header: gettext('Estranged'),
 		    width: 100,
 		    sortable: true,
@@ -94,7 +101,7 @@ Ext.define('PVE.dc.NodeView', {
     Ext.define('pve-dc-nodes', {
 	extend: 'Ext.data.Model',
 	fields: [ 'id', 'type', 'name', 'state', 'nodeid', 'ip', 
-		  'pmxcfs', 'rgmanager', 'estranged' ],
+		  'pmxcfs', 'rgmanager', 'estranged', 'level' ],
 	idProperty: 'id'
     });
 

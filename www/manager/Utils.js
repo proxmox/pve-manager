@@ -100,6 +100,13 @@ Ext.define('PVE.Utils', { statics: {
 	7: "debug"
     },
 
+    support_level_hash: {
+	'c': gettext('Community'),
+	'b': gettext('Basic'),
+	's': gettext('Standard'),
+	'p': gettext('Premium')
+    },
+
     kvm_ostypes: {
 	other: gettext('Other OS types'),
 	wxp: 'Microsoft Windows XP/2003',
@@ -721,6 +728,10 @@ Ext.define('PVE.Utils', { statics: {
 	}
 
 	return PVE.Utils.format_duration_long(uptime);
+    },
+
+    render_support_level: function(value, metaData, record) {
+	return PVE.Utils.support_level_hash[value] || '-';
     },
 
     render_upid: function(value, metaData, record) { 

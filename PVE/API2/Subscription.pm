@@ -57,7 +57,7 @@ sub parse_key {
     my ($key) = @_;
 
     if ($key =~ m/^pve([124])([cbsp])-[0-9a-f]{10}$/) {
-	return wantarray ? ($1, $2) : $1; # number of sockets, type
+	return wantarray ? ($1, $2) : $1; # number of sockets, level
     }
     return undef;
 }
@@ -110,7 +110,8 @@ sub read_etc_pve_subscription {
 
     my $key = <$fh>; # first line is the key
     chomp $key;
-    die "Wrong subscription key format\n" if !parse_key($key);
+    my ($sockets, $level) = parse_key($key);
+    die "Wrong subscription key format\n" if !$sockets;
 
     my $csum = <$fh>; # second line is a checksum
 
@@ -151,6 +152,10 @@ sub read_etc_pve_subscription {
 	} else {
 	    $info = $localinfo;
 	}
+    }
+
+    if ($info->{status} eq 'Active') {
+	$info->{level} = $level;
     }
 
     return $info;

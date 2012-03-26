@@ -206,26 +206,7 @@ __PACKAGE__->register_method({
 
 	if (!$param->{type} || $param->{type} eq 'node') {
 	    foreach my $node (@$nodelist) {
-		my $entry = {
-		    id => "node/$node",
-		    node => $node,
-		    type => "node",
-		};
-		if (my $d = $rrd->{"pve2-node/$node"}) {
-		    
-		    if (!$members || # no cluster
-			($members->{$node} && $members->{$node}->{online})) {
-			$entry->{uptime} = ($d->[0] || 0) + 0;
-			$entry->{cpu} = ($d->[4] || 0) + 0;
-			$entry->{mem} = ($d->[7] || 0) + 0;
-			$entry->{disk} = ($d->[11] || 0) + 0;
-		    }
-
-		    $entry->{maxcpu} = ($d->[3] || 0) + 0;
-		    $entry->{maxmem} = ($d->[6] || 0) + 0;
-		    $entry->{maxdisk} = ($d->[10] || 0) + 0;
-		}
-
+		my $entry = PVE::API2Tools::extract_node_stats($node, $members, $rrd);
 		push @$res, $entry;
 	    }
 	}
@@ -357,7 +338,7 @@ __PACKAGE__->register_method({
     }});
 
 my $parse_clustat = sub {
-    my ($clinfo, $members, $nodename, $raw) = @_;
+    my ($clinfo, $members, $rrd, $nodename, $raw) = @_;
 
     my $createNode = sub {
 	my ($expat, $tag, %attrib) = @_; 
@@ -390,6 +371,11 @@ my $parse_clustat = sub {
 		    $node->{ip} = $ip;
 		}
 	    }
+
+	    if (my $entry = PVE::API2Tools::extract_node_stats($name, $members, $rrd)) {
+		$node->{level} = $entry->{level} || '';
+	    }
+
 	} elsif ($tag eq 'group') {
 	    my $name = $node->{name};
 	    return if !$name; # just to be sure
@@ -467,15 +453,20 @@ __PACKAGE__->register_method({
 	my $clinfo = PVE::Cluster::get_clinfo(); 
 	my $members = PVE::Cluster::get_members();
 	my $nodename = PVE::INotify::nodename();
+	my $rrd = PVE::Cluster::rrd_dump();
 
 	if ($members) {
 	    my $cmd = ['clustat', '-x'];
 	    my $out = '';
 	    PVE::Tools::run_command($cmd, outfunc => sub { $out .= shift; });
-	    return &$parse_clustat($clinfo, $members, $nodename, $out);
+	    return &$parse_clustat($clinfo, $members, $rrd, $nodename, $out);
 	} else {
 	    # fake entry for local node if no cluster defined
 	    my $pmxcfs = ($clinfo && $clinfo->{version}) ? 1 : 0; # pmxcfs online ?
+
+	    my $subinfo = PVE::INotify::read_file('subscription');
+	    my $sublevel = $subinfo->{level} || '';
+
 	    return [{
 		type => 'node',
 		id => "node/$nodename",
@@ -483,7 +474,8 @@ __PACKAGE__->register_method({
 		'local' => 1,
 		nodeid => 0,
 		pmxcfs => $pmxcfs,
-		state => 1
+		state => 1,
+		level => $sublevel,
 	    }];
 	}
     }});
