@@ -178,7 +178,11 @@ Ext.define('PVE.StdWorkspace', {
 	    cont.add(comp);
 	    cont.doLayout();
 	} else {
-	    PVE.Utils.setErrorMask(cont, 'nothing selected');
+	    // TODO: display something useful
+
+	    // Note:: error mask has wrong zindex, so we do not
+	    // use that - see bug 114
+	    // PVE.Utils.setErrorMask(cont, 'nothing selected');
 	}
     },
 
