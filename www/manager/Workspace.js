@@ -177,13 +177,14 @@ Ext.define('PVE.StdWorkspace', {
 	    comp.border = false;
 	    cont.add(comp);
 	    cont.doLayout();
-	} else {
+	} 
+	// else {
 	    // TODO: display something useful
 
 	    // Note:: error mask has wrong zindex, so we do not
 	    // use that - see bug 114
 	    // PVE.Utils.setErrorMask(cont, 'nothing selected');
-	}
+	//}
     },
 
     selectById: function(nodeid) {

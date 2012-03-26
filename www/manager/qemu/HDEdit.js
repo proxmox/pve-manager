@@ -190,8 +190,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	} else {
 	    me.column1.push({
 		xtype: 'displayfield',
- 		fieldLabel: gettext('Disk image'),
- 		labelWidth: 50,
+		fieldLabel: gettext('Disk image'),
+		labelWidth: 50,
                 name: 'hdimage'
 	    });
 	}
