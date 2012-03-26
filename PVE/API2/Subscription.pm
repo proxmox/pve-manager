@@ -223,8 +223,10 @@ sub check_subscription {
     $subinfo->{key} = $key;
 
     my $emd5sum = md5_hex($shared_key_data . $check_token);
-    if (!$subinfo->{md5hash} || ($subinfo->{md5hash} ne $emd5sum)) {
-	die "MD5 Checksum Verification Failed";
+    if ($subinfo->{status} && $subinfo->{status} eq 'Active') {
+	if (!$subinfo->{md5hash} || ($subinfo->{md5hash} ne $emd5sum)) {
+	    die "MD5 Checksum Verification Failed\n";
+	}
     }
     
     check_fields($subinfo, $server_id, $req_sockets);
