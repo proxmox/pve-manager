@@ -58,6 +58,7 @@ Ext.define('PVE.window.Restore', {
 		url: url,
 		params: params,
 		method: 'POST',
+		waitMsgTarget: me,
 		failure: function (response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
 		},

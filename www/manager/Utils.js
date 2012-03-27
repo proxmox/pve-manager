@@ -360,7 +360,7 @@ Ext.define('PVE.Utils', { statics: {
 	var target = newopts.waitMsgTarget;
 	if (target) {
 	    // Note: ExtJS bug - this does not work when component is not rendered
-	    target.setLoading(newopts.waitMsg, true);
+	    target.setLoading(newopts.waitMsg);
 	}
 	Ext.Ajax.request(newopts);
     },
