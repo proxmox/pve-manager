@@ -319,45 +319,50 @@ __PACKAGE__->register_method({
 	    }
 	};
 
-	my $code = sub {
+	my $ostemplate = extract_param($param, 'ostemplate');
 
-	    my $basecfg_fn = PVE::OpenVZ::config_file($vmid);
+	my $archive;
 
+	if ($ostemplate eq '-') {
+	    die "pipe requires cli environment\n" 
+		if $rpcenv->{type} ne 'cli'; 
+	    die "pipe can only be used with restore tasks\n" 
+		if !$param->{restore};
+	    $archive = '-';
+	} else {
+	    $archive = $rpcenv->check_volume_access($authuser, $storage_cfg, $vmid, $ostemplate);
+	    die "can't find file '$archive'\n" if ! -f $archive;
+	}
+
+	if (!defined($param->{searchdomain}) && 
+	    !defined($param->{nameserver})) {
+	
+	    my $resolv = PVE::INotify::read_file('resolvconf');
+
+	    $param->{searchdomain} = $resolv->{search} if $resolv->{search};
+
+	    my @ns = ();
+	    push @ns, $resolv->{dns1} if  $resolv->{dns1};
+	    push @ns, $resolv->{dns2} if  $resolv->{dns2};
+	    push @ns, $resolv->{dns3} if  $resolv->{dns3};
+
+	    $param->{nameserver} = join(' ', @ns) if scalar(@ns);
+	}
+
+	my $basecfg_fn = PVE::OpenVZ::config_file($vmid);
+
+	my $check_vmid_usage = sub {
 	    if ($param->{force}) {
-		die "cant overwrite mounted container\n" if PVE::OpenVZ::check_mounted($conf, $vmid);
+		die "cant overwrite mounted container\n" 
+		    if PVE::OpenVZ::check_mounted($conf, $vmid);
 	    } else {
 		die "CT $vmid already exists\n" if -f $basecfg_fn;
 	    }
+	};
 
-	    my $ostemplate = extract_param($param, 'ostemplate');
+	my $code = sub {
 
-	    my $archive;
-
-	    if ($ostemplate eq '-') {
-		die "pipe requires cli environment\n" 
-		    if $rpcenv->{type} ne 'cli'; 
-		die "pipe can only be used with restore tasks\n" 
-		    if !$param->{restore};
-		$archive = '-';
-	    } else {
-		$archive = $rpcenv->check_volume_access($authuser, $storage_cfg, $vmid, $ostemplate);
-		die "can't find file '$archive'\n" if ! -f $archive;
-	    }
-
-	    if (!defined($param->{searchdomain}) && 
-		!defined($param->{nameserver})) {
-	
-		my $resolv = PVE::INotify::read_file('resolvconf');
-
-		$param->{searchdomain} = $resolv->{search} if $resolv->{search};
-
-		my @ns = ();
-		push @ns, $resolv->{dns1} if  $resolv->{dns1};
-		push @ns, $resolv->{dns2} if  $resolv->{dns2};
-		push @ns, $resolv->{dns3} if  $resolv->{dns3};
-
-		$param->{nameserver} = join(' ', @ns) if scalar(@ns);
-	    }
+	    &$check_vmid_usage(); # final check after locking
 
 	    PVE::OpenVZ::update_ovz_config($vmid, $conf, $param);
 
@@ -365,45 +370,45 @@ __PACKAGE__->register_method({
 
 	    PVE::Cluster::check_cfs_quorum();
 
-	    my $realcmd = sub {
-		if ($param->{restore}) {
-		    &$restore_openvz($private, $archive, $vmid, $param->{force});
+	    if ($param->{restore}) {
+		&$restore_openvz($private, $archive, $vmid, $param->{force});
 
-		    # is this really needed?
-		    my $cmd = ['vzctl', '--skiplock', '--quiet', 'set', $vmid, 
-			       '--applyconfig_map', 'name', '--save'];
+		# is this really needed?
+		my $cmd = ['vzctl', '--skiplock', '--quiet', 'set', $vmid, 
+			   '--applyconfig_map', 'name', '--save'];
+		run_command($cmd);
+
+		# reload config
+		$conf = PVE::OpenVZ::load_config($vmid);
+
+		# and initialize quota
+		my $disk_quota = $conf->{disk_quota}->{value};
+		if (!defined($disk_quota) || ($disk_quota != 0)) {
+		    $cmd = ['vzctl', '--skiplock', 'quotainit', $vmid];
 		    run_command($cmd);
-
-		    # reload config
-		    $conf = PVE::OpenVZ::load_config($vmid);
-
-		    # and initialize quota
-		    my $disk_quota = $conf->{disk_quota}->{value};
-		    if (!defined($disk_quota) || ($disk_quota != 0)) {
-			$cmd = ['vzctl', '--skiplock', 'quotainit', $vmid];
-			run_command($cmd);
-		    }
-
-		} else {
-		    PVE::Tools::file_set_contents($basecfg_fn, $rawconf);
-		    my $cmd = ['vzctl', '--skiplock', 'create', $vmid,
-			       '--ostemplate', $archive, '--private', $private];
-		    run_command($cmd);
-
-		    # hack: vzctl '--userpasswd' starts the CT, but we want 
-		    # to avoid that for create
-		    PVE::OpenVZ::set_rootpasswd($private, $password) 
-			if defined($password);
 		}
 
-		PVE::AccessControl::lock_user_config($addVMtoPoolFn, "can't add VM to pool") if $pool;
-	    };
+	    } else {
+		PVE::Tools::file_set_contents($basecfg_fn, $rawconf);
+		my $cmd = ['vzctl', '--skiplock', 'create', $vmid,
+			   '--ostemplate', $archive, '--private', $private];
+		run_command($cmd);
+		
+		# hack: vzctl '--userpasswd' starts the CT, but we want 
+		# to avoid that for create
+		PVE::OpenVZ::set_rootpasswd($private, $password) 
+		    if defined($password);
+	    }
 
-	    return $rpcenv->fork_worker($param->{restore} ? 'vzrestore' : 'vzcreate', 
-					$vmid, $authuser, $realcmd);
+	    PVE::AccessControl::lock_user_config($addVMtoPoolFn, "can't add VM to pool") if $pool;
 	};
 
-	return PVE::OpenVZ::lock_container($vmid, $code);
+	my $realcmd = sub { PVE::OpenVZ::lock_container($vmid, 1, $code); };
+
+	&$check_vmid_usage(); # first check before locking
+
+	return $rpcenv->fork_worker($param->{restore} ? 'vzrestore' : 'vzcreate', 
+				    $vmid, $authuser, $realcmd);
     }});
 
 my $vm_config_perm_list = [
@@ -473,7 +478,7 @@ __PACKAGE__->register_method({
 	    run_command($cmd);
 	};
 
-	PVE::OpenVZ::lock_container($vmid, $code);
+	PVE::OpenVZ::lock_container($vmid, undef, $code);
 
 	return undef;
     }});

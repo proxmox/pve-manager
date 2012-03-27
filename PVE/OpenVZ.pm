@@ -1157,16 +1157,18 @@ sub generate_raw_config {
 }
 
 sub create_lock_manager {
+    my ($max) = @_;
+
     return LockFile::Simple->make(-format => '%f',
 				  -autoclean => 1,
-				  -max => 30, 
-				  -delay => 2, 
+				  -max => defined($max) ? $max : 60, 
+				  -delay => 1, 
 				  -stale => 1,
 				  -nfs => 0);
 }
 
 sub lock_container {
-    my ($vmid, $code, @param) = @_;
+    my ($vmid, $max, $code, @param) = @_;
 
     my $filename = $global_vzconf->{lockdir} . "/${vmid}.lck";
     my $lock;
@@ -1174,12 +1176,11 @@ sub lock_container {
 
     eval {
 
-	my $lockmgr = create_lock_manager();
+	my $lockmgr = create_lock_manager($max);
 
 	$lock = $lockmgr->lock($filename) || die "can't lock container $vmid\n";
 
         $res = &$code(@param);
-
     };
     my $err = $@;
 

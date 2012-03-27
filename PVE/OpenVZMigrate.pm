@@ -18,7 +18,7 @@ use base qw(PVE::AbstractMigrate);
 sub lock_vm {
     my ($self, $vmid, $code, @param) = @_;
     
-    return PVE::OpenVZ::lock_container($vmid, $code, @param);
+    return PVE::OpenVZ::lock_container($vmid, undef, $code, @param);
 }
 
 sub prepare {
