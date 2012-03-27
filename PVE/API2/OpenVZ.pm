@@ -923,6 +923,16 @@ __PACKAGE__->register_method({
 	return $res;
     }});
 
+my $vm_is_ha_managed = sub {
+    my ($vmid) = @_;
+
+    my $cc = PVE::Cluster::cfs_read_file('cluster.conf');
+    if (PVE::Cluster::cluster_conf_lookup_pvevm($cc, 0, $vmid, 1)) {
+	return 1;
+    } 
+    return 0;
+};
+
 __PACKAGE__->register_method({
     name => 'vm_status', 
     path => '{vmid}/status/current',
@@ -950,12 +960,7 @@ __PACKAGE__->register_method({
 	my $vmstatus =  PVE::OpenVZ::vmstatus($param->{vmid});
 	my $status = $vmstatus->{$param->{vmid}};
 
-	my $cc = PVE::Cluster::cfs_read_file('cluster.conf');
-	if (PVE::Cluster::cluster_conf_lookup_pvevm($cc, 0, $param->{vmid}, 1)) {
-	    $status->{ha} = 1;
-	} else {
-	    $status->{ha} = 0;
-	}
+	$status->{ha} = &$vm_is_ha_managed($param->{vmid});
 
 	return $status;
     }});
@@ -1037,19 +1042,40 @@ __PACKAGE__->register_method({
 
 	die "CT $vmid already running\n" if PVE::OpenVZ::check_running($vmid);
 
-	my $realcmd = sub {
-	    my $upid = shift;
+	if (&$vm_is_ha_managed($vmid) && $rpcenv->{type} ne 'ha') {
 
-	    syslog('info', "starting CT $vmid: $upid\n");
+	    my $hacmd = sub {
+		my $upid = shift;
 
-	    my $cmd = ['vzctl', 'start', $vmid];
+		my $service = "pvevm:$vmid";
+
+		my $cmd = ['clusvcadm', '-e', $service, '-m', $node];
+
+		print "Executing HA start for CT $vmid\n";
+
+		PVE::Tools::run_command($cmd);
+
+		return;
+	    };
+
+	    return $rpcenv->fork_worker('hastart', $vmid, $authuser, $hacmd);
+
+	} else {
+
+	    my $realcmd = sub {
+		my $upid = shift;
+
+		syslog('info', "starting CT $vmid: $upid\n");
+
+		my $cmd = ['vzctl', 'start', $vmid];
 	    
-	    run_command($cmd);
+		run_command($cmd);
 
-	    return;
-	};
+		return;
+	    };
 
-	return $rpcenv->fork_worker('vzstart', $vmid, $authuser, $realcmd);
+	    return $rpcenv->fork_worker('vzstart', $vmid, $authuser, $realcmd);
+	}
     }});
 
 __PACKAGE__->register_method({
@@ -1085,20 +1111,39 @@ __PACKAGE__->register_method({
 
 	die "CT $vmid not running\n" if !PVE::OpenVZ::check_running($vmid);
 
-	my $realcmd = sub {
-	    my $upid = shift;
+	if (&$vm_is_ha_managed($vmid) && $rpcenv->{type} ne 'ha') {
 
-	    syslog('info', "stoping CT $vmid: $upid\n");
+	    my $hacmd = sub {
+		my $upid = shift;
 
-	    my $cmd = ['vzctl', 'stop', $vmid, '--fast'];
-	    run_command($cmd);
+		my $service = "pvevm:$vmid";
+
+		my $cmd = ['clusvcadm', '-d', $service];
+
+		print "Executing HA stop for CT $vmid\n";
+
+		PVE::Tools::run_command($cmd);
+
+		return;
+	    };
+
+	    return $rpcenv->fork_worker('hastop', $vmid, $authuser, $hacmd);
+
+	} else {
+
+	    my $realcmd = sub {
+		my $upid = shift;
+
+		syslog('info', "stoping CT $vmid: $upid\n");
+
+		my $cmd = ['vzctl', 'stop', $vmid, '--fast'];
+		run_command($cmd);
 	    
-	    return;
-	};
+		return;
+	    };
 
-	my $upid = $rpcenv->fork_worker('vzstop', $vmid, $authuser, $realcmd);
-
-	return $upid;
+	    return $rpcenv->fork_worker('vzstop', $vmid, $authuser, $realcmd);
+	}
     }});
 
 __PACKAGE__->register_method({
@@ -1329,17 +1374,36 @@ __PACKAGE__->register_method({
 		if !$param->{online};
 	}
 
-	my $realcmd = sub {
-	    my $upid = shift;
+	if (&$vm_is_ha_managed($vmid) && $rpcenv->{type} ne 'ha') {
 
-	    PVE::OpenVZMigrate->migrate($target, $targetip, $vmid, $param);
+	    my $hacmd = sub {
+		my $upid = shift;
 
-	    return;
-	};
+		my $service = "pvevm:$vmid";
 
-	my $upid = $rpcenv->fork_worker('vzmigrate', $vmid, $authuser, $realcmd);
+		my $cmd = ['clusvcadm', '-M', $service, '-m', $target];
 
-	return $upid;
+		print "Executing HA migrate for CT $vmid to node $target\n";
+
+		PVE::Tools::run_command($cmd);
+
+		return;
+	    };
+
+	    return $rpcenv->fork_worker('hamigrate', $vmid, $authuser, $hacmd);
+
+	} else {
+
+	    my $realcmd = sub {
+		my $upid = shift;
+
+		PVE::OpenVZMigrate->migrate($target, $targetip, $vmid, $param);
+
+		return;
+	    };
+
+	    return $rpcenv->fork_worker('vzmigrate', $vmid, $authuser, $realcmd);
+	}
     }});
 
 1;
