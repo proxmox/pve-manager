@@ -1,3 +1,9 @@
+pve-manager (2.0-50) unstable; urgency=low
+
+  * kvm network: allow to configure VLAN Id on the GUI
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 28 Mar 2012 07:11:55 +0200
+
 pve-manager (2.0-49) unstable; urgency=low
 
   * improve HA task display

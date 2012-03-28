@@ -52,6 +52,9 @@ Ext.define('PVE.Parser', { statics: {
 	}
 	if (net.bridge) {
 	    netstr += ",bridge=" + net.bridge;
+	    if (net.tag) {
+		netstr += ",tag=" + net.tag;
+	    }
 	}
 	if (net.rate) {
 	    netstr += ",rate=" + net.rate;

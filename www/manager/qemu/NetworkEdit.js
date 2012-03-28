@@ -12,6 +12,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    return {};
 	} else if (values.networkmode === 'bridge') {
 	    me.network.bridge = values.bridge;
+	    me.network.tag = values.tag;
 	} else {
 	    me.network.bridge = undefined;
 	}
@@ -82,10 +83,22 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 			}
 			me.down('field[name=bridge]').setDisabled(!value);
 			me.down('field[name=bridge]').validate();
+			me.down('field[name=tag]').setDisabled(!value);
 		    }
 		}
 	    },
 	    me.bridgesel,
+	    {
+		xtype: 'numberfield',
+		name: 'tag',
+		minValue: 1,
+		maxValue: 4094,
+		value: '',
+		emptyText: 'no VLAN',
+		fieldLabel: 'VLAN Tag',
+		labelAlign: 'right',
+		allowBlank: true
+	    },
 	    {
 		xtype: 'radiofield',
 		name: 'networkmode',
