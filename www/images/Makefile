@@ -7,6 +7,8 @@ all:
 GNOME_IMAGES = 			\
 	start.png		\
 	stop.png		\
+	gtk-stop.png		\
+	forward.png		\
 	display.png		\
 	keyboard.png		\
 	cdrom.png		\

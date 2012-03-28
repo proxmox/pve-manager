@@ -37,6 +37,18 @@ Ext.define('PVE.openvz.CmdMenu', {
 		    vm_command('start');
 		}
 	    },
+	    { 
+		text: gettext('Migrate'),
+		icon: '/pve2/images/forward.png',
+		handler: function() {
+		    var win = Ext.create('PVE.window.Migrate', {
+			vmtype: 'openvz',
+			nodename: nodename,
+			vmid: vmid
+		    });
+		    win.show();
+		}
+	    },
 	    {
 		text: gettext('Shutdown'),
 		icon: '/pve2/images/stop.png',
@@ -50,6 +62,20 @@ Ext.define('PVE.openvz.CmdMenu', {
 			vm_command('shutdown');
 		    });
 		}			    
+	    },
+	    {
+		text: gettext('Stop'),
+		icon: '/pve2/images/gtk-stop.png',
+		handler: function() {
+		    var msg = Ext.String.format(gettext("Do you really want to stop VM {0}?"), vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+
+			vm_command("stop");
+		    });
+		}
 	    },
 	    {
 		text: gettext('Console'),

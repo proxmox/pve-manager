@@ -1,3 +1,9 @@
+pve-manager (2.0-51) unstable; urgency=low
+
+  * fix bug #55: add Migrate and Stop to context menu
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 28 Mar 2012 13:12:19 +0200
+
 pve-manager (2.0-50) unstable; urgency=low
 
   * kvm network: allow to configure VLAN Id on the GUI
