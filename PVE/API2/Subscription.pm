@@ -85,15 +85,15 @@ sub check_fields {
 
     return undef if $info->{status} ne 'Active';
 
-    foreach my $f (qw(validdomain productname regdate nextduedate)) {
+    foreach my $f (qw(validdirectory productname regdate nextduedate)) {
 	if (!$info->{$f}) {
 	    die "Missing field '$f'\n";
 	}
     }
 
     my $found;
-    foreach my $dom (split(/,/, $info->{validdomain})) {
-	if ($dom eq $server_id) {
+    foreach my $hwid (split(/,/, $info->{validdirectory})) {
+	if ($hwid eq $server_id) {
 	    $found = 1;
 	    last;
 	}
@@ -193,7 +193,8 @@ sub check_subscription {
 
     my $params = {
 	licensekey => $key,
-	domain => $server_id,
+	dir => $server_id,
+	domain => 'www.proxmox.com',
 	ip => 'localhost',
 	check_token => $check_token,
     };
