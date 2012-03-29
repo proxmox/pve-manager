@@ -1,3 +1,10 @@
+pve-manager (2.0-53) unstable; urgency=low
+
+  * fix bug #117: automatically add domain to hostname when creating
+    openvz containers.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 29 Mar 2012 10:19:57 +0200
+
 pve-manager (2.0-52) unstable; urgency=low
 
   * fix Subscription code

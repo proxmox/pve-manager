@@ -349,6 +349,13 @@ __PACKAGE__->register_method({
 	    $param->{nameserver} = join(' ', @ns) if scalar(@ns);
 	}
 
+	# try to append domain to hostmane
+	if ($param->{hostname} && $param->{hostname} !~ m/\./ &&
+	    $param->{searchdomain}) {
+
+	    $param->{hostname} .= ".$param->{searchdomain}";
+	}
+
 	my $basecfg_fn = PVE::OpenVZ::config_file($vmid);
 
 	my $check_vmid_usage = sub {
