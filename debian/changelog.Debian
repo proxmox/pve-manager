@@ -1,3 +1,11 @@
+pve-manager (2.0-54) unstable; urgency=low
+
+  * use /etc/subscription to store subscription key
+  
+  * use http_proxy settings for subscription updates
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 29 Mar 2012 11:13:35 +0200
+
 pve-manager (2.0-53) unstable; urgency=low
 
   * fix bug #117: automatically add domain to hostname when creating

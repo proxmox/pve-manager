@@ -24,7 +24,7 @@ use PVE::RESTHandler;
 
 use base qw(PVE::RESTHandler);
 
-PVE::INotify::register_file('subscription', "/etc/pve-subscription",
+PVE::INotify::register_file('subscription', "/etc/subscription",
 			    \&read_etc_pve_subscription,
 			    \&write_etc_pve_subscription);
 
@@ -191,6 +191,9 @@ sub check_subscription {
 
     my $check_token = time() . md5_hex(rand(8999999999) + 1000000000) . $key;
 
+    my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
+    my $proxy = $dccfg->{http_proxy};
+
     my $params = {
 	licensekey => $key,
 	dir => $server_id,
@@ -209,7 +212,14 @@ sub check_subscription {
     $req->header('Content-Length' => length($content));
     $req->content($content);
 
-    my $ua = LWP::UserAgent->new(protocols_allowed => [ 'http', 'https' ], timeout => 30);
+    my $ua = LWP::UserAgent->new(protocols_allowed => ['http'], timeout => 30);
+
+    if ($proxy) {
+	$ua->proxy(['http'], $proxy);
+    } else {
+	$ua->env_proxy;
+    }
+
     my $response = $ua->request($req);
     my $code = $response->code;
 
