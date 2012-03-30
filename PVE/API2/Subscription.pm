@@ -62,6 +62,16 @@ sub parse_key {
     return undef;
 }
 
+my $saved_fields = {
+    key => 1,
+    checktime => 1,
+    status => 1,
+    validdirectory => 1,
+    productname => 1, 
+    regdate => 1,
+    nextduedate => 1,
+};
+
 sub check_fields {
     my ($info, $server_id, $req_sockets) = @_;
 
@@ -85,7 +95,7 @@ sub check_fields {
 
     return undef if $info->{status} ne 'Active';
 
-    foreach my $f (qw(validdirectory productname regdate nextduedate)) {
+    foreach my $f (keys %$saved_fields) {
 	if (!$info->{$f}) {
 	    die "Missing field '$f'\n";
 	}
@@ -233,6 +243,7 @@ sub check_subscription {
     my $subinfo = {};
     while ($raw =~ m/<(.*?)>([^<]+)<\/\1>/g) {
 	my ($k, $v) = ($1, $2);
+	next if !($k eq 'md5hash' || $saved_fields->{$k});
 	$subinfo->{$k} = $v;
     }
     $subinfo->{checktime} = time();
@@ -245,6 +256,8 @@ sub check_subscription {
 	}
     }
     
+    delete $subinfo->{md5hash};
+
     check_fields($subinfo, $server_id, $req_sockets);
  
     return $subinfo;
