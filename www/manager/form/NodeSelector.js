@@ -9,7 +9,7 @@ Ext.define('PVE.form.NodeSelector', {
 	var me = this;
 
 	var store = Ext.create('Ext.data.Store', {
-	    fields: [ 'name', 'cpu', 'maxcpu', 'mem', 'maxmem', 'uptime' ],
+	    fields: [ 'node', 'cpu', 'maxcpu', 'mem', 'maxmem', 'uptime' ],
 	    autoLoad: true,
 	    proxy: {
 		type: 'pve',
@@ -22,7 +22,7 @@ Ext.define('PVE.form.NodeSelector', {
 		    direction: 'DESC'
 		},
 		{
-		    property : 'name',
+		    property : 'node',
 		    direction: 'ASC'
 		}
 	    ]
@@ -30,13 +30,13 @@ Ext.define('PVE.form.NodeSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    valueField: 'name',
-	    displayField: 'name',
+	    valueField: 'node',
+	    displayField: 'node',
             listConfig: {
 		columns: [
 		    {
 			header: 'Node',
-			dataIndex: 'name',
+			dataIndex: 'node',
 			hideable: false,
 			flex: 1
 		    },

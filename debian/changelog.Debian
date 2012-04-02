@@ -2,6 +2,8 @@ pve-manager (2.0-55) unstable; urgency=low
 
   * fix bug #135: allow single letter 'dns-name', allow to start names
     with numbers
+  
+  * fix bug #137: API change! Return node name using 'node' property.
 
  -- Proxmox Support Team <support@proxmox.com>  Mon, 02 Apr 2012 12:13:33 +0200
 

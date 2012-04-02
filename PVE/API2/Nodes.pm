@@ -857,6 +857,7 @@ use PVE::SafeSyslog;
 use PVE::Cluster;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
+use PVE::API2Tools;
 
 use base qw(PVE::RESTHandler);
 
@@ -881,7 +882,7 @@ __PACKAGE__->register_method ({
 	    type => "object",
 	    properties => {},
 	},
-	links => [ { rel => 'child', href => "{name}" } ],
+	links => [ { rel => 'child', href => "{node}" } ],
     },
     code => sub {
 	my ($param) = @_;
@@ -889,26 +890,12 @@ __PACKAGE__->register_method ({
 	my $clinfo = PVE::Cluster::get_clinfo();
 	my $res = [];
 
-	my $nodename = PVE::INotify::nodename();
-	my $nodelist = $clinfo->{nodelist};
-
+	my $nodelist = PVE::Cluster::get_nodelist();
+	my $members = PVE::Cluster::get_members();
 	my $rrd = PVE::Cluster::rrd_dump();
 
-	my @nodes = $nodelist ? (keys %$nodelist) : $nodename;
-
-	foreach my $node (@nodes) {
-	    my $entry = { name => $node };
-	    if (my $d = $rrd->{"pve2-node/$node"}) {
-
-		$entry->{uptime} = $d->[0];
-		$entry->{maxcpu} = $d->[3];
-		$entry->{cpu} = $d->[4];
-		$entry->{maxmem} = $d->[6];
-		$entry->{mem} = $d->[7];
-		$entry->{maxdisk} = $d->[10];
-		$entry->{disk} = $d->[11];
-	    }
-
+	foreach my $node (@$nodelist) {
+	    my $entry = PVE::API2Tools::extract_node_stats($node, $members, $rrd);
 	    push @$res, $entry;
 	}
 
