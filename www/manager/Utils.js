@@ -65,7 +65,7 @@ Ext.apply(Ext.form.field.VTypes, {
     HttpProxyText: gettext('Example') + ": http://username:password&#64;host:port/",
 
     DnsName: function(v) {
-	return (/^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$/).test(v);
+	return (/^(([a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)\.)*([A-Za-z0-9]([A-Za-z0-9\-]*[A-Za-z0-9])?)$/).test(v);
     },
     DnsNameText: gettext('This is not a valid DNS name')
 });
