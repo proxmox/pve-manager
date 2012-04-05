@@ -2,15 +2,15 @@ Ext.define('PVE.dc.Support', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveDcSupport',
 
-    invalidHtml: '<h1>No valid subscription</h1>You do not have a valid subscription for this server. Please visit <a target="_blank" href="https://www.proxmox.com/products/proxmox-ve/subscription-service-plans">www.proxmox.com</a> to get a list of available options.',
+    invalidHtml: '<h1>No valid subscription</h1>You do not have a valid subscription for this server. Please visit <a target="_blank" href="http://www.proxmox.com/products/proxmox-ve/subscription-service-plans">www.proxmox.com</a> to get a list of available options.',
 
     communityHtml: 'Please use the public community <a target="_blank" href="http://forum.proxmox.com">forum</a> for any questions.',
 
-    activeHtml: 'Please use our <a target="_blank" href="http://my.proxmox.com">support portal</a> for any questions. You can also use the public community <a target="_blank" href="http://forum.proxmox.com">forum</a> to get additional information.',
+    activeHtml: 'Please use our <a target="_blank" href="https://my.proxmox.com">support portal</a> for any questions. You can also use the public community <a target="_blank" href="http://forum.proxmox.com">forum</a> to get additional information.',
 
     bugzillaHtml: '<h1>Bug Tracking</h1>Our bug tracking system is available <a target="_blank" href="https://bugzilla.proxmox.com">here</a>.',
 
-    docuHtml: '<h1>Documentation</h1>Complete documentation, tutorials, videos and more is available at our <a target="_blank" href="https://pve.proxmox.com/wiki/Documentation">wiki</a>.',
+    docuHtml: '<h1>Documentation</h1>Complete documentation, tutorials, videos and more is available at our <a target="_blank" href="http://pve.proxmox.com/wiki/Documentation">wiki</a>.',
 
     updateActive: function(data) {
 	var me = this;

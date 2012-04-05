@@ -1,3 +1,9 @@
+pve-manager (2.0-57) unstable; urgency=low
+
+  * fix support urls
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 05 Apr 2012 11:40:03 +0200
+
 pve-manager (2.0-56) unstable; urgency=low
 
   * added Russian translation
