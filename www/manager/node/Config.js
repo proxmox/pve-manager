@@ -102,6 +102,12 @@ Ext.define('PVE.node.Config', {
 		    title: 'UBC',
 		    itemId: 'ubc',
 		    xtype: 'pveNodeBCFailCnt'
+		},
+		{
+		    title: 'Subscription',
+		    itemId: 'support',
+		    xtype: 'pveNodeSubscription',
+		    nodename: nodename
 		}
 	    ]
 	});

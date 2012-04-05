@@ -80,6 +80,7 @@ JSSRC= 				                 	\
 	node/NetworkEdit.js				\
 	node/NetworkView.js				\
 	node/Tasks.js					\
+	node/Subscription.js				\
 	node/Config.js					\
 	qemu/StatusView.js				\
 	window/Migrate.js				\
@@ -134,6 +135,7 @@ JSSRC= 				                 	\
 	dc/AuthEdit.js					\
 	dc/Backup.js					\
 	dc/HAConfig.js					\
+	dc/Support.js					\
 	dc/Config.js					\
 	Workspace.js
 

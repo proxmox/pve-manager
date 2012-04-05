@@ -63,6 +63,11 @@ Ext.define('PVE.dc.Config', {
 		    xtype: 'pveDcHAConfig',
 		    title: 'HA',
 		    itemId: 'ha'
+		},
+		{ 
+		    xtype: 'pveDcSupport',
+		    title: gettext('Support'),
+		    itemId: 'support'
 		}
 	    ]
 	});

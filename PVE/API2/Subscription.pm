@@ -66,6 +66,7 @@ my $saved_fields = {
     key => 1,
     checktime => 1,
     status => 1,
+    message => 0,
     validdirectory => 1,
     productname => 1, 
     regdate => 1,
@@ -96,6 +97,7 @@ sub check_fields {
     return undef if $info->{status} ne 'Active';
 
     foreach my $f (keys %$saved_fields) {
+	next if !$saved_fields->{$f};
 	if (!$info->{$f}) {
 	    die "Missing field '$f'\n";
 	}
@@ -191,7 +193,7 @@ sub write_etc_pve_subscription {
 sub check_subscription {
     my ($key) = @_;
 
-    my $whmcsurl = "http://shop2.maurer-it.com";
+    my $whmcsurl = "https://shop.maurer-it.com";
 
     my $uri = "$whmcsurl/modules/servers/licensing/verify.php";
  
@@ -222,10 +224,10 @@ sub check_subscription {
     $req->header('Content-Length' => length($content));
     $req->content($content);
 
-    my $ua = LWP::UserAgent->new(protocols_allowed => ['http'], timeout => 30);
+    my $ua = LWP::UserAgent->new(protocols_allowed => ['https'], timeout => 30);
 
     if ($proxy) {
-	$ua->proxy(['http'], $proxy);
+	$ua->proxy(['http', 'https'], $proxy);
     } else {
 	$ua->env_proxy;
     }
@@ -243,11 +245,15 @@ sub check_subscription {
     my $subinfo = {};
     while ($raw =~ m/<(.*?)>([^<]+)<\/\1>/g) {
 	my ($k, $v) = ($1, $2);
-	next if !($k eq 'md5hash' || $saved_fields->{$k});
+	next if !($k eq 'md5hash' || defined($saved_fields->{$k}));
 	$subinfo->{$k} = $v;
     }
     $subinfo->{checktime} = time();
     $subinfo->{key} = $key;
+
+    if ($subinfo->{message}) {
+	$subinfo->{message} =~ s/^Directory Invalid$/Invalid Server ID/;
+    }
 
     my $emd5sum = md5_hex($shared_key_data . $check_token);
     if ($subinfo->{status} && $subinfo->{status} eq 'Active') {
@@ -279,13 +285,20 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
+	my $server_id = get_hwaddress();
+
 	my $info = PVE::INotify::read_file('subscription');
 	if (!$info) {
 	    return {
 		status => "NotFound",
 		message => "There is no subscription key",
+		serverid => $server_id,
 	    }
 	}
+
+	$info->{serverid} = $server_id;
+	$info->{sockets} = get_sockets();
+
 	return $info
     }});
 
