@@ -7,6 +7,7 @@ Ext.define('PVE.form.CacheTypeSelector', {
 
 	me.data = [
 	    ['', 'Default (no cache)'],
+	    ['directsync', 'Direct sync'],
 	    ['writethrough', 'Write through'],
 	    ['writeback', 'Write back'],
 	    ['unsafe', 'Write back (unsafe)'],
