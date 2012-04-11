@@ -162,6 +162,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		xtype: 'pveCompressionSelector',
 		fieldLabel: gettext('Compression'),
 		name: 'compress',
+		deleteEmpty: me.create ? false : true,
 		value: me.create ? 'lzo' : ''
 	    },
 	    {

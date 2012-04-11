@@ -1,5 +1,7 @@
 pve-manager (2.0-58) unstable; urgency=low
 
+  * fix bug #141: allow to create backup job without compression
+  
   * expose directsync drive cache option
   
   * add Turkish keyboard layout
