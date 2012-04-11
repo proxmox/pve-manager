@@ -1,3 +1,11 @@
+pve-manager (2.0-58) unstable; urgency=low
+
+  * expose directsync drive cache option
+  
+  * add Turkish keyboard layout
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 11 Apr 2012 08:38:59 +0200
+
 pve-manager (2.0-57) unstable; urgency=low
 
   * fix support urls

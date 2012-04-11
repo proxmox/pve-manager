@@ -161,9 +161,9 @@ Ext.define('PVE.Utils', { statics: {
 	'pt-br': 'Portuguese (Brazil)',
 	//ru: 'Russian',
 	si: 'Slovenian',
-	sv: 'Swedish'
+	sv: 'Swedish',
 	//th: 'Thai',
-	//tr: 'Turkish'
+	tr: 'Turkish'
     },
 
     kvm_vga_drivers: {
