@@ -6,6 +6,7 @@
 # Copyright (C) 2011 Proxmox Server Solutions GmbH
 
 use strict;
+use File::Copy;
 use PVE::Tools;
 use PVE::ProcFSTools;
 use PVE::Cluster;
@@ -150,6 +151,35 @@ sub upid_wait {
     }
 }
 
+sub copy_scripts {
+    my ($vmid, $oldconfig, $newconfig) = @_;
+
+    my $oldcfgdir = dirname($oldconfig);
+    my $newcfgdir = dirname($newconfig);
+
+    my $newfiles = [];
+    my $oldfiles = [];
+    eval {
+	foreach my $s (PVE::OpenVZ::SCRIPT_EXT) {
+	    my $scriptfn = "${vmid}.$s";
+	    my $oldfn = "$oldcfgdir/$scriptfn";
+	    next if ! -f $oldfn;
+	    my $dstfn = "$newcfgdir/$scriptfn";
+	    push @$oldfiles, $oldfn;
+	    push @$newfiles, $dstfn;
+	    copy($oldfn, $dstfn) || die "copy '$oldfn' to '$dstfn' failed - $!\n";
+	}
+    };
+    if (my $err = $@) {
+	foreach my $fn (@$newfiles) {
+	    unlink($fn);
+	}
+	die $err;
+    }
+
+    return ($newfiles, $oldfiles);
+}
+
 my $cmd = shift || '';
 my $migratetarget = shift if $cmd eq 'migrate';
 
@@ -164,17 +194,33 @@ if ($cmd eq 'start') {
 
     if ($status->{node} ne $nodename) {
 	ocf_log('info', "Move config for $status->{name} to local node");
-	my ($oldconfig, $newconfig);
+	my ($oldconfig, $newconfig, $oldfiles, $newfiles);
 	if ($status->{type} eq 'qemu') {
 	    $oldconfig = PVE::QemuServer::config_file($status->{vmid}, $status->{node});
 	    $newconfig = PVE::QemuServer::config_file($status->{vmid}, $nodename);
 	} else {
 	    $oldconfig = PVE::OpenVZ::config_file($status->{vmid}, $status->{node});
 	    $newconfig = PVE::OpenVZ::config_file($status->{vmid}, $nodename);
+
+	    eval { ($newfiles, $oldfiles) = copy_scripts($status->{vmid}, $oldconfig, $newconfig); };
+	    if (my $err = $@) {
+		ocf_log('err', "unable to move config scripts: $err");
+		exit(OCF_ERR_GENERIC);
+	    } 
 	}
 	if (!rename($oldconfig, $newconfig)) {
 	    ocf_log('err', "unable to move config file from '$oldconfig' to '$newconfig' - $!");
+	    if ($newfiles) {
+		foreach my $fn (@$newfiles) {
+		    unlink($fn);
+		}
+	    }
 	    exit(OCF_ERR_GENERIC);
+	}
+	if ($oldfiles) {
+	    foreach my $fn (@$oldfiles) {
+		unlink($fn);
+	    }
 	}
     }
 
