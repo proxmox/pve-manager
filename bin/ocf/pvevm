@@ -6,6 +6,7 @@
 # Copyright (C) 2011 Proxmox Server Solutions GmbH
 
 use strict;
+use File::Basename;
 use File::Copy;
 use PVE::Tools;
 use PVE::ProcFSTools;
