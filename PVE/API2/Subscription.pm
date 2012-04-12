@@ -275,6 +275,7 @@ __PACKAGE__->register_method ({
     method => 'GET',
     description => "Read subscription info.",
     proxyto => 'node',
+    permissions => { user => 'all' },
     parameters => {
     	additionalProperties => 0,
 	properties => {
