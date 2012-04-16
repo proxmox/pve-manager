@@ -544,14 +544,16 @@ sub get_lvm_mapping {
 sub get_mount_info {
     my ($dir) = @_;
 
+    # Note: df 'available' can be negative, and percentage set to '-'
+
     my $cmd = [ 'df', '-P', '-T', '-B', '1', $dir];
 
     my $res;
 
     my $parser = sub {
 	my $line = shift;
-	if (my ($fsid, $fstype, $mp) = $line =~
-	    m|^(\S+.*)\s+(\S+)\s+\d+\s+\d+\s+\d+\s+\d+%\s+(/.*)$|) {
+	if (my ($fsid, $fstype, undef, $mp) = $line =~
+	    m!(\S+.*)\s+(\S+)\s+\d+\s+\-?\d+\s+\d+\s+(\d+%|-)\s+(/.*)$!) {
 	    $res = {
 		device => $fsid,
 		fstype => $fstype,
