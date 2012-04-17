@@ -1,6 +1,8 @@
 pve-manager (2.0-62) unstable; urgency=low
 
   * fix bug #115: simplify GUI for users without permissions.
+  
+  * update Italian translation
 
  -- Proxmox Support Team <support@proxmox.com>  Tue, 17 Apr 2012 10:37:05 +0200
 
