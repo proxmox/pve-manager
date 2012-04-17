@@ -5,10 +5,17 @@ Ext.define('PVE.dc.Config', {
     initComponent: function() {
         var me = this;
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
+	me.items = [];
+
 	Ext.apply(me, {
 	    title: gettext("Datacenter"),
-	    hstateid: 'dctab',
-	    items: [
+	    hstateid: 'dctab'
+	});
+
+	if (caps.dc['Sys.Audit']) {
+	    me.items.push([
 		{
 		    title: gettext('Summary'),
 		    xtype: 'pveDcSummary',
@@ -18,22 +25,34 @@ Ext.define('PVE.dc.Config', {
 		    xtype: 'pveDcOptionView',
 		    title: gettext('Options'),
 		    itemId: 'options'
-		},
-		{
-		    xtype: 'pveStorageView',
-		    title: gettext('Storage'),
-		    itemId: 'storage'
-		},
-		{
-		    xtype: 'pveDcBackupView',
-		    title: gettext('Backup'),
-		    itemId: 'backup'
-		},
-		{
-		    xtype: 'pveUserView',
-		    title: gettext('Users'),
-		    itemId: 'users'
-		},
+		}
+	    ]);
+	}
+
+	if (caps.storage['Datastore.Allocate'] || caps.dc['Sys.Audit']) {
+	    me.items.push({
+		xtype: 'pveStorageView',
+		title: gettext('Storage'),
+		itemId: 'storage'
+	    });
+	}
+
+	if (caps.dc['Sys.Audit']) {
+	    me.items.push({
+		xtype: 'pveDcBackupView',
+		title: gettext('Backup'),
+		itemId: 'backup'
+	    });
+	}
+
+	me.items.push({
+	    xtype: 'pveUserView',
+	    title: gettext('Users'),
+	    itemId: 'users'
+	});
+
+	if (caps.dc['Sys.Audit']) {
+	    me.items.push([
 		{
 		    xtype: 'pveGroupView',
 		    title: gettext('Groups'),
@@ -63,14 +82,15 @@ Ext.define('PVE.dc.Config', {
 		    xtype: 'pveDcHAConfig',
 		    title: 'HA',
 		    itemId: 'ha'
-		},
-		{ 
-		    xtype: 'pveDcSupport',
-		    title: gettext('Support'),
-		    itemId: 'support'
 		}
-	    ]
-	});
+	    ]);
+
+	    me.items.push({
+		xtype: 'pveDcSupport',
+		title: gettext('Support'),
+		itemId: 'support'
+	    });
+	}
 
 	me.callParent();
    }

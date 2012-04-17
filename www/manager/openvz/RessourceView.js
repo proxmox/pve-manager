@@ -18,10 +18,16 @@ Ext.define('PVE.openvz.RessourceView', {
 	    throw "no VM ID specified";
 	}
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
+	var resEditor = (caps.vms['VM.Config.Memory'] || caps.vms['VM.Config.Disk'] ||
+		      caps.vms['VM.Config.CPU']) ? 'PVE.openvz.RessourceEdit' : undefined;
+
+
 	var rows = {
 	    memory: {
 		header: gettext('Memory'),
-		editor: 'PVE.openvz.RessourceEdit',
+		editor: resEditor,
 		never_delete: true,
 		renderer: function(value) {
 		    return PVE.Utils.format_size(value*1024*1024);
@@ -29,7 +35,7 @@ Ext.define('PVE.openvz.RessourceView', {
 	    },
 	    swap: {
 		header: gettext('Swap'),
-		editor: 'PVE.openvz.RessourceEdit',
+		editor: resEditor,
 		never_delete: true,
 		renderer: function(value) {
 		    return PVE.Utils.format_size(value*1024*1024);
@@ -38,12 +44,12 @@ Ext.define('PVE.openvz.RessourceView', {
 	    cpus: {
 		header: gettext('Processors'),
 		never_delete: true,
-		editor: 'PVE.openvz.RessourceEdit',
+		editor: resEditor,
 		defaultValue: 1
 	    },
 	    disk: {
 		header: gettext('Disk size'),
-		editor: 'PVE.openvz.RessourceEdit',
+		editor: resEditor,
 		never_delete: true,
 		renderer: function(value) {
 		    return PVE.Utils.format_size(value*1024*1024*1024);

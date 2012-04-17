@@ -17,12 +17,14 @@ Ext.define('PVE.openvz.DNS', {
 	    throw "no VM ID specified";
 	}
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
 	var rows = {
 	    hostname: {
 		required: true,
 		defaultValue: me.pveSelNode.data.name,
 		header: 'Hostname',
-		editor: {
+		editor: caps.vms['VM.Config.Network'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: 'Hostname',
 		    items: {
@@ -33,12 +35,12 @@ Ext.define('PVE.openvz.DNS', {
 			allowBlank: true,
 			emptyText: me.pveSelNode.data.name
 		    }
-		}
+		} : undefined
 	    },
 	    searchdomain: {
 		header: 'DNS domain',
 		defaultValue: '',
-		editor: {
+		editor: caps.vms['VM.Config.Network'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: 'DNS domain',
 		    items: {
@@ -47,12 +49,12 @@ Ext.define('PVE.openvz.DNS', {
 			fieldLabel: 'DNS domain',
 			allowBlank: false
 		    }
-		}
+		} : undefined
 	    },
 	    nameserver: {
 		header: gettext('DNS server'),
 		defaultValue: '',
-		editor: {
+		editor: caps.vms['VM.Config.Network'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('DNS server'),
 		    items: {
@@ -61,7 +63,7 @@ Ext.define('PVE.openvz.DNS', {
 			fieldLabel: gettext('DNS server'),
 			allowBlank: false
 		    }
-		}
+		} : undefined
 	    }
 	};
 

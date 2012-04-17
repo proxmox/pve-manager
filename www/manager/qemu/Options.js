@@ -17,12 +17,14 @@ Ext.define('PVE.qemu.Options', {
 	    throw "no VM ID specified";
 	}
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
 	var rows = {
 	    name: {
 		required: true,
 		defaultValue: me.pveSelNode.data.name,
 		header: gettext('Name'),
-		editor: {
+		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Name'),
 		    items: {
@@ -33,13 +35,13 @@ Ext.define('PVE.qemu.Options', {
 			fieldLabel: gettext('Name'),
 			allowBlank: true
 		    }
-		}
+		} : undefined
 	    },
 	    onboot: {
 		header: gettext('Start at boot'),
 		defaultValue: '',
 		renderer: PVE.Utils.format_boolean,
-		editor: {
+		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Start at boot'),
 		    items: {
@@ -50,11 +52,11 @@ Ext.define('PVE.qemu.Options', {
 			deleteDefaultValue: true,
 			fieldLabel: gettext('Start at boot')
 		    }
-		}
+		} : undefined
 	    },
 	    ostype: {
 		header: 'OS Type',
-		editor: 'PVE.qemu.OSTypeEdit',
+		editor: caps.vms['VM.Config.Options'] ? 'PVE.qemu.OSTypeEdit' : undefined,
 		renderer: PVE.Utils.render_kvm_ostype,
 		defaultValue: 'other'
 	    },
@@ -64,7 +66,7 @@ Ext.define('PVE.qemu.Options', {
 	    boot: {
 		header: gettext('Boot order'),
 		defaultValue: 'cdn',
-		editor: 'PVE.qemu.BootOrderEdit',
+		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.BootOrderEdit' : undefined,
 		renderer: function(order) {
 		    var i;
 		    var text = '';
@@ -98,7 +100,7 @@ Ext.define('PVE.qemu.Options', {
 		header: 'ACPI support',
 		defaultValue: true,
 		renderer: PVE.Utils.format_boolean,
-		editor: {
+		editor: caps.vms['VM.Config.HWType'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: 'ACPI support',
 		    items: {
@@ -110,13 +112,13 @@ Ext.define('PVE.qemu.Options', {
 			deleteDefaultValue: true,
 			fieldLabel: gettext('Enabled')
 		    }
-		}
+		} : undefined
 	    },
 	    kvm: {
 		header: 'KVM hardware virtualization',
 		defaultValue: true,
 		renderer: PVE.Utils.format_boolean,
-		editor: {
+		editor: caps.vms['VM.Config.HWType'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: 'KVM hardware virtualization',
 		    items: {
@@ -128,13 +130,13 @@ Ext.define('PVE.qemu.Options', {
 			deleteDefaultValue: true,
 			fieldLabel: gettext('Enabled')
 		    }
-		}
+		} : undefined
 	    },
 	    freeze: {
 		header: 'Freeze CPU at startup',
 		defaultValue: false,
 		renderer: PVE.Utils.format_boolean,
-		editor: {
+		editor: caps.vms['VM.PowerMgmt'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: 'Freeze CPU at startup',
 		    items: {
@@ -146,13 +148,13 @@ Ext.define('PVE.qemu.Options', {
 			labelWidth: 140,
 			fieldLabel: 'Freeze CPU at startup'
 		    }
-		}
+		} : undefined
 	    },
 	    localtime: {
 		header: 'Use local time for RTC',
 		defaultValue: false,
 		renderer: PVE.Utils.format_boolean,
-		editor: {
+		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: 'Use local time for RTC',
 		    items: {
@@ -164,13 +166,12 @@ Ext.define('PVE.qemu.Options', {
 			labelWidth: 140,
 			fieldLabel: 'Use local time for RTC'
 		    }
-		}
-
+		} : undefined
 	    },
 	    startdate: {
 		header: 'RTC start date',
 		defaultValue: 'now',
-		editor: {
+		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: 'RTC start date',
 		    items: {
@@ -182,7 +183,7 @@ Ext.define('PVE.qemu.Options', {
 			vtype: 'QemuStartDate',
 			allowBlank: true
 		    }
-		}
+		} : undefined
 	    }
 	};
 

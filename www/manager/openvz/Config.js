@@ -15,6 +15,8 @@ Ext.define('PVE.openvz.Config', {
 	    throw "no VM ID specified";
 	}
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
 	me.statusStore = Ext.create('PVE.data.ObjectStore', {
 	    url: "/api2/json/nodes/" + nodename + "/openvz/" + vmid + "/status/current",
 	    interval: 1000
@@ -34,6 +36,7 @@ Ext.define('PVE.openvz.Config', {
 
 	var startBtn = Ext.create('Ext.Button', { 
 	    text: gettext('Start'),
+	    disabled: !caps.vms['VM.PowerMgmt'],
 	    handler: function() {
 		vm_command('start');
 	    }			    
@@ -50,6 +53,7 @@ Ext.define('PVE.openvz.Config', {
  
 	var stopBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Stop'),
+	    disabled: !caps.vms['VM.PowerMgmt'],
 	    confirmMsg: Ext.String.format(gettext("Do you really want to stop VM {0}?"), vmid),
 	    handler: function() {
 		vm_command("stop");
@@ -58,6 +62,7 @@ Ext.define('PVE.openvz.Config', {
  
 	var shutdownBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Shutdown'),
+	    disabled: !caps.vms['VM.PowerMgmt'],
 	    confirmMsg: Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), vmid),
 	    handler: function() {
 		vm_command('shutdown');
@@ -66,6 +71,7 @@ Ext.define('PVE.openvz.Config', {
  
 	var migrateBtn = Ext.create('Ext.Button', { 
 	    text: gettext('Migrate'),
+	    disabled: !caps.vms['VM.Migrate'],
 	    handler: function() {
 		var win = Ext.create('PVE.window.Migrate', { 
 		    vmtype: 'openvz',
@@ -78,6 +84,7 @@ Ext.define('PVE.openvz.Config', {
 
 	var removeBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Remove'),
+	    disabled: !caps.vms['VM.Allocate'],
 	    confirmMsg: Ext.String.format(gettext('Are you sure you want to remove VM {0}? This will permanently erase all VM data.'), vmid),
 	    handler: function() {
 		PVE.Utils.API2Request({
@@ -95,6 +102,7 @@ Ext.define('PVE.openvz.Config', {
 
 	var consoleBtn = Ext.create('Ext.Button', {
 	    text: gettext('Console'),
+	    disabled: !caps.vms['VM.Console'],
 	    handler: function() {
 		PVE.Utils.openConoleWindow('openvz', vmid, nodename, vmname);
 	    }
@@ -139,26 +147,36 @@ Ext.define('PVE.openvz.Config', {
 		    itemId: 'ubc',
 		    xtype: 'pveBeanCounterGrid',
 		    url: '/api2/json/nodes/' + nodename + '/openvz/' + vmid + '/status/ubc'
-		},
-		{
-		    title: "InitLog",
-		    itemId: 'initlog',
-		    xtype: 'pveLogView',
-		    url: '/api2/extjs/nodes/' + nodename + '/openvz/' + vmid + '/initlog'
-		},
-		{
-		    title: gettext('Backup'),
-		    xtype: 'pveBackupView',
-		    itemId: 'backup'
-		},
-		{
-		    xtype: 'pveACLView',
-		    title: gettext('Permissions'),
-		    itemId: 'permissions',
-		    path: '/vms/' + vmid
 		}
 	    ]
 	});
+
+
+	if (caps.vms['VM.Console']) {
+	    me.items.push({
+		title: "InitLog",
+		itemId: 'initlog',
+		xtype: 'pveLogView',
+		url: '/api2/extjs/nodes/' + nodename + '/openvz/' + vmid + '/initlog'
+	    });
+	}
+
+	if (caps.vms['VM.Backup']) {
+	    me.items.push({
+		title: gettext('Backup'),
+		xtype: 'pveBackupView',
+		itemId: 'backup'
+	    });
+	}
+
+	if (caps.vms['Permissions.Modify']) {
+	    me.items.push({
+		xtype: 'pveACLView',
+		title: gettext('Permissions'),
+		itemId: 'permissions',
+		path: '/vms/' + vmid
+	    });
+	}
 
 	me.callParent();
 
@@ -171,10 +189,10 @@ Ext.define('PVE.openvz.Config', {
 		var rec = s.data.get('status');
 		status = rec ? rec.data.value : 'unknown';
 	    }
-	    startBtn.setDisabled(status === 'running');
-	    shutdownBtn.setDisabled(status !== 'running');
-	    stopBtn.setDisabled(status === 'stopped');
-	    removeBtn.setDisabled(status !== 'stopped');
+	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running');
+	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
+	    stopBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'stopped');
+	    removeBtn.setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
 
 	    if (status === 'mounted') {
 		umountBtn.setDisabled(false);

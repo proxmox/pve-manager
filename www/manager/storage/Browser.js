@@ -15,29 +15,38 @@ Ext.define('PVE.storage.Browser', {
 	    throw "no storage ID specified";
 	}
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
+	me.items = [
+	    {
+		title: gettext('Summary'),
+		xtype: 'pveStorageSummary',
+		itemId: 'summary'
+	    }
+	];
+
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Storage {0} on node {1}"), 
 				     "'" + storeid + "'", "'" + nodename + "'"),
-	    hstateid: 'storagetab',
-	    items: [
-		{
-		    title: gettext('Summary'),
-		    xtype: 'pveStorageSummary',
-		    itemId: 'summary'
-		},
-		{
-		    xtype: 'pveStorageContentView',
-		    title: gettext('Content'),
-		    itemId: 'content'
-		},
-		{
-		    xtype: 'pveACLView',
-		    title: gettext('Permissions'),
-		    itemId: 'permissions',
-		    path: '/storage/' + storeid
-		}
-	    ]
+	    hstateid: 'storagetab'
 	});
+
+	if (caps.storage['Datastore.Allocate']) {
+	    me.items.push({
+		xtype: 'pveStorageContentView',
+		title: gettext('Content'),
+		itemId: 'content'
+	    });
+	}
+
+	if (caps.storage['Permissions.Modify']) {
+	    me.items.push({
+		xtype: 'pveACLView',
+		title: gettext('Permissions'),
+		itemId: 'permissions',
+		path: '/storage/' + storeid
+	    });
+	}
 
 	me.callParent();
    }

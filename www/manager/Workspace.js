@@ -21,6 +21,11 @@ Ext.define('PVE.Workspace', {
 	me.loginData = loginData;
 	PVE.CSRFPreventionToken = loginData.CSRFPreventionToken;
 	PVE.UserName = loginData.username;
+
+	if (loginData.cap) {
+	    Ext.state.Manager.set('GuiCap', loginData.cap);
+	}
+
 	// creates a session cookie (expire = null) 
 	// that way the cookie gets deleted after browser window close
 	Ext.util.Cookies.set('PVEAuthCookie', loginData.ticket, null, '/', null, true);
@@ -229,6 +234,8 @@ Ext.define('PVE.StdWorkspace', {
 	Ext.History.init();
 	Ext.state.Manager.setProvider(Ext.create('PVE.StateProvider'));
 
+	var caps = Ext.state.Manager.get('GuiCap');
+	
 	var selview = new PVE.form.ViewSelector({});
 
 	var rtree = Ext.createWidget('pveResourceTree', {
@@ -328,6 +335,7 @@ Ext.define('PVE.StdWorkspace', {
 			    xtype: 'button',
 			    baseCls: 'x-btn',
 			    text: gettext("Create VM"),
+			    disabled: !caps.vms['VM.Allocate'],
 			    handler: function() {
 				var wiz = Ext.create('PVE.qemu.CreateWizard', {});
 				wiz.show();
@@ -339,6 +347,7 @@ Ext.define('PVE.StdWorkspace', {
 			    xtype: 'button',
 			    baseCls: 'x-btn',
 			    text: gettext("Create CT"),
+			    disabled: !caps.vms['VM.Allocate'],
 			    handler: function() {
 				var wiz = Ext.create('PVE.openvz.CreateWizard', {});
 				wiz.show();

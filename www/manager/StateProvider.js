@@ -188,6 +188,7 @@ Ext.define('PVE.StateProvider', {
     },
 
     get: function(name, defaultValue){
+	/*jslint confusion: true */
 	var me = this;
 	var data;
 
@@ -195,6 +196,9 @@ Ext.define('PVE.StateProvider', {
 	    data = { value: me.UIState[name] };
 	} else {
 	    data = me.callParent(arguments);
+	    if (!data && name === 'GuiCap') {
+		data = { vms: {}, storage: {}, access: {}, nodes: {}, dc: {} };
+	    }
 	}
 
 	//console.log("GET " + name + " " + Ext.encode(data));

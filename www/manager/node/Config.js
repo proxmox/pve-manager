@@ -10,6 +10,8 @@ Ext.define('PVE.node.Config', {
 	    throw "no node name specified";
 	}
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
 	me.statusStore = Ext.create('PVE.data.ObjectStore', {
 	    url: "/api2/json/nodes/" + nodename + "/status",
 	    interval: 1000
@@ -29,6 +31,7 @@ Ext.define('PVE.node.Config', {
 
 	var restartBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Restart'),
+	    disabled: !caps.nodes['Sys.PowerMgmt'],
 	    confirmMsg: Ext.String.format(gettext("Do you really want to restart node {0}?"), nodename),
 	    handler: function() { 
 		node_command('reboot');
@@ -37,6 +40,7 @@ Ext.define('PVE.node.Config', {
 
 	var shutdownBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Shutdown'),
+	    disabled: !caps.nodes['Sys.PowerMgmt'],
 	    confirmMsg: Ext.String.format(gettext("Do you really want to shutdown node {0}?"), nodename),
 	    handler: function() { 
 		node_command('shutdown');
@@ -45,6 +49,7 @@ Ext.define('PVE.node.Config', {
 
 	var shellBtn = Ext.create('Ext.Button', { 
 	    text: gettext('Shell'),
+	    disabled: !caps.nodes['Sys.Console'],
 	    handler: function() {
 		var url = Ext.urlEncode({
 		    console: 'shell',
@@ -56,12 +61,17 @@ Ext.define('PVE.node.Config', {
 	    }
 	}); 
 
+	me.items = [];
+
 	Ext.apply(me, {
 	    title: gettext('Node') + " '" + nodename + "'",
 	    hstateid: 'nodetab',
 	    defaults: { statusStore: me.statusStore },
-	    tbar: [ restartBtn, shutdownBtn, shellBtn ],
-	    items: [
+	    tbar: [ restartBtn, shutdownBtn, shellBtn ]
+	});
+
+	if (caps.nodes['Sys.Audit']) {
+	    me.items.push([
 		{
 		    title: gettext('Summary'),
 		    itemId: 'summary',
@@ -86,41 +96,60 @@ Ext.define('PVE.node.Config', {
 		    title: gettext('Time'),
 		    itemId: 'time',
 		    xtype: 'pveNodeTimeView'
-		},
+		}
+	    ]);
+	}
+
+	if (caps.nodes['Sys.Syslog']) {
+	    me.items.push([
 		{
 		    title: 'Syslog',
 		    itemId: 'syslog',
 		    xtype: 'pveLogView',
 		    url: "/api2/extjs/nodes/" + nodename + "/syslog"
-		},
-		{
-		    title: 'Task History',
-		    itemId: 'tasks',
-		    xtype: 'pveNodeTasks'
-		},
+		}
+	    ]);
+	}
+
+	me.items.push([
+	    {
+		title: 'Task History',
+		itemId: 'tasks',
+		xtype: 'pveNodeTasks'
+	    }
+	]);
+
+
+	if (caps.nodes['Sys.Audit']) {
+	    me.items.push([
 		{
 		    title: 'UBC',
 		    itemId: 'ubc',
 		    xtype: 'pveNodeBCFailCnt'
-		},
-		{
-		    title: 'Subscription',
-		    itemId: 'support',
-		    xtype: 'pveNodeSubscription',
-		    nodename: nodename
 		}
-	    ]
-	});
+	    ]);
+	}
+	
+	me.items.push([
+	    {
+		title: 'Subscription',
+		itemId: 'support',
+		xtype: 'pveNodeSubscription',
+		nodename: nodename
+	    }
+	]);
 
 	me.callParent();
 
 	me.statusStore.on('load', function(s, records, success) {
 	    var uptimerec = s.data.get('uptime');
-	    var uptime = uptimerec ? uptimerec.data.value : false;
-
-	    restartBtn.setDisabled(!uptime);
-	    shutdownBtn.setDisabled(!uptime);
-	    shellBtn.setDisabled(!uptime);
+	    var powermgmt = uptimerec ? uptimerec.data.value : false;
+	    if (!caps.nodes['Sys.PowerMgmt']) {
+		powermgmt = false;
+	    }
+	    restartBtn.setDisabled(!powermgmt);
+	    shutdownBtn.setDisabled(!powermgmt);
+	    shellBtn.setDisabled(!powermgmt);
 	});
 
 	me.on('afterrender', function() {

@@ -17,12 +17,14 @@ Ext.define('PVE.openvz.Options', {
 	    throw "no VM ID specified";
 	}
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
 	var rows = {
 	    onboot: {
 		header: gettext('Start at boot'),
 		defaultValue: '',
 		renderer: PVE.Utils.format_boolean,
-		editor: {
+		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Start at boot'),
 		    items: {
@@ -32,7 +34,7 @@ Ext.define('PVE.openvz.Options', {
 			defaultValue: 0,
 			fieldLabel: gettext('Start at boot')
 		    }
-		}
+		} : undefined
 	    },
 	    ostemplate: {
 		header: gettext('Template'),
@@ -45,7 +47,7 @@ Ext.define('PVE.openvz.Options', {
 	    cpuunits: {
 		header: 'CPU units',
 		defaultValue: '1000',
-		editor: {
+		editor: caps.vms['VM.Config.CPU'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: 'CPU units',
 		    items: {
@@ -56,7 +58,7 @@ Ext.define('PVE.openvz.Options', {
 			maxValue: 500000,
 			allowBlank: false
 		    }
-		}
+		} : undefined
 	    },
 	    quotaugidlimit: {
 		header: 'Quota UGID limit',
@@ -67,7 +69,7 @@ Ext.define('PVE.openvz.Options', {
 		    }
 		    return value;
 		},
-		editor: {
+		editor: caps.vms['VM.Config.Disk'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: 'Quota UGID limit (0 to disable user quotas)',
 		    items: {
@@ -77,12 +79,12 @@ Ext.define('PVE.openvz.Options', {
 			minValue: 0,
 			allowBlank: false
 		    }
-		}
+		} : undefined
 	    },
 	    quotatime: {
 		header: 'Quota Grace period',
 		defaultValue: '0',
-		editor: {
+		editor: caps.vms['VM.Config.Disk'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: 'Quota Grace period (seconds)',
 		    items: {
@@ -92,7 +94,7 @@ Ext.define('PVE.openvz.Options', {
 			allowBlank: false,
 			fieldLabel: 'Grace period'
 		    }
-		}
+		} : undefined
 	    }
 	};
 

@@ -59,6 +59,8 @@ Ext.define('PVE.dc.UserView', {
     initComponent : function() {
 	var me = this;
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
 	var store = new Ext.data.Store({
             id: "users",
 	    model: 'pve-users',
@@ -79,6 +81,9 @@ Ext.define('PVE.dc.UserView', {
 	    disabled: true,
 	    selModel: sm,
 	    enableFn: function(rec) {
+		if (!caps.access['User.Modify']) {
+		    return false;
+		}
 		return rec.data.userid !== 'root@pam';
 	    },
 	    confirmMsg: function (rec) {
@@ -104,7 +109,7 @@ Ext.define('PVE.dc.UserView', {
  
 	var run_editor = function() {
 	    var rec = sm.getSelection()[0];
-	    if (!rec) {
+	    if (!rec || !caps.access['User.Modify']) {
 		return;
 	    }
 
@@ -118,6 +123,9 @@ Ext.define('PVE.dc.UserView', {
 	var edit_btn = new PVE.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
+	    enableFn: function(rec) {
+		return !!caps.access['User.Modify'];
+	    },
 	    selModel: sm,
 	    handler: run_editor
 	});
@@ -138,6 +146,7 @@ Ext.define('PVE.dc.UserView', {
         var tbar = [
             {
 		text: gettext('Add'),
+		disabled: !caps.access['User.Modify'],
 		handler: function() {
                     var win = Ext.create('PVE.dc.UserEdit',{
                     });

@@ -35,11 +35,14 @@ Ext.define('PVE.qemu.HardwareView', {
 	    throw "no VM ID specified";
 	}
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
 	var rows = {
 	    memory: {
 		header: gettext('Memory'),
-		editor: 'PVE.qemu.MemoryEdit',
+		editor: caps.vms['VM.Config.Memory'] ? 'PVE.qemu.MemoryEdit' : undefined,
 		never_delete: true,
+		defaultValue: 512,
 		tdCls: 'pve-itype-icon-memory',
 		renderer: function(value) {
 		    return PVE.Utils.format_size(value*1024*1024);
@@ -48,7 +51,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	    sockets: {
 		header: gettext('Processors'),
 		never_delete: true,
-		editor: 'PVE.qemu.ProcessorEdit',
+		editor: (caps.vms['VM.Config.CPU'] || caps.vms['VM.Config.HWType']) ? 
+		    'PVE.qemu.ProcessorEdit' : undefined,
 		tdCls: 'pve-itype-icon-processor',
 		defaultValue: 1,
 		renderer: function(value, metaData, record, rowIndex, colIndex, store) {
@@ -69,14 +73,14 @@ Ext.define('PVE.qemu.HardwareView', {
 	    keyboard: {
 		header: gettext('Keyboard Layout'),
 		never_delete: true,
-		editor: 'PVE.qemu.KeyboardEdit',
+		editor: caps.vms['VM.Config.Options'] ? 'PVE.qemu.KeyboardEdit' : undefined,
 		tdCls: 'pve-itype-icon-keyboard',
 		defaultValue: '',
 		renderer: PVE.Utils.render_kvm_language
 	    },
 	    vga: {
 		header: gettext('Display'),
-		editor: 'PVE.qemu.DisplayEdit',
+		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.DisplayEdit' : undefined,
 		never_delete: true,
 		tdCls: 'pve-itype-icon-display',
 		defaultValue: '',
@@ -96,6 +100,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
 		editor: 'PVE.qemu.HDEdit',
+		never_delete: caps.vms['VM.Config.Disk'] ? false : true,
 		header: gettext('Hard Disk') + ' (' + confid +')',
 		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')'
 	    };
@@ -106,6 +111,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
 		editor: 'PVE.qemu.HDEdit',
+		never_delete: caps.vms['VM.Config.Disk'] ? false : true,
 		header: gettext('Hard Disk') + ' (' + confid +')',
 		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')'
 	    };
@@ -116,6 +122,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
 		editor: 'PVE.qemu.HDEdit',
+		never_delete: caps.vms['VM.Config.Disk'] ? false : true,
 		header: gettext('Hard Disk') + ' (' + confid +')',
 		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')'
 	    };
@@ -125,7 +132,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	    rows[confid] = {
 		group: 2,
 		tdCls: 'pve-itype-icon-network',
-		editor: 'PVE.qemu.NetworkEdit',
+		editor: caps.vms['VM.Config.Network'] ? 'PVE.qemu.NetworkEdit' : undefined,
+		never_delete: caps.vms['VM.Config.Network'] ? false : true,
 		header: gettext('Network Device') + ' (' + confid +')'
 	    };
 	}
@@ -133,7 +141,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    rows["unused" + i] = {
 		group: 3,
 		tdCls: 'pve-itype-icon-storage',
-		editor: 'PVE.qemu.HDEdit',
+		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.HDEdit' : undefined,
 		header: gettext('Unused Disk') + ' ' + i
 	    };
 	}
@@ -249,6 +257,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    {
 				text: gettext('Hard Disk'),
 				iconCls: 'pve-itype-icon-storage',
+				disabled: !caps.vms['VM.Config.Disk'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.HDEdit', {
 					url: '/api2/extjs/' + baseurl,
@@ -261,6 +270,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    {
 				text: gettext('CD/DVD Drive'),
 				iconCls: 'pve-itype-icon-cdrom',
+				disabled: !caps.vms['VM.Config.Disk'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.CDEdit', {
 					url: '/api2/extjs/' + baseurl,
@@ -273,6 +283,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    {
 				text: gettext('Network Device'),
 				iconCls: 'pve-itype-icon-network',
+				disabled: !caps.vms['VM.Config.Network'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.NetworkEdit', {
 					url: '/api2/extjs/' + baseurl,

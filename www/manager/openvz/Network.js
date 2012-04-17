@@ -242,6 +242,8 @@ Ext.define('PVE.openvz.NetworkView', {
 	    throw "no VM ID specified";
 	}
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
 	me.url = '/nodes/' + nodename + '/openvz/' + vmid + '/config';
 
 	var store = new Ext.data.Store({
@@ -254,6 +256,9 @@ Ext.define('PVE.openvz.NetworkView', {
 	    text: gettext('Remove'),
 	    disabled: true,
 	    selModel: sm,
+	    enableFn: function(rec) {
+		return !!caps.vms['VM.Config.Network'];
+	    },
 	    confirmMsg: function (rec) {
 		var idtext = rec.id;
 		if (rec.data.type === 'ip') {
@@ -304,6 +309,10 @@ Ext.define('PVE.openvz.NetworkView', {
 		return;
 	    }
 
+	    if (!caps.vms['VM.Config.Network']) {
+		return false;
+	    }
+
 	    var win = Ext.create('PVE.OpenVZ.NetIfEdit', {
 		url: me.url,
 		nodename: nodename,
@@ -319,6 +328,9 @@ Ext.define('PVE.openvz.NetworkView', {
 	    selModel: sm,
 	    disabled: true,
 	    enableFn: function(rec) {
+		if (!caps.vms['VM.Config.Network']) {
+		    return false;
+		}
 		return rec.data.type === 'veth';
 	    },
 	    handler: run_editor
@@ -336,6 +348,7 @@ Ext.define('PVE.openvz.NetworkView', {
 			items: [
 			    {
 				text: gettext('IP address') + ' (venet)',
+				disabled: !caps.vms['VM.Config.Network'],
 				//plain: true,
 				//iconCls: 'pve-itype-icon-storage',
 				handler: function() {
@@ -349,6 +362,7 @@ Ext.define('PVE.openvz.NetworkView', {
 			    },
 			    {
 				text: gettext('Network Device') + ' (veth)',
+				disabled: !caps.vms['VM.Config.Network'],
 				//plain: true,
 				//iconCls: 'pve-itype-icon-storage',
 				handler: function() {
