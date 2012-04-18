@@ -1,3 +1,9 @@
+pve-manager (2.0-63) unstable; urgency=low
+
+  * fix bug 128: implement pvectl startall/stopall
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 18 Apr 2012 10:02:54 +0200
+
 pve-manager (2.0-62) unstable; urgency=low
 
   * fix bug #115: simplify GUI for users without permissions.

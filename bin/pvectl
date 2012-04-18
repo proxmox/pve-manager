@@ -35,6 +35,118 @@ my $upid_exit = sub {
     exit($status eq 'OK' ? 0 : -1);
 };
 
+__PACKAGE__->register_method ({
+    name => 'startall', 
+    path => 'startall', 
+    method => 'POST',
+    description => "Start all containers (when onboot=1).",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {},
+    },
+    returns => { type => 'null'},
+    code => sub {
+	my ($param) = @_;
+
+	# wait up to 10 seconds for quorum
+	for (my $i = 10; $i >= 0; $i--) {
+	    last if PVE::Cluster::check_cfs_quorum($i != 0 ? 1 : 0);
+	    sleep(1);
+	}
+	
+	my $vzlist = PVE::OpenVZ::vmstatus();
+
+	my $cc = PVE::Cluster::cfs_read_file('cluster.conf');
+
+	my $startList = {};
+	foreach my $vmid (keys %$vzlist) {
+	    next if $vzlist->{$vmid}->{status} eq 'running'; # already running
+
+	    my $conf;
+	    eval { $conf = PVE::OpenVZ::load_config($vmid); };
+	    if (my $err = $@) {
+		warn $err;
+		next;
+	    }
+
+	    next if !$conf;
+
+	    next if !($conf->{onboot} && $conf->{onboot}->{value});
+
+	    # skip ha managed VMs (started by rgmanager)
+	    next if PVE::Cluster::cluster_conf_lookup_pvevm($cc, 0, $vmid, 1);
+
+	    if ($conf->{bootorder} && defined($conf->{bootorder}->{value})) {
+		$vzlist->{$vmid}->{bootorder} = $conf->{bootorder}->{value};
+	    } else {
+		$vzlist->{$vmid}->{bootorder} = -1000000000;
+	    }
+	    
+	    $startList->{$vmid} = $vzlist->{$vmid};
+	}
+
+	foreach my $vmid (sort {
+	    return $a <=> $b if $startList->{$b}->{bootorder} == $startList->{$a}->{bootorder};
+	    return $startList->{$b}->{bootorder} <=> $startList->{$a}->{bootorder};
+	    } keys %$startList) {
+
+	    PVE::Cluster::check_cfs_quorum(); # abort when we loose quorum
+
+	    eval {
+		print STDERR "Starting CT $vmid\n";
+		PVE::API2::OpenVZ->vm_start({node => $nodename, vmid => $vmid });
+	    };
+	    warn $@ if $@;
+	}
+
+	return undef;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'stopall', 
+    path => 'stopall', 
+    method => 'POST',
+    description => "Stop all containers.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    timeout => {
+		description => "Wait maximal timeout seconds.",
+		type => 'integer',
+		minimum => 0,
+		optional => 1,
+		default => 60,
+	    },
+	},
+    },
+    returns => { type => 'null'},
+    code => sub {
+	my ($param) = @_;
+
+	my $vzlist = PVE::OpenVZ::vmstatus();
+	my $timeout = defined ($param->{timeout}) ? $param->{timeout} : 60;
+
+	syslog('info', "Stopping all Container");
+
+	foreach my $vmid (keys %$vzlist) {
+	    next if $vzlist->{$vmid}->{status} ne 'running'; # not running
+
+	    eval {
+		print STDERR "Stoping CT $vmid\n";
+
+		# Set fairsched parameters to maximum so CT will stop fast
+		# ignore any errors
+		system("vzctl set $vmid --cpuunits 2000 --cpulimit 0 >/dev/null 2>&1");
+
+		PVE::API2::OpenVZ->vm_shutdown({node => $nodename, vmid => $vmid, 
+						timeout => $timeout, forceStop => 1 });
+	    };
+	    warn $@ if $@;
+	}
+
+	return undef;
+    }});
+
 my $cmddef = {
 
     list => [ "PVE::API2::OpenVZ", 'vmlist', [],
@@ -79,6 +191,8 @@ my $cmddef = {
     umount => [ 'PVE::API2::OpenVZ', 'vm_umount', ['vmid'], { node => $nodename }, $upid_exit],
     migrate => [ "PVE::API2::OpenVZ", 'migrate_vm', ['vmid', 'target'], { node => $nodename }, $upid_exit],
 
+    startall => [ __PACKAGE__, 'startall', []],
+    stopall => [ __PACKAGE__, 'stopall', []],
 };
 
 my $cmd = shift;
