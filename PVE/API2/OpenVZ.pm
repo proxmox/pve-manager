@@ -59,6 +59,15 @@ CPUUNITS="1000"
 CPUS="1"
 __EOD
 
+my $get_container_storage = sub {
+    my ($stcfg, $vmid, $veconf) = @_;
+
+    my $path = PVE::OpenVZ::get_privatedir($veconf, $vmid);
+    my ($vtype, $volid) = PVE::Storage::path_to_volume_id($stcfg, $path);
+    my ($sid, $volname) = PVE::Storage::parse_volume_id($volid, 1) if $volid;
+    return wantarray ? ($sid, $volname, $path) : $sid;
+};
+
 my $check_ct_modify_config_perm = sub {
     my ($rpcenv, $authuser, $vmid, $pool, $key_list) = @_;
     
@@ -725,12 +734,8 @@ __PACKAGE__->register_method({
 
 	my $stcfg = cfs_read_file("storage.cfg");
 
-	if ($veconf->{ve_private} && $veconf->{ve_private}->{value}) {
-	    my $path = PVE::OpenVZ::get_privatedir($veconf, $param->{vmid});
-	    my ($vtype, $volid) = PVE::Storage::path_to_volume_id($stcfg, $path);
-	    my ($sid, $volname) = PVE::Storage::parse_volume_id($volid, 1) if $volid;
-	    $conf->{storage} = $sid || $path;
-	}
+	my ($sid, undef, $path) = &$get_container_storage($stcfg, $param->{vmid}, $veconf);
+	$conf->{storage} = $sid || $path;
 
 	my $properties = PVE::OpenVZ::json_config_properties();
 
@@ -1073,6 +1078,12 @@ __PACKAGE__->register_method({
 		my $upid = shift;
 
 		syslog('info', "starting CT $vmid: $upid\n");
+
+		my $veconf = PVE::OpenVZ::load_config($vmid);
+		my $stcfg = cfs_read_file("storage.cfg");
+		if (my $sid = &$get_container_storage($stcfg, $vmid, $veconf)) {
+		    PVE::Storage::activate_storage($stcfg, $sid);
+		}
 
 		my $cmd = ['vzctl', 'start', $vmid];
 	    

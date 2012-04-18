@@ -1,6 +1,8 @@
 pve-manager (2.0-63) unstable; urgency=low
 
   * fix bug 128: implement pvectl startall/stopall
+  
+  * fix bug 171: activate storage before starting containers
 
  -- Proxmox Support Team <support@proxmox.com>  Wed, 18 Apr 2012 10:02:54 +0200
 
