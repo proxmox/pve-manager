@@ -96,6 +96,7 @@ JSSRC= 				                 	\
 	qemu/DisplayEdit.js				\
 	qemu/KeyboardEdit.js				\
 	qemu/HardwareView.js				\
+	qemu/StartupEdit.js				\
 	qemu/Options.js					\
 	qemu/Config.js					\
 	qemu/CreateWizard.js				\

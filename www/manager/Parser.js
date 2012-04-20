@@ -185,5 +185,55 @@ Ext.define('PVE.Parser', { statics: {
 	});
 
 	return netarray.join(';');
+    },
+
+    parseStartup: function(value) {
+	if (value === undefined) {
+	    return;
+	}
+
+	var res = {};
+
+	var errors = false;
+	Ext.Array.each(value.split(','), function(p) {
+	    if (!p || p.match(/^\s*$/)) {
+		return; // continue
+	    }
+
+	    var match_res;
+
+	    if ((match_res = p.match(/^(order)?=(\d+)$/)) !== null) {
+		res.order = match_res[2];
+	    } else if ((match_res = p.match(/^up=(\d+)$/)) !== null) {
+		res.up = match_res[1];
+	    } else if ((match_res = p.match(/^down=(\d+)$/)) !== null) {
+                res.down = match_res[1];
+	    } else {
+		errors = true;
+		return false; // break
+	    }
+	});
+
+	if (errors) {
+	    return;
+	}
+
+	return res;
+    },
+ 
+    printStartup: function(startup) {
+	var arr = [];
+	if (startup.order !== undefined && startup.order !== '') {
+	    arr.push('order=' + startup.order);
+	}
+	if (startup.up !== undefined && startup.up !== '') {
+	    arr.push('up=' + startup.up);
+	}
+	if (startup.down !== undefined && startup.down !== '') {
+	    arr.push('down=' + startup.down);
+	}
+
+	return arr.join(',');
     }
+
 }});

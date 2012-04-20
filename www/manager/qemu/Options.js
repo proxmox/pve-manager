@@ -54,6 +54,13 @@ Ext.define('PVE.qemu.Options', {
 		    }
 		} : undefined
 	    },
+	    startup: {
+		header: gettext('Start/Shutdown order'),
+		defaultValue: '',
+		renderer: PVE.Utils.render_kvm_startup,
+		editor: caps.vms['VM.Config.Options'] && caps.nodes['Sys.Modify'] ? 
+		    'PVE.qemu.StartupEdit' : undefined
+	    },
 	    ostype: {
 		header: 'OS Type',
 		editor: caps.vms['VM.Config.Options'] ? 'PVE.qemu.OSTypeEdit' : undefined,

@@ -244,6 +244,25 @@ Ext.define('PVE.Utils', { statics: {
 	return data;
     },
 
+    render_kvm_startup: function(value) {
+	var startup = PVE.Parser.parseStartup(value);
+
+	var res = 'order=';
+	if (startup.order === undefined) {
+	    res += 'any';
+	} else {
+	    res += startup.order;
+	}
+	if (startup.up !== undefined) {
+	    res += ',up=' + startup.up;
+	}
+	if (startup.down !== undefined) {
+	    res += ',down=' + startup.down;
+	}
+
+	return res;
+    },
+
     authOK: function() {
 	return Ext.util.Cookies.get('PVEAuthCookie');
     },
@@ -419,7 +438,9 @@ Ext.define('PVE.Utils', { statics: {
 	imgcopy: ['', gettext('Copy data') ],
 	imgdel: ['', gettext('Erase data') ],
 	download: ['', gettext('Download') ],
-	vzdump: ['', gettext('Backup') ]
+	vzdump: ['', gettext('Backup') ],
+	startall: [ '', gettext('Start all VMs and Containers') ],
+	stopall: [ '', gettext('Stop all VMs and Containers') ]
     },
 
     format_task_description: function(type, id) {	
