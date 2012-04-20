@@ -8,6 +8,7 @@ if [ "$1" = purge ]; then
     update-rc.d pvestatd remove >/dev/null 2>&1
     update-rc.d pvebanner remove >/dev/null 2>&1
     update-rc.d pvenetcommit remove >/dev/null 2>&1
+    update-rc.d pve-manager remove >/dev/null 2>&1
 
     if [ -e /usr/share/debconf/confmodule ]; then
 	. /usr/share/debconf/confmodule

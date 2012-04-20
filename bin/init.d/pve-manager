@@ -1,0 +1,39 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:        pve-manager
+# Required-Start:  $remote_fs apache2 qemu-server vz pvestatd
+# Required-Stop:   $remote_fs apache2 qemu-server vz pvestatd
+# Default-Start:   2 3 4 5
+# Default-Stop:    0 1 6
+# Short-Description: PVE VM Manager
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+PATH=/sbin:/bin:/usr/bin:/usr/sbin
+DESC="PVE Status Daemon" 
+PVESH=/usr/bin/pvesh
+
+test -f $PVESH || exit 0
+
+case "$1" in
+	start)
+		echo "Starting VMs and Containers"
+		pvesh --nooutput create /nodes/localhost/startall 
+  		;;
+	stop)
+		echo "Stopping VMs and Containers"
+		pvesh --nooutput create /nodes/localhost/stopall 
+   		;;
+	reload|restart|force-reload)
+	        # do nothing here 
+  		;;
+	*)
+	        N=/etc/init.d/$NAME
+  		echo "Usage: $N {start|stop|reload|restart|force-reload}" >&2
+  		exit 1
+		;;
+esac
+
+exit 0

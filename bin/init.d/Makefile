@@ -3,6 +3,7 @@ include ../../defines.mk
 all:
 
 SCRIPTS = 		\
+	pve-manager 	\
 	pvedaemon 	\
 	pvebanner	\
 	pvestatd	\

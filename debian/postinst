@@ -59,6 +59,7 @@ case "$1" in
     update-rc.d pvestatd defaults 21 79 >/dev/null
     update-rc.d pvebanner start 99 2 3 4 5 . >/dev/null
     update-rc.d pvenetcommit start 15 S . >/dev/null
+    update-rc.d pve-manager defaults 25 75 >/dev/null
 
     test -e /proxmox_install_mode || invoke-rc.d pvedaemon restart
     test -e /proxmox_install_mode || invoke-rc.d pvestatd restart

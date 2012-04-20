@@ -2,7 +2,7 @@ package PVE::API2::Nodes::Nodeinfo;
 
 use strict;
 use warnings;
-use POSIX;
+use POSIX qw(LONG_MAX);
 use Filesys::Df;
 use Time::Local qw(timegm_nocheck);
 use PVE::pvecfg;
@@ -19,6 +19,7 @@ use PVE::AccessControl;
 use PVE::Storage;
 use PVE::OpenVZ;
 use PVE::APLInfo;
+use PVE::QemuServer;
 use PVE::API2::Subscription;
 use PVE::API2::Services;
 use PVE::API2::Network;
@@ -120,6 +121,8 @@ __PACKAGE__->register_method ({
 	    { name => 'ubcfailcnt' },
 	    { name => 'network' },
 	    { name => 'aplinfo' },
+	    { name => 'startall' },
+	    { name => 'stopall' },
 	    ];
 
 	return $result;
@@ -846,6 +849,244 @@ __PACKAGE__->register_method({
 	};
 
 	return $rpcenv->fork_worker('download', undef, $user, $worker);
+    }});
+
+my $get_start_stop_list = sub {
+    my ($nodename, $autostart) = @_;
+
+    my $cc = PVE::Cluster::cfs_read_file('cluster.conf');
+    my $vmlist = PVE::Cluster::get_vmlist();
+
+    my $resList = {};
+    foreach my $vmid (keys %{$vmlist->{ids}}) {
+	my $d = $vmlist->{ids}->{$vmid};
+	my $startup;
+
+	eval { 
+	    return if $d->{node} ne $nodename;
+	    
+	    my $bootorder = LONG_MAX;
+
+	    if ($d->{type} eq 'openvz') {
+		my $conf = PVE::OpenVZ::load_config($vmid); 
+		return if $autostart && !($conf->{onboot} && $conf->{onboot}->{value});
+		
+		if ($conf->{bootorder} && defined($conf->{bootorder}->{value})) {
+		    $bootorder = $conf->{bootorder}->{value};
+		}
+		$startup = { order => $bootorder };
+
+	    } elsif ($d->{type} eq 'qemu') {
+		my $conf = PVE::QemuServer::load_config($vmid);
+		return if $autostart && !$conf->{onboot};
+
+		if ($conf->{startup}) {
+		    $startup = PVE::QemuServer::parse_startup($conf->{startup});
+		    $startup->{order} = $bootorder if !defined($startup->{order});
+		} else {
+		    $startup = { order => $bootorder };
+		}
+	    } else {
+		die "unknown VM type '$d->{type}'\n";
+	    }
+
+	    # skip ha managed VMs (started by rgmanager)
+	    return if PVE::Cluster::cluster_conf_lookup_pvevm($cc, 0, $vmid, 1);
+	    
+	    $resList->{$startup->{order}}->{$vmid} = $startup;
+	    $resList->{$startup->{order}}->{$vmid}->{type} = $d->{type};
+	};
+	warn $@ if $@;
+    }
+
+    return $resList;
+};
+
+__PACKAGE__->register_method ({
+    name => 'startall', 
+    path => 'startall', 
+    method => 'POST',
+    protected => 1,
+    description => "Start all VMs and containers (when onboot=1).",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+
+	my $nodename = $param->{node};
+	$nodename = PVE::INotify::nodename() if $nodename eq 'localhost';
+
+	my $code = sub {
+
+	    $rpcenv->{type} = 'priv'; # to start tasks in background
+
+	    # wait up to 10 seconds for quorum
+	    for (my $i = 10; $i >= 0; $i--) {
+		last if PVE::Cluster::check_cfs_quorum($i != 0 ? 1 : 0);
+		sleep(1);
+	    }
+	
+	    my $startList = &$get_start_stop_list($nodename, 1);
+ 
+	    foreach my $order (sort keys %$startList) {
+		my $vmlist = $startList->{$order};
+
+		foreach my $vmid (sort keys %$vmlist) {
+		    my $d = $vmlist->{$vmid};
+
+		    PVE::Cluster::check_cfs_quorum(); # abort when we loose quorum
+	    
+		    eval {
+			my $default_delay = 0;
+			my $upid;
+
+			if ($d->{type} eq 'openvz') {
+			    return if PVE::OpenVZ::check_running($vmid);
+			    print STDERR "Starting CT $vmid\n";
+			    $upid = PVE::API2::OpenVZ->vm_start({node => $nodename, vmid => $vmid });
+			} elsif ($d->{type} eq 'qemu') {
+			    $default_delay = 3; # to redruce load
+			    return if PVE::QemuServer::check_running($vmid, 1);
+			    print STDERR "Starting VM $vmid\n";
+			    $upid = PVE::API2::Qemu->vm_start({node => $nodename, vmid => $vmid });
+			} else {
+			    die "unknown VM type '$d->{type}'\n";
+			}
+
+			my $res = PVE::Tools::upid_decode($upid);
+			while (PVE::ProcFSTools::check_process_running($res->{pid})) {
+			    sleep(1);
+			}
+
+			my $status = PVE::Tools::upid_read_status($upid);
+			if ($status eq 'OK') {
+			    # use default delay to reduce load
+			    my $delay = defined($d->{up}) ? int($d->{up}) : $default_delay;
+			    if ($delay > 0) {
+				print STDERR "Waiting for $delay seconds (startup delay)\n" if $d->{up};
+				for (my $i = 0; $i < $delay; $i++) {
+				    sleep(1);
+				}
+			    }
+			} else {
+			    if ($d->{type} eq 'openvz') {
+				print STDERR "Starting CT $vmid failed: $status\n";
+			    } elsif ($d->{type} eq 'qemu') {
+				print STDERR "Starting VM $vmid failed: status\n";
+			    }
+			}
+		    };
+		    warn $@ if $@;
+		}
+	    }
+	    return;
+	};
+
+	return $rpcenv->fork_worker('startall', undef, $authuser, $code);
+    }});
+
+my $create_stop_worker = sub {
+    my ($nodename, $type, $vmid, $down_timeout) = @_;
+
+    my $upid;
+    if ($type eq 'openvz') {
+	return if !PVE::OpenVZ::check_running($vmid);
+	my $timeout =  defined($down_timeout) ? int($down_timeout) : 60;
+	print STDERR "Stoping CT $vmid (timeout = $timeout seconds)\n";
+	$upid = PVE::API2::OpenVZ->vm_shutdown({node => $nodename, vmid => $vmid, 
+						timeout => $timeout, forceStop => 1 });
+    } elsif ($type eq 'qemu') {
+	return if !PVE::QemuServer::check_running($vmid, 1);
+	my $timeout =  defined($down_timeout) ? int($down_timeout) : 60*3;
+	print STDERR "Stoping VM $vmid (timeout = $timeout seconds)\n";
+	$upid = PVE::API2::Qemu->vm_shutdown({node => $nodename, vmid => $vmid, 
+					      timeout => $timeout, forceStop => 1 });
+    } else {
+	die "unknown VM type '$type'\n";
+    }
+
+    my $res = PVE::Tools::upid_decode($upid);
+
+    return $res->{pid};
+};
+
+__PACKAGE__->register_method ({
+    name => 'stopall', 
+    path => 'stopall', 
+    method => 'POST',
+    protected => 1,
+    description => "Stop all VMs and Containers.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+
+	my $nodename = $param->{node};
+	$nodename = PVE::INotify::nodename() if $nodename eq 'localhost';
+
+	my $code = sub {
+
+	    $rpcenv->{type} = 'priv'; # to start tasks in background
+
+	    my $stopList = &$get_start_stop_list($nodename);
+
+	    my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
+	    my $maxWorkers = $cpuinfo->{cpus};
+
+	    foreach my $order (sort {$b <=> $a} keys %$stopList) {
+		my $vmlist = $stopList->{$order};
+		my $workers = {};
+		foreach my $vmid (sort {$b <=> $a} keys %$vmlist) {
+		    my $d = $vmlist->{$vmid};
+		    my $pid;
+		    eval { $pid = &$create_stop_worker($nodename, $d->{type}, $vmid, $d->{down}); };
+		    warn $@ if $@;
+		    next if !$pid;
+		
+		    $workers->{$pid} = 1;
+		    while (scalar(keys %$workers) >= $maxWorkers) {
+			foreach my $p (keys %$workers) {
+			    if (!PVE::ProcFSTools::check_process_running($p)) {
+				delete $workers->{$p};
+			    }
+			}
+			sleep(1);
+		    }
+		}
+		while (scalar(keys %$workers)) {
+		    foreach my $p (keys %$workers) {
+			if (!PVE::ProcFSTools::check_process_running($p)) {
+			    delete $workers->{$p};
+			}
+		    }
+		    sleep(1);
+		}
+	    }
+	    return;
+	};
+
+	return $rpcenv->fork_worker('stopall', undef, $authuser, $code);
+	
     }});
 
 package PVE::API2::Nodes;
