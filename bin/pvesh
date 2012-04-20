@@ -37,13 +37,27 @@ sub print_usage {
 }
 
 my $disable_proxy = 0;
+my $opt_nooutput = 0;
 
 my $cmd = shift;
 
-if ($cmd && $cmd eq '--noproxy') {
-    $cmd = shift;
-    $disable_proxy = 1;
-}
+my $optmatch;
+do {
+    $optmatch = 0;
+    if ($cmd) {
+	if ($cmd eq '--noproxy') {
+	    $cmd = shift;
+	    $disable_proxy = 1;
+	    $optmatch = 1;
+	} elsif ($cmd eq '--nooutput') {
+	    # we use this when starting task in CLI (suppress printing upid)
+	    # for example 'pvesh --nooutput create /nodes/localhost/stopall'
+	    $cmd = shift;
+	    $opt_nooutput = 1;
+	    $optmatch = 1;
+	}
+    }
+} while ($optmatch);
 
 if ($cmd) {
     if ($cmd eq 'verifyapi') {
@@ -51,7 +65,7 @@ if ($cmd) {
 	exit 0;
     } elsif ($cmd eq 'ls' || $cmd eq 'get' || $cmd eq 'create' || 
 	     $cmd eq 'set' || $cmd eq 'delete' ||$cmd eq 'help' ) {
-	pve_command([ $cmd, @ARGV]);
+	pve_command([ $cmd, @ARGV],  $opt_nooutput);
 	exit(0);
     } else {
 	print_usage ("unknown command '$cmd'");
@@ -237,7 +251,7 @@ sub proxy_handler {
 }
 
 sub call_method {
-    my ($dir, $cmd, $args) = @_;
+    my ($dir, $cmd, $args, $nooutput) = @_;
 
     my $method = map_cmd($cmd);
 
@@ -251,6 +265,8 @@ sub call_method {
     return proxy_handler($node, $remip, $dir, $cmd, $args) if $node;
 
     my $data = $handler->cli_handler("$cmd $dir", $info->{name}, $args, [], $uri_param, $read_password);
+
+    return if $nooutput;
 
     warn "200 OK\n"; # always print OK status if successful
 
@@ -430,7 +446,7 @@ sub list_dir {
 
 
 sub pve_command {
-    my $args = shift;
+    my ($args, $nooutput) = @_;
 
     PVE::Cluster::cfs_update();
 
@@ -501,7 +517,7 @@ sub pve_command {
 	    $path = shift @$args;
 	}
 
-	call_method(abs_path($cdir, $path), $cmd, $args);
+	call_method(abs_path($cdir, $path), $cmd, $args, $nooutput);
 
     } elsif ($cmd eq 'delete') {
 
