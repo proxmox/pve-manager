@@ -13,7 +13,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 	    xtype: 'numberfield',
 	    name: 'memory',
 	    minValue: 32,
-	    maxValue: 128*1024,
+	    maxValue: 512*1024,
 	    value: '512',
 	    step: 32,
 	    fieldLabel: gettext('Memory') + ' (MB)',
