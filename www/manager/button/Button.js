@@ -42,8 +42,8 @@ Ext.define('PVE.button.Button', {
 		    }
 		    Ext.MessageBox.defaultButton = me.dangerous ? 2 : 1;
 		    Ext.Msg.show({
-			title: gettext('Confirmtest'),
-			icon: 'ext-mb-question',
+			title: gettext('Confirm'),
+			icon: me.dangerous ? Ext.Msg.WARNING : Ext.Msg.QUESTION,
 			msg: msg,
 			buttons: Ext.Msg.YESNO,
 			callback: function(btn) {
