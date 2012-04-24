@@ -139,6 +139,23 @@ Ext.define('PVE.qemu.Options', {
 		    }
 		} : undefined
 	    },
+	    cpuunits: {
+		header: 'CPU units',
+		defaultValue: '1000',
+		editor: caps.vms['VM.Config.CPU'] ? {
+		    xtype: 'pveWindowEdit',
+		    subject: 'CPU units',
+		    items: {
+			xtype: 'numberfield',
+			name: 'cpuunits',
+			fieldLabel: 'CPU units',
+			minValue: 8,
+			maxValue: 500000,
+			defaultValue: 1000,
+			allowBlank: false
+		    }
+		} : undefined
+	    },
 	    freeze: {
 		header: 'Freeze CPU at startup',
 		defaultValue: false,
