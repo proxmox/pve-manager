@@ -232,10 +232,10 @@ Ext.define('PVE.StdWorkspace', {
 	var me = this;
 
 	Ext.History.init();
-	Ext.state.Manager.setProvider(Ext.create('PVE.StateProvider'));
 
-	var caps = Ext.state.Manager.get('GuiCap');
-	
+	var sprovider = Ext.create('PVE.StateProvider');
+	Ext.state.Manager.setProvider(sprovider);
+
 	var selview = new PVE.form.ViewSelector({});
 
 	var rtree = Ext.createWidget('pveResourceTree', {
@@ -278,6 +278,40 @@ Ext.define('PVE.StdWorkspace', {
 	    if (records && records.length) {
 		var view = combo.getViewFilter();
 		rtree.setViewFilter(view);
+	    }
+	});
+
+	var caps = sprovider.get('GuiCap');
+
+	var createVM = Ext.createWidget('button', {
+	    pack: 'end',
+	    margins: '3 5 0 0',
+	    baseCls: 'x-btn',
+	    text: gettext("Create VM"),
+	    disabled: !caps.vms['VM.Allocate'],
+	    handler: function() {
+		var wiz = Ext.create('PVE.qemu.CreateWizard', {});
+		wiz.show();
+	    } 
+	});
+
+	var createCT = Ext.createWidget('button', {
+	    pack: 'end',
+	    margins: '3 5 0 0',
+	    baseCls: 'x-btn',
+	    text: gettext("Create CT"),
+	    disabled: !caps.vms['VM.Allocate'],
+	    handler: function() {
+		var wiz = Ext.create('PVE.openvz.CreateWizard', {});
+		wiz.show();
+	    } 
+	});
+
+	sprovider.on('statechange', function(sp, key, value) {
+	    if (key === 'GuiCap' && value) {
+		caps = value;
+		createVM.setDisabled(!caps.vms['VM.Allocate']);
+		createCT.setDisabled(!caps.vms['VM.Allocate']);
 	    }
 	});
 
@@ -328,31 +362,9 @@ Ext.define('PVE.StdWorkspace', {
 				var rt = me.down('pveResourceTree');
 				rt.clearTree();
 			    }
-			},
-			{
-			    pack: 'end',
-			    margins: '3 5 0 0',
-			    xtype: 'button',
-			    baseCls: 'x-btn',
-			    text: gettext("Create VM"),
-			    disabled: !caps.vms['VM.Allocate'],
-			    handler: function() {
-				var wiz = Ext.create('PVE.qemu.CreateWizard', {});
-				wiz.show();
-			    } 
-			},
-			{
-			    pack: 'end',
-			    margins: '3 5 0 0',
-			    xtype: 'button',
-			    baseCls: 'x-btn',
-			    text: gettext("Create CT"),
-			    disabled: !caps.vms['VM.Allocate'],
-			    handler: function() {
-				var wiz = Ext.create('PVE.openvz.CreateWizard', {});
-				wiz.show();
-			    } 
-			}
+			}, 
+			createVM, 
+			createCT
 		    ]
 		},
 		{
