@@ -85,6 +85,7 @@ Ext.define('PVE.openvz.Config', {
 	var removeBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Remove'),
 	    disabled: !caps.vms['VM.Allocate'],
+	    dangerous: true,
 	    confirmMsg: Ext.String.format(gettext('Are you sure you want to remove VM {0}? This will permanently erase all VM data.'), vmid),
 	    handler: function() {
 		PVE.Utils.API2Request({

@@ -1,3 +1,9 @@
+pve-manager (2.0-64) unstable; urgency=low
+
+  * fix bug #179: set default button 'no' for dangerous actions
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 24 Apr 2012 08:09:23 +0200
+
 pve-manager (2.0-63) unstable; urgency=low
 
   * fix bug 128: implement pvectl startall/stopall

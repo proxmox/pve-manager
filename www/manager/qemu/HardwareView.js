@@ -210,6 +210,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    text: gettext('Remove'),
 	    selModel: sm,
 	    disabled: true,
+	    dangerous: true,
 	    confirmMsg: function(rec) {
 		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
 					    "'" + me.renderKey(rec.data.key, {}, rec) + "'");

@@ -116,6 +116,7 @@ Ext.define('PVE.grid.BackupView', {
 	    text: gettext('Remove'),
 	    disabled: true,
 	    selModel: sm,
+	    dangerous: true,	    
 	    confirmMsg: function(rec) {
 		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
 					    "'" + rec.data.volid + "'");

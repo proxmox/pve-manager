@@ -15,6 +15,9 @@ Ext.define('PVE.button.Button', {
     // function(record) or text
     confirmMsg: false,
 
+    // take special care in confirm box (select no as default).
+    dangerous: false,
+
     initComponent: function() {
 	/*jslint confusion: true */
 
@@ -36,12 +39,19 @@ Ext.define('PVE.button.Button', {
 		    msg = me.confirmMsg;
 		    if (Ext.isFunction(me.confirmMsg)) {
 			msg = me.confirmMsg(rec);
-		    } 
-		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
-			if (btn !== 'yes') {
-			    return;
+		    }
+		    Ext.MessageBox.defaultButton = me.dangerous ? 2 : 1;
+		    Ext.Msg.show({
+			title: gettext('Confirmtest'),
+			icon: 'ext-mb-question',
+			msg: msg,
+			buttons: Ext.Msg.YESNO,
+			callback: function(btn) {
+			    if (btn !== 'yes') {
+				return;
+			    }
+			    me.realHandler(button, event, rec);
 			}
-			me.realHandler(button, event, rec);
 		    });
 		} else {
 		    me.realHandler(button, event, rec);
