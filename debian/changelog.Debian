@@ -1,3 +1,9 @@
+pve-manager (2.1-2) unstable; urgency=low
+
+  * set apache directory access options for all used dirs
+  
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 30 Apr 2012 11:00:49 +0200
+
 pve-manager (2.1-1) unstable; urgency=low
 
   * added Turkish translation
