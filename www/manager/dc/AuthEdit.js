@@ -89,9 +89,10 @@ Ext.define('PVE.dc.AuthEdit', {
                 allowBlank: false
             },
             {
-                xtype: 'textfield',
+                xtype: 'pvetextfield',
                 fieldLabel: gettext('Fallback Server'),
-                name: 'server2'
+		deleteEmpty: !me.create,
+		name: 'server2'
             },
             {
                 xtype: 'numberfield',
@@ -115,8 +116,12 @@ Ext.define('PVE.dc.AuthEdit', {
 	    column2: column2,
 	    onGetValues: function(values) {
 		if (!values.port) {
-		    values.port = 0;
+		    if (!me.create) {
+			PVE.Utils.assemble_field_data(values, { 'delete': 'port' });
+		    }
+		    delete values.port;
 		}
+
 		if (me.create) {
 		    values.type = me.authType;
 		}

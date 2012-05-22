@@ -26,7 +26,7 @@ Ext.define('PVE.dc.AuthView', {
 		return;
 	    }
 
-	    if (rec.data.type === 'builtin') {
+	    if (rec.data.type === 'pve' || rec.data.type === 'pam') {
 		return;
 	    }
 
@@ -43,7 +43,7 @@ Ext.define('PVE.dc.AuthView', {
 	    disabled: true,
 	    selModel: sm,
 	    enableFn: function(rec) {
-		return rec.data.type !== 'builtin';
+		return !(rec.data.type === 'pve' || rec.data.type === 'pam');
 	    },
 	    handler: run_editor
 	});
@@ -57,7 +57,7 @@ Ext.define('PVE.dc.AuthView', {
 					 "'" + rec.data.realm + "'");
 	    },
 	    enableFn: function(rec) {
-		return rec.data.type !== 'builtin';
+		return !(rec.data.type === 'pve' || rec.data.type === 'pam');
 	    },
 	    handler: function(btn, event, rec) {
 		var realm = rec.data.realm;
