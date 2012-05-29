@@ -196,6 +196,7 @@ Ext.define('PVE.Utils', { statics: {
 	zh_CN: 'Chinese',
 	ja: 'Japanese',
 	en: 'English',
+	da: 'Danish',
 	de: 'German',
 	es: 'Spanish',
 	fr: 'French',
