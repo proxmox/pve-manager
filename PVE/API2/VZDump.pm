@@ -92,13 +92,17 @@ __PACKAGE__->register_method ({
 
 	my @exclude = PVE::Tools::split_list(extract_param($param, 'exclude'));
 	$param->{exclude} = PVE::VZDump::check_vmids(@exclude);
-	
-	# exclude-path list need to be 0 separated
-	my @expaths = split(/\0/, $param->{'exclude-path'} || '');
-	$param->{'exclude-path'} = [ @expaths ];
 
-	my @mailto = PVE::Tools::split_list(extract_param($param, 'mailto'));
-	$param->{mailto} = [ @mailto ];
+	# exclude-path list need to be 0 separated
+	if (defined($param->{'exclude-path'})) {
+	    my @expaths = split(/\0/, $param->{'exclude-path'} || '');
+	    $param->{'exclude-path'} = [ @expaths ];
+	}
+
+	if (defined($param->{mailto})) {
+	    my @mailto = PVE::Tools::split_list(extract_param($param, 'mailto'));
+	    $param->{mailto} = [ @mailto ];
+	}
 
 	die "you can only backup a single VM with option --stdout\n"
 	    if $param->{stdout} && scalar(@vmids) != 1;
