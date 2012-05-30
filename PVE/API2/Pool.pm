@@ -23,7 +23,7 @@ __PACKAGE__->register_method ({
     method => 'GET',
     description => "Pool index.",
     permissions => { 
-	description => "List all pools where you have Pool.Allocate permissions on /pool/<pool>.",
+	description => "List all pools where you have Pool.Allocate or VM.Allocate permissions on /pool/<pool>.",
 	user => 'all',
     },
     parameters => {
@@ -51,7 +51,7 @@ __PACKAGE__->register_method ({
 	my $usercfg = $rpcenv->{user_cfg};
 
 	foreach my $pool (keys %{$usercfg->{pools}}) {
-	    next if !$rpcenv->check($authuser, "/pool/$pool", [ 'Pool.Allocate' ], 1);
+	    next if !$rpcenv->check_any($authuser, "/pool/$pool", [ 'Pool.Allocate', 'VM.Allocate' ], 1);
 
 	    my $entry = { poolid => $pool };
 	    my $data = $usercfg->{pools}->{$pool};
@@ -108,7 +108,7 @@ __PACKAGE__->register_method ({
     path => '{poolid}', 
     method => 'PUT',
     permissions => { 
-	description => "You aslo need the right to modify permissions on any object you add/delete.",
+	description => "You also need the right to modify permissions on any object you add/delete.",
 	check => ['perm', '/pool/{poolid}', ['Pool.Allocate']],
     },
     description => "Update pool data.",

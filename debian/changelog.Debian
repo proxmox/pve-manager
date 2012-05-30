@@ -1,3 +1,9 @@
+pve-manager (2.1-8) unstable; urgency=low
+
+  * also list pools with VM.Allocate permissions
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 30 May 2012 11:20:45 +0200
+
 pve-manager (2.1-7) unstable; urgency=low
 
   * fix vzdump --exclude-path (allow to read value from vzdump.conf)
