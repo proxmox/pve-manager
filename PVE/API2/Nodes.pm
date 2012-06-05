@@ -937,11 +937,12 @@ __PACKAGE__->register_method ({
 	    }
 	
 	    my $startList = &$get_start_stop_list($nodename, 1);
- 
-	    foreach my $order (sort keys %$startList) {
+
+	    # Note: use numeric sorting with <=>
+	    foreach my $order (sort sort {$a <=> $b} keys %$startList) {
 		my $vmlist = $startList->{$order};
 
-		foreach my $vmid (sort keys %$vmlist) {
+		foreach my $vmid (sort {$a <=> $b} keys %$vmlist) {
 		    my $d = $vmlist->{$vmid};
 
 		    PVE::Cluster::check_cfs_quorum(); # abort when we loose quorum
