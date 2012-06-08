@@ -39,6 +39,27 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    delete me.drive.backup;
 	}
 
+	if (values.bps_rd) {
+	    me.drive.bps_rd = values.bps_rd;
+	} else {
+	    delete me.drive.bps_rd;
+	}
+	if (values.bps_wr) {
+	    me.drive.bps_wr = values.bps_wr;
+	} else {
+	    delete me.drive.bps_wr;
+	}
+	if (values.iops_rd) {
+	    me.drive.iops_rd = values.iops_rd;
+	} else {
+	    delete me.drive.iops_rd;
+	}
+	if (values.iops_wr) {
+	    me.drive.iops_wr = values.iops_wr;
+	} else {
+	    delete me.drive.iops_wr;
+	}
+
 	var params = {};
 		
 	params[confid] = PVE.Parser.printQemuDrive(me.drive);
@@ -81,6 +102,10 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.nobackup = (drive.backup === 'no');
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '';
+	values.bps_rd = drive.bps_rd || 0;
+	values.bps_wr = drive.bps_wr || 0;
+	values.iops_rd = drive.iops_rd || 0;
+	values.iops_wr = drive.iops_wr || 0;
 
 	me.setValues(values);
     },
@@ -210,6 +235,40 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		name: 'nobackup'
 	    });
 	}
+
+        me.bps_rd = Ext.widget('numberfield', {
+            name: 'bps_rd',
+            minValue: 0,
+            value: '0',
+            fieldLabel: gettext('Read IO (byte/s)'),
+            allowBlank: false
+        });
+        me.column2.push(me.bps_rd);
+        me.bps_wr = Ext.widget('numberfield', {
+            name: 'bps_wr',
+            minValue: 0,
+            value: '0',
+            fieldLabel: gettext('Write IO (byte/s)'),
+            allowBlank: false
+        });
+        me.column2.push(me.bps_wr);
+
+        me.iops_rd = Ext.widget('numberfield', {
+            name: 'iops_rd',
+            minValue: 0,
+            value: '0',
+            fieldLabel: gettext('Read IO (ops/s)'),
+            allowBlank: false
+        });
+        me.column2.push(me.iops_rd);
+        me.iops_wr = Ext.widget('numberfield', {
+            name: 'iops_wr',
+            minValue: 0,
+            value: '0',
+            fieldLabel: gettext('Write IO (ops/s)'),
+            allowBlank: false
+        });
+        me.column2.push(me.iops_wr);
 
 	me.callParent();
     }
