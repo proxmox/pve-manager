@@ -102,10 +102,10 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.nobackup = (drive.backup === 'no');
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '';
-	values.bps_rd = drive.bps_rd || 0;
-	values.bps_wr = drive.bps_wr || 0;
-	values.iops_rd = drive.iops_rd || 0;
-	values.iops_wr = drive.iops_wr || 0;
+	values.bps_rd = drive.bps_rd;
+	values.bps_wr = drive.bps_wr;
+	values.iops_rd = drive.iops_rd;
+	values.iops_wr = drive.iops_wr;
 
 	me.setValues(values);
     },
@@ -210,18 +210,19 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.column1.push(me.hdstoragesel);
 	    me.column1.push(me.hdfilesel);
 	    me.column1.push(me.hdsizesel);
-	    me.column2.push(me.formatsel);
+	    me.column1.push(me.formatsel);
 
 	} else {
 	    me.column1.push({
-		xtype: 'displayfield',
+		xtype: 'textfield',
+		disabled: true,
+		submitValue: false,
 		fieldLabel: gettext('Disk image'),
-		labelWidth: 50,
                 name: 'hdimage'
 	    });
 	}
 
-	me.column2.push({
+	me.column1.push({
 	    xtype: 'CacheTypeSelector',
 	    name: 'cache',
 	    value: '',
@@ -229,44 +230,52 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	});
 
 	if (!me.insideWizard) {
-	    me.column2.push({
+	    me.column1.push({
 		xtype: 'pvecheckbox',
 		fieldLabel: gettext('No backup'),
 		name: 'nobackup'
 	    });
 	}
 
+	var width2 = 120;
+
         me.bps_rd = Ext.widget('numberfield', {
             name: 'bps_rd',
-            minValue: 0,
-            value: '0',
-            fieldLabel: gettext('Read IO (byte/s)'),
-            allowBlank: false
+            minValue: 1000,
+	    step: 1000,
+            fieldLabel: gettext('Read limit') + ' (bytes/s)',
+	    labelWidth: width2,
+	    emptyText: gettext('unlimited')
         });
         me.column2.push(me.bps_rd);
+
         me.bps_wr = Ext.widget('numberfield', {
             name: 'bps_wr',
-            minValue: 0,
-            value: '0',
-            fieldLabel: gettext('Write IO (byte/s)'),
-            allowBlank: false
+            minValue: 1000,
+	    step: 1000,
+            fieldLabel: gettext('Write limit') + ' (bytes/s)',
+	    labelWidth: width2,
+	    emptyText: gettext('unlimited')
         });
         me.column2.push(me.bps_wr);
 
         me.iops_rd = Ext.widget('numberfield', {
             name: 'iops_rd',
-            minValue: 0,
-            value: '0',
-            fieldLabel: gettext('Read IO (ops/s)'),
-            allowBlank: false
+            minValue: 1000,
+	    step: 1000,
+            fieldLabel: gettext('Read limit') + ' (ops/s)',
+	    labelWidth: width2,
+	    emptyText: gettext('unlimited')
         });
         me.column2.push(me.iops_rd);
+
         me.iops_wr = Ext.widget('numberfield', {
             name: 'iops_wr',
-            minValue: 0,
-            value: '0',
-            fieldLabel: gettext('Write IO (ops/s)'),
-            allowBlank: false
+            minValue: 1000,
+	    step: 1000,
+            fieldLabel: gettext('Write limit') + ' (ops/s)',
+	    labelWidth: width2,
+	    emptyText: gettext('unlimited')
         });
         me.column2.push(me.iops_wr);
 
