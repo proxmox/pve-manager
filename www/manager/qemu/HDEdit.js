@@ -40,12 +40,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	}
 
 	if (values.bps_rd) {
-	    me.drive.bps_rd = values.bps_rd;
+	    me.drive.bps_rd = Ext.Number.toFixed(values.bps_rd * 1000000);
 	} else {
 	    delete me.drive.bps_rd;
 	}
 	if (values.bps_wr) {
-	    me.drive.bps_wr = values.bps_wr;
+	    me.drive.bps_wr = Ext.Number.toFixed(values.bps_wr * 1000000);
 	} else {
 	    delete me.drive.bps_wr;
 	}
@@ -102,8 +102,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.nobackup = (drive.backup === 'no');
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '';
-	values.bps_rd = drive.bps_rd;
-	values.bps_wr = drive.bps_wr;
+	values.bps_rd = drive.bps_rd / 1000000;
+	values.bps_wr = drive.bps_wr / 1000000;
 	values.iops_rd = drive.iops_rd;
 	values.iops_wr = drive.iops_wr;
 
@@ -241,9 +241,9 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
         me.bps_rd = Ext.widget('numberfield', {
             name: 'bps_rd',
-            minValue: 1000,
-	    step: 1000,
-            fieldLabel: gettext('Read limit') + ' (bytes/s)',
+            minValue: 1,
+	    step: 1,
+            fieldLabel: gettext('Read limit') + ' (MB/s)',
 	    labelWidth: width2,
 	    emptyText: gettext('unlimited')
         });
@@ -251,9 +251,9 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
         me.bps_wr = Ext.widget('numberfield', {
             name: 'bps_wr',
-            minValue: 1000,
-	    step: 1000,
-            fieldLabel: gettext('Write limit') + ' (bytes/s)',
+            minValue: 1,
+	    step: 1,
+            fieldLabel: gettext('Write limit') + ' (MB/s)',
 	    labelWidth: width2,
 	    emptyText: gettext('unlimited')
         });
@@ -261,8 +261,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
         me.iops_rd = Ext.widget('numberfield', {
             name: 'iops_rd',
-            minValue: 1000,
-	    step: 1000,
+            minValue: 10,
+	    step: 10,
             fieldLabel: gettext('Read limit') + ' (ops/s)',
 	    labelWidth: width2,
 	    emptyText: gettext('unlimited')
@@ -271,8 +271,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
         me.iops_wr = Ext.widget('numberfield', {
             name: 'iops_wr',
-            minValue: 1000,
-	    step: 1000,
+            minValue: 10,
+	    step: 10,
             fieldLabel: gettext('Write limit') + ' (ops/s)',
 	    labelWidth: width2,
 	    emptyText: gettext('unlimited')
