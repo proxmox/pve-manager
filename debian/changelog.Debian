@@ -1,3 +1,9 @@
+pve-manager (2.1-10) unstable; urgency=low
+
+  * add Catalan translation
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 14 Jun 2012 07:02:24 +0200
+
 pve-manager (2.1-9) unstable; urgency=low
 
   * use numeric sorting in startall
