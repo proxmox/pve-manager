@@ -40,12 +40,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	}
 
 	if (values.bps_rd) {
-	    me.drive.bps_rd = Ext.Number.toFixed(values.bps_rd * 1000000);
+	    me.drive.bps_rd = Ext.Number.toFixed(values.bps_rd * 1024 * 1024);
 	} else {
 	    delete me.drive.bps_rd;
 	}
 	if (values.bps_wr) {
-	    me.drive.bps_wr = Ext.Number.toFixed(values.bps_wr * 1000000);
+	    me.drive.bps_wr = Ext.Number.toFixed(values.bps_wr * 1024 * 1024);
 	} else {
 	    delete me.drive.bps_wr;
 	}
@@ -102,8 +102,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.nobackup = (drive.backup === 'no');
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '';
-	values.bps_rd = drive.bps_rd / 1000000;
-	values.bps_wr = drive.bps_wr / 1000000;
+	values.bps_rd = drive.bps_rd / (1024 * 1024);
+	values.bps_wr = drive.bps_wr / (1024 * 1024);
 	values.iops_rd = drive.iops_rd;
 	values.iops_wr = drive.iops_wr;
 
