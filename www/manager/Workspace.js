@@ -211,6 +211,15 @@ Ext.define('PVE.StdWorkspace', {
 
 	if (loginData) {
 	    PVE.data.ResourceStore.startUpdate();
+
+	    PVE.Utils.API2Request({
+		url: '/version',
+		method: 'GET',
+		success: function(response) {
+		    PVE.VersionInfo = response.result.data;
+		    me.updateVersionInfo();
+		}
+	    });
 	}
     },
 
@@ -224,6 +233,21 @@ Ext.define('PVE.StdWorkspace', {
 	    ui.update('<div class="x-unselectable" style="white-space:nowrap;">' + msg + '</div>');
 	} else {
 	    ui.update('');
+	}
+	ui.doLayout();
+    },
+
+    updateVersionInfo: function() {
+	var me = this;
+
+	var ui = me.query('#versioninfo')[0];
+
+	if (PVE.VersionInfo) {
+	    var version = PVE.VersionInfo.version + '-' + PVE.VersionInfo.release + '/' +
+		PVE.VersionInfo.repoid;
+	    ui.update('<span class="x-panel-header-text">Proxmox Virtual Environment<br>' + gettext('Version') + ': ' + version + "</span>");
+	} else {
+	    ui.update('<span class="x-panel-header-text">Proxmox Virtual Environment</span>');
 	}
 	ui.doLayout();
     },
@@ -341,7 +365,8 @@ Ext.define('PVE.StdWorkspace', {
 			{
 			    minWidth: 200,
 			    flex: 1,
-			    html: '<span class="x-panel-header-text">Proxmox Virtual Environment<br>' + gettext('Version') + ' ' + PVE.GUIVersion + "</span>"
+			    id: 'versioninfo',
+			    html: '<span class="x-panel-header-text">Proxmox Virtual Environment</span>'
 			},
 			{
 			    pack: 'end',

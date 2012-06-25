@@ -4,7 +4,6 @@ use strict;
 use mod_perl2 '1.9922';
 use Encode;
 use CGI;
-use PVE::pvecfg;
 use PVE::JSONSchema;
 use PVE::AccessControl;
 use PVE::REST;
@@ -42,7 +41,7 @@ if (my $cookie = $r->headers_in->{Cookie}) {
 	$token = PVE::AccessControl::assemble_csrf_prevention_token($username);
     }
 }
-my $version = PVE::pvecfg::version_text();
+
 $username = '' if !$username;
 
 my $cgi = CGI->new($r);
@@ -53,7 +52,6 @@ my $workspace = defined($args{console}) ?
 
 my $jssrc = <<_EOJS;
 if (!PVE) PVE = {};
-PVE.GUIVersion = '$version';
 PVE.UserName = '$username';
 PVE.CSRFPreventionToken = '$token';
 _EOJS
