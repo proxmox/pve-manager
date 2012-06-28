@@ -1,3 +1,9 @@
+pve-manager (2.1-11) unstable; urgency=low
+
+  * added Polish translation
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 28 Jun 2012 06:55:34 +0200
+
 pve-manager (2.1-10) unstable; urgency=low
 
   * add Catalan translation
