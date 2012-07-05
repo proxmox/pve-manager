@@ -51,6 +51,10 @@ sub extract_vm_stats {
 	$entry->{mem} = ($d->[6] || 0) + 0;
 	$entry->{maxdisk} = ($d->[7] || 0) + 0;
 	$entry->{disk} = ($d->[8] || 0) + 0;
+	$entry->{netin} = ($d->[9] || 0) + 0;
+	$entry->{netout} = ($d->[10] || 0) + 0;
+	$entry->{diskread} = ($d->[11] || 0) + 0;
+	$entry->{diskwrite} = ($d->[12] || 0) + 0;
     };
 
     return $entry;

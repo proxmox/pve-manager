@@ -143,6 +143,38 @@ Ext.define('PVE.data.ResourceStore', {
 		sortable: true,
 		width: 60
 	    },
+	    diskread: {
+		header: 'Total Disk Read',
+		type: 'integer',
+		hidden: true,
+		sortable: true,
+		renderer: PVE.Utils.format_size,
+		width: 100
+	    },
+	    diskwrite: {
+		header: 'Total Disk Write',
+		type: 'integer',
+		hidden: true,
+		sortable: true,
+		renderer: PVE.Utils.format_size,
+		width: 100
+	    },
+	    netin: {
+		header: 'Total NetIn',
+		type: 'integer',
+		hidden: true,
+		sortable: true,
+		renderer: PVE.Utils.format_size,
+		width: 100
+	    },
+	    netout: {
+		header: 'Total NetOut',
+		type: 'integer',
+		hidden: true,
+		sortable: true,
+		renderer: PVE.Utils.format_size,
+		width: 100
+	    },
 	    uptime: {
 		header: gettext('Uptime'),
 		type: 'integer',
