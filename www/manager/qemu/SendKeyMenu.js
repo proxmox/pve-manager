@@ -31,8 +31,13 @@ Ext.define('PVE.qemu.SendKeyMenu', {
 		height: 200,
 		items: [
 		    {
+			text: 'Tab', handler: function() {
+			    sendKey('tab');
+			}
+		    },
+		    {
 			text: 'Ctrl-Alt-Delete', handler: function() {
-			    sendKey('ctrl-alt-delete');  
+			    sendKey('ctrl-alt-delete');
 			}
 		    },
 		    {
