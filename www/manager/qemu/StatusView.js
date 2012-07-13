@@ -41,7 +41,7 @@ Ext.define('PVE.qemu.StatusView', {
 
 	var rows = {
 	    name: { header: gettext('Name'), defaultValue: 'no name specified' },
-	    status: { header: gettext('Status'), defaultValue: 'unknown' },
+	    qmpstatus: { header: gettext('Status'), defaultValue: 'unknown' },
 	    cpu: { header: 'CPU usage', required: true,  renderer: render_cpu },
 	    cpus: { visible: false },
 	    mem: { header: 'Memory usage', required: true,  renderer: render_mem },

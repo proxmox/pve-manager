@@ -178,7 +178,7 @@ sub update_qemu_status {
 
     my $ctime = time();
 
-    my $vmstatus = PVE::QemuServer::vmstatus();
+    my $vmstatus = PVE::QemuServer::vmstatus(undef, 1);
 
     foreach my $vmid (keys %$vmstatus) {
 	my $d = $vmstatus->{$vmid};
