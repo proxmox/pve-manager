@@ -1,3 +1,9 @@
+pve-manager (2.1-13) unstable; urgency=low
+
+  * update Danish translation
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 26 Jul 2012 14:24:27 +0200
+
 pve-manager (2.1-12) unstable; urgency=low
 
   * pvestatd: use QMP to query detailed blockstats from KVM
