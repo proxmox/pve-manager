@@ -38,7 +38,9 @@ Ext.define('PVE.openvz.RessourceInputPanel', {
 	    {
 		xtype: 'numberfield',
 		name: 'disk',
-		minValue: 0.5,
+		minValue: 0.001,
+		maxValue: 128*1024,
+		decimalPrecision: 3,
 		value: '4',
 		step: 1,
 		fieldLabel: gettext('Disk size') + ' (GB)',

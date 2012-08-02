@@ -165,8 +165,9 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	    me.hdsizesel = Ext.createWidget('numberfield', {
 		name: 'disksize',
-		minValue: 1,
+		minValue: 0.001,
 		maxValue: 128*1024,
+		decimalPrecision: 3,
 		value: '32',
 		fieldLabel: gettext('Disk size') + ' (GB)',
 		allowBlank: false
