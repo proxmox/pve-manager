@@ -939,7 +939,7 @@ __PACKAGE__->register_method ({
 	    my $startList = &$get_start_stop_list($nodename, 1);
 
 	    # Note: use numeric sorting with <=>
-	    foreach my $order (sort sort {$a <=> $b} keys %$startList) {
+	    foreach my $order (sort {$a <=> $b} keys %$startList) {
 		my $vmlist = $startList->{$order};
 
 		foreach my $vmid (sort {$a <=> $b} keys %$vmlist) {

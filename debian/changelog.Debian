@@ -1,3 +1,9 @@
+pve-manager (2.1-14) unstable; urgency=low
+
+  * fix startup ordering
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 07 Aug 2012 09:20:01 +0200
+
 pve-manager (2.1-13) unstable; urgency=low
 
   * update Danish translation
