@@ -123,6 +123,7 @@ JSSRC= 				                 	\
 	storage/LVMEdit.js				\
 	storage/RBDEdit.js				\
 	storage/SheepdogEdit.js				\
+	storage/NexentaEdit.js				\
 	dc/Summary.js					\
 	dc/OptionView.js				\
 	dc/StorageView.js				\
