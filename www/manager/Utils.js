@@ -612,6 +612,14 @@ Ext.define('PVE.Utils', { statics: {
 	    return 'LVM';
 	} else if (value === 'iscsi') {
 	    return 'iSCSI';
+	} else if (value === 'rbd') {
+	    return 'RBD';
+	} else if (value === 'sheepdog') {
+	    return 'Sheepdog';
+	} else if (value === 'nexenta') {
+	    return 'Nexenta';
+	} else if (value === 'iscsidirect') {
+	    return 'iSCSIDirect';
 	} else {
 	    return PVE.Utils.unknownText;
 	}
