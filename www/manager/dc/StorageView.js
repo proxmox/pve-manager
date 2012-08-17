@@ -42,6 +42,8 @@ Ext.define('PVE.dc.StorageView', {
 		editor = 'PVE.storage.IScsiEdit';
 	    } else if (type === 'rbd') {
 		editor = 'PVE.storage.RBDEdit';
+	    } else if (type === 'sheepdog') {
+		editor = 'PVE.storage.SheepdogEdit';
 	    } else {
 		return;
 	    }
@@ -136,6 +138,15 @@ Ext.define('PVE.dc.StorageView', {
 				iconCls: 'pve-itype-icon-node',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.RBDEdit', {});
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+			    {
+				text: 'Sheepdog',
+				iconCls: 'pve-itype-icon-node',
+				handler: function() {
+				    var win = Ext.create('PVE.storage.SheepdogEdit', {});
 				    win.on('destroy', reload);
 				    win.show();
 				}

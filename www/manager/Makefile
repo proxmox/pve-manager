@@ -122,6 +122,7 @@ JSSRC= 				                 	\
 	storage/IScsiEdit.js				\
 	storage/LVMEdit.js				\
 	storage/RBDEdit.js				\
+	storage/SheepdogEdit.js				\
 	dc/Summary.js					\
 	dc/OptionView.js				\
 	dc/StorageView.js				\
