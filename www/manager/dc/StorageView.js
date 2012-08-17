@@ -40,6 +40,8 @@ Ext.define('PVE.dc.StorageView', {
 		editor = 'PVE.storage.LVMEdit';
 	    } else if (type === 'iscsi') {
 		editor = 'PVE.storage.IScsiEdit';
+	    } else if (type === 'rbd') {
+		editor = 'PVE.storage.RBDEdit';
 	    } else {
 		return;
 	    }
@@ -128,7 +130,17 @@ Ext.define('PVE.dc.StorageView', {
 				    win.on('destroy', reload);
 				    win.show();
 				}
-			    }
+			    },
+			    {
+				text: 'RBD',
+				iconCls: 'pve-itype-icon-node',
+				handler: function() {
+				    var win = Ext.create('PVE.storage.RBDEdit', {});
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+
 			]
 		    })
 		},
