@@ -78,7 +78,7 @@ Ext.define('PVE.qemu.Config', {
 	    disabled: !caps.vms['VM.PowerMgmt'],
 	    confirmMsg: Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), vmid),
 	    handler: function() {
-		vm_command('shutdown', { timeout: 30 });
+		vm_command('shutdown');
 	    }			    
 	});
 
