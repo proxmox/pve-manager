@@ -1103,15 +1103,18 @@ sub update_ovz_config {
 	$veconf->{netif}->{value} = $newvalue;
     }
 
-    if (defined($param->{'nameserver'})) {
+    if (defined($param->{'nameserver'})) { 
+	# remove duplicates
 	my $nshash = {};
+	my $newvalue = '';
 	foreach my $ns (PVE::Tools::split_list($param->{'nameserver'})) {
 	    if (!$nshash->{$ns}) {
 		push @$changes, '--nameserver', $ns;
 		$nshash->{$ns} = 1;
+		$newvalue .= $newvalue ? " $ns" : $ns;
 	    }
 	}
-	$veconf->{'nameserver'}->{value} = join(' ', keys %$nshash);
+	$veconf->{'nameserver'}->{value} = $newvalue if $newvalue;
     }
 
     # foreach my $nv (@$changes) { print "CHANGE: $nv\n"; }
