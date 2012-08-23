@@ -5,7 +5,7 @@ Ext.define('PVE.form.ControllerSelector', {
     statics: {
 	maxIds: {
 	    ide: 3,
-	    virtio: 5,
+	    virtio: 15,
 	    scsi: 13
 	}
     },
