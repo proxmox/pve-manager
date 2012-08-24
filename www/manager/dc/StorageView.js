@@ -135,6 +135,9 @@ Ext.define('PVE.dc.StorageView', {
 				    win.show();
 				}
 			    },
+/* the following type are conidered unstable
+ * so we do not enable that on the GUI for now
+
 			    {
 				text: 'RBD',
 				iconCls: 'pve-itype-icon-node',
@@ -162,7 +165,7 @@ Ext.define('PVE.dc.StorageView', {
 				    win.show();
 				}
 			    },
-
+*/
 			]
 		    })
 		},
