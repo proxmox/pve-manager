@@ -132,7 +132,7 @@ __PACKAGE__->register_method ({
 	    next if $vzlist->{$vmid}->{status} ne 'running'; # not running
 
 	    eval {
-		print STDERR "Stoping CT $vmid\n";
+		print STDERR "Stopping CT $vmid\n";
 
 		# Set fairsched parameters to maximum so CT will stop fast
 		# ignore any errors

@@ -1003,13 +1003,13 @@ my $create_stop_worker = sub {
     if ($type eq 'openvz') {
 	return if !PVE::OpenVZ::check_running($vmid);
 	my $timeout =  defined($down_timeout) ? int($down_timeout) : 60;
-	print STDERR "Stoping CT $vmid (timeout = $timeout seconds)\n";
+	print STDERR "Stopping CT $vmid (timeout = $timeout seconds)\n";
 	$upid = PVE::API2::OpenVZ->vm_shutdown({node => $nodename, vmid => $vmid, 
 						timeout => $timeout, forceStop => 1 });
     } elsif ($type eq 'qemu') {
 	return if !PVE::QemuServer::check_running($vmid, 1);
 	my $timeout =  defined($down_timeout) ? int($down_timeout) : 60*3;
-	print STDERR "Stoping VM $vmid (timeout = $timeout seconds)\n";
+	print STDERR "Stopping VM $vmid (timeout = $timeout seconds)\n";
 	$upid = PVE::API2::Qemu->vm_shutdown({node => $nodename, vmid => $vmid, 
 					      timeout => $timeout, forceStop => 1 });
     } else {
