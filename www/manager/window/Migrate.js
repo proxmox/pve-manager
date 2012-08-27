@@ -40,6 +40,13 @@ Ext.define('PVE.window.Migrate', {
 	    throw "no VM type specified";
 	}
 
+	var running = false;
+	var vmrec = PVE.data.ResourceStore.findRecord('vmid', me.vmid,
+						      0, false, false, true);
+	if (vmrec && vmrec.data && vmrec.data.running) {
+	    running = true;
+	}
+
 	me.formPanel = Ext.create('Ext.form.Panel', {
 	    bodyPadding: 10,
 	    border: false,
@@ -60,6 +67,7 @@ Ext.define('PVE.window.Migrate', {
 		    name: 'online',
 		    uncheckedValue: 0,
 		    defaultValue: 0,
+		    checked: running,
 		    fieldLabel: 'Online'
 		}
 	    ]
