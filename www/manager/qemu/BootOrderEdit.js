@@ -60,7 +60,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 
 	if (sel1 !== 'c' && (sel2 !== 'c')) {
 	    Ext.Object.each(me.vmconfig, function(key, value) {
-		if ((/^(ide|scsi|virtio)\d+$/).test(key) &&
+		if ((/^(ide|sata|scsi|virtio)\d+$/).test(key) &&
 		    !(/media=cdrom/).test(value)) {
 		    list.push([key, "Disk '" + key + "'"]);
 		}
@@ -135,7 +135,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	});
 
 	me.mon(me.kv1, 'change', function(t, value) {
-	    if ((/^(ide|scsi|virtio)\d+$/).test(value)) {
+	    if ((/^(ide|sata|scsi|virtio)\d+$/).test(value)) {
 		me.curSel1 = 'c';
 		me.bootdisk = value;
 	    } else {
@@ -145,7 +145,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	});
 
 	me.mon(me.kv2, 'change', function(t, value) {
-	    if ((/^(ide|scsi|virtio)\d+$/).test(value)) {
+	    if ((/^(ide|sata|scsi|virtio)\d+$/).test(value)) {
 		me.curSel2 = 'c';
 		me.bootdisk = value;
 	    } else {
@@ -155,7 +155,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	});
 
 	me.mon(me.kv3, 'change', function(t, value) {
-	    if ((/^(ide|scsi|virtio)\d+$/).test(value)) {
+	    if ((/^(ide|sata|scsi|virtio)\d+$/).test(value)) {
 		me.curSel3 = 'c';
 		me.bootdisk = value;
 	    } else {

@@ -5,6 +5,7 @@ Ext.define('PVE.form.ControllerSelector', {
     statics: {
 	maxIds: {
 	    ide: 3,
+	    sata: 5,
 	    virtio: 15,
 	    scsi: 13
 	}
@@ -21,16 +22,16 @@ Ext.define('PVE.form.ControllerSelector', {
 
 	me.vmconfig = Ext.apply({}, vmconfig);
 	if (autoSelect) {
-	    var clist = ['ide', 'virtio', 'scsi'];
+	    var clist = ['ide', 'virtio', 'scsi', 'sata'];
 	    if (autoSelect === 'cdrom') {
-		clist = ['ide', 'scsi'];
+		clist = ['ide', 'scsi', 'sata'];
 		if (!Ext.isDefined(me.vmconfig.ide2)) {
 		    me.down('field[name=controller]').setValue('ide');
 		    me.down('field[name=deviceid]').setValue(2);
 		    return;
 		}
 	    } else if (me.vmconfig.ostype === 'l26') {
-		clist = ['virtio', 'ide', 'scsi'];
+		clist = ['virtio', 'ide', 'scsi', 'sata'];
 	    }
 
 	    Ext.Array.each(clist, function(controller) {

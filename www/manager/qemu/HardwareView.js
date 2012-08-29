@@ -105,6 +105,17 @@ Ext.define('PVE.qemu.HardwareView', {
 		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')'
 	    };
 	}
+	for (i = 0; i < 6; i++) {
+	    confid = "sata" + i;
+	    rows[confid] = {
+		group: 1,
+		tdCls: 'pve-itype-icon-storage',
+		editor: 'PVE.qemu.HDEdit',
+		never_delete: caps.vms['VM.Config.Disk'] ? false : true,
+		header: gettext('Hard Disk') + ' (' + confid +')',
+		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')'
+	    };
+	}
 	for (i = 0; i < 16; i++) {
 	    confid = "scsi" + i;
 	    rows[confid] = {
