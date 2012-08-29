@@ -9,7 +9,7 @@ Ext.define('PVE.form.ScsiHwSelector', {
 	    ['', PVE.Utils.render_scsihw('')],
 	    ['lsi', PVE.Utils.render_scsihw('lsi')],
 	    ['megasas', PVE.Utils.render_scsihw('megasas')],
-	    ['virtio-scsi-pci', PVE.Utils.render_scsihw('virtio-scsi-pci')],
+	    ['virtio-scsi-pci', PVE.Utils.render_scsihw('virtio-scsi-pci')]
 	];
 
 	me.callParent();

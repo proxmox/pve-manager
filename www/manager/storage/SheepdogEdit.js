@@ -39,7 +39,7 @@ Ext.define('PVE.storage.SheepdogInputPanel', {
 		value: '127.0.0.1:7000',
 		fieldLabel: gettext('Gateway'),
 		allowBlank: false
-	    },
+	    }
 	];
 
 	me.column2 = [
@@ -49,7 +49,7 @@ Ext.define('PVE.storage.SheepdogInputPanel', {
 		checked: true,
 		uncheckedValue: 0,
 		fieldLabel: gettext('Enable')
-	    },
+	    }
 	];
 
 	if (me.create || me.storageId !== 'local') {

@@ -63,7 +63,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		value: 'cephx;none',
 		fieldLabel: gettext('authsupported'),
 		allowBlank: false
-	    },
+	    }
 	];
 
 	me.column2 = [
@@ -73,7 +73,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		checked: true,
 		uncheckedValue: 0,
 		fieldLabel: gettext('Enable')
-	    },
+	    }
 	];
 
 	if (me.create || me.storageId !== 'local') {

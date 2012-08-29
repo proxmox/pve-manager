@@ -134,7 +134,7 @@ Ext.define('PVE.dc.StorageView', {
 				    win.on('destroy', reload);
 				    win.show();
 				}
-			    },
+			    }
 /* the following type are conidered unstable
  * so we do not enable that on the GUI for now
 

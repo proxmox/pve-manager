@@ -74,8 +74,7 @@ Ext.define('PVE.storage.NexentaInputPanel', {
 		value: '',
 		fieldLabel: gettext('Password'),
 		allowBlank: false
-	    },
-
+	    }
 	];
 
 	me.column2 = [
@@ -100,8 +99,7 @@ Ext.define('PVE.storage.NexentaInputPanel', {
 		value: '4K',
 		fieldLabel: gettext('Block Size'),
 		allowBlank: false
-	    },
-
+	    }
 	];
 
 	if (me.create || me.storageId !== 'local') {
