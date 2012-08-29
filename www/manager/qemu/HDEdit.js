@@ -39,15 +39,15 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    delete me.drive.backup;
 	}
 
-	if (values.bps_rd) {
-	    me.drive.bps_rd = Ext.Number.toFixed(values.bps_rd * 1024 * 1024);
+	if (values.mbps_rd) {
+	    me.drive.mbps_rd = values.mbps_rd;
 	} else {
-	    delete me.drive.bps_rd;
+	    delete me.drive.mbps_rd;
 	}
-	if (values.bps_wr) {
-	    me.drive.bps_wr = Ext.Number.toFixed(values.bps_wr * 1024 * 1024);
+	if (values.mbps_wr) {
+	    me.drive.mbps_wr = values.mbps_wr;
 	} else {
-	    delete me.drive.bps_wr;
+	    delete me.drive.mbps_wr;
 	}
 	if (values.iops_rd) {
 	    me.drive.iops_rd = values.iops_rd;
@@ -102,8 +102,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.nobackup = (drive.backup === 'no');
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '';
-	values.bps_rd = drive.bps_rd / (1024 * 1024);
-	values.bps_wr = drive.bps_wr / (1024 * 1024);
+	values.mbps_rd = drive.mbps_rd;
+	values.mbps_wr = drive.mbps_wr;
 	values.iops_rd = drive.iops_rd;
 	values.iops_wr = drive.iops_wr;
 
@@ -244,25 +244,25 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	var width2 = 120;
 
-        me.bps_rd = Ext.widget('numberfield', {
-            name: 'bps_rd',
+        me.mbps_rd = Ext.widget('numberfield', {
+            name: 'mbps_rd',
             minValue: 1,
 	    step: 1,
             fieldLabel: gettext('Read limit') + ' (MB/s)',
 	    labelWidth: width2,
 	    emptyText: gettext('unlimited')
         });
-        me.column2.push(me.bps_rd);
+        me.column2.push(me.mbps_rd);
 
-        me.bps_wr = Ext.widget('numberfield', {
-            name: 'bps_wr',
+        me.mbps_wr = Ext.widget('numberfield', {
+            name: 'mbps_wr',
             minValue: 1,
 	    step: 1,
             fieldLabel: gettext('Write limit') + ' (MB/s)',
 	    labelWidth: width2,
 	    emptyText: gettext('unlimited')
         });
-        me.column2.push(me.bps_wr);
+        me.column2.push(me.mbps_wr);
 
         me.iops_rd = Ext.widget('numberfield', {
             name: 'iops_rd',
