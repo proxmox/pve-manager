@@ -128,6 +128,20 @@ Ext.define('PVE.Utils', { statics: {
 	return value;
     },
 
+    render_scsihw: function(value) {
+	if (!value) {
+	    return PVE.Utils.defaultText + ' (lsi)';
+	} else if (value === 'lsi') {
+	    return 'LSI 53C895A';
+	} else if (value === 'megasas') {
+	    return 'MegaRAID SAS 8708EM2';
+	} else if (value === 'virtio-scsi-pci') {
+	    return 'VIRTIO';
+	} else {
+	    return value;
+	}
+    },
+
     // fixme: auto-generate this
     // for now, please keep in sync with PVE::Tools::kvmkeymaps
     kvm_keymaps: {

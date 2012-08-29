@@ -121,6 +121,12 @@ Ext.define('PVE.qemu.Options', {
 		    }
 		} : undefined
 	    },
+	    scsihw: {
+		header: 'SCSI Controller Type',
+		editor: caps.vms['VM.Config.Options'] ? 'PVE.qemu.ScsiHwEdit' : undefined,
+		renderer: PVE.Utils.render_scsihw,
+		defaultValue: ''
+	    },
 	    kvm: {
 		header: 'KVM hardware virtualization',
 		defaultValue: true,

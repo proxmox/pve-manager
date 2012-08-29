@@ -48,6 +48,7 @@ JSSRC= 				                 	\
 	form/ContentTypeSelector.js			\
 	form/DayOfWeekSelector.js			\
 	form/BackupModeSelector.js			\
+	form/ScsiHwSelector.js				\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
@@ -97,6 +98,7 @@ JSSRC= 				                 	\
 	qemu/KeyboardEdit.js				\
 	qemu/HardwareView.js				\
 	qemu/StartupEdit.js				\
+	qemu/ScsiHwEdit.js				\
 	qemu/Options.js					\
 	qemu/Config.js					\
 	qemu/CreateWizard.js				\
