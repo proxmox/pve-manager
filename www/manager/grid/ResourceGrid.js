@@ -180,7 +180,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 		    listeners: {
 			keyup: function(field, e) {
 			    var v = field.getValue();
-			    textfilter = v;
+			    textfilter = v.toLowerCase();
 			    filter_task.delay(500);
 			}
 		    }
