@@ -3,6 +3,9 @@ pve-manager (2.1-16) unstable; urgency=low
   * vzrestore: allow --storage option
   
   * fix bug 178: correctly verify if VMID is already used
+  
+  * GUI: allow to select SCSI disks when creating VMs (booting from SCSI
+    disks works again)
 
  -- Proxmox Support Team <support@proxmox.com>  Wed, 05 Sep 2012 08:04:28 +0200
 

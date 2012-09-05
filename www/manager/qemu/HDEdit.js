@@ -126,8 +126,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	if (!me.confid || me.unused) {
 	    me.bussel = Ext.createWidget('PVE.form.ControllerSelector', {
-		// boot from scsi does not work in kvm 1.0
-		noScsi: me.insideWizard ? true : false, 
 		vmconfig: me.insideWizard ? {ide2: 'cdrom'} : {}
 	    });
 	    me.column1.push(me.bussel);
