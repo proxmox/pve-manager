@@ -1,3 +1,9 @@
+pve-manager (2.1-16) unstable; urgency=low
+
+  * vzrestore: allow --storage option
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 05 Sep 2012 08:04:28 +0200
+
 pve-manager (2.1-15) unstable; urgency=low
 
   * Slovenian translation (thanks to Dojan Borstnar)

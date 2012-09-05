@@ -41,6 +41,11 @@ __PACKAGE__->register_method({
 		type => 'string', 
 		maxLength => 255,
 	    },
+	    storage => get_standard_option('pve-storage-id', {
+		description => "Target storage.",
+		default => 'local',
+		optional => 1,
+	    }),
 	    force => {
 		optional => 1, 
 		type => 'boolean',
