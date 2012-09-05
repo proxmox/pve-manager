@@ -10,31 +10,33 @@ Ext.define('PVE.form.VMIDSelector', {
 
     validateExists: undefined,
 
-    validator: function(value) {
-	/*jslint confusion: true */
-        var me = this;
-
-	if (!Ext.isDefined(me.validateExists)) {
-	    return true;
-	}
-	if (PVE.data.ResourceStore.findVMID(value)) {
-	    if (me.validateExists === true) {
-		return true;
-	    }
-	    return "This VM ID is already in use.";
-	} else {
-	    if (me.validateExists === false) {
-		return true;
-	    }
-	    return "This VM ID does not exists.";
-	}
-    },
-
     initComponent: function() {
         var me = this;
 
 	Ext.applyIf(me, {
-	    fieldLabel: 'VM ID'
+	    fieldLabel: 'VM ID',
+	    listeners: {
+		'change': function(field, newValue, oldValue) {
+		    if (!Ext.isDefined(me.validateExists)) {
+			return;
+		    }
+		    PVE.Utils.API2Request({
+			params: { vmid: newValue },
+			url: '/cluster/nextid',
+			method: 'GET',
+			success: function(response, opts) {
+			    if (me.validateExists === true) {
+				me.markInvalid("This VM ID does not exists.");
+			    }
+			},
+			failure: function(response, opts) {
+			    if (me.validateExists === false) {
+				me.markInvalid("This VM ID is already in use.");
+			    }
+			}
+		    });
+		}
+	    }
 	});
 
         me.callParent();

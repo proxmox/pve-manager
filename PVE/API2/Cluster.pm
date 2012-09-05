@@ -7,6 +7,7 @@ use XML::Parser;
 
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param);
+use PVE::Exception qw(raise_param_exc);
 use PVE::INotify;
 use PVE::Cluster qw(cfs_register_file cfs_lock_file cfs_read_file cfs_write_file);
 use PVE::Storage;
@@ -16,6 +17,7 @@ use PVE::API2::HAConfig;
 use JSON;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
+use PVE::JSONSchema qw(get_standard_option);
 
 use base qw(PVE::RESTHandler);
 
@@ -70,6 +72,7 @@ __PACKAGE__->register_method ({
 	    { name => 'backup' },
 	    { name => 'ha' },
 	    { name => 'status' },
+	    { name => 'nextid' },
 	    ];
 
 	return $result;
@@ -478,6 +481,40 @@ __PACKAGE__->register_method({
 		level => $sublevel,
 	    }];
 	}
+    }});
+
+__PACKAGE__->register_method({
+    name => 'nextid', 
+    path => 'nextid', 
+    method => 'GET',
+    description => "Get next free VMID. If you pass an VMID it will raise an error if the ID is already used.",
+    permissions => { user => 'all' },
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    vmid => get_standard_option('pve-vmid', {optional => 1}),
+	},
+    },
+    returns => {
+	type => 'integer',
+	description => "The next free VMID.",
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $vmlist = PVE::Cluster::get_vmlist() || {};
+	my $idlist = $vmlist->{ids} || {};
+
+	if (my $vmid = $param->{vmid}) {
+	    return $vmid if !defined($idlist->{$vmid});
+	    raise_param_exc({ vmid => "VM $vmid already exists" });
+	}
+
+	for (my $i = 100; $i < 10000; $i++) {
+	    return $i if !defined($idlist->{$i});
+	}
+
+	die "unable to get any free VMID\n";
     }});
 
 1;
