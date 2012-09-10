@@ -49,6 +49,7 @@ Ext.define('PVE.StateProvider', {
     hprefix: 'v1',
 
     compDict: {
+	snapshot: 29,
 	ha: 28,
 	support: 27,
 	pool: 26,

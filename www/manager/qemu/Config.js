@@ -152,6 +152,14 @@ Ext.define('PVE.qemu.Config', {
 	    });
 	}
 
+	if (caps.vms['VM.Snapshot']) {
+	    me.items.push({
+		title: gettext('Snapshots'),
+		xtype: 'pveQemuSnapshotTree',
+		itemId: 'snapshot'
+	    });
+	}
+
 	if (caps.vms['Permissions.Modify']) {
 	    me.items.push({
 		xtype: 'pveACLView',
