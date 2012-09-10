@@ -5,8 +5,6 @@ Ext.define('PVE.qemu.SnapshotTree', {
     reload: function() {
         var me = this;
 
-	console.log("RELOAD");
-
 	PVE.Utils.API2Request({
 	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/snapshot',
 	    waitMsgTarget: me,
@@ -35,8 +33,6 @@ Ext.define('PVE.qemu.SnapshotTree', {
 		    }
 		});
 
-		console.dir(root);
-
 		me.setRootNode(root);
 	    }
 	});
@@ -55,11 +51,73 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    throw "no VM ID specified";
 	}
 
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
+	me.rollbackBtn = new PVE.button.Button({
+	    text: gettext('Rollback'),
+	    disabled: true,
+	    selModel: sm,
+	    enableFn: function(record) { 
+		return record && record.data && record.data.name &&
+		    record.data.name !== '__current';
+	    },
+	    handler: function(btn, event) {
+		var rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+		var snapname = rec.data.name;
+
+		PVE.Utils.API2Request({
+		    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/snapshot/' + snapname + '/rollback',
+		    method: 'POST',
+		    waitMsgTarget: me,
+		    callback: function() {
+			me.reload();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    }
+		});
+	    }
+	});
+
+	me.deleteBtn = new PVE.button.Button({
+	    text: gettext('Delete'),
+	    disabled: true,
+	    selModel: sm,
+	    confirmMsg: gettext('Are you sure you want to remove this entry'),
+	    enableFn: function(record) { 
+		return record && record.data && record.data.name &&
+		    record.data.name !== '__current';
+	    },
+	    handler: function(btn, event) {
+		var rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+		var snapname = rec.data.name;
+
+		PVE.Utils.API2Request({
+		    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/snapshot/' + snapname,
+		    method: 'DELETE',
+		    waitMsgTarget: me,
+		    callback: function() {
+			me.reload();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    }
+		});
+	    }
+	});
+
 	Ext.apply(me, {
 	    layout: 'fit',
 	    rootVisible: false,
 	    animate: false,
-
+	    selModel: sm,
+	    tbar: [ me.rollbackBtn, me.deleteBtn ],
 	    fields: ['name', 'description' ],
 	    columns: [
 		{
