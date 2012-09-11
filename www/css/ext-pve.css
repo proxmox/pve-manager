@@ -84,6 +84,18 @@
     background-image:url(../images/drive-harddisk.png);
 }
 
+.x-tree-node-snapshot,
+.x-grid-tree-node-expanded .x-tree-node-snapshot
+{
+    background-image:url(../images/snapshot.png);
+}
+
+.x-tree-node-now,
+.x-grid-tree-node-expanded .x-tree-node-now
+{
+    background-image:url(../images/now.png);
+}
+
 .pve-itype-icon-pool,
 .x-tree-node-pool,
 .x-grid-tree-pool-expanded .x-tree-node-pool

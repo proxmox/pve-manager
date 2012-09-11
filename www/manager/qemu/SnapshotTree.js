@@ -19,6 +19,11 @@ Ext.define('PVE.qemu.SnapshotTree', {
 		Ext.Array.each(response.result.data, function(item) {
 		    item.leaf = true;
 		    item.children = [];
+		    if (item.name === '__current') {
+			item.iconCls = 'x-tree-node-now';
+		    } else {
+			item.iconCls = 'x-tree-node-snapshot';
+		    }
 		    idhash[item.name] = item;
 		});
 
@@ -118,7 +123,10 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    animate: false,
 	    selModel: sm,
 	    tbar: [ me.rollbackBtn, me.deleteBtn ],
-	    fields: ['name', 'description' ],
+	    fields: [ 
+		'name', 'description', 
+		{ name: 'snaptime', type: 'date', dateFormat: 'timestamp' }
+	    ],
 	    columns: [
 		{
 		    xtype: 'treecolumn',
@@ -127,11 +135,18 @@ Ext.define('PVE.qemu.SnapshotTree', {
 		    width: 200,
 		    renderer: function(value, metaData, record) {
 			if (value === '__current') {
-			    return "CWD";
+			    return "NOW";
 			} else {
 			    return value;
 			}
 		    }
+		},
+		{
+		    xtype: 'datecolumn',
+		    text: gettext('Date'),
+		    dataIndex: 'snaptime',
+		    format: 'Y-m-d H:i:s',
+		    width: 120
 		},
 		{ 
 		    text: gettext('Description'),
@@ -148,7 +163,7 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    ]
 	});
 
- 	me.callParent();
+	me.callParent();
 
 	me.on('show', me.reload);
     }
