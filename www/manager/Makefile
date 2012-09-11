@@ -100,6 +100,7 @@ JSSRC= 				                 	\
 	qemu/StartupEdit.js				\
 	qemu/ScsiHwEdit.js				\
 	qemu/Options.js					\
+	qemu/Snapshot.js				\
 	qemu/SnapshotTree.js				\
 	qemu/Config.js					\
 	qemu/CreateWizard.js				\

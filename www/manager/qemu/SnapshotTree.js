@@ -58,14 +58,39 @@ Ext.define('PVE.qemu.SnapshotTree', {
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
-	me.rollbackBtn = new PVE.button.Button({
+	var valid_snapshot = function(record) {
+	    return record && record.data && record.data.name &&
+		record.data.name !== '__current';
+	};
+
+	var run_editor = function() {
+	    var rec = sm.getSelection()[0];
+	    if (valid_snapshot(rec)) {
+		var win = Ext.create('PVE.window.Snapshot', { 
+		    snapname: rec.data.name,
+		    snaptime: rec.data.snaptime,
+		    description: rec.data.description,
+		    nodename: me.nodename,
+		    vmid: me.vmid
+		});
+		win.show();
+		me.mon(win, 'close', me.reload, me);
+	    }
+	};
+
+	var editBtn = new PVE.button.Button({
+	    text: gettext('Edit'),
+	    disabled: true,
+	    selModel: sm,
+	    enableFn: valid_snapshot,
+	    handler: run_editor
+	});
+
+	var rollbackBtn = new PVE.button.Button({
 	    text: gettext('Rollback'),
 	    disabled: true,
 	    selModel: sm,
-	    enableFn: function(record) { 
-		return record && record.data && record.data.name &&
-		    record.data.name !== '__current';
-	    },
+	    enableFn: valid_snapshot,
 	    handler: function(btn, event) {
 		var rec = sm.getSelection()[0];
 		if (!rec) {
@@ -87,15 +112,12 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    }
 	});
 
-	me.deleteBtn = new PVE.button.Button({
-	    text: gettext('Delete'),
+	var removeBtn = new PVE.button.Button({
+	    text: gettext('Remove'),
 	    disabled: true,
 	    selModel: sm,
 	    confirmMsg: gettext('Are you sure you want to remove this entry'),
-	    enableFn: function(record) { 
-		return record && record.data && record.data.name &&
-		    record.data.name !== '__current';
-	    },
+	    enableFn: valid_snapshot,
 	    handler: function(btn, event) {
 		var rec = sm.getSelection()[0];
 		if (!rec) {
@@ -117,12 +139,23 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    }
 	});
 
+	var snapshotBtn = Ext.create('Ext.Button', { 
+	    text: gettext('Take Snapshot'),
+	    handler: function() {
+		var win = Ext.create('PVE.window.Snapshot', { 
+		    nodename: me.nodename,
+		    vmid: me.vmid
+		});
+		win.show();
+	    }
+	});
+
 	Ext.apply(me, {
 	    layout: 'fit',
 	    rootVisible: false,
 	    animate: false,
 	    selModel: sm,
-	    tbar: [ me.rollbackBtn, me.deleteBtn ],
+	    tbar: [ snapshotBtn, rollbackBtn, removeBtn, editBtn ],
 	    fields: [ 
 		'name', 'description', 
 		{ name: 'snaptime', type: 'date', dateFormat: 'timestamp' }
@@ -160,12 +193,15 @@ Ext.define('PVE.qemu.SnapshotTree', {
 			}
 		    }
 		}
-	    ]
+	    ],
+	    columnLines: true, // will work in 4.1?
+	    listeners: {
+		show: me.reload,
+		itemdblclick: run_editor
+	    }
 	});
 
 	me.callParent();
-
-	me.on('show', me.reload);
     }
 });
 
