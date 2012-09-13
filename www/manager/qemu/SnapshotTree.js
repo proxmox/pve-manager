@@ -92,11 +92,11 @@ Ext.define('PVE.qemu.SnapshotTree', {
 
 	var valid_snapshot = function(record) {
 	    return record && record.data && record.data.name &&
-		record.data.name !== '__current';
+		record.data.name !== 'current';
 	};
 	var valid_snapshot_rollback = function(record) {
 	    return record && record.data && record.data.name &&
-		record.data.name !== '__current' && !record.data.snapstate;
+		record.data.name !== 'current' && !record.data.snapstate;
 	};
 
 	var run_editor = function() {
@@ -127,6 +127,11 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    disabled: true,
 	    selModel: sm,
 	    enableFn: valid_snapshot_rollback,
+	    confirmMsg: function(rec) {
+		var msg = Ext.String.format(gettext('Are you sure you want to rollback to snapshot {0}'),
+					    "'" + rec.data.name + "'");
+		return msg;
+	    },
 	    handler: function(btn, event) {
 		var rec = sm.getSelection()[0];
 		if (!rec) {
@@ -152,7 +157,11 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    text: gettext('Remove'),
 	    disabled: true,
 	    selModel: sm,
-	    confirmMsg: gettext('Are you sure you want to remove this entry'),
+	    confirmMsg: function(rec) {
+		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
+					    "'" + rec.data.name + "'");
+		return msg;
+	    },
 	    enableFn: valid_snapshot,
 	    handler: function(btn, event) {
 		var rec = sm.getSelection()[0];
