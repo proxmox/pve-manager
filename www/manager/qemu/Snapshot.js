@@ -140,5 +140,28 @@ Ext.define('PVE.window.Snapshot', {
 	});
 
 	me.callParent();
+
+	if (!me.snapname) {
+	    return;
+	}
+
+	// else load data
+
+	PVE.Utils.API2Request({
+	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + "/snapshot/" + 
+		me.snapname + '/config',
+	    waitMsgTarget: me,
+	    method: 'GET',
+	    failure: function(response, opts) {
+		Ext.Msg.alert('Error', response.htmlStatus);
+		me.close();
+	    },
+	    success: function(response, options) {
+		var data = response.result.data;
+		
+		console.dir(data);
+
+	    }
+	});
     }
 });
