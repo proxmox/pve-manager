@@ -151,7 +151,13 @@ Ext.define('PVE.window.Snapshot', {
 			xtype: 'grid',
 			region: 'center',
 			layout: 'fit',
-			autoScroll: true,
+			// NOTE: autoscroll is buggy with firefox, so
+			// we use native scrollbars
+			// autoScroll: true,
+			scroll: false,
+			viewConfig: {
+			    style: { overflow: 'auto', overflowX: 'hidden' }
+			},
 			height: 200,
 			store: summarystore,
 			columns: [
