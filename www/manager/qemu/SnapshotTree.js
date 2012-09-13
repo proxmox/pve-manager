@@ -31,6 +31,7 @@ Ext.define('PVE.qemu.SnapshotTree', {
 		me.load_task.delay(me.load_delay);
 	    },
 	    success: function(response, opts) {
+		PVE.Utils.setErrorMask(me, false);
 		var digest = 'invalid';
 		var idhash = {};
 		var root = { name: '__root', expanded: true, children: [] };
