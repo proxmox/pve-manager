@@ -2,43 +2,73 @@ Ext.define('PVE.qemu.SnapshotTree', {
     extend: 'Ext.tree.Panel',
     alias: ['widget.pveQemuSnapshotTree'],
 
-    reload: function() {
+    load_delay: 3000,
+
+    old_digest: 'invalid',
+
+    sorterFn: function(rec1, rec2) {
+	var v1 = rec1.data.snaptime;
+	var v2 = rec2.data.snaptime;
+
+	if (rec1.data.name === 'current') {
+	    return 1;
+	}
+	if (rec2.data.name === 'current') {
+	    return -1;
+	}
+
+	console.log("SORT " + v1 + " " + v2);
+	return (v1 > v2 ? 1 : (v1 < v2 ? -1 : 0));
+    },
+
+    reload: function(repeat) {
         var me = this;
 
 	PVE.Utils.API2Request({
 	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/snapshot',
-	    waitMsgTarget: me,
 	    method: 'GET',
 	    failure: function(response, opts) {
 		PVE.Utils.setErrorMask(me, response.htmlStatus);
+		me.load_task.delay(me.load_delay);
 	    },
 	    success: function(response, opts) {
-
+		var digest = 'invalid';
 		var idhash = {};
 		var root = { name: '__root', expanded: true, children: [] };
 		Ext.Array.each(response.result.data, function(item) {
 		    item.leaf = true;
 		    item.children = [];
-		    if (item.name === '__current') {
-			item.iconCls = 'x-tree-node-now';
+		    if (item.name === 'current') {
+			digest = item.digest + item.running;
+			if (item.running) {
+			    item.iconCls = 'x-tree-node-computer-running';
+			} else {
+			    item.iconCls = 'x-tree-node-computer';
+			}
 		    } else {
 			item.iconCls = 'x-tree-node-snapshot';
 		    }
 		    idhash[item.name] = item;
 		});
 
-		Ext.Array.each(response.result.data, function(item) {
-		    if (item.parent && idhash[item.parent]) {
-			var parent_item = idhash[item.parent];
-			parent_item.children.push(item);
-			parent_item.leaf = false;
-			parent_item.expanded = true;
-		    } else {
-			root.children.push(item);
-		    }
-		});
+		if (digest !== me.old_digest) {
+		    me.old_digest = digest;
 
-		me.setRootNode(root);
+		    Ext.Array.each(response.result.data, function(item) {
+			if (item.parent && idhash[item.parent]) {
+			    var parent_item = idhash[item.parent];
+			    parent_item.children.push(item);
+			    parent_item.leaf = false;
+			    parent_item.expanded = true;
+			} else {
+			    root.children.push(item);
+			}
+		    });
+
+		    me.setRootNode(root);
+		}
+
+		me.load_task.delay(me.load_delay);
 	    }
 	});
     },
@@ -56,11 +86,17 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    throw "no VM ID specified";
 	}
 
+	me.load_task = new Ext.util.DelayedTask(me.reload, me);
+
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
 	var valid_snapshot = function(record) {
 	    return record && record.data && record.data.name &&
 		record.data.name !== '__current';
+	};
+	var valid_snapshot_rollback = function(record) {
+	    return record && record.data && record.data.name &&
+		record.data.name !== '__current' && !record.data.snapstate;
 	};
 
 	var run_editor = function() {
@@ -90,7 +126,7 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    text: gettext('Rollback'),
 	    disabled: true,
 	    selModel: sm,
-	    enableFn: valid_snapshot,
+	    enableFn: valid_snapshot_rollback,
 	    handler: function(btn, event) {
 		var rec = sm.getSelection()[0];
 		if (!rec) {
@@ -154,10 +190,11 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    layout: 'fit',
 	    rootVisible: false,
 	    animate: false,
+	    sortableColumns: false,
 	    selModel: sm,
 	    tbar: [ snapshotBtn, rollbackBtn, removeBtn, editBtn ],
 	    fields: [ 
-		'name', 'description', 
+		'name', 'description', 'snapstate', 'vmstate', 'running',
 		{ name: 'snaptime', type: 'date', dateFormat: 'timestamp' }
 	    ],
 	    columns: [
@@ -167,7 +204,7 @@ Ext.define('PVE.qemu.SnapshotTree', {
 		    dataIndex: 'name',
 		    width: 200,
 		    renderer: function(value, metaData, record) {
-			if (value === '__current') {
+			if (value === 'current') {
 			    return "NOW";
 			} else {
 			    return value;
@@ -175,18 +212,37 @@ Ext.define('PVE.qemu.SnapshotTree', {
 		    }
 		},
 		{
-		    xtype: 'datecolumn',
-		    text: gettext('Date'),
+		    text: gettext('RAM'),
+		    align: 'center',
+		    resizable: false,
+		    dataIndex: 'vmstate',
+		    width: 50,
+		    renderer: function(value, metaData, record) {
+			if (record.data.name !== 'current') {
+			    return PVE.Utils.format_boolean(value);
+			}
+		    }
+		},
+		{
+		    text: gettext('Date') + "/" + gettext("State"),
 		    dataIndex: 'snaptime',
-		    format: 'Y-m-d H:i:s',
-		    width: 120
+		    resizable: false,
+		    width: 120,
+		    renderer: function(value, metaData, record) {
+			if (record.data.snapstate) {
+			    return record.data.snapstate;
+			}
+			if (value) {
+			    return Ext.Date.format(value,'Y-m-d H:i:s');
+			}
+		    }
 		},
 		{ 
 		    text: gettext('Description'),
 		    dataIndex: 'description',
 		    flex: 1,
 		    renderer: function(value, metaData, record) {
-			if (record.data.name === '__current') {
+			if (record.data.name === 'current') {
 			    return gettext("You are here!");
 			} else {
 			    return value;
@@ -197,11 +253,17 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    columnLines: true, // will work in 4.1?
 	    listeners: {
 		show: me.reload,
+		hide: me.load_task.cancel,
+		destroy: me.load_task.cancel,
 		itemdblclick: run_editor
 	    }
 	});
 
 	me.callParent();
+
+	me.store.sorters.add(new Ext.util.Sorter({
+	    sorterFn: me.sorterFn
+	}));
     }
 });
 

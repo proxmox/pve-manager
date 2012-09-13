@@ -20,7 +20,6 @@ GNOME_IMAGES = 			\
 
 IMAGES = ${GNOME_IMAGES}	\
 	snapshot.png		\
-	now.png			\
 	computer-on.png		\
 	memory.png		\
 	processor.png		\

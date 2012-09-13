@@ -20,10 +20,9 @@ Ext.define('PVE.window.Snapshot', {
 	    success: function(response, options) {
 		var upid = response.result.data;
 
-		var win = Ext.create('PVE.window.TaskViewer', { 
-		    upid: upid
-		});
-		win.show();
+		// we do not show task viewer for now
+		//var win = Ext.create('PVE.window.TaskViewer', { upid: upid });
+		//win.show();
 		me.close();
 	    }
 	});
@@ -81,7 +80,7 @@ Ext.define('PVE.window.Snapshot', {
 		uncheckedValue: 0,
 		defaultValue: 0,
 		checked: 1,
-		fieldLabel: 'Include State'
+		fieldLabel: 'Include RAM'
 	    });
 	}
 
