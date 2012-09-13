@@ -1,6 +1,8 @@
 Ext.define('PVE.window.Snapshot', {
     extend: 'Ext.window.Window',
 
+    resizable: false,
+
     take_snapshot: function(snapname, descr, vmstate) {
 	var me = this;
 	var params = { snapname: snapname, vmstate: vmstate ? 1 : 0 };
