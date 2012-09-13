@@ -103,8 +103,6 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    if (valid_snapshot(rec)) {
 		var win = Ext.create('PVE.window.Snapshot', { 
 		    snapname: rec.data.name,
-		    snaptime: rec.data.snaptime,
-		    description: rec.data.description,
 		    nodename: me.nodename,
 		    vmid: me.vmid
 		});

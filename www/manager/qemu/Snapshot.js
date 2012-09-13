@@ -1,8 +1,6 @@
 Ext.define('PVE.window.Snapshot', {
     extend: 'Ext.window.Window',
 
-    resizable: false,
-
     take_snapshot: function(snapname, descr, vmstate) {
 	var me = this;
 	var params = { snapname: snapname, vmstate: vmstate ? 1 : 0 };
@@ -56,12 +54,23 @@ Ext.define('PVE.window.Snapshot', {
 	    throw "no VM ID specified";
 	}
 
+	var summarystore = Ext.create('Ext.data.Store', {
+	    model: 'KeyValue',
+	    sorters: [
+		{
+		    property : 'key',
+		    direction: 'ASC'
+		}
+	    ]
+	});
+
 	var items = [
 	    {
 		xtype: me.snapname ? 'displayfield' : 'textfield',
 		name: 'snapname',
 		value: me.snapname,
 		fieldLabel: 'Snapshot Name',
+		vtype: 'StorageId',
 		allowBlank: false
 	    }
 	];
@@ -70,7 +79,6 @@ Ext.define('PVE.window.Snapshot', {
 	    items.push({
 		xtype: 'displayfield',
 		name: 'snaptime',
-		value: new Date(me.snaptime),
 		fieldLabel: 'Timestamp'
 	    });
 	} else {
@@ -88,13 +96,13 @@ Ext.define('PVE.window.Snapshot', {
 	    xtype: 'textareafield',
 	    grow: true,
 	    name: 'description',
-	    value: me.description,
 	    fieldLabel: 'Description'
 	});
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
 	    bodyPadding: 10,
 	    border: false,
+	    region: 'north',
 	    fieldDefaults: {
 		labelWidth: 100,
 		anchor: '100%'
@@ -130,12 +138,40 @@ Ext.define('PVE.window.Snapshot', {
 	    });
 	}
 
+	if (me.snapname) {
+	    Ext.apply(me, {
+		layout: 'border',
+		border: false,
+		width: 620,
+		height: 400,
+		items: [
+		    me.formPanel,
+		    {
+			title: gettext('Settings'),
+			xtype: 'grid',
+			region: 'center',
+			layout: 'fit',
+			autoScroll: true,
+			height: 200,
+			store: summarystore,
+			columns: [
+			    {header: 'Key', width: 150, dataIndex: 'key'},
+			    {header: 'Value', flex: 1, dataIndex: 'value'}
+			]
+		    }
+		]
+	    });
+	} else {
+	    Ext.apply(me, {
+		width: 450,
+		layout: 'auto',
+		border: false,
+		items: [ me.formPanel ]
+	    });
+	}	 
+
 	Ext.apply(me, {
-	    width: 450,
 	    modal: true,
-	    layout: 'auto',
-	    border: false,
-	    items: [ me.formPanel ],
 	    buttons: [ submitBtn ]
 	});
 
@@ -146,7 +182,6 @@ Ext.define('PVE.window.Snapshot', {
 	}
 
 	// else load data
-
 	PVE.Utils.API2Request({
 	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + "/snapshot/" + 
 		me.snapname + '/config',
@@ -158,9 +193,21 @@ Ext.define('PVE.window.Snapshot', {
 	    },
 	    success: function(response, options) {
 		var data = response.result.data;
-		
-		console.dir(data);
+		var kvarray = [];
+		Ext.Object.each(data, function(key, value) {
+		    if (key === 'description' || key === 'snaptime') {
+			return;
+		    }
+		    kvarray.push({ key: key, value: value });
+		});
+		summarystore.suspendEvents();
+		summarystore.add(kvarray);
+		summarystore.sort();
+		summarystore.resumeEvents();
+		summarystore.fireEvent('datachanged', summarystore);
 
+		form.findField('snaptime').setValue(new Date(data.snaptime));
+		form.findField('description').setValue(data.description);
 	    }
 	});
     }
