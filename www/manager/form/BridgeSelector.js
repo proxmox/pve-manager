@@ -27,7 +27,13 @@ Ext.define('PVE.form.BridgeSelector', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    fields: [ 'iface', 'active', 'type' ],
-	    filterOnLoad: true
+	    filterOnLoad: true,
+	    sorters: [
+		{
+		    property : 'iface',
+		    direction: 'ASC'
+		}
+	    ]
 	});
 
 	Ext.apply(me, {
