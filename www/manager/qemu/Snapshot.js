@@ -9,6 +9,7 @@ Ext.define('PVE.window.Snapshot', {
 	if (descr) {
 	    params.description = descr;
 	}
+
 	PVE.Utils.API2Request({
 	    params: params,
 	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + "/snapshot",
@@ -19,10 +20,8 @@ Ext.define('PVE.window.Snapshot', {
 	    },
 	    success: function(response, options) {
 		var upid = response.result.data;
-
-		// we do not show task viewer for now
-		//var win = Ext.create('PVE.window.TaskViewer', { upid: upid });
-		//win.show();
+		var win = Ext.create('PVE.window.TaskProgress', { upid: upid });
+		win.show();
 		me.close();
 	    }
 	});

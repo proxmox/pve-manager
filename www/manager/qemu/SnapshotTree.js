@@ -146,6 +146,11 @@ Ext.define('PVE.qemu.SnapshotTree', {
 		    },
 		    failure: function (response, opts) {
 			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    },
+		    success: function(response, options) {
+			var upid = response.result.data;
+			var win = Ext.create('PVE.window.TaskProgress', { upid: upid });
+			win.show();
 		    }
 		});
 	    }
