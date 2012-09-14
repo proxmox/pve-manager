@@ -279,6 +279,9 @@ __PACKAGE__->register_method({
 	return $lines;
     }});
 
+
+my $exit_status_cache = {};
+
 __PACKAGE__->register_method({
     name => 'read_task_status', 
     path => '{upid}/status', 
@@ -330,6 +333,14 @@ __PACKAGE__->register_method({
 	    'running' : 'stopped';
 
 	$task->{upid} = $param->{upid}; # include upid
+
+	if ($task->{status} eq 'stopped') {
+	    if (!defined($exit_status_cache->{$task->{upid}})) {
+		$exit_status_cache->{$task->{upid}} = 
+		    PVE::Tools::upid_read_status($task->{upid});
+	    }
+	    $task->{exitstatus} = $exit_status_cache->{$task->{upid}};
+	}
 
 	return $task;
     }});

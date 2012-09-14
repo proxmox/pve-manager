@@ -1,3 +1,71 @@
+Ext.define('PVE.window.TaskProgress', {
+    extend: 'Ext.window.Window',
+    alias: 'widget.pveTaskProgress',
+
+    initComponent: function() {
+        var me = this;
+
+	if (!me.upid) {
+	    throw "no task specified";
+	}
+
+	var task = PVE.Utils.parse_task_upid(me.upid);
+
+	var statstore = Ext.create('PVE.data.ObjectStore', {
+            url: "/api2/json/nodes/" + task.node + "/tasks/" + me.upid + "/status",
+	    interval: 1000,
+	    rows: {
+		status: { defaultValue: 'unknown' },
+		exitstatus: { defaultValue: 'unknown' }
+	    }
+	});
+
+	me.on('destroy', statstore.stopUpdate);	
+
+	var getObjectValue = function(key, defaultValue) {
+	    var rec = statstore.getById(key);
+	    if (rec) {
+		return rec.data.value;
+	    }
+	    return defaultValue;
+	};
+
+	var pbar = Ext.create('Ext.ProgressBar', { text: 'running...' });
+
+	me.mon(statstore, 'load', function() {
+	    var status = getObjectValue('status');
+	    if (status === 'stopped') {
+		var exitstatus = getObjectValue('exitstatus');
+		if (exitstatus == 'OK') {
+		    pbar.reset();
+		    pbar.updateText("Done!");
+		    Ext.Function.defer(me.close, 1000, me);
+		} else {
+		    me.close();
+		    Ext.Msg.alert('Task failed', exitstatus);
+		}
+	    }
+	});
+
+	var descr = PVE.Utils.format_task_description(task.type, task.id);
+
+	Ext.applyIf(me, {
+	    title: "Task: " + descr,
+	    width: 300,
+	    layout: 'auto',
+	    modal: true,
+	    bodyPadding: 5,
+	    items: pbar
+	});
+
+	me.callParent();
+
+	statstore.startUpdate();
+
+	pbar.wait();
+    }
+});
+
 // fixme: how can we avoid those lint errors?
 /*jslint confusion: true */
 
@@ -14,10 +82,24 @@ Ext.define('PVE.window.TaskViewer', {
 
 	var task = PVE.Utils.parse_task_upid(me.upid);
 
+	var statgrid;
+
 	var rows = {
 	    status: {
 		header: gettext('Status'),
-		defaultValue: 'unknown'
+		defaultValue: 'unknown',
+		renderer: function(value) {
+		    if (value != 'stopped') {
+			return value;
+		    }
+		    var es = statgrid.getObjectValue('exitstatus');
+		    if (es) {
+			return value + ': ' + es;
+		    }
+		}
+	    },
+	    exitstatus: { 
+		visible: false
 	    },
 	    type: {
 		header: 'Task type',
@@ -76,7 +158,7 @@ Ext.define('PVE.window.TaskViewer', {
 	    handler: stop_task
 	});
 
-	var statgrid = Ext.create('PVE.grid.ObjectGrid', {
+	statgrid = Ext.create('PVE.grid.ObjectGrid', {
 	    title: gettext('Status'),
 	    layout: 'fit',
 	    tbar: [ stop_btn1 ],
