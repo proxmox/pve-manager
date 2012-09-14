@@ -100,10 +100,22 @@ Ext.define('PVE.window.Snapshot', {
 	    fieldLabel: 'Description'
 	});
 
+	if (me.snapname) {
+	    items.push({
+		title: gettext('Settings'),
+		xtype: 'grid',
+		height: 200,
+		store: summarystore,
+		columns: [
+		    {header: 'Key', width: 150, dataIndex: 'key'},
+		    {header: 'Value', flex: 1, dataIndex: 'value'}
+		]
+	    });
+	}
+
 	me.formPanel = Ext.create('Ext.form.Panel', {
 	    bodyPadding: 10,
 	    border: false,
-	    region: 'north',
 	    fieldDefaults: {
 		labelWidth: 100,
 		anchor: '100%'
@@ -139,48 +151,21 @@ Ext.define('PVE.window.Snapshot', {
 	    });
 	}
 
-	if (me.snapname) {
-	    Ext.apply(me, {
-		layout: 'border',
-		border: false,
-		width: 620,
-		height: 400,
-		items: [
-		    me.formPanel,
-		    {
-			title: gettext('Settings'),
-			xtype: 'grid',
-			region: 'center',
-			layout: 'fit',
-			// NOTE: autoscroll is buggy with firefox, so
-			// we use native scrollbars
-			// autoScroll: true,
-			scroll: false,
-			viewConfig: {
-			    style: { overflow: 'auto', overflowX: 'hidden' }
-			},
-			height: 200,
-			store: summarystore,
-			columns: [
-			    {header: 'Key', width: 150, dataIndex: 'key'},
-			    {header: 'Value', flex: 1, dataIndex: 'value'}
-			]
-		    }
-		]
-	    });
-	} else {
-	    Ext.apply(me, {
-		width: 450,
-		layout: 'auto',
-		border: false,
-		items: [ me.formPanel ]
-	    });
-	}	 
-
 	Ext.apply(me, {
 	    modal: true,
-	    buttons: [ submitBtn ]
+	    width: 450,
+	    border: false,
+	    layout: 'fit',
+	    buttons: [ submitBtn ],
+	    items: me.formPanel
 	});
+
+	if (me.snapname) {
+	    Ext.apply(me, {
+		width: 620,
+		height: 400
+	    });
+	}	 
 
 	me.callParent();
 
@@ -207,6 +192,7 @@ Ext.define('PVE.window.Snapshot', {
 		    }
 		    kvarray.push({ key: key, value: value });
 		});
+
 		summarystore.suspendEvents();
 		summarystore.add(kvarray);
 		summarystore.sort();
