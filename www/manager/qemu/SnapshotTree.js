@@ -272,6 +272,8 @@ Ext.define('PVE.qemu.SnapshotTree', {
 		show: me.reload,
 		hide: me.load_task.cancel,
 		destroy: me.load_task.cancel,
+		// disable collapse
+		beforeitemcollapse: function() { return false; },
 		itemdblclick: run_editor
 	    }
 	});
