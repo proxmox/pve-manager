@@ -47,6 +47,14 @@ Ext.define('PVE.storage.NFSScan', {
 	    matchFieldWidth: false,
 	    listConfig: {
 		loadingText: 'Scanning...',
+		listeners: {
+		    // hack: call setHeight to show scroll bars correctly
+		    refresh: function(list) {
+			var lh = PVE.Utils.gridLineHeigh();
+			var count = store.getCount();
+			list.setHeight(lh * ((count > 10) ? 10 : count));
+		    }
+		},
 		width: 350
 	    }
 	});

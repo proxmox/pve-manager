@@ -157,7 +157,7 @@ Ext.define('PVE.window.Snapshot', {
 	    border: false,
 	    layout: 'fit',
 	    buttons: [ submitBtn ],
-	    items: me.formPanel
+	    items: [ me.formPanel ]
 	});
 
 	if (me.snapname) {

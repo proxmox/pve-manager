@@ -25,7 +25,15 @@ Ext.define('PVE.storage.VgSelector', {
 	    queryMode: 'local',
 	    editable: false,
 	    listConfig: {
-		loadingText: 'Scanning...'
+		loadingText: 'Scanning...',
+		listeners: {
+		    // hack: call setHeight to show scroll bars correctly
+		    refresh: function(list) {
+			var lh = PVE.Utils.gridLineHeigh();
+			var count = store.getCount();
+			list.setHeight(lh * ((count > 10) ? 10 : count));
+		    }
+		}
 	    }
 	});
 
