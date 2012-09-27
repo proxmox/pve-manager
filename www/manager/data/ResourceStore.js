@@ -2,22 +2,11 @@ Ext.define('PVE.data.ResourceStore', {
     extend: 'PVE.data.UpdateStore',
     singleton: true,
 
-    findNextVMID: function() {
-	var me = this, i;
-	
-	for (i = 100; i < 10000; i++) {
-	    if (me.findExact('vmid', i) < 0) {
-		return i;
-	    }
-	}
-    },
-
     findVMID: function(vmid) {
 	var me = this, i;
 	
 	return (me.findExact('vmid', parseInt(vmid, 10)) >= 0);
     },
-
  
     constructor: function(config) {
 	// fixme: how to avoid those warnings

@@ -45,7 +45,8 @@ Ext.define('PVE.window.Restore', {
 		    xtype: me.vmid ? 'displayfield' : 'pveVMIDSelector',
 		    name: 'vmid',
 		    fieldLabel: 'VM ID',
-		    value: me.vmid || PVE.data.ResourceStore.findNextVMID(),
+		    value: me.vmid,
+		    loadNextFreeVMID: me.vmid ? false: true,
 		    validateExists: false
 		}
 	    ]

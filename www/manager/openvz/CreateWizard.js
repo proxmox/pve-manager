@@ -5,8 +5,6 @@ Ext.define('PVE.openvz.CreateWizard', {
     initComponent: function() {
 	var me = this;
 
-	var nextvmid = PVE.data.ResourceStore.findNextVMID();
-
 	var summarystore = Ext.create('Ext.data.Store', {
 	    model: 'KeyValue',
 	    sorters: [
@@ -79,7 +77,8 @@ Ext.define('PVE.openvz.CreateWizard', {
 			{
 			    xtype: 'pveVMIDSelector',
 			    name: 'vmid',
-			    value: nextvmid,
+			    value: '',
+			    loadNextFreeVMID: true,
 			    validateExists: false
 			},
 			{

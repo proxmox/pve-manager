@@ -10,6 +10,8 @@ Ext.define('PVE.form.VMIDSelector', {
 
     validateExists: undefined,
 
+    loadNextFreeVMID: false,
+
     initComponent: function() {
         var me = this;
 
@@ -40,5 +42,15 @@ Ext.define('PVE.form.VMIDSelector', {
 	});
 
         me.callParent();
+
+	if (me.loadNextFreeVMID) {
+	    PVE.Utils.API2Request({
+		url: '/cluster/nextid',
+		method: 'GET',
+		success: function(response, opts) {
+		    me.setRawValue(response.result.data);
+		}
+	    });
+	}
     }
 });
