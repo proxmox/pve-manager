@@ -1,3 +1,9 @@
+pve-manager (2.2-19) unstable; urgency=low
+
+  * fix bug 178: use new API call to get next free VMID
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 27 Sep 2012 09:45:06 +0200
+
 pve-manager (2.2-18) unstable; urgency=low
 
   * add workaroud to correctly show scrollbars
