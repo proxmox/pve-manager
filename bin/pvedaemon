@@ -33,6 +33,9 @@ $0 = "pvedaemon";
 
 PVE::APIDaemon::enable_debug() if $opt_debug;
 
+# create dir for dtach sockets
+mkdir "/var/run/dtach";
+
 my $cpid;
 my $daemon;
 eval {

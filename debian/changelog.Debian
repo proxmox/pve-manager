@@ -1,3 +1,9 @@
+pve-manager (2.2-21) unstable; urgency=low
+
+  * openvz console fix: create /var/run/dtach at pvedaemon startup
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 02 Oct 2012 10:10:55 +0200
+
 pve-manager (2.2-20) unstable; urgency=low
 
   * openvz: use real console instead of 'vzctl enter'

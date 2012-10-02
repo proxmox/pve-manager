@@ -864,7 +864,6 @@ __PACKAGE__->register_method ({
 	my $remcmd = $remip ? 
 	    ['/usr/bin/ssh', '-c', 'blowfish-cbc', '-t', $remip] : [];
 
-	mkdir "/var/run/dtach";
 	my $shcmd = [ '/usr/bin/dtach', '-A', 
 		      "/var/run/dtach/vzctlconsole$vmid", 
 		      '-r', 'winch', '-z', 
