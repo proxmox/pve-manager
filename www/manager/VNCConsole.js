@@ -360,7 +360,7 @@ Ext.define('PVE.OpenVZConsole', {
 	    { 
 		text: gettext('Start'),
 		handler: function() { 
-		    vm_command("start", {}, 1);
+		    vm_command("start");
 		}
 	    },
 	    { 
@@ -387,14 +387,7 @@ Ext.define('PVE.OpenVZConsole', {
 		    }); 
 		}
 	    },
-	    // Note: no migrate here, because we can't display migrate log
-	    // and openvz migrate does not work if console is open
-            { 
-		text: gettext('Console'),
-                handler: function() {
-		    PVE.Utils.openConoleWindow('openvz', me.vmid, me.nodename, me.vmname);
-		}
-            },
+ 	    // Note: no migrate here, because we can't display migrate log
             '->',
 	    {
                 text: gettext('Refresh'),

@@ -152,16 +152,6 @@ Ext.define('PVE.openvz.Config', {
 	    ]
 	});
 
-
-	if (caps.vms['VM.Console']) {
-	    me.items.push({
-		title: "InitLog",
-		itemId: 'initlog',
-		xtype: 'pveLogView',
-		url: '/api2/extjs/nodes/' + nodename + '/openvz/' + vmid + '/initlog'
-	    });
-	}
-
 	if (caps.vms['VM.Backup']) {
 	    me.items.push({
 		title: gettext('Backup'),

@@ -1,3 +1,15 @@
+pve-manager (2.2-20) unstable; urgency=low
+
+  * openvz: use real console instead of 'vzctl enter'
+  
+  * openvz: remove init-logger pagers
+  
+  * dpenend on dtach (used by openvz console)
+  
+  * pvestatd: remove stale 'vzctl console' processes
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 02 Oct 2012 06:49:12 +0200
+
 pve-manager (2.2-19) unstable; urgency=low
 
   * fix bug 178: use new API call to get next free VMID

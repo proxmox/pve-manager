@@ -6,7 +6,7 @@ use POSIX ":sys_wait_h";
 use Fcntl ':flock';
 use Getopt::Long;
 use Time::HiRes qw (gettimeofday);
-use PVE::Tools;
+use PVE::Tools qw(dir_glob_foreach file_read_firstline);
 use PVE::ProcFSTools;
 use Filesys::Df;
 use PVE::INotify;
@@ -199,6 +199,45 @@ sub update_qemu_status {
     }
 }
 
+sub find_vzctl_console_pids {
+
+    my $res = {};
+
+    dir_glob_foreach('/proc', '\d+', sub {
+	my ($pid) = @_;
+
+	my $cmdline = file_read_firstline("/proc/$pid/cmdline");
+	return if !$cmdline;
+
+	my @args = split(/\0/, $cmdline);
+
+	# serach for vzctl console <vmid>
+	return if scalar(@args) != 3; 
+	return if $args[1] ne 'console';
+	return if $args[2] !~ m/^\d+$/;
+	return if $args[0] !~ m|^(/usr/sbin/)?vzctl$|;
+	
+	my $vmid = $args[2];
+	
+	push @{$res->{$vmid}}, $pid;
+    });
+
+    return $res;
+}
+sub remove_stale_openvz_consoles {
+
+    my $vmstatus = PVE::OpenVZ::vmstatus();
+    my $pidhash = find_vzctl_console_pids();
+
+    foreach my $vmid (keys %$pidhash) {
+	next if defined($vmstatus->{$vmid});
+	syslog('info', "remove stale vzctl console for CT $vmid");
+	foreach my $pid (@{$pidhash->{$vmid}}) {
+	    kill(9, $pid);
+	}
+    }
+}
+
 sub update_openvz_status {
 
     my $ctime = time();
@@ -281,6 +320,12 @@ sub update_status {
     };
     $err = $@;
     syslog('err', "storage status update error: $err") if $err;
+
+    eval {
+	remove_stale_openvz_consoles();
+    };
+    $err = $@;
+    syslog('err', "openvz console cleanup error: $err") if $err;
 }
 
 my $next_update = 0;

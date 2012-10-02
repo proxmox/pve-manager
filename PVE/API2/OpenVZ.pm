@@ -864,7 +864,11 @@ __PACKAGE__->register_method ({
 	my $remcmd = $remip ? 
 	    ['/usr/bin/ssh', '-c', 'blowfish-cbc', '-t', $remip] : [];
 
-	my $shcmd = [ '/usr/sbin/vzctl', 'enter', $vmid ];
+	mkdir "/var/run/dtach";
+	my $shcmd = [ '/usr/bin/dtach', '-A', 
+		      "/var/run/dtach/vzctlconsole$vmid", 
+		      '-r', 'winch', '-z', 
+		      '/usr/sbin/vzctl', 'console', $vmid ];
 
 	my $realcmd = sub {
 	    my $upid = shift;
