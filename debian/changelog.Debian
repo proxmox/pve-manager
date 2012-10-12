@@ -1,3 +1,9 @@
+pve-manager (2.2-22) unstable; urgency=low
+
+  * vzdump: also run 'backup-start' hook in snapshot mode
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 12 Oct 2012 06:07:12 +0200
+
 pve-manager (2.2-21) unstable; urgency=low
 
   * openvz console fix: create /var/run/dtach at pvedaemon startup
