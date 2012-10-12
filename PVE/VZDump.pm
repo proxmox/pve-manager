@@ -853,6 +853,8 @@ sub exec_backup_task {
 
 	} elsif ($mode eq 'snapshot') {
 
+	    $self->run_hook_script ('backup-start', $task, $logfd);
+
 	    my $snapshot_count = $task->{snapshot_count} || 0;
 
 	    $self->run_hook_script ('pre-stop', $task, $logfd);
