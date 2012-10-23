@@ -29,61 +29,62 @@ Description: Debian 5.0 (standard)
   A small Debian Lenny system including all standard packages.
 
 Package: debian-6.0-standard
-Version: 6.0-1
+Version: 6.0-6
 Type: openvz
 OS: debian-6.0
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
-Location: http://download.proxmox.com/appliances/system/debian-6.0-standard_6.0-1_i386.tar.gz
+Location: http://download.proxmox.com/appliances/system/debian-6.0-standard_6.0-6_i386.tar.gz
 Infopage: http://pve.proxmox.com/wiki/Debian_6.0_Standard
-md5sum: 08a616ab67ab618f2528b654ef2b28c2
+md5sum: 755290a5e2b895247f626910246805a4
 Description: Debian 6.0 (standard)
   A small Debian Squeeze system including all standard packages.
 
-Package: centos-4-standard
-Version: 4.7-1
+Package: debian-7.0-standard
+Version: 7.0-1
 Type: openvz
-OS: centos-4
+OS: debian-7.0
 Section: system
-Location: http://download.proxmox.com/appliances/system/centos-4-standard_4.7-1_i386.tar.gz
-Infopage: http://pve.proxmox.com/wiki/CentOS_4_Standard
-md5sum: 49ff5ac1ae0f03e8ab28eafdc050e85f
-Description: CentOS 4 (standard)
-  A small CentOS system.
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Location: http://download.proxmox.com/appliances/system/debian-7.0-standard_7.0-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Debian_7.0_Standard
+md5sum: c66cd4a326e81b083c77701136d57eb7
+Description: Debian 7.0 (standard)
+  A small Debian Wheezy system including all standard packages.
 
 Package: centos-5-standard
-Version: 5.2-1
+Version: 5.8-1
 Type: openvz
 OS: centos-5
 Section: system
-Location: http://download.proxmox.com/appliances/system/centos-5-standard_5.2-1_i386.tar.gz
+Location: http://download.proxmox.com/appliances/system/centos-5-standard_5.8-1_i386.tar.gz
 Infopage: http://pve.proxmox.com/wiki/CentOS_5_Standard
-md5sum: 5d3ef1bda953b7e9c832236413d9c048
+md5sum: 6877d22e95fe027ebbd85a501b0703c3
 Description: CentOS 5 (standard)
   A small CentOS system.
 
-Package: fedora-9-standard
-Version: 9-2
+Package: centos-6-standard
+Version: 6.3-1
 Type: openvz
-OS: fedora-9
+OS: centos-6
 Section: system
-Location: http://download.proxmox.com/appliances/system/fedora-9-standard_9-2_i386.tar.gz
-Infopage: http://pve.proxmox.com/wiki/Fedora_9_Standard
-md5sum: c5f127253345fb693ab0271bba94a82f
-Description: Fedora 9 (standard)
-  A small Fedora system.
+Location: http://download.proxmox.com/appliances/system/centos-6-standard_6.3-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/CentOS_6_Standard
+md5sum: 73299db108140a2f9593199bc6a29447
+Description: CentOS 6 (standard)
+  A small CentOS system.
 
 Package: proxmox-mailgateway
-Version: 2.4-2
+Version: 3.1-1
 Type: openvz
-OS: debian-4.0
+OS: debian-6.0
 Section: mail
 Certified: yes
 Maintainer: Proxmox Support Team <support@proxmox.com>
-Location: http://download.proxmox.com/appliances/mail/debian-4.0-proxmox-mailgateway_2.4-2_i386.tar.gz
+Location: http://download.proxmox.com/appliances/mail/debian-6.0-proxmox-mailgateway_3.1-1_amd64.tar.gz
 Infopage: http://pve.proxmox.com/wiki/Proxmox_Mail_Gateway
 ManageUrl: https://__IPADDRESS__/
-md5sum: 3b48ffe08347229a854bc8d5ee161e1f
+md5sum: 18cb838a7f5e0eddf22490f826a190d8
 Description: Proxmox Mail Gateway
   A full featured mail proxy for spam an virus filtering.
 
@@ -125,15 +126,15 @@ Description: CYAN Secure Web
  usage.
 
 Package: joomla
-Version: 1.5.15-1
+Version: 2.5-2
 Type: openvz
-OS: debian-5.0
+OS: debian-6.0
 Section: www
 Maintainer: Proxmox Support Team <support@proxmox.com>
-Location: http://download.proxmox.com/appliances/www/debian-5.0-joomla_1.5.15-1_i386.tar.gz
+Location: http://download.proxmox.com/appliances/www/debian-6.0-joomla_2.5-2_i386.tar.gz
 Infopage: http://pve.proxmox.com/wiki/Joomla!
 ManageUrl: http://__IPADDRESS__/
-md5sum: 351668b0fc5021484cde465cfd5d30c9
+md5sum: 865ce5fc003460d2aedbc06b45e02671
 Description: Joomla! Content Management
  Joomla! is one of the most powerful Open Source Content Management 
  Systems on the planet. It is used all over the world for everything from 
@@ -151,16 +152,38 @@ md5sum: 2c8ba5f36e94d95f3d0d535489f60e77
 Description: Ubuntu Hardy (standard)
   A small Ubuntu Hardy system including all standard packages.
 
-Package: drupal
-Version: 6.14-1
+Package: ubuntu-10.04-standard
+Version: 10.04-4
 Type: openvz
-OS: debian-5.0
+OS: ubuntu-10.04
+Section: system
+Location: http://download.proxmox.com/appliances/system/ubuntu-10.04-standard_10.04-4_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Lucid_Standard
+md5sum: ed04c27ede0327d39b88e43bf9b0d10e
+Description: Ubuntu Lucid Lynx (standard)
+  A small Ubuntu Lucid Lynx system including all standard packages.
+
+Package: ubuntu-12.04-standard
+Version: 12.04-1
+Type: openvz
+OS: ubuntu-12.04
+Section: system
+Location: http://download.proxmox.com/appliances/system/ubuntu-12.04-standard_12.04-1_i386.tar.gz
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Precise_Standard
+md5sum: 628d10ffa4ea4b4ab3254bd229ecd4be
+Description: Ubuntu Precise Pangolin (standard)
+  A small Ubuntu Precise Pangolin system including all standard packages.
+
+Package: drupal
+Version: 6.26-2
+Type: openvz
+OS: debian-6.0
 Section: www
 Maintainer: Proxmox Support Team <support@proxmox.com>
-Location: http://download.proxmox.com/appliances/www/debian-5.0-drupal_6.14-1_i386.tar.gz
+Location: http://download.proxmox.com/appliances/www/debian-6.0-drupal_6.26-2_i386.tar.gz
 Infopage: http://pve.proxmox.com/wiki/Drupal
 ManageUrl: http://__IPADDRESS__/
-md5sum: 557a4ab4d0adb998bf7fcd31219e9a0a
+md5sum: 354048b99f154b0e5f8b89ce168d5132
 Description: Drupal Content Management
  Drupal is a free software package that allows an individual or a
  community of users to easily publish, manage and organize a wide
@@ -238,15 +261,15 @@ Description:  Extensible trouble-ticket tracking system
  features a web, email and command-line interfaces.
 
 Package: wordpress
-Version: 2.9-1
+Version: 3.4.2-1
 Type: openvz
-OS: debian-5.0
+OS: debian-6.0
 Section: www
 Maintainer: Proxmox Support Team <support@proxmox.com>
-Location: http://download.proxmox.com/appliances/www/debian-5.0-wordpress_2.9-1_i386.tar.gz
+Location: http://download.proxmox.com/appliances/www/debian-6.0-wordpress_3.4.2-1_i386.tar.gz
 Infopage: http://pve.proxmox.com/wiki/Wordpress
 ManageUrl: http://__IPADDRESS__/
-md5sum: 362697bfa8821f6c736320544cbb9232
+md5sum: 9c0c9cf84003c6d524b739ec86d84fe4
 Description: Wordpress
  WordPress is a state-of-the-art publishing platform with a
  focus on aesthetics, web standards, and usability.
