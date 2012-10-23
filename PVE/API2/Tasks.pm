@@ -87,7 +87,7 @@ __PACKAGE__->register_method({
 		my $status = $5;
 		if ((my $task = PVE::Tools::upid_decode($upid, 1))) {
 		    return if $userfilter && $task->{user} !~ m/\Q$userfilter\E/i;
-		    next if !($auditor || $user eq $task->{user});
+		    return if !($auditor || $user eq $task->{user});
 
 		    return if $errors && $status && $status eq 'OK';
 

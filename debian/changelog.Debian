@@ -5,6 +5,8 @@ pve-manager (2.2-22) unstable; urgency=low
   * update openvz appliance list
   
   * add win8 to OS type selector
+  
+  * fix bug #205
 
  -- Proxmox Support Team <support@proxmox.com>  Fri, 12 Oct 2012 06:07:12 +0200
 
