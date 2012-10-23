@@ -57,12 +57,12 @@ upload: ${DEB}
 #poupload:
 #	rsync po/*.po po/pve-manager.pot pve.proxmox.com:/home/ftp/sources/po-files/
 
-#.PHONY: aplupload
-#aplupload:
-#	./aplinfo/apltest.pl
-#	gpg -bas -u support@proxmox.com aplinfo/aplinfo.dat
-#	gzip -c aplinfo/aplinfo.dat > aplinfo.dat.gz
-#	scp aplinfo/aplinfo.dat aplinfo.dat.gz aplinfo/aplinfo.dat.asc pve.proxmox.com:/home/ftp/appliances/
+.PHONY: aplupload
+aplupload:
+	./aplinfo/apltest.pl
+	gpg -bas -u support@proxmox.com aplinfo/aplinfo.dat
+	gzip -c aplinfo/aplinfo.dat > aplinfo.dat.gz
+	scp aplinfo/aplinfo.dat aplinfo.dat.gz aplinfo/aplinfo.dat.asc download1.proxmox.com:/home/ftp/appliances/
 
 .PHONY: install
 install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl
