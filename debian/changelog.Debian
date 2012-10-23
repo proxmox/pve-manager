@@ -1,3 +1,9 @@
+pve-manager (2.2-23) unstable; urgency=low
+
+  * update link to new debian-6.0-proxmox-mailgateway_3.1-2_amd64.tar.gz
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 23 Oct 2012 10:27:18 +0200
+
 pve-manager (2.2-22) unstable; urgency=low
 
   * vzdump: also run 'backup-start' hook in snapshot mode

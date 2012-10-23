@@ -75,16 +75,16 @@ Description: CentOS 6 (standard)
   A small CentOS system.
 
 Package: proxmox-mailgateway
-Version: 3.1-1
+Version: 3.1-2
 Type: openvz
 OS: debian-6.0
 Section: mail
 Certified: yes
 Maintainer: Proxmox Support Team <support@proxmox.com>
-Location: http://download.proxmox.com/appliances/mail/debian-6.0-proxmox-mailgateway_3.1-1_amd64.tar.gz
+Location: http://download.proxmox.com/appliances/mail/debian-6.0-proxmox-mailgateway_3.1-2_amd64.tar.gz
 Infopage: http://pve.proxmox.com/wiki/Proxmox_Mail_Gateway
 ManageUrl: https://__IPADDRESS__/
-md5sum: 18cb838a7f5e0eddf22490f826a190d8
+md5sum: 7cdfa4d86eb515c6183b40274b752af5
 Description: Proxmox Mail Gateway
   A full featured mail proxy for spam an virus filtering.
 
