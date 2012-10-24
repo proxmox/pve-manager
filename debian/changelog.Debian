@@ -1,3 +1,9 @@
+pve-manager (2.2-24) unstable; urgency=low
+
+  * vncproxy: wait until vnc port is ready (avoid connection errors)
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 24 Oct 2012 09:02:08 +0200
+
 pve-manager (2.2-23) unstable; urgency=low
 
   * update link to new debian-6.0-proxmox-mailgateway_3.1-2_amd64.tar.gz
