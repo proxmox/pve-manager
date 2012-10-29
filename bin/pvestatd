@@ -384,7 +384,7 @@ for (;;) { # forever
 
 	my $mem = PVE::ProcFSTools::read_memory_usage();
 
-	if (!defined($initial_memory_usage)) {
+	if (!defined($initial_memory_usage) || ($cycle < 10)) {
 	    $initial_memory_usage = $mem->{resident};
 	} else {
 	    my $diff = $mem->{resident} - $initial_memory_usage;

@@ -1,3 +1,9 @@
+pve-manager (2.2-26) unstable; urgency=low
+
+  *  pvestatd: fix server reload (run at least 10 cycles)
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 29 Oct 2012 13:08:20 +0100
+
 pve-manager (2.2-25) unstable; urgency=low
 
   * pvestatd: fix server reload (due to memory leak)
