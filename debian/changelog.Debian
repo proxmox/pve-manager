@@ -1,3 +1,9 @@
+pve-manager (2.2-25) unstable; urgency=low
+
+  * pvestatd: fix server reload (due to memory leak)
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 29 Oct 2012 12:32:28 +0100
+
 pve-manager (2.2-24) unstable; urgency=low
 
   * vncproxy: wait until vnc port is ready (avoid connection errors)

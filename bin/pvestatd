@@ -352,6 +352,8 @@ sub restart_server {
     exit (-1); # never reached?
 }
 
+my $initial_memory_usage;
+
 for (;;) { # forever
 
     eval {
@@ -382,10 +384,15 @@ for (;;) { # forever
 
 	my $mem = PVE::ProcFSTools::read_memory_usage();
 
-	if ($mem->{resident} > (35*1024*1024)) {
-	    syslog ('info', "restarting server after $cycle cycles to " .
-		    "reduce memory usage (free $mem->{resident} bytes)");
-	    restart_server ();
+	if (!defined($initial_memory_usage)) {
+	    $initial_memory_usage = $mem->{resident};
+	} else {
+	    my $diff = $mem->{resident} - $initial_memory_usage;
+	    if ($diff > 5*1024*1024) {
+		syslog ('info', "restarting server after $cycle cycles to " .
+			"reduce memory usage (free $mem->{resident} ($diff) bytes)");
+		restart_server ();
+	    }
 	}
 
 	my $wcount = 0;
