@@ -500,7 +500,7 @@ __PACKAGE__->register_method ({
 	# NOTE: vncterm VNC traffic is already TLS encrypted,
 	# so we select the fastest chipher here (or 'none'?)
 	my $remcmd = $remip ? 
-	    ['/usr/bin/ssh', '-c', 'blowfish-cbc', '-t', $remip] : [];
+	    ['/usr/bin/ssh', '-t', $remip] : [];
 
 	my $shcmd = $user eq 'root@pam' ? [ "/bin/bash", "-l" ] : [ "/bin/login" ];
 
