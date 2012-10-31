@@ -1,3 +1,10 @@
+pve-manager (2.2-27) unstable; urgency=low
+
+  * fix RRD images caching problems: new create_rrd_graph returns rrd 
+  png data inline - no need to read data from file.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 31 Oct 2012 07:15:57 +0100
+
 pve-manager (2.2-26) unstable; urgency=low
 
   *  pvestatd: fix server reload (run at least 10 cycles)

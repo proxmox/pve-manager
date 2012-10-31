@@ -115,9 +115,9 @@ sub format_response_data {
 	$raw = '';
 
 	if ($data && ref($data) && ref($data->{data}) && 
-	    $data->{data}->{filename}) {
+	    $data->{data}->{filename} && defined($data->{data}->{image})) {
 	    $filename = $data->{data}->{filename};
-	    $raw = PVE::Tools::file_get_contents($filename);
+	    $raw = $data->{data}->{image};
 	}
 	    
     } elsif ($format eq 'extjs') {
