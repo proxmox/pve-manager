@@ -141,7 +141,7 @@ __PACKAGE__->register_method({
 my $restore_openvz = sub {
     my ($private, $archive, $vmid, $force) = @_;
 
-    my $vzconf = PVE::OpenVZ::read_global_vz_config ();
+    my $vzconf = PVE::OpenVZ::read_global_vz_config();
     my $conffile = PVE::OpenVZ::config_file($vmid);
     my $cfgdir = dirname($conffile);
 
@@ -173,7 +173,7 @@ my $restore_openvz = sub {
 	};
 
 	mkpath $private || die "unable to create private dir '$private'";
-	mkpath $root || die "unable to create private dir '$private'";
+	mkpath $root || die "unable to create root dir '$root'";
 	
 	my $cmd = ['tar', 'xpf', $archive, '--totals', '--sparse', '-C', $private];
 
@@ -1089,6 +1089,12 @@ __PACKAGE__->register_method({
 		if (my $sid = &$get_container_storage($stcfg, $vmid, $veconf)) {
 		    PVE::Storage::activate_storage($stcfg, $sid);
 		}
+
+		my $vzconf = PVE::OpenVZ::read_global_vz_config();
+		
+		# make sure mount point is there (see bug #276)
+		my $root = PVE::OpenVZ::get_rootdir($veconf, $vmid);
+		mkpath $root || die "unable to create root dir '$root'";
 
 		my $cmd = ['vzctl', 'start', $vmid];
 	    
