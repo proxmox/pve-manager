@@ -1,3 +1,9 @@
+pve-manager (2.2-31) unstable; urgency=low
+
+  * Brazilian Transtalion (done by Maila Networks)
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 19 Nov 2012 13:17:23 +0100
+
 pve-manager (2.2-30) unstable; urgency=low
 
   * add Norwegian (Bokmal and Nynorsk) translations.
