@@ -19,17 +19,17 @@ Ext.define('PVE.form.CPUModelSelector', {
 	    ['phenom', 'phenom'],
 	    ['qemu32', 'qemu32'],
 	    ['qemu64', 'qemu64'],
-	    ['cpu64-rhel6', 'cpu64-rhel6'],
-	    ['cpu64-rhel5', 'cpu64-rhel5'],
 	    ['Conroe', 'Conroe'],
 	    ['Penryn', 'Penryn'],
 	    ['Nehalem', 'Nehalem'],
 	    ['Westmere', 'Westmere'],
 	    ['SandyBridge', 'SandyBridge'],
+	    ['Haswell', 'Haswell'],
 	    ['Opteron_G1', 'Opteron_G1'],
 	    ['Opteron_G2', 'Opteron_G2'],
 	    ['Opteron_G3', 'Opteron_G3'],
 	    ['Opteron_G4', 'Opteron_G4'],
+	    ['Opteron_G5', 'Opteron_G5'],
 	    ['host', 'host']
 	];
 

@@ -1,3 +1,11 @@
+pve-manager (2.2-32) unstable; urgency=low
+
+  * add new cpu types:  Haswell and Opteron_G5
+  
+  * remove rhel specific cpu types: cpu64-rhel6 and cpu64-rhel5
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 27 Nov 2012 06:46:35 +0100
+
 pve-manager (2.2-31) unstable; urgency=low
 
   * Brazilian Transtalion (done by Maila Networks)
