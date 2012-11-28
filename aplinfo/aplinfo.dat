@@ -245,15 +245,15 @@ Description: Zenoss Core IT monitoring
  applications through a single, integrated software package.
 
 Package: request-tracker
-Version: 3.8.7-1
+Version: 3.8.8-2
 Type: openvz
 OS: debian-6.0
 Section: admin
 Maintainer: Proxmox Support Team <support@proxmox.com>
-Location: http://download.proxmox.com/appliances/admin/debian-6.0-request-tracker_3.8.7-1_i386.tar.gz
+Location: http://download.proxmox.com/appliances/admin/debian-6.0-request-tracker_3.8.8-2_i386.tar.gz
 Infopage: http://pve.proxmox.com/wiki/RT_Request_Tracker
 ManageUrl: http://__IPADDRESS__/rt/
-md5sum: 155f824dce64337d04678b3bc2fa41ef
+md5sum: ccc6a2e4a0978ed6a209d48ff1e0995f
 Description:  Extensible trouble-ticket tracking system
  Request Tracker (RT) is an enterprise-grade ticketing system which
  enables a group of people to intelligently and efficiently manage
