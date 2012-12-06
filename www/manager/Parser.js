@@ -149,7 +149,7 @@ Ext.define('PVE.Parser', { statics: {
 		if (!p || p.match(/^\s*$/)) {
 		    return; // continue
 		}
-		var match_res = p.match(/^(ifname|mac|bridge|host_ifname|host_mac)=(\S+)$/);
+		var match_res = p.match(/^(ifname|mac|bridge|host_ifname|host_mac|mac_filter)=(\S+)$/);
 		if (!match_res) {
 		    errors = true;
 		    return false; // break
@@ -175,7 +175,7 @@ Ext.define('PVE.Parser', { statics: {
 
 	Ext.Object.each(netif, function(iface, data) {
 	    var tmparray = [];
-	    Ext.Array.each(['ifname', 'mac', 'bridge', 'host_ifname' , 'host_mac'], function(key) {
+	    Ext.Array.each(['ifname', 'mac', 'bridge', 'host_ifname' , 'host_mac', 'mac_filter'], function(key) {
 		var value = data[key];
 		if (value) {
 		    tmparray.push(key + '=' + value);

@@ -500,11 +500,15 @@ sub parse_netif {
     foreach my $iface (split (/;/, $data)) {
 	my $d = {};
 	foreach my $pv (split (/,/, $iface)) {
-	    if ($pv =~ m/^(ifname|mac|bridge|host_ifname|host_mac)=(.+)$/) {
-		$d->{$1} = $2;
+	    if ($pv =~ m/^(ifname|mac|bridge|host_ifname|host_mac|mac_filter)=(.+)$/) {
 		if ($1 eq 'host_ifname') {
+		    $d->{$1} = $2;
 		    $host_ifnames->{$2} = $1;
-		}
+		} elsif ($1 eq 'mac_filter') {
+		    $d->{$1} = parse_boolean('mac_filter', $2);
+		} else {
+		    $d->{$1} = $2;
+		}		
 	    }
 	}
 	if ($d->{ifname}) {
@@ -535,6 +539,10 @@ sub print_netif {
     $res .= ",host_ifname=$net->{host_ifname}" if $net->{host_ifname};
     $res .= ",host_mac=$net->{host_mac}" if $net->{host_mac};
     $res .= ",bridge=$net->{bridge}" if $net->{bridge};
+
+    if (defined($net->{mac_filter}) && !$net->{mac_filter}) {
+	$res .= ",mac_filter=off"; # 'on' is the default
+    }
 
     return $res;
 }
@@ -1095,6 +1103,9 @@ sub update_ovz_config {
 	    $ifadd .= $newif->{$ifname}->{host_ifname} ? ",$newif->{$ifname}->{host_ifname}" : ',';
 	    $ifadd .= $newif->{$ifname}->{host_mac} ? ",$newif->{$ifname}->{host_mac}" : ',';
 	    $ifadd .= $newif->{$ifname}->{bridge} ? ",$newif->{$ifname}->{bridge}" : '';
+	    
+	    # not possible with current vzctl
+	    #$ifadd .= $newif->{$ifname}->{mac_filter} ? ",$newif->{$ifname}->{mac_filter}" : '';
 
 	    if (!$ifaces->{$ifname} || ($ifaces->{$ifname}->{raw} ne $newif->{$ifname}->{raw})) {
 		push @$changes, '--netif_add', $ifadd;
