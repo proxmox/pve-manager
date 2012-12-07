@@ -241,7 +241,7 @@ Ext.define('PVE.KVMConsole', {
 			if (btn !== 'yes') {
 			    return;
 			}
-			vm_command('shutdown', {timeout: 30});
+			vm_command('shutdown');
 		    });
 		}			    
 	    }, 
@@ -253,7 +253,7 @@ Ext.define('PVE.KVMConsole', {
 			if (btn !== 'yes') {
 			    return;
 			}
-			vm_command("stop", { timeout: 30});
+			vm_command("stop");
 		    }); 
 		}
 	    },

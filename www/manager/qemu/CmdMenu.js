@@ -73,7 +73,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 			    return;
 			}
 
-			vm_command("stop", { timeout: 30 });
+			vm_command("stop");
 		    });		   
 		}
 	    },
