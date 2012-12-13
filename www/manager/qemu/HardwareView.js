@@ -203,6 +203,28 @@ Ext.define('PVE.qemu.HardwareView', {
 	    win.on('destroy', reload);
 	};
 
+	var run_resize = function() {
+	    var rec = sm.getSelection()[0];
+	    if (!rec) {
+		return;
+	    }
+
+	    var rowdef = rows[rec.data.key];
+	    if (!rowdef.editor) {
+		return;
+	    }
+
+	    var win = Ext.create('PVE.window.HDResize', {
+		disk: rec.data.key,
+		nodename: nodename,
+		vmid: vmid
+	    });
+
+	    win.show();
+
+	    win.on('destroy', reload);
+	};
+
 	var edit_btn = new PVE.button.Button({
 	    text: gettext('Edit'),
 	    selModel: sm,
@@ -215,6 +237,20 @@ Ext.define('PVE.qemu.HardwareView', {
 		return !!rowdef.editor;
 	    },
 	    handler: run_editor
+	});
+
+	var resize_btn = new PVE.button.Button({
+	    text: gettext('Resize disk'),
+	    selModel: sm,
+	    disabled: true,
+	    enableFn: function(rec) {
+		if (!rec) {
+		    return false;
+		}
+	    	var rowdef = rows[rec.data.key];
+		return rowdef.tdCls == 'pve-itype-icon-storage' && !rec.data.value.match(/media=cdrom/)
+	    },
+	    handler: run_resize
 	});
 
 	var remove_btn = new PVE.button.Button({
@@ -309,7 +345,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		    })
 		}, 
 		remove_btn,
-		edit_btn
+		edit_btn,
+		resize_btn
 	    ],
 	    rows: rows,
 	    sorterFn: sorterFn,

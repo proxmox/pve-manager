@@ -94,6 +94,7 @@ JSSRC= 				                 	\
 	qemu/NetworkEdit.js				\
 	qemu/CDEdit.js					\
 	qemu/HDEdit.js					\
+	qemu/HDResize.js				\
 	qemu/DisplayEdit.js				\
 	qemu/KeyboardEdit.js				\
 	qemu/HardwareView.js				\
