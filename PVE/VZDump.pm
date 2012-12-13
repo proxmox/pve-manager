@@ -672,7 +672,7 @@ sub get_backup_file_list {
     my $bklist = [];
     foreach my $fn (<$dir/${bkname}-*>) {
 	next if $exclude_fn && $fn eq $exclude_fn;
-	if ($fn =~ m!/(${bkname}-(\d{4})_(\d{2})_(\d{2})-(\d{2})_(\d{2})_(\d{2})\.(tgz|(tar(\.(gz|lzo))?)))$!) {
+	if ($fn =~ m!/(${bkname}-(\d{4})_(\d{2})_(\d{2})-(\d{2})_(\d{2})_(\d{2})\.(tgz|((tar|vma)(\.(gz|lzo))?)))$!) {
 	    $fn = "$dir/$1"; # untaint
 	    my $t = timelocal ($7, $6, $5, $4, $3 - 1, $2 - 1900);
 	    push @$bklist, [$fn, $t];
@@ -722,7 +722,7 @@ sub exec_backup_task {
 
 	my $logfile = $task->{logfile} = "$opts->{dumpdir}/$basename.log";
 
-	my $ext = '.tar';
+	my $ext = $vmtype eq 'qemu' ? '.vma' : '.tar';
 	my ($comp, $comp_ext) = compressor_info($opts->{compress});
 	if ($comp && $comp_ext) {
 	    $ext .= ".${comp_ext}";
@@ -916,7 +916,7 @@ sub exec_backup_task {
 		debugmsg ('info', "delete old backup '$d->[0]'", $logfd);
 		unlink $d->[0];
 		my $logfn = $d->[0];
-		$logfn =~ s/\.(tgz|(tar(\.(gz|lzo))?))$/\.log/;
+		$logfn =~ s/\.(tgz|((tar|vma)(\.(gz|lzo))?))$/\.log/;
 		unlink $logfn;
 	    }
 	}
@@ -946,8 +946,11 @@ sub exec_backup_task {
 		    debugmsg ('info', "resume vm", $logfd);
 		    $plugin->resume_vm ($task, $vmid);
 		} else {
-		    debugmsg ('info', "restarting vm", $logfd);
-		    $plugin->start_vm ($task, $vmid);
+		    my $running = $plugin->vm_status($vmid);
+		    if (!$running) {
+			debugmsg ('info', "restarting vm", $logfd);
+			$plugin->start_vm ($task, $vmid);
+		    }
 		} 
 	    };
 	    my $err = $@;

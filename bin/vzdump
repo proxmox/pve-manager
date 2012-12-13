@@ -52,7 +52,7 @@ vzdump - backup utility for virtual machine
 =head1 DESCRIPTION
 
 vzdump is an utility to make consistent snapshots of running virtual
-machines (VMs). It basically creates a tar archive of the VM private area,
+machines (VMs). It basically creates an archive of the VM private area,
 which also includes the VM configuration files. vzdump currently
 supports OpenVZ and QemuServer VMs.
 
@@ -96,7 +96,7 @@ number of backups to keep.
 
 =head1 RESTORE
 
-The resulting tar files can be restored with the following programs.
+The resulting archive files can be restored with the following programs.
 
 =over 1
 
@@ -182,7 +182,7 @@ Restore an OpenVZ machine to VM 600
 
 Restore an Qemu/KVM machine to VM 601
 
- # qmrestore /mnt/backup/vzdump-qemu-888.tar 601
+ # qmrestore /mnt/backup/vzdump-qemu-888.vma 601
 
 Clone an existing container 101 to container 300 using pipes
 

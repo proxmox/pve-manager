@@ -1,3 +1,9 @@
+pve-manager (2.3-1) unstable; urgency=low
+
+  * support new qemu vma backup files
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 13 Dec 2012 07:27:32 +0100
+
 pve-manager (2.2-32) unstable; urgency=low
 
   * add new cpu types:  Haswell and Opteron_G5
