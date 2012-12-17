@@ -1,3 +1,9 @@
+pve-manager (2.3-2) unstable; urgency=low
+
+  * add HD resize feature to expand disks.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 17 Dec 2012 13:03:15 +0100
+
 pve-manager (2.3-1) unstable; urgency=low
 
   * support new qemu vma backup files
