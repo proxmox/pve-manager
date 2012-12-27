@@ -71,6 +71,20 @@ Ext.define('PVE.qemu.SnapshotTree', {
 		me.load_task.delay(me.load_delay);
 	    }
 	});
+
+        PVE.Utils.API2Request({
+	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/feature',
+	    params: { feature: 'snapshot' },
+            method: 'GET',
+            success: function(response, options) {
+                var res = response.result.data;
+		if (res === 1) {
+		   Ext.getCmp('snapshotBtn').enable();
+		}
+            }
+        });
+
+
     },
 
     initComponent: function() {
@@ -94,6 +108,7 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    return record && record.data && record.data.name &&
 		record.data.name !== 'current';
 	};
+
 	var valid_snapshot_rollback = function(record) {
 	    return record && record.data && record.data.name &&
 		record.data.name !== 'current' && !record.data.snapstate;
@@ -193,7 +208,9 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	});
 
 	var snapshotBtn = Ext.create('Ext.Button', { 
+	    id: 'snapshotBtn',
 	    text: gettext('Take Snapshot'),
+	    disabled: true,
 	    handler: function() {
 		var win = Ext.create('PVE.window.Snapshot', { 
 		    nodename: me.nodename,
