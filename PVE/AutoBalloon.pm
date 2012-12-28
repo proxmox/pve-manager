@@ -93,6 +93,8 @@ sub compute_alg1 {
 	my $d = $vmstatus->{$vmid};
 	next if !$d->{balloon}; # skip if balloon driver not running
 	next if !$d->{balloon_min}; # skip if balloon value not set in config
+	next if defined($d->{shares}) && 
+	    ($d->{shares} == 0); # skip if shares set to zero
 
 	push @$idlist, $vmid;
 
