@@ -11,6 +11,7 @@ PERLSOURCE = 			\
 	OpenVZ.pm		\
 	OpenVZMigrate.pm	\
 	APLInfo.pm		\
+	AutoBalloon.pm		\
 	VZDump.pm
 
 all: pvecfg.pm ${SUBDIRS}

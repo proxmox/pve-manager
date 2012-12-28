@@ -9,6 +9,9 @@ DEB=${PACKAGE}_${VERSION}-${PACKAGERELEASE}_all.deb
 
 all: ${SUBDIRS}
 
+check:
+	${MAKE} -C bin/test check
+
 %:
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
@@ -43,7 +46,7 @@ ${DEB} deb:
 	lintian ${DEB}	
 
 .PHONY: upload
-upload: ${DEB}
+upload: ${DEB} check
 	./repoid.pl .git check
 	umount /pve/${RELEASE}; mount /pve/${RELEASE} -o rw 
 	mkdir -p /pve/${RELEASE}/extra

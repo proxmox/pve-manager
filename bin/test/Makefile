@@ -2,6 +2,9 @@ include ../../defines.mk
 
 all:
 
+check:
+	./balloontest.pl
+
 SCRIPTS = 		\
 	example1.pl	\
 	example2.pl
