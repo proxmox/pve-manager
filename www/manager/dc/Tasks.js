@@ -71,7 +71,11 @@ Ext.define('PVE.dc.Tasks', {
 		    width: 100,
 		    renderer: function(value, metaData, record) {
 			if (record.data.pid) {
-			    metaData.tdCls =  "x-grid-row-loading";
+			    if (record.data.type == "vncproxy") {
+				metaData.tdCls =  "x-grid-row-console";
+			    } else {
+				metaData.tdCls =  "x-grid-row-loading";
+			    }
 			    return "";
 			}
 			return Ext.Date.format(value, "M d H:i:s"); 
@@ -99,7 +103,9 @@ Ext.define('PVE.dc.Tasks', {
 		    width: 200,
 		    renderer: function(value, metaData, record) { 
 			if (record.data.pid) {
-			    metaData.tdCls =  "x-grid-row-loading";
+			    if (record.data.type != "vncproxy") {
+				metaData.tdCls =  "x-grid-row-loading";
+			    }
 			    return "";
 			}
 			if (value == 'OK') {

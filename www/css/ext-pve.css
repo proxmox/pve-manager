@@ -9,6 +9,12 @@
     background-image:url(../ext4/resources/themes/images/default/shared/loading-balls.gif);
 }
 
+.x-grid-row-console {
+    background-color: #fff;
+    background: no-repeat center center;
+    background-image:url(../images/display.png);
+}
+
 .x-selectable, .x-selectable * {
     -moz-user-select: text!important;
     -khtml-user-select: text!important;
