@@ -19,6 +19,9 @@ Ext.define('PVE.qemu.CreateWizard', {
 	var cdpanel = Ext.create('PVE.qemu.CDInputPanel', {
 	    title: 'CD/DVD',
 	    confid: 'ide2',
+	    fieldDefaults: {
+		labelWidth: 160
+	    },
 	    insideWizard: true
 	});
 

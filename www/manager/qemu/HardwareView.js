@@ -44,7 +44,13 @@ Ext.define('PVE.qemu.HardwareView', {
 		never_delete: true,
 		defaultValue: 512,
 		tdCls: 'pve-itype-icon-memory',
-		renderer: function(value) {
+		renderer: function(value, metaData, record) {
+		    var balloon =  me.getObjectValue('balloon');
+		    if (balloon) {
+			return PVE.Utils.format_size(balloon*1024*1024) + "/" + 
+			    PVE.Utils.format_size(value*1024*1024);
+
+		    } 
 		    return PVE.Utils.format_size(value*1024*1024);
 		}
 	    },
@@ -90,6 +96,9 @@ Ext.define('PVE.qemu.HardwareView', {
 		visible: false
 	    },
 	    cpu: {
+		visible: false
+	    },
+	    balloon: {
 		visible: false
 	    }
 	};

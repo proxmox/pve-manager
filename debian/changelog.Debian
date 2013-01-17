@@ -1,3 +1,9 @@
+pve-manager (2.3-4) unstable; urgency=low
+
+  * add balloon GUI (dynamic memory)
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 17 Jan 2013 12:58:58 +0100
+
 pve-manager (2.3-3) unstable; urgency=low
 
   * GUI: tasks - use better icon for open console
