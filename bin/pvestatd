@@ -227,19 +227,22 @@ sub update_qemu_status {
     foreach my $vmid (keys %$vmstatus) {
 	my $d = $vmstatus->{$vmid};
 	my $data;
+	my $status = $d->{qmpstatus} || $d->{status} || 'stopped';
+	my $template = 0;
 	if ($d->{pid}) { # running
-	    $data = "$d->{uptime}:$d->{name}:$ctime:$d->{cpus}:$d->{cpu}:" .
+	    $data = "$d->{uptime}:$d->{name}:$status:$template:" .
+		"$ctime:$d->{cpus}:$d->{cpu}:" .
 		"$d->{maxmem}:$d->{mem}:" .
 		"$d->{maxdisk}:$d->{disk}:" .
 		"$d->{netin}:$d->{netout}:" .
 		"$d->{diskread}:$d->{diskwrite}";
 	} else {
-	    $data = "0:$d->{name}:$ctime:$d->{cpus}::" .
+	    $data = "0:$d->{name}:$status:$template:$ctime:$d->{cpus}::" .
 		"$d->{maxmem}::" .
 		"$d->{maxdisk}:$d->{disk}:" .
 		":::";
 	}
-	PVE::Cluster::broadcast_rrd("pve2-vm/$vmid", $data);
+	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
     }
 }
 
@@ -292,18 +295,18 @@ sub update_openvz_status {
 	my $d = $vmstatus->{$vmid};
 	my $data;
 	if ($d->{status} eq 'running') { # running
-	    $data = "$d->{uptime}:$d->{name}:$ctime:$d->{cpus}:$d->{cpu}:" .
+	    $data = "$d->{uptime}:$d->{name}:$d->{status}:0:$ctime:$d->{cpus}:$d->{cpu}:" .
 		"$d->{maxmem}:$d->{mem}:" .
 		"$d->{maxdisk}:$d->{disk}:" .
 		"$d->{netin}:$d->{netout}:" .
 		"$d->{diskread}:$d->{diskwrite}";
 	} else {
-	    $data = "0:$d->{name}:$ctime:$d->{cpus}::" .
+	    $data = "0:$d->{name}:$d->{status}:0:$ctime:$d->{cpus}::" .
 		"$d->{maxmem}::" .
 		"$d->{maxdisk}:$d->{disk}:" .
 		":::";
 	}
-	PVE::Cluster::broadcast_rrd("pve2-vm/$vmid", $data);
+	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
     }
 }
 

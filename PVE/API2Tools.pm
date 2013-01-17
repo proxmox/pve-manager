@@ -44,7 +44,7 @@ sub extract_vm_stats {
 
 	$entry->{uptime} = ($d->[0] || 0) + 0;
 	$entry->{name} = $d->[1];
-
+	$entry->{status} = $entry->{uptime} ? 'running' : 'stopped';
 	$entry->{maxcpu} = ($d->[3] || 0) + 0;
 	$entry->{cpu} = ($d->[4] || 0) + 0;
 	$entry->{maxmem} = ($d->[5] || 0) + 0;
@@ -55,6 +55,24 @@ sub extract_vm_stats {
 	$entry->{netout} = ($d->[10] || 0) + 0;
 	$entry->{diskread} = ($d->[11] || 0) + 0;
 	$entry->{diskwrite} = ($d->[12] || 0) + 0;
+    
+    } elsif (my $d = $rrd->{"pve2.3-vm/$vmid"}) {
+
+	$entry->{uptime} = ($d->[0] || 0) + 0;
+	$entry->{name} = $d->[1];
+	$entry->{status} = $d->[2];
+	$entry->{template} = $d->[3] + 0;
+
+	$entry->{maxcpu} = ($d->[5] || 0) + 0;
+	$entry->{cpu} = ($d->[6] || 0) + 0;
+	$entry->{maxmem} = ($d->[7] || 0) + 0;
+	$entry->{mem} = ($d->[8] || 0) + 0;
+	$entry->{maxdisk} = ($d->[9] || 0) + 0;
+	$entry->{disk} = ($d->[10] || 0) + 0;
+	$entry->{netin} = ($d->[11] || 0) + 0;
+	$entry->{netout} = ($d->[12] || 0) + 0;
+	$entry->{diskread} = ($d->[13] || 0) + 0;
+	$entry->{diskwrite} = ($d->[14] || 0) + 0;
     };
 
     return $entry;
