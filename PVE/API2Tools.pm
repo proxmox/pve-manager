@@ -40,7 +40,9 @@ sub extract_vm_stats {
 	type => $data->{type},
     };
 
-    if (my $d = $rrd->{"pve2-vm/$vmid"}) {
+    my $d;
+
+    if ($d = $rrd->{"pve2-vm/$vmid"}) {
 
 	$entry->{uptime} = ($d->[0] || 0) + 0;
 	$entry->{name} = $d->[1];
@@ -56,7 +58,7 @@ sub extract_vm_stats {
 	$entry->{diskread} = ($d->[11] || 0) + 0;
 	$entry->{diskwrite} = ($d->[12] || 0) + 0;
     
-    } elsif (my $d = $rrd->{"pve2.3-vm/$vmid"}) {
+    } elsif ($d = $rrd->{"pve2.3-vm/$vmid"}) {
 
 	$entry->{uptime} = ($d->[0] || 0) + 0;
 	$entry->{name} = $d->[1];
