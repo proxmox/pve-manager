@@ -34,7 +34,16 @@ Ext.define('PVE.qemu.Config', {
 	    });
 	};
 
-	var startBtn = Ext.create('Ext.Button', { 
+	var resumeBtn = Ext.create('Ext.Button', { 
+	    text: gettext('Resume'),
+	    disabled: !caps.vms['VM.PowerMgmt'],
+	    visible: false,
+	    handler: function() {
+		vm_command('resume');
+	    }			    
+	}); 
+
+ 	var startBtn = Ext.create('Ext.Button', { 
 	    text: gettext('Start'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
 	    handler: function() {
@@ -114,7 +123,7 @@ Ext.define('PVE.qemu.Config', {
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Virtual Machine {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'kvmtab',
-	    tbar: [ startBtn, shutdownBtn, stopBtn, resetBtn, 
+	    tbar: [ resumeBtn, startBtn, shutdownBtn, stopBtn, resetBtn, 
 		    removeBtn, migrateBtn, consoleBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
@@ -173,12 +182,24 @@ Ext.define('PVE.qemu.Config', {
 
         me.statusStore.on('load', function(s, records, success) {
 	    var status;
+	    var qmpstatus;
+
 	    if (!success) {
 		me.workspace.checkVmMigration(me.pveSelNode);
-		status = 'unknown';
+		status = qmpstatus = 'unknown';
 	    } else {
 		var rec = s.data.get('status');
 		status = rec ? rec.data.value : 'unknown';
+		rec = s.data.get('qmpstatus');
+		qmpstatus = rec ? rec.data.value : 'unknown';
+	    }
+
+	    if (qmpstatus === 'prelaunch' || qmpstatus === 'paused') {
+		startBtn.setVisible(false);
+		resumeBtn.setVisible(true)
+	    } else {
+		startBtn.setVisible(true);
+		resumeBtn.setVisible(false)
 	    }
 
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running');

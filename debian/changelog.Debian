@@ -1,3 +1,9 @@
+pve-manager (2.3-5) unstable; urgency=low
+
+  * Display 'Resume' button when VM is 'paused'
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 18 Jan 2013 06:23:06 +0100
+
 pve-manager (2.3-4) unstable; urgency=low
 
   * add balloon GUI (dynamic memory)
