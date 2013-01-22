@@ -106,7 +106,7 @@ sub compute_alg1 {
 	    &$log("idlist2 $vmid $d->{balloon}, $d->{balloon_min}, $d->{freemem}\n");
 	} else {
 	    push @$idlist1, $vmid;
-	    &$log("idlist1 $vmid $d->{balloon}, $d->{balloon_min}, $d->{freemem}\n");
+	    &$log("idlist1 $vmid $d->{balloon}, $d->{balloon_min}\n");
 	}
     }
 
