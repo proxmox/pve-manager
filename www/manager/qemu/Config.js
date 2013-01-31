@@ -43,7 +43,7 @@ Ext.define('PVE.qemu.Config', {
 	    }			    
 	}); 
 
- 	var startBtn = Ext.create('Ext.Button', { 
+	var startBtn = Ext.create('Ext.Button', { 
 	    text: gettext('Start'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
 	    handler: function() {
@@ -196,10 +196,10 @@ Ext.define('PVE.qemu.Config', {
 
 	    if (qmpstatus === 'prelaunch' || qmpstatus === 'paused') {
 		startBtn.setVisible(false);
-		resumeBtn.setVisible(true)
+		resumeBtn.setVisible(true);
 	    } else {
 		startBtn.setVisible(true);
-		resumeBtn.setVisible(false)
+		resumeBtn.setVisible(false);
 	    }
 
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running');

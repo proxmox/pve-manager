@@ -387,7 +387,7 @@ Ext.define('PVE.OpenVZConsole', {
 		    }); 
 		}
 	    },
- 	    // Note: no migrate here, because we can't display migrate log
+	    // Note: no migrate here, because we can't display migrate log
             '->',
 	    {
                 text: gettext('Refresh'),

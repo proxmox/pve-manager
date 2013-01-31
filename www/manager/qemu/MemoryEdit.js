@@ -13,7 +13,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 
 	if (values.memoryType === 'fixed') {
 	    res = { memory: values.memory };
-	    res.delete = "balloon,shares";
+	    res['delete'] = "balloon,shares";
 	} else {
 	    res = { 
 		memory: values.maxmemory,
@@ -22,7 +22,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 	    if (Ext.isDefined(values.shares) && (values.shares !== "")) {
 		res.shares = values.shares;
 	    } else {
-		res.delete = "shares";
+		res['delete'] = "shares";
 	    }
 	}
 
@@ -93,8 +93,8 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		listeners: {
 		    change: function(f, value) {
 			var bf = me.down('field[name=balloon]');
-			balloon = bf.getValue();
-			if (balloon>value) {
+			var balloon = bf.getValue();
+			if (balloon > value) {
 			    bf.setValue(value);
 			}
 			bf.setMaxValue(value);
@@ -149,7 +149,7 @@ Ext.define('PVE.qemu.MemoryEdit', {
 	
 	Ext.apply(me, {
 	    subject: gettext('Memory'),
-	    items: Ext.create('PVE.qemu.MemoryInputPanel'),
+	    items: [ Ext.create('PVE.qemu.MemoryInputPanel') ],
 	    width: 350
 	});
 

@@ -256,8 +256,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		if (!rec) {
 		    return false;
 		}
-	    	var rowdef = rows[rec.data.key];
-		return rowdef.tdCls == 'pve-itype-icon-storage' && !rec.data.value.match(/media=cdrom/)
+		var rowdef = rows[rec.data.key];
+		return rowdef.tdCls == 'pve-itype-icon-storage' && !rec.data.value.match(/media=cdrom/);
 	    },
 	    handler: run_resize
 	});

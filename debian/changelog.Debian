@@ -1,3 +1,9 @@
+pve-manager (2.3-7) unstable; urgency=low
+
+  * fix javascript jslint warnings to make it work on all browsers.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 31 Jan 2013 07:16:13 +0100
+
 pve-manager (2.3-6) unstable; urgency=low
 
   * pvestatd: avoid warning about uninitialized value

@@ -40,8 +40,7 @@ Ext.define('PVE.window.HDResize', {
 		fieldLabel: 'Disk',
 		vtype: 'StorageId',
 		allowBlank: false
-	    },
-
+	    }
 	];
 
 	me.hdsizesel = Ext.createWidget('numberfield', {
