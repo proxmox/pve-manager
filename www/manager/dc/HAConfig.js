@@ -178,7 +178,7 @@ Ext.define('PVE.dc.HAConfig', {
 		    {
 			text: gettext('Failover Domain'),
 			handler: function() {
-			    Ext.Msg.alert(gettext('Error'), "not implemented - sorry");
+			    Ext.Msg.alert(gettext('Error'), "Please configure via CLI");
 			}
 		    }
 		]
