@@ -25,6 +25,10 @@ Ext.define('PVE.node.StatusView', {
 	    return per.toFixed(2) + "%";
 	};
 
+	var render_ksm = function(value) {
+	    return PVE.Utils.format_size(value.shared);
+	};
+
 	var render_meminfo = function(value) {
 	    var per = (value.used / value.total)*100;
 	    var text = "<div>Total: " + PVE.Utils.format_size(value.total) + "</div>" + 
@@ -40,6 +44,7 @@ Ext.define('PVE.node.StatusView', {
 	    wait: { header: 'IO delay', required: true, renderer: render_cpu },
 	    memory: { header: 'RAM usage', required: true, renderer: render_meminfo },
 	    swap: { header: 'SWAP usage', required: true, renderer: render_meminfo },
+	    ksm: { header: 'KSM sharing', required: true, renderer: render_ksm },
 	    rootfs: { header: 'HD space (root)', required: true, renderer: render_meminfo },
 	    pveversion: { header: 'PVE Manager version', required: true },
 	    kversion: { header: 'Kernel version', required: true }

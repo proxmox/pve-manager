@@ -246,6 +246,11 @@ __PACKAGE__->register_method({
 	    total => $meminfo->{memtotal},
 	    used => $meminfo->{memused},
 	};
+	
+	$res->{ksm} = {
+	    shared => $meminfo->{memshared},
+	};
+
 	$res->{swap} = {
 	    free => $meminfo->{swapfree},
 	    total => $meminfo->{swaptotal},
