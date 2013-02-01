@@ -11,7 +11,9 @@ Ext.define('PVE.node.StatusView', {
 	}
 
 	var render_cpuinfo = function(value) {
-	    return value.cpus + " x " + value.model;
+	    return value.cpus + " x " + value.model + " (" + 
+		value.sockets + " " + 
+		(value.sockets > 1 ? "Sockets" : "Socket") + ")";
 	};
 
 	var render_loadavg = function(value) {
