@@ -144,6 +144,12 @@ Ext.define('PVE.openvz.Config', {
 		    xtype: 'pveOpenVZOptions'
 		},
 		{
+		    title: 'Task History',
+		    itemId: 'tasks',
+		    xtype: 'pveNodeTasks',
+		    vmidFilter: vmid
+		},
+		{
 		    title: 'UBC',
 		    itemId: 'ubc',
 		    xtype: 'pveBeanCounterGrid',

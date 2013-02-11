@@ -43,6 +43,10 @@ __PACKAGE__->register_method({
 		type => 'string',
 		optional => 1,
 	    },
+	    vmid => get_standard_option('pve-vmid', {
+		description => "Only list tasks for this VM.",
+		optional => 1 
+	    }),
 	    errors => {
 		type => 'boolean',
 		optional => 1,
@@ -90,6 +94,8 @@ __PACKAGE__->register_method({
 		    return if !($auditor || $user eq $task->{user});
 
 		    return if $errors && $status && $status eq 'OK';
+
+		    return if $param->{vmid} && (!$task->{id} || $task->{id} ne $param->{vmid}); 
 
 		    return if $count++ < $start;
 		    return if $limit <= 0;

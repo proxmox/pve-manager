@@ -3,6 +3,8 @@ Ext.define('PVE.node.Tasks', {
 
     alias: ['widget.pveNodeTasks'],
 
+    vmidFilter: 0,
+
     initComponent : function() {
 	var me = this;
 
@@ -27,16 +29,25 @@ Ext.define('PVE.node.Tasks', {
 	var userfilter = '';
 	var filter_errors = 0;
 
-	// fixme: scroller update fails 
-	// http://www.sencha.com/forum/showthread.php?133677-scroller-does-not-adjust-to-the-filtered-grid-data&p=602887
-	var reload_task = new Ext.util.DelayedTask(function() {
+	var updateProxyParams = function() {
 	    var params = {
 		errors: filter_errors
 	    };
 	    if (userfilter) {
 		params.userfilter = userfilter;
 	    }
+	    if (me.vmidFilter) {
+		params.vmid = me.vmidFilter;
+	    }
 	    store.proxy.extraParams = params;
+	};
+
+	updateProxyParams();
+
+	// fixme: scroller update fails 
+	// http://www.sencha.com/forum/showthread.php?133677-scroller-does-not-adjust-to-the-filtered-grid-data&p=602887
+	var reload_task = new Ext.util.DelayedTask(function() {
+	    updateProxyParams();
 	    store.filter();
 	});
 
