@@ -228,7 +228,7 @@ sub update_qemu_status {
 	my $d = $vmstatus->{$vmid};
 	my $data;
 	my $status = $d->{qmpstatus} || $d->{status} || 'stopped';
-	my $template = 0;
+	my $template = $d->{template} ? $d->{template} : "0";
 	if ($d->{pid}) { # running
 	    $data = "$d->{uptime}:$d->{name}:$status:$template:" .
 		"$ctime:$d->{cpus}:$d->{cpu}:" .
