@@ -27,6 +27,7 @@
 .pve-itype-icon-keyboard,
 .pve-itype-icon-cdrom,
 .pve-itype-icon-qemu,
+.pve-itype-icon-qemu-template,
 .pve-itype-icon-qemu-running,
 .pve-itype-icon-openvz,
 .pve-itype-icon-openvz-running,
@@ -53,6 +54,13 @@
 .x-grid-tree-node-expanded .x-tree-node-computer-running
 {
     background-image:url(../images/computer-on.png);
+}
+
+.pve-itype-icon-qemu-template,
+.x-tree-node-computer-template,
+.x-grid-tree-node-expanded .x-tree-node-computer-template
+{
+    background-image:url(../images/computer-template.png);
 }
 
 .pve-itype-icon-openvz,
