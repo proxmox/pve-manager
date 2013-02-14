@@ -86,11 +86,9 @@ Ext.define('PVE.tree.ResourceTree', {
 
 	var defaults = PVE.tree.ResourceTree.typeDefaults[info.type];
 	if (defaults && defaults.iconCls) {
-	    if (info.running) {
-		info.iconCls = defaults.iconCls + "-running";
-	    } else {
-		info.iconCls = defaults.iconCls;
-	    }
+	    var running = info.running ? '-running' : '';
+	    var template = info.template ? '-template' : '';
+	    info.iconCls = defaults.iconCls + running + template;
 	}
     },
 
