@@ -164,6 +164,13 @@ Ext.define('PVE.data.ResourceStore', {
 		renderer: PVE.Utils.format_size,
 		width: 100
 	    },
+	    template: {
+		header: 'template',
+		type: 'integer',
+		hidden: true,
+		sortable: true,
+		width: 60
+	    },
 	    uptime: {
 		header: gettext('Uptime'),
 		type: 'integer',
