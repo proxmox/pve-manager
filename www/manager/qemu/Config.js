@@ -189,6 +189,7 @@ Ext.define('PVE.qemu.Config', {
         me.statusStore.on('load', function(s, records, success) {
 	    var status;
 	    var qmpstatus;
+	    var template;
 
 	    if (!success) {
 		me.workspace.checkVmMigration(me.pveSelNode);
@@ -198,6 +199,10 @@ Ext.define('PVE.qemu.Config', {
 		status = rec ? rec.data.value : 'unknown';
 		rec = s.data.get('qmpstatus');
 		qmpstatus = rec ? rec.data.value : 'unknown';
+		rec = s.data.get('template');
+		if(rec.data.value){
+		    template = rec.data.value;
+		}
 	    }
 
 	    if (qmpstatus === 'prelaunch' || qmpstatus === 'paused') {
@@ -208,8 +213,8 @@ Ext.define('PVE.qemu.Config', {
 		resumeBtn.setVisible(false);
 	    }
 
-	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running');
-	    resetBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
+	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
+	    resetBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running' || template);
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
 	    stopBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'stopped');
 	    removeBtn.setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
