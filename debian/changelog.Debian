@@ -1,6 +1,8 @@
 pve-manager (2.3-7) unstable; urgency=low
 
   * fix javascript jslint warnings to make it work on all browsers.
+  
+  * use e1000 as default network card
 
  -- Proxmox Support Team <support@proxmox.com>  Thu, 31 Jan 2013 07:16:13 +0100
 

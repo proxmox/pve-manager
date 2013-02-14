@@ -6,9 +6,9 @@ Ext.define('PVE.form.NetworkCardSelector', {
 	var me = this;
 
         me.data = [ 
-	    ['rtl8139', 'Realtec RTL8139'], 
 	    ['e1000', 'Intel E1000'],
-	    ['virtio', 'VirtIO (paravirtualized)']
+	    ['virtio', 'VirtIO (paravirtualized)'],
+	    ['rtl8139', 'Realtec RTL8139']
 	];
  
 	me.callParent();
