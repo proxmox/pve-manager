@@ -232,7 +232,8 @@ Ext.define('PVE.tree.ResourceTree', {
 			}
 			if ((item.data.text !== olditem.data.text) ||
 			    (item.data.node !== olditem.data.node) ||
-			    (item.data.running !== olditem.data.running)) {
+			    (item.data.running !== olditem.data.running) ||
+			    (item.data.template !== olditem.data.template)) {
 			    //console.log("changed node/text/running " + olditem.data.id);
 			    changed = true;
 			}
