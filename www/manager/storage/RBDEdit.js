@@ -44,7 +44,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		height: 22, // hack: set same height as text fields
 		name: 'monhost',
-		value: 'X.X.X.X:6789;X.X.X.X:6789;X.X.X.X:6789',
+		value: '',
 		fieldLabel: gettext('Monitor Host'),
 		allowBlank: false
 	    },
@@ -54,15 +54,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		name: 'username',
 		value: 'admin',
 		fieldLabel: gettext('username'),
-		allowBlank: false
-	    },
-	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
-		height: 22, // hack: set same height as text fields
-		name: 'authsupported',
-		value: 'cephx;none',
-		fieldLabel: gettext('authsupported'),
-		allowBlank: false
+		allowBlank: true
 	    }
 	];
 
