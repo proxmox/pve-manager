@@ -103,6 +103,24 @@ Ext.define('PVE.qemu.Options', {
 		    return text;
 		}
 	    },
+	    tablet: {
+		header: 'Use tablet for pointer',
+		defaultValue: true,
+		renderer: PVE.Utils.format_boolean,
+		editor: caps.vms['VM.Config.HWType'] ? {
+		    xtype: 'pveWindowEdit',
+		    subject: 'Use tablet for pointer',
+		    items: {
+			xtype: 'pvecheckbox',
+			name: 'tablet',
+			checked: true,
+			uncheckedValue: 0,
+			defaultValue: 1,
+			deleteDefaultValue: true,
+			fieldLabel: gettext('Enabled')
+		    }
+		} : undefined
+	    },
 	    acpi: {
 		header: 'ACPI support',
 		defaultValue: true,
