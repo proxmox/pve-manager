@@ -147,7 +147,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.formatsel = Ext.create('PVE.form.DiskFormatSelector', {
 		name: 'diskformat',
 		fieldLabel: gettext('Format'),
-		value: 'raw',
+		value: 'qcow2',
 		allowBlank: false
 	    });
 
@@ -192,8 +192,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 			} else if (rec.data.type === 'lvm' || 
 				   rec.data.type === 'rbd' ||
 				   rec.data.type === 'sheepdog' ||
-				   rec.data.type === 'nexenta'
-			) {
+				   rec.data.type === 'nexenta') {
 			    me.hdfilesel.setDisabled(true);
 			    me.hdfilesel.setVisible(false);
 			    me.formatsel.setValue('raw');
@@ -203,6 +202,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 			} else {
 			    me.hdfilesel.setDisabled(true);
 			    me.hdfilesel.setVisible(false);
+			    me.formatsel.setValue('qcow2');
 			    me.formatsel.setDisabled(false);
 			    me.hdsizesel.setDisabled(false);
 			    me.hdsizesel.setVisible(true);

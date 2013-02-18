@@ -8,6 +8,8 @@ pve-manager (2.3-7) unstable; urgency=low
   
   * Allow to set tablet option on the GUI
   
+  * use qcow2 format as default for directory and NFS storage
+  
   * cleanup RDB GUI (remove authsupported)
 
  -- Proxmox Support Team <support@proxmox.com>  Thu, 31 Jan 2013 07:16:13 +0100
