@@ -12,6 +12,7 @@ use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::AccessControl;
 use IO::File;
+use Net::IP qw(:PROC);
 
 use base qw(PVE::RESTHandler);
 
@@ -159,6 +160,17 @@ my $check_duplicate_gateway = sub {
     }
 };
 
+my $check_ipv4_settings = sub {
+    my $param = $_[0];
+
+    my $binip = Net::IP::ip_iptobin($param->{address}, 4);
+    my $binmask = Net::IP::ip_iptobin($param->{netmask}, 4);
+    my $broadcast = Net::IP::ip_to_bin('255.255.255.255', 4);
+    my $binhost = $binip | $binmask;
+
+    raise_param_exc({ address => "$param->{address} is not a valid host ip address." })
+        if ($binhost eq $binmask) || ($binhost eq $broadcast);
+};
 
 __PACKAGE__->register_method({
     name => 'create_network', 
@@ -191,6 +203,8 @@ __PACKAGE__->register_method({
 
 	    &$check_duplicate_gateway($config, $iface)
 		if $param->{gateway};
+
+	    &$check_ipv4_settings($param);
 
 	    $param->{method} = $param->{address} ? 'static' : 'manual'; 
 
@@ -246,6 +260,8 @@ __PACKAGE__->register_method({
 
 	    &$check_duplicate_gateway($config, $iface)
 		if $param->{gateway};
+
+	    &$check_ipv4_settings($param);
 
 	    $param->{method} = $param->{address} ? 'static' : 'manual'; 
 
