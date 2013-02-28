@@ -87,7 +87,14 @@ Ext.define('PVE.openvz.CreateWizard', {
 			    value: '',
 			    fieldLabel: 'Hostname',
 			    skipEmptyText: true,
-			    allowBlank: true
+			    allowBlank: true,
+			    validator: function(value) {
+				var hostnamere = /^[a-zA-Z0-9\-.]+$/;
+				if (value && !hostnamere.test(value)) {
+				    return "Hostname contains invalid characters !";
+				}
+				return true;
+			    }
 			}
 		    ],
 		    column2: [
@@ -124,7 +131,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 			    validator: function(value) {
 				var pw = me.down('field[name=password]').getValue();
 				if (pw !== value) {
-				    return "Passowords does not match!";
+				    return "Passwords does not match!";
 				}
 				return true;
 			    }
