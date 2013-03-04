@@ -1,3 +1,9 @@
+pve-manager (2.3-12) unstable; urgency=low
+
+  * fix IP address verification (Undefined subroutine &Net::IP::ip_to_bin)
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 04 Mar 2013 06:56:12 +0100
+
 pve-manager (2.3-11) unstable; urgency=low
 
   * bugfix #301 Add container hostname validation in GUI

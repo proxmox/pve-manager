@@ -3,6 +3,7 @@ package PVE::API2::Network;
 use strict;
 use warnings;
 
+use Net::IP qw(:PROC);
 use PVE::Tools qw(extract_param);
 use PVE::SafeSyslog;
 use PVE::INotify;
@@ -12,7 +13,6 @@ use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::AccessControl;
 use IO::File;
-use Net::IP qw(:PROC);
 
 use base qw(PVE::RESTHandler);
 
@@ -165,7 +165,7 @@ my $check_ipv4_settings = sub {
 
     my $binip = Net::IP::ip_iptobin($param->{address}, 4);
     my $binmask = Net::IP::ip_iptobin($param->{netmask}, 4);
-    my $broadcast = Net::IP::ip_to_bin('255.255.255.255', 4);
+    my $broadcast = Net::IP::ip_iptobin('255.255.255.255', 4);
     my $binhost = $binip | $binmask;
 
     raise_param_exc({ address => "$param->{address} is not a valid host ip address." })
