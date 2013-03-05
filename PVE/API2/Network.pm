@@ -58,6 +58,7 @@ my $confdesc = {
 	description => 'Network mask.',
 	type => 'string', format => 'ipv4mask',
 	optional => 1,
+	requires => 'address',
     },
     address => {
 	description => 'IP address.',
@@ -161,14 +162,14 @@ my $check_duplicate_gateway = sub {
 };
 
 my $check_ipv4_settings = sub {
-    my $param = $_[0];
+    my ($address, $netmask) = @_;
 
-    my $binip = Net::IP::ip_iptobin($param->{address}, 4);
-    my $binmask = Net::IP::ip_iptobin($param->{netmask}, 4);
+    my $binip = Net::IP::ip_iptobin($address, 4);
+    my $binmask = Net::IP::ip_iptobin($netmask, 4);
     my $broadcast = Net::IP::ip_iptobin('255.255.255.255', 4);
     my $binhost = $binip | $binmask;
 
-    raise_param_exc({ address => "$param->{address} is not a valid host ip address." })
+    raise_param_exc({ address => "$address is not a valid host ip address." })
         if ($binhost eq $binmask) || ($binhost eq $broadcast);
 };
 
@@ -204,7 +205,8 @@ __PACKAGE__->register_method({
 	    &$check_duplicate_gateway($config, $iface)
 		if $param->{gateway};
 
-	    &$check_ipv4_settings($param);
+	    &$check_ipv4_settings($param->{address}, $param->{netmask})
+		if $param->{address};
 
 	    $param->{method} = $param->{address} ? 'static' : 'manual'; 
 
@@ -261,7 +263,8 @@ __PACKAGE__->register_method({
 	    &$check_duplicate_gateway($config, $iface)
 		if $param->{gateway};
 
-	    &$check_ipv4_settings($param);
+	    &$check_ipv4_settings($param->{address}, $param->{netmask}) 
+		if $param->{address};
 
 	    $param->{method} = $param->{address} ? 'static' : 'manual'; 
 
