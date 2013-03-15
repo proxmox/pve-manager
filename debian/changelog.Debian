@@ -1,3 +1,9 @@
+pve-manager (3.0-1) unstable; urgency=low
+
+  * remove perl-suid dependency
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 15 Mar 2013 08:36:57 +0100
+
 pve-manager (2.3-13) unstable; urgency=low
 
   * network config: allow empty IP address/netmask
