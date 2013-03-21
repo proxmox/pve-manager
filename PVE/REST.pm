@@ -205,6 +205,7 @@ sub proxy_handler {
     debug_msg("proxy start $method $host:$abs_uri");
 
     my $ua = LWP::UserAgent->new(
+	ssl_opts => { verify_hostname => 0 },
 	protocols_allowed => [ 'http', 'https' ],
 	timeout => 30,
 	);
