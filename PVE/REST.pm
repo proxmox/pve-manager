@@ -205,7 +205,10 @@ sub proxy_handler {
     debug_msg("proxy start $method $host:$abs_uri");
 
     my $ua = LWP::UserAgent->new(
+	# keep it simple - we are on internal network, and use tickets
 	ssl_opts => { verify_hostname => 0 },
+	# using the pve root CA file would  be another option
+	# ssl_opts => { verify_hostname => 1 , SSL_ca_file => "/etc/pve/pve-root-ca.pem },
 	protocols_allowed => [ 'http', 'https' ],
 	timeout => 30,
 	);
