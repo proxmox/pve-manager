@@ -1,3 +1,9 @@
+pve-manager (3.0-2) unstable; urgency=low
+
+  * mark service vz optional in pve-manager init script
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 22 Mar 2013 06:18:27 +0100
+
 pve-manager (3.0-1) unstable; urgency=low
 
   * remove perl-suid dependency
