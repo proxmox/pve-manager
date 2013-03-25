@@ -5,7 +5,9 @@ DESTDIR=
 #SUBDIRS = bin lib www aplinfo
 SUBDIRS = aplinfo PVE bin www po
 
-DEB=${PACKAGE}_${VERSION}-${PACKAGERELEASE}_all.deb
+ARCH:=$(shell dpkg-architecture -qDEB_BUILD_ARCH)
+
+DEB=${PACKAGE}_${VERSION}-${PACKAGERELEASE}_${ARCH}.deb
 
 all: ${SUBDIRS}
 
@@ -43,7 +45,8 @@ ${DEB} deb:
 	dpkg-deb --build dest
 	mv dest.deb ${DEB}
 	rm -rf dest
-	lintian ${DEB}	
+	# supress lintian error: statically-linked-binary usr/bin/pvemailforward
+	lintian -X binaries ${DEB}	
 
 .PHONY: upload
 upload: ${DEB} check

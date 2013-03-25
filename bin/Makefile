@@ -13,6 +13,7 @@ SCRIPTS =  			\
 	pvedaemon		\
 	pveversion		\
 	pvesubscription		\
+	pvemailforward.pl	\
 	pveperf
 
 MANS = 				\
@@ -25,7 +26,7 @@ MANS = 				\
 	pvesubscription.1	\
 	pveperf.1
 
-all: ${MANS}
+all: ${MANS} pvemailforward
 
 %.1: %.1.pod
 	rm -f $@
@@ -46,12 +47,15 @@ pvesubscription.1.pod: pvesubscription
 vzrestore.1.pod: vzrestore
 	perl -I.. ./vzrestore printmanpod >$@
 
+pvemailforward: pvemailforward.c
+	gcc $< -o $@ -g -O2 -Wall -ldl -lc
+
 .PHONY: install 
 install: ${SCRIPTS} ${MANS} pvemailforward
 	perl -I.. ./pvesh verifyapi
 	install -d ${BINDIR}
 	install -m 0755 ${SCRIPTS} ${BINDIR}
-	install -m 2755 -g www-data pvemailforward ${BINDIR}
+	install -s -m 2755 -g www-data pvemailforward ${BINDIR}
 	install -d ${MAN1DIR}
 	install -m 0644 ${MANS} ${MAN1DIR}
 	install -d ${PODDIR}
@@ -67,5 +71,5 @@ distclean: clean
 
 .PHONY: clean
 clean:
-	rm -rf *~ ${MANS} *.1.pod
+	rm -rf *~ ${MANS} *.1.pod pvemailforward
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
