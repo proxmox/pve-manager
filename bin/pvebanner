@@ -7,11 +7,13 @@ use PVE::Cluster;
 my $nodename = PVE::INotify::nodename();
 my $localip = PVE::Cluster::remote_node_ip($nodename, 1);
 
-exit (0) if !$localip;
 
-my $xline = '-' x 80;
+my $xline = '-' x 78;
 
-print <<__EOBANNER;
+my $banner = '';
+
+if ($localip) {
+    $banner .= <<__EOBANNER;
 
 $xline
 
@@ -23,5 +25,15 @@ configure this server - connect to:
 $xline
 
 __EOBANNER
+
+}
+
+$banner .= "Debian GNU/Linux 7.0 \\n \\l\n\n";
+
+open(ISSUE, ">/etc/issue");
+
+print ISSUE $banner;
+
+close(ISSUE);
 
 exit (0);

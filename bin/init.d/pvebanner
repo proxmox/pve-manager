@@ -13,7 +13,9 @@
 
 PATH=/sbin:/bin:/usr/bin:/usr/sbin
 
-test -f $PVEDAEMON || exit 0
+test -f /usr/bin/pvebanner || exit 0
+
+test -f /etc/lsb-base-logging.sh || echo "FANCYTTY=0" >/etc/lsb-base-logging.sh 
 
 case "$1" in
     start)
