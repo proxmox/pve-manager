@@ -2,16 +2,16 @@
  *
  */ 
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 #define REAL_PATH "/usr/bin/pvemailforward.pl"
 
-int main(ac, av)
-char **av;
+int main(int argc, char **argv)
 {
-    execv(REAL_PATH, av);
+    execv(REAL_PATH, argv);
  
     fprintf(stderr, "exec '%s' failed\n", REAL_PATH);
 
-    return -1;
+    exit(-1);
 }
