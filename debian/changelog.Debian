@@ -1,3 +1,9 @@
+pve-manager (3.0-4) unstable; urgency=low
+
+  * add bootlog to GUI
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 26 Mar 2013 08:01:36 +0100
+
 pve-manager (3.0-3) unstable; urgency=low
 
   * pvebanner: overwrite /etc/issue instead of printing to stdout
