@@ -54,7 +54,10 @@ case "$1" in
     else
 	echo '|/usr/bin/pvemailforward' >/root/.forward
     fi
-	
+
+    # disable fancy init messages (bad with bootlogd)
+    test -f /etc/lsb-base-logging.sh || echo "FANCYTTY=0" >/etc/lsb-base-logging.sh 
+
     update-rc.d pvedaemon defaults 21 79 >/dev/null
     update-rc.d pvestatd defaults 21 79 >/dev/null
     update-rc.d pvebanner start 99 2 3 4 5 . >/dev/null
