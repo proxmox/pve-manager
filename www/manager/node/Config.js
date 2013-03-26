@@ -109,6 +109,14 @@ Ext.define('PVE.node.Config', {
 		    url: "/api2/extjs/nodes/" + nodename + "/syslog"
 		}
 	    ]);
+	    me.items.push([
+		{
+		    title: 'Bootlog',
+		    itemId: 'bootlog',
+		    xtype: 'pveLogView',
+		    url: "/api2/extjs/nodes/" + nodename + "/bootlog"
+		}
+	    ]);
 	}
 
 	me.items.push([
