@@ -1,3 +1,9 @@
+pve-manager (3.0-5) unstable; urgency=low
+
+  * avoid warning about undefined value in PVE::OpenVZ
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 27 Mar 2013 06:30:58 +0100
+
 pve-manager (3.0-4) unstable; urgency=low
 
   * add bootlog to GUI
