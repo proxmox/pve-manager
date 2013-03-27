@@ -591,7 +591,7 @@ sub parse_res_bar_limit {
 
     if ($text =~ m/^(\d+)([TGMKP])?$/i) {
 	my $val = $1;
-	my $mult = lc($2);
+	my $mult = $2 ? lc($2) : '';
 	if ($mult eq 'k') {
 	    $val = $val * 1024;
 	} elsif ($mult eq 'm') {
