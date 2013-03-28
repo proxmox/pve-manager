@@ -15,7 +15,7 @@ my $hostname = PVE::INotify::read_file("hostname");
 # but we can simply create a ticket if we are root
 my $ticket = PVE::AccessControl::assemble_ticket('root@pam');
 
-my $wcount = 2;
+my $wcount = 1;
 my $qcount = 100;
 
 sub test_rpc {
@@ -24,7 +24,7 @@ sub test_rpc {
     for (my $i = 0; $i < $qcount; $i++) {
 	eval {
 	    my ($page, $response, %reply_headers)
-                = get_https($hostname, 8006, '/api2/json',   
+                = get_https($host, 8006, '/api2/json',   
                        make_headers(Cookie => "PVEAuthCookie=$ticket"));
 	    die "$response\n" if $response !~ m/200 OK/;
 	};
@@ -64,5 +64,7 @@ sub run_tests {
 
     print "$host: $tpq ms per query\n";
 }
+
+# why is this faster than LWP::UserAgent?
 
 run_tests($hostname); # test 'apache'

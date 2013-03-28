@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-
+use lib '../../';
 use strict;
 use Time::HiRes qw( usleep ualarm gettimeofday tv_interval );
 use PVE::API2Client;
@@ -14,8 +14,8 @@ my $hostname = PVE::INotify::read_file("hostname");
 # but we can simply create a ticket if we are root
 my $ticket = PVE::AccessControl::assemble_ticket('root@pam');
 
-my $wcount = 4;
-my $qcount = 500;
+my $wcount = 1;
+my $qcount = 100;
 
 sub test_rpc {
     my ($host) = @_;
@@ -68,7 +68,7 @@ sub run_tests {
     print "$host: $tpq ms per query\n";
 }
 
-# TODO: Apache is much slower, why? 
+# TODO: Apache is much slower, why? (SSL?) 
 
 run_tests("localhost"); # test 'pvedaemon'
 
