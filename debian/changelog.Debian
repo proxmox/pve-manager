@@ -1,3 +1,10 @@
+pve-manager (3.0-6) unstable; urgency=low
+
+  * depend on ibnet-http-perl (>= 6.06-1). Older versions triggers bugs
+    with LWP::UserAgent
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 28 Mar 2013 13:17:08 +0100
+
 pve-manager (3.0-5) unstable; urgency=low
 
   * avoid warning about undefined value in PVE::OpenVZ
