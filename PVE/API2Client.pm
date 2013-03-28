@@ -110,7 +110,7 @@ sub call {
     if ($response->is_success) {
 	my $ct = $response->header('Content-Type');
 
-	die "got unexpected content type" if $ct ne 'application/json';
+	die "got unexpected content type" if $ct !~ m|application/json|;
 
 	return from_json($response->decoded_content, {utf8 => 1, allow_nonref => 1});
 
@@ -149,6 +149,7 @@ sub new {
     $self->{useragent} = LWP::UserAgent->new(
 	cookie_jar => $self->{cookie_jar},
 	protocols_allowed => [ 'http', 'https'],
+	ssl_opts => { verify_hostname => 0 },
 	timeout => $self->{timeout},
 	);
 
