@@ -4,6 +4,7 @@ $ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};  
 
+use lib '..'; #  fixme
 use strict;
 use Getopt::Long;
 use POSIX ":sys_wait_h";
@@ -13,6 +14,8 @@ use PVE::SafeSyslog;
 use PVE::APIDaemon;
 
 my $pidfile = "/var/run/pvedaemon.pid";
+my $lockfile = "/var/lock/pvedaemon.lck";
+
 my $opt_debug;
 
 initlog ('pvedaemon');
@@ -40,10 +43,14 @@ my $cpid;
 my $daemon;
 eval {
     $daemon = PVE::APIDaemon->new(
-	LocalAddr => "127.0.0.1",
-        LocalPort => 85,
-        Listen => SOMAXCONN,
-        ReuseAddr => 1,
+	host => "127.0.0.1", 
+	port => 85, 
+	trusted_env => 1, # partly trusted, because only local programs can connect
+	lockfile => $lockfile,
+	keep_alive => 100,
+	max_conn => 500,
+	max_requests => 1000,
+	logfile => '/var/log/pve/pvedaemon.log', # fixme?
 	);
 };
 

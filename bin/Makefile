@@ -11,6 +11,7 @@ SCRIPTS =  			\
 	pvebanner		\
 	pvectl			\
 	pvedaemon		\
+	pveproxy		\
 	pveversion		\
 	pvesubscription		\
 	pvemailforward.pl	\
@@ -22,6 +23,7 @@ MANS = 				\
 	vzrestore.1		\
 	pvestatd.1		\
 	pvedaemon.1		\
+	pveproxy.1		\
 	pveversion.1		\
 	pvesubscription.1	\
 	pveperf.1

@@ -429,8 +429,6 @@ sub rest_handler {
 	return &$exc_to_res($err);
     }
 
-    $rpcenv->set_user(undef);
-
     return $resp;
 }
 
@@ -491,6 +489,7 @@ sub handler {
      } else {
 	 $res = rest_handler($rpcenv, $clientip, $method, $abs_uri, $rel_uri, 
 			     $ticket, $token);
+	 $rpcenv->set_user(undef); # clear after request
      }
 
      if ($res->{proxy}) {

@@ -1,0 +1,235 @@
+#!/usr/bin/perl -T -w
+
+$ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
+
+delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};  
+
+use lib '..'; #  fixme
+use strict;
+use Getopt::Long;
+use POSIX ":sys_wait_h";
+use Socket;
+use IO::Socket::INET;
+use PVE::SafeSyslog;
+# use PVE::Config; # fixme
+use PVE::APIDaemon;
+use HTTP::Response;
+use Encode;
+use CGI;
+use File::Find;
+use Data::Dumper;
+
+
+my $pidfile = "/var/run/pveproxy.pid";
+my $lockfile = "/var/lock/pveproxy.lck";
+
+my $opt_debug;
+
+initlog ('pveproxy');
+
+if (!GetOptions ('debug' => \$opt_debug)) {
+    die "usage: $0 [--debug]\n";
+}
+
+$SIG{'__WARN__'} = sub {
+    my $err = $@;
+    my $t = $_[0];
+    chomp $t;
+    syslog('warning', "WARNING: %s", $t);
+    $@ = $err;
+};
+
+$0 = "pveproxy";
+
+PVE::APIDaemon::enable_debug() if $opt_debug;
+
+
+my $cpid;
+my $daemon;
+eval {
+
+    $daemon = PVE::APIDaemon->new(
+	port => 8006, 
+	keep_alive => 100,
+	max_conn => 500,
+	max_requests => 1000,
+	trusted_env => 0, # not trusted, anyone can connect
+	logfile => '/var/log/pve/access.log',
+	lockfile => $lockfile,
+	ssl => {
+	    key_file => '/etc/pve/local/pve-ssl.key',
+	    cert_file => '/etc/pve/local/pve-ssl.pem',
+	},
+	# Note: there is no authentication for those pages and dirs!
+	pages => {
+	    '/' => \&get_index,
+	    # avoid authentication when accessing favicon
+	    '/favicon.ico' => { 
+		file => '/usr/share/pve-manager/images/favicon.ico',
+	    },
+	},
+	dirs => {
+	    '/pve2/images/' => '/usr/share/pve-manager/images/',
+	    '/pve2/css/' => '/usr/share/pve-manager/css/',
+	    '/pve2/ext4/' => '/usr/share/pve-manager/ext4/',
+	    '/vncterm/' => '/usr/share/vncterm/',
+	},
+    );
+};
+
+my $err = $@;
+
+if ($err) {
+    syslog ('err' , "unable to start server: $err");
+    print STDERR $err;
+    exit (-1);
+}
+
+if ($opt_debug || !($cpid = fork ())) {
+
+    $SIG{PIPE} = 'IGNORE';
+    $SIG{INT} = 'IGNORE' if !$opt_debug;
+
+    $SIG{TERM} = $SIG{QUIT} = sub { 
+	syslog ('info' , "server closing");
+
+	$SIG{INT} = 'DEFAULT';
+
+	unlink "$pidfile";
+
+	exit (0);
+    };
+
+    syslog ('info' , "starting server");
+
+    if (!$opt_debug) {
+	# redirect STDIN/STDOUT/SDTERR to /dev/null
+	open STDIN,  '</dev/null' || die "can't read /dev/null  [$!]";
+	open STDOUT, '>/dev/null' || die "can't write /dev/null [$!]";
+	open STDERR, '>&STDOUT' || die "can't open STDERR to STDOUT [$!]";
+    }
+
+    POSIX::setsid(); 
+
+    eval {
+	$daemon->start_server();
+    };
+    my $err = $@;
+
+    if ($err) {
+	syslog ('err' , "unexpected server error: $err");
+	print STDERR $err if $opt_debug;
+	exit (-1);
+    }
+
+} else {
+
+    open (PIDFILE, ">$pidfile") || 
+	die "cant write '$pidfile' - $! :ERROR";
+    print PIDFILE "$cpid\n";
+    close (PIDFILE) || 
+	die "cant write '$pidfile' - $! :ERROR";
+}
+
+exit (0);
+
+# NOTE: Requests to those pages are not authenticated
+# so we must be very careful here 
+
+sub get_index {
+    my ($server, $r, $params) = @_;
+
+    my $lang = 'en';
+    my $username = '';
+    my $token = 'null';
+
+    if (my $cookie = $r->header('Cookie')) {
+	if (my $newlang = ($cookie =~ /(?:^|\s)PVELangCookie=([^;]*)/)[0]) {
+	    if ($newlang =~ m/^[a-z]{2,3}(_[A-Z]{2,3})?$/) {
+		$lang = $newlang;
+	    }
+	}
+	my $ticket = PVE::REST::extract_auth_cookie($cookie);
+	if (($username = PVE::AccessControl::verify_ticket($ticket, 1))) {
+	    $token = PVE::AccessControl::assemble_csrf_prevention_token($username);
+	}
+    }
+
+    my %args = CGI->new($r->url->query)->Vars;
+
+    my $workspace = defined($args{console}) ?
+	"PVE.ConsoleWorkspace" : "PVE.StdWorkspace";
+
+    my $jssrc = <<_EOJS;
+if (!PVE) PVE = {};
+PVE.UserName = '$username';
+PVE.CSRFPreventionToken = '$token';
+_EOJS
+
+    my $langfile = "/usr/share/pve-manager/ext4/locale/ext-lang-${lang}.js";
+    $jssrc .= PVE::Tools::file_get_contents($langfile) if -f $langfile;
+
+    my $i18nsrc;
+    $langfile = "/usr/share/pve-manager/root/pve-lang-${lang}.js";
+    if (-f $langfile) {
+	$i18nsrc = PVE::Tools::file_get_contents($langfile);
+    } else {
+	$i18nsrc = 'function gettext(buf) { return buf; }';
+    }
+
+    $jssrc .= <<_EOJS;
+
+// we need this (the java applet ignores the zindex)
+Ext.useShims = true;
+
+Ext.History.fieldid = 'x-history-field';
+
+Ext.onReady(function() { Ext.create('$workspace');});
+
+_EOJS
+
+    my $page = <<_EOD;
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <title>Proxmox Virtual Environment</title>
+ 
+    <link rel="stylesheet" type="text/css" href="/pve2/ext4/resources/css/ext-all.css" />
+    <link rel="stylesheet" type="text/css" href="/pve2/css/ext-pve.css" />
+ 
+    <script type="text/javascript">$i18nsrc</script>
+    <script type="text/javascript" src="/pve2/ext4/ext-all-debug.js"></script>
+    <script type="text/javascript" src="/pve2/ext4/pvemanagerlib.js"></script>
+    <script type="text/javascript">$jssrc</script>
+    
+  </head>
+  <body>
+    <!-- Fields required for history management -->
+    <form id="history-form" class="x-hidden">
+    <input type="hidden" id="x-history-field"/>
+    </form>
+  </body>
+</html>
+_EOD
+
+    my $resp = HTTP::Response->new(200, "OK", undef, $page); 
+
+    return $resp;
+} 
+
+__END__
+
+=head1 NAME
+                                          
+pveproxy - the PVE API proxy server
+
+=head1 SYNOPSIS
+
+pveproxy [--debug]
+
+=head1 DESCRIPTION
+
+This is the REST API proxy server, listening on port 8006. 
+
+
