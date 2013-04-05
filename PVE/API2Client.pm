@@ -131,6 +131,7 @@ sub new {
 	password => $param{password},
 	host => $param{host} || 'localhost',
 	port => $param{port},
+	protocol => $param{protocol},
 	timeout => $param{timeout} || 60,
     };
     bless $self;
