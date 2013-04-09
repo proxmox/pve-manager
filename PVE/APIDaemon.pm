@@ -382,6 +382,7 @@ sub push_request_header {
 		    $reqstate->{proto}->{ver} = $maj*1000+$min;
 		    $reqstate->{request} = HTTP::Request->new($method, $uri);
 
+		    delete $reqstate->{key}; # this is used by unshift_read_header()
 		    $self->unshift_read_header($reqstate);
 		} elsif ($line eq '') {
 		    # ignore empty lines before requests (browser bugs?)
