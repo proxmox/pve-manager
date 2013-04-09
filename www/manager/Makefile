@@ -158,11 +158,8 @@ pvemanagerlib.js: ${JSSRC}
 all: pvemanagerlib.js
 
 .PHONY: install 
-install: pvemanagerlib.js startup.pl index.pl
-	install -d ${WWWBASEDIR}
-	install -m 0755 -o www-data -g www-data startup.pl ${WWWBASEDIR}
-	install -d ${WWWROOTDIR}
-	install -m 0755 -o www-data -g www-data index.pl ${WWWROOTDIR}
+install: pvemanagerlib.js
+	install -d ${WWWBASEDIR}/root
 	install -d ${WWWEXT4DIR}
 	install -m 0644 -o www-data -g www-data pvemanagerlib.js ${WWWEXT4DIR}
 

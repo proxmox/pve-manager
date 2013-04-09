@@ -1,0 +1,59 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:        pveproxy
+# Required-Start:  $remote_fs $network $syslog pvedaemon
+# Required-Stop:   $remote_fs $network $syslog pvedaemon
+# Default-Start:   2 3 4 5
+# Default-Stop:    0 1 6
+# Short-Description: PVE API Proxy Server
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+PATH=/sbin:/bin:/usr/bin:/usr/sbin
+DAEMON=/usr/bin/pveproxy
+NAME=pveproxy
+DESC="PVE API Proxy Server"
+PIDFILE=/var/run/pveproxy.pid
+
+test -f $DAEMON || exit 0
+
+# avoid warnings about uninstalled locales when pveproxy executes commands
+export LC_ALL="C"
+
+case "$1" in
+	start)
+		log_daemon_msg "Starting $DESC" "$NAME"
+  		start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON
+		log_end_msg $?
+  		;;
+	stop)
+		log_daemon_msg "Stopping $DESC" "$NAME"
+  		start-stop-daemon --stop --quiet --retry TERM/2/TERM/10/KILL/2 --pidfile $PIDFILE
+		log_end_msg $?
+  		;;
+	reload)
+		log_daemon_msg "Reloading $DESC" "$NAME"
+		if ( [ -e $PIDFILE ] && kill -0 `cat $PIDFILE`) then
+		    start-stop-daemon --stop --signal HUP --pidfile $PIDFILE
+		else
+		    start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON
+		fi
+		log_end_msg $?
+  		;;		
+	restart|force-reload)
+		log_daemon_msg "Restarting $DESC" "$NAME"
+  		start-stop-daemon --stop --quiet --retry TERM/2/TERM/10/KILL/2 --pidfile $PIDFILE
+                sleep 2
+  		start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON
+		log_end_msg $?
+  		;;
+	*)
+	        N=/etc/init.d/$NAME
+  		echo "Usage: $N {start|stop|restart|force-reload}"
+  		exit 1
+		;;
+esac
+
+exit 0

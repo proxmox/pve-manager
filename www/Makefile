@@ -1,4 +1,4 @@
-SUBDIRS = templates images ext4 css manager
+SUBDIRS = images ext4 css manager
 
 all: ${SUBDIRS}
 

@@ -1,10 +1,9 @@
 /etc/init.d/pve-manager
 /etc/init.d/pvedaemon
+/etc/init.d/pveproxy
 /etc/init.d/pvebanner
 /etc/init.d/pvenetcommit
 /etc/init.d/pvestatd
 /etc/cron.daily/pve
-/etc/apache2/sites-available/pve.conf
-/etc/apache2/sites-available/pve-redirect.conf
 /etc/vz/vznet.conf
 /etc/vzdump.conf

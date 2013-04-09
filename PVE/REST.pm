@@ -6,8 +6,6 @@ use PVE::Cluster;
 use PVE::SafeSyslog;
 use PVE::Tools;
 use PVE::API2;
-use Apache2::Const;
-use mod_perl2;
 use JSON;
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -26,8 +24,6 @@ use Data::Dumper; # fixme: remove
 my $cookie_name = 'PVEAuthCookie';
 
 my $baseuri = "/api2";
-
-# http://perl.apache.org/docs/2.0/api/Apache2/SubProcess.html
 
 my $debug_enabled;
 sub enable_debug {
@@ -152,9 +148,9 @@ sub prepare_response_data {
 	if (is_error($res->{status})) {
 	    $success = 0;
 	    $new->{message} = $res->{message} || status_message($res->{status});
-	    $new->{status} = $res->{status} || HTTP_OK;
+	    $new->{status} = $res->{status} || 200;
 	    $res->{message} = undef;
-	    $res->{status} = HTTP_OK;
+	    $res->{status} = 200;
 	}
 	$new->{success} = $success;
     }
@@ -246,7 +242,6 @@ sub proxy_handler {
 	return $code;
     }
 
-
     if (my $cookie = $response->header("Set-Cookie")) {
 	$r->err_headers_out()->add("Set-Cookie" => $cookie);
     }
@@ -270,7 +265,7 @@ sub proxy_handler {
 
     debug_msg("proxy end $method $host:$abs_uri ($code)");
 
-    return OK;
+    return HTTP_OK;
 }
 
 my $exc_to_res = sub {
@@ -441,6 +436,10 @@ sub split_abs_uri {
     return wantarray ? ($rel_uri, $format) : $rel_uri;
 }
 
+1;
+
+__END__
+
 my $known_methods = {
     GET => 1,
     POST => 1,
@@ -452,6 +451,8 @@ my $request_count = 0;
 
 sub handler {
      my($r) = @_;
+
+     die "we do not use this any longer";
 
      debug_msg("perl handler called");
 
@@ -525,4 +526,3 @@ sub handler {
      return OK;
 }
 
-1;

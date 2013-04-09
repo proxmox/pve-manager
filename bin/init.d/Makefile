@@ -5,6 +5,7 @@ all:
 SCRIPTS = 		\
 	pve-manager 	\
 	pvedaemon 	\
+	pveproxy 	\
 	pvebanner	\
 	pvestatd	\
 	pvenetcommit

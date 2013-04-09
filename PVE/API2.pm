@@ -3,7 +3,6 @@ package PVE::API2;
 use strict;
 use warnings;
 
-use Apache2::Const qw(:http);
 use PVE::pvecfg;
 use PVE::RESTHandler;
 

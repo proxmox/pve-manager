@@ -24,7 +24,7 @@ sub log_request {
 
     my $loginfo = $reqstate->{log};
 
-    # like apache2 combined log format
+    # like apache2 common log format
     # LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""
 
     my $peerip = $reqstate->{peer_host} || '-';

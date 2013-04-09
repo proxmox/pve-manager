@@ -5,6 +5,7 @@ set -e
 
 if [ "$1" = purge ]; then
     update-rc.d pvedaemon remove >/dev/null 2>&1
+    update-rc.d pveproxy remove >/dev/null 2>&1
     update-rc.d pvestatd remove >/dev/null 2>&1
     update-rc.d pvebanner remove >/dev/null 2>&1
     update-rc.d pvenetcommit remove >/dev/null 2>&1

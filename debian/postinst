@@ -27,7 +27,7 @@ case "$1" in
 
     test -e /proxmox_install_mode || invoke-rc.d pvedaemon restart
     test -e /proxmox_install_mode || invoke-rc.d pvestatd restart    
-    test -e /proxmox_install_mode || invoke-rc.d apache2 restart
+    test -e /proxmox_install_mode || invoke-rc.d pveproxy restart
 
     exit 0;;
 
@@ -59,23 +59,17 @@ case "$1" in
     test -f /etc/lsb-base-logging.sh || echo "FANCYTTY=0" >/etc/lsb-base-logging.sh 
 
     update-rc.d pvedaemon defaults 21 79 >/dev/null
+    update-rc.d pveproxy defaults 21 79 >/dev/null
     update-rc.d pvestatd defaults 21 79 >/dev/null
     update-rc.d pvebanner start 99 2 3 4 5 . >/dev/null
     update-rc.d pvenetcommit start 15 S . >/dev/null
     update-rc.d pve-manager defaults 25 75 >/dev/null
 
     test -e /proxmox_install_mode || invoke-rc.d pvedaemon restart
+    test -e /proxmox_install_mode || invoke-rc.d pveproxy restart
     test -e /proxmox_install_mode || invoke-rc.d pvestatd restart
 
-    a2enmod perl >/dev/null 2>&1
-    a2enmod ssl >/dev/null 2>&1
-    a2enmod rewrite >/dev/null 2>&1
-    a2enmod proxy >/dev/null 2>&1
-
-    a2dissite default >/dev/null 2>&1 || true
-    a2ensite pve.conf >/dev/null 2>&1
-
-    test -e /proxmox_install_mode || invoke-rc.d apache2 restart
+    #a2ensite pve.conf >/dev/null 2>&1
 
     # There are three sub-cases:
     if test "${2+set}" != set; then
