@@ -44,10 +44,32 @@ $0 = "pveproxy";
 
 PVE::APIDaemon::enable_debug() if $opt_debug;
 
+sub add_dirs {
+    my ($result_hash, $alias, $subdir) = @_;
+
+    $result_hash->{$alias} = $subdir;
+
+    my $wanted = sub {
+	my $dir = $File::Find::dir;
+	if ($dir =~m!^$subdir(.*)$!) {
+	    my $name = "$alias$1/";
+	    $result_hash->{$name} = "$dir/";
+	}
+    };
+
+    find({wanted => $wanted, follow => 0, no_chdir => 1}, $subdir);
+}
 
 my $cpid;
 my $daemon;
 eval {
+
+    my $dirs = {};
+
+    add_dirs($dirs, '/pve2/ext4/', '/usr/share/pve-manager/ext4/');
+    add_dirs($dirs, '/pve2/images/' => '/usr/share/pve-manager/images/');
+    add_dirs($dirs, '/pve2/css/' => '/usr/share/pve-manager/css/');
+    add_dirs($dirs, '/vncterm/' => '/usr/share/vncterm/');
 
     $daemon = PVE::APIDaemon->new(
 	port => 8006, 
@@ -69,12 +91,7 @@ eval {
 		file => '/usr/share/pve-manager/images/favicon.ico',
 	    },
 	},
-	dirs => {
-	    '/pve2/images/' => '/usr/share/pve-manager/images/',
-	    '/pve2/css/' => '/usr/share/pve-manager/css/',
-	    '/pve2/ext4/' => '/usr/share/pve-manager/ext4/',
-	    '/vncterm/' => '/usr/share/vncterm/',
-	},
+	dirs => $dirs,
     );
 };
 

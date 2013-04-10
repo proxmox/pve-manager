@@ -265,16 +265,17 @@ sub handle_request {
 	} 
 
 	if ($self->{dirs} && ($method eq 'GET')) {
-	    foreach my $dir (keys %{$self->{dirs}}) {
-		# we only allow simple names
-		if ($uri =~ m/^$dir([a-zA-Z0-9\-\_\.\/]+)$/) {
-		    my $reluri = $1;
-		    $reluri =~ s/\.\./XX/g; # do not allow '..'
-		    my $filename = "$self->{dirs}->{$dir}$reluri";
+	    # we only allow simple names
+	    if ($uri =~ m!^(/\S+/)([a-zA-Z0-9\-\_\.]+)$!) {
+		my ($subdir, $file) = ($1, $2);
+		if (my $dir = $self->{dirs}->{$subdir}) {
+		    my $filename = "$dir$file";
 		    my $fh = IO::File->new($filename) ||
 			die "unable to open file '$filename' - $!\n";
 		    send_file_start($self, $reqstate, $filename);
 		    return;
+		} else {
+		    print "FAILED\n"
 		}
 	    }
 	}
