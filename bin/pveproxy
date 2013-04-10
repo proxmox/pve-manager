@@ -15,7 +15,8 @@ use PVE::SafeSyslog;
 use PVE::APIDaemon;
 use HTTP::Response;
 use Encode;
-use CGI;
+use URI;
+use URI::QueryParam;
 use File::Find;
 use Data::Dumper;
 
@@ -140,7 +141,7 @@ sub get_index {
     my ($server, $r, $params) = @_;
 
     my $lang = 'en';
-    my $username = '';
+    my $username;
     my $token = 'null';
 
     if (my $cookie = $r->header('Cookie')) {
@@ -155,10 +156,12 @@ sub get_index {
 	}
     }
 
-    my %args = CGI->new($r->url->query)->Vars;
+    my $args = $r->url->query_form_hash();
 
-    my $workspace = defined($args{console}) ?
+    my $workspace = defined($args->{console}) ?
 	"PVE.ConsoleWorkspace" : "PVE.StdWorkspace";
+
+    $username = '' if !$username;
 
     my $jssrc = <<_EOJS;
 if (!PVE) PVE = {};
