@@ -287,7 +287,9 @@ sub handle_request {
 }
 
 sub unshift_read_header {
-    my ($self, $reqstate) = @_;
+    my ($self, $reqstate, $state) = @_;
+
+    $state = {} if !$state;
 
     $reqstate->{hdl}->unshift_read(line => sub {
 	my ($hdl, $line) = @_;
@@ -298,8 +300,8 @@ sub unshift_read_header {
 	    my $r = $reqstate->{request};
 	    if ($line eq '') {
 
-		$r->push_header($reqstate->{key}, $reqstate->{val})
-		    if $reqstate->{key};
+		$r->push_header($state->{key}, $state->{val})
+		    if $state->{key};
 
 		my $conn = $r->header('Connection');
 
@@ -338,12 +340,12 @@ sub unshift_read_header {
 		    $self->handle_request($reqstate);
 		}
 	    } elsif ($line =~ /^([^:\s]+)\s*:\s*(.*)/) {
-		$r->push_header($reqstate->{key}, $reqstate->{val}) if $reqstate->{key};
-		($reqstate->{key}, $reqstate->{val}) = ($1, $2);
-		$self->unshift_read_header($reqstate);
+		$r->push_header($state->{key}, $state->{val}) if $state->{key};
+		($state->{key}, $state->{val}) = ($1, $2);
+		$self->unshift_read_header($reqstate, $state);
 	    } elsif ($line =~ /^\s+(.*)/) {
-		$reqstate->{val} .= " $1";
-		$self->unshift_read_header($reqstate);
+		$state->{val} .= " $1";
+		$self->unshift_read_header($reqstate, $state);
 	    } else {
 		$self->error($reqstate, 506, "unable to parse request header");
 	    }
@@ -382,7 +384,6 @@ sub push_request_header {
 		    $reqstate->{proto}->{ver} = $maj*1000+$min;
 		    $reqstate->{request} = HTTP::Request->new($method, $uri);
 
-		    delete $reqstate->{key}; # this is used by unshift_read_header()
 		    $self->unshift_read_header($reqstate);
 		} elsif ($line eq '') {
 		    # ignore empty lines before requests (browser bugs?)
