@@ -72,6 +72,8 @@ aplupload:
 
 .PHONY: install
 install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl
+	install -d -m 0700 -o www-data -g www-data ${DESTDIR}/var/log/pveproxy
+	install -D -m 0644 debian/pve.logrotate ${DESTDIR}/etc/logrotate.d/pve
 	install -d ${DESTDIR}/usr/share/${PACKAGE}
 	install -d ${DESTDIR}/usr/share/man/man1
 	install -d ${DOCDIR}/examples

@@ -704,10 +704,11 @@ sub start_workers {
 	    sleep (1);
 	} elsif ($pid) { #parent
 	    $workers->{$pid} = 1;
-	    $0 = "$0 worker";
 	    syslog('info', "worker $pid started");
 	    $need--;
 	} else {
+	    $0 = "$0 worker";
+
 	    $SIG{TERM} = $SIG{QUIT} = sub {
 		$child_terminate = 1;
 	    };

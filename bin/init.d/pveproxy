@@ -15,13 +15,18 @@ PATH=/sbin:/bin:/usr/bin:/usr/sbin
 DAEMON=/usr/bin/pveproxy
 NAME=pveproxy
 DESC="PVE API Proxy Server"
-PIDFILE=/var/run/pveproxy.pid
+RUNDIR=/var/run/pveproxy
+PIDFILE=${RUNDIR}/pveproxy.pid
 
 test -f $DAEMON || exit 0
 
 # avoid warnings about uninstalled locales when pveproxy executes commands
 export LC_ALL="C"
 
+mkdir -p ${RUNDIR} || true
+chmod 0700 ${RUNDIR} || true
+chown www-data:www-data ${RUNDIR} || true
+ 
 case "$1" in
 	start)
 		log_daemon_msg "Starting $DESC" "$NAME"

@@ -7,3 +7,4 @@
 /etc/cron.daily/pve
 /etc/vz/vznet.conf
 /etc/vzdump.conf
+/etc/logrotate.d/pve

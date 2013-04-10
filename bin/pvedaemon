@@ -49,9 +49,7 @@ eval {
 	lockfile => $lockfile,
 	keep_alive => 100,
 	max_conn => 500,
-	max_requests => 1000,
-	logfile => '/var/log/pve/pvedaemon.log', # fixme?
-	);
+	max_requests => 1000);
 };
 
 my $err = $@;

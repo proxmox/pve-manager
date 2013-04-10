@@ -1,0 +1,13 @@
+/var/log/pveproxy/access.log {
+        rotate 7
+        daily	
+	missingok
+	compress
+	delaycompress
+	notifempty
+	create 640 www-data www-data
+	sharedscripts
+	postrotate
+		/etc/init.d/pveproxy reload > /dev/null
+	endscript
+}
