@@ -12,7 +12,6 @@ use POSIX ":sys_wait_h";
 use Socket;
 use IO::Socket::INET;
 use PVE::SafeSyslog;
-# use PVE::Config; # fixme
 use PVE::APIDaemon;
 use HTTP::Response;
 use Encode;
@@ -125,7 +124,7 @@ if ($opt_debug || !($cpid = fork ())) {
 
 	$SIG{INT} = 'DEFAULT';
 
-	unlink "$pidfile";
+	unlink "$pidfile" if !$opt_debug;
 
 	exit (0);
     };

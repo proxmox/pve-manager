@@ -13,6 +13,7 @@ use AnyEvent::TLS;
 use AnyEvent::IO;
 use Fcntl ();
 use Compress::Zlib;
+use PVE::SafeSyslog;
 
 use Scalar::Util qw/weaken/; # fixme: remove?
 use Data::Dumper; # fixme: remove
@@ -446,7 +447,31 @@ sub accept {
     return $clientfh;
 }
 
+sub wait_end_loop {
+    my ($self) = @_;
 
+    $self->{end_loop} = 1;
+
+    undef $self->{socket_watch};
+	
+    if ($self->{conn_count} <= 0) {
+	$self->{end_cond}->send(1);
+	return;
+    }
+
+    # else we need to wait until all open connections gets closed
+    my $w; $w = AnyEvent->timer (after => 1, interval => 1, cb => sub {
+	eval {
+	    # fixme: test for active connections instead?
+	    if ($self->{conn_count} <= 0) {
+		undef $w;
+		$self->{end_cond}->send(1);
+	    }
+	};
+	warn $@ if $@;
+    });
+}
+ 
 sub accept_connections {
     my ($self) = @_;
 
@@ -495,27 +520,7 @@ sub accept_connections {
 	$self->{end_loop} = 1;
     }
 
-    if ($self->{end_loop}) {
-	
-	undef $self->{socket_watch};
-	
-	if ($self->{conn_count} <= 0) {
-	    $self->{end_cond}->send(1);
-	    return;
-	}
-
-	# else we need to wait until all open connections gets closed
-	my $w; $w = AnyEvent->timer (after => 1, interval => 1, cb => sub {
-	    eval {
-		# fixme: test for active connections instead?
-		if ($self->{conn_count} <= 0) {
-		    undef $w;
-		    $self->{end_cond}->send(1);
-		}
-	    };
-	    warn $@ if $@;
-	});
-    }
+    $self->wait_end_loop() if $self->{end_loop};
 }
 
 sub open_access_log {
@@ -534,7 +539,7 @@ sub open_access_log {
 	    syslog('err', "error writing access log: $msg");
 	    delete $self->{loghdl};
 	    $hdl->destroy;
-	    $self->end_loop = 1; # terminate asap
+	    $self->{end_loop} = 1; # terminate asap
 	});;
 
     return;
@@ -545,7 +550,7 @@ sub new {
 
     my $class = ref($this) || $this;
 
-    foreach my $req (qw(cb socket lockfh lockfile end_cond)) {
+    foreach my $req (qw(cb socket lockfh lockfile)) {
 	die "misssing required argument '$req'" if !defined($args{$req});
     }
 
@@ -561,6 +566,8 @@ sub new {
     $self->{max_conn} = 800 if !$self->{max_conn};
     $self->{max_requests} = 8000 if !$self->{max_requests};
 
+
+    $self->{end_cond} = AnyEvent->condvar;
 
     if ($self->{ssl}) {
 	$self->{tls_ctx} = AnyEvent::TLS->new(%{$self->{ssl}}); 
@@ -585,7 +592,23 @@ sub new {
 	warn $@ if $@;
     });
 
+    $self->{term_watch} = AnyEvent->signal(signal => "TERM", cb => sub {
+	undef $self->{term_watch};
+	$self->wait_end_loop();
+    });
+
+    $self->{quit_watch} = AnyEvent->signal(signal => "QUIT", cb => sub { 
+	undef $self->{quit_watch};
+	$self->wait_end_loop();
+    });
+
     return $self;
+}
+
+sub run {
+    my ($self) = @_;
+
+    $self->{end_cond}->recv;
 }
 
 package PVE::APIDaemon;
@@ -611,17 +634,13 @@ use PVE::REST;
 use JSON;
 
 # DOS attack prevention
+# fixme: remove CGI.pm
 $CGI::DISABLE_UPLOADS = 1; # no uploads
 $CGI::POST_MAX = 1024 * 10; # max 10K posts
 
 my $documentroot = "/usr/share/pve-api/root";
 
 my $workers = {};
-
-# some global vars
-# fixme: implement signals correctly
-my $child_terminate = 0;
-my $child_reload_config = 0;
 
 sub enable_debug { PVE::REST::enable_debug(); }
 sub debug_msg { PVE::REST::debug_msg(@_); }
@@ -709,13 +728,7 @@ sub start_workers {
 	} else {
 	    $0 = "$0 worker";
 
-	    $SIG{TERM} = $SIG{QUIT} = sub {
-		$child_terminate = 1;
-	    };
-
-	    $SIG{USR1} = sub {
-		$child_reload_config = 1;
-	    };
+	    $SIG{TERM} = $SIG{QUIT} = 'DEFAULT'; # we handle that with AnyEvent
 
 	    eval {
 		# try to init inotify
@@ -743,7 +756,7 @@ sub terminate_server {
     # nicely shutdown childs (give them max 10 seconds to shut down)
     my $previous_alarm = alarm (10);
     eval {
-	local $SIG{ALRM} = sub { die "Timed Out!\n" };
+	local $SIG{ALRM} = sub { die "timeout\n" };
 	
 	while ((my $pid = waitpid (-1, 0)) > 0) {
 	    if (defined($workers->{$pid})) {
@@ -751,19 +764,23 @@ sub terminate_server {
 		worker_finished ($pid);
 	    }
 	}
-
+	alarm(0); # avoid race condition
     };
+    my $err = $@;
+    
     alarm ($previous_alarm);
 
-    foreach my $cpid (keys %$workers) {
-	# KILL childs still alive!
-	if (kill (0, $cpid)) {
-	    delete ($workers->{$cpid});
-	    syslog("err", "kill worker $cpid");
-	    kill (9, $cpid);
+    if ($err) {
+	syslog('err', "error stopping workers (will kill them now) - $err"); 
+	foreach my $cpid (keys %$workers) {
+	    # KILL childs still alive!
+	    if (kill (0, $cpid)) {
+		delete ($workers->{$cpid});
+		syslog("err", "kill worker $cpid");
+		kill (9, $cpid);
+	    }
 	}
     }
-
 }
 
 sub start_server {
@@ -790,12 +807,10 @@ sub start_server {
 	    &$old_sig_term(@_) if $old_sig_term;
 	};
 
-	local $SIG{USR1} = 'IGNORE';
-
 	local $SIG{HUP} = sub {
 	    syslog("info", "received reload request");
 	    foreach my $cpid (keys %$workers) {
-		kill (10, $cpid); # SIGUSR1 childs
+		kill (15, $cpid); # kill childs
 	    }
 	};
 
@@ -852,9 +867,7 @@ my $extract_params = sub {
 sub handle_connections {
     my ($self, $rpcenv) = @_;
 
-    my $end_cond = AnyEvent->condvar;
-
-    my $server = PVE::HTTPServer->new(%{$self->{cfg}}, end_cond => $end_cond, cb => sub {
+    my $server = PVE::HTTPServer->new(%{$self->{cfg}}, cb => sub {
 	my ($server, $r) = @_;
 
 	my $method = $r->method();
@@ -910,7 +923,7 @@ sub handle_connections {
     });
 
     debug_msg("wating for connections");
-    $end_cond->recv;
+    $server->run();
     debug_msg("end worker loop");
 }
 
