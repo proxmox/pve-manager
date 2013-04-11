@@ -11,12 +11,34 @@ use AnyEvent::Util qw(guard fh_nonblocking WSAEWOULDBLOCK WSAEINPROGRESS);
 use AnyEvent::Handle;
 use AnyEvent::TLS;
 use AnyEvent::IO;
+use AnyEvent::HTTP;
 use Fcntl ();
 use Compress::Zlib;
 use PVE::SafeSyslog;
+use PVE::INotify;
+use PVE::RPCEnvironment;
+use PVE::REST;
+
+use URI;
+use HTTP::Status qw(:constants);
+use HTTP::Headers;
+use HTTP::Response;
+
+use CGI; # fixme: remove this!
+# DOS attack prevention
+# fixme: remove CGI.pm
+$CGI::DISABLE_UPLOADS = 1; # no uploads
+$CGI::POST_MAX = 1024 * 10; # max 10K posts
 
 use Scalar::Util qw/weaken/; # fixme: remove?
 use Data::Dumper; # fixme: remove
+
+my $known_methods = {
+    GET => 1,
+    POST => 1,
+    PUT => 1,
+    DELETE => 1,
+};
 
 sub log_request {
     my ($self, $reqstate) = @_;
@@ -101,7 +123,7 @@ sub finish_response {
 }
 
 sub response {
-    my ($self, $reqstate, $resp, $mtime) = @_;
+    my ($self, $reqstate, $resp, $mtime, $nocomp) = @_;
 
     #print "$$: send response: " . Dumper($resp);
 
@@ -129,6 +151,7 @@ sub response {
     } else {
 	$resp->header('Expires' => $date);
 	$resp->header('Cache-Control' => "max-age=0");
+	$resp->header("Pragma", "no-cache");
     }
 
     $resp->header('Server' => "pve-api-daemon/3.0");
@@ -143,7 +166,7 @@ sub response {
 
 	$content_length = length($content);
 
-	if ($content_length > 1024) {
+	if (!$nocomp && ($content_length > 1024)) {
 	    my $comp = Compress::Zlib::memGzip($content);
 	    $resp->header('Content-Encoding', 'gzip');
 	    $content = $comp;
@@ -227,6 +250,155 @@ sub send_file_start {
     warn $@ if $@;
 }
 
+sub proxy_request {
+    my ($self, $reqstate, $r, $clientip, $host, $method, $abs_uri, $ticket, $token, $params) = @_;
+
+    eval {
+	my $target;
+	if ($host eq 'localhost') {
+	    $target = "http://$host:85$abs_uri"; 
+	} else {
+	    $target = "https://$host:8006$abs_uri"; 
+	}
+
+	my $headers = {
+	    PVEDisableProxy => 'true',
+	    PVEClientIP => $clientip,
+	};
+
+	my $cookie_name = 'PVEAuthCookie';
+
+	$headers->{'cookie'} = PVE::REST::create_auth_cookie($ticket) if $ticket;
+	$headers->{'CSRFPreventionToken'} = $token if $token;
+
+	my $content;
+
+	if  ($method eq 'POST' || $method eq 'PUT') {
+	    $headers->{'Content-Type'} = 'application/x-www-form-urlencoded';
+	    # We use a temporary URI object to format
+	    # the application/x-www-form-urlencoded content.
+	    my $url = URI->new('http:');
+	    $url->query_form(%$params);
+	    $content = $url->query;
+	    if (defined($content)) {
+		$headers->{'Content-Length'} = length($content);
+	    }
+	}
+
+	# fixme: tls_ctx;
+
+	my $w; $w = http_request(
+	    $method => $target, 
+	    headers => $headers, 
+	    timeout => 30, 
+	    resurse => 0, 
+	    body => $content, 
+	    sub {
+		my ($body, $hdr) = @_;
+
+		undef $w;
+	    
+		eval {
+		    my $code = delete $hdr->{Status};
+		    my $msg = delete $hdr->{Reason};
+		    delete $hdr->{URL};
+		    delete $hdr->{HTTPVersion};
+		    my $header = HTTP::Headers->new(%$hdr);
+		    my $resp = HTTP::Response->new($code, $msg, $header, $body);
+		    $self->response($reqstate, $resp, undef, 1);
+		};
+		warn $@ if $@;
+	    });
+    };
+    warn $@ if $@;
+}
+
+my $extract_params = sub {
+    my ($r, $method) = @_;
+
+    # NOTE: HTTP::Request::Params return undef instead of ''
+    #my $parser = HTTP::Request::Params->new({req => $r});
+    #my $params = $parser->params;
+
+    my $post_params = {};
+
+    if ($method eq 'PUT' || $method eq 'POST') {
+	$post_params = CGI->new($r->content())->Vars;
+    }
+
+    my $query_params = CGI->new($r->url->query)->Vars;
+    my $params = $post_params || {};
+
+    foreach my $k (keys %{$query_params}) {
+	$params->{$k} = $query_params->{$k};
+    }
+
+    return PVE::Tools::decode_utf8_parameters($params);
+};
+
+sub handle_api2_request {
+    my ($self, $reqstate) = @_;
+
+    eval {
+	my $r = $reqstate->{request};
+	my $method = $r->method();
+	my $path = $r->uri->path();
+
+	my ($rel_uri, $format) = PVE::REST::split_abs_uri($path);
+	if (!$format) {
+	    $self->error($reqstate, HTTP_NOT_IMPLEMENTED, "no such uri");
+	    return;
+	}
+
+	my $rpcenv = $self->{rpcenv};
+	my $headers = $r->headers;
+
+	my $token = $headers->header('CSRFPreventionToken');
+
+	my $cookie = $headers->header('Cookie');
+
+	my $ticket = PVE::REST::extract_auth_cookie($cookie);
+
+	my $params = &$extract_params($r, $method);
+
+	my $clientip = $headers->header('PVEClientIP');
+
+	$rpcenv->init_request(params => $params); 
+
+	my $res = PVE::REST::rest_handler($rpcenv, $clientip, $method, $path, $rel_uri, $ticket, $token);
+
+	# fixme: eval { $userid = $rpcenv->get_user(); };
+	my $userid = $rpcenv->{user}; # this is faster
+	$rpcenv->set_user(undef); # clear after request
+
+	$reqstate->{log}->{userid} = $userid;
+ 
+	if ($res->{proxy}) {
+
+	    if ($self->{trusted_env}) {
+		$self->error($reqstate, HTTP_INTERNAL_SERVER_ERROR, "proxy not allowed");
+		return;
+	    } 
+
+	    $self->proxy_request($reqstate, $r, $clientip, $res->{proxy}, $method, 
+				 $r->uri, $ticket, $token, $res->{proxy_params});
+	    return;
+
+	}
+
+	PVE::REST::prepare_response_data($format, $res);
+	my ($raw, $ct) = PVE::REST::format_response_data($format, $res, $path);
+
+	my $resp = HTTP::Response->new($res->{status}, $res->{message});
+	$resp->header("Content-Type" => $ct);
+	$resp->content($raw);
+	$self->response($reqstate, $resp);
+	
+	return;
+    };
+    warn $@ if $@;
+}
+
 sub handle_request {
     my ($self, $reqstate) = @_;
 
@@ -235,19 +407,22 @@ sub handle_request {
     eval {
 	my $r = $reqstate->{request};
 	my $method = $r->method();
-	my $uri = $r->uri->path();
+	my $path = $r->uri->path();
 
-	#print "REQUEST $uri\n";
+	# print "REQUEST $path\n";
 
-	if ($uri =~ m!/api2!) { 
-	    my $handler =  $self->{cb};
-	    my ($resp, $userid) = &$handler($self, $reqstate->{request});
-	    $reqstate->{log}->{userid} = $userid if $userid;
+	if (!$known_methods->{$method}) {
+	    my $resp = HTTP::Response->new(HTTP_NOT_IMPLEMENTED, "method '$method' not available");
 	    $self->response($reqstate, $resp);
 	    return;
 	}
 
-	if ($self->{pages} && ($method eq 'GET') && (my $handler = $self->{pages}->{$uri})) {
+	if ($path =~ m!/api2!) { 
+	    $self->handle_api2_request($reqstate);
+	    return;
+	}
+
+	if ($self->{pages} && ($method eq 'GET') && (my $handler = $self->{pages}->{$path})) {
 	    if (ref($handler) eq 'CODE') {
 		my ($resp, $userid) = &$handler($self, $reqstate->{request});
 		$self->response($reqstate, $resp);
@@ -267,7 +442,7 @@ sub handle_request {
 
 	if ($self->{dirs} && ($method eq 'GET')) {
 	    # we only allow simple names
-	    if ($uri =~ m!^(/\S+/)([a-zA-Z0-9\-\_\.]+)$!) {
+	    if ($path =~ m!^(/\S+/)([a-zA-Z0-9\-\_\.]+)$!) {
 		my ($subdir, $file) = ($1, $2);
 		if (my $dir = $self->{dirs}->{$subdir}) {
 		    my $filename = "$dir$file";
@@ -275,13 +450,11 @@ sub handle_request {
 			die "unable to open file '$filename' - $!\n";
 		    send_file_start($self, $reqstate, $filename);
 		    return;
-		} else {
-		    print "FAILED\n"
 		}
 	    }
 	}
 
-	die "no such file '$uri'";
+	die "no such file '$path'";
     };
     if (my $err = $@) {
 	$self->error($reqstate, 501, $err);
@@ -550,7 +723,7 @@ sub new {
 
     my $class = ref($this) || $this;
 
-    foreach my $req (qw(cb socket lockfh lockfile)) {
+    foreach my $req (qw(rpcenv socket lockfh lockfile)) {
 	die "misssing required argument '$req'" if !defined($args{$req});
     }
 
@@ -565,7 +738,6 @@ sub new {
     $self->{keep_alive} = 0 if !defined($self->{keep_alive});
     $self->{max_conn} = 800 if !$self->{max_conn};
     $self->{max_requests} = 8000 if !$self->{max_requests};
-
 
     $self->{end_cond} = AnyEvent->condvar;
 
@@ -626,19 +798,8 @@ use POSIX qw(EINTR);
 use POSIX ":sys_wait_h";
 use IO::Handle;
 use IO::Select;
-use HTTP::Daemon;
-use HTTP::Status qw(:constants);
-use CGI;
 use Data::Dumper; # fixme: remove
-use PVE::REST;
 use JSON;
-
-# DOS attack prevention
-# fixme: remove CGI.pm
-$CGI::DISABLE_UPLOADS = 1; # no uploads
-$CGI::POST_MAX = 1024 * 10; # max 10K posts
-
-my $documentroot = "/usr/share/pve-api/root";
 
 my $workers = {};
 
@@ -833,94 +994,10 @@ sub send_error {
     $c->send_response(HTTP::Response->new($code, $msg));
 }
 
-my $known_methods = {
-    GET => 1,
-    POST => 1,
-    PUT => 1,
-    DELETE => 1,
-};
-
-my $extract_params = sub {
-    my ($r, $method) = @_;
-
-    # NOTE: HTTP::Request::Params return undef instead of ''
-    #my $parser = HTTP::Request::Params->new({req => $r});
-    #my $params = $parser->params;
-
-    my $post_params = {};
-
-    if ($method eq 'PUT' || $method eq 'POST') {
-	$post_params = CGI->new($r->content())->Vars;
-    }
-
-    my $query_params = CGI->new($r->url->query)->Vars;
-	
-    my $params = $post_params || {};
-
-    foreach my $k (keys %{$query_params}) {
-	$params->{$k} = $query_params->{$k};
-    }
-
-    return PVE::Tools::decode_utf8_parameters($params);
-};
-
 sub handle_connections {
     my ($self, $rpcenv) = @_;
 
-    my $server = PVE::HTTPServer->new(%{$self->{cfg}}, cb => sub {
-	my ($server, $r) = @_;
-
-	my $method = $r->method();
-
-
-	if (!$known_methods->{$method}) {
-	    return HTTP::Response->new(HTTP_NOT_IMPLEMENTED, "method '$method' not available");
-	}
-
-	my $uri = $r->uri->path();
-
-	my $response;
-	my $userid;
-
-	my ($rel_uri, $format) = PVE::REST::split_abs_uri($uri);
-	if (!$format) {
-	    $response = HTTP::Response->new(HTTP_NOT_IMPLEMENTED, "no such uri");
-	} else {
-	    my $headers = $r->headers;
-
-	    my $cookie = $headers->header('Cookie');
-
-	    my $ticket = PVE::REST::extract_auth_cookie($cookie);
-
-	    my $params = &$extract_params($r, $method);
-
-	    my $clientip = $headers->header('PVEClientIP');
-
-	    $rpcenv->init_request(params => $params); 
-
-	    my $res = PVE::REST::rest_handler($rpcenv, $clientip, $method, $uri, $rel_uri, $ticket);
-
-	    # fixme: eval { $userid = $rpcenv->get_user(); };
-	    $userid = $rpcenv->{user}; # this is faster
-	    $rpcenv->set_user(undef); # clear after request
- 
-	    if ($res->{proxy}) {
-		$response = HTTP::Response->new(HTTP_INTERNAL_SERVER_ERROR, "proxy not allowed");
-	    } else {
-
-		PVE::REST::prepare_response_data($format, $res);
-		my ($raw, $ct) = PVE::REST::format_response_data($format, $res, $uri);
-
-		$response = HTTP::Response->new($res->{status}, $res->{message});
-		$response->header("Content-Type" => $ct);
-		$response->header("Pragma", "no-cache");
-
-		$response->content($raw);
-	    }
-	}
-	    
-	return wantarray ? ($response, $userid) : $response;
-    });
+    my $server = PVE::HTTPServer->new(%{$self->{cfg}}, rpcenv => $rpcenv);
 
     debug_msg("wating for connections");
     $server->run();
