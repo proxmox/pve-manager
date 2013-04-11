@@ -282,8 +282,9 @@ sub proxy_request {
 	    $method => $target,
 	    headers => $headers,
 	    timeout => 30,
-	    resurse => 0,
+	    recurse => 0,
 	    body => $content,
+	    tls_ctx => $self->{tls_ctx},
 	    sub {
 		my ($body, $hdr) = @_;
 
@@ -715,6 +716,16 @@ sub write_log {
     }
 }
 
+sub atfork_handler {
+    my ($self) = @_;
+
+    eval {
+	# something else do to ?
+	close($self->{socket});
+    };
+    warn $@ if $@;
+}
+
 sub new {
     my ($this, %args) = @_;
 
@@ -729,9 +740,8 @@ sub new {
     # init inotify
     PVE::INotify::inotify_init();
 
-    my $atfork = sub { close($self->{socket}); };
     $self->{rpcenv} = PVE::RPCEnvironment->init(
-	$self->{trusted_env} ? 'priv' : 'pub', atfork => $atfork);
+	$self->{trusted_env} ? 'priv' : 'pub', atfork =>  sub { $self-> atfork_handler() });
 
     fh_nonblocking($self->{socket}, 1);
 
