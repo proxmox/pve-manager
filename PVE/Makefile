@@ -6,6 +6,7 @@ PERLSOURCE = 			\
 	API2.pm			\
 	API2Tools.pm		\
 	API2Client.pm		\
+	HTTPServer.pm		\
 	APIDaemon.pm		\
 	REST.pm			\
 	OpenVZ.pm		\
