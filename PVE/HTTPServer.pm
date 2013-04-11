@@ -30,7 +30,6 @@ use CGI; # fixme: remove this!
 $CGI::DISABLE_UPLOADS = 1; # no uploads
 $CGI::POST_MAX = 1024 * 10; # max 10K posts
 
-use Scalar::Util qw/weaken/; # fixme: remove?
 use Data::Dumper; # fixme: remove
 
 my $known_methods = {
@@ -69,7 +68,7 @@ sub log_aborted_request {
     if ($error) {
 	syslog("err", "problem with client $reqstate->{peer_host}; $error");
     }
-    
+
     $self->log_request($reqstate);
 }
 
@@ -87,12 +86,12 @@ sub client_do_disconnect {
 
     shutdown($hdl->{fh}, 1);
     # clear all handlers
-    $hdl->on_drain(undef); 
+    $hdl->on_drain(undef);
     $hdl->on_read(undef);
     $hdl->on_eof(undef);
     $self->{conn_count}--;
 
-    #print "$$: client_do_disconnect $self->{conn_count} $hdl\n";
+    print "$$: CLOSE FH" .  $hdl->{fh}->fileno() . " CONN$self->{conn_count}\n" if $self->{debug};
 }
 
 sub finish_response {
@@ -106,15 +105,15 @@ sub finish_response {
 
     if (!$self->{end_loop} && $reqstate->{keep_alive} > 0) {
 	# print "KEEPALIVE $reqstate->{keep_alive}\n";
-	$hdl->on_read(sub { 
+	$hdl->on_read(sub {
 	    eval { $self->push_request_header($reqstate); };
 	    warn $@ if $@;
 	});
     } else {
 	$hdl->on_drain (sub {
-	    eval { 
-		$self->client_do_disconnect($reqstate); 
-	    }; 
+	    eval {
+		$self->client_do_disconnect($reqstate);
+	    };
 	    warn $@ if $@;
 	});
     }
@@ -140,7 +139,7 @@ sub response {
     $reqstate->{log}->{code} = $code;
 
     my $res = "HTTP/1.0 $code $msg\015\012";
-    
+
     my $ctime = time();
     my $date = HTTP::Date::time2str($ctime);
     $resp->header('Date' => $date);
@@ -155,12 +154,7 @@ sub response {
     $resp->header('Server' => "pve-api-daemon/3.0");
 
     my $content_length;
-    if (ref($content) eq "CODE") {
-	$reqstate->{keep_alive} = 0;
-
-	# fixme:
-	
-    } elsif ($content) {
+    if ($content) {
 
 	$content_length = length($content);
 
@@ -172,10 +166,11 @@ sub response {
 	}
 	$resp->header("Content-Length" => $content_length);
 	$reqstate->{log}->{content_length} = $content_length;
+
     } else {
 	$resp->remove_header("Content-Length");
     }
- 
+
     if ($reqstate->{keep_alive} > 0) {
 	$resp->push_header('Connection' => 'Keep-Alive');
     } else {
@@ -183,7 +178,7 @@ sub response {
     }
 
     $res .= $resp->headers_as_string("\015\012");
-    #print "SEND(supress content) $res\n";
+    #print "SEND(without content) $res\n" if $self->{debug};
 
     $res .= "\015\012";
     $res .= $content;
@@ -198,7 +193,7 @@ sub error {
     my ($self, $reqstate, $code, $msg, $hdr, $content) = @_;
 
     eval {
-	my $resp = HTTP::Response->new($code, $msg, $hdr, $content);	
+	my $resp = HTTP::Response->new($code, $msg, $hdr, $content);
 	$self->response($reqstate, $resp);
     };
     warn $@ if $@;
@@ -209,14 +204,14 @@ sub send_file_start {
 
     eval {
 	# print "SEND FILE $filename\n";
-	# Note: aio_load() this is not really async unless we use IO::AIO! 
+	# Note: aio_load() this is not really async unless we use IO::AIO!
 	eval {
 
 	    my $fh = IO::File->new($filename, '<') ||
 		die "$!\n";
 	    my $stat = File::stat::stat($fh) ||
 		die "$!\n";
-	    
+
 	    my $data;
 	    my $len = sysread($fh, $data,  $stat->size);
 	    die "got short file\n" if !defined($len) || $len != $stat->size;
@@ -224,27 +219,27 @@ sub send_file_start {
 	    my $ct;
 	    if ($filename =~ m/\.css$/) {
 		$ct = 'text/css';
-	    } elsif ($filename =~ m/\.js$/) { 
+	    } elsif ($filename =~ m/\.js$/) {
 		$ct = 'application/javascript';
-	    } elsif ($filename =~ m/\.png$/) { 
+	    } elsif ($filename =~ m/\.png$/) {
 		$ct = 'image/png';
-	    } elsif ($filename =~ m/\.gif$/) { 
+	    } elsif ($filename =~ m/\.gif$/) {
 		$ct = 'image/gif';
-	    } elsif ($filename =~ m/\.jar$/) { 
+	    } elsif ($filename =~ m/\.jar$/) {
 		$ct = 'application/java-archive';
 	    } else {
 		die "unable to detect content type";
 	    }
 
 	    my $header = HTTP::Headers->new(Content_Type => $ct);
-	    my $resp = HTTP::Response->new(200, "OK", $header, $data); 
+	    my $resp = HTTP::Response->new(200, "OK", $header, $data);
 	    $self->response($reqstate, $resp, $stat->mtime);
 	};
 	if (my $err = $@) {
 	    $self->error($reqstate, 501, $err);
 	}
     };
-    
+
     warn $@ if $@;
 }
 
@@ -254,9 +249,9 @@ sub proxy_request {
     eval {
 	my $target;
 	if ($host eq 'localhost') {
-	    $target = "http://$host:85$abs_uri"; 
+	    $target = "http://$host:85$abs_uri";
 	} else {
-	    $target = "https://$host:8006$abs_uri"; 
+	    $target = "https://$host:8006$abs_uri";
 	}
 
 	my $headers = {
@@ -283,19 +278,17 @@ sub proxy_request {
 	    }
 	}
 
-	# fixme: tls_ctx;
-
 	my $w; $w = http_request(
-	    $method => $target, 
-	    headers => $headers, 
-	    timeout => 30, 
-	    resurse => 0, 
-	    body => $content, 
+	    $method => $target,
+	    headers => $headers,
+	    timeout => 30,
+	    resurse => 0,
+	    body => $content,
 	    sub {
 		my ($body, $hdr) = @_;
 
 		undef $w;
-	    
+
 		eval {
 		    my $code = delete $hdr->{Status};
 		    my $msg = delete $hdr->{Reason};
@@ -361,24 +354,24 @@ sub handle_api2_request {
 
 	my $clientip = $headers->header('PVEClientIP');
 
-	$rpcenv->init_request(params => $params); 
+	$rpcenv->init_request(params => $params);
 
 	my $res = PVE::REST::rest_handler($rpcenv, $clientip, $method, $path, $rel_uri, $ticket, $token);
 
-	# fixme: eval { $userid = $rpcenv->get_user(); };
+	# todo: eval { $userid = $rpcenv->get_user(); };
 	my $userid = $rpcenv->{user}; # this is faster
 	$rpcenv->set_user(undef); # clear after request
 
 	$reqstate->{log}->{userid} = $userid;
- 
+
 	if ($res->{proxy}) {
 
 	    if ($self->{trusted_env}) {
 		$self->error($reqstate, HTTP_INTERNAL_SERVER_ERROR, "proxy not allowed");
 		return;
-	    } 
+	    }
 
-	    $self->proxy_request($reqstate, $r, $clientip, $res->{proxy}, $method, 
+	    $self->proxy_request($reqstate, $r, $clientip, $res->{proxy}, $method,
 				 $r->uri, $ticket, $token, $res->{proxy_params});
 	    return;
 
@@ -391,7 +384,7 @@ sub handle_api2_request {
 	$resp->header("Content-Type" => $ct);
 	$resp->content($raw);
 	$self->response($reqstate, $resp);
-	
+
 	return;
     };
     warn $@ if $@;
@@ -415,7 +408,7 @@ sub handle_request {
 	    return;
 	}
 
-	if ($path =~ m!/api2!) { 
+	if ($path =~ m!/api2!) {
 	    $self->handle_api2_request($reqstate);
 	    return;
 	}
@@ -436,7 +429,7 @@ sub handle_request {
 		die "internal error - no handler";
 	    }
 	    return;
-	} 
+	}
 
 	if ($self->{dirs} && ($method eq 'GET')) {
 	    # we only allow simple names
@@ -491,7 +484,7 @@ sub unshift_read_header {
 		my $len = $r->header('Content-Length');
 		my $pveclientip = $r->header('PVEClientIP');
 
-		# fixme:
+		# fixme: how can we make PVEClientIP header trusted?
 		if ($self->{trusted_env} && $pveclientip) {
 		    $reqstate->{peer_host} = $pveclientip;
 		} else {
@@ -536,7 +529,7 @@ sub push_request_header {
 
 	    eval {
 		#print "got request header: $line\n";
- 
+
 		$reqstate->{keep_alive}--;
 
 		if ($line =~ /(\S+)\040(\S+)\040HTTP\/(\d+)\.(\d+)/o) {
@@ -549,7 +542,7 @@ sub push_request_header {
 
 		    $self->{request_count}++; # only count valid request headers
 		    if ($self->{request_count} >= $self->{max_requests}) {
-			$self->{end_loop} = 1;   
+			$self->{end_loop} = 1;
 		    }
 		    $reqstate->{log} = { requestline => $line };
 		    $reqstate->{proto}->{maj} = $maj;
@@ -609,11 +602,9 @@ sub accept {
 	die $errmsg if $errmsg;
     }
 
-    fh_nonblocking $clientfh, 1; 
+    fh_nonblocking $clientfh, 1;
 
     $self->{conn_count}++;
-
-    print "$$: ACCEPT OK $self->{conn_count} FH" .  $clientfh->fileno() . "\n";
 
     return $clientfh;
 }
@@ -624,7 +615,7 @@ sub wait_end_loop {
     $self->{end_loop} = 1;
 
     undef $self->{socket_watch};
-	
+
     if ($self->{conn_count} <= 0) {
 	$self->{end_cond}->send(1);
 	return;
@@ -633,7 +624,7 @@ sub wait_end_loop {
     # else we need to wait until all open connections gets closed
     my $w; $w = AnyEvent->timer (after => 1, interval => 1, cb => sub {
 	eval {
-	    # fixme: test for active connections instead?
+	    # todo: test for active connections instead (we can abort idle connections)
 	    if ($self->{conn_count} <= 0) {
 		undef $w;
 		$self->{end_cond}->send(1);
@@ -642,7 +633,7 @@ sub wait_end_loop {
 	warn $@ if $@;
     });
 }
- 
+
 sub accept_connections {
     my ($self) = @_;
 
@@ -670,7 +661,7 @@ sub accept_connections {
 		    };
 		    if (my $err = $@) { syslog('err', $err); }
 		},
-		on_error => sub { 
+		on_error => sub {
 		    my ($hdl, $fatal, $message) = @_;
 		    eval {
 			$self->log_aborted_request($reqstate, $message);
@@ -680,7 +671,7 @@ sub accept_connections {
 		},
 		($self->{tls_ctx} ? (tls => "accept", tls_ctx => $self->{tls_ctx}) : ()));
 
-	    print "$$: ACCEPT OK $reqstate->{hdl} $self->{conn_count}\n";
+	    print "$$: ACCEPT FH" .  $clientfh->fileno() . " CONN$self->{conn_count}\n" if $self->{debug};
 
 	    $self->push_request_header($reqstate);
 	}
@@ -696,7 +687,7 @@ sub accept_connections {
 
 # Note: We can't open log file in non-blocking mode and use AnyEvent::Handle,
 # because we write from multiple processes, and that would arbitrarily mix output
-# of all processes. 
+# of all processes.
 sub open_access_log {
     my ($self, $filename) = @_;
 
@@ -729,11 +720,18 @@ sub new {
 
     my $class = ref($this) || $this;
 
-    foreach my $req (qw(rpcenv socket lockfh lockfile)) {
+    foreach my $req (qw(socket lockfh lockfile)) {
 	die "misssing required argument '$req'" if !defined($args{$req});
     }
 
     my $self = bless { %args }, $class;
+
+    # init inotify
+    PVE::INotify::inotify_init();
+
+    my $atfork = sub { close($self->{socket}); };
+    $self->{rpcenv} = PVE::RPCEnvironment->init(
+	$self->{trusted_env} ? 'priv' : 'pub', atfork => $atfork);
 
     fh_nonblocking($self->{socket}, 1);
 
@@ -748,11 +746,11 @@ sub new {
     $self->{end_cond} = AnyEvent->condvar;
 
     if ($self->{ssl}) {
-	$self->{tls_ctx} = AnyEvent::TLS->new(%{$self->{ssl}}); 
+	$self->{tls_ctx} = AnyEvent::TLS->new(%{$self->{ssl}});
     }
 
     $self->open_access_log($self->{logfile}) if $self->{logfile};
-    
+
     $self->{socket_watch} = AnyEvent->io(fh => $self->{socket}, poll => 'r', cb => sub {
 	eval {
 	    if ($self->{conn_count} >= $self->{max_conn}) {
@@ -764,7 +762,7 @@ sub new {
 		});
 	    } else {
 		$self->accept_connections();
-	    } 
+	    }
 	};
 	warn $@ if $@;
     });
@@ -774,9 +772,13 @@ sub new {
 	$self->wait_end_loop();
     });
 
-    $self->{quit_watch} = AnyEvent->signal(signal => "QUIT", cb => sub { 
+    $self->{quit_watch} = AnyEvent->signal(signal => "QUIT", cb => sub {
 	undef $self->{quit_watch};
 	$self->wait_end_loop();
+    });
+
+    $self->{inotify_poll} = AnyEvent->timer(after => 5, interval => 5, cb => sub {
+	PVE::INotify::poll(); # read inotify events
     });
 
     return $self;

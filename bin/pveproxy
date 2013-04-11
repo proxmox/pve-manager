@@ -52,8 +52,6 @@ POSIX::setuid($uid) || die "setuid $uid failed - $!\n";
 # just to be sure
 die "detected strange uid/gid\n" if !($UID == $uid && $EUID == $uid && $GID eq "$gid $gid" && $EGID eq "$gid $gid");
 
-PVE::APIDaemon::enable_debug() if $opt_debug;
-
 sub add_dirs {
     my ($result_hash, $alias, $subdir) = @_;
 
@@ -86,6 +84,7 @@ eval {
 	keep_alive => 100,
 	max_conn => 500,
 	max_requests => 1000,
+	debug => $opt_debug,
 	trusted_env => 0, # not trusted, anyone can connect
 	logfile => '/var/log/pveproxy/access.log',
 	lockfile => $lockfile,

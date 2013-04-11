@@ -2,25 +2,17 @@ package PVE::APIDaemon;
 
 use strict;
 use warnings;
-use vars qw(@ISA);
+use POSIX ":sys_wait_h";
 use IO::Socket::INET;
 
 use PVE::SafeSyslog;
-use PVE::INotify;
-use PVE::RPCEnvironment;
 use PVE::HTTPServer;
-
-use POSIX qw(EINTR);
-use POSIX ":sys_wait_h";
-use IO::Handle;
-use IO::Select;
-use JSON;
 
 my $workers = {};
 
 sub new {
     my ($this, %args) = @_;
-    
+
     my $class = ref($this) || $this;
 
     die "no lockfile" if !$args{lockfile};
@@ -43,7 +35,7 @@ sub new {
     $cfg->{lockfh} = $lockfh;
     $cfg->{max_workers} = 3 if !$cfg->{max_workers};
     $cfg->{trusted_env} = 0 if !defined($cfg->{trusted_env});
-    
+
     return $self;
 }
 
@@ -52,9 +44,9 @@ sub worker_finished {
 
     syslog('info', "worker $cpid finished");
 }
-    
+
 sub finish_workers {
-    local $!; local $?;    
+    local $!; local $?;
     foreach my $cpid (keys %$workers) {
         my $waitpid = waitpid ($cpid, WNOHANG);
         if (defined($waitpid) && ($waitpid == $cpid)) {
@@ -75,7 +67,7 @@ sub test_workers {
 }
 
 sub start_workers {
-    my ($self, $rpcenv) = @_;
+    my ($self) = @_;
 
     my $count = 0;
     foreach my $cpid (keys %$workers) {
@@ -104,10 +96,8 @@ sub start_workers {
 	    $SIG{TERM} = $SIG{QUIT} = 'DEFAULT'; # we handle that with AnyEvent
 
 	    eval {
-		# try to init inotify
-		# fixme: poll
-		PVE::INotify::inotify_init();
-	        $self->handle_connections($rpcenv);
+		my $server = PVE::HTTPServer->new(%{$self->{cfg}});
+		$server->run();
 	    };
 	    if (my $err = $@) {
 		syslog('err', $err);
@@ -130,7 +120,7 @@ sub terminate_server {
     my $previous_alarm = alarm (10);
     eval {
 	local $SIG{ALRM} = sub { die "timeout\n" };
-	
+
 	while ((my $pid = waitpid (-1, 0)) > 0) {
 	    if (defined($workers->{$pid})) {
 		delete ($workers->{$pid});
@@ -140,11 +130,11 @@ sub terminate_server {
 	alarm(0); # avoid race condition
     };
     my $err = $@;
-    
+
     alarm ($previous_alarm);
 
     if ($err) {
-	syslog('err', "error stopping workers (will kill them now) - $err"); 
+	syslog('err', "error stopping workers (will kill them now) - $err");
 	foreach my $cpid (keys %$workers) {
 	    # KILL childs still alive!
 	    if (kill (0, $cpid)) {
@@ -159,10 +149,6 @@ sub terminate_server {
 sub start_server {
     my $self = shift;
 
-    my $atfork = sub { close($self->{cfg}->{socket}); };
-    my $rpcenv = PVE::RPCEnvironment->init(
-	$self->{cfg}->{trusted_env} ? 'priv' : 'pub', atfork => $atfork);
-
     eval {
 	my $old_sig_chld = $SIG{CHLD};
 	local $SIG{CHLD} = sub {
@@ -171,11 +157,11 @@ sub start_server {
 	};
 
 	my $old_sig_term = $SIG{TERM};
-	local $SIG{TERM} = sub { 
+	local $SIG{TERM} = sub {
 	    terminate_server ();
 	    &$old_sig_term(@_) if $old_sig_term;
 	};
-	local $SIG{QUIT} = sub { 
+	local $SIG{QUIT} = sub {
 	    terminate_server();
 	    &$old_sig_term(@_) if $old_sig_term;
 	};
@@ -188,8 +174,8 @@ sub start_server {
 	};
 
 	for (;;) { # forever
-	    $self->start_workers($rpcenv);
-	    sleep (5); 
+	    $self->start_workers();
+	    sleep (5);
 	    $self->test_workers();
 	}
     };
@@ -198,20 +184,6 @@ sub start_server {
     if ($err) {
 	syslog('err', "ERROR: $err");
     }
-}
-
-sub send_error {
-    my ($c, $code, $msg) = @_;
-
-    $c->send_response(HTTP::Response->new($code, $msg));
-}
-
-sub handle_connections {
-    my ($self, $rpcenv) = @_;
-
-    my $server = PVE::HTTPServer->new(%{$self->{cfg}}, rpcenv => $rpcenv);
-
-    $server->run();
 }
 
 1;

@@ -34,8 +34,6 @@ $SIG{'__WARN__'} = sub {
 
 $0 = "pvedaemon";
 
-PVE::APIDaemon::enable_debug() if $opt_debug;
-
 # create dir for dtach sockets
 mkdir "/var/run/dtach";
 
@@ -47,6 +45,7 @@ eval {
 	port => 85, 
 	trusted_env => 1, # partly trusted, because only local programs can connect
 	lockfile => $lockfile,
+	debug => $opt_debug,
 	keep_alive => 100,
 	max_conn => 500,
 	max_requests => 1000);
