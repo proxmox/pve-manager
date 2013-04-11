@@ -43,8 +43,6 @@ my $known_methods = {
 sub log_request {
     my ($self, $reqstate) = @_;
 
-    return if !$self->{loghdl};
-
     my $loginfo = $reqstate->{log};
 
     # like apache2 common log format
@@ -59,7 +57,7 @@ sub log_request {
 
     my $msg = "$peerip - $userid [$timestr] \"$requestline\" $code $content_length\n";
 
-    $self->{loghdl}->push_write($msg);
+    $self->write_log($msg);
 }
 
 sub log_aborted_request {
@@ -696,6 +694,9 @@ sub accept_connections {
     $self->wait_end_loop() if $self->{end_loop};
 }
 
+# Note: We can't open log file in non-blocking mode and use AnyEvent::Handle,
+# because we write from multiple processes, and that would arbitrarily mix output
+# of all processes. 
 sub open_access_log {
     my ($self, $filename) = @_;
 
@@ -704,18 +705,23 @@ sub open_access_log {
 	die "unable to open log file '$filename' - $!\n";
     umask($old_mask);
 
-    fh_nonblocking($logfh, 1);
-    $self->{loghdl} = AnyEvent::Handle->new(
-	fh => $logfh, 
-	on_error => sub {
-	    my ($hdl, $fatal, $msg) = @_;
-	    syslog('err', "error writing access log: $msg");
-	    delete $self->{loghdl};
-	    $hdl->destroy;
-	    $self->{end_loop} = 1; # terminate asap
-	});;
+    $logfh->autoflush(1);
 
-    return;
+    $self->{logfh} = $logfh;
+}
+
+sub write_log {
+    my ($self, $data) = @_;
+
+    return if !defined($self->{logfh}) || !$data;
+
+    my $res = $self->{logfh}->print($data);
+
+    if (!$res) {
+	delete $self->{logfh};
+	syslog('err', "error writing access log");
+	$self->{end_loop} = 1; # terminate asap
+    }
 }
 
 sub new {
@@ -745,7 +751,6 @@ sub new {
 	$self->{tls_ctx} = AnyEvent::TLS->new(%{$self->{ssl}}); 
     }
 
-    # fixme: logrotate?
     $self->open_access_log($self->{logfile}) if $self->{logfile};
     
     $self->{socket_watch} = AnyEvent->io(fh => $self->{socket}, poll => 'r', cb => sub {
