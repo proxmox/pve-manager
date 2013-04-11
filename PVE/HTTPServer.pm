@@ -248,8 +248,11 @@ sub proxy_request {
 
     eval {
 	my $target;
+	my $keep_alive = 1;
 	if ($host eq 'localhost') {
 	    $target = "http://$host:85$abs_uri";
+	    # keep alive for localhost is not worth (connection setup is about 0.2ms)
+	    $keep_alive = 0;
 	} else {
 	    $target = "https://$host:8006$abs_uri";
 	}
@@ -283,6 +286,7 @@ sub proxy_request {
 	    headers => $headers,
 	    timeout => 30,
 	    recurse => 0,
+	    keepalive => $keep_alive,
 	    body => $content,
 	    tls_ctx => $self->{tls_ctx},
 	    sub {
