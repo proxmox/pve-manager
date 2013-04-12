@@ -165,7 +165,7 @@ exit (0);
 # so we must be very careful here 
 
 sub get_index {
-    my ($server, $r, $params) = @_;
+    my ($server, $r, $args) = @_;
 
     my $lang = 'en';
     my $username;
@@ -182,8 +182,6 @@ sub get_index {
 	    $token = PVE::AccessControl::assemble_csrf_prevention_token($username);
 	}
     }
-
-    my $args = $r->url->query_form_hash();
 
     my $workspace = defined($args->{console}) ?
 	"PVE.ConsoleWorkspace" : "PVE.StdWorkspace";

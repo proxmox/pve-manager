@@ -2,10 +2,13 @@ package PVE::HTTPServer;
 
 use strict;
 use warnings;
+use Time::HiRes qw(usleep ualarm gettimeofday tv_interval);
 use Socket qw(IPPROTO_TCP TCP_NODELAY SOMAXCONN);
 use POSIX qw(strftime EINTR EAGAIN);
 use Fcntl;
+use IO::File;
 use File::stat qw();
+use Digest::MD5;
 use AnyEvent::Strict;
 use AnyEvent::Util qw(guard fh_nonblocking WSAEWOULDBLOCK WSAEINPROGRESS);
 use AnyEvent::Handle;
@@ -24,11 +27,8 @@ use HTTP::Status qw(:constants);
 use HTTP::Headers;
 use HTTP::Response;
 
-use CGI; # fixme: remove this!
-# DOS attack prevention
-# fixme: remove CGI.pm
-$CGI::DISABLE_UPLOADS = 1; # no uploads
-$CGI::POST_MAX = 1024 * 10; # max 10K posts
+# fixme
+# POST_MAX = 1024 * 10; # max 10K posts
 
 use Data::Dumper; # fixme: remove
 
@@ -38,6 +38,17 @@ my $known_methods = {
     PUT => 1,
     DELETE => 1,
 };
+
+my $baseuri = "/api2";
+
+sub split_abs_uri {
+    my ($abs_uri) = @_;
+
+    my ($format, $rel_uri) = $abs_uri =~ m/^\Q$baseuri\E\/+(html|text|json|extjs|png|htmljs)(\/.*)?$/;
+    $rel_uri = '/' if !$rel_uri;
+ 
+    return wantarray ? ($rel_uri, $format) : $rel_uri;
+}
 
 sub log_request {
     my ($self, $reqstate) = @_;
@@ -75,6 +86,11 @@ sub log_aborted_request {
 sub client_do_disconnect {
     my ($self, $reqstate) = @_;
 
+    if ($reqstate->{tmpfilename}) {
+	unlink $reqstate->{tmpfilename};
+	delete $reqstate->{tmpfilename};
+    }
+
     my $hdl = delete $reqstate->{hdl};
 
     if (!$hdl) {
@@ -103,8 +119,13 @@ sub finish_response {
     delete $reqstate->{request};
     delete $reqstate->{proto};
 
+    if ($reqstate->{tmpfilename}) {
+	unlink $reqstate->{tmpfilename};
+	delete $reqstate->{tmpfilename};
+    }
+
     if (!$self->{end_loop} && $reqstate->{keep_alive} > 0) {
-	# print "KEEPALIVE $reqstate->{keep_alive}\n";
+	# print "KEEPALIVE $reqstate->{keep_alive}\n" if $self->{debug};
 	$hdl->on_read(sub {
 	    eval { $self->push_request_header($reqstate); };
 	    warn $@ if $@;
@@ -244,17 +265,17 @@ sub send_file_start {
 }
 
 sub proxy_request {
-    my ($self, $reqstate, $r, $clientip, $host, $method, $abs_uri, $ticket, $token, $params) = @_;
+    my ($self, $reqstate, $clientip, $host, $method, $uri, $ticket, $token, $params) = @_;
 
     eval {
 	my $target;
 	my $keep_alive = 1;
 	if ($host eq 'localhost') {
-	    $target = "http://$host:85$abs_uri";
+	    $target = "http://$host:85$uri";
 	    # keep alive for localhost is not worth (connection setup is about 0.2ms)
 	    $keep_alive = 0;
 	} else {
-	    $target = "https://$host:8006$abs_uri";
+	    $target = "https://$host:8006$uri";
 	}
 
 	my $headers = {
@@ -271,8 +292,7 @@ sub proxy_request {
 
 	if  ($method eq 'POST' || $method eq 'PUT') {
 	    $headers->{'Content-Type'} = 'application/x-www-form-urlencoded';
-	    # We use a temporary URI object to format
-	    # the application/x-www-form-urlencoded content.
+	    # use URI object to format application/x-www-form-urlencoded content.
 	    my $url = URI->new('http:');
 	    $url->query_form(%$params);
 	    $content = $url->query;
@@ -309,21 +329,40 @@ sub proxy_request {
     warn $@ if $@;
 }
 
+# return arrays as \0 separated strings (like CGI.pm)
+sub decode_urlencoded {
+    my ($data) = @_;
+
+    my $res = {};
+
+    return $res if !$data;
+
+    foreach my $kv (split(/[\&\;]/, $data)) {
+	my ($k, $v) = split(/=/, $kv);
+	$k =~s/\+/ /g;
+	$k =~ s/%([0-9a-fA-F][0-9a-fA-F])/chr(hex($1))/eg;
+	$v =~s/\+/ /g;
+	$v =~ s/%([0-9a-fA-F][0-9a-fA-F])/chr(hex($1))/eg;
+
+	if (defined(my $old = $res->{$k})) {
+	    $res->{$k} = "$old\0$v";
+	} else {
+	    $res->{$k} = $v;
+	}	
+    }
+    return $res;
+}
+
 my $extract_params = sub {
     my ($r, $method) = @_;
 
-    # NOTE: HTTP::Request::Params return undef instead of ''
-    #my $parser = HTTP::Request::Params->new({req => $r});
-    #my $params = $parser->params;
-
-    my $post_params = {};
+    my $params = {};
 
     if ($method eq 'PUT' || $method eq 'POST') {
-	$post_params = CGI->new($r->content())->Vars;
+	$params = decode_urlencoded($r->content);
     }
 
-    my $query_params = CGI->new($r->url->query)->Vars;
-    my $params = $post_params || {};
+    my $query_params = decode_urlencoded($r->url->query());
 
     foreach my $k (keys %{$query_params}) {
 	$params->{$k} = $query_params->{$k};
@@ -333,41 +372,40 @@ my $extract_params = sub {
 };
 
 sub handle_api2_request {
-    my ($self, $reqstate) = @_;
+    my ($self, $reqstate, $auth, $upload_state) = @_;
 
     eval {
 	my $r = $reqstate->{request};
 	my $method = $r->method();
 	my $path = $r->uri->path();
 
-	my ($rel_uri, $format) = PVE::REST::split_abs_uri($path);
+	my ($rel_uri, $format) = split_abs_uri($path);
 	if (!$format) {
 	    $self->error($reqstate, HTTP_NOT_IMPLEMENTED, "no such uri");
 	    return;
 	}
 
+	print Dumper($upload_state) if $upload_state;
+
 	my $rpcenv = $self->{rpcenv};
-	my $headers = $r->headers;
 
-	my $token = $headers->header('CSRFPreventionToken');
+	my $params;
 
-	my $cookie = $headers->header('Cookie');
+	if ($upload_state) {
+	    $params = $upload_state->{params};
+	} else {
+	    $params = &$extract_params($r, $method); # fixme
+	}
 
-	my $ticket = PVE::REST::extract_auth_cookie($cookie);
+	delete $params->{_dc}; # remove disable cache parameter
 
-	my $params = &$extract_params($r, $method);
+	my $clientip = $reqstate->{peer_host};
 
-	my $clientip = $headers->header('PVEClientIP');
+	$rpcenv->init_request();
 
-	$rpcenv->init_request(params => $params);
+	my $res = PVE::REST::rest_handler($rpcenv, $clientip, $method, $rel_uri, $auth, $params);
 
-	my $res = PVE::REST::rest_handler($rpcenv, $clientip, $method, $path, $rel_uri, $ticket, $token);
-
-	# todo: eval { $userid = $rpcenv->get_user(); };
-	my $userid = $rpcenv->{user}; # this is faster
 	$rpcenv->set_user(undef); # clear after request
-
-	$reqstate->{log}->{userid} = $userid;
 
 	if ($res->{proxy}) {
 
@@ -376,8 +414,11 @@ sub handle_api2_request {
 		return;
 	    }
 
-	    $self->proxy_request($reqstate, $r, $clientip, $res->{proxy}, $method,
-				 $r->uri, $ticket, $token, $res->{proxy_params});
+	    $res->{proxy_params}->{tmpfilename} = $reqstate->{tmpfilename} if $upload_state;
+
+	    # fixme: cleanup parameter list
+	    $self->proxy_request($reqstate, $clientip, $res->{proxy}, $method,
+				 $r->uri, $auth->{ticket}, $auth->{token}, $res->{proxy_params});
 	    return;
 
 	}
@@ -389,38 +430,29 @@ sub handle_api2_request {
 	$resp->header("Content-Type" => $ct);
 	$resp->content($raw);
 	$self->response($reqstate, $resp);
-
-	return;
     };
-    warn $@ if $@;
+    if (my $err = $@) {
+	$self->error($reqstate, 501, $err);
+    }
 }
 
 sub handle_request {
-    my ($self, $reqstate) = @_;
-
-    #print "REQUEST" . Dumper($reqstate->{request});
+    my ($self, $reqstate, $auth) = @_;
 
     eval {
 	my $r = $reqstate->{request};
 	my $method = $r->method();
 	my $path = $r->uri->path();
 
-	# print "REQUEST $path\n";
-
-	if (!$known_methods->{$method}) {
-	    my $resp = HTTP::Response->new(HTTP_NOT_IMPLEMENTED, "method '$method' not available");
-	    $self->response($reqstate, $resp);
-	    return;
-	}
-
-	if ($path =~ m!/api2!) {
-	    $self->handle_api2_request($reqstate);
+	if ($path =~ m!$baseuri!) {
+	    $self->handle_api2_request($reqstate, $auth);
 	    return;
 	}
 
 	if ($self->{pages} && ($method eq 'GET') && (my $handler = $self->{pages}->{$path})) {
 	    if (ref($handler) eq 'CODE') {
-		my ($resp, $userid) = &$handler($self, $reqstate->{request});
+		my $params = decode_urlencoded($r->url->query());
+		my ($resp, $userid) = &$handler($self, $reqstate->{request}, $params);
 		$self->response($reqstate, $resp);
 	    } elsif (ref($handler) eq 'HASH') {
 		if (my $filename = $handler->{file}) {
@@ -457,6 +489,157 @@ sub handle_request {
     }
 }
 
+sub file_upload_multipart {
+    my ($self, $reqstate, $auth, $rstate) = @_;
+
+    eval {
+	my $boundary = $rstate->{boundary};
+	my $hdl = $reqstate->{hdl};
+
+	my $startlen = length($hdl->{rbuf});
+
+	if ($rstate->{phase} == 0) { # skip everything until start
+	    if ($hdl->{rbuf} =~ s/^.*?--\Q$boundary\E  \015?\012
+                       ((?:[^\015]+\015\012)* ) \015?\012//xs) {
+		my $header = $1;
+		my ($ct, $disp, $name, $filename);
+		foreach my $line (split(/\015?\012/, $header)) {
+		    # assume we have single line headers
+		    if ($line =~ m/^Content-Type\s*:\s*(.*)/i) {
+			$ct = parse_content_type($1);
+		    } elsif ($line =~ m/^Content-Disposition\s*:\s*(.*)/i) {
+			($disp, $name, $filename) = parse_content_disposition($1);
+		    }
+		}
+
+		if (!($disp && $disp eq 'form-data' && $name)) {
+		    syslog('err', "wrong content disposition im multipart - abort upload");
+		    $rstate->{phase} = -1;
+		} else {
+
+		    $rstate->{fieldname} = $name;
+
+		    if (!$ct) {
+			# found form data for field $name
+			$rstate->{phase} = 2;
+		    } elsif ($ct && $ct eq 'application/octet-stream' && $name eq 'filename' && $filename) {
+			# found file upload data
+			$rstate->{phase} = 1;
+			$rstate->{filename} = $filename;
+		    } else {
+			syslog('err', "wrong content type '$ct' im multipart - abort upload");
+			$rstate->{phase} = -1;		    
+		    }
+		}
+	    } else {
+		my $len = length($hdl->{rbuf});
+		substr($hdl->{rbuf}, 0, $len - $rstate->{maxheader}, '') 
+		    if $len > $rstate->{maxheader}; # skip garbage
+	    }
+	} elsif ($rstate->{phase} == 1) { # inside file - dump until end marker
+	    if ($hdl->{rbuf} =~ s/^(.*?)\015?\012(--\Q$boundary\E(--)? \015?\012(.*))$/$2/xs) {
+		my ($rest, $eof) = ($1, $3);
+		my $len = length($rest);
+		die "write to temporary file failed - $!" 
+		    if syswrite($rstate->{outfh}, $rest) != $len;
+		$rstate->{ctx}->add($rest);
+		$rstate->{params}->{filename} = $rstate->{filename};
+		$rstate->{md5sum} = $rstate->{ctx}->hexdigest;
+		$rstate->{bytes} += $len;
+		$rstate->{phase} =  $eof ? 100 : 0;
+	    } else {
+		my $len = length($hdl->{rbuf});
+		my $wlen = $len - $rstate->{boundlen};
+		if ($wlen > 0) {
+		    my $data =  substr($hdl->{rbuf}, 0, $wlen, '');
+		    die "write to temporary file failed - $!" 
+			if syswrite($rstate->{outfh}, $data) != $wlen;
+		    $rstate->{bytes} += $wlen;
+		    $rstate->{ctx}->add($data);
+		}
+	    }
+	} elsif ($rstate->{phase} == 2) { # inside normal field
+
+	    if ($hdl->{rbuf} =~ s/^(.*?)\015?\012(--\Q$boundary\E(--)? \015?\012(.*))$/$2/xs) {
+		my ($rest, $eof) = ($1, $3);
+		my $len = length($rest);
+		if ($len < 1024) { # fixme: max data size
+		    $rstate->{params}->{$rstate->{fieldname}} = $rest;
+		    $rstate->{phase} = $eof ? 100 : 0;
+		} else {
+		    syslog('err', "for data to large - abort upload");
+		    $rstate->{phase} = -1; # skip
+		}
+	    }
+	} else { # skip 
+	    my $len = length($hdl->{rbuf});
+	    substr($hdl->{rbuf}, 0, $len, ''); # empty rbuf
+	}
+
+	$rstate->{read} += ($startlen - length($hdl->{rbuf}));
+
+	if (!$rstate->{done} && ($rstate->{read} + length($hdl->{rbuf})) >= $rstate->{size}) {
+	    $rstate->{done} = 1; # make sure we dont get called twice 
+	    if ($rstate->{phase} < 0 || !$rstate->{md5sum}) {
+		$self->error($reqstate, 501, "upload failed"); # fixme: better msg
+	    } else {
+		my $elapsed = tv_interval($rstate->{starttime});
+
+		my $rate = int($rstate->{bytes}/($elapsed*1024*1024));
+		syslog('info', "multipart upload complete " . 
+		       "(size: %d time: %ds rate: %.2fMiB/s)", $rstate->{size}, $elapsed, $rate);
+		$self->handle_api2_request($reqstate, $auth, $rstate);
+	    }
+	}
+    };
+    if (my $err = $@) {
+	$self->error($reqstate, 501, $err);
+    }
+}
+
+sub parse_content_type {
+    my ($ctype) = @_;
+
+    my ($ct, @params) = split(/\s*[;,]\s*/o, $ctype);
+    
+    foreach my $v (@params) {
+	if ($v =~ m/^\s*boundary\s*=\s*(\S+?)\s*$/o) {
+	    return wantarray ? ($ct, $1) : $ct;
+	}
+    }
+ 
+    return  wantarray ? ($ct) : $ct;
+}
+
+sub parse_content_disposition {
+    my ($line) = @_;
+
+    my ($disp, @params) = split(/\s*[;,]\s*/o, $line);
+    my $name;
+    my $filename;
+
+    foreach my $v (@params) {
+	if ($v =~ m/^\s*name\s*=\s*(\S+?)\s*$/o) {
+	    $name = $1;
+	    $name =~ s/^"(.*)"$/$1/;
+	} elsif ($v =~ m/^\s*filename\s*=\s*(\S+?)\s*$/o) {
+	    $filename = $1;
+	    $filename =~ s/^"(.*)"$/$1/;
+	}
+    }
+ 
+    return  wantarray ? ($disp, $name, $filename) : $disp;
+}
+
+my $tmpfile_seq_no = 0;
+
+sub get_upload_filename {
+    # choose unpredictable tmpfile name
+  
+    $tmpfile_seq_no++;
+    return "/var/tmp/pveupload-" . Digest::MD5::md5_hex($tmpfile_seq_no . time() . $$);
+}
+
 sub unshift_read_header {
     my ($self, $reqstate, $state) = @_;
 
@@ -471,8 +654,17 @@ sub unshift_read_header {
 	    my $r = $reqstate->{request};
 	    if ($line eq '') {
 
+		my $path = $r->uri->path();
+		my $method = $r->method();
+
 		$r->push_header($state->{key}, $state->{val})
 		    if $state->{key};
+
+		if (!$known_methods->{$method}) {
+		    my $resp = HTTP::Response->new(HTTP_NOT_IMPLEMENTED, "method '$method' not available");
+		    $self->response($reqstate, $resp);
+		    return;
+		}
 
 		my $conn = $r->header('Connection');
 
@@ -484,9 +676,16 @@ sub unshift_read_header {
 		    }
 		}
 
-		# how much content to read?
 		my $te  = $r->header('Transfer-Encoding');
-		my $len = $r->header('Content-Length');
+		if ($te && lc($te) eq 'chunked') {
+		    # Handle chunked transfer encoding
+		    $self->error($reqstate, 501, "chunked transfer encoding not supported");
+		    return;
+		} elsif ($te) {
+		    $self->error($reqstate, 501, "Unknown transfer encoding '$te'");
+		    return;
+		}
+
 		my $pveclientip = $r->header('PVEClientIP');
 
 		# fixme: how can we make PVEClientIP header trusted?
@@ -496,19 +695,90 @@ sub unshift_read_header {
 		    $r->header('PVEClientIP', $reqstate->{peer_host});
 		}
 
-		if ($te && lc($te) eq 'chunked') {
-		    # Handle chunked transfer encoding
-		    $self->error($reqstate, 501, "chunked transfer encoding not supported");
-		} elsif ($te) {
-		    $self->error($reqstate, 501, "Unknown transfer encoding '$te'");
-		} elsif (defined($len)) {
-		    $reqstate->{hdl}->unshift_read (chunk => $len, sub {
-			my ($hdl, $data) = @_;
-			$r->content($data);
-			$self->handle_request($reqstate);
-						    });
+		my $len = $r->header('Content-Length');
+
+		# header processing complete - authenticate now
+
+		my $auth = {};
+		if ($path =~ m!$baseuri!) {
+		    my $token = $r->header('CSRFPreventionToken');
+		    my $cookie = $r->header('Cookie');
+		    my $ticket = PVE::REST::extract_auth_cookie($cookie);
+
+		    my ($rel_uri, $format) = split_abs_uri($path);
+		    if (!$format) {
+			$self->error($reqstate, HTTP_NOT_IMPLEMENTED, "no such uri");
+			return;
+		    }
+
+		    eval {
+			$auth = PVE::REST::auth_handler($self->{rpcenv}, $reqstate->{peer_host}, $method, 
+							$rel_uri, $ticket, $token);
+		    };
+		    if (my $err = $@) {
+			$self->error($reqstate, HTTP_UNAUTHORIZED, $err);
+			return;
+		    }
+		}
+
+		$reqstate->{log}->{userid} = $auth->{userid};
+
+		if (defined($len)) {
+
+		    if (!($method eq 'PUT' || $method eq 'POST')) {
+			$self->error($reqstate, 501, "Unexpected content for method '$method'");
+			return;
+		    }
+
+		    my $ctype = $r->header('Content-Type');
+		    my ($ct, $boundary) = parse_content_type($ctype);
+
+		    if ($auth->{isUpload} && !$self->{trusted_env}) {
+			die "upload 'Content-Type '$ctype' not implemented\n" 
+			    if !($boundary && ($ct eq 'multipart/form-data'));
+
+			die "upload without content length header not supported" if !$len;
+
+			die "upload without content length header not supported" if !$len;
+
+			print "start upload $path $ct $boundary\n" if $self->{debug};
+
+			my $tmpfilename = get_upload_filename();
+			my $outfh = IO::File->new($tmpfilename, O_RDWR|O_CREAT|O_EXCL, 0600) ||
+			    die "unable to create temporary upload file '$tmpfilename'";
+
+			$reqstate->{keep_alive} = 0;
+
+			my $boundlen = length($boundary) + 8; # \015?\012--$boundary--\015?\012
+
+			my $state = {
+			    size => $len,
+			    boundary => $boundary,
+			    ctx => Digest::MD5->new,
+			    boundlen =>  $boundlen,
+			    maxheader => 2048 + $boundlen, # should be large enough
+			    params => decode_urlencoded($r->url->query()),
+			    phase => 0,
+			    read => 0,
+			    starttime => [gettimeofday],
+			    outfh => $outfh,
+			};
+			$reqstate->{tmpfilename} = $tmpfilename;
+			$reqstate->{hdl}->on_read(sub { $self->file_upload_multipart($reqstate, $auth, $state); });
+			return;
+		    }
+
+		    if (!$ct || $ct eq 'application/x-www-form-urlencoded') {
+			$reqstate->{hdl}->unshift_read(chunk => $len, sub {
+			    my ($hdl, $data) = @_;
+			    $r->content($data);
+			    $self->handle_request($reqstate, $auth);
+		        });
+		    } else {
+			$self->error($reqstate, 506, "upload 'Content-Type '$ctype' not implemented");
+		    }
 		} else {
-		    $self->handle_request($reqstate);
+		    $self->handle_request($reqstate, $auth);
 		}
 	    } elsif ($line =~ /^([^:\s]+)\s*:\s*(.*)/) {
 		$r->push_header($state->{key}, $state->{val}) if $state->{key};
@@ -655,7 +925,7 @@ sub accept_connections {
 
 	    $reqstate->{hdl} = AnyEvent::Handle->new(
 		fh => $clientfh,
-		rbuf_max => 32768, # fixme: set smaller max read buffer ?
+		rbuf_max => 64*1024,
 		timeout => $self->{timeout},
 		linger => 0, # avoid problems with ssh - really needed ?
 		on_eof   => sub {

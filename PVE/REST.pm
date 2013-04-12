@@ -2,6 +2,7 @@ package PVE::REST;
 
 use warnings;
 use strict;
+use English;
 use PVE::Cluster;
 use PVE::SafeSyslog;
 use PVE::Tools;
@@ -19,21 +20,7 @@ use URI::Escape;
 
 use Data::Dumper; # fixme: remove
 
-# my $MaxRequestsPerChild = 200;
-
 my $cookie_name = 'PVEAuthCookie';
-
-my $baseuri = "/api2";
-
-my $debug_enabled;
-sub enable_debug {
-    $debug_enabled = 1;
-}
-
-sub debug_msg {
-    return if !$debug_enabled;
-    syslog('info', @_);
-}
 
 sub extract_auth_cookie {
     my ($cookie) = @_;
@@ -184,14 +171,13 @@ my $exc_to_res = sub {
     return $resp;
 };
 
-sub rest_handler {
-    my ($rpcenv, $clientip, $method, $abs_uri, $rel_uri, $ticket, $token) = @_;
-
+sub auth_handler {
+    my ($rpcenv, $clientip, $method, $rel_uri, $ticket, $token) = @_;
+    
     # set environment variables
+    $rpcenv->set_user(undef);
     $rpcenv->set_language('C'); # fixme:
     $rpcenv->set_client_ip($clientip);
-
-    my $euid = $>;
 
     my $require_auth = 1;
 
@@ -207,57 +193,48 @@ sub rest_handler {
 
     if ($require_auth) {
 
-	eval {
-	    die "No ticket\n" if !$ticket;
+	die "No ticket\n" if !$ticket;
 
-	    ($username, $age) = PVE::AccessControl::verify_ticket($ticket);
+	($username, $age) = PVE::AccessControl::verify_ticket($ticket);
 
-	    $rpcenv->set_user($username);
+	$rpcenv->set_user($username);
 
-	    if ($method eq 'POST' && $rel_uri =~ m|^/nodes/([^/]+)/storage/([^/]+)/upload$|) {
-		my ($node, $storeid) = ($1, $2);
-		# we disable CSRF checks if $isUpload is set,
-		# to improve security we check user upload permission here
-		my $perm = { check => ['perm', "/storage/$storeid", ['Datastore.AllocateTemplate']] };
-		$rpcenv->check_api2_permissions($perm, $username, {});
-		$isUpload = 1;
-	    }
-
-	    # we skip CSRF check for file upload, because it is
-	    # difficult to pass CSRF HTTP headers with native html forms,
-	    # and it should not be necessary at all.
-	    PVE::AccessControl::verify_csrf_prevention_token($username, $token)
-		if !$isUpload && ($euid != 0) && ($method ne 'GET');
-	};
-	if (my $err = $@) {
-	    return &$exc_to_res($err, HTTP_UNAUTHORIZED);
+	if ($method eq 'POST' && $rel_uri =~ m|^/nodes/([^/]+)/storage/([^/]+)/upload$|) {
+	    my ($node, $storeid) = ($1, $2);
+	    # we disable CSRF checks if $isUpload is set,
+	    # to improve security we check user upload permission here
+	    my $perm = { check => ['perm', "/storage/$storeid", ['Datastore.AllocateTemplate']] };
+	    $rpcenv->check_api2_permissions($perm, $username, {});
+	    $isUpload = 1;
 	}
+
+	# we skip CSRF check for file upload, because it is
+	# difficult to pass CSRF HTTP headers with native html forms,
+	# and it should not be necessary at all.
+	PVE::AccessControl::verify_csrf_prevention_token($username, $token)
+	    if !$isUpload && ($EUID != 0) && ($method ne 'GET');
     }
 
-    # we are authenticated now
+    return {
+	ticket => $ticket,
+	token => $token,
+	userid => $username,
+	age => $age,
+	isUpload => $isUpload,
+    };
+}
+
+sub rest_handler {
+    my ($rpcenv, $clientip, $method, $rel_uri, $auth, $params) = @_;
 
     my $uri_param = {};
     my ($handler, $info) = PVE::API2->find_handler($method, $rel_uri, $uri_param);
     if (!$handler || !$info) {
 	return {
 	    status => HTTP_NOT_IMPLEMENTED,
-	    message => "Method '$method $abs_uri' not implemented",
+	    message => "Method '$method $rel_uri' not implemented",
 	};
     }
-
-    # Note: we need to delay CGI parameter parsing until
-    # we are authenticated (avoid DOS (file upload) attacs)
-
-    my $params;
-    eval { $params = $rpcenv->parse_params($isUpload); };
-    if (my $err = $@) {
-	return { 
-	    status => HTTP_BAD_REQUEST, 
-	    message => "parameter parser failed: $err",
-	};   
-    }
-
-    delete $params->{_dc}; # remove disable cache parameter
 
     foreach my $p (keys %{$params}) {
 	if (defined($uri_param->{$p})) {
@@ -270,7 +247,7 @@ sub rest_handler {
     }
 
     # check access permissions
-    eval { $rpcenv->check_api2_permissions($info->{permissions}, $username, $uri_param); };
+    eval { $rpcenv->check_api2_permissions($info->{permissions}, $auth->{userid}, $uri_param); };
     if (my $err = $@) {
 	return &$exc_to_res($err, HTTP_FORBIDDEN);
     }
@@ -283,7 +260,7 @@ sub rest_handler {
 	    die "proxy parameter '$pn' does not exists" if !$node;
 
 	    if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
-		die "unable to proxy file uploads" if $isUpload; 
+		die "unable to proxy file uploads" if $auth->{isUpload}; 
 		$remip = PVE::Cluster::remote_node_ip($node);
 	    }
 	};
@@ -295,11 +272,7 @@ sub rest_handler {
 	}
     } 
 
-    if ($info->{protected} && ($euid != 0)) {
-	if ($isUpload) {
-	    my $uinfo = $rpcenv->get_upload_info('filename');
-	    $params->{tmpfilename} = $uinfo->{tmpfilename};
-	}
+    if ($info->{protected} && ($EUID != 0)) {
 	return { proxy => 'localhost' , proxy_params => $params }
     }
 
@@ -323,15 +296,6 @@ sub rest_handler {
     }
 
     return $resp;
-}
-
-sub split_abs_uri {
-    my ($abs_uri) = @_;
-
-    my ($format, $rel_uri) = $abs_uri =~ m/^\Q$baseuri\E\/+(html|text|json|extjs|png|htmljs)(\/.*)?$/;
-    $rel_uri = '/' if !$rel_uri;
- 
-    return wantarray ? ($rel_uri, $format) : $rel_uri;
 }
 
 1;
