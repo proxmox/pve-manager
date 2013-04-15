@@ -159,7 +159,7 @@ sub response {
 
     $reqstate->{log}->{code} = $code;
 
-    my $res = "HTTP/1.0 $code $msg\015\012";
+    my $res = "$reqstate->{proto}->{str} $code $msg\015\012";
 
     my $ctime = time();
     my $date = HTTP::Date::time2str($ctime);
@@ -385,7 +385,7 @@ sub handle_api2_request {
 	    return;
 	}
 
-	print Dumper($upload_state) if $upload_state;
+	#print Dumper($upload_state) if $upload_state;
 
 	my $rpcenv = $self->{rpcenv};
 
@@ -416,7 +416,6 @@ sub handle_api2_request {
 
 	    $res->{proxy_params}->{tmpfilename} = $reqstate->{tmpfilename} if $upload_state;
 
-	    # fixme: cleanup parameter list
 	    $self->proxy_request($reqstate, $clientip, $res->{proxy}, $method,
 				 $r->uri, $auth->{ticket}, $auth->{token}, $res->{proxy_params});
 	    return;
@@ -731,11 +730,11 @@ sub unshift_read_header {
 		    }
 
 		    my $ctype = $r->header('Content-Type');
-		    my ($ct, $boundary) = parse_content_type($ctype);
+		    my ($ct, $boundary) = parse_content_type($ctype) if $ctype;
 
 		    if ($auth->{isUpload} && !$self->{trusted_env}) {
 			die "upload 'Content-Type '$ctype' not implemented\n" 
-			    if !($boundary && ($ct eq 'multipart/form-data'));
+			    if !($boundary && $ct && ($ct eq 'multipart/form-data'));
 
 			die "upload without content length header not supported" if !$len;
 
@@ -820,6 +819,7 @@ sub push_request_header {
 			$self->{end_loop} = 1;
 		    }
 		    $reqstate->{log} = { requestline => $line };
+		    $reqstate->{proto}->{str} = "HTTP/$maj.$min";
 		    $reqstate->{proto}->{maj} = $maj;
 		    $reqstate->{proto}->{min} = $min;
 		    $reqstate->{proto}->{ver} = $maj*1000+$min;
