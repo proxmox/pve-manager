@@ -39,7 +39,8 @@ sub extract_auth_cookie {
 sub create_auth_cookie {
     my ($ticket) = @_;
 
-    return "${cookie_name}=$ticket; path=/; secure;";
+    my $encticket = uri_escape($ticket);
+    return "${cookie_name}=$encticket; path=/; secure;";
 }
 
 sub format_response_data {
