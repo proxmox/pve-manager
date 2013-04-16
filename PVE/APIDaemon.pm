@@ -3,6 +3,7 @@ package PVE::APIDaemon;
 use strict;
 use warnings;
 use POSIX ":sys_wait_h";
+use Socket qw(IPPROTO_TCP TCP_NODELAY SOMAXCONN);
 use IO::Socket::INET;
 
 use PVE::SafeSyslog;
@@ -27,6 +28,10 @@ sub new {
 	Proto  => 'tcp',
 	ReuseAddr => 1) ||
 	die "unable to create socket - $@\n";
+
+    # we ofter observe delays when using Nagle algorithm,
+    # so we disable that to maximize performance
+    setsockopt($socket, IPPROTO_TCP, TCP_NODELAY, 1);
 
     my $cfg = { %args };
     my $self = bless { cfg => $cfg }, $class;
