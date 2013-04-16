@@ -2,8 +2,8 @@
 
 ### BEGIN INIT INFO
 # Provides:        pve-manager
-# Required-Start:  $remote_fs apache2 qemu-server +vz pvestatd
-# Required-Stop:   $remote_fs apache2 qemu-server +vz pvestatd
+# Required-Start:  $remote_fs pveproxy qemu-server +vz pvestatd
+# Required-Stop:   $remote_fs pveproxy qemu-server +vz pvestatd
 # Default-Start:   2 3 4 5
 # Default-Stop:    0 1 6
 # Short-Description: PVE VM Manager

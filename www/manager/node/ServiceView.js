@@ -81,7 +81,7 @@ Ext.define('PVE.node.ServiceView', {
 	    }
 	    var service = rec.data.service;
 	    var state = rec.data.state;
-	    if (service == 'apache' ||
+	    if (service == 'pveproxy' ||
 		service == 'pvecluster' ||
 		service == 'pvedaemon') {
 		if (state == 'running') {

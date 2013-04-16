@@ -9,8 +9,6 @@ TODO:
 
     - write a widget to render a JSON Schema (parameters, returns)
 
-  * use nginx/fastcgi instead of apache2 to save resources?
- 	
   * impl. logfile search (like pmg tracking center)
 
 

@@ -17,7 +17,7 @@ use IO::File;
 use base qw(PVE::RESTHandler);
 
 my $service_list = {
-    apache => { name => 'WWW', desc => 'Web/API server' },
+    pveproxy => { name => 'WWW', desc => 'Web/API server' },
     postfix => { name => 'SMTP', desc => 'Simple Mail Tranfer Protocol' },
     ntpd => { name => 'NTP', desc => 'Network time protocol' },
     sshd => { name => 'SSH', desc => 'Secure shell daemon' },
@@ -58,11 +58,9 @@ my $service_cmd = sub {
 	} else {
 	    die "invalid service cmd '$service $cmd': ERROR";
 	}
-    } elsif  ($service eq 'apache') {
+    } elsif  ($service eq 'pveproxy') {
 	if ($cmd eq 'restart') {    
-	    print "graceful apache restart\n";
-	    $initd_cmd = '/usr/sbin/apache2ctl';
-	    $cmd = 'graceful';
+	    $initd_cmd = '/etc/init.d/pveproxy';
 	} else {
 	    die "invalid service cmd '$service $cmd': ERROR";
 	}
@@ -109,8 +107,8 @@ my $service_state = sub {
 
     if ($service eq 'postfix') {
 	$pid_file = '/var/spool/postfix/pid/master.pid';
-    } elsif  ($service eq 'apache') {
-	$pid_file = '/var/run/apache2.pid';
+    } elsif  ($service eq 'pveproxy') {
+	$pid_file = '/var/run/pveproxy/pveproxy.pid';
     } elsif  ($service eq 'pvedaemon') {
 	$pid_file = '/var/run/pvedaemon.pid';
     } elsif  ($service eq 'pvecluster') {
