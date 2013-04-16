@@ -27,8 +27,9 @@ use HTTP::Status qw(:constants);
 use HTTP::Headers;
 use HTTP::Response;
 
-# fixme
-# POST_MAX = 1024 * 10; # max 10K posts
+my $limit_max_headers = 30;
+my $limit_max_header_size = 8*1024;
+my $limit_max_post = 16*1024;
 
 use Data::Dumper; # fixme: remove
 
@@ -564,11 +565,12 @@ sub file_upload_multipart {
 	    if ($hdl->{rbuf} =~ s/^(.*?)\015?\012(--\Q$boundary\E(--)? \015?\012(.*))$/$2/xs) {
 		my ($rest, $eof) = ($1, $3);
 		my $len = length($rest);
-		if ($len < 1024) { # fixme: max data size
+		$rstate->{post_size} += $len;
+		if ($rstate->{post_size} < $limit_max_post) {
 		    $rstate->{params}->{$rstate->{fieldname}} = $rest;
 		    $rstate->{phase} = $eof ? 100 : 0;
 		} else {
-		    syslog('err', "for data to large - abort upload");
+		    syslog('err', "form data to large - abort upload");
 		    $rstate->{phase} = -1; # skip
 		}
 	    }
@@ -644,13 +646,16 @@ sub get_upload_filename {
 sub unshift_read_header {
     my ($self, $reqstate, $state) = @_;
 
-    $state = {} if !$state;
+    $state = { size => 0, count => 0 } if !$state;
 
     $reqstate->{hdl}->unshift_read(line => sub {
 	my ($hdl, $line) = @_;
 
 	eval {
-	    #print "$$: got header: $line\n";
+	    # print "$$: got header: $line\n" if $self->{debug};
+
+	    die "to many http header lines\n" if ++$state->{count} >= $limit_max_headers;
+	    die "http header too large\n" if ($state->{size} += length($line)) >= $limit_max_header_size;
 
 	    my $r = $reqstate->{request};
 	    if ($line eq '') {
@@ -761,11 +766,17 @@ sub unshift_read_header {
 			    params => decode_urlencoded($r->url->query()),
 			    phase => 0,
 			    read => 0,
+			    post_size => 0,
 			    starttime => [gettimeofday],
 			    outfh => $outfh,
 			};
 			$reqstate->{tmpfilename} = $tmpfilename;
 			$reqstate->{hdl}->on_read(sub { $self->file_upload_multipart($reqstate, $auth, $state); });
+			return;
+		    }
+
+		    if ($len > $limit_max_post) {
+			$self->error($reqstate, 501, "for data too large");
 			return;
 		    }
 
@@ -804,7 +815,7 @@ sub push_request_header {
 	    my ($hdl, $line) = @_;
 
 	    eval {
-		#print "got request header: $line\n";
+		# print "got request header: $line\n" if $self->{debug};
 
 		$reqstate->{keep_alive}--;
 
