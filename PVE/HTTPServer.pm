@@ -512,22 +512,24 @@ sub file_upload_multipart {
 		}
 
 		if (!($disp && $disp eq 'form-data' && $name)) {
-		    syslog('err', "wrong content disposition im multipart - abort upload");
+		    syslog('err', "wrong content disposition in multipart - abort upload");
 		    $rstate->{phase} = -1;
 		} else {
 
 		    $rstate->{fieldname} = $name;
 
-		    if (!$ct) {
+		    if ($filename) {
+			if ($name eq 'filename') {
+			    # found file upload data
+			    $rstate->{phase} = 1;
+			    $rstate->{filename} = $filename;
+			} else {
+			    syslog('err', "wrong field name for file upload - abort upload");
+			    $rstate->{phase} = -1;
+			}
+		    } else {
 			# found form data for field $name
 			$rstate->{phase} = 2;
-		    } elsif ($ct && $ct eq 'application/octet-stream' && $name eq 'filename' && $filename) {
-			# found file upload data
-			$rstate->{phase} = 1;
-			$rstate->{filename} = $filename;
-		    } else {
-			syslog('err', "wrong content type '$ct' im multipart - abort upload");
-			$rstate->{phase} = -1;		    
 		    }
 		}
 	    } else {
