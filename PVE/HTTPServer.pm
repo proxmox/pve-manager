@@ -553,7 +553,7 @@ sub file_upload_multipart {
 		my $len = length($hdl->{rbuf});
 		my $wlen = $len - $rstate->{boundlen};
 		if ($wlen > 0) {
-		    my $data =  substr($hdl->{rbuf}, 0, $wlen, '');
+		    my $data = substr($hdl->{rbuf}, 0, $wlen, '');
 		    die "write to temporary file failed - $!" 
 			if syswrite($rstate->{outfh}, $data) != $wlen;
 		    $rstate->{bytes} += $wlen;
@@ -590,12 +590,14 @@ sub file_upload_multipart {
 
 		my $rate = int($rstate->{bytes}/($elapsed*1024*1024));
 		syslog('info', "multipart upload complete " . 
-		       "(size: %d time: %ds rate: %.2fMiB/s)", $rstate->{size}, $elapsed, $rate);
+		       "(size: %d time: %ds rate: %.2fMiB/s md5sum: $rstate->{md5sum})", 
+		       $rstate->{bytes}, $elapsed, $rate);
 		$self->handle_api2_request($reqstate, $auth, $rstate);
 	    }
 	}
     };
     if (my $err = $@) {
+	syslog('err', $err);
 	$self->error($reqstate, 501, $err);
     }
 }
