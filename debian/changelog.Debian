@@ -1,3 +1,13 @@
+pve-manager (3.0-9) unstable; urgency=low
+
+  * http: improve security by setting size limits
+  
+  * stop keep-alive when there are many open connections
+  
+  * improve syslog for file uploads
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 16 Apr 2013 11:56:00 +0200
+
 pve-manager (3.0-8) unstable; urgency=low
 
   * disable Nagle algorithm to maximitze performance
