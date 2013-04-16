@@ -724,7 +724,7 @@ sub unshift_read_header {
 
 		$reqstate->{log}->{userid} = $auth->{userid};
 
-		if (defined($len)) {
+		if ($len) {
 
 		    if (!($method eq 'PUT' || $method eq 'POST')) {
 			$self->error($reqstate, 501, "Unexpected content for method '$method'");
