@@ -931,6 +931,11 @@ sub accept_connections {
 
 	    my $reqstate = { keep_alive => $self->{keep_alive} };
 
+	    # stop keep-alive when there are many open connections
+	    if ($self->{conn_count} >= $self->{max_conn_soft_limit}) {
+		$reqstate->{keep_alive} = 0;
+	    }
+
 	    if (my $sin = getpeername($clientfh)) {
 		my ($pport, $phost) = Socket::unpack_sockaddr_in($sin);
 		($reqstate->{peer_port}, $reqstate->{peer_host}) = ($pport,  Socket::inet_ntoa($phost));
@@ -1047,6 +1052,8 @@ sub new {
     }
 
     $self->open_access_log($self->{logfile}) if $self->{logfile};
+
+    $self->{max_conn_soft_limit} = $self->{max_conn} > 100 ? $self->{max_conn} - 20 : $self->{max_conn};
 
     $self->{socket_watch} = AnyEvent->io(fh => $self->{socket}, poll => 'r', cb => sub {
 	eval {
