@@ -26,12 +26,12 @@ use URI;
 use HTTP::Status qw(:constants);
 use HTTP::Headers;
 use HTTP::Response;
+use Data::Dumper;
 
 my $limit_max_headers = 30;
 my $limit_max_header_size = 8*1024;
 my $limit_max_post = 16*1024;
 
-use Data::Dumper; # fixme: remove
 
 my $known_methods = {
     GET => 1,
@@ -354,7 +354,7 @@ sub decode_urlencoded {
     return $res;
 }
 
-my $extract_params = sub {
+sub extract_params {
     my ($r, $method) = @_;
 
     my $params = {};
@@ -370,7 +370,7 @@ my $extract_params = sub {
     }
 
     return PVE::Tools::decode_utf8_parameters($params);
-};
+}
 
 sub handle_api2_request {
     my ($self, $reqstate, $auth, $upload_state) = @_;
@@ -395,7 +395,7 @@ sub handle_api2_request {
 	if ($upload_state) {
 	    $params = $upload_state->{params};
 	} else {
-	    $params = &$extract_params($r, $method); # fixme
+	    $params = extract_params($r, $method);
 	}
 
 	delete $params->{_dc}; # remove disable cache parameter
@@ -584,7 +584,7 @@ sub file_upload_multipart {
 	if (!$rstate->{done} && ($rstate->{read} + length($hdl->{rbuf})) >= $rstate->{size}) {
 	    $rstate->{done} = 1; # make sure we dont get called twice 
 	    if ($rstate->{phase} < 0 || !$rstate->{md5sum}) {
-		$self->error($reqstate, 501, "upload failed"); # fixme: better msg
+		die "upload failed\n"; 
 	    } else {
 		my $elapsed = tv_interval($rstate->{starttime});
 

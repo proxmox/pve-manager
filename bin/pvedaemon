@@ -4,13 +4,11 @@ $ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};  
 
-use lib '..'; #  fixme
 use strict;
 use Getopt::Long;
 use POSIX ":sys_wait_h";
 use Socket;
 use PVE::SafeSyslog;
-# use PVE::Config; # fixme
 use PVE::APIDaemon;
 
 my $pidfile = "/var/run/pvedaemon.pid";
