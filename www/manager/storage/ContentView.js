@@ -269,15 +269,18 @@ Ext.define('PVE.storage.Upload', {
 			me.close();
 		    } else {  
 			var msg = "Error " + xhr.status.toString() + ": " + Ext.htmlEncode(xhr.statusText);
-			Ext.Msg.alert(gettext('Error'), msg, function(btn) {
+			var result = Ext.decode(xhr.responseText);
+			result.message = msg;
+			var htmlStatus = PVE.Utils.extractRequestError(result, true);
+			Ext.Msg.alert(gettext('Error'), htmlStatus, function(btn) {
 			    me.close();
 			});
 
 		    }  
 		}, false);
 
-		xhr.addEventListener("error", function(e) {  
-		    var msg = "Error " + e.target.status.toString() + " occurred while receiving the document.";  
+		xhr.addEventListener("error", function(e) {
+		    var msg = "Error " + e.target.status.toString() + " occurred while receiving the document.";
 		    Ext.Msg.alert(gettext('Error'), msg, function(btn) {
 			me.close();
 		    });
