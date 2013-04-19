@@ -124,6 +124,7 @@ __PACKAGE__->register_method ({
 	    { name => 'aplinfo' },
 	    { name => 'startall' },
 	    { name => 'stopall' },
+	    { name => 'netstat' },
 	    ];
 
 	return $result;
@@ -269,6 +270,53 @@ __PACKAGE__->register_method({
 	    used => $dinfo->{used},
 	    free => $dinfo->{bavail} - $dinfo->{used},
 	};
+
+	return $res;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'netstat',
+    path => 'netstat',
+    method => 'GET',
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
+    },
+    description => "Read tap/vm network device interface counters",
+    proxyto => 'node',
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+        type => "array",
+        items => {
+            type => "object",
+            properties => {},
+        },
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $res = [ ];
+
+	my $netdev = PVE::ProcFSTools::read_proc_net_dev();
+	foreach my $dev (keys %$netdev) {
+		next if $dev !~ m/^tap([1-9]\d*)i(\d+)$/;
+	        my $vmid = $1;
+	        my $netid = $2;
+
+                push(
+                    @$res,
+                    {
+                        vmid => $vmid,
+                        dev  => "net$netid",
+                        in   => $netdev->{$dev}->{transmit},
+                        out  => $netdev->{$dev}->{receive},
+                    }
+                );
+	}
 
 	return $res;
     }});
