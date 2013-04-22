@@ -78,6 +78,18 @@ Ext.define('PVE.qemu.CmdMenu', {
 		}
 	    },
 	    {
+		text: gettext('Clone To VM'),
+		icon: '/pve2/images/forward.png',
+		handler: function() {
+		    var win = Ext.create('PVE.window.Clone', {
+			snapname: 'current',
+			nodename: nodename,
+			vmid: vmid,
+		    });
+		    win.show();
+		}
+	    },
+	    {
 		text: gettext('Console'),
 		icon: '/pve2/images/display.png',
 		handler: function() {
