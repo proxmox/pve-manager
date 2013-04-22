@@ -45,6 +45,7 @@ JSSRC= 				                 	\
 	form/LanguageSelector.js			\
 	form/DisplaySelector.js				\
 	form/CacheTypeSelector.js			\
+	form/SnapshotSelector.js			\
 	form/ContentTypeSelector.js			\
 	form/DayOfWeekSelector.js			\
 	form/BackupModeSelector.js			\
