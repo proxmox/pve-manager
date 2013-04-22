@@ -290,6 +290,7 @@ Ext.define('PVE.StdWorkspace', {
 				workspace: me,
 				viewFilter: selview.getViewFilter()
 			    };
+			    PVE.curSelectedNode = n;
 			}
 
 			me.setContent(comp);

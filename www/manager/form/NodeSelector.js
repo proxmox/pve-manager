@@ -5,6 +5,8 @@ Ext.define('PVE.form.NodeSelector', {
     // invalidate nodes which are offline
     onlineValidator: false,
 
+    selectCurNode: false,
+
     initComponent: function() {
 	var me = this;
 
@@ -76,6 +78,10 @@ Ext.define('PVE.form.NodeSelector', {
 		return "Node " + offline.join(', ') + " seems to be offline!";
 	    }
 	});
+
+        if (me.selectCurNode && PVE.curSelectedNode.data.node) {
+            me.value = PVE.curSelectedNode.data.node;
+        }
 
         me.callParent();
     }
