@@ -326,8 +326,12 @@ Ext.define('PVE.tree.ResourceTree', {
 		    //v.select(record);
 		    var menu;
 		    
-		    if (record.data.type === 'qemu') {
+		    if (record.data.type === 'qemu' && !record.data.template) {
 			menu = Ext.create('PVE.qemu.CmdMenu', {
+			    pveSelNode: record
+			});
+		    } else if (record.data.type === 'qemu' && record.data.template) {
+			menu = Ext.create('PVE.qemu.TemplateMenu', {
 			    pveSelNode: record
 			});
 		    } else if (record.data.type === 'openvz') {
