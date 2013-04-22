@@ -90,6 +90,26 @@ Ext.define('PVE.qemu.CmdMenu', {
 		}
 	    },
 	    {
+		text: gettext('Convert To Template'),
+		icon: '/pve2/images/forward.png',
+		handler: function() {
+		    var msg = Ext.String.format(gettext("Do you really want convert VM {0} to template (You'll can use the VM anymore)?"), vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+
+			PVE.Utils.API2Request({
+			     url: '/nodes/' + nodename + '/qemu/' + vmid + '/template',
+			     method: 'POST',
+			     failure: function(response, opts) {
+				Ext.Msg.alert('Error', response.htmlStatus);
+			     }
+			});
+		    });
+		}
+	    },
+	    {
 		text: gettext('Console'),
 		icon: '/pve2/images/display.png',
 		handler: function() {
