@@ -157,7 +157,7 @@ sub response {
 	$content = "";
     }
 
-    $reqstate->{keep_alive} = 0 if ($code >= 300) || $self->{end_loop};
+    $reqstate->{keep_alive} = 0 if ($code >= 400) || $self->{end_loop};
 
     $reqstate->{log}->{code} = $code;
 
@@ -230,10 +230,23 @@ sub send_file_start {
 	# Note: aio_load() this is not really async unless we use IO::AIO!
 	eval {
 
+	    my $r = $reqstate->{request};
+
 	    my $fh = IO::File->new($filename, '<') ||
 		die "$!\n";
 	    my $stat = File::stat::stat($fh) ||
 		die "$!\n";
+	    
+	    my $mtime = $stat->mtime;
+
+	    if (my $ifmod = $r->header('if-modified-since')) {
+		my $iftime = HTTP::Date::str2time($ifmod);
+		if ($mtime <= $iftime) {
+		    my $resp = HTTP::Response->new(304, "NOT MODIFIED");
+		    $self->response($reqstate, $resp, $mtime);
+		    return;
+		}
+	    }
 
 	    my $data;
 	    my $len = sysread($fh, $data,  $stat->size);
@@ -256,7 +269,7 @@ sub send_file_start {
 
 	    my $header = HTTP::Headers->new(Content_Type => $ct);
 	    my $resp = HTTP::Response->new(200, "OK", $header, $data);
-	    $self->response($reqstate, $resp, $stat->mtime);
+	    $self->response($reqstate, $resp, $mtime);
 	};
 	if (my $err = $@) {
 	    $self->error($reqstate, 501, $err);
