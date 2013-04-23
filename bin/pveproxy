@@ -18,17 +18,47 @@ use URI;
 use URI::QueryParam;
 use File::Find;
 use Data::Dumper;
-
+use Net::IP;
 
 my $pidfile = "/var/run/pveproxy/pveproxy.pid";
 my $lockfile = "/var/lock/pveproxy.lck";
 
 my $opt_debug;
+my $opt_allow_from;
+my $opt_deny_from;
+my $opt_policy;
 
 initlog ('pveproxy');
 
-if (!GetOptions ('debug' => \$opt_debug)) {
-    die "usage: $0 [--debug]\n";
+if (!GetOptions ('allow-from=s@' => \$opt_allow_from, 
+		 'deny-from=s@' => \$opt_deny_from,
+		 'policy=s' => \$opt_policy,
+		 'debug' => \$opt_debug)) {
+    die "usage: $0 [--allow-from CIDR{,CIRD}] [--deny-from CIDR{,CIRD}] [--policy (allow|deny)] [--debug]\n";
+}
+
+$opt_deny_from  = [ split(/,/, join(',', @$opt_deny_from)) ] if $opt_deny_from;
+$opt_allow_from  = [ split(/,/, join(',', @$opt_allow_from)) ] if $opt_allow_from;
+
+die "unknown policy '$opt_policy'\n" if $opt_policy && $opt_policy !~ m/^(allow|deny)$/;
+
+if ($opt_deny_from) {
+    my $ips = [];
+    foreach my $ip (@$opt_deny_from) {
+	$ip = "0/0" if $ip eq 'all';
+	push @$ips,  Net::IP->new($ip) || die Net::IP::Error() . "\n";
+    }
+
+    $opt_deny_from = $ips;
+}
+
+if ($opt_allow_from) {
+    my $ips = [];
+    foreach my $ip (@$opt_allow_from) {
+	$ip = "0/0" if $ip eq 'all';
+	push @$ips,  Net::IP->new($ip) || die Net::IP::Error() . "\n";
+    }
+    $opt_allow_from = $ips;
 }
 
 $SIG{'__WARN__'} = sub {
@@ -84,6 +114,9 @@ eval {
 	max_conn => 500,
 	max_requests => 1000,
 	debug => $opt_debug,
+	allow_from => $opt_allow_from,
+	deny_from => $opt_deny_from,
+	policy => $opt_policy,
 	trusted_env => 0, # not trusted, anyone can connect
 	logfile => '/var/log/pveproxy/access.log',
 	lockfile => $lockfile,
@@ -253,10 +286,56 @@ pveproxy - the PVE API proxy server
 
 =head1 SYNOPSIS
 
-pveproxy [--debug]
+pveproxy [--allow-from CIDR{,CIRD}] [--deny-from CIDR{,CIRD}] [--policy (allow|deny)] [--debug]
 
 =head1 DESCRIPTION
 
-This is the REST API proxy server, listening on port 8006. 
+This is the REST API proxy server, listening on port 8006. This is usually started
+as service using:
 
+ # service pveproxy start
+
+=head1 Host based access control
+
+Options '--allow-from', '--deny-from' and '--policy' can be used to set up
+apache2 like access control. If started as service, those values are read 
+from file /etc/default/pveproxy. For example:
+
+ ALLOW_FROM="10.0.0.1-10.0.0.5,192.168.0.0/22"
+ DENY_FROM="all"
+ POLICY="allow"
+
+IP addresses can be specified using any syntax understoop by Net::IP. The
+name 'all' is an alias for '0/0'. 
+
+The default policy is 'allow'.
+
+ Match                      | POLICY=deny | POLICY=allow
+ ---------------------------|-------------|------------
+ Match Allow only           | allow       | allow
+ Match Deny only            | deny        | deny
+ No match                   | deny        | allow
+ Match Both Allow & Deny    | deny        | allow
+
+=head1 FILES
+
+ /etc/default/pveproxy
+
+=head1 COPYRIGHT AND DISCLAIMER
+
+ Copyright (C) 2007-2013 Proxmox Server Solutions GmbH
+
+ This program is free software: you can redistribute it and/or modify it
+ under the terms of the GNU Affero General Public License as published
+ by the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public
+ License along with this program.  If not, see
+ <http://www.gnu.org/licenses/>.
 

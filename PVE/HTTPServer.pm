@@ -22,6 +22,7 @@ use PVE::INotify;
 use PVE::RPCEnvironment;
 use PVE::REST;
 
+use Net::IP;
 use URI;
 use HTTP::Status qw(:constants);
 use HTTP::Headers;
@@ -924,6 +925,41 @@ sub wait_end_loop {
     });
 }
 
+
+sub check_host_access {
+    my ($self, $clientip) = @_;
+    
+    my $cip = Net::IP->new($clientip);
+
+    my $match_allow = 0;
+    my $match_deny = 0;
+
+    if ($self->{allow_from}) {
+	foreach my $t (@{$self->{allow_from}}) {
+	    if ($t->overlaps($cip)) {
+		$match_allow = 1;
+		last;
+	    }
+	}
+    }
+
+    if ($self->{deny_from}) {
+	foreach my $t (@{$self->{deny_from}}) {
+	    if ($t->overlaps($cip)) {
+		$match_deny = 1;
+		last;
+	    }
+	}
+    }
+
+    if ($match_allow == $match_deny) {
+	# match both allow and deny, or no match
+	return $self->{policy} && $self->{policy} eq 'allow' ? 1 : 0;
+    }
+
+    return $match_allow;
+}
+
 sub accept_connections {
     my ($self) = @_;
 
@@ -941,6 +977,13 @@ sub accept_connections {
 	    if (my $sin = getpeername($clientfh)) {
 		my ($pport, $phost) = Socket::unpack_sockaddr_in($sin);
 		($reqstate->{peer_port}, $reqstate->{peer_host}) = ($pport,  Socket::inet_ntoa($phost));
+	    }
+
+	    if (!$self->{trusted_env} && !$self->check_host_access($reqstate->{peer_host})) {
+		print "$$: ABORT request from $reqstate->{peer_host} - access denied\n" if $self->{debug};
+		$reqstate->{log}->{code} = 403;
+		$self->log_request($reqstate);
+		next;
 	    }
 
 	    $reqstate->{hdl} = AnyEvent::Handle->new(
@@ -1046,6 +1089,8 @@ sub new {
     $self->{keep_alive} = 0 if !defined($self->{keep_alive});
     $self->{max_conn} = 800 if !$self->{max_conn};
     $self->{max_requests} = 8000 if !$self->{max_requests};
+
+    $self->{policy} = 'allow' if !$self->{policy};
 
     $self->{end_cond} = AnyEvent->condvar;
 
