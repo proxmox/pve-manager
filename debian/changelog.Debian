@@ -1,3 +1,9 @@
+pve-manager (3.0-11) unstable; urgency=low
+
+  * fix NodeSelector
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 24 Apr 2013 09:56:26 +0200
+
 pve-manager (3.0-10) unstable; urgency=low
 
   * pveproxy: implement if-modified-since
