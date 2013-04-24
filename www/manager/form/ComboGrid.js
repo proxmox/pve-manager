@@ -2,6 +2,9 @@ Ext.define('PVE.form.ComboGrid', {
     extend: 'Ext.form.field.ComboBox',
     alias: ['widget.PVE.form.ComboGrid'],
 
+    // this value is used as default value after load()
+    preferredValue: undefined,
+
     computeHeight: function() {
 	var me = this;
 	var lh = PVE.Utils.gridLineHeigh();
@@ -100,7 +103,7 @@ Ext.define('PVE.form.ComboGrid', {
 		    me.setDisabled(false);
 		}
 
-		var def = me.getValue();
+		var def = me.getValue() || me.preferredValue;
 		if (def) {
 		    me.setValue(def, true); // sync with grid
 		}

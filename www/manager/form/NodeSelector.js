@@ -80,7 +80,7 @@ Ext.define('PVE.form.NodeSelector', {
 	});
 
         if (me.selectCurNode && PVE.curSelectedNode.data.node) {
-            me.value = PVE.curSelectedNode.data.node;
+            me.preferredValue = PVE.curSelectedNode.data.node;
         }
 
         me.callParent();
