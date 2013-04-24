@@ -1,3 +1,13 @@
+pve-manager (3.0-10) unstable; urgency=low
+
+  * pveproxy: implement if-modified-since
+  
+  * pveproxy: implement host based access control
+  
+  * implement node netstat call to get current tap network counters
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 24 Apr 2013 08:05:11 +0200
+
 pve-manager (3.0-9) unstable; urgency=low
 
   * http: improve security by setting size limits
