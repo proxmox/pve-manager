@@ -20,13 +20,13 @@ Ext.define('PVE.form.NodeSelector', {
 	    autoDestory: true,
 	    sorters: [
 		{
+		    property : 'node',
+		    direction: 'ASC'
+		},
+		{
 		    property : 'mem',
 		    direction: 'DESC'
 		},
-		{
-		    property : 'node',
-		    direction: 'ASC'
-		}
 	    ]
 	});
 
@@ -39,12 +39,14 @@ Ext.define('PVE.form.NodeSelector', {
 		    {
 			header: 'Node',
 			dataIndex: 'node',
+			sortable: true,
 			hideable: false,
 			flex: 1
 		    },
 		    {
 			header: 'Memory usage',			
 			renderer: PVE.Utils.render_mem_usage,
+			sortable: true,
 			width: 100,
 			dataIndex: 'mem'
 		    },
