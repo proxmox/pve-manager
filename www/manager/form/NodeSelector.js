@@ -26,7 +26,7 @@ Ext.define('PVE.form.NodeSelector', {
 		{
 		    property : 'mem',
 		    direction: 'DESC'
-		},
+		}
 	    ]
 	});
 
