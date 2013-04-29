@@ -9,7 +9,7 @@ use Fcntl;
 use IO::File;
 use File::stat qw();
 use Digest::MD5;
-use AnyEvent::Strict;
+# use AnyEvent::Strict; # only use this for debugging
 use AnyEvent::Util qw(guard fh_nonblocking WSAEWOULDBLOCK WSAEINPROGRESS);
 use AnyEvent::Handle;
 use AnyEvent::TLS;
