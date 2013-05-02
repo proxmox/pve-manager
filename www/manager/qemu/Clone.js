@@ -7,25 +7,26 @@ Ext.define('PVE.window.Clone', {
     create_clone: function(snapname, name, newvmid, clonemode, storage, format, diskarray) {
 	var me = this;
 
-        params =  { name: name, clonefrom: me.vmid, vmid: newvmid, clonemode: clonemode };
+        params =  { name: name, newid: newvmid };
 
         if (snapname && snapname !== 'current') {
             params.snapname = snapname;
         }
 
-	if (clonemode === 'copy' && storage){
-
-	    Ext.Array.each(diskarray, function(disk) {
-		var myformat = format ? format : '';
-		params[disk] = storage + ':' + myformat;
-	    });
+	if (clonemode === 'copy') {
+	    params.full = 1;
+	    if (storage) {
+		params.storage = storage;
+		if (format) {
+		    params.format = format;
+		}
+	    }
 	}
-
 
 
 	PVE.Utils.API2Request({
 	    params: params,
-	    url: '/nodes/' + me.nodename + '/qemu',
+	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/clone',
 	    waitMsgTarget: me,
 	    method: 'POST',
 	    failure: function(response, opts) {
