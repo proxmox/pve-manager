@@ -17,7 +17,7 @@ Ext.define('PVE.window.Clone', {
 	    params.name = name;
 	}
 
-	if (clonemode === 'copy') {
+	if (clonemode === 'full') {
 	    params.full = 1;
 	    if (storage) {
 		params.storage = storage;
@@ -46,17 +46,17 @@ Ext.define('PVE.window.Clone', {
     compute_sel1: function(clonefeature, istemplate, snapname) {
         var me = this;
         var list = [];
-        list.push(['copy', 'Copy Clone']);
+        list.push(['full', 'Full Clone']);
 
 	if((clonefeature && istemplate === 1 && snapname === 'current') || (clonefeature && !istemplate && snapname !== 'current')){
-	    list.push(['clone', 'Linked Clone']);
+	    list.push(['linked', 'Linked Clone']);
 	}
         me.kv1.store.loadData(list);
 
 	if((clonefeature && istemplate === 1 && snapname === 'current') || (clonefeature && !istemplate && snapname !== 'current')){
-	    me.kv1.setValue('clone');
+	    me.kv1.setValue('linked');
 	}else{
-	    me.kv1.setValue('copy');
+	    me.kv1.setValue('full');
 	}
     },
 
@@ -179,7 +179,7 @@ Ext.define('PVE.window.Clone', {
         });
 
         me.mon(me.kv1, 'change', function(t, value) {
-	    if (value === 'copy') {
+	    if (value === 'full') {
 		me.hdstoragesel.setDisabled(false);
 	    }else{
 		me.hdstoragesel.setDisabled(true);
