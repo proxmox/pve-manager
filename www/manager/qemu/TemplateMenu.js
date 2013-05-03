@@ -73,7 +73,7 @@ Ext.define('PVE.qemu.TemplateMenu', {
 			}
 		    });
 		}
-	    },
+	    }
 	];
 
 	me.callParent();

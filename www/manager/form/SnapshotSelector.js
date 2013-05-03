@@ -12,7 +12,7 @@ Ext.define('PVE.form.SnapshotSelector', {
 	me.nodename = nodename;
 
         if (!vmid) {
-	    return
+	    return;
         }
 
 	me.vmid = vmid;
@@ -38,7 +38,7 @@ Ext.define('PVE.form.SnapshotSelector', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    fields: [ 'name'],
-	    filterOnLoad: true,
+	    filterOnLoad: true
 	});
 
 	Ext.apply(me, {
@@ -52,7 +52,7 @@ Ext.define('PVE.form.SnapshotSelector', {
 			dataIndex: 'name',
 			hideable: false,
 			flex: 1
-		    },
+		    }
 		]
 	    }
 	});

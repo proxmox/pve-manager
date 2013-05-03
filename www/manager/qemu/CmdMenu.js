@@ -84,7 +84,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		    var win = Ext.create('PVE.window.Clone', {
 			snapname: 'current',
 			nodename: nodename,
-			vmid: vmid,
+			vmid: vmid
 		    });
 		    win.show();
 		}

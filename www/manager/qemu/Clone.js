@@ -7,7 +7,7 @@ Ext.define('PVE.window.Clone', {
     create_clone: function(snapname, name, newvmid, clonemode, storage, format, diskarray) {
 	var me = this;
 
-        params =  { name: name, newid: newvmid };
+        var params = { name: name, newid: newvmid };
 
         if (snapname && snapname !== 'current') {
             params.snapname = snapname;
@@ -123,7 +123,7 @@ Ext.define('PVE.window.Clone', {
 		xtype: 'textfield',
 		name: 'name',
 		allowBlank: false,
-		fieldLabel: 'Name',
+		fieldLabel: 'Name'
 	    }
 	);
 
