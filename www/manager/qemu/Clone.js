@@ -3,30 +3,30 @@ Ext.define('PVE.window.Clone', {
 
     resizable: false,
 
+    isTemplate: false,
 
-    create_clone: function(snapname, name, newvmid, clonemode, storage, format, diskarray) {
+    create_clone: function(values) {
 	var me = this;
 
-        var params = { newid: newvmid };
+        var params = { newid: values.newvmid };
 
-        if (snapname && snapname !== 'current') {
-            params.snapname = snapname;
+        if (values.snapname && values.snapname !== 'current') {
+            params.snapname = values.snapname;
         }
 
-	if (name) {
-	    params.name = name;
+	if (values.name) {
+	    params.name = values.name;
 	}
 
-	if (clonemode === 'full') {
+	if (values.clonemode === 'copy') {
 	    params.full = 1;
-	    if (storage) {
-		params.storage = storage;
-		if (format) {
-		    params.format = format;
+	    if (values.storage) {
+		params.storage = values.storage;
+		if (values.diskformat) {
+		    params.format = values.diskformat;
 		}
 	    }
 	}
-
 
 	PVE.Utils.API2Request({
 	    params: params,
@@ -43,27 +43,35 @@ Ext.define('PVE.window.Clone', {
 
     },
 
-    compute_sel1: function(clonefeature, istemplate, snapname) {
-        var me = this;
-        var list = [];
-        list.push(['full', 'Full Clone']);
+    verifyFeature: function() {
+	var me = this;
+		    
+	var snapname = me.snapshotSel.getValue();
+	var clonemode = me.kv1.getValue();
 
-	if((clonefeature && istemplate === 1 && snapname === 'current') || (clonefeature && !istemplate && snapname !== 'current')){
-	    list.push(['linked', 'Linked Clone']);
+	var params = { feature: clonemode };
+	if (snapname !== 'current') {
+	    params.snapname = snapname;
 	}
-        me.kv1.store.loadData(list);
 
-	if((clonefeature && istemplate === 1 && snapname === 'current') || (clonefeature && !istemplate && snapname !== 'current')){
-	    me.kv1.setValue('linked');
-	}else{
-	    me.kv1.setValue('full');
-	}
+	PVE.Utils.API2Request({
+	    waitMsgTarget: me,
+	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/feature',
+	    params: params,
+	    method: 'GET',
+	    failure: function(response, opts) {
+		me.submitBtn.setDisabled(false);
+		Ext.Msg.alert('Error', response.htmlStatus);
+	    },
+	    success: function(response, options) {
+		me.submitBtn.setDisabled(response.result.data !== 1);
+	    }
+	});
     },
 
     initComponent : function() {
+	/*jslint confusion: true */
 	var me = this;
-
-	var diskarray = [];
 
 	if (!me.nodename) {
 	    throw "no node name specified";
@@ -73,49 +81,58 @@ Ext.define('PVE.window.Clone', {
 	    throw "no VM ID specified";
 	}
 
-	me.snapshotsel = Ext.create('PVE.form.SnapshotSelector', {
-		name: 'snapname',
-		fieldLabel: 'Snapshot',
-                nodename: me.nodename,
-                vmid: me.vmid,
-                disabled: false,
-                hidden: me.istemplate ? true : false,
-		allowBlank: false,
-		value : me.snapname,
-		listeners: {
-		    change: function(f, value) {
+	if (!me.snapname) {
+	    me.snapname = 'current';
+	}
 
-			var clonefeature;
-			var snapname = value;
-			//check if linked clone feature is available
-			    var params = { feature: 'clone' };
-			    if (value !== 'current') {
-				params.snapname = snapname;
-			    }
+	var col1 = [];
+	var col2 = [];
 
-			    PVE.Utils.API2Request({
-				waitMsgTarget: me,
-				url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/feature',
-				params: params,
-				method: 'GET',
-				success: function(response, options) {
-				    var res = response.result.data;
+	var modelist = [['copy', 'Full Clone']];
+	if (me.isTemplate) {
+	    modelist.push(['clone', 'Linked Clone']);
+	}
 
-				    if (res === 1) {
-					clonefeature = 1;
-				    }
-				    me.compute_sel1(clonefeature, me.istemplate, snapname);
-				}
-			    });
-		    }
+        me.kv1 = Ext.create('PVE.form.KVComboBox', {
+            fieldLabel: 'Clone Mode',
+            name: 'clonemode',
+            allowBlank: false,
+	    value: me.isTemplate ? 'clone' : 'copy',
+            data: modelist
+        });
+
+        me.mon(me.kv1, 'change', function(t, value) {
+	    if (value === 'copy') {
+		me.hdstoragesel.setDisabled(false);
+		me.formatsel.setDisabled(false);
+	    } else {
+		me.hdstoragesel.setDisabled(true);
+		me.formatsel.setDisabled(true);
+	    }
+	    me.verifyFeature();
+        });
+
+	col1.push(me.kv1);
+
+	me.snapshotSel = Ext.create('PVE.form.SnapshotSelector', {
+	    name: 'snapname',
+	    fieldLabel: 'Snapshot',
+            nodename: me.nodename,
+            vmid: me.vmid,
+	    hidden: me.isTemplate ? true : false,
+            disabled: false,
+	    allowBlank: false,
+	    value : me.snapname,
+	    listeners: {
+		change: function(f, value) {
+		    me.verifyFeature();
 		}
+	    }
 	});
 
-	var items = [];
+	col1.push(me.snapshotSel);
 
-	items.push(me.snapshotsel);
-
-	items.push(
+	col1.push(
 	    {
                 xtype: 'pveVMIDSelector',
                 name: 'newvmid',
@@ -132,7 +149,7 @@ Ext.define('PVE.window.Clone', {
 	);
 
         me.hdstoragesel = Ext.create('PVE.form.StorageSelector', {
-                name: 'hdstorage',
+                name: 'storage',
                 nodename: me.nodename,
                 fieldLabel: 'Target Storage',
                 storageContent: 'images',
@@ -171,103 +188,71 @@ Ext.define('PVE.window.Clone', {
 		allowBlank: false
 	});
 
-        me.kv1 = Ext.create('PVE.form.KVComboBox', {
-            fieldLabel: 'Clone Mode',
-            name: 'clonemode',
-            allowBlank: false,
-            data: []
-        });
+	col2.push({
+	    xtype: 'pvePoolSelector',
+	    fieldLabel: gettext('Resource Pool'),
+	    name: 'pool',
+	    value: '',
+	    allowBlank: true
+	});
 
-        me.mon(me.kv1, 'change', function(t, value) {
-	    if (value === 'full') {
-		me.hdstoragesel.setDisabled(false);
-	    }else{
-		me.hdstoragesel.setDisabled(true);
-		me.formatsel.setDisabled(true);
-	    }
-        });
-
-
-	items.push(me.kv1);
-	items.push(me.hdstoragesel);
-	items.push(me.formatsel);
+	col2.push(me.hdstoragesel);
+	col2.push(me.formatsel);
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
 	    bodyPadding: 10,
 	    border: false,
+	    layout: 'column',
+	    defaultType: 'container',
+	    columns: 2,
 	    fieldDefaults: {
 		labelWidth: 100,
 		anchor: '100%'
 	    },
-	    items: items
+	    items: [
+		{
+		    columnWidth: 0.5,
+		    padding: '0 10 0 0',
+		    layout: 'anchor',
+		    items: col1
+		},
+		{
+		    columnWidth: 0.5,
+		    padding: '0 0 0 10',
+		    layout: 'anchor',
+		    items: col2
+		}
+	    ]
 	});
 
 	var form = me.formPanel.getForm();
 
-	var submitBtn;
-
-	var titletext = me.istemplate ? "Template" : "VM";
+	var titletext = me.isTemplate ? "Template" : "VM";
 	me.title = "Clone " + titletext + " " + me.vmid;
-	submitBtn = Ext.create('Ext.Button', {
+	
+	me.submitBtn = Ext.create('Ext.Button', {
 	    text: gettext('Clone'),
+	    disabled: true,
 	    handler: function() {
 		if (form.isValid()) {
 		    var values = form.getValues();
-		    me.create_clone(values.snapname, values.name, values.newvmid, values.clonemode, values.hdstorage, values.diskformat, diskarray);
+		    me.create_clone(values);
 		}
 	    }
 	});
-
-
+	
 	Ext.apply(me, {
 	    modal: true,
-	    width: 350,
+	    width: 600,
 	    height: 250,
 	    border: false,
 	    layout: 'fit',
-	    buttons: [ submitBtn ],
+	    buttons: [ me.submitBtn ],
 	    items: [ me.formPanel ]
 	});
 
-
 	me.callParent();
 
-	if (!me.snapname) {
-	    return;
-	}
-
-	me.compute_sel1(me.clonefeature, me.istemplate, me.snapname);
-
-        var url;
-
-        if (me.snapsname) {
-	    url = '/nodes/' + me.nodename + '/qemu/' + me.vmid + "/snapshot/" + me.snapname + '/config';
-        } else {
-	    url = '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/config';
-        }
-
-
-	PVE.Utils.API2Request({
-	    url: url,
-	    waitMsgTarget: me,
-	    method: 'GET',
-	    failure: function(response, opts) {
-		Ext.Msg.alert('Error', response.htmlStatus);
-		me.close();
-	    },
-	    success: function(response, options) {
-		var data = response.result.data;
-		Ext.Object.each(data, function(key, value) {
-
-		    var drive = PVE.Parser.parseQemuDrive(key, value);
-		    if (drive) {
-			var match = drive.file.match(/^([^:]+):/);
-			if (match) {
-			diskarray.push(key);
-			}
-		    }
-		});
-	    }
-	});
+	me.verifyFeature();
     }
 });

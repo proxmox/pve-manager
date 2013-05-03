@@ -82,7 +82,6 @@ Ext.define('PVE.qemu.CmdMenu', {
 		icon: '/pve2/images/forward.png',
 		handler: function() {
 		    var win = Ext.create('PVE.window.Clone', {
-			snapname: 'current',
 			nodename: nodename,
 			vmid: vmid
 		    });
@@ -90,7 +89,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		}
 	    },
 	    {
-		text: gettext('Convert To Template'),
+		text: gettext('Convert to template'),
 		icon: '/pve2/images/forward.png',
 		handler: function() {
 		    var msg = Ext.String.format(gettext("Do you really want convert VM {0} to template (You'll can use the VM anymore)?"), vmid);

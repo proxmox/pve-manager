@@ -48,30 +48,12 @@ Ext.define('PVE.qemu.TemplateMenu', {
 		text: gettext('Clone'),
 		icon: '/pve2/images/forward.png',
 		handler: function() {
-		    var clonefeature;
-		    //check if linked clone feature is available
-		    var params = { feature: 'clone' };
-
-		    PVE.Utils.API2Request({
-			waitMsgTarget: me,
-			url: '/nodes/' + nodename + '/qemu/' + vmid + '/feature',
-			params: params,
-			method: 'GET',
-			success: function(response, options) {
-			    var res = response.result.data;
-			    if (res === 1) {
-				clonefeature = 1;
-			    }
-			    var win = Ext.create('PVE.window.Clone', {
-				snapname: 'current',
-				nodename: nodename,
-				vmid: vmid,
-				istemplate: template,
-				clonefeature: clonefeature
-			    });
-			    win.show();
-			}
+		    var win = Ext.create('PVE.window.Clone', {
+			nodename: nodename,
+			vmid: vmid,
+			isTemplate: template
 		    });
+		    win.show();
 		}
 	    }
 	];
