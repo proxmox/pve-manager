@@ -439,6 +439,7 @@ Ext.define('PVE.Utils', { statics: {
 	qmrestore: [ 'VM', gettext('Restore') ],
 	qmdestroy: [ 'VM', gettext('Destroy') ],
 	qmigrate: [ 'VM', gettext('Migrate') ],
+	qmclone: [ 'VM', gettext('Clone') ],
 	qmstart: [ 'VM', gettext('Start') ],
 	qmstop: [ 'VM', gettext('Stop') ],
 	qmreset: [ 'VM', gettext('Reset') ],
