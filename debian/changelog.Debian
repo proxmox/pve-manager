@@ -1,3 +1,9 @@
+pve-manager (3.0-12) unstable; urgency=low
+
+  * add Clone GUI
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 06 May 2013 11:37:35 +0200
+
 pve-manager (3.0-11) unstable; urgency=low
 
   * fix NodeSelector
