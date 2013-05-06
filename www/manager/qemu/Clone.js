@@ -47,6 +47,33 @@ Ext.define('PVE.window.Clone', {
 
     },
 
+    updateVisibility: function() {
+	var me = this;
+
+	var clonemode = me.kv1.getValue();
+	var storage = me.hdstoragesel.getValue();
+	var rec = me.hdstoragesel.store.getById(storage);
+
+	me.hdstoragesel.setDisabled(clonemode === 'clone');
+
+	if (!rec || clonemode === 'clone') {
+            me.formatsel.setDisabled(true);
+	    return;
+	}
+
+	if (rec.data.type === 'lvm' ||
+            rec.data.type === 'rbd' ||
+            rec.data.type === 'iscsi' ||
+            rec.data.type === 'sheepdog' ||
+            rec.data.type === 'nexenta'
+           ) {
+            me.formatsel.setValue('raw');
+            me.formatsel.setDisabled(true);
+        } else {
+            me.formatsel.setDisabled(false);
+        }
+    },
+
     verifyFeature: function() {
 	var me = this;
 		    
@@ -120,13 +147,7 @@ Ext.define('PVE.window.Clone', {
         });
 
         me.mon(me.kv1, 'change', function(t, value) {
-	    if (value === 'copy') {
-		me.hdstoragesel.setDisabled(false);
-		me.formatsel.setDisabled(false);
-	    } else {
-		me.hdstoragesel.setDisabled(true);
-		me.formatsel.setDisabled(true);
-	    }
+	    me.updateVisibility();
 	    me.verifyFeature();
         });
 
@@ -173,37 +194,23 @@ Ext.define('PVE.window.Clone', {
                 storageContent: 'images',
                 autoSelect: me.insideWizard,
                 allowBlank: true,
-                disabled: true,
+                disabled: me.isTemplate ? true : false, // because default mode is clone for templates
                 hidden: false,
                 listeners: {
                     change: function(f, value) {
-                        var rec = f.store.getById(value);
-			if (rec.data.type === 'iscsi') {
-                            me.formatsel.setValue('raw');
-                            me.formatsel.setDisabled(true);
-                        } else if (rec.data.type === 'lvm' ||
-                                   rec.data.type === 'rbd' ||
-                                   rec.data.type === 'sheepdog' ||
-                                   rec.data.type === 'nexenta'
-                        ) {
-                            me.formatsel.setValue('raw');
-                            me.formatsel.setDisabled(true);
-                        } else {
-                            me.formatsel.setDisabled(false);
-                        }
-
+			me.updateVisibility();
                     }
                 }
 
 	});
 
 	me.formatsel = Ext.create('PVE.form.DiskFormatSelector', {
-		name: 'diskformat',
-		fieldLabel: gettext('Format'),
-		value: 'raw',
-                disabled: true,
-                hidden: false,
-		allowBlank: false
+	    name: 'diskformat',
+	    fieldLabel: gettext('Format'),
+	    value: 'raw',
+            disabled: true,
+            hidden: false,
+	    allowBlank: false
 	});
 
 	col2.push({
