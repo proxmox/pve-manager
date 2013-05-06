@@ -78,7 +78,7 @@ Ext.define('PVE.qemu.SnapshotTree', {
             method: 'GET',
             success: function(response, options) {
                 var res = response.result.data;
-		if (res === 1) {
+		if (res.hasFeature) {
 		   Ext.getCmp('snapshotBtn').enable();
 		}
             }

@@ -18,6 +18,10 @@ Ext.define('PVE.window.Clone', {
 	    params.name = values.name;
 	}
 
+	if (values.target) {
+	    params.target = values.target;
+	}
+
 	if (values.clonemode === 'copy') {
 	    params.full = 1;
 	    if (values.storage) {
@@ -64,7 +68,11 @@ Ext.define('PVE.window.Clone', {
 		Ext.Msg.alert('Error', response.htmlStatus);
 	    },
 	    success: function(response, options) {
-		me.submitBtn.setDisabled(response.result.data !== 1);
+                var res = response.result.data;
+		me.submitBtn.setDisabled(res.hasFeature !== 1);
+
+		me.targetSel.allowedNodes = res.nodes;
+		me.targetSel.validate();
 	    }
 	});
     },
@@ -87,6 +95,16 @@ Ext.define('PVE.window.Clone', {
 
 	var col1 = [];
 	var col2 = [];
+
+	me.targetSel = Ext.create('PVE.form.NodeSelector', {
+	    name: 'target',
+	    fieldLabel: 'Target node',
+	    selectCurNode: true,
+	    allowBlank: false,
+	    onlineValidator: true
+	});
+
+	col1.push(me.targetSel);
 
 	var modelist = [['copy', 'Full Clone']];
 	if (me.isTemplate) {
@@ -112,7 +130,7 @@ Ext.define('PVE.window.Clone', {
 	    me.verifyFeature();
         });
 
-	col1.push(me.kv1);
+	col2.push(me.kv1);
 
 	me.snapshotSel = Ext.create('PVE.form.SnapshotSelector', {
 	    name: 'snapname',
@@ -130,7 +148,7 @@ Ext.define('PVE.window.Clone', {
 	    }
 	});
 
-	col1.push(me.snapshotSel);
+	col2.push(me.snapshotSel);
 
 	col1.push(
 	    {

@@ -7,6 +7,9 @@ Ext.define('PVE.form.NodeSelector', {
 
     selectCurNode: false,
 
+    // only allow those nodes (array)
+    allowedNodes: undefined,
+
     initComponent: function() {
 	var me = this;
 
@@ -66,18 +69,25 @@ Ext.define('PVE.form.NodeSelector', {
 		}
 		
 		var offline = [];
+		var notAllowed = [];
+
 		Ext.Array.each(value.split(/\s*,\s*/), function(node) {
 		    var rec = me.store.findRecord(me.valueField, node);
 		    if (!(rec && rec.data) || !Ext.isNumeric(rec.data.mem)) {
 			offline.push(node);
-		    } 
+		    } else if (me.allowedNodes && !Ext.Array.contains(me.allowedNodes, node)) {
+			notAllowed.push(node);
+		    }
 		});
 
-		if (offline.length == 0) {
-		    return true;
-		}
+		if (notAllowed.length !== 0) {
+		    return "Node " + offline.join(', ') + " is disabled (not allowed for this action)!";
+		} 
 
-		return "Node " + offline.join(', ') + " seems to be offline!";
+		if (offline.length !== 0) {
+		    return "Node " + offline.join(', ') + " seems to be offline!";
+		}
+		return true;
 	    }
 	});
 
