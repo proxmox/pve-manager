@@ -81,7 +81,7 @@ Ext.define('PVE.form.NodeSelector', {
 		});
 
 		if (notAllowed.length !== 0) {
-		    return "Node " + offline.join(', ') + " is disabled (not allowed for this action)!";
+		    return "Node " + notAllowed.join(', ') + " is not allowed for this action!";
 		} 
 
 		if (offline.length !== 0) {
