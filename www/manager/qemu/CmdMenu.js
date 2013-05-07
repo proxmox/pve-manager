@@ -92,7 +92,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		text: gettext('Convert to template'),
 		icon: '/pve2/images/forward.png',
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want convert VM {0} to template (You'll can use the VM anymore)?"), vmid);
+		    var msg = Ext.String.format(gettext("Do you really want to convert VM {0} into a template?"), vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
