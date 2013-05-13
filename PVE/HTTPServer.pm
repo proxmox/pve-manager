@@ -120,6 +120,7 @@ sub finish_response {
     delete $reqstate->{log};
     delete $reqstate->{request};
     delete $reqstate->{proto};
+    delete $reqstate->{accept_gzip};
 
     if ($reqstate->{tmpfilename}) {
 	unlink $reqstate->{tmpfilename};
@@ -146,6 +147,8 @@ sub response {
     my ($self, $reqstate, $resp, $mtime, $nocomp) = @_;
 
     #print "$$: send response: " . Dumper($resp);
+
+    $nocomp = 1 if !$reqstate->{accept_gzip};
 
     my $code = $resp->code;
     my $msg = $resp->message || HTTP::Status::status_message($code);
@@ -302,6 +305,7 @@ sub proxy_request {
 
 	$headers->{'cookie'} = PVE::REST::create_auth_cookie($ticket) if $ticket;
 	$headers->{'CSRFPreventionToken'} = $token if $token;
+	$headers->{'Accept-Encoding'} = 'gzip' if $reqstate->{accept_gzip};
 
 	my $content;
 
@@ -336,6 +340,7 @@ sub proxy_request {
 		    delete $hdr->{HTTPVersion};
 		    my $header = HTTP::Headers->new(%$hdr);
 		    my $resp = HTTP::Response->new($code, $msg, $header, $body);
+		    # Note: disable compression, because body is already compressed
 		    $self->response($reqstate, $resp, undef, 1);
 		};
 		warn $@ if $@;
@@ -689,6 +694,8 @@ sub unshift_read_header {
 		}
 
 		my $conn = $r->header('Connection');
+		my $accept_enc = $r->header('Accept-Encoding');
+		$reqstate->{accept_gzip} = ($accept_enc && $accept_enc =~ m/gzip/) ? 1 : 0;
 
 		if ($conn) {
 		    $reqstate->{keep_alive} = 0 if $conn =~ m/close/oi;
