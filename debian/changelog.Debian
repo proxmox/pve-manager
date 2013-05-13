@@ -1,3 +1,9 @@
+pve-manager (3.0-15) unstable; urgency=low
+
+  *  fix bug #385: correctly handle Accept-Encoding
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 13 May 2013 09:12:41 +0200
+
 pve-manager (3.0-14) unstable; urgency=low
 
   * qmtemplate task : format task description correctly
