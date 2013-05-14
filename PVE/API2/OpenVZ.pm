@@ -319,15 +319,6 @@ __PACKAGE__->register_method({
 
 	my $conf = PVE::OpenVZ::parse_ovz_config("/tmp/openvz/$vmid.conf", $pve_base_ovz_config);
 
-	my $addVMtoPoolFn = sub {		       
-	    my $usercfg = cfs_read_file("user.cfg");
-	    if (my $data = $usercfg->{pools}->{$pool}) {
-		$data->{vms}->{$vmid} = 1;
-		$usercfg->{vms}->{$vmid} = $pool;
-		cfs_write_file("user.cfg", $usercfg);
-	    }
-	};
-
 	my $ostemplate = extract_param($param, 'ostemplate');
 
 	my $archive;
@@ -416,7 +407,7 @@ __PACKAGE__->register_method({
 		    if defined($password);
 	    }
 
-	    PVE::AccessControl::lock_user_config($addVMtoPoolFn, "can't add VM to pool") if $pool;
+	    PVE::AccessControl::add_vm_to_pool($vmid, $pool) if $pool;
 	};
 
 	my $realcmd = sub { PVE::OpenVZ::lock_container($vmid, 1, $code); };
@@ -801,6 +792,8 @@ __PACKAGE__->register_method({
 	    my $cmd = ['vzctl', 'destroy', $vmid ];
 
 	    run_command($cmd);
+
+	    PVE::AccessControl::remove_vm_from_pool($vmid);
 	};
 
 	return $rpcenv->fork_worker('vzdestroy', $vmid, $authuser, $realcmd);
