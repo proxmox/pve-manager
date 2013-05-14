@@ -204,6 +204,10 @@ Ext.define('PVE.window.Clone', {
 
 	});
 
+	me.targetSel.on('change', function(f, value) {
+	    me.hdstoragesel.setTargetNode(value);
+	});
+
 	me.formatsel = Ext.create('PVE.form.DiskFormatSelector', {
 	    name: 'diskformat',
 	    fieldLabel: gettext('Format'),

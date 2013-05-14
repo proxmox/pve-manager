@@ -2,6 +2,43 @@ Ext.define('PVE.form.StorageSelector', {
     extend: 'PVE.form.ComboGrid',
     alias: ['widget.PVE.form.StorageSelector'],
 
+    reloadStorageList: function() {
+	var me = this;
+	if (!me.nodename) {
+	    return;
+	}
+
+	var params = {};
+	var url = '/api2/json/nodes/' + me.nodename + '/storage';
+	if (me.storageContent) {
+	    params.content = me.storageContent;
+	}
+	if (me.targetNode) {
+	    params.target = me.targetNode;
+	    params.enabled = 1; // skip disabled storages
+	}
+	me.store.setProxy({
+	    type: 'pve',
+	    url: url,
+	    extraParams: params
+	});
+
+	me.store.load();
+ 
+    },
+
+    setTargetNode: function(targetNode) {
+	var me = this;
+
+	if (!targetNode || (me.targetNode === targetNode)) {
+	    return;
+	}
+
+	me.targetNode = targetNode;
+
+	me.reloadStorageList();
+    },
+
     setNodename: function(nodename) {
 	var me = this;
 
@@ -11,17 +48,7 @@ Ext.define('PVE.form.StorageSelector', {
 
 	me.nodename = nodename;
 
-	var url = '/api2/json/nodes/' + me.nodename + '/storage';
-	if (me.storageContent) {
-	    url += '?content=' + me.storageContent;
-	}
-
-	me.store.setProxy({
-	    type: 'pve',
-	    url: url
-	});
-
-	me.store.load();
+	me.reloadStorageList();
     },
 
     initComponent: function() {
