@@ -32,7 +32,7 @@ Ext.define('PVE.qemu.StartupInputPanel', {
 		name: 'order',
 		defaultValue: '',
 		emptyText: 'any',
-		fieldLabel: gettext('Start order')
+		fieldLabel: gettext('Start/Shutdown order')
 	    },
 	    {
 		xtype: 'textfield',

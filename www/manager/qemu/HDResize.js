@@ -69,9 +69,9 @@ Ext.define('PVE.window.HDResize', {
 
 	var submitBtn;
 
-	me.title = 'Resize Disk';
+	me.title = gettext('Resize disk');
 	submitBtn = Ext.create('Ext.Button', {
-	    text: gettext('Resize'),
+	    text: gettext('Resize disk'),
 	    handler: function() {
 		if (form.isValid()) {
 		    var values = form.getValues();

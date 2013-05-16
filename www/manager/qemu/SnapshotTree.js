@@ -258,7 +258,7 @@ Ext.define('PVE.qemu.SnapshotTree', {
 		    }
 		},
 		{
-		    text: gettext('Date') + "/" + gettext("State"),
+		    text: gettext('Date') + "/" + gettext("Status"),
 		    dataIndex: 'snaptime',
 		    resizable: false,
 		    width: 120,

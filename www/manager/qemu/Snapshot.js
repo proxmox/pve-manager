@@ -139,9 +139,9 @@ Ext.define('PVE.window.Snapshot', {
 		}
 	    });
 	} else {
-	    me.title = "Take Snapshot of VM " + me.vmid;
+	    me.title ="VM " + me.vmid + ': ' + gettext('Take Snapshot');
 	    submitBtn = Ext.create('Ext.Button', {
-		text: 'Take Snapshot',
+		text: gettext('Take Snapshot'),
 		handler: function() {
 		    if (form.isValid()) {
 			var values = form.getValues();

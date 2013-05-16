@@ -53,7 +53,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		height: 22, // hack: set same height as text fields
 		name: 'username',
 		value: 'admin',
-		fieldLabel: gettext('username'),
+		fieldLabel: gettext('User name'),
 		allowBlank: true
 	    }
 	];
