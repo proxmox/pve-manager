@@ -45,7 +45,13 @@ Ext.define('PVE.tree.ResourceTree', {
 	    }
 
 	    // numeric compare for VM IDs
+	    // sort templates after regular VMs
 	    if (v1 === 'qemu' || v1 === 'openvz') {
+		if (n1.template && !n2.template) {
+		    return 1;
+		} else if (n2.template && !n1.template) {
+		    return -1;
+		}
 		v1 = n1.vmid;
 		v2 = n2.vmid;
 		if ((tcmp = v1 > v2 ? 1 : (v1 < v2 ? -1 : 0)) != 0) {
