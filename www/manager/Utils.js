@@ -770,6 +770,8 @@ Ext.define('PVE.Utils', { statics: {
 
 	if (record.data.running) {
 	    metaData.tdCls = cls + "-running";
+	} else if (record.data.template) {
+	    metaData.tdCls = cls + "-template";	    
 	} else {
 	    metaData.tdCls = cls;
 	}
