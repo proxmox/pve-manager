@@ -70,7 +70,7 @@ Ext.define('PVE.window.Snapshot', {
 		xtype: me.snapname ? 'displayfield' : 'textfield',
 		name: 'snapname',
 		value: me.snapname,
-		fieldLabel: 'Snapshot Name',
+		fieldLabel: gettext('Name'),
 		vtype: 'StorageId',
 		allowBlank: false
 	    }
@@ -80,7 +80,7 @@ Ext.define('PVE.window.Snapshot', {
 	    items.push({
 		xtype: 'displayfield',
 		name: 'snaptime',
-		fieldLabel: 'Timestamp'
+		fieldLabel: gettext('Timestamp')
 	    });
 	} else {
 	    items.push({
@@ -89,7 +89,7 @@ Ext.define('PVE.window.Snapshot', {
 		uncheckedValue: 0,
 		defaultValue: 0,
 		checked: 1,
-		fieldLabel: 'Include RAM'
+		fieldLabel: gettext('Include RAM')
 	    });
 	}
 
@@ -97,7 +97,7 @@ Ext.define('PVE.window.Snapshot', {
 	    xtype: 'textareafield',
 	    grow: true,
 	    name: 'description',
-	    fieldLabel: 'Description'
+	    fieldLabel: gettext('Description')
 	});
 
 	if (me.snapname) {
@@ -128,7 +128,7 @@ Ext.define('PVE.window.Snapshot', {
 	var submitBtn;
 
 	if (me.snapname) {
-	    me.title = "Edit Snapshot '" + me.snapname + " of VM " + me.vmid;
+	    me.title = gettext('Edit') + ': ' + gettext('Snapshot');
 	    submitBtn = Ext.create('Ext.Button', {
 		text: gettext('Update'),
 		handler: function() {

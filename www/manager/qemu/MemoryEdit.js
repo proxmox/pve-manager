@@ -39,7 +39,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		xtype: 'radiofield',
 		name: 'memoryType',
 		inputValue: 'fixed',
-		boxLabel: 'Use fixed size memory',
+		boxLabel: gettext('Use fixed size memory'),
 		checked: true,
 		listeners: {
 		    change: function(f, value) {
@@ -150,7 +150,7 @@ Ext.define('PVE.qemu.MemoryEdit', {
 	Ext.apply(me, {
 	    subject: gettext('Memory'),
 	    items: [ Ext.create('PVE.qemu.MemoryInputPanel') ],
-	    width: 350
+	    width: 400
 	});
 
 	me.callParent();

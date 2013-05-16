@@ -246,7 +246,7 @@ Ext.define('PVE.qemu.SnapshotTree', {
 		    }
 		},
 		{
-		    text: gettext('RAM'),
+		    text: 'RAM',
 		    align: 'center',
 		    resizable: false,
 		    dataIndex: 'vmstate',
