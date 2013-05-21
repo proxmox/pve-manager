@@ -1,3 +1,15 @@
+pve-manager (3.0-18) unstable; urgency=low
+
+  * use correct icons for templates
+  
+  * sort templates after regular VMs
+  
+  * update German translation
+
+  * update French translation
+  
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 21 May 2013 10:58:47 +0200
+
 pve-manager (3.0-17) unstable; urgency=low
 
   * fix bug #374: correctly remove destroyed container from pool
