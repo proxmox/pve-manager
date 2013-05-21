@@ -164,7 +164,8 @@ sub response {
 
     $reqstate->{log}->{code} = $code;
 
-    my $res = "$reqstate->{proto}->{str} $code $msg\015\012";
+    my $proto = $reqstate->{proto} ? $reqstate->{proto}->{str} : 'HTTP/1.0';
+    my $res = "$proto $code $msg\015\012";
 
     my $ctime = time();
     my $date = HTTP::Date::time2str($ctime);
