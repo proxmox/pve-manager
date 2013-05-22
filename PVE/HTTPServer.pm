@@ -647,7 +647,7 @@ sub parse_content_disposition {
 	if ($v =~ m/^\s*name\s*=\s*(\S+?)\s*$/o) {
 	    $name = $1;
 	    $name =~ s/^"(.*)"$/$1/;
-	} elsif ($v =~ m/^\s*filename\s*=\s*(\S+?)\s*$/o) {
+	} elsif ($v =~ m/^\s*filename\s*=\s*(.+?)\s*$/o) {
 	    $filename = $1;
 	    $filename =~ s/^"(.*)"$/$1/;
 	}
