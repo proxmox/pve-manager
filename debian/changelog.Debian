@@ -3,6 +3,8 @@ pve-manager (3.0-19) unstable; urgency=low
   * updated Chinese translation
   
   * allow to upload files with spaces in filename (replace with '_')
+  
+  * allow to delete pools with non-existent VMs/Storage
 
  -- Proxmox Support Team <support@proxmox.com>  Wed, 22 May 2013 06:04:49 +0200
 

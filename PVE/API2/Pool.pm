@@ -311,6 +311,11 @@ __PACKAGE__->register_method ({
 	PVE::AccessControl::lock_user_config(
 	    sub {
 
+		my $vmlist = PVE::Cluster::get_vmlist() || {};
+		my $idlist = $vmlist->{ids} || {};
+
+		my $storecfg = PVE::Storage::config();
+
 		my $usercfg = cfs_read_file("user.cfg");
 
 		my $pool = $param->{poolid};
@@ -320,8 +325,15 @@ __PACKAGE__->register_method ({
 		die "pool '$pool' does not exist\n" 
 		    if !$data;
 
-		die "pool '$pool' is not empty\n"
-		    if scalar (keys %{$data->{vms}}) || scalar(keys %{$data->{storage}});
+		foreach my $vmid (keys %{$data->{vms}}) {
+		    next if !$idlist->{$vmid};
+		    die "pool '$pool' is not empty (contains VM $vmid)\n";
+		}
+
+		foreach my $storeid (keys %{$data->{storage}}) {
+		    next if !PVE::Storage::storage_config ($storecfg, $storeid, 1);
+		    die "pool '$pool' is not empty (contains storage '$storeid')\n";
+		}
 
 		delete ($usercfg->{pools}->{$pool});
 
