@@ -334,6 +334,11 @@ sub proxy_request {
 
 		undef $w;
 
+		if (!$reqstate->{hdl}) {
+		    warn "proxy detected vanished client connection\n";
+		    return;
+		}
+
 		eval {
 		    my $code = delete $hdr->{Status};
 		    my $msg = delete $hdr->{Reason};
