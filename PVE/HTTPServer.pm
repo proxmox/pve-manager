@@ -326,6 +326,7 @@ sub proxy_request {
 	    headers => $headers,
 	    timeout => 30,
 	    recurse => 0,
+	    proxy => undef, # avoid use of $ENV{HTTP_PROXY}
 	    keepalive => $keep_alive,
 	    body => $content,
 	    tls_ctx => $self->{tls_ctx},
