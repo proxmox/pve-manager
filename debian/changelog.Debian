@@ -1,3 +1,9 @@
+pve-manager (3.0-20) unstable; urgency=low
+
+  * fix login problem when http_proxy is set
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 23 May 2013 07:29:25 +0200
+
 pve-manager (3.0-19) unstable; urgency=low
 
   * updated Chinese translation
