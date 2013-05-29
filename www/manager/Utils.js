@@ -440,6 +440,7 @@ Ext.define('PVE.Utils', { statics: {
 	qmdestroy: [ 'VM', gettext('Destroy') ],
 	qmigrate: [ 'VM', gettext('Migrate') ],
 	qmclone: [ 'VM', gettext('Clone') ],
+	qmmove: [ 'VM', gettext('Move disk') ],
 	qmtemplate: [ 'VM', gettext('Convert to template') ],
 	qmstart: [ 'VM', gettext('Start') ],
 	qmstop: [ 'VM', gettext('Stop') ],

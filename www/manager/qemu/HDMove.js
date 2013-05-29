@@ -22,6 +22,9 @@ Ext.define('PVE.window.HDMove', {
 		Ext.Msg.alert('Error', response.htmlStatus);
 	    },
 	    success: function(response, options) {
+		var upid = response.result.data;
+		var win = Ext.create('PVE.window.TaskViewer', { upid: upid });
+		win.show();
 		me.close();
 	    }
 	});
