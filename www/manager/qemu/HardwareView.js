@@ -290,7 +290,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    selModel: sm,
 	    disabled: true,
 	    enableFn: function(rec) {
-		if (!rec) {
+		if (!rec || rec.data.key.match(/^unused\d+/)) {
 		    return false;
 		}
 		var rowdef = rows[rec.data.key];
