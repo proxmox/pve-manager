@@ -17,7 +17,7 @@ Ext.define('PVE.window.HDMove', {
 	    params: params,
 	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/move',
 	    waitMsgTarget: me,
-	    method: 'PUT',
+	    method: 'POST',
 	    failure: function(response, opts) {
 		Ext.Msg.alert('Error', response.htmlStatus);
 	    },
