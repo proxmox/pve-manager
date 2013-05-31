@@ -1,3 +1,9 @@
+pve-manager (3.0-22) unstable; urgency=low
+
+  * support 'delete' flag for 'Move disk'
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 31 May 2013 10:59:59 +0200
+
 pve-manager (3.0-21) unstable; urgency=low
 
   * add 'Move disk' button for storage migration
