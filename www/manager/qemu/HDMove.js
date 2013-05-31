@@ -4,7 +4,7 @@ Ext.define('PVE.window.HDMove', {
     resizable: false,
 
 
-    move_disk: function(disk, storage, format) {
+    move_disk: function(disk, storage, format, delete_disk) {
 	var me = this;
 
         params =  { disk: disk, storage: storage };
@@ -12,10 +12,14 @@ Ext.define('PVE.window.HDMove', {
         if (format) {
             params.format = format;
         }
+	
+	if (delete_disk) {
+	    params['delete'] = 1;
+	};
 
 	PVE.Utils.API2Request({
 	    params: params,
-	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/move',
+	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/move_disk',
 	    waitMsgTarget: me,
 	    method: 'POST',
 	    failure: function(response, opts) {
@@ -97,8 +101,17 @@ Ext.define('PVE.window.HDMove', {
 	});
 
 
+   
 	items.push(me.hdstoragesel);
 	items.push(me.formatsel);
+
+	items.push({
+	    xtype: 'pvecheckbox',
+	    fieldLabel: gettext('Delete source'),
+	    name: 'deleteDisk',
+	    uncheckedValue: 0,
+	    checked: false
+	});
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
 	    bodyPadding: 10,
@@ -120,7 +133,8 @@ Ext.define('PVE.window.HDMove', {
 	    handler: function() {
 		if (form.isValid()) {
 		    var values = form.getValues();
-		    me.move_disk(me.disk, values.hdstorage, values.diskformat);
+		    me.move_disk(me.disk, values.hdstorage, values.diskformat,
+				 values.deleteDisk);
 		}
 	    }
 	});
