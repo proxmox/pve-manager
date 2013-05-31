@@ -127,9 +127,9 @@ Ext.define('PVE.window.HDMove', {
 
 	var submitBtn;
 
-	me.title = "Move disk";
+	me.title =  gettext("Move disk");
 	submitBtn = Ext.create('Ext.Button', {
-	    text: gettext('Move'),
+	    text: gettext('Move disk'),
 	    handler: function() {
 		if (form.isValid()) {
 		    var values = form.getValues();
