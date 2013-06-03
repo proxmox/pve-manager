@@ -55,7 +55,19 @@ Ext.define('PVE.window.TaskProgress', {
 	    layout: 'auto',
 	    modal: true,
 	    bodyPadding: 5,
-	    items: pbar
+	    items: pbar,
+	    buttons: [
+		{ 
+		    text: gettext('Details'),
+		    handler: function() {			
+			var win = Ext.create('PVE.window.TaskViewer', { 
+			    upid: me.upid
+			});
+			win.show();
+			me.close();
+		    }
+		}
+	    ]
 	});
 
 	me.callParent();
