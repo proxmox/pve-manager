@@ -30,6 +30,7 @@ Ext.define('PVE.openvz.DNS', {
 		    items: {
 			xtype: 'textfield',
 			name: 'hostname',
+			vtype: 'DnsName',
 			value: '',
 			fieldLabel: 'Hostname',
 			allowBlank: true,

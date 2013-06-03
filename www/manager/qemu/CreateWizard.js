@@ -68,6 +68,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 			{
 			    xtype: 'textfield',
 			    name: 'name',
+			    vtype: 'DnsName',
 			    value: '',
 			    fieldLabel: gettext('Name'),
 			    allowBlank: true

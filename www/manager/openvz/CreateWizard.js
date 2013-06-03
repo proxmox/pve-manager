@@ -84,17 +84,11 @@ Ext.define('PVE.openvz.CreateWizard', {
 			{
 			    xtype: 'pvetextfield',
 			    name: 'hostname',
+			    vtype: 'DnsName',
 			    value: '',
 			    fieldLabel: 'Hostname',
 			    skipEmptyText: true,
-			    allowBlank: true,
-			    validator: function(value) {
-				var hostnamere = /^[a-zA-Z0-9\-.]+$/;
-				if (value && !hostnamere.test(value)) {
-				    return "Hostname contains invalid characters !";
-				}
-				return true;
-			    }
+			    allowBlank: true
 			}
 		    ],
 		    column2: [
