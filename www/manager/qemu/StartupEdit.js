@@ -18,7 +18,6 @@ Ext.define('PVE.qemu.StartupInputPanel', {
 
 	var startup = PVE.Parser.parseStartup(value);
 	if (startup) {
-	    console.dir(startup);
 	    me.setValues(startup);
 	}
     },

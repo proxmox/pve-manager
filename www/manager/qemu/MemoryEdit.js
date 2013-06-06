@@ -7,8 +7,6 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	console.dir(values);
-
 	var res;
 
 	if (values.memoryType === 'fixed') {
@@ -158,7 +156,6 @@ Ext.define('PVE.qemu.MemoryEdit', {
 	me.load({
 	    success: function(response, options) {
 		var data = response.result.data;
-		console.dir(data);
 
 		var values = {
 		    memory: data.memory,

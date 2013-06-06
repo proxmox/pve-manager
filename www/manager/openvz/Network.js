@@ -117,7 +117,6 @@ Ext.define('PVE.OpenVZ.IPAdd', {
 	var me = this;
 
 	var values = me.formPanel.getValues();
-	console.dir(values);
 
 	if (me.dataCache.ip_address) {
 	    return { ip_address: me.dataCache.ip_address + ' ' + values.ipaddress };
