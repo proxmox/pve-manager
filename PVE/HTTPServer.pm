@@ -85,13 +85,24 @@ sub log_aborted_request {
     $self->log_request($reqstate);
 }
 
-sub client_do_disconnect {
-    my ($self, $reqstate) = @_;
+sub cleanup_reqstate {
+    my ($reqstate) = @_;
+
+    delete $reqstate->{log};
+    delete $reqstate->{request};
+    delete $reqstate->{proto};
+    delete $reqstate->{accept_gzip};
 
     if ($reqstate->{tmpfilename}) {
 	unlink $reqstate->{tmpfilename};
 	delete $reqstate->{tmpfilename};
     }
+}
+
+sub client_do_disconnect {
+    my ($self, $reqstate) = @_;
+
+    cleanup_reqstate($reqstate);
 
     my $hdl = delete $reqstate->{hdl};
 
@@ -117,15 +128,7 @@ sub finish_response {
 
     my $hdl = $reqstate->{hdl};
 
-    delete $reqstate->{log};
-    delete $reqstate->{request};
-    delete $reqstate->{proto};
-    delete $reqstate->{accept_gzip};
-
-    if ($reqstate->{tmpfilename}) {
-	unlink $reqstate->{tmpfilename};
-	delete $reqstate->{tmpfilename};
-    }
+    cleanup_reqstate($reqstate);
 
     if (!$self->{end_loop} && $reqstate->{keep_alive} > 0) {
 	# print "KEEPALIVE $reqstate->{keep_alive}\n" if $self->{debug};
@@ -147,6 +150,10 @@ sub response {
     my ($self, $reqstate, $resp, $mtime, $nocomp) = @_;
 
     #print "$$: send response: " . Dumper($resp);
+
+    # activate timeout
+    $reqstate->{hdl}->timeout_reset();
+    $reqstate->{hdl}->timeout($self->{timeout});
 
     $nocomp = 1 if !$reqstate->{accept_gzip};
 
@@ -432,6 +439,8 @@ sub handle_api2_request {
 
 	my $res = PVE::REST::rest_handler($rpcenv, $clientip, $method, $rel_uri, $auth, $params);
 
+	AnyEvent->now_update(); # in case somebody called sleep()
+
 	$rpcenv->set_user(undef); # clear after request
 
 	if ($res->{proxy}) {
@@ -469,6 +478,10 @@ sub handle_request {
 	my $r = $reqstate->{request};
 	my $method = $r->method();
 	my $path = $r->uri->path();
+	
+	# disable timeout on handle (we already have all data we need)
+	# we re-enable timeout in response()
+	$reqstate->{hdl}->timeout(0);
 
 	if ($path =~ m!$baseuri!) {
 	    $self->handle_api2_request($reqstate, $auth);
