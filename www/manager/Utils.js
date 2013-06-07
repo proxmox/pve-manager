@@ -448,6 +448,7 @@ Ext.define('PVE.Utils', { statics: {
 	qmshutdown: [ 'VM', gettext('Shutdown') ],
 	qmsuspend: [ 'VM', gettext('Suspend') ],
 	qmresume: [ 'VM', gettext('Resume') ],
+	qmconfig: [ 'VM', gettext('Configure') ],
 	vzcreate: ['CT', gettext('Create') ],
 	vzrestore: ['CT', gettext('Restore') ],
 	vzdestroy: ['CT', gettext('Destroy') ],

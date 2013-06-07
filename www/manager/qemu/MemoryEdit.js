@@ -148,6 +148,8 @@ Ext.define('PVE.qemu.MemoryEdit', {
 	Ext.apply(me, {
 	    subject: gettext('Memory'),
 	    items: [ Ext.create('PVE.qemu.MemoryInputPanel') ],
+	    // uncomment the following to use the async configiguration API
+	    // backgroundDelay: 5, 
 	    width: 400
 	});
 

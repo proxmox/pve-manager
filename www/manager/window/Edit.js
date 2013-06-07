@@ -17,6 +17,8 @@ Ext.define('PVE.window.Edit', {
     // set to true if you want an Add button (instead of Create)
     isAdd: false,
 
+    backgroundDelay: 0,
+
     isValid: function() {
 	var me = this;
 
@@ -82,19 +84,30 @@ Ext.define('PVE.window.Edit', {
 	    values.digest = me.digest;
 	}
 
+	if (me.backgroundDelay) {
+	    values.background_delay = me.backgroundDelay;
+	}
+
 	PVE.Utils.API2Request({
 	    url: me.url,
 	    waitMsgTarget: me,
-	    method: me.method || 'PUT',
+	    method: me.method || (me.backgroundDelay ? 'POST' : 'PUT'),
 	    params: values,
 	    failure: function(response, options) {
-		if (response.result.errors) {
+		if (response.result && response.result.errors) {
 		    form.markInvalid(response.result.errors);
 		}
 		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 	    },
 	    success: function(response, options) {
 		me.close();
+		if (me.backgroundDelay && response.result.data) {
+		    var upid = response.result.data;
+		    var win = Ext.create('PVE.window.TaskProgress', { 
+			upid: upid
+		    });
+		    win.show();
+		}
 	    }
 	});
     },
