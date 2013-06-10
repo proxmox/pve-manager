@@ -264,14 +264,17 @@ sub send_file_start {
 	    die "got short file\n" if !defined($len) || $len != $stat->size;
 
 	    my $ct;
+	    my $nocomp;
 	    if ($filename =~ m/\.css$/) {
 		$ct = 'text/css';
 	    } elsif ($filename =~ m/\.js$/) {
 		$ct = 'application/javascript';
 	    } elsif ($filename =~ m/\.png$/) {
 		$ct = 'image/png';
+		$nocomp = 1;
 	    } elsif ($filename =~ m/\.gif$/) {
 		$ct = 'image/gif';
+		$nocomp = 1;
 	    } elsif ($filename =~ m/\.jar$/) {
 		$ct = 'application/java-archive';
 	    } else {
@@ -280,7 +283,7 @@ sub send_file_start {
 
 	    my $header = HTTP::Headers->new(Content_Type => $ct);
 	    my $resp = HTTP::Response->new(200, "OK", $header, $data);
-	    $self->response($reqstate, $resp, $mtime);
+	    $self->response($reqstate, $resp, $mtime, $nocomp);
 	};
 	if (my $err = $@) {
 	    $self->error($reqstate, 501, $err);
@@ -459,12 +462,12 @@ sub handle_api2_request {
 	}
 
 	PVE::REST::prepare_response_data($format, $res);
-	my ($raw, $ct) = PVE::REST::format_response_data($format, $res, $path);
+	my ($raw, $ct, $nocomp) = PVE::REST::format_response_data($format, $res, $path);
 
 	my $resp = HTTP::Response->new($res->{status}, $res->{message});
 	$resp->header("Content-Type" => $ct);
 	$resp->content($raw);
-	$self->response($reqstate, $resp);
+	$self->response($reqstate, $resp, $nocomp);
     };
     if (my $err = $@) {
 	$self->error($reqstate, 501, $err);

@@ -49,7 +49,7 @@ sub format_response_data {
     my $data = $res->{data};
     my $info = $res->{info};
 
-    my ($ct, $raw);
+    my ($ct, $raw, $nocomp);
 
     if ($format eq 'json') {
 	$ct = 'application/json;charset=UTF-8';
@@ -92,7 +92,7 @@ sub format_response_data {
 
     } elsif ($format eq 'png') {
 	$ct = 'image/png';
-
+	$nocomp = 1;
 	# fixme: better to revove that whole png thing ?
 
 	my $filename;
@@ -116,7 +116,7 @@ sub format_response_data {
 	$raw = to_json($data, {utf8 => 1, allow_nonref => 1, pretty => 1});
     }
 
-    return wantarray ? ($raw, $ct) : $raw;
+    return wantarray ? ($raw, $ct, $nocomp) : $raw;
 }
 
 sub prepare_response_data {
