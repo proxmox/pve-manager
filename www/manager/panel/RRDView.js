@@ -5,14 +5,6 @@ Ext.define('PVE.panel.RRDView', {
     initComponent : function() {
 	var me = this;
 
-	if (!me.timeframe) {
-	    me.timeframe = 'hour';
-	}
-
-	if (!me.rrdcffn) {
-	    me.rrdcffn = 'AVERAGE';
-	}
-
 	if (!me.datasource) {
 	    throw "no datasource specified";
 	}
@@ -20,6 +12,27 @@ Ext.define('PVE.panel.RRDView', {
 	if (!me.rrdurl) {
 	    throw "no rrdurl specified";
 	}
+
+	var stateid = 'pveRRDTypeSelection';
+	var sp = Ext.state.Manager.getProvider();
+	var stateinit = sp.get(stateid);
+
+	if (!me.timeframe) {
+	    if(stateinit.timeframe){
+		me.timeframe = stateinit.timeframe;
+	    }else{
+		me.timeframe = 'hour';
+	    }
+	}
+
+	if (!me.rrdcffn) {
+	    if(stateinit.rrdcffn){
+		me.rrdcffn = stateinit.cf;
+	    }else{
+		me.rrdcffn = 'AVERAGE';
+	    }
+	}
+
 
 	var datasource = me.datasource;
 
@@ -33,7 +46,6 @@ Ext.define('PVE.panel.RRDView', {
 	    return url;
 	};
 
-	var stateid = 'pveRRDTypeSelection';
 
 	Ext.apply(me, {
 	    layout: 'fit',
@@ -45,9 +57,11 @@ Ext.define('PVE.panel.RRDView', {
 	    },
 	    applyState : function(state) {
 		if (state && state.id) {
-		    me.timeframe = state.timeframe;
-		    me.rrdcffn = state.cf;
-		    me.reload_task.delay(10);
+		    if(state.timeframe !== me.timeframe || state.cf !== me.rrdcffn){
+		        me.timeframe = state.timeframe;
+		        me.rrdcffn = state.cf;
+		        me.reload_task.delay(10);
+		    }
 		}
 	    }
 	});
@@ -79,9 +93,6 @@ Ext.define('PVE.panel.RRDView', {
 	me.on('destroy', function() {
 	    me.reload_task.cancel();
 	});
-
-	var sp = Ext.state.Manager.getProvider();
-	me.applyState(sp.get(stateid));
 
 	var state_change_fn = function(prov, key, value) {
 	    if (key == stateid) {
