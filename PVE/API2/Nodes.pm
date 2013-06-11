@@ -29,6 +29,7 @@ use PVE::API2::Storage::Status;
 use PVE::API2::Qemu;
 use PVE::API2::OpenVZ;
 use PVE::API2::VZDump;
+use PVE::API2::APT;
 use JSON;
 
 use base qw(PVE::RESTHandler);
@@ -79,6 +80,11 @@ __PACKAGE__->register_method ({
 });
 
 __PACKAGE__->register_method ({
+    subclass => "PVE::API2::APT",  
+    path => 'apt',
+});
+
+__PACKAGE__->register_method ({
     name => 'index', 
     path => '', 
     method => 'GET',
@@ -102,6 +108,7 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
     
 	my $result = [
+	    { name => 'apt' },
 	    { name => 'version' },
 	    { name => 'syslog' },
 	    { name => 'bootlog' },
