@@ -144,6 +144,12 @@ Ext.define('PVE.node.Config', {
 		itemId: 'support',
 		xtype: 'pveNodeSubscription',
 		nodename: nodename
+	    },
+	    {
+		title: gettext('Updates'),
+		itemId: 'apt',
+		xtype: 'pveNodeAPT',
+		nodename: nodename
 	    }
 	]);
 

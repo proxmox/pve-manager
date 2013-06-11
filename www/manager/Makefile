@@ -84,6 +84,7 @@ JSSRC= 				                 	\
 	node/NetworkView.js				\
 	node/Tasks.js					\
 	node/Subscription.js				\
+	node/APT.js					\
 	node/Config.js					\
 	qemu/StatusView.js				\
 	window/Migrate.js				\
