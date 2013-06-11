@@ -277,6 +277,7 @@ sub send_file_start {
 		$nocomp = 1;
 	    } elsif ($filename =~ m/\.jar$/) {
 		$ct = 'application/java-archive';
+		$nocomp = 1;
 	    } else {
 		die "unable to detect content type";
 	    }
