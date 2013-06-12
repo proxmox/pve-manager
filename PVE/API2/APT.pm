@@ -2,6 +2,7 @@ package PVE::API2::APT;
 
 use strict;
 use warnings;
+use File::stat ();
 
 use PVE::Tools qw(extract_param);
 use PVE::SafeSyslog;
@@ -10,6 +11,7 @@ use PVE::Exception qw(raise_param_exc);
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 
+use JSON;
 use PVE::JSONSchema qw(get_standard_option);
 
 use AptPkg::Cache;
@@ -115,6 +117,28 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
+	# we try to cache results
+	my $pve_pkgstatus_fn = "/var/lib/pve-manager/pkgupdates";
+
+	if (my $st1 = File::stat::stat($pve_pkgstatus_fn)) {
+	    my $st2 = File::stat::stat("/var/cache/apt/pkgcache.bin");
+	    my $st3 = File::stat::stat("/var/lib/dpkg/status");
+	
+	    if ($st2->mtime < $st1->mtime && $st3->mtime < $st1->mtime) {
+		my $data;
+		eval {
+		    my $jsonstr = PVE::Tools::file_get_contents($pve_pkgstatus_fn, 5*1024*1024);
+		    $data = decode_json($jsonstr);
+		};
+		if (my $err = $@) {
+		    warn "error readin cached package status in $pve_pkgstatus_fn\n";
+		    # continue and overwrite cache with new content
+		} else {
+		    return $data;
+		}
+	    }
+	}
+
 	my $pkglist = [];
 
 	my $cache = &$get_apt_cache();
@@ -133,6 +157,8 @@ __PACKAGE__->register_method({
 		push @$pkglist, $res;
 	    }
 	}
+
+	PVE::Tools::file_set_contents($pve_pkgstatus_fn, encode_json($pkglist));
 
 	return $pkglist;
     }});
