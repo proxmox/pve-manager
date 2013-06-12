@@ -91,6 +91,35 @@ my $assemble_pkginfo = sub {
     return $data;
 };
 
+# we try to cache results
+my $pve_pkgstatus_fn = "/var/lib/pve-manager/pkgupdates";
+
+my $update_pve_pkgstatus = sub {
+
+    my $pkglist = [];
+
+    my $cache = &$get_apt_cache();
+    my $policy = $cache->policy;
+    my $pkgrecords = $cache->packages();
+
+    foreach my $pkgname (keys %$cache) {
+	my $p = $cache->{$pkgname};
+	next if $p->{SelectedState} ne 'Install';
+	my $current_ver = $p->{CurrentVer};
+	my $candidate_ver = $policy->candidate($p);
+
+	if ($current_ver->{VerStr} ne $candidate_ver->{VerStr}) {
+	    my $info = $pkgrecords->lookup($pkgname);
+	    my $res = &$assemble_pkginfo($pkgname, $info, $current_ver, $candidate_ver);
+	    push @$pkglist, $res;
+	}
+    }
+
+    PVE::Tools::file_set_contents($pve_pkgstatus_fn, encode_json($pkglist));
+
+    return $pkglist;
+};
+
 __PACKAGE__->register_method({
     name => 'list_updates', 
     path => 'update', 
@@ -117,9 +146,6 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	# we try to cache results
-	my $pve_pkgstatus_fn = "/var/lib/pve-manager/pkgupdates";
-
 	if (my $st1 = File::stat::stat($pve_pkgstatus_fn)) {
 	    my $st2 = File::stat::stat("/var/cache/apt/pkgcache.bin");
 	    my $st3 = File::stat::stat("/var/lib/dpkg/status");
@@ -139,28 +165,53 @@ __PACKAGE__->register_method({
 	    }
 	}
 
-	my $pkglist = [];
-
-	my $cache = &$get_apt_cache();
-	my $policy = $cache->policy;
-	my $pkgrecords = $cache->packages();
-
-	foreach my $pkgname (keys %$cache) {
-	    my $p = $cache->{$pkgname};
-	    next if $p->{SelectedState} ne 'Install';
-	    my $current_ver = $p->{CurrentVer};
-	    my $candidate_ver = $policy->candidate($p);
-
-	    if ($current_ver->{VerStr} ne $candidate_ver->{VerStr}) {
-		my $info = $pkgrecords->lookup($pkgname);
-		my $res = &$assemble_pkginfo($pkgname, $info, $current_ver, $candidate_ver);
-		push @$pkglist, $res;
-	    }
-	}
-
-	PVE::Tools::file_set_contents($pve_pkgstatus_fn, encode_json($pkglist));
+	my $pkglist = &$update_pve_pkgstatus();
 
 	return $pkglist;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'update_database', 
+    path => 'update', 
+    method => 'POST',
+    description => "This is used to resynchronize the package index files from their sources (apt-get update).",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
+    protected => 1,
+    proxyto => 'node',
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    my $cmd = ['apt-get', 'update'];
+
+	    print "starting apt-get update\n";
+	    
+	    PVE::Tools::run_command($cmd);
+
+	    &$update_pve_pkgstatus();
+
+	    return;
+	};
+
+	return $rpcenv->fork_worker('apt', undef, $authuser, $realcmd);
+
     }});
 
 1;
