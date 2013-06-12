@@ -150,7 +150,7 @@ __PACKAGE__->register_method({
 	    my $st2 = File::stat::stat("/var/cache/apt/pkgcache.bin");
 	    my $st3 = File::stat::stat("/var/lib/dpkg/status");
 	
-	    if ($st2->mtime < $st1->mtime && $st3->mtime < $st1->mtime) {
+	    if ($st2->mtime <= $st1->mtime && $st3->mtime <= $st1->mtime) {
 		my $data;
 		eval {
 		    my $jsonstr = PVE::Tools::file_get_contents($pve_pkgstatus_fn, 5*1024*1024);
@@ -210,7 +210,53 @@ __PACKAGE__->register_method({
 	    return;
 	};
 
-	return $rpcenv->fork_worker('apt', undef, $authuser, $realcmd);
+	return $rpcenv->fork_worker('aptupdate', undef, $authuser, $realcmd);
+
+    }});
+
+__PACKAGE__->register_method({
+    name => 'upgrade', 
+    path => 'upgrade', 
+    method => 'POST',
+    description => "Install the newest versions of all packages (apt-get dist-upgrade).",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
+    protected => 1,
+    proxyto => 'node',
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    my $cmd = ['apt-get', 'dist-upgrade', '--assume-yes'];
+
+	    print "starting apt-get dist-upgrade\n";
+
+	    $ENV{DEBIAN_FRONTEND} = 'noninteractive';
+	    
+	    PVE::Tools::run_command($cmd);
+
+	    &$update_pve_pkgstatus();
+
+	    return;
+	};
+
+	return $rpcenv->fork_worker('aptupgrade', undef, $authuser, $realcmd);
 
     }});
 
