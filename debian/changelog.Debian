@@ -1,3 +1,13 @@
+pve-manager (3.0-24) unstable; urgency=low
+
+  * update Norwegian translations
+  
+  * rrd display : avoid 2 refresh
+  
+  * avoid gzip http response for png & gif & jar
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 12 Jun 2013 07:24:54 +0200
+
 pve-manager (3.0-23) unstable; urgency=low
 
   * fix bug #368: use vtype 'DnsName' to verify host names
