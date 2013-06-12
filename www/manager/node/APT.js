@@ -26,21 +26,71 @@ Ext.define('PVE.node.APT', {
 	    ]
 	});
 
-	var groupingFeature = Ext.create('Ext.grid.feature.Grouping',{
+	var groupingFeature = Ext.create('Ext.grid.feature.Grouping', {
             groupHeaderTpl: '{[ "Section: " + values.name ]} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})'
+	});
+
+	var rowBodyFeature = Ext.create('Ext.grid.feature.RowBody', {
+            getAdditionalData: function (data, rowIndex, record, orig) {
+                var headerCt = this.view.headerCt;
+                var colspan = headerCt.getColumnCount();
+                // Usually you would style the my-body-class in CSS file
+                return {
+                    rowBody: '<div style="padding: 1em">' + data.Description + '</div>',
+                    rowBodyColspan: colspan
+                };
+	    }
 	});
 
 	var reload = function() {
 	    store.load();
 	};
 
+	me.loadCount = 1; // avoid duplicate load mask
 	PVE.Utils.monStoreErrors(me, store);
+
+	var apt_command = function(cmd){
+	    PVE.Utils.API2Request({
+		url: "/nodes/" + nodename + "/apt/" + cmd,
+		method: 'POST',
+		failure: function(response, opts) {
+		    Ext.Msg.alert('Error', response.htmlStatus);
+		},
+		success: function(response, opts) {
+		    var upid = response.result.data;
+
+		    var win = Ext.create('PVE.window.TaskProgress', { 
+			upid: upid
+		    });
+		    win.show();
+		    me.mon(win, 'close', reload);
+		}
+	    });
+	};
+
+	var update_btn = new Ext.Button({
+	    text: gettext('Update'),
+	    handler: function(){
+		apt_command('update');
+	    }
+	});
+
+	var upgrade_btn = new Ext.Button({
+	    text: gettext('Upgrade'),
+	    handler: function(){
+		apt_command('upgrade');
+	    }
+	});
 
 	Ext.apply(me, {
 	    store: store,
 	    stateful: false,
-	    //tbar: [ start_btn, stop_btn, restart_btn ],
-	    features: [ groupingFeature ],
+            viewConfig: {
+		stripeRows: false,
+		emptyText: '<div style="display:table; width:100%; height:100%;"><div style="display:table-cell; vertical-align: middle; text-align:center;"><b>' + gettext('Your system is up to date.') + '</div></div>'
+	    },
+	    tbar: [ update_btn, upgrade_btn ],
+	    features: [ groupingFeature, rowBodyFeature ],
 	    columns: [
 		{
 		    header: gettext('Package'),
@@ -49,10 +99,21 @@ Ext.define('PVE.node.APT', {
 		    dataIndex: 'Package'
 		},
 		{
-		    header: gettext('Version'),
-		    width: 100,
-		    sortable: false,
-		    dataIndex: 'Version'
+		    text: gettext('Version'),
+		    columns: [
+			{
+			    header: gettext('current'),
+			    width: 100,
+			    sortable: false,
+			    dataIndex: 'OldVersion'
+			},
+			{
+			    header: gettext('new'),
+			    width: 100,
+			    sortable: false,
+			    dataIndex: 'Version'
+			}
+		    ]
 		},
 		{
 		    header: gettext('Description'),
@@ -62,13 +123,7 @@ Ext.define('PVE.node.APT', {
 		}
 	    ],
 	    listeners: { 
-		show: function() {
-		    // only load once (because this takes several seconds)
-		    if (!me.alreadyLoaded) {
-			reload();
-			me.alreadyLoaded = true;
-		    }
-		}
+		show: reload
 	    }
 	});
 
@@ -79,7 +134,7 @@ Ext.define('PVE.node.APT', {
     Ext.define('apt-pkglist', {
 	extend: 'Ext.data.Model',
 	fields: [ 'Package', 'Title', 'Description', 'Section', 'Arch',
-		  'Priority', 'Version' ],
+		  'Priority', 'Version', 'OldVersion' ],
 	idProperty: 'Package'
     });
 
