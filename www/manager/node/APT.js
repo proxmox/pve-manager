@@ -77,8 +77,12 @@ Ext.define('PVE.node.APT', {
 	    }
 	});
 
-	var upgrade_btn = new Ext.Button({
+	var upgrade_btn = new PVE.button.Button({
 	    text: gettext('Upgrade'),
+	    dangerous: true,
+	    confirmMsg: function(rec) {
+		return gettext('Are you sure you want to upgrade this node?');
+	    },
 	    handler: function(){
 		apt_command('upgrade');
 	    }
