@@ -7,7 +7,7 @@ Ext.define('PVE.window.HDMove', {
     move_disk: function(disk, storage, format, delete_disk) {
 	var me = this;
 
-        params =  { disk: disk, storage: storage };
+        var params =  { disk: disk, storage: storage };
 
         if (format) {
             params.format = format;
@@ -15,7 +15,7 @@ Ext.define('PVE.window.HDMove', {
 	
 	if (delete_disk) {
 	    params['delete'] = 1;
-	};
+	}
 
 	PVE.Utils.API2Request({
 	    params: params,
@@ -56,8 +56,7 @@ Ext.define('PVE.window.HDMove', {
                 fieldLabel: 'Disk',
                 vtype: 'StorageId',
                 allowBlank: false
-            },
-
+            }
         ];
 
         me.hdstoragesel = Ext.create('PVE.form.StorageSelector', {
