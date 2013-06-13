@@ -18,7 +18,7 @@ Ext.define('PVE.panel.RRDView', {
 	var stateinit = sp.get(stateid);
 
 	if (!me.timeframe) {
-	    if(stateinit.timeframe){
+	    if(stateinit && stateinit.timeframe){
 		me.timeframe = stateinit.timeframe;
 	    }else{
 		me.timeframe = 'hour';
@@ -26,7 +26,7 @@ Ext.define('PVE.panel.RRDView', {
 	}
 
 	if (!me.rrdcffn) {
-	    if(stateinit.rrdcffn){
+	    if(stateinit && stateinit.rrdcffn){
 		me.rrdcffn = stateinit.cf;
 	    }else{
 		me.rrdcffn = 'AVERAGE';
