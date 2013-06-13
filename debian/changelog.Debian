@@ -1,3 +1,9 @@
+pve-manager (3.0-25) unstable; urgency=low
+
+  * add package update manager to GUI
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 13 Jun 2013 13:09:02 +0200
+
 pve-manager (3.0-24) unstable; urgency=low
 
   * update Norwegian translations
