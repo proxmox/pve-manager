@@ -73,7 +73,7 @@ Ext.define('PVE.node.APT', {
 	var update_btn = new Ext.Button({
 	    text: gettext('Update'),
 	    handler: function(){
-		apt_command('update');
+		PVE.Utils.checked_command(function() { apt_command('update'); });
 	    }
 	});
 
@@ -84,7 +84,7 @@ Ext.define('PVE.node.APT', {
 		return gettext('Are you sure you want to upgrade this node?');
 	    },
 	    handler: function(){
-		apt_command('upgrade');
+		PVE.Utils.checked_command(function() { apt_command('upgrade'); });
 	    }
 	});
 

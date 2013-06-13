@@ -2,7 +2,7 @@ Ext.define('PVE.dc.Support', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveDcSupport',
 
-    invalidHtml: '<h1>No valid subscription</h1>You do not have a valid subscription for this server. Please visit <a target="_blank" href="http://www.proxmox.com/products/proxmox-ve/subscription-service-plans">www.proxmox.com</a> to get a list of available options.',
+    invalidHtml: '<h1>No valid subscription</h1>' + PVE.Utils.noSubKeyHtml,
 
     communityHtml: 'Please use the public community <a target="_blank" href="http://forum.proxmox.com">forum</a> for any questions.',
 

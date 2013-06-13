@@ -107,6 +107,8 @@ Ext.define('PVE.Utils', { statics: {
 	'p': gettext('Premium')
     },
 
+    noSubKeyHtml: 'You do not have a valid subscription for this server. Please visit <a target="_blank" href="http://www.proxmox.com/products/proxmox-ve/subscription-service-plans">www.proxmox.com</a> to get a list of available options.',
+
     kvm_ostypes: {
 	other: gettext('Other OS types'),
 	wxp: 'Microsoft Windows XP/2003',
@@ -427,6 +429,37 @@ Ext.define('PVE.Utils', { statics: {
                 }
             });
 	}
+    },
+
+    checked_command: function(orig_cmd) {
+	PVE.Utils.API2Request({
+	    url: '/nodes/localhost/subscription',
+	    method: 'GET',
+	    //waitMsgTarget: me,
+	    failure: function(response, opts) {
+		Ext.Msg.alert('Error', response.htmlStatus);
+	    },
+	    success: function(response, opts) {
+		var data = response.result.data;
+
+		if (data.status !== 'Active') {
+		    Ext.Msg.show({
+			title: 'No valid subscription',
+			icon: Ext.Msg.WARNING,
+			msg: PVE.Utils.noSubKeyHtml,
+			buttons: Ext.Msg.OK,
+			callback: function(btn) {
+			    if (btn !== 'ok') {
+				return;
+			    }
+			    orig_cmd();
+			}
+		    });
+		} else {
+		    orig_cmd();
+		}
+	    }
+	});
     },
 
     task_desc_table: {
