@@ -59,7 +59,7 @@ Ext.define('PVE.node.APT', {
 		success: function(response, opts) {
 		    var upid = response.result.data;
 
-		    var win = Ext.create('PVE.window.TaskProgress', { 
+		    var win = Ext.create('PVE.window.TaskViewer', { 
 			upid: upid
 		    });
 		    win.show();
