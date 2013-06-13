@@ -68,6 +68,8 @@ Ext.define('PVE.node.APT', {
 	    });
 	};
 
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
 	var update_btn = new Ext.Button({
 	    text: gettext('Update'),
 	    handler: function(){
@@ -82,14 +84,55 @@ Ext.define('PVE.node.APT', {
 	    }
 	});
 
+	var show_changelog = function(rec) {
+	    if (!rec || !rec.data || !(rec.data.ChangeLogUrl && rec.data.Package)) {
+		return;
+	    }
+
+	    var win = Ext.create('Ext.window.Window', {
+		title: gettext('Changelog') + ": " + rec.data.Package,
+		width: 800,
+		height: 400,
+		layout: 'fit',
+		modal: true,
+		items: {
+		    xtype: 'component',
+		    autoEl: {
+			frameborder: 0,
+			seamless: 1,
+			sandbox: "",
+			tag : "iframe",
+			src : rec.data.ChangeLogUrl
+		    }
+		}
+	    });
+	    win.show();
+	};
+
+	var changelog_btn = new PVE.button.Button({
+	    text: gettext('Changelog'),
+	    selModel: sm,
+	    disabled: true,
+	    enableFn: function(rec) {
+		if (!rec || !rec.data || !(rec.data.ChangeLogUrl && rec.data.Package)) {
+		    return false;
+		}
+		return true;
+	    },	    
+	    handler: function(b, e, rec) {
+		show_changelog(rec);
+	    }
+	});
+
 	Ext.apply(me, {
 	    store: store,
 	    stateful: false,
+	    selModel: sm,
             viewConfig: {
 		stripeRows: false,
 		emptyText: '<div style="display:table; width:100%; height:100%;"><div style="display:table-cell; vertical-align: middle; text-align:center;"><b>' + gettext('Your system is up to date.') + '</div></div>'
 	    },
-	    tbar: [ update_btn, upgrade_btn ],
+	    tbar: [ update_btn, upgrade_btn, changelog_btn ],
 	    features: [ groupingFeature, rowBodyFeature ],
 	    columns: [
 		{
@@ -123,7 +166,10 @@ Ext.define('PVE.node.APT', {
 		}
 	    ],
 	    listeners: { 
-		show: reload
+		show: reload,
+		itemdblclick: function(v, rec) {
+		    show_changelog(rec);
+		}
 	    }
 	});
 
@@ -134,7 +180,7 @@ Ext.define('PVE.node.APT', {
     Ext.define('apt-pkglist', {
 	extend: 'Ext.data.Model',
 	fields: [ 'Package', 'Title', 'Description', 'Section', 'Arch',
-		  'Priority', 'Version', 'OldVersion' ],
+		  'Priority', 'Version', 'OldVersion', 'ChangeLogUrl' ],
 	idProperty: 'Package'
     });
 
