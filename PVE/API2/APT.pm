@@ -70,10 +70,28 @@ __PACKAGE__->register_method({
 my $assemble_pkginfo = sub {
     my ($pkgname, $info, $current_ver, $candidate_ver)  = @_;
 
+    my $changelog_url;
+    foreach my $verfile (@{$candidate_ver->{FileList}}) {
+	my $pkgfile = $verfile->{File};
+	my $origin = $pkgfile->{Origin};
+	my $comp = $pkgfile->{Component};
+	if ($origin && $comp) {
+	    my $pkgver = $candidate_ver->{VerStr};
+	    my $firstLetter = substr($pkgname, 0, 1);
+	    if ($origin eq 'Debian') {
+		$changelog_url = "http://packages.debian.org/changelogs/pool/main/" . 
+		    "$firstLetter/$pkgname/${pkgname}_$pkgver/changelog";
+	    }
+	    last;
+	}
+    }
+
     my $data = { 
 	Package => $info->{Name},
 	Title => $info->{ShortDesc},
     };
+
+    $data->{ChangeLogUrl} = $changelog_url if $changelog_url;
 
     if (my $desc = $info->{LongDesc}) {
 	$desc =~ s/^.*\n\s?//; # remove first line
