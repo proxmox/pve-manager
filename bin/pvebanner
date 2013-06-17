@@ -7,7 +7,6 @@ use PVE::Cluster;
 my $nodename = PVE::INotify::nodename();
 my $localip = PVE::Cluster::remote_node_ip($nodename, 1);
 
-
 my $xline = '-' x 78;
 
 my $banner = '';
@@ -27,8 +26,6 @@ $xline
 __EOBANNER
 
 }
-
-$banner .= "Debian GNU/Linux 7.0 \\n \\l\n\n";
 
 open(ISSUE, ">/etc/issue");
 

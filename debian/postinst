@@ -68,6 +68,9 @@ case "$1" in
     test -e /proxmox_install_mode || invoke-rc.d pvedaemon restart
     test -e /proxmox_install_mode || invoke-rc.d pveproxy restart
     test -e /proxmox_install_mode || invoke-rc.d pvestatd restart
+    
+    # rewrite banner
+    test -e /proxmox_install_mode || pvebanner || /bin/true
 
     #a2ensite pve.conf >/dev/null 2>&1
 
