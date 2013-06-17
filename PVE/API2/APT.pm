@@ -77,10 +77,12 @@ my $assemble_pkginfo = sub {
 	my $comp = $pkgfile->{Component};
 	if ($origin && $comp) {
 	    my $pkgver = $candidate_ver->{VerStr};
-	    my $firstLetter = substr($pkgname, 0, 1);
+	    $pkgver =~ s/^\d+://; # strip epoch
+	    my $srcpkg = $info->{SourcePkg} || $pkgname;
+	    my $firstLetter = substr($srcpkg, 0, 1);
 	    if ($origin eq 'Debian') {
 		$changelog_url = "http://packages.debian.org/changelogs/pool/main/" . 
-		    "$firstLetter/$pkgname/${pkgname}_$pkgver/changelog";
+		    "$firstLetter/$srcpkg/${srcpkg}_$pkgver/changelog";
 	    }
 	    last;
 	}
