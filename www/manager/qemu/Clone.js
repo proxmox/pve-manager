@@ -14,6 +14,10 @@ Ext.define('PVE.window.Clone', {
             params.snapname = values.snapname;
         }
 
+	if (values.pool) {
+	    params.pool = values.pool;
+	}
+
 	if (values.name) {
 	    params.name = values.name;
 	}
