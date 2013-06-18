@@ -273,6 +273,10 @@ __PACKAGE__->register_method({
 
 	    my $cmd = ['apt-get', 'dist-upgrade', '--assume-yes'];
 
+	    push @$cmd, '-o', 'Dpkg::Options::=--force-confdef';
+
+	    push @$cmd, '-o', 'Dpkg::Options::=--force-confold';
+
 	    print "starting apt-get dist-upgrade\n";
 
 	    $ENV{DEBIAN_FRONTEND} = 'noninteractive';
