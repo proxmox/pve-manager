@@ -18,13 +18,9 @@ use AptPkg::Cache;
 use AptPkg::Version;
 use AptPkg::PkgRecords;
 
-my $apt_cache;
-
 my $get_apt_cache = sub {
     
-    return $apt_cache if $apt_cache;
-
-    $apt_cache = AptPkg::Cache->new() || die "unable to initialize AptPkg::Cache\n";
+    my $apt_cache = AptPkg::Cache->new() || die "unable to initialize AptPkg::Cache\n";
 
     return $apt_cache;
 };
