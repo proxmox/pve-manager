@@ -4,7 +4,10 @@ use strict;
 use warnings;
 use File::stat ();
 
+use LWP::UserAgent;
+
 use PVE::Tools qw(extract_param);
+use PVE::Cluster;
 use PVE::SafeSyslog;
 use PVE::INotify;
 use PVE::Exception qw(raise_param_exc);
@@ -343,10 +346,27 @@ __PACKAGE__->register_method({
 
 	my $data = "";
 
-	# fixme: proxy?
+	my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
+	my $proxy = $dccfg->{http_proxy};
 
-	my $cmd = ['wget', '-T', 10, '-O-', $url];
-	PVE::Tools::run_command($cmd, outfunc => sub { $data .= shift . "\n"; });
+	my $ua = LWP::UserAgent->new;
+	$ua->agent("PVE/1.0");
+	$ua->timeout(10);
+	$ua->max_size(1024*1024);
+  
+	if ($proxy) {
+	    $ua->proxy(['http'], $proxy);
+	} else {
+	    $ua->env_proxy;
+	}
+
+	my $response = $ua->get($url);
+
+        if ($response->is_success) {
+            $data = $response->decoded_content;
+        } else {
+            die $response->status_line;
+        }
 
 	return $data;
     }});
