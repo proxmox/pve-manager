@@ -67,8 +67,8 @@ __PACKAGE__->register_method({
 	return $res;
     }});
 
-my $assemble_pkginfo = sub {
-    my ($pkgname, $info, $current_ver, $candidate_ver)  = @_;
+my $get_changelug_url = sub {
+    my ($pkgname, $info, $candidate_ver) = @_;
 
     my $changelog_url;
     foreach my $verfile (@{$candidate_ver->{FileList}}) {
@@ -81,19 +81,26 @@ my $assemble_pkginfo = sub {
 	    my $srcpkg = $info->{SourcePkg} || $pkgname;
 	    my $firstLetter = substr($srcpkg, 0, 1);
 	    if ($origin eq 'Debian') {
-		$changelog_url = "http://packages.debian.org/changelogs/pool/main/" . 
+		$changelog_url = "http://packages.debian.org/changelogs/pool/$comp/" . 
 		    "$firstLetter/$srcpkg/${srcpkg}_$pkgver/changelog";
 	    }
 	    last;
 	}
     }
+    return $changelog_url;
+};
+
+my $assemble_pkginfo = sub {
+    my ($pkgname, $info, $current_ver, $candidate_ver)  = @_;
 
     my $data = { 
 	Package => $info->{Name},
 	Title => $info->{ShortDesc},
     };
 
-    $data->{ChangeLogUrl} = $changelog_url if $changelog_url;
+    if (my $changelog_url = &$get_changelug_url($pkgname, $info, $candidate_ver)) {
+	$data->{ChangeLogUrl} = $changelog_url;
+    }
 
     if (my $desc = $info->{LongDesc}) {
 	$desc =~ s/^.*\n\s?//; # remove first line
@@ -128,7 +135,7 @@ my $update_pve_pkgstatus = sub {
 	my $current_ver = $p->{CurrentVer};
 	my $candidate_ver = $policy->candidate($p);
 
-	if ($current_ver->{VerStr} ne $candidate_ver->{VerStr}) {
+	if ($pkgname eq 'apt' || $current_ver->{VerStr} ne $candidate_ver->{VerStr}) {
 	    my $info = $pkgrecords->lookup($pkgname);
 	    my $res = &$assemble_pkginfo($pkgname, $info, $current_ver, $candidate_ver);
 	    push @$pkglist, $res;
@@ -278,6 +285,72 @@ __PACKAGE__->register_method({
 
 	return $rpcenv->fork_worker('aptupgrade', undef, $authuser, $realcmd);
 
+    }});
+
+__PACKAGE__->register_method({
+    name => 'changelog', 
+    path => 'changelog', 
+    method => 'GET',
+    description => "Get package changelogs.",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    name => {
+		description => "Package name.",
+		type => 'string',
+	    },
+	    version => {
+		description => "Package version.",
+		type => 'string',
+		optional => 1,
+	    },		
+	},
+    },
+    returns => {
+	type => "string",
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $pkgname = $param->{name};
+
+	my $cache = &$get_apt_cache();
+	my $policy = $cache->policy;
+	my $p = $cache->{$pkgname} || die "no such package '$pkgname'\n";
+	my $pkgrecords = $cache->packages();
+
+	my $ver;
+	if ($param->{version}) {
+	    if (my $available = $p->{VersionList}) {
+		for my $v (@$available) {
+		    if ($v->{VerStr} eq $param->{version}) {
+			$ver = $v;
+			last;
+		    }
+		}
+	    }
+	    die "package '$pkgname' version '$param->{version}' is not avalable\n" if !$ver;
+	} else {
+	    $ver = $policy->candidate($p) || die "no installation candidate for package '$pkgname'\n";
+	}
+
+	my $info = $pkgrecords->lookup($pkgname);
+
+	my $url = &$get_changelug_url($pkgname, $info, $ver) ||
+	    die "changelog for '${pkgname}_$ver->{VerStr}' not available\n";
+
+	my $data = "";
+
+	# fixme: proxy?
+
+	my $cmd = ['wget', '-T', 10, '-O-', $url];
+	PVE::Tools::run_command($cmd, outfunc => sub { $data .= shift . "\n"; });
+
+	return $data;
     }});
 
 1;

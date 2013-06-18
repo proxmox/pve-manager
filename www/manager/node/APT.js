@@ -101,12 +101,28 @@ Ext.define('PVE.node.APT', {
 		modal: true,
 		items: {
 		    xtype: 'component',
-		    autoEl: {
-			frameborder: 0,
-			seamless: 1,
-			sandbox: "",
-			tag : "iframe",
-			src : rec.data.ChangeLogUrl
+		    autoScroll: true,
+		    style: {
+			'background-color': 'white',
+			'white-space': 'pre',
+			padding: '10px'
+		    },
+		    loader: {
+			url: "/api2/json/nodes/" + nodename + "/apt/changelog",
+			params: {
+			    name: rec.data.Package,
+			    version: rec.data.Version
+			},
+			ajaxOptions: { method: 'GET' },
+			renderer: function(loader, response, active) {
+			    var result = Ext.decode(response.responseText);
+			    if (result && result.data) {
+				loader.getTarget().update(Ext.htmlEncode(result.data));
+			    } else {
+				console.dir(response);
+			    }
+			},
+			autoLoad: true
 		    }
 		}
 	    });
