@@ -3,6 +3,7 @@ package PVE::API2::APT;
 use strict;
 use warnings;
 use File::stat ();
+use File::Basename;
 
 use LWP::UserAgent;
 
@@ -73,15 +74,14 @@ my $get_changelug_url = sub {
     foreach my $verfile (@{$candidate_ver->{FileList}}) {
 	my $pkgfile = $verfile->{File};
 	my $origin = $pkgfile->{Origin};
-	my $comp = $pkgfile->{Component};
-	if ($origin && $comp) {
+	my $base = dirname($info->{FileName});
+	if ($origin && $base) {
 	    my $pkgver = $candidate_ver->{VerStr};
 	    $pkgver =~ s/^\d+://; # strip epoch
 	    my $srcpkg = $info->{SourcePkg} || $pkgname;
-	    my $firstLetter = substr($srcpkg, 0, 1);
 	    if ($origin eq 'Debian') {
-		$changelog_url = "http://packages.debian.org/changelogs/pool/$comp/" . 
-		    "$firstLetter/$srcpkg/${srcpkg}_$pkgver/changelog";
+		$changelog_url = "http://packages.debian.org/changelogs/$base/" . 
+		    "${srcpkg}_$pkgver/changelog";
 	    }
 	    last;
 	}
