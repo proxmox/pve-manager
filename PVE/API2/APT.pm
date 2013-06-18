@@ -10,7 +10,7 @@ use PVE::Tools qw(extract_param);
 use PVE::Cluster;
 use PVE::SafeSyslog;
 use PVE::INotify;
-use PVE::Exception qw(raise_param_exc);
+use PVE::Exception;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 
@@ -136,7 +136,7 @@ my $update_pve_pkgstatus = sub {
 	my $current_ver = $p->{CurrentVer};
 	my $candidate_ver = $policy->candidate($p);
 
-	if ($pkgname eq 'apt' || $current_ver->{VerStr} ne $candidate_ver->{VerStr}) {
+	if ($current_ver->{VerStr} ne $candidate_ver->{VerStr}) {
 	    my $info = $pkgrecords->lookup($pkgname);
 	    my $res = &$assemble_pkginfo($pkgname, $info, $current_ver, $candidate_ver);
 	    push @$pkglist, $res;
@@ -365,7 +365,7 @@ __PACKAGE__->register_method({
         if ($response->is_success) {
             $data = $response->decoded_content;
         } else {
-            die $response->status_line;
+	    PVE::Exception::raise($response->message, code => $response->code);
         }
 
 	return $data;

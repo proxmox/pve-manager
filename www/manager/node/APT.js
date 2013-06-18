@@ -93,40 +93,43 @@ Ext.define('PVE.node.APT', {
 		return;
 	    }
 
+	    var view = Ext.createWidget('component', {
+		autoScroll: true,
+		style: {
+		    'background-color': 'white',
+		    'white-space': 'pre',
+		    'font-family': 'monospace',
+		    padding: '5px'
+		}
+	    });
+
 	    var win = Ext.create('Ext.window.Window', {
 		title: gettext('Changelog') + ": " + rec.data.Package,
 		width: 800,
 		height: 400,
 		layout: 'fit',
 		modal: true,
-		items: {
-		    xtype: 'component',
-		    autoScroll: true,
-		    style: {
-			'background-color': 'white',
-			'white-space': 'pre',
-			padding: '10px'
-		    },
-		    loader: {
-			url: "/api2/json/nodes/" + nodename + "/apt/changelog",
-			params: {
-			    name: rec.data.Package,
-			    version: rec.data.Version
-			},
-			ajaxOptions: { method: 'GET' },
-			renderer: function(loader, response, active) {
-			    var result = Ext.decode(response.responseText);
-			    if (result && result.data) {
-				loader.getTarget().update(Ext.htmlEncode(result.data));
-			    } else {
-				console.dir(response);
-			    }
-			},
-			autoLoad: true
-		    }
+		items: [ view ] 
+	    });
+
+	    PVE.Utils.API2Request({
+		waitMsgTarget: me,
+		url: "/nodes/" + nodename + "/apt/changelog",
+		params: {
+		    name: rec.data.Package,
+		    version: rec.data.Version
+		},
+		method: 'GET',
+		failure: function(response, opts) {
+		    win.close();
+		    Ext.Msg.alert('Error', response.htmlStatus);
+		},
+		success: function(response, opts) {
+		    win.show();
+		    view.update(Ext.htmlEncode(response.result.data));
 		}
 	    });
-	    win.show();
+
 	};
 
 	var changelog_btn = new PVE.button.Button({
