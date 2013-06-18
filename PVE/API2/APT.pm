@@ -119,6 +119,8 @@ my $pve_pkgstatus_fn = "/var/lib/pve-manager/pkgupdates";
 
 my $update_pve_pkgstatus = sub {
 
+    syslog('info', "update new package list: $pve_pkgstatus_fn");
+
     my $pkglist = [];
 
     my $cache = &$get_apt_cache();
@@ -173,7 +175,7 @@ __PACKAGE__->register_method({
 	    my $st2 = File::stat::stat("/var/cache/apt/pkgcache.bin");
 	    my $st3 = File::stat::stat("/var/lib/dpkg/status");
 	
-	    if ($st2->mtime <= $st1->mtime && $st3->mtime <= $st1->mtime) {
+	    if ($st2 && $st3 && $st2->mtime <= $st1->mtime && $st3->mtime <= $st1->mtime) {
 		my $data;
 		eval {
 		    my $jsonstr = PVE::Tools::file_get_contents($pve_pkgstatus_fn, 5*1024*1024);
