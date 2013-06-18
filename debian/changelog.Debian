@@ -1,3 +1,9 @@
+pve-manager (3.0-26) unstable; urgency=low
+
+  * package manager: improve changelog viewer, bug fixes
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 18 Jun 2013 11:49:16 +0200
+
 pve-manager (3.0-25) unstable; urgency=low
 
   * add package update manager to GUI
