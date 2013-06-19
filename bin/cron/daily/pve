@@ -29,13 +29,24 @@ my $nodename = PVE::INotify::nodename();
 
 eval { PVE::API2::Subscription->update({ node => $nodename }); };
 if (my $err = $@) {
-   syslog ('err', "update subscription info failed: $err");
+    syslog ('err', "update subscription info failed: $err");
 }
 
 my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
 eval { PVE::APLInfo::update($dccfg->{http_proxy}); };
 if (my $err = $@) {
-   syslog ('err', "update appliance info failed - see /var/log/pveam.log for details");
+    syslog ('err', "update appliance info failed - see /var/log/pveam.log for details");
+}
+
+if (my $info = PVE::INotify::read_file('subscription')) {
+    # We assume that users with subscriptions want informations
+    # about new packages.
+    if ($info->{status} eq 'Active') {
+	eval { PVE::APL2::APT->update_database({ node => $nodename, notify => 1 }); };
+	if (my $err = $@) {
+	    syslog ('err', "update apt database failed: $err");
+	}
+    }
 }
 
 sub cleanup_tasks {

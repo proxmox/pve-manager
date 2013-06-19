@@ -3,6 +3,7 @@ package PVE::API2::APT;
 use strict;
 use warnings;
 use File::stat ();
+use IO::File;
 use File::Basename;
 
 use LWP::UserAgent;
@@ -223,6 +224,12 @@ __PACKAGE__->register_method({
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
+	    notify => {
+		type => 'boolean',
+		description => "Send notification mail about new packages (to email address specified for user 'root\@pam').",
+		optional => 1,
+		default => 0,
+	    },
 	},
     },
     returns => {
@@ -244,7 +251,39 @@ __PACKAGE__->register_method({
 	    
 	    PVE::Tools::run_command($cmd);
 
-	    &$update_pve_pkgstatus();
+	    my $pkglist = &$update_pve_pkgstatus();
+
+	    if ($param->{notify} && scalar(@$pkglist)) {
+
+		my $usercfg = PVE::Cluster::cfs_read_file("user.cfg");
+		my $rootcfg = $usercfg->{users}->{'root@pam'} || {};
+		my $mailto = $rootcfg->{email};
+
+		if ($mailto) {
+		    my $hostname = `hostname -f` || PVE::INotify::nodename();
+		    chomp $hostname;
+
+		    my $data = "Content-Type: text/plain;charset=\"UTF8\"\n";
+		    $data .= "Content-Transfer-Encoding: 8bit\n";
+		    $data .= "FROM: <root\@$hostname>\n";
+		    $data .= "TO: $mailto\n";
+		    $data .= "SUBJECT: New software packages available ($hostname)\n";
+		    $data .= "\n";
+
+		    $data .= "The following updates are available:\n\n";
+
+		    foreach my $p (sort {$a->{Package} cmp $b->{Package} } @$pkglist) {
+			$data .= "$p->{Package}: $p->{OldVersion} ==> $p->{Version}\n";
+		    }
+
+		    my $fh = IO::File->new("|sendmail -B 8BITMIME $mailto") || 
+			die "unable to open 'sendmail' - $!";
+
+		    print $fh $data;
+
+		    $fh->close();
+		}
+	    }
 
 	    return;
 	};
