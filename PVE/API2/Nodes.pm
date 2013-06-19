@@ -576,6 +576,12 @@ __PACKAGE__->register_method ({
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
+	    upgrade => {
+		type => 'boolean',
+		description => "Run 'apt-get dist-upgrade' instead of normal shell.",
+		optional => 1,
+		default => 0,
+	    },
 	},
     },
     returns => { 
@@ -596,6 +602,8 @@ __PACKAGE__->register_method ({
 	my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
 
 	raise_perm_exc("realm != pam") if $realm ne 'pam'; 
+
+	raise_perm_exc('user != root@pam') if $param->{upgrade} && $user ne 'root@pam';
 
 	my $node = $param->{node};
 
@@ -619,7 +627,17 @@ __PACKAGE__->register_method ({
 	my $remcmd = $remip ? 
 	    ['/usr/bin/ssh', '-t', $remip] : [];
 
-	my $shcmd = $user eq 'root@pam' ? [ "/bin/bash", "-l" ] : [ "/bin/login" ];
+	my $shcmd;
+
+	if ($user eq 'root@pam') {
+	    if ($param->{upgrade}) {
+		$shcmd = [ '/bin/bash', '-l', '-c', 'apt-get dist-upgrade; /bin/bash' ];
+	    } else {
+		$shcmd = [ '/bin/bash', '-l' ];
+	    }
+	} else {
+	    $shcmd = [ '/bin/login' ];
+	}
 
 	my $timeout = 10; 
 

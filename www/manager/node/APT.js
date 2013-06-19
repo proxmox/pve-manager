@@ -80,14 +80,20 @@ Ext.define('PVE.node.APT', {
 
 	var upgrade_btn = new PVE.button.Button({
 	    text: gettext('Upgrade'),
-	    dangerous: true,
-	    confirmMsg: function(rec) {
-		return gettext('Are you sure you want to upgrade this node?');
-	    },
-	    handler: function(){
-		PVE.Utils.checked_command(function() { apt_command('upgrade'); });
+	    disabled: !(PVE.UserName && PVE.UserName === 'root@pam'),
+	    handler: function() {
+		PVE.Utils.checked_command(function() {
+		    var url = Ext.urlEncode({
+			console: 'upgrade',
+			node: nodename
+		    });
+		    var nw = window.open("?" + url, '_blank', 
+					 "innerWidth=745,innerheight=427");
+		    nw.focus();
+		});
 	    }
-	});
+	}); 
+
 
 	var show_changelog = function(rec) {
 	    if (!rec || !rec.data || !(rec.data.ChangeLogUrl && rec.data.Package)) {

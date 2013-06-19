@@ -417,6 +417,8 @@ Ext.define('PVE.Shell', {
     extend: 'PVE.VNCConsole',
     alias: ['widget.pveShell'],
 
+    ugradeSystem: false, // set to true to run "apt-get dist-upgrade"
+
     initComponent : function() {
 	var me = this;
  
@@ -432,23 +434,36 @@ Ext.define('PVE.Shell', {
 		    var applet = Ext.getDom(me.appletID);
 		    applet.sendRefreshRequest();
 		}
-	    },
-	    {
-                text: gettext('Reload'),
-                handler: function () { me.reloadApplet(); }
-	    },
+	    }
+	];
+
+	if (!me.ugradeSystem) {
+	    // we dont want to restart the upgrade script
+	    tbar.push([
+		{
+                    text: gettext('Reload'),
+                    handler: function () { me.reloadApplet(); }
+		}]);
+	}
+
+	tbar.push([
 	    { 
 		text: gettext('Shell'),
 		handler: function() {
 		    PVE.Utils.openConoleWindow('shell', undefined, me.nodename);
 		}
 	    }
-	];
+	]);
+
 
 	Ext.apply(me, {
 	    tbar: tbar,
 	    url: "/nodes/" + me.nodename + "/vncshell"
 	});
+
+	if (me.ugradeSystem) {
+	    me.params = { upgrade: 1 };	    
+	}
 
 	me.callParent();
     }

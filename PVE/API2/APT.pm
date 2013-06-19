@@ -60,7 +60,6 @@ __PACKAGE__->register_method({
 
 	my $res = [ 
 	    { id => 'update' },
-	    { id => 'upgrade' },
 	    { id => 'changelog' },
 	];
 
@@ -251,56 +250,6 @@ __PACKAGE__->register_method({
 	};
 
 	return $rpcenv->fork_worker('aptupdate', undef, $authuser, $realcmd);
-
-    }});
-
-__PACKAGE__->register_method({
-    name => 'upgrade', 
-    path => 'upgrade', 
-    method => 'POST',
-    description => "Install the newest versions of all packages (apt-get dist-upgrade).",
-    permissions => {
-	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
-    },
-    protected => 1,
-    proxyto => 'node',
-    parameters => {
-    	additionalProperties => 0,
-	properties => {
-	    node => get_standard_option('pve-node'),
-	},
-    },
-    returns => {
-	type => 'string',
-    },
-    code => sub {
-	my ($param) = @_;
-
-	my $rpcenv = PVE::RPCEnvironment::get();
-
-	my $authuser = $rpcenv->get_user();
-
-	my $realcmd = sub {
-	    my $upid = shift;
-
-	    my $cmd = ['apt-get', 'dist-upgrade', '--assume-yes'];
-
-	    push @$cmd, '-o', 'Dpkg::Options::=--force-confdef';
-
-	    push @$cmd, '-o', 'Dpkg::Options::=--force-confold';
-
-	    print "starting apt-get dist-upgrade\n";
-
-	    $ENV{DEBIAN_FRONTEND} = 'noninteractive';
-	    
-	    PVE::Tools::run_command($cmd);
-
-	    &$update_pve_pkgstatus();
-
-	    return;
-	};
-
-	return $rpcenv->fork_worker('aptupgrade', undef, $authuser, $realcmd);
 
     }});
 

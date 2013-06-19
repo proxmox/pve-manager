@@ -141,10 +141,18 @@ Ext.define('PVE.ConsoleWorkspace', {
 		toplevel: true
 	    };
 	} else if (consoleType === 'shell') {
-	    me.title = "node '" + param.node;
+	    me.title = "node '" + param.node + "'";
 	    content = {
 		xtype: 'pveShell',
 		nodename: param.node,
+		toplevel: true
+	    };
+	} else if (consoleType === 'upgrade') {
+	    me.title = Ext.String.format(gettext('System upgrade on node {0}'), "'" + param.node + "'");
+	    content = {
+		xtype: 'pveShell',
+		nodename: param.node,
+		ugradeSystem: true,
 		toplevel: true
 	    };
 	} else {

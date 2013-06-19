@@ -144,14 +144,17 @@ Ext.define('PVE.node.Config', {
 		itemId: 'support',
 		xtype: 'pveNodeSubscription',
 		nodename: nodename
-	    },
-	    {
+	    }
+	]);
+
+	if (caps.nodes['Sys.Console']) {
+	    me.items.push([{
 		title: gettext('Updates'),
 		itemId: 'apt',
 		xtype: 'pveNodeAPT',
 		nodename: nodename
-	    }
-	]);
+	    }]);
+	}
 
 	me.callParent();
 

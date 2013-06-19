@@ -503,7 +503,6 @@ Ext.define('PVE.Utils', { statics: {
 	download: ['', gettext('Download') ],
 	vzdump: ['', gettext('Backup') ],
 	aptupdate: ['', gettext('Update package database') ],
-	aptupgrade: ['', gettext('System upgrade') ],
 	startall: [ '', gettext('Start all VMs and Containers') ],
 	stopall: [ '', gettext('Stop all VMs and Containers') ]
     },
