@@ -13,7 +13,7 @@ Ext.define('PVE.node.APT', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    model: 'apt-pkglist',
-	    groupField: 'Section',
+	    groupField: 'Origin',
 	    proxy: {
                 type: 'pve',
                 url: "/api2/json/nodes/" + nodename + "/apt/update"
@@ -27,7 +27,8 @@ Ext.define('PVE.node.APT', {
 	});
 
 	var groupingFeature = Ext.create('Ext.grid.feature.Grouping', {
-            groupHeaderTpl: '{[ "Section: " + values.name ]} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})'
+            groupHeaderTpl: '{[ "Origin: " + values.name ]} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})',
+	    enableGroupingMenu: false
 	});
 
 	var rowBodyFeature = Ext.create('Ext.grid.feature.RowBody', {
@@ -203,7 +204,7 @@ Ext.define('PVE.node.APT', {
     Ext.define('apt-pkglist', {
 	extend: 'Ext.data.Model',
 	fields: [ 'Package', 'Title', 'Description', 'Section', 'Arch',
-		  'Priority', 'Version', 'OldVersion', 'ChangeLogUrl' ],
+		  'Priority', 'Version', 'OldVersion', 'ChangeLogUrl', 'Origin' ],
 	idProperty: 'Package'
     });
 

@@ -67,25 +67,32 @@ __PACKAGE__->register_method({
 	return $res;
     }});
 
-my $get_changelug_url = sub {
-    my ($pkgname, $info, $candidate_ver) = @_;
+my $get_pkgfile = sub {
+    my ($veriter)  = @_;
+
+    foreach my $verfile (@{$veriter->{FileList}}) {
+	my $pkgfile = $verfile->{File};
+	next if !$pkgfile->{Origin};
+	return $pkgfile;
+    }
+
+    return undef;
+};
+
+my $get_changelog_url =sub {
+    my ($pkgname, $info, $pkgver, $origin) = @_;
 
     my $changelog_url;
-    foreach my $verfile (@{$candidate_ver->{FileList}}) {
-	my $pkgfile = $verfile->{File};
-	my $origin = $pkgfile->{Origin};
-	my $base = dirname($info->{FileName});
-	if ($origin && $base) {
-	    my $pkgver = $candidate_ver->{VerStr};
-	    $pkgver =~ s/^\d+://; # strip epoch
-	    my $srcpkg = $info->{SourcePkg} || $pkgname;
-	    if ($origin eq 'Debian') {
-		$changelog_url = "http://packages.debian.org/changelogs/$base/" . 
-		    "${srcpkg}_$pkgver/changelog";
-	    }
-	    last;
+    my $base = dirname($info->{FileName});
+    if ($origin && $base) {
+	$pkgver =~ s/^\d+://; # strip epoch
+	my $srcpkg = $info->{SourcePkg} || $pkgname;
+	if ($origin eq 'Debian') {
+	    $changelog_url = "http://packages.debian.org/changelogs/$base/" . 
+		"${srcpkg}_$pkgver/changelog";
 	}
     }
+
     return $changelog_url;
 };
 
@@ -95,10 +102,15 @@ my $assemble_pkginfo = sub {
     my $data = { 
 	Package => $info->{Name},
 	Title => $info->{ShortDesc},
+	Origin => 'unknown',
     };
 
-    if (my $changelog_url = &$get_changelug_url($pkgname, $info, $candidate_ver)) {
-	$data->{ChangeLogUrl} = $changelog_url;
+    if (my $pkgfile = &$get_pkgfile($candidate_ver)) {
+	my $origin = $pkgfile->{Origin};
+	$data->{Origin} = $origin;
+	if (my $changelog_url = &$get_changelog_url($pkgname, $info, $candidate_ver->{VerStr}, $origin)) {
+	    $data->{ChangeLogUrl} = $changelog_url;
+	}
     }
 
     if (my $desc = $info->{LongDesc}) {
@@ -345,8 +357,11 @@ __PACKAGE__->register_method({
 
 	my $info = $pkgrecords->lookup($pkgname);
 
-	my $url = &$get_changelug_url($pkgname, $info, $ver) ||
-	    die "changelog for '${pkgname}_$ver->{VerStr}' not available\n";
+	my $pkgfile = &$get_pkgfile($ver);
+	my $url;
+
+	die "changelog for '${pkgname}_$ver->{VerStr}' not available\n"
+	    if !($pkgfile && ($url = &$get_changelog_url($pkgname, $info, $ver->{VerStr}, $pkgfile->{Origin})));
 
 	my $data = "";
 
