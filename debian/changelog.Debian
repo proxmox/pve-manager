@@ -1,3 +1,10 @@
+pve-manager (3.0-27) unstable; urgency=low
+
+  * package manager: run system upgrade inside VNC shell, group packages
+    by 'Origin', remove apt/upgrade API completely.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 19 Jun 2013 11:59:49 +0200
+
 pve-manager (3.0-26) unstable; urgency=low
 
   * package manager: improve changelog viewer, bug fixes
