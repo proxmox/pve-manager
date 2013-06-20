@@ -641,22 +641,29 @@ __PACKAGE__->register_method ({
 
 	my $timeout = 10; 
 
-	my @cmd = ('/usr/bin/vncterm', '-rfbport', $port,
+	my $cmd = ['/usr/bin/vncterm', '-rfbport', $port,
 		   '-timeout', $timeout, '-authpath', $authpath, 
-		   '-perm', 'Sys.Console', '-c', @$remcmd, @$shcmd);
+		   '-perm', 'Sys.Console', '-c', @$remcmd, @$shcmd];
 
 	my $realcmd = sub {
 	    my $upid = shift;
 
 	    syslog ('info', "starting vnc proxy $upid\n");
 
-	    my $cmdstr = join (' ', @cmd);
+	    my $cmdstr = join (' ', @$cmd);
 	    syslog ('info', "launch command: $cmdstr");
 
-	    if (system(@cmd) != 0) {
-		my $msg = "vncterm failed - $?";
-		syslog ('err', $msg);
-		return;
+	    eval { 
+		foreach my $k (keys %ENV) {
+		    next if $k eq 'PATH' || $k eq 'TERM' || $k eq 'USER' || $k eq 'HOME';
+		    delete $ENV{$k};
+		}
+		$ENV{PWD} = '/';
+
+		PVE::Tools::run_command($cmd, errmsg => "vncterm failed"); 
+	    };
+	    if (my $err = $@) {
+		syslog ('err', $err);
 	    }
 
 	    return;
