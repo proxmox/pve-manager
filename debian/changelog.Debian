@@ -1,3 +1,14 @@
+pve-manager (3.0-28) unstable; urgency=low
+
+  * fix bug #408: reset ENV before starting shell
+  
+  * fix bug #379: allow to overwrite existing CTs if user has VM.Backup
+    permissions
+  
+  * Allow to send notification mail about new packages.
+  
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 20 Jun 2013 11:12:50 +0200
+
 pve-manager (3.0-27) unstable; urgency=low
 
   * package manager: run system upgrade inside VNC shell, group packages
