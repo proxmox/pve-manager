@@ -232,11 +232,10 @@ __PACKAGE__->register_method({
     method => 'POST',
     description => "Create or restore a container.",
     permissions => {
-	description => "You need 'VM.Allocate' permissions on /vms/{vmid} or on the VM pool /pool/{pool}, and 'Datastore.AllocateSpace' on the storage.",
-	check => [ 'or', 
-		   [ 'perm', '/vms/{vmid}', ['VM.Allocate']],
-		   [ 'perm', '/pool/{pool}', ['VM.Allocate'], require_param => 'pool'],
-	    ],
+	user => 'all', # check inside
+ 	description => "You need 'VM.Allocate' permissions on /vms/{vmid} or on the VM pool /pool/{pool}. " .
+	    "For restore, it is enough if the user has 'VM.Backup' permission and the VM already exists. " .
+	    "You also need 'Datastore.AllocateSpace' permissions on the storage.",
     },
     protected => 1,
     proxyto => 'node',
@@ -306,12 +305,25 @@ __PACKAGE__->register_method({
 
 	my $private = PVE::Storage::get_private_dir($storage_cfg, $storage, $vmid);
 
+	my $basecfg_fn = PVE::OpenVZ::config_file($vmid);
+
 	if (defined($pool)) {
 	    $rpcenv->check_pool_exist($pool);
 	    $rpcenv->check_perm_modify($authuser, "/pool/$pool");
 	} 
 
 	$rpcenv->check($authuser, "/storage/$storage", ['Datastore.AllocateSpace']);
+
+	if ($rpcenv->check($authuser, "/vms/$vmid", ['VM.Allocate'], 1)) {
+	    # OK
+	} elsif ($pool && $rpcenv->check($authuser, "/pool/$pool", ['VM.Allocate'], 1)) {
+	    # OK
+	} elsif ($param->{restore} && $param->{force} && (-f $basecfg_fn) &&
+		 $rpcenv->check($authuser, "/vms/$vmid", ['VM.Backup'], 1)) {
+	    # OK: user has VM.Backup permissions, and want to restore an existing VM
+	} else {
+	    raise_perm_exc();
+	}
 
 	&$check_ct_modify_config_perm($rpcenv, $authuser, $vmid, $pool, [ keys %$param]);
 
@@ -355,8 +367,6 @@ __PACKAGE__->register_method({
 
 	    $param->{hostname} .= ".$param->{searchdomain}";
 	}
-
-	my $basecfg_fn = PVE::OpenVZ::config_file($vmid);
 
 	my $check_vmid_usage = sub {
 	    if ($param->{force}) {
