@@ -15,6 +15,7 @@ SCRIPTS =  			\
 	pveversion		\
 	pvesubscription		\
 	pvemailforward.pl	\
+	pveupgrade		\
 	pveperf
 
 MANS = 				\
@@ -26,6 +27,7 @@ MANS = 				\
 	pveproxy.1		\
 	pveversion.1		\
 	pvesubscription.1	\
+	pveupgrade.1		\
 	pveperf.1
 
 all: ${MANS} pvemailforward

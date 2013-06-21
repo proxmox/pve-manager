@@ -617,7 +617,7 @@ __PACKAGE__->register_method ({
 	my $port = PVE::Tools::next_vnc_port();
 
 	my $remip;
-	
+
 	if ($node ne PVE::INotify::nodename()) {
 	    $remip = PVE::Cluster::remote_node_ip($node);
 	}
@@ -631,7 +631,7 @@ __PACKAGE__->register_method ({
 
 	if ($user eq 'root@pam') {
 	    if ($param->{upgrade}) {
-		$shcmd = [ '/bin/bash', '-l', '-c', 'apt-get dist-upgrade; /bin/bash' ];
+		$shcmd = [ '/bin/bash', '-c', '"pveupgrade --shell"' ];
 	    } else {
 		$shcmd = [ '/bin/bash', '-l' ];
 	    }
