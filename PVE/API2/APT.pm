@@ -2,12 +2,15 @@ package PVE::API2::APT;
 
 use strict;
 use warnings;
+
+use POSIX;
 use File::stat ();
 use IO::File;
 use File::Basename;
 
 use LWP::UserAgent;
 
+use PVE::pvecfg;
 use PVE::Tools qw(extract_param);
 use PVE::Cluster;
 use PVE::SafeSyslog;
@@ -60,8 +63,9 @@ __PACKAGE__->register_method({
 	my ($param) = @_;
 
 	my $res = [ 
-	    { id => 'update' },
 	    { id => 'changelog' },
+	    { id => 'update' },
+	    { id => 'versions' },
 	];
 
 	return $res;
@@ -376,6 +380,83 @@ __PACKAGE__->register_method({
         }
 
 	return $data;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'versions', 
+    path => 'versions', 
+    method => 'GET',
+    description => "Get package information for important Proxmox packages.",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
+    },
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => "array",
+	items => {
+	    type => "object",
+	    properties => {},
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $pkgname = $param->{name};
+
+	my $cache = &$get_apt_cache();
+	my $policy = $cache->policy;
+	my $pkgrecords = $cache->packages();
+
+	# try to use a resonable ordering (most important things first)
+	my @list = qw(proxmox-ve-2.6.32 pve-manager);
+
+	foreach my $pkgname (keys %$cache) {
+	    if ($pkgname =~ m/pve-kernel-/) {
+		my $p = $cache->{$pkgname};
+		push @list, $pkgname if $p && $p->{CurrentState} eq 'Installed';
+	    }
+	}
+
+	push @list, qw(lvm2 clvm corosync-pve openais-pve libqb0 redhat-cluster-pve resource-agents-pve fence-agents-pve pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl vncterm vzctl vzprocps vzquota pve-qemu-kvm ksm-control-daemon);
+
+	my $pkglist = [];
+	
+	my (undef, undef, $kernel_release) = POSIX::uname();
+	my $pvever =  PVE::pvecfg::version_text();
+
+	foreach my $pkgname (@list) {
+	    my $p = $cache->{$pkgname};
+	    my $info = $pkgrecords->lookup($pkgname);
+ 	    my $candidate_ver = $policy->candidate($p);
+	    my $res;
+	    if (my $current_ver = $p->{CurrentVer}) {
+		$res = &$assemble_pkginfo($pkgname, $info, $current_ver, 
+					  $candidate_ver || $current_ver);
+	    } elsif ($candidate_ver) {
+		$res = &$assemble_pkginfo($pkgname, $info, $candidate_ver, 
+					  $candidate_ver);
+		delete $res->{OldVersion};
+	    } else {
+		next;
+	    }
+	    $res->{CurrentState} = $p->{CurrentState};
+
+	    # hack: add some useful information (used by 'pveversion -v')
+	    if ($pkgname eq 'pve-manager') {
+		$res->{ManagerVersion} = $pvever;
+	    } elsif ($pkgname eq 'proxmox-ve-2.6.32') {
+		$res->{RunningKernel} = $kernel_release;
+	    }
+
+	    push @$pkglist, $res;
+	}
+
+	return $pkglist;
     }});
 
 1;

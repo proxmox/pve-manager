@@ -1,38 +1,34 @@
 #!/usr/bin/perl -w
 
 use strict;
+use POSIX;
 use Getopt::Long;
-use PVE::pvecfg;
+use PVE::API2::APT;
 
-sub read_pkglist {
-
-    my $pkglist = {};
-
-    open (TMP, "dpkg-query --show -f '\${PACKAGE} \${VERSION} \${STATUS}\n'|") ||
-	die "cant exec dpkg-query\n";
-
-    while (defined (my $line = <TMP>)) {
-	if ($line =~ m/^(\S+)\s+(\S+)\s+install\s+ok\s+installed$/) {
-	    my ($pkg, $version) = ($1, $2);
-	    $pkglist->{$pkg} = $version;
-	}
-    }
-    
-    return $pkglist;
+my $pkgarray = PVE::API2::APT->versions({ node => 'localhost'});
+my $pkglist = {};
+foreach my $pkg (@$pkgarray) {
+    $pkglist->{$pkg->{Package}} = $pkg;
 }
 
-my $pkglist = read_pkglist();
-
 sub print_status {
-    my ($pkg, $repoid) = @_;
+    my ($pkg) = @_;
 
+    my $pkginfo =  $pkglist->{$pkg};
+
+    if (!$pkginfo) {
+	print "$pkg: unknown package - internal error\n";
+	return;
+    }
     my $version = "not correctly installed";
-    if ($pkglist->{$pkg}) {
-	$version = $pkglist->{$pkg};
+    if ($pkginfo->{OldVersion} && $pkginfo->{CurrentState} eq 'Installed') {
+	$version = $pkginfo->{OldVersion};
     }
 
-    if ($repoid) {
-	print "$pkg: $version ($repoid)\n";
+    if ($pkginfo->{RunningKernel}) {
+	print "$pkg: $version (running kernel: $pkginfo->{RunningKernel})\n";
+    } elsif ($pkginfo->{ManagerVersion}) {
+	print "$pkg: $version (running version: $pkginfo->{ManagerVersion})\n";
     } else {
 	print "$pkg: $version\n";
     }
@@ -58,49 +54,17 @@ if (scalar (@ARGV) != 0) {
     exit (-1);
 }
 
-my $ver =  PVE::pvecfg::package();
-$ver .= '/';
-$ver .= PVE::pvecfg::version();
-$ver .= '/';
-$ver .= PVE::pvecfg::repoid();
+my $ver =  PVE::pvecfg::package() . '/' . PVE::pvecfg::version_text();
+my (undef, undef, $kver) = POSIX::uname();
 
-my $kver = `uname -r`;
-chomp $kver;
 
 if (!$opt_verbose) {
-    print "$ver\n";
+    print "$ver (running kernel: $kver)\n";
     exit (0);
 }
 
-print_status ("pve-manager", $ver);
-print "running kernel: $kver\n";
-
-my @list = qw(lvm2 clvm corosync-pve openais-pve libqb0 redhat-cluster-pve resource-agents-pve fence-agents-pve pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl vncterm vzctl vzprocps vzquota);
-
-my $pkg = 'proxmox-ve-2.6.18';
-if (my $v = $pkglist->{$pkg}) {
-    print "$pkg: $v\n";
-    push @list, 'pve-qemu-kvm-2.6.18';
-    
-}
-$pkg = 'proxmox-ve-2.6.24';
-if (my $v = $pkglist->{$pkg}) {
-    print "$pkg: $v\n";
-    push @list, 'pve-qemu-kvm';
-}
-$pkg = 'proxmox-ve-2.6.32';
-if (my $v = $pkglist->{$pkg}) {
-    print "$pkg: $v\n";
-    push @list, 'pve-qemu-kvm';
-    push @list, 'ksm-control-daemon';
-}
-
-foreach $pkg (grep { m/^pve-kernel-/ } keys %$pkglist) {
-    print "$pkg: $pkglist->{$pkg}\n";    
-}
- 
-foreach my $p (@list) {
-    print_status ($p);
+foreach my $pkg (@$pkgarray) {
+    print_status($pkg->{Package});
 }
 
 exit 0;
