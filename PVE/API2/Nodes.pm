@@ -631,7 +631,9 @@ __PACKAGE__->register_method ({
 
 	if ($user eq 'root@pam') {
 	    if ($param->{upgrade}) {
-		$shcmd = [ '/bin/bash', '-c', '"pveupgrade --shell"' ];
+		my $upgradecmd = "pveupgrade --shell";
+		$upgradecmd = PVE::Tools::shellquote($upgradecmd) if $remip;
+		$shcmd = [ '/bin/bash', '-c', $upgradecmd ];
 	    } else {
 		$shcmd = [ '/bin/bash', '-l' ];
 	    }
