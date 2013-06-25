@@ -115,13 +115,10 @@ sub format_response_data {
 	$ct = 'application/x-spice-configuration;charset=UTF-8';
 	if ($data && ref($data) && ref($data->{data})) {
 	    $raw = "[virt-viewer]\n";
-	    $raw .= "title=$data->{data}->{title}\n" if $data->{data}->{title};
-	    $raw .= "type=$data->{data}->{type}\n" if $data->{data}->{type};
-	    $raw .= "host=$data->{data}->{host}\n" if $data->{data}->{host};
-	    $raw .= "port=$data->{data}->{port}\n" if $data->{data}->{port};
-	    $raw .= "password=$data->{data}->{password}\n" if $data->{data}->{password};
-	    $raw .= "proxy=$data->{data}->{proxy}\n" if $data->{data}->{proxy};
-        }
+	    while (my ($key, $value) = each %{$data->{data}}) {
+		$raw .= "$key=$value\n" if defined($value);
+	    }
+       }
     } else {
 	$ct = 'text/plain;charset=UTF-8';
 	$raw = to_json($data, {utf8 => 1, allow_nonref => 1, pretty => 1});
