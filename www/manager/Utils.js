@@ -186,7 +186,8 @@ Ext.define('PVE.Utils', { statics: {
     kvm_vga_drivers: {
 	std: 'Standard VGA',
 	vmware: 'VMWare compatible',
-	cirrus: 'Cirrus Logic GD5446'
+	cirrus: 'Cirrus Logic GD5446',
+	qxl: 'SPICE'
     },
 
     render_kvm_language: function (value) {
