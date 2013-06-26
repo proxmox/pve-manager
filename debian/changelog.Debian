@@ -1,3 +1,11 @@
+pve-manager (3.0-31) unstable; urgency=low
+
+  * add button to start SPICE console
+
+  * add spiceproxy server
+  
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 26 Jun 2013 13:40:55 +0200
+
 pve-manager (3.0-30) unstable; urgency=low
 
   * fix upgrade shell (quoting bug)
