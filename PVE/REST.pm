@@ -112,7 +112,7 @@ sub format_response_data {
 	$ct = 'text/html;charset=UTF-8';
 	$raw = encode_entities(to_json($data, {allow_nonref => 1}));
     } elsif ($format eq 'spiceconfig') {
-	$ct = 'application/x-spice-configuration;charset=UTF-8';
+	$ct = 'application/x-virt-viewer;charset=UTF-8';
 	if ($data && ref($data) && ref($data->{data})) {
 	    $raw = "[virt-viewer]\n";
 	    while (my ($key, $value) = each %{$data->{data}}) {
