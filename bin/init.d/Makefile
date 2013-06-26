@@ -6,6 +6,7 @@ SCRIPTS = 		\
 	pve-manager 	\
 	pvedaemon 	\
 	pveproxy 	\
+	spiceproxy 	\
 	pvebanner	\
 	pvestatd	\
 	pvenetcommit

@@ -12,6 +12,7 @@ SCRIPTS =  			\
 	pvectl			\
 	pvedaemon		\
 	pveproxy		\
+	spiceproxy		\
 	pveversion		\
 	pvesubscription		\
 	pvemailforward.pl	\
@@ -25,6 +26,7 @@ MANS = 				\
 	pvestatd.1		\
 	pvedaemon.1		\
 	pveproxy.1		\
+	spiceproxy.1		\
 	pveversion.1		\
 	pvesubscription.1	\
 	pveupgrade.1		\

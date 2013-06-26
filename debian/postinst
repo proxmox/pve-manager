@@ -28,6 +28,7 @@ case "$1" in
     test -e /proxmox_install_mode || invoke-rc.d pvedaemon restart
     test -e /proxmox_install_mode || invoke-rc.d pvestatd restart    
     test -e /proxmox_install_mode || invoke-rc.d pveproxy restart
+    test -e /proxmox_install_mode || invoke-rc.d spiceproxy restart
 
     exit 0;;
 
@@ -60,6 +61,7 @@ case "$1" in
 
     update-rc.d pvedaemon defaults 21 79 >/dev/null
     update-rc.d pveproxy defaults 21 79 >/dev/null
+    update-rc.d spiceproxy defaults 21 79 >/dev/null
     update-rc.d pvestatd defaults 21 79 >/dev/null
     update-rc.d pvebanner start 99 2 3 4 5 . >/dev/null
     update-rc.d pvenetcommit start 15 S . >/dev/null
@@ -67,6 +69,7 @@ case "$1" in
 
     test -e /proxmox_install_mode || invoke-rc.d pvedaemon restart
     test -e /proxmox_install_mode || invoke-rc.d pveproxy restart
+    test -e /proxmox_install_mode || invoke-rc.d spiceproxy restart
     test -e /proxmox_install_mode || invoke-rc.d pvestatd restart
     
     # rewrite banner

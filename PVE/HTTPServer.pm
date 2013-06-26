@@ -11,6 +11,7 @@ use File::stat qw();
 use Digest::MD5;
 # use AnyEvent::Strict; # only use this for debugging
 use AnyEvent::Util qw(guard fh_nonblocking WSAEWOULDBLOCK WSAEINPROGRESS);
+use AnyEvent::Socket;
 use AnyEvent::Handle;
 use AnyEvent::TLS;
 use AnyEvent::IO;
@@ -215,7 +216,7 @@ sub response {
     #print "SEND(without content) $res\n" if $self->{debug};
 
     $res .= "\015\012";
-    $res .= $content;
+    $res .= $content if $content;
 
     $self->log_request($reqstate, $reqstate->{request});
 
@@ -472,6 +473,94 @@ sub handle_api2_request {
     };
     if (my $err = $@) {
 	$self->error($reqstate, 501, $err);
+    }
+}
+
+sub handle_spice_proxy_request {
+    my ($self, $reqstate, $vmid, $node) = @_;
+
+    eval {
+
+        my $remip;
+
+        if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
+            $remip = PVE::Cluster::remote_node_ip($node);
+	    die "unable to get remote IP address for none '$node'\n";
+        }
+
+	if ($remip) {
+	    die "not implemented";
+
+	    return;
+	} 
+
+	$reqstate->{hdl}->timeout(0);
+
+	# local node
+	my $socket = PVE::QemuServer::spice_socket($vmid);
+
+	print "$$: CONNECT $vmid, $node, $socket\n" if $self->{debug};
+
+	# fixme: this needs root privs
+	tcp_connect "unix/", $socket, sub {
+	    my ($fh) = @_ 
+		or die "connect to '$socket' failed: $!";
+
+	    print "$$: CONNECTed to $socket\n" if $self->{debug};
+	    $reqstate->{proxyhdl} = AnyEvent::Handle->new(
+		fh => $fh,
+		rbuf_max => 64*1024,
+		wbuf_max => 64*10*1024,
+		timeout => 0,
+		#linger => 0, # avoid problems with ssh - really needed ?
+		on_eof => sub {
+		    my ($hdl) = @_;
+		    eval {
+			$self->log_aborted_request($reqstate);
+			$self->client_do_disconnect($reqstate);
+		    };
+		    if (my $err = $@) { syslog('err', $err); }
+		},
+		on_error => sub {
+		    my ($hdl, $fatal, $message) = @_;
+		    eval {
+			$self->log_aborted_request($reqstate, $message);
+			$self->client_do_disconnect($reqstate);
+		    };
+		    if (my $err = $@) { syslog('err', "$err"); }
+		},
+		on_read => sub {
+		    my ($hdl) = @_;
+
+		    my $len = length($hdl->{rbuf});
+		    my $data = substr($hdl->{rbuf}, 0, $len, '');
+
+		    #print "READ1 $len\n";
+		    $reqstate->{hdl}->push_write($data) if $reqstate->{hdl};
+		});
+   
+	    $reqstate->{hdl}->on_read(sub {
+		my ($hdl) = @_;
+
+		my $len = length($hdl->{rbuf});
+		my $data = substr($hdl->{rbuf}, 0, $len, '');
+
+		#print "READ0 $len\n";
+		$reqstate->{proxyhdl}->push_write($data) if $reqstate->{proxyhdl};
+	    });
+
+	    $reqstate->{hdl}->wbuf_max(64*10*1024);
+
+	    # fixme: use stop_read/start_read if write buffer grows to much
+
+	    my $proto = $reqstate->{proto} ? $reqstate->{proto}->{str} : 'HTTP/1.0';
+	    my $res = "$proto 200 OK\015\012"; # hope this is the right answer?
+	    $reqstate->{hdl}->push_write($res);
+	};
+    };
+    if (my $err = $@) {
+	$self->log_aborted_request($reqstate, $err);
+	$self->client_do_disconnect($reqstate);
     }
 }
 
@@ -753,7 +842,16 @@ sub unshift_read_header {
 		# header processing complete - authenticate now
 
 		my $auth = {};
-		if ($path =~ m!$baseuri!) {
+		if ($self->{spiceproxy}) {
+		    my $connect_str = $r->header('Host');
+		    my ($vmid, $node) = PVE::AccessControl::verify_spice_connect_url($connect_str);
+		    if (!($vmid && $node)) {
+			$self->error($reqstate, HTTP_UNAUTHORIZED, "invalid ticket");
+			return;
+		    }
+		    $self->handle_spice_proxy_request($reqstate, $vmid, $node);
+		    return;
+		} elsif ($path =~ m!$baseuri!) {
 		    my $token = $r->header('CSRFPreventionToken');
 		    my $cookie = $r->header('Cookie');
 		    my $ticket = PVE::REST::extract_auth_cookie($cookie);
@@ -862,7 +960,7 @@ sub push_request_header {
 	    my ($hdl, $line) = @_;
 
 	    eval {
-		# print "got request header: $line\n" if $self->{debug};
+		#print "got request header: $line\n" if $self->{debug};
 
 		$reqstate->{keep_alive}--;
 
@@ -1140,6 +1238,10 @@ sub new {
 
     if ($self->{ssl}) {
 	$self->{tls_ctx} = AnyEvent::TLS->new(%{$self->{ssl}});
+    }
+
+    if ($self->{spiceproxy}) {
+	$known_methods = { CONNECT => 1 };
     }
 
     $self->open_access_log($self->{logfile}) if $self->{logfile};

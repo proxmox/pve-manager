@@ -1,6 +1,7 @@
 /etc/init.d/pve-manager
 /etc/init.d/pvedaemon
 /etc/init.d/pveproxy
+/etc/init.d/spiceproxy
 /etc/init.d/pvebanner
 /etc/init.d/pvenetcommit
 /etc/init.d/pvestatd
