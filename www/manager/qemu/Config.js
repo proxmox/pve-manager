@@ -118,13 +118,29 @@ Ext.define('PVE.qemu.Config', {
 	    }
 	});
 
+	var spiceBtn = Ext.create('Ext.Button', {
+	    text: gettext('Spice'),
+	    disabled: !caps.vms['VM.Console'],
+	    handler: function() {
+		Ext.core.DomHelper.append(document.body, {
+		    tag : 'iframe',
+		    id : 'downloadIframe',
+		    frameBorder : 0,
+		    width : 0,
+		    height : 0,
+		    css : 'display:none;visibility:hidden;height:0px;',
+		    src : '/api2/spiceconfig/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy'
+		});
+	    }
+	});
+
 	var descr = vmid + " (" + (vmname ? "'" + vmname + "' " : "'VM " + vmid + "'") + ")";
 
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Virtual Machine {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'kvmtab',
 	    tbar: [ resumeBtn, startBtn, shutdownBtn, stopBtn, resetBtn, 
-		    removeBtn, migrateBtn, consoleBtn ],
+		    removeBtn, migrateBtn, consoleBtn, spiceBtn],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
@@ -190,6 +206,7 @@ Ext.define('PVE.qemu.Config', {
 	    var status;
 	    var qmpstatus;
 	    var template;
+	    var spice;
 
 	    if (!success) {
 		me.workspace.checkVmMigration(me.pveSelNode);
@@ -203,6 +220,8 @@ Ext.define('PVE.qemu.Config', {
 		if(rec.data.value){
 		    template = rec.data.value;
 		}
+		spice = s.data.get('spice') ? true : false;
+
 	    }
 
 	    if (qmpstatus === 'prelaunch' || qmpstatus === 'paused') {
@@ -212,7 +231,10 @@ Ext.define('PVE.qemu.Config', {
 		startBtn.setVisible(true);
 		resumeBtn.setVisible(false);
 	    }
+	    
+	    spiceBtn.setVisible(spice);
 
+	    spiceBtn.setDisabled(!caps.vms['VM.Console'] || status !== 'running');
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
 	    resetBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running' || template);
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
