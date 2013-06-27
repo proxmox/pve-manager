@@ -61,6 +61,9 @@ sub log_request {
     # like apache2 common log format
     # LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""
 
+    return if $loginfo->{written}; # avoid duplicate logs
+    $loginfo->{written} = 1;
+
     my $peerip = $reqstate->{peer_host} || '-';
     my $userid = $loginfo->{userid} || '-';
     my $content_length = defined($loginfo->{content_length}) ? $loginfo->{content_length} : '-';
@@ -556,6 +559,10 @@ sub handle_spice_proxy_request {
 	    my $proto = $reqstate->{proto} ? $reqstate->{proto}->{str} : 'HTTP/1.0';
 	    my $res = "$proto 200 OK\015\012"; # hope this is the right answer?
 	    $reqstate->{hdl}->push_write($res);
+
+	    # log early
+	    $reqstate->{log}->{code} = 200;
+	    $self->log_request($reqstate);
 	};
     };
     if (my $err = $@) {
