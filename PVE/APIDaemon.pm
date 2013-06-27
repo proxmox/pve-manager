@@ -202,7 +202,7 @@ sub read_proxy_config {
     $shcmd .= 'echo \"DENY_FROM:\$DENY_FROM\";';
     $shcmd .= 'echo \"POLICY:\$POLICY\";';
 
-    my $data = `bash -c "$shcmd"`;
+    my $data = -f $conffile ? `bash -c "$shcmd"` : '';
 
     my $res = {};
 
