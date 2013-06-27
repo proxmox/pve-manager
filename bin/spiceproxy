@@ -44,6 +44,9 @@ POSIX::setuid($uid) || die "setuid $uid failed - $!\n";
 # just to be sure
 die "detected strange uid/gid\n" if !($UID == $uid && $EUID == $uid && $GID eq "$gid $gid" && $EGID eq "$gid $gid");
 
+# we use same ALLOW/DENY/POLICY as pveproxy
+my $proxyconf = PVE::APIDaemon::read_proxy_config();
+
 my $cpid;
 my $daemon;
 eval {
@@ -56,6 +59,9 @@ eval {
 	debug => $opt_debug,
 	spiceproxy => 1,
 	logfile => '/var/log/pveproxy/access.log',
+	allow_from => $proxyconf->{ALLOW_FROM},
+	deny_from => $proxyconf->{DENY_FROM},
+	policy => $proxyconf->{POLICY},
     );
 };
 
@@ -128,6 +134,15 @@ spiceproxy [--debug]
 =head1 DESCRIPTION
 
 SPICE proxy server for Proxmox VE. Listens on port 3128.
+
+=head1 Host based access control
+
+It is possible to configure apache2 like access control lists. Values are read 
+from file /etc/default/pveproxy (see 'pveproxy' for details).
+
+=head1 FILES
+
+ /etc/default/pveproxy
 
 =head1 COPYRIGHT AND DISCLAIMER
 

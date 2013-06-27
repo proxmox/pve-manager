@@ -18,47 +18,16 @@ use URI;
 use URI::QueryParam;
 use File::Find;
 use Data::Dumper;
-use Net::IP;
 
 my $pidfile = "/var/run/pveproxy/pveproxy.pid";
 my $lockfile = "/var/lock/pveproxy.lck";
 
 my $opt_debug;
-my $opt_allow_from;
-my $opt_deny_from;
-my $opt_policy;
 
 initlog ('pveproxy');
 
-if (!GetOptions ('allow-from=s@' => \$opt_allow_from, 
-		 'deny-from=s@' => \$opt_deny_from,
-		 'policy=s' => \$opt_policy,
-		 'debug' => \$opt_debug)) {
-    die "usage: $0 [--allow-from CIDR{,CIRD}] [--deny-from CIDR{,CIRD}] [--policy (allow|deny)] [--debug]\n";
-}
-
-$opt_deny_from  = [ split(/,/, join(',', @$opt_deny_from)) ] if $opt_deny_from;
-$opt_allow_from  = [ split(/,/, join(',', @$opt_allow_from)) ] if $opt_allow_from;
-
-die "unknown policy '$opt_policy'\n" if $opt_policy && $opt_policy !~ m/^(allow|deny)$/;
-
-if ($opt_deny_from) {
-    my $ips = [];
-    foreach my $ip (@$opt_deny_from) {
-	$ip = "0/0" if $ip eq 'all';
-	push @$ips,  Net::IP->new($ip) || die Net::IP::Error() . "\n";
-    }
-
-    $opt_deny_from = $ips;
-}
-
-if ($opt_allow_from) {
-    my $ips = [];
-    foreach my $ip (@$opt_allow_from) {
-	$ip = "0/0" if $ip eq 'all';
-	push @$ips,  Net::IP->new($ip) || die Net::IP::Error() . "\n";
-    }
-    $opt_allow_from = $ips;
+if (!GetOptions ('debug' => \$opt_debug)) {
+    die "usage: $0 [--debug]\n";
 }
 
 $SIG{'__WARN__'} = sub {
@@ -80,6 +49,8 @@ POSIX::setuid($uid) || die "setuid $uid failed - $!\n";
 
 # just to be sure
 die "detected strange uid/gid\n" if !($UID == $uid && $EUID == $uid && $GID eq "$gid $gid" && $EGID eq "$gid $gid");
+
+my $proxyconf = PVE::APIDaemon::read_proxy_config();
 
 sub add_dirs {
     my ($result_hash, $alias, $subdir) = @_;
@@ -114,9 +85,9 @@ eval {
 	max_conn => 500,
 	max_requests => 1000,
 	debug => $opt_debug,
-	allow_from => $opt_allow_from,
-	deny_from => $opt_deny_from,
-	policy => $opt_policy,
+	allow_from => $proxyconf->{ALLOW_FROM},
+	deny_from => $proxyconf->{DENY_FROM},
+	policy => $proxyconf->{POLICY},
 	trusted_env => 0, # not trusted, anyone can connect
 	logfile => '/var/log/pveproxy/access.log',
 	lockfile => $lockfile,
@@ -286,7 +257,7 @@ pveproxy - the PVE API proxy server
 
 =head1 SYNOPSIS
 
-pveproxy [--allow-from CIDR{,CIRD}] [--deny-from CIDR{,CIRD}] [--policy (allow|deny)] [--debug]
+pveproxy [--debug]
 
 =head1 DESCRIPTION
 
@@ -297,8 +268,7 @@ as service using:
 
 =head1 Host based access control
 
-Options '--allow-from', '--deny-from' and '--policy' can be used to set up
-apache2 like access control. If started as service, those values are read 
+It is possible to configure apache2 like access control lists. Values are read 
 from file /etc/default/pveproxy. For example:
 
  ALLOW_FROM="10.0.0.1-10.0.0.5,192.168.0.0/22"

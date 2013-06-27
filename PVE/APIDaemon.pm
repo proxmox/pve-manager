@@ -5,6 +5,7 @@ use warnings;
 use POSIX ":sys_wait_h";
 use Socket qw(IPPROTO_TCP TCP_NODELAY SOMAXCONN);
 use IO::Socket::INET;
+use Net::IP;
 
 use PVE::SafeSyslog;
 use PVE::HTTPServer;
@@ -189,6 +190,40 @@ sub start_server {
     if ($err) {
 	syslog('err', "ERROR: $err");
     }
+}
+
+sub read_proxy_config {
+
+    my $conffile = "/etc/default/pveproxy";
+
+    # Note: evaluate with bash 
+    my $shcmd = ". $conffile;\n";
+    $shcmd .= 'echo \"ALLOW_FROM:\$ALLOW_FROM\";';
+    $shcmd .= 'echo \"DENY_FROM:\$DENY_FROM\";';
+    $shcmd .= 'echo \"POLICY:\$POLICY\";';
+
+    my $data = `bash -c "$shcmd"`;
+
+    my $res = {};
+
+    while ($data =~ s/^(.*)\n//) {
+	my ($key, $value) = split(/:/, $1, 2);
+	if ($key eq 'ALLOW_FROM' || $key eq 'DENY_FROM') {
+	    my $ips = [];
+	    foreach my $ip (split(/,/, $value)) {
+		$ip = "0/0" if $ip eq 'all';
+		push @$ips, Net::IP->new($ip) || die Net::IP::Error() . "\n";
+	    }
+	    $res->{$key} = $ips;
+	} elsif ($key eq 'POLICY') {
+	    die "unknown policy '$value'\n" if $value !~ m/^(allow|deny)$/;
+	    $res->{$key} = $value;
+	} else {
+	    # silently skip everythin else?
+	}
+    }
+
+    return $res;
 }
 
 1;

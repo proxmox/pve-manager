@@ -31,25 +31,8 @@ DAEMON_OPTS=""
 
 # Include defaults if available
 if [ -f /etc/default/$NAME ] ; then
-    ALLOW_FROM=""
-    DENY_FROM=""
-    POLICY=""
-
     . /etc/default/$NAME
-
-    if [ -n "$ALLOW_FROM" ] ; then
-	DAEMON_OPTS="${DAEMON_OPTS} --allow-from ${ALLOW_FROM}"
-    fi
-
-    if [ -n "$DENY_FROM" ] ; then
-	DAEMON_OPTS="${DAEMON_OPTS} --deny-from ${DENY_FROM}"
-    fi
-
-    if [ -n "$POLICY" ] ; then
-	DAEMON_OPTS="${DAEMON_OPTS} --policy $POLICY"
-    fi
 fi
-
  
 case "$1" in
 	start)
