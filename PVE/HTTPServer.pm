@@ -480,7 +480,7 @@ sub handle_api2_request {
 }
 
 sub handle_spice_proxy_request {
-    my ($self, $reqstate, $vmid, $node) = @_;
+    my ($self, $reqstate, $vmid, $node, $spiceport) = @_;
 
     eval {
 
@@ -500,16 +500,17 @@ sub handle_spice_proxy_request {
 	$reqstate->{hdl}->timeout(0);
 
 	# local node
-	my $socket = PVE::QemuServer::spice_socket($vmid);
 
-	print "$$: CONNECT $vmid, $node, $socket\n" if $self->{debug};
+	print "$$: CONNECT $vmid, $node, $spiceport\n" if $self->{debug};
+
+	# fixme: use qmp add_client instead?
 
 	# fixme: this needs root privs
-	tcp_connect "unix/", $socket, sub {
+	tcp_connect "127.0.0.1", $spiceport, sub {
 	    my ($fh) = @_ 
-		or die "connect to '$socket' failed: $!";
+		or die "connect to 'localhost:$spiceport' failed: $!";
 
-	    print "$$: CONNECTed to $socket\n" if $self->{debug};
+	    print "$$: CONNECTed to localhost:$spiceport\n" if $self->{debug};
 	    $reqstate->{proxyhdl} = AnyEvent::Handle->new(
 		fh => $fh,
 		rbuf_max => 64*1024,
@@ -851,12 +852,12 @@ sub unshift_read_header {
 		my $auth = {};
 		if ($self->{spiceproxy}) {
 		    my $connect_str = $r->header('Host');
-		    my ($vmid, $node) = PVE::AccessControl::verify_spice_connect_url($connect_str);
-		    if (!($vmid && $node)) {
+		    my ($vmid, $node, $port) = PVE::AccessControl::verify_spice_connect_url($connect_str);
+		    if (!($vmid && $node && $port)) {
 			$self->error($reqstate, HTTP_UNAUTHORIZED, "invalid ticket");
 			return;
 		    }
-		    $self->handle_spice_proxy_request($reqstate, $vmid, $node);
+		    $self->handle_spice_proxy_request($reqstate, $vmid, $node, $port);
 		    return;
 		} elsif ($path =~ m!$baseuri!) {
 		    my $token = $r->header('CSRFPreventionToken');
