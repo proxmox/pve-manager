@@ -503,9 +503,6 @@ sub handle_spice_proxy_request {
 
 	print "$$: CONNECT $vmid, $node, $spiceport\n" if $self->{debug};
 
-	# fixme: use qmp add_client instead?
-
-	# fixme: this needs root privs
 	tcp_connect "127.0.0.1", $spiceport, sub {
 	    my ($fh) = @_ 
 		or die "connect to 'localhost:$spiceport' failed: $!";
@@ -516,7 +513,6 @@ sub handle_spice_proxy_request {
 		rbuf_max => 64*1024,
 		wbuf_max => 64*10*1024,
 		timeout => 0,
-		#linger => 0, # avoid problems with ssh - really needed ?
 		on_eof => sub {
 		    my ($hdl) = @_;
 		    eval {
@@ -532,18 +528,19 @@ sub handle_spice_proxy_request {
 			$self->client_do_disconnect($reqstate);
 		    };
 		    if (my $err = $@) { syslog('err', "$err"); }
-		},
-		on_read => sub {
-		    my ($hdl) = @_;
-
-		    my $len = length($hdl->{rbuf});
-		    my $data = substr($hdl->{rbuf}, 0, $len, '');
-
-		    #print "READ1 $len\n";
-		    $reqstate->{hdl}->push_write($data) if $reqstate->{hdl};
 		});
-   
-	    $reqstate->{hdl}->on_read(sub {
+
+	    my $proxyhdlreader = sub {
+		my ($hdl) = @_;
+
+		my $len = length($hdl->{rbuf});
+		my $data = substr($hdl->{rbuf}, 0, $len, '');
+
+		#print "READ1 $len\n";
+		$reqstate->{hdl}->push_write($data) if $reqstate->{hdl};
+	    };
+
+	    my $hdlreader = sub {
 		my ($hdl) = @_;
 
 		my $len = length($hdl->{rbuf});
@@ -551,11 +548,14 @@ sub handle_spice_proxy_request {
 
 		#print "READ0 $len\n";
 		$reqstate->{proxyhdl}->push_write($data) if $reqstate->{proxyhdl};
-	    });
+	    };
+
+	    $reqstate->{proxyhdl}->on_read($proxyhdlreader);
+	    $reqstate->{hdl}->on_read($hdlreader);
 
 	    $reqstate->{hdl}->wbuf_max(64*10*1024);
 
-	    # fixme: use stop_read/start_read if write buffer grows to much
+	    # todo: use stop_read/start_read if write buffer grows to much
 
 	    my $proto = $reqstate->{proto} ? $reqstate->{proto}->{str} : 'HTTP/1.0';
 	    my $res = "$proto 200 OK\015\012"; # hope this is the right answer?
