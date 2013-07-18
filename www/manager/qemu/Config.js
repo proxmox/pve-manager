@@ -129,7 +129,8 @@ Ext.define('PVE.qemu.Config', {
 		    width : 0,
 		    height : 0,
 		    css : 'display:none;visibility:hidden;height:0px;',
-		    src : '/api2/spiceconfig/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy'
+		    src : '/api2/spiceconfig/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy?proxy=' + 
+			encodeURIComponent(window.location.hostname)
 		});
 	    }
 	});
