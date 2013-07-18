@@ -108,6 +108,20 @@ sub client_do_disconnect {
 
     cleanup_reqstate($reqstate);
 
+    my $shutdown_hdl = sub {
+	my $hdl = shift;
+
+	shutdown($hdl->{fh}, 1);
+	# clear all handlers
+	$hdl->on_drain(undef);
+	$hdl->on_read(undef);
+	$hdl->on_eof(undef);
+    };
+
+    if (my $proxyhdl = delete $reqstate->{proxyhdl}) {
+	&$shutdown_hdl($proxyhdl);
+    }
+
     my $hdl = delete $reqstate->{hdl};
 
     if (!$hdl) {
@@ -115,13 +129,10 @@ sub client_do_disconnect {
 	return;
     }
 
-    #print "close connection $hdl\n";
+    print "close connection $hdl\n" if $self->{debug};
 
-    shutdown($hdl->{fh}, 1);
-    # clear all handlers
-    $hdl->on_drain(undef);
-    $hdl->on_read(undef);
-    $hdl->on_eof(undef);
+    &$shutdown_hdl($hdl);
+
     $self->{conn_count}--;
 
     print "$$: CLOSE FH" .  $hdl->{fh}->fileno() . " CONN$self->{conn_count}\n" if $self->{debug};
@@ -480,7 +491,7 @@ sub handle_api2_request {
 }
 
 sub handle_spice_proxy_request {
-    my ($self, $reqstate, $vmid, $node, $spiceport) = @_;
+    my ($self, $reqstate, $connect_str, $vmid, $node, $spiceport) = @_;
 
     eval {
 
@@ -488,31 +499,28 @@ sub handle_spice_proxy_request {
 
         if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
             $remip = PVE::Cluster::remote_node_ip($node);
-	    die "unable to get remote IP address for none '$node'\n";
-        }
-
-	if ($remip) {
-	    die "not implemented";
-
-	    return;
-	} 
+	    die "unable to get remote IP address for node '$node'\n" if !$remip;
+	    print "REMOTE CONNECT $vmid, $remip, $connect_str\n" if $self->{debug};
+        } else {
+	    print "$$: CONNECT $vmid, $node, $spiceport\n" if $self->{debug};
+	}
 
 	$reqstate->{hdl}->timeout(0);
+	$reqstate->{hdl}->wbuf_max(64*10*1024);
 
-	# local node
+	my $remhost = $remip ? $remip : "127.0.0.1";
+	my $remport = $remip ? 3128 : $spiceport;
 
-	print "$$: CONNECT $vmid, $node, $spiceport\n" if $self->{debug};
-
-	tcp_connect "127.0.0.1", $spiceport, sub {
+	tcp_connect $remhost, $remport, sub {
 	    my ($fh) = @_ 
-		or die "connect to 'localhost:$spiceport' failed: $!";
+		or die "connect to '$remhost:$remport' failed: $!";
 
-	    print "$$: CONNECTed to localhost:$spiceport\n" if $self->{debug};
+	    print "$$: CONNECTed to '$remhost:$remport'\n" if $self->{debug};
 	    $reqstate->{proxyhdl} = AnyEvent::Handle->new(
 		fh => $fh,
 		rbuf_max => 64*1024,
 		wbuf_max => 64*10*1024,
-		timeout => 0,
+		timeout => 5,
 		on_eof => sub {
 		    my ($hdl) = @_;
 		    eval {
@@ -529,6 +537,7 @@ sub handle_spice_proxy_request {
 		    };
 		    if (my $err = $@) { syslog('err', "$err"); }
 		});
+
 
 	    my $proxyhdlreader = sub {
 		my ($hdl) = @_;
@@ -550,20 +559,44 @@ sub handle_spice_proxy_request {
 		$reqstate->{proxyhdl}->push_write($data) if $reqstate->{proxyhdl};
 	    };
 
-	    $reqstate->{proxyhdl}->on_read($proxyhdlreader);
-	    $reqstate->{hdl}->on_read($hdlreader);
-
-	    $reqstate->{hdl}->wbuf_max(64*10*1024);
-
-	    # todo: use stop_read/start_read if write buffer grows to much
-
 	    my $proto = $reqstate->{proto} ? $reqstate->{proto}->{str} : 'HTTP/1.0';
-	    my $res = "$proto 200 OK\015\012"; # hope this is the right answer?
-	    $reqstate->{hdl}->push_write($res);
 
-	    # log early
-	    $reqstate->{log}->{code} = 200;
-	    $self->log_request($reqstate);
+	    my $startproxy = sub {
+		$reqstate->{proxyhdl}->timeout(0);
+		$reqstate->{proxyhdl}->on_read($proxyhdlreader);
+		$reqstate->{hdl}->on_read($hdlreader);
+
+		# todo: use stop_read/start_read if write buffer grows to much
+
+		my $res = "$proto 200 OK\015\012"; # hope this is the right answer?
+		$reqstate->{hdl}->push_write($res);
+
+		# log early
+		$reqstate->{log}->{code} = 200;
+		$self->log_request($reqstate);
+	    };
+
+	    if ($remip) {
+		my $header = "CONNECT ${connect_str} $proto\015\012" .
+		    "Host: ${connect_str}\015\012" .
+		    "Proxy-Connection: keep-alive\015\012" .
+		    "User-Agent: spiceproxy\015\012" .
+		    "\015\012";
+		$reqstate->{proxyhdl}->push_write($header);
+		$reqstate->{proxyhdl}->push_read(line => sub {
+		    my ($hdl, $line) = @_;
+		    
+		    if ($line =~ m!^$proto 200 OK$!) {
+			&$startproxy();
+		    } else {
+			$reqstate->{hdl}->push_write($line);
+			$self->client_do_disconnect($reqstate);
+		    }
+                });
+	    } else {
+		&$startproxy();
+	    }
+
 	};
     };
     if (my $err = $@) {
@@ -857,7 +890,7 @@ sub unshift_read_header {
 			$self->error($reqstate, HTTP_UNAUTHORIZED, "invalid ticket");
 			return;
 		    }
-		    $self->handle_spice_proxy_request($reqstate, $vmid, $node, $port);
+		    $self->handle_spice_proxy_request($reqstate, $connect_str, $vmid, $node, $port);
 		    return;
 		} elsif ($path =~ m!$baseuri!) {
 		    my $token = $r->header('CSRFPreventionToken');
@@ -968,7 +1001,7 @@ sub push_request_header {
 	    my ($hdl, $line) = @_;
 
 	    eval {
-		#print "got request header: $line\n" if $self->{debug};
+		# print "got request header: $line\n" if $self->{debug};
 
 		$reqstate->{keep_alive}--;
 
