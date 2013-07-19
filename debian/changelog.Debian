@@ -1,3 +1,11 @@
+pve-manager (3.0-33) unstable; urgency=low
+
+  * correctly initialize $rpcenv in spiceproxy
+  
+  * fix bug #437: include pve-libspice-server1 in package list
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 19 Jul 2013 11:41:00 +0200
+
 pve-manager (3.0-32) unstable; urgency=low
 
   * improved spice proxy code
