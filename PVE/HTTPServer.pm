@@ -495,6 +495,9 @@ sub handle_spice_proxy_request {
 
     eval {
 
+	my $rpcenv = $self->{rpcenv};
+	$rpcenv->init_request();
+
         my $remip;
 
         if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
