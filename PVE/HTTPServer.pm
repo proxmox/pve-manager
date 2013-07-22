@@ -469,6 +469,11 @@ sub handle_api2_request {
 		return;
 	    }
 
+	    if ($r->header('PVEDisableProxy')) {
+		$self->error($reqstate, HTTP_INTERNAL_SERVER_ERROR, "proxy loop detected");
+		return;
+	    }
+
 	    $res->{proxy_params}->{tmpfilename} = $reqstate->{tmpfilename} if $upload_state;
 
 	    $self->proxy_request($reqstate, $clientip, $res->{proxy}, $method,
@@ -498,6 +503,9 @@ sub handle_spice_proxy_request {
 	my $rpcenv = $self->{rpcenv};
 	$rpcenv->init_request();
 
+	my $clientip = $reqstate->{peer_host};
+	my $r = $reqstate->{request};
+
         my $remip;
 
         if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
@@ -506,6 +514,11 @@ sub handle_spice_proxy_request {
 	    print "REMOTE CONNECT $vmid, $remip, $connect_str\n" if $self->{debug};
         } else {
 	    print "$$: CONNECT $vmid, $node, $spiceport\n" if $self->{debug};
+	}
+
+	if ($r->header('PVEDisableProxy')) {
+	    $self->error($reqstate, HTTP_INTERNAL_SERVER_ERROR, "proxy loop detected");
+	    return;
 	}
 
 	$reqstate->{hdl}->timeout(0);
@@ -584,7 +597,10 @@ sub handle_spice_proxy_request {
 		    "Host: ${connect_str}\015\012" .
 		    "Proxy-Connection: keep-alive\015\012" .
 		    "User-Agent: spiceproxy\015\012" .
+		    "PVEDisableProxy: true\015\012" .
+		    "PVEClientIP: $clientip\015\012" .
 		    "\015\012";
+
 		$reqstate->{proxyhdl}->push_write($header);
 		$reqstate->{proxyhdl}->push_read(line => sub {
 		    my ($hdl, $line) = @_;
