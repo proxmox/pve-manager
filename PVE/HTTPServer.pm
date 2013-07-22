@@ -500,6 +500,8 @@ sub handle_spice_proxy_request {
 
     eval {
 
+        die "Port $spiceport is not allowed" if ($spiceport < 61000 || $spiceport > 61099);
+
 	my $rpcenv = $self->{rpcenv};
 	$rpcenv->init_request();
 
