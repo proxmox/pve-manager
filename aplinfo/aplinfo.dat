@@ -41,14 +41,14 @@ Description: Debian 6.0 (standard)
   A small Debian Squeeze system including all standard packages.
 
 Package: debian-7.0-standard
-Version: 7.0-1
+Version: 7.0-2
 Type: openvz
 OS: debian-7.0
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
-Location: http://download.proxmox.com/appliances/system/debian-7.0-standard_7.0-1_i386.tar.gz
+Location: http://download.proxmox.com/appliances/system/debian-7.0-standard_7.0-2_i386.tar.gz
 Infopage: http://pve.proxmox.com/wiki/Debian_7.0_Standard
-md5sum: c66cd4a326e81b083c77701136d57eb7
+md5sum: 4f8627d2df5bc2627f71b3083b887e6d
 Description: Debian 7.0 (standard)
   A small Debian Wheezy system including all standard packages.
 
