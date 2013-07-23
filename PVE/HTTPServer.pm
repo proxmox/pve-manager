@@ -462,21 +462,21 @@ sub handle_api2_request {
 
 	$rpcenv->set_user(undef); # clear after request
 
-	if ($res->{proxy}) {
+	if (my $host = $res->{proxy}) {
 
 	    if ($self->{trusted_env}) {
 		$self->error($reqstate, HTTP_INTERNAL_SERVER_ERROR, "proxy not allowed");
 		return;
 	    }
 
-	    if ($r->header('PVEDisableProxy')) {
+	    if ($host ne 'localhost' && $r->header('PVEDisableProxy')) {
 		$self->error($reqstate, HTTP_INTERNAL_SERVER_ERROR, "proxy loop detected");
 		return;
 	    }
 
 	    $res->{proxy_params}->{tmpfilename} = $reqstate->{tmpfilename} if $upload_state;
 
-	    $self->proxy_request($reqstate, $clientip, $res->{proxy}, $method,
+	    $self->proxy_request($reqstate, $clientip, $host, $method,
 				 $r->uri, $auth->{ticket}, $auth->{token}, $res->{proxy_params});
 	    return;
 
