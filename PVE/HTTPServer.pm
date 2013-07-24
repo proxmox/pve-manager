@@ -518,7 +518,7 @@ sub handle_spice_proxy_request {
 	    print "$$: CONNECT $vmid, $node, $spiceport\n" if $self->{debug};
 	}
 
-	if ($r->header('PVEDisableProxy')) {
+	if ($remip && $r->header('PVEDisableProxy')) {
 	    $self->error($reqstate, HTTP_INTERNAL_SERVER_ERROR, "proxy loop detected");
 	    return;
 	}
