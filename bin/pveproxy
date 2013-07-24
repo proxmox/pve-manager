@@ -92,6 +92,7 @@ eval {
 	logfile => '/var/log/pveproxy/access.log',
 	lockfile => $lockfile,
 	ssl => {
+	    cipher_list => 'HIGH:MEDIUM:!aNULL:!MD5',
 	    key_file => '/etc/pve/local/pve-ssl.key',
 	    cert_file => '/etc/pve/local/pve-ssl.pem',
 	},
