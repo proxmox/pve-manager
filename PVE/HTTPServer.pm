@@ -621,6 +621,7 @@ sub handle_spice_proxy_request {
 	};
     };
     if (my $err = $@) {
+	warn $err;
 	$self->log_aborted_request($reqstate, $err);
 	$self->client_do_disconnect($reqstate);
     }
