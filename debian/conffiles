@@ -10,3 +10,4 @@
 /etc/vzdump.conf
 /etc/logrotate.d/pve
 /etc/apt/apt.conf.d/75pveconf
+/etc/apt/pve-repo-ca-certificates.crt

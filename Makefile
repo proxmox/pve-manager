@@ -17,6 +17,12 @@ check:
 %:
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
+pve-repo-ca-certificates.crt:
+	rm -rf ca-tmp
+	mkdir ca-tmp
+	cd ca-tmp; wget http://aia.startssl.com/certs/sub.class1.server.ca.pem
+	cd ca-tmp; wget http://aia.startssl.com/certs/ca.pem
+	cd ca-tmp; cat *.pem >../$@
 
 .PHONY: dinstall
 dinstall: ${DEB}
@@ -71,7 +77,7 @@ aplupload:
 	scp aplinfo/aplinfo.dat aplinfo.dat.gz aplinfo/aplinfo.dat.asc download1.proxmox.com:/home/ftp/appliances/
 
 .PHONY: install
-install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl
+install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl pve-apt.conf pve-repo-ca-certificates.crt
 	install -d -m 0700 -o www-data -g www-data ${DESTDIR}/var/log/pveproxy
 	install -D -m 0644 debian/pve.logrotate ${DESTDIR}/etc/logrotate.d/pve
 	install -d ${DESTDIR}/usr/share/${PACKAGE}
@@ -83,6 +89,7 @@ install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl
 	install -d ${DESTDIR}/var/lib/vz/template/iso
 	install -d ${DESTDIR}/var/lib/vz/template/qemu
 	install -D -m 0644 pve-apt.conf ${DESTDIR}/etc/apt/apt.conf.d/75pveconf
+	install -D -m 0644 pve-repo-ca-certificates.crt ${DESTDIR}/etc/apt/pve-repo-ca-certificates.crt
 	install -D -m 0644 vzdump.conf ${DESTDIR}/etc/vzdump.conf
 	install -D -m 0755 vznet.conf ${DESTDIR}/etc/vz/vznet.conf
 	install -m 0644 vzdump-hook-script.pl ${DOCDIR}/examples/vzdump-hook-script.pl
@@ -99,4 +106,4 @@ distclean: clean
 clean:
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 	find . -name '*~' -exec rm {} ';'
-	rm -rf dest country.dat *.deb
+	rm -rf dest country.dat *.deb ca-tmp
