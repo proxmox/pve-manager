@@ -173,6 +173,15 @@ sub read_etc_pve_subscription {
     return $info;
 }
 
+sub write_apt_auth {
+    my $key = shift;
+
+    my $server_id = get_hwaddress();
+    my $auth = { 'enterprise.proxmox.com' => { login => $key, password => get_hwaddress() } };
+    PVE::INotify::update_file('apt-auth', $auth);
+
+}
+
 sub write_etc_pve_subscription {
     my ($filename, $fh, $info) = @_;
 
@@ -188,6 +197,8 @@ sub write_etc_pve_subscription {
     my $raw = "$info->{key}\n$csum\n$data";
 
     PVE::Tools::safe_print($filename, $fh, $raw);
+
+    write_apt_auth($info->{key});
 }
 
 sub check_subscription {
@@ -328,6 +339,8 @@ __PACKAGE__->register_method ({
 
 	my $info = PVE::INotify::read_file('subscription');
 	return undef if !$info;
+
+	write_apt_auth($info->{key}) if $info->{key};
 
 	if (!$param->{force} && $info->{status} eq 'Active') {
 	    my $age = time() -  $info->{checktime};
