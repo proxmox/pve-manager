@@ -82,6 +82,7 @@ install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl
 	install -d ${DESTDIR}/var/lib/vz/template/cache
 	install -d ${DESTDIR}/var/lib/vz/template/iso
 	install -d ${DESTDIR}/var/lib/vz/template/qemu
+	install -D -m 0644 pve-apt.conf ${DESTDIR}/etc/apt/apt.conf.d/75pveconf
 	install -D -m 0644 vzdump.conf ${DESTDIR}/etc/vzdump.conf
 	install -D -m 0755 vznet.conf ${DESTDIR}/etc/vz/vznet.conf
 	install -m 0644 vzdump-hook-script.pl ${DOCDIR}/examples/vzdump-hook-script.pl
