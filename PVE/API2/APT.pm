@@ -249,6 +249,16 @@ __PACKAGE__->register_method({
 	my $realcmd = sub {
 	    my $upid = shift;
 
+	    # setup proxy for apt
+	    my $dcconf = PVE::Cluster::cfs_read_file('datacenter.cfg');
+
+	    my $aptconf = "// no proxy configured\n";
+	    if ($dcconf->{http_proxy}) {
+		$aptconf = "Acquire::http::Proxy \"$dcconf->{http_proxy}\";\n";
+	    }
+	    my $aptcfn = "/etc/apt/apt.conf.d/76pveproxy";
+	    PVE::Tools::file_set_contents($aptcfn, $aptconf);
+
 	    my $cmd = ['apt-get', 'update'];
 
 	    print "starting apt-get update\n";
