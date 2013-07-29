@@ -93,7 +93,10 @@ my $get_changelog_url =sub {
 	my $srcpkg = $info->{SourcePkg} || $pkgname;
 	if ($origin eq 'Debian') {
 	    $changelog_url = "http://packages.debian.org/changelogs/$base/" . 
-		"${srcpkg}_$pkgver/changelog";
+		"${srcpkg}_${pkgver}/changelog";
+	} elsif ($origin eq 'Proxmox') {
+	    $changelog_url = "http://download.proxmox.com/changelogs/${pkgname}/" . 
+		"${pkgname}_${pkgver}_changelog";
 	}
     }
 
