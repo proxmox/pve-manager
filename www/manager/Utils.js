@@ -187,7 +187,11 @@ Ext.define('PVE.Utils', { statics: {
 	std: 'Standard VGA',
 	vmware: 'VMWare compatible',
 	cirrus: 'Cirrus Logic GD5446',
-	qxl: 'SPICE'
+	qxl: 'SPICE',
+	serial0: 'Serial terminal 0',
+	serial1: 'Serial terminal 1',
+	serial2: 'Serial terminal 2',
+	serial3: 'Serial terminal 3'
     },
 
     render_kvm_language: function (value) {
