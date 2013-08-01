@@ -92,7 +92,7 @@ eval {
 	logfile => '/var/log/pveproxy/access.log',
 	lockfile => $lockfile,
 	ssl => {
-	    cipher_list => 'HIGH:MEDIUM:!aNULL:!MD5',
+	    cipher_list => $proxyconf->{CIPHERS} || 'HIGH:MEDIUM:!aNULL:!MD5',
 	    key_file => '/etc/pve/local/pve-ssl.key',
 	    cert_file => '/etc/pve/local/pve-ssl.pem',
 	},
@@ -287,6 +287,15 @@ The default policy is 'allow'.
  Match Deny only            | deny        | deny
  No match                   | deny        | allow
  Match Both Allow & Deny    | deny        | allow
+
+=head1 SSL Cipher Suite
+
+You can define the chiper list in /etc/default/pveproxy, for example
+
+ CIPHERS="HIGH:MEDIUM:!aNULL:!MD5"
+
+Above is the default. See the ciphers(1) man page from the openssl 
+package for list of all available options.
 
 =head1 FILES
 
