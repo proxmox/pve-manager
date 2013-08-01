@@ -84,7 +84,7 @@ my $get_pkgfile = sub {
 };
 
 my $get_changelog_url =sub {
-    my ($pkgname, $info, $pkgver, $origin) = @_;
+    my ($pkgname, $info, $pkgver, $origin, $component) = @_;
 
     my $changelog_url;
     my $base = dirname($info->{FileName});
@@ -95,8 +95,13 @@ my $get_changelog_url =sub {
 	    $changelog_url = "http://packages.debian.org/changelogs/$base/" . 
 		"${srcpkg}_${pkgver}/changelog";
 	} elsif ($origin eq 'Proxmox') {
-	    $changelog_url = "http://download.proxmox.com/changelogs/${pkgname}/" . 
-		"${pkgname}_${pkgver}_changelog";
+	    if ($component eq 'pve-enterprise') {
+		$changelog_url = "https://enterprise.proxmox.com/debian/$base/" . 
+		    "${srcpkg}_${pkgver}.changelog";
+	    } else {
+		$changelog_url = "http://download.proxmox.com/debian/$base/" .
+		    "${srcpkg}_${pkgver}.changelog";
+	    }
 	}
     }
 
@@ -113,9 +118,9 @@ my $assemble_pkginfo = sub {
     };
 
     if (my $pkgfile = &$get_pkgfile($candidate_ver)) {
-	my $origin = $pkgfile->{Origin};
-	$data->{Origin} = $origin;
-	if (my $changelog_url = &$get_changelog_url($pkgname, $info, $candidate_ver->{VerStr}, $origin)) {
+	$data->{Origin} = $pkgfile->{Origin};
+	if (my $changelog_url = &$get_changelog_url($pkgname, $info, $candidate_ver->{VerStr}, 
+						    $pkgfile->{Origin}, $pkgfile->{Component})) {
 	    $data->{ChangeLogUrl} = $changelog_url;
 	}
     }
@@ -366,7 +371,7 @@ __PACKAGE__->register_method({
 	my $url;
 
 	die "changelog for '${pkgname}_$ver->{VerStr}' not available\n"
-	    if !($pkgfile && ($url = &$get_changelog_url($pkgname, $info, $ver->{VerStr}, $pkgfile->{Origin})));
+	    if !($pkgfile && ($url = &$get_changelog_url($pkgname, $info, $ver->{VerStr}, $pkgfile->{Origin}, $pkgfile->{Component})));
 
 	my $data = "";
 
@@ -377,11 +382,25 @@ __PACKAGE__->register_method({
 	$ua->agent("PVE/1.0");
 	$ua->timeout(10);
 	$ua->max_size(1024*1024);
-  
+	$ua->ssl_opts(verify_hostname => 0); # don't care for changelogs
+
 	if ($proxy) {
-	    $ua->proxy(['http'], $proxy);
+	    $ua->proxy(['http', 'https'], $proxy);
 	} else {
 	    $ua->env_proxy;
+	}
+
+	my $username;
+	my $pw;
+
+	if ($pkgfile->{Origin} eq 'Proxmox' && $pkgfile->{Component} eq 'pve-enterprise') {
+	    my $info = PVE::INotify::read_file('subscription');
+	    if ($info->{status} eq 'Active') {
+		$username = $info->{key};
+		$pw = PVE::API2Tools::get_hwaddress();
+		$ua->credentials("enterprise.proxmox.com:443", 'pve-enterprise-repository', 
+				 $username, $pw);
+	    }
 	}
 
 	my $response = $ua->get($url);

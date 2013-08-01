@@ -35,18 +35,6 @@ my $localkeydays = 15;
 my $allowcheckfaildays = 5;
 
 my $shared_key_data = "kjfdlskfhiuewhfk947368";
-my $hwaddress;
-
-sub get_hwaddress {
-    
-    return $hwaddress if defined ($hwaddress);
-
-    my $fn = '/etc/ssh/ssh_host_rsa_key.pub';
-    my $sshkey = PVE::Tools::file_get_contents($fn);
-    $hwaddress = uc(md5_hex($sshkey));
-
-    return $hwaddress;
-}
 
 sub get_sockets {
     my $info = PVE::ProcFSTools::read_cpuinfo();
@@ -147,7 +135,7 @@ sub read_etc_pve_subscription {
 	    die "checksum failure\n" if $csum ne $newcsum;
 
 	    my $req_sockets = get_sockets();
-	    my $server_id = get_hwaddress();
+	    my $server_id = PVE::API2Tools::get_hwaddress();
 
 	    check_fields($localinfo, $server_id, $req_sockets);
 
@@ -176,8 +164,8 @@ sub read_etc_pve_subscription {
 sub write_apt_auth {
     my $key = shift;
 
-    my $server_id = get_hwaddress();
-    my $auth = { 'enterprise.proxmox.com' => { login => $key, password => get_hwaddress() } };
+    my $server_id = PVE::API2Tools::get_hwaddress();
+    my $auth = { 'enterprise.proxmox.com' => { login => $key, password => $server_id } };
     PVE::INotify::update_file('apt-auth', $auth);
 
 }
@@ -208,7 +196,7 @@ sub check_subscription {
 
     my $uri = "$whmcsurl/modules/servers/licensing/verify.php";
  
-    my $server_id = get_hwaddress();
+    my $server_id = PVE::API2Tools::get_hwaddress();
 
     my $req_sockets = get_sockets();
 
@@ -297,7 +285,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $server_id = get_hwaddress();
+	my $server_id = PVE::API2Tools::get_hwaddress();
 
 	my $info = PVE::INotify::read_file('subscription');
 	if (!$info) {
@@ -384,7 +372,7 @@ __PACKAGE__->register_method ({
 	};
 
 	my $req_sockets = get_sockets();
-	my $server_id = get_hwaddress();
+	my $server_id = PVE::API2Tools::get_hwaddress();
 
 	check_fields($info, $server_id, $req_sockets);
 

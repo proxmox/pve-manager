@@ -2,6 +2,21 @@ package PVE::API2Tools;
 
 use strict;
 use warnings;
+use PVE::Tools;
+use Digest::MD5 qw(md5_hex);
+
+my $hwaddress;
+
+sub get_hwaddress {
+    
+    return $hwaddress if defined ($hwaddress);
+
+    my $fn = '/etc/ssh/ssh_host_rsa_key.pub';
+    my $sshkey = PVE::Tools::file_get_contents($fn);
+    $hwaddress = uc(md5_hex($sshkey));
+
+    return $hwaddress;
+}
 
 sub extract_node_stats {
     my ($node, $members, $rrd) = @_;
