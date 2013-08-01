@@ -89,6 +89,7 @@ install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl pve-apt.conf p
 	install -d ${DESTDIR}/var/lib/vz/template/iso
 	install -d ${DESTDIR}/var/lib/vz/template/qemu
 	install -D -m 0644 pve-apt.conf ${DESTDIR}/etc/apt/apt.conf.d/75pveconf
+	install -D -m 0644 pve-sources.list ${DESTDIR}/etc/apt/sources.list.d/pve-enterprise.list
 	install -D -m 0644 pve-repo-ca-certificates.crt ${DESTDIR}/etc/apt/pve-repo-ca-certificates.crt
 	install -D -m 0644 vzdump.conf ${DESTDIR}/etc/vzdump.conf
 	install -D -m 0755 vznet.conf ${DESTDIR}/etc/vz/vznet.conf
