@@ -163,7 +163,7 @@ my $update_pve_pkgstatus = sub {
     my $notify_status = {};
     my $oldpkglist = &$read_cached_pkgstatus();
     foreach my $pi (@$oldpkglist) {
-	$notify_status->{$pi->{Package}} = $pi->{Version};
+	$notify_status->{$pi->{Package}} = $pi->{NotifyStatus};
     }
 
     my $pkglist = [];
@@ -349,13 +349,18 @@ __PACKAGE__->register_method({
 
 		    $data .= "The following updates are available:\n\n";
 
+		    my $count = 0;
 		    foreach my $p (sort {$a->{Package} cmp $b->{Package} } @$pkglist) {
+			next if $p->{NotifyStatus} && $p->{NotifyStatus} eq $p->{Version};
+			$count++;
 			if ($p->{OldVersion}) {
 			    $data .= "$p->{Package}: $p->{OldVersion} ==> $p->{Version}\n";
 			} else {
 			    $data .= "$p->{Package}: $p->{Version} (new)\n";
 			}
 		    }
+
+		    return if !$count; 
 
 		    my $fh = IO::File->new("|sendmail -B 8BITMIME $mailto") || 
 			die "unable to open 'sendmail' - $!";
