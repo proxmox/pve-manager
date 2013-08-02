@@ -277,7 +277,7 @@ __PACKAGE__->register_method({
 
 	    push @$cmd, '-qq' if $param->{quiet};
 
-	    print "starting apt-get update\n";
+	    print "starting apt-get update\n" if !$param->{quiet};
 	    
 	    PVE::Tools::run_command($cmd);
 
