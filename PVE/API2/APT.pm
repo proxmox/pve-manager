@@ -242,6 +242,12 @@ __PACKAGE__->register_method({
 		optional => 1,
 		default => 0,
 	    },
+	    quiet => {
+		type => 'boolean',
+		description => "Only produces output suitable for logging, omitting progress indicators.",
+		optional => 1,
+		default => 0,
+	    },
 	},
     },
     returns => {
@@ -268,6 +274,8 @@ __PACKAGE__->register_method({
 	    PVE::Tools::file_set_contents($aptcfn, $aptconf);
 
 	    my $cmd = ['apt-get', 'update'];
+
+	    push @$cmd, '-qq' if $param->{quiet};
 
 	    print "starting apt-get update\n";
 	    
