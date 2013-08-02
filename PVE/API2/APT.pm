@@ -144,9 +144,27 @@ my $assemble_pkginfo = sub {
 # we try to cache results
 my $pve_pkgstatus_fn = "/var/lib/pve-manager/pkgupdates";
 
+my $read_cached_pkgstatus = sub {
+    my $data = [];
+    eval {
+	my $jsonstr = PVE::Tools::file_get_contents($pve_pkgstatus_fn, 5*1024*1024);
+	$data = decode_json($jsonstr);
+    };
+    if (my $err = $@) {
+	warn "error reading cached package status in $pve_pkgstatus_fn\n";
+    }
+    return $data;
+};
+
 my $update_pve_pkgstatus = sub {
 
     syslog('info', "update new package list: $pve_pkgstatus_fn");
+
+    my $notify_status = {};
+    my $oldpkglist = &$read_cached_pkgstatus();
+    foreach my $pi (@$oldpkglist) {
+	$notify_status->{$pi->{Package}} = $pi->{Version};
+    }
 
     my $pkglist = [];
 
@@ -194,6 +212,14 @@ my $update_pve_pkgstatus = sub {
 	    }
 	}
     }
+
+    # keep notification status (avoid sending mails abou new packages more than once)
+    foreach my $pi (@$pkglist) {
+	if (my $ns = $notify_status->{$pi->{Package}}) {
+	    $pi->{NotifyStatus} = $ns if $ns eq $pi->{Version};
+	}
+    }
+
     PVE::Tools::file_set_contents($pve_pkgstatus_fn, encode_json($pkglist));
 
     return $pkglist;
@@ -230,15 +256,7 @@ __PACKAGE__->register_method({
 	    my $st3 = File::stat::stat("/var/lib/dpkg/status");
 	
 	    if ($st2 && $st3 && $st2->mtime <= $st1->mtime && $st3->mtime <= $st1->mtime) {
-		my $data;
-		eval {
-		    my $jsonstr = PVE::Tools::file_get_contents($pve_pkgstatus_fn, 5*1024*1024);
-		    $data = decode_json($jsonstr);
-		};
-		if (my $err = $@) {
-		    warn "error readin cached package status in $pve_pkgstatus_fn\n";
-		    # continue and overwrite cache with new content
-		} else {
+		if (my $data = &$read_cached_pkgstatus()) {
 		    return $data;
 		}
 	    }
@@ -344,7 +362,12 @@ __PACKAGE__->register_method({
 
 		    print $fh $data;
 
-		    $fh->close();
+		    $fh->close() || die "unable to close 'sendmail' - $!";
+
+		    foreach my $pi (@$pkglist) {
+			$pi->{NotifyStatus} = $pi->{Version};
+		    }
+		    PVE::Tools::file_set_contents($pve_pkgstatus_fn, encode_json($pkglist));
 		}
 	    }
 
