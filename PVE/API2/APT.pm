@@ -136,7 +136,7 @@ my $assemble_pkginfo = sub {
     }
 
     $data->{Version} = $candidate_ver->{VerStr};
-    $data->{OldVersion} = $current_ver->{VerStr};
+    $data->{OldVersion} = $current_ver->{VerStr} if $current_ver;
 
     return $data;
 };
@@ -164,9 +164,36 @@ my $update_pve_pkgstatus = sub {
 	    my $info = $pkgrecords->lookup($pkgname);
 	    my $res = &$assemble_pkginfo($pkgname, $info, $current_ver, $candidate_ver);
 	    push @$pkglist, $res;
+
+	    # also check if we need any new package
+	    # Note: this is just a quick hack (not recursive as it should be), because
+	    # I found no way to get that info from AptPkg
+	    if (my $deps = $candidate_ver->{DependsList}) {
+		my $found;
+		my $req;
+		for my $d (@$deps) {
+		    if ($d->{DepType} eq 'Depends') {
+			$found = $d->{TargetPkg}->{SelectedState} eq 'Install' if !$found;
+			$req = $d->{TargetPkg} if !$req;
+
+			if (!($d->{CompType} & AptPkg::Dep::Or)) {
+			    if (!$found && $req) { # New required Package
+				my $tpname = $req->{Name};
+				my $tpinfo = $pkgrecords->lookup($tpname);
+				my $tpcv = $policy->candidate($req);
+				if ($tpinfo && $tpcv) {
+				    my $res = &$assemble_pkginfo($tpname, $tpinfo, undef, $tpcv);
+				    push @$pkglist, $res;
+				}
+			    }
+			    undef $found;
+			    undef $req;
+			}
+		    }
+		}
+	    }
 	}
     }
-
     PVE::Tools::file_set_contents($pve_pkgstatus_fn, encode_json($pkglist));
 
     return $pkglist;
@@ -305,7 +332,11 @@ __PACKAGE__->register_method({
 		    $data .= "The following updates are available:\n\n";
 
 		    foreach my $p (sort {$a->{Package} cmp $b->{Package} } @$pkglist) {
-			$data .= "$p->{Package}: $p->{OldVersion} ==> $p->{Version}\n";
+			if ($p->{OldVersion}) {
+			    $data .= "$p->{Package}: $p->{OldVersion} ==> $p->{Version}\n";
+			} else {
+			    $data .= "$p->{Package}: $p->{Version} (new)\n";
+			}
 		    }
 
 		    my $fh = IO::File->new("|sendmail -B 8BITMIME $mailto") || 
