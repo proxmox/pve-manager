@@ -1,3 +1,21 @@
+pve-manager (3.0-37) unstable; urgency=low
+
+  * apt: try to detect new packages
+  
+  * tell apt to use http_proxy settings
+  
+  * support to view changelogs for available pve packages
+  
+  * allow to configure cipher list for pveproxy
+  
+  * automatically add pve repository to apt sources list
+  
+  * allow to use serial terminal as display
+  
+  * avoid apt autoremoval for pve-kernel packages
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 02 Aug 2013 10:11:33 +0200
+
 pve-manager (3.0-36) unstable; urgency=low
 
   * fix proxy loop assertion for spiceproxy
