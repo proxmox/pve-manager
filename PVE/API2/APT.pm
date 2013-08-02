@@ -275,11 +275,13 @@ __PACKAGE__->register_method({
 
 	    my $cmd = ['apt-get', 'update'];
 
-	    push @$cmd, '-qq' if $param->{quiet};
-
 	    print "starting apt-get update\n" if !$param->{quiet};
 	    
-	    PVE::Tools::run_command($cmd);
+	    if ($param->{quiet}) {
+		PVE::Tools::run_command($cmd, outfunc => sub {}, errfunc => sub {});
+	    } else {
+		PVE::Tools::run_command($cmd);
+	    }
 
 	    my $pkglist = &$update_pve_pkgstatus();
 
