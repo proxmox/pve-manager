@@ -5,11 +5,13 @@ use IO::File;
 use File::Find;
 use File::stat;
 
+use PVE::INotify;
 use PVE::Cluster;
 use PVE::APLInfo;
 use PVE::SafeSyslog;
 use PVE::RPCEnvironment;
 use PVE::API2::Subscription;
+use PVE::API2::APT;
 
 initlog ('pvedailycron', 'daemon');
 
@@ -42,7 +44,7 @@ if (my $info = PVE::INotify::read_file('subscription')) {
     # We assume that users with subscriptions want informations
     # about new packages.
     if ($info->{status} eq 'Active') {
-	eval { PVE::APL2::APT->update_database({ node => $nodename, notify => 1 }); };
+	eval { PVE::API2::APT->update_database({ node => $nodename, notify => 1 }); };
 	if (my $err = $@) {
 	    syslog ('err', "update apt database failed: $err");
 	}
