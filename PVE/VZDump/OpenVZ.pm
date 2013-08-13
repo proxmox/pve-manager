@@ -273,6 +273,10 @@ sub cleanup {
     my $di = $task->{diskinfo};
 
     if ($task->{cleanup}->{snapshot_mount}) {
+	# Note: sleep to avoid 'device is busy' message.
+	# Seems Kernel need some time to cleanup open file list,
+	# fir example when we stop the tar with kill (stop task)
+	sleep(1); 
 	$self->cmd_noerr ("umount $di->{mountpoint}");
     }
 
