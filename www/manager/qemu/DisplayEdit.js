@@ -9,6 +9,7 @@ Ext.define('PVE.qemu.DisplayEdit', {
 	var displayField;
 
 	var validateDisplay = function() {
+	    /*jslint confusion: true */
 	    var val = displayField.getValue();
 
 	    if (me.vmconfig && val.match(/^serial\d+$/)) {

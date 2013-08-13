@@ -80,7 +80,7 @@ Ext.define('PVE.node.Summary', {
 	var statusview = Ext.create('PVE.node.StatusView', {
 	    title: 'Status',
 	    pveSelNode: me.pveSelNode,
-	    style: 'padding-top:0px',
+	    style: { 'padding-top': '0px' },
 	    rstore: rstore
 	});
 
@@ -98,7 +98,7 @@ Ext.define('PVE.node.Summary', {
 	    bodyStyle: 'padding:10px',
 	    defaults: {
 		width: 800,
-		style: 'padding-top:10px'
+		style: { 'padding-top': '10px' }
 	    },		
 	    tbar: [version_btn, '->', { xtype: 'pveRRDTypeSelector' } ],
 	    items: [
