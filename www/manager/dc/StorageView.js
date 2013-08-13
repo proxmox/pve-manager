@@ -36,6 +36,8 @@ Ext.define('PVE.dc.StorageView', {
 		editor = 'PVE.storage.DirEdit';
 	    } else if (type === 'nfs') {
 		editor = 'PVE.storage.NFSEdit';
+	    } else if (type === 'glusterfs') {
+		editor = 'PVE.storage.GlusterFsEdit';
 	    } else if (type === 'lvm') {
 		editor = 'PVE.storage.LVMEdit';
 	    } else if (type === 'iscsi') {
@@ -131,6 +133,15 @@ Ext.define('PVE.dc.StorageView', {
 				iconCls: 'pve-itype-icon-node',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.IScsiEdit', {});
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+			    {
+				text: 'GlusterFS volume',
+				iconCls: 'pve-itype-icon-node',
+				handler: function() {
+				    var win = Ext.create('PVE.storage.GlusterFsEdit', {});
 				    win.on('destroy', reload);
 				    win.show();
 				}

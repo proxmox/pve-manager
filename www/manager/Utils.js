@@ -674,6 +674,8 @@ Ext.define('PVE.Utils', { statics: {
 	    return 'Directory';
 	} else if (value === 'nfs') {
 	    return 'NFS';
+	} else if (value === 'glusterfs') {
+	    return 'GlusterFS';
 	} else if (value === 'lvm') {
 	    return 'LVM';
 	} else if (value === 'iscsi') {
