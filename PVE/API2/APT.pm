@@ -523,7 +523,7 @@ __PACKAGE__->register_method({
 	    }
 	}
 
-	push @list, qw(lvm2 clvm corosync-pve openais-pve libqb0 redhat-cluster-pve resource-agents-pve fence-agents-pve pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl pve-libspice-server1 vncterm vzctl vzprocps vzquota pve-qemu-kvm ksm-control-daemon);
+	push @list, qw(lvm2 clvm corosync-pve openais-pve libqb0 redhat-cluster-pve resource-agents-pve fence-agents-pve pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl pve-libspice-server1 vncterm vzctl vzprocps vzquota pve-qemu-kvm ksm-control-daemon glusterfs-client);
 
 	my $pkglist = [];
 	
