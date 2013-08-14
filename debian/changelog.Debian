@@ -1,3 +1,9 @@
+pve-manager (3.1-1) unstable; urgency=low
+
+  * bump RELEASE to 3.1
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 14 Aug 2013 07:50:00 +0200
+
 pve-manager (3.0-38) unstable; urgency=low
 
   * add GUI for GlusterFS storage
