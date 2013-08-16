@@ -22,6 +22,7 @@ GNOME_IMAGES = 			\
 	computer.png
 
 IMAGES = ${GNOME_IMAGES}	\
+	favicon.ico		\
 	snapshot.png		\
 	computer-on.png		\
 	memory.png		\

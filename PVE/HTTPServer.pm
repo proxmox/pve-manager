@@ -287,6 +287,9 @@ sub send_file_start {
 	    } elsif ($filename =~ m/\.png$/) {
 		$ct = 'image/png';
 		$nocomp = 1;
+	    } elsif ($filename =~ m/\.ico$/) {
+		$ct = 'image/x-icon';
+		$nocomp = 1;
 	    } elsif ($filename =~ m/\.gif$/) {
 		$ct = 'image/gif';
 		$nocomp = 1;
