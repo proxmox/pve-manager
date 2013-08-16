@@ -72,7 +72,7 @@ Ext.define('PVE.node.APT', {
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
 	var update_btn = new Ext.Button({
-	    text: gettext('Update'),
+	    text: gettext('Refresh'),
 	    handler: function(){
 		PVE.Utils.checked_command(function() { apt_command('update'); });
 	    }
@@ -160,7 +160,7 @@ Ext.define('PVE.node.APT', {
 	    selModel: sm,
             viewConfig: {
 		stripeRows: false,
-		emptyText: '<div style="display:table; width:100%; height:100%;"><div style="display:table-cell; vertical-align: middle; text-align:center;"><b>' + gettext('Your system is up to date.') + '</div></div>'
+		emptyText: '<div style="display:table; width:100%; height:100%;"><div style="display:table-cell; vertical-align: middle; text-align:center;"><b>' + gettext('No updates available.') + '</div></div>'
 	    },
 	    tbar: [ update_btn, upgrade_btn, changelog_btn ],
 	    features: [ groupingFeature, rowBodyFeature ],
