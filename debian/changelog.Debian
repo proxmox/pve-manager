@@ -1,3 +1,9 @@
+pve-manager (3.1-2) unstable; urgency=low
+
+  * fix perl dependencies
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 16 Aug 2013 06:15:27 +0200
+
 pve-manager (3.1-1) unstable; urgency=low
 
   * bump RELEASE to 3.1
