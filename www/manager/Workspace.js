@@ -45,6 +45,7 @@ Ext.define('PVE.Workspace', {
 		handler: function(data) {
 		    me.login = null;
 		    me.updateLoginData(data);
+		    PVE.Utils.checked_command(function() {}); // display subscription status
 		}
 	    });
 	}
