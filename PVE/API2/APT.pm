@@ -92,6 +92,7 @@ my $get_changelog_url =sub {
 	$pkgver =~ s/^\d+://; # strip epoch
 	my $srcpkg = $info->{SourcePkg} || $pkgname;
 	if ($origin eq 'Debian') {
+	    $base =~ s!pool/updates/!pool/!; # for security channel
 	    $changelog_url = "http://packages.debian.org/changelogs/$base/" . 
 		"${srcpkg}_${pkgver}/changelog";
 	} elsif ($origin eq 'Proxmox') {
