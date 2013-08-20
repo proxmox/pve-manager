@@ -8,7 +8,7 @@ Ext.define('PVE.panel.NotesView', {
 	    url: me.url,
 	    waitMsgTarget: me,
 	    failure: function(response, opts) {
-		me.update("Error " + response.htmlStatus);
+		me.update(gettext('Error') + " " + response.htmlStatus);
 	    },
 	    success: function(response, opts) {
 		var data = response.result.data.description || '';

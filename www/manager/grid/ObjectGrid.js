@@ -90,14 +90,14 @@ Ext.define('PVE.grid.ObjectGrid', {
 	    stateful: false,
 	    columns: [
 		{
-		    header: 'Name',
+		    header: gettext('Name'),
 		    width: me.cwidth1 || 100,
 		    dataIndex: 'key',
 		    renderer: me.renderKey
 		},
 		{
 		    flex: 1,
-		    header: 'Value',
+		    header: gettext('Value'),
 		    dataIndex: 'value',
 		    renderer: me.renderValue
 		}

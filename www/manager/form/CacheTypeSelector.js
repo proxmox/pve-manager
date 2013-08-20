@@ -6,12 +6,12 @@ Ext.define('PVE.form.CacheTypeSelector', {
 	var me = this;
 
 	me.data = [
-	    ['', 'Default (No cache)'],
+	    ['', gettext('Default') + " (" + gettext('No cache') + ")"],
 	    ['directsync', 'Direct sync'],
 	    ['writethrough', 'Write through'],
 	    ['writeback', 'Write back'],
-	    ['unsafe', 'Write back (unsafe)'],
-	    ['none', 'No cache']
+	    ['unsafe', 'Write back (' + gettext('unsafe') + ')'],
+	    ['none', gettext('No cache')]
 	];
 
 	me.callParent();

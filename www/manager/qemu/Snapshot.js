@@ -16,7 +16,7 @@ Ext.define('PVE.window.Snapshot', {
 	    waitMsgTarget: me,
 	    method: 'POST',
 	    failure: function(response, opts) {
-		Ext.Msg.alert('Error', response.htmlStatus);
+		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 	    },
 	    success: function(response, options) {
 		var upid = response.result.data;
@@ -36,7 +36,7 @@ Ext.define('PVE.window.Snapshot', {
 	    waitMsgTarget: me,
 	    method: 'PUT',
 	    failure: function(response, opts) {
-		Ext.Msg.alert('Error', response.htmlStatus);
+		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 	    },
 	    success: function(response, options) {
 		me.close();
@@ -180,7 +180,7 @@ Ext.define('PVE.window.Snapshot', {
 	    waitMsgTarget: me,
 	    method: 'GET',
 	    failure: function(response, opts) {
-		Ext.Msg.alert('Error', response.htmlStatus);
+		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		me.close();
 	    },
 	    success: function(response, options) {

@@ -45,7 +45,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 
 	var bridgesel = Ext.create('PVE.form.BridgeSelector', {
 	    name: 'bridge',
-	    fieldLabel: 'Bridge',
+	    fieldLabel: gettext('Bridge'),
 	    labelAlign: 'right',
 	    autoSelect: true,
 	    disabled: true,
@@ -86,7 +86,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 			    name: 'hostname',
 			    vtype: 'DnsName',
 			    value: '',
-			    fieldLabel: 'Hostname',
+			    fieldLabel: gettext('Hostname'),
 			    skipEmptyText: true,
 			    allowBlank: true
 			}
@@ -183,7 +183,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 			    xtype: 'radiofield',
 			    name: 'networkmode',
 			    inputValue: 'bridge',
-			    boxLabel: 'Bridged mode',
+			    boxLabel: gettext('Bridged mode'),
 			    checked: false,
 			    listeners: {
 				change: function(f, value) {
@@ -213,7 +213,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 			    xtype: 'pvetextfield',
 			    name: 'searchdomain',
 			    skipEmptyText: true,
-			    fieldLabel: 'DNS domain',
+			    fieldLabel: gettext('DNS domain'),
 			    emptyText: 'use host settings',
 			    allowBlank: true,
 			    listeners: {

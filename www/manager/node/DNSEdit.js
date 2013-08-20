@@ -13,7 +13,7 @@ Ext.define('PVE.node.DNSEdit', {
 	me.items = [
 	    {
 		xtype: 'textfield',
-                fieldLabel: 'Search domain',
+                fieldLabel: gettext('Search domain'),
                 name: 'search',
                 allowBlank: false
 	    },
@@ -41,7 +41,7 @@ Ext.define('PVE.node.DNSEdit', {
 	];
 
 	Ext.applyIf(me, {
-	    subject: 'DNS',
+	    subject: gettext('DNS'),
 	    url: "/api2/extjs/nodes/" + nodename + "/dns",
 	    fieldDefaults: {
 		labelWidth: 120

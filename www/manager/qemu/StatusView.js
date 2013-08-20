@@ -34,20 +34,20 @@ Ext.define('PVE.qemu.StatusView', {
 	var render_mem = function(value, metaData, record, rowIndex, colIndex, store) {
 	    var maxmem = me.getObjectValue('maxmem', 0);
 	    var per = (value / maxmem)*100;
-	    var text = "<div>Total: " + PVE.Utils.format_size(maxmem) + "</div>" + 
-		"<div>Used: " + PVE.Utils.format_size(value) + "</div>";
+	    var text = "<div>" + gettext('Total') + ": " + PVE.Utils.format_size(maxmem) + "</div>" + 
+		"<div>" + gettext('Used') + ": " + PVE.Utils.format_size(value) + "</div>";
 	    return text;
 	};
 
 	var rows = {
 	    name: { header: gettext('Name'), defaultValue: 'no name specified' },
 	    qmpstatus: { header: gettext('Status'), defaultValue: 'unknown' },
-	    cpu: { header: 'CPU usage', required: true,  renderer: render_cpu },
+	    cpu: { header: gettext('CPU usage'), required: true,  renderer: render_cpu },
 	    cpus: { visible: false },
-	    mem: { header: 'Memory usage', required: true,  renderer: render_mem },
+	    mem: { header: gettext('Memory usage'), required: true,  renderer: render_mem },
 	    maxmem: { visible: false },
 	    uptime: { header: gettext('Uptime'), required: true, renderer: PVE.Utils.render_uptime },
-	    ha: { header: 'Managed by HA', required: true, renderer: PVE.Utils.format_boolean }
+	    ha: { header: gettext('Managed by HA'), required: true, renderer: PVE.Utils.format_boolean }
 	};
 
 	Ext.applyIf(me, {

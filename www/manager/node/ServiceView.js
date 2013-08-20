@@ -30,7 +30,7 @@ Ext.define('PVE.node.ServiceView', {
 		url: "/nodes/" + nodename + "/services/" + rec.data.service + "/" + cmd,
 		method: 'POST',
 		failure: function(response, opts) {
-		    Ext.Msg.alert('Error', response.htmlStatus);
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		    me.loading = true;
 		},
 		success: function(response, opts) {

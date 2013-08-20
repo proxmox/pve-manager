@@ -34,24 +34,24 @@ Ext.define('PVE.dc.AuthEdit', {
 
 	if (me.authType === 'ad') {
 
-	    me.subject = 'Active Directory Server';
+	    me.subject = gettext('Active Directory Server');
 
             column1.push({
                 xtype: 'textfield',
                 name: 'domain',
-                fieldLabel: 'Domain',
+                fieldLabel: gettext('Domain'),
                 emptyText: 'company.net',
                 allowBlank: false
             });
 
 	} else if (me.authType === 'ldap') {
 
-	    me.subject = 'LDAP Server';
+	    me.subject = gettext('LDAP Server');
 
             column1.push({
                 xtype: 'textfield',
                 name: 'base_dn',
-                fieldLabel: 'Base Domain Name',
+                fieldLabel: gettext('Base Domain Name'),
 		emptyText: 'CN=Users,DC=Company,DC=net',
                 allowBlank: false
             });
@@ -60,7 +60,7 @@ Ext.define('PVE.dc.AuthEdit', {
                 xtype: 'textfield',
                 name: 'user_attr',
                 emptyText: 'uid / sAMAccountName',
-                fieldLabel: 'User Attribute Name',
+                fieldLabel: gettext('User Attribute Name'),
                 allowBlank: false
             });
 

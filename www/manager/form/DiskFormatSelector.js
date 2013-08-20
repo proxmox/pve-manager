@@ -6,9 +6,9 @@ Ext.define('PVE.form.DiskFormatSelector', {
 	var me = this;
 
         me.data = [ 
-	    ['raw', 'Raw disk image (raw)'], 
-	    ['qcow2', 'QEMU image format (qcow2)'],
-	    ['vmdk', 'VMware image format (vmdk)']
+	    ['raw', gettext('Raw disk image') + ' (raw)')], 
+	    ['qcow2', gettext('QEMU image format') + ' (qcow2)'],
+	    ['vmdk', gettext('VMware image format') + ' (vmdk)']
 	];
 
 	me.callParent();

@@ -82,7 +82,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	    xtype: 'radiofield',
 	    name: 'mediaType',
 	    inputValue: 'iso',
-	    boxLabel: 'Use CD/DVD disc image file (iso)',
+	    boxLabel: gettext('Use CD/DVD disc image file (iso)'),
 	    checked: true,
 	    listeners: {
 		change: function(f, value) {
@@ -100,7 +100,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	    name: 'cdimage',
 	    nodename: me.nodename,
 	    storageContent: 'iso',
-	    fieldLabel: 'ISO Image',
+	    fieldLabel: gettext('ISO Image'),
 	    labelAlign: 'right',
 	    allowBlank: false
 	});
@@ -127,7 +127,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	    xtype: 'radiofield',
 	    name: 'mediaType',
 	    inputValue: 'cdrom',
-	    boxLabel: 'Use physical CD/DVD Drive'
+	    boxLabel: gettext('Use physical CD/DVD Drive')
 	});
 
 	items.push({

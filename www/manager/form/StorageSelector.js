@@ -73,24 +73,24 @@ Ext.define('PVE.form.StorageSelector', {
             listConfig: {
 		columns: [
 		    {
-			header: 'Name',
+			header: gettext('Name'),
 			dataIndex: 'storage',
 			hideable: false,
 			flex: 1
 		    },
 		    {
-			header: 'Type',  
+			header: gettext('Type'),
 			width: 60, 
 			dataIndex: 'type'
 		    },
 		    {
-			header: 'Avail',  
+			header: gettext('Avail'),
 			width: 80, 
 			dataIndex: 'avail', 
 			renderer: PVE.Utils.format_size 
 		    },
 		    {
-			header: 'Capacity',  
+			header: gettext('Capacity'),
 			width: 80, 
 			dataIndex: 'total', 
 			renderer: PVE.Utils.format_size 

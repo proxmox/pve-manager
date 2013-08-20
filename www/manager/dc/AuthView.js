@@ -82,7 +82,7 @@ Ext.define('PVE.dc.AuthView', {
 		menu: new Ext.menu.Menu({
 		    items: [
 			{
-			    text: 'Active Directory Server',
+			    text: gettext('Active Directory server'),
 			    handler: function() {
 				var win = Ext.create('PVE.dc.AuthEdit', {
 				    authType: 'ad'
@@ -92,7 +92,7 @@ Ext.define('PVE.dc.AuthView', {
 			    }
 			},
 			{
-			    text: 'LDAP Server',
+			    text: gettext('LDAP Server'),
 			    handler: function() {
 				var win = Ext.create('PVE.dc.AuthEdit',{
 				    authType: 'ldap'

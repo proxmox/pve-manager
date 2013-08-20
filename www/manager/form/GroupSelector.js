@@ -26,7 +26,7 @@ Ext.define('PVE.form.GroupSelector', {
 		    },
 		    {
 			id: 'comment',
-			header: 'Comment',
+			header: gettext('Comment'),
 			sortable: false,
 			dataIndex: 'comment',
 			flex: 1

@@ -28,12 +28,12 @@ Ext.define('PVE.form.VMIDSelector', {
 			method: 'GET',
 			success: function(response, opts) {
 			    if (me.validateExists === true) {
-				me.markInvalid("This VM ID does not exists.");
+				me.markInvalid(gettext('This VM ID does not exists'));
 			    }
 			},
 			failure: function(response, opts) {
 			    if (me.validateExists === false) {
-				me.markInvalid("This VM ID is already in use.");
+				me.markInvalid(gettext('This VM ID is already in use'));
 			    }
 			}
 		    });

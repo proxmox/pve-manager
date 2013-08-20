@@ -160,7 +160,7 @@ Ext.define('PVE.qemu.Config', {
 		    xtype: 'PVE.qemu.Options'
 		},
 		{
-		    title: 'Task History',
+		    title: gettext('Task History'),
 		    itemId: 'tasks',
 		    xtype: 'pveNodeTasks',
 		    vmidFilter: vmid

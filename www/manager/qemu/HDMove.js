@@ -53,7 +53,7 @@ Ext.define('PVE.window.HDMove', {
                 xtype: 'displayfield',
                 name: 'disk',
                 value: me.disk,
-                fieldLabel: 'Disk',
+                fieldLabel: gettext('Disk'),
                 vtype: 'StorageId',
                 allowBlank: false
             }
@@ -62,7 +62,7 @@ Ext.define('PVE.window.HDMove', {
         me.hdstoragesel = Ext.create('PVE.form.StorageSelector', {
                 name: 'hdstorage',
                 nodename: me.nodename,
-                fieldLabel: 'Target Storage',
+                fieldLabel: gettext('Target Storage'),
                 storageContent: 'images',
                 autoSelect: me.insideWizard,
                 allowBlank: true,

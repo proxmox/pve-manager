@@ -46,7 +46,7 @@ Ext.define('PVE.storage.NFSScan', {
 	    displayField: 'path',
 	    matchFieldWidth: false,
 	    listConfig: {
-		loadingText: 'Scanning...',
+		loadingText: gettext('Scanning...'),
 		listeners: {
 		    // hack: call setHeight to show scroll bars correctly
 		    refresh: function(list) {
@@ -120,7 +120,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		height: 22, // hack: set same height as text fields
 		name: 'export',
 		value: '',
-		fieldLabel: 'Export',
+		fieldLabel: gettext('Export'),
 		allowBlank: false
 	    },
 	    {
@@ -187,7 +187,7 @@ Ext.define('PVE.storage.NFSEdit', {
 	});
 	
 	Ext.apply(me, {
-            subject: 'NFS share',
+            subject: gettext('NFS share'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});

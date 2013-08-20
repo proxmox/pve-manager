@@ -13,7 +13,7 @@ Ext.define('PVE.window.HDResize', {
 	    waitMsgTarget: me,
 	    method: 'PUT',
 	    failure: function(response, opts) {
-		Ext.Msg.alert('Error', response.htmlStatus);
+		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 	    },
 	    success: function(response, options) {
 		me.close();
@@ -37,7 +37,7 @@ Ext.define('PVE.window.HDResize', {
 		xtype: 'displayfield',
 		name: 'disk',
 		value: me.disk,
-		fieldLabel: 'Disk',
+		fieldLabel: gettext('Disk'),
 		vtype: 'StorageId',
 		allowBlank: false
 	    }

@@ -25,7 +25,7 @@ Ext.define('PVE.storage.VgSelector', {
 	    queryMode: 'local',
 	    editable: false,
 	    listConfig: {
-		loadingText: 'Scanning...',
+		loadingText: gettext('Scanning...'),
 		listeners: {
 		    // hack: call setHeight to show scroll bars correctly
 		    refresh: function(list) {
@@ -236,7 +236,7 @@ Ext.define('PVE.storage.LVMEdit', {
 	});
 	
 	Ext.apply(me, {
-            subject: 'LVM group',
+            subject: gettext('LVM group'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});

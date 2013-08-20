@@ -6,9 +6,9 @@ Ext.define('PVE.form.BackupModeSelector', {
 	var me = this;
 
 	me.data = [
-	    ['snapshot', 'Snapshot'],
-	    ['suspend', 'Suspend'],
-	    ['stop', 'Stop']
+	    ['snapshot', gettext('Snapshot')],
+	    ['suspend', gettext('Suspend')],
+	    ['stop', gettext('Stop')]
 	];
 
 	me.callParent();

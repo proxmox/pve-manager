@@ -134,7 +134,7 @@ Ext.define('PVE.openvz.Config', {
 		    xtype: 'pveOpenVZNetworkView'
 		},
 		{
-		    title: 'DNS',
+		    title: gettext('DNS'),
 		    itemId: 'dns',
 		    xtype: 'pveOpenVZDNS'
 		},
@@ -144,7 +144,7 @@ Ext.define('PVE.openvz.Config', {
 		    xtype: 'pveOpenVZOptions'
 		},
 		{
-		    title: 'Task History',
+		    title: gettext('Task History'),
 		    itemId: 'tasks',
 		    xtype: 'pveNodeTasks',
 		    vmidFilter: vmid

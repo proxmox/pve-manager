@@ -68,7 +68,7 @@ Ext.define('PVE.OpenVZ.NetIfEdit', {
 		{
 		    xtype: 'textfield',
 		    name: 'mac',
-		    fieldLabel: 'MAC',
+		    fieldLabel: gettext('MAC address'),
 		    vtype: 'MacAddress',
 		    value: cdata.mac,
 		    allowBlank: me.create,
@@ -78,14 +78,14 @@ Ext.define('PVE.OpenVZ.NetIfEdit', {
 		    xtype: 'PVE.form.BridgeSelector',
 		    name: 'bridge',
 		    nodename: me.nodename,
-		    fieldLabel: 'Bridge',
+		    fieldLabel: gettext('Bridge'),
 		    value: cdata.bridge,
 		    allowBlank: false
 		},
 		{
 		    xtype: 'textfield',
 		    name: 'host_ifname',
-		    fieldLabel: 'Host device name',
+		    fieldLabel: gettext('Host device name'),
 		    value: cdata.host_ifname,
 		    allowBlank: true,
 		    emptyText: 'auto'
@@ -93,7 +93,7 @@ Ext.define('PVE.OpenVZ.NetIfEdit', {
 		{
 		    xtype: 'textfield',
 		    name: 'host_mac',
-		    fieldLabel: 'Host MAC address',
+		    fieldLabel: gettext('Host MAC address'),
 		    vtype: 'MacAddress',
 		    value: cdata.host_mac,
 		    allowBlank: true,
@@ -395,22 +395,22 @@ Ext.define('PVE.openvz.NetworkView', {
 		    renderer: me.renderValue
 		},
 		{
-		    header: 'Bridge',
+		    header: gettext('Bridge'),
 		    width: 110,
 		    dataIndex: 'bridge'
 		},
 		{
-		    header: 'MAC',
+		    header: gettext('MAC address'),
 		    width: 110,
 		    dataIndex: 'mac'
 		},
 		{
-		    header: 'Host ifname',
+		    header: gettext('Host ifname'),
 		    width: 110,
 		    dataIndex: 'host_ifname'
 		},
 		{
-		    header: 'Host MAC',
+		    header: gettext('Host MAC address'),
 		    width: 110,
 		    dataIndex: 'host_mac'
 		}

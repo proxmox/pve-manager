@@ -129,7 +129,7 @@ Ext.define('PVE.window.Clone', {
 
 	me.targetSel = Ext.create('PVE.form.NodeSelector', {
 	    name: 'target',
-	    fieldLabel: 'Target node',
+	    fieldLabel: gettext('Target node'),
 	    selectCurNode: true,
 	    allowBlank: false,
 	    onlineValidator: true
@@ -143,7 +143,7 @@ Ext.define('PVE.window.Clone', {
 	}
 
         me.kv1 = Ext.create('PVE.form.KVComboBox', {
-            fieldLabel: 'Clone Mode',
+            fieldLabel: gettext('Clone Mode'),
             name: 'clonemode',
             allowBlank: false,
 	    value: me.isTemplate ? 'clone' : 'copy',
@@ -159,7 +159,7 @@ Ext.define('PVE.window.Clone', {
 
 	me.snapshotSel = Ext.create('PVE.form.SnapshotSelector', {
 	    name: 'snapname',
-	    fieldLabel: 'Snapshot',
+	    fieldLabel: gettext('Snapshot'),
             nodename: me.nodename,
             vmid: me.vmid,
 	    hidden: me.isTemplate ? true : false,
@@ -194,7 +194,7 @@ Ext.define('PVE.window.Clone', {
         me.hdstoragesel = Ext.create('PVE.form.StorageSelector', {
                 name: 'storage',
                 nodename: me.nodename,
-                fieldLabel: 'Target Storage',
+                fieldLabel: gettext('Target Storage'),
                 storageContent: 'images',
                 autoSelect: me.insideWizard,
                 allowBlank: true,

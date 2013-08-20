@@ -17,7 +17,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 	});
 
 	var cdpanel = Ext.create('PVE.qemu.CDInputPanel', {
-	    title: 'CD/DVD',
+	    title: gettext('CD/DVD'),
 	    confid: 'ide2',
 	    fieldDefaults: {
 		labelWidth: 160
@@ -94,14 +94,14 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    }
 		},
 		{
-		    title: 'OS',
+		    title: gettext('OS'),
 		    xtype: 'PVE.qemu.OSTypeInputPanel'
 		},
 		cdpanel,
 		hdpanel,
 		{
 		    xtype: 'PVE.qemu.ProcessorInputPanel',
-		    title: 'CPU'
+		    title: gettext('CPU')
 		},
 		{
 		    xtype: 'PVE.qemu.MemoryInputPanel',

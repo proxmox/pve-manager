@@ -36,8 +36,6 @@ Ext.define('PVE.dc.StorageView', {
 		editor = 'PVE.storage.DirEdit';
 	    } else if (type === 'nfs') {
 		editor = 'PVE.storage.NFSEdit';
-	    } else if (type === 'glusterfs') {
-		editor = 'PVE.storage.GlusterFsEdit';
 	    } else if (type === 'lvm') {
 		editor = 'PVE.storage.LVMEdit';
 	    } else if (type === 'iscsi') {
@@ -102,7 +100,7 @@ Ext.define('PVE.dc.StorageView', {
 		    menu: new Ext.menu.Menu({
 			items: [
 			    {
-				text: 'Directory',
+				text: gettext('Directory'),
 				iconCls: 'pve-itype-icon-itype',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.DirEdit', {});
@@ -112,7 +110,7 @@ Ext.define('PVE.dc.StorageView', {
 
 			    },
 			    {
-				text: 'LVM group',
+				text: gettext('LVM group'),
 				handler: function() {
 				    var win = Ext.create('PVE.storage.LVMEdit', {});
 				    win.on('destroy', reload);
@@ -120,7 +118,7 @@ Ext.define('PVE.dc.StorageView', {
 				}
 			    },
 			    {
-				text: 'NFS share',
+				text: gettext('NFS share'),
 				iconCls: 'pve-itype-icon-node',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.NFSEdit', {});
@@ -129,19 +127,10 @@ Ext.define('PVE.dc.StorageView', {
 				}
 			    },
 			    {
-				text: 'iSCSI target',
+				text: gettext('iSCSI target'),
 				iconCls: 'pve-itype-icon-node',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.IScsiEdit', {});
-				    win.on('destroy', reload);
-				    win.show();
-				}
-			    },
-			    {
-				text: 'GlusterFS volume',
-				iconCls: 'pve-itype-icon-node',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.GlusterFsEdit', {});
 				    win.on('destroy', reload);
 				    win.show();
 				}

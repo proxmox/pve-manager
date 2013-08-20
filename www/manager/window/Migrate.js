@@ -11,7 +11,7 @@ Ext.define('PVE.window.Migrate', {
 	    waitMsgTarget: me,
 	    method: 'POST',
 	    failure: function(response, opts) {
-		Ext.Msg.alert('Error', response.htmlStatus);
+		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 	    },
 	    success: function(response, options) {
 		var upid = response.result.data;
@@ -58,7 +58,7 @@ Ext.define('PVE.window.Migrate', {
 		{
 		    xtype: 'PVE.form.NodeSelector',
 		    name: 'target',
-		    fieldLabel: 'Target node',
+		    fieldLabel: gettext('Target node'),
 		    allowBlank: false,
 		    onlineValidator: true
 		},
@@ -68,7 +68,7 @@ Ext.define('PVE.window.Migrate', {
 		    uncheckedValue: 0,
 		    defaultValue: 0,
 		    checked: running,
-		    fieldLabel: 'Online'
+		    fieldLabel: gettext('Online')
 		}
 	    ]
 	});
@@ -76,7 +76,7 @@ Ext.define('PVE.window.Migrate', {
 	var form = me.formPanel.getForm();
 
 	var submitBtn = Ext.create('Ext.Button', {
-	    text: 'Migrate',
+	    text: gettext('Migrate'),
 	    handler: function() {
 		var values = form.getValues();
 		me.migrate(values.target, values.online);
@@ -84,7 +84,7 @@ Ext.define('PVE.window.Migrate', {
 	});
 
 	Ext.apply(me, {
-	    title: "Migrate VM " + me.vmid,
+	    title: gettext('Migrate VM') + " " + me.vmid,
 	    width: 350,
 	    modal: true,
 	    layout: 'auto',

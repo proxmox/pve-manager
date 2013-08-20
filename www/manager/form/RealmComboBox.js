@@ -13,7 +13,7 @@ Ext.define('PVE.form.RealmComboBox', {
 	});
 
 	Ext.apply(me, {
-	    fieldLabel: 'Realm',
+	    fieldLabel: gettext('Realm'),
 	    name: 'realm',
 	    store: realmstore,
 	    queryMode: 'local',

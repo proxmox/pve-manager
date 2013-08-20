@@ -48,7 +48,7 @@ Ext.define('PVE.form.SnapshotSelector', {
             listConfig: {
 		columns: [
 		    {
-			header: 'Snapshot',
+			header: gettext('Snapshot'),
 			dataIndex: 'name',
 			hideable: false,
 			flex: 1

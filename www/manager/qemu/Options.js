@@ -62,7 +62,7 @@ Ext.define('PVE.qemu.Options', {
 		    'PVE.qemu.StartupEdit' : undefined
 	    },
 	    ostype: {
-		header: 'OS Type',
+		header: gettext('OS Type'),
 		editor: caps.vms['VM.Config.Options'] ? 'PVE.qemu.OSTypeEdit' : undefined,
 		renderer: PVE.Utils.render_kvm_ostype,
 		defaultValue: 'other'
@@ -104,12 +104,12 @@ Ext.define('PVE.qemu.Options', {
 		}
 	    },
 	    tablet: {
-		header: 'Use tablet for pointer',
+		header: gettext('Use tablet for pointer'),
 		defaultValue: true,
 		renderer: PVE.Utils.format_boolean,
 		editor: caps.vms['VM.Config.HWType'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: 'Use tablet for pointer',
+		    subject: gettext('Use tablet for pointer'),
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'tablet',
@@ -122,12 +122,12 @@ Ext.define('PVE.qemu.Options', {
 		} : undefined
 	    },
 	    acpi: {
-		header: 'ACPI support',
+		header: gettext('ACPI support'),
 		defaultValue: true,
 		renderer: PVE.Utils.format_boolean,
 		editor: caps.vms['VM.Config.HWType'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: 'ACPI support',
+		    subject: gettext('ACPI support'),
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'acpi',
@@ -140,18 +140,18 @@ Ext.define('PVE.qemu.Options', {
 		} : undefined
 	    },
 	    scsihw: {
-		header: 'SCSI Controller Type',
+		header: gettext('SCSI Controller Type'),
 		editor: caps.vms['VM.Config.Options'] ? 'PVE.qemu.ScsiHwEdit' : undefined,
 		renderer: PVE.Utils.render_scsihw,
 		defaultValue: ''
 	    },
 	    kvm: {
-		header: 'KVM hardware virtualization',
+		header: gettext('KVM hardware virtualization'),
 		defaultValue: true,
 		renderer: PVE.Utils.format_boolean,
 		editor: caps.vms['VM.Config.HWType'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: 'KVM hardware virtualization',
+		    subject: gettext('KVM hardware virtualization'),
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'kvm',
@@ -164,15 +164,15 @@ Ext.define('PVE.qemu.Options', {
 		} : undefined
 	    },
 	    cpuunits: {
-		header: 'CPU units',
+		header: gettext('CPU units'),
 		defaultValue: '1000',
 		editor: caps.vms['VM.Config.CPU'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: 'CPU units',
+		    subject: gettext('CPU units'),
 		    items: {
 			xtype: 'numberfield',
 			name: 'cpuunits',
-			fieldLabel: 'CPU units',
+			fieldLabel: gettext('CPU units'),
 			minValue: 8,
 			maxValue: 500000,
 			defaultValue: 1000,
@@ -181,12 +181,12 @@ Ext.define('PVE.qemu.Options', {
 		} : undefined
 	    },
 	    freeze: {
-		header: 'Freeze CPU at startup',
+		header: gettext('Freeze CPU at startup'),
 		defaultValue: false,
 		renderer: PVE.Utils.format_boolean,
 		editor: caps.vms['VM.PowerMgmt'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: 'Freeze CPU at startup',
+		    subject: gettext('Freeze CPU at startup'),
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'freeze',
@@ -194,17 +194,17 @@ Ext.define('PVE.qemu.Options', {
 			defaultValue: 0,
 			deleteDefaultValue: true,
 			labelWidth: 140,
-			fieldLabel: 'Freeze CPU at startup'
+			fieldLabel: gettext('Freeze CPU at startup')
 		    }
 		} : undefined
 	    },
 	    localtime: {
-		header: 'Use local time for RTC',
+		header: gettext('Use local time for RTC'),
 		defaultValue: false,
 		renderer: PVE.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: 'Use local time for RTC',
+		    subject: gettext('Use local time for RTC'),
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'localtime',
@@ -212,22 +212,22 @@ Ext.define('PVE.qemu.Options', {
 			defaultValue: 0,
 			deleteDefaultValue: true,
 			labelWidth: 140,
-			fieldLabel: 'Use local time for RTC'
+			fieldLabel: gettext('Use local time for RTC')
 		    }
 		} : undefined
 	    },
 	    startdate: {
-		header: 'RTC start date',
+		header: gettext('RTC start date'),
 		defaultValue: 'now',
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: 'RTC start date',
+		    subject: gettext('RTC start date'),
 		    items: {
 			xtype: 'pvetextfield',
 			name: 'startdate',
 			deleteEmpty: true,
 			value: 'now',
-			fieldLabel: 'RTC start date',
+			fieldLabel: gettext('RTC start date'),
 			vtype: 'QemuStartDate',
 			allowBlank: true
 		    }

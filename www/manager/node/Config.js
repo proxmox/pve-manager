@@ -24,7 +24,7 @@ Ext.define('PVE.node.Config', {
 		method: 'POST',
 		waitMsgTarget: me,
 		failure: function(response, opts) {
-		    Ext.Msg.alert('Error', response.htmlStatus);
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		}
 	    });
 	};
@@ -88,7 +88,7 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveNodeNetworkView'
 		},
 		{
-		    title: 'DNS',
+		    title: gettext('DNS'),
 		    itemId: 'dns',
 		    xtype: 'pveNodeDNSView'
 		},
@@ -121,7 +121,7 @@ Ext.define('PVE.node.Config', {
 
 	me.items.push([
 	    {
-		title: 'Task History',
+		title: gettext('Task History'),
 		itemId: 'tasks',
 		xtype: 'pveNodeTasks'
 	    }
@@ -140,7 +140,7 @@ Ext.define('PVE.node.Config', {
 	
 	me.items.push([
 	    {
-		title: 'Subscription',
+		title: gettext('Subscription'),
 		itemId: 'support',
 		xtype: 'pveNodeSubscription',
 		nodename: nodename

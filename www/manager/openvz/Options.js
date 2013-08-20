@@ -45,15 +45,15 @@ Ext.define('PVE.openvz.Options', {
 		defaultValue: 'no set'
 	    },
 	    cpuunits: {
-		header: 'CPU units',
+		header: gettext('CPU units'),
 		defaultValue: '1000',
 		editor: caps.vms['VM.Config.CPU'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: 'CPU units',
+		    subject: gettext('CPU units'),
 		    items: {
 			xtype: 'numberfield',
 			name: 'cpuunits',
-			fieldLabel: 'CPU units',
+			fieldLabel: gettext('CPU units'),
 			minValue: 8,
 			maxValue: 500000,
 			allowBlank: false
@@ -61,7 +61,7 @@ Ext.define('PVE.openvz.Options', {
 		} : undefined
 	    },
 	    quotaugidlimit: {
-		header: 'Quota UGID limit',
+		header: gettext('Quota UGID limit'),
 		defaultValue: '0',
 		renderer: function(value) {
 		    if (value == 0) {
@@ -71,22 +71,22 @@ Ext.define('PVE.openvz.Options', {
 		},
 		editor: caps.vms['VM.Config.Disk'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: 'Quota UGID limit (0 to disable user quotas)',
+		    subject: gettext('Quota UGID limit (0 to disable user quotas)'),
 		    items: {
 			xtype: 'numberfield',
 			name: 'quotaugidlimit',
-			fieldLabel: 'UGID limit',
+			fieldLabel: gettext('UGID limit'),
 			minValue: 0,
 			allowBlank: false
 		    }
 		} : undefined
 	    },
 	    quotatime: {
-		header: 'Quota Grace period',
+		header: gettext('Quota Grace period'),
 		defaultValue: '0',
 		editor: caps.vms['VM.Config.Disk'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: 'Quota Grace period (seconds)',
+		    subject: gettext('Quota Grace period (seconds)'),
 		    items: {
 			xtype: 'numberfield',
 			name: 'quotatime',

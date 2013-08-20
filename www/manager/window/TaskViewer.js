@@ -114,7 +114,7 @@ Ext.define('PVE.window.TaskViewer', {
 		visible: false
 	    },
 	    type: {
-		header: 'Task type',
+		header: gettext('Task type'),
 		required: true
 	    },
 	    user: {
@@ -126,7 +126,7 @@ Ext.define('PVE.window.TaskViewer', {
 		required: true 
 	    },
 	    pid: {
-		header: 'Process ID',
+		header: gettext('Process ID'),
 		required: true
 	    },
 	    starttime: {
@@ -135,7 +135,7 @@ Ext.define('PVE.window.TaskViewer', {
 		renderer: PVE.Utils.render_timestamp
 	    },
 	    upid: {
-		header: 'Unique task ID'
+		header: gettext('Unique task ID')
 	    }
 	};
 
@@ -153,7 +153,7 @@ Ext.define('PVE.window.TaskViewer', {
 		waitMsgTarget: me,
 		method: 'DELETE',
 		failure: function(response, opts) {
-		    Ext.Msg.alert('Error', response.htmlStatus);
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		}
 	    });
 	};

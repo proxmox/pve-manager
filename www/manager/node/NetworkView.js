@@ -30,7 +30,7 @@ Ext.define('PVE.node.NetworkView', {
 	    PVE.Utils.API2Request({
 		url: '/nodes/' + nodename + '/network',
 		failure: function(response, opts) {
-		    changeitem.update('Error: ' + response.htmlStatus);
+		    changeitem.update(gettext('Error') + ': ' + response.htmlStatus);
 		    store.loadData({});
 		},
 		success: function(response, opts) {
@@ -89,7 +89,7 @@ Ext.define('PVE.node.NetworkView', {
 			reload();
 		    },
 		    failure: function(response, opts) {
-			Ext.Msg.alert('Error', response.htmlStatus);
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		    }
 		});
 	    }
@@ -206,7 +206,7 @@ Ext.define('PVE.node.NetworkView', {
 			},
 			{
 			    xtype: 'booleancolumn', 
-			    header: 'Autostart',
+			    header: gettext('Autostart'),
 			    width: 80,
 			    sortable: true,
 			    dataIndex: 'autostart',
@@ -215,7 +215,7 @@ Ext.define('PVE.node.NetworkView', {
 			    undefinedText: 'No'
 			},
 			{
-			    header: 'Ports/Slaves',
+			    header: gettext('Ports/Slaves'),
 			    dataIndex: 'type',
 			    renderer: render_ports
 			},
@@ -230,7 +230,7 @@ Ext.define('PVE.node.NetworkView', {
 			    dataIndex: 'netmask'
 			},
 			{
-			    header: 'Gateway',
+			    header: gettext('Gateway'),
 			    sortable: true,
 			    dataIndex: 'gateway'
 			}

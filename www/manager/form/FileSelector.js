@@ -49,18 +49,18 @@ Ext.define('PVE.form.FileSelector', {
             listConfig: {
 		columns: [
 		    {
-			header: 'Name',
+			header: gettext('Name'),
 			dataIndex: 'text',
 			hideable: false,
 			flex: 1
 		    },
 		    {
-			header: 'Format',  
+			header: gettext('Format'),
 			width: 60, 
 			dataIndex: 'format'
 		    },
 		    {
-			header: 'Size',  
+			header: gettext('Size'),
 			width: 60, 
 			dataIndex: 'size', 
 			renderer: PVE.Utils.format_size 

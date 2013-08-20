@@ -32,7 +32,7 @@ Ext.define('PVE.dc.vmHAServiceEdit', {
 		    xtype: 'pvecheckbox',
 		    name: 'autostart',
 		    checked: true,
-		    fieldLabel: 'autostart'
+		    fieldLabel: gettext('Autostart')
 		}
 	    ]
 	});

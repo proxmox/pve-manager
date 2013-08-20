@@ -160,7 +160,7 @@ Ext.define('PVE.ConsoleWorkspace', {
 	    content = {
 		border: false,
 		bodyPadding: 10,
-		html: 'Error: No such console type' 
+		html: gettext('Error: No such console type')
 	    };
 	}
 

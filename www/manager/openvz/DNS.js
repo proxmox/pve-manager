@@ -23,31 +23,31 @@ Ext.define('PVE.openvz.DNS', {
 	    hostname: {
 		required: true,
 		defaultValue: me.pveSelNode.data.name,
-		header: 'Hostname',
+		header: gettext('Hostname'),
 		editor: caps.vms['VM.Config.Network'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: 'Hostname',
+		    subject: gettext('Hostname'),
 		    items: {
 			xtype: 'textfield',
 			name: 'hostname',
 			vtype: 'DnsName',
 			value: '',
-			fieldLabel: 'Hostname',
+			fieldLabel: gettext('Hostname'),
 			allowBlank: true,
 			emptyText: me.pveSelNode.data.name
 		    }
 		} : undefined
 	    },
 	    searchdomain: {
-		header: 'DNS domain',
+		header: gettext('DNS domain'),
 		defaultValue: '',
 		editor: caps.vms['VM.Config.Network'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: 'DNS domain',
+		    subject: gettext('DNS domain'),
 		    items: {
 			xtype: 'pvetextfield',
 			name: 'searchdomain',
-			fieldLabel: 'DNS domain',
+			fieldLabel: gettext('DNS domain'),
 			allowBlank: false
 		    }
 		} : undefined

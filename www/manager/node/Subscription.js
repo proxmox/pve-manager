@@ -69,10 +69,10 @@ Ext.define('PVE.node.Subscription', {
 		header: gettext('Server ID')
 	    },
 	    sockets: {
-		header: 'Sockets'
+		header: gettext('Sockets')
 	    },
 	    checktime: {
-		header: 'Last checked',
+		header: gettext('Last checked'),
 		renderer: PVE.Utils.render_timestamp
 	    }	    
 	};
@@ -100,7 +100,7 @@ Ext.define('PVE.node.Subscription', {
 			    method: 'POST',
 			    waitMsgTarget: me,
 			    failure: function(response, opts) {
-				Ext.Msg.alert('Error', response.htmlStatus);
+				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 			    },
 			    callback: reload
 			});

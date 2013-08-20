@@ -126,14 +126,14 @@ Ext.define('PVE.data.ResourceStore', {
 		width: 100
 	    },
 	    maxcpu: {
-		header: 'maxcpu',
+		header: gettext('maxcpu'),
 		type: 'integer',
 		hidden: true,
 		sortable: true,
 		width: 60
 	    },
 	    diskread: {
-		header: 'Total Disk Read',
+		header: gettext('Total Disk Read'),
 		type: 'integer',
 		hidden: true,
 		sortable: true,
@@ -141,7 +141,7 @@ Ext.define('PVE.data.ResourceStore', {
 		width: 100
 	    },
 	    diskwrite: {
-		header: 'Total Disk Write',
+		header: gettext('Total Disk Write'),
 		type: 'integer',
 		hidden: true,
 		sortable: true,
@@ -149,7 +149,7 @@ Ext.define('PVE.data.ResourceStore', {
 		width: 100
 	    },
 	    netin: {
-		header: 'Total NetIn',
+		header: gettext('Total NetIn'),
 		type: 'integer',
 		hidden: true,
 		sortable: true,
@@ -157,7 +157,7 @@ Ext.define('PVE.data.ResourceStore', {
 		width: 100
 	    },
 	    netout: {
-		header: 'Total NetOut',
+		header: gettext('Total NetOut'),
 		type: 'integer',
 		hidden: true,
 		sortable: true,
@@ -165,7 +165,7 @@ Ext.define('PVE.data.ResourceStore', {
 		width: 100
 	    },
 	    template: {
-		header: 'template',
+		header: gettext('Template'),
 		type: 'integer',
 		hidden: true,
 		sortable: true,

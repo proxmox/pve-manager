@@ -229,7 +229,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    xtype: 'CacheTypeSelector',
 	    name: 'cache',
 	    value: '',
-	    fieldLabel: 'Cache'
+	    fieldLabel: gettext('Cache')
 	});
 
 	if (!me.insideWizard) {
@@ -330,7 +330,7 @@ Ext.define('PVE.qemu.HDEdit', {
 		    var value = response.result.data[me.confid];
 		    var drive = PVE.Parser.parseQemuDrive(me.confid, value);
 		    if (!drive) {
-			Ext.Msg.alert('Error', 'Unable to parse drive options');
+			Ext.Msg.alert(gettext('Error'), gettext('Unable to parse drive options'));
 			me.close();
 			return;
 		    }

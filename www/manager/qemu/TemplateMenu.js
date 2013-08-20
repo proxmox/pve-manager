@@ -24,7 +24,7 @@ Ext.define('PVE.qemu.TemplateMenu', {
 		url: '/nodes/' + nodename + '/qemu/' + vmid + "/status/" + cmd,
 		method: 'POST',
 		failure: function(response, opts) {
-		    Ext.Msg.alert('Error', response.htmlStatus);
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		}
 	    });
 	};

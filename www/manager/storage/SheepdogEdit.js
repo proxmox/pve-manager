@@ -90,7 +90,7 @@ Ext.define('PVE.storage.SheepdogEdit', {
 	});
 
 	Ext.apply(me, {
-            subject: 'Sheepdog Storage',
+            subject: gettext('Sheepdog Storage'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});

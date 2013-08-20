@@ -184,14 +184,14 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     kvm_vga_drivers: {
-	std: 'Standard VGA',
-	vmware: 'VMWare compatible',
+	std: gettext('Standard VGA'),
+	vmware: gettext('VMWare compatible'),
 	cirrus: 'Cirrus Logic GD5446',
 	qxl: 'SPICE',
-	serial0: 'Serial terminal 0',
-	serial1: 'Serial terminal 1',
-	serial2: 'Serial terminal 2',
-	serial3: 'Serial terminal 3'
+	serial0: gettext('Serial terminal') + ' 0',
+	serial1: gettext('Serial terminal') + ' 1',
+	serial2: gettext('Serial terminal') + ' 2',
+	serial3: gettext('Serial terminal') + ' 3'
     },
 
     render_kvm_language: function (value) {
@@ -442,14 +442,14 @@ Ext.define('PVE.Utils', { statics: {
 	    method: 'GET',
 	    //waitMsgTarget: me,
 	    failure: function(response, opts) {
-		Ext.Msg.alert('Error', response.htmlStatus);
+		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 	    },
 	    success: function(response, opts) {
 		var data = response.result.data;
 
 		if (data.status !== 'Active') {
 		    Ext.Msg.show({
-			title: 'No valid subscription',
+			title: gettext('No valid subscription'),
 			icon: Ext.Msg.WARNING,
 			msg: PVE.Utils.noSubKeyHtml,
 			buttons: Ext.Msg.OK,
@@ -674,8 +674,6 @@ Ext.define('PVE.Utils', { statics: {
 	    return 'Directory';
 	} else if (value === 'nfs') {
 	    return 'NFS';
-	} else if (value === 'glusterfs') {
-	    return 'GlusterFS';
 	} else if (value === 'lvm') {
 	    return 'LVM';
 	} else if (value === 'iscsi') {

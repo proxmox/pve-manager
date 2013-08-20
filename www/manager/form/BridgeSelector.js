@@ -43,7 +43,7 @@ Ext.define('PVE.form.BridgeSelector', {
             listConfig: {
 		columns: [
 		    {
-			header: 'Bridge',
+			header: gettext('Bridge'),
 			dataIndex: 'iface',
 			hideable: false,
 			flex: 1

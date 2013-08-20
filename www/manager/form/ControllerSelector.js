@@ -57,7 +57,7 @@ Ext.define('PVE.form.ControllerSelector', {
 	var me = this;
 
 	Ext.apply(me, {
-	    fieldLabel: 'Bus/Device',
+	    fieldLabel: gettext('Bus/Device'),
 	    layout: 'hbox',
 	    height: 22, // hack: set to same height as other fields
 	    defaults: {
@@ -108,4 +108,4 @@ Ext.define('PVE.form.ControllerSelector', {
 
 	me.callParent();
     }
-});   
+});

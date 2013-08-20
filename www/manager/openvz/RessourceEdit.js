@@ -53,7 +53,7 @@ Ext.define('PVE.openvz.RessourceInputPanel', {
 		minValue: 1,
 		value: '1',
 		step: 1,
-		fieldLabel: 'CPUs',
+		fieldLabel: gettext('CPUs'),
 		labelWidth: labelWidth,
 		allowBlank: false
 	    }

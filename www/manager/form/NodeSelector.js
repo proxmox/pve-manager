@@ -40,21 +40,21 @@ Ext.define('PVE.form.NodeSelector', {
             listConfig: {
 		columns: [
 		    {
-			header: 'Node',
+			header: gettext('Node'),
 			dataIndex: 'node',
 			sortable: true,
 			hideable: false,
 			flex: 1
 		    },
 		    {
-			header: 'Memory usage',			
+			header: gettext('Memory usage'),			
 			renderer: PVE.Utils.render_mem_usage,
 			sortable: true,
 			width: 100,
 			dataIndex: 'mem'
 		    },
 		    {
-			header: 'CPU usage',
+			header: gettext('CPU usage'),
 			renderer: PVE.Utils.render_cpu,
 			sortable: true,
 			width: 100,

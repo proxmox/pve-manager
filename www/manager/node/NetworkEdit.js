@@ -33,7 +33,7 @@ Ext.define('PVE.node.NetworkEdit', {
 	var column2 = [
 	    {
 		xtype: 'pvecheckbox',
-		fieldLabel: 'Autostart',
+		fieldLabel: gettext('Autostart'),
 		name: 'autostart',
 		uncheckedValue: 0,
 		checked: me.create ? true : undefined
@@ -43,18 +43,18 @@ Ext.define('PVE.node.NetworkEdit', {
 	if (me.iftype === 'bridge') {
 	    column2.push({
 		xtype: 'textfield',
-		fieldLabel: 'Bridge ports',
+		fieldLabel: gettext('Bridge ports'),
 		name: 'bridge_ports'
 	    });	  
 	} else if (me.iftype === 'bond') {
 	    column2.push({
 		xtype: 'textfield',
-		fieldLabel: 'Slaves',
+		fieldLabel: gettext('Slaves'),
 		name: 'slaves'
 	    });
 	    column2.push({
 		xtype: 'bondModeSelector',
-		fieldLabel: 'Mode',
+		fieldLabel: gettext('Mode'),
 		name: 'bond_mode',
 		value: me.create ? 'balance-rr' : undefined,
 		allowBlank: false
@@ -117,7 +117,7 @@ Ext.define('PVE.node.NetworkEdit', {
 	    {
 		xtype: 'pvetextfield',
 		deleteEmpty: !me.create,
-		fieldLabel: 'Gateway',
+		fieldLabel: gettext('Gateway'),
 		vtype: 'IPAddress',
 		name: 'gateway'
 	    }

@@ -61,7 +61,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 
 	me.bridgesel = Ext.create('PVE.form.BridgeSelector', {
 	    name: 'bridge',
-	    fieldLabel: 'Bridge',
+	    fieldLabel: gettext('Bridge'),
 	    nodename: me.nodename,
 	    labelAlign: 'right',
 	    autoSelect: true,
@@ -74,7 +74,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		name: 'networkmode',
 		height: 22, // hack: set same height as text fields
 		inputValue: 'bridge',
-		boxLabel: 'Bridged mode',
+		boxLabel: gettext('Bridged mode'),
 		checked: true,
 		listeners: {
 		    change: function(f, value) {
@@ -95,7 +95,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		maxValue: 4094,
 		value: '',
 		emptyText: 'no VLAN',
-		fieldLabel: 'VLAN Tag',
+		fieldLabel: gettext('VLAN Tag'),
 		labelAlign: 'right',
 		allowBlank: true
 	    },
@@ -104,7 +104,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		name: 'networkmode',
 		height: 22, // hack: set same height as text fields
 		inputValue: 'nat',
-		boxLabel: 'NAT mode'
+		boxLabel: gettext('NAT mode')
 	    }
 	];
 
@@ -114,7 +114,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		name: 'networkmode',
 		height: 22, // hack: set same height as text fields
 		inputValue: 'none',
-		boxLabel: 'No network device'
+		boxLabel: gettext('No network device')
 	    });
 	}
 
@@ -122,14 +122,14 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    {
 		xtype: 'PVE.form.NetworkCardSelector',
 		name: 'model',
-		fieldLabel: 'Model',
+		fieldLabel: gettext('Model'),
 		value: 'e1000',
 		allowBlank: false
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'macaddr',
-		fieldLabel: 'MAC address',
+		fieldLabel: gettext('MAC address'),
 		vtype: 'MacAddress',
 		allowBlank: true,
 		emptyText: 'auto'
@@ -137,7 +137,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    {
 		xtype: 'numberfield',
 		name: 'rate',
-		fieldLabel: 'Rate limit (MB/s)',
+		fieldLabel: gettext('Rate limit (MB/s)'),
 		minValue: 0,
 		maxValue: 10*1024,
 		value: '',
@@ -187,7 +187,7 @@ Ext.define('PVE.qemu.NetworkEdit', {
 		    var value = me.vmconfig[me.confid];
 		    var network = PVE.Parser.parseQemuNetwork(me.confid, value);
 		    if (!network) {
-			Ext.Msg.alert('Error', 'Unable to parse network options');
+			Ext.Msg.alert(gettext('Error'), gettext('Unable to parse network options'));
 			me.close();
 			return;
 		    }

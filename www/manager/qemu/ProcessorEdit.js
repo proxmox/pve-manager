@@ -12,7 +12,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 		minValue: 1,
 		maxValue: 4,
 		value: '1',
-		fieldLabel: 'Sockets',
+		fieldLabel: gettext('Sockets'),
 		allowBlank: false,
 		listeners: {
 		    change: function(f, value) {
@@ -28,7 +28,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 		minValue: 1,
 		maxValue: 32,
 		value: '1',
-		fieldLabel: 'Cores',
+		fieldLabel: gettext('Cores'),
 		allowBlank: false,
 		listeners: {
 		    change: function(f, value) {
@@ -46,11 +46,11 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 		xtype: 'CPUModelSelector',
 		name: 'cpu',
 		value: '',
-		fieldLabel: 'CPU type'
+		fieldLabel: gettext('CPU type')
 	    },
 	    {
 		xtype: 'displayfield',
-		fieldLabel: 'Total cores',
+		fieldLabel: gettext('Total cores'),
 		name: 'totalcores',
 		value: '1'
 	    }

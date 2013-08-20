@@ -49,36 +49,36 @@ Ext.define('PVE.openvz.BeanCounterGrid', {
 	    stateful: false,
 	    columns: [
 		{
-		    header: 'Ressource',
+		    header: gettext('Resource'),
 		    width: 100,
 		    dataIndex: 'id'
 		},
 		{
-		    header: 'held',
+		    header: gettext('Held'),
 		    width: 100,
 		    renderer: me.renderUbc,
 		    dataIndex: 'held'
 		},
 		{
-		    header: 'maxheld',
+		    header: gettext('Maxheld'),
 		    width: 100,
 		    renderer: me.renderUbc,
 		    dataIndex: 'maxheld'
 		},
 		{
-		    header: 'barrier',
+		    header: gettext('Barrier'),
 		    width: 100,
 		    renderer: me.renderUbc,
 		    dataIndex: 'bar'
 		},
 		{
-		    header: 'limit',
+		    header: gettext('Limit'),
 		    width: 100,
 		    renderer: me.renderUbc,
 		    dataIndex: 'lim'
 		},
 		{
-		    header: 'failcnt',
+		    header: gettext('Failcnt'),
 		    width: 100,
 		    dataIndex: 'failcnt'
 		}

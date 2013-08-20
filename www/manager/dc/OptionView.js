@@ -5,7 +5,7 @@ Ext.define('PVE.dc.HttpProxyEdit', {
 	var me = this;
 
 	Ext.applyIf(me, {
-	    subject: 'HTTP proxy',
+	    subject: gettext('HTTP proxy'),
 	    items: {
 		xtype: 'pvetextfield',
 		name: 'http_proxy',
@@ -13,7 +13,7 @@ Ext.define('PVE.dc.HttpProxyEdit', {
 		emptyText: gettext('Do not use any proxy'),
 		deleteEmpty: true,
 		value: '',
-		fieldLabel: 'HTTP proxy'
+		fieldLabel: gettext('HTTP proxy')
 	    }
 	});
 
@@ -66,7 +66,7 @@ Ext.define('PVE.dc.OptionView', {
 		required: true 
 	    },
 	    http_proxy: { 
-		header: 'HTTP proxy',
+		header: gettext('HTTP proxy'),
 		editor: 'PVE.dc.HttpProxyEdit', 
 		required: true,
 		renderer: function(value) {

@@ -114,7 +114,7 @@ Ext.define('PVE.storage.TemplateDownload', {
 		    },
 		    method: 'POST',
 		    failure: function (response, opts) {
-			Ext.Msg.alert('Error', response.htmlStatus);
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		    },
 		    success: function(response, options) {
 			var upid = response.result.data;
@@ -185,9 +185,9 @@ Ext.define('PVE.storage.Upload', {
 		{
 		    xtype: 'pveKVComboBox',
 		    data: [
-			['iso', 'ISO image'],
-			['backup', 'VZDump backup file'],
-			['vztmpl', 'OpenVZ template']
+			['iso', gettext('ISO image')],
+			['backup', gettext('VZDump backup file')],
+			['vztmpl', gettext('OpenVZ template')]
 		    ],
 		    fieldLabel: gettext('Content'),
 		    name: 'content',
@@ -268,7 +268,7 @@ Ext.define('PVE.storage.Upload', {
 		    if (xhr.status == 200) {
 			me.close();
 		    } else {  
-			var msg = "Error " + xhr.status.toString() + ": " + Ext.htmlEncode(xhr.statusText);
+			var msg = gettext('Error') + " " + xhr.status.toString() + ": " + Ext.htmlEncode(xhr.statusText);
 			var result = Ext.decode(xhr.responseText);
 			result.message = msg;
 			var htmlStatus = PVE.Utils.extractRequestError(result, true);

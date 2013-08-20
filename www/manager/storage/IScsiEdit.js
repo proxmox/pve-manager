@@ -46,7 +46,7 @@ Ext.define('PVE.storage.IScsiScan', {
 	    displayField: 'target',
 	    matchFieldWidth: false,
 	    listConfig: {
-		loadingText: 'Scanning...',
+		loadingText: gettext('Scanning...'),
 		listeners: {
 		    // hack: call setHeight to show scroll bars correctly
 		    refresh: function(list) {
@@ -103,7 +103,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		height: 22, // hack: set same height as text fields
 		name: 'portal',
 		value: '',
-		fieldLabel: 'Portal',
+		fieldLabel: gettext('Portal'),
 		allowBlank: false,
 		listeners: {
 		    change: function(f, value) {
@@ -120,7 +120,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		xtype: me.create ? 'pveIScsiScan' : 'displayfield',
 		name: 'target',
 		value: '',
-		fieldLabel: 'Target',
+		fieldLabel: gettext('Target'),
 		allowBlank: false
 	    }
 	];
@@ -176,7 +176,7 @@ Ext.define('PVE.storage.IScsiEdit', {
 	});
 	
 	Ext.apply(me, {
-            subject: 'iSCSI target',
+            subject: gettext('iSCSI target'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});

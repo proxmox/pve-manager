@@ -13,7 +13,7 @@ Ext.define('PVE.node.StatusView', {
 	var render_cpuinfo = function(value) {
 	    return value.cpus + " x " + value.model + " (" + 
 		value.sockets.toString() + " " + 
-		(value.sockets > 1 ? "Sockets" : "Socket") + ")";
+		(value.sockets > 1 ? gettext('Sockets') : gettext('Socket')) + ")";
 	};
 
 	var render_loadavg = function(value) {
@@ -31,23 +31,23 @@ Ext.define('PVE.node.StatusView', {
 
 	var render_meminfo = function(value) {
 	    var per = (value.used / value.total)*100;
-	    var text = "<div>Total: " + PVE.Utils.format_size(value.total) + "</div>" + 
-		"<div>Used: " + PVE.Utils.format_size(value.used) + "</div>";
+	    var text = "<div>" + gettext('Total') + ": " + PVE.Utils.format_size(value.total) + "</div>" + 
+		"<div>" + gettext('Used') + ": " + PVE.Utils.format_size(value.used) + "</div>";
 	    return text;
 	};
 
 	var rows = {
-	    uptime: { header: 'Uptime', required: true, renderer: PVE.Utils.format_duration_long },
-	    loadavg: { header: 'Load average', required: true, renderer: render_loadavg },
-	    cpuinfo: { header: 'CPUs', required: true, renderer: render_cpuinfo },
-	    cpu: { header: 'CPU usage',required: true,  renderer: render_cpu },
-	    wait: { header: 'IO delay', required: true, renderer: render_cpu },
-	    memory: { header: 'RAM usage', required: true, renderer: render_meminfo },
-	    swap: { header: 'SWAP usage', required: true, renderer: render_meminfo },
-	    ksm: { header: 'KSM sharing', required: true, renderer: render_ksm },
-	    rootfs: { header: 'HD space (root)', required: true, renderer: render_meminfo },
-	    pveversion: { header: 'PVE Manager version', required: true },
-	    kversion: { header: 'Kernel version', required: true }
+	    uptime: { header: gettext('Uptime'), required: true, renderer: PVE.Utils.format_duration_long },
+	    loadavg: { header: gettext('Load average'), required: true, renderer: render_loadavg },
+	    cpuinfo: { header: gettext('CPUs'), required: true, renderer: render_cpuinfo },
+	    cpu: { header: gettext('CPU usage'),required: true,  renderer: render_cpu },
+	    wait: { header: gettext('IO delay'), required: true, renderer: render_cpu },
+	    memory: { header: gettext('RAM usage'), required: true, renderer: render_meminfo },
+	    swap: { header: gettext('SWAP usage'), required: true, renderer: render_meminfo },
+	    ksm: { header: gettext('KSM sharing'), required: true, renderer: render_ksm },
+	    rootfs: { header: gettext('HD space (root)'), required: true, renderer: render_meminfo },
+	    pveversion: { header: gettext('PVE Manager version'), required: true },
+	    kversion: { header: gettext('Kernel version'), required: true }
 	};
 
 	Ext.applyIf(me, {

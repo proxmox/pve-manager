@@ -41,7 +41,7 @@ Ext.define('PVE.storage.Summary', {
 		statusview,
 		{
 		    xtype: 'pveRRDView',
-		    title: "Usage",
+		    title: gettext('Usage'),
 		    pveSelNode: me.pveSelNode,
 		    datasource: 'total,used',
 		    rrdurl: rrdurl

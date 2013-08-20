@@ -26,7 +26,7 @@ Ext.define('PVE.openvz.Summary', {
 	var rstore = me.statusStore;
 
 	var statusview = Ext.create('PVE.openvz.StatusView', {
-	    title: 'Status',
+	    title: gettext('Status'),
 	    pveSelNode: me.pveSelNode,
 	    width: 400,
 	    rstore: rstore
@@ -64,28 +64,28 @@ Ext.define('PVE.openvz.Summary', {
 		},
 		{
 		    xtype: 'pveRRDView',
-		    title: "CPU usage %",
+		    title: gettext('CPU usage %'),
 		    pveSelNode: me.pveSelNode,
 		    datasource: 'cpu',
 		    rrdurl: rrdurl
 		},
 		{
 		    xtype: 'pveRRDView',
-		    title: "Memory usage",
+		    title: gettext('Memory usage'),
 		    pveSelNode: me.pveSelNode,
 		    datasource: 'mem,maxmem',
 		    rrdurl: rrdurl
 		},
 		{
 		    xtype: 'pveRRDView',
-		    title: "Network traffic",
+		    title: gettext('Network traffic'),
 		    pveSelNode: me.pveSelNode,
 		    datasource: 'netin,netout',
 		    rrdurl: rrdurl
 		},
 		{
 		    xtype: 'pveRRDView',
-		    title: "Disk IO",
+		    title: gettext('Disk IO'),
 		    pveSelNode: me.pveSelNode,
 		    datasource: 'diskread,diskwrite',
 		    rrdurl: rrdurl

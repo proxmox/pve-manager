@@ -55,7 +55,7 @@ Ext.define('PVE.node.APT', {
 		url: "/nodes/" + nodename + "/apt/" + cmd,
 		method: 'POST',
 		failure: function(response, opts) {
-		    Ext.Msg.alert('Error', response.htmlStatus);
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		},
 		success: function(response, opts) {
 		    var upid = response.result.data;
@@ -129,7 +129,7 @@ Ext.define('PVE.node.APT', {
 		method: 'GET',
 		failure: function(response, opts) {
 		    win.close();
-		    Ext.Msg.alert('Error', response.htmlStatus);
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		},
 		success: function(response, opts) {
 		    win.show();

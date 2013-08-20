@@ -31,7 +31,7 @@ Ext.define('PVE.form.UserSelector', {
 			flex: 1
 		    },
 		    {
-			header: 'Name',
+			header: gettext('Name'),
 			sortable: true,
 			renderer: render_full_name,
 			dataIndex: 'firstname',
@@ -39,7 +39,7 @@ Ext.define('PVE.form.UserSelector', {
 		    },
 		    {
 			id: 'comment',
-			header: 'Comment',
+			header: gettext('Comment'),
 			sortable: false,
 			dataIndex: 'comment',
 			flex: 1

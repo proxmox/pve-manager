@@ -35,7 +35,7 @@ Ext.define('PVE.node.Summary', {
 	    method: 'GET',
 	    failure: function(response, opts) {
 		win.close();
-		Ext.Msg.alert('Error', response.htmlStatus);
+		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 	    },
 	    success: function(response, opts) {
 		win.show();
@@ -78,9 +78,9 @@ Ext.define('PVE.node.Summary', {
 	var rstore = me.statusStore;
 
 	var statusview = Ext.create('PVE.node.StatusView', {
-	    title: 'Status',
+	    title: gettext('Status'),
 	    pveSelNode: me.pveSelNode,
-	    style: { 'padding-top': '0px' },
+	    style: 'padding-top:0px',
 	    rstore: rstore
 	});
 
@@ -98,32 +98,32 @@ Ext.define('PVE.node.Summary', {
 	    bodyStyle: 'padding:10px',
 	    defaults: {
 		width: 800,
-		style: { 'padding-top': '10px' }
+		style: 'padding-top:10px'
 	    },		
 	    tbar: [version_btn, '->', { xtype: 'pveRRDTypeSelector' } ],
 	    items: [
 		statusview,
 		{
 		    xtype: 'pveRRDView',
-		    title: "CPU usage %",
+		    title: gettext('CPU usage'),
 		    datasource: 'cpu,iowait',
 		    rrdurl: rrdurl
 		},
 		{
 		    xtype: 'pveRRDView',
-		    title: "Server load",
+		    title: gettext('Server load'),
 		    datasource: 'loadavg',
 		    rrdurl: rrdurl
 		},
 		{
 		    xtype: 'pveRRDView',
-		    title: "Memory usage",
+		    title: gettext('Memory usage'),
 		    datasource: 'memtotal,memused',
 		    rrdurl: rrdurl
 		},
 		{
 		    xtype: 'pveRRDView',
-		    title: "Network traffic",
+		    title: gettext('Network traffic'),
 		    datasource: 'netin,netout',
 		    rrdurl: rrdurl
 		}
