@@ -6,6 +6,7 @@ DESTDIR=
 SUBDIRS = aplinfo PVE bin www po
 
 ARCH:=$(shell dpkg-architecture -qDEB_BUILD_ARCH)
+GITVERSION:=$(shell cat .git/refs/heads/master)
 
 DEB=${PACKAGE}_${VERSION}-${PACKAGERELEASE}_${ARCH}.deb
 
@@ -46,6 +47,7 @@ ${DEB} deb:
 	install -m 0755 debian/prerm dest/DEBIAN
 	install -m 0755 debian/postrm dest/DEBIAN
 	install -m 0644 debian/triggers dest/DEBIAN
+	echo "git clone git://git.proxmox.com/git/pve-manager.git\\ngit checkout ${GITVERSION}" >  dest/usr/share/doc/${PACKAGE}/SOURCE
 	gzip --best dest/usr/share/man/*/*
 	gzip --best dest/usr/share/doc/${PACKAGE}/changelog.Debian
 	dpkg-deb --build dest
