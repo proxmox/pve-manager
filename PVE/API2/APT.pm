@@ -176,8 +176,8 @@ my $update_pve_pkgstatus = sub {
     foreach my $pkgname (keys %$cache) {
 	my $p = $cache->{$pkgname};
 	next if $p->{SelectedState} ne 'Install';
-	my $current_ver = $p->{CurrentVer};
-	my $candidate_ver = $policy->candidate($p);
+	my $current_ver = $p->{CurrentVer} || next;
+	my $candidate_ver = $policy->candidate($p) || next;
 
 	if ($current_ver->{VerStr} ne $candidate_ver->{VerStr}) {
 	    my $info = $pkgrecords->lookup($pkgname);
