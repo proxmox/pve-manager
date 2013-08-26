@@ -392,6 +392,7 @@ __PACKAGE__->register_method({
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
     },
+    proxyto => 'node',
     parameters => {
     	additionalProperties => 0,
 	properties => {
