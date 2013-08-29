@@ -19,6 +19,8 @@ Ext.define('PVE.openvz.Options', {
 
 	var caps = Ext.state.Manager.get('GuiCap');
 
+	var quotaDisabledText = gettext('User quotas disabled.');
+
 	var rows = {
 	    onboot: {
 		header: gettext('Start at boot'),
@@ -65,17 +67,19 @@ Ext.define('PVE.openvz.Options', {
 		defaultValue: '0',
 		renderer: function(value) {
 		    if (value == 0) {
-			return 'User quotas disabled.';
+			return quotaDisabledText;
 		    }
 		    return value;
 		},
 		editor: caps.vms['VM.Config.Disk'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: gettext('Quota UGID limit (0 to disable user quotas)'),
+		    subject: gettext('Quota UGID limit') + ' (0 ==> ' +
+			quotaDisabledText + ')',
+		    fieldDefaults: { labelWidth: 130 },
 		    items: {
 			xtype: 'numberfield',
 			name: 'quotaugidlimit',
-			fieldLabel: gettext('UGID limit'),
+			fieldLabel:  gettext('Quota UGID limit'),
 			minValue: 0,
 			allowBlank: false
 		    }
@@ -86,13 +90,15 @@ Ext.define('PVE.openvz.Options', {
 		defaultValue: '0',
 		editor: caps.vms['VM.Config.Disk'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: gettext('Quota Grace period (seconds)'),
+		    subject: gettext('Quota Grace period') + ' (' +
+			gettext('seconds') + ')',
+		    fieldDefaults: { labelWidth: 130 },
 		    items: {
 			xtype: 'numberfield',
 			name: 'quotatime',
 			minValue: 0,
 			allowBlank: false,
-			fieldLabel: 'Grace period'
+			fieldLabel: gettext('Quota Grace period')
 		    }
 		} : undefined
 	    }
