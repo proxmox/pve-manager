@@ -6,7 +6,7 @@ Ext.define('PVE.form.CPUModelSelector', {
 	var me = this;
 
         me.data = [ 
-	    ['', gettext('Default') + ' (kvm64)'],
+	    ['', PVE.Utils.defaultText + ' (kvm64)'],
 	    ['486', '486'],
 	    ['athlon', 'athlon'],
 	    ['core2duo', 'core2duo'],

@@ -137,7 +137,7 @@ Ext.define('PVE.dc.StorageView', {
 				    win.show();
 				}
 			    },
- 			    {
+			    {
 				text: gettext('GlusterFS volume'),
 				iconCls: 'pve-itype-icon-node',
 				handler: function() {
