@@ -176,7 +176,7 @@ Ext.define('PVE.storage.IScsiEdit', {
 	});
 	
 	Ext.apply(me, {
-            subject: 'iSCSI target',
+            subject: PVE.Utils.format_storage_type('iscsi'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});

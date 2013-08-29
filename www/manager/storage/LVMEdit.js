@@ -236,7 +236,7 @@ Ext.define('PVE.storage.LVMEdit', {
 	});
 	
 	Ext.apply(me, {
-            subject: gettext('LVM group'),
+            subject: PVE.Utils.format_storage_type('lvm'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});

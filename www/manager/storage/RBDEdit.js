@@ -106,7 +106,7 @@ Ext.define('PVE.storage.RBDEdit', {
 	});
 
 	Ext.apply(me, {
-            subject: gettext('RBD Storage'),
+            subject: PVE.Utils.format_storage_type('rbd'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});

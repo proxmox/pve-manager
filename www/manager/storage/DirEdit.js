@@ -111,7 +111,7 @@ Ext.define('PVE.storage.DirEdit', {
 	});
 
 	Ext.apply(me, {
-            subject: 'Directory',
+            subject: PVE.Utils.format_storage_type('dir'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});

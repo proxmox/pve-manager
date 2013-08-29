@@ -140,7 +140,7 @@ Ext.define('PVE.storage.NexentaEdit', {
 	});
 
 	Ext.apply(me, {
-            subject: gettext('Nexenta Storage'),
+            subject: PVE.Utils.format_storage_type('nexenta'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});

@@ -184,7 +184,7 @@ Ext.define('PVE.storage.GlusterFsEdit', {
 	});
 	
 	Ext.apply(me, {
-            subject: 'GlusterFS Volume',
+            subject: PVE.Utils.format_storage_type('glusterfs'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});

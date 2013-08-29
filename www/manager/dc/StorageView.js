@@ -102,7 +102,7 @@ Ext.define('PVE.dc.StorageView', {
 		    menu: new Ext.menu.Menu({
 			items: [
 			    {
-				text: gettext('Directory'),
+				text:  PVE.Utils.format_storage_type('dir'),
 				iconCls: 'pve-itype-icon-itype',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.DirEdit', {});
@@ -112,7 +112,7 @@ Ext.define('PVE.dc.StorageView', {
 
 			    },
 			    {
-				text: gettext('LVM group'),
+				text:  PVE.Utils.format_storage_type('lvm'),
 				handler: function() {
 				    var win = Ext.create('PVE.storage.LVMEdit', {});
 				    win.on('destroy', reload);
@@ -120,7 +120,7 @@ Ext.define('PVE.dc.StorageView', {
 				}
 			    },
 			    {
-				text: gettext('NFS share'),
+				text:  PVE.Utils.format_storage_type('nfs'),
 				iconCls: 'pve-itype-icon-node',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.NFSEdit', {});
@@ -129,7 +129,7 @@ Ext.define('PVE.dc.StorageView', {
 				}
 			    },
 			    {
-				text: gettext('iSCSI target'),
+				text: PVE.Utils.format_storage_type('iscsi'),
 				iconCls: 'pve-itype-icon-node',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.IScsiEdit', {});
@@ -138,7 +138,7 @@ Ext.define('PVE.dc.StorageView', {
 				}
 			    },
 			    {
-				text: gettext('GlusterFS volume'),
+				text: PVE.Utils.format_storage_type('glusterfs'),
 				iconCls: 'pve-itype-icon-node',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.GlusterFsEdit', {});
@@ -147,7 +147,7 @@ Ext.define('PVE.dc.StorageView', {
 				}
 			    },
 			    {
-				text: 'RBD',
+				text: PVE.Utils.format_storage_type('rbd'),
 				iconCls: 'pve-itype-icon-node',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.RBDEdit', {});
@@ -158,7 +158,7 @@ Ext.define('PVE.dc.StorageView', {
 /* the following type are conidered unstable
  * so we do not enable that on the GUI for now
 			    {
-				text: 'Sheepdog',
+				text: PVE.Utils.format_storage_type('sheepdog'),
 				iconCls: 'pve-itype-icon-node',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.SheepdogEdit', {});
@@ -167,7 +167,7 @@ Ext.define('PVE.dc.StorageView', {
 				}
 			    },
 			    {
-				text: 'Nexenta',
+				text: PVE.Utils.format_storage_type('nexenta'),
 				iconCls: 'pve-itype-icon-node',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.NexentaEdit', {});

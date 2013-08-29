@@ -187,7 +187,7 @@ Ext.define('PVE.storage.NFSEdit', {
 	});
 	
 	Ext.apply(me, {
-            subject: gettext('NFS share'),
+            subject: 'NFS',
 	    isAdd: true,
 	    items: [ ipanel ]
 	});
