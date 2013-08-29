@@ -64,7 +64,7 @@ Ext.define('PVE.openvz.Summary', {
 		},
 		{
 		    xtype: 'pveRRDView',
-		    title: gettext('CPU usage %'),
+		    title: gettext('CPU usage'),
 		    pveSelNode: me.pveSelNode,
 		    datasource: 'cpu',
 		    rrdurl: rrdurl

@@ -48,7 +48,7 @@ Ext.define('PVE.node.StatusView', {
 	    memory: { header: gettext('RAM usage'), required: true, renderer: render_meminfo },
 	    swap: { header: gettext('SWAP usage'), required: true, renderer: render_meminfo },
 	    ksm: { header: gettext('KSM sharing'), required: true, renderer: render_ksm },
-	    rootfs: { header: gettext('HD space (root)'), required: true, renderer: render_meminfo },
+	    rootfs: { header: gettext('HD space') + ' (root)', required: true, renderer: render_meminfo },
 	    pveversion: { header: gettext('PVE Manager version'), required: true },
 	    kversion: { header: gettext('Kernel version'), required: true }
 	};

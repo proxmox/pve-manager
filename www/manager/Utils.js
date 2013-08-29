@@ -469,7 +469,7 @@ Ext.define('PVE.Utils', { statics: {
 
     task_desc_table: {
 	vncproxy: [ 'VM/CT', gettext('Console') ],
-	spiceproxy: [ 'VM/CT', gettext('Spice Console') ],
+	spiceproxy: [ 'VM/CT', gettext('Console') + ' (Spice)' ],
 	vncshell: [ '', gettext('Shell') ],
 	qmsnapshot: [ 'VM', gettext('Snapshot') ],
 	qmrollback: [ 'VM', gettext('Rollback') ],

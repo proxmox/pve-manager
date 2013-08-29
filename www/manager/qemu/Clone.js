@@ -137,13 +137,13 @@ Ext.define('PVE.window.Clone', {
 
 	col1.push(me.targetSel);
 
-	var modelist = [['copy', 'Full Clone']];
+	var modelist = [['copy', gettext('Full Clone')]];
 	if (me.isTemplate) {
-	    modelist.push(['clone', 'Linked Clone']);
+	    modelist.push(['clone', gettext('Linked Clone')]);
 	}
 
         me.kv1 = Ext.create('PVE.form.KVComboBox', {
-            fieldLabel: gettext('Clone Mode'),
+            fieldLabel: gettext('Mode'),
             name: 'clonemode',
             allowBlank: false,
 	    value: me.isTemplate ? 'clone' : 'copy',

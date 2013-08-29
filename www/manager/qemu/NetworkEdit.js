@@ -137,7 +137,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    {
 		xtype: 'numberfield',
 		name: 'rate',
-		fieldLabel: gettext('Rate limit (MB/s)'),
+		fieldLabel: gettext('Rate limit') + ' (MB/s)',
 		minValue: 0,
 		maxValue: 10*1024,
 		value: '',

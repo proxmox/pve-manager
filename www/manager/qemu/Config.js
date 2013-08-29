@@ -119,7 +119,7 @@ Ext.define('PVE.qemu.Config', {
 	});
 
 	var spiceBtn = Ext.create('Ext.Button', {
-	    text: gettext('Spice'),
+	    text: 'SPICE',
 	    disabled: !caps.vms['VM.Console'],
 	    handler: function() {
 		Ext.core.DomHelper.append(document.body, {

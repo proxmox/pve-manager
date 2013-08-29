@@ -102,7 +102,7 @@ Ext.define('PVE.window.Restore', {
 		if (me.vmid) {
 		    var msg = gettext('Are you sure you want to restore this VM?') + ' ' +
 			gettext('This will permanently erase current VM data.');
-		    Ext.Msg.confirm(gettext('Confirmation'), msg, function(btn) {
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
 			}
@@ -118,7 +118,8 @@ Ext.define('PVE.window.Restore', {
 	    submitBtn.setDisabled(!valid);
 	});
 
-	var title = (me.vmtype === 'openvz') ? gettext('Restore CT') : gettext('Restore VM');
+	var title = (me.vmtype === 'openvz') ? gettext('Restore CT') : 
+	    gettext('Restore VM');
 
 	Ext.apply(me, {
 	    title: title,

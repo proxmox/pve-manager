@@ -41,7 +41,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 	me.column2 = [
 	    {
 		xtype: 'component', 
-		html: 'Linux/' + gettext('Other'), 
+		html: 'Linux/' + gettext('Other OS types'), 
 		cls:'x-form-check-group-label'
 	    },
 	    {
