@@ -33,16 +33,16 @@ Ext.define('PVE.openvz.StatusView', {
 	var render_mem = function(value, metaData, record, rowIndex, colIndex, store) {
 	    var maxmem = me.getObjectValue('maxmem', 0);
 	    var per = (value / maxmem)*100;
-	    var text = "<div>" + gettext('Total') + ": " + PVE.Utils.format_size(maxmem) + "</div>" + 
-		"<div>" + gettext('Used') + ": " + PVE.Utils.format_size(value) + "</div>";
+	    var text = "<div>" + PVE.Utils.totalText + ": " + PVE.Utils.format_size(maxmem) + "</div>" + 
+		"<div>" + PVE.Utils.usedText + ": " + PVE.Utils.format_size(value) + "</div>";
 	    return text;
 	};
 
 	var render_swap = function(value, metaData, record, rowIndex, colIndex, store) {
 	    var maxswap = me.getObjectValue('maxswap', 0);
 	    var per = (value / maxswap)*100;
-	    var text = "<div>" + gettext('Total') + ": " + PVE.Utils.format_size(maxswap) + "</div>" + 
-		"<div>" + gettext('Used') + ": " + PVE.Utils.format_size(value) + "</div>";
+	    var text = "<div>" + PVE.Utils.totalText + ": " + PVE.Utils.format_size(maxswap) + "</div>" + 
+		"<div>" + PVE.Utils.usedText + ": " + PVE.Utils.format_size(value) + "</div>";
 	    return text;
 	};
 

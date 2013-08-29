@@ -32,13 +32,10 @@ Ext.define('PVE.node.StatusView', {
 	    return PVE.Utils.format_size(value.shared);
 	};
 
-	var totalText = gettext('Total');
-	var usedText = gettext('Used');
-
 	var render_meminfo = function(value) {
 	    var per = (value.used / value.total)*100;
-	    var text = "<div>" +  totalText + ": " + PVE.Utils.format_size(value.total) + "</div>" + 
-		"<div>" + usedText + ": " + PVE.Utils.format_size(value.used) + "</div>";
+	    var text = "<div>" +  PVE.Utils.totalText + ": " + PVE.Utils.format_size(value.total) + "</div>" + 
+		"<div>" + PVE.Utils.usedText + ": " + PVE.Utils.format_size(value.used) + "</div>";
 	    return text;
 	};
 

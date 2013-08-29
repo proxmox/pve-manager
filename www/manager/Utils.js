@@ -661,6 +661,8 @@ Ext.define('PVE.Utils', { statics: {
     runningText: gettext('running'),
     stoppedText: gettext('stopped'),
     neverText: gettext('never'),
+    totalText: gettext('Total'),
+    usedText: gettext('Used'),
 
     format_expire: function(date) {
 	if (!date) {
