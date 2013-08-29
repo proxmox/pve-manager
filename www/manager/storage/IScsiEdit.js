@@ -103,7 +103,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		height: 22, // hack: set same height as text fields
 		name: 'portal',
 		value: '',
-		fieldLabel: gettext('Portal'),
+		fieldLabel: 'Portal',
 		allowBlank: false,
 		listeners: {
 		    change: function(f, value) {
@@ -120,7 +120,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		xtype: me.create ? 'pveIScsiScan' : 'displayfield',
 		name: 'target',
 		value: '',
-		fieldLabel: gettext('Target'),
+		fieldLabel: 'Target',
 		allowBlank: false
 	    }
 	];
@@ -176,7 +176,7 @@ Ext.define('PVE.storage.IScsiEdit', {
 	});
 	
 	Ext.apply(me, {
-            subject: gettext('iSCSI target'),
+            subject: 'iSCSI target',
 	    isAdd: true,
 	    items: [ ipanel ]
 	});

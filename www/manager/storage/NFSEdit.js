@@ -120,7 +120,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		height: 22, // hack: set same height as text fields
 		name: 'export',
 		value: '',
-		fieldLabel: gettext('Export'),
+		fieldLabel: 'Export',
 		allowBlank: false
 	    },
 	    {
