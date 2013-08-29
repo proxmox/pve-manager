@@ -10,10 +10,13 @@ Ext.define('PVE.node.StatusView', {
 	    throw "no node name specified";
 	}
 
+	var socketText = gettext('Socket');
+	var socketsText = gettext('Sockets');
+
 	var render_cpuinfo = function(value) {
 	    return value.cpus + " x " + value.model + " (" + 
 		value.sockets.toString() + " " + 
-		(value.sockets > 1 ? gettext('Sockets') : gettext('Socket')) + ")";
+		(value.sockets > 1 ? socketsText : socketText) + ")";
 	};
 
 	var render_loadavg = function(value) {
@@ -29,10 +32,13 @@ Ext.define('PVE.node.StatusView', {
 	    return PVE.Utils.format_size(value.shared);
 	};
 
+	var totalText = gettext('Total');
+	var usedText = gettext('Used');
+
 	var render_meminfo = function(value) {
 	    var per = (value.used / value.total)*100;
-	    var text = "<div>" + gettext('Total') + ": " + PVE.Utils.format_size(value.total) + "</div>" + 
-		"<div>" + gettext('Used') + ": " + PVE.Utils.format_size(value.used) + "</div>";
+	    var text = "<div>" +  totalText + ": " + PVE.Utils.format_size(value.total) + "</div>" + 
+		"<div>" + usedText + ": " + PVE.Utils.format_size(value.used) + "</div>";
 	    return text;
 	};
 
