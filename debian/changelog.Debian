@@ -1,3 +1,11 @@
+pve-manager (3.1-6) unstable; urgency=low
+
+  * update German translation
+  
+  * update Chinese translation
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 03 Sep 2013 07:03:02 +0200
+
 pve-manager (3.1-5) unstable; urgency=low
 
   * apt: proxy changelog API call to correct node
