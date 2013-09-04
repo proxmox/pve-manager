@@ -107,8 +107,9 @@ sub call {
 			      
     #print "RESP: " . Dumper($response) . "\n";
 
+    my $ct = $response->header('Content-Type');
+    
     if ($response->is_success) {
-	my $ct = $response->header('Content-Type');
 
 	die "got unexpected content type" if $ct !~ m|application/json|;
 
@@ -116,7 +117,20 @@ sub call {
 
     } else {
 
-	die $response->status_line . "\n";
+	my $msg = $response->status_line . "\n";
+	eval {
+	    return if $ct !~ m|application/json|;
+	    my $res = from_json($response->decoded_content, {utf8 => 1, allow_nonref => 1});
+	    if (my $errors = $res->{errors}) {
+		foreach my $key (keys $errors) {
+		    my $m = $errors->{$key};
+		    chomp($m);
+		    $m =~s/\n/ -- /g;
+		    $msg .= " $key: $m\n";
+		}
+	    }
+	};
+	die $msg;
 
     }
 }
