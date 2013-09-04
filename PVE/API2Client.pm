@@ -98,7 +98,15 @@ sub call {
     } elsif ($method eq 'POST') {
 	$response = $ua->request(HTTP::Request::Common::POST($uri, Content => $param));
     } elsif ($method eq 'PUT') {
-	$response = $ua->request(HTTP::Request::Common::PUT($uri, Content => $param));
+	# We use another temporary URI object to format
+	# the application/x-www-form-urlencoded content.
+
+	my $tmpurl = URI->new('http:');
+	$tmpurl->query_form(%$param);
+	my $content = $tmpurl->query;
+
+	$response = $ua->request(HTTP::Request::Common::PUT($uri, 'Content-Type' => 'application/x-www-form-urlencoded', Content => $content));
+
     } elsif ($method eq 'DELETE') {
 	$response = $ua->request(HTTP::Request::Common::DELETE($uri));
     } else {
@@ -107,7 +115,7 @@ sub call {
 			      
     #print "RESP: " . Dumper($response) . "\n";
 
-    my $ct = $response->header('Content-Type');
+    my $ct = $response->header('Content-Type') || '';
     
     if ($response->is_success) {
 
