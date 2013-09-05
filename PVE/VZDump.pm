@@ -440,7 +440,8 @@ sub new {
 
     my $defaults = read_vzdump_defaults();
 
-    my $maxfiles = $opts->{maxfiles};
+    my $maxfiles = $opts->{maxfiles}; # save here, because we overwrite with default
+
     $opts->{remove} = 1 if !defined($opts->{remove});
 
     foreach my $k (keys %$defaults) {
@@ -496,7 +497,7 @@ sub new {
     if ($opts->{storage}) {
 	my $info = storage_info ($opts->{storage});
 	$opts->{dumpdir} = $info->{dumpdir};
-	$maxfiles = $info->{maxfiles} if !$maxfiles && $info->{maxfiles};
+	$maxfiles = $info->{maxfiles} if !defined($maxfiles) && defined($info->{maxfiles});
     } elsif ($opts->{dumpdir}) {
 	die "dumpdir '$opts->{dumpdir}' does not exist\n"
 	    if ! -d $opts->{dumpdir};
@@ -508,7 +509,7 @@ sub new {
 	die "tmpdir '$opts->{tmpdir}' does not exist\n";
     }
 
-    $opts->{maxfiles} = $maxfiles if $maxfiles;
+    $opts->{maxfiles} = $maxfiles if defined($maxfiles);
 
     return $self;
 
