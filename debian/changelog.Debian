@@ -1,3 +1,11 @@
+pve-manager (3.1-8) unstable; urgency=low
+
+  * fix https proxy calls (always use CONNECT)
+  
+  * use correct changelog URLs for pve repositories
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 09 Sep 2013 11:39:49 +0200
+
 pve-manager (3.1-7) unstable; urgency=low
 
   * vzdump: correctly handle maxfiles parameter (0 is unlimited)
