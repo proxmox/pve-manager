@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use PVE::Tools;
 use Digest::MD5 qw(md5_hex);
+use URI;
+use URI::Escape;
 
 my $hwaddress;
 
@@ -112,5 +114,23 @@ sub extract_storage_stats {
 
     return $entry;
 };
+
+sub parse_http_proxy {
+    my ($proxyenv) = @_;
+
+    my $uri = URI->new($proxyenv);
+
+    my $scheme = $uri->scheme;
+    my $host = $uri->host;
+    my $port = $uri->port || 3128;
+
+    my ($username, $password);
+
+    if (defined(my $p_auth = $uri->userinfo())) {
+	($username, $password) = map URI::Escape::uri_unescape($_), split(":", $p_auth, 2);
+    }
+
+    return ("$host:$port", $username, $password);
+}
 
 1;

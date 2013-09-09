@@ -18,6 +18,7 @@ use PVE::INotify;
 use PVE::Exception;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
+use PVE::API2Tools;
 
 use JSON;
 use PVE::JSONSchema qw(get_standard_option);
@@ -455,8 +456,14 @@ __PACKAGE__->register_method({
 	$ua->max_size(1024*1024);
 	$ua->ssl_opts(verify_hostname => 0); # don't care for changelogs
 
+	# HACK: LWP does not use proxy 'CONNECT' for https
+	local $ENV{PERL_NET_HTTPS_SSL_SOCKET_CLASS} = "Net::SSL";
+	local ($ENV{HTTPS_PROXY}, $ENV{HTTPS_PROXY_USERNAME}, $ENV{HTTPS_PROXY_PASSWORD});
+
 	if ($proxy) {
-	    $ua->proxy(['http', 'https'], $proxy);
+	    ($ENV{HTTPS_PROXY}, $ENV{HTTPS_PROXY_USERNAME}, $ENV{HTTPS_PROXY_PASSWORD}) =
+		PVE::API2Tools::parse_http_proxy($proxy);
+	    $ua->proxy(['http'], $proxy);
 	} else {
 	    $ua->env_proxy;
 	}
