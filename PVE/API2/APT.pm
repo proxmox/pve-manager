@@ -99,10 +99,10 @@ my $get_changelog_url =sub {
 	} elsif ($origin eq 'Proxmox') {
 	    if ($component eq 'pve-enterprise') {
 		$changelog_url = "https://enterprise.proxmox.com/debian/$base/" . 
-		    "${srcpkg}_${pkgver}.changelog";
+		    "${pkgname}_${pkgver}.changelog";
 	    } else {
 		$changelog_url = "http://download.proxmox.com/debian/$base/" .
-		    "${srcpkg}_${pkgver}.changelog";
+		    "${pkgname}_${pkgver}.changelog";
 	    }
 	}
     }
