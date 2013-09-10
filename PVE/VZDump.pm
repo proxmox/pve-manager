@@ -646,7 +646,7 @@ sub run_hook_script {
 
     local %ENV;
 
-    foreach my $ek (qw(vmtype dumpdir hostname tarfile logfile)) {
+    foreach my $ek (qw(vmtype dumpdir hostname tarfile logfile storeid)) {
 	$ENV{uc($ek)} = $task->{$ek} if $task->{$ek};
     }
 
@@ -764,7 +764,7 @@ sub exec_backup_task {
 	    die "unable to create log file '$tmplog'";
 
 	$task->{dumpdir} = $opts->{dumpdir};
-
+	$task->{storeid} = $opts->{storage};
 	$task->{tmplog} = $tmplog;
 
 	unlink $logfile;

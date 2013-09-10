@@ -29,6 +29,8 @@ if ($phase eq 'job-start' ||
 
     my $dumpdir = $ENV{DUMPDIR};
 
+    my $storeid = $ENV{STOREID};
+
     my $hostname = $ENV{HOSTNAME};
 
     # tarfile is only available in phase 'backup-end'
