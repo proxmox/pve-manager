@@ -1,3 +1,9 @@
+pve-manager (3.1-10) unstable; urgency=low
+
+  * vzdump: pass storage ID to hook scripts
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 12 Sep 2013 06:21:59 +0200
+
 pve-manager (3.1-9) unstable; urgency=low
 
   * depend on libcrypt-ssleay-perl and liblwp-protocol-https-perl (for
