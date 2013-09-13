@@ -12,6 +12,12 @@ if ($phase eq 'job-start' ||
     $phase eq 'job-end'  || 
     $phase eq 'job-abort') { 
 
+    my $dumpdir = $ENV{DUMPDIR};
+
+    my $storeid = $ENV{STOREID};
+
+    print "HOOK-ENV: dumpdir=$dumpdir;storeid=$storeid\n";
+
     # do what you want 
 
 } elsif ($phase eq 'backup-start' || 
@@ -39,7 +45,7 @@ if ($phase eq 'job-start' ||
     # logfile is only available in phase 'log-end'
     my $logfile = $ENV{LOGFILE}; 
 
-    print "HOOK-ENV: vmtype=$vmtype;dumpdir=$dumpdir;hostname=$hostname;tarfile=$tarfile;logfile=$logfile\n";
+    print "HOOK-ENV: vmtype=$vmtype;dumpdir=$dumpdir;storeid=$storeid;hostname=$hostname;tarfile=$tarfile;logfile=$logfile\n";
 
     # example: copy resulting backup file to another host using scp
     if ($phase eq 'backup-end') {

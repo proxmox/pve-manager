@@ -646,7 +646,11 @@ sub run_hook_script {
 
     local %ENV;
 
-    foreach my $ek (qw(vmtype dumpdir hostname tarfile logfile storeid)) {
+    # set immutable opts directly (so they are available in all phases)
+    $ENV{STOREID} = $opts->{storage} if $opts->{storage};
+    $ENV{DUMPDIR} = $opts->{dumpdir} if $opts->{dumpdir};
+
+    foreach my $ek (qw(vmtype hostname tarfile logfile)) {
 	$ENV{uc($ek)} = $task->{$ek} if $task->{$ek};
     }
 
