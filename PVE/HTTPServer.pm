@@ -13,6 +13,7 @@ use Digest::MD5;
 use AnyEvent::Util qw(guard fh_nonblocking WSAEWOULDBLOCK WSAEINPROGRESS);
 use AnyEvent::Socket;
 use AnyEvent::Handle;
+use Net::SSLeay;
 use AnyEvent::TLS;
 use AnyEvent::IO;
 use AnyEvent::HTTP;
@@ -1304,6 +1305,7 @@ sub new {
 
     if ($self->{ssl}) {
 	$self->{tls_ctx} = AnyEvent::TLS->new(%{$self->{ssl}});
+	Net::SSLeay::CTX_set_options($self->{tls_ctx}->{ctx}, &Net::SSLeay::OP_NO_COMPRESSION);
     }
 
     if ($self->{spiceproxy}) {
