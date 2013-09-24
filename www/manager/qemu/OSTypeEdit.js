@@ -57,6 +57,11 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 	    {
 		xtype: 'radiofield',
 		name: 'ostype',
+		inputValue: 'solaris'
+	    },
+	    {
+		xtype: 'radiofield',
+		name: 'ostype',
 		inputValue: 'other'
 	    }
 	];
