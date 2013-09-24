@@ -176,7 +176,7 @@ my $update_pve_pkgstatus = sub {
 
     foreach my $pkgname (keys %$cache) {
 	my $p = $cache->{$pkgname};
-	next if $p->{SelectedState} ne 'Install';
+	next if !$p->{SelectedState} || ($p->{SelectedState} ne 'Install');
 	my $current_ver = $p->{CurrentVer} || next;
 	my $candidate_ver = $policy->candidate($p) || next;
 

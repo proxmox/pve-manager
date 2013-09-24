@@ -1,3 +1,9 @@
+pve-manager (3.1-14) unstable; urgency=low
+
+  * avoid warning in daily cron script
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 24 Sep 2013 06:41:03 +0200
+
 pve-manager (3.1-13) unstable; urgency=low
 
   * dissable SSL compression (avoid TLS CRIME vulnerability)
