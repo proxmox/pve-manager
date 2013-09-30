@@ -1,10 +1,11 @@
-#!/usr/bin/perl -T -w
+#!/usr/bin/perl -T
 
 $ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};  
 
 use strict;
+use warnings;
 use Getopt::Long;
 use POSIX ":sys_wait_h";
 use Socket;

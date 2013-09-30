@@ -1,6 +1,7 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 use strict;
+use warnings;
 use File::Sync;
 use Time::HiRes qw( usleep ualarm gettimeofday tv_interval );
 use Net::DNS::Resolver;

@@ -1,9 +1,10 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 # TODO:
 # implement persistent history ?
  
 use strict;
+use warnings;
 use Term::ReadLine;
 use File::Basename;
 use Getopt::Long;
