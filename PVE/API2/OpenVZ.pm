@@ -342,8 +342,8 @@ __PACKAGE__->register_method({
 		if !$param->{restore};
 	    $archive = '-';
 	} else {
-	    $archive = $rpcenv->check_volume_access($authuser, $storage_cfg, $vmid, $ostemplate);
-	    die "can't find file '$archive'\n" if ! -f $archive;
+	    $rpcenv->check_volume_access($authuser, $storage_cfg, $vmid, $ostemplate);
+	    $archive = PVE::Storage::abs_filesystem_path($storage_cfg, $ostemplate);
 	}
 
 	if (!defined($param->{searchdomain}) && 
