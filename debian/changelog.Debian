@@ -1,3 +1,10 @@
+pve-manager (3.1-17) unstable; urgency=low
+
+  * openvz create/restore: use new PVE::Storage::abs_filesystem_path() in 
+    order to correctly activate the storage.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 01 Oct 2013 12:47:22 +0200
+
 pve-manager (3.1-16) unstable; urgency=low
 
   * do not use -w switch as it breaks modules
