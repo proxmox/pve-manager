@@ -209,6 +209,7 @@ sub read_proxy_config {
 
     while ($data =~ s/^(.*)\n//) {
 	my ($key, $value) = split(/:/, $1, 2);
+	next if !$value;
 	if ($key eq 'ALLOW_FROM' || $key eq 'DENY_FROM') {
 	    my $ips = [];
 	    foreach my $ip (split(/,/, $value)) {
