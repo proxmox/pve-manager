@@ -48,6 +48,8 @@ Ext.define('PVE.dc.StorageView', {
 		editor = 'PVE.storage.SheepdogEdit';
 	    } else if (type === 'nexenta') {
 		editor = 'PVE.storage.NexentaEdit';
+	    } else if (type === 'zfs') {
+		editor = 'PVE.storage.ZFSEdit';
 	    } else {
 		return;
 	    }
@@ -175,6 +177,15 @@ Ext.define('PVE.dc.StorageView', {
 				    win.show();
 				}
 			    },
+			    {
+				text: PVE.Utils.format_storage_type('ZFS'),
+				iconCls: 'pve-itype-icon-node',
+				handler: function() {
+				    var win = Ext.create('PVE.storage.ZFSEdit', {});
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    }
 */
 			]
 		    })

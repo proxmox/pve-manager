@@ -135,6 +135,7 @@ JSSRC= 				                 	\
 	storage/RBDEdit.js				\
 	storage/SheepdogEdit.js				\
 	storage/NexentaEdit.js				\
+	storage/ZFSEdit.js				\
 	dc/Summary.js					\
 	dc/OptionView.js				\
 	dc/StorageView.js				\
