@@ -178,7 +178,7 @@ Ext.define('PVE.dc.StorageView', {
 				}
 			    },
 			    {
-				text: PVE.Utils.format_storage_type('ZFS'),
+				text: PVE.Utils.format_storage_type('zfs'),
 				iconCls: 'pve-itype-icon-node',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.ZFSEdit', {});

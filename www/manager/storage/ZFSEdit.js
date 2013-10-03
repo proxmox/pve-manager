@@ -50,6 +50,14 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	    },
 	    {
 			xtype: me.create ? 'textfield' : 'displayfield',
+			name: 'blocksize',
+			height: 22, // hack: set same height as text fields
+			value: '4k',
+			fieldLabel: gettext('Block Size'),
+			allowBlank: false
+	    },
+	    {
+			xtype: me.create ? 'textfield' : 'displayfield',
 			name: 'target',
 			height: 22, // hack: set same height as text fields
 			value: 'iqn.2010-09.org.openindiana:omnios:....',
@@ -65,14 +73,6 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 			checked: true,
 			uncheckedValue: 0,
 			fieldLabel: gettext('Enable')
-	    },
-	    {
-			xtype: me.create ? 'textfield' : 'displayfield',
-			name: 'blocksize',
-			height: 22, // hack: set same height as text fields
-			value: '4k',
-			fieldLabel: gettext('Block Size'),
-			allowBlank: false
 	    },
 	    {
 			xtype: me.create ? 'textfield' : 'displayfield',
