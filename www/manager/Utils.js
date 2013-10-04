@@ -690,8 +690,6 @@ Ext.define('PVE.Utils', { statics: {
 	    return 'RBD';
 	} else if (value === 'sheepdog') {
 	    return 'Sheepdog';
-	} else if (value === 'nexenta') {
-	    return 'Nexenta';
 	} else if (value === 'zfs') {
 	    return 'ZFS';
 	} else if (value === 'iscsidirect') {

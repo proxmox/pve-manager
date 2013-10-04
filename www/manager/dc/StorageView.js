@@ -46,8 +46,6 @@ Ext.define('PVE.dc.StorageView', {
 		editor = 'PVE.storage.RBDEdit';
 	    } else if (type === 'sheepdog') {
 		editor = 'PVE.storage.SheepdogEdit';
-	    } else if (type === 'nexenta') {
-		editor = 'PVE.storage.NexentaEdit';
 	    } else if (type === 'zfs') {
 		editor = 'PVE.storage.ZFSEdit';
 	    } else {
@@ -164,15 +162,6 @@ Ext.define('PVE.dc.StorageView', {
 				iconCls: 'pve-itype-icon-node',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.SheepdogEdit', {});
-				    win.on('destroy', reload);
-				    win.show();
-				}
-			    },
-			    {
-				text: PVE.Utils.format_storage_type('nexenta'),
-				iconCls: 'pve-itype-icon-node',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.NexentaEdit', {});
 				    win.on('destroy', reload);
 				    win.show();
 				}
