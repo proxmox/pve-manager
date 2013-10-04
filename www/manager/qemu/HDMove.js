@@ -76,7 +76,9 @@ Ext.define('PVE.window.HDMove', {
                             me.formatsel.setDisabled(true);
                         } else if (rec.data.type === 'lvm' ||
                                    rec.data.type === 'rbd' ||
-                                   rec.data.type === 'sheepdog'
+                                   rec.data.type === 'sheepdog' ||
+                                   rec.data.type === 'zfs'
+
                         ) {
                             me.formatsel.setValue('raw');
                             me.formatsel.setDisabled(true);
