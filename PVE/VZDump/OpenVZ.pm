@@ -303,8 +303,8 @@ sub cleanup {
 
     if ($task->{cleanup}->{etc_vzdump}) {
 	my $dir = "$task->{snapdir}/etc/vzdump";
-	#eval { rmtree $dir if -d $dir; };
-	#$self->logerr ($@) if $@;
+	eval { rmtree $dir if -d $dir; };
+	$self->logerr ($@) if $@;
     }
 
 }

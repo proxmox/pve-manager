@@ -971,7 +971,7 @@ sub exec_backup_task {
     eval { unlink $task->{tmptar} if $task->{tmptar} && -f $task->{tmptar}; };
     warn $@ if $@;
 
-#    eval { rmtree $task->{tmpdir} if $task->{tmpdir} && -d $task->{tmpdir}; };
+    eval { rmtree $task->{tmpdir} if $task->{tmpdir} && -d $task->{tmpdir}; };
     warn $@ if $@;
 
     my $delay = $task->{backuptime} = time () - $vmstarttime;
