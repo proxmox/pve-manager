@@ -18,8 +18,9 @@ Ext.define('PVE.data.UpdateStore', {
 
 	var run_load_task = function() {
 	    if (PVE.Utils.authOK()) {
-		PVE.data.UpdateQueue.queue(me);
-		load_task.delay(config.interval, run_load_task);
+		PVE.data.UpdateQueue.queue(me, function(runtime, success) {
+		    load_task.delay(config.interval, run_load_task);
+		});
 	    } else {
 		load_task.delay(200, run_load_task);
 	    }

@@ -15,30 +15,40 @@ Ext.define('PVE.data.UpdateQueue', {
 		return;
 	    }
 
-	    var store = queue.shift();
-	    if (!store) {
+	    var storeid = queue.shift();
+	    if (!storeid) {
 		return;
 	    }
+	    var info = queue_idx[storeid];
+	    queue_idx[storeid] = null;
 
-	    queue_idx[store.storeid] = null;
+	    info.updatestart = new Date();
 
 	    idle = false;
-	    store.load({
+	    info.store.load({
 		callback: function(records, operation, success) {
 		    idle = true;
+		    if (info.callback) {
+			var runtime = (new Date()).getTime() - info.updatestart.getTime();
+			info.callback(runtime, success);
+		    }
 		    start_update();
 		}
 	    });
 	};
 
 	Ext.apply(me, {
-	    queue: function(store) {
-		if (!store.storeid) {
+	    queue: function(store, cb) {
+		var storeid = store.storeid;
+		if (!storeid) {
 		    throw "unable to queue store without storeid";
 		}
-		if (!queue_idx[store.storeid]) {
-		    queue_idx[store.storeid] = store;
-		    queue.push(store);
+		if (!queue_idx[storeid]) {
+		    queue_idx[storeid] = {
+			store: store,
+			callback: cb
+		    };
+		    queue.push(storeid);
 		}
 		start_update();
 	    }
