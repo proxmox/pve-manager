@@ -1,3 +1,13 @@
+pve-manager (3.1-20) unstable; urgency=low
+
+  * some GUI optimizations for slow connections
+  
+  * remove nexenta plugin
+  
+  * ZFS GUI rework
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 14 Oct 2013 07:46:59 +0200
+
 pve-manager (3.1-19) unstable; urgency=low
 
   * vzdump: remove temporary directories (revert bug introduced by 
