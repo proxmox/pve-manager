@@ -1,3 +1,9 @@
+pve-manager (3.1-21) unstable; urgency=low
+
+  * update French translation
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 17 Oct 2013 06:11:56 +0200
+
 pve-manager (3.1-20) unstable; urgency=low
 
   * some GUI optimizations for slow connections
