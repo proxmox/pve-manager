@@ -514,7 +514,7 @@ sub handle_spice_proxy_request {
 
         my $remip;
 
-        if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
+        if ($node ne 'localhost' && PVE::INotify::nodename() !~ m/^$node$/i) {
             $remip = PVE::Cluster::remote_node_ip($node);
 	    die "unable to get remote IP address for node '$node'\n" if !$remip;
 	    print "REMOTE CONNECT $vmid, $remip, $connect_str\n" if $self->{debug};
