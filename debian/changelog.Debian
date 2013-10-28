@@ -1,3 +1,9 @@
+pve-manager (3.1-22) unstable; urgency=low
+
+  * spice: ignore the case of the characters in hostname match
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 28 Oct 2013 08:16:32 +0100
+
 pve-manager (3.1-21) unstable; urgency=low
 
   * update French translation
