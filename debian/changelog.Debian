@@ -1,3 +1,9 @@
+pve-manager (3.1-23) unstable; urgency=low
+
+  * subscription updates: set UserAgent header on proxy connect request
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 29 Oct 2013 10:20:02 +0100
+
 pve-manager (3.1-22) unstable; urgency=low
 
   * spice: ignore the case of the characters in hostname match
