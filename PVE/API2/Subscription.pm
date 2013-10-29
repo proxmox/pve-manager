@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex md5_base64);
 use MIME::Base64;
+use Net::SSL;
 use HTTP::Request;
 use LWP::UserAgent;
 use JSON; 
@@ -231,6 +232,8 @@ sub check_subscription {
     local ($ENV{HTTPS_PROXY}, $ENV{HTTPS_PROXY_USERNAME}, $ENV{HTTPS_PROXY_PASSWORD});
 
     if ($proxy) {
+	# some proxies reject connection if UserAgent header is not set
+	Net::SSL::send_useragent_to_proxy(1);
 	($ENV{HTTPS_PROXY}, $ENV{HTTPS_PROXY_USERNAME}, $ENV{HTTPS_PROXY_PASSWORD}) =
 	    PVE::API2Tools::parse_http_proxy($proxy);
 	$ua->proxy(['http'], $proxy);
