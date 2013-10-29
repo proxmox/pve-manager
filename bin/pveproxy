@@ -246,7 +246,8 @@ _EOJS
 </html>
 _EOD
 
-    my $resp = HTTP::Response->new(200, "OK", undef, $page); 
+    my $headers = HTTP::Headers->new(Content_Type => "text/html; charset=utf-8");
+    my $resp = HTTP::Response->new(200, "OK", $headers, $page); 
 
     return $resp;
 } 

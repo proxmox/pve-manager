@@ -1,6 +1,8 @@
 pve-manager (3.1-23) unstable; urgency=low
 
   * subscription updates: set UserAgent header on proxy connect request
+  
+  * correctly set content type for GUI index page
 
  -- Proxmox Support Team <support@proxmox.com>  Tue, 29 Oct 2013 10:20:02 +0100
 
