@@ -25,13 +25,41 @@ Ext.Ajax.on('beforerequest', function(conn, options) {
     }
 });
 
+var IPV4_OCTET = "(?:25[0-5]|(?:[1-9]|1[0-9]|2[0-4])?[0-9])";
+var IPV4_REGEXP = "(?:(?:" + IPV4_OCTET + "\\.){3}" + IPV4_OCTET + ")";
+var IPV6_H16 = "(?:[0-9a-fA-F]{1,4})";
+var IPV6_LS32 = "(?:(?:" + IPV6_H16 + ":" + IPV6_H16 + ")|" + IPV4_REGEXP + ")";
+
+
+var IP4_match = new RegExp("^(" + IPV4_REGEXP + ")$");
+
+var IPV6_REGEXP = "(?:" +
+    "(?:(?:"                                                  + "(?:" + IPV6_H16 + ":){6})" + IPV6_LS32 + ")|" +
+    "(?:(?:"                                         +   "::" + "(?:" + IPV6_H16 + ":){5})" + IPV6_LS32 + ")|" +
+    "(?:(?:(?:"                           + IPV6_H16 + ")?::" + "(?:" + IPV6_H16 + ":){4})" + IPV6_LS32 + ")|" +
+    "(?:(?:(?:(?:" + IPV6_H16 + ":){0,1}" + IPV6_H16 + ")?::" + "(?:" + IPV6_H16 + ":){3})" + IPV6_LS32 + ")|" +
+    "(?:(?:(?:(?:" + IPV6_H16 + ":){0,2}" + IPV6_H16 + ")?::" + "(?:" + IPV6_H16 + ":){2})" + IPV6_LS32 + ")|" +
+    "(?:(?:(?:(?:" + IPV6_H16 + ":){0,3}" + IPV6_H16 + ")?::" + "(?:" + IPV6_H16 + ":){1})" + IPV6_LS32 + ")|" +
+    "(?:(?:(?:(?:" + IPV6_H16 + ":){0,4}" + IPV6_H16 + ")?::" +                         ")" + IPV6_LS32 + ")|" +
+    "(?:(?:(?:(?:" + IPV6_H16 + ":){0,5}" + IPV6_H16 + ")?::" +                         ")" + IPV6_H16  + ")|" +
+    "(?:(?:(?:(?:" + IPV6_H16 + ":){0,7}" + IPV6_H16 + ")?::" +                         ")"             + ")"  +
+    ")";
+
+var IP64_match = new RegExp("^(?:" + IPV6_REGEXP + ")$");
+
 // custom Vtypes
 Ext.apply(Ext.form.field.VTypes, {
     IPAddress:  function(v) {
-        return (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/).test(v);
+	return IP64_match.test(v);
     },
     IPAddressText:  gettext('Example') + ': 192.168.1.1',
     IPAddressMask: /[\d\.]/i,
+
+    IP64Address:  function(v) {
+        return IP64_match.test(v);
+    },
+    IP64AddressText:  gettext('Example') + ': 192.168.1.1 2001:DB8::42',
+    IP64AddressMask: /[A-Fa-f0-9\.:]/,
 
     MacAddress: function(v) {
 	return (/^([a-fA-F0-9]{2}:){5}[a-fA-F0-9]{2}$/).test(v);

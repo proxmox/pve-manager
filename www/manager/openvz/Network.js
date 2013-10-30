@@ -140,7 +140,7 @@ Ext.define('PVE.OpenVZ.IPAdd', {
 		xtype: 'textfield',
 		name: 'ipaddress',
 		fieldLabel: gettext('IP address'),
-		vtype: 'IPAddress',
+		vtype: 'IP64Address',
 		allowBlank: false
 	    }
 	});

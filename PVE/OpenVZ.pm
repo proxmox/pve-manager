@@ -6,7 +6,7 @@ use File::stat qw();
 use POSIX qw (LONG_MAX);
 use IO::Dir;
 use IO::File;
-use PVE::Tools qw(extract_param);
+use PVE::Tools qw(extract_param $IPV6RE $IPV4RE);
 use PVE::ProcFSTools;
 use PVE::Cluster qw(cfs_register_file cfs_read_file);
 use PVE::SafeSyslog;
@@ -1064,7 +1064,7 @@ sub update_ovz_config {
 	}
 	my $newhash = {};
 	foreach my $ip (PVE::Tools::split_list($param->{'ip_address'})) {
-	    next if $ip !~ m|^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(/\d+)?$|;
+	    next if $ip !~ m!^(?:$IPV6RE|$IPV4RE)(?:/\d+)?$!;
 	    $newhash->{$ip} = 1;
 	    if (!$iphash->{$ip}) {
 		push @$changes, '--ipadd', $ip;
