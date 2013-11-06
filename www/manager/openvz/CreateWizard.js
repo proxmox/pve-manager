@@ -171,7 +171,7 @@ Ext.define('PVE.openvz.CreateWizard', {
 			{
 			    xtype: 'textfield',
 			    name: 'ip_address',
-			    vtype: 'IPAddress',
+			    vtype: 'IP64Address',
 			    value: '',
 			    fieldLabel: gettext('IP address'),
 			    labelAlign: 'right',
