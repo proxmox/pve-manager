@@ -31,7 +31,7 @@ var IPV6_H16 = "(?:[0-9a-fA-F]{1,4})";
 var IPV6_LS32 = "(?:(?:" + IPV6_H16 + ":" + IPV6_H16 + ")|" + IPV4_REGEXP + ")";
 
 
-var IP4_match = new RegExp("^(" + IPV4_REGEXP + ")$");
+var IP4_match = new RegExp("^(?:" + IPV4_REGEXP + ")$");
 
 var IPV6_REGEXP = "(?:" +
     "(?:(?:"                                                  + "(?:" + IPV6_H16 + ":){6})" + IPV6_LS32 + ")|" +
@@ -45,12 +45,12 @@ var IPV6_REGEXP = "(?:" +
     "(?:(?:(?:(?:" + IPV6_H16 + ":){0,7}" + IPV6_H16 + ")?::" +                         ")"             + ")"  +
     ")";
 
-var IP64_match = new RegExp("^(?:" + IPV6_REGEXP + ")$");
+var IP64_match = new RegExp("^(?:" + IPV6_REGEXP + "|" + IPV4_REGEXP + ")$");
 
 // custom Vtypes
 Ext.apply(Ext.form.field.VTypes, {
     IPAddress:  function(v) {
-	return IP64_match.test(v);
+	return IP4_match.test(v);
     },
     IPAddressText:  gettext('Example') + ': 192.168.1.1',
     IPAddressMask: /[\d\.]/i,
