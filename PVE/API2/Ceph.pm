@@ -80,6 +80,19 @@ my $check_ceph_inited = sub {
     return 1;
 };
 
+my $check_ceph_enabled = sub {
+    my ($noerr) = @_;
+
+    return undef if !&$check_ceph_inited($noerr);
+
+    if (! -f $ceph_cfgpath) {
+	die "pveceph configuration not enabled\n" if !$noerr;
+	return undef;
+    }
+
+    return 1;
+};
+
 my $force_symlink = sub {
     my ($old, $new) = @_;
 
@@ -143,13 +156,15 @@ my $run_ceph_cmd = sub {
     alarm($oldalarm) if $oldalarm;
 
     die $err if $err;
-
 };
 
-sub ceph_mon_status {
-    my ($quiet) = @_;
+my $run_ceph_cmd_json = sub {
+    my ($cmd, %opts) = @_;
 
     my $json = '';
+
+    my $quiet = delete $opts{quiet};
+
     my $parser = sub {
 	my $line = shift;
 	$json .= $line;
@@ -160,33 +175,25 @@ sub ceph_mon_status {
 	print "$line\n" if !$quiet;
     };
 
-    &$run_ceph_cmd(['mon_status'], outfunc => $parser, errfunc => $errfunc);
-
-    my $res = decode_json($json);
-
-    return $res;
-}
-
-my $ceph_osd_status = sub {
-    my ($quiet) = @_;
-
-    my $json = '';
-    my $parser = sub {
-	my $line = shift;
-	$json .= $line;
-    };
-
-    my $errfunc = sub {
-	my $line = shift;
-	print "$line\n" if !$quiet;
-    };
-
-    &$run_ceph_cmd(['osd', 'dump', '--format', 'json'], 
+    &$run_ceph_cmd([@$cmd, '--format', 'json'], 
 		   outfunc => $parser, errfunc => $errfunc);
 
     my $res = decode_json($json);
 
     return $res;
+};
+
+sub ceph_mon_status {
+    my ($quiet) = @_;
+ 
+    return &$run_ceph_cmd_json(['mon_status'], quiet => $quiet);
+
+}
+
+my $ceph_osd_status = sub {
+    my ($quiet) = @_;
+
+    return &$run_ceph_cmd_json(['osd', 'dump'], quiet => $quiet);
 };
 
 my $write_ceph_config = sub {
@@ -556,38 +563,9 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $res = { status => 'unknown' };
+	&$check_ceph_enabled();
 
-	eval {
-	    if (!&$check_ceph_installed(1)) {
-		$res->{status} = 'notinstalled';
-	    }
-	    if (! -f $ceph_cfgpath) {
-		$res->{status} = 'notconfigured';		
-		return;
-	    } else {
-		$res->{status} = 'configured';
-	    }
-
-	    my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
-	    $res->{config} = $cfg;
-
-	    eval { 
-		my $monstat = ceph_mon_status(1);
-		$res->{monstat} = $monstat;
-	    };
-	    warn $@ if $@;
-
-	    eval {
-		my $osdstat =  &$ceph_osd_status(1);
-		$res->{osdstat} = $osdstat;
-	    };
-	    warn $@ if $@;
-
-	};
-	warn $@ if $@;
-
-	return $res;
+	return &$run_ceph_cmd_json(['status'], quiet => 1);
     }});
 
 __PACKAGE__->register_method ({

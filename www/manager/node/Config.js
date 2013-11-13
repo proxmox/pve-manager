@@ -154,6 +154,12 @@ Ext.define('PVE.node.Config', {
 		xtype: 'pveNodeAPT',
 		nodename: nodename
 	    }]);
+	    me.items.push([{
+		title: 'Ceph',
+		itemId: 'ceph',
+		xtype: 'pveNodeCeph',
+		nodename: nodename
+	    }]);
 	}
 
 	me.callParent();
