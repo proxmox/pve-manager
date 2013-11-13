@@ -30,6 +30,7 @@ use PVE::API2::Qemu;
 use PVE::API2::OpenVZ;
 use PVE::API2::VZDump;
 use PVE::API2::APT;
+use PVE::API2::Ceph;
 use JSON;
 
 use base qw(PVE::RESTHandler);
@@ -37,6 +38,11 @@ use base qw(PVE::RESTHandler);
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Qemu",  
     path => 'qemu',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Ceph",  
+    path => 'ceph',
 });
 
 __PACKAGE__->register_method ({
@@ -108,6 +114,7 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
     
 	my $result = [
+	    { name => 'ceph' },
 	    { name => 'apt' },
 	    { name => 'version' },
 	    { name => 'syslog' },
