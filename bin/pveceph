@@ -107,16 +107,16 @@ __PACKAGE__->register_method ({
     }});
 
 my $cmddef = {
-    init => [ 'PVE::API2::Ceph', 'init', [] ],
-    createosd => [ 'PVE::API2::Ceph', 'createosd', ['dev'] ],
-    destroyosd => [ 'PVE::API2::Ceph', 'destroyosd', ['osdid'] ],
-    createmon => [ 'PVE::API2::Ceph', 'createmon', [] ],
-    destroymon => [ 'PVE::API2::Ceph', 'destroymon', ['monid'] ],
-    start => [ 'PVE::API2::Ceph', 'start', [] ],
-    stop => [ 'PVE::API2::Ceph', 'stop', [] ],
+    init => [ 'PVE::API2::Ceph', 'init', [], { node => $nodename } ],
+    createosd => [ 'PVE::API2::Ceph', 'createosd', ['dev'], { node => $nodename } ],
+    destroyosd => [ 'PVE::API2::Ceph', 'destroyosd', ['osdid'], { node => $nodename } ],
+    createmon => [ 'PVE::API2::Ceph', 'createmon', [], { node => $nodename } ],
+    destroymon => [ 'PVE::API2::Ceph', 'destroymon', ['monid'], { node => $nodename } ],
+    start => [ 'PVE::API2::Ceph', 'start', [], { node => $nodename } ],
+    stop => [ 'PVE::API2::Ceph', 'stop', [], { node => $nodename } ],
     install => [ __PACKAGE__, 'install', [] ],
     purge => [  __PACKAGE__, 'purge', [] ],
-    status => [ 'PVE::API2::Ceph', 'status', [], undef, sub {
+    status => [ 'PVE::API2::Ceph', 'status', [], { node => $nodename }, sub {
 	my $res = shift;
 	my $json = JSON->new->allow_nonref;
 	print $json->pretty->encode($res) . "\n";
