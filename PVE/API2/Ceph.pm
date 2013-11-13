@@ -158,16 +158,16 @@ my $run_ceph_cmd = sub {
     die $err if $err;
 };
 
-my $run_ceph_cmd_json = sub {
+my $run_ceph_cmd_text = sub {
     my ($cmd, %opts) = @_;
 
-    my $json = '';
+    my $out = '';
 
     my $quiet = delete $opts{quiet};
 
     my $parser = sub {
 	my $line = shift;
-	$json .= $line;
+	$out .= "$line\n";
     };
 
     my $errfunc = sub {
@@ -175,12 +175,17 @@ my $run_ceph_cmd_json = sub {
 	print "$line\n" if !$quiet;
     };
 
-    &$run_ceph_cmd([@$cmd, '--format', 'json'], 
-		   outfunc => $parser, errfunc => $errfunc);
+    &$run_ceph_cmd($cmd, outfunc => $parser, errfunc => $errfunc);
 
-    my $res = decode_json($json);
+    return $out;
+};
 
-    return $res;
+my $run_ceph_cmd_json = sub {
+    my ($cmd, %opts) = @_;
+
+    my $json = &$run_ceph_cmd_text([@$cmd, '--format', 'json'], %opts);
+
+    return decode_json($json);
 };
 
 sub ceph_mon_status {
@@ -261,6 +266,7 @@ __PACKAGE__->register_method ({
 	    { name => 'stop' },
 	    { name => 'start' },
 	    { name => 'status' },
+	    { name => 'crush' },
 	];
 
 	return $result;
@@ -678,3 +684,29 @@ __PACKAGE__->register_method ({
 
 	return undef;
     }});
+
+__PACKAGE__->register_method ({
+    name => 'crush',
+    path => 'crush',
+    method => 'GET',
+    description => "Get OSD crush map",
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => { type => 'string' },
+    code => sub {
+	my ($param) = @_;
+
+	&$check_ceph_inited();
+
+	my $txt = &$run_ceph_cmd_text(['osd', 'crush', 'dump'], quiet => 1);
+
+	return $txt;
+    }});
+
+

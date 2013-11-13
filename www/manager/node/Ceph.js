@@ -1,3 +1,50 @@
+Ext.define('PVE.node.CephCrushMap', {
+    extend: 'Ext.panel.Panel',
+    alias: 'widget.pveNodeCephCrushMap',
+
+    load: function() {
+	var me = this;
+	
+	PVE.Utils.API2Request({
+	    url: me.url,
+	    waitMsgTarget: me,
+	    failure: function(response, opts) {
+		me.update(gettext('Error') + " " + response.htmlStatus);
+	    },
+	    success: function(response, opts) {
+		var data = response.result.data;
+		me.update(data);
+	    }
+	});
+    },
+
+    initComponent: function() {
+        var me = this;
+
+	var nodename = me.pveSelNode.data.node;
+	if (!nodename) {
+	    throw "no node name specified";
+	}
+
+	Ext.apply(me, {
+	    url: '/api2/extjs/nodes/' + nodename + '/ceph/crush',
+	    style: 'padding-left:10px',
+	    bodyStyle: 'white-space:pre',
+	    bodyPadding: 5,
+	    autoScroll: true,
+	    listeners: {
+		show: function() {
+		    me.load();
+		}
+	    }
+	});
+
+	me.callParent();
+
+	me.load();
+    }
+});
+
 Ext.define('PVE.node.CephStatus', {
     extend: 'PVE.grid.ObjectGrid',
     alias: 'widget.pveNodeCephStatus',
@@ -178,8 +225,8 @@ Ext.define('PVE.node.Ceph', {
 		},
 		{
 		    title: 'Crush',
-		    itemId: 'test5',
-		    html: "ABCD"
+		    xtype: 'pveNodeCephCrushMap',
+		    itemId: 'crushmap'
 		}
 	    ],
 	    listeners: {
