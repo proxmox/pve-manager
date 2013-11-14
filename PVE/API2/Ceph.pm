@@ -261,15 +261,102 @@ __PACKAGE__->register_method ({
 	    { name => 'init' },
 	    { name => 'createmon' },
 	    { name => 'destroymon' },
+	    { name => 'listmon' },
 	    { name => 'createosd' },
 	    { name => 'destroyosd' },
 	    { name => 'stop' },
 	    { name => 'start' },
 	    { name => 'status' },
 	    { name => 'crush' },
+	    { name => 'config' },
 	];
 
 	return $result;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'config',
+    path => 'config',
+    method => 'GET',
+    description => "Get Ceph configuration.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => { type => 'string' },
+    code => sub {
+	my ($param) = @_;
+
+	&$check_ceph_inited();
+
+	return PVE::Tools::file_get_contents($pve_ceph_cfgpath);
+
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'listmon',
+    path => 'listmon',
+    method => 'GET',
+    description => "Get Ceph monitor list.",
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {
+		name => { type => 'string' },
+		addr => { type => 'string' },
+	    },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	&$check_ceph_inited();
+
+	my $res = [];
+
+	my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
+
+	my $monhash = {};
+	foreach my $section (keys %$cfg) {
+	    my $d = $cfg->{$section};
+	    if ($section =~ m/^mon\.(\S+)$/) {
+		my $monid = $1;
+		if ($d->{'mon addr'} && $d->{'host'}) {
+		    $monhash->{$monid} = {
+			addr => $d->{'mon addr'},
+			host => $d->{'host'},
+			name => $monid,
+		    }
+		}
+	    }
+	}
+
+	eval {
+	    my $monstat = ceph_mon_status();
+	    my $mons = $monstat->{monmap}->{mons};
+	    foreach my $d (@$mons) {
+		next if !defined($d->{name});
+		$monhash->{$d->{name}}->{rank} = $d->{rank}; 
+		$monhash->{$d->{name}}->{addr} = $d->{addr};
+		if (grep { $_ eq $d->{rank} } @{$monstat->{quorum}}) {
+		    $monhash->{$d->{name}}->{quorum} = 1;
+		}
+	    }
+	};
+	warn $@ if $@;
+
+	return PVE::RESTHandler::hash_to_array($monhash, 'name');
     }});
 
 __PACKAGE__->register_method ({
@@ -509,20 +596,40 @@ __PACKAGE__->register_method ({
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
+	    service => {
+		description => 'Ceph service name.',
+		type => 'string',
+		optional => 1,
+		pattern => '(mon|mds|osd)\.[A-Za-z0-9]{1,32}',
+	    },
 	},
     },
-    returns => { type => 'null' },
+    returns => { type => 'string' },
     code => sub {
 	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
 
 	&$check_ceph_inited();
 
 	my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
 	scalar(keys %$cfg) || die "no configuration\n";
 
-	&$ceph_service_cmd('stop');
+	my $worker = sub {
+	    my $upid = shift;
 
-	return undef;
+	    my $cmd = ['stop'];
+	    if ($param->{service}) {
+		push @$cmd, $param->{service};
+	    }
+
+	    &$ceph_service_cmd(@$cmd);
+	};
+
+	return $rpcenv->fork_worker('srvstop', $param->{service} || 'ceph',
+				    $authuser, $worker);
     }});
 
 __PACKAGE__->register_method ({
@@ -536,20 +643,40 @@ __PACKAGE__->register_method ({
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
+	    service => {
+		description => 'Ceph service name.',
+		type => 'string',
+		optional => 1,
+		pattern => '(mon|mds|osd)\.[A-Za-z0-9]{1,32}',
+	    },
 	},
     },
-    returns => { type => 'null' },
+    returns => { type => 'string' },
     code => sub {
 	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
 
 	&$check_ceph_inited();
 
 	my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
 	scalar(keys %$cfg) || die "no configuration\n";
 
-	&$ceph_service_cmd('start');
+	my $worker = sub {
+	    my $upid = shift;
 
-	return undef;
+	    my $cmd = ['start'];
+	    if ($param->{service}) {
+		push @$cmd, $param->{service};
+	    }
+
+	    &$ceph_service_cmd(@$cmd);
+	};
+
+	return $rpcenv->fork_worker('srvstart', $param->{service} || 'ceph',
+				    $authuser, $worker);
     }});
 
 __PACKAGE__->register_method ({

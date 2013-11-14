@@ -36,6 +36,12 @@ $rpcenv->init_request();
 $rpcenv->set_language($ENV{LANG});
 $rpcenv->set_user('root@pam');
 
+my $upid_exit = sub {
+    my $upid = shift;
+    my $status = PVE::Tools::upid_read_status($upid);
+    exit($status eq 'OK' ? 0 : -1);
+};
+
 my $nodename = PVE::INotify::nodename();
 
 __PACKAGE__->register_method ({
@@ -112,8 +118,10 @@ my $cmddef = {
     destroyosd => [ 'PVE::API2::Ceph', 'destroyosd', ['osdid'], { node => $nodename } ],
     createmon => [ 'PVE::API2::Ceph', 'createmon', [], { node => $nodename } ],
     destroymon => [ 'PVE::API2::Ceph', 'destroymon', ['monid'], { node => $nodename } ],
-    start => [ 'PVE::API2::Ceph', 'start', [], { node => $nodename } ],
-    stop => [ 'PVE::API2::Ceph', 'stop', [], { node => $nodename } ],
+    start => [ 'PVE::API2::Ceph', 'start', ['service'], { node => $nodename }, 
+	       $upid_exit],
+    stop => [ 'PVE::API2::Ceph', 'stop', ['service'], { node => $nodename }, 
+	      $upid_exit],
     install => [ __PACKAGE__, 'install', [] ],
     purge => [  __PACKAGE__, 'purge', [] ],
     status => [ 'PVE::API2::Ceph', 'status', [], { node => $nodename }, sub {

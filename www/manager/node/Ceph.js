@@ -1,3 +1,163 @@
+Ext.define('PVE.node.CephMonList', {
+    extend: 'Ext.grid.GridPanel',
+    alias: 'widget.pveNodeCephMonList',
+
+
+    initComponent: function() {
+        var me = this;
+
+	var nodename = me.pveSelNode.data.node;
+	if (!nodename) {
+	    throw "no node name specified";
+	}
+
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
+	var rstore = Ext.create('PVE.data.UpdateStore', {
+	    interval: 3000,
+	    storeid: 'ceph-mon-list',
+	    model: 'ceph-mon-list',
+	    proxy: {
+                type: 'pve',
+                url: "/api2/json/nodes/" + nodename + "/ceph/listmon"
+	    }
+	});
+
+	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
+
+	PVE.Utils.monStoreErrors(me, rstore);
+
+	var service_cmd = function(cmd) {
+	    var rec = sm.getSelection()[0];
+	    PVE.Utils.API2Request({
+		url: "/nodes/" + nodename + "/ceph/" + cmd,
+		method: 'POST',
+		params: { service: "mon." + rec.data.name },
+		failure: function(response, opts) {
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		}
+	    });
+	};
+
+	var start_btn = new PVE.button.Button({
+	    text: gettext('Start'),
+	    selModel: sm,
+	    disabled: true,
+	    handler: function(){
+		service_cmd("start");
+	    }
+	});
+
+	var stop_btn = new PVE.button.Button({
+	    text: gettext('Stop'),
+	    selModel: sm,
+	    disabled: true,
+	    handler: function(){
+		service_cmd("stop");
+	    }
+	});
+
+	Ext.apply(me, {
+	    store: store,
+	    selModel: sm,
+	    stateful: false,
+	    tbar: [ start_btn, stop_btn ],
+	    columns: [
+		{
+		    header: gettext('Name'),
+		    width: 50,
+		    sortable: true,
+		    renderer: function(v) { return "mon." + v; },
+		    dataIndex: 'name'
+		},
+		{
+		    header: gettext('Host'),
+		    width: 100,
+		    sortable: true,
+		    renderer: function(v) {
+			return v ? v : 'unknown';
+		    },
+		    dataIndex: 'host'
+		},
+		{
+		    header: gettext('Quorum'),
+		    width: 50,
+		    sortable: false,
+		    renderer: PVE.Utils.format_boolean,
+		    dataIndex: 'quorum'
+		},
+		{
+		    header: gettext('Address'),
+		    flex: 1,
+		    sortable: true,
+		    dataIndex: 'addr'
+		}
+	    ],
+	    listeners: {
+		show: rstore.startUpdate,
+		hide: rstore.stopUpdate,
+		destroy: rstore.stopUpdate
+	    }
+	});
+
+	me.callParent();
+    }
+}, function() {
+
+    Ext.define('ceph-mon-list', {
+	extend: 'Ext.data.Model',
+	fields: [ 'addr', 'name', 'rank', 'host', 'quorum' ],
+	idProperty: 'name'
+    });
+});
+
+Ext.define('PVE.node.CephConfig', {
+    extend: 'Ext.panel.Panel',
+    alias: 'widget.pveNodeCephConfig',
+
+    load: function() {
+	var me = this;
+	
+	PVE.Utils.API2Request({
+	    url: me.url,
+	    waitMsgTarget: me,
+	    failure: function(response, opts) {
+		me.update(gettext('Error') + " " + response.htmlStatus);
+	    },
+	    success: function(response, opts) {
+		var data = response.result.data;
+		me.update(Ext.htmlEncode(data));
+	    }
+	});
+    },
+
+    initComponent: function() {
+        var me = this;
+
+	var nodename = me.pveSelNode.data.node;
+	if (!nodename) {
+	    throw "no node name specified";
+	}
+
+	Ext.apply(me, {
+	    url: '/api2/extjs/nodes/' + nodename + '/ceph/config',
+//	    style: 'padding-left:10px',
+	    bodyStyle: 'white-space:pre',
+	    bodyPadding: 5,
+	    autoScroll: true,
+	    listeners: {
+		show: function() {
+		    me.load();
+		}
+	    }
+	});
+
+	me.callParent();
+
+	me.load();
+    }
+});
+
 Ext.define('PVE.node.CephCrushMap', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveNodeCephCrushMap',
@@ -28,7 +188,7 @@ Ext.define('PVE.node.CephCrushMap', {
 
 	Ext.apply(me, {
 	    url: '/api2/extjs/nodes/' + nodename + '/ceph/crush',
-	    style: 'padding-left:10px',
+//	    style: 'padding-left:10px',
 	    bodyStyle: 'white-space:pre',
 	    bodyPadding: 5,
 	    autoScroll: true,
@@ -199,14 +359,14 @@ Ext.define('PVE.node.Ceph', {
 		    itemId: 'status'
 		},
 		{
+		    xtype: 'pveNodeCephConfig',
 		    title: 'Config',
-		    itemId: 'config',
-		    html: "ABCD"
+		    itemId: 'config'
 		},
 		{
+		    xtype: 'pveNodeCephMonList',
 		    title: 'Monitor',
-		    itemId: 'test2',
-		    html: "ABCD"
+		    itemId: 'monlist'
 		},
 		{
 		    title: 'OSD',
