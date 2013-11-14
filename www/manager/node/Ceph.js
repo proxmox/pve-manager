@@ -13,7 +13,7 @@ Ext.define('PVE.node.CephCrushMap', {
 	    },
 	    success: function(response, opts) {
 		var data = response.result.data;
-		me.update(data);
+		me.update(Ext.htmlEncode(data));
 	    }
 	});
     },
