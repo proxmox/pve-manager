@@ -58,16 +58,11 @@ Ext.define('PVE.node.CephStatus', {
 	}
 
 	var renderquorum = function(value) {
-	    if (!value) {
-		return '';
+	    if (!value || value.length < 0) {
+		return 'No';
 	    }
-	    var txt = '';
 
-	    Ext.Array.each(value, function(name) {
-		txt += name + ' ';
-	    });
-
-	    return txt;
+	    return 'Yes {' + value.join(' ') + '}';
 	};
 
 	var rendermonmap = function(d) {
@@ -143,6 +138,11 @@ Ext.define('PVE.node.CephStatus', {
 		    renderer: renderhealth, 
 		    required: true
 		},
+		quorum_names: {
+		    header: 'quorum',
+		    renderer: renderquorum, 
+		    required: true
+		},
 		fsid: { 
 		    header: 'cluster', 
 		    required: true
@@ -150,11 +150,6 @@ Ext.define('PVE.node.CephStatus', {
 		monmap: {
 		    header: 'monmap',
 		    renderer: rendermonmap, 
-		    required: true
-		},
-		quorum_names: {
-		    header: 'quorum',
-		    renderer: renderquorum, 
 		    required: true
 		},
 		osdmap: {
