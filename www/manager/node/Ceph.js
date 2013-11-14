@@ -1,3 +1,49 @@
+Ext.define('PVE.CephCreateMon', {
+    extend: 'PVE.window.Edit',
+    alias: ['widget.pveCephCreateMon'],
+
+    create: true,
+ 
+    subject: 'Ceph Monitor',
+ 
+    setNode: function(nodename) {
+        var me = this;
+
+	me.nodename = nodename;
+        me.url = "/nodes/" + nodename + "/ceph/mon";
+    },
+
+    initComponent : function() {
+        var me = this;
+
+	if (!me.nodename) {
+	    throw "no node name specified";
+	}
+
+	me.setNode(me.nodename);
+
+        Ext.applyIf(me, {
+            method: 'POST',
+            items: [
+               {
+		   xtype: 'PVE.form.NodeSelector',
+		   submitValue: false,
+		   fieldLabel: gettext('Comment'),
+		   selectCurNode: true,
+		   allowBlank: false,
+		   listeners: {
+		       change: function(f, value) {
+			   me.setNode(value);
+		       }
+		   }
+	       }
+            ]
+        });
+
+        me.callParent();
+    }
+});
+
 Ext.define('PVE.node.CephMonList', {
     extend: 'Ext.grid.GridPanel',
     alias: 'widget.pveNodeCephMonList',
@@ -29,8 +75,12 @@ Ext.define('PVE.node.CephMonList', {
 
 	var service_cmd = function(cmd) {
 	    var rec = sm.getSelection()[0];
+	    if (!rec.data.host) {
+		Ext.Msg.alert(gettext('Error'), "entry has no host");
+		return;
+	    }
 	    PVE.Utils.API2Request({
-		url: "/nodes/" + nodename + "/ceph/" + cmd,
+		url: "/nodes/" + rec.data.host + "/ceph/" + cmd,
 		method: 'POST',
 		params: { service: "mon." + rec.data.name },
 		failure: function(response, opts) {
@@ -57,11 +107,44 @@ Ext.define('PVE.node.CephMonList', {
 	    }
 	});
 
+	var add_btn = new Ext.Button({
+	    text: gettext('Create'),
+	    handler: function(){
+		var win = Ext.create('PVE.CephCreateMon', {
+                    nodename: nodename
+		});
+		win.show();
+	    }
+	});
+
+	var remove_btn = new PVE.button.Button({
+	    text: gettext('Remove'),
+	    selModel: sm,
+	    disabled: true,
+	    handler: function() {
+		var rec = sm.getSelection()[0];
+
+		if (!rec.data.host) {
+		    Ext.Msg.alert(gettext('Error'), "entry has no host");
+		    return;
+		}
+
+		PVE.Utils.API2Request({
+		    url: "/nodes/" + rec.data.host + "/ceph/mon/" + 
+			rec.data.name,
+		    method: 'DELETE',
+		    failure: function(response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    }
+		});
+	    }
+	});
+
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
 	    stateful: false,
-	    tbar: [ start_btn, stop_btn ],
+	    tbar: [ start_btn, stop_btn, add_btn, remove_btn ],
 	    columns: [
 		{
 		    header: gettext('Name'),
@@ -140,8 +223,7 @@ Ext.define('PVE.node.CephConfig', {
 	}
 
 	Ext.apply(me, {
-	    url: '/api2/extjs/nodes/' + nodename + '/ceph/config',
-//	    style: 'padding-left:10px',
+	    url: '/nodes/' + nodename + '/ceph/config',
 	    bodyStyle: 'white-space:pre',
 	    bodyPadding: 5,
 	    autoScroll: true,
@@ -187,8 +269,7 @@ Ext.define('PVE.node.CephCrushMap', {
 	}
 
 	Ext.apply(me, {
-	    url: '/api2/extjs/nodes/' + nodename + '/ceph/crush',
-//	    style: 'padding-left:10px',
+	    url: '/nodes/' + nodename + '/ceph/crush',
 	    bodyStyle: 'white-space:pre',
 	    bodyPadding: 5,
 	    autoScroll: true,
