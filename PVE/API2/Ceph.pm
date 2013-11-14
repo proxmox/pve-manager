@@ -259,11 +259,8 @@ __PACKAGE__->register_method ({
 
 	my $result = [
 	    { name => 'init' },
-	    { name => 'createmon' },
-	    { name => 'destroymon' },
-	    { name => 'listmon' },
-	    { name => 'createosd' },
-	    { name => 'destroyosd' },
+	    { name => 'mon' },
+	    { name => 'osd' },
 	    { name => 'stop' },
 	    { name => 'start' },
 	    { name => 'status' },
@@ -297,7 +294,7 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     name => 'listmon',
-    path => 'listmon',
+    path => 'mon',
     method => 'GET',
     description => "Get Ceph monitor list.",
     proxyto => 'node',
@@ -317,6 +314,7 @@ __PACKAGE__->register_method ({
 		addr => { type => 'string' },
 	    },
 	},
+	links => [ { rel => 'child', href => "{name}" } ],
     },
     code => sub {
 	my ($param) = @_;
@@ -426,7 +424,7 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     name => 'createmon',
-    path => 'createmon',
+    path => 'mon',
     method => 'POST',
     description => "Create Ceph Monitor",
     proxyto => 'node',
@@ -535,8 +533,8 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     name => 'destroymon',
-    path => 'destroymon',
-    method => 'POST',
+    path => 'mon/{monid}',
+    method => 'DELETE',
     description => "Destroy Ceph monitor.",
     proxyto => 'node',
     protected => 1,
@@ -703,7 +701,7 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     name => 'createosd',
-    path => 'createosd',
+    path => 'osd',
     method => 'POST',
     description => "Create OSD",
     proxyto => 'node',
@@ -750,8 +748,8 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     name => 'destroyosd',
-    path => 'destroyosd',
-    method => 'POST',
+    path => 'osd/{osdid}',
+    method => 'DELETE',
     description => "Destroy OSD",
     proxyto => 'node',
     protected => 1,

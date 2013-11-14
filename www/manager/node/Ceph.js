@@ -19,7 +19,7 @@ Ext.define('PVE.node.CephMonList', {
 	    model: 'ceph-mon-list',
 	    proxy: {
                 type: 'pve',
-                url: "/api2/json/nodes/" + nodename + "/ceph/listmon"
+                url: "/api2/json/nodes/" + nodename + "/ceph/mon"
 	    }
 	});
 
