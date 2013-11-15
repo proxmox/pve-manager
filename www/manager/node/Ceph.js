@@ -1,3 +1,122 @@
+Ext.define('PVE.node.CephDiskList', {
+    extend: 'Ext.grid.GridPanel',
+    alias: 'widget.pveNodeCephDiskList',
+
+
+    initComponent: function() {
+        var me = this;
+
+	var nodename = me.pveSelNode.data.node;
+	if (!nodename) {
+	    throw "no node name specified";
+	}
+
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
+	var rstore = Ext.create('PVE.data.UpdateStore', {
+	    interval: 3000,
+	    storeid: 'ceph-disk-list',
+	    model: 'ceph-disk-list',
+	    proxy: {
+                type: 'pve',
+                url: "/api2/json/nodes/" + nodename + "/ceph/disks"
+	    }
+	});
+
+	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
+
+	PVE.Utils.monStoreErrors(me, rstore);
+
+	var create_btn = new PVE.button.Button({
+	    text: gettext('Create') + ': OSD',
+	    selModel: sm,
+	    disabled: true,
+	    handler: function() {
+		var rec = sm.getSelection()[0];
+		
+		console.log("CREATEOSD " + rec.data.dev);
+
+		PVE.Utils.API2Request({
+		    url: "/nodes/" + nodename + "/ceph/osd",
+		    method: 'POST',
+		    params: { dev: "/dev/" + rec.data.dev },
+		    failure: function(response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    }
+		});
+	    }
+	});
+
+	Ext.apply(me, {
+	    store: store,
+	    selModel: sm,
+	    stateful: false,
+	    tbar: [ create_btn ],
+	    columns: [
+		{
+		    header: gettext('Device'),
+		    width: 100,
+		    sortable: true,
+		    dataIndex: 'dev'
+		},
+		{
+		    header: gettext('used'),
+		    width: 50,
+		    sortable: false,
+		    renderer: function(v, metaData, rec) {
+			if (rec && (rec.data.osdid >= 0)) {
+			    return "osd." + rec.data.osdid;
+			}
+			return PVE.Utils.format_boolean(v);
+		    },
+		    dataIndex: 'used'
+		},
+		{
+		    header: gettext('Size'),
+		    width: 100,
+		    sortable: false,
+		    renderer: PVE.Utils.format_size,
+		    dataIndex: 'size'
+		},
+		{
+		    header: gettext('Vendor'),
+		    width: 100,
+		    sortable: true,
+		    dataIndex: 'vendor'
+		},
+		{
+		    header: gettext('Model'),
+		    width: 200,
+		    sortable: true,
+		    dataIndex: 'model'
+		},
+		{
+		    header: gettext('Serial'),
+		    flex: 1,
+		    sortable: true,
+		    dataIndex: 'serial'
+		}
+	    ],
+	    listeners: {
+		show: rstore.startUpdate,
+		hide: rstore.stopUpdate,
+		destroy: rstore.stopUpdate
+	    }
+	});
+
+	me.callParent();
+    }
+}, function() {
+
+    Ext.define('ceph-disk-list', {
+	extend: 'Ext.data.Model',
+	fields: [ 'dev', 'used', { name: 'size', type: 'number'}, 
+		  {name: 'osdid', type: 'number'}, 
+		  'vendor', 'model', 'serial'],
+	idProperty: 'dev'
+    });
+});
+
 Ext.define('PVE.CephCreateMon', {
     extend: 'PVE.window.Edit',
     alias: ['widget.pveCephCreateMon'],
@@ -107,7 +226,7 @@ Ext.define('PVE.node.CephMonList', {
 	    }
 	});
 
-	var add_btn = new Ext.Button({
+	var create_btn = new Ext.Button({
 	    text: gettext('Create'),
 	    handler: function(){
 		var win = Ext.create('PVE.CephCreateMon', {
@@ -144,7 +263,7 @@ Ext.define('PVE.node.CephMonList', {
 	    store: store,
 	    selModel: sm,
 	    stateful: false,
-	    tbar: [ start_btn, stop_btn, add_btn, remove_btn ],
+	    tbar: [ start_btn, stop_btn, create_btn, remove_btn ],
 	    columns: [
 		{
 		    header: gettext('Name'),
@@ -448,6 +567,11 @@ Ext.define('PVE.node.Ceph', {
 		    xtype: 'pveNodeCephMonList',
 		    title: 'Monitor',
 		    itemId: 'monlist'
+		},
+		{
+		    xtype: 'pveNodeCephDiskList',
+		    title: 'Disks',
+		    itemId: 'disklist'
 		},
 		{
 		    title: 'OSD',

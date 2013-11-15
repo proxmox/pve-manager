@@ -5,9 +5,11 @@ use warnings;
 use File::Basename;
 use File::Path;
 use POSIX qw (LONG_MAX);
+use Cwd qw(abs_path);
+use IO::Dir;
 
 use PVE::SafeSyslog;
-use PVE::Tools qw(extract_param run_command);
+use PVE::Tools qw(extract_param run_command file_get_contents file_read_firstline dir_glob_regex dir_glob_foreach);
 use PVE::Exception qw(raise raise_param_exc);
 use PVE::INotify;
 use PVE::Cluster qw(cfs_lock_file cfs_read_file cfs_write_file);
@@ -246,6 +248,112 @@ my $ceph_service_cmd = sub {
     run_command(['service', 'ceph', '-c', $ceph_cfgpath, @_]);
 };
 
+
+sub list_disks {
+    my $disklist = {};
+    
+    my $fd = IO::File->new("/proc/mounts", "r") ||
+	die "unable to open /proc/mounts - $!\n";
+
+    my $mounted = {};
+
+    while (defined(my $line = <$fd>)) {
+	my ($dev, $path, $fstype) = split(/\s+/, $line);
+	next if !($dev && $path && $fstype);
+	next if $dev !~ m|^/dev/|;
+	my $real_dev = abs_path($dev);
+	$mounted->{$real_dev} = $path;
+    }
+    close($fd);
+
+    my $dev_is_mounted = sub {
+	my ($dev) = @_;
+	return $mounted->{$dev};
+    };
+
+    my $dir_is_epmty = sub {
+	my ($dir) = @_;
+
+	my $dh = IO::Dir->new ($dir);
+	return 1 if !$dh;
+	
+	while (defined(my $tmp = $dh->read)) {
+	    next if $tmp eq '.' || $tmp eq '..';
+	    $dh->close;
+	    return 0;
+	}
+	$dh->close;
+	return 1;
+    };
+
+    dir_glob_foreach('/sys/block', '.*', sub {
+	my ($dev) = @_;
+
+	return if $dev eq '.';
+	return if $dev eq '..';
+
+	return if $dev =~ m|^ram\d+$|; # skip ram devices
+	return if $dev =~ m|^loop\d+$|; # skip loop devices
+	return if $dev =~ m|^md\d+$|; # skip md devices
+	return if $dev =~ m|^dm-.*$|; # skip dm related things
+	return if $dev =~ m|^fd\d+$|; # skip Floppy
+	return if $dev =~ m|^sr\d+$|; # skip CDs
+
+	my $devdir = "/sys/block/$dev/device";
+	return if ! -d $devdir;
+	
+	my $size = file_read_firstline("/sys/block/$dev/size");
+	return if !$size;
+
+	$size = $size * 512;
+
+	my $info = `udevadm info --path /sys/block/$dev --query all`;
+	return if !$info;
+
+	return if $info !~ m/^E: DEVTYPE=disk$/m;
+	return if $info =~ m/^E: ID_CDROM/m;
+
+	my $serial = 'unknown';
+	if ($info =~ m/^E: ID_SERIAL_SHORT=(\S+)$/m) {
+	    $serial = $1;
+	}
+
+	my $vendor = file_read_firstline("$devdir/vendor") || 'unknown';
+	my $model = file_read_firstline("$devdir/model") || 'unknown';
+
+	my $used = &$dir_is_epmty("/sys/block/$dev/holders") ? 0 : 1;
+
+	$used = 1 if &$dev_is_mounted("/dev/$dev");
+
+	$disklist->{$dev} = { 
+	    vendor => $vendor, 
+	    model => $model, 
+	    size => $size,
+	    serial => $serial,
+	}; 
+
+	my $osdid = -1;
+
+	dir_glob_foreach("/sys/block/$dev", "$dev.+", sub {
+	    my ($part) = @_;
+	    if (!&$dir_is_epmty("/sys/block/$dev/$part/holders"))  {
+		$used = 1;
+	    }
+	    if (my $mp = &$dev_is_mounted("/dev/$part")) {
+		$used = 1;
+		if ($mp =~ m|^/var/lib/ceph/osd/ceph-(\d+)$|) {
+		    $osdid = $1;
+		} 
+	    }		     
+	});
+
+	$disklist->{$dev}->{used} = $used;
+	$disklist->{$dev}->{osdid} = $osdid;
+   });
+
+    return $disklist;
+}
+
 __PACKAGE__->register_method ({
     name => 'index',
     path => '',
@@ -279,9 +387,49 @@ __PACKAGE__->register_method ({
 	    { name => 'crush' },
 	    { name => 'config' },
 	    { name => 'log' },
+	    { name => 'disks' },
 	];
 
 	return $result;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'disks',
+    path => 'disks',
+    method => 'GET',
+    description => "List local disks.",
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {
+		dev => { type => 'string' },
+		used => { type => 'boolean' },
+		size => { type => 'integer' },
+		osdid => { type => 'integer' },
+		vendor =>  { type => 'string', optional => 1 },
+		model =>  { type => 'string', optional => 1 },
+		serial =>  { type => 'string', optional => 1 },
+	    },
+	},
+	# links => [ { rel => 'child', href => "{}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	&$check_ceph_inited();
+
+	my $res = list_disks();
+
+	return PVE::RESTHandler::hash_to_array($res, 'dev');
     }});
 
 __PACKAGE__->register_method ({
@@ -743,6 +891,18 @@ __PACKAGE__->register_method ({
 	print "create OSD on $param->{dev}\n";
 
 	-b  $param->{dev} || die "no such block device '$param->{dev}'\n";
+
+	my $disklist = list_disks();
+
+	my $devname = $param->{dev};
+	$devname =~ s|/dev/||;
+       
+	my $diskinfo = $disklist->{$devname};
+	die "unable to get device info for '$devname'\n"
+	    if !$diskinfo;
+
+	die "device '$param->{dev}' is in use\n" 
+	    if $diskinfo->{used};
 
 	my $monstat = ceph_mon_status(1);
 	die "unable to get fsid\n" if !$monstat->{monmap} || !$monstat->{monmap}->{fsid};
