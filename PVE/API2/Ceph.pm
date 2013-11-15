@@ -266,6 +266,7 @@ __PACKAGE__->register_method ({
 	    { name => 'status' },
 	    { name => 'crush' },
 	    { name => 'config' },
+	    { name => 'log' },
 	];
 
 	return $result;
@@ -832,6 +833,63 @@ __PACKAGE__->register_method ({
 	my $txt = &$run_ceph_cmd_text(['osd', 'crush', 'dump'], quiet => 1);
 
 	return $txt;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'log', 
+    path => 'log', 
+    method => 'GET',
+    description => "Read ceph log",
+    proxyto => 'node',
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Syslog' ]],
+    },
+    protected => 1,
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    start => {
+		type => 'integer',
+		minimum => 0,
+		optional => 1,
+	    },
+	    limit => {
+		type => 'integer',
+		minimum => 0,
+		optional => 1,
+	    },
+	},
+    },
+    returns => {
+	type => 'array',
+	items => { 
+	    type => "object",
+	    properties => {
+		n => {
+		  description=>  "Line number",
+		  type=> 'integer',
+		},
+		t => {
+		  description=>  "Line text",
+		  type => 'string',
+		}
+	    }
+	}
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+	my $node = $param->{node};
+
+	my $logfile = "/var/log/ceph/ceph.log";
+	my ($count, $lines) = PVE::Tools::dump_logfile($logfile, $param->{start}, $param->{limit});
+
+	$rpcenv->set_result_attrib('total', $count);
+	    
+	return $lines; 
     }});
 
 

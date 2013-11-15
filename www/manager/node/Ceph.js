@@ -463,6 +463,12 @@ Ext.define('PVE.node.Ceph', {
 		    title: 'Crush',
 		    xtype: 'pveNodeCephCrushMap',
 		    itemId: 'crushmap'
+		},
+		{
+		    title: 'Log',
+		    itemId: 'log',
+		    xtype: 'pveLogView',
+		    url: "/api2/extjs/nodes/" + nodename + "/ceph/log"
 		}
 	    ],
 	    listeners: {
