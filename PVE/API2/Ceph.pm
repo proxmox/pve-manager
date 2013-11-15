@@ -205,13 +205,25 @@ my $write_ceph_config = sub {
     my ($cfg) = @_;
 
     my $out = '';
-    foreach my $section (keys %$cfg) {
-	$out .= "[$section]\n";
-	foreach my $key (sort keys %{$cfg->{$section}}) {
-	    $out .= "\t $key = $cfg->{$section}->{$key}\n";
+
+    my $cond_write_sec = sub {
+	my $re = shift;
+
+	foreach my $section (keys %$cfg) {
+	    next if $section !~ m/^$re$/;
+	    $out .= "[$section]\n";
+	    foreach my $key (sort keys %{$cfg->{$section}}) {
+		$out .= "\t $key = $cfg->{$section}->{$key}\n";
+	    }
+	    $out .= "\n";
 	}
-	$out .= "\n";
-    }
+    };
+
+    &$cond_write_sec('global');
+    &$cond_write_sec('mon');
+    &$cond_write_sec('osd');
+    &$cond_write_sec('mon\..*');
+    &$cond_write_sec('osd\..*');
 
     PVE::Tools::file_set_contents($pve_ceph_cfgpath, $out);
 };
