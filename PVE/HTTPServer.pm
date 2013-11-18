@@ -97,6 +97,7 @@ sub cleanup_reqstate {
     delete $reqstate->{request};
     delete $reqstate->{proto};
     delete $reqstate->{accept_gzip};
+    delete $reqstate->{starttime};
 
     if ($reqstate->{tmpfilename}) {
 	unlink $reqstate->{tmpfilename};
@@ -163,7 +164,7 @@ sub finish_response {
 }
 
 sub response {
-    my ($self, $reqstate, $resp, $mtime, $nocomp) = @_;
+    my ($self, $reqstate, $resp, $mtime, $nocomp, $delay) = @_;
 
     #print "$$: send response: " . Dumper($resp);
 
@@ -234,9 +235,17 @@ sub response {
     $res .= $content if $content;
 
     $self->log_request($reqstate, $reqstate->{request});
-
-    $reqstate->{hdl}->push_write($res);
-    $self->finish_response($reqstate);
+    
+    if ($delay && $delay > 0) {
+	my $w; $w = AnyEvent->timer(after => $delay, cb => sub {
+	    undef $w; # delete reference
+	    $reqstate->{hdl}->push_write($res);
+	    $self->finish_response($reqstate);
+	});
+    } else {
+	$reqstate->{hdl}->push_write($res);
+	$self->finish_response($reqstate);
+    }
 }
 
 sub error {
@@ -486,13 +495,20 @@ sub handle_api2_request {
 
 	}
 
+	my $delay = 0;
+	if ($res->{status} == HTTP_UNAUTHORIZED) {
+	    # always delay unauthorized calls by 3 seconds
+	    $delay = 3 - tv_interval($reqstate->{starttime});
+	    $delay = 0 if $delay < 0;
+	}
+
 	PVE::REST::prepare_response_data($format, $res);
 	my ($raw, $ct, $nocomp) = PVE::REST::format_response_data($format, $res, $path);
 
 	my $resp = HTTP::Response->new($res->{status}, $res->{message});
 	$resp->header("Content-Type" => $ct);
 	$resp->content($raw);
-	$self->response($reqstate, $resp, $nocomp);
+	$self->response($reqstate, $resp, undef, $nocomp, $delay);
     };
     if (my $err = $@) {
 	$self->error($reqstate, 501, $err);
@@ -1049,6 +1065,7 @@ sub push_request_header {
 		    $reqstate->{proto}->{min} = $min;
 		    $reqstate->{proto}->{ver} = $maj*1000+$min;
 		    $reqstate->{request} = HTTP::Request->new($method, $uri);
+		    $reqstate->{starttime} = [gettimeofday],
 
 		    $self->unshift_read_header($reqstate);
 		} elsif ($line eq '') {
