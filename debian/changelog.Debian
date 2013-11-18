@@ -1,3 +1,9 @@
+pve-manager (3.1-25) unstable; urgency=low
+
+  * delay UNAUTHORIZED response to avoid DOS attac
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 18 Nov 2013 11:20:37 +0100
+
 pve-manager (3.1-24) unstable; urgency=low
 
   * fix IP address parser for OpenVZ containers
