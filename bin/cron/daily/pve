@@ -86,7 +86,7 @@ sub cleanup_tasks {
 	}
     };
 
-    foreach my $subdir (qw(0 1 2 3 4 5 6 7 8 9 A B C F E F)) {
+    foreach my $subdir (qw(0 1 2 3 4 5 6 7 8 9 A B C D E F)) {
 	my $path = "$taskdir/$subdir";
 	find($wanted, $path);
     }
