@@ -1,3 +1,167 @@
+Ext.define('PVE.node.CephOsdTree', {
+    extend: 'Ext.tree.Panel',
+    alias: 'widget.pveNodeCephOsdTree',
+
+    initComponent: function() {
+        var me = this;
+
+	var nodename = me.pveSelNode.data.node;
+	if (!nodename) {
+	    throw "no node name specified";
+	}
+
+	var sm = Ext.create('Ext.selection.TreeModel', {});
+
+	var service_cmd = function(cmd) {
+	    var rec = sm.getSelection()[0];
+	    if (!(rec && rec.data.name && rec.data.host)) {
+		return;
+	    }
+	    PVE.Utils.API2Request({
+                url: "/nodes/" + rec.data.host + "/ceph/" + cmd,
+		params: { service: rec.data.name },
+		waitMsgTarget: me,
+		method: 'POST',
+		failure: function(response, opts) {
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		}
+	    });
+	}
+
+	var start_btn = new Ext.Button({
+	    text: gettext('Start'),
+	    disabled: true,
+	    handler: function(){ service_cmd('start'); }
+	});
+
+	var stop_btn = new Ext.Button({
+	    text: gettext('Stop'),
+	    disabled: true,
+	    handler: function(){ service_cmd('stop'); }
+	});
+
+	var remove_btn = new Ext.Button({
+	    text: gettext('Remove'),
+	    disabled: true,
+	    handler: function(){
+		var rec = sm.getSelection()[0];
+		if (!(rec && (rec.data.id >= 0) && rec.data.host)) {
+		    return;
+		}
+		PVE.Utils.API2Request({
+                    url: "/nodes/" + rec.data.host + "/ceph/osd/" + rec.data.id,
+		    waitMsgTarget: me,
+		    method: 'DELETE',
+		    failure: function(response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    }
+		});
+	    }
+	});
+
+	var set_button_status = function() {
+	    var rec = sm.getSelection()[0];
+
+	    if (!rec) {
+		start_btn.setDisabled(true);
+		stop_btn.setDisabled(true);
+		remove_btn.setDisabled(true);
+		return;
+	    }
+
+	    var isOsd = (rec.data.host && (rec.data.type === 'osd') && (rec.data.id >= 0));
+
+	    start_btn.setDisabled(!(isOsd && (rec.data.status !== 'up')));
+	    stop_btn.setDisabled(!(isOsd && (rec.data.status !== 'down')));
+	    remove_btn.setDisabled(!(isOsd && (rec.data.status === 'down')));
+	};
+
+	sm.on('selectionchange', set_button_status);
+
+	var reload = function() {
+	    PVE.Utils.API2Request({
+                url: "/nodes/" + nodename + "/ceph/osd",
+		waitMsgTarget: me,
+		method: 'GET',
+		failure: function(response, opts) {
+		    PVE.Utils.setErrorMask(me, response.htmlStatus);
+		},
+		success: function(response, opts) {
+		    sm.deselectAll();
+		    me.setRootNode(response.result.data.root);
+		    me.expandAll();
+		    set_button_status();
+		}
+	    });
+	};
+
+	var reload_btn = new Ext.Button({
+	    text: gettext('Reload'),
+	    handler: reload
+	});
+
+	Ext.apply(me, {
+	    tbar: [ reload_btn, start_btn, stop_btn, remove_btn ],
+	    rootVisible: false,
+	    fields: ['name', 'type', 'status', 'host',
+		     { type: 'integre', name: 'id' }, 
+		     { type: 'number', name: 'reweight' }, 
+		     { type: 'number', name: 'crush_weight' }],
+	    stateful: false,
+	    selModel: sm,
+	    columns: [
+		{
+		    xtype: 'treecolumn',
+		    text: 'Name',
+		    dataIndex: 'name',
+		    width: 200
+		},
+		{ 
+		    text: 'ID',
+		    dataIndex: 'id',
+		    align: 'right',
+		    width: 60
+		},
+		{ 
+		    text: 'weight',
+		    dataIndex: 'crush_weight',
+		    align: 'right',
+		    width: 60
+		},
+		{ 
+		    text: 'Type',
+		    dataIndex: 'type',
+		    align: 'right',
+		    width: 100		 
+		},
+		{ 
+		    text: 'Status',
+		    dataIndex: 'status',
+		    align: 'right',
+		    width: 100
+		},
+		{ 
+		    text: 'reweight',
+		    dataIndex: 'reweight',
+		    align: 'right',
+		    width: 60
+		}
+	    ],
+	    listeners: {
+		show: function() {
+		    console.log("RELOAD");
+		    reload();
+		}
+	    }
+	});
+
+	me.callParent();
+
+	reload();
+    }
+});
+
+
 Ext.define('PVE.node.CephDiskList', {
     extend: 'Ext.grid.GridPanel',
     alias: 'widget.pveNodeCephDiskList',
@@ -34,8 +198,6 @@ Ext.define('PVE.node.CephDiskList', {
 	    handler: function() {
 		var rec = sm.getSelection()[0];
 		
-		console.log("CREATEOSD " + rec.data.dev);
-
 		PVE.Utils.API2Request({
 		    url: "/nodes/" + nodename + "/ceph/osd",
 		    method: 'POST',
@@ -574,9 +736,9 @@ Ext.define('PVE.node.Ceph', {
 		    itemId: 'disklist'
 		},
 		{
+		    xtype: 'pveNodeCephOsdTree',
 		    title: 'OSD',
-		    itemId: 'test3',
-		    html: "ABCD"
+		    itemId: 'osdtree'
 		},
 		{
 		    title: 'Pool',

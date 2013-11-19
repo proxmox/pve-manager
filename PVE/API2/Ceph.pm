@@ -861,6 +861,82 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
+    name => 'listosd',
+    path => 'osd',
+    method => 'GET',
+    description => "Get Ceph osd list/tree.",
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => "object",
+    },
+    code => sub {
+	my ($param) = @_;
+
+	&$check_ceph_inited();
+
+	my $res = &$run_ceph_cmd_json(['osd', 'tree'], quiet => 1);
+
+        die "no tree nodes found\n" if !($res && $res->{nodes});
+
+	my $nodes = {};
+	my $newnodes = {};
+	foreach my $e (@{$res->{nodes}}) {
+	    $nodes->{$e->{id}} = $e;
+	    
+	    my $new = { 
+		id => $e->{id}, 
+		name => $e->{name}, 
+		type => $e->{type}
+	    };
+
+	    foreach my $opt (qw(status crush_weight reweight)) {
+		$new->{$opt} = $e->{$opt} if defined($e->{$opt});
+	    }
+
+	    $newnodes->{$e->{id}} = $new;
+	}
+
+	foreach my $e (@{$res->{nodes}}) {
+	    my $new = $newnodes->{$e->{id}};
+	    if ($e->{children} && scalar(@{$e->{children}})) {
+		$new->{children} = [];
+		$new->{leaf} = 0;
+		foreach my $cid (@{$e->{children}}) {
+		    $nodes->{$cid}->{parent} = $e->{id};
+		    if ($nodes->{$cid}->{type} eq 'osd' &&
+			$e->{type} eq 'host') {
+			$newnodes->{$cid}->{host} = $e->{name};
+		    }
+		    push @{$new->{children}}, $newnodes->{$cid};
+		}
+	    } else {
+		$new->{leaf} = ($e->{id} >= 0) ? 1 : 0;
+	    }
+	}
+
+	my $rootnode;
+	foreach my $e (@{$res->{nodes}}) {
+	    if (!$nodes->{$e->{id}}->{parent}) {
+		$rootnode = $newnodes->{$e->{id}};
+		last;
+	    }
+	}
+
+	die "no root node\n" if !$rootnode;
+
+	my $data = { root => $rootnode };
+
+	return $data;
+    }});
+
+__PACKAGE__->register_method ({
     name => 'createosd',
     path => 'osd',
     method => 'POST',
