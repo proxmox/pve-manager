@@ -114,6 +114,16 @@ __PACKAGE__->register_method ({
 
 my $cmddef = {
     init => [ 'PVE::API2::Ceph', 'init', [], { node => $nodename } ],
+    lspools => [ 'PVE::API2::Ceph', 'lspools', [], { node => $nodename }, sub {
+	my $res = shift;
+
+	printf("%-20s %10s %10s\n", "Name", "size", "pg_num");
+	foreach my $p (sort {$a->{pool_name} cmp $b->{pool_name}} @$res) {
+	    printf("%-20s %10d %10d\n", $p->{pool_name}, $p->{size}, $p->{pg_num});
+	}
+    }],
+    createpool => [ 'PVE::API2::Ceph', 'createpool', ['name'], { node => $nodename }],
+    destroypool => [ 'PVE::API2::Ceph', 'destroypool', ['name'], { node => $nodename } ],
     createosd => [ 'PVE::API2::Ceph', 'createosd', ['dev'], { node => $nodename } ],
     destroyosd => [ 'PVE::API2::Ceph', 'destroyosd', ['osdid'], { node => $nodename } ],
     createmon => [ 'PVE::API2::Ceph', 'createmon', [], { node => $nodename } ],

@@ -381,6 +381,7 @@ __PACKAGE__->register_method ({
 	    { name => 'init' },
 	    { name => 'mon' },
 	    { name => 'osd' },
+	    { name => 'pools' },
 	    { name => 'stop' },
 	    { name => 'start' },
 	    { name => 'status' },
@@ -858,6 +859,119 @@ __PACKAGE__->register_method ({
 	&$check_ceph_enabled();
 
 	return &$run_ceph_cmd_json(['status'], quiet => 1);
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'lspools',
+    path => 'pools',
+    method => 'GET',
+    description => "List all pools.",
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {
+		pool => { type => 'integer' },
+		pool_name => { type => 'string' },
+		size => { type => 'integer' },
+	    },
+	},
+	links => [ { rel => 'child', href => "{pool_name}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	&$check_ceph_inited();
+
+	my $res = &$run_ceph_cmd_json(['osd', 'dump'], quiet => 1);
+
+	my $data = [];
+	foreach my $e (@{$res->{pools}}) {
+	    my $d = {};
+	    foreach my $attr (qw(pool pool_name size min_size pg_num crush_ruleset)) {
+		$d->{$attr} = $e->{$attr} if defined($e->{$attr});
+	    }
+	    push @$data, $d;
+	}
+
+	return $data;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'createpool',
+    path => 'pools',
+    method => 'POST',
+    description => "Create POOL",
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    name => {
+		description => "The name of the pool. It must be unique.",
+		type => 'string',
+	    },
+	    pg_num => {
+		description => "Number of placement groups.",
+		type => 'integer',
+		default => 512,
+		optional => 1,
+		minimum => 8,
+		maximum => 32768,
+	    },	    
+	},
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	&$check_ceph_inited();
+
+	die "not fully configured - missing '$pve_ckeyring_path'\n" 
+	    if ! -f $pve_ckeyring_path;
+
+	my $pg_num = $param->{pg_num} || 512;
+
+	&$run_ceph_cmd(['osd', 'pool', 'create', $param->{name}, $pg_num]);
+
+	return undef;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'destroypool',
+    path => 'pools/{name}',
+    method => 'DELETE',
+    description => "Destroy pool",
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    name => {
+		description => "The name of the pool. It must be unique.",
+		type => 'string',
+	    },
+	},
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	&$check_ceph_inited();
+
+	&$run_ceph_cmd(['osd', 'pool', 'delete', $param->{name}, $param->{name}, '--yes-i-really-really-mean-it']);
+
+	return undef;
     }});
 
 __PACKAGE__->register_method ({
