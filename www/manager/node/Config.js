@@ -158,6 +158,7 @@ Ext.define('PVE.node.Config', {
 		title: 'Ceph',
 		itemId: 'ceph',
 		xtype: 'pveNodeCeph',
+		phstateid: me.hstateid,
 		nodename: nodename
 	    }]);
 	}
