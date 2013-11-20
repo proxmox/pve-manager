@@ -920,6 +920,14 @@ __PACKAGE__->register_method ({
 		description => "The name of the pool. It must be unique.",
 		type => 'string',
 	    },
+	    size => {
+		description => 'Number of replicas per object',
+		type => 'integer',
+		default => 2,
+		optional => 1,
+		minimum => 1,
+		maximum => 3,
+	    },
 	    pg_num => {
 		description => "Number of placement groups.",
 		type => 'integer',
@@ -940,8 +948,11 @@ __PACKAGE__->register_method ({
 	    if ! -f $pve_ckeyring_path;
 
 	my $pg_num = $param->{pg_num} || 512;
+	my $size = $param->{size} || 2;
 
 	&$run_ceph_cmd(['osd', 'pool', 'create', $param->{name}, $pg_num]);
+
+	&$run_ceph_cmd(['osd', 'pool', 'set', $param->{name}, 'size', $size]);
 
 	return undef;
     }});

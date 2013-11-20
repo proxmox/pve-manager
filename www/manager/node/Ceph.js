@@ -1,3 +1,179 @@
+Ext.define('PVE.CephCreatePool', {
+    extend: 'PVE.window.Edit',
+    alias: ['widget.pveCephCreatePool'],
+
+    create: true,
+ 
+    subject: 'Ceph Pool',
+ 
+     initComponent : function() {
+        var me = this;
+
+	if (!me.nodename) {
+	    throw "no node name specified";
+	}
+
+        Ext.applyIf(me, {
+	    url: "/nodes/" + me.nodename + "/ceph/pools",
+            method: 'POST',
+            items: [
+		{
+		    xtype: 'textfield',
+		    fieldLabel: gettext('Name'),
+		    name: 'name',
+		    allowBlank: false
+		},
+		{
+		    xtype: 'numberfield',
+		    fieldLabel: gettext('Size'),
+		    name: 'size',
+		    value: 2,
+		    minValue: 1,
+		    maxValue: 3,
+		    allowBlank: false
+		},
+		{
+		    xtype: 'numberfield',
+		    fieldLabel: 'pg_num',
+		    name: 'pg_num',
+		    value: 512,
+		    minValue: 8,
+		    maxValue: 32768,
+		    allowBlank: false
+		}
+            ]
+        });
+
+        me.callParent();
+    }
+});
+
+Ext.define('PVE.node.CephPoolList', {
+    extend: 'Ext.grid.GridPanel',
+    alias: 'widget.pveNodeCephPoolList',
+
+    initComponent: function() {
+        var me = this;
+
+	var nodename = me.pveSelNode.data.node;
+	if (!nodename) {
+	    throw "no node name specified";
+	}
+
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
+	var rstore = Ext.create('PVE.data.UpdateStore', {
+	    interval: 3000,
+	    storeid: 'ceph-pool-list',
+	    model: 'ceph-pool-list',
+	    proxy: {
+                type: 'pve',
+                url: "/api2/json/nodes/" + nodename + "/ceph/pools"
+	    }
+	});
+
+	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
+
+	PVE.Utils.monStoreErrors(me, rstore);
+
+	var create_btn = new Ext.Button({
+	    text: gettext('Create'),
+	    handler: function() {
+		var win = Ext.create('PVE.CephCreatePool', {
+                    nodename: nodename
+		});
+		win.show();
+	    }
+	});
+
+	var remove_btn = new PVE.button.Button({
+	    text: gettext('Remove'),
+	    selModel: sm,
+	    disabled: true,
+	    confirmMsg: function(rec) {
+		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
+					    "'" + rec.data.pool_name + "'");
+		msg += " " + gettext('This will permanently erase all image data.');
+
+		return msg;
+	    },
+	    handler: function() {
+		var rec = sm.getSelection()[0];
+
+		if (!rec.data.pool_name) {
+		    return;
+		}
+
+		PVE.Utils.API2Request({
+		    url: "/nodes/" + nodename + "/ceph/pools/" + 
+			rec.data.pool_name,
+		    method: 'DELETE',
+		    failure: function(response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    }
+		});
+	    }
+	});
+
+	Ext.apply(me, {
+	    store: store,
+	    selModel: sm,
+	    stateful: false,
+	    tbar: [ create_btn, remove_btn ],
+	    columns: [
+		{
+		    header: gettext('Name'),
+		    width: 100,
+		    sortable: true,
+		    dataIndex: 'pool_name'
+		},
+		{
+		    header: gettext('Size') + '/min',
+		    width: 50,
+		    sortable: false,
+		    renderer: function(v, meta, rec) {
+			return v + '/' + rec.data.min_size;
+		    },
+		    dataIndex: 'size'
+		},
+		{
+		    header: 'pg_num',
+		    width: 100,
+		    sortable: false,
+		    dataIndex: 'pg_num'
+		},
+		{
+		    header: 'ruleset',
+		    width: 50,
+		    sortable: false,
+		    dataIndex: 'crush_ruleset'
+		}
+	    ],
+	    listeners: {
+		show: rstore.startUpdate,
+		hide: rstore.stopUpdate,
+		destroy: rstore.stopUpdate
+	    }
+	});
+
+	me.callParent();
+    }
+}, function() {
+
+    Ext.define('ceph-pool-list', {
+	extend: 'Ext.data.Model',
+	fields: [ 'pool_name', 
+		  { name: 'pool', type: 'integer'}, 
+		  { name: 'size', type: 'integer'}, 
+		  { name: 'min_size', type: 'integer'}, 
+		  { name: 'pg_num', type: 'integer'}, 
+		  { name: 'crush_ruleset', type: 'integer'}
+		],
+	idProperty: 'pool_name'
+    });
+});
+
+
 Ext.define('PVE.node.CephOsdTree', {
     extend: 'Ext.tree.Panel',
     alias: 'widget.pveNodeCephOsdTree',
@@ -149,7 +325,6 @@ Ext.define('PVE.node.CephOsdTree', {
 	    ],
 	    listeners: {
 		show: function() {
-		    console.log("RELOAD");
 		    reload();
 		}
 	    }
@@ -741,9 +916,9 @@ Ext.define('PVE.node.Ceph', {
 		    itemId: 'osdtree'
 		},
 		{
-		    title: 'Pool',
-		    itemId: 'test4',
-		    html: "ABCD"
+		    xtype: 'pveNodeCephPoolList',
+		    title: 'Pools',
+		    itemId: 'pools'
 		},
 		{
 		    title: 'Crush',
