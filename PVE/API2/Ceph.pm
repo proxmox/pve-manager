@@ -508,7 +508,7 @@ __PACKAGE__->register_method ({
     name => 'init',
     path => 'init',
     method => 'POST',
-    description => "Create initial ceph configuration.",
+    description => "Create initial ceph default configuration and setup symlinks.",
     proxyto => 'node',
     protected => 1,
     parameters => {
@@ -526,7 +526,7 @@ __PACKAGE__->register_method ({
 	    pg_bits => {
 		description => "Placement group bits, used to specify the default number of placement groups (Note: 'osd pool default pg num' does not work for deafult pools)",
 		type => 'integer',
-		default => 9,
+		default => 6,
 		optional => 1,
 		minimum => 6,
 		maximum => 14,
@@ -539,38 +539,45 @@ __PACKAGE__->register_method ({
 
 	&$check_ceph_installed();
 
-	-f $pve_ceph_cfgpath &&
-	    die "configuration file '$pve_ceph_cfgpath' already exists.\n";
+	# simply load old config if it already exists
+	my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
 
-	my $pg_bits = $param->{pg_bits} || 9;
-	my $size = $param->{size} || 2;
+	my $keyring = '/etc/pve/priv/$cluster.$name.keyring';
 
-	my $fsid;
-	my $uuid;
+	if (!$cfg->{global}) {
 
-	UUID::generate($uuid);
-	UUID::unparse($uuid, $fsid);
+	    my $fsid;
+	    my $uuid;
 
-	my $global = {
-	    'fsid' => $fsid,
-	    'auth supported' => 'cephx',
-	    'auth cluster required' => 'cephx',
-	    'auth service required' => 'cephx',
-	    'auth client required' => 'cephx',
-	    'keyring' => '/etc/pve/priv/$cluster.$name.keyring',
-	    'filestore xattr use omap' => 'true',
-	    'osd journal size' => '1024',
-	    'osd pool default size' => $size,
-	    'osd pool default min size' => 1,
-	    'osd pg bits' => $pg_bits,
-	    'osd pgp bits' => $pg_bits,
-	};
+	    UUID::generate($uuid);
+	    UUID::unparse($uuid, $fsid);
 
-	# this does not work for default pools 
-	#'osd pool default pg num' => $pg_num,
-	#'osd pool default pgp num' => $pg_num, 
+	    $cfg->{global} = {
+		'fsid' => $fsid,
+		'auth supported' => 'cephx',
+		'auth cluster required' => 'cephx',
+		'auth service required' => 'cephx',
+		'auth client required' => 'cephx',
+		'filestore xattr use omap' => 'true',
+		'osd journal size' => '1024',
+		'osd pool default min size' => 1,
+	    };
 
-	&$write_ceph_config({global => $global});
+	    # this does not work for default pools 
+	    #'osd pool default pg num' => $pg_num,
+	    #'osd pool default pgp num' => $pg_num, 
+	}
+	
+	$cfg->{global}->{keyring} = $keyring;
+
+	$cfg->{global}->{'osd pool default size'} = $param->{size} if $param->{size};
+	
+	if ($param->{pg_bits}) {
+	    $cfg->{global}->{'osd pg bits'} = $param->{pg_bits};
+	    $cfg->{global}->{'osd pgp bits'} = $param->{pg_bits};
+	}
+	
+	&$write_ceph_config($cfg);
 
 	&$setup_pve_symlinks();
 
@@ -1076,9 +1083,6 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	&$check_ceph_inited();
-
-	die "not fully configured - missing '$pve_ckeyring_path'\n" 
-	    if ! -f $pve_ckeyring_path;
 
 	&$setup_pve_symlinks();
 
