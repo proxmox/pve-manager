@@ -7,6 +7,7 @@ use File::Path;
 use POSIX qw (LONG_MAX);
 use Cwd qw(abs_path);
 use IO::Dir;
+use UUID;
 
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param run_command file_get_contents file_read_firstline dir_glob_regex dir_glob_foreach);
@@ -544,7 +545,14 @@ __PACKAGE__->register_method ({
 	my $pg_bits = $param->{pg_bits} || 9;
 	my $size = $param->{size} || 2;
 
+	my $fsid;
+	my $uuid;
+
+	UUID::generate($uuid);
+	UUID::unparse($uuid, $fsid);
+
 	my $global = {
+	    'fsid' => $fsid,
 	    'auth supported' => 'cephx',
 	    'auth cluster required' => 'cephx',
 	    'auth service required' => 'cephx',
