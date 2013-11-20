@@ -29,9 +29,7 @@ my $ceph_cfgdir = "/etc/ceph";
 my $pve_ceph_cfgpath = "/etc/pve/$ccname.conf";
 my $ceph_cfgpath = "$ceph_cfgdir/$ccname.conf";
 my $pve_mon_key_path = "/etc/pve/priv/$ccname.mon.keyring";
-my $ceph_mon_key_path = "$ceph_cfgdir/$ccname.mon.keyring";
-my $pve_ckeyring_path = "/etc/pve/priv/$ccname.keyring";
-my $ceph_ckeyring_path = "$ceph_cfgdir/$ccname.client.admin.keyring";
+my $pve_ckeyring_path = "/etc/pve/priv/$ccname.client.admin.keyring";
 
 my $ceph_bootstrap_osd_keyring = "/var/lib/ceph/bootstrap-osd/$ccname.keyring";
 my $ceph_bootstrap_mds_keyring = "/var/lib/ceph/bootstrap-mds/$ccname.keyring";
@@ -42,8 +40,6 @@ sub purge_all_ceph_files {
     # fixme: this is very dangerous - should we really support this function?
 
     unlink $ceph_cfgpath;
-    unlink $ceph_mon_key_path;
-    unlink $ceph_ckeyring_path;
 
     unlink $pve_ceph_cfgpath;
     unlink $pve_ckeyring_path;
@@ -95,16 +91,6 @@ my $check_ceph_enabled = sub {
     return 1;
 };
 
-my $force_symlink = sub {
-    my ($old, $new) = @_;
-
-    return if (-l $new) && (readlink($new) eq $old);
-	
-    unlink $new;
-    symlink($old, $new) ||
-	die "unable to create symlink '$new' - $!\n";
-};
-
 my $parse_ceph_config = sub {
     my ($filename) = @_;
 
@@ -150,7 +136,7 @@ my $run_ceph_cmd = sub {
 	# Note: --connect-timeout does not work with current version
 	# '--connect-timeout', $timeout,
 
-	run_command(['ceph', '-c', $ceph_cfgpath, @$cmd], %params);
+	run_command(['ceph', '-c', $pve_ceph_cfgpath, @$cmd], %params);
 	alarm(0);
     };
     my $err = $@;
@@ -236,16 +222,14 @@ my $setup_pve_symlinks = sub {
 	my $lnk = readlink($ceph_cfgpath);
 	die "file '$ceph_cfgpath' already exists\n"
 	    if !$lnk || $lnk ne $pve_ceph_cfgpath;
+    } else {
+	symlink($pve_ceph_cfgpath, $ceph_cfgpath) ||
+	    die "unable to create symlink '$ceph_cfgpath' - $!\n";
     }
-
-    # now assume we are allowed to setup/overwrite content 
-    &$force_symlink($pve_ceph_cfgpath, $ceph_cfgpath);
-    &$force_symlink($pve_mon_key_path, $ceph_mon_key_path);
-    &$force_symlink($pve_ckeyring_path, $ceph_ckeyring_path);
 };
 
 my $ceph_service_cmd = sub {
-    run_command(['service', 'ceph', '-c', $ceph_cfgpath, @_]);
+    run_command(['service', 'ceph', '-c', $pve_ceph_cfgpath, @_]);
 };
 
 
@@ -565,6 +549,7 @@ __PACKAGE__->register_method ({
 	    'auth cluster required' => 'cephx',
 	    'auth service required' => 'cephx',
 	    'auth client required' => 'cephx',
+	    'keyring' => '/etc/pve/priv/$cluster.$name.keyring',
 	    'filestore xattr use omap' => 'true',
 	    'osd journal size' => '1024',
 	    'osd pool default size' => $size,
