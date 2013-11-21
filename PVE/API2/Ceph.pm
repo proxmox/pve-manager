@@ -542,8 +542,6 @@ __PACKAGE__->register_method ({
 	# simply load old config if it already exists
 	my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
 
-	my $keyring = '/etc/pve/priv/$cluster.$name.keyring';
-
 	if (!$cfg->{global}) {
 
 	    my $fsid;
@@ -568,7 +566,8 @@ __PACKAGE__->register_method ({
 	    #'osd pool default pgp num' => $pg_num, 
 	}
 	
-	$cfg->{global}->{keyring} = $keyring;
+	$cfg->{global}->{keyring} = '/etc/pve/priv/$cluster.$name.keyring';
+	$cfg->{osd}->{keyring} = "/var/lib/ceph/osd/ceph-$id/keyring";
 
 	$cfg->{global}->{'osd pool default size'} = $param->{size} if $param->{size};
 	
