@@ -613,13 +613,12 @@ __PACKAGE__->register_method ({
 	if (! -f $pve_mon_key_path) {
 	    run_command("cp $pve_ckeyring_path $pve_mon_key_path.tmp");
 	    run_command("ceph-authtool $pve_mon_key_path.tmp -n client.admin --set-uid=0 " .
-			"--cap mds 'allow *' " .
+			"--cap mds 'allow' " .
 			"--cap osd 'allow *' " .
 			"--cap mon 'allow *'");
 	    run_command("ceph-authtool $pve_mon_key_path.tmp --gen-key -n mon. --cap mon 'allow *'");
 	    run_command("mv $pve_mon_key_path.tmp $pve_mon_key_path");
 	}
-
 
 	my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
 
