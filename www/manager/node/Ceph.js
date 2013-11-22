@@ -484,7 +484,7 @@ Ext.define('PVE.CephCreateMon', {
                {
 		   xtype: 'PVE.form.NodeSelector',
 		   submitValue: false,
-		   fieldLabel: gettext('Comment'),
+		   fieldLabel: gettext('Host'),
 		   selectCurNode: true,
 		   allowBlank: false,
 		   listeners: {
@@ -797,6 +797,7 @@ Ext.define('PVE.node.CephStatus', {
 	    }
 
 	    var txt = value.overall_status;
+
 	    Ext.Array.each(value.summary, function(d) {
 		txt += " " + d.summary + ';';
 	    });

@@ -567,7 +567,7 @@ __PACKAGE__->register_method ({
 	}
 	
 	$cfg->{global}->{keyring} = '/etc/pve/priv/$cluster.$name.keyring';
-	$cfg->{osd}->{keyring} = "/var/lib/ceph/osd/ceph-$id/keyring";
+	$cfg->{osd}->{keyring} = '/var/lib/ceph/osd/ceph-$id/keyring';
 
 	$cfg->{global}->{'osd pool default size'} = $param->{size} if $param->{size};
 	
@@ -596,7 +596,7 @@ __PACKAGE__->register_method ({
 	    node => get_standard_option('pve-node'),
 	},
     },
-    returns => { type => 'null' },
+    returns => { type => 'string' },
     code => sub {
 	my ($param) = @_;
 
@@ -604,20 +604,9 @@ __PACKAGE__->register_method ({
 
 	&$setup_pve_symlinks();
 
-	if (! -f $pve_ckeyring_path) {
-	    run_command("ceph-authtool $pve_ckeyring_path --create-keyring " .
-			"--gen-key -n client.admin");
-	}
+	my $rpcenv = PVE::RPCEnvironment::get();
 
-	if (! -f $pve_mon_key_path) {
-	    run_command("cp $pve_ckeyring_path $pve_mon_key_path.tmp");
-	    run_command("ceph-authtool $pve_mon_key_path.tmp -n client.admin --set-uid=0 " .
-			"--cap mds 'allow' " .
-			"--cap osd 'allow *' " .
-			"--cap mon 'allow *'");
-	    run_command("ceph-authtool $pve_mon_key_path.tmp --gen-key -n mon. --cap mon 'allow *'");
-	    run_command("mv $pve_mon_key_path.tmp $pve_mon_key_path");
-	}
+	my $authuser = $rpcenv->get_user();
 
 	my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
 
@@ -653,42 +642,59 @@ __PACKAGE__->register_method ({
 	die "monitor address '$monaddr' already in use by '$monaddrhash->{$monaddr}'\n" 
 	    if $monaddrhash->{$monaddr};
 
+	my $worker = sub  {
+	    my $upid = shift;
 
-	my $mondir =  "/var/lib/ceph/mon/$ccname-$monid";
-	-d $mondir && die "monitor filesystem '$mondir' already exist\n";
- 
-	my $monmap = "/tmp/monmap";
-	
-	eval {
-	    mkdir $mondir;
-
-	    if ($moncount > 0) {
-		my $monstat = ceph_mon_status(); # online test
-		&$run_ceph_cmd(['mon', 'getmap', '-o', $monmap]);
-	    } else {
-		run_command("monmaptool --create --clobber --add $monid $monaddr --print $monmap");
+	    if (! -f $pve_ckeyring_path) {
+		run_command("ceph-authtool $pve_ckeyring_path --create-keyring " .
+			    "--gen-key -n client.admin");
 	    }
 
-	    run_command("ceph-mon --mkfs -i $monid --monmap $monmap --keyring $pve_mon_key_path");
+	    if (! -f $pve_mon_key_path) {
+		run_command("cp $pve_ckeyring_path $pve_mon_key_path.tmp");
+		run_command("ceph-authtool $pve_mon_key_path.tmp -n client.admin --set-uid=0 " .
+			    "--cap mds 'allow' " .
+			    "--cap osd 'allow *' " .
+			    "--cap mon 'allow *'");
+		run_command("ceph-authtool $pve_mon_key_path.tmp --gen-key -n mon. --cap mon 'allow *'");
+		run_command("mv $pve_mon_key_path.tmp $pve_mon_key_path");
+	    }
+
+	    my $mondir =  "/var/lib/ceph/mon/$ccname-$monid";
+	    -d $mondir && die "monitor filesystem '$mondir' already exist\n";
+ 
+	    my $monmap = "/tmp/monmap";
+	
+	    eval {
+		mkdir $mondir;
+
+		if ($moncount > 0) {
+		    my $monstat = ceph_mon_status(); # online test
+		    &$run_ceph_cmd(['mon', 'getmap', '-o', $monmap]);
+		} else {
+		    run_command("monmaptool --create --clobber --add $monid $monaddr --print $monmap");
+		}
+
+		run_command("ceph-mon --mkfs -i $monid --monmap $monmap --keyring $pve_mon_key_path");
+	    };
+	    my $err = $@;
+	    unlink $monmap;
+	    if ($err) {
+		File::Path::remove_tree($mondir);
+		die $err;
+	    }
+
+	    $cfg->{$monsection} = {
+		'host' => $monname,
+		'mon addr' => $monaddr,
+	    };
+
+	    &$write_ceph_config($cfg);
+
+	    &$ceph_service_cmd('start', $monsection);
 	};
-	my $err = $@;
-	unlink $monmap;
-	if ($err) {
-	    File::Path::remove_tree($mondir);
-	    die $err;
-	}
 
-	$cfg->{$monsection} = {
-	    'host' => $monname,
-	    'mon addr' => $monaddr,
-	};
-
-	&$write_ceph_config($cfg);
-
-	&$ceph_service_cmd('start', $monsection);
-
-	return undef;
-
+	return $rpcenv->fork_worker('cephcreatemon', $monsection, $authuser, $worker);
     }});
 
 __PACKAGE__->register_method ({
@@ -708,9 +714,13 @@ __PACKAGE__->register_method ({
 	    },
 	},
     },
-    returns => { type => 'null' },
+    returns => { type => 'string' },
     code => sub {
 	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
 
 	&$check_ceph_inited();
 
@@ -731,16 +741,20 @@ __PACKAGE__->register_method ({
 
 	die "can't remove last monitor\n" if scalar(@$monlist) <= 1;
 
-	&$run_ceph_cmd(['mon', 'remove', $monid]);
+	my $worker = sub {
+	    my $upid = shift;
 
-	eval { &$ceph_service_cmd('stop', $monsection); };
-	warn $@ if $@;
+	    &$run_ceph_cmd(['mon', 'remove', $monid]);
 
-	delete $cfg->{$monsection};
-	&$write_ceph_config($cfg);
-	File::Path::remove_tree($mondir);
+	    eval { &$ceph_service_cmd('stop', $monsection); };
+	    warn $@ if $@;
 
-	return undef;
+	    delete $cfg->{$monsection};
+	    &$write_ceph_config($cfg);
+	    File::Path::remove_tree($mondir);
+	};
+
+	return $rpcenv->fork_worker('cephdestroymon', $monsection,  $authuser, $worker);
     }});
 
 __PACKAGE__->register_method ({
@@ -1076,15 +1090,17 @@ __PACKAGE__->register_method ({
 	    }
 	},
     },
-    returns => { type => 'null' },
+    returns => { type => 'string' },
     code => sub {
 	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
 
 	&$check_ceph_inited();
 
 	&$setup_pve_symlinks();
-
-	print "create OSD on $param->{dev}\n";
 
 	-b  $param->{dev} || die "no such block device '$param->{dev}'\n";
 
@@ -1108,11 +1124,17 @@ __PACKAGE__->register_method ({
 	    &$run_ceph_cmd(['auth', 'get', 'client.bootstrap-osd', '-o', $ceph_bootstrap_osd_keyring]);
 	};
 
-	run_command(['ceph-disk', 'prepare', '--zap-disk', '--fs-type', 'xfs',
-		     '--cluster', $ccname, '--cluster-uuid', $fsid,
-		     '--', $param->{dev}]);
+	my $worker = sub {
+	    my $upid = shift;
 
-	return undef;
+	    print "create OSD on $param->{dev}\n";
+
+	    run_command(['ceph-disk', 'prepare', '--zap-disk', '--fs-type', 'xfs',
+			 '--cluster', $ccname, '--cluster-uuid', $fsid,
+			 '--', $param->{dev}]);
+	};
+
+	return $rpcenv->fork_worker('cephcreateods', $param->{dev},  $authuser, $worker);
     }});
 
 __PACKAGE__->register_method ({
@@ -1132,17 +1154,19 @@ __PACKAGE__->register_method ({
 	    },
 	},
     },
-    returns => { type => 'null' },
+    returns => { type => 'string' },
     code => sub {
 	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
 
 	&$check_ceph_inited();
 
 	my $osdid = $param->{osdid};
 
-	print "destroy OSD $param->{osdid}\n";
-
-	# fixme: not sure what we should do here
+	# fixme: not 100% sure what we should do here
  
 	my $stat = &$ceph_osd_status();
 
@@ -1164,19 +1188,25 @@ __PACKAGE__->register_method ({
 
 	my $osdsection = "osd.$osdid";	
 
-	eval { &$ceph_service_cmd('stop', $osdsection); };
-	warn $@ if $@;
+	my $worker = sub {
+	    my $upid = shift;
 
-	print "Remove $osdsection from the CRUSH map\n";
-	&$run_ceph_cmd(['osd', 'crush', 'remove', $osdid]);
+	    print "destroy OSD $param->{osdid}\n";
 
-	print "Remove the $osdsection authentication key.\n";
-	&$run_ceph_cmd(['auth', 'del', $osdsection]);
+	    eval { &$ceph_service_cmd('stop', $osdsection); };
+	    warn $@ if $@;
 
-	print "Remove OSD $osdsection\n";
-	&$run_ceph_cmd(['osd', 'rm', $osdid]);
+	    print "Remove $osdsection from the CRUSH map\n";
+	    &$run_ceph_cmd(['osd', 'crush', 'remove', $osdid]);
 
-	return undef;
+	    print "Remove the $osdsection authentication key.\n";
+	    &$run_ceph_cmd(['auth', 'del', $osdsection]);
+
+	    print "Remove OSD $osdsection\n";
+	    &$run_ceph_cmd(['osd', 'rm', $osdid]);
+	};
+
+	return $rpcenv->fork_worker('cephdestroyods', $osdsection,  $authuser, $worker);
     }});
 
 __PACKAGE__->register_method ({
