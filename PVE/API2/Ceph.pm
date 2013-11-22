@@ -127,24 +127,12 @@ my $parse_ceph_config = sub {
 
 my $run_ceph_cmd = sub {
     my ($cmd, %params) = @_;
+    
+    my $timeout = 5;
 
-    my $timeout = 3;
-
-    my $oldalarm;
-    eval {
-	local $SIG{ALRM} = sub { die "timeout\n" };
-	$oldalarm = alarm($timeout); 
-	# Note: --connect-timeout does not work with current version
-	# '--connect-timeout', $timeout,
-
-	run_command(['ceph', '-c', $pve_ceph_cfgpath, @$cmd], %params);
-	alarm(0);
-    };
-    my $err = $@;
-
-    alarm($oldalarm) if $oldalarm;
-
-    die $err if $err;
+    run_command(['ceph', '-c', $pve_ceph_cfgpath, 
+		 '--connect-timeout', $timeout, 
+		 @$cmd], %params);
 };
 
 my $run_ceph_cmd_text = sub {
