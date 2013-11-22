@@ -819,9 +819,9 @@ Ext.define('PVE.node.CephStatus', {
 	    });
 	    txt += '; ';
 
-	    txt += d.data_bytes + " bytes data, ";
-	    txt += d.bytes_used + " bytes used, ";
-	    txt += d.bytes_avail + " bytes avail";
+	    txt += PVE.Utils.format_size(d.data_bytes) + " data, ";
+	    txt += PVE.Utils.format_size(d.bytes_used) + " used, ";
+	    txt += PVE.Utils.format_size(d.bytes_avail) + " avail";
 
 	    return txt;
 	};
