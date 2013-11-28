@@ -3,6 +3,8 @@ pve-manager (3.1-25) unstable; urgency=low
   * delay UNAUTHORIZED response to avoid DOS attac
   
   * fix typo in pve cron script
+  
+  * backup GUI: fix VMID selection bug
 
  -- Proxmox Support Team <support@proxmox.com>  Mon, 18 Nov 2013 11:20:37 +0100
 

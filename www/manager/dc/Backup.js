@@ -47,7 +47,9 @@ Ext.define('PVE.dc.BackupEdit', {
 			    sel.push(record.data.vmid);
 			});
 
+			insideUpdate = true;
 			vmidField.setValue(sel);
+			insideUpdate = false;
 		    }
 		}
 	    }
