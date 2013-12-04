@@ -162,9 +162,11 @@ Ext.define('PVE.Utils', { statics: {
 
     render_scsihw: function(value) {
 	if (!value) {
-	    return PVE.Utils.defaultText + ' (lsi)';
+	    return PVE.Utils.defaultText + ' (LSI 53C895A)';
 	} else if (value === 'lsi') {
 	    return 'LSI 53C895A';
+	} else if (value === 'lsi53c810') {
+	    return 'LSI 53C810';
 	} else if (value === 'megasas') {
 	    return 'MegaRAID SAS 8708EM2';
 	} else if (value === 'virtio-scsi-pci') {
