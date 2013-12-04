@@ -44,20 +44,47 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	} else {
 	    delete me.drive.mbps_rd;
 	}
+
+	if (values.mbps_rd_max && values.mbps_rd) {
+	    me.drive.mbps_rd_max = values.mbps_rd_max;
+	} else {
+	    delete me.drive.mbps_rd_max;
+	}
+
 	if (values.mbps_wr) {
 	    me.drive.mbps_wr = values.mbps_wr;
 	} else {
 	    delete me.drive.mbps_wr;
 	}
+
+	if (values.mbps_wr_max && values.mbps_wr) {
+	    me.drive.mbps_wr_max = values.mbps_wr_max;
+	} else {
+	    delete me.drive.mbps_wr_max;
+	}
+
 	if (values.iops_rd) {
 	    me.drive.iops_rd = values.iops_rd;
 	} else {
 	    delete me.drive.iops_rd;
 	}
+
+	if (values.iops_rd_max && values.iops_rd) {
+	    me.drive.iops_rd_max = values.iops_rd_max;
+	} else {
+	    delete me.drive.iops_rd_max;
+	}
+
 	if (values.iops_wr) {
 	    me.drive.iops_wr = values.iops_wr;
 	} else {
 	    delete me.drive.iops_wr;
+	}
+
+	if (values.iops_wr_max && values.iops_wr) {
+	    me.drive.iops_wr_max = values.iops_wr_max;
+	} else {
+	    delete me.drive.iops_wr_max;
 	}
 
 	var params = {};
@@ -106,6 +133,10 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.mbps_wr = drive.mbps_wr;
 	values.iops_rd = drive.iops_rd;
 	values.iops_wr = drive.iops_wr;
+	values.mbps_rd_max = drive.mbps_rd_max;
+	values.mbps_wr_max = drive.mbps_wr_max;
+	values.iops_rd_max = drive.iops_rd_max;
+	values.iops_wr_max = drive.iops_wr_max;
 
 	me.setValues(values);
     },
@@ -123,6 +154,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	me.column1 = [];
 	me.column2 = [];
+	me.column3 = [];
 
 	if (!me.confid || me.unused) {
 	    me.bussel = Ext.createWidget('PVE.form.ControllerSelector', {
@@ -252,6 +284,17 @@ Ext.define('PVE.qemu.HDInputPanel', {
         });
         me.column2.push(me.mbps_rd);
 
+        me.mbps_rd_max = Ext.widget('numberfield', {
+            name: 'mbps_rd_max',
+            minValue: 1,
+	    step: 1,
+            fieldLabel: gettext('Read max burst') + ' (MB)',
+	    labelWidth: width2,
+	    emptyText: gettext('default')
+        });
+        me.column2.push(me.mbps_rd_max);
+
+
         me.mbps_wr = Ext.widget('numberfield', {
             name: 'mbps_wr',
             minValue: 1,
@@ -261,6 +304,16 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    emptyText: gettext('unlimited')
         });
         me.column2.push(me.mbps_wr);
+
+        me.mbps_wr_max = Ext.widget('numberfield', {
+            name: 'mbps_wr_max',
+            minValue: 1,
+	    step: 1,
+            fieldLabel: gettext('Write max burst') + ' (MB)',
+	    labelWidth: width2,
+	    emptyText: gettext('default')
+        });
+        me.column2.push(me.mbps_wr_max);
 
         me.iops_rd = Ext.widget('numberfield', {
             name: 'iops_rd',
@@ -272,6 +325,16 @@ Ext.define('PVE.qemu.HDInputPanel', {
         });
         me.column2.push(me.iops_rd);
 
+        me.iops_rd_max = Ext.widget('numberfield', {
+            name: 'iops_rd_max',
+            minValue: 10,
+	    step: 10,
+            fieldLabel: gettext('Read max burst') + ' (ops)',
+	    labelWidth: width2,
+	    emptyText: gettext('default')
+        });
+        me.column2.push(me.iops_rd_max);
+
         me.iops_wr = Ext.widget('numberfield', {
             name: 'iops_wr',
             minValue: 10,
@@ -281,6 +344,16 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    emptyText: gettext('unlimited')
         });
         me.column2.push(me.iops_wr);
+
+        me.iops_wr_max = Ext.widget('numberfield', {
+            name: 'iops_wr_max',
+            minValue: 10,
+	    step: 10,
+            fieldLabel: gettext('Write max burst') + ' (ops)',
+	    labelWidth: width2,
+	    emptyText: gettext('default')
+        });
+        me.column2.push(me.iops_wr_max);
 
 	me.callParent();
     }
