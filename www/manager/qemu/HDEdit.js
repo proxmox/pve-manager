@@ -27,65 +27,32 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.drive.format = values.diskformat;
 	}
 	
-	if (values.cache) {
-	    me.drive.cache = values.cache;
-	} else {
-	    delete me.drive.cache;
-	}
-
 	if (values.nobackup) {
 	    me.drive.backup = 'no';
 	} else {
 	    delete me.drive.backup;
 	}
 
-	if (values.mbps_rd) {
-	    me.drive.mbps_rd = values.mbps_rd;
+	if (values.cache) {
+	    me.drive.cache = values.cache;
 	} else {
-	    delete me.drive.mbps_rd;
+	    delete me.drive.cache;
 	}
 
-	if (values.mbps_rd_max && values.mbps_rd) {
-	    me.drive.mbps_rd_max = values.mbps_rd_max;
-	} else {
-	    delete me.drive.mbps_rd_max;
-	}
-
-	if (values.mbps_wr) {
-	    me.drive.mbps_wr = values.mbps_wr;
-	} else {
-	    delete me.drive.mbps_wr;
-	}
-
-	if (values.mbps_wr_max && values.mbps_wr) {
-	    me.drive.mbps_wr_max = values.mbps_wr_max;
-	} else {
-	    delete me.drive.mbps_wr_max;
-	}
-
-	if (values.iops_rd) {
-	    me.drive.iops_rd = values.iops_rd;
-	} else {
-	    delete me.drive.iops_rd;
-	}
-
-	if (values.iops_rd_max && values.iops_rd) {
-	    me.drive.iops_rd_max = values.iops_rd_max;
-	} else {
-	    delete me.drive.iops_rd_max;
-	}
-
-	if (values.iops_wr) {
-	    me.drive.iops_wr = values.iops_wr;
-	} else {
-	    delete me.drive.iops_wr;
-	}
-
-	if (values.iops_wr_max && values.iops_wr) {
-	    me.drive.iops_wr_max = values.iops_wr_max;
-	} else {
-	    delete me.drive.iops_wr_max;
-	}
+	var names = ['mbps_rd', 'mbps_wr', 'iops_rd', 'iops_wr'];
+	Ext.Array.each(names, function(name) {
+	    if (values[name]) {
+		me.drive[name] = values[name];
+	    } else {
+		delete me.drive[name];
+	    }
+	    var burst_name = name + '_max';
+	    if (values[burst_name] && values[name]) {
+		me.drive[burst_name] = values[burst_name];
+	    } else {
+		delete me.drive[burst_name];
+	    }
+	});
 
 	var params = {};
 		
@@ -154,7 +121,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	me.column1 = [];
 	me.column2 = [];
-	me.column3 = [];
 
 	if (!me.confid || me.unused) {
 	    me.bussel = Ext.createWidget('PVE.form.ControllerSelector', {
@@ -272,7 +238,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    });
 	}
 
-	var width2 = 120;
+	var width2 = 140;
 
         me.mbps_rd = Ext.widget('numberfield', {
             name: 'mbps_rd',
