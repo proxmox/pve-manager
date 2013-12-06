@@ -110,6 +110,7 @@ __PACKAGE__->register_method ({
 	my $result = [
 	    { name => 'apt' },
 	    { name => 'version' },
+	    { name => 'execute' },
 	    { name => 'syslog' },
 	    { name => 'bootlog' },
 	    { name => 'status' },
@@ -327,6 +328,59 @@ __PACKAGE__->register_method({
 
 	return $res;
     }});
+
+__PACKAGE__->register_method({
+    name => 'execute',
+    path => 'execute',
+    method => 'GET',
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
+    },
+    description => "Execute commands in order",
+    proxyto => 'node',
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    commands => { type => "JSON_STRING" }
+	},
+    },
+    returns => {
+	type => 'array',
+	properties => {
+
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+	my $res = [];
+
+	my $commands = eval {
+		decode_json($param->{commands});
+	};
+	die "commands param did not contain valid JSON: $@" if $@;
+	die "commands is not an array" if ref($commands) ne "ARRAY";
+
+        foreach my $cmd (@$commands) {
+	    die "$cmd is not a valid command" if (ref($cmd) ne "HASH" || !$cmd->{path} || !$cmd->{method});
+
+	    $cmd->{args} //= {};
+
+	    my $path = "nodes/".$param->{node}."/".$cmd->{path};
+	    my ($handler, $info) = PVE::API2->find_handler($cmd->{method}, $path, $cmd->{args});
+	    if (!$handler || !$info) {
+		die "no handler for '$path'\n";
+	    }
+
+	    eval {
+		push(@$res, $handler->handle($info, $cmd->{args}) );
+	    };
+	    push(@$res, $@) if $@;
+	}
+
+	return $res;
+    }});
+
 
 __PACKAGE__->register_method({
     name => 'node_cmd', 
