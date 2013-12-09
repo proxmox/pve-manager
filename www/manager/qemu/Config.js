@@ -113,16 +113,24 @@ Ext.define('PVE.qemu.Config', {
 	var spice = false;
 
 	var openSpiceConsole = function(vmid, nodename, vmname){
-	    Ext.core.DomHelper.append(document.body, {
-		tag : 'iframe',
-		id : 'downloadIframe',
-		frameBorder : 0,
-		width : 0,
-		height : 0,
-		css : 'display:none;visibility:hidden;height:0px;',
-		src : '/api2/spiceconfig/nodes/' + nodename + '/qemu/' + vmid + 
-		    '/spiceproxy?proxy=' + 
-		    encodeURIComponent(window.location.hostname)
+	    PVE.Utils.API2Request({
+		url: '/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy',
+		params: { proxy: window.location.hostname },
+		method: 'POST',
+		waitMsgTarget: me,
+		failure: function(response, opts){
+		    Ext.Msg.alert('Error', response.htmlStatus);
+		},
+		success: function(response, opts){
+		    var raw = "[virt-viewer]\n";
+		    Ext.Object.each(response.result.data, function(k, v) {
+			raw += k + "=" + v + "\n";
+		    });
+		    var url = 'data:application/x-virt-viewer;charset=UTF-8,' +
+			encodeURIComponent(raw);
+		    
+		    window.open(url, "_top");
+		}
 	    });
 	};
 
