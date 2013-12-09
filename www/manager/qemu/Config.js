@@ -110,29 +110,50 @@ Ext.define('PVE.qemu.Config', {
 
 	var vmname = me.pveSelNode.data.name;
 
-	var consoleBtn = Ext.create('Ext.Button', {
-	    text: gettext('Console'),
-	    disabled: !caps.vms['VM.Console'],
-	    handler: function() {
-		PVE.Utils.openConoleWindow('kvm', vmid, nodename, vmname);
+	var spice = false;
+
+	var openSpiceConsole = function(vmid, nodename, vmname){
+	    Ext.core.DomHelper.append(document.body, {
+		tag : 'iframe',
+		id : 'downloadIframe',
+		frameBorder : 0,
+		width : 0,
+		height : 0,
+		css : 'display:none;visibility:hidden;height:0px;',
+		src : '/api2/spiceconfig/nodes/' + nodename + '/qemu/' + vmid + 
+		    '/spiceproxy?proxy=' + 
+		    encodeURIComponent(window.location.hostname)
+	    });
+	};
+
+	var spiceMenu = Ext.create('Ext.menu.Item', {
+	    text: 'SPICE',
+	    handler: function(){
+		openSpiceConsole(vmid, nodename, vmname);
 	    }
 	});
 
-	var spiceBtn = Ext.create('Ext.Button', {
-	    text: 'SPICE',
+	var consoleBtn = Ext.create('Ext.button.Split', {
+	    text: gettext('Console'),
 	    disabled: !caps.vms['VM.Console'],
 	    handler: function() {
-		Ext.core.DomHelper.append(document.body, {
-		    tag : 'iframe',
-		    id : 'downloadIframe',
-		    frameBorder : 0,
-		    width : 0,
-		    height : 0,
-		    css : 'display:none;visibility:hidden;height:0px;',
-		    src : '/api2/spiceconfig/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy?proxy=' + 
-			encodeURIComponent(window.location.hostname)
-		});
-	    }
+		if (spice) {
+		    openSpiceConsole(vmid, nodename, vmname);
+		} else {
+		    PVE.Utils.openConoleWindow('kvm', vmid, nodename, vmname);
+		}
+	    },
+	    menu: new Ext.menu.Menu({
+		items: [
+		    { 
+			text: 'VNC', 
+			handler: function(){
+			    PVE.Utils.openConoleWindow('kvm', vmid, nodename, vmname);			    
+			}
+		    },
+		    spiceMenu
+		]
+	    })
 	});
 
 	var descr = vmid + " (" + (vmname ? "'" + vmname + "' " : "'VM " + vmid + "'") + ")";
@@ -141,7 +162,7 @@ Ext.define('PVE.qemu.Config', {
 	    title: Ext.String.format(gettext("Virtual Machine {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'kvmtab',
 	    tbar: [ resumeBtn, startBtn, shutdownBtn, stopBtn, resetBtn, 
-		    removeBtn, migrateBtn, consoleBtn, spiceBtn],
+		    removeBtn, migrateBtn, consoleBtn],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
@@ -207,7 +228,6 @@ Ext.define('PVE.qemu.Config', {
 	    var status;
 	    var qmpstatus;
 	    var template;
-	    var spice;
 
 	    if (!success) {
 		me.workspace.checkVmMigration(me.pveSelNode);
@@ -233,9 +253,9 @@ Ext.define('PVE.qemu.Config', {
 		resumeBtn.setVisible(false);
 	    }
 	    
-	    spiceBtn.setVisible(spice);
+	    spiceMenu.setVisible(spice);
+	    spiceMenu.setDisabled(!caps.vms['VM.Console'] || status !== 'running');
 
-	    spiceBtn.setDisabled(!caps.vms['VM.Console'] || status !== 'running');
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
 	    resetBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running' || template);
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
