@@ -5,6 +5,7 @@ use warnings;
 use POSIX qw(LONG_MAX);
 use Filesys::Df;
 use Time::Local qw(timegm_nocheck);
+use HTTP::Status qw(:constants);
 use PVE::pvecfg;
 use PVE::Tools;
 use PVE::ProcFSTools;
@@ -110,7 +111,6 @@ __PACKAGE__->register_method ({
 	my $result = [
 	    { name => 'apt' },
 	    { name => 'version' },
-	    { name => 'execute' },
 	    { name => 'syslog' },
 	    { name => 'bootlog' },
 	    { name => 'status' },
@@ -332,17 +332,21 @@ __PACKAGE__->register_method({
 __PACKAGE__->register_method({
     name => 'execute',
     path => 'execute',
-    method => 'GET',
+    method => 'POST',
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
     },
-    description => "Execute commands in order",
+    description => "Execute multiple commands in order.",
     proxyto => 'node',
+    protected => 1, # avoid problems with proxy code
     parameters => {
 	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-	    commands => { type => "JSON_STRING" }
+	    commands => {
+		description => "JSON encoded array of commands.",
+		type => "string",
+	    }
 	},
     },
     returns => {
@@ -355,27 +359,52 @@ __PACKAGE__->register_method({
 	my ($param) = @_;
 	my $res = [];
 
-	my $commands = eval {
-		decode_json($param->{commands});
-	};
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+
+	my $commands = eval { decode_json($param->{commands}); };
+
 	die "commands param did not contain valid JSON: $@" if $@;
 	die "commands is not an array" if ref($commands) ne "ARRAY";
 
         foreach my $cmd (@$commands) {
-	    die "$cmd is not a valid command" if (ref($cmd) ne "HASH" || !$cmd->{path} || !$cmd->{method});
-
-	    $cmd->{args} //= {};
-
-	    my $path = "nodes/".$param->{node}."/".$cmd->{path};
-	    my ($handler, $info) = PVE::API2->find_handler($cmd->{method}, $path, $cmd->{args});
-	    if (!$handler || !$info) {
-		die "no handler for '$path'\n";
-	    }
-
 	    eval {
-		push(@$res, $handler->handle($info, $cmd->{args}) );
+		die "$cmd is not a valid command" if (ref($cmd) ne "HASH" || !$cmd->{path} || !$cmd->{method});
+	    
+		$cmd->{args} //= {};
+
+		my $path = "nodes/$param->{node}/$cmd->{path}";
+		
+		my $uri_param = {};
+		my ($handler, $info) = PVE::API2->find_handler($cmd->{method}, $path, $uri_param);
+		if (!$handler || !$info) {
+		    die "no handler for '$path'\n";
+		}
+
+		foreach my $p (keys %{$cmd->{args}}) {
+		    raise_param_exc({ $p => "duplicate parameter" }) if defined($uri_param->{$p});
+		    $uri_param->{$p} = $cmd->{args}->{$p};
+		}
+
+		# check access permissions
+		$rpcenv->check_api2_permissions($info->{permissions}, $user, $uri_param);
+
+		push @$res, {
+		    status => HTTP_OK,
+		    data => $handler->handle($info, $cmd->{args}), 
+		};
 	    };
-	    push(@$res, $@) if $@;
+	    if (my $err = $@) {
+		my $resp = { status => HTTP_INTERNAL_SERVER_ERROR };
+		if (ref($err) eq "PVE::Exception") {
+		    $resp->{status} = $err->{code} if $err->{code};
+		    $resp->{errors} = $err->{errors} if $err->{errors};
+		    $resp->{message} = $err->{msg};
+		} else {
+		    $resp->{message} = $err;
+		}
+		push @$res, $resp;
+	    }
 	}
 
 	return $res;
