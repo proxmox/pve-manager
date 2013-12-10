@@ -250,6 +250,18 @@ Ext.define('PVE.Utils', { statics: {
 	return data;
     },
 
+    render_console_viewer: function(value) {
+	if (!value) {
+	    return PVE.Utils.defaultText + ' (Java VNC Applet)';
+	} else if (value === 'applet') {
+	    return 'Java VNC Applet';
+	} else if (value === 'vv') {
+	    return  'SPICE (remote-viewer)';
+	} else {
+	    return value;
+	}
+    },
+
     language_map: {
 	zh_CN: 'Chinese',
 	ca: 'Catalan',
@@ -507,6 +519,7 @@ Ext.define('PVE.Utils', { statics: {
 	vncproxy: [ 'VM/CT', gettext('Console') ],
 	spiceproxy: [ 'VM/CT', gettext('Console') + ' (Spice)' ],
 	vncshell: [ '', gettext('Shell') ],
+	spiceshell: [ '', gettext('Shell')  + ' (Spice)' ],
 	qmsnapshot: [ 'VM', gettext('Snapshot') ],
 	qmrollback: [ 'VM', gettext('Rollback') ],
 	qmdelsnapshot: [ 'VM', gettext('Delete Snapshot') ],
@@ -909,6 +922,31 @@ Ext.define('PVE.Utils', { statics: {
 	var nw = window.open("?" + url, '_blank', 
 			     "innerWidth=745,innerheight=427");
 	nw.focus();
+    },
+
+    defaultViewer: function(){
+	return PVE.VersionInfo.console || 'applet';
+    },
+
+    openSpiceViewer: function(url, params){
+	PVE.Utils.API2Request({
+	    url: url,
+	    params: params,
+	    method: 'POST',
+	    failure: function(response, opts){
+		Ext.Msg.alert('Error', response.htmlStatus);
+	    },
+	    success: function(response, opts){
+		var raw = "[virt-viewer]\n";
+		Ext.Object.each(response.result.data, function(k, v) {
+		    raw += k + "=" + v + "\n";
+		});
+		var url = 'data:application/x-virt-viewer;charset=UTF-8,' +
+		    encodeURIComponent(raw);
+		    
+		window.open(url, "_top");
+	    }
+	});
     },
 
     // comp.setLoading() is buggy in ExtJS 4.0.7, so we 

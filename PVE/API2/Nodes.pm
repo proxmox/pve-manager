@@ -119,6 +119,7 @@ __PACKAGE__->register_method ({
 	    { name => 'rrd' }, # fixme: remove?
 	    { name => 'rrddata' },# fixme: remove?
 	    { name => 'vncshell' },
+	    { name => 'spiceshell' },
 	    { name => 'time' },
 	    { name => 'dns' },
 	    { name => 'services' },
@@ -764,6 +765,137 @@ __PACKAGE__->register_method ({
 	    port => $port, 
 	    upid => $upid, 
 	    cert => $sslcert, 
+	};
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'spiceshell', 
+    path => 'spiceshell',  
+    method => 'POST',
+    protected => 1,
+    proxyto => 'node',
+    permissions => {
+	description => "Restricted to users on realm 'pam'",
+	check => ['perm', '/nodes/{node}', [ 'Sys.Console' ]],
+    },
+    description => "Creates a spice shell.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    proxy => {
+		description => "This can be used by the client to specify the proxy server. All nodes in a cluster runs 'spiceproxy', so it is up to the client to choose one. By default, we return the node where the VM is currently running. As resonable setting is to use same node you use to connect to the API (This is window.location.hostname for the JS GUI).",
+		type => 'string', format => 'dns-name',
+		optional => 1,
+	    },
+	    upgrade => {
+		type => 'boolean',
+		description => "Run 'apt-get dist-upgrade' instead of normal shell.",
+		optional => 1,
+		default => 0,
+	    },
+	},
+    },
+    returns => {
+	description => "Returned values can be directly passed to the 'remote-viewer' application.",
+    	additionalProperties => 1,
+	properties => {
+	    type => { type => 'string' },
+	    password => { type => 'string' },
+	    proxy => { type => 'string' },
+	    host => { type => 'string' },
+	    'tls-port' => { type => 'integer' },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+
+	my ($user, undef, $realm) = PVE::AccessControl::verify_username($authuser);
+
+	raise_perm_exc("realm != pam") if $realm ne 'pam'; 
+
+	raise_perm_exc('user != root@pam') if $param->{upgrade} && $user ne 'root@pam';
+
+	my $node = $param->{node};
+	my $proxy = $param->{proxy};
+	if (!$proxy) {
+	    my $host = `hostname -f` || PVE::INotify::nodename();
+	    chomp $host;
+	    $proxy = $host;
+	}
+
+	my $authpath = "/nodes/$node";
+
+	my ($ticket, $proxyticket) = PVE::AccessControl::assemble_spice_ticket($authuser, 0, $node);
+
+	my $filename = "/etc/pve/local/pve-ssl.pem";
+	my $subject = PVE::QemuServer::read_x509_subject_spice($filename);
+
+	my $cacert = PVE::Tools::file_get_contents("/etc/pve/pve-root-ca.pem", 8192);
+	$cacert =~ s/\n/\\n/g;
+
+	my $port = PVE::Tools::next_spice_port();
+
+	my $shcmd;
+
+	if ($user eq 'root@pam') {
+	    if ($param->{upgrade}) {
+		my $upgradecmd = "pveupgrade --shell";
+		$shcmd = [ '/bin/bash', '-c', $upgradecmd ];
+	    } else {
+		$shcmd = [ '/bin/bash', '-l' ];
+	    }
+	} else {
+	    $shcmd = [ '/bin/login' ];
+	}
+
+	my $timeout = 10; 
+
+	my $cmd = ['/usr/bin/spiceterm', '--port', $port, '--addr', '127.0.0.1',
+		   '--timeout', $timeout, '--authpath', $authpath, 
+		   '--permissions', 'Sys.Console', '--', @$shcmd];
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    syslog ('info', "starting spiceterm $upid\n");
+
+	    my $cmdstr = join (' ', @$cmd);
+	    syslog ('info', "launch command: $cmdstr");
+
+	    eval { 
+		foreach my $k (keys %ENV) {
+		    next if $k eq 'PATH' || $k eq 'TERM' || $k eq 'USER' || $k eq 'HOME';
+		    delete $ENV{$k};
+		}
+		$ENV{PWD} = '/';
+		$ENV{SPICE_TICKET} = $ticket;
+		PVE::Tools::run_command($cmd, errmsg => "spiceterm failed"); 
+	    };
+	    if (my $err = $@) {
+		syslog ('err', $err);
+	    }
+
+	    return;
+	};
+
+	my $upid = $rpcenv->fork_worker('spiceshell', "", $user, $realcmd);
+	
+	PVE::Tools::wait_for_vnc_port($port);
+
+	return {
+	    type => 'spice',
+	    title => "Shell on '$node'",
+	    host => $proxyticket, # this break tls hostname verification, so we need to use 'host-subject'
+	    proxy => "http://$proxy:3128",
+	    'tls-port' => $port,
+	    'host-subject' => $subject,
+	    ca => $cacert,
+	    password => $ticket,
+	    'delete-this-file' => 1,
 	};
     }});
 

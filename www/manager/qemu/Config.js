@@ -145,10 +145,10 @@ Ext.define('PVE.qemu.Config', {
 	    text: gettext('Console'),
 	    disabled: !caps.vms['VM.Console'],
 	    handler: function() {
-		if (spice) {
-		    openSpiceConsole(vmid, nodename, vmname);
-		} else {
+		if (PVE.VersionInfo.console === 'applet' || !spice) {
 		    PVE.Utils.openConoleWindow('kvm', vmid, nodename, vmname);
+		} else {
+		    openSpiceConsole(vmid, nodename, vmname);
 		}
 	    },
 	    menu: new Ext.menu.Menu({

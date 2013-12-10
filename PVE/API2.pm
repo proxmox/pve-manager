@@ -83,7 +83,7 @@ __PACKAGE__->register_method ({
     path => 'version',
     method => 'GET',
     permissions => { user => 'all' },
-    description => "API version details",
+    description => "API version details. The result also includes the global datacenter confguration.",
     parameters => {
 	additionalProperties => 0,
 	properties => {},
@@ -99,6 +99,13 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($resp, $param) = @_;
     
-	return PVE::pvecfg::version_info();
+	my $res = PVE::Cluster::cfs_read_file('datacenter.cfg');
+
+	my $vi = PVE::pvecfg::version_info();
+	foreach my $k (qw(version release repoid)) {
+	    $res->{$k} = $vi->{$k};
+	}
+
+	return $res;
     }});
 1;

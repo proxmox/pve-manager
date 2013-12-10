@@ -51,13 +51,12 @@ Ext.define('PVE.node.Config', {
 	    text: gettext('Shell'),
 	    disabled: !caps.nodes['Sys.Console'],
 	    handler: function() {
-		var url = Ext.urlEncode({
-		    console: 'shell',
-		    node: nodename
-		});
-		var nw = window.open("?" + url, '_blank', 
-				     "innerWidth=745,innerheight=427");
-		nw.focus();
+		if (PVE.Utils.defaultViewer() === 'vv') {
+		    var params = { proxy: window.location.hostname };
+		    PVE.Utils.openSpiceViewer('/nodes/' + nodename + '/spiceshell', params);
+		} else {
+		    PVE.Utils.openConoleWindow('shell', undefined, nodename);
+		}
 	    }
 	}); 
 

@@ -45,6 +45,35 @@ Ext.define('PVE.dc.KeyboardEdit', {
     }
 });
 
+Ext.define('PVE.dc.ConsoleViewerEdit', {
+    extend: 'PVE.window.Edit',
+
+    initComponent : function() {
+	var me = this;
+
+	var data = [];
+
+	Ext.Array.each(['', 'applet', 'vv'], function(value) {
+	    data.push([value, PVE.Utils.render_console_viewer(value)]);
+	});
+
+	Ext.applyIf(me, {
+	    subject: gettext('Console Viewer'),
+	    items: {
+		xtype: 'pveKVComboBox',
+		name: 'console',
+		data: data,
+		value: '',
+		fieldLabel: gettext('Console Viewer')
+	    }
+	});
+
+	me.callParent();
+
+	me.load();
+    }
+});
+
 Ext.define('PVE.dc.OptionView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveDcOptionView'],
@@ -75,6 +104,12 @@ Ext.define('PVE.dc.OptionView', {
 		    }
 		    return value;
 		}
+	    },
+	    console: {
+		header: gettext('Console Viewer'),
+		editor: 'PVE.dc.ConsoleViewerEdit',
+		required: true,
+		renderer: PVE.Utils.render_console_viewer
 	    }
 	};
 
