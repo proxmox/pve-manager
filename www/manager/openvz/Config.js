@@ -105,7 +105,13 @@ Ext.define('PVE.openvz.Config', {
 	    text: gettext('Console'),
 	    disabled: !caps.vms['VM.Console'],
 	    handler: function() {
-		PVE.Utils.openConoleWindow('openvz', vmid, nodename, vmname);
+		if (PVE.Utils.defaultViewer() === 'vv') {
+		    var params = { proxy: window.location.hostname };
+		    PVE.Utils.openSpiceViewer('/nodes/' + nodename + '/openvz/' + vmid + 
+					      '/spiceproxy', params);
+		} else {
+		    PVE.Utils.openConoleWindow('openvz', vmid, nodename, vmname);
+		}
 	    }
 	});
 
