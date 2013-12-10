@@ -928,7 +928,7 @@ sub unshift_read_header {
 		if ($self->{spiceproxy}) {
 		    my $connect_str = $r->header('Host');
 		    my ($vmid, $node, $port) = PVE::AccessControl::verify_spice_connect_url($connect_str);
-		    if (!($vmid && $node && $port)) {
+		    if (!(defined($vmid) && $node && $port)) {
 			$self->error($reqstate, HTTP_UNAUTHORIZED, "invalid ticket");
 			return;
 		    }
