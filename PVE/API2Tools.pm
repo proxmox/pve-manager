@@ -140,22 +140,11 @@ sub run_spiceterm {
     my $rpcenv = PVE::RPCEnvironment::get();
 
     my $authuser = $rpcenv->get_user();
-    
-    if (!$proxy) {
-	my $host = `hostname -f` || PVE::INotify::nodename();
-	chomp $host;
-	$proxy = $host;
-    }
-
-    my ($ticket, $proxyticket) = PVE::AccessControl::assemble_spice_ticket($authuser, $vmid, $node);
-
-    my $filename = "/etc/pve/local/pve-ssl.pem";
-    my $subject = PVE::QemuServer::read_x509_subject_spice($filename);
-
-    my $cacert = PVE::Tools::file_get_contents("/etc/pve/pve-root-ca.pem", 8192);
-    $cacert =~ s/\n/\\n/g;
 
     my $port = PVE::Tools::next_spice_port();
+    
+    my ($ticket, undef, $remote_viewer_config) = 
+	PVE::AccessControl::remote_viewer_config($authuser, $vmid, $node, $proxy, $title, $port);
 
     my $timeout = 10; 
 
@@ -197,19 +186,10 @@ sub run_spiceterm {
     } else {
 	$rpcenv->fork_worker('spiceshell', undef, $authuser, $realcmd);
     }
+
     PVE::Tools::wait_for_vnc_port($port);
 
-    return {
-	type => 'spice',
-	title => $title,
-	host => $proxyticket, # this break tls hostname verification, so we need to use 'host-subject'
-	proxy => "http://$proxy:3128",
-	'tls-port' => $port,
-	'host-subject' => $subject,
-	ca => $cacert,
-	password => $ticket,
-	'delete-this-file' => 1,
-    };
+    return $remote_viewer_config;
 }
 
 1;
