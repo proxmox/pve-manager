@@ -165,14 +165,17 @@ sub run_spiceterm {
 	my $cmdstr = join (' ', @$cmd);
 	syslog ('info', "launch command: $cmdstr");
 
-	eval { 
+	eval {
 	    foreach my $k (keys %ENV) {
-		next if $k eq 'PATH' || $k eq 'TERM' || $k eq 'USER' || $k eq 'HOME';
+		next if $k eq 'PATH' || $k eq 'TERM' || $k eq 'USER' || $k eq 'HOME' || $k eq 'LANG' || $k eq 'LANGUAGE' ;
 		delete $ENV{$k};
 	    }
 	    $ENV{PWD} = '/';
 	    $ENV{SPICE_TICKET} = $ticket;
-	    PVE::Tools::run_command($cmd, errmsg => "spiceterm failed"); 
+
+	    # run_command sets LC_ALL, so we use system() instead
+	    system(@$cmd) == 0 || 
+		die "spiceterm failed\n";
 	};
 	if (my $err = $@) {
 	    syslog ('err', $err);
