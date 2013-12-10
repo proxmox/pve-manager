@@ -6,6 +6,7 @@ use PVE::Tools;
 use Digest::MD5 qw(md5_hex);
 use URI;
 use URI::Escape;
+use PVE::SafeSyslog;
 
 my $hwaddress;
 
@@ -131,6 +132,84 @@ sub parse_http_proxy {
     }
 
     return ("$host:$port", $username, $password);
+}
+
+sub run_spiceterm {
+    my ($authpath, $permissions, $vmid, $node, $proxy, $title, $shcmd) = @_;
+
+    my $rpcenv = PVE::RPCEnvironment::get();
+
+    my $authuser = $rpcenv->get_user();
+    
+    if (!$proxy) {
+	my $host = `hostname -f` || PVE::INotify::nodename();
+	chomp $host;
+	$proxy = $host;
+    }
+
+    my ($ticket, $proxyticket) = PVE::AccessControl::assemble_spice_ticket($authuser, $vmid, $node);
+
+    my $filename = "/etc/pve/local/pve-ssl.pem";
+    my $subject = PVE::QemuServer::read_x509_subject_spice($filename);
+
+    my $cacert = PVE::Tools::file_get_contents("/etc/pve/pve-root-ca.pem", 8192);
+    $cacert =~ s/\n/\\n/g;
+
+    my $port = PVE::Tools::next_spice_port();
+
+    my $timeout = 10; 
+
+    my $cmd = ['/usr/bin/spiceterm', '--port', $port, '--addr', '127.0.0.1',
+	       '--timeout', $timeout, '--authpath', $authpath, 
+	       '--permissions', $permissions];
+
+    my $dcconf = PVE::Cluster::cfs_read_file('datacenter.cfg');
+    push @$cmd, '--keymap', $dcconf->{keyboard} if $dcconf->{keyboard};
+
+    push @$cmd, '--', @$shcmd;
+
+    my $realcmd = sub {
+	my $upid = shift;
+
+	syslog ('info', "starting spiceterm $upid - $title\n");
+
+	my $cmdstr = join (' ', @$cmd);
+	syslog ('info', "launch command: $cmdstr");
+
+	eval { 
+	    foreach my $k (keys %ENV) {
+		next if $k eq 'PATH' || $k eq 'TERM' || $k eq 'USER' || $k eq 'HOME';
+		delete $ENV{$k};
+	    }
+	    $ENV{PWD} = '/';
+	    $ENV{SPICE_TICKET} = $ticket;
+	    PVE::Tools::run_command($cmd, errmsg => "spiceterm failed"); 
+	};
+	if (my $err = $@) {
+	    syslog ('err', $err);
+	}
+
+	return;
+    };
+
+    if ($vmid) {
+	$rpcenv->fork_worker('spiceproxy', $vmid, $authuser, $realcmd);
+    } else {
+	$rpcenv->fork_worker('spiceshell', undef, $authuser, $realcmd);
+    }
+    PVE::Tools::wait_for_vnc_port($port);
+
+    return {
+	type => 'spice',
+	title => $title,
+	host => $proxyticket, # this break tls hostname verification, so we need to use 'host-subject'
+	proxy => "http://$proxy:3128",
+	'tls-port' => $port,
+	'host-subject' => $subject,
+	ca => $cacert,
+	password => $ticket,
+	'delete-this-file' => 1,
+    };
 }
 
 1;

@@ -938,85 +938,21 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $rpcenv = PVE::RPCEnvironment::get();
-
-	my $authuser = $rpcenv->get_user();
-
 	my $vmid = $param->{vmid};
 	my $node = $param->{node};
 	my $proxy = $param->{proxy};
-	if (!$proxy) {
-	    my $host = `hostname -f` || PVE::INotify::nodename();
-	    chomp $host;
-	    $proxy = $host;
-	}
 
 	my $authpath = "/vms/$vmid";
+	my $permissions = 'VM.Console';
 
-	my ($ticket, $proxyticket) = PVE::AccessControl::assemble_spice_ticket($authuser, $vmid, $node);
+	my $shcmd = ['/usr/bin/dtach', '-A', 
+		     "/var/run/dtach/vzctlconsole$vmid", 
+		     '-r', 'winch', '-z', 
+		     '/usr/sbin/vzctl', 'console', $vmid];
 
-	my $filename = "/etc/pve/local/pve-ssl.pem";
-	my $subject = PVE::QemuServer::read_x509_subject_spice($filename);
+	my $title = "CT $vmid";
 
-	my $cacert = PVE::Tools::file_get_contents("/etc/pve/pve-root-ca.pem", 8192);
-	$cacert =~ s/\n/\\n/g;
-
-	my $port = PVE::Tools::next_spice_port();
-
-	my $remip;
-	
-	my $timeout = 10; 
-
-	my $cmd = ['/usr/bin/spiceterm', '--port', $port, '--addr', '127.0.0.1',
-		   '--timeout', $timeout, '--authpath', $authpath, 
-		   '--permissions', 'VM.Console'];
-
-	my $dcconf = PVE::Cluster::cfs_read_file('datacenter.cfg');
-	push @$cmd, '--keymap', $dcconf->{keyboard} if $dcconf->{keyboard};
-
-	push @$cmd, '--', 
-	'/usr/bin/dtach', '-A', 
-	"/var/run/dtach/vzctlconsole$vmid", 
-	'-r', 'winch', '-z', 
-	'/usr/sbin/vzctl', 'console', $vmid;
-			  
-	my $realcmd = sub {
-	    my $upid = shift;
-
-	    syslog('info', "starting openvz vnc proxy $upid\n");
-
-	    eval { 
-		foreach my $k (keys %ENV) {
-		    next if $k eq 'PATH' || $k eq 'TERM' || $k eq 'USER' || $k eq 'HOME';
-		    delete $ENV{$k};
-		}
-		$ENV{PWD} = '/';
-		$ENV{SPICE_TICKET} = $ticket;
-	    
-		run_command($cmd, errmsg => "spiceterm failed");
-	    };
-	    if (my $err = $@) {
-		syslog ('err', $err);
-	    }
-
-	    return;
-	};
-
-	my $upid = $rpcenv->fork_worker('spiceproxy', $vmid, $authuser, $realcmd);
-
-	PVE::Tools::wait_for_vnc_port($port);
-
-	return {
-	    type => 'spice',
-	    title => "Shell on '$node'",
-	    host => $proxyticket, # this break tls hostname verification, so we need to use 'host-subject'
-	    proxy => "http://$proxy:3128",
-	    'tls-port' => $port,
-	    'host-subject' => $subject,
-	    ca => $cacert,
-	    password => $ticket,
-	    'delete-this-file' => 1,
-	};
+	return PVE::API2Tools::run_spiceterm($authpath, $permissions, $vmid, $node, $proxy, $title, $shcmd);
     }});
 
 __PACKAGE__->register_method({
