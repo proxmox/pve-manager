@@ -965,17 +965,25 @@ __PACKAGE__->register_method ({
 
 	my $remip;
 	
-	my $shcmd = [ '/usr/bin/dtach', '-A', 
-		      "/var/run/dtach/vzctlconsole$vmid", 
-		      '-r', 'winch', '-z', 
-		      '/usr/sbin/vzctl', 'console', $vmid ];
+	my $timeout = 10; 
 
+	my $cmd = ['/usr/bin/spiceterm', '--port', $port, '--addr', '127.0.0.1',
+		   '--timeout', $timeout, '--authpath', $authpath, 
+		   '--permissions', 'VM.Console'];
+
+	my $dcconf = PVE::Cluster::cfs_read_file('datacenter.cfg');
+	push @$cmd, '--keymap', $dcconf->{keyboard} if $dcconf->{keyboard};
+
+	push @$cmd, '--', 
+	'/usr/bin/dtach', '-A', 
+	"/var/run/dtach/vzctlconsole$vmid", 
+	'-r', 'winch', '-z', 
+	'/usr/sbin/vzctl', 'console', $vmid;
+			  
 	my $realcmd = sub {
 	    my $upid = shift;
 
 	    syslog('info', "starting openvz vnc proxy $upid\n");
-
-	    my $timeout = 10; 
 
 	    eval { 
 		foreach my $k (keys %ENV) {
@@ -985,10 +993,6 @@ __PACKAGE__->register_method ({
 		$ENV{PWD} = '/';
 		$ENV{SPICE_TICKET} = $ticket;
 	    
-		my $cmd = ['/usr/bin/spiceterm', '--port', $port, '--addr', '127.0.0.1',
-			   '--timeout', $timeout, '--authpath', $authpath, 
-			   '--permissions', 'VM.Console', '--', @$shcmd];
-
 		run_command($cmd, errmsg => "spiceterm failed");
 	    };
 	    if (my $err = $@) {

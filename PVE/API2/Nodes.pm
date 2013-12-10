@@ -856,7 +856,12 @@ __PACKAGE__->register_method ({
 
 	my $cmd = ['/usr/bin/spiceterm', '--port', $port, '--addr', '127.0.0.1',
 		   '--timeout', $timeout, '--authpath', $authpath, 
-		   '--permissions', 'Sys.Console', '--', @$shcmd];
+		   '--permissions', 'Sys.Console'];
+
+	my $dcconf = PVE::Cluster::cfs_read_file('datacenter.cfg');
+	push @$cmd, '--keymap', $dcconf->{keyboard} if $dcconf->{keyboard};
+
+	push @$cmd, '--', @$shcmd;
 
 	my $realcmd = sub {
 	    my $upid = shift;
