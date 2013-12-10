@@ -779,16 +779,12 @@ __PACKAGE__->register_method ({
 	description => "Restricted to users on realm 'pam'",
 	check => ['perm', '/nodes/{node}', [ 'Sys.Console' ]],
     },
-    description => "Creates a spice shell.",
+    description => "Creates a SPICE shell.",
     parameters => {
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-	    proxy => {
-		description => "This can be used by the client to specify the proxy server. All nodes in a cluster runs 'spiceproxy', so it is up to the client to choose one. By default, we return the node where the VM is currently running. As resonable setting is to use same node you use to connect to the API (This is window.location.hostname for the JS GUI).",
-		type => 'string', format => 'dns-name',
-		optional => 1,
-	    },
+	    proxy => get_standard_option('spice-proxy', { optional => 1 }),
 	    upgrade => {
 		type => 'boolean',
 		description => "Run 'apt-get dist-upgrade' instead of normal shell.",
@@ -797,17 +793,7 @@ __PACKAGE__->register_method ({
 	    },
 	},
     },
-    returns => {
-	description => "Returned values can be directly passed to the 'remote-viewer' application.",
-    	additionalProperties => 1,
-	properties => {
-	    type => { type => 'string' },
-	    password => { type => 'string' },
-	    proxy => { type => 'string' },
-	    host => { type => 'string' },
-	    'tls-port' => { type => 'integer' },
-	},
-    },
+    returns => get_standard_option('remote-viewer-config'),
     code => sub {
 	my ($param) = @_;
 
