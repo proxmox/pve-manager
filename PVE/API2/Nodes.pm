@@ -393,7 +393,7 @@ __PACKAGE__->register_method({
 
 		push @$res, {
 		    status => HTTP_OK,
-		    data => $handler->handle($info, $cmd->{args}), 
+		    data => $handler->handle($info, $uri_param),
 		};
 	    };
 	    if (my $err = $@) {
