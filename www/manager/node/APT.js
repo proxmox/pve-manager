@@ -83,13 +83,21 @@ Ext.define('PVE.node.APT', {
 	    disabled: !(PVE.UserName && PVE.UserName === 'root@pam'),
 	    handler: function() {
 		PVE.Utils.checked_command(function() {
-		    var url = Ext.urlEncode({
-			console: 'upgrade',
-			node: nodename
-		    });
-		    var nw = window.open("?" + url, '_blank', 
-					 "innerWidth=745,innerheight=427");
-		    nw.focus();
+		    var url;
+		    var params;
+		    if (PVE.Utils.defaultViewer() === 'vv') {
+			url = '/nodes/' + nodename + '/spiceshell';
+			params = { upgrade: 1, proxy: window.location.hostname };
+			PVE.Utils.openSpiceViewer(url, params);
+		    } else {
+			url = Ext.urlEncode({
+			    console: 'upgrade',
+			    node: nodename
+			});
+			var nw = window.open("?" + url, '_blank', 
+					     "innerWidth=745,innerheight=427");
+			nw.focus();
+		    }
 		});
 	    }
 	}); 
