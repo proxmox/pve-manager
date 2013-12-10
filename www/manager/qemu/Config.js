@@ -112,32 +112,12 @@ Ext.define('PVE.qemu.Config', {
 
 	var spice = false;
 
-	var openSpiceConsole = function(vmid, nodename, vmname){
-	    PVE.Utils.API2Request({
-		url: '/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy',
-		params: { proxy: window.location.hostname },
-		method: 'POST',
-		waitMsgTarget: me,
-		failure: function(response, opts){
-		    Ext.Msg.alert('Error', response.htmlStatus);
-		},
-		success: function(response, opts){
-		    var raw = "[virt-viewer]\n";
-		    Ext.Object.each(response.result.data, function(k, v) {
-			raw += k + "=" + v + "\n";
-		    });
-		    var url = 'data:application/x-virt-viewer;charset=UTF-8,' +
-			encodeURIComponent(raw);
-		    
-		    window.open(url, "_top");
-		}
-	    });
-	};
-
 	var spiceMenu = Ext.create('Ext.menu.Item', {
 	    text: 'SPICE',
 	    handler: function(){
-		openSpiceConsole(vmid, nodename, vmname);
+		var url = '/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy';
+		var params = { proxy: window.location.hostname };
+		PVE.Utils.openSpiceViewer(url, params);
 	    }
 	});
 
@@ -148,7 +128,9 @@ Ext.define('PVE.qemu.Config', {
 		if (PVE.VersionInfo.console === 'applet' || !spice) {
 		    PVE.Utils.openConoleWindow('kvm', vmid, nodename, vmname);
 		} else {
-		    openSpiceConsole(vmid, nodename, vmname);
+		    var url = '/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy';
+		    var params = { proxy: window.location.hostname };
+		    PVE.Utils.openSpiceViewer(url, params);
 		}
 	    },
 	    menu: new Ext.menu.Menu({
