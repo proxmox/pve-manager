@@ -112,7 +112,22 @@ Ext.define('PVE.qemu.CmdMenu', {
 		text: gettext('Console'),
 		icon: '/pve2/images/display.png',
 		handler: function() {
-		    PVE.Utils.openConoleWindow('kvm', vmid, nodename, vmname);
+		    PVE.Utils.API2Request({
+			url: '/nodes/' + nodename + '/qemu/' + vmid + '/status/current',
+			failure: function(response, opts) {
+			    Ext.Msg.alert('Error', response.htmlStatus);
+			},
+			success: function(response, opts) {
+			    var spice = response.result.data.spice;
+			    if (PVE.VersionInfo.console === 'applet' || !spice) {
+				PVE.Utils.openConoleWindow('kvm', vmid, nodename, vmname);
+			    } else {
+				var url = '/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy';
+				var params = { proxy: window.location.hostname };
+				PVE.Utils.openSpiceViewer(url, params);
+			    }
+			}
+		    });
 		}
 	    }
 	];
