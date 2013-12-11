@@ -48,7 +48,7 @@ my $baseuri = "/api2";
 sub split_abs_uri {
     my ($abs_uri) = @_;
 
-    my ($format, $rel_uri) = $abs_uri =~ m/^\Q$baseuri\E\/+(html|text|json|extjs|png|htmljs|spiceconfig)(\/.*)?$/;
+    my ($format, $rel_uri) = $abs_uri =~ m/^\Q$baseuri\E\/+(html|text|json|extjs|png|htmljs)(\/.*)?$/;
     $rel_uri = '/' if !$rel_uri;
  
     return wantarray ? ($rel_uri, $format) : $rel_uri;
