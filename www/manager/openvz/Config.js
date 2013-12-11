@@ -110,7 +110,7 @@ Ext.define('PVE.openvz.Config', {
 		    PVE.Utils.openSpiceViewer('/nodes/' + nodename + '/openvz/' + vmid + 
 					      '/spiceproxy', params);
 		} else {
-		    PVE.Utils.openConoleWindow('openvz', vmid, nodename, vmname);
+		    PVE.Utils.openConsoleWindow('openvz', vmid, nodename, vmname);
 		}
 	    }
 	});

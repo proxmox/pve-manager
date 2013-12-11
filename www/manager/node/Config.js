@@ -55,7 +55,7 @@ Ext.define('PVE.node.Config', {
 		    var params = { proxy: window.location.hostname };
 		    PVE.Utils.openSpiceViewer('/nodes/' + nodename + '/spiceshell', params);
 		} else {
-		    PVE.Utils.openConoleWindow('shell', undefined, nodename);
+		    PVE.Utils.openConsoleWindow('shell', undefined, nodename);
 		}
 	    }
 	}); 

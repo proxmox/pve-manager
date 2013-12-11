@@ -912,7 +912,7 @@ Ext.define('PVE.Utils', { statics: {
 	}
     },
  
-    openConoleWindow: function(vmtype, vmid, nodename, vmname) {
+    openConsoleWindow: function(vmtype, vmid, nodename, vmname) {
 	var url = Ext.urlEncode({
 	    console: vmtype, // kvm, openvz or shell
 	    vmid: vmid,

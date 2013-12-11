@@ -126,7 +126,7 @@ Ext.define('PVE.qemu.Config', {
 	    disabled: !caps.vms['VM.Console'],
 	    handler: function() {
 		if (PVE.VersionInfo.console === 'applet' || !spice) {
-		    PVE.Utils.openConoleWindow('kvm', vmid, nodename, vmname);
+		    PVE.Utils.openConsoleWindow('kvm', vmid, nodename, vmname);
 		} else {
 		    var url = '/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy';
 		    var params = { proxy: window.location.hostname };
@@ -138,7 +138,7 @@ Ext.define('PVE.qemu.Config', {
 		    { 
 			text: 'VNC', 
 			handler: function(){
-			    PVE.Utils.openConoleWindow('kvm', vmid, nodename, vmname);			    
+			    PVE.Utils.openConsoleWindow('kvm', vmid, nodename, vmname);			    
 			}
 		    },
 		    spiceMenu

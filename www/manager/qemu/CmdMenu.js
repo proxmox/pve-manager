@@ -120,7 +120,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 			success: function(response, opts) {
 			    var spice = response.result.data.spice;
 			    if (PVE.VersionInfo.console === 'applet' || !spice) {
-				PVE.Utils.openConoleWindow('kvm', vmid, nodename, vmname);
+				PVE.Utils.openConsoleWindow('kvm', vmid, nodename, vmname);
 			    } else {
 				var url = '/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy';
 				var params = { proxy: window.location.hostname };
