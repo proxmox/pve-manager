@@ -928,7 +928,33 @@ Ext.define('PVE.Utils', { statics: {
 	return PVE.VersionInfo.console || 'applet';
     },
 
+
     openSpiceViewer: function(url, params){
+
+	var downloadWithName = function(uri, name) {
+	    var link = Ext.DomHelper.append(document.body, {
+		tag: 'a',
+		href: uri,
+		css : 'display:none;visibility:hidden;height:0px;',
+	    });
+
+	    // Note: we need to tell android the correct file name extension
+	    // but we do not set 'download' tag for other environments, because
+	    // It can have strange side effects (additional user prompt on firefox)
+	    var andriod = navigator.userAgent.match(/Android/i) ? true : false;
+	    if (andriod) {
+		link.download = name;
+	    }
+
+	    if (link.fireEvent) {
+		link.fireEvent('onclick');
+	    } else {
+                var evt = document.createEvent("MouseEvents");
+                evt.initMouseEvent('click', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
+		link.dispatchEvent(evt);
+	    }
+	};
+
 	PVE.Utils.API2Request({
 	    url: url,
 	    params: params,
@@ -944,7 +970,7 @@ Ext.define('PVE.Utils', { statics: {
 		var url = 'data:application/x-virt-viewer;charset=UTF-8,' +
 		    encodeURIComponent(raw);
 		    
-		window.open(url, "_top");
+		downloadWithName(url, "pve-spice.vv");
 	    }
 	});
     },
