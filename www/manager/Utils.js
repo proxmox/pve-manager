@@ -935,7 +935,7 @@ Ext.define('PVE.Utils', { statics: {
 	    var link = Ext.DomHelper.append(document.body, {
 		tag: 'a',
 		href: uri,
-		css : 'display:none;visibility:hidden;height:0px;',
+		css : 'display:none;visibility:hidden;height:0px;'
 	    });
 
 	    // Note: we need to tell android the correct file name extension
