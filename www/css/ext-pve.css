@@ -20,6 +20,8 @@
     -khtml-user-select: text!important;
 }
 
+.pve-itype-icon-virt-viewer,
+.pve-itype-icon-tigervnc,
 .pve-itype-icon-display,
 .pve-itype-icon-memory,
 .pve-itype-icon-processor,
@@ -144,6 +146,16 @@
 .pve-itype-icon-display
 {
     background-image:url(../images/display.png);
+}
+
+.pve-itype-icon-tigervnc
+{
+    background-image:url(../images/tigervnc.png);
+}
+
+.pve-itype-icon-virt-viewer
+{
+    background-image:url(../images/virt-viewer.png);
 }
 
 .pve-bar-wrap

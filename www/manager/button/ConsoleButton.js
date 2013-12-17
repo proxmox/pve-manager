@@ -87,11 +87,13 @@ Ext.define('PVE.button.ConsoleButton', {
 
 	me.spiceMenu = Ext.create('Ext.menu.Item', {
 	    text: 'SPICE',
+	    iconCls: 'pve-itype-icon-virt-viewer',
 	    handler: create_spice_console
 	});
 
 	var vncMenu = Ext.create('Ext.menu.Item', {
 	    text: 'VNC',
+	    iconCls: 'pve-itype-icon-tigervnc',
 	    handler: create_vnc_console
 	});
 

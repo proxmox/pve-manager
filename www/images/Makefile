@@ -6,6 +6,10 @@ all:
 # stop.png /usr/share/icons/gnome/16x16/actions/media-playback-stop.png
 # computer-template.png /usr/share/icons/gnome/16x16/mimetypes/gnome-mime-application-vnd.sun.xml.calc.template.png
 
+# virt-viewer.png copied from virt-viewer sources
+# tigervnc.png converted from tigervnc sources
+# (tigervnc.org/media/tigervnc_16.svg)
+
 GNOME_IMAGES = 			\
 	start.png		\
 	stop.png		\
@@ -22,6 +26,8 @@ GNOME_IMAGES = 			\
 	computer.png
 
 IMAGES = ${GNOME_IMAGES}	\
+	virt-viewer.png		\
+	tigervnc.png		\
 	favicon.ico		\
 	snapshot.png		\
 	computer-on.png		\
