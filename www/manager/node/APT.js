@@ -78,30 +78,12 @@ Ext.define('PVE.node.APT', {
 	    }
 	});
 
-	var upgrade_btn = new PVE.button.Button({
-	    text: gettext('Upgrade'),
+	var upgrade_btn = Ext.create('PVE.button.ConsoleButton', {
 	    disabled: !(PVE.UserName && PVE.UserName === 'root@pam'),
-	    handler: function() {
-		PVE.Utils.checked_command(function() {
-		    var url;
-		    var params;
-		    if (PVE.Utils.defaultViewer() === 'vv') {
-			url = '/nodes/' + nodename + '/spiceshell';
-			params = { upgrade: 1, proxy: window.location.hostname };
-			PVE.Utils.openSpiceViewer(url, params);
-		    } else {
-			url = Ext.urlEncode({
-			    console: 'upgrade',
-			    node: nodename
-			});
-			var nw = window.open("?" + url, '_blank', 
-					     "innerWidth=745,innerheight=427");
-			nw.focus();
-		    }
-		});
-	    }
-	}); 
-
+	    text: gettext('Upgrade'),
+	    consoleType: 'upgrade',
+	    nodename: nodename
+	});
 
 	var show_changelog = function(rec) {
 	    if (!rec || !rec.data || !(rec.data.ChangeLogUrl && rec.data.Package)) {

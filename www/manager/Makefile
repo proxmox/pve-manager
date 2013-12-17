@@ -5,6 +5,7 @@ JSSRC= 				                 	\
 	Parser.js					\
 	StateProvider.js				\
 	button/Button.js				\
+	button/ConsoleButton.js				\
 	qemu/SendKeyMenu.js				\
 	qemu/CmdMenu.js					\
 	qemu/TemplateMenu.js				\

@@ -47,18 +47,12 @@ Ext.define('PVE.node.Config', {
 	    }
 	});
 
-	var shellBtn = Ext.create('Ext.Button', { 
-	    text: gettext('Shell'),
+	var shellBtn = Ext.create('PVE.button.ConsoleButton', {
 	    disabled: !caps.nodes['Sys.Console'],
-	    handler: function() {
-		if (PVE.Utils.defaultViewer() === 'vv') {
-		    var params = { proxy: window.location.hostname };
-		    PVE.Utils.openSpiceViewer('/nodes/' + nodename + '/spiceshell', params);
-		} else {
-		    PVE.Utils.openConsoleWindow('shell', undefined, nodename);
-		}
-	    }
-	}); 
+	    text: gettext('Shell'),
+	    consoleType: 'shell',
+	    nodename: nodename
+	});
 
 	me.items = [];
 

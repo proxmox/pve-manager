@@ -110,40 +110,12 @@ Ext.define('PVE.qemu.Config', {
 
 	var vmname = me.pveSelNode.data.name;
 
-	var spice = false;
-
-	var spiceMenu = Ext.create('Ext.menu.Item', {
-	    text: 'SPICE',
-	    handler: function(){
-		var url = '/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy';
-		var params = { proxy: window.location.hostname };
-		PVE.Utils.openSpiceViewer(url, params);
-	    }
-	});
-
-	var consoleBtn = Ext.create('Ext.button.Split', {
-	    text: gettext('Console'),
+	var consoleBtn = Ext.create('PVE.button.ConsoleButton', {
 	    disabled: !caps.vms['VM.Console'],
-	    handler: function() {
-		if (PVE.VersionInfo.console === 'applet' || !spice) {
-		    PVE.Utils.openConsoleWindow('kvm', vmid, nodename, vmname);
-		} else {
-		    var url = '/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy';
-		    var params = { proxy: window.location.hostname };
-		    PVE.Utils.openSpiceViewer(url, params);
-		}
-	    },
-	    menu: new Ext.menu.Menu({
-		items: [
-		    { 
-			text: 'VNC', 
-			handler: function(){
-			    PVE.Utils.openConsoleWindow('kvm', vmid, nodename, vmname);			    
-			}
-		    },
-		    spiceMenu
-		]
-	    })
+	    consoleType: 'kvm',
+	    consoleName: vmname,
+	    nodename: nodename,
+	    vmid: vmid
 	});
 
 	var descr = vmid + " (" + (vmname ? "'" + vmname + "' " : "'VM " + vmid + "'") + ")";
@@ -218,6 +190,7 @@ Ext.define('PVE.qemu.Config', {
 	    var status;
 	    var qmpstatus;
 	    var template;
+	    var spice = false;
 
 	    if (!success) {
 		me.workspace.checkVmMigration(me.pveSelNode);
@@ -242,9 +215,8 @@ Ext.define('PVE.qemu.Config', {
 		startBtn.setVisible(true);
 		resumeBtn.setVisible(false);
 	    }
-	    
-	    spiceMenu.setVisible(spice);
-	    spiceMenu.setDisabled(!caps.vms['VM.Console'] || status !== 'running');
+
+	    consoleBtn.setEnableSpice(spice);
 
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
 	    resetBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running' || template);

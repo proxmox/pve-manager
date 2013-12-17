@@ -101,18 +101,12 @@ Ext.define('PVE.openvz.Config', {
 
 	var vmname = me.pveSelNode.data.name;
 
-	var consoleBtn = Ext.create('Ext.Button', {
-	    text: gettext('Console'),
+	var consoleBtn = Ext.create('PVE.button.ConsoleButton', {
 	    disabled: !caps.vms['VM.Console'],
-	    handler: function() {
-		if (PVE.Utils.defaultViewer() === 'vv') {
-		    var params = { proxy: window.location.hostname };
-		    PVE.Utils.openSpiceViewer('/nodes/' + nodename + '/openvz/' + vmid + 
-					      '/spiceproxy', params);
-		} else {
-		    PVE.Utils.openConsoleWindow('openvz', vmid, nodename, vmname);
-		}
-	    }
+	    consoleType: 'openvz',
+	    consoleName: vmname,
+	    nodename: nodename,
+	    vmid: vmid
 	});
 
 	var descr = vmid + " (" + (vmname ? "'" + vmname + "' " : "'CT " + vmid + "'") + ")";
