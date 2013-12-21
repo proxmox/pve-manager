@@ -1,6 +1,7 @@
 include ../../defines.mk
 
 PERLSOURCE = 			\
+	Ceph.pm			\
 	APT.pm			\
 	Subscription.pm		\
 	VZDump.pm		\

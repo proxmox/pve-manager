@@ -11,10 +11,15 @@ Ext.define('PVE.panel.Config', {
 
 	var activeTab;
 
+	var hsregex =  /^([^\-\s]+)(-\S+)?$/;
+
 	if (stateid) {
 	    var state = sp.get(stateid);
 	    if (state && state.value) {
-		activeTab = state.value;
+		var res = hsregex.exec(state.value);
+		if (res && res[1]) {
+		    activeTab = res[1];
+		}
 	    }
 	}
 
@@ -70,13 +75,14 @@ Ext.define('PVE.panel.Config', {
 		},
 		tabchange: function(tp, newcard, oldcard) {
 		    var ntab = newcard.itemId;
+
 		    // Note: '' is alias for first tab.
 		    // First tab can be 'search' or something else
 		    if (newcard.itemId === items[0].itemId) {
 			ntab = '';
 		    }
 		    var state = { value: ntab };
-		    if (stateid) {
+		    if (stateid && !newcard.phstateid) {
 			sp.set(stateid, state);
 		    }
 		}
@@ -91,10 +97,11 @@ Ext.define('PVE.panel.Config', {
 	me.callParent();
 
 	var statechange = function(sp, key, state) {
-	    if (stateid && key === stateid) {
+	    if (stateid && (key === stateid) && state) {
 		var atab = tab.getActiveTab().itemId;
-		var ntab = state.value || items[0].itemId;
-		if (state && ntab && (atab != ntab)) {
+		var res = hsregex.exec(state.value);
+		var ntab = (res && res[1]) ? res[1] : items[0].itemId;
+		if (ntab && (atab != ntab)) {
 		    tab.setActiveTab(ntab);
 		}
 	    }

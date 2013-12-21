@@ -3,6 +3,7 @@ include ../defines.mk
 SUBDIRS = init.d cron ocf test
 
 SCRIPTS =  			\
+	pveceph			\
 	vzdump			\
 	vzrestore		\
 	pvestatd		\
@@ -20,6 +21,7 @@ SCRIPTS =  			\
 	pveperf
 
 MANS = 				\
+	pveceph.1		\
 	pvectl.1		\
 	vzdump.1		\
 	vzrestore.1		\
@@ -43,6 +45,9 @@ all: ${MANS} pvemailforward
 
 pvectl.1.pod: pvectl
 	perl -I.. ./pvectl printmanpod >$@
+
+pveceph.1.pod: pveceph
+	perl -I.. ./pveceph printmanpod >$@
 
 vzdump.1.pod: vzdump
 	perl -I.. -T ./vzdump printmanpod >$@
