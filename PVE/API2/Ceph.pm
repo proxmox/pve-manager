@@ -8,6 +8,7 @@ use POSIX qw (LONG_MAX);
 use Cwd qw(abs_path);
 use IO::Dir;
 use UUID;
+use Net::IP;
 
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param run_command file_get_contents file_read_firstline dir_glob_regex dir_glob_foreach);
@@ -503,6 +504,12 @@ __PACKAGE__->register_method ({
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
+	    network => {
+		description => "Use specific network for all ceph related traffic", 
+		type => 'string', format => 'CIDR',
+		optional => 1,
+		maxLength => 128,
+	    },
 	    size => {
 		description => 'Number of replicas per object',
 		type => 'integer',
@@ -563,13 +570,36 @@ __PACKAGE__->register_method ({
 	    $cfg->{global}->{'osd pg bits'} = $param->{pg_bits};
 	    $cfg->{global}->{'osd pgp bits'} = $param->{pg_bits};
 	}
-	
+
+	if ($param->{network}) {
+	    $cfg->{global}->{'public network'} = $param->{network};
+	    $cfg->{global}->{'cluster network'} = $param->{network};
+	}
+
 	&$write_ceph_config($cfg);
 
 	&$setup_pve_symlinks();
 
 	return undef;
     }});
+
+my $find_node_ip = sub {
+    my ($cidr) = @_;
+
+    my $config = PVE::INotify::read_file('interfaces');
+
+    my $net = Net::IP->new($cidr) || die Net::IP::Error() . "\n";
+
+    foreach my $iface (keys %$config) {
+	my $d = $config->{$iface};
+	next if !$d->{address};
+	my $a = Net::IP->new($d->{address});
+	next if !$a;
+	return $d->{address} if $net->overlaps($a);
+    }
+
+    die "unable to find local address within network '$cidr'\n";
+};
 
 __PACKAGE__->register_method ({
     name => 'createmon',
@@ -622,8 +652,15 @@ __PACKAGE__->register_method ({
 	}
 	die "unable to find usable monitor id\n" if !defined($monid);
 
-	my $monsection = "mon.$monid";	
-	my $monaddr = PVE::Cluster::remote_node_ip($param->{node}) . ":6789";
+	my $monsection = "mon.$monid"; 
+	my $ip;
+	if (my $pubnet = $cfg->{global}->{'public network'}) {
+	    $ip = &$find_node_ip($pubnet);
+	} else {
+	    $ip = PVE::Cluster::remote_node_ip($param->{node});
+	}
+
+	my $monaddr = "$ip:6789";
 	my $monname = $param->{node};
 
 	die "monitor '$monsection' already exists\n" if $cfg->{$monsection};
