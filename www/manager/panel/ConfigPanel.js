@@ -81,9 +81,12 @@ Ext.define('PVE.panel.Config', {
 		    if (newcard.itemId === items[0].itemId) {
 			ntab = '';
 		    }
-		    var state = { value: ntab };
-		    if (stateid && !newcard.phstateid) {
-			sp.set(stateid, state);
+		    if (stateid) {
+			if (newcard.phstateid) {
+			    sp.set(newcard.phstateid, newcard.getHState());
+			} else {
+			    sp.set(stateid, { value: ntab });
+			}
 		    }
 		}
 	    }

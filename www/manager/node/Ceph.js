@@ -875,6 +875,26 @@ Ext.define('PVE.node.Ceph', {
     extend: 'Ext.tab.Panel',
     alias: 'widget.pveNodeCeph',
 
+    getHState: function(itemId) {
+        var me = this;
+	
+	if (!itemId) {
+	    itemId = me.getActiveTab().itemId;
+	}
+
+	var first =  me.items.get(0);
+	var ntab;
+
+	// Note: '' is alias for first tab.
+	if (itemId === first.itemId) {
+	    ntab = 'ceph';
+	} else {
+	    ntab = 'ceph-' + itemId;
+	}
+
+	return { value: ntab };
+    },
+
     initComponent: function() {
         var me = this;
 
@@ -956,17 +976,7 @@ Ext.define('PVE.node.Ceph', {
 		    }
 		},
 		tabchange: function(tp, newcard, oldcard) {
-		    var first =  tp.items.get(0);
-		    var ntab;
-
-		    // Note: '' is alias for first tab.
-		    if (newcard.itemId === first.itemId) {
-			ntab = 'ceph';
-		    } else {
-			ntab = 'ceph-' + newcard.itemId;
-		    }
-
-		    var state = { value: ntab };
+		    var state = me.getHState(newcard.itemId);
 		    sp.set(me.phstateid, state);
 		}
 	    }
