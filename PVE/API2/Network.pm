@@ -241,6 +241,11 @@ __PACKAGE__->register_method({
 
 	    $param->{method} = $param->{address} ? 'static' : 'manual'; 
 
+	    if ($param->{type} =~ m/^OVS/) {
+		-x '/usr/bin/ovs-vsctl' ||
+		    die "Open VSwitch is not installed (need package 'openvswitch-switch')\n";
+	    }
+
 	    if ($param->{type} eq 'OVSIntPort' || $param->{type} eq 'OVSBond') {
 		my $brname = $param->{ovs_bridge};
 		raise_param_exc({ ovs_bridge => "parameter is required" }) if !$brname;
