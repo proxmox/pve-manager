@@ -22,6 +22,9 @@ IFFN=/etc/network/interfaces
 
 case "$1" in
     start)
+	# remove OVS config
+	rm -f /etc/openvswitch/conf.db
+
 	if test -f "${IFFN}.new"; then
 	    echo "committing new network configuration";
 	    if ! mv "${IFFN}.new" $IFFN; then
