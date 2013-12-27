@@ -25,10 +25,20 @@ my $bond_mode_enum = [
     'broadcast',
     '802.3ad',
     'balance-tlb',
-    'balance-alb'
+    'balance-alb',
+    'balance-slb', # OVS only
+    'balance-tcp', # OVS only
     ];
 
+my $network_type_enum = ['bridge', 'bond', 'eth', 'alias', 
+			 'OVSBridge', 'OVSBond', 'OVSPort', 'OVSIntPort'];
+
 my $confdesc = {
+    type => {
+	description => "Network interface type",
+	type => 'string',
+	enum => [@$network_type_enum, 'unknown'],
+    },
     autostart => {
 	description => "Automatically start interface on boot.",
 	type => 'boolean',
@@ -39,7 +49,28 @@ my $confdesc = {
 	optional => 1,
 	type => 'string', format => 'pve-iface-list',
     },
+    ovs_ports => {
+	description => "Specify the iterfaces you want to add to your bridge.",
+	optional => 1,
+	type => 'string', format => 'pve-iface-list',
+    },
+    ovs_options => {
+	description => "OVS interface options.",
+	optional => 1,
+	type => 'string',
+	maxLength => 1024,
+    },
+    ovs_bridge => {
+	description => "The OVS bridge associated with a OVS port. This is required when you create an OVS port.",
+	optional => 1,
+	type => 'string', format => 'pve-iface',
+    },
     slaves => {
+	description => "Specify the interfaces used by the bonding device.",
+	optional => 1,
+	type => 'string', format => 'pve-iface-list',
+    },
+    ovs_bonds => {
 	description => "Specify the interfaces used by the bonding device.",
 	optional => 1,
 	type => 'string', format => 'pve-iface-list',
@@ -92,7 +123,7 @@ __PACKAGE__->register_method({
 	    type => {
 		description => "Only list specific interface types.",
 		type => 'string',
-		enum => ['bond', 'bridge', 'alias', 'eth'],
+		enum => $network_type_enum,
 		optional => 1,
 	    },
 	},
@@ -209,6 +240,19 @@ __PACKAGE__->register_method({
 		if $param->{address};
 
 	    $param->{method} = $param->{address} ? 'static' : 'manual'; 
+
+	    if ($param->{type} eq 'OVSIntPort' || $param->{type} eq 'OVSBond') {
+		my $brname = $param->{ovs_bridge};
+		raise_param_exc({ ovs_bridge => "parameter is required" }) if !$brname;
+		my $br = $config->{$brname};
+		raise_param_exc({ ovs_bridge => "bridge '$brname' does not exist" }) if !$br;
+		raise_param_exc({ ovs_bridge => "interface '$brname' is no OVS bridge" }) 
+		    if $br->{type} ne 'OVSBridge';
+
+		my @ports = split (/\s+/, $br->{ovs_ports} || '');
+		$br->{ovs_ports} = join(' ', @ports, $iface)
+		    if ! grep { $_ eq $iface } @ports;
+	    }
 
 	    $config->{$iface} = $param;
 
@@ -345,6 +389,19 @@ __PACKAGE__->register_method({
 
 	    raise_param_exc({ iface => "interface does not exist" })
 		if !$config->{$param->{iface}};
+
+	    my $d = $config->{$param->{iface}};
+	    if ($d->{type} eq 'OVSIntPort' || $d->{type} eq 'OVSBond') {
+		if (my $brname = $d->{ovs_bridge}) {
+		    if (my $br = $config->{$brname}) {
+			if ($br->{ovs_ports}) {
+			    my @ports = split (/\s+/, $br->{ovs_ports});
+			    my @new = grep { $_ ne $param->{iface} } @ports;
+			    $br->{ovs_ports} = join(' ', @new);
+			}
+		    }
+		}
+	    }
 
 	    delete $config->{$param->{iface}};
 

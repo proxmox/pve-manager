@@ -111,7 +111,21 @@ Ext.define('PVE.node.NetworkView', {
 		return record.data.bridge_ports;
 	    } else if (value === 'bond') {
 		return record.data.slaves;
+	    } else if (value === 'OVSBridge') {
+		return record.data.ovs_ports;
+	    } else if (value === 'OVSBond') {
+		return record.data.ovs_bonds;
 	    }
+	};
+
+	var find_next_iface_id = function(prefix) {
+	    var next;
+	    for (next = 0; next <= 9999; next++) {
+		if (!store.getById(prefix + next.toString())) {
+		    break;
+		}
+	    }
+	    return prefix + next.toString();
 	};
 
 	Ext.apply(me, {
@@ -120,44 +134,67 @@ Ext.define('PVE.node.NetworkView', {
 		{
 		    text: gettext('Create'),
 		    menu: new Ext.menu.Menu({
+			plain: true,
 			items: [
 			    {
-				text: 'Bridge',
+				text: PVE.Utils.render_network_iface_type('bridge'),
 				handler: function() {
-				    var next;
-				    for (next = 0; next <= 9999; next++) {
-					if (!store.data.get('vmbr' + next.toString())) {
-					    break;
-					}
-				    }
-				    
 				    var win = Ext.create('PVE.node.NetworkEdit', {
 					pveSelNode: me.pveSelNode,
 					iftype: 'bridge',
-					iface_default: 'vmbr' + next.toString()
+					iface_default: find_next_iface_id('vmbr')
 				    });
 				    win.on('destroy', reload);
 				    win.show();
 				}
 			    },
 			    {
-				text: 'Bond',
+				text: PVE.Utils.render_network_iface_type('bond'),
 				handler: function() {
-				    var next;
-				    for (next = 0; next <= 9999; next++) {
-					if (!store.data.get('bond' + next.toString())) {
-					    break;
-					}
-				    }
 				    var win = Ext.create('PVE.node.NetworkEdit', {
 					pveSelNode: me.pveSelNode,
 					iftype: 'bond',
-					iface_default: 'bond' + next.toString()
+					iface_default: find_next_iface_id('bond')
 				    });
 				    win.on('destroy', reload);
 				    win.show();
 				}
-			    } 
+			    }, '-',
+			    {
+				text: PVE.Utils.render_network_iface_type('OVSBridge'),
+				handler: function() {
+				    var win = Ext.create('PVE.node.NetworkEdit', {
+					pveSelNode: me.pveSelNode,
+					iftype: 'OVSBridge',
+					iface_default: find_next_iface_id('vmbr')
+				    });
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+			    {
+				text: PVE.Utils.render_network_iface_type('OVSBond'),
+				handler: function() {
+				    var win = Ext.create('PVE.node.NetworkEdit', {
+					pveSelNode: me.pveSelNode,
+					iftype: 'OVSBond',
+					iface_default: find_next_iface_id('bond')
+				    });
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+			    {
+				text: PVE.Utils.render_network_iface_type('OVSIntPort'),
+				handler: function() {
+				    var win = Ext.create('PVE.node.NetworkEdit', {
+					pveSelNode: me.pveSelNode,
+					iftype: 'OVSIntPort'
+				    });
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    }
 			]
 		    })
 		}, ' ', 
@@ -193,6 +230,13 @@ Ext.define('PVE.node.NetworkView', {
 			    width: 100,
 			    sortable: true,
 			    dataIndex: 'iface'
+			},
+			{
+			    header: gettext('Type'),
+			    width: 100,
+			    sortable: true,
+			    renderer: PVE.Utils.render_network_iface_type,
+			    dataIndex: 'type'
 			},
 			{
 			    xtype: 'booleancolumn', 

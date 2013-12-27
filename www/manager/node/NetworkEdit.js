@@ -19,26 +19,38 @@ Ext.define('PVE.node.NetworkEdit', {
 	var iface_vtype;
 
 	if (me.iftype === 'bridge') {
-	    me.subject = "Bridge";
 	    iface_vtype = 'BridgeName';
 	} else if (me.iftype === 'bond') {
-	    me.subject = "Bond";
 	    iface_vtype = 'BondName';
 	} else if (me.iftype === 'eth' && !me.create) {
-	    me.subject = gettext("Network Device");
+	    iface_vtype = 'InterfaceName';
+	} else if (me.iftype === 'OVSBridge') {
+	    iface_vtype = 'BridgeName';
+	} else if (me.iftype === 'OVSBond') {
+	    iface_vtype = 'BondName';
+	} else if (me.iftype === 'OVSIntPort') {
+	    iface_vtype = 'InterfaceName';
+	} else if (me.iftype === 'OVSPort') {
+	    iface_vtype = 'InterfaceName';
 	} else {
-	    throw "no known network device type specified";
+	    console.log(me.iftype);
+	    throw "unknown network device type specified";
 	}
 
-	var column2 = [
-	    {
+	me.subject = PVE.Utils.render_network_iface_type(me.iftype);
+
+	var column2 = [];
+
+	if (!(me.iftype === 'OVSIntPort' || me.iftype === 'OVSPort' ||
+	      me.iftype === 'OVSBond')) {
+	    column2.push({
 		xtype: 'pvecheckbox',
 		fieldLabel: gettext('Autostart'),
 		name: 'autostart',
 		uncheckedValue: 0,
 		checked: me.create ? true : undefined
-	    }
-	];
+	    });
+	}
 
 	if (me.iftype === 'bridge') {
 	    column2.push({
@@ -46,6 +58,32 @@ Ext.define('PVE.node.NetworkEdit', {
 		fieldLabel: gettext('Bridge ports'),
 		name: 'bridge_ports'
 	    });	  
+	} else if (me.iftype === 'OVSBridge') {
+	    column2.push({
+		xtype: 'textfield',
+		fieldLabel: gettext('Bridge ports'),
+		name: 'ovs_ports'
+	    });	  
+	    column2.push({
+		xtype: 'textfield',
+		fieldLabel: gettext('OVS options'),
+		name: 'ovs_options'
+	    });	  
+	} else if (me.iftype === 'OVSPort' || me.iftype === 'OVSIntPort') {
+	    column2.push({
+		xtype: me.create ? 'PVE.form.BridgeSelector' : 'displayfield',
+		height: 22, // hack: set same height as text fields
+		fieldLabel: PVE.Utils.render_network_iface_type('OVSBridge'),
+		allowBlank: false,
+		nodename: nodename,
+		bridgeType: 'OVSBridge',
+		name: 'ovs_bridge'
+	    });
+	    column2.push({
+		xtype: 'textfield',
+		fieldLabel: gettext('OVS options'),
+		name: 'ovs_options'
+	    });
 	} else if (me.iftype === 'bond') {
 	    column2.push({
 		xtype: 'textfield',
@@ -58,6 +96,21 @@ Ext.define('PVE.node.NetworkEdit', {
 		name: 'bond_mode',
 		value: me.create ? 'balance-rr' : undefined,
 		allowBlank: false
+	    });
+	} else if (me.iftype === 'OVSBond') {
+	    column2.push({
+		xtype: me.create ? 'PVE.form.BridgeSelector' : 'displayfield',
+		height: 22, // hack: set same height as text fields
+		fieldLabel: PVE.Utils.render_network_iface_type('OVSBridge'),
+		allowBlank: false,
+		nodename: nodename,
+		bridgeType: 'OVSBridge',
+		name: 'ovs_bridge'
+	    });
+	    column2.push({
+		xtype: 'textfield',
+		fieldLabel: gettext('OVS options'),
+		name: 'ovs_options'
 	    });
 	}
 
@@ -73,6 +126,11 @@ Ext.define('PVE.node.NetworkEdit', {
 	}
 
 	var column1 = [
+	    { 
+		xtype: 'hiddenfield',
+		name: 'type',
+		value: me.iftype
+	    },
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		fieldLabel: gettext('Name'),
@@ -81,47 +139,71 @@ Ext.define('PVE.node.NetworkEdit', {
 		value: me.iface,
 		vtype: iface_vtype,
 		allowBlank: false
-	    },
-	    {
-		xtype: 'pvetextfield',
-		deleteEmpty: !me.create,
-		fieldLabel: gettext('IP address'),
-		vtype: 'IPAddress',
-		name: 'address'
-	    },
-	    {
-		xtype: 'pvetextfield',
-		deleteEmpty: !me.create,
-		fieldLabel: gettext('Subnet mask'),
-		vtype: 'IPAddress',
-		name: 'netmask',
-		validator: function(value) {
-		    /*jslint confusion: true */
-		    if (!me.items) {
-			return true;
-		    }
-		    var address = me.down('field[name=address]').getValue();
-		    if (value !== '') {
-			if (address === '') {
-			    return "Subnet mask requires option 'IP address'";
-			}
-		    } else {
-			if (address !== '') {
-			    return "Option 'IP address' requires a subnet mask";
-			}
-		    }
-		    
-		    return true;
-		}
-	    },
-	    {
-		xtype: 'pvetextfield',
-		deleteEmpty: !me.create,
-		fieldLabel: gettext('Gateway'),
-		vtype: 'IPAddress',
-		name: 'gateway'
 	    }
 	];
+
+	if (me.iftype === 'OVSPort') {
+	    // nothing to edit
+	} else if (me.iftype === 'OVSBond') {
+	    column1.push([
+		{
+		    xtype: 'textfield',
+		    fieldLabel: gettext('Slaves'),
+		    name: 'ovs_bonds'
+		},
+		{
+		    xtype: 'bondModeSelector',
+		    fieldLabel: gettext('Mode'),
+		    name: 'bond_mode',
+		    openvswitch: true,
+		    value: me.create ? 'active-backup' : undefined,
+		    allowBlank: false
+		}
+	    ]);
+	} else {
+
+	    column1.push([
+		{
+		    xtype: 'pvetextfield',
+		    deleteEmpty: !me.create,
+		    fieldLabel: gettext('IP address'),
+		    vtype: 'IPAddress',
+		    name: 'address'
+		},
+		{
+		    xtype: 'pvetextfield',
+		    deleteEmpty: !me.create,
+		    fieldLabel: gettext('Subnet mask'),
+		    vtype: 'IPAddress',
+		    name: 'netmask',
+		    validator: function(value) {
+			/*jslint confusion: true */
+			if (!me.items) {
+			    return true;
+			}
+			var address = me.down('field[name=address]').getValue();
+			if (value !== '') {
+			    if (address === '') {
+				return "Subnet mask requires option 'IP address'";
+			    }
+			} else {
+			    if (address !== '') {
+				return "Option 'IP address' requires a subnet mask";
+			    }
+			}
+		    
+			return true;
+		    }
+		},
+		{
+		    xtype: 'pvetextfield',
+		    deleteEmpty: !me.create,
+		    fieldLabel: gettext('Gateway'),
+		    vtype: 'IPAddress',
+		    name: 'gateway'
+		}
+	    ]);
+	}
 
 	Ext.applyIf(me, {
 	    url: url,

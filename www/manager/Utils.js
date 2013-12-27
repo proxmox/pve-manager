@@ -77,6 +77,12 @@ Ext.apply(Ext.form.field.VTypes, {
     },
     BondNameText: gettext('Format') + ': bond<b>N</b>, where 0 <= <b>N</b> <= 9999',
 
+    InterfaceName: function(v) {
+        return (/^[a-z][a-z0-9_]{1,20}$/).test(v);
+    },
+    InterfaceNameText: gettext('Format') + ': [a-z][a-z0-9_]{1,20}',
+
+
     QemuStartDate: function(v) {
 	return (/^(now|\d{4}-\d{1,2}-\d{1,2}(T\d{1,2}:\d{1,2}:\d{1,2})?)$/).test(v);
     },
@@ -158,6 +164,21 @@ Ext.define('PVE.Utils', { statics: {
 	    return text + ' (' + value + ')';
 	}
 	return value;
+    },
+
+    network_iface_types: {
+	eth: gettext("Network Device"),
+	bridge: 'Linux Bridge',
+	bond: 'Linux Bond',
+	OVSBridge: 'OVS Bridge',
+	OVSBond: 'OVS Bond',
+	OVSPort: 'OVS Port',
+	OVSIntPort: 'OVS IntPort'
+    },
+
+    render_network_iface_type: function(value) {
+	return PVE.Utils.network_iface_types[value] || 
+	    PVE.Utils.unknownText;
     },
 
     render_scsihw: function(value) {

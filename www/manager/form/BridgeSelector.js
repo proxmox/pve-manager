@@ -2,6 +2,8 @@ Ext.define('PVE.form.BridgeSelector', {
     extend: 'PVE.form.ComboGrid',
     alias: ['widget.PVE.form.BridgeSelector'],
 
+    bridgeType: 'bridge', // or OVSBridge
+
     setNodename: function(nodename) {
 	var me = this;
 
@@ -13,7 +15,8 @@ Ext.define('PVE.form.BridgeSelector', {
 
 	me.store.setProxy({
 	    type: 'pve',
-	    url: '/api2/json/nodes/' + me.nodename + '/network?type=bridge'
+	    url: '/api2/json/nodes/' + me.nodename + '/network?type=' +
+		me.bridgeType
 	});
 
 	me.store.load();
