@@ -9,9 +9,10 @@ Ext.define('PVE.form.BondModeSelector', {
 
 	if (me.openvswitch) {
            me.data = [ 
-	       ['balance-tcp', 'balance-tcp'],
+	       ['active-backup', 'active-backup'],
 	       ['balance-slb', 'balance-slb'],
-	       ['active-backup', 'active-backup'] 
+	       ['lacp-balance-slb', 'LACP (balance-slb)'],
+	       ['lacp-balance-tcp', 'LACP (balance-tcp)']
 	   ];
 	} else {
             me.data = [ 
@@ -19,7 +20,7 @@ Ext.define('PVE.form.BondModeSelector', {
 		['active-backup', 'active-backup'], 
 		['balance-xor', 'balance-xor'], 
 		['broadcast', 'broadcast'], 
-		['802.3ad', '802.3ad'], 
+		['802.3ad', 'LACP (layer2)'], 
 		['balance-tlb', 'balance-tlb'], 
 		['balance-alb', 'balance-alb']
 	    ];

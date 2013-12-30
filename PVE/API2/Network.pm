@@ -20,14 +20,15 @@ my $iflockfn = "/etc/network/.pve-interfaces.lock";
 
 my $bond_mode_enum = [
     'balance-rr',
-    'active-backup',
+    'active-backup', # OVS and Linux
     'balance-xor',
     'broadcast',
     '802.3ad',
     'balance-tlb',
     'balance-alb',
-    'balance-slb', # OVS only
-    'balance-tcp', # OVS only
+    'balance-slb', # OVS 
+    'lacp-balance-slb', # OVS
+    'lacp-balance-tcp', # OVS
     ];
 
 my $network_type_enum = ['bridge', 'bond', 'eth', 'alias', 
