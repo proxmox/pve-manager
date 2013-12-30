@@ -2,11 +2,10 @@ Ext.define('PVE.CephCreatePool', {
     extend: 'PVE.window.Edit',
     alias: ['widget.pveCephCreatePool'],
 
-    create: true,
- 
     subject: 'Ceph Pool',
  
      initComponent : function() {
+	 /*jslint confusion: true */
         var me = this;
 
 	if (!me.nodename) {
@@ -14,6 +13,7 @@ Ext.define('PVE.CephCreatePool', {
 	}
 
         Ext.applyIf(me, {
+	    create: true,
 	    url: "/nodes/" + me.nodename + "/ceph/pools",
             method: 'POST',
             items: [
@@ -50,7 +50,7 @@ Ext.define('PVE.CephCreatePool', {
 
 Ext.define('PVE.node.CephPoolList', {
     extend: 'Ext.grid.GridPanel',
-    alias: 'widget.pveNodeCephPoolList',
+    alias: ['widget.pveNodeCephPoolList'],
 
     initComponent: function() {
         var me = this;
@@ -176,9 +176,10 @@ Ext.define('PVE.node.CephPoolList', {
 
 Ext.define('PVE.node.CephOsdTree', {
     extend: 'Ext.tree.Panel',
-    alias: 'widget.pveNodeCephOsdTree',
+    alias: ['widget.pveNodeCephOsdTree'],
 
     initComponent: function() {
+	 /*jslint confusion: true */
         var me = this;
 
 	var nodename = me.pveSelNode.data.node;
@@ -202,7 +203,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		}
 	    });
-	}
+	};
 
 	var start_btn = new Ext.Button({
 	    text: gettext('Start'),
@@ -339,10 +340,11 @@ Ext.define('PVE.node.CephOsdTree', {
 
 Ext.define('PVE.node.CephDiskList', {
     extend: 'Ext.grid.GridPanel',
-    alias: 'widget.pveNodeCephDiskList',
+    alias: ['widget.pveNodeCephDiskList'],
 
 
     initComponent: function() {
+	 /*jslint confusion: true */
         var me = this;
 
 	var nodename = me.pveSelNode.data.node;
@@ -458,8 +460,6 @@ Ext.define('PVE.CephCreateMon', {
     extend: 'PVE.window.Edit',
     alias: ['widget.pveCephCreateMon'],
 
-    create: true,
- 
     subject: 'Ceph Monitor',
  
     setNode: function(nodename) {
@@ -470,6 +470,7 @@ Ext.define('PVE.CephCreateMon', {
     },
 
     initComponent : function() {
+	 /*jslint confusion: true */
         var me = this;
 
 	if (!me.nodename) {
@@ -479,6 +480,7 @@ Ext.define('PVE.CephCreateMon', {
 	me.setNode(me.nodename);
 
         Ext.applyIf(me, {
+	    create: true,
             method: 'POST',
             items: [
                {
@@ -502,8 +504,7 @@ Ext.define('PVE.CephCreateMon', {
 
 Ext.define('PVE.node.CephMonList', {
     extend: 'Ext.grid.GridPanel',
-    alias: 'widget.pveNodeCephMonList',
-
+    alias: ['widget.pveNodeCephMonList'],
 
     initComponent: function() {
         var me = this;
@@ -614,7 +615,7 @@ Ext.define('PVE.node.CephMonList', {
 		    width: 100,
 		    sortable: true,
 		    renderer: function(v) {
-			return v ? v : 'unknown';
+			return v || 'unknown';
 		    },
 		    dataIndex: 'host'
 		},
@@ -652,7 +653,7 @@ Ext.define('PVE.node.CephMonList', {
 
 Ext.define('PVE.node.CephConfig', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.pveNodeCephConfig',
+    alias: ['widget.pveNodeCephConfig'],
 
     load: function() {
 	var me = this;
@@ -698,7 +699,7 @@ Ext.define('PVE.node.CephConfig', {
 
 Ext.define('PVE.node.CephCrushMap', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.pveNodeCephCrushMap',
+    alias: ['widget.pveNodeCephCrushMap'],
 
     load: function() {
 	var me = this;
@@ -744,9 +745,10 @@ Ext.define('PVE.node.CephCrushMap', {
 
 Ext.define('PVE.node.CephStatus', {
     extend: 'PVE.grid.ObjectGrid',
-    alias: 'widget.pveNodeCephStatus',
+    alias: ['widget.pveNodeCephStatus'],
 
     initComponent: function() {
+	 /*jslint confusion: true */
         var me = this;
 
 	var nodename = me.pveSelNode.data.node;
@@ -865,7 +867,7 @@ Ext.define('PVE.node.CephStatus', {
 
 	me.callParent();
 
- 	me.on('show', me.rstore.startUpdate);
+	me.on('show', me.rstore.startUpdate);
 	me.on('hide', me.rstore.stopUpdate);
 	me.on('destroy', me.rstore.stopUpdate);	
     }
@@ -873,9 +875,10 @@ Ext.define('PVE.node.CephStatus', {
 
 Ext.define('PVE.node.Ceph', {
     extend: 'Ext.tab.Panel',
-    alias: 'widget.pveNodeCeph',
+    alias: ['widget.pveNodeCeph'],
 
     getHState: function(itemId) {
+	 /*jslint confusion: true */
         var me = this;
 	
 	if (!itemId) {
