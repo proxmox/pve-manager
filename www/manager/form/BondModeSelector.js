@@ -20,7 +20,7 @@ Ext.define('PVE.form.BondModeSelector', {
 		['active-backup', 'active-backup'], 
 		['balance-xor', 'balance-xor'], 
 		['broadcast', 'broadcast'], 
-		['802.3ad', 'LACP (layer2)'], 
+		['802.3ad', 'LACP (802.3ad)'], 
 		['balance-tlb', 'balance-tlb'], 
 		['balance-alb', 'balance-alb']
 	    ];
@@ -29,3 +29,20 @@ Ext.define('PVE.form.BondModeSelector', {
 	me.callParent();
     }
 });
+
+Ext.define('PVE.form.BondPolicySelector', {
+    extend: 'PVE.form.KVComboBox',
+    alias: ['widget.bondPolicySelector'],
+
+    initComponent: function() {
+	var me = this;
+        me.data = [
+	    ['layer2', 'layer2'],
+	    ['layer2+3', 'layer2+3'], 
+	    ['layer3+4', 'layer3+4']
+	];
+ 
+	me.callParent();
+    }
+});
+

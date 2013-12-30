@@ -81,6 +81,12 @@ my $confdesc = {
 	optional => 1,
 	type => 'string', enum => $bond_mode_enum,
     },
+    bond_xmit_hash_policy => {
+	description => "Selects the transmit hash policy to use for slave selection in balance-xor and 802.3ad modes.",
+	optional => 1,
+	type => 'string', 
+	enum => ['layer2', 'layer2+3', 'layer3+4' ],
+    },
     gateway => {
 	description => 'Default gateway address.',
 	type => 'string', format => 'ipv4',

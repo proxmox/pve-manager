@@ -90,13 +90,35 @@ Ext.define('PVE.node.NetworkEdit', {
 		fieldLabel: gettext('Slaves'),
 		name: 'slaves'
 	    });
+
+	    var policySelector = Ext.createWidget('bondPolicySelector', {
+		fieldLabel: gettext('Hash policy'),
+		name: 'bond_xmit_hash_policy',
+		deleteEmpty: !me.create,
+		disabled: true
+	    });
+
 	    column2.push({
 		xtype: 'bondModeSelector',
 		fieldLabel: gettext('Mode'),
 		name: 'bond_mode',
 		value: me.create ? 'balance-rr' : undefined,
+		listeners: {
+		    change: function(f, value) {
+			if (value === 'balance-xor' ||
+			    value === '802.3ad') {
+			    policySelector.setDisabled(false);
+			} else {
+			    policySelector.setDisabled(true);
+			    policySelector.setValue('');
+			}
+		    }
+		},
 		allowBlank: false
 	    });
+
+	    column2.push(policySelector);
+
 	} else if (me.iftype === 'OVSBond') {
 	    column2.push({
 		xtype: me.create ? 'PVE.form.BridgeSelector' : 'displayfield',
