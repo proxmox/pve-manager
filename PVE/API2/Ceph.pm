@@ -1159,7 +1159,7 @@ __PACKAGE__->register_method ({
 			 '--', $param->{dev}]);
 	};
 
-	return $rpcenv->fork_worker('cephcreateods', $param->{dev},  $authuser, $worker);
+	return $rpcenv->fork_worker('cephcreateosd', $param->{dev},  $authuser, $worker);
     }});
 
 __PACKAGE__->register_method ({
@@ -1211,18 +1211,18 @@ __PACKAGE__->register_method ({
 
 	die "osd is still runnung (up == 1)\n" if $osdstat->{up};
 
-	my $osdsection = "osd.$osdid";	
+	my $osdsection = "osd.$osdid";
 
 	my $worker = sub {
 	    my $upid = shift;
 
-	    print "destroy OSD $param->{osdid}\n";
+	    print "destroy OSD $osdsection\n";
 
 	    eval { &$ceph_service_cmd('stop', $osdsection); };
 	    warn $@ if $@;
 
 	    print "Remove $osdsection from the CRUSH map\n";
-	    &$run_ceph_cmd(['osd', 'crush', 'remove', $osdid]);
+	    &$run_ceph_cmd(['osd', 'crush', 'remove', $osdsection]);
 
 	    print "Remove the $osdsection authentication key.\n";
 	    &$run_ceph_cmd(['auth', 'del', $osdsection]);
@@ -1231,7 +1231,7 @@ __PACKAGE__->register_method ({
 	    &$run_ceph_cmd(['osd', 'rm', $osdid]);
 	};
 
-	return $rpcenv->fork_worker('cephdestroyods', $osdsection,  $authuser, $worker);
+	return $rpcenv->fork_worker('cephdestroyosd', $osdsection,  $authuser, $worker);
     }});
 
 __PACKAGE__->register_method ({
