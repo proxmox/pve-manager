@@ -142,9 +142,7 @@ Ext.define('PVE.node.NetworkEdit', {
 	    }
 	];
 
-	if (me.iftype === 'OVSPort') {
-	    // nothing to edit
-	} else if (me.iftype === 'OVSBond') {
+	if (me.iftype === 'OVSBond') {
 	    column1.push([
 		{
 		    xtype: 'textfield',
