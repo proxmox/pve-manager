@@ -89,15 +89,10 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    },
 	    me.bridgesel,
 	    {
-		xtype: 'numberfield',
+		xtype: 'pveVlanField',
 		name: 'tag',
-		minValue: 1,
-		maxValue: 4094,
 		value: '',
-		emptyText: 'no VLAN',
-		fieldLabel: gettext('VLAN Tag'),
-		labelAlign: 'right',
-		allowBlank: true
+		labelAlign: 'right'
 	    },
 	    {
 		xtype: 'radiofield',

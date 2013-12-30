@@ -2,7 +2,7 @@ Ext.define('PVE.form.BridgeSelector', {
     extend: 'PVE.form.ComboGrid',
     alias: ['widget.PVE.form.BridgeSelector'],
 
-    bridgeType: 'bridge', // or OVSBridge
+    bridgeType: 'any_bridge', // bridge, OVSBridge or any_bridge
 
     setNodename: function(nodename) {
 	var me = this;

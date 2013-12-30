@@ -19,6 +19,7 @@ JSSRC= 				                 	\
 	data/DiffStore.js				\
 	data/ObjectStore.js				\
 	data/ResourceStore.js				\
+	form/VLanField.js				\
 	form/Checkbox.js				\
 	form/TextField.js				\
 	form/RRDTypeSelector.js				\

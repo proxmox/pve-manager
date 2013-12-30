@@ -55,6 +55,13 @@ my $confdesc = {
 	optional => 1,
 	type => 'string', format => 'pve-iface-list',
     },
+    ovs_tag => {
+	description => "Specify a VLan tag (used by OVSPort, OVSIntPort, OVSBond)",
+	optional => 1,
+	type => 'integer',
+	minimum => 1,
+	maximum => 4094,
+    },
     ovs_options => {
 	description => "OVS interface options.",
 	optional => 1,
@@ -130,7 +137,7 @@ __PACKAGE__->register_method({
 	    type => {
 		description => "Only list specific interface types.",
 		type => 'string',
-		enum => $network_type_enum,
+		enum => [ @$network_type_enum, 'any_bridge' ],
 		optional => 1,
 	    },
 	},
@@ -158,7 +165,11 @@ __PACKAGE__->register_method({
 
 	if ($param->{type}) {
 	    foreach my $k (keys %$config) {
-		delete $config->{$k} if $param->{type} ne $config->{$k}->{type};
+		my $type = $config->{$k}->{type};
+		my $match =  ($param->{type} eq $type) || (
+		    ($param->{type} eq 'any_bridge') && 
+		    ($type eq 'bridge' || $type eq 'OVSBridge'));
+		delete $config->{$k} if !$match;
 	    }
 	}
 

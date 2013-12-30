@@ -80,6 +80,12 @@ Ext.define('PVE.node.NetworkEdit', {
 		name: 'ovs_bridge'
 	    });
 	    column2.push({
+		xtype: 'pveVlanField',
+		deleteEmpty: !me.create,
+		name: 'ovs_tag',
+		value: ''
+	    });
+	    column2.push({
 		xtype: 'textfield',
 		fieldLabel: gettext('OVS options'),
 		name: 'ovs_options'
@@ -130,6 +136,12 @@ Ext.define('PVE.node.NetworkEdit', {
 		name: 'ovs_bridge'
 	    });
 	    column2.push({
+		xtype: 'pveVlanField',
+		deleteEmpty: !me.create,
+		name: 'ovs_tag',
+		value: ''
+	    });
+	    column2.push({
 		xtype: 'textfield',
 		fieldLabel: gettext('OVS options'),
 		name: 'ovs_options'
@@ -167,17 +179,17 @@ Ext.define('PVE.node.NetworkEdit', {
 	if (me.iftype === 'OVSBond') {
 	    column1.push([
 		{
-		    xtype: 'textfield',
-		    fieldLabel: gettext('Slaves'),
-		    name: 'ovs_bonds'
-		},
-		{
 		    xtype: 'bondModeSelector',
 		    fieldLabel: gettext('Mode'),
 		    name: 'bond_mode',
 		    openvswitch: true,
 		    value: me.create ? 'active-backup' : undefined,
 		    allowBlank: false
+		},
+		{
+		    xtype: 'textfield',
+		    fieldLabel: gettext('Slaves'),
+		    name: 'ovs_bonds'
 		}
 	    ]);
 	} else {
