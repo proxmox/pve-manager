@@ -1179,7 +1179,7 @@ __PACKAGE__->register_method ({
 			 '--', $param->{dev}]);
 	};
 
-	return $rpcenv->fork_worker('cephcreateosd', $param->{dev},  $authuser, $worker);
+	return $rpcenv->fork_worker('cephcreateosd', $devname,  $authuser, $worker);
     }});
 
 __PACKAGE__->register_method ({
