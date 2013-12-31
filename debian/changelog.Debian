@@ -1,3 +1,15 @@
+pve-manager (3.1-32) unstable; urgency=low
+
+  * add mtu support for manual interfaces
+  
+  * pveceph: allow to set min_size for pools, fix osd remove
+
+  * improve OVS GUI
+  
+  * add support to change bond_xmit_hash_policy on linux bond devices
+  
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 31 Dec 2013 10:17:52 +0100
+
 pve-manager (3.1-31) unstable; urgency=low
 
   * add OpenVSwitch GUI
