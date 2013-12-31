@@ -1123,7 +1123,14 @@ __PACKAGE__->register_method ({
 	    dev => {
 		description => "Block device name.",
 		type => 'string',
-	    }
+	    },
+	    fstype => {
+		description => "File system type.",
+		type => 'string',
+		enum => ['xfs', 'ext4', 'btrfs'],
+		default => 'xfs',
+		optional => 1,
+	    },
 	},
     },
     returns => { type => 'string' },
@@ -1163,9 +1170,11 @@ __PACKAGE__->register_method ({
 	my $worker = sub {
 	    my $upid = shift;
 
-	    print "create OSD on $param->{dev}\n";
+	    my $fstype = $param->{fstype} || 'xfs';
 
-	    run_command(['ceph-disk', 'prepare', '--zap-disk', '--fs-type', 'xfs',
+	    print "create OSD on $param->{dev} ($fstype)\n";
+
+	    run_command(['ceph-disk', 'prepare', '--zap-disk', '--fs-type', $fstype,
 			 '--cluster', $ccname, '--cluster-uuid', $fsid,
 			 '--', $param->{dev}]);
 	};
