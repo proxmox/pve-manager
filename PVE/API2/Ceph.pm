@@ -965,6 +965,14 @@ __PACKAGE__->register_method ({
 		minimum => 1,
 		maximum => 3,
 	    },
+	    min_size => {
+		description => 'Minimum number of replicas per object',
+		type => 'integer',
+		default => 1,
+		optional => 1,
+		minimum => 1,
+		maximum => 3,
+	    },
 	    pg_num => {
 		description => "Number of placement groups.",
 		type => 'integer',
@@ -986,8 +994,11 @@ __PACKAGE__->register_method ({
 
 	my $pg_num = $param->{pg_num} || 512;
 	my $size = $param->{size} || 2;
+	my $min_size = $param->{min_size} || 1;
 
 	&$run_ceph_cmd(['osd', 'pool', 'create', $param->{name}, $pg_num]);
+
+	&$run_ceph_cmd(['osd', 'pool', 'set', $param->{name}, 'min_size', $min_size]);
 
 	&$run_ceph_cmd(['osd', 'pool', 'set', $param->{name}, 'size', $size]);
 
