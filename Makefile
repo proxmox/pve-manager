@@ -79,7 +79,7 @@ aplupload:
 	scp aplinfo/aplinfo.dat aplinfo.dat.gz aplinfo/aplinfo.dat.asc download1.proxmox.com:/home/ftp/appliances/
 
 .PHONY: install
-install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl pve-apt.conf pve-repo-ca-certificates.crt
+install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl pve-apt.conf pve-repo-ca-certificates.crt mtu
 	install -d -m 0700 -o www-data -g www-data ${DESTDIR}/var/log/pveproxy
 	install -D -m 0644 debian/pve.logrotate ${DESTDIR}/etc/logrotate.d/pve
 	install -d ${DESTDIR}/usr/share/${PACKAGE}
@@ -95,6 +95,7 @@ install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl pve-apt.conf p
 	install -D -m 0644 pve-repo-ca-certificates.crt ${DESTDIR}/etc/apt/pve-repo-ca-certificates.crt
 	install -D -m 0644 vzdump.conf ${DESTDIR}/etc/vzdump.conf
 	install -D -m 0755 vznet.conf ${DESTDIR}/etc/vz/vznet.conf
+	install -D -m 0755 mtu ${DESTDIR}/etc/network/if-up.d/mtu
 	install -m 0644 vzdump-hook-script.pl ${DOCDIR}/examples/vzdump-hook-script.pl
 	install -m 0644 copyright ${DOCDIR}
 	install -m 0644 debian/changelog.Debian ${DOCDIR}

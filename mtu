@@ -1,0 +1,16 @@
+#!/bin/sh
+
+case "$IFACE" in
+  # Ignore any alias (#272891) which uses <interface>:<alabel>
+  *:*)
+    exit 0
+  ;;
+esac
+
+if [ "$METHOD" != manual ]; then
+        exit 0
+fi
+
+if [ -n "$IF_MTU" ]; then
+    ip link set $IFACE mtu $IF_MTU
+fi
