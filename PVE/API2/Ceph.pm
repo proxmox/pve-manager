@@ -1249,6 +1249,12 @@ __PACKAGE__->register_method ({
 
 	    print "Remove OSD $osdsection\n";
 	    &$run_ceph_cmd(['osd', 'rm', $osdid]);
+
+	    # try to unmount fro standard mount point
+	    my $mountpoint = "/var/lib/ceph/osd/ceph-$osdid";
+	    print "Unmount OSD $osdsection from  $mountpoint\n";
+	    eval { run_command(['umount', $mountpoint]); };
+	    warn $@ if $@;
 	};
 
 	return $rpcenv->fork_worker('cephdestroyosd', $osdsection,  $authuser, $worker);
