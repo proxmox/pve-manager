@@ -976,7 +976,7 @@ __PACKAGE__->register_method ({
 	    pg_num => {
 		description => "Number of placement groups.",
 		type => 'integer',
-		default => 512,
+		default => 64,
 		optional => 1,
 		minimum => 8,
 		maximum => 32768,
@@ -992,7 +992,7 @@ __PACKAGE__->register_method ({
 	die "not fully configured - missing '$pve_ckeyring_path'\n" 
 	    if ! -f $pve_ckeyring_path;
 
-	my $pg_num = $param->{pg_num} || 512;
+	my $pg_num = $param->{pg_num} || 64;
 	my $size = $param->{size} || 2;
 	my $min_size = $param->{min_size} || 1;
 
