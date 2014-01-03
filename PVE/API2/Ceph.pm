@@ -1273,8 +1273,26 @@ __PACKAGE__->register_method ({
 
 	&$check_ceph_inited();
 
-	my $txt = &$run_ceph_cmd_text(['osd', 'crush', 'dump'], quiet => 1);
+	# this produces JSON (difficult to read for the user)
+	# my $txt = &$run_ceph_cmd_text(['osd', 'crush', 'dump'], quiet => 1);
 
+	my $txt = '';
+
+	my $mapfile = "/var/tmp/ceph-crush.map.$$";
+	my $mapdata = "/var/tmp/ceph-crush.txt.$$";
+
+	eval {
+	    &$run_ceph_cmd(['osd', 'getcrushmap', '-o', $mapfile]);
+	    run_command(['crushtool', '-d', $mapfile, '-o', $mapdata]);
+	    $txt = PVE::Tools::file_get_contents($mapdata);
+	};
+	my $err = $@;
+
+	unlink $mapfile;
+	unlink $mapdata;
+
+	die $err if $err;
+       
 	return $txt;
     }});
 
