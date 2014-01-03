@@ -43,6 +43,15 @@ Ext.define('PVE.CephCreatePool', {
 		},
 		{
 		    xtype: 'numberfield',
+		    fieldLabel: gettext('Crush RuleSet'),
+		    name: 'crush_ruleset',
+		    value: 0,
+		    minValue: 0,
+		    maxValue: 32768,
+		    allowBlank: false
+		},
+		{
+		    xtype: 'numberfield',
 		    fieldLabel: 'pg_num',
 		    name: 'pg_num',
 		    value: 64,

@@ -980,7 +980,15 @@ __PACKAGE__->register_method ({
 		optional => 1,
 		minimum => 8,
 		maximum => 32768,
-	    },	    
+	    },
+	    crush_ruleset => {
+		description => "The ruleset to use for mapping object placement in the cluster.",
+		type => 'integer',
+		minimum => 0,
+		maximum => 32768,
+		default => 0,
+		optional => 1,
+	    },
 	},
     },
     returns => { type => 'null' },
@@ -1001,6 +1009,10 @@ __PACKAGE__->register_method ({
 	&$run_ceph_cmd(['osd', 'pool', 'set', $param->{name}, 'min_size', $min_size]);
 
 	&$run_ceph_cmd(['osd', 'pool', 'set', $param->{name}, 'size', $size]);
+
+	if (defined($param->{crush_ruleset})) {
+	    &$run_ceph_cmd(['osd', 'pool', 'set', $param->{name}, 'crush_ruleset', $param->{crush_ruleset}]);
+	}
 
 	return undef;
     }});

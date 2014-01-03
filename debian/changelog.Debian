@@ -3,6 +3,10 @@ pve-manager (3.1-33) unstable; urgency=low
   * ceph: return decompiled crush map in text format
   
   * ceph: try to unmount OSD after removal
+  
+  * ceph: only use 64 PGs by default
+  
+  * ceph: allow to specify crush ruleset on pool creation
 
  -- Proxmox Support Team <support@proxmox.com>  Fri, 03 Jan 2014 10:58:49 +0100
 
