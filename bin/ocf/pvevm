@@ -115,8 +115,20 @@ sub validate_all {
 	die "no VMID specified\n" if !defined($vmid);
 	die "got invalid VMID '$vmid'\n" if $vmid !~ m/^[1-9]\d*$/;
 
-	my $vmlist = PVE::Cluster::get_vmlist();
+	my $vmlist;
+        for (my $i = 0; $i < 10; $i++) {
+	    $vmlist = PVE::Cluster::get_vmlist();
+	    if (!$vmlist || !$vmlist->{ids}) {
+		warn "got empty cluster VM list - try again in 2 seconds\n";
+		sleep(2);
+		PVE::Cluster::cfs_update();
+	    } else {
+		last;
+	    }
+	}
+
 	die "got empty cluster VM list\n" if !$vmlist || !$vmlist->{ids};
+ 
 	my $data = $vmlist->{ids}->{$vmid};
 	die "VM $vmid does not exist\n" if !$data;
 
