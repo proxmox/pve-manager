@@ -38,6 +38,8 @@ my $ceph_bootstrap_mds_keyring = "/var/lib/ceph/bootstrap-mds/$ccname.keyring";
 
 my $ceph_bin = "/usr/bin/ceph";
 
+my $pve_osd_default_journal_size = 1024*5;
+
 sub purge_all_ceph_files {
     # fixme: this is very dangerous - should we really support this function?
 
@@ -222,7 +224,6 @@ my $ceph_service_cmd = sub {
     run_command(['service', 'ceph', '-c', $pve_ceph_cfgpath, @_]);
 };
 
-
 sub list_disks {
     my $disklist = {};
     
@@ -260,6 +261,15 @@ sub list_disks {
 	return 1;
     };
 
+    my $journal_uuid = '45b0969e-9b03-4f30-b4c6-b4b80ceff106';
+
+    my $journalhash = {};
+    dir_glob_foreach('/dev/disk/by-parttypeuuid', "$journal_uuid\..+", sub {
+	my ($entry) = @_;
+	my $real_dev = abs_path("/dev/disk/by-parttypeuuid/$entry");
+	$journalhash->{$real_dev} = 1;
+    });
+
     dir_glob_foreach('/sys/block', '.*', sub {
 	my ($dev) = @_;
 
@@ -292,41 +302,89 @@ sub list_disks {
 	    $serial = $1;
 	}
 
+	my $gpt = 0;
+	if ($info =~ m/^E: ID_PART_TABLE_TYPE=gpt$/m) {
+	    $gpt = 1;
+	}
+
+	# detect SSD (fixme - currently only works for ATA disks)
+	my $rpm = 7200; # default guess
+	if ($info =~ m/^E: ID_ATA_ROTATION_RATE_RPM=(\d+)$/m) {
+	    $rpm = $1;
+	}
+
 	my $vendor = file_read_firstline("$devdir/vendor") || 'unknown';
 	my $model = file_read_firstline("$devdir/model") || 'unknown';
 
-	my $used = &$dir_is_epmty("/sys/block/$dev/holders") ? 0 : 1;
+	my $used;
 
-	$used = 1 if &$dev_is_mounted("/dev/$dev");
+	$used = 'LVM' if !&$dir_is_epmty("/sys/block/$dev/holders");
+
+	$used = 'mounted' if &$dev_is_mounted("/dev/$dev");
 
 	$disklist->{$dev} = { 
 	    vendor => $vendor, 
 	    model => $model, 
 	    size => $size,
 	    serial => $serial,
+	    gpt => $gpt,
+	    rmp => $rpm,
 	}; 
 
 	my $osdid = -1;
 
+	my $journal_count = 0;
+
 	dir_glob_foreach("/sys/block/$dev", "$dev.+", sub {
 	    my ($part) = @_;
-	    if (!&$dir_is_epmty("/sys/block/$dev/$part/holders"))  {
-		$used = 1;
-	    }
 	    if (my $mp = &$dev_is_mounted("/dev/$part")) {
-		$used = 1;
+		$used = 'mounted' if !$used;
 		if ($mp =~ m|^/var/lib/ceph/osd/ceph-(\d+)$|) {
 		    $osdid = $1;
 		} 
-	    }		     
+	    }
+	    if (!&$dir_is_epmty("/sys/block/$dev/$part/holders"))  {
+		$used = 'LVM' if !$used;
+	    }
+	    $used = 'partitions' if !$used;
+
+	    $journal_count++ if $journalhash->{"/dev/$part"};
 	});
 
-	$disklist->{$dev}->{used} = $used;
+	$disklist->{$dev}->{used} = $used if $used;
 	$disklist->{$dev}->{osdid} = $osdid;
-   });
+	$disklist->{$dev}->{journals} = $journal_count;
+    });
 
     return $disklist;
 }
+
+my $lookup_diskinfo = sub {
+    my ($disklist, $disk) = @_;
+
+    my $real_dev = abs_path($disk);
+    $real_dev =~ s|/dev/||;
+    my $diskinfo = $disklist->{$real_dev};
+    
+    die "disk '$disk' not found in disk list\n" if !$diskinfo;
+
+    return wantarray ? ($diskinfo, $real_dev) : $diskinfo;
+};
+
+ 
+my $count_journal_disks = sub {
+    my ($disklist, $disk) = @_;
+
+    my $count = 0;
+
+    my ($diskinfo, $real_dev) = &$lookup_diskinfo($disklist, $disk);
+    die "journal disk '$disk' does not contain a GUID partition table\n" 
+	if !$diskinfo->{gpt};
+
+    $count = $diskinfo->{journals} if $diskinfo->{journals};
+
+    return $count;
+};
 
 __PACKAGE__->register_method ({
     name => 'index',
@@ -379,6 +437,12 @@ __PACKAGE__->register_method ({
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
+	    type => {
+		description => "Only list specific types of disks.",
+		type => 'string',
+		enum => ['unused', 'journal_disks'],
+		optional => 1,
+	    },
 	},
     },
     returns => {
@@ -387,7 +451,8 @@ __PACKAGE__->register_method ({
 	    type => "object",
 	    properties => {
 		dev => { type => 'string' },
-		used => { type => 'boolean' },
+		used => { type => 'string', optional => 1 },
+		gpt => { type => 'boolean' },
 		size => { type => 'integer' },
 		osdid => { type => 'integer' },
 		vendor =>  { type => 'string', optional => 1 },
@@ -402,9 +467,27 @@ __PACKAGE__->register_method ({
 
 	&$check_ceph_inited();
 
-	my $res = list_disks();
+	my $disks = list_disks();
 
-	return PVE::RESTHandler::hash_to_array($res, 'dev');
+	my $res = [];
+	foreach my $dev (keys %$disks) {
+	    my $d = $disks->{$dev};
+	    if ($param->{type}) {
+		if ($param->{type} eq 'journal_disks') {
+		    next if $d->{osdid} >= 0;
+		    next if !$d->{gpt};
+		} elsif ($param->{type} eq 'unused') {
+		    next if $d->{used};
+		} else {
+		    die "internal error"; # should not happen
+		}
+	    }
+
+	    $d->{dev} = "/dev/$dev";
+	    push @$res, $d; 
+	}
+
+	return $res;
     }});
 
 __PACKAGE__->register_method ({
@@ -552,7 +635,7 @@ __PACKAGE__->register_method ({
 		'auth service required' => 'cephx',
 		'auth client required' => 'cephx',
 		'filestore xattr use omap' => 'true',
-		'osd journal size' => '1024',
+		'osd journal size' => $pve_osd_default_journal_size,
 		'osd pool default min size' => 1,
 	    };
 
@@ -565,7 +648,7 @@ __PACKAGE__->register_method ({
 	$cfg->{osd}->{keyring} = '/var/lib/ceph/osd/ceph-$id/keyring';
 
 	$cfg->{global}->{'osd pool default size'} = $param->{size} if $param->{size};
-	
+
 	if ($param->{pg_bits}) {
 	    $cfg->{global}->{'osd pg bits'} = $param->{pg_bits};
 	    $cfg->{global}->{'osd pgp bits'} = $param->{pg_bits};
@@ -1136,6 +1219,11 @@ __PACKAGE__->register_method ({
 		description => "Block device name.",
 		type => 'string',
 	    },
+	    journal_dev => {
+		description => "Block device name for journal.",
+		optional => 1,
+		type => 'string',
+	    },
 	    fstype => {
 		description => "File system type.",
 		type => 'string',
@@ -1156,6 +1244,13 @@ __PACKAGE__->register_method ({
 	&$check_ceph_inited();
 
 	&$setup_pve_symlinks();
+
+	my $journal_dev;
+
+	if ($param->{journal_dev} && ($param->{journal_dev} ne $param->{dev})) {
+	    -b  $param->{journal_dev} || die "no such block device '$param->{journal_dev}'\n";
+	    $journal_dev = $param->{journal_dev};
+	}
 
 	-b  $param->{dev} || die "no such block device '$param->{dev}'\n";
 
@@ -1186,9 +1281,17 @@ __PACKAGE__->register_method ({
 
 	    print "create OSD on $param->{dev} ($fstype)\n";
 
-	    run_command(['ceph-disk', 'prepare', '--zap-disk', '--fs-type', $fstype,
-			 '--cluster', $ccname, '--cluster-uuid', $fsid,
-			 '--', $param->{dev}]);
+	    my $cmd = ['ceph-disk', 'prepare', '--zap-disk', '--fs-type', $fstype,
+		       '--cluster', $ccname, '--cluster-uuid', $fsid ];
+
+	    if ($journal_dev) {
+		print "using device '$journal_dev' for journal\n";
+		push @$cmd, '--journal-dev', $param->{dev}, $journal_dev;
+	    } else {
+		push @$cmd, $param->{dev};
+	    }
+	    
+	    run_command($cmd);
 	};
 
 	return $rpcenv->fork_worker('cephcreateosd', $devname,  $authuser, $worker);
@@ -1208,6 +1311,12 @@ __PACKAGE__->register_method ({
 	    osdid => {
 		description => 'OSD ID',
 		type => 'integer',
+	    },
+	    cleanup => {
+		description => "If set, we remove partition table entries.",
+		type => 'boolean',
+		optional => 1,
+		default => 0,
 	    },
 	},
     },
@@ -1262,11 +1371,57 @@ __PACKAGE__->register_method ({
 	    print "Remove OSD $osdsection\n";
 	    &$run_ceph_cmd(['osd', 'rm', $osdid]);
 
-	    # try to unmount fro standard mount point
+	    # try to unmount from standard mount point
 	    my $mountpoint = "/var/lib/ceph/osd/ceph-$osdid";
+
+	    my $remove_partition = sub {
+		my ($disklist, $part) = @_;
+
+		return if !$part || (! -b $part );
+		   
+		foreach my $real_dev (keys %$disklist) {
+		    my $diskinfo = $disklist->{$real_dev};
+		    next if !$diskinfo->{gpt};
+		    if ($part =~ m|^/dev/${real_dev}(\d+)$|) {
+			my $partnum = $1;
+			print "remove partition $part (disk '/dev/${real_dev}', partnum $partnum)\n";
+			eval { run_command(['/sbin/sgdisk', '-d', $partnum, "/dev/${real_dev}"]); };
+			warn $@ if $@;
+			last;
+		    }
+		}
+	    };
+
+	    my $journal_part;
+	    my $data_part;
+	    
+	    if ($param->{cleanup}) {
+		my $jpath = "$mountpoint/journal";
+		$journal_part = abs_path($jpath);
+
+		if (my $fd = IO::File->new("/proc/mounts", "r")) {
+		    while (defined(my $line = <$fd>)) {
+			my ($dev, $path, $fstype) = split(/\s+/, $line);
+			next if !($dev && $path && $fstype);
+			next if $dev !~ m|^/dev/|;
+			if ($path eq $mountpoint) {
+			    $data_part = abs_path($dev);
+			    last;
+			}
+		    }
+		    close($fd);
+		}
+	    }
+
 	    print "Unmount OSD $osdsection from  $mountpoint\n";
 	    eval { run_command(['umount', $mountpoint]); };
-	    warn $@ if $@;
+	    if (my $err = $@) {
+		warn $err;
+	    } elsif ($param->{cleanup}) {
+		my $disklist = list_disks();
+		&$remove_partition($disklist, $journal_part);
+		&$remove_partition($disklist, $data_part);
+	    }
 	};
 
 	return $rpcenv->fork_worker('cephdestroyosd', $osdsection,  $authuser, $worker);

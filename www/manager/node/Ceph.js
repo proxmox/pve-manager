@@ -191,6 +191,91 @@ Ext.define('PVE.node.CephPoolList', {
     });
 });
 
+Ext.define('PVE.CephCreateOsd', {
+    extend: 'PVE.window.Edit',
+    alias: ['widget.pveCephCreateOsd'],
+
+    subject: 'Ceph OSD',
+
+    initComponent : function() {
+	 /*jslint confusion: true */
+        var me = this;
+
+	if (!me.nodename) {
+	    throw "no node name specified";
+	}
+
+	me.create = true;
+  
+        Ext.applyIf(me, {
+	    url: "/nodes/" + me.nodename + "/ceph/osd",
+            method: 'POST',
+            items: [
+               {
+		   xtype: 'pveCephDiskSelector',
+		   name: 'dev',
+		   nodename: me.nodename,
+		   value: me.dev,
+		   diskType: 'unused',
+		   fieldLabel: gettext('Disk'),
+		   allowBlank: false
+	       },
+               {
+		   xtype: 'pveCephDiskSelector',
+		   name: 'journal_dev',
+		   nodename: me.nodename,
+		   diskType: 'journal_disks',
+		   fieldLabel: gettext('Journal Disk'),
+		   value: '',
+		   autoSelect: false,
+		   allowBlank: true,
+		   emptyText: 'use OSD disk'
+	       }
+            ]
+        });
+
+        me.callParent();
+    }
+});
+
+Ext.define('PVE.CephRemoveOsd', {
+    extend: 'PVE.window.Edit',
+    alias: ['widget.pveCephRemoveOsd'],
+
+    isRemove: true,
+
+    initComponent : function() {
+	 /*jslint confusion: true */
+        var me = this;
+
+	if (!me.nodename) {
+	    throw "no node name specified";
+	}
+	if (me.osdid === undefined || me.osdid < 0) {
+	    throw "no osdid specified";
+	}
+
+	me.create = true;
+
+	me.title = gettext('Remove') + ': ' + 'Ceph OSD osd.' + me.osdid;
+ 
+        Ext.applyIf(me, {
+	    url: "/nodes/" + me.nodename + "/ceph/osd/" + me.osdid,
+            method: 'DELETE',
+            items: [
+		{
+		    xtype: 'pvecheckbox',
+		    name: 'cleanup',
+		    checked: true,
+		    labelWidth: 130,
+		    fieldLabel: gettext('Remove Partitions')
+		}
+             ]
+        });
+
+        me.callParent();
+    }
+});
 
 Ext.define('PVE.node.CephOsdTree', {
     extend: 'Ext.tree.Panel',
@@ -243,14 +328,12 @@ Ext.define('PVE.node.CephOsdTree', {
 		if (!(rec && (rec.data.id >= 0) && rec.data.host)) {
 		    return;
 		}
-		PVE.Utils.API2Request({
-                    url: "/nodes/" + rec.data.host + "/ceph/osd/" + rec.data.id,
-		    waitMsgTarget: me,
-		    method: 'DELETE',
-		    failure: function(response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
+
+		var win = Ext.create('PVE.CephRemoveOsd', {
+                    nodename: rec.data.host,
+		    osdid: rec.data.id
 		});
+		win.show();
 	    }
 	});
 
@@ -360,7 +443,6 @@ Ext.define('PVE.node.CephDiskList', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveNodeCephDiskList'],
 
-
     initComponent: function() {
 	 /*jslint confusion: true */
         var me = this;
@@ -390,17 +472,17 @@ Ext.define('PVE.node.CephDiskList', {
 	    text: gettext('Create') + ': OSD',
 	    selModel: sm,
 	    disabled: true,
+	    enableFn: function(rec) {
+		return !rec.data.used;
+	    },
 	    handler: function() {
 		var rec = sm.getSelection()[0];
 		
-		PVE.Utils.API2Request({
-		    url: "/nodes/" + nodename + "/ceph/osd",
-		    method: 'POST',
-		    params: { dev: "/dev/" + rec.data.dev },
-		    failure: function(response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
+		var win = Ext.create('PVE.CephCreateOsd', {
+                    nodename: nodename,
+		    dev: rec.data.dev
 		});
+		win.show();
 	    }
 	});
 
@@ -424,7 +506,7 @@ Ext.define('PVE.node.CephDiskList', {
 			if (rec && (rec.data.osdid >= 0)) {
 			    return "osd." + rec.data.osdid;
 			}
-			return PVE.Utils.format_boolean(v);
+			return v || PVE.Utils.noText;
 		    },
 		    dataIndex: 'used'
 		},
@@ -474,6 +556,71 @@ Ext.define('PVE.node.CephDiskList', {
     });
 });
 
+Ext.define('PVE.form.CephDiskSelector', {
+    extend: 'PVE.form.ComboGrid',
+    alias: ['widget.pveCephDiskSelector'],
+
+    diskType: 'journal_disks',
+
+    initComponent: function() {
+	var me = this;
+
+	var nodename = me.nodename;
+	if (!nodename) {
+	    throw "no node name specified";
+	}
+
+	var store = Ext.create('Ext.data.Store', {
+	    filterOnLoad: true,
+	    model: 'ceph-disk-list',
+	    proxy: {
+                type: 'pve',
+                url: "/api2/json/nodes/" + nodename + "/ceph/disks",
+		extraParams: { type: me.diskType }
+	    },
+	    sorters: [
+		{
+		    property : 'dev',
+		    direction: 'ASC'
+		}
+	    ]
+	});
+
+	Ext.apply(me, {
+	    store: store,
+	    valueField: 'dev',
+	    displayField: 'dev',
+            listConfig: {
+		columns: [
+		    {
+			header: gettext('Device'),
+			width: 80,
+			sortable: true,
+			dataIndex: 'dev'
+		    },
+		    {
+			header: gettext('Size'),
+			width: 60,
+			sortable: false,
+			renderer: PVE.Utils.format_size,
+			dataIndex: 'size'
+		    },
+		    {
+			header: gettext('Serial'),
+			flex: 1,
+			sortable: true,
+			dataIndex: 'serial'
+		    }
+		]
+	    }
+	});
+
+        me.callParent();
+
+	store.load();
+    }
+});
+
 Ext.define('PVE.CephCreateMon', {
     extend: 'PVE.window.Edit',
     alias: ['widget.pveCephCreateMon'],
@@ -497,8 +644,9 @@ Ext.define('PVE.CephCreateMon', {
 
 	me.setNode(me.nodename);
 
+	me.create = true;
+
         Ext.applyIf(me, {
-	    create: true,
             method: 'POST',
             items: [
                {
