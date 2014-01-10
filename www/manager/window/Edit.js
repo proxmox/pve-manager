@@ -17,6 +17,9 @@ Ext.define('PVE.window.Edit', {
     // set to true if you want an Add button (instead of Create)
     isAdd: false,
 
+    // set to true if you want an Remove button (instead of Create)
+    isRemove: false,
+
     backgroundDelay: 0,
 
     isValid: function() {
@@ -88,8 +91,14 @@ Ext.define('PVE.window.Edit', {
 	    values.background_delay = me.backgroundDelay;
 	}
 
+	var url =  me.url;
+	if (me.method === 'DELETE') {
+	    url = url + "?" + Ext.Object.toQueryString(values);
+	    values = undefined;
+	}
+
 	PVE.Utils.API2Request({
-	    url: me.url,
+	    url: url,
 	    waitMsgTarget: me,
 	    method: me.method || (me.backgroundDelay ? 'POST' : 'PUT'),
 	    params: values,
@@ -183,7 +192,7 @@ Ext.define('PVE.window.Edit', {
 	var form = me.formPanel.getForm();
 
 	var submitBtn = Ext.create('Ext.Button', {
-	    text: me.create ? (me.isAdd ? gettext('Add') : gettext('Create')) : gettext('OK'),
+	    text: me.create ? (me.isAdd ? gettext('Add') : ( me.isRemove ? gettext('Remove') : gettext('Create'))) : gettext('OK'),
 	    disabled: !me.create,
 	    handler: function() {
 		me.submit();
