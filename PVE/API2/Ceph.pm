@@ -335,21 +335,29 @@ sub list_disks {
 
 	my $journal_count = 0;
 
+	my $found_partitions;
+	my $found_lvm;
+	my $found_mountpoints;
 	dir_glob_foreach("/sys/block/$dev", "$dev.+", sub {
 	    my ($part) = @_;
+
+	    $found_partitions = 1;
+
 	    if (my $mp = &$dev_is_mounted("/dev/$part")) {
-		$used = 'mounted' if !$used;
+		$found_mountpoints = 1;
 		if ($mp =~ m|^/var/lib/ceph/osd/ceph-(\d+)$|) {
 		    $osdid = $1;
 		} 
 	    }
 	    if (!&$dir_is_epmty("/sys/block/$dev/$part/holders"))  {
-		$used = 'LVM' if !$used;
+		$found_lvm = 1;
 	    }
-	    $used = 'partitions' if !$used;
-
 	    $journal_count++ if $journalhash->{"/dev/$part"};
 	});
+
+	$used = 'mounted' if $found_mountpoints && !$used;
+	$used = 'LVM' if $found_lvm && !$used;
+	$used = 'partitions' if $found_partitions && !$used;
 
 	$disklist->{$dev}->{used} = $used if $used;
 	$disklist->{$dev}->{osdid} = $osdid;
