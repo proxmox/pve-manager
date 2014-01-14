@@ -304,7 +304,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    handler: run_move
 	});
 
- 	var diskthrottle_btn = new PVE.button.Button({
+	var diskthrottle_btn = new PVE.button.Button({
 	    text: gettext('Disk Throttle'),
 	    selModel: sm,
 	    disabled: true,

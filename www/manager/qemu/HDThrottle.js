@@ -178,7 +178,7 @@ Ext.define('PVE.qemu.HDThrottle', {
 
 	var ipanel = Ext.create('PVE.qemu.HDThrottleInputPanel', {
 	    confid: me.confid,
-	    nodename: nodename,
+	    nodename: nodename
 	});
 
 	var subject;
