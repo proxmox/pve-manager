@@ -218,12 +218,6 @@ Ext.define('PVE.qemu.HardwareView', {
 		return;
 	    }
 
-	    var rowdef = rows[rec.data.key];
-	    if (!rowdef.editor) {
-		return;
-	    }
-
-	    var editor = rowdef.editor;
             var win = Ext.create('PVE.qemu.HDThrottle', {
 		pveSelNode: me.pveSelNode,
 		confid: rec.data.key,
@@ -237,11 +231,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	var run_resize = function() {
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
-		return;
-	    }
-
-	    var rowdef = rows[rec.data.key];
-	    if (!rowdef.editor) {
 		return;
 	    }
 
@@ -262,11 +251,6 @@ Ext.define('PVE.qemu.HardwareView', {
 		return;
 	    }
 
-	    var rowdef = rows[rec.data.key];
-	    if (!rowdef.editor) {
-		return;
-	    }
-
 	    var win = Ext.create('PVE.window.HDMove', {
 		disk: rec.data.key,
 		nodename: nodename,
@@ -278,15 +262,10 @@ Ext.define('PVE.qemu.HardwareView', {
 	    win.on('destroy', reload);
 	};
 
-        var diskthrottleMenu = Ext.create('Ext.menu.Item', {
-           text: 'Disk Throttle',
-           handler: run_diskthrottle
-        });
-
-        var edit_btn = Ext.create('Ext.button.Split', {
+	var edit_btn = new PVE.button.Button({
 	    text: gettext('Edit'),
 	    selModel: sm,
-//	    disabled: true,
+	    disabled: true,
 	    enableFn: function(rec) {
 		if (!rec) {
 		    return false;
@@ -294,18 +273,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		var rowdef = rows[rec.data.key];
 		return !!rowdef.editor;
 	    },
-	    handler: run_editor,
-
-            menu: new Ext.menu.Menu({
-                items: [
-                    {
-			text: gettext('Edit'),
-
-		        handler: run_editor,
-                    },
-                    diskthrottleMenu
-                ]
-            })
+	    handler: run_editor
         });
 
 	var resize_btn = new PVE.button.Button({
@@ -322,7 +290,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    handler: run_resize
 	});
 
-
 	var move_btn = new PVE.button.Button({
 	    text: gettext('Move disk'),
 	    selModel: sm,
@@ -335,6 +302,20 @@ Ext.define('PVE.qemu.HardwareView', {
 		return rowdef.tdCls == 'pve-itype-icon-storage' && !rec.data.value.match(/media=cdrom/);
 	    },
 	    handler: run_move
+	});
+
+ 	var diskthrottle_btn = new PVE.button.Button({
+	    text: gettext('Disk Throttle'),
+	    selModel: sm,
+	    disabled: true,
+	    enableFn: function(rec) {
+		if (!rec || rec.data.key.match(/^unused\d+/)) {
+		    return false;
+		}
+		var rowdef = rows[rec.data.key];
+		return rowdef.tdCls == 'pve-itype-icon-storage' && !rec.data.value.match(/media=cdrom/);
+	    },
+	    handler: run_diskthrottle
 	});
 
 	var remove_btn = new PVE.button.Button({
@@ -431,7 +412,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		remove_btn,
 		edit_btn,
 		resize_btn,
-		move_btn
+		move_btn,
+		diskthrottle_btn
 	    ],
 	    rows: rows,
 	    sorterFn: sorterFn,

@@ -97,6 +97,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	me.drive = {};
 
 	me.column1 = [];
+	me.column2 = [];
 
 	if (!me.confid || me.unused) {
 	    me.bussel = Ext.createWidget('PVE.form.ControllerSelector', {
@@ -199,20 +200,18 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    });
 	}
 
-	me.column1.push({
+	me.column2.push({
 	    xtype: 'CacheTypeSelector',
 	    name: 'cache',
 	    value: '',
 	    fieldLabel: gettext('Cache')
 	});
 
-	if (!me.insideWizard) {
-	    me.column1.push({
-		xtype: 'pvecheckbox',
-		fieldLabel: gettext('No backup'),
-		name: 'nobackup'
-	    });
-	}
+	me.column2.push({
+	    xtype: 'pvecheckbox',
+	    fieldLabel: gettext('No backup'),
+	    name: 'nobackup'
+	});
 
 	me.callParent();
     }
