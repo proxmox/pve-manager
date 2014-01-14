@@ -26,7 +26,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 		xtype: 'numberfield',
 		name: 'cores',
 		minValue: 1,
-		maxValue: 32,
+		maxValue: 128,
 		value: '1',
 		fieldLabel: gettext('Cores'),
 		allowBlank: false,
