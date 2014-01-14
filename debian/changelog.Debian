@@ -1,3 +1,17 @@
+pve-manager (3.1-35) unstable; urgency=low
+
+  * update max cores limit to 128
+  
+  * use separate window for disk IO-throttle form
+
+  * ceph: improve disk usage detection
+  
+  * ceph: allow to specify separate journal disks
+  
+  * depend on gdisk
+  
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 14 Jan 2014 11:43:54 +0100
+
 pve-manager (3.1-34) unstable; urgency=low
 
   * ocf agent: retry get_vmlist if we get an empty list
