@@ -146,7 +146,7 @@ sub run_spiceterm {
     my ($ticket, undef, $remote_viewer_config) = 
 	PVE::AccessControl::remote_viewer_config($authuser, $vmid, $node, $proxy, $title, $port);
 
-    my $timeout = 10; 
+    my $timeout = 40; 
 
     my $cmd = ['/usr/bin/spiceterm', '--port', $port, '--addr', '127.0.0.1',
 	       '--timeout', $timeout, '--authpath', $authpath, 
