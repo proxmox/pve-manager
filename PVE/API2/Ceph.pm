@@ -21,6 +21,7 @@ use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
 use JSON;
+use PVE::RADOS;
 
 use base qw(PVE::RESTHandler);
 
@@ -126,59 +127,6 @@ my $parse_ceph_config = sub {
     }
 
     return $cfg;
-};
-
-my $run_ceph_cmd = sub {
-    my ($cmd, %params) = @_;
-    
-    my $timeout = 5;
-
-    run_command(['ceph', '-c', $pve_ceph_cfgpath, 
-		 '--connect-timeout', $timeout, 
-		 @$cmd], %params);
-};
-
-my $run_ceph_cmd_text = sub {
-    my ($cmd, %opts) = @_;
-
-    my $out = '';
-
-    my $quiet = delete $opts{quiet};
-
-    my $parser = sub {
-	my $line = shift;
-	$out .= "$line\n";
-    };
-
-    my $errfunc = sub {
-	my $line = shift;
-	print "$line\n" if !$quiet;
-    };
-
-    &$run_ceph_cmd($cmd, outfunc => $parser, errfunc => $errfunc);
-
-    return $out;
-};
-
-my $run_ceph_cmd_json = sub {
-    my ($cmd, %opts) = @_;
-
-    my $json = &$run_ceph_cmd_text([@$cmd, '--format', 'json'], %opts);
-
-    return decode_json($json);
-};
-
-sub ceph_mon_status {
-    my ($quiet) = @_;
- 
-    return &$run_ceph_cmd_json(['mon_status'], quiet => $quiet);
-
-}
-
-my $ceph_osd_status = sub {
-    my ($quiet) = @_;
-
-    return &$run_ceph_cmd_json(['osd', 'dump'], quiet => $quiet);
 };
 
 my $write_ceph_config = sub {
@@ -568,7 +516,8 @@ __PACKAGE__->register_method ({
 	}
 
 	eval {
-	    my $monstat = ceph_mon_status();
+	    my $rados = PVE::RADOS::new();
+	    my $monstat = $rados->mon_command({ prefix => 'mon_status' });
 	    my $mons = $monstat->{monmap}->{mons};
 	    foreach my $d (@$mons) {
 		next if !defined($d->{name});
@@ -785,8 +734,9 @@ __PACKAGE__->register_method ({
 		mkdir $mondir;
 
 		if ($moncount > 0) {
-		    my $monstat = ceph_mon_status(); # online test
-		    &$run_ceph_cmd(['mon', 'getmap', '-o', $monmap]);
+		    my $rados = PVE::RADOS::new();
+		    my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
+		    PVE::Tools::file_set_contents($monmap, $mapdata);
 		} else {
 		    run_command("monmaptool --create --clobber --add $monid $monaddr --print $monmap");
 		}
@@ -845,12 +795,12 @@ __PACKAGE__->register_method ({
 	my $monid = $param->{monid};
 	my $monsection = "mon.$monid";	
 
-	my $monstat = ceph_mon_status();
+	my $rados = PVE::RADOS::new();
+	my $monstat = $rados->mon_command({ prefix => 'mon_status' });
 	my $monlist = $monstat->{monmap}->{mons};
 
 	die "no such monitor id '$monid'\n" 
 	    if !defined($cfg->{$monsection});
-
 
 	my $mondir =  "/var/lib/ceph/mon/$ccname-$monid";
 	-d $mondir || die "monitor filesystem '$mondir' does not exist on this node\n";
@@ -860,7 +810,7 @@ __PACKAGE__->register_method ({
 	my $worker = sub {
 	    my $upid = shift;
 
-	    &$run_ceph_cmd(['mon', 'remove', $monid]);
+	    $rados->mon_command({ prefix => "mon remove", name => $monid });
 
 	    eval { &$ceph_service_cmd('stop', $monsection); };
 	    warn $@ if $@;
@@ -986,7 +936,8 @@ __PACKAGE__->register_method ({
 
 	&$check_ceph_enabled();
 
-	return &$run_ceph_cmd_json(['status'], quiet => 1);
+	my $rados = PVE::RADOS::new();
+	return $rados->mon_command({ prefix => 'status' });
     }});
 
 __PACKAGE__->register_method ({
@@ -1019,7 +970,8 @@ __PACKAGE__->register_method ({
 
 	&$check_ceph_inited();
 
-	my $res = &$run_ceph_cmd_json(['osd', 'dump'], quiet => 1);
+	my $rados = PVE::RADOS::new();
+	my $res = $rados->mon_command({ prefix => 'osd dump' });
 
 	my $data = [];
 	foreach my $e (@{$res->{pools}}) {
@@ -1094,15 +1046,38 @@ __PACKAGE__->register_method ({
 	my $pg_num = $param->{pg_num} || 64;
 	my $size = $param->{size} || 2;
 	my $min_size = $param->{min_size} || 1;
+	my $ruleset = $param->{crush_ruleset} || 0;
+	my $rados = PVE::RADOS::new();
 
-	&$run_ceph_cmd(['osd', 'pool', 'create', $param->{name}, $pg_num]);
+	$rados->mon_command({ 
+	    prefix => "osd pool create",
+	    pool => $param->{name},
+	    pg_num => int($pg_num),
+# this does not work for unknown reason
+#	    properties => ["size=$size", "min_size=$min_size", "crush_ruleset=$ruleset"],
+	});
 
-	&$run_ceph_cmd(['osd', 'pool', 'set', $param->{name}, 'min_size', $min_size]);
+	$rados->mon_command({ 
+	    prefix => "osd pool set",
+	    pool => $param->{name},
+	    var => 'min_size',
+	    val => $min_size
+	});
 
-	&$run_ceph_cmd(['osd', 'pool', 'set', $param->{name}, 'size', $size]);
+	$rados->mon_command({ 
+	    prefix => "osd pool set",
+	    pool => $param->{name},
+	    var => 'size',
+	    val => $size,
+	});
 
 	if (defined($param->{crush_ruleset})) {
-	    &$run_ceph_cmd(['osd', 'pool', 'set', $param->{name}, 'crush_ruleset', $param->{crush_ruleset}]);
+	    $rados->mon_command({ 
+		prefix => "osd pool set",
+		pool => $param->{name},
+		var => 'crush_ruleset',
+		val => $param->{crush_ruleset},
+	    });
 	}
 
 	return undef;
@@ -1131,7 +1106,13 @@ __PACKAGE__->register_method ({
 
 	&$check_ceph_inited();
 
-	&$run_ceph_cmd(['osd', 'pool', 'delete', $param->{name}, $param->{name}, '--yes-i-really-really-mean-it']);
+	my $rados = PVE::RADOS::new();
+	# fixme: '--yes-i-really-really-mean-it'
+	$rados->mon_command({ 
+	    prefix => "osd pool delete",
+	    pool => $param->{name},
+	    pool2 => $param->{name},
+	    sure => '--yes-i-really-really-mean-it'});
 
 	return undef;
     }});
@@ -1157,7 +1138,8 @@ __PACKAGE__->register_method ({
 
 	&$check_ceph_inited();
 
-	my $res = &$run_ceph_cmd_json(['osd', 'tree'], quiet => 1);
+	my $rados = PVE::RADOS::new();
+	my $res = $rados->mon_command({ prefix => 'osd tree' });
 
         die "no tree nodes found\n" if !($res && $res->{nodes});
 
@@ -1274,12 +1256,14 @@ __PACKAGE__->register_method ({
 	die "device '$param->{dev}' is in use\n" 
 	    if $diskinfo->{used};
 
-	my $monstat = ceph_mon_status(1);
+	my $rados = PVE::RADOS::new();
+	my $monstat = $rados->mon_command({ prefix => 'mon_status' });
 	die "unable to get fsid\n" if !$monstat->{monmap} || !$monstat->{monmap}->{fsid};
 	my $fsid = $monstat->{monmap}->{fsid};
 
 	if (! -f $ceph_bootstrap_osd_keyring) {
-	    &$run_ceph_cmd(['auth', 'get', 'client.bootstrap-osd', '-o', $ceph_bootstrap_osd_keyring]);
+	    my $bindata = $rados->mon_command({ prefix => 'auth get client.bootstrap-osd', format => 'plain' });
+	    PVE::Tools::file_set_contents($ceph_bootstrap_osd_keyring, $bindata);
 	};
 
 	my $worker = sub {
@@ -1342,7 +1326,8 @@ __PACKAGE__->register_method ({
 
 	# fixme: not 100% sure what we should do here
  
-	my $stat = &$ceph_osd_status();
+	my $rados = PVE::RADOS::new();
+	my $stat = $rados->mon_command({ prefix => 'osd dump' });
 
 	my $osdlist = $stat->{osds} || [];
 
@@ -1371,13 +1356,13 @@ __PACKAGE__->register_method ({
 	    warn $@ if $@;
 
 	    print "Remove $osdsection from the CRUSH map\n";
-	    &$run_ceph_cmd(['osd', 'crush', 'remove', $osdsection]);
+	    $rados->mon_command({ prefix => "osd crush remove", name => $osdsection });
 
 	    print "Remove the $osdsection authentication key.\n";
-	    &$run_ceph_cmd(['auth', 'del', $osdsection]);
+	    $rados->mon_command({ prefix => "auth del", entity => $osdsection });
 
 	    print "Remove OSD $osdsection\n";
-	    &$run_ceph_cmd(['osd', 'rm', $osdid]);
+	    $rados->mon_command({ prefix => "osd rm", ids => "$osdid" });
 
 	    # try to unmount from standard mount point
 	    my $mountpoint = "/var/lib/ceph/osd/ceph-$osdid";
@@ -1462,8 +1447,11 @@ __PACKAGE__->register_method ({
 	my $mapfile = "/var/tmp/ceph-crush.map.$$";
 	my $mapdata = "/var/tmp/ceph-crush.txt.$$";
 
+	my $rados = PVE::RADOS::new();
+	
 	eval {
-	    &$run_ceph_cmd(['osd', 'getcrushmap', '-o', $mapfile]);
+	    my $bindata = $rados->mon_command({ prefix => 'osd getcrushmap', format => 'plain' });
+	    PVE::Tools::file_set_contents($mapfile, $bindata);
 	    run_command(['crushtool', '-d', $mapfile, '-o', $mapdata]);
 	    $txt = PVE::Tools::file_get_contents($mapdata);
 	};
