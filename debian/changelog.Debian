@@ -1,3 +1,11 @@
+pve-manager (3.1-36) unstable; urgency=low
+
+  * use PVE::RADOS perl bindings
+  
+  * set spiceterm timeout to 40 
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 20 Jan 2014 08:57:42 +0100
+
 pve-manager (3.1-35) unstable; urgency=low
 
   * update max cores limit to 128
