@@ -516,7 +516,7 @@ __PACKAGE__->register_method ({
 	}
 
 	eval {
-	    my $rados = PVE::RADOS::new();
+	    my $rados = PVE::RADOS->new();
 	    my $monstat = $rados->mon_command({ prefix => 'mon_status' });
 	    my $mons = $monstat->{monmap}->{mons};
 	    foreach my $d (@$mons) {
@@ -734,7 +734,7 @@ __PACKAGE__->register_method ({
 		mkdir $mondir;
 
 		if ($moncount > 0) {
-		    my $rados = PVE::RADOS::new();
+		    my $rados = PVE::RADOS->new();
 		    my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
 		    PVE::Tools::file_set_contents($monmap, $mapdata);
 		} else {
@@ -795,7 +795,7 @@ __PACKAGE__->register_method ({
 	my $monid = $param->{monid};
 	my $monsection = "mon.$monid";	
 
-	my $rados = PVE::RADOS::new();
+	my $rados = PVE::RADOS->new();
 	my $monstat = $rados->mon_command({ prefix => 'mon_status' });
 	my $monlist = $monstat->{monmap}->{mons};
 
@@ -936,7 +936,7 @@ __PACKAGE__->register_method ({
 
 	&$check_ceph_enabled();
 
-	my $rados = PVE::RADOS::new();
+	my $rados = PVE::RADOS->new();
 	return $rados->mon_command({ prefix => 'status' });
     }});
 
@@ -970,7 +970,7 @@ __PACKAGE__->register_method ({
 
 	&$check_ceph_inited();
 
-	my $rados = PVE::RADOS::new();
+	my $rados = PVE::RADOS->new();
 	my $res = $rados->mon_command({ prefix => 'osd dump' });
 
 	my $data = [];
@@ -1047,7 +1047,7 @@ __PACKAGE__->register_method ({
 	my $size = $param->{size} || 2;
 	my $min_size = $param->{min_size} || 1;
 	my $ruleset = $param->{crush_ruleset} || 0;
-	my $rados = PVE::RADOS::new();
+	my $rados = PVE::RADOS->new();
 
 	$rados->mon_command({ 
 	    prefix => "osd pool create",
@@ -1106,7 +1106,7 @@ __PACKAGE__->register_method ({
 
 	&$check_ceph_inited();
 
-	my $rados = PVE::RADOS::new();
+	my $rados = PVE::RADOS->new();
 	# fixme: '--yes-i-really-really-mean-it'
 	$rados->mon_command({ 
 	    prefix => "osd pool delete",
@@ -1138,7 +1138,7 @@ __PACKAGE__->register_method ({
 
 	&$check_ceph_inited();
 
-	my $rados = PVE::RADOS::new();
+	my $rados = PVE::RADOS->new();
 	my $res = $rados->mon_command({ prefix => 'osd tree' });
 
         die "no tree nodes found\n" if !($res && $res->{nodes});
@@ -1256,7 +1256,7 @@ __PACKAGE__->register_method ({
 	die "device '$param->{dev}' is in use\n" 
 	    if $diskinfo->{used};
 
-	my $rados = PVE::RADOS::new();
+	my $rados = PVE::RADOS->new();
 	my $monstat = $rados->mon_command({ prefix => 'mon_status' });
 	die "unable to get fsid\n" if !$monstat->{monmap} || !$monstat->{monmap}->{fsid};
 	my $fsid = $monstat->{monmap}->{fsid};
@@ -1326,7 +1326,7 @@ __PACKAGE__->register_method ({
 
 	# fixme: not 100% sure what we should do here
  
-	my $rados = PVE::RADOS::new();
+	my $rados = PVE::RADOS->new();
 	my $stat = $rados->mon_command({ prefix => 'osd dump' });
 
 	my $osdlist = $stat->{osds} || [];
@@ -1447,7 +1447,7 @@ __PACKAGE__->register_method ({
 	my $mapfile = "/var/tmp/ceph-crush.map.$$";
 	my $mapdata = "/var/tmp/ceph-crush.txt.$$";
 
-	my $rados = PVE::RADOS::new();
+	my $rados = PVE::RADOS->new();
 	
 	eval {
 	    my $bindata = $rados->mon_command({ prefix => 'osd getcrushmap', format => 'plain' });
