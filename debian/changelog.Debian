@@ -1,3 +1,9 @@
+pve-manager (3.1-37) unstable; urgency=low
+
+  * fixes for new PVE::RADOS perl bindings
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 21 Jan 2014 12:12:27 +0100
+
 pve-manager (3.1-36) unstable; urgency=low
 
   * use PVE::RADOS perl bindings
