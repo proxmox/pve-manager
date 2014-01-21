@@ -41,6 +41,21 @@ my $ceph_bin = "/usr/bin/ceph";
 
 my $pve_osd_default_journal_size = 1024*5;
 
+my $verify_blockdev_path = sub {
+    my ($path) = @_;
+
+    $path = abs_path($path);
+
+    die "got unusual device path '$path'\n" if $path !~  m|^/dev/(.*)$|;
+
+    $path = "/dev/$1"; # untaint
+
+    die "no such block device '$path'\n"
+	if ! -b $path;
+    
+    return $path;
+};
+
 sub purge_all_ceph_files {
     # fixme: this is very dangerous - should we really support this function?
 
@@ -1244,11 +1259,10 @@ __PACKAGE__->register_method ({
 	my $journal_dev;
 
 	if ($param->{journal_dev} && ($param->{journal_dev} ne $param->{dev})) {
-	    -b  $param->{journal_dev} || die "no such block device '$param->{journal_dev}'\n";
-	    $journal_dev = $param->{journal_dev};
+            $journal_dev = &$verify_blockdev_path($param->{journal_dev});
 	}
 
-	-b  $param->{dev} || die "no such block device '$param->{dev}'\n";
+        $param->{dev} = &$verify_blockdev_path($param->{dev});
 
 	my $disklist = list_disks();
 
@@ -1266,12 +1280,14 @@ __PACKAGE__->register_method ({
 	my $monstat = $rados->mon_command({ prefix => 'mon_status' });
 	die "unable to get fsid\n" if !$monstat->{monmap} || !$monstat->{monmap}->{fsid};
 	my $fsid = $monstat->{monmap}->{fsid};
+        $fsid = $1 if $fsid =~ m/^([0-9a-f\-]+)$/;
 
 	if (! -f $ceph_bootstrap_osd_keyring) {
 	    my $bindata = $rados->mon_command({ prefix => 'auth get client.bootstrap-osd', format => 'plain' });
 	    PVE::Tools::file_set_contents($ceph_bootstrap_osd_keyring, $bindata);
 	};
 
+        
 	my $worker = sub {
 	    my $upid = shift;
 
