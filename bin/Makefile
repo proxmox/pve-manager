@@ -47,7 +47,7 @@ pvectl.1.pod: pvectl
 	perl -I.. ./pvectl printmanpod >$@
 
 pveceph.1.pod: pveceph
-	perl -I.. ./pveceph printmanpod >$@
+	perl -I.. -T ./pveceph printmanpod >$@
 
 vzdump.1.pod: vzdump
 	perl -I.. -T ./vzdump printmanpod >$@
