@@ -810,7 +810,7 @@ __PACKAGE__->register_method ({
 	my $worker = sub {
 	    my $upid = shift;
 
-	    $rados->mon_command({ prefix => "mon remove", name => $monid });
+	    $rados->mon_command({ prefix => "mon remove", name => $monid, format => 'plain' });
 
 	    eval { &$ceph_service_cmd('stop', $monsection); };
 	    warn $@ if $@;
@@ -1055,13 +1055,15 @@ __PACKAGE__->register_method ({
 	    pg_num => int($pg_num),
 # this does not work for unknown reason
 #	    properties => ["size=$size", "min_size=$min_size", "crush_ruleset=$ruleset"],
+	    format => 'plain',
 	});
 
 	$rados->mon_command({ 
 	    prefix => "osd pool set",
 	    pool => $param->{name},
 	    var => 'min_size',
-	    val => $min_size
+	    val => $min_size,
+	    format => 'plain',
 	});
 
 	$rados->mon_command({ 
@@ -1069,6 +1071,7 @@ __PACKAGE__->register_method ({
 	    pool => $param->{name},
 	    var => 'size',
 	    val => $size,
+	    format => 'plain',
 	});
 
 	if (defined($param->{crush_ruleset})) {
@@ -1077,6 +1080,7 @@ __PACKAGE__->register_method ({
 		pool => $param->{name},
 		var => 'crush_ruleset',
 		val => $param->{crush_ruleset},
+	        format => 'plain',
 	    });
 	}
 
@@ -1112,7 +1116,9 @@ __PACKAGE__->register_method ({
 	    prefix => "osd pool delete",
 	    pool => $param->{name},
 	    pool2 => $param->{name},
-	    sure => '--yes-i-really-really-mean-it'});
+	    sure => '--yes-i-really-really-mean-it',
+	    format => 'plain',
+        });
 
 	return undef;
     }});
@@ -1356,13 +1362,13 @@ __PACKAGE__->register_method ({
 	    warn $@ if $@;
 
 	    print "Remove $osdsection from the CRUSH map\n";
-	    $rados->mon_command({ prefix => "osd crush remove", name => $osdsection });
+	    $rados->mon_command({ prefix => "osd crush remove", name => $osdsection, format => 'plain' });
 
 	    print "Remove the $osdsection authentication key.\n";
-	    $rados->mon_command({ prefix => "auth del", entity => $osdsection });
+	    $rados->mon_command({ prefix => "auth del", entity => $osdsection, format => 'plain' });
 
 	    print "Remove OSD $osdsection\n";
-	    $rados->mon_command({ prefix => "osd rm", ids => "$osdid" });
+	    $rados->mon_command({ prefix => "osd rm", ids => "$osdid", format => 'plain' });
 
 	    # try to unmount from standard mount point
 	    my $mountpoint = "/var/lib/ceph/osd/ceph-$osdid";
