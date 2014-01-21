@@ -825,6 +825,8 @@ __PACKAGE__->register_method ({
 	my $worker = sub {
 	    my $upid = shift;
 
+	    $rados = PVE::RADOS->new(); # reopen
+
 	    $rados->mon_command({ prefix => "mon remove", name => $monid, format => 'plain' });
 
 	    eval { &$ceph_service_cmd('stop', $monsection); };
@@ -1286,7 +1288,6 @@ __PACKAGE__->register_method ({
 	    my $bindata = $rados->mon_command({ prefix => 'auth get client.bootstrap-osd', format => 'plain' });
 	    PVE::Tools::file_set_contents($ceph_bootstrap_osd_keyring, $bindata);
 	};
-
         
 	my $worker = sub {
 	    my $upid = shift;
@@ -1371,6 +1372,8 @@ __PACKAGE__->register_method ({
 
 	my $worker = sub {
 	    my $upid = shift;
+
+	    $rados = PVE::RADOS->new(); # reopen
 
 	    print "destroy OSD $osdsection\n";
 
