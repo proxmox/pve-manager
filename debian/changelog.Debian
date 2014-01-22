@@ -1,3 +1,11 @@
+pve-manager (3.1-38) unstable; urgency=low
+
+  * ceph: add API and buttons for osd in/out
+  
+  * use longer rados timeouts when inside worker tasks
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 22 Jan 2014 12:49:46 +0100
+
 pve-manager (3.1-37) unstable; urgency=low
 
   * fixes for new PVE::RADOS perl bindings
