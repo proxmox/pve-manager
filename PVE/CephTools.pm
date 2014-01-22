@@ -6,8 +6,9 @@ use File::Basename;
 use File::Path;
 use POSIX qw (LONG_MAX);
 use Cwd qw(abs_path);
+use IO::Dir;
 
-use PVE::Tools;
+use PVE::Tools qw(extract_param run_command file_get_contents file_read_firstline dir_glob_regex dir_glob_foreach);
 
 my $ccname = 'ceph'; # ceph cluster name
 my $ceph_cfgdir = "/etc/ceph";
@@ -28,6 +29,7 @@ my $config_hash = {
     pve_ckeyring_path => $pve_ckeyring_path,
     ceph_bootstrap_osd_keyring => $ceph_bootstrap_osd_keyring,
     ceph_bootstrap_mds_keyring => $ceph_bootstrap_mds_keyring,
+    long_rados_timeout => 60,
 };
 
 sub get_config {
@@ -185,6 +187,149 @@ sub setup_pve_symlinks {
 
 sub ceph_service_cmd {
     PVE::Tools::run_command(['service', 'ceph', '-c', $pve_ceph_cfgpath, @_]);
+}
+
+sub list_disks {
+    my $disklist = {};
+    
+    my $fd = IO::File->new("/proc/mounts", "r") ||
+	die "unable to open /proc/mounts - $!\n";
+
+    my $mounted = {};
+
+    while (defined(my $line = <$fd>)) {
+	my ($dev, $path, $fstype) = split(/\s+/, $line);
+	next if !($dev && $path && $fstype);
+	next if $dev !~ m|^/dev/|;
+	my $real_dev = abs_path($dev);
+	$mounted->{$real_dev} = $path;
+    }
+    close($fd);
+
+    my $dev_is_mounted = sub {
+	my ($dev) = @_;
+	return $mounted->{$dev};
+    };
+
+    my $dir_is_epmty = sub {
+	my ($dir) = @_;
+
+	my $dh = IO::Dir->new ($dir);
+	return 1 if !$dh;
+	
+	while (defined(my $tmp = $dh->read)) {
+	    next if $tmp eq '.' || $tmp eq '..';
+	    $dh->close;
+	    return 0;
+	}
+	$dh->close;
+	return 1;
+    };
+
+    my $journal_uuid = '45b0969e-9b03-4f30-b4c6-b4b80ceff106';
+
+    my $journalhash = {};
+    dir_glob_foreach('/dev/disk/by-parttypeuuid', "$journal_uuid\..+", sub {
+	my ($entry) = @_;
+	my $real_dev = abs_path("/dev/disk/by-parttypeuuid/$entry");
+	$journalhash->{$real_dev} = 1;
+    });
+
+    dir_glob_foreach('/sys/block', '.*', sub {
+	my ($dev) = @_;
+
+	return if $dev eq '.';
+	return if $dev eq '..';
+
+	return if $dev =~ m|^ram\d+$|; # skip ram devices
+	return if $dev =~ m|^loop\d+$|; # skip loop devices
+	return if $dev =~ m|^md\d+$|; # skip md devices
+	return if $dev =~ m|^dm-.*$|; # skip dm related things
+	return if $dev =~ m|^fd\d+$|; # skip Floppy
+	return if $dev =~ m|^sr\d+$|; # skip CDs
+
+	my $devdir = "/sys/block/$dev/device";
+	return if ! -d $devdir;
+	
+	my $size = file_read_firstline("/sys/block/$dev/size");
+	return if !$size;
+
+	$size = $size * 512;
+
+	my $info = `udevadm info --path /sys/block/$dev --query all`;
+	return if !$info;
+
+	return if $info !~ m/^E: DEVTYPE=disk$/m;
+	return if $info =~ m/^E: ID_CDROM/m;
+
+	my $serial = 'unknown';
+	if ($info =~ m/^E: ID_SERIAL_SHORT=(\S+)$/m) {
+	    $serial = $1;
+	}
+
+	my $gpt = 0;
+	if ($info =~ m/^E: ID_PART_TABLE_TYPE=gpt$/m) {
+	    $gpt = 1;
+	}
+
+	# detect SSD (fixme - currently only works for ATA disks)
+	my $rpm = 7200; # default guess
+	if ($info =~ m/^E: ID_ATA_ROTATION_RATE_RPM=(\d+)$/m) {
+	    $rpm = $1;
+	}
+
+	my $vendor = file_read_firstline("$devdir/vendor") || 'unknown';
+	my $model = file_read_firstline("$devdir/model") || 'unknown';
+
+	my $used;
+
+	$used = 'LVM' if !&$dir_is_epmty("/sys/block/$dev/holders");
+
+	$used = 'mounted' if &$dev_is_mounted("/dev/$dev");
+
+	$disklist->{$dev} = { 
+	    vendor => $vendor, 
+	    model => $model, 
+	    size => $size,
+	    serial => $serial,
+	    gpt => $gpt,
+	    rmp => $rpm,
+	}; 
+
+	my $osdid = -1;
+
+	my $journal_count = 0;
+
+	my $found_partitions;
+	my $found_lvm;
+	my $found_mountpoints;
+	dir_glob_foreach("/sys/block/$dev", "$dev.+", sub {
+	    my ($part) = @_;
+
+	    $found_partitions = 1;
+
+	    if (my $mp = &$dev_is_mounted("/dev/$part")) {
+		$found_mountpoints = 1;
+		if ($mp =~ m|^/var/lib/ceph/osd/ceph-(\d+)$|) {
+		    $osdid = $1;
+		} 
+	    }
+	    if (!&$dir_is_epmty("/sys/block/$dev/$part/holders"))  {
+		$found_lvm = 1;
+	    }
+	    $journal_count++ if $journalhash->{"/dev/$part"};
+	});
+
+	$used = 'mounted' if $found_mountpoints && !$used;
+	$used = 'LVM' if $found_lvm && !$used;
+	$used = 'partitions' if $found_partitions && !$used;
+
+	$disklist->{$dev}->{used} = $used if $used;
+	$disklist->{$dev}->{osdid} = $osdid;
+	$disklist->{$dev}->{journals} = $journal_count;
+    });
+
+    return $disklist;
 }
 
 1;

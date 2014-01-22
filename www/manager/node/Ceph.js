@@ -292,69 +292,7 @@ Ext.define('PVE.node.CephOsdTree', {
 
 	var sm = Ext.create('Ext.selection.TreeModel', {});
 
-	var service_cmd = function(cmd) {
-	    var rec = sm.getSelection()[0];
-	    if (!(rec && rec.data.name && rec.data.host)) {
-		return;
-	    }
-	    PVE.Utils.API2Request({
-                url: "/nodes/" + rec.data.host + "/ceph/" + cmd,
-		params: { service: rec.data.name },
-		waitMsgTarget: me,
-		method: 'POST',
-		failure: function(response, opts) {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
-	    });
-	};
-
-	var start_btn = new Ext.Button({
-	    text: gettext('Start'),
-	    disabled: true,
-	    handler: function(){ service_cmd('start'); }
-	});
-
-	var stop_btn = new Ext.Button({
-	    text: gettext('Stop'),
-	    disabled: true,
-	    handler: function(){ service_cmd('stop'); }
-	});
-
-	var remove_btn = new Ext.Button({
-	    text: gettext('Remove'),
-	    disabled: true,
-	    handler: function(){
-		var rec = sm.getSelection()[0];
-		if (!(rec && (rec.data.id >= 0) && rec.data.host)) {
-		    return;
-		}
-
-		var win = Ext.create('PVE.CephRemoveOsd', {
-                    nodename: rec.data.host,
-		    osdid: rec.data.id
-		});
-		win.show();
-	    }
-	});
-
-	var set_button_status = function() {
-	    var rec = sm.getSelection()[0];
-
-	    if (!rec) {
-		start_btn.setDisabled(true);
-		stop_btn.setDisabled(true);
-		remove_btn.setDisabled(true);
-		return;
-	    }
-
-	    var isOsd = (rec.data.host && (rec.data.type === 'osd') && (rec.data.id >= 0));
-
-	    start_btn.setDisabled(!(isOsd && (rec.data.status !== 'up')));
-	    stop_btn.setDisabled(!(isOsd && (rec.data.status !== 'down')));
-	    remove_btn.setDisabled(!(isOsd && (rec.data.status === 'down')));
-	};
-
-	sm.on('selectionchange', set_button_status);
+	var set_button_status; // defined later
 
 	var reload = function() {
 	    PVE.Utils.API2Request({
@@ -373,16 +311,116 @@ Ext.define('PVE.node.CephOsdTree', {
 	    });
 	};
 
+	var osd_cmd = function(cmd) {
+	    var rec = sm.getSelection()[0];
+	    if (!(rec && (rec.data.id >= 0) && rec.data.host)) {
+		return;
+	    }
+	    PVE.Utils.API2Request({
+                url: "/nodes/" + rec.data.host + "/ceph/osd/" + 
+		    rec.data.id + '/' + cmd,
+		waitMsgTarget: me,
+		method: 'POST',
+		success: reload,
+		failure: function(response, opts) {
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		}
+	    });
+	};
+
+	var service_cmd = function(cmd) {
+	    var rec = sm.getSelection()[0];
+	    if (!(rec && rec.data.name && rec.data.host)) {
+		return;
+	    }
+	    PVE.Utils.API2Request({
+                url: "/nodes/" + rec.data.host + "/ceph/" + cmd,
+		params: { service: rec.data.name },
+		waitMsgTarget: me,
+		method: 'POST',
+		success: reload,
+		failure: function(response, opts) {
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		}
+	    });
+	};
+
+	var start_btn = new Ext.Button({
+	    text: gettext('Start'),
+	    disabled: true,
+	    handler: function(){ service_cmd('start'); }
+	});
+
+	var stop_btn = new Ext.Button({
+	    text: gettext('Stop'),
+	    disabled: true,
+	    handler: function(){ service_cmd('stop'); }
+	});
+
+	var osd_out_btn = new Ext.Button({
+	    text: 'Out',
+	    disabled: true,
+	    handler: function(){ osd_cmd('out'); }
+	});
+
+	var osd_in_btn = new Ext.Button({
+	    text: 'In',
+	    disabled: true,
+	    handler: function(){ osd_cmd('in'); }
+	});
+
+	var remove_btn = new Ext.Button({
+	    text: gettext('Remove'),
+	    disabled: true,
+	    handler: function(){
+		var rec = sm.getSelection()[0];
+		if (!(rec && (rec.data.id >= 0) && rec.data.host)) {
+		    return;
+		}
+
+		var win = Ext.create('PVE.CephRemoveOsd', {
+                    nodename: rec.data.host,
+		    osdid: rec.data.id
+		});
+		win.show();
+		me.mon(win, 'close', reload, me);
+	    }
+	});
+
+	set_button_status = function() {
+	    var rec = sm.getSelection()[0];
+
+	    if (!rec) {
+		start_btn.setDisabled(true);
+		stop_btn.setDisabled(true);
+		remove_btn.setDisabled(true);
+		osd_out_btn.setDisabled(true);
+		osd_in_btn.setDisabled(true);
+		return;
+	    }
+
+	    var isOsd = (rec.data.host && (rec.data.type === 'osd') && (rec.data.id >= 0));
+
+	    start_btn.setDisabled(!(isOsd && (rec.data.status !== 'up')));
+	    stop_btn.setDisabled(!(isOsd && (rec.data.status !== 'down')));
+	    remove_btn.setDisabled(!(isOsd && (rec.data.status === 'down')));
+
+	    osd_out_btn.setDisabled(!(isOsd && rec.data['in']));
+	    osd_in_btn.setDisabled(!(isOsd && !rec.data['in']));
+	};
+
+	sm.on('selectionchange', set_button_status);
+
 	var reload_btn = new Ext.Button({
 	    text: gettext('Reload'),
 	    handler: reload
 	});
 
 	Ext.apply(me, {
-	    tbar: [ reload_btn, start_btn, stop_btn, remove_btn ],
+	    tbar: [ reload_btn, start_btn, stop_btn, osd_out_btn, osd_in_btn, remove_btn ],
 	    rootVisible: false,
-	    fields: ['name', 'type', 'status', 'host',
-		     { type: 'integre', name: 'id' }, 
+	    fields: ['name', 'type', 'status', 'host', 'in',
+		     { type: 'integer', name: 'id' }, 
 		     { type: 'number', name: 'reweight' }, 
 		     { type: 'number', name: 'crush_weight' }],
 	    stateful: false,
@@ -416,6 +454,13 @@ Ext.define('PVE.node.CephOsdTree', {
 		    text: 'Status',
 		    dataIndex: 'status',
 		    align: 'right',
+		    renderer: function(value, metaData, rec) {
+			if (!value) {
+			    return value;
+			}
+			var data = rec.data;
+			return value + '/' + (data['in'] ? 'in' : 'out');
+		    },
 		    width: 100
 		},
 		{ 
