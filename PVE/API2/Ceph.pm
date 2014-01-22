@@ -22,173 +22,18 @@ use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
 use JSON;
 use PVE::RADOS;
+use PVE::CephTools;
 
 use base qw(PVE::RESTHandler);
 
 use Data::Dumper; # fixme: remove
 
-my $ccname = 'ceph'; # ceph cluster name
-my $ceph_cfgdir = "/etc/ceph";
-my $pve_ceph_cfgpath = "/etc/pve/$ccname.conf";
-my $ceph_cfgpath = "$ceph_cfgdir/$ccname.conf";
-my $pve_mon_key_path = "/etc/pve/priv/$ccname.mon.keyring";
-my $pve_ckeyring_path = "/etc/pve/priv/$ccname.client.admin.keyring";
-
-my $ceph_bootstrap_osd_keyring = "/var/lib/ceph/bootstrap-osd/$ccname.keyring";
-my $ceph_bootstrap_mds_keyring = "/var/lib/ceph/bootstrap-mds/$ccname.keyring";
-
-my $ceph_bin = "/usr/bin/ceph";
-
-my $pve_osd_default_journal_size = 1024*5;
 
 # we can use longer rados timeout when inside workers
 my $long_rados_timeout = 60;
 
-my $verify_blockdev_path = sub {
-    my ($path) = @_;
+my $pve_osd_default_journal_size = 1024*5;
 
-    $path = abs_path($path);
-
-    die "got unusual device path '$path'\n" if $path !~  m|^/dev/(.*)$|;
-
-    $path = "/dev/$1"; # untaint
-
-    die "no such block device '$path'\n"
-	if ! -b $path;
-    
-    return $path;
-};
-
-sub purge_all_ceph_files {
-    # fixme: this is very dangerous - should we really support this function?
-
-    unlink $ceph_cfgpath;
-
-    unlink $pve_ceph_cfgpath;
-    unlink $pve_ckeyring_path;
-    unlink $pve_mon_key_path;
-
-    unlink $ceph_bootstrap_osd_keyring;
-    unlink $ceph_bootstrap_mds_keyring;
-
-    system("rm -rf /var/lib/ceph/mon/ceph-*");
-
-    # remove osd?
-
-}
-
-my $check_ceph_installed = sub {
-    my ($noerr) = @_;
-
-    if (! -x $ceph_bin) {
-	die "ceph binaries not installed\n" if !$noerr;
-	return undef;
-    }
-
-    return 1;
-};
-
-my $check_ceph_inited = sub {
-    my ($noerr) = @_;
-
-    return undef if !&$check_ceph_installed($noerr);
-
-    if (! -f $pve_ceph_cfgpath) {
-	die "pveceph configuration not initialized\n" if !$noerr;
-	return undef;
-    }
-
-    return 1;
-};
-
-my $check_ceph_enabled = sub {
-    my ($noerr) = @_;
-
-    return undef if !&$check_ceph_inited($noerr);
-
-    if (! -f $ceph_cfgpath) {
-	die "pveceph configuration not enabled\n" if !$noerr;
-	return undef;
-    }
-
-    return 1;
-};
-
-my $parse_ceph_config = sub {
-    my ($filename) = @_;
-
-    my $cfg = {};
-
-    return $cfg if ! -f $filename;
-
-    my $fh = IO::File->new($filename, "r") ||
-	die "unable to open '$filename' - $!\n";
-
-    my $section;
-
-    while (defined(my $line = <$fh>)) {
-	$line =~ s/[;#].*$//;
-	$line =~ s/^\s+//;
-	$line =~ s/\s+$//;
-	next if !$line;
-
-	$section = $1 if $line =~ m/^\[(\S+)\]$/;
-	if (!$section) {
-	    warn "no section - skip: $line\n";
-	    next;
-	}
-
-	if ($line =~ m/^(.*\S)\s*=\s*(\S.*)$/) {
-	    $cfg->{$section}->{$1} = $2;
-	}
-
-    }
-
-    return $cfg;
-};
-
-my $write_ceph_config = sub {
-    my ($cfg) = @_;
-
-    my $out = '';
-
-    my $cond_write_sec = sub {
-	my $re = shift;
-
-	foreach my $section (keys %$cfg) {
-	    next if $section !~ m/^$re$/;
-	    $out .= "[$section]\n";
-	    foreach my $key (sort keys %{$cfg->{$section}}) {
-		$out .= "\t $key = $cfg->{$section}->{$key}\n";
-	    }
-	    $out .= "\n";
-	}
-    };
-
-    &$cond_write_sec('global');
-    &$cond_write_sec('mon');
-    &$cond_write_sec('osd');
-    &$cond_write_sec('mon\..*');
-    &$cond_write_sec('osd\..*');
-
-    PVE::Tools::file_set_contents($pve_ceph_cfgpath, $out);
-};
-
-my $setup_pve_symlinks = sub {
-    # fail if we find a real file instead of a link
-    if (-f $ceph_cfgpath) {
-	my $lnk = readlink($ceph_cfgpath);
-	die "file '$ceph_cfgpath' already exists\n"
-	    if !$lnk || $lnk ne $pve_ceph_cfgpath;
-    } else {
-	symlink($pve_ceph_cfgpath, $ceph_cfgpath) ||
-	    die "unable to create symlink '$ceph_cfgpath' - $!\n";
-    }
-};
-
-my $ceph_service_cmd = sub {
-    run_command(['service', 'ceph', '-c', $pve_ceph_cfgpath, @_]);
-};
 
 sub list_disks {
     my $disklist = {};
@@ -439,7 +284,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
 
 	my $disks = list_disks();
 
@@ -479,9 +324,10 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
 
-	return PVE::Tools::file_get_contents($pve_ceph_cfgpath);
+	my $path = PVE::CephTools::get_config('pve_ceph_cfgpath');
+	return PVE::Tools::file_get_contents($path);
 
     }});
 
@@ -512,11 +358,11 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
 
 	my $res = [];
 
-	my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
+	my $cfg = PVE::CephTools::parse_ceph_config();
 
 	my $monhash = {};
 	foreach my $section (keys %$cfg) {
@@ -590,10 +436,10 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	&$check_ceph_installed();
+	PVE::CephTools::check_ceph_installed();
 
 	# simply load old config if it already exists
-	my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
+	my $cfg = PVE::CephTools::parse_ceph_config();
 
 	if (!$cfg->{global}) {
 
@@ -634,9 +480,9 @@ __PACKAGE__->register_method ({
 	    $cfg->{global}->{'cluster network'} = $param->{network};
 	}
 
-	&$write_ceph_config($cfg);
+	PVE::CephTools::write_ceph_config($cfg);
 
-	&$setup_pve_symlinks();
+	PVE::CephTools::setup_pve_symlinks();
 
 	return undef;
     }});
@@ -676,15 +522,15 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
 
-	&$setup_pve_symlinks();
+	PVE::CephTools::setup_pve_symlinks();
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
 	my $authuser = $rpcenv->get_user();
 
-	my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
+	my $cfg = PVE::CephTools::parse_ceph_config();
 
 	my $moncount = 0;
 
@@ -728,11 +574,14 @@ __PACKAGE__->register_method ({
 	my $worker = sub  {
 	    my $upid = shift;
 
+	    my $pve_ckeyring_path = PVE::CephTools::get_config('pve_ckeyring_path');
+
 	    if (! -f $pve_ckeyring_path) {
 		run_command("ceph-authtool $pve_ckeyring_path --create-keyring " .
 			    "--gen-key -n client.admin");
 	    }
 
+	    my $pve_mon_key_path = PVE::CephTools::get_config('pve_mon_key_path');
 	    if (! -f $pve_mon_key_path) {
 		run_command("cp $pve_ckeyring_path $pve_mon_key_path.tmp");
 		run_command("ceph-authtool $pve_mon_key_path.tmp -n client.admin --set-uid=0 " .
@@ -742,6 +591,8 @@ __PACKAGE__->register_method ({
 		run_command("ceph-authtool $pve_mon_key_path.tmp --gen-key -n mon. --cap mon 'allow *'");
 		run_command("mv $pve_mon_key_path.tmp $pve_mon_key_path");
 	    }
+
+	    my $ccname = PVE::CephTools::get_config('ccname');
 
 	    my $mondir =  "/var/lib/ceph/mon/$ccname-$monid";
 	    -d $mondir && die "monitor filesystem '$mondir' already exist\n";
@@ -773,9 +624,9 @@ __PACKAGE__->register_method ({
 		'mon addr' => $monaddr,
 	    };
 
-	    &$write_ceph_config($cfg);
+	    PVE::CephTools::write_ceph_config($cfg);
 
-	    &$ceph_service_cmd('start', $monsection);
+	    PVE::CephTools::ceph_service_cmd('start', $monsection);
 	};
 
 	return $rpcenv->fork_worker('cephcreatemon', $monsection, $authuser, $worker);
@@ -806,9 +657,9 @@ __PACKAGE__->register_method ({
 
 	my $authuser = $rpcenv->get_user();
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
 
-	my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
+	my $cfg = PVE::CephTools::parse_ceph_config();
        
 	my $monid = $param->{monid};
 	my $monsection = "mon.$monid";	
@@ -819,6 +670,8 @@ __PACKAGE__->register_method ({
 
 	die "no such monitor id '$monid'\n" 
 	    if !defined($cfg->{$monsection});
+
+	my $ccname = PVE::CephTools::get_config('ccname');
 
 	my $mondir =  "/var/lib/ceph/mon/$ccname-$monid";
 	-d $mondir || die "monitor filesystem '$mondir' does not exist on this node\n";
@@ -833,11 +686,11 @@ __PACKAGE__->register_method ({
 
 	    $rados->mon_command({ prefix => "mon remove", name => $monid, format => 'plain' });
 
-	    eval { &$ceph_service_cmd('stop', $monsection); };
+	    eval { PVE::CephTools::ceph_service_cmd('stop', $monsection); };
 	    warn $@ if $@;
 
 	    delete $cfg->{$monsection};
-	    &$write_ceph_config($cfg);
+	    PVE::CephTools::write_ceph_config($cfg);
 	    File::Path::remove_tree($mondir);
 	};
 
@@ -871,9 +724,9 @@ __PACKAGE__->register_method ({
 
 	my $authuser = $rpcenv->get_user();
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
 
-	my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
+	my $cfg = PVE::CephTools::parse_ceph_config();
 	scalar(keys %$cfg) || die "no configuration\n";
 
 	my $worker = sub {
@@ -884,7 +737,7 @@ __PACKAGE__->register_method ({
 		push @$cmd, $param->{service};
 	    }
 
-	    &$ceph_service_cmd(@$cmd);
+	    PVE::CephTools::ceph_service_cmd(@$cmd);
 	};
 
 	return $rpcenv->fork_worker('srvstop', $param->{service} || 'ceph',
@@ -918,9 +771,9 @@ __PACKAGE__->register_method ({
 
 	my $authuser = $rpcenv->get_user();
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
 
-	my $cfg = &$parse_ceph_config($pve_ceph_cfgpath);
+	my $cfg = PVE::CephTools::parse_ceph_config();
 	scalar(keys %$cfg) || die "no configuration\n";
 
 	my $worker = sub {
@@ -931,7 +784,7 @@ __PACKAGE__->register_method ({
 		push @$cmd, $param->{service};
 	    }
 
-	    &$ceph_service_cmd(@$cmd);
+	    PVE::CephTools::ceph_service_cmd(@$cmd);
 	};
 
 	return $rpcenv->fork_worker('srvstart', $param->{service} || 'ceph',
@@ -955,7 +808,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	&$check_ceph_enabled();
+	PVE::CephTools::check_ceph_enabled();
 
 	my $rados = PVE::RADOS->new();
 	return $rados->mon_command({ prefix => 'status' });
@@ -989,7 +842,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
 
 	my $rados = PVE::RADOS->new();
 	my $res = $rados->mon_command({ prefix => 'osd dump' });
@@ -1059,7 +912,9 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
+
+	my $pve_ckeyring_path = PVE::CephTools::get_config('pve_ckeyring_path');
 
 	die "not fully configured - missing '$pve_ckeyring_path'\n" 
 	    if ! -f $pve_ckeyring_path;
@@ -1129,7 +984,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
 
 	my $rados = PVE::RADOS->new();
 	# fixme: '--yes-i-really-really-mean-it'
@@ -1163,7 +1018,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
 
 	my $rados = PVE::RADOS->new();
 	my $res = $rados->mon_command({ prefix => 'osd tree' });
@@ -1258,17 +1113,17 @@ __PACKAGE__->register_method ({
 
 	my $authuser = $rpcenv->get_user();
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
 
-	&$setup_pve_symlinks();
+	PVE::CephTools::setup_pve_symlinks();
 
 	my $journal_dev;
 
 	if ($param->{journal_dev} && ($param->{journal_dev} ne $param->{dev})) {
-            $journal_dev = &$verify_blockdev_path($param->{journal_dev});
+            $journal_dev = PVE::CephTools::verify_blockdev_path($param->{journal_dev});
 	}
 
-        $param->{dev} = &$verify_blockdev_path($param->{dev});
+        $param->{dev} = PVE::CephTools::verify_blockdev_path($param->{dev});
 
 	my $disklist = list_disks();
 
@@ -1285,8 +1140,11 @@ __PACKAGE__->register_method ({
 	my $rados = PVE::RADOS->new();
 	my $monstat = $rados->mon_command({ prefix => 'mon_status' });
 	die "unable to get fsid\n" if !$monstat->{monmap} || !$monstat->{monmap}->{fsid};
+
 	my $fsid = $monstat->{monmap}->{fsid};
         $fsid = $1 if $fsid =~ m/^([0-9a-f\-]+)$/;
+
+	my $ceph_bootstrap_osd_keyring = PVE::CephTools::get_config('ceph_bootstrap_osd_keyring');
 
 	if (! -f $ceph_bootstrap_osd_keyring) {
 	    my $bindata = $rados->mon_command({ prefix => 'auth get client.bootstrap-osd', format => 'plain' });
@@ -1299,6 +1157,8 @@ __PACKAGE__->register_method ({
 	    my $fstype = $param->{fstype} || 'xfs';
 
 	    print "create OSD on $param->{dev} ($fstype)\n";
+
+	    my $ccname = PVE::CephTools::get_config('ccname');
 
 	    my $cmd = ['ceph-disk', 'prepare', '--zap-disk', '--fs-type', $fstype,
 		       '--cluster', $ccname, '--cluster-uuid', $fsid ];
@@ -1347,7 +1207,7 @@ __PACKAGE__->register_method ({
 
 	my $authuser = $rpcenv->get_user();
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
 
 	my $osdid = $param->{osdid};
 
@@ -1382,7 +1242,7 @@ __PACKAGE__->register_method ({
 
 	    print "destroy OSD $osdsection\n";
 
-	    eval { &$ceph_service_cmd('stop', $osdsection); };
+	    eval { PVE::CephTools::ceph_service_cmd('stop', $osdsection); };
 	    warn $@ if $@;
 
 	    print "Remove $osdsection from the CRUSH map\n";
@@ -1450,6 +1310,7 @@ __PACKAGE__->register_method ({
 	return $rpcenv->fork_worker('cephdestroyosd', $osdsection,  $authuser, $worker);
     }});
 
+
 __PACKAGE__->register_method ({
     name => 'crush',
     path => 'crush',
@@ -1467,7 +1328,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	&$check_ceph_inited();
+	PVE::CephTools::check_ceph_inited();
 
 	# this produces JSON (difficult to read for the user)
 	# my $txt = &$run_ceph_cmd_text(['osd', 'crush', 'dump'], quiet => 1);
