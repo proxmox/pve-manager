@@ -41,6 +41,9 @@ my $ceph_bin = "/usr/bin/ceph";
 
 my $pve_osd_default_journal_size = 1024*5;
 
+# we can use longer rados timeout when inside workers
+my $long_rados_timeout = 60;
+
 my $verify_blockdev_path = sub {
     my ($path) = @_;
 
@@ -749,7 +752,7 @@ __PACKAGE__->register_method ({
 		mkdir $mondir;
 
 		if ($moncount > 0) {
-		    my $rados = PVE::RADOS->new();
+		    my $rados = PVE::RADOS->new(timeout => $long_rados_timeout);
 		    my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
 		    PVE::Tools::file_set_contents($monmap, $mapdata);
 		} else {
@@ -825,7 +828,8 @@ __PACKAGE__->register_method ({
 	my $worker = sub {
 	    my $upid = shift;
 
-	    $rados = PVE::RADOS->new(); # reopen
+	    # reopen with longer timeout
+	    $rados = PVE::RADOS->new(timeout => $long_rados_timeout); 
 
 	    $rados->mon_command({ prefix => "mon remove", name => $monid, format => 'plain' });
 
@@ -1373,7 +1377,8 @@ __PACKAGE__->register_method ({
 	my $worker = sub {
 	    my $upid = shift;
 
-	    $rados = PVE::RADOS->new(); # reopen
+	    # reopen with longer timeout
+	    $rados = PVE::RADOS->new(timeout => $long_rados_timeout); 
 
 	    print "destroy OSD $osdsection\n";
 
