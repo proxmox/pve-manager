@@ -636,8 +636,8 @@ Ext.define('PVE.node.CephDiskList', {
 		    dataIndex: 'dev'
 		},
 		{
-		    header: gettext('used'),
-		    width: 50,
+		    header: gettext('Usage'),
+		    width: 80,
 		    sortable: false,
 		    renderer: function(v, metaData, rec) {
 			if (rec && (rec.data.osdid >= 0)) {
@@ -650,6 +650,7 @@ Ext.define('PVE.node.CephDiskList', {
 		{
 		    header: gettext('Size'),
 		    width: 100,
+		    align: 'right',
 		    sortable: false,
 		    renderer: PVE.Utils.format_size,
 		    dataIndex: 'size'
