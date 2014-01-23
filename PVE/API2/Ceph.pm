@@ -1141,7 +1141,8 @@ __PACKAGE__->register_method ({
 	    }
 	    if (my $s = $stats->{$d->{pool}}) {
 		$d->{bytes_used} = $s->{bytes_used};
-		$d->{percent_used} = ($d->{bytes_used}*100)/$total if $total;
+		$d->{percent_used} = ($d->{bytes_used}*$d->{size}*100)/$total 
+		    if $d->{size} && $total;
 	    }
 	    push @$data, $d;
 	}
