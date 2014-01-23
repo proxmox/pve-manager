@@ -165,6 +165,28 @@ Ext.define('PVE.node.CephPoolList', {
 		    width: 50,
 		    sortable: false,
 		    dataIndex: 'crush_ruleset'
+		},
+		{
+		    header: gettext('Used'),
+		    columns: [
+			{
+			    xtype: 'numbercolumn',
+			    header: '%',
+			    width: 80,
+			    sortable: true,
+			    align: 'right',
+			    format: '0.00',
+			    dataIndex: 'percent_used'
+			},
+			{
+			    header: gettext('Total'),
+			    width: 100,
+			    sortable: true,
+			    renderer: PVE.Utils.render_size,
+			    align: 'right',
+			    dataIndex: 'bytes_used'
+			}
+		    ]
 		}
 	    ],
 	    listeners: {
@@ -185,6 +207,8 @@ Ext.define('PVE.node.CephPoolList', {
 		  { name: 'size', type: 'integer'}, 
 		  { name: 'min_size', type: 'integer'}, 
 		  { name: 'pg_num', type: 'integer'}, 
+		  { name: 'bytes_used', type: 'integer'}, 
+		  { name: 'percent_used', type: 'number'}, 
 		  { name: 'crush_ruleset', type: 'integer'}
 		],
 	idProperty: 'pool_name'

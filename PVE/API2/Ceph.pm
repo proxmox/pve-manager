@@ -1094,7 +1094,18 @@ __PACKAGE__->register_method ({
 	PVE::CephTools::check_ceph_inited();
 
 	my $rados = PVE::RADOS->new();
-	my $res = $rados->mon_command({ prefix => 'osd dump' });
+
+	my $stats = {};
+	my $res = $rados->mon_command({ prefix => 'df' });
+	my $total = $res->{stats}->{total_space} || 0;
+	$total = $total * 1024;
+	foreach my $d (@{$res->{pools}}) {
+	    next if !$d->{stats};
+	    next if !defined($d->{id});
+	    $stats->{$d->{id}} = $d->{stats};
+	}
+
+	$res = $rados->mon_command({ prefix => 'osd dump' });
 
 	my $data = [];
 	foreach my $e (@{$res->{pools}}) {
@@ -1102,8 +1113,13 @@ __PACKAGE__->register_method ({
 	    foreach my $attr (qw(pool pool_name size min_size pg_num crush_ruleset)) {
 		$d->{$attr} = $e->{$attr} if defined($e->{$attr});
 	    }
+	    if (my $s = $stats->{$d->{pool}}) {
+		$d->{bytes_used} = $s->{bytes_used};
+		$d->{percent_used} = ($d->{bytes_used}*100)/$total if $total;
+	    }
 	    push @$data, $d;
 	}
+
 
 	return $data;
     }});
