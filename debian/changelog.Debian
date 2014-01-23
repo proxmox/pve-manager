@@ -1,3 +1,13 @@
+pve-manager (3.1-39) unstable; urgency=low
+
+  * ceph: view osd commit/apply latency
+  
+  * ceph: display osd usage
+
+  * ceph: display pool usage information
+  
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 23 Jan 2014 10:22:20 +0100
+
 pve-manager (3.1-38) unstable; urgency=low
 
   * ceph: add API and buttons for osd in/out
