@@ -448,6 +448,8 @@ Ext.define('PVE.node.CephOsdTree', {
 		     { type: 'number', name: 'percent_used' }, 
 		     { type: 'integer', name: 'bytes_used' }, 
 		     { type: 'integer', name: 'total_space' },
+		     { type: 'integer', name: 'apply_latency_ms' },
+		     { type: 'integer', name: 'commit_latency_ms' },
 		     { type: 'number', name: 'crush_weight' }],
 	    stateful: false,
 	    selModel: sm,
@@ -501,29 +503,63 @@ Ext.define('PVE.node.CephOsdTree', {
 		    },
 		    width: 60
 		},
-		{ 
-		    text: gettext('Size'),
-		    dataIndex: 'total_space',
-		    align: 'right',
-		    renderer: function(value, metaData, rec) {
-			if (rec.data.type !== 'osd') {
-			    return '';
+		{
+		    header: gettext('Used'),
+		    columns: [
+			{
+			    text: '%',
+			    dataIndex: 'percent_used',
+			    align: 'right',
+			    renderer: function(value, metaData, rec) {
+				if (rec.data.type !== 'osd') {
+				    return '';
+				}
+				return Ext.util.Format.number(value, '0.00');
+			    },
+			    width: 80
+			},
+			{
+			    text: gettext('Total'),
+			    dataIndex: 'total_space',
+			    align: 'right',
+			    renderer: function(value, metaData, rec) {
+				if (rec.data.type !== 'osd') {
+				    return '';
+				}
+				return PVE.Utils.render_size(value);
+			    },
+			    width: 100
 			}
-			return PVE.Utils.render_size(value);
-		    },
-		    width: 100
+		    ]
 		},
 		{
-		    text: gettext('Used') + ' %',
-		    dataIndex: 'percent_used',
-		    align: 'right',
-		    renderer: function(value, metaData, rec) {
-			if (rec.data.type !== 'osd') {
-			    return '';
+		    header: gettext('Latency (ms)'),
+		    columns: [
+			{
+			    text: 'Apply',
+			    dataIndex: 'apply_latency_ms',
+			    align: 'right',
+			    renderer: function(value, metaData, rec) {
+				if (rec.data.type !== 'osd') {
+				    return '';
+				}
+				return value;
+			    },
+			    width: 60
+			},
+			{
+			    text: 'Commit',
+			    dataIndex: 'commit_latency_ms',
+			    align: 'right',
+			    renderer: function(value, metaData, rec) {
+				if (rec.data.type !== 'osd') {
+				    return '';
+				}
+				return value;
+			    },
+			    width: 60
 			}
-			return Ext.util.Format.number(value, '0.00');
-		    },
-		    width: 80
+		    ]
 		}
 	    ],
 	    listeners: {
