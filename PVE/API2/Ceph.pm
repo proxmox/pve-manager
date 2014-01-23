@@ -40,6 +40,20 @@ my $get_osd_status = sub {
     return $osdstat;
 };
 
+my $get_osd_usage = sub {
+    my ($rados) = @_;
+
+    my $osdlist = $rados->mon_command({ prefix => 'pg dump', 
+					dumpcontents => [ 'osds' ]}) || [];
+
+    my $osdstat;
+    foreach my $d (@$osdlist) {
+	$osdstat->{$d->{osd}} = $d if defined($d->{osd});    
+    }
+
+    return $osdstat;
+};
+
 __PACKAGE__->register_method ({
     name => 'index',
     path => '',
@@ -69,6 +83,8 @@ __PACKAGE__->register_method ({
 
 	my $osdhash = &$get_osd_status($rados);
 
+	my $usagehash = &$get_osd_usage($rados);
+
 	my $nodes = {};
 	my $newnodes = {};
 	foreach my $e (@{$res->{nodes}}) {
@@ -86,6 +102,12 @@ __PACKAGE__->register_method ({
 
 	    if (my $stat = $osdhash->{$e->{id}}) {
 		$new->{in} = $stat->{in} if defined($stat->{in});
+	    }
+
+	    if (my $stat = $usagehash->{$e->{id}}) {
+		$new->{total_space} = ($stat->{kb} || 1) * 1024;
+		$new->{bytes_used} = ($stat->{kb_used} || 0) * 1024;
+		$new->{percent_used} = ($new->{bytes_used}*100)/$new->{total_space};
 	    }
 
 	    $newnodes->{$e->{id}} = $new;

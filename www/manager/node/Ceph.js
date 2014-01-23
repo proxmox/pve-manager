@@ -170,12 +170,11 @@ Ext.define('PVE.node.CephPoolList', {
 		    header: gettext('Used'),
 		    columns: [
 			{
-			    xtype: 'numbercolumn',
 			    header: '%',
 			    width: 80,
 			    sortable: true,
 			    align: 'right',
-			    format: '0.00',
+			    renderer: Ext.util.Format.numberRenderer('0.00'),
 			    dataIndex: 'percent_used'
 			},
 			{
@@ -446,6 +445,9 @@ Ext.define('PVE.node.CephOsdTree', {
 	    fields: ['name', 'type', 'status', 'host', 'in',
 		     { type: 'integer', name: 'id' }, 
 		     { type: 'number', name: 'reweight' }, 
+		     { type: 'number', name: 'percent_used' }, 
+		     { type: 'integer', name: 'bytes_used' }, 
+		     { type: 'integer', name: 'total_space' },
 		     { type: 'number', name: 'crush_weight' }],
 	    stateful: false,
 	    selModel: sm,
@@ -454,25 +456,13 @@ Ext.define('PVE.node.CephOsdTree', {
 		    xtype: 'treecolumn',
 		    text: 'Name',
 		    dataIndex: 'name',
-		    width: 200
-		},
-		{ 
-		    text: 'ID',
-		    dataIndex: 'id',
-		    align: 'right',
-		    width: 60
-		},
-		{ 
-		    text: 'weight',
-		    dataIndex: 'crush_weight',
-		    align: 'right',
-		    width: 60
+		    width: 150
 		},
 		{ 
 		    text: 'Type',
 		    dataIndex: 'type',
 		    align: 'right',
-		    width: 100		 
+		    width: 60		 
 		},
 		{ 
 		    text: 'Status',
@@ -485,13 +475,55 @@ Ext.define('PVE.node.CephOsdTree', {
 			var data = rec.data;
 			return value + '/' + (data['in'] ? 'in' : 'out');
 		    },
-		    width: 100
+		    width: 60
+		},
+		{ 
+		    text: 'weight',
+		    dataIndex: 'crush_weight',
+		    align: 'right',
+		    renderer: function(value, metaData, rec) {
+			if (rec.data.type !== 'osd') {
+			    return '';
+			}
+			return value;
+		    },
+		    width: 60
 		},
 		{ 
 		    text: 'reweight',
 		    dataIndex: 'reweight',
 		    align: 'right',
+		    renderer: function(value, metaData, rec) {
+			if (rec.data.type !== 'osd') {
+			    return '';
+			}
+			return value;
+		    },
 		    width: 60
+		},
+		{ 
+		    text: gettext('Size'),
+		    dataIndex: 'total_space',
+		    align: 'right',
+		    renderer: function(value, metaData, rec) {
+			if (rec.data.type !== 'osd') {
+			    return '';
+			}
+			return PVE.Utils.render_size(value);
+		    },
+		    width: 100
+		},
+		{
+		    text: gettext('Used') + ' %',
+		    dataIndex: 'percent_used',
+		    align: 'right',
+		    renderer: function(value, metaData, rec) {
+			if (rec.data.type !== 'osd') {
+			    return '';
+			}
+			return Ext.util.Format.number(value, '0.00');
+		    },
+		    width: 80
 		}
 	    ],
 	    listeners: {
