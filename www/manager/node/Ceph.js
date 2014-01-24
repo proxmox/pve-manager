@@ -598,7 +598,13 @@ Ext.define('PVE.node.CephDiskList', {
 	    proxy: {
                 type: 'pve',
                 url: "/api2/json/nodes/" + nodename + "/ceph/disks"
-	    }
+	    },
+	    sorters: [
+		{
+		    property : 'dev',
+		    direction: 'ASC'
+		}
+	    ]
 	});
 
 	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
