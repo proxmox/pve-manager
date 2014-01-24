@@ -3,6 +3,8 @@ Ext.define('PVE.CephCreateMon', {
     alias: ['widget.pveCephCreateMon'],
 
     subject: 'Ceph Monitor',
+
+    showProgress: true,
  
     setNode: function(nodename) {
         var me = this;
@@ -83,6 +85,11 @@ Ext.define('PVE.node.CephMonList', {
 		url: "/nodes/" + rec.data.host + "/ceph/" + cmd,
 		method: 'POST',
 		params: { service: "mon." + rec.data.name },
+		success: function(response, options) {
+		    var upid = response.result.data;
+		    var win = Ext.create('PVE.window.TaskProgress', { upid: upid });
+		    win.show();
+		},
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		}
@@ -133,6 +140,11 @@ Ext.define('PVE.node.CephMonList', {
 		    url: "/nodes/" + rec.data.host + "/ceph/mon/" + 
 			rec.data.name,
 		    method: 'DELETE',
+		    success: function(response, options) {
+			var upid = response.result.data;
+			var win = Ext.create('PVE.window.TaskProgress', { upid: upid });
+			win.show();
+		    },
 		    failure: function(response, opts) {
 			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		    }

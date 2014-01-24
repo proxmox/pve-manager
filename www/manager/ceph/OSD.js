@@ -4,6 +4,8 @@ Ext.define('PVE.CephCreateOsd', {
 
     subject: 'Ceph OSD',
 
+    showProgress: true,
+
     initComponent : function() {
 	 /*jslint confusion: true */
         var me = this;
@@ -50,6 +52,8 @@ Ext.define('PVE.CephRemoveOsd', {
     alias: ['widget.pveCephRemoveOsd'],
 
     isRemove: true,
+
+    showProgress: true,
 
     initComponent : function() {
 	 /*jslint confusion: true */
@@ -145,7 +149,12 @@ Ext.define('PVE.node.CephOsdTree', {
 		params: { service: rec.data.name },
 		waitMsgTarget: me,
 		method: 'POST',
-		success: reload,
+		success: function(response, options) {
+		    var upid = response.result.data;
+		    var win = Ext.create('PVE.window.TaskProgress', { upid: upid });
+		    win.show();
+		    me.mon(win, 'close', reload, me);
+		},
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		}

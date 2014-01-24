@@ -22,6 +22,8 @@ Ext.define('PVE.window.Edit', {
 
     backgroundDelay: 0,
 
+    showProgress: false,
+
     isValid: function() {
 	var me = this;
 
@@ -110,7 +112,8 @@ Ext.define('PVE.window.Edit', {
 	    },
 	    success: function(response, options) {
 		me.close();
-		if (me.backgroundDelay && response.result.data) {
+		if ((me.backgroundDelay || me.showProgress) && 
+		    response.result.data) {
 		    var upid = response.result.data;
 		    var win = Ext.create('PVE.window.TaskProgress', { 
 			upid: upid
