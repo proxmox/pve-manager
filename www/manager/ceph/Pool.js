@@ -138,6 +138,7 @@ Ext.define('PVE.node.CephPoolList', {
 	    selModel: sm,
 	    stateful: false,
 	    tbar: [ create_btn, remove_btn ],
+	    features: [ { ftype: 'summary' } ],
 	    columns: [
 		{
 		    header: gettext('Name'),
@@ -175,7 +176,9 @@ Ext.define('PVE.node.CephPoolList', {
 			    sortable: true,
 			    align: 'right',
 			    renderer: Ext.util.Format.numberRenderer('0.00'),
-			    dataIndex: 'percent_used'
+			    dataIndex: 'percent_used',
+			    summaryType: 'sum',
+			    summaryRenderer: Ext.util.Format.numberRenderer('0.00')
 			},
 			{
 			    header: gettext('Total'),
@@ -183,7 +186,9 @@ Ext.define('PVE.node.CephPoolList', {
 			    sortable: true,
 			    renderer: PVE.Utils.render_size,
 			    align: 'right',
-			    dataIndex: 'bytes_used'
+			    dataIndex: 'bytes_used',
+			    summaryType: 'sum',
+			    summaryRenderer: PVE.Utils.render_size
 			}
 		    ]
 		}
