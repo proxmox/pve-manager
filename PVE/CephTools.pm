@@ -186,7 +186,9 @@ sub setup_pve_symlinks {
 }
 
 sub ceph_service_cmd {
-    PVE::Tools::run_command(['service', 'ceph', '-c', $pve_ceph_cfgpath, @_]);
+    # ceph daemons does not call 'setsid', so we do that ourself
+    # (fork_worker send KILL to whole process group) 
+    PVE::Tools::run_command(['setsid', 'service', 'ceph', '-c', $pve_ceph_cfgpath, @_]);
 }
 
 sub list_disks {
