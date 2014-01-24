@@ -74,6 +74,13 @@ JSSRC= 				                 	\
 	panel/ConfigPanel.js				\
 	grid/BackupView.js				\
 	panel/LogView.js				\
+	ceph/Pool.js					\
+	ceph/OSD.js					\
+	ceph/Disks.js					\
+	ceph/Monitor.js					\
+	ceph/Crush.js					\
+	ceph/Status.js					\
+	ceph/Config.js					\
 	node/DNSEdit.js					\
 	node/DNSView.js					\
 	node/TimeView.js				\
@@ -87,7 +94,6 @@ JSSRC= 				                 	\
 	node/Tasks.js					\
 	node/Subscription.js				\
 	node/APT.js					\
-	node/Ceph.js					\
 	node/Config.js					\
 	qemu/StatusView.js				\
 	window/Migrate.js				\
