@@ -40,6 +40,10 @@ my $confdesc = {
 	type => 'string',
 	enum => [@$network_type_enum, 'unknown'],
     },
+    comments => {
+	description => "Comments",
+	type => 'string',
+    },
     autostart => {
 	description => "Automatically start interface on boot.",
 	type => 'boolean',
