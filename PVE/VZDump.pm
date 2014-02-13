@@ -287,6 +287,8 @@ my $sendmail = sub {
 
     print MAIL "Content-Type: multipart/alternative;\n";
     print MAIL "\tboundary=\"$boundary\"\n";
+    print MAIL "MIME-Version: 1.0\n";
+
     print MAIL "FROM: vzdump backup tool <root>\n";
     print MAIL "TO: $rcvrtxt\n";
     print MAIL "SUBJECT: vzdump backup status ($hostname) : $stat\n";
