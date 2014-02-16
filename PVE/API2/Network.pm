@@ -43,6 +43,7 @@ my $confdesc = {
     comments => {
 	description => "Comments",
 	type => 'string',
+	optional => 1,
     },
     autostart => {
 	description => "Automatically start interface on boot.",
