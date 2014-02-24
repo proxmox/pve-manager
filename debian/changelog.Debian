@@ -1,3 +1,11 @@
+pve-manager (3.1-44) unstable; urgency=low
+
+  * re-add support for spiceconfig output format (revert commit
+    97da4646288d2806c334c6a1c1361acb22df0535 and commit
+    b96fb2234a7df02999489cc1f33ad52defac8998)
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 24 Feb 2014 12:49:35 +0100
+
 pve-manager (3.1-43) unstable; urgency=low
 
   * fix network API (make comments optional)

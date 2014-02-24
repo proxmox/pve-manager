@@ -111,6 +111,14 @@ sub format_response_data {
 	# we use this for extjs file upload forms
 	$ct = 'text/html;charset=UTF-8';
 	$raw = encode_entities(to_json($data, {allow_nonref => 1}));
+    } elsif ($format eq 'spiceconfig') {
+	$ct = 'application/x-virt-viewer;charset=UTF-8';
+	if ($data && ref($data) && ref($data->{data})) {
+	    $raw = "[virt-viewer]\n";
+	    while (my ($key, $value) = each %{$data->{data}}) {
+		$raw .= "$key=$value\n" if defined($value);
+	    }
+	}
     } else {
 	$ct = 'text/plain;charset=UTF-8';
 	$raw = to_json($data, {utf8 => 1, allow_nonref => 1, pretty => 1});
