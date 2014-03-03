@@ -97,6 +97,7 @@ install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl pve-apt.conf p
 	install -D -m 0755 vznet.conf ${DESTDIR}/etc/vz/vznet.conf
 	install -D -m 0755 mtu ${DESTDIR}/etc/network/if-up.d/mtu
 	install -m 0644 vzdump-hook-script.pl ${DOCDIR}/examples/vzdump-hook-script.pl
+	install -m 0644 spice-example-sh ${DOCDIR}/examples/spice-example-sh
 	install -m 0644 copyright ${DOCDIR}
 	install -m 0644 debian/changelog.Debian ${DOCDIR}
 	install -m 0644 country.dat ${DESTDIR}/usr/share/${PACKAGE}
