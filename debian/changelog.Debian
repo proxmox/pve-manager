@@ -1,3 +1,9 @@
+pve-manager (3.2-1) unstable; urgency=low
+
+  * bump version for 3.2 release
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 06 Mar 2014 06:43:46 +0100
+
 pve-manager (3.1-45) unstable; urgency=low
 
   * parseQemuNetwork: add vmxnet3
