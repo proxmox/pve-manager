@@ -80,13 +80,18 @@ __PACKAGE__->register_method ({
     parameters => {
     	additionalProperties => 0,
 	properties => {
+	    version => {
+		type => 'string',
+		enum => ['dumpling', 'emperor', 'firefly'],
+		optional => 1,
+	    }
 	},
     },
     returns => { type => 'null' },
     code => sub {
 	my ($param) = @_;
 
-	my $cephver = 'emperor';
+	my $cephver = $param->{version} || 'dumpling';
 
 	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
 
