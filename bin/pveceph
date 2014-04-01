@@ -16,6 +16,7 @@ use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Tools qw(run_command);
 use PVE::JSONSchema qw(get_standard_option);
+use PVE::CephTools;
 use PVE::API2::Ceph;
 
 use PVE::CLIHandler;
@@ -60,14 +61,17 @@ __PACKAGE__->register_method ({
 
 	my $monstat;
 
-	eval { $monstat	= PVE::API2::Ceph::ceph_mon_status(1); };
+	eval { 
+	    my $rados = PVE::RADOS->new();
+	    my $monstat = $rados->mon_command({ prefix => 'mon_status' });
+	};
 	my $err = $@;
 
 	die "detected running ceph services- unable to purge data\n" 
 	    if !$err;
 
 	# fixme: this is dangerous - should we really support this function?
-	PVE::API2::Ceph::purge_all_ceph_files();
+	PVE::CephTools::purge_all_ceph_files();
 
 	return undef;
     }});
