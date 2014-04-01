@@ -1,3 +1,13 @@
+pve-manager (3.2-2) unstable; urgency=low
+
+  * pveceph: fix purge command
+  
+  * pheceph: add -version argument to install (defaults to dumpling)
+  
+  * spice-example-sh: avoid use of sed and aw
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 01 Apr 2014 06:04:04 +0200
+
 pve-manager (3.2-1) unstable; urgency=low
 
   * bump version for 3.2 release
