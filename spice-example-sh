@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # needs pve-manager >= 3.1-44
 
 usage() { 
@@ -57,7 +59,9 @@ fi
 
 NODE=${NODE%%\.*}
 
-DATA=`curl -k -d "username=$USERNAME&password=$PASSWORD"  https://$PROXY:8006/api2/json/access/ticket` 
+DATA=$(curl -f -s -S -k -d "username=$USERNAME&password=$PASSWORD"  https://$PROXY:8006/api2/json/access/ticket)
+
+echo "AUTH OK"
 
 TICKET=${DATA//\"/}
 TICKET=${TICKET##*ticket:}
@@ -67,6 +71,6 @@ CSRF=${DATA//\"/}
 CSRF=${CSRF##*CSRFPreventionToken:}
 CSRF=${CSRF%%,*}
 
-curl -k -b "PVEAuthCookie=$TICKET" -H "CSRFPreventionToken: $CSRF" https://$PROXY:8006/api2/spiceconfig/nodes/$NODE/qemu/$VMID/spiceproxy -d "proxy=$PROXY" > spiceproxy
+curl -f -s -S -k -b "PVEAuthCookie=$TICKET" -H "CSRFPreventionToken: $CSRF" https://$PROXY:8006/api2/spiceconfig/nodes/$NODE/qemu/$VMID/spiceproxy -d "proxy=$PROXY" > spiceproxy
 
 remote-viewer spiceproxy
