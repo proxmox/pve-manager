@@ -1,3 +1,9 @@
+pve-manager (3.2-3) unstable; urgency=low
+
+  * add Euskera (Basque) translations
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 17 Apr 2014 11:25:54 +0200
+
 pve-manager (3.2-2) unstable; urgency=low
 
   * pveceph: fix purge command
