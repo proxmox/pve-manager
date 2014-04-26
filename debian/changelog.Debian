@@ -1,3 +1,9 @@
+pve-manager (3.2-4) unstable; urgency=low
+
+  *  add X-UA-Compatible tag to avoid IE GUI bugs
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 26 Apr 2014 09:34:53 +0200
+
 pve-manager (3.2-3) unstable; urgency=low
 
   * add Euskera (Basque) translations
