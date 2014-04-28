@@ -341,8 +341,6 @@ sub proxy_request {
 	    PVEClientIP => $clientip,
 	};
 
-	my $cookie_name = 'PVEAuthCookie';
-
 	$headers->{'cookie'} = PVE::REST::create_auth_cookie($ticket) if $ticket;
 	$headers->{'CSRFPreventionToken'} = $token if $token;
 	$headers->{'Accept-Encoding'} = 'gzip' if $reqstate->{accept_gzip};
