@@ -41,6 +41,33 @@ sub update_ticket {
     $self->{cookie_jar}->set_cookie(0, 'PVEAuthCookie', $ticket, '/', $domain);
 }
 
+sub login {
+    my ($self) = @_;
+
+    my $uri = URI->new();
+    $uri->scheme($self->{protocol});
+    $uri->host($self->{host});
+    $uri->port($self->{port});
+    $uri->path('/api2/json/access/ticket');
+
+    my $ua = $self->{useragent};
+
+    my $response = $ua->post($uri, { 
+	username => $self->{username} || 'unknown',
+	password => $self->{password} || ''});
+
+    if (!$response->is_success) {
+	die $response->status_line . "\n";
+    }
+
+    my $data = from_json($response->decoded_content, {utf8 => 1, allow_nonref => 1});
+
+    $self->update_ticket($data->{data}->{ticket});
+    $self->{csrftoken} = $data->{data}->{CSRFPreventionToken};
+ 
+    return $data;
+}
+
 sub call {
     my ($self, $method, $path, $param) = @_;
 	
@@ -57,24 +84,7 @@ sub call {
     });
     
     if (!$ticket && $self->{username} && $self->{password}) {
-	my $uri = URI->new();
-	$uri->scheme($self->{protocol});
-	$uri->host($self->{host});
-	$uri->port($self->{port});
-	$uri->path('/api2/json/access/ticket');
-
-	my $response = $ua->post($uri, { 
-	    username => $self->{username},
-	    password => $self->{password}});
-
-	if (!$response->is_success) {
-	    die $response->status_line . "\n";
-	}
-
-	my $data = from_json($response->decoded_content, {utf8 => 1, allow_nonref => 1});
-
-	$self->update_ticket($data->{data}->{ticket});
-	$self->{csrftoken} = $data->{data}->{CSRFPreventionToken};
+	$self->login();
     }
 
     my $uri = URI->new();
