@@ -6,7 +6,6 @@ use English;
 use PVE::Cluster;
 use PVE::SafeSyslog;
 use PVE::Tools;
-use PVE::API2;
 use JSON;
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -21,6 +20,16 @@ use URI::Escape;
 use Data::Dumper; # fixme: remove
 
 my $cookie_name = 'PVEAuthCookie';
+
+my $base_handler_class;
+
+sub set_base_handler_class {
+    my ($class) = @_;
+
+    die "base_handler_class already defined" if $base_handler_class;
+
+    $base_handler_class = $class;
+}
 
 sub extract_auth_cookie {
     my ($cookie) = @_;
@@ -236,8 +245,10 @@ sub auth_handler {
 sub rest_handler {
     my ($rpcenv, $clientip, $method, $rel_uri, $auth, $params) = @_;
 
+    die "no base handler - internal error" if !$base_handler_class;
+
     my $uri_param = {};
-    my ($handler, $info) = PVE::API2->find_handler($method, $rel_uri, $uri_param);
+    my ($handler, $info) = $base_handler_class->find_handler($method, $rel_uri, $uri_param);
     if (!$handler || !$info) {
 	return {
 	    status => HTTP_NOT_IMPLEMENTED,

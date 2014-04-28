@@ -19,6 +19,9 @@ sub new {
 
     die "no lockfile" if !$args{lockfile};
 
+    die "no base_handler_class" if !$args{base_handler_class};
+    #require $args{base_handler_class};
+
     my $lockfh = IO::File->new(">>$args{lockfile}") ||
 	die "unable to open lock file '$args{lockfile}' - $!\n";
 
@@ -36,6 +39,8 @@ sub new {
 
     my $cfg = { %args };
     my $self = bless { cfg => $cfg }, $class;
+
+    $cfg->{base_handler_class} = $args{base_handler_class};
 
     $cfg->{socket} = $socket;
     $cfg->{lockfh} = $lockfh;

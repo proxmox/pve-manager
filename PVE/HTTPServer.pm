@@ -1292,11 +1292,13 @@ sub new {
 
     my $class = ref($this) || $this;
 
-    foreach my $req (qw(socket lockfh lockfile)) {
+    foreach my $req (qw(base_handler_class socket lockfh lockfile)) {
 	die "misssing required argument '$req'" if !defined($args{$req});
     }
 
     my $self = bless { %args }, $class;
+
+    PVE::REST::set_base_handler_class($self->{base_handler_class});
 
     # init inotify
     PVE::INotify::inotify_init();

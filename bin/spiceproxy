@@ -13,6 +13,7 @@ use English;
 use Getopt::Long;
 use PVE::SafeSyslog;
 use PVE::APIDaemon;
+use PVE::API2;
 
 my $pidfile = "/var/run/pveproxy/spiceproxy.pid";
 my $lockfile = "/var/lock/spiceproxy.lck";
@@ -51,6 +52,7 @@ my $cpid;
 my $daemon;
 eval {
     $daemon = PVE::APIDaemon->new(
+	base_handler_class => 'PVE::API2',
 	port => 3128, 
 	keep_alive => 0,
 	max_workers => 1, # do we need more?

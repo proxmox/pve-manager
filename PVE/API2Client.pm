@@ -6,7 +6,6 @@ use URI;
 use HTTP::Cookies;
 use LWP::UserAgent;
 use JSON;
-use PVE::API2;
 use Data::Dumper; # fixme: remove
 use HTTP::Request::Common;
 

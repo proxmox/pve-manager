@@ -19,6 +19,7 @@ use URI;
 use URI::QueryParam;
 use File::Find;
 use Data::Dumper;
+use PVE::API2;
 
 my $pidfile = "/var/run/pveproxy/pveproxy.pid";
 my $lockfile = "/var/lock/pveproxy.lck";
@@ -81,6 +82,7 @@ eval {
     add_dirs($dirs, '/vncterm/' => '/usr/share/vncterm/');
 
     $daemon = PVE::APIDaemon->new(
+	base_handler_class => 'PVE::API2',
 	port => 8006, 
 	keep_alive => 100,
 	max_conn => 500,

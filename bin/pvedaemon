@@ -11,6 +11,7 @@ use POSIX ":sys_wait_h";
 use Socket;
 use PVE::SafeSyslog;
 use PVE::APIDaemon;
+use PVE::API2;
 
 my $pidfile = "/var/run/pvedaemon.pid";
 my $lockfile = "/var/lock/pvedaemon.lck";
@@ -40,6 +41,7 @@ my $cpid;
 my $daemon;
 eval {
     $daemon = PVE::APIDaemon->new(
+	base_handler_class => 'PVE::API2',
 	host => "127.0.0.1", 
 	port => 85, 
 	trusted_env => 1, # partly trusted, because only local programs can connect
