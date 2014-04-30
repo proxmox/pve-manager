@@ -26,6 +26,7 @@ use PVE::REST;
 
 use Net::IP;
 use URI;
+use URI::Escape;
 use HTTP::Status qw(:constants);
 use HTTP::Headers;
 use HTTP::Response;
@@ -1046,7 +1047,7 @@ sub push_request_header {
 		$reqstate->{keep_alive}--;
 
 		if ($line =~ /(\S+)\040(\S+)\040HTTP\/(\d+)\.(\d+)/o) {
-		    my ($method, $uri, $maj, $min) = ($1, $2, $3, $4);
+		    my ($method, $url, $maj, $min) = ($1, $2, $3, $4);
 
 		    if ($maj != 1) {
 			$self->error($reqstate, 506, "http protocol version $maj.$min not supported");
@@ -1062,7 +1063,7 @@ sub push_request_header {
 		    $reqstate->{proto}->{maj} = $maj;
 		    $reqstate->{proto}->{min} = $min;
 		    $reqstate->{proto}->{ver} = $maj*1000+$min;
-		    $reqstate->{request} = HTTP::Request->new($method, $uri);
+		    $reqstate->{request} = HTTP::Request->new($method, uri_unescape($url));
 		    $reqstate->{starttime} = [gettimeofday],
 
 		    $self->unshift_read_header($reqstate);
