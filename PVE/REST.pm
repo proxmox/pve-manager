@@ -172,11 +172,11 @@ sub prepare_response_data {
 }
 
 my $exc_to_res = sub {
-    my ($err, $status) = @_;
+    my ($info, $err, $status) = @_;
 
     $status = $status || HTTP_INTERNAL_SERVER_ERROR;
 
-    my $resp = {};
+    my $resp = { info => $info };
     if (ref($err) eq "PVE::Exception") {
 	$resp->{status} = $err->{code} || $status;
 	$resp->{errors} = $err->{errors} if $err->{errors};
@@ -269,7 +269,7 @@ sub rest_handler {
     # check access permissions
     eval { $rpcenv->check_api2_permissions($info->{permissions}, $auth->{userid}, $uri_param); };
     if (my $err = $@) {
-	return &$exc_to_res($err, HTTP_FORBIDDEN);
+	return &$exc_to_res($info, $err, HTTP_FORBIDDEN);
     }
 
     if ($info->{proxyto}) {
@@ -285,7 +285,7 @@ sub rest_handler {
 	    }
 	};
 	if (my $err = $@) {
-	    return &$exc_to_res($err);
+	    return &$exc_to_res($info, $err);
 	}
 	if ($remip) {
 	    return { proxy => $remip, proxy_params => $params };
@@ -312,7 +312,7 @@ sub rest_handler {
 	}
     };
     if (my $err = $@) {
-	return &$exc_to_res($err);
+	return &$exc_to_res($info, $err);
     }
 
     return $resp;
