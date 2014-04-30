@@ -503,10 +503,15 @@ sub handle_api2_request {
 
 	PVE::REST::prepare_response_data($format, $res);
 	my ($raw, $ct, $nocomp) = PVE::REST::format_response_data($format, $res, $path);
-
-	my $resp = HTTP::Response->new($res->{status}, $res->{message});
-	$resp->header("Content-Type" => $ct);
-	$resp->content($raw);
+	
+	my $resp;
+	if (ref($raw) && (ref($raw) eq 'HTTP::Response')) {
+	    $resp = $raw;
+	} else {
+	    $resp = HTTP::Response->new($res->{status}, $res->{message});
+	    $resp->header("Content-Type" => $ct);
+	    $resp->content($raw);
+	}
 	$self->response($reqstate, $resp, undef, $nocomp, $delay);
     };
     if (my $err = $@) {
