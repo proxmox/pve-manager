@@ -52,125 +52,6 @@ sub create_auth_cookie {
     return "${cookie_name}=$encticket; path=/; secure;";
 }
 
-sub format_response_data {
-    my($format, $res, $uri) = @_;
-
-    my $data = $res->{data};
-    my $info = $res->{info};
-
-    my ($ct, $raw, $nocomp);
-
-    if ($format eq 'json') {
-	$ct = 'application/json;charset=UTF-8';
-	$raw = to_json($data, {utf8 => 1, allow_nonref => 1});
-    } elsif ($format eq 'html') {
-	$ct = 'text/html;charset=UTF-8';
-	$raw = "<html><body>";
-	if (!is_success($res->{status})) {
-	    my $msg = $res->{message} || '';
-	    $raw .= "<h1>ERROR $res->{status} $msg</h1>";
-	}
-	my $lnk = PVE::JSONSchema::method_get_child_link($info);
-	if ($lnk && $data && $data->{data} && is_success($res->{status})) {
-
-	    my $href = $lnk->{href};
-	    if ($href =~ m/^\{(\S+)\}$/) {
-		my $prop = $1;
-		$uri =~ s/\/+$//; # remove trailing slash
-		foreach my $elem (sort {$a->{$prop} cmp $b->{$prop}} @{$data->{data}}) {
-		    next if !ref($elem);
-
-		    if (defined(my $value = $elem->{$prop})) {
-			if ($value ne '') {
-			    if (scalar(keys %$elem) > 1) {
-				my $tv = to_json($elem, {allow_nonref => 1, canonical => 1});
-				$raw .= "<a href='$uri/$value'>$value</a> <pre>$tv</pre><br>";
-			    } else {
-				$raw .= "<a href='$uri/$value'>$value</a><br>";
-			    }
-			}
-		    }
-		}
-	    }
-	} else {
-	    $raw .= "<pre>";
-	    $raw .= encode_entities(to_json($data, {allow_nonref => 1, pretty => 1}));
-	    $raw .= "</pre>";
-	}
-	$raw .= "</body></html>";
-
-    } elsif ($format eq 'png') {
-	$ct = 'image/png';
-	$nocomp = 1;
-	# fixme: better to revove that whole png thing ?
-
-	my $filename;
-	$raw = '';
-
-	if ($data && ref($data) && ref($data->{data}) && 
-	    $data->{data}->{filename} && defined($data->{data}->{image})) {
-	    $filename = $data->{data}->{filename};
-	    $raw = $data->{data}->{image};
-	}
-	    
-    } elsif ($format eq 'extjs') {
-	$ct = 'application/json;charset=UTF-8';
-	$raw = to_json($data, {utf8 => 1, allow_nonref => 1});
-    } elsif ($format eq 'htmljs') {
-	# we use this for extjs file upload forms
-	$ct = 'text/html;charset=UTF-8';
-	$raw = encode_entities(to_json($data, {allow_nonref => 1}));
-    } elsif ($format eq 'spiceconfig') {
-	$ct = 'application/x-virt-viewer;charset=UTF-8';
-	if ($data && ref($data) && ref($data->{data})) {
-	    $raw = "[virt-viewer]\n";
-	    while (my ($key, $value) = each %{$data->{data}}) {
-		$raw .= "$key=$value\n" if defined($value);
-	    }
-	}
-    } else {
-	$ct = 'text/plain;charset=UTF-8';
-	$raw = to_json($data, {utf8 => 1, allow_nonref => 1, pretty => 1});
-    }
-
-    return wantarray ? ($raw, $ct, $nocomp) : $raw;
-}
-
-sub prepare_response_data {
-    my ($format, $res) = @_;
-
-    my $success = 1;
-    my $new = {
-	data => $res->{data},
-    };
-    if (scalar(keys %{$res->{errors}})) {
-	$success = 0;
-	$new->{errors} = $res->{errors};
-    }
-
-    if ($format eq 'extjs' || $format eq 'htmljs') {
-	# HACK: extjs wants 'success' property instead of useful HTTP status codes
-	if (is_error($res->{status})) {
-	    $success = 0;
-	    $new->{message} = $res->{message} || status_message($res->{status});
-	    $new->{status} = $res->{status} || 200;
-	    $res->{message} = undef;
-	    $res->{status} = 200;
-	}
-	$new->{success} = $success;
-    }
-
-    if ($success && $res->{total}) {
-	$new->{total} = $res->{total};
-    }
-
-    if ($success && $res->{changes}) {
-	$new->{changes} = $res->{changes};
-    }
-
-    $res->{data} = $new;
-}
-
 my $exc_to_res = sub {
     my ($info, $err, $status) = @_;
 
@@ -201,7 +82,7 @@ sub auth_handler {
 
     # explicitly allow some calls without auth
     if (($rel_uri eq '/access/domains' && $method eq 'GET') ||
-	($rel_uri eq '/access/ticket' && $method eq 'POST')) {
+	($rel_uri eq '/access/ticket' && ($method eq 'GET' || $method eq 'POST'))) {
 	$require_auth = 0;
     }
 
@@ -316,6 +197,85 @@ sub rest_handler {
     }
 
     return $resp;
+}
+
+# generic formater support
+
+my $formater_hash = {};
+
+sub register_formater {
+    my ($format, $func) = @_;
+
+    die "formater '$format' already defined" if $formater_hash->{$format};
+
+    $formater_hash->{$format} = {
+	func => $func,
+    };
+}
+
+sub get_formater {
+    my ($format) = @_; 
+
+     return undef if !$format;
+
+    my $info = $formater_hash->{$format};
+    return undef if !$info;
+
+    return $info->{func};
+}
+
+my $login_formater_hash = {};
+
+sub register_login_formater {
+    my ($format, $func) = @_;
+
+    die "login formater '$format' already defined" if $login_formater_hash->{$format};
+
+    $login_formater_hash->{$format} = {
+	func => $func,
+    };
+}
+
+sub get_login_formater {
+    my ($format) = @_; 
+
+    return undef if !$format;
+
+    my $info = $login_formater_hash->{$format};
+    return undef if !$info;
+
+    return $info->{func};
+}
+
+sub register_page_formater {
+    my (%config) = @_;
+
+   my $base_handler_class = $config{base_handler_class} ||
+       die "missing base_handler_class";
+
+   my $format = $config{format} ||
+	die "missing format";
+
+    die "format '$format' is not registered"
+	if !$formater_hash->{$format};
+
+    my $path = $config{path} ||
+	die "missing path";
+
+    my $method = $config{method} ||
+	die "missing method";
+	
+    my $code = $config{code} ||
+	die "missing formater code";
+    
+    my $uri_param = {};
+    my ($handler, $info) = $base_handler_class->find_handler($method, $path, $uri_param);
+    die "unabe to find handler for '$method: $path'" if !($handler && $info);
+
+    die "duplicate formater for '$method: $path'" 
+	if $info->{formater} && $info->{formater}->{$format};
+
+    $info->{formater}->{$format} = $code;
 }
 
 1;

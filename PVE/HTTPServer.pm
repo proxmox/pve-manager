@@ -49,7 +49,7 @@ my $baseuri = "/api2";
 sub split_abs_uri {
     my ($abs_uri) = @_;
 
-    my ($format, $rel_uri) = $abs_uri =~ m/^\Q$baseuri\E\/+(html|text|json|extjs|png|htmljs|spiceconfig)(\/.*)?$/;
+    my ($format, $rel_uri) = $abs_uri =~ m/^\Q$baseuri\E\/+([a-z][a-z0-9]+)(\/.*)?$/;
     $rel_uri = '/' if !$rel_uri;
  
     return wantarray ? ($rel_uri, $format) : $rel_uri;
@@ -445,8 +445,11 @@ sub handle_api2_request {
 	my $path = $r->uri->path();
 
 	my ($rel_uri, $format) = split_abs_uri($path);
-	if (!$format) {
-	    $self->error($reqstate, HTTP_NOT_IMPLEMENTED, "no such uri");
+
+	my $formater = PVE::REST::get_formater($format);
+
+	if (!defined($formater)) {
+	    $self->error($reqstate, HTTP_NOT_IMPLEMENTED, "no such uri $rel_uri, $format");
 	    return;
 	}
 
@@ -501,9 +504,14 @@ sub handle_api2_request {
 	    $delay = 0 if $delay < 0;
 	}
 
-	PVE::REST::prepare_response_data($format, $res);
-	my ($raw, $ct, $nocomp) = PVE::REST::format_response_data($format, $res, $path);
-	
+	if ($res->{info} && $res->{info}->{formater}) {
+	    if (defined(my $func = $res->{info}->{formater}->{$format})) {
+		$formater = $func;
+	    }
+	}
+
+	my ($raw, $ct, $nocomp) = &$formater($res, $res->{data}, $path, $auth);
+
 	my $resp;
 	if (ref($raw) && (ref($raw) eq 'HTTP::Response')) {
 	    $resp = $raw;
@@ -954,7 +962,23 @@ sub unshift_read_header {
 							$rel_uri, $ticket, $token);
 		    };
 		    if (my $err = $@) {
-			$self->error($reqstate, HTTP_UNAUTHORIZED, $err);
+			# always delay unauthorized calls by 3 seconds
+			my $delay = 3;
+			if (my $formater = PVE::REST::get_login_formater($format)) {
+			    my ($raw, $ct, $nocomp) = &$formater($path, $auth);
+			    my $resp;
+			    if (ref($raw) && (ref($raw) eq 'HTTP::Response')) {
+				$resp = $raw;
+			    } else {
+				$resp = HTTP::Response->new(HTTP_UNAUTHORIZED, "Login Required");
+				$resp->header("Content-Type" => $ct);
+				$resp->content($raw);
+			    }
+			    $self->response($reqstate, $resp, undef, $nocomp, 3);
+			} else {
+			    my $resp = HTTP::Response->new(HTTP_UNAUTHORIZED, $err);
+			    $self->response($reqstate, $resp, undef, 0, $delay);
+			}
 			return;
 		    }
 		}
