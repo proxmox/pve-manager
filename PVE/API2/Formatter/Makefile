@@ -1,6 +1,8 @@
 include ../../../defines.mk
 
 PERLSOURCE = 			\
+	Bootstrap.pm		\
+	HTML.pm			\
 	Standard.pm
 
 all:

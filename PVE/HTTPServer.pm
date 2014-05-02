@@ -434,6 +434,10 @@ sub proxy_request {
 		    delete $hdr->{URL};
 		    delete $hdr->{HTTPVersion};
 		    my $header = HTTP::Headers->new(%$hdr);
+		    if (my $location = $header->header('Location')) {
+			$location =~ s|^http://localhost:85||;
+			$header->header(Location => $location);
+		    }
 		    my $resp = HTTP::Response->new($code, $msg, $header, $body);
 		    # Note: disable compression, because body is already compressed
 		    $self->response($reqstate, $resp, undef, 1);
@@ -560,7 +564,7 @@ sub handle_api2_request {
 	    }
 	}
 
-	my ($raw, $ct, $nocomp) = &$formatter($res, $res->{data}, $path, $auth);
+	my ($raw, $ct, $nocomp) = &$formatter($res, $res->{data}, $params, $path, $auth);
 
 	my $resp;
 	if (ref($raw) && (ref($raw) eq 'HTTP::Response')) {

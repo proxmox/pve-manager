@@ -6,7 +6,6 @@ use warnings;
 use PVE::pvecfg;
 use PVE::RESTHandler;
 use PVE::JSONSchema;
-use PVE::API2::Formatter::Standard;
 
 use base qw(PVE::RESTHandler);
 

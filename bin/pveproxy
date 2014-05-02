@@ -20,6 +20,8 @@ use URI::QueryParam;
 use File::Find;
 use Data::Dumper;
 use PVE::API2;
+use PVE::API2::Formatter::Standard;
+use PVE::API2::Formatter::HTML;
 
 my $pidfile = "/var/run/pveproxy/pveproxy.pid";
 my $lockfile = "/var/lock/pveproxy.lck";

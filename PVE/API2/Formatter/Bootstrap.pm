@@ -94,15 +94,21 @@ sub body {
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Proxmox VE Portal at '$hostname'</title>
+    <title>Proxmox VE API</title>
 
     <!-- Bootstrap -->
-    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/pve2/css/bootstrap.min.css" rel="stylesheet">
 
     <script type="text/javascript">
     $jssrc
     $jssetup
     </script>
+
+    <style>
+body {
+	padding-top: 70px;
+}
+    </style>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -114,7 +120,7 @@ sub body {
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="/js/bootstrap.min.js"></script>
+    <script src="/pve2/js/bootstrap.min.js"></script>
 
   </head>
   <body>

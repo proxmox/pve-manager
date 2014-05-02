@@ -12,6 +12,8 @@ use Socket;
 use PVE::SafeSyslog;
 use PVE::APIDaemon;
 use PVE::API2;
+use PVE::API2::Formatter::Standard;
+use PVE::API2::Formatter::HTML;
 
 my $pidfile = "/var/run/pvedaemon.pid";
 my $lockfile = "/var/lock/pvedaemon.lck";
