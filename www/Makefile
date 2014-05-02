@@ -1,4 +1,4 @@
-SUBDIRS = images ext4 css manager
+SUBDIRS = images ext4 css manager bootstrap
 
 all: ${SUBDIRS}
 
