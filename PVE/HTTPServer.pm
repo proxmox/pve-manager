@@ -55,49 +55,49 @@ sub split_abs_uri {
     return wantarray ? ($rel_uri, $format) : $rel_uri;
 }
 
-# generic formater support
+# generic formatter support
 
-my $formater_hash = {};
+my $formatter_hash = {};
 
-sub register_formater {
+sub register_formatter {
     my ($format, $func) = @_;
 
-    die "formater '$format' already defined" if $formater_hash->{$format};
+    die "formatter '$format' already defined" if $formatter_hash->{$format};
 
-    $formater_hash->{$format} = {
+    $formatter_hash->{$format} = {
 	func => $func,
     };
 }
 
-sub get_formater {
+sub get_formatter {
     my ($format) = @_; 
 
      return undef if !$format;
 
-    my $info = $formater_hash->{$format};
+    my $info = $formatter_hash->{$format};
     return undef if !$info;
 
     return $info->{func};
 }
 
-my $login_formater_hash = {};
+my $login_formatter_hash = {};
 
-sub register_login_formater {
+sub register_login_formatter {
     my ($format, $func) = @_;
 
-    die "login formater '$format' already defined" if $login_formater_hash->{$format};
+    die "login formatter '$format' already defined" if $login_formatter_hash->{$format};
 
-    $login_formater_hash->{$format} = {
+    $login_formatter_hash->{$format} = {
 	func => $func,
     };
 }
 
-sub get_login_formater {
+sub get_login_formatter {
     my ($format) = @_; 
 
     return undef if !$format;
 
-    my $info = $login_formater_hash->{$format};
+    my $info = $login_formatter_hash->{$format};
     return undef if !$info;
 
     return $info->{func};
@@ -496,9 +496,9 @@ sub handle_api2_request {
 
 	my ($rel_uri, $format) = split_abs_uri($path);
 
-	my $formater = get_formater($format);
+	my $formatter = get_formatter($format);
 
-	if (!defined($formater)) {
+	if (!defined($formatter)) {
 	    $self->error($reqstate, HTTP_NOT_IMPLEMENTED, "no such uri $rel_uri, $format");
 	    return;
 	}
@@ -554,13 +554,13 @@ sub handle_api2_request {
 	    $delay = 0 if $delay < 0;
 	}
 
-	if ($res->{info} && $res->{info}->{formater}) {
-	    if (defined(my $func = $res->{info}->{formater}->{$format})) {
-		$formater = $func;
+	if ($res->{info} && $res->{info}->{formatter}) {
+	    if (defined(my $func = $res->{info}->{formatter}->{$format})) {
+		$formatter = $func;
 	    }
 	}
 
-	my ($raw, $ct, $nocomp) = &$formater($res, $res->{data}, $path, $auth);
+	my ($raw, $ct, $nocomp) = &$formatter($res, $res->{data}, $path, $auth);
 
 	my $resp;
 	if (ref($raw) && (ref($raw) eq 'HTTP::Response')) {
@@ -1014,8 +1014,8 @@ sub unshift_read_header {
 		    if (my $err = $@) {
 			# always delay unauthorized calls by 3 seconds
 			my $delay = 3;
-			if (my $formater = get_login_formater($format)) {
-			    my ($raw, $ct, $nocomp) = &$formater($path, $auth);
+			if (my $formatter = get_login_formatter($format)) {
+			    my ($raw, $ct, $nocomp) = &$formatter($path, $auth);
 			    my $resp;
 			    if (ref($raw) && (ref($raw) eq 'HTTP::Response')) {
 				$resp = $raw;

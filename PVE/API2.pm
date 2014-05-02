@@ -114,7 +114,7 @@ __PACKAGE__->register_method ({
 	return $res;
     }});
 
-# register result formaters
+# register result formatters
 
 my $prepare_response_data = sub {
     my ($format, $res) = @_;
@@ -151,7 +151,7 @@ my $prepare_response_data = sub {
     $res->{data} = $new;
 };
 
-PVE::HTTPServer::register_formater('json', sub {
+PVE::HTTPServer::register_formatter('json', sub {
     my ($res, $data, $param, $path, $auth) = @_;
 
     my $nocomp = 0;
@@ -166,7 +166,7 @@ PVE::HTTPServer::register_formater('json', sub {
 });
 
 
-PVE::HTTPServer::register_formater('extjs', sub {
+PVE::HTTPServer::register_formatter('extjs', sub {
     my ($res, $data, $param, $path, $auth) = @_;
 
     my $nocomp = 0;
@@ -180,7 +180,7 @@ PVE::HTTPServer::register_formater('extjs', sub {
     return ($raw, $ct, $nocomp);			     
 });
 
-PVE::HTTPServer::register_formater('htmljs', sub {
+PVE::HTTPServer::register_formatter('htmljs', sub {
     my ($res, $data, $param, $path, $auth) = @_;
  
     my $nocomp = 0;
@@ -197,7 +197,7 @@ PVE::HTTPServer::register_formater('htmljs', sub {
 });
 
 
-PVE::HTTPServer::register_formater('spiceconfig', sub {
+PVE::HTTPServer::register_formatter('spiceconfig', sub {
     my ($res, $data, $param, $path, $auth) = @_;
 
     my $nocomp = 0;
@@ -220,7 +220,7 @@ PVE::HTTPServer::register_formater('spiceconfig', sub {
     return ($raw, $ct, $nocomp);
 });
 
-PVE::HTTPServer::register_formater('png', sub {
+PVE::HTTPServer::register_formatter('png', sub {
     my ($res, $data, $param, $path, $auth) = @_;
 
     my $nocomp = 1;
@@ -245,7 +245,7 @@ PVE::HTTPServer::register_formater('png', sub {
     return ($raw, $ct, $nocomp);
 });
 
-PVE::HTTPServer::register_formater('html', sub {
+PVE::HTTPServer::register_formatter('html', sub {
     my ($res, $data, $param, $path, $auth) = @_;
 
     my $nocomp = 0;
