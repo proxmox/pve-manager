@@ -182,6 +182,10 @@ PVE::HTTPServer::register_formatter($portal_format, sub {
     }
 
     my $info = $res->{info};
+
+    $html .= $doc->el(tag => 'h3', text => 'Description');
+    $html .= $doc->el(tag => 'p', text => $info->{description});
+
     my $lnk = PVE::JSONSchema::method_get_child_link($info);
 
     if ($lnk && $data && $data->{data} && HTTP::Status::is_success($res->{status})) {
