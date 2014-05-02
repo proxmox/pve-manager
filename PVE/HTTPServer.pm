@@ -55,6 +55,56 @@ sub split_abs_uri {
     return wantarray ? ($rel_uri, $format) : $rel_uri;
 }
 
+# generic formater support
+
+my $formater_hash = {};
+
+sub register_formater {
+    my ($format, $func) = @_;
+
+    die "formater '$format' already defined" if $formater_hash->{$format};
+
+    $formater_hash->{$format} = {
+	func => $func,
+    };
+}
+
+sub get_formater {
+    my ($format) = @_; 
+
+     return undef if !$format;
+
+    my $info = $formater_hash->{$format};
+    return undef if !$info;
+
+    return $info->{func};
+}
+
+my $login_formater_hash = {};
+
+sub register_login_formater {
+    my ($format, $func) = @_;
+
+    die "login formater '$format' already defined" if $login_formater_hash->{$format};
+
+    $login_formater_hash->{$format} = {
+	func => $func,
+    };
+}
+
+sub get_login_formater {
+    my ($format) = @_; 
+
+    return undef if !$format;
+
+    my $info = $login_formater_hash->{$format};
+    return undef if !$info;
+
+    return $info->{func};
+}
+
+# server implementation
+
 sub log_request {
     my ($self, $reqstate) = @_;
 
@@ -446,7 +496,7 @@ sub handle_api2_request {
 
 	my ($rel_uri, $format) = split_abs_uri($path);
 
-	my $formater = PVE::REST::get_formater($format);
+	my $formater = get_formater($format);
 
 	if (!defined($formater)) {
 	    $self->error($reqstate, HTTP_NOT_IMPLEMENTED, "no such uri $rel_uri, $format");
@@ -964,7 +1014,7 @@ sub unshift_read_header {
 		    if (my $err = $@) {
 			# always delay unauthorized calls by 3 seconds
 			my $delay = 3;
-			if (my $formater = PVE::REST::get_login_formater($format)) {
+			if (my $formater = get_login_formater($format)) {
 			    my ($raw, $ct, $nocomp) = &$formater($path, $auth);
 			    my $resp;
 			    if (ref($raw) && (ref($raw) eq 'HTTP::Response')) {

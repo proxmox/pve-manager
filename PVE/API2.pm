@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use PVE::pvecfg;
-use PVE::REST;
+use PVE::HTTPServer;
 use PVE::RESTHandler;
 use HTTP::Status;
 use JSON;
@@ -151,7 +151,7 @@ my $prepare_response_data = sub {
     $res->{data} = $new;
 };
 
-PVE::REST::register_formater('json', sub {
+PVE::HTTPServer::register_formater('json', sub {
     my ($res, $data, $param, $path, $auth) = @_;
 
     my $nocomp = 0;
@@ -166,7 +166,7 @@ PVE::REST::register_formater('json', sub {
 });
 
 
-PVE::REST::register_formater('extjs', sub {
+PVE::HTTPServer::register_formater('extjs', sub {
     my ($res, $data, $param, $path, $auth) = @_;
 
     my $nocomp = 0;
@@ -180,7 +180,7 @@ PVE::REST::register_formater('extjs', sub {
     return ($raw, $ct, $nocomp);			     
 });
 
-PVE::REST::register_formater('htmljs', sub {
+PVE::HTTPServer::register_formater('htmljs', sub {
     my ($res, $data, $param, $path, $auth) = @_;
  
     my $nocomp = 0;
@@ -197,7 +197,7 @@ PVE::REST::register_formater('htmljs', sub {
 });
 
 
-PVE::REST::register_formater('spiceconfig', sub {
+PVE::HTTPServer::register_formater('spiceconfig', sub {
     my ($res, $data, $param, $path, $auth) = @_;
 
     my $nocomp = 0;
@@ -220,7 +220,7 @@ PVE::REST::register_formater('spiceconfig', sub {
     return ($raw, $ct, $nocomp);
 });
 
-PVE::REST::register_formater('png', sub {
+PVE::HTTPServer::register_formater('png', sub {
     my ($res, $data, $param, $path, $auth) = @_;
 
     my $nocomp = 1;
@@ -245,7 +245,7 @@ PVE::REST::register_formater('png', sub {
     return ($raw, $ct, $nocomp);
 });
 
-PVE::REST::register_formater('html', sub {
+PVE::HTTPServer::register_formater('html', sub {
     my ($res, $data, $param, $path, $auth) = @_;
 
     my $nocomp = 0;
