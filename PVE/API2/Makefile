@@ -28,3 +28,4 @@ clean:
 install: ${PERLSOURCE}
 	install -d ${PERLLIBDIR}/PVE/API2
 	install -m 0644 ${PERLSOURCE} ${PERLLIBDIR}/PVE/API2
+	make -C Formatter install
