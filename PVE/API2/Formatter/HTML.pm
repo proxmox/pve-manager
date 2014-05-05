@@ -202,19 +202,25 @@ PVE::HTTPServer::register_formatter($portal_format, sub {
 		next if !ref($elem);
 		
 		if (defined(my $value = $elem->{$prop})) {
-		    if ($value ne '') {
-			my $text = $value;
-			if (scalar(keys %$elem) > 1) {
-			    my $tv = to_json($elem, {allow_nonref => 1, canonical => 1});
-			    $text = "$value $tv";
-			}
-			push @$items, {
-			    tag => 'a', 
-			    class => 'list-group-item',
-			    href => "$path/$value",
-			    text => $text,
-			}
-		    }
+		    my $tv = to_json($elem, {pretty => 1, allow_nonref => 1, canonical => 1});
+
+		    push @$items, {
+			tag => 'a', 
+			class => 'list-group-item',
+			href => "$path/$value",
+			cn => [
+			    {
+				tag => 'h4',
+				class => 'list-group-item-heading',
+				text => $value,
+			    },
+			    {
+				tag => 'pre',
+				class => 'list-group-item',
+				text => $tv,
+			    },
+			],
+		    };
 		}
 	    }
 
