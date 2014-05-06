@@ -112,6 +112,17 @@ sub get_rootdir {
     return $root;
 }
 
+sub get_disk_quota {
+    my ($conf) = @_;
+
+    my $disk_quota = $global_vzconf->{disk_quota};
+    if ($conf->{disk_quota} && defined($conf->{disk_quota}->{value})) {
+	$disk_quota = $conf->{disk_quota}->{value};
+    }
+
+    return $disk_quota;
+}
+
 sub read_user_beancounters {
     my $ubc = {};
 
@@ -436,6 +447,7 @@ sub read_global_vz_config {
 	privatedir => '/var/lib/vz/private/$VEID', # note '$VEID' is a place holder
 	dumpdir => '/var/lib/vz/dump',
 	lockdir => '/var/lib/vz/lock',
+	disk_quota => 1,
     };
     
     my $filename = "/etc/vz/vz.conf";
@@ -472,6 +484,9 @@ sub read_global_vz_config {
 	my $dir = $1;
 	$dir =~ s/^\"(.*)\"/$1/;
 	$res->{lockdir} = $dir;
+    }
+    if ($data =~ m/^\s*DISK_QUOTA=(no|false|off|0)$/m) { 
+	$res->{disk_quota} = 0;
     }
 
     return $res;

@@ -164,7 +164,7 @@ sub phase1 {
 	}
     }
 
-    my $disk_quota = $conf->{disk_quota}->{value};
+    my $disk_quota = PVE::OpenVZ::get_disk_quota($conf);
     if (!defined($disk_quota) || ($disk_quota != 0)) {
 	$disk_quota = $self->{disk_quota} = 1;
 
