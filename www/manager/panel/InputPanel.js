@@ -74,6 +74,14 @@ Ext.define('PVE.panel.InputPanel', {
 		    items: me.column2 || [] // allow empty column
 		}
 	    ];
+	    if (me.columnB) {
+		items.push({
+		    columnWidth: 1,
+		    padding: '10 0 0 0',
+		    layout: 'anchor',
+		    items: me.columnB
+		});
+	    }
 	} else {
 	    throw "unsupported config";
 	}
