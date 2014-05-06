@@ -82,6 +82,14 @@ Ext.define('PVE.dc.Config', {
 		    xtype: 'pveDcHAConfig',
 		    title: 'HA',
 		    itemId: 'ha'
+		},
+		{
+		    xtype: 'pveFirewallPanel',
+		    title: gettext('Firewall'),
+		    base_url: '/cluster/firewall',
+		    fwtype: 'dc',
+		    phstateid: me.hstateid,
+		    itemId: 'firewall'
 		}
 	    ]);
 

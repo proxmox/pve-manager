@@ -141,12 +141,22 @@ Ext.define('PVE.node.Config', {
 	]);
 
 	if (caps.nodes['Sys.Console']) {
-	    me.items.push([{
-		title: gettext('Updates'),
-		itemId: 'apt',
-		xtype: 'pveNodeAPT',
-		nodename: nodename
-	    }]);
+	    me.items.push([
+		{
+		    xtype: 'pveFirewallPanel',
+		    title: gettext('Firewall'),
+		    base_url: '/nodes/' + nodename + '/firewall',
+		    fwtype: 'node',
+		    phstateid: me.hstateid,
+		    itemId: 'firewall'
+		},
+		{
+		    title: gettext('Updates'),
+		    itemId: 'apt',
+		    xtype: 'pveNodeAPT',
+		    nodename: nodename
+		}
+	    ]);
 	    me.items.push([{
 		title: 'Ceph',
 		itemId: 'ceph',

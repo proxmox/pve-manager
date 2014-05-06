@@ -17,15 +17,17 @@ Ext.define('PVE.qemu.Config', {
 
 	var caps = Ext.state.Manager.get('GuiCap');
 
+	var base_url = '/nodes/' + nodename + "/qemu/" + vmid;
+ 
 	me.statusStore = Ext.create('PVE.data.ObjectStore', {
-	    url: "/api2/json/nodes/" + nodename + "/qemu/" + vmid + "/status/current",
+	    url: '/api2/json' + base_url + '/status/current',
 	    interval: 1000
 	});
 
 	var vm_command = function(cmd, params) {
 	    PVE.Utils.API2Request({
 		params: params,
-		url: '/nodes/' + nodename + '/qemu/' + vmid + "/status/" + cmd,
+		url: base_url + '/status/' + cmd,
 		waitMsgTarget: me,
 		method: 'POST',
 		failure: function(response, opts) {
@@ -98,7 +100,7 @@ Ext.define('PVE.qemu.Config', {
 	    confirmMsg: Ext.String.format(gettext('Are you sure you want to remove VM {0}? This will permanently erase all VM data.'), vmid),
 	    handler: function() {
 		PVE.Utils.API2Request({
-		    url: '/nodes/' + nodename + '/qemu/' + vmid,
+		    url: base_url,
 		    method: 'DELETE',
 		    waitMsgTarget: me,
 		    failure: function(response, opts) {
@@ -173,6 +175,19 @@ Ext.define('PVE.qemu.Config', {
 		xtype: 'pveQemuSnapshotTree',
 		itemId: 'snapshot'
 	    });
+	}
+
+	if (caps.vms['VM.Console']) {
+	    me.items.push([
+		{
+		    xtype: 'pveFirewallPanel',
+		    title: gettext('Firewall'),
+		    base_url: base_url + '/firewall',
+		    fwtype: 'vm',
+		    phstateid: me.hstateid,
+		    itemId: 'firewall'
+		}
+	    ]);
 	}
 
 	if (caps.vms['Permissions.Modify']) {

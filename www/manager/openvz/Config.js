@@ -17,15 +17,17 @@ Ext.define('PVE.openvz.Config', {
 
 	var caps = Ext.state.Manager.get('GuiCap');
 
+	var base_url = '/nodes/' + nodename + '/openvz/' + vmid;
+ 
 	me.statusStore = Ext.create('PVE.data.ObjectStore', {
-	    url: "/api2/json/nodes/" + nodename + "/openvz/" + vmid + "/status/current",
+	    url: '/api2/json' + base_url + '/status/current',
 	    interval: 1000
 	});
 
 	var vm_command = function(cmd, params) {
 	    PVE.Utils.API2Request({
 		params: params,
-		url: '/nodes/' + nodename + '/openvz/' + vmid + "/status/" + cmd,
+		url: base_url + "/status/" + cmd,
 		waitMsgTarget: me,
 		method: 'POST',
 		failure: function(response, opts) {
@@ -89,7 +91,7 @@ Ext.define('PVE.openvz.Config', {
 	    confirmMsg: Ext.String.format(gettext('Are you sure you want to remove VM {0}? This will permanently erase all VM data.'), vmid),
 	    handler: function() {
 		PVE.Utils.API2Request({
-		    url: '/nodes/' + nodename + '/openvz/' + vmid,
+		    url: base_url,
 		    method: 'DELETE',
 		    waitMsgTarget: me,
 		    failure: function(response, opts) {
@@ -153,7 +155,7 @@ Ext.define('PVE.openvz.Config', {
 		    title: 'UBC',
 		    itemId: 'ubc',
 		    xtype: 'pveBeanCounterGrid',
-		    url: '/api2/json/nodes/' + nodename + '/openvz/' + vmid + '/status/ubc'
+		    url: '/api2/json' + base_url + '/status/ubc'
 		}
 	    ]
 	});
@@ -164,6 +166,19 @@ Ext.define('PVE.openvz.Config', {
 		xtype: 'pveBackupView',
 		itemId: 'backup'
 	    });
+	}
+
+	if (caps.vms['VM.Console']) {
+	    me.items.push([
+		{
+		    xtype: 'pveFirewallPanel',
+		    title: gettext('Firewall'),
+		    base_url: base_url + '/firewall',
+		    fwtype: 'vm',
+		    phstateid: me.hstateid,
+		    itemId: 'firewall'
+		}
+	    ]);
 	}
 
 	if (caps.vms['Permissions.Modify']) {
