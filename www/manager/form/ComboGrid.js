@@ -74,9 +74,12 @@ Ext.define('PVE.form.ComboGrid', {
     initComponent: function() {
 	var me = this;
 
+	if (me.initialConfig.editable === undefined) {
+	    me.editable = false;
+	}
+
 	Ext.apply(me, {
 	    queryMode: 'local',
-	    editable: false,
 	    matchFieldWidth: false
 	});
 
@@ -127,7 +130,7 @@ Ext.define('PVE.form.ComboGrid', {
 			def = rec.data[me.valueField];
 			me.setValue(def, true);
 		    } else {
-			me.setValue('', true);
+			me.setValue(me.editable ? def : '', true);
 		    }
 		}
 	    }
