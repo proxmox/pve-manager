@@ -29,11 +29,14 @@ Ext.define('PVE.form.KVComboBox', {
 	    data : me.data
 	});
 
+	if (me.initialConfig.editable === undefined) {
+	    me.editable = false;
+	}
+
 	Ext.apply(me, {
 	    displayField: 'value',
 	    valueField: 'key',
-	    queryMode: 'local',
-	    editable: false
+	    queryMode: 'local'
 	});
 
 	me.callParent();
