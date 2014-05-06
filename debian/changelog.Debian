@@ -1,3 +1,9 @@
+pve-manager (3.2-6) unstable; urgency=low
+
+  * fix bug #300: use disk_quota default settings from /etv/vz/vz.conf
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 06 May 2014 06:58:23 +0200
+
 pve-manager (3.2-5) unstable; urgency=low
 
   * produce nicer html for direct API access (/api2/html)
