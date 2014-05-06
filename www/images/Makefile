@@ -10,7 +10,12 @@ all:
 # tigervnc.png converted from tigervnc sources
 # (tigervnc.org/media/tigervnc_16.svg)
 
+# checked.png converted from extjs examples/ux/css/images/checked.gif
+# unchecked.png converted from extjs examples/ux/css/images/unchecked.gif
+
 GNOME_IMAGES = 			\
+	checked.png		\
+	unchecked.png 		\
 	start.png		\
 	stop.png		\
 	gtk-stop.png		\

@@ -15,6 +15,22 @@
     background-image:url(../images/display.png);
 }
 
+.x-grid-checkheader {
+    height: 14px;
+    background-image: url(../images/unchecked.png);
+    background-position: 50% -2px;
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
+
+.x-grid-checkheader-checked {
+    background-image: url(../images/checked.png);
+}
+
+.x-grid-checkheader-editor .x-form-cb-wrap {
+    text-align: center;
+}
+
 .x-selectable, .x-selectable * {
     -moz-user-select: text!important;
     -khtml-user-select: text!important;

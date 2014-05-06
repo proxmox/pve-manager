@@ -43,6 +43,8 @@ JSSRC= 				                 	\
 	form/FileSelector.js				\
 	form/StorageSelector.js				\
 	form/BridgeSelector.js				\
+	form/SecurityGroupSelector.js			\
+	form/IPSetSelector.js				\
 	form/CPUModelSelector.js			\
 	form/VNCKeyboardSelector.js			\
 	form/LanguageSelector.js			\
@@ -53,6 +55,7 @@ JSSRC= 				                 	\
 	form/DayOfWeekSelector.js			\
 	form/BackupModeSelector.js			\
 	form/ScsiHwSelector.js				\
+	form/FirewallPolicySelector.js			\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
@@ -66,14 +69,21 @@ JSSRC= 				                 	\
 	window/Backup.js				\
 	window/Restore.js				\
 	panel/NotesView.js				\
+	grid/CheckColumn.js				\
 	grid/SelectFeature.js				\
 	grid/ObjectGrid.js				\
 	grid/ResourceGrid.js				\
 	grid/PoolMembers.js				\
+	grid/FirewallRules.js				\
+	grid/FirewallAliases.js				\
+	grid/FirewallOptions.js				\
 	tree/ResourceTree.js				\
+	panel/IPSet.js					\
 	panel/ConfigPanel.js				\
+	panel/SubConfigPanel.js				\
 	grid/BackupView.js				\
 	panel/LogView.js				\
+	panel/Firewall.js				\
 	ceph/Pool.js					\
 	ceph/OSD.js					\
 	ceph/Disks.js					\
@@ -161,6 +171,7 @@ JSSRC= 				                 	\
 	dc/Backup.js					\
 	dc/HAConfig.js					\
 	dc/Support.js					\
+	dc/SecurityGroups.js				\
 	dc/Config.js					\
 	Workspace.js
 
