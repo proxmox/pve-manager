@@ -18,6 +18,7 @@ use PVE::OpenVZ;
 use PVE::RPCEnvironment;
 use PVE::API2::Subscription;
 use PVE::AutoBalloon;
+use PVE::Firewall;
 
 $SIG{'__WARN__'} = sub {
     my $err = $@;
@@ -333,6 +334,13 @@ sub update_storage_status {
     }
 }
 
+sub update_pve_firewall {
+
+    local $SIG{'__WARN__'} = 'IGNORE'; # do not fill up logs
+    
+    PVE::Firewall::update();
+}
+
 sub update_status {
 
     # update worker list. This is not really required and
@@ -374,6 +382,13 @@ sub update_status {
     };
     $err = $@;
     syslog('err', "openvz console cleanup error: $err") if $err;
+
+    eval {
+	update_pve_firewall();
+    };
+    $err = $@;
+    syslog('err', "pve firewall update error: $err") if $err;
+
 }
 
 my $next_update = 0;
