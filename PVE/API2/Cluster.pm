@@ -18,8 +18,15 @@ use JSON;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
+use PVE::Firewall;
+use PVE::API2::Firewall::Cluster;
 
 use base qw(PVE::RESTHandler);
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Firewall::Cluster",  
+    path => 'firewall',
+});
 
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Backup",  
@@ -73,6 +80,7 @@ __PACKAGE__->register_method ({
 	    { name => 'ha' },
 	    { name => 'status' },
 	    { name => 'nextid' },
+	    { name => 'firewall' },
 	    ];
 
 	return $result;

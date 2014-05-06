@@ -19,6 +19,7 @@ use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::AccessControl;
 use PVE::Storage;
+use PVE::Firewall;
 use PVE::OpenVZ;
 use PVE::APLInfo;
 use PVE::QemuServer;
@@ -33,6 +34,7 @@ use PVE::API2::OpenVZ;
 use PVE::API2::VZDump;
 use PVE::API2::APT;
 use PVE::API2::Ceph;
+use PVE::API2::Firewall::Host;
 use JSON;
 
 use base qw(PVE::RESTHandler);
@@ -93,6 +95,11 @@ __PACKAGE__->register_method ({
 });
 
 __PACKAGE__->register_method ({
+    subclass => "PVE::API2::Firewall::Host",  
+    path => 'firewall',
+});
+
+__PACKAGE__->register_method ({
     name => 'index', 
     path => '', 
     method => 'GET',
@@ -142,6 +149,7 @@ __PACKAGE__->register_method ({
 	    { name => 'startall' },
 	    { name => 'stopall' },
 	    { name => 'netstat' },
+	    { name => 'firewall' },
 	    ];
 
 	return $result;

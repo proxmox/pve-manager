@@ -18,6 +18,7 @@ use PVE::RPCEnvironment;
 use PVE::OpenVZ;
 use PVE::OpenVZMigrate;
 use PVE::JSONSchema qw(get_standard_option);
+use PVE::API2::Firewall::VM;
 
 use base qw(PVE::RESTHandler);
 
@@ -500,6 +501,11 @@ __PACKAGE__->register_method({
 	return undef;
     }});
 
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Firewall::VM",  
+    path => '{vmid}/firewall',
+});
+
 __PACKAGE__->register_method({
     name => 'vmdiridx',
     path => '{vmid}', 
@@ -541,6 +547,7 @@ __PACKAGE__->register_method({
 	    { subdir => 'initlog' },
 	    { subdir => 'rrd' },
 	    { subdir => 'rrddata' },
+	    { subdir => 'firewall' },
 	    ];
 	
 	return $res;
