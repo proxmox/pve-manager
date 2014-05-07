@@ -292,10 +292,11 @@ sub find_resource_methods {
 
     for my $method (qw(GET POST PUT DELETE)) {
 	my $uri_param = {};
-	my ($handler, $info, $pm) = PVE::API2->find_handler($method, $path, $uri_param);
+	my $path_match;
+	my ($handler, $info) = PVE::API2->find_handler($method, $path, $uri_param, \$path_match);
 	if ($handler && $info && !$ihash->{$info}) {
 	    $ihash->{$info} = {
-		path => $pm,
+		path => $path_match,
 		handler => $handler, 
 		info => $info, 
 		uri_param => $uri_param,
