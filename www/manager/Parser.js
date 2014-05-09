@@ -31,6 +31,8 @@ Ext.define('PVE.Parser', { statics: {
 		res.rate = match_res[1];
 	    } else if ((match_res = p.match(/^tag=(\d+(\.\d+)?)$/)) !== null) {
                 res.tag = match_res[1];
+	    } else if ((match_res = p.match(/^firewall=(\d+)$/)) !== null) {
+                res.firewall = match_res[1];
 	    } else {
 		errors = true;
 		return false; // break
@@ -54,6 +56,9 @@ Ext.define('PVE.Parser', { statics: {
 	    netstr += ",bridge=" + net.bridge;
 	    if (net.tag) {
 		netstr += ",tag=" + net.tag;
+	    }
+	    if (net.firewall) {
+		netstr += ",firewall=" + net.firewall;
 	    }
 	}
 	if (net.rate) {

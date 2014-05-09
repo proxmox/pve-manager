@@ -13,6 +13,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	} else if (values.networkmode === 'bridge') {
 	    me.network.bridge = values.bridge;
 	    me.network.tag = values.tag;
+	    me.network.firewall = values.firewall;
 	} else {
 	    me.network.bridge = undefined;
 	}
@@ -84,6 +85,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 			me.down('field[name=bridge]').setDisabled(!value);
 			me.down('field[name=bridge]').validate();
 			me.down('field[name=tag]').setDisabled(!value);
+			me.down('field[name=firewall]').setDisabled(!value);
 		    }
 		}
 	    },
@@ -92,6 +94,13 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		xtype: 'pveVlanField',
 		name: 'tag',
 		value: '',
+		labelAlign: 'right'
+	    },
+	    me.bridgesel,
+	    {
+		xtype: 'pvecheckbox',
+		fieldLabel: gettext('Firewall'),
+		name: 'firewall',
 		labelAlign: 'right'
 	    },
 	    {
