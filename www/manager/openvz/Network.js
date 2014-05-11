@@ -83,6 +83,17 @@ Ext.define('PVE.OpenVZ.NetIfEdit', {
 		    allowBlank: false
 		},
 		{
+		    xtype: 'pveVlanField',
+		    name: 'tag',
+		    value: cdata.tag,
+		},
+		{
+		    xtype: 'pvecheckbox',
+		    fieldLabel: gettext('Firewall'),
+		    name: 'firewall',
+		    checked: cdata.firewall,
+		},
+		{
 		    xtype: 'textfield',
 		    name: 'host_ifname',
 		    fieldLabel: gettext('Host device name'),
@@ -430,7 +441,7 @@ Ext.define('PVE.openvz.NetworkView', {
     Ext.define('pve-openvz-network', {
 	extend: "Ext.data.Model",
 	proxy: { type: 'memory' },
-	fields: [ 'id', 'type', 'value', 'ifname', 'mac', 'bridge', 'host_ifname', 'host_mac' ]
+	fields: [ 'id', 'type', 'value', 'ifname', 'mac', 'bridge', 'host_ifname', 'host_mac', 'tag', 'firewall' ]
     });
 
 });
