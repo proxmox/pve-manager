@@ -132,7 +132,20 @@ Ext.define('PVE.FirewallRulePanel', {
 		value: '',
 		deleteEmpty: !me.create,
 		fieldLabel: gettext('Macro'),
-		allowBlank: true
+		allowBlank: true,
+		listeners: {
+		    change: function(f, value) {
+                        if (value === '') {
+			    me.down('field[name=proto]').setDisabled(false);
+			    me.down('field[name=sport]').setDisabled(false);
+			    me.down('field[name=dport]').setDisabled(false);
+                        } else {
+			    me.down('field[name=proto]').setDisabled(true);
+			    me.down('field[name=sport]').setDisabled(true);
+			    me.down('field[name=dport]').setDisabled(true);
+                        }
+                    }
+                }
 	    },
 	    {
 		xtype: 'pveKVComboBox',
