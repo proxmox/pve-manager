@@ -25,11 +25,11 @@ Ext.define('PVE.FirewallOptions', {
 
 	var rows = {};
 
-	var add_boolean_row = function(name, text, labelWidth) {
+	var add_boolean_row = function(name, text, defaultValue, labelWidth) {
 	    rows[name] = {
 		header: text,
 		required: true,
-		defaultValue: 0,
+		defaultValue: defaultValue || 0,
 		renderer: PVE.Utils.format_boolean,
 		editor: {
 		    xtype: 'pveWindowEdit',
@@ -37,6 +37,8 @@ Ext.define('PVE.FirewallOptions', {
 		    fieldDefaults: { labelWidth: labelWidth || 100 },
 		    items: {
 			xtype: 'pvecheckbox',
+			defaultValue: defaultValue || 0,
+			checked: defaultValue ? true : false,
 			name: name,
 			uncheckedValue: 0,
 			fieldLabel: text
@@ -100,12 +102,11 @@ Ext.define('PVE.FirewallOptions', {
 	    };
 	};
 
-	add_boolean_row('enable', gettext('Enable Firewall'));
+	add_boolean_row('enable', gettext('Enable Firewall'), 1);
 
 	if (me.fwtype === 'node') {
-	    add_boolean_row('nosmurfs', gettext('SMURFS filter'));
-	    add_boolean_row('tcpflags', gettext('TCP flags filter'));
-	    add_boolean_row('allow_bridge_route', gettext('Allow bridge route'), 150);
+	    add_boolean_row('nosmurfs', gettext('SMURFS filter'), 1);
+	    add_boolean_row('tcpflags', gettext('TCP flags filter'), 0);
 	    add_integer_row('nf_conntrack_max', 'nf_conntrack_max', 120, 32768);
 	    add_integer_row('nf_conntrack_tcp_timeout_established', 
 			    'nf_conntrack_tcp_timeout_established', 250, 7875);
@@ -114,8 +115,8 @@ Ext.define('PVE.FirewallOptions', {
 	    add_log_row('tcp_flags_log_level', 120);
 	    add_log_row('smurf_log_level');
 	} else if (me.fwtype === 'vm') {
-	    add_boolean_row('dhcp', gettext('Enable DHCP'));
-	    add_boolean_row('macfilter', gettext('MAC filter'));
+	    add_boolean_row('dhcp', gettext('Enable DHCP'), 0);
+	    add_boolean_row('macfilter', gettext('MAC filter'), 1);
 	    add_log_row('log_level_in');
 	    add_log_row('log_level_out');
 	}
