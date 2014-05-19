@@ -70,18 +70,27 @@ Ext.define('PVE.FirewallRulePanel', {
 		data: [['ACCEPT', 'ACCEPT'], ['DROP', 'DROP'], ['REJECT', 'REJECT']],
 		fieldLabel: gettext('Action'),
 		allowBlank: false
-	    },
-	    {
-		xtype: 'pveKVComboBox',
-		name: 'proto',
-		value: '',
+	    }
+        ];
+
+	if (me.allow_iface) {
+	    me.column1.push({
+		xtype: 'pvetextfield',
+		name: 'iface',
 		deleteEmpty: !me.create,
-		emptyText: 'any',
-		editable: true,
-		data: [['tcp', 'TCP'], ['udp', 'UDP'], ['icmp', 'ICMP']],
-		fieldLabel: gettext('Protocol'),
-		allowBlank: true
-	    },
+		value: '',
+		fieldLabel: gettext('Interface')
+	    });
+	} else {
+	    me.column1.push({
+		xtype: 'displayfield',
+		fieldLabel: '',
+		height: 22, // hack: set same height as text fields
+		value: ''
+	    });
+	}
+
+	me.column1.push([
 	    {
 		xtype: 'displayfield',
 		fieldLabel: '',
@@ -106,7 +115,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		value: '',
 		fieldLabel: gettext('Destination')
 	    }
-	];
+	]);
 
 	me.column2 = [
 	    {
@@ -124,27 +133,18 @@ Ext.define('PVE.FirewallRulePanel', {
 		deleteEmpty: !me.create,
 		fieldLabel: gettext('Macro'),
 		allowBlank: true
-	    }
-	];
-
-	if (me.allow_iface) {
-	    me.column2.push({
-		xtype: 'pvetextfield',
-		name: 'iface',
-		deleteEmpty: !me.create,
+	    },
+	    {
+		xtype: 'pveKVComboBox',
+		name: 'proto',
 		value: '',
-		fieldLabel: gettext('Interface')
-	    });
-	} else {
-	    me.column2.push({
-		xtype: 'displayfield',
-		fieldLabel: '',
-		height: 22, // hack: set same height as text fields
-		value: ''
-	    });
-	}
-
-	me.column2.push([
+		deleteEmpty: !me.create,
+		emptyText: 'any',
+		editable: true,
+		data: [['tcp', 'TCP'], ['udp', 'UDP'], ['icmp', 'ICMP']],
+		fieldLabel: gettext('Protocol'),
+		allowBlank: true
+	    },
 	    {
 		xtype: 'displayfield',
 		fieldLabel: '',
@@ -164,7 +164,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		value: '',
 		fieldLabel: gettext('Dest. port')
 	    }
-	]);
+	];
 	
 	me.columnB = [
 	    {
