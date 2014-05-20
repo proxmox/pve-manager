@@ -48,6 +48,14 @@ Ext.define('PVE.panel.Firewall', {
 	    });
 	}
 
+	if (me.fwtype === 'vm') {
+	    items.push({
+		xtype: 'pveFirewallAliases',
+		base_url: me.base_url + '/aliases',		    
+		itemId: 'aliases'
+	    });
+	}
+
 	items.push({
 	    xtype: 'pveFirewallOptions',
 	    title: 'Options',
