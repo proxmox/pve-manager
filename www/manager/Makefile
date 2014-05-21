@@ -45,6 +45,7 @@ JSSRC= 				                 	\
 	form/BridgeSelector.js				\
 	form/SecurityGroupSelector.js			\
 	form/IPSetSelector.js				\
+	form/IPProtocolSelector.js			\
 	form/CPUModelSelector.js			\
 	form/VNCKeyboardSelector.js			\
 	form/LanguageSelector.js			\

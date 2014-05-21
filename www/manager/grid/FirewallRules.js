@@ -130,7 +130,6 @@ Ext.define('PVE.FirewallRulePanel', {
 		xtype: 'pveFWMacroSelector',
 		name: 'macro',
 		value: '',
-		deleteEmpty: !me.create,
 		fieldLabel: gettext('Macro'),
 		allowBlank: true,
 		listeners: {
@@ -148,13 +147,10 @@ Ext.define('PVE.FirewallRulePanel', {
                 }
 	    },
 	    {
-		xtype: 'pveKVComboBox',
+		xtype: 'pveIPProtocolSelector',
 		name: 'proto',
 		value: '',
-		deleteEmpty: !me.create,
 		emptyText: 'any',
-		editable: true,
-		data: [['tcp', 'TCP'], ['udp', 'UDP'], ['icmp', 'ICMP'], ['igmp', 'IGMP']],
 		fieldLabel: gettext('Protocol'),
 		allowBlank: true
 	    },
@@ -165,17 +161,15 @@ Ext.define('PVE.FirewallRulePanel', {
 		value: ''
 	    },
 	    {
-		xtype: 'pvetextfield',
+		xtype: 'textfield',
 		name: 'sport',
-		deleteEmpty: !me.create,
 		value: '',
 		fieldLabel: gettext('Source port')
 	    },
 	    {
-		xtype: 'pvetextfield',
+		xtype: 'textfield',
 		name: 'dport',
 		height: 22, // hack: set same height as text fields
-		deleteEmpty: !me.create,
 		value: '',
 		fieldLabel: gettext('Dest. port')
 	    }
@@ -390,36 +384,7 @@ Ext.define('PVE.FirewallRules', {
 	});
     },
 
-    createRule: function(editor, rule) {
-        var me = this;
-
-	if (!me.base_url) {
-	    return;
-	}
-
-	rule.pos = 0;
-
-	rule.enable = rule.enable ? 1 : 0;
-
-	PVE.Utils.API2Request({
-	    url: me.base_url,
-	    method: 'POST',
-	    params: rule,
-	    waitMsgTarget: me,
-	    failure: function(response, options) {
-		if (editor) {
-		    editor.form.markInvalid(response.result.errors);
-		} else {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
-	    },
-	    callback: function() {
-		me.store.load();
-	    }
-	});
-    },
-
-    updateRule: function(editor, rule) {
+    updateRule: function(rule) {
         var me = this;
 
 	if (!me.base_url) { 
@@ -598,7 +563,7 @@ Ext.define('PVE.FirewallRules', {
 			if (!me.allow_iface || !data.iface) {
 			    delete data.iface;
 			}
-			me.updateRule(undefined, data);
+			me.updateRule(data);
 		    }
 		},
 		width: 50
