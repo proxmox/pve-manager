@@ -154,7 +154,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		deleteEmpty: !me.create,
 		emptyText: 'any',
 		editable: true,
-		data: [['tcp', 'TCP'], ['udp', 'UDP'], ['icmp', 'ICMP']],
+		data: [['tcp', 'TCP'], ['udp', 'UDP'], ['icmp', 'ICMP'], ['igmp', 'IGMP']],
 		fieldLabel: gettext('Protocol'),
 		allowBlank: true
 	    },
@@ -165,15 +165,17 @@ Ext.define('PVE.FirewallRulePanel', {
 		value: ''
 	    },
 	    {
-		xtype: 'textfield',
+		xtype: 'pvetextfield',
 		name: 'sport',
+		deleteEmpty: !me.create,
 		value: '',
 		fieldLabel: gettext('Source port')
 	    },
 	    {
-		xtype: 'textfield',
+		xtype: 'pvetextfield',
 		name: 'dport',
 		height: 22, // hack: set same height as text fields
+		deleteEmpty: !me.create,
 		value: '',
 		fieldLabel: gettext('Dest. port')
 	    }
