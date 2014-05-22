@@ -122,6 +122,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		editable: true,
 		queryDelay: 900000000, // disable query
 		value: '',
+		preferredValue: '', // hack: else Form sets dirty flag?
 		fieldLabel: gettext('Source')
 	    },
 	    {
@@ -131,6 +132,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		queryDelay: 900000000, // disable query
 		editable: true,
 		value: '',
+		preferredValue: '', // hack: else Form sets dirty flag?
 		fieldLabel: gettext('Destination')
 	    }
 	]);
@@ -171,7 +173,6 @@ Ext.define('PVE.FirewallRulePanel', {
 		queryDelay: 900000000, // disable query
 		editable: true,
 		value: '',
-		emptyText: 'any',
 		fieldLabel: gettext('Protocol')
 	    },
 	    {
