@@ -221,7 +221,7 @@ __PACKAGE__->register_method ({
 	my $ceph_bootstrap_osd_keyring = PVE::CephTools::get_config('ceph_bootstrap_osd_keyring');
 
 	if (! -f $ceph_bootstrap_osd_keyring) {
-	    my $bindata = $rados->mon_command({ prefix => 'auth get client.bootstrap-osd', format => 'plain' });
+	    my $bindata = $rados->mon_command({ prefix => 'auth get', entity => 'client.bootstrap-osd', format => 'plain' });
 	    PVE::Tools::file_set_contents($ceph_bootstrap_osd_keyring, $bindata);
 	};
         
