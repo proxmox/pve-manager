@@ -51,6 +51,24 @@ Ext.define('PVE.FirewallRulePanel', {
 
     allow_iface: false,
 
+    onGetValues: function(values) {
+	var me = this;
+
+	// hack: editable ComboGrid returns nothing when empty, so we need to set ''
+
+	if (values.source === undefined) {
+	    values.source = '';
+	}
+	if (values.dest === undefined) {
+	    values.dest = '';
+	}
+	if (values.proto === undefined) {
+	    values.proto = '';
+	}
+
+	return values;
+    },
+
     initComponent : function() {
 	var me = this;
 
@@ -149,10 +167,12 @@ Ext.define('PVE.FirewallRulePanel', {
 	    {
 		xtype: 'pveIPProtocolSelector',
 		name: 'proto',
+		autoSelect: false,
+		queryDelay: 900000000, // disable query
+		editable: true,
 		value: '',
 		emptyText: 'any',
-		fieldLabel: gettext('Protocol'),
-		allowBlank: true
+		fieldLabel: gettext('Protocol')
 	    },
 	    {
 		xtype: 'displayfield',
