@@ -396,6 +396,8 @@ sub restart_server {
 
     sleep($waittime) if $waittime; # avoid high server load due to restarts
 
+    PVE::INotify::inotify_close();
+
     exec (@$commandline);
     exit (-1); # never reached?
 }
