@@ -678,6 +678,7 @@ Ext.define('PVE.FirewallRules', {
 		    itemdblclick: run_editor
 		}
 	    },
+	    sortableColumns: false,
 	    columns: columns
 	});
 
