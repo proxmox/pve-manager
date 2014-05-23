@@ -552,6 +552,17 @@ Ext.define('PVE.FirewallRules', {
 	}
 	tbar.push([ me.removeBtn, me.editBtn ]);
 
+	var render_errors = function(name, value, metaData, record) {
+	    var errors = record.data.errors;
+	    if (errors && errors[name]) {
+		metaData.tdCls = 'x-form-invalid-field';
+		var html = '<p>' +  Ext.htmlEncode(errors[name]) + '</p>';
+		metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' + 
+		    html.replace(/\"/g,'&quot;') + '"';
+	    }
+	    return value;
+	};
+
 	var columns = [
 	    {
 		// similar to xtype: 'rownumberer',
@@ -592,16 +603,25 @@ Ext.define('PVE.FirewallRules', {
 	    {
 		header: gettext('Type'),
 		dataIndex: 'type',
+		renderer: function(value, metaData, record) {
+		    return render_errors('type', value, metaData, record);
+		},
 		width: 50
 	    },
 	    {
 		header: gettext('Action'),
 		dataIndex: 'action',
+		renderer: function(value, metaData, record) {
+		    return render_errors('action', value, metaData, record);
+		},
 		width: 80
 	    },
 	    {
 		header: gettext('Macro'),
 		dataIndex: 'macro',
+		renderer: function(value, metaData, record) {
+		    return render_errors('macro', value, metaData, record);
+		},
 		width: 80
 	    }
 	];
@@ -610,6 +630,9 @@ Ext.define('PVE.FirewallRules', {
 	    columns.push({
 		header: gettext('Interface'),
 		dataIndex: 'iface',
+		renderer: function(value, metaData, record) {
+		    return render_errors('iface', value, metaData, record);
+		},
 		width: 80
 	    });
 	}
@@ -618,34 +641,49 @@ Ext.define('PVE.FirewallRules', {
 	    {
 		header: gettext('Source'),
 		dataIndex: 'source',
+		renderer: function(value, metaData, record) {
+		    return render_errors('source', value, metaData, record);
+		},
 		width: 100
 	    },
 	    {
 		header: gettext('Destination'),
 		dataIndex: 'dest',
+		renderer: function(value, metaData, record) {
+		    return render_errors('dest', value, metaData, record);
+		},
 		width: 100
 	    },
 	    {
 		header: gettext('Protocol'),
 		dataIndex: 'proto',
+		renderer: function(value, metaData, record) {
+		    return render_errors('proto', value, metaData, record);
+		},
 		width: 100
 	    },
 	    {
 		header: gettext('Dest. port'),
 		dataIndex: 'dport',
+		renderer: function(value, metaData, record) {
+		    return render_errors('dport', value, metaData, record);
+		},
 		width: 100
 	    },
 	    {
 		header: gettext('Source port'),
 		dataIndex: 'sport',
+		renderer: function(value, metaData, record) {
+		    return render_errors('sport', value, metaData, record);
+		},
 		width: 100
 	    },
 	    {
 		header: gettext('Comment'),
 		dataIndex: 'comment',
 		flex: 1,
-		renderer: function(value) {
-		    return Ext.util.Format.htmlEncode(value);
+		renderer: function(value, metaData, record) {
+		    return render_errors('comment', Ext.util.Format.htmlEncode(value), metaData, record);
 		}
 	    }
 	]);
@@ -694,7 +732,7 @@ Ext.define('PVE.FirewallRules', {
 	extend: 'Ext.data.Model',
 	fields: [ { name: 'enable', type: 'boolean' },
 		  'type', 'action', 'macro', 'source', 'dest', 'proto', 'iface',
-		  'dport', 'sport', 'comment', 'pos', 'digest' ],
+		  'dport', 'sport', 'comment', 'pos', 'digest', 'errors' ],
 	idProperty: 'pos'
     });
 
