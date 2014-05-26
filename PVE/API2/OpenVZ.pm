@@ -502,7 +502,7 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Firewall::VM",  
+    subclass => "PVE::API2::Firewall::CT",  
     path => '{vmid}/firewall',
 });
 
