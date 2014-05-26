@@ -416,6 +416,7 @@ Ext.define('PVE.FirewallRules', {
 
 	var pos = rule.pos;
 	delete rule.pos;
+	delete rule.errors;
 
 	PVE.Utils.API2Request({
 	    url: me.base_url + '/' + pos.toString(),
@@ -423,11 +424,7 @@ Ext.define('PVE.FirewallRules', {
 	    params: rule,
 	    waitMsgTarget: me,
 	    failure: function(response, options) {
-		if (editor) {
-		    editor.form.markInvalid(response.result.errors);
-		} else {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
+		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 	    },
 	    callback: function() {
 		me.store.load();
