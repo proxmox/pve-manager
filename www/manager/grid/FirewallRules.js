@@ -66,6 +66,8 @@ Ext.define('PVE.FirewallRulePanel', {
 	    values.proto = '';
 	}
 
+	delete values.modified_marker;
+ 
 	return values;
     },
 
@@ -73,6 +75,14 @@ Ext.define('PVE.FirewallRulePanel', {
 	var me = this;
 
 	me.column1 = [
+	    {
+		// hack: we use this field to mark the form 'dirty' when the
+		// record has errors- so that the user can safe the unmodified 
+		// form again.
+		xtype: 'hiddenfield',
+		name: 'modified_marker',
+		value: '',
+	    },
 	    {
 		xtype: 'pveKVComboBox',
 		name: 'type',
@@ -249,6 +259,14 @@ Ext.define('PVE.FirewallRuleEdit', {
 		success:  function(response, options) {
 		    var values = response.result.data;
 		    ipanel.setValues(values);
+		    var field = me.query('[isFormField][name=modified_marker]')[0];
+		    field.setValue(1);
+		    if (values.errors) {
+			Ext.Function.defer(function() {
+			    var form = ipanel.up('form').getForm();
+			    form.markInvalid(values.errors)
+			}, 100);
+		    }
 		}
 	    });
 	}
