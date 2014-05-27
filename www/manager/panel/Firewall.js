@@ -54,6 +54,11 @@ Ext.define('PVE.panel.Firewall', {
 		base_url: me.base_url + '/aliases',		    
 		itemId: 'aliases'
 	    });
+	    items.push({
+		xtype: 'pveIPSet',
+		base_url: me.base_url + '/ipset',		    
+		itemId: 'ipset'
+	    });
 	}
 
 	items.push({
