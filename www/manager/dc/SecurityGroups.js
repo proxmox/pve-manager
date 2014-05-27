@@ -150,8 +150,7 @@ Ext.define('PVE.SecurityGroupList', {
 		    return;
 		}
 		PVE.Utils.API2Request({
-		    url: me.base_url + '/' + rec.data.group + 
-			'?digest=' + encodeURIComponent(rec.data.digest),
+		    url: me.base_url + '/' + rec.data.group,
 		    method: 'DELETE',
 		    waitMsgTarget: me,
 		    failure: function(response, options) {
