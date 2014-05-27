@@ -200,6 +200,7 @@ Ext.define('PVE.SecurityGroups', {
 	var rule_panel = Ext.createWidget('pveFirewallRules', {
 	    region: 'center',
 	    allow_groups: false,
+	    ipset_base_url: '/cluster/firewall/ipset',
 	    tbar_prefix: '<b>' + gettext('Rules') + ':</b>',
 	    flex: 0.75,
 	    border: false
