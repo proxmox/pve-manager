@@ -55,16 +55,13 @@ Ext.define('PVE.FirewallRulePanel', {
 	var me = this;
 
 	// hack: editable ComboGrid returns nothing when empty, so we need to set ''
+	// Also, disabled text fields return nothing, so we need to set ''
 
-	if (values.source === undefined) {
-	    values.source = '';
-	}
-	if (values.dest === undefined) {
-	    values.dest = '';
-	}
-	if (values.proto === undefined) {
-	    values.proto = '';
-	}
+	Ext.Array.each(['source', 'dest', 'proto', 'sport', 'dport'], function(key) {
+	    if (values[key] === undefined) {
+		values[key] = '';
+	    }
+	});
 
 	delete values.modified_marker;
  
@@ -147,6 +144,7 @@ Ext.define('PVE.FirewallRulePanel', {
 	    }
 	]);
 
+	
 	me.column2 = [
 	    {
 		xtype: 'pvecheckbox',
@@ -170,9 +168,12 @@ Ext.define('PVE.FirewallRulePanel', {
 			    me.down('field[name=dport]').setDisabled(false);
                         } else {
 			    me.down('field[name=proto]').setDisabled(true);
+			    me.down('field[name=proto]').setValue('');
 			    me.down('field[name=sport]').setDisabled(true);
+			    me.down('field[name=sport]').setValue('');
 			    me.down('field[name=dport]').setDisabled(true);
-                        }
+ 			    me.down('field[name=dport]').setValue('');
+                       }
                     }
                 }
 	    },
