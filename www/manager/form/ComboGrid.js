@@ -8,7 +8,7 @@ Ext.define('PVE.form.ComboGrid', {
     computeHeight: function() {
 	var me = this;
 	var lh = PVE.Utils.gridLineHeigh();
-	var count = me.store.getCount();
+	var count = me.store.getTotalCount();
 	return (count > 10) ? 10*lh : 26+count*lh;
     },
 
