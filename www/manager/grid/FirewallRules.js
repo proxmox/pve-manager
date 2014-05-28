@@ -121,6 +121,14 @@ Ext.define('PVE.FirewallRulePanel', {
 	    });
 	}
 
+	var disable_query_for_ips = function(f, value) {
+	    if (value.match(/^\d/)) { // IP address starts with \d
+		f.queryDelay = 9999999999; // hack: disbale with long delay
+	    } else {
+		f.queryDelay = 10;
+	    }
+	};
+
 	me.column1.push([
 	    {
 		xtype: 'displayfield',
@@ -136,17 +144,20 @@ Ext.define('PVE.FirewallRulePanel', {
 		base_url: me.ipset_base_url,
 		value: '',
 		preferredValue: '', // hack: else Form sets dirty flag?
-		fieldLabel: gettext('Source')
+		fieldLabel: gettext('Source'),
+		listeners: { change: disable_query_for_ips }
 	    },
 	    {
 		xtype: 'pveIPSetSelector',
 		name: 'dest',
 		autoSelect: false,
+		typeAhead: true,
 		editable: true,
 		base_url: me.ipset_base_url,
 		value: '',
 		preferredValue: '', // hack: else Form sets dirty flag?
-		fieldLabel: gettext('Destination')
+		fieldLabel: gettext('Destination'),
+		listeners: { change: disable_query_for_ips }
 	    }
 	]);
 
