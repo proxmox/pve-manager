@@ -13,29 +13,33 @@ Ext.define('PVE.form.IPSetSelector', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    autoLoad: true,
-	    fields: [ { name: 'name', 
-			convert: function(v) {  return '+' + v; }},
-		      'comment' ],
-	    idProperty: 'name',
+	    fields: [ 'type', 'name', 'ref', 'comment' ],
+	    idProperty: 'ref',
 	    proxy: {
 		type: 'pve',
 		url: "/api2/json" + me.base_url
 	    },
 	    sorters: {
-		property: 'name',
+		property: 'ref',
 		order: 'DESC'
 	    }
 	});
 
 	Ext.apply(me, {
 	    store: store,
-	    valueField: 'name',
-	    displayField: 'name',
+	    valueField: 'ref',
+	    displayField: 'ref',
             listConfig: {
 		columns: [
 		    {
-			header: gettext('IPSet'),
-			dataIndex: 'name',
+			header: gettext('Type'),
+			dataIndex: 'type',
+			hideable: false,
+			width: 60
+		    },
+		    {
+			header: gettext('Name'),
+			dataIndex: 'ref',
 			hideable: false,
 			width: 100
 		    },

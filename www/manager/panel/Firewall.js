@@ -26,8 +26,8 @@ Ext.define('PVE.panel.Firewall', {
 		title: 'Rules',
 		allow_iface: true,
 		base_url: me.base_url + '/rules',
-		ipset_base_url: me.fwtype === 'vm' ? (me.base_url + '/ipset') : 
-		    '/cluster/firewall/ipset',
+		ipset_base_url: me.fwtype === 'vm' ? (me.base_url + '/refs') : 
+		    '/cluster/firewall/refs',
 		itemId: 'rules'
 	    }
 	];
