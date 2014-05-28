@@ -134,7 +134,6 @@ Ext.define('PVE.FirewallRulePanel', {
 		autoSelect: false,
 		editable: true,
 		base_url: me.ipset_base_url,
-		queryDelay: 900000000, // disable query
 		value: '',
 		preferredValue: '', // hack: else Form sets dirty flag?
 		fieldLabel: gettext('Source')
@@ -143,7 +142,6 @@ Ext.define('PVE.FirewallRulePanel', {
 		xtype: 'pveIPSetSelector',
 		name: 'dest',
 		autoSelect: false,
-		queryDelay: 900000000, // disable query
 		editable: true,
 		base_url: me.ipset_base_url,
 		value: '',
@@ -189,7 +187,6 @@ Ext.define('PVE.FirewallRulePanel', {
 		xtype: 'pveIPProtocolSelector',
 		name: 'proto',
 		autoSelect: false,
-		queryDelay: 900000000, // disable query
 		editable: true,
 		value: '',
 		fieldLabel: gettext('Protocol')

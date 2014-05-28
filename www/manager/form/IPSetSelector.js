@@ -41,7 +41,7 @@ Ext.define('PVE.form.IPSetSelector', {
 			header: gettext('Name'),
 			dataIndex: 'ref',
 			hideable: false,
-			width: 100
+			width: 140
 		    },
 		    {
 			header: gettext('Comment'),  
