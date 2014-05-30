@@ -180,6 +180,7 @@ Ext.define('PVE.IPSetCidrEdit', {
 
 	me.create = (me.cidr === undefined);
 
+
 	if (me.create) {
             me.url = '/api2/extjs' + me.base_url;
             me.method = 'POST';
@@ -188,17 +189,36 @@ Ext.define('PVE.IPSetCidrEdit', {
             me.method = 'PUT';
         }
 
+	var column1 = [];
+
+	if (me.create) {
+	    if (!me.list_refs_url) {
+		throw "no alias_base_url specified";
+	    }
+
+	    column1.push({
+		xtype: 'pveIPRefSelector',
+		name: 'cidr',
+		ref_type: 'alias',
+		autoSelect: false,
+		editable: true,
+		base_url: me.list_refs_url,
+		value: '',
+		fieldLabel: gettext('IP/CIDR')
+	    });
+	} else {
+	    column1.push({
+		xtype: 'displayfield',
+		name: 'cidr',
+		height: 22, // hack: set same height as text fields
+		value: '',
+		fieldLabel: gettext('IP/CIDR')
+	    });
+	}
+
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
 	    create: me.create,
-	    column1: [
-		{
-		    xtype: me.create ? 'textfield' : 'displayfield',
-		    name: 'cidr',
-		    height: 22, // hack: set same height as text fields
-		    value: '',
-		    fieldLabel: gettext('IP/CIDR')
-		}
-	    ],
+	    column1: column1,
 	    column2: [
 		{
 		    xtype: 'pvecheckbox',
@@ -242,6 +262,7 @@ Ext.define('PVE.IPSetGrid', {
     alias: 'widget.pveIPSetGrid',
 
     base_url: undefined,
+    list_refs_url: undefined,
 
     addBtn: undefined,
     removeBtn: undefined,
@@ -269,6 +290,10 @@ Ext.define('PVE.IPSetGrid', {
     initComponent: function() {
 	/*jslint confusion: true */
         var me = this;
+
+	if (!me.list_refs_url) {
+	    throw "no1 list_refs_url specified";
+	}
 
 	var store = new Ext.data.Store({
 	    model: 'pve-ipset'
@@ -308,7 +333,8 @@ Ext.define('PVE.IPSetGrid', {
 		    return;
 		}
 		var win = Ext.create('PVE.IPSetCidrEdit', {
-		    base_url: me.base_url
+		    base_url: me.base_url,
+		    list_refs_url: me.list_refs_url
 		});
 		win.show();
 		win.on('destroy', reload);
@@ -393,11 +419,18 @@ Ext.define('PVE.IPSet', {
 
     title: 'IPSet',
 
+    list_refs_url: undefined,
+
     initComponent: function() {
 	var me = this;
 
+	if (!me.list_refs_url) {
+	    throw "no list_refs_url specified";
+	}
+
 	var ipset_panel = Ext.createWidget('pveIPSetGrid', {
 	    region: 'center',
+	    list_refs_url: me.list_refs_url,
 	    flex: 0.5,
 	    border: false
 	});

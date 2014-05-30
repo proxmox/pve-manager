@@ -51,7 +51,7 @@ Ext.define('PVE.FirewallRulePanel', {
 
     allow_iface: false,
 
-    ipset_base_url: undefined,
+    list_refs_url: undefined,
 
     onGetValues: function(values) {
 	var me = this;
@@ -73,8 +73,8 @@ Ext.define('PVE.FirewallRulePanel', {
     initComponent : function() {
 	var me = this;
 
-	if (!me.ipset_base_url) {
-	    throw "no ipset_base_url specified";
+	if (!me.list_refs_url) {
+	    throw "no list_refs_url specified";
 	}
 
 	me.column1 = [
@@ -129,21 +129,21 @@ Ext.define('PVE.FirewallRulePanel', {
 		value: ''
 	    },
 	    {
-		xtype: 'pveIPSetSelector',
+		xtype: 'pveIPRefSelector',
 		name: 'source',
 		autoSelect: false,
 		editable: true,
-		base_url: me.ipset_base_url,
+		base_url: me.list_refs_url,
 		value: '',
 		fieldLabel: gettext('Source')
 
 	    },
 	    {
-		xtype: 'pveIPSetSelector',
+		xtype: 'pveIPRefSelector',
 		name: 'dest',
 		autoSelect: false,
 		editable: true,
-		base_url: me.ipset_base_url,
+		base_url: me.list_refs_url,
 		value: '',
 		fieldLabel: gettext('Destination')
 	    }
@@ -228,7 +228,7 @@ Ext.define('PVE.FirewallRuleEdit', {
     extend: 'PVE.window.Edit',
 
     base_url: undefined,
-    ipset_base_url: undefined,
+    list_refs_url: undefined,
 
     allow_iface: false,
 
@@ -239,8 +239,8 @@ Ext.define('PVE.FirewallRuleEdit', {
 	if (!me.base_url) {
 	    throw "no base_url specified";
 	}
-	if (!me.ipset_base_url) {
-	    throw "no ipset_base_url specified";
+	if (!me.list_refs_url) {
+	    throw "no list_refs_url specified";
 	}
 
 	me.create = (me.rule_pos === undefined);
@@ -255,7 +255,7 @@ Ext.define('PVE.FirewallRuleEdit', {
 
 	var ipanel = Ext.create('PVE.FirewallRulePanel', {
 	    create: me.create,
-	    ipset_base_url: me.ipset_base_url,
+	    list_refs_url: me.list_refs_url,
 	    allow_iface: me.allow_iface,
 	    rule_pos: me.rule_pos
 	});
@@ -380,7 +380,7 @@ Ext.define('PVE.FirewallRules', {
     alias: 'widget.pveFirewallRules',
 
     base_url: undefined,
-    ipset_base_url: undefined,
+    list_refs_url: undefined,
 
     addBtn: undefined,
     removeBtn: undefined,
@@ -490,8 +490,8 @@ Ext.define('PVE.FirewallRules', {
 	/*jslint confusion: true */
         var me = this;
 
-	if (!me.ipset_base_url) {
-	    throw "no ipset_base_url specified";
+	if (!me.list_refs_url) {
+	    throw "no list_refs_url specified";
 	}
 
 	var store = new Ext.data.Store({
@@ -524,7 +524,7 @@ Ext.define('PVE.FirewallRules', {
 		digest: rec.data.digest,
 		allow_iface: me.allow_iface,
 		base_url: me.base_url,
-		ipset_base_url: me.ipset_base_url,
+		list_refs_url: me.list_refs_url,
 		rule_pos: rec.data.pos
 	    });
 
@@ -546,7 +546,7 @@ Ext.define('PVE.FirewallRules', {
 		var win = Ext.create('PVE.FirewallRuleEdit', {
 		    allow_iface: me.allow_iface,
 		    base_url: me.base_url,
-		    ipset_base_url: me.ipset_base_url
+		    list_refs_url: me.list_refs_url
 		});
 		win.on('destroy', reload);
 		win.show();
