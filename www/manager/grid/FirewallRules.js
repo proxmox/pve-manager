@@ -121,14 +121,6 @@ Ext.define('PVE.FirewallRulePanel', {
 	    });
 	}
 
-	var disable_query_for_ips = function(f, value) {
-	    if (value.match(/^\d/)) { // IP address starts with \d
-		f.queryDelay = 9999999999; // hack: disbale with long delay
-	    } else {
-		f.queryDelay = 10;
-	    }
-	};
-
 	me.column1.push([
 	    {
 		xtype: 'displayfield',
@@ -143,21 +135,17 @@ Ext.define('PVE.FirewallRulePanel', {
 		editable: true,
 		base_url: me.ipset_base_url,
 		value: '',
-		preferredValue: '', // hack: else Form sets dirty flag?
-		fieldLabel: gettext('Source'),
-		listeners: { change: disable_query_for_ips }
+		fieldLabel: gettext('Source')
+
 	    },
 	    {
 		xtype: 'pveIPSetSelector',
 		name: 'dest',
 		autoSelect: false,
-		typeAhead: true,
 		editable: true,
 		base_url: me.ipset_base_url,
 		value: '',
-		preferredValue: '', // hack: else Form sets dirty flag?
-		fieldLabel: gettext('Destination'),
-		listeners: { change: disable_query_for_ips }
+		fieldLabel: gettext('Destination')
 	    }
 	]);
 
@@ -282,12 +270,12 @@ Ext.define('PVE.FirewallRuleEdit', {
 
 	if (!me.create) {
 	    me.load({
-		success:  function(response, options) {
+		success: function(response, options) {
 		    var values = response.result.data;
 		    ipanel.setValues(values);
-		    var field = me.query('[isFormField][name=modified_marker]')[0];
-		    field.setValue(1);
 		    if (values.errors) {
+			var field = me.query('[isFormField][name=modified_marker]')[0];
+			field.setValue(1);
 			Ext.Function.defer(function() {
 			    var form = ipanel.up('form').getForm();
 			    form.markInvalid(values.errors)

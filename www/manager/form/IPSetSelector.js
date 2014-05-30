@@ -4,6 +4,8 @@ Ext.define('PVE.form.IPSetSelector', {
 
     base_url: undefined,
 
+    preferredValue: '', // hack: else Form sets dirty flag?
+
     initComponent: function() {
 	var me = this;
 
@@ -24,6 +26,14 @@ Ext.define('PVE.form.IPSetSelector', {
 		order: 'DESC'
 	    }
 	});
+
+	var disable_query_for_ips = function(f, value) {
+	    if (value.match(/^\d/)) { // IP address starts with \d
+		f.queryDelay = 9999999999; // hack: disbale with long delay
+	    } else {
+		f.queryDelay = 10;
+	    }
+	};
 
 	Ext.apply(me, {
 	    store: store,
@@ -51,6 +61,8 @@ Ext.define('PVE.form.IPSetSelector', {
 		]
 	    }
 	});
+
+	me.on('change', disable_query_for_ips);
 
         me.callParent();
     }
