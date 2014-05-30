@@ -363,6 +363,20 @@ Ext.define('PVE.IPSetGrid', {
 	    }
 	});
 
+	var render_errors = function(value, metaData, record) {
+	    var errors = record.data.errors;
+	    if (errors) {
+		var msg = errors.cidr || errors.nomatch;
+		if (msg) {
+		    metaData.tdCls = 'x-form-invalid-field';
+		    var html = '<p>' +  Ext.htmlEncode(msg) + '</p>';
+		    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' + 
+			html.replace(/\"/g,'&quot;') + '"';
+		}
+	    }
+	    return value;
+	};
+
 	Ext.apply(me, {
 	    tbar: [ '<b>IP/CIDR:</b>', me.addBtn, me.removeBtn, me.editBtn ],
 	    store: store,
@@ -379,6 +393,7 @@ Ext.define('PVE.IPSetGrid', {
 		    dataIndex: 'cidr',
 		    width: 150,
 		    renderer: function(value, metaData, record) {
+			value = render_errors(value, metaData, record);
 			if (record.data.nomatch) {
 			    return '<b>! </b>' + value;
 			}
@@ -407,7 +422,7 @@ Ext.define('PVE.IPSetGrid', {
     Ext.define('pve-ipset', {
 	extend: 'Ext.data.Model',
 	fields: [ { name: 'nomatch', type: 'boolean' },
-		  'cidr', 'comment' ],
+		  'cidr', 'comment', 'errors' ],
 	idProperty: 'cidr'
     });
 
