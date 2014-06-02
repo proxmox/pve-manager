@@ -38,6 +38,7 @@
 
 .pve-itype-icon-virt-viewer,
 .pve-itype-icon-tigervnc,
+.pve-itype-icon-novnc,
 .pve-itype-icon-display,
 .pve-itype-icon-memory,
 .pve-itype-icon-processor,
@@ -167,6 +168,11 @@
 .pve-itype-icon-tigervnc
 {
     background-image:url(../images/tigervnc.png);
+}
+
+.pve-itype-icon-novnc
+{
+    background-image:url(../images/novnc.png);
 }
 
 .pve-itype-icon-virt-viewer

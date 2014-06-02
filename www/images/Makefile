@@ -33,6 +33,7 @@ GNOME_IMAGES = 			\
 IMAGES = ${GNOME_IMAGES}	\
 	virt-viewer.png		\
 	tigervnc.png		\
+	novnc.png		\
 	favicon.ico		\
 	snapshot.png		\
 	computer-on.png		\
