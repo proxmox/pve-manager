@@ -129,6 +129,18 @@ Ext.define('PVE.ConsoleWorkspace', {
 		vmname: param.vmname,
 		toplevel: true
 	    };
+	} else if (consoleType === 'novnc') {
+	    me.title = "VM " + param.vmid;
+	    if (param.vmname) {
+		me.title += " ('" + param.vmname + "')";
+	    }
+	    content = {
+		xtype: 'pvenovncConsole',
+		vmid: param.vmid,
+		nodename: param.node,
+		vmname: param.vmname,
+ 		toplevel: true
+ 	    };
 	} else if (consoleType === 'openvz') {
 	    me.title = "CT " + param.vmid;
 	    if (param.vmname) {

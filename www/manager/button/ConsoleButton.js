@@ -71,6 +71,12 @@ Ext.define('PVE.button.ConsoleButton', {
 	    }
 	};
 
+	var create_novnc_console = function() {
+	    if (me.consoleType === 'kvm') {
+		PVE.Utils.openConsoleWindow('novnc', me.vmid, me.nodename, me.consoleName);
+	    }
+	};
+
 	var create_vnc_console = function() {
 	    if (me.consoleType === 'kvm') {
 		PVE.Utils.openConsoleWindow('kvm', me.vmid, me.nodename, me.consoleName);
@@ -97,6 +103,12 @@ Ext.define('PVE.button.ConsoleButton', {
 	    handler: create_vnc_console
 	});
 
+	var novncMenu = Ext.create('Ext.menu.Item', {
+	    text: 'noVNC',
+	    iconCls: 'pve-itype-icon-novnc',
+	    handler: create_novnc_console
+	});
+
 	Ext.applyIf(me, { text: gettext('Console') });
 
 	Ext.apply(me, {
@@ -109,7 +121,7 @@ Ext.define('PVE.button.ConsoleButton', {
 		}
 	    },
 	    menu: new Ext.menu.Menu({
-		items: [ vncMenu, me.spiceMenu ]
+		items: [ novncMenu, vncMenu, me.spiceMenu ]
 	    })
 	});
 

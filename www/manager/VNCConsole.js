@@ -468,3 +468,236 @@ Ext.define('PVE.Shell', {
 	me.callParent();
     }
 });
+
+Ext.define('PVE.noVNCConsole', {
+    extend: 'Ext.panel.Panel',
+    alias: ['widget.pvenoVNCConsole'],
+
+    initComponent : function() {
+	var me = this;
+
+	if (!me.url) {
+	    throw "no url specified";
+	}
+
+	var myid = me.id + "-vncapp";
+
+	var box = Ext.create('widget.uxiframe', {
+		    id: myid
+		});
+
+	var resize_window = function() {
+	    //console.log("resize");
+
+	    var novnciframe = box.getFrame();
+	    // console.log("resize " + myid + " " + novnciframe);
+	    // noVNC_canvas
+	    var tbar = me.getDockedItems("[dock=top]")[0];
+	    var tbh = tbar ? tbar.getHeight() : 0;
+
+	    // does not work as ExtJS modifies our iframe id from below
+	    var innerDoc = novnciframe.contentDocument || novnciframe.contentWindow.document;
+
+	    var aw = innerDoc.getElementById('noVNC_canvas').width + 8;
+	    var ah = innerDoc.getElementById('noVNC_canvas').height + 8;
+
+	    if (aw < 640) { aw = 640; }
+	    if (ah < 400) { ah = 400; }
+
+	    var oh;
+	    var ow;
+
+	    //console.log("size0 " + aw + " " + ah + " tbh " + tbh);
+
+	    if (window.innerHeight) {
+		oh = window.innerHeight;
+		ow = window.innerWidth;
+	    } else if (document.documentElement && 
+		       document.documentElement.clientHeight) {
+		oh = document.documentElement.clientHeight;
+		ow = document.documentElement.clientWidth;
+	    } else if (document.body) {
+		oh = document.body.clientHeight;
+		ow = document.body.clientWidth;
+	    }  else {
+		throw "can't get window size";
+	    }
+
+	    var offsetw = aw - ow;
+	    var offseth = ah + tbh - oh;
+
+	    if (offsetw !== 0 || offseth !== 0) {
+		//console.log("try resize by " + offsetw + " " + offseth);
+		try { window.resizeBy(offsetw, offseth); } catch (e) {}
+	    }
+
+	    Ext.Function.defer(resize_window, 1000);
+	};
+
+	var start_novnc_viewer = function(param) {
+
+	    var urlparams = Ext.urlEncode({
+		encrypt: 1,
+		port: param.port,
+		password: param.ticket
+	    });
+	    box.load('/novnc/vnc_pve.html?' + urlparams);
+            if (me.toplevel) {
+		Ext.Function.defer(resize_window, 1000);
+	    }
+	};
+
+	Ext.apply(me, {
+	    layout: 'fit',
+	    border: false,
+	    autoScroll: me.toplevel ? false : true,
+	    items: box,
+	    reloadnoVNC: function() {
+		PVE.Utils.API2Request({
+		    url: me.url,
+		    params: me.params,
+		    method: me.method || 'POST',
+		    failure: function(response, opts) {
+			box.update(gettext('Error') + ' ' + response.htmlStatus);
+		    },
+		    success: function(response, opts) {
+			start_novnc_viewer(response.result.data);
+		    }
+		});
+	    }
+	});
+
+	me.callParent();
+
+	if (me.toplevel) {
+	    me.on("render", function() { me.reloadnoVNC();});
+	} else {
+	    me.on("show", function() { me.reloadnoVNC();});
+	    me.on("hide", function() { box.update(""); });
+	}
+    }
+});
+
+Ext.define('PVE.novncConsole', {
+    extend: 'PVE.noVNCConsole',
+    alias: ['widget.pvenovncConsole'],
+
+    initComponent : function() {
+	var me = this;
+ 
+	if (!me.nodename) { 
+	    throw "no node name specified";
+	}
+
+	if (!me.vmid) {
+	    throw "no VM ID specified";
+	}
+
+	var vm_command = function(cmd, params, reload) {
+	    PVE.Utils.API2Request({
+		params: params,
+		url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + "/status/" + cmd,
+		method: 'POST',
+		waitMsgTarget: me,
+		failure: function(response, opts) {
+		    Ext.Msg.alert('Error', response.htmlStatus);
+		},
+		success: function() {
+		    if (reload) {
+			Ext.Function.defer(me.reloadnoVNC, 1000, me);
+		    }
+		}
+	    });
+	};
+
+	var tbar = [ 
+	    { 
+		text: gettext('Start'),
+		handler: function() { 
+		    vm_command("start", {}, 1);
+		}
+	    },
+	    { 
+		text: gettext('Shutdown'),
+		handler: function() {
+		    var msg = Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), me.vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+			vm_command('shutdown');
+		    });
+		}			    
+	    }, 
+	    { 
+		text: gettext('Kill VM'),
+		handler: function() {
+		    var msg = Ext.String.format(gettext("Do you really want to KILL VM {0}? This can cause data loss!"), me.vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+			vm_command("stop");
+		    }); 
+		}
+	    },
+	    { 
+		xtype: 'pveQemuSendKeyMenu',
+		nodename: me.nodename,
+		vmid: me.vmid
+	    },
+	    { 
+		text: gettext('Reset'),
+		handler: function() { 
+		    var msg = Ext.String.format(gettext("Do you really want to reset VM {0}?"), me.vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+			vm_command("reset");
+		    });
+		}
+	    },
+	    { 
+		text: gettext('Suspend'),
+		handler: function() {
+		    var msg = Ext.String.format(gettext("Do you really want to suspend VM {0}?"), me.vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+			vm_command("suspend");
+		    }); 
+		}
+	    },
+	    { 
+		text: gettext('Resume'),
+		handler: function() {
+		    vm_command("resume"); 
+		}
+	    },
+	    // Note: no migrate here, because we can't display migrate log
+            { 
+                text: gettext('Console'),
+                handler: function() {
+		    PVE.Utils.openConsoleWindow('kvm', me.vmid, me.nodename, me.vmname);
+		}
+            },
+            '->',
+	    {
+                text: gettext('Reload'),
+                handler: function () { 
+		    me.reloadnoVNC(); 
+		}
+	    }
+	];
+
+	Ext.apply(me, {
+	    tbar: tbar,
+	    url: "/nodes/" + me.nodename + "/qemu/" + me.vmid + "/vncproxy",
+	    params: { unsecure: 1, websocket: 1 }
+	});
+
+	me.callParent();
+    }
+});
