@@ -1,3 +1,13 @@
+pve-manager (3.2-7) unstable; urgency=low
+
+  * add Firewall GUI
+  
+  * openvz: add bridge vlan && firewall options to gui
+
+  * depend on pve-firewall
+  
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 03 Jun 2014 09:07:50 +0200
+
 pve-manager (3.2-6) unstable; urgency=low
 
   * fix bug #300: use disk_quota default settings from /etv/vz/vz.conf
