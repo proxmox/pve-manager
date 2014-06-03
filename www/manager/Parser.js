@@ -1,5 +1,5 @@
-// Some configuration values are complex strings - 
-// so we need parsers/generators for them. 
+// Some configuration values are complex strings -
+// so we need parsers/generators for them.
 
 Ext.define('PVE.Parser', { statics: {
 
@@ -106,7 +106,7 @@ Ext.define('PVE.Parser', { statics: {
 	    }
 
 	    var v = match_res[2];
-	    
+
 	    if (k === 'cache' && v === 'off') {
 		v = 'none';
 	    }
@@ -126,7 +126,7 @@ Ext.define('PVE.Parser', { statics: {
 	var drivestr = drive.file;
 
 	Ext.Object.each(drive, function(key, value) {
-	    if (!Ext.isDefined(value) || key === 'file' || 
+	    if (!Ext.isDefined(value) || key === 'file' ||
 		key === 'index' || key === 'interface') {
 		return; // continue
 	    }
@@ -159,19 +159,17 @@ Ext.define('PVE.Parser', { statics: {
 		    errors = true;
 		    return false; // break
 		}
-		if (match_res[1]==='bridge'){
+		if (match_res[1] === 'bridge'){
 		    var bridgevlanf = match_res[2];
-		    var bridge_res =  bridgevlanf.match(/^(vmbr(\d+))(v(\d+))?(f)?$/);
+		    var bridge_res = bridgevlanf.match(/^(vmbr(\d+))(v(\d+))?(f)?$/);
 		    if (!bridge_res) {
 			errors = true;
 			return false; // break
 		    }
 		    data['bridge'] = bridge_res[1];
 		    data['tag'] = bridge_res[4];
-		    if(bridge_res[5]){
-			data['firewall'] = 1;
-		    }
-		}else{
+		    data['firewall'] = bridge_res[5] ? 1 : 0;
+		} else {
 		    data[match_res[1]] = match_res[2];
 		}
 	    });
@@ -196,14 +194,13 @@ Ext.define('PVE.Parser', { statics: {
 	    var tmparray = [];
 	    Ext.Array.each(['ifname', 'mac', 'bridge', 'host_ifname' , 'host_mac', 'mac_filter', 'tag', 'firewall'], function(key) {
 		var value = data[key];
-		if(key === 'bridge'){
+		if (key === 'bridge'){
 		    if(data['tag']){
 			value = value + 'v' + data['tag'];
 		    }
-		    if(data['firewall']){
+		    if (data['firewall']){
 			value = value + 'f';
 		    }
-
 		}
 		if (value) {
 		    tmparray.push(key + '=' + value);
@@ -249,7 +246,7 @@ Ext.define('PVE.Parser', { statics: {
 
 	return res;
     },
- 
+
     printStartup: function(startup) {
 	var arr = [];
 	if (startup.order !== undefined && startup.order !== '') {
