@@ -120,7 +120,9 @@ Ext.define('PVE.FirewallOptions', {
 	    add_boolean_row('macfilter', gettext('MAC filter'), 1);
 	    add_log_row('log_level_in');
 	    add_log_row('log_level_out');
-	}
+	} else if (me.fwtype === 'dc') {
+	    add_boolean_row('enable', gettext('Enable Firewall'), 0);
+	} 
  
 	if (me.fwtype === 'dc' || me.fwtype === 'vm') {
 	    rows.policy_in = {
