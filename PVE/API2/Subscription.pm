@@ -375,6 +375,8 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
+	$param->{key} = PVE::Tools::trim($param->{key});
+
 	my $info = {
 	    status => 'New',
 	    key => $param->{key},
