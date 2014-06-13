@@ -343,6 +343,8 @@ sub send_file_start {
 	    my $nocomp;
 	    if ($filename =~ m/\.css$/) {
 		$ct = 'text/css';
+	    } elsif ($filename =~ m/\.html$/) {
+		$ct = 'text/html';
 	    } elsif ($filename =~ m/\.js$/) {
 		$ct = 'application/javascript';
 	    } elsif ($filename =~ m/\.png$/) {
