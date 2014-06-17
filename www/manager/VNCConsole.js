@@ -482,9 +482,7 @@ Ext.define('PVE.noVNCConsole', {
 
 	var myid = me.id + "-vncapp";
 
-	var box = Ext.create('widget.uxiframe', {
-		    id: myid
-		});
+	var box = Ext.create('widget.uxiframe', { id: myid });
 
 	var resize_window = function() {
 	    //console.log("resize");
@@ -695,7 +693,7 @@ Ext.define('PVE.novncConsole', {
 	Ext.apply(me, {
 	    tbar: tbar,
 	    url: "/nodes/" + me.nodename + "/qemu/" + me.vmid + "/vncproxy",
-	    params: { unsecure: 1, websocket: 1 }
+	    params: { websocket: 1 }
 	});
 
 	me.callParent();
