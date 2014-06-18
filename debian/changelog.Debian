@@ -1,3 +1,9 @@
+pve-manager (3.2-10) unstable; urgency=low
+
+  * HTTPServer: implement websockets
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 18 Jun 2014 12:12:51 +0200
+
 pve-manager (3.2-9) unstable; urgency=low
 
   * kvm: add noVNC console 
