@@ -8,7 +8,9 @@ use POSIX qw(strftime EINTR EAGAIN);
 use Fcntl;
 use IO::File;
 use File::stat qw();
+use MIME::Base64;
 use Digest::MD5;
+use Digest::SHA;
 # use AnyEvent::Strict; # only use this for debugging
 use AnyEvent::Util qw(guard fh_nonblocking WSAEWOULDBLOCK WSAEINPROGRESS);
 use AnyEvent::Socket;
@@ -375,6 +377,192 @@ sub send_file_start {
     warn $@ if $@;
 }
 
+sub websocket_proxy {
+    my ($self, $reqstate, $wsaccept, $wsproto, $param) = @_;
+
+    eval {
+	my $remhost;
+	my $remport;
+
+	my $max_payload_size = 65536;
+
+	my $binary;
+	if ($wsproto eq 'binary') {
+	    $binary = 1;
+	} elsif ($wsproto eq 'base64') {
+	    $binary = 0;
+	} else {
+	    die "websocket_proxy: unsupported protocol '$wsproto'\n";
+	}
+
+	if ($param->{port}) {
+	    $remhost = '127.0.0.1';
+	    $remport = $param->{port};
+	} elsif ($param->{socket}) {
+	    $remhost = 'unix/';
+	    $remport = $param->{socket};
+	} else {
+	    die "websocket_proxy: missing port or socket\n";
+	}
+
+	tcp_connect $remhost, $remport, sub {
+	    my ($fh) = @_ 
+		or die "connect to '$remhost:$remport' failed: $!";
+	
+	    print "$$: CONNECTed to '$remhost:$remport'\n" if $self->{debug};
+
+	    $reqstate->{proxyhdl} = AnyEvent::Handle->new(
+		fh => $fh,
+		rbuf_max => 64*1024,
+		wbuf_max => 64*10*1024,
+		timeout => 5,
+		on_eof => sub {
+		    my ($hdl) = @_;
+		    eval {
+			$self->log_aborted_request($reqstate);
+			$self->client_do_disconnect($reqstate);
+		    };
+		    if (my $err = $@) { syslog('err', $err); }
+		},
+		on_error => sub {
+		    my ($hdl, $fatal, $message) = @_;
+		    eval {
+			$self->log_aborted_request($reqstate, $message);
+			$self->client_do_disconnect($reqstate);
+		    };
+		    if (my $err = $@) { syslog('err', "$err"); }
+		});
+
+	    my $proxyhdlreader = sub {
+		my ($hdl) = @_;
+		
+		my $len = length($hdl->{rbuf});
+		my $data = substr($hdl->{rbuf}, 0, $len, '');
+
+		my $string;
+		my $payload;
+
+		if ($binary) {
+		    $string = "\x82"; # binary frame
+		    $payload = $data;
+		} else {
+		    $string = "\x81"; # text frame
+		    $payload = encode_base64($data, '');
+		}
+
+		my $payload_len = length($payload);
+		if ($payload_len <= 125) {
+		    $string .= pack 'C', $payload_len;
+		} elsif ($payload_len <= 0xffff) {
+		    $string .= pack 'C', 126; 
+		    $string .= pack 'n', $payload_len;
+		} else {
+		    $string .= pack 'C', 127; 
+		    $string .= pack 'Q>', $payload_len;
+		}
+		$string .= $payload;
+
+		$reqstate->{hdl}->push_write($string) if $reqstate->{hdl};
+	    };
+
+	    my $hdlreader = sub {
+		my ($hdl) = @_;
+
+		my $len = length($hdl->{rbuf});
+		return if $len < 2;
+
+		my $hdr = unpack('C', substr($hdl->{rbuf}, 0, 1));
+		my $opcode = $hdr & 0b00001111;
+		my $fin = $hdr & 0b10000000;
+
+		die "received fragmented websocket frame\n" if !$fin;
+
+		my $rsv = $hdr & 0b01110000;
+		die "received websocket frame with RSV flags\n" if $rsv;
+
+		my $payload_len = unpack 'C', substr($hdl->{rbuf}, 1, 1);
+
+		my $masked = $payload_len & 0b10000000;
+		die "received unmasked websocket frame from client\n" if !$masked;
+
+		my $offset = 2;
+		$payload_len = $payload_len & 0b01111111;
+		if ($payload_len == 126) {
+		    return if $len < 4;
+		    $payload_len = unpack('n', substr($hdl->{rbuf}, $offset, 2));
+		    $offset += 2;
+		} elsif ($payload_len == 127) {
+		    return if $len < 10;
+		    $payload_len = unpack('Q>', substr($hdl->{rbuf}, $offset, 8));
+		    $offset += 8;
+		}
+
+		die "received too large websocket frame (len = $payload_len)\n" 
+		    if ($payload_len > $max_payload_size) || ($payload_len < 0);
+
+		return if $len < ($offset + 4 + $payload_len);
+
+		my $data = substr($hdl->{rbuf}, 0, $len, ''); # now consume data
+		
+		my @mask = (unpack('C', substr($data, $offset+0, 1)),
+			    unpack('C', substr($data, $offset+1, 1)),
+			    unpack('C', substr($data, $offset+2, 1)),
+			    unpack('C', substr($data, $offset+3, 1)));
+
+		$offset += 4;
+
+		my $payload = substr($data, $offset, $payload_len);
+
+		for (my $i = 0; $i < $payload_len; $i++) {
+		    my $d = unpack('C', substr($payload, $i, 1));
+		    my $n = $d ^ $mask[$i % 4];
+		    substr($payload, $i, 1, pack('C', $n));
+		}
+
+		$payload = decode_base64($payload) if !$binary;
+
+		if ($opcode == 1 || $opcode == 2) {
+		    $reqstate->{proxyhdl}->push_write($payload) if $reqstate->{proxyhdl};
+		} elsif ($opcode == 8) {
+		    # ignore close ?
+		    print "websocket received close\n" if $self->{debug};
+		} else {
+		    die "received unhandled websocket opcode $opcode\n";
+		}
+	    };
+
+	    my $proto = $reqstate->{proto} ? $reqstate->{proto}->{str} : 'HTTP/1.1';
+
+	    $reqstate->{proxyhdl}->timeout(0);
+	    $reqstate->{proxyhdl}->on_read($proxyhdlreader);
+	    $reqstate->{hdl}->on_read($hdlreader);
+
+	    # todo: use stop_read/start_read if write buffer grows to much
+
+	    my $res = "$proto 101 Switching Protocols\015\012" .
+		"Upgrade: websocket\015\012" .
+		"Connection: upgrade\015\012" .
+		"Sec-WebSocket-Accept: $wsaccept\015\012" .
+		"Sec-WebSocket-Protocol: $wsproto\015\012" .
+		"\015\012";
+
+	    print $res if $self->{debug};
+
+	    $reqstate->{hdl}->push_write($res);
+
+	    # log early
+	    $reqstate->{log}->{code} = 101;
+	    $self->log_request($reqstate);
+	};
+
+    };
+    if (my $err = $@) {
+	warn $err;
+	$self->log_aborted_request($reqstate, $err);
+	$self->client_do_disconnect($reqstate);
+    }
+}
+
 sub proxy_request {
     my ($self, $reqstate, $clientip, $host, $method, $uri, $ticket, $token, $params) = @_;
 
@@ -533,6 +721,8 @@ sub handle_api2_request {
 
 	$rpcenv->set_user(undef); # clear after request
 
+	my $upgrade = $r->header('upgrade');
+
 	if (my $host = $res->{proxy}) {
 
 	    if ($self->{trusted_env}) {
@@ -551,6 +741,26 @@ sub handle_api2_request {
 				 $r->uri, $auth->{ticket}, $auth->{token}, $res->{proxy_params});
 	    return;
 
+	} elsif ($upgrade && ($method eq 'GET') && ($path =~ m|websocket$|)) {
+	    die "unable to upgrade protocol\n" if !$upgrade || ($upgrade ne 'websocket');
+	    my $wsver = $r->header('sec-websocket-version');
+	    die "unsupported websocket-version '$wsver'\n" if !$wsver || ($wsver ne '13');
+	    my $wsproto_str = $r->header('sec-websocket-protocol');
+	    die "missing websocket-protocol header" if !$wsproto_str;
+	    my $wsproto;
+	    foreach my $p (PVE::Tools::split_list($wsproto_str)) {
+		$wsproto = $p if !$wsproto && $p eq 'base64';
+		$wsproto = $p if $p eq 'binary';
+	    }
+	    die "unsupported websocket-protocol protocol '$wsproto_str'\n" if !$wsproto;
+	    my $wskey = $r->header('sec-websocket-key');
+	    die "missing websocket-key\n" if !$wskey;
+	    # Note: Digest::SHA::sha1_base64 has wrong padding
+	    my $wsaccept = Digest::SHA::sha1_base64("${wskey}258EAFA5-E914-47DA-95CA-C5AB0DC85B11") . "=";
+	    if ($res->{status} == HTTP_OK) {
+		$self->websocket_proxy($reqstate, $wsaccept, $wsproto, $res->{data});
+		return;
+	    }
 	}
 
 	my $delay = 0;

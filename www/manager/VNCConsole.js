@@ -536,7 +536,7 @@ Ext.define('PVE.noVNCConsole', {
 
 	    var urlparams = Ext.urlEncode({
 		encrypt: 1,
-		port: param.port,
+		path: "api2/json/nodes/" + me.nodename + "/qemu/" + me.vmid + "/vncwebsocket?port=" + param.port,
 		password: param.ticket
 	    });
 	    box.load('/novnc/vnc_pve.html?' + urlparams);
@@ -553,7 +553,7 @@ Ext.define('PVE.noVNCConsole', {
 	    reloadnoVNC: function() {
 		PVE.Utils.API2Request({
 		    url: me.url,
-		    params: me.params,
+		    params: { websocket: 1 },
 		    method: me.method || 'POST',
 		    failure: function(response, opts) {
 			box.update(gettext('Error') + ' ' + response.htmlStatus);
@@ -692,8 +692,7 @@ Ext.define('PVE.novncConsole', {
 
 	Ext.apply(me, {
 	    tbar: tbar,
-	    url: "/nodes/" + me.nodename + "/qemu/" + me.vmid + "/vncproxy",
-	    params: { websocket: 1 }
+	    url: "/nodes/" + me.nodename + "/qemu/" + me.vmid + "/vncproxy"
 	});
 
 	me.callParent();
