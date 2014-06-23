@@ -2,6 +2,14 @@ Ext.define('PVE.form.RealmComboBox', {
     extend: 'Ext.form.field.ComboBox',
     alias: ['widget.pveRealmComboBox'],
 
+    needOTP: function(realm) {
+	var me = this;
+
+	var rec = me.store.findRecord('realm', realm);
+
+	return rec && rec.data && rec.data.tfa ? rec.data.tfa : undefined;
+    },
+
     initComponent: function() {
 	var me = this;
 

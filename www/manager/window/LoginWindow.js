@@ -34,6 +34,13 @@ Ext.define('PVE.window.LoginWindow', {
     initComponent: function() {
 	var me = this;
 
+	var otp_field = Ext.createWidget('textfield', { 
+	    fieldLabel: gettext('OTP'), 
+	    name: 'otp',
+	    allowBlank: false,
+	    hidden: true
+	});
+
 	Ext.apply(me, {
 	    width: 400,
 	    modal: true,
@@ -95,9 +102,21 @@ Ext.define('PVE.window.LoginWindow', {
 			    }
 			}
 		    },
+		    otp_field,
 		    {
 			xtype: 'pveRealmComboBox',
-			name: 'realm'
+			name: 'realm',
+			listeners: {
+			    change: function(f, value) {
+				if (f.needOTP(value)) {
+				    otp_field.setVisible(true);
+				    otp_field.setDisabled(false);
+				} else {
+				    otp_field.setVisible(false);
+				    otp_field.setDisabled(true);
+				}
+			    }
+			}
 		    },
 		    {   
 			xtype: 'pveLanguageSelector',

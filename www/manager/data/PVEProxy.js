@@ -32,7 +32,7 @@ Ext.define('PVE.RestProxy', {
 
     Ext.define('pve-domains', {
 	extend: "Ext.data.Model",
-	fields: [ 'realm', 'type', 'comment', 'default',
+	fields: [ 'realm', 'type', 'comment', 'default', 'tfa',
 		  { 
 		      name: 'descr',
 		      // Note: We use this in the RealmComboBox.js
@@ -45,7 +45,13 @@ Ext.define('PVE.RestProxy', {
 			      return value;
 			  }
 			  // return realm if there is no comment
-			  return info.comment || info.realm;
+			  text = info.comment || info.realm;
+
+			  if (info.tfa) {
+			      text += " (+ " + info.tfa + ")";
+			  }
+
+			  return text;
 		      }
 		  }
 		],

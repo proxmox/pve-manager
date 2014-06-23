@@ -118,11 +118,19 @@ Ext.define('PVE.dc.UserEdit', {
 		name: 'email',
 		fieldLabel: gettext('E-Mail'),
 		vtype: 'email'
-	    },
+	    }
+	];
+
+	var columnB = [
 	    {
 		xtype: 'textfield',
 		name: 'comment',
 		fieldLabel: gettext('Comment')
+	    },
+	    {
+		xtype: 'textfield',
+		name: 'keys',
+		fieldLabel: gettext('Key IDs')
 	    }
 	];
  
@@ -147,6 +155,7 @@ Ext.define('PVE.dc.UserEdit', {
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
 	    column1: column1,
 	    column2: column2,
+	    columnB: columnB,
 	    onGetValues: function(values) {
 		// hack: ExtJS datefield does not submit 0, so we need to set that
 		if (!values.expire) {
