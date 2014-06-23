@@ -1,3 +1,9 @@
+pve-manager (3.2-11) unstable; urgency=low
+
+  * add Persian (Farsi) translation.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 23 Jun 2014 06:31:39 +0200
+
 pve-manager (3.2-10) unstable; urgency=low
 
   * HTTPServer: implement websockets
