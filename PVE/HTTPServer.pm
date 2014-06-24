@@ -681,12 +681,10 @@ sub extract_params {
 }
 
 sub handle_api2_request {
-    my ($self, $reqstate, $auth, $upload_state) = @_;
+    my ($self, $reqstate, $auth, $method, $path, $upload_state) = @_;
 
     eval {
 	my $r = $reqstate->{request};
-	my $method = $r->method();
-	my $path = $r->uri->path();
 
 	my ($rel_uri, $format) = split_abs_uri($path);
 
@@ -926,19 +924,17 @@ sub handle_spice_proxy_request {
 }
 
 sub handle_request {
-    my ($self, $reqstate, $auth) = @_;
+    my ($self, $reqstate, $auth, $method, $path) = @_;
 
     eval {
 	my $r = $reqstate->{request};
-	my $method = $r->method();
-	my $path = $r->uri->path();
 	
 	# disable timeout on handle (we already have all data we need)
 	# we re-enable timeout in response()
 	$reqstate->{hdl}->timeout(0);
 
 	if ($path =~ m!$baseuri!) {
-	    $self->handle_api2_request($reqstate, $auth);
+	    $self->handle_api2_request($reqstate, $auth, $method, $path);
 	    return;
 	}
 
@@ -983,7 +979,7 @@ sub handle_request {
 }
 
 sub file_upload_multipart {
-    my ($self, $reqstate, $auth, $rstate) = @_;
+    my ($self, $reqstate, $auth, $method, $path, $rstate) = @_;
 
     eval {
 	my $boundary = $rstate->{boundary};
@@ -1085,7 +1081,7 @@ sub file_upload_multipart {
 		syslog('info', "multipart upload complete " . 
 		       "(size: %d time: %ds rate: %.2fMiB/s md5sum: $rstate->{md5sum})", 
 		       $rstate->{bytes}, $elapsed, $rate);
-		$self->handle_api2_request($reqstate, $auth, $rstate);
+		$self->handle_api2_request($reqstate, $auth, $method, $path, $rstate);
 	    }
 	}
     };
@@ -1155,7 +1151,7 @@ sub unshift_read_header {
 	    my $r = $reqstate->{request};
 	    if ($line eq '') {
 
-		my $path = $r->uri->path();
+		my $path = uri_unescape($r->uri->path());
 		my $method = $r->method();
 
 		$r->push_header($state->{key}, $state->{val})
@@ -1293,7 +1289,7 @@ sub unshift_read_header {
 			    outfh => $outfh,
 			};
 			$reqstate->{tmpfilename} = $tmpfilename;
-			$reqstate->{hdl}->on_read(sub { $self->file_upload_multipart($reqstate, $auth, $state); });
+			$reqstate->{hdl}->on_read(sub { $self->file_upload_multipart($reqstate, $auth, $method, $path, $state); });
 			return;
 		    }
 
@@ -1306,13 +1302,13 @@ sub unshift_read_header {
 			$reqstate->{hdl}->unshift_read(chunk => $len, sub {
 			    my ($hdl, $data) = @_;
 			    $r->content($data);
-			    $self->handle_request($reqstate, $auth);
+			    $self->handle_request($reqstate, $auth, $method, $path);
 		        });
 		    } else {
 			$self->error($reqstate, 506, "upload 'Content-Type '$ctype' not implemented");
 		    }
 		} else {
-		    $self->handle_request($reqstate, $auth);
+		    $self->handle_request($reqstate, $auth, $method, $path);
 		}
 	    } elsif ($line =~ /^([^:\s]+)\s*:\s*(.*)/) {
 		$r->push_header($state->{key}, $state->{val}) if $state->{key};
@@ -1358,7 +1354,7 @@ sub push_request_header {
 		    $reqstate->{proto}->{maj} = $maj;
 		    $reqstate->{proto}->{min} = $min;
 		    $reqstate->{proto}->{ver} = $maj*1000+$min;
-		    $reqstate->{request} = HTTP::Request->new($method, uri_unescape($url));
+		    $reqstate->{request} = HTTP::Request->new($method, $url);
 		    $reqstate->{starttime} = [gettimeofday],
 
 		    $self->unshift_read_header($reqstate);
