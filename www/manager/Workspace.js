@@ -116,6 +116,8 @@ Ext.define('PVE.ConsoleWorkspace', {
 	var param = Ext.Object.fromQueryString(window.location.search);
 	var consoleType = me.consoleType || param.console;
 
+	param.novnc = (param.novnc === '1') ? true : false;
+
 	var content;
 	if (consoleType === 'kvm') {
 	    me.title = "VM " + param.vmid;
@@ -124,23 +126,12 @@ Ext.define('PVE.ConsoleWorkspace', {
 	    }
 	    content = {
 		xtype: 'pveKVMConsole',
+		novnc: param.novnc,
 		vmid: param.vmid,
 		nodename: param.node,
 		vmname: param.vmname,
 		toplevel: true
 	    };
-	} else if (consoleType === 'novnc') {
-	    me.title = "VM " + param.vmid;
-	    if (param.vmname) {
-		me.title += " ('" + param.vmname + "')";
-	    }
-	    content = {
-		xtype: 'pvenovncConsole',
-		vmid: param.vmid,
-		nodename: param.node,
-		vmname: param.vmname,
- 		toplevel: true
- 	    };
 	} else if (consoleType === 'openvz') {
 	    me.title = "CT " + param.vmid;
 	    if (param.vmname) {
@@ -148,6 +139,7 @@ Ext.define('PVE.ConsoleWorkspace', {
 	    }
 	    content = {
 		xtype: 'pveOpenVZConsole',
+		novnc: param.novnc,
 		vmid: param.vmid,
 		nodename: param.node,
 		vmname: param.vmname,
@@ -157,6 +149,7 @@ Ext.define('PVE.ConsoleWorkspace', {
 	    me.title = "node '" + param.node + "'";
 	    content = {
 		xtype: 'pveShell',
+		novnc: param.novnc,
 		nodename: param.node,
 		toplevel: true
 	    };
@@ -164,6 +157,7 @@ Ext.define('PVE.ConsoleWorkspace', {
 	    me.title = Ext.String.format(gettext('System upgrade on node {0}'), "'" + param.node + "'");
 	    content = {
 		xtype: 'pveShell',
+		novnc: param.novnc,
 		nodename: param.node,
 		ugradeSystem: true,
 		toplevel: true

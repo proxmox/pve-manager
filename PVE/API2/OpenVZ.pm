@@ -833,6 +833,11 @@ __PACKAGE__->register_method ({
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    vmid => get_standard_option('pve-vmid'),
+	    websocket => {
+		optional => 1,
+		type => 'boolean',
+		description => "use websocket instead of standard VNC.",
+	    },
 	},
     },
     returns => { 
@@ -889,7 +894,14 @@ __PACKAGE__->register_method ({
 
 	    my $cmd = ['/usr/bin/vncterm', '-rfbport', $port,
 		       '-timeout', $timeout, '-authpath', $authpath, 
-		       '-perm', 'VM.Console', '-c', @$remcmd, @$shcmd];
+		       '-perm', 'VM.Console'];
+
+	    if ($param->{websocket}) {
+		$ENV{PVE_VNC_TICKET} = $ticket; # pass ticket to vncterm 
+		push @$cmd, '-notls', '-listen', 'localhost';
+	    }
+
+	    push @$cmd, '-c', @$remcmd, @$shcmd;
 
 	    run_command($cmd);
 
@@ -907,6 +919,55 @@ __PACKAGE__->register_method ({
 	    upid => $upid, 
 	    cert => $sslcert, 
 	};
+    }});
+
+__PACKAGE__->register_method({
+    name => 'vncwebsocket',
+    path => '{vmid}/vncwebsocket',
+    method => 'GET',
+    permissions => { 
+	description => "You also need to pass a valid ticket (vncticket).",
+	check => ['perm', '/vms/{vmid}', [ 'VM.Console' ]],
+    },
+    description => "Opens a weksocket for VNC traffic.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vmid => get_standard_option('pve-vmid'),
+	    vncticket => {
+		description => "Ticket from previous call to vncproxy.",
+		type => 'string',
+		maxLength => 512,
+	    },
+	    port => {
+		description => "Port number returned by previous vncproxy call.",
+		type => 'integer',
+		minimum => 5900,
+		maximum => 5999,
+	    },
+	},
+    },
+    returns => {
+	type => "object",
+	properties => {
+	    port => { type => 'string' },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
+
+	my $authpath = "/vms/$param->{vmid}";
+
+	PVE::AccessControl::verify_vnc_ticket($param->{vncticket}, $authuser, $authpath);
+
+	my $port = $param->{port};
+	
+	return { port => $port };
     }});
 
 __PACKAGE__->register_method ({

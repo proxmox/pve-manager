@@ -71,21 +71,15 @@ Ext.define('PVE.button.ConsoleButton', {
 	    }
 	};
 
-	var create_novnc_console = function() {
+	var create_vnc_console = function(novnc) {
 	    if (me.consoleType === 'kvm') {
-		PVE.Utils.openConsoleWindow('novnc', me.vmid, me.nodename, me.consoleName);
-	    }
-	};
-
-	var create_vnc_console = function() {
-	    if (me.consoleType === 'kvm') {
-		PVE.Utils.openConsoleWindow('kvm', me.vmid, me.nodename, me.consoleName);
+		PVE.Utils.openConsoleWindow('kvm', me.vmid, me.nodename, me.consoleName, novnc);
 	    } else if (me.consoleType === 'openvz') {
-		PVE.Utils.openConsoleWindow('openvz', me.vmid, me.nodename, me.consoleName);
+		PVE.Utils.openConsoleWindow('openvz', me.vmid, me.nodename, me.consoleName, novnc);
 	    } else if (me.consoleType === 'shell') {
-		PVE.Utils.openConsoleWindow('shell', undefined, me.nodename);
+		PVE.Utils.openConsoleWindow('shell', undefined, me.nodename, undefined, novnc);
 	    } else if (me.consoleType === 'upgrade') {
-		var url = Ext.urlEncode({ console: 'upgrade', node: me.nodename });
+		var url = Ext.urlEncode({ console: 'upgrade', node: me.nodename, novnc: novnc });
 		var nw = window.open("?" + url, '_blank', "innerWidth=745,innerheight=427");
 		nw.focus();
 	    }
@@ -100,13 +94,13 @@ Ext.define('PVE.button.ConsoleButton', {
 	var vncMenu = Ext.create('Ext.menu.Item', {
 	    text: 'VNC',
 	    iconCls: 'pve-itype-icon-tigervnc',
-	    handler: create_vnc_console
+	    handler: function() { create_vnc_console(0); }
 	});
 
-	var novncMenu = Ext.create('Ext.menu.Item', {
+	var noVncMenu = Ext.create('Ext.menu.Item', {
 	    text: 'noVNC',
 	    iconCls: 'pve-itype-icon-novnc',
-	    handler: create_novnc_console
+	    handler: function() { create_vnc_console(1); }
 	});
 
 	Ext.applyIf(me, { text: gettext('Console') });
@@ -121,7 +115,7 @@ Ext.define('PVE.button.ConsoleButton', {
 		}
 	    },
 	    menu: new Ext.menu.Menu({
-		items: [ novncMenu, vncMenu, me.spiceMenu ]
+		items: [ noVncMenu, vncMenu, me.spiceMenu ]
 	    })
 	});
 

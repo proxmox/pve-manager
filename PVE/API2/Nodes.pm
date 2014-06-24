@@ -682,6 +682,11 @@ __PACKAGE__->register_method ({
 		optional => 1,
 		default => 0,
 	    },
+	    websocket => {
+		optional => 1,
+		type => 'boolean',
+		description => "use websocket instead of standard vnc.",
+	    },
 	},
     },
     returns => { 
@@ -745,7 +750,14 @@ __PACKAGE__->register_method ({
 
 	my $cmd = ['/usr/bin/vncterm', '-rfbport', $port,
 		   '-timeout', $timeout, '-authpath', $authpath, 
-		   '-perm', 'Sys.Console', '-c', @$remcmd, @$shcmd];
+		   '-perm', 'Sys.Console'];
+
+	if ($param->{websocket}) {
+	    $ENV{PVE_VNC_TICKET} = $ticket; # pass ticket to vncterm 
+	    push @$cmd, '-notls', '-listen', 'localhost';
+	}
+
+	push @$cmd, '-c', @$remcmd, @$shcmd;
 
 	my $realcmd = sub {
 	    my $upid = shift;
@@ -757,6 +769,7 @@ __PACKAGE__->register_method ({
 
 	    eval { 
 		foreach my $k (keys %ENV) {
+		    next if $k eq 'PVE_VNC_TICKET';
 		    next if $k eq 'PATH' || $k eq 'TERM' || $k eq 'USER' || $k eq 'HOME';
 		    delete $ENV{$k};
 		}
@@ -782,6 +795,56 @@ __PACKAGE__->register_method ({
 	    upid => $upid, 
 	    cert => $sslcert, 
 	};
+    }});
+
+__PACKAGE__->register_method({
+    name => 'vncwebsocket',
+    path => 'vncwebsocket',
+    method => 'GET',
+    permissions => { 
+	description => "Restricted to users on realm 'pam'. You also need to pass a valid ticket (vncticket).",
+	check => ['perm', '/nodes/{node}', [ 'Sys.Console' ]],
+    },
+    description => "Opens a weksocket for VNC traffic.",
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    vncticket => {
+		description => "Ticket from previous call to vncproxy.",
+		type => 'string',
+		maxLength => 512,
+	    },
+	    port => {
+		description => "Port number returned by previous vncproxy call.",
+		type => 'integer',
+		minimum => 5900,
+		maximum => 5999,
+	    },
+	},
+    },
+    returns => {
+	type => "object",
+	properties => {
+	    port => { type => 'string' },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
+
+	raise_perm_exc("realm != pam") if $realm ne 'pam'; 
+
+	my $authpath = "/nodes/$param->{node}";
+
+	PVE::AccessControl::verify_vnc_ticket($param->{vncticket}, $user, $authpath);
+
+	my $port = $param->{port};
+	
+	return { port => $port };
     }});
 
 __PACKAGE__->register_method ({
