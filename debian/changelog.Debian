@@ -1,3 +1,9 @@
+pve-manager (3.2-12) unstable; urgency=low
+
+  * implement novnc console for openvz and shell
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 24 Jun 2014 17:39:10 +0200
+
 pve-manager (3.2-11) unstable; urgency=low
 
   * add Persian (Farsi) translation.
