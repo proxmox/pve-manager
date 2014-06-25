@@ -720,6 +720,7 @@ sub handle_api2_request {
 	$rpcenv->set_user(undef); # clear after request
 
 	my $upgrade = $r->header('upgrade');
+	$upgrade = lc($upgrade) if $upgrade;
 
 	if (my $host = $res->{proxy}) {
 
@@ -740,7 +741,7 @@ sub handle_api2_request {
 	    return;
 
 	} elsif ($upgrade && ($method eq 'GET') && ($path =~ m|websocket$|)) {
-	    die "unable to upgrade protocol\n" if !$upgrade || ($upgrade ne 'websocket');
+	    die "unable to upgrade to protocol '$upgrade'\n" if !$upgrade || ($upgrade ne 'websocket');
 	    my $wsver = $r->header('sec-websocket-version');
 	    die "unsupported websocket-version '$wsver'\n" if !$wsver || ($wsver ne '13');
 	    my $wsproto_str = $r->header('sec-websocket-protocol');
