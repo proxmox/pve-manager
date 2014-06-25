@@ -1,3 +1,9 @@
+pve-manager (3.2-13) unstable; urgency=low
+
+  * use noVNC as default console viewer
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 25 Jun 2014 07:24:04 +0200
+
 pve-manager (3.2-12) unstable; urgency=low
 
   * implement novnc console for openvz and shell
