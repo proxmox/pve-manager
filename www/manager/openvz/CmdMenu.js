@@ -81,7 +81,7 @@ Ext.define('PVE.openvz.CmdMenu', {
 		text: gettext('Console'),
 		icon: '/pve2/images/display.png',
 		handler: function() {
-		    PVE.Utils.openConsoleWindow('openvz', vmid, nodename, vmname);
+		    PVE.Utils.openDefaultConsoleWindow(true, 'openvz', vmid, nodename, vmname);
 		}
 	    }
 	];

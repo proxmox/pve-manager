@@ -118,14 +118,8 @@ Ext.define('PVE.qemu.CmdMenu', {
 			    Ext.Msg.alert('Error', response.htmlStatus);
 			},
 			success: function(response, opts) {
-			    var spice = response.result.data.spice;
-			    if (PVE.VersionInfo.console === 'applet' || !spice) {
-				PVE.Utils.openConsoleWindow('kvm', vmid, nodename, vmname);
-			    } else {
-				var url = '/nodes/' + nodename + '/qemu/' + vmid + '/spiceproxy';
-				var params = { proxy: window.location.hostname };
-				PVE.Utils.openSpiceViewer(url, params);
-			    }
+			    var allowSpice = response.result.data.spice;
+			    PVE.Utils.openDefaultConsoleWindow(allowSpice, 'kvm', vmid, nodename, vmname);
 			}
 		    });
 		}

@@ -1090,17 +1090,44 @@ Ext.define('PVE.Utils', { statics: {
 	}
     },
  
-    openConsoleWindow: function(vmtype, vmid, nodename, vmname, novnc) {
-	var url = Ext.urlEncode({
-	    console: vmtype, // kvm, openvz or shell
-	    novnc: novnc ? 1 : 0,
-	    vmid: vmid,
-	    vmname: vmname,
-	    node: nodename
-	});
-	var nw = window.open("?" + url, '_blank', 
-			     "innerWidth=745,innerheight=427");
-	nw.focus();
+    openDefaultConsoleWindow: function(allowSpice, vmtype, vmid, nodename, vmname) {
+	var dv = PVE.Utils.defaultViewer(allowSpice);
+	PVE.Utils.openConsoleWindow(dv, vmtype, vmid, nodename, vmname);
+    },
+
+    openConsoleWindow: function(viewer, vmtype, vmid, nodename, vmname) {
+	// kvm, openvz, shell, upgrade
+
+	if (vmid == undefined && (vmtype === 'kvm' || vmtype === 'openvz')) {
+	    throw "missing vmid";
+	}
+
+	if (!nodename) {
+	    throw "no nodename specified";
+	}
+
+	if (viewer === 'applet' || viewer === 'html5') {
+	    PVE.Utils.openVNCViewer(vmtype, vmid, nodename, vmname, viewer === 'html5');
+	} else if (viewer === 'vv') {
+	    var url;
+	    var params = { proxy: window.location.hostname };
+	    if (vmtype === 'kvm') {
+		url = '/nodes/' + nodename + '/qemu/' + vmid.toString() + '/spiceproxy';
+		PVE.Utils.openSpiceViewer(url, params);
+	    } else if (vmtype === 'openvz') {
+		url = '/nodes/' + nodename + '/openvz/' + vmid.toString() + '/spiceproxy';
+		PVE.Utils.openSpiceViewer(url, params);
+	    } else if (vmtype === 'shell') {
+		url = '/nodes/' + nodename + '/spiceshell';
+		PVE.Utils.openSpiceViewer(url, params);
+	    } else if (vmtype === 'upgrade') {
+		url = '/nodes/' + nodename + '/spiceshell';
+		params.upgrade = 1;
+		PVE.Utils.openSpiceViewer(url, params);
+	    }
+	} else {
+	    throw "unknown viewer type";
+	}
     },
 
     defaultViewer: function(allowSpice) {
@@ -1111,6 +1138,18 @@ Ext.define('PVE.Utils', { statics: {
 	}
 
 	return dv;
+    },
+
+    openVNCViewer: function(vmtype, vmid, nodename, vmname, novnc) {
+	var url = Ext.urlEncode({
+	    console: vmtype, // kvm, openvz, upgrade or shell
+	    novnc: novnc ? 1 : 0,
+	    vmid: vmid,
+	    vmname: vmname,
+	    node: nodename
+	});
+	var nw = window.open("?" + url, '_blank', "innerWidth=745,innerheight=427");
+	nw.focus();
     },
 
     openSpiceViewer: function(url, params){
