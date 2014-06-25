@@ -6,7 +6,7 @@ Ext.define('PVE.button.ConsoleButton', {
 
     consoleName: undefined,
 
-    enableSpice: undefined,
+    enableSpice: true,
 
     nodename: undefined,
 
@@ -17,20 +17,6 @@ Ext.define('PVE.button.ConsoleButton', {
 
 	me.enableSpice = enable;
 	me.spiceMenu.setDisabled(!enable);
-    },
-
-    getEnableSpice: function() {
-	var me = this;
-
-	if (me.enableSpice === undefined) {
-	    if (PVE.VersionInfo.console &&  PVE.VersionInfo.console === 'vv') {
-		return true;
-	    } else {
-		return false;
-	    }
-	} else {
-	    return me.enableSpice;
-	}
     },
 
     initComponent: function() {
@@ -107,11 +93,15 @@ Ext.define('PVE.button.ConsoleButton', {
 
 	Ext.apply(me, {
 	    handler: function() {
-		if (!me.getEnableSpice() ||
-		    (PVE.VersionInfo.console && PVE.VersionInfo.console === 'applet')) {
-		    create_vnc_console();
-		} else {
+		var dv = PVE.Utils.defaultViewer(me.enableSpice);
+		if (dv === 'vv') {
 		    create_spice_console();
+		} else if (dv === 'applet') {
+		    create_vnc_console(0);
+		} else if (dv === 'html5') {
+		    create_vnc_console(1);
+		} else {
+		    throw "unknown defaultViewer";
 		}
 	    },
 	    menu: new Ext.menu.Menu({

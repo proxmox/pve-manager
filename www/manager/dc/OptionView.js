@@ -53,7 +53,7 @@ Ext.define('PVE.dc.ConsoleViewerEdit', {
 
 	var data = [];
 
-	Ext.Array.each(['', 'applet', 'vv'], function(value) {
+	Ext.Array.each(['', 'applet', 'vv', 'html5'], function(value) {
 	    data.push([value, PVE.Utils.render_console_viewer(value)]);
 	});
 

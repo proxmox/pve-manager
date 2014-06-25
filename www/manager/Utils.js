@@ -422,11 +422,13 @@ Ext.define('PVE.Utils', { statics: {
 
     render_console_viewer: function(value) {
 	if (!value) {
-	    return PVE.Utils.defaultText + ' (Java VNC Applet)';
+	    return PVE.Utils.defaultText + ' (HTML5)';
 	} else if (value === 'applet') {
 	    return 'Java VNC Applet';
 	} else if (value === 'vv') {
 	    return  'SPICE (remote-viewer)';
+	} else if (value === 'html5') {
+	    return  'HTML5 (noVNC)';
 	} else {
 	    return value;
 	}
@@ -1101,10 +1103,15 @@ Ext.define('PVE.Utils', { statics: {
 	nw.focus();
     },
 
-    defaultViewer: function(){
-	return PVE.VersionInfo.console || 'applet';
-    },
+    defaultViewer: function(allowSpice) {
+	var vncdefault = 'html5';
+	var dv = PVE.VersionInfo.console || vncdefault;
+	if (dv === 'vv' && !allowSpice) {
+	    dv = vncdefault;
+	}
 
+	return dv;
+    },
 
     openSpiceViewer: function(url, params){
 
