@@ -232,6 +232,11 @@ Ext.define('PVE.qemu.Options', {
 			allowBlank: true
 		    }
 		} : undefined
+	    },
+	    smbios1: {
+		header: gettext('SMBIOS settings (type1)'),
+		defaultValue: '',
+		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.Smbios1Edit' : undefined
 	    }
 	};
 

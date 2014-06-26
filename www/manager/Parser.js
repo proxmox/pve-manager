@@ -260,6 +260,30 @@ Ext.define('PVE.Parser', { statics: {
 	}
 
 	return arr.join(',');
-    }
+    },
+
+    parseQemuSmbios1: function(value) {
+	var res = {};
+
+	Ext.Array.each(value.split(','), function(p) {
+	    var kva = p.split(/=/, 2);
+	    res[kva[0]] = kva[1];
+	});
+
+	return res;
+    },
+
+    printQemuSmbios1: function(data) {
+
+	var datastr = '';
+
+	Ext.Object.each(data, function(key, value) {
+	    if (value === '') return;
+	    datastr += (datastr !== '' ? ',' : '') + key + '=' + value;
+	});
+
+	return datastr;
+    },
+
 
 }});

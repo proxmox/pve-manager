@@ -115,6 +115,7 @@ JSSRC= 				                 	\
 	qemu/BootOrderEdit.js				\
 	qemu/MemoryEdit.js				\
 	qemu/NetworkEdit.js				\
+	qemu/Smbios1Edit.js				\
 	qemu/CDEdit.js					\
 	qemu/HDEdit.js					\
 	qemu/HDResize.js				\
