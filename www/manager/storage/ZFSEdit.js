@@ -61,7 +61,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		value: 'iqn.2010-09.org.openindiana:omnios:....',
 		fieldLabel: gettext('Target'),
 		allowBlank: false
-	    }
+	    },
 	    {
 	    xtype: me.create ? 'textfield' : 'displayfield',
 	    name: 'comstar_tg',
@@ -87,7 +87,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		value: 'Comstar',
 		fieldLabel: gettext('iSCSI Provider'),
 		allowBlank: false
-	    }
+	    },
 	    xtype: 'pvecheckbox',
 	    name: 'sparse',
 	    checked: false,
