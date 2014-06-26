@@ -62,6 +62,14 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		fieldLabel: gettext('Target'),
 		allowBlank: false
 	    }
+	    {
+	    xtype: me.create ? 'textfield' : 'displayfield',
+	    name: 'comstar_tg',
+	    height: 22, // hack: set same height as text fields
+	    value: '',
+	    fieldLabel: gettext('Target group'),
+	    allowBlank: true
+	    }
 	];
 
 	me.column2 = [
@@ -79,6 +87,27 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		value: 'Comstar',
 		fieldLabel: gettext('iSCSI Provider'),
 		allowBlank: false
+	    }
+	    xtype: 'pvecheckbox',
+	    name: 'sparse',
+	    checked: false,
+	    uncheckedValue: 0,
+	    fieldLabel: gettext('Thin provision')
+	    },
+	    {
+	    xtype: 'pvecheckbox',
+	    name: 'nowritecache',
+	    checked: true,
+	    uncheckedValue: 0,
+	    fieldLabel: gettext('Write cache')
+	    },
+	    {
+	    xtype: me.create ? 'textfield' : 'displayfield',
+	    name: 'comstar_hg',
+	    height: 22, // hack: set same height as text fields
+	    value: '',
+	    fieldLabel: gettext('Host group'),
+	    allowBlank: true
 	    }
 	];
 
