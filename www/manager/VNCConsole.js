@@ -9,6 +9,28 @@ PVE_vnc_console_event = function(appletid, action, err) {
 	    return;
 	}
 
+	comp.detectMigratedVM();
+    }
+
+    return;
+ };
+
+Ext.define('PVE.VNCConsole', {
+    extend: 'Ext.panel.Panel',
+    alias: ['widget.pveVNCConsole'],
+
+    novnc: false,
+
+    last_novnc_state: undefined,
+    last_novnc_msg: undefined,
+
+    detectMigratedVM: function() {
+	var me = this;
+	
+	if (!me.vmid) {
+	    return;
+	}
+
 	// try to detect migrated VM
 	PVE.Utils.API2Request({
 	    url: '/cluster/resources',
@@ -16,45 +38,20 @@ PVE_vnc_console_event = function(appletid, action, err) {
 	    success: function(response) {
 		var list = response.result.data;
 		Ext.Array.each(list, function(item) {
-		    if (item.type === 'qemu' && item.vmid == comp.vmid) {
-			if (item.node !== comp.nodename) {
+		    if (item.type === 'qemu' && item.vmid == me.vmid) {
+			if (item.node !== me.nodename) {
 			    //console.log("MOVED VM to node " + item.node);
-			    comp.nodename = item.node;
-			    comp.url = "/nodes/" + comp.nodename + "/" + item.type + "/" + comp.vmid + "/vncproxy";
+			    me.nodename = item.node;
+			    me.url = "/nodes/" + me.nodename + "/" + item.type + "/" + me.vmid + "/vncproxy";
 			    //console.log("NEW URL " + comp.url);
-			    comp.reloadApplet();
+			    me.reloadApplet();
 			}
 			return false; // break
 		    }
 		});
 	    }
 	});
-    }
-
-    return;
-    /*
-      var el = Ext.get(appletid);
-      if (!el)
-      return;
-
-      if (action === "close") {
-      //	el.remove();
-      } else if (action === "error") {
-      //	console.log("TESTERROR: " + err);
-      //	var compid = appletid.replace("-vncapp", "");
-      //	var comp = Ext.getCmp(compid);
-      }
-
-      //Ext.get('mytestid').remove();
-      */
-
-};
-
-Ext.define('PVE.VNCConsole', {
-    extend: 'Ext.panel.Panel',
-    alias: ['widget.pveVNCConsole'],
-
-    novnc: false,
+    },
 
     initComponent : function() {
 	var me = this;
@@ -91,6 +88,25 @@ Ext.define('PVE.VNCConsole', {
 		var innerDoc = novnciframe.contentDocument || novnciframe.contentWindow.document;
 		aw = innerDoc.getElementById('noVNC_canvas').width + 8;
 		ah = innerDoc.getElementById('noVNC_canvas').height + 8;
+
+		var novnc_state = innerDoc.getElementById('noVNC_status_state').innerHTML;
+		var novnc_msg = innerDoc.getElementById('noVNC_status_msg').innerHTML;
+
+		if (novnc_state !== me.last_novnc_state || novnc_msg !== me.last_novnc_msg) {
+		    me.last_novnc_state = novnc_state; 
+		    me.last_novnc_msg = novnc_msg; 
+
+		    if (novnc_state !== 'normal') {
+			PVE.Utils.setErrorMask(box, novnc_msg || 'unknown');
+		    } else {
+			PVE.Utils.setErrorMask(box); // clear mask
+		    }
+
+		    if (novnc_state === 'disconnected') {
+			me.detectMigratedVM();
+		    }
+		}
+
 	    } else {
 		applet = Ext.getDom(myid);
 	    
@@ -353,6 +369,7 @@ Ext.define('PVE.KVMConsole', {
             '->',
 	    {
                 text: gettext('Refresh'),
+		hidden: me.novnc ? true : false,
 		handler: function() { 
 		    var applet = Ext.getDom(me.appletID);
 		    applet.sendRefreshRequest();
@@ -446,6 +463,7 @@ Ext.define('PVE.OpenVZConsole', {
             '->',
 	    {
                 text: gettext('Refresh'),
+		hidden: me.novnc ? true : false,
 		handler: function() { 
 		    var applet = Ext.getDom(me.appletID);
 		    applet.sendRefreshRequest();
@@ -482,34 +500,32 @@ Ext.define('PVE.Shell', {
 	    throw "no node name specified";
 	}
 
-	var tbar = [ 
-           '->',
-	    {
+	var tbar = [ '->' ];
+
+	if (!me.novnc) {
+	    tbar.push({
                 text: gettext('Refresh'),
 		handler: function() { 
 		    var applet = Ext.getDom(me.appletID);
 		    applet.sendRefreshRequest();
 		}
-	    }
-	];
+	    });
+	}
 
 	if (!me.ugradeSystem) {
 	    // we dont want to restart the upgrade script
-	    tbar.push([
-		{
-                    text: gettext('Reload'),
-                    handler: function () { me.reloadApplet(); }
-		}]);
+	    tbar.push({
+                text: gettext('Reload'),
+                handler: function () { me.reloadApplet(); }
+	    });
 	}
 
-	tbar.push([
-	    { 
-		text: gettext('Shell'),
-		handler: function() {
-		    PVE.Utils.openVNCViewer('shell', undefined, me.nodename, undefined, me.novnc);
-		}
+	tbar.push({ 
+	    text: gettext('Shell'),
+	    handler: function() {
+		PVE.Utils.openVNCViewer('shell', undefined, me.nodename, undefined, me.novnc);
 	    }
-	]);
+	});
 
 	var baseUrl = "/nodes/" + me.nodename;
 
