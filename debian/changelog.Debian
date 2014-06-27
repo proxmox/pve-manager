@@ -1,3 +1,9 @@
+pve-manager (3.2-16) unstable; urgency=low
+
+  * noVNC console: correctly display connection error
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 27 Jun 2014 10:31:28 +0200
+
 pve-manager (3.2-15) unstable; urgency=low
 
   * Qemu GUI: add support to edit SMBIOS settings
