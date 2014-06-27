@@ -85,7 +85,7 @@ Ext.define('PVE.VNCConsole', {
 		var novnciframe = box.getFrame();
 		// noVNC_canvas
 		var innerDoc = novnciframe.contentDocument || novnciframe.contentWindow.document;
-		aw = innerDoc.getElementById('noVNC_canvas').width + 8;
+		aw = innerDoc.getElementById('noVNC_canvas').width;
 		ah = innerDoc.getElementById('noVNC_canvas').height + 8;
 
 		var novnc_state = innerDoc.getElementById('noVNC_status_state').innerHTML;
