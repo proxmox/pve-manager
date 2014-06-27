@@ -40,10 +40,9 @@ Ext.define('PVE.VNCConsole', {
 		Ext.Array.each(list, function(item) {
 		    if (item.type === 'qemu' && item.vmid == me.vmid) {
 			if (item.node !== me.nodename) {
-			    //console.log("MOVED VM to node " + item.node);
 			    me.nodename = item.node;
 			    me.url = "/nodes/" + me.nodename + "/" + item.type + "/" + me.vmid + "/vncproxy";
-			    //console.log("NEW URL " + comp.url);
+			    me.wsurl = "/nodes/" + me.nodename + "/" + item.type + "/" + me.vmid + "/vncwebsocket";
 			    me.reloadApplet();
 			}
 			return false; // break
