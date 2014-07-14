@@ -890,6 +890,7 @@ Ext.define('PVE.Utils', { statics: {
     neverText: gettext('never'),
     totalText: gettext('Total'),
     usedText: gettext('Used'),
+    directoryText: gettext('Directory'),
 
     format_expire: function(date) {
 	if (!date) {
@@ -900,7 +901,7 @@ Ext.define('PVE.Utils', { statics: {
 
     format_storage_type: function(value) {
 	if (value === 'dir') {
-	    return 'Directory';
+	    return PVE.Utils.directoryText;
 	} else if (value === 'nfs') {
 	    return 'NFS';
 	} else if (value === 'glusterfs') {
