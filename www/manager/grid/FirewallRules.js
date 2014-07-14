@@ -555,7 +555,8 @@ Ext.define('PVE.FirewallRules', {
 
 	if (me.allow_groups) {
 	    me.groupBtn =  Ext.create('Ext.Button', {
-		text: gettext('Insert') + ': ' + gettext('Security Group'),
+		text: gettext('Insert') + ': ' + 
+		    gettext('Security Group'),
 		disabled: true,
 		handler: function() {
 		    var win = Ext.create('PVE.FirewallGroupRuleEdit', {

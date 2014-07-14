@@ -49,13 +49,13 @@ Ext.define('PVE.qemu.Smbios1InputPanel', {
 	    },
 	    {
 		xtype: 'textfield',
-		fieldLabel: gettext('version'),
+		fieldLabel: gettext('Version'),
 		regex: /^\S+$/,
 		name: 'version',
 	    },
 	    {
 		xtype: 'textfield',
-		fieldLabel: gettext('serial'),
+		fieldLabel: gettext('Serial'),
 		regex: /^\S+$/,
 		name: 'serial',
 	    },
