@@ -134,7 +134,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	    xtype: 'radiofield',
 	    name: 'mediaType',
 	    inputValue: 'none',
-	    boxLabel: 'Do not use any media'
+	    boxLabel: gettext('Do not use any media')
 	});
 
 	if (me.insideWizard) {
