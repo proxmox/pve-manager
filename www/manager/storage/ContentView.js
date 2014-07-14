@@ -183,12 +183,8 @@ Ext.define('PVE.storage.Upload', {
             },
 	    items: [
 		{
-		    xtype: 'pveKVComboBox',
-		    data: [
-			['iso', PVE.Utils.format_content_types('iso')],
-			['backup', PVE.Utils.format_content_types('backup')],
-			['vztmpl', PVE.Utils.format_content_types('vztmpl')]
-		    ],
+		    xtype: 'pveContentTypeSelector',
+		    cts: ['iso', 'backup', 'vztmpl'],
 		    fieldLabel: gettext('Content'),
 		    name: 'content',
 		    value: 'iso'
