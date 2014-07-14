@@ -187,7 +187,7 @@ Ext.define('PVE.window.Clone', {
 		xtype: 'textfield',
 		name: 'name',
 		allowBlank: true,
-		fieldLabel: 'Name'
+		fieldLabel: gettext('Name')
 	    }
 	);
 
