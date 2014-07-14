@@ -891,6 +891,11 @@ Ext.define('PVE.Utils', { statics: {
     totalText: gettext('Total'),
     usedText: gettext('Used'),
     directoryText: gettext('Directory'),
+    imagesText: gettext('Disk image'),
+    backupFileText: gettext('VZDump backup file'),
+    vztmplText: gettext('OpenVZ template'),
+    isoImageText: gettext('ISO image'),
+    containersText: gettext('OpenVZ Container'),
 
     format_expire: function(date) {
 	if (!date) {
@@ -943,15 +948,15 @@ Ext.define('PVE.Utils', { statics: {
 
 	Ext.each(value.split(',').sort(), function(ct) {
 	    if (ct === 'images') {
-		cta.push('Images');
+		cta.push(PVE.Utils.imagesText);
 	    } else if (ct === 'backup') {
-		cta.push('Backups');
+		cta.push(PVE.Utils.backupFileText);
 	    } else if (ct === 'vztmpl') {
-		cta.push('Templates');
+		cta.push(PVE.Utils.vztmplText);
 	    } else if (ct === 'iso') {
-		cta.push('ISO');
+		cta.push(PVE.Utils.isoImageText);
 	    } else if (ct === 'rootdir') {
-		cta.push('Containers');
+		cta.push(PVE.Utils.containersText);
 	    }
 	});
 
