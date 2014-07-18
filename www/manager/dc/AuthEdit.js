@@ -63,16 +63,21 @@ Ext.define('PVE.dc.AuthEdit', {
                 fieldLabel: gettext('User Attribute Name'),
                 allowBlank: false
             });
+	} else if (me.authType === 'pve') {
+
+	    if (me.create) throw 'unknown auth type';
+
+	    me.subject = 'Proxmox VE authentication server';
+
+	} else if (me.authType === 'pam') {
+
+	    if (me.create) throw 'unknown auth type';
+
+	    me.subject = 'linux PAM';
 
 	} else {
 	    throw 'unknown auth type ';
 	}
-
-        column1.push({
-            xtype: 'textfield',
-            name: 'comment',
-            fieldLabel: gettext('Comment')
-        });
 
         column1.push({
             xtype: 'pvecheckbox',
@@ -81,39 +86,89 @@ Ext.define('PVE.dc.AuthEdit', {
             uncheckedValue: 0
         });
 
-        var column2 = [
-            {
-                xtype: 'textfield',
-                fieldLabel: gettext('Server'),
-                name: 'server1',
-                allowBlank: false
-            },
-            {
-                xtype: 'pvetextfield',
-                fieldLabel: gettext('Fallback Server'),
-		deleteEmpty: !me.create,
-		name: 'server2'
-            },
-            {
-                xtype: 'numberfield',
-                name: 'port',
-                fieldLabel: gettext('Port'),
-                minValue: 1,
-                maxValue: 65535,
-		emptyText: gettext('Default'),
-		submitEmptyText: false
-            },
-            {
-                xtype: 'pvecheckbox',
-                fieldLabel: 'SSL',
-                name: 'secure',
-                uncheckedValue: 0
-            }
-        ];
+        var column2 = [];
+
+	if (me.authType === 'ldap' || me.authType === 'ad') {
+	    column2.push([
+		{
+                    xtype: 'textfield',
+                    fieldLabel: gettext('Server'),
+                    name: 'server1',
+                    allowBlank: false
+		},
+		{
+                    xtype: 'pvetextfield',
+                    fieldLabel: gettext('Fallback Server'),
+		    deleteEmpty: !me.create,
+		    name: 'server2'
+		},
+		{
+                    xtype: 'numberfield',
+                    name: 'port',
+                    fieldLabel: gettext('Port'),
+                    minValue: 1,
+                    maxValue: 65535,
+		    emptyText: gettext('Default'),
+		    submitEmptyText: false
+		},
+		{
+                    xtype: 'pvecheckbox',
+                    fieldLabel: 'SSL',
+                    name: 'secure',
+                    uncheckedValue: 0
+		}
+            ]);
+	}
+
+	// Two Factor Auth settings
+
+        column2.push({
+            xtype: 'pveKVComboBox',
+            name: 'tfa',
+	    value: '',
+            fieldLabel: gettext('TFA'),
+	    data: [ ['', 'none'], ['oath', 'OATH'], ['yubico', 'Yubico']],
+	    listeners: {
+		change: function(f, value) {
+		    if (!me.rendered) {
+			return;
+		    }
+		    me.down('field[name=yubico_api_id]').setVisible(value === 'yubico');
+		    me.down('field[name=yubico_api_key]').setVisible(value === 'yubico');
+		    me.down('field[name=yubico_url]').setVisible(value === 'yubico');
+		}
+	    }
+        });
+
+	column2.push({
+            xtype: 'textfield',
+            name: 'yubico_api_id',
+	    hidden: true,
+            fieldLabel: 'Yubico API Id'
+        });
+
+	column2.push({
+            xtype: 'textfield',
+            name: 'yubico_api_key',
+	    hidden: true,
+            fieldLabel: 'Yubico API Key'
+        });
+
+	column2.push({
+            xtype: 'textfield',
+            name: 'yubico_url',
+	    hidden: true,
+            fieldLabel: 'Yubico URL'
+        });
 
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
 	    column1: column1,
 	    column2: column2,
+	    columnB: [{
+		xtype: 'textfield',
+		name: 'comment',
+		fieldLabel: gettext('Comment')
+            }],
 	    onGetValues: function(values) {
 		if (!values.port) {
 		    if (!me.create) {
@@ -126,6 +181,23 @@ Ext.define('PVE.dc.AuthEdit', {
 		    values.type = me.authType;
 		}
 
+		if (values.tfa === 'oath') {
+		    values.tfa = "type=oath";
+		} else if (values.tfa === 'yubico') {
+		    values.tfa = "type=yubico";
+		    values.tfa += ",id=" + values.yubico_api_id;
+		    values.tfa += ",key=" + values.yubico_api_key;
+		    if (values.yubico_url) {
+			values.tfa += ",url=" + values.yubico_url;
+		    }
+		} else {
+		    delete values.tfa;
+		}
+
+		delete values.yubico_api_id;
+		delete values.yubico_api_key;
+		delete values.yubico_url;
+		
 		return values;
 	    }
 	});
@@ -150,6 +222,17 @@ Ext.define('PVE.dc.AuthEdit', {
 			me.close();
 			throw "got wrong auth type";
 		    }
+
+		    if (data.tfa) {
+			var tfacfg = PVE.Parser.parseTfaConfig(data.tfa);
+			data.tfa = tfacfg.type;
+			if (tfacfg.type === 'yubico') {
+			    data.yubico_api_key = tfacfg.key;
+			    data.yubico_api_id = tfacfg.id;
+			    data.yubico_url = tfacfg.url;
+			}
+		    }
+
                     me.setValues(data);
                 }
             });

@@ -285,5 +285,15 @@ Ext.define('PVE.Parser', { statics: {
 	return datastr;
     },
 
+    parseTfaConfig: function(value) {
+	var res = {};
+
+	Ext.Array.each(value.split(','), function(p) {
+	    var kva = p.split(/=/, 2);
+	    res[kva[0]] = kva[1];
+	});
+
+	return res;
+    }
 
 }});

@@ -26,10 +26,6 @@ Ext.define('PVE.dc.AuthView', {
 		return;
 	    }
 
-	    if (rec.data.type === 'pve' || rec.data.type === 'pam') {
-		return;
-	    }
-
             var win = Ext.create('PVE.dc.AuthEdit',{
                 realm: rec.data.realm,
 		authType: rec.data.type
@@ -42,9 +38,6 @@ Ext.define('PVE.dc.AuthView', {
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    enableFn: function(rec) {
-		return !(rec.data.type === 'pve' || rec.data.type === 'pam');
-	    },
 	    handler: run_editor
 	});
 
