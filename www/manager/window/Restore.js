@@ -31,7 +31,7 @@ Ext.define('PVE.window.Restore', {
 	    bodyPadding: 10,
 	    border: false,
 	    fieldDefaults: {
-		labelWidth: 60,
+		labelWidth: 100,
 		anchor: '100%'
 	    },
 	    items: [
@@ -123,7 +123,7 @@ Ext.define('PVE.window.Restore', {
 
 	Ext.apply(me, {
 	    title: title,
-	    width: 450,
+	    width: 500,
 	    modal: true,
 	    layout: 'auto',
 	    border: false,
