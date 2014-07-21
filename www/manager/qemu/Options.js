@@ -299,7 +299,7 @@ Ext.define('PVE.qemu.Options', {
 
 	Ext.applyIf(me, {
 	    url: "/api2/json/nodes/" + nodename + "/qemu/" + vmid + "/config",
-	    cwidth1: 150,
+	    cwidth1: 170,
 	    tbar: [ edit_btn ],
 	    rows: rows,
 	    listeners: {
