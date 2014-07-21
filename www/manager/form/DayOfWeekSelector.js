@@ -6,13 +6,13 @@ Ext.define('PVE.form.DayOfWeekSelector', {
 	var me = this;
 
 	me.data = [
-	    ['sun', Ext.Date.dayNames[0]],
-	    ['mon', Ext.Date.dayNames[1]],
-	    ['tue', Ext.Date.dayNames[2]],
-	    ['wed', Ext.Date.dayNames[3]],
-	    ['thu', Ext.Date.dayNames[4]],
-	    ['fri', Ext.Date.dayNames[5]],
-	    ['sat', Ext.Date.dayNames[6]]
+	    ['sun', Ext.util.Format.htmlDecode(Ext.Date.dayNames[0])],
+	    ['mon', Ext.util.Format.htmlDecode(Ext.Date.dayNames[1])],
+	    ['tue', Ext.util.Format.htmlDecode(Ext.Date.dayNames[2])],
+	    ['wed', Ext.util.Format.htmlDecode(Ext.Date.dayNames[3])],
+	    ['thu', Ext.util.Format.htmlDecode(Ext.Date.dayNames[4])],
+	    ['fri', Ext.util.Format.htmlDecode(Ext.Date.dayNames[5])],
+	    ['sat', Ext.util.Format.htmlDecode(Ext.Date.dayNames[6])]
 	];
 
 	me.callParent();
