@@ -133,11 +133,42 @@ Ext.define('PVE.dc.AuthEdit', {
 		    if (!me.rendered) {
 			return;
 		    }
+		    me.down('field[name=oath_step]').setVisible(value === 'oath');
+		    me.down('field[name=oath_digits]').setVisible(value === 'oath');
 		    me.down('field[name=yubico_api_id]').setVisible(value === 'yubico');
 		    me.down('field[name=yubico_api_key]').setVisible(value === 'yubico');
 		    me.down('field[name=yubico_url]').setVisible(value === 'yubico');
 		}
 	    }
+        });
+
+	column2.push({
+            xtype: 'numberfield',
+            name: 'oath_step',
+	    value: '',
+	    minValue: 10,
+	    step: 1,
+	    allowDecimals: false,
+	    allowBlank: true,
+	    emptyText: PVE.Utils.defaultText + ' (30)',
+	    submitEmptyText: false,
+	    hidden: true,
+            fieldLabel: 'OATH time step'
+        });
+
+	column2.push({
+            xtype: 'numberfield',
+            name: 'oath_digits',
+	    value: '',
+	    minValue: 6,
+	    maxValue: 8,
+	    step: 1,
+	    allowDecimals: false,
+	    allowBlank: true,
+	    emptyText: PVE.Utils.defaultText + ' (6)',
+	    submitEmptyText: false,
+	    hidden: true,
+            fieldLabel: 'OATH password length'
         });
 
 	column2.push({
@@ -183,6 +214,12 @@ Ext.define('PVE.dc.AuthEdit', {
 
 		if (values.tfa === 'oath') {
 		    values.tfa = "type=oath";
+		    if (values.oath_step) {
+			values.tfa += ",step=" + values.oath_step;
+		    }
+		    if (values.oath_digits) {
+			values.tfa += ",digits=" + values.oath_digits;
+		    }
 		} else if (values.tfa === 'yubico') {
 		    values.tfa = "type=yubico";
 		    values.tfa += ",id=" + values.yubico_api_id;
@@ -194,6 +231,8 @@ Ext.define('PVE.dc.AuthEdit', {
 		    delete values.tfa;
 		}
 
+		delete values.oath_step;
+		delete values.oath_digits;
 		delete values.yubico_api_id;
 		delete values.yubico_api_key;
 		delete values.yubico_url;
@@ -230,6 +269,9 @@ Ext.define('PVE.dc.AuthEdit', {
 			    data.yubico_api_key = tfacfg.key;
 			    data.yubico_api_id = tfacfg.id;
 			    data.yubico_url = tfacfg.url;
+			} else if (tfacfg.type === 'oath') {
+			    data.oath_step = tfacfg.step;
+			    data.oath_digits = tfacfg.digits;
 			}
 		    }
 
