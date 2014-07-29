@@ -359,7 +359,17 @@ if ($cmd eq 'start') {
     upid_wait($upid);
 
     # something went wrong if old config file is still there
-    exit((-f $oldconfig) ? OCF_ERR_GENERIC : OCF_SUCCESS);
+    if (-f $oldconfig) {
+	# check if VM is really dead. If still running, return non-critical error
+	# We use OCF error code 150 (same as vm.sh agent)
+	check_running($status);
+
+	exit(150) if $status->{running};
+
+	exit(OCF_ERR_GENERIC);
+    }
+
+    exit(OCF_SUCCESS);
 
 } elsif($cmd eq 'stop') {
     my $status = validate_all();
