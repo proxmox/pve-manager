@@ -121,6 +121,23 @@ Ext.define('PVE.qemu.Options', {
 		    }
 		} : undefined
 	    },
+	    hotplug: {
+		header: gettext('Hotplug'),
+		defaultValue: '',
+		renderer: PVE.Utils.format_boolean,
+		editor: caps.vms['VM.Config.HWType'] ? {
+		    xtype: 'pveWindowEdit',
+		    subject: gettext('Hotplog'),
+		    items: {
+			xtype: 'pvecheckbox',
+			name: 'hotplug',
+			uncheckedValue: 0,
+			defaultValue: 0,
+			deleteDefaultValue: true,
+			fieldLabel: gettext('Hotplug')
+		    }
+		} : undefined
+	    },
 	    acpi: {
 		header: gettext('ACPI support'),
 		defaultValue: true,
