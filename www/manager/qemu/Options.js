@@ -127,7 +127,7 @@ Ext.define('PVE.qemu.Options', {
 		renderer: PVE.Utils.format_boolean,
 		editor: caps.vms['VM.Config.HWType'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: gettext('Hotplog'),
+		    subject: gettext('Hotplug'),
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'hotplug',
