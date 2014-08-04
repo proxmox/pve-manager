@@ -23,6 +23,8 @@ use PVE::API2;
 use PVE::API2::Formatter::Standard;
 use PVE::API2::Formatter::HTML;
 
+use PVE::ExtJSIndex;
+
 my $pidfile = "/var/run/pveproxy/pveproxy.pid";
 my $lockfile = "/var/lock/pveproxy.lck";
 
@@ -78,6 +80,7 @@ eval {
 
     my $dirs = {};
 
+    add_dirs($dirs, '/pve2/locale/', '/usr/share/pve-manager/locale/');
     add_dirs($dirs, '/pve2/ext4/', '/usr/share/pve-manager/ext4/');
     add_dirs($dirs, '/pve2/images/' => '/usr/share/pve-manager/images/');
     add_dirs($dirs, '/pve2/css/' => '/usr/share/pve-manager/css/');
@@ -194,63 +197,9 @@ sub get_index {
 	}
     }
 
-    my $workspace = defined($args->{console}) ?
-	"PVE.ConsoleWorkspace" : "PVE.StdWorkspace";
-
     $username = '' if !$username;
 
-    my $jssrc = <<_EOJS;
-if (!PVE) PVE = {};
-PVE.UserName = '$username';
-PVE.CSRFPreventionToken = '$token';
-_EOJS
-
-    my $langfile = "/usr/share/pve-manager/ext4/locale/ext-lang-${lang}.js";
-    $jssrc .= PVE::Tools::file_get_contents($langfile) if -f $langfile;
-
-    my $i18nsrc;
-    $langfile = "/usr/share/pve-manager/root/pve-lang-${lang}.js";
-    if (-f $langfile) {
-	$i18nsrc = PVE::Tools::file_get_contents($langfile);
-    } else {
-	$i18nsrc = 'function gettext(buf) { return buf; }';
-    }
-
-    $jssrc .= <<_EOJS;
-
-// we need this (the java applet ignores the zindex)
-Ext.useShims = true;
-
-Ext.History.fieldid = 'x-history-field';
-
-Ext.onReady(function() { Ext.create('$workspace');});
-
-_EOJS
-
-    my $page = <<_EOD;
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=10">
-    <title>Proxmox Virtual Environment</title>
- 
-    <link rel="stylesheet" type="text/css" href="/pve2/ext4/resources/css/ext-all.css" />
-    <link rel="stylesheet" type="text/css" href="/pve2/css/ext-pve.css" />
-
-    <script type="text/javascript">$i18nsrc</script>
-    <script type="text/javascript" src="/pve2/ext4/ext-all-debug.js"></script>
-    <script type="text/javascript" src="/pve2/ext4/pvemanagerlib.js"></script>
-    <script type="text/javascript">$jssrc</script>
-    
-  </head>
-  <body>
-    <!-- Fields required for history management -->
-    <form id="history-form" class="x-hidden">
-    <input type="hidden" id="x-history-field"/>
-    </form>
-  </body>
-</html>
-_EOD
+    my $page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console});
 
     my $headers = HTTP::Headers->new(Content_Type => "text/html; charset=utf-8");
     my $resp = HTTP::Response->new(200, "OK", $headers, $page); 
