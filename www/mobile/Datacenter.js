@@ -92,6 +92,8 @@ Ext.define('PVE.Datacenter', {
 
 	var ci = me.down('pveClusterInfo');
 
+	me.setMasked(false);
+
 	me.summary = {};
 
 	PVE.Utils.API2Request({
@@ -129,6 +131,9 @@ Ext.define('PVE.Datacenter', {
 
 		me.summary.nodes = node_count;
 		ci.setData(me.summary);
+	    },
+	    failure: function(response) {
+		me.setMasked({ xtype: 'loadmask', message: response.htmlStatus} );
 	    }
 	});
     },
