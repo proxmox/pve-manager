@@ -13,7 +13,9 @@ Ext.define('PVE.form.RealmSelector', {
     needOTP: function(realm) {
 	var me = this;
 
-	var rec = me.store.findRecord('realm', realm);
+	var realmstore = me.getStore();
+
+	var rec = realmstore.findRecord('realm', realm);
 
 	return rec && rec.data && rec.data.tfa ? rec.data.tfa : undefined;
     },
