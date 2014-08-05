@@ -7,6 +7,7 @@ PERLSOURCE = 			\
 	API2Tools.pm		\
 	API2Client.pm		\
 	ExtJSIndex.pm		\
+	NoVncIndex.pm		\
 	HTTPServer.pm		\
 	APIDaemon.pm		\
 	REST.pm			\

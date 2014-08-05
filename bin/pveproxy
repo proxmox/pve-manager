@@ -24,6 +24,7 @@ use PVE::API2::Formatter::Standard;
 use PVE::API2::Formatter::HTML;
 
 use PVE::ExtJSIndex;
+use PVE::NoVncIndex;
 
 my $pidfile = "/var/run/pveproxy/pveproxy.pid";
 my $lockfile = "/var/lock/pveproxy.lck";
@@ -199,7 +200,13 @@ sub get_index {
 
     $username = '' if !$username;
 
-    my $page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console});
+    my $page;
+
+    if (defined($args->{console}) && $args->{novnc}) {
+	$page = PVE::NoVncIndex::get_index($lang, $username, $token, $args->{console});
+    } else {
+	$page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console});
+    }
 
     my $headers = HTTP::Headers->new(Content_Type => "text/html; charset=utf-8");
     my $resp = HTTP::Response->new(200, "OK", $headers, $page); 

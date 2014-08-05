@@ -31,7 +31,7 @@ _EOD
 _EOD
 
     my $jssrc = <<_EOJS;
-if (!PVE) PVE = {};
+if (typeof(PVE) === 'undefined') PVE = {};
 PVE.UserName = '$username'
 PVE.CSRFPreventionToken = '$csrftoken';
 _EOJS
