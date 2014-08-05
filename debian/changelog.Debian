@@ -1,6 +1,8 @@
 pve-manager (3.2-20) unstable; urgency=low
 
   * add sencha touch based GUI for mobile devices
+  
+  * update Chinese translation (zh_CN).
 
  -- Proxmox Support Team <support@proxmox.com>  Tue, 05 Aug 2014 09:30:49 +0200
 
