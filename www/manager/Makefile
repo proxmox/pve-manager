@@ -2,6 +2,7 @@ include ../../defines.mk
 
 JSSRC= 				                 	\
 	Utils.js					\
+	Toolkit.js					\
 	Parser.js					\
 	StateProvider.js				\
 	button/Button.js				\

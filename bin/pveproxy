@@ -25,6 +25,7 @@ use PVE::API2::Formatter::HTML;
 
 use PVE::ExtJSIndex;
 use PVE::NoVncIndex;
+use PVE::TouchIndex;
 
 my $pidfile = "/var/run/pveproxy/pveproxy.pid";
 my $lockfile = "/var/lock/pveproxy.lck";
@@ -177,6 +178,21 @@ if ($opt_debug || !($cpid = fork ())) {
 
 exit (0);
 
+sub is_phone {
+    my ($ua) = @_;
+
+    return 0 if !$ua;
+
+    return 1 if $ua =~ m/(iPhone|iPod|Windows Phone)/;
+
+    if ($ua =~ m/Mobile(\/|\s)/) {
+	return 1 if $ua =~ m/(BlackBerry|BB)/;
+	return 1 if ($ua =~ m/(Android)/) && ($ua !~ m/(Silk)/);
+    }
+
+    return 0;
+}
+
 # NOTE: Requests to those pages are not authenticated
 # so we must be very careful here 
 
@@ -201,12 +217,22 @@ sub get_index {
 
     $username = '' if !$username;
 
+    my $mobile = is_phone($r->header('User-Agent')) ? 1 : 0;
+
+    if (defined($args->{mobile})) {
+	$mobile = $args->{mobile} ? 1 : 0;
+    }
+
     my $page;
 
     if (defined($args->{console}) && $args->{novnc}) {
 	$page = PVE::NoVncIndex::get_index($lang, $username, $token, $args->{console});
     } else {
-	$page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console});
+	if ($mobile) {
+	    $page = PVE::TouchIndex::get_index($lang, $username, $token, $args->{console});
+	} else {
+	    $page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console});
+	}
     }
 
     my $headers = HTTP::Headers->new(Content_Type => "text/html; charset=utf-8");
