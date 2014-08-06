@@ -72,6 +72,8 @@ INCLUDE_URI='/novnc/include/';
                  id="sendTabButton" class="noVNC_status_button">
           <input type="image" alt="Esc" src="/novnc/images/esc.png"
                  id="sendEscButton" class="noVNC_status_button">
+	  <input type="image" alt="Ctrl+Alt+Del" src="/novnc/images/ctrlaltdel.png"
+		 id="sendCtrlAltDelButton" class="noVNC_status_button">
         </div>
       </div>
     </div>
@@ -80,9 +82,9 @@ INCLUDE_URI='/novnc/include/';
 
     <!--noVNC Buttons-->
     <div class="noVNC-buttons-right">
-      <input type="image" alt="Ctrl+Alt+Del" src="/novnc/images/ctrlaltdel.png"
-             id="sendCtrlAltDelButton" class="noVNC_status_button"
-             title="Send Ctrl-Alt-Del" />
+      <input type="image" alt="Send keys" src="/novnc/images/showextrakeys.png"
+             id="showSendKeysButton" class="noVNC_status_button"
+	     title="Send keys" />
       <input type="image" alt="Clipboard" src="/novnc/images/clipboard.png"
              id="clipboardButton" class="noVNC_status_button"
              title="Clipboard" />
@@ -136,6 +138,12 @@ INCLUDE_URI='/novnc/include/';
           <li><input id="noVNC_logging" type="input" value=""> Logging</li>
 
          </ul>
+      </span>
+    </div>
+
+    <!-- PVE Send Key Panel -->
+    <div id="noVNC_send_keys" class="triangle-right top">
+      <span id="noVNC_send_keys_panel">
       </span>
     </div>
 
