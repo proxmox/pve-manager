@@ -1,3 +1,9 @@
+pve-manager (3.2-21) unstable; urgency=low
+
+  * novnc: add sendKey menufor KVM VMs
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 06 Aug 2014 09:09:47 +0200
+
 pve-manager (3.2-20) unstable; urgency=low
 
   * add sencha touch based GUI for mobile devices
