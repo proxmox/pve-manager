@@ -112,14 +112,7 @@ INCLUDE_URI='/novnc/include/';
     <!-- PVE command Panel -->
     <div id="noVNC_pve_commands" class="triangle-right top">
       <span id="noVNC_pve_command_menu">
-        <input type="button" id="pveStartButton" value="Start" />
-	<input type="button" id="pveShutdownButton" value="Shutdown" />
- 	<input type="button" id="pveStopButton" value="Stop" />
- 	<input type="button" id="pveResetButton" value="Reset" />
-	<input type="button" id="pveSuspendButton" value="Suspend" />
- 	<input type="button" id="pveResumeButton" value="Resume" />
-        <input type="button" id="pveReloadButton" value="Reload" />
-      </span>
+     </span>
     </div>
 
     <!-- Settings Panel -->
