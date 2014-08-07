@@ -1,3 +1,9 @@
+pve-manager (3.2-22) unstable; urgency=low
+
+  * mobile: register OpenVZ migrate page
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 07 Aug 2014 11:08:16 +0200
+
 pve-manager (3.2-21) unstable; urgency=low
 
   * novnc: add sendKey menufor KVM VMs
