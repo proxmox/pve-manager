@@ -159,7 +159,7 @@ INCLUDE_URI='/novnc/include/';
 
     <!-- HTML5 Canvas -->
     <div id="noVNC_container">
-      <canvas id="noVNC_canvas" width="640px" height="20px">
+      <canvas id="noVNC_canvas" width="640" height="400">
         Canvas not supported.
       </canvas>
     </div>
