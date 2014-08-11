@@ -1,3 +1,9 @@
+pve-manager (3.2-23) unstable; urgency=low
+
+  * update Spanish translation
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 11 Aug 2014 10:11:43 +0200
+
 pve-manager (3.2-22) unstable; urgency=low
 
   * mobile: register OpenVZ migrate page
