@@ -18,7 +18,7 @@ Ext.define('PVE.form.ViewSelector', {
 		text: gettext('Storage View'),
 		groups: ['node'],
 		filterfn: function(node) {
-		    return node.data.type === 'storage';
+		    return node.data.type === 'storage' || node.data.type === 'node';
 		}
 	    },
 	    pool: { 

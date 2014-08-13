@@ -1,6 +1,8 @@
 pve-manager (3.2-24) unstable; urgency=low
 
   * GUI: add new 'Pool View'
+  
+  * GUI: show correct node status in 'Storage View'
 
  -- Proxmox Support Team <support@proxmox.com>  Wed, 13 Aug 2014 08:07:59 +0200
 
