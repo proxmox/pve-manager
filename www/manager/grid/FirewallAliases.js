@@ -70,7 +70,7 @@ Ext.define('PVE.FirewallAliases', {
 
     base_url: undefined,
 
-    title: gettext('Aliases'),
+    title: gettext('Alias'),
 
     initComponent : function() {
 	/*jslint confusion: true */

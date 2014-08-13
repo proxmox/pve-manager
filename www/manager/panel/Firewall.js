@@ -26,7 +26,7 @@ Ext.define('PVE.panel.Firewall', {
 	var items = [
 	    {
 		xtype: 'pveFirewallRules',
-		title: 'Rules',
+		title: gettext('Rules'),
 		allow_iface: true,
 		base_url: me.base_url + '/rules',
 		list_refs_url: list_refs_url,
@@ -37,7 +37,7 @@ Ext.define('PVE.panel.Firewall', {
 	if (me.fwtype === 'dc') {
 	    items.push({
 		xtype: 'pveSecurityGroups',
-		title: 'Security Groups',
+		title: gettext('Security Group'),
 		itemId: 'sg'
 	    });
 	    items.push({
@@ -69,7 +69,7 @@ Ext.define('PVE.panel.Firewall', {
 
 	items.push({
 	    xtype: 'pveFirewallOptions',
-	    title: 'Options',
+	    title: gettext('Options'),
 	    base_url: me.base_url + '/options',
 	    fwtype: me.fwtype,
 	    itemId: 'options'
