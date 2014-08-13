@@ -125,7 +125,7 @@
 
 .pve-itype-icon-pool,
 .x-tree-node-pool,
-.x-grid-tree-pool-expanded .x-tree-node-pool
+.x-grid-tree-node-expanded .x-tree-node-pool
 {
     background-image:url(../images/connect_established.png);
 }
