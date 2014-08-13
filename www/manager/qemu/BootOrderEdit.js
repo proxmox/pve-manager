@@ -78,7 +78,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	//}
 	
 	if (includeNone) {
-	    list.push(['', 'none']);
+	    list.push(['', PVE.Utils.noneText]);
 	}
 
 	return list;

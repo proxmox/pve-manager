@@ -670,6 +670,7 @@ Ext.define('PVE.Utils', { statics: {
 
     yesText: gettext('Yes'),
     noText: gettext('No'),
+    noneText: gettext('none'),
     errorText: gettext('Error'),
     unknownText: gettext('Unknown'),
     defaultText: gettext('Default'),
