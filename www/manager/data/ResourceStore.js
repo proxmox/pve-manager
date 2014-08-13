@@ -35,6 +35,7 @@ Ext.define('PVE.data.ResourceStore', {
 	    running: {
 		header: gettext('Online'),
 		type: 'boolean',
+		renderer: PVE.Utils.format_boolean,
 		hidden: true,
 		convert: function(value, record) {
 		    var info = record.data;
