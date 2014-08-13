@@ -20,6 +20,15 @@ Ext.define('PVE.form.ViewSelector', {
 		filterfn: function(node) {
 		    return node.data.type === 'storage';
 		}
+	    },
+	    pool: { 
+		text: gettext('Pool View'), 
+		groups: ['pool'],
+                // Pool View only lists VMs and Containers
+                filterfn: function(node) {
+                    return node.data.type === 'qemu' || node.data.type === 'openvz' || 
+			node.data.type === 'pool';
+                }
 	    }
 	};
 
