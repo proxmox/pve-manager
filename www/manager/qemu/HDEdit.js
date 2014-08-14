@@ -33,6 +33,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    delete me.drive.backup;
 	}
 
+	if (values.discard) {
+	    me.drive.discard = 'on';
+	} else {
+	    delete me.drive.discard;
+	}
+
 	if (values.cache) {
 	    me.drive.cache = values.cache;
 	} else {
@@ -81,6 +87,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.nobackup = (drive.backup === 'no');
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '';
+	values.discard = (drive.discard === 'on');
 
 	me.setValues(values);
     },
@@ -211,6 +218,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    xtype: 'pvecheckbox',
 	    fieldLabel: gettext('No backup'),
 	    name: 'nobackup'
+	});
+
+	me.column2.push({
+	    xtype: 'pvecheckbox',
+	    fieldLabel: gettext('Discard'),
+	    name: 'discard'
 	});
 
 	me.callParent();
