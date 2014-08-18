@@ -25,6 +25,7 @@ Ext.define('PVE.form.CPUModelSelector', {
 	    ['Westmere', 'Westmere'],
 	    ['SandyBridge', 'SandyBridge'],
 	    ['Haswell', 'Haswell'],
+	    ['Broadwell', 'Broadwell'],
 	    ['Opteron_G1', 'Opteron_G1'],
 	    ['Opteron_G2', 'Opteron_G2'],
 	    ['Opteron_G3', 'Opteron_G3'],
