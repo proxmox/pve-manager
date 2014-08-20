@@ -1,3 +1,9 @@
+pve-manager (3.2-25) unstable; urgency=low
+
+  * add discard option to qemu drive
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 20 Aug 2014 12:19:00 +0200
+
 pve-manager (3.2-24) unstable; urgency=low
 
   * GUI: add new 'Pool View'
