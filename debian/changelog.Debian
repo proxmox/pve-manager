@@ -1,6 +1,8 @@
 pve-manager (3.2-25) unstable; urgency=low
 
-  * add discard option to qemu drive
+  * GUI: add discard option to qemu drive
+  
+  * GUI: add Broadwell cpu model
 
  -- Proxmox Support Team <support@proxmox.com>  Wed, 20 Aug 2014 12:19:00 +0200
 
