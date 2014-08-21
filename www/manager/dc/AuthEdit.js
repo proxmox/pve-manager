@@ -125,6 +125,7 @@ Ext.define('PVE.dc.AuthEdit', {
         column2.push({
             xtype: 'pveKVComboBox',
             name: 'tfa',
+	    deleteEmpty: !me.create,
 	    value: '',
             fieldLabel: gettext('TFA'),
 	    data: [ ['', PVE.Utils.noneText], ['oath', 'OATH'], ['yubico', 'Yubico']],
