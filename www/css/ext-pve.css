@@ -43,6 +43,7 @@
 .pve-itype-icon-memory,
 .pve-itype-icon-processor,
 .pve-itype-icon-network,
+.pve-itype-icon-network-server,
 .pve-itype-icon-keyboard,
 .pve-itype-icon-cdrom,
 .pve-itype-icon-qemu,
@@ -133,6 +134,11 @@
 .pve-itype-icon-itype
 {
     background-image:url(../ext4/resources/themes/images/default/tree/folder.gif);
+}
+
+.pve-itype-icon-network-server
+{
+    background-image:url(../images/network-server.png);
 }
 
 .pve-itype-icon-network

@@ -1,3 +1,4 @@
+
 Ext.define('PVE.dc.StorageView', {
     extend: 'Ext.grid.GridPanel',
 
@@ -113,6 +114,7 @@ Ext.define('PVE.dc.StorageView', {
 			    },
 			    {
 				text:  PVE.Utils.format_storage_type('lvm'),
+				iconCls: 'pve-itype-icon-storage',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.LVMEdit', {});
 				    win.on('destroy', reload);
@@ -121,7 +123,7 @@ Ext.define('PVE.dc.StorageView', {
 			    },
 			    {
 				text:  PVE.Utils.format_storage_type('nfs'),
-				iconCls: 'pve-itype-icon-node',
+				iconCls: 'pve-itype-icon-network-server',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.NFSEdit', {});
 				    win.on('destroy', reload);
@@ -130,7 +132,7 @@ Ext.define('PVE.dc.StorageView', {
 			    },
 			    {
 				text: PVE.Utils.format_storage_type('iscsi'),
-				iconCls: 'pve-itype-icon-node',
+				iconCls: 'pve-itype-icon-network-server',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.IScsiEdit', {});
 				    win.on('destroy', reload);
@@ -139,7 +141,7 @@ Ext.define('PVE.dc.StorageView', {
 			    },
 			    {
 				text: PVE.Utils.format_storage_type('glusterfs'),
-				iconCls: 'pve-itype-icon-node',
+				iconCls: 'pve-itype-icon-network-server',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.GlusterFsEdit', {});
 				    win.on('destroy', reload);
@@ -148,7 +150,7 @@ Ext.define('PVE.dc.StorageView', {
 			    },
 			    {
 				text: PVE.Utils.format_storage_type('rbd'),
-				iconCls: 'pve-itype-icon-node',
+				iconCls: 'pve-itype-icon-network-server',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.RBDEdit', {});
 				    win.on('destroy', reload);
@@ -159,7 +161,7 @@ Ext.define('PVE.dc.StorageView', {
  * so we do not enable that on the GUI for now
 			    {
 				text: PVE.Utils.format_storage_type('sheepdog'),
-				iconCls: 'pve-itype-icon-node',
+				iconCls: 'pve-itype-icon-network-server',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.SheepdogEdit', {});
 				    win.on('destroy', reload);
@@ -168,7 +170,7 @@ Ext.define('PVE.dc.StorageView', {
 			    },
 			    {
 				text: PVE.Utils.format_storage_type('zfs'),
-				iconCls: 'pve-itype-icon-node',
+				iconCls: 'pve-itype-icon-network-server',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.ZFSEdit', {});
 				    win.on('destroy', reload);
