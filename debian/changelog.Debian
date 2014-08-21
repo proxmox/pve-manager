@@ -1,3 +1,9 @@
+pve-manager (3.2-27) unstable; urgency=low
+
+  * fix bug #554: do not set delete flag on Auth create
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 21 Aug 2014 12:07:51 +0200
+
 pve-manager (3.2-26) unstable; urgency=low
 
   * GUI: use better icons for storage menu
