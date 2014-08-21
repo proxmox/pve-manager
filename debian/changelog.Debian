@@ -1,3 +1,9 @@
+pve-manager (3.2-26) unstable; urgency=low
+
+  * GUI: use better icons for storage menu
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 21 Aug 2014 09:20:31 +0200
+
 pve-manager (3.2-25) unstable; urgency=low
 
   * GUI: add discard option to qemu drive
