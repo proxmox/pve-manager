@@ -156,6 +156,15 @@ Ext.define('PVE.dc.StorageView', {
 				    win.on('destroy', reload);
 				    win.show();
 				}
+			    },
+			    {
+				text: PVE.Utils.format_storage_type('zfs'),
+				iconCls: 'pve-itype-icon-network-server',
+				handler: function() {
+				    var win = Ext.create('PVE.storage.ZFSEdit', {});
+				    win.on('destroy', reload);
+				    win.show();
+				}
 			    }
 /* the following type are conidered unstable
  * so we do not enable that on the GUI for now
@@ -164,15 +173,6 @@ Ext.define('PVE.dc.StorageView', {
 				iconCls: 'pve-itype-icon-network-server',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.SheepdogEdit', {});
-				    win.on('destroy', reload);
-				    win.show();
-				}
-			    },
-			    {
-				text: PVE.Utils.format_storage_type('zfs'),
-				iconCls: 'pve-itype-icon-network-server',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.ZFSEdit', {});
 				    win.on('destroy', reload);
 				    win.show();
 				}

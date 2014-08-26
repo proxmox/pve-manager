@@ -58,7 +58,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'target',
 		height: 22, // hack: set same height as text fields
-		value: 'iqn.2010-09.org.openindiana:omnios:....',
+		value: '',
 		fieldLabel: gettext('Target'),
 		allowBlank: false
 	    },
