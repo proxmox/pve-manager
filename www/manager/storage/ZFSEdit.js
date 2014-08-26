@@ -81,10 +81,10 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		fieldLabel: gettext('Enable')
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.create ? 'pveiScsiProviderSelector' : 'displayfield',
 		name: 'iscsiprovider',
 		height: 22, // hack: set same height as text fields
-		value: 'Comstar',
+		value: 'comstar',
 		fieldLabel: gettext('iSCSI Provider'),
 		allowBlank: false
 	    },
