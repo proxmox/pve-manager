@@ -113,6 +113,14 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 		}
 	    },
 	    {
+		xtype: me.create ? 'pvetextfield' : 'displayfield',
+		height: 22, // hack: set same height as text fields
+		name: 'server2',
+		value: '',
+		fieldLabel: gettext('Second Server'),
+		allowBlank: true,
+	    },
+	    {
 		xtype: me.create ? 'pveGlusterFsScan' : 'displayfield',
 		height: 22, // hack: set same height as text fields
 		name: 'volume',
