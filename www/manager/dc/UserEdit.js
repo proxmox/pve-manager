@@ -178,6 +178,9 @@ Ext.define('PVE.dc.UserEdit', {
             subject: gettext('User'),
             url: url,
             method: method,
+	    fieldDefaults: {
+		labelWidth: 110 // for spanish translation 
+	    },
 	    items: [ ipanel ]
         });
 
