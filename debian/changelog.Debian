@@ -1,3 +1,11 @@
+pve-manager (3.2-30) unstable; urgency=low
+
+  * resourcegrid : add template menu
+  
+  * fix label width for spanish translation
+  
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 01 Sep 2014 11:38:20 +0200
+
 pve-manager (3.2-29) unstable; urgency=low
 
   * glusterfs GUI: new option to specify backup volfile server
