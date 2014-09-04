@@ -74,11 +74,37 @@ Ext.define('PVE.dc.ConsoleViewerEdit', {
     }
 });
 
+Ext.define('PVE.dc.EmailFromEdit', {
+    extend: 'PVE.window.Edit',
+
+    initComponent : function() {
+	var me = this;
+
+	Ext.applyIf(me, {
+	    subject: gettext('Email from address'),
+	    items: {
+		xtype: 'pvetextfield',
+		name: 'email_from',
+		vtype: 'email',
+		emptyText: gettext('Send emails from root@$hostname'),
+		deleteEmpty: true,
+		value: '',
+		fieldLabel: gettext('Email from address')
+	    }
+	});
+
+	me.callParent();
+
+	me.load();
+    }
+});
+
 Ext.define('PVE.dc.OptionView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveDcOptionView'],
 
     noProxyText: gettext('Do not use any proxy'),
+    noEmailFromText: gettext('Send emails from root@$hostname'),
 
     initComponent : function() {
 	var me = this;
@@ -110,6 +136,17 @@ Ext.define('PVE.dc.OptionView', {
 		editor: 'PVE.dc.ConsoleViewerEdit',
 		required: true,
 		renderer: PVE.Utils.render_console_viewer
+	    },
+	    email_from: { 
+		header: gettext('Email from address'),
+		editor: 'PVE.dc.EmailFromEdit', 
+		required: true,
+		renderer: function(value) {
+		    if (!value) {
+			return me.noEmailFromText;
+		    }
+		    return value;
+		}
 	    }
 	};
 

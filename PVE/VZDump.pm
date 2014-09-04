@@ -279,8 +279,10 @@ my $sendmail = sub {
     foreach my $r (@$mailto) {
 	$rcvrarg .= " '$r'";
     }
+    my $dcconf = PVE::Cluster::cfs_read_file('datacenter.cfg');
+    my $mailfrom = $dcconf->{email_from} || "root";
 
-    open (MAIL,"|sendmail -B 8BITMIME $rcvrarg") || 
+    open (MAIL,"|sendmail -B 8BITMIME -f $mailfrom $rcvrarg") || 
 	die "unable to open 'sendmail' - $!";
 
     my $rcvrtxt = join (', ', @$mailto);
@@ -289,7 +291,7 @@ my $sendmail = sub {
     print MAIL "\tboundary=\"$boundary\"\n";
     print MAIL "MIME-Version: 1.0\n";
 
-    print MAIL "FROM: vzdump backup tool <root>\n";
+    print MAIL "FROM: vzdump backup tool <$mailfrom>\n";
     print MAIL "TO: $rcvrtxt\n";
     print MAIL "SUBJECT: vzdump backup status ($hostname) : $stat\n";
     print MAIL "\n";

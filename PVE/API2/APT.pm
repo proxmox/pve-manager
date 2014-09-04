@@ -341,10 +341,11 @@ __PACKAGE__->register_method({
 		if ($mailto) {
 		    my $hostname = `hostname -f` || PVE::INotify::nodename();
 		    chomp $hostname;
+		    my $mailfrom = $dcconf->{email_from} || "root";
 
 		    my $data = "Content-Type: text/plain;charset=\"UTF8\"\n";
 		    $data .= "Content-Transfer-Encoding: 8bit\n";
-		    $data .= "FROM: <root\@$hostname>\n";
+		    $data .= "FROM: <$mailfrom>\n";
 		    $data .= "TO: $mailto\n";
 		    $data .= "SUBJECT: New software packages available ($hostname)\n";
 		    $data .= "\n";
@@ -364,7 +365,7 @@ __PACKAGE__->register_method({
 
 		    return if !$count; 
 
-		    my $fh = IO::File->new("|sendmail -B 8BITMIME $mailto") || 
+		    my $fh = IO::File->new("|sendmail -B 8BITMIME -f $mailfrom $mailto") || 
 			die "unable to open 'sendmail' - $!";
 
 		    print $fh $data;

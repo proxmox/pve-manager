@@ -24,12 +24,15 @@ eval {
     my $rootcfg = $usercfg->{users}->{'root@pam'} || {};
     my $mailto = $rootcfg->{email};
 
+    my $dcconf = cfs_read_file('datacenter.cfg');
+    my $mailfrom = $dcconf->{email_from} || "root";
+
     die "user 'root\@pam' does not have a email address\n" if !$mailto;
 
     syslog("info", "forward mail to <$mailto>");
 
     # we never send DSN (avoid mail loops)
-    open(CMD, "|sendmail -bm -N never $mailto") ||
+    open(CMD, "|sendmail -bm -N never -f $mailfrom $mailto") ||
 	die "can't exec sendmail - $!\n";
     while (<>) { print CMD $_; }
     close(CMD);
