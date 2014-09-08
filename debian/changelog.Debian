@@ -1,3 +1,9 @@
+pve-manager (3.3-1) unstable; urgency=low
+
+  * i18n: small fixes
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 08 Sep 2014 09:55:22 +0200
+
 pve-manager (3.2-31) unstable; urgency=low
 
   * GUI: add new email_from option to datacenter.cfg
