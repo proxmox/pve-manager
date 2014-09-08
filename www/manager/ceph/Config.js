@@ -102,22 +102,22 @@ Ext.define('PVE.node.Ceph', {
 	    items: [
 		{
 		    xtype: 'pveNodeCephStatus',
-		    title: 'Status',
+		    title: gettext('Status'),
 		    itemId: 'status'
 		},
 		{
 		    xtype: 'pveNodeCephConfig',
-		    title: 'Config',
+		    title: gettext('Config'),
 		    itemId: 'config'
 		},
 		{
 		    xtype: 'pveNodeCephMonList',
-		    title: 'Monitor',
+		    title: gettext('Monitor'),
 		    itemId: 'monlist'
 		},
 		{
 		    xtype: 'pveNodeCephDiskList',
-		    title: 'Disks',
+		    title: gettext('Disks'),
 		    itemId: 'disklist'
 		},
 		{
@@ -127,7 +127,7 @@ Ext.define('PVE.node.Ceph', {
 		},
 		{
 		    xtype: 'pveNodeCephPoolList',
-		    title: 'Pools',
+		    title: gettext('Pools'),
 		    itemId: 'pools'
 		},
 		{
@@ -136,7 +136,7 @@ Ext.define('PVE.node.Ceph', {
 		    itemId: 'crushmap'
 		},
 		{
-		    title: 'Log',
+		    title: gettext('Log'),
 		    itemId: 'log',
 		    xtype: 'pveLogView',
 		    url: "/api2/extjs/nodes/" + nodename + "/ceph/log"
