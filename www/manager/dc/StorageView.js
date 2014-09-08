@@ -206,7 +206,7 @@ Ext.define('PVE.dc.StorageView', {
 		    renderer: PVE.Utils.format_content_types
 		},
 		{
-		    header: 'Path/Target',
+		    header: gettext('Path') + '/' + gettext('Target'),
 		    flex: 1,
 		    sortable: true,
 		    dataIndex: 'path',
