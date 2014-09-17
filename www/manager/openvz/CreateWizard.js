@@ -190,16 +190,31 @@ Ext.define('PVE.openvz.CreateWizard', {
 				    if (!me.rendered) {
 					return;
 				    }
+				    me.down('field[name=firewall]').setDisabled(!value);
 				    me.down('field[name=bridge]').setDisabled(!value);
 				    me.down('field[name=bridge]').validate();
 				}
 			    }
 			},
-			bridgesel
+			bridgesel,
+			{
+			    xtype: 'pvecheckbox',
+			    fieldLabel: gettext('Firewall'),
+			    name: 'firewall',
+			    checked: false,
+			    disabled: true
+			}
 		    ],
 		    onGetValues: function(values) {
 			if (values.networkmode === 'bridge') {
-			    return { netif: 'ifname=eth0,bridge=' + values.bridge };
+			    var netif = PVE.Parser.printOpenVZNetIf({
+				eth0: {
+				    ifname: "eth0",
+				    bridge: values.bridge,
+				    firewall: values.firewall
+				}
+			    });
+			    return { netif: netif };
 			} else {
 			    return { ip_address: values.ip_address };
 			}
