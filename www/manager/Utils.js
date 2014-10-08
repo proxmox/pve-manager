@@ -510,6 +510,8 @@ Ext.define('PVE.Utils', { statics: {
 	vzmount: ['CT', gettext('Mount') ],
 	vzumount: ['CT', gettext('Unmount') ],
 	vzshutdown: ['CT', gettext('Shutdown') ],
+	vzsuspend: [ 'CT', gettext('Suspend') ],
+	vzresume: [ 'CT', gettext('Resume') ],
 	hamigrate: [ 'HA', gettext('Migrate') ],
 	hastart: [ 'HA', gettext('Start') ],
 	hastop: [ 'HA', gettext('Stop') ],
