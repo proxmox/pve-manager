@@ -1459,6 +1459,102 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
+    name => 'vm_suspend',
+    path => '{vmid}/status/suspend',
+    method => 'POST',
+    protected => 1,
+    proxyto => 'node',
+    description => "Suspend the container.",
+    permissions => {
+        check => ['perm', '/vms/{vmid}', [ 'VM.PowerMgmt' ]],
+    },
+    parameters => {
+        additionalProperties => 0,
+        properties => {
+            node => get_standard_option('pve-node'),
+            vmid => get_standard_option('pve-vmid'),
+        },
+    },
+    returns => {
+        type => 'string',
+    },
+    code => sub {
+        my ($param) = @_;
+
+        my $rpcenv = PVE::RPCEnvironment::get();
+
+        my $authuser = $rpcenv->get_user();
+
+        my $node = extract_param($param, 'node');
+
+        my $vmid = extract_param($param, 'vmid');
+
+        die "CT $vmid not running\n" if !PVE::OpenVZ::check_running($vmid);
+
+        my $realcmd = sub {
+            my $upid = shift;
+
+            syslog('info', "suspend CT $vmid: $upid\n");
+
+            PVE::OpenVZ::vm_suspend($vmid);
+
+            return;
+        };
+
+        my $upid = $rpcenv->fork_worker('vzsuspend', $vmid, $authuser, $realcmd);
+
+        return $upid;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'vm_resume',
+    path => '{vmid}/status/resume',
+    method => 'POST',
+    protected => 1,
+    proxyto => 'node',
+    description => "Resume the container.",
+    permissions => {
+        check => ['perm', '/vms/{vmid}', [ 'VM.PowerMgmt' ]],
+    },
+    parameters => {
+        additionalProperties => 0,
+        properties => {
+            node => get_standard_option('pve-node'),
+            vmid => get_standard_option('pve-vmid'),
+        },
+    },
+    returns => {
+        type => 'string',
+    },
+    code => sub {
+        my ($param) = @_;
+
+        my $rpcenv = PVE::RPCEnvironment::get();
+
+        my $authuser = $rpcenv->get_user();
+
+        my $node = extract_param($param, 'node');
+
+        my $vmid = extract_param($param, 'vmid');
+
+        die "CT $vmid already running\n" if PVE::OpenVZ::check_running($vmid);
+
+        my $realcmd = sub {
+            my $upid = shift;
+
+            syslog('info', "resume CT $vmid: $upid\n");
+
+            PVE::OpenVZ::vm_resume($vmid);
+
+            return;
+        };
+
+        my $upid = $rpcenv->fork_worker('vzresume', $vmid, $authuser, $realcmd);
+
+        return $upid;
+    }});
+
+__PACKAGE__->register_method({
     name => 'migrate_vm', 
     path => '{vmid}/migrate',
     method => 'POST',

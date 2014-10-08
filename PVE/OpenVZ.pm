@@ -6,7 +6,7 @@ use File::stat qw();
 use POSIX qw (LONG_MAX);
 use IO::Dir;
 use IO::File;
-use PVE::Tools qw(extract_param $IPV6RE $IPV4RE);
+use PVE::Tools qw(run_command extract_param $IPV6RE $IPV4RE);
 use PVE::ProcFSTools;
 use PVE::Cluster qw(cfs_register_file cfs_read_file);
 use PVE::SafeSyslog;
@@ -1218,6 +1218,30 @@ sub lock_container {
     die $err if $err;
 
     return $res;
+}
+
+sub vm_suspend {
+    my ($vmid) = @_;
+
+    my $cmd = ['vzctl', 'chkpnt', $vmid];
+
+    eval { run_command($cmd); };
+    if (my $err = $@) {
+        syslog("err", "CT $vmid suspend failed - $err");
+        die $err;
+    }
+}
+
+sub vm_resume {
+    my ($vmid) = @_;
+
+    my $cmd = ['vzctl', 'restore', $vmid];
+
+    eval { run_command($cmd); };
+    if (my $err = $@) {
+        syslog("err", "CT $vmid resume failed - $err");
+        die $err;
+    }
 }
 
 sub replacepw {
