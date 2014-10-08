@@ -162,6 +162,18 @@ Ext.define('PVE.QemuSummary', {
 		}
 	    },
 	    { 
+		text: gettext('Suspend'),
+		handler: function() {
+		    me.vm_command("suspend", {});
+		}
+	    },
+	    { 
+		text: gettext('Resume'),
+		handler: function() {
+		    me.vm_command("resume", {});
+		}
+	    },
+	    { 
 		text: gettext('Shutdown'),
 		handler: function() {
 		    me.vm_command("shutdown", {});
