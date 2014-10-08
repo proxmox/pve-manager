@@ -74,6 +74,8 @@ my $cmddef = {
 		}],
 
     start => [ 'PVE::API2::OpenVZ', 'vm_start', ['vmid'], { node => $nodename }, $upid_exit],
+    suspend => [ 'PVE::API2::OpenVZ', 'vm_suspend', ['vmid'], { node => $nodename }, $upid_exit],
+    resume => [ 'PVE::API2::OpenVZ', 'vm_resume', ['vmid'], { node => $nodename }, $upid_exit],
     shutdown => [ 'PVE::API2::OpenVZ', 'vm_shutdown', ['vmid'], { node => $nodename }, $upid_exit],
     stop => [ 'PVE::API2::OpenVZ', 'vm_stop', ['vmid'], { node => $nodename }, $upid_exit],
     mount => [ 'PVE::API2::OpenVZ', 'vm_mount', ['vmid'], { node => $nodename }, $upid_exit],
