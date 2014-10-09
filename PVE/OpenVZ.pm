@@ -167,7 +167,7 @@ sub read_container_network_usage {
 
     # fixme: can we get that info directly (with vzctl exec)?
     my $cmd = ['/usr/sbin/vzctl', 'exec', $vmid, '/bin/cat', '/proc/net/dev'];
-    eval { PVE::Tools::run_command($cmd, outfunc => $netparser); };
+    eval { run_command($cmd, outfunc => $netparser); };
     my $err = $@;
     syslog('err', $err) if $err;
 
