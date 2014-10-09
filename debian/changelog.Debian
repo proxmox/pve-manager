@@ -1,3 +1,9 @@
+pve-manager (3.3-3) unstable; urgency=low
+
+  * openvz: implement suspend/resume
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 09 Oct 2014 09:37:47 +0200
+
 pve-manager (3.3-2) unstable; urgency=low
 
   * fix bug #534: implement firewall checkbox for OpenVZ CreateWizard
