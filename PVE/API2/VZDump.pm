@@ -122,7 +122,13 @@ __PACKAGE__->register_method ({
 		die "interrupted by signal\n";
 	    };
 
-	    $vzdump->getlock (); # only one process allowed
+	    eval {
+		$vzdump->getlock(); # only one process allowed
+	    };
+	    if ($@) {
+		$vzdump->sendmail([], 0, $@);
+		exit(-1);
+	    }
 
 	    if (defined($param->{ionice})) {
 		if ($param->{ionice} > 7) {

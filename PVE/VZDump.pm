@@ -243,8 +243,8 @@ sub find_add_exclude {
     }
 }
 
-my $sendmail = sub {
-    my ($self, $tasklist, $totaltime) = @_;
+sub sendmail {
+    my ($self, $tasklist, $totaltime, $err) = @_;
 
     my $opts = $self->{opts};
 
@@ -268,7 +268,8 @@ my $sendmail = sub {
 	}
     }
 
-    my $stat = $ecount ? 'backup failed' : 'backup successful';
+    my $stat = ($ecount || $err) ? 'backup failed' : 'backup successful';
+    $stat .= ": $err" if $err;
 
     my $hostname = `hostname -f` || PVE::INotify::nodename();
     chomp $hostname;
@@ -596,7 +597,7 @@ sub getlock {
  
     if (!open (SERVER_FLCK, ">>$lockfile")) {
 	debugmsg ('err', "can't open lock on file '$lockfile' - $!", undef, 1);
-	exit (-1);
+	die "can't open lock on file '$lockfile' - $!";
     }
 
     if (flock (SERVER_FLCK, LOCK_EX|LOCK_NB)) {
@@ -605,7 +606,7 @@ sub getlock {
 
     if (!$maxwait) {
 	debugmsg ('err', "can't aquire lock '$lockfile' (wait = 0)", undef, 1);
-	exit (-1);
+	die "can't aquire lock '$lockfile' (wait = 0)";
     }
 
     debugmsg('info', "trying to get global lock - waiting...", undef, 1);
@@ -629,7 +630,7 @@ sub getlock {
 
     if ($err) {
 	debugmsg ('err', "can't aquire lock '$lockfile' - $err", undef, 1);
-	exit (-1);
+	die "can't aquire lock '$lockfile' - $err";
     }
 
     debugmsg('info', "got global lock", undef, 1);
@@ -1068,7 +1069,7 @@ sub exec_backup {
 
     my $totaltime = time() - $starttime;
 
-    eval { $self->$sendmail ($tasklist, $totaltime); };
+    eval { $self->sendmail ($tasklist, $totaltime); };
     debugmsg ('err', $@) if $@;
 
     die $err if $err;
