@@ -78,7 +78,7 @@ sub parse_dow {
     return $res;
 };
 
-my $vzdump_propetries = {
+my $vzdump_properties = {
     additionalProperties => 0,
     properties => PVE::VZDump::json_config_properties({}),
 };
@@ -112,7 +112,7 @@ sub parse_vzdump_cron_config {
 		die "unable to parse day of week '$dow' in '$filename'\n" if !$dowhash;
 
 		my $args = PVE::Tools::split_args($param);
-		my $opts = PVE::JSONSchema::get_options($vzdump_propetries, $args, 'vmid');
+		my $opts = PVE::JSONSchema::get_options($vzdump_properties, $args, 'vmid');
 
 		$opts->{id} = "$digest:$jid";
 		$jid++;
