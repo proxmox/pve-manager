@@ -268,6 +268,8 @@ sub sendmail {
 	}
     }
 
+    return if (!$ecount && !$err && $opts->{mailnotification} eq 'failure');
+
     my $stat = ($ecount || $err) ? 'backup failed' : 'backup successful';
     $stat .= ": $err" if $err;
 
@@ -1133,6 +1135,13 @@ my $confdesc = {
 	type => 'string', format => 'string-list',
 	description => "",
 	optional => 1,
+    },
+    mailnotification => {
+        type => 'string',
+        description => "Specify when to send an email",
+        optional => 1,
+        enum => [ 'always', 'failure' ],
+        default => 'always',
     },
     tmpdir => {
 	type => 'string',
