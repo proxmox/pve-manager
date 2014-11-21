@@ -1164,7 +1164,7 @@ my $confdesc = {
     }),
     size => {
 	type => 'integer',
-	description => "LVM snapshot size im MB.",
+	description => "LVM snapshot size in MB.",
 	optional => 1,
 	minimum => 500,
     },
