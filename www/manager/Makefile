@@ -37,6 +37,7 @@ JSSRC= 				                 	\
 	form/DiskFormatSelector.js			\
 	form/BusTypeSelector.js				\
 	form/ControllerSelector.js			\
+	form/EmailNotificationSelector.js		\
 	form/RealmComboBox.js				\
 	form/BondModeSelector.js			\
 	form/ViewSelector.js				\
