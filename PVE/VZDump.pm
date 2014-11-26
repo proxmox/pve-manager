@@ -268,7 +268,8 @@ sub sendmail {
 	}
     }
 
-    return if (!$ecount && !$err && $opts->{mailnotification} eq 'failure');
+    my $notify = $opts->{mailnotification} || 'always';
+    return if (!$ecount && !$err && ($notify eq 'failure'));
 
     my $stat = ($ecount || $err) ? 'backup failed' : 'backup successful';
     $stat .= ": $err" if $err;
