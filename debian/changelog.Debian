@@ -1,3 +1,9 @@
+pve-manager (3.3-7) unstable; urgency=low
+
+  * vzdump: avoid warning about uninitialized value
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 26 Nov 2014 06:57:04 +0100
+
 pve-manager (3.3-6) unstable; urgency=low
 
   * VZDump: added email notification setting
