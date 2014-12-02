@@ -1,3 +1,9 @@
+pve-manager (3.3-8) unstable; urgency=low
+
+  * pveproxy: support TLS1.1 and TLS1.2
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 02 Dec 2014 14:04:36 +0100
+
 pve-manager (3.3-7) unstable; urgency=low
 
   * vzdump: avoid warning about uninitialized value
