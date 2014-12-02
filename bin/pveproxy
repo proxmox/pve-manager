@@ -107,7 +107,8 @@ eval {
 	ssl => {
 	    # Note: older versions are considered insecure, for example
 	    # search for "Poodle"-Attac
-	    method => "tlsv1",
+	    sslv2 => 0,
+	    sslv3 => 0,	    
 	    cipher_list => $proxyconf->{CIPHERS} || 'HIGH:MEDIUM:!aNULL:!MD5',
 	    key_file => '/etc/pve/local/pve-ssl.key',
 	    cert_file => '/etc/pve/local/pve-ssl.pem',
