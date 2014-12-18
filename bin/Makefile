@@ -43,6 +43,9 @@ all: ${MANS} pvemailforward
 %.1.pod: %
 	podselect $*>$@
 
+pvestatd.1.pod: pvestatd
+	perl -I.. ./pvestatd printmanpod >$@
+
 pvectl.1.pod: pvectl
 	perl -I.. ./pvectl printmanpod >$@
 

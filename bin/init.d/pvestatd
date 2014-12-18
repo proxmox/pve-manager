@@ -18,38 +18,36 @@ DESC="PVE Status Daemon"
 
 PIDFILE=/var/run/pvestatd.pid
 
+# Exit if the package is not installed
 test -f $DAEMON || exit 0
+[ -e /proxmox_install_mode ] && exit 0
+
+# avoid warnings about uninstalled locales
+export LC_ALL="C"
 
 case "$1" in
-	start)
-		log_daemon_msg "Starting $DESC" "$NAME"
-  		start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON
-		log_end_msg $?
-  		;;
-	stop)
-		log_daemon_msg "Stopping $DESC" "$NAME"
-  		start-stop-daemon --stop  --quiet --retry TERM/5/TERM/10/KILL/2 --pidfile $PIDFILE
-		log_end_msg $?
-  		;;
-	reload)
-		log_daemon_msg "Reloading $DESC" "$NAME"
-		if ( [ -e $PIDFILE ] && kill -0 `cat $PIDFILE`) then
-		    start-stop-daemon --stop --quiet --pidfile $PIDFILE --signal HUP
-		else
-		    start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON
-		fi
-		log_end_msg $?
-  		;;
-	restart|force-reload)
-		log_daemon_msg "Restarting $DESC" "$NAME"
-  		start-stop-daemon --stop --quiet --retry TERM/5/TERM/10/KILL/2 --pidfile $PIDFILE
-  		start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON
-		log_end_msg $?
-  		;;
-	*)
-	        N=/etc/init.d/$NAME
-  		echo "Usage: $N {start|stop|reload|restart|force-reload}" >&2
-  		exit 1
+    start)
+	log_daemon_msg "Starting $DESC" "$NAME"
+	$DAEMON start
+ 	log_end_msg $?
+  	;;
+    stop)
+	log_daemon_msg "Stopping $DESC" "$NAME"
+	$DAEMON stop
+	log_end_msg $?
+  	;;
+    status)
+	$DAEMON status
+	;;
+    reload|restart|force-reload)
+	log_daemon_msg "Restarting $DESC" "$NAME"
+ 	$DAEMON restart
+ 	log_end_msg $?
+  	;;
+    *)
+	N=/etc/init.d/$NAME
+  	echo "Usage: $N {start|stop|status|reload|restart|force-reload}" >&2
+  	exit 1
 		;;
 esac
 

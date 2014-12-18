@@ -3,9 +3,8 @@
 use strict;
 use warnings;
 use PVE::SafeSyslog;
-use POSIX ":sys_wait_h";
-use Fcntl ':flock';
-use Getopt::Long;
+use PVE::Daemon;
+
 use Time::HiRes qw (gettimeofday);
 use PVE::Tools qw(dir_glob_foreach file_read_firstline);
 use PVE::ProcFSTools;
@@ -19,119 +18,49 @@ use PVE::RPCEnvironment;
 use PVE::API2::Subscription;
 use PVE::AutoBalloon;
 
-$SIG{'__WARN__'} = sub {
-    my $err = $@;
-    my $t = $_[0];
-    chomp $t;
-    syslog('warning', "WARNING: %s", $t);
-    $@ = $err;
-};
-
-initlog('pvestatd');
-
-$ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
-
-die "please run as root\n" if $> != 0;
-
-my $nodename = PVE::INotify::nodename();
+use base qw(PVE::Daemon);
 
 my $opt_debug;
 
-if (!GetOptions ('debug' => \$opt_debug)) {
-    die "USAGE: $0 [--debug]\n";
+my $cmdline = [$0, @ARGV];
+
+my %daemon_options = (restart_on_error => 5, stop_wait_time => 5);
+
+my $daemon = __PACKAGE__->new('pvestatd', $cmdline, %daemon_options);
+
+my $rpcenv = PVE::RPCEnvironment->init('cli');
+
+$rpcenv->init_request();
+$rpcenv->set_language($ENV{LANG});
+$rpcenv->set_user('root@pam');
+
+my $nodename = PVE::INotify::nodename();
+my $restart_request = 0;
+
+sub init {
+    my ($self) = @_;
+
+    PVE::Cluster::cfs_update();
 }
 
-my $opt_pidfile = "/var/run/pvestatd.pid";
+sub shutdown {
+    my ($self) = @_;
 
-sub lockpidfile {
-    my $pidfile = shift;
-    my $lkfn = "$pidfile.lock";
-
-    if (!open (FLCK, ">>$lkfn")) {
-	my $msg = "can't aquire lock on file '$lkfn' - $!";
-	syslog ('err', $msg);
-	die "ERROR: $msg\n";
-    }
-
-    if (!flock (FLCK, LOCK_EX|LOCK_NB)) {
-	close (FLCK);
-        my $msg = "can't aquire lock '$lkfn' - $!";
-	syslog ('err', $msg);
-	die "ERROR: $msg\n";
-    }
-}
-
-sub writepidfile {
-    my $pidfile = shift;
-
-    if (!open (PIDFH, ">$pidfile")) {
-	my $msg = "can't open pid file '$pidfile' - $!";
-	syslog ('err', $msg);
-	die "ERROR: $msg\n";
-    } 
-    print PIDFH "$$\n";
-    close (PIDFH);
-}
-
-# try to get the lock
-lockpidfile($opt_pidfile);
-
-# run in background
-my $spid;
-
-my $restart = $ENV{RESTART_PVESTATD};
-
-if (!$opt_debug) {
-    open STDIN,  '</dev/null' || die "can't read /dev/null";
-    open STDOUT, '>/dev/null' || die "can't write /dev/null";
-}
-
-if (!$restart && !$opt_debug) {
-    $spid = fork();
-    if (!defined ($spid)) {
-	my $msg =  "can't put server into background - fork failed";
-	syslog('err', $msg);
-	die "ERROR: $msg\n";
-    } elsif ($spid) { #parent
-	exit (0);
-    }
-}
-
-writepidfile($opt_pidfile);
-
-open STDERR, '>&STDOUT' || die "can't close STDERR\n";
-
-sub cleanup {
-    unlink "$opt_pidfile.lock";
-    unlink "$opt_pidfile";
-}
- 
-$SIG{INT} = $SIG{TERM} = $SIG{QUIT} = sub { 
     syslog('info' , "server closing");
-
-    $SIG{INT} = 'DEFAULT';
 
     # wait for children
     1 while (waitpid(-1, POSIX::WNOHANG()) > 0);
 
-    cleanup();
-
-    exit (0);
-};
-
-PVE::INotify::inotify_init();
-
-my $reload_config;
-
-if ($restart) {
-    syslog('info' , "restarting server");
-} else {
-    syslog('info' , "starting server");
+    $self->exit_daemon(0);
 }
 
-$SIG{HUP} = sub { 
-    $reload_config = 1;
-};
+sub hup {
+    my ($self) = @_;
+
+    syslog('info' , "received signal HUP");
+
+    $restart_request = 1;
+}
 
 sub update_node_status {
 
@@ -272,6 +201,7 @@ sub find_vzctl_console_pids {
 
     return $res;
 }
+
 sub remove_stale_openvz_consoles {
 
     my $vmstatus = PVE::OpenVZ::vmstatus();
@@ -383,36 +313,18 @@ my $next_update = 0;
 my $cycle = 0; 
 my $updatetime = 10;
 
-my $commandline = [$0, @ARGV];
-
-$0 = "pvestatd";
-
-sub restart_server {
-    my $waittime = shift;
-
-    syslog('info', "server shutdown (restart)");
-
-    $ENV{RESTART_PVESTATD} = 1;
-
-    sleep($waittime) if $waittime; # avoid high server load due to restarts
-
-    PVE::INotify::inotify_close();
-
-    exec (@$commandline);
-    exit (-1); # never reached?
-}
-
 my $initial_memory_usage;
 
-for (;;) { # forever
+sub run {
+    my ($self) = @_;
 
-    eval {
-	$next_update = time() + $updatetime;
+    for (;;) { # forever
+
+ 	$next_update = time() + $updatetime;
 
 	if ($cycle) {
 	    my ($ccsec, $cusec) = gettimeofday ();
 	    eval {
-		$reload_config = 0;
 		# syslog('info', "start status update");
 		PVE::Cluster::cfs_update();
 		update_status();
@@ -441,24 +353,34 @@ for (;;) { # forever
 	    if ($diff > 5*1024*1024) {
 		syslog ('info', "restarting server after $cycle cycles to " .
 			"reduce memory usage (free $mem->{resident} ($diff) bytes)");
-		restart_server ();
+		$self->restart_daemon();
 	    }
 	}
 
 	my $wcount = 0;
 	while ((time() < $next_update) && 
 	       ($wcount < $updatetime) && # protect against time wrap
-	       !$reload_config) { $wcount++; sleep (1); };
-    };
+	       !$restart_request) { $wcount++; sleep (1); };
 
-    my $err = $@;
-    
-    if ($err) {
-	syslog ('err', "ERROR: $err");
-	restart_server(5);
-	exit (0);
+	$self->restart_daemon() if $restart_request;
     }
 }
+
+$daemon->register_start_command(__PACKAGE__);
+$daemon->register_restart_command(__PACKAGE__);
+$daemon->register_stop_command(__PACKAGE__);
+$daemon->register_status_command(__PACKAGE__);
+
+my $cmddef = {
+    start => [ __PACKAGE__, 'start', []],
+    restart => [ __PACKAGE__, 'restart', []],
+    stop => [ __PACKAGE__, 'stop', []],
+    status => [ __PACKAGE__, 'status', [], undef, sub { print shift . "\n";} ],
+};
+
+my $cmd = shift;
+
+PVE::CLIHandler::handle_cmd($cmddef, $0, $cmd, \@ARGV, undef, $0);
 
 exit (0);
 
@@ -470,11 +392,14 @@ pvestatd - PVE Status Daemon
 
 =head1 SYNOPSIS
 
-pvestatd
+=include synopsis
 
 =head1 DESCRIPTION
 
-Documentation is available at www.proxmox.com
+This daemom queries the status of VMs, storages and containers at
+regular intervals. The result is sent to all nodes in the cluster.
+
+=include pve_copyright
 
 
 
