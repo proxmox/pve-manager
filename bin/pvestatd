@@ -367,7 +367,7 @@ sub run {
 }
 
 $daemon->register_start_command(__PACKAGE__);
-$daemon->register_restart_command(__PACKAGE__);
+$daemon->register_restart_command(__PACKAGE__, 1);
 $daemon->register_stop_command(__PACKAGE__);
 $daemon->register_status_command(__PACKAGE__);
 
