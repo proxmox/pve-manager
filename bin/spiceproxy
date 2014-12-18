@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w -T
+#!/usr/bin/perl -T
 
 # Note: In theory, all this can be done by 'pveproxy' daemon. But som API call
 # still have blocking code, so we use a separate daemon to avoid that the console
@@ -9,6 +9,7 @@ $ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};  
 
 use strict;
+use warnings;
 use English;
 use Getopt::Long;
 use PVE::SafeSyslog;
