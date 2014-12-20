@@ -11,31 +11,19 @@ delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
 use strict;
 use warnings;
 use English;
-use Getopt::Long;
+
 use PVE::SafeSyslog;
+use PVE::Daemon;
 use PVE::APIDaemon;
 use PVE::API2;
 
-my $pidfile = "/var/run/pveproxy/spiceproxy.pid";
-my $lockfile = "/var/lock/spiceproxy.lck";
+use base qw(PVE::Daemon);
 
-my $opt_debug;
+my $cmdline = [$0, @ARGV];
 
-initlog ('spiceproxy');
+my %daemon_options = (restart_on_error => 5, stop_wait_time => 15, run_dir => '/var/run/pveproxy');
 
-if (!GetOptions ('debug' => \$opt_debug)) {
-    die "usage: $0 [--debug]\n";
-}
-
-$SIG{'__WARN__'} = sub {
-    my $err = $@;
-    my $t = $_[0];
-    chomp $t;
-    syslog('warning', "WARNING: %s", $t);
-    $@ = $err;
-};
-
-$0 = "spiceproxy";
+my $daemon = __PACKAGE__->new('spiceproxy', $cmdline, %daemon_options);
 
 my $gid = getgrnam('www-data') || die "getgrnam failed - $!\n";
 POSIX::setgid($gid) || die "setgid $gid failed - $!\n";
@@ -46,81 +34,57 @@ POSIX::setuid($uid) || die "setuid $uid failed - $!\n";
 # just to be sure
 die "detected strange uid/gid\n" if !($UID == $uid && $EUID == $uid && $GID eq "$gid $gid" && $EGID eq "$gid $gid");
 
-# we use same ALLOW/DENY/POLICY as pveproxy
-my $proxyconf = PVE::APIDaemon::read_proxy_config();
+sub init {
+    my ($self) = @_;
 
-my $cpid;
-my $daemon;
-eval {
-    $daemon = PVE::APIDaemon->new(
+    # we use same ALLOW/DENY/POLICY as pveproxy
+    my $proxyconf = PVE::APIDaemon::read_proxy_config();
+
+    $self->{api_daemon} = PVE::APIDaemon->new(
 	base_handler_class => 'PVE::API2',
 	port => 3128, 
 	keep_alive => 0,
 	max_workers => 1, # do we need more?
 	max_conn => 500,
-	lockfile => $lockfile,
-	debug => $opt_debug,
+	lockfile => "/var/lock/spiceproxy.lck",
+	debug => $self->{debug},
 	spiceproxy => 1,
 	logfile => '/var/log/pveproxy/access.log',
 	allow_from => $proxyconf->{ALLOW_FROM},
 	deny_from => $proxyconf->{DENY_FROM},
 	policy => $proxyconf->{POLICY},
     );
+}
+
+sub shutdown {
+    my ($self) = @_;
+
+    $self->exit_daemon(0);
+}
+
+sub run {
+    my ($self) = @_;
+  
+    $self->{api_daemon}->start_server();
+}
+
+$daemon->register_start_command(__PACKAGE__);
+$daemon->register_restart_command(__PACKAGE__, 0);
+$daemon->register_reload_command(__PACKAGE__);
+$daemon->register_stop_command(__PACKAGE__);
+$daemon->register_status_command(__PACKAGE__);
+
+my $cmddef = {
+    start => [ __PACKAGE__, 'start', []],
+    restart => [ __PACKAGE__, 'restart', []],
+    reload => [ __PACKAGE__, 'reload', []],
+    stop => [ __PACKAGE__, 'stop', []],
+    status => [ __PACKAGE__, 'status', [], undef, sub { print shift . "\n";} ],
 };
 
-my $err = $@;
+my $cmd = shift;
 
-if ($err) {
-    syslog ('err' , "unable to start server: $err");
-    print STDERR $err;
-    exit (-1);
-}
-
-if ($opt_debug || !($cpid = fork ())) {
-
-    $SIG{PIPE} = 'IGNORE';
-    $SIG{INT} = 'IGNORE' if !$opt_debug;
-
-    $SIG{TERM} = $SIG{QUIT} = sub { 
-	syslog ('info' , "server closing");
-
-	$SIG{INT} = 'DEFAULT';
-
-	unlink "$pidfile";
-
-	exit (0);
-    };
-
-    syslog ('info' , "starting server");
-
-    if (!$opt_debug) {
-	# redirect STDIN/STDOUT/SDTERR to /dev/null
-	open STDIN,  '</dev/null' || die "can't read /dev/null  [$!]";
-	open STDOUT, '>/dev/null' || die "can't write /dev/null [$!]";
-	open STDERR, '>&STDOUT' || die "can't open STDERR to STDOUT [$!]";
-    }
-
-    POSIX::setsid(); 
-    
-    eval {
-	$daemon->start_server();
-    };
-    my $err = $@;
-
-    if ($err) {
-	syslog ('err' , "unexpected server error: $err");
-	print STDERR $err if $opt_debug;
-	exit (-1);
-    }
-
-} else {
-
-    open (PIDFILE, ">$pidfile") || 
-	die "cant write '$pidfile' - $! :ERROR";
-    print PIDFILE "$cpid\n";
-    close (PIDFILE) || 
-	die "cant write '$pidfile' - $! :ERROR";
-}
+PVE::CLIHandler::handle_cmd($cmddef, $0, $cmd, \@ARGV, undef, $0);
 
 exit (0);
 
@@ -132,7 +96,7 @@ spiceproxy - SPICE proxy server for Proxmox VE
 
 =head1 SYNOPSIS
 
-spiceproxy [--debug]
+=include synopsis
 
 =head1 DESCRIPTION
 
@@ -147,21 +111,4 @@ from file /etc/default/pveproxy (see 'pveproxy' for details).
 
  /etc/default/pveproxy
 
-=head1 COPYRIGHT AND DISCLAIMER
-
- Copyright (C) 2007-2013 Proxmox Server Solutions GmbH
-
- This program is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
-
- You should have received a copy of the GNU Affero General Public
- License along with this program.  If not, see
- <http://www.gnu.org/licenses/>.
-
+=include pve_copyright
