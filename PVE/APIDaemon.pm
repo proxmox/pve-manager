@@ -7,6 +7,7 @@ use Socket qw(IPPROTO_TCP TCP_NODELAY SOMAXCONN);
 use IO::Socket::INET;
 use Net::IP;
 
+use PVE::INotify;
 use PVE::SafeSyslog;
 use PVE::HTTPServer;
 
@@ -104,7 +105,14 @@ sub start_workers {
 	} else {
 	    $0 = "$0 worker";
 
-	    $SIG{TERM} = $SIG{QUIT} = 'DEFAULT'; # we handle that with AnyEvent
+	    PVE::INotify::inotify_close();
+
+	    for my $sig (qw(CHLD HUP INT TERM QUIT)) {
+		$SIG{$sig} = 'DEFAULT'; # restore default handler
+		# AnyEvent signals only works if $SIG{XX} is 
+		# undefined (perl event loop)
+		delete $SIG{$sig}; # so that we can handle events with AnyEvent
+	    }
 
 	    eval {
 		my $server = PVE::HTTPServer->new(%{$self->{cfg}});
@@ -114,6 +122,8 @@ sub start_workers {
 		syslog('err', $err);
 		sleep(5); # avoid fast restarts
 	    }
+
+	    syslog('info', "worker exit");
 	    exit (0);
 	}
     }
@@ -173,6 +183,10 @@ sub start_server {
 	    &$old_sig_term(@_) if $old_sig_term;
 	};
 	local $SIG{QUIT} = sub {
+	    terminate_server();
+	    &$old_sig_term(@_) if $old_sig_term;
+	};
+	local $SIG{INT} = sub {
 	    terminate_server();
 	    &$old_sig_term(@_) if $old_sig_term;
 	};
