@@ -33,6 +33,8 @@ Ext.define('PVE.Parser', { statics: {
                 res.tag = match_res[1];
 	    } else if ((match_res = p.match(/^firewall=(\d+)$/)) !== null) {
                 res.firewall = match_res[1];
+	    } else if ((match_res = p.match(/^link_down=(\d+)$/)) !== null) {
+                res.disconnect = match_res[1];
 	    } else {
 		errors = true;
 		return false; // break
@@ -63,6 +65,9 @@ Ext.define('PVE.Parser', { statics: {
 	}
 	if (net.rate) {
 	    netstr += ",rate=" + net.rate;
+	}
+	if (net.disconnect) {
+	    netstr += ",link_down=" + net.disconnect;
 	}
 	return netstr;
     },

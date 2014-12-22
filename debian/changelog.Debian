@@ -1,4 +1,6 @@
 pve-manager (3.3-11) unstable; urgency=low
+  
+  * New 'disconnect' button on the network edit pannel.
 
   * Fix backup failure at shutdown (stop backup on host shutdown)
   

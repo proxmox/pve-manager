@@ -18,6 +18,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    me.network.bridge = undefined;
 	}
 	me.network.macaddr = values.macaddr;
+	me.network.disconnect = values.disconnect;
 
 	if (values.rate) {
 	    me.network.rate = values.rate;
@@ -147,6 +148,11 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		value: '',
 		emptyText: 'unlimited',
 		allowBlank: true
+	    },
+	    {
+		xtype: 'pvecheckbox',
+		fieldLabel: gettext('Disconnect'),
+		name: 'disconnect'
 	    }
 	];
 
