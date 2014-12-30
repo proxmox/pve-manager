@@ -31,6 +31,8 @@ case "$1" in
 		pvesh --nooutput create /nodes/localhost/startall 
   		;;
 	stop)
+	        echo "Stopping all running Backups"
+		vzdump -stop
 		echo "Stopping VMs and Containers"
 		pvesh --nooutput create /nodes/localhost/stopall 
    		;;

@@ -63,6 +63,10 @@ __PACKAGE__->register_method ({
 
 	# silent exit if we run on wrong node
 	exit(0) if $param->{node} && $param->{node} ne $nodename;
+	
+	if($param->{stop}){
+	    PVE::VZDump::stop_all_backups;
+	}
 
 	my $cmdline = PVE::VZDump::command_line($param);
 

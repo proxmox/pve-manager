@@ -22,6 +22,8 @@ my @posix_filesystems = qw(ext3 ext4 nfs nfs4 reiserfs xfs);
 
 my $lockfile = '/var/run/vzdump.lock';
 
+my $pidfile = '/var/run/vzdump.pid';
+
 my $logdir = '/var/log/vzdump';
 
 my @plugins = qw (PVE::VZDump::OpenVZ);
@@ -210,6 +212,8 @@ sub read_vzdump_defaults {
 	    $res->{lockwait} = int($1);
 	} elsif ($line =~ m/stopwait:\s*(\d+)\s*$/) {
 	    $res->{stopwait} = int($1);
+	} elsif ($line =~ m/stop:\s*(\d+)\s*$/) {
+	    $res->{stop} = int($1);
 	} elsif ($line =~ m/size:\s*(\d+)\s*$/) {
 	    $res->{size} = int($1);
 	} elsif ($line =~ m/maxfiles:\s*(\d+)\s*$/) {
@@ -596,6 +600,15 @@ sub get_lvm_device {
 sub getlock {
     my ($self) = @_;
 
+    my $fh;
+	    
+    open($fh, "> $pidfile")
+	or die "cannot open $pidfile: $!";
+
+    print $fh $$, "\n",PVE::ProcFSTools::read_proc_starttime($$), "\n";
+
+    close $fh || warn "close $pidfile failed: $!";
+    
     my $maxwait = $self->{opts}->{lockwait} || $self->{lockwait};
  
     if (!open (SERVER_FLCK, ">>$lockfile")) {
@@ -1013,6 +1026,11 @@ sub exec_backup {
 
     my $opts = $self->{opts};
 
+    if ($opts->{stop}) {
+	stop_all_backups($self);
+	return;
+    }
+
     debugmsg ('info', "starting new backup job: $self->{cmdline}", undef, 1);
     debugmsg ('info', "skip external VMs: " . join(', ', @{$self->{skiplist}}))
 	if scalar(@{$self->{skiplist}});
@@ -1078,6 +1096,8 @@ sub exec_backup {
     die $err if $err;
 
     die "job errors\n" if $errcount; 
+
+    unlink $pidfile;
 }
 
 my $confdesc = {
@@ -1163,6 +1183,12 @@ my $confdesc = {
 	description => "Store resulting file to this storage.",
 	optional => 1,
     }),
+    stop => {
+	type => 'boolean',
+	description => "Stop all current runnig backup jobs on this host.",
+	optional => 1,
+	default => 0,
+    },
     size => {
 	type => 'integer',
 	description => "LVM snapshot size in MB.",
@@ -1228,7 +1254,7 @@ sub verify_vzdump_parameters {
     my ($param, $check_missing) = @_;
 
     raise_param_exc({ all => "option conflicts with option 'vmid'"})
-	if $param->{all} && $param->{vmid};
+	if ($param->{all} || $param->{stop}) && $param->{vmid};
 
     raise_param_exc({ exclude => "option conflicts with option 'vmid'"})
 	if $param->{exclude} && $param->{vmid};
@@ -1238,8 +1264,33 @@ sub verify_vzdump_parameters {
     return if !$check_missing;
 
     raise_param_exc({ vmid => "property is missing"})
-	if !$param->{all} && !$param->{vmid};
+	if !($param->{all} || $param->{stop}) && !$param->{vmid};
 
+}
+
+sub stop_all_backups {
+    my($self) = @_;
+
+    return if ! -e $pidfile;
+
+    my @param = split(/\n/,PVE::Tools::file_get_contents($pidfile));
+    my $pid;
+    my $stime;
+
+    if ($param[0] =~ /^([-\@\w.]+)$/){
+	$pid = $1;
+    }
+    if ($param[1] =~/^([-\@\w.]+)$/){
+	$stime = $1;
+    }
+
+    if(PVE::ProcFSTools::check_process_running($pid, $stime) && 
+       PVE::ProcFSTools::read_proc_starttime($pid) == $stime){
+	print "toll";
+	kill(15,$pid);
+    }
+
+    unlink $pidfile;
 }
 
 sub command_line {
