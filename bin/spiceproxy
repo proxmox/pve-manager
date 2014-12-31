@@ -11,19 +11,35 @@ delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
 use strict;
 use warnings;
 use English;
+use Socket qw(IPPROTO_TCP TCP_NODELAY SOMAXCONN);
+use IO::Socket::INET;
 
 use PVE::SafeSyslog;
 use PVE::Daemon;
-use PVE::APIDaemon;
+use PVE::APIDaemon; # fixme: remove
 use PVE::API2;
 
 use base qw(PVE::Daemon);
 
+$SIG{'__WARN__'} = sub {
+    my $err = $@;
+    my $t = $_[0];
+    chomp $t;
+    print STDERR "$t\n";
+    syslog('warning', "%s", $t);
+    $@ = $err;
+};
+
 my $cmdline = [$0, @ARGV];
 
-my %daemon_options = (restart_on_error => 5, stop_wait_time => 15, run_dir => '/var/run/pveproxy');
+my %daemon_options = (
+    max_workers => 1, # fixme: do we need more?
+    restart_on_error => 5, 
+    stop_wait_time => 15, 
+    run_dir => '/var/run/pveproxy',
+);
 
-my $daemon = __PACKAGE__->new('spiceproxy', $cmdline, %daemon_options);
+my $daemon = __PACKAGE__->new('spiceproxy', $cmdline, %daemon_options); 
 
 my $gid = getgrnam('www-data') || die "getgrnam failed - $!\n";
 POSIX::setgid($gid) || die "setgid $gid failed - $!\n";
@@ -40,39 +56,52 @@ sub init {
     # we use same ALLOW/DENY/POLICY as pveproxy
     my $proxyconf = PVE::APIDaemon::read_proxy_config();
 
-    $self->{api_daemon} = PVE::APIDaemon->new(
+    my $accept_lock_fn = "/var/lock/spiceproxy.lck";
+
+    my $lockfh = IO::File->new(">>${accept_lock_fn}") ||
+	die "unable to open lock file '${accept_lock_fn}' - $!\n";
+
+    my $socket = IO::Socket::INET->new(
+	LocalAddr => undef, # all interfaces
+	LocalPort => 3128,
+	Listen => SOMAXCONN,
+	Proto  => 'tcp',
+	ReuseAddr => 1) ||
+	die "unable to create socket - $@\n";
+
+    # we often observe delays when using Nagle algorithm,
+    # so we disable that to maximize performance
+    setsockopt($socket, IPPROTO_TCP, TCP_NODELAY, 1);
+
+    $self->{server_config} = {
 	base_handler_class => 'PVE::API2',
-	port => 3128, 
 	keep_alive => 0,
-	max_workers => 1, # do we need more?
 	max_conn => 500,
-	lockfile => "/var/lock/spiceproxy.lck",
+	lockfile => $accept_lock_fn,
+	socket => $socket,
+	lockfh => $lockfh,
 	debug => $self->{debug},
 	spiceproxy => 1,
+	trusted_env => 0,
 	logfile => '/var/log/pveproxy/access.log',
 	allow_from => $proxyconf->{ALLOW_FROM},
 	deny_from => $proxyconf->{DENY_FROM},
 	policy => $proxyconf->{POLICY},
-    );
-}
-
-sub shutdown {
-    my ($self) = @_;
-
-    $self->exit_daemon(0);
+    };
 }
 
 sub run {
     my ($self) = @_;
-  
-    $self->{api_daemon}->start_server();
+
+    my $server = PVE::HTTPServer->new(%{$self->{server_config}});
+    $server->run();
 }
 
-$daemon->register_start_command(__PACKAGE__);
-$daemon->register_restart_command(__PACKAGE__, 0);
-$daemon->register_reload_command(__PACKAGE__);
-$daemon->register_stop_command(__PACKAGE__);
-$daemon->register_status_command(__PACKAGE__);
+$daemon->register_start_command();
+$daemon->register_restart_command(0);
+$daemon->register_reload_command();
+$daemon->register_stop_command();
+$daemon->register_status_command();
 
 my $cmddef = {
     start => [ __PACKAGE__, 'start', []],
