@@ -10,7 +10,6 @@ PERLSOURCE = 			\
 	TouchIndex.pm		\
 	NoVncIndex.pm		\
 	HTTPServer.pm		\
-	APIDaemon.pm		\
 	REST.pm			\
 	OpenVZ.pm		\
 	OpenVZMigrate.pm	\

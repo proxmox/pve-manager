@@ -14,8 +14,9 @@ use English;
 
 use PVE::SafeSyslog;
 use PVE::Daemon;
-use PVE::APIDaemon; # fixme: remove
+use PVE::API2Tools;
 use PVE::API2;
+use PVE::HTTPServer;
 
 use base qw(PVE::Daemon);
 
@@ -53,7 +54,7 @@ sub init {
     my ($self) = @_;
 
     # we use same ALLOW/DENY/POLICY as pveproxy
-    my $proxyconf = PVE::APIDaemon::read_proxy_config();
+    my $proxyconf = PVE::API2Tools::read_proxy_config();
 
     my $accept_lock_fn = "/var/lock/spiceproxy.lck";
 

@@ -10,16 +10,17 @@ use English;
 
 use PVE::SafeSyslog;
 use PVE::Daemon;
-use PVE::APIDaemon; # fixme: remove
 use HTTP::Response;
 use Encode;
 use URI;
 use URI::QueryParam;
 use File::Find;
 use Data::Dumper;
+use PVE::API2Tools;
 use PVE::API2;
 use PVE::API2::Formatter::Standard;
 use PVE::API2::Formatter::HTML;
+use PVE::HTTPServer;
 
 use PVE::ExtJSIndex;
 use PVE::NoVncIndex;
@@ -78,7 +79,7 @@ sub init {
     my ($self) = @_;
 
     # we use same ALLOW/DENY/POLICY as pveproxy
-    my $proxyconf = PVE::APIDaemon::read_proxy_config();
+    my $proxyconf = PVE::API2Tools::read_proxy_config();
 
     my $accept_lock_fn = "/var/lock/pveproxy.lck";
 

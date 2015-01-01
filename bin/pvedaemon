@@ -12,6 +12,7 @@ use PVE::Daemon;
 use PVE::API2;
 use PVE::API2::Formatter::Standard;
 use PVE::API2::Formatter::HTML;
+use PVE::HTTPServer;
 
 use base qw(PVE::Daemon);
 
