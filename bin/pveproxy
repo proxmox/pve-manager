@@ -7,12 +7,10 @@ delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
 use strict;
 use warnings;
 use English;
-use Getopt::Long;
-use POSIX ":sys_wait_h";
-use Socket;
-use IO::Socket::INET;
+
 use PVE::SafeSyslog;
-use PVE::APIDaemon;
+use PVE::Daemon;
+use PVE::APIDaemon; # fixme: remove
 use HTTP::Response;
 use Encode;
 use URI;
@@ -27,26 +25,28 @@ use PVE::ExtJSIndex;
 use PVE::NoVncIndex;
 use PVE::TouchIndex;
 
-my $pidfile = "/var/run/pveproxy/pveproxy.pid";
-my $lockfile = "/var/lock/pveproxy.lck";
-
-my $opt_debug;
-
-initlog ('pveproxy');
-
-if (!GetOptions ('debug' => \$opt_debug)) {
-    die "usage: $0 [--debug]\n";
-}
+use base qw(PVE::Daemon);
 
 $SIG{'__WARN__'} = sub {
     my $err = $@;
     my $t = $_[0];
     chomp $t;
-    syslog('warning', "WARNING: %s", $t);
+    print STDERR "$t\n";
+    syslog('warning', "%s", $t);
     $@ = $err;
 };
 
-$0 = "pveproxy";
+my $cmdline = [$0, @ARGV];
+
+my %daemon_options = (
+    max_workers => 3,
+    restart_on_error => 5, 
+    stop_wait_time => 15,
+    leave_children_open_on_reload => 1,
+    run_dir => '/var/run/pveproxy',
+);
+
+my $daemon = __PACKAGE__->new('pveproxy', $cmdline, %daemon_options); 
 
 # run as www-data
 my $gid = getgrnam('www-data') || die "getgrnam failed - $!\n";
@@ -57,8 +57,6 @@ POSIX::setuid($uid) || die "setuid $uid failed - $!\n";
 
 # just to be sure
 die "detected strange uid/gid\n" if !($UID == $uid && $EUID == $uid && $GID eq "$gid $gid" && $EGID eq "$gid $gid");
-
-my $proxyconf = PVE::APIDaemon::read_proxy_config();
 
 sub add_dirs {
     my ($result_hash, $alias, $subdir) = @_;
@@ -76,9 +74,18 @@ sub add_dirs {
     find({wanted => $wanted, follow => 0, no_chdir => 1}, $subdir);
 }
 
-my $cpid;
-my $daemon;
-eval {
+sub init {
+    my ($self) = @_;
+
+    # we use same ALLOW/DENY/POLICY as pveproxy
+    my $proxyconf = PVE::APIDaemon::read_proxy_config();
+
+    my $accept_lock_fn = "/var/lock/pveproxy.lck";
+
+    my $lockfh = IO::File->new(">>${accept_lock_fn}") ||
+	die "unable to open lock file '${accept_lock_fn}' - $!\n";
+
+    my $socket = $self->create_reusable_socket(8006);
 
     my $dirs = {};
 
@@ -91,19 +98,20 @@ eval {
     add_dirs($dirs, '/vncterm/' => '/usr/share/vncterm/');
     add_dirs($dirs, '/novnc/' => '/usr/share/novnc-pve/');
 
-    $daemon = PVE::APIDaemon->new(
+    $self->{server_config} = {
 	base_handler_class => 'PVE::API2',
-	port => 8006, 
 	keep_alive => 100,
 	max_conn => 500,
 	max_requests => 1000,
-	debug => $opt_debug,
+	lockfile => $accept_lock_fn,
+	socket => $socket,
+	lockfh => $lockfh,
+	debug => $self->{debug},
+	trusted_env => 0, # not trusted, anyone can connect
+	logfile => '/var/log/pveproxy/access.log',
 	allow_from => $proxyconf->{ALLOW_FROM},
 	deny_from => $proxyconf->{DENY_FROM},
 	policy => $proxyconf->{POLICY},
-	trusted_env => 0, # not trusted, anyone can connect
-	logfile => '/var/log/pveproxy/access.log',
-	lockfile => $lockfile,
 	ssl => {
 	    # Note: older versions are considered insecure, for example
 	    # search for "Poodle"-Attac
@@ -122,63 +130,31 @@ eval {
 	    },
 	},
 	dirs => $dirs,
-    );
+    };
+}
+
+sub run {
+    my ($self) = @_;
+
+    my $server = PVE::HTTPServer->new(%{$self->{server_config}});
+    $server->run();
+}
+
+$daemon->register_start_command();
+$daemon->register_restart_command(1);
+$daemon->register_stop_command();
+$daemon->register_status_command();
+
+my $cmddef = {
+    start => [ __PACKAGE__, 'start', []],
+    restart => [ __PACKAGE__, 'restart', []],
+    stop => [ __PACKAGE__, 'stop', []],
+    status => [ __PACKAGE__, 'status', [], undef, sub { print shift . "\n";} ],
 };
 
-my $err = $@;
+my $cmd = shift;
 
-if ($err) {
-    syslog ('err' , "unable to start server: $err");
-    print STDERR $err;
-    exit (-1);
-}
-
-
-if ($opt_debug || !($cpid = fork ())) {
-
-    $SIG{PIPE} = 'IGNORE';
-    $SIG{INT} = 'IGNORE' if !$opt_debug;
-
-    $SIG{TERM} = $SIG{QUIT} = sub { 
-	syslog ('info' , "server closing");
-
-	$SIG{INT} = 'DEFAULT';
-
-	unlink "$pidfile" if !$opt_debug;
-
-	exit (0);
-    };
-
-    syslog ('info' , "starting server");
-
-    if (!$opt_debug) {
-	# redirect STDIN/STDOUT/SDTERR to /dev/null
-	open STDIN,  '</dev/null' || die "can't read /dev/null  [$!]";
-	open STDOUT, '>/dev/null' || die "can't write /dev/null [$!]";
-	open STDERR, '>&STDOUT' || die "can't open STDERR to STDOUT [$!]";
-    }
-
-    POSIX::setsid(); 
-
-    eval {
-	$daemon->start_server();
-    };
-    my $err = $@;
-
-    if ($err) {
-	syslog ('err' , "unexpected server error: $err");
-	print STDERR $err if $opt_debug;
-	exit (-1);
-    }
-
-} else {
-
-    open (PIDFILE, ">$pidfile") || 
-	die "cant write '$pidfile' - $! :ERROR";
-    print PIDFILE "$cpid\n";
-    close (PIDFILE) || 
-	die "cant write '$pidfile' - $! :ERROR";
-}
+PVE::CLIHandler::handle_cmd($cmddef, $0, $cmd, \@ARGV, undef, $0);
 
 exit (0);
 
@@ -253,12 +229,12 @@ pveproxy - the PVE API proxy server
 
 =head1 SYNOPSIS
 
-pveproxy [--debug]
+=include synopsis
 
 =head1 DESCRIPTION
 
-This is the REST API proxy server, listening on port 8006. This is usually started
-as service using:
+This is the REST API proxy server, listening on port 8006. This is usually 
+started as service using:
 
  # service pveproxy start
 
@@ -296,21 +272,4 @@ package for list of all available options.
 
  /etc/default/pveproxy
 
-=head1 COPYRIGHT AND DISCLAIMER
-
- Copyright (C) 2007-2013 Proxmox Server Solutions GmbH
-
- This program is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
-
- You should have received a copy of the GNU Affero General Public
- License along with this program.  If not, see
- <http://www.gnu.org/licenses/>.
-
+=include pve_copyright
