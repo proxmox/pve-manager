@@ -35,7 +35,8 @@ my $cmdline = [$0, @ARGV];
 my %daemon_options = (
     max_workers => 1, # fixme: do we need more?
     restart_on_error => 5, 
-    stop_wait_time => 15, 
+    stop_wait_time => 15,
+    leave_children_open_on_reload => 1,
     run_dir => '/var/run/pveproxy',
 );
 
