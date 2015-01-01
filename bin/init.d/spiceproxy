@@ -45,11 +45,6 @@ case "$1" in
 	$DAEMON stop
 	log_end_msg $?
   	;;
-    reload)
-	log_daemon_msg "Reloading $DESC" "$NAME"
-	$DAEMON reload
-	log_end_msg $?
-  	;;		
     restart|force-reload)
 	log_daemon_msg "Restarting $DESC" "$NAME"
 	$DAEMON restart
