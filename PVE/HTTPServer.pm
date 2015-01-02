@@ -530,8 +530,12 @@ sub websocket_proxy {
 		if ($opcode == 1 || $opcode == 2) {
 		    $reqstate->{proxyhdl}->push_write($payload) if $reqstate->{proxyhdl};
 		} elsif ($opcode == 8) {
-		    # ignore close ?
 		    print "websocket received close\n" if $self->{debug};
+		    if ($reqstate->{proxyhdl}) {
+			$reqstate->{proxyhdl}->push_write($payload);
+			$reqstate->{proxyhdl}->push_shutdown();
+		    }
+		    $hdl->push_shutdown();
 		} else {
 		    die "received unhandled websocket opcode $opcode\n";
 		}
