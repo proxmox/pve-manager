@@ -369,6 +369,39 @@ Ext.define('PVE.qemu.HardwareView', {
 	    }
 	});
 
+	var revert_btn = new PVE.button.Button({
+	    text: gettext('Revert'),
+	    selModel: sm,
+	    disabled: true,
+	    enableFn: function(rec) {
+		if (!rec) {
+		    return false;
+		}
+		if(!rec.data['pending'] && !rec.data['delete']){
+		    return false;
+		}
+		var rowdef = rows[rec.data.key];
+
+		return true;    
+	    },
+	    handler: function(b, e, rec) {
+		PVE.Utils.API2Request({
+		    url: '/api2/extjs/' + baseurl,
+		    waitMsgTarget: me,
+		    method: 'PUT',
+		    params: {
+			'revert': rec.data.key
+		    },
+		    callback: function() {
+			reload();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert('Error',response.htmlStatus);
+		    }
+		});
+	    }
+	});
+
 	Ext.applyIf(me, {
 	    url: '/api2/json/' + 'nodes/' + nodename + '/qemu/' + vmid + '/pending',
 	    selModel: sm,
@@ -424,7 +457,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		edit_btn,
 		resize_btn,
 		move_btn,
-		diskthrottle_btn
+		diskthrottle_btn,
+		revert_btn
 	    ],
 	    rows: rows,
 	    sorterFn: sorterFn,

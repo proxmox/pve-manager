@@ -302,6 +302,33 @@ Ext.define('PVE.qemu.Options', {
 	    handler: run_editor
 	});
 
+        var revert_btn = new PVE.button.Button({
+            text: gettext('Revert'),
+            disabled: true,
+            handler: function() {
+		var sm = me.getSelectionModel();
+		var rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+
+                PVE.Utils.API2Request({
+                    url: '/api2/extjs/' + baseurl,
+                    waitMsgTarget: me,
+                    method: 'PUT',
+                    params: {
+                        'revert': rec.data.key
+                    },
+                    callback: function() {
+                        reload();
+                    },
+                    failure: function (response, opts) {
+                        Ext.Msg.alert('Error',response.htmlStatus);
+                    }
+                });
+            }
+        });
+
 	var set_button_status = function() {
 	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
@@ -310,6 +337,13 @@ Ext.define('PVE.qemu.Options', {
 		edit_btn.disable();
 		return;
 	    }
+
+            if(rec.data['pending'] || rec.data['delete']){
+                revert_btn.setDisabled(false);
+            }else {
+                revert_btn.setDisabled(true);
+	    }
+
 	    var rowdef = rows[rec.data.key];
 	    edit_btn.setDisabled(!rowdef.editor);
 	};
@@ -317,7 +351,7 @@ Ext.define('PVE.qemu.Options', {
 	Ext.applyIf(me, {
 	    url: "/api2/json/nodes/" + nodename + "/qemu/" + vmid + "/pending",
 	    cwidth1: 170,
-	    tbar: [ edit_btn ],
+	    tbar: [ edit_btn, revert_btn ],
 	    rows: rows,
 	    listeners: {
 		itemdblclick: run_editor,
