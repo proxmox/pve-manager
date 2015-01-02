@@ -59,8 +59,6 @@ sub shutdown {
 sub hup {
     my ($self) = @_;
 
-    syslog('info' , "received signal HUP");
-
     $restart_request = 1;
 }
 
