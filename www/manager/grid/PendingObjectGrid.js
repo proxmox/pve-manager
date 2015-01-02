@@ -36,7 +36,7 @@ Ext.define('PVE.grid.PendingObjectGrid', {
 
 	if (renderer) {
 	    current = renderer(value, metaData, record, rowIndex, colIndex, store);
-	    if(record.data['pending'] || rowdef.multiValues){
+	    if(record.data['pending'] || record.data['pending'] === 0 || rowdef.multiValues){
 		pending = renderer(record.data['pending'], metaData, record, rowIndex, colIndex, store, 1);
 	    }
 	    if(pending == current) {
