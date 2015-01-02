@@ -270,6 +270,9 @@ Ext.define('PVE.qemu.HardwareView', {
 		if (!rec) {
 		    return false;
 		}
+		if(rec.data['delete']){
+		    return false;
+		}
 		var rowdef = rows[rec.data.key];
 		return !!rowdef.editor;
 	    },
@@ -281,7 +284,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    selModel: sm,
 	    disabled: true,
 	    enableFn: function(rec) {
-		if (!rec) {
+		if (!rec || rec.data.key.match(/^unused\d+/) || rec.data['pending'] || rec.data['delete']) {
 		    return false;
 		}
 		var rowdef = rows[rec.data.key];
@@ -296,6 +299,9 @@ Ext.define('PVE.qemu.HardwareView', {
 	    disabled: true,
 	    enableFn: function(rec) {
 		if (!rec || rec.data.key.match(/^unused\d+/)) {
+		    return false;
+		}
+		if(rec.data['pending'] || rec.data['delete']){
 		    return false;
 		}
 		var rowdef = rows[rec.data.key];
@@ -334,6 +340,9 @@ Ext.define('PVE.qemu.HardwareView', {
 	    },
 	    enableFn: function(rec) {
 		if (!rec) {
+		    return false;
+		}
+		if(rec.data['delete']){
 		    return false;
 		}
 		var rowdef = rows[rec.data.key];
