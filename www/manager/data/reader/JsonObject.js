@@ -37,21 +37,47 @@ Ext.define('PVE.data.reader.JsonObject', {
 		}
 	    }
 
-	    if (me.rows) {
-		Ext.Object.each(me.rows, function(key, rowdef) {
-		    if (Ext.isDefined(root[key])) {
-			data.push({key: key, value: root[key]});
-		    } else if (Ext.isDefined(rowdef.defaultValue)) {
-			data.push({key: key, value: rowdef.defaultValue});
-		    } else if (rowdef.required) {
-			data.push({key: key, value: undefined});
-		    }
-		});
+	    if (me.pending) {
+
+		if (me.rows) {
+		    Ext.Object.each(me.rows, function(key, rowdef) {
+			if (Ext.isDefined(root[key])) {
+			    if(Ext.isDefined(root[key]["value"])){
+				data.push({key: key, value: root[key]["value"], pending: root[key]["pending"], delete: root[key]["delete"]});
+			    }else if(Ext.isDefined(rowdef.defaultValue)){
+				data.push({key: key, value: rowdef.defaultValue, pending: root[key]["pending"], delete: root[key]["delete"]});
+			    }
+			} else if (Ext.isDefined(rowdef.defaultValue)) {
+			    data.push({key: key, value: rowdef.defaultValue, pending: undefined, delete: undefined});
+			} else if (rowdef.required) {
+			    data.push({key: key, value: undefined, pending: undefined, delete: undefined});
+			}
+		    });
+		} else {
+		    Ext.Object.each(root, function(key, value) {
+			data.push({key: key, value: root[key]["value"], pending: root[key]["pending"], delete: root[key]["delete"]});
+		    });
+	    	}
+
 	    } else {
-		Ext.Object.each(root, function(key, value) {
-		    data.push({key: key, value: value });
-		});
+
+		if (me.rows) {
+		    Ext.Object.each(me.rows, function(key, rowdef) {
+			if (Ext.isDefined(root[key])) {
+			    data.push({key: key, value: root[key]});
+			} else if (Ext.isDefined(rowdef.defaultValue)) {
+			    data.push({key: key, value: rowdef.defaultValue});
+			} else if (rowdef.required) {
+			    data.push({key: key, value: undefined});
+			}
+		    });
+		} else {
+		    Ext.Object.each(root, function(key, value) {
+			data.push({key: key, value: value });
+		    });
+	    	}
 	    }
+
 	}
         catch (ex) {
             Ext.Error.raise({

@@ -19,6 +19,7 @@ JSSRC= 				                 	\
 	data/UpdateStore.js				\
 	data/DiffStore.js				\
 	data/ObjectStore.js				\
+	data/PendingObjectStore.js				\
 	data/ResourceStore.js				\
 	form/VLanField.js				\
 	form/Checkbox.js				\
@@ -76,6 +77,7 @@ JSSRC= 				                 	\
 	grid/CheckColumn.js				\
 	grid/SelectFeature.js				\
 	grid/ObjectGrid.js				\
+	grid/PendingObjectGrid.js			\
 	grid/ResourceGrid.js				\
 	grid/PoolMembers.js				\
 	grid/FirewallRules.js				\

@@ -67,6 +67,12 @@ Ext.define('PVE.RestProxy', {
 	idProperty: 'key'
     });
 
+    Ext.define('KeyValuePendingDelete', {
+	extend: "Ext.data.Model",
+	fields: [ 'key', 'value', 'pending', 'delete' ],
+	idProperty: 'key'
+    });
+
     Ext.define('pve-string-list', {
 	extend: 'Ext.data.Model',
 	fields:  [ 'n', 't' ],

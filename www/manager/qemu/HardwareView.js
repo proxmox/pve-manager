@@ -1,7 +1,7 @@
 // fixme: howto avoid jslint type confusion?
 /*jslint confusion: true */
 Ext.define('PVE.qemu.HardwareView', {
-    extend: 'PVE.grid.ObjectGrid',
+    extend: 'PVE.grid.PendingObjectGrid',
     alias: ['widget.PVE.qemu.HardwareView'],
 
     renderKey: function(key, metaData, record, rowIndex, colIndex, store) {
@@ -359,7 +359,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	});
 
 	Ext.applyIf(me, {
-	    url: '/api2/json/' + baseurl,
+	    url: '/api2/json/' + 'nodes/' + nodename + '/qemu/' + vmid + '/pending',
 	    selModel: sm,
 	    cwidth1: 170,
 	    tbar: [ 
