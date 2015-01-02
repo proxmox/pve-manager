@@ -40,6 +40,8 @@ my $restart_request = 0;
 sub init {
     my ($self) = @_;
 
+    $opt_debug = $self->{debug};
+
     PVE::Cluster::cfs_update();
 }
 
