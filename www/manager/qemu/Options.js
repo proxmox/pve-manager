@@ -74,10 +74,10 @@ Ext.define('PVE.qemu.Options', {
 		header: gettext('Boot order'),
 		defaultValue: 'cdn',
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.BootOrderEdit' : undefined,
-		renderer: function(order) {
+		renderer: function(order, metaData, record, rowIndex, colIndex, store, pending) {
 		    var i;
 		    var text = '';
-		    var bootdisk = me.getObjectValue('bootdisk');
+		    var bootdisk = me.getObjectValue('bootdisk', undefined, pending);
 		    order = order || 'cdn';
 		    for (i = 0; i < order.length; i++) {
 			var sel = order.substring(i, i + 1);
