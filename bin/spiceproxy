@@ -10,7 +10,6 @@ delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
 
 use strict;
 use warnings;
-use English;
 
 use PVE::SafeSyslog;
 use PVE::Daemon;
@@ -36,19 +35,12 @@ my %daemon_options = (
     restart_on_error => 5, 
     stop_wait_time => 15,
     leave_children_open_on_reload => 1,
+    setuid => 'www-data',
+    setgid => 'www-data',
     run_dir => '/var/run/pveproxy',
 );
 
 my $daemon = __PACKAGE__->new('spiceproxy', $cmdline, %daemon_options); 
-
-my $gid = getgrnam('www-data') || die "getgrnam failed - $!\n";
-POSIX::setgid($gid) || die "setgid $gid failed - $!\n";
-$EGID = "$gid $gid"; # this calls setgroups
-my $uid = getpwnam('www-data') || die "getpwnam failed - $!\n";
-POSIX::setuid($uid) || die "setuid $uid failed - $!\n";
-
-# just to be sure
-die "detected strange uid/gid\n" if !($UID == $uid && $EUID == $uid && $GID eq "$gid $gid" && $EGID eq "$gid $gid");
 
 sub init {
     my ($self) = @_;
