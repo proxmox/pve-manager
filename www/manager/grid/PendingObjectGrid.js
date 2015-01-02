@@ -2,11 +2,17 @@ Ext.define('PVE.grid.PendingObjectGrid', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pvePendingObjectGrid'],
 
-    getObjectValue: function(key, defaultValue) {
+    getObjectValue: function(key, defaultValue, pending) {
 	var me = this;
 	var rec = me.store.getById(key);
 	if (rec) {
-	    return rec.data.value;
+	    if (pending && rec.data['pending']) {
+		return rec.data['pending'];
+	    }else if (rec.data.value) {
+		return rec.data.value;
+	    }else {
+		return defaultValue;
+	    }
 	}
 	return defaultValue;
     },
@@ -30,8 +36,11 @@ Ext.define('PVE.grid.PendingObjectGrid', {
 
 	if (renderer) {
 	    current = renderer(value, metaData, record, rowIndex, colIndex, store);
-	    if(record.data['pending']){
-		pending = renderer(record.data['pending'], metaData, record, rowIndex, colIndex, store);
+	    if(record.data['pending'] || rowdef.multiValues){
+		pending = renderer(record.data['pending'], metaData, record, rowIndex, colIndex, store, 1);
+	    }
+	    if(pending == current) {
+		pending = undefined;
 	    }
 	}else{
 	    current = value;

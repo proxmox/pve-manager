@@ -61,14 +61,17 @@ Ext.define('PVE.qemu.HardwareView', {
 		    'PVE.qemu.ProcessorEdit' : undefined,
 		tdCls: 'pve-itype-icon-processor',
 		defaultValue: 1,
-		renderer: function(value, metaData, record, rowIndex, colIndex, store) {
-		    var model = me.getObjectValue('cpu');
-		    var cores = me.getObjectValue('cores');
+		multiValues: 1,
+		renderer: function(value, metaData, record, rowIndex, colIndex, store, pending) {
+
+		    var sockets = me.getObjectValue('sockets', 1, pending);
+		    var model = me.getObjectValue('cpu', undefined, pending);
+		    var cores = me.getObjectValue('cores', undefined, pending);
 		    var res = '';
 		    if (!cores || (cores <= 1)) {
-			res = value;
+			res = sockets;
 		    } else {
-			res = (value*cores) + ' (' + value + ' sockets, ' + cores + ' cores)';
+			res = (sockets*cores) + ' (' + sockets + ' sockets, ' + cores + ' cores)';
 		    }
 		    if (model) {
 			res += ' [' + model + ']';
