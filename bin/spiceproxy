@@ -37,7 +37,7 @@ my %daemon_options = (
     leave_children_open_on_reload => 1,
     setuid => 'www-data',
     setgid => 'www-data',
-    run_dir => '/var/run/pveproxy',
+    pidfile => '/var/run/pveproxy/spiceproxy.pid',
 );
 
 my $daemon = __PACKAGE__->new('spiceproxy', $cmdline, %daemon_options); 

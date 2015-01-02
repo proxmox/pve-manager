@@ -45,7 +45,7 @@ my %daemon_options = (
     leave_children_open_on_reload => 1,
     setuid => 'www-data',
     setgid => 'www-data',
-    run_dir => '/var/run/pveproxy',
+    pidfile => '/var/run/pveproxy/pveproxy.pid',
 );
 
 my $daemon = __PACKAGE__->new('pveproxy', $cmdline, %daemon_options); 
