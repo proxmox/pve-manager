@@ -1430,6 +1430,8 @@ sub wait_end_loop {
 
     undef $self->{socket_watch};
 
+    $0 = "$0 (shutdown)" if $0 !~ m/\(shutdown\)$/;
+
     if ($self->{conn_count} <= 0) {
 	$self->{end_cond}->send(1);
 	return;
