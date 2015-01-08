@@ -338,9 +338,10 @@ Ext.define('PVE.qemu.Options', {
 		return;
 	    }
 
-            if(rec.data['pending'] || rec.data['delete']){
-                revert_btn.setDisabled(false);
-            }else {
+	    if ((Ext.isDefined(rec.data.pending) && (rec.data.pending !== '')) || 
+		rec.data['delete']) {
+		revert_btn.setDisabled(false);
+            } else {
                 revert_btn.setDisabled(true);
 	    }
 
