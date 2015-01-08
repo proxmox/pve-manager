@@ -1,9 +1,30 @@
 /* A reader to store a single JSON Object (hash) into a storage.
  * Also accepts an array containing a single hash. 
+ *
  * So it can read:
  *
- * example1: { data: "xyz" }
- * example2: [ {  data: "xyz" } ]
+ * example1: {data1: "xyz", data2: "abc"} 
+ * returns [{key: "data1", value: "xyz"}, {key: "data2", value: "abc"}]
+ *
+ * example2: [ {data1: "xyz", data2: "abc"} ] 
+ * returns [{key: "data1", value: "xyz"}, {key: "data2", value: "abc"}]
+ *
+ * If you set 'readArray', the reader expexts the object as array:
+ *
+ * example3: [ { key: "data1", value: "xyz", p2: "cde" },  { key: "data2", value: "abc", p2: "efg" }]
+ * returns [{key: "data1", value: "xyz", p2: "cde}, {key: "data2", value: "abc", p2: "efg"}]
+ *
+ * Note: The records can contain additional properties (like 'p2' above) when you use 'readArray'
+ *
+ * Additional feature: specify allowed properties with default values with 'rows' object
+ *
+ * var rows = {
+ *   memory: {
+ *     required: true,
+ *     defaultValue: 512
+ *   }
+ * }
+ *
  */
 
 Ext.define('PVE.data.reader.JsonObject', {
@@ -11,7 +32,11 @@ Ext.define('PVE.data.reader.JsonObject', {
     alias : 'reader.jsonobject',
     
     root: 'data',
- 
+  
+    readArray: false,
+
+    rows: undefined,
+
     constructor: function(config) {
         var me = this;
 
@@ -27,39 +52,49 @@ Ext.define('PVE.data.reader.JsonObject', {
         try {
             var result = Ext.decode(response.responseText);
 	    var root = me.getRoot(result);
-	    var org_root = root;
 
-	    if (Ext.isArray(org_root)) {
-		if (org_root.length == 1) {
-		    root = org_root[0];
-		} else {
-		    root = {};
-		}
-	    }
+	    if (me.readArray) {
 
-	    if (me.pending) {
+		var rec_hash = {};
+		Ext.Array.each(root, function(rec) {
+		    if (Ext.isDefined(rec.key)) {
+			rec_hash[rec.key] = rec;
+		    }
+		});
 
 		if (me.rows) {
 		    Ext.Object.each(me.rows, function(key, rowdef) {
-			if (Ext.isDefined(root[key])) {
-			    if(Ext.isDefined(root[key]["value"])){
-				data.push({key: key, value: root[key]["value"], pending: root[key]["pending"], delete: root[key]["delete"]});
-			    }else if(Ext.isDefined(rowdef.defaultValue)){
-				data.push({key: key, value: rowdef.defaultValue, pending: root[key]["pending"], delete: root[key]["delete"]});
+			var rec = rec_hash[key];
+			if (Ext.isDefined(rec)) {
+			    if (!Ext.isDefined(rec.value)) {
+				rec.value = rowdef.defaultValue;
 			    }
+			    data.push(rec);
 			} else if (Ext.isDefined(rowdef.defaultValue)) {
-			    data.push({key: key, value: rowdef.defaultValue, pending: undefined, delete: undefined});
+			    data.push({key: key, value: rowdef.defaultValue} );
 			} else if (rowdef.required) {
-			    data.push({key: key, value: undefined, pending: undefined, delete: undefined});
+			    data.push({key: key, value: undefined });
 			}
 		    });
 		} else {
-		    Ext.Object.each(root, function(key, value) {
-			data.push({key: key, value: root[key]["value"], pending: root[key]["pending"], delete: root[key]["delete"]});
+		    Ext.Array.each(root, function(rec) {
+			if (Ext.isDefined(rec.key)) {
+			    data.push(rec);
+			}
 		    });
 	    	}
+		
+	    } else { 
+		
+		var org_root = root;
 
-	    } else {
+		if (Ext.isArray(org_root)) {
+		    if (root.length == 1) {
+			root = org_root[0];
+		    } else {
+			root = {};
+		    }
+		}
 
 		if (me.rows) {
 		    Ext.Object.each(me.rows, function(key, rowdef) {
@@ -77,7 +112,6 @@ Ext.define('PVE.data.reader.JsonObject', {
 		    });
 	    	}
 	    }
-
 	}
         catch (ex) {
             Ext.Error.raise({

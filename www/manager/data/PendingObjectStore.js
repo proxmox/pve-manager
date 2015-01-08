@@ -19,7 +19,7 @@ Ext.define('PVE.data.PendingObjectStore',  {
                 reader: {
 		    type: 'jsonobject',
 		    rows: config.rows,
-		    pending: 1
+		    readArray: true
 		}
             }
         });
