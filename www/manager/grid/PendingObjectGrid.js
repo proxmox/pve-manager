@@ -1,5 +1,5 @@
 Ext.define('PVE.grid.PendingObjectGrid', {
-    extend: 'Ext.grid.GridPanel',
+    extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pvePendingObjectGrid'],
 
     getObjectValue: function(key, defaultValue, pending) {
@@ -71,51 +71,6 @@ Ext.define('PVE.grid.PendingObjectGrid', {
 		rows: me.rows
 	    });
 	}
-
-	var rstore = me.rstore;
-
-	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
-
-	if (me.sorterFn) {
-	    store.sorters.add(new Ext.util.Sorter({
-		sorterFn: me.sorterFn
-	    }));
-	}
-
-	store.filters.add(new Ext.util.Filter({
-	    filterFn: function(item) {
-		if (rows) {
-		    var rowdef = rows[item.data.key];
-		    if (!rowdef || (rowdef.visible === false)) {
-			return false;
-		    }
-		}
-		return true;
-	    }
-	}));
-
-	PVE.Utils.monStoreErrors(me, rstore);
-
-
-	Ext.applyIf(me, {
-	    store: store,
-	    hideHeaders: true,
-	    stateful: false,
-	    columns: [
-		{
-		    header: gettext('Name'),
-		    width: me.cwidth1 || 100,
-		    dataIndex: 'key',
-		    renderer: me.renderKey
-		},
-		{
-		    flex: 1,
-		    header: gettext('Value'),
-		    dataIndex: 'value',
-		    renderer: me.renderValue
-		}
-	    ]
-	});
 
 	me.callParent();
    }
