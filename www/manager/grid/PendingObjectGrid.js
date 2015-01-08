@@ -6,22 +6,16 @@ Ext.define('PVE.grid.PendingObjectGrid', {
 	var me = this;
 	var rec = me.store.getById(key);
 	if (rec) {
-	    if (pending && rec.data['pending']) {
-		return rec.data['pending'];
-	    }else if (rec.data.value) {
-		return rec.data.value;
-	    }else {
+	    var value = (pending && Ext.isDefined(rec.data.pending) && (rec.data.pending !== '')) ? 
+		rec.data.pending : rec.data.value;
+
+            if (Ext.isDefined(value) && (value !== '')) {
+		return value;
+            } else {
 		return defaultValue;
-	    }
+            }
 	}
 	return defaultValue;
-    },
-
-    renderKey: function(key, metaData, record, rowIndex, colIndex, store) {
-	var me = this;
-	var rows = me.rows;
-	var rowdef = (rows && rows[key]) ?  rows[key] : {};
-	return rowdef.header || key;
     },
 
     renderValue: function(value, metaData, record, rowIndex, colIndex, store) {
@@ -35,26 +29,27 @@ Ext.define('PVE.grid.PendingObjectGrid', {
 	var pending = '';
 
 	if (renderer) {
-	    current = renderer(value, metaData, record, rowIndex, colIndex, store);
-	    if(record.data['pending'] || record.data['pending'] === 0 || rowdef.multiValues){
-		pending = renderer(record.data['pending'], metaData, record, rowIndex, colIndex, store, 1);
+	    current = renderer(value, metaData, record, rowIndex, colIndex, store, false);
+	    if (Ext.isDefined(record.data.pending) && (record.data.pending !== '')) {
+		pending = renderer(record.data.pending, metaData, record, rowIndex, colIndex, store, true);
 	    }
-	    if(pending == current) {
+	    if (pending == current) {
 		pending = undefined;
 	    }
-	}else{
+	} else {
 	    current = value;
-	    pending = record.data['pending'];
+	    pending = record.data.pending;
 	}
-	if(record.data['delete']){
+
+	if (record.data['delete']) {
 	    pendingdelete = '<div style="text-decoration: line-through;">'+ current +'</div>';
 	}
 
-	value = current;
-	if(pending || pendingdelete){
-	    value += '<div style="color:red">' + pending + pendingdelete + '</div>';
+	if (pending || pendingdelete) {
+	    return current + '<div style="color:red">' + pending + pendingdelete + '</div>';
+	} else {
+	    return current;
 	}
-	return value;
     },
 
     initComponent : function() {
@@ -80,17 +75,6 @@ Ext.define('PVE.grid.PendingObjectGrid', {
 	var rstore = me.rstore;
 
 	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
-
-	if (rows) {
-	    Ext.Object.each(rows, function(key, rowdef) {
-		//fixme : add missing options from config file ?
-		if (Ext.isDefined(rowdef.defaultValue)) {
-		    store.add({ key: key, value: rowdef.defaultValue, pending: undefined, delete: undefined });
-		} else if (rowdef.required) {
-		    store.add({ key: key, value: undefined, pending: undefined, delete: undefined });
-		}
-	    });
-	}
 
 	if (me.sorterFn) {
 	    store.sorters.add(new Ext.util.Sorter({
