@@ -58,12 +58,13 @@ Ext.define('PVE.grid.PendingObjectGrid', {
 		throw "no url specified";
 	    }
 
-
-	    me.rstore = Ext.create('PVE.data.PendingObjectStore', {
+	    me.rstore = Ext.create('PVE.data.ObjectStore', {
+		model: 'KeyValuePendingDelete',
+		readArray: true,
 		url: me.url,
 		interval: me.interval,
 		extraParams: me.extraParams,
-		rows: me.rows,
+		rows: me.rows
 	    });
 	}
 
