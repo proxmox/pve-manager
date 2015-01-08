@@ -9,6 +9,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	var rows = me.rows;
 	var rowdef = rows[key] || {};
 
+	metaData.tdAttr = "valign=middle";
+
 	if (rowdef.tdCls) {
 	    metaData.tdCls = rowdef.tdCls;
 	    if (rowdef.tdCls == 'pve-itype-icon-storage') { 
