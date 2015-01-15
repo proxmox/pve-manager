@@ -43,6 +43,7 @@ ${DEB} deb:
 	install -m 0644 debian/conffiles dest/DEBIAN
 	install -m 0755 debian/config dest/DEBIAN
 	install -m 0644 debian/templates dest/DEBIAN
+	install -m 0755 debian/preinst dest/DEBIAN
 	install -m 0755 debian/postinst dest/DEBIAN
 	install -m 0755 debian/prerm dest/DEBIAN
 	install -m 0755 debian/postrm dest/DEBIAN
