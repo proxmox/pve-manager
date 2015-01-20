@@ -598,58 +598,54 @@ sub get_lvm_device {
 }
 
 sub getlock {
-    my ($self) = @_;
+    my ($self, $upid) = @_;
 
     my $fh;
 	    
-    open($fh, "> $pidfile")
-	or die "cannot open $pidfile: $!";
-
-    print $fh $$, "\n",PVE::ProcFSTools::read_proc_starttime($$), "\n";
-
-    close $fh || warn "close $pidfile failed: $!";
-    
     my $maxwait = $self->{opts}->{lockwait} || $self->{lockwait};
  
+    die "missimg UPID" if !$upid; # should not happen
+
     if (!open (SERVER_FLCK, ">>$lockfile")) {
 	debugmsg ('err', "can't open lock on file '$lockfile' - $!", undef, 1);
 	die "can't open lock on file '$lockfile' - $!";
     }
 
-    if (flock (SERVER_FLCK, LOCK_EX|LOCK_NB)) {
-	return;
-    }
+    if (!flock (SERVER_FLCK, LOCK_EX|LOCK_NB)) {
 
-    if (!$maxwait) {
-	debugmsg ('err', "can't aquire lock '$lockfile' (wait = 0)", undef, 1);
-	die "can't aquire lock '$lockfile' (wait = 0)";
-    }
-
-    debugmsg('info', "trying to get global lock - waiting...", undef, 1);
-
-    eval {
-	alarm ($maxwait * 60);
-	
-	local $SIG{ALRM} = sub { alarm (0); die "got timeout\n"; };
-
-	if (!flock (SERVER_FLCK, LOCK_EX)) {
-	    my $err = $!;
-	    close (SERVER_FLCK);
-	    alarm (0);
-	    die "$err\n";
+	if (!$maxwait) {
+	    debugmsg ('err', "can't aquire lock '$lockfile' (wait = 0)", undef, 1);
+	    die "can't aquire lock '$lockfile' (wait = 0)";
 	}
-	alarm (0);
-    };
-    alarm (0);
-    
-    my $err = $@;
 
-    if ($err) {
-	debugmsg ('err', "can't aquire lock '$lockfile' - $err", undef, 1);
-	die "can't aquire lock '$lockfile' - $err";
+	debugmsg('info', "trying to get global lock - waiting...", undef, 1);
+
+	eval {
+	    alarm ($maxwait * 60);
+	
+	    local $SIG{ALRM} = sub { alarm (0); die "got timeout\n"; };
+
+	    if (!flock (SERVER_FLCK, LOCK_EX)) {
+		my $err = $!;
+		close (SERVER_FLCK);
+		alarm (0);
+		die "$err\n";
+	    }
+	    alarm (0);
+	};
+	alarm (0);
+    
+	my $err = $@;
+	
+	if ($err) {
+	    debugmsg ('err', "can't aquire lock '$lockfile' - $err", undef, 1);
+	    die "can't aquire lock '$lockfile' - $err";
+	}
+
+	debugmsg('info', "got global lock", undef, 1);
     }
 
-    debugmsg('info', "got global lock", undef, 1);
+    PVE::Tools::file_set_contents($pidfile, $upid);
 }
 
 sub run_hook_script {
@@ -1026,11 +1022,6 @@ sub exec_backup {
 
     my $opts = $self->{opts};
 
-    if ($opts->{stop}) {
-	stop_all_backups($self);
-	return;
-    }
-
     debugmsg ('info', "starting new backup job: $self->{cmdline}", undef, 1);
     debugmsg ('info', "skip external VMs: " . join(', ', @{$self->{skiplist}}))
 	if scalar(@{$self->{skiplist}});
@@ -1185,7 +1176,7 @@ my $confdesc = {
     }),
     stop => {
 	type => 'boolean',
-	description => "Stop all current runnig backup jobs on this host.",
+	description => "Stop runnig backup jobs on this host.",
 	optional => 1,
 	default => 0,
     },
@@ -1254,7 +1245,7 @@ sub verify_vzdump_parameters {
     my ($param, $check_missing) = @_;
 
     raise_param_exc({ all => "option conflicts with option 'vmid'"})
-	if ($param->{all} || $param->{stop}) && $param->{vmid};
+	if $param->{all} && $param->{vmid};
 
     raise_param_exc({ exclude => "option conflicts with option 'vmid'"})
 	if $param->{exclude} && $param->{vmid};
@@ -1268,29 +1259,25 @@ sub verify_vzdump_parameters {
 
 }
 
-sub stop_all_backups {
+sub stop_running_backups {
     my($self) = @_;
 
-    return if ! -e $pidfile;
+    my $upid = PVE::Tools::file_read_firstline($pidfile);
+    return if !$upid;
 
-    my @param = split(/\n/,PVE::Tools::file_get_contents($pidfile));
-    my $pid;
-    my $stime;
+    my $task = PVE::Tools::upid_decode($upid);
 
-    if ($param[0] =~ /^([-\@\w.]+)$/){
-	$pid = $1;
+    if (PVE::ProcFSTools::check_process_running($task->{pid}, $task->{pstart}) && 
+	PVE::ProcFSTools::read_proc_starttime($task->{pid}) == $task->{pstart}) {
+	kill(15, $task->{pid});
+	# wait max 15 seconds to shut down (else, do nothing for now)
+	my $i;
+	for ($i = 15; $i > 0; $i--) {
+	    last if !PVE::ProcFSTools::check_process_running(($task->{pid}, $task->{pstart}));
+	    sleep (1);
+	}
+	die "stoping backup process $task->{pid} failed\n" if $i == 0;
     }
-    if ($param[1] =~/^([-\@\w.]+)$/){
-	$stime = $1;
-    }
-
-    if(PVE::ProcFSTools::check_process_running($pid, $stime) && 
-       PVE::ProcFSTools::read_proc_starttime($pid) == $stime){
-	print "toll";
-	kill(15,$pid);
-    }
-
-    unlink $pidfile;
 }
 
 sub command_line {

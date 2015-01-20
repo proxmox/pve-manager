@@ -1,5 +1,9 @@
 pve-manager (3.3-11) unstable; urgency=low
 
+  * Fix backup failure at shutdown (stop backup on host shutdown)
+  
+  * vzdump: new option --stop to abort running backup job
+  
   * Support additional e1000 variants for VM machines
 
  -- Proxmox Support Team <support@proxmox.com>  Tue, 20 Jan 2015 07:17:34 +0100

@@ -29,6 +29,7 @@ $rpcenv->set_user('root@pam');
 my $cmddef = [ 'PVE::API2::VZDump', 'vzdump', 'vmid', undef, 
 	       sub {
 		   my $upid = shift;
+		   exit(0) if $upid eq 'OK';
 		   my $status = PVE::Tools::upid_read_status($upid);
 		   exit($status eq 'OK' ? 0 : -1);
 	       }];

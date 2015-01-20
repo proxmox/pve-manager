@@ -62,16 +62,17 @@ __PACKAGE__->register_method ({
 	PVE::VZDump::verify_vzdump_parameters($param, 1);
 
 	# silent exit if we run on wrong node
-	exit(0) if $param->{node} && $param->{node} ne $nodename;
+	return 'OK' if $param->{node} && $param->{node} ne $nodename;
 	
-	if($param->{stop}){
-	    PVE::VZDump::stop_all_backups;
-	}
-
 	my $cmdline = PVE::VZDump::command_line($param);
 
 	# convert string lists to arrays
 	my @vmids = PVE::Tools::split_list(extract_param($param, 'vmid'));
+
+	if($param->{stop}){
+	    PVE::VZDump::stop_running_backups();
+	    return 'OK' if !scalar(@vmids);
+	}
 
 	my $skiplist = [];
 	if (!$param->{all}) {
@@ -88,7 +89,7 @@ __PACKAGE__->register_method ({
 		}
 		@vmids = @localvmids;
 		# silent exit if specified VMs run on other nodes
-		exit(0) if !scalar(@vmids);
+		return "OK" if !scalar(@vmids);
 	    }
 
 	    $param->{vmids} = PVE::VZDump::check_vmids(@vmids)
@@ -122,15 +123,17 @@ __PACKAGE__->register_method ({
 	my $vzdump = PVE::VZDump->new($cmdline, $param, $skiplist);
 
 	my $worker = sub {
+	    my $upid = shift;
+
 	    $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = $SIG{HUP} = $SIG{PIPE} = sub {
 		die "interrupted by signal\n";
 	    };
 
 	    eval {
-		$vzdump->getlock(); # only one process allowed
+		$vzdump->getlock($upid); # only one process allowed
 	    };
-	    if ($@) {
-		$vzdump->sendmail([], 0, $@);
+	    if (my $err = $@) {
+		$vzdump->sendmail([], 0, $err);
 		exit(-1);
 	    }
 
