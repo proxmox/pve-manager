@@ -12,10 +12,9 @@ case "$1" in
 		echo "Detected old pve-manager version - using stop/start to restart daemons"
 		for i in ${DAEMONS}; do
 		    if [ -e "/usr/bin/$i" ]; then
-			/usr/bin/$i stop
+			service $i stop
 		    fi
 		done
-
 		sleep 2
 	    fi
 	fi
