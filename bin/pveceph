@@ -86,7 +86,7 @@ __PACKAGE__->register_method ({
 	properties => {
 	    version => {
 		type => 'string',
-		enum => ['dumpling', 'emperor', 'firefly'],
+		enum => ['dumpling', 'emperor', 'firefly', 'giant'],
 		optional => 1,
 	    }
 	},
