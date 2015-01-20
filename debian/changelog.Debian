@@ -1,3 +1,9 @@
+pve-manager (3.3-11) unstable; urgency=low
+
+  * Support additional e1000 variants for VM machines
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 20 Jan 2015 07:17:34 +0100
+
 pve-manager (3.3-10) unstable; urgency=low
 
   * fix restart behavior
