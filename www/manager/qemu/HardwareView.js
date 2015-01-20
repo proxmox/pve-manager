@@ -69,12 +69,18 @@ Ext.define('PVE.qemu.HardwareView', {
 		    var sockets = me.getObjectValue('sockets', 1, pending);
 		    var model = me.getObjectValue('cpu', undefined, pending);
 		    var cores = me.getObjectValue('cores', 1, pending);
+		    var numa = me.getObjectValue('numa', undefined, pending);
 
 		    var res = (sockets*cores) + ' (' + sockets + ' sockets, ' + cores + ' cores)';
 		    
 		    if (model) {
 			res += ' [' + model + ']';
 		    }
+
+		    if (numa) {
+			res += ' [numa=' + numa +']';
+		    }
+
 		    return res;
 		}
 	    },
@@ -98,6 +104,9 @@ Ext.define('PVE.qemu.HardwareView', {
 		visible: false
 	    },
 	    cpu: {
+		visible: false
+	    },
+	    numa: {
 		visible: false
 	    },
 	    balloon: {

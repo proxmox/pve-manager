@@ -37,7 +37,14 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 			me.down('field[name=totalcores]').setValue(sockets*cores);
 		    }
 		}
-	    }
+	    },
+	    {
+		xtype: 'pvecheckbox',
+		fieldLabel: gettext('Enable numa'),
+		name: 'numa',
+		uncheckedValue: 0,
+	    },
+
 	];
 
 
