@@ -3,6 +3,8 @@ pve-manager (3.3-12) unstable; urgency=low
   * add numa option to processor form
   
   * fix rendering of pending processor values
+  
+  * GUI: dynamically update VM config every 5 seconds
 
  -- Proxmox Support Team <support@proxmox.com>  Wed, 21 Jan 2015 08:39:16 +0100
 
