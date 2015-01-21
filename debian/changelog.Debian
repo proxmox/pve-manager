@@ -1,3 +1,11 @@
+pve-manager (3.3-12) unstable; urgency=low
+
+  * add numa option to processor form
+  
+  * fix rendering of pending processor values
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 21 Jan 2015 08:39:16 +0100
+
 pve-manager (3.3-11) unstable; urgency=low
   
   * New 'disconnect' button on the network edit pannel.
