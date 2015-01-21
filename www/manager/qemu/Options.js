@@ -123,7 +123,7 @@ Ext.define('PVE.qemu.Options', {
 	    },
 	    hotplug: {
 		header: gettext('Hotplug'),
-		defaultValue: '',
+		defaultValue: true,
 		renderer: PVE.Utils.format_boolean,
 		editor: caps.vms['VM.Config.HWType'] ? {
 		    xtype: 'pveWindowEdit',
@@ -132,7 +132,7 @@ Ext.define('PVE.qemu.Options', {
 			xtype: 'pvecheckbox',
 			name: 'hotplug',
 			uncheckedValue: 0,
-			defaultValue: 0,
+			defaultValue: 1,
 			deleteDefaultValue: true,
 			fieldLabel: gettext('Hotplug')
 		    }
