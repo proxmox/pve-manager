@@ -74,7 +74,10 @@ Ext.define('PVE.node.Subscription', {
 	    checktime: {
 		header: gettext('Last checked'),
 		renderer: PVE.Utils.render_timestamp
-	    }	    
+	    },
+	    nextduedate: {
+		header: gettext('Next due date'),
+	    }
 	};
 
 	Ext.applyIf(me, {
