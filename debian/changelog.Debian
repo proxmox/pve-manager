@@ -1,3 +1,9 @@
+pve-manager (3.3-13) unstable; urgency=low
+
+  * PendingObjectGrid: improve detection of pending changes
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 22 Jan 2015 12:57:21 +0100
+
 pve-manager (3.3-12) unstable; urgency=low
 
   * add numa option to processor form
