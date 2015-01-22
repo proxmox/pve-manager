@@ -63,7 +63,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		    'PVE.qemu.ProcessorEdit' : undefined,
 		tdCls: 'pve-itype-icon-processor',
 		defaultValue: 1,
-		multiValues: 1,
+		multiKey: ['sockets', 'cpu', 'cores', 'numa'],
 		renderer: function(value, metaData, record, rowIndex, colIndex, store, pending) {
 
 		    var sockets = me.getObjectValue('sockets', 1, pending);
@@ -390,23 +390,22 @@ Ext.define('PVE.qemu.HardwareView', {
 		    return false;
 		}
 
-		if (Ext.isDefined(rec.data.pending) && (rec.data.pending !== '')) {
-		    return true;
-		}
-
 		if (rec.data['delete']) {
 		    return true;
 		}
 
-		return false;    
+		return me.hasPendingChanges(rec.data.key);
 	    },
 	    handler: function(b, e, rec) {
+		var rowdef = me.rows[rec.data.key] || {};
+		var keys = rowdef.multiKey ||  [ rec.data.key ];
+		var revert = keys.join(',');
 		PVE.Utils.API2Request({
 		    url: '/api2/extjs/' + baseurl,
 		    waitMsgTarget: me,
 		    method: 'PUT',
 		    params: {
-			'revert': rec.data.key
+			'revert': revert
 		    },
 		    callback: function() {
 			reload();

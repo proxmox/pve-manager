@@ -18,6 +18,23 @@ Ext.define('PVE.grid.PendingObjectGrid', {
 	return defaultValue;
     },
 
+    hasPendingChanges: function(key) {
+	var me = this;
+	var rows = me.rows;
+	var rowdef = (rows && rows[key]) ?  rows[key] : {};
+	var keys = rowdef.multiKey ||  [ key ];
+	var pending = false;
+
+	Ext.Array.each(keys, function(k) {
+	    var rec = me.store.getById(k);
+	    if (rec && rec.data && Ext.isDefined(rec.data.pending) && (rec.data.pending !== '')) {
+		pending = true;
+	    }
+	});
+
+	return pending;
+    },
+
     renderValue: function(value, metaData, record, rowIndex, colIndex, store) {
 	var me = this;
 	var rows = me.rows;
@@ -30,7 +47,7 @@ Ext.define('PVE.grid.PendingObjectGrid', {
 
 	if (renderer) {
 	    current = renderer(value, metaData, record, rowIndex, colIndex, store, false);
-	    if ((Ext.isDefined(record.data.pending) && (record.data.pending !== '')) || rowdef.multiValues) {
+	    if (me.hasPendingChanges(key)) {
 		pending = renderer(record.data.pending, metaData, record, rowIndex, colIndex, store, true);
 	    }
 	    if (pending == current) {
