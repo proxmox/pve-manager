@@ -338,15 +338,12 @@ Ext.define('PVE.qemu.Options', {
 		return;
 	    }
 
-	    if ((Ext.isDefined(rec.data.pending) && (rec.data.pending !== '')) || 
-		rec.data['delete']) {
-		revert_btn.setDisabled(false);
-            } else {
-                revert_btn.setDisabled(true);
-	    }
+	    var key = rec.data.key;
+	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
+	    var rowdef = rows[key];
 
-	    var rowdef = rows[rec.data.key];
 	    edit_btn.setDisabled(!rowdef.editor);
+	    revert_btn.setDisabled(!pending);
 	};
 
 	Ext.applyIf(me, {
@@ -366,6 +363,10 @@ Ext.define('PVE.qemu.Options', {
 	me.on('show', me.rstore.startUpdate);
 	me.on('hide', me.rstore.stopUpdate);
 	me.on('destroy', me.rstore.stopUpdate);	
+
+	me.rstore.on('datachanged', function() {
+	    set_button_status();
+	});
     }
 });
 

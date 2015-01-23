@@ -277,16 +277,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    text: gettext('Edit'),
 	    selModel: sm,
 	    disabled: true,
-	    enableFn: function(rec) {
-		if (!rec) {
-		    return false;
-		}
-		if(rec.data['delete']){
-		    return false;
-		}
-		var rowdef = rows[rec.data.key];
-		return !!rowdef.editor;
-	    },
 	    handler: run_editor
         });
 
@@ -294,16 +284,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    text: gettext('Resize disk'),
 	    selModel: sm,
 	    disabled: true,
-	    enableFn: function(rec) {
-		if (!rec || rec.data.key.match(/^unused\d+/) || rec.data['delete']) {
-		    return false;
-		}
-		if (Ext.isDefined(rec.data.pending) && (rec.data.pending !== '')) {
-		    return false;
-		}
-		var rowdef = rows[rec.data.key];
-		return rowdef.tdCls == 'pve-itype-icon-storage' && !rec.data.value.match(/media=cdrom/);
-	    },
 	    handler: run_resize
 	});
 
@@ -311,16 +291,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    text: gettext('Move disk'),
 	    selModel: sm,
 	    disabled: true,
-	    enableFn: function(rec) {
-		if (!rec || rec.data.key.match(/^unused\d+/)) {
-		    return false;
-		}
-		if(rec.data['pending'] || rec.data['delete']){
-		    return false;
-		}
-		var rowdef = rows[rec.data.key];
-		return rowdef.tdCls == 'pve-itype-icon-storage' && !rec.data.value.match(/media=cdrom/);
-	    },
 	    handler: run_move
 	});
 
@@ -328,13 +298,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    text: gettext('Disk Throttle'),
 	    selModel: sm,
 	    disabled: true,
-	    enableFn: function(rec) {
-		if (!rec || rec.data.key.match(/^unused\d+/)) {
-		    return false;
-		}
-		var rowdef = rows[rec.data.key];
-		return rowdef.tdCls == 'pve-itype-icon-storage' && !rec.data.value.match(/media=cdrom/);
-	    },
 	    handler: run_diskthrottle
 	});
 
@@ -351,17 +314,6 @@ Ext.define('PVE.qemu.HardwareView', {
 		}
 
 		return msg;
-	    },
-	    enableFn: function(rec) {
-		if (!rec) {
-		    return false;
-		}
-		if (rec.data['delete']) {
-		    return false;
-		}
-		var rowdef = rows[rec.data.key];
-
-		return rowdef.never_delete !== true;    
 	    },
 	    handler: function(b, e, rec) {
 		PVE.Utils.API2Request({
@@ -385,17 +337,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    text: gettext('Revert'),
 	    selModel: sm,
 	    disabled: true,
-	    enableFn: function(rec) {
-		if (!rec) {
-		    return false;
-		}
-
-		if (rec.data['delete']) {
-		    return true;
-		}
-
-		return me.hasPendingChanges(rec.data.key);
-	    },
 	    handler: function(b, e, rec) {
 		var rowdef = me.rows[rec.data.key] || {};
 		var keys = rowdef.multiKey ||  [ rec.data.key ];
@@ -416,6 +357,40 @@ Ext.define('PVE.qemu.HardwareView', {
 		});
 	    }
 	});
+
+	var set_button_status = function() {
+	    var sm = me.getSelectionModel();
+	    var rec = sm.getSelection()[0];
+
+	    if (!rec) {
+		remove_btn.disable();
+		edit_btn.disable();
+		resize_btn.disable();
+		move_btn.disable();
+		diskthrottle_btn.disable();
+		revert_btn.disable();
+		return;
+	    }
+	    var key = rec.data.key;
+	    var value = rec.data.value;
+	    var rowdef = rows[key];
+
+	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
+	    var isDisk = !key.match(/^unused\d+/) && 
+		(rowdef.tdCls == 'pve-itype-icon-storage' && !value.match(/media=cdrom/));
+
+	    remove_btn.setDisabled(rec.data['delete'] || (rowdef.never_delete === true));
+
+	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor);
+
+	    resize_btn.setDisabled(pending || !isDisk);
+
+	    move_btn.setDisabled(pending || !isDisk);
+
+	    diskthrottle_btn.setDisabled(pending || !isDisk);
+
+	    revert_btn.setDisabled(!pending);
+	};
 
 	Ext.applyIf(me, {
 	    url: '/api2/json/' + 'nodes/' + nodename + '/qemu/' + vmid + '/pending',
@@ -479,7 +454,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	    rows: rows,
 	    sorterFn: sorterFn,
 	    listeners: {
-		itemdblclick: run_editor
+		itemdblclick: run_editor,
+		selectionchange: set_button_status
 	    }
 	});
 
@@ -489,5 +465,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	me.on('hide', me.rstore.stopUpdate);
 	me.on('destroy', me.rstore.stopUpdate);	
 
+	me.rstore.on('datachanged', function() {
+	    set_button_status();
+	});
     }
 });
