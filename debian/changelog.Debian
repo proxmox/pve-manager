@@ -1,3 +1,9 @@
+pve-manager (3.3-14) unstable; urgency=low
+
+  * HardwareView: correctly enable/disable buttons
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Jan 2015 09:13:09 +0100
+
 pve-manager (3.3-13) unstable; urgency=low
 
   * PendingObjectGrid: improve detection of pending changes
