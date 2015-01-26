@@ -11,17 +11,17 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    autoLoad: {}, // true,
-	    fields: [ 'vg', 'size', 'free' ],
+	    fields: [ 'pool', 'size', 'free' ],
 	    proxy: {
 		type: 'pve',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/lvm'
+		url: '/api2/json/nodes/' + me.nodename + '/scan/zfs'
 	    }
 	});
 
 	Ext.apply(me, {
 	    store: store,
-	    valueField: 'vg',
-	    displayField: 'vg',
+	    valueField: 'pool',
+	    displayField: 'pool',
 	    queryMode: 'local',
 	    editable: false,
 	    listConfig: {
@@ -72,16 +72,29 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 		fieldLabel: 'ID',
 		vtype: 'StorageId',
 		allowBlank: false
-	    },
-	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
-		name: 'pool',
-		height: 22, // hack: set same height as text fields
-		value: '',
-		fieldLabel: gettext('Pool'),
-		allowBlank: false
 	    }
 	];
+
+	var zfspoolnameField = Ext.createWidget(me.create ? 'textfield' : 'displayfield', {
+	    height: 22, // hack: set same height as text fields
+	    name: 'poolname',
+	    hidden: !!me.create,
+	    disabled: !!me.create,
+	    value: '',
+	    fieldLabel: gettext('ZFS Pool'),
+	    allowBlank: false
+	});
+	
+	if (me.create) {
+	    var zfspoolField = Ext.create('PVE.storage.ZFSPoolSelector', {
+		name: 'pool',
+		fieldLabel: gettext('ZFS Pool'),
+		allowBlank: false
+	    });
+	    me.column1.push(zfspoolField);
+	}
+
+	me.column1.push(zfspoolnameField);
 
 	me.column2 = [
 	    {
