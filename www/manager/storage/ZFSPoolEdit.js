@@ -95,7 +95,7 @@ Ext.define('PVE.storage.ZFSPoolEdit', {
 	});
 
 	Ext.apply(me, {
-            subject: 'ZFSPool Storage',
+            subject: 'ZFS Storage',
 	    isAdd: true,
 	    items: [ ipanel ]
 	});
