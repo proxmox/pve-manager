@@ -1,3 +1,46 @@
+Ext.define('PVE.storage.ZFSPoolSelector', {
+    extend: 'Ext.form.field.ComboBox',
+    alias: 'widget.pveZFSPoolSelector',
+
+    initComponent : function() {
+	var me = this;
+
+	if (!me.nodename) {
+	    me.nodename = 'localhost';
+	}
+
+	var store = Ext.create('Ext.data.Store', {
+	    autoLoad: {}, // true,
+	    fields: [ 'vg', 'size', 'free' ],
+	    proxy: {
+		type: 'pve',
+		url: '/api2/json/nodes/' + me.nodename + '/scan/lvm'
+	    }
+	});
+
+	Ext.apply(me, {
+	    store: store,
+	    valueField: 'vg',
+	    displayField: 'vg',
+	    queryMode: 'local',
+	    editable: false,
+	    listConfig: {
+		loadingText: gettext('Scanning...'),
+		listeners: {
+		    // hack: call setHeight to show scroll bars correctly
+		    refresh: function(list) {
+			var lh = PVE.Utils.gridLineHeigh();
+			var count = store.getCount();
+			list.setHeight(lh * ((count > 10) ? 10 : count));
+		    }
+		}
+	    }
+	});
+
+	me.callParent();
+    }
+});
+
 Ext.define('PVE.storage.ZFSPoolInputPanel', {
     extend: 'PVE.panel.InputPanel',
 
