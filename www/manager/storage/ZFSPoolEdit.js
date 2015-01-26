@@ -1,11 +1,11 @@
-Ext.define('PVE.storage.ZFSInputPanel', {
+Ext.define('PVE.storage.ZFSPoolInputPanel', {
     extend: 'PVE.panel.InputPanel',
 
     onGetValues: function(values) {
 	var me = this;
 
 	if (me.create) {
-	    values.type = 'zfs';
+	    values.type = 'zfspool';
 	    values.content = 'images';
 	} else {
 	    delete values.storage;
@@ -32,43 +32,11 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	    },
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
-		name: 'portal',
-		height: 22, // hack: set same height as text fields
-		value: '',
-		fieldLabel: gettext('Portal'),
-		allowBlank: false
-	    },
-	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'pool',
 		height: 22, // hack: set same height as text fields
 		value: '',
 		fieldLabel: gettext('Pool'),
 		allowBlank: false
-	    },
-	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
-		name: 'blocksize',
-		height: 22, // hack: set same height as text fields
-		value: '4k',
-		fieldLabel: gettext('Block Size'),
-		allowBlank: false
-	    },
-	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
-		name: 'target',
-		height: 22, // hack: set same height as text fields
-		value: '',
-		fieldLabel: gettext('Target'),
-		allowBlank: false
-	    },
-	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
-		name: 'comstar_tg',
-		height: 22, // hack: set same height as text fields
-		value: '',
-		fieldLabel: gettext('Target group'),
-		allowBlank: true
 	    }
 	];
 
@@ -81,35 +49,12 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		fieldLabel: gettext('Enable')
 	    },
 	    {
-		xtype: me.create ? 'pveiScsiProviderSelector' : 'displayfield',
-		name: 'iscsiprovider',
-		height: 22, // hack: set same height as text fields
-		value: 'comstar',
-		fieldLabel: gettext('iSCSI Provider'),
-		allowBlank: false
-	    },
-	    {
 		xtype: 'pvecheckbox',
 		name: 'sparse',
 		checked: false,
 		uncheckedValue: 0,
 		fieldLabel: gettext('Thin provision')
-	    },
-	    {
-		xtype: 'pvecheckbox',
-		name: 'nowritecache',
-		checked: true,
-		uncheckedValue: 0,
-		fieldLabel: gettext('Write cache')
-	    },
-	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
-		name: 'comstar_hg',
-		height: 22, // hack: set same height as text fields
-		value: '',
-		fieldLabel: gettext('Host group'),
-		allowBlank: true
-	    }
+	    }	    
 	];
 
 	if (me.create || me.storageId !== 'local') {
@@ -128,7 +73,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
     }
 });
 
-Ext.define('PVE.storage.ZFSEdit', {
+Ext.define('PVE.storage.ZFSPoolEdit', {
     extend: 'PVE.window.Edit',
     
     initComponent : function() {
@@ -144,13 +89,13 @@ Ext.define('PVE.storage.ZFSEdit', {
             me.method = 'PUT';
         }
 
-	var ipanel = Ext.create('PVE.storage.ZFSInputPanel', {
+	var ipanel = Ext.create('PVE.storage.ZFSPoolInputPanel', {
 	    create: me.create,
 	    storageId: me.storageId
 	});
 
 	Ext.apply(me, {
-            subject: 'ZFS Storage',
+            subject: 'ZFSPool Storage',
 	    isAdd: true,
 	    items: [ ipanel ]
 	});
