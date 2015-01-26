@@ -714,6 +714,8 @@ Ext.define('PVE.Utils', { statics: {
 	    return 'Sheepdog';
 	} else if (value === 'zfs') {
 	    return 'ZFS';
+	} else if (value === 'zfspool') {
+	    return 'ZFSPool';
 	} else if (value === 'iscsidirect') {
 	    return 'iSCSIDirect';
 	} else {

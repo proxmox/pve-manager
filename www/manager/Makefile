@@ -161,6 +161,7 @@ JSSRC= 				                 	\
 	storage/RBDEdit.js				\
 	storage/SheepdogEdit.js				\
 	storage/ZFSEdit.js				\
+	storage/ZFSPoolEdit.js				\
 	dc/Summary.js					\
 	dc/OptionView.js				\
 	dc/StorageView.js				\

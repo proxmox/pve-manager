@@ -49,6 +49,8 @@ Ext.define('PVE.dc.StorageView', {
 		editor = 'PVE.storage.SheepdogEdit';
 	    } else if (type === 'zfs') {
 		editor = 'PVE.storage.ZFSEdit';
+	    } else if (type === 'zfspool') {
+		editor = 'PVE.storage.ZFSPoolEdit';
 	    } else {
 		return;
 	    }
@@ -165,7 +167,17 @@ Ext.define('PVE.dc.StorageView', {
 				    win.on('destroy', reload);
 				    win.show();
 				}
-			    }
+			    },
+			    {
+                                text: PVE.Utils.format_storage_type('zfspool'),
+                                iconCls: 'pve-itype-icon-storage',
+                                handler: function() {
+                                    var win = Ext.create('PVE.storage.ZFSPoolEdit', {});
+                                    win.on('destroy', reload);
+                                    win.show();
+                                }
+                            },
+
 /* the following type are conidered unstable
  * so we do not enable that on the GUI for now
 			    {
