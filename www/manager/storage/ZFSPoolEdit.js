@@ -75,26 +75,21 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	    }
 	];
 
-	var zfspoolnameField = Ext.createWidget(me.create ? 'textfield' : 'displayfield', {
-	    height: 22, // hack: set same height as text fields
-	    name: 'poolname',
-	    hidden: !!me.create,
-	    disabled: !!me.create,
-	    value: '',
-	    fieldLabel: gettext('ZFS Pool'),
-	    allowBlank: false
-	});
-	
 	if (me.create) {
-	    var zfspoolField = Ext.create('PVE.storage.ZFSPoolSelector', {
+	    me.column1.push(Ext.create('PVE.storage.ZFSPoolSelector', {
 		name: 'pool',
 		fieldLabel: gettext('ZFS Pool'),
 		allowBlank: false
-	    });
-	    me.column1.push(zfspoolField);
+	    }));
+	} else {
+	    me.column1.push(Ext.createWidget('displayfield', {
+		height: 22, // hack: set same height as text fields
+		name: 'pool',
+		value: '',
+		fieldLabel: gettext('ZFS Pool'),
+		allowBlank: false
+	    }));
 	}
-
-	me.column1.push(zfspoolnameField);
 
 	me.column2 = [
 	    {
