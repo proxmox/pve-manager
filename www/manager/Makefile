@@ -55,6 +55,7 @@ JSSRC= 				                 	\
 	form/CacheTypeSelector.js			\
 	form/SnapshotSelector.js			\
 	form/ContentTypeSelector.js			\
+	form/HotplugFeatureSelector.js			\
 	form/iScsiProviderSelector.js			\
 	form/DayOfWeekSelector.js			\
 	form/BackupModeSelector.js			\

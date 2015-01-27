@@ -93,6 +93,32 @@ Ext.define('PVE.Utils', { statics: {
 	return value;
     },
 
+    render_hotplug_features: function (value) {
+ 	var fa = [];
+
+	if (!value || (value === '0')) {
+	    return gettext('disabled');
+	}
+
+	Ext.each(value.split(','), function(el) {
+	    if (el === 'disk') {
+		fa.push(gettext('Disk'));
+	    } else if (el === 'network') {
+		fa.push(gettext('Network'));
+	    } else if (el === 'usb') {
+		fa.push(gettext('USB'));
+	    } else if (el === 'memory') {
+		fa.push(gettext('Memory'));
+	    } else if (el === 'cpu') {
+		fa.push(gettext('CPU'));
+	    } else {
+		fa.push(el);
+	    }
+	});
+
+	return fa.join(', ');
+    },
+
     network_iface_types: {
 	eth: gettext("Network Device"),
 	bridge: 'Linux Bridge',
