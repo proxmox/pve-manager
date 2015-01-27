@@ -1,3 +1,11 @@
+pve-manager (3.3-15) unstable; urgency=low
+
+  * GUI: implement hotplug feature selector
+  
+  * GUI: add UI for local ZFS storage
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 27 Jan 2015 12:37:36 +0100
+
 pve-manager (3.3-14) unstable; urgency=low
 
   * HardwareView: correctly enable/disable buttons
