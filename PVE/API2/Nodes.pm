@@ -1282,6 +1282,11 @@ __PACKAGE__->register_method ({
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
+	    force => {
+		optional => 1,
+		type => 'boolean',
+		description => "force if onboot=0.",
+	    },
 	},
     },
     returns => {
@@ -1296,6 +1301,8 @@ __PACKAGE__->register_method ({
 	my $nodename = $param->{node};
 	$nodename = PVE::INotify::nodename() if $nodename eq 'localhost';
 
+	my $force = $param->{force};
+
 	my $code = sub {
 
 	    $rpcenv->{type} = 'priv'; # to start tasks in background
@@ -1305,8 +1312,8 @@ __PACKAGE__->register_method ({
 		last if PVE::Cluster::check_cfs_quorum($i != 0 ? 1 : 0);
 		sleep(1);
 	    }
-	
-	    my $startList = &$get_start_stop_list($nodename, 1);
+	    my $autostart = $force ? undef : 1;
+	    my $startList = &$get_start_stop_list($nodename, $autostart);
 
 	    # Note: use numeric sorting with <=>
 	    foreach my $order (sort {$a <=> $b} keys %$startList) {
