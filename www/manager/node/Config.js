@@ -29,6 +29,37 @@ Ext.define('PVE.node.Config', {
 	    });
 	};
 
+	var startallvmBtn = Ext.create('PVE.button.Button', {
+	    text: gettext('Start All VMs'),
+	    confirmMsg: Ext.String.format(gettext("Do you really want to start all Vms on  node {0}?"), nodename),
+	    handler: function() {
+		PVE.Utils.API2Request({
+		    params: { force: 1 },
+		    url: '/nodes/' + nodename + '/startall',
+		    method: 'POST',
+		    waitMsgTarget: me,
+			failure: function(response, opts) {
+			Ext.Msg.alert('Error', response.htmlStatus);
+		    }
+		});
+	    }
+	});
+
+	var stopallvmBtn = Ext.create('PVE.button.Button', {
+	    text: gettext('Stop All VMs'),
+	    confirmMsg: Ext.String.format(gettext("Do you really want to stop all Vms on  node {0}?"), nodename),
+	    handler: function() {
+		PVE.Utils.API2Request({
+		    url: '/nodes/' + nodename + '/stopall',
+		    method: 'POST',
+		    waitMsgTarget: me,
+			failure: function(response, opts) {
+			Ext.Msg.alert('Error', response.htmlStatus);
+		    }
+		});
+	    }
+	});
+
 	var restartBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Restart'),
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
@@ -60,7 +91,7 @@ Ext.define('PVE.node.Config', {
 	    title: gettext('Node') + " '" + nodename + "'",
 	    hstateid: 'nodetab',
 	    defaults: { statusStore: me.statusStore },
-	    tbar: [ restartBtn, shutdownBtn, shellBtn ]
+	    tbar: [ startallvmBtn, stopallvmBtn, restartBtn, shutdownBtn, shellBtn ]
 	});
 
 	if (caps.nodes['Sys.Audit']) {
