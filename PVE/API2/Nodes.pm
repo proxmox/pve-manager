@@ -190,6 +190,7 @@ __PACKAGE__->register_method({
     },
     method => 'GET',
     proxyto => 'node',
+    proxyto => 'node',
     protected => 1, # openvz /proc entries are only readable by root
     description => "Get user_beancounters failcnt for all active containers.",
     parameters => {
@@ -1277,6 +1278,7 @@ __PACKAGE__->register_method ({
     path => 'startall', 
     method => 'POST',
     protected => 1,
+    proxyto => 'node',
     description => "Start all VMs and containers (when onboot=1).",
     parameters => {
     	additionalProperties => 0,
@@ -1403,6 +1405,7 @@ __PACKAGE__->register_method ({
     path => 'stopall', 
     method => 'POST',
     protected => 1,
+    proxyto => 'node',
     description => "Stop all VMs and Containers.",
     parameters => {
     	additionalProperties => 0,
@@ -1465,6 +1468,105 @@ __PACKAGE__->register_method ({
 
 	return $rpcenv->fork_worker('stopall', undef, $authuser, $code);
 	
+    }});
+
+my $create_migrate_worker = sub {
+    my ($nodename, $type, $vmid, $target) = @_;
+
+    my $upid;
+    if ($type eq 'openvz') {
+	my $online = PVE::OpenVZ::check_running($vmid) ? 1 : 0;
+	print STDERR "Migrating CT $vmid\n";
+	$upid = PVE::API2::OpenVZ->migrate_vm({node => $nodename, vmid => $vmid, target => $target,
+						online => $online });
+    } elsif ($type eq 'qemu') {
+	my $online = PVE::QemuServer::check_running($vmid, 1) ? 1 : 0;
+	print STDERR "Migrating VM $vmid\n";
+	$upid = PVE::API2::Qemu->migrate_vm({node => $nodename, vmid => $vmid, target => $target,
+					      online => $online });
+    } else {
+	die "unknown VM type '$type'\n";
+    }
+
+    my $res = PVE::Tools::upid_decode($upid);
+
+    return $res->{pid};
+};
+
+__PACKAGE__->register_method ({
+    name => 'migrateall',
+    path => 'migrateall',
+    method => 'POST',
+    proxyto => 'node',
+    protected => 1,
+    description => "Migrate all VMs and Containers.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+            target => get_standard_option('pve-node', { description => "Target node." }),
+            maxworkers => {
+                description => "Max parralel migration job.",
+                type => 'integer',
+                minimum => 1
+            },
+	},
+    },
+    returns => {
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+
+	my $nodename = $param->{node};
+	$nodename = PVE::INotify::nodename() if $nodename eq 'localhost';
+
+        my $target = $param->{target};
+        my $maxWorkers = $param->{maxworkers};
+
+	my $code = sub {
+
+	    $rpcenv->{type} = 'priv'; # to start tasks in background
+
+	    my $migrateList = &$get_start_stop_list($nodename);
+
+	    foreach my $order (sort {$b <=> $a} keys %$migrateList) {
+		my $vmlist = $migrateList->{$order};
+		my $workers = {};
+		foreach my $vmid (sort {$b <=> $a} keys %$vmlist) {
+		    my $d = $vmlist->{$vmid};
+		    my $pid;
+		    eval { $pid = &$create_migrate_worker($nodename, $d->{type}, $vmid, $target); };
+		    warn $@ if $@;
+		    next if !$pid;
+
+		    $workers->{$pid} = 1;
+		    while (scalar(keys %$workers) >= $maxWorkers) {
+			foreach my $p (keys %$workers) {
+			    if (!PVE::ProcFSTools::check_process_running($p)) {
+				delete $workers->{$p};
+			    }
+			}
+			sleep(1);
+		    }
+		}
+		while (scalar(keys %$workers)) {
+		    foreach my $p (keys %$workers) {
+			if (!PVE::ProcFSTools::check_process_running($p)) {
+			    delete $workers->{$p};
+			}
+		    }
+		    sleep(1);
+		}
+	    }
+	    return;
+	};
+
+	return $rpcenv->fork_worker('migrateall', undef, $authuser, $code);
+
     }});
 
 package PVE::API2::Nodes;
