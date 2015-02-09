@@ -60,6 +60,17 @@ Ext.define('PVE.node.Config', {
 	    }
 	});
 
+	var migrateallvmBtn = Ext.create('PVE.button.Button', {
+	    text: gettext('Migrate All VMs'),
+	    handler: function() {
+                var win = Ext.create('PVE.window.MigrateAll', {
+                    nodename: nodename,
+                });
+                win.show();
+                me.mon(win, 'close', me.reload, me);
+	    }
+	});
+
 	var restartBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Restart'),
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
@@ -91,7 +102,7 @@ Ext.define('PVE.node.Config', {
 	    title: gettext('Node') + " '" + nodename + "'",
 	    hstateid: 'nodetab',
 	    defaults: { statusStore: me.statusStore },
-	    tbar: [ startallvmBtn, stopallvmBtn, restartBtn, shutdownBtn, shellBtn ]
+	    tbar: [ startallvmBtn, stopallvmBtn, migrateallvmBtn, restartBtn, shutdownBtn, shellBtn ]
 	});
 
 	if (caps.nodes['Sys.Audit']) {
