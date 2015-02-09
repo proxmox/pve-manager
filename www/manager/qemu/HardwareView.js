@@ -111,6 +111,9 @@ Ext.define('PVE.qemu.HardwareView', {
 	    },
 	    balloon: {
 		visible: false
+	    },
+	    hotplug: {
+		visible: false
 	    }
 	};
 
@@ -216,6 +219,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var win = Ext.create(editor, {
 		pveSelNode: me.pveSelNode,
 		confid: rec.data.key,
+		hotplug: me.getObjectValue('hotplug'),
 		url: '/api2/extjs/' + baseurl
 	    });
 
