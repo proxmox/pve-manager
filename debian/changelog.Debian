@@ -1,3 +1,9 @@
+pve-manager (3.3-16) unstable; urgency=low
+
+  * pveproxy: set method to tlsv1 (required for IE)
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 09 Feb 2015 11:42:56 +0100
+
 pve-manager (3.3-15) unstable; urgency=low
 
   * GUI: implement hotplug feature selector
