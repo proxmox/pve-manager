@@ -27,11 +27,13 @@ Ext.define('PVE.form.MemoryField', {
 	var current_size = min_size;
 	var value_up = min_size;
 	var value_down = min_size;
+	var value_start = min_size;
 
 	var i, j;
 	for (j = 0; j < 9; j++) {
 	    for (i = 0; i < 32; i++) {
 		if ((value >= current_size) && (value < (current_size + dimm_size))) {
+		    value_start = current_size,
 		    value_up = current_size + dimm_size;
 		    value_down = current_size - ((i === 0) ? prev_dimm_size : dimm_size);
 		}
@@ -41,7 +43,7 @@ Ext.define('PVE.form.MemoryField', {
 	    dimm_size = dimm_size*2;
 	}
 
-	return { up: value_up, down: value_down };
+	return { up: value_up, down: value_down, start: value_start };
     },
 
     onSpinUp: function() {
@@ -65,9 +67,17 @@ Ext.define('PVE.form.MemoryField', {
 
 	if (me.hotplug) {
 	    me.minValue = 1024;
+
+	    me.on('blur', function(field) {
+		value = me.getValue();
+		var res = me.computeUpDown(value);
+		if (value === res.start || value === res.up || value === res.down) {
+		    return;
+		}
+		field.setValue(res.up);
+	    });
 	}
 
         me.callParent();
-
     }
 });
