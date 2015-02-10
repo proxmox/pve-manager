@@ -31,8 +31,6 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 	var me = this;
 	var labelWidth = 160;
 
-	var hotplug = me.hotplug;
-
 	var items = [
 	    {
 		xtype: 'radiofield',
@@ -55,95 +53,58 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 	    {
 		xtype: 'numberfield',
 		name: 'memory',
-		minValue: 32,
-		maxValue: 4096*1024,
-		value: '512',
+		hotplug: me.hotplug,
+		minValue: me.hotplug ? 1024 : 32,
+		maxValue: 4178944,
+		value:  me.hotplug ? '1024' : '512',
 		step: 32,
 		fieldLabel: gettext('Memory') + ' (MB)',
 		labelAlign: 'right',
 		labelWidth: labelWidth,
 		allowBlank: false,
-		listeners: {
-                    change: function(f, value, oldvalue) {
-			var me = this;
+		computeUpDown: function(value) {
+		    var me = this;
 
-			if(!hotplug) {
-			    return;
-			}
+		    if (!me.hotplug) {
+			return { up: value + me.step, down: value - me.step };
+		    }
 
-			//fill an array with dimms size
-			var dimmarray = new Array (255);
-			var dimm_size = 512;
-			var current_size = 1024;
-			var i;
-			var j;
-			var dimm_id = 0;
-			for (j = 0; j < 8; j++) {
-			    for (i = 0; i < 32; i++) {
-				dimmarray[dimm_id] = current_size;
-				current_size += dimm_size;				
-				dimm_id++;
-			    }
-			    dimm_size *= 2;
-			}
-			//find nearest value in array
-			var k = 0, closest, closestDiff, currentDiff
-			closest = dimmarray[0];
-			for(k; k < dimmarray.length;k++) {
-			    closestDiff = Math.abs(value - closest);
-			    currentDiff = Math.abs(value - dimmarray[k]);
-			    if(currentDiff < closestDiff) {
-				closest = dimmarray[k];
-			    }
-			    closestDiff = null;
-			    currentDiff = null;
-			}
-			if(value != closest){
-			    value = closest;
-			}
-		        f.setValue(value);
+		    var dimm_size = 512;
+		    var prev_dimm_size = 0;
+		    var min_size = 1024;
+		    var current_size = min_size;
+		    var value_up = min_size;
+		    var value_down = min_size;
 
-			//dynamic step
-			if(value > oldvalue) {
-			    if(value < 16384) {
-				me.step = 512;
-			    } else if(value >= 16384 && value < 49152) {
-				me.step = 1024;
-			    } else if (value >= 49152 && value < 114688) {
-				me.step = 2048;
-			    } else if (value >= 114688 && value < 245760) {
-				me.step = 4096;
-			    } else if (value >= 245760 && value < 507904) {
-				me.step = 8192;
-			    } else if (value >= 507904 && value < 1032192) {
-				me.step = 16384;
-			    } else if (value >= 1032192 && value < 2080768) {
-				me.step = 32768;
-			    } else if (value >= 2080768 && value < 4177920) {
-				me.step = 65536;
+		    var i, j;
+		    for (j = 0; j < 9; j++) {
+			for (i = 0; i < 32; i++) {
+			    if ((value >= current_size) && (value < (current_size + dimm_size))) {
+				value_up = current_size + dimm_size;
+				value_down = current_size - ((i === 0) ? prev_dimm_size : dimm_size);
 			    }
-			} else if (value < oldvalue) {
-			    if(value <= 16384) {
-				me.step = 512;
-			    } else if(value > 16384 && value <= 49152) {
-				me.step = 1024;
-			    } else if (value > 49152 && value <= 114688) {
-				me.step = 2048;
-			    } else if (value > 114688 && value <= 245760) {
-				me.step = 4096;
-			    } else if (value > 245760 && value <= 507904) {
-				me.step = 8192;
-			    } else if (value > 507904 && value <= 1032192) {
-				me.step = 16384;
-			    } else if (value > 1032192 && value <= 2080768) {
-				me.step = 32768;
-			    } else if (value > 2080768 && value <= 4177920) {
-				me.step = 65536;
-			    }
+			    current_size += dimm_size;				
 			}
-                    }
-                }
+			prev_dimm_size = dimm_size;
+			dimm_size = dimm_size*2;
+		    }
 
+		    return { up: value_up, down: value_down };
+		},
+		onSpinUp: function() {
+		    var me = this;
+		    if (!me.readOnly) {
+			var res = me.computeUpDown(me.getValue());
+			me.setValue(Ext.Number.constrain(res.up, me.minValue, me.maxValue));
+		    }
+		},
+		onSpinDown: function() {
+		    var me = this;
+		    if (!me.readOnly) {
+			var res = me.computeUpDown(me.getValue());
+			me.setValue(Ext.Number.constrain(res.down, me.minValue, me.maxValue));
+		    }
+		}
 	    },
 	    {
 		xtype: 'radiofield',
