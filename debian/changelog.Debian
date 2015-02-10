@@ -1,3 +1,9 @@
+pve-manager (3.3-17) unstable; urgency=low
+
+  * memory form : hotplug improvements
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 10 Feb 2015 11:48:18 +0100
+
 pve-manager (3.3-16) unstable; urgency=low
 
   * pveproxy: set method to tlsv1 (required for IE)
