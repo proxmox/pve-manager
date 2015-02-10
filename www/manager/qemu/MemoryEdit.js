@@ -72,17 +72,14 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		}
 	    },
 	    {
-		xtype: 'numberfield',
+		xtype: 'pveMemoryField',
 		name: 'maxmemory',
+		hotplug: me.hotplug,
 		disabled: true,
-		minValue: 32,
-		maxValue: 512*1024,
 		value: '1024',
-		step: 32,
 		fieldLabel: gettext('Maximum memory') + ' (MB)',
 		labelAlign: 'right',
 		labelWidth: labelWidth,
-		allowBlank: false,
 		listeners: {
 		    change: function(f, value) {
 			var bf = me.down('field[name=balloon]');
