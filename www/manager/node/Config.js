@@ -28,48 +28,67 @@ Ext.define('PVE.node.Config', {
 		}
 	    });
 	};
-
-	var startallvmBtn = Ext.create('PVE.button.Button', {
-	    text: gettext('Start All VMs'),
-	    confirmMsg: Ext.String.format(gettext("Do you really want to start all Vms on  node {0}?"), nodename),
-	    handler: function() {
-		PVE.Utils.API2Request({
-		    params: { force: 1 },
-		    url: '/nodes/' + nodename + '/startall',
-		    method: 'POST',
-		    waitMsgTarget: me,
-			failure: function(response, opts) {
-			Ext.Msg.alert('Error', response.htmlStatus);
+	
+	var actionBtn = Ext.create('Ext.Button', {
+	    text: gettext('More'),
+	    disabled: !caps.nodes['Sys.PowerMgmt'],
+	    menu: new Ext.menu.Menu({
+		items: [
+		    {
+			text: gettext('Start All VMs'),
+			icon: '/pve2/images/start.png',
+			handler: function() {
+			    var msg = Ext.String.format(gettext("Do you really want to start all Vms on  node {0}?"), nodename);
+			    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+				if (btn !== 'yes') {
+				    return;
+				}
+				PVE.Utils.API2Request({
+				    params: { force: 1 },
+				    url: '/nodes/' + nodename + '/startall',
+				    method: 'POST',
+				    waitMsgTarget: me,
+				    failure: function(response, opts) {
+					Ext.Msg.alert('Error', response.htmlStatus);
+				    }
+				});
+			    });
+			}
+		    },
+		    {
+			text: gettext('Stop All VMs'),
+			icon: '/pve2/images/gtk-stop.png',
+			handler: function() {
+			    var msg = Ext.String.format(gettext("Do you really want to stop all Vms on  node {0}?"), nodename);
+			    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+				if (btn !== 'yes') {
+				    return;
+				}
+			    
+				PVE.Utils.API2Request({
+				    url: '/nodes/' + nodename + '/stopall',
+				    method: 'POST',
+				    waitMsgTarget: me,
+				    failure: function(response, opts) {
+					Ext.Msg.alert('Error', response.htmlStatus);
+				    }
+				});
+			    });
+			}
+		    },
+		    {
+			text: gettext('Migrate All VMs'),
+			icon: '/pve2/images/forward.png',
+			handler: function() {
+			    var win = Ext.create('PVE.window.MigrateAll', {
+				nodename: nodename,
+			    });
+			    win.show();
+			}
 		    }
-		});
-	    }
-	});
-
-	var stopallvmBtn = Ext.create('PVE.button.Button', {
-	    text: gettext('Stop All VMs'),
-	    confirmMsg: Ext.String.format(gettext("Do you really want to stop all Vms on  node {0}?"), nodename),
-	    handler: function() {
-		PVE.Utils.API2Request({
-		    url: '/nodes/' + nodename + '/stopall',
-		    method: 'POST',
-		    waitMsgTarget: me,
-			failure: function(response, opts) {
-			Ext.Msg.alert('Error', response.htmlStatus);
-		    }
-		});
-	    }
-	});
-
-	var migrateallvmBtn = Ext.create('PVE.button.Button', {
-	    text: gettext('Migrate All VMs'),
-	    handler: function() {
-                var win = Ext.create('PVE.window.MigrateAll', {
-                    nodename: nodename,
-                });
-                win.show();
-                me.mon(win, 'close', me.reload, me);
-	    }
-	});
+		]
+	    })
+	}); 
 
 	var restartBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Restart'),
@@ -102,7 +121,7 @@ Ext.define('PVE.node.Config', {
 	    title: gettext('Node') + " '" + nodename + "'",
 	    hstateid: 'nodetab',
 	    defaults: { statusStore: me.statusStore },
-	    tbar: [ startallvmBtn, stopallvmBtn, migrateallvmBtn, restartBtn, shutdownBtn, shellBtn ]
+	    tbar: [ restartBtn, shutdownBtn, shellBtn, actionBtn]
 	});
 
 	if (caps.nodes['Sys.Audit']) {

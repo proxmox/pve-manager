@@ -555,7 +555,8 @@ Ext.define('PVE.Utils', { statics: {
 	vzdump: ['', gettext('Backup') ],
 	aptupdate: ['', gettext('Update package database') ],
 	startall: [ '', gettext('Start all VMs and Containers') ],
-	stopall: [ '', gettext('Stop all VMs and Containers') ]
+	stopall: [ '', gettext('Stop all VMs and Containers') ],
+	migrateall: [ '', gettext('Migrate all VMs and Containers') ]
     },
 
     format_task_description: function(type, id) {	
