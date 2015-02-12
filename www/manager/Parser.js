@@ -66,6 +66,9 @@ Ext.define('PVE.Parser', { statics: {
 	if (net.rate) {
 	    netstr += ",rate=" + net.rate;
 	}
+	if (net.queues) {
+	    netstr += ",queues=" + net.queues;
+	}
 	if (net.disconnect) {
 	    netstr += ",link_down=" + net.disconnect;
 	}

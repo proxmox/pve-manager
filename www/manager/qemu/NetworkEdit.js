@@ -19,6 +19,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	}
 	me.network.macaddr = values.macaddr;
 	me.network.disconnect = values.disconnect;
+	me.network.queues = values.queues;
 
 	if (values.rate) {
 	    me.network.rate = values.rate;
@@ -147,6 +148,15 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		maxValue: 10*1024,
 		value: '',
 		emptyText: 'unlimited',
+		allowBlank: true
+	    },
+	    {
+		xtype: 'numberfield',
+		name: 'queues',
+		fieldLabel: gettext('Multiqueues'),
+		minValue: 1,
+		maxValue: 8,
+		value: '',
 		allowBlank: true
 	    },
 	    {
