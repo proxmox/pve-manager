@@ -4,7 +4,7 @@ Ext.define('PVE.qemu.HardwareView', {
     extend: 'PVE.grid.PendingObjectGrid',
     alias: ['widget.PVE.qemu.HardwareView'],
 
-    renderKey: function(key, metaData, record, rowIndex, colIndex, store) {
+    renderKey: function(key, metaData, rec, rowIndex, colIndex, store) {
 	var me = this;
 	var rows = me.rows;
 	var rowdef = rows[key] || {};
@@ -14,7 +14,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	if (rowdef.tdCls) {
 	    metaData.tdCls = rowdef.tdCls;
 	    if (rowdef.tdCls == 'pve-itype-icon-storage') { 
-		if (record.data.value.match(/media=cdrom/)) {
+		var value = me.getObjectValue(key, '', true);
+		if (value.match(/media=cdrom/)) {
 		    metaData.tdCls = 'pve-itype-icon-cdrom';
 		    return rowdef.cdheader;
 		}
@@ -210,8 +211,9 @@ Ext.define('PVE.qemu.HardwareView', {
 	    }
 
 	    var editor = rowdef.editor;
-	    if (rowdef.tdCls == 'pve-itype-icon-storage') { 
-		if (rec.data.value.match(/media=cdrom/)) {
+	    if (rowdef.tdCls == 'pve-itype-icon-storage') {
+		var value = me.getObjectValue(rec.data.key, '', true); 
+		if (value.match(/media=cdrom/)) {
 		    editor = 'PVE.qemu.CDEdit';
 		}
 	    }
