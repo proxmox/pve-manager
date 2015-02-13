@@ -35,6 +35,8 @@ Ext.define('PVE.Parser', { statics: {
                 res.firewall = match_res[1];
 	    } else if ((match_res = p.match(/^link_down=(\d+)$/)) !== null) {
                 res.disconnect = match_res[1];
+	    } else if ((match_res = p.match(/^queues=(\d+)$/)) !== null) {
+                res.queues = match_res[1];
 	    } else {
 		errors = true;
 		return false; // break
