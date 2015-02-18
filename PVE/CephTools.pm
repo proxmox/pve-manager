@@ -165,6 +165,7 @@ sub write_ceph_config {
     };
 
     &$cond_write_sec('global');
+    &$cond_write_sec('client');
     &$cond_write_sec('mon');
     &$cond_write_sec('osd');
     &$cond_write_sec('mon\..*');
