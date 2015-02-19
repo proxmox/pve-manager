@@ -1,3 +1,9 @@
+pve-manager (3.4-1) unstable; urgency=low
+
+  * write_ceph_config: also write mds sections
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 19 Feb 2015 06:31:48 +0100
+
 pve-manager (3.3-21) unstable; urgency=low
 
   * write_ceph_config: also write client section
