@@ -17,6 +17,13 @@ Ext.define('PVE.panel.RRDView', {
 	var sp = Ext.state.Manager.getProvider();
 	var stateinit = sp.get(stateid);
 
+        if (stateinit) {
+	    if(stateinit.timeframe !== me.timeframe || stateinit.cf !== me.rrdcffn){
+		me.timeframe = stateinit.timeframe;
+		me.rrdcffn = stateinit.cf;
+	    }
+	}
+
 	if (!me.timeframe) {
 	    if(stateinit && stateinit.timeframe){
 		me.timeframe = stateinit.timeframe;
