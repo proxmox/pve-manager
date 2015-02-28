@@ -1,0 +1,13 @@
+[Unit]
+Description= PVE SPICE Proxy Server
+ConditionPathExists=/usr/bin/spiceproxy
+Wants=pveproxy.service
+After=pveproxy.service
+
+[Service]
+ExecStart=/etc/init.d/spiceproxy start
+ExecStop=/etc/init.d/spiceproxy stop
+Type=forking
+
+[Install]
+WantedBy=multi-user.target

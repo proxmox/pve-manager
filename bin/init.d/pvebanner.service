@@ -1,0 +1,13 @@
+[Unit]
+Description=Proxmox VE Login Banner
+ConditionPathExists=/usr/bin/pvebanner
+Wants=console-getty.service
+Before=console-getty.service
+
+[Service]
+ExecStart=/usr/bin/pvebanner
+Type=oneshot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=getty.target

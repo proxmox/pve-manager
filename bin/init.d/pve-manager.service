@@ -1,0 +1,13 @@
+[Unit]
+Description=PVE VM Manager
+ConditionPathExists=/usr/bin/pvesh
+Wants=pveproxy.service
+After=pveproxy.service
+
+[Service]
+ExecStart=/etc/init.d/pve-manager start
+ExecStop=/etc/init.d/pve-manager stop
+Type=forking
+
+[Install]
+WantedBy=multi-user.target

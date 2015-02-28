@@ -1,0 +1,13 @@
+[Unit]
+Description=PVE API Daemon
+ConditionPathExists=/usr/bin/pvedaemon
+Requires=pve-cluster.service
+After=pve-cluster.service
+
+[Service]
+ExecStart=/etc/init.d/pvedaemon start
+ExecStop=/etc/init.d/pvedaemon stop
+Type=forking
+
+[Install]
+WantedBy=multi-user.target

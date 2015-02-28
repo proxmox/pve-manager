@@ -1,0 +1,12 @@
+[Unit]
+Description=Commit Proxmox VE network changes
+
+[Service]
+ExecStartPre=-/bin/rm -f /etc/openvswitch/conf.db
+ExecStartPre=-/bin/mv /etc/network/interfaces.new /etc/network/interfaces
+ExecStart=/bin/true
+Type=oneshot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=networking.service

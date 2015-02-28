@@ -3,17 +3,40 @@
 # Abort if any command returns an error value
 set -e
 
-if [ "$1" = purge ]; then
-    update-rc.d pvedaemon remove >/dev/null 2>&1
-    update-rc.d pveproxy remove >/dev/null 2>&1
-    update-rc.d spiceproxy remove >/dev/null 2>&1
-    update-rc.d pvestatd remove >/dev/null 2>&1
-    update-rc.d pvebanner remove >/dev/null 2>&1
-    update-rc.d pvenetcommit remove >/dev/null 2>&1
-    update-rc.d pve-manager remove >/dev/null 2>&1
+case "$1" in
+    purge)
+	rm -rf /var/log/pveproxy
+	rm -rf /var/lib/pve-manager
+    ;;
 
-    if [ -e /usr/share/debconf/confmodule ]; then
-	. /usr/share/debconf/confmodule
-	db_purge
-    fi
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    ;;
+
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+# same as dh_systemd_enable (code copied)
+systemctl --system daemon-reload >/dev/null || true
+
+PVESERVICES="pvedaemon pveproxy spiceproxy pvestatd pvebanner pvenetcommit pve-manager"
+if [ "$1" = "remove" ]; then
+    for service in ${PVESERVICES}; do
+	echo "REMOVETEST $service";
+	if [ -x "/usr/bin/deb-systemd-helper" ]; then
+	    deb-systemd-helper mask $service.service >/dev/null
+	fi
+    done
+fi
+
+if [ "$1" = purge ]; then
+    for service in ${PVESERVICES}; do
+	echo "PURGETEST $service";
+	if [ -x "/usr/bin/deb-systemd-helper" ]; then
+	    deb-systemd-helper purge $service.service >/dev/null
+	    deb-systemd-helper unmask $service.service >/dev/null
+	fi
+    done
 fi

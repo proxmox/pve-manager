@@ -24,11 +24,12 @@ case "$1" in
     # test if /etc/pve is mounted; else simple exit to avoid
     # error during updates
     test -f /etc/pve/local/pve-ssl.pem || exit 0;
-
-    test -e /proxmox_install_mode || invoke-rc.d pvedaemon restart
-    test -e /proxmox_install_mode || invoke-rc.d pvestatd restart    
-    test -e /proxmox_install_mode || invoke-rc.d pveproxy restart
-    test -e /proxmox_install_mode || invoke-rc.d spiceproxy restart
+    test -e /proxmox_install_mode && exit 0;
+    
+    deb-systemd-invoke restart pvedaemon.service 
+    deb-systemd-invoke restart pvestatd.service    
+    deb-systemd-invoke restart pveproxy.service
+    deb-systemd-invoke restart spiceproxy.service
 
     exit 0;;
 
@@ -57,23 +58,37 @@ case "$1" in
     fi
 
     # disable fancy init messages (bad with bootlogd)
-    test -f /etc/lsb-base-logging.sh || echo "FANCYTTY=0" >/etc/lsb-base-logging.sh 
+    test -f /etc/lsb-base-logging.sh || echo "FANCYTTY=0" >/etc/lsb-base-logging.sh
 
-    update-rc.d pvedaemon defaults 21 79 >/dev/null
-    update-rc.d pveproxy defaults 21 79 >/dev/null
-    update-rc.d spiceproxy defaults 21 79 >/dev/null
-    update-rc.d pvestatd defaults 21 79 >/dev/null
-    update-rc.d pvebanner start 99 2 3 4 5 . >/dev/null
-    update-rc.d pvenetcommit start 15 S . >/dev/null
-    update-rc.d pve-manager defaults 25 75 >/dev/null
 
-    test -e /proxmox_install_mode || invoke-rc.d pvedaemon restart
-    test -e /proxmox_install_mode || invoke-rc.d pveproxy restart
-    test -e /proxmox_install_mode || invoke-rc.d spiceproxy restart
-    test -e /proxmox_install_mode || invoke-rc.d pvestatd restart
+    systemctl --system daemon-reload >/dev/null || true
+
+    # same as dh_systemd_enable (code copied)
+
+    for service in pvedaemon pveproxy spiceproxy pvestatd pvebanner pvenetcommit pve-manager; do
+	deb-systemd-helper unmask $service.service >/dev/null || true
+
+	# was-enabled defaults to true, so new installations run enable.
+	if deb-systemd-helper --quiet was-enabled $service.service; then
+	    # Enables the unit on first installation, creates new
+	    # symlinks on upgrades if the unit file has changed.
+	    deb-systemd-helper enable $service.service >/dev/null || true
+	else
+	    # Update the statefile to add new symlinks (if any), which need to be
+	    # cleaned up on purge. Also remove old symlinks.
+	    deb-systemd-helper update-state $service.service >/dev/null || true
+	fi
+    done
+
+    if test ! -e /proxmox_install_mode; then
+
+	for service in pvedaemon pveproxy spiceproxy pvestatd; do
+	    deb-systemd-invoke restart $service
+	done
+    fi
     
     # rewrite banner
-    test -e /proxmox_install_mode || pvebanner || /bin/true
+    test -e /proxmox_install_mode || pvebanner || true
 
     #a2ensite pve.conf >/dev/null 2>&1
 

@@ -1,0 +1,13 @@
+[Unit]
+Description=PVE Status Daemon
+ConditionPathExists=/usr/bin/pvestatd
+Requires=pve-cluster.service
+After=pve-cluster.service
+
+[Service]
+ExecStart=/etc/init.d/pvestatd start
+ExecStop=/etc/init.d/pvestatd stop
+Type=forking
+
+[Install]
+WantedBy=multi-user.target
