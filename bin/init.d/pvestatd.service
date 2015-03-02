@@ -5,8 +5,9 @@ Requires=pve-cluster.service
 After=pve-cluster.service
 
 [Service]
-ExecStart=/etc/init.d/pvestatd start
-ExecStop=/etc/init.d/pvestatd stop
+ExecStart=/usr/bin/pvestatd start
+ExecStop=/usr/bin/pvestatd stop
+ExecReload=/usr/bin/pvestatd restart
 Type=forking
 
 [Install]

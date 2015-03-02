@@ -5,8 +5,9 @@ Requires=pve-cluster.service
 After=pve-cluster.service
 
 [Service]
-ExecStart=/etc/init.d/pvedaemon start
-ExecStop=/etc/init.d/pvedaemon stop
+ExecStart=/usr/bin/pvedaemon start
+ExecStop=/usr/bin/pvedaemon stop
+ExecReload=/usr/bin/pvedaemon restart
 Type=forking
 
 [Install]

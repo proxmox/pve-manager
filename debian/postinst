@@ -26,10 +26,10 @@ case "$1" in
     test -f /etc/pve/local/pve-ssl.pem || exit 0;
     test -e /proxmox_install_mode && exit 0;
     
-    deb-systemd-invoke restart pvedaemon.service 
-    deb-systemd-invoke restart pvestatd.service    
-    deb-systemd-invoke restart pveproxy.service
-    deb-systemd-invoke restart spiceproxy.service
+    deb-systemd-invoke reload pvedaemon.service 
+    deb-systemd-invoke reload pvestatd.service    
+    deb-systemd-invoke reload pveproxy.service
+    deb-systemd-invoke reload spiceproxy.service
 
     exit 0;;
 
@@ -83,7 +83,7 @@ case "$1" in
     if test ! -e /proxmox_install_mode; then
 
 	for service in pvedaemon pveproxy spiceproxy pvestatd; do
-	    deb-systemd-invoke restart $service
+	    deb-systemd-invoke reload $service
 	done
     fi
     

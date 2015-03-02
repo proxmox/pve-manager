@@ -7,8 +7,9 @@ After=pve-cluster.service
 After=pvedaemon.service
 
 [Service]
-ExecStart=/etc/init.d/pveproxy start
-ExecStop=/etc/init.d/pveproxy stop
+ExecStart=/usr/bin/pveproxy start
+ExecStop=/usr/bin/pveproxy stop
+ExecReload=/usr/bin/pveproxy restart
 Type=forking
 
 [Install]

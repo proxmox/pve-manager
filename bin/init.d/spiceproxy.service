@@ -5,8 +5,9 @@ Wants=pveproxy.service
 After=pveproxy.service
 
 [Service]
-ExecStart=/etc/init.d/spiceproxy start
-ExecStop=/etc/init.d/spiceproxy stop
+ExecStart=/usr/bin/spiceproxy start
+ExecStop=/usr/bin/spiceproxy stop
+ExecReload=/usr/bin/spiceproxy restart
 Type=forking
 
 [Install]
