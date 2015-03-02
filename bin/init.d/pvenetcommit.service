@@ -1,5 +1,8 @@
 [Unit]
 Description=Commit Proxmox VE network changes
+DefaultDependencies=no
+After=local-fs.target
+Before=sysinit.target
 
 [Service]
 ExecStartPre=-/bin/rm -f /etc/openvswitch/conf.db
@@ -8,5 +11,7 @@ ExecStart=/bin/true
 Type=oneshot
 RemainAfterExit=yes
 
+
 [Install]
-WantedBy=networking.service
+WantedBy=sysinit.target
+
