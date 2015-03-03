@@ -1051,16 +1051,6 @@ __PACKAGE__->register_method({
 	return $res;
     }});
 
-my $vm_is_ha_managed = sub {
-    my ($vmid) = @_;
-
-    my $cc = PVE::Cluster::cfs_read_file('cluster.conf');
-    if (PVE::Cluster::cluster_conf_lookup_pvevm($cc, 0, $vmid, 1)) {
-	return 1;
-    } 
-    return 0;
-};
-
 __PACKAGE__->register_method({
     name => 'vm_status', 
     path => '{vmid}/status/current',
@@ -1088,7 +1078,7 @@ __PACKAGE__->register_method({
 	my $vmstatus =  PVE::OpenVZ::vmstatus($param->{vmid});
 	my $status = $vmstatus->{$param->{vmid}};
 
-	$status->{ha} = &$vm_is_ha_managed($param->{vmid});
+	$status->{ha} = PVE::Cluster::vm_is_ha_managed($param->{vmid});
 
 	return $status;
     }});
@@ -1170,7 +1160,7 @@ __PACKAGE__->register_method({
 
 	die "CT $vmid already running\n" if PVE::OpenVZ::check_running($vmid);
 
-	if (&$vm_is_ha_managed($vmid) && $rpcenv->{type} ne 'ha') {
+	if (PVE::Cluster::vm_is_ha_managed($vmid) && $rpcenv->{type} ne 'ha') {
 
 	    my $hacmd = sub {
 		my $upid = shift;
@@ -1251,7 +1241,7 @@ __PACKAGE__->register_method({
 
 	die "CT $vmid not running\n" if !PVE::OpenVZ::check_running($vmid);
 
-	if (&$vm_is_ha_managed($vmid) && $rpcenv->{type} ne 'ha') {
+	if (PVE::Cluster::vm_is_ha_managed($vmid) && $rpcenv->{type} ne 'ha') {
 
 	    my $hacmd = sub {
 		my $upid = shift;
@@ -1610,7 +1600,7 @@ __PACKAGE__->register_method({
 		if !$param->{online};
 	}
 
-	if (&$vm_is_ha_managed($vmid) && $rpcenv->{type} ne 'ha') {
+	if (PVE::Cluster::vm_is_ha_managed($vmid) && $rpcenv->{type} ne 'ha') {
 
 	    my $hacmd = sub {
 		my $upid = shift;
