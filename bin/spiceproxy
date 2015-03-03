@@ -38,7 +38,14 @@ my %daemon_options = (
     setuid => 'www-data',
     setgid => 'www-data',
     pidfile => '/var/run/pveproxy/spiceproxy.pid',
-);
+    );
+
+my $rundir="/var/run/pveproxy";
+if (mkdir($rundir, 0700)) { # only works at first start if we are root)
+    my $gid = getgrnam('www-data') || die "getgrnam failed - $!\n";
+    my $uid = getpwnam('www-data') || die "getpwnam failed - $!\n";
+    chown($uid, $gid, $rundir);
+}
 
 my $daemon = __PACKAGE__->new('spiceproxy', $cmdline, %daemon_options); 
 

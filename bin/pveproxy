@@ -49,10 +49,11 @@ my %daemon_options = (
 );
 
 my $rundir="/var/run/pveproxy";
-mkdir($rundir, 0700);
-my $gid = getgrnam('www-data') || die "getgrnam failed - $!\n";
-my $uid = getpwnam('www-data') || die "getpwnam failed - $!\n";
-chown($uid, $gid, $rundir);
+if (mkdir($rundir, 0700)) { # only works at first start if we are root)
+    my $gid = getgrnam('www-data') || die "getgrnam failed - $!\n";
+    my $uid = getpwnam('www-data') || die "getpwnam failed - $!\n";
+    chown($uid, $gid, $rundir);
+}
 
 my $daemon = __PACKAGE__->new('pveproxy', $cmdline, %daemon_options); 
 
