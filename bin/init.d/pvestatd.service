@@ -8,6 +8,7 @@ After=pve-cluster.service
 ExecStart=/usr/bin/pvestatd start
 ExecStop=/usr/bin/pvestatd stop
 ExecReload=/usr/bin/pvestatd restart
+PIDFile=/var/run/pvestatd.pid
 Type=forking
 
 [Install]

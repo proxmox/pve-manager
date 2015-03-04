@@ -10,6 +10,7 @@ After=pvedaemon.service
 ExecStart=/usr/bin/pveproxy start
 ExecStop=/usr/bin/pveproxy stop
 ExecReload=/usr/bin/pveproxy restart
+PIDFile=/var/run/pveproxy/pveproxy.pid
 Type=forking
 
 [Install]

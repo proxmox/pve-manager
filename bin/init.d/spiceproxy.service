@@ -8,6 +8,7 @@ After=pveproxy.service
 ExecStart=/usr/bin/spiceproxy start
 ExecStop=/usr/bin/spiceproxy stop
 ExecReload=/usr/bin/spiceproxy restart
+PIDFile=/var/run/pveproxy/spiceproxy.pid
 Type=forking
 
 [Install]
