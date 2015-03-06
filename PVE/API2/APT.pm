@@ -524,7 +524,7 @@ __PACKAGE__->register_method({
 	my $pkgrecords = $cache->packages();
 
 	# try to use a resonable ordering (most important things first)
-	my @list = qw(proxmox-ve-2.6.32 pve-manager);
+	my @list = qw(proxmox-ve-3.10.0 pve-manager);
 
 	foreach my $pkgname (keys %$cache) {
 	    if ($pkgname =~ m/pve-kernel-/) {
@@ -533,7 +533,7 @@ __PACKAGE__->register_method({
 	    }
 	}
 
-	push @list, qw(lvm2 clvm corosync-pve openais-pve libqb0 redhat-cluster-pve resource-agents-pve fence-agents-pve pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl pve-libspice-server1 vncterm vzctl vzprocps vzquota pve-qemu-kvm ksm-control-daemon glusterfs-client);
+	push @list, qw(lvm2 clvm corosync-pve libqb0 resource-agents-pve fence-agents-pve pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl pve-libspice-server1 vncterm vzctl vzprocps vzquota pve-qemu-kvm ksm-control-daemon glusterfs-client);
 
 	my $pkglist = [];
 	
@@ -543,7 +543,7 @@ __PACKAGE__->register_method({
 	foreach my $pkgname (@list) {
 	    my $p = $cache->{$pkgname};
 	    my $info = $pkgrecords->lookup($pkgname);
- 	    my $candidate_ver = $policy->candidate($p);
+	    my $candidate_ver = defined($p) ? $policy->candidate($p) : undef;
 	    my $res;
 	    if (my $current_ver = $p->{CurrentVer}) {
 		$res = &$assemble_pkginfo($pkgname, $info, $current_ver, 
@@ -560,7 +560,7 @@ __PACKAGE__->register_method({
 	    # hack: add some useful information (used by 'pveversion -v')
 	    if ($pkgname eq 'pve-manager') {
 		$res->{ManagerVersion} = $pvever;
-	    } elsif ($pkgname eq 'proxmox-ve-2.6.32') {
+	    } elsif ($pkgname eq 'proxmox-ve-3.10.0') {
 		$res->{RunningKernel} = $kernel_release;
 	    }
 
