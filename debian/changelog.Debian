@@ -1,3 +1,21 @@
+pve-manager (4.0-2) unstable; urgency=medium
+
+  * fix proxversion -v for jessie release
+
+  * add PIDFile option for systemd services
+
+  * avoid shell scripts in systemd service definitions
+
+  * depend on systemd, add service files
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 06 Mar 2015 11:35:33 +0100
+
+pve-manager (4.0-1) unstable; urgency=medium
+
+  * first version for Debian jessie
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 28 Feb 2015 09:34:33 +0100
+
 pve-manager (3.4-1) unstable; urgency=low
 
   * write_ceph_config: also write mds sections
