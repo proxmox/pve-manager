@@ -1446,6 +1446,11 @@ sub wait_end_loop {
 	return;
     }
 
+    # fork and exit, so that parent starts a new worker
+    if (fork()) {
+	exit(0);
+    }
+
     # else we need to wait until all open connections gets closed
     my $w; $w = AnyEvent->timer (after => 1, interval => 1, cb => sub {
 	eval {
