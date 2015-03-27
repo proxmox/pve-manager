@@ -13,7 +13,6 @@ use File::Path;
 use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Cluster qw(cfs_read_file);
-use PVE::VZDump::OpenVZ;
 use Time::localtime;
 use Time::Local;
 use PVE::JSONSchema qw(get_standard_option);
@@ -26,7 +25,7 @@ my $pidfile = '/var/run/vzdump.pid';
 
 my $logdir = '/var/log/vzdump';
 
-my @plugins = qw (PVE::VZDump::OpenVZ);
+my @plugins = qw();
 
 # Load available plugins
 my $pveplug = "/usr/share/perl5/PVE/VZDump/QemuServer.pm";
@@ -850,28 +849,11 @@ sub exec_backup_task {
 
 	    $self->run_hook_script ('backup-start', $task, $logfd);
 
-	    if ($vmtype eq 'openvz') {
-		# pre-suspend rsync
-		$plugin->copy_data_phase1 ($task, $vmid);
-	    }
-
 	    debugmsg ('info', "suspend vm", $logfd);
 	    $vmstoptime = time ();
 	    $self->run_hook_script ('pre-stop', $task, $logfd);
 	    $plugin->suspend_vm ($task, $vmid);
 	    $cleanup->{resume} = 1;
-
-	    if ($vmtype eq 'openvz') {
-		# post-suspend rsync
-		$plugin->copy_data_phase2 ($task, $vmid);
-
-		debugmsg ('info', "resume vm", $logfd);
-		$cleanup->{resume} = 0;
-		$self->run_hook_script ('pre-restart', $task, $logfd);
-		$plugin->resume_vm ($task, $vmid);
-		my $delay = time () - $vmstoptime;
-		debugmsg ('info', "vm is online again after $delay seconds", $logfd);
-	    }
 
 	} elsif ($mode eq 'snapshot') {
 

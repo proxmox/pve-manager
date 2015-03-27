@@ -5,12 +5,10 @@ SUBDIRS = init.d cron ocf test
 SCRIPTS =  			\
 	pveceph			\
 	vzdump			\
-	vzrestore		\
 	pvestatd		\
 	pvesh			\
 	pveam			\
 	pvebanner		\
-	pvectl			\
 	pvedaemon		\
 	pveproxy		\
 	spiceproxy		\
@@ -22,9 +20,7 @@ SCRIPTS =  			\
 
 MANS = 				\
 	pveceph.1		\
-	pvectl.1		\
 	vzdump.1		\
-	vzrestore.1		\
 	pvestatd.1		\
 	pvedaemon.1		\
 	pveproxy.1		\
@@ -82,10 +78,8 @@ install: ${SCRIPTS} ${MANS} pvemailforward
 	install -d ${MAN1DIR}
 	install -m 0644 ${MANS} ${MAN1DIR}
 	install -d ${PODDIR}
-	install -m 0644 pvectl.1.pod ${PODDIR}
 	install -m 0644 vzdump.1.pod ${PODDIR}
 	install -m 0644 pvesubscription.1.pod ${PODDIR}
-	install -m 0644 vzrestore.1.pod ${PODDIR}
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
 .PHONY: distclean

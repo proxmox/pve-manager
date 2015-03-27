@@ -12,8 +12,7 @@ PERLSOURCE = 			\
 	Pool.pm			\
 	Tasks.pm		\
 	Network.pm		\
-	Services.pm		\
-	OpenVZ.pm
+	Services.pm
 
 all:
 

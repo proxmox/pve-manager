@@ -1,7 +1,6 @@
 include ../../defines.mk
 
 PERLSOURCE = 			\
-	OpenVZ.pm  		\
 	Plugin.pm
 
 all:

@@ -13,7 +13,6 @@ use PVE::INotify;
 use PVE::Cluster qw(cfs_read_file);
 use PVE::Storage;
 use PVE::QemuServer;
-use PVE::OpenVZ;
 use PVE::RPCEnvironment;
 use PVE::API2::Subscription;
 use PVE::AutoBalloon;
@@ -202,45 +201,6 @@ sub find_vzctl_console_pids {
     return $res;
 }
 
-sub remove_stale_openvz_consoles {
-
-    my $vmstatus = PVE::OpenVZ::vmstatus();
-    my $pidhash = find_vzctl_console_pids();
-
-    foreach my $vmid (keys %$pidhash) {
-	next if defined($vmstatus->{$vmid});
-	syslog('info', "remove stale vzctl console for CT $vmid");
-	foreach my $pid (@{$pidhash->{$vmid}}) {
-	    kill(9, $pid);
-	}
-    }
-}
-
-sub update_openvz_status {
-
-    my $ctime = time();
-
-    my $vmstatus = PVE::OpenVZ::vmstatus();
-
-    foreach my $vmid (keys %$vmstatus) {
-	my $d = $vmstatus->{$vmid};
-	my $data;
-	if ($d->{status} eq 'running') { # running
-	    $data = "$d->{uptime}:$d->{name}:$d->{status}:0:$ctime:$d->{cpus}:$d->{cpu}:" .
-		"$d->{maxmem}:$d->{mem}:" .
-		"$d->{maxdisk}:$d->{disk}:" .
-		"$d->{netin}:$d->{netout}:" .
-		"$d->{diskread}:$d->{diskwrite}";
-	} else {
-	    $data = "0:$d->{name}:$d->{status}:0:$ctime:$d->{cpus}::" .
-		"$d->{maxmem}::" .
-		"$d->{maxdisk}:$d->{disk}:" .
-		":::";
-	}
-	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
-    }
-}
-
 sub update_storage_status {
 
     my $cfg = cfs_read_file("storage.cfg");
@@ -288,22 +248,10 @@ sub update_status {
     syslog('err', "qemu status update error: $err") if $err;
 
     eval {
-	update_openvz_status();
-    };
-    $err = $@;
-    syslog('err', "openvz status update error: $err") if $err;
-
-    eval {
 	update_storage_status();
     };
     $err = $@;
     syslog('err', "storage status update error: $err") if $err;
-
-    eval {
-	remove_stale_openvz_consoles();
-    };
-    $err = $@;
-    syslog('err', "openvz console cleanup error: $err") if $err;
 }
 
 my $next_update = 0;

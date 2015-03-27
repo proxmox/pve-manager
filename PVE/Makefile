@@ -11,8 +11,6 @@ PERLSOURCE = 			\
 	NoVncIndex.pm		\
 	HTTPServer.pm		\
 	REST.pm			\
-	OpenVZ.pm		\
-	OpenVZMigrate.pm	\
 	APLInfo.pm		\
 	AutoBalloon.pm		\
 	CephTools.pm		\
