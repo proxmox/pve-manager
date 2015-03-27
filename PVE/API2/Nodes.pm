@@ -22,6 +22,7 @@ use PVE::Storage;
 use PVE::Firewall;
 use PVE::OpenVZ;
 use PVE::APLInfo;
+use PVE::HA::Config;
 use PVE::QemuServer;
 use PVE::API2::Subscription;
 use PVE::API2::Services;
@@ -1225,7 +1226,7 @@ __PACKAGE__->register_method({
 my $get_start_stop_list = sub {
     my ($nodename, $autostart) = @_;
 
-    # fixmem: $cc = PVE::Cluster::cfs_read_file('cluster.conf');
+    my $haconf = PVE::HA::Config::read_resources_config();
     my $vmlist = PVE::Cluster::get_vmlist();
 
     my $resList = {};
@@ -1261,8 +1262,8 @@ my $get_start_stop_list = sub {
 		die "unknown VM type '$d->{type}'\n";
 	    }
 
-	    # fixme: skip ha managed VMs (started by rgmanager)
-	    ##return if PVE::Cluster::cluster_conf_lookup_pvevm($cc, 0, $vmid, 1);
+	    # skip ha managed VMs (started by pve-ha-manager)
+	    return if defined($haconf->{ids}->{"pvevm:$vmid"});
 	    
 	    $resList->{$startup->{order}}->{$vmid} = $startup;
 	    $resList->{$startup->{order}}->{$vmid}->{type} = $d->{type};
