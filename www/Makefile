@@ -1,4 +1,4 @@
-SUBDIRS = images ext4 css manager bootstrap touch mobile
+SUBDIRS = images ext4 ext5 css manager bootstrap touch mobile
 
 all: ${SUBDIRS}
 
