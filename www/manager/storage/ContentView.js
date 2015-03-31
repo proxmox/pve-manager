@@ -443,6 +443,27 @@ Ext.define('PVE.storage.ContentView', {
 			win.show();
 			win.on('destroy', reload);
 		    }
+		},
+		'->',
+		gettext('Search') + ':', ' ',
+		{
+		    xtype: 'textfield',
+		    width: 200,
+		    enableKeyEvents: true,
+		    listeners: {
+			buffer: 500,
+			keyup: function(field) {
+			    store.clearFilter(true);
+			    store.filter([
+				{
+				    property: 'text',
+				    value: field.getValue(),
+				    anyMatch: true,
+				    caseSensitive: false
+				}
+			    ]);
+			}
+		    }
 		}
 	    ],
 	    columns: [

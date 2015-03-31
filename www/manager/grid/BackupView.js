@@ -75,6 +75,27 @@ Ext.define('PVE.grid.BackupView', {
 	    }
 	});
 
+	var storagefilter = Ext.create('Ext.form.field.Text', {
+	    fieldLabel: gettext('Search'),
+	    labelWidth: 50,
+	    labelAlign: 'right',
+	    enableKeyEvents: true,
+	    listeners: {
+		buffer: 500,
+		keyup: function(field) {
+		    me.store.clearFilter(true);
+		    me.store.filter([
+			{
+			    property: 'volid',
+			    value: field.getValue(),
+			    anyMatch: true,
+			    caseSensitive: false
+			}
+		    ]);
+		}
+	    }
+	});
+
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
 	var backup_btn = Ext.create('Ext.button.Button', {
@@ -151,7 +172,7 @@ Ext.define('PVE.grid.BackupView', {
 	Ext.apply(me, {
 	    stateful: false,
 	    selModel: sm,
-	    tbar: [ backup_btn, restore_btn, delete_btn, '->', storagesel ],
+	    tbar: [ backup_btn, restore_btn, delete_btn, '->', storagesel, storagefilter ],
 	    columns: [
 		{
 		    header: gettext('Name'),
