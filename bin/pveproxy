@@ -22,6 +22,7 @@ use PVE::API2::Formatter::HTML;
 use PVE::HTTPServer;
 
 use PVE::ExtJSIndex;
+use PVE::ExtJSIndex5;
 use PVE::NoVncIndex;
 use PVE::TouchIndex;
 
@@ -204,18 +205,22 @@ sub get_index {
 	$mobile = $args->{mobile} ? 1 : 0;
     }
 
+	my $ext5;
+	if (defined($args->{ext5})) {
+	$ext5 = $args->{ext5} ? 1 : 0;
+    }
+
     my $page;
 
     if (defined($args->{console}) && $args->{novnc}) {
-	$page = PVE::NoVncIndex::get_index($lang, $username, $token, $args->{console});
-    } else {
-	if ($mobile) {
-	    $page = PVE::TouchIndex::get_index($lang, $username, $token, $args->{console});
+		$page = PVE::NoVncIndex::get_index($lang, $username, $token, $args->{console});
+    } elsif ($mobile) {
+		$page = PVE::TouchIndex::get_index($lang, $username, $token, $args->{console});
+	} elsif ($ext5) {
+		$page = PVE::ExtJSIndex5::get_index($lang, $username, $token, $args->{console});
 	} else {
-	    $page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console});
+		$page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console});
 	}
-    }
-
     my $headers = HTTP::Headers->new(Content_Type => "text/html; charset=utf-8");
     my $resp = HTTP::Response->new(200, "OK", $headers, $page); 
 
