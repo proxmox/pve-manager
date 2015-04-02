@@ -79,8 +79,9 @@ Ext.define('PVE.dc.Config', {
 		    itemId: 'domains'
 		},
 		{
-		    xtype: 'pveDcHAConfig',
+		    xtype: 'pveHAPanel',
 		    title: 'HA',
+		    phstateid: me.hstateid,
 		    itemId: 'ha'
 		},
 		{

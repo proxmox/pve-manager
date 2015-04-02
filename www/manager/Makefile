@@ -165,6 +165,7 @@ JSSRC= 				                 	\
 	storage/SheepdogEdit.js				\
 	storage/ZFSEdit.js				\
 	storage/ZFSPoolEdit.js				\
+	ha/Config.js					\
 	dc/Summary.js					\
 	dc/OptionView.js				\
 	dc/StorageView.js				\
@@ -179,7 +180,6 @@ JSSRC= 				                 	\
 	dc/AuthView.js					\
 	dc/AuthEdit.js					\
 	dc/Backup.js					\
-	dc/HAConfig.js					\
 	dc/Support.js					\
 	dc/SecurityGroups.js				\
 	dc/Config.js					\
