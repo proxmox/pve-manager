@@ -23,6 +23,44 @@ Ext.define('PVE.ha.GroupsView', {
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
+	var run_editor = function() {
+	    var rec = sm.getSelection()[0];
+
+            var win = Ext.create('PVE.ha.GroupEdit',{
+                groupId: rec.data.group
+            });
+            win.on('destroy', reload);
+            win.show();
+	};
+
+	var remove_btn = new PVE.button.Button({
+	    text: gettext('Remove'),
+	    disabled: true,
+	    selModel: sm,
+	    handler: function(btn, event, rec) {
+		var group = rec.data.group;
+
+		PVE.Utils.API2Request({
+		    url: '/cluster/ha/groups/' + group,
+		    method: 'DELETE',
+		    waitMsgTarget: me,
+		    callback: function() {
+			reload();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    }
+		});
+	    }
+	});
+	
+	var edit_btn = new PVE.button.Button({
+	    text: gettext('Edit'),
+	    disabled: true,
+	    selModel: sm,
+	    handler: run_editor
+	});
+
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
@@ -30,6 +68,17 @@ Ext.define('PVE.ha.GroupsView', {
 	    viewConfig: {
 		trackOver: false
 	    },
+	    tbar: [
+		{
+		    text: gettext('Create'),
+		    handler: function() {
+			var win = Ext.create('PVE.ha.GroupEdit',{});
+			win.on('destroy', reload);
+			win.show();
+		    }
+		},
+		edit_btn, remove_btn
+	    ],
 	    columns: [
 		{
 		    header: gettext('Group'),
@@ -53,12 +102,12 @@ Ext.define('PVE.ha.GroupsView', {
 		},
 		{
 		    header: gettext('Nodes'),
-		    width: 500,
+		    flex: 1,
 		    sortable: false,
 		    dataIndex: 'nodes'
 		},
 		{
-		    header: gettext('Description'),
+		    header: gettext('Comment'),
 		    flex: 1,
 		    dataIndex: 'comment'
 		}
