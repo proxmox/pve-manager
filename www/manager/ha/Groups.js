@@ -7,10 +7,6 @@ Ext.define('PVE.ha.GroupsView', {
 
 	var store = new Ext.data.Store({
 	    model: 'pve-ha-groups',
-	    proxy: {
-                type: 'pve',
-		url: "/api2/json/cluster/ha/groups"
-	    },
 	    sorters: { 
 		property: 'group', 
 		order: 'DESC' 
@@ -120,15 +116,4 @@ Ext.define('PVE.ha.GroupsView', {
 
 	me.callParent();
     }
-}, function() {
-
-    Ext.define('pve-ha-groups', {
-	extend: 'Ext.data.Model',
-	fields: [ 
-	    'group', 'type', 'restricted', 'digest', 'nofailback',
-	    'nodes', 'comment'
-	],
-	idProperty: 'group'
-    });
-
 });

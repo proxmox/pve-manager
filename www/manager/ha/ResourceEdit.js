@@ -11,7 +11,13 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	if (me.create) {
 	    values.type = 'vm';
 	    values.sid = values.vmid;
-	    delete values['delete']; // ignore
+	}
+	
+	if (values.group === '') {
+	    if (!me.create) {
+		values['delete'] = values['delete'] ? ',group' : 'group';
+	    }
+	    delete values.group;
 	}
 
 	delete values.vmid;
@@ -42,10 +48,9 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 
 	me.column2 = [
 	    {
-		xtype: 'pvetextfield', // fixme: group selector
+		xtype: 'pveHAGroupSelector',
 		name: 'group',
 		value: '',
-		deleteEmpty: true,
 		fieldLabel: gettext('Group')
 	    },
 	    {
