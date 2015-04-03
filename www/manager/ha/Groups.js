@@ -113,8 +113,8 @@ Ext.define('PVE.ha.GroupsView', {
 		}
 	    ],
 	    listeners: {
-		show: reload
-//		itemdblclick: run_editor
+		show: reload,
+		itemdblclick: run_editor
 	    }
 	});
 

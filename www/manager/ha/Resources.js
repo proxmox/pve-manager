@@ -23,6 +23,52 @@ Ext.define('PVE.ha.ResourcesView', {
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
+	var run_editor = function() {
+	    var rec = sm.getSelection()[0];
+	    var sid = rec.data.sid;
+	    
+	    var regex =  /^(\S+):(\S+)$/;
+	    var res = regex.exec(sid);
+
+	    if (res[1] !== 'vm') { return; };
+	    
+	    var vmid = res[2];
+	    
+            var win = Ext.create('PVE.ha.VMResourceEdit',{
+                vmid: vmid
+            });
+            win.on('destroy', reload);
+            win.show();
+	};
+
+	var remove_btn = new PVE.button.Button({
+	    text: gettext('Remove'),
+	    disabled: true,
+	    selModel: sm,
+	    handler: function(btn, event, rec) {
+		var sid = rec.data.sid;
+
+		PVE.Utils.API2Request({
+		    url: '/cluster/ha/resources/' + sid,
+		    method: 'DELETE',
+		    waitMsgTarget: me,
+		    callback: function() {
+			reload();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    }
+		});
+	    }
+	});
+	
+	var edit_btn = new PVE.button.Button({
+	    text: gettext('Edit'),
+	    disabled: true,
+	    selModel: sm,
+	    handler: run_editor
+	});
+
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
@@ -30,6 +76,18 @@ Ext.define('PVE.ha.ResourcesView', {
 	    viewConfig: {
 		trackOver: false
 	    },
+	    tbar: [
+		{
+		    text: gettext('Add'),
+		    handler: function() {
+			var win = Ext.create('PVE.ha.VMResourceEdit',{});
+			win.on('destroy', reload);
+			win.show();
+		    }
+		},
+		edit_btn, remove_btn
+	    ],
+
 	    columns: [
 		{
 		    header: 'ID',
@@ -59,8 +117,8 @@ Ext.define('PVE.ha.ResourcesView', {
 		}
 	    ],
 	    listeners: {
-		show: reload
-//		itemdblclick: run_editor
+		show: reload,
+		itemdblclick: run_editor
 	    }
 	});
 
