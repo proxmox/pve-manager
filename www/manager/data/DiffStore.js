@@ -5,6 +5,8 @@
 Ext.define('PVE.data.DiffStore', {
     extend: 'Ext.data.Store',
 
+    sortAfterUpdate: false,
+    
     constructor: function(config) {
 	var me = this;
 
@@ -68,6 +70,10 @@ Ext.define('PVE.data.DiffStore', {
 	    });
 
 	    me.filter();
+
+	    if (me.sortAfterUpdate) {
+		me.sort();
+	    }
 
 	    first_load = false;
 
