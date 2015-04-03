@@ -1,3 +1,9 @@
+pve-manager (4.0-4) unstable; urgency=medium
+
+  * implement new GUI for HA
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 03 Apr 2015 18:49:20 +0200
+
 pve-manager (4.0-3) unstable; urgency=medium
 
   * use new pve-ha-manager
