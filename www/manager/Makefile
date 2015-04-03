@@ -167,6 +167,8 @@ JSSRC= 				                 	\
 	storage/ZFSPoolEdit.js				\
 	ha/StatusView.js				\
 	ha/Resources.js					\
+	ha/Groups.js					\
+	ha/Fencing.js					\
 	ha/Config.js					\
 	dc/Summary.js					\
 	dc/OptionView.js				\
