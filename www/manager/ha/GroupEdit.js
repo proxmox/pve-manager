@@ -87,7 +87,7 @@ Ext.define('PVE.ha.GroupEdit', {
 	});
 
 	Ext.apply(me, {
-            subject: gettext('HA Groups'),
+            subject: gettext('HA Group'),
 	    items: [ ipanel ]
 	});
 	
