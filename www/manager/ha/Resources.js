@@ -21,6 +21,20 @@ Ext.define('PVE.ha.ResourcesView', {
 	    store.load();
 	};
 
+	var render_error = function(dataIndex, value, metaData, record) {
+	    var errors = record.data.errors;
+	    if (errors) {
+		var msg = errors[dataIndex];
+		if (msg) {
+		    metaData.tdCls = 'x-form-invalid-field';
+		    var html = '<p>' +  Ext.htmlEncode(msg) + '</p>';
+		    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' + 
+			html.replace(/\"/g,'&quot;') + '"';
+		}
+	    }
+	    return value;
+	};
+
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
 	var run_editor = function() {
@@ -108,6 +122,9 @@ Ext.define('PVE.ha.ResourcesView', {
 		    header: gettext('Group'),
 		    width: 200,
 		    sortable: true,
+		    renderer: function(value, metaData, record) {
+			return render_error('group', value, metaData, record);
+		    },
 		    dataIndex: 'group'
 		},
 		{
@@ -129,7 +146,7 @@ Ext.define('PVE.ha.ResourcesView', {
     Ext.define('pve-ha-resources', {
 	extend: 'Ext.data.Model',
 	fields: [ 
-	    'sid', 'type', 'state', 'digest', 'group', 'comment'
+	    'sid', 'type', 'state', 'digest', 'errors', 'group', 'comment'
 	],
 	idProperty: 'sid'
     });
