@@ -1,3 +1,11 @@
+pve-manager (3.4-4) unstable; urgency=low
+
+  * GUI: add quick search fields to storage content and backup views
+  
+  * fix package version info
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 13 Apr 2015 15:27:52 +0200
+
 pve-manager (3.4-3) unstable; urgency=low
 
   * fix logfile rotation
