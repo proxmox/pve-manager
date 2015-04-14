@@ -26,7 +26,7 @@ _EOD
 
     $page .= <<_EOD;
     <script type="text/javascript" src="/pve2/ext5/ext-all-debug.js"></script>
-    <script type="text/javascript" src="/pve2/ext4/pvemanagerlib.js"></script>
+    <script type="text/javascript" src="/pve2/manager5/Utils.js"></script>
     <script type="text/javascript" src="/pve2/ext5/packages/ext-locale/build/ext-locale-${lang}.js"></script>
 _EOD
 
