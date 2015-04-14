@@ -1,6 +1,8 @@
 pve-manager (4.0-5) unstable; urgency=medium
 
   * ha GUI: show configuration errors
+
+  * fix apt sources for jessie
   
  -- Proxmox Support Team <support@proxmox.com>  Tue, 07 Apr 2015 09:55:48 +0200
 

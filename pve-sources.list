@@ -1,1 +1,1 @@
-deb https://enterprise.proxmox.com/debian wheezy pve-enterprise
+deb https://enterprise.proxmox.com/debian jessie pve-enterprise
