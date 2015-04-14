@@ -102,7 +102,7 @@ __PACKAGE__->register_method ({
 
 	my $keyurl = "https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc";
 
-	print "download and import ceph reqpository keys\n";
+	print "download and import ceph repository keys\n";
 
 	# Note: wget on Debian wheezy cannot handle new ceph.com certificates, so
 	# we use LWP::UserAgent
