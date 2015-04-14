@@ -93,6 +93,7 @@ sub init {
     add_dirs($dirs, '/pve2/touch/', '/usr/share/pve-manager/touch/');
     add_dirs($dirs, '/pve2/ext4/', '/usr/share/pve-manager/ext4/');
     add_dirs($dirs, '/pve2/ext5/', '/usr/share/pve-manager/ext5/');
+    add_dirs($dirs, '/pve2/manager5/', '/usr/share/pve-manager/manager5/');
     add_dirs($dirs, '/pve2/images/' => '/usr/share/pve-manager/images/');
     add_dirs($dirs, '/pve2/css/' => '/usr/share/pve-manager/css/');
     add_dirs($dirs, '/pve2/js/' => '/usr/share/pve-manager/js/');
