@@ -1070,6 +1070,111 @@ __PACKAGE__->register_method({
 	return $res;
     }});
 
+__PACKAGE__->register_method({
+    name => 'apl_download', 
+    path => 'aplinfo', 
+    method => 'POST',
+    permissions => {
+	check => ['perm', '/storage/{storage}', ['Datastore.AllocateTemplate']],
+    },
+    description => "Download appliance templates.",
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+    	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    storage => get_standard_option('pve-storage-id'),
+	    template => { type => 'string', maxLength => 255 },
+	},
+    },
+    returns => { type => "string" },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $user = $rpcenv->get_user();
+
+	my $node = $param->{node};
+
+	my $list = PVE::APLInfo::load_data();
+
+	my $template = $param->{template};
+	my $pd = $list->{all}->{$template};
+
+	raise_param_exc({ template => "no such template"}) if !$pd;
+
+	my $cfg = cfs_read_file("storage.cfg");
+	my $scfg = PVE::Storage::storage_check_enabled($cfg, $param->{storage}, $node);
+
+	die "cannot download to storage type '$scfg->{type}'" 
+	    if !($scfg->{type} eq 'dir' || $scfg->{type} eq 'nfs');
+
+	die "unknown template type '$pd->{type}'\n" if $pd->{type} ne 'openvz';
+
+	die "storage '$param->{storage}' does not support templates\n" 
+	    if !$scfg->{content}->{vztmpl};
+
+	my $src = $pd->{location};
+	my $tmpldir = PVE::Storage::get_vztmpl_dir($cfg, $param->{storage});
+	my $dest = "$tmpldir/$template";
+	my $tmpdest = "$tmpldir/${template}.tmp.$$";
+
+	my $worker = sub  {
+	    my $upid = shift;
+	    
+	    print "starting template download from: $src\n";
+	    print "target file: $dest\n";
+
+	    eval {
+
+		if (-f $dest) {
+		    my $md5 = (split (/\s/, `md5sum '$dest'`))[0];
+
+		    if ($md5 && (lc($md5) eq lc($pd->{md5sum}))) {
+			print "file already exists $md5 - no need to download\n";
+			return;
+		    }
+		}
+
+		local %ENV;
+		my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
+		if ($dccfg->{http_proxy}) {
+		    $ENV{http_proxy} = $dccfg->{http_proxy};
+		}
+
+		my @cmd = ('/usr/bin/wget', '--progress=dot:mega', '-O', $tmpdest, $src);
+		if (system (@cmd) != 0) {
+		    die "download failed - $!\n";
+		}
+
+		my $md5 = (split (/\s/, `md5sum '$tmpdest'`))[0];
+		
+		if (!$md5 || (lc($md5) ne lc($pd->{md5sum}))) {
+		    die "wrong checksum: $md5 != $pd->{md5sum}\n";
+		}
+
+		if (system ('mv', $tmpdest, $dest) != 0) {
+		    die "unable to save file - $!\n";
+		}
+	    };
+	    my $err = $@;
+
+	    unlink $tmpdest;
+
+	    if ($err) {
+		print "\n";
+		die $err if $err;
+	    }
+
+	    print "download finished\n";
+	};
+
+	return $rpcenv->fork_worker('download', undef, $user, $worker);
+    }});
+
+
 my $get_start_stop_list = sub {
     my ($nodename, $autostart) = @_;
 
