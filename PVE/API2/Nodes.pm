@@ -20,6 +20,7 @@ use PVE::JSONSchema qw(get_standard_option);
 use PVE::AccessControl;
 use PVE::Storage;
 use PVE::Firewall;
+use PVE::LXC;
 use PVE::APLInfo;
 use PVE::HA::Config;
 use PVE::QemuServer;
@@ -30,6 +31,7 @@ use PVE::API2::Tasks;
 use PVE::API2::Storage::Scan;
 use PVE::API2::Storage::Status;
 use PVE::API2::Qemu;
+use PVE::API2::LXC;
 use PVE::API2::VZDump;
 use PVE::API2::APT;
 use PVE::API2::Ceph;
@@ -41,6 +43,11 @@ use base qw(PVE::RESTHandler);
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Qemu",  
     path => 'qemu',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::LXC",  
+    path => 'lxc',
 });
 
 __PACKAGE__->register_method ({
@@ -135,6 +142,7 @@ __PACKAGE__->register_method ({
 	    { name => 'scan' },
 	    { name => 'storage' },
 	    { name => 'qemu' },
+	    { name => 'lxc' },
 	    { name => 'vzdump' },
 	    { name => 'ubcfailcnt' },
 	    { name => 'network' },
