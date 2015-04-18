@@ -20,9 +20,9 @@ Ext.define('PVE.tree.ResourceTree', {
 		iconCls: 'x-tree-node-computer',
 		text: gettext('Virtual Machine')
 	    },
-	    openvz: {
+	    lxc: {
 		iconCls: 'x-tree-node-openvz',
-		text: gettext('OpenVZ Container')
+		text: gettext('LXC Container')
 	    } 
 	}
     },
@@ -46,7 +46,7 @@ Ext.define('PVE.tree.ResourceTree', {
 
 	    // numeric compare for VM IDs
 	    // sort templates after regular VMs
-	    if (v1 === 'qemu' || v1 === 'openvz') {
+	    if (v1 === 'qemu' || v1 === 'lxc') {
 		if (n1.template && !n2.template) {
 		    return 1;
 		} else if (n2.template && !n1.template) {
@@ -340,8 +340,8 @@ Ext.define('PVE.tree.ResourceTree', {
 			menu = Ext.create('PVE.qemu.TemplateMenu', {
 			    pveSelNode: record
 			});
-		    } else if (record.data.type === 'openvz') {
-			menu = Ext.create('PVE.openvz.CmdMenu', {
+		    } else if (record.data.type === 'lxc') {
+			menu = Ext.create('PVE.lxc.CmdMenu', {
 			    pveSelNode: record
 			});
 		    } else {
@@ -393,7 +393,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		}
 	    },
 	    checkVmMigration: function(record) {
-		if (!(record.data.type === 'qemu' || record.data.type === 'openvz')) {
+		if (!(record.data.type === 'qemu' || record.data.type === 'lxc')) {
 		    throw "not a vm type";
 		}
 

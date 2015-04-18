@@ -39,7 +39,7 @@ Ext.define('PVE.data.ResourceStore', {
 		hidden: true,
 		convert: function(value, record) {
 		    var info = record.data;
-		    if (info.type === 'qemu' || info.type === 'openvz' || info.type === 'node') {
+		    if (info.type === 'qemu' || info.type === 'lxc' || info.type === 'node') {
 			return (Ext.isNumeric(info.uptime) && (info.uptime > 0));
 		    } else {
 			return false;
@@ -65,7 +65,7 @@ Ext.define('PVE.data.ResourceStore', {
 			text = info.pool;
 		    } else if (info.type === 'storage') {
 			text = info.storage + ' (' + info.node + ')';
-		    } else if (info.type === 'qemu' || info.type === 'openvz') {
+		    } else if (info.type === 'qemu' || info.type === 'lxc') {
 			text = String(info.vmid);
 			if (info.name) {
 			    text += " (" + info.name + ')';

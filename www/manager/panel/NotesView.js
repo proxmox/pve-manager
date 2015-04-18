@@ -35,8 +35,8 @@ Ext.define('PVE.panel.NotesView', {
 
 	if (vmtype === 'qemu') {
 	    me.url = '/api2/extjs/nodes/' + nodename + '/qemu/' + vmid + '/config';
-	} else if (vmtype === 'openvz') {
-	    me.url = '/api2/extjs/nodes/' + nodename + '/openvz/' + vmid + '/config';
+	} else if (vmtype === 'lxc') {
+	    me.url = '/api2/extjs/nodes/' + nodename + '/lxc/' + vmid + '/config';
 	} else {
 	    throw "unknown vm type '" + vmtype + "'";
 	}

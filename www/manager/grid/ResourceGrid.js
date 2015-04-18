@@ -203,8 +203,8 @@ Ext.define('PVE.grid.ResourceGrid', {
 			menu = Ext.create('PVE.qemu.TemplateMenu', {
 			    pveSelNode: record
 			});
-		    } else if (record.data.type === 'openvz') {
-			menu = Ext.create('PVE.openvz.CmdMenu', {
+		    } else if (record.data.type === 'lxc') {
+			menu = Ext.create('PVE.lxc.CmdMenu', {
 			    pveSelNode: record
 			});
 		    } else {

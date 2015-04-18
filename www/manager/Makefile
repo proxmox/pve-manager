@@ -10,7 +10,7 @@ JSSRC= 				                 	\
 	qemu/SendKeyMenu.js				\
 	qemu/CmdMenu.js					\
 	qemu/TemplateMenu.js				\
-	openvz/CmdMenu.js				\
+	lxc/CmdMenu.js					\
 	VNCConsole.js					\
 	data/TimezoneStore.js				\
 	data/reader/JsonObject.js			\
@@ -139,16 +139,10 @@ JSSRC= 				                 	\
 	qemu/SnapshotTree.js				\
 	qemu/Config.js					\
 	qemu/CreateWizard.js				\
-	openvz/StatusView.js				\
-	openvz/Summary.js				\
-	openvz/RessourceEdit.js				\
-	openvz/RessourceView.js				\
-	openvz/Options.js				\
-	openvz/Network.js				\
-	openvz/DNS.js					\
-	openvz/BeanCounterGrid.js			\
-	openvz/Config.js				\
-	openvz/CreateWizard.js				\
+	lxc/StatusView.js				\
+	lxc/Summary.js					\
+	lxc/Config.js					\
+	lxc/CreateWizard.js				\
 	pool/StatusView.js				\
 	pool/Summary.js					\
 	pool/Config.js					\

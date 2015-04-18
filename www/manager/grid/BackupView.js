@@ -27,6 +27,10 @@ Ext.define('PVE.grid.BackupView', {
 	    filterFn = function(item) {
 		return item.data.volid.match(':backup/vzdump-openvz-');
 	    };
+	} else if (vmtype === 'lxc') {
+	    filterFn = function(item) {
+		return item.data.volid.match(':backup/vzdump-lxc-');
+	    };
 	} else if (vmtype === 'qemu') {
 	    filterFn = function(item) {
 		return item.data.volid.match(':backup/vzdump-qemu-');

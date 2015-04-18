@@ -924,9 +924,9 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     openConsoleWindow: function(viewer, vmtype, vmid, nodename, vmname) {
-	// kvm, openvz, shell, upgrade
+	// kvm, lxc, shell, upgrade
 
-	if (vmid == undefined && (vmtype === 'kvm' || vmtype === 'openvz')) {
+	if (vmid == undefined && (vmtype === 'kvm' || vmtype === 'lxc')) {
 	    throw "missing vmid";
 	}
 
@@ -942,8 +942,8 @@ Ext.define('PVE.Utils', { statics: {
 	    if (vmtype === 'kvm') {
 		url = '/nodes/' + nodename + '/qemu/' + vmid.toString() + '/spiceproxy';
 		PVE.Utils.openSpiceViewer(url, params);
-	    } else if (vmtype === 'openvz') {
-		url = '/nodes/' + nodename + '/openvz/' + vmid.toString() + '/spiceproxy';
+	    } else if (vmtype === 'lxc') {
+		url = '/nodes/' + nodename + '/lxc/' + vmid.toString() + '/spiceproxy';
 		PVE.Utils.openSpiceViewer(url, params);
 	    } else if (vmtype === 'shell') {
 		url = '/nodes/' + nodename + '/spiceshell';
@@ -970,7 +970,7 @@ Ext.define('PVE.Utils', { statics: {
 
     openVNCViewer: function(vmtype, vmid, nodename, vmname, novnc) {
 	var url = Ext.urlEncode({
-	    console: vmtype, // kvm, openvz, upgrade or shell
+	    console: vmtype, // kvm, lxc, upgrade or shell
 	    novnc: novnc ? 1 : 0,
 	    vmid: vmid,
 	    vmname: vmname,

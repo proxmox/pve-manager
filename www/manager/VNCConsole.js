@@ -393,9 +393,9 @@ Ext.define('PVE.KVMConsole', {
     }
 });
 
-Ext.define('PVE.OpenVZConsole', {
+Ext.define('PVE.LxcConsole', {
     extend: 'PVE.VNCConsole',
-    alias: ['widget.pveOpenVZConsole'],
+    alias: ['widget.pveLxcConsole'],
 
     initComponent : function() {
 	var me = this;
@@ -408,7 +408,7 @@ Ext.define('PVE.OpenVZConsole', {
 	    throw "no VM ID specified";
 	}
 
-	var baseUrl = "/nodes/" + me.nodename + "/openvz/" + me.vmid;
+	var baseUrl = "/nodes/" + me.nodename + "/lxc/" + me.vmid;
  
 	var vm_command = function(cmd, params, reload_applet) {
 	    PVE.Utils.API2Request({

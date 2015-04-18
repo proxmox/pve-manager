@@ -2,7 +2,7 @@ Ext.define('PVE.button.ConsoleButton', {
     extend: 'Ext.button.Split',
     alias: 'widget.pveConsoleButton',
 
-    consoleType: 'shell', // one of 'shell', 'kvm', 'openvz', 'upgrade'
+    consoleType: 'shell', // one of 'shell', 'kvm', 'lxc', 'upgrade'
 
     consoleName: undefined,
 

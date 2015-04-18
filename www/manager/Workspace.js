@@ -132,13 +132,13 @@ Ext.define('PVE.ConsoleWorkspace', {
 		vmname: param.vmname,
 		toplevel: true
 	    };
-	} else if (consoleType === 'openvz') {
+	} else if (consoleType === 'lxc') {
 	    me.title = "CT " + param.vmid;
 	    if (param.vmname) {
 		me.title += " ('" + param.vmname + "')";
 	    }
 	    content = {
-		xtype: 'pveOpenVZConsole',
+		xtype: 'pveLxcConsole',
 		novnc: param.novnc,
 		vmid: param.vmid,
 		nodename: param.node,
@@ -288,14 +288,14 @@ Ext.define('PVE.StdWorkspace', {
 			    root: 'PVE.dc.Config',
 			    node: 'PVE.node.Config',
 			    qemu: 'PVE.qemu.Config',
-			    openvz: 'PVE.openvz.Config',
+			    lxc: 'PVE.lxc.Config',
 			    storage: 'PVE.storage.Browser',
 			    pool: 'pvePoolConfig'
 			};
 			
 			if (selected.length > 0) {
 			    var n = selected[0];
-			    comp = { 
+			    comp = {
 				xtype: tlckup[n.data.type || 'root'] || 
 				    'pvePanelConfig',
 				layout: { type: 'fit' },
@@ -342,7 +342,7 @@ Ext.define('PVE.StdWorkspace', {
 	    text: gettext("Create CT"),
 	    disabled: !caps.vms['VM.Allocate'],
 	    handler: function() {
-		var wiz = Ext.create('PVE.openvz.CreateWizard', {});
+		var wiz = Ext.create('PVE.lxc.CreateWizard', {});
 		wiz.show();
 	    } 
 	});
