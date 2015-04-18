@@ -13,6 +13,7 @@ use PVE::INotify;
 use PVE::Cluster qw(cfs_read_file);
 use PVE::Storage;
 use PVE::QemuServer;
+use PVE::LXC;
 use PVE::RPCEnvironment;
 use PVE::API2::Subscription;
 use PVE::AutoBalloon;
@@ -175,30 +176,43 @@ sub update_qemu_status {
     }
 }
 
-sub find_vzctl_console_pids {
+sub remove_stale_lxc_consoles {
 
-    my $res = {};
+    my $vmstatus = PVE::LXC::vmstatus();
+    my $pidhash = PVE::LXC::find_lxc_console_pids();
 
-    dir_glob_foreach('/proc', '\d+', sub {
-	my ($pid) = @_;
+    foreach my $vmid (keys %$pidhash) {
+	next if defined($vmstatus->{$vmid});
+	syslog('info', "remove stale lxc-console for CT $vmid");
+	foreach my $pid (@{$pidhash->{$vmid}}) {
+	    kill(9, $pid);
+	}
+    }
+}
 
-	my $cmdline = file_read_firstline("/proc/$pid/cmdline");
-	return if !$cmdline;
+sub update_lxc_status {
 
-	my @args = split(/\0/, $cmdline);
+    my $ctime = time();
 
-	# serach for vzctl console <vmid>
-	return if scalar(@args) != 3; 
-	return if $args[1] ne 'console';
-	return if $args[2] !~ m/^\d+$/;
-	return if $args[0] !~ m|^(/usr/sbin/)?vzctl$|;
-	
-	my $vmid = $args[2];
-	
-	push @{$res->{$vmid}}, $pid;
-    });
+    my $vmstatus = PVE::LXC::vmstatus();
 
-    return $res;
+    foreach my $vmid (keys %$vmstatus) {
+	my $d = $vmstatus->{$vmid};
+	my $data;
+	if ($d->{status} eq 'running') { # running
+	    $data = "$d->{uptime}:$d->{name}:$d->{status}:0:$ctime:$d->{cpus}:$d->{cpu}:" .
+		"$d->{maxmem}:$d->{mem}:" .
+		"$d->{maxdisk}:$d->{disk}:" .
+		"$d->{netin}:$d->{netout}:" .
+		"$d->{diskread}:$d->{diskwrite}";
+	} else {
+	    $data = "0:$d->{name}:$d->{status}:0:$ctime:$d->{cpus}::" .
+		"$d->{maxmem}::" .
+		"$d->{maxdisk}:$d->{disk}:" .
+		":::";
+	}
+	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
+    }
 }
 
 sub update_storage_status {
@@ -248,10 +262,22 @@ sub update_status {
     syslog('err', "qemu status update error: $err") if $err;
 
     eval {
+	update_lxc_status();
+    };
+    $err = $@;
+    syslog('err', "lxc status update error: $err") if $err;
+
+    eval {
 	update_storage_status();
     };
     $err = $@;
     syslog('err', "storage status update error: $err") if $err;
+
+    eval {
+	remove_stale_lxc_consoles();
+    };
+    $err = $@;
+    syslog('err', "lxc console cleanup error: $err") if $err;
 }
 
 my $next_update = 0;
