@@ -141,6 +141,7 @@ JSSRC= 				                 	\
 	qemu/CreateWizard.js				\
 	lxc/StatusView.js				\
 	lxc/Summary.js					\
+	lxc/Network.js					\
 	lxc/Config.js					\
 	lxc/CreateWizard.js				\
 	pool/StatusView.js				\
