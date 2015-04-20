@@ -13,6 +13,25 @@ Ext.apply(Ext.form.field.VTypes, {
     IPAddressText:  gettext('Example') + ': 192.168.1.1',
     IPAddressMask: /[\d\.]/i,
 
+    IPCIDRAddress:  function(v) {
+	return IP4_cidr_match.test(v);
+    },
+    IPCIDRAddressText:  gettext('Example') + ': 192.168.1.1/24',
+    IPCIDRAddressMask: /[\d\.\/]/i,
+
+    IP6Address:  function(v) {
+        return IP6_match.test(v);
+    },
+    IP6AddressText:  gettext('Example') + ': 2001:DB8::42',
+    IP6AddressMask: /[A-Fa-f0-9:]/,
+
+    IP6CIDRAddress:  function(v) {
+	return IP6_cidr_match.test(v);
+    },
+    IP6CIDRAddressText:  gettext('Example') + ': 2001:DB8::42/64',
+    IP6CIDRAddressMask:  /[A-Fa-f0-9:\/]/,
+
+    
     IP64Address:  function(v) {
         return IP64_match.test(v);
     },
