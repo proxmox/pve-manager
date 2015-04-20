@@ -223,24 +223,35 @@ Ext.define('PVE.Parser', { statics: {
 	return netarray.join(';');
     },
 
+    parseLxcNetwork: function(value) {
+	if (!value) {
+	    return;
+	}
+
+	var data = {};
+	Ext.Array.each(value.split(','), function(p) {
+	    if (!p || p.match(/^\s*$/)) {
+		return; // continue
+	    }
+	    var match_res = p.match(/^(link|hwaddr|mtu|name|ip|ip6|gw|gw6)=(\S+)$/);
+	    if (!match_res) {
+		// todo: simply ignore errors ?
+		return; // continue
+	    }
+	    data[match_res[1]] = match_res[2];
+	});
+
+	return data;
+    },
+
     printLxcNetwork: function(data) {
 	var tmparray = [];
-	Ext.Array.each(['link', 'hwaddr', 'mtu', 'name', 'ipv4',
-			'ipv4.gateway', 'ipv6', 'ipv6.gateway',
-			'firewall'], function(key) {
+	Ext.Array.each(['link', 'hwaddr', 'mtu', 'name', 'ip',
+			'gw', 'ip6', 'gw6'], function(key) {
 		var value = data[key];
-		if (key === 'bridge'){
-		    if(data['tag']){
-			value = value + 'v' + data['tag'];
-		    }
-		    if (data['firewall']){
-			value = value + 'f';
-		    }
-		}
 		if (value) {
 		    tmparray.push(key + '=' + value);
 		}
-
 	});
 	
 	return tmparray.join(',');
