@@ -43,12 +43,11 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    }
 	});
 
-	var bridgesel = Ext.create('PVE.form.BridgeSelector', {
-	    name: 'bridge',
-	    fieldLabel: gettext('Bridge'),
-	    labelAlign: 'right',
-	    autoSelect: true,
-	    allowBlank: false
+	var networkpanel = Ext.create('PVE.lxc.NetworkInputPanel', {
+	    title: gettext('Network'),
+	    insideWizard: true,
+	    dataCache: {},
+	    create: true,
 	});
 
 	Ext.applyIf(me, {
@@ -68,7 +67,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 				change: function(f, value) {
 				    tmplstoragesel.setNodename(value);
 				    tmplsel.setStorage(undefined, value);
-				    bridgesel.setNodename(value);
+				    networkpanel.setNodename(value);
 				    storagesel.setNodename(value);
 				}
 			    }
@@ -143,31 +142,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    title: gettext('Template'),
 		    column1: [ tmplstoragesel, tmplsel]
 		},
-//		{
-//		    xtype: 'pveLxcResourceInputPanel',
-//		    title: gettext('Resources')
-//		},
-		{
-		    xtype: 'inputpanel',
-		    title: gettext('Network'),
-		    column1: [
-			bridgesel,
-			{
-			    xtype: 'pvecheckbox',
-			    fieldLabel: gettext('Firewall'),
-			    name: 'firewall',
-			    checked: false,
-			    disabled: true
-			}
-		    ],
-		    onGetValues: function(values) {
-			var netif = PVE.Parser.printLxcNetwork({
-			    link: values.bridge,
-			    firewall: values.firewall
-			});
-			return { net0: netif };
-		    }
-		},
+		networkpanel,
 		{
 		    title: gettext('Confirm'),
 		    layout: 'fit',

@@ -4,6 +4,19 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 
     insideWizard: false,
 
+    setNodename: function(nodename) {
+	var me = this;
+	
+	if (!nodename || (me.nodename === nodename)) {
+	    return;
+	}
+
+	me.nodename = nodename;
+
+	var bridgesel = me.query("[isFormField][name=link]")[0];
+	bridgesel.setNodename(nodename);
+    },
+    
     onGetValues: function(values) {
 	var me = this;
 
@@ -15,7 +28,12 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    id = me.ifname;
 	}
 
+	if (!id) {
+	    return {};
+	}
+
 	var newdata = {};
+	
 	newdata[id] = PVE.Parser.printLxcNetwork(values);
 	return newdata;
     },
@@ -26,13 +44,14 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	if (!me.dataCache) {
 	    throw "no dataCache specified";
 	}
-
-	if (!me.nodename) {
-	    throw "no node name specified";
-	}
 	
 	var cdata = {};
 
+	if (me.insideWizard) {
+	    me.ifname = 'net0';
+	    cdata.name = 'eth0';
+	}
+	
 	if (!me.create) {
 	    if (!me.ifname) {
 		throw "no interface name specified";
@@ -58,6 +77,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    xtype: 'combobox',
 	    fieldLabel: gettext('ID'),
 	    store: netliststore,
+	    editable: false,
 	    name: 'id',
 	    value: me.ifname,
 	    disabled: !me.create,
