@@ -29,6 +29,7 @@ var IPV6_LS32 = "(?:(?:" + IPV6_H16 + ":" + IPV6_H16 + ")|" + IPV4_REGEXP + ")";
 
 
 var IP4_match = new RegExp("^(?:" + IPV4_REGEXP + ")$");
+var IP4_cidr_match = new RegExp("^(?:" + IPV4_REGEXP + ")\/[1-3][0-9]?$");
 
 var IPV6_REGEXP = "(?:" +
     "(?:(?:"                                                  + "(?:" + IPV6_H16 + ":){6})" + IPV6_LS32 + ")|" +
@@ -41,6 +42,9 @@ var IPV6_REGEXP = "(?:" +
     "(?:(?:(?:(?:" + IPV6_H16 + ":){0,5}" + IPV6_H16 + ")?::" +                         ")" + IPV6_H16  + ")|" +
     "(?:(?:(?:(?:" + IPV6_H16 + ":){0,7}" + IPV6_H16 + ")?::" +                         ")"             + ")"  +
     ")";
+
+var IP6_match = new RegExp("^(?:" + IPV6_REGEXP + ")$");
+var IP6_cidr_match = new RegExp("^(?:" + IPV6_REGEXP + ")\/[0-9]{1,3}?$");
 
 var IP64_match = new RegExp("^(?:" + IPV6_REGEXP + "|" + IPV4_REGEXP + ")$");
 
