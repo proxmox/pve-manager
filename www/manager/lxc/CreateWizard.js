@@ -142,6 +142,10 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    title: gettext('Template'),
 		    column1: [ tmplstoragesel, tmplsel]
 		},
+		{
+		    xtype: 'pveLxcResourceInputPanel',
+		    title: gettext('Resources')
+		},
 		networkpanel,
 		{
 		    title: gettext('Confirm'),
