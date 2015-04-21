@@ -21,7 +21,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		text: gettext('Virtual Machine')
 	    },
 	    lxc: {
-		iconCls: 'x-tree-node-openvz',
+		iconCls: 'x-tree-node-lxc',
 		text: gettext('LXC Container')
 	    } 
 	}

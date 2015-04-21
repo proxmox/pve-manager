@@ -49,8 +49,8 @@
 .pve-itype-icon-qemu,
 .pve-itype-icon-qemu-template,
 .pve-itype-icon-qemu-running,
-.pve-itype-icon-openvz,
-.pve-itype-icon-openvz-running,
+.pve-itype-icon-lxc,
+.pve-itype-icon-lxc-running,
 .pve-itype-icon-node,
 .pve-itype-icon-node-running,
 .pve-itype-icon-storage,
@@ -83,16 +83,16 @@
     background-image:url(../images/computer-template.png);
 }
 
-.pve-itype-icon-openvz,
-.x-tree-node-openvz,
-.x-grid-tree-node-expanded .x-tree-node-openvz
+.pve-itype-icon-lxc,
+.x-tree-node-lxc,
+.x-grid-tree-node-expanded .x-tree-node-lxc
 {
     background-image:url(../images/openvz-off.png);
 }
 
-.pve-itype-icon-openvz-running,
-.x-tree-node-openvz-running,
-.x-grid-tree-node-expanded .x-tree-node-openvz-running
+.pve-itype-icon-lxc-running,
+.x-tree-node-lxc-running,
+.x-grid-tree-node-expanded .x-tree-node-lxc-running
 {
     background-image:url(../images/openvz-on.png);
 }
