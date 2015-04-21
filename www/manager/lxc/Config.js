@@ -126,6 +126,11 @@ Ext.define('PVE.lxc.Config', {
 		    itemId: 'summary'
 		},
 		{
+		    title: gettext('Resources'),
+		    itemId: 'resources',
+		    xtype: 'pveLxcRessourceView'
+		},
+		{
 		    title: gettext('Network'),
 		    itemId: 'network',
 		    xtype: 'pveLxcNetworkView'
