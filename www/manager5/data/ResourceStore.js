@@ -19,7 +19,7 @@ Ext.define('PVE.data.ResourceStore', {
 	var field_defaults = {
 	    type: {
 		header: gettext('Type'),
-		type: 'text',
+		type: 'string',
 		renderer: PVE.Utils.render_resource_type,
 		sortable: true,
 		hideable: false,
@@ -27,7 +27,7 @@ Ext.define('PVE.data.ResourceStore', {
 	    },
 	    id: {
 		header: 'ID',
-		type: 'text',
+		type: 'string',
 		hidden: true,
 		sortable: true,
 		width: 80
@@ -48,7 +48,7 @@ Ext.define('PVE.data.ResourceStore', {
 	    },
 	    text: {
 		header: gettext('Description'),
-		type: 'text',
+		type: 'string',
 		sortable: true,
 		width: 200,
 		convert: function(value, record) {
@@ -87,7 +87,7 @@ Ext.define('PVE.data.ResourceStore', {
 		header: gettext('Name'),
 		hidden: true,
 		sortable: true,
-		type: 'text'
+		type: 'string'
 	    },
 	    disk: {
 		header: gettext('Disk usage'),
@@ -181,21 +181,21 @@ Ext.define('PVE.data.ResourceStore', {
 	    }, 
 	    node: {
 		header: gettext('Node'),
-		type: 'text',
+		type: 'string',
 		hidden: true,
 		sortable: true,
 		width: 110
 	    },
 	    storage: {
 		header: gettext('Storage'),
-		type: 'text',
+		type: 'string',
 		hidden: true,
 		sortable: true,
 		width: 110
 	    },
 	    pool: {
 		header: gettext('Pool'),
-		type: 'text',
+		type: 'string',
 		hidden: true,
 		sortable: true,
 		width: 110
