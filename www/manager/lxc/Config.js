@@ -136,6 +136,11 @@ Ext.define('PVE.lxc.Config', {
 		    xtype: 'pveLxcNetworkView'
 		},
 		{
+		    title: gettext('DNS'),
+		    itemId: 'dns',
+		    xtype: 'pveLxcDNS'
+		},
+		{
 		    title: gettext('Options'),
 		    itemId: 'options',
 		    xtype: 'pveLxcOptions'

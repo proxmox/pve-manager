@@ -144,6 +144,7 @@ JSSRC= 				                 	\
 	lxc/Network.js					\
 	lxc/Resources.js				\
 	lxc/Options.js					\
+	lxc/DNS.js					\
 	lxc/Config.js					\
 	lxc/CreateWizard.js				\
 	pool/StatusView.js				\
