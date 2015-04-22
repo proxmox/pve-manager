@@ -136,14 +136,12 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    {
 		xtype: 'pveVlanField',
 		name: 'tag',
-		disabled: true,
 		value: cdata.tag,
 	    },
 	    {
 		xtype: 'pvecheckbox',
 		fieldLabel: gettext('Firewall'),
 		name: 'firewall',
-		disabled: true,
 		checked: cdata.firewall,
 	    }
 	];
