@@ -136,6 +136,11 @@ Ext.define('PVE.lxc.Config', {
 		    xtype: 'pveLxcNetworkView'
 		},
 		{
+		    title: gettext('Options'),
+		    itemId: 'options',
+		    xtype: 'pveLxcOptions'
+		},
+		{
 		    title: gettext('Task History'),
 		    itemId: 'tasks',
 		    xtype: 'pveNodeTasks',

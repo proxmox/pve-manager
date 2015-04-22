@@ -1199,12 +1199,22 @@ my $get_start_stop_list = sub {
 	    
 	    my $bootorder = LONG_MAX;
 
-	    if ($d->{type} eq 'qemu') {
+	    if ($d->{type} eq 'lxc') {
+		my $conf = PVE::LXC::load_config($vmid); 
+		return if $autostart && !$conf->{'pve.onboot'};
+		
+		if ($conf->{'pve.startup'}) {
+		    $startup = PVE::JSONSchema::parse_startup($conf->{'pve.startup'});
+		    $startup->{order} = $bootorder if !defined($startup->{order});
+		} else {
+		    $startup = { order => $bootorder };
+		}
+	    } elsif ($d->{type} eq 'qemu') {
 		my $conf = PVE::QemuServer::load_config($vmid);
 		return if $autostart && !$conf->{onboot};
 
 		if ($conf->{startup}) {
-		    $startup = PVE::QemuServer::parse_startup($conf->{startup});
+		    $startup =  PVE::JSONSchema::parse_startup($conf->{startup});
 		    $startup->{order} = $bootorder if !defined($startup->{order});
 		} else {
 		    $startup = { order => $bootorder };
@@ -1282,7 +1292,11 @@ __PACKAGE__->register_method ({
 			my $default_delay = 0;
 			my $upid;
 
-			if ($d->{type} eq 'qemu') {
+			if ($d->{type} eq 'lxc') {
+			    return if PVE::LXC::check_running($vmid);
+			    print STDERR "Starting CT $vmid\n";
+			    $upid = PVE::API2::LXC->vm_start({node => $nodename, vmid => $vmid });
+			} elsif ($d->{type} eq 'qemu') {
 			    $default_delay = 3; # to redruce load
 			    return if PVE::QemuServer::check_running($vmid, 1);
 			    print STDERR "Starting VM $vmid\n";
@@ -1307,7 +1321,11 @@ __PACKAGE__->register_method ({
 				}
 			    }
 			} else {
-			    print STDERR "Starting VM $vmid failed: status\n";
+			    if ($d->{type} eq 'lxc') {
+				print STDERR "Starting CT $vmid failed: $status\n";
+			    } elsif ($d->{type} eq 'qemu') {
+				print STDERR "Starting VM $vmid failed: status\n";
+			    }
 			}
 		    };
 		    warn $@ if $@;
@@ -1323,7 +1341,13 @@ my $create_stop_worker = sub {
     my ($nodename, $type, $vmid, $down_timeout) = @_;
 
     my $upid;
-    if ($type eq 'qemu') {
+    if ($type eq 'lxc') {
+	return if !PVE::LXC::check_running($vmid);
+	my $timeout =  defined($down_timeout) ? int($down_timeout) : 60;
+	print STDERR "Stopping CT $vmid (timeout = $timeout seconds)\n";
+	$upid = PVE::API2::LXC->vm_shutdown({node => $nodename, vmid => $vmid, 
+					     timeout => $timeout, forceStop => 1 });
+    } elsif ($type eq 'qemu') {
 	return if !PVE::QemuServer::check_running($vmid, 1);
 	my $timeout =  defined($down_timeout) ? int($down_timeout) : 60*3;
 	print STDERR "Stopping VM $vmid (timeout = $timeout seconds)\n";
@@ -1412,11 +1436,16 @@ my $create_migrate_worker = sub {
     my ($nodename, $type, $vmid, $target) = @_;
 
     my $upid;
-    if ($type eq 'qemu') {
+    if ($type eq 'lxc') {
+	my $online = PVE::LXC::check_running($vmid) ? 1 : 0;
+	print STDERR "Migrating CT $vmid\n";
+	$upid = PVE::API2::LXC->migrate_vm({node => $nodename, vmid => $vmid, target => $target,
+					    online => $online });
+    } elsif ($type eq 'qemu') {
 	my $online = PVE::QemuServer::check_running($vmid, 1) ? 1 : 0;
 	print STDERR "Migrating VM $vmid\n";
 	$upid = PVE::API2::Qemu->migrate_vm({node => $nodename, vmid => $vmid, target => $target,
-					      online => $online });
+					     online => $online });
     } else {
 	die "unknown VM type '$type'\n";
     }
