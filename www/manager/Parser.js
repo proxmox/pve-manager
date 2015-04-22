@@ -233,7 +233,7 @@ Ext.define('PVE.Parser', { statics: {
 	    if (!p || p.match(/^\s*$/)) {
 		return; // continue
 	    }
-	    var match_res = p.match(/^(link|hwaddr|mtu|name|ip|ip6|gw|gw6)=(\S+)$/);
+	    var match_res = p.match(/^(bridge|hwaddr|mtu|name|ip|ip6|gw|gw6)=(\S+)$/);
 	    if (!match_res) {
 		// todo: simply ignore errors ?
 		return; // continue
@@ -246,7 +246,7 @@ Ext.define('PVE.Parser', { statics: {
 
     printLxcNetwork: function(data) {
 	var tmparray = [];
-	Ext.Array.each(['link', 'hwaddr', 'mtu', 'name', 'ip',
+	Ext.Array.each(['bridge', 'hwaddr', 'mtu', 'name', 'ip',
 			'gw', 'ip6', 'gw6'], function(key) {
 		var value = data[key];
 		if (value) {

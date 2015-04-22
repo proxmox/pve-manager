@@ -13,7 +13,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 
 	me.nodename = nodename;
 
-	var bridgesel = me.query("[isFormField][name=link]")[0];
+	var bridgesel = me.query("[isFormField][name=bridge]")[0];
 	bridgesel.setNodename(nodename);
     },
     
@@ -127,7 +127,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    },
 	    {
 		xtype: 'PVE.form.BridgeSelector',
-		name: 'link',
+		name: 'bridge',
 		nodename: me.nodename,
 		fieldLabel: gettext('Bridge'),
 		value: cdata.bridge,
@@ -377,7 +377,7 @@ Ext.define('PVE.lxc.NetworkView', {
 		{
 		    header: gettext('Bridge'),
 		    width: 80,
-		    dataIndex: 'link'
+		    dataIndex: 'bridge'
 		},
 		{
 		    header: gettext('Firewall'),
@@ -439,7 +439,7 @@ Ext.define('PVE.lxc.NetworkView', {
     Ext.define('pve-lxc-network', {
 	extend: "Ext.data.Model",
 	proxy: { type: 'memory' },
-	fields: [ 'id', 'name', 'hwaddr', 'link',
+	fields: [ 'id', 'name', 'hwaddr', 'bridge',
 		  'ip', 'gw', 'ip6', 'gw6', 'tag', 'firewall' ]
     });
 
