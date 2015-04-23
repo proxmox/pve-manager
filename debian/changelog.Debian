@@ -1,3 +1,11 @@
+pve-manager (3.4-5) unstable; urgency=low
+
+  * pveceph: add hammer release
+  
+  * pveceph init: allow protocol http
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 23 Apr 2015 06:16:24 +0200
+
 pve-manager (3.4-4) unstable; urgency=low
 
   * GUI: add quick search fields to storage content and backup views
