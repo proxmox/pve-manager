@@ -110,7 +110,7 @@ __PACKAGE__->register_method ({
 	#die "unable to download ceph release key\n";
 
 	my $tmp_key_file = "/tmp/ceph-release-keys.asc";
-	my $ua = LWP::UserAgent->new(protocols_allowed => ['https'], timeout => 30);
+	my $ua = LWP::UserAgent->new(protocols_allowed => ['http', 'https'], timeout => 30);
 	$ua->env_proxy;
 	my $response = $ua->get($keyurl);
 	if ($response->is_success) {
