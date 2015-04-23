@@ -148,49 +148,9 @@ Ext.define('PVE.lxc.CreateWizard', {
 		},
 		networkpanel,
 		{
-		    xtype: 'inputpanel',
+		    xtype: 'pveLxcDNSInputPanel',
 		    title: gettext('DNS'),
-		    column1: [
-			{
-			    xtype: 'pvetextfield',
-			    name: 'searchdomain',
-			    skipEmptyText: true,
-			    fieldLabel: gettext('DNS domain'),
-			    emptyText: 'use host settings',
-			    allowBlank: true,
-			    listeners: {
-				change: function(f, value) {
-				    if (!me.rendered) {
-					return;
-				    }
-				    var field = me.down('#dns1');
-				    field.setDisabled(!value);
-				    field.clearInvalid();
-				    field = me.down('#dns2');
-				    field.setDisabled(!value);
-				    field.clearInvalid();
-				}
-			    }
-			},
-			{
-			    xtype: 'pvetextfield',
-			    fieldLabel: gettext('DNS server') + " 1",
-			    vtype: 'IPAddress',
-			    allowBlank: true,
-			    disabled: true,
-			    name: 'nameserver',
-			    itemId: 'dns1'
-			},
-			{
-			    xtype: 'pvetextfield',
-			    fieldLabel: gettext('DNS server') + " 2",
-			    vtype: 'IPAddress',
-			    skipEmptyText: true,
-			    disabled: true,
-			    name: 'nameserver',
-			    itemId: 'dns2'
-			}
-		    ]
+		    insideWizard: true
 		},
 		{
 		    title: gettext('Confirm'),
