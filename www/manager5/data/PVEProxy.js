@@ -1,31 +1,29 @@
 Ext.define('PVE.RestProxy', {
     extend: 'Ext.data.RestProxy',
     alias : 'proxy.pve',
+    
+    pageParam : null,
+    startParam: null,
+    limitParam: null,
+    groupParam: null,
+    sortParam: null,
+    filterParam: null,
+    noCache : false,
+    afterRequest: function(request, success) {
+		this.fireEvent('afterload', this, request, success);
+		return;
+	},
 
     constructor: function(config) {
-	var me = this;
 
-	config = config || {};
-
-	Ext.applyIf(config, {
-	    pageParam : null,
-	    startParam: null,
-	    limitParam: null,
-	    groupParam: null,
-	    sortParam: null,
-	    filterParam: null,
-	    noCache : false,
+	Ext.applyIf(config, {	    
 	    reader: {
 		type: 'json',
 		root: config.root || 'data'
 	    },
-	    afterRequest: function(request, success) {
-		me.fireEvent('afterload', me, request, success);
-		return;
-	    }
 	});
 
-	me.callParent([config]); 
+	this.callParent([config]); 
     }
 
 }, function() {
