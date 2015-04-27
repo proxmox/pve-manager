@@ -1,3 +1,9 @@
+pve-manager (3.4-6) unstable; urgency=low
+
+  *  pveceph: use git.ceph.com for key download url
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 27 Apr 2015 06:34:31 +0200
+
 pve-manager (3.4-5) unstable; urgency=low
 
   * pveceph: add hammer release
