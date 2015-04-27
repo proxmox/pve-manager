@@ -19,7 +19,7 @@ Ext.define('PVE.RestProxy', {
 	Ext.applyIf(config, {	    
 	    reader: {
 		type: 'json',
-		root: config.root || 'data'
+		rootProperty: config.root || 'data'
 	    },
 	});
 
