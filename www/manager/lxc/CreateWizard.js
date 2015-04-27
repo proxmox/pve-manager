@@ -144,7 +144,8 @@ Ext.define('PVE.lxc.CreateWizard', {
 		},
 		{
 		    xtype: 'pveLxcResourceInputPanel',
-		    title: gettext('Resources')
+		    title: gettext('Resources'),
+		    insideWizard: true
 		},
 		networkpanel,
 		{

@@ -35,18 +35,18 @@ Ext.define('PVE.lxc.RessourceInputPanel', {
 	];
 
 	me.column2 = [
-	    // {
-	    // 	xtype: 'numberfield',
-	    // 	name: 'disk',
-	    // 	minValue: 0.001,
-	    // 	maxValue: 128*1024,
-	    // 	decimalPrecision: 3,
-	    // 	value: '4',
-	    // 	step: 1,
-	    // 	fieldLabel: gettext('Disk size') + ' (GB)',
-	    // 	labelWidth: labelWidth,
-	    // 	allowBlank: false
-	    // },
+	    {
+	     	xtype: me.insideWizard ? 'numberfield' : 'displayfield',
+	     	name: 'disk',
+	     	minValue: 0,
+	     	maxValue: 128*1024,
+	     	decimalPrecision: 3,
+	     	value: '8',
+	     	step: 1,
+	     	fieldLabel: gettext('Disk size') + ' (GB)',
+	     	labelWidth: labelWidth,
+	     	allowBlank: false
+	    },
 	    {
 		xtype: 'numberfield',
 		name: 'cpus',
