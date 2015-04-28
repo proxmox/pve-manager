@@ -11,8 +11,8 @@ use PVE::Tools qw(run_command);
 my $gitdir = shift;
 die "no repository" if !$gitdir;
 
-my $path = "$gitdir/refs/heads/stable-3.4-fixes";
-die "master branch does not exists" if ! -f $path;
+my $path = "$gitdir/refs/heads/stable-3";
+die "stable-3 branch does not exists" if ! -f $path;
 
 my $arg1 = shift;
 
