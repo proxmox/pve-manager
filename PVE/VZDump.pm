@@ -86,7 +86,7 @@ sub storage_info {
  
     die "can't use storage type '$type' for backup\n" 
 	if (!($type eq 'dir' || $type eq 'nfs' || $type eq 'glusterfs'));
-    die "can't use storage for backups - wrong content type\n" 
+    die "can't use storage '$storage' for backups - wrong content type\n" 
 	if (!$scfg->{content}->{backup});
 
     PVE::Storage::activate_storage($cfg, $storage);
