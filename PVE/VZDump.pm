@@ -28,15 +28,19 @@ my $logdir = '/var/log/vzdump';
 my @plugins = qw();
 
 # Load available plugins
-my $pveplug = "/usr/share/perl5/PVE/VZDump/QemuServer.pm";
-if (-f $pveplug) {
-    eval { require $pveplug; };
-    if (!$@) {
-	PVE::VZDump::QemuServer->import ();
-	  push @plugins, "PVE::VZDump::QemuServer";
-      } else {
-	  warn $@;
-      }
+my @pve_vzdump_classes = qw(PVE::VZDump::QemuServer PVE::VZDump::LXC);
+foreach my $plug (@pve_vzdump_classes) {
+    my $filename = "/usr/share/perl5/$plug.pm";
+    $filename =~ s!::!/!g;
+    if (-f $filename) {
+	eval { require $filename; };
+	if (!$@) {
+	    $plug->import ();
+	    push @plugins, $plug;
+	} else {
+	    warn $@;
+	}
+    }
 }
 
 # helper functions
@@ -849,12 +853,29 @@ sub exec_backup_task {
 
 	    $self->run_hook_script ('backup-start', $task, $logfd);
 
+	    if ($vmtype eq 'lxc') {
+		# pre-suspend rsync
+		$plugin->copy_data_phase1($task, $vmid);
+	    }
+
 	    debugmsg ('info', "suspend vm", $logfd);
 	    $vmstoptime = time ();
 	    $self->run_hook_script ('pre-stop', $task, $logfd);
 	    $plugin->suspend_vm ($task, $vmid);
 	    $cleanup->{resume} = 1;
 
+	    if ($vmtype eq 'lxc') {
+		# post-suspend rsync
+		$plugin->copy_data_phase2($task, $vmid);
+
+		debugmsg ('info', "resume vm", $logfd);
+		$cleanup->{resume} = 0;
+		$self->run_hook_script('pre-restart', $task, $logfd);
+		$plugin->resume_vm($task, $vmid);
+		my $delay = time () - $vmstoptime;
+		debugmsg('info', "vm is online again after $delay seconds", $logfd);
+	    }
+	    
 	} elsif ($mode eq 'snapshot') {
 
 	    $self->run_hook_script ('backup-start', $task, $logfd);
