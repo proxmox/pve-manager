@@ -114,7 +114,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		}
 	    }
 	}
-	var child = Ext.ModelMgr.create(info, 'PVETree', info.id);
+	var child = Ext.create('PVETree', info);
 
         var cs = node.childNodes;
 	var pos;
