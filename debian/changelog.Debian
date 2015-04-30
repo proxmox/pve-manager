@@ -1,3 +1,9 @@
+pve-manager (4.0-7) unstable; urgency=medium
+
+  * improve LXC GUI
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 30 Apr 2015 18:49:13 +0200
+
 pve-manager (4.0-6) unstable; urgency=medium
 
   * containers: use LXC instead of OpenVZ
