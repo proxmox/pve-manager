@@ -717,9 +717,9 @@ Ext.define('PVE.Utils', { statics: {
     directoryText: gettext('Directory'),
     imagesText: gettext('Disk image'),
     backupFileText: gettext('VZDump backup file'),
-    vztmplText: gettext('OpenVZ template'),
+    vztmplText: gettext('Container template'),
     isoImageText: gettext('ISO image'),
-    containersText: gettext('OpenVZ Container'),
+    containersText: gettext('Container'),
 
     format_expire: function(date) {
 	if (!date) {
