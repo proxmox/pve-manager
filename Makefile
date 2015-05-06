@@ -102,6 +102,8 @@ install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl pve-apt.conf p
 	install -m 0644 copyright ${DOCDIR}
 	install -m 0644 debian/changelog.Debian ${DOCDIR}
 	install -m 0644 country.dat ${DESTDIR}/usr/share/${PACKAGE}
+	# temporary: set ExtJS 5 migration devel directory
+	install -d ${DESTDIR}/usr/share/${PACKAGE}/manager5
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
 .PHONY: distclean
