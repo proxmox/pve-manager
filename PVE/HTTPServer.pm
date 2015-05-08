@@ -1504,8 +1504,8 @@ sub accept_connections {
 	    }
 
 	    if (my $sin = getpeername($clientfh)) {
-		my ($pport, $phost) = Socket::unpack_sockaddr_in($sin);
-		($reqstate->{peer_port}, $reqstate->{peer_host}) = ($pport,  Socket::inet_ntoa($phost));
+		my ($pfamily, $pport, $phost) = PVE::Tools::unpack_sockaddr_in46($sin);
+		($reqstate->{peer_port}, $reqstate->{peer_host}) = ($pport,  Socket::inet_ntop($pfamily, $phost));
 	    }
 
 	    if (!$self->{trusted_env} && !$self->check_host_access($reqstate->{peer_host})) {
