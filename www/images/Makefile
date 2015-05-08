@@ -42,6 +42,8 @@ IMAGES = ${GNOME_IMAGES}	\
 	proxmox_logo.png	\
 	network-server-on.png	\
 	network-server-off.png	\
+	lxc-on.png		\
+	lxc-off.png		\
 	openvz-on.png		\
 	openvz-off.png		\
 	blank.gif

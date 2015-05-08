@@ -87,14 +87,14 @@
 .x-tree-node-lxc,
 .x-grid-tree-node-expanded .x-tree-node-lxc
 {
-    background-image:url(../images/openvz-off.png);
+    background-image:url(../images/lxc-off.png);
 }
 
 .pve-itype-icon-lxc-running,
 .x-tree-node-lxc-running,
 .x-grid-tree-node-expanded .x-tree-node-lxc-running
 {
-    background-image:url(../images/openvz-on.png);
+    background-image:url(../images/lxc-on.png);
 }
 
 .pve-itype-icon-node,
