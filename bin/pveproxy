@@ -26,6 +26,8 @@ use PVE::ExtJSIndex5;
 use PVE::NoVncIndex;
 use PVE::TouchIndex;
 
+use PVE::Tools;
+
 use base qw(PVE::Daemon);
 
 $SIG{'__WARN__'} = sub {
@@ -85,7 +87,8 @@ sub init {
     my $lockfh = IO::File->new(">>${accept_lock_fn}") ||
 	die "unable to open lock file '${accept_lock_fn}' - $!\n";
 
-    my $socket = $self->create_reusable_socket(8006);
+    my $family = PVE::Tools::get_host_address_family($self->{nodename});
+    my $socket = $self->create_reusable_socket(8006, undef, $family);
 
     my $dirs = {};
 
