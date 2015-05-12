@@ -39,6 +39,10 @@ _EOD
     <script type="text/javascript" src="/pve2/manager5/form/LanguageSelector.js"></script>
     <script type="text/javascript" src="/pve2/manager5/form/KVComboBox.js"></script>
     <script type="text/javascript" src="/pve2/manager5/window/LoginWindow.js"></script>
+    <script type="text/javascript" src="/pve2/manager5/panel/StatusPanel.js"></script>
+    <script type="text/javascript" src="/pve2/manager5/panel/ConfigPanel.js"></script>
+    <script type="text/javascript" src="/pve2/manager5/dc/Config.js"></script>
+    <script type="text/javascript" src="/pve2/manager5/grid/ResourceGrid.js"></script>
     <script type="text/javascript" src="/pve2/ext5/packages/ext-locale/build/ext-locale-${lang}.js"></script>
 _EOD
 
