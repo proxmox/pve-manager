@@ -5,6 +5,7 @@ use warnings;
 use Net::IP;
 
 use PVE::Tools;
+use PVE::INotify;
 use Digest::MD5 qw(md5_hex);
 use URI;
 use URI::Escape;
@@ -143,7 +144,9 @@ sub run_spiceterm {
 
     my $authuser = $rpcenv->get_user();
 
-    my $port = PVE::Tools::next_spice_port();
+    my $nodename = PVE::INotify::nodename();
+    my $family = PVE::Tools::get_host_address_family($nodename);
+    my $port = PVE::Tools::next_spice_port($family);
     
     my ($ticket, undef, $remote_viewer_config) = 
 	PVE::AccessControl::remote_viewer_config($authuser, $vmid, $node, $proxy, $title, $port);

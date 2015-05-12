@@ -680,13 +680,15 @@ __PACKAGE__->register_method ({
 	$sslcert = PVE::Tools::file_get_contents("/etc/pve/pve-root-ca.pem", 8192)
 	    if !$sslcert;
 
-	my $port = PVE::Tools::next_vnc_port();
-
-	my $remip;
+	my ($remip, $family);
 
 	if ($node ne PVE::INotify::nodename()) {
-	    $remip = PVE::Cluster::remote_node_ip($node);
+	    ($remip, $family) = PVE::Cluster::remote_node_ip($node);
+	} else {
+	    $family = PVE::Tools::get_host_address_family($node);
 	}
+
+	my $port = PVE::Tools::next_vnc_port($family);
 
 	# NOTE: vncterm VNC traffic is already TLS encrypted,
 	# so we select the fastest chipher here (or 'none'?)
