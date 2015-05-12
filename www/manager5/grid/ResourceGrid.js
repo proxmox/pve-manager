@@ -1,18 +1,3 @@
-// fixme: remove this fix
-// this hack is required for ExtJS 4.0.0
-Ext.override(Ext.grid.feature.Chunking, {
-    attachEvents: function() {
-        var grid = this.view.up('gridpanel'),
-            scroller = grid.down('gridscroller[dock=right]');
-        if (scroller === null ) {
-            grid.on("afterlayout", this.attachEvents, this);
-	    return;
-        }
-        scroller.el.on('scroll', this.onBodyScroll, this, {buffer: 300});
-    },
-    rowHeight: PVE.Utils.gridLineHeigh()
-});
-
 Ext.define('PVE.grid.ResourceGrid', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveResourceGrid'],
