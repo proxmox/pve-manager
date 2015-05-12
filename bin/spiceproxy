@@ -60,7 +60,8 @@ sub init {
     my $lockfh = IO::File->new(">>${accept_lock_fn}") ||
 	die "unable to open lock file '${accept_lock_fn}' - $!\n";
 
-    my $socket = $self->create_reusable_socket(3128);
+    my $family = PVE::Tools::get_host_address_family($self->{nodename});
+    my $socket = $self->create_reusable_socket(3128, undef, $family);
 
     $self->{server_config} = {
 	base_handler_class => 'PVE::API2',
