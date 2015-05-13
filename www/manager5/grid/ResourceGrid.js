@@ -102,7 +102,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 		    if (!olditem) {
 			//console.log("GRID ADD UID: " + item.data.id);
 			var info = Ext.apply({}, item.data);
-			var child = Ext.ModelMgr.create(info, store.model, info.id);
+			var child = Ext.create(store.model, info);
 			addlist.push(item);
 			continue;
 		    }
