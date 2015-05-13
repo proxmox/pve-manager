@@ -35,9 +35,9 @@ _EOD
     <script type="text/javascript" src="/pve2/manager5/data/UpdateStore.js"></script>
     <script type="text/javascript" src="/pve2/manager5/data/ResourceStore.js"></script>
     <script type="text/javascript" src="/pve2/manager5/data/UpdateQueue.js"></script>
-    <script type="text/javascript" src="/pve2/manager5/form/RealmComboBox.js"></script>
-    <script type="text/javascript" src="/pve2/manager5/form/LanguageSelector.js"></script>
     <script type="text/javascript" src="/pve2/manager5/form/KVComboBox.js"></script>
+    <script type="text/javascript" src="/pve2/manager5/form/RealmComboBox.js"></script>    
+    <script type="text/javascript" src="/pve2/manager5/form/LanguageSelector.js"></script>
     <script type="text/javascript" src="/pve2/manager5/window/LoginWindow.js"></script>
     <script type="text/javascript" src="/pve2/manager5/panel/StatusPanel.js"></script>
     <script type="text/javascript" src="/pve2/manager5/panel/ConfigPanel.js"></script>
