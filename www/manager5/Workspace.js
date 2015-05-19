@@ -325,7 +325,7 @@ Ext.define('PVE.StdWorkspace', {
 
 	var createVM = Ext.createWidget('button', {
 	    pack: 'end',
-	    margins: '3 5 0 0',
+	    margin: '3 5 0 0',
 	    baseCls: 'x-btn',
 	    text: gettext("Create VM"),
 	    disabled: !caps.vms['VM.Allocate'],
@@ -337,7 +337,7 @@ Ext.define('PVE.StdWorkspace', {
 
 	var createCT = Ext.createWidget('button', {
 	    pack: 'end',
-	    margins: '3 5 0 0',
+	    margin: '3 5 0 0',
 	    baseCls: 'x-btn',
 	    text: gettext("Create CT"),
 	    disabled: !caps.vms['VM.Allocate'],
@@ -371,10 +371,10 @@ Ext.define('PVE.StdWorkspace', {
 			baseCls: 'x-plain'			
 		    },
 		    border: false,
-		    margins: '2 0 5 0',
+		    margin: '2 0 5 0',
 		    items: [
 			{
-			    margins: '0 0 0 4',
+			    margin: '0 0 0 4',
 			    html: '<a class="x-unselectable" target=_blank href="http://www.proxmox.com">' +
 				'<img height=30 width=209 src="/pve2/images/proxmox_logo.png"/></a>'
 			},
@@ -386,13 +386,13 @@ Ext.define('PVE.StdWorkspace', {
 			},
 			{
 			    pack: 'end',
-			    margins: '8 10 0 10',
+			    margin: '8 10 0 10',
 			    id: 'userinfo',
 			    stateful: false
 			},
 			{
 			    pack: 'end',
-			    margins: '3 5 0 0',
+			    margin: '3 5 0 0',
 			    xtype: 'button',
 			    baseCls: 'x-btn',
 			    text: gettext("Logout"),
@@ -415,7 +415,7 @@ Ext.define('PVE.StdWorkspace', {
 		    layout: { type: 'fit' },
 		    border: false,
 		    stateful: false,
-		    margins: '0 5 0 0',
+		    margin: '0 5 0 0',
 		    items: []
 		},
 		{
@@ -423,7 +423,7 @@ Ext.define('PVE.StdWorkspace', {
 		    xtype: 'container',
 		    border: false,
 		    layout: { type: 'vbox', align: 'stretch' },
-		    margins: '0 0 0 5',
+		    margin: '0 0 0 5',
 		    split: true,
 		    width: 200,
 		    items: [ selview, rtree ]
@@ -431,7 +431,7 @@ Ext.define('PVE.StdWorkspace', {
 		{
 //		    xtype: 'pveStatusPanel',
 		    region: 'south',
-		    margins:'0 5 5 5',
+		    margin:'0 5 5 5',
 		    height: 200,       
 		    split:true
 		}
