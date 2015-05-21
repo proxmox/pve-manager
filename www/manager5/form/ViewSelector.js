@@ -57,7 +57,6 @@ Ext.define('PVE.form.ViewSelector', {
 	    allowBlank: false,
 	    forceSelection: true,
 	    autoSelect: false,
-	    triggerAction: 'all',
 	    valueField: 'key',
 	    displayField: 'value',
 
