@@ -53,7 +53,6 @@ Ext.define('PVE.form.ViewSelector', {
 	    store: store,
 	    value: groupdef[0][0],
 	    editable: false,
-	    queryMode: 'local',
 	    allowBlank: false,
 	    forceSelection: true,
 	    autoSelect: false,
