@@ -583,6 +583,8 @@ sub proxy_request {
 	    $target = "http://$host:85$uri";
 	    # keep alive for localhost is not worth (connection setup is about 0.2ms)
 	    $keep_alive = 0;
+	} elsif (Net::IP::ip_is_ipv6($host)) {
+	    $target = "https://[$host]:8006$uri";
 	} else {
 	    $target = "https://$host:8006$uri";
 	}
