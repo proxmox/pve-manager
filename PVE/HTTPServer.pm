@@ -402,7 +402,7 @@ sub websocket_proxy {
 	}
 
 	if ($param->{port}) {
-	    $remhost = '127.0.0.1';
+	    $remhost = 'localhost';
 	    $remport = $param->{port};
 	} elsif ($param->{socket}) {
 	    $remhost = 'unix/';
@@ -835,7 +835,7 @@ sub handle_spice_proxy_request {
 	$reqstate->{hdl}->timeout(0);
 	$reqstate->{hdl}->wbuf_max(64*10*1024);
 
-	my $remhost = $remip ? $remip : "127.0.0.1";
+	my $remhost = $remip ? $remip : "localhost";
 	my $remport = $remip ? 3128 : $spiceport;
 
 	tcp_connect $remhost, $remport, sub {
