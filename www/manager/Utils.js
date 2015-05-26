@@ -44,6 +44,7 @@ var IPV6_REGEXP = "(?:" +
 
 var IP6_match = new RegExp("^(?:" + IPV6_REGEXP + ")$");
 var IP6_cidr_match = new RegExp("^(?:" + IPV6_REGEXP + ")\/[0-9]{1,3}?$");
+var IP6_bracket_match = new RegExp("^\\[(" + IPV6_REGEXP + ")\\]");
 
 var IP64_match = new RegExp("^(?:" + IPV6_REGEXP + "|" + IPV4_REGEXP + ")$");
 
@@ -920,6 +921,11 @@ Ext.define('PVE.Utils', { statics: {
 	    return gettext('Edit') + ': ' + subject;
 	}
     },
+
+    windowHostname: function() {
+	return window.location.hostname.replace(IP6_bracket_match,
+            function(m, addr, offset, original) { return addr; });
+    },
  
     openDefaultConsoleWindow: function(allowSpice, vmtype, vmid, nodename, vmname) {
 	var dv = PVE.Utils.defaultViewer(allowSpice);
@@ -941,7 +947,7 @@ Ext.define('PVE.Utils', { statics: {
 	    PVE.Utils.openVNCViewer(vmtype, vmid, nodename, vmname, viewer === 'html5');
 	} else if (viewer === 'vv') {
 	    var url;
-	    var params = { proxy: window.location.hostname };
+	    var params = { proxy: PVE.Utils.windowHostname() };
 	    if (vmtype === 'kvm') {
 		url = '/nodes/' + nodename + '/qemu/' + vmid.toString() + '/spiceproxy';
 		PVE.Utils.openSpiceViewer(url, params);
