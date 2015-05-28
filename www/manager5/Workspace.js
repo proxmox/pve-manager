@@ -429,7 +429,7 @@ Ext.define('PVE.StdWorkspace', {
 		    items: [ selview, rtree ]
 		},
 		{
-//		    xtype: 'pveStatusPanel',
+		    xtype: 'pveStatusPanel',
 		    region: 'south',
 		    margin:'0 5 5 5',
 		    height: 200,       

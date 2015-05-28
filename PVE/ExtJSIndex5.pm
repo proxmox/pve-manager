@@ -31,6 +31,7 @@ _EOD
     <script type="text/javascript" src="/pve2/manager5/StateProvider.js"></script>
     <script type="text/javascript" src="/pve2/manager5/form/ViewSelector.js"></script>
     <script type="text/javascript" src="/pve2/manager5/data/PVEProxy.js"></script>
+    <script type="text/javascript" src="/pve2/manager5/data/DiffStore.js"></script>
     <script type="text/javascript" src="/pve2/manager5/tree/ResourceTree.js"></script>
     <script type="text/javascript" src="/pve2/manager5/data/UpdateStore.js"></script>
     <script type="text/javascript" src="/pve2/manager5/data/ResourceStore.js"></script>
@@ -42,6 +43,8 @@ _EOD
     <script type="text/javascript" src="/pve2/manager5/panel/StatusPanel.js"></script>
     <script type="text/javascript" src="/pve2/manager5/panel/ConfigPanel.js"></script>
     <script type="text/javascript" src="/pve2/manager5/dc/Config.js"></script>
+    <script type="text/javascript" src="/pve2/manager5/dc/Tasks.js"></script>
+    <script type="text/javascript" src="/pve2/manager5/dc/Log.js"></script>
     <script type="text/javascript" src="/pve2/manager5/grid/ResourceGrid.js"></script>
     <script type="text/javascript" src="/pve2/ext5/packages/ext-locale/build/ext-locale-${lang}.js"></script>
 _EOD
