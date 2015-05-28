@@ -17,7 +17,6 @@ Ext.define('PVE.form.RealmComboBox', {
 
 	var realmstore = Ext.create('Ext.data.Store', {
 	    model: 'pve-domains',
-	    autoDestory: true
 	});
 
 	Ext.apply(me, {

@@ -20,7 +20,6 @@ Ext.define('PVE.form.NodeSelector', {
 		type: 'pve',
 		url: '/api2/json/nodes'
 	    },
-	    autoDestory: true,
 	    sorters: [
 		{
 		    property : 'node',

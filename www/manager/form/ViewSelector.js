@@ -45,7 +45,6 @@ Ext.define('PVE.form.ViewSelector', {
             },
 	    data: groupdef,
 	    autoload: true,
-	    autoDestory: true
 	});
 
 	Ext.apply(me, {

@@ -232,7 +232,6 @@ Ext.define('PVE.data.ResourceStore', {
 	Ext.apply(config, {
 	    storeid: 'PVEResources',
 	    model: 'PVEResources',
-	    autoDestory: false,
 	    defaultColums: function() {
 		var res = [];
 		Ext.Object.each(field_defaults, function(field, info) {

@@ -22,7 +22,7 @@ Ext.define('PVE.node.TimeEdit', {
 		fieldLabel: gettext('Time zone'),
 		name: 'timezone',
 		queryMode: 'local',
-		store: new PVE.data.TimezoneStore({autoDestory: true}),
+		store: new PVE.data.TimezoneStore(),
 		valueField: 'zone',
 		displayField: 'zone',
 		triggerAction: 'all',
