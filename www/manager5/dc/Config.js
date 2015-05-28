@@ -1,3 +1,7 @@
+/*
+ * Main config panel, located in Center of the ViewPort
+ */
+
 Ext.define('PVE.dc.Config', {
     extend: 'PVE.panel.Config',
     alias: 'widget.PVE.dc.Config',

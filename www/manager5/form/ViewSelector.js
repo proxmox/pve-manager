@@ -1,3 +1,6 @@
+/*
+ * Top left combobox, used to select a view of the underneath RessourceTree
+ */
 Ext.define('PVE.form.ViewSelector', {
     extend: 'Ext.form.field.ComboBox',
     alias: ['widget.pveViewSelector'],

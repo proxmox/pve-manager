@@ -1,3 +1,6 @@
+/*
+ * Left Treepanel, containing all the ressources we manage in this datacenter: server nodes, server storages, VMs and Containers
+ */
 Ext.define('PVE.tree.ResourceTree', {
     extend: 'Ext.tree.TreePanel',
     alias: ['widget.pveResourceTree'],

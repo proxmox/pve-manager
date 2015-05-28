@@ -1,3 +1,7 @@
+/* This class defines the "Cluster log" tab of the bottom status panel
+ * A log entry is a timestamp associated with an action on a cluster
+ */
+
 Ext.define('PVE.dc.Log', {
     extend: 'Ext.grid.GridPanel',
 

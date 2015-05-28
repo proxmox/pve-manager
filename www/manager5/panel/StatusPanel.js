@@ -1,3 +1,6 @@
+/*
+ * This class describes the bottom panel
+ */
 Ext.define('PVE.panel.StatusPanel', {
     extend: 'Ext.tab.Panel',
     alias: 'widget.pveStatusPanel',

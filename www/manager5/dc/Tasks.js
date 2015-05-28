@@ -1,3 +1,7 @@
+/* This class defines the "Tasks" tab of the bottom status panel
+ * Tasks are jobs with a start, end and log output
+ */
+
 Ext.define('PVE.dc.Tasks', {
     extend: 'Ext.grid.GridPanel',
 
