@@ -100,6 +100,8 @@ Ext.define('PVE.dc.Config', {
 		itemId: 'support'
 	    });
 	}
+	//EXT5DEBUG
+	me.items =[];
 
 	me.callParent();
    }
