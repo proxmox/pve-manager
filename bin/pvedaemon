@@ -34,10 +34,12 @@ my %daemon_options = (
     leave_children_open_on_reload => 1,
 );
 
-# create dir for dtach sockets
-mkdir "/var/run/dtach";
-
 my $daemon = __PACKAGE__->new('pvedaemon', $cmdline, %daemon_options); 
+
+sub prepare {
+    # create dir for dtach sockets
+    mkdir "/var/run/dtach";
+}
 
 sub init {
     my ($self) = @_;
@@ -83,7 +85,7 @@ my $cmddef = {
 
 my $cmd = shift;
 
-PVE::CLIHandler::handle_cmd($cmddef, $0, $cmd, \@ARGV, undef, $0);
+PVE::CLIHandler::handle_cmd($cmddef, $0, $cmd, \@ARGV, undef, $0, \&prepare);
 
 exit (0);
 

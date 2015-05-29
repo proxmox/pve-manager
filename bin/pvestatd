@@ -27,15 +27,18 @@ my $cmdline = [$0, @ARGV];
 my %daemon_options = (restart_on_error => 5, stop_wait_time => 5);
 
 my $daemon = __PACKAGE__->new('pvestatd', $cmdline, %daemon_options);
-
-my $rpcenv = PVE::RPCEnvironment->init('cli');
-
-$rpcenv->init_request();
-$rpcenv->set_language($ENV{LANG});
-$rpcenv->set_user('root@pam');
-
 my $nodename = PVE::INotify::nodename();
-my $restart_request = 0;
+my $restart_request;
+
+sub prepare {
+    my $rpcenv = PVE::RPCEnvironment->init('cli');
+
+    $rpcenv->init_request();
+    $rpcenv->set_language($ENV{LANG});
+    $rpcenv->set_user('root@pam');
+
+    $restart_request = 0;
+}
 
 sub init {
     my ($self) = @_;
@@ -354,7 +357,7 @@ my $cmddef = {
 
 my $cmd = shift;
 
-PVE::CLIHandler::handle_cmd($cmddef, $0, $cmd, \@ARGV, undef, $0);
+PVE::CLIHandler::handle_cmd($cmddef, $0, $cmd, \@ARGV, undef, $0, \&prepare);
 
 exit (0);
 

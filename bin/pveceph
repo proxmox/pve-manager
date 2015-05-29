@@ -24,27 +24,30 @@ use PVE::CLIHandler;
 
 use base qw(PVE::CLIHandler);
 
-$ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
+my $cmddef;
+my $nodename = PVE::INotify::nodename();
 
-initlog ('pveceph');
+sub prepare {
+    $ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
 
-die "please run as root\n" if $> != 0;
+    initlog ('pveceph');
 
-PVE::INotify::inotify_init();
+    die "please run as root\n" if $> != 0;
 
-my $rpcenv = PVE::RPCEnvironment->init('cli');
+    PVE::INotify::inotify_init();
 
-$rpcenv->init_request();
-$rpcenv->set_language($ENV{LANG});
-$rpcenv->set_user('root@pam');
+    my $rpcenv = PVE::RPCEnvironment->init('cli');
+
+    $rpcenv->init_request();
+    $rpcenv->set_language($ENV{LANG});
+    $rpcenv->set_user('root@pam');
+}
 
 my $upid_exit = sub {
     my $upid = shift;
     my $status = PVE::Tools::upid_read_status($upid);
     exit($status eq 'OK' ? 0 : -1);
 };
-
-my $nodename = PVE::INotify::nodename();
 
 __PACKAGE__->register_method ({
     name => 'purge',
@@ -169,7 +172,7 @@ my $cmddef = {
 
 my $cmd = shift;
 
-PVE::CLIHandler::handle_cmd($cmddef, "pveceph", $cmd, \@ARGV, undef, $0);
+PVE::CLIHandler::handle_cmd($cmddef, "pveceph", $cmd, \@ARGV, undef, $0, \&prepare);
 
 exit 0;
 
