@@ -25,11 +25,12 @@ case "$1" in
     # error during updates
     test -f /etc/pve/local/pve-ssl.pem || exit 0;
     test -e /proxmox_install_mode && exit 0;
-    
-    deb-systemd-invoke reload-or-restart pvedaemon.service 
-    deb-systemd-invoke reload-or-restart pvestatd.service    
-    deb-systemd-invoke reload-or-restart pveproxy.service
-    deb-systemd-invoke reload-or-restart spiceproxy.service
+
+    # Note: reload-or-try-restart fails if service is not active
+    systemctl --quiet is-active pvedaemon.service && deb-systemd-invoke reload-or-try-restart pvedaemon.service
+    systemctl --quiet is-active pvestatd.service && deb-systemd-invoke reload-or-try-restart pvestatd.service
+    systemctl --quiet is-active pveproxy.service && deb-systemd-invoke reload-or-try-restart pveproxy.service
+    systemctl --quiet is-active spiceproxy.service && deb-systemd-invoke reload-or-try-restart spiceproxy.service
 
     exit 0;;
 
