@@ -146,7 +146,7 @@ sub write_vzdump_cron_config {
     my ($filename, $cfg) = @_;
 
     my $out = "# cluster wide vzdump cron schedule\n";
-    $out .= "# Atomatically generated file - do not edit\n\n";
+    $out .= "# Automatically generated file - do not edit\n\n";
     $out .= "PATH=\"/usr/sbin:/usr/bin:/sbin:/bin\"\n\n";
 
     my $jobs = $cfg->{jobs} || [];
