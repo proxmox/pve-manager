@@ -103,7 +103,6 @@ JSSRC= 				                 	\
 	node/TimeView.js				\
 	node/TimeEdit.js				\
 	node/StatusView.js				\
-	node/BCFailCnt.js				\
 	node/Summary.js					\
 	node/ServiceView.js				\
 	node/NetworkEdit.js				\

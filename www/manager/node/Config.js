@@ -181,17 +181,6 @@ Ext.define('PVE.node.Config', {
 	    }
 	]);
 
-
-	if (caps.nodes['Sys.Audit']) {
-	    me.items.push([
-		{
-		    title: 'UBC',
-		    itemId: 'ubc',
-		    xtype: 'pveNodeBCFailCnt'
-		}
-	    ]);
-	}
-	
 	me.items.push([
 	    {
 		title: gettext('Subscription'),

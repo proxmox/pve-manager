@@ -144,7 +144,6 @@ __PACKAGE__->register_method ({
 	    { name => 'qemu' },
 	    { name => 'lxc' },
 	    { name => 'vzdump' },
-	    { name => 'ubcfailcnt' },
 	    { name => 'network' },
 	    { name => 'aplinfo' },
 	    { name => 'startall' },
