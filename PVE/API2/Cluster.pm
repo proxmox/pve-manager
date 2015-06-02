@@ -349,91 +349,6 @@ __PACKAGE__->register_method({
 	return undef;
     }});
 
-my $parse_clustat = sub {
-    my ($clinfo, $members, $rrd, $nodename, $raw) = @_;
-
-    my $createNode = sub {
-	my ($expat, $tag, %attrib) = @_; 
-	my $node = { type => $tag, %attrib };
-
-	if ($tag eq 'node') {
-	    my $name = $node->{name};
-	    return if !$name; # just to be sure
-
-	    foreach my $key (qw(estranged local qdisk rgmanager rgmanager_master state)) {
-		$node->{$key} = int($node->{$key}) if defined($node->{$key});
-	    }
-	    $node->{nodeid} = hex($node->{nodeid}) if defined($node->{nodeid});
-
-	    # unique ID for GUI
-	    $node->{id} = "node/$node->{name}";
-
-	    my $pmxcfs = 0;
-	    if (!$members) { # no cluster
-		if ($name eq $nodename) {
-		    $pmxcfs = ($clinfo && $clinfo->{version}) ? 1 : 0; # pmxcfs online ?
-		}
-	    } elsif ($members->{$name}) {
-		$pmxcfs = $members->{$name}->{online} ? 1 : 0
-	    }
-	    $node->{pmxcfs} = $pmxcfs;
-
-	    if ($members && $members->{$name}) {
-		if (my $ip = $members->{$name}->{ip}) {
-		    $node->{ip} = $ip;
-		}
-	    }
-
-	    if (my $entry = PVE::API2Tools::extract_node_stats($name, $members, $rrd)) {
-		$node->{level} = $entry->{level} || '';
-	    }
-
-	} elsif ($tag eq 'group') {
-	    my $name = $node->{name};
-	    return if !$name; # just to be sure
-	    # unique ID for GUI
-	    $node->{id} = "group/$node->{name}";
-	} else {
-	    $node->{id} = $tag;
-	}
-
-	return $node;
-    }; 
-
-    my $extract_tags = {
-	cluster => 1,
-	quorum => 1,
-	node => 1,
-	group => 1,
-    };
-
-    my $handlers = {
-	Init => sub {
-	    my $expat = shift;
-	    $expat->{NodeList} = [];
-	},
-	Final => sub {
-	    my $expat = shift;
-	    $expat->{NodeList};
-	},
-	Start => sub {
-	    my $expat = shift;
-	    my $tag = shift;
-	    if ($extract_tags->{$tag}) { 
-		my $node = &$createNode($expat, $tag, @_);
-		push @{$expat->{NodeList}}, $node;
-	    }
-	},
-    };
- 
-    my $data = [];
-    if ($raw) {
-	my $parser = new XML::Parser(Handlers => $handlers);
-	$data = $parser->parse($raw);
-    }
-    return $data;
-};
-
 __PACKAGE__->register_method({
     name => 'get_status', 
     path => 'status', 
@@ -468,10 +383,38 @@ __PACKAGE__->register_method({
 	my $rrd = PVE::Cluster::rrd_dump();
 
 	if ($members) {
-	    my $cmd = ['clustat', '-x'];
-	    my $out = '';
-	    PVE::Tools::run_command($cmd, outfunc => sub { $out .= shift; });
-	    return &$parse_clustat($clinfo, $members, $rrd, $nodename, $out);
+	    my $res = [];
+
+	    if (my $d = $clinfo->{cluster}) {
+		push @$res, {
+		    type => 'cluster',
+		    id => 'cluster',
+		    nodes => $d->{nodes},
+		    version => $d->{version},
+		    name => $d->{name},
+		    quorate => $d->{quorate},
+		};
+	    }
+	    
+	    foreach my $node (keys %$members) {
+		my $d = $members->{$node};
+		my $entry = { 
+		    type => 'node',
+		    id => "node/$node",
+		    name => $node,
+		    nodeid => $d->{id},
+		    ip => $d->{ip},
+		    'local' => ($node eq $nodename) ? 1 : 0,
+		    online => $d->{online},
+		};
+		
+		if (my $d = PVE::API2Tools::extract_node_stats($node, $members, $rrd)) {
+		    $entry->{level} = $d->{level};
+		}
+		
+		push @$res, $entry;
+	    }
+	    return $res;
 	} else {
 	    # fake entry for local node if no cluster defined
 	    my $pmxcfs = ($clinfo && $clinfo->{version}) ? 1 : 0; # pmxcfs online ?
@@ -483,10 +426,10 @@ __PACKAGE__->register_method({
 		type => 'node',
 		id => "node/$nodename",
 		name => $nodename,
+		ip => PVE::Cluster::remote_node_ip($nodename),
 		'local' => 1,
 		nodeid => 0,
-		pmxcfs => $pmxcfs,
-		state => 1,
+		online => 1,
 		level => $sublevel,
 	    }];
 	}

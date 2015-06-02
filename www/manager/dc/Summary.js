@@ -22,9 +22,17 @@ Ext.define('PVE.dc.NodeView', {
 
 	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
 
+	var noClusterText = gettext("Standalone node - no cluster defined");
+	var status = Ext.create('Ext.Component', {
+	    padding: 2,
+	    html: '&nbsp;',
+	    dock: 'bottom'
+	});
+
 	Ext.apply(me, {
 	    store: store,
 	    stateful: false,
+	    bbar: [ status ],
 	    columns: [
 		{
 		    header: gettext('Name'),
@@ -42,7 +50,7 @@ Ext.define('PVE.dc.NodeView', {
 		    header: gettext('Online'),
 		    width: 100,
 		    sortable: true,
-		    dataIndex: 'state',
+		    dataIndex: 'online',
 		    renderer: PVE.Utils.format_boolean
 		},
 		{
@@ -53,132 +61,10 @@ Ext.define('PVE.dc.NodeView', {
 		    renderer: PVE.Utils.render_support_level
 		},
 		{
-		    header: gettext('Estranged'),
-		    width: 100,
-		    sortable: true,
-		    dataIndex: 'estranged',
-		    renderer: PVE.Utils.format_boolean
-		},
-		{
 		    header: gettext('Server Address'),
-		    width: 100,
+		    flex: 1,
 		    sortable: true,
 		    dataIndex: 'ip'
-		},
-		{
-		    header: gettext('Services'),
-		    flex: 1,
-		    width: 80,
-		    sortable: true,
-		    dataIndex: 'pmxcfs',
-		    renderer: function(value, metaData, record) {
-			var list = [];
-			var data = record.data;
-			if (data) {
-			    if (data.pmxcfs) {
-				list.push('PVECluster');
-			    }
-			    if (data.rgmanager) {
-				list.push('RGManager');
-			    }
-
-			}
-			return list.join(', ');
-		    }
-		}
-	    ], 
-	    listeners: {
-		show: rstore.startUpdate,
-		hide: rstore.stopUpdate,
-		destroy: rstore.stopUpdate
-	    }
-	});
-
-	me.callParent();
-    }
-}, function() {
-
-    Ext.define('pve-dc-nodes', {
-	extend: 'Ext.data.Model',
-	fields: [ 'id', 'type', 'name', 'state', 'nodeid', 'ip', 
-		  'pmxcfs', 'rgmanager', 'estranged', 'level' ],
-	idProperty: 'id'
-    });
-
-});
-
-Ext.define('PVE.dc.HAServiceView', {
-    extend: 'Ext.grid.GridPanel',
-
-    alias: ['widget.pveHaServiceView'],
-
-    initComponent : function() {
-	var me = this;
-
-	var rstore = Ext.create('PVE.data.UpdateStore', {
-	    interval: 3000,
-	    storeid: 'pve-ha-services',
-	    model: 'pve-ha-services',
-	    proxy: {
-                type: 'pve',
-                url: "/api2/json/cluster/status"
-	    },
-	    filters: {
-		property: 'type',
-		value   : 'group'
-	    }
-	});
-
-	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
-
-	var noClusterText = gettext("Standalone node - no cluster defined");
-	var status = Ext.create('Ext.Component', {
-	    padding: 2,
-	    html: '&nbsp;',
-	    dock: 'bottom'
-	});
-
-	Ext.apply(me, {
-	    store: store,
-	    stateful: false,
-	    //tbar: [ 'start', 'stop' ],
-	    bbar: [ status ],
-	    columns: [
-		{
-		    header: gettext('Name'),
-		    flex: 1,
-		    sortable: true,
-		    dataIndex: 'name'
-		},
-		{
-		    header: gettext('Owner'),
-		    flex: 1,
-		    sortable: true,
-		    dataIndex: 'owner'
-		},
-		{
-		    header: gettext('Status'),
-		    width: 80,
-		    sortable: true,
-		    dataIndex: 'state_str'
-		},
-		{
-		    header: gettext('Restarts'),
-		    width: 80,
-		    sortable: true,
-		    dataIndex: 'restarts'
-		},
-		{
-		    header: gettext('Last transition'),
-		    width: 200,
-		    sortable: true,
-		    dataIndex: 'last_transition'
-		},
-		{
-		    header: gettext('Last owner'),
-		    flex: 1,
-		    sortable: true,
-		    dataIndex: 'last_owner'
 		}
 	    ], 
 	    listeners: {
@@ -195,37 +81,36 @@ Ext.define('PVE.dc.HAServiceView', {
 		return;
 	    }
 
+	    console.log("test1");
+	    console.dir(records);
+	    
 	    var cluster_rec = rstore.getById('cluster');
-	    var quorum_rec = rstore.getById('quorum');
 
-	    if (!(cluster_rec && quorum_rec)) {
+	    if (!cluster_rec) {
 		status.update(noClusterText);
 		return;
 	    }
 
 	    var cluster_raw = cluster_rec.raw;
-	    var quorum_raw = quorum_rec.raw;
-	    if (!(cluster_raw && quorum_raw)) {
+	    if (!cluster_raw) {
 		status.update(noClusterText);
 		return;
 	    }
-
-	    status.update("Quorate: " + PVE.Utils.format_boolean(quorum_raw.quorate));
+	    var text = gettext("Cluster") + ": " + cluster_raw.name + ",  " +
+		gettext("Quorate") + ": " + PVE.Utils.format_boolean(cluster_raw.quorate);
+	    status.update(text);
 	});
 
     }
 }, function() {
 
-    Ext.define('pve-ha-services', {
+    Ext.define('pve-dc-nodes', {
 	extend: 'Ext.data.Model',
-	fields: [ 'id', 'type', 'name', 'owner', 'last_owner', 'state_str', 'restarts',
-		  { name: 'last_transition',  type: 'date', dateFormat: 'timestamp'}
-		],
+	fields: [ 'id', 'type', 'name', 'nodeid', 'ip', 'level', 'local', 'online'],
 	idProperty: 'id'
     });
 
 });
-
 
 Ext.define('PVE.dc.Summary', {
     extend: 'Ext.panel.Panel',
@@ -234,14 +119,6 @@ Ext.define('PVE.dc.Summary', {
 
     initComponent: function() {
         var me = this;
-
-	var hagrid = Ext.create('PVE.dc.HAServiceView', {
-	    title: gettext('HA Service Status'),
-	    region: 'south',
-	    border: false,
-	    split: true,
-	    flex: 1
-	});
 
 	var nodegrid = Ext.create('PVE.dc.NodeView', {
 	    title: gettext('Nodes'),
@@ -252,15 +129,13 @@ Ext.define('PVE.dc.Summary', {
 
 	Ext.apply(me, {
 	    layout: 'border',
-	    items: [ nodegrid, hagrid ],
+	    items: [ nodegrid ],
 	    listeners: {
 		show: function() {
-		    hagrid.fireEvent('show', hagrid);
-		    nodegrid.fireEvent('show', hagrid);
+		    nodegrid.fireEvent('show', nodegrid);
 		},
 		hide: function() {
-		    hagrid.fireEvent('hide', hagrid);
-		    nodegrid.fireEvent('hide', hagrid);
+		    nodegrid.fireEvent('hide', nodegrid);
 		}
 	    }
 	});
