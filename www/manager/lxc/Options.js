@@ -50,22 +50,6 @@ Ext.define('PVE.lxc.Options', {
 	    storage: {
 		header: gettext('Storage'),
 		defaultValue: 'no set'
-	    },
-	    cpuunits: {
-		header: gettext('CPU units'),
-		defaultValue: '1024',
-		editor: caps.vms['VM.Config.CPU'] ? {
-		    xtype: 'pveWindowEdit',
-		    subject: gettext('CPU units'),
-		    items: {
-			xtype: 'numberfield',
-			name: 'cpuunits',
-			fieldLabel: gettext('CPU units'),
-			minValue: 8,
-			maxValue: 500000,
-			allowBlank: false
-		    }
-		} : undefined
 	    }
 	};
 

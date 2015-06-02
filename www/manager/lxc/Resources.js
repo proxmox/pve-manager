@@ -49,11 +49,20 @@ Ext.define('PVE.lxc.RessourceInputPanel', {
 	    },
 	    {
 		xtype: 'numberfield',
-		name: 'cpus',
+		name: 'cpulimit',
 		minValue: 0,
 		value: '1',
 		step: 1,
-		fieldLabel: gettext('CPUs'),
+		fieldLabel: gettext('CPU limit'),
+		labelWidth: labelWidth,
+		allowBlank: false
+	    },
+	    {
+		xtype: 'numberfield',
+		name: 'cpuunits',
+		fieldLabel: gettext('CPU units'),
+		minValue: 8,
+		maxValue: 500000,
 		labelWidth: labelWidth,
 		allowBlank: false
 	    }
@@ -122,8 +131,8 @@ Ext.define('PVE.lxc.RessourceView', {
 		    return PVE.Utils.format_size(value*1024*1024);
 		}
 	    },
-	    cpus: {
-		header: gettext('Processors'),
+	    cpulimit: {
+		header: gettext('CPU limit'),
 		never_delete: true,
 		editor: resEditor,
 		defaultValue: 1,
@@ -131,6 +140,12 @@ Ext.define('PVE.lxc.RessourceView', {
 		    if (value) { return value; };
 		    return gettext('unlimited');
 		}
+	    },
+	    cpuunits: {
+		header: gettext('CPU units'),
+		never_delete: true,
+		editor: resEditor,
+		defaultValue: 1024
 	    },
 	    disk: {
 		header: gettext('Disk size'),
