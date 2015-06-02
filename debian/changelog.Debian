@@ -1,3 +1,9 @@
+pve-manager (4.0-10) unstable; urgency=medium
+
+  * API change: /cluster/status - do not use clustat
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 02 Jun 2015 11:07:13 +0200
+
 pve-manager (4.0-9) unstable; urgency=medium
 
   * pveproxy: add ipv6 support
