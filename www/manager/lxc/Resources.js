@@ -61,6 +61,7 @@ Ext.define('PVE.lxc.RessourceInputPanel', {
 		xtype: 'numberfield',
 		name: 'cpuunits',
 		fieldLabel: gettext('CPU units'),
+		value: 1024,
 		minValue: 8,
 		maxValue: 500000,
 		labelWidth: labelWidth,
