@@ -64,13 +64,16 @@ Ext.define('PVE.qemu.HardwareView', {
 		    'PVE.qemu.ProcessorEdit' : undefined,
 		tdCls: 'pve-itype-icon-processor',
 		defaultValue: 1,
-		multiKey: ['sockets', 'cpu', 'cores', 'numa'],
+		multiKey: ['sockets', 'cpu', 'cores', 'numa', 'vcpus', 'cpulimit', 'cpuunits'],
 		renderer: function(value, metaData, record, rowIndex, colIndex, store, pending) {
 
 		    var sockets = me.getObjectValue('sockets', 1, pending);
 		    var model = me.getObjectValue('cpu', undefined, pending);
 		    var cores = me.getObjectValue('cores', 1, pending);
 		    var numa = me.getObjectValue('numa', undefined, pending);
+		    var vcpus = me.getObjectValue('vcpus', undefined, pending);
+		    var cpulimit = me.getObjectValue('cpulimit', undefined, pending);
+		    var cpuunits = me.getObjectValue('cpuunits', undefined, pending);
 
 		    var res = (sockets*cores) + ' (' + sockets + ' sockets, ' + cores + ' cores)';
 		    
@@ -82,49 +85,20 @@ Ext.define('PVE.qemu.HardwareView', {
 			res += ' [numa=' + numa +']';
 		    }
 
+		    if (vcpus) {
+			res += ' [vcpus=' + vcpus +']';
+		    }
+
+		    if (cpulimit) {
+			res += ' [cpulimit=' + cpulimit +']';
+		    }
+
+		    if (cpuunits) {
+			res += ' [cpuunits=' + cpuunits +']';
+		    }
+
 		    return res;
 		}
-	    },
-	    cpulimit: {
-		header: gettext('CPU limit'),
-		never_delete: true,
-		defaultValue: '',
-		renderer: function(value) {
-		    if (value && value !== '0') { return value; };
-		    return gettext('unlimited');
-		},
-		tdCls: 'pve-itype-icon-processor',
-		editor: caps.vms['VM.Config.CPU'] ? {
-		    xtype: 'pveWindowEdit',
-		    subject: gettext('CPU limit'),
-		    items: {
-			xtype: 'numberfield',
-			name: 'cpulimit',
-			minValue: 0,
-			value: '',
-			step: 1,
-			fieldLabel: gettext('CPU limit')
-		    }
-		} : undefined
-	    },
-	    cpuunits: {
-		header: gettext('CPU units'),
-		never_delete: true,
-		defaultValue: '1024',
-		tdCls: 'pve-itype-icon-processor',
-		editor: caps.vms['VM.Config.CPU'] ? {
-		    xtype: 'pveWindowEdit',
-		    subject: gettext('CPU units'),
-		    items: {
-			xtype: 'numberfield',
-			name: 'cpuunits',
-			fieldLabel: gettext('CPU units'),
-			minValue: 8,
-			maxValue: 500000,
-			value: 1024,
-			allowBlank: false
-		    }
-		} : undefined
 	    },
 	    keyboard: {
 		header: gettext('Keyboard Layout'),
@@ -156,7 +130,17 @@ Ext.define('PVE.qemu.HardwareView', {
 	    },
 	    hotplug: {
 		visible: false
+	    },
+	    vcpus: {
+		visible: false
+	    },
+	    cpuunits: {
+		visible: false
+	    },
+	    cpulimit: {
+		visible: false
 	    }
+
 	};
 
 	for (i = 0; i < 4; i++) {
@@ -313,6 +297,28 @@ Ext.define('PVE.qemu.HardwareView', {
 	    win.on('destroy', reload);
 	};
 
+	var run_cpuoptions = function() {
+	    var rec = sm.getSelection()[0];
+	    if (!rec) {
+		return;
+	    }
+
+	    var sockets = me.getObjectValue('sockets', 1);
+	    var cores = me.getObjectValue('cores', 1);
+
+	    var win = Ext.create('PVE.qemu.CPUOptions', {
+		maxvcpus: sockets * cores,
+		vmid: vmid,
+		pveSelNode: me.pveSelNode,
+		confid: rec.data.key,
+		url: '/api2/extjs/' + baseurl
+	    });
+
+	    win.show();
+
+	    win.on('destroy', reload);
+	};
+
 	var run_move = function() {
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
@@ -356,6 +362,13 @@ Ext.define('PVE.qemu.HardwareView', {
 	    selModel: sm,
 	    disabled: true,
 	    handler: run_diskthrottle
+	});
+
+	var cpuoptions_btn = new PVE.button.Button({
+	    text: gettext('CPU options'),
+	    selModel: sm,
+	    disabled: true,
+	    handler: run_cpuoptions
 	});
 
 	var remove_btn = new PVE.button.Button({
@@ -425,6 +438,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		resize_btn.disable();
 		move_btn.disable();
 		diskthrottle_btn.disable();
+		cpuoptions_btn.disable();
 		revert_btn.disable();
 		return;
 	    }
@@ -446,7 +460,10 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    diskthrottle_btn.setDisabled(pending || !isDisk);
 
+	    cpuoptions_btn.setDisabled(rowdef.tdCls != 'pve-itype-icon-processor');
+
 	    revert_btn.setDisabled(!pending);
+
 	};
 
 	Ext.applyIf(me, {
@@ -506,6 +523,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		resize_btn,
 		move_btn,
 		diskthrottle_btn,
+		cpuoptions_btn,
 		revert_btn
 	    ],
 	    rows: rows,
