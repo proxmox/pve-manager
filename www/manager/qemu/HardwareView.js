@@ -85,6 +85,47 @@ Ext.define('PVE.qemu.HardwareView', {
 		    return res;
 		}
 	    },
+	    cpulimit: {
+		header: gettext('CPU limit'),
+		never_delete: true,
+		defaultValue: '',
+		renderer: function(value) {
+		    if (value && value !== '0') { return value; };
+		    return gettext('unlimited');
+		},
+		tdCls: 'pve-itype-icon-processor',
+		editor: caps.vms['VM.Config.CPU'] ? {
+		    xtype: 'pveWindowEdit',
+		    subject: gettext('CPU limit'),
+		    items: {
+			xtype: 'numberfield',
+			name: 'cpulimit',
+			minValue: 0,
+			value: '',
+			step: 1,
+			fieldLabel: gettext('CPU limit')
+		    }
+		} : undefined
+	    },
+	    cpuunits: {
+		header: gettext('CPU units'),
+		never_delete: true,
+		defaultValue: '1024',
+		tdCls: 'pve-itype-icon-processor',
+		editor: caps.vms['VM.Config.CPU'] ? {
+		    xtype: 'pveWindowEdit',
+		    subject: gettext('CPU units'),
+		    items: {
+			xtype: 'numberfield',
+			name: 'cpuunits',
+			fieldLabel: gettext('CPU units'),
+			minValue: 8,
+			maxValue: 500000,
+			value: 1024,
+			allowBlank: false
+		    }
+		} : undefined
+	    },
 	    keyboard: {
 		header: gettext('Keyboard Layout'),
 		never_delete: true,
@@ -218,12 +259,22 @@ Ext.define('PVE.qemu.HardwareView', {
 		}
 	    }
 
-	    var win = Ext.create(editor, {
-		pveSelNode: me.pveSelNode,
-		confid: rec.data.key,
-		hotplug: me.getObjectValue('hotplug'),
-		url: '/api2/extjs/' + baseurl
-	    });
+	    var win;
+	    if (Ext.isString(rowdef.editor)) {
+		win = Ext.create(rowdef.editor, {
+		    pveSelNode: me.pveSelNode,
+		    confid: rec.data.key,
+		    url: '/api2/extjs/' + baseurl
+		});
+	    } else {
+		var config = Ext.apply({
+		    pveSelNode: me.pveSelNode,
+		    confid: rec.data.key,
+		    url: '/api2/extjs/' + baseurl
+		}, rowdef.editor);
+		win = Ext.createWidget(rowdef.editor.xtype, config);
+		win.load();
+	    }
 
 	    win.show();
 	    win.on('destroy', reload);
