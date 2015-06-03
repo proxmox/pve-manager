@@ -11,6 +11,7 @@ Ext.define('PVE.form.ScsiHwSelector', {
 	    ['lsi53c810', PVE.Utils.render_scsihw('lsi53c810')],
 	    ['megasas', PVE.Utils.render_scsihw('megasas')],
 	    ['virtio-scsi-pci', PVE.Utils.render_scsihw('virtio-scsi-pci')],
+	    ['virtio-scsi-single', PVE.Utils.render_scsihw('virtio-scsi-single')],
 	    ['pvscsi', PVE.Utils.render_scsihw('pvscsi')]
 	];
 

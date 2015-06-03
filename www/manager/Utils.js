@@ -149,6 +149,8 @@ Ext.define('PVE.Utils', { statics: {
 	    return 'MegaRAID SAS 8708EM2';
 	} else if (value === 'virtio-scsi-pci') {
 	    return 'VIRTIO';
+	} else if (value === 'virtio-scsi-single') {
+	    return 'VIRTIO single';
 	} else if (value === 'pvscsi') {
 	    return 'VMware PVSCSI';
 	} else {
