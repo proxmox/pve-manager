@@ -21,7 +21,16 @@ Ext.define('PVE.node.ServiceView', {
 	    }
 	});
 
-	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
+	var store = Ext.create('PVE.data.DiffStore', {
+	    rstore: rstore,
+	    sortAfterUpdate: true,
+	    sorters: [
+		{
+		    property : 'name',
+		    direction: 'ASC'
+		}
+	    ]
+	});
 
 	var service_cmd = function(cmd) {
 	    var sm = me.getSelectionModel();
