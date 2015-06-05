@@ -16,24 +16,66 @@ use IO::File;
 
 use base qw(PVE::RESTHandler);
 
-my $service_list = {
-    pveproxy => { name => 'WWW', desc => 'Web/API server' },
-    postfix => { name => 'SMTP', desc => 'Simple Mail Tranfer Protocol' },
-    ntpd => { name => 'NTP', desc => 'Network time protocol' },
-    sshd => { name => 'SSH', desc => 'Secure shell daemon' },
-    syslog => { name => 'Syslog', desc => 'Syslog daemon' },
-    cron => { name => 'CRON', desc => 'Daemon to execute scheduled commands' },
-    pvedaemon => { name => 'NodeManager', desc => 'PVE node manager daemon' },
-    corosync => { name => 'CMan', desc => 'CMan/Corosync cluster daemon' },
-    # clvm => { name => 'CLVM', desc => 'LVM cluster locking daemon' },
-    rgmanager => { name => 'RGManager', desc => 'Resource Group Manager daemon' },
-    pvecluster => { name => 'PVECluster', desc => 'Proxmox VE cluster file system' },
+my $service_name_list = [
+    'pveproxy', 
+    'pvedaemon',
+    'spiceproxy',
+    'pvestatd',
+    'pve-cluster',
+    'corosync',
+    'pve-firewall',
+    'pvefw-logger',
+    'pve-ha-crm',
+    'pve-ha-lrm',
+    'sshd',
+    'syslog',
+    'cron',
+    'postfix',
+    ];
+
+my $get_full_service_state = sub {
+    my ($service) = @_;
+
+    my $res;
+    
+    my $parser = sub {
+	my $line = shift;
+	if ($line =~ m/^([^=\s]+)=(.*)$/) {
+	    $res->{$1} = $2;
+	}
+    };
+
+    PVE::Tools::run_command(['systemctl', 'show', $service], outfunc => $parser); 
+    
+    return $res;
 };
+
+my $static_service_list;
+
+sub get_service_list {
+
+    return $static_service_list if $static_service_list;
+    
+    my $list = {};
+    foreach my $name (@$service_name_list) {
+	my $ss;
+	eval { $ss = &$get_full_service_state($name); };
+	warn $@ if $@;
+	next if !$ss;
+	next if !defined($ss->{Description});
+	$list->{$name} = { name => $name, desc =>  $ss->{Description} };
+    }
+
+    $static_service_list = $list;
+    
+    return $static_service_list;
+}
+
 
 my $service_prop_desc = {
     description => "Service ID",
     type => 'string',
-    enum => [ keys %{$service_list} ],
+    enum => $service_name_list,
 };
 
 my $service_cmd = sub {
@@ -44,106 +86,29 @@ my $service_cmd = sub {
     die "unknown service command '$cmd'\n"
 	if $cmd !~ m/^(start|stop|restart|reload)$/;
 
-    if ($service eq 'postfix') {
-	$initd_cmd = '/etc/init.d/postfix';
-    } elsif ($service eq 'pvecluster') {
+    if ($service eq 'pvecluster' || $service eq 'pvedaemon' || $service eq 'pveproxy') {
 	if ($cmd eq 'restart') {    
-	    $initd_cmd = '/etc/init.d/pve-cluster';
-	} else {
-	    die "invalid service cmd 'pve-cluster $cmd': ERROR";
-	}
-    } elsif ($service eq 'pvedaemon') {
-	if ($cmd eq 'restart') {    
-	    $initd_cmd = '/etc/init.d/pvedaemon';
+	    # OK
 	} else {
 	    die "invalid service cmd '$service $cmd': ERROR";
 	}
-    } elsif  ($service eq 'pveproxy') {
-	if ($cmd eq 'restart') {    
-	    $initd_cmd = '/etc/init.d/pveproxy';
-	} else {
-	    die "invalid service cmd '$service $cmd': ERROR";
-	}
-    } elsif  ($service eq 'ntpd') {
-	# debian start/stop scripts does not work for us
-	if ($cmd eq 'stop') {
-	    system ('/etc/init.d/ntp stop');
-	    #system ('/usr/bin/killall /usr/sbin/ntpd'); 
-	} elsif ($cmd eq 'start') {
-	    system ('/etc/init.d/ntp start');
-	    system ('/sbin/hwclock --systohc');
-	} elsif ($cmd eq 'restart') {
-	    system ('/etc/init.d/ntp restart');
-	    system ('/sbin/hwclock --systohc');
-	    # restart cron/syslog to get right schedules and log time/dates
-	    system ('/etc/init.d/rsyslog restart');
-	    system ('/etc/init.d/cron restart');
-	}
-	return 0;
-    } elsif  ($service eq 'syslog') {
-	$initd_cmd = '/etc/init.d/rsyslog';
-    } elsif  ($service eq 'cron') {
-	$initd_cmd = '/etc/init.d/cron';
-    } elsif  ($service eq 'corosync') {
-	$cmd = 'start' if $cmd eq 'restart';
-	$initd_cmd = '/etc/init.d/cman';
-    } elsif  ($service eq 'clvm') {
-	$initd_cmd = '/etc/init.d/clvm';
-    } elsif  ($service eq 'rgmanager') {
-	$initd_cmd = '/etc/init.d/rgmanager';
-    } elsif  ($service eq 'sshd') {
-	$initd_cmd = '/etc/init.d/ssh';
-    } else {
-	die "unknown service '$service': ERROR";
-    }    
-
-    PVE::Tools::run_command ([$initd_cmd, $cmd]);
+    }
+    
+    PVE::Tools::run_command(['systemctl', $cmd, $service]);
 };
 
 my $service_state = sub {
     my ($service) = @_;
 
-    my $pid_file;
-
-    if ($service eq 'postfix') {
-	$pid_file = '/var/spool/postfix/pid/master.pid';
-    } elsif  ($service eq 'pveproxy') {
-	$pid_file = '/var/run/pveproxy/pveproxy.pid';
-    } elsif  ($service eq 'pvedaemon') {
-	$pid_file = '/var/run/pvedaemon.pid';
-    } elsif  ($service eq 'pvecluster') {
-	$pid_file = '/var/run/pve-cluster.pid';
-    } elsif  ($service eq 'ntpd') {
-	$pid_file = '/var/run/ntpd.pid';
-    } elsif  ($service eq 'sshd') {
-	$pid_file = '/var/run/sshd.pid';
-    } elsif  ($service eq 'cron') {
-	$pid_file = '/var/run/crond.pid';
-    } elsif  ($service eq 'corosync') {
-	$pid_file = '/var/run/corosync.pid';
-    } elsif  ($service eq 'clvm') {
-	$pid_file = '/var/run/clvmd.pid';
-    } elsif  ($service eq 'rgmanager') {
-	$pid_file = '/var/run/rgmanager.pid';
-    } elsif  ($service eq 'syslog') {
-	$pid_file = '/var/run/rsyslogd.pid';
-    } else {
-	die "unknown service '$service': ERROR";
-    }    
-
-    my $pid;
-    if (my $fh = IO::File->new ($pid_file, "r")) {
-	my $line = <$fh>;
-	chomp $line;
-	    
-	if ($line  && ($line =~ m/^\s*(\d+)\s*$/)) {
-	    $pid = $1;
-	}
+    my $ss;
+    eval { $ss = &$get_full_service_state($service); };
+    if (my $err = $@) {
+	return 'unknown';
     }
 
-    return 'running' if ($pid && kill (0, $pid));
+    return $ss->{SubState} if $ss->{SubState};
 
-    return 'stopped';
+    return 'unknown';
 };
 
 __PACKAGE__->register_method ({
@@ -175,6 +140,8 @@ __PACKAGE__->register_method ({
   
 	my $res = [];
 
+	my $service_list = get_service_list();
+	
 	foreach my $id (keys %{$service_list}) {
 	    push @$res, { 
 		service => $id,
@@ -250,6 +217,8 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
   
+	my $service_list = get_service_list();
+	
 	my $si = $service_list->{$param->{service}};
 	return {
 	    service => $param->{service},
@@ -285,8 +254,6 @@ __PACKAGE__->register_method ({
 	my $rpcenv = PVE::RPCEnvironment::get();
 
 	my $user = $rpcenv->get_user();
-
-	my $si = $service_list->{$param->{service}};
 
 	my $realcmd = sub {
 	    my $upid = shift;
@@ -327,8 +294,6 @@ __PACKAGE__->register_method ({
 
 	my $user = $rpcenv->get_user();
 
-	my $si = $service_list->{$param->{service}};
-
 	my $realcmd = sub {
 	    my $upid = shift;
 
@@ -368,8 +333,6 @@ __PACKAGE__->register_method ({
 
 	my $user = $rpcenv->get_user();
 
-	my $si = $service_list->{$param->{service}};
-
 	my $realcmd = sub {
 	    my $upid = shift;
 
@@ -408,8 +371,6 @@ __PACKAGE__->register_method ({
 	my $rpcenv = PVE::RPCEnvironment::get();
 
 	my $user = $rpcenv->get_user();
-
-	my $si = $service_list->{$param->{service}};
 
 	my $realcmd = sub {
 	    my $upid = shift;
