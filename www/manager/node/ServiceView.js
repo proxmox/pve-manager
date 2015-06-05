@@ -46,7 +46,7 @@ Ext.define('PVE.node.ServiceView', {
 		    rstore.startUpdate();
 		    var upid = response.result.data;
 
-		    var win = Ext.create('PVE.window.TaskViewer', { 
+		    var win = Ext.create('PVE.window.TaskProgress', { 
 			upid: upid
 		    });
 		    win.show();
