@@ -298,11 +298,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	};
 
 	var run_cpuoptions = function() {
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
-		return;
-	    }
-
 	    var sockets = me.getObjectValue('sockets', 1);
 	    var cores = me.getObjectValue('cores', 1);
 
@@ -310,7 +305,6 @@ Ext.define('PVE.qemu.HardwareView', {
 		maxvcpus: sockets * cores,
 		vmid: vmid,
 		pveSelNode: me.pveSelNode,
-		confid: rec.data.key,
 		url: '/api2/extjs/' + baseurl
 	    });
 
@@ -364,10 +358,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	    handler: run_diskthrottle
 	});
 
-	var cpuoptions_btn = new PVE.button.Button({
+	var cpuoptions_btn = new Ext.Button({
 	    text: gettext('CPU options'),
-	    selModel: sm,
-	    disabled: true,
 	    handler: run_cpuoptions
 	});
 
@@ -438,7 +430,6 @@ Ext.define('PVE.qemu.HardwareView', {
 		resize_btn.disable();
 		move_btn.disable();
 		diskthrottle_btn.disable();
-		cpuoptions_btn.disable();
 		revert_btn.disable();
 		return;
 	    }
@@ -459,8 +450,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    move_btn.setDisabled(pending || !isDisk);
 
 	    diskthrottle_btn.setDisabled(pending || !isDisk);
-
-	    cpuoptions_btn.setDisabled(rowdef.tdCls != 'pve-itype-icon-processor');
 
 	    revert_btn.setDisabled(!pending);
 

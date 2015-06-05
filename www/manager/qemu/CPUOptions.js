@@ -2,6 +2,31 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
     extend: 'PVE.panel.InputPanel',
     alias: 'widget.PVE.qemu.CPUOptionsInputPanel',
 
+    onGetValues: function(values) {
+	var me = this;
+
+	var delete_array = [];
+	
+	if (values.vcpus === '') {
+	    delete_array.push('vcpus');
+	    delete values.vcpus;
+	}
+	if (values.cpulimit === '' || values.cpulimit == 0) {
+	    delete_array.push('cpulimit');
+	    delete values.cpulimit;
+	}
+	if (values.cpuunits === '' || values.cpuunits == 1024) {
+	    delete_array.push('cpuunits');
+	    delete values.cpuunits;
+	}
+
+	if (delete_array.length) {
+	    values['delete'] = delete_array.join(',');
+	}
+	
+	return values;
+    },
+    
     initComponent : function() {
 	var me = this;
 
@@ -23,8 +48,7 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
                 value: '',
                 step: 1,
                 fieldLabel: gettext('CPU limit'),
-                allowBlank: false
-
+                allowBlank: true
             },
 	    {
                 xtype: 'numberfield',
@@ -33,9 +57,8 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
                 minValue: 8,
                 maxValue: 500000,
                 value: 1024,
-                allowBlank: false
+                allowBlank: true
             }
-
 	];
 
 	me.items = items;
