@@ -1,3 +1,8 @@
+/*
+ * Display log entries in a panel with scrollbar
+ * The log entries are automatically refreshed via a background task,
+ * with newest entries comming at the bottom
+ */
 Ext.define('PVE.panel.LogView', {
     extend: 'Ext.panel.Panel',
 
