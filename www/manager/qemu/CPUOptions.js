@@ -39,6 +39,7 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
                 value: '',
                 fieldLabel: gettext('Vcpus'),
                 allowBlank: true,
+                emptyText: me.maxvcpus
             },
             {
                 xtype: 'numberfield',
@@ -48,7 +49,8 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
                 value: '',
                 step: 1,
                 fieldLabel: gettext('CPU limit'),
-                allowBlank: true
+                allowBlank: true,
+                emptyText: gettext('unlimited')
             },
 	    {
                 xtype: 'numberfield',
