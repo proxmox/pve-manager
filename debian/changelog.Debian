@@ -2,6 +2,8 @@ pve-manager (4.0-12) unstable; urgency=medium
 
   * change pve-manager service type to oneshot
 
+  * add iothread option
+  
  -- Proxmox Support Team <support@proxmox.com>  Wed, 10 Jun 2015 09:05:29 +0200
 
 pve-manager (4.0-11) unstable; urgency=medium

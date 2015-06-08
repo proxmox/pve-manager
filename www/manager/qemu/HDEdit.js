@@ -39,6 +39,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    delete me.drive.discard;
 	}
 
+	if (values.iothread && me.confid.match(/^virtio\d+$/)) {
+	    me.drive.iothread = 'on';
+	} else {
+	    delete me.drive.iothread;
+	}
+
 	if (values.cache) {
 	    me.drive.cache = values.cache;
 	} else {
@@ -88,6 +94,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '';
 	values.discard = (drive.discard === 'on');
+	values.iothread = (drive.iothread === 'on');
 
 	me.setValues(values);
     },
@@ -225,6 +232,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    xtype: 'pvecheckbox',
 	    fieldLabel: gettext('Discard'),
 	    name: 'discard'
+	});
+
+	me.column2.push({
+	    xtype: 'pvecheckbox',
+	    fieldLabel: gettext('Iothread'),
+	    name: 'iothread'
 	});
 
 	me.callParent();
