@@ -128,7 +128,6 @@ __PACKAGE__->register_method ({
 	    { name => 'apt' },
 	    { name => 'version' },
 	    { name => 'syslog' },
-	    { name => 'bootlog' },
 	    { name => 'status' },
 	    { name => 'subscription' },
 	    { name => 'tasks' },
@@ -557,63 +556,7 @@ __PACKAGE__->register_method({
 	my $user = $rpcenv->get_user();
 	my $node = $param->{node};
 
-	my ($count, $lines) = PVE::Tools::dump_logfile("/var/log/syslog", $param->{start}, $param->{limit});
-
-	$rpcenv->set_result_attrib('total', $count);
-	    
-	return $lines; 
-    }});
-
-__PACKAGE__->register_method({
-    name => 'bootlog', 
-    path => 'bootlog', 
-    method => 'GET',
-    description => "Read boot log",
-    proxyto => 'node',
-    permissions => {
-	check => ['perm', '/nodes/{node}', [ 'Sys.Syslog' ]],
-    },
-    protected => 1,
-    parameters => {
-    	additionalProperties => 0,
-	properties => {
-	    node => get_standard_option('pve-node'),
-	    start => {
-		type => 'integer',
-		minimum => 0,
-		optional => 1,
-	    },
-	    limit => {
-		type => 'integer',
-		minimum => 0,
-		optional => 1,
-	    },
-	},
-    },
-    returns => {
-	type => 'array',
-	items => { 
-	    type => "object",
-	    properties => {
-		n => {
-		  description=>  "Line number",
-		  type=> 'integer',
-		},
-		t => {
-		  description=>  "Line text",
-		  type => 'string',
-		}
-	    }
-	}
-    },
-    code => sub {
-	my ($param) = @_;
-
-	my $rpcenv = PVE::RPCEnvironment::get();
-	my $user = $rpcenv->get_user();
-	my $node = $param->{node};
-
-	my ($count, $lines) = PVE::Tools::dump_logfile("/var/log/boot", $param->{start}, $param->{limit});
+	my ($count, $lines) = PVE::Tools::dump_journal($param->{start}, $param->{limit});
 
 	$rpcenv->set_result_attrib('total', $count);
 	    
