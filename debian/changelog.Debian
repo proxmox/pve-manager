@@ -1,3 +1,25 @@
+pve-manager (4.0-11) unstable; urgency=medium
+
+  * API change: remove bootlog API
+
+  * fix LogView widget
+
+  * use Wants instead of Requires inside systemd service definitions
+
+  * implement service API using systemctl
+
+  * add cpu options form
+
+  * add virtio-scsi-single scsi controller
+
+  * add IvyBridge cpu model
+
+  * LXC GUI: use cpulimit instead of cpus
+
+  * remove UBC GUI
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 09 Jun 2015 12:22:58 +0200
+
 pve-manager (4.0-10) unstable; urgency=medium
 
   * API change: /cluster/status - do not use clustat
