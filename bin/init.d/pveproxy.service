@@ -1,7 +1,7 @@
 [Unit]
 Description=PVE API Proxy Server
 ConditionPathExists=/usr/bin/pveproxy
-Requires=pve-cluster.service
+Wants=pve-cluster.service
 Wants=pvedaemon.service
 After=pve-cluster.service
 After=pvedaemon.service

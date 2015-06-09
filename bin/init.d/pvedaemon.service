@@ -1,7 +1,7 @@
 [Unit]
 Description=PVE API Daemon
 ConditionPathExists=/usr/bin/pvedaemon
-Requires=pve-cluster.service
+Wants=pve-cluster.service
 After=pve-cluster.service
 
 [Service]

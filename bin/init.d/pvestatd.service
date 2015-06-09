@@ -1,7 +1,7 @@
 [Unit]
 Description=PVE Status Daemon
 ConditionPathExists=/usr/bin/pvestatd
-Requires=pve-cluster.service
+Wants=pve-cluster.service
 After=pve-cluster.service
 
 [Service]
