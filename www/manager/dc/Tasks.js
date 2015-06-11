@@ -12,18 +12,24 @@ Ext.define('PVE.dc.Tasks', {
 	    proxy: {
                 type: 'pve',
 		url: '/api2/json/cluster/tasks'
-	    },
+	    }
+	});
+
+	var store = Ext.create('PVE.data.DiffStore', { 
+	    rstore: taskstore,
+	    sortAfterUpdate: true,
+	    appendAtStart: true,
 	    sorters: [
+		{
+		    property : 'pid',
+		    direction: 'DESC'
+		},
 		{
 		    property : 'starttime',
 		    direction: 'DESC'
 		}
 	    ]
-	});
 
-	var store = Ext.create('PVE.data.DiffStore', { 
-	    rstore: taskstore,
-	    appendAtStart: true 
 	});
 
 	var run_task_viewer = function() {
