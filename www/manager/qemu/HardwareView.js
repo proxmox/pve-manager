@@ -244,8 +244,9 @@ Ext.define('PVE.qemu.HardwareView', {
 	    }
 
 	    var win;
-	    if (Ext.isString(rowdef.editor)) {
-		win = Ext.create(rowdef.editor, {
+
+	    if (Ext.isString(editor)) {
+		win = Ext.create(editor, {
 		    pveSelNode: me.pveSelNode,
 		    confid: rec.data.key,
 		    url: '/api2/extjs/' + baseurl
