@@ -31,6 +31,7 @@ my $service_name_list = [
     'syslog',
     'cron',
     'postfix',
+    'ksmtuned',
     ];
 
 my $get_full_service_state = sub {
