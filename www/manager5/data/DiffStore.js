@@ -35,15 +35,15 @@ Ext.define('PVE.data.DiffStore', {
 	    var olditem = me.getById(id);
 	    if (olditem) {
 		olditem.beginEdit();
-		me.model.prototype.fields.eachKey(function(field) {
-		    if (olditem.data[field] !== data[field]) {
-			olditem.set(field, data[field]);
+		Ext.Array.each(me.model.prototype.fields, function(field) {
+		    if (olditem.data[field.name] !== data[field.name]) {
+			olditem.set(field.name, data[field.name]);
 		    }
 		});
 		olditem.endEdit(true);
 		olditem.commit(); 
 	    } else {
-		var newrec = Ext.ModelMgr.create(data, me.model, id);
+		var newrec = Ext.create(me.model, data);
 		var pos = (me.appendAtStart && !first_load) ? 0 : me.data.length;
 		me.insert(pos, newrec);
 	    }
@@ -64,7 +64,7 @@ Ext.define('PVE.data.DiffStore', {
 		    me.remove(olditem);
 		}
 	    });
-		    
+
 	    rstore.each(function(item) {
 		cond_add_item(item.data, item.getId());
 	    });
