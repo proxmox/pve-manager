@@ -45,7 +45,7 @@ Ext.define('PVE.dc.Log', {
 		{ 
 		    header: gettext("Time"), 
 		    dataIndex: 'time',
-		    width: 100,
+		    width: 150,
 		    renderer: function(value) { 
 			return Ext.Date.format(value, "M d H:i:s"); 
 		    }
@@ -53,7 +53,7 @@ Ext.define('PVE.dc.Log', {
 		{ 
 		    header: gettext("Node"), 
 		    dataIndex: 'node',
-		    width: 100
+		    width: 150
 		},
 		{ 
 		    header: gettext("Service"), 

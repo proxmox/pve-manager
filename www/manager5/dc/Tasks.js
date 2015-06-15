@@ -70,7 +70,7 @@ Ext.define('PVE.dc.Tasks', {
 		{ 
 		    header: gettext("Start Time"), 
 		    dataIndex: 'starttime',
-		    width: 100,
+		    width: 150,
 		    renderer: function(value) { 
 			return Ext.Date.format(value, "M d H:i:s"); 
 		    }
@@ -78,7 +78,7 @@ Ext.define('PVE.dc.Tasks', {
 		{ 
 		    header: gettext("End Time"), 
 		    dataIndex: 'endtime',
-		    width: 100,
+		    width: 150,
 		    renderer: function(value, metaData, record) {
 			if (record.data.pid) {
 			    if (record.data.type == "vncproxy" || 
