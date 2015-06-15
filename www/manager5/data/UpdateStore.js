@@ -1,3 +1,9 @@
+/* Extends the Ext.data.Store type
+ * with  startUpdate() and stopUpdate() methods
+ * to refresh the store data in the background
+ * Components using this store directly will flicker
+ * due to the redisplay of the element ater 'config.interval' ms
+ */
 Ext.define('PVE.data.UpdateStore', {
     extend: 'Ext.data.Store',
 
