@@ -1,3 +1,11 @@
+pve-manager (4.0-13) unstable; urgency=medium
+
+  * use pvetest repository for beta release
+
+  * GUI: display version 4.0Beta to mark this a beta release.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 16 Jun 2015 12:28:38 +0200
+
 pve-manager (4.0-12) unstable; urgency=medium
 
   * change pve-manager service type to oneshot
