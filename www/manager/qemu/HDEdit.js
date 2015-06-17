@@ -39,7 +39,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    delete me.drive.discard;
 	}
 
-	if (values.iothread && me.confid.match(/^virtio\d+$/)) {
+	if (values.iothread && confid.match(/^virtio\d+$/)) {
 	    me.drive.iothread = 'on';
 	} else {
 	    delete me.drive.iothread;
