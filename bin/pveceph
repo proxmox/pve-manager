@@ -24,7 +24,6 @@ use PVE::CLIHandler;
 
 use base qw(PVE::CLIHandler);
 
-my $cmddef;
 my $nodename = PVE::INotify::nodename();
 
 sub prepare {
