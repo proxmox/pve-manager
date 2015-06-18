@@ -11,6 +11,7 @@ sub get_index {
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=10">
     <title>Proxmox Virtual Environment</title>
  
     <link rel="stylesheet" type="text/css" href="/pve2/ext4/resources/css/ext-all.css" />
