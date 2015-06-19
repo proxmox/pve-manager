@@ -1,3 +1,9 @@
+pve-manager (4.0-14) unstable; urgency=medium
+
+  * qemu GUI: fix CD edit (bug #640)
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 19 Jun 2015 06:46:19 +0200
+
 pve-manager (4.0-13) unstable; urgency=medium
 
   * use pvetest repository for beta release
