@@ -524,7 +524,7 @@ __PACKAGE__->register_method({
 	my $pkgrecords = $cache->packages();
 
 	# try to use a resonable ordering (most important things first)
-	my @list = qw(proxmox-ve-3.10.0 pve-manager);
+	my @list = qw(proxmox-ve pve-manager);
 
 	foreach my $pkgname (keys %$cache) {
 	    if ($pkgname =~ m/pve-kernel-/) {
@@ -533,7 +533,10 @@ __PACKAGE__->register_method({
 	    }
 	}
 
-	push @list, qw(lvm2 clvm corosync-pve libqb0 resource-agents-pve fence-agents-pve pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl pve-libspice-server1 vncterm vzctl vzprocps vzquota pve-qemu-kvm ksm-control-daemon glusterfs-client);
+	# comment out old packages uses before 4.0
+	# resource-agents-pve fence-agents-pve vzctl vzprocps vzquota
+	
+	push @list, qw(lvm2 clvm corosync-pve libqb0 pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl pve-libspice-server1 vncterm pve-qemu-kvm pve-container pve-firewall pve-ha-manager ksm-control-daemon glusterfs-client lxc-pve);
 
 	my $pkglist = [];
 	
@@ -560,7 +563,7 @@ __PACKAGE__->register_method({
 	    # hack: add some useful information (used by 'pveversion -v')
 	    if ($pkgname eq 'pve-manager') {
 		$res->{ManagerVersion} = $pvever;
-	    } elsif ($pkgname eq 'proxmox-ve-3.10.0') {
+	    } elsif ($pkgname eq 'proxmox-ve') {
 		$res->{RunningKernel} = $kernel_release;
 	    }
 
