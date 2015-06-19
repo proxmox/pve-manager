@@ -1,3 +1,9 @@
+pve-manager (4.0-16) unstable; urgency=medium
+
+  *  pveversion: fix package list for pve 4.0
+  
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 19 Jun 2015 12:25:54 +0200
+
 pve-manager (4.0-15) unstable; urgency=medium
  
   * fix bug #644: remove old java console
