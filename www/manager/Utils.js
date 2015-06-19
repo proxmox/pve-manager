@@ -233,11 +233,9 @@ Ext.define('PVE.Utils', { statics: {
     render_console_viewer: function(value) {
 	if (!value) {
 	    return PVE.Utils.defaultText + ' (HTML5)';
-	} else if (value === 'applet') {
-	    return 'Java VNC Applet';
 	} else if (value === 'vv') {
 	    return  'SPICE (remote-viewer)';
-	} else if (value === 'html5') {
+	} else if (value === 'applet' || value === 'html5') {
 	    return  'HTML5 (noVNC)';
 	} else {
 	    return value;
@@ -946,7 +944,7 @@ Ext.define('PVE.Utils', { statics: {
 	}
 
 	if (viewer === 'applet' || viewer === 'html5') {
-	    PVE.Utils.openVNCViewer(vmtype, vmid, nodename, vmname, viewer === 'html5');
+	    PVE.Utils.openVNCViewer(vmtype, vmid, nodename, vmname, true);
 	} else if (viewer === 'vv') {
 	    var url;
 	    var params = { proxy: PVE.Utils.windowHostname() };
