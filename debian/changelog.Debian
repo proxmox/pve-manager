@@ -6,6 +6,8 @@ pve-manager (4.0-14) unstable; urgency=medium
 
   * Force Internet Explorer to interpret pages in IE10 compatibility modus
 
+  * remove old java console
+
  -- Proxmox Support Team <support@proxmox.com>  Fri, 19 Jun 2015 06:46:19 +0200
 
 pve-manager (4.0-13) unstable; urgency=medium

@@ -34,14 +34,6 @@ Ext.define('PVE.button.ConsoleButton', {
 	    }
 	});
 
-	var vncMenu = Ext.create('Ext.menu.Item', {
-	    text: 'VNC',
-	    iconCls: 'pve-itype-icon-tigervnc',
-	    handler: function() { 
-		PVE.Utils.openConsoleWindow('applet', me.consoleType, me.vmid, me.nodename, me.consoleName);
-	    }
-	});
-
 	var noVncMenu = Ext.create('Ext.menu.Item', {
 	    text: 'noVNC',
 	    iconCls: 'pve-itype-icon-novnc',
@@ -58,7 +50,7 @@ Ext.define('PVE.button.ConsoleButton', {
 						   me.nodename, me.consoleName);
 	    },
 	    menu: new Ext.menu.Menu({
-		items: [ noVncMenu, vncMenu, me.spiceMenu ]
+		items: [ noVncMenu, me.spiceMenu ]
 	    })
 	});
 
