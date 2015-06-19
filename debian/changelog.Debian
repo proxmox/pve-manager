@@ -1,3 +1,9 @@
+pve-manager (4.0-15) unstable; urgency=medium
+ 
+  * fix bug #644: remove old java console
+  
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 19 Jun 2015 09:09:59 +0200
+
 pve-manager (4.0-14) unstable; urgency=medium
 
   * qemu GUI: fix CD edit (bug #640)
@@ -5,8 +11,6 @@ pve-manager (4.0-14) unstable; urgency=medium
   * Fix qemu create wizard when iothread is set
 
   * Force Internet Explorer to interpret pages in IE10 compatibility modus
-
-  * remove old java console
 
  -- Proxmox Support Team <support@proxmox.com>  Fri, 19 Jun 2015 06:46:19 +0200
 
