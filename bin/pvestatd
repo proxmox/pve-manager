@@ -18,6 +18,12 @@ use PVE::RPCEnvironment;
 use PVE::API2::Subscription;
 use PVE::AutoBalloon;
 
+use PVE::Status::Plugin;
+use PVE::Status::Graphite;
+
+PVE::Status::Graphite->register();
+PVE::Status::Plugin->init();
+
 use base qw(PVE::Daemon);
 
 my $opt_debug;
@@ -66,6 +72,7 @@ sub hup {
 }
 
 sub update_node_status {
+    my ($status_cfg) = @_;
 
     my ($avg1, $avg5, $avg15) = PVE::ProcFSTools::read_loadavg();
 
@@ -106,6 +113,14 @@ sub update_node_status {
 	"$dinfo->{blocks}:$dused:$netin:$netout";
 
     PVE::Cluster::broadcast_rrd("pve2-node/$nodename", $data);
+
+    foreach my $id (keys %{$status_cfg->{ids}}) {
+	my $plugin_config = $status_cfg->{ids}->{$id};
+	next if $plugin_config->{disable};
+	my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
+	my $d = {}; # fixme: what data?
+	$plugin->update_node_status($plugin_config, $nodename, $d);
+    }
 }
 
 sub auto_balloning {
@@ -149,6 +164,7 @@ sub auto_balloning {
 }
 
 sub update_qemu_status {
+    my ($status_cfg) = @_;
 
     my $ctime = time();
 
@@ -176,6 +192,13 @@ sub update_qemu_status {
 		":::";
 	}
 	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
+
+	foreach my $id (keys %{$status_cfg->{ids}}) {
+	    my $plugin_config = $status_cfg->{ids}->{$id};
+	    next if $plugin_config->{disable};
+	    my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
+	    $plugin->update_qemu_status($plugin_config, $vmid, $d);
+	}
     }
 }
 
@@ -194,6 +217,7 @@ sub remove_stale_lxc_consoles {
 }
 
 sub update_lxc_status {
+    my ($status_cfg) = @_;
 
     my $ctime = time();
 
@@ -215,10 +239,18 @@ sub update_lxc_status {
 		":::";
 	}
 	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
+
+	foreach my $id (keys %{$status_cfg->{ids}}) {
+	    my $plugin_config = $status_cfg->{ids}->{$id};
+	    next if $plugin_config->{disable};
+	    my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
+	    $plugin->update_lxc_status($plugin_config, $vmid, $d);
+	}
     }
 }
 
 sub update_storage_status {
+    my ($status_cfg) = @_;
 
     my $cfg = cfs_read_file("storage.cfg");
 
@@ -237,6 +269,13 @@ sub update_storage_status {
 
 	my $key = "pve2-storage/${nodename}/$storeid";
 	PVE::Cluster::broadcast_rrd($key, $data);
+
+	foreach my $id (keys %{$status_cfg->{ids}}) {
+	    my $plugin_config = $status_cfg->{ids}->{$id};
+	    next if $plugin_config->{disable};
+	    my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
+	    $plugin->update_storage_status($plugin_config, $storeid, $d);
+	}
     }
 }
 
@@ -252,26 +291,28 @@ sub update_status {
     my $err = $@;
     syslog('err', $err) if $err;
 
+    my $status_cfg = PVE::Cluster::cfs_read_file('status.cfg');
+
     eval {
-	update_node_status();
+	update_node_status($status_cfg);
     };
     $err = $@;
     syslog('err', "node status update error: $err") if $err;
 
     eval {
-	update_qemu_status();
+	update_qemu_status($status_cfg);
     };
     $err = $@;
     syslog('err', "qemu status update error: $err") if $err;
 
     eval {
-	update_lxc_status();
+	update_lxc_status($status_cfg);
     };
     $err = $@;
     syslog('err', "lxc status update error: $err") if $err;
 
     eval {
-	update_storage_status();
+	update_storage_status($status_cfg);
     };
     $err = $@;
     syslog('err', "storage status update error: $err") if $err;
