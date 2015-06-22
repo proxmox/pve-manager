@@ -118,7 +118,18 @@ sub update_node_status {
 	my $plugin_config = $status_cfg->{ids}->{$id};
 	next if $plugin_config->{disable};
 	my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
-	my $d = {}; # fixme: what data?
+
+	my $d = {};
+	$d->{uptime} = $uptime;
+	$d->{cpustat} = $stat;
+	$d->{cpustat}->{avg1} = $avg1;
+	$d->{cpustat}->{avg5} = $avg5;
+	$d->{cpustat}->{avg15} = $avg15;
+	$d->{cpustat}->{cpus} = $maxcpu;
+	$d->{memory} = $meminfo;
+	$d->{blockstat} = $dinfo;
+	$d->{nics} = $netdev;
+
 	$plugin->update_node_status($plugin_config, $nodename, $d, $ctime);
     }
 }
