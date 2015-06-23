@@ -48,25 +48,25 @@ sub parse_section_header {
 }
 
 sub update_node_status {
-    my ($plugin_config, $node, $data) = @_;
+    my ($class, $plugin_config, $node, $data, $ctime) = @_;
 
     die "please implement inside plugin";
 }
 
 sub update_qemu_status {
-    my ($plugin_config, $vmid, $data) = @_;
+    my ($class, $plugin_config, $vmid, $data, $ctime) = @_;
 
     die "please implement inside plugin";
 }
 
 sub update_lxc_status {
-    my ($plugin_config, $vmid, $data) = @_;
+    my ($class, $plugin_config, $vmid, $data, $ctime) = @_;
 
     die "please implement inside plugin";
 }
 
 sub update_storage_status {
-    my ($plugin_config, $storeid, $data) = @_;
+    my ($class, $plugin_config, $nodename, $storeid, $data, $ctime) = @_;
 
     die "please implement inside plugin";
 }

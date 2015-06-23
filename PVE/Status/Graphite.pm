@@ -7,6 +7,8 @@ use PVE::Status::Plugin;
 # example config (/etc/pve/status.cfg)
 #graphite:
 #	graphiteserver test
+#	port 2003
+#	path proxmox.mycluster
 #	disable 0
 #
 
@@ -19,8 +21,16 @@ sub type {
 sub properties {
     return {
 	graphiteserver => {
-            type => 'string',
-	    description => "External graphite statistic server",
+	    type => 'string', format => 'dns-name',
+	    description => "External graphite statistic server dns name",
+	},
+	port => {
+            type => 'integer',
+	    description => "graphite server port",
+	},
+	path => {
+            type => 'string', format => 'graphite-path',
+	    description => "root graphite path (ex: proxmox.mycluster.mykey)",
 	},
     };
 }
@@ -28,33 +38,90 @@ sub properties {
 sub options {
     return {
 	graphiteserver => {},
+	port => { optional => 1 },
+	path => { optional => 1 },
 	disable => { optional => 1 },
    };
 }
 
 # Plugin implementation
 sub update_node_status {
-    my ($plugin_config, $node, $data) = @_;
+    my ($class, $plugin_config, $node, $data, $ctime) = @_;
 
-    # implement me
+    write_graphite_hash($plugin_config, $data, $ctime, "nodes.$node");
+
 }
 
 sub update_qemu_status {
-    my ($plugin_config, $vmid, $data) = @_;
-
-    # implement me
+    my ($class, $plugin_config, $vmid, $data, $ctime) = @_;
+    write_graphite_hash($plugin_config, $data, $ctime, "qemu.$vmid");
 }
 
 sub update_lxc_status {
-    my ($plugin_config, $vmid, $data) = @_;
+    my ($class, $plugin_config, $vmid, $data, $ctime) = @_;
 
-    # implement me
+    write_graphite_hash($plugin_config, $data, $ctime, "lxc.$vmid");
 }
 
 sub update_storage_status {
-    my ($plugin_config, $storeid, $data) = @_;
+    my ($class, $plugin_config, $nodename, $storeid, $data, $ctime) = @_;
 
-    # implement me
+    write_graphite_hash($plugin_config, $data, $ctime, "storages.$nodename.$storeid");
 }
+
+sub write_graphite_hash {
+    my ($plugin_config, $d, $ctime, $object) = @_;
+
+    my $host = $plugin_config->{graphiteserver};
+    my $port = $plugin_config->{port} ? $plugin_config->{port} : 2003;
+    my $path = $plugin_config->{path} ? $plugin_config->{path} : 'proxmox';
+
+    my $carbon_socket = IO::Socket::IP->new(
+        PeerAddr    => $host,
+        PeerPort    => $port,
+        Proto       => 'udp',
+    );
+
+    write_graphite($carbon_socket, $d, $ctime, $path.".$object");
+
+    $carbon_socket->close() if $carbon_socket;
+
+}
+
+sub write_graphite {
+    my ($carbon_socket, $d, $ctime, $path) = @_;
+
+    for my $key (keys %$d) {
+
+        my $value = $d->{$key};
+        my $oldpath = $path;
+        $key =~ s/\./-/g;
+        $path .= ".$key";
+
+        if ( defined $value ) {
+            if ( ref $value eq 'HASH' ) {
+                write_graphite($carbon_socket, $value, $ctime, $path);
+            }else {
+                $carbon_socket->send( "$path $value $ctime" );
+            }
+        }
+        $path = $oldpath;
+    }
+}
+
+PVE::JSONSchema::register_format('graphite-path', \&pve_verify_graphite_path);
+sub pve_verify_graphite_path {
+    my ($path, $noerr) = @_;
+
+    my $regex = "([a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)";
+
+    if ($path !~ /^(${regex}\.)*${regex}$/) {
+           return undef if $noerr;
+           die "value does not look like a valid graphite path\n";
+    }
+
+    return $path;
+}
+
 
 1;

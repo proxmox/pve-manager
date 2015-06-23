@@ -119,7 +119,7 @@ sub update_node_status {
 	next if $plugin_config->{disable};
 	my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
 	my $d = {}; # fixme: what data?
-	$plugin->update_node_status($plugin_config, $nodename, $d);
+	$plugin->update_node_status($plugin_config, $nodename, $d, $ctime);
     }
 }
 
@@ -197,7 +197,7 @@ sub update_qemu_status {
 	    my $plugin_config = $status_cfg->{ids}->{$id};
 	    next if $plugin_config->{disable};
 	    my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
-	    $plugin->update_qemu_status($plugin_config, $vmid, $d);
+	    $plugin->update_qemu_status($plugin_config, $vmid, $d, $ctime);
 	}
     }
 }
@@ -244,7 +244,7 @@ sub update_lxc_status {
 	    my $plugin_config = $status_cfg->{ids}->{$id};
 	    next if $plugin_config->{disable};
 	    my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
-	    $plugin->update_lxc_status($plugin_config, $vmid, $d);
+	    $plugin->update_lxc_status($plugin_config, $vmid, $d, $ctime);
 	}
     }
 }
@@ -274,7 +274,7 @@ sub update_storage_status {
 	    my $plugin_config = $status_cfg->{ids}->{$id};
 	    next if $plugin_config->{disable};
 	    my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
-	    $plugin->update_storage_status($plugin_config, $storeid, $d);
+	    $plugin->update_storage_status($plugin_config, $nodename, $storeid, $d, $ctime);
 	}
     }
 }
