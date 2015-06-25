@@ -266,7 +266,17 @@ Ext.define('PVE.node.NetworkView', {
 			{
 			    header: gettext('IP address'),
 			    sortable: true,
-			    dataIndex: 'address'
+			    dataIndex: 'address',
+			    renderer: function(value, metaData, rec) {
+				if (rec.data.address && rec.data.address6) {
+				    return rec.data.address + "<br>"
+				           + rec.data.address6 + '/' + rec.data.netmask6;
+				} else if (rec.data.address6) {
+				    return rec.data.address6 + '/' + rec.data.netmask6;
+				} else {
+				    return rec.data.address;
+				}
+			    }
 			},
 			{
 			    header: gettext('Subnet mask'),
@@ -276,7 +286,16 @@ Ext.define('PVE.node.NetworkView', {
 			{
 			    header: gettext('Gateway'),
 			    sortable: true,
-			    dataIndex: 'gateway'
+			    dataIndex: 'gateway',
+			    renderer: function(value, metaData, rec) {
+				if (rec.data.gateway && rec.data.gateway6) {
+				    return rec.data.gateway + "<br>" + rec.data.gateway6;
+				} else if (rec.data.gateway6) {
+				    return rec.data.gateway6;
+				} else {
+				    return rec.data.gateway;
+				}
+			    }
 			}
 		    ],
 		    listeners: {
@@ -312,8 +331,9 @@ Ext.define('PVE.node.NetworkView', {
 	extend: 'Ext.data.Model',
 	fields: [ 
 	    'iface', 'type', 'active', 'autostart',
-	    'bridge_ports', 'slaves', 'address',
-	    'netmask', 'gateway'
+	    'bridge_ports', 'slaves',
+	    'address', 'netmask', 'gateway',
+	    'address6', 'netmask6', 'gateway6',
 	],
 	idProperty: 'iface'
     });

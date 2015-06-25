@@ -233,6 +233,48 @@ Ext.define('PVE.node.NetworkEdit', {
 		    fieldLabel: gettext('Gateway'),
 		    vtype: 'IPAddress',
 		    name: 'gateway'
+		},
+		{
+		    xtype: 'pvetextfield',
+		    deleteEmpty: !me.create,
+		    fieldLabel: gettext('IPv6 address'),
+		    vtype: 'IP6Address',
+		    name: 'address6'
+		},
+		{
+		    xtype: 'numberfield',
+		    deleteEmpty: !me.create,
+		    fieldLabel: gettext('Prefix length'),
+		    name: 'netmask6',
+		    value: '',
+		    minValue: 0,
+		    maxValue: 128,
+		    allowBlank: true,
+		    validator: function(value) {
+			/*jslint confusion: true */
+			if (!me.items) {
+			    return true;
+			}
+			var address = me.down('field[name=address6]').getValue();
+			if (value !== '') {
+			    if (address === '') {
+				return "IPv6 prefix length requires option 'IPv6 address'";
+			    }
+			} else {
+			    if (address !== '') {
+				return "Option 'IPv6 address' requires an IPv6 prefix length";
+			    }
+			}
+
+			return true;
+		    }
+		},
+		{
+		    xtype: 'pvetextfield',
+		    deleteEmpty: !me.create,
+		    fieldLabel: gettext('Gateway'),
+		    vtype: 'IP6Address',
+		    name: 'gateway6'
 		}
 	    ]);
 	}
