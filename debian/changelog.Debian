@@ -1,3 +1,9 @@
+pve-manager (4.0-17) unstable; urgency=medium
+
+  * add noVNC resize feature
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 25 Jun 2015 17:56:06 +0200
+
 pve-manager (4.0-16) unstable; urgency=medium
 
   *  pveversion: fix package list for pve 4.0
