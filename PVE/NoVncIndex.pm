@@ -128,6 +128,7 @@ INCLUDE_URI='/novnc/include/';
           <li><input id="noVNC_path" type="input" value="websockify"> Path</li>
           <li><input id="noVNC_repeaterID" type="input" value=""> Repeater ID</li>
           <li><input id="noVNC_stylesheet" type="input" value=""> Stylesheet</li>
+          <li><input id="noVNC_resize" type="input" value=""> Resize</li>
           <li><input id="noVNC_logging" type="input" value=""> Logging</li>
 
          </ul>
