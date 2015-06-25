@@ -765,16 +765,18 @@ __PACKAGE__->register_method ({
 my $find_node_ip = sub {
     my ($cidr) = @_;
 
-    my $config = PVE::INotify::read_file('interfaces');
-
     my $net = Net::IP->new($cidr) || die Net::IP::Error() . "\n";
+    my $id = $net->version == 6 ? 'address6' : 'address';
 
-    foreach my $iface (keys %$config) {
+    my $config = PVE::INotify::read_file('interfaces');
+    my $ifaces = $config->{ifaces};
+
+    foreach my $iface (keys %$ifaces) {
 	my $d = $config->{$iface};
-	next if !$d->{address};
-	my $a = Net::IP->new($d->{address});
+	next if !$d->{$id};
+	my $a = Net::IP->new($d->{$id});
 	next if !$a;
-	return $d->{address} if $net->overlaps($a);
+	return $d->{$id} if $net->overlaps($a);
     }
 
     die "unable to find local address within network '$cidr'\n";
