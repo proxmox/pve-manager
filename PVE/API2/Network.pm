@@ -45,6 +45,11 @@ my $confdesc = {
 	type => 'string',
 	optional => 1,
     },
+    comments6 => {
+	description => "Comments",
+	type => 'string',
+	optional => 1,
+    },
     autostart => {
 	description => "Automatically start interface on boot.",
 	type => 'boolean',
@@ -115,6 +120,23 @@ my $confdesc = {
 	type => 'string', format => 'ipv4',
 	optional => 1,
 	requires => 'netmask',
+    },
+    gateway6 => {
+	description => 'Default ipv6 gateway address.',
+	type => 'string', format => 'ipv6',
+	optional => 1,
+    },
+    netmask6 => {
+	description => 'Network mask.',
+	type => 'integer', minimum => 0, maximum => 128,
+	optional => 1,
+	requires => 'address6',
+    },
+    address6 => {
+	description => 'IP address.',
+	type => 'string', format => 'ipv6',
+	optional => 1,
+	requires => 'netmask6',
     }
 };
 
@@ -166,19 +188,21 @@ __PACKAGE__->register_method({
 
 	$rpcenv->set_result_attrib('changes', $changes) if $changes;
 
-	delete $config->{lo}; # do not list the loopback device
+	my $ifaces = $config->{ifaces};
+
+	delete $ifaces->{lo}; # do not list the loopback device
 
 	if ($param->{type}) {
-	    foreach my $k (keys %$config) {
-		my $type = $config->{$k}->{type};
+	    foreach my $k (keys %$ifaces) {
+		my $type = $ifaces->{$k}->{type};
 		my $match =  ($param->{type} eq $type) || (
 		    ($param->{type} eq 'any_bridge') && 
 		    ($type eq 'bridge' || $type eq 'OVSBridge'));
-		delete $config->{$k} if !$match;
+		delete $ifaces->{$k} if !$match;
 	    }
 	}
 
-	return PVE::RESTHandler::hash_to_array($config, 'iface');
+	return PVE::RESTHandler::hash_to_array($ifaces, 'iface');
    }});
 
 __PACKAGE__->register_method({
@@ -206,13 +230,23 @@ __PACKAGE__->register_method({
 	return undef;
     }});
 
-my $check_duplicate_gateway = sub {
-    my ($config, $newiface) = @_;
+my $check_duplicate = sub {
+    my ($config, $newiface, $key, $name) = @_;
 
     foreach my $iface (keys %$config) {
-	raise_param_exc({ gateway => "Default gateway already exists on interface '$iface'." })
-	    if ($newiface ne $iface) && $config->{$iface}->{gateway};
+	raise_param_exc({ $key => "$name already exists on interface '$iface'." })
+	    if ($newiface ne $iface) && $config->{$iface}->{$key};
     }
+};
+
+my $check_duplicate_gateway = sub {
+    my ($config, $newiface) = @_;
+    return &$check_duplicate($config, $newiface, 'gateway', 'Default gateway');
+};
+
+my $check_duplicate_gateway6 = sub {
+    my ($config, $newiface) = @_;
+    return &$check_duplicate($config, $newiface, 'gateway6', 'Default ipv6 gateway');
 };
 
 my $check_ipv4_settings = sub {
@@ -225,6 +259,29 @@ my $check_ipv4_settings = sub {
 
     raise_param_exc({ address => "$address is not a valid host ip address." })
         if ($binhost eq $binmask) || ($binhost eq $broadcast);
+};
+
+sub ipv6_tobin {
+    return Net::IP::ip_iptobin(Net::IP::ip_expand_address(shift, 6), 6);
+}
+
+my $check_ipv6_settings = sub {
+    my ($address, $netmask) = @_;
+
+    raise_param_exc({ netmask => "$netmask is not a valid subnet length for ipv6" })
+	if $netmask < 0 || $netmask > 128;
+
+    raise_param_exc({ address => "$address is not a valid host ip address." })
+	if !Net::IP::ip_is_ipv6($address);
+
+    my $binip = ipv6_tobin($address);
+    my $binmask = Net::IP::ip_get_mask($netmask, 6);
+
+    my $type = Net::IP::ip_iptypev6($binip);
+
+    raise_param_exc({ address => "$address is not a valid host ip address." })
+	if ($binip eq $binmask) ||
+	   (defined($type) && $type !~ /^(?:(?:GLOBAL|(?:UNIQUE|LINK)-LOCAL)-UNICAST)$/);
 };
 
 __PACKAGE__->register_method({
@@ -252,17 +309,30 @@ __PACKAGE__->register_method({
 
 	my $code = sub {
 	    my $config = PVE::INotify::read_file('interfaces');
+	    my $ifaces = $config->{ifaces};
 
 	    raise_param_exc({ iface => "interface already exists" })
-		if $config->{$iface};
+		if $ifaces->{$iface};
 
-	    &$check_duplicate_gateway($config, $iface)
+	    &$check_duplicate_gateway($ifaces, $iface)
 		if $param->{gateway};
+	    &$check_duplicate_gateway6($ifaces, $iface)
+		if $param->{gateway6};
 
 	    &$check_ipv4_settings($param->{address}, $param->{netmask})
 		if $param->{address};
+	    &$check_ipv6_settings($param->{address6}, int($param->{netmask6}))
+		if $param->{address6};
+
+	    my $families = $param->{families} = [];
+	    push @$families, 'inet'
+		if $param->{address} && !grep(/^inet$/, @$families);
+	    push @$families, 'inet6'
+		if $param->{address6} && !grep(/^inet6$/, @$families);
+	    @$families = ('inet') if !scalar(@$families);
 
 	    $param->{method} = $param->{address} ? 'static' : 'manual'; 
+	    $param->{method6} = $param->{address6} ? 'static' : 'manual'; 
 
 	    if ($param->{type} =~ m/^OVS/) {
 		-x '/usr/bin/ovs-vsctl' ||
@@ -272,7 +342,7 @@ __PACKAGE__->register_method({
 	    if ($param->{type} eq 'OVSIntPort' || $param->{type} eq 'OVSBond') {
 		my $brname = $param->{ovs_bridge};
 		raise_param_exc({ ovs_bridge => "parameter is required" }) if !$brname;
-		my $br = $config->{$brname};
+		my $br = $ifaces->{$brname};
 		raise_param_exc({ ovs_bridge => "bridge '$brname' does not exist" }) if !$br;
 		raise_param_exc({ ovs_bridge => "interface '$brname' is no OVS bridge" }) 
 		    if $br->{type} ne 'OVSBridge';
@@ -282,7 +352,7 @@ __PACKAGE__->register_method({
 		    if ! grep { $_ eq $iface } @ports;
 	    }
 
-	    $config->{$iface} = $param;
+	    $ifaces->{$iface} = $param;
 
 	    PVE::INotify::write_file('interfaces', $config);
 	};
@@ -324,24 +394,42 @@ __PACKAGE__->register_method({
 
 	my $code = sub {
 	    my $config = PVE::INotify::read_file('interfaces');
+	    my $ifaces = $config->{ifaces};
 
 	    raise_param_exc({ iface => "interface does not exist" })
-		if !$config->{$iface};
+		if !$ifaces->{$iface};
 
+	    my $families = ($param->{families} ||= []);
 	    foreach my $k (PVE::Tools::split_list($delete)) {
-		delete $config->{$iface}->{$k};
+		delete $ifaces->{$iface}->{$k};
+		@$families = grep(!/^inet$/, @$families) if $k eq 'address';
+		@$families = grep(!/^inet6$/, @$families) if $k eq 'address6';
 	    }
 
-	    &$check_duplicate_gateway($config, $iface)
+	    &$check_duplicate_gateway($ifaces, $iface)
 		if $param->{gateway};
+	    &$check_duplicate_gateway6($ifaces, $iface)
+		if $param->{gateway6};
 
-	    &$check_ipv4_settings($param->{address}, $param->{netmask}) 
-		if $param->{address};
+	    if ($param->{address}) {
+		&$check_ipv4_settings($param->{address}, $param->{netmask});
+		push @$families, 'inet' if !grep(/^inet$/, @$families);
+	    } else {
+		@$families = grep(!/^inet$/, @$families);
+	    }
+	    if ($param->{address6}) {
+		&$check_ipv6_settings($param->{address6}, int($param->{netmask6}));
+		push @$families, 'inet6' if !grep(/^inet6$/, @$families);
+	    } else {
+		@$families = grep(!/^inet6$/, @$families);
+	    }
+	    @$families = ('inet') if !scalar(@$families);
 
 	    $param->{method} = $param->{address} ? 'static' : 'manual'; 
+	    $param->{method6} = $param->{address6} ? 'static' : 'manual'; 
 
 	    foreach my $k (keys %$param) {
-		$config->{$iface}->{$k} = $param->{$k};
+		$ifaces->{$iface}->{$k} = $param->{$k};
 	    }
 	    
 	    PVE::INotify::write_file('interfaces', $config);
@@ -384,11 +472,12 @@ __PACKAGE__->register_method({
 	my ($param) = @_;
 
 	my $config = PVE::INotify::read_file('interfaces');
+	my $ifaces = $config->{ifaces};
 
 	raise_param_exc({ iface => "interface does not exist" })
-	    if !$config->{$param->{iface}};
+	    if !$ifaces->{$param->{iface}};
 
-	return $config->{$param->{iface}};
+	return $ifaces->{$param->{iface}};
    }});
 
 __PACKAGE__->register_method({
@@ -414,14 +503,15 @@ __PACKAGE__->register_method({
 
 	my $code = sub {
 	    my $config = PVE::INotify::read_file('interfaces');
+	    my $ifaces = $config->{ifaces};
 
 	    raise_param_exc({ iface => "interface does not exist" })
-		if !$config->{$param->{iface}};
+		if !$ifaces->{$param->{iface}};
 
-	    my $d = $config->{$param->{iface}};
+	    my $d = $ifaces->{$param->{iface}};
 	    if ($d->{type} eq 'OVSIntPort' || $d->{type} eq 'OVSBond') {
 		if (my $brname = $d->{ovs_bridge}) {
-		    if (my $br = $config->{$brname}) {
+		    if (my $br = $ifaces->{$brname}) {
 			if ($br->{ovs_ports}) {
 			    my @ports = split (/\s+/, $br->{ovs_ports});
 			    my @new = grep { $_ ne $param->{iface} } @ports;
@@ -431,7 +521,7 @@ __PACKAGE__->register_method({
 		}
 	    }
 
-	    delete $config->{$param->{iface}};
+	    delete $ifaces->{$param->{iface}};
 
 	    PVE::INotify::write_file('interfaces', $config);
 	};
