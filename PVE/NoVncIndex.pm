@@ -97,7 +97,7 @@ INCLUDE_URI='/novnc/include/';
     </div>
 
     <!-- Popup Status Panel -->
-    <div id="noVNC_popup_status_panel" class="">
+    <div id="noVNC_popup_status" class="">
     </div>
 
     <!-- Clipboard Panel -->
