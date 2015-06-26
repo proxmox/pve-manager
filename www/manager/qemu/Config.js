@@ -178,6 +178,14 @@ Ext.define('PVE.qemu.Config', {
 	}
 
 	if (caps.vms['VM.Console']) {
+	    me.items.push({
+		title: gettext('Console'),
+		itemId: 'console',
+		xtype: 'pveQemuConsole'
+	    });
+	}
+
+	if (caps.vms['VM.Console']) {
 	    me.items.push([
 		{
 		    xtype: 'pveFirewallPanel',
