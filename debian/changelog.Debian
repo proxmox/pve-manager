@@ -1,3 +1,9 @@
+pve-manager (4.0-19) unstable; urgency=medium
+
+  * add embedded qemu novnc console
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 26 Jun 2015 12:58:53 +0200
+
 pve-manager (4.0-18) unstable; urgency=medium
 
   * node networking GUI: add IPV6 support
