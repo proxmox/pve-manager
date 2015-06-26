@@ -1,3 +1,9 @@
+pve-manager (3.4-8) unstable; urgency=low
+
+  * novncindex : Renamed popupStatusPanel to popupStatus
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 26 Jun 2015 09:45:26 +0200
+
 pve-manager (3.4-7) unstable; urgency=low
 
   * add noVNC resize feature
