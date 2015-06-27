@@ -1,3 +1,48 @@
+Ext.define('PVE.noVncConsole', {
+    extend: 'Ext.panel.Panel',
+    alias: 'widget.pveNoVncConsole',
+
+    nodename: undefined,
+
+    vmid: undefined,
+
+    consoleType: undefined, // lxc or kvm
+    
+    initComponent : function() {
+	var me = this;
+
+	if (!me.nodename) {
+	    throw "no node name specified";
+	}
+
+	if (!me.vmid) {
+	    throw "no VM ID specified";
+	}
+	
+	if (!me.consoleType) {
+	    throw "no console type specified";
+	}
+
+	// always use same iframe, to avoid running several noVnc clients
+	// at same time (to avoid performance problems)
+	var box = Ext.create('widget.uxiframe', { id: "vncconsole" });
+
+	Ext.apply(me, {
+	    layout: { type: 'fit' },
+	    border: false,
+	    items: box,
+	    listeners: {
+		show: function() {
+		    box.load('/?console=' + me.consoleType + '&novnc=1&vmid='+ me.vmid +
+			     '&node=' + me.nodename + '&resize=scale');
+		}
+	    }
+	});		
+
+	me.callParent();
+    }
+});
+
 PVE_vnc_console_event = function(appletid, action, err) {
     //console.log("TESTINIT param1 " + appletid + " action " + action);
 

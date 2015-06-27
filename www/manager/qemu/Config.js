@@ -181,7 +181,10 @@ Ext.define('PVE.qemu.Config', {
 	    me.items.push({
 		title: gettext('Console'),
 		itemId: 'console',
-		xtype: 'pveQemuConsole'
+		xtype: 'pveNoVncConsole',
+		vmid: vmid,
+		consoleType: 'kvm',
+		nodename: nodename
 	    });
 	}
 

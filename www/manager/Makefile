@@ -115,7 +115,6 @@ JSSRC= 				                 	\
 	window/Migrate.js				\
 	window/MigrateAll.js				\
 	qemu/Monitor.js					\
-	qemu/Console.js					\
 	qemu/Summary.js					\
 	qemu/OSTypeEdit.js				\
 	qemu/ProcessorEdit.js				\

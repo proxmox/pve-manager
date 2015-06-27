@@ -163,6 +163,18 @@ Ext.define('PVE.lxc.Config', {
 	}
 
 	if (caps.vms['VM.Console']) {
+	    me.items.push({
+		title: gettext('Console'),
+		itemId: 'console',
+		xtype: 'pveNoVncConsole',
+		vmid: vmid,
+		consoleType: 'lxc',
+		nodename: nodename
+	    });
+	}
+
+
+	if (caps.vms['VM.Console']) {
 	    me.items.push([
 		{
 		    xtype: 'pveFirewallPanel',
