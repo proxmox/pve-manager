@@ -1,3 +1,9 @@
+pve-manager (4.0-20) unstable; urgency=medium
+
+  * add embedded lxc novnc console
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 27 Jun 2015 12:24:07 +0200
+
 pve-manager (4.0-19) unstable; urgency=medium
 
   * add embedded qemu novnc console
