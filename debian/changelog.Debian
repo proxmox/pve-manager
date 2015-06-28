@@ -1,3 +1,9 @@
+pve-manager (4.0-21) unstable; urgency=medium
+
+  * do not show monitor and console for templates
+
+ -- Proxmox Support Team <support@proxmox.com>  Sun, 28 Jun 2015 09:19:39 +0200
+
 pve-manager (4.0-20) unstable; urgency=medium
 
   * add embedded lxc novnc console
