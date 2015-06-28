@@ -14,6 +14,8 @@ Ext.define('PVE.qemu.Config', {
 	if (!vmid) {
 	    throw "no VM ID specified";
 	}
+	
+	var template = me.pveSelNode.data.template;
 
 	var caps = Ext.state.Manager.get('GuiCap');
 
@@ -153,7 +155,7 @@ Ext.define('PVE.qemu.Config', {
 	    ]
 	});
 
-	if (caps.vms['VM.Monitor']) {
+	if (caps.vms['VM.Monitor'] && !template) {
 	    me.items.push({
 		title: gettext('Monitor'),
 		itemId: 'monitor',
@@ -177,7 +179,7 @@ Ext.define('PVE.qemu.Config', {
 	    });
 	}
 
-	if (caps.vms['VM.Console']) {
+	if (caps.vms['VM.Console'] && !template) {
 	    me.items.push({
 		title: gettext('Console'),
 		itemId: 'console',
@@ -215,7 +217,6 @@ Ext.define('PVE.qemu.Config', {
         me.statusStore.on('load', function(s, records, success) {
 	    var status;
 	    var qmpstatus;
-	    var template;
 	    var spice = false;
 
 	    if (!success) {
