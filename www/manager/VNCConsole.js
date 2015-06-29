@@ -15,14 +15,14 @@ Ext.define('PVE.noVncConsole', {
 	    throw "no node name specified";
 	}
 
-	if (!me.vmid) {
-	    throw "no VM ID specified";
-	}
-	
 	if (!me.consoleType) {
 	    throw "no console type specified";
 	}
 
+	if (!me.vmid && me.consoleType !== 'shell') {
+	    throw "no VM ID specified";
+	}
+	
 	// always use same iframe, to avoid running several noVnc clients
 	// at same time (to avoid performance problems)
 	var box = Ext.create('widget.uxiframe', { id: "vncconsole" });
@@ -33,8 +33,11 @@ Ext.define('PVE.noVncConsole', {
 	    items: box,
 	    listeners: {
 		show: function() {
-		    box.load('/?console=' + me.consoleType + '&novnc=1&vmid='+ me.vmid +
-			     '&node=' + me.nodename + '&resize=scale');
+		    var url = '/?console=' + me.consoleType + '&novnc=1&node=' + me.nodename + '&resize=scale';
+		    if (me.vmid) {
+			url += '&vmid='+ me.vmid;
+		    }
+		    box.load(url);
 		}
 	    }
 	});		

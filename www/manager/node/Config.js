@@ -197,6 +197,13 @@ Ext.define('PVE.node.Config', {
 		    itemId: 'apt',
 		    xtype: 'pveNodeAPT',
 		    nodename: nodename
+		},
+		{
+		    title: gettext('Console'),
+		    itemId: 'console',
+		    xtype: 'pveNoVncConsole',
+		    consoleType: 'shell',
+		    nodename: nodename
 		}
 	    ]);
 	    me.items.push([{
