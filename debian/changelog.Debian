@@ -1,3 +1,9 @@
+pve-manager (4.0-22) unstable; urgency=medium
+
+  * add embedded novnc console for nodes
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 29 Jun 2015 16:16:42 +0200
+
 pve-manager (4.0-21) unstable; urgency=medium
 
   * do not show monitor and console for templates
