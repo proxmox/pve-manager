@@ -497,6 +497,7 @@ __PACKAGE__->register_method({
     name => 'versions', 
     path => 'versions', 
     method => 'GET',
+    proxyto => 'node',
     description => "Get package information for important Proxmox packages.",
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
