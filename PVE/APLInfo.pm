@@ -48,82 +48,86 @@ sub logmsg {
     }
 }
 
+sub read_aplinfo_from_fh {
+    my ($fh, $list, $source, $update) = @_;
+
+    local $/ = "";
+
+    while (my $rec = <$fh>) {
+	chomp $rec;
+	
+	my $res = {};
+
+	while ($rec) {
+
+	    if ($rec =~ s/^Description:\s*([^\n]*)(\n\s+.*)*$//si) {
+		$res->{headline} = $1;
+		my $long = $2;
+		$long =~ s/\n\s+/ /g;
+		$long =~ s/^\s+//g;
+		$long =~ s/\s+$//g;
+		$res->{description} = $long;
+	    } elsif ($rec =~ s/^Version:\s*(.*\S)\s*\n//i) {
+		my $version = $1;
+		if ($version =~ m/^(\d[a-zA-Z0-9\.\+\-\:\~]*)-(\d+)$/) {
+		    $res->{version} = $version;
+		} else {
+		    my $msg = "unable to parse appliance record: version = '$version'\n";
+		    $update ? die $msg : warn $msg;
+		}
+	    } elsif ($rec =~ s/^Type:\s*(.*\S)\s*\n//i) {
+		my $type = $1;
+		if ($type =~ m/^(openvz|lxc)$/) {
+		    $res->{type} = $type;
+		} else {
+		    my $msg = "unable to parse appliance record: unknown type '$type'\n";
+		    $update ? die $msg : warn $msg;
+		}
+	    } elsif ($rec =~ s/^([^:]+):\s*(.*\S)\s*\n//) {
+		$res->{lc $1} = $2;
+	    } else {
+		my $msg = "unable to parse appliance record: $rec\n";
+		$update ? die $msg : warn $msg;		
+		$res = {};
+		last;
+	    }
+	}
+	
+	if ($res->{'package'} eq 'pve-web-news' && $res->{description}) {
+	    $list->{'all'}->{$res->{'package'}} = $res;	    
+	    next;
+	}
+
+	$res->{section} = 'unknown' if !$res->{section};
+	
+	if ($res->{'package'} && $res->{type} && $res->{os} && $res->{version} &&
+	    $res->{infopage}) {
+	    my $template;
+	    if ($res->{location}) {
+		$template = $res->{location};
+		$template =~ s|.*/([^/]+.tar.gz)|$1|;
+	    } else {
+		$template = "$res->{os}-$res->{package}_$res->{version}_i386.tar.gz";
+		$template =~ s/$res->{os}-$res->{os}-/$res->{os}-/;
+	    }
+	    $res->{source} = $source;
+	    $res->{template} = $template;
+	    $list->{$res->{section}}->{$template} = $res;
+	    $list->{'all'}->{$template} = $res;
+	} else {
+	    my $msg = "found incomplete appliance records\n";
+	    $update ? die $msg : warn $msg;		
+	}
+    }
+}
+
 sub read_aplinfo {
     my ($filename, $list, $source, $update) = @_;
 
     my $fh = IO::File->new("<$filename") ||
 	die "unable to open file '$filename' - $!\n";
 
-    local $/ = "";
-
-    eval { 
-	while (my $rec = <$fh>) {
-	    chomp $rec;
-	
-	    my $res = {};
-
-	    while ($rec) {
-
-		if ($rec =~ s/^Description:\s*([^\n]*)(\n\s+.*)*$//si) {
-		    $res->{headline} = $1;
-		    my $long = $2;
-		    $long =~ s/\n\s+/ /g;
-		    $long =~ s/^\s+//g;
-		    $long =~ s/\s+$//g;
-		    $res->{description} = $long;
-		} elsif ($rec =~ s/^Version:\s*(.*\S)\s*\n//i) {
-		    my $version = $1;
-		    if ($version =~ m/^(\d[a-zA-Z0-9\.\+\-\:\~]*)-(\d+)$/) {
-			$res->{version} = $version;
-		    } else {
-			my $msg = "unable to parse appliance record: version = '$version'\n";
-			$update ? die $msg : warn $msg;
-		    }
-		} elsif ($rec =~ s/^Type:\s*(.*\S)\s*\n//i) {
-		    my $type = $1;
-		    if ($type =~ m/^(openvz)$/) {
-			$res->{type} = $type;
-		    } else {
-			my $msg = "unable to parse appliance record: unknown type '$type'\n";
-			$update ? die $msg : warn $msg;
-		    }
-		} elsif ($rec =~ s/^([^:]+):\s*(.*\S)\s*\n//) {
-		    $res->{lc $1} = $2;
-		} else {
-		    my $msg = "unable to parse appliance record: $rec\n";
-		    $update ? die $msg : warn $msg;		
-		    $res = {};
-		    last;
-		}
-	    }
-
-	    if ($res->{'package'} eq 'pve-web-news' && $res->{description}) {
-		$list->{'all'}->{$res->{'package'}} = $res;	    
-		next;
-	    }
-
-	    $res->{section} = 'unknown' if !$res->{section};
-
-	    if ($res->{'package'} && $res->{type} && $res->{os} && $res->{version} &&
-		$res->{infopage}) {
-		my $template;
-		if ($res->{location}) {
-		    $template = $res->{location};
-		    $template =~ s|.*/([^/]+.tar.gz)|$1|;
-		} else {
-		    $template = "$res->{os}-$res->{package}_$res->{version}_i386.tar.gz";
-		    $template =~ s/$res->{os}-$res->{os}-/$res->{os}-/;
-		}
-		$res->{source} = $source;
-		$res->{template} = $template;
-		$list->{$res->{section}}->{$template} = $res;
-		$list->{'all'}->{$template} = $res;
-	    } else {
-		my $msg = "found incomplete appliance records\n";
-		$update ? die $msg : warn $msg;		
-	    }
-	}
-    };
+    eval { read_aplinfo_from_fh($fh, $list, $source, $update); };
     my $err = $@;
 
     close($fh);

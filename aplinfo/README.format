@@ -27,7 +27,7 @@ Package, Section, Version, Maintainer, Description
 
 Additionally we define the following fields:
 
-Type: openvz | qemu
+Type: openvz | qemu | lxc
 OS: Operating system type
 Location: download url
 Infopage: url to additional info
