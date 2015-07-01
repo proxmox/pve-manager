@@ -62,7 +62,7 @@ sub read_aplinfo_from_fh {
 
 	    if ($rec =~ s/^Description:\s*([^\n]*)(\n\s+.*)*$//si) {
 		$res->{headline} = $1;
-		my $long = $2;
+		my $long = $2 || '';
 		$long =~ s/\n\s+/ /g;
 		$long =~ s/^\s+//g;
 		$long =~ s/\s+$//g;
@@ -240,7 +240,7 @@ sub download_aplinfo {
 sub get_apl_sources {
  
     my $urls = [];
-    push @$urls, "http://download.proxmox.com/appliances";
+    push @$urls, "http://download.proxmox.com/images";
     push @$urls, "http://releases.turnkeylinux.org/pve";
 
     return $urls;
