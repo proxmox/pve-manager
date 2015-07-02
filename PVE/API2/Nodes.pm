@@ -1063,7 +1063,8 @@ __PACKAGE__->register_method({
 	die "cannot download to storage type '$scfg->{type}'" 
 	    if !($scfg->{type} eq 'dir' || $scfg->{type} eq 'nfs');
 
-	die "unknown template type '$pd->{type}'\n" if $pd->{type} ne 'openvz';
+	die "unknown template type '$pd->{type}'\n"
+	    if !($pd->{type} eq 'openvz' || $pd->{type} eq 'lxc');
 
 	die "storage '$param->{storage}' does not support templates\n" 
 	    if !$scfg->{content}->{vztmpl};
