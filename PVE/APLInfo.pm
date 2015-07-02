@@ -110,6 +110,7 @@ sub read_aplinfo_from_fh {
 		my $arch = $res->{architecture} || 'i386';
 		$template = "$res->{os}-$res->{package}_$res->{version}_$arch.tar.gz";
 		$template =~ s/$res->{os}-$res->{os}-/$res->{os}-/;
+		$res->{location} = "$source/$res->{section}/$template";
 	    }
 	    $res->{source} = $source;
 	    $res->{template} = $template;
