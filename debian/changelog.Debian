@@ -1,3 +1,9 @@
+pve-manager (4.0-23) unstable; urgency=medium
+
+  * use updated LXC template list
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 02 Jul 2015 12:02:29 +0200
+
 pve-manager (4.0-22) unstable; urgency=medium
 
   * add embedded novnc console for nodes
