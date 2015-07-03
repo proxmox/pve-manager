@@ -31,6 +31,11 @@ Ext.apply(Ext.form.field.VTypes, {
     IP6CIDRAddressText:  gettext('Example') + ': 2001:DB8::42/64',
     IP6CIDRAddressMask:  /[A-Fa-f0-9:\/]/,
 
+    IP6PrefixLength:  function(v) {
+	return v >= 0 && v <= 128;
+    },
+    IP6PrefixLengthText:  gettext('Example') + ': X, where 0 <= X <= 128',
+    IP6PrefixLengthMask:  /[0-9]/,
     
     IP64Address:  function(v) {
         return IP64_match.test(v);

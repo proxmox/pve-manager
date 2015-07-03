@@ -242,13 +242,12 @@ Ext.define('PVE.node.NetworkEdit', {
 		    name: 'address6'
 		},
 		{
-		    xtype: 'numberfield',
+		    xtype: 'pvetextfield',
 		    deleteEmpty: !me.create,
 		    fieldLabel: gettext('Prefix length'),
+		    vtype: 'IP6PrefixLength',
 		    name: 'netmask6',
 		    value: '',
-		    minValue: 0,
-		    maxValue: 128,
 		    allowBlank: true,
 		    validator: function(value) {
 			/*jslint confusion: true */
