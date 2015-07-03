@@ -1,3 +1,9 @@
+pve-manager (4.0-24) unstable; urgency=medium
+
+  * NetworkEdit: use pvetextfield instead of numberfield
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 03 Jul 2015 07:22:05 +0200
+
 pve-manager (4.0-23) unstable; urgency=medium
 
   * use updated LXC template list
