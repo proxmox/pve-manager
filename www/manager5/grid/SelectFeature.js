@@ -1,18 +1,19 @@
-Ext.override(Ext.view.Table, {
+ Ext.override(Ext.view.Table, {
     afterRender: function() {
         var me = this;
         
         me.callParent();
-        me.mon(me.el, {
-            scroll: me.fireBodyScroll,
-            scope: me
-        });
-	if (!me.featuresMC ||
-	    (me.featuresMC.findIndex('ftype', 'selectable') < 0)) {
-            me.el.unselectable();
-	}
-
-        me.attachEventsForFeatures();
+// EXT5DEBUG
+//        me.mon(me.el, {
+//            scroll: me.fireBodyScroll,
+//            scope: me
+//        });
+//	if (!me.featuresMC ||
+//	    (me.featuresMC.findIndex('ftype', 'selectable') < 0)) {
+//            me.el.unselectable();
+//	}
+//
+//        me.attachEventsForFeatures();
     }
 });
 
