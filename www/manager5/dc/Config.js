@@ -1,5 +1,5 @@
 /*
- * Main config panel, located in Center of the ViewPort
+ * Datacenter config panel, located in the center of the ViewPort after the Datacenter view is selected
  */
 
 Ext.define('PVE.dc.Config', {
@@ -19,18 +19,17 @@ Ext.define('PVE.dc.Config', {
 	});
 
 	if (caps.dc['Sys.Audit']) {
-	    me.items.push([
-		{
-		    title: gettext('Summary'),
-		    xtype: 'pveDcSummary',
-		    itemId: 'summary'
-		},
-		{
-		    xtype: 'pveDcOptionView',
-		    title: gettext('Options'),
-		    itemId: 'options'
-		}
-	    ]);
+	    me.items.push({
+	    title: gettext('Summary'),
+		xtype: 'pveDcSummary',
+		itemId: 'summary'
+		});
+
+	    me.items.push({
+	    xtype: 'pveDcOptionView',
+		title: gettext('Options'),
+		itemId: 'options'
+		});
 	}
 
 	if (caps.storage['Datastore.Allocate'] || caps.dc['Sys.Audit']) {
@@ -42,7 +41,7 @@ Ext.define('PVE.dc.Config', {
 	}
 
 	if (caps.dc['Sys.Audit']) {
-	    me.items.push({
+		me.items.push({
 		xtype: 'pveDcBackupView',
 		title: gettext('Backup'),
 		itemId: 'backup'
@@ -56,47 +55,57 @@ Ext.define('PVE.dc.Config', {
 	});
 
 	if (caps.dc['Sys.Audit']) {
-	    me.items.push([
-		{
+	    me.items.push({
 		    xtype: 'pveGroupView',
 		    title: gettext('Groups'),
 		    itemId: 'groups'
-		},
-		{
+		});
+
+	    me.items.push({
 		    xtype: 'pvePoolView',
 		    title: gettext('Pools'),
 		    itemId: 'pools'
-		},
-		{
+		});
+
+	    me.items.push({
 		    xtype: 'pveACLView',
 		    title: gettext('Permissions'),
 		    itemId: 'permissions'
-		},
-		{
+		});
+
+	    me.items.push({
 		    xtype: 'pveRoleView',
 		    title: gettext('Roles'),
 		    itemId: 'roles'
-		},
-		{
-		    xtype: 'pveAuthView',
-		    title: gettext('Authentication'),
+		});
+
+	    me.items.push({
+//		    xtype: 'pveAuthView',
+//		    title: gettext('Authentication'),
+		    xtype: 'gridpanel',
+		    title: 'AuthenTODO',
 		    itemId: 'domains'
-		},
-		{
-		    xtype: 'pveHAPanel',
-		    title: 'HA',
-		    phstateid: me.hstateid,
+		});
+
+	    me.items.push({
+//		    xtype: 'pveHAPanel',
+//		    title: 'HA',
+	        xtype: 'gridpanel',
+	        title: 'HATODO',
+	        phstateid: me.hstateid,
 		    itemId: 'ha'
-		},
-		{
-		    xtype: 'pveFirewallPanel',
-		    title: gettext('Firewall'),
+		});
+
+	    me.items.push({
+//		    xtype: 'pveFirewallPanel',
+//		    title: gettext('Firewall'),
+	        xtype: 'gridpanel',
+	        title: 'FireTODO',
 		    base_url: '/cluster/firewall',
 		    fwtype: 'dc',
 		    phstateid: me.hstateid,
 		    itemId: 'firewall'
-		}
-	    ]);
+		});
 
 	    me.items.push({
 		xtype: 'pveDcSupport',
@@ -104,8 +113,6 @@ Ext.define('PVE.dc.Config', {
 		itemId: 'support'
 	    });
 	}
-	//EXT5DEBUG
-	me.items =[];
 
 	me.callParent();
    }
