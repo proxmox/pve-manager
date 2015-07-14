@@ -222,7 +222,7 @@ __PACKAGE__->register_method ({
 		    type => "object",
 		    additionalProperties => 1,
 		    properties => {
-			type => { type => 'string', enum => ['qemu', 'openvz', 'storage'] },
+			type => { type => 'string', enum => ['qemu', 'lxc', 'openvz', 'storage'] },
 			id => { type => 'string' },
 			node => { type => 'string' },
 			vmid => { type => 'integer', optional => 1 },
