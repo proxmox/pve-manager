@@ -1149,7 +1149,7 @@ my $get_start_stop_list = sub {
 		return if $autostart && !$conf->{'pve.onboot'};
 		
 		if ($conf->{'pve.startup'}) {
-		    $startup = PVE::JSONSchema::parse_startup($conf->{'pve.startup'});
+		    $startup = PVE::JSONSchema::pve_parse_startup_order($conf->{'pve.startup'});
 		    $startup->{order} = $bootorder if !defined($startup->{order});
 		} else {
 		    $startup = { order => $bootorder };
@@ -1159,7 +1159,7 @@ my $get_start_stop_list = sub {
 		return if $autostart && !$conf->{onboot};
 
 		if ($conf->{startup}) {
-		    $startup =  PVE::JSONSchema::parse_startup($conf->{startup});
+		    $startup =  PVE::JSONSchema::pve_parse_startup_order($conf->{startup});
 		    $startup->{order} = $bootorder if !defined($startup->{order});
 		} else {
 		    $startup = { order => $bootorder };
