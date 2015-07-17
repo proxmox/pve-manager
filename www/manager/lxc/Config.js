@@ -172,7 +172,14 @@ Ext.define('PVE.lxc.Config', {
 		nodename: nodename
 	    });
 	}
-
+	
+	if (caps.vms['VM.Snapshot']) {
+	    me.items.push({
+		title: gettext('Snapshots'),
+		xtype: 'pveLxcSnapshotTree',
+		itemId: 'snapshot'
+	    });
+	}
 
 	if (caps.vms['VM.Console']) {
 	    me.items.push([

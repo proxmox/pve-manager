@@ -147,6 +147,8 @@ JSSRC= 				                 	\
 	lxc/DNS.js					\
 	lxc/Config.js					\
 	lxc/CreateWizard.js				\
+	lxc/SnapshotTree.js				\
+	lxc/Snapshot.js					\
 	pool/StatusView.js				\
 	pool/Summary.js					\
 	pool/Config.js					\
