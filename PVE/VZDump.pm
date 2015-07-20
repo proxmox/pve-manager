@@ -1311,7 +1311,8 @@ sub command_line {
     }
 
     foreach my $p (keys %$param) {
-	next if $p eq 'id' || $p eq 'vmid' || $p eq 'starttime' || $p eq 'dow' || $p eq 'stdout';
+	next if $p eq 'id' || $p eq 'vmid' || $p eq 'starttime' ||
+	        $p eq 'dow' || $p eq 'stdout' || $p eq 'enabled';
 	my $v = $param->{$p};
 	my $pd = $confdesc->{$p} || die "no such vzdump option '$p'\n";
 	if ($p eq 'exclude-path') {

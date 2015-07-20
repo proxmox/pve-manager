@@ -101,12 +101,13 @@ sub parse_vzdump_cron_config {
 	next if $line =~ m/^\s*$/;
 	next if $line =~ m/^PATH\s*=/; # we always overwrite path
 
-	if ($line =~ m|^(\d+)\s+(\d+)\s+\*\s+\*\s+(\S+)\s+root\s+(/\S+/)?vzdump(\s+(.*))?$|) {
+	if ($line =~ m|^(\d+)\s+(\d+)\s+\*\s+\*\s+(\S+)\s+root\s+(/\S+/)?(#)?vzdump(\s+(.*))?$|) {
 	    eval {
 		my $minute = int($1);
 		my $hour = int($2);
 		my $dow = $3;
-		my $param = $6;
+		my $param = $7;
+		my $enabled = $5;
 
 		my $dowhash = parse_dow($dow, 1);
 		die "unable to parse day of week '$dow' in '$filename'\n" if !$dowhash;
@@ -114,6 +115,7 @@ sub parse_vzdump_cron_config {
 		my $args = PVE::Tools::split_args($param);
 		my $opts = PVE::JSONSchema::get_options($vzdump_properties, $args, 'vmid');
 
+		$opts->{enabled} = !defined($enabled);
 		$opts->{id} = "$digest:$jid";
 		$jid++;
 		$opts->{starttime} = sprintf "%02d:%02d", $hour, $minute;
@@ -151,6 +153,7 @@ sub write_vzdump_cron_config {
 
     my $jobs = $cfg->{jobs} || [];
     foreach my $job (@$jobs) {
+	my $enabled = ($job->{enabled}) ? '' : '#';
 	my $dh = parse_dow($job->{dow});
 	my $dow;
 	if ($dh->{mon} && $dh->{tue} && $dh->{wed} && $dh->{thu} &&
@@ -176,7 +179,7 @@ sub write_vzdump_cron_config {
 
 	my $cmd = PVE::VZDump::command_line($job);
 
-	$out .= sprintf "$minute $hour * * %-11s root $cmd\n", $dow;
+	$out .= sprintf "$minute $hour * * %-11s root $enabled$cmd\n", $dow;
     }
 
     my $ejobs = $cfg->{ejobs} || [];
@@ -246,6 +249,12 @@ __PACKAGE__->register_method({
 		description => "Day of week selection.",
 		default => 'mon,tue,wed,thu,fri,sat,sun',
 	    },
+	    enabled => {
+		type => 'boolean',
+		optional => 1,
+		description => "Enable or disable the job.",
+		default => '1',
+	    },
        }),
     },
     returns => { type => 'null' },
@@ -258,7 +267,7 @@ __PACKAGE__->register_method({
 	my $data = cfs_read_file('vzdump.cron');
 
 	$param->{dow} = 'mon,tue,wed,thu,fri,sat,sun' if !defined($param->{dow});
-
+	$param->{enabled} = 1 if !defined($param->{enabled});
 	PVE::VZDump::verify_vzdump_parameters($param, 1);
 
 	push @{$data->{jobs}}, $param;
@@ -323,7 +332,7 @@ __PACKAGE__->register_method({
 		type => 'string',
 		description => "The job ID.",
 		maxLength => 50,
-	    }
+	    },
 	},
     },
     returns => { type => 'null' },
@@ -388,6 +397,12 @@ __PACKAGE__->register_method({
 		type => 'string', format => 'pve-configid-list',
 		description => "A list of settings you want to delete.",
 		optional => 1,
+	    },
+	    enabled => {
+		type => 'boolean',
+		optional => 1,
+		description => "Enable or disable the job.",
+		default => '1',
 	    },
        }),
     },
