@@ -24,7 +24,8 @@ Ext.define('PVE.data.ObjectStore',  {
                 reader: {
 		    type: 'jsonobject',
 		    rows: config.rows,
-		    readArray: config.readArray
+		    readArray: config.readArray,
+		    rootProperty: config.root || 'data'
 		}
             }
         });

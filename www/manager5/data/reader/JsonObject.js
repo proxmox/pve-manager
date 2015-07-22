@@ -31,8 +31,6 @@ Ext.define('PVE.data.reader.JsonObject', {
     extend: 'Ext.data.reader.Json',
     alias : 'reader.jsonobject',
     
-    root: 'data',
-  
     readArray: false,
 
     rows: undefined,
@@ -50,8 +48,9 @@ Ext.define('PVE.data.reader.JsonObject', {
 
 	var data = [];
         try {
-            var result = Ext.decode(response.responseText);
-	    var root = me.getRoot(result);
+        var result = Ext.decode(response.responseText);
+        // get our data items inside the server response
+        var root = result[me.getRootProperty()];
 
 	    if (me.readArray) {
 
