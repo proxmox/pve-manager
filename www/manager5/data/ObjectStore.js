@@ -1,3 +1,8 @@
+/* This store encapsulates data items which are organized as an Array of key-values Objects
+ * ie data[0] contains something like {key: "keyboard", value: "da"}
+*
+* Designed to work with the KeyValue model and the JsonObject data reader
+*/
 Ext.define('PVE.data.ObjectStore',  {
     extend: 'PVE.data.UpdateStore',
 
