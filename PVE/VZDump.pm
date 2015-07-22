@@ -189,6 +189,7 @@ sub read_vzdump_defaults {
 	stopwait => 10, # 10 minutes
 	mode => 'snapshot',
 	maxfiles => 1, 
+	pigz => 0,
     };
 
     my $fh = IO::File->new ("<$fn");
@@ -225,6 +226,8 @@ sub read_vzdump_defaults {
 	    $res->{'exclude-path'} = PVE::Tools::split_args($1); 
 	} elsif ($line =~ m/mode:\s*(stop|snapshot|suspend)\s*$/) {
 	    $res->{mode} = $1;
+	} elsif($line =~ m/pigz:\s*(\d+)\s*/) {
+	    $res->{pigz} = $1;
 	} else {
 	    debugmsg ('warn', "unable to parse configuration file '$fn' - error at line " . $., undef, 1);
 	}
@@ -678,14 +681,22 @@ sub run_hook_script {
 }
 
 sub compressor_info {
-    my ($opt_compress) = @_;
+    my ($opts) = @_;
+    my $opt_compress = $opts->{compress};
 
     if (!$opt_compress || $opt_compress eq '0') {
 	return undef;
     } elsif ($opt_compress eq '1' || $opt_compress eq 'lzo') {
 	return ('lzop', 'lzo');
     } elsif ($opt_compress eq 'gzip') {
-	return ('gzip', 'gz');
+	if ($opts->{pigz} > 0) {
+	    # As default use int((#cores + 1)/2), we need #cores+1 for the case that #cores = 1
+	    my $cores = POSIX::sysconf(84);
+	    my $pigz_threads = ($opts->{pigz} > 1) ? $opts->{pigz} : int(($cores + 1)/2);
+	    return ("pigz -p ${pigz_threads}", 'gz');
+	} else {
+	    return ('gzip', 'gz');
+	}
     } else {
 	die "internal error - unknown compression option '$opt_compress'";
     }
@@ -748,7 +759,7 @@ sub exec_backup_task {
 	my $logfile = $task->{logfile} = "$opts->{dumpdir}/$basename.log";
 
 	my $ext = $vmtype eq 'qemu' ? '.vma' : '.tar';
-	my ($comp, $comp_ext) = compressor_info($opts->{compress});
+	my ($comp, $comp_ext) = compressor_info($opts);
 	if ($comp && $comp_ext) {
 	    $ext .= ".${comp_ext}";
 	}
@@ -1122,6 +1133,13 @@ my $confdesc = {
 	optional => 1,
 	enum => ['0', '1', 'gzip', 'lzo'],
 	default => 'lzo',
+    },
+    pigz=> {
+	type => "integer",
+	description => "Uses pigz instead of gzip when N>0.".
+	    " N=1 uses half of cores, N>1 uses N as thread count.",
+	optional => 1,
+	default => 0,
     },
     quiet => {
 	type => 'boolean',
