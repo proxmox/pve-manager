@@ -380,8 +380,8 @@ Ext.define('PVE.storage.ContentView', {
 			var vmtype;
 			if (rec.data.volid.match(/vzdump-qemu-/)) {
 			    vmtype = 'qemu';
-			} else if (rec.data.volid.match(/vzdump-openvz-/)) {
-			    vmtype = 'openvz';
+			} else if (rec.data.volid.match(/vzdump-openvz-/) || rec.data.volid.match(/vzdump-lxc-/)) {
+			    vmtype = 'lxc';
 			} else {
 			    return;
 			}
