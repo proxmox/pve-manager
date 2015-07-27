@@ -1,3 +1,13 @@
+pve-manager (4.0-25) unstable; urgency=medium
+
+  * Added UI elements for the backup job disabling function
+
+  * implement snapshot support for LXC
+
+  * Added parallel compress support for vzdump with pigz
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 27 Jul 2015 13:28:24 +0200
+
 pve-manager (4.0-24) unstable; urgency=medium
 
   * NetworkEdit: use pvetextfield instead of numberfield
