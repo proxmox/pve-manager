@@ -408,7 +408,8 @@ Ext.define('PVE.dc.BackupView', {
 		    header: gettext('Enabled'),
 		    width: 50,
 		    dataIndex: 'enabled',
-		    sortable: true,
+		    renderer: PVE.Utils.format_boolean,
+		    sortable: true
 		},
 		{
 		    header: gettext('Node'),
