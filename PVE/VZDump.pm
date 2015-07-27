@@ -27,6 +27,147 @@ my $logdir = '/var/log/vzdump';
 
 my @plugins = qw();
 
+my $confdesc = {
+    vmid => {
+	type => 'string', format => 'pve-vmid-list',
+	description => "The ID of the VM you want to backup.",
+	optional => 1,
+    },
+    node => get_standard_option('pve-node', {
+	description => "Only run if executed on this node.",
+	optional => 1,
+    }),
+    all => {
+	type => 'boolean',
+	description => "Backup all known VMs on this host.",
+	optional => 1,
+	default => 0,
+    },
+    stdexcludes => {
+	type => 'boolean',
+	description => "Exclude temorary files and logs.",
+	optional => 1,
+	default => 1,
+    },
+    compress => {
+	type => 'string',
+	description => "Compress dump file.",
+	optional => 1,
+	enum => ['0', '1', 'gzip', 'lzo'],
+	default => 'lzo',
+    },
+    pigz=> {
+	type => "integer",
+	description => "Uses pigz instead of gzip when N>0.".
+	    " N=1 uses half of cores, N>1 uses N as thread count.",
+	optional => 1,
+	default => 0,
+    },
+    quiet => {
+	type => 'boolean',
+	description => "Be quiet.",
+	optional => 1,
+	default => 0,
+    },
+    mode => {
+	type => 'string',
+	description => "Backup mode.",
+	optional => 1,
+	default => 'stop',
+	enum => [ 'snapshot', 'suspend', 'stop' ],
+    },
+    exclude => {
+	type => 'string', format => 'pve-vmid-list',
+	description => "exclude specified VMs (assumes --all)",
+	optional => 1,
+    },
+    'exclude-path' => {
+	type => 'string', format => 'string-alist',
+	description => "exclude certain files/directories (regex).",
+	optional => 1,
+    },
+    mailto => {
+	type => 'string', format => 'string-list',
+	description => "",
+	optional => 1,
+    },
+    mailnotification => {
+	type => 'string',
+	description => "Specify when to send an email",
+	optional => 1,
+	enum => [ 'always', 'failure' ],
+	default => 'always',
+    },
+    tmpdir => {
+	type => 'string',
+	description => "Store temporary files to specified directory.",
+	optional => 1,
+    },
+    dumpdir => {
+	type => 'string',
+	description => "Store resulting files to specified directory.",
+	optional => 1,
+    },
+    script => {
+	type => 'string',
+	description => "Use specified hook script.",
+	optional => 1,
+    },
+    storage => get_standard_option('pve-storage-id', {
+	description => "Store resulting file to this storage.",
+	optional => 1,
+    }),
+    stop => {
+	type => 'boolean',
+	description => "Stop runnig backup jobs on this host.",
+	optional => 1,
+	default => 0,
+    },
+    size => {
+	type => 'integer',
+	description => "LVM snapshot size in MB.",
+	optional => 1,
+	minimum => 500,
+    },
+    bwlimit => {
+	type => 'integer',
+	description => "Limit I/O bandwidth (KBytes per second).",
+	optional => 1,
+	minimum => 0,
+    },
+    ionice => {
+	type => 'integer',
+	description => "Set CFQ ionice priority.",
+	optional => 1,
+	minimum => 0,
+	maximum => 8,
+    },
+    lockwait => {
+	type => 'integer',
+	description => "Maximal time to wait for the global lock (minutes).",
+	optional => 1,
+	minimum => 0,
+    },
+    stopwait => {
+	type => 'integer',
+	description => "Maximal time to wait until a VM is stopped (minutes).",
+	optional => 1,
+	minimum => 0,
+    },
+    maxfiles => {
+	type => 'integer',
+	description => "Maximal number of backup files per VM.",
+	optional => 1,
+	minimum => 1,
+    },
+    remove => {
+	type => 'boolean',
+	description => "Remove old backup files if there are more than 'maxfiles' backup files.",
+	optional => 1,
+	default => 1,
+    },
+};
+
 # Load available plugins
 my @pve_vzdump_classes = qw(PVE::VZDump::QemuServer PVE::VZDump::LXC);
 foreach my $plug (@pve_vzdump_classes) {
@@ -181,7 +322,7 @@ sub read_vzdump_defaults {
 
     my $fn = "/etc/vzdump.conf";
 
-    my $res = {
+    my $defaults = {
 	bwlimit => 0,
 	ionice => 7,
 	size => 1024,
@@ -192,48 +333,16 @@ sub read_vzdump_defaults {
 	pigz => 0,
     };
 
-    my $fh = IO::File->new ("<$fn");
-    return $res if !$fh;
-    
-    my $line;
-    while (defined ($line = <$fh>)) {
-	next if $line =~ m/^\s*$/;
-	next if $line =~ m/^\#/;
+    my $raw;
+    eval { $raw = PVE::Tools::file_get_contents($fn); };
+    return $defaults if $@;
 
-	if ($line =~ m/tmpdir:\s*(.*\S)\s*$/) {
-	    $res->{tmpdir} = $1;
-	} elsif ($line =~ m/dumpdir:\s*(.*\S)\s*$/) {
-	    $res->{dumpdir} = $1;
-	} elsif ($line =~ m/storage:\s*(\S+)\s*$/) {
-	    $res->{storage} = $1;
-	} elsif ($line =~ m/script:\s*(.*\S)\s*$/) {
-	    $res->{script} = $1;
-	} elsif ($line =~ m/bwlimit:\s*(\d+)\s*$/) {
-	    $res->{bwlimit} = int($1);
-	} elsif ($line =~ m/ionice:\s*([0-8])\s*$/) {
-	    $res->{ionice} = int($1);
-	} elsif ($line =~ m/lockwait:\s*(\d+)\s*$/) {
-	    $res->{lockwait} = int($1);
-	} elsif ($line =~ m/stopwait:\s*(\d+)\s*$/) {
-	    $res->{stopwait} = int($1);
-	} elsif ($line =~ m/stop:\s*(\d+)\s*$/) {
-	    $res->{stop} = int($1);
-	} elsif ($line =~ m/size:\s*(\d+)\s*$/) {
-	    $res->{size} = int($1);
-	} elsif ($line =~ m/maxfiles:\s*(\d+)\s*$/) {
-	    $res->{maxfiles} = int($1);
-	} elsif ($line =~ m/exclude-path:\s*(.*)\s*$/) {
-	    $res->{'exclude-path'} = PVE::Tools::split_args($1); 
-	} elsif ($line =~ m/mode:\s*(stop|snapshot|suspend)\s*$/) {
-	    $res->{mode} = $1;
-	} elsif($line =~ m/pigz:\s*(\d+)\s*/) {
-	    $res->{pigz} = $1;
-	} else {
-	    debugmsg ('warn', "unable to parse configuration file '$fn' - error at line " . $., undef, 1);
-	}
+    my $conf_schema = { type => 'object', properties => $confdesc, };
+    my $res = PVE::JSONSchema::parse_config($conf_schema, $fn, $raw);
 
+    foreach my $key (keys %$defaults) {
+	$res->{$key} = $defaults->{$key} if !$res->{$key};
     }
-    close ($fh);
 
     return $res;
 }
@@ -1105,146 +1214,6 @@ sub exec_backup {
     unlink $pidfile;
 }
 
-my $confdesc = {
-    vmid => {
-	type => 'string', format => 'pve-vmid-list',		
-	description => "The ID of the VM you want to backup.",
-	optional => 1,
-    },
-    node => get_standard_option('pve-node', { 
-	description => "Only run if executed on this node.",
-	optional => 1,
-    }),
-    all => {
-	type => 'boolean',
-	description => "Backup all known VMs on this host.",
-	optional => 1,
-	default => 0,
-    },
-    stdexcludes => {
-	type => 'boolean',
-	description => "Exclude temorary files and logs.",
-	optional => 1,
-	default => 1,
-    },
-    compress => {
-	type => 'string',
-	description => "Compress dump file.",
-	optional => 1,
-	enum => ['0', '1', 'gzip', 'lzo'],
-	default => 'lzo',
-    },
-    pigz=> {
-	type => "integer",
-	description => "Uses pigz instead of gzip when N>0.".
-	    " N=1 uses half of cores, N>1 uses N as thread count.",
-	optional => 1,
-	default => 0,
-    },
-    quiet => {
-	type => 'boolean',
-	description => "Be quiet.",
-	optional => 1,
-	default => 0,
-    },
-    mode => {
-	type => 'string',
-	description => "Backup mode.",
-	optional => 1,
-	default => 'stop',
-	enum => [ 'snapshot', 'suspend', 'stop' ],
-    },
-    exclude => {
-	type => 'string', format => 'pve-vmid-list',
-	description => "exclude specified VMs (assumes --all)",
-	optional => 1,
-    },
-    'exclude-path' => {
-	type => 'string', format => 'string-alist',
-	description => "exclude certain files/directories (regex).",
-	optional => 1,
-    },
-    mailto => {
-	type => 'string', format => 'string-list',
-	description => "",
-	optional => 1,
-    },
-    mailnotification => {
-        type => 'string',
-        description => "Specify when to send an email",
-        optional => 1,
-        enum => [ 'always', 'failure' ],
-        default => 'always',
-    },
-    tmpdir => {
-	type => 'string',
-	description => "Store temporary files to specified directory.",
-	optional => 1,
-    },
-    dumpdir => {
-	type => 'string',
-	description => "Store resulting files to specified directory.",
-	optional => 1,
-    },
-    script => {
-	type => 'string',
-	description => "Use specified hook script.",
-	optional => 1,
-    },
-    storage => get_standard_option('pve-storage-id', {
-	description => "Store resulting file to this storage.",
-	optional => 1,
-    }),
-    stop => {
-	type => 'boolean',
-	description => "Stop runnig backup jobs on this host.",
-	optional => 1,
-	default => 0,
-    },
-    size => {
-	type => 'integer',
-	description => "LVM snapshot size in MB.",
-	optional => 1,
-	minimum => 500,
-    },
-    bwlimit => {
-	type => 'integer',
-	description => "Limit I/O bandwidth (KBytes per second).",
-	optional => 1,
-	minimum => 0,
-    },
-    ionice => {
-	type => 'integer',
-	description => "Set CFQ ionice priority.",
-	optional => 1,
-	minimum => 0,
-	maximum => 8,
-    },
-    lockwait => {
-	type => 'integer',
-	description => "Maximal time to wait for the global lock (minutes).",
-	optional => 1,
-	minimum => 0,
-    },
-    stopwait => {
-	type => 'integer',
-	description => "Maximal time to wait until a VM is stopped (minutes).",
-	optional => 1,
-	minimum => 0,
-    },
-    maxfiles => {
-	type => 'integer',
-	description => "Maximal number of backup files per VM.",
-	optional => 1,
-	minimum => 1,
-    },
-    remove => {
-	type => 'boolean',
-	description => "Remove old backup files if there are more than 'maxfiles' backup files.",
-	optional => 1,
-	default => 1,
-    },
-};
 
 sub option_exists {
     my $key = shift;
