@@ -81,9 +81,6 @@ Ext.define('PVE.dc.NodeView', {
 		return;
 	    }
 
-	    console.log("test1");
-	    console.dir(records);
-	    
 	    var cluster_rec = rstore.getById('cluster');
 
 	    if (!cluster_rec) {
