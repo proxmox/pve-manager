@@ -23,7 +23,7 @@ Ext.define('PVE.window.Restore', {
 	    name: 'storage',
 	    value: '',
 	    fieldLabel: gettext('Storage'),
-	    storageContent: (me.vmtype === 'openvz') ? 'rootdir' : 'images',
+	    storageContent: (me.vmtype === 'lxc') ? 'rootdir' : 'images',
 	    allowBlank: true
 	});
 
@@ -88,8 +88,8 @@ Ext.define('PVE.window.Restore', {
 		};
 
 		var url;
-		if (me.vmtype === 'openvz') {
-		    url = '/nodes/' + me.nodename + '/openvz';
+		if (me.vmtype === 'lxc') {
+		    url = '/nodes/' + me.nodename + '/lxc';
 		    params.ostemplate = me.volid;
 		    params.restore = 1;
 		} else if (me.vmtype === 'qemu') {

@@ -115,7 +115,7 @@ Ext.define('PVE.grid.PoolMembers', {
 		var params = { 'delete': 1 };
 		if (rec.data.type === 'storage') {
 		    params.storage = rec.data.storage;
-		} else if (rec.data.type === 'qemu' || rec.data.type === 'openvz') {
+		} else if (rec.data.type === 'qemu' || rec.data.type === 'lxc' || rec.data.type === 'openvz') {
 		    params.vms = rec.data.vmid;
 		} else {
 		    throw "unknown resource type";

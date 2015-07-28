@@ -29,7 +29,7 @@ Ext.define('PVE.form.ViewSelector', {
 		groups: ['pool'],
                 // Pool View only lists VMs and Containers
                 filterfn: function(node) {
-                    return node.data.type === 'qemu' || node.data.type === 'openvz' || 
+                    return node.data.type === 'qemu' || node.data.type === 'lxc' || node.data.type === 'openvz' || 
 			node.data.type === 'pool';
                 }
 	    }
