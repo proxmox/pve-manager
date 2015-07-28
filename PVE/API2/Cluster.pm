@@ -426,7 +426,7 @@ __PACKAGE__->register_method({
 		type => 'node',
 		id => "node/$nodename",
 		name => $nodename,
-		ip => PVE::Cluster::remote_node_ip($nodename),
+		ip => scalar(PVE::Cluster::remote_node_ip($nodename)),
 		'local' => 1,
 		nodeid => 0,
 		online => 1,
