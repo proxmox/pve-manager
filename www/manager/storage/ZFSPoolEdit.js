@@ -49,7 +49,6 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 
 	if (me.create) {
 	    values.type = 'zfspool';
-	    values.content = 'images';
 	} else {
 	    delete values.storage;
 	}
@@ -155,7 +154,7 @@ Ext.define('PVE.storage.ZFSPoolEdit', {
 	});
 
 	Ext.apply(me, {
-            subject: 'ZFS Storage',
+            subject: PVE.Utils.format_storage_type('ZFS Storage'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});
@@ -166,7 +165,11 @@ Ext.define('PVE.storage.ZFSPoolEdit', {
             me.load({
                 success:  function(response, options) {
                     var values = response.result.data;
-                    if (values.nodes) {
+		    var ctypes = values.content || '';
+
+		    values.content = ctypes.split(',');
+
+		    if (values.nodes) {
                         values.nodes = values.nodes.split(',');
                     }
                     values.enable = values.disable ? 0 : 1;
