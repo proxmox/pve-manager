@@ -173,15 +173,6 @@ Ext.define('PVE.node.Config', {
 	    }
 	]);
 
-	me.items.push([
-	    {
-		title: gettext('Subscription'),
-		itemId: 'support',
-		xtype: 'pveNodeSubscription',
-		nodename: nodename
-	    }
-	]);
-
 	if (caps.nodes['Sys.Console']) {
 	    me.items.push([
 		{
@@ -214,6 +205,15 @@ Ext.define('PVE.node.Config', {
 		nodename: nodename
 	    }]);
 	}
+
+	me.items.push([
+	    {
+		title: gettext('Subscription'),
+		itemId: 'support',
+		xtype: 'pveNodeSubscription',
+		nodename: nodename
+	    }
+	]);
 
 	me.callParent();
 
