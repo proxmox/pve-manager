@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# If IFACE is an automagic vlan interface (without the vlan-raw-device
+# parameter) then let's try to discover the magic here..  Another way would be
+# to just probe for the right device name in /proc/net/vlan
+
+case "$IFACE" in
+  # Ignore any alias (#272891)
+  *:*)
+    exit 0
+  ;;
+  *.[0-9]*)
+    # Silently ignore interfaces which ifupdown handles on its own
+    # If IF_BRIDGE_PORTS is set, probably we're called by bridge-utils
+    [ -z "$IF_VLAN_RAW_DEVICE" -a -z "$IF_BRIDGE_PORTS" ] && exit 0
+    IF_VLAN_RAW_DEVICE=`echo $IFACE|sed "s/\([A-Za-z0-9]*\)\..*/\1/"`
+  ;;
+  # Test for vlan raw device (#196890, #292648)
+  *)
+    [ -z "$IF_VLAN_RAW_DEVICE" ] && exit 0
+  ;;
+esac
+
+if [ -e "/sys/class/net/$IFACE" ]; then
+    ip link delete $IFACE
+fi

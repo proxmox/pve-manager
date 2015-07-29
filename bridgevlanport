@@ -1,0 +1,23 @@
+#!/bin/sh
+
+if [ ! -x /sbin/bridge ]
+then
+  exit 0
+fi
+
+if [ "$MODE" = "start" ] ; then
+  case "$IFACE" in
+    *.[0-9]*)
+      VLANID=`echo $IFACE|sed "s/[a-zA-Z0-9]*\.//g"`
+      IF_VLAN_RAW_DEVICE=`echo $IFACE|sed "s/\([a-zA-Z0-9]*\)\..*/\1/"`
+    ;;
+  esac
+
+  if [ -n "$IF_VLAN_RAW_DEVICE" ]; then
+      if [ -e "/sys/class/net/$IF_VLAN_RAW_DEVICE/bridge/vlan_filtering" ]; then 
+          bridge vlan add dev $IF_VLAN_RAW_DEVICE vid $VLANID self
+      fi
+  fi
+fi
+
+

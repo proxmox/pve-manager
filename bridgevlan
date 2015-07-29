@@ -1,0 +1,54 @@
+#!/bin/sh
+
+if [ ! -x /sbin/bridge ] && [ ! -f /sys/class/net/$IFACE/bridge/vlan_filtering ]
+then
+  exit 0
+fi
+
+# Enabling vlan filtering feature
+if [ "$MODE" = "start" ] ; then
+
+  if [ -n "$IF_BRIDGE_VLAN_AWARE" ]
+  then
+    echo 1 > /sys/class/net/$IFACE/bridge/vlan_filtering
+  else
+   exit 0
+  fi
+
+fi
+
+. /lib/bridge-utils/bridge-utils.sh
+
+case "$IF_BRIDGE_PORTS" in
+    "")
+	exit 0
+	;;
+    none)
+	INTERFACES=""
+	;;
+    *)
+	INTERFACES="$IF_BRIDGE_PORTS"
+	;;
+esac
+
+all_interfaces= &&
+unset all_interfaces &&
+bridge_parse_ports $INTERFACES | while read i
+do
+  for port in $i
+  do
+    if [ "$MODE" = "start" ] && [ -d /sys/class/net/$IFACE/brif/$port ]; then
+      #we allow vlan to pass through attached interface
+      if [[ $port =~ ^(eth|bond|wlan)[0-9]{1,2}$ ]]
+      then
+        if [ -n "$IF_BRIDGE_VIDS" ]
+	then
+             bridge vlan add dev $port vid $IF_BRIDGE_VIDS
+	else
+             bridge vlan add dev $port vid 2-4094
+        fi
+      fi
+    fi
+  done
+done
+

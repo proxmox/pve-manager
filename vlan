@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# Most of this stuff is to enable vlans, it's really only needed by bridge_utils
+case "$IFACE" in
+  # Ignore any alias (#272891) which uses <interface>:<alabel>
+  *:*)
+    exit 0
+  ;;
+  vlan[0-9]*)
+    VLANID=`echo $IFACE|sed "s/vlan*//"`
+  ;;
+  *.[0-9]*)
+    # Silently ignore interfaces which ifupdown handles on its own
+    # If IF_BRIDGE_PORTS is set, probably we're called by bridge-utils
+    [ -z "$IF_VLAN_RAW_DEVICE" -a -z "$IF_BRIDGE_PORTS" ] && exit 0
+    VLANID=`echo $IFACE|sed "s/[a-zA-Z0-9]*\.//g"`
+    IF_VLAN_RAW_DEVICE=`echo $IFACE|sed "s/\([a-zA-Z0-9]*\)\..*/\1/"`
+  ;;
+
+  *)
+    exit 0
+  ;;
+esac
+
+if [ -n "$IF_VLAN_RAW_DEVICE" ]; then
+    if ! ip link show dev "$IF_VLAN_RAW_DEVICE" > /dev/null; then
+        echo "$IF_VLAN_RAW_DEVICE does not exist, unable to create $IFACE"
+        exit 1
+    fi
+    if [ ! -e "/sys/class/net/$IFACE" ]; then
+        ip link set up dev $IF_VLAN_RAW_DEVICE
+	ip link add link $IF_VLAN_RAW_DEVICE name $IFACE type vlan id $VLANID 
+    fi
+
+fi
+
+# This is not vlan specific, and should actually go somewhere else.
+if [ -n "$IF_HW_MAC_ADDRESS" ]; then
+    ip link set $IFACE address $IF_HW_MAC_ADDRESS
+fi

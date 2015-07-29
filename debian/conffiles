@@ -11,3 +11,7 @@
 /etc/apt/pve-repo-ca-certificates.crt
 /etc/apt/sources.list.d/pve-enterprise.list
 /etc/network/if-up.d/mtu
+/etc/network/if-pre-up.d/vlan
+/etc/network/if-post-down.d/vlan
+/etc/network/if-up.d/bridgevlan
+/etc/network/if-up.d/bridgevlanport
