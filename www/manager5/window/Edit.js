@@ -232,13 +232,17 @@ Ext.define('PVE.window.Edit', {
 	    me.title = PVE.Utils.dialog_title(me.subject, me.create, me.isAdd);
 	}
 
+	if (me.create) {
+		me.buttons = [ submitBtn ] ;
+	} else {
+		me.buttons = [ submitBtn, resetBtn ];
+	}
+
 	Ext.applyIf(me, {
 	    modal: true,
-	    layout: 'auto',
 	    width: twoColumn ? colwidth*2 : colwidth,
 	    border: false,
 	    items: [ me.formPanel ],
-	    buttons: me.create ? [ submitBtn ] : [ submitBtn, resetBtn ]
 	});
 
 	me.callParent();
