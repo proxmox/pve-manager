@@ -1,3 +1,9 @@
+pve-manager (3.4-9) unstable; urgency=low
+
+  * improve creation of OpenVZ archive (store config file first)
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 30 Jul 2015 12:08:55 +0200
+
 pve-manager (3.4-8) unstable; urgency=low
 
   * novncindex : Renamed popupStatusPanel to popupStatus
