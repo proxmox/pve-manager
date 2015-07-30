@@ -33,7 +33,11 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	}
 
 	var newdata = {};
-	
+
+	if (values['ipv6mode'] !== 'static')
+	    values['ip6'] = values['ipv6mode'];
+	if (values['ipv4mode'] !== 'static')
+	    values['ip'] = values['ipv4mode']
 	newdata[id] = PVE.Parser.printLxcNetwork(values);
 	return newdata;
     },
@@ -145,13 +149,64 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		checked: cdata.firewall,
 	    }
 	];
+
+	var dhcp4 = (cdata.ip === 'dhcp');
+	if (dhcp4) {
+	    cdata.ip = '';
+	    cdata.gw = '';
+	}
+
+	var auto6 = (cdata.ip6 === 'auto');
+	var dhcp6 = (cdata.ip6 === 'dhcp');
+	if (auto6 || dhcp6) {
+	    cdata.ip6 = '';
+	    cdata.gw6 = '';
+	}
 	
 	me.column2 = [
+	    {
+		layout: {
+		    type: 'hbox',
+		    align: 'middle'
+		},
+		border: false,
+		margin: '0 0 5 0',
+		height: 22, // hack: set same height as text fields
+		items: [
+		    {
+			xtype: 'label',
+			text: gettext('IPv4') + ':',
+		    },
+		    {
+			xtype: 'radiofield',
+			boxLabel: gettext('Static'),
+			name: 'ipv4mode',
+			inputValue: 'static',
+			checked: !dhcp4,
+			margin: '0 0 0 10',
+			listeners: {
+			    change: function(cb, value) {
+				me.down('field[name=ip]').setDisabled(!value);
+				me.down('field[name=gw]').setDisabled(!value);
+			    }
+			}
+		    },
+		    {
+			xtype: 'radiofield',
+			boxLabel: gettext('DHCP'),
+			name: 'ipv4mode',
+			inputValue: 'dhcp',
+			checked: dhcp4,
+			margin: '0 0 0 10'
+		    }
+		]
+	    },
 	    {
 		xtype: 'textfield',
 		name: 'ip',
 		vtype: 'IPCIDRAddress',
 		value: cdata.ip,
+		disabled: dhcp4,
 		fieldLabel: gettext('IPv4/CIDR')
 	    },
 	    {
@@ -159,13 +214,66 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		name: 'gw',
 		value: cdata.gw,
 		vtype: 'IPAddress',
-		fieldLabel: gettext('Gateway') + ' (' + gettext('IPv4') +')'
+		disabled: dhcp4,
+		fieldLabel: gettext('Gateway') + ' (' + gettext('IPv4') +')',
+		margin: '0 0 3 0' // override bottom margin to account for the menuseparator
+	    },
+	    {
+		xtype: 'menuseparator',
+		height: '3',
+		margin: '0'
+	    },
+	    {
+		layout: {
+		    type: 'hbox',
+		    align: 'middle'
+		},
+		border: false,
+		margin: '0 0 5 0',
+		height: 22, // hack: set same height as text fields
+		items: [
+		    {
+			xtype: 'label',
+			text: gettext('IPv6') + ':',
+		    },
+		    {
+			xtype: 'radiofield',
+			boxLabel: gettext('Static'),
+			name: 'ipv6mode',
+			inputValue: 'static',
+			checked: !(auto6 || dhcp6),
+			margin: '0 0 0 10',
+			listeners: {
+			    change: function(cb, value) {
+				me.down('field[name=ip6]').setDisabled(!value);
+				me.down('field[name=gw6]').setDisabled(!value);
+			    }
+			}
+		    },
+		    {
+			xtype: 'radiofield',
+			boxLabel: gettext('DHCP'),
+			name: 'ipv6mode',
+			inputValue: 'dhcp',
+			checked: dhcp6,
+			margin: '0 0 0 10'
+		    },
+		    {
+			xtype: 'radiofield',
+			boxLabel: gettext('SLAAC'),
+			name: 'ipv6mode',
+			inputValue: 'auto',
+			checked: auto6,
+			margin: '0 0 0 10'
+		    }
+		]
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'ip6',
 		value: cdata.ip6,
 		vtype: 'IP6CIDRAddress',
+		disabled: (dhcp6 || auto6),
 		fieldLabel: gettext('IPv6/CIDR')
 	    },
 	    {
@@ -173,8 +281,9 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		name: 'gw6',
 		vtype: 'IP6Address',
 		value: cdata.gw6,
+		disabled: (dhcp6 || auto6),
 		fieldLabel: gettext('Gateway') + ' (' + gettext('IPv6') +')'
-	    }	
+	    }
 	];
 
 	me.callParent();
