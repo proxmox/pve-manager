@@ -38,16 +38,20 @@ do
   for port in $i
   do
     if [ "$MODE" = "start" ] && [ -d /sys/class/net/$IFACE/brif/$port ]; then
-      #we allow vlan to pass through attached interface
-      if [[ $port =~ ^(eth|bond|wlan)[0-9]{1,2}$ ]]
-      then
-        if [ -n "$IF_BRIDGE_VIDS" ]
-	then
-             bridge vlan add dev $port vid $IF_BRIDGE_VIDS
-	else
-             bridge vlan add dev $port vid 2-4094
-        fi
-      fi
+      case "$port" in
+	*.[0-9]*)
+	    # do nothing
+	;;
+	*)
+          # we allow vlan to pass through attached interface
+          if [ -n "$IF_BRIDGE_VIDS" ]
+	  then
+            bridge vlan add dev $port vid $IF_BRIDGE_VIDS
+	  else
+            bridge vlan add dev $port vid 2-4094
+          fi
+	;;
+      esac
     fi
   done
 done
