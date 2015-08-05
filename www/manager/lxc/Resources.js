@@ -36,18 +36,6 @@ Ext.define('PVE.lxc.RessourceInputPanel', {
 
 	me.column2 = [
 	    {
-	     	xtype: me.insideWizard ? 'numberfield' : 'displayfield',
-	     	name: 'disk',
-	     	minValue: 0,
-	     	maxValue: 128*1024,
-	     	decimalPrecision: 3,
-	     	value: '8',
-	     	step: 1,
-	     	fieldLabel: gettext('Disk size') + ' (GB)',
-	     	labelWidth: labelWidth,
-	     	allowBlank: false
-	    },
-	    {
 		xtype: 'numberfield',
 		name: 'cpulimit',
 		minValue: 0,
@@ -147,14 +135,6 @@ Ext.define('PVE.lxc.RessourceView', {
 		never_delete: true,
 		editor: resEditor,
 		defaultValue: 1024
-	    },
-	    disk: {
-		header: gettext('Disk size'),
-		editor: resEditor,
-		never_delete: true,
-		renderer: function(value) {
-		    return PVE.Utils.format_size(value*1024*1024*1024);
-		}
 	    }
 	};
 

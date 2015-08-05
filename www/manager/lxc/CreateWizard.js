@@ -97,7 +97,6 @@ Ext.define('PVE.lxc.CreateWizard', {
 			    value: '',
 			    allowBlank: true
 			},
-			storagesel,
 			{
 			    xtype: 'textfield',
 			    inputType: 'password',
@@ -141,6 +140,24 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    xtype: 'inputpanel',
 		    title: gettext('Template'),
 		    column1: [ tmplstoragesel, tmplsel]
+		},
+		{
+		    xtype: 'inputpanel',
+		    title: gettext('Root Disk'),
+		    column1: [
+			storagesel,
+			{
+			    xtype: 'numberfield',
+			    name: 'size',
+			    minValue: 0.1,
+			    maxValue: 128*1024,
+			    decimalPrecision: 3,
+			    value: '8',
+			    step: 1,
+			    fieldLabel: gettext('Disk size') + ' (GB)',
+			    allowBlank: false
+			}
+		    ]
 		},
 		{
 		    xtype: 'pveLxcResourceInputPanel',

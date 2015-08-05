@@ -43,12 +43,16 @@ Ext.define('PVE.lxc.Options', {
 		editor: caps.vms['VM.Config.Options'] && caps.nodes['Sys.Modify'] ? 
 		    'PVE.qemu.StartupEdit' : undefined
 	    },
-	    ostemplate: {
-		header: gettext('Template'),
+	    ostype: {
+		header: gettext('OS Type'),
 		defaultValue: 'no set'
 	    },
-	    storage: {
-		header: gettext('Storage'),
+	    arch: {
+		header: gettext('Architecture'),
+		defaultValue: 'no set'
+	    },
+	    rootfs: {
+		header: gettext('Root Disk'),
 		defaultValue: 'no set'
 	    }
 	};
