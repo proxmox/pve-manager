@@ -1,3 +1,9 @@
+pve-manager (4.0-27) unstable; urgency=medium
+
+  * update LXC GUI (support new rootfs and size parameter).
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 06 Aug 2015 11:30:33 +0200
+
 pve-manager (4.0-26) unstable; urgency=medium
 
   * fix bug #662: wrong subroutine for parsing startup order
