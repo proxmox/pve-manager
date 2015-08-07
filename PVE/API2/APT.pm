@@ -536,9 +536,12 @@ __PACKAGE__->register_method({
 
 	# comment out old packages uses before 4.0
 	# clvm resource-agents-pve fence-agents-pve vzctl vzprocps vzquota
-	
+
+	my @opt_pack = ('zfsutils');
+
 	push @list, qw(lvm2 corosync-pve libqb0 pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl pve-libspice-server1 vncterm pve-qemu-kvm pve-container pve-firewall pve-ha-manager ksm-control-daemon glusterfs-client lxc-pve lxcfs cgmanager);
 
+	@list = (@list, @opt_pack);
 	my $pkglist = [];
 	
 	my (undef, undef, $kernel_release) = POSIX::uname();
@@ -566,6 +569,9 @@ __PACKAGE__->register_method({
 		$res->{ManagerVersion} = $pvever;
 	    } elsif ($pkgname eq 'proxmox-ve') {
 		$res->{RunningKernel} = $kernel_release;
+	    }
+	    if (grep( /^$pkgname$/, @opt_pack)) {
+		next if $res->{CurrentState} eq 'NotInstalled';
 	    }
 
 	    push @$pkglist, $res;
