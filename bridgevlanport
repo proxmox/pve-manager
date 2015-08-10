@@ -8,8 +8,8 @@ fi
 if [ "$MODE" = "start" ] ; then
   case "$IFACE" in
     *.[0-9]*)
-      VLANID=`echo $IFACE|sed "s/[a-zA-Z0-9]*\.//g"`
-      IF_VLAN_RAW_DEVICE=`echo $IFACE|sed "s/\([a-zA-Z0-9]*\)\..*/\1/"`
+      VLANID="${IFACE##*.}"
+      IF_VLAN_RAW_DEVICE="${IFACE%.*}"
     ;;
   esac
 
