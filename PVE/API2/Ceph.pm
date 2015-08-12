@@ -772,7 +772,7 @@ my $find_node_ip = sub {
     my $ifaces = $config->{ifaces};
 
     foreach my $iface (keys %$ifaces) {
-	my $d = $config->{$iface};
+	my $d = $ifaces->{$iface};
 	next if !$d->{$id};
 	my $a = Net::IP->new($d->{$id});
 	next if !$a;
