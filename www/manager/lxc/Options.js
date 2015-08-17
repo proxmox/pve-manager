@@ -54,6 +54,27 @@ Ext.define('PVE.lxc.Options', {
 	    rootfs: {
 		header: gettext('Root Disk'),
 		defaultValue: 'no set'
+	    },
+	    cmode: {
+		header: gettext('Console mode'),
+		defaultValue: 'tty',
+		editor: caps.vms['VM.Config.Options'] ? {
+		    xtype: 'pveWindowEdit',
+		    subject: gettext('Console mode'),
+		    items: {
+			xtype: 'pveKVComboBox',
+			name: 'cmode',
+			deleteEmpty: true,
+			value: '',
+			data: [
+			    ['', PVE.Utils.defaultText + " (tty)"],
+			    ['tty', "/dev/tty[X]"],
+			    ['console', "/dev/console"],
+			    ['shell', "shell"]
+			],
+			fieldLabel: gettext('Console mode')
+		    }
+		} : undefined
 	    }
 	};
 
