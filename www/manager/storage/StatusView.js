@@ -49,12 +49,7 @@ Ext.define('PVE.storage.StatusView', {
 	    used: {
 		header: gettext('Used'), 
 		required: true, 
-		renderer: function(value) {
-		    // do not confuse users with filesystem details
-		    var total = me.getObjectValue('total', 0);
-		    var avail = me.getObjectValue('avail', 0);
-		    return PVE.Utils.render_size(total - avail);
-		}
+		renderer: PVE.Utils.render_size
 	    },
 	    avail: {
 		header: gettext('Avail'), 

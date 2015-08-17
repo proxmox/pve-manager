@@ -273,10 +273,7 @@ sub update_storage_status {
 	my $d = $info->{$storeid};
 	next if !$d->{active};
 
-	# everything not free is considered to be used
-	my $realused = $d->{total} - $d->{avail};
-
-	my $data = "$ctime:$d->{total}:$realused";
+	my $data = "$ctime:$d->{total}:$d->{used}";
 
 	my $key = "pve2-storage/${nodename}/$storeid";
 	PVE::Cluster::broadcast_rrd($key, $data);
