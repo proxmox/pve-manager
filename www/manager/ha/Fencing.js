@@ -16,7 +16,7 @@ Ext.define('PVE.ha.FencingView', {
 	    viewConfig: {
 		trackOver: false,
 		deferEmptyText: false,
-		emptyText: 'Use watchgog based fencing.'
+		emptyText: 'Use watchdog based fencing.'
 	    },
 	    columns: [
 		{
