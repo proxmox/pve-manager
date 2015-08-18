@@ -55,7 +55,7 @@ Ext.define('PVE.dc.Tasks', {
 
 	    viewConfig: {
 		trackOver: false,
-		stripeRows: false, // does not work with getRowClass()
+		stripeRows: true, // does not work with getRowClass()
  
 		getRowClass: function(record, index) {
 		    var status = record.get('status');

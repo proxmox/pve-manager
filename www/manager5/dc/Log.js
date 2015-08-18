@@ -30,7 +30,7 @@ Ext.define('PVE.dc.Log', {
 
 	    viewConfig: {
 		trackOver: false,
-		stripeRows: false, // does not work with getRowClass()
+		stripeRows: true,
  
 		getRowClass: function(record, index) {
 		    var pri = record.get('pri');
