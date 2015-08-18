@@ -5,6 +5,8 @@ Ext.define('PVE.grid.ResourceGrid', {
     //fixme: this makes still problems with the scrollbar
     //features: [ {ftype: 'chunking'}],
     
+    title: gettext('Search'),
+
     initComponent : function() {
 	var me = this;
 
@@ -147,10 +149,6 @@ Ext.define('PVE.grid.ResourceGrid', {
 	var load_cb = function() { 
 	    updateGrid(); 
 	};
-
-	Ext.applyIf(me, {
-	    title: gettext('Search')
-	});
 
 	Ext.apply(me, {
 	    store: store,
