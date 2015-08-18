@@ -62,9 +62,9 @@ Ext.define('PVE.dc.ConsoleViewerEdit', {
 	    items: {
 		xtype: 'pveKVComboBox',
 		name: 'console',
-		data: data,
 		value: '',
-		fieldLabel: gettext('Console Viewer')
+		fieldLabel: gettext('Console Viewer'),
+		comboItems: data,
 	    }
 	});
 

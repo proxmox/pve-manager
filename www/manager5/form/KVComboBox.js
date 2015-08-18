@@ -1,9 +1,17 @@
+/* Key-Value ComboBox
+ *
+ * config properties:
+ * comboItems: an array of Key - Value pairs
+ */
 Ext.define('PVE.form.KVComboBox', {
     extend: 'Ext.form.field.ComboBox',
     alias: 'widget.pveKVComboBox',
 
     deleteEmpty: true,
-    
+    config: {
+        comboItems: undefined
+    },
+
     getSubmitData: function() {
         var me = this,
             data = null,
@@ -26,7 +34,7 @@ Ext.define('PVE.form.KVComboBox', {
 
 	me.store = Ext.create('Ext.data.ArrayStore', {
 	    model: 'KeyValue',
-	    data : me.data
+	    data : me.getConfig('comboItems'),
 	});
 
 	if (me.initialConfig.editable === undefined) {
