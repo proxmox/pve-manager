@@ -1,3 +1,15 @@
+pve-manager (4.0-29) unstable; urgency=medium
+
+  * correctly display lxc templates
+
+  * lxc GUI: implement console mode option
+
+  * fix bug #682: change at the Gui the used disk size
+
+  * Ceph: fix old interfaces access in find_node_ip
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 18 Aug 2015 16:45:53 +0200
+
 pve-manager (4.0-28) unstable; urgency=medium
 
   * allow all storages with content type 'images' for containers
