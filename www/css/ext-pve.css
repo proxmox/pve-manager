@@ -50,6 +50,7 @@
 .pve-itype-icon-qemu-template,
 .pve-itype-icon-qemu-running,
 .pve-itype-icon-lxc,
+.pve-itype-icon-lxc-template,
 .pve-itype-icon-lxc-running,
 .pve-itype-icon-node,
 .pve-itype-icon-node-running,
@@ -88,6 +89,13 @@
 .x-grid-tree-node-expanded .x-tree-node-lxc
 {
     background-image:url(../images/lxc-off.png);
+}
+
+.pve-itype-icon-lxc-template,
+.x-tree-node-lxc-template,
+.x-grid-tree-node-expanded .x-tree-node-lxc-template
+{
+    background-image:url(../images/computer-template.png);
 }
 
 .pve-itype-icon-lxc-running,

@@ -236,15 +236,17 @@ sub update_lxc_status {
 
     foreach my $vmid (keys %$vmstatus) {
 	my $d = $vmstatus->{$vmid};
+	my $template = $d->{template} ? $d->{template} : "0";
 	my $data;
 	if ($d->{status} eq 'running') { # running
-	    $data = "$d->{uptime}:$d->{name}:$d->{status}:0:$ctime:$d->{cpus}:$d->{cpu}:" .
+	    $data = "$d->{uptime}:$d->{name}:$d->{status}:$template:" .
+		"$ctime:$d->{cpus}:$d->{cpu}:" .
 		"$d->{maxmem}:$d->{mem}:" .
 		"$d->{maxdisk}:$d->{disk}:" .
 		"$d->{netin}:$d->{netout}:" .
 		"$d->{diskread}:$d->{diskwrite}";
 	} else {
-	    $data = "0:$d->{name}:$d->{status}:0:$ctime:$d->{cpus}::" .
+	    $data = "0:$d->{name}:$d->{status}:$template:$ctime:$d->{cpus}::" .
 		"$d->{maxmem}::" .
 		"$d->{maxdisk}:$d->{disk}:" .
 		":::";
