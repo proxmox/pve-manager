@@ -55,6 +55,52 @@ Ext.define('PVE.lxc.Options', {
 		header: gettext('Root Disk'),
 		defaultValue: 'no set'
 	    },
+	    console: {
+		header: gettext('Enable /dev/console'),
+		defaultValue: 1,
+		renderer: PVE.Utils.format_boolean,
+		editor: caps.vms['VM.Config.Options'] ? {
+		    xtype: 'pveWindowEdit',
+		    subject: gettext('Enable /dev/console'),
+		    items: {
+			xtype: 'pvecheckbox',
+			name: 'console',
+			uncheckedValue: 0,
+			defaultValue: 1,
+			deleteDefaultValue: true,
+			checked: true,
+			fieldLabel: gettext('Enable /dev/console')
+		    }
+		} : undefined
+	    },
+	    tty: {
+		header: gettext('TTY count'),
+		defaultValue: 2,
+		editor: caps.vms['VM.Config.Options'] ? {
+		    xtype: 'pveWindowEdit',
+		    subject: gettext('TTY count'),
+		    items: {
+			xtype: 'numberfield',
+			name: 'tty',
+			decimalPrecision: 0,
+			minValue: 0,
+			maxValue: 6,
+			value: 2,
+			fieldLabel: gettext('TTY count'),
+			allowEmpty: gettext('Default'),
+			getSubmitData: function() {
+			    var me = this;
+			    var val = me.getSubmitValue();
+			    if (val !== null && val !== '' && val !== '2') {
+				return { tty: val };
+			    } else {
+				return { 'delete' : 'tty' };
+			    }
+			}
+
+		    }
+		} : undefined
+	    },
 	    cmode: {
 		header: gettext('Console mode'),
 		defaultValue: 'tty',
