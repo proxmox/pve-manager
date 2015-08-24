@@ -1,3 +1,9 @@
+pve-manager (4.0-30) unstable; urgency=medium
+
+  * lxc GUI: add tty and console options
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 24 Aug 2015 06:36:39 +0200
+
 pve-manager (4.0-29) unstable; urgency=medium
 
   * correctly display lxc templates
