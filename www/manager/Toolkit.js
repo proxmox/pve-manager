@@ -111,7 +111,7 @@ Ext.define('Ext.ux.IFrame', {
     src: 'about:blank',
 
     renderTpl: [
-        '<iframe src="{src}" name="{frameName}" width="100%" height="100%" frameborder="0"></iframe>'
+        '<iframe src="{src}" name="{frameName}" width="100%" height="100%" frameborder="0" allowfullscreen="true"></iframe>'
     ],
 
     initComponent: function () {
