@@ -23,7 +23,7 @@ Ext.define('PVE.window.Restore', {
 	    name: 'storage',
 	    value: '',
 	    fieldLabel: gettext('Storage'),
-	    storageContent: (me.vmtype === 'lxc') ? 'rootdir' : 'images',
+	    storageContent: 'images,rootdir',
 	    allowBlank: true
 	});
 
