@@ -2,15 +2,15 @@
  *
  * config properties:
  * comboItems: an array of Key - Value pairs
+ * deleteEmpty: if set to true (default), an empty value received from the
+ * comboBox will reset the property to its default value
  */
 Ext.define('PVE.form.KVComboBox', {
     extend: 'Ext.form.field.ComboBox',
     alias: 'widget.pveKVComboBox',
 
     deleteEmpty: true,
-    config: {
-        comboItems: undefined
-    },
+    comboItems: undefined,
 
     getSubmitData: function() {
         var me = this,
@@ -22,9 +22,9 @@ Ext.define('PVE.form.KVComboBox', {
                 data = {};
                 data[me.getName()] = val;
             } else if (me.deleteEmpty) {
-		data = {};
+                data = {};
                 data['delete'] = me.getName();
-	    }
+            }
         }
         return data;
     },
@@ -34,7 +34,7 @@ Ext.define('PVE.form.KVComboBox', {
 
 	me.store = Ext.create('Ext.data.ArrayStore', {
 	    model: 'KeyValue',
-	    data : me.getConfig('comboItems'),
+	    data : me.comboItems,
 	});
 
 	if (me.initialConfig.editable === undefined) {
