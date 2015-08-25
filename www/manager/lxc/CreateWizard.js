@@ -18,7 +18,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 	var storagesel = Ext.create('PVE.form.StorageSelector', {
 	    name: 'storage',
 	    fieldLabel: gettext('Storage'),
-	    storageContent: 'images,rootdir',
+	    storageContent: 'rootdir',
 	    autoSelect: true,
 	    allowBlank: false
 	});

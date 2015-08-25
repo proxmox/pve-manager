@@ -65,6 +65,15 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		checked: true,
 		uncheckedValue: 0,
 		fieldLabel: gettext('Enable')
+	    },
+	    {
+		xtype: 'pveContentTypeSelector',
+		cts: ['images', 'rootdir'],
+		fieldLabel: gettext('Content'),
+		name: 'content',
+		value: ['images', 'rootdir'],
+		multiSelect: true,
+		allowBlank: false
 	    }
 	];
 
@@ -117,6 +126,11 @@ Ext.define('PVE.storage.RBDEdit', {
             me.load({
                 success:  function(response, options) {
                     var values = response.result.data;
+
+		    var ctypes = values.content || '';
+
+		    values.content = ctypes.split(',');
+
                     if (values.nodes) {
                         values.nodes = values.nodes.split(',');
                     }
