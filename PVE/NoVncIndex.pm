@@ -88,6 +88,9 @@ INCLUDE_URI='/novnc/include/';
       <input type="image" alt="Clipboard" src="/novnc/images/clipboard.png"
              id="clipboardButton" class="noVNC_status_button"
              title="Clipboard" />
+      <input type="image" alt="Fullscreen" src="/novnc/images/fullscreen.png"
+             id="fullscreenButton" class="noVNC_status_button"
+             title="Fullscreen" />
       <input type="image" alt="Commands" src="/novnc/images/power.png"
              id="pveCommandsButton" class="noVNC_status_button"
              title="Commands" />
@@ -168,6 +171,7 @@ INCLUDE_URI='/novnc/include/';
   </div>
   <script src="/novnc/include/util.js"></script>
   <script src="/novnc/include/pveui.js"></script>
+  <script src="/novnc/include/inflator.js"></script>
 </body>
 </html>
 _EOD
