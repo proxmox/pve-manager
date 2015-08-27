@@ -148,7 +148,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 			storagesel,
 			{
 			    xtype: 'numberfield',
-			    name: 'size',
+			    name: 'rootfs',
 			    minValue: 0.1,
 			    maxValue: 128*1024,
 			    decimalPrecision: 3,
