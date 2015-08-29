@@ -69,7 +69,7 @@ sub read_aplinfo_from_fh {
 		$res->{description} = $long;
 	    } elsif ($rec =~ s/^Version:\s*(.*\S)\s*\n//i) {
 		my $version = $1;
-		if ($version =~ m/^(\d[a-zA-Z0-9\.\+\-\:\~]*)-(\d+)$/) {
+		if ($version =~ m/^(\d[a-zA-Z0-9\.\+\-\:\~]*)(-(\d+))?$/) {
 		    $res->{version} = $version;
 		} else {
 		    my $msg = "unable to parse appliance record: version = '$version'\n";
