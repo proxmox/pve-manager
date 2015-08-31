@@ -171,7 +171,6 @@ INCLUDE_URI='/novnc/include/';
   </div>
   <script src="/novnc/include/util.js"></script>
   <script src="/novnc/include/pveui.js"></script>
-  <script src="/novnc/include/inflator.js"></script>
 </body>
 </html>
 _EOD
