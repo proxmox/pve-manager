@@ -1,15 +1,13 @@
 Ext.define('PVE.ha.VMResourceInputPanel', {
     extend: 'PVE.panel.InputPanel',
 
-    // only usable to type 'vm'
-    
+
     vmid: undefined,
     
     onGetValues: function(values) {
 	var me = this;
 
 	if (me.create) {
-	    values.type = 'vm';
 	    values.sid = values.vmid;
 	}
 	
@@ -88,7 +86,7 @@ Ext.define('PVE.ha.VMResourceEdit', {
             me.url = '/api2/extjs/cluster/ha/resources';
             me.method = 'POST';
         } else {
-            me.url = '/api2/extjs/cluster/ha/resources/vm:' + me.vmid;
+            me.url = '/api2/extjs/cluster/ha/resources/' + me.vmid;
             me.method = 'PUT';
         }
 
@@ -118,7 +116,7 @@ Ext.define('PVE.ha.VMResourceEdit', {
 		    var regex =  /^(\S+):(\S+)$/;
 		    var res = regex.exec(values.sid);
 
-		    if (res[1] !== 'vm') { throw "got unexpected resource type"; };
+		  if (res[1] !== 'vm' && res[1] !== 'ct') { throw "got unexpected resource type"; };
 
 		    values.vmid = res[2];
 		    

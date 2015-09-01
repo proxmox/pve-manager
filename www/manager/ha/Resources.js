@@ -44,7 +44,7 @@ Ext.define('PVE.ha.ResourcesView', {
 	    var regex =  /^(\S+):(\S+)$/;
 	    var res = regex.exec(sid);
 
-	    if (res[1] !== 'vm') { return; };
+	  if (res[1] !== 'vm' && res[1] !== 'ct') { return; };
 	    
 	    var vmid = res[2];
 	    
@@ -146,7 +146,7 @@ Ext.define('PVE.ha.ResourcesView', {
     Ext.define('pve-ha-resources', {
 	extend: 'Ext.data.Model',
 	fields: [ 
-	    'sid', 'type', 'state', 'digest', 'errors', 'group', 'comment'
+	  'sid', 'state', 'digest', 'errors', 'group', 'comment'
 	],
 	idProperty: 'sid'
     });
