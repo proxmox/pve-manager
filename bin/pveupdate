@@ -25,7 +25,7 @@ my $rpcenv = PVE::RPCEnvironment->init('cli');
 
 $rpcenv->init_request();
 $rpcenv->set_language($ENV{LANG});
-$rpcenv->set_user('root@pam'); 
+$rpcenv->set_user('root@pam');
 
 my $nodename = PVE::INotify::nodename();
 

@@ -17,6 +17,7 @@ SCRIPTS =  			\
 	pveversion		\
 	pvemailforward.pl	\
 	pveupgrade		\
+	pveupdate		\
 	pveperf
 
 SERVICE_MANS = $(addsuffix .8, ${SERVICES})
