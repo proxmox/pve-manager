@@ -26,7 +26,7 @@ $rpcenv->set_language($ENV{LANG});
 $rpcenv->set_user('root@pam'); 
 
 
-my $cmddef = [ 'PVE::API2::VZDump', 'vzdump', 'vmid', undef, 
+my $cmddef = [ 'PVE::API2::VZDump', 'vzdump', ['vmid'], undef,
 	       sub {
 		   my $upid = shift;
 		   exit(0) if $upid eq 'OK';

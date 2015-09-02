@@ -70,7 +70,8 @@ pvemailforward: pvemailforward.c
 	gcc $< -o $@ -g -O2 -Wall -ldl -lc
 
 .PHONY: install 
-install: ${SCRIPTS} ${MANS} pvemailforward
+install: ${SCRIPTS} ${MANS} pvemailforward vzdump.bash-completion
+
 	perl -I.. ./pvesh verifyapi
 	install -d ${BINDIR}
 	install -m 0755 ${SCRIPTS} ${BINDIR}
@@ -80,6 +81,7 @@ install: ${SCRIPTS} ${MANS} pvemailforward
 	install -d ${PODDIR}
 	install -m 0644 vzdump.1.pod ${PODDIR}
 	install -m 0644 pvesubscription.1.pod ${PODDIR}
+	install -m 0644 -D vzdump.bash-completion ${BASHCOMPLDIR}/vzdump
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
 .PHONY: distclean

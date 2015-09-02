@@ -10,6 +10,7 @@ MAN1DIR=${DESTDIR}/usr/share/man/man1
 CRONDAILYDIR=${DESTDIR}/etc/cron.daily
 INITDBINDIR=${DESTDIR}/etc/init.d
 SERVICEDIR=${DESTDIR}/lib/systemd/system
+BASHCOMPLDIR=${DESTDIR}/usr/share/bash-completion/completions/
 HARADIR=${DESTDIR}/usr/share/cluster
 DOCDIR=${DESTDIR}/usr/share/doc/${PACKAGE}
 PODDIR=${DESTDIR}/usr/share/doc/${PACKAGE}/pod
