@@ -237,6 +237,23 @@ Ext.define('PVE.qemu.Options', {
 		header: gettext('SMBIOS settings (type1)'),
 		defaultValue: '',
 		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.Smbios1Edit' : undefined
+	    },
+	    protection: {
+		header: gettext('VM protection'),
+		defaultValue: false,
+		renderer: PVE.Utils.format_boolean,
+		editor: caps.vms['VM.Config.Options'] ? {
+		    xtype: 'pveWindowEdit',
+		    subject: gettext('VM protection'),
+		    items: {
+			xtype: 'pvecheckbox',
+			name: 'protection',
+			uncheckedValue: 0,
+			defaultValue: 0,
+			deleteDefaultValue: true,
+			fieldLabel: gettext('Enabled')
+		    }
+		} : undefined
 	    }
 	};
 

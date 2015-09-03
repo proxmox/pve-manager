@@ -121,6 +121,23 @@ Ext.define('PVE.lxc.Options', {
 			fieldLabel: gettext('Console mode')
 		    }
 		} : undefined
+	    },
+            protection: {
+                header: gettext('CT protection'),
+                defaultValue: false,
+                renderer: PVE.Utils.format_boolean,
+                editor: caps.vms['VM.Config.Options'] ? {
+                    xtype: 'pveWindowEdit',
+                    subject: gettext('CT protection'),
+                    items: {
+                        xtype: 'pvecheckbox',
+                        name: 'protection',
+                        uncheckedValue: 0,
+                        defaultValue: 0,
+                        deleteDefaultValue: true,
+                        fieldLabel: gettext('Enabled')
+                    }
+                } : undefined
 	    }
 	};
 
