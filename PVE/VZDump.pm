@@ -85,7 +85,7 @@ my $confdesc = {
     },
     'exclude-path' => {
 	type => 'string', format => 'string-alist',
-	description => "exclude certain files/directories (regex).",
+	description => "exclude certain files/directories (shell globs).",
 	optional => 1,
     },
     mailto => {
@@ -350,21 +350,6 @@ sub read_vzdump_defaults {
     return $res;
 }
 
-
-sub find_add_exclude {
-    my ($self, $excltype, $value) = @_;
-
-    if (($excltype eq '-regex') || ($excltype eq '-files')) {
-	$value = "\.$value";
-    }
-
-    if ($excltype eq '-files') {
-	push @{$self->{findexcl}}, "'('", '-not', '-type', 'd', '-regex' , "'$value'", "')'", '-o';
-    } else {
-	push @{$self->{findexcl}}, "'('", $excltype , "'$value'", '-prune', "')'", '-o';
-    }
-}
-
 sub sendmail {
     my ($self, $tasklist, $totaltime, $err) = @_;
 
@@ -589,28 +574,20 @@ sub new {
     $skiplist = [] if !$skiplist;
     my $self = bless { cmdline => $cmdline, opts => $opts, skiplist => $skiplist };
 
-    #always skip '.'
-    push @{$self->{findexcl}}, "'('", '-regex' , "'^\\.\$'", "')'", '-o';
-
-    $self->find_add_exclude ('-type', 's'); # skip sockets
-
+    my $findexcl = $self->{findexcl} = [];
     if ($defaults->{'exclude-path'}) {
-	foreach my $path (@{$defaults->{'exclude-path'}}) {
-	    $self->find_add_exclude ('-regex', $path);
-	}
+	push @$findexcl, @{$defaults->{'exclude-path'}};
     }
 
     if ($opts->{'exclude-path'}) {
-	foreach my $path (@{$opts->{'exclude-path'}}) {
-	    $self->find_add_exclude ('-regex', $path);
-	}
+	push @$findexcl, @{$opts->{'exclude-path'}};
     }
 
     if ($opts->{stdexcludes}) {
-	$self->find_add_exclude ('-files', '/var/log/.+');
-	$self->find_add_exclude ('-regex', '/tmp/.+');
-	$self->find_add_exclude ('-regex', '/var/tmp/.+');
-	$self->find_add_exclude ('-regex', '/var/run/.+pid');
+	push @$findexcl, '/var/log/?*',
+	                 '/tmp/?*',
+	                 '/var/tmp/?*',
+	                 '/var/run/?*';
     }
 
     foreach my $p (@plugins) {
