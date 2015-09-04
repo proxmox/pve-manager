@@ -7,6 +7,7 @@ PACKAGERELEASE=32
 BINDIR=${DESTDIR}/usr/bin
 PERLLIBDIR=${DESTDIR}/usr/share/perl5
 MAN1DIR=${DESTDIR}/usr/share/man/man1
+MAN8DIR=${DESTDIR}/usr/share/man/man8
 CRONDAILYDIR=${DESTDIR}/etc/cron.daily
 INITDBINDIR=${DESTDIR}/etc/init.d
 SERVICEDIR=${DESTDIR}/lib/systemd/system

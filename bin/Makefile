@@ -2,15 +2,16 @@ include ../defines.mk
 
 SUBDIRS = init.d cron ocf test
 
+SERVICES = pvestatd pveproxy
+
 SCRIPTS =  			\
+	${SERVICES}		\
 	pveceph			\
 	vzdump			\
-	pvestatd		\
 	pvesh			\
 	pveam			\
 	pvebanner		\
 	pvedaemon		\
-	pveproxy		\
 	spiceproxy		\
 	pveversion		\
 	pvesubscription		\
@@ -18,41 +19,60 @@ SCRIPTS =  			\
 	pveupgrade		\
 	pveperf
 
-MANS = 				\
-	pveceph.1		\
-	vzdump.1		\
-	pvestatd.1		\
-	pvedaemon.1		\
-	pveproxy.1		\
-	spiceproxy.1		\
-	pveversion.1		\
-	pvesubscription.1	\
-	pveupgrade.1		\
+SERVICE_MANS = $(addsuffix .8, ${SERVICES})
+
+CLI_MANS = 				\
+	pveceph.1			\
+	vzdump.1			\
+	pvedaemon.1			\
+	spiceproxy.1			\
+	pveversion.1			\
+	pvesubscription.1		\
+	pveupgrade.1			\
 	pveperf.1
 
-all: ${MANS} pvemailforward
+all: ${SERVICE_MANS} ${CLI_MANS} pvemailforward
+
+%.1.pod: %
+	perl -I.. -T -e "use PVE::CLI::$*; PVE::CLI::$*->generate_pod_manpage();" >$@.tmp
+	mv $@.tmp $@
+
+%.8.pod: %
+	perl -I.. -T -e "use PVE::Service::$*; PVE::Service::$*->generate_pod_manpage();" >$@.tmp
+	mv $@.tmp $@
 
 %.1: %.1.pod
 	rm -f $@
-	cat $<|pod2man -n $* -s 1 -r ${VERSION} -c "Proxmox Documentation" >$@
+	cat $<|pod2man -n $* -s 1 -r ${VERSION} -c "Proxmox Documentation" >$@.tmp
+	mv $@.tmp $@
 
-%.1.pod: %
-	podselect $*>$@
+%.8: %.8.pod
+	rm -f $@
+	cat $<|pod2man -n $* -s 8 -r ${VERSION} -c "Proxmox Documentation" >$@.tmp
+	mv $@.tmp $@
 
-pvestatd.1.pod:
-	perl -I.. -T -e "use PVE::Service::pvestatd; PVE::Service::pvestatd->generate_pod_manpage();" >$@
+pveversion.1.pod: pveversion
+	podselect $< > $@.tmp
+	mv $@.tmp $@
 
-pvestatd.bash-completion:
-	perl -I.. -T -e "use PVE::Service::pvestatd; PVE::Service::pvestatd->generate_bash_completions();" >$@
+pvesubscription.1.pod: pvesubscription
+	podselect $< > $@.tmp
+	mv $@.tmp $@
+
+pveupgrade.1.pod: pveupgrade
+	podselect $< > $@.tmp
+	mv $@.tmp $@
+
+pveperf.1.pod: pveperf
+	podselect $< > $@.tmp
+	mv $@.tmp $@
+
+%.service-bash-completion:
+	perl -I.. -T -e "use PVE::Service::$*; PVE::Service::$*->generate_bash_completions();" >$@.tmp
+	mv $@.tmp $@
 
 pvedaemon.1.pod: pvedaemon
 	perl -I.. -T ./pvedaemon printmanpod >$@
-
-pveproxy.1.pod: pveproxy
-	perl -I.. -T -e "use PVE::Service::pveproxy; PVE::Service::pveproxy->generate_pod_manpage();" >$@
-
-pveproxy.bash-completion:
-	perl -I.. -T -e "use PVE::Service::pveproxy; PVE::Service::pveproxy->generate_bash_completions();" >$@
 
 spiceproxy.1.pod: spiceproxy
 	perl -I.. -T ./spiceproxy printmanpod >$@
@@ -78,24 +98,23 @@ vzrestore.1.pod: vzrestore
 pvemailforward: pvemailforward.c
 	gcc $< -o $@ -g -O2 -Wall -ldl -lc
 
-.PHONY: install 
-install: ${SCRIPTS} ${MANS} pvemailforward vzdump.bash-completion pvestatd.bash-completion pveproxy.bash-completion
-
-	perl -I.. -T -e "use PVE::CLI::vzdump; PVE::CLI::vzdump->verify_api();"
-	perl -I.. -T -e "use PVE::Service::pvestatd; PVE::Service::pvestatd->verify_api();"
-	perl -I.. -T -e "use PVE::Service::pveproxy; PVE::Service::pveproxy->verify_api();"
+.PHONY: install
+install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward vzdump.bash-completion $(addsuffix .service-bash-completion, ${SERVICES})
 	perl -I.. ./pvesh verifyapi
+	perl -I.. -T -e "use PVE::CLI::vzdump; PVE::CLI::vzdump->verify_api();"
+	for i in ${SERVICES}; do perl -I.. -T -e "use PVE::Service::$$i; PVE::Service::$$i->verify_api();"; done
 	install -d ${BINDIR}
 	install -m 0755 ${SCRIPTS} ${BINDIR}
 	install -s -m 2755 -g www-data pvemailforward ${BINDIR}
 	install -d ${MAN1DIR}
-	install -m 0644 ${MANS} ${MAN1DIR}
+	install -m 0644 ${CLI_MANS} ${MAN1DIR}
+	install -d ${MAN8DIR}
+	install -m 0644 ${SERVICE_MANS} ${MAN8DIR}
 	install -d ${PODDIR}
 	install -m 0644 vzdump.1.pod ${PODDIR}
 	install -m 0644 pvesubscription.1.pod ${PODDIR}
 	install -m 0644 -D vzdump.bash-completion ${BASHCOMPLDIR}/vzdump
-	install -m 0644 -D pvestatd.bash-completion ${BASHCOMPLDIR}/pvestatd
-	install -m 0644 -D pveproxy.bash-completion ${BASHCOMPLDIR}/pveproxy
+	for i in ${SERVICES}; do install -m 0644 -D $$i.service-bash-completion ${BASHCOMPLDIR}/$$i; done
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
 .PHONY: distclean
@@ -104,5 +123,5 @@ distclean: clean
 
 .PHONY: clean
 clean:
-	rm -rf *~ ${MANS} *.1.pod pvemailforward *.bash-completion
+	rm -rf *~ *.tmp ${CLI_MANS} ${SERVICE_MANS} *.1.pod *.8.pod pvemailforward *.bash-completion *.service-bash-completion
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
