@@ -39,8 +39,11 @@ all: ${MANS} pvemailforward
 %.1.pod: %
 	podselect $*>$@
 
-pvestatd.1.pod: pvestatd
-	perl -I.. ./pvestatd printmanpod >$@
+pvestatd.1.pod:
+	perl -I.. -T -e "use PVE::Service::pvestatd; PVE::Service::pvestatd->generate_pod_manpage();" >$@
+
+pvestatd.bash-completion:
+	perl -I.. -T -e "use PVE::Service::pvestatd; PVE::Service::pvestatd->generate_bash_completions();" >$@
 
 pvedaemon.1.pod: pvedaemon
 	perl -I.. -T ./pvedaemon printmanpod >$@
@@ -73,7 +76,7 @@ pvemailforward: pvemailforward.c
 	gcc $< -o $@ -g -O2 -Wall -ldl -lc
 
 .PHONY: install 
-install: ${SCRIPTS} ${MANS} pvemailforward vzdump.bash-completion
+install: ${SCRIPTS} ${MANS} pvemailforward vzdump.bash-completion pvestatd.bash-completion
 
 	perl -I.. -T -e "use PVE::CLI::vzdump; PVE::CLI::vzdump->verify_api();"
 	perl -I.. ./pvesh verifyapi
@@ -86,6 +89,7 @@ install: ${SCRIPTS} ${MANS} pvemailforward vzdump.bash-completion
 	install -m 0644 vzdump.1.pod ${PODDIR}
 	install -m 0644 pvesubscription.1.pod ${PODDIR}
 	install -m 0644 -D vzdump.bash-completion ${BASHCOMPLDIR}/vzdump
+	install -m 0644 -D pvestatd.bash-completion ${BASHCOMPLDIR}/pvestatd
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
 .PHONY: distclean

@@ -5,4 +5,4 @@ use warnings;
 
 use PVE::CLI::vzdump;
 
-PVE::CLI::vzdump->run();
+PVE::CLI::vzdump->run_cli();
