@@ -31,10 +31,12 @@ my $confdesc = {
     vmid => {
 	type => 'string', format => 'pve-vmid-list',
 	description => "The ID of the VM you want to backup.",
+	completion => \&PVE::Cluster::complete_local_vmid,
 	optional => 1,
     },
     node => get_standard_option('pve-node', {
 	description => "Only run if executed on this node.",
+	completion => \&PVE::Cluster::get_nodelist,
 	optional => 1,
     }),
     all => {
@@ -115,6 +117,7 @@ my $confdesc = {
     },
     storage => get_standard_option('pve-storage-id', {
 	description => "Store resulting file to this storage.",
+	completion => \&complete_backup_storage,
 	optional => 1,
     }),
     stop => {
@@ -1294,6 +1297,25 @@ sub command_line {
     }
 
     return $cmd;
+}
+
+# bash completion helpers
+sub complete_backup_storage {
+
+    my $cfg = PVE::Storage::config();
+    my $ids = $cfg->{ids};
+
+    my $nodename = PVE::INotify::nodename();
+
+    my $res = [];
+    foreach my $sid (keys %$ids) {
+	my $scfg = $ids->{$sid};
+	next if !PVE::Storage::storage_check_enabled($cfg, $sid, $nodename, 1);
+	next if !$scfg->{content}->{backup};
+	push @$res, $sid;
+    }
+
+    return $res;
 }
 
 1;
