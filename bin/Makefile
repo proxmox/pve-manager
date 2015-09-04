@@ -3,11 +3,12 @@ include ../defines.mk
 SUBDIRS = init.d cron ocf test
 
 SERVICES = pvestatd pveproxy
+CLITOOLS = vzdump
 
 SCRIPTS =  			\
 	${SERVICES}		\
+	${CLITOOLS}		\
 	pveceph			\
-	vzdump			\
 	pvesh			\
 	pveam			\
 	pvebanner		\
@@ -22,8 +23,8 @@ SCRIPTS =  			\
 SERVICE_MANS = $(addsuffix .8, ${SERVICES})
 
 CLI_MANS = 				\
+	$(addsuffix .1, ${CLITOOLS})	\
 	pveceph.1			\
-	vzdump.1			\
 	pvedaemon.1			\
 	spiceproxy.1			\
 	pveversion.1			\
@@ -71,6 +72,10 @@ pveperf.1.pod: pveperf
 	perl -I.. -T -e "use PVE::Service::$*; PVE::Service::$*->generate_bash_completions();" >$@.tmp
 	mv $@.tmp $@
 
+%.bash-completion:
+	perl -I.. -T -e "use PVE::CLI::$*; PVE::CLI::$*->generate_bash_completions();" >$@.tmp
+	mv $@.tmp $@
+
 pvedaemon.1.pod: pvedaemon
 	perl -I.. -T ./pvedaemon printmanpod >$@
 
@@ -83,12 +88,6 @@ pvectl.1.pod: pvectl
 pveceph.1.pod: pveceph
 	perl -I.. -T ./pveceph printmanpod >$@
 
-vzdump.1.pod: vzdump
-	perl -I.. -T -e "use PVE::CLI::vzdump; PVE::CLI::vzdump->generate_pod_manpage();" >$@
-
-vzdump.bash-completion:
-	perl -I.. -T -e "use PVE::CLI::vzdump; PVE::CLI::vzdump->generate_bash_completions();" >$@
-
 pvesubscription.1.pod: pvesubscription
 	perl -I.. -T ./pvesubscription printmanpod >$@
 
@@ -99,9 +98,9 @@ pvemailforward: pvemailforward.c
 	gcc $< -o $@ -g -O2 -Wall -ldl -lc
 
 .PHONY: install
-install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward vzdump.bash-completion $(addsuffix .service-bash-completion, ${SERVICES})
+install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward $(addsuffix .service-bash-completion, ${SERVICES}) $(addsuffix .bash-completion, ${CLITOOLS})
 	perl -I.. ./pvesh verifyapi
-	perl -I.. -T -e "use PVE::CLI::vzdump; PVE::CLI::vzdump->verify_api();"
+	for i in ${CLITOOLS}; do perl -I.. -T -e "use PVE::CLI::$$i; PVE::CLI::$$i->verify_api();"; done
 	for i in ${SERVICES}; do perl -I.. -T -e "use PVE::Service::$$i; PVE::Service::$$i->verify_api();"; done
 	install -d ${BINDIR}
 	install -m 0755 ${SCRIPTS} ${BINDIR}
@@ -111,9 +110,9 @@ install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward vzdump.bash-compl
 	install -d ${MAN8DIR}
 	install -m 0644 ${SERVICE_MANS} ${MAN8DIR}
 	install -d ${PODDIR}
-	install -m 0644 vzdump.1.pod ${PODDIR}
+	for i in ${CLITOOLS}; do install -m 0644 $$i.1.pod ${PODDIR}; done
 	install -m 0644 pvesubscription.1.pod ${PODDIR}
-	install -m 0644 -D vzdump.bash-completion ${BASHCOMPLDIR}/vzdump
+	for i in ${CLITOOLS}; do install -m 0644 -D $$i.bash-completion ${BASHCOMPLDIR}/$$i; done
 	for i in ${SERVICES}; do install -m 0644 -D $$i.service-bash-completion ${BASHCOMPLDIR}/$$i; done
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
