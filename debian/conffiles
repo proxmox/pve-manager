@@ -14,3 +14,4 @@
 /etc/network/if-post-down.d/vlan
 /etc/network/if-up.d/bridgevlan
 /etc/network/if-up.d/bridgevlanport
+/etc/modprobe.d/pve-blacklist.conf
