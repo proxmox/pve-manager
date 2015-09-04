@@ -49,7 +49,10 @@ pvedaemon.1.pod: pvedaemon
 	perl -I.. -T ./pvedaemon printmanpod >$@
 
 pveproxy.1.pod: pveproxy
-	perl -I.. -T ./pveproxy printmanpod >$@
+	perl -I.. -T -e "use PVE::Service::pveproxy; PVE::Service::pveproxy->generate_pod_manpage();" >$@
+
+pveproxy.bash-completion:
+	perl -I.. -T -e "use PVE::Service::pveproxy; PVE::Service::pveproxy->generate_bash_completions();" >$@
 
 spiceproxy.1.pod: spiceproxy
 	perl -I.. -T ./spiceproxy printmanpod >$@
@@ -76,9 +79,11 @@ pvemailforward: pvemailforward.c
 	gcc $< -o $@ -g -O2 -Wall -ldl -lc
 
 .PHONY: install 
-install: ${SCRIPTS} ${MANS} pvemailforward vzdump.bash-completion pvestatd.bash-completion
+install: ${SCRIPTS} ${MANS} pvemailforward vzdump.bash-completion pvestatd.bash-completion pveproxy.bash-completion
 
 	perl -I.. -T -e "use PVE::CLI::vzdump; PVE::CLI::vzdump->verify_api();"
+	perl -I.. -T -e "use PVE::Service::pvestatd; PVE::Service::pvestatd->verify_api();"
+	perl -I.. -T -e "use PVE::Service::pveproxy; PVE::Service::pveproxy->verify_api();"
 	perl -I.. ./pvesh verifyapi
 	install -d ${BINDIR}
 	install -m 0755 ${SCRIPTS} ${BINDIR}
@@ -90,6 +95,7 @@ install: ${SCRIPTS} ${MANS} pvemailforward vzdump.bash-completion pvestatd.bash-
 	install -m 0644 pvesubscription.1.pod ${PODDIR}
 	install -m 0644 -D vzdump.bash-completion ${BASHCOMPLDIR}/vzdump
 	install -m 0644 -D pvestatd.bash-completion ${BASHCOMPLDIR}/pvestatd
+	install -m 0644 -D pveproxy.bash-completion ${BASHCOMPLDIR}/pveproxy
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
 .PHONY: distclean
