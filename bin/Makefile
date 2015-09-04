@@ -58,7 +58,10 @@ pveceph.1.pod: pveceph
 	perl -I.. -T ./pveceph printmanpod >$@
 
 vzdump.1.pod: vzdump
-	perl -I.. -T ./vzdump printmanpod >$@
+	perl -I.. -T -e "use PVE::CLI::vzdump; PVE::CLI::vzdump->generate_pod_manpage();" >$@
+
+vzdump.bash-completion:
+	perl -I.. -T -e "use PVE::CLI::vzdump; PVE::CLI::vzdump->generate_bash_completions();" >$@
 
 pvesubscription.1.pod: pvesubscription
 	perl -I.. -T ./pvesubscription printmanpod >$@
@@ -72,6 +75,7 @@ pvemailforward: pvemailforward.c
 .PHONY: install 
 install: ${SCRIPTS} ${MANS} pvemailforward vzdump.bash-completion
 
+	perl -I.. -T -e "use PVE::CLI::vzdump; PVE::CLI::vzdump->verify_api();"
 	perl -I.. ./pvesh verifyapi
 	install -d ${BINDIR}
 	install -m 0755 ${SCRIPTS} ${BINDIR}
@@ -90,5 +94,5 @@ distclean: clean
 
 .PHONY: clean
 clean:
-	rm -rf *~ ${MANS} *.1.pod pvemailforward
+	rm -rf *~ ${MANS} *.1.pod pvemailforward *.bash-completion
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
