@@ -3,28 +3,16 @@
 use strict;
 use warnings;
 
+use PVE::INotify;
+use PVE::RPCEnvironment;
 use PVE::Service::pvestatd;
 
-PVE::Service::pvestatd->run_cli();
+my $prepare = sub {
+    my $rpcenv = PVE::RPCEnvironment->init('cli');
 
-__END__
+    $rpcenv->init_request();
+    $rpcenv->set_language($ENV{LANG});
+    $rpcenv->set_user('root@pam');
+};
 
-=head1 NAME
-                                          
-pvestatd - PVE Status Daemon
-
-=head1 SYNOPSIS
-
-=include synopsis
-
-=head1 DESCRIPTION
-
-This daemom queries the status of VMs, storages and containers at
-regular intervals. The result is sent to all nodes in the cluster.
-
-=include pve_copyright
-
-
-
-
-
+PVE::Service::pvestatd->run_cli(undef, undef, $prepare);
