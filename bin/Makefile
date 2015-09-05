@@ -3,7 +3,7 @@ include ../defines.mk
 SUBDIRS = init.d cron ocf test
 
 SERVICES = pvestatd pveproxy
-CLITOOLS = vzdump
+CLITOOLS = vzdump pvesubscription
 
 SCRIPTS =  			\
 	${SERVICES}		\
@@ -15,7 +15,6 @@ SCRIPTS =  			\
 	pvedaemon		\
 	spiceproxy		\
 	pveversion		\
-	pvesubscription		\
 	pvemailforward.pl	\
 	pveupgrade		\
 	pveperf
@@ -28,7 +27,6 @@ CLI_MANS = 				\
 	pvedaemon.1			\
 	spiceproxy.1			\
 	pveversion.1			\
-	pvesubscription.1		\
 	pveupgrade.1			\
 	pveperf.1
 
@@ -53,10 +51,6 @@ all: ${SERVICE_MANS} ${CLI_MANS} pvemailforward
 	mv $@.tmp $@
 
 pveversion.1.pod: pveversion
-	podselect $< > $@.tmp
-	mv $@.tmp $@
-
-pvesubscription.1.pod: pvesubscription
 	podselect $< > $@.tmp
 	mv $@.tmp $@
 
@@ -88,9 +82,6 @@ pvectl.1.pod: pvectl
 pveceph.1.pod: pveceph
 	perl -I.. -T ./pveceph printmanpod >$@
 
-pvesubscription.1.pod: pvesubscription
-	perl -I.. -T ./pvesubscription printmanpod >$@
-
 vzrestore.1.pod: vzrestore
 	perl -I.. ./vzrestore printmanpod >$@
 
@@ -111,7 +102,6 @@ install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward $(addsuffix .serv
 	install -m 0644 ${SERVICE_MANS} ${MAN8DIR}
 	install -d ${PODDIR}
 	for i in ${CLITOOLS}; do install -m 0644 $$i.1.pod ${PODDIR}; done
-	install -m 0644 pvesubscription.1.pod ${PODDIR}
 	for i in ${CLITOOLS}; do install -m 0644 -D $$i.bash-completion ${BASHCOMPLDIR}/$$i; done
 	for i in ${SERVICES}; do install -m 0644 -D $$i.service-bash-completion ${BASHCOMPLDIR}/$$i; done
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done

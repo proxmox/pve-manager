@@ -1,6 +1,6 @@
 include ../../defines.mk
 
-SOURCES=vzdump.pm
+SOURCES=vzdump.pm pvesubscription.pm
 
 .PHONY: install
 install: ${SOURCES}
