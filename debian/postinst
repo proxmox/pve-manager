@@ -51,7 +51,7 @@ case "$1" in
 
     # create new daily randomize update cronjob if not exist
     MIN="$(shuf -i 0-59 -n 1)"
-    HOUR="$(shuf -i 6-10 -n 1)"
+    HOUR="$(shuf -i 2-5 -n 1)"
     echo "Create cron job for daily update"
     cat <<EOF >/etc/cron.d/pveupdate
 # automatically generated - do not edit
