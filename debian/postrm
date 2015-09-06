@@ -10,6 +10,7 @@ case "$1" in
     ;;
 
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+	rm -f /etc/cron.d/pveupdate
     ;;
 
     *)
