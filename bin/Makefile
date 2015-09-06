@@ -1,6 +1,6 @@
 include ../defines.mk
 
-SUBDIRS = init.d cron ocf test
+SUBDIRS = init.d ocf test
 
 SERVICES = pvestatd pveproxy
 CLITOOLS = vzdump pvesubscription
