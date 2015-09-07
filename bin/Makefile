@@ -2,7 +2,7 @@ include ../defines.mk
 
 SUBDIRS = init.d ocf test
 
-SERVICES = pvestatd pveproxy pvedaemon
+SERVICES = pvestatd pveproxy pvedaemon spiceproxy
 CLITOOLS = vzdump pvesubscription
 
 SCRIPTS =  			\
@@ -12,7 +12,6 @@ SCRIPTS =  			\
 	pvesh			\
 	pveam			\
 	pvebanner		\
-	spiceproxy		\
 	pveversion		\
 	pvemailforward.pl	\
 	pveupgrade		\
@@ -24,7 +23,6 @@ SERVICE_MANS = $(addsuffix .8, ${SERVICES})
 CLI_MANS = 				\
 	$(addsuffix .1, ${CLITOOLS})	\
 	pveceph.1			\
-	spiceproxy.1			\
 	pveversion.1			\
 	pveupgrade.1			\
 	pveperf.1
@@ -68,9 +66,6 @@ pveperf.1.pod: pveperf
 %.bash-completion:
 	perl -I.. -T -e "use PVE::CLI::$*; PVE::CLI::$*->generate_bash_completions();" >$@.tmp
 	mv $@.tmp $@
-
-spiceproxy.1.pod: spiceproxy
-	perl -I.. -T ./spiceproxy printmanpod >$@
 
 pvectl.1.pod: pvectl
 	perl -I.. ./pvectl printmanpod >$@
