@@ -1125,8 +1125,8 @@ __PACKAGE__->register_method ({
 
 	my $stats = {};
 	my $res = $rados->mon_command({ prefix => 'df' });
-	my $total = $res->{stats}->{total_space} || 0;
-	$total = $total * 1024;
+	my $total = $res->{stats}->{total_avail_bytes} || 0;
+
 	foreach my $d (@{$res->{pools}}) {
 	    next if !$d->{stats};
 	    next if !defined($d->{id});
@@ -1143,8 +1143,8 @@ __PACKAGE__->register_method ({
 	    }
 	    if (my $s = $stats->{$d->{pool}}) {
 		$d->{bytes_used} = $s->{bytes_used};
-		$d->{percent_used} = ($d->{bytes_used}*$d->{size}*100)/$total 
-		    if $d->{size} && $total;
+		$d->{percent_used} = ($s->{bytes_used} / $total)*100
+		    if $s->{max_avail} && $total;
 	    }
 	    push @$data, $d;
 	}
