@@ -33,7 +33,7 @@ vzdump - backup utility for virtual machine
 vzdump is an utility to make consistent snapshots of running virtual
 machines (VMs). It basically creates an archive of the VM private area,
 which also includes the VM configuration files. vzdump currently
-supports OpenVZ and QemuServer VMs.
+supports LXC containers and QemuServer VMs.
 
 There are several ways to provide consistency (option C<mode>):
 
@@ -45,7 +45,7 @@ Stop the VM during backup. This results in a very long downtime.
 
 =item C<suspend> mode
 
-For OpenVZ, this mode uses rsync to copy the VM to a temporary
+For containers, this mode uses rsync to copy the VM to a temporary
 location (see option --tmpdir). Then the VM is suspended and a second
 rsync copies changed files. After that, the VM is started (resume)
 again. This results in a minimal downtime, but needs additional space
@@ -67,7 +67,7 @@ create the LVM snapshot.
 Newer version of vzdump encodes the virtual machine type and the
 backup time into the filename, for example
 
- vzdump-openvz-105-2009_10_09-11_04_43.tar
+ vzdump-lxc-105-2009_10_09-11_04_43.tar
 
 That way it is possible to store several backup into the same
 directory. The parameter C<maxfiles> can be used to specify the maximal
@@ -79,7 +79,7 @@ The resulting archive files can be restored with the following programs.
 
 =over 1
 
-=item vzrestore: OpenVZ restore utility
+=item pct restore: Containers restore utility
 
 =item qmrestore: QemuServer restore utility
 
@@ -108,7 +108,7 @@ Global configuration is stored in /etc/vzdump.conf.
 
 You can specify a hook script with option C<--script>. This script is called at various phases of the backup process, with parameters accordingly set. You can find an example in the documentation directory (C<vzdump-hook-script.pl>).
 
-=head1 EXCLUSIONS (OpenVZ only)
+=head1 EXCLUSIONS (Containers only)
 
 vzdump skips the following files wit option --stdexcludes
 
@@ -155,20 +155,20 @@ Backup all VMs excluding VM 101 and 102
 
  # vzdump --mode suspend --exclude 101,102
 
-Restore an OpenVZ machine to VM 600
+Restore a container to a new VM 600
 
- # vzrestore /mnt/backup/vzdump-openvz-777.tar 600
+ # pct restore 600 /mnt/backup/vzdump-lxc-777.tar
 
-Restore an Qemu/KVM machine to VM 601
+Restore a Qemu/KVM machine to VM 601
 
  # qmrestore /mnt/backup/vzdump-qemu-888.vma 601
 
-Clone an existing container 101 to container 300 using pipes
+Clone an existing container 101 to a new container 300 with a 4GB root file system, using pipes
 
- # vzdump 101 --stdout|vzrestore - 300
+ # vzdump 101 --stdout | pct restore --rootfs 4 300 -
 
 =head1 SEE ALSO
 
-vzrestore(1) qmrestore(1)
+pct(1), qmrestore(1)
 
 =include pve_copyright
