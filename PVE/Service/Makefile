@@ -1,6 +1,6 @@
 include ../../defines.mk
 
-SOURCES=pvestatd.pm pveproxy.pm
+SOURCES=pvestatd.pm pveproxy.pm pvedaemon.pm
 
 .PHONY: install
 install: ${SOURCES}
