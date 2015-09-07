@@ -32,6 +32,7 @@ use PVE::API2::Storage::Scan;
 use PVE::API2::Storage::Status;
 use PVE::API2::Qemu;
 use PVE::API2::LXC;
+use PVE::API2::LXC::Status;
 use PVE::API2::VZDump;
 use PVE::API2::APT;
 use PVE::API2::Ceph;
