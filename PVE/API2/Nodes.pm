@@ -1240,7 +1240,7 @@ __PACKAGE__->register_method ({
 			if ($d->{type} eq 'lxc') {
 			    return if PVE::LXC::check_running($vmid);
 			    print STDERR "Starting CT $vmid\n";
-			    $upid = PVE::API2::LXC->vm_start({node => $nodename, vmid => $vmid });
+			    $upid = PVE::API2::LXC::Status->vm_start({node => $nodename, vmid => $vmid });
 			} elsif ($d->{type} eq 'qemu') {
 			    $default_delay = 3; # to redruce load
 			    return if PVE::QemuServer::check_running($vmid, 1);
@@ -1290,7 +1290,7 @@ my $create_stop_worker = sub {
 	return if !PVE::LXC::check_running($vmid);
 	my $timeout =  defined($down_timeout) ? int($down_timeout) : 60;
 	print STDERR "Stopping CT $vmid (timeout = $timeout seconds)\n";
-	$upid = PVE::API2::LXC->vm_shutdown({node => $nodename, vmid => $vmid, 
+	$upid = PVE::API2::LXC::Status->vm_shutdown({node => $nodename, vmid => $vmid,
 					     timeout => $timeout, forceStop => 1 });
     } elsif ($type eq 'qemu') {
 	return if !PVE::QemuServer::check_running($vmid, 1);
