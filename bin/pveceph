@@ -98,7 +98,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $cephver = $param->{version} || 'firefly';
+	my $cephver = $param->{version} || 'hammer';
 
 	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
 
