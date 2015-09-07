@@ -19,6 +19,7 @@ SCRIPTS =  			\
 	pveperf
 
 SERVICE_MANS = $(addsuffix .8, ${SERVICES})
+SERVICE_PODS = $(addsuffix .pod, ${SERVICE_MANS})
 
 CLI_MANS = 				\
 	$(addsuffix .1, ${CLITOOLS})	\
@@ -26,6 +27,8 @@ CLI_MANS = 				\
 	pveversion.1			\
 	pveupgrade.1			\
 	pveperf.1
+CLI_PODS = $(addsuffix .pod, ${CLI_MANS})
+
 
 all: ${SERVICE_MANS} ${CLI_MANS} pvemailforward
 
@@ -80,7 +83,7 @@ pvemailforward: pvemailforward.c
 	gcc $< -o $@ -g -O2 -Wall -ldl -lc
 
 .PHONY: install
-install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward $(addsuffix .service-bash-completion, ${SERVICES}) $(addsuffix .bash-completion, ${CLITOOLS})
+install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward $(addsuffix .service-bash-completion, ${SERVICES}) $(addsuffix .bash-completion, ${CLITOOLS}) ${SERVICE_PODS} ${CLI_PODS}
 	perl -I.. ./pvesh verifyapi
 	for i in ${CLITOOLS}; do perl -I.. -T -e "use PVE::CLI::$$i; PVE::CLI::$$i->verify_api();"; done
 	for i in ${SERVICES}; do perl -I.. -T -e "use PVE::Service::$$i; PVE::Service::$$i->verify_api();"; done
