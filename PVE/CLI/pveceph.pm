@@ -73,7 +73,8 @@ __PACKAGE__->register_method ({
 	properties => {
 	    version => {
 		type => 'string',
-		enum => ['dumpling', 'emperor', 'firefly', 'giant', 'hammer'],
+		#enum => ['dumpling', 'emperor', 'firefly', 'giant', 'hammer'],
+		enum => ['hammer'], # only release for jessie
 		optional => 1,
 	    }
 	},
@@ -86,7 +87,12 @@ __PACKAGE__->register_method ({
 
 	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
 
-	my $keyurl = "https://git.ceph.com/?p=ceph.git;a=blob_plain;f=keys/release.asc";
+	# use fixed devel repo for now, because there is no officila repo for jessie
+	my $devrepo = 'v0.94.3';
+
+	my $keyurl = $devrepo ?
+	    "https://git.ceph.com/?p=ceph.git;a=blob_plain;f=keys/autobuild.asc" :
+	    "https://git.ceph.com/?p=ceph.git;a=blob_plain;f=keys/release.asc";
 
 	print "download and import ceph repository keys\n";
 
@@ -111,7 +117,9 @@ __PACKAGE__->register_method ({
 
 	unlink $tmp_key_file;
 
-	my $source = "deb http://ceph.com/debian-$cephver wheezy main\n";
+	my $source = $devrepo ?
+	    "deb http://gitbuilder.ceph.com/ceph-deb-jessie-x86_64-basic/ref/$devrepo jessie main\n" :
+	    "deb http://ceph.com/debian-$cephver jessie main\n";
 
 	PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $source);
 
