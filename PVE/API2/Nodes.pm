@@ -1147,10 +1147,10 @@ my $get_start_stop_list = sub {
 
 	    if ($d->{type} eq 'lxc') {
 		my $conf = PVE::LXC::load_config($vmid); 
-		return if $autostart && !$conf->{'pve.onboot'};
+		return if $autostart && !$conf->{'onboot'};
 		
 		if ($conf->{'pve.startup'}) {
-		    $startup = PVE::JSONSchema::pve_parse_startup_order($conf->{'pve.startup'});
+		    $startup = PVE::JSONSchema::pve_parse_startup_order($conf->{'startup'});
 		    $startup->{order} = $bootorder if !defined($startup->{order});
 		} else {
 		    $startup = { order => $bootorder };
