@@ -216,7 +216,7 @@ sub list_disks {
 	return $mounted->{$dev};
     };
 
-    my $dir_is_epmty = sub {
+    my $dir_is_empty = sub {
 	my ($dir) = @_;
 
 	my $dh = IO::Dir->new ($dir);
@@ -288,7 +288,7 @@ sub list_disks {
 
 	my $used;
 
-	$used = 'LVM' if !&$dir_is_epmty("/sys/block/$dev/holders");
+	$used = 'LVM' if !&$dir_is_empty("/sys/block/$dev/holders");
 
 	$used = 'mounted' if &$dev_is_mounted("/dev/$dev");
 
@@ -319,7 +319,7 @@ sub list_disks {
 		    $osdid = $1;
 		} 
 	    }
-	    if (!&$dir_is_epmty("/sys/block/$dev/$part/holders"))  {
+	    if (!&$dir_is_empty("/sys/block/$dev/$part/holders"))  {
 		$found_lvm = 1;
 	    }
 	    $journal_count++ if $journalhash->{"/dev/$part"};
