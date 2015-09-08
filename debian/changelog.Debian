@@ -1,3 +1,19 @@
+pve-manager (4.0-33) unstable; urgency=medium
+
+  * Add missing install target dependencies
+
+  * Update vzdump man page for use with LXC containers
+
+  * GUI option for VM protection added
+
+  * fix bug #701: blacklist nvidiafb
+
+  * improve pveupdate with random start time
+
+  * vzdump: implement bash completion
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 08 Sep 2015 10:44:51 +0200
+
 pve-manager (4.0-32) unstable; urgency=medium
 
   * aplinfo: improve version parser
