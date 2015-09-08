@@ -74,6 +74,12 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		value: ['images', 'rootdir'],
 		multiSelect: true,
 		allowBlank: false
+	    },
+	    {
+		xtype: 'pvecheckbox',
+		name: 'krbd',
+		uncheckedValue: 0,
+		fieldLabel: gettext('KRBD')
 	    }
 	];
 
