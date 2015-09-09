@@ -1,3 +1,15 @@
+pve-manager (4.0-34) unstable; urgency=medium
+
+  * Add krbd option to GUI on ceph storage
+
+  * fix output percent_used in rbd pools
+
+  * allow usage of ceph development repository
+
+  * fixes the problem of containers not autostarting with onboot=1
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 09 Sep 2015 08:04:44 +0200
+
 pve-manager (4.0-33) unstable; urgency=medium
 
   * Add missing install target dependencies
