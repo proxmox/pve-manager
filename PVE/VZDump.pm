@@ -1279,7 +1279,7 @@ sub command_line {
     my $cmd = "vzdump";
 
     if ($param->{vmid}) {
-	$cmd .= " " . join(' ', PVE::Tools::split_list($param->{vmid}));
+	$cmd .= " " . join(',', PVE::Tools::split_list($param->{vmid}));
     }
 
     foreach my $p (keys %$param) {
