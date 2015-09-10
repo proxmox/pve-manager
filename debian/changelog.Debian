@@ -1,3 +1,14 @@
+pve-manager (4.0-36) unstable; urgency=medium
+
+  * add pvesh man page
+
+  * Update vzdump man page for 4.0
+
+  * fix bug #706: Use comma to split vmid list when building
+    the crontab vzdump command
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 10 Sep 2015 12:24:09 +0200
+
 pve-manager (4.0-35) unstable; urgency=medium
 
   * HA GUI: fix 'state' default value in resource edit dialog
