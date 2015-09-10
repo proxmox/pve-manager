@@ -24,7 +24,9 @@ CLI_MANS = 				\
 	$(addsuffix .1, ${CLITOOLS})	\
 	pveversion.1			\
 	pveupgrade.1			\
-	pveperf.1
+	pveperf.1				\
+	pvesh.1
+
 CLI_PODS = $(addsuffix .pod, ${CLI_MANS})
 
 
@@ -57,6 +59,10 @@ pveupgrade.1.pod: pveupgrade
 	mv $@.tmp $@
 
 pveperf.1.pod: pveperf
+	podselect $< > $@.tmp
+	mv $@.tmp $@
+
+pvesh.1.pod: pvesh
 	podselect $< > $@.tmp
 	mv $@.tmp $@
 

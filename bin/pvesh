@@ -562,3 +562,49 @@ while (defined ($input = $term->readline("pve:/$cdir> "))) {
     };
     warn $@ if $@;
 }
+
+__END__
+
+=head1 NAME
+
+pvesh - shell interface to the Promox VE API
+
+=head1 SYNOPSIS
+
+pvesh [get|set|create|delete|help] [REST API path] [--verbose]
+
+=head1 DESCRIPTION
+
+pvesh provides a shell-like interface to the Proxmox VE REST API, in two different modes:
+
+=over
+
+=item interactive
+
+when called without parameters, pvesh starts an interactive client, where you can navigate
+in the different parts of the API
+
+=item command line
+
+when started with parameters pvesh will send a command to the corresponding REST url, and will
+return the JSON formatted output
+
+=back
+
+=head1 EXAMPLES
+
+get the list of nodes in my cluster
+
+pvesh get /nodes
+
+get a list of available options for the datacenter
+
+pvesh help cluster/options -v
+
+set the HTMl5 NoVNC console as the default console for the datacenter
+
+pvesh set cluster/options -console html5
+
+=head1 SEE ALSO
+
+qm(1), pct(1)
