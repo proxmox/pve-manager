@@ -108,9 +108,9 @@ Ext.define('PVE.ha.VMResourceEdit', {
 		success:  function(response, options) {
 		    var values = response.result.data;
 
-		    values.enable = false;
-		    if (values.state === 'enabled') {
-			values.enable = true;
+		    values.enable = true;
+		    if (values.state === 'disabled') {
+			values.enable = false;
 		    }
 
 		    var regex =  /^(\S+):(\S+)$/;
