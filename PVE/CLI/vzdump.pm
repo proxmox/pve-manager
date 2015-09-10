@@ -51,16 +51,22 @@ rsync copies changed files. After that, the VM is started (resume)
 again. This results in a minimal downtime, but needs additional space
 to hold the VM copy.
 
-For QemuServer, this mode work like C<stop> mode, but uses
-suspend/resume instead of stop/start.
+For QemuServer, this mode will suspend the VM, start
+a live backup, and resume the VM.
 
 =item C<snapshot> mode
 
-This mode uses LVM2 snapshots. There is no downtime, but snapshot mode
-needs LVM2 and some free space on the corresponding volume group to
-create the LVM snapshot.
+For containers, this mode uses the snapshotting facilities of the underlying
+storage. A snapshot will be made of the container volume, and the snapshot content
+will be archived in a tar file.
+
+For QemuServer, this mode will do a live backup similar to the C<snaphost> mode, but without
+suspending/resuming the VM.
 
 =back
+
+A technical overview of the Proxmox VE live backup for QemuServer can be found online at:
+https://git.proxmox.com/?p=pve-qemu-kvm.git;a=blob;f=backup.txt
 
 =head1 BACKUP FILE NAMES
 
