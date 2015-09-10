@@ -21,8 +21,10 @@ use PVE::AutoBalloon;
 
 use PVE::Status::Plugin;
 use PVE::Status::Graphite;
+use PVE::Status::InfluxDB;
 
 PVE::Status::Graphite->register();
+PVE::Status::InfluxDB->register();
 PVE::Status::Plugin->init();
 
 use base qw(PVE::Daemon);

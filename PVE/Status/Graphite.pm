@@ -6,7 +6,7 @@ use PVE::Status::Plugin;
 
 # example config (/etc/pve/status.cfg)
 #graphite:
-#	graphiteserver test
+#	server test
 #	port 2003
 #	path proxmox.mycluster
 #	disable 0
@@ -20,13 +20,13 @@ sub type {
 
 sub properties {
     return {
-	graphiteserver => {
+	server => {
 	    type => 'string', format => 'dns-name',
-	    description => "External graphite statistic server dns name",
+	    description => "server dns name",
 	},
 	port => {
             type => 'integer',
-	    description => "graphite server port",
+	    description => "network port",
 	},
 	path => {
             type => 'string', format => 'graphite-path',
@@ -37,7 +37,7 @@ sub properties {
 
 sub options {
     return {
-	graphiteserver => {},
+	server => {},
 	port => { optional => 1 },
 	path => { optional => 1 },
 	disable => { optional => 1 },
@@ -72,7 +72,7 @@ sub update_storage_status {
 sub write_graphite_hash {
     my ($plugin_config, $d, $ctime, $object) = @_;
 
-    my $host = $plugin_config->{graphiteserver};
+    my $host = $plugin_config->{server};
     my $port = $plugin_config->{port} ? $plugin_config->{port} : 2003;
     my $path = $plugin_config->{path} ? $plugin_config->{path} : 'proxmox';
 

@@ -2,6 +2,7 @@ include ../../defines.mk
 
 PERLSOURCE = 			\
 	Graphite.pm		\
+	InfluxDB.pm		\
 	Plugin.pm
 
 all:
