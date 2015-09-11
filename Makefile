@@ -2,7 +2,6 @@ include defines.mk
 
 DESTDIR=
 
-#SUBDIRS = bin lib www aplinfo
 SUBDIRS = aplinfo PVE bin www po
 
 ARCH:=$(shell dpkg-architecture -qDEB_BUILD_ARCH)
@@ -71,13 +70,6 @@ upload: ${DEB} check
 #.PHONY: poupload
 #poupload:
 #	rsync po/*.po po/pve-manager.pot pve.proxmox.com:/home/ftp/sources/po-files/
-
-.PHONY: aplupload
-aplupload:
-	./aplinfo/apltest.pl
-	gpg -bas -u support@proxmox.com aplinfo/aplinfo.dat
-	gzip -c aplinfo/aplinfo.dat > aplinfo.dat.gz
-	scp aplinfo/aplinfo.dat aplinfo.dat.gz aplinfo/aplinfo.dat.asc download1.proxmox.com:/home/ftp/appliances/
 
 .PHONY: install
 install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl pve-apt.conf pve-repo-ca-certificates.crt mtu bridgevlan bridgevlanport vlan vlan-down
