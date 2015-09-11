@@ -1,3 +1,12 @@
+pve-manager (4.0-37) unstable; urgency=medium
+
+  * add influxdb stats plugin
+
+  * appdate appliance database (aplinfo.dat), include centos7 and
+    archlinux templates
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 11 Sep 2015 09:30:01 +0200
+
 pve-manager (4.0-36) unstable; urgency=medium
 
   * add pvesh man page
