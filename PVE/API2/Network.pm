@@ -55,6 +55,11 @@ my $confdesc = {
 	type => 'boolean',
 	optional => 1,
     },
+    bridge_vlan_aware => {
+	description => "Enable bridge vlan support.",
+	type => 'boolean',
+	optional => 1,
+    },
     bridge_ports => {
 	description => "Specify the iterfaces you want to add to your bridge.",
 	optional => 1,
