@@ -39,9 +39,6 @@ do
   do
     if [ "$MODE" = "start" ] && [ -d /sys/class/net/$IFACE/brif/$port ]; then
       case "$port" in
-	*.[0-9]*)
-	    # do nothing
-	;;
 	*)
           # we allow vlan to pass through attached interface
           if [ -n "$IF_BRIDGE_VIDS" ]
