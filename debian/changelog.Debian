@@ -1,3 +1,11 @@
+pve-manager (4.0-38) unstable; urgency=medium
+
+  * add bridge vlan aware checkbox
+
+  * bridgevlan : allow filtering on tagged interfaces (for QinQ)
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 16 Sep 2015 11:05:49 +0200
+
 pve-manager (4.0-37) unstable; urgency=medium
 
   * add influxdb stats plugin
