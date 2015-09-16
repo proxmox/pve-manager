@@ -164,10 +164,10 @@ Ext.define('PVE.FirewallRulePanel', {
 		name: 'macro',
 		value: '',
 		fieldLabel: gettext('Macro'),
-		allowBlank: true,
+		editable: true,
 		listeners: {
 		    change: function(f, value) {
-                        if (value === '') {
+                        if (!value) {
 			    me.down('field[name=proto]').setDisabled(false);
 			    me.down('field[name=sport]').setDisabled(false);
 			    me.down('field[name=dport]').setDisabled(false);
