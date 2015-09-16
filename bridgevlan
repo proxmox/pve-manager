@@ -38,17 +38,13 @@ do
   for port in $i
   do
     if [ "$MODE" = "start" ] && [ -d /sys/class/net/$IFACE/brif/$port ]; then
-      case "$port" in
-	*)
-          # we allow vlan to pass through attached interface
-          if [ -n "$IF_BRIDGE_VIDS" ]
-	  then
+        # we allow vlan to pass through attached interface
+        if [ -n "$IF_BRIDGE_VIDS" ]
+	then
             bridge vlan add dev $port vid $IF_BRIDGE_VIDS
-	  else
+	else
             bridge vlan add dev $port vid 2-4094
-          fi
-	;;
-      esac
+        fi
     fi
   done
 done
