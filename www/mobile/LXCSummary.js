@@ -1,10 +1,10 @@
-Ext.define('PVE.OpenVzSummary', {
+Ext.define('PVE.LXCSummary', {
     extend: 'PVE.Page',
-    alias: 'widget.pveOpenVzSummary',
+    alias: 'widget.pveLXCSummary',
 
     statics: {
 	pathMatch: function(loc) {
-	    return loc.match(/^nodes\/([^\s\/]+)\/openvz\/(\d+)$/);
+	    return loc.match(/^nodes\/([^\s\/]+)\/lxc\/(\d+)$/);
 	}
     },
 
@@ -16,7 +16,7 @@ Ext.define('PVE.OpenVzSummary', {
 
 	PVE.Utils.API2Request({
 	    params: params,
-	    url: '/nodes/' + me.nodename + '/openvz/' + me.vmid + '/status/' + cmd,
+	    url: '/nodes/' + me.nodename + '/lxc/' + me.vmid + '/status/' + cmd,
 	    method: 'POST',
 	    success: function(response, opts) {
 		var upid = response.result.data;
@@ -31,11 +31,11 @@ Ext.define('PVE.OpenVzSummary', {
 
     config: {
 	items: [
-	    { 
+	    {
 		xtype: 'titlebar',
 		docked: 'top',
 		items: [
-		    { 
+		    {
 			xtype: 'button',
 			align: 'right',
 			iconCls: 'refresh',
@@ -46,7 +46,7 @@ Ext.define('PVE.OpenVzSummary', {
 		    {
 			xtype: 'pveMenuButton',
 			align: 'right',
-			pveStdMenu: true,
+			pveStdMenu: true
 		    }
 		]
 	    },
@@ -57,17 +57,20 @@ Ext.define('PVE.OpenVzSummary', {
 		style: 'background-color:white;',
 		tpl: [
 		    '<table style="margin-bottom:0px;">',
+
 		    '<tr><td>Status:</td><td>{status}</td></tr>',
 		    '<tr><td>Memory:</td><td>{[this.meminfo(values)]}</td></tr>',
 		    '<tr><td>CPU:</td><td>{[this.cpuinfo(values)]}</td></tr>',
-		    '<tr><td>Uptime:</td><td>{[PVE.Utils.format_duration_long(values.uptime)]}</td></tr>',
+		    '<tr><td>Uptime:</td><td>{[PVE.Utils.format_duration_long'+
+		    '(values.uptime)]}</td></tr>',
+
 		    '</table>',
 		    {
 			meminfo: function(values) {
 			    if (!Ext.isDefined(values.mem)) {
 				return '-';
 			    }
-			    return PVE.Utils.format_size(values.mem || 0) + " of " + 
+			    return PVE.Utils.format_size(values.mem || 0) + " of " +
 				PVE.Utils.format_size(values.maxmem);
 			},
 			cpuinfo: function(values) {
@@ -86,7 +89,7 @@ Ext.define('PVE.OpenVzSummary', {
 		html: gettext('Configuration')
 	    },
 	    {
-                xtype: 'container',
+		xtype: 'container',
 		scrollable: 'both',
 		flex: 1,
 		styleHtmlContent: true,
@@ -100,11 +103,11 @@ Ext.define('PVE.OpenVzSummary', {
 		    '</table>'
 		]
 	    }
-   	]
+	]
     },
 
     reload: function() {
- 	var me = this;
+	var me = this;
 
 	var cti = me.down('#ctstatus');
 
@@ -113,7 +116,7 @@ Ext.define('PVE.OpenVzSummary', {
 	};
 
 	PVE.Utils.API2Request({
-	    url: '/nodes/' + me.nodename + '/openvz/' + me.vmid + '/status/current',
+	    url: '/nodes/' + me.nodename + '/lxc/' + me.vmid + '/status/current',
 	    method: 'GET',
 	    success: function(response) {
 		var d = response.result.data;
@@ -125,12 +128,13 @@ Ext.define('PVE.OpenVzSummary', {
 	var ctc = me.down('#ctconfig');
 
 	PVE.Utils.API2Request({
-	    url: '/nodes/' + me.nodename + '/openvz/' + me.vmid + '/config',
+	    url: '/nodes/' + me.nodename + '/lxc/' + me.vmid + '/config',
 	    method: 'GET',
 	    success: function(response) {
 		var d = response.result.data;
 		var names = ['hostname', 'memory', 'swap', 'cpus', 'ostemplate',
-			     'ip_address', 'nameserver', 'searchdomain', 'netif'];
+			     'ip_address', 'nameserver', 'searchdomain',
+			     'netif'];
 		var kv = PVE.Workspace.obj_to_kv(d, names);
 		ctc.setData(kv);
 	    },
@@ -158,46 +162,49 @@ Ext.define('PVE.OpenVzSummary', {
 		    me.vm_command("start", {});
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Suspend'),
 		handler: function() {
 		    me.vm_command("suspend", {});
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Resume'),
 		handler: function() {
 		    me.vm_command("resume", {});
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Shutdown'),
 		handler: function() {
 		    me.vm_command("shutdown", {});
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Stop'),
 		handler: function() {
 		    me.vm_command("stop", {});
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Migrate'),
 		handler: function() {
-		    PVE.Workspace.gotoPage('nodes/' + me.nodename + '/openvz/' + me.vmid + '/migrate'); 
+		    PVE.Workspace.gotoPage('nodes/' + me.nodename + '/lxc/'
+					   + me.vmid + '/migrate');
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Console'),
 		handler: function() {
-		    PVE.Utils.openConsoleWindow('html5', 'openvz', me.vmid, me.nodename);
+		    PVE.Utils.openConsoleWindow('html5', 'lxc', me.vmid,
+					      me.nodename);
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Spice'),
 		handler: function() {
-		    PVE.Utils.openConsoleWindow('vv', 'openvz', me.vmid, me.nodename);
+		    PVE.Utils.openConsoleWindow('vv', 'lxc', me.vmid,
+						me.nodename);
 		}
 	    }
 	]);

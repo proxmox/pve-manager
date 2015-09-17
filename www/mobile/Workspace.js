@@ -52,8 +52,8 @@ Ext.define('PVE.Workspace', { statics: {
     history: null,
 
     pages: [ 
-	'PVE.OpenVzMigrate',
-	'PVE.OpenVzSummary',
+	'PVE.LXCMigrate',
+	'PVE.LXCSummary',
 	'PVE.QemuMigrate',
 	'PVE.QemuSummary',
 	'PVE.NodeSummary', 

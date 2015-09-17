@@ -3,7 +3,7 @@ Ext.define('PVE.MigrateBase', {
 
     nodename: undefined,
     vmid: undefined,
-    vmtype: undefined, // qemu or openvz
+    vmtype: undefined, // qemu or lxc
 
     config: {
 	items: [
@@ -110,14 +110,14 @@ Ext.define('PVE.QemuMigrate', {
     }
 });
 
-Ext.define('PVE.OpenVzMigrate', {
+Ext.define('PVE.LXCMigrate', {
     extend: 'PVE.MigrateBase',
 
-    vmtype: 'openvz',
+    vmtype: 'lxc',
 
     statics: {
 	pathMatch: function(loc) {
-	    return loc.match(/^nodes\/([^\s\/]+)\/openvz\/(\d+)\/migrate$/);
+	    return loc.match(/^nodes\/([^\s\/]+)\/lxc\/(\d+)\/migrate$/);
 	}
     },
 

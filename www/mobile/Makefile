@@ -18,7 +18,7 @@ JSSRC= 				                 	\
 	NodeSummary.js					\
 	Migrate.js					\
 	QemuSummary.js					\
-	OpenVzSummary.js				\
+	LXCSummary.js				\
 	app.js
 
 all: pvemanager-mobile.js

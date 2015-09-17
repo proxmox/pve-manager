@@ -141,14 +141,14 @@ Ext.define('PVE.NodeSummary', {
 	};
 
 	PVE.Utils.API2Request({
-	    url: '/nodes/' + me.nodename + '/openvz',
+	    url: '/nodes/' + me.nodename + '/lxc',
 	    method: 'GET',
 	    success: function(response) {
 		var d = response.result.data;
 		d.nodename = me.nodename;
-		d.forEach(function(el) { el.type = 'openvz'; el.nodename = me.nodename });
+		d.forEach(function(el) { el.type = 'lxc'; el.nodename = me.nodename });
 		me.store.each(function(rec) {
-		    if (rec.get('type') === 'openvz') {
+		    if (rec.get('type') === 'lxc') {
 			rec.destroy();
 		    }
 		});
