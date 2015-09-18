@@ -889,7 +889,9 @@ sub create_config_line {
 	    my $txt = $data->{value} ? 'yes' : 'no';
 	    $text .= uc($key) . "=\"$txt\"\n";
 	} else {
-	    $text .= uc($key) . "=\"$data->{value}\"\n";
+	    my $value = $data->{value};
+	    die "detected invalid newline inside property '$key'\n" if $value =~ m/\n/;
+	    $text .= uc($key) . "=\"$value\"\n";
 	}
     } elsif (defined($data->{bar})) {
 	my $tmp = format_res_bar_lim($key, $data);
