@@ -16,6 +16,7 @@ use PVE::Cluster qw(cfs_read_file);
 use Time::localtime;
 use Time::Local;
 use PVE::JSONSchema qw(get_standard_option);
+use PVE::HA::Config;
 
 my @posix_filesystems = qw(ext3 ext4 nfs nfs4 reiserfs xfs);
 
@@ -825,6 +826,15 @@ sub exec_backup_task {
 
     eval {
 	die "unable to find VM '$vmid'\n" if !$plugin;
+
+	# for now we deny backups of a running ha managed service in *stop* mode
+	# as it interferes with the HA stack (enabled services should not stop).
+	if ($opts->{mode} eq 'stop' &&
+	    PVE::HA::Config::vm_is_ha_managed($vmid, 'enabled'))
+	{
+	    die "Cannot execute a backup with stop mode on a HA managed and".
+		" enabled Service. Use snapshot mode or disable the Service.\n";
+	}
 
 	my $vmtype = $plugin->type();
 
