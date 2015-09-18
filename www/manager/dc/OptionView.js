@@ -85,7 +85,7 @@ Ext.define('PVE.dc.EmailFromEdit', {
 	    items: {
 		xtype: 'pvetextfield',
 		name: 'email_from',
-		vtype: 'email',
+		vtype: 'pveMail',
 		emptyText: gettext('Send emails from root@$hostname'),
 		deleteEmpty: true,
 		value: '',

@@ -117,7 +117,7 @@ Ext.define('PVE.dc.UserEdit', {
 		xtype: 'textfield',
 		name: 'email',
 		fieldLabel: gettext('E-Mail'),
-		vtype: 'email'
+		vtype: 'pveMail'
 	    }
 	];
 
