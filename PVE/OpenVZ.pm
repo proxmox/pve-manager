@@ -736,6 +736,17 @@ sub parse_integer {
     return undef;
 };
 
+# use this for dns-name/ipv4/ipv6 (or lists of them)
+sub parse_simple_string {
+    my ($key, $text) = @_;
+
+    if ($text =~ m/^([a-zA-Z0-9\-\,\;\:\.\s]*)$/) {
+	return { value => $1 };
+    }
+    
+    return undef;
+}
+
 my $ovz_ressources = {
     numproc => \&parse_res_num_ignore,
     numtcpsock => \&parse_res_num_ignore,
@@ -776,9 +787,9 @@ my $ovz_ressources = {
 
     ip_address => 'string',
     netif => 'string',
-    hostname => 'string',
-    nameserver => 'string',
-    searchdomain => 'string',
+    hostname => \&parse_simple_string,
+    nameserver => \&parse_simple_string,
+    searchdomain => \&parse_simple_string,
 
     name => 'string',
     description => 'string',
@@ -1054,6 +1065,12 @@ sub update_ovz_config {
 
 	$newvalue = defined($newvalue) ? $newvalue : $param->{$name};
 	return if !defined($newvalue);
+
+	my $parser = $ovz_ressources->{$name};
+	if ($parser && ref($parser)) {
+	    my $ok = &$parser($name, $newvalue);
+	    die "invalid format - unable to parse property '$name'\n" if !defined($ok);
+	}
 
 	my $oldvalue = $veconf->{$name}->{value};
 	if (!defined($oldvalue) || ($oldvalue ne $newvalue)) {
