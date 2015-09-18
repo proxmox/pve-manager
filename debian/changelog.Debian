@@ -1,3 +1,9 @@
+pve-manager (3.4-10) unstable; urgency=low
+
+  * openvz: improve configuration parser
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 18 Sep 2015 12:42:06 +0200
+
 pve-manager (3.4-9) unstable; urgency=low
 
   * improve creation of OpenVZ archive (store config file first)
