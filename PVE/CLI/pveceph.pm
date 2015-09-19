@@ -119,7 +119,7 @@ __PACKAGE__->register_method ({
 
 	my $source = $devrepo ?
 	    "deb http://gitbuilder.ceph.com/ceph-deb-jessie-x86_64-basic/ref/$devrepo jessie main\n" :
-	    "deb http://ceph.com/debian-$cephver jessie main\n";
+	    "deb http://download.ceph.com/debian-$cephver jessie main\n";
 
 	PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $source);
 
