@@ -8,7 +8,8 @@ use PVE::API2::VZDump;
 
 use base qw(PVE::CLIHandler);
 
-our $cmddef = [ 'PVE::API2::VZDump', 'vzdump', ['vmid'], undef,
+# Note: use string 'vmid' as $arg_param option, to allow vmid lists
+our $cmddef = [ 'PVE::API2::VZDump', 'vzdump', 'vmid', undef,
 		sub {
 		    my $upid = shift;
 		    exit(0) if $upid eq 'OK';
