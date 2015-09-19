@@ -1,3 +1,9 @@
+pve-manager (3.4-11) unstable; urgency=low
+
+  * pveceph: change ceph download url to download.ceph.com
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 19 Sep 2015 14:16:40 +0200
+
 pve-manager (3.4-10) unstable; urgency=low
 
   * openvz: improve configuration parser
