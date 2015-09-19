@@ -125,7 +125,7 @@ __PACKAGE__->register_method ({
 
 	unlink $tmp_key_file;
 
-	my $source = "deb http://ceph.com/debian-$cephver wheezy main\n";
+	my $source = "deb http://download.ceph.com/debian-$cephver wheezy main\n";
 
 	PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $source);
 
