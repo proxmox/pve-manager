@@ -75,13 +75,14 @@ Ext.define('PVE.Datacenter', {
 		xtype: 'list',
 		flex: 1,
 		disableSelection: true,
+		sorters: 'name',
 		listeners: {
 		    itemsingletap: function(list, index, target, record) {
 			PVE.Workspace.gotoPage('nodes/' + record.get('name'));
 		    } 
 		},
 		itemTpl: '{name}' +
-		    '<br><small>Online: {[PVE.Utils.format_boolean(values.state)]}</small>' +
+		    '<br><small>Online: {[PVE.Utils.format_boolean(values.online)]}</small>' +
 		    '<br><small>Support: {[PVE.Utils.render_support_level(values.level)]}</small>'
 	    }
 	]	
@@ -115,21 +116,18 @@ Ext.define('PVE.Datacenter', {
 		var d = response.result.data;
 		list.setData(d.filter(function(el) { return (el.type === "node"); }));
 
-		var node_count = 0;
 		d.forEach(function(el) {
 		    if (el.type === "node") {
-			node_count++;
 			if (el.local) {
 			    me.summary.local_node = el.name;
 			}
 		    } else if (el.type === "cluster") {
+			me.summary.nodes = el.nodes;
+			me.summary.quorate = PVE.Utils.format_boolean(el.quorate);
 			me.summary.cluster_name = el.name;
-		    } else if (el.type === "quorum") {
-			me.summary.quorate = el.quorate;
 		    }
 		});
 
-		me.summary.nodes = node_count;
 		ci.setData(me.summary);
 	    },
 	    failure: function(response) {
