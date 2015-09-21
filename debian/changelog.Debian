@@ -1,3 +1,19 @@
+pve-manager (4.0-39) unstable; urgency=medium
+
+  * update sencha touch sources to 2.4.2
+
+  * Allow email adresses with a top level domain of up to 63 characters
+
+  * Deny stop mode backups from HA managed and enabled services
+
+  * vzdump: re-enable passing vmid lists at command line
+
+  * Allow typeahead selection of Firewall macros
+
+  * vzdump: replace 'find' exclude command switches
+  
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 21 Sep 2015 12:21:51 +0200
+
 pve-manager (4.0-38) unstable; urgency=medium
 
   * add bridge vlan aware checkbox
