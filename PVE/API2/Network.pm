@@ -31,7 +31,7 @@ my $bond_mode_enum = [
     'lacp-balance-tcp', # OVS
     ];
 
-my $network_type_enum = ['bridge', 'bond', 'eth', 'alias', 
+my $network_type_enum = ['bridge', 'bond', 'eth', 'alias', 'vlan',
 			 'OVSBridge', 'OVSBond', 'OVSPort', 'OVSIntPort'];
 
 my $confdesc = {

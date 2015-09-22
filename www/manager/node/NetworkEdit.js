@@ -24,6 +24,8 @@ Ext.define('PVE.node.NetworkEdit', {
 	    iface_vtype = 'BondName';
 	} else if (me.iftype === 'eth' && !me.create) {
 	    iface_vtype = 'InterfaceName';
+	} else if (me.iftype === 'vlan' && !me.create) {
+	    iface_vtype = 'InterfaceName';
 	} else if (me.iftype === 'OVSBridge') {
 	    iface_vtype = 'BridgeName';
 	} else if (me.iftype === 'OVSBond') {

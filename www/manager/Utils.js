@@ -127,6 +127,7 @@ Ext.define('PVE.Utils', { statics: {
 	eth: gettext("Network Device"),
 	bridge: 'Linux Bridge',
 	bond: 'Linux Bond',
+	vlan: 'Linux Vlan interface',
 	OVSBridge: 'OVS Bridge',
 	OVSBond: 'OVS Bond',
 	OVSPort: 'OVS Port',
