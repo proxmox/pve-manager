@@ -9,8 +9,7 @@ Ext.define('PVE.TaskListBase', {
 	    },
 	    {
 		xtype: 'list',
-		//flex: 1,
-		height: 800,
+		flex: 1,
 		disableSelection: true,
 		listeners: {
 		    itemsingletap: function(list, index, target, record) {
@@ -19,12 +18,18 @@ Ext.define('PVE.TaskListBase', {
 		    }
 		},
 		itemTpl: [
-		    '<small>{starttime:date("M d H:i:s")} - {endtime:date("M d H:i:s")}</small><br>', 
-		    '{[this.desc(values)]}<br>',
-		    '<small>node: {node} Status: {status}</small>',
+		    '<div style="vertical-align: middle;">' +
+		    '<span>{[this.desc(values)]}</span>',
+		    '<span style=" font-size:small; float: right;">' +
+		    '{starttime:date("M d H:i:s")} - {endtime:date("H:i:s")}' +
+		    '</span></div>',
+		    '<small>node: {node}<br /> Status: {[this.status(values)]}</small>',
 		    {
 			desc: function(values) {
 			    return PVE.Utils.format_task_description(values.type, values.id);
+			},
+			status: function(values) {
+			    return Ext.String.ellipsis(values.status, 160);
 			}
 		    }
 		]
@@ -74,7 +79,7 @@ Ext.define('PVE.ClusterTaskList', {
     },
 
     config: {
-	baseUrl: '/cluster/tasks',
+	baseUrl: '/cluster/tasks'
     },
 
     initialize: function() {

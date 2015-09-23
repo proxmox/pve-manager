@@ -89,7 +89,7 @@ Ext.define('PVE.TaskViewer', {
 		var d = response.result.data;
 		var kv = [];
 
-		kv.push({ key: gettext('Status'), value: d.exitstatus || d.status });
+		kv.push({ key: gettext('Taskstatus'), value: d.status });
 		kv.push({ key: gettext('Node'), value: d.node });
 		kv.push({ key: gettext('User'), value: d.user });
 		kv.push({ key: gettext('Starttime'), value: PVE.Utils.render_timestamp(d.starttime) });
