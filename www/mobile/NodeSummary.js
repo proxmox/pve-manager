@@ -84,13 +84,13 @@ Ext.define('PVE.NodeSummary', {
 			    if (!values.uptime) {
 				return '-';
 			    }
-			    return PVE.Utils.format_size(values.mem)
+			    return PVE.Utils.format_size(values.mem);
 			},
 			cpuinfo: function(values) {
 			    if (!values.uptime) {
 				return '-';
 			    }
-			    return (values.cpu*100).toFixed(1);
+			    return (values.cpu*100).toFixed(1) + '%';
 			}
 		    }
 		]
