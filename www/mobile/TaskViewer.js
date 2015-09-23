@@ -16,16 +16,7 @@ Ext.define('PVE.TaskViewer', {
     config: {
 	items: [
 	    { 
-		xtype: 'titlebar',
-		title: gettext("Task Viewer"),
-		docked: 'top',
-		items: [
-		    {
-			xtype: 'pveMenuButton',
-			align: 'right',
-			pveStdMenu: true
-		    }
-		]
+		xtype: 'pveTitleBar'
 	    },
 	    {
 		itemId: 'taskStatus',

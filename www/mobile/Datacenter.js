@@ -34,33 +34,10 @@ Ext.define('PVE.Datacenter', {
     config: {
 	appUrl: '',
 	items: [
-	    { 
-		xtype: 'titlebar',
-		docked: 'top',
+	    {
+		xtype: 'pveTitleBar',
 		title: gettext('Datacenter'),
-		items: [
-		    { 
-			xtype: 'button',
-			align: 'right',
-			iconCls: 'refresh',
-			handler: function() {
-			    this.up('pvePage').reload();
-			}
-		    },
-		    {
-			xtype: 'pveMenuButton',
-			align: 'right',
-			pveStdMenu: true,
-			menuItems: [
-			    { 
-				text: gettext('Tasks'),
-				handler: function() {
-				    PVE.Workspace.gotoPage('tasks');
-				}
-			    }
-			]
-		    }
-		]
+		pveBackButton: false
 	    },
 	    {
  		xtype: 'pveClusterInfo'
@@ -138,6 +115,15 @@ Ext.define('PVE.Datacenter', {
 
     initialize: function() {
 	var me = this;
+
+	me.down('pveMenuButton').setMenuItems([
+	    {
+		text: gettext('Tasks'),
+		handler: function() {
+		    PVE.Workspace.gotoPage('tasks');
+		}
+	    }
+	]);
 
 	me.reload();
     }

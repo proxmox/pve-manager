@@ -26,17 +26,10 @@ Ext.define('PVE.ErrorPage', {
 	    align: 'stretch'
 	},
 	items: [
-	    { 
-		xtype: 'titlebar',
-		docked: 'top',
-		title: gettext('Error'),
-		items: [
-		    {
-			xtype: 'pveMenuButton',
-			align: 'right',
-			pveStdMenu: true
-		    }
-		]
+	    {
+		xtype: 'pveTitleBar',
+		pveBackButton: false,
+		title: gettext('Error')
 	    }
 	]
     }

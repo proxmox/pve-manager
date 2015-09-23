@@ -48,23 +48,7 @@ Ext.define('PVE.NodeSummary', {
     config: {
 	items: [
 	    { 
-		xtype: 'titlebar',
-		docked: 'top',
-		items: [
-		    { 
-			xtype: 'button',
-			align: 'right',
-			iconCls: 'refresh',
-			handler: function() {
-			    this.up('pvePage').reload();
-			}
-		    },
-		    {
-			xtype: 'pveMenuButton',
-			align: 'right',
-			pveStdMenu: true
-		    }
-		]
+		xtype: 'pveTitleBar'
 	    },
 	    {
 		xtype: 'pveNodeInfo'

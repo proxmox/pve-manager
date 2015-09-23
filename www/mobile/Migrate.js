@@ -8,15 +8,8 @@ Ext.define('PVE.MigrateBase', {
     config: {
 	items: [
 	    {
-		xtype: 'titlebar',
-		docked: 'top',
-		items: [
-		    {
-			xtype: 'pveMenuButton',
-			align: 'right',
-			pveStdMenu: true
-		    }
-		]
+		xtype: 'pveTitleBar',
+		pveReloadButton: false
 	    },
 	    { 
 		xtype: 'formpanel',
