@@ -74,6 +74,20 @@ Ext.define('PVE.Workspace', { statics: {
 	});
     },
 
+    goBack: function() {
+	var actions = PVE.Workspace.history.getActions(),
+	    lastAction = actions[actions.length - 2];
+
+	var url = '';
+	if(lastAction) {
+	    actions.pop();
+	    url = lastAction.getUrl();
+	}
+
+	// use loadPage directly so we don't cause new additions to the history
+	PVE.Workspace.loadPage(url);
+    },
+
     __setAppWindow: function(comp, dir) {
 
 	var old = PVE.Workspace.appWindow;
@@ -94,7 +108,7 @@ Ext.define('PVE.Workspace', { statics: {
 		}
 	    }, 500);
 	} else {
-	    Ext.Viewport.setActiveItem(PVE.Workspace.appWindow, anim);
+	    Ext.Viewport.setActiveItem(PVE.Workspace.appWindow);
 	}
     },
 
