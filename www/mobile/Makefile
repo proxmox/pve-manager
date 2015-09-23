@@ -8,6 +8,7 @@ JSSRC= 				                 	\
 	Toolkit.js					\
 	PVEProxy.js					\
 	MenuButton.js					\
+	PVEBar.js					\
 	Workspace.js					\
 	NodeSelector.js					\
 	RealmSelector.js				\
