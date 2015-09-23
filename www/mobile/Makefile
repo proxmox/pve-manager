@@ -18,6 +18,7 @@ JSSRC= 				                 	\
 	Datacenter.js					\
 	NodeSummary.js					\
 	Migrate.js					\
+	VMSummaryBase.js				\
 	QemuSummary.js					\
 	LXCSummary.js				\
 	app.js
