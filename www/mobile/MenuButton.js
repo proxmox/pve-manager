@@ -22,6 +22,18 @@ Ext.define('PVE.MenuButton', {
 	};
 
 	var items = [];
+
+	if (me.getPveStdMenu()) {
+	    items.push({
+		xtype: 'button',
+		ui: 'plain',
+		text: gettext('Datacenter'),
+		handler: addHide(function() {
+		    PVE.Workspace.gotoPage('');
+		})
+	    });
+	}
+
 	data.forEach(function(el) {
 	    items.push(Ext.apply(el, {
 		xtype: 'button',
