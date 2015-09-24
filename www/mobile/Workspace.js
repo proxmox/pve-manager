@@ -28,7 +28,7 @@ Ext.define('PVE.ErrorPage', {
 	items: [
 	    {
 		xtype: 'pveTitleBar',
-		pveBackButton: false,
+		pveReloadButton: false,
 		title: gettext('Error')
 	    }
 	]
