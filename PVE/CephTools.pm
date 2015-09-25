@@ -43,9 +43,11 @@ sub get_config {
 }
 
 sub verify_blockdev_path {
-    my ($path) = @_;
+    my ($rel_path) = @_;
 
-    $path = abs_path($path);
+    die "missing path" if !$rel_path;
+    my $path = abs_path($rel_path);
+    die "failed to get absolute path to $rel_path" if !$path;
 
     die "got unusual device path '$path'\n" if $path !~  m|^/dev/(.*)$|;
 
