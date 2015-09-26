@@ -80,9 +80,9 @@ Ext.define('PVE.Utils', { statics: {
 	w2k: 'Microsoft Windows 2000',
 	w2k8: 'Microsoft Windows Vista/2008',
 	win7: 'Microsoft Windows 7/2008r2',
-	win8: 'Microsoft Windows 8/2012',
+	win8: 'Microsoft Windows 8/10/2012',
 	l24: 'Linux 2.4 Kernel',
-	l26: 'Linux 3.X/2.6 Kernel',
+	l26: 'Linux 4.X/3.X/2.6 Kernel',
 	solaris: 'Solaris Kernel'
     },
 
