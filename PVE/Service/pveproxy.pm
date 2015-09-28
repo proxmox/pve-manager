@@ -40,6 +40,8 @@ my %daemon_options = (
 
 my $daemon = __PACKAGE__->new('pveproxy', $cmdline, %daemon_options);
 
+my $ext5_dir_exists;
+
 sub add_dirs {
     my ($result_hash, $alias, $subdir) = @_;
 
@@ -70,13 +72,19 @@ sub init {
     my $family = PVE::Tools::get_host_address_family($self->{nodename});
     my $socket = $self->create_reusable_socket(8006, undef, $family);
 
+    $ext5_dir_exists = (-d '/usr/share/pve-manager/ext5');
+
     my $dirs = {};
 
     add_dirs($dirs, '/pve2/locale/', '/usr/share/pve-manager/locale/');
     add_dirs($dirs, '/pve2/touch/', '/usr/share/pve-manager/touch/');
     add_dirs($dirs, '/pve2/ext4/', '/usr/share/pve-manager/ext4/');
-    add_dirs($dirs, '/pve2/ext5/', '/usr/share/pve-manager/ext5/');
-    add_dirs($dirs, '/pve2/manager5/', '/usr/share/pve-manager/manager5/');
+
+    if ($ext5_dir_exists) { # only add ext5 dirs if it was build
+	add_dirs($dirs, '/pve2/ext5/', '/usr/share/pve-manager/ext5/');
+	add_dirs($dirs, '/pve2/manager5/', '/usr/share/pve-manager/manager5/');
+    }
+
     add_dirs($dirs, '/pve2/images/' => '/usr/share/pve-manager/images/');
     add_dirs($dirs, '/pve2/css/' => '/usr/share/pve-manager/css/');
     add_dirs($dirs, '/pve2/js/' => '/usr/share/pve-manager/js/');
@@ -183,22 +191,22 @@ sub get_index {
 	$mobile = $args->{mobile} ? 1 : 0;
     }
 
-	my $ext5;
-	if (defined($args->{ext5})) {
+    my $ext5;
+    if (defined($args->{ext5})) {
 	$ext5 = $args->{ext5} ? 1 : 0;
     }
 
     my $page;
 
     if (defined($args->{console}) && $args->{novnc}) {
-		$page = PVE::NoVncIndex::get_index($lang, $username, $token, $args->{console});
+	$page = PVE::NoVncIndex::get_index($lang, $username, $token, $args->{console});
     } elsif ($mobile) {
-		$page = PVE::TouchIndex::get_index($lang, $username, $token, $args->{console});
-	} elsif ($ext5) {
-		$page = PVE::ExtJSIndex5::get_index($lang, $username, $token, $args->{console});
-	} else {
-		$page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console});
-	}
+	$page = PVE::TouchIndex::get_index($lang, $username, $token, $args->{console});
+    } elsif ($ext5 && $ext5_dir_exists) {
+	$page = PVE::ExtJSIndex5::get_index($lang, $username, $token, $args->{console});
+    } else {
+	$page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console});
+    }
     my $headers = HTTP::Headers->new(Content_Type => "text/html; charset=utf-8");
     my $resp = HTTP::Response->new(200, "OK", $headers, $page);
 
