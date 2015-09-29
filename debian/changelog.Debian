@@ -1,3 +1,9 @@
+pve-manager (4.0-43) unstable; urgency=medium
+
+  * check for ext5 dir to avoid missing directory errors
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 29 Sep 2015 07:17:45 +0200
+
 pve-manager (4.0-42) unstable; urgency=medium
 
   * update OS Type descriptions
