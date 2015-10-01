@@ -185,6 +185,16 @@ Ext.define('PVE.storage.LVMInputPanel', {
 
 	me.column1.push(vgnameField);
 
+	me.column1.push({
+	    xtype: 'pveContentTypeSelector',
+	    cts: ['images', 'rootdir'],
+	    fieldLabel: gettext('Content'),
+	    name: 'content',
+	    value: ['images', 'rootdir'],
+	    multiSelect: true,
+	    allowBlank: false
+	});
+
 	me.column2 = [
 	    {
 		xtype: 'PVE.form.NodeSelector',
