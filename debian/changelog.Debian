@@ -1,3 +1,9 @@
+pve-manager (4.0-44) unstable; urgency=medium
+
+  * add content type selector to LVM storage editor
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 01 Oct 2015 13:04:26 +0200
+
 pve-manager (4.0-43) unstable; urgency=medium
 
   * check for ext5 dir to avoid missing directory errors
