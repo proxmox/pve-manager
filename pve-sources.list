@@ -1,3 +1,1 @@
-# changed to pvetest, because this is a beta release
-deb http://download.proxmox.com/debian jessie pvetest
-#deb https://enterprise.proxmox.com/debian jessie pve-enterprise
+deb https://enterprise.proxmox.com/debian jessie pve-enterprise
