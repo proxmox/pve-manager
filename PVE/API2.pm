@@ -106,7 +106,6 @@ __PACKAGE__->register_method ({
 	foreach my $k (qw(version release repoid)) {
 	    $res->{$k} = $vi->{$k};
 	}
-	$res->{version} = "4.0Beta";
 	
 	return $res;
     }});
