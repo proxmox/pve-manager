@@ -15,4 +15,4 @@ my $prepare = sub {
     $rpcenv->set_user('root@pam');
 };
 
-PVE::Service::pvestatd->run_cli(undef, undef, $prepare);
+PVE::Service::pvestatd->run_cli_handler(prepare => $prepare);

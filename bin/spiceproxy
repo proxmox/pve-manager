@@ -26,4 +26,4 @@ my $prepare  = sub {
     }
 };
 
-PVE::Service::spiceproxy->run_cli(undef, undef, $prepare);
+PVE::Service::spiceproxy->run_cli_handler(prepare => $prepare);

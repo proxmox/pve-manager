@@ -24,4 +24,4 @@ my $prepare = sub {
     mkdir "/var/run/dtach";
 };
 
-PVE::Service::pvedaemon->run_cli(undef, undef, $prepare);
+PVE::Service::pvedaemon->run_cli_handler(prepare => $prepare);

@@ -28,4 +28,4 @@ my $prepare = sub {
     }
 };
 
-PVE::Service::pveproxy->run_cli(undef, undef, $prepare);
+PVE::Service::pveproxy->run_cli_handler(prepare => $prepare);
