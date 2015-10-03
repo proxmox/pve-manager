@@ -1,3 +1,9 @@
+pve-manager (4.0-46) unstable; urgency=medium
+
+  * fix bug #719: vzdump - only call cleanup after prepare
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 03 Oct 2015 15:32:02 +0200
+
 pve-manager (4.0-45) unstable; urgency=medium
 
   * sources.list: prepare for final 4.0 release - use pve-enterprise repository
