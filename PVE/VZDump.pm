@@ -1068,8 +1068,11 @@ sub exec_backup_task {
 	    warn $@ if $@;
 	}
 
-	eval { $plugin->cleanup ($task, $vmid) };
-	warn $@ if $@;
+	if (defined($task->{mode})) { 
+	    # only call cleanup when necessary (when prepare was executed)
+	    eval { $plugin->cleanup ($task, $vmid) };
+	    warn $@ if $@;
+	}
 
 	eval { $plugin->set_logfd (undef); };
 	warn $@ if $@;
