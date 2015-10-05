@@ -1,3 +1,9 @@
+pve-manager (4.0-47) unstable; urgency=medium
+
+  * DNS ui/api: ipv6 support
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 05 Oct 2015 12:34:16 +0200
+
 pve-manager (4.0-46) unstable; urgency=medium
 
   * fix bug #719: vzdump - only call cleanup after prepare
