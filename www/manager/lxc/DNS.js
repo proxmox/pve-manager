@@ -60,7 +60,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 	    {
 		xtype: 'pvetextfield',
 		fieldLabel: gettext('DNS server') + " 1",
-		vtype: 'IPAddress',
+		vtype: 'IP64Address',
 		allowBlank: true,
 		disabled: true,
 		name: 'dns1',
@@ -69,7 +69,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 	    {
 		xtype: 'pvetextfield',
 		fieldLabel: gettext('DNS server') + " 2",
-		vtype: 'IPAddress',
+		vtype: 'IP64Address',
 		skipEmptyText: true,
 		disabled: true,
 		name: 'dns2',
@@ -78,7 +78,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 	    {
 		xtype: 'pvetextfield',
 		fieldLabel: gettext('DNS server') + " 3",
-		vtype: 'IPAddress',
+		vtype: 'IP64Address',
 		skipEmptyText: true,
 		disabled: true,
 		name: 'dns3',
