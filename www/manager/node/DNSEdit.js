@@ -20,21 +20,21 @@ Ext.define('PVE.node.DNSEdit', {
 	    {
 		xtype: 'pvetextfield',
                 fieldLabel: gettext('DNS server') + " 1",
-		vtype: 'IPAddress',
+		vtype: 'IP64Address',
 		skipEmptyText: true,
                 name: 'dns1'
 	    },
 	    {
 		xtype: 'pvetextfield',
 		fieldLabel: gettext('DNS server') + " 2",
-		vtype: 'IPAddress',
+		vtype: 'IP64Address',
 		skipEmptyText: true,
                 name: 'dns2'
 	    },
 	    {
 		xtype: 'pvetextfield',
                 fieldLabel: gettext('DNS server') + " 3",
-		vtype: 'IPAddress',
+		vtype: 'IP64Address',
 		skipEmptyText: true,
                 name: 'dns3'
 	    }

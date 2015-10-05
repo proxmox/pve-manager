@@ -883,17 +883,17 @@ __PACKAGE__->register_method({
 	    },
 	    dns1 => {
 		description => 'First name server IP address.',
-		type => 'string', format => 'ipv4',
+		type => 'string', format => 'ip',
 		optional => 1,
 	    },		
 	    dns2 => {
 		description => 'Second name server IP address.',
-		type => 'string', format => 'ipv4',
+		type => 'string', format => 'ip',
 		optional => 1,
 	    },		
 	    dns3 => {
 		description => 'Third name server IP address.',
-		type => 'string', format => 'ipv4',
+		type => 'string', format => 'ip',
 		optional => 1,
 	    },		
 	},
