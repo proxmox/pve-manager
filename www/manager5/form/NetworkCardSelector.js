@@ -8,7 +8,7 @@ Ext.define('PVE.form.NetworkCardSelector', {
         me.data = [ 
 	    ['e1000', 'Intel E1000'],
 	    ['virtio', 'VirtIO (' + gettext('paravirtualized') + ')'],
-	    ['rtl8139', 'Realtec RTL8139'],
+	    ['rtl8139', 'Realtek RTL8139'],
 	    ['vmxnet3', 'VMWare vmxnet3']
 	];
  
