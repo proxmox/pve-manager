@@ -73,7 +73,12 @@ Ext.apply(Ext.form.field.VTypes, {
     StorageId:  function(v) {
         return (/^[a-z][a-z0-9\-\_\.]*[a-z0-9]$/i).test(v);
     },
-    StorageIdText: gettext("Allowed characters") + ": 'a-z', '0-9', '-', '_', '.'",
+    StorageIdText: gettext("Allowed characters") + ":  'A-Z', 'a-z', '0-9', '-', '_', '.'",
+
+    ConfigId:  function(v) {
+        return (/^[a-z][a-z0-9\_]+$/i).test(v);
+    },
+    ConfigIdText: gettext("Allowed characters") + ": 'A-Z', 'a-z', '0-9', '_'",
 
     HttpProxy:  function(v) {
         return (/^http:\/\/.*$/).test(v);

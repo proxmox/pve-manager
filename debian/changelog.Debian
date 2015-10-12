@@ -1,5 +1,7 @@
 pve-manager (4.0-49) unstable; urgency=medium
 
+  * GUI: add new vtype ConfigId, use it for snapshot names
+
   * IP4_cidr_match: allow short masks like /8
 
  -- Proxmox Support Team <support@proxmox.com>  Fri, 09 Oct 2015 08:16:55 +0200

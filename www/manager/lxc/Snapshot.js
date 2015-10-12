@@ -71,7 +71,7 @@ Ext.define('PVE.window.LxcSnapshot', {
 		name: 'snapname',
 		value: me.snapname,
 		fieldLabel: gettext('Name'),
-		vtype: 'StorageId',
+		vtype: 'ConfigId',
 		allowBlank: false
 	    }
 	];
