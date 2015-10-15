@@ -59,7 +59,7 @@ Ext.define('PVE.FirewallRulePanel', {
 	// hack: editable ComboGrid returns nothing when empty, so we need to set ''
 	// Also, disabled text fields return nothing, so we need to set ''
 
-	Ext.Array.each(['source', 'dest', 'proto', 'sport', 'dport'], function(key) {
+	Ext.Array.each(['source', 'dest', 'proto', 'sport', 'dport', 'macro'], function(key) {
 	    if (values[key] === undefined) {
 		values[key] = '';
 	    }
