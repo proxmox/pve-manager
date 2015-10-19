@@ -1132,7 +1132,6 @@ __PACKAGE__->register_method({
 my $get_start_stop_list = sub {
     my ($nodename, $autostart) = @_;
 
-    my $haconf = PVE::HA::Config::read_resources_config();
     my $vmlist = PVE::Cluster::get_vmlist();
 
     my $resList = {};
@@ -1164,8 +1163,8 @@ my $get_start_stop_list = sub {
 	    }
 
 	    # skip ha managed VMs (started by pve-ha-manager)
-	    return if defined($haconf->{ids}->{"pvevm:$vmid"});
-	    
+	    return if PVE::HA::Config::vm_is_ha_managed($vmid);
+
 	    $resList->{$startup->{order}}->{$vmid} = $startup;
 	    $resList->{$startup->{order}}->{$vmid}->{type} = $d->{type};
 	};
