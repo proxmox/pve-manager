@@ -1145,28 +1145,22 @@ my $get_start_stop_list = sub {
 	    
 	    my $bootorder = LONG_MAX;
 
+	    my $conf;
 	    if ($d->{type} eq 'lxc') {
-		my $conf = PVE::LXC::load_config($vmid); 
-		return if $autostart && !$conf->{'onboot'};
-		
-		if ($conf->{'pve.startup'}) {
-		    $startup = PVE::JSONSchema::pve_parse_startup_order($conf->{'startup'});
-		    $startup->{order} = $bootorder if !defined($startup->{order});
-		} else {
-		    $startup = { order => $bootorder };
-		}
+		$conf = PVE::LXC::load_config($vmid);
 	    } elsif ($d->{type} eq 'qemu') {
-		my $conf = PVE::QemuServer::load_config($vmid);
-		return if $autostart && !$conf->{onboot};
-
-		if ($conf->{startup}) {
-		    $startup =  PVE::JSONSchema::pve_parse_startup_order($conf->{startup});
-		    $startup->{order} = $bootorder if !defined($startup->{order});
-		} else {
-		    $startup = { order => $bootorder };
-		}
+		$conf = PVE::QemuServer::load_config($vmid);
 	    } else {
 		die "unknown VM type '$d->{type}'\n";
+	    }
+
+	    return if $autostart && !$conf->{onboot};
+
+	    if ($conf->{startup}) {
+		$startup =  PVE::JSONSchema::pve_parse_startup_order($conf->{startup});
+		$startup->{order} = $bootorder if !defined($startup->{order});
+	    } else {
+		$startup = { order => $bootorder };
 	    }
 
 	    # skip ha managed VMs (started by pve-ha-manager)
