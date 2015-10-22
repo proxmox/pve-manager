@@ -1,0 +1,89 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use PVE::pvecfg;
+
+($> == 0 ) || die "please run as root\n";
+
+my @general = ('hostname', 'pveversion --verbose', 'cat /etc/hosts', 'top -b -n 1  | head -n 15',
+  'pvesubscription get','lscpu', 'grep --max-count=1 "model name" /proc/cpuinfo' );
+
+my @storage = ('cat /etc/pve/storage.cfg', 'pvesm status', 'cat /etc/fstab', 'mount', 'df --human');
+
+my @volumes = ('lvdisplay', 'vgdisplay', 'zpool status', 'zfs list');
+
+my @machines = ('qm list', 'grep . /etc/pve/qemu-server/*');
+
+my @net = ('ifconfig', 'cat /etc/network/interfaces', 'grep . /etc/pve/firewall/*',
+  'iptables-save');
+
+my @cluster = ('pvecm nodes', 'pvecm status');
+
+if (PVE::pvecfg::version() >= 4.0) {
+    push @machines, 'grep . /etc/pve/lxc/*' ;
+    push @cluster, 'cat /etc/pve/corosync.conf' ;
+} else {
+    push @machines, 'grep . /etc/pve/openvz/*' ;
+    push @cluster,  'clustat', 'cat /etc/cluster.conf' ;
+}
+
+my $general_report = {
+    title => 'general system info',
+    commands => \@general,
+};
+
+my $storage_report = {
+    title => 'info about storage (lvm and zfs)',
+    commands => \@storage,
+};
+
+my $volume_report = {
+    title => 'info about virtual machines',
+    commands => \@machines,
+};
+
+my $net_report = {
+    title => 'info about network and firewall',
+    commands => \@net,
+};
+
+my $cluster_report = {
+    title => 'info about clustering',
+    commands => \@cluster,
+};
+
+my @global_report = ($general_report, $storage_report, $volume_report, $net_report, $cluster_report);
+
+# execute commands and display their output as if they've been done on a interactive shell
+# so the local sysadmin can reproduce what we're doing
+sub do_execute {
+    my ($shell_command) = @_;
+    print "$shell_command \n";
+    system $shell_command;
+    print "\n";
+}
+
+foreach my $subreport (@global_report) {
+    my $title = $subreport->{'title'};
+    my @commands = @{$subreport->{'commands'}};
+
+    print "==== ".$title." ====\n";
+    foreach my $shell_command (@commands) {
+	do_execute($shell_command);
+    }
+}
+
+__END__
+
+=head1 NAME
+
+pvereport - Proxmox VE Report tool
+
+=head1 SYNOPSIS
+
+pvereport
+
+=head1 DESCRIPTION
+
+Display various information related to a Proxmox VE system

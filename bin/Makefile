@@ -15,7 +15,8 @@ SCRIPTS =  			\
 	pvemailforward.pl	\
 	pveupgrade		\
 	pveupdate		\
-	pveperf
+	pveperf			\
+	pvereport
 
 SERVICE_MANS = $(addsuffix .8, ${SERVICES})
 SERVICE_PODS = $(addsuffix .pod, ${SERVICE_MANS})
@@ -25,7 +26,8 @@ CLI_MANS = 				\
 	pveversion.1			\
 	pveupgrade.1			\
 	pveperf.1				\
-	pvesh.1
+	pvesh.1				\
+	pvereport.1
 
 CLI_PODS = $(addsuffix .pod, ${CLI_MANS})
 
@@ -63,6 +65,10 @@ pveperf.1.pod: pveperf
 	mv $@.tmp $@
 
 pvesh.1.pod: pvesh
+	podselect $< > $@.tmp
+	mv $@.tmp $@
+
+pvereport.1.pod: pvereport
 	podselect $< > $@.tmp
 	mv $@.tmp $@
 
