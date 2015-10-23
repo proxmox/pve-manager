@@ -1,3 +1,9 @@
+pve-manager (4.0-52) unstable; urgency=medium
+
+  * fix bug #781: separate LXC CPU and memory in editor
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Oct 2015 13:40:42 +0200
+
 pve-manager (4.0-51) unstable; urgency=medium
 
   * fix check if vm is ha managed in get_start_stop_list
