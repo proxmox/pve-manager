@@ -1,7 +1,45 @@
 var labelWidth = 120;
 
+Ext.define('PVE.lxc.MemoryEdit', {
+    extend: 'PVE.window.Edit',
+
+    initComponent : function() {
+	var me = this;
+
+	Ext.apply(me, {
+	    subject: gettext('Memory'),
+	    items: Ext.create('PVE.lxc.MemoryInputPanel')
+	});
+
+	me.callParent();
+
+	me.load();
+    }
+});
+
+
 Ext.define('PVE.lxc.CPUEdit', {
     extend: 'PVE.window.Edit',
+
+    initComponent : function() {
+	var me = this;
+
+	Ext.apply(me, {
+	    subject: gettext('CPU'),
+	    items: Ext.create('PVE.lxc.CPUInputPanel')
+	});
+
+	me.callParent();
+
+	me.load();
+    }
+});
+
+Ext.define('PVE.lxc.CPUInputPanel', {
+    extend: 'PVE.panel.InputPanel',
+    alias: 'widget.pveLxcCPUInputPanel',
+
+    insideWizard: false,
 
     initComponent : function() {
 	var me = this;
@@ -33,13 +71,14 @@ Ext.define('PVE.lxc.CPUEdit', {
 	});
 
 	me.callParent();
-
-	me.load();
     }
 });
 
-Ext.define('PVE.lxc.MemoryEdit', {
-    extend: 'PVE.window.Edit',
+Ext.define('PVE.lxc.MemoryInputPanel', {
+    extend: 'PVE.panel.InputPanel',
+    alias: 'widget.pveLxcMemoryInputPanel',
+
+    insideWizard: false,
 
     initComponent : function() {
 	var me = this;
@@ -73,7 +112,5 @@ Ext.define('PVE.lxc.MemoryEdit', {
 	});
 
 	me.callParent();
-
-	me.load();
     }
 });

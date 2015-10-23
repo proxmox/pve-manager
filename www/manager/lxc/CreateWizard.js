@@ -160,9 +160,20 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    ]
 		},
 		{
-		    xtype: 'pveLxcResourceInputPanel',
+		    xtype: 'inputpanel',
 		    title: gettext('Resources'),
-		    insideWizard: true
+		    items: [
+			{
+			    xtype: 'pveLxcMemoryInputPanel',
+			    title: gettext('Memory'),
+			    insideWizard: true
+			},
+			{
+			    xtype: 'pveLxcCPUInputPanel',
+			    title: gettext('CPU'),
+			    insideWizard: true
+			}
+		    ]
 		},
 		networkpanel,
 		{
