@@ -149,6 +149,7 @@ JSSRC= 				                 	\
 	lxc/CreateWizard.js				\
 	lxc/SnapshotTree.js				\
 	lxc/Snapshot.js					\
+	lxc/ResourceEdit.js				\
 	pool/StatusView.js				\
 	pool/Summary.js					\
 	pool/Config.js					\
