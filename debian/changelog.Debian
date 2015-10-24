@@ -1,4 +1,4 @@
-pve-manager (4.0-53) unstable; urgency=medium
+pve-manager (4.0-54) unstable; urgency=medium
 
   * fix bug #781: separate LXC CPU and memory in editor
 
