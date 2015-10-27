@@ -88,7 +88,7 @@ __PACKAGE__->register_method ({
 	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
 
 	# use fixed devel repo for now, because there is no officila repo for jessie
-	my $devrepo = 'v0.94.3';
+	my $devrepo = undef;
 
 	my $keyurl = $devrepo ?
 	    "https://git.ceph.com/?p=ceph.git;a=blob_plain;f=keys/autobuild.asc" :
@@ -102,7 +102,7 @@ __PACKAGE__->register_method ({
 	#die "unable to download ceph release key\n";
 
 	my $tmp_key_file = "/tmp/ceph-release-keys.asc";
-	my $ua = LWP::UserAgent->new(protocols_allowed => ['http', 'https'], timeout => 30);
+	my $ua = LWP::UserAgent->new(protocols_allowed => ['http', 'https'], timeout => 120);
 	$ua->env_proxy;
 	my $response = $ua->get($keyurl);
 	if ($response->is_success) {
