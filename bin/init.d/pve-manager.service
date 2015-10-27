@@ -3,6 +3,7 @@ Description=PVE VM Manager
 ConditionPathExists=/usr/bin/pvesh
 Wants=pveproxy.service
 After=pveproxy.service
+After=open-iscsi.service
 
 [Service]
 ExecStart=/etc/init.d/pve-manager start
