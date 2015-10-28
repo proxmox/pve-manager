@@ -3,6 +3,22 @@ Ext.define('PVE.lxc.RessourceView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveLxcRessourceView'],
 
+    renderKey: function(key, metaData, rec, rowIndex, colIndex, store) {
+	var me = this;
+	var rows = me.rows;
+	var rowdef = rows[key] || {};
+
+	metaData.tdAttr = "valign=middle";
+
+	if (rowdef.tdCls) {
+	    metaData.tdCls = rowdef.tdCls;
+	    if (rowdef.tdCls == 'pve-itype-icon-storage') {
+		var value = me.getObjectValue(key, '', true);
+	    }
+	}
+	return rowdef.header || key;
+    },
+
     initComponent : function() {
 	var me = this;
 	var i, confid;
@@ -24,6 +40,8 @@ Ext.define('PVE.lxc.RessourceView', {
 		header: gettext('Memory'),
 		editor: caps.vms['VM.Config.Memory'] ? 'PVE.lxc.MemoryEdit' : undefined,
 		never_delete: true,
+		defaultValue: 512,
+		tdCls: 'pve-itype-icon-memory',
 		renderer: function(value) {
 		    return PVE.Utils.format_size(value*1024*1024);
 		}
@@ -32,6 +50,8 @@ Ext.define('PVE.lxc.RessourceView', {
 		header: gettext('Swap'),
 		editor: caps.vms['VM.Config.Memory'] ? 'PVE.lxc.MemoryEdit' : undefined,
 		never_delete: true,
+		defaultValue: 512,
+		tdCls: 'pve-itype-icon-swap',
 		renderer: function(value) {
 		    return PVE.Utils.format_size(value*1024*1024);
 		}
@@ -41,6 +61,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		never_delete: true,
 		editor: caps.vms['VM.Config.CPU'] ? 'PVE.lxc.CPUEdit' : undefined,
 		defaultValue: 1,
+		tdCls: 'pve-itype-icon-processor',
 		renderer: function(value) {
 		    if (value) { return value; };
 		    return gettext('unlimited');
@@ -50,7 +71,8 @@ Ext.define('PVE.lxc.RessourceView', {
 		header: gettext('CPU units'),
 		never_delete: true,
 		editor: caps.vms['VM.Config.CPU'] ? 'PVE.lxc.CPUEdit' : undefined,
-		defaultValue: 1024
+		defaultValue: 1024,
+		tdCls: 'pve-itype-icon-processor'
 	    }
 	};
 
