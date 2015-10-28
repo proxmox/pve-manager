@@ -112,6 +112,23 @@ Ext.define('PVE.lxc.RessourceView', {
 	    win.on('destroy', reload);
 	};
 
+	var run_resize = function() {
+	    var rec = sm.getSelection()[0];
+	    if (!rec) {
+		return;
+	    }
+
+	    var win = Ext.create('PVE.window.MPResize', {
+		disk: rec.data.key,
+		nodename: nodename,
+		vmid: vmid
+	    });
+
+	    win.show();
+
+	    win.on('destroy', reload);
+	};
+
 	var edit_btn = new PVE.button.Button({
 	    text: gettext('Edit'),
 	    selModel: sm,
@@ -126,15 +143,45 @@ Ext.define('PVE.lxc.RessourceView', {
 	    handler: run_editor
 	});
 
+	var resize_btn = new PVE.button.Button({
+	    text: gettext('Resize disk'),
+	    selModel: sm,
+	    disabled: true,
+	    handler: run_resize
+	});
+
+	var set_button_status = function() {
+	    var sm = me.getSelectionModel();
+	    var rec = sm.getSelection()[0];
+
+	    if (!rec) {
+		edit_btn.disable();
+		resize_btn.disable();
+		return;
+	    }
+	    var key = rec.data.key;
+	    var value = rec.data.value;
+	    var rowdef = rows[key];
+
+	    var isDisk = (rowdef.tdCls == 'pve-itype-icon-storage');
+
+	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor);
+
+	    resize_btn.setDisabled(!isDisk);
+
+	};
+	
 	Ext.applyIf(me, {
 	    url: '/api2/json/' + baseurl,
 	    selModel: sm,
 	    cwidth1: 170,
-	    tbar: [ edit_btn ],
+	    tbar: [ edit_btn,
+		    resize_btn],
 	    rows: rows,
 	    listeners: {
 		show: reload,
-		itemdblclick: run_editor
+		itemdblclick: run_editor,
+		selectionchange: set_button_status
 	    }
 	});
 

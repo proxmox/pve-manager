@@ -150,6 +150,7 @@ JSSRC= 				                 	\
 	lxc/SnapshotTree.js				\
 	lxc/Snapshot.js					\
 	lxc/ResourceEdit.js				\
+	lxc/MPResize.js					\
 	pool/StatusView.js				\
 	pool/Summary.js					\
 	pool/Config.js					\
