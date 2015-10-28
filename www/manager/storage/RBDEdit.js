@@ -6,8 +6,6 @@ Ext.define('PVE.storage.RBDInputPanel', {
 
 	if (me.create) {
 	    values.type = 'rbd';
-            values.content = 'images';
-
 	} else {
 	    delete values.storage;
 	}
@@ -71,7 +69,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		cts: ['images', 'rootdir'],
 		fieldLabel: gettext('Content'),
 		name: 'content',
-		value: ['images', 'rootdir'],
+		value: ['images'],
 		multiSelect: true,
 		allowBlank: false
 	    },
