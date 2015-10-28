@@ -12,6 +12,7 @@ all:
 
 # checked.png converted from extjs examples/ux/css/images/checked.gif
 # unchecked.png converted from extjs examples/ux/css/images/unchecked.gif
+# swap.png downloaded from https://www.iconfinder.com/icons/17009/arrows_exchange_interact_refresh_reload_swap_sync_update_icon#size=16
 
 GNOME_IMAGES = 			\
 	checked.png		\
@@ -46,7 +47,8 @@ IMAGES = ${GNOME_IMAGES}	\
 	lxc-off.png		\
 	openvz-on.png		\
 	openvz-off.png		\
-	blank.gif
+	blank.gif		\
+	swap.png
 
 .PHONY: install 
 install: ${IMAGES}

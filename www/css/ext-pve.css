@@ -52,6 +52,7 @@
 .pve-itype-icon-lxc,
 .pve-itype-icon-lxc-template,
 .pve-itype-icon-lxc-running,
+.pve-itype-icon-swap,
 .pve-itype-icon-node,
 .pve-itype-icon-node-running,
 .pve-itype-icon-storage,
@@ -61,6 +62,13 @@
     background-repeat: no-repeat;
     background-position:3px center;
     padding-left: 20px;
+}
+
+.pve-itype-icon-qemu,
+.x-tree-node-computer,
+.x-grid-tree-node-expanded .x-tree-node-computer
+{
+    background-image:url(../images/computer.png);
 }
 
 .pve-itype-icon-qemu,
@@ -96,6 +104,13 @@
 .x-grid-tree-node-expanded .x-tree-node-lxc-template
 {
     background-image:url(../images/computer-template.png);
+}
+
+.pve-itype-icon-swap,
+.x-tree-node-lxc-swap,
+.x-grid-tree-node-expanded .x-tree-lxc-swap
+{
+    background-image:url(../images/swap.png);
 }
 
 .pve-itype-icon-lxc-running,
