@@ -1,3 +1,11 @@
+pve-manager (4.0-55) unstable; urgency=medium
+
+  * pve-manager service: start after open-iscsi
+
+  * pveceph install: use release repository
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 28 Oct 2015 09:26:06 +0100
+
 pve-manager (4.0-54) unstable; urgency=medium
 
   * fix bug #781: separate LXC CPU and memory in editor
