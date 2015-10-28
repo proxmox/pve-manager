@@ -20,6 +20,8 @@ my @net = ('ifconfig', 'cat /etc/network/interfaces', 'grep . /etc/pve/firewall/
 
 my @cluster = ('pvecm nodes', 'pvecm status');
 
+my @bios = ('dmidecode -t bios');
+
 if (PVE::pvecfg::version() >= 4.0) {
     push @machines, 'grep . /etc/pve/lxc/*' ;
     push @cluster, 'cat /etc/pve/corosync.conf' ;
@@ -53,7 +55,12 @@ my $cluster_report = {
     commands => \@cluster,
 };
 
-my @global_report = ($general_report, $storage_report, $volume_report, $net_report, $cluster_report);
+my $bios_report = {
+    title => 'info about bios',
+    commands => \@bios,
+};
+
+my @global_report = ($general_report, $storage_report, $volume_report, $net_report, $cluster_report, $bios_report);
 
 # execute commands and display their output as if they've been done on a interactive shell
 # so the local sysadmin can reproduce what we're doing
