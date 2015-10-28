@@ -51,10 +51,6 @@ Ext.define('PVE.lxc.Options', {
 		header: gettext('Architecture'),
 		defaultValue: PVE.Utils.unknownText
 	    },
-	    rootfs: {
-		header: gettext('Root Disk'),
-		defaultValue: PVE.Utils.noneText
-	    },
 	    console: {
 		header: gettext('Enable /dev/console'),
 		defaultValue: 1,

@@ -73,6 +73,11 @@ Ext.define('PVE.lxc.RessourceView', {
 		editor: caps.vms['VM.Config.CPU'] ? 'PVE.lxc.CPUEdit' : undefined,
 		defaultValue: 1024,
 		tdCls: 'pve-itype-icon-processor'
+	    },
+	    rootfs: {
+		header: gettext('Root Disk'),
+		defaultValue: PVE.Utils.noneText,
+		tdCls: 'pve-itype-icon-storage'
 	    }
 	};
 
