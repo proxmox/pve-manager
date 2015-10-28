@@ -250,6 +250,7 @@ Ext.define('PVE.Utils', { statics: {
 	en: 'English',
 	eu: 'Euskera (Basque)',
 	fr: 'French',
+	gl: 'Galician',
 	de: 'German',
 	it: 'Italian',
 	ja: 'Japanese',

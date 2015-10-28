@@ -10,6 +10,8 @@ pve-manager (4.0-56) unstable; urgency=medium
 
   * RBD: select 'images' content type by default
 
+  * GUI: add Galician language
+
  -- Proxmox Support Team <support@proxmox.com>  Wed, 28 Oct 2015 11:53:42 +0100
 
 pve-manager (4.0-55) unstable; urgency=medium
