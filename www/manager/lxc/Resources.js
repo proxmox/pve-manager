@@ -81,6 +81,15 @@ Ext.define('PVE.lxc.RessourceView', {
 	    }
 	};
 
+	for (i = 0; i < 10; i++) {
+	    confid = "mp" + i;
+	    rows[confid] = {
+		group: 1,
+		tdCls: 'pve-itype-icon-storage',
+		header: gettext('Mount Point') + ' (' + confid +')',
+	    };
+	}
+
 	var reload = function() {
 	    me.rstore.load();
 	};
