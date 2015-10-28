@@ -1,3 +1,17 @@
+pve-manager (4.0-56) unstable; urgency=medium
+
+  * add bios report to pvereport
+
+  * lxc: add mount points to GUI
+
+  * lxc: add resize to GUI
+
+  * lxc: add icons to resources
+
+  * RBD: select 'images' content type by default
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 28 Oct 2015 11:53:42 +0100
+
 pve-manager (4.0-55) unstable; urgency=medium
 
   * pve-manager service: start after open-iscsi
