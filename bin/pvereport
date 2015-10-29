@@ -3,19 +3,31 @@
 use strict;
 use warnings;
 use PVE::pvecfg;
+use PVE::Tools;
 
 ($> == 0 ) || die "please run as root\n";
 
+# output the content of all the files of a directory
+sub dir2text {
+    my ($target_dir, $regexp) = @_;
+
+    PVE::Tools::dir_glob_foreach($target_dir, $regexp, sub {
+        my ($file) = @_;
+        print "# cat $target_dir$file\n";
+        print PVE::Tools::file_get_contents($target_dir.$file)."\n";
+    });
+}
+
 my @general = ('hostname', 'pveversion --verbose', 'cat /etc/hosts', 'top -b -n 1  | head -n 15',
-  'pvesubscription get','lscpu', 'grep --max-count=1 "model name" /proc/cpuinfo' );
+  'pvesubscription get', 'lscpu');
 
 my @storage = ('cat /etc/pve/storage.cfg', 'pvesm status', 'cat /etc/fstab', 'mount', 'df --human');
 
 my @volumes = ('lvdisplay', 'vgdisplay', 'zpool status', 'zfs list');
 
-my @machines = ('qm list', 'grep . /etc/pve/qemu-server/*');
+my @machines = ('qm list', sub { dir2text('/etc/pve/qemu-server/', '\d.*conf') });
 
-my @net = ('ifconfig', 'cat /etc/network/interfaces', 'grep . /etc/pve/firewall/*',
+my @net = ('ifconfig', 'cat /etc/network/interfaces', sub { dir2text('/etc/pve/firewall/', '.*fw') },
   'iptables-save');
 
 my @cluster = ('pvecm nodes', 'pvecm status');
@@ -23,11 +35,12 @@ my @cluster = ('pvecm nodes', 'pvecm status');
 my @bios = ('dmidecode -t bios');
 
 if (PVE::pvecfg::version() >= 4.0) {
-    push @machines, 'grep . /etc/pve/lxc/*' ;
-    push @cluster, 'cat /etc/pve/corosync.conf' ;
+    push @cluster, 'cat /etc/pve/corosync.conf 2> /dev/null' ;
+    push @machines, sub { dir2text('/etc/pve/lxc/', '\d.*conf') };
 } else {
-    push @machines, 'grep . /etc/pve/openvz/*' ;
-    push @cluster,  'clustat', 'cat /etc/cluster.conf' ;
+    push @general, 'grep --max-count=1 "model name" /proc/cpuinfo';
+    push @machines, sub { dir2text('/etc/pve/openvz/', '\d.*conf') };
+    push @cluster,  'clustat', 'cat /etc/cluster.conf 2> /dev/null';
 }
 
 my $general_report = {
@@ -65,9 +78,9 @@ my @global_report = ($general_report, $storage_report, $volume_report, $net_repo
 # execute commands and display their output as if they've been done on a interactive shell
 # so the local sysadmin can reproduce what we're doing
 sub do_execute {
-    my ($shell_command) = @_;
-    print "$shell_command \n";
-    system $shell_command;
+    my ($command) = @_;
+    print "# $command \n";
+    system $command;
     print "\n";
 }
 
@@ -76,8 +89,13 @@ foreach my $subreport (@global_report) {
     my @commands = @{$subreport->{'commands'}};
 
     print "==== ".$title." ====\n";
-    foreach my $shell_command (@commands) {
-	do_execute($shell_command);
+    foreach my $command (@commands) {
+	if (ref $command eq 'CODE') {
+	    &$command;
+	} else {
+	   do_execute($command);
+	   next;
+	}
     }
 }
 
