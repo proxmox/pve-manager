@@ -1,3 +1,9 @@
+pve-manager (4.0-57) unstable; urgency=medium
+
+  * improve pvereport script
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 30 Oct 2015 07:17:45 +0100
+
 pve-manager (4.0-56) unstable; urgency=medium
 
   * add bios report to pvereport
