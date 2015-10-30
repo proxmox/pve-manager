@@ -5,6 +5,8 @@ Ext.define('PVE.ha.GroupsView', {
     initComponent : function() {
 	var me = this;
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
 	var store = new Ext.data.Store({
 	    model: 'pve-ha-groups',
 	    sorters: { 
@@ -67,6 +69,7 @@ Ext.define('PVE.ha.GroupsView', {
 	    tbar: [
 		{
 		    text: gettext('Create'),
+		    disabled: !caps.nodes['Sys.Console'],
 		    handler: function() {
 			var win = Ext.create('PVE.ha.GroupEdit',{});
 			win.on('destroy', reload);
@@ -110,6 +113,11 @@ Ext.define('PVE.ha.GroupsView', {
 	    ],
 	    listeners: {
 		show: reload,
+		beforeselect: function(grid, record, index, eOpts) {
+		    if (!caps.nodes['Sys.Console']) {
+			return false;
+		    }
+		},
 		itemdblclick: run_editor
 	    }
 	});

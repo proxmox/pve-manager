@@ -5,6 +5,8 @@ Ext.define('PVE.ha.ResourcesView', {
     initComponent : function() {
 	var me = this;
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
 	var store = new Ext.data.Store({
 	    model: 'pve-ha-resources',
 	    proxy: {
@@ -93,6 +95,7 @@ Ext.define('PVE.ha.ResourcesView', {
 	    tbar: [
 		{
 		    text: gettext('Add'),
+		    disabled: !caps.nodes['Sys.Console'],
 		    handler: function() {
 			var win = Ext.create('PVE.ha.VMResourceEdit',{});
 			win.on('destroy', reload);
@@ -135,6 +138,11 @@ Ext.define('PVE.ha.ResourcesView', {
 	    ],
 	    listeners: {
 		show: reload,
+		beforeselect: function(grid, record, index, eOpts) {
+		    if (!caps.nodes['Sys.Console']) {
+			return false;
+		    }
+		},
 		itemdblclick: run_editor
 	    }
 	});
