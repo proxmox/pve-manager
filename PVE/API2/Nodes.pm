@@ -22,6 +22,7 @@ use PVE::Storage;
 use PVE::Firewall;
 use PVE::LXC;
 use PVE::APLInfo;
+use PVE::Report;
 use PVE::HA::Config;
 use PVE::QemuServer;
 use PVE::API2::Subscription;
@@ -131,6 +132,7 @@ __PACKAGE__->register_method ({
 	    { name => 'syslog' },
 	    { name => 'status' },
 	    { name => 'subscription' },
+	    { name => 'report' },
 	    { name => 'tasks' },
 	    { name => 'rrd' }, # fixme: remove?
 	    { name => 'rrddata' },# fixme: remove?
@@ -1128,6 +1130,27 @@ __PACKAGE__->register_method({
 	return $rpcenv->fork_worker('download', undef, $user, $worker);
     }});
 
+__PACKAGE__->register_method({
+    name => 'report',
+    path => 'report',
+    method => 'GET',
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
+    },
+    description => "Gather various systems information about a node",
+    proxyto => 'node',
+    parameters => {
+    additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'object',
+    },
+    code => sub {
+	return { report => PVE::Report::generate() };
+    }});
 
 my $get_start_stop_list = sub {
     my ($nodename, $autostart) = @_;
