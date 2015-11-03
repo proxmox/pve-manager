@@ -1146,10 +1146,10 @@ __PACKAGE__->register_method({
 	},
     },
     returns => {
-	type => 'object',
+	type => 'string',
     },
     code => sub {
-	return { report => PVE::Report::generate() };
+	return PVE::Report::generate();
     }});
 
 my $get_start_stop_list = sub {
