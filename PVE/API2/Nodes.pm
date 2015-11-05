@@ -1137,6 +1137,7 @@ __PACKAGE__->register_method({
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
     },
+    protected => 1,
     description => "Gather various systems information about a node",
     proxyto => 'node',
     parameters => {
