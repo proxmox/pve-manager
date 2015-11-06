@@ -1,3 +1,9 @@
+pve-manager (4.0-59) unstable; urgency=medium
+
+  * Add report modal window, containing pvereport content
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 06 Nov 2015 10:20:49 +0100
+
 pve-manager (4.0-58) unstable; urgency=medium
 
   * Improve HA UI for users with restricted permissions
