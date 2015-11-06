@@ -54,9 +54,10 @@ Ext.define('PVE.node.Subscription', {
 	    height: 600,
 	    layout: 'fit',
 	    modal: true,
-	    tbar: [
+	    buttons: [
+		        '->',
 			{
-			    text: gettext('Download') + gettext('System Report'),
+			    text: gettext('Download'),
 			    handler: function() {
 				fileContent = reportWindow.getComponent('system-report-view').html;
 				fileName = getReportFileName();
