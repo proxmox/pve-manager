@@ -1234,8 +1234,8 @@ __PACKAGE__->register_method ({
 
 	    $rpcenv->{type} = 'priv'; # to start tasks in background
 
-	    # wait up to 10 seconds for quorum
-	    for (my $i = 10; $i >= 0; $i--) {
+	    # wait up to 60 seconds for quorum
+	    for (my $i = 60; $i >= 0; $i--) {
 		last if PVE::Cluster::check_cfs_quorum($i != 0 ? 1 : 0);
 		sleep(1);
 	    }
