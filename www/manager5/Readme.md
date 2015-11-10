@@ -1,22 +1,21 @@
-pveproxy with ExtJS 5 developpement mini howto
+pveproxy with ExtJS 6 developpement mini howto
 ==============================================
 
-unpack the ExtJS 5 sources, and copy them to /usr/share/pve-manager/ext5
+unpack the ExtJS 6 sources, and copy them to /usr/share/pve-manager/ext6
 
-    cd www/ext5/
+    cd www/ext6/
     make install
 
-symlink the to our ext5 compatible javascript code
+symlink the ext6 dir in pve-manager to the manager5 directory
 
     cd /usr/share/pve-manager
-    ln -s PATH_TO_YOUR_GIT_REPO/www/manager5
+    ln -s PATH_TO_YOUR_GIT_REPO/www/manager5 #this is not a typo
 
-access the PVE proxy with ExtJS 5
+access the PVE proxy with ExtJS 6
 
-    https://localhost:8006/?ext5=1
+    https://localhost:8006/?ext6=1
 
 
-With the extra parameter **ext5=1**, pve-proxy will call the function **PVE::ExtJSIndex5::get_index()**
-which returns a HTML page, with all javascript files included.
-Provided you included the javascript in **PVE/ExtJSIndex5.pm**, a simple browser refresh is then enough 
-to see your changes.
+With the extra parameter **ext6=1**, pve-proxy will call the function **PVE::ExtJSIndex6::get_index()**
+which returns a HTML page, with all javascript symlinked from your git repository.
+Provided you included the javascript files in **PVE/ExtJSIndex5.pm**, after editing a file in the git repository, a simple refresh is enough to see your changes in the browser.
