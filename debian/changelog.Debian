@@ -1,3 +1,9 @@
+pve-manager (4.0-60) unstable; urgency=medium
+
+  * make startall wait up to 60 seconds for quorum
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 10 Nov 2015 07:48:53 +0100
+
 pve-manager (4.0-59) unstable; urgency=medium
 
   * Add report modal window, containing pvereport content
