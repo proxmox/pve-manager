@@ -364,8 +364,11 @@ sub send_file_start {
 	    } elsif ($filename =~ m/\.woff$/) {
 		$ct = 'application/font-woff';
 		$nocomp = 1;
+	    } elsif ($filename =~ m/\.woff2$/) {
+		$ct = 'application/font-woff2';
+		$nocomp = 1;
 	    } elsif ($filename =~ m/\.ttf$/) {
-		$ct = 'application/x-font-ttf';
+		$ct = 'application/font-snft';
 		$nocomp = 1;
 	    } else {
 		die "unable to detect content type";
