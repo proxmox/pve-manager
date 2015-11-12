@@ -12,7 +12,7 @@ sub get_index {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Proxmox Virtual Environment</title>
-    <link rel="stylesheet" type="text/css" href="/pve2/ext6/theme-neptune/resources/theme-neptune-all.css" />
+    <link rel="stylesheet" type="text/css" href="/pve2/ext6/theme-triton/resources/theme-triton-all.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/css/ext-pve.css" />
 _EOD
 
