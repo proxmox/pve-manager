@@ -196,7 +196,7 @@ Ext.define('PVE.StdWorkspace', {
 	    PVE.Utils.setErrorMask(cont, false);
 	    comp.border = false;
 	    cont.add(comp);
-	    cont.doLayout();
+	    cont.updateLayout();
 	} 
 	// else {
 	    // TODO: display something useful
@@ -249,7 +249,7 @@ Ext.define('PVE.StdWorkspace', {
 	} else {
 	    ui.update('');
 	}
-	ui.doLayout();
+	ui.updateLayout();
     },
 
     updateVersionInfo: function() {
@@ -264,7 +264,7 @@ Ext.define('PVE.StdWorkspace', {
 	} else {
 	    ui.update('Proxmox Virtual Environment');
 	}
-	ui.doLayout();
+	ui.updateLayout();
     },
 
     initComponent : function() {
