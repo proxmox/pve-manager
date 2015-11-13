@@ -9,7 +9,7 @@ unpack the ExtJS 6 sources, and copy them to /usr/share/pve-manager/ext6
 symlink the ext6 dir in pve-manager to the manager5 directory
 
     cd /usr/share/pve-manager
-    ln -s PATH_TO_YOUR_GIT_REPO/www/manager5 #this is not a typo
+    ln -s PATH_TO_YOUR_GIT_REPO/www/manager6
 
 access the PVE proxy with ExtJS 6
 
