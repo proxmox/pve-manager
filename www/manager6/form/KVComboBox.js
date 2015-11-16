@@ -11,7 +11,11 @@ Ext.define('PVE.form.KVComboBox', {
 
     deleteEmpty: true,
     comboItems: undefined,
+    displayField: 'value',
+    valueField: 'key',
+    queryMode: 'local',
 
+    // overide framework function to implement deleteEmpty behaviour
     getSubmitData: function() {
         var me = this,
             data = null,
@@ -40,12 +44,6 @@ Ext.define('PVE.form.KVComboBox', {
 	if (me.initialConfig.editable === undefined) {
 	    me.editable = false;
 	}
-
-	Ext.apply(me, {
-	    displayField: 'value',
-	    valueField: 'key',
-	    queryMode: 'local'
-	});
 
 	me.callParent();
     }
