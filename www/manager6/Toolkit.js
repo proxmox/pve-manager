@@ -88,7 +88,13 @@ Ext.apply(Ext.form.field.VTypes, {
     DnsName: function(v) {
 	return (/^(([a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)\.)*([A-Za-z0-9]([A-Za-z0-9\-]*[A-Za-z0-9])?)$/).test(v);
     },
-    DnsNameText: gettext('This is not a valid DNS name')
+    DnsNameText: gettext('This is not a valid DNS name'),
+
+    // workaround for https://www.sencha.com/forum/showthread.php?302150
+    pveMail: function(v) {
+        return (/^(\w+)([\-+.][\w]+)*@(\w[\-\w]*\.){1,5}([A-Za-z]){2,63}$/).test(v);
+    },
+    pveMailText: gettext('This field should be an e-mail address in the format "user@example.com"'),
 });
 
 // we dont want that a displayfield set the form dirty flag! 
