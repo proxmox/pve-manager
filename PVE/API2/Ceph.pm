@@ -726,7 +726,6 @@ __PACKAGE__->register_method ({
 
 	    $cfg->{global} = {
 		'fsid' => $fsid,
-		'auth supported' => 'cephx',
 		'auth cluster required' => 'cephx',
 		'auth service required' => 'cephx',
 		'auth client required' => 'cephx',
