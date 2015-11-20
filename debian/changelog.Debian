@@ -1,3 +1,15 @@
+pve-manager (4.0-61) unstable; urgency=medium
+
+  * ceph.conf : remove auth_supported
+
+  * Allow email adresses with a top level domain of up to 63 characters
+
+  * fix bug #575: fork at shutdown, so that partent starts new worker
+
+  * update build infrastucture to be able to develop with Ext6
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 20 Nov 2015 10:05:01 +0100
+
 pve-manager (4.0-60) unstable; urgency=medium
 
   * make startall wait up to 60 seconds for quorum
