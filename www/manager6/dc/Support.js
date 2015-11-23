@@ -69,7 +69,7 @@ Ext.define('PVE.dc.Support', {
 	    autoScroll: true,
 	    bodyStyle: 'padding:10px',
 	    listeners: {
-		show: reload
+		activate: reload
 	    }
 	});
 

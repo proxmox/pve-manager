@@ -100,7 +100,7 @@ Ext.define('PVE.dc.PoolView', {
 		}
 	    ],
 	    listeners: {
-		show: reload,
+		activate: reload,
 		itemdblclick: run_editor
 	    }
 	});

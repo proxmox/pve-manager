@@ -128,7 +128,7 @@ Ext.define('PVE.dc.Summary', {
 	    layout: 'border',
 	    items: [ nodegrid ],
 	    listeners: {
-		show: function() {
+		activate: function() {
 		    nodegrid.fireEvent('show', nodegrid);
 		},
 		hide: function() {

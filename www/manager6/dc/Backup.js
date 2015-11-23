@@ -448,7 +448,7 @@ Ext.define('PVE.dc.BackupView', {
 		}
 	    ],
 	    listeners: {
-		show: reload,
+		activate: reload,
 		itemdblclick: run_editor
 	    }
 	});

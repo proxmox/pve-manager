@@ -136,7 +136,7 @@ Ext.define('PVE.dc.AuthView', {
 		}
 	    ],
 	    listeners: {
-		show: reload,
+		activate: reload,
 		itemdblclick: run_editor
 	    }
 	});

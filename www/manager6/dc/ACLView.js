@@ -222,7 +222,7 @@ Ext.define('PVE.dc.ACLView', {
 	    },
 	    columns: columns,
 	    listeners: {
-		show: reload
+		activate: reload
 	    }
 	});
 

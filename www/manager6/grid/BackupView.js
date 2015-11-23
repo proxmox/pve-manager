@@ -198,7 +198,7 @@ Ext.define('PVE.grid.BackupView', {
 		}
 	    ],
 	    listeners: {
-		show: reload
+		activate: reload
 	    }
 	});
 

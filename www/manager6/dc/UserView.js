@@ -225,7 +225,7 @@ Ext.define('PVE.dc.UserView', {
 		}
 	    ],
 	    listeners: {
-		show: reload,
+		activate: reload,
 		itemdblclick: run_editor
 	    }
 	});

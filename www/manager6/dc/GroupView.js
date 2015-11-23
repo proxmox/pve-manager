@@ -100,7 +100,7 @@ Ext.define('PVE.dc.GroupView', {
 		}
 	    ],
 	    listeners: {
-		show: reload,
+		activate: reload,
 		itemdblclick: run_editor
 	    }
 	});

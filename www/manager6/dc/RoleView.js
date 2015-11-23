@@ -52,7 +52,7 @@ Ext.define('PVE.dc.RoleView', {
 		}
 	    ],
 	    listeners: {
-		show: function() {
+		activate: function() {
 		    store.load();
 		}
 	    }

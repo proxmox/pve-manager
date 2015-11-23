@@ -245,7 +245,7 @@ Ext.define('PVE.dc.StorageView', {
 		}
 	    ],
 	    listeners: {
-		show: reload,
+		activate: reload,
 		itemdblclick: run_editor
 	    }
 	});
