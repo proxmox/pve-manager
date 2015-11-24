@@ -1,9 +1,15 @@
 [Unit]
 Description=PVE VM Manager
 ConditionPathExists=/usr/bin/pvesh
+Wants=pvestatd.service
 Wants=pveproxy.service
+Wants=pve-firewall.service
+Wants=lxc.service
 After=pveproxy.service
+After=pvestatd.service
 After=open-iscsi.service
+After=pve-firewall.service
+After=lxc.service
 
 [Service]
 ExecStart=/etc/init.d/pve-manager start
