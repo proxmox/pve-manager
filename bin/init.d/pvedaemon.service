@@ -1,8 +1,8 @@
 [Unit]
 Description=PVE API Daemon
 ConditionPathExists=/usr/bin/pvedaemon
-Wants=pve-cluster.service
-After=pve-cluster.service
+Wants=corosync.service pve-cluster.service
+After=corosync.service pve-cluster.service
 
 [Service]
 ExecStart=/usr/bin/pvedaemon start
