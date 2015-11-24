@@ -12,7 +12,6 @@
 . /lib/lsb/init-functions
 
 PATH=/sbin:/bin:/usr/bin:/usr/sbin
-DESC="PVE Status Daemon" 
 PVESH=/usr/bin/pvesh
 
 test -f $PVESH || exit 0
