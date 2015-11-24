@@ -1,3 +1,9 @@
+pve-manager (4.0-62) unstable; urgency=medium
+
+  * fix systemd shutdown order
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 24 Nov 2015 17:31:15 +0100
+
 pve-manager (4.0-61) unstable; urgency=medium
 
   * ceph.conf : remove auth_supported
