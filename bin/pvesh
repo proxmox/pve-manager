@@ -11,6 +11,7 @@ use Getopt::Long;
 use HTTP::Status qw(:constants :is status_message);
 use Text::ParseWords;
 use PVE::JSONSchema;
+use PVE::SafeSyslog;
 use PVE::Cluster;
 use PVE::INotify;
 use PVE::RPCEnvironment;
@@ -23,6 +24,9 @@ my $rpcenv = PVE::RPCEnvironment->init('cli');
 
 $rpcenv->set_language($ENV{LANG});
 $rpcenv->set_user('root@pam'); 
+
+my $logid = $ENV{PVE_LOG_ID} || 'pvesh';
+initlog($logid);
 
 my $basedir = '/api2/json';
 
