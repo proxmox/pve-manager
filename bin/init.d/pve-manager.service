@@ -12,10 +12,14 @@ After=pve-firewall.service
 After=lxc.service
 
 [Service]
-ExecStart=/etc/init.d/pve-manager start
-ExecStop=/etc/init.d/pve-manager stop
+Environment="PVE_LOG_ID=pve-manager"
+ExecStart=/usr/bin/pvesh --nooutput create /nodes/localhost/startall
+ExecStop=-/usr/bin/vzdump -stop
+ExecStop=/usr/bin/pvesh --nooutput create /nodes/localhost/stopall
 Type=oneshot
 RemainAfterExit=yes
+StandardOutput=null
+StandardError=null
 
 [Install]
 WantedBy=multi-user.target
