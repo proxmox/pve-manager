@@ -3,8 +3,10 @@ Description=PVE API Proxy Server
 ConditionPathExists=/usr/bin/pveproxy
 Wants=pve-cluster.service
 Wants=pvedaemon.service
+Wants=ssh.service
 After=pve-cluster.service
 After=pvedaemon.service
+After=ssh.service
 
 [Service]
 ExecStart=/usr/bin/pveproxy start
