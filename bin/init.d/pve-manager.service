@@ -12,6 +12,7 @@ After=spiceproxy.service
 After=open-iscsi.service
 After=pve-firewall.service
 After=lxc.service
+After=pve-ha-crm.service pve-ha-lrm.service
 
 [Service]
 Environment="PVE_LOG_ID=pve-manager"
