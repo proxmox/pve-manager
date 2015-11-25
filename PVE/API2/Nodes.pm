@@ -1320,9 +1320,7 @@ my $create_stop_worker = sub {
 	die "unknown VM type '$type'\n";
     }
 
-    my $res = PVE::Tools::upid_decode($upid);
-
-    return $res->{pid};
+    return $upid;
 };
 
 __PACKAGE__->register_method ({
@@ -1362,18 +1360,33 @@ __PACKAGE__->register_method ({
 	    foreach my $order (sort {$b <=> $a} keys %$stopList) {
 		my $vmlist = $stopList->{$order};
 		my $workers = {};
+
+		my $finish_worker = sub {
+		    my $pid = shift;
+		    my $d = $workers->{$pid};
+		    return if !$d;
+		    delete $workers->{$pid};
+
+		    syslog('info', "end task $d->{upid}");
+		};
+
 		foreach my $vmid (sort {$b <=> $a} keys %$vmlist) {
 		    my $d = $vmlist->{$vmid};
-		    my $pid;
-		    eval { $pid = &$create_stop_worker($nodename, $d->{type}, $vmid, $d->{down}); };
+		    my $upid;
+		    eval { $upid = &$create_stop_worker($nodename, $d->{type}, $vmid, $d->{down}); };
 		    warn $@ if $@;
-		    next if !$pid;
-		
-		    $workers->{$pid} = 1;
+		    next if !$upid;
+
+		    my $res = PVE::Tools::upid_decode($upid, 1);
+		    next if !$res;
+
+		    my $pid = $res->{pid};
+
+		    $workers->{$pid} = { type => $d->{type}, upid => $upid, vmid => $vmid };
 		    while (scalar(keys %$workers) >= $maxWorkers) {
 			foreach my $p (keys %$workers) {
 			    if (!PVE::ProcFSTools::check_process_running($p)) {
-				delete $workers->{$p};
+				&$finish_worker($p);
 			    }
 			}
 			sleep(1);
@@ -1382,17 +1395,19 @@ __PACKAGE__->register_method ({
 		while (scalar(keys %$workers)) {
 		    foreach my $p (keys %$workers) {
 			if (!PVE::ProcFSTools::check_process_running($p)) {
-			    delete $workers->{$p};
+			    &$finish_worker($p);
 			}
 		    }
 		    sleep(1);
 		}
 	    }
+
+	    syslog('info', "all VMs and CTs stopped");
+
 	    return;
 	};
 
 	return $rpcenv->fork_worker('stopall', undef, $authuser, $code);
-	
     }});
 
 my $create_migrate_worker = sub {
