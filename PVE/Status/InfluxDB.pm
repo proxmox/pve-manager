@@ -100,36 +100,41 @@ sub write_influxdb_hash {
 }
 
 sub build_influxdb_payload {
-    my ($payload, $d, $ctime, $tags, $keyprefix, $depth) = @_;
+    my ($payload, $d, $ctime, $tags, $measurement, $depth) = @_;
 
     $depth = 0 if !$depth;
+    my @values = ();
 
     for my $key (keys %$d) {
 
         my $value = $d->{$key};
         my $oldtags = $tags;
-
+	
         if ( defined $value ) {
             if ( ref $value eq 'HASH' ) {
 
 		if($depth == 0) {
-		    $keyprefix = $key;
+		    $measurement = $key;
 		}elsif($depth == 1){
 		    $tags .= ",instance=$key";
 		}
 
 		$depth++;
-                build_influxdb_payload($payload, $value, $ctime, $tags, $keyprefix, $depth);
+                build_influxdb_payload($payload, $value, $ctime, $tags, $measurement, $depth);
 		$depth--;
 
             }elsif ($value =~ m/^\d+$/) {
 
-		$keyprefix = "system" if !$keyprefix && $depth == 0;
-
-                $payload->{string} .= $keyprefix."_"."$key,$tags value=$value $ctime\n";
+		$measurement = "system" if !$measurement && $depth == 0;
+		push(@values, "$key=$value");
             }
         }
         $tags = $oldtags;
+    }
+
+    if(@values > 0) {
+	my $valuestr =  join(',', @values);
+	$payload->{string} .= $measurement.",$tags $valuestr $ctime\n";
     }
 }
 
