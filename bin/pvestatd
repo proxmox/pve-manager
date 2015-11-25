@@ -8,7 +8,7 @@ use PVE::RPCEnvironment;
 use PVE::Service::pvestatd;
 
 my $prepare = sub {
-    my $rpcenv = PVE::RPCEnvironment->init('cli');
+    my $rpcenv = PVE::RPCEnvironment->init('priv');
 
     $rpcenv->init_request();
     $rpcenv->set_language($ENV{LANG});
