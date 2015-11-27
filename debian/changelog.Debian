@@ -1,3 +1,23 @@
+pve-manager (4.0-63) unstable; urgency=medium
+
+  * add qemu agent gui option
+
+  * influxdb: use multi values measurement
+
+  * pvestatd: use 'priv' environment for service
+
+  * improve log messages at sytem shutdown
+
+  * pveproxy.service: add Wants=ssh.service
+
+  * pveproxy.service: start after remote-fs and ceph
+
+  * pve-manager.service: do not invoke old init.d script
+
+  * pve-manager.service: start after pve-ha-crm.service and pve-ha-lrm.service
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 27 Nov 2015 13:30:44 +0100
+
 pve-manager (4.0-62) unstable; urgency=medium
 
   * fix systemd shutdown order
