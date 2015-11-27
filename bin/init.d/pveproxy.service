@@ -4,9 +4,12 @@ ConditionPathExists=/usr/bin/pveproxy
 Wants=pve-cluster.service
 Wants=pvedaemon.service
 Wants=ssh.service
+Wants=remote-fs.target
 After=pve-cluster.service
 After=pvedaemon.service
 After=ssh.service
+After=remote-fs.target
+After=ceph.service
 
 [Service]
 ExecStart=/usr/bin/pveproxy start
