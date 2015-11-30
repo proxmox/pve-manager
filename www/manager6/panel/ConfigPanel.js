@@ -9,7 +9,7 @@ Ext.define('PVE.panel.Config', {
 
 	var sp = Ext.state.Manager.getProvider();
 
-	var activeTab;
+	var activeTab; // leaving this undefined means items[0] will be the default tab
 
 	var hsregex =  /^([^\-\s]+)(-\S+)?$/;
 
@@ -67,12 +67,6 @@ Ext.define('PVE.panel.Config', {
 	    }),
 	    items: items,
 	    listeners: {
-		afterrender: function(tp) {
-		    var first =  tp.items.get(0);
-		    if (first) {
-			first.fireEvent('show', first);
-		    }
-		},
 		tabchange: function(tp, newcard, oldcard) {
 		    var ntab = newcard.itemId;
 
