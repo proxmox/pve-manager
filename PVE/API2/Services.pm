@@ -32,6 +32,7 @@ my $service_name_list = [
     'cron',
     'postfix',
     'ksmtuned',
+    'systemd-timesyncd',
     ];
 
 my $get_full_service_state = sub {
