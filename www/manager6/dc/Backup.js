@@ -25,7 +25,7 @@ Ext.define('PVE.dc.BackupEdit', {
 
 	var selModeField =  Ext.create('PVE.form.KVComboBox', {
 	    xtype: 'pveKVComboBox',
-	    data: [
+	    comboItems: [
 		['include', gettext('Include selected VMs')],
 		['all', gettext('All')],
 		['exclude', gettext('Exclude selected VMs')]
