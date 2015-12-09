@@ -270,7 +270,7 @@ sub update {
     $ua->agent("PVE/1.0");
 
     if ($proxy) {
-	$ua->proxy(['http'], $proxy);
+	$ua->proxy(['http', 'https'], $proxy);
     } else {
 	$ua->env_proxy;
     }
