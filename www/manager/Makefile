@@ -62,6 +62,7 @@ JSSRC= 				                 	\
 	form/BackupModeSelector.js			\
 	form/ScsiHwSelector.js				\
 	form/FirewallPolicySelector.js			\
+	form/QemuBiosSelector.js			\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
@@ -133,6 +134,7 @@ JSSRC= 				                 	\
 	qemu/HardwareView.js				\
 	qemu/StartupEdit.js				\
 	qemu/ScsiHwEdit.js				\
+	qemu/QemuBiosEdit.js				\
 	qemu/Options.js					\
 	qemu/Snapshot.js				\
 	qemu/Clone.js					\
