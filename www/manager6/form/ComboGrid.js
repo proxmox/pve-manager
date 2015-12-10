@@ -5,13 +5,6 @@ Ext.define('PVE.form.ComboGrid', {
     // this value is used as default value after load()
     preferredValue: undefined,
 
-    computeHeight: function() {
-	var me = this;
-	var lh = PVE.Utils.gridLineHeigh();
-	var count = me.store.getTotalCount();
-	return (count > 10) ? 10*lh : 26+count*lh;
-    },
-
     // hack: allow to select empty value
     // seems extjs does not allow that when 'editable == false'
     onKeyUp: function(e, t) {
@@ -43,7 +36,6 @@ Ext.define('PVE.form.ComboGrid', {
             store: me.store,
             displayField: me.displayField,
             focusOnToFront: false,
-	    height: me.computeHeight(),
             pageSize: me.pageSize
         }, me.listConfig, me.defaultListConfig);
 
@@ -60,7 +52,6 @@ Ext.define('PVE.form.ComboGrid', {
             itemclick: me.onItemClick,
             refresh: me.onListRefresh,
 	    show: function() {
-		picker.setHeight(me.computeHeight());
 		me.syncSelection();
 	    },
             scope: me
