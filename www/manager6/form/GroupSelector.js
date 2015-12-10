@@ -3,6 +3,25 @@ Ext.define('PVE.form.GroupSelector', {
     alias: ['widget.pveGroupSelector'],
 
     allowBlank: false,
+    autoSelect: false,
+    valueField: 'groupid',
+    displayField: 'groupid',
+    listConfig: {
+	columns: [
+	    {
+		header: gettext('Group'),
+		sortable: true,
+		dataIndex: 'groupid',
+		flex: 1
+	    },
+	    {
+		header: gettext('Comment'),
+		sortable: false,
+		dataIndex: 'comment',
+		flex: 1
+	    }
+	]
+    },
 
     initComponent: function() {
 	var me = this;
@@ -13,25 +32,6 @@ Ext.define('PVE.form.GroupSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    autoSelect: false,
-	    valueField: 'groupid',
-	    displayField: 'groupid',
-            listConfig: {
-		columns: [
-		    {
-			header: gettext('Group'),
-			sortable: true,
-			dataIndex: 'groupid',
-			flex: 1
-		    },
-		    {
-			header: gettext('Comment'),
-			sortable: false,
-			dataIndex: 'comment',
-			flex: 1
-		    }
-		]
-	    }
 	});
 
         me.callParent();

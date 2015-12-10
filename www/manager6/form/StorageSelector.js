@@ -2,6 +2,37 @@ Ext.define('PVE.form.StorageSelector', {
     extend: 'PVE.form.ComboGrid',
     alias: ['widget.PVE.form.StorageSelector'],
 
+    allowBlank: false,
+    valueField: 'storage',
+    displayField: 'storage',
+    listConfig: {
+	columns: [
+	    {
+		header: gettext('Name'),
+		dataIndex: 'storage',
+		hideable: false,
+		flex: 1
+	    },
+	    {
+		header: gettext('Type'),
+		width: 60,
+		dataIndex: 'type'
+	    },
+	    {
+		header: gettext('Avail'),
+		width: 80,
+		dataIndex: 'avail',
+		renderer: PVE.Utils.format_size
+	    },
+	    {
+		header: gettext('Capacity'),
+		width: 80,
+		dataIndex: 'total',
+		renderer: PVE.Utils.format_size
+	    }
+	]
+    },
+
     reloadStorageList: function() {
 	var me = this;
 	if (!me.nodename) {
@@ -67,36 +98,6 @@ Ext.define('PVE.form.StorageSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    allowBlank: false,
-	    valueField: 'storage',
-	    displayField: 'storage',
-            listConfig: {
-		columns: [
-		    {
-			header: gettext('Name'),
-			dataIndex: 'storage',
-			hideable: false,
-			flex: 1
-		    },
-		    {
-			header: gettext('Type'),
-			width: 60, 
-			dataIndex: 'type'
-		    },
-		    {
-			header: gettext('Avail'),
-			width: 80, 
-			dataIndex: 'avail', 
-			renderer: PVE.Utils.format_size 
-		    },
-		    {
-			header: gettext('Capacity'),
-			width: 80, 
-			dataIndex: 'total', 
-			renderer: PVE.Utils.format_size 
-		    }
-		]
-	    }
 	});
 
         me.callParent();
