@@ -1,3 +1,9 @@
+pve-manager (4.1-1) unstable; urgency=medium
+
+  * bump version for 4.1 release
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 11 Dec 2015 08:54:17 +0100
+
 pve-manager (4.0-66) unstable; urgency=medium
 
   * add qemu BIOS option
