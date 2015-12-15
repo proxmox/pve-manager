@@ -139,7 +139,7 @@ sub parse_ceph_config {
 	    next;
 	}
 
-	if ($line =~ m/^(.*\S)\s*=\s*(\S.*)$/) {
+	if ($line =~ m/^(.*?\S)\s*=\s*(\S.*)$/) {
 	    $cfg->{$section}->{$1} = $2;
 	}
 
