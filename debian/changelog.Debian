@@ -1,3 +1,9 @@
+pve-manager (4.1-2) unstable; urgency=medium
+
+  * update bash completion helpers (use -o default)
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 19 Dec 2015 09:22:13 +0100
+
 pve-manager (4.1-1) unstable; urgency=medium
 
   * bump version for 4.1 release

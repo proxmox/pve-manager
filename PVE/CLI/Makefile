@@ -2,6 +2,8 @@ include ../../defines.mk
 
 SOURCES=vzdump.pm pvesubscription.pm pveceph.pm
 
+all:
+
 .PHONY: install
 install: ${SOURCES}
 	install -d -m 0755 ${PERLLIBDIR}/PVE/CLI

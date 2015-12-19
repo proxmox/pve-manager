@@ -2,6 +2,8 @@ include ../../defines.mk
 
 SOURCES=pvestatd.pm pveproxy.pm pvedaemon.pm spiceproxy.pm
 
+all:
+
 .PHONY: install
 install: ${SOURCES}
 	install -d -m 0755 ${PERLLIBDIR}/PVE/Service
