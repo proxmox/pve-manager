@@ -1,3 +1,9 @@
+pve-manager (4.1-5) unstable; urgency=medium
+
+  * Close #850: ifenslave-2.6 is a transitional package
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 11 Jan 2016 15:30:08 +0100
+
 pve-manager (4.1-4) unstable; urgency=medium
 
   * update Hungarian translation
