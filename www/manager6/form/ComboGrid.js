@@ -1,84 +1,104 @@
+/*
+ * ComboGrid component:
+ * a ComboBox where the dropdown menu (the "Picker") is a Grid with Rows and Columns
+ * expects a listConfig object with a columns property
+ * roughly based on the GridPicker from https://www.sencha.com/forum/showthread.php?299909
+ *
+*/
 Ext.define('PVE.form.ComboGrid', {
-    extend: 'Ext.form.field.ComboBox',
+    extend: 'Ext.form.field.Picker',
     alias: ['widget.PVE.form.ComboGrid'],
 
     // this value is used as default value after load()
     preferredValue: undefined,
+    // If set to `true`, allows the combo field to hold more than one value at a time, and allows selecting multiple
+    // items from the dropdown list.
+    multiSelect: false,
 
-    // hack: allow to select empty value
-    // seems extjs does not allow that when 'editable == false'
-    onKeyUp: function(e, t) {
-        var me = this;
-        var key = e.getKey();
-
-        if (!me.editable && me.allowBlank && !me.multiSelect &&
-	    (key == e.BACKSPACE || key == e.DELETE)) {
-	    me.setValue('');
-	}
-
-        me.callParent(arguments);	
+    defaultPickerConfig: {
+        maxHeight: 300,
+        width: 400,
+        scrollable: true,
+        floating: true,
     },
 
-    // copied from ComboBox 
+    displayField: false,
+    valueField: false,
+    matchFieldWidth: false,
+
     createPicker: function() {
-        var me = this,
-        picker,
-        menuCls = Ext.baseCSSPrefix + 'menu',
-
-        opts = Ext.apply({
+	var me = this;
+        var config = Ext.applyIf({
+            store: me.getStore(),
             selModel: {
-                mode: me.multiSelect ? 'SIMPLE' : 'SINGLE'
+                selType: 'checkboxmodel',
+                mode: me.multiSelect ? 'SIMPLE' : 'SINGLE',
+                showHeaderCheckbox: false // shows a selectAll checkbox, not reliable
             },
-            floating: true,
-            hidden: true,
-            ownerCt: me.ownerCt,
-            cls: me.el.up('.' + menuCls) ? menuCls : '',
-            store: me.store,
-            displayField: me.displayField,
-            focusOnToFront: false,
-            pageSize: me.pageSize
-        }, me.listConfig, me.defaultListConfig);
+            listeners: {
+                selectionchange: {
+                    fn: function(grid, selectedRecords) {
+                        me.setRecords(selectedRecords);
+                        me.fireEvent('select', me, selectedRecords);
+                    },
+                    scope: me
+                }
+            }
+        }, me.defaultPickerConfig);
 
-	// NOTE: we simply use a grid panel
-        //picker = me.picker = Ext.create('Ext.view.BoundList', opts);
-	picker = me.picker = Ext.create('Ext.grid.Panel', opts);
+        var grid = Ext.create('Ext.grid.Panel', config);
 
-	// pass getNode() to the view
-	picker.getNode = function() {
-	    picker.getView().getNode(arguments);
-	};
+        // update the grid with the field values when loading
+        if (me.getRawValue()){
+            var previousItems = [];
+            Ext.Array.each(me.getRawValue().split(','), function(record) {
+                var previousItem = me.store.findRecord(me.valueField, record);
+                previousItems.push(previousItem);
+            });
 
-        me.mon(picker, {
-            itemclick: me.onItemClick,
-            refresh: me.onListRefresh,
-	    show: function() {
-		me.syncSelection();
-	    },
-            scope: me
-        });
+            grid.getSelectionModel().select(previousItems);
 
-        me.mon(picker.getSelectionModel(), 'selectionchange', me.onListSelectionChange, me);
+        }
 
-        return picker;
+        return grid;
+    },
+
+    setRecords: function(records) {
+        if (records && !Ext.isArray(records)) {
+            records = [records];
+        }
+        this.selectedRecords = records;
+        var rawValue = [];
+
+        Ext.Array.each(records, function(record) {
+            rawValue.push(record.get(this.displayField));
+        }, this);
+
+        this.setValue(rawValue);
+    },
+
+    getRecords: function() {
+        return this.selectedRecords;
+    },
+
+    beforeReset: function() {
+        if(this.picker) {
+            this.picker.getSelectionModel().deselectAll()
+        }
+        this.callParent(arguments);
+    },
+
+    getStore: function() {
+        if (!this.store) {
+            this.store = Ext.create('Ext.data.Store', {});
+        }
+        return this.store;
     },
 
     initComponent: function() {
 	var me = this;
-
-	if (me.initialConfig.editable === undefined) {
-	    me.editable = false;
-	}
-
-	Ext.apply(me, {
-	    queryMode: 'local',
-	    matchFieldWidth: false
-	});
-
-	Ext.applyIf(me, { value: ''}); // hack: avoid ExtJS validate() bug
-
-	Ext.applyIf(me.listConfig, { width: 400 });
-
-        me.callParent();
+	Ext.apply(me.defaultPickerConfig, me.listConfig);
+        me.callParent(arguments);
 
 	me.store.on('beforeload', function() {	 
 	    if (!me.isDisabled()) {
@@ -126,5 +146,5 @@ Ext.define('PVE.form.ComboGrid', {
 		}
 	    }
 	});
-    }
+    },
 });
