@@ -1,8 +1,8 @@
 /*
- * ComboGrid component:
- * a ComboBox where the dropdown menu (the "Picker") is a Grid with Rows and Columns
- * expects a listConfig object with a columns property
- * roughly based on the GridPicker from https://www.sencha.com/forum/showthread.php?299909
+ * ComboGrid component: a ComboBox where the dropdown menu (the
+ * "Picker") is a Grid with Rows and Columns expects a listConfig
+ * object with a columns property roughly based on the GridPicker from
+ * https://www.sencha.com/forum/showthread.php?299909
  *
 */
 Ext.define('PVE.form.ComboGrid', {
@@ -11,8 +11,10 @@ Ext.define('PVE.form.ComboGrid', {
 
     // this value is used as default value after load()
     preferredValue: undefined,
-    // If set to `true`, allows the combo field to hold more than one value at a time, and allows selecting multiple
-    // items from the dropdown list.
+    
+    // If set to `true`, allows the combo field to hold more than one
+    // value at a time, and allows selecting multiple items from the
+    // dropdown list.
     multiSelect: false,
 
     defaultPickerConfig: {
@@ -146,5 +148,5 @@ Ext.define('PVE.form.ComboGrid', {
 		}
 	    }
 	});
-    },
+    }
 });
