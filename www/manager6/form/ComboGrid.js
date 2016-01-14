@@ -48,6 +48,8 @@ Ext.define('PVE.form.ComboGrid', {
             }
         }, me.defaultPickerConfig);
 
+        Ext.apply(config, me.listConfig);
+
         var grid = Ext.create('Ext.grid.Panel', config);
 
         // update the grid with the field values when loading
@@ -99,7 +101,6 @@ Ext.define('PVE.form.ComboGrid', {
 
     initComponent: function() {
 	var me = this;
-	Ext.apply(me.defaultPickerConfig, me.listConfig);
         me.callParent(arguments);
 
 	me.store.on('beforeload', function() {	 
