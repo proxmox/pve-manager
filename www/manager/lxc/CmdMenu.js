@@ -27,7 +27,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 	    });
 	};
 
-	me.title = "CT " + vmid;
+	me.title = gettext('CT') + ' ' + vmid;
 
 	me.items = [
 	    {
@@ -53,7 +53,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		text: gettext('Suspend'),
 		icon: '/pve2/images/forward.png',
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to suspend CT {0}?"), vmid);
+		    var msg = Ext.String.format(gettext("Do you really want to suspend {0}?"), gettext('CT') + ' ' + vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -74,7 +74,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		text: gettext('Shutdown'),
 		icon: '/pve2/images/stop.png',
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to shutdown CT {0}?"), vmid);
+		    var msg = Ext.String.format(gettext("Do you really want to shutdown {0}?"), gettext('CT') + ' ' + vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -88,7 +88,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		text: gettext('Stop'),
 		icon: '/pve2/images/gtk-stop.png',
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to stop CT {0}?"), vmid);
+		    var msg = Ext.String.format(gettext("Do you really want to stop {0}?"), gettext('CT') + ' ' + vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;

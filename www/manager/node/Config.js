@@ -35,10 +35,10 @@ Ext.define('PVE.node.Config', {
 	    menu: new Ext.menu.Menu({
 		items: [
 		    {
-			text: gettext('Start All VMs'),
+			text: gettext('Start all VMs and Containers'),
 			icon: '/pve2/images/start.png',
 			handler: function() {
-			    var msg = Ext.String.format(gettext("Do you really want to start all Vms on  node {0}?"), nodename);
+			    var msg = Ext.String.format(gettext("Do you really want to start all VMs and Containers on node {0}?"), nodename);
 			    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 				if (btn !== 'yes') {
 				    return;
@@ -56,10 +56,10 @@ Ext.define('PVE.node.Config', {
 			}
 		    },
 		    {
-			text: gettext('Stop All VMs'),
+			text: gettext('Stop all VMs and Containers'),
 			icon: '/pve2/images/gtk-stop.png',
 			handler: function() {
-			    var msg = Ext.String.format(gettext("Do you really want to stop all Vms on  node {0}?"), nodename);
+			    var msg = Ext.String.format(gettext("Do you really want to stop all VMs and Containers on node {0}?"), nodename);
 			    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 				if (btn !== 'yes') {
 				    return;
@@ -77,7 +77,7 @@ Ext.define('PVE.node.Config', {
 			}
 		    },
 		    {
-			text: gettext('Migrate All VMs'),
+			text: gettext('Migrate all VMs and Containers'),
 			icon: '/pve2/images/forward.png',
 			handler: function() {
 			    var win = Ext.create('PVE.window.MigrateAll', {

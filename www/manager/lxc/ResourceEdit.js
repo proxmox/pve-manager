@@ -94,7 +94,7 @@ Ext.define('PVE.lxc.MemoryInputPanel', {
 		maxValue: 512*1024,
 		value: '512',
 		step: 32,
-		fieldLabel: gettext('Memory (MB)'),
+		fieldLabel: gettext('Memory') + ' (MB)',
 		labelWidth: labelWidth,
 		allowBlank: false
 	    },
@@ -105,7 +105,7 @@ Ext.define('PVE.lxc.MemoryInputPanel', {
 		maxValue: 128*1024,
 		value: '512',
 		step: 32,
-		fieldLabel: gettext('Swap (MB)'),
+		fieldLabel: gettext('Swap') + ' (MB)',
 		labelWidth: labelWidth,
 		allowBlank: false
 	    }

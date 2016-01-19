@@ -80,7 +80,7 @@ Ext.define('PVE.qemu.CPUOptions', {
         });
 	
 	Ext.apply(me, {
-	    subject: gettext('CPU Options'),
+	    subject: gettext('CPU options'),
 	    items: ipanel,
 	    width: 150
 	});
