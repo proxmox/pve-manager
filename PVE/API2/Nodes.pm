@@ -290,7 +290,7 @@ __PACKAGE__->register_method({
 
 	my $netdev = PVE::ProcFSTools::read_proc_net_dev();
 	foreach my $dev (keys %$netdev) {
-		next if $dev !~ m/^tap([1-9]\d*)i(\d+)$/;
+		next if $dev !~ m/^(?:tap|veth)([1-9]\d*)i(\d+)$/;
 	        my $vmid = $1;
 	        my $netid = $2;
 
