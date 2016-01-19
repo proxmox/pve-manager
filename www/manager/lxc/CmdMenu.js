@@ -99,6 +99,26 @@ Ext.define('PVE.lxc.CmdMenu', {
 		}
 	    },
 	    {
+		text: gettext('Convert to template'),
+		icon: '/pve2/images/forward.png',
+		handler: function() {
+		    var msg = Ext.String.format(gettext("Do you really want to convert {0} into a template?"), gettext('CT') + ' ' + vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+
+			PVE.Utils.API2Request({
+			     url: '/nodes/' + nodename + '/lxc/' + vmid + '/template',
+			     method: 'POST',
+			     failure: function(response, opts) {
+				Ext.Msg.alert('Error', response.htmlStatus);
+			     }
+			});
+		    });
+		}
+	    },
+	    {
 		text: gettext('Console'),
 		icon: '/pve2/images/display.png',
 		handler: function() {
