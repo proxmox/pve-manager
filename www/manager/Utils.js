@@ -560,6 +560,8 @@ Ext.define('PVE.Utils', { statics: {
 	vzsnapshot: [ 'CT', gettext('Snapshot') ],
 	vzrollback: [ 'CT', gettext('Rollback') ],
 	vzdelsnapshot: [ 'CT', gettext('Delete Snapshot') ],
+	vztemplate: [ 'CT', gettext('Convert to template') ],
+	vzclone: [ 'CT', gettext('Clone') ],
 	hamigrate: [ 'HA', gettext('Migrate') ],
 	hastart: [ 'HA', gettext('Start') ],
 	hastop: [ 'HA', gettext('Stop') ],
