@@ -366,7 +366,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		pdata.updateCount = 0;
 		var rootnode = me.store.getRootNode();
 		rootnode.collapse();
-		rootnode.removeAll(true);
+		rootnode.removeAll();
 		pdata.dataIndex = {};
 		me.getSelectionModel().deselectAll();
 	    },
