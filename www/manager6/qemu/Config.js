@@ -132,10 +132,14 @@ Ext.define('PVE.qemu.Config', {
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
-		    title: gettext('Summary'),
-		    xtype: 'pveQemuSummary',
+		    title: gettext('SummaryTODO'),
+		    xtype: 'panel',
+//		    title: gettext('Summary'),
+//		    xtype: 'pveQemuSummary',
 		    itemId: 'summary'
-		},
+		} ]
+	});
+/*
 		{
 		    title: gettext('Hardware'),
 		    itemId: 'hardware',
@@ -211,7 +215,7 @@ Ext.define('PVE.qemu.Config', {
 		path: '/vms/' + vmid
 	    });
 	}
-
+*/
 	me.callParent();
 
         me.statusStore.on('load', function(s, records, success) {

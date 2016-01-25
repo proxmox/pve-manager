@@ -19,8 +19,10 @@ Ext.define('PVE.storage.Browser', {
 
 	me.items = [
 	    {
-		title: gettext('Summary'),
-		xtype: 'pveStorageSummary',
+		title: gettext('SummaryTODO'),
+		xtype: 'panel',
+//		title: gettext('Summary'),
+//		xtype: 'pveStorageSummary',
 		itemId: 'summary'
 	    }
 	];
@@ -33,16 +35,21 @@ Ext.define('PVE.storage.Browser', {
 
 	if (caps.storage['Datastore.Allocate']) {
 	    me.items.push({
-		xtype: 'pveStorageContentView',
-		title: gettext('Content'),
+		xtype: 'gridpanel',
+		title: gettext('ContentTODO'),
+//		xtype: 'pveStorageContentView',
+//		title: gettext('Content'),
 		itemId: 'content'
 	    });
 	}
 
 	if (caps.storage['Permissions.Modify']) {
 	    me.items.push({
-		xtype: 'pveACLView',
-		title: gettext('Permissions'),
+		xtype: 'window',
+		title: gettext('PermissionsTODO'),
+//		xtype: 'pveACLView',
+//		title: gettext('Permissions'),
+
 		itemId: 'permissions',
 		path: '/storage/' + storeid
 	    });
