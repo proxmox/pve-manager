@@ -1,3 +1,6 @@
+ # this package will only be run in developpement mode, when extjs6=1 added
+ # as extra parameter
+
 package PVE::ExtJSIndex6;
 
 use strict;
@@ -5,6 +8,13 @@ use warnings;
 
 sub get_index {
     my ($lang, $username, $csrftoken, $console) = @_;
+
+    my $manager_source_dir = '/usr/share/pve-manager/manager6/';
+
+#    # exit early to avoid this being run by mistake
+    if ( ! -d $manager_source_dir) {
+	return "$manager_source_dir not found";
+    }
 
     my $page = <<_EOD;
 <!DOCTYPE html>
@@ -14,6 +24,7 @@ sub get_index {
     <title>Proxmox Virtual Environment</title>
     <link rel="stylesheet" type="text/css" href="/pve2/ext6/theme-triton/resources/theme-triton-all.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/css/ext-pve.css" />
+    <script type="text/javascript" src="/pve2/ext6/ext-all-debug.js"></script>
 _EOD
 
     my $langfile = "/usr/share/pve-manager/locale/pve-lang-${lang}.js";
@@ -23,206 +34,218 @@ _EOD
 	$page .= '<script type="text/javascript">function gettext(buf) { return buf; }</script>';
     }
 
-    $page .= <<_EOD;
-    <script type="text/javascript" src="/pve2/ext6/ext-all-debug.js"></script>
-
-    <script type="text/javascript" src="/pve2/manager6/Utils.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/Toolkit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/Parser.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/StateProvider.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/button/Button.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/button/ConsoleButton.js"></script>
-<!--
-    <script type="text/javascript" src="/pve2/manager6/qemu/SendKeyMenu.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/CmdMenu.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/TemplateMenu.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/lxc/CmdMenu.js"></script>
--->
-    <script type="text/javascript" src="/pve2/manager6/VNCConsole.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/data/TimezoneStore.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/data/reader/JsonObject.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/data/PVEProxy.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/data/UpdateQueue.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/data/UpdateStore.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/data/DiffStore.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/data/ObjectStore.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/data/ResourceStore.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/VLanField.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/Checkbox.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/TextField.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/RRDTypeSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/ComboGrid.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/KVComboBox.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/Boolean.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/CompressionSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/PoolSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/GroupSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/UserSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/RoleSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/VMIDSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/MemoryField.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/NetworkCardSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/DiskFormatSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/BusTypeSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/ControllerSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/EmailNotificationSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/RealmComboBox.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/BondModeSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/ViewSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/NodeSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/FileSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/StorageSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/BridgeSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/SecurityGroupSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/IPRefSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/IPProtocolSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/CPUModelSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/VNCKeyboardSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/LanguageSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/DisplaySelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/CacheTypeSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/SnapshotSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/ContentTypeSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/HotplugFeatureSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/iScsiProviderSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/DayOfWeekSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/BackupModeSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/ScsiHwSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/form/FirewallPolicySelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/Tasks.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/Log.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/panel/StatusPanel.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/panel/RRDView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/panel/InputPanel.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/window/Edit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/window/LoginWindow.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/window/TaskViewer.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/window/Wizard.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/window/NotesEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/window/Backup.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/window/Restore.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/panel/NotesView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/grid/CheckColumn.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/grid/SelectFeature.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/grid/ObjectGrid.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/grid/PendingObjectGrid.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/grid/ResourceGrid.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/grid/PoolMembers.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/grid/FirewallRules.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/grid/FirewallAliases.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/grid/FirewallOptions.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/tree/ResourceTree.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/panel/IPSet.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/panel/ConfigPanel.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/panel/SubConfigPanel.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/grid/BackupView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/panel/LogView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/panel/Firewall.js"></script>
-<!--
-    <script type="text/javascript" src="/pve2/manager6/ceph/Pool.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ceph/OSD.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ceph/Disks.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ceph/Monitor.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ceph/Crush.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ceph/Status.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ceph/Config.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/node/DNSEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/node/DNSView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/node/TimeView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/node/TimeEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/node/StatusView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/node/Summary.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/node/ServiceView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/node/NetworkEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/node/NetworkView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/node/Tasks.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/node/Subscription.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/node/APT.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/node/Config.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/StatusView.js"></script>
--->
-    <script type="text/javascript" src="/pve2/manager6/window/Migrate.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/window/MigrateAll.js"></script>
-<!--
-    <script type="text/javascript" src="/pve2/manager6/qemu/Monitor.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/Summary.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/OSTypeEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/ProcessorEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/BootOrderEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/MemoryEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/NetworkEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/Smbios1Edit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/CDEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/HDEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/HDResize.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/HDMove.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/HDThrottle.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/CPUOptions.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/DisplayEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/KeyboardEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/HardwareView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/StartupEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/ScsiHwEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/Options.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/Snapshot.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/Clone.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/SnapshotTree.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/Config.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/qemu/CreateWizard.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/lxc/StatusView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/lxc/Summary.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/lxc/Network.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/lxc/Resources.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/lxc/Options.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/lxc/DNS.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/lxc/Config.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/lxc/CreateWizard.js"></script>
--->
-    <script type="text/javascript" src="/pve2/manager6/pool/StatusView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/pool/Summary.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/pool/Config.js"></script>
-<!--
-    <script type="text/javascript" src="/pve2/manager6/storage/ContentView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/storage/StatusView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/storage/Summary.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/storage/Browser.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/storage/DirEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/storage/NFSEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/storage/GlusterFsEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/storage/IScsiEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/storage/LVMEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/storage/RBDEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/storage/SheepdogEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/storage/ZFSEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/storage/ZFSPoolEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ha/StatusView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ha/GroupSelector.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ha/ResourceEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ha/Resources.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ha/GroupEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ha/Groups.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ha/Fencing.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/ha/Config.js"></script>
--->
-    <script type="text/javascript" src="/pve2/manager6/dc/Summary.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/OptionView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/StorageView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/UserEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/UserView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/PoolView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/PoolEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/GroupView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/GroupEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/RoleView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/ACLView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/AuthView.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/AuthEdit.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/Backup.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/Support.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/SecurityGroups.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/dc/Config.js"></script>
-    <script type="text/javascript" src="/pve2/manager6/Workspace.js"></script>
+    # NB: ordering matters
+    my $js_files =  <<_EOD;
+Utils.js
+Toolkit.js
+Parser.js
+StateProvider.js
+button/Button.js
+button/ConsoleButton.js
+qemu/SendKeyMenu.js
+qemu/CmdMenu.js
+qemu/TemplateMenu.js
+lxc/CmdMenu.js
+VNCConsole.js
+data/TimezoneStore.js
+data/reader/JsonObject.js
+data/PVEProxy.js
+data/UpdateQueue.js
+data/UpdateStore.js
+data/DiffStore.js
+data/ObjectStore.js
+data/ResourceStore.js
+form/VLanField.js
+form/Checkbox.js
+form/TextField.js
+form/RRDTypeSelector.js
+form/ComboGrid.js
+form/KVComboBox.js
+form/Boolean.js
+form/CompressionSelector.js
+form/PoolSelector.js
+form/GroupSelector.js
+form/UserSelector.js
+form/RoleSelector.js
+form/VMIDSelector.js
+form/MemoryField.js
+form/NetworkCardSelector.js
+form/DiskFormatSelector.js
+form/BusTypeSelector.js
+form/ControllerSelector.js
+form/EmailNotificationSelector.js
+form/RealmComboBox.js
+form/BondModeSelector.js
+form/ViewSelector.js
+form/NodeSelector.js
+form/FileSelector.js
+form/StorageSelector.js
+form/BridgeSelector.js
+form/SecurityGroupSelector.js
+form/IPRefSelector.js
+form/IPProtocolSelector.js
+form/CPUModelSelector.js
+form/VNCKeyboardSelector.js
+form/LanguageSelector.js
+form/DisplaySelector.js
+form/CacheTypeSelector.js
+form/SnapshotSelector.js
+form/ContentTypeSelector.js
+form/HotplugFeatureSelector.js
+form/iScsiProviderSelector.js
+form/DayOfWeekSelector.js
+form/BackupModeSelector.js
+form/ScsiHwSelector.js
+form/FirewallPolicySelector.js
+form/QemuBiosSelector.js
+dc/Tasks.js
+dc/Log.js
+panel/StatusPanel.js
+panel/RRDView.js
+panel/InputPanel.js
+window/Edit.js
+window/LoginWindow.js
+window/TaskViewer.js
+window/Wizard.js
+window/NotesEdit.js
+window/Backup.js
+window/Restore.js
+panel/NotesView.js
+grid/CheckColumn.js
+grid/SelectFeature.js
+grid/ObjectGrid.js
+grid/PendingObjectGrid.js
+grid/ResourceGrid.js
+grid/PoolMembers.js
+grid/FirewallRules.js
+grid/FirewallAliases.js
+grid/FirewallOptions.js
+tree/ResourceTree.js
+panel/IPSet.js
+panel/ConfigPanel.js
+panel/SubConfigPanel.js
+grid/BackupView.js
+panel/LogView.js
+panel/Firewall.js
+ceph/Pool.js
+ceph/OSD.js
+ceph/Disks.js
+ceph/Monitor.js
+ceph/Crush.js
+ceph/Status.js
+ceph/Config.js
+node/DNSEdit.js
+node/DNSView.js
+node/TimeView.js
+node/TimeEdit.js
+node/StatusView.js
+node/Summary.js
+node/ServiceView.js
+node/NetworkEdit.js
+node/NetworkView.js
+node/Tasks.js
+node/Subscription.js
+node/APT.js
+node/Config.js
+qemu/StatusView.js
+window/Migrate.js
+window/MigrateAll.js
+qemu/Monitor.js
+qemu/Summary.js
+qemu/OSTypeEdit.js
+qemu/ProcessorEdit.js
+qemu/BootOrderEdit.js
+qemu/MemoryEdit.js
+qemu/NetworkEdit.js
+qemu/Smbios1Edit.js
+qemu/CDEdit.js
+qemu/HDEdit.js
+qemu/HDResize.js
+qemu/HDMove.js
+qemu/HDThrottle.js
+qemu/CPUOptions.js
+qemu/DisplayEdit.js
+qemu/KeyboardEdit.js
+qemu/HardwareView.js
+qemu/StartupEdit.js
+qemu/ScsiHwEdit.js
+qemu/QemuBiosEdit.js
+qemu/Options.js
+qemu/Snapshot.js
+qemu/Clone.js
+qemu/SnapshotTree.js
+qemu/Config.js
+qemu/CreateWizard.js
+lxc/StatusView.js
+lxc/Summary.js
+lxc/Network.js
+lxc/Resources.js
+lxc/Options.js
+lxc/DNS.js
+lxc/Config.js
+lxc/CreateWizard.js
+lxc/SnapshotTree.js
+lxc/Snapshot.js
+lxc/ResourceEdit.js
+lxc/MPResize.js
+pool/StatusView.js
+pool/Summary.js
+pool/Config.js
+storage/ContentView.js
+storage/StatusView.js
+storage/Summary.js
+storage/Browser.js
+storage/DirEdit.js
+storage/NFSEdit.js
+storage/GlusterFsEdit.js
+storage/IScsiEdit.js
+storage/LVMEdit.js
+storage/RBDEdit.js
+storage/SheepdogEdit.js
+storage/ZFSEdit.js
+storage/ZFSPoolEdit.js
+ha/StatusView.js
+ha/GroupSelector.js
+ha/ResourceEdit.js
+ha/Resources.js
+ha/GroupEdit.js
+ha/Groups.js
+ha/Fencing.js
+ha/Config.js
+dc/Summary.js
+dc/OptionView.js
+dc/StorageView.js
+dc/UserEdit.js
+dc/UserView.js
+dc/PoolView.js
+dc/PoolEdit.js
+dc/GroupView.js
+dc/GroupEdit.js
+dc/RoleView.js
+dc/ACLView.js
+dc/AuthView.js
+dc/AuthEdit.js
+dc/Backup.js
+dc/Support.js
+dc/SecurityGroups.js
+dc/Config.js
+Workspace.js
 _EOD
+
+    my @files_array = split('\n', $js_files);
+    my $prefix = '<script type="text/javascript" src="/pve2/manager6/';
+    my $postifx = '"></script>';
+    my $include_file = '';
+
+    foreach my $file (@files_array) {
+    	if (-e $manager_source_dir . '/' . $file) {
+    		# will build <script type="text/javascript" src="/pve2/manager6/Workspace.js"></script>
+    		my $include_line = join('', "    ", $prefix, $file, $postifx);
+    		$include_file = join("\n", $include_file ,$include_line);
+    	}
+    }
+
+    $page .= $include_file . "\n";
 
     my $jssrc = <<_EOJS;
 if (typeof(PVE) === 'undefined') PVE = {};
@@ -238,7 +261,6 @@ _EOJS
 Ext.useShims = true;
 Ext.History.fieldid = 'x-history-field';
 Ext.onReady(function() {
-	console.log(Ext.getVersion().version);
 	Ext.create('$workspace');
 });
 _EOJS
@@ -255,7 +277,7 @@ _EOJS
   </body>
 </html>
 _EOD
-   
+
     return $page;
 
 }
