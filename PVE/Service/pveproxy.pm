@@ -114,7 +114,6 @@ sub init {
 	    cipher_list => $proxyconf->{CIPHERS} || 'HIGH:MEDIUM:!aNULL:!MD5',
 	    key_file => '/etc/pve/local/pve-ssl.key',
 	    cert_file => '/etc/pve/local/pve-ssl.pem',
-	    dh => 'skip2048',
 	},
 	# Note: there is no authentication for those pages and dirs!
 	pages => {
@@ -126,6 +125,12 @@ sub init {
 	},
 	dirs => $dirs,
     };
+
+    if ($proxyconf->{DHPARAMS}) {
+	$self->{server_config}->{ssl}->{dh_file} = $proxyconf->{DHPARAMS};
+    } else {
+	$self->{server_config}->{ssl}->{dh} = 'skip2048';
+    }
 }
 
 sub run {
@@ -242,7 +247,7 @@ from file /etc/default/pveproxy. For example:
  DENY_FROM="all"
  POLICY="allow"
 
-IP addresses can be specified using any syntax understoop by Net::IP. The
+IP addresses can be specified using any syntax understood by Net::IP. The
 name 'all' is an alias for '0/0'.
 
 The default policy is 'allow'.
@@ -256,12 +261,25 @@ The default policy is 'allow'.
 
 =head1 SSL Cipher Suite
 
-You can define the chiper list in /etc/default/pveproxy, for example
+You can define the cipher list in /etc/default/pveproxy, for example
 
  CIPHERS="HIGH:MEDIUM:!aNULL:!MD5"
 
 Above is the default. See the ciphers(1) man page from the openssl
-package for list of all available options.
+package for a list of all available options.
+
+=head1 Diffie-Hellman Parameters
+
+You can define the used Diffie-Hellman parameters in /etc/default/pveproxy
+by setting DHPARAMS to the path of a file containing DH parameters in PEM
+format, for example
+
+ DHPARAMS="/path/to/dhparams.pem"
+
+If this option is not set, the built-in 'skip2048' parameters will be used.
+
+Note: DH parameters are only used if a cipher suite utilizing the DH key
+exchange algorithm is negotiated.
 
 =head1 FILES
 

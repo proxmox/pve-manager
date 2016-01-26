@@ -210,6 +210,7 @@ sub read_proxy_config {
     $shcmd .= 'echo \"DENY_FROM:\$DENY_FROM\";';
     $shcmd .= 'echo \"POLICY:\$POLICY\";';
     $shcmd .= 'echo \"CIPHERS:\$CIPHERS\";';
+    $shcmd .= 'echo \"DHPARAMS:\$DHPARAMS\";';
 
     my $data = -f $conffile ? `bash -c "$shcmd"` : '';
 
@@ -229,6 +230,8 @@ sub read_proxy_config {
 	    die "unknown policy '$value'\n" if $value !~ m/^(allow|deny)$/;
 	    $res->{$key} = $value;
 	} elsif ($key eq 'CIPHERS') {
+	    $res->{$key} = $value;
+	} elsif ($key eq 'DHPARAMS') {
 	    $res->{$key} = $value;
 	} else {
 	    # silently skip everythin else?
