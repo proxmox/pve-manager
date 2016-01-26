@@ -1,3 +1,11 @@
+pve-manager (4.1-7) unstable; urgency=medium
+
+  * Enable TLS 1.1 and 1.2, change default DH params
+
+  * Add DHPARAMS option in /etc/default/pveproxy
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 26 Jan 2016 16:47:21 +0100
+
 pve-manager (4.1-6) unstable; urgency=medium
 
   * fix #871: netstat: include veth devices
