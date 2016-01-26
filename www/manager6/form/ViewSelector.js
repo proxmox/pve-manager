@@ -5,6 +5,14 @@ Ext.define('PVE.form.ViewSelector', {
     extend: 'Ext.form.field.ComboBox',
     alias: ['widget.pveViewSelector'],
 
+    editable: false,
+    allowBlank: false,
+    forceSelection: true,
+    autoSelect: false,
+    valueField: 'key',
+    displayField: 'value',
+    hideLabel: true,
+
     initComponent: function() {
 	var me = this;
 
@@ -51,16 +59,8 @@ Ext.define('PVE.form.ViewSelector', {
 	});
 
 	Ext.apply(me, {
-	    hideLabel: true,
 	    store: store,
 	    value: groupdef[0][0],
-	    editable: false,
-	    allowBlank: false,
-	    forceSelection: true,
-	    autoSelect: false,
-	    valueField: 'key',
-	    displayField: 'value',
-
 	    getViewFilter: function() {
 		var view = me.getValue();
 		return Ext.apply({ id: view }, default_views[view] || default_views.server);
@@ -96,7 +96,6 @@ Ext.define('PVE.form.ViewSelector', {
 	};
 
 	var sp = Ext.state.Manager.getProvider();
-
 	me.mon(sp, 'statechange', statechange, me);
     }
 });
