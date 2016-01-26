@@ -315,7 +315,7 @@ Ext.define('PVE.StdWorkspace', {
 	});
 
 	selview.on('select', function(combo, records) { 
-	    if (records && records.length) {
+	    if (records) {
 		var view = combo.getViewFilter();
 		rtree.setViewFilter(view);
 	    }
