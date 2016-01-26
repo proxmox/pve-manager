@@ -108,12 +108,13 @@ sub init {
 	ssl => {
 	    # Note: older versions are considered insecure, for example
 	    # search for "Poodle"-Attac
-	    method => 'tlsv1',
+	    method => 'any',
 	    sslv2 => 0,
 	    sslv3 => 0,
 	    cipher_list => $proxyconf->{CIPHERS} || 'HIGH:MEDIUM:!aNULL:!MD5',
 	    key_file => '/etc/pve/local/pve-ssl.key',
 	    cert_file => '/etc/pve/local/pve-ssl.pem',
+	    dh => 'skip2048',
 	},
 	# Note: there is no authentication for those pages and dirs!
 	pages => {
