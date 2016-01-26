@@ -275,12 +275,13 @@ Ext.define('PVE.StdWorkspace', {
 	var sprovider = Ext.create('PVE.StateProvider');
 	Ext.state.Manager.setProvider(sprovider);
 
-	var selview = new PVE.form.ViewSelector({});
+	var selview = Ext.create('PVE.form.ViewSelector');
 
 	var rtree = Ext.createWidget('pveResourceTree', {
 	    viewFilter: selview.getViewFilter(),
 	    flex: 1,
-	    selModel: new Ext.selection.TreeModel({
+	    selModel: {
+		selType: 'treemodel',
 		listeners: {
 		    selectionchange: function(sm, selected) {
 			var comp;
@@ -311,7 +312,7 @@ Ext.define('PVE.StdWorkspace', {
 			me.setContent(comp);
 		    }
 		}
-	    })
+	    }
 	});
 
 	selview.on('select', function(combo, records) { 
