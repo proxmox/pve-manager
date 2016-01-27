@@ -23,6 +23,7 @@ use PVE::Firewall;
 use PVE::LXC;
 use PVE::APLInfo;
 use PVE::Report;
+use PVE::HA::Env::PVE2;
 use PVE::HA::Config;
 use PVE::QemuServer;
 use PVE::API2::Subscription;

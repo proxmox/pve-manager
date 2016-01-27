@@ -16,6 +16,7 @@ use PVE::Cluster qw(cfs_read_file);
 use Time::localtime;
 use Time::Local;
 use PVE::JSONSchema qw(get_standard_option);
+use PVE::HA::Env::PVE2;
 use PVE::HA::Config;
 
 my @posix_filesystems = qw(ext3 ext4 nfs nfs4 reiserfs xfs);
