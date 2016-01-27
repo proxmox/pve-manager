@@ -12,6 +12,7 @@ Ext.define('PVE.form.ViewSelector', {
     valueField: 'key',
     displayField: 'value',
     hideLabel: true,
+    queryMode: 'local',
 
     initComponent: function() {
 	var me = this;
