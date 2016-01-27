@@ -29,6 +29,7 @@ Ext.define('PVE.grid.PendingObjectGrid', {
 	    var rec = me.store.getById(k);
 	    if (rec && rec.data && Ext.isDefined(rec.data.pending) && (rec.data.pending !== '')) {
 		pending = true;
+		return false; // break
 	    }
 	});
 
