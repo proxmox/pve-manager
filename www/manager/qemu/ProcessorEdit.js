@@ -2,6 +2,14 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
     extend: 'PVE.panel.InputPanel',
     alias: 'widget.PVE.qemu.ProcessorInputPanel',
 
+    onGetValues: function(values) {
+	var me = this;
+	me.cpu.cputype = values['cputype'];
+	return {
+	    cpu: PVE.Parser.printQemuCpu(me.cpu)
+	};
+    },
+
     initComponent : function() {
 	var me = this;
 
@@ -51,7 +59,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	me.column2 = [
 	    {
 		xtype: 'CPUModelSelector',
-		name: 'cpu',
+		name: 'cputype',
 		value: '',
 		fieldLabel: gettext('Type')
 	    },
@@ -74,13 +82,22 @@ Ext.define('PVE.qemu.ProcessorEdit', {
     initComponent : function() {
 	var me = this;
 	
+	var ipanel = Ext.create('PVE.qemu.ProcessorInputPanel')
+
 	Ext.apply(me, {
 	    subject: gettext('Processors'),
-	    items: Ext.create('PVE.qemu.ProcessorInputPanel')
+	    items: ipanel
 	});
 
 	me.callParent();
 
-	me.load();
+	me.load({
+	    success: function(response, options) {
+		var value = response.result.data['cpu'];
+		var cpu = PVE.Parser.parseQemuCpu(value);
+		ipanel.cpu = cpu;
+		me.setValues({ cputype: cpu.cputype });
+	    }
+	});
     }
 });

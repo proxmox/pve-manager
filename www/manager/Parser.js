@@ -338,6 +338,63 @@ Ext.define('PVE.Parser', { statics: {
 	});
 
 	return res;
-    }
+    },
+
+    parseQemuCpu: function(value) {
+	if (!value) {
+	    return;
+	}
+
+	var res = {};
+
+	var errors = false;
+	Ext.Array.each(value.split(','), function(p) {
+	    if (!p || p.match(/^\s*$/)) {
+		return; // continue
+	    }
+
+	    if (!p.match(/=/)) {
+		if (Ext.isDefined(res['cpu'])) {
+		    errors = true;
+		    return false; // break
+		}
+		res.cputype = p;
+		return; // continue
+	    }
+
+	    var match_res = p.match(/^([a-z_]+)=(\S+)$/);
+	    if (!match_res) {
+		errors = true;
+		return false; // break
+	    }
+
+	    var k = match_res[1];
+	    if (Ext.isDefined(res[k])) {
+		errors = true;
+		return false; // break
+	    }
+
+	    res[k] = match_res[2];
+	});
+
+	if (errors || !res.cputype) {
+	    return;
+	}
+
+	return res;
+    },
+
+    printQemuCpu: function(cpu) {
+	var cpustr = cpu.cputype;
+
+	Ext.Object.each(cpu, function(key, value) {
+	    if (!Ext.isDefined(value) || key === 'cputype') {
+		return; // continue
+	    }
+	    cpustr += ',' + key + '=' + value;
+	});
+
+	return cpustr;
+    },
 
 }});
