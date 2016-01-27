@@ -1,3 +1,9 @@
+pve-manager (4.1-8) unstable; urgency=medium
+
+  * gui: preserve extra cpu options when changing CPU type
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 27 Jan 2016 16:45:45 +0100
+
 pve-manager (4.1-7) unstable; urgency=medium
 
   * Enable TLS 1.1 and 1.2, change default DH params
