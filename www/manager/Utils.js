@@ -757,6 +757,8 @@ Ext.define('PVE.Utils', { statics: {
 	    return 'GlusterFS';
 	} else if (value === 'lvm') {
 	    return 'LVM';
+	} else if (value === 'lvmthin') {
+	    return 'LVM-Thin';
 	} else if (value === 'iscsi') {
 	    return 'iSCSI';
 	} else if (value === 'rbd') {
@@ -769,6 +771,8 @@ Ext.define('PVE.Utils', { statics: {
 	    return 'ZFS';
 	} else if (value === 'iscsidirect') {
 	    return 'iSCSIDirect';
+	} else if (value === 'drbd') {
+	    return 'DRBD';
 	} else {
 	    return PVE.Utils.unknownText;
 	}
