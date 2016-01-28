@@ -80,10 +80,8 @@ Ext.define('PVE.dc.Config', {
 		});
 
 	    me.items.push({
-//		    xtype: 'pveAuthView',
-//		    title: gettext('Authentication'),
-		    xtype: 'gridpanel',
-		    title: 'AuthenTODO',
+		    xtype: 'pveAuthView',
+		    title: gettext('Authentication'),
 		    itemId: 'domains'
 		});
 

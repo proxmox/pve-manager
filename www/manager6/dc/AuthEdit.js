@@ -128,7 +128,7 @@ Ext.define('PVE.dc.AuthEdit', {
 	    deleteEmpty: !me.create,
 	    value: '',
             fieldLabel: gettext('TFA'),
-	    data: [ ['', PVE.Utils.noneText], ['oath', 'OATH'], ['yubico', 'Yubico']],
+	    comboItems: [ ['', PVE.Utils.noneText], ['oath', 'OATH'], ['yubico', 'Yubico']],
 	    listeners: {
 		change: function(f, value) {
 		    if (!me.rendered) {
