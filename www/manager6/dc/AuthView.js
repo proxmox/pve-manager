@@ -128,7 +128,6 @@ Ext.define('PVE.dc.AuthView', {
 		    dataIndex: 'tfa'
 		},
 		{
-		    id: 'comment',
 		    header: gettext('Comment'),
 		    sortable: false,
 		    dataIndex: 'comment',

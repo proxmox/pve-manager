@@ -217,7 +217,6 @@ Ext.define('PVE.dc.UserView', {
 		    dataIndex: 'firstname'
 		},
 		{
-		    id: 'comment',
 		    header: gettext('Comment'),
 		    sortable: false,
 		    dataIndex: 'comment',

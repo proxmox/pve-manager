@@ -38,7 +38,6 @@ Ext.define('PVE.form.UserSelector', {
 			flex: 1
 		    },
 		    {
-			id: 'comment',
 			header: gettext('Comment'),
 			sortable: false,
 			dataIndex: 'comment',
