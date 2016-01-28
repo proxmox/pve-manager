@@ -95,10 +95,8 @@ Ext.define('PVE.dc.Config', {
 		});
 
 	    me.items.push({
-//		    xtype: 'pveFirewallPanel',
-//		    title: gettext('Firewall'),
-	        xtype: 'gridpanel',
-	        title: 'FireTODO',
+		    xtype: 'pveFirewallPanel',
+		    title: gettext('Firewall'),
 		    base_url: '/cluster/firewall',
 		    fwtype: 'dc',
 		    phstateid: me.hstateid,
