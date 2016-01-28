@@ -623,10 +623,11 @@ Ext.define('PVE.FirewallRules', {
 		header: gettext('Enable'),
 		dataIndex: 'enable',
 		listeners: {
-		    checkchange: function(column, record, checked) {
+		    checkchange: function(column, recordIndex, checked) {
+			var record = me.getStore().getData().items[recordIndex];
 			record.commit();
 			var data = {};
-			record.fields.each(function(field) {
+			Ext.Array.forEach(record.getFields(), function(field) {
 			    data[field.name] = record.get(field.name);
 			});
 			if (!me.allow_iface || !data.iface) {
