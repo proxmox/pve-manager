@@ -5,6 +5,16 @@ Ext.define('PVE.Parser', { statics: {
 
     // this class only contains static functions
 
+    parseBoolean: function(value, default_value) {
+	if (!Ext.isDefined(value))
+	    return default_value;
+	value = value.toLowerCase();
+	return value === 1 || value === '1' ||
+	       value === 'on' ||
+	       value === 'yes' ||
+	       value === 'true';
+    },
+
     parseQemuNetwork: function(key, value) {
 	if (!(key && value)) {
 	    return;

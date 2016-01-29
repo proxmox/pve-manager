@@ -90,11 +90,11 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	}
 
 	values.hdimage = drive.file;
-	values.nobackup = (drive.backup === 'no');
+	values.nobackup = !PVE.Parser.parseBoolean(drive.backup, 1);
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '';
 	values.discard = (drive.discard === 'on');
-	values.iothread = (drive.iothread === 'on');
+	values.iothread = PVE.Parser.parseBoolean(drive.iothread);
 
 	me.setValues(values);
     },
