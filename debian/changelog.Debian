@@ -1,3 +1,9 @@
+pve-manager (4.1-9) unstable; urgency=medium
+
+  * gui: cpu: fix processor editing
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 01 Feb 2016 17:13:03 +0100
+
 pve-manager (4.1-8) unstable; urgency=medium
 
   * gui: preserve extra cpu options when changing CPU type
