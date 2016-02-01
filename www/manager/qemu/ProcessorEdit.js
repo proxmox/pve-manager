@@ -38,6 +38,8 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
     initComponent : function() {
 	var me = this;
 
+	me.cpu = {};
+
 	me.column1 = [
 	    {
 		xtype: 'numberfield',
