@@ -352,7 +352,7 @@ Ext.define('PVE.Parser', { statics: {
 
     parseQemuCpu: function(value) {
 	if (!value) {
-	    return;
+	    return {};
 	}
 
 	var res = {};
@@ -396,15 +396,21 @@ Ext.define('PVE.Parser', { statics: {
 
     printQemuCpu: function(cpu) {
 	var cpustr = cpu.cputype;
+	var optstr = '';
 
 	Ext.Object.each(cpu, function(key, value) {
 	    if (!Ext.isDefined(value) || key === 'cputype') {
 		return; // continue
 	    }
-	    cpustr += ',' + key + '=' + value;
+	    optstr += ',' + key + '=' + value;
 	});
 
-	return cpustr;
-    },
+	if (!cpustr) {
+	    if (optstr)
+		return 'kvm64' + optstr;
+	    return;
+	}
 
+	return cpustr + optstr;
+    },
 }});
