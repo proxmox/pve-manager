@@ -184,7 +184,7 @@ Ext.define('PVE.storage.Upload', {
 	    items: [
 		{
 		    xtype: 'pveContentTypeSelector',
-		    cts: ['iso', 'backup', 'vztmpl'],
+		    cts: ['iso', 'vztmpl'],
 		    fieldLabel: gettext('Content'),
 		    name: 'content',
 		    value: 'iso'
