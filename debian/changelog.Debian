@@ -1,3 +1,9 @@
+pve-manager (4.1-10) unstable; urgency=medium
+
+  * remove 'VZDump backup file' option from upload web gui
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 02 Feb 2016 18:13:09 +0100
+
 pve-manager (4.1-9) unstable; urgency=medium
 
   * gui: cpu: fix processor editing
