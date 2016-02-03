@@ -494,7 +494,7 @@ Ext.define('PVE.FirewallRules', {
 	    throw "no list_refs_url specified";
 	}
 
-	var store = new Ext.data.Store({
+	var store = Ext.create('Ext.data.Store',{
 	    model: 'pve-fw-rule'
 	});
 
@@ -532,7 +532,7 @@ Ext.define('PVE.FirewallRules', {
 	    win.on('destroy', reload);
 	};
 
-	me.editBtn = new PVE.button.Button({
+	me.editBtn = Ext.create('PVE.button.Button',{
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
@@ -569,7 +569,7 @@ Ext.define('PVE.FirewallRules', {
 	    });
 	}
 
-	me.removeBtn = new PVE.button.Button({
+	me.removeBtn = Ext.create('PVE.button.Button',{
 	    text: gettext('Remove'),
 	    selModel: sm,
 	    disabled: true,
