@@ -121,7 +121,7 @@ Ext.define('PVE.FirewallRulePanel', {
 	    });
 	}
 
-	me.column1.push([
+	me.column1.push(
 	    {
 		xtype: 'displayfield',
 		fieldLabel: '',
@@ -147,7 +147,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		value: '',
 		fieldLabel: gettext('Destination')
 	    }
-	]);
+	);
 
 	
 	me.column2 = [
@@ -587,7 +587,7 @@ Ext.define('PVE.FirewallRules', {
 	if (me.groupBtn) {
 	    tbar.push(me.groupBtn);
 	}
-	tbar.push([ me.removeBtn, me.editBtn ]);
+	tbar.push(me.removeBtn, me.editBtn);
 
 	var render_errors = function(name, value, metaData, record) {
 	    var errors = record.data.errors;
@@ -675,7 +675,7 @@ Ext.define('PVE.FirewallRules', {
 	    });
 	}
 
-	columns.push([
+	columns.push(
 	    {
 		header: gettext('Source'),
 		dataIndex: 'source',
@@ -724,7 +724,7 @@ Ext.define('PVE.FirewallRules', {
 		    return render_errors('comment', Ext.util.Format.htmlEncode(value), metaData, record);
 		}
 	    }
-	]);
+	);
 
 	Ext.apply(me, {
 	    store: store,
