@@ -54,7 +54,7 @@ Ext.define('PVE.form.IPRefSelector', {
 	    });
 	}
 
-	columns.push([
+	columns.push(
 	    {
 		header: gettext('Name'),
 		dataIndex: 'ref',
@@ -66,7 +66,7 @@ Ext.define('PVE.form.IPRefSelector', {
 		dataIndex: 'comment', 
 		flex: 1
 	    }
-	]);
+	);
 
 	Ext.apply(me, {
 	    store: store,
