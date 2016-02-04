@@ -27,6 +27,20 @@ Ext.define('PVE.form.ComboGrid', {
     displayField: false,
     valueField: false,
     matchFieldWidth: false,
+    // if we have value(s) in the textField, mark them as selected in the picker
+    // private
+    syncSelection: function() {
+        var me = this, previousItems = [];
+
+        if (me.getRawValue()) {
+            Ext.Array.each(me.getRawValue().split(','), function(record) {
+                var previousItem = me.store.findRecord(me.valueField, record);
+                // select only what can be found in the ComboGrid store
+                previousItem != null && previousItems.push(previousItem);
+            });
+            me.picker.getSelectionModel().select(previousItems);
+        }
+    },
 
     createPicker: function() {
 	var me = this;
@@ -44,28 +58,21 @@ Ext.define('PVE.form.ComboGrid', {
                         me.fireEvent('select', me, selectedRecords);
                     },
                     scope: me
+                },
+                show: {
+                    fn: function() {
+                        me.syncSelection();
+                    },
+                    scope: me
                 }
             }
         }, me.defaultPickerConfig);
 
         Ext.apply(config, me.listConfig);
 
-        var grid = Ext.create('Ext.grid.Panel', config);
+        var picker = me.picker = Ext.create('Ext.grid.Panel', config);
 
-        // if we have value(s) in the textField, mark them as selected in the picker
-        if (me.getRawValue()){
-            var previousItems = [];
-            Ext.Array.each(me.getRawValue().split(','), function(record) {
-                var previousItem = me.store.findRecord(me.valueField, record);
-                // select only what can be found in the ComboGrid store
-                previousItem != null && previousItems.push(previousItem);
-            });
-
-            grid.getSelectionModel().select(previousItems);
-
-        }
-
-        return grid;
+        return picker;
     },
 
     setRecords: function(records) {
