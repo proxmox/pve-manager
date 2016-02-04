@@ -164,7 +164,7 @@ Ext.define('PVE.FirewallAliases', {
 	});
 
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    store: store,
 	    tbar: [ me.addBtn, me.removeBtn, me.editBtn ],
 	    selModel: sm,
