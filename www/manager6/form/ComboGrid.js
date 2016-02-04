@@ -52,12 +52,13 @@ Ext.define('PVE.form.ComboGrid', {
 
         var grid = Ext.create('Ext.grid.Panel', config);
 
-        // update the grid with the field values when loading
+        // if we have value(s) in the textField, mark them as selected in the picker
         if (me.getRawValue()){
             var previousItems = [];
             Ext.Array.each(me.getRawValue().split(','), function(record) {
                 var previousItem = me.store.findRecord(me.valueField, record);
-                previousItems.push(previousItem);
+                // select only what can be found in the ComboGrid store
+                previousItem != null && previousItems.push(previousItem);
             });
 
             grid.getSelectionModel().select(previousItems);
