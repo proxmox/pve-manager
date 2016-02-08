@@ -197,6 +197,10 @@ Ext.define('PVE.node.Config', {
 		    nodename: nodename
 		}
 	    ]);
+	}
+
+	if (caps.nodes['Sys.Modify'] || caps.nodes['Sys.Audit'] ||
+	    caps.nodes['Sys.Log']) {
 	    me.items.push([{
 		title: 'Ceph',
 		itemId: 'ceph',

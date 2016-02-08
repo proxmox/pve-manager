@@ -61,6 +61,9 @@ __PACKAGE__->register_method ({
     description => "Get Ceph osd list/tree.",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -378,6 +381,9 @@ __PACKAGE__->register_method ({
     description => "ceph osd in",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -414,6 +420,9 @@ __PACKAGE__->register_method ({
     description => "ceph osd out",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -486,6 +495,9 @@ __PACKAGE__->register_method ({
     method => 'GET',
     description => "Directory index.",
     permissions => { user => 'all' },
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -527,6 +539,9 @@ __PACKAGE__->register_method ({
     description => "List local disks.",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -588,6 +603,9 @@ __PACKAGE__->register_method ({
     name => 'config',
     path => 'config',
     method => 'GET',
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
+    },
     description => "Get Ceph configuration.",
     parameters => {
     	additionalProperties => 0,
@@ -613,6 +631,9 @@ __PACKAGE__->register_method ({
     description => "Get Ceph monitor list.",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -679,6 +700,9 @@ __PACKAGE__->register_method ({
     description => "Create initial ceph default configuration and setup symlinks.",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -788,6 +812,9 @@ __PACKAGE__->register_method ({
     description => "Create Ceph Monitor",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -915,6 +942,9 @@ __PACKAGE__->register_method ({
     description => "Destroy Ceph monitor.",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -980,6 +1010,9 @@ __PACKAGE__->register_method ({
     description => "Stop ceph services.",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -1027,6 +1060,9 @@ __PACKAGE__->register_method ({
     description => "Start ceph services.",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -1074,6 +1110,9 @@ __PACKAGE__->register_method ({
     description => "Get ceph status.",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -1097,6 +1136,9 @@ __PACKAGE__->register_method ({
     description => "List all pools.",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -1159,6 +1201,9 @@ __PACKAGE__->register_method ({
     description => "Create POOL",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -1263,6 +1308,9 @@ __PACKAGE__->register_method ({
     description => "Destroy pool",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -1300,6 +1348,9 @@ __PACKAGE__->register_method ({
     description => "Get OSD crush map",
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
+    },
     parameters => {
     	additionalProperties => 0,
 	properties => {
