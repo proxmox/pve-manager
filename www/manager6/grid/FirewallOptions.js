@@ -94,7 +94,7 @@ Ext.define('PVE.FirewallOptions', {
 			xtype: 'pveKVComboBox',
 			name: name,
 			fieldLabel: name,
-			data: [['nolog', 'nolog'], ['info', 'info'], ['err', 'err'],
+			comboItems: [['nolog', 'nolog'], ['info', 'info'], ['err', 'err'],
 			       ['warning', 'warning'], ['crit', 'crit'], ['alert', 'alert'],
 			       ['emerg', 'emerg'], ['debug', 'debug']]
 		    }
@@ -226,6 +226,6 @@ Ext.define('PVE.FirewallOptions', {
 
 	me.callParent();
 
-	me.on('show', reload);
+	me.on('activate', reload);
     }
 });
