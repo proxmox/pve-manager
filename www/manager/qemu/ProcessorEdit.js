@@ -19,7 +19,6 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	} else {
 	    del = [];
 	}
-	console.log(del);
 
 	if (cpustring) {
 	    values['cpu'] = cpustring;
