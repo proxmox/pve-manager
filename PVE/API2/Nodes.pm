@@ -1356,7 +1356,9 @@ __PACKAGE__->register_method ({
 	    my $stopList = &$get_start_stop_list($nodename);
 
 	    my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
-	    my $maxWorkers = $cpuinfo->{cpus};
+	    my $datacenterconfig = cfs_read_file('datacenter.cfg');
+	    # if not set by user spawn max cpu count number of workers
+	    my $maxWorkers =  $datacenterconfig->{max_workers} || $cpuinfo->{cpus};
 
 	    foreach my $order (sort {$b <=> $a} keys %$stopList) {
 		my $vmlist = $stopList->{$order};
@@ -1447,7 +1449,10 @@ __PACKAGE__->register_method ({
 	    node => get_standard_option('pve-node'),
             target => get_standard_option('pve-node', { description => "Target node." }),
             maxworkers => {
-                description => "Max parralel migration job.",
+                description => "Maximal number of parallel migration job." .
+		    " If not set use 'max_workers' from datacenter.cfg," .
+		    " one of both must be set!",
+		optional => 1,
                 type => 'integer',
                 minimum => 1
             },
@@ -1466,7 +1471,11 @@ __PACKAGE__->register_method ({
 	$nodename = PVE::INotify::nodename() if $nodename eq 'localhost';
 
         my $target = $param->{target};
-        my $maxWorkers = $param->{maxworkers};
+
+	my $datacenterconfig = cfs_read_file('datacenter.cfg');
+	# prefer parameter over datacenter cfg settings
+	my $maxWorkers = $param->{maxworkers} || $datacenterconfig->{max_workers} ||
+	    die "either 'maxworkers' parameter or max_workers in datacenter.cfg must be set!\n";
 
 	my $code = sub {
 
