@@ -1,3 +1,11 @@
+pve-manager (4.1-11) unstable; urgency=medium
+
+  * Close #822: show the nodename in the page title
+
+  * use max_workers from datacenter.cfg for stopall/migrateall
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 11 Feb 2016 12:05:54 +0100
+
 pve-manager (4.1-10) unstable; urgency=medium
 
   * remove 'VZDump backup file' option from upload web gui
