@@ -7,7 +7,7 @@ use strict;
 use warnings;
 
 sub get_index {
-    my ($lang, $username, $csrftoken, $console) = @_;
+    my ($lang, $username, $csrftoken, $console, $nodename) = @_;
 
     my $manager_source_dir = '/usr/share/pve-manager/manager6/';
 
@@ -21,7 +21,7 @@ sub get_index {
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Proxmox Virtual Environment</title>
+    <title>$nodename - Proxmox Virtual Environment</title>
     <link rel="stylesheet" type="text/css" href="/pve2/ext6/theme-triton/resources/theme-triton-all.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/css/ext-pve.css" />
     <script type="text/javascript" src="/pve2/ext6/ext-all-debug.js"></script>

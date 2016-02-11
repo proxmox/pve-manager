@@ -4,13 +4,13 @@ use strict;
 use warnings;
 
 sub get_index {
-    my ($lang, $username, $csrftoken, $console) = @_;
+    my ($lang, $username, $csrftoken, $console, $nodename) = @_;
 
     my $page = <<_EOD;
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Proxmox Console</title>
+    <title>$nodename - Proxmox Console</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <!-- Apple iOS Safari settings -->

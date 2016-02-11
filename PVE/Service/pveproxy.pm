@@ -117,7 +117,7 @@ sub init {
 	},
 	# Note: there is no authentication for those pages and dirs!
 	pages => {
-	    '/' => \&get_index,
+	    '/' => sub { get_index($self->{nodename}, @_) },
 	    # avoid authentication when accessing favicon
 	    '/favicon.ico' => {
 		file => '/usr/share/pve-manager/images/favicon.ico',
@@ -171,7 +171,7 @@ sub is_phone {
 # so we must be very careful here
 
 sub get_index {
-    my ($server, $r, $args) = @_;
+    my ($nodename, $server, $r, $args) = @_;
 
     my $lang = 'en';
     my $username;
@@ -205,13 +205,13 @@ sub get_index {
     my $page;
 
     if (defined($args->{console}) && $args->{novnc}) {
-	$page = PVE::NoVncIndex::get_index($lang, $username, $token, $args->{console});
+	$page = PVE::NoVncIndex::get_index($lang, $username, $token, $args->{console}, $nodename);
     } elsif ($mobile) {
-	$page = PVE::TouchIndex::get_index($lang, $username, $token, $args->{console});
+	$page = PVE::TouchIndex::get_index($lang, $username, $token, $args->{console}, $nodename);
     } elsif ($ext6 && $ext6_dir_exists) {
-	$page = PVE::ExtJSIndex6::get_index($lang, $username, $token, $args->{console});
+	$page = PVE::ExtJSIndex6::get_index($lang, $username, $token, $args->{console}, $nodename);
     } else {
-	$page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console});
+	$page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console}, $nodename);
     }
     my $headers = HTTP::Headers->new(Content_Type => "text/html; charset=utf-8");
     my $resp = HTTP::Response->new(200, "OK", $headers, $page);

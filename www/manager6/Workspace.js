@@ -65,8 +65,6 @@ Ext.define('PVE.Workspace', {
 	    }
 	});
 
-	document.title = me.title;
-
 	me.callParent();
 
         if (!PVE.Utils.authOK()) {

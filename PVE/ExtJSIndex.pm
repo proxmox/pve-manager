@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 sub get_index {
-    my ($lang, $username, $csrftoken, $console) = @_;
+    my ($lang, $username, $csrftoken, $console, $nodename) = @_;
 
     my $page = <<_EOD;
 <!DOCTYPE html>
@@ -12,7 +12,7 @@ sub get_index {
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=10">
-    <title>Proxmox Virtual Environment</title>
+    <title>$nodename - Proxmox Virtual Environment</title>
  
     <link rel="stylesheet" type="text/css" href="/pve2/ext4/resources/css/ext-all.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/css/ext-pve.css" />

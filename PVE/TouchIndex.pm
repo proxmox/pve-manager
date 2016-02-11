@@ -4,14 +4,14 @@ use strict;
 use warnings;
 
 sub get_index {
-    my ($lang, $username, $csrftoken, $console) = @_;
+    my ($lang, $username, $csrftoken, $console, $nodename) = @_;
 
     my $page = <<_EOD;
 <!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Proxmox Virtual Environment</title>
+    <title>$nodename - Proxmox Virtual Environment</title>
  
     <link rel="stylesheet" type="text/css" href="/pve2/touch/resources/css/sencha-touch.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/touch/resources/css/pve.css" />
