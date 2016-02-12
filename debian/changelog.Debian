@@ -1,3 +1,9 @@
+pve-manager (4.1-12) unstable; urgency=medium
+
+  * add permissions to allow non root ceph configuration
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 12 Feb 2016 08:22:39 +0100
+
 pve-manager (4.1-11) unstable; urgency=medium
 
   * Close #822: show the nodename in the page title
