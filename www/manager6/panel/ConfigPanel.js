@@ -52,7 +52,7 @@ Ext.define('PVE.panel.Config', {
 	var toolbar = Ext.create('Ext.toolbar.Toolbar', {
 	    items: tbar,
 	    style: 'border:0px;',
-	    height: 28
+	    height: 32
 	});
 
 	var tab = Ext.create('Ext.tab.Panel', {

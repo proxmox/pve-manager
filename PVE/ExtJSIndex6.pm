@@ -24,6 +24,7 @@ sub get_index {
     <title>$nodename - Proxmox Virtual Environment</title>
     <link rel="stylesheet" type="text/css" href="/pve2/ext6/theme-triton/resources/theme-triton-all.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/css/ext-pve.css" />
+    <link rel="stylesheet" type="text/css" href="/pve2/css/ext6-pve.css" />
     <script type="text/javascript" src="/pve2/ext6/ext-all-debug.js"></script>
 _EOD
 

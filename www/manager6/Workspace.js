@@ -369,6 +369,7 @@ Ext.define('PVE.StdWorkspace', {
 			baseCls: 'x-plain'			
 		    },
 		    border: false,
+		    height: 35,
 		    margin: '2 0 5 0',
 		    items: [
 			{
@@ -380,8 +381,7 @@ Ext.define('PVE.StdWorkspace', {
 			    minWidth: 200,
 			    flex: 1,
 			    id: 'versioninfo',
-			    html: 'Proxmox Virtual Environment',
-			    height: 30
+			    html: 'Proxmox Virtual Environment'
 			},
 			{
 			    pack: 'end',
