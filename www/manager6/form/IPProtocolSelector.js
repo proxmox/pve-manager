@@ -1,11 +1,34 @@
 Ext.define('PVE.form.IPProtocolSelector', {
     extend: 'PVE.form.ComboGrid',
     alias: ['widget.pveIPProtocolSelector'],
-
-    initComponent: function() {
-	var me = this;
-	
- 	var store = Ext.create('Ext.data.Store', {
+    valueField: 'p',
+    displayField: 'p',
+    listConfig: {
+	columns: [
+	    {
+		header: gettext('Protocol'),
+		dataIndex: 'p',
+		hideable: false,
+		sortable: false,
+		width: 100
+	    },
+	    {
+		header: gettext('Number'),
+		dataIndex: 'n',
+		hideable: false,
+		sortable: false,
+		width: 50
+	    },
+	    {
+		header: gettext('Description'),
+		dataIndex: 'd',
+		hideable: false,
+		sortable: false,
+		flex: 1
+	    }
+	]
+    },
+    store: {
 	    fields: [ 'p', 'd', 'n'],
 	    data: [
 		{ p: 'tcp', n: 6, d: 'Transmission Control Protocol' },
@@ -60,39 +83,5 @@ Ext.define('PVE.form.IPProtocolSelector', {
 		{ p: 'wesp', n: 141, d: 'Wrapped Encapsulating Security Payload' },
 		{ p: 'rohc', n: 142, d: 'Robust Header Compression' }
 	    ]
-	});
-
-	Ext.apply(me, {
-	    store: store,
-	    valueField: 'p',
-	    displayField: 'p',
-            listConfig: {
-		columns: [
-		    {
-			header: gettext('Protocol'),
-			dataIndex: 'p',
-			hideable: false,
-			sortable: false,
-			width: 100
-		    },
-		    {
-			header: gettext('Number'),
-			dataIndex: 'n',
-			hideable: false,
-			sortable: false,
-			width: 50
-		    },
-		    {
-			header: gettext('Description'),
-			dataIndex: 'd',
-			hideable: false,
-			sortable: false,
-			flex: 1
-		    }
-		]
-	    }
-	});
-
-        me.callParent();
-    }
+	}
 });

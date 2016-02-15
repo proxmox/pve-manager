@@ -1,7 +1,25 @@
 Ext.define('PVE.form.FWMacroSelector', {
     extend: 'PVE.form.ComboGrid',
     alias: 'widget.pveFWMacroSelector',
-
+    allowBlank: true,
+    autoSelect: false,
+    valueField: 'macro',
+    displayField: 'macro',
+    listConfig: {
+	columns: [
+	    {
+		header: gettext('Macro'),
+		dataIndex: 'macro',
+		hideable: false,
+		width: 100
+	    },
+	    {
+		header: gettext('Description'),
+		flex: 1,
+		dataIndex: 'descr'
+	    }
+	]
+    },
     initComponent: function() {
 	var me = this;
 
@@ -21,25 +39,6 @@ Ext.define('PVE.form.FWMacroSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    allowBlank: true,
-	    autoSelect: false,
-	    valueField: 'macro',
-	    displayField: 'macro',
-            listConfig: {
-		columns: [
-		    {
-			header: gettext('Macro'),
-			dataIndex: 'macro',
-			hideable: false,
-			width: 100
-		    },
-		    {
-			header: gettext('Description'),
-			flex: 1,
-			dataIndex: 'descr'
-		    }
-		]
-	    }
 	});
 
 	me.callParent();
