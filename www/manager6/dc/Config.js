@@ -86,11 +86,9 @@ Ext.define('PVE.dc.Config', {
 		});
 
 	    me.items.push({
-//		    xtype: 'pveHAPanel',
-//		    title: 'HA',
-	        xtype: 'gridpanel',
-	        title: 'HATODO',
-	        phstateid: me.hstateid,
+		    xtype: 'pveHAPanel',
+		    title: 'HA',
+		    phstateid: me.hstateid,
 		    itemId: 'ha'
 		});
 
