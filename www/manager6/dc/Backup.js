@@ -180,6 +180,14 @@ Ext.define('PVE.dc.BackupEdit', {
 		value: 'snapshot',
 		name: 'mode'
 	    },
+	    {
+		xtype: 'pvecheckbox',
+		fieldLabel: gettext('Enable'),
+		name: 'enabled',
+		uncheckedValue: 0,
+		defaultValue: 1,
+		checked: true
+	    },
 	    vmidField
 	];
 
@@ -397,6 +405,12 @@ Ext.define('PVE.dc.BackupView', {
 	    ],		
 	    columns: [
 		{
+		    header: gettext('Enabled'),
+		    width: 50,
+		    dataIndex: 'enabled',
+		    sortable: true,
+		},
+		{
 		    header: gettext('Node'),
 		    width: 100,
 		    sortable: true,
@@ -463,6 +477,7 @@ Ext.define('PVE.dc.BackupView', {
 	    'id', 'starttime', 'dow',
 	    'storage', 'node', 'vmid', 'exclude',
 	    'mailto',
+	    { name: 'enabled', type: 'boolean' },
 	    { name: 'all', type: 'boolean' },
 	    { name: 'snapshot', type: 'boolean' },
 	    { name: 'stop', type: 'boolean' },
