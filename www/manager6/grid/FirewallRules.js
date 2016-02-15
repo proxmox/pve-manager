@@ -58,7 +58,7 @@ Ext.define('PVE.FirewallRulePanel', {
 	// hack: editable ComboGrid returns nothing when empty, so we need to set ''
 	// Also, disabled text fields return nothing, so we need to set ''
 
-	Ext.Array.each(['source', 'dest', 'proto', 'sport', 'dport'], function(key) {
+	Ext.Array.each(['source', 'dest', 'macro', 'proto', 'sport', 'dport'], function(key) {
 	    if (values[key] === undefined) {
 		values[key] = '';
 	    }
@@ -161,12 +161,12 @@ Ext.define('PVE.FirewallRulePanel', {
 	    {
 		xtype: 'pveFWMacroSelector',
 		name: 'macro',
-		value: '',
 		fieldLabel: gettext('Macro'),
+		editable: true,
 		allowBlank: true,
 		listeners: {
 		    change: function(f, value) {
-                        if (value === '') {
+                        if (value === null) {
 			    me.down('field[name=proto]').setDisabled(false);
 			    me.down('field[name=sport]').setDisabled(false);
 			    me.down('field[name=dport]').setDisabled(false);
