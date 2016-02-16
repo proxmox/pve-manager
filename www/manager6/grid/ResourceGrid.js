@@ -2,9 +2,6 @@ Ext.define('PVE.grid.ResourceGrid', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveResourceGrid'],
 
-    //fixme: this makes still problems with the scrollbar
-    //features: [ {ftype: 'chunking'}],
-    
     title: gettext('Search'),
 
     initComponent : function() {
@@ -137,7 +134,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 
 	    store.resumeEvents();
 
-	    store.fireEvent('datachanged', store);
+	    store.fireEvent('refresh', store);
 
 	    //console.log("END GRID UPDATE");
 	};
