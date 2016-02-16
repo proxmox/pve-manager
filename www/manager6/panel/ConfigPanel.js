@@ -1,6 +1,12 @@
+/*
+ * Base class for all the multitab config panels
+ */
 Ext.define('PVE.panel.Config', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pvePanelConfig',
+
+    showSearch: true, // add a ressource grid with a search button as first tab
+    viewFilter: undefined, // a filter to pass to that ressource grid
 
     initComponent: function() {
         var me = this;
@@ -40,7 +46,6 @@ Ext.define('PVE.panel.Config', {
 	    padding: '0 0 5 0'
 	});
 
-	Ext.applyIf(me, { showSearch: true });
 
 	if (me.showSearch) {
 	    items.unshift({
