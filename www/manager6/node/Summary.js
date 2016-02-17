@@ -2,6 +2,13 @@ Ext.define('PVE.node.Summary', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveNodeSummary',
 
+    scrollable: true,
+    bodyStyle: 'padding:10px',
+    defaults: {
+	width: 800,
+	style: { 'padding-top': '10px' }
+    },
+
     showVersions: function() {
 	var me = this;
 
@@ -94,12 +101,6 @@ Ext.define('PVE.node.Summary', {
 	});
 
 	Ext.apply(me, {
-	    autoScroll: true,
-	    bodyStyle: 'padding:10px',
-	    defaults: {
-		width: 800,
-		style: { 'padding-top': '10px' }
-	    },		
 	    tbar: [version_btn, '->', { xtype: 'pveRRDTypeSelector' } ],
 	    items: [
 		statusview,
