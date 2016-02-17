@@ -263,6 +263,9 @@ sub update {
 
     import_gpg_keys();
 
+    # ensure that always use the same socket class
+    local $ENV{PERL_NET_HTTPS_SSL_SOCKET_CLASS} = "IO::Socket::SSL";
+
     # this code works for ftp and http
     # always use passive ftp
     local $ENV{FTP_PASSIVE} = 1;
