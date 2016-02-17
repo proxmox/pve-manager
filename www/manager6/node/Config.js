@@ -125,7 +125,7 @@ Ext.define('PVE.node.Config', {
 	});
 
 	if (caps.nodes['Sys.Audit']) {
-	    me.items.push([
+	    me.items.push(
 		{
 		    title: gettext('Summary'),
 		    itemId: 'summary',
@@ -134,49 +134,56 @@ Ext.define('PVE.node.Config', {
 		{
 		    title: gettext('Services'),
 		    itemId: 'services',
-		    xtype: 'pveNodeServiceView'
+//		    xtype: 'pveNodeServiceView',
+		    xtype: 'panel',
 		},
 		{
 		    title: gettext('Network'),
 		    itemId: 'network',
-		    xtype: 'pveNodeNetworkView'
+//		    xtype: 'pveNodeNetworkView'
+		    xtype: 'panel',
 		},
 		{
 		    title: gettext('DNS'),
 		    itemId: 'dns',
-		    xtype: 'pveNodeDNSView'
+//		    xtype: 'pveNodeDNSView'
+		    xtype: 'panel',
 		},
 		{
 		    title: gettext('Time'),
 		    itemId: 'time',
-		    xtype: 'pveNodeTimeView'
+//		    xtype: 'pveNodeTimeView'
+		    xtype: 'panel',
 		}
-	    ]);
+	    );
 	}
 
 	if (caps.nodes['Sys.Syslog']) {
-	    me.items.push([
+	    me.items.push(
 		{
 		    title: 'Syslog',
 		    itemId: 'syslog',
-		    xtype: 'pveLogView',
+//		    xtype: 'pveLogView',
+		    xtype: 'panel',
 		    url: "/api2/extjs/nodes/" + nodename + "/syslog"
 		}
-	    ]);
+	    );
 	}
 
-	me.items.push([
+	me.items.push(
 	    {
 		title: gettext('Task History'),
 		itemId: 'tasks',
-		xtype: 'pveNodeTasks'
+//		xtype: 'pveNodeTasks'
+		    xtype: 'panel',
 	    }
-	]);
+	);
 
 	if (caps.nodes['Sys.Console']) {
-	    me.items.push([
+	    me.items.push(
 		{
-		    xtype: 'pveFirewallPanel',
+//		    xtype: 'pveFirewallPanel',
+		    xtype: 'panel',
 		    title: gettext('Firewall'),
 		    base_url: '/nodes/' + nodename + '/firewall',
 		    fwtype: 'node',
@@ -186,34 +193,38 @@ Ext.define('PVE.node.Config', {
 		{
 		    title: gettext('Updates'),
 		    itemId: 'apt',
-		    xtype: 'pveNodeAPT',
+//		    xtype: 'pveNodeAPT',
+		    xtype: 'panel',
 		    nodename: nodename
 		},
 		{
 		    title: gettext('Console'),
 		    itemId: 'console',
-		    xtype: 'pveNoVncConsole',
+//		    xtype: 'pveNoVncConsole',
+		    xtype: 'panel',
 		    consoleType: 'shell',
 		    nodename: nodename
+		},
+		{
+		    title: 'Ceph',
+		    itemId: 'ceph',
+//		xtype: 'pveNodeCeph',
+		    xtype: 'panel',
+		    phstateid: me.hstateid,
+		    nodename: nodename
 		}
-	    ]);
-	    me.items.push([{
-		title: 'Ceph',
-		itemId: 'ceph',
-		xtype: 'pveNodeCeph',
-		phstateid: me.hstateid,
-		nodename: nodename
-	    }]);
+	    );
 	}
 
-	me.items.push([
+	me.items.push(
 	    {
 		title: gettext('Subscription'),
 		itemId: 'support',
-		xtype: 'pveNodeSubscription',
+//		xtype: 'pveNodeSubscription',
+		xtype: 'panel',
 		nodename: nodename
 	    }
-	]);
+	);
 
 	me.callParent();
 
