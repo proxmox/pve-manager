@@ -192,12 +192,4 @@ Ext.define('PVE.node.Subscription', {
 
 	me.callParent();
     }
-}, function() {
-
-    Ext.define('pve-services', {
-	extend: 'Ext.data.Model',
-	fields: [ 'service', 'name', 'desc', 'state' ],
-	idProperty: 'service'
-    });
-
 });
