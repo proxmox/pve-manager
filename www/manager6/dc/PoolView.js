@@ -95,6 +95,7 @@ Ext.define('PVE.dc.PoolView', {
 		{
 		    header: gettext('Comment'),
 		    sortable: false,
+		    renderer: Ext.String.htmlEncode,
 		    dataIndex: 'comment',
 		    flex: 1
 		}

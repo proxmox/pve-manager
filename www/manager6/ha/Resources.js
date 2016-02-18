@@ -133,6 +133,7 @@ Ext.define('PVE.ha.ResourcesView', {
 		{
 		    header: gettext('Description'),
 		    flex: 1,
+		    renderer: Ext.String.htmlEncode,
 		    dataIndex: 'comment'
 		}
 	    ],

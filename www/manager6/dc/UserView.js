@@ -219,6 +219,7 @@ Ext.define('PVE.dc.UserView', {
 		{
 		    header: gettext('Comment'),
 		    sortable: false,
+		    renderer: Ext.String.htmlEncode,
 		    dataIndex: 'comment',
 		    flex: 1
 		}
