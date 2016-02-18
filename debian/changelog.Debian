@@ -2,6 +2,8 @@ pve-manager (4.1-14) unstable; urgency=medium
 
   * pveupdate: Fix problems with turnkey repository
 
+  * Fix 895: don't drop the other processor values on load()
+
  -- Proxmox Support Team <support@proxmox.com>  Thu, 18 Feb 2016 06:35:32 +0100
 
 pve-manager (4.1-13) unstable; urgency=medium
