@@ -66,6 +66,7 @@ Ext.define('PVE.window.Clone', {
 	}
 
 	if (rec.data.type === 'lvm' ||
+	    rec.data.type === 'lvmthin' ||
             rec.data.type === 'rbd' ||
             rec.data.type === 'iscsi' ||
             rec.data.type === 'sheepdog' ||
