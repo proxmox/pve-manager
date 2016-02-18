@@ -119,11 +119,14 @@ Ext.define('PVE.qemu.ProcessorEdit', {
 
 	me.load({
 	    success: function(response, options) {
-		var value = response.result.data['cpu'];
-		var cpu = PVE.Parser.parseQemuCpu(value);
-		ipanel.cpu = cpu;
-		if (value)
-		    me.setValues({ cputype: cpu.cputype });
+		var data = response.result.data;
+		var value = data['cpu'];
+		if (value) {
+		    var cpu = PVE.Parser.parseQemuCpu(value);
+		    ipanel.cpu = cpu;
+		    data.cputype = cpu.cputype;
+		}
+		me.setValues(data);
 	    }
 	});
     }
