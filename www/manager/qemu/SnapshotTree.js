@@ -279,7 +279,7 @@ Ext.define('PVE.qemu.SnapshotTree', {
 			if (record.data.name === 'current') {
 			    return gettext("You are here!");
 			} else {
-			    return value;
+			    return Ext.String.htmlEncode(value);
 			}
 		    }
 		}

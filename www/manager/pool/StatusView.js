@@ -13,6 +13,7 @@ Ext.define('PVE.pool.StatusView', {
 	var rows = {
 	    comment: {
 		header: gettext('Comment'), 
+		renderer: Ext.String.htmlEncode,
 		required: true
 	    }
 	};

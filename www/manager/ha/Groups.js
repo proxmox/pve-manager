@@ -108,7 +108,8 @@ Ext.define('PVE.ha.GroupsView', {
 		{
 		    header: gettext('Comment'),
 		    flex: 1,
-		    dataIndex: 'comment'
+		    dataIndex: 'comment',
+		    renderer: Ext.String.htmlEncode
 		}
 	    ],
 	    listeners: {
