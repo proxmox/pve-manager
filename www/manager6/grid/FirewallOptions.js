@@ -107,6 +107,7 @@ Ext.define('PVE.FirewallOptions', {
 	    add_boolean_row('enable', gettext('Enable Firewall'), 1);
 	    add_boolean_row('nosmurfs', gettext('SMURFS filter'), 1);
 	    add_boolean_row('tcpflags', gettext('TCP flags filter'), 0);
+	    add_boolean_row('ndp', gettext('Enable NDP'), 1);
 	    add_integer_row('nf_conntrack_max', 'nf_conntrack_max', 120, 32768);
 	    add_integer_row('nf_conntrack_tcp_timeout_established', 
 			    'nf_conntrack_tcp_timeout_established', 250, 7875);
@@ -117,6 +118,7 @@ Ext.define('PVE.FirewallOptions', {
 	} else if (me.fwtype === 'vm') {
 	    add_boolean_row('enable', gettext('Enable Firewall'), 0);
 	    add_boolean_row('dhcp', gettext('Enable DHCP'), 0);
+	    add_boolean_row('ndp', gettext('Enable NDP'), 1);
 	    add_boolean_row('macfilter', gettext('MAC filter'), 1);
 	    add_log_row('log_level_in');
 	    add_log_row('log_level_out');
