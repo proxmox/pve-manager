@@ -1,3 +1,15 @@
+pve-manager (4.1-15) unstable; urgency=medium
+
+  * add lvmthin to gui
+
+  * restrict lvm thin on qemu to storage type raw
+
+  * add htmlEncode to various fields
+
+  * firewall: add enable ndp option
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 20 Feb 2016 10:22:17 +0100
+
 pve-manager (4.1-14) unstable; urgency=medium
 
   * pveupdate: Fix problems with turnkey repository
