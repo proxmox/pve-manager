@@ -1,13 +1,19 @@
 Ext.define('PVE.form.RRDTypeSelector', {
     extend: 'Ext.form.field.ComboBox',
     alias: ['widget.pveRRDTypeSelector'],
-  
-    initComponent: function() {
-        var me = this;
-	
-	var store = new Ext.data.ArrayStore({
-            fields: [ 'id', 'timeframe', 'cf', 'text' ],
-            data : [
+
+    displayField: 'text',
+    valueField: 'id',
+    editable: false,
+    queryMode: 'local',
+    value: 'hour',
+    stateEvents: [ 'select' ],
+    stateful: true,
+    stateId: 'pveRRDTypeSelection',
+    store: {
+	type: 'array',
+	fields: [ 'id', 'timeframe', 'cf', 'text' ],
+	data : [
 		[ 'hour', 'hour', 'AVERAGE', "Hour (average)" ],
 		[ 'hourmax', 'hour', 'MAX', "Hour (max)" ],
 		[ 'day', 'day', 'AVERAGE', "Day (average)" ],
@@ -19,47 +25,25 @@ Ext.define('PVE.form.RRDTypeSelector', {
 		[ 'year', 'year', 'AVERAGE', "Year (average)" ],
 		[ 'yearmax', 'year', 'MAX', "Year (max)" ]
 	    ]
-	});
-
-	Ext.apply(me, {
-            store: store,
-            displayField: 'text',
-	    valueField: 'id',
-	    editable: false,
-            queryMode: 'local',
-	    value: 'hour',
-	    getState: function() {
-		var ind = store.findExact('id', me.getValue());
-		var rec = store.getAt(ind);
-		if (!rec) {
-		    return;
-		}
-		return { 
-		    id: rec.data.id,
-		    timeframe: rec.data.timeframe,
-		    cf: rec.data.cf
-		};
-	    },
-	    applyState : function(state) {
-		if (state && state.id) {
-		    me.setValue(state.id);
-		}
-	    },
-	    stateEvents: [ 'select' ],
-	    stateful: true,
-	    id: 'pveRRDTypeSelection'        
-	});
-
-	me.callParent();
-
-	var statechange = function(sp, key, value) {
-	    if (key === me.id) {
-		me.applyState(value);
-	    }
+	},
+// save current selection in the state Provider so RRDView can read it
+    getState: function() {
+	var ind = this.getStore().findExact('id', this.getValue());
+	var rec = this.getStore().getAt(ind);
+	if (!rec) {
+	    return;
+	}
+	return {
+	    id: rec.data.id,
+	    timeframe: rec.data.timeframe,
+	    cf: rec.data.cf
 	};
-
-	var sp = Ext.state.Manager.getProvider();
-	me.mon(sp, 'statechange', statechange, me);
-    }
+    },
+// set selection based on last saved state
+    applyState : function(state) {
+	if (state && state.id) {
+	    this.setValue(state.id);
+	}
+    },
 });
 
