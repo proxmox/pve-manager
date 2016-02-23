@@ -448,10 +448,10 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		xtype: 'textfield',
 		name: 'mp',
 		value: '',
-		emptyText: gettext('Path'),
+		emptyText:  gettext('/some/path'),
 		allowBlank: false,
 		hidden: isroot,
-		fieldLabel: gettext('/some/path'),
+		fieldLabel: gettext('Path'),
 	    });
 	};
 
