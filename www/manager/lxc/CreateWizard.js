@@ -15,14 +15,6 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    ]
 	});
 
-	var storagesel = Ext.create('PVE.form.StorageSelector', {
-	    name: 'storage',
-	    fieldLabel: gettext('Storage'),
-	    storageContent: 'rootdir',
-	    autoSelect: true,
-	    allowBlank: false
-	});
-
 	var tmplsel = Ext.create('PVE.form.FileSelector', {
 	    name: 'ostemplate',
 	    storageContent: 'vztmpl',
@@ -41,6 +33,14 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    tmplsel.setStorage(value);
 		}
 	    }
+	});
+
+	var rootfspanel = Ext.create('PVE.lxc.MountPointInputPanel', {
+	    title: gettext('Root Disk'),
+	    insideWizard: true,
+	    create: true,
+	    unused: false,
+	    confid: 'rootfs',
 	});
 
 	var networkpanel = Ext.create('PVE.lxc.NetworkInputPanel', {
@@ -68,7 +68,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 				    tmplstoragesel.setNodename(value);
 				    tmplsel.setStorage(undefined, value);
 				    networkpanel.setNodename(value);
-				    storagesel.setNodename(value);
+				    rootfspanel.setNodename(value);
 				}
 			    }
 			},
@@ -141,24 +141,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    title: gettext('Template'),
 		    column1: [ tmplstoragesel, tmplsel]
 		},
-		{
-		    xtype: 'inputpanel',
-		    title: gettext('Root Disk'),
-		    column1: [
-			storagesel,
-			{
-			    xtype: 'numberfield',
-			    name: 'rootfs',
-			    minValue: 0.1,
-			    maxValue: 128*1024,
-			    decimalPrecision: 3,
-			    value: '8',
-			    step: 1,
-			    fieldLabel: gettext('Disk size') + ' (GB)',
-			    allowBlank: false
-			}
-		    ]
-		},
+		rootfspanel,
 		{
 		    xtype: 'pveLxcCPUInputPanel',
 		    title: gettext('CPU'),
