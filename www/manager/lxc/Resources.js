@@ -35,6 +35,8 @@ Ext.define('PVE.lxc.RessourceView', {
 
 	var caps = Ext.state.Manager.get('GuiCap');
 
+	var mpeditor = caps.vms['VM.Config.Disk'] ? 'PVE.lxc.MountPointEdit' : undefined;
+
 	var rows = {
 	    memory: {
 		header: gettext('Memory'),
@@ -77,6 +79,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    rootfs: {
 		header: gettext('Root Disk'),
 		defaultValue: PVE.Utils.noneText,
+		editor: mpeditor,
 		tdCls: 'pve-itype-icon-storage'
 	    }
 	};
@@ -86,7 +89,18 @@ Ext.define('PVE.lxc.RessourceView', {
 	    rows[confid] = {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
+		editor: mpeditor,
 		header: gettext('Mount Point') + ' (' + confid +')',
+	    };
+	}
+
+	for (i = 0; i < 8; i++) {
+	    confid = "unused" + i;
+	    rows[confid] = {
+		group: 1,
+		tdCls: 'pve-itype-icon-storage',
+		editor: mpeditor,
+		header: gettext('Unused Disk') + ' ' + i,
 	    };
 	}
 
@@ -138,6 +152,23 @@ Ext.define('PVE.lxc.RessourceView', {
 	    win.on('destroy', reload);
 	};
 
+	var run_remove = function(b, e, rec) {
+	    PVE.Utils.API2Request({
+		url: '/api2/extjs/' + baseurl,
+		waitMsgTarget: me,
+		method: 'PUT',
+		params: {
+		    'delete': rec.data.key
+		},
+		callback: function() {
+		    reload();
+		},
+		failure: function (response, opts) {
+		    Ext.Msg.alert('Error', response.htmlStatus);
+		}
+	    });
+	};
+
 	var edit_btn = new PVE.button.Button({
 	    text: gettext('Edit'),
 	    selModel: sm,
@@ -159,12 +190,30 @@ Ext.define('PVE.lxc.RessourceView', {
 	    handler: run_resize
 	});
 
+	var remove_btn = new PVE.button.Button({
+	    text: gettext('Remove'),
+	    selModel: sm,
+	    disabled: true,
+	    dangerous: true,
+	    confirmMsg: function(rec) {
+		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
+					    "'" + me.renderKey(rec.data.key, {}, rec) + "'");
+		if (rec.data.key.match(/^unused\d+$/)) {
+		    msg += " " + gettext('This will permanently erase all image data.');
+		}
+
+		return msg;
+	    },
+	    handler: run_remove
+	});
+
 	var set_button_status = function() {
 	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 
 	    if (!rec) {
 		edit_btn.disable();
+		remove_btn.disable();
 		resize_btn.disable();
 		return;
 	    }
@@ -176,6 +225,7 @@ Ext.define('PVE.lxc.RessourceView', {
 
 	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor);
 
+	    remove_btn.setDisabled(!isDisk || rec.data.key === 'rootfs');
 	    resize_btn.setDisabled(!isDisk);
 
 	};
@@ -184,8 +234,31 @@ Ext.define('PVE.lxc.RessourceView', {
 	    url: '/api2/json/' + baseurl,
 	    selModel: sm,
 	    cwidth1: 170,
-	    tbar: [ edit_btn,
-		    resize_btn],
+	    tbar: [
+		{
+		    text: gettext('Add'),
+		    menu: new Ext.menu.Menu({
+			items: [
+			    {
+				text: gettext('Mount Point'),
+				iconCls: 'pve-itype-icon-storage',
+				disabled: !caps.vms['VM.Config.Disk'],
+				handler: function() {
+				    var win = Ext.create('PVE.lxc.MountPointEdit', {
+					url: '/api2/extjs/' + baseurl,
+					pveSelNode: me.pveSelNode
+				    });
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+			]
+		    })
+		},
+		edit_btn,
+		remove_btn,
+		resize_btn,
+	    ],
 	    rows: rows,
 	    listeners: {
 		show: reload,
