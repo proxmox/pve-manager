@@ -223,7 +223,13 @@ Ext.define('PVE.lxc.RessourceView', {
 
 	    var isDisk = (rowdef.tdCls == 'pve-itype-icon-storage');
 
-	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor);
+	    var noedit = rec.data['delete'] || !rowdef.editor;
+	    if (!noedit && PVE.UserName !== 'root@pam' && key.match(/^mp\d+$/)) {
+		var mp = PVE.Parser.parseLxcMountPoint(value);
+		if (mp.type !== 'volume')
+		    noedit = true;
+	    }
+	    edit_btn.setDisabled(noedit);
 
 	    remove_btn.setDisabled(!isDisk || rec.data.key === 'rootfs');
 	    resize_btn.setDisabled(!isDisk);
