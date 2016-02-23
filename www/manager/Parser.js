@@ -307,6 +307,16 @@ Ext.define('PVE.Parser', { statics: {
 	    return;
 	}
 
+	var m = res.file.match(/^([a-z][a-z0-9\-\_\.]*[a-z0-9]):/);
+	if (m) {
+	    res.storage = m[1];
+	    res.type = 'volume';
+	} else if (res.file.match(/^\/dev\//)) {
+	    res.type = 'device';
+	} else {
+	    res.type = 'bind';
+	}
+
 	return res;
     },
 
@@ -314,7 +324,8 @@ Ext.define('PVE.Parser', { statics: {
 	var drivestr = mp.file;
 
 	Ext.Object.each(mp, function(key, value) {
-	    if (!Ext.isDefined(value) || key === 'file') {
+	    if (!Ext.isDefined(value) || key === 'file' ||
+		key === 'type' || key === 'storage') {
 		return; // continue
 	    }
 	    drivestr += ',' + key + '=' + value;
