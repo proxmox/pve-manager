@@ -1040,8 +1040,15 @@ __PACKAGE__->register_method({
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-	    storage => get_standard_option('pve-storage-id'),
-	    template => { type => 'string', maxLength => 255 },
+	    storage => get_standard_option('pve-storage-id', {
+		description => "Only list status for  specified storage",
+		completion => \&PVE::Storage::complete_storage_enabled,
+	    }),
+	    template => { type => 'string',
+			  description => "The template wich will downloaded",
+			  maxLength => 255,
+			  completion => \&complete_templet_repo,
+	    },
 	},
     },
     returns => { type => "string" },
@@ -1518,6 +1525,21 @@ __PACKAGE__->register_method ({
 	return $rpcenv->fork_worker('migrateall', undef, $authuser, $code);
 
     }});
+
+# bash completion helper
+
+sub complete_templet_repo {
+    my ($cmdname, $pname, $cvalue) = @_;
+
+    my $repo = PVE::APLInfo::load_data();
+    my $res = [];
+    foreach my $templ (keys %{$repo->{all}}) {
+	next if $templ !~ m/^$cvalue/;
+	push @$res, $templ;
+    }
+
+    return $res;
+}
 
 package PVE::API2::Nodes;
 

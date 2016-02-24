@@ -12,6 +12,7 @@ use PVE::INotify;
 use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::CLIHandler;
+use PVE::API2::Nodes;
 
 use base qw(PVE::CLIHandler);
 
@@ -44,6 +45,7 @@ __PACKAGE__->register_method ({
 
 our $cmddef = {
     update => [ __PACKAGE__, 'update', []],
+    download => [ 'PVE::API2::Nodes::Nodeinfo', 'apl_download', [ 'storage', 'template'], { node => $nodename } ],
 };
 
 1;
