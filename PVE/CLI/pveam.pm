@@ -13,6 +13,7 @@ use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::CLIHandler;
 use PVE::API2::Nodes;
+use PVE::Storage;
 
 use base qw(PVE::CLIHandler);
 
@@ -96,6 +97,50 @@ __PACKAGE__->register_method ({
 	return $res;
     }});
 
+__PACKAGE__->register_method ({
+    name => 'remove',
+    path => 'remove',
+    method => 'DELETE',
+    description => "Remove a template.",
+    permissions => {
+	description => "Only user who can create templates can remove them.",
+	check => ['perm', '/storage/{storage}', ['Datastore.AllocateTemplate']],
+    },
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    template_path => { 
+		type => 'string',
+		description => "The template to remove.",
+		maxLength => 255,
+	    },
+	},
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
+
+	my $template = $param->{template_path};
+
+	my $cfg = PVE::Cluster::cfs_read_file("storage.cfg");
+
+	$rpcenv->check_volume_access($authuser, $cfg, undef, $template);
+
+	my $abs_path = PVE::Storage::abs_filesystem_path($cfg, $template);
+
+	unlink $abs_path;
+
+	return undef;
+    }});
+
+
 my $print_list = sub {
     my ($list) = @_;
 
@@ -111,6 +156,7 @@ our $cmddef = {
     update => [ __PACKAGE__, 'update', []],
     download => [ 'PVE::API2::Nodes::Nodeinfo', 'apl_download', [ 'storage', 'template'], { node => $nodename } ],
     list => [  __PACKAGE__, 'index', [ 'storage' ], { node => $nodename }, $print_list ],
+    remove => [  __PACKAGE__, 'remove', [ 'template_path' ], { node => $nodename }]
 };
 
 1;
