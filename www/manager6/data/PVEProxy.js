@@ -61,7 +61,8 @@ Ext.define('PVE.RestProxy', {
 
     Ext.define('KeyValue', {
 	extend: "Ext.data.Model",
-	fields: [ 'key', 'value' ]
+	fields: [ 'key', 'value' ],
+	idProperty: 'key'
     });
 
     Ext.define('KeyValuePendingDelete', {
