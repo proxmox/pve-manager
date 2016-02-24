@@ -43,9 +43,74 @@ __PACKAGE__->register_method ({
 
     }});
 
+__PACKAGE__->register_method ({
+    name => 'index',
+    path => 'index',
+    method => 'GET',
+    description => "Get list of all templates on storage",
+    permissions => {
+	description => "Show all users the template wich have permission on that storage.",
+	check => ['perm', '/storage/{storage}', ['Datastore.AllocateTemplate']],
+    },
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    storage => get_standard_option('pve-storage-id', {
+		description => "Only list status for specified storage",
+		completion => \&PVE::Storage::complete_storage_enabled,
+	   }),
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {},
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
+
+	my $storeid = $param->{storage};
+
+	my $cfg = PVE::Cluster::cfs_read_file("storage.cfg");
+
+	die "Storage do not support templates!\n" if !$cfg->{ids}->{$storeid}->{content}->{vztmpl};
+
+	my $vollist = PVE::Storage::volume_list($cfg, $storeid, undef, 'vztmpl');
+
+	my $res = [];
+	foreach my $item (@$vollist) {
+	    eval { $rpcenv->check_volume_access($authuser, $cfg, undef, $item->{volid}); };
+	    next if $@;
+	    push @$res, $item;
+	}
+
+	return $res;
+    }});
+
+my $print_list = sub {
+    my ($list) = @_;
+
+    printf "%-60s %-6s\n",
+    qw(NAME SIZE);
+
+    foreach my $rec (@$list) {
+	printf "%-60s %-4.2fMB\n", $rec->{volid}, $rec->{size}/(1024*1024);
+    }
+};
+
 our $cmddef = {
     update => [ __PACKAGE__, 'update', []],
     download => [ 'PVE::API2::Nodes::Nodeinfo', 'apl_download', [ 'storage', 'template'], { node => $nodename } ],
+    list => [  __PACKAGE__, 'index', [ 'storage' ], { node => $nodename }, $print_list ],
 };
 
 1;
