@@ -1,11 +1,12 @@
 /*
- * The DiffStore acts as proxy between an UpdateStore instance and a component.
+ * The DiffStore is a in-memory store acting as proxy between a real store
+ * instance and a component.
  * Its purpose is to redisplay the component *only* if the data has been changed
- * inside the UpdateStore, to avoid the annoying visual flickering of using
- * the UpdateStore directly.
+ * inside the real store, to avoid the annoying visual flickering of using
+ * the real store directly.
  *
  * Implementation:
- * The DiffStore monitors via mon() the 'load' events sent by the target store.
+ * The DiffStore monitors via mon() the 'load' events sent by the real store.
  * On each 'load' event, the DiffStore compares its own content with the target
  * store (call to cond_add_item()) and then fires a 'refresh' event.
  * The 'refresh' event will automatically trigger a view refresh on the component
@@ -13,8 +14,9 @@
  */
 
 /* Config properties:
- * rstore: A target store to track changes
+ * rstore: the realstore which will autorefresh its content from the API
  * Only works if rstore has a model and use 'idProperty'
+ * sortAfterUpdate: sort the diffstore before rendering the view
  */
 Ext.define('PVE.data.DiffStore', {
     extend: 'Ext.data.Store',

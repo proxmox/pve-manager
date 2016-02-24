@@ -3,6 +3,9 @@
  * to refresh the store data in the background
  * Components using this store directly will flicker
  * due to the redisplay of the element ater 'config.interval' ms
+ *
+ * Note that you have to call yourself startUpdate() for the background load
+ * to begin
  */
 Ext.define('PVE.data.UpdateStore', {
     extend: 'Ext.data.Store',

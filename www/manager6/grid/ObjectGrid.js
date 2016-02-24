@@ -1,3 +1,17 @@
+/* Renders a list of key values objets
+
+mandatory config parameters:
+rows: an object container where each propery is a key-value object we want to render
+       var rows = {
+           keyboard: {
+               header: gettext('Keyboard Layout'),
+               editor: 'PVE.dc.KeyboardEdit',
+               renderer: PVE.Utils.render_kvm_language,
+               required: true
+           },
+
+*/
+
 Ext.define('PVE.grid.ObjectGrid', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveObjectGrid'],
