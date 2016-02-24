@@ -1,23 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -T
 
 use strict;
 use warnings;
-use PVE::Cluster;
-use PVE::APLInfo;
 
-if (scalar (@ARGV) != 1) {
-    print STDERR "usage: $0 CMD\n";
-    exit (-1);
-}
+use PVE::CLI::pveam;
 
-my $cmd = shift;
-
-if ($cmd eq 'update') {
-    my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
-    exit (0) if PVE::APLInfo::update($dccfg->{http_proxy});
-    print STDERR "update failed - see /var/log/pveam.log for details\n";
-    exit (-1);
-} else {
-    print STDERR "unknown CMD '$cmd'\n";
-    exit (-1);
-}
+PVE::CLI::pveam->run_cli();

@@ -3,13 +3,12 @@ include ../defines.mk
 SUBDIRS = init.d ocf test
 
 SERVICES = pvestatd pveproxy pvedaemon spiceproxy
-CLITOOLS = vzdump pvesubscription pveceph
+CLITOOLS = vzdump pvesubscription pveceph pveam
 
 SCRIPTS =  			\
 	${SERVICES}		\
 	${CLITOOLS}		\
 	pvesh			\
-	pveam			\
 	pvebanner		\
 	pveversion		\
 	pvemailforward.pl	\
@@ -25,9 +24,9 @@ CLI_MANS = 				\
 	$(addsuffix .1, ${CLITOOLS})	\
 	pveversion.1			\
 	pveupgrade.1			\
-	pveperf.1				\
+	pveperf.1			\
 	pvesh.1				\
-	pvereport.1
+	pvereport.1			\
 
 CLI_PODS = $(addsuffix .pod, ${CLI_MANS})
 
