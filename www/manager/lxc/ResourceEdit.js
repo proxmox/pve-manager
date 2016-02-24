@@ -1,3 +1,4 @@
+/*jslint confusion: true */
 var labelWidth = 120;
 
 Ext.define('PVE.lxc.MemoryEdit', {
@@ -54,7 +55,7 @@ Ext.define('PVE.lxc.MountPointEdit', {
 	    confid: me.confid,
 	    nodename: nodename,
 	    unused: unused,
-	    create: me.create,
+	    create: me.create
 	});
 
 	var subject;
@@ -68,7 +69,7 @@ Ext.define('PVE.lxc.MountPointEdit', {
 
 	Ext.apply(me, {
 	    subject: subject,
-	    items: ipanel,
+	    items: ipanel
 	});
 
 	me.callParent();
@@ -126,7 +127,7 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 	    }
 	];
 
- 	if (me.insideWizard) {
+	if (me.insideWizard) {
 	    me.column1 = items;
 	} else {
 	    me.items = items;
@@ -202,23 +203,27 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    me.mpdata.file = values.storage + ':' + values.disksize;
 	}
 
-	if (confid !== 'rootfs')
+	if (confid !== 'rootfs') {
 	    me.mpdata.mp = values.mp;
+	}
 
-	if (values.ro)
+	if (values.ro) {
 	    me.mpdata.ro = 1;
-	else
+	} else {
 	    delete me.mpdata.ro;
+	}
 
-	if (values.quota)
+	if (values.quota) {
 	    me.mpdata.quota = 1;
-	else
+	} else {
 	    delete me.mpdata.quota;
+	}
 
-	if (values.acl === 'Default')
+	if (values.acl === 'Default') {
 	    delete me.mpdata.acl;
-	else
+	} else {
 	    me.mpdata.acl = values.acl;
+	}
 
 	var res = {};
 	res[confid] = PVE.Parser.printLxcMountPoint(me.mpdata);
@@ -229,8 +234,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	var me = this;
 
 	me.mpdata = mp;
-	if (!Ext.isDefined(me.mpdata['acl'])) {
-	    me.mpdata['acl'] = 'Default';
+	if (!Ext.isDefined(me.mpdata.acl)) {
+	    me.mpdata.acl = 'Default';
 	}
 
 	if (mp.type === 'bind') {
@@ -247,7 +252,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	me.vmconfig = vmconfig;
 
 	if (me.mpsel) {
-	    for (var i = 0; i != 8; ++i) {
+	    var i;
+	    for (i = 0; i != 8; ++i) {
 		var name = "mp" + i;
 		if (!Ext.isDefined(vmconfig[name])) {
 		    me.mpsel.setValue(name);
@@ -285,7 +291,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 
 	if (!me.confid || me.unused) {
 	    var names = [];
-	    for (var i = 0; i != 8; ++i) {
+	    var i;
+	    for (i = 0; i != 8; ++i) {
 		var name = 'mp' + i;
 		names.push([name, name]);
 	    }
@@ -296,17 +303,19 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		allowBlank: false,
 		data: names,
 		validator: function(value) {
-		    if (!me.rendered)
+		    if (!me.rendered) {
 			return;
-		    if (Ext.isDefined(me.vmconfig[value]))
+		    }
+		    if (Ext.isDefined(me.vmconfig[value])) {
 			return "Mount point is already in use.";
+		    }
 		    return true;
 		},
 		listeners: {
 		    change: function(field, value) {
 			field.validate();
 		    }
-		},
+		}
 	    });
 	    me.column1.push(me.mpsel);
 	}
@@ -336,8 +345,9 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		    } else {
 			me.quota.setDisabled(false);
 		    }
-		    if (me.unused || !me.create)
+		    if (me.unused || !me.create) {
 			return;
+		    }
 		    if (rec.data.type === 'iscsi') {
 			me.hdfilesel.setStorage(value);
 			me.hdfilesel.setDisabled(false);
@@ -360,8 +370,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 			me.hdsizesel.setDisabled(false);
 			me.hdsizesel.setVisible(true);
 		    }
-		},
-	    },
+		}
+	    }
 	});
 	me.column1.push(me.hdstoragesel);
 
@@ -382,8 +392,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 			var disk = me.vmconfig[value];
 			var storage = disk.split(':')[0];
 			me.hdstoragesel.setValue(storage);
-		    },
-		},
+		    }
+		}
 	    });
 	    me.column1.push(me.unusedDisks);
 	} else if (me.create) {
@@ -421,7 +431,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	me.quota = Ext.createWidget('pvecheckbox', {
 	    name: 'quota',
 	    defaultValue: 0,
-	    fieldLabel: gettext('Enable quota'),
+	    fieldLabel: gettext('Enable quota')
 	});
 
 	me.column2 = [
@@ -430,7 +440,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		name: 'ro',
 		defaultValue: 0,
 		fieldLabel: gettext('Read-only'),
-		hidden: me.insideWizard,
+		hidden: me.insideWizard
 	    },
 	    {
 		xtype: 'pveKVComboBox',
@@ -438,9 +448,9 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		fieldLabel: gettext('ACLs'),
 		data: [['Default', 'Default'], ['1', 'On'], ['0', 'Off']],
 		value: 'Default',
-		allowBlank: true,
+		allowBlank: true
 	    },
-	    me.quota,
+	    me.quota
 	];
 
 	if (!isroot) {
@@ -451,9 +461,9 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		emptyText:  gettext('/some/path'),
 		allowBlank: false,
 		hidden: isroot,
-		fieldLabel: gettext('Path'),
+		fieldLabel: gettext('Path')
 	    });
-	};
+	}
 
 	me.callParent();
     }

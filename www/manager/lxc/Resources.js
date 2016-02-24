@@ -65,7 +65,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		defaultValue: 1,
 		tdCls: 'pve-itype-icon-processor',
 		renderer: function(value) {
-		    if (value) { return value; };
+		    if (value) { return value; }
 		    return gettext('unlimited');
 		}
 	    },
@@ -90,7 +90,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
 		editor: mpeditor,
-		header: gettext('Mount Point') + ' (' + confid +')',
+		header: gettext('Mount Point') + ' (' + confid + ')'
 	    };
 	}
 
@@ -100,7 +100,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
 		editor: mpeditor,
-		header: gettext('Unused Disk') + ' ' + i,
+		header: gettext('Unused Disk') + ' ' + i
 	    };
 	}
 
@@ -226,8 +226,9 @@ Ext.define('PVE.lxc.RessourceView', {
 	    var noedit = rec.data['delete'] || !rowdef.editor;
 	    if (!noedit && PVE.UserName !== 'root@pam' && key.match(/^mp\d+$/)) {
 		var mp = PVE.Parser.parseLxcMountPoint(value);
-		if (mp.type !== 'volume')
+		if (mp.type !== 'volume') {
 		    noedit = true;
+		}
 	    }
 	    edit_btn.setDisabled(noedit);
 
@@ -257,13 +258,13 @@ Ext.define('PVE.lxc.RessourceView', {
 				    win.on('destroy', reload);
 				    win.show();
 				}
-			    },
+			    }
 			]
 		    })
 		},
 		edit_btn,
 		remove_btn,
-		resize_btn,
+		resize_btn
 	    ],
 	    rows: rows,
 	    listeners: {

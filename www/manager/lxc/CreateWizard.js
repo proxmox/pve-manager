@@ -40,14 +40,14 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    insideWizard: true,
 	    create: true,
 	    unused: false,
-	    confid: 'rootfs',
+	    confid: 'rootfs'
 	});
 
 	var networkpanel = Ext.create('PVE.lxc.NetworkInputPanel', {
 	    title: gettext('Network'),
 	    insideWizard: true,
 	    dataCache: {},
-	    create: true,
+	    create: true
 	});
 
 	Ext.applyIf(me, {
