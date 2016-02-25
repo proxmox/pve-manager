@@ -138,7 +138,7 @@ Ext.define('PVE.ha.ResourcesView', {
 		}
 	    ],
 	    listeners: {
-		show: reload,
+		activate: reload,
 		beforeselect: function(grid, record, index, eOpts) {
 		    if (!caps.nodes['Sys.Console']) {
 			return false;

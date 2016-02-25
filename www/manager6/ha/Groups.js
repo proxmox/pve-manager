@@ -113,7 +113,7 @@ Ext.define('PVE.ha.GroupsView', {
 		}
 	    ],
 	    listeners: {
-		show: reload,
+		activate: reload,
 		beforeselect: function(grid, record, index, eOpts) {
 		    if (!caps.nodes['Sys.Console']) {
 			return false;

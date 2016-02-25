@@ -186,7 +186,7 @@ Ext.define('PVE.node.Subscription', {
 	    ],
 	    rows: rows,
 	    listeners: {
-		show: reload
+		activate: reload
 	    }
 	});
 

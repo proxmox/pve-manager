@@ -186,7 +186,7 @@ Ext.define('PVE.node.APT', {
 		}
 	    ],
 	    listeners: { 
-		show: reload,
+		activate: reload,
 		itemdblclick: function(v, rec) {
 		    show_changelog(rec);
 		}

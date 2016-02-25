@@ -319,7 +319,7 @@ Ext.define('PVE.node.NetworkView', {
 		}
 	    ],
 	    listeners: {
-		show: reload
+		activate: reload
 	    }
 	});
 
