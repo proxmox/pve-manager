@@ -15,7 +15,7 @@ use PVE::RPCEnvironment;
 use PVE::API2::Subscription;
 use PVE::API2::APT;
 
-initlog ('pvedailycron', 'daemon');
+initlog ('pveupdate', 'daemon');
 
 die "please run as root\n" if $> != 0;
 
