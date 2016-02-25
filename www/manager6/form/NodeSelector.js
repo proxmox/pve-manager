@@ -10,12 +10,10 @@ Ext.define('PVE.form.NodeSelector', {
     // only allow those nodes (array)
     allowedNodes: undefined,
 
-    initComponent: function() {
-	var me = this;
-
-	var store = Ext.create('Ext.data.Store', {
+    valueField: 'node',
+    displayField: 'node',
+    store: {
 	    fields: [ 'node', 'cpu', 'maxcpu', 'mem', 'maxmem', 'uptime' ],
-	    autoLoad: true,
 	    proxy: {
 		type: 'pve',
 		url: '/api2/json/nodes'
@@ -30,70 +28,71 @@ Ext.define('PVE.form.NodeSelector', {
 		    direction: 'DESC'
 		}
 	    ]
-	});
+	},
 
-	Ext.apply(me, {
-	    store: store,
-	    valueField: 'node',
-	    displayField: 'node',
-            listConfig: {
-		columns: [
-		    {
-			header: gettext('Node'),
-			dataIndex: 'node',
-			sortable: true,
-			hideable: false,
-			flex: 1
-		    },
-		    {
-			header: gettext('Memory usage'),			
-			renderer: PVE.Utils.render_mem_usage,
-			sortable: true,
-			width: 100,
-			dataIndex: 'mem'
-		    },
-		    {
-			header: gettext('CPU usage'),
-			renderer: PVE.Utils.render_cpu,
-			sortable: true,
-			width: 100,
-			dataIndex: 'cpu'
-		    }
-		]
+    listConfig: {
+	columns: [
+	    {
+		header: gettext('Node'),
+		dataIndex: 'node',
+		sortable: true,
+		hideable: false,
+		flex: 1
 	    },
-	    validator: function(value) {
-		/*jslint confusion: true */
-		if (!me.onlineValidator || (me.allowBlank && !value)) {
-		    return true;
-		}
-		
-		var offline = [];
-		var notAllowed = [];
+	    {
+		header: gettext('Memory usage'),
+		renderer: PVE.Utils.render_mem_usage,
+		sortable: true,
+		width: 100,
+		dataIndex: 'mem'
+	    },
+	    {
+		header: gettext('CPU usage'),
+		renderer: PVE.Utils.render_cpu,
+		sortable: true,
+		width: 100,
+		dataIndex: 'cpu'
+	    }
+	],
+    },
 
-		Ext.Array.each(value.split(/\s*,\s*/), function(node) {
-		    var rec = me.store.findRecord(me.valueField, node);
-		    if (!(rec && rec.data) || !Ext.isNumeric(rec.data.mem)) {
-			offline.push(node);
-		    } else if (me.allowedNodes && !Ext.Array.contains(me.allowedNodes, node)) {
-			notAllowed.push(node);
-		    }
-		});
+    validator: function(value) {
+	/*jslint confusion: true */
+	var me = this;
+	if (!me.onlineValidator || (me.allowBlank && !value)) {
+	    return true;
+	}
 
-		if (notAllowed.length !== 0) {
-		    return "Node " + notAllowed.join(', ') + " is not allowed for this action!";
-		} 
+	var offline = [];
+	var notAllowed = [];
 
-		if (offline.length !== 0) {
-		    return "Node " + offline.join(', ') + " seems to be offline!";
-		}
-		return true;
+	Ext.Array.each(value.split(/\s*,\s*/), function(node) {
+	    var rec = me.store.findRecord(me.valueField, node);
+	    if (!(rec && rec.data) || !Ext.isNumeric(rec.data.mem)) {
+		offline.push(node);
+	    } else if (me.allowedNodes && !Ext.Array.contains(me.allowedNodes, node)) {
+		notAllowed.push(node);
 	    }
 	});
+
+	if (notAllowed.length !== 0) {
+	    return "Node " + notAllowed.join(', ') + " is not allowed for this action!";
+	}
+
+	if (offline.length !== 0) {
+	    return "Node " + offline.join(', ') + " seems to be offline!";
+	}
+	return true;
+    },
+
+    initComponent: function() {
+	var me = this;
 
         if (me.selectCurNode && PVE.curSelectedNode.data.node) {
             me.preferredValue = PVE.curSelectedNode.data.node;
         }
 
         me.callParent();
+        me.getStore().load();
     }
 });
