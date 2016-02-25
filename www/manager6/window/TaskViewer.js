@@ -201,7 +201,7 @@ Ext.define('PVE.window.TaskViewer', {
 
 	statstore.startUpdate();
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    title: "Task viewer: " + task.desc,
 	    width: 800,
 	    height: 400,
