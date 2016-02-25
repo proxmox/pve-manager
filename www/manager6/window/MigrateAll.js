@@ -41,7 +41,7 @@ Ext.define('PVE.window.MigrateAll', {
 	    },
 	    items: [
 		{
-		    xtype: 'PVE.form.NodeSelector',
+		    xtype: 'pveNodeSelector',
 		    name: 'target',
 		    fieldLabel: 'Target node',
 		    allowBlank: false,

@@ -27,7 +27,7 @@ Ext.define('PVE.ha.GroupInputPanel', {
 		allowBlank: false
 	    },
 	    {
-		xtype: 'PVE.form.NodeSelector',
+		xtype: 'pveNodeSelector',
 		name: 'nodes',
 		fieldLabel: gettext('Nodes'),
 		allowBlank: false,
