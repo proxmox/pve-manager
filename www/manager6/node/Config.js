@@ -163,8 +163,7 @@ Ext.define('PVE.node.Config', {
 		{
 		    title: 'Syslog',
 		    itemId: 'syslog',
-//		    xtype: 'pveLogView',
-		    xtype: 'panel',
+		    xtype: 'pveLogView',
 		    url: "/api2/extjs/nodes/" + nodename + "/syslog"
 		}
 	    );
@@ -174,8 +173,7 @@ Ext.define('PVE.node.Config', {
 	    {
 		title: gettext('Task History'),
 		itemId: 'tasks',
-//		xtype: 'pveNodeTasks'
-		    xtype: 'panel',
+		xtype: 'pveNodeTasks'
 	    }
 	);
 
