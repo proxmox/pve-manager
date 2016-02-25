@@ -2,7 +2,9 @@ Ext.define('PVE.node.Tasks', {
     extend: 'Ext.grid.GridPanel',
 
     alias: ['widget.pveNodeTasks'],
-
+    stateful: false,
+    loadMask: true,
+    sortableColumns: false,
     vmidFilter: 0,
 
     initComponent : function() {
@@ -13,9 +15,9 @@ Ext.define('PVE.node.Tasks', {
 	    throw "no node name specified";
 	}
 
-	var store = Ext.create('Ext.data.Store', {
+	var store = Ext.create('Ext.data.BufferedStore', {
 	    pageSize: 500,
-	    buffered: true,
+	    autoLoad: true,
 	    remoteFilter: true,
 	    model: 'pve-tasks',
 	    proxy: {
@@ -44,11 +46,9 @@ Ext.define('PVE.node.Tasks', {
 
 	updateProxyParams();
 
-	// fixme: scroller update fails 
-	// http://www.sencha.com/forum/showthread.php?133677-scroller-does-not-adjust-to-the-filtered-grid-data&p=602887
-	var reload_task = new Ext.util.DelayedTask(function() {
+	var reload_task = Ext.create('Ext.util.DelayedTask',function() {
 	    updateProxyParams();
-	    store.filter();
+	    store.reload();
 	});
 
 	var run_task_viewer = function() {
@@ -73,14 +73,10 @@ Ext.define('PVE.node.Tasks', {
 
 	Ext.apply(me, {
 	    store: store,
-	    stateful: false,
-	    verticalScrollerType: 'paginggridscroller',
-	    loadMask: true,
-	    invalidateScrollerOnRefresh: false,
 	    viewConfig: {
 		trackOver: false,
 		stripeRows: false, // does not work with getRowClass()
- 
+
 		getRowClass: function(record, index) {
 		    var status = record.get('status');
 
@@ -115,7 +111,6 @@ Ext.define('PVE.node.Tasks', {
 		    }
 		}, ' '
 	    ],
-	    sortableColumns: false,
 	    columns: [
 		{ 
 		    header: gettext("Start Time"), 
@@ -173,7 +168,6 @@ Ext.define('PVE.node.Tasks', {
 
 	me.callParent();
 
-	store.guaranteeRange(0, store.pageSize - 1);
     }
 });
 
