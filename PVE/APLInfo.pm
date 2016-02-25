@@ -246,7 +246,7 @@ sub get_apl_sources {
  
     my $urls = [];
     push @$urls, "http://download.proxmox.com/images";
-    push @$urls, "http://releases.turnkeylinux.org/pve";
+    push @$urls, "https://releases.turnkeylinux.org/pve";
 
     return $urls;
 }
