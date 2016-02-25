@@ -16,6 +16,12 @@ Ext.define('PVE.panel.LogView', {
 
     scrollToEnd: true,
 
+    autoScroll: true,
+
+    layout: 'auto',
+
+    bodyPadding: 5,
+
     getMaxDown: function(scrollToEnd) {
         var me = this;
 
@@ -181,24 +187,8 @@ Ext.define('PVE.panel.LogView', {
 	});
 
 	Ext.apply(me, {
-	    autoScroll: true,
-	    layout: 'auto',
 	    items: me.dataCmp,
-	    bodyStyle: 'padding: 5px;',
 	    listeners: {
-		show: function() {
-		    var target = me.getTargetEl();
-		    if (target && target.dom) {
-			target.dom.scrollTop = me.savedScrollTop;
-		    }
-		},
-		beforehide: function() {
-		    // Hack: chrome reset scrollTop to 0, so we save/restore
-		    var target = me.getTargetEl();
-		    if (target && target.dom) {
-			me.savedScrollTop = target.dom.scrollTop;
-		    }
-		},
 		destroy: function() {
 		    Ext.TaskManager.stop(me.task);
 		}
