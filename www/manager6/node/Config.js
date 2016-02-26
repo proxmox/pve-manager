@@ -191,15 +191,13 @@ Ext.define('PVE.node.Config', {
 		{
 		    title: gettext('Updates'),
 		    itemId: 'apt',
-//		    xtype: 'pveNodeAPT',
-		    xtype: 'panel',
+		    xtype: 'pveNodeAPT',
 		    nodename: nodename
 		},
 		{
 		    title: gettext('Console'),
 		    itemId: 'console',
-//		    xtype: 'pveNoVncConsole',
-		    xtype: 'panel',
+		    xtype: 'pveNoVncConsole',
 		    consoleType: 'shell',
 		    nodename: nodename
 		},
