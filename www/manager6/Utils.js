@@ -239,8 +239,6 @@ Ext.define('PVE.Utils', { statics: {
     render_console_viewer: function(value) {
 	if (!value) {
 	    return PVE.Utils.defaultText + ' (HTML5)';
-	} else if (value === 'applet') {
-	    return 'Java VNC Applet';
 	} else if (value === 'vv') {
 	    return  'SPICE (remote-viewer)';
 	} else if (value === 'html5') {
@@ -955,8 +953,8 @@ Ext.define('PVE.Utils', { statics: {
 	    throw "no nodename specified";
 	}
 
-	if (viewer === 'applet' || viewer === 'html5') {
-	    PVE.Utils.openVNCViewer(vmtype, vmid, nodename, vmname, viewer === 'html5');
+	if (viewer === 'html5') {
+	    PVE.Utils.openVNCViewer(vmtype, vmid, nodename, vmname);
 	} else if (viewer === 'vv') {
 	    var url;
 	    var params = { proxy: PVE.Utils.windowHostname() };
@@ -989,10 +987,10 @@ Ext.define('PVE.Utils', { statics: {
 	return dv;
     },
 
-    openVNCViewer: function(vmtype, vmid, nodename, vmname, novnc) {
+    openVNCViewer: function(vmtype, vmid, nodename, vmname) {
 	var url = Ext.urlEncode({
 	    console: vmtype, // kvm, lxc, upgrade or shell
-	    novnc: novnc ? 1 : 0,
+	    novnc: 1,
 	    vmid: vmid,
 	    vmname: vmname,
 	    node: nodename

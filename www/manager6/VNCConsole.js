@@ -7,6 +7,10 @@ Ext.define('PVE.noVncConsole', {
     vmid: undefined,
 
     consoleType: undefined, // lxc or kvm
+
+    layout: 'fit',
+
+    border: false,
     
     initComponent : function() {
 	var me = this;
@@ -25,14 +29,12 @@ Ext.define('PVE.noVncConsole', {
 	
 	// always use same iframe, to avoid running several noVnc clients
 	// at same time (to avoid performance problems)
-	var box = Ext.create('widget.uxiframe', { id: "vncconsole" });
+	var box = Ext.create('Ext.ux.IFrame', { id : "vncconsole" });
 
 	Ext.apply(me, {
-	    layout: { type: 'fit' },
-	    border: false,
 	    items: box,
 	    listeners: {
-		show: function() {
+		activate: function() {
 		    var url = '/?console=' + me.consoleType + '&novnc=1&node=' + me.nodename + '&resize=scale';
 		    if (me.vmid) {
 			url += '&vmid='+ me.vmid;
@@ -46,31 +48,15 @@ Ext.define('PVE.noVncConsole', {
     }
 });
 
-PVE_vnc_console_event = function(appletid, action, err) {
-    //console.log("TESTINIT param1 " + appletid + " action " + action);
-
-    if (action === "error") {
-	var compid = appletid.replace("-vncapp", "");
-	var comp = Ext.getCmp(compid);
-
-	if (!comp || !comp.vmid || !comp.toplevel) {
-	    return;
-	}
-
-	comp.detectMigratedVM();
-    }
-
-    return;
- };
-
 Ext.define('PVE.VNCConsole', {
     extend: 'Ext.panel.Panel',
     alias: ['widget.pveVNCConsole'],
 
-    novnc: false,
-
     last_novnc_state: undefined,
     last_novnc_msg: undefined,
+
+    layout: 'fit',
+    border: false,
 
     detectMigratedVM: function() {
 	var me = this;
@@ -113,58 +99,39 @@ Ext.define('PVE.VNCConsole', {
 
 	var box;
 
-	if (me.novnc) {
-	    if (!me.wsurl) {
-		throw "no web socket url specified";
-	    }
-	    box = Ext.create('widget.uxiframe', { id: myid });
-	} else {
-	    box = Ext.create('Ext.Component', { border: false, html: "" });
+	if (!me.wsurl) {
+	    throw "no web socket url specified";
 	}
+	box = Ext.create('Ext.ux.IFrame', { id: myid });
 
 	var resize_window = function() {
 	    //console.log("resize");
 
 	    var aw;
 	    var ah;
-	    var applet;
 
-	    if (me.novnc) {
-		var novnciframe = box.getFrame();
-		// noVNC_canvas
-		var innerDoc = novnciframe.contentDocument || novnciframe.contentWindow.document;
-		aw = innerDoc.getElementById('noVNC_canvas').width;
-		ah = innerDoc.getElementById('noVNC_canvas').height + 8;
+	    var novnciframe = box.getFrame();
+	    // noVNC_canvas
+	    var innerDoc = novnciframe.contentDocument || novnciframe.contentWindow.document;
+	    aw = innerDoc.getElementById('noVNC_canvas').width;
+	    ah = innerDoc.getElementById('noVNC_canvas').height + 8;
 
-		var novnc_state = innerDoc.getElementById('noVNC_status_state').innerHTML;
-		var novnc_msg = innerDoc.getElementById('noVNC_status_msg').innerHTML;
+	    var novnc_state = innerDoc.getElementById('noVNC_status_state').innerHTML;
+	    var novnc_msg = innerDoc.getElementById('noVNC_status_msg').innerHTML;
 
-		if (novnc_state !== me.last_novnc_state || novnc_msg !== me.last_novnc_msg) {
-		    me.last_novnc_state = novnc_state; 
-		    me.last_novnc_msg = novnc_msg; 
+	    if (novnc_state !== me.last_novnc_state || novnc_msg !== me.last_novnc_msg) {
+		me.last_novnc_state = novnc_state; 
+		me.last_novnc_msg = novnc_msg; 
 
-		    if (novnc_state !== 'normal') {
-			PVE.Utils.setErrorMask(box, novnc_msg || 'unknown');
-		    } else {
-			PVE.Utils.setErrorMask(box); // clear mask
-		    }
-
-		    if (novnc_state === 'disconnected') {
-			me.detectMigratedVM();
-		    }
+		if (novnc_state !== 'normal') {
+		    PVE.Utils.setErrorMask(box, novnc_msg || 'unknown');
+		} else {
+		    PVE.Utils.setErrorMask(box); // clear mask
 		}
 
-	    } else {
-		applet = Ext.getDom(myid);
-	    
-		// try again when dom element is available
-		if (!(applet && Ext.isFunction(applet.getPreferredSize))) {
-		    return Ext.Function.defer(resize_window, 1000);
+		if (novnc_state === 'disconnected') {
+		    me.detectMigratedVM();
 		}
-
-		var ps = applet.getPreferredSize();
-		aw = ps.width;
-		ah = ps.height;
 	    }
 
 	    if (aw < 640) { aw = 640; }
@@ -192,10 +159,6 @@ Ext.define('PVE.VNCConsole', {
 		throw "can't get window size";
 	    }
 
-	    if (!me.novnc) {
-		Ext.fly(applet).setSize(aw, ah + tbh);
-	    }
-
 	    var offsetw = aw - ow;
 	    var offseth = ah + tbh - oh;
 
@@ -207,80 +170,28 @@ Ext.define('PVE.VNCConsole', {
 	    Ext.Function.defer(resize_window, 1000);
 	};
 
-	var resize_box = function() {
-	    if (me.novnc) {
-		throw "implement me";
-	    } else {
-		var applet = Ext.getDom(myid);
-
-		if ((applet && Ext.isFunction(applet.getPreferredSize))) {
-		    var ps = applet.getPreferredSize();
-		    Ext.fly(applet).setSize(ps.width, ps.height);
-		}
-	    }
-
-	    Ext.Function.defer(resize_box, 1000);
-	};
-
 	var start_vnc_viewer = function(param) {
-	    
-	    if (me.novnc) {
-		
-		var pveparams = Ext.urlEncode({
-		    port: param.port,
-		    vncticket: param.ticket
-		});
+	    var pveparams = Ext.urlEncode({
+		port: param.port,
+		vncticket: param.ticket
+	    });
 
-		var urlparams = Ext.urlEncode({
-		    encrypt: 1,
-		    path: "api2/json" + me.wsurl + "?" + pveparams,
-		    password: param.ticket
-		});
-		box.load('/novnc/vnc_pve.html?' + urlparams);
-	    
-	    } else {
+	    var urlparams = Ext.urlEncode({
+		encrypt: 1,
+		path: "api2/json" + me.wsurl + "?" + pveparams,
+		password: param.ticket
+	    });
+	    box.load('/novnc/vnc_pve.html?' + urlparams);
 
-		var cert = param.cert;
-		cert = cert.replace(/\n/g, "|");
-
-		box.update({
-		    id: myid,
-		    border: false,
-		    tag: 'applet',
-		    code: 'com.tigervnc.vncviewer.VncViewer',
-		    archive: '/vncterm/VncViewer.jar',
-		    // NOTE: set size to '100%' -  else resize does not work
-		    width: "100%",
-		    height: "100%", 
-		    cn: [
-			{tag: 'param', name: 'id', value: myid},
-			{tag: 'param', name: 'PORT', value: param.port},
-			{tag: 'param', name: 'PASSWORD', value: param.ticket},
-			{tag: 'param', name: 'USERNAME', value: param.user},
-			{tag: 'param', name: 'Show Controls', value: 'No'},
-			{tag: 'param', name: 'Offer Relogin', value: 'No'},
-			{tag: 'param', name: 'PVECert', value: cert}
-		    ]
-		});
-	    }
-
-            if (me.toplevel) {
-		Ext.Function.defer(resize_window, 1000);
-            } else {
-		Ext.Function.defer(resize_box, 1000);
-            }
+	    Ext.Function.defer(resize_window, 1000);
 	};
 
 	Ext.apply(me, {
-	    layout: 'fit',
-	    border: false,
-	    autoScroll: me.toplevel ? false : true,
+	    scrollable: me.toplevel ? false : true,
 	    items: box,
 	    reloadApplet: function() {
 		var params = Ext.apply({}, me.params);
-		if (me.novnc) {
-		    params.websocket = 1;
-		} 
+		params.websocket = 1;
 		PVE.Utils.API2Request({
 		    url: me.url,
 		    params: params,
@@ -300,7 +211,7 @@ Ext.define('PVE.VNCConsole', {
 	if (me.toplevel) {
 	    me.on("render", me.reloadApplet);
 	} else {
-	    me.on("show", me.reloadApplet);
+	    me.on("activate", me.reloadApplet);
 	    me.on("hide", function() { box.update(""); });
 	}
     }
@@ -410,18 +321,10 @@ Ext.define('PVE.KVMConsole', {
             { 
                 text: gettext('Console'),
                 handler: function() {
-		    PVE.Utils.openVNCViewer('kvm', me.vmid, me.nodename, me.vmname, me.novnc);
+		    PVE.Utils.openVNCViewer('kvm', me.vmid, me.nodename, me.vmname);
 		}
             },
             '->',
-	    {
-                text: gettext('Refresh'),
-		hidden: me.novnc ? true : false,
-		handler: function() { 
-		    var applet = Ext.getDom(me.appletID);
-		    applet.sendRefreshRequest();
-		}
-	    },
 	    {
                 text: gettext('Reload'),
                 handler: function () { 
@@ -509,14 +412,6 @@ Ext.define('PVE.LxcConsole', {
 	    // Note: no migrate here, because we can't display migrate log
             '->',
 	    {
-                text: gettext('Refresh'),
-		hidden: me.novnc ? true : false,
-		handler: function() { 
-		    var applet = Ext.getDom(me.appletID);
-		    applet.sendRefreshRequest();
-		}
-	    },
-	    {
                 text: gettext('Reload'),
                 handler: function () { 
 		    me.reloadApplet(); 
@@ -549,16 +444,6 @@ Ext.define('PVE.Shell', {
 
 	var tbar = [ '->' ];
 
-	if (!me.novnc) {
-	    tbar.push({
-                text: gettext('Refresh'),
-		handler: function() { 
-		    var applet = Ext.getDom(me.appletID);
-		    applet.sendRefreshRequest();
-		}
-	    });
-	}
-
 	if (!me.ugradeSystem) {
 	    // we dont want to restart the upgrade script
 	    tbar.push({
@@ -570,7 +455,7 @@ Ext.define('PVE.Shell', {
 	tbar.push({ 
 	    text: gettext('Shell'),
 	    handler: function() {
-		PVE.Utils.openVNCViewer('shell', undefined, me.nodename, undefined, me.novnc);
+		PVE.Utils.openVNCViewer('shell', undefined, me.nodename, undefined);
 	    }
 	});
 
