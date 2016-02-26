@@ -5,7 +5,6 @@ use warnings;
 
 use PVE::Cluster;
 use PVE::APLInfo;
-use Data::Dumper;
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param);
 use PVE::Cluster;
@@ -36,7 +35,6 @@ __PACKAGE__->register_method ({
     code => sub {
 
 	my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
-	print Data::Dumper::Dumper $dccfg;
 	print STDERR "update failed - see /var/log/pveam.log for details\n"
 	    if !PVE::APLInfo::update($dccfg->{http_proxy});
 
