@@ -11,7 +11,7 @@ Ext.define('PVE.noVncConsole', {
     layout: 'fit',
 
     border: false,
-    
+
     initComponent : function() {
 	var me = this;
 
@@ -26,7 +26,7 @@ Ext.define('PVE.noVncConsole', {
 	if (!me.vmid && me.consoleType !== 'shell') {
 	    throw "no VM ID specified";
 	}
-	
+
 	// always use same iframe, to avoid running several noVnc clients
 	// at same time (to avoid performance problems)
 	var box = Ext.create('Ext.ux.IFrame', { id : "vncconsole" });
@@ -42,7 +42,7 @@ Ext.define('PVE.noVncConsole', {
 		    box.load(url);
 		}
 	    }
-	});		
+	});
 
 	me.callParent();
     }
@@ -50,7 +50,7 @@ Ext.define('PVE.noVncConsole', {
 
 Ext.define('PVE.VNCConsole', {
     extend: 'Ext.panel.Panel',
-    alias: ['widget.pveVNCConsole'],
+    alias: 'widget.pveVNCConsole',
 
     last_novnc_state: undefined,
     last_novnc_msg: undefined,
@@ -60,7 +60,7 @@ Ext.define('PVE.VNCConsole', {
 
     detectMigratedVM: function() {
 	var me = this;
-	
+
 	if (!me.vmid) {
 	    return;
 	}
@@ -120,8 +120,8 @@ Ext.define('PVE.VNCConsole', {
 	    var novnc_msg = innerDoc.getElementById('noVNC_status_msg').innerHTML;
 
 	    if (novnc_state !== me.last_novnc_state || novnc_msg !== me.last_novnc_msg) {
-		me.last_novnc_state = novnc_state; 
-		me.last_novnc_msg = novnc_msg; 
+		me.last_novnc_state = novnc_state;
+		me.last_novnc_msg = novnc_msg;
 
 		if (novnc_state !== 'normal') {
 		    PVE.Utils.setErrorMask(box, novnc_msg || 'unknown');
@@ -148,7 +148,7 @@ Ext.define('PVE.VNCConsole', {
 	    if (window.innerHeight) {
 		oh = window.innerHeight;
 		ow = window.innerWidth;
-	    } else if (document.documentElement && 
+	    } else if (document.documentElement &&
 		       document.documentElement.clientHeight) {
 		oh = document.documentElement.clientHeight;
 		ow = document.documentElement.clientWidth;
@@ -219,12 +219,12 @@ Ext.define('PVE.VNCConsole', {
 
 Ext.define('PVE.KVMConsole', {
     extend: 'PVE.VNCConsole',
-    alias: ['widget.pveKVMConsole'],
+    alias: 'widget.pveKVMConsole',
 
     initComponent : function() {
 	var me = this;
- 
-	if (!me.nodename) { 
+
+	if (!me.nodename) {
 	    throw "no node name specified";
 	}
 
@@ -251,14 +251,14 @@ Ext.define('PVE.KVMConsole', {
 	    });
 	};
 
-	var tbar = [ 
-	    { 
+	var tbar = [
+	    {
 		text: gettext('Start'),
-		handler: function() { 
+		handler: function() {
 		    vm_command("start", {}, 1);
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Shutdown'),
 		handler: function() {
 		    var msg = Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), me.vmid);
@@ -268,9 +268,9 @@ Ext.define('PVE.KVMConsole', {
 			}
 			vm_command('shutdown');
 		    });
-		}			    
-	    }, 
-	    { 
+		}
+	    },
+	    {
 		text: gettext('Stop'),
 		handler: function() {
 		    var msg = Ext.String.format(gettext("Do you really want to stop VM {0}?"), me.vmid);
@@ -279,17 +279,17 @@ Ext.define('PVE.KVMConsole', {
 			    return;
 			}
 			vm_command("stop");
-		    }); 
+		    });
 		}
 	    },
-	    { 
+	    {
 		xtype: 'pveQemuSendKeyMenu',
 		nodename: me.nodename,
 		vmid: me.vmid
 	    },
-	    { 
+	    {
 		text: gettext('Reset'),
-		handler: function() { 
+		handler: function() {
 		    var msg = Ext.String.format(gettext("Do you really want to reset VM {0}?"), me.vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
@@ -299,7 +299,7 @@ Ext.define('PVE.KVMConsole', {
 		    });
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Suspend'),
 		handler: function() {
 		    var msg = Ext.String.format(gettext("Do you really want to suspend VM {0}?"), me.vmid);
@@ -308,17 +308,17 @@ Ext.define('PVE.KVMConsole', {
 			    return;
 			}
 			vm_command("suspend");
-		    }); 
+		    });
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Resume'),
 		handler: function() {
-		    vm_command("resume"); 
+		    vm_command("resume");
 		}
 	    },
 	    // Note: no migrate here, because we can't display migrate log
-            { 
+            {
                 text: gettext('Console'),
                 handler: function() {
 		    PVE.Utils.openVNCViewer('kvm', me.vmid, me.nodename, me.vmname);
@@ -327,13 +327,12 @@ Ext.define('PVE.KVMConsole', {
             '->',
 	    {
                 text: gettext('Reload'),
-                handler: function () { 
-		    me.reloadApplet(); 
+                handler: function () {
+		    me.reloadApplet();
 		}
 	    }
 	];
 
-	
 	Ext.apply(me, {
 	    tbar: tbar,
 	    url: baseUrl + "/vncproxy",
@@ -346,12 +345,12 @@ Ext.define('PVE.KVMConsole', {
 
 Ext.define('PVE.LxcConsole', {
     extend: 'PVE.VNCConsole',
-    alias: ['widget.pveLxcConsole'],
+    alias: 'widget.pveLxcConsole',
 
     initComponent : function() {
 	var me = this;
- 
-	if (!me.nodename) { 
+
+	if (!me.nodename) {
 	    throw "no node name specified";
 	}
 
@@ -360,7 +359,7 @@ Ext.define('PVE.LxcConsole', {
 	}
 
 	var baseUrl = "/nodes/" + me.nodename + "/lxc/" + me.vmid;
- 
+
 	var vm_command = function(cmd, params, reload_applet) {
 	    PVE.Utils.API2Request({
 		params: params,
@@ -378,14 +377,14 @@ Ext.define('PVE.LxcConsole', {
 	    });
 	};
 
-	var tbar = [ 
-	    { 
+	var tbar = [
+	    {
 		text: gettext('Start'),
-		handler: function() { 
+		handler: function() {
 		    vm_command("start");
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Shutdown'),
 		handler: function() {
 		    var msg = Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), me.vmid);
@@ -394,10 +393,10 @@ Ext.define('PVE.LxcConsole', {
 			    return;
 			}
 			vm_command("shutdown");
-		    }); 
+		    });
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Stop'),
 		handler: function() {
 		    var msg = Ext.String.format(gettext("Do you really want to stop VM {0}?"), me.vmid);
@@ -406,15 +405,15 @@ Ext.define('PVE.LxcConsole', {
 			    return;
 			}
 			vm_command("stop");
-		    }); 
+		    });
 		}
 	    },
 	    // Note: no migrate here, because we can't display migrate log
             '->',
 	    {
                 text: gettext('Reload'),
-                handler: function () { 
-		    me.reloadApplet(); 
+                handler: function () {
+		    me.reloadApplet();
 		}
 	    }
 	];
@@ -431,14 +430,14 @@ Ext.define('PVE.LxcConsole', {
 
 Ext.define('PVE.Shell', {
     extend: 'PVE.VNCConsole',
-    alias: ['widget.pveShell'],
+    alias: 'widget.pveShell',
 
     ugradeSystem: false, // set to true to run "apt-get dist-upgrade"
 
     initComponent : function() {
 	var me = this;
- 
-	if (!me.nodename) { 
+
+	if (!me.nodename) {
 	    throw "no node name specified";
 	}
 
@@ -452,7 +451,7 @@ Ext.define('PVE.Shell', {
 	    });
 	}
 
-	tbar.push({ 
+	tbar.push({
 	    text: gettext('Shell'),
 	    handler: function() {
 		PVE.Utils.openVNCViewer('shell', undefined, me.nodename, undefined);
@@ -468,7 +467,7 @@ Ext.define('PVE.Shell', {
 	});
 
 	if (me.ugradeSystem) {
-	    me.params = { upgrade: 1 };	    
+	    me.params = { upgrade: 1 };
 	}
 
 	me.callParent();
