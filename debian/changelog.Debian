@@ -1,3 +1,17 @@
+pve-manager (4.1-16) unstable; urgency=medium
+
+  * firewall: add option to allow router advertisement
+
+  * update Norwegian translation
+
+  * pveam: add list, download and remove
+
+  * do not use Net::SSL
+
+  * lxc: create/edit/remove mountpoints
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 27 Feb 2016 10:29:20 +0100
+
 pve-manager (4.1-15) unstable; urgency=medium
 
   * add lvmthin to gui
