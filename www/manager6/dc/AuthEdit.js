@@ -89,7 +89,7 @@ Ext.define('PVE.dc.AuthEdit', {
         var column2 = [];
 
 	if (me.authType === 'ldap' || me.authType === 'ad') {
-	    column2.push([
+	    column2.push(
 		{
                     xtype: 'textfield',
                     fieldLabel: gettext('Server'),
@@ -117,7 +117,7 @@ Ext.define('PVE.dc.AuthEdit', {
                     name: 'secure',
                     uncheckedValue: 0
 		}
-            ]);
+            );
 	}
 
 	// Two Factor Auth settings

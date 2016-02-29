@@ -185,7 +185,7 @@ Ext.define('PVE.node.NetworkEdit', {
 	];
 
 	if (me.iftype === 'OVSBond') {
-	    column1.push([
+	    column1.push(
 		{
 		    xtype: 'bondModeSelector',
 		    fieldLabel: gettext('Mode'),
@@ -199,10 +199,10 @@ Ext.define('PVE.node.NetworkEdit', {
 		    fieldLabel: gettext('Slaves'),
 		    name: 'ovs_bonds'
 		}
-	    ]);
+	    );
 	} else {
 
-	    column1.push([
+	    column1.push(
 		{
 		    xtype: 'pvetextfield',
 		    deleteEmpty: !me.create,
@@ -283,7 +283,7 @@ Ext.define('PVE.node.NetworkEdit', {
 		    vtype: 'IP6Address',
 		    name: 'gateway6'
 		}
-	    ]);
+	    );
 	}
 
 	Ext.applyIf(me, {

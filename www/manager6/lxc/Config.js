@@ -184,7 +184,7 @@ Ext.define('PVE.lxc.Config', {
 //	}
 
 //	if (caps.vms['VM.Console']) {
-//	    me.items.push([
+//	    me.items.push(
 //		{
 //		    xtype: 'pveFirewallPanel',
 //		    title: gettext('Firewall'),
@@ -193,7 +193,7 @@ Ext.define('PVE.lxc.Config', {
 //		    phstateid: me.hstateid,
 //		    itemId: 'firewall'
 //		}
-//	    ]);
+//	    );
 //	}
 
 //	if (caps.vms['Permissions.Modify']) {
