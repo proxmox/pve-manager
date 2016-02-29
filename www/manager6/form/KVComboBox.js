@@ -22,7 +22,7 @@ Ext.define('PVE.form.KVComboBox', {
             val;
         if (!me.disabled && me.submitValue) {
             val = me.getSubmitValue();
-            if (val !== null && val !== '') {
+            if (val !== null && val !== '' && val !== '__default__') {
                 data = {};
                 data[me.getName()] = val;
             } else if (me.deleteEmpty) {

@@ -228,7 +228,7 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     kvm_keymap_array: function() {
-	var data = [['', PVE.Utils.render_kvm_language('')]];
+	var data = [['__default__', PVE.Utils.render_kvm_language('')]];
 	Ext.Object.each(PVE.Utils.kvm_keymaps, function(key, value) {
 	    data.push([key, PVE.Utils.render_kvm_language(value)]);
 	});
@@ -237,7 +237,7 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     render_console_viewer: function(value) {
-	if (!value) {
+	if (!value || value === '__default__') {
 	    return PVE.Utils.defaultText + ' (HTML5)';
 	} else if (value === 'vv') {
 	    return  'SPICE (remote-viewer)';
@@ -302,7 +302,7 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     kvm_vga_driver_array: function() {
-	var data = [['', PVE.Utils.render_kvm_vga_driver('')]];
+	var data = [['__default__', PVE.Utils.render_kvm_vga_driver('')]];
 	Ext.Object.each(PVE.Utils.kvm_vga_drivers, function(key, value) {
 	    data.push([key, PVE.Utils.render_kvm_vga_driver(value)]);
 	});
@@ -765,7 +765,7 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     format_boolean_with_default: function(value) {
-	if (Ext.isDefined(value) && value !== '') {
+	if (Ext.isDefined(value) && value !== '__default__') {
 	    return value ? PVE.Utils.yesText : PVE.Utils.noText;
 	}
 	return PVE.Utils.defaultText;

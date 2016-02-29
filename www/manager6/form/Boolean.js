@@ -7,7 +7,7 @@ Ext.define('PVE.form.Boolean', {
 	var me = this;
 
 	me.data = [
-	    ['', gettext('Default')],
+	    ['__default__', gettext('Default')],
 	    [1, gettext('Yes')],
 	    [0, gettext('No')]
 	];

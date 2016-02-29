@@ -34,7 +34,7 @@ Ext.define('PVE.dc.KeyboardEdit', {
 	    items: {
 		xtype: 'VNCKeyboardSelector',
 		name: 'keyboard',
-		value: '',
+		value: '__default__',
 		fieldLabel: gettext('Keyboard Layout')
 	    }
 	});
@@ -53,7 +53,7 @@ Ext.define('PVE.dc.ConsoleViewerEdit', {
 
 	var data = [];
 
-	Ext.Array.each(['', 'vv', 'html5'], function(value) {
+	Ext.Array.each(['__default__','vv', 'html5'], function(value) {
 	    data.push([value, PVE.Utils.render_console_viewer(value)]);
 	});
 
@@ -62,7 +62,7 @@ Ext.define('PVE.dc.ConsoleViewerEdit', {
 	    items: {
 		xtype: 'pveKVComboBox',
 		name: 'console',
-		value: '',
+		value: '__default__',
 		fieldLabel: gettext('Console Viewer'),
 		comboItems: data,
 	    }

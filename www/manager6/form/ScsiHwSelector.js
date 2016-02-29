@@ -6,7 +6,7 @@ Ext.define('PVE.form.ScsiHwSelector', {
 	var me = this;
 
         me.data = [ 
-	    ['', PVE.Utils.render_scsihw('')],
+	    ['__default__', PVE.Utils.render_scsihw('')],
 	    ['lsi', PVE.Utils.render_scsihw('lsi')],
 	    ['lsi53c810', PVE.Utils.render_scsihw('lsi53c810')],
 	    ['megasas', PVE.Utils.render_scsihw('megasas')],
