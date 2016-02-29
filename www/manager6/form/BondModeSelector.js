@@ -8,14 +8,14 @@ Ext.define('PVE.form.BondModeSelector', {
 	var me = this;
 
 	if (me.openvswitch) {
-           me.data = [ 
+           me.comboItems = [
 	       ['active-backup', 'active-backup'],
 	       ['balance-slb', 'balance-slb'],
 	       ['lacp-balance-slb', 'LACP (balance-slb)'],
 	       ['lacp-balance-tcp', 'LACP (balance-tcp)']
 	   ];
 	} else {
-            me.data = [ 
+            me.comboItems = [
 		['balance-rr', 'balance-rr'], 
 		['active-backup', 'active-backup'], 
 		['balance-xor', 'balance-xor'], 
@@ -33,16 +33,10 @@ Ext.define('PVE.form.BondModeSelector', {
 Ext.define('PVE.form.BondPolicySelector', {
     extend: 'PVE.form.KVComboBox',
     alias: ['widget.bondPolicySelector'],
-
-    initComponent: function() {
-	var me = this;
-        me.data = [
+    comboItems: [
 	    ['layer2', 'layer2'],
 	    ['layer2+3', 'layer2+3'], 
 	    ['layer3+4', 'layer3+4']
-	];
- 
-	me.callParent();
-    }
+    ],
 });
 
