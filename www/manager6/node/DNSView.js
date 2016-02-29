@@ -40,7 +40,7 @@ Ext.define('PVE.node.DNSView', {
 
 	me.callParent();
 
-	me.on('show', me.rstore.startUpdate);
+	me.on('activate', me.rstore.startUpdate);
 	me.on('hide', me.rstore.stopUpdate);
 	me.on('destroy', me.rstore.stopUpdate);	
     }
