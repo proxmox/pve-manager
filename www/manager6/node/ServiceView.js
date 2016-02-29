@@ -114,7 +114,7 @@ Ext.define('PVE.node.ServiceView', {
 	    }
 	};
 
-	me.mon(store, 'datachanged', set_button_status);
+	me.mon(store, 'refresh', set_button_status);
 
 	PVE.Utils.monStoreErrors(me, rstore);
 
