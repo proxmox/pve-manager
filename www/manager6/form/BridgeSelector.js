@@ -4,6 +4,35 @@ Ext.define('PVE.form.BridgeSelector', {
 
     bridgeType: 'any_bridge', // bridge, OVSBridge or any_bridge
 
+    store: {
+	fields: [ 'iface', 'active', 'type' ],
+	filterOnLoad: true,
+	sorters: [
+	    {
+		property : 'iface',
+		direction: 'ASC'
+	    }
+	]
+    },
+    valueField: 'iface',
+    displayField: 'iface',
+    listConfig: {
+	columns: [
+	    {
+		header: gettext('Bridge'),
+		dataIndex: 'iface',
+		hideable: false,
+		flex: 1
+	    },
+	    {
+		header: gettext('Active'),
+		width: 60,
+		dataIndex: 'active',
+		renderer: PVE.Utils.format_boolean
+	    }
+	]
+    },
+
     setNodename: function(nodename) {
 	var me = this;
 
@@ -28,44 +57,9 @@ Ext.define('PVE.form.BridgeSelector', {
 	var nodename = me.nodename;
 	me.nodename = undefined; 
 
-	var store = Ext.create('Ext.data.Store', {
-	    fields: [ 'iface', 'active', 'type' ],
-	    filterOnLoad: true,
-	    sorters: [
-		{
-		    property : 'iface',
-		    direction: 'ASC'
-		}
-	    ]
-	});
-
-	Ext.apply(me, {
-	    store: store,
-	    valueField: 'iface',
-	    displayField: 'iface',
-            listConfig: {
-		columns: [
-		    {
-			header: gettext('Bridge'),
-			dataIndex: 'iface',
-			hideable: false,
-			flex: 1
-		    },
-		    {
-			header: gettext('Active'),  
-			width: 60, 
-			dataIndex: 'active', 
-			renderer: PVE.Utils.format_boolean
-		    }
-		]
-	    }
-	});
-
         me.callParent();
 
-	if (nodename) {
-	    me.setNodename(nodename);
-	}
+	me.setNodename(nodename);
     }
 });
 
