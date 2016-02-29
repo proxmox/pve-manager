@@ -134,26 +134,22 @@ Ext.define('PVE.node.Config', {
 		{
 		    title: gettext('Services'),
 		    itemId: 'services',
-//		    xtype: 'pveNodeServiceView',
-		    xtype: 'panel',
+		    xtype: 'pveNodeServiceView',
 		},
 		{
 		    title: gettext('Network'),
 		    itemId: 'network',
-//		    xtype: 'pveNodeNetworkView'
-		    xtype: 'panel',
+		    xtype: 'pveNodeNetworkView'
 		},
 		{
 		    title: gettext('DNS'),
 		    itemId: 'dns',
-//		    xtype: 'pveNodeDNSView'
-		    xtype: 'panel',
+		    xtype: 'pveNodeDNSView'
 		},
 		{
 		    title: gettext('Time'),
 		    itemId: 'time',
-//		    xtype: 'pveNodeTimeView'
-		    xtype: 'panel',
+		    xtype: 'pveNodeTimeView'
 		}
 	    );
 	}
