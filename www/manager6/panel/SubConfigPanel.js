@@ -3,6 +3,8 @@ Ext.define('PVE.panel.SubConfig', {
     alias: ['widget.pvePanelSubConfig'],
 
     configPrefix: undefined,
+    tabPosition: 'left',
+    tabRotation: 0,
 
     getHState: function(itemId) {
 	 /*jslint confusion: true */
@@ -45,8 +47,6 @@ Ext.define('PVE.panel.SubConfig', {
 	}
 
 	Ext.apply(me, {
-	    plain: true,
-	    tabPosition: 'bottom',
 	    listeners: {
 		afterrender: function(tp) {
 		    var first =  tp.items.get(0);
