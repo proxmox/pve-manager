@@ -216,7 +216,7 @@ Ext.define('PVE.FirewallOptions', {
 	    edit_btn.setDisabled(!rowdef.editor);
 	};
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    url: "/api2/json" + me.base_url,
 	    cwidth1: 150,
 	    tbar: [ edit_btn ],

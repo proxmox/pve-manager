@@ -178,7 +178,7 @@ Ext.define('PVE.dc.OptionView', {
 	    handler: run_editor
 	});
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    url: "/api2/json/cluster/options",
 	    cwidth1: 130,
 	    interval: 1000,
