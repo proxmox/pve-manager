@@ -535,6 +535,18 @@ __PACKAGE__->register_method({
 		minimum => 0,
 		optional => 1,
 	    },
+	    since => {
+		type=> 'string',
+		pattern => '^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}(:\d{2})?)?$',
+		description => "Display all log since this date-time string.",
+		optional => 1,
+	    },
+	    until => {
+		type=> 'string',
+		pattern => '^\d{4}-\d{2}-\d{2}( \d{2}:\d{2}(:\d{2})?)?$',
+		description => "Display all log until this date-time string.",
+		optional => 1,
+	    },
 	},
     },
     returns => {
@@ -560,11 +572,12 @@ __PACKAGE__->register_method({
 	my $user = $rpcenv->get_user();
 	my $node = $param->{node};
 
-	my ($count, $lines) = PVE::Tools::dump_journal($param->{start}, $param->{limit});
+	my ($count, $lines) = PVE::Tools::dump_journal($param->{start}, $param->{limit},
+						       $param->{since}, $param->{until});
 
 	$rpcenv->set_result_attrib('total', $count);
-	    
-	return $lines; 
+
+	return $lines;
     }});
 
 my $sslcert;
