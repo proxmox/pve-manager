@@ -1,19 +1,15 @@
 Ext.define('PVE.node.SubscriptionKeyEdit', {
     extend: 'PVE.window.Edit',
-
+    title: gettext('Upload Subscription Key'),
+    width: 300,
+    items: {
+	xtype: 'textfield',
+	name: 'key',
+	value: '',
+	fieldLabel: gettext('Subscription Key')
+    },
     initComponent : function() {
 	var me = this;
-
-	Ext.apply(me, {
-	    title: gettext('Upload Subscription Key'),
-	    width: 300,
-	    items: {
-		xtype: 'textfield',
-		name: 'key',
-		value: '',
-		fieldLabel: gettext('Subscription Key')
-	    }
-	});
 
 	me.callParent();
 
@@ -39,7 +35,7 @@ Ext.define('PVE.node.Subscription', {
 
 	var view = Ext.createWidget('component', {
 	    itemId: 'system-report-view',
-	    autoScroll: true,
+	    scrollable: true,
 	    style: {
 		'background-color': 'white',
 		'white-space': 'pre',
@@ -148,7 +144,7 @@ Ext.define('PVE.node.Subscription', {
 	    }
 	};
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    url: '/api2/json' + baseurl,
 	    cwidth1: 170,
 	    tbar: [ 
@@ -180,7 +176,7 @@ Ext.define('PVE.node.Subscription', {
 		{
 		    text: gettext('System Report'),
 		    handler: function() {
-			PVE.Utils.checked_command(me.showReport());
+			PVE.Utils.checked_command(function (){ me.showReport(); });
 		    }
 		}
 	    ],
