@@ -13,7 +13,7 @@ use PVE::ProcFSTools;
 use PVE::SafeSyslog;
 use PVE::Cluster qw(cfs_read_file);
 use PVE::INotify;
-use PVE::Exception qw(raise raise_perm_exc);
+use PVE::Exception qw(raise raise_perm_exc raise_param_exc);
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
