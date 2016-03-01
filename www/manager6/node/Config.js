@@ -176,8 +176,7 @@ Ext.define('PVE.node.Config', {
 	if (caps.nodes['Sys.Console']) {
 	    me.items.push(
 		{
-//		    xtype: 'pveFirewallPanel',
-		    xtype: 'panel',
+		    xtype: 'pveFirewallPanel',
 		    title: gettext('Firewall'),
 		    base_url: '/nodes/' + nodename + '/firewall',
 		    fwtype: 'node',
@@ -212,8 +211,7 @@ Ext.define('PVE.node.Config', {
 	    {
 		title: gettext('Subscription'),
 		itemId: 'support',
-//		xtype: 'pveNodeSubscription',
-		xtype: 'panel',
+		xtype: 'pveNodeSubscription',
 		nodename: nodename
 	    }
 	);
