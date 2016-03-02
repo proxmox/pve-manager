@@ -121,6 +121,7 @@ Ext.define('PVE.FirewallOptions', {
 	    add_boolean_row('ndp', gettext('Enable NDP'), 1);
 	    add_boolean_row('radv', gettext('Allow Router Advertisement'), 0);
 	    add_boolean_row('macfilter', gettext('MAC filter'), 1);
+	    add_boolean_row('ipfilter', gettext('IP filter'), 0);
 	    add_log_row('log_level_in');
 	    add_log_row('log_level_out');
 	} else if (me.fwtype === 'dc') {
