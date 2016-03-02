@@ -1191,7 +1191,7 @@ my $get_start_stop_list = sub {
 
 	    my $conf;
 	    if ($d->{type} eq 'lxc') {
-		$conf = PVE::LXC::load_config($vmid);
+		$conf = PVE::LXC::Config->load_config($vmid);
 	    } elsif ($d->{type} eq 'qemu') {
 		$conf = PVE::QemuServer::load_config($vmid);
 	    } else {
