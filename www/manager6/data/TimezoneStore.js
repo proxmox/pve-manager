@@ -1,8 +1,12 @@
+Ext.define('Timezone', {
+    extend: 'Ext.data.Model',
+    fields: ['zone']
+});
+
 Ext.define('PVE.data.TimezoneStore', {
     extend: 'Ext.data.Store',
-
-    statics: {
-	timezones: [
+    model: 'Timezone',
+    data: [
 	    ['Africa/Abidjan'],
 	    ['Africa/Accra'],
 	    ['Africa/Addis_Ababa'],
@@ -410,27 +414,5 @@ Ext.define('PVE.data.TimezoneStore', {
 	    ['Pacific/Tongatapu'],
 	    ['Pacific/Wake'],
 	    ['Pacific/Wallis']
-	]
-    },
-
-    constructor: function(config) {
-	var me = this;
-
-	config = config || {};
-
-	Ext.regModel('Timezone', {
-	    fields: ['zone'],
-	    proxy: {
-		type: 'memory',
-		reader: 'array'
-	    }
-	});
-
-	Ext.apply(config, {
-	    model: 'Timezone',
-	    data: PVE.data.TimezoneStore.timezones
-	});
-
-	me.callParent([config]);	
-    }
+	],
 });
