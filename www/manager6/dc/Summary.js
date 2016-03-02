@@ -88,13 +88,13 @@ Ext.define('PVE.dc.NodeView', {
 		return;
 	    }
 
-	    var cluster_raw = cluster_rec.raw;
-	    if (!cluster_raw) {
+	    var cluster_data = cluster_rec.getData();
+	    if (!cluster_data) {
 		status.update(noClusterText);
 		return;
 	    }
-	    var text = gettext("Cluster") + ": " + cluster_raw.name + ",  " +
-		gettext("Quorate") + ": " + PVE.Utils.format_boolean(cluster_raw.quorate);
+	    var text = gettext("Cluster") + ": " + cluster_data.name + ",  " +
+		gettext("Quorate") + ": " + PVE.Utils.format_boolean(cluster_data.quorate);
 	    status.update(text);
 	});
 
