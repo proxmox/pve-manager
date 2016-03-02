@@ -130,6 +130,7 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 	    },
 	    {
 		xtype: 'pveContentTypeSelector',
+		cts: ['images', 'iso', 'backup', 'vztmpl'],
 		name: 'content',
 		value: 'images',
 		multiSelect: true,
