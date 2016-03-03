@@ -344,6 +344,9 @@ sub read_vzdump_defaults {
 
     my $conf_schema = { type => 'object', properties => $confdesc, };
     my $res = PVE::JSONSchema::parse_config($conf_schema, $fn, $raw);
+    if (my $excludes = $res->{'exclude-path'}) {
+	$res->{'exclude-path'} = PVE::Tools::split_args($excludes);
+    }
 
     foreach my $key (keys %$defaults) {
 	$res->{$key} = $defaults->{$key} if !$res->{$key};
