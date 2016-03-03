@@ -71,15 +71,13 @@ Ext.define('PVE.window.HDMove', {
                 listeners: {
                     change: function(f, value) {
                         var rec = f.store.getById(value);
-			if (rec.data.type === 'iscsi') {
-                            me.formatsel.setValue('raw');
-                            me.formatsel.setDisabled(true);
-                        } else if (rec.data.type === 'lvm' ||
-				   rec.data.type === 'lvmthin' ||
-                                   rec.data.type === 'rbd' ||
-                                   rec.data.type === 'sheepdog' ||
-                                   rec.data.type === 'zfs' ||
-				   rec.data.type === 'zfspool'
+			if (rec.data.type === 'iscsi' ||
+			    rec.data.type === 'lvm' ||
+			    rec.data.type === 'lvmthin' ||
+			    rec.data.type === 'rbd' ||
+			    rec.data.type === 'sheepdog' ||
+			    rec.data.type === 'zfs' ||
+			    rec.data.type === 'zfspool'
                         ) {
                             me.formatsel.setValue('raw');
                             me.formatsel.setDisabled(true);
