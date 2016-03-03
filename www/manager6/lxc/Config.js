@@ -127,32 +127,32 @@ Ext.define('PVE.lxc.Config', {
 		    xtype: 'panel',
 		    itemId: 'summary'
 		},
-//		{
-//		    title: gettext('Resources'),
-//		    itemId: 'resources',
-//		    xtype: 'pveLxcRessourceView'
-//		},
-//		{
-//		    title: gettext('Network'),
-//		    itemId: 'network',
-//		    xtype: 'pveLxcNetworkView'
-//		},
-//		{
-//		    title: gettext('DNS'),
-//		    itemId: 'dns',
-//		    xtype: 'pveLxcDNS'
-//		},
-//		{
-//		    title: gettext('Options'),
-//		    itemId: 'options',
-//		    xtype: 'pveLxcOptions'
-//		},
-//		{
-//		    title: gettext('Task History'),
-//		    itemId: 'tasks',
-//		    xtype: 'pveNodeTasks',
-//		    vmidFilter: vmid
-//		}
+		{
+		    title: gettext('Resources'),
+		    itemId: 'resources',
+		    xtype: 'pveLxcRessourceView'
+		},
+		{
+		    title: gettext('Network'),
+		    itemId: 'network',
+		    xtype: 'pveLxcNetworkView'
+		},
+		{
+		    title: gettext('DNS'),
+		    itemId: 'dns',
+		    xtype: 'pveLxcDNS'
+		},
+		{
+		    title: gettext('Options'),
+		    itemId: 'options',
+		    xtype: 'pveLxcOptions'
+		},
+		{
+		    title: gettext('Task History'),
+		    itemId: 'tasks',
+		    xtype: 'pveNodeTasks',
+		    vmidFilter: vmid
+		}
 	    ]
 	});
 
@@ -164,37 +164,37 @@ Ext.define('PVE.lxc.Config', {
 //	    });
 //	}
 
-//	if (caps.vms['VM.Console']) {
-//	    me.items.push({
-//		title: gettext('Console'),
-//		itemId: 'console',
-//		xtype: 'pveNoVncConsole',
-//		vmid: vmid,
-//		consoleType: 'lxc',
-//		nodename: nodename
-//	    });
-//	}
+	if (caps.vms['VM.Console']) {
+	    me.items.push({
+		title: gettext('Console'),
+		itemId: 'console',
+		xtype: 'pveNoVncConsole',
+		vmid: vmid,
+		consoleType: 'lxc',
+		nodename: nodename
+	    });
+	}
 	
-//	if (caps.vms['VM.Snapshot']) {
-//	    me.items.push({
-//		title: gettext('Snapshots'),
-//		xtype: 'pveLxcSnapshotTree',
-//		itemId: 'snapshot'
-//	    });
-//	}
+	if (caps.vms['VM.Snapshot']) {
+	    me.items.push({
+		title: gettext('Snapshots'),
+		xtype: 'pveLxcSnapshotTree',
+		itemId: 'snapshot'
+	    });
+	}
 
-//	if (caps.vms['VM.Console']) {
-//	    me.items.push(
-//		{
-//		    xtype: 'pveFirewallPanel',
-//		    title: gettext('Firewall'),
-//		    base_url: base_url + '/firewall',
-//		    fwtype: 'vm',
-//		    phstateid: me.hstateid,
-//		    itemId: 'firewall'
-//		}
-//	    );
-//	}
+	if (caps.vms['VM.Console']) {
+	    me.items.push(
+		{
+		    xtype: 'pveFirewallPanel',
+		    title: gettext('Firewall'),
+		    base_url: base_url + '/firewall',
+		    fwtype: 'vm',
+		    phstateid: me.hstateid,
+		    itemId: 'firewall'
+		}
+	    );
+	}
 
 //	if (caps.vms['Permissions.Modify']) {
 //	    me.items.push({
