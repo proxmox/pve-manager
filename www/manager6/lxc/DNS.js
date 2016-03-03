@@ -258,7 +258,7 @@ Ext.define('PVE.lxc.DNS', {
 	    edit_btn.setDisabled(!rowdef.editor);
 	};
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    url: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/config",
 	    selModel: sm,
 	    cwidth1: 150,

@@ -188,7 +188,7 @@ Ext.define('PVE.lxc.Options', {
 	    handler: run_editor
 	});
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    url: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/config",
 	    selModel: sm,
 	    cwidth1: 150,

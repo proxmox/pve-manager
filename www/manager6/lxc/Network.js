@@ -448,7 +448,7 @@ Ext.define('PVE.lxc.NetworkView', {
 	    handler: run_editor
 	});
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
 	    stateful: false,
