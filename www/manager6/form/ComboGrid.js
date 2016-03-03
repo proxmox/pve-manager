@@ -200,6 +200,18 @@ Ext.define('PVE.form.ComboGrid', {
             scope: me
         });
 
+	// hack for extjs6
+	// when the clicked item is the same as the previously selected,
+	// it does not select the item
+	// instead we hide the picker
+	if (!me.multiSelect) {
+	    picker.on('itemclick', function (sm,record) {
+		if (picker.getSelection()[0] === record) {
+		    picker.hide();
+		}
+	    });
+	}
+
         picker.getNavigationModel().navigateOnSpace = false;
 
         return picker;
