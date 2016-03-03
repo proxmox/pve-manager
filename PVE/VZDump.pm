@@ -565,6 +565,7 @@ sub new {
     $opts->{remove} = 1 if !defined($opts->{remove});
 
     foreach my $k (keys %$defaults) {
+	next if $k eq 'exclude-path'; # dealt with separately
 	if ($k eq 'dumpdir' || $k eq 'storage') {
 	    $opts->{$k} = $defaults->{$k} if !defined ($opts->{dumpdir}) &&
 		!defined ($opts->{storage});
