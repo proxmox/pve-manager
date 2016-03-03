@@ -119,10 +119,10 @@ You can specify a hook script with option C<--script>. This script is called at 
 
 vzdump skips the following files wit option --stdexcludes
 
- /var/log/.+
- /tmp/.+
- /var/tmp/.+
- /var/run/.+pid
+ /var/log/?*
+ /tmp/?*
+ /var/tmp/?*
+ /var/run/?*pid
 
 You can manually specify exclude paths, for example:
 
