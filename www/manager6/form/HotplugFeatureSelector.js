@@ -5,6 +5,11 @@ Ext.define('PVE.form.HotplugFeatureSelector', {
     multiSelect: true,
     allowBlank: true,
     deleteEmpty: false,
+    comboItems: [['disk', gettext('Disk')],
+	['network',  gettext('Network')],
+	['usb',  gettext('USB')],
+	['memory',  gettext('Memory')],
+	['cpu',  gettext('CPU')]],
 
     setValue: function(value, doSelect) {
 	var me = this;
@@ -41,17 +46,4 @@ Ext.define('PVE.form.HotplugFeatureSelector', {
         }
         return data;
     },
-
-  
-    initComponent: function() {
-	var me = this;
-
-	me.data = [['disk', gettext('Disk')], 
-		   ['network',  gettext('Network')], 
-		   ['usb',  gettext('USB')],
-		   ['memory',  gettext('Memory')],
-		   ['cpu',  gettext('CPU')]];
-	
-	me.callParent();
-    }
 });

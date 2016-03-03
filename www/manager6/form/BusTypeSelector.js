@@ -9,14 +9,14 @@ Ext.define('PVE.form.BusTypeSelector', {
     initComponent: function() {
 	var me = this;
 
-	me.data = [['ide', 'IDE'], ['sata', 'SATA']];
+	me.comboItems = [['ide', 'IDE'], ['sata', 'SATA']];
 
 	if (!me.noVirtIO) {
-	    me.data.push(['virtio', 'VIRTIO']);
+	    me.comboItems.push(['virtio', 'VIRTIO']);
 	}
 
 	if (!me.noScsi) {
-	    me.data.push(['scsi', 'SCSI']);
+	    me.comboItems.push(['scsi', 'SCSI']);
 	}
 
 	me.callParent();

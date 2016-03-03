@@ -2,16 +2,9 @@
 Ext.define('PVE.form.Boolean', {
     extend: 'PVE.form.KVComboBox',
     alias: ['widget.booleanfield'],
-  
-    initComponent: function() {
-	var me = this;
-
-	me.data = [
-	    ['__default__', gettext('Default')],
-	    [1, gettext('Yes')],
-	    [0, gettext('No')]
-	];
-
-	me.callParent();
-    }
+    comboItems: [
+	['__default__', gettext('Default')],
+	[1, gettext('Yes')],
+	[0, gettext('No')]
+    ]
 });

@@ -7,14 +7,14 @@ Ext.define('PVE.form.ContentTypeSelector', {
     initComponent: function() {
 	var me = this;
 
-	me.data = [];
+	me.comboItems = [];
 
 	if (me.cts === undefined) {
 	    me.cts = ['images', 'iso', 'vztmpl', 'backup', 'rootdir'];
 	}
 
 	Ext.Array.each(me.cts, function(ct) {
-	    me.data.push([ct, PVE.Utils.format_content_types(ct)]);
+	    me.comboItem.push([ct, PVE.Utils.format_content_types(ct)]);
 	});
 
 	me.callParent();
