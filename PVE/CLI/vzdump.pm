@@ -126,7 +126,7 @@ vzdump skips the following files wit option --stdexcludes
 
 You can manually specify exclude paths, for example:
 
- # vzdump 777 --exclude-path C</tmp/.+> --exclude-path C</var/tmp/.+>
+ # vzdump 777 --exclude-path /tmp/ --exclude-path /var/foo*
 
 (only excludes tmp directories)
 
