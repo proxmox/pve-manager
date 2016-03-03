@@ -593,7 +593,7 @@ sub new {
 	push @$findexcl, '/var/log/?*',
 	                 '/tmp/?*',
 	                 '/var/tmp/?*',
-	                 '/var/run/?*pid';
+	                 '/var/run/?*.pid';
     }
 
     foreach my $p (@plugins) {
