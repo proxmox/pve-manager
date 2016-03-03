@@ -77,7 +77,7 @@ my $confdesc = {
 	type => 'string',
 	description => "Backup mode.",
 	optional => 1,
-	default => 'stop',
+	default => 'snapshot',
 	enum => [ 'snapshot', 'suspend', 'stop' ],
     },
     exclude => {
@@ -133,12 +133,14 @@ my $confdesc = {
 	description => "LVM snapshot size in MB.",
 	optional => 1,
 	minimum => 500,
+	default => 1024,
     },
     bwlimit => {
 	type => 'integer',
 	description => "Limit I/O bandwidth (KBytes per second).",
 	optional => 1,
 	minimum => 0,
+	default => 0,
     },
     ionice => {
 	type => 'integer',
@@ -146,24 +148,28 @@ my $confdesc = {
 	optional => 1,
 	minimum => 0,
 	maximum => 8,
+	default => 7,
     },
     lockwait => {
 	type => 'integer',
 	description => "Maximal time to wait for the global lock (minutes).",
 	optional => 1,
 	minimum => 0,
+	default => 3*60, # 3 hours
     },
     stopwait => {
 	type => 'integer',
 	description => "Maximal time to wait until a VM is stopped (minutes).",
 	optional => 1,
 	minimum => 0,
+	default => 10, # 10 minutes
     },
     maxfiles => {
 	type => 'integer',
 	description => "Maximal number of backup files per VM.",
 	optional => 1,
 	minimum => 1,
+	default => 1,
     },
     remove => {
 	type => 'boolean',
@@ -328,14 +334,10 @@ sub read_vzdump_defaults {
     my $fn = "/etc/vzdump.conf";
 
     my $defaults = {
-	bwlimit => 0,
-	ionice => 7,
-	size => 1024,
-	lockwait => 3*60, # 3 hours
-	stopwait => 10, # 10 minutes
-	mode => 'snapshot',
-	maxfiles => 1, 
-	pigz => 0,
+	map {
+	    my $default = $confdesc->{$_}->{default};
+	     defined($default) ? ($_ => $default) : ()
+	} keys %$confdesc
     };
 
     my $raw;
