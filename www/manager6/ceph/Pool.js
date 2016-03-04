@@ -3,7 +3,52 @@ Ext.define('PVE.CephCreatePool', {
     alias: ['widget.pveCephCreatePool'],
 
     subject: 'Ceph Pool',
- 
+    create: true,
+    method: 'POST',
+    items: [
+	{
+	    xtype: 'textfield',
+	    fieldLabel: gettext('Name'),
+	    name: 'name',
+	    allowBlank: false
+	},
+	{
+	    xtype: 'numberfield',
+	    fieldLabel: gettext('Size'),
+	    name: 'size',
+	    value: 2,
+	    minValue: 1,
+	    maxValue: 3,
+	    allowBlank: false
+	},
+	{
+	    xtype: 'numberfield',
+	    fieldLabel: gettext('Min. Size'),
+	    name: 'min_size',
+	    value: 1,
+	    minValue: 1,
+	    maxValue: 3,
+	    allowBlank: false
+	},
+	{
+	    xtype: 'numberfield',
+	    fieldLabel: gettext('Crush RuleSet'),
+	    name: 'crush_ruleset',
+	    value: 0,
+	    minValue: 0,
+	    maxValue: 32768,
+	    allowBlank: false
+	},
+	{
+	    xtype: 'numberfield',
+	    fieldLabel: 'pg_num',
+	    name: 'pg_num',
+	    value: 64,
+	    minValue: 8,
+	    maxValue: 32768,
+	    allowBlank: false
+	}
+    ],
      initComponent : function() {
 	 /*jslint confusion: true */
         var me = this;
@@ -13,53 +58,7 @@ Ext.define('PVE.CephCreatePool', {
 	}
 
         Ext.applyIf(me, {
-	    create: true,
 	    url: "/nodes/" + me.nodename + "/ceph/pools",
-            method: 'POST',
-            items: [
-		{
-		    xtype: 'textfield',
-		    fieldLabel: gettext('Name'),
-		    name: 'name',
-		    allowBlank: false
-		},
-		{
-		    xtype: 'numberfield',
-		    fieldLabel: gettext('Size'),
-		    name: 'size',
-		    value: 2,
-		    minValue: 1,
-		    maxValue: 3,
-		    allowBlank: false
-		},
-		{
-		    xtype: 'numberfield',
-		    fieldLabel: gettext('Min. Size'),
-		    name: 'min_size',
-		    value: 1,
-		    minValue: 1,
-		    maxValue: 3,
-		    allowBlank: false
-		},
-		{
-		    xtype: 'numberfield',
-		    fieldLabel: gettext('Crush RuleSet'),
-		    name: 'crush_ruleset',
-		    value: 0,
-		    minValue: 0,
-		    maxValue: 32768,
-		    allowBlank: false
-		},
-		{
-		    xtype: 'numberfield',
-		    fieldLabel: 'pg_num',
-		    name: 'pg_num',
-		    value: 64,
-		    minValue: 8,
-		    maxValue: 32768,
-		    allowBlank: false
-		}
-            ]
         });
 
         me.callParent();
@@ -70,6 +69,63 @@ Ext.define('PVE.node.CephPoolList', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveNodeCephPoolList'],
 
+    stateful: false,
+    bufferedRenderer: false,
+    features: [ { ftype: 'summary'} ],
+    columns: [
+	{
+	    header: gettext('Name'),
+	    width: 100,
+	    sortable: true,
+	    dataIndex: 'pool_name'
+	},
+	{
+	    header: gettext('Size') + '/min',
+	    width: 80,
+	    sortable: false,
+	    renderer: function(v, meta, rec) {
+		return v + '/' + rec.data.min_size;
+	    },
+	    dataIndex: 'size'
+	},
+	{
+	    header: 'pg_num',
+	    width: 100,
+	    sortable: false,
+	    dataIndex: 'pg_num'
+	},
+	{
+	    header: 'ruleset',
+	    width: 50,
+	    sortable: false,
+	    dataIndex: 'crush_ruleset'
+	},
+	{
+	    header: gettext('Used'),
+	    columns: [
+		{
+		    header: '%',
+		    width: 80,
+		    sortable: true,
+		    align: 'right',
+		    renderer: Ext.util.Format.numberRenderer('0.00'),
+		    dataIndex: 'percent_used',
+		    summaryType: 'sum',
+		    summaryRenderer: Ext.util.Format.numberRenderer('0.00')
+		},
+		{
+		    header: gettext('Total'),
+		    width: 100,
+		    sortable: true,
+		    renderer: PVE.Utils.render_size,
+		    align: 'right',
+		    dataIndex: 'bytes_used',
+		    summaryType: 'sum',
+		    summaryRenderer: PVE.Utils.render_size
+		}
+	    ]
+	}
+    ],
     initComponent: function() {
         var me = this;
 
@@ -136,65 +192,9 @@ Ext.define('PVE.node.CephPoolList', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
 	    tbar: [ create_btn, remove_btn ],
-	    features: [ { ftype: 'summary' } ],
-	    columns: [
-		{
-		    header: gettext('Name'),
-		    width: 100,
-		    sortable: true,
-		    dataIndex: 'pool_name'
-		},
-		{
-		    header: gettext('Size') + '/min',
-		    width: 50,
-		    sortable: false,
-		    renderer: function(v, meta, rec) {
-			return v + '/' + rec.data.min_size;
-		    },
-		    dataIndex: 'size'
-		},
-		{
-		    header: 'pg_num',
-		    width: 100,
-		    sortable: false,
-		    dataIndex: 'pg_num'
-		},
-		{
-		    header: 'ruleset',
-		    width: 50,
-		    sortable: false,
-		    dataIndex: 'crush_ruleset'
-		},
-		{
-		    header: gettext('Used'),
-		    columns: [
-			{
-			    header: '%',
-			    width: 80,
-			    sortable: true,
-			    align: 'right',
-			    renderer: Ext.util.Format.numberRenderer('0.00'),
-			    dataIndex: 'percent_used',
-			    summaryType: 'sum',
-			    summaryRenderer: Ext.util.Format.numberRenderer('0.00')
-			},
-			{
-			    header: gettext('Total'),
-			    width: 100,
-			    sortable: true,
-			    renderer: PVE.Utils.render_size,
-			    align: 'right',
-			    dataIndex: 'bytes_used',
-			    summaryType: 'sum',
-			    summaryRenderer: PVE.Utils.render_size
-			}
-		    ]
-		}
-	    ],
 	    listeners: {
-		show: rstore.startUpdate,
+		activate: rstore.startUpdate,
 		hide: rstore.stopUpdate,
 		destroy: rstore.stopUpdate
 	    }
