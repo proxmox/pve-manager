@@ -1,7 +1,9 @@
 Ext.define('PVE.node.CephCrushMap', {
     extend: 'Ext.panel.Panel',
     alias: ['widget.pveNodeCephCrushMap'],
-
+    bodyStyle: 'white-space:pre',
+    bodyPadding: 5,
+    scrollable: true,
     load: function() {
 	var me = this;
 	
@@ -28,11 +30,9 @@ Ext.define('PVE.node.CephCrushMap', {
 
 	Ext.apply(me, {
 	    url: '/nodes/' + nodename + '/ceph/crush',
-	    bodyStyle: 'white-space:pre',
-	    bodyPadding: 5,
-	    autoScroll: true,
+
 	    listeners: {
-		show: function() {
+		activate: function() {
 		    me.load();
 		}
 	    }

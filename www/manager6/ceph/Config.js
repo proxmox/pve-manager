@@ -2,6 +2,9 @@ Ext.define('PVE.node.CephConfig', {
     extend: 'Ext.panel.Panel',
     alias: ['widget.pveNodeCephConfig'],
 
+    bodyStyle: 'white-space:pre',
+    bodyPadding: 5,
+    scrollable: true,
     load: function() {
 	var me = this;
 	
@@ -28,9 +31,6 @@ Ext.define('PVE.node.CephConfig', {
 
 	Ext.apply(me, {
 	    url: '/nodes/' + nodename + '/ceph/config',
-	    bodyStyle: 'white-space:pre',
-	    bodyPadding: 5,
-	    autoScroll: true,
 	    listeners: {
 		show: function() {
 		    me.load();
@@ -47,6 +47,10 @@ Ext.define('PVE.node.CephConfig', {
 Ext.define('PVE.node.Ceph', {
     extend: 'Ext.tab.Panel',
     alias: ['widget.pveNodeCeph'],
+
+    tabPosition: 'left',
+    tabRotation: 0,
+    minTabWidth: 80,
 
     getHState: function(itemId) {
 	 /*jslint confusion: true */
@@ -93,8 +97,6 @@ Ext.define('PVE.node.Ceph', {
 	}
 
 	Ext.apply(me, {
-	    plain: true,
-	    tabPosition: 'bottom',
 	    defaults: {
 		border: false,
 		pveSelNode: me.pveSelNode

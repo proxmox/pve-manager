@@ -1,7 +1,8 @@
 Ext.define('PVE.node.CephStatus', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveNodeCephStatus'],
-
+    cwidth1: 150,
+    interval: 3000,
     initComponent: function() {
 	 /*jslint confusion: true */
         var me = this;
@@ -85,8 +86,6 @@ Ext.define('PVE.node.CephStatus', {
 
 	Ext.applyIf(me, {
 	    url: "/api2/json/nodes/" + nodename + "/ceph/status",
-	    cwidth1: 150,
-	    interval: 3000,
 	    rows: {
 		health: { 
 		    header: 'health', 

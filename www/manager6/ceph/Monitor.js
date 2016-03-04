@@ -29,7 +29,7 @@ Ext.define('PVE.CephCreateMon', {
             method: 'POST',
             items: [
                {
-		   xtype: 'PVE.form.NodeSelector',
+		   xtype: 'pveNodeSelector',
 		   submitValue: false,
 		   fieldLabel: gettext('Host'),
 		   selectCurNode: true,
@@ -176,7 +176,7 @@ Ext.define('PVE.node.CephMonList', {
 		},
 		{
 		    header: gettext('Quorum'),
-		    width: 50,
+		    width: 70,
 		    sortable: false,
 		    renderer: PVE.Utils.format_boolean,
 		    dataIndex: 'quorum'
@@ -189,7 +189,7 @@ Ext.define('PVE.node.CephMonList', {
 		}
 	    ],
 	    listeners: {
-		show: rstore.startUpdate,
+		activate: rstore.startUpdate,
 		hide: rstore.stopUpdate,
 		destroy: rstore.stopUpdate
 	    }

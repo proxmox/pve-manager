@@ -2,7 +2,52 @@
 Ext.define('PVE.node.CephDiskList', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveNodeCephDiskList'],
-
+    columns: [
+	{
+	    header: gettext('Device'),
+	    width: 100,
+	    sortable: true,
+	    dataIndex: 'dev'
+	},
+	{
+	    header: gettext('Usage'),
+	    width: 80,
+	    sortable: false,
+	    renderer: function(v, metaData, rec) {
+		if (rec && (rec.data.osdid >= 0)) {
+		    return "osd." + rec.data.osdid;
+		}
+		return v || PVE.Utils.noText;
+	    },
+	    dataIndex: 'used'
+	},
+	{
+	    header: gettext('Size'),
+	    width: 100,
+	    align: 'right',
+	    sortable: false,
+	    renderer: PVE.Utils.format_size,
+	    dataIndex: 'size'
+	},
+	{
+	    header: gettext('Vendor'),
+	    width: 100,
+	    sortable: true,
+	    dataIndex: 'vendor'
+	},
+	{
+	    header: gettext('Model'),
+	    width: 200,
+	    sortable: true,
+	    dataIndex: 'model'
+	},
+	{
+	    header: gettext('Serial'),
+	    flex: 1,
+	    sortable: true,
+	    dataIndex: 'serial'
+	}
+    ],
     initComponent: function() {
 	 /*jslint confusion: true */
         var me = this;
@@ -57,54 +102,9 @@ Ext.define('PVE.node.CephDiskList', {
 	    selModel: sm,
 	    stateful: false,
 	    tbar: [ create_btn ],
-	    columns: [
-		{
-		    header: gettext('Device'),
-		    width: 100,
-		    sortable: true,
-		    dataIndex: 'dev'
-		},
-		{
-		    header: gettext('Usage'),
-		    width: 80,
-		    sortable: false,
-		    renderer: function(v, metaData, rec) {
-			if (rec && (rec.data.osdid >= 0)) {
-			    return "osd." + rec.data.osdid;
-			}
-			return v || PVE.Utils.noText;
-		    },
-		    dataIndex: 'used'
-		},
-		{
-		    header: gettext('Size'),
-		    width: 100,
-		    align: 'right',
-		    sortable: false,
-		    renderer: PVE.Utils.format_size,
-		    dataIndex: 'size'
-		},
-		{
-		    header: gettext('Vendor'),
-		    width: 100,
-		    sortable: true,
-		    dataIndex: 'vendor'
-		},
-		{
-		    header: gettext('Model'),
-		    width: 200,
-		    sortable: true,
-		    dataIndex: 'model'
-		},
-		{
-		    header: gettext('Serial'),
-		    flex: 1,
-		    sortable: true,
-		    dataIndex: 'serial'
-		}
-	    ],
+
 	    listeners: {
-		show: rstore.startUpdate,
+		activate: rstore.startUpdate,
 		hide: rstore.stopUpdate,
 		destroy: rstore.stopUpdate
 	    }
@@ -129,6 +129,31 @@ Ext.define('PVE.form.CephDiskSelector', {
 
     diskType: 'journal_disks',
 
+    valueField: 'dev',
+    displayField: 'dev',
+    listConfig: {
+	columns: [
+	    {
+		header: gettext('Device'),
+		width: 80,
+		sortable: true,
+		dataIndex: 'dev'
+	    },
+	    {
+		header: gettext('Size'),
+		width: 60,
+		sortable: false,
+		renderer: PVE.Utils.format_size,
+		dataIndex: 'size'
+	    },
+	    {
+		header: gettext('Serial'),
+		flex: 1,
+		sortable: true,
+		dataIndex: 'serial'
+	    }
+	]
+    },
     initComponent: function() {
 	var me = this;
 
@@ -155,31 +180,6 @@ Ext.define('PVE.form.CephDiskSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    valueField: 'dev',
-	    displayField: 'dev',
-            listConfig: {
-		columns: [
-		    {
-			header: gettext('Device'),
-			width: 80,
-			sortable: true,
-			dataIndex: 'dev'
-		    },
-		    {
-			header: gettext('Size'),
-			width: 60,
-			sortable: false,
-			renderer: PVE.Utils.format_size,
-			dataIndex: 'size'
-		    },
-		    {
-			header: gettext('Serial'),
-			flex: 1,
-			sortable: true,
-			dataIndex: 'serial'
-		    }
-		]
-	    }
 	});
 
         me.callParent();
