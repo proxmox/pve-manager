@@ -81,10 +81,18 @@
 }
 
 .x-column-header-inner {
-    padding: 4px 6px;
+    padding: 4px 4px;
+}
+
+.x-column-header-align-right .x-column-header-text {
+    margin-right: 4px;
 }
 
 /* fixes no space from top in the login form */
 .x-panel-body-default-framed {
     padding-top: 8px;
+}
+
+.x-group-sub-header .x-column-header-inner {
+    padding: 4px 4px;
 }
