@@ -1081,7 +1081,7 @@ Ext.define('PVE.Utils', { statics: {
 	    }
 
 	    var msg;
-	    var operation = request.operation;
+	    var operation = request._operation;
 	    var error = operation.getError();
 	    if (error.statusText) {
 		msg = error.statusText + ' (' + error.status + ')';
