@@ -88,7 +88,7 @@ Ext.define('PVE.node.CephDiskList', {
 	    },
 	    handler: function() {
 		var rec = sm.getSelection()[0];
-		
+
 		var win = Ext.create('PVE.CephCreateOsd', {
                     nodename: nodename,
 		    dev: rec.data.dev
@@ -116,8 +116,8 @@ Ext.define('PVE.node.CephDiskList', {
 
     Ext.define('ceph-disk-list', {
 	extend: 'Ext.data.Model',
-	fields: [ 'dev', 'used', { name: 'size', type: 'number'}, 
-		  {name: 'osdid', type: 'number'}, 
+	fields: [ 'dev', 'used', { name: 'size', type: 'number'},
+		  {name: 'osdid', type: 'number'},
 		  'vendor', 'model', 'serial'],
 	idProperty: 'dev'
     });

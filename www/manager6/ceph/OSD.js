@@ -15,7 +15,7 @@ Ext.define('PVE.CephCreateOsd', {
 	}
 
 	me.create = true;
-  
+
         Ext.applyIf(me, {
 	    url: "/nodes/" + me.nodename + "/ceph/osd",
             method: 'POST',
@@ -78,7 +78,7 @@ Ext.define('PVE.CephRemoveOsd', {
 	me.create = true;
 
 	me.title = gettext('Remove') + ': ' + 'Ceph OSD osd.' + me.osdid;
- 
+
         Ext.applyIf(me, {
 	    url: "/nodes/" + me.nodename + "/ceph/osd/" + me.osdid,
         });
@@ -235,7 +235,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		return;
 	    }
 	    PVE.Utils.API2Request({
-                url: "/nodes/" + rec.data.host + "/ceph/osd/" + 
+                url: "/nodes/" + rec.data.host + "/ceph/osd/" +
 		    rec.data.id + '/' + cmd,
 		waitMsgTarget: me,
 		method: 'POST',
@@ -343,9 +343,9 @@ Ext.define('PVE.node.CephOsdTree', {
 	    tbar: [ reload_btn, start_btn, stop_btn, osd_out_btn, osd_in_btn, remove_btn ],
 	    rootVisible: false,
 	    fields: ['name', 'type', 'status', 'host', 'in', 'id' ,
-		     { type: 'number', name: 'reweight' }, 
-		     { type: 'number', name: 'percent_used' }, 
-		     { type: 'integer', name: 'bytes_used' }, 
+		     { type: 'number', name: 'reweight' },
+		     { type: 'number', name: 'percent_used' },
+		     { type: 'integer', name: 'bytes_used' },
 		     { type: 'integer', name: 'total_space' },
 		     { type: 'integer', name: 'apply_latency_ms' },
 		     { type: 'integer', name: 'commit_latency_ms' },

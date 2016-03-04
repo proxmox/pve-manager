@@ -87,33 +87,33 @@ Ext.define('PVE.node.CephStatus', {
 	Ext.applyIf(me, {
 	    url: "/api2/json/nodes/" + nodename + "/ceph/status",
 	    rows: {
-		health: { 
-		    header: 'health', 
-		    renderer: renderhealth, 
+		health: {
+		    header: 'health',
+		    renderer: renderhealth,
 		    required: true
 		},
 		quorum_names: {
 		    header: 'quorum',
-		    renderer: renderquorum, 
+		    renderer: renderquorum,
 		    required: true
 		},
-		fsid: { 
-		    header: 'cluster', 
+		fsid: {
+		    header: 'cluster',
 		    required: true
 		},
 		monmap: {
 		    header: 'monmap',
-		    renderer: rendermonmap, 
+		    renderer: rendermonmap,
 		    required: true
 		},
 		osdmap: {
 		    header: 'osdmap',
-		    renderer: renderosdmap, 
+		    renderer: renderosdmap,
 		    required: true
 		},
 		pgmap: {
 		    header: 'pgmap',
-		    renderer: renderpgmap, 
+		    renderer: renderpgmap,
 		    required: true
 		}
 	    }
@@ -123,6 +123,6 @@ Ext.define('PVE.node.CephStatus', {
 
 	me.on('show', me.rstore.startUpdate);
 	me.on('hide', me.rstore.stopUpdate);
-	me.on('destroy', me.rstore.stopUpdate);	
+	me.on('destroy', me.rstore.stopUpdate);
     }
 });

@@ -6,7 +6,7 @@ Ext.define('PVE.node.CephCrushMap', {
     scrollable: true,
     load: function() {
 	var me = this;
-	
+
 	PVE.Utils.API2Request({
 	    url: me.url,
 	    waitMsgTarget: me,

@@ -28,7 +28,7 @@ Ext.define('PVE.node.Config', {
 		}
 	    });
 	};
-	
+
 	var actionBtn = Ext.create('Ext.Button', {
 	    text: gettext('More'),
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
@@ -64,7 +64,7 @@ Ext.define('PVE.node.Config', {
 				if (btn !== 'yes') {
 				    return;
 				}
-			    
+
 				PVE.Utils.API2Request({
 				    url: '/nodes/' + nodename + '/stopall',
 				    method: 'POST',
@@ -88,13 +88,13 @@ Ext.define('PVE.node.Config', {
 		    }
 		]
 	    })
-	}); 
+	});
 
 	var restartBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Restart'),
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
 	    confirmMsg: Ext.String.format(gettext("Do you really want to restart node {0}?"), nodename),
-	    handler: function() { 
+	    handler: function() {
 		node_command('reboot');
 	    }
 	});
@@ -103,7 +103,7 @@ Ext.define('PVE.node.Config', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
 	    confirmMsg: Ext.String.format(gettext("Do you really want to shutdown node {0}?"), nodename),
-	    handler: function() { 
+	    handler: function() {
 		node_command('shutdown');
 	    }
 	});

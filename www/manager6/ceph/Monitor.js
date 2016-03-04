@@ -5,7 +5,7 @@ Ext.define('PVE.CephCreateMon', {
     subject: 'Ceph Monitor',
 
     showProgress: true,
- 
+
     setNode: function(nodename) {
         var me = this;
 
@@ -137,7 +137,7 @@ Ext.define('PVE.node.CephMonList', {
 		}
 
 		PVE.Utils.API2Request({
-		    url: "/nodes/" + rec.data.host + "/ceph/mon/" + 
+		    url: "/nodes/" + rec.data.host + "/ceph/mon/" +
 			rec.data.name,
 		    method: 'DELETE',
 		    success: function(response, options) {

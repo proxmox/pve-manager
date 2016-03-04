@@ -49,7 +49,7 @@ Ext.define('PVE.CephCreatePool', {
 	    allowBlank: false
 	}
     ],
-     initComponent : function() {
+    initComponent : function() {
 	 /*jslint confusion: true */
         var me = this;
 
@@ -179,7 +179,7 @@ Ext.define('PVE.node.CephPoolList', {
 		}
 
 		PVE.Utils.API2Request({
-		    url: "/nodes/" + nodename + "/ceph/pools/" + 
+		    url: "/nodes/" + nodename + "/ceph/pools/" +
 			rec.data.pool_name,
 		    method: 'DELETE',
 		    failure: function(response, opts) {
@@ -206,13 +206,13 @@ Ext.define('PVE.node.CephPoolList', {
 
     Ext.define('ceph-pool-list', {
 	extend: 'Ext.data.Model',
-	fields: [ 'pool_name', 
-		  { name: 'pool', type: 'integer'}, 
-		  { name: 'size', type: 'integer'}, 
-		  { name: 'min_size', type: 'integer'}, 
-		  { name: 'pg_num', type: 'integer'}, 
-		  { name: 'bytes_used', type: 'integer'}, 
-		  { name: 'percent_used', type: 'number'}, 
+	fields: [ 'pool_name',
+		  { name: 'pool', type: 'integer'},
+		  { name: 'size', type: 'integer'},
+		  { name: 'min_size', type: 'integer'},
+		  { name: 'pg_num', type: 'integer'},
+		  { name: 'bytes_used', type: 'integer'},
+		  { name: 'percent_used', type: 'number'},
 		  { name: 'crush_ruleset', type: 'integer'}
 		],
 	idProperty: 'pool_name'

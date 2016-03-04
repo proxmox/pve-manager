@@ -7,7 +7,7 @@ Ext.define('PVE.node.CephConfig', {
     scrollable: true,
     load: function() {
 	var me = this;
-	
+
 	PVE.Utils.API2Request({
 	    url: me.url,
 	    waitMsgTarget: me,
@@ -55,7 +55,7 @@ Ext.define('PVE.node.Ceph', {
     getHState: function(itemId) {
 	 /*jslint confusion: true */
         var me = this;
-	
+
 	if (!itemId) {
 	    itemId = me.getActiveTab().itemId;
 	}
