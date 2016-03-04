@@ -54,7 +54,16 @@ Ext.define('PVE.CephRemoveOsd', {
     isRemove: true,
 
     showProgress: true,
-
+    method: 'DELETE',
+    items: [
+	{
+	    xtype: 'pvecheckbox',
+	    name: 'cleanup',
+	    checked: true,
+	    labelWidth: 130,
+	    fieldLabel: gettext('Remove Partitions')
+	}
+    ],
     initComponent : function() {
 	 /*jslint confusion: true */
         var me = this;
@@ -72,16 +81,6 @@ Ext.define('PVE.CephRemoveOsd', {
  
         Ext.applyIf(me, {
 	    url: "/nodes/" + me.nodename + "/ceph/osd/" + me.osdid,
-            method: 'DELETE',
-            items: [
-		{
-		    xtype: 'pvecheckbox',
-		    name: 'cleanup',
-		    checked: true,
-		    labelWidth: 130,
-		    fieldLabel: gettext('Remove Partitions')
-		}
-             ]
         });
 
         me.callParent();
@@ -91,7 +90,115 @@ Ext.define('PVE.CephRemoveOsd', {
 Ext.define('PVE.node.CephOsdTree', {
     extend: 'Ext.tree.Panel',
     alias: ['widget.pveNodeCephOsdTree'],
-
+    columns: [
+	{
+	    xtype: 'treecolumn',
+	    text: 'Name',
+	    dataIndex: 'name',
+	    width: 150
+	},
+	{
+	    text: 'Type',
+	    dataIndex: 'type',
+	    align: 'right',
+	    width: 60
+	},
+	{
+	    text: 'Status',
+	    dataIndex: 'status',
+	    align: 'right',
+	    renderer: function(value, metaData, rec) {
+		if (!value) {
+		    return value;
+		}
+		var data = rec.data;
+		return value + '/' + (data['in'] ? 'in' : 'out');
+	    },
+	    width: 80
+	},
+	{
+	    text: 'weight',
+	    dataIndex: 'crush_weight',
+	    align: 'right',
+	    renderer: function(value, metaData, rec) {
+		if (rec.data.type !== 'osd') {
+		    return '';
+		}
+		return value;
+	    },
+	    width: 80
+	},
+	{
+	    text: 'reweight',
+	    dataIndex: 'reweight',
+	    align: 'right',
+	    renderer: function(value, metaData, rec) {
+		if (rec.data.type !== 'osd') {
+		    return '';
+		}
+		return value;
+	    },
+	    width: 90
+	},
+	{
+	    header: gettext('Used'),
+	    columns: [
+		{
+		    text: '%',
+		    dataIndex: 'percent_used',
+		    align: 'right',
+		    renderer: function(value, metaData, rec) {
+			if (rec.data.type !== 'osd') {
+			    return '';
+			}
+			return Ext.util.Format.number(value, '0.00');
+		    },
+		    width: 80
+		},
+		{
+		    text: gettext('Total'),
+		    dataIndex: 'total_space',
+		    align: 'right',
+		    renderer: function(value, metaData, rec) {
+			if (rec.data.type !== 'osd') {
+			    return '';
+			}
+			return PVE.Utils.render_size(value);
+		    },
+		    width: 100
+		}
+	    ]
+	},
+	{
+	    header: gettext('Latency (ms)'),
+	    columns: [
+		{
+		    text: 'Apply',
+		    dataIndex: 'apply_latency_ms',
+		    align: 'right',
+		    renderer: function(value, metaData, rec) {
+			if (rec.data.type !== 'osd') {
+			    return '';
+			}
+			return value;
+		    },
+		    width: 60
+		},
+		{
+		    text: 'Commit',
+		    dataIndex: 'commit_latency_ms',
+		    align: 'right',
+		    renderer: function(value, metaData, rec) {
+			if (rec.data.type !== 'osd') {
+			    return '';
+			}
+			return value;
+		    },
+		    width: 60
+		}
+	    ]
+	}
+    ],
     initComponent: function() {
 	 /*jslint confusion: true */
         var me = this;
@@ -235,8 +342,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	Ext.apply(me, {
 	    tbar: [ reload_btn, start_btn, stop_btn, osd_out_btn, osd_in_btn, remove_btn ],
 	    rootVisible: false,
-	    fields: ['name', 'type', 'status', 'host', 'in',
-		     { type: 'integer', name: 'id' }, 
+	    fields: ['name', 'type', 'status', 'host', 'in', 'id' ,
 		     { type: 'number', name: 'reweight' }, 
 		     { type: 'number', name: 'percent_used' }, 
 		     { type: 'integer', name: 'bytes_used' }, 
@@ -246,117 +352,9 @@ Ext.define('PVE.node.CephOsdTree', {
 		     { type: 'number', name: 'crush_weight' }],
 	    stateful: false,
 	    selModel: sm,
-	    columns: [
-		{
-		    xtype: 'treecolumn',
-		    text: 'Name',
-		    dataIndex: 'name',
-		    width: 150
-		},
-		{ 
-		    text: 'Type',
-		    dataIndex: 'type',
-		    align: 'right',
-		    width: 60		 
-		},
-		{ 
-		    text: 'Status',
-		    dataIndex: 'status',
-		    align: 'right',
-		    renderer: function(value, metaData, rec) {
-			if (!value) {
-			    return value;
-			}
-			var data = rec.data;
-			return value + '/' + (data['in'] ? 'in' : 'out');
-		    },
-		    width: 60
-		},
-		{ 
-		    text: 'weight',
-		    dataIndex: 'crush_weight',
-		    align: 'right',
-		    renderer: function(value, metaData, rec) {
-			if (rec.data.type !== 'osd') {
-			    return '';
-			}
-			return value;
-		    },
-		    width: 60
-		},
-		{ 
-		    text: 'reweight',
-		    dataIndex: 'reweight',
-		    align: 'right',
-		    renderer: function(value, metaData, rec) {
-			if (rec.data.type !== 'osd') {
-			    return '';
-			}
-			return value;
-		    },
-		    width: 60
-		},
-		{
-		    header: gettext('Used'),
-		    columns: [
-			{
-			    text: '%',
-			    dataIndex: 'percent_used',
-			    align: 'right',
-			    renderer: function(value, metaData, rec) {
-				if (rec.data.type !== 'osd') {
-				    return '';
-				}
-				return Ext.util.Format.number(value, '0.00');
-			    },
-			    width: 80
-			},
-			{
-			    text: gettext('Total'),
-			    dataIndex: 'total_space',
-			    align: 'right',
-			    renderer: function(value, metaData, rec) {
-				if (rec.data.type !== 'osd') {
-				    return '';
-				}
-				return PVE.Utils.render_size(value);
-			    },
-			    width: 100
-			}
-		    ]
-		},
-		{
-		    header: gettext('Latency (ms)'),
-		    columns: [
-			{
-			    text: 'Apply',
-			    dataIndex: 'apply_latency_ms',
-			    align: 'right',
-			    renderer: function(value, metaData, rec) {
-				if (rec.data.type !== 'osd') {
-				    return '';
-				}
-				return value;
-			    },
-			    width: 60
-			},
-			{
-			    text: 'Commit',
-			    dataIndex: 'commit_latency_ms',
-			    align: 'right',
-			    renderer: function(value, metaData, rec) {
-				if (rec.data.type !== 'osd') {
-				    return '';
-				}
-				return value;
-			    },
-			    width: 60
-			}
-		    ]
-		}
-	    ],
+
 	    listeners: {
-		show: function() {
+		activate: function() {
 		    reload();
 		}
 	    }
