@@ -23,7 +23,7 @@ Ext.define('PVE.node.TimeView', {
 	    win.show();
 	};
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    url: "/api2/json/nodes/" + nodename + "/time",
 	    cwidth1: 150,
 	    interval: 1000,
