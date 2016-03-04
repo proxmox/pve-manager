@@ -95,6 +95,7 @@ Ext.define('PVE.data.DiffStore', {
 
 	    me.resumeEvents();
 	    me.fireEvent('refresh', me);
+	    me.fireEvent('datachanged', me);
 	});
     }
 });
