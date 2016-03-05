@@ -45,6 +45,39 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
+    name => 'available',
+    path => 'available',
+    method => 'GET',
+    description => "List available templates.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    section => {
+		type => 'string',
+		description => "Restrict list to specified section.",
+		enum => ['system', 'turnkeylinux'],
+		optional => 1,
+	    },
+	}
+    },
+    returns => { type => 'null'},
+    code => sub {
+	my ($param) = @_;
+
+	my $list = PVE::APLInfo::load_data();
+
+	foreach my $section (sort keys %$list) {
+	    next if $section eq 'all';
+	    next if $param->{section} && $section ne $param->{section};
+	    foreach my $template (sort keys %{$list->{$section}}) {
+		print sprintf("%-15s %s\n", $section, $template);
+	    }
+	}
+	return undef;
+
+    }});
+
+__PACKAGE__->register_method ({
     name => 'index',
     path => 'index',
     method => 'GET',
@@ -155,6 +188,7 @@ my $print_list = sub {
 our $cmddef = {
     update => [ __PACKAGE__, 'update', []],
     download => [ 'PVE::API2::Nodes::Nodeinfo', 'apl_download', [ 'storage', 'template'], { node => $nodename } ],
+    available => [  __PACKAGE__, 'available', []],
     list => [  __PACKAGE__, 'index', [ 'storage' ], { node => $nodename }, $print_list ],
     remove => [  __PACKAGE__, 'remove', [ 'template_path' ], { node => $nodename }]
 };
