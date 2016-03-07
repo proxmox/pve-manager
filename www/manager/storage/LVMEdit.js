@@ -97,7 +97,6 @@ Ext.define('PVE.storage.LVMInputPanel', {
 
 	if (me.create) {
 	    values.type = 'lvm';
-	    values.content = 'images';
 	} else {
 	    delete values.storage;
 	}
@@ -257,6 +256,10 @@ Ext.define('PVE.storage.LVMEdit', {
 	    me.load({
 		success:  function(response, options) {
 		    var values = response.result.data;
+		    var ctypes = values.content || '';
+
+		    values.content = ctypes.split(',');
+
 		    if (values.nodes) {
 			values.nodes = values.nodes.split(',');
 		    }
