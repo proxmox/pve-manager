@@ -15,6 +15,7 @@ use PVE::INotify;
 use PVE::RPCEnvironment;
 use PVE::OpenVZ;
 use PVE::API2::OpenVZ;
+use PVE::QemuConfig;
 use PVE::QemuServer;
 use PVE::API2::Qemu;
 
@@ -209,8 +210,8 @@ if ($cmd eq 'start') {
 	ocf_log('info', "Move config for $status->{name} to local node");
 	my ($oldconfig, $newconfig, $oldfiles, $newfiles);
 	if ($status->{type} eq 'qemu') {
-	    $oldconfig = PVE::QemuServer::config_file($status->{vmid}, $status->{node});
-	    $newconfig = PVE::QemuServer::config_file($status->{vmid}, $nodename);
+	    $oldconfig = PVE::QemuConfig->config_file($status->{vmid}, $status->{node});
+	    $newconfig = PVE::QemuConfig->config_file($status->{vmid}, $nodename);
 	} else {
 	    $oldconfig = PVE::OpenVZ::config_file($status->{vmid}, $status->{node});
 	    $newconfig = PVE::OpenVZ::config_file($status->{vmid}, $nodename);
@@ -349,7 +350,7 @@ if ($cmd eq 'start') {
 
     my $oldconfig;
     if ($status->{type} eq 'qemu') {
-	$oldconfig = PVE::QemuServer::config_file($status->{vmid}, $status->{node});
+	$oldconfig = PVE::QemuConfig->config_file($status->{vmid}, $status->{node});
 	$upid = PVE::API2::Qemu->migrate_vm($params);
     } else {
 	$oldconfig = PVE::OpenVZ::config_file($status->{vmid}, $status->{node});

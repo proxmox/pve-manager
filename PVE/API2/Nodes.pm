@@ -25,6 +25,7 @@ use PVE::APLInfo;
 use PVE::Report;
 use PVE::HA::Env::PVE2;
 use PVE::HA::Config;
+use PVE::QemuConfig;
 use PVE::QemuServer;
 use PVE::API2::Subscription;
 use PVE::API2::Services;
@@ -1193,7 +1194,7 @@ my $get_start_stop_list = sub {
 	    if ($d->{type} eq 'lxc') {
 		$conf = PVE::LXC::Config->load_config($vmid);
 	    } elsif ($d->{type} eq 'qemu') {
-		$conf = PVE::QemuServer::load_config($vmid);
+		$conf = PVE::QemuConfig->load_config($vmid);
 	    } else {
 		die "unknown VM type '$d->{type}'\n";
 	    }
