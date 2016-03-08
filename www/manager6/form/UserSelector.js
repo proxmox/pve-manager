@@ -1,7 +1,10 @@
 Ext.define('PVE.form.UserSelector', {
     extend: 'PVE.form.ComboGrid',
     alias: ['widget.pveUserSelector'],
-
+    allowBlank: false,
+    autoSelect: false,
+    valueField: 'userid',
+    displayField: 'userid',
     initComponent: function() {
 	var me = this;
 
@@ -18,10 +21,6 @@ Ext.define('PVE.form.UserSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    allowBlank: false,
-	    autoSelect: false,
-	    valueField: 'userid',
-	    displayField: 'userid',
             listConfig: {
 		columns: [
 		    {

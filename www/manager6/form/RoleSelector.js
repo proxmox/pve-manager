@@ -2,6 +2,10 @@ Ext.define('PVE.form.RoleSelector', {
     extend: 'PVE.form.ComboGrid',
     alias: ['widget.pveRoleSelector'],
 
+    allowBlank: false,
+    autoSelect: false,
+    valueField: 'roleid',
+    displayField: 'roleid',
     initComponent: function() {
 	var me = this;
 
@@ -11,10 +15,6 @@ Ext.define('PVE.form.RoleSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    allowBlank: false,
-	    autoSelect: false,
-	    valueField: 'roleid',
-	    displayField: 'roleid',
             listConfig: {
 		columns: [
 		    {
