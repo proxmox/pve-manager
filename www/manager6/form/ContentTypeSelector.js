@@ -1,7 +1,7 @@
 Ext.define('PVE.form.ContentTypeSelector', {
     extend: 'PVE.form.KVComboBox',
     alias: ['widget.pveContentTypeSelector'],
-  
+
     cts: undefined,
 
     initComponent: function() {

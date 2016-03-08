@@ -55,9 +55,9 @@ Ext.define('PVE.form.UserSelector', {
 
     Ext.define('pve-users', {
 	extend: 'Ext.data.Model',
-	fields: [ 
+	fields: [
 	    'userid', 'firstname', 'lastname' , 'email', 'comment',
-	    { type: 'boolean', name: 'enable' }, 
+	    { type: 'boolean', name: 'enable' },
 	    { type: 'date', dateFormat: 'timestamp', name: 'expire' }
 	],
 	proxy: {

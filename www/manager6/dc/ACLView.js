@@ -61,7 +61,7 @@ Ext.define('PVE.dc.ACLAdd', {
 	Ext.apply(me, {
 	    items: [ ipanel ]
 	});
-	    
+
 	me.callParent();
     }
 });
@@ -83,9 +83,9 @@ Ext.define('PVE.dc.ACLView', {
                 type: 'pve',
 		url: "/api2/json/access/acl"
 	    },
-	    sorters: { 
-		property: 'path', 
-		order: 'DESC' 
+	    sorters: {
+		property: 'path',
+		order: 'DESC'
 	    }
 	});
 
@@ -150,9 +150,9 @@ Ext.define('PVE.dc.ACLView', {
 	    selModel: sm,
 	    confirmMsg: gettext('Are you sure you want to remove this entry'),
 	    handler: function(btn, event, rec) {
-		var params = { 
-		    'delete': 1, 
-		    path: rec.data.path, 
+		var params = {
+		    'delete': 1,
+		    path: rec.data.path,
 		    roles: rec.data.roleid
 		};
 		if (rec.data.type === 'group') {
@@ -232,12 +232,12 @@ Ext.define('PVE.dc.ACLView', {
 
     Ext.define('pve-acl', {
 	extend: 'Ext.data.Model',
-	fields: [ 
-	    'path', 'type', 'ugid', 'roleid', 
-	    { 
-		name: 'propagate', 
+	fields: [
+	    'path', 'type', 'ugid', 'roleid',
+	    {
+		name: 'propagate',
 		type: 'boolean'
-	    } 
+	    }
 	]
     });
 

@@ -13,9 +13,9 @@ Ext.define('PVE.dc.StorageView', {
                 type: 'pve',
 		url: "/api2/json/storage"
 	    },
-	    sorters: { 
-		property: 'storage', 
-		order: 'DESC' 
+	    sorters: {
+		property: 'storage',
+		order: 'DESC'
 	    }
 	});
 
@@ -31,7 +31,7 @@ Ext.define('PVE.dc.StorageView', {
 		return;
 	    }
 	    var type = rec.data.type;
-	    
+
 	    var editor;
 	    if (type === 'dir') {
 		editor = 'PVE.storage.DirEdit';
@@ -63,7 +63,7 @@ Ext.define('PVE.dc.StorageView', {
 	    win.show();
 	    win.on('destroy', reload);
 	};
-	
+
 	var edit_btn = new PVE.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
@@ -101,7 +101,7 @@ Ext.define('PVE.dc.StorageView', {
 	    viewConfig: {
 		trackOver: false
 	    },
-	    tbar: [ 
+	    tbar: [
 		{
 		    text: gettext('Add'),
 		    menu: new Ext.menu.Menu({
@@ -267,10 +267,10 @@ Ext.define('PVE.dc.StorageView', {
 
     Ext.define('pve-storage', {
 	extend: 'Ext.data.Model',
-	fields: [ 
+	fields: [
 	    'path', 'type', 'content', 'server', 'portal', 'target', 'export', 'storage',
 	    { name: 'shared', type: 'boolean'},
-	    { name: 'disable', type: 'boolean'} 
+	    { name: 'disable', type: 'boolean'}
 	],
 	idProperty: 'storage'
     });
