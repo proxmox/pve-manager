@@ -1,7 +1,9 @@
 Ext.define('PVE.dc.ACLAdd', {
     extend: 'PVE.window.Edit',
     alias: ['widget.pveACLAdd'],
-
+    url: '/access/acl',
+    method: 'PUT',
+    isAdd: true,
     initComponent : function() {
 	/*jslint confusion: true */
         var me = this;
@@ -57,9 +59,6 @@ Ext.define('PVE.dc.ACLAdd', {
 	});
 
 	Ext.apply(me, {
-	    url: '/access/acl',
-	    method: 'PUT',
-	    isAdd: true,
 	    items: [ ipanel ]
 	});
 	    
@@ -78,7 +77,7 @@ Ext.define('PVE.dc.ACLView', {
     initComponent : function() {
 	var me = this;
 
-	var store = new Ext.data.Store({
+	var store = Ext.create('Ext.data.Store',{
 	    model: 'pve-acl',
 	    proxy: {
                 type: 'pve',
@@ -91,7 +90,7 @@ Ext.define('PVE.dc.ACLView', {
 	});
 
 	if (me.path) {
-	    store.filters.add(new Ext.util.Filter({
+	    store.addFilter(Ext.create('Ext.util.Filter',{
 		filterFn: function(item) {
 		    if (item.data.path === me.path) {
 			return true;
@@ -188,7 +187,8 @@ Ext.define('PVE.dc.ACLView', {
 	    tbar: [
 		{
 		    text: gettext('Add'),
-		    menu: new Ext.menu.Menu({
+		    menu: {
+			xtype: 'menu',
 			items: [
 			    {
 				text: gettext('Group Permission'),
@@ -213,7 +213,7 @@ Ext.define('PVE.dc.ACLView', {
 				}
 			    }
 			]
-		    })
+		    },
 		},
 		remove_btn
 	    ],
