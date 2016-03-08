@@ -14,7 +14,7 @@ Ext.define('PVE.form.ContentTypeSelector', {
 	}
 
 	Ext.Array.each(me.cts, function(ct) {
-	    me.comboItem.push([ct, PVE.Utils.format_content_types(ct)]);
+	    me.comboItems.push([ct, PVE.Utils.format_content_types(ct)]);
 	});
 
 	me.callParent();
