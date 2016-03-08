@@ -41,6 +41,8 @@ Ext.define('PVE.dc.StorageView', {
 		editor = 'PVE.storage.GlusterFsEdit';
 	    } else if (type === 'lvm') {
 		editor = 'PVE.storage.LVMEdit';
+	    } else if (type === 'lvmthin') {
+		editor = 'PVE.storage.LvmThinEdit';
 	    } else if (type === 'iscsi') {
 		editor = 'PVE.storage.IScsiEdit';
 	    } else if (type === 'rbd') {
@@ -119,6 +121,15 @@ Ext.define('PVE.dc.StorageView', {
 				iconCls: 'pve-itype-icon-storage',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.LVMEdit', {});
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+			    {
+				text:  PVE.Utils.format_storage_type('lvmthin'),
+				iconCls: 'pve-itype-icon-storage',
+				handler: function() {
+				    var win = Ext.create('PVE.storage.LvmThinEdit', {});
 				    win.on('destroy', reload);
 				    win.show();
 				}
