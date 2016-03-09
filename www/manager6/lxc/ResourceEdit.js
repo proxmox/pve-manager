@@ -332,6 +332,9 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    hidden: me.unused || !me.create,
 	    listeners: {
 		change: function(f, value) {
+		    if (!value) { // initial store loading fires an unwanted 'change'
+			return;
+		    }
 		    if (me.mpdata.type === 'bind') {
 			me.quota.setDisabled(true);
 			me.quota.setValue(false);
