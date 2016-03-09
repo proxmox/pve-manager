@@ -107,9 +107,9 @@ Ext.define('PVE.lxc.Options', {
 			xtype: 'pveKVComboBox',
 			name: 'cmode',
 			deleteEmpty: true,
-			value: '',
-			data: [
-			    ['', PVE.Utils.defaultText + " (tty)"],
+			value: '__default__',
+			comboItems: [
+			    ['__default__', PVE.Utils.defaultText + " (tty)"],
 			    ['tty', "/dev/tty[X]"],
 			    ['console', "/dev/console"],
 			    ['shell', "shell"]
