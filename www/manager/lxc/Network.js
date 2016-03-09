@@ -126,7 +126,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		fieldLabel: gettext('MAC address'),
 		vtype: 'MacAddress',
 		value: cdata.hwaddr,
-		allowBlank: me.create,
+		allowBlank: true,
 		emptyText: 'auto'
 	    },
 	    {
