@@ -284,9 +284,9 @@ Ext.define('PVE.lxc.SnapshotTree', {
 		    }
 		}
 	    ],
-	    columnLines: true, // will work in 4.1?
+	    columnLines: true,
 	    listeners: {
-		show: me.reload,
+		activate: me.reload,
 		hide: me.load_task.cancel,
 		destroy: me.load_task.cancel,
 		// disable collapse

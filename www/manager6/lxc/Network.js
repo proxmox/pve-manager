@@ -532,14 +532,12 @@ Ext.define('PVE.lxc.NetworkView', {
 		}
 	    ],
 	    listeners: {
-		show: me.load,
+		activate: me.load,
 		itemdblclick: run_editor
 	    }
 	});
 
 	me.callParent();
-
-	me.load();
    }
 }, function() {
 

@@ -195,13 +195,12 @@ Ext.define('PVE.lxc.Options', {
 	    tbar: [ edit_btn ],
 	    rows: rows,
 	    listeners: {
-		itemdblclick: run_editor
+		itemdblclick: run_editor,
+		activate: reload
 	    }
 	});
 
 	me.callParent();
-
-	me.on('show', reload);
     }
 });
 

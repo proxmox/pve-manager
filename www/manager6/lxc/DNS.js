@@ -266,12 +266,11 @@ Ext.define('PVE.lxc.DNS', {
 	    rows: rows,
 	    listeners: {
 		itemdblclick: run_editor,
-		selectionchange: set_button_status
+		selectionchange: set_button_status,
+		activate: reload
 	    }
 	});
 
 	me.callParent();
-
-	me.on('show', reload);
     }
 });
