@@ -5,6 +5,16 @@ Ext.define('PVE.Parser', { statics: {
 
     // this class only contains static functions
 
+    parseBoolean: function(value, default_value) {
+	if (!Ext.isDefined(value))
+	    return default_value;
+	value = value.toLowerCase();
+	return value === 1 || value === '1' ||
+	       value === 'on' ||
+	       value === 'yes' ||
+	       value === 'true';
+    },
+
     parseQemuNetwork: function(key, value) {
 	if (!(key && value)) {
 	    return;
@@ -257,6 +267,73 @@ Ext.define('PVE.Parser', { statics: {
 	return tmparray.join(',');
     },
 
+    parseLxcMountPoint: function(value) {
+	if (!value) {
+	    return;
+	}
+
+	var res = {};
+
+	var errors = false;
+	Ext.Array.each(value.split(','), function(p) {
+	    if (!p || p.match(/^\s*$/)) {
+		return; // continue
+	    }
+	    var match_res = p.match(/^([a-z_]+)=(\S+)$/);
+	    if (!match_res) {
+		if (!p.match(/\=/)) {
+		    res.file = p;
+		    return; // continue
+		}
+		errors = true;
+		return false; // break
+	    }
+	    var k = match_res[1];
+	    if (k === 'volume') {
+		k = 'file';
+	    }
+
+	    if (Ext.isDefined(res[k])) {
+		errors = true;
+		return false; // break
+	    }
+
+	    var v = match_res[2];
+
+	    res[k] = v;
+	});
+
+	if (errors || !res.file) {
+	    return;
+	}
+
+	var m = res.file.match(/^([a-z][a-z0-9\-\_\.]*[a-z0-9]):/);
+	if (m) {
+	    res.storage = m[1];
+	    res.type = 'volume';
+	} else if (res.file.match(/^\/dev\//)) {
+	    res.type = 'device';
+	} else {
+	    res.type = 'bind';
+	}
+
+	return res;
+    },
+
+    printLxcMountPoint: function(mp) {
+	var drivestr = mp.file;
+
+	Ext.Object.each(mp, function(key, value) {
+	    if (!Ext.isDefined(value) || key === 'file' ||
+		key === 'type' || key === 'storage') {
+		return; // continue
+	    }
+	    drivestr += ',' + key + '=' + value;
+	});
+
+	return drivestr;
+    },
+
     parseStartup: function(value) {
 	if (value === undefined) {
 	    return;
@@ -338,6 +415,69 @@ Ext.define('PVE.Parser', { statics: {
 	});
 
 	return res;
-    }
+    },
 
+    parseQemuCpu: function(value) {
+	if (!value) {
+	    return {};
+	}
+
+	var res = {};
+
+	var errors = false;
+	Ext.Array.each(value.split(','), function(p) {
+	    if (!p || p.match(/^\s*$/)) {
+		return; // continue
+	    }
+
+	    if (!p.match(/=/)) {
+		if (Ext.isDefined(res['cpu'])) {
+		    errors = true;
+		    return false; // break
+		}
+		res.cputype = p;
+		return; // continue
+	    }
+
+	    var match_res = p.match(/^([a-z_]+)=(\S+)$/);
+	    if (!match_res) {
+		errors = true;
+		return false; // break
+	    }
+
+	    var k = match_res[1];
+	    if (Ext.isDefined(res[k])) {
+		errors = true;
+		return false; // break
+	    }
+
+	    res[k] = match_res[2];
+	});
+
+	if (errors || !res.cputype) {
+	    return;
+	}
+
+	return res;
+    },
+
+    printQemuCpu: function(cpu) {
+	var cpustr = cpu.cputype;
+	var optstr = '';
+
+	Ext.Object.each(cpu, function(key, value) {
+	    if (!Ext.isDefined(value) || key === 'cputype') {
+		return; // continue
+	    }
+	    optstr += ',' + key + '=' + value;
+	});
+
+	if (!cpustr) {
+	    if (optstr)
+		return 'kvm64' + optstr;
+	    return;
+	}
+
+	return cpustr + optstr;
+    },
 }});
