@@ -1,3 +1,9 @@
+pve-manager (4.1-20) unstable; urgency=medium
+
+  * Allow non-self-signed override certificate for API
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 09 Mar 2016 14:38:30 +0100
+
 pve-manager (4.1-19) unstable; urgency=medium
 
   * Use methods from PVE::QemuConfig
