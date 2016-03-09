@@ -42,7 +42,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	    }
 	});
 
-	Ext.applyIf(me, { text: gettext('Console') });
+	Ext.apply(me, { text: gettext('Console') });
 
 	Ext.apply(me, {
 	    handler: function() {
