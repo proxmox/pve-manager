@@ -301,7 +301,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		fieldLabel: gettext('Mount Point'),
 		matchFieldWidth: false,
 		allowBlank: false,
-		data: names,
+		comboItems: names,
 		validator: function(value) {
 		    if (!me.rendered) {
 			return;
@@ -446,7 +446,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		xtype: 'pveKVComboBox',
 		name: 'acl',
 		fieldLabel: gettext('ACLs'),
-		data: [['Default', 'Default'], ['1', 'On'], ['0', 'Off']],
+		comboItems: [['Default', 'Default'], ['1', 'On'], ['0', 'Off']],
 		value: 'Default',
 		allowBlank: true
 	    },
