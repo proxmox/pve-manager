@@ -1,7 +1,18 @@
 Ext.define('PVE.storage.Summary', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveStorageSummary',
-
+    scrollable: true,
+    bodyPadding: 10,
+    defaults: {
+	style: 'padding-top:10px',
+	width: 800
+    },
+    tbar: [
+	'->',
+	{
+	    xtype: 'pveRRDTypeSelector'
+	}
+    ],
     initComponent: function() {
         var me = this;
 
@@ -25,18 +36,6 @@ Ext.define('PVE.storage.Summary', {
 	var rrdurl = "/api2/png/nodes/" + nodename + "/storage/" + storage + "/rrd";
 
 	Ext.apply(me, {
-	    autoScroll: true,
-	    bodyStyle: 'padding:10px',
-	    defaults: {
-		style: 'padding-top:10px',
-		width: 800
-	    },		
-	    tbar: [
-		'->',
-		{
-		    xtype: 'pveRRDTypeSelector'
-		}
-	    ],
 	    items: [
 		statusview,
 		{
@@ -49,7 +48,7 @@ Ext.define('PVE.storage.Summary', {
 	    ]
 	});
 
-	me.on('show', rstore.startUpdate);
+	me.on('activate', rstore.startUpdate);
 	me.on('hide', rstore.stopUpdate);
 	me.on('destroy', rstore.stopUpdate);	
 
