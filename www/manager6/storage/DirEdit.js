@@ -10,7 +10,7 @@ Ext.define('PVE.storage.DirInputPanel', {
 	    delete values.storage;
 	}
 
-	values.disable = values.enable ? 0 : 1;	    
+	values.disable = values.enable ? 0 : 1;
 	delete values.enable;
 
 	return values;
@@ -78,7 +78,7 @@ Ext.define('PVE.storage.DirInputPanel', {
 		xtype: 'pveNodeSelector',
 		name: 'nodes',
 		fieldLabel: gettext('Nodes'),
-		emptyText: gettext('All') + ' (' + 
+		emptyText: gettext('All') + ' (' +
 		    gettext('No restrictions') +')',
 		multiSelect: true,
 		autoSelect: false
@@ -94,7 +94,7 @@ Ext.define('PVE.storage.DirEdit', {
 
     initComponent : function() {
 	var me = this;
- 
+
 	me.create = !me.storageId;
 
 	if (me.create) {
@@ -115,7 +115,7 @@ Ext.define('PVE.storage.DirEdit', {
 	    isAdd: true,
 	    items: [ ipanel ]
 	});
-	
+
 	me.callParent();
 
 	if (!me.create) {

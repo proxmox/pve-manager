@@ -104,7 +104,7 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 		checked: false,
 		uncheckedValue: 0,
 		fieldLabel: gettext('Thin provision')
-	    }	    
+	    }
 	];
 
 	if (me.create || me.storageId !== 'local') {
@@ -125,7 +125,7 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 
 Ext.define('PVE.storage.ZFSPoolEdit', {
     extend: 'PVE.window.Edit',
-    
+
     initComponent : function() {
 	var me = this;
 

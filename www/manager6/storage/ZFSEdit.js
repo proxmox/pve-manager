@@ -130,7 +130,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 
 Ext.define('PVE.storage.ZFSEdit', {
     extend: 'PVE.window.Edit',
-    
+
     initComponent : function() {
 	var me = this;
 

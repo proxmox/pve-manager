@@ -50,7 +50,7 @@ Ext.define('PVE.storage.Summary', {
 
 	me.on('activate', rstore.startUpdate);
 	me.on('hide', rstore.stopUpdate);
-	me.on('destroy', rstore.stopUpdate);	
+	me.on('destroy', rstore.stopUpdate);
 
 	me.callParent();
     }

@@ -74,8 +74,8 @@ Ext.define('PVE.grid.TemplateSelector', {
 
     Ext.define('pve-aplinfo', {
 	extend: 'Ext.data.Model',
-	fields: [ 
-	    'template', 'type', 'package', 'version', 'headline', 'infopage', 
+	fields: [
+	    'template', 'type', 'package', 'version', 'headline', 'infopage',
 	    'description', 'os', 'section'
 	],
 	idProperty: 'template'
@@ -111,8 +111,8 @@ Ext.define('PVE.storage.TemplateDownload', {
 	    handler: function(button, event, rec) {
 		PVE.Utils.API2Request({
 		    url: '/nodes/' + me.nodename + '/aplinfo',
-		    params: { 
-			storage: me.storage, 
+		    params: {
+			storage: me.storage,
 			template: rec.data.template
 		    },
 		    method: 'POST',
@@ -121,8 +121,8 @@ Ext.define('PVE.storage.TemplateDownload', {
 		    },
 		    success: function(response, options) {
 			var upid = response.result.data;
-			
-			var win = Ext.create('PVE.window.TaskViewer', { 
+
+			var win = Ext.create('PVE.window.TaskViewer', {
 			    upid: upid
 			});
 			win.show();
@@ -159,7 +159,7 @@ Ext.define('PVE.storage.Upload', {
 	    throw "no node name specified";
 	}
 
-	if (!me.storage) { 
+	if (!me.storage) {
 	    throw "no storage ID specified";
 	}
 
@@ -224,7 +224,7 @@ Ext.define('PVE.storage.Upload', {
 	    }
 	    pbar.updateProgress(per, text);
 	};
- 
+
 	var abortBtn = Ext.create('Ext.Button', {
 	    text: gettext('Abort'),
 	    disabled: true,
@@ -262,10 +262,10 @@ Ext.define('PVE.storage.Upload', {
 
 		xhr = new XMLHttpRequest();
 
-		xhr.addEventListener("load", function(e) {   
+		xhr.addEventListener("load", function(e) {
 		    if (xhr.status == 200) {
 			me.close();
-		    } else {  
+		    } else {
 			var msg = gettext('Error') + " " + xhr.status.toString() + ": " + Ext.htmlEncode(xhr.statusText);
 			var result = Ext.decode(xhr.responseText);
 			result.message = msg;
@@ -274,7 +274,7 @@ Ext.define('PVE.storage.Upload', {
 			    me.close();
 			});
 
-		    }  
+		    }
 		}, false);
 
 		xhr.addEventListener("error", function(e) {
@@ -283,16 +283,16 @@ Ext.define('PVE.storage.Upload', {
 			me.close();
 		    });
 		});
- 
+
 		xhr.upload.addEventListener("progress", function(evt) {
-		    if (evt.lengthComputable) {  
-			var percentComplete = evt.loaded / evt.total;  
+		    if (evt.lengthComputable) {
+			var percentComplete = evt.loaded / evt.total;
 			updateProgress(percentComplete, evt.loaded);
-		    } 
+		    }
 		}, false);
 
 		xhr.open("POST", "/api2/json" + baseurl, true);
-		xhr.send(fd);		
+		xhr.send(fd);
 	    }
 	});
 
@@ -331,7 +331,7 @@ Ext.define('PVE.storage.ContentView', {
 	}
 
 	var storage = me.pveSelNode.data.storage;
-	if (!storage) { 
+	if (!storage) {
 	    throw "no storage ID specified";
 	}
 
@@ -343,9 +343,9 @@ Ext.define('PVE.storage.ContentView', {
                 type: 'pve',
 		url: '/api2/json' + baseurl
 	    },
-	    sorters: { 
-		property: 'volid', 
-		order: 'DESC' 
+	    sorters: {
+		property: 'volid',
+		order: 'DESC'
 	    }
 	});
 
@@ -499,11 +499,11 @@ Ext.define('PVE.storage.ContentView', {
 
     Ext.define('pve-storage-content', {
 	extend: 'Ext.data.Model',
-	fields: [ 
-	    'volid', 'content', 'format', 'size', 'used', 'vmid', 
+	fields: [
+	    'volid', 'content', 'format', 'size', 'used', 'vmid',
 	    'channel', 'id', 'lun',
-	    {	
-		name: 'text', 
+	    {
+		name: 'text',
 		convert: function(value, record) {
 		    // check for volid, because if you click on a grouping header,
 		    // it calls convert (but with an empty volid)

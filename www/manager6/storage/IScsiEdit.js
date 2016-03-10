@@ -69,9 +69,9 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 	values.content = values.luns ? 'images' : 'none';
 	delete values.luns;
 
-	values.disable = values.enable ? 0 : 1;	    
+	values.disable = values.enable ? 0 : 1;
 	delete values.enable;
-	
+
 	return values;
     },
 
@@ -121,7 +121,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		xtype: 'pveNodeSelector',
 		name: 'nodes',
 		fieldLabel: gettext('Nodes'),
-		emptyText: gettext('All') + ' (' + 
+		emptyText: gettext('All') + ' (' +
 		    gettext('No restrictions') +')',
 		multiSelect: true,
 		autoSelect: false
@@ -150,7 +150,7 @@ Ext.define('PVE.storage.IScsiEdit', {
 
     initComponent : function() {
 	var me = this;
- 
+
 	me.create = !me.storageId;
 
 	if (me.create) {
@@ -165,7 +165,7 @@ Ext.define('PVE.storage.IScsiEdit', {
 	    create: me.create,
 	    storageId: me.storageId
 	});
-	
+
 	Ext.apply(me, {
             subject: PVE.Utils.format_storage_type('iscsi'),
 	    isAdd: true,

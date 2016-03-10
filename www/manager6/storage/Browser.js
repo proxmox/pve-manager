@@ -27,7 +27,7 @@ Ext.define('PVE.storage.Browser', {
 	var caps = Ext.state.Manager.get('GuiCap');
 
 	Ext.apply(me, {
-	    title: Ext.String.format(gettext("Storage {0} on node {1}"), 
+	    title: Ext.String.format(gettext("Storage {0} on node {1}"),
 				     "'" + storeid + "'", "'" + nodename + "'"),
 	    hstateid: 'storagetab'
 	});

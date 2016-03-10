@@ -70,9 +70,9 @@ Ext.define('PVE.storage.NFSInputPanel', {
 	    delete values.storage;
 	}
 
-	values.disable = values.enable ? 0 : 1;	    
+	values.disable = values.enable ? 0 : 1;
 	delete values.enable;
-	
+
 	return values;
     },
 
@@ -130,7 +130,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		xtype: 'pveNodeSelector',
 		name: 'nodes',
 		fieldLabel: gettext('Nodes'),
-		emptyText: gettext('All') + ' (' + 
+		emptyText: gettext('All') + ' (' +
 		    gettext('No restrictions') +')',
 		multiSelect: true,
 		autoSelect: false
@@ -162,7 +162,7 @@ Ext.define('PVE.storage.NFSEdit', {
 
     initComponent : function() {
 	var me = this;
- 
+
 	me.create = !me.storageId;
 
 	if (me.create) {
@@ -177,7 +177,7 @@ Ext.define('PVE.storage.NFSEdit', {
 	    create: me.create,
 	    storageId: me.storageId
 	});
-	
+
 	Ext.apply(me, {
             subject: 'NFS',
 	    isAdd: true,

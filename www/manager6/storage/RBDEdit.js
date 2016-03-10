@@ -10,7 +10,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	    delete values.storage;
 	}
 
-	values.disable = values.enable ? 0 : 1;	    
+	values.disable = values.enable ? 0 : 1;
 	delete values.enable;
 
 	return values;
@@ -86,7 +86,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		xtype: 'pveNodeSelector',
 		name: 'nodes',
 		fieldLabel: gettext('Nodes'),
-		emptyText: gettext('All') + ' (' + 
+		emptyText: gettext('All') + ' (' +
 		    gettext('No restrictions') +')',
 		multiSelect: true,
 		autoSelect: false
@@ -102,7 +102,7 @@ Ext.define('PVE.storage.RBDEdit', {
 
     initComponent : function() {
 	var me = this;
- 
+
 	me.create = !me.storageId;
 
 	if (me.create) {
@@ -123,7 +123,7 @@ Ext.define('PVE.storage.RBDEdit', {
 	    isAdd: true,
 	    items: [ ipanel ]
 	});
-	
+
 	me.callParent();
 
         if (!me.create) {
