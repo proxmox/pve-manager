@@ -4,6 +4,13 @@ Ext.define('PVE.storage.NFSScan', {
 
     queryParam: 'server',
 
+    valueField: 'path',
+    displayField: 'path',
+    matchFieldWidth: false,
+    listConfig: {
+	loadingText: gettext('Scanning...'),
+	width: 350
+    },
     doRawQuery: function() {
     },
 
@@ -42,21 +49,6 @@ Ext.define('PVE.storage.NFSScan', {
 
 	Ext.apply(me, {
 	    store: store,
-	    valueField: 'path',
-	    displayField: 'path',
-	    matchFieldWidth: false,
-	    listConfig: {
-		loadingText: gettext('Scanning...'),
-		listeners: {
-		    // hack: call setHeight to show scroll bars correctly
-		    refresh: function(list) {
-			var lh = PVE.Utils.gridLineHeigh();
-			var count = store.getCount();
-			list.setHeight(lh * ((count > 10) ? 10 : count));
-		    }
-		},
-		width: 350
-	    }
 	});
 
 	me.callParent();

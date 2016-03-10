@@ -1,7 +1,10 @@
 Ext.define('PVE.storage.VgSelector', {
     extend: 'Ext.form.field.ComboBox',
     alias: 'widget.pveVgSelector',
-
+    valueField: 'vg',
+    displayField: 'vg',
+    queryMode: 'local',
+    editable: false,
     initComponent : function() {
 	var me = this;
 
@@ -20,20 +23,8 @@ Ext.define('PVE.storage.VgSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    valueField: 'vg',
-	    displayField: 'vg',
-	    queryMode: 'local',
-	    editable: false,
 	    listConfig: {
 		loadingText: gettext('Scanning...'),
-		listeners: {
-		    // hack: call setHeight to show scroll bars correctly
-		    refresh: function(list) {
-			var lh = PVE.Utils.gridLineHeigh();
-			var count = store.getCount();
-			list.setHeight(lh * ((count > 10) ? 10 : count));
-		    }
-		}
 	    }
 	});
 
@@ -46,7 +37,11 @@ Ext.define('PVE.storage.BaseStorageSelector', {
     alias: 'widget.pveBaseStorageSelector',
 
     existingGroupsText: gettext("Existing volume groups"),
-
+    queryMode: 'local',
+    editable: false,
+    value: '',
+    valueField: 'storage',
+    displayField: 'text',
     initComponent : function() {
 	var me = this;
 
@@ -78,11 +73,6 @@ Ext.define('PVE.storage.BaseStorageSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    queryMode: 'local',
-	    editable: false,
-	    value: '',
-	    valueField: 'storage',
-	    displayField: 'text'
 	});
 
 	me.callParent();

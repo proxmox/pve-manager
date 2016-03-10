@@ -1,7 +1,13 @@
 Ext.define('PVE.storage.ZFSPoolSelector', {
     extend: 'Ext.form.field.ComboBox',
     alias: 'widget.pveZFSPoolSelector',
-
+    valueField: 'pool',
+    displayField: 'pool',
+    queryMode: 'local',
+    editable: false,
+    listConfig: {
+	loadingText: gettext('Scanning...'),
+    },
     initComponent : function() {
 	var me = this;
 
@@ -20,21 +26,6 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    valueField: 'pool',
-	    displayField: 'pool',
-	    queryMode: 'local',
-	    editable: false,
-	    listConfig: {
-		loadingText: gettext('Scanning...'),
-		listeners: {
-		    // hack: call setHeight to show scroll bars correctly
-		    refresh: function(list) {
-			var lh = PVE.Utils.gridLineHeigh();
-			var count = store.getCount();
-			list.setHeight(lh * ((count > 10) ? 10 : count));
-		    }
-		}
-	    }
 	});
 
 	me.callParent();

@@ -3,6 +3,9 @@ Ext.define('PVE.storage.TPoolSelector', {
     alias: 'widget.pveTPSelector',
 
     queryParam: 'vg',
+    valueField: 'lv',
+    displayField: 'lv',
+    editable: false,
 
     doRawQuery: function() {
     },
@@ -42,19 +45,8 @@ Ext.define('PVE.storage.TPoolSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    valueField: 'lv',
-	    displayField: 'lv',
-	    editable: false,
 	    listConfig: {
 		loadingText: gettext('Scanning...'),
-		listeners: {
-		    // hack: call setHeight to show scroll bars correctly
-		    refresh: function(list) {
-			var lh = PVE.Utils.gridLineHeigh();
-			var count = store.getCount();
-			list.setHeight(lh * ((count > 10) ? 10 : count));
-		    }
-		}
 	    }
 	});
 
@@ -66,6 +58,10 @@ Ext.define('PVE.storage.BaseVGSelector', {
     extend: 'Ext.form.field.ComboBox',
     alias: 'widget.pveBaseVGSelector',
 
+    valueField: 'vg',
+    displayField: 'vg',
+    queryMode: 'local',
+    editable: false,
     initComponent : function() {
 	var me = this;
 
@@ -84,20 +80,8 @@ Ext.define('PVE.storage.BaseVGSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    valueField: 'vg',
-	    displayField: 'vg',
-	    queryMode: 'local',
-	    editable: false,
 	    listConfig: {
 		loadingText: gettext('Scanning...'),
-		listeners: {
-		    // hack: call setHeight to show scroll bars correctly
-		    refresh: function(list) {
-			var lh = PVE.Utils.gridLineHeigh();
-			var count = store.getCount();
-			list.setHeight(lh * ((count > 10) ? 10 : count));
-		    }
-		}
 	    }
 	});
 
