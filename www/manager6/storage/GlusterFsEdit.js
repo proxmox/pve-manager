@@ -141,7 +141,7 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 
 	me.column2 = [
 	    {
-		xtype: 'PVE.form.NodeSelector',
+		xtype: 'pveNodeSelector',
 		name: 'nodes',
 		fieldLabel: gettext('Nodes'),
 		emptyText: gettext('All') + ' (' + 

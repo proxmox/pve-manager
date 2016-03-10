@@ -199,7 +199,7 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 
 	me.column2 = [
 	    {
-		xtype: 'PVE.form.NodeSelector',
+		xtype: 'pveNodeSelector',
 		name: 'nodes',
 		fieldLabel: gettext('Nodes'),
 		emptyText: gettext('All') + ' (' +

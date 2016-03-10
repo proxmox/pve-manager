@@ -54,7 +54,7 @@ Ext.define('PVE.storage.SheepdogInputPanel', {
 
 	if (me.create || me.storageId !== 'local') {
 	    me.column2.unshift({
-		xtype: 'PVE.form.NodeSelector',
+		xtype: 'pveNodeSelector',
 		name: 'nodes',
 		fieldLabel: gettext('Nodes'),
 		emptyText: gettext('All') + ' (' + 
