@@ -202,6 +202,7 @@ storage/NFSEdit.js
 storage/GlusterFsEdit.js
 storage/IScsiEdit.js
 storage/LVMEdit.js
+storage/LvmThinEdit.js
 storage/RBDEdit.js
 storage/SheepdogEdit.js
 storage/ZFSEdit.js
