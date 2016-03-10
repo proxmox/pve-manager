@@ -1,6 +1,6 @@
 Ext.define('PVE.storage.StatusView', {
     extend: 'PVE.grid.ObjectGrid',
-    alias: ['widget.pveStorageStatusView'],
+    alias: 'widget.pveStorageStatusView',
 
     initComponent : function() {
 	var me = this;

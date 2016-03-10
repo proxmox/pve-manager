@@ -1,7 +1,7 @@
 Ext.define('PVE.grid.TemplateSelector', {
     extend: 'Ext.grid.GridPanel',
 
-    alias: ['widget.pveTemplateSelector'],
+    alias: 'widget.pveTemplateSelector',
 
     initComponent : function() {
 	var me = this;
@@ -85,7 +85,7 @@ Ext.define('PVE.grid.TemplateSelector', {
 
 Ext.define('PVE.storage.TemplateDownload', {
     extend: 'Ext.window.Window',
-    alias: ['widget.pveTemplateDownload'],
+    alias: 'widget.pveTemplateDownload',
 
     modal: true,
 
@@ -144,7 +144,7 @@ Ext.define('PVE.storage.TemplateDownload', {
 
 Ext.define('PVE.storage.Upload', {
     extend: 'Ext.window.Window',
-    alias: ['widget.pveStorageUpload'],
+    alias: 'widget.pveStorageUpload',
 
     resizable: false,
 
@@ -318,7 +318,7 @@ Ext.define('PVE.storage.Upload', {
 Ext.define('PVE.storage.ContentView', {
     extend: 'Ext.grid.GridPanel',
 
-    alias: ['widget.pveStorageContentView'],
+    alias: 'widget.pveStorageContentView',
 
     initComponent : function() {
 	var me = this;
