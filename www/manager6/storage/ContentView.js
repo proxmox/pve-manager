@@ -3,6 +3,10 @@ Ext.define('PVE.grid.TemplateSelector', {
 
     alias: 'widget.pveTemplateSelector',
 
+    stateful: false,
+    viewConfig: {
+	trackOver: false
+    },
     initComponent : function() {
 	var me = this;
 
@@ -35,10 +39,6 @@ Ext.define('PVE.grid.TemplateSelector', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
-	    viewConfig: {
-		trackOver: false
-	    },
 	    features: [ groupingFeature ],
 	    columns: [
 		{
@@ -88,14 +88,17 @@ Ext.define('PVE.storage.TemplateDownload', {
     alias: 'widget.pveTemplateDownload',
 
     modal: true,
-
+    title: gettext('Templates'),
+    layout: 'fit',
+    width: 600,
+    height: 400,
     initComponent : function() {
 	/*jslint confusion: true */
         var me = this;
 
 	var grid = Ext.create('PVE.grid.TemplateSelector', {
 	    border: false,
-	    autoScroll: true,
+	    scrollable: true,
 	    nodename: me.nodename
 	});
 
@@ -129,11 +132,7 @@ Ext.define('PVE.storage.TemplateDownload', {
 	    }
 	});
 
-        Ext.applyIf(me, {
-            title: gettext('Templates'),
-	    layout: 'fit',
-	    width: 600,
-	    height: 400,
+        Ext.apply(me, {
 	    items: grid,
 	    buttons: [ submitBtn ]
 	});
@@ -193,7 +192,10 @@ Ext.define('PVE.storage.Upload', {
 		    xtype: 'filefield',
 		    name: 'filename',
 		    buttonText: gettext('Select File...'),
-		    allowBlank: false
+		    allowBlank: false,
+		    buttonConfig: {
+			height: 32
+		    }
 		},
 		pbar
 	    ]
@@ -298,7 +300,7 @@ Ext.define('PVE.storage.Upload', {
 	    submitBtn.setDisabled(!valid);
 	});
 
-        Ext.applyIf(me, {
+        Ext.apply(me, {
             title: gettext('Upload'),
 	    items: me.formPanel,
 	    buttons: [ abortBtn, submitBtn ],
@@ -334,7 +336,7 @@ Ext.define('PVE.storage.ContentView', {
 	}
 
 	var baseurl = "/nodes/" + nodename + "/storage/" + storage + "/content";
-	var store = new Ext.data.Store({
+	var store = Ext.create('Ext.data.Store',{
 	    model: 'pve-storage-content',
 	    groupField: 'content',
 	    proxy: {
@@ -487,7 +489,7 @@ Ext.define('PVE.storage.ContentView', {
 		}
 	    ],
 	    listeners: {
-		show: reload
+		activate: reload
 	    }
 	});
 
