@@ -2,6 +2,10 @@ Ext.define('PVE.pool.StatusView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pvePoolStatusView'],
 
+    title: gettext('Status'),
+    cwidth1: 150,
+    interval: 30000,
+    //height: 195,
     initComponent : function() {
 	var me = this;
 
@@ -18,12 +22,8 @@ Ext.define('PVE.pool.StatusView', {
 	    }
 	};
 
-	Ext.applyIf(me, {
-	    title: gettext('Status'),
+	Ext.apply(me, {
 	    url: "/api2/json/pools/" + pool,
-	    cwidth1: 150,
-	    interval: 30000,
-	    //height: 195,
 	    rows: rows
 	});
 

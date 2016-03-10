@@ -27,7 +27,7 @@ Ext.define('PVE.pool.Summary', {
 	    items: [ statusview ]
 	});
 
-	me.on('show', rstore.startUpdate);
+	me.on('activate', rstore.startUpdate);
 	me.on('hide', rstore.stopUpdate);
 	me.on('destroy', rstore.stopUpdate);	
 
