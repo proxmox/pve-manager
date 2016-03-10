@@ -145,7 +145,7 @@ Ext.define('PVE.storage.ZFSPoolEdit', {
 	});
 
 	Ext.apply(me, {
-            subject: PVE.Utils.format_storage_type('ZFS Storage'),
+            subject: PVE.Utils.format_storage_type('zfspool'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});
