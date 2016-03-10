@@ -505,7 +505,9 @@ Ext.define('PVE.storage.ContentView', {
 	    {	
 		name: 'text', 
 		convert: function(value, record) {
-		    if (value) {
+		    // check for volid, because if you click on a grouping header,
+		    // it calls convert (but with an empty volid)
+		    if (value || record.data.volid === null) {
 			return value;
 		    }
 		    return PVE.Utils.render_storage_content(value, {}, record);
