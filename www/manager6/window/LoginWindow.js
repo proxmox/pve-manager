@@ -1,6 +1,22 @@
 Ext.define('PVE.window.LoginWindow', {
     extend: 'Ext.window.Window',
 
+    width: 400,
+
+    modal: true,
+
+    border: false,
+
+    draggable: true,
+
+    closable: false,
+
+    resizable: false,
+
+    layout: 'auto',
+
+    title: gettext('Proxmox VE Login'),
+
     // private
     onLogon: function() {
 	var me = this;
@@ -42,25 +58,13 @@ Ext.define('PVE.window.LoginWindow', {
 	});
 
 	Ext.apply(me, {
-	    width: 400,
-	    modal: true,
-	    border: false,
-	    draggable: true,
-	    closable: false,
-	    resizable: false,
-	    layout: 'auto',
-	    title: gettext('Proxmox VE Login'),
-
 	    items: [{
 		xtype: 'form',
 		layout: 'form',
 		url: '/api2/extjs/access/ticket',
 
 		fieldDefaults: {
-		    labelAlign: 'right'
-		},
-
-		defaults: {
+		    labelAlign: 'right',
 		    allowBlank: false
 		},
 		
