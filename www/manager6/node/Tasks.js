@@ -162,7 +162,8 @@ Ext.define('PVE.node.Tasks', {
 		selectionchange: function(v, selections) {
 		    view_btn.setDisabled(!(selections && selections[0]));
 		},
-		show: function() { reload_task.delay(10); }
+		show: function() { reload_task.delay(10); },
+		destroy: function() { reload_task.cancel(); },
 	    }
 	});
 
