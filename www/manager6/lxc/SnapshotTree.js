@@ -79,7 +79,10 @@ Ext.define('PVE.lxc.SnapshotTree', {
 	    success: function(response, options) {
 		var res = response.result.data;
 		if (res.hasFeature) {
-		   Ext.getCmp('snapshotBtn').enable();
+		    var snpBtns = Ext.ComponentQuery.query('#snapshotBtn');
+		    snpBtns.forEach(function(item){
+			item.enable();
+		    });
 		}
 	    }
 	});
@@ -208,7 +211,7 @@ Ext.define('PVE.lxc.SnapshotTree', {
 	});
 
 	var snapshotBtn = Ext.create('Ext.Button', {
-	    id: 'snapshotBtn',
+	    itemId: 'snapshotBtn',
 	    text: gettext('Take Snapshot'),
 	    disabled: true,
 	    handler: function() {

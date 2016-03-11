@@ -43,7 +43,7 @@ Ext.define('PVE.dc.RoleView', {
 		    dataIndex: 'roleid'
 		},
 		{
-		    id: 'privs',
+		    itemid: 'privs',
 		    header: gettext('Privileges'),
 		    sortable: false,
 		    renderer: render_privs,
