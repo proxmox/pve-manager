@@ -1,7 +1,9 @@
 Ext.define('PVE.window.LoginWindow', {
     extend: 'Ext.window.Window',
 
-    controller: Ext.create('Ext.app.ViewController', {
+    controller: {
+
+	xclass: 'Ext.app.ViewController',
 
 	onLogon: function() {
 	    var me = this;
@@ -79,7 +81,7 @@ Ext.define('PVE.window.LoginWindow', {
 		click: 'onLogon'
             }
 	}
-    }),
+    },
 
     width: 400,
 
