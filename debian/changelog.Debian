@@ -1,3 +1,9 @@
+pve-manager (4.1-21) unstable; urgency=medium
+
+  * fix 483: disable template/upload button
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 11 Mar 2016 16:30:15 +0100
+
 pve-manager (4.1-20) unstable; urgency=medium
 
   * Allow non-self-signed override certificate for API
