@@ -188,14 +188,23 @@ Ext.define('PVE.StdWorkspace', {
 	var me = this;
 	
 	var cont = me.child('#content');
-	cont.removeAll(true);
+
+	var lay = cont.getLayout();
+
+	var cur = lay.getActiveItem();
 
 	if (comp) {
 	    PVE.Utils.setErrorMask(cont, false);
 	    comp.border = false;
 	    cont.add(comp);
-	    cont.updateLayout();
-	} 
+	    if (cur !== null && lay.getNext()) {
+		lay.next();
+		var task = Ext.create('Ext.util.DelayedTask', function(){
+		    cont.remove(cur);
+		});
+		task.delay(10);
+	    }
+	}
 	// else {
 	    // TODO: display something useful
 
@@ -411,7 +420,7 @@ Ext.define('PVE.StdWorkspace', {
 		    region: 'center',
 		    id: 'content',
 		    xtype: 'container',
-		    layout: { type: 'fit' },
+		    layout: { type: 'card' },
 		    border: false,
 		    stateful: false,
 		    margin: '0 5 0 0',
