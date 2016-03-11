@@ -1,6 +1,86 @@
 Ext.define('PVE.window.LoginWindow', {
     extend: 'Ext.window.Window',
 
+    controller: Ext.create('Ext.app.ViewController', {
+
+	onLogon: function() {
+	    var me = this;
+
+	    var form = this.lookupReference('loginForm');
+	    var view = this.getView();
+
+	    if(form.isValid()){
+		view.el.mask(gettext('Please wait...'), 'x-mask-loading');
+
+		form.submit({
+		    failure: function(f, resp){
+			view.el.unmask();
+			var handler = function() {
+			    var uf = me.lookupReference('usernameField');
+			    uf.focus(true, true);
+			};
+
+			Ext.MessageBox.alert(gettext('Error'),
+					     gettext("Login failed. Please try again"),
+					     handler);
+		    },
+		    success: function(f, resp){
+			view.el.unmask();
+
+			var handler = view.handler || Ext.emptyFn;
+			handler.call(me, resp.result.data);
+			view.close();
+		    }
+		});
+	    }
+	},
+
+	control: {
+	    'field[name=username]': {
+		specialkey: function(f, e) {
+		    if (e.getKey() === e.ENTER) {
+			var pf = this.lookupReference('passwordField');
+			if (pf.getValue()) {
+			    this.onLogon();
+			} else {
+			    pf.focus(false);
+			}
+		    }
+		}
+	    },
+	    'field[name=password]': {
+		specialkey: function(f, e) {
+		    if (e.getKey() === e.ENTER) {
+			this.onLogon();
+		    }
+		}
+	    },
+	    'field[name=realm]': {
+		change: function(f, value) {
+		    var otp_field = this.lookupReference('otpField');
+		    if (f.needOTP(value)) {
+			otp_field.setVisible(true);
+			otp_field.setDisabled(false);
+		    } else {
+			otp_field.setVisible(false);
+			otp_field.setDisabled(true);
+		    }
+		}
+	    },
+	    'field[name=lang]': {
+		change: function(f, value) {
+		    var dt = Ext.Date.add(new Date(), Ext.Date.YEAR, 10);
+		    Ext.util.Cookies.set('PVELangCookie', value, dt);
+		    this.getView().mask(gettext('Please wait...'), 'x-mask-loading');
+		    window.location.reload();
+		}
+	    },
+            'button[reference=loginButton]': {
+		click: 'onLogon'
+            }
+	}
+    }),
+
     width: 400,
 
     modal: true,
@@ -17,137 +97,59 @@ Ext.define('PVE.window.LoginWindow', {
 
     title: gettext('Proxmox VE Login'),
 
-    // private
-    onLogon: function() {
-	var me = this;
+    items: [{
+	xtype: 'form',
+	layout: 'form',
+	url: '/api2/extjs/access/ticket',
+	reference: 'loginForm',
 
-	var form = me.getComponent(0).getForm();
+	fieldDefaults: {
+	    labelAlign: 'right',
+	    allowBlank: false
+	},
 
-	if(form.isValid()){
-            me.el.mask(gettext('Please wait...'), 'x-mask-loading');
-
-	    form.submit({
-		failure: function(f, resp){
-		    me.el.unmask();
-		    Ext.MessageBox.alert(gettext('Error'), 
-					 gettext("Login failed. Please try again"), 
-					 function() {
-			var uf = form.findField('username');
-			uf.focus(true, true);
-		    });
-		},
-		success: function(f, resp){
-		    me.el.unmask();
-		    
-		    var handler = me.handler || Ext.emptyFn;
-		    handler.call(me, resp.result.data);
-		    me.close();
-		}
-	    });
-	}
-    },
-
-    initComponent: function() {
-	var me = this;
-
-	var otp_field = Ext.createWidget('textfield', { 
-	    fieldLabel: gettext('OTP'), 
-	    name: 'otp',
-	    allowBlank: false,
-	    hidden: true
-	});
-
-	Ext.apply(me, {
-	    items: [{
-		xtype: 'form',
-		layout: 'form',
-		url: '/api2/extjs/access/ticket',
-
-		fieldDefaults: {
-		    labelAlign: 'right',
-		    allowBlank: false
-		},
-		
-		items: [
-		    { 
-			xtype: 'textfield', 
-			fieldLabel: gettext('User name'), 
-			name: 'username',
-			blankText: gettext("Enter your user name"),
-			listeners: {
-			    afterrender: function(f) {
-				// Note: only works if we pass delay 1000
-				f.focus(true, 1000);
-			    },
-			    specialkey: function(f, e) {
-				if (e.getKey() === e.ENTER) {
-				    var pf = me.query('textfield[name="password"]')[0];
-				    if (pf.getValue()) {
-					me.onLogon();
-				    } else {
-					pf.focus(false);
-				    }
-				}
-			    }
-			}
-		    },
-		    { 
-			xtype: 'textfield', 
-			inputType: 'password',
-			fieldLabel: gettext('Password'), 
-			name: 'password',
-			blankText: gettext("Enter your password"),
-			listeners: {
-			    specialkey: function(field, e) {
-				if (e.getKey() === e.ENTER) {
-				    me.onLogon();
-				}
-			    }
-			}
-		    },
-		    otp_field,
-		    {
-			xtype: 'pveRealmComboBox',
-			name: 'realm',
-			listeners: {
-			    change: function(f, value) {
-				if (f.needOTP(value)) {
-				    otp_field.setVisible(true);
-				    otp_field.setDisabled(false);
-				} else {
-				    otp_field.setVisible(false);
-				    otp_field.setDisabled(true);
-				}
-			    }
-			}
-		    },
-		    {   
-			xtype: 'pveLanguageSelector',
-			fieldLabel: gettext('Language'), 
-			value: Ext.util.Cookies.get('PVELangCookie') || 'en',
-			name: 'lang',
-			submitValue: false,
-			listeners: {
-			    change: function(t, value) {
-				var dt = Ext.Date.add(new Date(), Ext.Date.YEAR, 10);
-				Ext.util.Cookies.set('PVELangCookie', value, dt);
-				me.el.mask(gettext('Please wait...'), 'x-mask-loading');
-				window.location.reload();
-			    }
-			}
-		    }
-		],
-		buttons: [
-		    {
-			text: gettext('Login'),
-			handler: function(){
-			    me.onLogon();
-			}
-		    }
-		]
-	    }]
-	});
-
-	me.callParent();
-    }
-});
+	items: [
+	    {
+		xtype: 'textfield',
+		fieldLabel: gettext('User name'),
+		name: 'username',
+		reference: 'usernameField',
+		blankText: gettext("Enter your user name")
+	    },
+	    {
+		xtype: 'textfield',
+		inputType: 'password',
+		fieldLabel: gettext('Password'),
+		name: 'password',
+		reference: 'passwordField',
+		blankText: gettext("Enter your password")
+	    },
+	    {
+		xtype: 'textfield',
+		fieldLabel: gettext('OTP'),
+		name: 'otp',
+		reference: 'otpField',
+		allowBlank: false,
+		hidden: true
+	    },
+	    {
+		xtype: 'pveRealmComboBox',
+		name: 'realm'
+	    },
+	    {
+		xtype: 'pveLanguageSelector',
+		fieldLabel: gettext('Language'),
+		value: Ext.util.Cookies.get('PVELangCookie') || 'en',
+		name: 'lang',
+		reference: 'langField',
+		submitValue: false
+	    }
+	],
+	buttons: [
+	    {
+		text: gettext('Login'),
+		reference: 'loginButton'
+	    }
+	]
+    }]
+ });
