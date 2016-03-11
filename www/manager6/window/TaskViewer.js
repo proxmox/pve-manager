@@ -207,7 +207,6 @@ Ext.define('PVE.window.TaskViewer', {
 	    height: 400,
 	    layout: 'fit',
 	    modal: true,
-	    bodyPadding: 5,
 	    items: [{
 		xtype: 'tabpanel',
 		region: 'center',
