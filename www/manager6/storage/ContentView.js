@@ -183,10 +183,11 @@ Ext.define('PVE.storage.Upload', {
 	    items: [
 		{
 		    xtype: 'pveContentTypeSelector',
-		    cts: ['iso', 'vztmpl'],
+		    cts: me.contents,
 		    fieldLabel: gettext('Content'),
 		    name: 'content',
-		    value: 'iso'
+		    value: me.contents[0] || '',
+		    allowBlank: false
 		},
 		{
 		    xtype: 'filefield',
@@ -357,9 +358,42 @@ Ext.define('PVE.storage.ContentView', {
 
 	var reload = function() {
 	    store.load();
+	    me.statusStore.load();
 	};
 
 	PVE.Utils.monStoreErrors(me, store);
+
+	var templateButton = Ext.create('PVE.button.Button',{
+	    itemId: 'tmpl-btn',
+	    text: gettext('Templates'),
+	    handler: function() {
+		var win = Ext.create('PVE.storage.TemplateDownload', {
+		    nodename: nodename,
+		    storage: storage
+		});
+		win.show();
+		win.on('destroy', reload);
+	    }
+	});
+
+	var uploadButton = Ext.create('PVE.button.Button', {
+	    contents : ['iso','vztmpl'],
+	    text: gettext('Upload'),
+	    handler: function() {
+		var me = this;
+		var win = Ext.create('PVE.storage.Upload', {
+		    nodename: nodename,
+		    storage: storage,
+		    contents: me.contents,
+		});
+		win.show();
+		win.on('destroy', reload);
+	    }
+	});
+
+	me.statusStore = Ext.create('PVE.data.ObjectStore', {
+	    url: '/api2/json/nodes/' + nodename + '/storage/' + storage + '/status',
+	});
 
 	Ext.apply(me, {
 	    store: store,
@@ -424,28 +458,8 @@ Ext.define('PVE.storage.ContentView', {
 			});
 		    }
 		},
-		{
-		    text: gettext('Templates'),
-		    handler: function() {
-			var win = Ext.create('PVE.storage.TemplateDownload', {
-			    nodename: nodename,
-			    storage: storage
-			});
-			win.show();
-			win.on('destroy', reload);
-		    }
-		},
-		{
-		    text: gettext('Upload'),
-		    handler: function() {
-			var win = Ext.create('PVE.storage.Upload', {
-			    nodename: nodename,
-			    storage: storage
-			});
-			win.show();
-			win.on('destroy', reload);
-		    }
-		},
+		templateButton,
+		uploadButton,
 		'->',
 		gettext('Search') + ':', ' ',
 		{
@@ -494,6 +508,40 @@ Ext.define('PVE.storage.ContentView', {
 	});
 
 	me.callParent();
+
+	// disable the buttons/restrict the upload window 
+	// if templates or uploads are not allowed
+	me.statusStore.on('load', function(s,records,succes) {
+	    if (me.destroyed) { // if the element is not there anymore, do nothing
+		return;
+	    }
+	    var availcontent = [];
+	    Ext.Array.each(records, function(item){
+		if (item.id === 'content') {
+		    availcontent = item.data.value.split(',');
+		}
+	    });
+	    var templ = false;
+	    var upload = false;
+	    var cts = [];
+
+	    Ext.Array.each(availcontent, function(content) {
+		if (content === 'vztmpl') {
+		    templ = true;
+		    cts.push('vztmpl');
+		} else if (content === 'iso') {
+		    upload = true;
+		    cts.push('iso');
+		}
+	    });
+
+	    if (templ !== upload) {
+		uploadButton.contents = cts;
+	    }
+
+	    templateButton.setDisabled(!templ);
+	    uploadButton.setDisabled(!upload && !templ);
+	});
     }
 }, function() {
 
