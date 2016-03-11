@@ -53,7 +53,7 @@ Ext.define('PVE.window.LoginWindow', {
 
 	    items: [{
 		xtype: 'form',
-		frame: true,
+		layout: 'form',
 		url: '/api2/extjs/access/ticket',
 
 		fieldDefaults: {
@@ -61,7 +61,6 @@ Ext.define('PVE.window.LoginWindow', {
 		},
 
 		defaults: {
-		    anchor: '-5',
 		    allowBlank: false
 		},
 		
