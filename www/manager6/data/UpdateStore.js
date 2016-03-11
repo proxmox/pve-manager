@@ -42,6 +42,7 @@ Ext.define('PVE.data.UpdateStore', {
 	    },
 	    stopUpdate: function() {
 		load_task.cancel();
+		PVE.data.UpdateQueue.unqueue(me);
 	    }
 	});
 
@@ -49,6 +50,7 @@ Ext.define('PVE.data.UpdateStore', {
 
 	me.on('destroy', function() {
 	    load_task.cancel();
+	    PVE.data.UpdateQueue.unqueue(me);
 	});
     }
 });

@@ -51,6 +51,16 @@ Ext.define('PVE.data.UpdateQueue', {
 		    queue.push(storeid);
 		}
 		start_update();
+	    },
+	    unqueue: function(store) {
+		var storeid = store.storeid;
+		if (!storeid) {
+		    throw "unabel to unqueue store without storeid";
+		}
+		if (queue_idx[storeid]) {
+		    Ext.Array.remove(queue,storeid);
+		    queue_idx[storeid] = null;
+		}
 	    }
 	});
     }
