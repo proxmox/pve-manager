@@ -1,1 +1,15 @@
-/* empty for now */
+/* overwrite to use full black for enabled buttons */
+.x-btn-inner-default-toolbar-small {
+    font: 300 12px/16px helvetica, arial, verdana, sans-serif;
+    color: #000;
+    padding: 0 5px;
+    max-width: 100%;
+}
+
+/* add missing class for context menu header */
+.x-menu-header {
+    font: 400 13px/20px 'Open Sans', 'Helvetica Neue', helvetica, arial, verdana, sans-serif;
+    color: #fff;
+    padding: 4px;
+    background-color: #3892d4;
+}
