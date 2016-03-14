@@ -41,6 +41,10 @@ Ext.define('PVE.panel.LogView', {
         var me = this;
 	var el = me.dataCmp.el;
 
+	if (me.destroyed) { // return if element is not there anymore
+	    return;
+	}
+
 	if (me.viewInfo && me.viewInfo.start === start &&
 	    me.viewInfo.end === end && me.viewInfo.total === total &&
 	    me.viewInfo.textLength === text.length) {

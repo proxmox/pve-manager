@@ -76,7 +76,7 @@ Ext.define('PVE.dc.NodeView', {
 
 	me.callParent();
 
-	rstore.on('load', function(s, records, success) {
+	me.mon(rstore,'load', function(s, records, success) {
 	    if (!success) {
 		return;
 	    }

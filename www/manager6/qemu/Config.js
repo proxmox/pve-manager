@@ -218,7 +218,7 @@ Ext.define('PVE.qemu.Config', {
 */
 	me.callParent();
 
-        me.statusStore.on('load', function(s, records, success) {
+        me.mon(me.statusStore,'load', function(s, records, success) {
 	    var status;
 	    var qmpstatus;
 	    var spice = false;

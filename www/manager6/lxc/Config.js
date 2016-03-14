@@ -205,7 +205,7 @@ Ext.define('PVE.lxc.Config', {
 
 	me.callParent();
 
-	me.statusStore.on('load', function(s, records, success) {
+	me.mon(me.statusStore,'load', function(s, records, success) {
 	    var status;
 	    if (!success) {
 		me.workspace.checkVmMigration(me.pveSelNode);

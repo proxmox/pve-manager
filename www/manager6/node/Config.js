@@ -217,7 +217,7 @@ Ext.define('PVE.node.Config', {
 
 	me.callParent();
 
-	me.statusStore.on('load', function(s, records, success) {
+	me.mon(me.statusStore,'load', function(s, records, success) {
 	    var uptimerec = s.data.get('uptime');
 	    var powermgmt = uptimerec ? uptimerec.data.value : false;
 	    if (!caps.nodes['Sys.PowerMgmt']) {
