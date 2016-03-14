@@ -241,6 +241,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	if (mp.type === 'bind') {
 	    me.quota.setDisabled(true);
 	    me.quota.setValue(false);
+	    me.acl.setDisabled(true);
+	    me.acl.setValue('Default');
 	}
 
 	me.setValues(mp);
@@ -335,6 +337,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		    if (me.mpdata.type === 'bind') {
 			me.quota.setDisabled(true);
 			me.quota.setValue(false);
+			me.acl.setDisabled(true);
+			me.acl.setValue('Default');
 			return;
 		    }
 		    var rec = f.store.getById(value);
@@ -428,6 +432,14 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    });
 	}
 
+	me.acl = Ext.createWidget('pveKVComboBox', {
+	    name: 'acl',
+	    fieldLabel: gettext('ACLs'),
+	    data: [['Default', 'Default'], ['1', 'On'], ['0', 'Off']],
+	    value: 'Default',
+	    allowBlank: true
+	});
+
 	me.quota = Ext.createWidget('pvecheckbox', {
 	    name: 'quota',
 	    defaultValue: 0,
@@ -442,14 +454,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		fieldLabel: gettext('Read-only'),
 		hidden: me.insideWizard
 	    },
-	    {
-		xtype: 'pveKVComboBox',
-		name: 'acl',
-		fieldLabel: gettext('ACLs'),
-		data: [['Default', 'Default'], ['1', 'On'], ['0', 'Off']],
-		value: 'Default',
-		allowBlank: true
-	    },
+	    me.acl,
 	    me.quota
 	];
 
