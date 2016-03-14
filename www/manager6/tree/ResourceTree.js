@@ -250,22 +250,19 @@ Ext.define('PVE.tree.ResourceTree', {
 			// fixme: also test filterfn()?
 		    }
 
-		    if (!item || changed) {
+		    if (changed) {
+			olditem.beginEdit();
+			//console.log("REM UPDATE UID: " + key + " ITEM " + item.data.running);
+			var info = olditem.data;
+			Ext.apply(info, item.data);
+			me.setIconCls(info);
+			olditem.commit();
+		    }
+		    if (!item && olditem.isLeaf()) {
 			//console.log("REM UID: " + key + " ITEM " + olditem.data.id);
-			if (olditem.isLeaf()) {
-			    delete index[key];
-			    var parentNode = olditem.parentNode;
-			    parentNode.removeChild(olditem, true);
-			} else {
-			    if (item && changed) {
-				olditem.beginEdit();
-				//console.log("REM UPDATE UID: " + key + " ITEM " + item.data.running);
-				var info = olditem.data;
-				Ext.apply(info, item.data);
-				me.setIconCls(info);
-				olditem.commit();
-			    }
-			}
+			delete index[key];
+			var parentNode = olditem.parentNode;
+			parentNode.removeChild(olditem, true);
 		    }
 		}
 	    }
@@ -303,6 +300,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		me.selectById(lastsel.data.id);
 	    }
 
+	    // on first tree load set the selection from the stateful provider
 	    if (!pdata.updateCount) {
 		rootnode.collapse();
 		rootnode.expand();
