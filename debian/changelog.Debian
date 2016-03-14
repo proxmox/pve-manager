@@ -1,3 +1,9 @@
+pve-manager (4.1-22) unstable; urgency=medium
+
+  * lxc: disable ACL settings for bind mounts
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 14 Mar 2016 17:30:39 +0100
+
 pve-manager (4.1-21) unstable; urgency=medium
 
   * fix 483: disable template/upload button
