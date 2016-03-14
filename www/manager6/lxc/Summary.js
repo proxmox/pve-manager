@@ -2,6 +2,13 @@ Ext.define('PVE.lxc.Summary', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveLxcSummary',
 
+    scrollable: true,
+    bodyStyle: 'padding:10px',
+    defaults: {
+	style: 'padding-top:10px',
+	width: 800
+    },
+
     initComponent: function() {
         var me = this;
 
@@ -46,12 +53,6 @@ Ext.define('PVE.lxc.Summary', {
 		    xtype: 'pveRRDTypeSelector'
 		}
 	    ],
-	    autoScroll: true,
-	    bodyStyle: 'padding:10px',
-	    defaults: {
-		style: 'padding-top:10px',
-		width: 800
-	    },		
 	    items: [
 		{
 		    style: 'padding-top:0px',
@@ -93,7 +94,7 @@ Ext.define('PVE.lxc.Summary', {
 	    ]
 	});
 
-	me.on('show', function() {
+	me.on('activate', function() {
 	    notesview.load();
 	});
 

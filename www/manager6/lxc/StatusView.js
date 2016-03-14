@@ -70,7 +70,6 @@ Ext.define('PVE.lxc.StatusView', {
 
 	Ext.applyIf(me, {
 	    cwidth1: 150,
-	    height: 200,
 	    rows: rows
 	});
 
