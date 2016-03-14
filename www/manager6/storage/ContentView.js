@@ -323,6 +323,11 @@ Ext.define('PVE.storage.ContentView', {
 
     alias: 'widget.pveStorageContentView',
 
+    stateful: false,
+    viewConfig: {
+	trackOver: false,
+	loadMask: false,
+    },
     initComponent : function() {
 	var me = this;
 
@@ -398,10 +403,6 @@ Ext.define('PVE.storage.ContentView', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
-	    viewConfig: {
-		trackOver: false
-	    },
 	    features: [ groupingFeature ],
 	    tbar: [
 		{
