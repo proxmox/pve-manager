@@ -172,7 +172,7 @@ Ext.define('PVE.grid.PoolMembers', {
             },
             columns: coldef,
 	    listeners: {
-		show: reload
+		activate: reload
 	    }
 	});
 
