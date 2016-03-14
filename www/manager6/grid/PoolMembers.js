@@ -13,7 +13,7 @@ Ext.define('PVE.pool.AddVM', {
 	me.isAdd = true;
 	me.url = "/pools/" + me.pool;
 	me.method = 'PUT';
-	
+
 	Ext.apply(me, {
 	    subject: gettext('Virtual Machine'),
 	    width: 350,
@@ -47,7 +47,7 @@ Ext.define('PVE.pool.AddStorage', {
 	me.isAdd = true;
 	me.url = "/pools/" + me.pool;
 	me.method = 'PUT';
-	
+
 	Ext.apply(me, {
 	    subject: gettext('Storage'),
 	    width: 350,
@@ -88,7 +88,7 @@ Ext.define('PVE.grid.PoolMembers', {
 		    direction: 'ASC'
 		}
 	    ],
-	    proxy: { 
+	    proxy: {
 		type: 'pve',
 		root: 'data.members',
 		url: "/api2/json/pools/" + me.pool

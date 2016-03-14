@@ -36,7 +36,7 @@ Ext.apply(Ext.form.field.VTypes, {
     },
     IP6PrefixLengthText:  gettext('Example') + ': X, where 0 <= X <= 128',
     IP6PrefixLengthMask:  /[0-9]/,
-    
+
     IP64Address:  function(v) {
         return IP64_match.test(v);
     },
@@ -194,7 +194,7 @@ Ext.define('Ext.ux.IFrame', {
         this.cleanupListeners(true);
         this.callParent();
     },
-    
+
     cleanupListeners: function(destroying){
         var doc, prop;
 
