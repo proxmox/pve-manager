@@ -97,21 +97,6 @@ Ext.apply(Ext.form.field.VTypes, {
     pveMailText: gettext('This field should be an e-mail address in the format "user@example.com"'),
 });
 
-// we dont want that a displayfield set the form dirty flag! 
-Ext.override(Ext.form.field.Display, {
-    isDirty: function() { return false; }
-});
-
-// hack: ExtJS does not display the correct value if we
-// call setValue while the store is loading, so we need
-// to call it again after loading
-Ext.override(Ext.form.field.ComboBox, {
-    onLoad: function() {
-	this.setValue(this.value, false);
-        this.callOverridden(arguments);
-    }
-});
-
 // ExtJs 5-6 has an issue with caching
 // see https://www.sencha.com/forum/showthread.php?308989
 Ext.define('PVE.UnderlayPool', {
