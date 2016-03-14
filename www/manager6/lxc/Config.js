@@ -121,10 +121,8 @@ Ext.define('PVE.lxc.Config', {
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
-//		    title: gettext('Summary'),
-//		    xtype: 'pveLxcSummary',
-		    title: gettext('SummaryTODO'),
-		    xtype: 'panel',
+		    title: gettext('Summary'),
+		    xtype: 'pveLxcSummary',
 		    itemId: 'summary'
 		},
 		{
@@ -156,13 +154,13 @@ Ext.define('PVE.lxc.Config', {
 	    ]
 	});
 
-//	if (caps.vms['VM.Backup']) {
-//	    me.items.push({
-//		title: gettext('Backup'),
-//		xtype: 'pveBackupView',
-//		itemId: 'backup'
-//	    });
-//	}
+	if (caps.vms['VM.Backup']) {
+	    me.items.push({
+		title: gettext('Backup'),
+		xtype: 'pveBackupView',
+		itemId: 'backup'
+	    });
+	}
 
 	if (caps.vms['VM.Console']) {
 	    me.items.push({
@@ -196,14 +194,14 @@ Ext.define('PVE.lxc.Config', {
 	    );
 	}
 
-//	if (caps.vms['Permissions.Modify']) {
-//	    me.items.push({
-//		xtype: 'pveACLView',
-//		title: gettext('Permissions'),
-//		itemId: 'permissions',
-//		path: '/vms/' + vmid
-//	    });
-//	}
+	if (caps.vms['Permissions.Modify']) {
+	    me.items.push({
+		xtype: 'pveACLView',
+		title: gettext('Permissions'),
+		itemId: 'permissions',
+		path: '/vms/' + vmid
+	    });
+	}
 
 	me.callParent();
 
