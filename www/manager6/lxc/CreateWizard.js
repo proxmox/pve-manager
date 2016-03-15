@@ -58,7 +58,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    title: gettext('General'),
 		    column1: [
 			{
-			    xtype: 'PVE.form.NodeSelector',
+			    xtype: 'pveNodeSelector',
 			    name: 'nodename',
 			    fieldLabel: gettext('Node'),
 			    allowBlank: false,
