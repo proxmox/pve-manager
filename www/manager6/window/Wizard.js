@@ -173,7 +173,7 @@ Ext.define('PVE.window.Wizard', {
 
 	Ext.apply(me, {
 	    width: 620,
-	    height: 400,
+	    height: 450,
 	    modal: true,
 	    border: false,
 	    draggable: true,
