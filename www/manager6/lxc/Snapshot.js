@@ -188,7 +188,7 @@ Ext.define('PVE.window.LxcSnapshot', {
 		summarystore.add(kvarray);
 		summarystore.sort();
 		summarystore.resumeEvents();
-		summarystore.fireEvent('datachanged', summarystore);
+		summarystore.fireEvent('refresh', summarystore);
 
 		form.findField('snaptime').setValue(new Date(data.snaptime));
 		form.findField('description').setValue(data.description);
