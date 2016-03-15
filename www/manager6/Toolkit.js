@@ -130,6 +130,13 @@ Ext.define('PVE.UnderlayPool', {
     }
 });
 
+// should be fixed with ExtJS 6.0.2, see:
+// https://www.sencha.com/forum/showthread.php?307244-Bug-with-datefield-in-window-with-scroll
+Ext.define('PVE.Datepicker', {
+    override: 'Ext.picker.Date',
+    hideMode: 'visibility'
+});
+
 Ext.define('Ext.ux.IFrame', {
     extend: 'Ext.Component',
 
