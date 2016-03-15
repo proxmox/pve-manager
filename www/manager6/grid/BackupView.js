@@ -49,7 +49,7 @@ Ext.define('PVE.grid.BackupView', {
 	});
 
 	var reload = Ext.Function.createBuffered(function() {
-	    if (me.store.proxy.url) {
+	    if (me.store && me.store.proxy.url) {
 		me.store.load();
 	    }
 	}, 100);
