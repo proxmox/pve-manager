@@ -1,6 +1,9 @@
 Ext.define('PVE.pool.AddVM', {
     extend: 'PVE.window.Edit',
-
+    width: 600,
+    height: 400,
+    isAdd: true,
+    create: true,
     initComponent : function() {
 	/*jslint confusion: true */
 	var me = this;
@@ -9,26 +12,85 @@ Ext.define('PVE.pool.AddVM', {
 	    throw "no pool specified";
 	}
 
-	me.create = true;
-	me.isAdd = true;
 	me.url = "/pools/" + me.pool;
 	me.method = 'PUT';
 
-	Ext.apply(me, {
-	    subject: gettext('Virtual Machine'),
-	    width: 350,
-	    items: [
-		{
-		    xtype: 'pveVMIDSelector',
-		    name: 'vms',
-		    validateExists: true,
-		    value:  '',
-		    fieldLabel: "VM ID"
+	var vmsField = Ext.create('Ext.form.field.Text', {
+	    name: 'vms',
+	    hidden: true,
+	    allowBlank: false
+	});
+
+	var vmStore = Ext.create('Ext.data.Store', {
+	    model: 'PVEResources',
+	    sorters: {
+		property: 'vmid',
+		order: 'ASC'
+	    },
+	    filters: [
+		function(item) {
+		    return ((item.data.type === 'lxc' || item.data.type === 'qemu') && item.data.pool === '');
 		}
 	    ]
 	});
 
+	var vmGrid = Ext.create('widget.grid',{
+	    store: vmStore,
+	    border: true,
+	    height: 300,
+	    scrollable: true,
+	    selModel: {
+		selType: 'checkboxmodel',
+		mode: 'SIMPLE',
+		listeners: {
+		    selectionchange: function(model, selected, opts) {
+			var selectedVms = [];
+			selected.forEach(function(vm) {
+			    selectedVms.push(vm.data.vmid);
+			});
+			vmsField.setValue(selectedVms);
+		    }
+		},
+	    },
+	    columns: [
+		{
+		    header: 'ID',
+		    dataIndex: 'vmid',
+		    width: 60
+		},
+		{
+		    header: gettext('Node'),
+		    dataIndex: 'node'
+		},
+		{
+		    header: gettext('Status'),
+		    dataIndex: 'uptime',
+		    renderer: function(value) {
+			if (value) {
+			    return PVE.Utils.runningText;
+			} else {
+			    return PVE.Utils.stoppedText;
+			}
+		    }
+		},
+		{
+		    header: gettext('Name'),
+		    dataIndex: 'name',
+		    flex: 1
+		},
+		{
+		    header: gettext('Type'),
+		    dataIndex: 'type'
+		}
+	    ],
+	});
+	Ext.apply(me, {
+	    subject: gettext('Virtual Machine'),
+	    items: [ vmsField, vmGrid ]
+	});
+
 	me.callParent();
+	vmStore.load();
     }
 });
 
