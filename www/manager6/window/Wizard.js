@@ -171,7 +171,7 @@ Ext.define('PVE.window.Wizard', {
 	    me.title = PVE.Utils.dialog_title(me.subject, true, false);
 	}
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    width: 620,
 	    height: 400,
 	    modal: true,
