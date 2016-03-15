@@ -14,13 +14,13 @@ Ext.define('PVE.qemu.Config', {
 	if (!vmid) {
 	    throw "no VM ID specified";
 	}
-	
+
 	var template = me.pveSelNode.data.template;
 
 	var caps = Ext.state.Manager.get('GuiCap');
 
 	var base_url = '/nodes/' + nodename + "/qemu/" + vmid;
- 
+
 	me.statusStore = Ext.create('PVE.data.ObjectStore', {
 	    url: '/api2/json' + base_url + '/status/current',
 	    interval: 1000
@@ -38,23 +38,23 @@ Ext.define('PVE.qemu.Config', {
 	    });
 	};
 
-	var resumeBtn = Ext.create('Ext.Button', { 
+	var resumeBtn = Ext.create('Ext.Button', {
 	    text: gettext('Resume'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
 	    visible: false,
 	    handler: function() {
 		vm_command('resume');
-	    }			    
-	}); 
+	    }
+	});
 
-	var startBtn = Ext.create('Ext.Button', { 
+	var startBtn = Ext.create('Ext.Button', {
 	    text: gettext('Start'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
 	    handler: function() {
 		vm_command('start');
-	    }			    
-	}); 
- 
+	    }
+	});
+
 	var stopBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Stop'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
@@ -64,7 +64,7 @@ Ext.define('PVE.qemu.Config', {
 	    }
 	});
 
-	var migrateBtn = Ext.create('Ext.Button', { 
+	var migrateBtn = Ext.create('Ext.Button', {
 	    text: gettext('Migrate'),
 	    disabled: !caps.vms['VM.Migrate'],
 	    handler: function() {
@@ -74,14 +74,14 @@ Ext.define('PVE.qemu.Config', {
 		    vmid: vmid
 		});
 		win.show();
-	    }    
+	    }
 	});
- 
+
 	var resetBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Reset'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
 	    confirmMsg: Ext.String.format(gettext("Do you really want to reset VM {0}?"), vmid),
-	    handler: function() { 
+	    handler: function() {
 		vm_command("reset");
 	    }
 	});
@@ -92,7 +92,7 @@ Ext.define('PVE.qemu.Config', {
 	    confirmMsg: Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), vmid),
 	    handler: function() {
 		vm_command('shutdown');
-	    }			    
+	    }
 	});
 
 	var removeBtn = Ext.create('PVE.button.Button', {
@@ -109,7 +109,7 @@ Ext.define('PVE.qemu.Config', {
 			Ext.Msg.alert('Error', response.htmlStatus);
 		    }
 		});
-	    } 
+	    }
 	});
 
 	var vmname = me.pveSelNode.data.name;
@@ -127,7 +127,7 @@ Ext.define('PVE.qemu.Config', {
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Virtual Machine {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'kvmtab',
-	    tbar: [ resumeBtn, startBtn, shutdownBtn, stopBtn, resetBtn, 
+	    tbar: [ resumeBtn, startBtn, shutdownBtn, stopBtn, resetBtn,
 		    removeBtn, migrateBtn, consoleBtn],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
@@ -218,7 +218,7 @@ Ext.define('PVE.qemu.Config', {
 */
 	me.callParent();
 
-        me.mon(me.statusStore,'load', function(s, records, success) {
+        me.mon(me.statusStore, 'load', function(s, records, success) {
 	    var status;
 	    var qmpstatus;
 	    var spice = false;

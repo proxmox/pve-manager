@@ -512,7 +512,7 @@ Ext.define('PVE.storage.ContentView', {
 
 	// disable the buttons/restrict the upload window
 	// if templates or uploads are not allowed
-	me.mon(me.statusStore,'load', function(s,records,succes) {
+	me.mon(me.statusStore, 'load', function(s,records,succes) {
 	    var availcontent = [];
 	    Ext.Array.each(records, function(item){
 		if (item.id === 'content') {

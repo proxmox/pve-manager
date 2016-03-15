@@ -240,7 +240,7 @@ Ext.define('PVE.form.ComboGrid', {
             me.createPicker();
         }
 
-	me.mon(me.store, 'beforeload', function() {	 
+	me.mon(me.store, 'beforeload', function() {
 	    if (!me.isDisabled()) {
 		me.setDisabled(true);
 		me.enableAfterLoad = true;
@@ -251,7 +251,7 @@ Ext.define('PVE.form.ComboGrid', {
 	me.mon(me.store, 'load', function(store, r, success, o) {
 	    if (success) {
 		me.clearInvalid();
-		
+
 		if (me.enableAfterLoad) {
 		    delete me.enableAfterLoad;
 		    me.setDisabled(false);

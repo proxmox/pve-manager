@@ -66,7 +66,7 @@ Ext.define('PVE.dc.NodeView', {
 		    sortable: true,
 		    dataIndex: 'ip'
 		}
-	    ], 
+	    ],
 	    listeners: {
 		show: rstore.startUpdate,
 		hide: rstore.stopUpdate,
@@ -76,7 +76,7 @@ Ext.define('PVE.dc.NodeView', {
 
 	me.callParent();
 
-	me.mon(rstore,'load', function(s, records, success) {
+	me.mon(rstore, 'load', function(s, records, success) {
 	    if (!success) {
 		return;
 	    }

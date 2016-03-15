@@ -18,7 +18,7 @@ Ext.define('PVE.lxc.Config', {
 	var caps = Ext.state.Manager.get('GuiCap');
 
 	var base_url = '/nodes/' + nodename + '/lxc/' + vmid;
- 
+
 	me.statusStore = Ext.create('PVE.data.ObjectStore', {
 	    url: '/api2/json' + base_url + '/status/current',
 	    interval: 1000
@@ -36,23 +36,23 @@ Ext.define('PVE.lxc.Config', {
 	    });
 	};
 
-	var startBtn = Ext.create('Ext.Button', { 
+	var startBtn = Ext.create('Ext.Button', {
 	    text: gettext('Start'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
 	    handler: function() {
 		vm_command('start');
-	    }			    
-	}); 
+	    }
+	});
 
-	var umountBtn = Ext.create('Ext.Button', { 
+	var umountBtn = Ext.create('Ext.Button', {
 	    text: gettext('Unmount'),
 	    disabled: true,
 	    hidden: true,
 	    handler: function() {
 		vm_command('umount');
-	    }			    
-	}); 
- 
+	    }
+	});
+
 	var stopBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Stop'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
@@ -61,21 +61,21 @@ Ext.define('PVE.lxc.Config', {
 		vm_command("stop");
 	    }
 	});
- 
+
 	var shutdownBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
 	    confirmMsg: Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), vmid),
 	    handler: function() {
 		vm_command('shutdown');
-	    }			    
+	    }
 	});
- 
-	var migrateBtn = Ext.create('Ext.Button', { 
+
+	var migrateBtn = Ext.create('Ext.Button', {
 	    text: gettext('Migrate'),
 	    disabled: !caps.vms['VM.Migrate'],
 	    handler: function() {
-		var win = Ext.create('PVE.window.Migrate', { 
+		var win = Ext.create('PVE.window.Migrate', {
 		    vmtype: 'lxc',
 		    nodename: nodename,
 		    vmid: vmid
@@ -116,7 +116,7 @@ Ext.define('PVE.lxc.Config', {
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Container {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'lxctab',
-	    tbar: [ startBtn, shutdownBtn, umountBtn, stopBtn, removeBtn, 
+	    tbar: [ startBtn, shutdownBtn, umountBtn, stopBtn, removeBtn,
 		    migrateBtn, consoleBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
@@ -172,7 +172,7 @@ Ext.define('PVE.lxc.Config', {
 		nodename: nodename
 	    });
 	}
-	
+
 	if (caps.vms['VM.Snapshot']) {
 	    me.items.push({
 		title: gettext('Snapshots'),
@@ -205,7 +205,7 @@ Ext.define('PVE.lxc.Config', {
 
 	me.callParent();
 
-	me.mon(me.statusStore,'load', function(s, records, success) {
+	me.mon(me.statusStore, 'load', function(s, records, success) {
 	    var status;
 	    if (!success) {
 		me.workspace.checkVmMigration(me.pveSelNode);
