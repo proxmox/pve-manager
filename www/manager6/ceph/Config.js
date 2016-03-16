@@ -45,33 +45,11 @@ Ext.define('PVE.node.CephConfig', {
 });
 
 Ext.define('PVE.node.Ceph', {
-    extend: 'Ext.tab.Panel',
+    extend: 'PVE.panel.SubConfig',
     alias: ['widget.pveNodeCeph'],
 
-    tabPosition: 'left',
-    tabRotation: 0,
     minTabWidth: 80,
-
-    getHState: function(itemId) {
-	 /*jslint confusion: true */
-        var me = this;
-
-	if (!itemId) {
-	    itemId = me.getActiveTab().itemId;
-	}
-
-	var first =  me.items.get(0);
-	var ntab;
-
-	// Note: '' is alias for first tab.
-	if (itemId === first.itemId) {
-	    ntab = 'ceph';
-	} else {
-	    ntab = 'ceph-' + itemId;
-	}
-
-	return { value: ntab };
-    },
+    configPrefix: 'ceph',
 
     initComponent: function() {
         var me = this;
@@ -79,21 +57,6 @@ Ext.define('PVE.node.Ceph', {
 	var nodename = me.pveSelNode.data.node;
 	if (!nodename) {
 	    throw "no node name specified";
-	}
-
-	if (!me.phstateid) {
-	    throw "no parent history state specified";
-	}
-
-	var sp = Ext.state.Manager.getProvider();
-	var state = sp.get(me.phstateid);
-	var hsregex =  /^ceph-(\S+)$/;
-
-	if (state && state.value) {
-	    var res = hsregex.exec(state.value);
-	    if (res && res[1]) {
-		me.activeTab = res[1];
-	    }
 	}
 
 	Ext.apply(me, {
@@ -144,34 +107,8 @@ Ext.define('PVE.node.Ceph', {
 		    url: "/api2/extjs/nodes/" + nodename + "/ceph/log"
 		}
 	    ],
-	    listeners: {
-		afterrender: function(tp) {
-		    var first =  tp.items.get(0);
-		    if (first) {
-			first.fireEvent('show', first);
-		    }
-		},
-		tabchange: function(tp, newcard, oldcard) {
-		    var state = me.getHState(newcard.itemId);
-		    sp.set(me.phstateid, state);
-		}
-	    }
 	});
 
 	me.callParent();
-
-	var statechange = function(sp, key, state) {
-	    if ((key === me.phstateid) && state) {
-		var first = me.items.get(0);
-		var atab = me.getActiveTab().itemId;
-		var res = hsregex.exec(state.value);
-		var ntab = (res && res[1]) ? res[1] : first.itemId;
-		if (ntab && (atab != ntab)) {
-		    me.setActiveTab(ntab);
-		}
-	    }
-	};
-
-	me.mon(sp, 'statechange', statechange);
     }
 });
