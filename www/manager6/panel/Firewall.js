@@ -20,7 +20,7 @@ Ext.define('PVE.panel.Firewall', {
 	    throw "unknown firewall panel type";
 	}
 
-	var list_refs_url = me.fwtype === 'vm' ? (me.base_url + '/refs') : 
+	var list_refs_url = me.fwtype === 'vm' ? (me.base_url + '/refs') :
 	    '/cluster/firewall/refs';
 
 	var items = [
@@ -42,13 +42,13 @@ Ext.define('PVE.panel.Firewall', {
 	    });
 	    items.push({
 		xtype: 'pveFirewallAliases',
-		base_url: '/cluster/firewall/aliases',		    
+		base_url: '/cluster/firewall/aliases',
 		itemId: 'aliases'
 	    });
 	    items.push({
 		xtype: 'pveIPSet',
 		base_url: '/cluster/firewall/ipset',
-		list_refs_url: list_refs_url,		    
+		list_refs_url: list_refs_url,
 		itemId: 'ipset'
 	    });
 	}
@@ -56,13 +56,13 @@ Ext.define('PVE.panel.Firewall', {
 	if (me.fwtype === 'vm') {
 	    items.push({
 		xtype: 'pveFirewallAliases',
-		base_url: me.base_url + '/aliases',		    
+		base_url: me.base_url + '/aliases',
 		itemId: 'aliases'
 	    });
 	    items.push({
 		xtype: 'pveIPSet',
-		base_url: me.base_url + '/ipset',		    
-		list_refs_url: list_refs_url,		    
+		base_url: me.base_url + '/ipset',
+		list_refs_url: list_refs_url,
 		itemId: 'ipset'
 	    });
 	}

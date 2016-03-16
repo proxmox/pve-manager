@@ -10,7 +10,7 @@ Ext.define('PVE.panel.SubConfig', {
     getHState: function(itemId) {
 	 /*jslint confusion: true */
         var me = this;
-	
+
 	if (!itemId) {
 	    if (me.getActiveTab() === undefined) {
 		me.setActiveTab(0);
@@ -40,7 +40,7 @@ Ext.define('PVE.panel.SubConfig', {
 
 	var sp = Ext.state.Manager.getProvider();
 	var state = sp.get(me.phstateid);
-	
+
 	var hsregex =  /^([^\-\s]+)-(\S+)?$/;
 
 	if (state && state.value) {
@@ -54,7 +54,7 @@ Ext.define('PVE.panel.SubConfig', {
 	Ext.apply(me, {
 	    listeners: {
 		afterrender: function(tp) {
-		    // if we have lazy items, 
+		    // if we have lazy items,
 		    // we saved the tabname in savedTab
 		    if (me.activeTab === undefined && me.savedTab) {
 			me.setActiveTab(me.savedTab);

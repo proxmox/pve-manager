@@ -29,7 +29,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	me.spiceMenu = Ext.create('Ext.menu.Item', {
 	    text: 'SPICE',
 	    iconCls: 'pve-itype-icon-virt-viewer',
-	    handler: function() { 
+	    handler: function() {
 		PVE.Utils.openConsoleWindow('vv', me.consoleType, me.vmid, me.nodename, me.consoleName);
 	    }
 	});
@@ -37,7 +37,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	var noVncMenu = Ext.create('Ext.menu.Item', {
 	    text: 'noVNC',
 	    iconCls: 'pve-itype-icon-novnc',
-	    handler: function() { 
+	    handler: function() {
 		PVE.Utils.openConsoleWindow('html5', me.consoleType, me.vmid, me.nodename, me.consoleName);
 	    }
 	});
@@ -48,7 +48,7 @@ Ext.define('PVE.button.ConsoleButton', {
 
 	Ext.apply(me, {
 	    handler: function() {
-		PVE.Utils.openDefaultConsoleWindow(me.enableSpice, me.consoleType, me.vmid, 
+		PVE.Utils.openDefaultConsoleWindow(me.enableSpice, me.consoleType, me.vmid,
 						   me.nodename, me.consoleName);
 	    },
 	    menu: new Ext.menu.Menu({
