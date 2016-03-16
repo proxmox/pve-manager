@@ -87,6 +87,14 @@ Ext.define('PVE.panel.Config', {
 			    sp.set(stateid, { value: ntab });
 			}
 		    }
+
+		    // if we have a tabpanel which we declared lazy (with ptype: lazyitems)
+		    // then we have the actual item in items.items[0]
+		    // and there we need to fire the event hide
+		    // because some tabs use this event (which is not fired in this case)
+		    if (oldcard.plugins && oldcard.plugins[0] && oldcard.plugins[0].ptype == 'lazyitems') {
+			oldcard.items.items[0].fireEvent('hide');
+		    }
 		}
 	    }
 	});

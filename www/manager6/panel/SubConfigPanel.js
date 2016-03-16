@@ -5,12 +5,16 @@ Ext.define('PVE.panel.SubConfig', {
     configPrefix: undefined,
     tabPosition: 'left',
     tabRotation: 0,
+    savedTab: undefined,
 
     getHState: function(itemId) {
 	 /*jslint confusion: true */
         var me = this;
 	
 	if (!itemId) {
+	    if (me.getActiveTab() === undefined) {
+		me.setActiveTab(0);
+	    }
 	    itemId = me.getActiveTab().itemId;
 	}
 
@@ -42,16 +46,21 @@ Ext.define('PVE.panel.SubConfig', {
 	if (state && state.value) {
 	    var res = hsregex.exec(state.value);
 	    if (res && res[1] && res[2] && res[1] === me.configPrefix) {
-		me.activeTab = res[2];
+		me.activeTab = res[2]; // if we have lazy items, this does nothing
+		me.savedTab = res[2]; // so we save it here
 	    }
 	}
 
 	Ext.apply(me, {
 	    listeners: {
 		afterrender: function(tp) {
-		    var first =  tp.items.get(0);
-		    if (first) {
-			first.fireEvent('show', first);
+		    // if we have lazy items, 
+		    // we saved the tabname in savedTab
+		    if (me.activeTab === undefined && me.savedTab) {
+			me.setActiveTab(me.savedTab);
+		    } else if (me.activeTab === undefined) {
+			// if we have nothing else, we set 0 as active
+			me.setActiveTab(0);
 		    }
 		},
 		tabchange: function(tp, newcard, oldcard) {
