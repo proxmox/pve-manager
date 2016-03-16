@@ -13,3 +13,13 @@
     padding: 4px;
     background-color: #3892d4;
 }
+
+/* reduce tree space */
+.x-grid-cell-inner-treecolumn { /* vertical padding */
+    padding: 4px 0px;
+}
+
+/* horizontal distance between parent and child leaf */
+.x-tree-elbow-img {
+    width: 14px;
+}
