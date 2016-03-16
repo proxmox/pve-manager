@@ -64,49 +64,52 @@ Ext.define('PVE.node.Ceph', {
 		border: false,
 		pveSelNode: me.pveSelNode
 	    },
-	    items: [
-		{
-		    xtype: 'pveNodeCephStatus',
-		    title: gettext('Status'),
-		    itemId: 'status'
-		},
-		{
-		    xtype: 'pveNodeCephConfig',
-		    title: gettext('Config'),
-		    itemId: 'config'
-		},
-		{
-		    xtype: 'pveNodeCephMonList',
-		    title: gettext('Monitor'),
-		    itemId: 'monlist'
-		},
-		{
-		    xtype: 'pveNodeCephDiskList',
-		    title: gettext('Disks'),
-		    itemId: 'disklist'
-		},
-		{
-		    xtype: 'pveNodeCephOsdTree',
-		    title: 'OSD',
-		    itemId: 'osdtree'
-		},
-		{
-		    xtype: 'pveNodeCephPoolList',
-		    title: gettext('Pools'),
-		    itemId: 'pools'
-		},
-		{
-		    title: 'Crush',
-		    xtype: 'pveNodeCephCrushMap',
-		    itemId: 'crushmap'
-		},
-		{
-		    title: gettext('Log'),
-		    itemId: 'log',
-		    xtype: 'pveLogView',
-		    url: "/api2/extjs/nodes/" + nodename + "/ceph/log"
-		}
-	    ],
+	    plugins: {
+		ptype: 'lazyitems',
+		items: [
+		    {
+			xtype: 'pveNodeCephStatus',
+			title: gettext('Status'),
+			itemId: 'status'
+		    },
+		    {
+			xtype: 'pveNodeCephConfig',
+			title: gettext('Config'),
+			itemId: 'config'
+		    },
+		    {
+			xtype: 'pveNodeCephMonList',
+			title: gettext('Monitor'),
+			itemId: 'monlist'
+		    },
+		    {
+			xtype: 'pveNodeCephDiskList',
+			title: gettext('Disks'),
+			itemId: 'disklist'
+		    },
+		    {
+			xtype: 'pveNodeCephOsdTree',
+			title: 'OSD',
+			itemId: 'osdtree'
+		    },
+		    {
+			xtype: 'pveNodeCephPoolList',
+			title: gettext('Pools'),
+			itemId: 'pools'
+		    },
+		    {
+			title: 'Crush',
+			xtype: 'pveNodeCephCrushMap',
+			itemId: 'crushmap'
+		    },
+		    {
+			title: gettext('Log'),
+			itemId: 'log',
+			xtype: 'pveLogView',
+			url: "/api2/extjs/nodes/" + nodename + "/ceph/log"
+		    }
+		],
+	    }
 	});
 
 	me.callParent();

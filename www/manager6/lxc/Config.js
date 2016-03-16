@@ -128,7 +128,14 @@ Ext.define('PVE.lxc.Config', {
 		{
 		    title: gettext('Resources'),
 		    itemId: 'resources',
-		    xtype: 'pveLxcRessourceView'
+		    layout: 'fit',
+		    plugins: {
+			ptype: 'lazyitems',
+			items: {
+			    xtype: 'pveLxcRessourceView',
+			    pveSelNode: me.pveSelNode
+			}
+		    }
 		},
 		{
 		    title: gettext('Network'),
