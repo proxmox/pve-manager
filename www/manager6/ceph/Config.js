@@ -32,7 +32,7 @@ Ext.define('PVE.node.CephConfig', {
 	Ext.apply(me, {
 	    url: '/nodes/' + nodename + '/ceph/config',
 	    listeners: {
-		show: function() {
+		activate: function() {
 		    me.load();
 		}
 	    }
