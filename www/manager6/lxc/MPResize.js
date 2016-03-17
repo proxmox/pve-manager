@@ -85,8 +85,6 @@ Ext.define('PVE.window.MPResize', {
 
 	Ext.apply(me, {
 	    modal: true,
-	    width: 250,
-	    height: 150,
 	    border: false,
 	    layout: 'fit',
 	    buttons: [ submitBtn ],
