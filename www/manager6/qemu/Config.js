@@ -135,9 +135,7 @@ Ext.define('PVE.qemu.Config', {
 		    title: gettext('Summary'),
 		    xtype: 'pveQemuSummary',
 		    itemId: 'summary'
-		} ]
-	});
-/*
+		}, 
 		{
 		    title: gettext('Hardware'),
 		    itemId: 'hardware',
@@ -156,7 +154,7 @@ Ext.define('PVE.qemu.Config', {
 		}
 	    ]
 	});
-
+/*
 	if (caps.vms['VM.Monitor'] && !template) {
 	    me.items.push({
 		title: gettext('Monitor'),
