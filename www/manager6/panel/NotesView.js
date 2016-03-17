@@ -1,6 +1,12 @@
 Ext.define('PVE.panel.NotesView', {
     extend: 'Ext.panel.Panel',
 
+    title: gettext("Notes"),
+    style: 'padding-left:10px',
+    bodyStyle: 'white-space:pre',
+    bodyPadding: 10,
+    scrollable: true,
+
     load: function() {
 	var me = this;
 	
@@ -42,11 +48,6 @@ Ext.define('PVE.panel.NotesView', {
 	}
 
 	Ext.apply(me, {
-	    title: gettext("Notes"),
-	    style: 'padding-left:10px',
-	    bodyStyle: 'white-space:pre',
-	    bodyPadding: 10,
-	    autoScroll: true,
 	    listeners: {
 		render: function(c) {
 		    c.el.on('dblclick', function() { 

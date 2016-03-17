@@ -52,7 +52,6 @@ Ext.define('PVE.qemu.StatusView', {
 
 	Ext.applyIf(me, {
 	    cwidth1: 150,
-	    height: 166,
 	    rows: rows
 	});
 

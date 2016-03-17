@@ -11,7 +11,7 @@ Ext.define('PVE.window.NotesEdit', {
 	    items: {
 		xtype: 'textarea',
 		name: 'description',
-		rows: 7,
+		height: 200,
 		value: '',
 		hideLabel: true
 	    }

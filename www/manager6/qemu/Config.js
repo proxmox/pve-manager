@@ -132,10 +132,8 @@ Ext.define('PVE.qemu.Config', {
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
-		    title: gettext('SummaryTODO'),
-		    xtype: 'panel',
-//		    title: gettext('Summary'),
-//		    xtype: 'pveQemuSummary',
+		    title: gettext('Summary'),
+		    xtype: 'pveQemuSummary',
 		    itemId: 'summary'
 		} ]
 	});
