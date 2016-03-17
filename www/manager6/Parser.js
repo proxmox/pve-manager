@@ -307,7 +307,7 @@ Ext.define('PVE.Parser', { statics: {
 	    return;
 	}
 
-	var m = res.file.match(/^([a-z][a-z0-9\-\_\.]*[a-z0-9]):/);
+	var m = res.file.match(/^([a-z][a-z0-9\-\_\.]*[a-z0-9]):/i);
 	if (m) {
 	    res.storage = m[1];
 	    res.type = 'volume';
