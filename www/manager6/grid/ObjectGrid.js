@@ -66,7 +66,10 @@ Ext.define('PVE.grid.ObjectGrid', {
 
 	var rstore = me.rstore;
 
-	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore, filters: [] });
+	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore,
+	    sorters: [],
+	    filters: []
+	});
 
 	if (rows) {
 	    Ext.Object.each(rows, function(key, rowdef) {
