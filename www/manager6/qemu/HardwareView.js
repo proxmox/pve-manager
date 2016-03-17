@@ -456,7 +456,7 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	};
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    url: '/api2/json/' + 'nodes/' + nodename + '/qemu/' + vmid + '/pending',
 	    interval: 5000,
 	    selModel: sm,
@@ -526,11 +526,11 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	me.callParent();
 
-	me.on('show', me.rstore.startUpdate);
+	me.on('activate', me.rstore.startUpdate);
 	me.on('hide', me.rstore.stopUpdate);
 	me.on('destroy', me.rstore.stopUpdate);	
 
-	me.rstore.on('datachanged', function() {
+	me.mon(me.rstore, 'refresh', function() {
 	    set_button_status();
 	});
     }
