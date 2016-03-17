@@ -82,12 +82,12 @@ Ext.define('PVE.grid.ObjectGrid', {
 	}
 
 	if (me.sorterFn) {
-	    store.sorters.add(new Ext.util.Sorter({
+	    store.sorters.add(Ext.create('Ext.util.Sorter', {
 		sorterFn: me.sorterFn
 	    }));
 	}
 
-	store.filters.add(new Ext.util.Filter({
+	store.filters.add(Ext.create('Ext.util.Filter', {
 	    filterFn: function(item) {
 		if (rows) {
 		    var rowdef = rows[item.data.key];
