@@ -80,7 +80,10 @@ Ext.define('PVE.qemu.SnapshotTree', {
             success: function(response, options) {
                 var res = response.result.data;
 		if (res.hasFeature) {
-		   Ext.getCmp('snapshotBtn').enable();
+		    var snpBtns = Ext.ComponentQuery.query('#snapshotBtn');
+		    snpBtns.forEach(function(item){
+			item.enable();
+		    });
 		}
             }
         });
@@ -209,7 +212,7 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	});
 
 	var snapshotBtn = Ext.create('Ext.Button', { 
-	    id: 'snapshotBtn',
+	    itemId: 'snapshotBtn',
 	    text: gettext('Take Snapshot'),
 	    disabled: true,
 	    handler: function() {
@@ -287,7 +290,7 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    ],
 	    columnLines: true, // will work in 4.1?
 	    listeners: {
-		show: me.reload,
+		activate: me.reload,
 		hide: me.load_task.cancel,
 		destroy: me.load_task.cancel,
 		itemdblclick: run_editor
