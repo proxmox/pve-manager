@@ -219,7 +219,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	me.column2.push({
 	    xtype: 'CacheTypeSelector',
 	    name: 'cache',
-	    value: '',
+	    value: '__default__',
 	    fieldLabel: gettext('Cache')
 	});
 

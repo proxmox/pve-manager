@@ -9,7 +9,7 @@ Ext.define('PVE.qemu.BiosEdit', {
 	    items: {
 		xtype: 'pveQemuBiosSelector',
 		name: 'bios',
-		value: '',
+		value: '__default__',
 		fieldLabel: 'BIOS'
 	    }
 	});

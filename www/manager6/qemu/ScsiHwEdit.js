@@ -9,7 +9,7 @@ Ext.define('PVE.qemu.ScsiHwEdit', {
 	    items: {
 		xtype: 'pveScsiHwSelector',
 		name: 'scsihw',
-		value: '',
+		value: '__default__',
 		fieldLabel: gettext('Type')
 	    }
 	});

@@ -149,7 +149,7 @@ Ext.define('PVE.window.Clone', {
             name: 'clonemode',
             allowBlank: false,
 	    value: me.isTemplate ? 'clone' : 'copy',
-            data: modelist
+            comboItems: modelist
         });
 
         me.mon(me.kv1, 'change', function(t, value) {
