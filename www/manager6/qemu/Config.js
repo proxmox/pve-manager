@@ -154,7 +154,7 @@ Ext.define('PVE.qemu.Config', {
 		}
 	    ]
 	});
-/*
+
 	if (caps.vms['VM.Monitor'] && !template) {
 	    me.items.push({
 		title: gettext('Monitor'),
@@ -211,7 +211,7 @@ Ext.define('PVE.qemu.Config', {
 		path: '/vms/' + vmid
 	    });
 	}
-*/
+
 	me.callParent();
 
         me.mon(me.statusStore, 'load', function(s, records, success) {
