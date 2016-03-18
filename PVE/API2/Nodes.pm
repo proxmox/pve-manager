@@ -1297,7 +1297,7 @@ __PACKAGE__->register_method ({
 			    print STDERR "Starting CT $vmid\n";
 			    $upid = PVE::API2::LXC::Status->vm_start({node => $nodename, vmid => $vmid });
 			} elsif ($d->{type} eq 'qemu') {
-			    $default_delay = 3; # to redruce load
+			    $default_delay = 3; # to reduce load
 			    return if PVE::QemuServer::check_running($vmid, 1);
 			    print STDERR "Starting VM $vmid\n";
 			    $upid = PVE::API2::Qemu->vm_start({node => $nodename, vmid => $vmid });
