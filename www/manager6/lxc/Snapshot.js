@@ -154,7 +154,7 @@ Ext.define('PVE.window.LxcSnapshot', {
 	if (me.snapname) {
 	    Ext.apply(me, {
 		width: 620,
-		height: 400
+		height: 420
 	    });
 	}
 
