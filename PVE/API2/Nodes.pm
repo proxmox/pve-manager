@@ -1208,9 +1208,6 @@ my $get_start_stop_list = sub {
 		$startup = { order => $bootorder };
 	    }
 
-	    # skip ha managed VMs (started by pve-ha-manager)
-	    return if PVE::HA::Config::vm_is_ha_managed($vmid);
-
 	    $resList->{$startup->{order}}->{$vmid} = $startup;
 	    $resList->{$startup->{order}}->{$vmid}->{type} = $d->{type};
 	};
@@ -1285,6 +1282,9 @@ __PACKAGE__->register_method ({
 		    } else {
 			die "unknown VM type '$d->{type}'\n";
 		    }
+
+		    # skip ha managed VMs (started by pve-ha-manager)
+		    next if PVE::HA::Config::vm_is_ha_managed($vmid);
 
 		    PVE::Cluster::check_cfs_quorum(); # abort when we loose quorum
 	    
@@ -1413,6 +1413,9 @@ __PACKAGE__->register_method ({
 		};
 
 		foreach my $vmid (sort {$b <=> $a} keys %$vmlist) {
+		    # skip ha managed VMs (stopped by pve-ha-manager)
+		    next if PVE::HA::Config::vm_is_ha_managed($vmid);
+
 		    my $d = $vmlist->{$vmid};
 		    my $upid;
 		    eval { $upid = &$create_stop_worker($nodename, $d->{type}, $vmid, $d->{down}); };
