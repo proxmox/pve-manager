@@ -1274,6 +1274,18 @@ __PACKAGE__->register_method ({
 		foreach my $vmid (sort {$a <=> $b} keys %$vmlist) {
 		    my $d = $vmlist->{$vmid};
 
+		    # skip templates
+		    my $conf;
+		    if ($d->{type} eq 'lxc') {
+			$conf = PVE::LXC::Config->load_config($vmid);
+			next if PVE::LXC::Config->is_template($conf);
+		    } elsif ($d->{type} eq 'qemu') {
+			$conf = PVE::QemuConfig->load_config($vmid);
+			next if PVE::QemuConfig->is_template($conf);
+		    } else {
+			die "unknown VM type '$d->{type}'\n";
+		    }
+
 		    PVE::Cluster::check_cfs_quorum(); # abort when we loose quorum
 	    
 		    eval {
