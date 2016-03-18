@@ -1225,6 +1225,9 @@ __PACKAGE__->register_method ({
     path => 'startall', 
     method => 'POST',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'VM.PowerMgmt' ]],
+    },
     proxyto => 'node',
     description => "Start all VMs and containers (when onboot=1).",
     parameters => {
@@ -1350,6 +1353,9 @@ __PACKAGE__->register_method ({
     path => 'stopall', 
     method => 'POST',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'VM.PowerMgmt' ]],
+    },
     proxyto => 'node',
     description => "Stop all VMs and Containers.",
     parameters => {
@@ -1463,6 +1469,9 @@ __PACKAGE__->register_method ({
     method => 'POST',
     proxyto => 'node',
     protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'VM.Migrate' ]],
+    },
     description => "Migrate all VMs and Containers.",
     parameters => {
 	additionalProperties => 0,
