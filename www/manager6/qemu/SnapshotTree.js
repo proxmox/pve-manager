@@ -60,6 +60,7 @@ Ext.define('PVE.qemu.SnapshotTree', {
 			    parent_item.children.push(item);
 			    parent_item.leaf = false;
 			    parent_item.expanded = true;
+			    parent_item.expandable = false;
 			} else {
 			    root.children.push(item);
 			}
@@ -289,8 +290,6 @@ Ext.define('PVE.qemu.SnapshotTree', {
 		show: me.reload,
 		hide: me.load_task.cancel,
 		destroy: me.load_task.cancel,
-		// disable collapse
-		beforeitemcollapse: function() { return false; },
 		itemdblclick: run_editor
 	    }
 	});
