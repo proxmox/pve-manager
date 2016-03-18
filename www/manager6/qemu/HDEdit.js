@@ -169,6 +169,9 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		allowBlank: false,
 		listeners: {
 		    change: function(f, value) {
+			if (!value) { // initial store loading fires an unwanted 'change'
+			    return;
+			}
 			var rec = f.store.getById(value);
 			if (rec.data.type === 'iscsi') {
 			    me.hdfilesel.setStorage(value);

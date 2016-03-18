@@ -70,6 +70,9 @@ Ext.define('PVE.window.HDMove', {
                 hidden: false,
                 listeners: {
                     change: function(f, value) {
+			if (!value) { // initial store loading fires an unwanted 'change
+			    return;
+			}
                         var rec = f.store.getById(value);
 			if (rec.data.type === 'iscsi' ||
 			    rec.data.type === 'lvm' ||

@@ -59,7 +59,7 @@ Ext.define('PVE.window.HDResize', {
 	    bodyPadding: 10,
 	    border: false,
 	    fieldDefaults: {
-		labelWidth: 120,
+		labelWidth: 140,
 		anchor: '100%'
 	    },
 	    items: items
