@@ -89,6 +89,7 @@ Ext.define('PVE.grid.BackupView', {
 		keyup: function(field) {
 		    me.store.clearFilter(true);
 		    me.store.filter([
+			filterFn,
 			{
 			    property: 'volid',
 			    value: field.getValue(),
