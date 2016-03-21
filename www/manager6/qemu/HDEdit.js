@@ -92,7 +92,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.hdimage = drive.file;
 	values.nobackup = !PVE.Parser.parseBoolean(drive.backup, 1);
 	values.diskformat = drive.format || 'raw';
-	values.cache = drive.cache || '';
+	values.cache = drive.cache || '__default__';
 	values.discard = (drive.discard === 'on');
 	values.iothread = PVE.Parser.parseBoolean(drive.iothread);
 

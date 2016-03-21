@@ -24,7 +24,7 @@ Ext.define('PVE.qemu.DisplayEdit', {
 
 	displayField = Ext.createWidget('DisplaySelector', {  
 	    name: 'vga',
-	    value: '',
+	    value: '__default__',
 	    fieldLabel: gettext('Graphic card'),
 	    validator: validateDisplay
 	});

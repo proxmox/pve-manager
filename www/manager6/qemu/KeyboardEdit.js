@@ -9,7 +9,7 @@ Ext.define('PVE.qemu.KeyboardEdit', {
 	    items: {
 		xtype: 'VNCKeyboardSelector',
 		name: 'keyboard',
-		value: '',
+		value: '__default__',
 		fieldLabel: gettext('Keyboard Layout')
 	    }
 	});
