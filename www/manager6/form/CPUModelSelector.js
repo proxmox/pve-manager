@@ -22,12 +22,15 @@ Ext.define('PVE.form.CPUModelSelector', {
 	['SandyBridge', 'SandyBridge'],
 	['IvyBridge', 'IvyBridge'],
 	['Haswell', 'Haswell'],
+	['Haswell-noTSX','Haswell-noTSX'],
 	['Broadwell', 'Broadwell'],
+	['Broadwell-noTSX','Broadwell-noTSX'],
 	['Opteron_G1', 'Opteron_G1'],
 	['Opteron_G2', 'Opteron_G2'],
 	['Opteron_G3', 'Opteron_G3'],
 	['Opteron_G4', 'Opteron_G4'],
 	['Opteron_G5', 'Opteron_G5'],
 	['host', 'host']
+
     ]
 });
