@@ -146,6 +146,18 @@ Ext.define('PVE.Utils', { statics: {
 	    PVE.Utils.unknownText;
     },
 
+    render_qemu_bios: function(value) {
+	if (!value) {
+	    return PVE.Utils.defaultText + ' (SeaBIOS)';
+	} else if (value === 'seabios') {
+	    return "SeaBIOS";
+	} else if (value === 'ovmf') {
+	    return "OVMF (UEFI)";
+	} else {
+	    return value;
+	}
+    },
+
     render_scsihw: function(value) {
 	if (!value) {
 	    return PVE.Utils.defaultText + ' (LSI 53C895A)';

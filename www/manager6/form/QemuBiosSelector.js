@@ -5,8 +5,8 @@ Ext.define('PVE.form.QemuBiosSelector', {
     initComponent: function() {
 	var me = this;
 
-        me.data = [
-	    ['', PVE.Utils.render_qemu_bios('')],
+        me.comboItems = [
+	    ['__default__', PVE.Utils.render_qemu_bios('')],
 	    ['seabios', PVE.Utils.render_qemu_bios('seabios')],
 	    ['ovmf', PVE.Utils.render_qemu_bios('ovmf')]
 	];
