@@ -194,9 +194,6 @@ Ext.define('PVE.storage.Upload', {
 		    name: 'filename',
 		    buttonText: gettext('Select File...'),
 		    allowBlank: false,
-		    buttonConfig: {
-			height: 32
-		    }
 		},
 		pbar
 	    ]
