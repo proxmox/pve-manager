@@ -370,7 +370,7 @@ Ext.define('PVE.qemu.Options', {
 	    revert_btn.setDisabled(!pending);
 	};
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    url: "/api2/json/nodes/" + nodename + "/qemu/" + vmid + "/pending",
 	    interval: 5000,
 	    cwidth1: 170,
@@ -384,7 +384,7 @@ Ext.define('PVE.qemu.Options', {
 
 	me.callParent();
 
-	me.on('show', me.rstore.startUpdate);
+	me.on('activate', me.rstore.startUpdate);
 	me.on('hide', me.rstore.stopUpdate);
 	me.on('destroy', me.rstore.stopUpdate);	
 
