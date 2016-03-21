@@ -98,17 +98,11 @@ Ext.define('PVE.qemu.Config', {
 	var removeBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Remove'),
 	    disabled: !caps.vms['VM.Allocate'],
-	    dangerous: true,
-	    confirmMsg: Ext.String.format(gettext('Are you sure you want to remove VM {0}? This will permanently erase all VM data.'), vmid),
 	    handler: function() {
-		PVE.Utils.API2Request({
-		    url: base_url,
-		    method: 'DELETE',
-		    waitMsgTarget: me,
-		    failure: function(response, opts) {
-			Ext.Msg.alert('Error', response.htmlStatus);
-		    }
-		});
+		Ext.create('PVE.window.SafeDestroy', {
+		    vmid: vmid,
+		    base_url: base_url
+		}).show();
 	    }
 	});
 

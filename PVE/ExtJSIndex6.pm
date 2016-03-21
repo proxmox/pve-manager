@@ -112,6 +112,7 @@ window/Wizard.js
 window/NotesEdit.js
 window/Backup.js
 window/Restore.js
+window/SafeDestroy.js
 panel/NotesView.js
 grid/CheckColumn.js
 grid/SelectFeature.js
