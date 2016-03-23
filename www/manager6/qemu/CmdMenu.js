@@ -53,7 +53,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		text: gettext('Suspend'),
 		icon: '/pve2/images/forward.png',
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to suspend {0}?"), gettext('VM') + ' ' + vmid);
+		    var msg = Ext.String.format(gettext("Do you really want to suspend {0}?"), 'VM ' + vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -73,7 +73,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		text: gettext('Shutdown'),
 		icon: '/pve2/images/stop.png',
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to shutdown {0}?"), gettext('VM') + ' ' + vmid);
+		    var msg = Ext.String.format(gettext("Do you really want to shutdown {0}?"), 'VM ' + vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -87,7 +87,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		text: gettext('Stop'),
 		icon: '/pve2/images/gtk-stop.png',
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to stop {0}?"), gettext('VM') + ' ' + vmid);
+		    var msg = Ext.String.format(gettext("Do you really want to stop {0}?"), 'VM ' + vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -112,7 +112,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		text: gettext('Convert to template'),
 		icon: '/pve2/images/forward.png',
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to convert {0} into a template?"), gettext('VM') + ' ' + vmid);
+		    var msg = Ext.String.format(gettext("Do you really want to convert {0} into a template?"), 'VM ' + vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
