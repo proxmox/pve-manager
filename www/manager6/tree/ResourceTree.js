@@ -217,7 +217,8 @@ Ext.define('PVE.tree.ResourceTree', {
 	    var groups = me.viewFilter.groups || [];
 	    var filterfn = me.viewFilter.filterfn;
 
-	    // remove vanished or changed items
+	    // remove vanished or moved items
+	    // update in place changed items
 	    var key;
 	    for (key in index) {
 		if (index.hasOwnProperty(key)) {
@@ -228,19 +229,22 @@ Ext.define('PVE.tree.ResourceTree', {
 		    var item = rstore.data.get(olditem.data.id);
 
 		    var changed = false;
+		    var moved = false;
 		    if (item) {
 			// test if any grouping attributes changed
+			// this will also catch migrated nodes
 			var i, len;
 			for (i = 0, len = groups.length; i < len; i++) {
 			    var attr = groups[i];
 			    if (item.data[attr] != olditem.data[attr]) {
 				//console.log("changed " + attr);
-				changed = true;
+				moved = true;
 				break;
 			    }
 			}
+
+			// tree item has been updated
 			if ((item.data.text !== olditem.data.text) ||
-			    (item.data.node !== olditem.data.node) ||
 			    (item.data.running !== olditem.data.running) ||
 			    (item.data.template !== olditem.data.template)) {
 			    //console.log("changed node/text/running " + olditem.data.id);
@@ -258,7 +262,7 @@ Ext.define('PVE.tree.ResourceTree', {
 			me.setIconCls(info);
 			olditem.commit();
 		    }
-		    if (!item && olditem.isLeaf()) {
+		    if ((!item || moved) && olditem.isLeaf()) {
 			//console.log("REM UID: " + key + " ITEM " + olditem.data.id);
 			delete index[key];
 			var parentNode = olditem.parentNode;
