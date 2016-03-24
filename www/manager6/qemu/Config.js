@@ -244,6 +244,7 @@ Ext.define('PVE.qemu.Config', {
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
 	    stopBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'stopped');
 	    removeBtn.setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
+	    consoleBtn.setDisabled(template);
 	});
 
 	me.on('afterrender', function() {
