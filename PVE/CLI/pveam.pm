@@ -114,7 +114,7 @@ __PACKAGE__->register_method ({
 
 	my $storeid = $param->{storage};
 
-	my $cfg = PVE::Cluster::cfs_read_file("storage.cfg");
+	my $cfg = PVE::Storage::config();
 
 	die "Storage do not support templates!\n" if !$cfg->{ids}->{$storeid}->{content}->{vztmpl};
 
@@ -162,7 +162,7 @@ __PACKAGE__->register_method ({
 
 	my $template = $param->{template_path};
 
-	my $cfg = PVE::Cluster::cfs_read_file("storage.cfg");
+	my $cfg = PVE::Storage::config();
 
 	$rpcenv->check_volume_access($authuser, $cfg, undef, $template);
 

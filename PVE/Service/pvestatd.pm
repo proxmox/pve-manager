@@ -258,7 +258,7 @@ sub update_lxc_status {
 sub update_storage_status {
     my ($status_cfg) = @_;
 
-    my $cfg = cfs_read_file("storage.cfg");
+    my $cfg = PVE::Storage::config();
 
     my $ctime = time();
 

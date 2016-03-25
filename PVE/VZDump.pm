@@ -236,7 +236,7 @@ sub run_command {
 sub storage_info {
     my $storage = shift;
 
-    my $cfg = cfs_read_file('storage.cfg');
+    my $cfg = PVE::Storage::config();
     my $scfg = PVE::Storage::storage_config($cfg, $storage);
     my $type = $scfg->{type};
  

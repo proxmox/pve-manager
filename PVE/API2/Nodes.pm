@@ -1082,7 +1082,7 @@ __PACKAGE__->register_method({
 
 	raise_param_exc({ template => "no such template"}) if !$pd;
 
-	my $cfg = cfs_read_file("storage.cfg");
+	my $cfg = PVE::Storage::config();
 	my $scfg = PVE::Storage::storage_check_enabled($cfg, $param->{storage}, $node);
 
 	die "cannot download to storage type '$scfg->{type}'" 
