@@ -75,12 +75,13 @@ Ext.define('PVE.window.SafeDestroy', {
 	me.callParent();
 
 	var msg = Ext.String.format(gettext('Are you sure you want to remove VM {0}? This will permanently erase all VM data.'), me.vmid);
-	me.getComponent('safepanel').getComponent('message').setValue(msg);
 
 	var submitBtn = me.down('toolbar').getComponent('removeButton');
 	submitBtn.base_url= me.base_url;
 
-	me.getComponent('safepanel').getComponent('input').vmid = me.vmid;
-	me.getComponent('safepanel').getComponent('input').submitBtn = submitBtn;
+	var safepanel = me.getComponent('safepanel');
+	safepanel.getComponent('message').setValue(msg);
+	safepanel.getComponent('input').vmid = me.vmid;
+	safepanel.getComponent('input').submitBtn = submitBtn;
     }
 });
