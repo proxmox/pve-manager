@@ -5,46 +5,46 @@
 Ext.define('PVE.window.SafeDestroy', {
     extend: 'Ext.window.Window',
     alias: 'widget.pveSafeDestroy',
-    title: gettext('Are you sure ?'),
+    title: gettext('Are you sure?'),
     modal: true,
     buttonAlign: 'center',
 
     items: [
+	{
+	    itemId: 'safepanel',
+	    xtype: 'container',
+	    padding: 10,
+	    width: 450,
+	    layout: {
+		type: 'vbox',
+		align: 'stretch'
+	    },
+	    items: [
 		{
-		    itemId: 'safepanel',
-		    xtype: 'container',
-		    padding: 10,
-		    width: 450,
-		    layout: {
-			type: 'vbox',
-			align: 'stretch'
-		    },
-		    items: [
-			{
-			    itemId: 'message',
-			    xtype: 'textarea',
-			    editable: false,
-			},
-			{
-			    itemId: 'input',
-			    xtype: 'numberfield',
-			    name: 'VM id',
-			    fieldLabel: gettext('Please enter the VM ID to confirm'),
-			    hideTrigger:true,
-			    allowBlank: false,
-			    listeners: {
-				change: function(f, value) {
-				    if (value === this.vmid) {
-					this.submitBtn.enable();
-				    } else {
-					this.submitBtn.disable();
-				    }
-				}
+		    itemId: 'message',
+		    xtype: 'textarea',
+		    editable: false,
+		},
+		{
+		    itemId: 'input',
+		    xtype: 'numberfield',
+		    name: 'VM id',
+		    fieldLabel: gettext('Please enter the VM ID to confirm'),
+		    hideTrigger:true,
+		    allowBlank: false,
+		    listeners: {
+			change: function(f, value) {
+			    if (value === this.vmid) {
+				this.submitBtn.enable();
+			    } else {
+				this.submitBtn.disable();
 			    }
 			}
-		    ]
+		    }
 		}
-     ],
+	    ]
+	}
+    ],
     buttons: [
 	{
 	    id: 'removeButton',
