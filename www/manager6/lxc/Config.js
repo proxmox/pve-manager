@@ -15,6 +15,8 @@ Ext.define('PVE.lxc.Config', {
 	    throw "no VM ID specified";
 	}
 
+	var template = me.pveSelNode.data.template;
+
 	var caps = Ext.state.Manager.get('GuiCap');
 
 	var base_url = '/nodes/' + nodename + '/lxc/' + vmid;
@@ -214,11 +216,14 @@ Ext.define('PVE.lxc.Config', {
 	    } else {
 		var rec = s.data.get('status');
 		status = rec ? rec.data.value : 'unknown';
+		rec = s.data.get('template');
+		template = rec.data.value || false;
 	    }
-	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running');
+	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
 	    stopBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'stopped');
 	    removeBtn.setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
+	    consoleBtn.setDisabled(template);
 
 	    if (status === 'mounted') {
 		umountBtn.setDisabled(false);
