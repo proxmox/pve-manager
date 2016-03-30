@@ -5,83 +5,118 @@
 Ext.define('PVE.window.SafeDestroy', {
     extend: 'Ext.window.Window',
     alias: 'widget.pveSafeDestroy',
+
     title: gettext('Are you sure?'),
     modal: true,
     buttonAlign: 'center',
+    bodyPadding: 10,
+    width: 450,
+    layout: 'hbox',
+
+    viewModel: { type: 'default' },
+
+    config: {
+	item: {
+	    id: undefined,
+	    type: undefined
+	},
+	url: undefined
+    },
+
+    applyItem: function(item) {
+	var me = this;
+
+	if (!Ext.isDefined(item.id)) {
+	    throw "no ID specified";
+	}
+
+	if (!Ext.isDefined(item.type)) {
+	    throw "no VM type specified";
+	}
+
+	me.getViewModel().set('item', item);
+
+	return item;
+    },
+
+    controller: {
+
+	xclass: 'Ext.app.ViewController',
+
+	control: {
+	    'field[name=confirm]': {
+		change: function(f, value) {
+		    var view = this.getView();
+		    var removeButton = this.lookupReference('removeButton');
+		    if (value === view.getItem().id) {
+			removeButton.enable();
+		    } else {
+			removeButton.disable();
+		    }
+		}
+	    },
+            'button[reference=cancelButton]': {
+		click: function() {
+		    this.getView().close();
+		}
+	    },
+            'button[reference=removeButton]': {
+		click: function() {
+		    var view = this.getView();
+		    PVE.Utils.API2Request({
+			url: view.getUrl(),
+			method: 'DELETE',
+			waitMsgTarget: view,
+			failure: function(response, opts) {
+			    Ext.Msg.alert('Error', response.htmlStatus);
+			},
+			callback: function() {
+			    view.close();
+			}
+		    });
+		}
+            }
+	}
+    },
 
     items: [
 	{
-	    itemId: 'safepanel',
+	    xtype: 'component',
+	    cls: [ Ext.baseCSSPrefix + 'message-box-icon',
+		   Ext.baseCSSPrefix + 'message-box-warning',
+		   Ext.baseCSSPrefix + 'dlg-icon'],
+	},
+	{
 	    xtype: 'container',
-	    padding: 10,
-	    width: 450,
+	    flex: 1,
 	    layout: {
 		type: 'vbox',
 		align: 'stretch'
 	    },
 	    items: [
 		{
-		    itemId: 'message',
-		    xtype: 'textarea',
-		    editable: false,
+		    xtype: 'component',
+		    bind: gettext('Are you sure you want to remove {item.type} {item.id}? This will permanently erase all data.')
 		},
 		{
-		    itemId: 'input',
+		    reference: 'confirmField',
 		    xtype: 'numberfield',
-		    name: 'VM id',
-		    fieldLabel: gettext('Please enter the VM ID to confirm'),
-		    hideTrigger:true,
-		    allowBlank: false,
-		    listeners: {
-			change: function(f, value) {
-			    if (value === this.vmid) {
-				this.submitBtn.enable();
-			    } else {
-				this.submitBtn.disable();
-			    }
-			}
-		    }
+		    name: 'confirm',
+		    labelWidth: 300,
+		    bind: {
+			fieldLabel: gettext('Please enter the {item.type} ID to confirm'),
+		    },
+		    hideTrigger: true,
+		    allowBlank: false
 		}
-	    ]
+	    ],
 	}
     ],
     buttons: [
 	{
-	    id: 'removeButton',
+	    reference: 'removeButton',
 	    text: gettext('Remove'),
-	    disabled: true,
-	    handler: function () {
-		var me = this;
-		PVE.Utils.API2Request({
-		    url: me.base_url,
-		    method: 'DELETE',
-		    waitMsgTarget: me,
-		    failure: function(response, opts) {
-			Ext.Msg.alert('Error', response.htmlStatus);
-		    }
-		});
-		me.up('window').close();
-	    }
-	}, {
-	    text: gettext('Cancel'),
-	    handler: function() {
-		this.up('window').close();
-	    }
+	    disabled: true
 	}
-    ],
-
-    initComponent: function() {
-	var me = this;
-	me.callParent();
-
-	var msg = Ext.String.format(gettext('Are you sure you want to remove VM {0}? This will permanently erase all VM data.'), me.vmid);
-
-	var submitBtn = me.down('toolbar').getComponent('removeButton');
-	submitBtn.base_url= me.base_url;
-
-	var safepanel = me.getComponent('safepanel');
-	safepanel.getComponent('message').setValue(msg);
-	safepanel.getComponent('input').vmid = me.vmid;
-	safepanel.getComponent('input').submitBtn = submitBtn;
-    }
+    ]
 });

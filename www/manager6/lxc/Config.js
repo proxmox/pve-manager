@@ -89,8 +89,8 @@ Ext.define('PVE.lxc.Config', {
 	    disabled: !caps.vms['VM.Allocate'],
 	    handler: function() {
 		Ext.create('PVE.window.SafeDestroy', {
-		    vmid: vmid,
-		    base_url: base_url
+		    url: base_url,
+		    item: { type: 'CT', id: vmid }
 		}).show();
 	    }
 	});
