@@ -222,9 +222,8 @@ Ext.define('PVE.qemu.Config', {
 		rec = s.data.get('qmpstatus');
 		qmpstatus = rec ? rec.data.value : 'unknown';
 		rec = s.data.get('template');
-		if(rec.data.value){
-		    template = rec.data.value;
-		}
+		template = rec.data.value || false;
+
 		spice = s.data.get('spice') ? true : false;
 
 	    }
