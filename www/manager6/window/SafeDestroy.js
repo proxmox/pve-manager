@@ -55,12 +55,7 @@ Ext.define('PVE.window.SafeDestroy', {
 		    }
 		}
 	    },
-            'button[reference=cancelButton]': {
-		click: function() {
-		    this.getView().close();
-		}
-	    },
-            'button[reference=removeButton]': {
+           'button[reference=removeButton]': {
 		click: function() {
 		    var view = this.getView();
 		    PVE.Utils.API2Request({
