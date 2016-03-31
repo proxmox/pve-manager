@@ -624,24 +624,24 @@ Ext.define('PVE.Utils', { statics: {
 	var kb = size / 1024;
 
 	if (kb < 1024) {
-	    return kb.toFixed(0) + "KB";
+	    return kb.toFixed(0) + "KiB";
 	}
 
 	var mb = size / (1024*1024);
 
 	if (mb < 1024) {
-	    return mb.toFixed(0) + "MB";
+	    return mb.toFixed(0) + "MiB";
 	}
 
 	var gb = mb / 1024;
 
 	if (gb < 1024) {
-	    return gb.toFixed(2) + "GB";
+	    return gb.toFixed(2) + "GiB";
 	}
 
 	var tb =  gb / 1024;
 
-	return tb.toFixed(2) + "TB";
+	return tb.toFixed(2) + "TiB";
 
     },
 
