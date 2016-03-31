@@ -59,6 +59,7 @@ data/UpdateStore.js
 data/DiffStore.js
 data/ObjectStore.js
 data/ResourceStore.js
+data/RRDStore.js
 form/VLanField.js
 form/Checkbox.js
 form/TextField.js
@@ -106,6 +107,7 @@ dc/Tasks.js
 dc/Log.js
 panel/StatusPanel.js
 panel/RRDView.js
+panel/RRDChart.js
 panel/InputPanel.js
 window/Edit.js
 window/LoginWindow.js
