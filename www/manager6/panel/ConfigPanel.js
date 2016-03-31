@@ -43,7 +43,6 @@ Ext.define('PVE.panel.Config', {
 	    xtype: 'tbtext',
 	    text: title,
 	    baseCls: 'x-panel-header-text',
-	    padding: '0 0 5 0'
 	});
 
 
@@ -64,8 +63,8 @@ Ext.define('PVE.panel.Config', {
 
 	var toolbar = Ext.create('Ext.toolbar.Toolbar', {
 	    items: tbar,
-	    style: 'border:0px;',
-	    height: 32
+	    border: false,
+	    height: 36
 	});
 
 	var tab = Ext.create('Ext.tab.Panel', {
