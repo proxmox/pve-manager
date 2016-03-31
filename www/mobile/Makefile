@@ -2,7 +2,7 @@ include ../../defines.mk
 
 
 JSSRC= 				                 	\
-	../ext4/extjs/src/util/Cookies.js		\
+	../ext6/extjs/classic/classic/src/util/Cookies.js \
 	../manager/Utils.js				\
 	../manager/Parser.js				\
 	Toolkit.js					\
