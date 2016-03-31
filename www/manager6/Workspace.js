@@ -267,7 +267,7 @@ Ext.define('PVE.StdWorkspace', {
 	if (PVE.VersionInfo) {
 	    var version = PVE.VersionInfo.version + '-' + PVE.VersionInfo.release + '/' +
 		PVE.VersionInfo.repoid;
-	    ui.update('Proxmox Virtual Environment<br>' + gettext('Version') + ': ' + version);
+	    ui.update('Proxmox Virtual Environment ' + version);
 	} else {
 	    ui.update('Proxmox Virtual Environment');
 	}
@@ -369,20 +369,18 @@ Ext.define('PVE.StdWorkspace', {
 	    items: [
 		{
 		    region: 'north',
-		    height: 30,
 		    layout: { 
 			type: 'hbox',
+			align: 'middle'
 		    },
 		    baseCls: 'x-plain',		
 		    defaults: {
 			baseCls: 'x-plain'			
 		    },
 		    border: false,
-		    height: 35,
-		    margin: '2 0 5 0',
+		    margin: '2 0 2 5',
 		    items: [
 			{
-			    margin: '0 0 0 4',
 			    html: '<a class="x-unselectable" target=_blank href="http://www.proxmox.com">' +
 				'<img height=30 width=209 src="/pve2/images/proxmox_logo.png"/></a>'
 			},
@@ -394,13 +392,13 @@ Ext.define('PVE.StdWorkspace', {
 			},
 			{
 			    pack: 'end',
-			    margin: '8 10 0 10',
+			    margin: '0 10 0 0',
 			    id: 'userinfo',
 			    stateful: false
 			},
 			{
 			    pack: 'end',
-			    margin: '3 5 0 0',
+			    margin: '0 5 0 0',
 			    xtype: 'button',
 			    baseCls: 'x-btn',
 			    text: gettext("Logout"),
