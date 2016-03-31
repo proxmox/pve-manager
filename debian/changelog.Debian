@@ -10,6 +10,10 @@ pve-manager (4.1-23) unstable; urgency=medium
 
   * Allow non-root to use start/stop/migrate all buttons
 
+  * Fix #926: vzdump: config/default key regression
+
+  * fix compression selection in backup window
+
  -- Proxmox Support Team <support@proxmox.com>  Thu, 31 Mar 2016 10:57:55 +0200
 
 pve-manager (4.1-22) unstable; urgency=medium
