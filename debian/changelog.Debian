@@ -1,5 +1,9 @@
 pve-manager (4.1-23) unstable; urgency=medium
 
+  * switch GUI to ExtJS6
+
+  * use new ExtJS6 charts for node/lxc/qemu
+
   * Allow migrate-all button on HA enabled VMs
 
   * Skip templates when using the start all VMs button
