@@ -351,7 +351,7 @@ sub read_vzdump_defaults {
     }
 
     foreach my $key (keys %$defaults) {
-	$res->{$key} = $defaults->{$key} if !$res->{$key};
+	$res->{$key} = $defaults->{$key} if !defined($res->{$key});
     }
 
     return $res;
