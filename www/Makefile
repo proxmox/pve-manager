@@ -1,5 +1,4 @@
-# Note: please add ext6 for extJS 6 development
-SUBDIRS = images ext4 css manager bootstrap touch mobile
+SUBDIRS = images ext6 css manager6 bootstrap touch mobile
 
 all: ${SUBDIRS}
 

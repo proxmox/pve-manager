@@ -18,7 +18,6 @@ use PVE::API2::Formatter::HTML;
 use PVE::HTTPServer;
 
 use PVE::ExtJSIndex;
-use PVE::ExtJSIndex6;
 use PVE::NoVncIndex;
 use PVE::TouchIndex;
 
@@ -39,8 +38,6 @@ my %daemon_options = (
 );
 
 my $daemon = __PACKAGE__->new('pveproxy', $cmdline, %daemon_options);
-
-my $ext6_dir_exists;
 
 sub add_dirs {
     my ($result_hash, $alias, $subdir) = @_;
@@ -72,18 +69,12 @@ sub init {
     my $family = PVE::Tools::get_host_address_family($self->{nodename});
     my $socket = $self->create_reusable_socket(8006, undef, $family);
 
-    $ext6_dir_exists = (-d '/usr/share/pve-manager/ext6');
-
     my $dirs = {};
 
     add_dirs($dirs, '/pve2/locale/', '/usr/share/pve-manager/locale/');
     add_dirs($dirs, '/pve2/touch/', '/usr/share/pve-manager/touch/');
-    add_dirs($dirs, '/pve2/ext4/', '/usr/share/pve-manager/ext4/');
-
-    if ($ext6_dir_exists) { # only add ext6 dirs if they exist
-	add_dirs($dirs, '/pve2/ext6/', '/usr/share/pve-manager/ext6/');
-	add_dirs($dirs, '/pve2/manager6/', '/usr/share/pve-manager/manager6/');
-    }
+    add_dirs($dirs, '/pve2/ext6/', '/usr/share/pve-manager/ext6/');
+    add_dirs($dirs, '/pve2/manager6/', '/usr/share/pve-manager/manager6/');
 
     add_dirs($dirs, '/pve2/images/' => '/usr/share/pve-manager/images/');
     add_dirs($dirs, '/pve2/css/' => '/usr/share/pve-manager/css/');
@@ -203,19 +194,12 @@ sub get_index {
 	$mobile = $args->{mobile} ? 1 : 0;
     }
 
-    my $ext6;
-    if (defined($args->{ext6})) {
-	$ext6 = $args->{ext6} ? 1 : 0;
-    }
-
     my $page;
 
     if (defined($args->{console}) && $args->{novnc}) {
 	$page = PVE::NoVncIndex::get_index($lang, $username, $token, $args->{console}, $nodename);
     } elsif ($mobile) {
 	$page = PVE::TouchIndex::get_index($lang, $username, $token, $args->{console}, $nodename);
-    } elsif ($ext6 && $ext6_dir_exists) {
-	$page = PVE::ExtJSIndex6::get_index($lang, $username, $token, $args->{console}, $nodename);
     } else {
 	$page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console}, $nodename);
     }

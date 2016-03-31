@@ -11,11 +11,11 @@ sub get_index {
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=10">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>$nodename - Proxmox Virtual Environment</title>
- 
-    <link rel="stylesheet" type="text/css" href="/pve2/ext4/resources/css/ext-all.css" />
-    <link rel="stylesheet" type="text/css" href="/pve2/css/ext-pve.css" />
+    <link rel="stylesheet" type="text/css" href="/pve2/ext6/theme-crisp/resources/theme-crisp-all.css" />
+    <link rel="stylesheet" type="text/css" href="/pve2/ext6/crisp/resources/charts-all.css" />
+    <link rel="stylesheet" type="text/css" href="/pve2/css/ext6-pve.css" />
 _EOD
 
     my $langfile = "/usr/share/pve-manager/locale/pve-lang-${lang}.js";
@@ -26,9 +26,10 @@ _EOD
     }
 
     $page .= <<_EOD;
-    <script type="text/javascript" src="/pve2/ext4/ext-all-debug.js"></script>
-    <script type="text/javascript" src="/pve2/ext4/pvemanagerlib.js"></script>
-    <script type="text/javascript" src="/pve2/ext4/locale/ext-lang-${lang}.js"></script>
+    <script type="text/javascript" src="/pve2/ext6/ext-all-debug.js"></script>
+    <script type="text/javascript" src="/pve2/ext6/charts-debug.js"></script>
+    <script type="text/javascript" src="/pve2/ext6/pvemanagerlib.js"></script>
+    <script type="text/javascript" src="/pve2/ext6/locale/ext-lang-${lang}.js"></script>
 _EOD
 
     my $jssrc = <<_EOJS;

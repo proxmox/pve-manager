@@ -1,0 +1,226 @@
+include ../../defines.mk
+
+JSSRC= 				                 	\
+	Utils.js					\
+	Toolkit.js					\
+	Parser.js					\
+	StateProvider.js				\
+	button/Button.js				\
+	button/ConsoleButton.js				\
+	qemu/SendKeyMenu.js				\
+	qemu/CmdMenu.js					\
+	qemu/TemplateMenu.js				\
+	lxc/CmdMenu.js					\
+	VNCConsole.js					\
+	data/TimezoneStore.js				\
+	data/reader/JsonObject.js			\
+	data/PVEProxy.js				\
+	data/UpdateQueue.js				\
+	data/UpdateStore.js				\
+	data/DiffStore.js				\
+	data/ObjectStore.js				\
+	data/ResourceStore.js				\
+	data/RRDStore.js				\
+	form/VLanField.js				\
+	form/Checkbox.js				\
+	form/TextField.js				\
+	form/RRDTypeSelector.js				\
+	form/ComboGrid.js				\
+	form/KVComboBox.js				\
+	form/Boolean.js					\
+	form/CompressionSelector.js			\
+	form/PoolSelector.js				\
+	form/GroupSelector.js				\
+	form/UserSelector.js				\
+	form/RoleSelector.js				\
+	form/VMIDSelector.js				\
+	form/MemoryField.js				\
+	form/NetworkCardSelector.js			\
+	form/DiskFormatSelector.js			\
+	form/BusTypeSelector.js				\
+	form/ControllerSelector.js			\
+	form/EmailNotificationSelector.js		\
+	form/RealmComboBox.js				\
+	form/BondModeSelector.js			\
+	form/ViewSelector.js				\
+	form/NodeSelector.js				\
+	form/FileSelector.js				\
+	form/StorageSelector.js				\
+	form/BridgeSelector.js				\
+	form/SecurityGroupSelector.js			\
+	form/IPRefSelector.js				\
+	form/IPProtocolSelector.js			\
+	form/CPUModelSelector.js			\
+	form/VNCKeyboardSelector.js			\
+	form/LanguageSelector.js			\
+	form/DisplaySelector.js				\
+	form/CacheTypeSelector.js			\
+	form/SnapshotSelector.js			\
+	form/ContentTypeSelector.js			\
+	form/HotplugFeatureSelector.js			\
+	form/iScsiProviderSelector.js			\
+	form/DayOfWeekSelector.js			\
+	form/BackupModeSelector.js			\
+	form/ScsiHwSelector.js				\
+	form/FirewallPolicySelector.js			\
+	form/QemuBiosSelector.js			\
+	dc/Tasks.js					\
+	dc/Log.js					\
+	panel/StatusPanel.js				\
+	panel/RRDView.js				\
+	panel/RRDChart.js				\
+	panel/InputPanel.js				\
+	window/Edit.js					\
+	window/LoginWindow.js				\
+	window/TaskViewer.js				\
+	window/Wizard.js				\
+	window/NotesEdit.js				\
+	window/Backup.js				\
+	window/Restore.js				\
+	window/SafeDestroy.js				\
+	panel/NotesView.js				\
+	grid/SelectFeature.js				\
+	grid/ObjectGrid.js				\
+	grid/PendingObjectGrid.js			\
+	grid/ResourceGrid.js				\
+	grid/PoolMembers.js				\
+	grid/FirewallRules.js				\
+	grid/FirewallAliases.js				\
+	grid/FirewallOptions.js				\
+	tree/ResourceTree.js				\
+	panel/IPSet.js					\
+	panel/ConfigPanel.js				\
+	panel/SubConfigPanel.js				\
+	grid/BackupView.js				\
+	panel/LogView.js				\
+	panel/Firewall.js				\
+	ceph/Pool.js					\
+	ceph/OSD.js					\
+	ceph/Disks.js					\
+	ceph/Monitor.js					\
+	ceph/Crush.js					\
+	ceph/Status.js					\
+	ceph/Config.js					\
+	node/DNSEdit.js					\
+	node/DNSView.js					\
+	node/TimeView.js				\
+	node/TimeEdit.js				\
+	node/StatusView.js				\
+	node/Summary.js					\
+	node/ServiceView.js				\
+	node/NetworkEdit.js				\
+	node/NetworkView.js				\
+	node/Tasks.js					\
+	node/Subscription.js				\
+	node/APT.js					\
+	node/Config.js					\
+	qemu/StatusView.js				\
+	window/Migrate.js				\
+	window/MigrateAll.js				\
+	qemu/Monitor.js					\
+	qemu/Summary.js					\
+	qemu/OSTypeEdit.js				\
+	qemu/ProcessorEdit.js				\
+	qemu/BootOrderEdit.js				\
+	qemu/MemoryEdit.js				\
+	qemu/NetworkEdit.js				\
+	qemu/Smbios1Edit.js				\
+	qemu/CDEdit.js					\
+	qemu/HDEdit.js					\
+	qemu/HDResize.js				\
+	qemu/HDMove.js					\
+	qemu/HDThrottle.js				\
+	qemu/CPUOptions.js				\
+	qemu/DisplayEdit.js				\
+	qemu/KeyboardEdit.js				\
+	qemu/HardwareView.js				\
+	qemu/StartupEdit.js				\
+	qemu/ScsiHwEdit.js				\
+	qemu/QemuBiosEdit.js				\
+	qemu/Options.js					\
+	qemu/Snapshot.js				\
+	qemu/Clone.js					\
+	qemu/SnapshotTree.js				\
+	qemu/Config.js					\
+	qemu/CreateWizard.js				\
+	lxc/StatusView.js				\
+	lxc/Summary.js					\
+	lxc/Network.js					\
+	lxc/Resources.js				\
+	lxc/Options.js					\
+	lxc/DNS.js					\
+	lxc/Config.js					\
+	lxc/CreateWizard.js				\
+	lxc/SnapshotTree.js				\
+	lxc/Snapshot.js					\
+	lxc/ResourceEdit.js				\
+	lxc/MPResize.js					\
+	pool/StatusView.js				\
+	pool/Summary.js					\
+	pool/Config.js					\
+	storage/ContentView.js				\
+	storage/StatusView.js				\
+	storage/Summary.js				\
+	storage/Browser.js				\
+	storage/DirEdit.js				\
+	storage/NFSEdit.js				\
+	storage/GlusterFsEdit.js			\
+	storage/IScsiEdit.js				\
+	storage/LVMEdit.js				\
+	storage/LvmThinEdit.js				\
+	storage/RBDEdit.js				\
+	storage/SheepdogEdit.js				\
+	storage/ZFSEdit.js				\
+	storage/ZFSPoolEdit.js				\
+	ha/StatusView.js				\
+	ha/GroupSelector.js				\
+	ha/ResourceEdit.js				\
+	ha/Resources.js					\
+	ha/GroupEdit.js					\
+	ha/Groups.js					\
+	ha/Fencing.js					\
+	ha/Config.js					\
+	dc/Summary.js					\
+	dc/OptionView.js				\
+	dc/StorageView.js				\
+	dc/UserEdit.js					\
+	dc/UserView.js					\
+	dc/PoolView.js					\
+	dc/PoolEdit.js					\
+	dc/GroupView.js					\
+	dc/GroupEdit.js					\
+	dc/RoleView.js					\
+	dc/ACLView.js					\
+	dc/AuthView.js					\
+	dc/AuthEdit.js					\
+	dc/Backup.js					\
+	dc/Support.js					\
+	dc/SecurityGroups.js				\
+	dc/Config.js					\
+	Workspace.js
+
+lint: ${JSSRC}
+	jslint ${JSSRC} 
+
+pvemanagerlib.js: ${JSSRC}
+	cat ${JSSRC} >$@.tmp
+	mv $@.tmp $@
+
+all: pvemanagerlib.js
+
+.PHONY: install 
+install: pvemanagerlib.js
+	install -d ${WWWBASEDIR}/root
+	install -d ${WWWEXT6DIR}
+	install -m 0644 -o www-data -g www-data pvemanagerlib.js ${WWWEXT6DIR}
+
+.PHONY: distclean
+distclean: clean
+
+.PHONY: clean
+clean:
+	find . -name '*~' -exec rm {} ';'	
+	rm -rf pvemanagerlib.js
+
+
+
