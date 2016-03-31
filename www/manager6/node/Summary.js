@@ -91,48 +91,56 @@ Ext.define('PVE.node.Summary', {
 	    rstore: rstore
 	});
 
-	var rrdurl = "/api2/png/nodes/" + nodename + "/rrd";
-  
 	var version_btn = new Ext.Button({
 	    text: gettext('Package versions'),
 	    handler: function(){
-		PVE.Utils.checked_command(function() { me.showVersions(); });
+		PVE.Utils.checked_command(function() { d675f09dme.showVersions(); });
 	    }
+	});
+
+	var rrdstore = Ext.create('PVE.data.RRDStore', {
+	    rrdurl: "/api2/json/nodes/" + nodename + "/rrddata",
 	});
 
 	Ext.apply(me, {
 	    tbar: [version_btn, '->', { xtype: 'pveRRDTypeSelector' } ],
-	    items: [
-		statusview,
-		{
-		    xtype: 'pveRRDView',
-		    title: gettext('CPU usage'),
-		    datasource: 'cpu,iowait',
-		    rrdurl: rrdurl
-		},
-		{
-		    xtype: 'pveRRDView',
-		    title: gettext('Server load'),
-		    datasource: 'loadavg',
-		    rrdurl: rrdurl
-		},
-		{
-		    xtype: 'pveRRDView',
-		    title: gettext('Memory usage'),
-		    datasource: 'memtotal,memused',
-		    rrdurl: rrdurl
-		},
-		{
-		    xtype: 'pveRRDView',
-		    title: gettext('Network traffic'),
-		    datasource: 'netin,netout',
-		    rrdurl: rrdurl
-		}
-	    ],
+	    plugins: {
+		ptype: 'lazyitems',
+		items: [
+		    statusview,
+		    {
+			xtype: 'pveRRDChart',
+			title: gettext('CPU usage'),
+			fields: ['cpu','iowait'],
+			fieldTitles: [gettext('CPU usage'), gettext('IO delay')],
+			store: rrdstore
+		    },
+		    {
+			xtype: 'pveRRDChart',
+			title: gettext('Server load'),
+			fields: ['loadavg'],
+			fieldTitles: [gettext('Load average')],
+			store: rrdstore
+		    },
+		    {
+			xtype: 'pveRRDChart',
+			title: gettext('Memory usage'),
+			fields: ['memtotal','memused'],
+			fieldTitles: [gettext('Total'), gettext('RAM usage')],
+			store: rrdstore
+		    },
+		    {
+			xtype: 'pveRRDChart',
+			title: gettext('Network traffic'),
+			fields: ['netin','netout'],
+			store: rrdstore
+		    },
+		],
+	    },
 	    listeners: {
-		show: rstore.startUpdate,
-		hide: rstore.stopUpdate,
-		destroy: rstore.stopUpdate
+		activate: function() { rstore.startUpdate(); rrdstore.startUpdate(); },
+		hide: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); },
+		destroy: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); },
 	    }
 	});
 
