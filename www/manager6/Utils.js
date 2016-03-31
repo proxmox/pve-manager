@@ -106,7 +106,7 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     render_hotplug_features: function (value) {
- 	var fa = [];
+	var fa = [];
 
 	if (!value || (value === '0')) {
 	    return gettext('disabled');
@@ -1093,6 +1093,7 @@ Ext.define('PVE.Utils', { statics: {
 	    }
 
 	    var msg;
+	    /*jslint nomen: true */
 	    var operation = request._operation;
 	    var error = operation.getError();
 	    if (error.statusText) {
