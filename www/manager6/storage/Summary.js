@@ -4,7 +4,7 @@ Ext.define('PVE.storage.Summary', {
     scrollable: true,
     bodyPadding: 10,
     defaults: {
-	style: 'padding-top:10px',
+	style: {'padding-top':'10px'},
 	width: 800
     },
     tbar: [
@@ -33,24 +33,27 @@ Ext.define('PVE.storage.Summary', {
 
 	var rstore = statusview.rstore;
 
-	var rrdurl = "/api2/png/nodes/" + nodename + "/storage/" + storage + "/rrd";
+	var rrdstore = Ext.create('PVE.data.RRDStore', {
+	    rrdurl:  "/api2/json/nodes/" + nodename + "/storage/" + storage + "/rrddata",
+	});
 
 	Ext.apply(me, {
 	    items: [
 		statusview,
 		{
-		    xtype: 'pveRRDView',
+		    xtype: 'pveRRDChart',
 		    title: gettext('Usage'),
-		    pveSelNode: me.pveSelNode,
-		    datasource: 'total,used',
-		    rrdurl: rrdurl
+		    fields: ['total','used'],
+		    fieldTitles: ['Total Size', 'Used Size'],
+		    store: rrdstore
 		}
-	    ]
+	    ],
+	    listeners: {
+		activate: function() { rstore.startUpdate(); rrdstore.startUpdate(); },
+		hide: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); },
+		destroy: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); },
+	    }
 	});
-
-	me.on('activate', rstore.startUpdate);
-	me.on('hide', rstore.stopUpdate);
-	me.on('destroy', rstore.stopUpdate);
 
 	me.callParent();
     }

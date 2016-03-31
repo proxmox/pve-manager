@@ -57,6 +57,11 @@ Ext.define('PVE.data.RRDStore', {
 	'diskread',
 	'diskwrite',
 	'maxdisk',
+
+	// missing storage fields
+	'used',
+	'total',
+
 	// for time we generate unix timestamps, javascript uses milliseconds instead of seconds
 	{ name:'time', convert: function(value) { return value*1000; }},
     ],

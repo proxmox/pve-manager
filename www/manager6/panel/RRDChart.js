@@ -37,7 +37,9 @@ Ext.define('PVE.widget.RRDChart', {
 	'maxmem',
 	'mem',
 	'disk',
-	'maxdisk'
+	'maxdisk',
+	'total',
+	'used',
     ],
     bytespersArr: [
 	'netin',
