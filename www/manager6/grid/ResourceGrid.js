@@ -2,7 +2,7 @@ Ext.define('PVE.grid.ResourceGrid', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveResourceGrid'],
 
-    title: gettext('Search'),
+    border: false,
 
     initComponent : function() {
 	var me = this;
