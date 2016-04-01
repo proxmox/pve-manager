@@ -294,7 +294,7 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     language_array: function() {
-	var data = [['', PVE.Utils.render_language('')]];
+	var data = [['__default__', PVE.Utils.render_language('')]];
 	Ext.Object.each(PVE.Utils.language_map, function(key, value) {
 	    data.push([key, PVE.Utils.render_language(value)]);
 	});
