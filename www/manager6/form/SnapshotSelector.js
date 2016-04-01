@@ -2,6 +2,9 @@ Ext.define('PVE.form.SnapshotSelector', {
     extend: 'PVE.form.ComboGrid',
     alias: ['widget.PVE.form.SnapshotSelector'],
 
+    valueField: 'name',
+    displayField: 'name',
+
     loadStore: function(nodename, vmid) {
 	var me = this;
 
@@ -43,8 +46,6 @@ Ext.define('PVE.form.SnapshotSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    valueField: 'name',
-	    displayField: 'name',
             listConfig: {
 		columns: [
 		    {

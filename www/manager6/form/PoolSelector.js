@@ -3,6 +3,8 @@ Ext.define('PVE.form.PoolSelector', {
     alias: ['widget.pvePoolSelector'],
 
     allowBlank: false,
+    valueField: 'poolid',
+    displayField: 'poolid',
 
     initComponent: function() {
 	var me = this;
@@ -14,8 +16,6 @@ Ext.define('PVE.form.PoolSelector', {
 	Ext.apply(me, {
 	    store: store,
 	    autoSelect: false,
-	    valueField: 'poolid',
-	    displayField: 'poolid',
             listConfig: {
 		columns: [
 		    {
