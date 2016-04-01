@@ -77,7 +77,7 @@ Ext.define('PVE.panel.Firewall', {
 
 	if (me.fwtype !== 'dc') {
 	    items.push({
-		title: 'Log',
+		title: gettext('Log'),
 		itemId: 'fwlog',
 		xtype: 'pveLogView',
 		url: '/api2/extjs' + me.base_url + '/log'
