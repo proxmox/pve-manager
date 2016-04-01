@@ -8,6 +8,9 @@ Ext.define('PVE.form.IPRefSelector', {
 
     ref_type: undefined, // undefined = any [undefined, 'ipset' or 'alias']
 
+    valueField: 'ref',
+    displayField: 'ref',
+
     initComponent: function() {
 	var me = this;
 
@@ -70,8 +73,6 @@ Ext.define('PVE.form.IPRefSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    valueField: 'ref',
-	    displayField: 'ref',
             listConfig: { columns: columns }
 	});
 
