@@ -99,6 +99,8 @@ Ext.define('PVE.window.LoginWindow', {
 
     title: gettext('Proxmox VE Login'),
 
+    defaultFocus: 'usernameField',
+
     items: [{
 	xtype: 'form',
 	layout: 'form',
@@ -115,6 +117,7 @@ Ext.define('PVE.window.LoginWindow', {
 		xtype: 'textfield',
 		fieldLabel: gettext('User name'),
 		name: 'username',
+		itemId: 'usernameField',
 		reference: 'usernameField',
 		blankText: gettext("Enter your user name")
 	    },
