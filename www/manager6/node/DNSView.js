@@ -17,7 +17,7 @@ Ext.define('PVE.node.DNSView', {
 	    win.show();
 	};
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    url: "/api2/json/nodes/" + nodename + "/dns",
 	    cwidth1: 130,
 	    interval: 1000,
