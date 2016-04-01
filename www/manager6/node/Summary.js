@@ -94,7 +94,7 @@ Ext.define('PVE.node.Summary', {
 	var version_btn = new Ext.Button({
 	    text: gettext('Package versions'),
 	    handler: function(){
-		PVE.Utils.checked_command(function() { d675f09dme.showVersions(); });
+		PVE.Utils.checked_command(function() { me.showVersions(); });
 	    }
 	});
 
