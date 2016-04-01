@@ -41,7 +41,7 @@ Ext.define('PVE.qemu.Config', {
 	var resumeBtn = Ext.create('Ext.Button', {
 	    text: gettext('Resume'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
-	    visible: false,
+	    hidden: true,
 	    handler: function() {
 		vm_command('resume');
 	    }
