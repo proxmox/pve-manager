@@ -100,7 +100,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	    name: 'cdimage',
 	    nodename: me.nodename,
 	    storageContent: 'iso',
-	    fieldLabel: gettext('ISO Image'),
+	    fieldLabel: gettext('ISO image'),
 	    labelAlign: 'right',
 	    allowBlank: false
 	});
