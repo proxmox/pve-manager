@@ -7,6 +7,7 @@ JSSRC= 				                 	\
 	StateProvider.js				\
 	button/Button.js				\
 	button/ConsoleButton.js				\
+	button/Split.js					\
 	qemu/SendKeyMenu.js				\
 	qemu/CmdMenu.js					\
 	qemu/TemplateMenu.js				\
