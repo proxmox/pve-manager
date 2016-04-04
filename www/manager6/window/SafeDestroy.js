@@ -12,6 +12,7 @@ Ext.define('PVE.window.SafeDestroy', {
     bodyPadding: 10,
     width: 450,
     layout: 'hbox',
+    defaultFocus: 'confirmField',
 
     viewModel: { type: 'default' },
 
@@ -52,6 +53,12 @@ Ext.define('PVE.window.SafeDestroy', {
 			removeButton.enable();
 		    } else {
 			removeButton.disable();
+		    }
+		},
+		specialkey: function (field, event) {
+		    var removeButton = this.lookupReference('removeButton');
+		    if (!removeButton.isDisabled() && event.getKey() == event.ENTER) {
+			removeButton.fireEvent('click', removeButton, event);
 		    }
 		}
 	    },
@@ -96,6 +103,7 @@ Ext.define('PVE.window.SafeDestroy', {
 		},
 		{
 		    reference: 'confirmField',
+		    itemId: 'confirmField',
 		    xtype: 'numberfield',
 		    name: 'confirm',
 		    labelWidth: 300,
