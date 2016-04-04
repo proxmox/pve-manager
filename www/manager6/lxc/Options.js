@@ -119,12 +119,12 @@ Ext.define('PVE.lxc.Options', {
 		} : undefined
 	    },
             protection: {
-                header: gettext('CT protection'),
+                header: gettext('Protection'),
                 defaultValue: false,
                 renderer: PVE.Utils.format_boolean,
                 editor: caps.vms['VM.Config.Options'] ? {
                     xtype: 'pveWindowEdit',
-                    subject: gettext('CT protection'),
+                    subject: gettext('Protection'),
                     items: {
                         xtype: 'pvecheckbox',
                         name: 'protection',

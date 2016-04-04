@@ -58,7 +58,7 @@ Ext.define('PVE.qemu.Config', {
 	var stopBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Stop'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
-	    confirmMsg: Ext.String.format(gettext("Do you really want to stop VM {0}?"), vmid),
+	    confirmMsg: PVE.Utils.format_task_description('qmstop', vmid),
 	    handler: function() {
 		vm_command("stop", { timeout: 30 });
 	    }
@@ -80,7 +80,7 @@ Ext.define('PVE.qemu.Config', {
 	var resetBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Reset'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
-	    confirmMsg: Ext.String.format(gettext("Do you really want to reset VM {0}?"), vmid),
+	    confirmMsg: PVE.Utils.format_task_description('qmreset', vmid),
 	    handler: function() {
 		vm_command("reset");
 	    }
@@ -89,7 +89,7 @@ Ext.define('PVE.qemu.Config', {
 	var shutdownBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
-	    confirmMsg: Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), vmid),
+	    confirmMsg: PVE.Utils.format_task_description('qmshutdown', vmid),
 	    handler: function() {
 		vm_command('shutdown');
 	    }

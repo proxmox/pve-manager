@@ -6,7 +6,7 @@ Ext.define('PVE.window.SafeDestroy', {
     extend: 'Ext.window.Window',
     alias: 'widget.pveSafeDestroy',
 
-    title: gettext('Are you sure?'),
+    title: gettext('Confirm'),
     modal: true,
     buttonAlign: 'center',
     bodyPadding: 10,
@@ -91,7 +91,8 @@ Ext.define('PVE.window.SafeDestroy', {
 	    items: [
 		{
 		    xtype: 'component',
-		    bind: gettext('Are you sure you want to remove {item.type} {item.id}? This will permanently erase all data.')
+		    bind: gettext('Are you sure you want to remove {item.type} {item.id}?') + ' ' +
+			gettext('This will permanently erase all data.')
 		},
 		{
 		    reference: 'confirmField',

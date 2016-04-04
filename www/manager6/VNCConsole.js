@@ -260,8 +260,8 @@ Ext.define('PVE.KVMConsole', {
 	    },
 	    {
 		text: gettext('Shutdown'),
-		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), me.vmid);
+		handler: function() {		    
+		    var msg = PVE.Utils.format_task_description('qmshutdown', me.vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -273,7 +273,7 @@ Ext.define('PVE.KVMConsole', {
 	    {
 		text: gettext('Stop'),
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to stop VM {0}?"), me.vmid);
+		    var msg = PVE.Utils.format_task_description('qmstop', me.vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -290,7 +290,7 @@ Ext.define('PVE.KVMConsole', {
 	    {
 		text: gettext('Reset'),
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to reset VM {0}?"), me.vmid);
+		    var msg = PVE.Utils.format_task_description('qmreset', me.vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -302,7 +302,7 @@ Ext.define('PVE.KVMConsole', {
 	    {
 		text: gettext('Suspend'),
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to suspend VM {0}?"), me.vmid);
+		    var msg = PVE.Utils.format_task_description('qmsuspend', me.vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -387,7 +387,7 @@ Ext.define('PVE.LxcConsole', {
 	    {
 		text: gettext('Shutdown'),
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), me.vmid);
+		    var msg = PVE.Utils.format_task_description('vzshutdown', me.vmid);		    
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -399,7 +399,7 @@ Ext.define('PVE.LxcConsole', {
 	    {
 		text: gettext('Stop'),
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to stop VM {0}?"), me.vmid);
+		    var msg = PVE.Utils.format_task_description('vzstop', me.vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;

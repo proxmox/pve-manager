@@ -146,7 +146,7 @@ Ext.define('PVE.grid.BackupView', {
 	    confirmMsg: function(rec) {
 		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
 					    "'" + rec.data.volid + "'");
-		msg += " " + gettext('This will permanently erase all image data.');
+		msg += " " + gettext('This will permanently erase all data.');
 
 		return msg;
 	    },

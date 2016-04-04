@@ -153,7 +153,7 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 	    me.column1.push({
 		xtype: 'pveBaseVGSelector',
 		name: 'vgname',
-		fieldLabel: gettext('Volume Group'),
+		fieldLabel: gettext('Volume group'),
 		listeners: {
 		    change: function(f, value) {
 			if (me.create) {

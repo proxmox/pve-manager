@@ -88,20 +88,22 @@ Ext.define('PVE.window.Restore', {
 		};
 
 		var url;
+		var msg;
 		if (me.vmtype === 'lxc') {
 		    url = '/nodes/' + me.nodename + '/lxc';
 		    params.ostemplate = me.volid;
 		    params.restore = 1;
+		    msg = PVE.Utils.format_task_description('vzrestore', params.vmid);
 		} else if (me.vmtype === 'qemu') {
 		    url = '/nodes/' + me.nodename + '/qemu';
 		    params.archive = me.volid;
+		    msg = PVE.Utils.format_task_description('qmrestore', params.vmid);
 		} else {
 		    throw 'unknown VM type';
 		}
 
 		if (me.vmid) {
-		    var msg = gettext('Are you sure you want to restore this VM?') + ' ' +
-			gettext('This will permanently erase current VM data.');
+		    msg += '. ' + gettext('This will permanently erase current VM data.');
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;

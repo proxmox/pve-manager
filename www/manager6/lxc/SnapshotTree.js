@@ -145,8 +145,8 @@ Ext.define('PVE.lxc.SnapshotTree', {
 	    selModel: sm,
 	    enableFn: valid_snapshot_rollback,
 	    confirmMsg: function(rec) {
-		var msg = Ext.String.format(gettext('Are you sure you want to rollback to snapshot {0}'),
-					    "'" + rec.data.name + "'");
+		return PVE.Utils.format_task_description('vzrollback', me.vmid) +
+		    " '" +  rec.data.name + "'";
 		return msg;
 	    },
 	    handler: function(btn, event) {

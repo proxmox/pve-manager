@@ -263,12 +263,12 @@ Ext.define('PVE.qemu.Options', {
 		} : undefined
 	    },
 	    protection: {
-		header: gettext('VM protection'),
+		header: gettext('Protection'),
 		defaultValue: false,
 		renderer: PVE.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: gettext('VM protection'),
+		    subject: gettext('Protection'),
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'protection',

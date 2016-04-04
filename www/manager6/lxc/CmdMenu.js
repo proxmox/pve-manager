@@ -53,7 +53,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		text: gettext('Suspend'),
 		icon: '/pve2/images/forward.png',
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to suspend {0}?"), 'CT ' + vmid);
+		    var msg = PVE.Utils.format_task_description('vzsuspend', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -74,7 +74,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		text: gettext('Shutdown'),
 		icon: '/pve2/images/stop.png',
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to shutdown {0}?"), 'CT ' + vmid);
+		    var msg = PVE.Utils.format_task_description('vzshutdown', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -88,7 +88,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		text: gettext('Stop'),
 		icon: '/pve2/images/gtk-stop.png',
 		handler: function() {
-		    var msg = Ext.String.format(gettext("Do you really want to stop {0}?"), 'CT ' + vmid);
+		    var msg = PVE.Utils.format_task_description('vzstop', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -102,7 +102,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 //		text: gettext('Convert to template'),
 //		icon: '/pve2/images/forward.png',
 //		handler: function() {
-//		    var msg = Ext.String.format(gettext("Do you really want to convert {0} into a template?"), 'CT ' + vmid);
+//    		    var msg = PVE.Utils.format_task_description('vztemplate', vmid);
 //		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 //			if (btn !== 'yes') {
 //			    return;

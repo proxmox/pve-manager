@@ -373,7 +373,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
 					    "'" + me.renderKey(rec.data.key, {}, rec) + "'");
 		if (rec.data.key.match(/^unused\d+$/)) {
-		    msg += " " + gettext('This will permanently erase all image data.');
+		    msg += " " + gettext('This will permanently erase all data.');
 		}
 
 		return msg;

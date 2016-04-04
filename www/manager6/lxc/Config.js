@@ -58,7 +58,7 @@ Ext.define('PVE.lxc.Config', {
 	var stopBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Stop'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
-	    confirmMsg: Ext.String.format(gettext("Do you really want to stop VM {0}?"), vmid),
+	    confirmMsg: PVE.Utils.format_task_description('vzstop', vmid),
 	    handler: function() {
 		vm_command("stop");
 	    }
@@ -67,7 +67,7 @@ Ext.define('PVE.lxc.Config', {
 	var shutdownBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
-	    confirmMsg: Ext.String.format(gettext("Do you really want to shutdown VM {0}?"), vmid),
+	    confirmMsg: PVE.Utils.format_task_description('vzshutdown', vmid),
 	    handler: function() {
 		vm_command('shutdown');
 	    }

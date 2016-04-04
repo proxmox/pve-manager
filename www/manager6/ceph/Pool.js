@@ -167,7 +167,7 @@ Ext.define('PVE.node.CephPoolList', {
 	    confirmMsg: function(rec) {
 		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
 					    "'" + rec.data.pool_name + "'");
-		msg += " " + gettext('This will permanently erase all image data.');
+		msg += " " + gettext('This will permanently erase all data.');
 
 		return msg;
 	    },

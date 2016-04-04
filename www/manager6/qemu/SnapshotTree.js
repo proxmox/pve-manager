@@ -145,9 +145,8 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    selModel: sm,
 	    enableFn: valid_snapshot_rollback,
 	    confirmMsg: function(rec) {
-		var msg = Ext.String.format(gettext('Are you sure you want to rollback to snapshot {0}'),
-					    "'" + rec.data.name + "'");
-		return msg;
+		return PVE.Utils.format_task_description('qmrollback', me.vmid) +
+		    " '" +  rec.data.name + "'";
 	    },
 	    handler: function(btn, event) {
 		var rec = sm.getSelection()[0];
