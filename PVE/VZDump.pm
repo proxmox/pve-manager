@@ -391,91 +391,45 @@ sub sendmail {
     my $hostname = `hostname -f` || PVE::INotify::nodename();
     chomp $hostname;
 
-    my $boundary = "----_=_NextPart_001_".int(time).$$;
-
-    my $rcvrarg = '';
-    foreach my $r (@$mailto) {
-	$rcvrarg .= " '$r'";
-    }
-    my $dcconf = PVE::Cluster::cfs_read_file('datacenter.cfg');
-    my $mailfrom = $dcconf->{email_from} || "root";
-
-    open (MAIL,"|sendmail -B 8BITMIME -f $mailfrom $rcvrarg") || 
-	die "unable to open 'sendmail' - $!";
-
-    my $rcvrtxt = join (', ', @$mailto);
-
-    print MAIL "Content-Type: multipart/alternative;\n";
-    print MAIL "\tboundary=\"$boundary\"\n";
-    print MAIL "MIME-Version: 1.0\n";
-
-    print MAIL "FROM: vzdump backup tool <$mailfrom>\n";
-    print MAIL "TO: $rcvrtxt\n";
-    print MAIL "SUBJECT: vzdump backup status ($hostname) : $stat\n";
-    print MAIL "\n";
-    print MAIL "This is a multi-part message in MIME format.\n\n";
-    print MAIL "--$boundary\n";
-
-    print MAIL "Content-Type: text/plain;\n";
-    print MAIL "\tcharset=\"UTF8\"\n";
-    print MAIL "Content-Transfer-Encoding: 8bit\n";
-    print MAIL "\n";
-
     # text part
-
-    my $fill = '  '; # Avoid The Remove Extra Line Breaks Issue (MS Outlook)
-
-    print MAIL sprintf ("${fill}%-10s %-6s %10s %10s  %s\n", qw(VMID STATUS TIME SIZE FILENAME));
+    my $text = sprintf ("%-10s %-6s %10s %10s  %s\n", qw(VMID STATUS TIME SIZE FILENAME));
     foreach my $task (@$tasklist) {
 	my $vmid = $task->{vmid};
 	if  ($task->{state} eq 'ok') {
 
-	    print MAIL sprintf ("${fill}%-10s %-6s %10s %10s  %s\n", $vmid, 
-				$task->{state}, 
+	    $text .= sprintf ("%-10s %-6s %10s %10s  %s\n", $vmid,
+				$task->{state},
 				format_time($task->{backuptime}),
 				format_size ($task->{size}),
 				$task->{tarfile});
 	} else {
-	    print MAIL sprintf ("${fill}%-10s %-6s %10s %8.2fMB  %s\n", $vmid, 
-				$task->{state}, 
+	    $text .= sprintf ("%-10s %-6s %10s %8.2fMB  %s\n", $vmid,
+				$task->{state},
 				format_time($task->{backuptime}),
 				0, '-');
 	}
     }
-    print MAIL "${fill}\n";
-    print MAIL "${fill}Detailed backup logs:\n";
-    print MAIL "${fill}\n";
-    print MAIL "$fill$cmdline\n";
-    print MAIL "${fill}\n";
+
+    $text .= "Detailed backup logs:\n\n";
+    $text .= "$cmdline\n\n";
 
     foreach my $task (@$tasklist) {
 	my $vmid = $task->{vmid};
 	my $log = $task->{tmplog};
 	if (!$log) {
-	    print MAIL "${fill}$vmid: no log available\n\n";
+	    $text .= "$vmid: no log available\n\n";
 	    next;
 	}
 	open (TMP, "$log");
-	while (my $line = <TMP>) { print MAIL encode8bit ("${fill}$vmid: $line"); }
+	while (my $line = <TMP>) { $text .= encode8bit ("$vmid: $line"); }
 	close (TMP);
-	print MAIL "${fill}\n";
+	$text .= "\n";
     }
 
-    # end text part
-    print MAIL "\n--$boundary\n";
-
-    print MAIL "Content-Type: text/html;\n";
-    print MAIL "\tcharset=\"UTF8\"\n";
-    print MAIL "Content-Transfer-Encoding: 8bit\n";
-    print MAIL "\n";
-
     # html part
-
-    print MAIL "<html><body>\n";
-
-    print MAIL "<table border=1 cellpadding=3>\n";
-
-    print MAIL "<tr><td>VMID<td>NAME<td>STATUS<td>TIME<td>SIZE<td>FILENAME</tr>\n";
+    my $html = "<html><body>\n";
+    $html .= "<table border=1 cellpadding=3>\n";
+    $html .= "<tr><td>VMID<td>NAME<td>STATUS<td>TIME<td>SIZE<td>FILENAME</tr>\n";
 
     my $ssize = 0;
 
@@ -487,56 +441,54 @@ sub sendmail {
 
 	    $ssize += $task->{size};
 
-	    print MAIL sprintf ("<tr><td>%s<td>%s<td>OK<td>%s<td align=right>%s<td>%s</tr>\n", 
+	    $html .= sprintf ("<tr><td>%s<td>%s<td>OK<td>%s<td align=right>%s<td>%s</tr>\n",
 				$vmid, $name,
 				format_time($task->{backuptime}),
 				format_size ($task->{size}),
 				escape_html ($task->{tarfile}));
 	} else {
-	    print MAIL sprintf ("<tr><td>%s<td>%s<td><font color=red>FAILED<td>%s<td colspan=2>%s</tr>\n",
- 
-				$vmid, $name, format_time($task->{backuptime}), 
+	    $html .= sprintf ("<tr><td>%s<td>%s<td><font color=red>FAILED<td>%s<td colspan=2>%s</tr>\n",
+				$vmid, $name, format_time($task->{backuptime}),
 				escape_html ($task->{msg}));
 	}
     }
 
-    print MAIL sprintf ("<tr><td align=left colspan=3>TOTAL<td>%s<td>%s<td></tr>",
+    $html .= sprintf ("<tr><td align=left colspan=3>TOTAL<td>%s<td>%s<td></tr>",
  format_time ($totaltime), format_size ($ssize));
 
-    print MAIL "</table><br><br>\n";
-    print MAIL "Detailed backup logs:<br>\n";
-    print MAIL "<br>\n";
-    print MAIL "<pre>\n";
-    print MAIL escape_html($cmdline) . "\n";
-    print MAIL "\n";
+    $html .= "</table><br><br>\n";
+    $html .= "Detailed backup logs:<br /><br />\n";
+    $html .= "<pre>\n";
+    $html .= escape_html($cmdline) . "\n\n";
 
     foreach my $task (@$tasklist) {
 	my $vmid = $task->{vmid};
 	my $log = $task->{tmplog};
 	if (!$log) {
-	    print MAIL "$vmid: no log available\n\n";
+	    $html .= "$vmid: no log available\n\n";
 	    next;
 	}
 	open (TMP, "$log");
 	while (my $line = <TMP>) {
 	    if ($line =~ m/^\S+\s\d+\s+\d+:\d+:\d+\s+(ERROR|WARN):/) {
-		print MAIL encode8bit ("$vmid: <font color=red>". 
-				       escape_html ($line) . "</font>"); 
+		$html .= encode8bit ("$vmid: <font color=red>".
+				       escape_html ($line) . "</font>");
 	    } else {
-		print MAIL encode8bit ("$vmid: " . escape_html ($line)); 
+		$html .= encode8bit ("$vmid: " . escape_html ($line));
 	    }
 	}
 	close (TMP);
-	print MAIL "\n";
+	$html .= "\n";
     }
-    print MAIL "</pre>\n";
-
-    print MAIL "</body></html>\n";
-
+    $html .= "</pre></body></html>\n";
     # end html part
-    print MAIL "\n--$boundary--\n";
 
-    close(MAIL);
+    my $subject = "vzdump backup status ($hostname) : $stat";
+
+    my $dcconf = PVE::Cluster::cfs_read_file('datacenter.cfg');
+    my $mailfrom = $dcconf->{email_from} || "root";
+
+    PVE::Tools::sendmail($mailto, $subject, $text, $html, $mailfrom, "vzdump backup tool");
 };
 
 sub new {
