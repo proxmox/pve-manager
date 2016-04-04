@@ -553,6 +553,8 @@ Ext.define('PVE.Utils', { statics: {
 	vzrestore: ['CT', gettext('Restore') ],
 	vzdestroy: ['CT', gettext('Destroy') ],
 	vzmigrate: [ 'CT', gettext('Migrate') ],
+	vzclone: [ 'CT', gettext('Clone') ],
+	vztemplate: [ 'CT', gettext('Convert to template') ],
 	vzstart: ['CT', gettext('Start') ],
 	vzstop: ['CT', gettext('Stop') ],
 	vzmount: ['CT', gettext('Mount') ],
