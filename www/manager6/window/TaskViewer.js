@@ -49,7 +49,7 @@ Ext.define('PVE.window.TaskProgress', {
 
 	var descr = PVE.Utils.format_task_description(task.type, task.id);
 
-	Ext.applyIf(me, {
+	Ext.apply(me, {
 	    title: "Task: " + descr,
 	    width: 300,
 	    layout: 'auto',
