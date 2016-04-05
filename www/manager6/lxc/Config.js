@@ -55,21 +55,25 @@ Ext.define('PVE.lxc.Config', {
 	    }
 	});
 
-	var stopBtn = Ext.create('PVE.button.Button', {
+	var stopBtn = Ext.create('Ext.menu.Item',{
 	    text: gettext('Stop'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
 	    confirmMsg: PVE.Utils.format_task_description('vzstop', vmid),
+	    dangerous: true,
 	    handler: function() {
 		vm_command("stop");
 	    }
 	});
 
-	var shutdownBtn = Ext.create('PVE.button.Button', {
+	var shutdownBtn = Ext.create('PVE.button.Split', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
 	    confirmMsg: PVE.Utils.format_task_description('vzshutdown', vmid),
 	    handler: function() {
 		vm_command('shutdown');
+	    },
+	    menu: {
+		items:[stopBtn]
 	    }
 	});
 
@@ -112,7 +116,7 @@ Ext.define('PVE.lxc.Config', {
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Container {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'lxctab',
-	    tbar: [ startBtn, shutdownBtn, umountBtn, stopBtn, removeBtn,
+	    tbar: [ startBtn, shutdownBtn, umountBtn, removeBtn,
 		    migrateBtn, consoleBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
@@ -228,11 +232,11 @@ Ext.define('PVE.lxc.Config', {
 	    if (status === 'mounted') {
 		umountBtn.setDisabled(false);
 		umountBtn.setVisible(true);
-		stopBtn.setVisible(false);
+		stopBtn.setDisabled(true);
 	    } else {
 		umountBtn.setDisabled(true);
 		umountBtn.setVisible(false);
-		stopBtn.setVisible(true);
+		stopBtn.setDisabled(false);
 	    }
 	});
 

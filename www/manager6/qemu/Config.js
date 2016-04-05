@@ -55,15 +55,6 @@ Ext.define('PVE.qemu.Config', {
 	    }
 	});
 
-	var stopBtn = Ext.create('PVE.button.Button', {
-	    text: gettext('Stop'),
-	    disabled: !caps.vms['VM.PowerMgmt'],
-	    confirmMsg: PVE.Utils.format_task_description('qmstop', vmid),
-	    handler: function() {
-		vm_command("stop", { timeout: 30 });
-	    }
-	});
-
 	var migrateBtn = Ext.create('Ext.Button', {
 	    text: gettext('Migrate'),
 	    disabled: !caps.vms['VM.Migrate'],
@@ -86,12 +77,23 @@ Ext.define('PVE.qemu.Config', {
 	    }
 	});
 
-	var shutdownBtn = Ext.create('PVE.button.Button', {
+	var shutdownBtn = Ext.create('PVE.button.Split', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
 	    confirmMsg: PVE.Utils.format_task_description('qmshutdown', vmid),
 	    handler: function() {
 		vm_command('shutdown');
+	    },
+	    menu: {
+		items: [{
+		    text: gettext('Stop'),
+		    disabled: !caps.vms['VM.PowerMgmt'],
+		    dangerous: true,
+		    confirmMsg: PVE.Utils.format_task_description('qmstop', vmid),
+		    handler: function() {
+			vm_command("stop", { timeout: 30 });
+		    }
+		}]
 	    }
 	});
 
@@ -121,7 +123,7 @@ Ext.define('PVE.qemu.Config', {
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Virtual Machine {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'kvmtab',
-	    tbar: [ resumeBtn, startBtn, shutdownBtn, stopBtn, resetBtn,
+	    tbar: [ resumeBtn, startBtn, shutdownBtn, resetBtn,
 		    removeBtn, migrateBtn, consoleBtn],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
@@ -241,7 +243,6 @@ Ext.define('PVE.qemu.Config', {
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
 	    resetBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running' || template);
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
-	    stopBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'stopped');
 	    removeBtn.setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
 	    consoleBtn.setDisabled(template);
 	});
