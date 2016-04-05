@@ -14,30 +14,12 @@ Ext.define('PVE.window.SafeDestroy', {
     layout: 'hbox',
     defaultFocus: 'confirmField',
 
-    viewModel: { type: 'default' },
-
     config: {
 	item: {
 	    id: undefined,
 	    type: undefined
 	},
 	url: undefined
-    },
-
-    applyItem: function(item) {
-	var me = this;
-
-	if (!Ext.isDefined(item.id)) {
-	    throw "no ID specified";
-	}
-
-	if (!Ext.isDefined(item.type)) {
-	    throw "no VM type specified";
-	}
-
-	me.getViewModel().set('item', item);
-
-	return item;
     },
 
     controller: {
@@ -98,17 +80,14 @@ Ext.define('PVE.window.SafeDestroy', {
 	    items: [
 		{
 		    xtype: 'component',
-		    bind: gettext('Are you sure you want to remove {item.type} {item.id}?') + ' ' +
-			gettext('This will permanently erase all data.')
+		    reference: 'messageCmp'
 		},
 		{
 		    itemId: 'confirmField',
+		    reference: 'confirmField',
 		    xtype: 'numberfield',
 		    name: 'confirm',
 		    labelWidth: 300,
-		    bind: {
-			fieldLabel: gettext('Please enter the {item.type} ID to confirm'),
-		    },
 		    hideTrigger: true,
 		    allowBlank: false
 		}
@@ -121,5 +100,39 @@ Ext.define('PVE.window.SafeDestroy', {
 	    text: gettext('Remove'),
 	    disabled: true
 	}
-    ]
+    ],
+
+    initComponent : function() {
+	var me = this;
+
+	me.callParent();
+
+	var item = me.getItem();
+
+	if (!Ext.isDefined(item.id)) {
+	    throw "no ID specified";
+	}
+
+	if (!Ext.isDefined(item.type)) {
+	    throw "no VM type specified";
+	}
+
+	var messageCmp = me.lookupReference('messageCmp');
+	var msg;
+
+	if (item.type === 'VM') {
+	    msg = PVE.Utils.format_task_description('qmdestroy', item.id);
+	} else if (item.type === 'CT') {
+	    msg = PVE.Utils.format_task_description('vzdestroy', item.id);
+	} else {
+	    throw "unknown VM type specified";
+	}
+
+	messageCmp.setHtml(msg);
+
+	var confirmField = me.lookupReference('confirmField');
+	msg = gettext('Please enter the ID to confirm') +
+	    ' (' + item.id + ')';
+	confirmField.setFieldLabel(msg);
+    }
 });
