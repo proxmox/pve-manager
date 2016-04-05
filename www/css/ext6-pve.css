@@ -26,7 +26,14 @@
 
 /* adjust horizontal position of menu icons */
 .x-menu-item-icon-default {
-    left: 2px;
+    top: 5px;
+    left: 3px;
+    font-size: 14px;
+}
+
+/* this gives a better placement for the font-awesome icons */
+.x-btn-icon-el-default-toolbar-small {
+    height: 14px;
 }
 
 /* icons for tree/snapshots/menus/etc.. */

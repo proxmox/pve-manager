@@ -15,6 +15,7 @@ sub get_index {
     <title>$nodename - Proxmox Virtual Environment</title>
     <link rel="stylesheet" type="text/css" href="/pve2/ext6/theme-crisp/resources/theme-crisp-all.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/ext6/crisp/resources/charts-all.css" />
+    <link rel="stylesheet" type="text/css" href="/pve2/css/font-awesome.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/css/ext6-pve.css" />
 _EOD
 
