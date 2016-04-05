@@ -84,7 +84,7 @@ Ext.define('PVE.window.Migrate', {
 	});
 
 	Ext.apply(me, {
-	    title: gettext('Migrate') + ' VM ' + me.vmid,
+	    title: gettext('Migrate') + ((me.vmtype === 'qemu')?' VM ':' CT ') + me.vmid,
 	    width: 350,
 	    modal: true,
 	    layout: 'auto',
