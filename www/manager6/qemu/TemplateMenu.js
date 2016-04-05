@@ -34,7 +34,7 @@ Ext.define('PVE.qemu.TemplateMenu', {
 	me.items = [
 	    {
 		text: gettext('Migrate'),
-		icon: '/pve2/images/forward.png',
+		iconCls: 'fa fa-fw fa-send-o',
 		handler: function() {
 		    var win = Ext.create('PVE.window.Migrate', {
 			vmtype: 'qemu',
@@ -46,7 +46,7 @@ Ext.define('PVE.qemu.TemplateMenu', {
 	    },
 	    {
 		text: gettext('Clone'),
-		icon: '/pve2/images/forward.png',
+		iconCls: 'fa fa-fw fa-clone',
 		handler: function() {
 		    var win = Ext.create('PVE.window.Clone', {
 			nodename: nodename,

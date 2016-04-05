@@ -43,7 +43,8 @@ Ext.define('PVE.lxc.Config', {
 	    disabled: !caps.vms['VM.PowerMgmt'],
 	    handler: function() {
 		vm_command('start');
-	    }
+	    },
+	    iconCls: 'fa fa-play'
 	});
 
 	var umountBtn = Ext.create('Ext.Button', {
@@ -62,7 +63,8 @@ Ext.define('PVE.lxc.Config', {
 	    dangerous: true,
 	    handler: function() {
 		vm_command("stop");
-	    }
+	    },
+	    iconCls: 'fa fa-stop'
 	});
 
 	var shutdownBtn = Ext.create('PVE.button.Split', {
@@ -74,7 +76,8 @@ Ext.define('PVE.lxc.Config', {
 	    },
 	    menu: {
 		items:[stopBtn]
-	    }
+	    },
+	    iconCls: 'fa fa-power-off'
 	});
 
 	var migrateBtn = Ext.create('Ext.Button', {
@@ -87,7 +90,8 @@ Ext.define('PVE.lxc.Config', {
 		    vmid: vmid
 		});
 		win.show();
-	    }
+	    },
+	    iconCls: 'fa fa-send-o'
 	});
 
 	var removeBtn = Ext.create('PVE.button.Button', {
@@ -98,7 +102,8 @@ Ext.define('PVE.lxc.Config', {
 		    url: base_url,
 		    item: { type: 'CT', id: vmid }
 		}).show();
-	    }
+	    },
+	    iconCls: 'fa fa-trash-o'
 	});
 
 	var vmname = me.pveSelNode.data.name;
@@ -108,7 +113,8 @@ Ext.define('PVE.lxc.Config', {
 	    consoleType: 'lxc',
 	    consoleName: vmname,
 	    nodename: nodename,
-	    vmid: vmid
+	    vmid: vmid,
+	    iconCls: 'fa fa-terminal'
 	});
 
 	var descr = vmid + " (" + (vmname ? "'" + vmname + "' " : "'CT " + vmid + "'") + ")";

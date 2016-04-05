@@ -32,14 +32,14 @@ Ext.define('PVE.lxc.CmdMenu', {
 	me.items = [
 	    {
 		text: gettext('Start'),
-		icon: '/pve2/images/start.png',
+		iconCls: 'fa fa-fw fa-play',
 		handler: function() {
 		    vm_command('start');
 		}
 	    },
 	    { 
 		text: gettext('Migrate'),
-		icon: '/pve2/images/forward.png',
+		iconCls: 'fa fa-fw fa-send-o',
 		handler: function() {
 		    var win = Ext.create('PVE.window.Migrate', {
 			vmtype: 'lxc',
@@ -51,7 +51,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 	    },
 	    {
 		text: gettext('Suspend'),
-		icon: '/pve2/images/forward.png',
+		iconCls: 'fa fa-fw fa-pause',
 		handler: function() {
 		    var msg = PVE.Utils.format_task_description('vzsuspend', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
@@ -65,14 +65,14 @@ Ext.define('PVE.lxc.CmdMenu', {
 	    },
 	    {
 		text: gettext('Resume'),
-		icon: '/pve2/images/forward.png',
+		iconCls: 'fa fa-fw fa-play',
 		handler: function() {
 		    vm_command('resume');
 		}
 	    },
 	    {
 		text: gettext('Shutdown'),
-		icon: '/pve2/images/stop.png',
+		iconCls: 'fa fa-fw fa-power-off',
 		handler: function() {
 		    var msg = PVE.Utils.format_task_description('vzshutdown', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
@@ -86,7 +86,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 	    },
 	    {
 		text: gettext('Stop'),
-		icon: '/pve2/images/gtk-stop.png',
+		iconCls: 'fa fa-fw fa-stop',
 		handler: function() {
 		    var msg = PVE.Utils.format_task_description('vzstop', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
@@ -120,7 +120,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 //	    },
 	    {
 		text: gettext('Console'),
-		icon: '/pve2/images/display.png',
+		iconCls: 'fa fa-fw fa-terminal',
 		handler: function() {
 		    PVE.Utils.openDefaultConsoleWindow(true, 'lxc', vmid, nodename, vmname);
 		}

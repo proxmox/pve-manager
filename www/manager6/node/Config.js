@@ -36,7 +36,8 @@ Ext.define('PVE.node.Config', {
 		items: [
 		    {
 			text: gettext('Start all VMs and Containers'),
-			icon: '/pve2/images/start.png',
+			text: gettext('Start All VMs'),
+			iconCls: 'fa fa-fw fa-play',
 			handler: function() {
 			    var msg = gettext('Start all VMs and Containers') + ' (' + gettext('Node') + " '" + nodename + "')";
 			    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
@@ -57,7 +58,7 @@ Ext.define('PVE.node.Config', {
 		    },
 		    {
 			text: gettext('Stop all VMs and Containers'),
-			icon: '/pve2/images/gtk-stop.png',
+			iconCls: 'fa fa-fw fa-stop fa-red',
 			handler: function() {
 			    var msg = gettext('Stop all VMs and Containers') + ' (' + gettext('Node') + " '" + nodename + "')";
 			    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
@@ -78,7 +79,7 @@ Ext.define('PVE.node.Config', {
 		    },
 		    {
 			text: gettext('Migrate all VMs and Containers'),
-			icon: '/pve2/images/forward.png',
+			iconCls: 'fa fa-fw fa-send-o',
 			handler: function() {
 			    var win = Ext.create('PVE.window.MigrateAll', {
 				nodename: nodename,
@@ -96,7 +97,8 @@ Ext.define('PVE.node.Config', {
 	    confirmMsg: gettext('Node') + " '" + nodename + "' - " + gettext('Restart'),
 	    handler: function() {
 		node_command('reboot');
-	    }
+	    },
+	    iconCls: 'fa fa-undo'
 	});
 
 	var shutdownBtn = Ext.create('PVE.button.Button', {
@@ -105,14 +107,16 @@ Ext.define('PVE.node.Config', {
 	    confirmMsg: gettext('Node') + " '" + nodename + "' - " + gettext('Shutdown'),
 	    handler: function() {
 		node_command('shutdown');
-	    }
+	    },
+	    iconCls: 'fa fa-power-off'
 	});
 
 	var shellBtn = Ext.create('PVE.button.ConsoleButton', {
 	    disabled: !caps.nodes['Sys.Console'],
 	    text: gettext('Shell'),
 	    consoleType: 'shell',
-	    nodename: nodename
+	    nodename: nodename,
+		iconCls: 'fa fa-terminal'
 	});
 
 	me.items = [];

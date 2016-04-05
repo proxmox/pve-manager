@@ -44,7 +44,8 @@ Ext.define('PVE.qemu.Config', {
 	    hidden: true,
 	    handler: function() {
 		vm_command('resume');
-	    }
+	    },
+	    iconCls: 'fa fa-play'
 	});
 
 	var startBtn = Ext.create('Ext.Button', {
@@ -52,7 +53,8 @@ Ext.define('PVE.qemu.Config', {
 	    disabled: !caps.vms['VM.PowerMgmt'],
 	    handler: function() {
 		vm_command('start');
-	    }
+	    },
+	    iconCls: 'fa fa-play',
 	});
 
 	var migrateBtn = Ext.create('Ext.Button', {
@@ -65,7 +67,8 @@ Ext.define('PVE.qemu.Config', {
 		    vmid: vmid
 		});
 		win.show();
-	    }
+	    },
+	    iconCls: 'fa fa-send-o'
 	});
 
 	var resetBtn = Ext.create('PVE.button.Button', {
@@ -74,7 +77,8 @@ Ext.define('PVE.qemu.Config', {
 	    confirmMsg: PVE.Utils.format_task_description('qmreset', vmid),
 	    handler: function() {
 		vm_command("reset");
-	    }
+	    },
+	    iconCls: 'fa fa-bolt'
 	});
 
 	var shutdownBtn = Ext.create('PVE.button.Split', {
@@ -92,9 +96,11 @@ Ext.define('PVE.qemu.Config', {
 		    confirmMsg: PVE.Utils.format_task_description('qmstop', vmid),
 		    handler: function() {
 			vm_command("stop", { timeout: 30 });
-		    }
+		    },
+		    iconCls: 'fa fa-stop',
 		}]
-	    }
+	    },
+	    iconCls: 'fa fa-power-off'
 	});
 
 	var removeBtn = Ext.create('PVE.button.Button', {
@@ -105,7 +111,8 @@ Ext.define('PVE.qemu.Config', {
 		    url: base_url,
 		    item: { type: 'VM', id: vmid }
 		}).show();
-	    }
+	    },
+	    iconCls: 'fa fa-trash-o'
 	});
 
 	var vmname = me.pveSelNode.data.name;
@@ -115,7 +122,8 @@ Ext.define('PVE.qemu.Config', {
 	    consoleType: 'kvm',
 	    consoleName: vmname,
 	    nodename: nodename,
-	    vmid: vmid
+	    vmid: vmid,
+	    iconCls: 'fa fa-terminal'
 	});
 
 	var descr = vmid + " (" + (vmname ? "'" + vmname + "' " : "'VM " + vmid + "'") + ")";
