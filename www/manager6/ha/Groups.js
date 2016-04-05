@@ -86,14 +86,14 @@ Ext.define('PVE.ha.GroupsView', {
 		    dataIndex: 'group'
 		},
 		{
-		    header: gettext('restricted'),
+		    header: 'restricted',
 		    width: 100,
 		    sortable: true,
 		    renderer: PVE.Utils.format_boolean,
 		    dataIndex: 'restricted'
 		},
 		{
-		    header: gettext('nofailback'),
+		    header: 'nofailback',
 		    width: 100,
 		    sortable: true,
 		    renderer: PVE.Utils.format_boolean,

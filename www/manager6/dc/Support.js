@@ -47,7 +47,7 @@ Ext.define('PVE.dc.Support', {
 		waitMsgTarget: me,
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    me.update(gettext('Unable to load subscription status') + ": " + response.htmlStatus);
+		    me.update('Unable to load subscription status' + ": " + response.htmlStatus);
 		},
 		success: function(response, opts) {
 		    var data = response.result.data;

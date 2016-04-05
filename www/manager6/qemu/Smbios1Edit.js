@@ -103,7 +103,7 @@ Ext.define('PVE.qemu.Smbios1Edit', {
 		if (value) {
 		    var data = PVE.Parser.parseQemuSmbios1(value);
 		    if (!data) {
-			Ext.Msg.alert(gettext('Error'), gettext('Unable to parse smbios options'));
+			Ext.Msg.alert(gettext('Error'), 'Unable to parse smbios options');
 			me.close();
 			return;
 		    }

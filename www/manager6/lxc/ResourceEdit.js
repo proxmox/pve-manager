@@ -60,7 +60,7 @@ Ext.define('PVE.lxc.MountPointEdit', {
 
 	var subject;
 	if (unused) {
-	    subject = gettext('Unused Mount Point');
+	    subject = gettext('Unused Disk');
 	} else if (me.create) {
 	    subject = gettext('Mount Point');
 	} else {
@@ -82,7 +82,7 @@ Ext.define('PVE.lxc.MountPointEdit', {
 		    var mp = PVE.Parser.parseLxcMountPoint(value);
 
 		    if (!mp) {
-			Ext.Msg.alert(gettext('Error'), gettext('Unable to parse mount point options'));
+			Ext.Msg.alert(gettext('Error'), 'Unable to parse mount point options');
 			me.close();
 			return;
 		    }

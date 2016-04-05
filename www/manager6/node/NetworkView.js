@@ -199,7 +199,7 @@ Ext.define('PVE.node.NetworkView', {
 		    })
 		}, ' ', 
 		{
-		    text: gettext('Revert changes'),
+		    text: gettext('Revert'),
 		    handler: function() {
 			PVE.Utils.API2Request({
 			    url: '/nodes/' + nodename + '/network',

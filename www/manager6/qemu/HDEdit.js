@@ -240,7 +240,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	me.column2.push({
 	    xtype: 'pvecheckbox',
-	    fieldLabel: gettext('Iothread'),
+	    fieldLabel: gettext('IO thread'),
 	    name: 'iothread'
 	});
 
@@ -292,7 +292,7 @@ Ext.define('PVE.qemu.HDEdit', {
 		    var value = response.result.data[me.confid];
 		    var drive = PVE.Parser.parseQemuDrive(me.confid, value);
 		    if (!drive) {
-			Ext.Msg.alert(gettext('Error'), gettext('Unable to parse drive options'));
+			Ext.Msg.alert(gettext('Error'), 'Unable to parse drive options');
 			me.close();
 			return;
 		    }

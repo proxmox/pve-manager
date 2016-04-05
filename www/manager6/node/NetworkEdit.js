@@ -57,7 +57,7 @@ Ext.define('PVE.node.NetworkEdit', {
 	if (me.iftype === 'bridge') {
 	    column2.push({
 		xtype: 'pvecheckbox',
-		fieldLabel: gettext('Vlan Aware'),
+		fieldLabel: gettext('VLAN aware'),
 		name: 'bridge_vlan_aware',
 		deleteEmpty: !me.create,
 	    });

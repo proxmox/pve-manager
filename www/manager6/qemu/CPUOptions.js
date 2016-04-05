@@ -37,7 +37,7 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
                 minValue: 1,
                 maxValue: me.maxvcpus,
                 value: '',
-                fieldLabel: gettext('Vcpus'),
+                fieldLabel: gettext('VCPUs'),
                 allowBlank: true,
                 emptyText: me.maxvcpus
             },

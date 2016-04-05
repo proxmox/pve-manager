@@ -226,7 +226,7 @@ Ext.define('PVE.IPSetCidrEdit', {
 		    checked: false,
 		    height: 22, // hack: set same height as text fields
 		    uncheckedValue: 0,
-		    fieldLabel: gettext('nomatch')
+		    fieldLabel: 'nomatch'
 		}
 	    ],
 	    columnB: [

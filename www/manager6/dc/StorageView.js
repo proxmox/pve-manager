@@ -248,7 +248,7 @@ Ext.define('PVE.dc.StorageView', {
 		    renderer: PVE.Utils.format_boolean
 		},
 		{
-		    header: gettext('Enable'),
+		    header: gettext('Enabled'),
 		    width: 80,
 		    sortable: true,
 		    dataIndex: 'disable',

@@ -41,13 +41,13 @@ Ext.define('PVE.ha.GroupInputPanel', {
 		xtype: 'pvecheckbox',
 		name: 'restricted',
 		uncheckedValue: 0,
-		fieldLabel: gettext('restricted')
+		fieldLabel: 'restricted'
 	    },
 	    {
 		xtype: 'pvecheckbox',
 		name: 'nofailback',
 		uncheckedValue: 0,
-		fieldLabel: gettext('nofailback')
+		fieldLabel: 'nofailback'
 	    },
 	];
 

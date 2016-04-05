@@ -120,8 +120,12 @@ Ext.define('PVE.window.Restore', {
 	    submitBtn.setDisabled(!valid);
 	});
 
-	var title = (me.vmtype === 'openvz') ? gettext('Restore CT') : 
-	    gettext('Restore VM');
+	var title =  gettext('Restore') + ": " + (
+	    (me.vmtype === 'lxc') ? 'CT' : 'VM');
+
+	if (me.vmid) {
+	    title += " " + me.vmid;
+	}
 
 	Ext.apply(me, {
 	    title: title,

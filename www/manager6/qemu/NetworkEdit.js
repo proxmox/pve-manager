@@ -207,7 +207,7 @@ Ext.define('PVE.qemu.NetworkEdit', {
 		    var value = me.vmconfig[me.confid];
 		    var network = PVE.Parser.parseQemuNetwork(me.confid, value);
 		    if (!network) {
-			Ext.Msg.alert(gettext('Error'), gettext('Unable to parse network options'));
+			Ext.Msg.alert(gettext('Error'), 'Unable to parse network options');
 			me.close();
 			return;
 		    }

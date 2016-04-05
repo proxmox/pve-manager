@@ -9,7 +9,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	typeDefaults: {
 	    node: { 
 		iconCls: 'x-tree-node-server',
-		text: gettext('Node list')
+		text: gettext('Nodes')
 	    },
 	    pool: { 
 		iconCls: 'x-tree-node-pool',
@@ -17,7 +17,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	    },
 	    storage: {
 		iconCls: 'x-tree-node-harddisk',
-		text: gettext('Storage list')
+		text: gettext('Storage')
 	    },
 	    qemu: {
 		iconCls: 'x-tree-node-computer',

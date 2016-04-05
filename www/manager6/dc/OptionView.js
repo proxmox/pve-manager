@@ -86,7 +86,7 @@ Ext.define('PVE.dc.EmailFromEdit', {
 		xtype: 'pvetextfield',
 		name: 'email_from',
 		vtype: 'pveMail',
-		emptyText: gettext('Send emails from root@$hostname'),
+		emptyText: 'root@$hostname',
 		deleteEmpty: true,
 		value: '',
 		fieldLabel: gettext('Email from address')
@@ -104,7 +104,6 @@ Ext.define('PVE.dc.OptionView', {
     alias: ['widget.pveDcOptionView'],
 
     noProxyText: gettext('Do not use any proxy'),
-    noEmailFromText: gettext('Send emails from root@$hostname'),
 
     initComponent : function() {
 	var me = this;
@@ -143,7 +142,7 @@ Ext.define('PVE.dc.OptionView', {
 		required: true,
 		renderer: function(value) {
 		    if (!value) {
-			return me.noEmailFromText;
+			return 'root@$hostname';
 		    }
 		    return value;
 		}

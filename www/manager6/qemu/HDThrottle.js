@@ -198,7 +198,7 @@ Ext.define('PVE.qemu.HDThrottle', {
 		    var value = response.result.data[me.confid];
 		    var drive = PVE.Parser.parseQemuDrive(me.confid, value);
 		    if (!drive) {
-			Ext.Msg.alert(gettext('Error'), gettext('Unable to parse drive options'));
+			Ext.Msg.alert(gettext('Error'), 'Unable to parse drive options');
 			me.close();
 			return;
 		    }
