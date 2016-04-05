@@ -102,7 +102,6 @@ Ext.define('PVE.window.SafeDestroy', {
 			gettext('This will permanently erase all data.')
 		},
 		{
-		    reference: 'confirmField',
 		    itemId: 'confirmField',
 		    xtype: 'numberfield',
 		    name: 'confirm',
