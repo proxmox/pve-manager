@@ -27,12 +27,29 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    });
 	};
 
+	var running = false;
+	var stopped = true;
+	var suspended = false;
+
+	switch (me.pveSelNode.data.status) {
+	    case 'running':
+		running = true;
+		stopped = false;
+		break;
+	    case 'paused':
+		stopped = false;
+		suspended = true;
+		break;
+	    default: break;
+	}
+
 	me.title = "VM " + vmid;
 
 	me.items = [
 	    {
 		text: gettext('Start'),
 		iconCls: 'fa fa-fw fa-play',
+		disabled: running,
 		handler: function() {
 		    vm_command('start');
 		}
@@ -52,6 +69,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    {
 		text: gettext('Suspend'),
 		iconCls: 'fa fa-fw fa-pause',
+		disabled: stopped || suspended,
 		handler: function() {
 		    var msg = PVE.Utils.format_task_description('qmsuspend', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
@@ -65,6 +83,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    {
 		text: gettext('Resume'),
 		iconCls: 'fa fa-fw fa-play',
+		disabled: !suspended,
 		handler: function() {
 		    vm_command('resume');
 		}
@@ -72,6 +91,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    {
 		text: gettext('Shutdown'),
 		iconCls: 'fa fa-fw fa-power-off',
+		disabled: stopped || suspended,
 		handler: function() {
 		    var msg = PVE.Utils.format_task_description('qmshutdown', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
@@ -86,6 +106,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    {
 		text: gettext('Stop'),
 		iconCls: 'fa fa-fw fa-stop',
+		disabled: stopped,
 		handler: function() {
 		    var msg = PVE.Utils.format_task_description('qmstop', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
