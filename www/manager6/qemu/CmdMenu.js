@@ -54,7 +54,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		    vm_command('start');
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Migrate'),
 		iconCls: 'fa fa-fw fa-send-o',
 		handler: function() {
@@ -101,7 +101,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 
 			vm_command('shutdown');
 		    });
-		}			    
+		}
 	    },
 	    {
 		text: gettext('Stop'),
@@ -115,7 +115,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 			}
 
 			vm_command("stop");
-		    });		   
+		    });
 		}
 	    },
 	    {

@@ -13,7 +13,6 @@ Ext.define('PVE.lxc.CmdMenu', {
 	if (!vmid) {
 	    throw "no CT ID specified";
 	}
-
 	var vmname = me.pveSelNode.data.name;
 
 	var vm_command = function(cmd, params) {
@@ -54,7 +53,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		    vm_command('start');
 		}
 	    },
-	    { 
+	    {
 		text: gettext('Migrate'),
 		iconCls: 'fa fa-fw fa-send-o',
 		handler: function() {
@@ -76,7 +75,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 			if (btn !== 'yes') {
 			    return;
 			}
-			
+
 			vm_command('suspend');
 		    });
 		}
@@ -102,7 +101,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 
 			vm_command('shutdown');
 		    });
-		}			    
+		}
 	    },
 	    {
 		text: gettext('Stop'),
