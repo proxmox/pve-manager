@@ -345,10 +345,17 @@ Ext.define('PVE.tree.ResourceTree', {
 			menu = Ext.create('PVE.qemu.TemplateMenu', {
 			    pveSelNode: record
 			});
-		    } else if (record.data.type === 'lxc') {
+		    } else if (record.data.type === 'lxc' && !record.data.template) {
 			menu = Ext.create('PVE.lxc.CmdMenu', {
 			    pveSelNode: record
 			});
+		    } else if (record.data.type === 'lxc' && record.data.template) {
+			/* since clone does not work reliably, disable for now
+			menu = Ext.create('PVE.lxc.TemplateMenu', {
+			    pveSelNode: record
+			});
+			*/
+			return;
 		    } else {
 			return;
 		    }
