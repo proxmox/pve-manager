@@ -1,7 +1,10 @@
 Ext.define('PVE.form.DayOfWeekSelector', {
     extend: 'PVE.form.KVComboBox',
     alias: ['widget.pveDayOfWeekSelector'],
-    comboItems: [
+    comboItems:[],
+    initComponent: function(){
+	var me = this;
+	me.comboItems = [
 	    ['sun', Ext.util.Format.htmlDecode(Ext.Date.dayNames[0])],
 	    ['mon', Ext.util.Format.htmlDecode(Ext.Date.dayNames[1])],
 	    ['tue', Ext.util.Format.htmlDecode(Ext.Date.dayNames[2])],
@@ -9,5 +12,7 @@ Ext.define('PVE.form.DayOfWeekSelector', {
 	    ['thu', Ext.util.Format.htmlDecode(Ext.Date.dayNames[4])],
 	    ['fri', Ext.util.Format.htmlDecode(Ext.Date.dayNames[5])],
 	    ['sat', Ext.util.Format.htmlDecode(Ext.Date.dayNames[6])]
-	]
+	];
+	this.callParent();
+    }
 });
