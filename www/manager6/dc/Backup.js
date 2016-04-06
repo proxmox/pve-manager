@@ -430,7 +430,15 @@ Ext.define('PVE.dc.BackupView', {
 		    header: gettext('Day of week'),
 		    width: 200,
 		    sortable: false,
-		    dataIndex: 'dow'
+		    dataIndex: 'dow',
+		    renderer: function(val) {
+			var dows = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+			var selected = [];
+			val.split(',').forEach(function(day){
+			    selected.push(Ext.Date.dayNames[dows.indexOf(day)]);
+			});
+			return selected.join(', ');
+		    }
 		},
 		{
 		    header: gettext('Start Time'),
