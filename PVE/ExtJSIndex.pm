@@ -43,8 +43,6 @@ _EOJS
 	"PVE.ConsoleWorkspace" : "PVE.StdWorkspace";
 
    $jssrc .= <<_EOJS;
-// we need this (the java applet ignores the zindex)
-Ext.useShims = true;
 Ext.History.fieldid = 'x-history-field';
 Ext.onReady(function() { Ext.create('$workspace');});
 _EOJS
