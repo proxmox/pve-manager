@@ -24,7 +24,6 @@ Ext.define('PVE.storage.DirInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'storage',
-		height: 22, // hack: set same height as text fields
 		value: me.storageId || '',
 		fieldLabel: 'ID',
 		vtype: 'StorageId',
@@ -32,7 +31,6 @@ Ext.define('PVE.storage.DirInputPanel', {
 	    },
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
-		height: 22, // hack: set same height as text fields
 		name: 'path',
 		value: '',
 		fieldLabel: gettext('Directory'),

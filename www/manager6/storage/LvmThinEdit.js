@@ -114,7 +114,6 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'storage',
-		height: 22, // hack: set same height as text fields
 		value: me.storageId || '',
 		fieldLabel: 'ID',
 		vtype: 'StorageId',
@@ -124,7 +123,6 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 	];
 
 	var vgnameField = Ext.createWidget(me.create ? 'textfield' : 'displayfield', {
-	    height: 22, // hack: set same height as text fields
 	    name: 'vgname',
 	    hidden: !!me.create,
 	    disabled: !!me.create,
@@ -134,7 +132,6 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 	});
 
 	var thinpoolField = Ext.createWidget(me.create ? 'textfield' : 'displayfield', {
-	    height: 22, // hack: set same height as text fields
 	    name: 'thinpool',
 	    hidden: !!me.create,
 	    disabled: !!me.create,

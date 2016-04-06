@@ -115,7 +115,6 @@ Ext.define('PVE.FirewallRulePanel', {
 	    me.column1.push({
 		xtype: 'displayfield',
 		fieldLabel: '',
-		height: 22, // hack: set same height as text fields
 		value: ''
 	    });
 	}
@@ -154,7 +153,6 @@ Ext.define('PVE.FirewallRulePanel', {
 		xtype: 'pvecheckbox',
 		name: 'enable',
 		checked: false,
-		height: 22, // hack: set same height as text fields
 		uncheckedValue: 0,
 		fieldLabel: gettext('Enable')
 	    },
@@ -204,7 +202,6 @@ Ext.define('PVE.FirewallRulePanel', {
 	    {
 		xtype: 'textfield',
 		name: 'dport',
-		height: 22, // hack: set same height as text fields
 		value: '',
 		fieldLabel: gettext('Dest. port')
 	    }
@@ -340,7 +337,6 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
 		    xtype: 'pvecheckbox',
 		    name: 'enable',
 		    checked: false,
-		    height: 22, // hack: set same height as text fields
 		    uncheckedValue: 0,
 		    fieldLabel: gettext('Enable')
 		}

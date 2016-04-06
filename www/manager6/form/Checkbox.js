@@ -9,8 +9,6 @@ Ext.define('PVE.form.Checkbox', {
  
     inputValue: '1',
 
-    height: 22, // hack: set same height as text fields
-
     getSubmitData: function() {
         var me = this,
             data = null,

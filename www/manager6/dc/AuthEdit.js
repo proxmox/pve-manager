@@ -24,7 +24,6 @@ Ext.define('PVE.dc.AuthEdit', {
         var column1 = [
             {
                 xtype: me.create ? 'textfield' : 'displayfield',
-		height: 22, // hack: set same height as text fields
                 name: 'realm',
                 fieldLabel: gettext('Realm'),
                 value: me.realm,

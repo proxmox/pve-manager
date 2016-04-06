@@ -210,7 +210,6 @@ Ext.define('PVE.IPSetCidrEdit', {
 	    column1.push({
 		xtype: 'displayfield',
 		name: 'cidr',
-		height: 22, // hack: set same height as text fields
 		value: '',
 		fieldLabel: gettext('IP/CIDR')
 	    });
@@ -224,7 +223,6 @@ Ext.define('PVE.IPSetCidrEdit', {
 		    xtype: 'pvecheckbox',
 		    name: 'nomatch',
 		    checked: false,
-		    height: 22, // hack: set same height as text fields
 		    uncheckedValue: 0,
 		    fieldLabel: 'nomatch'
 		}

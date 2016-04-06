@@ -24,7 +24,6 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'storage',
-		height: 22, // hack: set same height as text fields
 		value: me.storageId || '',
 		fieldLabel: 'ID',
 		vtype: 'StorageId',
@@ -33,7 +32,6 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'portal',
-		height: 22, // hack: set same height as text fields
 		value: '',
 		fieldLabel: gettext('Portal'),
 		allowBlank: false
@@ -41,7 +39,6 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'pool',
-		height: 22, // hack: set same height as text fields
 		value: '',
 		fieldLabel: gettext('Pool'),
 		allowBlank: false
@@ -49,7 +46,6 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'blocksize',
-		height: 22, // hack: set same height as text fields
 		value: '4k',
 		fieldLabel: gettext('Block Size'),
 		allowBlank: false
@@ -57,7 +53,6 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'target',
-		height: 22, // hack: set same height as text fields
 		value: '',
 		fieldLabel: gettext('Target'),
 		allowBlank: false
@@ -65,7 +60,6 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'comstar_tg',
-		height: 22, // hack: set same height as text fields
 		value: '',
 		fieldLabel: gettext('Target group'),
 		allowBlank: true
@@ -83,7 +77,6 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	    {
 		xtype: me.create ? 'pveiScsiProviderSelector' : 'displayfield',
 		name: 'iscsiprovider',
-		height: 22, // hack: set same height as text fields
 		value: 'comstar',
 		fieldLabel: gettext('iSCSI Provider'),
 		allowBlank: false
@@ -105,7 +98,6 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'comstar_hg',
-		height: 22, // hack: set same height as text fields
 		value: '',
 		fieldLabel: gettext('Host group'),
 		allowBlank: true

@@ -57,7 +57,6 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'storage',
-		height: 22, // hack: set same height as text fields
 		value: me.storageId || '',
 		fieldLabel: 'ID',
 		vtype: 'StorageId',
@@ -73,7 +72,6 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	    }));
 	} else {
 	    me.column1.push(Ext.createWidget('displayfield', {
-		height: 22, // hack: set same height as text fields
 		name: 'pool',
 		value: '',
 		fieldLabel: gettext('ZFS Pool'),

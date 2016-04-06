@@ -101,7 +101,6 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    {
 		xtype: 'textfield',
 		name: 'name',
-		height: 22, // hack: set same height as text fields
 		fieldLabel: gettext('Name') + ' (i.e. eth0)',
 		allowBlank: false,
 		value: cdata.name,
@@ -171,7 +170,6 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		},
 		border: false,
 		margin: '0 0 5 0',
-		height: 22, // hack: set same height as text fields
 		items: [
 		    {
 			xtype: 'label',
@@ -230,7 +228,6 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		},
 		border: false,
 		margin: '0 0 5 0',
-		height: 22, // hack: set same height as text fields
 		items: [
 		    {
 			xtype: 'label',

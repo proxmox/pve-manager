@@ -75,7 +75,6 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    {
 		xtype: 'radiofield',
 		name: 'networkmode',
-		height: 22, // hack: set same height as text fields
 		inputValue: 'bridge',
 		boxLabel: gettext('Bridged mode'),
 		checked: true,
@@ -108,7 +107,6 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    {
 		xtype: 'radiofield',
 		name: 'networkmode',
-		height: 22, // hack: set same height as text fields
 		inputValue: 'nat',
 		boxLabel: gettext('NAT mode')
 	    }
@@ -118,7 +116,6 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    me.column1.push({
 		xtype: 'radiofield',
 		name: 'networkmode',
-		height: 22, // hack: set same height as text fields
 		inputValue: 'none',
 		boxLabel: gettext('No network device')
 	    });

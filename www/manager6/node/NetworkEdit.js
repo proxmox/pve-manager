@@ -80,7 +80,6 @@ Ext.define('PVE.node.NetworkEdit', {
 	} else if (me.iftype === 'OVSPort' || me.iftype === 'OVSIntPort') {
 	    column2.push({
 		xtype: me.create ? 'PVE.form.BridgeSelector' : 'displayfield',
-		height: 22, // hack: set same height as text fields
 		fieldLabel: PVE.Utils.render_network_iface_type('OVSBridge'),
 		allowBlank: false,
 		nodename: nodename,
@@ -136,7 +135,6 @@ Ext.define('PVE.node.NetworkEdit', {
 	} else if (me.iftype === 'OVSBond') {
 	    column2.push({
 		xtype: me.create ? 'PVE.form.BridgeSelector' : 'displayfield',
-		height: 22, // hack: set same height as text fields
 		fieldLabel: PVE.Utils.render_network_iface_type('OVSBridge'),
 		allowBlank: false,
 		nodename: nodename,
@@ -176,7 +174,6 @@ Ext.define('PVE.node.NetworkEdit', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		fieldLabel: gettext('Name'),
-		height: 22, // hack: set same height as text fields
 		name: 'iface',
 		value: me.iface,
 		vtype: iface_vtype,

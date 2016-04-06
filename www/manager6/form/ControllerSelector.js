@@ -59,7 +59,6 @@ Ext.define('PVE.form.ControllerSelector', {
 	Ext.apply(me, {
 	    fieldLabel: gettext('Bus/Device'),
 	    layout: 'hbox',
-	    height: 22, // hack: set to same height as other fields
 	    defaults: {
                 flex: 1,
                 hideLabel: true

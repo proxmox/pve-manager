@@ -84,7 +84,6 @@ Ext.define('PVE.storage.NFSInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'storage',
-		height: 22, // hack: set same height as text fields
 		value: me.storageId || '',
 		fieldLabel: 'ID',
 		vtype: 'StorageId',
@@ -92,7 +91,6 @@ Ext.define('PVE.storage.NFSInputPanel', {
 	    },
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
-		height: 22, // hack: set same height as text fields
 		name: 'server',
 		value: '',
 		fieldLabel: gettext('Server'),
@@ -109,7 +107,6 @@ Ext.define('PVE.storage.NFSInputPanel', {
 	    },
 	    {
 		xtype: me.create ? 'pveNFSScan' : 'displayfield',
-		height: 22, // hack: set same height as text fields
 		name: 'export',
 		value: '',
 		fieldLabel: 'Export',

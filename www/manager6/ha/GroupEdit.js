@@ -20,7 +20,6 @@ Ext.define('PVE.ha.GroupInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'group',
-		height: 22, // hack: set same height as text fields
 		value: me.groupId || '',
 		fieldLabel: 'ID',
 		vtype: 'StorageId',

@@ -220,3 +220,8 @@
     background-image:url(../images/virt-viewer.png);
 }
 
+
+/* displayfield minheight is wrong */
+.x-form-display-field-default {
+    min-height: 20px;
+}

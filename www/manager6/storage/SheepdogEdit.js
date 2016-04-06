@@ -26,7 +26,6 @@ Ext.define('PVE.storage.SheepdogInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'storage',
-		height: 22, // hack: set same height as text fields
 		value: me.storageId || '',
 		fieldLabel: 'ID',
 		vtype: 'StorageId',
@@ -35,7 +34,6 @@ Ext.define('PVE.storage.SheepdogInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'portal',
-		height: 22, // hack: set same height as text fields
 		value: '127.0.0.1:7000',
 		fieldLabel: gettext('Gateway'),
 		allowBlank: false
