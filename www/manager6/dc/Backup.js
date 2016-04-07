@@ -434,10 +434,41 @@ Ext.define('PVE.dc.BackupView', {
 		    renderer: function(val) {
 			var dows = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 			var selected = [];
+			var cur = -1;
 			val.split(',').forEach(function(day){
-			    selected.push(Ext.Date.dayNames[dows.indexOf(day)]);
+			    cur++;
+			    dow = (dows.indexOf(day)+6)%7;
+			    if (cur === dow) {
+				if (selected.length === 0 || selected[selected.length-1] === 0) {
+				    selected.push(1);
+				} else {
+				    selected[selected.length-1]++;
+				}
+			    } else {
+				while (cur < dow) {
+				    cur++;
+				    selected.push(0);
+				}
+				selected.push(1);
+			    }
 			});
-			return selected.join(', ');
+
+			cur = -1;
+			var days = [];
+			selected.forEach(function(item) {
+			    cur++;
+			    if (item > 2) {
+				days.push(Ext.Date.dayNames[(cur+1)] + '-' + Ext.Date.dayNames[(cur+item)%7]);
+				cur += item-1;
+			    } else if (item == 2) {
+				days.push(Ext.Date.dayNames[cur+1]);
+				days.push(Ext.Date.dayNames[(cur+2)%7]);
+				cur++;
+			    } else if (item == 1) {
+				days.push(Ext.Date.dayNames[(cur+1)%7]);
+			    }
+			})
+			return days.join(', ');
 		    }
 		},
 		{
