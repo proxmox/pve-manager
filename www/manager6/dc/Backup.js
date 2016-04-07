@@ -406,7 +406,7 @@ Ext.define('PVE.dc.BackupView', {
 	    columns: [
 		{
 		    header: gettext('Enabled'),
-		    width: 50,
+		    width: 80,
 		    dataIndex: 'enabled',
 		    xtype: 'checkcolumn',
 		    sortable: true,
