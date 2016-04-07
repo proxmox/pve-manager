@@ -137,6 +137,28 @@ Ext.define('PVE.Datepicker', {
     hideMode: 'visibility'
 });
 
+// force alert boxes to be rendered with an Error Icon
+// since Ext.Msg is an object and not a prototype, we need to override it
+// after the framework has been initiated
+Ext.onReady(function() {
+    Ext.override(Ext.Msg, {
+	alert: function(title, message, fn, scope) {
+	    if (Ext.isString(title)) {
+		var config = {
+		    title: title,
+		    message: message,
+		    icon: this.ERROR,
+		    buttons: this.OK,
+		    fn: fn,
+		    scope : scope,
+		    minWidth: this.minWidth
+		};
+	    return this.show(config);
+	    }
+	}
+    });
+});
+
 Ext.define('Ext.ux.IFrame', {
     extend: 'Ext.Component',
 
