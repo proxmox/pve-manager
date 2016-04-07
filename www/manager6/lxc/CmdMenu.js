@@ -65,29 +65,29 @@ Ext.define('PVE.lxc.CmdMenu', {
 		    win.show();
 		}
 	    },
-	    {
-		text: gettext('Suspend'),
-		iconCls: 'fa fa-fw fa-pause',
-		disabled: stopped || suspended,
-		handler: function() {
-		    var msg = PVE.Utils.format_task_description('vzsuspend', vmid);
-		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
-			if (btn !== 'yes') {
-			    return;
-			}
-
-			vm_command('suspend');
-		    });
-		}
-	    },
-	    {
-		text: gettext('Resume'),
-		iconCls: 'fa fa-fw fa-play',
-		disabled: !suspended,
-		handler: function() {
-		    vm_command('resume');
-		}
-	    },
+//	    {
+//		text: gettext('Suspend'),
+//		iconCls: 'fa fa-fw fa-pause',
+//		disabled: stopped || suspended,
+//		handler: function() {
+//		    var msg = PVE.Utils.format_task_description('vzsuspend', vmid);
+//		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+//			if (btn !== 'yes') {
+//			    return;
+//			}
+//
+//			vm_command('suspend');
+//		    });
+//		}
+//	    },
+//	    {
+//		text: gettext('Resume'),
+//		iconCls: 'fa fa-fw fa-play',
+//		disabled: !suspended,
+//		handler: function() {
+//		    vm_command('resume');
+//		}
+//	    },
 	    {
 		text: gettext('Shutdown'),
 		iconCls: 'fa fa-fw fa-power-off',
