@@ -1,3 +1,21 @@
+pve-manager (4.1-25) unstable; urgency=medium
+
+  * Build-Depend on pve-doc-generator
+  
+  * use pve-doc-generator
+
+  * various ExtJS6 GUI fixes
+
+  * disable suspend/resume on containers
+
+  * update translation files
+
+  * use font-awesome icons for action buttons and cmdmenu
+
+  * use split button for shutdown/stop for vm/ct
+
+ -- Proxmox Support Team <support@proxmox.com>  Sun, 10 Apr 2016 15:49:23 +0200
+
 pve-manager (4.1-24) unstable; urgency=medium
 
   * updated logo to higher quality
