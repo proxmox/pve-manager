@@ -79,12 +79,6 @@ pvereport.1.pod: pvereport
 	perl -I.. -T -e "use PVE::CLI::$*; PVE::CLI::$*->generate_bash_completions();" >$@.tmp
 	mv $@.tmp $@
 
-pvectl.1.pod: pvectl
-	perl -I.. ./pvectl printmanpod >$@
-
-vzrestore.1.pod: vzrestore
-	perl -I.. ./vzrestore printmanpod >$@
-
 pvemailforward: pvemailforward.c
 	gcc $< -o $@ -g -O2 -Wall -ldl -lc
 
