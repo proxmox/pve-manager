@@ -156,10 +156,6 @@ Ext.define('PVE.window.Wizard', {
 	    me.down('#submit').setDisabled(!valid);    
 	    me.down('#back').setDisabled(tp.items.indexOf(newcard) == 0);
 
-	    if (oldcard && !check_card(oldcard)) {
-		disable_at(oldcard);
-	    }
-
 	    var next = tp.items.indexOf(newcard) + 1;
 	    var ntab = tp.items.getAt(next);
 	    if (valid && ntab && !newcard.onSubmit) {
