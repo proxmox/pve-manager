@@ -242,6 +242,8 @@ Ext.define('PVE.form.ComboGrid', {
 
 	me.mon(me.store, 'beforeload', function() {
 	    if (!me.isDisabled()) {
+		// prevent user input and field validation until the store is successfully loaded
+		me.suspendEvent('validitychange');
 		me.setDisabled(true);
 		me.enableAfterLoad = true;
 	    }
@@ -255,6 +257,8 @@ Ext.define('PVE.form.ComboGrid', {
 		if (me.enableAfterLoad) {
 		    delete me.enableAfterLoad;
 		    me.setDisabled(false);
+		    me.resumeEvent('validitychange');
+		    me.isValid(); // if field was disabled then reenabled, validation status was lost
 		}
 
 		var def = me.getValue() || me.preferredValue;
