@@ -898,17 +898,42 @@ Ext.define('PVE.Utils', { statics: {
 
     render_resource_type: function(value, metaData, record, rowIndex, colIndex, store) {
 
-	var cls = 'pve-itype-icon-' + value;
+	var icon = '';
+	var gridcls = '';
 
-	if (record.data.running) {
-	    metaData.tdCls = cls + "-running";
-	} else if (record.data.template) {
-	    metaData.tdCls = cls + "-template";	    
-	} else {
-	    metaData.tdCls = cls;
+	switch (value) {
+	    case 'lxc': icon = 'cube';
+			gridcls = '-stopped';
+			break;
+	    case 'qemu': icon = 'desktop';
+			 gridcls = '-stopped';
+			 break;
+	    case 'node': icon = 'building';
+			 gridcls = '-offline';
+			 break;
+	    case 'storage': icon = 'database'; break;
+	    case 'pool': icon = 'tags'; break;
+	    default: icon = 'file';
 	}
 
-	return value;
+	if (value === 'lxc' || value === 'qemu') {
+	    if (record.data.running && record.data.status !== 'paused') {
+		gridcls = '-running';
+	    } else if (record.data.running) {
+		gridcls = '-paused';
+	    }
+	    if (record.data.template) {
+		icon = 'file-o';
+		gridcls = '-template-' + value;
+	    }
+	} else if (value === 'node') {
+	    if (record.data.running) {
+		gridcls = '-online'
+	    }
+	}
+
+	var fa = '<i class="fa fa-fw x-fa-grid' + gridcls  +  ' fa-' + icon  + '"></i> '
+	return fa + value;
     },
 
     render_uptime: function(value, metaData, record, rowIndex, colIndex, store) {

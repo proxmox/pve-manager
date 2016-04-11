@@ -8,27 +8,36 @@ Ext.define('PVE.tree.ResourceTree', {
     statics: {
 	typeDefaults: {
 	    node: { 
-		iconCls: 'x-tree-node-server',
+		iconCls: 'fa fa-building  x-fa-tree',
 		text: gettext('Nodes')
 	    },
 	    pool: { 
-		iconCls: 'x-tree-node-pool',
+		iconCls: 'fa fa-tags fa-dark  x-fa-tree',
 		text: gettext('Resource Pool')
 	    },
 	    storage: {
-		iconCls: 'x-tree-node-harddisk',
+		iconCls: 'fa fa-database fa-dark  x-fa-tree',
 		text: gettext('Storage')
 	    },
 	    qemu: {
-		iconCls: 'x-tree-node-computer',
+		iconCls: 'fa fa-desktop  x-fa-tree',
 		text: gettext('Virtual Machine')
 	    },
 	    lxc: {
-		iconCls: 'x-tree-node-lxc',
+		//iconCls: 'x-tree-node-lxc',
+		iconCls: 'fa fa-cube  x-fa-tree',
 		text: gettext('LXC Container')
-	    } 
+	    },
+	    template: {
+		iconCls: 'fa fa-file-o fa-dark  x-fa-tree-template'
+	    },
+	    datacenter: {
+		iconCls: 'fa fa-server x-fa-tree-datacenter',
+	    }
 	}
     },
+
+    useArrows: true,
 
     // private
     nodeSortFn: function(node1, node2) {
@@ -94,10 +103,34 @@ Ext.define('PVE.tree.ResourceTree', {
 	var me = this;
 
 	var defaults = PVE.tree.ResourceTree.typeDefaults[info.type];
+	if (info.id === 'root') {
+	    defaults = PVE.tree.ResourceTree.typeDefaults['datacenter'];
+	} else if (info.type === 'type') {
+	    defaults = PVE.tree.ResourceTree.typeDefaults[info.groupbyid];
+	}
 	if (defaults && defaults.iconCls) {
-	    var running = info.running ? '-running' : '';
-	    var template = info.template ? '-template' : '';
-	    info.iconCls = defaults.iconCls + running + template;
+	    var iconClsAdd = '';
+
+	    if (info.running && info.type === 'node') {
+		iconClsAdd = '-online';
+	    } else if (info.running) {
+		iconClsAdd = '-running';
+		if (info.status === 'paused') {
+		    iconClsAdd = '-paused';
+		}
+	    } else if (info.type === 'lxc' || info.type === 'qemu') {
+		iconClsAdd = '-stopped';
+	    } else if (info.type === 'node') {
+		iconClsAdd = '-offline';
+	    }
+
+	    info.iconCls = defaults.iconCls + iconClsAdd;
+
+	    if (info.template) {
+		iconClsAdd = '-template';
+		info.iconCls = PVE.tree.ResourceTree.typeDefaults['template'].iconCls + '-' + info.type;
+	    }
+
 	}
     },
 
@@ -201,7 +234,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	    // fixme: suspend events ?
 
 	    var rootnode = me.store.getRootNode();
-	    
+	    me.setIconCls(rootnode.data);
 	    // remember selected node (and all parents)
 	    var sm = me.getSelectionModel();
 

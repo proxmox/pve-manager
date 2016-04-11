@@ -23,7 +23,7 @@ Ext.define('PVE.data.ResourceStore', {
 		renderer: PVE.Utils.render_resource_type,
 		sortable: true,
 		hideable: false,
-		width: 80
+		width: 100
 	    },
 	    id: {
 		header: 'ID',
