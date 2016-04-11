@@ -49,7 +49,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    {
 		text: gettext('Start'),
 		iconCls: 'fa fa-fw fa-play',
-		disabled: running,
+		disabled: running || suspended,
 		handler: function() {
 		    vm_command('start');
 		}
@@ -131,7 +131,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    },
 	    {
 		text: gettext('Convert to template'),
-		iconCls: 'fa fa-fw fa-sticky-note-o',
+		iconCls: 'fa fa-fw fa-file-o',
 		handler: function() {
 		    var msg = PVE.Utils.format_task_description('qmtemplate', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
