@@ -335,6 +335,7 @@ Ext.define('PVE.StdWorkspace', {
 	    pack: 'end',
 	    margin: '3 5 0 0',
 	    baseCls: 'x-btn',
+	    iconCls: 'fa fa-desktop',
 	    text: gettext("Create VM"),
 	    disabled: !caps.vms['VM.Allocate'],
 	    handler: function() {
@@ -347,6 +348,7 @@ Ext.define('PVE.StdWorkspace', {
 	    pack: 'end',
 	    margin: '3 5 0 0',
 	    baseCls: 'x-btn',
+	    iconCls: 'fa fa-cube',
 	    text: gettext("Create CT"),
 	    disabled: !caps.vms['VM.Allocate'],
 	    handler: function() {
@@ -401,6 +403,7 @@ Ext.define('PVE.StdWorkspace', {
 			    margin: '0 5 0 0',
 			    xtype: 'button',
 			    baseCls: 'x-btn',
+			    iconCls: 'fa fa-sign-out',
 			    text: gettext("Logout"),
 			    handler: function() { 
 				PVE.data.ResourceStore.stopUpdate();
