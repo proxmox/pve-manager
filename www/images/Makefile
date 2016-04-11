@@ -14,6 +14,11 @@ all:
 # unchecked.png converted from extjs examples/ux/css/images/unchecked.gif
 # swap.png downloaded from https://www.iconfinder.com/icons/17009/arrows_exchange_interact_refresh_reload_swap_sync_update_icon#size=16
 
+# icon-ram, icon-cpu, icon-cd
+# are self made (sources as .xcf)
+# icon-swap, icon-display, icon-harddisk, icon-keyboard, icon-network
+# come from fontawesome (respective fa-refresh, fa-desktop, fa-hdd-o, fa-keyboard-o, fa-exchange)
+
 GNOME_IMAGES = 			\
 	checked.png		\
 	unchecked.png 		\
@@ -48,7 +53,15 @@ IMAGES = ${GNOME_IMAGES}	\
 	openvz-on.png		\
 	openvz-off.png		\
 	blank.gif		\
-	swap.png
+	swap.png		\
+	icon-ram.png		\
+	icon-cpu.png		\
+	icon-swap.png		\
+	icon-cd.png		\
+	icon-network.png	\
+	icon-display.png	\
+	icon-harddisk.png	\
+	icon-keyboard.png
 
 .PHONY: install 
 install: ${IMAGES}
