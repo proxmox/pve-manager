@@ -14,6 +14,8 @@ pve-manager (4.1-25) unstable; urgency=medium
 
   * use split button for shutdown/stop for vm/ct
 
+  * qemu: fix parse vlan trunks
+
  -- Proxmox Support Team <support@proxmox.com>  Sun, 10 Apr 2016 15:49:23 +0200
 
 pve-manager (4.1-24) unstable; urgency=medium
