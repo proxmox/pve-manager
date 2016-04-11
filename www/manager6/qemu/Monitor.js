@@ -100,6 +100,10 @@ Ext.define('PVE.qemu.Monitor', {
 				var cmd = f.getValue();
 				f.setValue('');
 				executeCmd(cmd);
+			    } else if (e.getKey() === e.PAGE_UP) {
+				textbox.scrollBy(0, -0.9*textbox.getHeight(), false);
+			    } else if (e.getKey() === e.PAGE_DOWN) {
+				textbox.scrollBy(0, 0.9*textbox.getHeight(), false);
 			    }
 			}
 		    }
