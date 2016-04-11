@@ -279,7 +279,8 @@ Ext.define('PVE.tree.ResourceTree', {
 			// tree item has been updated
 			if ((item.data.text !== olditem.data.text) ||
 			    (item.data.running !== olditem.data.running) ||
-			    (item.data.template !== olditem.data.template)) {
+			    (item.data.template !== olditem.data.template) ||
+			    (item.data.status !== olditem.data.status)) {
 			    //console.log("changed node/text/running " + olditem.data.id);
 			    changed = true;
 			}
