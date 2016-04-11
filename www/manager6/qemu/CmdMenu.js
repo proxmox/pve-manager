@@ -1,6 +1,7 @@
 Ext.define('PVE.qemu.CmdMenu', {
     extend: 'Ext.menu.Menu',
 
+    showSeparator: false,
     initComponent: function() {
 	var me = this;
 
@@ -55,20 +56,9 @@ Ext.define('PVE.qemu.CmdMenu', {
 		}
 	    },
 	    {
-		text: gettext('Migrate'),
-		iconCls: 'fa fa-fw fa-send-o',
-		handler: function() {
-		    var win = Ext.create('PVE.window.Migrate', {
-			vmtype: 'qemu',
-			nodename: nodename,
-			vmid: vmid
-		    });
-		    win.show();
-		}
-	    },
-	    {
 		text: gettext('Suspend'),
 		iconCls: 'fa fa-fw fa-pause',
+		hidden: suspended,
 		disabled: stopped || suspended,
 		handler: function() {
 		    var msg = PVE.Utils.format_task_description('qmsuspend', vmid);
@@ -83,7 +73,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    {
 		text: gettext('Resume'),
 		iconCls: 'fa fa-fw fa-play',
-		disabled: !suspended,
+		hidden: !suspended,
 		handler: function() {
 		    vm_command('resume');
 		}
@@ -118,6 +108,19 @@ Ext.define('PVE.qemu.CmdMenu', {
 		    });
 		}
 	    },
+	    { xtype: 'menuseparator' },
+	    {
+		text: gettext('Migrate'),
+		iconCls: 'fa fa-fw fa-send-o',
+		handler: function() {
+		    var win = Ext.create('PVE.window.Migrate', {
+			vmtype: 'qemu',
+			nodename: nodename,
+			vmid: vmid
+		    });
+		    win.show();
+		}
+	    },
 	    {
 		text: gettext('Clone'),
 		iconCls: 'fa fa-fw fa-clone',
@@ -149,6 +152,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		    });
 		}
 	    },
+	    { xtype: 'menuseparator' },
 	    {
 		text: gettext('Console'),
 		iconCls: 'fa fa-fw fa-terminal',

@@ -1,6 +1,7 @@
 Ext.define('PVE.lxc.CmdMenu', {
     extend: 'Ext.menu.Menu',
 
+    showSeparator: false,
     initComponent: function() {
 	var me = this;
 
@@ -53,21 +54,10 @@ Ext.define('PVE.lxc.CmdMenu', {
 		    vm_command('start');
 		}
 	    },
-	    {
-		text: gettext('Migrate'),
-		iconCls: 'fa fa-fw fa-send-o',
-		handler: function() {
-		    var win = Ext.create('PVE.window.Migrate', {
-			vmtype: 'lxc',
-			nodename: nodename,
-			vmid: vmid
-		    });
-		    win.show();
-		}
-	    },
 //	    {
 //		text: gettext('Suspend'),
 //		iconCls: 'fa fa-fw fa-pause',
+//		hidde: suspended,
 //		disabled: stopped || suspended,
 //		handler: function() {
 //		    var msg = PVE.Utils.format_task_description('vzsuspend', vmid);
@@ -83,7 +73,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 //	    {
 //		text: gettext('Resume'),
 //		iconCls: 'fa fa-fw fa-play',
-//		disabled: !suspended,
+//		hidden: !suspended,
 //		handler: function() {
 //		    vm_command('resume');
 //		}
@@ -118,6 +108,19 @@ Ext.define('PVE.lxc.CmdMenu', {
 		    });
 		}
 	    },
+	    { xtype: 'menuseparator', },
+	    {
+		text: gettext('Migrate'),
+		iconCls: 'fa fa-fw fa-send-o',
+		handler: function() {
+		    var win = Ext.create('PVE.window.Migrate', {
+			vmtype: 'lxc',
+			nodename: nodename,
+			vmid: vmid
+		    });
+		    win.show();
+		}
+	    },
 //	    {
 //		text: gettext('Convert to template'),
 //		icon: '/pve2/images/forward.png',
@@ -138,6 +141,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 //		    });
 //		}
 //	    },
+	    { xtype: 'menuseparator', },
 	    {
 		text: gettext('Console'),
 		iconCls: 'fa fa-fw fa-terminal',
