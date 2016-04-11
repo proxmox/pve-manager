@@ -192,6 +192,7 @@ Ext.define('PVE.dc.ACLView', {
 			items: [
 			    {
 				text: gettext('Group Permission'),
+				iconCls: 'fa fa-fw fa-group',
 				handler: function() {
 				    var win = Ext.create('PVE.dc.ACLAdd',{
 					aclType: 'group',
@@ -203,6 +204,7 @@ Ext.define('PVE.dc.ACLView', {
 			    },
 			    {
 				text: gettext('User Permission'),
+				iconCls: 'fa fa-fw fa-user',
 				handler: function() {
 				    var win = Ext.create('PVE.dc.ACLAdd',{
 					aclType: 'user',
