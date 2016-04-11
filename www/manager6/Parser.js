@@ -40,13 +40,13 @@ Ext.define('PVE.Parser', { statics: {
 	    } else if ((match_res = p.match(/^rate=(\d+(\.\d+)?)$/)) !== null) {
 		res.rate = match_res[1];
 	    } else if ((match_res = p.match(/^tag=(\d+(\.\d+)?)$/)) !== null) {
-                res.tag = match_res[1];
+		res.tag = match_res[1];
 	    } else if ((match_res = p.match(/^firewall=(\d+)$/)) !== null) {
-                res.firewall = match_res[1];
+		res.firewall = match_res[1];
 	    } else if ((match_res = p.match(/^link_down=(\d+)$/)) !== null) {
-                res.disconnect = match_res[1];
+		res.disconnect = match_res[1];
 	    } else if ((match_res = p.match(/^queues=(\d+)$/)) !== null) {
-                res.queues = match_res[1];
+		res.queues = match_res[1];
 	    } else if ((match_res = p.match(/^trunks=(\d+(?:-\d+)?(?:;\d+(?:-\d+)?)*)$/)) !== null) {
 		res.trunks = match_res[1];
 	    } else {
