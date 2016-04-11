@@ -36,15 +36,184 @@
     height: 14px;
 }
 
+/* this icon looks weird in sizes not n*14px */
+.x-btn-icon-el-default-toolbar-small.fa-ellipsis-v {
+    font-size: 14px;
+}
+
+.x-btn-icon-el-default-small {
+    height: 14px;
+    font-size: 14px;
+}
+
 /* icons for tree/snapshots/menus/etc.. */
+
+/* overwrite folder icons of theme */
+.x-tree-icon-parent,
+.x-tree-icon-parent-expanded {
+    background: none;
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 1.25em;
+    line-height: 1.6em;
+    color: #555;
+    margin-right: 5px;
+}
+
+.x-tree-icon-parent:not(.x-tree-icon-custom):before {
+   content: "\f114";
+}
+
+.x-tree-icon-parent-expanded:not(.x-tree-icon-custom):before {
+    content: "\f115";
+}
+
+/* loading in task list */
 .x-grid-row-loading {
     background: no-repeat center center;
     background-image:url(../ext6/theme-crisp/resources/images/loadmask/loading.gif);
 }
 
+/* console icon in task list */
 .x-grid-row-console {
     background: no-repeat center center;
-    background-image:url(../images/display.png);
+    background-image:url(../images/icon-display.png);
+}
+
+/* for font-awesome colors */
+/* tree icons */
+
+/* big symbols */
+.x-fa-tree,
+.x-fa-tree-running,
+.x-fa-tree-stopped,
+.x-fa-tree-paused,
+.x-fa-tree-online,
+.x-fa-tree-offline,
+.x-fa-tree-template-lxc,
+.x-fa-tree-template-qemu,
+.x-fa-tree-datacenter {
+    font-size: 1.25em;
+    line-height: 1.6em;
+    color: #555;
+    margin-right: 5px;
+}
+
+/* grid icons (resources, etc) */
+.x-fa-grid,
+.x-fa-grid-running,
+.x-fa-grid-stopped,
+.x-fa-grid-paused,
+.x-fa-grid-online,
+.x-fa-grid-offline,
+.x-fa-grid-template-lxc,
+.x-fa-grid-template-qemu {
+    font-size: 1.25em;
+    color: #555;
+    margin-right: 5px;
+}
+
+/* the running vms are darker */
+.x-fa-tree-running,
+.x-fa-grid-running {
+    color: #000;
+}
+
+/* the small icons */
+.x-fa-tree-running:after,
+.x-fa-tree-stopped:after,
+.x-fa-tree-paused:after,
+.x-fa-tree-template-lxc:after,
+.x-fa-tree-template-qemu:after,
+.x-fa-tree-online:after,
+.x-fa-tree-offline:after,
+.x-fa-grid:after,
+.x-fa-grid-running:after,
+.x-fa-grid-stopped:after,
+.x-fa-grid-paused:after,
+.x-fa-grid-online:after,
+.x-fa-grid-offline:after,
+.x-fa-grid-template-lxc:after,
+.x-fa-grid-template-qemu:after {
+    position: relative;
+    left: -5px;
+    top: 1px;
+    font-size: 0.75em;
+    text-shadow: -1px 0px 2px #fff;
+    content: "\ ";
+}
+
+.x-fa-tree-online:after,
+.x-fa-grid-online:after {
+    content: "\f058";
+    color: #009828;
+}
+
+.x-fa-tree-offline:after,
+.x-fa-grid-offline:after {
+    content: "\f057";
+    color: #CC1800;
+}
+
+.x-fa-tree-running:after,
+.x-fa-grid-running:after {
+    content: "\f04b";
+    color: #009828;
+}
+
+.x-fa-tree-paused:after,
+.x-fa-grid-paused:after {
+    content: "\f04c";
+    color: #CC8E00;
+    font-size: 0.6em;
+}
+
+.x-fa-tree-stopped,
+.x-fa-grid-stopped,
+.x-fa-tree-offline,
+.x-fa-grid-offline {
+    color: #cfcfcf;
+}
+
+/*
+.x-fa-tree-stopped:after {
+  content: "\f04d";
+  color: #f5c5c5;
+  font-size: 0.5em;
+}
+*/
+
+.x-fa-tree-template-lxc:after,
+.x-fa-grid-template-lxc:after {
+    content: "\f1b2";
+    background: #fff;
+}
+
+
+.x-fa-tree-template-qemu:after,
+.x-fa-grid-template-qemu:after {
+    content : "\f108";
+    background: #fff;
+}
+
+.x-grid-item-over
+.x-fa-tree-template-qemu:after,
+.x-grid-item-over
+.x-fa-tree-template-lxc:after {
+    background-color: #e2eff9;
+    text-shadow: -1px 0px 2px #e2eff9;
+}
+
+.x-grid-item-selected
+.x-fa-tree-template-qemu:after,
+.x-grid-item-selected
+.x-fa-tree-template-lxc:after {
+    background-color: #c2ddf2;
+    text-shadow: -1px 0px 2px #c2ddf2;
 }
 
 .pve-itype-icon-virt-viewer,
@@ -79,28 +248,7 @@
 .x-tree-node-computer,
 .x-grid-tree-node-expanded .x-tree-node-computer
 {
-    background-image:url(../images/computer.png);
-}
-
-.pve-itype-icon-qemu,
-.x-tree-node-computer,
-.x-grid-tree-node-expanded .x-tree-node-computer
-{
-    background-image:url(../images/computer.png);
-}
-
-.pve-itype-icon-qemu-running,
-.x-tree-node-computer-running,
-.x-grid-tree-node-expanded .x-tree-node-computer-running
-{
-    background-image:url(../images/computer-on.png);
-}
-
-.pve-itype-icon-qemu-template,
-.x-tree-node-computer-template,
-.x-grid-tree-node-expanded .x-tree-node-computer-template
-{
-    background-image:url(../images/computer-template.png);
+    background-image:url(../images/icon-display.png);
 }
 
 .pve-itype-icon-lxc,
@@ -110,18 +258,11 @@
     background-image:url(../images/lxc-off.png);
 }
 
-.pve-itype-icon-lxc-template,
-.x-tree-node-lxc-template,
-.x-grid-tree-node-expanded .x-tree-node-lxc-template
-{
-    background-image:url(../images/computer-template.png);
-}
-
 .pve-itype-icon-swap,
 .x-tree-node-lxc-swap,
 .x-grid-tree-node-expanded .x-tree-lxc-swap
 {
-    background-image:url(../images/swap.png);
+    background-image:url(../images/icon-swap.png);
 }
 
 .pve-itype-icon-lxc-running,
@@ -131,38 +272,17 @@
     background-image:url(../images/lxc-on.png);
 }
 
-.pve-itype-icon-node,
-.x-tree-node-server,
-.x-grid-tree-node-expanded .x-tree-node-server
-{
-    background-image:url(../images/network-server-off.png);
-}
-
-.pve-itype-icon-node-running,
-.x-tree-node-server-running,
-.x-grid-tree-node-expanded .x-tree-node-server-running
-{
-    background-image:url(../images/network-server-on.png);
-}
-
 .pve-itype-icon-storage,
 .x-tree-node-harddisk,
 .x-grid-tree-node-expanded .x-tree-node-harddisk
 {
-    background-image:url(../images/drive-harddisk.png);
+    background-image:url(../images/icon-harddisk.png);
 }
 
 .x-tree-node-snapshot,
 .x-grid-tree-node-expanded .x-tree-node-snapshot
 {
     background-image:url(../images/snapshot.png);
-}
-
-.pve-itype-icon-pool,
-.x-tree-node-pool,
-.x-grid-tree-node-expanded .x-tree-node-pool
-{
-    background-image:url(../images/connect_established.png);
 }
 
 .pve-itype-icon-itype
@@ -177,32 +297,32 @@
 
 .pve-itype-icon-network
 {
-    background-image:url(../images/network.png);
+    background-image:url(../images/icon-network.png);
 }
 
 .pve-itype-icon-keyboard
 {
-    background-image:url(../images/keyboard.png);
+    background-image:url(../images/icon-keyboard.png);
 }
 
 .pve-itype-icon-cdrom
 {
-    background-image:url(../images/cdrom.png);
+    background-image:url(../images/icon-cd.png);
 }
 
 .pve-itype-icon-memory
 {
-    background-image:url(../images/memory.png);
+    background-image:url(../images/icon-ram.png);
 }
 
 .pve-itype-icon-processor
 {
-    background-image:url(../images/processor.png);
+    background-image:url(../images/icon-cpu.png);
 }
 
 .pve-itype-icon-display
 {
-    background-image:url(../images/display.png);
+    background-image:url(../images/icon-display.png);
 }
 
 .pve-itype-icon-tigervnc
