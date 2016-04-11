@@ -47,6 +47,8 @@ Ext.define('PVE.Parser', { statics: {
                 res.disconnect = match_res[1];
 	    } else if ((match_res = p.match(/^queues=(\d+)$/)) !== null) {
                 res.queues = match_res[1];
+	    } else if ((match_res = p.match(/^trunks=(\d+(?:-\d+)?(?:;\d+(?:-\d+)?)*)$/)) !== null) {
+		res.trunks = match_res[1];
 	    } else {
 		errors = true;
 		return false; // break
@@ -83,6 +85,9 @@ Ext.define('PVE.Parser', { statics: {
 	}
 	if (net.disconnect) {
 	    netstr += ",link_down=" + net.disconnect;
+	}
+	if (net.trunks) {
+	    netstr += ",trunks=" + net.trunks;
 	}
 	return netstr;
     },
