@@ -31,6 +31,7 @@ Ext.define('PVE.node.Config', {
 
 	var actionBtn = Ext.create('Ext.Button', {
 	    text: gettext('More'),
+	    iconCls: 'fa fa-fw fa-ellipsis-v',
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
 	    menu: new Ext.menu.Menu({
 		items: [
