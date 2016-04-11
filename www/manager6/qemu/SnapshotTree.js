@@ -41,12 +41,12 @@ Ext.define('PVE.qemu.SnapshotTree', {
 		    if (item.name === 'current') {
 			digest = item.digest + item.running;
 			if (item.running) {
-			    item.iconCls = 'x-tree-node-computer-running';
+			    item.iconCls = 'fa fa-fw fa-desktop x-fa-tree-running';
 			} else {
-			    item.iconCls = 'x-tree-node-computer';
+			    item.iconCls = 'fa fa-fw fa-desktop x-fa-tree';
 			}
 		    } else {
-			item.iconCls = 'x-tree-node-snapshot';
+			item.iconCls = 'fa fa-fw fa-history x-fa-tree';
 		    }
 		    idhash[item.name] = item;
 		});
