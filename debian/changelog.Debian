@@ -2,6 +2,8 @@ pve-manager (4.1-26) unstable; urgency=medium
 
   * do not depend of pve-doc-generator (this should be a Build-Depend instead)
 
+  * revert default compress mode for vzdump to 0
+
  -- Proxmox Support Team <support@proxmox.com>  Tue, 12 Apr 2016 12:41:34 +0200
 
 pve-manager (4.1-25) unstable; urgency=medium

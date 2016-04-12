@@ -58,7 +58,7 @@ my $confdesc = {
 	description => "Compress dump file.",
 	optional => 1,
 	enum => ['0', '1', 'gzip', 'lzo'],
-	default => 'lzo',
+	default => '0',
     },
     pigz=> {
 	type => "integer",
