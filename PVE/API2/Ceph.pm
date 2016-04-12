@@ -138,17 +138,16 @@ __PACKAGE__->register_method ({
 	    }
 	}
 
-	my $rootnode;
+	my $roots = [];
 	foreach my $e (@{$res->{nodes}}) {
 	    if (!$nodes->{$e->{id}}->{parent}) {
-		$rootnode = $newnodes->{$e->{id}};
-		last;
+		push @$roots, $newnodes->{$e->{id}};
 	    }
 	}
 
-	die "no root node\n" if !$rootnode;
+	die "no root node\n" if !@$roots;
 
-	my $data = { root => $rootnode };
+	my $data = { root => { leaf =>  0, children => $roots } };
 
 	return $data;
     }});
