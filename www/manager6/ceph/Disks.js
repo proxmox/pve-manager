@@ -61,7 +61,7 @@ Ext.define('PVE.node.CephDiskList', {
 
 	var rstore = Ext.create('PVE.data.UpdateStore', {
 	    interval: 3000,
-	    storeid: 'ceph-disk-list',
+	    storeid: 'ceph-disk-list' + nodename,
 	    model: 'ceph-disk-list',
 	    proxy: {
                 type: 'pve',

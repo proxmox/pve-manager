@@ -13,7 +13,7 @@ Ext.define('PVE.node.ServiceView', {
 
 	var rstore = Ext.create('PVE.data.UpdateStore', {
 	    interval: 1000,
-	    storeid: 'pve-services',
+	    storeid: 'pve-services' + nodename,
 	    model: 'pve-services',
 	    proxy: {
                 type: 'pve',

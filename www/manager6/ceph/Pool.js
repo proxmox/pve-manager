@@ -138,7 +138,7 @@ Ext.define('PVE.node.CephPoolList', {
 
 	var rstore = Ext.create('PVE.data.UpdateStore', {
 	    interval: 3000,
-	    storeid: 'ceph-pool-list',
+	    storeid: 'ceph-pool-list' + nodename,
 	    model: 'ceph-pool-list',
 	    proxy: {
                 type: 'pve',

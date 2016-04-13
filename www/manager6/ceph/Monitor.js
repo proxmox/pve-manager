@@ -63,7 +63,7 @@ Ext.define('PVE.node.CephMonList', {
 
 	var rstore = Ext.create('PVE.data.UpdateStore', {
 	    interval: 3000,
-	    storeid: 'ceph-mon-list',
+	    storeid: 'ceph-mon-list' + nodename,
 	    model: 'ceph-mon-list',
 	    proxy: {
                 type: 'pve',
