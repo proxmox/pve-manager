@@ -1,172 +1,140 @@
 Ext.define('PVE.qemu.BootOrderPanel', {
     extend: 'PVE.panel.InputPanel',
-
+    alias: 'widget.pveQemuBootOrderPanel',
     vmconfig: {}, // store loaded vm config
 
     bootdisk: undefined,
-    curSel1: '',
-    curSel2: '',
-    curSel3: '',
+    selection: [],
+    list: [],
+
+    setVMConfig: function(vmconfig) {
+	var me = this;
+	me.vmconfig = vmconfig;
+	var order = me.vmconfig.boot || 'cdn';
+	me.bootdisk = me.vmconfig.bootdisk || undefined;
+
+	// get the first 3 characters
+	// ignore the rest (there should never be more than 3)
+	me.selection = order.split('').slice(0,3);
+
+	// build bootdev list
+	me.list = [];
+	Ext.Object.each(me.vmconfig, function(key, value) {
+	    if ((/^(ide|sata|scsi|virtio)\d+$/).test(key) &&
+		!(/media=cdrom/).test(value)) {
+		me.list.push([key, "Disk '" + key + "'"]);
+	    }
+	});
+
+	me.list.push(['d', 'CD-ROM']);
+	me.list.push(['n', gettext('Network')]);
+	me.list.push(['__none__', PVE.Utils.noneText]);
+
+	me.recomputeList();
+    },
 
     onGetValues: function(values) {
 	var me = this;
-
-	var order = '';
-
-	if (me.curSel1) {
-	    order = order + me.curSel1;
-	}
-	if (me.curSel2) {
-	    order = order + me.curSel2;
-	}
-	if (me.curSel3) {
-	    order = order + me.curSel3;
-	}
-
+	var order = me.selection.join('');
 	var res = { boot: order };
-	if (me.bootdisk && (me.curSel1 === 'c' || me.curSel2 === 'c' || me.curSel3 === 'c') ) {
-	    res.bootdisk =  me.bootdisk;
+
+	if  (me.bootdisk && order.indexOf('c') !== -1) {
+	    res['bootdisk'] = me.bootdisk;
 	} else {
 	    res['delete'] = 'bootdisk';
-	} 
+	}
 
 	return res;
     },
 
-    setVMConfig: function(vmconfig) {
-	var me = this;
+    recomputeSelection: function(combobox, newVal, oldVal) {
+	var me = this.up('#inputpanel');
+	me.selection = [];
+	me.comboboxes.forEach(function(item) {
+	    var val = item.getValue();
 
-	me.vmconfig = vmconfig;
+	    // when selecting an already selected item,
+	    // switch it around
+	    if (val === newVal &&
+		item.name !== combobox.name &&
+		newVal !== '__none__') {
+		// swap items
+		val = oldVal;
+	    }
 
-	var order = me.vmconfig.boot || 'cdn';
-	me.bootdisk = me.vmconfig.bootdisk;
-	if (!me.vmconfig[me.bootdisk]) {
-	    me.bootdisk = undefined;
-	}
-	me.curSel1 = order.substring(0, 1) || '';
-	me.curSel2 = order.substring(1, 2) || '';
-	me.curSel3 = order.substring(2, 3) || '';
+	    // push 'c','d' or 'n' in the array
+	    if ((/^(ide|sata|scsi|virtio)\d+$/).test(val)) {
+		me.selection.push('c');
+		me.bootdisk = val;
+	    } else if (val === 'd' ||
+		       val === 'n') {
+		me.selection.push(val);
+	    }
+	});
 
-	me.compute_sel1();
-
-	me.kv1.resetOriginalValue();
-	me.kv2.resetOriginalValue();
-	me.kv3.resetOriginalValue();
+	me.recomputeList();
     },
 
-    genList: function(includeNone, sel1, sel2) {
+    recomputeList: function(){
 	var me = this;
-	var list = [];
-
-	if (sel1 !== 'c' && (sel2 !== 'c')) {
-	    Ext.Object.each(me.vmconfig, function(key, value) {
-		if ((/^(ide|sata|scsi|virtio)\d+$/).test(key) &&
-		    !(/media=cdrom/).test(value)) {
-		    list.push([key, "Disk '" + key + "'"]);
-		}
-	    });
-	}
-
-	if (sel1 !== 'd' && (sel2 !== 'd')) {
-	    list.push(['d', 'CD-ROM']);
-	}
-	if (sel1 !== 'n' && (sel2 !== 'n')) {
-	    list.push(['n', gettext('Network')]);
-	}
-	//if (sel1 !== 'a' && (sel2 !== 'a')) {
-	//    list.push(['a', 'Floppy']);
-	//}
-	
-	if (includeNone) {
-	    list.push(['', PVE.Utils.noneText]);
-	}
-
-	return list;
-    },
-
-    compute_sel3: function() {
-	var me = this;
-	var list = me.genList(true, me.curSel1, me.curSel2);
-	me.kv3.store.loadData(list);
-	me.kv3.setValue((me.curSel3 === 'c') ? me.bootdisk : me.curSel3);
-    },
-
-    compute_sel2: function() {
-	var me = this;
-	var list = me.genList(true, me.curSel1);
-	me.kv2.store.loadData(list);
-	me.kv2.setValue((me.curSel2 === 'c') ? me.bootdisk : me.curSel2);
-	me.compute_sel3();
-    },
-
-    compute_sel1: function() {
-	var me = this;
-	var list = me.genList(false);
-	me.kv1.store.loadData(list);
-	me.kv1.setValue((me.curSel1 === 'c') ? me.bootdisk : me.curSel1);
-	me.compute_sel2();
+	// set the correct values in the kvcomboboxes
+	var cnt = 0;
+	me.comboboxes.forEach(function(item) {
+	    if (cnt === 0) {
+		// never show 'none' on first combobox
+		item.store.loadData(me.list.slice(0, me.list.length-1));
+	    } else {
+		item.store.loadData(me.list);
+	    }
+	    item.suspendEvents(false);
+	    if (cnt < me.selection.length) {
+		item.setValue((me.selection[cnt] !== 'c')?me.selection[cnt]:me.bootdisk);
+	    } else if (cnt === 0){
+		item.setValue('');
+	    } else {
+		item.setValue('__none__');
+	    }
+	    cnt++;
+	    item.resumeEvents(true);
+	    item.validate();
+	});
     },
 
     initComponent : function() {
 	var me = this;
 
-	me.kv1 = Ext.create('PVE.form.KVComboBox', {
-	    fieldLabel: gettext('Boot device') + " 1",
-	    labelWidth: 120,
-	    name: 'bd1',
-	    allowBlank: false,
-	    data: []
-	});
-
-	me.kv2 = Ext.create('PVE.form.KVComboBox', {
-	    fieldLabel: gettext('Boot device') + " 2",
-	    labelWidth: 120,
-	    name: 'bd2',
-	    allowBlank: false,
-	    data: []
-	});
-
-	me.kv3 = Ext.create('PVE.form.KVComboBox', {
-	    fieldLabel: gettext('Boot device') + " 3",
-	    labelWidth: 120,
-	    name: 'bd3',
-	    allowBlank: false,
-	    data: []
-	});
-
-	me.mon(me.kv1, 'change', function(t, value) {
-	    if ((/^(ide|sata|scsi|virtio)\d+$/).test(value)) {
-		me.curSel1 = 'c';
-		me.bootdisk = value;
-	    } else {
-		me.curSel1 = value;
-	    }
-	    me.compute_sel2();
-	});
-
-	me.mon(me.kv2, 'change', function(t, value) {
-	    if ((/^(ide|sata|scsi|virtio)\d+$/).test(value)) {
-		me.curSel2 = 'c';
-		me.bootdisk = value;
-	    } else {
-		me.curSel2 = value;
-	    }
-	    me.compute_sel3();
-	});
-
-	me.mon(me.kv3, 'change', function(t, value) {
-	    if ((/^(ide|sata|scsi|virtio)\d+$/).test(value)) {
-		me.curSel3 = 'c';
-		me.bootdisk = value;
-	    } else {
-		me.curSel3 = value;
-	    }
-	});
-
-	Ext.apply(me, {
-	    items: [ me.kv1, me.kv2, me.kv3 ]	
-	});
-	
+	// this has to be done here, because of
+	// the way our inputPanel class handles items
+	me.comboboxes = [
+		Ext.createWidget('pveKVComboBox', {
+		fieldLabel: gettext('Boot device') + " 1",
+		labelWidth: 120,
+		name: 'bd1',
+		allowBlank: false,
+		listeners: {
+		    change: me.recomputeSelection,
+		}
+	    }),
+		Ext.createWidget('pveKVComboBox', {
+		fieldLabel: gettext('Boot device') + " 2",
+		labelWidth: 120,
+		name: 'bd2',
+		allowBlank: false,
+		listeners: {
+		    change: me.recomputeSelection,
+		}
+	    }),
+		Ext.createWidget('pveKVComboBox', {
+		fieldLabel: gettext('Boot device') + " 3",
+		labelWidth: 120,
+		name: 'bd3',
+		allowBlank: false,
+		listeners: {
+		    change: me.recomputeSelection,
+		}
+	    }),
+	];
+	Ext.apply(me, { items: me.comboboxes });
 	me.callParent();
     }
 });
@@ -174,20 +142,19 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 Ext.define('PVE.qemu.BootOrderEdit', {
     extend: 'PVE.window.Edit',
 
+    items: {
+	xtype: 'pveQemuBootOrderPanel',
+	itemId: 'inputpanel',
+    },
+
+    subject: gettext('Boot Order'),
+
     initComponent : function() {
 	var me = this;
-	
-	var ipanel = Ext.create('PVE.qemu.BootOrderPanel', {});
-
-	me.items = [ ipanel ];
-
-	me.subject = gettext('Boot order');
-
 	me.callParent();
-	
 	me.load({
 	    success: function(response, options) {
-		ipanel.setVMConfig(response.result.data);
+		me.down('#inputpanel').setVMConfig(response.result.data);
 	    }
 	});
     }
