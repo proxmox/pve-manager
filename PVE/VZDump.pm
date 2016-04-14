@@ -92,7 +92,8 @@ my $confdesc = {
     },
     mailto => {
 	type => 'string', format => 'string-list',
-	description => "",
+	description => "Comma-separated list of email addresses that should" .
+	    " receive email notifications.",
 	optional => 1,
     },
     mailnotification => {
