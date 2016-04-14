@@ -350,6 +350,10 @@ sub read_vzdump_defaults {
     if (my $excludes = $res->{'exclude-path'}) {
 	$res->{'exclude-path'} = PVE::Tools::split_args($excludes);
     }
+    if (defined($res->{mailto})) {
+	my @mailto = PVE::Tools::split_list($res->{mailto});
+	$res->{mailto} = [ @mailto ];
+    }
 
     foreach my $key (keys %$defaults) {
 	$res->{$key} = $defaults->{$key} if !defined($res->{$key});
