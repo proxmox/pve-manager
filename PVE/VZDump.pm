@@ -130,7 +130,7 @@ my $confdesc = {
     },
     size => {
 	type => 'integer',
-	description => "LVM snapshot size in MB.",
+	description => "Unused, will be removed in a future release.",
 	optional => 1,
 	minimum => 500,
 	default => 1024,
@@ -1193,6 +1193,10 @@ sub verify_vzdump_parameters {
 	if $param->{exclude} && $param->{vmid};
 
     $param->{all} = 1 if defined($param->{exclude});
+
+    warn "option 'size' is deprecated and will be removed in a future " .
+	 "release, please update your script/configuration!\n"
+	if defined($param->{size});
 
     return if !$check_missing;
 

@@ -112,7 +112,7 @@ __PACKAGE__->register_method ({
 	die "you can only backup a single VM with option --stdout\n"
 	    if $param->{stdout} && scalar(@vmids) != 1;
 
-	foreach my $key (qw(maxfiles tmpdir dumpdir script size bwlimit ionice)) {
+	foreach my $key (qw(maxfiles tmpdir dumpdir script bwlimit ionice)) {
 	    raise_param_exc({ $key => "Only root may set this option."})
 		if defined($param->{$key}) && ($user ne 'root@pam');	    
 	}
