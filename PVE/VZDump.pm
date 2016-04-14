@@ -32,7 +32,7 @@ my @plugins = qw();
 my $confdesc = {
     vmid => {
 	type => 'string', format => 'pve-vmid-list',
-	description => "The ID of the VM you want to backup.",
+	description => "The ID of the guest system you want to backup.",
 	completion => \&PVE::Cluster::complete_local_vmid,
 	optional => 1,
     },
@@ -43,7 +43,7 @@ my $confdesc = {
     }),
     all => {
 	type => 'boolean',
-	description => "Backup all known VMs on this host.",
+	description => "Backup all known guest systems on this host.",
 	optional => 1,
 	default => 0,
     },
@@ -82,7 +82,7 @@ my $confdesc = {
     },
     exclude => {
 	type => 'string', format => 'pve-vmid-list',
-	description => "Exclude specified VMs (assumes --all)",
+	description => "Exclude specified guest systems (assumes --all)",
 	optional => 1,
     },
     'exclude-path' => {
@@ -159,14 +159,14 @@ my $confdesc = {
     },
     stopwait => {
 	type => 'integer',
-	description => "Maximal time to wait until a VM is stopped (minutes).",
+	description => "Maximal time to wait until a guest system is stopped (minutes).",
 	optional => 1,
 	minimum => 0,
 	default => 10, # 10 minutes
     },
     maxfiles => {
 	type => 'integer',
-	description => "Maximal number of backup files per VM.",
+	description => "Maximal number of backup files per guest system.",
 	optional => 1,
 	minimum => 1,
 	default => 1,
