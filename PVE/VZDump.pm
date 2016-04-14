@@ -582,33 +582,6 @@ sub new {
 
 }
 
-sub get_lvm_mapping {
-
-    my $devmapper;
-
-    my $cmd = ['lvs', '--units', 'm', '--separator', ':', '--noheadings',
-	       '-o', 'vg_name,lv_name,lv_size' ];
-
-    my $parser = sub {
-	my $line = shift;
-	if ($line =~ m|^\s*(\S+):(\S+):(\d+(\.\d+))[Mm]$|) {
-	    my $vg = $1;
-	    my $lv = $2;
-	    $devmapper->{"/dev/$vg/$lv"} = [$vg, $lv];
-	    my $qlv = $lv;
-	    $qlv =~ s/-/--/g;
-	    my $qvg = $vg;
-	    $qvg =~ s/-/--/g;
-	    $devmapper->{"/dev/mapper/$qvg-$qlv"} = [$vg, $lv];
-	}			
-    };
-
-    eval { PVE::Tools::run_command($cmd, errfunc => sub {}, outfunc => $parser); };
-    warn $@ if $@;
-
-    return $devmapper;
-}
-
 sub get_mount_info {
     my ($dir) = @_;
 
@@ -634,22 +607,6 @@ sub get_mount_info {
     warn $@ if $@;
 
     return $res;
-}
-
-sub get_lvm_device {
-    my ($dir, $mapping) = @_;
-
-    my $info = get_mount_info($dir);
-
-    return undef if !$info;
-   
-    my $dev = $info->{device};
-
-    my ($vg, $lv);
-
-    ($vg, $lv) = @{$mapping->{$dev}} if defined $mapping->{$dev};
-
-    return wantarray ? ($dev, $info->{mountpoint}, $vg, $lv, $info->{fstype}) : $dev;
 }
 
 sub getlock {
