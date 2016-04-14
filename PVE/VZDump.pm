@@ -49,7 +49,7 @@ my $confdesc = {
     },
     stdexcludes => {
 	type => 'boolean',
-	description => "Exclude temorary files and logs.",
+	description => "Exclude temporary files and logs.",
 	optional => 1,
 	default => 1,
     },
@@ -62,7 +62,7 @@ my $confdesc = {
     },
     pigz=> {
 	type => "integer",
-	description => "Uses pigz instead of gzip when N>0.".
+	description => "Use pigz instead of gzip when N>0.".
 	    " N=1 uses half of cores, N>1 uses N as thread count.",
 	optional => 1,
 	default => 0,
@@ -82,12 +82,12 @@ my $confdesc = {
     },
     exclude => {
 	type => 'string', format => 'pve-vmid-list',
-	description => "exclude specified VMs (assumes --all)",
+	description => "Exclude specified VMs (assumes --all)",
 	optional => 1,
     },
     'exclude-path' => {
 	type => 'string', format => 'string-alist',
-	description => "exclude certain files/directories (shell globs).",
+	description => "Exclude certain files/directories (shell globs).",
 	optional => 1,
     },
     mailto => {
