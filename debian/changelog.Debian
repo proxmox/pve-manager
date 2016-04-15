@@ -1,3 +1,9 @@
+pve-manager (4.1-30) unstable; urgency=medium
+
+  * GUI: use raw format for DRBD images
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 15 Apr 2016 08:38:06 +0200
+
 pve-manager (4.1-29) unstable; urgency=medium
 
   * Fix 'mailto: ...' in /etc/vzdump.conf
