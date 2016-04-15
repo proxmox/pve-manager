@@ -846,6 +846,35 @@ Ext.define('PVE.Utils', { statics: {
 	return Ext.Date.format(servertime, 'Y-m-d H:i:s');
     },
 
+    calculate_mem_usage: function(data) {
+	if (!Ext.isNumeric(data.mem) ||
+	    data.maxmem === 0 ||
+	    data.uptime < 1) {
+	    return -1;
+	}
+
+	return (data.mem / data.maxmem);
+    },
+
+    render_mem_usage_percent: function(value, metaData, record, rowIndex, colIndex, store) {
+	if (!Ext.isNumeric(value) || value === -1) {
+	    return '';
+	}
+	if (value > 1 ) {
+	    // we got no percentage but bytes
+	    var mem = value;
+	    var maxmem = record.data.maxmem;
+	    if (!record.data.uptime ||
+		maxmem === 0 ||
+		!Ext.isNumeric(mem)) {
+		return '';
+	    }
+
+	    return ((mem*100)/maxmem).toFixed(1) + " %";
+	}
+	return (value*100).toFixed(1) + " %";
+    },
+
     render_mem_usage: function(value, metaData, record, rowIndex, colIndex, store) {
 
 	var mem = value;
@@ -862,6 +891,26 @@ Ext.define('PVE.Utils', { statics: {
 	var per = (mem * 100) / maxmem;
 
 	return per.toFixed(1) + '%';
+    },
+
+    calculate_disk_usage: function(data) {
+
+	if (!Ext.isNumeric(data.disk) ||
+	    data.type === 'qemu' ||
+	    (data.type === 'lxc' && data.uptime === 0) ||
+	    data.maxdisk === 0) {
+	    return -1;
+	}
+
+	return (data.disk / data.maxdisk);
+    },
+
+    render_disk_usage_percent: function(value, metaData, record, rowIndex, colIndex, store) {
+	if (!Ext.isNumeric(value) || value === -1) {
+	    return '';
+	}
+
+	return (value * 100).toFixed(1) + " %";
     },
 
     render_disk_usage: function(value, metaData, record, rowIndex, colIndex, store) {
