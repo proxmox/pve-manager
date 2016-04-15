@@ -622,32 +622,14 @@ Ext.define('PVE.Utils', { statics: {
     format_size: function(size) {
 	/*jslint confusion: true */
 
-	if (size < 1024) {
-	    return size;
+	var units = ['', 'Ki', 'Mi', 'Gi', 'Ti', 'Pi', 'Ei', 'Zi', 'Yi'];
+	var num = 0;
+
+	while (size >= 1024 && ((num++)+1) < units.length) {
+	    size = size / 1024;
 	}
 
-	var kb = size / 1024;
-
-	if (kb < 1024) {
-	    return kb.toFixed(0) + "KiB";
-	}
-
-	var mb = size / (1024*1024);
-
-	if (mb < 1024) {
-	    return mb.toFixed(0) + "MiB";
-	}
-
-	var gb = mb / 1024;
-
-	if (gb < 1024) {
-	    return gb.toFixed(2) + "GiB";
-	}
-
-	var tb =  gb / 1024;
-
-	return tb.toFixed(2) + "TiB";
-
+	return size.toFixed((num > 0)?2:0) + " " + units[num] + "B";
     },
 
     format_html_bar: function(per, text) {
