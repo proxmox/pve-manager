@@ -180,6 +180,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 			    me.hdsizesel.setVisible(false);
 			} else if (rec.data.type === 'lvm' ||
 				   rec.data.type === 'lvmthin' ||
+				   rec.data.type === 'drbd' ||
 				   rec.data.type === 'rbd' ||
 				   rec.data.type === 'sheepdog' ||
 				   rec.data.type === 'zfs' ||
