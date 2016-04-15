@@ -721,7 +721,9 @@ __PACKAGE__->register_method ({
 		maximum => 3,
 	    },
 	    pg_bits => {
-		description => "Placement group bits, used to specify the default number of placement groups (Note: 'osd pool default pg num' does not work for deafult pools)",
+		description => "Placement group bits, used to specify the " .
+		    "default number of placement groups.\n\nNOTE: 'osd pool " .
+		    "default pg num' does not work for default pools.",
 		type => 'integer',
 		default => 6,
 		optional => 1,
