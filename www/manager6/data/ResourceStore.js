@@ -4,10 +4,10 @@ Ext.define('PVE.data.ResourceStore', {
 
     findVMID: function(vmid) {
 	var me = this, i;
-	
+
 	return (me.findExact('vmid', parseInt(vmid, 10)) >= 0);
     },
- 
+
     constructor: function(config) {
 	// fixme: how to avoid those warnings
 	/*jslint confusion: true */
@@ -198,7 +198,7 @@ Ext.define('PVE.data.ResourceStore', {
 		renderer: PVE.Utils.render_uptime,
 		sortable: true,
 		width: 110
-	    }, 
+	    },
 	    node: {
 		header: gettext('Node'),
 		type: 'string',
@@ -228,7 +228,7 @@ Ext.define('PVE.data.ResourceStore', {
 	    if (!Ext.isDefined(value.convert) && !Ext.isDefined(value.calculate)) {
 		fields.push({name: key, type: value.type});
 		fieldNames.push(key);
-	    } else if (key === 'text' || key === 'running') { 
+	    } else if (key === 'text' || key === 'running') {
 		fields.push({name: key, type: value.type, convert: value.convert});
 		fieldNames.push(key);
 	    } else {

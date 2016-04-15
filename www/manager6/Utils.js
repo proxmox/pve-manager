@@ -2,19 +2,19 @@ Ext.ns('PVE');
 
 // avoid errors related to Accessible Rich Internet Applications
 // (access for people with disabilities)
-// TODO reenable after all components are upgraded 
+// TODO reenable after all components are upgraded
 Ext.enableAria = false;
 Ext.enableAriaButtons = false;
 Ext.enableAriaPanels = false;
 
 // avoid errors when running without development tools
-if (!Ext.isDefined(Ext.global.console)) {   
-    var console = { 
-	dir: function() {}, 
-	log: function() {} 
+if (!Ext.isDefined(Ext.global.console)) {
+    var console = {
+	dir: function() {},
+	log: function() {}
     };
 }
-console.log("Starting PVE Manager"); 
+console.log("Starting PVE Manager");
 
 Ext.Ajax.defaultHeaders = {
     'Accept': 'application/json'
@@ -22,7 +22,7 @@ Ext.Ajax.defaultHeaders = {
 
 Ext.Ajax.on('beforerequest', function(conn, options) {
     if (PVE.CSRFPreventionToken) {
-	if (!options.headers) { 
+	if (!options.headers) {
 	    options.headers = {};
 	}
 	options.headers.CSRFPreventionToken = PVE.CSRFPreventionToken;
@@ -60,7 +60,7 @@ Ext.define('PVE.Utils', { statics: {
 
     // this class only contains static functions
 
-    toolkit: undefined, // (extjs|touch), set inside Toolkit.js 
+    toolkit: undefined, // (extjs|touch), set inside Toolkit.js
 
     log_severity_hash: {
 	0: "panic",
@@ -142,7 +142,7 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     render_network_iface_type: function(value) {
-	return PVE.Utils.network_iface_types[value] || 
+	return PVE.Utils.network_iface_types[value] ||
 	    PVE.Utils.unknownText;
     },
 
@@ -181,29 +181,29 @@ Ext.define('PVE.Utils', { statics: {
     kvm_keymaps: {
 	//ar: 'Arabic',
 	da: 'Danish',
-	de: 'German', 
-	'de-ch': 'German (Swiss)', 
-	'en-gb': 'English (UK)', 
+	de: 'German',
+	'de-ch': 'German (Swiss)',
+	'en-gb': 'English (UK)',
 	'en-us': 'English (USA)',
 	es: 'Spanish',
 	//et: 'Estonia',
 	fi: 'Finnish',
-	//fo: 'Faroe Islands', 
-	fr: 'French', 
-	'fr-be': 'French (Belgium)', 
+	//fo: 'Faroe Islands',
+	fr: 'French',
+	'fr-be': 'French (Belgium)',
 	'fr-ca': 'French (Canada)',
 	'fr-ch': 'French (Swiss)',
 	//hr: 'Croatia',
 	hu: 'Hungarian',
 	is: 'Icelandic',
-	it: 'Italian', 
+	it: 'Italian',
 	ja: 'Japanese',
 	lt: 'Lithuanian',
 	//lv: 'Latvian',
-	mk: 'Macedonian', 
+	mk: 'Macedonian',
 	nl: 'Dutch',
 	//'nl-be': 'Dutch (Belgium)',
-	no: 'Norwegian', 
+	no: 'Norwegian',
 	pl: 'Polish',
 	pt: 'Portuguese',
 	'pt-br': 'Portuguese (Brazil)',
@@ -307,7 +307,7 @@ Ext.define('PVE.Utils', { statics: {
 	    return PVE.Utils.defaultText;
 	}
 	var text = PVE.Utils.kvm_vga_drivers[value];
-	if (text) { 
+	if (text) {
 	    return text + ' (' + value + ')';
 	}
 	return value;
@@ -352,7 +352,7 @@ Ext.define('PVE.Utils', { statics: {
     // fixme: remove - not needed?
     gridLineHeigh: function() {
 	return 21;
-	
+
 	//if (Ext.isGecko)
 	//return 23;
 	//return 21;
@@ -372,10 +372,10 @@ Ext.define('PVE.Utils', { statics: {
 	    if (verbose && Ext.isObject(result.errors)) {
 		msg += "<br>";
 		Ext.Object.each(result.errors, function(prop, desc) {
-		    msg += "<br><b>" + Ext.htmlEncode(prop) + "</b>: " + 
+		    msg += "<br><b>" + Ext.htmlEncode(prop) + "</b>: " +
 			Ext.htmlEncode(desc);
 		});
-	    }	
+	    }
 	}
 
 	return msg;
@@ -586,7 +586,7 @@ Ext.define('PVE.Utils', { statics: {
 	migrateall: [ '', gettext('Migrate all VMs and Containers') ]
     },
 
-    format_task_description: function(type, id) {	
+    format_task_description: function(type, id) {
 	var farray = PVE.Utils.task_desc_table[type];
 	if (!farray) {
 	    return type;
@@ -594,7 +594,7 @@ Ext.define('PVE.Utils', { statics: {
 	var prefix = farray[0];
 	var text = farray[1];
 	if (prefix) {
-	    return prefix + ' ' + id + ' - ' + text; 
+	    return prefix + ' ' + id + ' - ' + text;
 	}
 	return text;
     },
@@ -637,7 +637,7 @@ Ext.define('PVE.Utils', { statics: {
 	return "<div class='pve-bar-wrap'>" + text + "<div class='pve-bar-border'>" +
 	    "<div class='pve-bar-inner' style='width:" + per + "%;'></div>" +
 	    "</div></div>";
-	
+
     },
 
     format_cpu_bar: function(per1, per2, text) {
@@ -645,7 +645,7 @@ Ext.define('PVE.Utils', { statics: {
 	return "<div class='pve-bar-border'>" +
 	    "<div class='pve-bar-inner' style='width:" + per1 + "%;'></div>" +
 	    "<div class='pve-bar-inner2' style='width:" + per2 + "%;'></div>" +
-	    "<div class='pve-bar-text'>" + text + "</div>" + 
+	    "<div class='pve-bar-text'>" + text + "</div>" +
 	    "</div>";
     },
 
@@ -657,7 +657,7 @@ Ext.define('PVE.Utils', { statics: {
 
 	return "<div class='pve-largebar-border'>" +
 	    "<div class='pve-largebar-inner' style='width:" + per + "%;'></div>" +
-	    "<div class='pve-largebar-text'>" + text + "</div>" + 
+	    "<div class='pve-largebar-text'>" + text + "</div>" +
 	    "</div>";
     },
 
@@ -679,7 +679,7 @@ Ext.define('PVE.Utils', { statics: {
 
 	if (days) {
 	    var ds = days > 1 ? PVE.Utils.daysText : PVE.Utils.dayText;
-	    return days.toString() + ' ' + ds + ' ' + 
+	    return days.toString() + ' ' + ds + ' ' +
 		hours_str + ':' + mins_str + ':' + ut_str;
 	} else {
 	    return hours_str + ':' + mins_str + ':' + ut_str;
@@ -687,7 +687,7 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     format_duration_short: function(ut) {
-	
+
 	if (ut < 60) {
 	    return ut.toString() + 's';
 	}
@@ -703,7 +703,7 @@ Ext.define('PVE.Utils', { statics: {
 	}
 
 	var days = ut / 86400;
-	return days.toFixed(0) + 'd';	
+	return days.toFixed(0) + 'd';
     },
 
     yesText: gettext('Yes'),
@@ -819,8 +819,8 @@ Ext.define('PVE.Utils', { statics: {
 	if (Ext.isNumber(data.channel) &&
 	    Ext.isNumber(data.id) &&
 	    Ext.isNumber(data.lun)) {
-	    return "CH " + 
-		Ext.String.leftPad(data.channel,2, '0') + 
+	    return "CH " +
+		Ext.String.leftPad(data.channel,2, '0') +
 		" ID " + data.id + " LUN " + data.lun;
 	}
 	return data.volid.replace(/^.*:(.*\/)?/,'');
@@ -841,7 +841,7 @@ Ext.define('PVE.Utils', { statics: {
 	if (!Ext.isNumeric(maxcpu) && (maxcpu >= 1)) {
 	    return '';
 	}
-	
+
 	var per = value * 100;
 
 	return per.toFixed(1) + '% of ' + maxcpu.toString() + (maxcpu > 1 ? 'CPUs' : 'CPU');
@@ -895,7 +895,7 @@ Ext.define('PVE.Utils', { statics: {
 
 	var mem = value;
 	var maxmem = record.data.maxmem;
-	
+
 	if (!record.data.uptime) {
 	    return '';
 	}
@@ -990,7 +990,7 @@ Ext.define('PVE.Utils', { statics: {
 	if (uptime === undefined) {
 	    return '';
 	}
-	
+
 	if (uptime <= 0) {
 	    return '-';
 	}
@@ -1002,7 +1002,7 @@ Ext.define('PVE.Utils', { statics: {
 	return PVE.Utils.support_level_hash[value] || '-';
     },
 
-    render_upid: function(value, metaData, record) { 
+    render_upid: function(value, metaData, record) {
 	var type = record.data.type;
 	var id = record.data.id;
 
@@ -1025,7 +1025,7 @@ Ext.define('PVE.Utils', { statics: {
 	return window.location.hostname.replace(IP6_bracket_match,
             function(m, addr, offset, original) { return addr; });
     },
- 
+
     openDefaultConsoleWindow: function(allowSpice, vmtype, vmid, nodename, vmname) {
 	var dv = PVE.Utils.defaultViewer(allowSpice);
 	PVE.Utils.openConsoleWindow(dv, vmtype, vmid, nodename, vmname);
@@ -1128,13 +1128,13 @@ Ext.define('PVE.Utils', { statics: {
 		});
 		var url = 'data:application/x-virt-viewer;charset=UTF-8,' +
 		    encodeURIComponent(raw);
-		    
+
 		downloadWithName(url, "pve-spice.vv");
 	    }
 	});
     },
 
-    // comp.setLoading() is buggy in ExtJS 4.0.7, so we 
+    // comp.setLoading() is buggy in ExtJS 4.0.7, so we
     // use el.mask() instead
     setErrorMask: function(comp, msg) {
 	var el = comp.el;
