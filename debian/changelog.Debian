@@ -2,6 +2,10 @@ pve-manager (4.1-30) unstable; urgency=medium
 
   * GUI: use raw format for DRBD images
 
+  * also display Linux 4.X on OS selection
+
+  * fix #181: rewrite Boot Order Window
+
  -- Proxmox Support Team <support@proxmox.com>  Fri, 15 Apr 2016 08:38:06 +0200
 
 pve-manager (4.1-29) unstable; urgency=medium
