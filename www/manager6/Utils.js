@@ -904,9 +904,7 @@ Ext.define('PVE.Utils', { statics: {
 	    return '';
 	}
 
-	var per = (mem * 100) / maxmem;
-
-	return per.toFixed(1) + '%';
+	return PVE.Utils.render_size(value);
     },
 
     calculate_disk_usage: function(data) {
@@ -933,14 +931,16 @@ Ext.define('PVE.Utils', { statics: {
 
 	var disk = value;
 	var maxdisk = record.data.maxdisk;
+	var type = record.data.type;
 
-	if (!(Ext.isNumeric(disk) && maxdisk)) {
+	if (!Ext.isNumeric(disk) ||
+	    type === 'qemu' ||
+	    maxdisk === 0 ||
+	    (type === 'lxc' && record.data.uptime === 0)) {
 	    return '';
 	}
 
-	var per = (disk * 100) / maxdisk;
-
-	return per.toFixed(1) + '%';
+	return PVE.Utils.render_size(value);
     },
 
     render_resource_type: function(value, metaData, record, rowIndex, colIndex, store) {

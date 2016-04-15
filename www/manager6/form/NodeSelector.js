@@ -43,8 +43,8 @@ Ext.define('PVE.form.NodeSelector', {
 		flex: 1
 	    },
 	    {
-		header: gettext('Memory usage'),
-		renderer: PVE.Utils.render_mem_usage,
+		header: gettext('Memory usage') + " %",
+		renderer: PVE.Utils.render_mem_usage_percent,
 		sortable: true,
 		width: 100,
 		dataIndex: 'mem'

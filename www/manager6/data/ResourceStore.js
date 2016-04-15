@@ -94,7 +94,17 @@ Ext.define('PVE.data.ResourceStore', {
 		type: 'integer',
 		renderer: PVE.Utils.render_disk_usage,
 		sortable: true,
-		width: 100
+		width: 100,
+		hidden: true,
+	    },
+	    diskuse: {
+		header: gettext('Disk usage') + " %",
+		type: 'number',
+		sortable: true,
+		renderer: PVE.Utils.render_disk_usage_percent,
+		width: 100,
+		calculate: PVE.Utils.calculate_disk_usage,
+		sortType: 'asFloat',
 	    },
 	    maxdisk: {
 		header: gettext('Disk size'),
@@ -108,6 +118,16 @@ Ext.define('PVE.data.ResourceStore', {
 		header: gettext('Memory usage'),
 		type: 'integer',
 		renderer: PVE.Utils.render_mem_usage,
+		sortable: true,
+		hidden: true,
+		width: 100
+	    },
+	    memuse: {
+		header: gettext('Memory usage') + " %",
+		type: 'number',
+		renderer: PVE.Utils.render_mem_usage_percent,
+		calculate: PVE.Utils.calculate_mem_usage,
+		sortType: 'asFloat',
 		sortable: true,
 		width: 100
 	    },
@@ -205,13 +225,16 @@ Ext.define('PVE.data.ResourceStore', {
 	var fields = [];
 	var fieldNames = [];
 	Ext.Object.each(field_defaults, function(key, value) {
-	    if (!Ext.isDefined(value.convert)) {
+	    if (!Ext.isDefined(value.convert) && !Ext.isDefined(value.calculate)) {
 		fields.push({name: key, type: value.type});
 		fieldNames.push(key);
 	    } else if (key === 'text' || key === 'running') { 
 		fields.push({name: key, type: value.type, convert: value.convert});
 		fieldNames.push(key);
-	    }		
+	    } else {
+		value.name = key;
+		fields.push(value);
+	    }
 	});
 
 	Ext.define('PVEResources', {
