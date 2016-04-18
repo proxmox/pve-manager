@@ -65,7 +65,7 @@ Ext.define('PVE.lxc.StatusView', {
 	    swap: { header: gettext('VSwap usage'), required: true,  renderer: render_swap },
 	    maxswap: { visible: false },
 	    uptime: { header: gettext('Uptime'), required: true, renderer: PVE.Utils.render_uptime },
-	    ha: { header: gettext('Managed by HA'), required: true, renderer: PVE.Utils.format_boolean }
+	    ha: { header: gettext('Managed by HA'), required: true, renderer: PVE.Utils.format_ha }
 	};
 
 	Ext.applyIf(me, {

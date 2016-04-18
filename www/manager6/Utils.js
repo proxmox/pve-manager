@@ -778,6 +778,20 @@ Ext.define('PVE.Utils', { statics: {
 	return !value ? PVE.Utils.yesText : PVE.Utils.noText;
     },
 
+    format_ha: function(value) {
+	var text = PVE.Utils.format_boolean(value.managed);
+
+	if (value.managed) {
+	    text += ', State: ';
+	    text += value.state ? value.state : PVE.Utils.noneText;
+
+	    text += ', Group: ';
+	    text += value.group ? value.group : PVE.Utils.noneText;
+	}
+
+	return text;
+    },
+
     format_content_types: function(value) {
 	var cta = [];
 
