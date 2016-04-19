@@ -398,6 +398,8 @@ Ext.define('PVE.StdWorkspace', {
 			    id: 'userinfo',
 			    stateful: false
 			},
+			createVM, 
+			createCT,
 			{
 			    pack: 'end',
 			    margin: '0 5 0 0',
@@ -412,9 +414,7 @@ Ext.define('PVE.StdWorkspace', {
 				var rt = me.down('pveResourceTree');
 				rt.clearTree();
 			    }
-			}, 
-			createVM, 
-			createCT
+			}
 		    ]
 		},
 		{
