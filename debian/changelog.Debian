@@ -1,3 +1,9 @@
+pve-manager (4.1-31) unstable; urgency=medium
+
+  * StatusView: more verbose HA status output
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 19 Apr 2016 09:39:33 +0200
+
 pve-manager (4.1-30) unstable; urgency=medium
 
   * GUI: use raw format for DRBD images
