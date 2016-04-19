@@ -725,6 +725,8 @@ Ext.define('PVE.Utils', { statics: {
     vztmplText: gettext('Container template'),
     isoImageText: gettext('ISO image'),
     containersText: gettext('Container'),
+    stateText: gettext('State'),
+    groupText: gettext('Group'),
 
     format_expire: function(date) {
 	if (!date) {
@@ -782,10 +784,10 @@ Ext.define('PVE.Utils', { statics: {
 	var text = PVE.Utils.format_boolean(value.managed);
 
 	if (value.managed) {
-	    text += ', State: ';
+	    text += ', ' + PVE.Utils.stateText + ': ';
 	    text += value.state ? value.state : PVE.Utils.noneText;
 
-	    text += ', Group: ';
+	    text += ', ' +  PVE.Utils.groupText + ': ';
 	    text += value.group ? value.group : PVE.Utils.noneText;
 	}
 
