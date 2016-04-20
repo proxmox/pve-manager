@@ -14,6 +14,11 @@
     background-color: #3892d4;
 }
 
+/* make the upper window end visible */
+.x-css-shadow {
+    box-shadow: rgb(136,136,136) 0px -1px 15px !important;
+}
+
 /* reduce tree space */
 .x-grid-cell-inner-treecolumn { /* vertical padding */
     padding: 4px 0px 3px 0px;
