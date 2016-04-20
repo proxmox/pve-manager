@@ -1,3 +1,9 @@
+pve-manager (4.1-32) unstable; urgency=medium
+
+  * GUI: enhace visibillity of dialog window border
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 20 Apr 2016 09:21:17 +0200
+
 pve-manager (4.1-31) unstable; urgency=medium
 
   * StatusView: more verbose HA status output
