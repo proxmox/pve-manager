@@ -3,7 +3,14 @@ Ext.define('PVE.grid.ResourceGrid', {
     alias: ['widget.pveResourceGrid'],
 
     border: false,
-
+    saveCurrentState: function(){
+	var me = this;
+	me.saveState();
+    },
+    defaultSorter: {
+	property: 'type',
+	direction: 'ASC'
+    },
     initComponent : function() {
 	var me = this;
 
@@ -14,12 +21,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    model: 'PVEResources',
-	    sorters: [
-		{
-		    property : 'type',
-		    direction: 'ASC'
-		}
-	    ],
+	    sorters: me.defaultSorter,
 	    proxy: { type: 'memory' }
 	});
 
@@ -149,7 +151,21 @@ Ext.define('PVE.grid.ResourceGrid', {
 
 	Ext.apply(me, {
 	    store: store,
+	    stateful: true,
+	    stateId: 'resourcegrid',
 	    tbar: [
+		{
+		    xtype: 'button',
+		    itemId: 'resetbutton',
+		    tooltip: gettext("Reset Columns"),
+		    iconCls: 'fa fa-fw fa-columns x-button-reset',
+		    handler: function(button, e, opts) {
+			var sp = Ext.state.Manager.getProvider();
+			me.getStore().sort(me.defaultSorter);
+			me.reconfigure(null, PVE.data.ResourceStore.defaultColums());
+			sp.clear(me.stateId);
+		    }
+		},
 		'->', 
 		gettext('Search') + ':', ' ',
 		{
@@ -206,13 +222,15 @@ Ext.define('PVE.grid.ResourceGrid', {
 		},
 		destroy: function() {
 		    rstore.un("load", load_cb);
-		}
+		},
+		columnschanged: 'saveCurrentState',
+		columnresize: 'saveCurrentState',
+		columnmove: 'saveCurrentState',
+		sortchange: 'saveCurrentState',
 	    },
             columns: coldef
 	});
-
 	me.callParent();
-
 	updateGrid();
 	rstore.on("load", load_cb);
     }

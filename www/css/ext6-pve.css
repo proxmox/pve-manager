@@ -350,3 +350,16 @@
 .x-form-display-field-default {
     min-height: 20px;
 }
+
+.x-button-reset:before {
+    font-size: 16px;
+}
+
+/* for resetcolumnsbutton */
+.x-button-reset:after{
+    content: "\f0e7 ";
+    position: relative;
+    text-shadow: 0 0 2px #fff;
+    left: -3px;
+    top: 2px;
+}
