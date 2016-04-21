@@ -2,6 +2,8 @@ pve-manager (4.1-33) unstable; urgency=medium
 
   * Do not display the internal value we use for storing ostypes
 
+  * updated Italian translation
+
  -- Proxmox Support Team <support@proxmox.com>  Thu, 21 Apr 2016 12:21:38 +0200
 
 pve-manager (4.1-32) unstable; urgency=medium
