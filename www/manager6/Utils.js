@@ -100,7 +100,7 @@ Ext.define('PVE.Utils', { statics: {
 	}
 	var text = PVE.Utils.kvm_ostypes[value];
 	if (text) {
-	    return text + ' (' + value + ')';
+	    return text;
 	}
 	return value;
     },
