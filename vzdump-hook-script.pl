@@ -25,7 +25,8 @@ if ($phase eq 'job-start' ||
 	 $phase eq 'backup-abort' || 
 	 $phase eq 'log-end' || 
 	 $phase eq 'pre-stop' ||
-	 $phase eq 'pre-restart') {
+	 $phase eq 'pre-restart' ||
+	 $phase eq 'post-restart') {
 
     my $mode = shift; # stop/suspend/snapshot
 

@@ -903,6 +903,7 @@ sub exec_backup_task {
 		$cleanup->{resume} = 0;
 		$self->run_hook_script('pre-restart', $task, $logfd);
 		$plugin->resume_vm($task, $vmid);
+		$self->run_hook_script('post-restart', $task, $logfd);
 		my $delay = time () - $vmstoptime;
 		debugmsg('info', "vm is online again after $delay seconds", $logfd);
 	    }
@@ -933,6 +934,8 @@ sub exec_backup_task {
 		my $delay = time () - $vmstoptime;
 		debugmsg ('info', "vm is online again after $delay seconds", $logfd);
 	    }
+
+	    $self->run_hook_script ('post-restart', $task, $logfd);
 
 	} else {
 	    die "internal error - unknown mode '$mode'\n";
@@ -1010,7 +1013,8 @@ sub exec_backup_task {
 			debugmsg ('info', "restarting vm", $logfd);
 			$plugin->start_vm ($task, $vmid);
 		    }
-		} 
+		}
+		$self->run_hook_script ('post-restart', $task, $logfd);
 	    };
 	    my $err = $@;
 	    if ($err) {
