@@ -142,6 +142,16 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		value: cdata.tag,
 	    },
 	    {
+		xtype: 'numberfield',
+		name: 'rate',
+		fieldLabel: gettext('Rate limit') + ' (MB/s)',
+		minValue: 0,
+		maxValue: 10*1024,
+		value: cdata.rate,
+		emptyText: 'unlimited',
+		allowBlank: true
+	    },
+	    {
 		xtype: 'pvecheckbox',
 		fieldLabel: gettext('Firewall'),
 		name: 'firewall',

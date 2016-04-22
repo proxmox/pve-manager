@@ -248,7 +248,7 @@ Ext.define('PVE.Parser', { statics: {
 	    if (!p || p.match(/^\s*$/)) {
 		return; // continue
 	    }
-	    var match_res = p.match(/^(bridge|hwaddr|mtu|name|ip|ip6|gw|gw6|firewall|tag)=(\S+)$/);
+	    var match_res = p.match(/^(bridge|hwaddr|mtu|name|ip|ip6|gw|gw6|firewall|tag|rate)=(\S+)$/);
 	    if (!match_res) {
 		// todo: simply ignore errors ?
 		return; // continue
@@ -268,7 +268,10 @@ Ext.define('PVE.Parser', { statics: {
 		    tmparray.push(key + '=' + value);
 		}
 	});
-	
+
+	if (data.rate) {
+	    tmparray.push('rate=' + data.rate);
+	}
 	return tmparray.join(',');
     },
 
