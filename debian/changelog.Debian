@@ -2,6 +2,12 @@ pve-manager (4.1-34) unstable; urgency=medium
 
   * LXC GUI: add network rate limit
 
+  * do not disable a combogrid when it loads
+
+  * fix wizard validity logic
+
+  * add enableKeyEvents to combogrid
+
  -- Proxmox Support Team <support@proxmox.com>  Fri, 22 Apr 2016 09:15:07 +0200
 
 pve-manager (4.1-33) unstable; urgency=medium
