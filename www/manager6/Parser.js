@@ -269,7 +269,7 @@ Ext.define('PVE.Parser', { statics: {
 		}
 	});
 
-	if (data.rate) {
+	if (data.rate > 0) {
 	    tmparray.push('rate=' + data.rate);
 	}
 	return tmparray.join(',');
