@@ -47,7 +47,6 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	me.column2 = [
 	    {
 		xtype: 'pveHAGroupSelector',
-		editable: true,
 		name: 'group',
 		value: '',
 		fieldLabel: gettext('Group')
