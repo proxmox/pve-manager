@@ -222,7 +222,7 @@ Ext.define('PVE.window.Wizard', {
 	display_header(tabs[0]);
 
 	Ext.Array.each(me.query('field'), function(field) {
-	    field.on('validitychange', function(f) {
+	    field.on('change', function(f) {
 		var tp = me.down('#wizcontent');
 		var atab = tp.getActiveTab();
 		var valid = check_card(atab);
