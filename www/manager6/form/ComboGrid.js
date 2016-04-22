@@ -215,6 +215,18 @@ Ext.define('PVE.form.ComboGrid', {
 	    });
 	}
 
+	// when our store is not yet loaded, we increase
+	// the height of the gridpanel, so that we can see
+	// the loading mask
+	//
+	// we save the minheight to reset it after the load
+	picker.on('show', function() {
+	    if (me.enableAfterLoad) {
+		me.savedMinHeight = picker.getMinHeight();
+		picker.setMinHeight(100);
+	    }
+	});
+
         picker.getNavigationModel().navigateOnSpace = false;
 
         return picker;
@@ -245,9 +257,6 @@ Ext.define('PVE.form.ComboGrid', {
 
 	me.mon(me.store, 'beforeload', function() {
 	    if (!me.isDisabled()) {
-		// prevent user input and field validation until the store is successfully loaded
-		me.suspendEvent('validitychange');
-		me.setDisabled(true);
 		me.enableAfterLoad = true;
 	    }
 	});
@@ -259,9 +268,11 @@ Ext.define('PVE.form.ComboGrid', {
 
 		if (me.enableAfterLoad) {
 		    delete me.enableAfterLoad;
-		    me.setDisabled(false);
-		    me.resumeEvent('validitychange');
-		    me.isValid(); // if field was disabled then reenabled, validation status was lost
+		    if (me.picker) {
+			me.picker.setMinHeight((me.savedMinHeight)?me.savedMinHeight:0);
+			delete me.savedMinHeight;
+			me.picker.updateLayout();
+		    }
 		}
 
 		var def = me.getValue() || me.preferredValue;
