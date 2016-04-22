@@ -27,6 +27,9 @@ Ext.define('PVE.form.ComboGrid', {
         me.callParent(arguments);
     },
 
+    // needed to trigger onKeyUp etc.
+    enableKeyEvents: true,
+
 // override ExtJS protected method
     onBindStore: function(store, initial) {
         var me = this,
