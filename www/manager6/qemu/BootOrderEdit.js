@@ -6,6 +6,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
     bootdisk: undefined,
     selection: [],
     list: [],
+    comboboxes: [],
 
     setVMConfig: function(vmconfig) {
 	var me = this;
@@ -31,6 +32,10 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	me.list.push(['__none__', PVE.Utils.noneText]);
 
 	me.recomputeList();
+
+	me.comboboxes.forEach(function(box) {
+	    box.resetOriginalValue();
+	});
     },
 
     onGetValues: function(values) {
@@ -86,7 +91,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	    } else {
 		item.store.loadData(me.list);
 	    }
-	    item.suspendEvents(false);
+	    item.suspendEvent('change');
 	    if (cnt < me.selection.length) {
 		item.setValue((me.selection[cnt] !== 'c')?me.selection[cnt]:me.bootdisk);
 	    } else if (cnt === 0){
@@ -95,7 +100,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 		item.setValue('__none__');
 	    }
 	    cnt++;
-	    item.resumeEvents(true);
+	    item.resumeEvent('change');
 	    item.validate();
 	});
     },
