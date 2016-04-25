@@ -8,6 +8,10 @@ Ext.define('PVE.qemu.BootOrderPanel', {
     list: [],
     comboboxes: [],
 
+    isBootDisk: function(value) {
+	return (/^(ide|sata|scsi|virtio)\d+$/).test(value);
+    },
+
     setVMConfig: function(vmconfig) {
 	var me = this;
 	me.vmconfig = vmconfig;
@@ -21,7 +25,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	// build bootdev list
 	me.list = [];
 	Ext.Object.each(me.vmconfig, function(key, value) {
-	    if ((/^(ide|sata|scsi|virtio)\d+$/).test(key) &&
+	    if (me.isBootDisk(key) &&
 		!(/media=cdrom/).test(value)) {
 		me.list.push([key, "Disk '" + key + "'"]);
 	    }
@@ -60,7 +64,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 
 	    // when selecting an already selected item,
 	    // switch it around
-	    if (val === newVal &&
+	    if ((val === newVal || (me.isBootDisk(val) && me.isBootDisk(newVal))) &&
 		item.name !== combobox.name &&
 		newVal !== '__none__') {
 		// swap items
@@ -68,7 +72,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	    }
 
 	    // push 'c','d' or 'n' in the array
-	    if ((/^(ide|sata|scsi|virtio)\d+$/).test(val)) {
+	    if (me.isBootDisk(val)) {
 		me.selection.push('c');
 		me.bootdisk = val;
 	    } else if (val === 'd' ||
