@@ -2,6 +2,8 @@ Ext.define('PVE.form.SecurityGroupsSelector', {
     extend: 'PVE.form.ComboGrid',
     alias: ['widget.pveSecurityGroupsSelector'],
 
+    valueField: 'group',
+    displayField: 'group',
     initComponent: function() {
 	var me = this;
 
@@ -21,8 +23,6 @@ Ext.define('PVE.form.SecurityGroupsSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    valueField: 'group',
-	    displayField: 'group',
             listConfig: {
 		columns: [
 		    {
