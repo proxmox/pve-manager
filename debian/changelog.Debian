@@ -1,3 +1,9 @@
+pve-manager (4.2-2) unstable; urgency=medium
+
+  * fix securitygroupselector
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 26 Apr 2016 12:07:52 +0200
+
 pve-manager (4.2-1) unstable; urgency=medium
 
   * fix #943: allow saving of values
