@@ -74,6 +74,7 @@ Ext.define('PVE.qemu.Options', {
 		header: gettext('Boot order'),
 		defaultValue: 'cdn',
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.BootOrderEdit' : undefined,
+		multiKey: ['boot', 'bootdisk'],
 		renderer: function(order, metaData, record, rowIndex, colIndex, store, pending) {
 		    var i;
 		    var text = '';
@@ -336,12 +337,16 @@ Ext.define('PVE.qemu.Options', {
 		    return;
 		}
 
+		var rowdef = me.rows[rec.data.key] || {};
+		var keys = rowdef.multiKey ||  [ rec.data.key ];
+		var revert = keys.join(',');
+
                 PVE.Utils.API2Request({
                     url: '/api2/extjs/' + baseurl,
                     waitMsgTarget: me,
                     method: 'PUT',
                     params: {
-                        'revert': rec.data.key
+                        'revert': revert
                     },
                     callback: function() {
                         reload();
