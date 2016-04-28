@@ -357,6 +357,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	sp.on('statechange', statechange);
 
 	Ext.apply(me, {
+	    allowSelection: true,
 	    store: store,
 	    viewConfig: {
 		// note: animate cause problems with applyState
@@ -398,7 +399,16 @@ Ext.define('PVE.tree.ResourceTree', {
 		},
 		destroy: function() {
 		    rstore.un("load", updateTree);
-		}
+		},
+		beforecellmousedown: function (tree, record,item,index,ev) {
+		    // disable selection when right clicking
+		    me.allowSelection = !(event.button === 2);
+		},
+		beforeselect: function (tree, record, index, eopts) {
+		    var allow = me.allowSelection;
+		    me.allowSelection = true;
+		    return allow;
+		},
 	    },
 	    setViewFilter: function(view) {
 		me.viewFilter = view;
