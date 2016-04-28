@@ -14,9 +14,12 @@ Ext.apply(Ext.form.field.VTypes, {
     IPAddressMask: /[\d\.]/i,
 
     IPCIDRAddress:  function(v) {
-	return IP4_cidr_match.test(v);
+	var result = IP4_cidr_match.exec(v);
+	// limits according to JSON Schema see
+	// pve-common/src/PVE/JSONSchema.pm
+	return (result !== null && result[1] >= 8 && result[1] <= 32);
     },
-    IPCIDRAddressText:  gettext('Example') + ': 192.168.1.1/24',
+    IPCIDRAddressText:  gettext('Example') + ': 192.168.1.1/24' + "<br>" + gettext('Valid CIDR Range') + ': 8-32',
     IPCIDRAddressMask: /[\d\.\/]/i,
 
     IP6Address:  function(v) {
@@ -26,9 +29,12 @@ Ext.apply(Ext.form.field.VTypes, {
     IP6AddressMask: /[A-Fa-f0-9:]/,
 
     IP6CIDRAddress:  function(v) {
-	return IP6_cidr_match.test(v);
+	var result = IP6_cidr_match.exec(v);
+	// limits according to JSON Schema see
+	// pve-common/src/PVE/JSONSchema.pm
+	return (result !== null && result[1] >= 8 && result[1] <= 120);
     },
-    IP6CIDRAddressText:  gettext('Example') + ': 2001:DB8::42/64',
+    IP6CIDRAddressText:  gettext('Example') + ': 2001:DB8::42/64' + "<br>" + gettext('Valid CIDR Range') + ': 8-120',
     IP6CIDRAddressMask:  /[A-Fa-f0-9:\/]/,
 
     IP6PrefixLength:  function(v) {
