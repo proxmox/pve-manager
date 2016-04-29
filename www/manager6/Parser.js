@@ -6,8 +6,9 @@ Ext.define('PVE.Parser', { statics: {
     // this class only contains static functions
 
     parseBoolean: function(value, default_value) {
-	if (!Ext.isDefined(value))
+	if (!Ext.isDefined(value)) {
 	    return default_value;
+	}
 	value = value.toLowerCase();
 	return value === 1 || value === '1' ||
 	       value === 'on' ||
@@ -407,7 +408,7 @@ Ext.define('PVE.Parser', { statics: {
 	var datastr = '';
 
 	Ext.Object.each(data, function(key, value) {
-	    if (value === '') return;
+	    if (value === '') { return; }
 	    datastr += (datastr !== '' ? ',' : '') + key + '=' + value;
 	});
 
@@ -481,8 +482,9 @@ Ext.define('PVE.Parser', { statics: {
 	});
 
 	if (!cpustr) {
-	    if (optstr)
+	    if (optstr) {
 		return 'kvm64' + optstr;
+	    }
 	    return;
 	}
 

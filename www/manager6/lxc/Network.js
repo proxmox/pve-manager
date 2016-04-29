@@ -34,10 +34,12 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 
 	var newdata = {};
 
-	if (values['ipv6mode'] !== 'static')
-	    values['ip6'] = values['ipv6mode'];
-	if (values['ipv4mode'] !== 'static')
-	    values['ip'] = values['ipv4mode']
+	if (values.ipv6mode !== 'static') {
+	    values.ip6 = values.ipv6mode;
+	}
+	if (values.ipv4mode !== 'static') {
+	    values.ip = values.ipv4mode;
+	}
 	newdata[id] = PVE.Parser.printLxcNetwork(values);
 	return newdata;
     },
