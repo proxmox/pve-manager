@@ -56,8 +56,8 @@ Ext.define('PVE.node.Subscription', {
 			{
 			    text: gettext('Download'),
 			    handler: function() {
-				fileContent = reportWindow.getComponent('system-report-view').html;
-				fileName = getReportFileName();
+				var fileContent = reportWindow.getComponent('system-report-view').html;
+				var fileName = getReportFileName();
 
 				// Internet Explorer
 				if (window.navigator.msSaveOrOpenBlob) {

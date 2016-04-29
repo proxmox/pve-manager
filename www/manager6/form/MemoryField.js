@@ -69,7 +69,7 @@ Ext.define('PVE.form.MemoryField', {
 	    me.minValue = 1024;
 
 	    me.on('blur', function(field) {
-		value = me.getValue();
+		var value = me.getValue();
 		var res = me.computeUpDown(value);
 		if (value === res.start || value === res.up || value === res.down) {
 		    return;

@@ -165,7 +165,7 @@ Ext.define('PVE.form.ComboGrid', {
         picker = me.picker || Ext.widget(pickerCfg);
 
         if (picker.getStore() !== me.store) {
-            picker.bindStore(store);
+            picker.bindStore(me.store);
         }
 
         if (me.pageSize) {

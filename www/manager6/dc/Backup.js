@@ -437,7 +437,7 @@ Ext.define('PVE.dc.BackupView', {
 			var cur = -1;
 			val.split(',').forEach(function(day){
 			    cur++;
-			    dow = (dows.indexOf(day)+6)%7;
+			    var dow = (dows.indexOf(day)+6)%7;
 			    if (cur === dow) {
 				if (selected.length === 0 || selected[selected.length-1] === 0) {
 				    selected.push(1);
