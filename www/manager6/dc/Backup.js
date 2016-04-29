@@ -467,7 +467,7 @@ Ext.define('PVE.dc.BackupView', {
 			    } else if (item == 1) {
 				days.push(Ext.Date.dayNames[(cur+1)%7]);
 			    }
-			})
+			});
 			return days.join(', ');
 		    }
 		},

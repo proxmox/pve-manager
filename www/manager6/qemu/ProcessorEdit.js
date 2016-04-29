@@ -108,7 +108,7 @@ Ext.define('PVE.qemu.ProcessorEdit', {
     initComponent : function() {
 	var me = this;
 	
-	var ipanel = Ext.create('PVE.qemu.ProcessorInputPanel')
+	var ipanel = Ext.create('PVE.qemu.ProcessorInputPanel');
 
 	Ext.apply(me, {
 	    subject: gettext('Processors'),

@@ -274,7 +274,7 @@ Ext.define('PVE.FirewallRuleEdit', {
 			field.setValue(1);
 			Ext.Function.defer(function() {
 			    var form = ipanel.up('form').getForm();
-			    form.markInvalid(values.errors)
+			    form.markInvalid(values.errors);
 			}, 100);
 		    }
 		}

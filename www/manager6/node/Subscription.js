@@ -29,10 +29,10 @@ Ext.define('PVE.node.Subscription', {
 	var me = this;
 	var nodename = me.pveSelNode.data.node;
 
-	var getReportFileName= function() {
+	var getReportFileName = function() {
 	    var now = Ext.Date.format(new Date(), 'D-d-F-Y-G-i');
 	    return me.nodename + '-report-'  + now + '.txt';
-	}
+	};
 
 	var view = Ext.createWidget('component', {
 	    itemId: 'system-report-view',

@@ -1,7 +1,7 @@
 /*global IP4_match, IP4_cidr_match, IP6_match, IP6_cidr_match, IP64_match*/
 // ExtJS related things
 
-PVE.Utils.toolkit = 'extjs',
+PVE.Utils.toolkit = 'extjs';
 
  // do not send '_dc' parameter
 Ext.Ajax.disableCaching = false;

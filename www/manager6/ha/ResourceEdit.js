@@ -116,7 +116,9 @@ Ext.define('PVE.ha.VMResourceEdit', {
 		    var regex =  /^(\S+):(\S+)$/;
 		    var res = regex.exec(values.sid);
 
-		  if (res[1] !== 'vm' && res[1] !== 'ct') { throw "got unexpected resource type"; };
+		    if (res[1] !== 'vm' && res[1] !== 'ct') {
+			throw "got unexpected resource type";
+		    }
 
 		    values.vmid = res[2];
 		    

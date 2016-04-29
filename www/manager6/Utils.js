@@ -975,11 +975,11 @@ Ext.define('PVE.Utils', { statics: {
 	    }
 	} else if (value === 'node') {
 	    if (record.data.running) {
-		gridcls = '-online'
+		gridcls = '-online';
 	    }
 	}
 
-	var fa = '<i class="fa fa-fw x-fa-grid' + gridcls  +  ' fa-' + icon  + '"></i> '
+	var fa = '<i class="fa fa-fw x-fa-grid' + gridcls  +  ' fa-' + icon  + '"></i> ';
 	return fa + value;
     },
 
