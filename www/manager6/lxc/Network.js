@@ -99,8 +99,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		return true;
 	    }
 	};
-
-    	me.column1 = [
+	me.column1 = [
 	    ifselector,
 	    {
 		xtype: 'textfield',

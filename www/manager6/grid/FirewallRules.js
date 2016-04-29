@@ -174,7 +174,7 @@ Ext.define('PVE.FirewallRulePanel', {
 			    me.down('field[name=sport]').setDisabled(true);
 			    me.down('field[name=sport]').setValue('');
 			    me.down('field[name=dport]').setDisabled(true);
- 			    me.down('field[name=dport]').setValue('');
+			    me.down('field[name=dport]').setValue('');
                        }
                     }
                 }

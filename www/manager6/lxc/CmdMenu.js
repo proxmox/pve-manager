@@ -125,7 +125,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 //		text: gettext('Convert to template'),
 //		icon: '/pve2/images/forward.png',
 //		handler: function() {
-//    		    var msg = PVE.Utils.format_task_description('vztemplate', vmid);
+//		    var msg = PVE.Utils.format_task_description('vztemplate', vmid);
 //		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 //			if (btn !== 'yes') {
 //			    return;
