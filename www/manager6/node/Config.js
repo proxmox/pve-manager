@@ -37,7 +37,6 @@ Ext.define('PVE.node.Config', {
 		items: [
 		    {
 			text: gettext('Start all VMs and Containers'),
-			text: gettext('Start All VMs'),
 			iconCls: 'fa fa-fw fa-play',
 			handler: function() {
 			    var msg = gettext('Start all VMs and Containers') + ' (' + gettext('Node') + " '" + nodename + "')";

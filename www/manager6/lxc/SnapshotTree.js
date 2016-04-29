@@ -147,7 +147,6 @@ Ext.define('PVE.lxc.SnapshotTree', {
 	    confirmMsg: function(rec) {
 		return PVE.Utils.format_task_description('vzrollback', me.vmid) +
 		    " '" +  rec.data.name + "'";
-		return msg;
 	    },
 	    handler: function(btn, event) {
 		var rec = sm.getSelection()[0];
