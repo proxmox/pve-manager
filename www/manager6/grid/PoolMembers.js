@@ -1,3 +1,6 @@
+// Ext.create is a function
+// but we defined create as a bool in PVE.window.Edit
+/*jslint confusion: true*/
 Ext.define('PVE.pool.AddVM', {
     extend: 'PVE.window.Edit',
     width: 600,

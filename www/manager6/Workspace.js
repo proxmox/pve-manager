@@ -109,6 +109,9 @@ Ext.define('PVE.ConsoleWorkspace', {
     title: gettext('Console'),
 
     initComponent : function() {
+	// novnc is a string in param
+	// but a boolean in content
+	/*jslint confusion: true*/
 	var me = this;
 
 	var param = Ext.Object.fromQueryString(window.location.search);

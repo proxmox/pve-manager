@@ -10,7 +10,7 @@ Ext.define('PVE.Parser', { statics: {
 	    return default_value;
 	}
 	value = value.toLowerCase();
-	return value === 1 || value === '1' ||
+	return value === '1' ||
 	       value === 'on' ||
 	       value === 'yes' ||
 	       value === 'true';
@@ -192,9 +192,11 @@ Ext.define('PVE.Parser', { statics: {
 			errors = true;
 			return false; // break
 		    }
-		    data['bridge'] = bridge_res[1];
-		    data['tag'] = bridge_res[4];
-		    data['firewall'] = bridge_res[5] ? 1 : 0;
+		    data.bridge = bridge_res[1];
+		    data.tag = bridge_res[4];
+		    /*jslint confusion: true*/
+		    data.firewall = bridge_res[5] ? 1 : 0;
+		    /*jslint confusion: false*/
 		} else {
 		    data[match_res[1]] = match_res[2];
 		}
@@ -221,10 +223,10 @@ Ext.define('PVE.Parser', { statics: {
 	    Ext.Array.each(['ifname', 'mac', 'bridge', 'host_ifname' , 'host_mac', 'mac_filter', 'tag', 'firewall'], function(key) {
 		var value = data[key];
 		if (key === 'bridge'){
-		    if(data['tag']){
-			value = value + 'v' + data['tag'];
+		    if(data.tag){
+			value = value + 'v' + data.tag;
 		    }
-		    if (data['firewall']){
+		    if (data.firewall){
 			value = value + 'f';
 		    }
 		}
@@ -270,9 +272,11 @@ Ext.define('PVE.Parser', { statics: {
 		}
 	});
 
+	/*jslint confusion: true*/
 	if (data.rate > 0) {
 	    tmparray.push('rate=' + data.rate);
 	}
+	/*jslint confusion: false*/
 	return tmparray.join(',');
     },
 
@@ -396,7 +400,7 @@ Ext.define('PVE.Parser', { statics: {
 	var res = {};
 
 	Ext.Array.each(value.split(','), function(p) {
-	    var kva = p.split(/=/, 2);
+	    var kva = p.split('=', 2);
 	    res[kva[0]] = kva[1];
 	});
 
@@ -419,7 +423,7 @@ Ext.define('PVE.Parser', { statics: {
 	var res = {};
 
 	Ext.Array.each(value.split(','), function(p) {
-	    var kva = p.split(/=/, 2);
+	    var kva = p.split('=', 2);
 	    res[kva[0]] = kva[1];
 	});
 
@@ -439,8 +443,8 @@ Ext.define('PVE.Parser', { statics: {
 		return; // continue
 	    }
 
-	    if (!p.match(/=/)) {
-		if (Ext.isDefined(res['cpu'])) {
+	    if (!p.match(/\=/)) {
+		if (Ext.isDefined(res.cpu)) {
 		    errors = true;
 		    return false; // break
 		}

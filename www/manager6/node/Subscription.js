@@ -74,7 +74,7 @@ Ext.define('PVE.node.Subscription', {
 			    }
 			},
 		],
-	    items: [ view ]
+	    items: view
 	});
 
 	PVE.Utils.API2Request({

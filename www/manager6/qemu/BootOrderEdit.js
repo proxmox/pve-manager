@@ -48,7 +48,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	var res = { boot: order };
 
 	if  (me.bootdisk && order.indexOf('c') !== -1) {
-	    res['bootdisk'] = me.bootdisk;
+	    res.bootdisk = me.bootdisk;
 	} else {
 	    res['delete'] = 'bootdisk';
 	}
@@ -151,10 +151,10 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 Ext.define('PVE.qemu.BootOrderEdit', {
     extend: 'PVE.window.Edit',
 
-    items: {
+    items: [{
 	xtype: 'pveQemuBootOrderPanel',
-	itemId: 'inputpanel',
-    },
+	itemId: 'inputpanel'
+    }],
 
     subject: gettext('Boot Order'),
 

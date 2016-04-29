@@ -50,14 +50,14 @@ Ext.define('PVE.panel.Config', {
 	    items.unshift({
 		itemId: 'search',
 		title: gettext('Search'),
-		layout: 'fit',
-		plugins: {
+		layout: { type:'fit' },
+		plugins: [{
 		    ptype: 'lazyitems',
-		    items: {
+		    items: [{
 			xtype: 'pveResourceGrid',
 			pveSelNode: me.pveSelNode
-		    }
-		}
+		    }]
+		}]
 	    });
 	}
 

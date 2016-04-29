@@ -152,7 +152,7 @@ Ext.define('PVE.qemu.MemoryEdit', {
 
 	Ext.apply(me, {
 	    subject: gettext('Memory'),
-	    items: ipanel,
+	    items: [ ipanel ],
 	    // uncomment the following to use the async configiguration API
 	    // backgroundDelay: 5, 
 	    width: 400

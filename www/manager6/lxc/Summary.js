@@ -54,7 +54,7 @@ Ext.define('PVE.lxc.Summary', {
 		ptype: 'lazyitems',
 		items: [
 		    {
-			style: 'padding-top:0px',
+			style: {'padding-top': '0px' },
 			layout: {
 			    type: 'hbox',
 			    align: 'stretchmax'

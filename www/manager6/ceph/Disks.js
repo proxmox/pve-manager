@@ -15,7 +15,7 @@ Ext.define('PVE.node.CephDiskList', {
 	    sortable: false,
 	    renderer: function(v, metaData, rec) {
 		if (rec && (rec.data.osdid >= 0)) {
-		    return "osd." + rec.data.osdid;
+		    return "osd." + rec.data.osdid.toString();
 		}
 		return v || PVE.Utils.noText;
 	    },

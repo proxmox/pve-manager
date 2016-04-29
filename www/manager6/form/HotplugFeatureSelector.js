@@ -15,13 +15,15 @@ Ext.define('PVE.form.HotplugFeatureSelector', {
 	var me = this;
 
 	if (me.multiSelect && Ext.isString(value)) {
+	    var newVal;
 	    if (value === '0') {
-		value = [];
+		newVal = [];
 	    } else if (value === '1') {
-		value = ['disk', 'network', 'usb'];
+		newVal = ['disk', 'network', 'usb'];
 	    } else {
-		value = value.split(',');
+		newVal = value.split(',');
 	    }
+	    me.callParent([newVal, doSelect]);
 	}
 
 	me.callParent([value, doSelect]);

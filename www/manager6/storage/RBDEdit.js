@@ -52,6 +52,9 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	    }
 	];
 
+	// here value is an array, 
+	// while before it was a string
+	/*jslint confusion: true*/
 	me.column2 = [
 	    {
 		xtype: 'pvecheckbox',
@@ -76,6 +79,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		fieldLabel: gettext('KRBD')
 	    }
 	];
+	/*jslint confusion: false*/
 
 	if (me.create || me.storageId !== 'local') {
 	    me.column2.unshift({

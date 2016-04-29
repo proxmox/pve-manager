@@ -137,10 +137,10 @@ Ext.define('PVE.lxc.Config', {
 		    layout: 'fit',
 		    plugins: {
 			ptype: 'lazyitems',
-			items: {
+			items: [{
 			    xtype: 'pveLxcRessourceView',
 			    pveSelNode: me.pveSelNode
-			}
+			}]
 		    }
 		},
 		{

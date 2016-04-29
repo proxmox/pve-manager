@@ -6,8 +6,8 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	var me = this;
 
 	// build the cpu options:
-	me.cpu.cputype = values['cputype'];
-	delete values['cputype'];
+	me.cpu.cputype = values.cputype;
+	delete values.cputype;
 	var cpustring = PVE.Parser.printQemuCpu(me.cpu);
 
 	// remove cputype delete request:
@@ -21,14 +21,14 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	}
 
 	if (cpustring) {
-	    values['cpu'] = cpustring;
+	    values.cpu = cpustring;
 	} else {
 	    del.push('cpu');
 	}
 
-	del = del.join(',');
-	if (del) {
-	    values['delete'] = del;
+	var delarr = del.join(',');
+	if (delarr) {
+	    values['delete'] = delarr;
 	}
 
 	return values;
@@ -120,7 +120,7 @@ Ext.define('PVE.qemu.ProcessorEdit', {
 	me.load({
 	    success: function(response, options) {
 		var data = response.result.data;
-		var value = data['cpu'];
+		var value = data.cpu;
 		if (value) {
 		    var cpu = PVE.Parser.parseQemuCpu(value);
 		    ipanel.cpu = cpu;

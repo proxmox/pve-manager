@@ -28,7 +28,7 @@ Ext.define('PVE.storage.Summary', {
 
 	var statusview = Ext.create('PVE.storage.StatusView', {
 	    pveSelNode: me.pveSelNode,
-	    style: 'padding-top:0px'
+	    style: {'padding-top':'0px'}
 	});
 
 	var rstore = statusview.rstore;

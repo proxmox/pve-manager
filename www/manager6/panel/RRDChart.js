@@ -66,7 +66,7 @@ Ext.define('PVE.widget.RRDChart', {
 	// limit to 2 decimal points
 	value = Ext.util.Format.number(value, "0.##");
 
-	return value + " " + units[si];
+	return value.toString() + " " + units[si];
     },
 
     leftAxisRenderer: function(axis, label, layoutContext) {

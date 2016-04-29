@@ -11,7 +11,7 @@ Ext.define('PVE.window.SafeDestroy', {
     buttonAlign: 'center',
     bodyPadding: 10,
     width: 450,
-    layout: 'hbox',
+    layout: { type:'hbox' },
     defaultFocus: 'confirmField',
 
     config: {

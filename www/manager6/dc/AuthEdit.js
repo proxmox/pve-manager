@@ -274,8 +274,11 @@ Ext.define('PVE.dc.AuthEdit', {
 			    data.yubico_api_id = tfacfg.id;
 			    data.yubico_url = tfacfg.url;
 			} else if (tfacfg.type === 'oath') {
+			    // step is a number before
+			    /*jslint confusion: true*/
 			    data.oath_step = tfacfg.step;
 			    data.oath_digits = tfacfg.digits;
+			    /*jslint confusion: false*/
 			}
 		    }
 

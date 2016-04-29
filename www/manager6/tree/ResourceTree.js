@@ -104,7 +104,7 @@ Ext.define('PVE.tree.ResourceTree', {
 
 	var defaults = PVE.tree.ResourceTree.typeDefaults[info.type];
 	if (info.id === 'root') {
-	    defaults = PVE.tree.ResourceTree.typeDefaults['datacenter'];
+	    defaults = PVE.tree.ResourceTree.typeDefaults.datacenter;
 	} else if (info.type === 'type') {
 	    defaults = PVE.tree.ResourceTree.typeDefaults[info.groupbyid];
 	}
@@ -128,7 +128,7 @@ Ext.define('PVE.tree.ResourceTree', {
 
 	    if (info.template) {
 		iconClsAdd = '-template';
-		info.iconCls = PVE.tree.ResourceTree.typeDefaults['template'].iconCls + '-' + info.type;
+		info.iconCls = PVE.tree.ResourceTree.typeDefaults.template.iconCls + '-' + info.type;
 	    }
 
 	}

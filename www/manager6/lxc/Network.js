@@ -71,7 +71,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 
 	var i, netlist = [];
 	for (i = 0; i < 10; i++) {
-	    netlist.push({ "name": "net" + i });
+	    netlist.push({ "name": "net" + i.toString() });
 	}
 	
 	var netliststore = Ext.create('Ext.data.Store', {
@@ -94,6 +94,8 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		if (me.create && me.dataCache[value]) {
 		    return "Network ID already in use";
 		}
+		// validator can return bool/String
+		/*jslint confusion: true*/
 		return true;
 	    }
 	};
@@ -107,7 +109,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		allowBlank: false,
 		value: cdata.name,
 		validator: function(value) {
-		    var result = true;
+		    var result = '';
 		    Ext.Object.each(me.dataCache, function(key, netstr) {
 			if (!key.match(/^net\d+/) || key === me.ifname) {
 			    return; // continue
@@ -118,7 +120,12 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 			    return false;
 			}
 		    });
-		    return result;
+		    if (result !== '') {
+			return result;
+		    }
+		    // validator can return bool/string
+		    /*jslint confusion:true*/
+		    return true;
 		}
 	    },
 	    {

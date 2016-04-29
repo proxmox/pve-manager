@@ -79,6 +79,9 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	    }));
 	}
 
+	// value is an array,
+	// while before it was a string
+	/*jslint confusion: true*/
 	me.column1.push(
 	    {xtype: 'pveContentTypeSelector',
 	     cts: ['images', 'rootdir'],
@@ -86,8 +89,9 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	     name: 'content',
 	     value: ['images', 'rootdir'],
 	     multiSelect: true,
-	     allowBlank: false});
-
+	     allowBlank: false
+	});
+	/*jslint confusion: false*/
 	me.column2 = [
 	    {
 		xtype: 'pvecheckbox',

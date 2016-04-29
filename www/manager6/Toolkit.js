@@ -147,6 +147,7 @@ Ext.define('PVE.Datepicker', {
 // since Ext.Msg is an object and not a prototype, we need to override it
 // after the framework has been initiated
 Ext.onReady(function() {
+/*jslint confusion: true */
     Ext.override(Ext.Msg, {
 	alert: function(title, message, fn, scope) {
 	    if (Ext.isString(title)) {
@@ -163,8 +164,8 @@ Ext.onReady(function() {
 	    }
 	}
     });
+/*jslint confusion: false */
 });
-
 Ext.define('Ext.ux.IFrame', {
     extend: 'Ext.Component',
 

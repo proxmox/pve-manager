@@ -106,7 +106,7 @@ Ext.define('PVE.lxc.DNSEdit', {
 
 	Ext.apply(me, {
 	    subject: gettext('Resources'),
-	    items: ipanel
+	    items: [ ipanel ]
 	});
 
 	me.callParent();

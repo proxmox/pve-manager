@@ -54,7 +54,7 @@ Ext.define('PVE.panel.LogView', {
 	var maxDown = me.getMaxDown();
 	var scrollToEnd = (maxDown <= 0) && me.scrollToEnd;
 
-	el.setStyle('padding-top', start*me.lineHeight + 'px');
+	el.setStyle('padding-top', (start*me.lineHeight).toString() + 'px');
 	el.update(text);
 	me.dataCmp.setHeight(total*me.lineHeight);
 

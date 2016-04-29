@@ -11,11 +11,11 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
 	    delete_array.push('vcpus');
 	    delete values.vcpus;
 	}
-	if (values.cpulimit === '' || values.cpulimit == 0) {
+	if (values.cpulimit === '' || values.cpulimit == '0') {
 	    delete_array.push('cpulimit');
 	    delete values.cpulimit;
 	}
-	if (values.cpuunits === '' || values.cpuunits == 1024) {
+	if (values.cpuunits === '' || values.cpuunits == '1024') {
 	    delete_array.push('cpuunits');
 	    delete values.cpuunits;
 	}
@@ -58,7 +58,7 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
                 fieldLabel: gettext('CPU units'),
                 minValue: 8,
                 maxValue: 500000,
-                value: 1024,
+                value: '1024',
                 allowBlank: true
             }
 	];
@@ -81,7 +81,7 @@ Ext.define('PVE.qemu.CPUOptions', {
 	
 	Ext.apply(me, {
 	    subject: gettext('CPU options'),
-	    items: ipanel,
+	    items: [ ipanel ]
 	});
 
 	me.callParent();
