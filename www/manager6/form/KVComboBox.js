@@ -38,7 +38,7 @@ Ext.define('PVE.form.KVComboBox', {
 
 	me.store = Ext.create('Ext.data.ArrayStore', {
 	    model: 'KeyValue',
-	    data : me.comboItems,
+	    data : me.comboItems
 	});
 
 	if (me.initialConfig.editable === undefined) {

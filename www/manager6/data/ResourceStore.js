@@ -95,7 +95,7 @@ Ext.define('PVE.data.ResourceStore', {
 		renderer: PVE.Utils.render_disk_usage,
 		sortable: true,
 		width: 100,
-		hidden: true,
+		hidden: true
 	    },
 	    diskuse: {
 		header: gettext('Disk usage') + " %",
@@ -104,7 +104,7 @@ Ext.define('PVE.data.ResourceStore', {
 		renderer: PVE.Utils.render_disk_usage_percent,
 		width: 100,
 		calculate: PVE.Utils.calculate_disk_usage,
-		sortType: 'asFloat',
+		sortType: 'asFloat'
 	    },
 	    maxdisk: {
 		header: gettext('Disk size'),

@@ -46,7 +46,7 @@ Ext.define('PVE.storage.TPoolSelector', {
 	Ext.apply(me, {
 	    store: store,
 	    listConfig: {
-		loadingText: gettext('Scanning...'),
+		loadingText: gettext('Scanning...')
 	    }
 	});
 
@@ -81,7 +81,7 @@ Ext.define('PVE.storage.BaseVGSelector', {
 	Ext.apply(me, {
 	    store: store,
 	    listConfig: {
-		loadingText: gettext('Scanning...'),
+		loadingText: gettext('Scanning...')
 	    }
 	});
 

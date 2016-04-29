@@ -31,7 +31,7 @@ Ext.define('PVE.form.GroupSelector', {
 	});
 
 	Ext.apply(me, {
-	    store: store,
+	    store: store
 	});
 
         me.callParent();

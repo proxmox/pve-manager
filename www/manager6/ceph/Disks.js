@@ -179,7 +179,7 @@ Ext.define('PVE.form.CephDiskSelector', {
 	});
 
 	Ext.apply(me, {
-	    store: store,
+	    store: store
 	});
 
         me.callParent();

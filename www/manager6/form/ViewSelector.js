@@ -56,7 +56,7 @@ Ext.define('PVE.form.ViewSelector', {
 		reader: 'array'
             },
 	    data: groupdef,
-	    autoload: true,
+	    autoload: true
 	});
 
 	Ext.apply(me, {

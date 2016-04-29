@@ -39,7 +39,7 @@ Ext.define('PVE.panel.HA', {
 	    plugins: [{
 		ptype: 'lazyitems',
 		items: items
-	    }],
+	    }]
 	});
 
 	me.callParent();

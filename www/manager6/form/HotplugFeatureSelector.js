@@ -47,5 +47,5 @@ Ext.define('PVE.form.HotplugFeatureSelector', {
 	    }
         }
         return data;
-    },
+    }
 });

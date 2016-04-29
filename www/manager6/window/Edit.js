@@ -242,7 +242,7 @@ Ext.define('PVE.window.Edit', {
 	    modal: true,
 	    width: twoColumn ? colwidth*2 : colwidth,
 	    border: false,
-	    items: [ me.formPanel ],
+	    items: [ me.formPanel ]
 	});
 
 	me.callParent();

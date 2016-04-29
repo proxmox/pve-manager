@@ -61,7 +61,7 @@ Ext.define('PVE.storage.StatusView', {
 	}
 
 	Ext.apply(me, {
-	    url: "/api2/json/nodes/" + nodename + "/storage/" + storage + "/status",
+	    url: "/api2/json/nodes/" + nodename + "/storage/" + storage + "/status"
 	});
 
 	me.callParent();

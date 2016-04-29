@@ -76,8 +76,8 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 		xtype: 'pvecheckbox',
 		fieldLabel: gettext('Enable NUMA'),
 		name: 'numa',
-		uncheckedValue: 0,
-	    },
+		uncheckedValue: 0
+	    }
 
 	];
 

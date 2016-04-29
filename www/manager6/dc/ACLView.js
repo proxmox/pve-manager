@@ -215,7 +215,7 @@ Ext.define('PVE.dc.ACLView', {
 				}
 			    }
 			]
-		    },
+		    }
 		},
 		remove_btn
 	    ],

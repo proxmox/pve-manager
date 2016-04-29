@@ -76,7 +76,7 @@ Ext.define('PVE.qemu.CPUOptions', {
 	var me = this;
 
         var ipanel = Ext.create('PVE.qemu.CPUOptionsInputPanel', {
-            maxvcpus: me.maxvcpus,
+            maxvcpus: me.maxvcpus
         });
 	
 	Ext.apply(me, {

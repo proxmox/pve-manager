@@ -100,7 +100,7 @@ Ext.apply(Ext.form.field.VTypes, {
     pveMail: function(v) {
         return (/^(\w+)([\-+.][\w]+)*@(\w[\-\w]*\.){1,5}([A-Za-z]){2,63}$/).test(v);
     },
-    pveMailText: gettext('Example') + ": user@example.com",
+    pveMailText: gettext('Example') + ": user@example.com"
 });
 
 // ExtJs 5-6 has an issue with caching

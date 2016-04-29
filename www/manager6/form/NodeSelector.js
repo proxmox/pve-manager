@@ -56,7 +56,7 @@ Ext.define('PVE.form.NodeSelector', {
 		width: 100,
 		dataIndex: 'cpu'
 	    }
-	],
+	]
     },
 
     validator: function(value) {

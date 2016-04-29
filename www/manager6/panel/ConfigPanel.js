@@ -42,7 +42,7 @@ Ext.define('PVE.panel.Config', {
 	tbar.unshift({
 	    xtype: 'tbtext',
 	    text: title,
-	    baseCls: 'x-panel-header-text',
+	    baseCls: 'x-panel-header-text'
 	});
 
 

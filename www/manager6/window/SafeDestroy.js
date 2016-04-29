@@ -68,7 +68,7 @@ Ext.define('PVE.window.SafeDestroy', {
 	    xtype: 'component',
 	    cls: [ Ext.baseCSSPrefix + 'message-box-icon',
 		   Ext.baseCSSPrefix + 'message-box-warning',
-		   Ext.baseCSSPrefix + 'dlg-icon'],
+		   Ext.baseCSSPrefix + 'dlg-icon']
 	},
 	{
 	    xtype: 'container',
@@ -91,7 +91,7 @@ Ext.define('PVE.window.SafeDestroy', {
 		    hideTrigger: true,
 		    allowBlank: false
 		}
-	    ],
+	    ]
 	}
     ],
     buttons: [

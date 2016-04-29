@@ -47,7 +47,7 @@ Ext.define('PVE.storage.IScsiScan', {
 	});
 
 	Ext.apply(me, {
-	    store: store,
+	    store: store
 	});
 
 	me.callParent();

@@ -61,7 +61,7 @@ Ext.define('PVE.CephCreatePool', {
 	}
 
         Ext.applyIf(me, {
-	    url: "/nodes/" + me.nodename + "/ceph/pools",
+	    url: "/nodes/" + me.nodename + "/ceph/pools"
         });
 
         me.callParent();

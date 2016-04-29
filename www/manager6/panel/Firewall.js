@@ -92,7 +92,7 @@ Ext.define('PVE.panel.Firewall', {
 	    plugins: [{
 		ptype: 'lazyitems',
 		items: items
-	    }],
+	    }]
 	});
 
 	me.callParent();

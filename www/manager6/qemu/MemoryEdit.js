@@ -56,7 +56,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		hotplug: me.hotplug,
 		fieldLabel: gettext('Memory') + ' (MB)',
 		labelAlign: 'right',
-		labelWidth: labelWidth,
+		labelWidth: labelWidth
 	    },
 	    {
 		xtype: 'radiofield',
@@ -118,7 +118,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		allowBlank: true,
 		emptyText: PVE.Utils.defaultText + ' (1000)',
 		submitEmptyText: false
-	    },
+	    }
 	];
 
 	if (me.insideWizard) {
@@ -147,7 +147,7 @@ Ext.define('PVE.qemu.MemoryEdit', {
 	}
 	
         var ipanel = Ext.create('PVE.qemu.MemoryInputPanel', {
-            hotplug: memoryhotplug,
+            hotplug: memoryhotplug
         });
 
 	Ext.apply(me, {
@@ -169,7 +169,7 @@ Ext.define('PVE.qemu.MemoryEdit', {
 		    maxmemory: data.memory,
 		    balloon: data.balloon,
 		    shares: data.shares,
-		    memoryType: data.balloon ? 'dynamic' : 'fixed',
+		    memoryType: data.balloon ? 'dynamic' : 'fixed'
 		};
 		ipanel.setValues(values);
 	    }

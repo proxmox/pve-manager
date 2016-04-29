@@ -34,7 +34,7 @@ Ext.define('PVE.form.RealmComboBox', {
 	var me = this;
 
 	me.store = Ext.create('Ext.data.Store', {
-	    model: 'pve-domains',
+	    model: 'pve-domains'
 	});
 
 	me.callParent();

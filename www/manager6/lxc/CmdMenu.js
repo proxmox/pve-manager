@@ -108,7 +108,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		    });
 		}
 	    },
-	    { xtype: 'menuseparator', },
+	    { xtype: 'menuseparator' },
 	    {
 		text: gettext('Migrate'),
 		iconCls: 'fa fa-fw fa-send-o',
@@ -141,7 +141,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 //		    });
 //		}
 //	    },
-	    { xtype: 'menuseparator', },
+	    { xtype: 'menuseparator' },
 	    {
 		text: gettext('Console'),
 		iconCls: 'fa fa-fw fa-terminal',

@@ -54,7 +54,7 @@ Ext.define('PVE.qemu.Config', {
 	    handler: function() {
 		vm_command('start');
 	    },
-	    iconCls: 'fa fa-play',
+	    iconCls: 'fa fa-play'
 	});
 
 	var migrateBtn = Ext.create('Ext.Button', {
@@ -97,7 +97,7 @@ Ext.define('PVE.qemu.Config', {
 		    handler: function() {
 			vm_command("stop", { timeout: 30 });
 		    },
-		    iconCls: 'fa fa-stop',
+		    iconCls: 'fa fa-stop'
 		}]
 	    },
 	    iconCls: 'fa fa-power-off'

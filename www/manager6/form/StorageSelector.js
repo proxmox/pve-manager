@@ -97,7 +97,7 @@ Ext.define('PVE.form.StorageSelector', {
 	});
 
 	Ext.apply(me, {
-	    store: store,
+	    store: store
 	});
 
         me.callParent();

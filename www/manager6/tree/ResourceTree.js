@@ -32,7 +32,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		iconCls: 'fa fa-file-o fa-dark  x-fa-tree-template'
 	    },
 	    datacenter: {
-		iconCls: 'fa fa-server x-fa-tree-datacenter',
+		iconCls: 'fa fa-server x-fa-tree-datacenter'
 	    }
 	}
     },

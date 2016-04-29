@@ -48,7 +48,7 @@ Ext.define('PVE.storage.NFSScan', {
 	});
 
 	Ext.apply(me, {
-	    store: store,
+	    store: store
 	});
 
 	me.callParent();

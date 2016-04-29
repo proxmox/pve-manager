@@ -99,7 +99,7 @@ Ext.define('PVE.node.Summary', {
 	});
 
 	var rrdstore = Ext.create('PVE.data.RRDStore', {
-	    rrdurl: "/api2/json/nodes/" + nodename + "/rrddata",
+	    rrdurl: "/api2/json/nodes/" + nodename + "/rrddata"
 	});
 
 	Ext.apply(me, {
@@ -134,13 +134,13 @@ Ext.define('PVE.node.Summary', {
 			title: gettext('Network traffic'),
 			fields: ['netin','netout'],
 			store: rrdstore
-		    },
-		],
+		    }
+		]
 	    },
 	    listeners: {
 		activate: function() { rstore.startUpdate(); rrdstore.startUpdate(); },
 		hide: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); },
-		destroy: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); },
+		destroy: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); }
 	    }
 	});
 

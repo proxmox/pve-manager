@@ -121,7 +121,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 		name: 'bd1',
 		allowBlank: false,
 		listeners: {
-		    change: me.recomputeSelection,
+		    change: me.recomputeSelection
 		}
 	    }),
 		Ext.createWidget('pveKVComboBox', {
@@ -130,7 +130,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 		name: 'bd2',
 		allowBlank: false,
 		listeners: {
-		    change: me.recomputeSelection,
+		    change: me.recomputeSelection
 		}
 	    }),
 		Ext.createWidget('pveKVComboBox', {
@@ -139,9 +139,9 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 		name: 'bd3',
 		allowBlank: false,
 		listeners: {
-		    change: me.recomputeSelection,
+		    change: me.recomputeSelection
 		}
-	    }),
+	    })
 	];
 	Ext.apply(me, { items: me.comboboxes });
 	me.callParent();

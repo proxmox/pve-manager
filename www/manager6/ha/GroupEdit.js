@@ -47,7 +47,7 @@ Ext.define('PVE.ha.GroupInputPanel', {
 		name: 'nofailback',
 		uncheckedValue: 0,
 		fieldLabel: 'nofailback'
-	    },
+	    }
 	];
 
 	me.columnB = [

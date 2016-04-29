@@ -226,7 +226,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 		columnschanged: 'saveCurrentState',
 		columnresize: 'saveCurrentState',
 		columnmove: 'saveCurrentState',
-		sortchange: 'saveCurrentState',
+		sortchange: 'saveCurrentState'
 	    },
             columns: coldef
 	});

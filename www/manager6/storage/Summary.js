@@ -34,7 +34,7 @@ Ext.define('PVE.storage.Summary', {
 	var rstore = statusview.rstore;
 
 	var rrdstore = Ext.create('PVE.data.RRDStore', {
-	    rrdurl:  "/api2/json/nodes/" + nodename + "/storage/" + storage + "/rrddata",
+	    rrdurl:  "/api2/json/nodes/" + nodename + "/storage/" + storage + "/rrddata"
 	});
 
 	Ext.apply(me, {
@@ -51,7 +51,7 @@ Ext.define('PVE.storage.Summary', {
 	    listeners: {
 		activate: function() { rstore.startUpdate(); rrdstore.startUpdate(); },
 		hide: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); },
-		destroy: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); },
+		destroy: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); }
 	    }
 	});
 

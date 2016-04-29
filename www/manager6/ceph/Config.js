@@ -108,7 +108,7 @@ Ext.define('PVE.node.Ceph', {
 			xtype: 'pveLogView',
 			url: "/api2/extjs/nodes/" + nodename + "/ceph/log"
 		    }
-		],
+		]
 	    }
 	});
 

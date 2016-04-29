@@ -20,7 +20,7 @@ Ext.define('PVE.data.RRDStore', {
     },
 
     proxy: {
-	type: 'pve',
+	type: 'pve'
     },
     fields: [
 	// node rrd fields
@@ -63,7 +63,7 @@ Ext.define('PVE.data.RRDStore', {
 	'total',
 
 	// for time we generate unix timestamps, javascript uses milliseconds instead of seconds
-	{ name:'time', convert: function(value) { return value*1000; }},
+	{ name:'time', convert: function(value) { return value*1000; }}
     ],
     sorters: 'time',
     timeframe: 'hour',

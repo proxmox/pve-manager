@@ -412,7 +412,7 @@ Ext.define('PVE.dc.BackupView', {
 		    sortable: true,
 		    disabled: true,
 		    disabledCls: 'x-item-enabled',
-		    stopSelection: false,
+		    stopSelection: false
 		},
 		{
 		    header: gettext('Node'),

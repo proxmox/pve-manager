@@ -45,7 +45,7 @@ Ext.define('PVE.qemu.Summary', {
 	});
 
 	var rrdstore = Ext.create('PVE.data.RRDStore', {
-	    rrdurl: "/api2/json/nodes/" + nodename + "/qemu/" + vmid + "/rrddata",
+	    rrdurl: "/api2/json/nodes/" + nodename + "/qemu/" + vmid + "/rrddata"
 	});
 
 	Ext.apply(me, {
@@ -91,12 +91,12 @@ Ext.define('PVE.qemu.Summary', {
 			fields: ['diskread','diskwrite'],
 			store: rrdstore
 		    }
-		],
+		]
 	    },
 	    listeners: {
 		activate: function() {notesview.load(); rrdstore.startUpdate();},
 		hide: rrdstore.stopUpdate,
-		destroy: rrdstore.stopUpdate,
+		destroy: rrdstore.stopUpdate
 	    }
 	});
 

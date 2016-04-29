@@ -11,7 +11,7 @@ Ext.define('PVE.form.DayOfWeekSelector', {
 	    ['thu', Ext.util.Format.htmlDecode(Ext.Date.dayNames[4])],
 	    ['fri', Ext.util.Format.htmlDecode(Ext.Date.dayNames[5])],
 	    ['sat', Ext.util.Format.htmlDecode(Ext.Date.dayNames[6])],
-	    ['sun', Ext.util.Format.htmlDecode(Ext.Date.dayNames[0])],
+	    ['sun', Ext.util.Format.htmlDecode(Ext.Date.dayNames[0])]
 	];
 	this.callParent();
     }

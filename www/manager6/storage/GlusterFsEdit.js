@@ -48,7 +48,7 @@ Ext.define('PVE.storage.GlusterFsScan', {
 	});
 
 	Ext.apply(me, {
-	    store: store,
+	    store: store
 	});
 
 	me.callParent();
@@ -107,7 +107,7 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 		name: 'server2',
 		value: '',
 		fieldLabel: gettext('Second Server'),
-		allowBlank: true,
+		allowBlank: true
 	    },
 	    {
 		xtype: me.create ? 'pveGlusterFsScan' : 'displayfield',

@@ -81,7 +81,7 @@ Ext.define('PVE.data.reader.JsonObject', {
 			    data.push(rec);
 			}
 		    });
-	    	}
+		}
 		
 	    } else { 
 		
@@ -109,7 +109,7 @@ Ext.define('PVE.data.reader.JsonObject', {
 		    Ext.Object.each(root, function(key, value) {
 			data.push({key: key, value: value });
 		    });
-	    	}
+		}
 	    }
 	}
         catch (ex) {

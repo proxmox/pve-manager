@@ -414,5 +414,5 @@ Ext.define('PVE.data.TimezoneStore', {
 	    ['Pacific/Tongatapu'],
 	    ['Pacific/Wake'],
 	    ['Pacific/Wallis']
-	],
+	]
 });

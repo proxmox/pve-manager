@@ -83,7 +83,7 @@ Ext.define('PVE.node.Config', {
 			iconCls: 'fa fa-fw fa-send-o',
 			handler: function() {
 			    var win = Ext.create('PVE.window.MigrateAll', {
-				nodename: nodename,
+				nodename: nodename
 			    });
 			    win.show();
 			}
@@ -139,7 +139,7 @@ Ext.define('PVE.node.Config', {
 		{
 		    title: gettext('Services'),
 		    itemId: 'services',
-		    xtype: 'pveNodeServiceView',
+		    xtype: 'pveNodeServiceView'
 		},
 		{
 		    title: gettext('Network'),

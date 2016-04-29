@@ -55,7 +55,7 @@ Ext.define('PVE.window.MigrateAll', {
 		    value: 1,
 		    fieldLabel: 'Parallel jobs',
 		    allowBlank: false
-		},
+		}
 	    ]
 	});
 

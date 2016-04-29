@@ -20,7 +20,7 @@ Ext.define('PVE.RestProxy', {
 	    reader: {
 		type: 'json',
 		rootProperty: config.root || 'data'
-	    },
+	    }
 	});
 
 	this.callParent([config]); 

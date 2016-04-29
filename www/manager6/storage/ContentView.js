@@ -193,7 +193,7 @@ Ext.define('PVE.storage.Upload', {
 		    xtype: 'filefield',
 		    name: 'filename',
 		    buttonText: gettext('Select File...'),
-		    allowBlank: false,
+		    allowBlank: false
 		},
 		pbar
 	    ]
@@ -323,7 +323,7 @@ Ext.define('PVE.storage.ContentView', {
     stateful: false,
     viewConfig: {
 	trackOver: false,
-	loadMask: false,
+	loadMask: false
     },
     initComponent : function() {
 	var me = this;
@@ -386,7 +386,7 @@ Ext.define('PVE.storage.ContentView', {
 		var win = Ext.create('PVE.storage.Upload', {
 		    nodename: nodename,
 		    storage: storage,
-		    contents: me.contents,
+		    contents: me.contents
 		});
 		win.show();
 		win.on('destroy', reload);
@@ -394,7 +394,7 @@ Ext.define('PVE.storage.ContentView', {
 	});
 
 	me.statusStore = Ext.create('PVE.data.ObjectStore', {
-	    url: '/api2/json/nodes/' + nodename + '/storage/' + storage + '/status',
+	    url: '/api2/json/nodes/' + nodename + '/storage/' + storage + '/status'
 	});
 
 	Ext.apply(me, {

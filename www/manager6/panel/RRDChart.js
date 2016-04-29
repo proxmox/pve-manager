@@ -11,17 +11,17 @@ Ext.define('PVE.widget.RRDChart', {
 	position: 'left',
 	grid: true,
 	renderer: 'leftAxisRenderer',
-	minimum: 0,
+	minimum: 0
     }, {
 	type: 'time',
 	position: 'bottom',
 	grid: true,
-	fields: ['time'],
+	fields: ['time']
     }],
     legend: {
 	docked: 'right',
 	// we set this that all graphs have same width
-	width: 140,
+	width: 140
     },
     listeners: {
 	afterrender: 'onAfterRender'
@@ -39,7 +39,7 @@ Ext.define('PVE.widget.RRDChart', {
 	'disk',
 	'maxdisk',
 	'total',
-	'used',
+	'used'
     ],
     bytespersArr: [
 	'netin',
@@ -122,7 +122,7 @@ Ext.define('PVE.widget.RRDChart', {
 		fill: true,
 		style: {
 		    lineWidth: 1.5,
-		    opacity: 0.60,
+		    opacity: 0.60
 		},
 		marker: {
 		    opacity: 0,

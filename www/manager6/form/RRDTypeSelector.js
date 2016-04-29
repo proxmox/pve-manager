@@ -44,6 +44,6 @@ Ext.define('PVE.form.RRDTypeSelector', {
 	if (state && state.id) {
 	    this.setValue(state.id);
 	}
-    },
+    }
 });
 

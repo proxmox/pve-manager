@@ -41,7 +41,7 @@ Ext.define('PVE.ha.StatusView', {
 	    store: store,
 	    stateful: false,
 	    viewConfig: {
-		trackOver: false,
+		trackOver: false
 	    },
 	    columns: [
 		{

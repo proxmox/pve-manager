@@ -64,7 +64,7 @@ Ext.define('PVE.dc.ConsoleViewerEdit', {
 		name: 'console',
 		value: '__default__',
 		fieldLabel: gettext('Console Viewer'),
-		comboItems: data,
+		comboItems: data
 	    }
 	});
 

@@ -148,7 +148,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    {
 		xtype: 'pveVlanField',
 		name: 'tag',
-		value: cdata.tag,
+		value: cdata.tag
 	    },
 	    {
 		xtype: 'numberfield',
@@ -164,7 +164,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		xtype: 'pvecheckbox',
 		fieldLabel: gettext('Firewall'),
 		name: 'firewall',
-		checked: cdata.firewall,
+		checked: cdata.firewall
 	    }
 	];
 
@@ -192,7 +192,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		items: [
 		    {
 			xtype: 'label',
-			text: gettext('IPv4') + ':',
+			text: gettext('IPv4') + ':'
 		    },
 		    {
 			xtype: 'radiofield',
@@ -250,7 +250,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		items: [
 		    {
 			xtype: 'label',
-			text: gettext('IPv6') + ':',
+			text: gettext('IPv6') + ':'
 		    },
 		    {
 			xtype: 'radiofield',

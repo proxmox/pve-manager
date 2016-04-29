@@ -38,7 +38,7 @@ Ext.define('PVE.form.FWMacroSelector', {
 	});
 
 	Ext.apply(me, {
-	    store: store,
+	    store: store
 	});
 
 	me.callParent();
@@ -83,7 +83,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		// form again.
 		xtype: 'hiddenfield',
 		name: 'modified_marker',
-		value: '',
+		value: ''
 	    },
 	    {
 		xtype: 'pveKVComboBox',

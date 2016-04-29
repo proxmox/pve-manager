@@ -6,7 +6,7 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
     queryMode: 'local',
     editable: false,
     listConfig: {
-	loadingText: gettext('Scanning...'),
+	loadingText: gettext('Scanning...')
     },
     initComponent : function() {
 	var me = this;
@@ -25,7 +25,7 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
 	});
 
 	Ext.apply(me, {
-	    store: store,
+	    store: store
 	});
 
 	me.callParent();

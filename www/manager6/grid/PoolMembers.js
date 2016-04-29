@@ -53,7 +53,7 @@ Ext.define('PVE.pool.AddVM', {
 			});
 			vmsField.setValue(selectedVms);
 		    }
-		},
+		}
 	    },
 	    columns: [
 		{
@@ -85,7 +85,7 @@ Ext.define('PVE.pool.AddVM', {
 		    header: gettext('Type'),
 		    dataIndex: 'type'
 		}
-	    ],
+	    ]
 	});
 	Ext.apply(me, {
 	    subject: gettext('Virtual Machine'),

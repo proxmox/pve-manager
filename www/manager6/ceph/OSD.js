@@ -80,7 +80,7 @@ Ext.define('PVE.CephRemoveOsd', {
 	me.title = gettext('Remove') + ': ' + 'Ceph OSD osd.' + me.osdid;
 
         Ext.applyIf(me, {
-	    url: "/nodes/" + me.nodename + "/ceph/osd/" + me.osdid,
+	    url: "/nodes/" + me.nodename + "/ceph/osd/" + me.osdid
         });
 
         me.callParent();

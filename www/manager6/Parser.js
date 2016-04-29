@@ -493,5 +493,5 @@ Ext.define('PVE.Parser', { statics: {
 	}
 
 	return cpustr + optstr;
-    },
+    }
 }});

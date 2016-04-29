@@ -24,7 +24,7 @@ Ext.define('PVE.storage.VgSelector', {
 	Ext.apply(me, {
 	    store: store,
 	    listConfig: {
-		loadingText: gettext('Scanning...'),
+		loadingText: gettext('Scanning...')
 	    }
 	});
 
@@ -72,7 +72,7 @@ Ext.define('PVE.storage.BaseStorageSelector', {
 	store.loadData([{ storage: '' }], true);
 
 	Ext.apply(me, {
-	    store: store,
+	    store: store
 	});
 
 	me.callParent();

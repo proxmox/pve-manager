@@ -72,7 +72,7 @@ Ext.define('PVE.node.Subscription', {
 				    document.body.removeChild(element);
 				}
 			    }
-			},
+			}
 		],
 	    items: view
 	});
@@ -140,7 +140,7 @@ Ext.define('PVE.node.Subscription', {
 		renderer: PVE.Utils.render_timestamp
 	    },
 	    nextduedate: {
-		header: gettext('Next due date'),
+		header: gettext('Next due date')
 	    }
 	};
 
