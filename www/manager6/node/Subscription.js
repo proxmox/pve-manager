@@ -1,3 +1,4 @@
+/*global Blob*/
 Ext.define('PVE.node.SubscriptionKeyEdit', {
     extend: 'PVE.window.Edit',
     title: gettext('Upload Subscription Key'),
