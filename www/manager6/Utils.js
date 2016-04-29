@@ -785,10 +785,10 @@ Ext.define('PVE.Utils', { statics: {
 
 	if (value.managed) {
 	    text += ', ' + PVE.Utils.stateText + ': ';
-	    text += value.state ? value.state : PVE.Utils.noneText;
+	    text += value.state || PVE.Utils.noneText;
 
 	    text += ', ' +  PVE.Utils.groupText + ': ';
-	    text += value.group ? value.group : PVE.Utils.noneText;
+	    text += value.group || PVE.Utils.noneText;
 	}
 
 	return text;

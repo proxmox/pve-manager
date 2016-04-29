@@ -269,7 +269,7 @@ Ext.define('PVE.form.ComboGrid', {
 		if (me.enableAfterLoad) {
 		    delete me.enableAfterLoad;
 		    if (me.picker) {
-			me.picker.setMinHeight((me.savedMinHeight)?me.savedMinHeight:0);
+			me.picker.setMinHeight(me.savedMinHeight || 0);
 			delete me.savedMinHeight;
 			me.picker.updateLayout();
 		    }
