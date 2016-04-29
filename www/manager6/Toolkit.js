@@ -239,10 +239,12 @@ Ext.define('Ext.ux.IFrame', {
             try {
                 doc = this.getDoc();
                 if (doc) {
+		    /*jslint nomen: true*/
                     Ext.get(doc).un(this._docListeners);
-                    if (destroying) {
+		    /*jslint nomen: false*/
+                    if (destroying && doc.hasOwnProperty) {
                         for (prop in doc) {
-                            if (doc.hasOwnProperty && doc.hasOwnProperty(prop)) {
+                            if (doc.hasOwnProperty(prop)) {
                                 delete doc[prop];
                             }
                         }
@@ -264,6 +266,7 @@ Ext.define('Ext.ux.IFrame', {
                 // the event reaches listeners on elements like the document body. The effected
                 // mechanisms that depend on this bubbling behavior are listed to the right
                 // of the event.
+		/*jslint nomen: true*/
                 Ext.get(doc).on(
                     me._docListeners = {
                         mousedown: fn, // menu dismisal (MenuManager) and Window onMouseDown (toFront)
@@ -274,6 +277,7 @@ Ext.define('Ext.ux.IFrame', {
                         scope: me
                     }
                 );
+		/*jslint nomen: false*/
             } catch(e) {
                 // cannot do this xss
             }
