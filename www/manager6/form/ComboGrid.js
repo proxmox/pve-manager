@@ -30,6 +30,25 @@ Ext.define('PVE.form.ComboGrid', {
     // needed to trigger onKeyUp etc.
     enableKeyEvents: true,
 
+    // override ExtJS method
+    // if the field has multiSelect enabled, the store is not loaded, and
+    // the displayfield == valuefield, it saves the rawvalue as an array
+    // but the getRawValue method is only defined in the textfield class
+    // (which has not to deal with arrays) an returns the string in the
+    // field (not an array)
+    //
+    // so if we have multiselect enabled, return the rawValue (which
+    // should be an array) and else we do callParent so
+    // it should not impact any other use of the class
+    getRawValue: function() {
+	var me = this;
+	if (me.multiSelect) {
+	    return me.rawValue;
+	} else {
+	    return me.callParent();
+	}
+    },
+
 // override ExtJS protected method
     onBindStore: function(store, initial) {
         var me = this,
