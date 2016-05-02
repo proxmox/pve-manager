@@ -264,7 +264,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		    var node = nodesel.getValue();
 		    store.clearFilter();
 		    store.filterBy(function(rec) {
-			return (!node || rec.get('node') === node);
+			return (!node || node.length === 0 || rec.get('node') === node);
 		    });
 		    var list = vmidField.getValue();
 		    var mode = selModeField.getValue();
