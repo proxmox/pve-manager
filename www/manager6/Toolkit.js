@@ -137,6 +137,28 @@ Ext.define('PVE.UnderlayPool', {
     }
 });
 
+// if the order of the values are not the same in originalValue and value
+// extjs will not overwrite value, but marks the field dirty and thus
+// the reset button will be enabled (but clicking it changes nothing)
+// so if the arrays are not the same after resetting, we
+// clear and set it
+Ext.define('PVE.form.ComboBox', {
+    override: 'Ext.form.field.ComboBox',
+
+    reset: function() {
+	// copied from combobox
+	var me = this;
+	me.callParent();
+	me.applyEmptyText();
+
+	// clear and set when not the same
+	if (Ext.isArray(me.originalValue) && !Ext.Array.equals(me.getValue(), me.originalValue)) {
+	    me.clearValue();
+	    me.setValue(me.originalValue);
+	}
+    }
+});
+
 // should be fixed with ExtJS 6.0.2, see:
 // https://www.sencha.com/forum/showthread.php?307244-Bug-with-datefield-in-window-with-scroll
 Ext.define('PVE.Datepicker', {
