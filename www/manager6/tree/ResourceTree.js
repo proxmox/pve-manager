@@ -402,13 +402,13 @@ Ext.define('PVE.tree.ResourceTree', {
 		},
 		beforecellmousedown: function (tree, record,item,index,ev) {
 		    // disable selection when right clicking
-		    me.allowSelection = !(event.button === 2);
+		    me.allowSelection = (event.button !== 2);
 		},
 		beforeselect: function (tree, record, index, eopts) {
 		    var allow = me.allowSelection;
 		    me.allowSelection = true;
 		    return allow;
-		},
+		}
 	    },
 	    setViewFilter: function(view) {
 		me.viewFilter = view;
