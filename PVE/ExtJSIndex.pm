@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 sub get_index {
-    my ($lang, $username, $csrftoken, $console, $nodename) = @_;
+    my ($lang, $username, $csrftoken, $console, $nodename, $debug) = @_;
 
     my $page = <<_EOD;
 <!DOCTYPE html>
@@ -26,9 +26,19 @@ _EOD
 	$page .= '<script type="text/javascript">function gettext(buf) { return buf; }</script>';
     }
 
-    $page .= <<_EOD;
+    if ($debug) {
+	$page .= <<_EOD;
+    <script type="text/javascript" src="/pve2/ext6/ext-all-debug.js"></script>
+    <script type="text/javascript" src="/pve2/ext6/charts-debug.js"></script>
+_EOD
+    } else {
+	$page .= <<_EOD;
     <script type="text/javascript" src="/pve2/ext6/ext-all.js"></script>
     <script type="text/javascript" src="/pve2/ext6/charts.js"></script>
+_EOD
+    }
+
+$page .= <<_EOD;
     <script type="text/javascript" src="/pve2/ext6/pvemanagerlib.js"></script>
     <script type="text/javascript" src="/pve2/ext6/locale/locale-${lang}.js"></script>
 _EOD

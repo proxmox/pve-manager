@@ -201,7 +201,8 @@ sub get_index {
     } elsif ($mobile) {
 	$page = PVE::TouchIndex::get_index($lang, $username, $token, $args->{console}, $nodename);
     } else {
-	$page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console}, $nodename);
+	$page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console}, $nodename,
+	    $server->{debug});
     }
     my $headers = HTTP::Headers->new(Content_Type => "text/html; charset=utf-8");
     my $resp = HTTP::Response->new(200, "OK", $headers, $page);
