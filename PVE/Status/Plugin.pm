@@ -22,7 +22,7 @@ my $defaultData = {
 	    type => 'string', format => 'pve-configid',
 	},
 	disable => {
-	    description => "Flag to disable the plugun.",
+	    description => "Flag to disable the plugin.",
 	    type => 'boolean',
 	    optional => 1,
 	},
