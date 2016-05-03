@@ -8,6 +8,8 @@ pve-manager (4.2-4) unstable; urgency=medium
 
   * fix pending changes with boot order
 
+  * Do not send -debug versions of framework files
+
  -- Proxmox Support Team <support@proxmox.com>  Tue, 03 May 2016 06:33:55 +0200
 
 pve-manager (4.2-3) unstable; urgency=medium
