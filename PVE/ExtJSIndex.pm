@@ -21,9 +21,9 @@ _EOD
 
     my $langfile = "/usr/share/pve-manager/locale/pve-lang-${lang}.js";
     if (-f $langfile) {
-	$page .= "<script type='text/javascript' src='/pve2/locale/pve-lang-${lang}.js'></script>";
+	$page .= "    <script type='text/javascript' src='/pve2/locale/pve-lang-${lang}.js'></script>\n";
     } else {
-	$page .= '<script type="text/javascript">function gettext(buf) { return buf; }</script>';
+	$page .= "    <script type='text/javascript'>function gettext(buf) { return buf; }</script>\n";
     }
 
     if ($debug) {
