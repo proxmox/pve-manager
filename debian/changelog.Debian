@@ -1,3 +1,13 @@
+pve-manager (4.2-4) unstable; urgency=medium
+
+  * fix #944: do not filter by empty array
+
+  * fix combobox reset behaviour
+
+  * fix combogrid multiselect bug
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 03 May 2016 06:33:55 +0200
+
 pve-manager (4.2-3) unstable; urgency=medium
 
   * improve gui cidr matching
