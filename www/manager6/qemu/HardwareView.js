@@ -439,8 +439,9 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var rowdef = rows[key];
 
 	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
-	    var isDisk = !key.match(/^unused\d+/) && 
-		(rowdef.tdCls == 'pve-itype-icon-storage' && !value.match(/media=cdrom/));
+	    var isDisk = !key.match(/^unused\d+/) &&
+		rowdef.tdCls == 'pve-itype-icon-storage' &&
+		(value && !value.match(/media=cdrom/));
 
 	    remove_btn.setDisabled(rec.data['delete'] || (rowdef.never_delete === true));
 

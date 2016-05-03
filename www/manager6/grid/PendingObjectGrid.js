@@ -55,7 +55,7 @@ Ext.define('PVE.grid.PendingObjectGrid', {
 		pending = undefined;
 	    }
 	} else {
-	    current = value;
+	    current = value || '';
 	    pending = record.data.pending;
 	}
 
@@ -64,7 +64,7 @@ Ext.define('PVE.grid.PendingObjectGrid', {
 	}
 
 	if (pending || pendingdelete) {
-	    return current + '<div style="color:red">' + pending + pendingdelete + '</div>';
+	    return current + '<div style="color:red">' + (pending || '') + pendingdelete + '</div>';
 	} else {
 	    return current;
 	}
