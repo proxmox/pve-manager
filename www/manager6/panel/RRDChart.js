@@ -5,7 +5,9 @@ Ext.define('PVE.widget.RRDChart', {
 
     width: 800,
     height: 300,
-    interactions: 'crosszoom',
+    interactions: [{
+	type: 'crosszoom'
+    }],
     axes: [{
 	type: 'numeric',
 	position: 'left',
@@ -24,7 +26,8 @@ Ext.define('PVE.widget.RRDChart', {
 	width: 140
     },
     listeners: {
-	afterrender: 'onAfterRender'
+	afterrender: 'onAfterRender',
+	animationend: 'onAfterAnimation'
     },
 
     bytesArr : [
@@ -108,6 +111,18 @@ Ext.define('PVE.widget.RRDChart', {
 	}
 	me.axes[0].setTitle(axisTitle);
 
+
+	me.addTool({
+	    type: 'minus',
+	    disabled: true,
+	    tooltip: gettext('Undo Zoom'),
+	    handler: function(){
+		var undoButton = me.interactions[0].getUndoButton();
+		if (undoButton.handler) {
+		    undoButton.handler();
+		}
+	    }
+	});
 	// add a series for each field we get
 	me.fields.forEach(function(item, index){
 	    var title = item;
@@ -142,6 +157,14 @@ Ext.define('PVE.widget.RRDChart', {
 		}
 	    });
 	});
+    },
+
+    onAfterAnimation: function(chart, eopts) {
+	// if the undobuton is disabled,
+	// disable our tool
+	var ourUndoZoomButton = chart.tools[0];
+	var undoButton = chart.interactions[0].getUndoButton();
+	ourUndoZoomButton.setDisabled(undoButton.isDisabled());
     },
 
     initComponent: function() {
