@@ -240,7 +240,7 @@ Ext.define('PVE.form.ComboGrid', {
 	//
 	// we save the minheight to reset it after the load
 	picker.on('show', function() {
-	    if (me.enableAfterLoad) {
+	    if (me.enableLoadMask) {
 		me.savedMinHeight = picker.getMinHeight();
 		picker.setMinHeight(100);
 	    }
@@ -276,7 +276,7 @@ Ext.define('PVE.form.ComboGrid', {
 
 	me.mon(me.store, 'beforeload', function() {
 	    if (!me.isDisabled()) {
-		me.enableAfterLoad = true;
+		me.enableLoadMask = true;
 	    }
 	});
 
@@ -285,8 +285,13 @@ Ext.define('PVE.form.ComboGrid', {
 	    if (success) {
 		me.clearInvalid();
 
-		if (me.enableAfterLoad) {
-		    delete me.enableAfterLoad;
+		if (me.enableLoadMask) {
+		    delete me.enableLoadMask;
+
+		    // if the picker exists,
+		    // we reset its minheight to the saved var/0
+		    // we have to update the layout, otherwise the height
+		    // gets not recalculated
 		    if (me.picker) {
 			me.picker.setMinHeight(me.savedMinHeight || 0);
 			delete me.savedMinHeight;
