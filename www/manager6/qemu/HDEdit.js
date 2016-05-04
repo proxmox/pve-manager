@@ -10,6 +10,23 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
     vmconfig: {}, // used to select usused disks
 
+    controller: {
+
+	xclass: 'Ext.app.ViewController',
+
+	onControllerChange: function(field) {
+	    var value = field.getValue();
+	    this.lookup('iothread').setDisabled(!value.match(/^(virtio|scsi)/));
+	},
+
+	control: {
+	    'field[name=controller]' : {
+		change: 'onControllerChange',
+		afterrender: 'onControllerChange'
+	    }
+	}
+    },
+
     onGetValues: function(values) {
 	var me = this;
 
@@ -39,7 +56,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    delete me.drive.discard;
 	}
 
-	if (values.iothread && confid.match(/^virtio\d+$/)) {
+	if (values.iothread && confid.match(/^(virtio|scsi)\d+$/)) {
 	    me.drive.iothread = 'on';
 	} else {
 	    delete me.drive.iothread;
@@ -241,7 +258,9 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	me.column2.push({
 	    xtype: 'pvecheckbox',
+	    disabled: me.insideWizard || (me.confid && !me.confid.match(/^(virtio|scsi)/)),
 	    fieldLabel: gettext('IO thread'),
+	    reference: 'iothread',
 	    name: 'iothread'
 	});
 
