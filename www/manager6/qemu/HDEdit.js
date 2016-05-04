@@ -20,9 +20,47 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	},
 
 	control: {
-	    'field[name=controller]' : {
+	    'field[name=controller]': {
 		change: 'onControllerChange',
 		afterrender: 'onControllerChange'
+	    },
+	    'field[name=hdstorage]': {
+		change: function(f, value) {
+		    if (!value) { // initial store loading fires an unwanted 'change'
+			return;
+		    }
+		    var me = this.getView();
+		    var rec = f.store.getById(value);
+		    if (rec.data.type === 'iscsi') {
+			me.hdfilesel.setStorage(value);
+			me.hdfilesel.setDisabled(false);
+			me.formatsel.setValue('raw');
+			me.formatsel.setDisabled(true);
+			me.hdfilesel.setVisible(true);
+			me.hdsizesel.setDisabled(true);
+			me.hdsizesel.setVisible(false);
+		    } else if (rec.data.type === 'lvm' ||
+			       rec.data.type === 'lvmthin' ||
+			       rec.data.type === 'drbd' ||
+			       rec.data.type === 'rbd' ||
+			       rec.data.type === 'sheepdog' ||
+			       rec.data.type === 'zfs' ||
+			       rec.data.type === 'zfspool') {
+			me.hdfilesel.setDisabled(true);
+			me.hdfilesel.setVisible(false);
+			me.formatsel.setValue('raw');
+			me.formatsel.setDisabled(true);
+			me.hdsizesel.setDisabled(false);
+			me.hdsizesel.setVisible(true);
+		    } else {
+			me.hdfilesel.setDisabled(true);
+			me.hdfilesel.setVisible(false);
+			me.formatsel.setValue('qcow2');
+			me.formatsel.setDisabled(false);
+			me.hdsizesel.setDisabled(false);
+			me.hdsizesel.setVisible(true);
+		    }
+		}
 	    }
 	}
     },
@@ -183,44 +221,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		fieldLabel: gettext('Storage'),
 		storageContent: 'images',
 		autoSelect: me.insideWizard,
-		allowBlank: false,
-		listeners: {
-		    change: function(f, value) {
-			if (!value) { // initial store loading fires an unwanted 'change'
-			    return;
-			}
-			var rec = f.store.getById(value);
-			if (rec.data.type === 'iscsi') {
-			    me.hdfilesel.setStorage(value);
-			    me.hdfilesel.setDisabled(false);
-			    me.formatsel.setValue('raw');
-			    me.formatsel.setDisabled(true);
-			    me.hdfilesel.setVisible(true);
-			    me.hdsizesel.setDisabled(true);
-			    me.hdsizesel.setVisible(false);
-			} else if (rec.data.type === 'lvm' ||
-				   rec.data.type === 'lvmthin' ||
-				   rec.data.type === 'drbd' ||
-				   rec.data.type === 'rbd' ||
-				   rec.data.type === 'sheepdog' ||
-				   rec.data.type === 'zfs' ||
-				   rec.data.type === 'zfspool') {
-			    me.hdfilesel.setDisabled(true);
-			    me.hdfilesel.setVisible(false);
-			    me.formatsel.setValue('raw');
-			    me.formatsel.setDisabled(true);
-			    me.hdsizesel.setDisabled(false);
-			    me.hdsizesel.setVisible(true);
-			} else {
-			    me.hdfilesel.setDisabled(true);
-			    me.hdfilesel.setVisible(false);
-			    me.formatsel.setValue('qcow2');
-			    me.formatsel.setDisabled(false);
-			    me.hdsizesel.setDisabled(false);
-			    me.hdsizesel.setVisible(true);
-			}			
-		    }
-		}
+		allowBlank: false
 	    });
 	    me.column1.push(me.hdstoragesel);
 	    me.column1.push(me.hdfilesel);
