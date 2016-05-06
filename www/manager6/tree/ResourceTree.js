@@ -266,6 +266,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		    if (item) {
 			// test if any grouping attributes changed
 			// this will also catch migrated nodes
+			// in server view
 			var i, len;
 			for (i = 0, len = groups.length; i < len; i++) {
 			    var attr = groups[i];
@@ -274,6 +275,13 @@ Ext.define('PVE.tree.ResourceTree', {
 				moved = true;
 				break;
 			    }
+			}
+
+			// explicitely check for node, since
+			// in some views, node is not a grouping
+			// attribute
+			if (!moved && item.data.node !== olditem.data.node) {
+			    moved = true;
 			}
 
 			// tree item has been updated
