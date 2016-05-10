@@ -378,7 +378,7 @@ Ext.define('PVE.qemu.Options', {
 	Ext.apply(me, {
 	    url: "/api2/json/nodes/" + nodename + "/qemu/" + vmid + "/pending",
 	    interval: 5000,
-	    cwidth1: 170,
+	    cwidth1: 250,
 	    tbar: [ edit_btn, revert_btn ],
 	    rows: rows,
 	    listeners: {

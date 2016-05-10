@@ -108,7 +108,7 @@ Ext.define('PVE.grid.ObjectGrid', {
 	    columns: [
 		{
 		    header: gettext('Name'),
-		    width: me.cwidth1 || 100,
+		    width: me.cwidth1 || 200,
 		    dataIndex: 'key',
 		    renderer: me.renderKey
 		},

@@ -191,7 +191,6 @@ Ext.define('PVE.lxc.Options', {
 	Ext.apply(me, {
 	    url: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/config",
 	    selModel: sm,
-	    cwidth1: 150,
 	    tbar: [ edit_btn ],
 	    rows: rows,
 	    listeners: {

@@ -219,7 +219,6 @@ Ext.define('PVE.FirewallOptions', {
 
 	Ext.apply(me, {
 	    url: "/api2/json" + me.base_url,
-	    cwidth1: 150,
 	    tbar: [ edit_btn ],
 	    rows: rows,
 	    listeners: {

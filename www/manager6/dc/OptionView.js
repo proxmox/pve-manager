@@ -179,7 +179,6 @@ Ext.define('PVE.dc.OptionView', {
 
 	Ext.apply(me, {
 	    url: "/api2/json/cluster/options",
-	    cwidth1: 130,
 	    interval: 1000,
 	    selModel: sm,
 	    tbar: [ edit_btn ],

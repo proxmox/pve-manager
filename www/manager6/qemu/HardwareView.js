@@ -461,7 +461,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    url: '/api2/json/' + 'nodes/' + nodename + '/qemu/' + vmid + '/pending',
 	    interval: 5000,
 	    selModel: sm,
-	    cwidth1: 170,
 	    tbar: [ 
 		{
 		    text: gettext('Add'),
