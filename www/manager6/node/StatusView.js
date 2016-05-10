@@ -1,6 +1,7 @@
 Ext.define('PVE.node.StatusView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveNodeStatusView'],
+    disabled: true,
 
     initComponent : function() {
 	var me = this;

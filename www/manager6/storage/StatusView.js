@@ -1,6 +1,7 @@
 Ext.define('PVE.storage.StatusView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: 'widget.pveStorageStatusView',
+    disabled: true,
 
     title: gettext('Status'),
     cwidth1: 150,

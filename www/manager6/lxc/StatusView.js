@@ -1,5 +1,6 @@
 Ext.define('PVE.lxc.StatusView', {
     extend: 'PVE.grid.ObjectGrid',
+    disabled: true,
 
     initComponent : function() {
 	var me = this;

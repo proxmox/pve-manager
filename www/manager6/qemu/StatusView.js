@@ -1,6 +1,7 @@
 Ext.define('PVE.qemu.StatusView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveQemuStatusView'],
+    disabled: true,
 
     initComponent : function() {
 	var me = this;

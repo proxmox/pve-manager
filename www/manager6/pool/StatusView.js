@@ -1,6 +1,7 @@
 Ext.define('PVE.pool.StatusView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pvePoolStatusView'],
+    disabled: true,
 
     title: gettext('Status'),
     cwidth1: 150,

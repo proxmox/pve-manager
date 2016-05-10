@@ -10,11 +10,17 @@ rows: an object container where each propery is a key-value object we want to re
                required: true
            },
 
+optional:
+disabled: setting this parameter to true will disable selection and focus on the
+pveObjectGrid as well as greying out input elements.
+Useful for a readonly tabular display
+
 */
 
 Ext.define('PVE.grid.ObjectGrid', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveObjectGrid'],
+    disabled: false,
 
     getObjectValue: function(key, defaultValue) {
 	var me = this;
