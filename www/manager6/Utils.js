@@ -112,6 +112,10 @@ Ext.define('PVE.Utils', { statics: {
 	    return gettext('disabled');
 	}
 
+	if (value === '1') {
+	    value = 'disk,network,usb';
+	}
+
 	Ext.each(value.split(','), function(el) {
 	    if (el === 'disk') {
 		fa.push(gettext('Disk'));

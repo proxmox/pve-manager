@@ -1,51 +1,47 @@
 Ext.define('PVE.form.HotplugFeatureSelector', {
-    extend: 'PVE.form.KVComboBox',
-    alias: ['widget.pveHotplugFeatureSelector'],
+    extend: 'Ext.form.CheckboxGroup',
+    alias: 'widget.pveHotplugFeatureSelector',
 
-    multiSelect: true,
-    allowBlank: true,
-    deleteEmpty: false,
-    comboItems: [['disk', gettext('Disk')],
-	['network',  gettext('Network')],
-	['usb',  gettext('USB')],
-	['memory',  gettext('Memory')],
-	['cpu',  gettext('CPU')]],
+    columns: 1,
+    vertical: true,
+    items: [
+	{ boxLabel: gettext('Disk'),    name: 'hotplug', inputValue: 'disk',   submitValue: false, checked: true },
+	{ boxLabel: gettext('Network'), name: 'hotplug', inputValue: 'network',submitValue: false, checked: true },
+	{ boxLabel: gettext('USB'),     name: 'hotplug', inputValue: 'usb',    submitValue: false, checked: true },
+	{ boxLabel: gettext('Memory'),  name: 'hotplug', inputValue: 'memory', submitValue: false },
+	{ boxLabel: gettext('CPU'),     name: 'hotplug', inputValue: 'cpu',    submitValue: false }
+    ],
 
-    setValue: function(value, doSelect) {
+    setValue: function(value) {
 	var me = this;
-
-	if (me.multiSelect && Ext.isString(value)) {
-	    var newVal;
-	    if (value === '0') {
-		newVal = [];
-	    } else if (value === '1') {
-		newVal = ['disk', 'network', 'usb'];
-	    } else {
-		newVal = value.split(',');
-	    }
-	    me.callParent([newVal, doSelect]);
+	var newVal = [];
+	if (value === '1') {
+	    newVal = ['disk', 'network', 'usb'];
+	} else if (value !== '0') {
+	    newVal = value.split(',');
 	}
-
-	me.callParent([value, doSelect]);
+	me.callParent([{ hotplug: newVal }]);
     },
 
+    // overide framework function to
+    // assemble the hotplug value
     getSubmitData: function() {
-        var me = this,
-            data = null,
-            val;
-        if (!me.disabled && me.submitValue) {
-            val = me.getSubmitValue();
-	    if (Ext.isArray(val)) {
-		val = val.join(',') || '0';
+	var me = this,
+	boxes = me.getBoxes(),
+	data = [];
+	Ext.Array.forEach(boxes, function(box){
+	    if (box.getValue()) {
+		data.push(box.inputValue);
 	    }
-            if (val !== null && val !== '') {
-                data = {};
-                data[me.getName()] = val;
-            } else if (me.deleteEmpty) {
-		data = {};
-                data['delete'] = me.getName();
-	    }
-        }
-        return data;
+	});
+
+	/* because above is hotplug an array */
+	/*jslint confusion: true*/
+	if (data.length === 0) {
+	    return { 'hotplug':'0' };
+	} else {
+	    return { 'hotplug': data.join(',') };
+	}
     }
+
 });
