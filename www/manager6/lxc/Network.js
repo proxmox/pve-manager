@@ -69,38 +69,22 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    cdata = PVE.Parser.parseLxcNetwork(me.dataCache[me.ifname]);
 	}
 
-	var i, netlist = [];
+	var i;
 	for (i = 0; i < 10; i++) {
-	    netlist.push({ "name": "net" + i.toString() });
-	}
-	
-	var netliststore = Ext.create('Ext.data.Store', {
-	    fields: ['name'],
-	    data: netlist
-	});
-
-	var ifselector = {
-	    xtype: 'combobox',
-	    fieldLabel: gettext('ID'),
-	    store: netliststore,
-	    editable: false,
-	    name: 'id',
-	    value: me.ifname,
-	    disabled: !me.create,
-	    queryMode: 'local',
-	    displayField: 'name',
-	    valueField: 'name',
-	    validator: function(value) {
-		if (me.create && me.dataCache[value]) {
-		    return "Network ID already in use";
-		}
-		// validator can return bool/String
-		/*jslint confusion: true*/
-		return true;
+	    if (me.create && !me.dataCache['net'+i.toString()]) {
+		me.ifname = 'net' + i.toString();
+		break;
 	    }
+	}
+
+	var idselector = {
+	    xtype: 'hidden',
+	    name: 'id',
+	    value: me.ifname
 	};
+
 	me.column1 = [
-	    ifselector,
+	    idselector,
 	    {
 		xtype: 'textfield',
 		name: 'name',
@@ -370,6 +354,7 @@ Ext.define('PVE.lxc.NetworkView', {
 		    records.push(net);
 		});
 		me.store.loadData(records);
+		me.down('button[name=addButton]').setDisabled((records.length >= 10));
 	    }
 	});
     },
@@ -470,6 +455,7 @@ Ext.define('PVE.lxc.NetworkView', {
 	    tbar: [
 		{
 		    text: gettext('Add'),
+		    name: 'addButton',
 		    disabled: !caps.vms['VM.Config.Network'],
 		    handler: function() {
 			var win = Ext.create('PVE.lxc.NetworkEdit', {
