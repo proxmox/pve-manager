@@ -1,3 +1,18 @@
+pve-manager (4.2-5) unstable; urgency=medium
+
+  * ceph: brackets around ipv6
+
+  * fix #992: remove network id from gui
+
+  * fix #976: set 'disabled' for grid panels which disaply a read only,
+    not sortable content
+
+  * Enlarge Object Grid first column default size
+
+  * change hotplugselector to use checkboxes
+    
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 17 May 2016 16:59:41 +0200
+
 pve-manager (4.2-4) unstable; urgency=medium
 
   * fix #944: do not filter by empty array
