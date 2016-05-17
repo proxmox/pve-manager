@@ -191,9 +191,23 @@ sub setup_pve_symlinks {
 }
 
 sub ceph_service_cmd {
-    # ceph daemons does not call 'setsid', so we do that ourself
-    # (fork_worker send KILL to whole process group) 
-    PVE::Tools::run_command(['setsid', 'service', 'ceph', '-c', $pve_ceph_cfgpath, @_]);
+    my ($action, $service) = @_;
+
+    if(-f "/lib/systemd/system/ceph-osd@.service") {
+
+	if ($service && $service =~ m/^(mon|osd|mds|radosgw)(\.([A-Za-z0-9]{1,32}))?$/) {
+	    $service = defined($3) ? "ceph-$1\@$3" : "ceph-$1.target";
+	} else {
+	    $service = "ceph.target";
+	}
+
+	PVE::Tools::run_command(['/bin/systemctl', $action, $service]);
+
+    } else {
+	# ceph daemons does not call 'setsid', so we do that ourself
+	# (fork_worker send KILL to whole process group) 
+	PVE::Tools::run_command(['setsid', 'service', 'ceph', '-c', $pve_ceph_cfgpath, $action, $service]);
+    }
 }
 
 sub list_disks {
