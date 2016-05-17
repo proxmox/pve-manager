@@ -3,6 +3,7 @@ package PVE::API2::CephOSD;
 use strict;
 use warnings;
 use Cwd qw(abs_path);
+use Net::IP;
 
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param run_command file_get_contents file_read_firstline dir_glob_regex dir_glob_foreach);
@@ -868,7 +869,7 @@ __PACKAGE__->register_method ({
 	    $ip = PVE::Cluster::remote_node_ip($param->{node});
 	}
 
-	my $monaddr = "$ip:6789";
+	my $monaddr = Net::IP::ip_is_ipv6($ip) ? "[$ip]:6789" : "$ip:6789";
 	my $monname = $param->{node};
 
 	die "monitor '$monsection' already exists\n" if $cfg->{$monsection};
