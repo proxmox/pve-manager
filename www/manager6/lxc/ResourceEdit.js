@@ -250,6 +250,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    me.acl.setDisabled(true);
 	    me.backup.setDisabled(true);
 	    me.acl.setValue('Default');
+	    me.hdstoragesel.setDisabled(true);
 	}
 
 	me.setValues(mp);
