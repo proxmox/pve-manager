@@ -225,6 +225,12 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    me.mpdata.acl = values.acl;
 	}
 
+	if (values.backup) {
+	    me.mpdata.backup = 1;
+	} else {
+	    delete me.mpdata.backup;
+	}
+
 	var res = {};
 	res[confid] = PVE.Parser.printLxcMountPoint(me.mpdata);
 	return res;
@@ -242,6 +248,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    me.quota.setDisabled(true);
 	    me.quota.setValue(false);
 	    me.acl.setDisabled(true);
+	    me.backup.setDisabled(true);
 	    me.acl.setValue('Default');
 	}
 
@@ -341,6 +348,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 			me.quota.setDisabled(true);
 			me.quota.setValue(false);
 			me.acl.setDisabled(true);
+			me.backup.setDisabled(true);
 			me.acl.setValue('Default');
 			return;
 		    }
@@ -462,6 +470,14 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	];
 
 	if (!isroot) {
+	    me.backup = Ext.createWidget('pvecheckbox',{
+		xtype: 'pvecheckbox',
+		name: 'backup',
+		fieldLabel: gettext('Backup')
+	    });
+	    if (me.mpdata.type !== 'bind') {
+		me.column2.push(me.backup);
+	    }
 	    me.column2.push({
 		xtype: 'textfield',
 		name: 'mp',
