@@ -1,3 +1,9 @@
+pve-manager (4.2-6) unstable; urgency=medium
+
+  * allow tagging of vlan 1 in gui
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 18 May 2016 11:32:43 +0200
+
 pve-manager (4.2-5) unstable; urgency=medium
 
   * ceph: brackets around ipv6
