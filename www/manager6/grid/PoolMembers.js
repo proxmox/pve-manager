@@ -237,6 +237,7 @@ Ext.define('PVE.grid.PoolMembers', {
             },
             columns: coldef,
 	    listeners: {
+		itemcontextmenu: PVE.Utils.createCmdMenu,
 		activate: reload
 	    }
 	});

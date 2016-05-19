@@ -186,36 +186,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 		stripeRows: true
             },
 	    listeners: {
-		itemcontextmenu: function(v, record, item, index, event) {
-		    event.stopEvent();
-		    v.select(record);
-		    var menu;
-		    
-		    if (record.data.type === 'qemu' && !record.data.template) {
-			menu = Ext.create('PVE.qemu.CmdMenu', {
-			    pveSelNode: record
-			});
-		    } else if (record.data.type === 'qemu' && record.data.template) {
-			menu = Ext.create('PVE.qemu.TemplateMenu', {
-			    pveSelNode: record
-			});
-		    } else if (record.data.type === 'lxc' && !record.data.template) {
-			menu = Ext.create('PVE.lxc.CmdMenu', {
-			    pveSelNode: record
-			});
-		    } else if (record.data.type === 'lxc' && record.data.template) {
-			/* since clone does not work reliably, disable for now
-			menu = Ext.create('PVE.lxc.TemplateMenu', {
-			    pveSelNode: record
-			});
-			*/
-			return;
-		    } else {
-			return;
-		    }
-
-		    menu.showAt(event.getXY());
-		},
+		itemcontextmenu: PVE.Utils.createCmdMenu,
 		itemdblclick: function(v, record) {
 		    var ws = me.up('pveStdWorkspace');
 		    ws.selectById(record.data.id);
