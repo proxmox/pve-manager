@@ -20,14 +20,6 @@ sub type {
 
 sub properties {
     return {
-	server => {
-	    type => 'string', format => 'dns-name',
-	    description => "server dns name",
-	},
-	port => {
-            type => 'integer',
-	    description => "network port",
-	},
 	path => {
             type => 'string', format => 'graphite-path',
 	    description => "root graphite path (ex: proxmox.mycluster.mykey)",

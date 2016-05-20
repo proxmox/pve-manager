@@ -26,6 +26,14 @@ my $defaultData = {
 	    type => 'boolean',
 	    optional => 1,
 	},
+	server => {
+	    type => 'string', format => 'address',
+	    description => "server dns name or IP address",
+	},
+	port => {
+	    type => 'integer',
+	    description => "server network port",
+	},
     },
 };
 
