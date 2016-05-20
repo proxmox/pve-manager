@@ -73,8 +73,12 @@ Ext.define('PVE.data.DiffStore', {
 
 	    me.suspendEvents();
 
+	    // getSource returns null if data is not filtered
+	    // if it is filtered it returns all records
+	    var allItems = me.getData().getSource() || me.getData();
+
 	    // remove vanished items
-	    (me.snapshot || me.data).each(function(olditem) {
+	    allItems.each(function(olditem) {
 		var item = rstore.getById(olditem.getId());
 		if (!item) {
 		    me.remove(olditem);
