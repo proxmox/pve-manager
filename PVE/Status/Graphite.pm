@@ -72,7 +72,7 @@ sub write_graphite_hash {
         PeerAddr    => $host,
         PeerPort    => $port,
         Proto       => 'udp',
-    );
+    ) || die "couldn't create carbon socket [$host]:$port - $@\n";
 
     write_graphite($carbon_socket, $d, $ctime, $path.".$object");
 

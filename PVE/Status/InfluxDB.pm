@@ -92,7 +92,7 @@ sub write_influxdb_hash {
         PeerAddr    => $host,
         PeerPort    => $port,
         Proto       => 'udp',
-    );
+    ) || die "couldn't create influxdb socket [$host]:$port - $@\n";
 
     $socket->send($payload->{string});
     $socket->close() if $socket;
