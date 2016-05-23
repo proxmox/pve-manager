@@ -1,3 +1,15 @@
+pve-manager (4.2-7) unstable; urgency=medium
+
+  * Status: report errors on socket creation problems
+
+  * Status: allow IPs and move properties to base class
+
+  * GUI: fix wrong message after subscription upload
+
+  * GUI: fix reset button with bind mounts
+  
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 23 May 2016 09:42:28 +0200
+
 pve-manager (4.2-6) unstable; urgency=medium
 
   * allow tagging of vlan 1 in gui
