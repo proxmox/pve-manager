@@ -79,6 +79,7 @@ sub init {
     add_dirs($dirs, '/pve2/images/' => '/usr/share/pve-manager/images/');
     add_dirs($dirs, '/pve2/css/' => '/usr/share/pve-manager/css/');
     add_dirs($dirs, '/pve2/js/' => '/usr/share/pve-manager/js/');
+    add_dirs($dirs, '/pve-docs/' => '/usr/share/pve-docs/');
     add_dirs($dirs, '/vncterm/' => '/usr/share/vncterm/');
     add_dirs($dirs, '/novnc/' => '/usr/share/novnc-pve/');
 

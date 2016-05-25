@@ -370,6 +370,12 @@ sub send_file_start {
 	    } elsif ($filename =~ m/\.ttf$/) {
 		$ct = 'application/font-snft';
 		$nocomp = 1;
+	    } elsif ($filename =~ m/\.pdf$/) {
+		$ct = 'application/pdf';
+		$nocomp = 1;
+	    } elsif ($filename =~ m/\.epub$/) {
+		$ct = 'application/epub+zip';
+		$nocomp = 1;
 	    } else {
 		die "unable to detect content type";
 	    }
