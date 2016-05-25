@@ -311,6 +311,21 @@ sub error {
     warn $@ if $@;
 }
 
+my $file_extension_info = {
+    css   => { ct => 'text/css' },
+    html  => { ct => 'text/html' },
+    js    => { ct => 'application/javascript' },
+    png   => { ct => 'image/png' , nocomp => 1 },
+    ico   => { ct => 'image/x-icon', nocomp => 1},
+    gif   => { ct => 'image/gif', nocomp => 1},
+    jar   => { ct => 'application/java-archive', nocomp => 1},
+    woff  => { ct => 'application/font-woff', nocomp => 1},
+    woff2 => { ct => 'application/font-woff2', nocomp => 1},
+    ttf   => { ct => 'application/font-snft', nocomp => 1},
+    pdf   => { ct => 'application/pdf', nocomp => 1},
+    epub  => { ct => 'application/epub+zip', nocomp => 1},
+};
+
 sub send_file_start {
     my ($self, $reqstate, $filename) = @_;
 
@@ -341,48 +356,14 @@ sub send_file_start {
 	    my $len = sysread($fh, $data,  $stat->size);
 	    die "got short file\n" if !defined($len) || $len != $stat->size;
 
-	    my $ct;
-	    my $nocomp;
-	    if ($filename =~ m/\.css$/) {
-		$ct = 'text/css';
-	    } elsif ($filename =~ m/\.html$/) {
-		$ct = 'text/html';
-	    } elsif ($filename =~ m/\.js$/) {
-		$ct = 'application/javascript';
-	    } elsif ($filename =~ m/\.png$/) {
-		$ct = 'image/png';
-		$nocomp = 1;
-	    } elsif ($filename =~ m/\.ico$/) {
-		$ct = 'image/x-icon';
-		$nocomp = 1;
-	    } elsif ($filename =~ m/\.gif$/) {
-		$ct = 'image/gif';
-		$nocomp = 1;
-	    } elsif ($filename =~ m/\.jar$/) {
-		$ct = 'application/java-archive';
-		$nocomp = 1;
-	    } elsif ($filename =~ m/\.woff$/) {
-		$ct = 'application/font-woff';
-		$nocomp = 1;
-	    } elsif ($filename =~ m/\.woff2$/) {
-		$ct = 'application/font-woff2';
-		$nocomp = 1;
-	    } elsif ($filename =~ m/\.ttf$/) {
-		$ct = 'application/font-snft';
-		$nocomp = 1;
-	    } elsif ($filename =~ m/\.pdf$/) {
-		$ct = 'application/pdf';
-		$nocomp = 1;
-	    } elsif ($filename =~ m/\.epub$/) {
-		$ct = 'application/epub+zip';
-		$nocomp = 1;
-	    } else {
-		die "unable to detect content type";
-	    }
+	    my ($ext) = $filename =~ m/\.([^.]*)$/;
+	    my $ext_info = $file_extension_info->{$ext};
 
-	    my $header = HTTP::Headers->new(Content_Type => $ct);
+	    die "unable to detect content type" if !$ext_info;
+
+	    my $header = HTTP::Headers->new(Content_Type => $ext_info->{ct});
 	    my $resp = HTTP::Response->new(200, "OK", $header, $data);
-	    $self->response($reqstate, $resp, $mtime, $nocomp);
+	    $self->response($reqstate, $resp, $mtime, $ext_info->{nocomp});
 	};
 	if (my $err = $@) {
 	    $self->error($reqstate, 501, $err);
