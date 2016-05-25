@@ -1,3 +1,9 @@
+pve-manager (4.2-8) unstable; urgency=medium
+
+  * depend on pve-docs package
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 25 May 2016 10:00:22 +0200
+
 pve-manager (4.2-7) unstable; urgency=medium
 
   * Status: report errors on socket creation problems
