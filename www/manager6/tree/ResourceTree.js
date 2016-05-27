@@ -379,9 +379,9 @@ Ext.define('PVE.tree.ResourceTree', {
 		destroy: function() {
 		    rstore.un("load", updateTree);
 		},
-		beforecellmousedown: function (tree, record,item,index,ev) {
+		beforecellmousedown: function (tree, td, cellIndex, record, tr, rowIndex, ev) {
 		    // disable selection when right clicking
-		    me.allowSelection = (event.button !== 2);
+		    me.allowSelection = (ev.button !== 2);
 		},
 		beforeselect: function (tree, record, index, eopts) {
 		    var allow = me.allowSelection;

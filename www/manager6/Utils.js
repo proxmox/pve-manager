@@ -1188,7 +1188,9 @@ Ext.define('PVE.Utils', { statics: {
 
     createCmdMenu: function(v, record, item, index, event) {
 	event.stopEvent();
-	v.select(record);
+	if (!(v instanceof Ext.tree.View)) {
+	    v.select(record);
+	}
 	var menu;
 
 	if (record.data.type === 'qemu' && !record.data.template) {
