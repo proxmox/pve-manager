@@ -6,8 +6,7 @@ Ext.define('PVE.lxc.Summary', {
     scrollable: true,
     bodyStyle: 'padding:10px',
     defaults: {
-	style: {'padding-top':'10px'},
-	width: 800
+	style: {'padding-top':'10px'}
     },
 
     initComponent: function() {
@@ -54,7 +53,8 @@ Ext.define('PVE.lxc.Summary', {
 		ptype: 'lazyitems',
 		items: [
 		    {
-			style: {'padding-top': '0px' },
+			width: 800,
+			padding: '0 5 0 0',
 			layout: {
 			    type: 'hbox',
 			    align: 'stretchmax'
@@ -63,34 +63,45 @@ Ext.define('PVE.lxc.Summary', {
 			items: [ statusview, notesview ]
 		    },
 		    {
-			xtype: 'pveRRDChart',
-			title: gettext('CPU usage'),
-			pveSelNode: me.pveSelNode,
-			fields: ['cpu'],
-			fieldTitles: [gettext('CPU usage')],
-			store: rrdstore
-		    },
-		    {
-			xtype: 'pveRRDChart',
-			title: gettext('Memory usage'),
-			pveSelNode: me.pveSelNode,
-			fields: ['maxmem', 'mem'],
-			fieldTitles: [gettext('Total'), gettext('RAM usage')],
-			store: rrdstore
-		    },
-		    {
-			xtype: 'pveRRDChart',
-			title: gettext('Network traffic'),
-			pveSelNode: me.pveSelNode,
-			fields: ['netin','netout'],
-			store: rrdstore
-		    },
-		    {
-			xtype: 'pveRRDChart',
-			title: gettext('Disk IO'),
-			pveSelNode: me.pveSelNode,
-			fields: ['diskread','diskwrite'],
-			store: rrdstore
+			xtype: 'container',
+			layout: {
+			    type: 'column'
+			},
+			defaults: {
+			    padding: '0 5 10 0'
+			},
+			items: [
+			    {
+				xtype: 'pveRRDChart',
+				title: gettext('CPU usage'),
+				pveSelNode: me.pveSelNode,
+				fields: ['cpu'],
+				fieldTitles: [gettext('CPU usage')],
+				store: rrdstore
+			    },
+			    {
+				xtype: 'pveRRDChart',
+				title: gettext('Memory usage'),
+				pveSelNode: me.pveSelNode,
+				fields: ['maxmem', 'mem'],
+				fieldTitles: [gettext('Total'), gettext('RAM usage')],
+				store: rrdstore
+			    },
+			    {
+				xtype: 'pveRRDChart',
+				title: gettext('Network traffic'),
+				pveSelNode: me.pveSelNode,
+				fields: ['netin','netout'],
+				store: rrdstore
+			    },
+			    {
+				xtype: 'pveRRDChart',
+				title: gettext('Disk IO'),
+				pveSelNode: me.pveSelNode,
+				fields: ['diskread','diskwrite'],
+				store: rrdstore
+			    }
+			]
 		    }
 		]
 	    },

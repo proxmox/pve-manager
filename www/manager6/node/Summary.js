@@ -5,7 +5,6 @@ Ext.define('PVE.node.Summary', {
     scrollable: true,
     bodyStyle: 'padding:10px',
     defaults: {
-	width: 800,
 	style: { 'padding-top': '10px' }
     },
 
@@ -87,7 +86,8 @@ Ext.define('PVE.node.Summary', {
 	var statusview = Ext.create('PVE.node.StatusView', {
 	    title: gettext('Status'),
 	    pveSelNode: me.pveSelNode,
-	    style: { 'padding-top': '0px' },
+	    width: 800,
+	    padding: '0 5 0 0',
 	    rstore: rstore
 	});
 
@@ -109,31 +109,40 @@ Ext.define('PVE.node.Summary', {
 		items: [
 		    statusview,
 		    {
-			xtype: 'pveRRDChart',
-			title: gettext('CPU usage'),
-			fields: ['cpu','iowait'],
-			fieldTitles: [gettext('CPU usage'), gettext('IO delay')],
-			store: rrdstore
-		    },
-		    {
-			xtype: 'pveRRDChart',
-			title: gettext('Server load'),
-			fields: ['loadavg'],
-			fieldTitles: [gettext('Load average')],
-			store: rrdstore
-		    },
-		    {
-			xtype: 'pveRRDChart',
-			title: gettext('Memory usage'),
-			fields: ['memtotal','memused'],
-			fieldTitles: [gettext('Total'), gettext('RAM usage')],
-			store: rrdstore
-		    },
-		    {
-			xtype: 'pveRRDChart',
-			title: gettext('Network traffic'),
-			fields: ['netin','netout'],
-			store: rrdstore
+			xtype: 'container',
+			layout: 'column',
+			defaults: {
+			    padding: '0 5 10 0'
+			},
+			items: [
+			    {
+				xtype: 'pveRRDChart',
+				title: gettext('CPU usage'),
+				fields: ['cpu','iowait'],
+				fieldTitles: [gettext('CPU usage'), gettext('IO delay')],
+				store: rrdstore
+			    },
+			    {
+				xtype: 'pveRRDChart',
+				title: gettext('Server load'),
+				fields: ['loadavg'],
+				fieldTitles: [gettext('Load average')],
+				store: rrdstore
+			    },
+			    {
+				xtype: 'pveRRDChart',
+				title: gettext('Memory usage'),
+				fields: ['memtotal','memused'],
+				fieldTitles: [gettext('Total'), gettext('RAM usage')],
+				store: rrdstore
+			    },
+			    {
+				xtype: 'pveRRDChart',
+				title: gettext('Network traffic'),
+				fields: ['netin','netout'],
+				store: rrdstore
+			    }
+			]
 		    }
 		]
 	    },
