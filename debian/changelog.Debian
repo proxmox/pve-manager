@@ -1,3 +1,9 @@
+pve-manager (4.2-9) unstable; urgency=medium
+
+  * Add Online Help for complex PVE panels
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 01 Jun 2016 12:53:44 +0200
+
 pve-manager (4.2-8) unstable; urgency=medium
 
   * depend on pve-docs package
