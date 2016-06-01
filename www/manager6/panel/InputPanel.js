@@ -1,8 +1,20 @@
 Ext.define('PVE.panel.InputPanel', {
     extend: 'Ext.panel.Panel',
     alias: ['widget.inputpanel'],
-
+    listeners: {
+	activate: function() {
+	    // notify owning container that it should display a help button
+	    this.onlineHelp && Ext.GlobalEvents.fireEvent('pveShowHelp', this.onlineHelp);
+	},
+	deactivate: function() {
+	    this.onlineHelp && Ext.GlobalEvents.fireEvent('pveHideHelp', this.onlineHelp);
+	},
+    },
     border: false,
+
+    // override this with an URL to a relevant chapter of the pve manual
+    // setting this will display a help button in our parent panel
+    onlineHelp: undefined,
 
     // overwrite this to modify submit data
     onGetValues: function(values) {
