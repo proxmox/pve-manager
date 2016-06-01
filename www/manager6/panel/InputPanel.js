@@ -4,11 +4,15 @@ Ext.define('PVE.panel.InputPanel', {
     listeners: {
 	activate: function() {
 	    // notify owning container that it should display a help button
-	    this.onlineHelp && Ext.GlobalEvents.fireEvent('pveShowHelp', this.onlineHelp);
+	    if (this.onlineHelp) {
+		Ext.GlobalEvents.fireEvent('pveShowHelp', this.onlineHelp);
+	    }
 	},
 	deactivate: function() {
-	    this.onlineHelp && Ext.GlobalEvents.fireEvent('pveHideHelp', this.onlineHelp);
-	},
+	    if (this.onlineHelp) {
+		Ext.GlobalEvents.fireEvent('pveHideHelp', this.onlineHelp);
+	    }
+	}
     },
     border: false,
 
