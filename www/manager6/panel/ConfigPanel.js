@@ -23,7 +23,13 @@ Ext.define('PVE.panel.Config', {
 	    var state = sp.get(stateid);
 	    if (state && state.value) {
 		var res = hsregex.exec(state.value);
-		if (res && res[1]) {
+		if (res && res[1] && Ext.isArray(me.items)) {
+		    me.items.forEach(function(item) {
+			if (item.itemId === res[1]) {
+			    activeTab = res[1];
+			}
+		    });
+		} else if (res && res[1] && me.items && me.items.itemId === res[1]) {
 		    activeTab = res[1];
 		}
 	    }
