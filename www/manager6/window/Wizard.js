@@ -65,6 +65,10 @@ Ext.define('PVE.window.Wizard', {
 	    region: 'south',
 	    margins: '0 5 5 5',
 	    items: [  
+		{
+		    xtype: 'pveHelpButton',
+		    itemId: 'help'
+		},
 		'->', 
 		{ 
 		    text: gettext('Back'),
