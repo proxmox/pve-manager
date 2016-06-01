@@ -238,6 +238,12 @@ Ext.define('PVE.window.Edit', {
 		me.buttons = [ submitBtn, resetBtn ];
 	}
 
+	if (items[0].onlineHelp) {
+	    var helpButton = Ext.create('PVE.button.Help');
+	    me.buttons.unshift(helpButton, '->');
+	    Ext.GlobalEvents.fireEvent('pveShowHelp', items[0].onlineHelp);
+	}
+
 	Ext.applyIf(me, {
 	    modal: true,
 	    width: twoColumn ? colwidth*2 : colwidth,
