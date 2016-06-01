@@ -5,7 +5,9 @@ Ext.define('PVE.button.Help', {
     extend: 'Ext.button.Button',
     alias: 'widget.pveHelpButton',
     text: gettext('Help'),
-    iconCls: 'fa fa-question-circle',
+    // make help button less flashy by styling it like toolbar buttons
+    iconCls: ' x-btn-icon-el-default-toolbar-small fa fa-question-circle',
+    cls: 'x-btn-default-toolbar-small pve-help-button',
     hidden: true,
     controller: {
 	xclass: 'Ext.app.ViewController',

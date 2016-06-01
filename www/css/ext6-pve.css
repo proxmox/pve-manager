@@ -363,3 +363,7 @@
     left: -3px;
     top: 2px;
 }
+
+.pve-help-button .x-btn-inner {
+    color: black;
+}
