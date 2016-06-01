@@ -175,7 +175,7 @@ Ext.define('PVE.qemu.Config', {
 	    });
 	}
 
-	if (caps.vms['VM.Snapshot']) {
+	if (caps.vms['VM.Snapshot'] && !template) {
 	    me.items.push({
 		title: gettext('Snapshots'),
 		xtype: 'pveQemuSnapshotTree',
