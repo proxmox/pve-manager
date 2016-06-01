@@ -42,6 +42,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 		{
 		    xtype: 'inputpanel',
 		    title: gettext('General'),
+		    onlineHelp: 'chapter-qm.html#_general_settings',
 		    column1: [
 			{
 			    xtype: 'pveNodeSelector',
