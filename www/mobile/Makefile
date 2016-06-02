@@ -3,8 +3,8 @@ include ../../defines.mk
 
 JSSRC= 				                 	\
 	../ext6/extjs/classic/classic/src/util/Cookies.js \
-	../manager/Utils.js				\
-	../manager/Parser.js				\
+	../manager6/Utils.js				\
+	../manager6/Parser.js				\
 	Toolkit.js					\
 	PVEProxy.js					\
 	MenuButton.js					\
