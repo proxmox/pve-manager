@@ -1,3 +1,13 @@
+pve-manager (4.2-10) unstable; urgency=medium
+
+  * make the graphs on the summary pages use empty space
+
+  * check if tabs exist before selecting them
+
+  * hide snapshot tab with qemu templates
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 02 Jun 2016 10:01:40 +0200
+
 pve-manager (4.2-9) unstable; urgency=medium
 
   * Add Online Help for complex PVE panels
