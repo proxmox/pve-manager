@@ -5,9 +5,7 @@ Ext.define('PVE.qemu.Summary', {
     tbar: [ '->', { xtype: 'pveRRDTypeSelector' } ],
     scrollable: true,
     bodyPadding: 10,
-    defaults: {
-	style: {'padding-top':'10px'}
-    },
+
     initComponent: function() {
         var me = this;
 
@@ -52,24 +50,24 @@ Ext.define('PVE.qemu.Summary', {
 		ptype: 'lazyitems',
 		items: [
 		    {
-			width: 800,
-			padding: '0 5 0 0',
-			layout: {
-			    type: 'hbox',
-			    align: 'stretchmax'
-			},
-			border: false,
-			items: [ statusview, notesview ]
-		    },
-		    {
 			xtype: 'container',
 			layout: {
 			    type: 'column'
 			},
 			defaults: {
-			    padding: '0 5 10 0'
+			    padding: '0 10 10 0'
 			},
 			items: [
+			    {
+				width: 800,
+				height: 300,
+				layout: {
+				    type: 'hbox',
+				    align: 'stretch'
+				},
+				border: false,
+				items: [ statusview, notesview ]
+			    },
 			    {
 				xtype: 'pveRRDChart',
 				title: gettext('CPU usage'),
