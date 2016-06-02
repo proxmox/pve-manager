@@ -5,6 +5,7 @@ Ext.define('PVE.widget.RRDChart', {
 
     width: 800,
     height: 300,
+    animation: false,
     interactions: [{
 	type: 'crosszoom'
     }],
@@ -179,5 +180,10 @@ Ext.define('PVE.widget.RRDChart', {
 	}
 
 	me.callParent();
+
+	// enable animation after the store is loaded
+	me.store.onAfter('load', function() {
+	    me.setAnimation(true);
+	}, this, {single: true});
     }
 });
