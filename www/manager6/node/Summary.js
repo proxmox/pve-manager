@@ -4,9 +4,6 @@ Ext.define('PVE.node.Summary', {
 
     scrollable: true,
     bodyStyle: 'padding:10px',
-    defaults: {
-	style: { 'padding-top': '10px' }
-    },
 
     showVersions: function() {
 	var me = this;
@@ -87,7 +84,6 @@ Ext.define('PVE.node.Summary', {
 	    title: gettext('Status'),
 	    pveSelNode: me.pveSelNode,
 	    width: 800,
-	    padding: '0 5 0 0',
 	    rstore: rstore
 	});
 
@@ -107,14 +103,14 @@ Ext.define('PVE.node.Summary', {
 	    plugins: {
 		ptype: 'lazyitems',
 		items: [
-		    statusview,
 		    {
 			xtype: 'container',
 			layout: 'column',
 			defaults: {
-			    padding: '0 5 10 0'
+			    padding: '0 10 10 0'
 			},
 			items: [
+			    statusview,
 			    {
 				xtype: 'pveRRDChart',
 				title: gettext('CPU usage'),
