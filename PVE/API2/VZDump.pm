@@ -165,3 +165,42 @@ __PACKAGE__->register_method ({
 
 	return $rpcenv->fork_worker('vzdump', undef, $user, $worker);
    }});
+
+__PACKAGE__->register_method ({
+    name => 'extractconfig',
+    path => 'extractconfig',
+    method => 'GET',
+    description => "Extract configuration from vzdump backup archive.",
+    permissions => {
+	description => "The user needs 'VM.Backup' permissions on the backed up guest ID, and 'Datastore.AllocateSpace' on the backup storage.",
+	user => 'all',
+    },
+    protected => 1,
+    proxyto => 'node',
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    volume => {
+		description => "Volume identifier",
+		type => 'string',
+		completion => \&PVE::Storage::complete_volume,
+	    },
+	},
+    },
+    returns => { type => 'string' },
+    code => sub {
+	my ($param) = @_;
+
+	my $volume = extract_param($param, 'volume');
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+
+	my $storage_cfg = PVE::Storage::config();
+	$rpcenv->check_volume_access($authuser, $storage_cfg, undef, $volume);
+
+	return PVE::Storage::extract_vzdump_config($storage_cfg, $volume);
+    }});
+
+1;
