@@ -254,18 +254,6 @@ my $check_duplicate_gateway6 = sub {
     return &$check_duplicate($config, $newiface, 'gateway6', 'Default ipv6 gateway');
 };
 
-my $check_ipv4_settings = sub {
-    my ($address, $netmask) = @_;
-
-    my $binip = Net::IP::ip_iptobin($address, 4);
-    my $binmask = Net::IP::ip_iptobin($netmask, 4);
-    my $broadcast = Net::IP::ip_iptobin('255.255.255.255', 4);
-    my $binhost = $binip | $binmask;
-
-    raise_param_exc({ address => "$address is not a valid host ip address." })
-        if ($binhost eq $binmask) || ($binhost eq $broadcast);
-};
-
 sub ipv6_tobin {
     return Net::IP::ip_iptobin(Net::IP::ip_expand_address(shift, 6), 6);
 }
@@ -324,8 +312,6 @@ __PACKAGE__->register_method({
 	    &$check_duplicate_gateway6($ifaces, $iface)
 		if $param->{gateway6};
 
-	    &$check_ipv4_settings($param->{address}, $param->{netmask})
-		if $param->{address};
 	    &$check_ipv6_settings($param->{address6}, int($param->{netmask6}))
 		if $param->{address6};
 
@@ -417,7 +403,6 @@ __PACKAGE__->register_method({
 		if $param->{gateway6};
 
 	    if ($param->{address}) {
-		&$check_ipv4_settings($param->{address}, $param->{netmask});
 		push @$families, 'inet' if !grep(/^inet$/, @$families);
 	    } else {
 		@$families = grep(!/^inet$/, @$families);
