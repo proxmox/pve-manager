@@ -120,14 +120,14 @@ __PACKAGE__->register_method ({
 	$rpcenv->check($user, "/storage/$param->{storage}", [ 'Datastore.AllocateSpace' ])
 	    if $param->{storage};
 
-	my $vzdump = PVE::VZDump->new($cmdline, $param, $skiplist);
-
 	my $worker = sub {
 	    my $upid = shift;
 
 	    $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = $SIG{HUP} = $SIG{PIPE} = sub {
 		die "interrupted by signal\n";
 	    };
+
+	    my $vzdump = PVE::VZDump->new($cmdline, $param, $skiplist);
 
 	    eval {
 		$vzdump->getlock($upid); # only one process allowed

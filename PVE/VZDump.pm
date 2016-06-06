@@ -391,13 +391,21 @@ sub sendmail {
     return if (!$ecount && !$err && ($notify eq 'failure'));
 
     my $stat = ($ecount || $err) ? 'backup failed' : 'backup successful';
-    $stat .= ": $err" if $err;
+    if ($err) {
+	if ($err =~ /\n/) {
+	    $stat .= ": multiple problems";
+	} else {
+	    $stat .= ": $err";
+	    $err = undef;
+	}
+    }
 
     my $hostname = `hostname -f` || PVE::INotify::nodename();
     chomp $hostname;
 
     # text part
-    my $text = sprintf ("%-10s %-6s %10s %10s  %s\n", qw(VMID STATUS TIME SIZE FILENAME));
+    my $text = $err ? "$err\n\n" : '';
+    $text .= sprintf ("%-10s %-6s %10s %10s  %s\n", qw(VMID STATUS TIME SIZE FILENAME));
     foreach my $task (@$tasklist) {
 	my $vmid = $task->{vmid};
 	if  ($task->{state} eq 'ok') {
@@ -433,6 +441,7 @@ sub sendmail {
 
     # html part
     my $html = "<html><body>\n";
+    $html .= "<p>" . (escape_html($err) =~ s/\n/<br>/gr) . "</p>\n" if $err;
     $html .= "<table border=1 cellpadding=3>\n";
     $html .= "<tr><td>VMID<td>NAME<td>STATUS<td>TIME<td>SIZE<td>FILENAME</tr>\n";
 
@@ -566,19 +575,28 @@ sub new {
 	$opts->{storage} = 'local';
     }
 
+    my $errors = '';
+
     if ($opts->{storage}) {
 	my $info = storage_info ($opts->{storage});
 	$opts->{dumpdir} = $info->{dumpdir};
 	$maxfiles = $info->{maxfiles} if !defined($maxfiles) && defined($info->{maxfiles});
     } elsif ($opts->{dumpdir}) {
-	die "dumpdir '$opts->{dumpdir}' does not exist\n"
+	$errors .= "dumpdir '$opts->{dumpdir}' does not exist"
 	    if ! -d $opts->{dumpdir};
     } else {
 	die "internal error"; 
     }
 
     if ($opts->{tmpdir} && ! -d $opts->{tmpdir}) {
-	die "tmpdir '$opts->{tmpdir}' does not exist\n";
+	$errors .= "\n" if $errors;
+	$errors .= "tmpdir '$opts->{tmpdir}' does not exist";
+    }
+
+    if ($errors) {
+	eval { $self->sendmail([], 0, $errors); };
+	debugmsg ('err', $@) if $@;
+	die "$errors\n";
     }
 
     $opts->{maxfiles} = $maxfiles if defined($maxfiles);
