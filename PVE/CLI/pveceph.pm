@@ -73,8 +73,8 @@ __PACKAGE__->register_method ({
 	properties => {
 	    version => {
 		type => 'string',
-		#enum => ['dumpling', 'emperor', 'firefly', 'giant', 'hammer'],
-		enum => ['hammer'], # only release for jessie
+		#enum => ['dumpling', 'emperor', 'firefly', 'giant', 'hammer'] # for wheezy,
+		enum => ['hammer', 'infernalis', 'jewel'], # for jessie
 		optional => 1,
 	    }
 	},
