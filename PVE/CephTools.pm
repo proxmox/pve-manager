@@ -193,7 +193,7 @@ sub setup_pve_symlinks {
 sub ceph_service_cmd {
     my ($action, $service) = @_;
 
-    if(-f "/lib/systemd/system/ceph-osd@.service") {
+    if (systemd_managed()) {
 
 	if ($service && $service =~ m/^(mon|osd|mds|radosgw)(\.([A-Za-z0-9]{1,32}))?$/) {
 	    $service = defined($3) ? "ceph-$1\@$3" : "ceph-$1.target";
@@ -351,6 +351,17 @@ sub list_disks {
     });
 
     return $disklist;
+}
+
+# Ceph versions greater Hammer use 'ceph' as user and group instead
+# of 'root', and use systemd.
+sub systemd_managed {
+
+    if (-f "/lib/systemd/system/ceph-osd\@.service") {
+	return 1;
+    } else {
+	return 0;
+    }
 }
 
 1;
