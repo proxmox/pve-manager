@@ -220,7 +220,7 @@ Ext.define('PVE.Utils', { statics: {
 
     kvm_vga_drivers: {
 	std: gettext('Standard VGA'),
-	vmware: gettext('VMWare compatible'),
+	vmware: gettext('VMware compatible'),
 	cirrus: 'Cirrus Logic GD5446',
 	qxl: 'SPICE',
 	qxl2: 'SPICE dual monitor',
