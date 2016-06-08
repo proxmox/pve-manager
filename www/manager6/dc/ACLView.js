@@ -50,6 +50,7 @@ Ext.define('PVE.dc.ACLAdd', {
 		xtype: 'pvecheckbox',
 		name: 'propagate',
 		checked: true,
+		uncheckedValue: 0,
 		fieldLabel: gettext('Propagate')
 	    });
 	}

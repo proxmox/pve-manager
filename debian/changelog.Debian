@@ -10,6 +10,8 @@ pve-manager (4.2-12) unstable; urgency=medium
 
   * Fix #1015: vzdump: send email on early errors
 
+  * Fix #191: acl: honor propagate checkbox
+
  -- Proxmox Support Team <support@proxmox.com>  Wed, 08 Jun 2016 12:46:04 +0200
 
 pve-manager (4.2-11) unstable; urgency=medium
