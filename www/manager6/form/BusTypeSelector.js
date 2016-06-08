@@ -12,7 +12,7 @@ Ext.define('PVE.form.BusTypeSelector', {
 	me.comboItems = [['ide', 'IDE'], ['sata', 'SATA']];
 
 	if (!me.noVirtIO) {
-	    me.comboItems.push(['virtio', 'VIRTIO']);
+	    me.comboItems.push(['virtio', 'VirtIO']);
 	}
 
 	if (!me.noScsi) {
