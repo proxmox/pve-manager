@@ -1,3 +1,17 @@
+pve-manager (4.2-12) unstable; urgency=medium
+
+  * Rename the SCSI VirtIO controller to better differenciate from VirtIO blk
+
+  * fix #778: Case fix for VMware
+
+  * fix #1005: don't exclude /var/log/?* with stdexcludes
+
+  * Remove IPv4 netmask check
+
+  * Fix #1015: vzdump: send email on early errors
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 08 Jun 2016 12:46:04 +0200
+
 pve-manager (4.2-11) unstable; urgency=medium
 
   * add vzdump/extractconfig API path
