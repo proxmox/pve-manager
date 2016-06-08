@@ -558,8 +558,7 @@ sub new {
     }
 
     if ($opts->{stdexcludes}) {
-	push @$findexcl, '/var/log/?*',
-	                 '/tmp/?*',
+	push @$findexcl, '/tmp/?*',
 	                 '/var/tmp/?*',
 	                 '/var/run/?*.pid';
     }
