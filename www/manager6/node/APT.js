@@ -37,7 +37,7 @@ Ext.define('PVE.node.APT', {
                 var colspan = headerCt.getColumnCount();
                 // Usually you would style the my-body-class in CSS file
                 return {
-                    rowBody: '<div style="padding: 1em">' + data.Description + '</div>',
+                    rowBody: '<div style="padding: 1em">' + Ext.String.htmlEncode(data.Description) + '</div>',
                     rowBodyColspan: colspan
                 };
 	    }

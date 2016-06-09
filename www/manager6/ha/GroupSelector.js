@@ -22,7 +22,8 @@ Ext.define('PVE.ha.GroupSelector', {
 	    {
 		header: gettext('Comment'),
 		flex: 1,
-		dataIndex: 'comment'
+		dataIndex: 'comment',
+		renderer: Ext.String.htmlEncode
 	    }
 	]
     },

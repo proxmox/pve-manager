@@ -15,6 +15,7 @@ Ext.define('PVE.form.FWMacroSelector', {
 	    },
 	    {
 		header: gettext('Description'),
+		renderer: Ext.String.htmlEncode,
 		flex: 1,
 		dataIndex: 'descr'
 	    }

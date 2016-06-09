@@ -49,7 +49,7 @@ Ext.define('PVE.RestProxy', {
 			      text += " (+ " + info.tfa + ")";
 			  }
 
-			  return text;
+			  return Ext.String.htmlEncode(text);
 		      }
 		  }
 		],

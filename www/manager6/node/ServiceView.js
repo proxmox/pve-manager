@@ -137,6 +137,7 @@ Ext.define('PVE.node.ServiceView', {
 		},
 		{
 		    header: gettext('Description'),
+		    renderer: Ext.String.htmlEncode,
 		    dataIndex: 'desc',
 		    flex: 1
 		}

@@ -33,7 +33,8 @@ Ext.define('PVE.form.SecurityGroupsSelector', {
 		    },
 		    {
 			header: gettext('Comment'),  
-			dataIndex: 'comment', 
+			dataIndex: 'comment',
+			renderer: Ext.String.htmlEncode,
 			flex: 1
 		    }
 		]
