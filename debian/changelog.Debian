@@ -1,3 +1,9 @@
+pve-manager (3.4-14) unstable; urgency=low
+
+  * add htmlEncode to various comment/description fields
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 09 Jun 2016 17:45:33 +0200
+
 pve-manager (3.4-13) unstable; urgency=low
 
   * firewall: add enable ndp option
