@@ -59,6 +59,7 @@ Ext.define('PVE.grid.TemplateSelector', {
 		{
 		    header: gettext('Description'),
 		    flex: 1.5,
+		    renderer: Ext.String.htmlEncode,
 		    dataIndex: 'headline'
 		}
 	    ],

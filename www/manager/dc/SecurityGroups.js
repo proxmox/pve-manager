@@ -167,7 +167,7 @@ Ext.define('PVE.SecurityGroupList', {
 	    selModel: sm,
 	    columns: [
 		{ header: gettext('Group'), dataIndex: 'group', width: 100 },
-		{ header: gettext('Comment'), dataIndex: 'comment', flex: 1 }
+		{ header: gettext('Comment'), dataIndex: 'comment', renderer: Ext.String.htmlEncode, flex: 1 }
 	    ],
 	    listeners: {
 		itemdblclick: run_editor,

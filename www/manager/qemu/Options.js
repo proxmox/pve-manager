@@ -253,6 +253,7 @@ Ext.define('PVE.qemu.Options', {
 	    smbios1: {
 		header: gettext('SMBIOS settings (type1)'),
 		defaultValue: '',
+		renderer: Ext.String.htmlEncode,
 		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.Smbios1Edit' : undefined
 	    }
 	};

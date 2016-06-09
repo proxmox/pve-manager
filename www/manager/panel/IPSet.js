@@ -148,7 +148,7 @@ Ext.define('PVE.IPSetList', {
 	    selModel: sm,
 	    columns: [
 		{ header: 'IPSet', dataIndex: 'name', width: 100 },
-		{ header: gettext('Comment'), dataIndex: 'comment', flex: 1 }
+		{ header: gettext('Comment'), dataIndex: 'comment', renderer: Ext.String.htmlEncode, flex: 1 }
 	    ],
 	    listeners: {
 		itemdblclick: run_editor,
