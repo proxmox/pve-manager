@@ -126,10 +126,10 @@ __PACKAGE__->register_method ({
 	print "update available package list\n";
 	eval { run_command(['apt-get', '-q', 'update'], outfunc => sub {}, errfunc => sub {}); };
 
-	run_command(['apt-get', '-q', '--assume-yes', '--no-install-recommends',
-		     '-o', 'Dpkg::Options::=--force-confnew',
-		     'install', '--',
-		     'ceph', 'ceph-common', 'gdisk']);
+	system('apt-get', '--no-install-recommends',
+		'-o', 'Dpkg::Options::=--force-confnew',
+		'install', '--',
+		'ceph', 'ceph-common', 'gdisk');
 
 	return undef;
     }});
