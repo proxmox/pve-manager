@@ -282,15 +282,19 @@ sub sendmail {
     chomp $hostname;
 
     my $boundary = "----_=_NextPart_001_".int(time).$$;
+    my $mail_re = qr/[^-a-zA-Z0-9+._@]/;
 
-    my $rcvrarg = '';
-    foreach my $r (@$mailto) {
-	$rcvrarg .= " '$r'";
+    foreach (@$mailto) {
+	die "illegal character in mailto address\n"
+	    if ($_ =~ $mail_re);
     }
+
     my $dcconf = PVE::Cluster::cfs_read_file('datacenter.cfg');
     my $mailfrom = $dcconf->{email_from} || "root";
+    die "illegal character in mailfrom address\n"
+	if $mailfrom =~ $mail_re;
 
-    open (MAIL,"|sendmail -B 8BITMIME -f $mailfrom $rcvrarg") || 
+    open (MAIL, "|-", "sendmail", "-B", "8BITMIME", "-f", $mailfrom, @$mailto) ||
 	die "unable to open 'sendmail' - $!";
 
     my $rcvrtxt = join (', ', @$mailto);

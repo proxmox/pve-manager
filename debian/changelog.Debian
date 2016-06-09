@@ -1,6 +1,8 @@
 pve-manager (3.4-14) unstable; urgency=low
 
   * add htmlEncode to various comment/description fields
+  
+  * catch malformed mailto/mailfrom in sendmail
 
  -- Proxmox Support Team <support@proxmox.com>  Thu, 09 Jun 2016 17:45:33 +0200
 
