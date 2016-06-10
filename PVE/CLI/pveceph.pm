@@ -74,7 +74,7 @@ __PACKAGE__->register_method ({
 	    version => {
 		type => 'string',
 		#enum => ['dumpling', 'emperor', 'firefly', 'giant', 'hammer'] # for wheezy,
-		enum => ['hammer', 'infernalis', 'jewel'], # for jessie
+		enum => ['hammer'], # for jessie
 		optional => 1,
 	    }
 	},
