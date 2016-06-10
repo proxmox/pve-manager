@@ -1,3 +1,11 @@
+pve-manager (4.2-13) unstable; urgency=medium
+
+  * htmlEncode some comment fields
+
+  * pveceph install: run apt-get interactive
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 10 Jun 2016 15:34:29 +0200
+
 pve-manager (4.2-12) unstable; urgency=medium
 
   * Rename the SCSI VirtIO controller to better differenciate from VirtIO blk
