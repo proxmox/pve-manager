@@ -1,6 +1,7 @@
 Ext.define('PVE.dc.Support', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveDcSupport',
+    pveGuidePath: '/pve-docs/index.html',
 
     invalidHtml: '<h1>No valid subscription</h1>' + PVE.Utils.noSubKeyHtml,
 
@@ -10,13 +11,21 @@ Ext.define('PVE.dc.Support', {
 
     bugzillaHtml: '<h1>Bug Tracking</h1>Our bug tracking system is available <a target="_blank" href="https://bugzilla.proxmox.com">here</a>.',
 
-    docuHtml: '<h1>Documentation</h1>Complete documentation, tutorials, videos and more is available at our <a target="_blank" href="http://pve.proxmox.com/wiki/Documentation">wiki</a>.',
+    docuHtml: function() {
+	var me = this;
+	var guideUrl = window.location.origin + me.pveGuidePath;
+	var text = Ext.String.format('<h1>Documentation</h1>'
+	+ 'The official Proxmox VE Administration Guide'
+	+ ' is included with this installation and can be browsed at '
+	+ '<a target="_blank" href="{0}">{0}</a>', guideUrl);
+	return text;
+    },
 
     updateActive: function(data) {
 	var me = this;
 	
 	var html = '<h1>' + data.productname + '</h1>' + me.activeHtml; 
-	html += '<br><br>' + me.docuHtml;
+	html += '<br><br>' + me.docuHtml();
 	html += '<br><br>' + me.bugzillaHtml;
 
 	me.update(html);
@@ -26,7 +35,7 @@ Ext.define('PVE.dc.Support', {
 	var me = this;
 
 	var html = '<h1>' + data.productname + '</h1>' + me.communityHtml; 
-	html += '<br><br>' + me.docuHtml;
+	html += '<br><br>' + me.docuHtml();
 	html += '<br><br>' + me.bugzillaHtml;
 
 	me.update(html);
