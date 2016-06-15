@@ -2,7 +2,6 @@ Ext.define('PVE.panel.NotesView', {
     extend: 'Ext.panel.Panel',
 
     title: gettext("Notes"),
-    style: 'padding-left:10px',
     bodyStyle: 'white-space:pre',
     bodyPadding: 10,
     scrollable: true,

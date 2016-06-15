@@ -38,6 +38,7 @@ Ext.define('PVE.lxc.Summary', {
 
 	var notesview = Ext.create('PVE.panel.NotesView', {
 	    pveSelNode: me.pveSelNode,
+	    padding: '0 0 0 10',
 	    flex: 1
 	});
 
