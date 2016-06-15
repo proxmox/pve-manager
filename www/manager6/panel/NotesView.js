@@ -59,7 +59,18 @@ Ext.define('PVE.panel.NotesView', {
 			win.on('destroy', me.load, me);
 		    });
 		}
-	    }
+	    },
+	    tools: [{
+		type: 'gear',
+		handler: function() {
+		    var win = Ext.create('PVE.window.NotesEdit', {
+			pveSelNode: me.pveSelNode,
+			url: me.url
+		    });
+		    win.show();
+		    win.on('destroy', me.load, me);
+		}
+	    }]
 	});
 
 	me.callParent();
