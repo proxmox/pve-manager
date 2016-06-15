@@ -248,18 +248,18 @@ Ext.define('PVE.lxc.SnapshotTree', {
 			}
 		    }
 		},
-		{
-		    text: gettext('RAM'),
-		    align: 'center',
-		    resizable: false,
-		    dataIndex: 'vmstate',
-		    width: 50,
-		    renderer: function(value, metaData, record) {
-			if (record.data.name !== 'current') {
-			    return PVE.Utils.format_boolean(value);
-			}
-		    }
-		},
+//		{
+//		    text: gettext('RAM'),
+//		    align: 'center',
+//		    resizable: false,
+//		    dataIndex: 'vmstate',
+//		    width: 50,
+//		    renderer: function(value, metaData, record) {
+//			if (record.data.name !== 'current') {
+//			    return PVE.Utils.format_boolean(value);
+//			}
+//		    }
+//		},
 		{
 		    text: gettext('Date') + "/" + gettext("Status"),
 		    dataIndex: 'snaptime',
