@@ -47,6 +47,7 @@ Ext.define('PVE.qemu.StatusView', {
 	    cpus: { visible: false },
 	    mem: { header: gettext('Memory usage'), required: true,  renderer: render_mem },
 	    maxmem: { visible: false },
+	    maxdisk: { header: gettext('Bootdisk size'), renderer: PVE.Utils.render_size, required: true},
 	    uptime: { header: gettext('Uptime'), required: true, renderer: PVE.Utils.render_uptime },
 	    ha: { header: gettext('Managed by HA'), required: true, renderer: PVE.Utils.format_ha }
 	};

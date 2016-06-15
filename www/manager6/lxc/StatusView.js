@@ -65,6 +65,7 @@ Ext.define('PVE.lxc.StatusView', {
 	    maxmem: { visible: false },
 	    swap: { header: gettext('VSwap usage'), required: true,  renderer: render_swap },
 	    maxswap: { visible: false },
+	    maxdisk: { header: gettext('Bootdisk size'), renderer: PVE.Utils.render_size, required: true},
 	    uptime: { header: gettext('Uptime'), required: true, renderer: PVE.Utils.render_uptime },
 	    ha: { header: gettext('Managed by HA'), required: true, renderer: PVE.Utils.format_ha }
 	};
