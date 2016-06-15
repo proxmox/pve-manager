@@ -16,6 +16,8 @@ Ext.define('PVE.qemu.StatusView', {
 	    throw "no VM ID specified";
 	}
 
+	var template = !!me.pveSelNode.data.template;
+
 	var render_cpu = function(value, metaData, record, rowIndex, colIndex, store) {
 	    if (!me.getObjectValue('uptime')) {
 		return '-';
@@ -40,17 +42,28 @@ Ext.define('PVE.qemu.StatusView', {
 	    return text;
 	};
 
-	var rows = {
-	    name: { header: gettext('Name'), defaultValue: 'no name specified' },
-	    qmpstatus: { header: gettext('Status'), defaultValue: 'unknown' },
-	    cpu: { header: gettext('CPU usage'), required: true,  renderer: render_cpu },
-	    cpus: { visible: false },
-	    mem: { header: gettext('Memory usage'), required: true,  renderer: render_mem },
-	    maxmem: { visible: false },
-	    maxdisk: { header: gettext('Bootdisk size'), renderer: PVE.Utils.render_size, required: true},
-	    uptime: { header: gettext('Uptime'), required: true, renderer: PVE.Utils.render_uptime },
-	    ha: { header: gettext('Managed by HA'), required: true, renderer: PVE.Utils.format_ha }
-	};
+	var rows = {};
+
+	if (template) {
+	    rows = {
+		name: { header: gettext('Name'), defaultValue: 'no name specified' },
+		cpus: { header: gettext('Processors'), required: true},
+		maxmem: { header: gettext('Memory'), renderer: PVE.Utils.render_size, required: true},
+		maxdisk: { header: gettext('Bootdisk size'), renderer: PVE.Utils.render_size, required: true}
+	    };
+	} else {
+	    rows = {
+		name: { header: gettext('Name'), defaultValue: 'no name specified' },
+		qmpstatus: { header: gettext('Status'), defaultValue: 'unknown' },
+		cpu: { iconCls: 'fa fa-up', header: gettext('CPU usage'), required: true,  renderer: render_cpu },
+		cpus: { visible: false },
+		mem: { header: gettext('Memory usage'), required: true,  renderer: render_mem },
+		maxmem: { visible: false },
+		maxdisk: { header: gettext('Bootdisk size'), renderer: PVE.Utils.render_size, required: true},
+		uptime: { header: gettext('Uptime'), required: true, renderer: PVE.Utils.render_uptime },
+		ha: { header: gettext('Managed by HA'), required: true, renderer: PVE.Utils.format_ha }
+	    };
+	}
 
 	Ext.applyIf(me, {
 	    cwidth1: 150,
