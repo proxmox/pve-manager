@@ -85,6 +85,7 @@ Ext.define('PVE.form.ViewSelector', {
 	    },
 	    stateEvents: [ 'select' ],
 	    stateful: true,
+	    stateId: 'pveview',
 	    id: 'view'
 	});
 
