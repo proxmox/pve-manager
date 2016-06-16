@@ -1,3 +1,15 @@
+pve-manager (4.2-15) unstable; urgency=medium
+
+  * remove unnecessary information on template summary
+
+  * add 'edit' tool to notes panel
+
+  * add a 'bootdisk size' entry to the status view
+
+  * remove RAM column from lxc snapshottree (temporarily)
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 16 Jun 2016 10:58:43 +0200
+
 pve-manager (4.2-14) unstable; urgency=medium
 
   * Add a toplevel pointer to the PVE admin guide
