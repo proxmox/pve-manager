@@ -4,7 +4,7 @@ Ext.define('PVE.lxc.Summary', {
 
     tbar: [ '->' , { xtype: 'pveRRDTypeSelector' } ],
     scrollable: true,
-    bodyStyle: 'padding:10px',
+    bodyPadding: 10,
 
     initComponent: function() {
         var me = this;
