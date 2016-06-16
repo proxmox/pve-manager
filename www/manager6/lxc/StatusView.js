@@ -15,6 +15,8 @@ Ext.define('PVE.lxc.StatusView', {
 	    throw "no VM ID specified";
 	}
 
+	var template = !!me.pveSelNode.data.template;
+
 	var render_cpu = function(value, metaData, record, rowIndex, colIndex, store) {
 	    if (!me.getObjectValue('uptime')) {
 		return '-';
@@ -55,21 +57,32 @@ Ext.define('PVE.lxc.StatusView', {
 	    return value;
 	};
 
-	var rows = {
-	    name: { header: gettext('Name'), defaultValue: 'no name specified' },
-	    status: { header: gettext('Status'), defaultValue: 'unknown', renderer: render_status },
-	    failcnt: { visible: false },
-	    cpu: { header: gettext('CPU usage'), required: true,  renderer: render_cpu },
-	    cpus: { visible: false },
-	    mem: { header: gettext('Memory usage'), required: true,  renderer: render_mem },
-	    maxmem: { visible: false },
-	    swap: { header: gettext('VSwap usage'), required: true,  renderer: render_swap },
-	    maxswap: { visible: false },
-	    maxdisk: { header: gettext('Bootdisk size'), renderer: PVE.Utils.render_size, required: true},
-	    uptime: { header: gettext('Uptime'), required: true, renderer: PVE.Utils.render_uptime },
-	    ha: { header: gettext('Managed by HA'), required: true, renderer: PVE.Utils.format_ha }
-	};
+	var rows = {};
 
+	if (template) {
+	    rows = {
+		name: { header: gettext('Name'), defaultValue: 'no name specified' },
+		cpus: { header: gettext('CPU limit'), required: true},
+		maxmem: { header: gettext('Memory'), required: true,  renderer: PVE.Utils.render_size },
+		maxswap: { header: gettext('VSwap'), required: true,  renderer: PVE.Utils.render_size },
+		maxdisk: { header: gettext('Bootdisk size'), renderer: PVE.Utils.render_size, required: true}
+	    };
+	} else {
+	    rows = {
+		name: { header: gettext('Name'), defaultValue: 'no name specified' },
+		status: { header: gettext('Status'), defaultValue: 'unknown', renderer: render_status },
+		failcnt: { visible: false },
+		cpu: { header: gettext('CPU usage'), required: true,  renderer: render_cpu },
+		cpus: { visible: false },
+		mem: { header: gettext('Memory usage'), required: true,  renderer: render_mem },
+		maxmem: { visible: false },
+		swap: { header: gettext('VSwap usage'), required: true,  renderer: render_swap },
+		maxswap: { visible: false },
+		maxdisk: { header: gettext('Bootdisk size'), renderer: PVE.Utils.render_size, required: true},
+		uptime: { header: gettext('Uptime'), required: true, renderer: PVE.Utils.render_uptime },
+		ha: { header: gettext('Managed by HA'), required: true, renderer: PVE.Utils.format_ha }
+	    };
+	}
 	Ext.applyIf(me, {
 	    cwidth1: 150,
 	    rows: rows
