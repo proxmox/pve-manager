@@ -174,10 +174,59 @@ Ext.define('PVE.grid.BackupView', {
 	    }
 	});
 
+	var config_btn = Ext.create('PVE.button.Button', {
+	    text: gettext('Show Configuration'),
+	    disabled: true,
+	    selModel: sm,
+	    enableFn: function(rec) {
+		return !!rec;
+	    },
+	    handler: function(b, e, rec) {
+		var storage = storagesel.getValue();
+		if (!storage) {
+		    return;
+		}
+
+		var win = Ext.create('Ext.window.Window', {
+		    title: gettext('Configuration'),
+		    width: 600,
+		    height: 400,
+		    layout: 'fit',
+		    modal: true,
+		    items: [{
+			itemId: 'configtext',
+			autoScroll: true,
+			style: {
+			    'background-color': 'white',
+			    'white-space': 'pre',
+			    'font-family': 'monospace',
+			    padding: '5px'
+			}
+		    }]
+		});
+
+		PVE.Utils.API2Request({
+		    url: "/nodes/" + nodename + "/vzdump/extractconfig",
+		    method: 'GET',
+		    params: {
+			volume: rec.data.volid
+		    },
+		    failure: function(response, opts) {
+			win.close();
+			Ext.Msg.alert('Error', response.htmlStatus);
+		    },
+		    success: function(response,options) {
+			win.show();
+			win.down('#configtext').update(Ext.htmlEncode(response.result.data));
+		    }
+		});
+	    }
+	});
+
 	Ext.apply(me, {
 	    stateful: false,
 	    selModel: sm,
-	    tbar: [ backup_btn, restore_btn, delete_btn, '->', storagesel, storagefilter ],
+	    tbar: [ backup_btn, restore_btn, delete_btn,config_btn, '->', storagesel, storagefilter ],
 	    columns: [
 		{
 		    header: gettext('Name'),
