@@ -461,6 +461,9 @@ Ext.define('PVE.StdWorkspace', {
 		    itemId: 'south',
 		    region: 'south',
 		    margin:'0 5 5 5',
+		    title: gettext('Logs'),
+		    collapsible: true,
+		    header: false,
 		    height: 200,
 		    split:true,
 		    listeners: {
