@@ -422,30 +422,56 @@ Ext.define('PVE.StdWorkspace', {
 		},
 		{
 		    region: 'center',
+		    stateful: true,
+		    stateId: 'pvecenter',
+		    minWidth: 100,
+		    minHeight: 100,
 		    id: 'content',
 		    xtype: 'container',
 		    layout: { type: 'card' },
 		    border: false,
-		    stateful: false,
 		    margin: '0 5 0 0',
 		    items: []
 		},
 		{
 		    region: 'west',
+		    stateful: true,
+		    stateId: 'pvewest',
+		    itemId: 'west',
 		    xtype: 'container',
 		    border: false,
 		    layout: { type: 'vbox', align: 'stretch' },
 		    margin: '0 0 0 5',
 		    split: true,
 		    width: 200,
-		    items: [ selview, rtree ]
+		    items: [ selview, rtree ],
+		    listeners: {
+			resize: function(panel, width, height) {
+			    var viewWidth = me.getSize().width;
+			    if (width > viewWidth - 100) {
+				panel.setWidth(viewWidth - 100);
+			    }
+			}
+		    }
 		},
 		{
 		    xtype: 'pveStatusPanel',
+		    stateful: true,
+		    stateId: 'pvesouth',
+		    itemId: 'south',
 		    region: 'south',
 		    margin:'0 5 5 5',
-		    height: 200,       
-		    split:true
+		    height: 200,
+		    split:true,
+		    listeners: {
+			resize: function(panel, width, height) {
+			    console.log('test');
+			    var viewHeight = me.getSize().height;
+			    if (height > (viewHeight - 150)) {
+				panel.setHeight(viewHeight - 150);
+			    }
+			}
+		    }
 		}
 	    ]
 	});
