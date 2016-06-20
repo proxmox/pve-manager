@@ -203,7 +203,13 @@ __PACKAGE__->register_method({
 			    $pe->{maxmem} = 0 if !$pe->{maxmem};
 			    $pe->{maxmem} += $entry->{maxmem};
 			    $pe->{cpu} = 0 if !$pe->{cpu};
-			    $pe->{cpu} += $entry->{cpu};
+			    # explanation:
+			    # we do not know how much cpus there are in the cluster at this moment
+			    # so we calculate the current % of the cpu
+			    # but we had already the old cpu % before this vm, so:
+			    # new% = (old%*oldmax + cur%*curmax) / (oldmax+curmax)
+			    $pe->{cpu} = $entry->{cpu} if !$pe->{maxcpu};
+			    $pe->{cpu} = (($pe->{cpu} * $pe->{maxcpu}) + ($entry->{cpu} * $entry->{maxcpu})) / ($pe->{maxcpu} + $entry->{maxcpu});
 			    $pe->{maxcpu} = 0 if !$pe->{maxcpu};
 			    $pe->{maxcpu} += $entry->{maxcpu};
 			}
