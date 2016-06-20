@@ -391,9 +391,15 @@ Ext.define('PVE.StdWorkspace', {
 			},
 			{
 			    minWidth: 200,
-			    flex: 1,
 			    id: 'versioninfo',
 			    html: 'Proxmox Virtual Environment'
+			},
+			{
+			    xtype: 'pveGlobalSearchField',
+			    tree: rtree
+			},
+			{
+			    flex: 1
 			},
 			{
 			    pack: 'end',

@@ -65,6 +65,7 @@ JSSRC= 				                 	\
 	form/BackupModeSelector.js			\
 	form/ScsiHwSelector.js				\
 	form/FirewallPolicySelector.js			\
+	form/GlobalSearchField.js			\
 	form/QemuBiosSelector.js			\
 	dc/Tasks.js					\
 	dc/Log.js					\
