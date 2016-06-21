@@ -194,6 +194,7 @@ Ext.define('PVE.grid.BackupView', {
 		    layout: 'fit',
 		    modal: true,
 		    items: [{
+			xtype: 'component',
 			itemId: 'configtext',
 			autoScroll: true,
 			style: {
