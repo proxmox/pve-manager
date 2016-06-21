@@ -474,7 +474,6 @@ Ext.define('PVE.StdWorkspace', {
 		    split:true,
 		    listeners: {
 			resize: function(panel, width, height) {
-			    console.log('test');
 			    var viewHeight = me.getSize().height;
 			    if (height > (viewHeight - 150)) {
 				panel.setHeight(viewHeight - 150);
