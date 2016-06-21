@@ -208,7 +208,11 @@
 .x-grid-item-over
 .x-fa-tree-template-qemu:after,
 .x-grid-item-over
-.x-fa-tree-template-lxc:after {
+.x-fa-tree-template-lxc:after,
+.x-grid-item-over
+.x-fa-grid-template-qemu:after,
+.x-grid-item-over
+.x-fa-grid-template-lxc:after {
     background-color: #e2eff9;
     text-shadow: -1px 0px 2px #e2eff9;
 }
@@ -216,7 +220,11 @@
 .x-grid-item-selected
 .x-fa-tree-template-qemu:after,
 .x-grid-item-selected
-.x-fa-tree-template-lxc:after {
+.x-fa-tree-template-lxc:after,
+.x-grid-item-selected
+.x-fa-grid-template-qemu:after,
+.x-grid-item-selected
+.x-fa-grid-template-lxc:after {
     background-color: #c2ddf2;
     text-shadow: -1px 0px 2px #c2ddf2;
 }
