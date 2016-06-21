@@ -412,6 +412,7 @@ Ext.define('PVE.tree.ResourceTree', {
 			    cn.expand();
 			}
 		    }
+		    me.getView().focusRow(node);
 		}
 	    },
 	    selectById: function(nodeid) {
