@@ -154,6 +154,14 @@ Ext.define('PVE.node.NetworkEdit', {
 	    });
 	}
 
+	column2.push({
+	    xtype: 'textfield',
+	    fieldLabel: gettext('Comment'),
+	    allowBlank: true,
+	    nodename: nodename,
+	    name: 'comments'
+	});
+
 	var url;
 	var method;
 

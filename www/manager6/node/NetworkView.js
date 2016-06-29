@@ -296,6 +296,11 @@ Ext.define('PVE.node.NetworkView', {
 				    return rec.data.gateway;
 				}
 			    }
+			},
+			{
+			    header: gettext('Comment'),
+			    dataIndex: 'comments',
+			    renderer: Ext.String.htmlEncode
 			}
 		    ],
 		    listeners: {
