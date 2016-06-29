@@ -333,7 +333,8 @@ Ext.define('PVE.node.NetworkView', {
 	    'iface', 'type', 'active', 'autostart',
 	    'bridge_ports', 'slaves',
 	    'address', 'netmask', 'gateway',
-	    'address6', 'netmask6', 'gateway6'
+	    'address6', 'netmask6', 'gateway6',
+	    'comments'
 	],
 	idProperty: 'iface'
     });
