@@ -29,6 +29,11 @@ Ext.define('PVE.form.BridgeSelector', {
 		width: 60,
 		dataIndex: 'active',
 		renderer: PVE.Utils.format_boolean
+	    },
+	    {
+		header: gettext('Comment'),
+		dataIndex: 'comments',
+		renderer: Ext.String.htmlEncode
 	    }
 	]
     },
