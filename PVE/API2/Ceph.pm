@@ -1321,6 +1321,12 @@ __PACKAGE__->register_method ({
 		description => "The name of the pool. It must be unique.",
 		type => 'string',
 	    },
+	    force => {
+		description => "If true, destroys pool even if in use",
+		type => 'boolean',
+		optional => 1,
+		default => 0,
+	    }
 	},
     },
     returns => { type => 'null' },
@@ -1328,6 +1334,22 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	PVE::CephTools::check_ceph_inited();
+
+	# if not forced, destroy ceph pool only when no
+	# vm disks are on it anymore
+	if (!$param->{force}) {
+	    my $storagecfg = PVE::Storage::config();
+	    foreach my $storageid (keys %{$storagecfg->{ids}}) {
+		my $storage = $storagecfg->{ids}->{$storageid};
+		next if $storage->{type} ne 'rbd';
+		next if $storage->{pool} ne $param->{name};
+
+		# check if any vm disks are on the pool
+		my $res = PVE::Storage::vdisk_list($storagecfg, $storageid);
+		die "ceph pool '$param->{name}' still in use by storage '$storageid'\n"
+		    if @{$res->{$storageid}} != 0;
+	    }
+	}
 
 	my $rados = PVE::RADOS->new();
 	# fixme: '--yes-i-really-really-mean-it'
