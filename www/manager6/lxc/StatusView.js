@@ -57,6 +57,18 @@ Ext.define('PVE.lxc.StatusView', {
 	    return value;
 	};
 
+	var render_bootdisk = function(value, metaData, record, rowIndex, colIndex, store) {
+	    if (!Ext.isNumeric(value)) {
+		return '';
+	    }
+	    var disk = me.getObjectValue('disk', 0);
+	    var text = "<div>" + PVE.Utils.totalText + ": " + PVE.Utils.format_size(value) + "</div>";
+	    if (Ext.isNumeric(disk) && disk > 0) {
+		text += "<div>" + PVE.Utils.usedText + ": " + PVE.Utils.format_size(disk) + "</div>";
+	    }
+	    return text;
+	};
+
 	var rows = {};
 
 	if (template) {
@@ -78,7 +90,7 @@ Ext.define('PVE.lxc.StatusView', {
 		maxmem: { visible: false },
 		swap: { header: gettext('VSwap usage'), required: true,  renderer: render_swap },
 		maxswap: { visible: false },
-		maxdisk: { header: gettext('Bootdisk size'), renderer: PVE.Utils.render_size, required: true},
+		maxdisk: { header: gettext('Bootdisk size'), renderer: render_bootdisk, required: true},
 		uptime: { header: gettext('Uptime'), required: true, renderer: PVE.Utils.render_uptime },
 		ha: { header: gettext('Managed by HA'), required: true, renderer: PVE.Utils.format_ha }
 	    };
