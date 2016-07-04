@@ -10,6 +10,8 @@
 Ext.define('PVE.data.UpdateStore', {
     extend: 'Ext.data.Store',
 
+    isStopped: true,
+
     constructor: function(config) {
 	var me = this;
 
@@ -26,6 +28,10 @@ Ext.define('PVE.data.UpdateStore', {
 	var load_task = new Ext.util.DelayedTask();
 
 	var run_load_task = function() {
+	    if (me.isStopped) {
+		return;
+	    }
+
 	    if (PVE.Utils.authOK()) {
 		PVE.data.UpdateQueue.queue(me, function(runtime, success) {
 		    var interval = config.interval + runtime*2;
@@ -38,9 +44,11 @@ Ext.define('PVE.data.UpdateStore', {
 
 	Ext.apply(config, {
 	    startUpdate: function() {
+		me.isStopped = false;
 		run_load_task();
 	    },
 	    stopUpdate: function() {
+		me.isStopped = true;
 		load_task.cancel();
 		PVE.data.UpdateQueue.unqueue(me);
 	    }
