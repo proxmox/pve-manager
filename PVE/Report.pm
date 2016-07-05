@@ -12,7 +12,9 @@ my @general = ('hostname', 'pveversion --verbose', 'cat /etc/hosts', 'top -b -n 
 
 my @storage = ('cat /etc/pve/storage.cfg', 'pvesm status', 'cat /etc/fstab', 'mount', 'df --human');
 
-my @volumes = ('lvdisplay', 'vgdisplay', 'zpool status', 'zfs list');
+my @volumes = ('lvs', 'vgs', 'zpool status', 'zfs list');
+
+my @disks = ('lsblk', 'multipath -ll', 'multipath -v3');
 
 my @machines = ('qm list', sub { dir2text('/etc/pve/qemu-server/', '\d.*conf') });
 
@@ -62,7 +64,18 @@ my $bios_report = {
     commands => \@bios,
 };
 
-my @global_report = ($general_report, $storage_report, $volume_report, $net_report, $cluster_report, $bios_report);
+my $disks_report = {
+    title => 'info about disks',
+    commands => \@disks,
+};
+
+my $volumes_report = {
+    title => 'info about volumes',
+    commands => \@volumes,
+};
+
+my @global_report = ($general_report, $storage_report, $volume_report, $net_report,
+		     $cluster_report, $bios_report, $disks_report, $volumes_report);
 
 # output the content of all the files of a directory
 sub dir2text {
