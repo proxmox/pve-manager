@@ -28,12 +28,24 @@ Ext.define('PVE.qemu.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Name'),
 		    items: {
-			xtype: 'textfield',
-			name: 'name',
-			vtype: 'DnsName',
-			value: '',
-			fieldLabel: gettext('Name'),
-			allowBlank: true
+			xtype: 'inputpanel',
+			items:{
+			    xtype: 'textfield',
+			    name: 'name',
+			    vtype: 'DnsName',
+			    value: '',
+			    fieldLabel: gettext('Name'),
+			    allowBlank: true
+			},
+			onGetValues: function(values) {
+			    var params = values;
+			    if (values.name === undefined ||
+				values.name === null ||
+				values.name === '') {
+				params = { 'delete':'name'};
+			    }
+			    return params;
+			}
 		    }
 		} : undefined
 	    },
