@@ -269,6 +269,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    rows: rows,
 	    listeners: {
 		afterrender: reload,
+		activate: reload,
 		itemdblclick: run_editor,
 		selectionchange: set_button_status
 	    }
