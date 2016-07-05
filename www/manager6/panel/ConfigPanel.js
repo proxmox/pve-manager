@@ -108,6 +108,11 @@ Ext.define('PVE.panel.Config', {
 		    if (oldcard.plugins && oldcard.plugins[0] && oldcard.plugins[0].ptype == 'lazyitems') {
 			oldcard.items.items[0].fireEvent('hide');
 		    }
+
+		    // same for activating
+		    if (newcard.plugins && newcard.plugins[0] && newcard.plugins[0].ptype == 'lazyitems') {
+			newcard.items.items[0].fireEvent('activate');
+		    }
 		}
 	    }
 	});
