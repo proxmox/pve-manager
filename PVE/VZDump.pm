@@ -363,7 +363,7 @@ sub read_vzdump_defaults {
 }
 
 sub sendmail {
-    my ($self, $tasklist, $totaltime, $err) = @_;
+    my ($self, $tasklist, $totaltime, $err, $detail_pre, $detail_post) = @_;
 
     my $opts = $self->{opts};
 
@@ -426,6 +426,7 @@ sub sendmail {
     $text .= "Detailed backup logs:\n\n";
     $text .= "$cmdline\n\n";
 
+    $text .= $detail_pre . "\n" if defined($detail_pre);
     foreach my $task (@$tasklist) {
 	my $vmid = $task->{vmid};
 	my $log = $task->{tmplog};
@@ -438,6 +439,7 @@ sub sendmail {
 	close (TMP);
 	$text .= "\n";
     }
+    $text .= $detail_post if defined($detail_post);
 
     # html part
     my $html = "<html><body>\n";
@@ -475,6 +477,7 @@ sub sendmail {
     $html .= "<pre>\n";
     $html .= escape_html($cmdline) . "\n\n";
 
+    $html .= escape_html($detail_pre) . "\n" if defined($detail_pre);
     foreach my $task (@$tasklist) {
 	my $vmid = $task->{vmid};
 	my $log = $task->{tmplog};
@@ -494,6 +497,7 @@ sub sendmail {
 	close (TMP);
 	$html .= "\n";
     }
+    $html .= escape_html($detail_post) if defined($detail_post);
     $html .= "</pre></body></html>\n";
     # end html part
 
@@ -1110,22 +1114,28 @@ sub exec_backup {
 	}
     }
 
+    # Use in-memory files for the outer hook logs to pass them to sendmail.
+    my $job_start_log = '';
+    my $job_end_log = '';
+    open my $job_start_fd, '>', \$job_start_log;
+    open my $job_end_fd, '>', \$job_end_log;
+
     my $starttime = time();
     my $errcount = 0;
     eval {
 
-	$self->run_hook_script ('job-start');
+	$self->run_hook_script ('job-start', undef, $job_start_fd);
 
 	foreach my $task (@$tasklist) {
 	    $self->exec_backup_task ($task);
 	    $errcount += 1 if $task->{state} ne 'ok';
 	}
 
-	$self->run_hook_script ('job-end');    
+	$self->run_hook_script ('job-end', undef, $job_end_fd);
     };
     my $err = $@;
 
-    $self->run_hook_script ('job-abort') if $err;    
+    $self->run_hook_script ('job-abort', undef, $job_end_fd) if $err;
 
     if ($err) {
 	debugmsg ('err', "Backup job failed - $err", undef, 1);
@@ -1137,9 +1147,12 @@ sub exec_backup {
 	}
     }
 
+    close $job_start_fd;
+    close $job_end_fd;
+
     my $totaltime = time() - $starttime;
 
-    eval { $self->sendmail ($tasklist, $totaltime); };
+    eval { $self->sendmail ($tasklist, $totaltime, undef, $job_start_log, $job_end_log); };
     debugmsg ('err', $@) if $@;
 
     die $err if $err;
