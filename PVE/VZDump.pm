@@ -423,7 +423,7 @@ sub sendmail {
 	}
     }
 
-    $text .= "Detailed backup logs:\n\n";
+    $text .= "\nDetailed backup logs:\n\n";
     $text .= "$cmdline\n\n";
 
     $text .= $detail_pre . "\n" if defined($detail_pre);
