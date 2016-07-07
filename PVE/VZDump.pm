@@ -1067,7 +1067,7 @@ sub exec_backup_task {
     close ($logfd) if $logfd;
     
     if ($task->{tmplog} && $task->{logfile}) {
-	system ("cp '$task->{tmplog}' '$task->{logfile}'");
+	system {'cp'} 'cp', $task->{tmplog}, $task->{logfile};
     }
 
     eval { $self->run_hook_script ('log-end', $task); };
