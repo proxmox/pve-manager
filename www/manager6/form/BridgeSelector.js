@@ -22,7 +22,7 @@ Ext.define('PVE.form.BridgeSelector', {
 		header: gettext('Bridge'),
 		dataIndex: 'iface',
 		hideable: false,
-		flex: 1
+		width: 100
 	    },
 	    {
 		header: gettext('Active'),
@@ -33,7 +33,8 @@ Ext.define('PVE.form.BridgeSelector', {
 	    {
 		header: gettext('Comment'),
 		dataIndex: 'comments',
-		renderer: Ext.String.htmlEncode
+		renderer: Ext.String.htmlEncode,
+		flex: 1
 	    }
 	]
     },
