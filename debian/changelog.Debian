@@ -1,3 +1,37 @@
+pve-manager (4.2-17) unstable; urgency=medium
+
+  * Fix #1048: vzdump: include job-* hook logs in email
+
+  * vzdump: cleanups
+
+  * fix undefined value warning in resources api call
+
+  * fix surviving update store
+
+  * reload lxc resources also on activate
+
+  * fire activate event for lazyitems in tabpanels
+
+  * correctly delete name of a qemu vm
+
+  * Add some extra debug information to the report.
+
+  * add ca-certificates as required depency
+
+  * lxc/status: show disk usage on running containers
+
+  * fix #1030: calculate correct cpu usage of pools
+
+  * fix #757: show the bridge comment in the selector
+
+  * add comment to network edit and view
+
+  * add comments to network model
+
+  * fix #1043: prevent ceph destroypool when in use
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 11 Jul 2016 13:10:57 +0200
+
 pve-manager (4.2-16) unstable; urgency=medium
 
   * apply style to backup configuration window
