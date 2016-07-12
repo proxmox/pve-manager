@@ -41,7 +41,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		name: 'monhost',
 		vtype: 'HostList',
 		value: '',
-		fieldLabel: gettext('Monitor Host'),
+		fieldLabel: 'Monitor(s)',
 		allowBlank: false
 	    },
 	    {
@@ -77,7 +77,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		xtype: 'pvecheckbox',
 		name: 'krbd',
 		uncheckedValue: 0,
-		fieldLabel: gettext('KRBD')
+		fieldLabel: 'KRBD'
 	    }
 	];
 	/*jslint confusion: false*/
