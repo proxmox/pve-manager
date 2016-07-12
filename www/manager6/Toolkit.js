@@ -1,4 +1,5 @@
-/*global IP4_match, IP4_cidr_match, IP6_match, IP6_cidr_match, IP64_match, DnsName_match*/
+/*global IP4_match, IP4_cidr_match, IP6_match, IP6_cidr_match, IP64_match, DnsName_match, DnsName_REGEXP, IPV4_REGEXP, IPV6_REGEXP*/
+/*global HostPort_match, HostPortBrackets_match, IP6_dotnotation_match*/
 // ExtJS related things
 
 PVE.Utils.toolkit = 'extjs';
@@ -101,7 +102,26 @@ Ext.apply(Ext.form.field.VTypes, {
     pveMail: function(v) {
         return (/^(\w+)([\-+.][\w]+)*@(\w[\-\w]*\.){1,5}([A-Za-z]){2,63}$/).test(v);
     },
-    pveMailText: gettext('Example') + ": user@example.com"
+    pveMailText: gettext('Example') + ": user@example.com",
+
+    HostList: function(v) {
+	var list = v.split(/[\ \,\;]+/);
+	var i;
+	for (i = 0; i < list.length; i++) {
+	    if (list[i] == "") {
+		continue;
+	    }
+
+	    if (!HostPort_match.test(list[i]) &&
+		!HostPortBrackets_match.test(list[i]) &&
+		!IP6_dotnotation_match.test(list[i])) {
+		return false;
+	    }
+	}
+
+	return true;
+    },
+    HostListText: gettext('Not a valid list of hosts')
 });
 
 // ExtJs 5-6 has an issue with caching

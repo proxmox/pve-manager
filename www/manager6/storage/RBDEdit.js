@@ -39,6 +39,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	    {
 		xtype: me.create ? 'textfield' : 'displayfield',
 		name: 'monhost',
+		vtype: 'HostList',
 		value: '',
 		fieldLabel: gettext('Monitor Host'),
 		allowBlank: false
