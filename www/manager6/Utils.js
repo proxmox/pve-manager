@@ -56,6 +56,9 @@ var IP6_bracket_match = new RegExp("^\\[(" + IPV6_REGEXP + ")\\]");
 
 var IP64_match = new RegExp("^(?:" + IPV6_REGEXP + "|" + IPV4_REGEXP + ")$");
 
+var DnsName_REGEXP = "(?:(([a-zA-Z0-9]([a-zA-Z0-9\\-]*[a-zA-Z0-9])?)\\.)*([A-Za-z0-9]([A-Za-z0-9\\-]*[A-Za-z0-9])?))";
+var DnsName_match = new RegExp("^" + DnsName_REGEXP + "$");
+
 Ext.define('PVE.Utils', { statics: {
 
     // this class only contains static functions

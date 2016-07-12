@@ -1,4 +1,4 @@
-/*global IP4_match, IP4_cidr_match, IP6_match, IP6_cidr_match, IP64_match*/
+/*global IP4_match, IP4_cidr_match, IP6_match, IP6_cidr_match, IP64_match, DnsName_match*/
 // ExtJS related things
 
 PVE.Utils.toolkit = 'extjs';
@@ -93,7 +93,7 @@ Ext.apply(Ext.form.field.VTypes, {
     HttpProxyText: gettext('Example') + ": http://username:password&#64;host:port/",
 
     DnsName: function(v) {
-	return (/^(([a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)\.)*([A-Za-z0-9]([A-Za-z0-9\-]*[A-Za-z0-9])?)$/).test(v);
+	return DnsName_match.test(v);
     },
     DnsNameText: gettext('This is not a valid DNS name'),
 
