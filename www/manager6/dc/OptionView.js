@@ -99,6 +99,32 @@ Ext.define('PVE.dc.EmailFromEdit', {
     }
 });
 
+Ext.define('PVE.dc.MacPrefixEdit', {
+    extend: 'PVE.window.Edit',
+
+    initComponent : function() {
+	var me = this;
+
+	Ext.applyIf(me, {
+	    subject: gettext('MAC address prefix'),
+	    items: {
+		xtype: 'pvetextfield',
+		name: 'mac_prefix',
+		regex: /^[a-f0-9]{2}(?::[a-f0-9]{2}){0,2}:?$/i,
+		regexText: gettext('Example') + ': 02:8f',
+		emptyText: PVE.Utils.noneText,
+		deleteEmpty: true,
+		value: '',
+		fieldLabel: gettext('MAC address prefix')
+	    }
+	});
+
+	me.callParent();
+
+	me.load();
+    }
+});
+
 Ext.define('PVE.dc.OptionView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveDcOptionView'],
@@ -141,6 +167,17 @@ Ext.define('PVE.dc.OptionView', {
 		renderer: function(value) {
 		    if (!value) {
 			return 'root@$hostname';
+		    }
+		    return value;
+		}
+	    },
+	    mac_prefix: {
+		header: gettext('MAC address prefix'),
+		editor: 'PVE.dc.MacPrefixEdit',
+		required: true,
+		renderer: function(value) {
+		    if (!value) {
+			return PVE.Utils.noneText;
 		    }
 		    return value;
 		}
