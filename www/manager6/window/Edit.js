@@ -255,7 +255,14 @@ Ext.define('PVE.window.Edit', {
 
 	// always mark invalid fields
 	me.on('afterlayout', function() {
+	    // on touch devices, the isValid function
+	    // triggers a layout, which triggers an isValid
+	    // and so on
+	    // to prevent this we disable the layouting here
+	    // and enable it afterwards
+	    me.suspendLayout = true;
 	    me.isValid();
+	    me.suspendLayout = false;
 	});
     }
 });
