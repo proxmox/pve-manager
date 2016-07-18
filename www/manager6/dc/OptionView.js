@@ -10,7 +10,7 @@ Ext.define('PVE.dc.HttpProxyEdit', {
 		xtype: 'pvetextfield',
 		name: 'http_proxy',
 		vtype: 'HttpProxy',
-		emptyText: gettext('Do not use any proxy'),
+		emptyText: PVE.Utils.noneText,
 		deleteEmpty: true,
 		value: '',
 		fieldLabel: gettext('HTTP proxy')
@@ -103,8 +103,6 @@ Ext.define('PVE.dc.OptionView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveDcOptionView'],
 
-    noProxyText: gettext('Do not use any proxy'),
-
     initComponent : function() {
 	var me = this;
 
@@ -125,7 +123,7 @@ Ext.define('PVE.dc.OptionView', {
 		required: true,
 		renderer: function(value) {
 		    if (!value) {
-			return me.noProxyText;
+			return PVE.Utils.noneText;
 		    }
 		    return value;
 		}
