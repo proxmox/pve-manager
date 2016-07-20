@@ -26,7 +26,8 @@ Ext.define('PVE.form.RealmComboBox', {
 
     needOTP: function(realm) {
 	var me = this;
-	var rec = me.store.findRecord('realm', realm);
+	// use exact match
+	var rec = me.store.findRecord('realm', realm, 0, false, false, true);
 	return rec && rec.data && rec.data.tfa ? rec.data.tfa : undefined;
     },
 
