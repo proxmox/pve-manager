@@ -2,6 +2,42 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
     extend: 'PVE.panel.InputPanel',
     alias: 'widget.pveQemuOSTypePanel',
     onlineHelp: 'chapter-qm.html#_os_settings',
+    insideWizard: false,
+
+    controller: {
+	xclass: 'Ext.app.ViewController',
+	control: {
+	    'radiogroup': {
+		    change: function(field, value) {
+			var me = this;
+			if (!me.getView().insideWizard) {
+			    return;
+			}
+
+			var targetValues;
+
+			if (PVE.qemu.OSDefaults[value.ostype]) {
+			    targetValues = PVE.qemu.OSDefaults[value.ostype];
+			} else {
+			    targetValues = PVE.qemu.OSDefaults.generic;
+			}
+
+			me.setWidget('pveBusSelector', targetValues.busType);
+			me.setWidget('pveNetworkCardSelector', targetValues.networkCard);
+		    }
+	    }
+	},
+	setWidget: function(widget, newValue) {
+	    // changing a widget is safe only if ComponentQuery.query returns us
+	    // a single value array
+	    var widgets = Ext.ComponentQuery.query('pveQemuCreateWizard ' + widget);
+	    if (widgets.length === 1) {
+		widgets[0].setValue(newValue);
+	    } else {
+		throw 'non unique widget :' + widget + ' in Wizard';
+	    }
+	}
+    },
 
     initComponent : function() {
 	var me = this;
