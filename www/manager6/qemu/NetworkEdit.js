@@ -127,7 +127,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		xtype: 'pveNetworkCardSelector',
 		name: 'model',
 		fieldLabel: gettext('Model'),
-		value: 'e1000',
+		value: PVE.qemu.OSDefaults.generic.networkCard,
 		allowBlank: false
 	    },
 	    {
