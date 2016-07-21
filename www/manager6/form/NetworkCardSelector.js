@@ -1,6 +1,6 @@
 Ext.define('PVE.form.NetworkCardSelector', {
     extend: 'PVE.form.KVComboBox',
-    alias: ['widget.PVE.form.NetworkCardSelector'],
+    alias: 'widget.pveNetworkCardSelector',
     comboItems: [
 	['e1000', 'Intel E1000'],
 	['virtio', 'VirtIO (' + gettext('paravirtualized') + ')'],

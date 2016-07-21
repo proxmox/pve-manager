@@ -72,7 +72,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	var items = [];
 
 	if (!me.confid) {
-	    me.bussel = Ext.createWidget('PVE.form.ControllerSelector', {
+	    me.bussel = Ext.create('PVE.form.ControllerSelector', {
 		noVirtIO: true
 	    });
 	    items.push(me.bussel);

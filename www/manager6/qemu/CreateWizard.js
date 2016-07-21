@@ -2,6 +2,7 @@
 /*jslint confusion: true */
 Ext.define('PVE.qemu.CreateWizard', {
     extend: 'PVE.window.Wizard',
+    alias: 'widget.pveQemuCreateWizard',
 
     initComponent: function() {
 	var me = this;
@@ -96,16 +97,16 @@ Ext.define('PVE.qemu.CreateWizard', {
 		},
 		{
 		    title: gettext('OS'),
-		    xtype: 'PVE.qemu.OSTypeInputPanel'
+		    xtype: 'pveQemuOSTypePanel'
 		},
 		cdpanel,
 		hdpanel,
 		{
-		    xtype: 'PVE.qemu.ProcessorInputPanel',
+		    xtype: 'pveQemuProcessorPanel',
 		    title: gettext('CPU')
 		},
 		{
-		    xtype: 'PVE.qemu.MemoryInputPanel',
+		    xtype: 'pveQemuMemoryPanel',
 		    insideWizard: true,
 		    title: gettext('Memory')
 		},

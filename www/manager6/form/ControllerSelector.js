@@ -1,6 +1,6 @@
 Ext.define('PVE.form.ControllerSelector', {
     extend: 'Ext.form.FieldContainer',
-    alias: ['widget.PVE.form.ControllerSelector'],
+    alias: 'widget.pveControllerSelector',
    
     statics: {
 	maxIds: {
@@ -65,7 +65,7 @@ Ext.define('PVE.form.ControllerSelector', {
 	    },
 	    items: [
 		{
-		    xtype: 'PVE.form.BusTypeSelector',
+		    xtype: 'pveBusSelector',
 		    name: 'controller',
 		    value: 'ide',
 		    noVirtIO: me.noVirtIO,

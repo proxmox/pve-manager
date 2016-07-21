@@ -124,7 +124,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 
 	me.column2 = [
 	    {
-		xtype: 'PVE.form.NetworkCardSelector',
+		xtype: 'pveNetworkCardSelector',
 		name: 'model',
 		fieldLabel: gettext('Model'),
 		value: 'e1000',
