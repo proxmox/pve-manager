@@ -123,6 +123,7 @@ JSSRC= 				                 	\
 	qemu/Monitor.js					\
 	qemu/Summary.js					\
 	qemu/OSTypeEdit.js				\
+	qemu/OSDefaults.js				\
 	qemu/ProcessorEdit.js				\
 	qemu/BootOrderEdit.js				\
 	qemu/MemoryEdit.js				\
