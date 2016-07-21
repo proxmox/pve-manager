@@ -1195,6 +1195,27 @@ Ext.define('PVE.Utils', { statics: {
 	});
     },
 
+    openTreeConsole: function(tree, record, item, index, e) {
+	e.stopEvent();
+	var nodename = record.data.node;
+	var vmid = record.data.vmid;
+	var vmname = record.data.name;
+	if (record.data.type === 'qemu' && !record.data.template) {
+	    PVE.Utils.API2Request({
+		url: '/nodes/' + nodename + '/qemu/' + vmid + '/status/current',
+		failure: function(response, opts) {
+		    Ext.Msg.alert('Error', response.htmlStatus);
+		},
+		success: function(response, opts) {
+		    var allowSpice = response.result.data.spice;
+		    PVE.Utils.openDefaultConsoleWindow(allowSpice, 'kvm', vmid, nodename, vmname);
+		}
+	    });
+	} else if (record.data.type === 'lxc' && !record.data.template) {
+	    PVE.Utils.openDefaultConsoleWindow(true, 'lxc', vmid, nodename, vmname);
+	}
+    },
+
     createCmdMenu: function(v, record, item, index, event) {
 	event.stopEvent();
 	if (!(v instanceof Ext.tree.View)) {

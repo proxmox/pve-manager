@@ -387,7 +387,8 @@ Ext.define('PVE.tree.ResourceTree', {
 		    var allow = me.allowSelection;
 		    me.allowSelection = true;
 		    return allow;
-		}
+		},
+		itemdblclick: PVE.Utils.openTreeConsole
 	    },
 	    setViewFilter: function(view) {
 		me.viewFilter = view;
