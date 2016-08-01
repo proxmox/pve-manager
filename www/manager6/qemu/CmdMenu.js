@@ -28,6 +28,8 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    });
 	};
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
 	var running = false;
 	var stopped = true;
 	var suspended = false;
@@ -112,6 +114,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    {
 		text: gettext('Migrate'),
 		iconCls: 'fa fa-fw fa-send-o',
+		hidden: caps.vms['VM.Migrate'] ? false : true,
 		handler: function() {
 		    var win = Ext.create('PVE.window.Migrate', {
 			vmtype: 'qemu',
@@ -124,6 +127,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    {
 		text: gettext('Clone'),
 		iconCls: 'fa fa-fw fa-clone',
+		hidden: caps.vms['VM.Clone'] ? false : true,
 		handler: function() {
 		    var win = Ext.create('PVE.window.Clone', {
 			nodename: nodename,
@@ -135,6 +139,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    {
 		text: gettext('Convert to template'),
 		iconCls: 'fa fa-fw fa-file-o',
+		hidden: caps.vms['VM.Allocate'] ? false : true,
 		handler: function() {
 		    var msg = PVE.Utils.format_task_description('qmtemplate', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
