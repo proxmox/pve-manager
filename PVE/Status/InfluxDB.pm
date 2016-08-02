@@ -100,42 +100,71 @@ sub write_influxdb_hash {
 }
 
 sub build_influxdb_payload {
-    my ($payload, $d, $ctime, $tags, $measurement, $depth) = @_;
+    my ($payload, $data, $ctime, $tags, $measurement, $instance) = @_;
 
-    $depth = 0 if !$depth;
     my @values = ();
 
-    for my $key (keys %$d) {
+    foreach my $key (sort keys %$data) {
+	my $value = $data->{$key};
+	next if !defined($value);
 
-        my $value = $d->{$key};
-        my $oldtags = $tags;
-	
-        if ( defined $value ) {
-            if ( ref $value eq 'HASH' ) {
+	if (!ref($value) && $value ne '') {
+	    # value is scalar
 
-		if($depth == 0) {
-		    $measurement = $key;
-		}elsif($depth == 1){
-		    $tags .= ",instance=$key";
-		}
+	    $value = prepare_value($value);
+	    push @values, "$key=$value";
+	} elsif (ref($value) eq 'HASH') {
+	    # value is a hash
 
-		$depth++;
-                build_influxdb_payload($payload, $value, $ctime, $tags, $measurement, $depth);
-		$depth--;
-
-            }elsif ($value =~ m/^\d+$/) {
-
-		$measurement = "system" if !$measurement && $depth == 0;
-		push(@values, "$key=$value");
-            }
-        }
-        $tags = $oldtags;
+	    if (!defined($measurement)) {
+		build_influxdb_payload($payload, $value, $ctime, $tags, $key);
+	    } elsif(!defined($instance)) {
+		build_influxdb_payload($payload, $value, $ctime, $tags, $measurement, $key);
+	    } else {
+		push @values, get_recursive_values($value);
+	    }
+	}
     }
 
-    if(@values > 0) {
+    if (@values > 0) {
+	my $mm = $measurement // 'system';
+	my $tagstring = $tags;
+	$tagstring .= ",instance=$instance" if defined($instance);
 	my $valuestr =  join(',', @values);
-	$payload->{string} .= $measurement.",$tags $valuestr $ctime\n";
+	$payload->{string} .= "$mm,$tagstring $valuestr $ctime\n";
     }
+}
+
+sub get_recursive_values {
+    my ($hash) = @_;
+
+    my @values = ();
+
+    foreach my $key (keys %$hash) {
+	my $value = $hash->{$key};
+	if(ref($value) eq 'HASH') {
+	    push(@values, get_recursive_values($value));
+	} elsif (!ref($value) && $value ne '') {
+	    $value = prepare_value($value);
+	    push @values, "$key=$value";
+	}
+    }
+
+    return @values;
+}
+
+sub prepare_value {
+    my ($value) = @_;
+
+    # if value is not just a number we
+    # have to replace " with \"
+    # and surround it with "
+    if ($value =~ m/[^\d\.]/) {
+	$value =~ s/\"/\\\"/g;
+	$value = "\"$value\"";
+    }
+
+    return $value;
 }
 
 1;
