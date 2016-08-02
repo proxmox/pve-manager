@@ -98,7 +98,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 		{
 		    title: gettext('OS'),
 		    xtype: 'pveQemuOSTypePanel',
-		    insideWizard: true,
+		    insideWizard: true
 		},
 		cdpanel,
 		hdpanel,
