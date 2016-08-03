@@ -189,6 +189,14 @@ my $read_password = sub {
     my $input = $term->readline('password: ');
     my $conf = $term->readline('Retype new password: ');
     $attribs->{redisplay_function} = $old;
+
+    # remove password from history
+    if ($term->Features->{autohistory}) {
+	my $historyPosition = $term->where_history();
+	$term->remove_history($historyPosition);
+	$term->remove_history($historyPosition - 1);
+    }
+
     die "Passwords do not match.\n" if ($input ne $conf);
     return $input;
 };
@@ -558,7 +566,11 @@ while (defined ($input = $term->readline("pve:/$cdir> "))) {
 	exit (0);
     }
 
-    $term->addhistory($input);
+    # add input to history if it gets not
+    # automatically added
+    if (!$term->Features->{autohistory}) {
+	$term->addhistory($input);
+    }
 
     eval {
 	my $args = [ shellwords($input) ];
