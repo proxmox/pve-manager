@@ -60,6 +60,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 			{
 			    xtype: 'pveNodeSelector',
 			    name: 'nodename',
+			    selectCurNode: true,
 			    fieldLabel: gettext('Node'),
 			    allowBlank: false,
 			    onlineValidator: true,
