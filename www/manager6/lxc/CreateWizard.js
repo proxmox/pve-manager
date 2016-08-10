@@ -2,6 +2,23 @@
 Ext.define('PVE.lxc.CreateWizard', {
     extend: 'PVE.window.Wizard',
 
+    loadSSHKeyFromFile: function(file) {
+	var me = this;
+	// ssh-keygen produces 740 bytes for an average 4096 bit rsa key, with
+	// a user@host comment, 1420 for 8192 bits; current max is 16kbit
+	// assume: 740*8 for max. 32kbit (5920 byte file)
+	// round upwards to nearest nice number => 8192 bytes, leaves lots of comment space
+	if (file.size > 8192) {
+	    Ext.Msg.alert(gettext('Error'), gettext("Invalid file size: ") + file.size);
+	    return;
+	}
+	var reader = new FileReader();
+	reader.onload = function(evt) {
+	    me.sshkeyfield.setValue(evt.target.result);
+	};
+	reader.readAsText(file);
+    },
+
     initComponent: function() {
 	var me = this;
 
@@ -50,6 +67,106 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    create: true
 	});
 
+	var passwordfield = Ext.createWidget('textfield', {
+	    inputType: 'password',
+	    name: 'password',
+	    value: '',
+	    fieldLabel: gettext('Password'),
+	    allowBlank: false,
+	    minLength: 5,
+	    change: function(f, value) {
+		if (!me.rendered) {
+		    return;
+		}
+		me.down('field[name=confirmpw]').validate();
+	    }
+	});
+
+	me.sshkeyfield = Ext.createWidget('textfield', {
+	    xtype: 'textfield',
+	    name: 'ssh-public-keys',
+	    value: '',
+	    fieldLabel: gettext('SSH public key'),
+	    allowBlank: true,
+	    validator: function(value) {
+		if (value.length) {
+		    var key = PVE.Parser.parseSSHKey(value);
+		    if (!key) {
+			return "Failed to recognize ssh key";
+		    }
+		    me.down('field[name=password]').allowBlank = true;
+		} else {
+		    me.down('field[name=password]').allowBlank = false;
+		}
+		me.down('field[name=password]').validate();
+		return true;
+	    },
+	    afterRender: function() {
+		if (!window.FileReader) {
+		    // No FileReader support in this browser
+		    return;
+		}
+		var cancel = function(ev) {
+		    ev = ev.event;
+		    if (ev.preventDefault) {
+			ev.preventDefault();
+		    }
+		};
+		me.sshkeyfield.inputEl.on('dragover', cancel);
+		me.sshkeyfield.inputEl.on('dragenter', cancel);
+		me.sshkeyfield.inputEl.on('drop', function(ev) {
+		    ev = ev.event;
+		    if (ev.preventDefault) {
+			ev.preventDefault();
+		    }
+		    var files = ev.dataTransfer.files;
+		    me.loadSSHKeyFromFile(files[0]);
+		});
+	    },
+	});
+
+	var column2 = [
+	    {
+		xtype: 'pvePoolSelector',
+		fieldLabel: gettext('Resource Pool'),
+		name: 'pool',
+		value: '',
+		allowBlank: true
+	    },
+	    passwordfield,
+	    {
+		xtype: 'textfield',
+		inputType: 'password',
+		name: 'confirmpw',
+		value: '',
+		fieldLabel: gettext('Confirm password'),
+		allowBlank: true,
+		validator: function(value) {
+		    var pw = me.down('field[name=password]').getValue();
+		    if (pw !== value) {
+			return "Passwords does not match!";
+		    }
+		    return true;
+		}
+	    },
+	    me.sshkeyfield
+	];
+
+	if (window.FileReader) {
+	    column2.push({
+		xtype: 'filebutton',
+		name: 'file',
+		text: gettext('Load SSH Key File'),
+		listeners: {
+		    change: function(btn, e, value) {
+			e = e.event;
+			me.loadSSHKeyFromFile(e.target.files[0]);
+			btn.reset();
+		    }
+		}
+	    });
+	}
+
 	Ext.applyIf(me, {
 	    subject: gettext('LXC Container'),
 	    items: [
@@ -90,45 +207,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 			    allowBlank: true
 			}
 		    ],
-		    column2: [
-			{
-			    xtype: 'pvePoolSelector',
-			    fieldLabel: gettext('Resource Pool'),
-			    name: 'pool',
-			    value: '',
-			    allowBlank: true
-			},
-			{
-			    xtype: 'textfield',
-			    inputType: 'password',
-			    name: 'password',
-			    value: '',
-			    fieldLabel: gettext('Password'),
-			    allowBlank: false,
-			    minLength: 5,
-			    change: function(f, value) {
-				if (!me.rendered) {
-				    return;
-				}
-				me.down('field[name=confirmpw]').validate();
-			    }
-			},
-			{
-			    xtype: 'textfield',
-			    inputType: 'password',
-			    name: 'confirmpw',
-			    value: '',
-			    fieldLabel: gettext('Confirm password'),
-			    allowBlank: false,
-			    validator: function(value) {
-				var pw = me.down('field[name=password]').getValue();
-				if (pw !== value) {
-				    return "Passwords does not match!";
-				}
-				return true;
-			    }
-			}
-		    ],
+		    column2: column2,
 		    onGetValues: function(values) {
 			delete values.confirmpw;
 			if (!values.pool) {
@@ -203,6 +282,12 @@ Ext.define('PVE.lxc.CreateWizard', {
 			var nodename = kv.nodename;
 			delete kv.nodename;
 			delete kv.tmplstorage;
+
+			if (!kv['ssh-public-keys'].length) {
+			    delete kv['ssh-public-keys'];
+			} else if (!kv['password'].length) {
+			    delete kv['password'];
+			}
 
 			PVE.Utils.API2Request({
 			    url: '/nodes/' + nodename + '/lxc',

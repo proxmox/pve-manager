@@ -493,5 +493,35 @@ Ext.define('PVE.Parser', { statics: {
 	}
 
 	return cpustr + optstr;
+    },
+
+    parseSSHKey: function(key) {
+	//                |--- options can have quotes--|     type    key        comment
+	var keyre = /^(?:((?:[^\s"]|\"(?:\\.|[^"\\])*")+)\s+)?(\S+)\s+(\S+)(?:\s+(.*))?$/;
+	var typere = /^(?:ssh-(?:dss|rsa|ed25519)|ecdsa-sha2-nistp\d+)$/;
+
+	var m = key.match(keyre);
+	if (!m) {
+	    return null;
+	}
+	if (m.length < 3 || !m[2]) { // [2] is always either type or key
+	    return null;
+	}
+	if (m[1] && m[1].match(typere)) {
+	    return {
+		type: m[1],
+		key: m[2],
+		comment: m[3]
+	    };
+	}
+	if (m[2].match(typere)) {
+	    return {
+		options: m[1],
+		type: m[2],
+		key: m[3],
+		comment: m[4]
+	    };
+	}
+	return null;
     }
 }});
