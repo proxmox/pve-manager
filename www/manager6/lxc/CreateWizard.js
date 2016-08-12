@@ -57,6 +57,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    insideWizard: true,
 	    create: true,
 	    unused: false,
+	    onlineHelp: 'chapter-pct.html#_container_storage',
 	    confid: 'rootfs'
 	});
 
@@ -64,6 +65,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    title: gettext('Network'),
 	    insideWizard: true,
 	    dataCache: {},
+	    onlineHelp: 'chapter-pct.html#_container_network',
 	    create: true
 	});
 
@@ -219,6 +221,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 		{
 		    xtype: 'inputpanel',
 		    title: gettext('Template'),
+		    onlineHelp: 'chapter-pct.html#_container_images',
 		    column1: [ tmplstoragesel, tmplsel]
 		},
 		rootfspanel,
