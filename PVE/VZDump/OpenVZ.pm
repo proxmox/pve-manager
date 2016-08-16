@@ -222,11 +222,11 @@ sub assemble {
     $task->{cleanup}->{etc_vzdump} = 1;
 	
     mkpath "$dir/etc/vzdump/";
-    $self->cmd ("cp '$conffile' '$dir/etc/vzdump/vps.conf'");
+    PVE::Tools::file_copy($conffile, "$dir/etc/vzdump/vps.conf");
     my $cfgdir = dirname ($conffile);
     foreach my $s (PVE::OpenVZ::SCRIPT_EXT) {
 	my $fn = "$cfgdir/$vmid.$s";
-	$self->cmd ("cp '$fn' '$dir/etc/vzdump/vps.$s'") if -f $fn;
+	PVE::Tools::file_copy($fn, "$dir/etc/vzdump/vps.$s") if -f $fn;
     } 
 }
 
