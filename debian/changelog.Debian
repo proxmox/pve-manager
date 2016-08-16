@@ -1,3 +1,10 @@
+pve-manager (3.4-15) unstable; urgency=low
+
+  * use file_copy instead of an unsafe cp call (thanks to RACK911Labs.com for
+    the hint)
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 16 Aug 2016 16:59:53 +0200
+
 pve-manager (3.4-14) unstable; urgency=low
 
   * add htmlEncode to various comment/description fields
