@@ -208,13 +208,10 @@ Ext.define('PVE.StdWorkspace', {
 		task.delay(10);
 	    }
 	}
-	// else {
-	    // TODO: display something useful
-
-	    // Note:: error mask has wrong zindex, so we do not
-	    // use that - see bug 114
-	    // PVE.Utils.setErrorMask(cont, 'nothing selected');
-	//}
+	else {
+	    // helper for cleaning the content when logging out
+	    cont.removeAll();
+	}
     },
 
     selectById: function(nodeid) {
@@ -417,11 +414,19 @@ Ext.define('PVE.StdWorkspace', {
 			    iconCls: 'fa fa-sign-out',
 			    text: gettext("Logout"),
 			    handler: function() { 
-				PVE.data.ResourceStore.stopUpdate();
+				PVE.data.ResourceStore.loadData([], false);
 				me.showLogin(); 
-				me.setContent(); 
+				me.setContent(null);
 				var rt = me.down('pveResourceTree');
 				rt.clearTree();
+
+				// empty the stores of the StatusPanel child items
+				var statusPanels = Ext.ComponentQuery.query('pveStatusPanel grid');
+				Ext.Array.forEach(statusPanels, function(comp) {
+				    if (comp.getStore()) {
+					comp.getStore().loadData([], false);
+				    }
+				});
 			    }
 			}
 		    ]
