@@ -861,7 +861,7 @@ sub exec_backup_task {
 
 	# prepare
 
-	my $mode = $running ? $opts->{mode} : 'stop';
+	my $mode = $running ? $task->{mode} : 'stop';
 
 	if ($mode eq 'snapshot') {
 	    my %saved_task = %$task;
@@ -874,6 +874,8 @@ sub exec_backup_task {
 		%$task = %saved_task; 
 	    }
 	}
+
+	$cleanup->{prepared} = 1;
 
 	$task->{mode} = $mode;
 
@@ -1013,7 +1015,7 @@ sub exec_backup_task {
 	    warn $@ if $@;
 	}
 
-	if (defined($task->{mode})) { 
+	if ($cleanup->{prepared}) {
 	    # only call cleanup when necessary (when prepare was executed)
 	    eval { $plugin->cleanup ($task, $vmid) };
 	    warn $@ if $@;
@@ -1096,7 +1098,7 @@ sub exec_backup {
 	    foreach my $vmid (sort @$vmlist) {
 		next if grep { $_ eq  $vmid } @{$opts->{exclude}};
 		next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Backup' ], 1);
-	        push @$tasklist, { vmid => $vmid,  state => 'todo', plugin => $plugin };
+	        push @$tasklist, { vmid => $vmid,  state => 'todo', plugin => $plugin, mode => $opts->{mode} };
 	    }
 	}
     } else {
@@ -1110,7 +1112,7 @@ sub exec_backup {
 		}
 	    }
 	    $rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Backup' ]);
-	    push @$tasklist, { vmid => $vmid,  state => 'todo', plugin => $plugin };
+	    push @$tasklist, { vmid => $vmid,  state => 'todo', plugin => $plugin, mode => $opts->{mode} };
 	}
     }
 
