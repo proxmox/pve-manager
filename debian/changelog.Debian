@@ -1,3 +1,73 @@
+pve-manager (4.2-18) unstable; urgency=medium
+
+  * lxc: wizard: ssh key
+
+  * vzdump: set task mode early to fix a warning
+
+  * Clear sensitive content when logging out fixes #1060
+
+  * delete old lxc/qemu statusview classes
+
+  * make lxc/qemu use new statusview
+
+  * make node StatusView use new version
+
+  * include new statusview classes in makefile
+
+  * add GuestStatusView and TemplateStatusView
+
+  * add new StatusView component
+
+  * add new infoWidget component
+
+  * Do not use a hardcoded Certificate Authority for https repositories
+
+  * only use exact match in pveRealmSelector
+
+  * make the lxc wizard select the current node by default
+
+  * Remove obsolete make variable for ExtJS4
+
+  * remove obsolete ExtJS4 files
+
+  * Drop "classic" theme from installed files
+
+  * add novnc-pve to pveversion -v
+
+  * don't save password and double lines in pvesh history
+
+  * avoid IE compatibility mode
+
+  * fix influxdb field assignment and allow non integer field
+
+  * fix lint error
+
+  * closes #195 : hide disallowed commands in tree
+
+  * Add mac prefix to the datacenter options
+
+  * prevent KRDB and Monitor(s) being localized
+
+  * open vm console on doubleclick in tree
+
+  * Set VirtIO drivers as default when using the Qemu Wizard and the OS Type is Linux
+
+  * USe PVE.qemu.OSDefaults statics to get defaults for NIC and Storage Controller
+
+  * Add PVE.qemu.OSDefaults class to hold OS-dependant wizard defaults
+
+  * Rename Wizard Component aliases using camelCase
+
+  * change default proxy text to noneText
+
+  * prevent infinite loop in edit window
+
+  * add HostList validator and check monhosts with it
+
+  * give comment in bridgeselector more space
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 19 Aug 2016 14:55:36 +0200
+
 pve-manager (4.2-17) unstable; urgency=medium
 
   * Fix #1048: vzdump: include job-* hook logs in email
