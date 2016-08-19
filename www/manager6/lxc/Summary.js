@@ -29,13 +29,6 @@ Ext.define('PVE.lxc.Summary', {
 	var template = !!me.pveSelNode.data.template;
 	var rstore = me.statusStore;
 
-	var statusview = Ext.create('PVE.lxc.StatusView', {
-	    title: gettext('Status'),
-	    pveSelNode: me.pveSelNode,
-	    width: template ? 800 : 400,
-	    rstore: rstore
-	});
-
 	var notesview = Ext.create('PVE.panel.NotesView', {
 	    pveSelNode: me.pveSelNode,
 	    padding: template ? '10 0 0 0' : '0 0 0 10',
@@ -55,13 +48,20 @@ Ext.define('PVE.lxc.Summary', {
 			    padding: '0 10 10 0'
 			},
 			items: [{
-				width: 800,
-				layout: {
-				    type: 'vbox',
-				    align: 'stretch'
+			    width: 800,
+			    layout: {
+				type: 'vbox',
+				align: 'stretch'
+			    },
+			    border: false,
+			    items: [
+				{
+				    xtype: 'pveTemplateStatusView',
+				    pveSelNode: me.pveSelNode,
+				    rstore: rstore
 				},
-				border: false,
-				items: [ statusview, notesview ]
+				notesview
+			    ]
 			}]
 		    }]
 		},
@@ -96,7 +96,15 @@ Ext.define('PVE.lxc.Summary', {
 					align: 'stretch'
 				    },
 				    border: false,
-				    items: [ statusview, notesview ]
+				    items: [
+					{
+					    xtype: 'pveGuestStatusView',
+					    pveSelNode: me.pveSelNode,
+					    width: 400,
+					    rstore: rstore
+					},
+					notesview
+				    ]
 				},
 				{
 				    xtype: 'pveRRDChart',
