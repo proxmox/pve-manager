@@ -121,7 +121,6 @@ JSSRC= 				                 	\
 	node/Subscription.js				\
 	node/APT.js					\
 	node/Config.js					\
-	qemu/StatusView.js				\
 	window/Migrate.js				\
 	window/MigrateAll.js				\
 	qemu/Monitor.js					\
@@ -151,7 +150,6 @@ JSSRC= 				                 	\
 	qemu/SnapshotTree.js				\
 	qemu/Config.js					\
 	qemu/CreateWizard.js				\
-	lxc/StatusView.js				\
 	lxc/Summary.js					\
 	lxc/Network.js					\
 	lxc/Resources.js				\
