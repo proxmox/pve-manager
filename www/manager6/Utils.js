@@ -1022,6 +1022,33 @@ Ext.define('PVE.Utils', { statics: {
 	return PVE.Utils.format_task_description(type, id);
     },
 
+    /* render functions for new status panel */
+
+    render_usage: function(val) {
+	return (val*100).toFixed(2) + '%';
+    },
+
+    render_cpu_usage: function(val, max) {
+	return Ext.String.format(gettext('{0}% of {1}') +
+	    ' ' + gettext('CPU(s)'), (val*100).toFixed(2), max);
+    },
+
+    render_size_usage: function(val, max) {
+	return (val*100/max).toFixed(2) + '% '+ '(' +
+	    Ext.String.format(gettext('{0} of {1}'),
+	    PVE.Utils.render_size(val), PVE.Utils.render_size(max)) + ')';
+    },
+
+    /* this is different for nodes */
+    render_node_cpu_usage: function(value, record) {
+	return PVE.Utils.render_cpu_usage(value, record.cpus);
+    },
+
+    /* this is different for nodes */
+    render_node_size_usage: function(record) {
+	return PVE.Utils.render_size_usage(record.used, record.total);
+    },
+
     dialog_title: function(subject, create, isAdd) {
 	if (create) {
 	    if (isAdd) {
