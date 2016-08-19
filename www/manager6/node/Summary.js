@@ -80,13 +80,6 @@ Ext.define('PVE.node.Summary', {
 
 	var rstore = me.statusStore;
 
-	var statusview = Ext.create('PVE.node.StatusView', {
-	    title: gettext('Status'),
-	    pveSelNode: me.pveSelNode,
-	    width: 800,
-	    rstore: rstore
-	});
-
 	var version_btn = new Ext.Button({
 	    text: gettext('Package versions'),
 	    handler: function(){
@@ -110,7 +103,12 @@ Ext.define('PVE.node.Summary', {
 			    padding: '0 10 10 0'
 			},
 			items: [
-			    statusview,
+			    {
+				xtype: 'pveNodeStatus',
+				rstore: rstore,
+				width: 800,
+				pveSelNode: me.pveSelNode
+			    },
 			    {
 				xtype: 'pveRRDChart',
 				title: gettext('CPU usage'),

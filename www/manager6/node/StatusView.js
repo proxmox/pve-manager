@@ -1,65 +1,116 @@
 Ext.define('PVE.node.StatusView', {
-    extend: 'PVE.grid.ObjectGrid',
-    alias: ['widget.pveNodeStatusView'],
-    disabled: true,
+    extend: 'PVE.panel.StatusView',
+    alias: 'widget.pveNodeStatus',
 
-    initComponent : function() {
-	var me = this;
+    height: 300,
 
-	var nodename = me.pveSelNode.data.node;
-	if (!nodename) {
-	    throw "no node name specified";
+    defaults: {
+	xtype: 'pveInfoWidget',
+	padding: '0 30 5 30',
+	width: 394
+    },
+
+    items: [
+	{
+	    xtype: 'box',
+	    width: 400,
+	    height: 20
+	},
+	{
+	    itemId: 'cpu',
+	    title: gettext('CPU usage'),
+	    valueField: 'cpu',
+	    maxField: 'cpuinfo',
+	    renderer: PVE.Utils.render_node_cpu_usage
+	},
+	{
+	    itemId: 'wait',
+	    title: gettext('IO delay'),
+	    valueField: 'wait'
+	},
+	{
+	    itemId: 'load',
+	    title: gettext('Load average'),
+	    printBar: false,
+	    textField: 'loadavg'
+	},
+	{
+	    xtype: 'box',
+	    width: 400,
+	    padding: '0 0 20 0'
+	},
+	{
+	    itemId: 'memory',
+	    title: gettext('RAM usage'),
+	    valueField: 'memory',
+	    maxField: 'memory',
+	    renderer: PVE.Utils.render_node_size_usage
+	},
+	{
+	    itemId: 'ksm',
+	    printBar: false,
+	    title: gettext('KSM sharing'),
+	    textField: 'ksm',
+	    renderer: function(record) {
+		return PVE.Utils.render_size(record.shared);
+	    },
+	    padding: '0 30 10 30'
+	},
+	{
+	    itemId: 'rootfs',
+	    title: gettext('HD space') + '(root)',
+	    valueField: 'rootfs',
+	    maxField: 'rootfs',
+	    renderer: PVE.Utils.render_node_size_usage
+	},
+	{
+	    itemId: 'swap',
+	    printSize: true,
+	    title: gettext('SWAP usage'),
+	    valueField: 'swap',
+	    maxField: 'swap',
+	    renderer: PVE.Utils.render_node_size_usage
+	},
+	{
+	    xtype: 'box',
+	    width: 400,
+	    padding: '0 0 20 0'
+	},
+	{
+	    itemId: 'cpus',
+	    printBar: false,
+	    title: gettext('CPUs'),
+	    textField: 'cpuinfo',
+	    renderer: function(cpuinfo) {
+		return cpuinfo.cpus + " x " + cpuinfo.model + " (" +
+		cpuinfo.sockets.toString() + " " +
+		gettext('Socket' + (cpuinfo.sockets > 1 ? 's': '')) + ")";
+	    },
+	    value: '',
+	    width: 790
+	},
+	{
+	    itemId: 'kversion',
+	    title: gettext('Kernel Version'),
+	    printBar: false,
+	    textField: 'kversion',
+	    value: '',
+	    width: 790
+	},
+	{
+	    itemId: 'version',
+	    printBar: false,
+	    title: gettext('PVE Manager Version'),
+	    textField: 'pveversion',
+	    value: '',
+	    width: 790
 	}
+    ],
 
-	var socketText = gettext('Socket');
-	var socketsText = gettext('Sockets');
-
-	var render_cpuinfo = function(value) {
-	    return value.cpus + " x " + value.model + " (" + 
-		value.sockets.toString() + " " + 
-		(value.sockets > 1 ? socketsText : socketText) + ")";
-	};
-
-	var render_loadavg = function(value) {
-	    return value[0] + ", " + value[1] + ", " + value[2]; 
-	};
-
-	var render_cpu = function(value) {
-	    var per = value * 100;
-	    return per.toFixed(2) + "%";
-	};
-
-	var render_ksm = function(value) {
-	    return PVE.Utils.format_size(value.shared);
-	};
-
-	var render_meminfo = function(value) {
-	    var per = (value.used / value.total)*100;
-	    var text = "<div>" +  PVE.Utils.totalText + ": " + PVE.Utils.format_size(value.total) + "</div>" + 
-		"<div>" + PVE.Utils.usedText + ": " + PVE.Utils.format_size(value.used) + "</div>";
-	    return text;
-	};
-
-	var rows = {
-	    uptime: { header: gettext('Uptime'), required: true, renderer: PVE.Utils.format_duration_long },
-	    loadavg: { header: gettext('Load average'), required: true, renderer: render_loadavg },
-	    cpuinfo: { header: gettext('CPUs'), required: true, renderer: render_cpuinfo },
-	    cpu: { header: gettext('CPU usage'),required: true,  renderer: render_cpu },
-	    wait: { header: gettext('IO delay'), required: true, renderer: render_cpu },
-	    memory: { header: gettext('RAM usage'), required: true, renderer: render_meminfo },
-	    swap: { header: gettext('SWAP usage'), required: true, renderer: render_meminfo },
-	    ksm: { header: gettext('KSM sharing'), required: true, renderer: render_ksm },
-	    rootfs: { header: gettext('HD space') + ' (root)', required: true, renderer: render_meminfo },
-	    pveversion: { header: gettext('PVE Manager version'), required: true },
-	    kversion: { header: gettext('Kernel version'), required: true }
-	};
-
-	Ext.applyIf(me, {
-	    cwidth1: 150,
-	    //height: 276,
-	    rows: rows
-	});
-
-	me.callParent();
+    updateTitle: function() {
+	var me = this;
+	var uptime = PVE.Utils.render_uptime(me.getRecordValue('uptime'));
+	me.setTitle(me.pveSelNode.data.node + ' (' + gettext('Uptime') + ': ' + uptime + ')');
     }
+
 });
