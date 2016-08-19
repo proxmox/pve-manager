@@ -375,3 +375,20 @@
 .pve-help-button .x-btn-inner {
     color: black;
 }
+
+/* for info widget */
+div.left-aligned {
+    float: left;
+}
+
+div.right-aligned {
+    float: right;
+}
+
+.x-progress.critical .x-progress-bar{
+    background-color: #FF8888;
+}
+
+.x-progress.warning .x-progress-bar{
+    background-color: #FFCC00;
+}
