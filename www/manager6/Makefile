@@ -70,8 +70,12 @@ JSSRC= 				                 	\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
+	panel/StatusView.js				\
+	panel/GuestStatusView.js			\
 	panel/RRDView.js				\
 	panel/RRDChart.js				\
+	panel/InfoWidget.js				\
+	panel/TemplateStatusView.js			\
 	panel/InputPanel.js				\
 	window/Edit.js					\
 	window/LoginWindow.js				\
