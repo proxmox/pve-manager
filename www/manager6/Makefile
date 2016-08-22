@@ -97,10 +97,8 @@ JSSRC= 				                 	\
 	tree/ResourceTree.js				\
 	panel/IPSet.js					\
 	panel/ConfigPanel.js				\
-	panel/SubConfigPanel.js				\
 	grid/BackupView.js				\
 	panel/LogView.js				\
-	panel/Firewall.js				\
 	ceph/Pool.js					\
 	ceph/OSD.js					\
 	ceph/Disks.js					\
@@ -185,7 +183,6 @@ JSSRC= 				                 	\
 	ha/GroupEdit.js					\
 	ha/Groups.js					\
 	ha/Fencing.js					\
-	ha/Config.js					\
 	dc/Summary.js					\
 	dc/OptionView.js				\
 	dc/StorageView.js				\
