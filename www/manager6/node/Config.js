@@ -232,7 +232,7 @@ Ext.define('PVE.node.Config', {
 		    groups: ['ceph']
 		},
 		{
-		    xtype: 'pveNodeCephConfig',
+		    xtype: 'pveNodeCephConfigCrush',
 		    title: gettext('Config'),
 		    iconCls: 'fa fa-gear',
 		    groups: ['ceph'],
@@ -258,12 +258,6 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-sitemap',
 		    groups: ['ceph'],
 		    itemId: 'ceph-pools'
-		},
-		{
-		    title: 'Crush',
-		    iconCls: 'fa fa-map-o',
-		    xtype: 'pveNodeCephCrushMap',
-		    itemId: 'crushmap'
 		}
 	    );
 	}

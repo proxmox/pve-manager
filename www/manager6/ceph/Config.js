@@ -1,6 +1,6 @@
 Ext.define('PVE.node.CephConfig', {
     extend: 'Ext.panel.Panel',
-    alias: ['widget.pveNodeCephConfig'],
+    alias: 'widget.pveNodeCephConfig',
 
     bodyStyle: 'white-space:pre',
     bodyPadding: 5,
@@ -44,9 +44,36 @@ Ext.define('PVE.node.CephConfig', {
     }
 });
 
+Ext.define('PVE.node.CephConfigCrush', {
+    extend: 'Ext.panel.Panel',
+    alias: 'widget.pveNodeCephConfigCrush',
+
+    layout: 'border',
+    items: [{
+	    title: gettext('Ceph Config'),
+	    xtype: 'pveNodeCephConfig',
+	    region: 'center'
+	},
+	{
+	    title: gettext('Crush Map'),
+	    xtype: 'pveNodeCephCrushMap',
+	    region: 'east',
+	    split: true,
+	    flex: 1
+    }],
+
+    initComponent: function() {
+	var me = this;
+	me.defaults = {
+	    pveSelNode: me.pveSelNode
+	};
+	me.callParent();
+    }
+});
+
 Ext.define('PVE.node.Ceph', {
     extend: 'PVE.panel.SubConfig',
-    alias: ['widget.pveNodeCeph'],
+    alias: 'widget.pveNodeCeph',
 
     minTabWidth: 80,
     configPrefix: 'ceph',
