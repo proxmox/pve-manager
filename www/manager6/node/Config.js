@@ -132,28 +132,138 @@ Ext.define('PVE.node.Config', {
 	    me.items.push(
 		{
 		    title: gettext('Summary'),
-		    itemId: 'summary',
+		    iconCls: 'fa fa-book',
+		    itemId: 'system',
+		    expandedOnInit: true,
 		    xtype: 'pveNodeSummary'
 		},
 		{
 		    title: gettext('Services'),
+		    iconCls: 'fa fa-cogs',
 		    itemId: 'services',
+		    groups: ['system'],
 		    xtype: 'pveNodeServiceView'
-		},
-		{
-		    title: gettext('Network'),
-		    itemId: 'network',
-		    xtype: 'pveNodeNetworkView'
-		},
-		{
-		    title: gettext('DNS'),
-		    itemId: 'dns',
-		    xtype: 'pveNodeDNSView'
 		},
 		{
 		    title: gettext('Time'),
 		    itemId: 'time',
-		    xtype: 'pveNodeTimeView'
+		    groups: ['system'],
+		    xtype: 'pveNodeTimeView',
+		    iconCls: 'fa fa-clock-o'
+		});
+	}
+
+	if (caps.nodes['Sys.Syslog']) {
+	    me.items.push({
+		title: 'Syslog',
+		iconCls: 'fa fa-list',
+		groups: ['system'],
+		disabled: !caps.nodes['Sys.Syslog'],
+		itemId: 'syslog',
+		xtype: 'pveLogView',
+		url: "/api2/extjs/nodes/" + nodename + "/syslog",
+		log_select_timespan: 1
+	    });
+
+	    if (caps.nodes['Sys.Modify']) {
+		me.items.push({
+		    title: gettext('Updates'),
+		    iconCls: 'fa fa-refresh',
+		    disabled: !caps.nodes['Sys.Console'],
+		    itemId: 'apt',
+		    xtype: 'pveNodeAPT',
+		    nodename: nodename
+		});
+	    }
+	}
+
+	if (caps.nodes['Sys.Audit']) {
+	    me.items.push(
+		{
+		    title: gettext('Network'),
+		    iconCls: 'fa fa-exchange',
+		    itemId: 'network',
+		    expandedOnInit: true,
+		    collapsibleTabBar: false,
+		    xtype: 'pveNodeNetworkView'
+		},
+		{
+		    title: gettext('DNS'),
+		    iconCls: 'fa fa-globe',
+		    groups: ['network'],
+		    itemId: 'dns',
+		    xtype: 'pveNodeDNSView'
+		},
+		{
+		    xtype: 'pveFirewallRules',
+		    iconCls: 'fa fa-shield',
+		    groups: ['network'],
+		    title: gettext('Firewall'),
+		    allow_iface: true,
+		    base_url: '/nodes/' + nodename + '/firewall/rules',
+		    list_refs_url: '/cluster/firewall/refs',
+		    itemId: 'firewall'
+		},
+		{
+		    xtype: 'pveFirewallOptions',
+		    title: gettext('Options'),
+		    iconCls: 'fa fa-gear',
+		    groups: ['network', 'firewall'],
+		    base_url: '/nodes/' + nodename + '/firewall/options',
+		    fwtype: 'node',
+		    itemId: 'firewall-options'
+		});
+	}
+
+
+	if (caps.nodes['Sys.Audit']) {
+	    me.items.push(
+		{
+		    title: 'Ceph',
+		    itemId: 'ceph',
+		    iconCls: 'fa fa-ceph',
+		    xtype: 'pveNodeCephStatus'
+		},
+		{
+		    title: gettext('Disks'),
+		    xtype: 'pveNodeCephDiskList',
+		    iconCls: 'fa fa-hdd-o',
+		    itemId: 'disklist',
+		    groups: ['ceph']
+		},
+		{
+		    xtype: 'pveNodeCephConfig',
+		    title: gettext('Config'),
+		    iconCls: 'fa fa-gear',
+		    groups: ['ceph'],
+		    itemId: 'ceph-config'
+		},
+		{
+		    xtype: 'pveNodeCephMonList',
+		    title: gettext('Monitor'),
+		    iconCls: 'fa fa-tv',
+		    groups: ['ceph'],
+		    itemId: 'ceph-monlist'
+		},
+		{
+		    xtype: 'pveNodeCephOsdTree',
+		    title: 'OSD',
+		    iconCls: 'fa fa-hdd-o',
+		    groups: ['ceph'],
+		    itemId: 'ceph-osdtree'
+		},
+		{
+		    xtype: 'pveNodeCephPoolList',
+		    title: gettext('Pools'),
+		    iconCls: 'fa fa-sitemap',
+		    groups: ['ceph'],
+		    itemId: 'ceph-pools'
+		},
+		{
+		    title: 'Crush',
+		    iconCls: 'fa fa-map-o',
+		    xtype: 'pveNodeCephCrushMap',
+		    itemId: 'crushmap'
 		}
 	    );
 	}
@@ -161,11 +271,33 @@ Ext.define('PVE.node.Config', {
 	if (caps.nodes['Sys.Syslog']) {
 	    me.items.push(
 		{
-		    title: 'Syslog',
-		    itemId: 'syslog',
 		    xtype: 'pveLogView',
-		    url: "/api2/extjs/nodes/" + nodename + "/syslog",
-		    log_select_timespan: 1
+		    title: gettext('Log'),
+		    iconCls: 'fa fa-list',
+		    groups: ['network', 'firewall'],
+		    url: '/api2/extjs/nodes/' + nodename + '/firewall/log',
+		    itemId: 'firewall-fwlog'
+		},
+		{
+		    title: gettext('Log'),
+		    itemId: 'ceph-log',
+		    iconCls: 'fa fa-list',
+		    groups: ['ceph'],
+		    xtype: 'pveLogView',
+		    url: "/api2/extjs/nodes/" + nodename + "/ceph/log"
+		});
+	}
+
+	if (caps.nodes['Sys.Console']) {
+	    me.items.push(
+		{
+		    title: gettext('Shell'),
+		    iconCls: 'fa fa-terminal',
+		    groups: ['system'],
+		    itemId: 'console',
+		    xtype: 'pveNoVncConsole',
+		    consoleType: 'shell',
+		    nodename: nodename
 		}
 	    );
 	}
@@ -173,47 +305,13 @@ Ext.define('PVE.node.Config', {
 	me.items.push(
 	    {
 		title: gettext('Task History'),
+		iconCls: 'fa fa-list',
 		itemId: 'tasks',
 		xtype: 'pveNodeTasks'
-	    }
-	);
-
-	if (caps.nodes['Sys.Console']) {
-	    me.items.push(
-		{
-		    xtype: 'pveFirewallPanel',
-		    title: gettext('Firewall'),
-		    base_url: '/nodes/' + nodename + '/firewall',
-		    fwtype: 'node',
-		    phstateid: me.hstateid,
-		    itemId: 'firewall'
-		},
-		{
-		    title: gettext('Updates'),
-		    itemId: 'apt',
-		    xtype: 'pveNodeAPT',
-		    nodename: nodename
-		},
-		{
-		    title: gettext('Console'),
-		    itemId: 'console',
-		    xtype: 'pveNoVncConsole',
-		    consoleType: 'shell',
-		    nodename: nodename
-		},
-		{
-		    title: 'Ceph',
-		    itemId: 'ceph',
-		    xtype: 'pveNodeCeph',
-		    phstateid: me.hstateid,
-		    nodename: nodename
-		}
-	    );
-	}
-
-	me.items.push(
+	    },
 	    {
 		title: gettext('Subscription'),
+		iconCls: 'fa fa-support',
 		itemId: 'support',
 		xtype: 'pveNodeSubscription',
 		nodename: nodename

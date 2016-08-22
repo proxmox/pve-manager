@@ -412,6 +412,12 @@ div.right-aligned {
     padding-right: 5px;
 }
 
+.fa-ceph:before {
+    font-family: Arial;
+    font-weight: bold;
+    content: 'C';
+}
+
 .x-treelist-row-over > * > .x-treelist-item-icon,
 .x-treelist-row-over > * > .x-treelist-item-text{
     color: #000;
