@@ -1,3 +1,6 @@
+/*global
+  FileReader
+*/
 /*jslint confusion: true */
 Ext.define('PVE.lxc.CreateWizard', {
     extend: 'PVE.window.Wizard',
@@ -124,7 +127,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    var files = ev.dataTransfer.files;
 		    me.loadSSHKeyFromFile(files[0]);
 		});
-	    },
+	    }
 	});
 
 	var column2 = [
@@ -288,8 +291,8 @@ Ext.define('PVE.lxc.CreateWizard', {
 
 			if (!kv['ssh-public-keys'].length) {
 			    delete kv['ssh-public-keys'];
-			} else if (!kv['password'].length) {
-			    delete kv['password'];
+			} else if (!kv.password.length) {
+			    delete kv.password;
 			}
 
 			PVE.Utils.API2Request({
