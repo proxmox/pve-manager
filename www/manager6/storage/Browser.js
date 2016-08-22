@@ -20,6 +20,7 @@ Ext.define('PVE.storage.Browser', {
 	    {
 		title: gettext('Summary'),
 		xtype: 'pveStorageSummary',
+		iconCls: 'fa fa-book',
 		itemId: 'summary'
 	    }
 	];
@@ -36,6 +37,7 @@ Ext.define('PVE.storage.Browser', {
 	    me.items.push({
 		xtype: 'pveStorageContentView',
 		title: gettext('Content'),
+		iconCls: 'fa fa-th',
 		itemId: 'content'
 	    });
 	}
@@ -44,6 +46,7 @@ Ext.define('PVE.storage.Browser', {
 	    me.items.push({
 		xtype: 'pveACLView',
 		title: gettext('Permissions'),
+		iconCls: 'fa fa-unlock',
 		itemId: 'permissions',
 		path: '/storage/' + storeid
 	    });
