@@ -129,38 +129,41 @@ Ext.define('PVE.lxc.Config', {
 		{
 		    title: gettext('Summary'),
 		    xtype: 'pveLxcSummary',
+		    iconCls: 'fa fa-book',
 		    itemId: 'summary'
 		},
 		{
-		    title: gettext('Resources'),
-		    itemId: 'resources',
-		    layout: 'fit',
-		    plugins: {
-			ptype: 'lazyitems',
-			items: [{
-			    xtype: 'pveLxcRessourceView',
-			    pveSelNode: me.pveSelNode
-			}]
-		    }
-		},
-		{
-		    title: gettext('Network'),
-		    itemId: 'network',
-		    xtype: 'pveLxcNetworkView'
-		},
-		{
-		    title: gettext('DNS'),
-		    itemId: 'dns',
-		    xtype: 'pveLxcDNS'
+		    title: gettext('System'),
+		    itemId: 'system',
+		    expandedOnInit: true,
+		    iconCls: 'fa fa-cube',
+		    xtype: 'pveLxcRessourceView'
 		},
 		{
 		    title: gettext('Options'),
 		    itemId: 'options',
+		    groups: ['system'],
+		    iconCls: 'fa fa-gear',
 		    xtype: 'pveLxcOptions'
+		},
+		{
+		    title: gettext('Network'),
+		    iconCls: 'fa fa-exchange',
+		    itemId: 'network',
+		    groups:['system'],
+		    xtype: 'pveLxcNetworkView'
+		},
+		{
+		    title: gettext('DNS'),
+		    groups: ['system'],
+		    iconCls: 'fa fa-globe',
+		    itemId: 'dns',
+		    xtype: 'pveLxcDNS'
 		},
 		{
 		    title: gettext('Task History'),
 		    itemId: 'tasks',
+		    iconCls: 'fa fa-list',
 		    xtype: 'pveNodeTasks',
 		    vmidFilter: vmid
 		}
@@ -170,6 +173,7 @@ Ext.define('PVE.lxc.Config', {
 	if (caps.vms['VM.Backup']) {
 	    me.items.push({
 		title: gettext('Backup'),
+		iconCls: 'fa fa-floppy-o',
 		xtype: 'pveBackupView',
 		itemId: 'backup'
 	    });
@@ -179,6 +183,8 @@ Ext.define('PVE.lxc.Config', {
 	    me.items.push({
 		title: gettext('Console'),
 		itemId: 'console',
+		groups: ['system'],
+		iconCls: 'fa fa-terminal',
 		xtype: 'pveNoVncConsole',
 		vmid: vmid,
 		consoleType: 'lxc',
@@ -189,6 +195,7 @@ Ext.define('PVE.lxc.Config', {
 	if (caps.vms['VM.Snapshot']) {
 	    me.items.push({
 		title: gettext('Snapshots'),
+		iconCls: 'fa fa-history',
 		xtype: 'pveLxcSnapshotTree',
 		itemId: 'snapshot'
 	    });
@@ -197,12 +204,47 @@ Ext.define('PVE.lxc.Config', {
 	if (caps.vms['VM.Console']) {
 	    me.items.push(
 		{
-		    xtype: 'pveFirewallPanel',
+		    xtype: 'pveFirewallRules',
 		    title: gettext('Firewall'),
-		    base_url: base_url + '/firewall',
-		    fwtype: 'vm',
-		    phstateid: me.hstateid,
+		    iconCls: 'fa fa-shield',
+		    allow_iface: true,
+		    base_url: base_url + '/firewall/rules',
+		    list_refs_url: base_url + '/refs',
 		    itemId: 'firewall'
+		},
+		{
+		    xtype: 'pveFirewallOptions',
+		    groups: ['firewall'],
+		    iconCls: 'fa fa-gear',
+		    title: gettext('Options'),
+		    base_url: base_url + '/firewall/options',
+		    fwtype: 'vm',
+		    itemId: 'firewall-options'
+		},
+		{
+		    xtype: 'pveFirewallAliases',
+		    title: gettext('Alias'),
+		    groups: ['firewall'],
+		    iconCls: 'fa fa-external-link',
+		    base_url: base_url + '/firewall/aliases',
+		    itemId: 'firewall-aliases'
+		},
+		{
+		    xtype: 'pveIPSet',
+		    title: gettext('IPSet'),
+		    groups: ['firewall'],
+		    iconCls: 'fa fa-list-ol',
+		    base_url: base_url + '/firewall/ipset',
+		    list_refs_url: base_url + '/refs',
+		    itemId: 'firewall-ipset'
+		},
+		{
+		    title: gettext('Log'),
+		    groups: ['firewall'],
+		    iconCls: 'fa fa-list',
+		    itemId: 'firewall-fwlog',
+		    xtype: 'pveLogView',
+		    url: '/api2/extjs' + base_url + '/firewall/log'
 		}
 	    );
 	}
@@ -212,6 +254,7 @@ Ext.define('PVE.lxc.Config', {
 		xtype: 'pveACLView',
 		title: gettext('Permissions'),
 		itemId: 'permissions',
+		iconCls: 'fa fa-unlock',
 		path: '/vms/' + vmid
 	    });
 	}
