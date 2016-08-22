@@ -146,7 +146,6 @@ Ext.define('PVE.qemu.Summary', {
 		},
 		listeners: {
 		    activate: function() {notesview.load(); rrdstore.startUpdate();},
-		    hide: rrdstore.stopUpdate,
 		    destroy: rrdstore.stopUpdate
 		}
 	    });

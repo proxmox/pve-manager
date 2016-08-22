@@ -402,7 +402,6 @@ Ext.define('PVE.qemu.Options', {
 	me.callParent();
 
 	me.on('activate', me.rstore.startUpdate);
-	me.on('hide', me.rstore.stopUpdate);
 	me.on('destroy', me.rstore.stopUpdate);	
 
 	me.rstore.on('datachanged', function() {

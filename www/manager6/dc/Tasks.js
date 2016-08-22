@@ -131,7 +131,6 @@ Ext.define('PVE.dc.Tasks', {
 	    listeners: {
 		itemdblclick: run_task_viewer,
 		show: taskstore.startUpdate,
-		hide: taskstore.stopUpdate,
 		destroy: taskstore.stopUpdate
 	    }
 	});

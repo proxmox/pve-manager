@@ -50,7 +50,6 @@ Ext.define('PVE.storage.Summary', {
 	    ],
 	    listeners: {
 		activate: function() { rstore.startUpdate(); rrdstore.startUpdate(); },
-		hide: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); },
 		destroy: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); }
 	    }
 	});

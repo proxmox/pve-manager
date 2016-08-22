@@ -105,7 +105,6 @@ Ext.define('PVE.node.CephDiskList', {
 
 	    listeners: {
 		activate: rstore.startUpdate,
-		hide: rstore.stopUpdate,
 		destroy: rstore.stopUpdate
 	    }
 	});

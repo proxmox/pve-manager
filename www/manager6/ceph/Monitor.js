@@ -190,7 +190,6 @@ Ext.define('PVE.node.CephMonList', {
 	    ],
 	    listeners: {
 		activate: rstore.startUpdate,
-		hide: rstore.stopUpdate,
 		destroy: rstore.stopUpdate
 	    }
 	});

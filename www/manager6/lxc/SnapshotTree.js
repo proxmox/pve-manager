@@ -290,7 +290,6 @@ Ext.define('PVE.lxc.SnapshotTree', {
 	    columnLines: true,
 	    listeners: {
 		activate: me.reload,
-		hide: me.load_task.cancel,
 		destroy: me.load_task.cancel,
 		itemdblclick: run_editor
 	    }

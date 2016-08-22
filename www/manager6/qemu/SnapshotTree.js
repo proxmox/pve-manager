@@ -290,7 +290,6 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    columnLines: true, // will work in 4.1?
 	    listeners: {
 		activate: me.reload,
-		hide: me.load_task.cancel,
 		destroy: me.load_task.cancel,
 		itemdblclick: run_editor
 	    }

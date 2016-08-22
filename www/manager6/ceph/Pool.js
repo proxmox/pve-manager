@@ -198,7 +198,6 @@ Ext.define('PVE.node.CephPoolList', {
 	    tbar: [ create_btn, remove_btn ],
 	    listeners: {
 		activate: rstore.startUpdate,
-		hide: rstore.stopUpdate,
 		destroy: rstore.stopUpdate
 	    }
 	});

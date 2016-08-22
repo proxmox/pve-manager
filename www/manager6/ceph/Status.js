@@ -122,7 +122,6 @@ Ext.define('PVE.node.CephStatus', {
 	me.callParent();
 
 	me.on('activate', me.rstore.startUpdate);
-	me.on('hide', me.rstore.stopUpdate);
 	me.on('destroy', me.rstore.stopUpdate);
     }
 });

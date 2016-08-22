@@ -142,7 +142,6 @@ Ext.define('PVE.lxc.Summary', {
 		},
 		listeners: {
 		    activate: function() { notesview.load(); rrdstore.startUpdate(); },
-		    hide: rrdstore.stopUpdate,
 		    destroy: rrdstore.stopUpdate
 		}
 	    });

@@ -145,7 +145,6 @@ Ext.define('PVE.node.ServiceView', {
 	    listeners: {
 		selectionchange: set_button_status,
 		activate: rstore.startUpdate,
-		hide: rstore.stopUpdate,
 		destroy: rstore.stopUpdate
 	    }
 	});

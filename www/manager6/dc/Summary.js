@@ -69,7 +69,6 @@ Ext.define('PVE.dc.NodeView', {
 	    ],
 	    listeners: {
 		show: rstore.startUpdate,
-		hide: rstore.stopUpdate,
 		destroy: rstore.stopUpdate
 	    }
 	});
@@ -130,9 +129,6 @@ Ext.define('PVE.dc.Summary', {
 	    listeners: {
 		activate: function() {
 		    nodegrid.fireEvent('show', nodegrid);
-		},
-		hide: function() {
-		    nodegrid.fireEvent('hide', nodegrid);
 		}
 	    }
 	});
