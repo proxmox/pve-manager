@@ -392,3 +392,27 @@ div.right-aligned {
 .x-progress.warning .x-progress-bar{
     background-color: #FFCC00;
 }
+
+.x-treelist-nav {
+    background-color: #f5f5f5;
+}
+
+.x-treelist-row {
+    margin-top: 5px;
+}
+
+.x-treelist-item-icon {
+    color: #000;
+    margin-left: 2px;
+}
+
+.x-treelist-item-text {
+    color: #000;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.x-treelist-row-over > * > .x-treelist-item-icon,
+.x-treelist-row-over > * > .x-treelist-item-text{
+    color: #000;
+}

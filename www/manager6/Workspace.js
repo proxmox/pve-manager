@@ -306,7 +306,6 @@ Ext.define('PVE.StdWorkspace', {
 			    comp = {
 				xtype: tlckup[n.data.type || 'root'] || 
 				    'pvePanelConfig',
-				layout: { type: 'fit' },
 				showSearch: (n.data.id === 'root') ||
 				    Ext.isDefined(n.data.groupbyid),
 				pveSelNode: n,
