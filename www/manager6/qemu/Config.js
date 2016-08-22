@@ -138,15 +138,20 @@ Ext.define('PVE.qemu.Config', {
 		{
 		    title: gettext('Summary'),
 		    xtype: 'pveQemuSummary',
+		    iconCls: 'fa fa-book',
 		    itemId: 'summary'
-		}, 
+		},
 		{
-		    title: gettext('Hardware'),
-		    itemId: 'hardware',
+		    title: gettext('System'),
+		    itemId: 'system',
+		    expandedOnInit: true,
+		    iconCls: 'fa fa-desktop',
 		    xtype: 'PVE.qemu.HardwareView'
 		},
 		{
 		    title: gettext('Options'),
+		    groups: ['system'],
+		    iconCls: 'fa fa-gear',
 		    itemId: 'options',
 		    xtype: 'PVE.qemu.Options'
 		},
@@ -154,6 +159,7 @@ Ext.define('PVE.qemu.Config', {
 		    title: gettext('Task History'),
 		    itemId: 'tasks',
 		    xtype: 'pveNodeTasks',
+		    iconCls: 'fa fa-list',
 		    vmidFilter: vmid
 		}
 	    ]
@@ -162,6 +168,8 @@ Ext.define('PVE.qemu.Config', {
 	if (caps.vms['VM.Monitor'] && !template) {
 	    me.items.push({
 		title: gettext('Monitor'),
+		groups: ['system'],
+		iconCls: 'fa fa-eye',
 		itemId: 'monitor',
 		xtype: 'pveQemuMonitor'
 	    });
@@ -170,6 +178,7 @@ Ext.define('PVE.qemu.Config', {
 	if (caps.vms['VM.Backup']) {
 	    me.items.push({
 		title: gettext('Backup'),
+		iconCls: 'fa fa-floppy-o',
 		xtype: 'pveBackupView',
 		itemId: 'backup'
 	    });
@@ -178,6 +187,7 @@ Ext.define('PVE.qemu.Config', {
 	if (caps.vms['VM.Snapshot'] && !template) {
 	    me.items.push({
 		title: gettext('Snapshots'),
+		iconCls: 'fa fa-history',
 		xtype: 'pveQemuSnapshotTree',
 		itemId: 'snapshot'
 	    });
@@ -187,6 +197,8 @@ Ext.define('PVE.qemu.Config', {
 	    me.items.push({
 		title: gettext('Console'),
 		itemId: 'console',
+		iconCls: 'fa fa-terminal',
+		groups: ['system'],
 		xtype: 'pveNoVncConsole',
 		vmid: vmid,
 		consoleType: 'kvm',
@@ -197,12 +209,47 @@ Ext.define('PVE.qemu.Config', {
 	if (caps.vms['VM.Console']) {
 	    me.items.push(
 		{
-		    xtype: 'pveFirewallPanel',
+		    xtype: 'pveFirewallRules',
 		    title: gettext('Firewall'),
-		    base_url: base_url + '/firewall',
-		    fwtype: 'vm',
-		    phstateid: me.hstateid,
+		    iconCls: 'fa fa-shield',
+		    allow_iface: true,
+		    base_url: base_url + '/firewall/rules',
+		    list_refs_url: base_url + '/refs',
 		    itemId: 'firewall'
+		},
+		{
+		    xtype: 'pveFirewallOptions',
+		    groups: ['firewall'],
+		    iconCls: 'fa fa-gear',
+		    title: gettext('Options'),
+		    base_url: base_url + '/firewall/options',
+		    fwtype: 'vm',
+		    itemId: 'firewall-options'
+		},
+		{
+		    xtype: 'pveFirewallAliases',
+		    title: gettext('Alias'),
+		    groups: ['firewall'],
+		    iconCls: 'fa fa-external-link',
+		    base_url: base_url + '/firewall/aliases',
+		    itemId: 'firewall-aliases'
+		},
+		{
+		    xtype: 'pveIPSet',
+		    title: gettext('IPSet'),
+		    groups: ['firewall'],
+		    iconCls: 'fa fa-list-ol',
+		    base_url: base_url + '/firewall/ipset',
+		    list_refs_url: base_url + '/refs',
+		    itemId: 'firewall-ipset'
+		},
+		{
+		    title: gettext('Log'),
+		    groups: ['firewall'],
+		    iconCls: 'fa fa-list',
+		    itemId: 'firewall-fwlog',
+		    xtype: 'pveLogView',
+		    url: '/api2/extjs' + base_url + '/firewall/log'
 		}
 	    );
 	}
@@ -211,6 +258,7 @@ Ext.define('PVE.qemu.Config', {
 	    me.items.push({
 		xtype: 'pveACLView',
 		title: gettext('Permissions'),
+		iconCls: 'fa fa-unlock',
 		itemId: 'permissions',
 		path: '/vms/' + vmid
 	    });
