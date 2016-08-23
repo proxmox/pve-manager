@@ -17,6 +17,7 @@ Location: download url
 Infopage: url to additional info
 ManageUrl: url to connect to management interface
 md5sum: md5sum of the package
+sha512sum: sha512sum of the package
 
 Here is an example:
 
@@ -31,6 +32,7 @@ Location: http://download.proxmox.com/appliances/mail/debian-4.0-proxmox-mailgat
 Infopage: http://pve.proxmox.com/wiki/Proxmox_Mail_Gateway
 ManageUrl: https://__IPADDRESS__/
 md5sum: 3b48ffe08347229a854bc8d5ee161e1f
+sha512sum: 85d2a87a70feb0e595dde83b487f1c549c3ef26e7338f39259c81094077479864fac537ec05152510ae7b9735c672033031f267add03410950c721a8e55a2a9c
 Description: Proxmox Mail Gateway
   A full featured mail proxy for spam an virus filtering.
 
