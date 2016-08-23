@@ -40,6 +40,8 @@ use PVE::API2::VZDump;
 use PVE::API2::APT;
 use PVE::API2::Ceph;
 use PVE::API2::Firewall::Host;
+use Digest::MD5;
+use Digest::SHA;
 use JSON;
 
 use base qw(PVE::RESTHandler);
@@ -1105,13 +1107,37 @@ __PACKAGE__->register_method({
 	    print "starting template download from: $src\n";
 	    print "target file: $dest\n";
 
+	    my $check_hash = sub {
+		my ($template_info, $filename, $noerr) = @_;
+
+		my $digest;
+		my $expected;
+
+		eval {
+		    if ($expected = $template_info->{sha512sum}) {
+			$digest = Digest::SHA->new(512)->addfile($filename, "b")->hexdigest;
+		    } elsif ($expected = $template_info->{md5sum}) {
+			#fallback to MD5
+			open (my $fh, '<', $filename) or die "Can't open '$filename': $!";
+			binmode ($fh);
+			$digest = Digest::MD5->new->addfile($fh)->hexdigest;
+			close($fh);
+		    } else {
+			die "no expected checksum defined";
+		    }
+		};
+
+		die "checking hash failed - $@\n" if $@ && !$noerr;
+
+		return ($digest, $digest ? lc($digest) eq lc($expected) : 0);
+	    };
+
 	    eval {
-
 		if (-f $dest) {
-		    my $md5 = (split (/\s/, `md5sum '$dest'`))[0];
+		    my ($hash, $correct) = &$check_hash($pd, $dest, 1);
 
-		    if ($md5 && (lc($md5) eq lc($pd->{md5sum}))) {
-			print "file already exists $md5 - no need to download\n";
+		    if ($hash && $correct) {
+			print "file already exists $hash - no need to download\n";
 			return;
 		    }
 		}
@@ -1127,10 +1153,13 @@ __PACKAGE__->register_method({
 		    die "download failed - $!\n";
 		}
 
-		my $md5 = (split (/\s/, `md5sum '$tmpdest'`))[0];
+		my ($hash, $correct) = &$check_hash($pd, $tmpdest);
+
+		die "could not calculate checksum\n" if !$hash;
 		
-		if (!$md5 || (lc($md5) ne lc($pd->{md5sum}))) {
-		    die "wrong checksum: $md5 != $pd->{md5sum}\n";
+		if (!$correct) {
+		    my $expected = $pd->{sha512sum} // $pd->{md5sum};
+		    die "wrong checksum: $hash != $expected\n";
 		}
 
 		if (!rename($tmpdest, $dest)) {
