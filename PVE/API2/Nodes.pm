@@ -1133,7 +1133,7 @@ __PACKAGE__->register_method({
 		    die "wrong checksum: $md5 != $pd->{md5sum}\n";
 		}
 
-		if (system ('mv', $tmpdest, $dest) != 0) {
+		if (!rename($tmpdest, $dest)) {
 		    die "unable to save file - $!\n";
 		}
 	    };

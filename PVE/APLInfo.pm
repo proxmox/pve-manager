@@ -3,6 +3,7 @@ package PVE::APLInfo;
 use strict;
 use IO::File;
 use PVE::SafeSyslog;
+use PVE::Tools;
 use LWP::UserAgent;
 use POSIX qw(strftime);
 
@@ -181,9 +182,10 @@ sub download_aplinfo {
 	    die "update failed - no data file '$aplsrcurl'\n";
 	}
  
-	if (system("zcat -f $tmpgz >$tmp 2>/dev/null") != 0) {
-	    die "update failed: unable to unpack '$tmpgz'\n";
-	} 
+       eval {
+           PVE::Tools::run_command(["gunzip", "-f", $tmpgz]);
+       };
+       die "update failed: unable to unpack '$tmpgz'\n" if $@;
 
 	# verify signature
 
@@ -226,7 +228,7 @@ sub download_aplinfo {
 	};
 	die "update failed: $@" if $@;
 
-	if (system("mv $tmp $aplinfodir/$host 2>/dev/null") != 0) { 
+	if (!rename($tmp, "$aplinfodir/$host")) {
 	    die "update failed: unable to store data\n";
 	}
 
@@ -256,7 +258,7 @@ sub update {
 
     my $size;
     if (($size = (-s $logfile) || 0) > (1024*50)) {
-	system ("mv $logfile $logfile.0");
+	rename($logfile, "$logfile.0");
     }
     my $logfd = IO::File->new (">>$logfile");
     logmsg($logfd, "starting update");
