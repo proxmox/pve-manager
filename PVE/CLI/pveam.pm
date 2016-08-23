@@ -93,7 +93,7 @@ __PACKAGE__->register_method ({
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    storage => get_standard_option('pve-storage-id', {
-		description => "Only list status for specified storage",
+		description => "Only list templates on specified storage",
 		completion => \&PVE::Storage::complete_storage_enabled,
 	   }),
 	},
@@ -116,7 +116,7 @@ __PACKAGE__->register_method ({
 
 	my $cfg = PVE::Storage::config();
 
-	die "Storage do not support templates!\n" if !$cfg->{ids}->{$storeid}->{content}->{vztmpl};
+	die "Storage does not support templates!\n" if !$cfg->{ids}->{$storeid}->{content}->{vztmpl};
 
 	my $vollist = PVE::Storage::volume_list($cfg, $storeid, undef, 'vztmpl');
 

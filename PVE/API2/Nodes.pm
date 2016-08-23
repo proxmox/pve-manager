@@ -1057,7 +1057,7 @@ __PACKAGE__->register_method({
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    storage => get_standard_option('pve-storage-id', {
-		description => "Only list status for  specified storage",
+		description => "The storage where the template will be stored",
 		completion => \&PVE::Storage::complete_storage_enabled,
 	    }),
 	    template => { type => 'string',
