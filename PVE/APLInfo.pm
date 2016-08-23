@@ -10,33 +10,6 @@ use POSIX qw(strftime);
 my $logfile = "/var/log/pveam.log";
 my $aplinfodir = "/var/lib/pve-manager/apl-info";
 
-# Default list of GPG keys allowed to sign aplinfo
-#
-#pub   1024D/5CAC72FE 2004-06-24
-#      Key fingerprint = 9ABD 7E02 AD24 3AD3 C2FB  BCCC B0C1 CC22 5CAC 72FE
-#uid                  Proxmox Support Team <support@proxmox.com>
-#pub   2048R/A16EB94D 2008-08-15 [expires: 2023-08-12]
-#      Key fingerprint = 694C FF26 795A 29BA E07B  4EB5 85C2 5E95 A16E B94D
-#uid                  Turnkey Linux Release Key <release@turnkeylinux.com>
-
-my $valid_keys = {
-    '9ABD7E02AD243AD3C2FBBCCCB0C1CC225CAC72FE' => 1, # fingerprint support@proxmox.com
-    '25CAC72FE' => 1,                                # keyid support@proxmox.com
-    '694CFF26795A29BAE07B4EB585C25E95A16EB94D' => 1, # fingerprint release@turnkeylinux.com
-    'A16EB94D' => 1,                                 # keyid release@turnkeylinux.com
-};
-
-sub import_gpg_keys {
-
-    my @keyfiles = ('support@proxmox.com.pubkey', 'release@turnkeylinux.com.pubkey');
-
-    foreach my $key (@keyfiles) {
-	my $fn = "/usr/share/doc/pve-manager/$key";
-	system ("/usr/bin/gpg --batch --no-tty --status-fd=1 -q " .
-		"--logger-fd=1 --import $fn >>$logfile");
-    }
-}
-
 sub logmsg {
     my ($logfd, $msg) = @_;
 
@@ -187,37 +160,23 @@ sub download_aplinfo {
        };
        die "update failed: unable to unpack '$tmpgz'\n" if $@;
 
+
+
 	# verify signature
+	my $trustedkeyring = "/usr/share/doc/pve-manager/trustedkeys.gpg";
+	my $cmd = "/usr/bin/gpgv -q --keyring $trustedkeyring $sigfn $tmp";
 
-	my $cmd = "/usr/bin/gpg --verify --trust-model always --batch --no-tty --status-fd=1 -q " .
-	    "--logger-fd=1 $sigfn $tmp";
+	eval {
+	    my $logfunc = sub {
+		my $line = shift;
+		logmsg($logfd, "signature verification: $line");
+	    };
 
-	open(CMD, "$cmd|") ||
-	    die "unable to execute '$cmd': $!\n";
-
-	my $line;
-	my $signer = '';
-	while (defined($line = <CMD>)) {
-	    chomp $line;
-	    logmsg($logfd, $line);
-
-	    # code borrowed from SA
-	    next if $line !~ /^\Q[GNUPG:]\E (?:VALID|GOOD)SIG (\S{8,40})/;
-	    my $key = $1;  
-
-	    # we want either a keyid (8) or a fingerprint (40)
-	    if (length $key > 8 && length $key < 40) {
-		substr($key, 8) = '';
-	    }
-	    # use the longest match we can find
-	    $signer = $key if (length $key > length $signer) && $valid_keys->{$key};
-	}
-
-	close(CMD);
-
-	die "unable to verify signature\n" if !$signer;
-
-	logmsg($logfd, "signature valid: $signer");
+	    PVE::Tools::run_command($cmd,
+				    outfunc => $logfunc,
+				    errfunc => $logfunc);
+	};
+	die "unable to verify signature - $@\n" if $@;
 
 	# test syntax
 	eval { 
@@ -262,8 +221,6 @@ sub update {
     }
     my $logfd = IO::File->new (">>$logfile");
     logmsg($logfd, "starting update");
-
-    import_gpg_keys();
 
     my $ua = LWP::UserAgent->new;
     $ua->agent("PVE/1.0");
