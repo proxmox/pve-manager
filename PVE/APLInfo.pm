@@ -180,10 +180,7 @@ sub download_aplinfo {
 
 	# test syntax
 	eval { 
-	    my $fh = IO::File->new("<$tmp") ||
-		die "unable to open file '$tmp' - $!\n";
 	    read_aplinfo($tmp, {}, $aplurl, 1);
-	    close($fh);
 	};
 	die "update failed: $@" if $@;
 
