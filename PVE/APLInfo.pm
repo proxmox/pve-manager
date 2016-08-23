@@ -1,6 +1,7 @@
 package PVE::APLInfo;
 
 use strict;
+use warnings;
 use IO::File;
 use PVE::SafeSyslog;
 use PVE::Tools;
