@@ -1114,17 +1114,17 @@ __PACKAGE__->register_method({
 		my $expected;
 
 		eval {
+		    open(my $fh, '<', $filename) or die "Can't open '$filename': $!";
+		    binmode($fh);
 		    if ($expected = $template_info->{sha512sum}) {
-			$digest = Digest::SHA->new(512)->addfile($filename, "b")->hexdigest;
+			$digest = Digest::SHA->new(512)->addfile($fh)->hexdigest;
 		    } elsif ($expected = $template_info->{md5sum}) {
 			#fallback to MD5
-			open (my $fh, '<', $filename) or die "Can't open '$filename': $!";
-			binmode ($fh);
 			$digest = Digest::MD5->new->addfile($fh)->hexdigest;
-			close($fh);
 		    } else {
 			die "no expected checksum defined";
 		    }
+		    close($fh);
 		};
 
 		die "checking hash failed - $@\n" if $@ && !$noerr;
