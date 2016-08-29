@@ -4,6 +4,19 @@ Description: News displayed on the admin interface
   For more information please visit our homepage at
   <a href='http://www.proxmox.com' target='_blank'>www.proxmox.com</a>
 
+Package: alpine-3.3-default
+Version: 20160427
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.3-default_20160427_amd64.tar.xz
+md5sum: 5fb4ea6af895e38cea5921f92dfe1a98
+sha512sum: 991310939ef749b2c283f598c7dd81208192ea8f2e9f2e6c1afbd8c9d1e0513a61b9fcb1864763e25aad32f341c032f5a0e8580288c18218baa15406001d3c79
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.3 (20160427)
+
 Package: archlinux-base
 Version: 2015-24-29-1
 Type: lxc
@@ -13,32 +26,35 @@ Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: x86_64
 Location: system/archlinux-base_2015-24-29-1_x86_64.tar.gz
 md5sum: 057e8569507f79db2e2a33a2ebc56c67
+sha512sum: ccd34c026c6ab8f3f8c14b8e7c4da10ce0345ca64865cb2ebbe080d71b376bebc0584957fbf1e0f620f6752a922eb9045abf5bebffbe4442a1dfa188a953f46a
 Infopage: https://www.archlinux.org
 Description: ArchLinux base image.
 
 Package: centos-6-default
-Version: 20150829
+Version: 20160205
 Type: lxc
 OS: centos
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/centos-6-default_20150829_amd64.tar.xz
-md5sum: a5584dd509570a0cf556047ee74cfb1c
+Location: system/centos-6-default_20160205_amd64.tar.xz
+md5sum: f8f9acb42fe7fa8c37e36f35158e7f2f
+sha512sum: 824b852645b3adc927332b29dc307a6f30f34602e12f0359fa727dec588ae9d083a40e678a4b0c7fb5d783137beb0be12c59da96bd526c3075e3bf5d65118b6e
 Infopage: https://linuxcontainers.org
-Description: LXC default image for centos 6 (20150829)
+Description: LXC default image for centos 6 (20160205)
 
 Package: centos-7-default
-Version: 20150829
+Version: 20160205
 Type: lxc
 OS: centos
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/centos-7-default_20150829_amd64.tar.xz
-md5sum: 61a52e339392cf12fa5ca69837624fd5
+Location: system/centos-7-default_20160205_amd64.tar.xz
+md5sum: 26b35982aeb79977b5a7c6d2ff2a0421
+sha512sum: a9324aaced25ed965941e20048b45ad151b5f1d87fa3288e6b57e7483162b4c844376a1f7bebe18d412e47fcf4717d723397e151b8923b76e0544fa9442282fb
 Infopage: https://linuxcontainers.org
-Description: LXC default image for centos 7 (20150829)
+Description: LXC default image for centos 7 (20160205)
 
 Package: debian-6.0-standard
 Version: 6.0-7
@@ -49,6 +65,7 @@ Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
 Location: system/debian-6.0-standard_6.0-7_amd64.tar.gz
 md5sum: ff39ec06497d7cc175e031d6ef76699e
+sha512sum: e267f6264446e9042039e843131520ac1195a56acf64e48202db68f196b58419711a67ea6d9b1504768266e248350033e8938d80c05d807106862245a185b7ef
 Infopage: http://pve.proxmox.com/wiki/Debian_6.0_Standard
 Description: Debian 6.0 (standard)
  A small Debian Squeeze system including all standard packages.
@@ -62,22 +79,37 @@ Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
 Location: system/debian-7.0-standard_7.0-3_amd64.tar.gz
 md5sum: 68f0509ce8bdb0400e1495ab2819e862
+sha512sum: ea805c3cdf6d4b41ba1bddbccd695d8e2ef0c55ecc93f5fb77a325291a363b63921902612e14cf6ad24d8da147e17d010285e1ddf79e7acae4f2838cbf745df9
 Infopage: http://pve.proxmox.com/wiki/Debian_7.0_Standard
 Description: Debian 7.0 (standard)
  A small Debian Wheezy system including all standard packages.
 
 Package: debian-8.0-standard
-Version: 8.0-1
+Version: 8.4-1
 Type: lxc
 OS: debian-8.0
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/debian-8.0-standard_8.0-1_amd64.tar.gz
-md5sum: 9942d8a3f8fc96a47e7545d63d09ccb7
+Location: system/debian-8.0-standard_8.4-1_amd64.tar.gz
+md5sum: dac8dbf0d73e12bf2eb5b25c38bd4e30
+sha512sum: 7c4c018d0fb5c900ffe3a813b3291474c7fc268c5aa06e9d5aff48a6be35d05c835d485edf57b887ca206e2f0b8b85b7ce35a19643388505c5284d4838e9dc72
 Infopage: http://pve.proxmox.com/wiki/Debian_8.0_Standard
 Description: Debian 8.0 (standard)
  A small Debian Jessie system including all standard packages.
+
+Package: gentoo-current-default
+Version: 20160523
+Type: lxc
+OS: gentoo
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/gentoo-current-default_20160523_amd64.tar.xz
+md5sum: 69f840e372b710f58f709c18154ac1f7
+sha512sum: fba420b263c771348a4fcadeddfd4b33ad2f20c07211e3bade1d2d37599e5ab62b51cdcc21b0625147c96712650638d503f142b06ed743c5d3f7e377b6a7bbce
+Infopage: https://linuxcontainers.org
+Description: LXC default image for gentoo current (20160523)
 
 Package: ubuntu-12.04-standard
 Version: 12.04-1
@@ -88,6 +120,7 @@ Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
 Location: system/ubuntu-12.04-standard_12.04-1_amd64.tar.gz
 md5sum: f93f1f090aebd558ed8769c823896caa
+sha512sum: 73e54d691d9e831206fba004bc5d28ce48a02118c479a0c5e0d93ed1411924c52a2d99a4d33136f6ec844d841475efaa4a4e8a08fda12e7b0ee56e46535dde8b
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Precise_Standard
 Description: Ubuntu Precise (standard)
  A small Ubuntu Precise system including all standard packages.
@@ -101,6 +134,7 @@ Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
 Location: system/ubuntu-14.04-standard_14.04-1_amd64.tar.gz
 md5sum: 153da63c710f435973a06ff28233e4e4
+sha512sum: 996a5c2d31562f006fa59520634d856c370446150abeb7ca16a00ae24fb6acef45b1db13e3d8b7a5f888138b6120c9d12bddab7ff14b4ee2137ae9056bb5f4bd
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Trusty_Standard
 Description: Ubuntu Trusty (standard)
  A small Ubuntu Trusty system including all standard packages.
@@ -114,7 +148,36 @@ Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
 Location: system/ubuntu-15.04-standard_15.04-1_amd64.tar.gz
 md5sum: f6ebbb378f32d5c3426f1a404e533945
+sha512sum: 16416426fbc47a89d441f081a64db8cc4c65de3d885e4bbea4ffc992553de5e5d9296d027735a6062034758af7c4d0ecb2f07da1dcc28a174c82d501a6844f72
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Vivid_Standard
 Description: Ubuntu Vivid (standard)
  A small Ubuntu Vivid system including all standard packages.
+
+Package: ubuntu-15.10-standard
+Version: 15.10-1
+Type: lxc
+OS: ubuntu-15.10
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-15.10-standard_15.10-1_amd64.tar.gz
+md5sum: 56e60cdc5652afceb6b977dec7c0e51d
+sha512sum: 053e2ceef150dc4c5539b8c80a669b9735a954a04c9857b2bd59ad70f22c841b257561b5c6202562d13ee04961e2c9ddbba66279770403572fe8ab1c5fd1afac
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Wily_Standard
+Description: Ubuntu Wily (standard)
+ A small Ubuntu Wily system including all standard packages.
+
+Package: ubuntu-16.04-standard
+Version: 16.04-1
+Type: lxc
+OS: ubuntu-16.04
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-16.04-standard_16.04-1_amd64.tar.gz
+md5sum: 920f741a79f559db227f684bf63f9cdb
+sha512sum: bf9e903c7bb2c6dfda47f68e31f5f6e77409933247232b332be6e822dcb4574c2deac6b7c3e8af260248e658e71015e9669828db827a5a7371539652f2a11197
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Xenial_Standard
+Description: Ubuntu Xenial (standard)
+ A small Ubuntu Xenial system including all standard packages.
 
