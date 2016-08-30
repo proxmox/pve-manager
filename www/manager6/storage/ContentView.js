@@ -459,6 +459,23 @@ Ext.define('PVE.storage.ContentView', {
 		},
 		templateButton,
 		uploadButton,
+		{
+		    xtype: 'pveButton',
+		    text: gettext('Show Configuration'),
+		    disabled: true,
+		    selModel: sm,
+		    enableFn: function(rec) {
+			return rec && rec.data.content === 'backup';
+		    },
+		    handler: function(b,e,rec) {
+			var win = Ext.create('PVE.window.BackupConfig', {
+			    volume: rec.data.volid,
+			    pveSelNode: me.pveSelNode
+			});
+
+			win.show();
+		    }
+		},
 		'->',
 		gettext('Search') + ':', ' ',
 		{
