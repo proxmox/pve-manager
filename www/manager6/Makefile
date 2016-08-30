@@ -85,6 +85,7 @@ JSSRC= 				                 	\
 	window/Backup.js				\
 	window/Restore.js				\
 	window/SafeDestroy.js				\
+	window/BackupConfig.js				\
 	panel/NotesView.js				\
 	grid/SelectFeature.js				\
 	grid/ObjectGrid.js				\

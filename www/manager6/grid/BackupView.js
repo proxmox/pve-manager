@@ -187,40 +187,12 @@ Ext.define('PVE.grid.BackupView', {
 		    return;
 		}
 
-		var win = Ext.create('Ext.window.Window', {
-		    title: gettext('Configuration'),
-		    width: 600,
-		    height: 400,
-		    layout: 'fit',
-		    modal: true,
-		    items: [{
-			xtype: 'component',
-			itemId: 'configtext',
-			autoScroll: true,
-			style: {
-			    'background-color': 'white',
-			    'white-space': 'pre',
-			    'font-family': 'monospace',
-			    padding: '5px'
-			}
-		    }]
+		var win = Ext.create('PVE.window.BackupConfig', {
+		    volume: rec.data.volid,
+		    pveSelNode: me.pveSelNode
 		});
 
-		PVE.Utils.API2Request({
-		    url: "/nodes/" + nodename + "/vzdump/extractconfig",
-		    method: 'GET',
-		    params: {
-			volume: rec.data.volid
-		    },
-		    failure: function(response, opts) {
-			win.close();
-			Ext.Msg.alert('Error', response.htmlStatus);
-		    },
-		    success: function(response,options) {
-			win.show();
-			win.down('#configtext').update(Ext.htmlEncode(response.result.data));
-		    }
-		});
+		win.show();
 	    }
 	});
 
