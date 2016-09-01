@@ -413,9 +413,14 @@ div.right-aligned {
 }
 
 .fa-ceph:before {
-    font-family: Arial;
-    font-weight: bold;
-    content: 'C';
+    width: 14px;
+    height: 14px;
+    position: absolute;
+    left: 1px;
+    top: 4px;
+    background-image:url(../images/logo-ceph.png);
+    background-size: 14px 14px;
+    content: ' ';
 }
 
 .x-treelist-row-over > * > .x-treelist-item-icon,

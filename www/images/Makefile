@@ -19,6 +19,9 @@ all:
 # icon-swap, icon-display, icon-harddisk, icon-keyboard, icon-network
 # come from fontawesome (respective fa-refresh, fa-desktop, fa-hdd-o, fa-keyboard-o, fa-exchange)
 
+# ceph logos are from
+#  http://ceph.com/logos/
+
 GNOME_IMAGES = 			\
 	checked.png		\
 	unchecked.png 		\
@@ -61,7 +64,8 @@ IMAGES = ${GNOME_IMAGES}	\
 	icon-network.png	\
 	icon-display.png	\
 	icon-harddisk.png	\
-	icon-keyboard.png
+	icon-keyboard.png	\
+	logo-ceph.png
 
 .PHONY: install 
 install: ${IMAGES}
