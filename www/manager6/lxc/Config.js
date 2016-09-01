@@ -131,44 +131,56 @@ Ext.define('PVE.lxc.Config', {
 		    xtype: 'pveLxcSummary',
 		    iconCls: 'fa fa-book',
 		    itemId: 'summary'
-		},
-		{
-		    title: gettext('System'),
-		    itemId: 'system',
-		    expandedOnInit: true,
-		    iconCls: 'fa fa-cube',
-		    xtype: 'pveLxcRessourceView'
-		},
-		{
-		    title: gettext('Options'),
-		    itemId: 'options',
-		    groups: ['system'],
-		    iconCls: 'fa fa-gear',
-		    xtype: 'pveLxcOptions'
-		},
-		{
-		    title: gettext('Network'),
-		    iconCls: 'fa fa-exchange',
-		    itemId: 'network',
-		    groups:['system'],
-		    xtype: 'pveLxcNetworkView'
-		},
-		{
-		    title: gettext('DNS'),
-		    groups: ['system'],
-		    iconCls: 'fa fa-globe',
-		    itemId: 'dns',
-		    xtype: 'pveLxcDNS'
-		},
-		{
-		    title: gettext('Task History'),
-		    itemId: 'tasks',
-		    iconCls: 'fa fa-list',
-		    xtype: 'pveNodeTasks',
-		    vmidFilter: vmid
 		}
 	    ]
 	});
+
+	if (caps.vms['VM.Console']) {
+	    me.items.push({
+		title: gettext('Console'),
+		itemId: 'console',
+		iconCls: 'fa fa-terminal',
+		xtype: 'pveNoVncConsole',
+		vmid: vmid,
+		consoleType: 'lxc',
+		nodename: nodename
+	    });
+	}
+
+	me.items.push(
+	    {
+		title: gettext('Resources'),
+		itemId: 'resources',
+		expandedOnInit: true,
+		iconCls: 'fa fa-cube',
+		xtype: 'pveLxcRessourceView'
+	    },
+	    {
+		title: gettext('Network'),
+		iconCls: 'fa fa-exchange',
+		itemId: 'network',
+		xtype: 'pveLxcNetworkView'
+	    },
+	    {
+		title: gettext('DNS'),
+		iconCls: 'fa fa-globe',
+		itemId: 'dns',
+		xtype: 'pveLxcDNS'
+	    },
+	    {
+		title: gettext('Options'),
+		itemId: 'options',
+		iconCls: 'fa fa-gear',
+		xtype: 'pveLxcOptions'
+	    },
+	    {
+		title: gettext('Task History'),
+		itemId: 'tasks',
+		iconCls: 'fa fa-list',
+		xtype: 'pveNodeTasks',
+		vmidFilter: vmid
+	    }
+	);
 
 	if (caps.vms['VM.Backup']) {
 	    me.items.push({
@@ -176,19 +188,6 @@ Ext.define('PVE.lxc.Config', {
 		iconCls: 'fa fa-floppy-o',
 		xtype: 'pveBackupView',
 		itemId: 'backup'
-	    });
-	}
-
-	if (caps.vms['VM.Console']) {
-	    me.items.push({
-		title: gettext('Console'),
-		itemId: 'console',
-		groups: ['system'],
-		iconCls: 'fa fa-terminal',
-		xtype: 'pveNoVncConsole',
-		vmid: vmid,
-		consoleType: 'lxc',
-		nodename: nodename
 	    });
 	}
 
