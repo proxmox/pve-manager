@@ -140,35 +140,47 @@ Ext.define('PVE.qemu.Config', {
 		    xtype: 'pveQemuSummary',
 		    iconCls: 'fa fa-book',
 		    itemId: 'summary'
-		},
-		{
-		    title: gettext('System'),
-		    itemId: 'system',
-		    expandedOnInit: true,
-		    iconCls: 'fa fa-desktop',
-		    xtype: 'PVE.qemu.HardwareView'
-		},
-		{
-		    title: gettext('Options'),
-		    groups: ['system'],
-		    iconCls: 'fa fa-gear',
-		    itemId: 'options',
-		    xtype: 'PVE.qemu.Options'
-		},
-		{
-		    title: gettext('Task History'),
-		    itemId: 'tasks',
-		    xtype: 'pveNodeTasks',
-		    iconCls: 'fa fa-list',
-		    vmidFilter: vmid
 		}
 	    ]
 	});
 
+	if (caps.vms['VM.Console'] && !template) {
+	    me.items.push({
+		title: gettext('Console'),
+		itemId: 'console',
+		iconCls: 'fa fa-terminal',
+		xtype: 'pveNoVncConsole',
+		vmid: vmid,
+		consoleType: 'kvm',
+		nodename: nodename
+	    });
+	}
+
+	me.items.push(
+	    {
+		title: gettext('Hardware'),
+		itemId: 'hardware',
+		iconCls: 'fa fa-desktop',
+		xtype: 'PVE.qemu.HardwareView'
+	    },
+	    {
+		title: gettext('Options'),
+		iconCls: 'fa fa-gear',
+		itemId: 'options',
+		xtype: 'PVE.qemu.Options'
+	    },
+	    {
+		title: gettext('Task History'),
+		itemId: 'tasks',
+		xtype: 'pveNodeTasks',
+		iconCls: 'fa fa-list',
+		vmidFilter: vmid
+	    }
+	);
+
 	if (caps.vms['VM.Monitor'] && !template) {
 	    me.items.push({
 		title: gettext('Monitor'),
-		groups: ['system'],
 		iconCls: 'fa fa-eye',
 		itemId: 'monitor',
 		xtype: 'pveQemuMonitor'
@@ -190,19 +202,6 @@ Ext.define('PVE.qemu.Config', {
 		iconCls: 'fa fa-history',
 		xtype: 'pveQemuSnapshotTree',
 		itemId: 'snapshot'
-	    });
-	}
-
-	if (caps.vms['VM.Console'] && !template) {
-	    me.items.push({
-		title: gettext('Console'),
-		itemId: 'console',
-		iconCls: 'fa fa-terminal',
-		groups: ['system'],
-		xtype: 'pveNoVncConsole',
-		vmid: vmid,
-		consoleType: 'kvm',
-		nodename: nodename
 	    });
 	}
 
