@@ -133,21 +133,52 @@ Ext.define('PVE.node.Config', {
 		{
 		    title: gettext('Summary'),
 		    iconCls: 'fa fa-book',
-		    itemId: 'system',
-		    expandedOnInit: true,
+		    itemId: 'summary',
 		    xtype: 'pveNodeSummary'
-		},
+		}
+	    );
+	}
+
+	if (caps.nodes['Sys.Console']) {
+	    me.items.push(
 		{
-		    title: gettext('Services'),
+		    title: gettext('Shell'),
+		    iconCls: 'fa fa-terminal',
+		    itemId: 'console',
+		    xtype: 'pveNoVncConsole',
+		    consoleType: 'shell',
+		    nodename: nodename
+		}
+	    );
+	}
+
+	if (caps.nodes['Sys.Audit']) {
+	    me.items.push(
+		{
+		    title: gettext('System'),
 		    iconCls: 'fa fa-cogs',
 		    itemId: 'services',
-		    groups: ['system'],
+		    expandedOnInit: true,
 		    xtype: 'pveNodeServiceView'
+		},
+		{
+		    title: gettext('Network'),
+		    iconCls: 'fa fa-exchange',
+		    itemId: 'network',
+		    groups: ['services'],
+		    xtype: 'pveNodeNetworkView'
+		},
+		{
+		    title: gettext('DNS'),
+		    iconCls: 'fa fa-globe',
+		    groups: ['services'],
+		    itemId: 'dns',
+		    xtype: 'pveNodeDNSView'
 		},
 		{
 		    title: gettext('Time'),
 		    itemId: 'time',
-		    groups: ['system'],
+		    groups: ['services'],
 		    xtype: 'pveNodeTimeView',
 		    iconCls: 'fa fa-clock-o'
 		});
@@ -157,7 +188,7 @@ Ext.define('PVE.node.Config', {
 	    me.items.push({
 		title: 'Syslog',
 		iconCls: 'fa fa-list',
-		groups: ['system'],
+		groups: ['services'],
 		disabled: !caps.nodes['Sys.Syslog'],
 		itemId: 'syslog',
 		xtype: 'pveLogView',
@@ -180,24 +211,8 @@ Ext.define('PVE.node.Config', {
 	if (caps.nodes['Sys.Audit']) {
 	    me.items.push(
 		{
-		    title: gettext('Network'),
-		    iconCls: 'fa fa-exchange',
-		    itemId: 'network',
-		    expandedOnInit: true,
-		    collapsibleTabBar: false,
-		    xtype: 'pveNodeNetworkView'
-		},
-		{
-		    title: gettext('DNS'),
-		    iconCls: 'fa fa-globe',
-		    groups: ['network'],
-		    itemId: 'dns',
-		    xtype: 'pveNodeDNSView'
-		},
-		{
 		    xtype: 'pveFirewallRules',
 		    iconCls: 'fa fa-shield',
-		    groups: ['network'],
 		    title: gettext('Firewall'),
 		    allow_iface: true,
 		    base_url: '/nodes/' + nodename + '/firewall/rules',
@@ -208,7 +223,7 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveFirewallOptions',
 		    title: gettext('Options'),
 		    iconCls: 'fa fa-gear',
-		    groups: ['network', 'firewall'],
+		    groups: ['firewall'],
 		    base_url: '/nodes/' + nodename + '/firewall/options',
 		    fwtype: 'node',
 		    itemId: 'firewall-options'
@@ -268,7 +283,7 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveLogView',
 		    title: gettext('Log'),
 		    iconCls: 'fa fa-list',
-		    groups: ['network', 'firewall'],
+		    groups: ['firewall'],
 		    url: '/api2/extjs/nodes/' + nodename + '/firewall/log',
 		    itemId: 'firewall-fwlog'
 		},
@@ -280,20 +295,6 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveLogView',
 		    url: "/api2/extjs/nodes/" + nodename + "/ceph/log"
 		});
-	}
-
-	if (caps.nodes['Sys.Console']) {
-	    me.items.push(
-		{
-		    title: gettext('Shell'),
-		    iconCls: 'fa fa-terminal',
-		    groups: ['system'],
-		    itemId: 'console',
-		    xtype: 'pveNoVncConsole',
-		    consoleType: 'shell',
-		    nodename: nodename
-		}
-	    );
 	}
 
 	me.items.push(
