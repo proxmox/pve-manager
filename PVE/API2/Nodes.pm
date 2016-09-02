@@ -1087,9 +1087,6 @@ __PACKAGE__->register_method({
 	my $cfg = PVE::Storage::config();
 	my $scfg = PVE::Storage::storage_check_enabled($cfg, $param->{storage}, $node);
 
-	die "cannot download to storage type '$scfg->{type}'" 
-	    if !($scfg->{type} eq 'dir' || $scfg->{type} eq 'nfs');
-
 	die "unknown template type '$pd->{type}'\n"
 	    if !($pd->{type} eq 'openvz' || $pd->{type} eq 'lxc');
 
