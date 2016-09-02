@@ -7,11 +7,13 @@ Ext.define('PVE.window.NotesEdit', {
 	Ext.apply(me, {
 	    title: gettext('Notes'),
 	    width: 600,
+	    height: '400px',
+	    resizable: true,
 	    layout: 'fit',
 	    items: {
 		xtype: 'textarea',
 		name: 'description',
-		height: 200,
+		height: '100%',
 		value: '',
 		hideLabel: true
 	    }
