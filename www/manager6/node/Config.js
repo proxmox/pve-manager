@@ -234,17 +234,17 @@ Ext.define('PVE.node.Config', {
 	if (caps.nodes['Sys.Audit']) {
 	    me.items.push(
 		{
+		    title: gettext('Disks'),
+		    itemId: 'storage',
+		    expandedOnInit: true,
+		    iconCls: 'fa fa-hdd-o',
+		    xtype: 'pveNodeDiskList'
+		},
+		{
 		    title: 'Ceph',
 		    itemId: 'ceph',
 		    iconCls: 'fa fa-ceph',
 		    xtype: 'pveNodeCephStatus'
-		},
-		{
-		    title: gettext('Disks'),
-		    xtype: 'pveNodeCephDiskList',
-		    iconCls: 'fa fa-hdd-o',
-		    itemId: 'disklist',
-		    groups: ['ceph']
 		},
 		{
 		    xtype: 'pveNodeCephConfigCrush',
