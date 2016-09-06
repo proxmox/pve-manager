@@ -42,6 +42,7 @@ use PVE::API2::Ceph;
 use PVE::API2::Firewall::Host;
 use Digest::MD5;
 use Digest::SHA;
+use PVE::API2::Disks;
 use JSON;
 
 use base qw(PVE::RESTHandler);
@@ -97,6 +98,11 @@ __PACKAGE__->register_method ({
 });
 
 __PACKAGE__->register_method ({
+   subclass => "PVE::API2::Disks",
+   path => 'disks',
+});
+
+__PACKAGE__->register_method ({
     subclass => "PVE::API2::APT",  
     path => 'apt',
 });
@@ -131,6 +137,7 @@ __PACKAGE__->register_method ({
     
 	my $result = [
 	    { name => 'ceph' },
+	    { name => 'disks' },
 	    { name => 'apt' },
 	    { name => 'version' },
 	    { name => 'syslog' },
