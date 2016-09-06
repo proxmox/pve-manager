@@ -1,3 +1,78 @@
+Ext.define('PVE.form.CephDiskSelector', {
+    extend: 'PVE.form.ComboGrid',
+    alias: ['widget.pveCephDiskSelector'],
+
+    diskType: 'journal_disks',
+
+    valueField: 'dev',
+    displayField: 'dev',
+    emptyText: gettext('No Disks unused'),
+    listConfig: {
+	columns: [
+	    {
+		header: gettext('Device'),
+		width: 80,
+		sortable: true,
+		dataIndex: 'dev'
+	    },
+	    {
+		header: gettext('Size'),
+		width: 60,
+		sortable: false,
+		renderer: PVE.Utils.format_size,
+		dataIndex: 'size'
+	    },
+	    {
+		header: gettext('Serial'),
+		flex: 1,
+		sortable: true,
+		dataIndex: 'serial'
+	    }
+	]
+    },
+    initComponent: function() {
+	var me = this;
+
+	var nodename = me.nodename;
+	if (!nodename) {
+	    throw "no node name specified";
+	}
+
+	var store = Ext.create('Ext.data.Store', {
+	    filterOnLoad: true,
+	    model: 'ceph-disk-list',
+	    proxy: {
+                type: 'pve',
+                url: "/api2/json/nodes/" + nodename + "/ceph/disks",
+		extraParams: { type: me.diskType }
+	    },
+	    sorters: [
+		{
+		    property : 'dev',
+		    direction: 'ASC'
+		}
+	    ]
+	});
+
+	Ext.apply(me, {
+	    store: store
+	});
+
+        me.callParent();
+
+	store.load();
+    }
+}, function() {
+
+    Ext.define('ceph-disk-list', {
+	extend: 'Ext.data.Model',
+	fields: [ 'dev', 'used', { name: 'size', type: 'number'},
+		  {name: 'osdid', type: 'number'},
+		  'vendor', 'model', 'serial'],
+	idProperty: 'dev'
+    });
+});
+
 Ext.define('PVE.CephCreateOsd', {
     extend: 'PVE.window.Edit',
     alias: ['widget.pveCephCreateOsd'],
@@ -24,7 +99,6 @@ Ext.define('PVE.CephCreateOsd', {
 		   xtype: 'pveCephDiskSelector',
 		   name: 'dev',
 		   nodename: me.nodename,
-		   value: me.dev,
 		   diskType: 'unused',
 		   fieldLabel: gettext('Disk'),
 		   allowBlank: false
@@ -268,6 +342,18 @@ Ext.define('PVE.node.CephOsdTree', {
 	    });
 	};
 
+	var create_btn = new PVE.button.Button({
+	    text: gettext('Create') + ': OSD',
+	    handler: function() {
+		var rec = sm.getSelection()[0];
+
+		var win = Ext.create('PVE.CephCreateOsd', {
+                    nodename: nodename
+		});
+		win.show();
+	    }
+	});
+
 	var start_btn = new Ext.Button({
 	    text: gettext('Start'),
 	    disabled: true,
@@ -340,7 +426,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	});
 
 	Ext.apply(me, {
-	    tbar: [ reload_btn, start_btn, stop_btn, osd_out_btn, osd_in_btn, remove_btn ],
+	    tbar: [ create_btn, reload_btn, start_btn, stop_btn, osd_out_btn, osd_in_btn, remove_btn ],
 	    rootVisible: false,
 	    fields: ['name', 'type', 'status', 'host', 'in', 'id' ,
 		     { type: 'number', name: 'reweight' },
