@@ -102,7 +102,6 @@ JSSRC= 				                 	\
 	panel/LogView.js				\
 	ceph/Pool.js					\
 	ceph/OSD.js					\
-	ceph/Disks.js					\
 	ceph/Monitor.js					\
 	ceph/Crush.js					\
 	ceph/Status.js					\
