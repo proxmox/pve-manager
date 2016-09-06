@@ -107,6 +107,7 @@ JSSRC= 				                 	\
 	ceph/Crush.js					\
 	ceph/Status.js					\
 	ceph/Config.js					\
+	node/Disks.js					\
 	node/DNSEdit.js					\
 	node/DNSView.js					\
 	node/TimeView.js				\

@@ -541,6 +541,7 @@ Ext.define('PVE.Utils', { statics: {
     },
 
     task_desc_table: {
+	diskinit: [ 'Disk', gettext('Initialize GPT') ],
 	vncproxy: [ 'VM/CT', gettext('Console') ],
 	spiceproxy: [ 'VM/CT', gettext('Console') + ' (Spice)' ],
 	vncshell: [ '', gettext('Shell') ],
