@@ -37,7 +37,7 @@ sub get_config {
 
     my $value = $config_hash->{$key};
 
-    die "no such ceph config '$key'" if !$value; 
+    die "no such ceph config '$key'" if !$value;
 
     return $value;
 }
@@ -74,7 +74,7 @@ sub check_ceph_inited {
     my ($noerr) = @_;
 
     return undef if !check_ceph_installed($noerr);
-    
+
     if (! -f $pve_ceph_cfgpath) {
 	die "pveceph configuration not initialized\n" if !$noerr;
 	return undef;
@@ -188,7 +188,7 @@ sub ceph_service_cmd {
 
     } else {
 	# ceph daemons does not call 'setsid', so we do that ourself
-	# (fork_worker send KILL to whole process group) 
+	# (fork_worker send KILL to whole process group)
 	PVE::Tools::run_command(['setsid', 'service', 'ceph', '-c', $pve_ceph_cfgpath, $action, $service]);
     }
 }
