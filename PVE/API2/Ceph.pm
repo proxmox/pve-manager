@@ -17,6 +17,7 @@ use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RADOS;
 use PVE::CephTools;
+use PVE::Diskmanage;
 
 use base qw(PVE::RESTHandler);
 
@@ -197,12 +198,12 @@ __PACKAGE__->register_method ({
 	my $journal_dev;
 
 	if ($param->{journal_dev} && ($param->{journal_dev} ne $param->{dev})) {
-            $journal_dev = PVE::CephTools::verify_blockdev_path($param->{journal_dev});
+            $journal_dev = PVE::Diskmanage::verify_blockdev_path($param->{journal_dev});
 	}
 
-        $param->{dev} = PVE::CephTools::verify_blockdev_path($param->{dev});
+        $param->{dev} = PVE::Diskmanage::verify_blockdev_path($param->{dev});
 
-	my $disklist = PVE::CephTools::list_disks();
+	my $disklist = PVE::Diskmanage::get_disks();
 
 	my $devname = $param->{dev};
 	$devname =~ s|/dev/||;
@@ -365,7 +366,7 @@ __PACKAGE__->register_method ({
 	    if (my $err = $@) {
 		warn $err;
 	    } elsif ($param->{cleanup}) {
-		my $disklist = PVE::CephTools::list_disks();
+		my $disklist = PVE::Diskmanage::get_disks();
 		&$remove_partition($disklist, $journal_part);
 		&$remove_partition($disklist, $data_part);
 	    }
@@ -576,7 +577,7 @@ __PACKAGE__->register_method ({
 
 	PVE::CephTools::check_ceph_inited();
 
-	my $disks = PVE::CephTools::list_disks();
+	my $disks = PVE::Diskmanage::get_disks();
 
 	my $res = [];
 	foreach my $dev (keys %$disks) {
