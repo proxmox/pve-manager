@@ -267,9 +267,9 @@ Ext.define('PVE.StdWorkspace', {
 	if (PVE.VersionInfo) {
 	    var version = PVE.VersionInfo.version + '-' + PVE.VersionInfo.release + '/' +
 		PVE.VersionInfo.repoid;
-	    ui.update('Proxmox Virtual Environment ' + version);
+	    ui.update('Virtual Environment ' + version);
 	} else {
-	    ui.update('Proxmox Virtual Environment');
+	    ui.update('Virtual Environment');
 	}
 	ui.updateLayout();
     },
@@ -383,12 +383,12 @@ Ext.define('PVE.StdWorkspace', {
 		    items: [
 			{
 			    html: '<a class="x-unselectable" target=_blank href="http://www.proxmox.com">' +
-				'<img height=30 width=209 src="/pve2/images/proxmox_logo.png"/></a>'
+				'<img style="padding-top:4px;padding-right:5px" src="/pve2/images/proxmox_logo.png"/></a>'
 			},
 			{
 			    minWidth: 200,
 			    id: 'versioninfo',
-			    html: 'Proxmox Virtual Environment'
+			    html: 'Virtual Environment'
 			},
 			{
 			    xtype: 'pveGlobalSearchField',
