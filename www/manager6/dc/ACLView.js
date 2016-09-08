@@ -56,7 +56,8 @@ Ext.define('PVE.dc.ACLAdd', {
 	}
 
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
-	    items: items
+	    items: items,
+	    onlineHelp: 'chapter-pveum.html#_terms_and_definitions'
 	});
 
 	Ext.apply(me, {
