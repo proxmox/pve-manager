@@ -65,7 +65,8 @@ IMAGES = ${GNOME_IMAGES}	\
 	icon-display.png	\
 	icon-harddisk.png	\
 	icon-keyboard.png	\
-	logo-ceph.png
+	logo-ceph.png		\
+	logo-128.png
 
 .PHONY: install 
 install: ${IMAGES}
