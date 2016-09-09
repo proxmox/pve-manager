@@ -1,3 +1,27 @@
+pve-manager (4.2-19) unstable; urgency=medium
+
+  * reorganize GUI - use a treelist instead of tabs in configpanel
+
+  * Add link to terms glossary when adding an ACL
+
+  * new disk list panel (and remove ceph disks from navigation)
+
+  * fix #1091: add backup config button to storage contentview
+
+  * fix #621: allow template download to glusterfs
+
+  * fix #586: make notes edit window resizable
+
+  * add ceph icon
+
+  * update default aplinfo.dat
+
+  * aplinfo:  improve signature verification, add generated trustedkeys.gpg
+
+  * aplinfo: improve checksum handling (use SHA512)
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 09 Sep 2016 09:30:52 +0200
+
 pve-manager (4.2-18) unstable; urgency=medium
 
   * lxc: wizard: ssh key
