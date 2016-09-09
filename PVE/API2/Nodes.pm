@@ -1291,10 +1291,12 @@ __PACKAGE__->register_method ({
 
 	    $rpcenv->{type} = 'priv'; # to start tasks in background
 
-	    # wait up to 60 seconds for quorum
-	    for (my $i = 60; $i >= 0; $i--) {
-		last if PVE::Cluster::check_cfs_quorum($i != 0 ? 1 : 0);
-		sleep(1);
+	    if (!PVE::Cluster::check_cfs_quorum(1)) {
+		print "waiting for quorum ...\n";
+		do {
+		    sleep(1);
+		} while (!PVE::Cluster::check_cfs_quorum(1));
+		print "got quorum\n";
 	    }
 	    my $autostart = $force ? undef : 1;
 	    my $startList = &$get_start_stop_list($nodename, $autostart);
