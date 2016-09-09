@@ -1,3 +1,9 @@
+pve-manager (4.2-20) unstable; urgency=medium
+
+  * startall: remove timeout, wait forever
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 09 Sep 2016 10:40:26 +0200
+
 pve-manager (4.2-19) unstable; urgency=medium
 
   * reorganize GUI - use a treelist instead of tabs in configpanel
