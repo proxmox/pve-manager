@@ -118,7 +118,7 @@ Ext.define('PVE.pool.AddStorage', {
 	    width: 350,
 	    items: [
 		{
-		    xtype: 'PVE.form.StorageSelector',
+		    xtype: 'pveStorageSelector',
 		    name: 'storage',
 		    nodename: 'localhost',
 		    autoSelect: false,
