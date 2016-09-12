@@ -139,6 +139,9 @@ Ext.define('PVE.qemu.HardwareView', {
 	    },
 	    cpulimit: {
 		visible: false
+	    },
+	    bios: {
+		visible: false
 	    }
 
 	};
@@ -428,9 +431,34 @@ Ext.define('PVE.qemu.HardwareView', {
 	    }
 	});
 
+	var efidisk_menuitem = Ext.create('Ext.menu.Item',{
+	    text: gettext('EFI Disk'),
+	    iconCls: 'pve-itype-icon-storage',
+	    disabled: !caps.vms['VM.Config.Disk'],
+	    handler: function() {
+		var win = Ext.create('PVE.qemu.EFIDiskEdit', {
+		    url: '/api2/extjs/' + baseurl,
+		    pveSelNode: me.pveSelNode
+		});
+		win.on('destroy', reload);
+		win.show();
+	    }
+	});
+
 	var set_button_status = function() {
 	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
+
+	    // check if there is already an efidisk
+	    var rstoredata = me.rstore.getData().map;
+	    if (rstoredata.bios &&
+		rstoredata.bios.data.value === 'ovmf' &&
+		!rstoredata.efidisk0) {
+		// we have ovmf configured and no efidisk
+		efidisk_menuitem.setDisabled(false);
+	    } else {
+		efidisk_menuitem.setDisabled(true);
+	    }
 
 	    if (!rec) {
 		remove_btn.disable();
@@ -450,6 +478,9 @@ Ext.define('PVE.qemu.HardwareView', {
 		rowdef.tdCls == 'pve-itype-icon-storage' &&
 		(value && !value.match(/media=cdrom/));
 
+	    var isEfi = (key === 'efidisk0');
+
+
 	    remove_btn.setDisabled(rec.data['delete'] || (rowdef.never_delete === true));
 
 	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor);
@@ -458,7 +489,7 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    move_btn.setDisabled(pending || !isDisk);
 
-	    diskthrottle_btn.setDisabled(pending || !isDisk);
+	    diskthrottle_btn.setDisabled(pending || !isDisk || isEfi);
 
 	    revert_btn.setDisabled(!pending);
 
@@ -511,7 +542,8 @@ Ext.define('PVE.qemu.HardwareView', {
 				    win.on('destroy', reload);
 				    win.show();
 				}
-			    }
+			    },
+			    efidisk_menuitem
 			]
 		    })
 		}, 
