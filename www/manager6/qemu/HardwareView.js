@@ -197,9 +197,16 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('Network Device') + ' (' + confid +')'
 	    };
 	}
+	rows.efidisk0 = {
+	    group: 3,
+	    tdCls: 'pve-itype-icon-storage',
+	    editor: null,
+	    never_delete: caps.vms['VM.Config.Disk'] ? false : true,
+	    header: gettext('EFI Disk')
+	};
 	for (i = 0; i < 8; i++) {
 	    rows["unused" + i] = {
-		group: 3,
+		group: 4,
 		tdCls: 'pve-itype-icon-storage',
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.HDEdit' : undefined,
 		header: gettext('Unused Disk') + ' ' + i
