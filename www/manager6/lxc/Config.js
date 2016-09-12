@@ -208,7 +208,7 @@ Ext.define('PVE.lxc.Config', {
 		    iconCls: 'fa fa-shield',
 		    allow_iface: true,
 		    base_url: base_url + '/firewall/rules',
-		    list_refs_url: base_url + '/refs',
+		    list_refs_url: base_url + '/firewall/refs',
 		    itemId: 'firewall'
 		},
 		{
@@ -234,7 +234,7 @@ Ext.define('PVE.lxc.Config', {
 		    groups: ['firewall'],
 		    iconCls: 'fa fa-list-ol',
 		    base_url: base_url + '/firewall/ipset',
-		    list_refs_url: base_url + '/refs',
+		    list_refs_url: base_url + '/firewall/refs',
 		    itemId: 'firewall-ipset'
 		},
 		{
