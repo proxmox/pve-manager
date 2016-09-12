@@ -1,6 +1,6 @@
 Ext.define('PVE.form.StorageSelector', {
     extend: 'PVE.form.ComboGrid',
-    alias: ['widget.PVE.form.StorageSelector'],
+    alias: 'widget.pveStorageSelector',
 
     allowBlank: false,
     valueField: 'storage',
