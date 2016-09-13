@@ -8,6 +8,7 @@ Ext.define('PVE.qemu.BiosEdit', {
 	    subject: 'BIOS',
 	    items: {
 		xtype: 'pveQemuBiosSelector',
+		onlineHelp: 'chapter-qm.html#_bios_and_uefi',
 		name: 'bios',
 		value: '__default__',
 		fieldLabel: 'BIOS'

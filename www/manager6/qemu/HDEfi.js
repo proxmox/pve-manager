@@ -126,6 +126,7 @@ Ext.define('PVE.qemu.EFIDiskEdit', {
 	/* because create is a method above..., really jslint? */
 	me.items = [{
 	    xtype: 'pveEFIDiskInputPanel',
+	    onlineHelp: 'chapter-qm.html#_bios_and_uefi',
 	    confid: me.confid,
 	    nodename: nodename,
 	    create: true
