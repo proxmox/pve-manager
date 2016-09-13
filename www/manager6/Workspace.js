@@ -403,6 +403,14 @@ Ext.define('PVE.StdWorkspace', {
 			    id: 'userinfo',
 			    stateful: false
 			},
+			{
+			    xtype: 'pveHelpButton',
+			    hidden: false,
+			    iconCls: 'fa fa-info-circle x-btn-icon-el-default-toolbar-small ',
+			    listenToGlobalEvent: false,
+			    onlineHelp: 'index.html',
+			    margin: '0 5 0 0'
+			},
 			createVM, 
 			createCT,
 			{
