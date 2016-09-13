@@ -436,12 +436,20 @@ Ext.define('PVE.qemu.HardwareView', {
 	    iconCls: 'pve-itype-icon-storage',
 	    disabled: !caps.vms['VM.Config.Disk'],
 	    handler: function() {
-		var win = Ext.create('PVE.qemu.EFIDiskEdit', {
-		    url: '/api2/extjs/' + baseurl,
-		    pveSelNode: me.pveSelNode
-		});
-		win.on('destroy', reload);
-		win.show();
+
+		var rstoredata = me.rstore.getData().map;
+		// check if ovmf is configured
+		if (rstoredata.bios && rstoredata.bios.data.value === 'ovmf') {
+		    var win = Ext.create('PVE.qemu.EFIDiskEdit', {
+			url: '/api2/extjs/' + baseurl,
+			pveSelNode: me.pveSelNode
+		    });
+		    win.on('destroy', reload);
+		    win.show();
+		} else {
+		    Ext.Msg.alert('Error',gettext('Please select OVMF(UEFI) as BIOS first.'));
+		}
+
 	    }
 	});
 
@@ -449,16 +457,10 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 
-	    // check if there is already an efidisk
-	    var rstoredata = me.rstore.getData().map;
-	    if (rstoredata.bios &&
-		rstoredata.bios.data.value === 'ovmf' &&
-		!rstoredata.efidisk0) {
-		// we have ovmf configured and no efidisk
-		efidisk_menuitem.setDisabled(false);
-	    } else {
-		efidisk_menuitem.setDisabled(true);
-	    }
+	    // disable button when we have an efidisk already
+	    // disable is ok in this case, because you can instantly
+	    // see that there is already one
+	    efidisk_menuitem.setDisabled(me.rstore.getData().map.efidisk0 !== undefined);
 
 	    if (!rec) {
 		remove_btn.disable();
