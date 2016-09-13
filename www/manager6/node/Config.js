@@ -2,6 +2,8 @@ Ext.define('PVE.node.Config', {
     extend: 'PVE.panel.Config',
     alias: 'widget.PVE.node.Config',
 
+    onlineHelp: 'chapter-sysadmin.html',
+
     initComponent: function() {
         var me = this;
 
@@ -158,6 +160,7 @@ Ext.define('PVE.node.Config', {
 		    title: gettext('System'),
 		    iconCls: 'fa fa-cogs',
 		    itemId: 'services',
+		    onlineHelp: 'index.html#_service_daemons',
 		    expandedOnInit: true,
 		    xtype: 'pveNodeServiceView'
 		},
@@ -165,6 +168,7 @@ Ext.define('PVE.node.Config', {
 		    title: gettext('Network'),
 		    iconCls: 'fa fa-exchange',
 		    itemId: 'network',
+		    onlineHelp: 'chapter-sysadmin.html#_network_configuration',
 		    groups: ['services'],
 		    xtype: 'pveNodeNetworkView'
 		},
@@ -173,6 +177,7 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-globe',
 		    groups: ['services'],
 		    itemId: 'dns',
+		    onlineHelp: 'chapter-sysadmin.html#_network_configuration',
 		    xtype: 'pveNodeDNSView'
 		},
 		{
@@ -201,6 +206,8 @@ Ext.define('PVE.node.Config', {
 		    title: gettext('Updates'),
 		    iconCls: 'fa fa-refresh',
 		    disabled: !caps.nodes['Sys.Console'],
+		    // do we want to link to system updates instead?
+		    onlineHelp: 'chapter-sysadmin.html#_package_repositories',
 		    itemId: 'apt',
 		    xtype: 'pveNodeAPT',
 		    nodename: nodename
@@ -213,6 +220,7 @@ Ext.define('PVE.node.Config', {
 		{
 		    xtype: 'pveFirewallRules',
 		    iconCls: 'fa fa-shield',
+		    onlineHelp: 'chapter-pve-firewall.html',
 		    title: gettext('Firewall'),
 		    allow_iface: true,
 		    base_url: '/nodes/' + nodename + '/firewall/rules',
@@ -223,6 +231,7 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveFirewallOptions',
 		    title: gettext('Options'),
 		    iconCls: 'fa fa-gear',
+		    onlineHelp: 'chapter-pve-firewall.html#_host_specific_configuration',
 		    groups: ['firewall'],
 		    base_url: '/nodes/' + nodename + '/firewall/options',
 		    fwtype: 'node',
@@ -243,6 +252,7 @@ Ext.define('PVE.node.Config', {
 		{
 		    title: 'Ceph',
 		    itemId: 'ceph',
+		    onlineHelp: 'pveceph.1.html',
 		    iconCls: 'fa fa-ceph',
 		    xtype: 'pveNodeCephStatus'
 		},
@@ -250,6 +260,7 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveNodeCephConfigCrush',
 		    title: gettext('Config'),
 		    iconCls: 'fa fa-gear',
+		    onlineHelp: 'pveceph.1.html',
 		    groups: ['ceph'],
 		    itemId: 'ceph-config'
 		},
@@ -257,6 +268,7 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveNodeCephMonList',
 		    title: gettext('Monitor'),
 		    iconCls: 'fa fa-tv',
+		    onlineHelp: 'pveceph.1.html',
 		    groups: ['ceph'],
 		    itemId: 'ceph-monlist'
 		},
@@ -264,6 +276,7 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveNodeCephOsdTree',
 		    title: 'OSD',
 		    iconCls: 'fa fa-hdd-o',
+		    onlineHelp: 'pveceph.1.html',
 		    groups: ['ceph'],
 		    itemId: 'ceph-osdtree'
 		},
@@ -271,6 +284,7 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveNodeCephPoolList',
 		    title: gettext('Pools'),
 		    iconCls: 'fa fa-sitemap',
+		    onlineHelp: 'pveceph.1.html',
 		    groups: ['ceph'],
 		    itemId: 'ceph-pools'
 		}
@@ -292,6 +306,7 @@ Ext.define('PVE.node.Config', {
 		    itemId: 'ceph-log',
 		    iconCls: 'fa fa-list',
 		    groups: ['ceph'],
+		    onlineHelp: 'pveceph.1.html',
 		    xtype: 'pveLogView',
 		    url: "/api2/extjs/nodes/" + nodename + "/ceph/log"
 		});
@@ -308,6 +323,7 @@ Ext.define('PVE.node.Config', {
 		title: gettext('Subscription'),
 		iconCls: 'fa fa-support',
 		itemId: 'support',
+		onlineHelp: 'chapter-sysadmin.html#_getting_help',
 		xtype: 'pveNodeSubscription',
 		nodename: nodename
 	    }
