@@ -2,6 +2,8 @@ Ext.define('PVE.pool.Config', {
     extend: 'PVE.panel.Config',
     alias: 'widget.pvePoolConfig',
 
+    onlineHelp: 'chapter-pveum.html#_pools',
+
     initComponent: function() {
         var me = this;
 
@@ -31,6 +33,7 @@ Ext.define('PVE.pool.Config', {
 		    xtype: 'pveACLView',
 		    title: gettext('Permissions'),
 		    iconCls: 'fa fa-unlock',
+		    onlineHelp: 'chapter-pveum.html',
 		    itemId: 'permissions',
 		    path: '/pool/' + pool
 		}
