@@ -113,6 +113,7 @@ Ext.define('PVE.panel.Config', {
 	if (me.savedItems[cardid]) {
 	    var curcard = me.getLayout().getActiveItem();
 	    var newcard = me.add(me.savedItems[cardid]);
+	    me.helpButton.onlineHelp = newcard.onlineHelp || me.onlineHelp;
 	    if (curcard) {
 		me.setActiveItem(cardid);
 		me.remove(curcard, true);
@@ -157,12 +158,30 @@ Ext.define('PVE.panel.Config', {
 	var tbar = me.tbar || [];
 	me.tbar = undefined;
 
+	if (!me.onlineHelp) {
+	    switch(me.pveSelNode.data.id) {
+		case 'type/storage':me.onlineHelp = 'chapter-pvesm.html'; break;
+		case 'type/qemu':me.onlineHelp = 'chapter-qm.html'; break;
+		case 'type/lxc':me.onlineHelp = 'chapter-pct.html'; break;
+		case 'type/pool':me.onlineHelp = 'chapter-pveum.html#_pools'; break;
+		case 'type/node':me.onlineHelp = 'chapter-sysadmin.html'; break;
+	    }
+	}
+
 	tbar.unshift('->');
 	tbar.unshift({
 	    xtype: 'tbtext',
 	    text: title,
 	    baseCls: 'x-panel-header-text'
 	});
+
+	me.helpButton = Ext.create('PVE.button.Help', {
+	    hidden: false,
+	    listenToGlobalEvent: false,
+	    onlineHelp: me.onlineHelp || undefined
+	});
+
+	tbar.push(me.helpButton);
 
 	me.dockedItems[1].items = tbar;
 
