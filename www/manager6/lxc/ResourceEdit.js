@@ -187,6 +187,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 
     insideWizard: false,
 
+    onlineHelp: 'chapter-pct.html#_container_storage',
+
     unused: false, // ADD usused disk imaged
 
     vmconfig: {}, // used to select usused disks
