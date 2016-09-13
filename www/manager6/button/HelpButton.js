@@ -9,6 +9,7 @@ Ext.define('PVE.button.Help', {
     iconCls: ' x-btn-icon-el-default-toolbar-small fa fa-question-circle',
     cls: 'x-btn-default-toolbar-small pve-help-button',
     hidden: true,
+    listenToGlobalEvent: true,
     controller: {
 	xclass: 'Ext.app.ViewController',
 	listen: {
@@ -18,15 +19,26 @@ Ext.define('PVE.button.Help', {
 	    }
 	},
 	onPveShowHelp: function(helpLink) {
-	    this.getView().setHandler(function() {
-		var docsURI = window.location.origin +
-		'/pve-docs/' + helpLink;
-		window.open(docsURI);
-	    });
-	    this.getView().show();
+	    var me = this.getView();
+	    if (me.listenToGlobalEvent === true) {
+		me.onlineHelp = helpLink;
+		me.show();
+	    }
 	},
 	onPveHideHelp: function() {
-	    this.getView().hide();
+	    var me = this.getView();
+	    if (me.listenGlobalEvent === true) {
+		me.hide();
+	    }
+	}
+    },
+    handler: function() {
+	var me = this;
+	if (me.onlineHelp) {
+	    var docsURI = window.location.origin + '/pve-docs/' + me.onlineHelp;
+	    window.open(docsURI);
+	} else {
+	    Ext.Msg.alert(gettext('Help'), gettext('No Help available'));
 	}
     }
 });
