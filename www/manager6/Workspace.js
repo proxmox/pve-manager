@@ -291,19 +291,17 @@ Ext.define('PVE.StdWorkspace', {
 		selType: 'treemodel',
 		listeners: {
 		    selectionchange: function(sm, selected) {
-			var comp;
-			var tlckup = {
-			    root: 'PVE.dc.Config',
-			    node: 'PVE.node.Config',
-			    qemu: 'PVE.qemu.Config',
-			    lxc: 'PVE.lxc.Config',
-			    storage: 'PVE.storage.Browser',
-			    pool: 'pvePoolConfig'
-			};
-			
 			if (selected.length > 0) {
 			    var n = selected[0];
-			    comp = {
+			    var tlckup = {
+				root: 'PVE.dc.Config',
+				node: 'PVE.node.Config',
+				qemu: 'PVE.qemu.Config',
+				lxc: 'PVE.lxc.Config',
+				storage: 'PVE.storage.Browser',
+				pool: 'pvePoolConfig'
+			    };
+			    var comp = {
 				xtype: tlckup[n.data.type || 'root'] || 
 				    'pvePanelConfig',
 				showSearch: (n.data.id === 'root') ||
@@ -313,9 +311,8 @@ Ext.define('PVE.StdWorkspace', {
 				viewFilter: selview.getViewFilter()
 			    };
 			    PVE.curSelectedNode = n;
+			    me.setContent(comp);
 			}
-
-			me.setContent(comp);
 		    }
 		}
 	    }
