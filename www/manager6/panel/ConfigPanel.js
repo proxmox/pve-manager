@@ -114,6 +114,13 @@ Ext.define('PVE.panel.Config', {
 	    var curcard = me.getLayout().getActiveItem();
 	    var newcard = me.add(me.savedItems[cardid]);
 	    me.helpButton.onlineHelp = newcard.onlineHelp || me.onlineHelp;
+	    var tooltip = '';
+	    if (newcard.onlineHelp) {
+		tooltip = newcard.onlineHelpTooltip || newcard.title;
+	    } else if (me.onlineHelpTooltip) {
+		tooltip = me.onlineHelpTooltip;
+	    }
+	    me.helpButton.setTooltip(tooltip);
 	    if (curcard) {
 		me.setActiveItem(cardid);
 		me.remove(curcard, true);
@@ -178,7 +185,8 @@ Ext.define('PVE.panel.Config', {
 	me.helpButton = Ext.create('PVE.button.Help', {
 	    hidden: false,
 	    listenToGlobalEvent: false,
-	    onlineHelp: me.onlineHelp || undefined
+	    onlineHelp: me.onlineHelp || undefined,
+	    tooltip: me.onlineHelpTooltip
 	});
 
 	tbar.push(me.helpButton);
