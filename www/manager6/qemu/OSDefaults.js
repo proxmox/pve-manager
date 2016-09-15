@@ -40,11 +40,12 @@ Ext.define('PVE.qemu.OSDefaults', {
 	    scsihw: 'virtio-scsi-pci'
 	};
 
-	// both of them are in kernel since 2.6.25
+       // virtio-net is in kernel since 2.6.25
+       // virtio-scsi since 3.2 but backported in RHEL with 2.6 kernel
 	addOS({
 	    pveOS: 'l26',
 	    parent : 'generic',
-	    busType: 'virtio',
+	    busType: 'scsi',
 	    networkCard: 'virtio'
 	});
 
