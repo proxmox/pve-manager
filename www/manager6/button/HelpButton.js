@@ -21,7 +21,7 @@ Ext.define('PVE.button.Help', {
 	onPveShowHelp: function(helpLink) {
 	    var me = this.getView();
 	    if (me.listenToGlobalEvent === true) {
-		me.onlineHelp = helpLink;
+		me.setOnlineHelp(helpLink);
 		me.show();
 	    }
 	},
@@ -32,6 +32,15 @@ Ext.define('PVE.button.Help', {
 	    }
 	}
     },
+
+    // this sets the link and
+    // sets the tooltip text
+    setOnlineHelp:function(link) {
+	var me = this;
+	me.onlineHelp = link;
+	me.setTooltip(PVE.Utils.mapDocsUrlToTitle(link));
+    },
+
     handler: function() {
 	var me = this;
 	if (me.onlineHelp) {
