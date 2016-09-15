@@ -101,7 +101,7 @@ Ext.define('PVE.panel.Config', {
 	itemId: 'toolbar',
 	dock: 'top',
 	height: 36,
-	overflowHandler: 'menu'
+	overflowHandler: 'scroller'
     }],
 
     firstItem: '',
