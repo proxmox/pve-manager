@@ -62,10 +62,10 @@ Ext.define('PVE.lxc.RessourceView', {
 		header: gettext('CPU limit'),
 		never_delete: true,
 		editor: caps.vms['VM.Config.CPU'] ? 'PVE.lxc.CPUEdit' : undefined,
-		defaultValue: 1,
+		defaultValue: 0,
 		tdCls: 'pve-itype-icon-processor',
 		renderer: function(value) {
-		    if (value) { return value; }
+		    if (value > 0) { return value; }
 		    return gettext('unlimited');
 		}
 	    },

@@ -131,6 +131,7 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 	    me.column1 = items;
 	} else {
 	    me.items = items;
+	    me.items[0].value = 0;
 	}
    
 	me.callParent();
