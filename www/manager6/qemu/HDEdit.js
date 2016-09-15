@@ -111,6 +111,10 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		
 	params[confid] = PVE.Parser.printQemuDrive(me.drive);
 	
+	if (me.insideWizard) {
+	    params.scsihw = PVE.qemu.OSDefaults.generic.scsihw;
+	}
+
 	return params;	
     },
 

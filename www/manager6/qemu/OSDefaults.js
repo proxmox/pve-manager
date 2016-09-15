@@ -36,7 +36,8 @@ Ext.define('PVE.qemu.OSDefaults', {
 	// default values
 	me.generic = {
 	    busType: 'ide',
-	    networkCard: 'e1000'
+	    networkCard: 'e1000',
+	    scsihw: 'virtio-scsi-pci'
 	};
 
 	// both of them are in kernel since 2.6.25
