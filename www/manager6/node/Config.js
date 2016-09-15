@@ -298,6 +298,7 @@ Ext.define('PVE.node.Config', {
 		    title: gettext('Log'),
 		    iconCls: 'fa fa-list',
 		    groups: ['firewall'],
+		    onlineHelp: 'chapter-pve-firewall.html',
 		    url: '/api2/extjs/nodes/' + nodename + '/firewall/log',
 		    itemId: 'firewall-fwlog'
 		},
