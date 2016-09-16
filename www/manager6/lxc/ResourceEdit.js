@@ -109,7 +109,7 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 		xtype: 'numberfield',
 		name: 'cpulimit',
 		minValue: 0,
-		value: '1',
+		value: me.insideWizard ? 1 : 0,
 		step: 1,
 		fieldLabel: gettext('CPU limit'),
 		labelWidth: labelWidth,
@@ -131,7 +131,6 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 	    me.column1 = items;
 	} else {
 	    me.items = items;
-	    me.items[0].value = 0;
 	}
    
 	me.callParent();
