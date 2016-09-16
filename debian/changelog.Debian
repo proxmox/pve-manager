@@ -1,3 +1,26 @@
+pve-manager (4.2-21) unstable; urgency=medium
+
+  * update favicon, add homescreen icon, use new logo
+
+  * wizard: use refresh event instead of datachanged
+
+  * lxc: correctly display cpulimit
+
+  * change overflowhandler of actionmenu to scroller
+
+  * improve online Help system, add tooltip for context sensitive for help
+    button, add global help button
+
+  * Use SCSI controller as default for l26 guests fix #1105
+
+  * virtio-scsi-pci as default SCSI for new VMS fix #1106
+
+  * fix #1104: add missing /firewall in url
+
+  * add efidisk button to add menu, add efidisk to qemu hardwareview
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 16 Sep 2016 08:08:17 +0200
+
 pve-manager (4.2-20) unstable; urgency=medium
 
   * startall: remove timeout, wait forever
