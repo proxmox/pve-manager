@@ -143,7 +143,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 			    summarystore.add(data);
 			    summarystore.sort();
 			    summarystore.resumeEvents();
-			    summarystore.fireEvent('datachanged', summarystore);
+			    summarystore.fireEvent('refresh');
 
 			}
 		    },
