@@ -3,6 +3,7 @@
 Ext.define('PVE.qemu.CreateWizard', {
     extend: 'PVE.window.Wizard',
     alias: 'widget.pveQemuCreateWizard',
+    qemuScsiController: undefined,
 
     initComponent: function() {
 	var me = this;
@@ -153,6 +154,10 @@ Ext.define('PVE.qemu.CreateWizard', {
 
 			var nodename = kv.nodename;
 			delete kv.nodename;
+
+			if (me.qemuScsiController) {
+			    kv.scsihw = me.qemuScsiController;
+			}
 
 			PVE.Utils.API2Request({
 			    url: '/nodes/' + nodename + '/qemu',

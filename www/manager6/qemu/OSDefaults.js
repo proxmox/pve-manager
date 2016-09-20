@@ -53,7 +53,14 @@ Ext.define('PVE.qemu.OSDefaults', {
 	addOS({
 	    pveOS: 'w2k',
 	    parent : 'generic',
-	    networkCard: 'rtl8139'
+	    networkCard: 'rtl8139',
+	    scsihw: 'lsi'
+	});
+
+	addOS({
+	    pveOS: 'wxp',
+	    parent : 'generic',
+	    scsihw: 'lsi'
 	});
 
     }
