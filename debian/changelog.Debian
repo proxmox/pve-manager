@@ -1,3 +1,13 @@
+pve-manager (4.2-22) unstable; urgency=medium
+
+  * fix #1112: add a warning message if the EFI disk is missing
+
+  * fix #1113: use a LSI controller for legacy OSes
+
+  * fix #1113: preserve LSI controller for legacy Oses
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 20 Sep 2016 17:28:07 +0200
+
 pve-manager (4.2-21) unstable; urgency=medium
 
   * update favicon, add homescreen icon, use new logo
