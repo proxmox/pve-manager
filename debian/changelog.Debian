@@ -1,3 +1,9 @@
+pve-manager (4.2-23) unstable; urgency=medium
+
+  * fix #1117: do not test for the cgmanager package in pveversion 
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 21 Sep 2016 16:17:22 +0200
+
 pve-manager (4.2-22) unstable; urgency=medium
 
   * fix #1112: add a warning message if the EFI disk is missing
