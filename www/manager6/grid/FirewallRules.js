@@ -280,6 +280,8 @@ Ext.define('PVE.FirewallRuleEdit', {
 		    }
 		}
 	    });
+	} else if (me.rec) {
+	    ipanel.setValues(me.rec.data);
 	}
     }
 });
@@ -549,6 +551,37 @@ Ext.define('PVE.FirewallRules', {
 	    }
 	});
 
+	var run_copy_editor = function() {
+	    var rec = sm.getSelection()[0];
+
+	    if (!rec) {
+		return;
+	    }
+	    var type = rec.data.type;
+
+
+	    if (!(type === 'in' || type === 'out')) {
+		return;
+	    }
+
+	    var win = Ext.create('PVE.FirewallRuleEdit', {
+		allow_iface: me.allow_iface,
+		base_url: me.base_url,
+		list_refs_url: me.list_refs_url,
+		rec: rec,
+	    });
+
+	    win.show();
+	    win.on('destroy', reload);
+	};
+
+	me.copyBtn = Ext.create('PVE.button.Button',{
+	    text: gettext('Copy'),
+	    selModel: sm,
+	    disabled: true,
+	    handler: run_copy_editor,
+	});
+
 	if (me.allow_groups) {
 	    me.groupBtn =  Ext.create('Ext.Button', {
 		text: gettext('Insert') + ': ' + 
@@ -579,7 +612,7 @@ Ext.define('PVE.FirewallRules', {
 	});
 
 	var tbar = me.tbar_prefix ? [ me.tbar_prefix ] : [];
-	tbar.push(me.addBtn);
+	tbar.push(me.addBtn, me.copyBtn);
 	if (me.groupBtn) {
 	    tbar.push(me.groupBtn);
 	}
