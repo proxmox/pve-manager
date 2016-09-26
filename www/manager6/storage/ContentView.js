@@ -127,6 +127,7 @@ Ext.define('PVE.storage.TemplateDownload', {
 			    upid: upid
 			});
 			win.show();
+			win.on('destroy', me.reloadGrid);
 			me.close();
 		    }
 		});
@@ -372,10 +373,10 @@ Ext.define('PVE.storage.ContentView', {
 	    handler: function() {
 		var win = Ext.create('PVE.storage.TemplateDownload', {
 		    nodename: nodename,
-		    storage: storage
+		    storage: storage,
+		    reloadGrid: reload
 		});
 		win.show();
-		win.on('destroy', reload);
 	    }
 	});
 
