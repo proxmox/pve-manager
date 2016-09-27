@@ -71,7 +71,10 @@ Ext.define('PVE.node.CephMonList', {
 	    }
 	});
 
-	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
+	var store = Ext.create('PVE.data.DiffStore', {
+	    rstore: rstore,
+	    sorters: [{ property: 'name'}]
+	});
 
 	PVE.Utils.monStoreErrors(me, rstore);
 
