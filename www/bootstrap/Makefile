@@ -25,9 +25,6 @@ install: ${BTDATA}
 	install -m 0644 -o www-data -g www-data ${BTDIR}/js/bootstrap.min.js ${WWWJSDIR}
 	install -m 0644 ${BTDIR}/fonts/glyphicons-halflings-regular.ttf ${WWWIMAGEDIR}
 
-.PHONY: distclean
-distclean: clean
-
 .PHONY: clean
 clean:
 	rm -rf *~ ${BTDIR}

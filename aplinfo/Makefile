@@ -36,9 +36,6 @@ trustedkeys.gpg: ${TRUSTED_KEYS}
 	gpg --fingerprint --batch --no-tty --homedir tempgpg --import ${TRUSTED_KEYS}
 	gpg --batch --no-tty --homedir tempgpg --export > trustedkeys.gpg
 
-.PHONY: distclean
-distclean: clean
-
 .PHONY: clean
 clean:
 	rm -rf *~ aplinfo.dat.gz aplinfo.dat.asc tempgpg

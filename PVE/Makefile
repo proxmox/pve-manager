@@ -28,10 +28,6 @@ pvecfg.pm: pvecfg.pm.in
 %:
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
-.PHONY: distclean
-distclean: clean
-	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
-
 .PHONY: clean
 clean:
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done

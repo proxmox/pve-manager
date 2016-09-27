@@ -7,9 +7,6 @@ install: README fontawesome-webfont.ttf FontAwesome.otf fontawesome-webfont.woff
 	install -d ${WWWFONTSDIR}
 	install -m 0644 -o www-data -g www-data $? ${WWWFONTSDIR}
 
-.PHONY: distclean
-distclean: clean
-
 .PHONY: clean
 clean:
 	rm -rf *~

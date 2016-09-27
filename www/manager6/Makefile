@@ -219,9 +219,6 @@ install: pvemanagerlib.js
 	install -d ${WWWEXT6DIR}
 	install -m 0644 -o www-data -g www-data pvemanagerlib.js ${WWWEXT6DIR}
 
-.PHONY: distclean
-distclean: clean
-
 .PHONY: clean
 clean:
 	find . -name '*~' -exec rm {} ';'	

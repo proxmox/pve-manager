@@ -5,9 +5,6 @@ PERLSOURCE = 			\
 
 all:
 
-.PHONY: distclean
-distclean: clean
-
 .PHONY: clean
 clean:
 	rm -rf *~

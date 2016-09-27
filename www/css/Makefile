@@ -8,9 +8,6 @@ install: ext6-pve.css font-awesome.css
 	install -m 0644 -o www-data -g www-data $? ${WWWCSSDIR}
 	set -e && ${MAKE} -C fonts install
 
-.PHONY: distclean
-distclean: clean
-
 .PHONY: clean
 clean:
 	rm -rf *~

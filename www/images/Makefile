@@ -73,9 +73,6 @@ install: ${IMAGES}
 	install -d ${WWWIMAGEDIR}
 	install -m 0644 -o www-data -g www-data ${IMAGES} ${WWWIMAGEDIR}
 
-.PHONY: distclean
-distclean: clean
-
 .PHONY: clean
 clean:
 	rm -rf *~

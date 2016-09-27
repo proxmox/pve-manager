@@ -92,7 +92,6 @@ install: country.dat vznet.conf vzdump.conf vzdump-hook-script.pl pve-apt.conf m
 
 .PHONY: distclean
 distclean: clean
-	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
 .PHONY: clean
 clean:

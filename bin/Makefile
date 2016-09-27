@@ -86,10 +86,6 @@ install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward $(addsuffix .serv
 	for i in ${SERVICES}; do install -m 0644 -D $$i.service-bash-completion ${BASHCOMPLDIR}/$$i; done
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
-.PHONY: distclean
-distclean: clean
-	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
-
 .PHONY: clean
 clean:
 	make cleanup-docgen

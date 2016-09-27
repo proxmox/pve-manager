@@ -26,9 +26,6 @@ install: ${SCRIPTS}
 	install -d ${SERVICEDIR}
 	install -m 0644 ${SERVICES} ${SERVICEDIR}
 
-.PHONY: distclean
-distclean: clean
-
 .PHONY: clean
 clean:
 	rm -rf *~

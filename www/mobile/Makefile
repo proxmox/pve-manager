@@ -35,9 +35,6 @@ install: pvemanager-mobile.js
 	install -m 0644 pvemanager-mobile.js ${WWWTOUCHDIR}
 	chown -R www-data:www-data ${WWWTOUCHDIR}
 
-.PHONY: distclean
-distclean: clean
-
 .PHONY: clean
 clean:
 	rm -rf *~ pvemanager-mobile.js
