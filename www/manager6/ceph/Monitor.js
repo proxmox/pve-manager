@@ -163,7 +163,7 @@ Ext.define('PVE.node.CephMonList', {
 	    columns: [
 		{
 		    header: gettext('Name'),
-		    width: 50,
+		    width: 100,
 		    sortable: true,
 		    renderer: function(v) { return "mon." + v; },
 		    dataIndex: 'name'
