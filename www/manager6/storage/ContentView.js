@@ -123,11 +123,13 @@ Ext.define('PVE.storage.TemplateDownload', {
 		    success: function(response, options) {
 			var upid = response.result.data;
 
-			var win = Ext.create('PVE.window.TaskViewer', {
-			    upid: upid
-			});
-			win.show();
-			win.on('destroy', me.reloadGrid);
+			Ext.create('PVE.window.TaskViewer', {
+			    upid: upid,
+			    listeners: {
+				destroy: me.reloadGrid
+			    }
+			}).show();
+
 			me.close();
 		    }
 		});
