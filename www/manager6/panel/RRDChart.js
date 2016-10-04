@@ -22,9 +22,7 @@ Ext.define('PVE.widget.RRDChart', {
 	fields: ['time']
     }],
     legend: {
-	docked: 'right',
-	// we set this that all graphs have same width
-	width: 140
+	docked: 'bottom'
     },
     listeners: {
 	afterrender: 'onAfterRender',
@@ -112,8 +110,7 @@ Ext.define('PVE.widget.RRDChart', {
 	}
 	me.axes[0].setTitle(axisTitle);
 
-
-	me.addTool({
+	me.addTool([{
 	    type: 'minus',
 	    disabled: true,
 	    tooltip: gettext('Undo Zoom'),
@@ -123,7 +120,13 @@ Ext.define('PVE.widget.RRDChart', {
 		    undoButton.handler();
 		}
 	    }
-	});
+	},{
+	    type: 'restore',
+	    tooltip: gettext('Toggle Legend'),
+	    handler: function(){
+		me.legend.setVisible(!me.legend.isVisible());
+	    }
+	}]);
 	// add a series for each field we get
 	me.fields.forEach(function(item, index){
 	    var title = item;
