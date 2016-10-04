@@ -5,7 +5,7 @@ Ext.define('PVE.storage.Summary', {
     bodyPadding: 10,
     defaults: {
 	style: {'padding-top':'10px'},
-	width: 800
+	width: 770
     },
     tbar: [
 	'->',
@@ -26,12 +26,16 @@ Ext.define('PVE.storage.Summary', {
 	    throw "no storage ID specified";
 	}
 
-	var statusview = Ext.create('PVE.storage.StatusView', {
-	    pveSelNode: me.pveSelNode,
-	    style: {'padding-top':'0px'}
+	var rstore  = Ext.create('PVE.data.ObjectStore', {
+	    url: "/api2/json/nodes/" + nodename + "/storage/" + storage + "/status",
+	    interval: 1000
 	});
 
-	var rstore = statusview.rstore;
+	var statusview = Ext.create('PVE.storage.StatusView', {
+	    pveSelNode: me.pveSelNode,
+	    rstore: rstore,
+	    style: {'padding-top':'0px'}
+	});
 
 	var rrdstore = Ext.create('PVE.data.RRDStore', {
 	    rrdurl:  "/api2/json/nodes/" + nodename + "/storage/" + storage + "/rrddata"
