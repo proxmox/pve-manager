@@ -251,6 +251,19 @@ Ext.define('PVE.DiskSmartWindow', {
 	    { text: gettext('Flags'), dataIndex: 'flags'},
 	    { text: gettext('Failing'), dataIndex: 'fail', renderer: Ext.String.htmlEncode }
 	    ]
+	},
+	{
+	    xtype: 'component',
+	    itemId: 'text',
+	    layout: {
+		type: 'fit'
+	    },
+	    hidden: true,
+	    style: {
+		'background-color': 'white',
+		'white-space': 'pre',
+		'font-family': 'monospace'
+	    }
 	}
     ],
 
@@ -307,12 +320,27 @@ Ext.define('PVE.DiskSmartWindow', {
 
 	me.callParent();
 	var grid = me.down('#smarts');
+	var text = me.down('#text');
 
 	PVE.Utils.monStoreErrors(grid, me.store);
 	me.mon(me.store, 'load', function(s, records, success) {
 	    if (success && records.length > 0) {
 		var rec = records[0];
-		grid.setStore(rec.attributes());
+		switch (rec.data.type) {
+		    case 'text':
+			grid.setVisible(false);
+			text.setVisible(true);
+			text.setHtml(Ext.String.htmlEncode(rec.data.text));
+			break;
+		    default:
+			// includes 'ata'
+			// cannot use empty case because
+			// of jslint
+			grid.setVisible(true);
+			text.setVisible(false);
+			grid.setStore(rec.attributes());
+			break;
+		}
 	    }
 	});
 
@@ -323,7 +351,9 @@ Ext.define('PVE.DiskSmartWindow', {
     Ext.define('disk-smart', {
 	extend: 'Ext.data.Model',
 	fields: [
-	    { name:'health'}
+	    { name:'health'},
+	    { name:'type'},
+	    { name:'text'}
 	],
 	hasMany: {model: 'smart-attribute', name: 'attributes'}
     });
