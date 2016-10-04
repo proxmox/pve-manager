@@ -496,6 +496,16 @@ Ext.define('PVE.StdWorkspace', {
 	me.callParent();
 
 	me.updateUserInfo();
+
+	// on resize, center all modal windows
+	Ext.on('resize', function(){
+	    var wins = Ext.ComponentQuery.query('window[modal]');
+	    if (wins.length > 0) {
+		wins.forEach(function(win){
+		    win.alignTo(me, 'c-c');
+		});
+	    }
+	});
     }
 });
 
