@@ -10,7 +10,7 @@ Ext.define('PVE.qemu.BiosEdit', {
 	    fieldStyle: 'background-color: LightYellow;',
 	    value: gettext('You need to add an EFI disk for storing the ' +
 	    'EFI settings. See the online help for details.'),
-	    hidden: true,
+	    hidden: true
 	});
 
 	Ext.applyIf(me, {
