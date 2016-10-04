@@ -187,6 +187,9 @@ Ext.define('PVE.node.DiskList', {
 	    }
 	});
 
+	me.loadCount = 1; // avoid duplicate loadmask
+	PVE.Utils.monStoreErrors(me, store);
+
 	Ext.apply(me, {
 	    emptyText: gettext('No Disk found'),
 	    store: store,
@@ -295,16 +298,24 @@ Ext.define('PVE.DiskSmartWindow', {
 	}
 
 	me.store = Ext.create('Ext.data.Store', {
-	    model: 'smart-attribute',
+	    model: 'disk-smart',
 	    proxy: {
                 type: 'pve',
-		root: 'data.attributes',
                 url: "/api2/json/nodes/" + nodename + "/disks/smart?disk=" + dev
 	    }
 	});
 
 	me.callParent();
-	me.down('#smarts').setStore(me.store);
+	var grid = me.down('#smarts');
+
+	PVE.Utils.monStoreErrors(grid, me.store);
+	me.mon(me.store, 'load', function(s, records, success) {
+	    if (success && records.length > 0) {
+		var rec = records[0];
+		grid.setStore(rec.attributes());
+	    }
+	});
+
 	me.store.load();
     }
 }, function() {
