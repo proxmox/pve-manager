@@ -63,24 +63,28 @@ Ext.define('PVE.node.DiskList', {
 	    header: gettext('Vendor'),
 	    width: 100,
 	    sortable: true,
+	    renderer: Ext.String.htmlEncode,
 	    dataIndex: 'vendor'
 	},
 	{
 	    header: gettext('Model'),
 	    width: 200,
 	    sortable: true,
+	    renderer: Ext.String.htmlEncode,
 	    dataIndex: 'model'
 	},
 	{
 	    header: gettext('Serial'),
 	    width: 200,
 	    sortable: true,
+	    renderer: Ext.String.htmlEncode,
 	    dataIndex: 'serial'
 	},
 	{
 	    header: 'S.M.A.R.T.',
 	    width: 100,
 	    sortable: true,
+	    renderer: Ext.String.htmlEncode,
 	    dataIndex: 'health'
 	},
 	{
@@ -236,13 +240,13 @@ Ext.define('PVE.DiskSmartWindow', {
 	    reserveScrollbar: true,
 	    columns: [
 	    { text: 'ID', dataIndex: 'id', width: 50 },
-	    { text: gettext('Attribute'), flex: 1, dataIndex: 'name' },
-	    { text: gettext('Value'), dataIndex: 'raw'},
+	    { text: gettext('Attribute'), flex: 1, dataIndex: 'name', renderer: Ext.String.htmlEncode },
+	    { text: gettext('Value'), dataIndex: 'raw', renderer: Ext.String.htmlEncode },
 	    { text: gettext('Normalized'), dataIndex: 'value', width: 60},
 	    { text: gettext('Threshold'), dataIndex: 'threshold', width: 60},
 	    { text: gettext('Worst'), dataIndex: 'worst', width: 60},
 	    { text: gettext('Flags'), dataIndex: 'flags'},
-	    { text: gettext('Failing'), dataIndex: 'fail'}
+	    { text: gettext('Failing'), dataIndex: 'fail', renderer: Ext.String.htmlEncode }
 	    ]
 	}
     ],
