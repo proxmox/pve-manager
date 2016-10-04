@@ -3,7 +3,7 @@ Ext.define('PVE.qemu.Summary', {
     alias: 'widget.pveQemuSummary',
 
     scrollable: true,
-    bodyPadding: 10,
+    bodyPadding: '10 0 0 0',
 
     initComponent: function() {
         var me = this;
@@ -31,7 +31,7 @@ Ext.define('PVE.qemu.Summary', {
 
 	var notesview = Ext.create('PVE.panel.NotesView', {
 	    pveSelNode: me.pveSelNode,
-	    padding: template? '10 0 0 0' : '0 0 0 10',
+	    padding: '0 0 0 10',
 	    flex: 1
 	});
 
@@ -47,10 +47,10 @@ Ext.define('PVE.qemu.Summary', {
 				type: 'column'
 			    },
 			    defaults: {
-				padding: '0 10 10 0'
+				padding: '0 0 10 0'
 			    },
 			    items: [{
-				width: 800,
+				width: 770,
 				layout: {
 				    type: 'vbox',
 				    align: 'stretch'
@@ -60,6 +60,7 @@ Ext.define('PVE.qemu.Summary', {
 				    {
 					xtype: 'pveTemplateStatusView',
 					pveSelNode: me.pveSelNode,
+					padding: '0 0 10 10',
 					rstore: rstore
 				    },
 				    notesview
@@ -89,11 +90,11 @@ Ext.define('PVE.qemu.Summary', {
 				type: 'column'
 			    },
 			    defaults: {
-				padding: '0 10 10 0'
+				padding: '0 0 10 10'
 			    },
 			    items: [
 				{
-				    width: 800,
+				    width: 770,
 				    height: 300,
 				    layout: {
 					type: 'hbox',

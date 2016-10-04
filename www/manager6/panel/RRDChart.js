@@ -3,7 +3,7 @@ Ext.define('PVE.widget.RRDChart', {
     alias: 'widget.pveRRDChart',
 
 
-    width: 800,
+    width: 770,
     height: 300,
     animation: false,
     interactions: [{

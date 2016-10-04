@@ -3,19 +3,23 @@ Ext.define('PVE.node.StatusView', {
     alias: 'widget.pveNodeStatus',
 
     height: 300,
+    bodyPadding: '20 15 20 15',
 
     defaults: {
 	xtype: 'pveInfoWidget',
-	padding: '0 30 5 30',
-	width: 394
+	padding: '0 15 5 15',
+	// default available width on 1920x1080 is
+	// 1545, so we have for one column
+	// ~770px
+	// -10 for padding
+	// -2 for border
+	// -30 for inner padding
+	// = 728px
+	// = 364px per column inside statuspanel
+	width: 364
     },
 
     items: [
-	{
-	    xtype: 'box',
-	    width: 400,
-	    height: 20
-	},
 	{
 	    itemId: 'cpu',
 	    title: gettext('CPU usage'),
@@ -54,7 +58,7 @@ Ext.define('PVE.node.StatusView', {
 	    renderer: function(record) {
 		return PVE.Utils.render_size(record.shared);
 	    },
-	    padding: '0 30 10 30'
+	    padding: '0 15 10 15'
 	},
 	{
 	    itemId: 'rootfs',
@@ -87,7 +91,7 @@ Ext.define('PVE.node.StatusView', {
 		gettext('Socket' + (cpuinfo.sockets > 1 ? 's': '')) + ")";
 	    },
 	    value: '',
-	    width: 790
+	    width: 730
 	},
 	{
 	    itemId: 'kversion',
@@ -95,7 +99,7 @@ Ext.define('PVE.node.StatusView', {
 	    printBar: false,
 	    textField: 'kversion',
 	    value: '',
-	    width: 790
+	    width: 730
 	},
 	{
 	    itemId: 'version',
@@ -103,7 +107,7 @@ Ext.define('PVE.node.StatusView', {
 	    title: gettext('PVE Manager Version'),
 	    textField: 'pveversion',
 	    value: '',
-	    width: 790
+	    width: 730
 	}
     ],
 

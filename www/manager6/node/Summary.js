@@ -3,7 +3,7 @@ Ext.define('PVE.node.Summary', {
     alias: 'widget.pveNodeSummary',
 
     scrollable: true,
-    bodyStyle: 'padding:10px',
+    bodyPadding: '10 0 0 0',
 
     showVersions: function() {
 	var me = this;
@@ -100,13 +100,13 @@ Ext.define('PVE.node.Summary', {
 			xtype: 'container',
 			layout: 'column',
 			defaults: {
-			    padding: '0 10 10 0'
+			    padding: '0 0 10 10'
 			},
 			items: [
 			    {
 				xtype: 'pveNodeStatus',
 				rstore: rstore,
-				width: 800,
+				width: 770,
 				pveSelNode: me.pveSelNode
 			    },
 			    {
