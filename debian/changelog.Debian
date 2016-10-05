@@ -1,3 +1,21 @@
+pve-manager (4.3-2) unstable; urgency=medium
+
+  * fix #1108: add copy firewall rule to GUI
+
+  * fix #1116: center modal windows on browser resize
+
+  * use new statusview for storage
+
+  * move rrd legend to the bottom, make it toggleable
+
+  * show smart text if disk type is not ATA
+
+  * add loadMask to Disk and SMART grid
+
+  * fix #1115 reload storage grid after template download
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 05 Oct 2016 07:11:04 +0200
+
 pve-manager (4.3-1) unstable; urgency=medium
 
   * prepare version number for new 4.3 release
