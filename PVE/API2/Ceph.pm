@@ -203,11 +203,11 @@ __PACKAGE__->register_method ({
 
         $param->{dev} = PVE::Diskmanage::verify_blockdev_path($param->{dev});
 
-	my $disklist = PVE::Diskmanage::get_disks();
-
 	my $devname = $param->{dev};
 	$devname =~ s|/dev/||;
-       
+
+	my $disklist = PVE::Diskmanage::get_disks($devname, 1);
+
 	my $diskinfo = $disklist->{$devname};
 	die "unable to get device info for '$devname'\n"
 	    if !$diskinfo;
@@ -215,6 +215,7 @@ __PACKAGE__->register_method ({
 	die "device '$param->{dev}' is in use\n" 
 	    if $diskinfo->{used};
 
+	my $devpath = $diskinfo->{devpath};
 	my $rados = PVE::RADOS->new();
 	my $monstat = $rados->mon_command({ prefix => 'mon_status' });
 	die "unable to get fsid\n" if !$monstat->{monmap} || !$monstat->{monmap}->{fsid};
@@ -234,7 +235,7 @@ __PACKAGE__->register_method ({
 
 	    my $fstype = $param->{fstype} || 'xfs';
 
-	    print "create OSD on $param->{dev} ($fstype)\n";
+	    print "create OSD on $devpath ($fstype)\n";
 
 	    my $ccname = PVE::CephTools::get_config('ccname');
 
@@ -243,9 +244,9 @@ __PACKAGE__->register_method ({
 
 	    if ($journal_dev) {
 		print "using device '$journal_dev' for journal\n";
-		push @$cmd, '--journal-dev', $param->{dev}, $journal_dev;
+		push @$cmd, '--journal-dev', $devpath, $journal_dev;
 	    } else {
-		push @$cmd, $param->{dev};
+		push @$cmd, $devpath;
 	    }
 	    
 	    run_command($cmd);
