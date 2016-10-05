@@ -330,11 +330,12 @@ __PACKAGE__->register_method ({
 		   
 		foreach my $real_dev (keys %$disklist) {
 		    my $diskinfo = $disklist->{$real_dev};
+		    my $devpath = $diskinfo->{devpath};
 		    next if !$diskinfo->{gpt};
-		    if ($part =~ m|^/dev/${real_dev}(\d+)$|) {
+		    if ($part =~ m|^${devpath}(\d+)$|) {
 			my $partnum = $1;
-			print "remove partition $part (disk '/dev/${real_dev}', partnum $partnum)\n";
-			eval { run_command(['/sbin/sgdisk', '-d', $partnum, "/dev/${real_dev}"]); };
+			print "remove partition $part (disk '${devpath}', partnum $partnum)\n";
+			eval { run_command(['/sbin/sgdisk', '-d', $partnum, "${devpath}"]); };
 			warn $@ if $@;
 			last;
 		    }
@@ -367,7 +368,7 @@ __PACKAGE__->register_method ({
 	    if (my $err = $@) {
 		warn $err;
 	    } elsif ($param->{cleanup}) {
-		my $disklist = PVE::Diskmanage::get_disks();
+		my $disklist = PVE::Diskmanage::get_disks(undef, 1);
 		&$remove_partition($disklist, $journal_part);
 		&$remove_partition($disklist, $data_part);
 	    }
