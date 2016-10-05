@@ -47,6 +47,8 @@ Ext.define('PVE.storage.GlusterFsScan', {
 	    }
 	});
 
+	store.sort('volname', 'ASC');
+
 	Ext.apply(me, {
 	    store: store
 	});

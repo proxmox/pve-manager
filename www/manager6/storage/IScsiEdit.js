@@ -46,6 +46,8 @@ Ext.define('PVE.storage.IScsiScan', {
 	    }
 	});
 
+	store.sort('target', 'ASC');
+
 	Ext.apply(me, {
 	    store: store
 	});

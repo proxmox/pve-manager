@@ -21,6 +21,8 @@ Ext.define('PVE.storage.VgSelector', {
 	    }
 	});
 
+	store.sort('vg', 'ASC');
+
 	Ext.apply(me, {
 	    store: store,
 	    listConfig: {
@@ -70,6 +72,8 @@ Ext.define('PVE.storage.BaseStorageSelector', {
 	});
 
 	store.loadData([{ storage: '' }], true);
+
+	store.sort('storage', 'ASC');
 
 	Ext.apply(me, {
 	    store: store

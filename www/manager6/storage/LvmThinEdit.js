@@ -43,6 +43,8 @@ Ext.define('PVE.storage.TPoolSelector', {
 	    }
 	});
 
+	store.sort('lv', 'ASC');
+
 	Ext.apply(me, {
 	    store: store,
 	    listConfig: {

@@ -47,6 +47,8 @@ Ext.define('PVE.storage.NFSScan', {
 	    }
 	});
 
+	store.sort('path', 'ASC');
+
 	Ext.apply(me, {
 	    store: store
 	});

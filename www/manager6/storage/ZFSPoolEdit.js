@@ -24,6 +24,8 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
 	    }
 	});
 
+	store.sort('pool', 'ASC');
+
 	Ext.apply(me, {
 	    store: store
 	});
