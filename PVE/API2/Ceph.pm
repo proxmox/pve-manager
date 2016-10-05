@@ -577,7 +577,7 @@ __PACKAGE__->register_method ({
 
 	PVE::CephTools::check_ceph_inited();
 
-	my $disks = PVE::Diskmanage::get_disks();
+	my $disks = PVE::Diskmanage::get_disks(undef, 1);
 
 	my $res = [];
 	foreach my $dev (keys %$disks) {
