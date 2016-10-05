@@ -35,22 +35,20 @@ Ext.define('PVE.dc.BackupEdit', {
 	    value: ''
 	});
 
-	var insideUpdate = false;
-	
 	var sm = Ext.create('Ext.selection.CheckboxModel', {
 	    mode: 'SIMPLE',
 	    listeners: {
 		selectionchange: function(model, selected) {
-		    if (!insideUpdate) { // avoid endless loop
-			var sel = [];
-			Ext.Array.each(selected, function(record) {
-			    sel.push(record.data.vmid);
-			});
+		    var sel = [];
+		    Ext.Array.each(selected, function(record) {
+			sel.push(record.data.vmid);
+		    });
 
-			insideUpdate = true;
-			vmidField.setValue(sel);
-			insideUpdate = false;
-		    }
+		    // to avoid endless recursion suspend the vmidField change
+		    // event temporary as it calls us again
+		    vmidField.suspendEvent('change');
+		    vmidField.setValue(sel);
+		    vmidField.resumeEvent('change');
 		}
 	    }
 	});
@@ -219,10 +217,6 @@ Ext.define('PVE.dc.BackupEdit', {
 	});
 
 	var update_vmid_selection = function(list, mode) {
-	    if (insideUpdate) {
-		return; // should not happen - just to be sure
-	    }
-	    insideUpdate = true;
 	    if (mode !== 'all') {
 		sm.deselectAll(true);
 		if (list) {
@@ -234,7 +228,6 @@ Ext.define('PVE.dc.BackupEdit', {
 		    });
 		}
 	    }
-	    insideUpdate = false;
 	};
 
 	vmidField.on('change', function(f, value) {
