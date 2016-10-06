@@ -17,6 +17,49 @@ Ext.define('PVE.form.ControllerSelector', {
 
     vmconfig: {}, // used to check for existing devices
 
+    sortByPreviousUsage: function(vmconfig, controllerList) {
+	var sortedList = [];
+
+	var usedControllers = Ext.clone(PVE.form.ControllerSelector.maxIds);
+
+	var type;
+	for (type in usedControllers) {
+	    if(usedControllers.hasOwnProperty(type)) {
+		usedControllers[type] = 0;
+	    }
+	}
+
+	var property;
+	for (property in vmconfig) {
+	    if (vmconfig.hasOwnProperty(property)) {
+		if (property.match(PVE.Utils.bus_match) && !vmconfig[property].match(/media=cdrom/)) {
+		    var foundController = property.match(PVE.Utils.bus_match)[1];
+		    usedControllers[foundController]++;
+		    }
+		}
+	}
+
+	var arrayControllers = [
+	    {name:'ide', count:usedControllers.ide},
+	    {name:'sata', count:usedControllers.sata},
+	    {name:'virtio', count:usedControllers.virtio},
+	    {name:'scsi', count:usedControllers.scsi}
+	].sort(function compare(a, b){
+	    return b.count - a.count;
+	});
+
+	if (arrayControllers[0].count > arrayControllers[1].count ) {
+	    // we have a favourite !
+	    var favourite = arrayControllers[0].name;
+	    sortedList = Ext.Array.remove(controllerList, favourite);
+	    sortedList.unshift(favourite);
+	    return sortedList;
+	}
+	else {
+	    return controllerList;
+	}
+    },
+
     setVMConfig: function(vmconfig, autoSelect) {
 	var me = this;
 
@@ -30,8 +73,10 @@ Ext.define('PVE.form.ControllerSelector', {
 		    me.down('field[name=deviceid]').setValue(2);
 		    return;
 		}
-	    } else if (me.vmconfig.ostype === 'l26') {
-		clist = ['virtio', 'ide', 'scsi', 'sata'];
+	    } else  {
+		// in most cases we want to add a disk to the same controller
+		// we previously used
+		clist = me.sortByPreviousUsage(me.vmconfig, clist);
 	    }
 
 	    Ext.Array.each(clist, function(controller) {
