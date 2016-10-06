@@ -63,40 +63,6 @@ var HostPort_match = new RegExp("^(" + IPV4_REGEXP + "|" + DnsName_REGEXP + ")(:
 var HostPortBrackets_match = new RegExp("^\\[(?:" + IPV6_REGEXP + "|" + IPV4_REGEXP + "|" + DnsName_REGEXP + ")\\](:\\d+)?$");
 var IP6_dotnotation_match = new RegExp("^" + IPV6_REGEXP + "(\\.\\d+)?$");
 
-var DocsPages = {
-    'pve-admin-guide.html':'Proxmox VE Administration Guide',
-    'chapter-sysadmin.html':'Host System Administration',
-    'chapter-pvecm.html':'Cluster Manager',
-    'chapter-pmxcfs.html':'Proxmox Cluster File System (pmxcfs)',
-    'chapter-pvesm.html':'Proxmox VE Storage',
-    'chapter-qm.html': 'Qemu/KVM Virtual Machines',
-    'chapter-pve-firewall.html': 'Proxmox VE Firewall',
-    'chapter-pveum.html': 'User Management',
-    'chapter-pct.html': 'Proxmox Container Toolkit',
-    'chapter-ha-manager.html': 'High Availability',
-    'chapter-vzdump.html': 'Backup and Restore',
-    'chapter-pve-faq.html': 'Frequently Asked Questions',
-    'chapter-pve-bibliography.html': 'Bibliography',
-    'qm.1.html': 'Qemu/KVM Virtual Machine Manager',
-    'qmrestore.1.html': 'Restore QemuServer vzdump Backups',
-    'pct.1.html': 'Tool to manage Linux Containers (LXC) on Proxmox VE',
-    'pveam.1.html': 'Proxmox VE Appliance Manager',
-    'pveceph.1.html': 'Manage CEPH Services on Proxmox VE Nodes',
-    'pvecm.1.html': 'Proxmox VE Cluster Manager',
-    'pveum.1.html': 'Proxmox VE User Manager',
-    'pvesm.1.html': 'Proxmox VE Storage Manager',
-    'pvesubscription.1.html': 'Proxmox VE Subscription Manager',
-    'vzdump.1.html': 'Backup Utility for VMs and Containers',
-    'ha-manager.1.html': 'Proxmox VE HA Manager',
-    'index.html':'',
-    'datacenter.cfg.5.html':'Proxmox VE Datacenter Configuration'
-};
-
-var DocsSubTitles = {
-    '_vm_container_configuration':'VM/Container configuration',
-    '_ip_aliases':'IP Aliases',
-    '_ip_sets':'IP Sets'
-};
 Ext.define('PVE.Utils', { statics: {
 
     // this class only contains static functions
@@ -1313,12 +1279,48 @@ Ext.define('PVE.Utils', { statics: {
 	menu.showAt(event.getXY());
     },
 
+    DocsPages: {
+	'pve-admin-guide.html':'Proxmox VE Administration Guide',
+	'chapter-sysadmin.html':'Host System Administration',
+	'chapter-pvecm.html':'Cluster Manager',
+	'chapter-pmxcfs.html':'Proxmox Cluster File System (pmxcfs)',
+	'chapter-pvesm.html':'Proxmox VE Storage',
+	'chapter-qm.html': 'Qemu/KVM Virtual Machines',
+	'chapter-pve-firewall.html': 'Proxmox VE Firewall',
+	'chapter-pveum.html': 'User Management',
+	'chapter-pct.html': 'Proxmox Container Toolkit',
+	'chapter-ha-manager.html': 'High Availability',
+	'chapter-vzdump.html': 'Backup and Restore',
+	'chapter-pve-faq.html': 'Frequently Asked Questions',
+	'chapter-pve-bibliography.html': 'Bibliography',
+	'qm.1.html': 'Qemu/KVM Virtual Machine Manager',
+	'qmrestore.1.html': 'Restore QemuServer vzdump Backups',
+	'pct.1.html': 'Tool to manage Linux Containers (LXC) on Proxmox VE',
+	'pveam.1.html': 'Proxmox VE Appliance Manager',
+	'pveceph.1.html': 'Manage CEPH Services on Proxmox VE Nodes',
+	'pvecm.1.html': 'Proxmox VE Cluster Manager',
+	'pveum.1.html': 'Proxmox VE User Manager',
+	'pvesm.1.html': 'Proxmox VE Storage Manager',
+	'pvesubscription.1.html': 'Proxmox VE Subscription Manager',
+	'vzdump.1.html': 'Backup Utility for VMs and Containers',
+	'ha-manager.1.html': 'Proxmox VE HA Manager',
+	'index.html':'',
+	'datacenter.cfg.5.html':'Proxmox VE Datacenter Configuration'
+    },
+
+    DocsSubTitles: {
+	'_vm_container_configuration':'VM/Container configuration',
+	'_ip_aliases':'IP Aliases',
+	'_ip_sets':'IP Sets'
+    },
+
     mapDocsUrlToTitle: function(url) {
 	var title, subtitle;
+
 	// if there is a subtitle
 	if (url.indexOf('#') !== -1) {
-	    title = DocsPages[url.split('#')[0]] || '';
-	    subtitle = DocsSubTitles[url.split('#')[1]];
+	    title = PVE.Utils.DocsPages[url.split('#')[0]] || '';
+	    subtitle = PVE.Utils.DocsSubTitles[url.split('#')[1]];
 
 	    // if we do not find the subtitle,
 	    // capitalize the beginning of every word
@@ -1337,7 +1339,7 @@ Ext.define('PVE.Utils', { statics: {
 
 	    title += subtitle;
 	} else {
-	    title = DocsPages[url] || '';
+	    title = PVE.Utils.DocsPages[url] || '';
 	}
 
 	return title;
