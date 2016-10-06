@@ -580,6 +580,9 @@ Ext.define('PVE.FirewallRules', {
 	me.copyBtn = Ext.create('PVE.button.Button',{
 	    text: gettext('Copy'),
 	    selModel: sm,
+	    enableFn: function(rec) {
+		return (rec.data.type === 'in' || rec.data.type === 'out');
+	    },
 	    disabled: true,
 	    handler: run_copy_editor
 	});
