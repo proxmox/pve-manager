@@ -172,7 +172,8 @@ Ext.define('PVE.form.ComboBox', {
 	me.applyEmptyText();
 
 	// clear and set when not the same
-	if (Ext.isArray(me.originalValue) && !Ext.Array.equals(me.getValue(), me.originalValue)) {
+	var value = me.getValue();
+	if (Ext.isArray(me.originalValue) && Ext.isArray(value) && !Ext.Array.equals(value, me.originalValue)) {
 	    me.clearValue();
 	    me.setValue(me.originalValue);
 	}
