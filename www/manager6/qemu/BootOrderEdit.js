@@ -9,7 +9,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
     comboboxes: [],
 
     isBootDisk: function(value) {
-	return (/^(ide|sata|scsi|virtio)\d+$/).test(value);
+	return PVE.Utils.bus_match.test(value);
     },
 
     setVMConfig: function(vmconfig) {

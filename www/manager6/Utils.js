@@ -103,6 +103,8 @@ Ext.define('PVE.Utils', { statics: {
 
     toolkit: undefined, // (extjs|touch), set inside Toolkit.js
 
+    bus_match: /^(ide|sata|virtio|scsi)\d+$/,
+
     log_severity_hash: {
 	0: "panic",
 	1: "alert",
