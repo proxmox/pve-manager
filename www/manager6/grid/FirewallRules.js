@@ -568,7 +568,7 @@ Ext.define('PVE.FirewallRules', {
 		allow_iface: me.allow_iface,
 		base_url: me.base_url,
 		list_refs_url: me.list_refs_url,
-		rec: rec,
+		rec: rec
 	    });
 
 	    win.show();
@@ -579,7 +579,7 @@ Ext.define('PVE.FirewallRules', {
 	    text: gettext('Copy'),
 	    selModel: sm,
 	    disabled: true,
-	    handler: run_copy_editor,
+	    handler: run_copy_editor
 	});
 
 	if (me.allow_groups) {
