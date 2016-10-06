@@ -8,6 +8,20 @@ Ext.define('PVE.data.ResourceStore', {
 	return (me.findExact('vmid', parseInt(vmid, 10)) >= 0);
     },
 
+    // returns the cached data from all nodes
+    getNodes: function() {
+	var me = this;
+
+	var nodes = [];
+	me.each(function(record) {
+	    if (record.get('type') == "node") {
+		nodes.push( record.getData() );
+	    }
+	});
+
+	return nodes;
+    },
+
     constructor: function(config) {
 	// fixme: how to avoid those warnings
 	/*jslint confusion: true */
