@@ -1,8 +1,9 @@
 Ext.define('PVE.ha.GroupInputPanel', {
     extend: 'PVE.panel.InputPanel',
+    onlineHelp: 'chapter-ha-manager.html#_groups',
 
     groupId: undefined,
-    
+
     onGetValues: function(values) {
 	var me = this;
 
