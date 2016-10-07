@@ -35,29 +35,24 @@ Ext.define('PVE.form.ControllerSelector', {
 		if (property.match(PVE.Utils.bus_match) && !vmconfig[property].match(/media=cdrom/)) {
 		    var foundController = property.match(PVE.Utils.bus_match)[1];
 		    usedControllers[foundController]++;
-		    }
 		}
+	    }
 	}
 
-	var arrayControllers = [
-	    {name:'ide', count:usedControllers.ide},
-	    {name:'sata', count:usedControllers.sata},
-	    {name:'virtio', count:usedControllers.virtio},
-	    {name:'scsi', count:usedControllers.scsi}
-	].sort(function compare(a, b){
-	    return b.count - a.count;
+	// TODO: add to OSDefaults.js?
+	var sortPriority = (vmconfig.ostype && vmconfig.ostype == "l26") ?
+	    { scsi: 4 , virtio: 3, sata: 2, ide: 1 } :
+	    { ide: 4, sata: 3, scsi: 2, virtio: 1 };
+
+	var sortedList = Ext.clone(controllerList);
+	sortedList.sort(function(a,b) {
+	    if (usedControllers[b] == usedControllers[a]) {
+		return sortPriority[b] - sortPriority[a];
+	    }
+	    return usedControllers[b] - usedControllers[a];
 	});
-
-	if (arrayControllers[0].count > arrayControllers[1].count ) {
-	    // we have a favourite !
-	    var favourite = arrayControllers[0].name;
-	    sortedList = Ext.Array.remove(controllerList, favourite);
-	    sortedList.unshift(favourite);
-	    return sortedList;
-	}
-	else {
-	    return controllerList;
-	}
+	
+	return sortedList;
     },
 
     setVMConfig: function(vmconfig, autoSelect) {
