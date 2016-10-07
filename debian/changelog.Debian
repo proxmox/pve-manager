@@ -1,3 +1,22 @@
+pve-manager (4.3-3) unstable; urgency=medium
+
+  * HA/Groups: add onlineHelp button to edit window
+
+  * ha/groups: allow editing node priorities through UI
+
+  * When adding a new hard disk, use the most used controller as suggested
+    value
+
+  * remove debugging code from postrm
+
+  * use correct info on disks in destroyosd and skip smart
+
+  * fix #1099: get correct info on disks in createosd
+
+  * Sort all lists in the storage what we load dynamically
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 07 Oct 2016 11:46:03 +0200
+
 pve-manager (4.3-2) unstable; urgency=medium
 
   * fix #1108: add copy firewall rule to GUI
