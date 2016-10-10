@@ -18,7 +18,6 @@ Ext.define('PVE.form.ControllerSelector', {
     vmconfig: {}, // used to check for existing devices
 
     sortByPreviousUsage: function(vmconfig, controllerList) {
-	var sortedList = [];
 
 	var usedControllers = Ext.clone(PVE.form.ControllerSelector.maxIds);
 
