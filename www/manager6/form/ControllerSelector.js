@@ -39,10 +39,10 @@ Ext.define('PVE.form.ControllerSelector', {
 	    }
 	}
 
-	// TODO: add to OSDefaults.js?
-	var sortPriority = (vmconfig.ostype && vmconfig.ostype == "l26") ?
-	    { scsi: 4 , virtio: 3, sata: 2, ide: 1 } :
-	    { ide: 4, sata: 3, scsi: 2, virtio: 1 };
+	var vmDefaults = PVE.qemu.OSDefaults[vmconfig.ostype];
+
+	var sortPriority = vmDefaults && vmDefaults.busPriority
+	    ? vmDefaults.busPriority : PVE.qemu.OSDefaults.generic;
 
 	var sortedList = Ext.clone(controllerList);
 	sortedList.sort(function(a,b) {

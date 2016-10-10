@@ -37,6 +37,12 @@ Ext.define('PVE.qemu.OSDefaults', {
 	me.generic = {
 	    busType: 'ide',
 	    networkCard: 'e1000',
+	    busPriority: {
+		    ide: 4,
+		    sata: 3,
+		    scsi: 2,
+		    virtio: 1
+	    },
 	    scsihw: 'virtio-scsi-pci'
 	};
 
@@ -46,6 +52,12 @@ Ext.define('PVE.qemu.OSDefaults', {
 	    pveOS: 'l26',
 	    parent : 'generic',
 	    busType: 'scsi',
+	    busPriority: {
+		    scsi: 4,
+		    virtio: 3,
+		    sata: 2,
+		    ide: 1
+	    },
 	    networkCard: 'virtio'
 	});
 
