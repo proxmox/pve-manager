@@ -56,11 +56,10 @@ Ext.define('PVE.qemu.OSDefaults', {
 	    networkCard: 'rtl8139',
 	    scsihw: 'lsi'
 	});
-
+	// https://pve.proxmox.com/wiki/Windows_XP_Guest_Notes
 	addOS({
 	    pveOS: 'wxp',
-	    parent : 'generic',
-	    scsihw: 'lsi'
+	    parent : 'w2k',
 	});
 
     }
