@@ -1003,6 +1003,9 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     render_size_usage: function(val, max) {
+	if (max === 0) {
+	    return gettext('N/A');
+	}
 	return (val*100/max).toFixed(2) + '% '+ '(' +
 	    Ext.String.format(gettext('{0} of {1}'),
 	    PVE.Utils.render_size(val), PVE.Utils.render_size(max)) + ')';
