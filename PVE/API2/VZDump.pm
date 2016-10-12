@@ -56,6 +56,11 @@ __PACKAGE__->register_method ({
 		if $param->{stdout};
 	}
 
+	foreach my $key (qw(maxfiles tmpdir dumpdir script bwlimit ionice)) {
+	    raise_param_exc({ $key => "Only root may set this option."})
+		if defined($param->{$key}) && ($user ne 'root@pam');
+	}
+
 	# by default we set --rsyncable for gzip
 	local $ENV{GZIP} = "--rsyncable" if !$ENV{GZIP};
 
@@ -111,11 +116,6 @@ __PACKAGE__->register_method ({
 
 	die "you can only backup a single VM with option --stdout\n"
 	    if $param->{stdout} && scalar(@vmids) != 1;
-
-	foreach my $key (qw(maxfiles tmpdir dumpdir script bwlimit ionice)) {
-	    raise_param_exc({ $key => "Only root may set this option."})
-		if defined($param->{$key}) && ($user ne 'root@pam');	    
-	}
 
 	$rpcenv->check($user, "/storage/$param->{storage}", [ 'Datastore.AllocateSpace' ])
 	    if $param->{storage};
