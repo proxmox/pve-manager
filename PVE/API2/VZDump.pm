@@ -23,7 +23,7 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => "Create backup.",
     permissions => {
-	description => "The user needs 'VM.Backup' permissions on any VM, and 'Datastore.AllocateSpace' on the backup storage.",
+	description => "The user needs 'VM.Backup' permissions on any VM, and 'Datastore.AllocateSpace' on the backup storage. The 'maxfiles', 'tmpdir', 'dumpdir', 'script', 'bwlimit' and 'ionice' parameters are restricted to the 'root\@pam' user.",
 	user => 'all',
     },
     protected => 1,
