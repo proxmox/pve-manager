@@ -1,7 +1,7 @@
 Ext.define('PVE.qemu.ProcessorInputPanel', {
     extend: 'PVE.panel.InputPanel',
     alias: 'widget.pveQemuProcessorPanel',
-    onlineHelp: 'chapter-qm.html#_cpu',
+    onlineHelp: 'qm_cpu',
 
     onGetValues: function(values) {
 	var me = this;

@@ -4,7 +4,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 
     insideWizard: false,
 
-    onlineHelp: 'chapter-pct.html#_container_network',
+    onlineHelp: 'pct_container_network',
 
     setNodename: function(nodename) {
 	var me = this;

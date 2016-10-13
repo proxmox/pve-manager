@@ -1,6 +1,6 @@
 Ext.define('PVE.ha.GroupInputPanel', {
     extend: 'PVE.panel.InputPanel',
-    onlineHelp: 'chapter-ha-manager.html#_groups',
+    onlineHelp: 'ha_manager_groups',
 
     groupId: undefined,
 

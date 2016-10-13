@@ -187,7 +187,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 
     insideWizard: false,
 
-    onlineHelp: 'chapter-pct.html#_container_storage',
+    onlineHelp: 'pct_container_storage',
 
     unused: false, // ADD usused disk imaged
 

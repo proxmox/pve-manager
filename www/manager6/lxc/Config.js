@@ -2,7 +2,7 @@ Ext.define('PVE.lxc.Config', {
     extend: 'PVE.panel.Config',
     alias: 'widget.PVE.lxc.Config',
 
-    onlineHelp: 'chapter-pct.html',
+    onlineHelp: 'chapter_pct',
 
     initComponent: function() {
         var me = this;
@@ -153,7 +153,7 @@ Ext.define('PVE.lxc.Config', {
 	    {
 		title: gettext('Resources'),
 		itemId: 'resources',
-		onlineHelp: 'chapter-pct.html#_configuration',
+		onlineHelp: 'pct_configuration',
 		expandedOnInit: true,
 		iconCls: 'fa fa-cube',
 		xtype: 'pveLxcRessourceView'
@@ -161,21 +161,21 @@ Ext.define('PVE.lxc.Config', {
 	    {
 		title: gettext('Network'),
 		iconCls: 'fa fa-exchange',
-		onlineHelp: 'chapter-pct.html#_container_network',
+		onlineHelp: 'pct_container_network',
 		itemId: 'network',
 		xtype: 'pveLxcNetworkView'
 	    },
 	    {
 		title: gettext('DNS'),
 		iconCls: 'fa fa-globe',
-		onlineHelp: 'chapter-pct.html#_container_network',
+		onlineHelp: 'pct_container_network',
 		itemId: 'dns',
 		xtype: 'pveLxcDNS'
 	    },
 	    {
 		title: gettext('Options'),
 		itemId: 'options',
-		onlineHelp: 'chapter-pct.html#_options',
+		onlineHelp: 'pct_options',
 		iconCls: 'fa fa-gear',
 		xtype: 'pveLxcOptions'
 	    },
@@ -192,7 +192,7 @@ Ext.define('PVE.lxc.Config', {
 	    me.items.push({
 		title: gettext('Backup'),
 		iconCls: 'fa fa-floppy-o',
-		onlineHelp: 'chapter-vzdump.html',
+		onlineHelp: 'chapter_vzdump',
 		xtype: 'pveBackupView',
 		itemId: 'backup'
 	    });
@@ -202,7 +202,7 @@ Ext.define('PVE.lxc.Config', {
 	    me.items.push({
 		title: gettext('Snapshots'),
 		iconCls: 'fa fa-history',
-		onlineHelp: 'chapter-pct.html#_snapshots',
+		onlineHelp: 'pct_snapshots',
 		xtype: 'pveLxcSnapshotTree',
 		itemId: 'snapshot'
 	    });
@@ -213,7 +213,7 @@ Ext.define('PVE.lxc.Config', {
 		{
 		    xtype: 'pveFirewallRules',
 		    title: gettext('Firewall'),
-		    onlineHelp: 'chapter-pve-firewall.html',
+		    onlineHelp: 'chapter_pve_firewall',
 		    iconCls: 'fa fa-shield',
 		    allow_iface: true,
 		    base_url: base_url + '/firewall/rules',
@@ -224,7 +224,7 @@ Ext.define('PVE.lxc.Config', {
 		    xtype: 'pveFirewallOptions',
 		    groups: ['firewall'],
 		    iconCls: 'fa fa-gear',
-		    onlineHelp: 'chapter-pve-firewall.html#_vm_container_configuration',
+		    onlineHelp: 'pve_firewall_vm_container_configuration',
 		    title: gettext('Options'),
 		    base_url: base_url + '/firewall/options',
 		    fwtype: 'vm',
@@ -235,7 +235,7 @@ Ext.define('PVE.lxc.Config', {
 		    title: gettext('Alias'),
 		    groups: ['firewall'],
 		    iconCls: 'fa fa-external-link',
-		    onlineHelp: 'chapter-pve-firewall.html#_ip_aliases',
+		    onlineHelp: 'pve_firewall_ip_aliases',
 		    base_url: base_url + '/firewall/aliases',
 		    itemId: 'firewall-aliases'
 		},
@@ -244,7 +244,7 @@ Ext.define('PVE.lxc.Config', {
 		    title: gettext('IPSet'),
 		    groups: ['firewall'],
 		    iconCls: 'fa fa-list-ol',
-		    onlineHelp: 'chapter-pve-firewall.html#_ip_sets',
+		    onlineHelp: 'pve_firewall_ip_sets',
 		    base_url: base_url + '/firewall/ipset',
 		    list_refs_url: base_url + '/firewall/refs',
 		    itemId: 'firewall-ipset'
@@ -253,7 +253,7 @@ Ext.define('PVE.lxc.Config', {
 		    title: gettext('Log'),
 		    groups: ['firewall'],
 		    iconCls: 'fa fa-list',
-		    onlineHelp: 'chapter-pve-firewall.html',
+		    onlineHelp: 'chapter_pve_firewall',
 		    itemId: 'firewall-fwlog',
 		    xtype: 'pveLogView',
 		    url: '/api2/extjs' + base_url + '/firewall/log'
@@ -267,7 +267,7 @@ Ext.define('PVE.lxc.Config', {
 		title: gettext('Permissions'),
 		itemId: 'permissions',
 		iconCls: 'fa fa-unlock',
-		onlineHelp: 'chapter-pveum.html',
+		onlineHelp: 'chapter_user_management',
 		path: '/vms/' + vmid
 	    });
 	}

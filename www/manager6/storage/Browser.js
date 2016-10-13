@@ -2,7 +2,7 @@ Ext.define('PVE.storage.Browser', {
     extend: 'PVE.panel.Config',
     alias: 'widget.PVE.storage.Browser',
 
-    onlineHelp: 'chapter-pvesm.html',
+    onlineHelp: 'chapter_storage',
 
     initComponent: function() {
         var me = this;
@@ -49,7 +49,7 @@ Ext.define('PVE.storage.Browser', {
 		xtype: 'pveACLView',
 		title: gettext('Permissions'),
 		iconCls: 'fa fa-unlock',
-		onlineHelp: 'chapter-pveum.html',
+		onlineHelp: 'chapter_user_management',
 		itemId: 'permissions',
 		path: '/storage/' + storeid
 	    });

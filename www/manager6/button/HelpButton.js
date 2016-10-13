@@ -1,6 +1,9 @@
 /* help button pointing to an online documentation
    for components contained in a modal window
- */
+*/
+/*global
+  pveOnlineHelpInfo
+*/
 Ext.define('PVE.button.Help', {
     extend: 'Ext.button.Button',
     alias: 'widget.pveHelpButton',
@@ -35,16 +38,32 @@ Ext.define('PVE.button.Help', {
 
     // this sets the link and
     // sets the tooltip text
-    setOnlineHelp:function(link) {
+    setOnlineHelp:function(blockid) {
 	var me = this;
-	me.onlineHelp = link;
-	me.setTooltip(PVE.Utils.mapDocsUrlToTitle(link));
+
+	var info = pveOnlineHelpInfo[blockid];
+	if (info) {
+	    me.onlineHelp = blockid;
+	    var title = info.title;
+	    if (info.subtitle) {
+		title += ' - ' + info.subtitle;
+	    }
+	    me.setTooltip(title);
+	}
     },
 
     handler: function() {
 	var me = this;
+	var docsURI;
+
 	if (me.onlineHelp) {
-	    var docsURI = window.location.origin + '/pve-docs/' + me.onlineHelp;
+	    var info = pveOnlineHelpInfo[me.onlineHelp];
+	    if (info) {
+		docsURI = window.location.origin + info.link;
+	    }
+	}
+
+	if (docsURI) {
 	    window.open(docsURI);
 	} else {
 	    Ext.Msg.alert(gettext('Help'), gettext('No Help available'));

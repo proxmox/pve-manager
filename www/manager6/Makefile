@@ -207,8 +207,12 @@ JSSRC= 				                 	\
 lint: ${JSSRC}
 	jslint ${JSSRC} 
 
-pvemanagerlib.js: ${JSSRC}
-	cat ${JSSRC} >$@.tmp
+pvemanagerlib.js: OnlineHelpInfo.js ${JSSRC}
+	cat OnlineHelpInfo.js ${JSSRC} >$@.tmp
+	mv $@.tmp $@
+
+OnlineHelpInfo.js: /usr/bin/asciidoc-pve
+	/usr/bin/asciidoc-pve scan-extjs ${JSSRC} >$@.tmp
 	mv $@.tmp $@
 
 all: pvemanagerlib.js
@@ -222,7 +226,7 @@ install: pvemanagerlib.js
 .PHONY: clean
 clean:
 	find . -name '*~' -exec rm {} ';'	
-	rm -rf pvemanagerlib.js
+	rm -rf pvemanagerlib.js OnlineHelpInfo.js
 
 
 

@@ -405,7 +405,7 @@ Ext.define('PVE.StdWorkspace', {
 			    hidden: false,
 			    iconCls: 'fa fa-info-circle x-btn-icon-el-default-toolbar-small ',
 			    listenToGlobalEvent: false,
-			    onlineHelp: 'index.html',
+			    onlineHelp: 'pve_documentation_index',
 			    margin: '0 5 0 0'
 			},
 			createVM, 

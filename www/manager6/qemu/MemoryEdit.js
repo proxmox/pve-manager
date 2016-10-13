@@ -1,7 +1,7 @@
 Ext.define('PVE.qemu.MemoryInputPanel', {
     extend: 'PVE.panel.InputPanel',
     alias: 'widget.pveQemuMemoryPanel',
-    onlineHelp: 'chapter-qm.html#_memory',
+    onlineHelp: 'qm_memory',
 
     insideWizard: false,
 

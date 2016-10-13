@@ -1,7 +1,7 @@
 Ext.define('PVE.qemu.OSTypeInputPanel', {
     extend: 'PVE.panel.InputPanel',
     alias: 'widget.pveQemuOSTypePanel',
-    onlineHelp: 'chapter-qm.html#_os_settings',
+    onlineHelp: 'qm_os_settings',
     insideWizard: false,
 
     controller: {

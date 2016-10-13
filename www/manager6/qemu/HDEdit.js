@@ -3,7 +3,7 @@
 Ext.define('PVE.qemu.HDInputPanel', {
     extend: 'PVE.panel.InputPanel',
     alias: 'widget.PVE.qemu.HDInputPanel',
-    onlineHelp: 'chapter-qm.html#_hard_disk',
+    onlineHelp: 'qm_hard_disk',
 
     insideWizard: false,
 
