@@ -71,8 +71,7 @@ Ext.define('PVE.qemu.OSDefaults', {
 	// https://pve.proxmox.com/wiki/Windows_XP_Guest_Notes
 	addOS({
 	    pveOS: 'wxp',
-	    parent : 'w2k',
+	    parent : 'w2k'
 	});
-
     }
 });
