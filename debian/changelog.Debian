@@ -1,3 +1,15 @@
+pve-manager (4.3-4) unstable; urgency=medium
+
+  * use auto-generated block IDs to reference online docu
+
+  * vzdump: document restricted API parameters
+
+  * Move bus priority list to OSDefaults
+
+  * make Win XP and Win 2003 use the same defaults as Win 2000
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 13 Oct 2016 11:28:41 +0200
+
 pve-manager (4.3-3) unstable; urgency=medium
 
   * HA/Groups: add onlineHelp button to edit window
