@@ -534,7 +534,7 @@ __PACKAGE__->register_method({
 	my @opt_pack = ('zfsutils', 'drbdmanage', 'fence-agents-pve',
 			'gfs2-utils', 'pve-sheepdog', 'openvswitch-switch', 'ceph');
 
-	push @list, qw(lvm2 corosync-pve libqb0 pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl pve-libspice-server1 vncterm pve-qemu-kvm pve-container pve-firewall pve-ha-manager ksm-control-daemon glusterfs-client lxc-pve lxcfs criu novnc-pve);
+	push @list, qw(lvm2 corosync-pve libqb0 pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl pve-libspice-server1 vncterm pve-docs pve-qemu-kvm pve-container pve-firewall pve-ha-manager ksm-control-daemon glusterfs-client lxc-pve lxcfs criu novnc-pve);
 
 	@list = (@list, @opt_pack);
 	my $pkglist = [];
