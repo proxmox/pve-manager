@@ -1,3 +1,13 @@
+pve-manager (4.3-5) unstable; urgency=medium
+
+  * recompile with new pve-docs package (fix onlineHelp links)
+
+  * pveversion: add smartmontools
+
+  * pveversion: add pve-docs package
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 14 Oct 2016 09:01:09 +0200
+
 pve-manager (4.3-4) unstable; urgency=medium
 
   * use auto-generated block IDs to reference online docu
