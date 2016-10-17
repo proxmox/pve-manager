@@ -233,6 +233,7 @@ __PACKAGE__->register_method({
     description => "Create new vzdump backup job.",
     permissions => {
 	check => ['perm', '/', ['Sys.Modify']],
+	description => "The 'tmpdir', 'dumpdir' and 'script' parameters are additionally restricted to the 'root\@pam' user.",
     },
     parameters => {
     	additionalProperties => 0,
@@ -263,6 +264,11 @@ __PACKAGE__->register_method({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
+
+	foreach my $key (qw(tmpdir dumpdir script)) {
+	    raise_param_exc({ $key => "Only root may set this option."})
+		if defined($param->{$key}) && ($user ne 'root@pam');
+	}
 
 	my $data = cfs_read_file('vzdump.cron');
 
