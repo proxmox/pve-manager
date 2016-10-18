@@ -63,9 +63,9 @@ var HostPort_match = new RegExp("^(" + IPV4_REGEXP + "|" + DnsName_REGEXP + ")(:
 var HostPortBrackets_match = new RegExp("^\\[(?:" + IPV6_REGEXP + "|" + IPV4_REGEXP + "|" + DnsName_REGEXP + ")\\](:\\d+)?$");
 var IP6_dotnotation_match = new RegExp("^" + IPV6_REGEXP + "(\\.\\d+)?$");
 
-Ext.define('PVE.Utils', { statics: {
+Ext.define('PVE.Utils', { utilities: {
 
-    // this class only contains static functions
+    // this singleton contains miscellaneous utilities
 
     toolkit: undefined, // (extjs|touch), set inside Toolkit.js
 
@@ -1277,6 +1277,12 @@ Ext.define('PVE.Utils', { statics: {
 	}
 
 	menu.showAt(event.getXY());
+    }},
+
+    singleton: true,
+    constructor: function() {
+	var me = this;
+	Ext.apply(me, me.utilities);
     }
-}});
+});
 
