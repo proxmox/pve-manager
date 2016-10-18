@@ -1,5 +1,3 @@
-/*global IP4_match, IP4_cidr_match, IP6_match, IP6_cidr_match, IP64_match, DnsName_match, DnsName_REGEXP, IPV4_REGEXP, IPV6_REGEXP*/
-/*global HostPort_match, HostPortBrackets_match, IP6_dotnotation_match*/
 // ExtJS related things
 
 PVE.Utils.toolkit = 'extjs';
@@ -10,13 +8,13 @@ Ext.Ajax.disableCaching = false;
 // custom Vtypes
 Ext.apply(Ext.form.field.VTypes, {
     IPAddress:  function(v) {
-	return IP4_match.test(v);
+	return PVE.Utils.IP4_match.test(v);
     },
     IPAddressText:  gettext('Example') + ': 192.168.1.1',
     IPAddressMask: /[\d\.]/i,
 
     IPCIDRAddress:  function(v) {
-	var result = IP4_cidr_match.exec(v);
+	var result = PVE.Utils.IP4_cidr_match.exec(v);
 	// limits according to JSON Schema see
 	// pve-common/src/PVE/JSONSchema.pm
 	return (result !== null && result[1] >= 8 && result[1] <= 32);
@@ -25,13 +23,13 @@ Ext.apply(Ext.form.field.VTypes, {
     IPCIDRAddressMask: /[\d\.\/]/i,
 
     IP6Address:  function(v) {
-        return IP6_match.test(v);
+        return PVE.Utils.IP6_match.test(v);
     },
     IP6AddressText:  gettext('Example') + ': 2001:DB8::42',
     IP6AddressMask: /[A-Fa-f0-9:]/,
 
     IP6CIDRAddress:  function(v) {
-	var result = IP6_cidr_match.exec(v);
+	var result = PVE.Utils.IP6_cidr_match.exec(v);
 	// limits according to JSON Schema see
 	// pve-common/src/PVE/JSONSchema.pm
 	return (result !== null && result[1] >= 8 && result[1] <= 120);
@@ -46,7 +44,7 @@ Ext.apply(Ext.form.field.VTypes, {
     IP6PrefixLengthMask:  /[0-9]/,
 
     IP64Address:  function(v) {
-        return IP64_match.test(v);
+        return PVE.Utils.IP64_match.test(v);
     },
     IP64AddressText:  gettext('Example') + ': 192.168.1.1 2001:DB8::42',
     IP64AddressMask: /[A-Fa-f0-9\.:]/,
@@ -94,7 +92,7 @@ Ext.apply(Ext.form.field.VTypes, {
     HttpProxyText: gettext('Example') + ": http://username:password&#64;host:port/",
 
     DnsName: function(v) {
-	return DnsName_match.test(v);
+	return PVE.Utils.DnsName_match.test(v);
     },
     DnsNameText: gettext('This is not a valid DNS name'),
 
@@ -112,9 +110,9 @@ Ext.apply(Ext.form.field.VTypes, {
 		continue;
 	    }
 
-	    if (!HostPort_match.test(list[i]) &&
-		!HostPortBrackets_match.test(list[i]) &&
-		!IP6_dotnotation_match.test(list[i])) {
+	    if (!PVE.Utils.HostPort_match.test(list[i]) &&
+		!PVE.Utils.HostPortBrackets_match.test(list[i]) &&
+		!PVE.Utils.IP6_dotnotation_match.test(list[i])) {
 		return false;
 	    }
 	}
