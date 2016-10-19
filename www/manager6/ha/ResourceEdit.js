@@ -63,7 +63,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,
-		fieldLabel: gettext('enable'),
+		fieldLabel: gettext('enabled'),
 		listeners: {
 		    'change': function(field, newValue) {
 			if (newValue === false) {
