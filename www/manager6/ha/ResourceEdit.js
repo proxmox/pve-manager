@@ -1,6 +1,6 @@
 Ext.define('PVE.ha.VMResourceInputPanel', {
     extend: 'PVE.panel.InputPanel',
-
+    onlineHelp: 'ha_manager_service_operations',
     vmid: undefined,
     
     onGetValues: function(values) {
