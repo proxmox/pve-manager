@@ -1,7 +1,6 @@
 Ext.define('PVE.ha.VMResourceInputPanel', {
     extend: 'PVE.panel.InputPanel',
 
-
     vmid: undefined,
     
     onGetValues: function(values) {
@@ -33,6 +32,14 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
     initComponent : function() {
 	var me = this;
 
+	var disabledHint = Ext.createWidget({
+	    xtype: 'displayfield', //submitValue is false, so we don't get submitted
+	    userCls: 'pve-hint',
+	    value: gettext('Disabling the resource will stop the guest system. ' +
+	    'See the online help for details.'),
+	    hidden: true
+	});
+
 	me.column1 = [
 	    {
 		xtype: me.vmid ? 'displayfield' : 'pveVMIDSelector',
@@ -56,8 +63,21 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,
-		fieldLabel: gettext('enable')
-	    }
+		fieldLabel: gettext('enable'),
+		listeners: {
+		    'change': function(field, newValue) {
+			if (newValue === false) {
+			    disabledHint.setVisible(true);
+			}
+			else {
+			    if (disabledHint.isVisible()) {
+				disabledHint.setVisible(false);
+			    }
+			}
+		    }
+		}
+	    },
+	    disabledHint
 	];
 
 	me.columnB = [
