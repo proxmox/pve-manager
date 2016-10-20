@@ -68,8 +68,10 @@ Ext.apply(Ext.form.field.VTypes, {
     InterfaceName: function(v) {
         return (/^[a-z][a-z0-9_]{1,20}$/).test(v);
     },
-    InterfaceNameText: gettext('Format') + ': [a-z][a-z0-9_]{1,20}',
-
+    InterfaceNameText: gettext("Allowed characters") + ": 'a-z', '0-9', '_'" + "<br />" +
+		       gettext("Minimum characters") + ": 2" + "<br />" +
+		       gettext("Maximum characters") + ": 21" + "<br />" +
+		       gettext("Must start with") + ": 'a-z'",
 
     QemuStartDate: function(v) {
 	return (/^(now|\d{4}-\d{1,2}-\d{1,2}(T\d{1,2}:\d{1,2}:\d{1,2})?)$/).test(v);
@@ -79,12 +81,17 @@ Ext.apply(Ext.form.field.VTypes, {
     StorageId:  function(v) {
         return (/^[a-z][a-z0-9\-\_\.]*[a-z0-9]$/i).test(v);
     },
-    StorageIdText: gettext("Allowed characters") + ":  'A-Z', 'a-z', '0-9', '-', '_', '.'",
+    StorageIdText: gettext("Allowed characters") + ":  'A-Z', 'a-z', '0-9', '-', '_', '.'" + "<br />" +
+		   gettext("Minimum characters") + ": 2" + "<br />" +
+		   gettext("Must start with") + ": 'A-Z', 'a-z'<br />" +
+		   gettext("Must end with") + ": 'A-Z', 'a-z', '0-9'<br />",
 
     ConfigId:  function(v) {
         return (/^[a-z][a-z0-9\_]+$/i).test(v);
     },
-    ConfigIdText: gettext("Allowed characters") + ": 'A-Z', 'a-z', '0-9', '_'",
+    ConfigIdText: gettext("Allowed characters") + ": 'A-Z', 'a-z', '0-9', '_'" + "<br />" +
+		  gettext("Minimum characters") + ": 2" + "<br />" +
+		  gettext("Must start with") + ": " + gettext("letter"),
 
     HttpProxy:  function(v) {
         return (/^http:\/\/.*$/).test(v);
