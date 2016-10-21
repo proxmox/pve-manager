@@ -1,3 +1,19 @@
+pve-manager (4.3-6) unstable; urgency=medium
+
+  * fix #1175: make error messages more verbose
+
+  * add onlineHelp
+
+  * fix #1161: add hint when disabling a ha resource
+
+  * move out custom css style for hints in css class and use it
+
+  * fix 'NaN%' when max value is 0
+
+  * restrict vzdump cron options
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 21 Oct 2016 08:46:44 +0200
+
 pve-manager (4.3-5) unstable; urgency=medium
 
   * recompile with new pve-docs package (fix onlineHelp links)
