@@ -1,10 +1,16 @@
+pve-manager (4.3-7) unstable; urgency=medium
+
+  * correct bug number in previous changelog
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 21 Oct 2016 12:42:09 +0200
+
 pve-manager (4.3-6) unstable; urgency=medium
 
   * fix #1175: make error messages more verbose
 
   * add onlineHelp
 
-  * fix #1161: add hint when disabling a ha resource
+  * fix #1142: add hint when disabling a ha resource
 
   * move out custom css style for hints in css class and use it
 
