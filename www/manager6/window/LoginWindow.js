@@ -9,10 +9,21 @@ Ext.define('PVE.window.LoginWindow', {
 	    var me = this;
 
 	    var form = this.lookupReference('loginForm');
+	    var unField = this.lookupReference('usernameField');
+	    var saveunField = this.lookupReference('saveunField');
 	    var view = this.getView();
 
 	    if(form.isValid()){
 		view.el.mask(gettext('Please wait...'), 'x-mask-loading');
+
+		// set or clear username
+		var sp = Ext.state.Manager.getProvider();
+		if (saveunField.getValue() === true) {
+		    sp.set(unField.getStateId(), unField.getValue());
+		} else {
+		    sp.clear(unField.getStateId());
+		}
+		sp.set(saveunField.getStateId(), saveunField.getValue());
 
 		form.submit({
 		    failure: function(f, resp){
@@ -79,7 +90,25 @@ Ext.define('PVE.window.LoginWindow', {
 	    },
             'button[reference=loginButton]': {
 		click: 'onLogon'
-            }
+            },
+	    '#': {
+		show: function() {
+		    var sp = Ext.state.Manager.getProvider();
+		    var checkboxField = this.lookupReference('saveunField');
+		    var unField = this.lookupReference('usernameField');
+
+		    var checked = sp.get(checkboxField.getStateId());
+		    checkboxField.setValue(checked);
+
+		    if(checked === true) {
+			var username = sp.get(unField.getStateId());
+			console.log(username);
+			unField.setValue(username);
+			var pwField = this.lookupReference('passwordField');
+			pwField.focus();
+		    }
+		}
+	    }
 	}
     },
 
@@ -119,6 +148,7 @@ Ext.define('PVE.window.LoginWindow', {
 		name: 'username',
 		itemId: 'usernameField',
 		reference: 'usernameField',
+		stateId: 'login-username',
 		blankText: gettext("Enter your user name")
 	    },
 	    {
@@ -151,6 +181,16 @@ Ext.define('PVE.window.LoginWindow', {
 	    }
 	],
 	buttons: [
+	    {
+		xtype: 'checkbox',
+		fieldLabel: gettext('Save User name'),
+		name: 'saveusername',
+		reference: 'saveunField',
+		stateId: 'login-saveusername',
+		labelWidth: 'auto',
+		labelAlign: 'right',
+		submitValue: false
+	    },
 	    {
 		text: gettext('Login'),
 		reference: 'loginButton'
