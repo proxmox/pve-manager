@@ -431,3 +431,8 @@ div.right-aligned {
 .x-treelist-row-over > * > .x-treelist-item-text{
     color: #000;
 }
+
+/* some icons have to be color manually */
+.black {
+    color: #000;
+}

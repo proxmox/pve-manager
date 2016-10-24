@@ -396,9 +396,25 @@ Ext.define('PVE.StdWorkspace', {
 			},
 			{
 			    pack: 'end',
-			    margin: '0 10 0 0',
 			    id: 'userinfo',
 			    stateful: false
+			},
+			{
+			    xtype: 'button',
+			    margin: '0 10 0 0',
+			    iconCls: 'fa black fa-caret-down',
+			    menuAlign: 'tr-br?',
+			    menu: {
+				showSeparator: false,
+				items: [{
+				    text: gettext('My Settings'),
+				    iconCls: 'fa fa-fw fa-gear',
+				    handler: function() {
+					var win = Ext.create('PVE.window.Settings');
+					win.show();
+				    }
+				}]
+			    }
 			},
 			{
 			    xtype: 'pveHelpButton',
