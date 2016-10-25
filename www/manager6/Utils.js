@@ -961,6 +961,11 @@ Ext.define('PVE.Utils', { utilities: {
 	    }
 	}
 
+	// overwrite anything else
+	if (record.data.hastate === 'error') {
+	    gridcls = '-offline';
+	}
+
 	var fa = '<i class="fa fa-fw x-fa-grid' + gridcls  +  ' fa-' + icon  + '"></i> ';
 	return fa + value;
     },

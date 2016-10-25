@@ -124,6 +124,11 @@ Ext.define('PVE.tree.ResourceTree', {
 		iconClsAdd = '-offline';
 	    }
 
+	    // overwrite any other class
+	    if (info.hastate === 'error') {
+		iconClsAdd = '-offline';
+	    }
+
 	    info.iconCls = defaults.iconCls + iconClsAdd;
 
 	    if (info.template) {
@@ -288,7 +293,8 @@ Ext.define('PVE.tree.ResourceTree', {
 			if ((item.data.text !== olditem.data.text) ||
 			    (item.data.running !== olditem.data.running) ||
 			    (item.data.template !== olditem.data.template) ||
-			    (item.data.status !== olditem.data.status)) {
+			    (item.data.status !== olditem.data.status) ||
+			    (item.data.hastate!== olditem.data.hastate)) {
 			    //console.log("changed node/text/running " + olditem.data.id);
 			    changed = true;
 			}
