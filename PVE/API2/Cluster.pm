@@ -168,6 +168,15 @@ __PACKAGE__->register_method({
 	my $vmlist = PVE::Cluster::get_vmlist() || {};
 	my $idlist = $vmlist->{ids} || {};
 
+
+	my $nodename = PVE::INotify::nodename();
+	my $haenv = PVE::HA::Env::PVE2->new($nodename);
+	my $hastatus = $haenv->read_manager_status();
+	my $hatypemap = {
+	    'qemu' => 'vm',
+	    'lxc' => 'ct'
+	};
+
 	my $pooldata = {};
 	if (!$param->{type} || $param->{type} eq 'pool') {
 	    foreach my $pool (keys %{$usercfg->{pools}}) {
@@ -216,6 +225,12 @@ __PACKAGE__->register_method({
 		}
 		
 		next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ], 1);
+
+		# get ha status
+		my $hatype = $hatypemap->{$entry->{type}};
+		if (defined($hastatus->{service_status}->{"$hatype:$vmid"})) {
+		    $entry->{hastate} = $hastatus->{service_status}->{"$hatype:$vmid"}->{state};
+		}
 
 		push @$res, $entry;
 	    }
