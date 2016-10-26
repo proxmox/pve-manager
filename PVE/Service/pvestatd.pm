@@ -222,6 +222,9 @@ sub remove_stale_lxc_consoles {
     }
 }
 
+my $persistent_container_order = {};
+my $persistent_container_order_counter = 0;
+
 sub rebalance_lxc_containers {
     my ($vmstatus) = @_;
 
@@ -264,8 +267,32 @@ sub rebalance_lxc_containers {
 	}
     }
 
-    foreach my $bct (@balanced_cts) {
+    my $ctid_sorter = sub {
+	my ($id1, $id2) = @_;
+
+	my $last = $persistent_container_order_counter + 1;
+
+	my $po1 = $persistent_container_order->{$id1} // $last;
+	my $po2 = $persistent_container_order->{$id2} // $last;
+
+	if ($po1 == $last && $po2 == $last) {
+	    return $id1 <=> $id2;
+	} else {
+	    return $po1 <=> $po2;
+	}
+    };
+
+    my $new_order = {};
+
+    foreach my $bct (sort { &$ctid_sorter($a->[0], $b->[0]) } @balanced_cts) {
 	my ($vmid, $cpulimit, $cpuset) = @$bct;
+
+	if (my $order = $persistent_container_order->{$vmid}) {
+	    $new_order->{$vmid} = $order; # copy old value
+	} else {
+	    my $order = ++$persistent_container_order_counter;
+	    $new_order->{$vmid} = $order;
+	}
 
 	# We need to keep cpus_by_count sorted
 	my @cpus_by_count = sort {
@@ -285,6 +312,8 @@ sub rebalance_lxc_containers {
 	    warn $@ if $@; # ignore errors ?
 	}
     }
+
+    $persistent_container_order = $new_order;
 }
 
 sub update_lxc_status {
