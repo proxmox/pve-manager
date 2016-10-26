@@ -226,7 +226,6 @@ my $persistent_container_order = {};
 my $persistent_container_order_counter = 0;
 
 sub rebalance_lxc_containers {
-    my ($vmstatus) = @_;
 
     return if !-d '/sys/fs/cgroup/cpuset/lxc'; # nothing to do...
 
@@ -237,9 +236,10 @@ sub rebalance_lxc_containers {
     my @cpu_ctcount = (0) x $PVE::CpuSet::MAX_CPUID;
     my @balanced_cts;
 
-    foreach my $vmid (sort keys %$vmstatus) {
-	my $d = $vmstatus->{$vmid};
-	next if !$d->{pid};
+    my $ctlist = PVE::LXC::config_list();
+
+    foreach my $vmid (sort keys %$ctlist) {
+	next if ! -d "/sys/fs/cgroup/cpuset/lxc/$vmid";
 
 	my ($conf, $cpuset);
 	eval {
@@ -349,8 +349,6 @@ sub update_lxc_status {
 	    $plugin->update_lxc_status($plugin_config, $vmid, $d, $ctime);
 	}
     }
-
-    rebalance_lxc_containers($vmstatus);
 }
 
 sub update_storage_status {
@@ -411,6 +409,12 @@ sub update_status {
     };
     $err = $@;
     syslog('err', "lxc status update error: $err") if $err;
+
+    eval {
+	rebalance_lxc_containers();
+    };
+    $err = $@;
+    syslog('err', "lxc cpuset rebalance error: $err") if $err;
 
     eval {
 	update_storage_status($status_cfg);
