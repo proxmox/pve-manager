@@ -5,7 +5,17 @@ use warnings;
 
 use PVE::INotify;
 use PVE::RPCEnvironment;
+use PVE::SafeSyslog;
 use PVE::Service::pvestatd;
+
+$SIG{'__WARN__'} = sub {
+    my $err = $@;
+    my $t = $_[0];
+    chomp $t;
+    print STDERR "$t\n";
+    syslog('warning', "%s", $t);
+    $@ = $err;
+};
 
 my $prepare = sub {
     my $rpcenv = PVE::RPCEnvironment->init('priv');
