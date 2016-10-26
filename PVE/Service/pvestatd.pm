@@ -9,12 +9,14 @@ use PVE::Daemon;
 use Time::HiRes qw (gettimeofday);
 use PVE::Tools qw(dir_glob_foreach file_read_firstline);
 use PVE::ProcFSTools;
+use PVE::CpuSet;
 use Filesys::Df;
 use PVE::INotify;
 use PVE::Cluster qw(cfs_read_file);
 use PVE::Storage;
 use PVE::QemuServer;
 use PVE::LXC;
+use PVE::LXC::Config;
 use PVE::RPCEnvironment;
 use PVE::API2::Subscription;
 use PVE::AutoBalloon;
@@ -220,6 +222,71 @@ sub remove_stale_lxc_consoles {
     }
 }
 
+sub rebalance_lxc_containers {
+    my ($vmstatus) = @_;
+
+    return if !-d '/sys/fs/cgroup/cpuset/lxc'; # nothing to do...
+
+    my $all_cpus = PVE::CpuSet->new_from_cgroup('lxc', 'effective_cpus');
+    my @allowed_cpus = $all_cpus->members();
+    my $cpucount = scalar(@allowed_cpus);
+
+    my @cpu_ctcount = (0) x $PVE::CpuSet::MAX_CPUID;
+    my @balanced_cts;
+
+    foreach my $vmid (sort keys %$vmstatus) {
+	my $d = $vmstatus->{$vmid};
+	next if !$d->{pid};
+
+	my ($conf, $cpuset);
+	eval {
+
+	    $conf = PVE::LXC::Config->load_config($vmid);
+
+	    $cpuset = PVE::CpuSet->new_from_cgroup("lxc/$vmid");
+	};
+	if (my $err = $@) {
+	    warn $err;
+	    next;
+	}
+
+	my @cpuset_members = $cpuset->members();
+
+	# container has a fixed set, count it
+	if (PVE::LXC::Config->has_lxc_entry($conf, 'lxc.cgroup.cpuset.cpus')) {
+	    foreach my $cpu (@cpuset_members) {
+		$cpu_ctcount[$cpu]++ if $cpu <= @cpu_ctcount;
+	    }
+	} else {
+	    my $cpulimit = $conf->{cpulimit} // $cpucount;
+	    $cpulimit = $cpucount if $cpulimit > $cpucount;
+	    push @balanced_cts, [$vmid, $cpulimit, $cpuset];
+	}
+    }
+
+    foreach my $bct (@balanced_cts) {
+	my ($vmid, $cpulimit, $cpuset) = @$bct;
+
+	# We need to keep cpus_by_count sorted
+	my @cpus_by_count = sort {
+	    $cpu_ctcount[$a] <=> $cpu_ctcount[$b]
+	} @allowed_cpus;
+
+	my $newset = PVE::CpuSet->new();
+
+	for (my $i = 0; $i < $cpulimit && $i < @cpus_by_count; ++$i) {
+	    my $cpu = $cpus_by_count[$i];
+	    $newset->insert($cpu);
+	    $cpu_ctcount[$cpu]++;
+	}
+
+	if (!$newset->is_equal($cpuset)) {
+	    eval { $newset->write_to_cgroup("lxc/$vmid"); };
+	    warn $@ if $@; # ignore errors ?
+	}
+    }
+}
+
 sub update_lxc_status {
     my ($status_cfg) = @_;
 
@@ -253,6 +320,8 @@ sub update_lxc_status {
 	    $plugin->update_lxc_status($plugin_config, $vmid, $d, $ctime);
 	}
     }
+
+    rebalance_lxc_containers($vmstatus);
 }
 
 sub update_storage_status {
