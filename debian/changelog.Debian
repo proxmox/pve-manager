@@ -1,3 +1,9 @@
+pve-manager (4.3-8) unstable; urgency=medium
+
+  * pvestatd: add container cpuset balancing
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 27 Oct 2016 12:33:38 +0200
+
 pve-manager (4.3-7) unstable; urgency=medium
 
   * correct bug number in previous changelog
