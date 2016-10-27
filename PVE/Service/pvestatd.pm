@@ -222,9 +222,6 @@ sub remove_stale_lxc_consoles {
     }
 }
 
-my $persistent_container_order = {};
-my $persistent_container_order_counter = 0;
-
 sub rebalance_lxc_containers {
 
     return if !-d '/sys/fs/cgroup/cpuset/lxc'; # nothing to do...
@@ -255,65 +252,91 @@ sub rebalance_lxc_containers {
 
 	my @cpuset_members = $cpuset->members();
 
-	# container has a fixed set, count it
-	if (PVE::LXC::Config->has_lxc_entry($conf, 'lxc.cgroup.cpuset.cpus')) {
-	    foreach my $cpu (@cpuset_members) {
-		$cpu_ctcount[$cpu]++ if $cpu <= @cpu_ctcount;
-	    }
-	} else {
-	    my $cores = $conf->{cores};
+	if (defined(my $cores = $conf->{cores}) &&
+	    !PVE::LXC::Config->has_lxc_entry($conf, 'lxc.cgroup.cpuset.cpus')) {
+
 	    $cores = $cpucount if !$cores || $cores > $cpucount;
-	    push @balanced_cts, [$vmid, $cores, $cpuset];
+
+	    # see if the number of cores was hot-reduced or
+	    # hasn't been enacted at all yet
+	    my $newset = PVE::CpuSet->new();
+	    if ($cores <  scalar(@cpuset_members)) {
+		for (my $i = 0; $i < $cores; $i++) {
+		    $newset->insert($cpuset_members[$i]);
+		}
+	    } elsif ($cores > scalar(@cpuset_members)) {
+		my $count = $newset->insert(@cpuset_members);
+		foreach my $cpu (@allowed_cpus) {
+		    $count += $newset->insert($cpu);
+		    last if $count >= $cores;
+		}
+	    } else {
+		$newset->insert(@cpuset_members);
+	    }
+
+	    # Apply hot-plugged changes if any:
+	    if (!$newset->is_equal($cpuset)) {
+		@cpuset_members = $newset->members();
+		syslog('info', "detected changed cpu set for lxc/$vmid: " .
+		       join(',', @cpuset_members));
+		$newset->write_to_cgroup("lxc/$vmid");
+	    }
+
+	    # Note: no need to rebalance if we already use all cores
+	    push @balanced_cts, [$vmid, $cores, $newset]
+		if $cores != $cpucount;
+	}
+
+	foreach my $cpu (@cpuset_members) {
+	    $cpu_ctcount[$cpu]++ if $cpu <= $PVE::CpuSet::MAX_CPUID;
 	}
     }
 
-    my $ctid_sorter = sub {
-	my ($id1, $id2) = @_;
+    my $find_best_cpu = sub {
+	my ($cpulist, $cpu) = @_;
 
-	my $last = $persistent_container_order_counter + 1;
+	my $cur_cost = $cpu_ctcount[$cpu];
+	my $cur_cpu = $cpu;
 
-	my $po1 = $persistent_container_order->{$id1} // $last;
-	my $po2 = $persistent_container_order->{$id2} // $last;
-
-	if ($po1 == $last && $po2 == $last) {
-	    return $id1 <=> $id2;
-	} else {
-	    return $po1 <=> $po2;
+	foreach my $candidate (@$cpulist) {
+	    my $cost = $cpu_ctcount[$candidate];
+	    if ($cost < ($cur_cost -1)) {
+		$cur_cost = $cost;
+		$cur_cpu = $candidate;
+	    }
 	}
+
+	return $cur_cpu;
     };
 
-    my $new_order = {};
-
-    foreach my $bct (sort { &$ctid_sorter($a->[0], $b->[0]) } @balanced_cts) {
+    foreach my $bct (@balanced_cts) {
 	my ($vmid, $cores, $cpuset) = @$bct;
-
-	if (my $order = $persistent_container_order->{$vmid}) {
-	    $new_order->{$vmid} = $order; # copy old value
-	} else {
-	    my $order = ++$persistent_container_order_counter;
-	    $new_order->{$vmid} = $order;
-	}
-
-	# We need to keep cpus_by_count sorted
-	my @cpus_by_count = sort {
-	    $cpu_ctcount[$a] <=> $cpu_ctcount[$b]
-	} @allowed_cpus;
 
 	my $newset = PVE::CpuSet->new();
 
-	for (my $i = 0; $i < $cores && $i < @cpus_by_count; ++$i) {
-	    my $cpu = $cpus_by_count[$i];
-	    $newset->insert($cpu);
-	    $cpu_ctcount[$cpu]++;
+	my $rest = [];
+	foreach my $cpu (@allowed_cpus) {
+	    next if $cpuset->has($cpu);
+	    push @$rest, $cpu;
+	}
+
+	my @members = $cpuset->members();
+	foreach my $cpu (@members) {
+	    my $best =  &$find_best_cpu($rest, $cpu);
+	    if ($best != $cpu) {
+		$cpu_ctcount[$best]++;
+		$cpu_ctcount[$cpu]--;
+	    }
+	    $newset->insert($best);
 	}
 
 	if (!$newset->is_equal($cpuset)) {
+	    syslog('info', "modified cpu set for lxc/$vmid: " .
+		   join(',', $newset->members));
 	    eval { $newset->write_to_cgroup("lxc/$vmid"); };
-	    warn $@ if $@; # ignore errors ?
+	    warn $@ if $@;
 	}
     }
-
-    $persistent_container_order = $new_order;
 }
 
 sub update_lxc_status {
