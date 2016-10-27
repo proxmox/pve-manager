@@ -261,9 +261,9 @@ sub rebalance_lxc_containers {
 		$cpu_ctcount[$cpu]++ if $cpu <= @cpu_ctcount;
 	    }
 	} else {
-	    my $cpulimit = $conf->{cpulimit} // $cpucount;
-	    $cpulimit = $cpucount if $cpulimit > $cpucount;
-	    push @balanced_cts, [$vmid, $cpulimit, $cpuset];
+	    my $cores = $conf->{cores};
+	    $cores = $cpucount if !$cores || $cores > $cpucount;
+	    push @balanced_cts, [$vmid, $cores, $cpuset];
 	}
     }
 
@@ -285,7 +285,7 @@ sub rebalance_lxc_containers {
     my $new_order = {};
 
     foreach my $bct (sort { &$ctid_sorter($a->[0], $b->[0]) } @balanced_cts) {
-	my ($vmid, $cpulimit, $cpuset) = @$bct;
+	my ($vmid, $cores, $cpuset) = @$bct;
 
 	if (my $order = $persistent_container_order->{$vmid}) {
 	    $new_order->{$vmid} = $order; # copy old value
@@ -301,7 +301,7 @@ sub rebalance_lxc_containers {
 
 	my $newset = PVE::CpuSet->new();
 
-	for (my $i = 0; $i < $cpulimit && $i < @cpus_by_count; ++$i) {
+	for (my $i = 0; $i < $cores && $i < @cpus_by_count; ++$i) {
 	    my $cpu = $cpus_by_count[$i];
 	    $newset->insert($cpu);
 	    $cpu_ctcount[$cpu]++;
