@@ -14,6 +14,7 @@ use PVE::Storage;
 use PVE::API2Tools;
 use PVE::API2::Backup;
 use PVE::API2::HAConfig;
+use PVE::HA::Config;
 use JSON;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
@@ -168,10 +169,7 @@ __PACKAGE__->register_method({
 	my $vmlist = PVE::Cluster::get_vmlist() || {};
 	my $idlist = $vmlist->{ids} || {};
 
-
-	my $nodename = PVE::INotify::nodename();
-	my $haenv = PVE::HA::Env::PVE2->new($nodename);
-	my $hastatus = $haenv->read_manager_status();
+	my $hastatus = PVE::HA::Config::read_manager_status();
 	my $hatypemap = {
 	    'qemu' => 'vm',
 	    'lxc' => 'ct'
@@ -227,9 +225,11 @@ __PACKAGE__->register_method({
 		next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ], 1);
 
 		# get ha status
-		my $hatype = $hatypemap->{$entry->{type}};
-		if (defined($hastatus->{service_status}->{"$hatype:$vmid"})) {
-		    $entry->{hastate} = $hastatus->{service_status}->{"$hatype:$vmid"}->{state};
+		if (my $hatype = $hatypemap->{$entry->{type}}) {
+		    my $sid = "$hatype:$vmid";
+		    if (defined($hastatus->{service_status}->{$sid})) {
+			$entry->{hastate} = $hastatus->{service_status}->{$sid}->{state};
+		    }
 		}
 
 		push @$res, $entry;
