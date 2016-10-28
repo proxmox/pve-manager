@@ -46,6 +46,35 @@ Ext.define('PVE.dc.NodeView', {
 	    sortable: true,
 	    dataIndex: 'ip'
 	},
+	{
+	    header: gettext('CPU Usage'),
+	    sortable: true,
+	    width: 110,
+	    dataIndex: 'cpuusage',
+	    tdCls: 'x-progressbar-default-cell',
+	    xtype: 'widgetcolumn',
+	    widget: {
+		xtype: 'pveProgressBar'
+	    }
+	},
+	{
+	    header: gettext('Memory Usage'),
+	    width: 110,
+	    sortable: true,
+	    tdCls: 'x-progressbar-default-cell',
+	    dataIndex: 'memoryusage',
+	    xtype: 'widgetcolumn',
+	    widget: {
+		xtype: 'pveProgressBar'
+	    }
+	},
+	{
+	    header: gettext('Uptime'),
+	    sortable: true,
+	    dataIndex: 'uptime',
+	    align: 'right',
+	    renderer: PVE.Utils.render_uptime
+	}
     ],
 
     stateful: true,
@@ -78,3 +107,25 @@ Ext.define('PVE.dc.NodeView', {
 
 });
 
+Ext.define('PVE.widget.ProgressBar',{
+    extend: 'Ext.Progress',
+    alias: 'widget.pveProgressBar',
+
+    animate: true,
+    textTpl: [
+	'{percent}%'
+    ],
+
+    setValue: function(value){
+	var me = this;
+	me.callParent([value]);
+
+	me.removeCls(['warning', 'critical']);
+
+	if (value > 0.89) {
+	    me.addCls('critical');
+	} else if (value > 0.59) {
+	    me.addCls('warning');
+	}
+    }
+});
