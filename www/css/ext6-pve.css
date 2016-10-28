@@ -436,3 +436,23 @@ div.right-aligned {
 .black {
     color: #000;
 }
+
+.normal {
+    color: #c2ddf2;
+}
+
+.faded {
+    color: #cfcfcf;
+}
+
+.good {
+    color: #009828;
+}
+
+.warning {
+    color: #fc0;
+}
+
+.critical {
+    color: #f88;
+}
