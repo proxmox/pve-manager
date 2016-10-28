@@ -203,6 +203,7 @@ JSSRC= 				                 	\
 	dc/Support.js					\
 	dc/SecurityGroups.js				\
 	dc/Config.js					\
+	dc/NodeView.js					\
 	Workspace.js
 
 lint: ${JSSRC}
