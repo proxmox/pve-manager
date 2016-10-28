@@ -401,19 +401,11 @@ Ext.define('PVE.StdWorkspace', {
 			},
 			{
 			    xtype: 'button',
-			    margin: '0 10 0 0',
-			    iconCls: 'fa black fa-caret-down',
-			    menuAlign: 'tr-br?',
-			    menu: {
-				showSeparator: false,
-				items: [{
-				    text: gettext('My Settings'),
-				    iconCls: 'fa fa-fw fa-gear',
-				    handler: function() {
-					var win = Ext.create('PVE.window.Settings');
-					win.show();
-				    }
-				}]
+			    margin: '0 10 0 3',
+			    iconCls: 'fa black fa-gear',
+			    handler: function() {
+				var win = Ext.create('PVE.window.Settings');
+				win.show();
 			    }
 			},
 			{
