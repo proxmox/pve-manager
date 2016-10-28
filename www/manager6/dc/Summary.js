@@ -15,6 +15,39 @@ Ext.define('PVE.dc.Summary', {
 
     items: [
 	{
+	    itemId: 'dcHealth',
+	    xtype: 'pveDcHealth'
+	},
+	{
+	    itemId: 'dcGuests',
+	    xtype: 'pveDcGuests'
+	},
+	{
+	    title: gettext('Cluster Resources'),
+	    xtype: 'panel',
+	    height: 250,
+	    bodyPadding: '0 0 10 0',
+	    layout: 'column',
+	    defaults: {
+		xtype: 'pveGauge',
+		columnWidth: 1/3
+	    },
+	    items:[
+		{
+		    title: gettext('CPU'),
+		    itemId: 'cpu'
+		},
+		{
+		    title: gettext('Memory'),
+		    itemId: 'memory'
+		},
+		{
+		    title: gettext('Storage'),
+		    itemId: 'storage'
+		}
+	    ]
+	},
+	{
 	    itemId: 'nodeview',
 	    xtype: 'pveDcNodeView',
 	    height: 250
@@ -50,10 +83,113 @@ Ext.define('PVE.dc.Summary', {
 
 	me.getComponent('nodeview').setStore(gridstore);
 
+	var gueststatus = me.getComponent('dcGuests');
+
+	var cpustat = me.down('#cpu');
+	var memorystat = me.down('#memory');
+	var storagestat = me.down('#storage');
+
+	me.mon(PVE.data.ResourceStore, 'load', function(curstore, results) {
+	    me.suspendLayout = true;
+
+	    var cpu = 0;
+	    var maxcpu = 0;
+
+	    var nodes = 0;
+
+	    var memory = 0;
+	    var maxmem = 0;
+
+	    var countedStorages = {};
+	    var used = 0;
+	    var total = 0;
+
+	    var qemu = {
+		running: 0,
+		paused: 0,
+		stopped: 0,
+		template: 0
+	    };
+	    var lxc = {
+		running: 0,
+		paused: 0,
+		stopped: 0,
+		template: 0
+	    };
+	    var error = 0;
+
+	    var i;
+
+	    for (i = 0; i < results.length; i++) {
+		var item = results[i];
+		switch(item.data.type) {
+		    case 'node':
+			cpu += (item.data.cpu * item.data.maxcpu);
+			maxcpu += item.data.maxcpu || 0;
+			memory += item.data.mem || 0;
+			maxmem += item.data.maxmem || 0;
+			nodes++;
+
+			// update grid also
+			var griditem = gridstore.getById(item.data.id);
+			if (griditem) {
+			    griditem.set('cpuusage', item.data.cpu);
+			    var max = item.data.maxmem || 1;
+			    var val = item.data.mem || 0;
+			    griditem.set('memoryusage', val/max);
+			    griditem.set('uptime', item.data.uptime);
+			    griditem.commit(); //else it marks the fields as dirty
+			}
+			break;
+		    case 'storage':
+			if (!countedStorages[item.data.storage] ||
+			    (item.data.storage === 'local' &&
+			    !countedStorages[item.data.id])) {
+			    used += item.data.disk;
+			    total += item.data.maxdisk;
+
+			    countedStorages[item.data.storage === 'local'?item.data.id:item.data.storage] = true;
+			}
+			break;
+		    case 'qemu':
+			qemu[item.data.template ? 'template' : item.data.status]++;
+			if (item.data.hastate === 'error') {
+			    error++;
+			}
+			break;
+		    case 'lxc':
+			lxc[item.data.template ? 'template' : item.data.status]++;
+			if (item.data.hastate === 'error') {
+			    error++;
+			}
+			break;
+		    default: break;
+		}
+	    }
+
+	    var text = Ext.String.format(gettext('of {0} CPU(s)'), maxcpu);
+	    cpustat.updateValue((cpu/maxcpu), text);
+
+	    text = Ext.String.format(gettext('{0} of {1}'), PVE.Utils.render_size(memory), PVE.Utils.render_size(maxmem));
+	    memorystat.updateValue((memory/maxmem), text);
+
+	    text = Ext.String.format(gettext('{0} of {1}'), PVE.Utils.render_size(used), PVE.Utils.render_size(total));
+	    storagestat.updateValue((used/total), text);
+
+	    gueststatus.updateValues(qemu,lxc,error);
+
+	    me.suspendLayout = false;
+	    me.updateLayout(true);
+	});
+
+	var dcHealth = me.getComponent('dcHealth');
+	me.mon(rstore, 'load', dcHealth.updateStatus, dcHealth);
+
 	me.on('destroy', function(){
 	    rstore.stopUpdate();
 	});
 
 	rstore.startUpdate();
     }
+
 });
