@@ -189,6 +189,7 @@ JSSRC= 				                 	\
 	ha/Fencing.js					\
 	dc/Summary.js					\
 	dc/Health.js					\
+	dc/Guests.js					\
 	dc/OptionView.js				\
 	dc/StorageView.js				\
 	dc/UserEdit.js					\
