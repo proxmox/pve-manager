@@ -1,28 +1,59 @@
 Ext.define('PVE.dc.Summary', {
     extend: 'Ext.panel.Panel',
+    alias: 'widget.pveDcSummary',
 
-    alias: ['widget.pveDcSummary'],
+    scrollable: true,
+
+    bodyPadding: '10 0 0 0',
+
+    layout: 'column',
+
+    defaults: {
+	width: 762,
+	padding: '0 0 10 10'
+    },
+
+    items: [
+	{
+	    itemId: 'nodeview',
+	    xtype: 'pveDcNodeView',
+	    height: 250
+	}
+    ],
 
     initComponent: function() {
         var me = this;
 
-	var nodegrid = Ext.create('PVE.dc.NodeView', {
-	    title: gettext('Nodes'),
-	    border: false,
-	    region: 'center',
-	    flex: 3
+	var rstore = Ext.create('PVE.data.UpdateStore', {
+	    interval: 3000,
+	    storeid: 'pve-cluster-status',
+	    model: 'pve-dc-nodes',
+	    proxy: {
+                type: 'pve',
+                url: "/api2/json/cluster/status"
+	    }
 	});
 
-	Ext.apply(me, {
-	    layout: 'border',
-	    items: [ nodegrid ],
-	    listeners: {
-		activate: function() {
-		    nodegrid.fireEvent('show', nodegrid);
-		}
+	var gridstore = Ext.create('PVE.data.DiffStore', {
+	    rstore: rstore,
+	    filters: {
+		property: 'type',
+		value: 'node'
+	    },
+	    sorters: {
+		property: 'id',
+		direction: 'ASC'
 	    }
 	});
 
 	me.callParent();
+
+	me.getComponent('nodeview').setStore(gridstore);
+
+	me.on('destroy', function(){
+	    rstore.stopUpdate();
+	});
+
+	rstore.startUpdate();
     }
 });

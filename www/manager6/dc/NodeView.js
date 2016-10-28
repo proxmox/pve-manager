@@ -1,103 +1,73 @@
 Ext.define('PVE.dc.NodeView', {
     extend: 'Ext.grid.GridPanel',
+    alias: 'widget.pveDcNodeView',
 
-    alias: ['widget.pveDcNodeView'],
+    title: gettext('Nodes'),
+    disableSelection: true,
+    scrollable: true,
 
-    initComponent : function() {
-	var me = this;
-
-	var rstore = Ext.create('PVE.data.UpdateStore', {
-	    interval: 3000,
-	    storeid: 'pve-dc-nodes',
-	    model: 'pve-dc-nodes',
-	    proxy: {
-                type: 'pve',
-                url: "/api2/json/cluster/status"
-	    },
-	    filters: {
-		property: 'type',
-		value   : 'node'
-	    }
-	});
-
-	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
-
-	var noClusterText = gettext("Standalone node - no cluster defined");
-	var status = Ext.create('Ext.Component', {
-	    padding: 2,
-	    html: '&nbsp;',
-	    dock: 'bottom'
-	});
-
-	Ext.apply(me, {
-	    store: store,
-	    stateful: false,
-	    bbar: [ status ],
-	    columns: [
-		{
-		    header: gettext('Name'),
-		    width: 200,
-		    sortable: true,
-		    dataIndex: 'name'
-		},
-		{
-		    header: 'ID',
-		    width: 50,
-		    sortable: true,
-		    dataIndex: 'nodeid'
-		},
-		{
-		    header: gettext('Online'),
-		    width: 100,
-		    sortable: true,
-		    dataIndex: 'online',
-		    renderer: PVE.Utils.format_boolean
-		},
-		{
-		    header: gettext('Support'),
-		    width: 100,
-		    sortable: true,
-		    dataIndex: 'level',
-		    renderer: PVE.Utils.render_support_level
-		},
-		{
-		    header: gettext('Server Address'),
-		    flex: 1,
-		    sortable: true,
-		    dataIndex: 'ip'
+    columns: [
+	{
+	    header: gettext('Name'),
+	    flex: 1,
+	    sortable: true,
+	    dataIndex: 'name'
+	},
+	{
+	    header: 'ID',
+	    width: 40,
+	    sortable: true,
+	    dataIndex: 'nodeid'
+	},
+	{
+	    header: gettext('Online'),
+	    width: 60,
+	    sortable: true,
+	    dataIndex: 'online',
+	    renderer: function(value) {
+		var icon = '<i class="fa good fa-check"></i>';
+		if (!value) {
+		    icon = '<i class="fa critical fa-times"></i>';
 		}
-	    ],
-	    listeners: {
-		show: rstore.startUpdate,
-		destroy: rstore.stopUpdate
+
+		return icon;
 	    }
-	});
+	},
+	{
+	    header: gettext('Support'),
+	    width: 100,
+	    sortable: true,
+	    dataIndex: 'level',
+	    renderer: PVE.Utils.render_support_level
+	},
+	{
+	    header: gettext('Server Address'),
+	    width: 115,
+	    sortable: true,
+	    dataIndex: 'ip'
+	},
+    ],
 
-	me.callParent();
-
-	me.mon(rstore, 'load', function(s, records, success) {
-	    if (!success) {
-		return;
+    stateful: true,
+    stateId: 'grid-cluster-nodes',
+    tools: [
+	{
+	    type: 'up',
+	    handler: function(){
+		var me = this.up('grid');
+		var height = Math.max(me.getHeight()-50, 250);
+		me.setHeight(height);
 	    }
-
-	    var cluster_rec = rstore.getById('cluster');
-
-	    if (!cluster_rec) {
-		status.update(noClusterText);
-		return;
+	},
+	{
+	    type: 'down',
+	    handler: function(){
+		var me = this.up('grid');
+		var height = me.getHeight()+50;
+		me.setHeight(height);
 	    }
-
-	    var cluster_data = cluster_rec.getData();
-	    if (!cluster_data) {
-		status.update(noClusterText);
-		return;
-	    }
-	    var text = gettext("Cluster") + ": " + cluster_data.name + ",  " +
-		gettext("Quorate") + ": " + PVE.Utils.format_boolean(cluster_data.quorate);
-	    status.update(text);
-	});
-
-    }
+	}
+    ]
 }, function() {
 
     Ext.define('pve-dc-nodes', {
