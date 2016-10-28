@@ -5,6 +5,8 @@ use warnings;
 use PVE::pvecfg;
 use PVE::Tools;
 
+$ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
+
 my $report;
 
 my @general = ('hostname', 'pveversion --verbose', 'cat /etc/hosts', 'top -b -n 1  | head -n 15',
@@ -12,9 +14,16 @@ my @general = ('hostname', 'pveversion --verbose', 'cat /etc/hosts', 'top -b -n 
 
 my @storage = ('cat /etc/pve/storage.cfg', 'pvesm status', 'cat /etc/fstab', 'mount', 'df --human');
 
-my @volumes = ('lvs', 'vgs', 'zpool status', 'zfs list');
+my @volumes = ('lvs', 'vgs');
+# command -v is the posix equivalent of 'which'
+if (system('command -v zfs > /dev/null 2>&1') == 0) {
+    push @volumes, 'zpool status', 'zfs list'
+}
 
-my @disks = ('lsblk', 'multipath -ll', 'multipath -v3');
+my @disks = ('lsblk');
+if (system('command -v multipath > /dev/null 2>&1') == 0) {
+    push @disks, 'multipath -ll', 'multipath -v3'
+}
 
 my @machines = ('qm list', sub { dir2text('/etc/pve/qemu-server/', '\d.*conf') });
 
