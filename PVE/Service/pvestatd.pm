@@ -252,10 +252,10 @@ sub rebalance_lxc_containers {
 
 	my @cpuset_members = $cpuset->members();
 
-	if (defined(my $cores = $conf->{cores}) &&
-	    !PVE::LXC::Config->has_lxc_entry($conf, 'lxc.cgroup.cpuset.cpus')) {
+	if (!PVE::LXC::Config->has_lxc_entry($conf, 'lxc.cgroup.cpuset.cpus')) {
 
-	    $cores = $cpucount if !$cores || $cores > $cpucount;
+	    my $cores = $conf->{cores} || $cpucount;
+	    $cores = $cpucount if $cores > $cpucount;
 
 	    # see if the number of cores was hot-reduced or
 	    # hasn't been enacted at all yet
@@ -278,13 +278,13 @@ sub rebalance_lxc_containers {
 	    if (!$newset->is_equal($cpuset)) {
 		@cpuset_members = $newset->members();
 		syslog('info', "detected changed cpu set for lxc/$vmid: " .
-		       join(',', @cpuset_members));
+		       $newset->short_string());
 		$newset->write_to_cgroup("lxc/$vmid");
 	    }
 
 	    # Note: no need to rebalance if we already use all cores
 	    push @balanced_cts, [$vmid, $cores, $newset]
-		if $cores != $cpucount;
+		if defined($conf->{cores}) && ($cores != $cpucount);
 	}
 
 	foreach my $cpu (@cpuset_members) {
@@ -332,7 +332,7 @@ sub rebalance_lxc_containers {
 
 	if (!$newset->is_equal($cpuset)) {
 	    syslog('info', "modified cpu set for lxc/$vmid: " .
-		   join(',', $newset->members));
+		   $newset->short_string());
 	    eval { $newset->write_to_cgroup("lxc/$vmid"); };
 	    warn $@ if $@;
 	}
