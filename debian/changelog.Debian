@@ -1,3 +1,21 @@
+pve-manager (4.3-9) unstable; urgency=medium
+
+  * use new CpuSet::max_cpuid() helper
+
+  * Fix #1186: do not run non installed commands
+
+  * add 'my settings' to top bar
+
+  * make login user name saveable
+
+  * add hastate to /cluster/resources api call
+
+  * show ha error state in tree and resource grid
+
+  * rebalance_lxc_containers: nicer logs, improve hotplug
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 29 Oct 2016 07:51:28 +0200
+
 pve-manager (4.3-8) unstable; urgency=medium
 
   * pvestatd: add container cpuset balancing
