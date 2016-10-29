@@ -1,3 +1,11 @@
+pve-manager (4.3-10) unstable; urgency=medium
+
+  * LXC GUI: Wizard now uses new 'cores' option instead of cpulimit
+
+  * GUI: new datacenter/cluster dashboard
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 29 Oct 2016 15:11:59 +0200
+
 pve-manager (4.3-9) unstable; urgency=medium
 
   * use new CpuSet::max_cpuid() helper
