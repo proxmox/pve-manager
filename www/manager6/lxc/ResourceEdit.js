@@ -101,19 +101,59 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 
     insideWizard: false,
 
+    onGetValues: function(values) {
+	var me = this;
+
+	var delete_array = [];
+
+	if (values.cores === '') {
+	    delete_array.push('cores');
+	    delete values.cores;
+	}
+	if (values.cpulimit === '' || values.cpulimit == '0') {
+	    delete_array.push('cpulimit');
+	    delete values.cpulimit;
+	}
+	if (values.cpuunits === '' || values.cpuunits == '1024') {
+	    delete_array.push('cpuunits');
+	    delete values.cpuunits;
+	}
+
+	if (delete_array.length) {
+	    values['delete'] = delete_array.join(',');
+	}
+
+	return values;
+    },
+
     initComponent : function() {
 	var me = this;
 
-	var items = [
+	var column1 = [
+            {
+                xtype: 'numberfield',
+                name: 'cores',
+		minValue: 1,
+		maxValue: 128,
+		step: 1,
+		value: me.insideWizard ? 1 : '',
+		fieldLabel: gettext('Cores'),
+		allowBlank: true,
+                emptyText: gettext('unlimited')
+            }
+	];
+
+	var column2 = [
 	    {
 		xtype: 'numberfield',
 		name: 'cpulimit',
 		minValue: 0,
-		value: me.insideWizard ? 1 : 0,
+		value: '',
 		step: 1,
 		fieldLabel: gettext('CPU limit'),
 		labelWidth: labelWidth,
-		allowBlank: false
+		allowBlank: true,
+                emptyText: gettext('unlimited')
 	    },
 	    {
 		xtype: 'numberfield',
@@ -128,9 +168,10 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 	];
 
 	if (me.insideWizard) {
-	    me.column1 = items;
+	    me.column1 = column1;
 	} else {
-	    me.items = items;
+	    me.column1 = column1;
+	    me.column2 = column2;
 	}
    
 	me.callParent();

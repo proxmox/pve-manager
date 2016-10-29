@@ -58,6 +58,17 @@ Ext.define('PVE.lxc.RessourceView', {
 		    return PVE.Utils.format_size(value*1024*1024);
 		}
 	    },
+	    cores: {
+		header: gettext('Cores'),
+		never_delete: true,
+		editor: caps.vms['VM.Config.CPU'] ? 'PVE.lxc.CPUEdit' : undefined,
+		defaultValue: '',
+		tdCls: 'pve-itype-icon-processor',
+		renderer: function(value) {
+		    if (value) { return value; }
+		    return gettext('unlimited');
+		}
+	    },
 	    cpulimit: {
 		header: gettext('CPU limit'),
 		never_delete: true,
