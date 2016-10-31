@@ -12,7 +12,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	
 	if (values.group === '') {
 	    if (!me.create) {
-		values['delete'] = values['delete'] ? ',group' : 'group';
+		values['delete'] = 'group';
 	    }
 	    delete values.group;
 	}
