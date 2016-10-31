@@ -124,6 +124,24 @@ Ext.define('PVE.ha.ResourcesView', {
 		    dataIndex: 'state'
 		},
 		{
+		    header: gettext('Max. Restart'),
+		    width: 100,
+		    sortable: true,
+		    renderer: function(v) {
+			return v || '1';
+		    },
+		    dataIndex: 'max_restart'
+		},
+		{
+		    header: gettext('Max. Relocate'),
+		    width: 100,
+		    sortable: true,
+		    renderer: function(v) {
+			return v || '1';
+		    },
+		    dataIndex: 'max_relocate'
+		},
+		{
 		    header: gettext('Group'),
 		    width: 200,
 		    sortable: true,
@@ -157,7 +175,8 @@ Ext.define('PVE.ha.ResourcesView', {
     Ext.define('pve-ha-resources', {
 	extend: 'Ext.data.Model',
 	fields: [ 
-	  'sid', 'state', 'digest', 'errors', 'group', 'comment'
+	  'sid', 'state', 'digest', 'errors', 'group', 'comment',
+	  'max_restart', 'max_relocate',
 	],
 	idProperty: 'sid'
     });

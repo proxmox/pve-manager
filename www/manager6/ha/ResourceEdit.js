@@ -25,7 +25,20 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    values.state = 'disabled';
 	}
 	delete values.enable;
-	
+
+	if (values.max_restart == '1') {
+	    if (!me.create) {
+		values['delete'] = values['delete'] ? values['delete'] + ',max_restart' : 'max_restart';
+	    }
+	    delete values.max_restart;
+	}
+	if (values.max_relocate == '1') {
+	    if (!me.create) {
+		values['delete'] = values['delete'] ? values['delete'] + ',max_relocate' : 'max_relocate';
+	    }
+	    delete values.max_relocate;
+	}
+
 	return values;
     },
 
@@ -48,6 +61,24 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		value: me.vmid,
 		loadNextFreeVMID: false,
 		validateExists: true
+	    },
+	    {
+		xtype: 'numberfield',
+		name: 'max_restart',
+		fieldLabel: gettext('Max. Restart'),
+		value: 1,
+		minValue: 0,
+		maxValue: 10,
+		allowBlank: false
+	    },
+	    {
+		xtype: 'numberfield',
+		name: 'max_relocate',
+		fieldLabel: gettext('Max. Relocate'),
+		value: 1,
+		minValue: 0,
+		maxValue: 10,
+		allowBlank: false
 	    }
 	];
 
