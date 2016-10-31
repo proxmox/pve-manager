@@ -136,6 +136,8 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 		minValue: 1,
 		maxValue: 128,
 		step: 1,
+		allowDecimals: false,
+		allowExponential: false,
 		value: me.insideWizard ? 1 : '',
 		fieldLabel: gettext('Cores'),
 		allowBlank: true,
