@@ -403,6 +403,9 @@ Ext.define('PVE.StdWorkspace', {
 			    xtype: 'button',
 			    margin: '0 10 0 3',
 			    iconCls: 'fa black fa-gear',
+			    style: {
+				cursor: 'pointer'
+			    },
 			    handler: function() {
 				var win = Ext.create('PVE.window.Settings');
 				win.show();
@@ -411,6 +414,7 @@ Ext.define('PVE.StdWorkspace', {
 			{
 			    xtype: 'pveHelpButton',
 			    hidden: false,
+			    baseCls: 'x-btn',
 			    iconCls: 'fa fa-info-circle x-btn-icon-el-default-toolbar-small ',
 			    listenToGlobalEvent: false,
 			    onlineHelp: 'pve_documentation_index',
