@@ -4,8 +4,8 @@ Ext.define('PVE.form.CephDiskSelector', {
 
     diskType: 'journal_disks',
 
-    valueField: 'dev',
-    displayField: 'dev',
+    valueField: 'devpath',
+    displayField: 'devpath',
     emptyText: gettext('No Disks unused'),
     listConfig: {
 	columns: [
@@ -13,7 +13,7 @@ Ext.define('PVE.form.CephDiskSelector', {
 		header: gettext('Device'),
 		width: 80,
 		sortable: true,
-		dataIndex: 'dev'
+		dataIndex: 'devpath'
 	    },
 	    {
 		header: gettext('Size'),
@@ -48,7 +48,7 @@ Ext.define('PVE.form.CephDiskSelector', {
 	    },
 	    sorters: [
 		{
-		    property : 'dev',
+		    property : 'devpath',
 		    direction: 'ASC'
 		}
 	    ]
@@ -66,10 +66,10 @@ Ext.define('PVE.form.CephDiskSelector', {
 
     Ext.define('ceph-disk-list', {
 	extend: 'Ext.data.Model',
-	fields: [ 'dev', 'used', { name: 'size', type: 'number'},
+	fields: [ 'devpath', 'used', { name: 'size', type: 'number'},
 		  {name: 'osdid', type: 'number'},
 		  'vendor', 'model', 'serial'],
-	idProperty: 'dev'
+	idProperty: 'devpath'
     });
 });
 
