@@ -14,6 +14,10 @@ Ext.define('PVE.form.MemoryField', {
 
     value: '512', // qm default
 
+    allowDecimals: false,
+
+    allowExponential: false,
+
     computeUpDown: function(value) {
 	var me = this;
 
