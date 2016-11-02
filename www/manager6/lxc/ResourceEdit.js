@@ -104,24 +104,10 @@ Ext.define('PVE.lxc.CPUInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	var delete_array = [];
-
-	if (values.cores === '') {
-	    delete_array.push('cores');
-	    delete values.cores;
-	}
-	if (values.cpulimit === '' || values.cpulimit == '0') {
-	    delete_array.push('cpulimit');
-	    delete values.cpulimit;
-	}
-	if (values.cpuunits === '' || values.cpuunits == '1024') {
-	    delete_array.push('cpuunits');
-	    delete values.cpuunits;
-	}
-
-	if (delete_array.length) {
-	    values['delete'] = delete_array.join(',');
-	}
+	PVE.Utils.delete_if_default(values, 'cores', '', me.insideWizard);
+	// cpu{limit,unit} aren't in the wizard so create is always false
+	PVE.Utils.delete_if_default(values, 'cpulimit', '0', 0);
+	PVE.Utils.delete_if_default(values, 'cpuunits', '1024', 0);
 
 	return values;
     },

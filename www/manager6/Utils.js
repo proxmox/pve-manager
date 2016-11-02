@@ -1253,6 +1253,21 @@ Ext.define('PVE.Utils', { utilities: {
 	menu.showAt(event.getXY());
     }},
 
+    // helper for deleting field which are set to there default values
+    delete_if_default: function(values, fieldname, default_val, create) {
+	if (values[fieldname] === '' || values[fieldname] === default_val) {
+	    if (!create) {
+		if (values['delete']) {
+		    values['delete'] += ',' + fieldname;
+		} else {
+		    values['delete'] = fieldname;
+		}
+	    }
+
+	    delete values[fieldname];
+	}
+    },
+
     singleton: true,
     constructor: function() {
 	var me = this;

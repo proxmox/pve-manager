@@ -5,28 +5,13 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	var delete_array = [];
-	
-	if (values.vcpus === '') {
-	    delete_array.push('vcpus');
-	    delete values.vcpus;
-	}
-	if (values.cpulimit === '' || values.cpulimit == '0') {
-	    delete_array.push('cpulimit');
-	    delete values.cpulimit;
-	}
-	if (values.cpuunits === '' || values.cpuunits == '1024') {
-	    delete_array.push('cpuunits');
-	    delete values.cpuunits;
-	}
+	PVE.Utils.delete_if_default(values, 'vcpus', '', 0);
+	PVE.Utils.delete_if_default(values, 'cpulimit', '0', 0);
+	PVE.Utils.delete_if_default(values, 'cpuunits', '1024', 0);
 
-	if (delete_array.length) {
-	    values['delete'] = delete_array.join(',');
-	}
-	
 	return values;
     },
-    
+
     initComponent : function() {
 	var me = this;
 

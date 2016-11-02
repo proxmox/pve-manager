@@ -10,12 +10,6 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    values.sid = values.vmid;
 	}
 	
-	if (values.group === '') {
-	    if (!me.create) {
-		values['delete'] = 'group';
-	    }
-	    delete values.group;
-	}
 
 	delete values.vmid;
 
@@ -26,18 +20,9 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	}
 	delete values.enable;
 
-	if (values.max_restart == '1') {
-	    if (!me.create) {
-		values['delete'] = values['delete'] ? values['delete'] + ',max_restart' : 'max_restart';
-	    }
-	    delete values.max_restart;
-	}
-	if (values.max_relocate == '1') {
-	    if (!me.create) {
-		values['delete'] = values['delete'] ? values['delete'] + ',max_relocate' : 'max_relocate';
-	    }
-	    delete values.max_relocate;
-	}
+	PVE.Utils.delete_if_default(values, 'group', '', me.create);
+	PVE.Utils.delete_if_default(values, 'max_restart', '1', me.create);
+	PVE.Utils.delete_if_default(values, 'max_relocate', '1', me.create);
 
 	return values;
     },
