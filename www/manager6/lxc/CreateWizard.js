@@ -60,7 +60,6 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    insideWizard: true,
 	    create: true,
 	    unused: false,
-	    onlineHelp: 'pct_container_storage',
 	    confid: 'rootfs'
 	});
 
