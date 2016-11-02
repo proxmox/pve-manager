@@ -137,6 +137,8 @@ Ext.define('PVE.lxc.DNS', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveLxcDNS'],
 
+    onlineHelp: 'pct_container_network',
+
     initComponent : function() {
 	var me = this;
 	var i;

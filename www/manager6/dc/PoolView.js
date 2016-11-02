@@ -3,6 +3,8 @@ Ext.define('PVE.dc.PoolView', {
 
     alias: ['widget.pvePoolView'],
 
+    onlineHelp: 'pveum_pools',
+
     initComponent : function() {
 	var me = this;
 

@@ -72,6 +72,7 @@ Ext.define('PVE.node.CephPoolList', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveNodeCephPoolList'],
 
+    onlineHelp: 'chapter_pveceph',
     stateful: false,
     bufferedRenderer: false,
     features: [ { ftype: 'summary'} ],

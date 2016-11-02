@@ -432,6 +432,8 @@ Ext.define('PVE.IPSet', {
 
     title: 'IPSet',
 
+    onlineHelp: 'pve_firewall_ip_sets',
+
     list_refs_url: undefined,
 
     initComponent: function() {

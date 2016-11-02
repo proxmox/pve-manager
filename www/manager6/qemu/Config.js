@@ -162,14 +162,12 @@ Ext.define('PVE.qemu.Config', {
 	    {
 		title: gettext('Hardware'),
 		itemId: 'hardware',
-		onlineHelp: 'qm_virtual_machines_settings',
 		iconCls: 'fa fa-desktop',
 		xtype: 'PVE.qemu.HardwareView'
 	    },
 	    {
 		title: gettext('Options'),
 		iconCls: 'fa fa-gear',
-		onlineHelp: 'qm_options',
 		itemId: 'options',
 		xtype: 'PVE.qemu.Options'
 	    },
@@ -196,7 +194,6 @@ Ext.define('PVE.qemu.Config', {
 		title: gettext('Backup'),
 		iconCls: 'fa fa-floppy-o',
 		xtype: 'pveBackupView',
-		onlineHelp: 'chapter_vzdump',
 		itemId: 'backup'
 	    });
 	}
@@ -216,7 +213,6 @@ Ext.define('PVE.qemu.Config', {
 		    xtype: 'pveFirewallRules',
 		    title: gettext('Firewall'),
 		    iconCls: 'fa fa-shield',
-		    onlineHelp: 'chapter_pve_firewall',
 		    allow_iface: true,
 		    base_url: base_url + '/firewall/rules',
 		    list_refs_url: base_url + '/firewall/refs',
@@ -237,7 +233,6 @@ Ext.define('PVE.qemu.Config', {
 		    title: gettext('Alias'),
 		    groups: ['firewall'],
 		    iconCls: 'fa fa-external-link',
-		    onlineHelp: 'pve_firewall_ip_aliases',
 		    base_url: base_url + '/firewall/aliases',
 		    itemId: 'firewall-aliases'
 		},
@@ -246,7 +241,6 @@ Ext.define('PVE.qemu.Config', {
 		    title: gettext('IPSet'),
 		    groups: ['firewall'],
 		    iconCls: 'fa fa-list-ol',
-		    onlineHelp: 'pve_firewall_ip_sets',
 		    base_url: base_url + '/firewall/ipset',
 		    list_refs_url: base_url + '/firewall/refs',
 		    itemId: 'firewall-ipset'
@@ -268,7 +262,6 @@ Ext.define('PVE.qemu.Config', {
 		xtype: 'pveACLView',
 		title: gettext('Permissions'),
 		iconCls: 'fa fa-unlock',
-		onlineHelp: 'chapter_user_management',
 		itemId: 'permissions',
 		path: '/vms/' + vmid
 	    });

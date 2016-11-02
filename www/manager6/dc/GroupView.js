@@ -3,6 +3,8 @@ Ext.define('PVE.dc.GroupView', {
 
     alias: ['widget.pveGroupView'],
 
+    onlineHelp: 'pveum_groups',
+
     initComponent : function() {
 	var me = this;
 

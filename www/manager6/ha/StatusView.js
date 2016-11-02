@@ -2,6 +2,8 @@ Ext.define('PVE.ha.StatusView', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveHAStatusView'],
 
+    onlineHelp: 'chapter_ha_manager',
+
     sortPriority: {
 	quorum: 1,
 	master: 2,

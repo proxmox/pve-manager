@@ -3,6 +3,8 @@ Ext.define('PVE.lxc.Options', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveLxcOptions'],
 
+    onlineHelp: 'pct_options',
+
     initComponent : function() {
 	var me = this;
 	var i;

@@ -4,6 +4,8 @@ Ext.define('PVE.qemu.HardwareView', {
     extend: 'PVE.grid.PendingObjectGrid',
     alias: ['widget.PVE.qemu.HardwareView'],
 
+    onlineHelp: 'qm_virtual_machines_settings',
+
     renderKey: function(key, metaData, rec, rowIndex, colIndex, store) {
 	var me = this;
 	var rows = me.rows;

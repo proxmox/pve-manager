@@ -3,6 +3,8 @@ Ext.define('PVE.node.NetworkView', {
 
     alias: ['widget.pveNodeNetworkView'],
 
+    onlineHelp: 'sysadmin_network_configuration',
+
     initComponent : function() {
 	var me = this;
 

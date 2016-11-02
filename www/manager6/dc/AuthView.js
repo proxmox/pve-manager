@@ -3,6 +3,8 @@ Ext.define('PVE.dc.AuthView', {
 
     alias: ['widget.pveAuthView'],
 
+    onlineHelp: 'pveum_authentication_realms',
+
     initComponent : function() {
 	var me = this;
 

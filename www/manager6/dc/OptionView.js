@@ -129,6 +129,8 @@ Ext.define('PVE.dc.OptionView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveDcOptionView'],
 
+    onlineHelp: 'datacenter_configuration_file',
+
     initComponent : function() {
 	var me = this;
 

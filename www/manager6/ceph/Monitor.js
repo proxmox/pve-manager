@@ -51,6 +51,8 @@ Ext.define('PVE.node.CephMonList', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveNodeCephMonList'],
 
+    onlineHelp: 'chapter_pveceph',
+
     initComponent: function() {
         var me = this;
 

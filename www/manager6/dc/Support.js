@@ -2,6 +2,7 @@ Ext.define('PVE.dc.Support', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveDcSupport',
     pveGuidePath: '/pve-docs/index.html',
+    onlineHelp: 'getting_help',
 
     invalidHtml: '<h1>No valid subscription</h1>' + PVE.Utils.noSubKeyHtml,
 

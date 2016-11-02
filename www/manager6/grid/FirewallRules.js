@@ -377,6 +377,8 @@ Ext.define('PVE.FirewallRules', {
     extend: 'Ext.grid.Panel',
     alias: 'widget.pveFirewallRules',
 
+    onlineHelp: 'chapter_pve_firewall',
+
     base_url: undefined,
     list_refs_url: undefined,
 

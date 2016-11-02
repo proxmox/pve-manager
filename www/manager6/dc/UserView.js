@@ -56,6 +56,8 @@ Ext.define('PVE.dc.UserView', {
 
     alias: ['widget.pveUserView'],
 
+    onlineHelp: 'pveum_users',
+
     initComponent : function() {
 	var me = this;
 

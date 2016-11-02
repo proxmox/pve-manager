@@ -4,6 +4,8 @@ Ext.define('PVE.dc.StorageView', {
 
     alias: ['widget.pveStorageView'],
 
+    onlineHelp: 'chapter_storage',
+
     initComponent : function() {
 	var me = this;
 

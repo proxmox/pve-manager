@@ -164,6 +164,7 @@ Ext.define('PVE.CephRemoveOsd', {
 Ext.define('PVE.node.CephOsdTree', {
     extend: 'Ext.tree.Panel',
     alias: ['widget.pveNodeCephOsdTree'],
+    onlineHelp: 'chapter_pveceph',
     columns: [
 	{
 	    xtype: 'treecolumn',

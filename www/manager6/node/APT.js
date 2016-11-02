@@ -3,6 +3,8 @@ Ext.define('PVE.node.APT', {
 
     alias: ['widget.pveNodeAPT'],
 
+    onlineHelp: 'sysadmin_package_repositories',
+
     initComponent : function() {
 	var me = this;
 

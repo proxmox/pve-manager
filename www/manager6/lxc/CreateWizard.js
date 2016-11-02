@@ -68,7 +68,6 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    title: gettext('Network'),
 	    insideWizard: true,
 	    dataCache: {},
-	    onlineHelp: 'pct_container_network',
 	    create: true
 	});
 

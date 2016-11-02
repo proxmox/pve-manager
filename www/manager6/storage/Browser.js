@@ -49,7 +49,6 @@ Ext.define('PVE.storage.Browser', {
 		xtype: 'pveACLView',
 		title: gettext('Permissions'),
 		iconCls: 'fa fa-unlock',
-		onlineHelp: 'chapter_user_management',
 		itemId: 'permissions',
 		path: '/storage/' + storeid
 	    });

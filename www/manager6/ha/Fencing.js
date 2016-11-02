@@ -2,6 +2,8 @@ Ext.define('PVE.ha.FencingView', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveFencingView'],
 
+    onlineHelp: 'ha_manager_fencing',
+
     initComponent : function() {
 	var me = this;
 

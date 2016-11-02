@@ -3,6 +3,7 @@ Ext.define('PVE.grid.BackupView', {
 
     alias: ['widget.pveBackupView'],
 
+    onlineHelp: 'chapter_vzdump',
 
     initComponent : function() {
 	var me = this;

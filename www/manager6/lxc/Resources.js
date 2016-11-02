@@ -3,6 +3,8 @@ Ext.define('PVE.lxc.RessourceView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveLxcRessourceView'],
 
+    onlineHelp: 'pct_configuration',
+
     renderKey: function(key, metaData, rec, rowIndex, colIndex, store) {
 	var me = this;
 	var rows = me.rows;

@@ -329,6 +329,8 @@ Ext.define('PVE.lxc.NetworkView', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveLxcNetworkView'],
 
+    onlineHelp: 'pct_container_network',
+
     dataCache: {}, // used to store result of last load
 
     load: function() {

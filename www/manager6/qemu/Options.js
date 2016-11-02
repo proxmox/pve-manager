@@ -3,6 +3,8 @@ Ext.define('PVE.qemu.Options', {
     extend: 'PVE.grid.PendingObjectGrid',
     alias: ['widget.PVE.qemu.Options'],
 
+    onlineHelp: 'qm_options',
+
     initComponent : function() {
 	var me = this;
 	var i;

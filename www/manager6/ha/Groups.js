@@ -2,6 +2,8 @@ Ext.define('PVE.ha.GroupsView', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveHAGroupsView'],
 
+    onlineHelp: 'ha_manager_groups',
+
     initComponent : function() {
 	var me = this;
 

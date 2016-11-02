@@ -29,9 +29,8 @@ Ext.define('PVE.dc.Config', {
 	    });
 
 	    me.items.push({
-	    xtype: 'pveDcOptionView',
+		xtype: 'pveDcOptionView',
 		title: gettext('Options'),
-		onlineHelp: 'datacenter_configuration_file',
 		iconCls: 'fa fa-gear',
 		itemId: 'options'
 	    });
@@ -41,7 +40,6 @@ Ext.define('PVE.dc.Config', {
 	    me.items.push({
 		xtype: 'pveStorageView',
 		title: gettext('Storage'),
-		onlineHelp: 'chapter_storage',
 		iconCls: 'fa fa-database',
 		itemId: 'storage'
 	    });
@@ -51,7 +49,6 @@ Ext.define('PVE.dc.Config', {
 	    me.items.push({
 		xtype: 'pveDcBackupView',
 		iconCls: 'fa fa-floppy-o',
-		onlineHelp: 'chapter_vzdump',
 		title: gettext('Backup'),
 		itemId: 'backup'
 	    },
@@ -59,7 +56,6 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveACLView',
 		title: gettext('Permissions'),
 		iconCls: 'fa fa-unlock',
-		onlineHelp: 'chapter_user_management',
 		itemId: 'permissions',
 		expandedOnInit: true
 	    });
@@ -69,7 +65,6 @@ Ext.define('PVE.dc.Config', {
 	    xtype: 'pveUserView',
 	    groups: ['permissions'],
 	    iconCls: 'fa fa-user',
-	    onlineHelp: 'pveum_users',
 	    title: gettext('Users'),
 	    itemId: 'users'
 	});
@@ -79,7 +74,6 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveGroupView',
 		title: gettext('Groups'),
 		iconCls: 'fa fa-users',
-		onlineHelp: 'pveum_groups',
 		groups: ['permissions'],
 		itemId: 'groups'
 	    },
@@ -87,7 +81,6 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pvePoolView',
 		title: gettext('Pools'),
 		iconCls: 'fa fa-tags',
-		onlineHelp: 'pveum_pools',
 		groups: ['permissions'],
 		itemId: 'pools'
 	    },
@@ -95,7 +88,6 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveRoleView',
 		title: gettext('Roles'),
 		iconCls: 'fa fa-male',
-		onlineHelp: 'pveum_roles',
 		groups: ['permissions'],
 		itemId: 'roles'
 	    },
@@ -103,7 +95,6 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveAuthView',
 		title: gettext('Authentication'),
 		groups: ['permissions'],
-		onlineHelp: 'pveum_authentication_realms',
 		iconCls: 'fa fa-key',
 		itemId: 'domains'
 	    },
@@ -111,14 +102,12 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveHAStatusView',
 		title: 'HA',
 		iconCls: 'fa fa-heartbeat',
-		onlineHelp: 'chapter_ha_manager',
 		itemId: 'ha'
 	    },
 	    {
 		title: gettext('Resources'),
 		groups: ['ha'],
 		iconCls: 'fa fa-th',
-		onlineHelp: 'ha_manager_resources',
 		xtype: 'pveHAResourcesView',
 		itemId: 'resources'
 	    },
@@ -126,7 +115,6 @@ Ext.define('PVE.dc.Config', {
 		title: gettext('Groups'),
 		groups: ['ha'],
 		xtype: 'pveHAGroupsView',
-		onlineHelp: 'ha_manager_groups',
 		iconCls: 'fa fa-object-group',
 		itemId: 'ha-groups'
 	    },
@@ -134,7 +122,6 @@ Ext.define('PVE.dc.Config', {
 		title: gettext('Fencing'),
 		groups: ['ha'],
 		iconCls: 'fa fa-bolt',
-		onlineHelp: 'ha_manager_fencing',
 		xtype: 'pveFencingView',
 		itemId: 'ha-fencing'
 	    },
@@ -145,7 +132,6 @@ Ext.define('PVE.dc.Config', {
 		base_url: '/cluster/firewall/rules',
 		list_refs_url: '/cluster/firewall/refs',
 		iconCls: 'fa fa-shield',
-		onlineHelp: 'chapter_pve_firewall',
 		itemId: 'firewall'
 	    },
 	    {
@@ -163,7 +149,6 @@ Ext.define('PVE.dc.Config', {
 		title: gettext('Security Group'),
 		groups: ['firewall'],
 		iconCls: 'fa fa-group',
-		onlineHelp: 'pve_firewall_security_groups',
 		itemId: 'firewall-sg'
 	    },
 	    {
@@ -171,7 +156,6 @@ Ext.define('PVE.dc.Config', {
 		title: gettext('Alias'),
 		groups: ['firewall'],
 		iconCls: 'fa fa-external-link',
-		onlineHelp: 'pve_firewall_ip_aliases',
 		base_url: '/cluster/firewall/aliases',
 		itemId: 'firewall-aliases'
 	    },
@@ -180,7 +164,6 @@ Ext.define('PVE.dc.Config', {
 		title: 'IPSet',
 		groups: ['firewall'],
 		iconCls: 'fa fa-list-ol',
-		onlineHelp: 'pve_firewall_ip_sets',
 		base_url: '/cluster/firewall/ipset',
 		list_refs_url: '/cluster/firewall/refs',
 		itemId: 'firewall-ipset'
@@ -189,7 +172,6 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveDcSupport',
 		title: gettext('Support'),
 		itemId: 'support',
-		onlineHelp: 'getting_help',
 		iconCls: 'fa fa-comments-o'
 	    });
 	}

@@ -2,6 +2,8 @@ Ext.define('PVE.ha.ResourcesView', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveHAResourcesView'],
 
+    onlineHelp: 'ha_manager_resources',
+
     initComponent : function() {
 	var me = this;
 

@@ -23,6 +23,8 @@ Ext.define('PVE.node.Subscription', {
 
     alias: ['widget.pveNodeSubscription'],
 
+    onlineHelp: 'getting_help',
+
     features: [ {ftype: 'selectable'}],
 
     showReport: function() {

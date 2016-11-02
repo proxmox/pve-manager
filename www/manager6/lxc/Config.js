@@ -153,7 +153,6 @@ Ext.define('PVE.lxc.Config', {
 	    {
 		title: gettext('Resources'),
 		itemId: 'resources',
-		onlineHelp: 'pct_configuration',
 		expandedOnInit: true,
 		iconCls: 'fa fa-cube',
 		xtype: 'pveLxcRessourceView'
@@ -161,21 +160,18 @@ Ext.define('PVE.lxc.Config', {
 	    {
 		title: gettext('Network'),
 		iconCls: 'fa fa-exchange',
-		onlineHelp: 'pct_container_network',
 		itemId: 'network',
 		xtype: 'pveLxcNetworkView'
 	    },
 	    {
 		title: gettext('DNS'),
 		iconCls: 'fa fa-globe',
-		onlineHelp: 'pct_container_network',
 		itemId: 'dns',
 		xtype: 'pveLxcDNS'
 	    },
 	    {
 		title: gettext('Options'),
 		itemId: 'options',
-		onlineHelp: 'pct_options',
 		iconCls: 'fa fa-gear',
 		xtype: 'pveLxcOptions'
 	    },
@@ -192,7 +188,6 @@ Ext.define('PVE.lxc.Config', {
 	    me.items.push({
 		title: gettext('Backup'),
 		iconCls: 'fa fa-floppy-o',
-		onlineHelp: 'chapter_vzdump',
 		xtype: 'pveBackupView',
 		itemId: 'backup'
 	    });
@@ -202,7 +197,6 @@ Ext.define('PVE.lxc.Config', {
 	    me.items.push({
 		title: gettext('Snapshots'),
 		iconCls: 'fa fa-history',
-		onlineHelp: 'pct_snapshots',
 		xtype: 'pveLxcSnapshotTree',
 		itemId: 'snapshot'
 	    });
@@ -213,7 +207,6 @@ Ext.define('PVE.lxc.Config', {
 		{
 		    xtype: 'pveFirewallRules',
 		    title: gettext('Firewall'),
-		    onlineHelp: 'chapter_pve_firewall',
 		    iconCls: 'fa fa-shield',
 		    allow_iface: true,
 		    base_url: base_url + '/firewall/rules',
@@ -235,7 +228,6 @@ Ext.define('PVE.lxc.Config', {
 		    title: gettext('Alias'),
 		    groups: ['firewall'],
 		    iconCls: 'fa fa-external-link',
-		    onlineHelp: 'pve_firewall_ip_aliases',
 		    base_url: base_url + '/firewall/aliases',
 		    itemId: 'firewall-aliases'
 		},
@@ -244,7 +236,6 @@ Ext.define('PVE.lxc.Config', {
 		    title: gettext('IPSet'),
 		    groups: ['firewall'],
 		    iconCls: 'fa fa-list-ol',
-		    onlineHelp: 'pve_firewall_ip_sets',
 		    base_url: base_url + '/firewall/ipset',
 		    list_refs_url: base_url + '/firewall/refs',
 		    itemId: 'firewall-ipset'
@@ -267,7 +258,6 @@ Ext.define('PVE.lxc.Config', {
 		title: gettext('Permissions'),
 		itemId: 'permissions',
 		iconCls: 'fa fa-unlock',
-		onlineHelp: 'chapter_user_management',
 		path: '/vms/' + vmid
 	    });
 	}

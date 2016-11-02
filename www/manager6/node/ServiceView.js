@@ -3,6 +3,8 @@ Ext.define('PVE.node.ServiceView', {
 
     alias: ['widget.pveNodeServiceView'],
 
+    onlineHelp: 'pve_service_daemons',
+
     initComponent : function() {
 	var me = this;
 

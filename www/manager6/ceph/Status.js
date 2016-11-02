@@ -1,6 +1,7 @@
 Ext.define('PVE.node.CephStatus', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveNodeCephStatus'],
+    onlineHelp: 'chapter_pveceph',
     cwidth1: 150,
     interval: 3000,
     initComponent: function() {

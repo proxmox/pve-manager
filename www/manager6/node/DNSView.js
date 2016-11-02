@@ -2,6 +2,8 @@ Ext.define('PVE.node.DNSView', {
     extend: 'PVE.grid.ObjectGrid',
     alias: ['widget.pveNodeDNSView'],
 
+    onlineHelp: 'sysadmin_network_configuration',
+
     initComponent : function() {
 	var me = this;
 

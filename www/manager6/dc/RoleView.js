@@ -3,6 +3,8 @@ Ext.define('PVE.dc.RoleView', {
 
     alias: ['widget.pveRoleView'],
 
+    onlineHelp: 'pveum_roles',
+
     initComponent : function() {
 	var me = this;
 

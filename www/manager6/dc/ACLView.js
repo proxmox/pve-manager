@@ -73,6 +73,8 @@ Ext.define('PVE.dc.ACLView', {
 
     alias: ['widget.pveACLView'],
 
+    onlineHelp: 'chapter_user_management',
+
     // use fixed path
     path: undefined,
 

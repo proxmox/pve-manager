@@ -2,6 +2,8 @@ Ext.define('PVE.lxc.SnapshotTree', {
     extend: 'Ext.tree.Panel',
     alias: ['widget.pveLxcSnapshotTree'],
 
+    onlineHelp: 'pct_snapshots',
+
     load_delay: 3000,
 
     old_digest: 'invalid',

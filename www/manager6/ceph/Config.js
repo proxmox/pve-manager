@@ -48,6 +48,8 @@ Ext.define('PVE.node.CephConfigCrush', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveNodeCephConfigCrush',
 
+    onlineHelp: 'chapter_pveceph',
+
     layout: 'border',
     items: [{
 	    title: gettext('Ceph Config'),

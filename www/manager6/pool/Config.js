@@ -33,7 +33,6 @@ Ext.define('PVE.pool.Config', {
 		    xtype: 'pveACLView',
 		    title: gettext('Permissions'),
 		    iconCls: 'fa fa-unlock',
-		    onlineHelp: 'chapter_user_management',
 		    itemId: 'permissions',
 		    path: '/pool/' + pool
 		}

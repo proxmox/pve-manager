@@ -322,6 +322,8 @@ Ext.define('PVE.dc.BackupView', {
 
     alias: ['widget.pveDcBackupView'],
 
+    onlineHelp: 'chapter_vzdump',
+
     allText: '-- ' + gettext('All') + ' --',
     allExceptText: gettext('All except {0}'),
 

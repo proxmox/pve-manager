@@ -1,6 +1,8 @@
 Ext.define('PVE.FirewallAliasEdit', {
     extend: 'PVE.window.Edit',
 
+    onlineHelp: 'pve_firewall_ip_aliases',
+
     base_url: undefined,
     
     alias_name: undefined,
