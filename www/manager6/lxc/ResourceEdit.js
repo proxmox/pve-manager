@@ -99,6 +99,8 @@ Ext.define('PVE.lxc.CPUInputPanel', {
     extend: 'PVE.panel.InputPanel',
     alias: 'widget.pveLxcCPUInputPanel',
 
+    onlineHelp: 'pct_cpu',
+
     insideWizard: false,
 
     onGetValues: function(values) {
@@ -169,6 +171,8 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 Ext.define('PVE.lxc.MemoryInputPanel', {
     extend: 'PVE.panel.InputPanel',
     alias: 'widget.pveLxcMemoryInputPanel',
+
+    onlineHelp: 'pct_memory',
 
     insideWizard: false,
 
