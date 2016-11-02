@@ -30,7 +30,7 @@ Ext.define('PVE.button.Help', {
 	},
 	onPveHideHelp: function() {
 	    var me = this.getView();
-	    if (me.listenGlobalEvent === true) {
+	    if (me.listenToGlobalEvent === true) {
 		me.hide();
 	    }
 	}
