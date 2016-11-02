@@ -147,7 +147,7 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 		fieldLabel: gettext('Enable')
 	    },
 	    {
-		xtype: 'numberfield',
+		xtype: 'pveIntegerField',
 		fieldLabel: gettext('Max Backups'),
 		name: 'maxfiles',
 		minValue: 0,

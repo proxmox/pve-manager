@@ -16,7 +16,7 @@ Ext.define('PVE.CephCreatePool', {
 	    allowBlank: false
 	},
 	{
-	    xtype: 'numberfield',
+	    xtype: 'pveIntegerField',
 	    fieldLabel: gettext('Size'),
 	    name: 'size',
 	    value: 2,
@@ -25,7 +25,7 @@ Ext.define('PVE.CephCreatePool', {
 	    allowBlank: false
 	},
 	{
-	    xtype: 'numberfield',
+	    xtype: 'pveIntegerField',
 	    fieldLabel: gettext('Min. Size'),
 	    name: 'min_size',
 	    value: 1,
@@ -34,7 +34,7 @@ Ext.define('PVE.CephCreatePool', {
 	    allowBlank: false
 	},
 	{
-	    xtype: 'numberfield',
+	    xtype: 'pveIntegerField',
 	    fieldLabel: gettext('Crush RuleSet'),
 	    name: 'crush_ruleset',
 	    value: 0,
@@ -43,7 +43,7 @@ Ext.define('PVE.CephCreatePool', {
 	    allowBlank: false
 	},
 	{
-	    xtype: 'numberfield',
+	    xtype: 'pveIntegerField',
 	    fieldLabel: 'pg_num',
 	    name: 'pg_num',
 	    value: 64,

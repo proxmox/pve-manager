@@ -48,7 +48,7 @@ Ext.define('PVE.window.MigrateAll', {
 		    onlineValidator: true
 		},
 		{
-		    xtype: 'numberfield',
+		    xtype: 'pveIntegerField',
 		    name: 'maxworkers',
 		    minValue: 1,
 		    maxValue: 100,

@@ -17,7 +17,7 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
 
         var items = [
             {
-                xtype: 'numberfield',
+                xtype: 'pveIntegerField',
                 name: 'vcpus',
                 minValue: 1,
                 maxValue: me.maxvcpus,
@@ -38,7 +38,7 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
                 emptyText: gettext('unlimited')
             },
 	    {
-                xtype: 'numberfield',
+                xtype: 'pveIntegerField',
                 name: 'cpuunits',
                 fieldLabel: gettext('CPU units'),
                 minValue: 8,

@@ -149,7 +149,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		allowBlank: true
 	    },
 	    {
-		xtype: 'numberfield',
+		xtype: 'pveIntegerField',
 		name: 'queues',
 		fieldLabel: gettext('Multiqueues'),
 		minValue: 1,

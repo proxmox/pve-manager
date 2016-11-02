@@ -106,7 +106,7 @@ Ext.define('PVE.dc.AuthEdit', {
 		    name: 'server2'
 		},
 		{
-                    xtype: 'numberfield',
+                    xtype: 'pveIntegerField',
                     name: 'port',
                     fieldLabel: gettext('Port'),
                     minValue: 1,
@@ -147,13 +147,10 @@ Ext.define('PVE.dc.AuthEdit', {
         });
 
 	column2.push({
-            xtype: 'numberfield',
+            xtype: 'pveIntegerField',
             name: 'oath_step',
 	    value: '',
 	    minValue: 10,
-	    step: 1,
-	    allowDecimals: false,
-	    allowBlank: true,
 	    emptyText: PVE.Utils.defaultText + ' (30)',
 	    submitEmptyText: false,
 	    hidden: true,
@@ -161,14 +158,11 @@ Ext.define('PVE.dc.AuthEdit', {
         });
 
 	column2.push({
-            xtype: 'numberfield',
+            xtype: 'pveIntegerField',
             name: 'oath_digits',
 	    value: '',
 	    minValue: 6,
 	    maxValue: 8,
-	    step: 1,
-	    allowDecimals: false,
-	    allowBlank: true,
 	    emptyText: PVE.Utils.defaultText + ' (6)',
 	    submitEmptyText: false,
 	    hidden: true,

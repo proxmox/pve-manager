@@ -42,7 +42,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 
 	me.column1 = [
 	    {
-		xtype: 'numberfield',
+		xtype: 'pveIntegerField',
 		name: 'sockets',
 		minValue: 1,
 		maxValue: 4,
@@ -58,7 +58,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 		}
 	    },
 	    {
-		xtype: 'numberfield',
+		xtype: 'pveIntegerField',
 		name: 'cores',
 		minValue: 1,
 		maxValue: 128,

@@ -78,9 +78,8 @@ Ext.define('PVE.lxc.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('TTY count'),
 		    items: {
-			xtype: 'numberfield',
+			xtype: 'pveIntegerField',
 			name: 'tty',
-			decimalPrecision: 0,
 			minValue: 0,
 			maxValue: 6,
 			value: 2,

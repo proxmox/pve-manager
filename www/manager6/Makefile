@@ -26,6 +26,7 @@ JSSRC= 				                 	\
 	form/VLanField.js				\
 	form/Checkbox.js				\
 	form/TextField.js				\
+	form/IntegerField.js				\
 	form/RRDTypeSelector.js				\
 	form/ComboGrid.js				\
 	form/KVComboBox.js				\

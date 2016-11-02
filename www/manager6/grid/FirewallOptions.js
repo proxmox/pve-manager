@@ -59,10 +59,9 @@ Ext.define('PVE.FirewallOptions', {
 		    subject: text,
 		    fieldDefaults: { labelWidth: labelWidth || 100 },
 		    items: {
-			xtype: 'numberfield',
+			xtype: 'pveIntegerField',
 			name: name,
 			minValue: minValue,
-			decimalPrecision: 0,
 			fieldLabel: text,
 			emptyText: gettext('Default'),
 			getSubmitData: function() {

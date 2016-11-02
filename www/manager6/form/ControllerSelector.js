@@ -122,7 +122,7 @@ Ext.define('PVE.form.ControllerSelector', {
 		    }
 		},
 		{
-		    xtype: 'numberfield',
+		    xtype: 'pveIntegerField',
 		    name: 'deviceid',
 		    minValue: 0,
 		    maxValue: PVE.form.ControllerSelector.maxIds.ide,

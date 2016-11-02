@@ -48,25 +48,21 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		validateExists: true
 	    },
 	    {
-		xtype: 'numberfield',
+		xtype: 'pveIntegerField',
 		name: 'max_restart',
 		fieldLabel: gettext('Max. Restart'),
 		value: 1,
 		minValue: 0,
 		maxValue: 10,
-		allowDecimals: false,
-		allowExponential: false,
 		allowBlank: false
 	    },
 	    {
-		xtype: 'numberfield',
+		xtype: 'pveIntegerField',
 		name: 'max_relocate',
 		fieldLabel: gettext('Max. Relocate'),
 		value: 1,
 		minValue: 0,
 		maxValue: 10,
-		allowDecimals: false,
-		allowExponential: false,
 		allowBlank: false
 	    }
 	];
