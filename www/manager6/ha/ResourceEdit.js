@@ -75,7 +75,6 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    {
 		xtype: 'pveHAGroupSelector',
 		name: 'group',
-		value: '',
 		fieldLabel: gettext('Group')
 	    },
 	    {

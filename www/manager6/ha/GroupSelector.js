@@ -2,6 +2,7 @@ Ext.define('PVE.ha.GroupSelector', {
     extend: 'PVE.form.ComboGrid',
     alias: ['widget.pveHAGroupSelector'],
 
+    value: [],
     autoSelect: false,
     valueField: 'group',
     displayField: 'group',

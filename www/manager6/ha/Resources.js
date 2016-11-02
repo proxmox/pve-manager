@@ -176,7 +176,7 @@ Ext.define('PVE.ha.ResourcesView', {
 	extend: 'Ext.data.Model',
 	fields: [ 
 	  'sid', 'state', 'digest', 'errors', 'group', 'comment',
-	  'max_restart', 'max_relocate',
+	  'max_restart', 'max_relocate'
 	],
 	idProperty: 'sid'
     });
