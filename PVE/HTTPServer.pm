@@ -1624,7 +1624,15 @@ sub new {
 
     if ($self->{ssl}) {
 	$self->{tls_ctx} = AnyEvent::TLS->new(%{$self->{ssl}});
-	Net::SSLeay::CTX_set_options($self->{tls_ctx}->{ctx}, &Net::SSLeay::OP_NO_COMPRESSION);
+	# TODO : openssl >= 1.0.2 supports SSL_CTX_set_ecdh_auto to select a curve depending on 
+	# server and client availability from SSL_CTX_set1_curves. 
+	# that way other curves like 25519 can be used.
+	# openssl 1.0.1 can only support 1 curve at a time.
+	my $curve = Net::SSLeay::OBJ_txt2nid('prime256v1');
+	my $ecdh = Net::SSLeay::EC_KEY_new_by_curve_name($curve);
+	Net::SSLeay::CTX_set_options($self->{tls_ctx}->{ctx}, &Net::SSLeay::OP_NO_COMPRESSION | &Net::SSLeay::OP_SINGLE_ECDH_USE | &Net::SSLeay::OP_SINGLE_DH_USE);
+	Net::SSLeay::CTX_set_tmp_ecdh($self->{tls_ctx}->{ctx}, $ecdh);
+	Net::SSLeay::EC_KEY_free($ecdh);
     }
 
     if ($self->{spiceproxy}) {
