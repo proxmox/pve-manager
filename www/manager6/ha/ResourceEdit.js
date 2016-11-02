@@ -54,6 +54,8 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		value: 1,
 		minValue: 0,
 		maxValue: 10,
+		allowDecimals: false,
+		allowExponential: false,
 		allowBlank: false
 	    },
 	    {
@@ -63,6 +65,8 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		value: 1,
 		minValue: 0,
 		maxValue: 10,
+		allowDecimals: false,
+		allowExponential: false,
 		allowBlank: false
 	    }
 	];
