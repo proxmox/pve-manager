@@ -47,8 +47,15 @@ Ext.define('PVE.ha.GroupSelector', {
     Ext.define('pve-ha-groups', {
 	extend: 'Ext.data.Model',
 	fields: [ 
-	    'group', 'type', 'restricted', 'digest', 'nofailback',
-	    'nodes', 'comment'
+	    'group', 'type', 'digest', 'nodes', 'comment',
+	    {
+		name : 'restricted',
+		type: 'boolean'
+	    },
+	    {
+		name : 'nofailback',
+		type: 'boolean'
+	    }
 	],
 	proxy: {
             type: 'pve',
