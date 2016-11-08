@@ -1,8 +1,6 @@
 Ext.define('PVE.FirewallAliasEdit', {
     extend: 'PVE.window.Edit',
 
-    onlineHelp: 'pve_firewall_ip_aliases',
-
     base_url: undefined,
     
     alias_name: undefined,
@@ -69,6 +67,8 @@ Ext.define('PVE.FirewallAliasEdit', {
 Ext.define('PVE.FirewallAliases', {
     extend: 'Ext.grid.Panel',
     alias: ['widget.pveFirewallAliases'],
+
+    onlineHelp: 'pve_firewall_ip_aliases',
 
     stateful: true,
     stateId: 'grid-firewall-aliases',
