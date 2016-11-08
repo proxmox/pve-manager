@@ -75,6 +75,9 @@ Ext.define('PVE.dc.ACLView', {
 
     onlineHelp: 'chapter_user_management',
 
+    stateful: true,
+    stateId: 'grid-acls',
+
     // use fixed path
     path: undefined,
 
@@ -187,7 +190,6 @@ Ext.define('PVE.dc.ACLView', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
 	    tbar: [
 		{
 		    text: gettext('Add'),

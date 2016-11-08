@@ -5,6 +5,9 @@ Ext.define('PVE.dc.RoleView', {
 
     onlineHelp: 'pveum_roles',
 
+    stateful: true,
+    stateId: 'grid-roles',
+
     initComponent : function() {
 	var me = this;
 
@@ -32,7 +35,6 @@ Ext.define('PVE.dc.RoleView', {
 
 	Ext.apply(me, {
 	    store: store,
-	    stateful: false,
 
 	    viewConfig: {
 		trackOver: false

@@ -5,6 +5,9 @@ Ext.define('PVE.dc.PoolView', {
 
     onlineHelp: 'pveum_pools',
 
+    stateful: true,
+    stateId: 'grid-pools',
+
     initComponent : function() {
 	var me = this;
 
@@ -82,7 +85,6 @@ Ext.define('PVE.dc.PoolView', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
 	    tbar: tbar,
 	    viewConfig: {
 		trackOver: false

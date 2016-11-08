@@ -5,6 +5,9 @@ Ext.define('PVE.dc.AuthView', {
 
     onlineHelp: 'pveum_authentication_realms',
 
+    stateful: true,
+    stateId: 'grid-authrealms',
+
     initComponent : function() {
 	var me = this;
 
@@ -105,7 +108,6 @@ Ext.define('PVE.dc.AuthView', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
             tbar: tbar,
 	    viewConfig: {
 		trackOver: false

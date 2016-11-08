@@ -5,6 +5,9 @@ Ext.define('PVE.dc.GroupView', {
 
     onlineHelp: 'pveum_groups',
 
+    stateful: true,
+    stateId: 'grid-groups',
+
     initComponent : function() {
 	var me = this;
 
@@ -82,7 +85,6 @@ Ext.define('PVE.dc.GroupView', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
 	    tbar: tbar,
 	    viewConfig: {
 		trackOver: false

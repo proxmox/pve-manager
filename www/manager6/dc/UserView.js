@@ -58,6 +58,9 @@ Ext.define('PVE.dc.UserView', {
 
     onlineHelp: 'pveum_users',
 
+    stateful: true,
+    stateId: 'grid-users',
+
     initComponent : function() {
 	var me = this;
 
@@ -177,7 +180,6 @@ Ext.define('PVE.dc.UserView', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
 	    tbar: tbar,
 	    viewConfig: {
 		trackOver: false
