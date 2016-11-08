@@ -4,6 +4,7 @@ Ext.define('PVE.node.CephConfig', {
 
     bodyStyle: 'white-space:pre',
     bodyPadding: 5,
+    border: false,
     scrollable: true,
     load: function() {
 	var me = this;

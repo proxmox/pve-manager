@@ -3,6 +3,7 @@ Ext.define('PVE.node.CephCrushMap', {
     alias: ['widget.pveNodeCephCrushMap'],
     bodyStyle: 'white-space:pre',
     bodyPadding: 5,
+    border: false,
     stateful: true,
     stateId: 'layout-ceph-crush',
     scrollable: true,
