@@ -6,6 +6,9 @@ Ext.define('PVE.qemu.SnapshotTree', {
 
     old_digest: 'invalid',
 
+    stateful: true,
+    stateId: 'grid-qemu-snapshots',
+
     sorterFn: function(rec1, rec2) {
 	var v1 = rec1.data.snaptime;
 	var v2 = rec2.data.snaptime;

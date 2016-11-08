@@ -333,6 +333,9 @@ Ext.define('PVE.lxc.NetworkView', {
 
     dataCache: {}, // used to store result of last load
 
+    stateful: true,
+    stateId: 'grid-lxc-network',
+
     load: function() {
 	var me = this;
 
@@ -455,7 +458,6 @@ Ext.define('PVE.lxc.NetworkView', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
 	    tbar: [
 		{
 		    text: gettext('Add'),
