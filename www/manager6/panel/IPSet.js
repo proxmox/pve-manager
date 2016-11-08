@@ -2,6 +2,9 @@ Ext.define('PVE.IPSetList', {
     extend: 'Ext.grid.Panel',
     alias: 'widget.pveIPSetList',
 
+    stateful: true,
+    stateId: 'grid-firewall-ipsetlist',
+
     ipset_panel: undefined,
 
     base_url: undefined,
@@ -147,7 +150,7 @@ Ext.define('PVE.IPSetList', {
 	    tbar: [ '<b>IPSet:</b>', me.addBtn, me.removeBtn, me.editBtn ],
 	    selModel: sm,
 	    columns: [
-		{ header: 'IPSet', dataIndex: 'name', width: 100 },
+		{ header: 'IPSet', dataIndex: 'name', width: '100' },
 		{ header: gettext('Comment'), dataIndex: 'comment', renderer: Ext.String.htmlEncode, flex: 1 }
 	    ],
 	    listeners: {
@@ -258,6 +261,9 @@ Ext.define('PVE.IPSetCidrEdit', {
 Ext.define('PVE.IPSetGrid', {
     extend: 'Ext.grid.Panel',
     alias: 'widget.pveIPSetGrid',
+
+    stateful: true,
+    stateId: 'grid-firewall-ipsets',
 
     base_url: undefined,
     list_refs_url: undefined,
@@ -446,7 +452,6 @@ Ext.define('PVE.IPSet', {
 	var ipset_panel = Ext.createWidget('pveIPSetGrid', {
 	    region: 'center',
 	    list_refs_url: me.list_refs_url,
-	    flex: 0.5,
 	    border: false
 	});
 
@@ -454,7 +459,7 @@ Ext.define('PVE.IPSet', {
 	    region: 'west',
 	    ipset_panel: ipset_panel,
 	    base_url: me.base_url,
-	    flex: 0.5,
+	    width: '50%',
 	    border: false,
 	    split: true
 	});

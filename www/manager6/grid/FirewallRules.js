@@ -379,6 +379,9 @@ Ext.define('PVE.FirewallRules', {
 
     onlineHelp: 'chapter_pve_firewall',
 
+    stateful: true,
+    stateId: 'grid-firewall-rules',
+
     base_url: undefined,
     list_refs_url: undefined,
 

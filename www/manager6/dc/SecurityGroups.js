@@ -62,6 +62,9 @@ Ext.define('PVE.SecurityGroupList', {
     extend: 'Ext.grid.Panel',
     alias: 'widget.pveSecurityGroupList',
 
+    stateful: true,
+    stateId: 'grid-securitygroups',
+
     rule_panel: undefined,
 
     addBtn: undefined,
@@ -166,7 +169,7 @@ Ext.define('PVE.SecurityGroupList', {
 	    tbar: [ '<b>' + gettext('Group') + ':</b>', me.addBtn, me.removeBtn, me.editBtn ],
 	    selModel: sm,
 	    columns: [
-		{ header: gettext('Group'), dataIndex: 'group', width: 100 },
+		{ header: gettext('Group'), dataIndex: 'group', width: '100' },
 		{ header: gettext('Comment'), dataIndex: 'comment', renderer: Ext.String.htmlEncode, flex: 1 }
 	    ],
 	    listeners: {
@@ -202,14 +205,13 @@ Ext.define('PVE.SecurityGroups', {
 	    allow_groups: false,
 	    list_refs_url: '/cluster/firewall/refs',
 	    tbar_prefix: '<b>' + gettext('Rules') + ':</b>',
-	    flex: 0.75,
 	    border: false
 	});
 
 	var sglist = Ext.createWidget('pveSecurityGroupList', {
 	    region: 'west',
 	    rule_panel: rule_panel,
-	    flex: 0.25,
+	    width: '25%',
 	    border: false,
 	    split: true
 	});

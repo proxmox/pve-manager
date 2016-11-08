@@ -70,6 +70,9 @@ Ext.define('PVE.FirewallAliases', {
     extend: 'Ext.grid.Panel',
     alias: ['widget.pveFirewallAliases'],
 
+    stateful: true,
+    stateId: 'grid-firewall-aliases',
+
     base_url: undefined,
 
     title: gettext('Alias'),
