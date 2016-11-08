@@ -3,7 +3,8 @@ Ext.define('PVE.grid.TemplateSelector', {
 
     alias: 'widget.pveTemplateSelector',
 
-    stateful: false,
+    stateful: true,
+    stateId: 'grid-template-selector',
     viewConfig: {
 	trackOver: false
     },
@@ -324,7 +325,8 @@ Ext.define('PVE.storage.ContentView', {
 
     alias: 'widget.pveStorageContentView',
 
-    stateful: false,
+    stateful: true,
+    stateId: 'grid-storage-content',
     viewConfig: {
 	trackOver: false,
 	loadMask: false
