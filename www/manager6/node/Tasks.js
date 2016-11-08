@@ -2,7 +2,8 @@ Ext.define('PVE.node.Tasks', {
     extend: 'Ext.grid.GridPanel',
 
     alias: ['widget.pveNodeTasks'],
-    stateful: false,
+    stateful: true,
+    stateId: 'grid-node-tasks',
     loadMask: true,
     sortableColumns: false,
     vmidFilter: 0,

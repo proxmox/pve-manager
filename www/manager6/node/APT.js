@@ -148,7 +148,8 @@ Ext.define('PVE.node.APT', {
 
 	Ext.apply(me, {
 	    store: store,
-	    stateful: false,
+	    stateful: true,
+	    stateId: 'grid-update',
 	    selModel: sm,
             viewConfig: {
 		stripeRows: false,

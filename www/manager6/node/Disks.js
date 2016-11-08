@@ -2,6 +2,8 @@ Ext.define('PVE.node.DiskList', {
     extend: 'Ext.grid.GridPanel',
     alias: 'widget.pveNodeDiskList',
     emptyText: gettext('No Disks found'),
+    stateful: true,
+    stateId: 'grid-node-disks',
     columns: [
 	{
 	    header: gettext('Device'),
@@ -194,7 +196,6 @@ Ext.define('PVE.node.DiskList', {
 	    emptyText: gettext('No Disk found'),
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
 	    tbar: [ reloadButton, smartButton, initButton ],
 	    listeners: {
 		itemdblclick: function() {

@@ -222,7 +222,8 @@ Ext.define('PVE.node.NetworkView', {
 	    items: [
 		{
 		    xtype: 'gridpanel',
-		    stateful: false,
+		    stateful: true,
+		    stateId: 'grid-node-network',
 		    store: store,
 		    region: 'center',
 		    border: false,
