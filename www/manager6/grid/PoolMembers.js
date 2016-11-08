@@ -138,6 +138,9 @@ Ext.define('PVE.grid.PoolMembers', {
 
     // fixme: dynamic status update ?
 
+    stateful: true,
+    stateId: 'grid-pool-members',
+
     initComponent : function() {
 	var me = this;
 
