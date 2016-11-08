@@ -165,6 +165,8 @@ Ext.define('PVE.node.CephOsdTree', {
     extend: 'Ext.tree.Panel',
     alias: ['widget.pveNodeCephOsdTree'],
     onlineHelp: 'chapter_pveceph',
+    stateful: true,
+    stateId: 'grid-ceph-osd',
     columns: [
 	{
 	    xtype: 'treecolumn',
@@ -437,7 +439,6 @@ Ext.define('PVE.node.CephOsdTree', {
 		     { type: 'integer', name: 'apply_latency_ms' },
 		     { type: 'integer', name: 'commit_latency_ms' },
 		     { type: 'number', name: 'crush_weight' }],
-	    stateful: false,
 	    selModel: sm,
 
 	    listeners: {

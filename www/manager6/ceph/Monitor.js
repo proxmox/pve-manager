@@ -53,6 +53,9 @@ Ext.define('PVE.node.CephMonList', {
 
     onlineHelp: 'chapter_pveceph',
 
+    stateful: true,
+    stateId: 'grid-ceph-monitor',
+
     initComponent: function() {
         var me = this;
 
@@ -160,7 +163,6 @@ Ext.define('PVE.node.CephMonList', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
 	    tbar: [ start_btn, stop_btn, create_btn, remove_btn ],
 	    columns: [
 		{

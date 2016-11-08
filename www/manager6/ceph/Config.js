@@ -61,7 +61,7 @@ Ext.define('PVE.node.CephConfigCrush', {
 	    xtype: 'pveNodeCephCrushMap',
 	    region: 'east',
 	    split: true,
-	    flex: 1
+	    width: '50%'
     }],
 
     initComponent: function() {

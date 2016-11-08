@@ -73,7 +73,8 @@ Ext.define('PVE.node.CephPoolList', {
     alias: ['widget.pveNodeCephPoolList'],
 
     onlineHelp: 'chapter_pveceph',
-    stateful: false,
+    stateful: true,
+    stateId: 'grid-ceph-pools',
     bufferedRenderer: false,
     features: [ { ftype: 'summary'} ],
     columns: [
