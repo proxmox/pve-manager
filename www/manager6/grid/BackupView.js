@@ -5,6 +5,9 @@ Ext.define('PVE.grid.BackupView', {
 
     onlineHelp: 'chapter_vzdump',
 
+    stateful: true,
+    stateId: 'grid-guest-backup',
+
     initComponent : function() {
 	var me = this;
 
@@ -198,7 +201,6 @@ Ext.define('PVE.grid.BackupView', {
 	});
 
 	Ext.apply(me, {
-	    stateful: false,
 	    selModel: sm,
 	    tbar: [ backup_btn, restore_btn, delete_btn,config_btn, '->', storagesel, storagefilter ],
 	    columns: [
