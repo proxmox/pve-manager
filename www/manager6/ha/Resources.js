@@ -4,6 +4,9 @@ Ext.define('PVE.ha.ResourcesView', {
 
     onlineHelp: 'ha_manager_resources',
 
+    stateful: true,
+    stateId: 'grid-ha-resources',
+
     initComponent : function() {
 	var me = this;
 
@@ -92,7 +95,6 @@ Ext.define('PVE.ha.ResourcesView', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
 	    viewConfig: {
 		trackOver: false
 	    },

@@ -6,6 +6,9 @@ Ext.define('PVE.dc.StorageView', {
 
     onlineHelp: 'chapter_storage',
 
+    stateful: true,
+    stateId: 'grid-dc-storage',
+
     initComponent : function() {
 	var me = this;
 
@@ -99,7 +102,6 @@ Ext.define('PVE.dc.StorageView', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
 	    viewConfig: {
 		trackOver: false
 	    },

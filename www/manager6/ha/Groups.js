@@ -4,6 +4,9 @@ Ext.define('PVE.ha.GroupsView', {
 
     onlineHelp: 'ha_manager_groups',
 
+    stateful: true,
+    stateId: 'grid-ha-groups',
+
     initComponent : function() {
 	var me = this;
 
@@ -64,7 +67,6 @@ Ext.define('PVE.ha.GroupsView', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
 	    viewConfig: {
 		trackOver: false
 	    },

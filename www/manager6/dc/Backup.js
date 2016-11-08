@@ -382,7 +382,8 @@ Ext.define('PVE.dc.BackupView', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    stateful: false,
+	    stateful: true,
+	    stateId: 'grid-dc-backup',
 	    viewConfig: {
 		trackOver: false
 	    },
