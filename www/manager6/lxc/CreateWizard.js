@@ -85,8 +85,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    }
 	});
 
-	me.sshkeyfield = Ext.createWidget('textfield', {
-	    xtype: 'textfield',
+	me.sshkeyfield = Ext.createWidget('pvetextfield', {
 	    name: 'ssh-public-keys',
 	    value: '',
 	    fieldLabel: gettext('SSH public key'),
