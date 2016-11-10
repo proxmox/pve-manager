@@ -1,5 +1,7 @@
 Ext.define('PVE.window.Wizard', {
     extend: 'Ext.window.Window',
+
+    activeTitle: '', // used for automated testing
     
     getValues: function(dirtyOnly) {
 	var me = this;
@@ -129,6 +131,7 @@ Ext.define('PVE.window.Wizard', {
 	});
 
 	var display_header = function(newcard) {
+	    me.activeTitle = newcard.title;
 	    var html = '<h1>' + newcard.title + '</h1>';
 	    if (newcard.descr) {
 		html += newcard.descr;
