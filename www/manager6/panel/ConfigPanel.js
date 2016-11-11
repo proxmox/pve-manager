@@ -108,6 +108,20 @@ Ext.define('PVE.panel.Config', {
     layout: 'card',
     border: 0,
 
+    // used for automated test
+    selectById: function(cardid) {
+	var me = this;
+
+	var root = me.store.getRoot();
+	var selection = root.findChild('id', cardid, true);
+
+	if (selection) {
+	    var menu = me.down('#menu');
+	    menu.setSelection(selection);
+	    return cardid;
+	}
+    },
+
     activateCard: function(cardid) {
 	var me = this;
 	if (me.savedItems[cardid]) {
