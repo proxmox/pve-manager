@@ -434,6 +434,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		if (node) {
 		    me.selectExpand(node);
 		}
+		return node;
 	    },
 	    checkVmMigration: function(record) {
 		if (!(record.data.type === 'qemu' || record.data.type === 'lxc')) {
