@@ -1220,6 +1220,23 @@ Ext.define('PVE.Utils', { utilities: {
 	}
     },
 
+    // test automation helper
+    call_menu_handler: function(menu, text) {
+
+	var list = menu.query('menuitem');
+
+	Ext.Array.each(list, function(item) {
+	    if (item.text === text) {
+		if (item.handler) {
+		    item.handler();
+		    return 1;
+		} else {
+		    return undefined;
+		}
+	    }
+	});
+    },
+
     createCmdMenu: function(v, record, item, index, event) {
 	event.stopEvent();
 	if (!(v instanceof Ext.tree.View)) {
