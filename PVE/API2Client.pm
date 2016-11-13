@@ -139,7 +139,7 @@ sub call {
 	    return if $ct !~ m|application/json|;
 	    my $res = from_json($response->decoded_content, {utf8 => 1, allow_nonref => 1});
 	    if (my $errors = $res->{errors}) {
-		foreach my $key (keys $errors) {
+		foreach my $key (keys %$errors) {
 		    my $m = $errors->{$key};
 		    chomp($m);
 		    $m =~s/\n/ -- /g;
