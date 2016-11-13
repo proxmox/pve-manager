@@ -155,6 +155,12 @@ sub call {
 sub new {
     my ($class, %param) = @_;
 
+    my $default_ca = "/etc/pve/pve-root-ca.pem";
+
+    my $ssl_default_opts = {  verify_hostname => 0 };
+    $ssl_default_opts->{SSL_ca_file} = $default_ca
+	if -f $default_ca;
+
     my $self = { 
 	ticket => $param{ticket},
 	csrftoken => $param{csrftoken},
@@ -163,6 +169,7 @@ sub new {
 	host => $param{host} || 'localhost',
 	port => $param{port},
 	protocol => $param{protocol},
+	ssl_opts => $param{ssl_opts} || $ssl_default_opts,
 	timeout => $param{timeout} || 60,
     };
     bless $self;
@@ -181,7 +188,7 @@ sub new {
     $self->{useragent} = LWP::UserAgent->new(
 	cookie_jar => $self->{cookie_jar},
 	protocols_allowed => [ 'http', 'https'],
-	ssl_opts => { verify_hostname => 0 },
+	ssl_opts => $self->{ssl_opts},
 	timeout => $self->{timeout},
 	);
 
