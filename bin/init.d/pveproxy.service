@@ -10,6 +10,8 @@ After=pvedaemon.service
 After=ssh.service
 After=remote-fs.target
 After=ceph.service
+After=sheepdog.service
+After=glusterd.service
 
 [Service]
 ExecStart=/usr/bin/pveproxy start
