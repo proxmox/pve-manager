@@ -155,9 +155,10 @@ sub rest_handler {
 
     if ($info->{proxyto}) {
 	my $remip;
+	my $node;
 	eval {
 	    my $pn = $info->{proxyto};
-	    my $node = $uri_param->{$pn};
+	    $node = $uri_param->{$pn};
 	    die "proxy parameter '$pn' does not exists" if !$node;
 
 	    if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
@@ -169,7 +170,7 @@ sub rest_handler {
 	    return &$exc_to_res($info, $err);
 	}
 	if ($remip) {
-	    return { proxy => $remip, proxy_params => $params };
+	    return { proxy => $remip, proxynode => $node, proxy_params => $params };
 	}
     } 
 
