@@ -191,7 +191,7 @@ foreach my $plug (@pve_vzdump_classes) {
 	    $plug->import ();
 	    push @plugins, $plug;
 	} else {
-	    warn $@;
+	    die $@;
 	}
     }
 }
