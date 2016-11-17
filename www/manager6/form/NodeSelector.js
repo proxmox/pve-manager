@@ -7,6 +7,9 @@ Ext.define('PVE.form.NodeSelector', {
 
     selectCurNode: false,
 
+    // do not allow those nodes (array)
+    disallowedNodes: undefined,
+
     // only allow those nodes (array)
     allowedNodes: undefined,
     // set default value to empty array, else it inits it with
@@ -97,5 +100,13 @@ Ext.define('PVE.form.NodeSelector', {
 
         me.callParent();
         me.getStore().load();
+
+	// filter out disallowed nodes
+	me.getStore().addFilter(new Ext.util.Filter({
+	    filterFn: function(item) {
+		return !Ext.Array.contains(me.disallowedNodes, item.data.node);
+	    }
+	}));
+
     }
 });
