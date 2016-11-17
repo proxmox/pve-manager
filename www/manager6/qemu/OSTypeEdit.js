@@ -60,6 +60,11 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 	    {
 		xtype: 'radiofield',
 		name: 'ostype',
+		inputValue: 'win10'
+	    },
+	    {
+		xtype: 'radiofield',
+		name: 'ostype',
 		inputValue: 'win8'
 	    },
 	    {
