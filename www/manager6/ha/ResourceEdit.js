@@ -13,13 +13,6 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 
 	delete values.vmid;
 
-	if (values.enable) {
-	    values.state = 'enabled';
-	} else {
-	    values.state = 'disabled';
-	}
-	delete values.enable;
-
 	PVE.Utils.delete_if_default(values, 'group', '', me.create);
 	PVE.Utils.delete_if_default(values, 'max_restart', '1', me.create);
 	PVE.Utils.delete_if_default(values, 'max_relocate', '1', me.create);
@@ -67,6 +60,8 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    }
 	];
 
+	// value is expected to be integer as it's above, ignore that
+	/*jslint confusion: true */
 	me.column2 = [
 	    {
 		xtype: 'pveHAGroupSelector',
@@ -74,14 +69,18 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		fieldLabel: gettext('Group')
 	    },
 	    {
-		xtype: 'pvecheckbox',
-		name: 'enable',
-		checked: true,
-		uncheckedValue: 0,
-		fieldLabel: gettext('enabled'),
+		xtype: 'pveKVComboBox',
+		name: 'state',
+		value: 'started',
+		fieldLabel: gettext('Request State'),
+		comboItems: [
+		    ['started', gettext('Started')],
+		    ['stopped', gettext('Stopped')],
+		    ['disabled', gettext('Disabled')]
+		],
 		listeners: {
 		    'change': function(field, newValue) {
-			if (newValue === false) {
+			if (newValue === 'disabled') {
 			    disabledHint.setVisible(true);
 			}
 			else {
@@ -94,6 +93,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    },
 	    disabledHint
 	];
+	/*jslint confusion: false */
 
 	me.columnB = [
 	    {
@@ -142,11 +142,6 @@ Ext.define('PVE.ha.VMResourceEdit', {
 	    me.load({
 		success:  function(response, options) {
 		    var values = response.result.data;
-
-		    values.enable = true;
-		    if (values.state === 'disabled') {
-			values.enable = false;
-		    }
 
 		    var regex =  /^(\S+):(\S+)$/;
 		    var res = regex.exec(values.sid);

@@ -119,7 +119,7 @@ Ext.define('PVE.ha.ResourcesView', {
 		    dataIndex: 'sid'
 		},
 		{
-		    header: gettext('State'),
+		    header: gettext('Request State'),
 		    width: 100,
 		    sortable: true,
 		    renderer: function(v) {
