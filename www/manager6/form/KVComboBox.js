@@ -33,6 +33,28 @@ Ext.define('PVE.form.KVComboBox', {
         return data;
     },
 
+    validator: function(val) {
+	var me = this;
+
+	if (me.editable || val === null || val === '') {
+	    return true;
+	}
+
+	if (me.comboItems) {
+	    var values = me.multiSelect ? val.split(me.delimiter) : [val];
+	    var items = Ext.Array.pluck(me.comboItems, 1);
+	    if (Ext.Array.every(values, function(value) {
+		return Ext.Array.contains(items, value);
+	    })) {
+		return true;
+	    }
+	}
+
+	// returns a boolean or string
+	/*jslint confusion: true */
+	return "value '" + val + "' not allowed!";
+    },
+
     initComponent: function() {
 	var me = this;
 
