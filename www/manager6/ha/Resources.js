@@ -123,7 +123,7 @@ Ext.define('PVE.ha.ResourcesView', {
 		    width: 100,
 		    sortable: true,
 		    renderer: function(v) {
-			return v || 'enabled';
+			return v || 'started';
 		    },
 		    dataIndex: 'state'
 		},
