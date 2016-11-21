@@ -116,6 +116,7 @@ Ext.define('PVE.panel.Config', {
 	var selection = root.findChild('id', cardid, true);
 
 	if (selection) {
+	    selection.expand();
 	    var menu = me.down('#menu');
 	    menu.setSelection(selection);
 	    return cardid;
