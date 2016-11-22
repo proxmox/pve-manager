@@ -14,16 +14,9 @@ Ext.define('PVE.ha.StatusView', {
     initComponent : function() {
 	var me = this;
 
-	me.rstore = Ext.create('PVE.data.ObjectStore', {
-	    interval: me.interval,
-	    model: 'pve-ha-status',
-	    storeid: 'pve-store-' + (++Ext.idSeed),
-	    groupField: 'type',
-	    proxy: {
-                type: 'pve',
-		url: '/api2/json/cluster/ha/status/current'
-	    }
-	});
+	if (!me.rstore) {
+	    throw "no rstore given";
+	}
 
 	PVE.Utils.monStoreErrors(me, me.rstore);
 
@@ -36,7 +29,12 @@ Ext.define('PVE.ha.StatusView', {
 		    var p2 = me.sortPriority[rec2.data.type];
 		    return (p1 !== p2) ? ((p1 > p2) ? 1 : -1) : 0;
 		}
-	    }]
+	    }],
+	    filters: {
+		property: 'type',
+		value: 'service',
+		operator: '!='
+	    }
 	});
 
 	Ext.apply(me, {

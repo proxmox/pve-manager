@@ -99,17 +99,10 @@ Ext.define('PVE.dc.Config', {
 		itemId: 'domains'
 	    },
 	    {
-		xtype: 'pveHAStatusView',
+		xtype: 'pveHAStatus',
 		title: 'HA',
 		iconCls: 'fa fa-heartbeat',
 		itemId: 'ha'
-	    },
-	    {
-		title: gettext('Resources'),
-		groups: ['ha'],
-		iconCls: 'fa fa-th',
-		xtype: 'pveHAResourcesView',
-		itemId: 'resources'
 	    },
 	    {
 		title: gettext('Groups'),

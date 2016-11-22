@@ -12,20 +12,22 @@ Ext.define('PVE.ha.ResourcesView', {
 
 	var caps = Ext.state.Manager.get('GuiCap');
 
-	var store = new Ext.data.Store({
-	    model: 'pve-ha-resources',
-	    proxy: {
-                type: 'pve',
-		url: "/api2/json/cluster/ha/resources"
-	    },
-	    sorters: { 
-		property: 'sid', 
-		order: 'DESC' 
+	if (!me.rstore) {
+	    throw "no store given";
+	}
+
+	PVE.Utils.monStoreErrors(me, me.rstore);
+
+	var store = Ext.create('PVE.data.DiffStore', {
+	    rstore: me.rstore,
+	    filters: {
+		property: 'type',
+		value: 'service'
 	    }
 	});
-	
+
 	var reload = function() {
-	    store.load();
+	    me.rstore.load();
 	};
 
 	var render_error = function(dataIndex, value, metaData, record) {
@@ -162,7 +164,6 @@ Ext.define('PVE.ha.ResourcesView', {
 		}
 	    ],
 	    listeners: {
-		activate: reload,
 		beforeselect: function(grid, record, index, eOpts) {
 		    if (!caps.nodes['Sys.Console']) {
 			return false;
