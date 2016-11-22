@@ -71,7 +71,10 @@ Ext.define('PVE.ha.StatusView', {
     Ext.define('pve-ha-status', {
 	extend: 'Ext.data.Model',
 	fields: [ 
-	    'id', 'type', 'node', 'status', 'sid'
+	    'id', 'type', 'node', 'status', 'sid',
+	    'state', 'group', 'comment',
+	    'max_restart', 'max_relocate', 'type',
+	    'crm_state', 'request_state'
 	],
 	idProperty: 'id'
     });
