@@ -69,6 +69,36 @@ Ext.define('PVE.Utils', { utilities: {
 	solaris: 'Solaris Kernel'
     },
 
+    get_health_icon: function(state, circle) {
+	if (circle === undefined) {
+	    circle = false;
+	}
+
+	if (state === undefined) {
+	    state = 'uknown';
+	}
+
+	var icon = 'faded fa-question';
+	switch(state) {
+	    case 'good':
+		icon = 'good fa-check';
+		break;
+	    case 'warning':
+		icon = 'warning fa-exclamation';
+		break;
+	    case 'critical':
+		icon = 'critical fa-times';
+		break;
+	    default: break;
+	}
+
+	if (circle) {
+	    icon += '-circle';
+	}
+
+	return icon;
+    },
+
     render_kvm_ostype: function (value) {
 	if (!value) {
 	    return gettext('Other OS types');

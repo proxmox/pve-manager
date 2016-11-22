@@ -25,7 +25,7 @@ Ext.define('PVE.dc.Health', {
 	}
 
 	var cluster = {
-	    iconCls:'good fa-check-circle',
+	    iconCls: PVE.Utils.get_health_icon('good', true),
 	    text: gettext("Standalone node - no cluster defined")
 	};
 
@@ -48,7 +48,7 @@ Ext.define('PVE.dc.Health', {
 		cluster.text += gettext("Quorate") + ": ";
 		cluster.text += PVE.Utils.format_boolean(item.data.quorate);
 		if (item.data.quorate != 1) {
-		    cluster.iconCls = 'critical fa-times-circle';
+		    cluster.iconCls = PVE.Utils.get_health_icon('critical', true);
 		}
 
 		numNodes = item.data.nodes;
