@@ -104,7 +104,11 @@ Ext.define('PVE.form.NodeSelector', {
 	// filter out disallowed nodes
 	me.getStore().addFilter(new Ext.util.Filter({
 	    filterFn: function(item) {
-		return !Ext.Array.contains(me.disallowedNodes, item.data.node);
+		if (Ext.isArray(me.disallowedNodes)) {
+		    return !Ext.Array.contains(me.disallowedNodes, item.data.node);
+		} else {
+		    return true;
+		}
 	    }
 	}));
 
