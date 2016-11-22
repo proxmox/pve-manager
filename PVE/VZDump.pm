@@ -770,9 +770,9 @@ sub exec_backup_task {
 	die "unable to find VM '$vmid'\n" if !$plugin;
 
 	# for now we deny backups of a running ha managed service in *stop* mode
-	# as it interferes with the HA stack (enabled services should not stop).
+	# as it interferes with the HA stack (started services should not stop).
 	if ($opts->{mode} eq 'stop' &&
-	    PVE::HA::Config::vm_is_ha_managed($vmid, 'enabled'))
+	    PVE::HA::Config::vm_is_ha_managed($vmid, 'started'))
 	{
 	    die "Cannot execute a backup with stop mode on a HA managed and".
 		" enabled Service. Use snapshot mode or disable the Service.\n";
