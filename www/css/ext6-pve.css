@@ -456,3 +456,47 @@ div.right-aligned {
 .critical {
     color: #FF6C59;
 }
+
+/* for the ceph monitor widgets */
+div.monitor {
+	text-align:left;
+	border:#cfcfcf solid 1px;
+	border-radius:2px;
+	margin: 2px;
+	padding: 5px 8px;
+}
+
+/* for auto layout */
+div.inline-block {
+    display: inline-block;
+    vertical-align: top;
+}
+
+/* ceph dashboard osd table styling */
+table.osds {
+    border-collapse: collapse;
+    margin: auto;
+}
+
+table.osds td {
+    padding: 4px;
+    text-align: right;
+    border-right: 1px solid #cfcfcf;
+}
+
+table.osds td:last-of-type {
+    border-right: 0;
+}
+
+table.osds tr {
+    border-bottom: 1px solid #cfcfcf;
+}
+
+table.osds tr:last-of-type {
+    border-bottom: 0;
+}
+
+table.osds td:first-of-type {
+    text-align: left;
+}
+

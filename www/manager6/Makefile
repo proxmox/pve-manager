@@ -110,6 +110,7 @@ JSSRC= 				                 	\
 	ceph/Monitor.js					\
 	ceph/Crush.js					\
 	ceph/Status.js					\
+	ceph/StatusDetail.js				\
 	ceph/Config.js					\
 	node/Disks.js					\
 	node/DNSEdit.js					\
