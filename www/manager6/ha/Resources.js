@@ -121,13 +121,27 @@ Ext.define('PVE.ha.ResourcesView', {
 		    dataIndex: 'sid'
 		},
 		{
+		    header: gettext('State'),
+		    width: 100,
+		    sortable: true,
+		    dataIndex: 'state'
+		},
+		{
 		    header: gettext('Request State'),
 		    width: 100,
+		    hidden: true,
 		    sortable: true,
 		    renderer: function(v) {
 			return v || 'started';
 		    },
-		    dataIndex: 'state'
+		    dataIndex: 'request_state'
+		},
+		{
+		    header: gettext('CRM State'),
+		    width: 100,
+		    hidden: true,
+		    sortable: true,
+		    dataIndex: 'crm_state'
 		},
 		{
 		    header: gettext('Max. Restart'),
