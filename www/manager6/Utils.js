@@ -893,6 +893,14 @@ Ext.define('PVE.Utils', { utilities: {
 	return PVE.Utils.format_size(value);
     },
 
+    render_bandwidth: function(value) {
+	if (!Ext.isNumeric(value)) {
+	    return '';
+	}
+
+	return PVE.Utils.format_size(value) + '/s';
+    },
+
     render_timestamp: function(value, metaData, record, rowIndex, colIndex, store) {
 	var servertime = new Date(value * 1000);
 	return Ext.Date.format(servertime, 'Y-m-d H:i:s');

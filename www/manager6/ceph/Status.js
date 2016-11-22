@@ -1,128 +1,236 @@
 Ext.define('PVE.node.CephStatus', {
-    extend: 'PVE.grid.ObjectGrid',
-    alias: ['widget.pveNodeCephStatus'],
+    extend: 'Ext.panel.Panel',
+    alias: 'widget.pveNodeCephStatus',
+
     onlineHelp: 'chapter_pveceph',
-    cwidth1: 150,
-    interval: 3000,
+
+    scrollable: true,
+
+    bodyPadding: '10 0 0 0',
+
+    defaults: {
+	width: 762,
+	userCls: 'inline-block',
+	padding: '0 0 10 10'
+    },
+
+    items: [
+	{
+	    xtype: 'panel',
+	    title: gettext('Health'),
+	    bodyPadding: '0 10 10 10',
+	    minHeight: 210,
+	    layout: {
+		type: 'hbox',
+		align: 'top'
+	    },
+	    items: [
+		{
+		    flex: 1,
+		    itemId: 'overallhealth',
+		    xtype: 'pveHealthWidget',
+		    title: gettext('Status')
+		},
+		{
+		    flex: 2,
+		    itemId: 'warnings',
+		    stateful: true,
+		    stateId: 'ceph-status-warnings',
+		    padding: '15 0 0 0',
+		    xtype: 'grid',
+		    minHeight: 100,
+		    // since we load the store manually,
+		    // to show the emptytext, we have to
+		    // specify an empty store
+		    store: { data:[] },
+		    emptyText: gettext('No Warnings/Errors'),
+		    columns: [
+			{
+			    dataIndex: 'severity',
+			    header: gettext('Severity'),
+			    align: 'center',
+			    width: 70,
+			    renderer: function(value) {
+				var health = PVE.Utils.map_ceph_health[value];
+				var classes = PVE.Utils.get_health_icon(health);
+
+				return '<i class="fa fa-fw ' + classes + '"></i>';
+			    },
+			    sorter: {
+				sorterFn: function(a,b) {
+				    var healthArr = ['HEALTH_ERR', 'HEALTH_WARN', 'HEALTH_OK'];
+				    return healthArr.indexOf(b.data.severity) - healthArr.indexOf(a.data.severity);
+				}
+			    }
+			},
+			{
+			    dataIndex: 'summary',
+			    header: gettext('Summary'),
+			    flex: 1
+			}
+		    ]
+		}
+	    ]
+	},
+	{
+	    xtype: 'pveCephStatusDetail',
+	    itemId: 'statusdetail',
+	    title: gettext('Status')
+	},
+	{
+	    xtype: 'panel',
+	    title: gettext('Performance'),
+	    bodyPadding: '0 10 10 10',
+	    layout: {
+		type: 'hbox',
+		align: 'center'
+	    },
+	    items: [
+		{
+		    flex: 1,
+		    xtype: 'pveGauge',
+		    itemId: 'space',
+		    title: gettext('Usage')
+		},
+		{
+		    flex: 2,
+		    xtype: 'container',
+		    defaults: {
+			padding: '0 0 0 30',
+			height: 100
+		    },
+		    items: [
+			{
+			    itemId: 'reads',
+			    xtype: 'pveRunningChart',
+			    title: gettext('Reads'),
+			    renderer: PVE.Utils.render_bandwidth
+			},
+			{
+			    itemId: 'writes',
+			    xtype: 'pveRunningChart',
+			    title: gettext('Writes'),
+			    renderer: PVE.Utils.render_bandwidth
+			},
+			{
+			    itemId: 'iops',
+			    xtype: 'pveRunningChart',
+			    hidden: true,
+			    title: gettext('IOPS'),
+			    renderer: Ext.util.Format.numberRenderer('0,000')
+			},
+			{
+			    itemId: 'readiops',
+			    xtype: 'pveRunningChart',
+			    hidden: true,
+			    title: gettext('Read IOPS'),
+			    renderer: Ext.util.Format.numberRenderer('0,000')
+			},
+			{
+			    itemId: 'writeiops',
+			    xtype: 'pveRunningChart',
+			    hidden: true,
+			    title: gettext('Write IOPS'),
+			    renderer: Ext.util.Format.numberRenderer('0,000')
+			}
+		    ]
+		}
+	    ]
+	}
+    ],
+
+    updateAll: function(store, records, success) {
+	if (!success || records.length === 0) {
+	    return;
+	}
+
+	var me = this;
+	var rec = records[0];
+
+	// add health panel
+	me.down('#overallhealth').updateHealth(PVE.Utils.render_ceph_health(rec));
+	// add errors to gridstore
+	me.down('#warnings').getStore().loadRawData(rec.data.health.summary, false);
+
+	// update detailstatus panel
+	me.getComponent('statusdetail').updateAll(rec);
+
+	// add performance data
+	var used = rec.data.pgmap.bytes_used;
+	var total = rec.data.pgmap.bytes_total;
+
+	var text = Ext.String.format(gettext('{0} of {1}'),
+	    PVE.Utils.render_size(used),
+	    PVE.Utils.render_size(total)
+	);
+
+	// update the usage widget
+	me.down('#space').updateValue(used/total, text);
+
+	// TODO: logic for jewel (iops splitted in read/write)
+
+	var iops = rec.data.pgmap.op_per_sec;
+	var readiops = rec.data.pgmap.read_op_per_sec;
+	var writeiops = rec.data.pgmap.write_op_per_sec0;
+	var reads = rec.data.pgmap.read_bytes_sec || 0;
+	var writes = rec.data.pgmap.write_bytes_sec || 0;
+
+	if (iops !== undefined && me.version !== 'hammer') {
+	    me.change_version('hammer');
+	} else if((readiops !== undefined || writeiops !== undefined) && me.version !== 'jewel') {
+	    me.change_version('jewel');
+	}
+	// update the graphs
+	me.reads.addDataPoint(reads);
+	me.writes.addDataPoint(writes);
+	me.iops.addDataPoint(iops);
+	me.readiops.addDataPoint(readiops);
+	me.writeiops.addDataPoint(writeiops);
+    },
+
+    change_version: function(version) {
+	var me = this;
+	me.version = version;
+	me.sp.set('ceph-version', version);
+	me.iops.setVisible(version === 'hammer');
+	me.readiops.setVisible(version === 'jewel');
+	me.writeiops.setVisible(version === 'jewel');
+    },
+
     initComponent: function() {
-	 /*jslint confusion: true */
-        var me = this;
+	var me = this;
 
 	var nodename = me.pveSelNode.data.node;
 	if (!nodename) {
 	    throw "no node name specified";
 	}
 
-	var renderquorum = function(value) {
-	    if (!value || value.length < 0) {
-		return 'No';
-	    }
-
-	    return 'Yes {' + value.join(' ') + '}';
-	};
-
-	var rendermonmap = function(d) {
-	    if (!d) {
-		return '';
-	    }
-
-	    var txt =  'e' + d.epoch + ': ' + d.mons.length + " mons at ";
-
-	    Ext.Array.each(d.mons, function(d) {
-		txt += d.name + '=' + d.addr + ',';
-	    });
-
-	    return txt;
-	};
-
-	var renderosdmap = function(value) {
-	    if (!value || !value.osdmap) {
-		return '';
-	    }
-
-	    var d = value.osdmap;
-
-	    var txt = 'e' + d.epoch + ': ';
-
-	    txt += d.num_osds + ' osds: ' + d.num_up_osds + ' up, ' +
-		d.num_in_osds + " in";
-
-	    return txt;
-	};
-
-	var renderhealth = function(value) {
-	    if (!value || !value.overall_status) {
-		return '';
-	    }
-
-	    var txt = value.overall_status;
-
-	    Ext.Array.each(value.summary, function(d) {
-		txt += " " + d.summary + ';';
-	    });
-
-	    return txt;
-	};
-
-	var renderpgmap = function(d) {
-	    if (!d) {
-		return '';
-	    }
-
-	    var txt = 'v' + d.version + ': ';
-
-	    txt += d.num_pgs + " pgs:";
-
-	    Ext.Array.each(d.pgs_by_state, function(s) {
-		txt += " " + s.count + " " + s.state_name;
-	    });
-	    txt += '; ';
-
-	    txt += PVE.Utils.format_size(d.data_bytes) + " data, ";
-	    txt += PVE.Utils.format_size(d.bytes_used) + " used, ";
-	    txt += PVE.Utils.format_size(d.bytes_avail) + " avail";
-
-	    return txt;
-	};
-
-	Ext.applyIf(me, {
-	    url: "/api2/json/nodes/" + nodename + "/ceph/status",
-	    rows: {
-		health: {
-		    header: 'health',
-		    renderer: renderhealth,
-		    required: true
-		},
-		quorum_names: {
-		    header: 'quorum',
-		    renderer: renderquorum,
-		    required: true
-		},
-		fsid: {
-		    header: 'cluster',
-		    required: true
-		},
-		monmap: {
-		    header: 'monmap',
-		    renderer: rendermonmap,
-		    required: true
-		},
-		osdmap: {
-		    header: 'osdmap',
-		    renderer: renderosdmap,
-		    required: true
-		},
-		pgmap: {
-		    header: 'pgmap',
-		    renderer: renderpgmap,
-		    required: true
-		}
+	me.callParent();
+	me.store = Ext.create('PVE.data.UpdateStore', {
+	    storeid: 'ceph-status-' + nodename,
+	    interval: 5000,
+	    proxy: {
+		type: 'pve',
+		url: '/api2/json/nodes/' + nodename + '/ceph/status'
 	    }
 	});
 
-	me.callParent();
+	// save references for the updatefunction
+	me.iops = me.down('#iops');
+	me.readiops = me.down('#readiops');
+	me.writeiops = me.down('#writeiops');
+	me.reads = me.down('#reads');
+	me.writes = me.down('#writes');
 
-	me.on('activate', me.rstore.startUpdate);
-	me.on('destroy', me.rstore.stopUpdate);
+	// get ceph version
+	me.sp = Ext.state.Manager.getProvider();
+	me.version = me.sp.get('ceph-version');
+	me.change_version(me.version);
+
+	PVE.Utils.monStoreErrors(me,me.store);
+	me.mon(me.store, 'load', me.updateAll, me);
+	me.on('destroy', me.store.stopUpdate);
+	me.store.startUpdate();
     }
+
 });
