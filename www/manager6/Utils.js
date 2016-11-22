@@ -99,6 +99,30 @@ Ext.define('PVE.Utils', { utilities: {
 	return icon;
     },
 
+    map_ceph_health: {
+	'HEALTH_OK':'good',
+	'HEALTH_WARN':'warning',
+	'HEALTH_ERR':'critical'
+    },
+
+    render_ceph_health: function(record) {
+	var state = {
+	    iconCls: PVE.Utils.get_health_icon(),
+	    text: ''
+	};
+
+	if (!record || !record.data) {
+	    return state;
+	}
+
+	var health = PVE.Utils.map_ceph_health[record.data.health.overall_status];
+
+	state.iconCls = PVE.Utils.get_health_icon(health, true);
+	state.text = record.data.health.overall_status;
+
+	return state;
+    },
+
     render_kvm_ostype: function (value) {
 	if (!value) {
 	    return gettext('Other OS types');

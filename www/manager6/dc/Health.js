@@ -59,7 +59,7 @@ Ext.define('PVE.dc.Health', {
 	    nodes.offline = numNodes - nodes.online;
 	}
 
-	me.getComponent('clusterstatus').update(cluster);
+	me.getComponent('clusterstatus').updateHealth(cluster);
 	me.getComponent('nodestatus').update(nodes);
     },
 
@@ -81,27 +81,8 @@ Ext.define('PVE.dc.Health', {
 
 	me.cepherrors = 0;
 
-	var cephstate = {
-	    iconCls: 'faded fa-question-circle',
-	    text: ''
-	};
-
-	switch (records[0].data.health.overall_status) {
-	    case 'HEALTH_OK':
-		cephstate.iconCls = 'good fa-check-circle';
-		break;
-	    case 'HEALTH_WARN':
-		cephstate.iconCls = 'warning fa-info-circle';
-		break;
-	    case 'HEALTH_ERR':
-		cephstate.iconCls = 'critical fa-times-circle';
-		break;
-	    default:
-		cephstate.iconCls = 'faded fa-question-circle';
-		break;
-	}
-	cephstate.text = records[0].data.health.overall_status;
-	cephstatus.update(cephstate);
+	var state = PVE.Utils.render_ceph_health(records[0]);
+	cephstatus.updateHealth(state);
 	cephstatus.setVisible(true);
     },
 
@@ -115,16 +96,8 @@ Ext.define('PVE.dc.Health', {
     items: [
 	{
 	    itemId: 'clusterstatus',
-	    data: {
-		iconCls: 'faded fa-question-circle',
-		text: ''
-	    },
-	    tpl: [
-		'<h3>' + gettext('Status') + '</h3>',
-		'<i class="fa fa-5x {iconCls}"></i>',
-		'<br /><br/>',
-		'{text}'
-	    ]
+	    xtype: 'pveHealthWidget',
+	    title: gettext('Status')
 	},
 	{
 	    itemId: 'nodestatus',
@@ -153,15 +126,8 @@ Ext.define('PVE.dc.Health', {
 	    itemId: 'ceph',
 	    width: 250,
 	    columnWidth: undefined,
-	    data: {
-		text: '',
-		iconCls: 'faded fa-question-circle'
-	    },
-	    tpl: [
-		'<h3>Ceph</h3>',
-		'<i class="fa fa-5x {iconCls}"></i><br /><br />',
-		gettext("Health") + ': {text}'
-	    ],
+	    title: gettext('Ceph'),
+	    xtype: 'pveHealthWidget',
 	    hidden: true
 	}
     ],
