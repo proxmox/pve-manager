@@ -12,7 +12,13 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 
 	if (values.memoryType === 'fixed') {
 	    res = { memory: values.memory };
-	    res['delete'] = "balloon,shares";
+	    if (values.ballooning === '1') {
+		// if balloning is active if it is not explicitely set
+		res['delete'] = "balloon,shares";
+	    } else {
+		res['delete'] = "shares";
+		res.balloon = 0;
+	    }
 	} else {
 	    res = { 
 		memory: values.maxmemory,
@@ -45,6 +51,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 			    return;
 			}
 			me.down('field[name=memory]').setDisabled(!value);
+			me.down('field[name=ballooning]').setDisabled(!value);
 			me.down('field[name=maxmemory]').setDisabled(value);
 			me.down('field[name=balloon]').setDisabled(value);
 			me.down('field[name=shares]').setDisabled(value);
@@ -58,6 +65,15 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		fieldLabel: gettext('Memory') + ' (MB)',
 		labelAlign: 'right',
 		labelWidth: labelWidth
+	    },
+	    {
+		xtype: 'pvecheckbox',
+		hotplug: me.hotplug,
+		name: 'ballooning',
+		value: '1',
+		labelAlign: 'right',
+		labelWidth: labelWidth,
+		fieldLabel: gettext('Ballooning')
 	    },
 	    {
 		xtype: 'radiofield',
@@ -169,6 +185,7 @@ Ext.define('PVE.qemu.MemoryEdit', {
 		    memory: data.memory,
 		    maxmemory: data.memory,
 		    balloon: data.balloon,
+		    ballooning: data.balloon === 0 ? '0' : '1',
 		    shares: data.shares,
 		    memoryType: data.balloon ? 'dynamic' : 'fixed'
 		};
