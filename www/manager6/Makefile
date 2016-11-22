@@ -75,6 +75,7 @@ JSSRC= 				                 	\
 	panel/GuestStatusView.js			\
 	panel/RRDView.js				\
 	panel/RRDChart.js				\
+	panel/RunningChart.js				\
 	panel/InfoWidget.js				\
 	panel/TemplateStatusView.js			\
 	panel/InputPanel.js				\
