@@ -155,7 +155,7 @@
 .x-fa-tree-online:after,
 .x-fa-grid-online:after {
     content: "\f058";
-    color: #009828;
+    color: #21BF4B;
 }
 
 .x-fa-tree-offline:after,
@@ -167,7 +167,7 @@
 .x-fa-tree-running:after,
 .x-fa-grid-running:after {
     content: "\f04b";
-    color: #009828;
+    color: #21BF4B;
 }
 
 .x-fa-tree-paused:after,
@@ -446,7 +446,7 @@ div.right-aligned {
 }
 
 .good {
-    color: #009828;
+    color: #21BF4B;
 }
 
 .warning {
@@ -454,5 +454,5 @@ div.right-aligned {
 }
 
 .critical {
-    color: #f88;
+    color: #FF6C59;
 }

@@ -53,7 +53,7 @@ Ext.define('PVE.panel.GaugeWidget', {
     warningThreshold: 0.6,
     criticalThreshold: 0.9,
     warningColor: '#fc0',
-    criticalColor: '#f66',
+    criticalColor: '#FF6C59',
     defaultColor: '#c2ddf2',
     backgroundColor: '#f5f5f5',
 
