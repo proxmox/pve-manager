@@ -700,7 +700,7 @@ sub proxy_request {
 	    verify_cb => sub {
 		my (undef, undef, undef, $depth, undef, undef, $cert) = @_;
 		# we don't care about intermediate or root certificates
-		return 0 if $depth != 0;
+		return 1 if $depth != 0;
 		# check server certificate against cache of pinned FPs
 		return check_cert_fingerprint($cert);
 	    },
