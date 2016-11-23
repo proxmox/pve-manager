@@ -1,3 +1,69 @@
+pve-manager (4.3-11) unstable; urgency=medium
+
+  * fix kvcombobox validator
+
+  * ha/ResourceEdit.js: fix online help ref
+
+  * fix missing mons array in ceph status output
+
+  * fix SSL verify callback for certificate chains
+
+  * VZDump: switch ha managed check from enabled to started
+
+  * fix #1208: add ballooning checkbox to memory edit
+
+  * check for array in disallowednodes filter
+
+  * add new ceph dashboard
+
+  * merge ha resources into the ha status panel
+
+  * ConfigPanel: automatically expand node in selectById()
+
+  * ha resource edit: adapt to new service state
+
+  * do not show current node in migration window
+
+  * NodeSelector: add disallowedNodes configuration property
+
+  * add kvcombobox validator
+
+  * make GUI grids stateful
+
+  * remove reset columns button from resource grid
+
+  * enable certificate pinning for proxied requests
+
+  * check for lxc instead of openvz in the backup window
+
+  * VZDump: die with error if plugin loading fails
+
+  * add sheepdog and gluster to pveproxy.service
+
+  * API2Client: allow to set ssl options
+
+  * fix #1196: make restriced/nofailback boolean in gui
+
+  * disable rules copy button if not 'in' or 'out' rule
+
+  * BackupEdit, cleanup: remove insideUpdate construct
+
+  * Add ECDH curves to use with modern ciphers
+
+  * only allow integers in memoryfield
+
+  * add pveIntegerField and use it
+
+  * improve online help
+
+  * add 'max_{relocate, restart}' fields to UI
+
+  * change ceph diskselector field to devpath
+
+  * show correct mouse cursor on help and settings button
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 23 Nov 2016 12:40:00 +0100
+
 pve-manager (4.3-10) unstable; urgency=medium
 
   * LXC GUI: Wizard now uses new 'cores' option instead of cpulimit
