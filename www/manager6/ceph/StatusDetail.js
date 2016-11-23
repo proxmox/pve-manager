@@ -158,7 +158,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    return (a.name < b.name)?-1:(a.name > b.name)?1:0;
 	});
 
-	var monTimes = record.data.health.timechecks.mons;
+	var monTimes = record.data.health.timechecks.mons || [];
 	var timechecks = {};
 	var monContainer = me.getComponent('monitors');
 	var i;
