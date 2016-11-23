@@ -40,9 +40,9 @@ Ext.define('PVE.form.KVComboBox', {
 	    return true;
 	}
 
-	if (me.comboItems) {
+	if (me.store.getCount() > 0) {
 	    var values = me.multiSelect ? val.split(me.delimiter) : [val];
-	    var items = Ext.Array.pluck(me.comboItems, 1);
+	    var items = me.store.getData().collect('value', 'data');
 	    if (Ext.Array.every(values, function(value) {
 		return Ext.Array.contains(items, value);
 	    })) {
