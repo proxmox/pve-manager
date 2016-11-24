@@ -286,9 +286,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 			delete kv.nodename;
 			delete kv.tmplstorage;
 
-			if (!kv['ssh-public-keys'].length) {
-			    delete kv['ssh-public-keys'];
-			} else if (!kv.password.length) {
+			if (!kv.password.length && kv['ssh-public-keys']) {
 			    delete kv.password;
 			}
 
