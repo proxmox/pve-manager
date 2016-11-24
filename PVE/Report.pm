@@ -20,7 +20,7 @@ if (system('command -v zfs > /dev/null 2>&1') == 0) {
     push @volumes, 'zpool status', 'zfs list'
 }
 
-my @disks = ('lsblk');
+my @disks = ('lsblk --ascii');
 if (system('command -v multipath > /dev/null 2>&1') == 0) {
     push @disks, 'multipath -ll', 'multipath -v3'
 }
