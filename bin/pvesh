@@ -515,7 +515,7 @@ sub pve_command {
 
 	list_dir(abs_path($cdir, $path), $args);
 
-    } elsif ($cmd eq 'get') {
+    } elsif ($cmd =~ m/^get|delete|set$/) {
 
 	my $path;
 	if (scalar(@$args) && $args->[0] !~ m/^\-/)  {
@@ -532,23 +532,6 @@ sub pve_command {
 	}
 
 	call_method(abs_path($cdir, $path), $cmd, $args, $nooutput);
-
-    } elsif ($cmd eq 'delete') {
-
-	my $path = shift @$args;
-
-	die "usage: delete [path]\n" if scalar(@$args);
-
-	call_method(abs_path($cdir, $path), $cmd, $args);
-
-    } elsif ($cmd eq 'set') {
-
-	my $path;
-	if (scalar(@$args) && $args->[0] !~ m/^\-/)  {
-	    $path = shift @$args;
-	}
-
-	call_method(abs_path($cdir, $path), $cmd, $args);
 
     } else {
 	die "unknown command '$cmd'\n";
