@@ -25,6 +25,7 @@ use PVE::SafeSyslog;
 use PVE::INotify;
 use PVE::RPCEnvironment;
 use PVE::REST;
+use PVE::Cluster;
 
 use Net::IP;
 use URI;
@@ -105,95 +106,6 @@ sub get_login_formatter {
     return $info->{func};
 }
 
-my $cert_cache_nodes = {};
-my $cert_cache_timestamp = time();
-my $cert_cache_fingerprints = {};
-sub update_cert_cache {
-    my ($update_node, $clear) = @_;
-
-    syslog('info', "Clearing outdated entries from certificate cache")
-	if $clear;
-    $cert_cache_timestamp = time() if !defined($update_node);
-
-    my $node_list = defined($update_node) ? [ $update_node ] : [ keys %$cert_cache_nodes ];
-
-    foreach my $node (@$node_list) {
-	my $clear_old = sub {
-	    if (my $old_fp = $cert_cache_nodes->{$node}) {
-		# distrust old fingerprint
-		delete $cert_cache_fingerprints->{$old_fp};
-		# ensure reload on next proxied request
-		delete $cert_cache_nodes->{$node};
-	    }
-	};
-
-	my $err;
-	my $cert_path = "/etc/pve/nodes/$node/pve-ssl.pem";
-	my $custom_cert_path = "/etc/pve/nodes/$node/pveproxy-ssl.pem";
-	$cert_path = $custom_cert_path if -f $custom_cert_path;
-	my $cert;
-	eval {
-	    my $bio = Net::SSLeay::BIO_new_file($cert_path, 'r');
-	    $cert = Net::SSLeay::PEM_read_bio_X509($bio);
-	    Net::SSLeay::BIO_free($bio);
-	};
-	$err = $@;
-	if ($err || !defined($cert)) {
-	    &$clear_old() if $clear;
-	    next;
-	}
-
-	my $fp;
-	eval {
-	    $fp = Net::SSLeay::X509_get_fingerprint($cert, 'sha256');
-	};
-	$err = $@;
-	if ($err || !defined($fp) || $fp eq '') {
-	    &$clear_old() if $clear;
-	    next;
-	}
-
-	my $old_fp = $cert_cache_nodes->{$node};
-	$cert_cache_fingerprints->{$fp} = 1;
-	$cert_cache_nodes->{$node} = $fp;
-
-	if (defined($old_fp) && $fp ne $old_fp) {
-	    delete $cert_cache_fingerprints->{$old_fp};
-	}
-    }
-}
-
-sub check_cert_fingerprint {
-    my ($cert) = @_;
-
-    # clear cache every 30 minutes at least
-    update_cert_cache(undef, 1) if time() - $cert_cache_timestamp >= 60*30;
-
-    # get fingerprint of server certificate
-    my $fp;
-    eval {
-	$fp = Net::SSLeay::X509_get_fingerprint($cert, 'sha256');
-    };
-    return 0 if $@ || !defined($fp) || $fp eq ''; # error
-
-    my $check = sub {
-	for my $expected (keys %$cert_cache_fingerprints) {
-	    return 1 if $fp eq $expected;
-	}
-	return 0;
-    };
-
-    return 1 if &$check();
-
-    # clear cache and retry at most once every minute
-    if (time() - $cert_cache_timestamp >= 60) {
-	syslog ('info', "Could not verify remote node certificate '$fp' with list of pinned certificates, refreshing cache");
-	update_cert_cache();
-	return &$check();
-    }
-
-    return 0;
-}
 
 # server implementation
 
@@ -702,13 +614,12 @@ sub proxy_request {
 		# we don't care about intermediate or root certificates
 		return 1 if $depth != 0;
 		# check server certificate against cache of pinned FPs
-		return check_cert_fingerprint($cert);
+		return PVE::Cluster::check_cert_fingerprint($cert);
 	    },
 	};
 
 	# load and cache cert fingerprint if first time we proxy to this node
-	update_cert_cache($node)
-	    if defined($node) && !defined($cert_cache_nodes->{$node});
+	PVE::Cluster::initialize_cert_cache($node);
 
 	my $w; $w = http_request(
 	    $method => $target,
