@@ -1,3 +1,11 @@
+pve-manager (4.3-12) unstable; urgency=medium
+
+  * fix #1212: allow options for delete in pvesh
+
+  * change ssh-public-keys check in wizard
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 28 Nov 2016 06:18:15 +0100
+
 pve-manager (4.3-11) unstable; urgency=medium
 
   * fix kvcombobox validator
