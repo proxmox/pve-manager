@@ -15,6 +15,7 @@ use PVE::API2Tools;
 use PVE::API2::Backup;
 use PVE::API2::HAConfig;
 use PVE::HA::Config;
+use PVE::API2::ClusterConfig;
 use JSON;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
@@ -23,6 +24,11 @@ use PVE::Firewall;
 use PVE::API2::Firewall::Cluster;
 
 use base qw(PVE::RESTHandler);
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::ClusterConfig",
+    path => 'config',
+});
 
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Firewall::Cluster",  
@@ -82,6 +88,7 @@ __PACKAGE__->register_method ({
 	    { name => 'status' },
 	    { name => 'nextid' },
 	    { name => 'firewall' },
+	    { name => 'config' },
 	    ];
 
 	return $result;
