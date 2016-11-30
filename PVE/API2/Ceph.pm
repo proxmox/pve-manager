@@ -535,6 +535,7 @@ __PACKAGE__->register_method ({
 	    { name => 'config' },
 	    { name => 'log' },
 	    { name => 'disks' },
+	    { name => 'flags' },
 	];
 
 	return $result;
@@ -1307,6 +1308,126 @@ __PACKAGE__->register_method ({
 	        format => 'plain',
 	    });
 	}
+
+	return undef;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'get_flags',
+    path => 'flags',
+    method => 'GET',
+    description => "get all set ceph flags",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => { type => 'string' },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::CephTools::check_ceph_inited();
+
+	my $pve_ckeyring_path = PVE::CephTools::get_config('pve_ckeyring_path');
+
+	die "not fully configured - missing '$pve_ckeyring_path'\n"
+	    if ! -f $pve_ckeyring_path;
+
+	my $rados = PVE::RADOS->new();
+
+	my $stat = $rados->mon_command({ prefix => 'osd dump' });
+
+	return $stat->{flags} // '';
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'set_flag',
+    path => 'flags/{flag}',
+    method => 'POST',
+    description => "Set a ceph flag",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    flag => {
+		description => 'The ceph flag to set/unset',
+		type => 'string',
+		enum => [ 'full', 'pause', 'noup', 'nodown', 'noout', 'noin', 'nobackfill', 'norebalance', 'norecover', 'noscrub', 'nodeep-scrub', 'notieragent'],
+	    },
+	},
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::CephTools::check_ceph_inited();
+
+	my $pve_ckeyring_path = PVE::CephTools::get_config('pve_ckeyring_path');
+
+	die "not fully configured - missing '$pve_ckeyring_path'\n"
+	    if ! -f $pve_ckeyring_path;
+
+	my $set = $param->{set} // !$param->{unset};
+	my $rados = PVE::RADOS->new();
+
+	$rados->mon_command({
+	    prefix => "osd set",
+	    key => $param->{flag},
+	});
+
+	return undef;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'unset_flag',
+    path => 'flags/{flag}',
+    method => 'DELETE',
+    description => "Unset a ceph flag",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    flag => {
+		description => 'The ceph flag to set/unset',
+		type => 'string',
+		enum => [ 'full', 'pause', 'noup', 'nodown', 'noout', 'noin', 'nobackfill', 'norebalance', 'norecover', 'noscrub', 'nodeep-scrub', 'notieragent'],
+	    },
+	},
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::CephTools::check_ceph_inited();
+
+	my $pve_ckeyring_path = PVE::CephTools::get_config('pve_ckeyring_path');
+
+	die "not fully configured - missing '$pve_ckeyring_path'\n"
+	    if ! -f $pve_ckeyring_path;
+
+	my $set = $param->{set} // !$param->{unset};
+	my $rados = PVE::RADOS->new();
+
+	$rados->mon_command({
+	    prefix => "osd unset",
+	    key => $param->{flag},
+	});
 
 	return undef;
     }});
