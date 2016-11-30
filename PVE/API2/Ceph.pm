@@ -30,6 +30,8 @@ my $get_osd_status = sub {
 
     my $osdlist = $stat->{osds} || [];
 
+    my $flags = $stat->{flags} || undef;
+
     my $osdstat;
     foreach my $d (@$osdlist) {
 	$osdstat->{$d->{osd}} = $d if defined($d->{osd});    
@@ -39,7 +41,7 @@ my $get_osd_status = sub {
 	return $osdstat->{$osdid};
     }
 
-    return $osdstat;
+    return wantarray? ($osdstat, $flags):$osdstat;
 };
 
 my $get_osd_usage = sub {
@@ -86,7 +88,7 @@ __PACKAGE__->register_method ({
 
         die "no tree nodes found\n" if !($res && $res->{nodes});
 
-	my $osdhash = &$get_osd_status($rados);
+	my ($osdhash, $flags) = &$get_osd_status($rados);
 
 	my $usagehash = &$get_osd_usage($rados);
 
@@ -150,6 +152,9 @@ __PACKAGE__->register_method ({
 	die "no root node\n" if !@$roots;
 
 	my $data = { root => { leaf =>  0, children => $roots } };
+
+	# we want this for the noout flag
+	$data->{flags} = $flags if $flags;
 
 	return $data;
     }});
