@@ -280,6 +280,9 @@ Ext.define('PVE.node.CephOsdTree', {
 	 /*jslint confusion: true */
         var me = this;
 
+	// we expect noout to be not set by default
+	var noout = false;
+
 	var nodename = me.pveSelNode.data.node;
 	if (!nodename) {
 	    throw "no node name specified";
@@ -301,6 +304,13 @@ Ext.define('PVE.node.CephOsdTree', {
 		    sm.deselectAll();
 		    me.setRootNode(response.result.data.root);
 		    me.expandAll();
+		    // extract noout flag
+		    if (response.result.data.flags &&
+			response.result.data.flags.search(/noout/) !== -1) {
+			noout = true;
+		    } else {
+			noout = false;
+		    }
 		    set_button_status();
 		}
 	    });
@@ -399,8 +409,37 @@ Ext.define('PVE.node.CephOsdTree', {
 	    }
 	});
 
+	var noout_btn = new Ext.Button({
+	    text: gettext('Set noout'),
+	    handler: function() {
+		PVE.Utils.API2Request({
+		    url: "/nodes/" + nodename + "/ceph/flags/noout",
+		    waitMsgTarget: me,
+		    method: noout ? 'DELETE' : 'POST',
+		    failure: function(response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    },
+		    success: reload
+		});
+	    }
+	});
+
+	var osd_label = new Ext.toolbar.TextItem({
+	    data: {
+		osd: undefined
+	    },
+	    tpl: [
+		'<tpl if="osd">',
+		'{osd}:',
+		'<tpl else>',
+		gettext('No OSD selected'),
+		'</tpl>'
+	    ]
+	});
+
 	set_button_status = function() {
 	    var rec = sm.getSelection()[0];
+	    noout_btn.setText(noout?gettext('Unset noout'):gettext('Set noout'));
 
 	    if (!rec) {
 		start_btn.setDisabled(true);
@@ -419,6 +458,8 @@ Ext.define('PVE.node.CephOsdTree', {
 
 	    osd_out_btn.setDisabled(!(isOsd && rec.data['in']));
 	    osd_in_btn.setDisabled(!(isOsd && !rec.data['in']));
+
+	    osd_label.update(isOsd?{osd:rec.data.name}:undefined);
 	};
 
 	sm.on('selectionchange', set_button_status);
@@ -429,7 +470,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	});
 
 	Ext.apply(me, {
-	    tbar: [ create_btn, reload_btn, start_btn, stop_btn, osd_out_btn, osd_in_btn, remove_btn ],
+	    tbar: [ create_btn, reload_btn, noout_btn, '->', osd_label, start_btn, stop_btn, osd_out_btn, osd_in_btn, remove_btn ],
 	    rootVisible: false,
 	    fields: ['name', 'type', 'status', 'host', 'in', 'id' ,
 		     { type: 'number', name: 'reweight' },
