@@ -207,6 +207,12 @@ Ext.define('PVE.lxc.CreateWizard', {
 			    fieldLabel: gettext('Hostname'),
 			    skipEmptyText: true,
 			    allowBlank: true
+			},
+			{
+			    xtype: 'pvecheckbox',
+			    name: 'unprivileged',
+			    value: '',
+			    fieldLabel: gettext('Unprivileged container')
 			}
 		    ],
 		    column2: column2,

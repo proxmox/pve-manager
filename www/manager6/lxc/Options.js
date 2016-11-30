@@ -135,7 +135,12 @@ Ext.define('PVE.lxc.Options', {
                         fieldLabel: gettext('Enabled')
                     }
                 } : undefined
-	    }
+	    },
+	    unprivileged: {
+		header: gettext('Unprivileged container'),
+		renderer: PVE.Utils.format_boolean,
+		defaultValue: 0
+	    },
 	};
 
 	var baseurl = 'nodes/' + nodename + '/lxc/' + vmid + '/config';
