@@ -500,3 +500,6 @@ table.osds td:first-of-type {
     text-align: left;
 }
 
+.pointer {
+    cursor: pointer;
+}

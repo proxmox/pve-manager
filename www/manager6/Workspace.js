@@ -403,9 +403,7 @@ Ext.define('PVE.StdWorkspace', {
 			    xtype: 'button',
 			    margin: '0 10 0 3',
 			    iconCls: 'fa black fa-gear',
-			    style: {
-				cursor: 'pointer'
-			    },
+			    userCls: 'pointer',
 			    handler: function() {
 				var win = Ext.create('PVE.window.Settings');
 				win.show();

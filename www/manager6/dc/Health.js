@@ -126,9 +126,33 @@ Ext.define('PVE.dc.Health', {
 	    itemId: 'ceph',
 	    width: 250,
 	    columnWidth: undefined,
+	    userCls: 'pointer',
 	    title: gettext('Ceph'),
 	    xtype: 'pveHealthWidget',
-	    hidden: true
+	    hidden: true,
+	    listeners: {
+		element: 'el',
+		click: function() {
+		    var me = this;
+		    var sp = Ext.state.Manager.getProvider();
+
+		    // preselect the ceph tab
+		    sp.set('nodetab', {value:'ceph'});
+
+		    // select the first node which is online
+		    var nodeid = '';
+		    var nodes = PVE.data.ResourceStore.getNodes();
+		    Ext.Array.some(nodes, function(node) {
+			if (node.running) {
+			    nodeid = node.id;
+			    return true;
+			}
+
+			return false;
+		    });
+		    Ext.ComponentQuery.query('pveResourceTree')[0].selectById(nodeid);
+		}
+	    }
 	}
     ],
 
