@@ -188,8 +188,17 @@ Ext.define('PVE.node.CephOsdTree', {
 		if (!value) {
 		    return value;
 		}
-		var data = rec.data;
-		return value + '/' + (data['in'] ? 'in' : 'out');
+		var inout = rec.data['in'] ? 'in' : 'out';
+		var updownicon = value === 'up' ? 'good fa-arrow-circle-up' :
+						  'critical fa-arrow-circle-down';
+
+		var inouticon = rec.data['in'] ? 'good fa-circle' :
+						 'warning fa-circle-o';
+
+		var text = value + ' <i class="fa ' + updownicon + '"></i> / ' +
+			   inout + ' <i class="fa ' + inouticon + '"></i>';
+
+		return text;
 	    },
 	    width: 80
 	},
