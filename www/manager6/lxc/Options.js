@@ -119,28 +119,28 @@ Ext.define('PVE.lxc.Options', {
 		    }
 		} : undefined
 	    },
-            protection: {
-                header: gettext('Protection'),
-                defaultValue: false,
-                renderer: PVE.Utils.format_boolean,
-                editor: caps.vms['VM.Config.Options'] ? {
-                    xtype: 'pveWindowEdit',
-                    subject: gettext('Protection'),
-                    items: {
-                        xtype: 'pvecheckbox',
-                        name: 'protection',
-                        uncheckedValue: 0,
-                        defaultValue: 0,
-                        deleteDefaultValue: true,
-                        fieldLabel: gettext('Enabled')
-                    }
-                } : undefined
+	    protection: {
+		header: gettext('Protection'),
+		defaultValue: false,
+		renderer: PVE.Utils.format_boolean,
+		editor: caps.vms['VM.Config.Options'] ? {
+		    xtype: 'pveWindowEdit',
+		    subject: gettext('Protection'),
+		    items: {
+			xtype: 'pvecheckbox',
+			name: 'protection',
+			uncheckedValue: 0,
+			defaultValue: 0,
+			deleteDefaultValue: true,
+			fieldLabel: gettext('Enabled')
+		    }
+		} : undefined
 	    },
 	    unprivileged: {
 		header: gettext('Unprivileged container'),
 		renderer: PVE.Utils.format_boolean,
 		defaultValue: 0
-	    },
+	    }
 	};
 
 	var baseurl = 'nodes/' + nodename + '/lxc/' + vmid + '/config';
