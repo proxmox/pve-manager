@@ -1,5 +1,6 @@
 Ext.define('PVE.qemu.StartupInputPanel', {
     extend: 'PVE.panel.InputPanel',
+    onlineHelp: 'qm_startup_and_shutdown',
 
     onGetValues: function(values) {
 	var me = this;

@@ -175,6 +175,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 		{
 		    xtype: 'inputpanel',
 		    title: gettext('General'),
+		    onlineHelp: 'pct_general',
 		    column1: [
 			{
 			    xtype: 'pveNodeSelector',
