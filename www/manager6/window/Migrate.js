@@ -94,6 +94,27 @@ Ext.define('PVE.window.Migrate', {
 	    }
 	});
 
+	var helpConfig;
+	// fixme:
+	// the onlinehelp parser needs
+	// that every id is explicitely written
+	// can we do this better?
+	if (me.vmtype === 'qemu') {
+	    helpConfig = {
+		onlineHelp: 'qm_migration',
+		listenToGlobalEvent: false,
+		hidden: false
+	    };
+	} else {
+	    helpConfig = {
+		onlineHelp: 'pct_migration',
+		listenToGlobalEvent: false,
+		hidden: false
+	    };
+	}
+
+	var helpBtn = Ext.create('PVE.button.Help', helpConfig);
+
 	Ext.apply(me, {
 	    title: gettext('Migrate') + ((me.vmtype === 'qemu')?' VM ':' CT ') + me.vmid,
 	    width: 350,
@@ -101,7 +122,7 @@ Ext.define('PVE.window.Migrate', {
 	    layout: 'auto',
 	    border: false,
 	    items: [ me.formPanel ],
-	    buttons: [ submitBtn ]
+	    buttons: [ helpBtn, '->', submitBtn ]
 	});
 
 	me.callParent();
