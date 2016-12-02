@@ -1,3 +1,32 @@
+pve-manager (4.3-13) unstable; urgency=medium
+
+  * adds a help button to the migration window
+
+  * change lxc migration option to restart mode
+
+  * Add online help for startup/shutdown order and LXC general settings
+
+  * Add the possibility to create an unprivileged container at creation
+    time in the GUI.
+
+  * show in/out/up/down icons in osd overview
+
+  * make ceph status in cluster dashboard clickable
+
+  * add noout button and reorder actions
+
+  * add ceph flags api calls
+
+  * also return the ceph flags in osd api call
+
+  * pvereport: tell lsblk to use ascii
+
+  * plug new ClusterConfig API at /cluster/config
+
+  * Add Windows 2016 as available ostype to select
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 02 Dec 2016 16:38:30 +0100
+
 pve-manager (4.3-12) unstable; urgency=medium
 
   * fix #1212: allow options for delete in pvesh
