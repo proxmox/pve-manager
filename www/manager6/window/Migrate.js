@@ -5,8 +5,18 @@ Ext.define('PVE.window.Migrate', {
 
     migrate: function(target, online) {
 	var me = this;
+	var params = {
+	    target: target
+	};
+
+	if (me.vmtype === 'qemu') {
+	    params.online = online;
+	} else {
+	    params.restart = online;
+	}
+
 	PVE.Utils.API2Request({
-	    params: { target: target, online: online },
+	    params: params,
 	    url: '/nodes/' + me.nodename + '/' + me.vmtype + '/' + me.vmid + "/migrate",
 	    waitMsgTarget: me,
 	    method: 'POST',
@@ -69,7 +79,7 @@ Ext.define('PVE.window.Migrate', {
 		    uncheckedValue: 0,
 		    defaultValue: 0,
 		    checked: running,
-		    fieldLabel: gettext('Online')
+		    fieldLabel: me.vtype === 'qemu' ? gettext('Online') : gettext('Restart Mode')
 		}
 	    ]
 	});
