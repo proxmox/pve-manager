@@ -1,3 +1,9 @@
+pve-manager (4.3-14) unstable; urgency=medium
+
+  * fix typo in vmtype check
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 05 Dec 2016 12:33:35 +0100
+
 pve-manager (4.3-13) unstable; urgency=medium
 
   * adds a help button to the migration window
