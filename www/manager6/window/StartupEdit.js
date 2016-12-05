@@ -1,4 +1,4 @@
-Ext.define('PVE.qemu.StartupInputPanel', {
+Ext.define('PVE.panel.StartupInputPanel', {
     extend: 'PVE.panel.InputPanel',
     onlineHelp: 'qm_startup_and_shutdown',
 
@@ -54,15 +54,17 @@ Ext.define('PVE.qemu.StartupInputPanel', {
     }
 });
 
-Ext.define('PVE.qemu.StartupEdit', {
+Ext.define('PVE.window.StartupEdit', {
     extend: 'PVE.window.Edit',
+    alias: 'widget.pveWindowStartupEdit',
+    onlineHelp: undefined,
 
     initComponent : function() {
 	/*jslint confusion: true */
 
 	var me = this;
-
-	var ipanel = Ext.create('PVE.qemu.StartupInputPanel', {});
+	var ipanelConfig = me.onlineHelp ? {onlineHelp: me.onlineHelp} : {};
+	var ipanel = Ext.create('PVE.panel.StartupInputPanel', ipanelConfig);
 
 	Ext.applyIf(me, {
 	    subject: gettext('Start/Shutdown order'),

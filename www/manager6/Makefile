@@ -91,6 +91,7 @@ JSSRC= 				                 	\
 	window/SafeDestroy.js				\
 	window/BackupConfig.js				\
 	window/Settings.js				\
+	window/StartupEdit.js				\
 	panel/NotesView.js				\
 	grid/SelectFeature.js				\
 	grid/ObjectGrid.js				\
@@ -147,7 +148,6 @@ JSSRC= 				                 	\
 	qemu/DisplayEdit.js				\
 	qemu/KeyboardEdit.js				\
 	qemu/HardwareView.js				\
-	qemu/StartupEdit.js				\
 	qemu/ScsiHwEdit.js				\
 	qemu/QemuBiosEdit.js				\
 	qemu/Options.js					\
