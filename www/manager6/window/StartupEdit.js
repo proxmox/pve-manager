@@ -60,7 +60,6 @@ Ext.define('PVE.window.StartupEdit', {
     onlineHelp: undefined,
 
     initComponent : function() {
-	/*jslint confusion: true */
 
 	var me = this;
 	var ipanelConfig = me.onlineHelp ? {onlineHelp: me.onlineHelp} : {};
@@ -71,7 +70,7 @@ Ext.define('PVE.window.StartupEdit', {
 	    fieldDefaults: {
 		labelWidth: 120
 	    },
-	    items: ipanel
+	    items: [ ipanel ]
 	});
 
 	me.callParent();
