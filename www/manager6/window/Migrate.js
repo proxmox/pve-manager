@@ -79,7 +79,7 @@ Ext.define('PVE.window.Migrate', {
 		    uncheckedValue: 0,
 		    defaultValue: 0,
 		    checked: running,
-		    fieldLabel: me.vtype === 'qemu' ? gettext('Online') : gettext('Restart Mode')
+		    fieldLabel: me.vmtype === 'qemu' ? gettext('Online') : gettext('Restart Mode')
 		}
 	    ]
 	});
