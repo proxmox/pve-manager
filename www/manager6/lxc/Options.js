@@ -43,7 +43,10 @@ Ext.define('PVE.lxc.Options', {
 		defaultValue: '',
 		renderer: PVE.Utils.render_kvm_startup,
 		editor: caps.vms['VM.Config.Options'] && caps.nodes['Sys.Modify'] ? 
-		    'PVE.qemu.StartupEdit' : undefined
+		    {
+			xtype: 'pveWindowStartupEdit',
+			onlineHelp: 'pct_startup_and_shutdown'
+		    } : undefined
 	    },
 	    ostype: {
 		header: gettext('OS Type'),
