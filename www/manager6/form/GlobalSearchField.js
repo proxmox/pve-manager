@@ -22,8 +22,9 @@ Ext.define('PVE.form.GlobalSearchField', {
 	xtype: 'gridpanel',
 	focusOnToFront: false,
 	floating: true,
+	emptyText: PVE.Utils.noneText,
 	width: 600,
-	maxHeight: 400,
+	height: 400,
 	scrollable: {
 	    xtype: 'scroller',
 	    y: true,
