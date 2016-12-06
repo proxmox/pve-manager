@@ -362,7 +362,6 @@ Ext.define('PVE.DiskSmartWindow', {
 	extend: 'Ext.data.Model',
 	fields: [
 	    { name:'id', type:'number' }, 'name', 'value', 'worst', 'threshold', 'flags', 'fail', 'raw'
-	],
-	belongsTo: 'disk-smart'
+	]
     });
 });
