@@ -25,7 +25,6 @@ Ext.define('PVE.widget.RRDChart', {
 	docked: 'bottom'
     },
     listeners: {
-	afterrender: 'onAfterRender',
 	animationend: 'onAfterAnimation'
     },
 
@@ -96,8 +95,26 @@ Ext.define('PVE.widget.RRDChart', {
 	    '<br>' + new Date(record.get('time')));
     },
 
-    onAfterRender: function(){
+    onAfterAnimation: function(chart, eopts) {
+	// if the undobuton is disabled,
+	// disable our tool
+	var ourUndoZoomButton = chart.tools[0];
+	var undoButton = chart.interactions[0].getUndoButton();
+	ourUndoZoomButton.setDisabled(undoButton.isDisabled());
+    },
+
+    initComponent: function() {
 	var me = this;
+
+	if (!me.store) {
+	    throw "cannot work without store";
+	}
+
+	if (!me.fields) {
+	    throw "cannot work without fields";
+	}
+
+	me.callParent();
 
 	// add correct label for left axis
 	var axisTitle = "";
@@ -161,28 +178,6 @@ Ext.define('PVE.widget.RRDChart', {
 		}
 	    });
 	});
-    },
-
-    onAfterAnimation: function(chart, eopts) {
-	// if the undobuton is disabled,
-	// disable our tool
-	var ourUndoZoomButton = chart.tools[0];
-	var undoButton = chart.interactions[0].getUndoButton();
-	ourUndoZoomButton.setDisabled(undoButton.isDisabled());
-    },
-
-    initComponent: function() {
-	var me = this;
-
-	if (!me.store) {
-	    throw "cannot work without store";
-	}
-
-	if (!me.fields) {
-	    throw "cannot work without fields";
-	}
-
-	me.callParent();
 
 	// enable animation after the store is loaded
 	me.store.onAfter('load', function() {
