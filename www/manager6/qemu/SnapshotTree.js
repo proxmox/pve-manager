@@ -94,6 +94,15 @@ Ext.define('PVE.qemu.SnapshotTree', {
 
     },
 
+    listeners: {
+	beforestatesave: function(grid, state, eopts) {
+	    // extjs cannot serialize functions,
+	    // so a the sorter with only the sorterFn will
+	    // not be a valid sorter when restoring the state
+	    delete state.storeState.sorters;
+	}
+    },
+
     initComponent: function() {
         var me = this;
 
