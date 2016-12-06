@@ -21,6 +21,7 @@ Ext.define('PVE.grid.ObjectGrid', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveObjectGrid'],
     disabled: false,
+    hideHeaders: true,
 
     getObjectValue: function(key, defaultValue) {
 	var me = this;
@@ -109,7 +110,6 @@ Ext.define('PVE.grid.ObjectGrid', {
 
 	Ext.applyIf(me, {
 	    store: store,
-	    hideHeaders: true,
 	    stateful: false,
 	    columns: [
 		{
