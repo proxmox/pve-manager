@@ -43,6 +43,7 @@ Ext.define('PVE.window.MigrateAll', {
 		{
 		    xtype: 'pveNodeSelector',
 		    name: 'target',
+		    disallowedNodes: [me.nodename],
 		    fieldLabel: 'Target node',
 		    allowBlank: false,
 		    onlineValidator: true
