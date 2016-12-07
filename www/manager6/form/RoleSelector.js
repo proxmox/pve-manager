@@ -10,7 +10,10 @@ Ext.define('PVE.form.RoleSelector', {
 	var me = this;
 
 	var store = new Ext.data.Store({
-	    model: 'pve-roles'
+	    model: 'pve-roles',
+	    sorters: [{
+		property: 'roleid'
+	    }]
 	});
 
 	Ext.apply(me, {

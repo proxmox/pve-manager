@@ -28,7 +28,10 @@ Ext.define('PVE.form.GroupSelector', {
 	var me = this;
 
 	var store = new Ext.data.Store({
-	    model: 'pve-groups'
+	    model: 'pve-groups',
+	    sorters: [{
+		property: 'groupid'
+	    }]
 	});
 
 	Ext.apply(me, {

@@ -9,7 +9,10 @@ Ext.define('PVE.form.UserSelector', {
 	var me = this;
 
 	var store = new Ext.data.Store({
-	    model: 'pve-users'
+	    model: 'pve-users',
+	    sorters: [{
+		property: 'userid'
+	    }]
 	});
 
 	var render_full_name = function(firstname, metaData, record) {
