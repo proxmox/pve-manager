@@ -112,5 +112,8 @@ Ext.define('PVE.form.NodeSelector', {
 	    }
 	}));
 
+	me.mon(me.getStore(), 'load', function(){
+	    me.isValid();
+	});
     }
 });
