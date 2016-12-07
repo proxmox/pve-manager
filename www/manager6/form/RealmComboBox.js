@@ -6,6 +6,7 @@ Ext.define('PVE.form.RealmComboBox', {
     name: 'realm',
     queryMode: 'local',
     allowBlank: false,
+    editable: false,
     forceSelection: true,
     autoSelect: false,
     triggerAction: 'all',
