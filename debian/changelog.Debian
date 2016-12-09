@@ -1,3 +1,17 @@
+pve-manager (4.4-1) unstable; urgency=medium
+
+  * make realmselector non-editable
+
+  * fix #1176: sort user/group/realm selector
+
+  * aplinfo.dat: update
+
+  * Add online help for start/shutdown for containers
+
+  * Turn the qemu StartupEdit widget into a generic component
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 09 Dec 2016 10:28:32 +0100
+
 pve-manager (4.3-14) unstable; urgency=medium
 
   * fix typo in vmtype check
