@@ -27,6 +27,22 @@ Ext.define('PVE.window.Restore', {
 	    allowBlank: true
 	});
 
+	var IDfield;
+	if (me.vmid) {
+	    IDfield = Ext.create('Ext.form.field.Display', {
+		name: 'vmid',
+		value: me.vmid,
+		fieldLabel: (me.vmtype === 'lxc') ? 'CT' : 'VM'
+	    });
+	} else {
+	    IDfield = Ext.create('PVE.form.GuestIDSelector', {
+		name: 'vmid',
+		guestType: me.vmtype,
+		loadNextGuestID: true,
+		validateExists: false
+	    });
+	}
+
 	me.formPanel = Ext.create('Ext.form.Panel', {
 	    bodyPadding: 10,
 	    border: false,
@@ -41,14 +57,7 @@ Ext.define('PVE.window.Restore', {
 		    fieldLabel: gettext('Source')
 		},
 		storagesel,
-		{
-		    xtype: me.vmid ? 'displayfield' : 'pveVMIDSelector',
-		    name: 'vmid',
-		    fieldLabel: 'VM ID',
-		    value: me.vmid,
-		    loadNextFreeVMID: me.vmid ? false: true,
-		    validateExists: false
-		}
+		IDfield
 	    ]
 	});
 

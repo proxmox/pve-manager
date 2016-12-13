@@ -194,10 +194,11 @@ Ext.define('PVE.lxc.CreateWizard', {
 			    }
 			},
 			{
-			    xtype: 'pveVMIDSelector',
-			    name: 'vmid',
+			    xtype: 'pveGuestIDSelector',
+			    name: 'vmid', // backend only knows vmid
+			    guestType: 'lxc',
 			    value: '',
-			    loadNextFreeVMID: true,
+			    loadNextFreeID: true,
 			    validateExists: false
 			},
 			{

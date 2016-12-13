@@ -36,7 +36,7 @@ JSSRC= 				                 	\
 	form/GroupSelector.js				\
 	form/UserSelector.js				\
 	form/RoleSelector.js				\
-	form/VMIDSelector.js				\
+	form/GuestIDSelector.js				\
 	form/MemoryField.js				\
 	form/NetworkCardSelector.js			\
 	form/DiskFormatSelector.js			\

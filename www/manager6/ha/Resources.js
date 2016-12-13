@@ -56,10 +56,11 @@ Ext.define('PVE.ha.ResourcesView', {
 	    if (res[1] !== 'vm' && res[1] !== 'ct') {
 		return;
 	    }
-	    
+	    var guestType = res[1];
 	    var vmid = res[2];
 	    
             var win = Ext.create('PVE.ha.VMResourceEdit',{
+                guestType: guestType,
                 vmid: vmid
             });
             win.on('destroy', reload);

@@ -62,10 +62,11 @@ Ext.define('PVE.qemu.CreateWizard', {
 			    }
 			},
 			{
-			    xtype: 'pveVMIDSelector',
+			    xtype: 'pveGuestIDSelector',
 			    name: 'vmid',
+			    guestType: 'qemu',
 			    value: '',
-			    loadNextFreeVMID: true,
+			    loadNextFreeID: true,
 			    validateExists: false
 			},
 			{

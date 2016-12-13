@@ -179,10 +179,11 @@ Ext.define('PVE.window.Clone', {
 
 	col1.push(
 	    {
-                xtype: 'pveVMIDSelector',
+                xtype: 'pveGuestIDSelector',
                 name: 'newvmid',
+                guestType: 'qemu',
                 value: '',
-                loadNextFreeVMID: true,
+                loadNextGuestVMID: true,
                 validateExists: false
             },
 	    {

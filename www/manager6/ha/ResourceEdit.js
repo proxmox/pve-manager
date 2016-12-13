@@ -33,11 +33,11 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 
 	me.column1 = [
 	    {
-		xtype: me.vmid ? 'displayfield' : 'pveVMIDSelector',
+		xtype: me.vmid ? 'displayfield' : 'pveGuestIDSelector',
 		name: 'vmid',
-		fieldLabel: 'VM ID',
+		fieldLabel: (me.vmid && me.guestType === 'ct') ? 'CT' : 'VM',
 		value: me.vmid,
-		loadNextFreeVMID: false,
+		loadNextGuestID: false,
 		validateExists: true
 	    },
 	    {
@@ -111,6 +111,7 @@ Ext.define('PVE.ha.VMResourceEdit', {
     extend: 'PVE.window.Edit',
 
     vmid: undefined,
+    guestType: undefined,
 
     initComponent : function() {
 	var me = this;
@@ -127,11 +128,12 @@ Ext.define('PVE.ha.VMResourceEdit', {
 
 	var ipanel = Ext.create('PVE.ha.VMResourceInputPanel', {
 	    create: me.create,
-	    vmid: me.vmid
+	    vmid: me.vmid,
+	    guestType: me.guestType
 	});
 
 	Ext.apply(me, {
-            subject: gettext('VM Resource'),
+            subject: gettext('CT/VM Resource'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});
