@@ -111,7 +111,6 @@ Ext.define('PVE.window.Clone', {
     },
 
     initComponent : function() {
-	/*jslint confusion: true */
 	var me = this;
 
 	if (!me.nodename) {

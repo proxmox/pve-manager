@@ -1,7 +1,7 @@
 /*global
   FileReader
 */
-/*jslint confusion: true */
+
 Ext.define('PVE.lxc.CreateWizard', {
     extend: 'PVE.window.Wizard',
 
@@ -55,6 +55,8 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    }
 	});
 
+	/*jslint confusion: true */
+	/* type confusion for 'create' between boolean and function */
 	var rootfspanel = Ext.create('PVE.lxc.MountPointInputPanel', {
 	    title: gettext('Root Disk'),
 	    insideWizard: true,
@@ -69,6 +71,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    dataCache: {},
 	    create: true
 	});
+	/*jslint confusion: false */
 
 	var passwordfield = Ext.createWidget('textfield', {
 	    inputType: 'password',
@@ -85,6 +88,8 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    }
 	});
 
+	/*jslint confusion: true */
+	/* the validator function can return either a string or a boolean */
 	me.sshkeyfield = Ext.createWidget('pvetextfield', {
 	    name: 'ssh-public-keys',
 	    value: '',
@@ -153,6 +158,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    },
 	    me.sshkeyfield
 	];
+	/*jslint confusion: false */
 
 	if (window.FileReader) {
 	    column2.push({

@@ -1,5 +1,3 @@
-// fixme: howto avoid jslint type confusion?
-/*jslint confusion: true */
 Ext.define('PVE.qemu.CreateWizard', {
     extend: 'PVE.window.Wizard',
     alias: 'widget.pveQemuCreateWizard',
@@ -27,11 +25,14 @@ Ext.define('PVE.qemu.CreateWizard', {
 	    insideWizard: true
 	});
 
+	/*jslint confusion: true */
+	/* type confusion for 'create' between boolean and function */
 	var hdpanel = Ext.create('PVE.qemu.HDInputPanel', {
 	    title: gettext('Hard Disk'),
 	    create: true,
 	    insideWizard: true
 	});
+	/*jslint confusion: false */
 
 	var networkpanel =  Ext.create('PVE.qemu.NetworkInputPanel', {
 	    title: gettext('Network'),
