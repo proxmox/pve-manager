@@ -171,7 +171,7 @@ Ext.define('PVE.node.CephStatus', {
 
 	var iops = rec.data.pgmap.op_per_sec;
 	var readiops = rec.data.pgmap.read_op_per_sec;
-	var writeiops = rec.data.pgmap.write_op_per_sec0;
+	var writeiops = rec.data.pgmap.write_op_per_sec;
 	var reads = rec.data.pgmap.read_bytes_sec || 0;
 	var writes = rec.data.pgmap.write_bytes_sec || 0;
 
