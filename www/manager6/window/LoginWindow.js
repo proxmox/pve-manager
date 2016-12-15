@@ -102,7 +102,6 @@ Ext.define('PVE.window.LoginWindow', {
 
 		    if(checked === true) {
 			var username = sp.get(unField.getStateId());
-			console.log(username);
 			unField.setValue(username);
 			var pwField = this.lookupReference('passwordField');
 			pwField.focus();
