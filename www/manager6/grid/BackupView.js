@@ -43,13 +43,25 @@ Ext.define('PVE.grid.BackupView', {
 	    throw "unsupported VM type '" + vmtype + "'";
 	}
 
+	var searchFilter = {
+	    property: 'volid',
+	// on initial store display only our vmid backups
+	// surround with minus sign to prevent the 2016 VMID bug
+	    value: vmtype + '-' + vmid + '-',
+	    anyMatch: true,
+	    caseSensitive: false
+	};
+
 	me.store = Ext.create('Ext.data.Store', {
 	    model: 'pve-storage-content',
 	    sorters: { 
 		property: 'volid', 
 		order: 'DESC' 
 	    },
-	    filters: { filterFn: filterFn }
+	    filters: [
+	        filterFn,
+		searchFilter
+		]
 	});
 
 	var reload = Ext.Function.createBuffered(function() {
@@ -88,18 +100,15 @@ Ext.define('PVE.grid.BackupView', {
 	    labelWidth: 50,
 	    labelAlign: 'right',
 	    enableKeyEvents: true,
+	    value: searchFilter.value,
 	    listeners: {
 		buffer: 500,
 		keyup: function(field) {
 		    me.store.clearFilter(true);
+		    searchFilter.value = field.getValue();
 		    me.store.filter([
 			filterFn,
-			{
-			    property: 'volid',
-			    value: field.getValue(),
-			    anyMatch: true,
-			    caseSensitive: false
-			}
+			searchFilter
 		    ]);
 		}
 	    }
