@@ -26,17 +26,17 @@ Ext.define('PVE.grid.BackupView', {
 	    throw "no VM type specified";
 	}
 
-	var filterFn;
+	var vmtypeFilter;
 	if (vmtype === 'openvz') {
-	    filterFn = function(item) {
+	    vmtypeFilter = function(item) {
 		return item.data.volid.match(':backup/vzdump-openvz-');
 	    };
 	} else if (vmtype === 'lxc') {
-	    filterFn = function(item) {
+	    vmtypeFilter = function(item) {
 		return item.data.volid.match(':backup/vzdump-lxc-');
 	    };
 	} else if (vmtype === 'qemu') {
-	    filterFn = function(item) {
+	    vmtypeFilter = function(item) {
 		return item.data.volid.match(':backup/vzdump-qemu-');
 	    };
 	} else {
@@ -59,7 +59,7 @@ Ext.define('PVE.grid.BackupView', {
 		order: 'DESC' 
 	    },
 	    filters: [
-	        filterFn,
+	        vmtypeFilter,
 		searchFilter
 		]
 	});
@@ -107,7 +107,7 @@ Ext.define('PVE.grid.BackupView', {
 		    me.store.clearFilter(true);
 		    searchFilter.value = field.getValue();
 		    me.store.filter([
-			filterFn,
+			vmtypeFilter,
 			searchFilter
 		    ]);
 		}
