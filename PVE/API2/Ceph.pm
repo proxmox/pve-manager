@@ -329,22 +329,15 @@ __PACKAGE__->register_method ({
 	    my $mountpoint = "/var/lib/ceph/osd/ceph-$osdid";
 
 	    my $remove_partition = sub {
-		my ($disklist, $part) = @_;
+		my ($part) = @_;
 
 		return if !$part || (! -b $part );
-		   
-		foreach my $real_dev (keys %$disklist) {
-		    my $diskinfo = $disklist->{$real_dev};
-		    my $devpath = $diskinfo->{devpath};
-		    next if !$diskinfo->{gpt};
-		    if ($part =~ m|^${devpath}(\d+)$|) {
-			my $partnum = $1;
-			print "remove partition $part (disk '${devpath}', partnum $partnum)\n";
-			eval { run_command(['/sbin/sgdisk', '-d', $partnum, "${devpath}"]); };
-			warn $@ if $@;
-			last;
-		    }
-		}
+		my $partnum = PVE::Diskmanage::get_partnum($part);
+		my $devpath = PVE::Diskmanage::get_blockdev($part);
+
+		print "remove partition $part (disk '${devpath}', partnum $partnum)\n";
+		eval { run_command(['/sbin/sgdisk', '-d', $partnum, "${devpath}"]); };
+		warn $@ if $@;
 	    };
 
 	    my $journal_part;
@@ -369,13 +362,12 @@ __PACKAGE__->register_method ({
 	    }
 
 	    print "Unmount OSD $osdsection from  $mountpoint\n";
-	    eval { run_command(['umount', $mountpoint]); };
+	    eval { run_command(['/bin/umount', $mountpoint]); };
 	    if (my $err = $@) {
 		warn $err;
 	    } elsif ($param->{cleanup}) {
-		my $disklist = PVE::Diskmanage::get_disks(undef, 1);
-		&$remove_partition($disklist, $journal_part);
-		&$remove_partition($disklist, $data_part);
+		&$remove_partition($journal_part);
+		&$remove_partition($data_part);
 	    }
 	};
 
