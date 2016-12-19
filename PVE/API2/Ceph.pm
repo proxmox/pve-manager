@@ -366,8 +366,9 @@ __PACKAGE__->register_method ({
 	    if (my $err = $@) {
 		warn $err;
 	    } elsif ($param->{cleanup}) {
-		&$remove_partition($journal_part);
+		#be aware of the ceph udev rules which can remount.
 		&$remove_partition($data_part);
+		&$remove_partition($journal_part);
 	    }
 	};
 
