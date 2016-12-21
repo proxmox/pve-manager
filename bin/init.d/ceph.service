@@ -1,0 +1,11 @@
+[Unit]
+Description=PVE activate Ceph OSD disks
+After=pve-cluster.service
+Requires=pve-cluster.service
+
+[Service]
+ExecStart=/usr/sbin/ceph-disk --log-stdout activate-all
+Type=oneshot
+
+[Install]
+WantedBy=ceph.target
