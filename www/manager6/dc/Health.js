@@ -67,8 +67,13 @@ Ext.define('PVE.dc.Health', {
 	var me = this;
 	var cephstatus = me.getComponent('ceph');
 	if (!success || records.length < 1) {
+
+	    // if ceph status is already visible
+	    // dont stop to update
+	    if (cephstatus.isVisible()) {
+		return;
+	    }
 	    me.cepherrors++;
-	    cephstatus.setVisible(false);
 
 	    // after 3 unsuccessful tries of
 	    // /nodes/localhost/ceph/status
