@@ -245,17 +245,24 @@ sub rebalance_lxc_containers {
 	}
 
 	eval {
-	    # allow all, so that we can set new cpuset in /ns
-	    $all_cpus->write_to_cgroup("lxc/$vmid");
-	    eval {
-		$newset->write_to_cgroup("lxc/$vmid/ns");
-	    };
-	    if (my $err = $@) {
-		warn $err if !$rebalance_error_count->{$vmid}++;
-		# restore original
-		$cpuset->write_to_cgroup("lxc/$vmid");
+
+	    if (-d "/sys/fs/cgroup/cpuset/lxc/$vmid/ns") {
+		# allow all, so that we can set new cpuset in /ns
+		$all_cpus->write_to_cgroup("lxc/$vmid");
+		eval {
+		    $newset->write_to_cgroup("lxc/$vmid/ns");
+		};
+		if (my $err = $@) {
+		    warn $err if !$rebalance_error_count->{$vmid}++;
+		    # restore original
+		    $cpuset->write_to_cgroup("lxc/$vmid");
+		} else {
+		    # also apply to container root cgroup
+		    $newset->write_to_cgroup("lxc/$vmid");
+		    $rebalance_error_count->{$vmid} = 0;
+		}
 	    } else {
-		# also apply to container root cgroup
+		# old style container
 		$newset->write_to_cgroup("lxc/$vmid");
 		$rebalance_error_count->{$vmid} = 0;
 	    }
