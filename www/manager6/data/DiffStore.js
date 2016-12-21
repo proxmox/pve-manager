@@ -20,6 +20,7 @@
  */
 Ext.define('PVE.data.DiffStore', {
     extend: 'Ext.data.Store',
+    alias: 'store.diff',
 
     sortAfterUpdate: false,
     
