@@ -1,3 +1,31 @@
+pve-manager (4.4-2) unstable; urgency=medium
+
+  * rebalance_lxc_containers: avoid repeated warnings if rebalance fail
+
+  * ebalance_lxc_containers: make it work with new lxc/<ID>/ns subgroup
+
+  * rebalance_lxc_containers: make it work with old style lxc setup
+
+  * fix typo in ceph jewel iops parsing
+
+  * filter the local node in the migrateall window
+
+  * validate nodeselector after store is loaded
+
+  * make date column resizable
+
+  * remove obsolete belongsTo
+
+  * snapshottree: remove sorter before saving the state
+
+  * set fixed height on global search window
+
+  * fix #1161: filter by default the displayed guest backups
+
+  * Convert the VMIDSelector to a generic GuestIDSelector
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 21 Dec 2016 12:26:23 +0100
+
 pve-manager (4.4-1) unstable; urgency=medium
 
   * make realmselector non-editable
