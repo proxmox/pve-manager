@@ -948,6 +948,12 @@ __PACKAGE__->register_method ({
 	    PVE::CephTools::write_ceph_config($cfg);
 
 	    PVE::CephTools::ceph_service_cmd('start', $monsection);
+
+	    if ($systemd_managed) {
+		#to ensure we have the correct startup order.
+		eval { PVE::Tools::run_command(['/bin/systemctl', 'enable', "ceph-mon\@${monid}.service"]); };
+		warn "Enable ceph-mon\@${monid}.service manually"if $@;
+	    }
 	};
 
 	return $rpcenv->fork_worker('cephcreatemon', $monsection, $authuser, $worker);
