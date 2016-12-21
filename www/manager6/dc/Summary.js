@@ -88,6 +88,7 @@ Ext.define('PVE.dc.Summary', {
 	var cpustat = me.down('#cpu');
 	var memorystat = me.down('#memory');
 	var storagestat = me.down('#storage');
+	var sp = Ext.state.Manager.getProvider();
 
 	me.mon(PVE.data.ResourceStore, 'load', function(curstore, results) {
 	    me.suspendLayout = true;
@@ -103,6 +104,13 @@ Ext.define('PVE.dc.Summary', {
 	    var countedStorages = {};
 	    var used = 0;
 	    var total = 0;
+	    var usableStorages = {};
+	    var storages = sp.get('dash-storages') || '';
+	    storages.split(',').forEach(function(storage){
+		if (storage !== '') {
+		    usableStorages[storage] = true;
+		}
+	    });
 
 	    var qemu = {
 		running: 0,
@@ -142,6 +150,13 @@ Ext.define('PVE.dc.Summary', {
 			}
 			break;
 		    case 'storage':
+			if (!Ext.Object.isEmpty(usableStorages)) {
+			    if (usableStorages[item.data.id] === true) {
+				used += item.data.disk;
+				total += item.data.maxdisk;
+			    }
+			    break;
+			}
 			if (!countedStorages[item.data.storage] ||
 			    (item.data.storage === 'local' &&
 			    !countedStorages[item.data.id])) {
