@@ -222,6 +222,8 @@ sub remove_stale_lxc_consoles {
     }
 }
 
+my $rebalance_error_count = {};
+
 sub rebalance_lxc_containers {
 
     return if !-d '/sys/fs/cgroup/cpuset/lxc'; # nothing to do...
@@ -237,8 +239,11 @@ sub rebalance_lxc_containers {
     my $modify_cpuset = sub {
 	my ($vmid, $cpuset, $newset) = @_;
 
-	syslog('info', "modified cpu set for lxc/$vmid: " .
-	       $newset->short_string());
+	if (!$rebalance_error_count->{$vmid}) {
+	    syslog('info', "modified cpu set for lxc/$vmid: " .
+		   $newset->short_string());
+	}
+
 	eval {
 	    # allow all, so that we can set new cpuset in /ns
 	    $all_cpus->write_to_cgroup("lxc/$vmid");
@@ -246,15 +251,18 @@ sub rebalance_lxc_containers {
 		$newset->write_to_cgroup("lxc/$vmid/ns");
 	    };
 	    if (my $err = $@) {
-		warn $err;
+		warn $err if !$rebalance_error_count->{$vmid}++;
 		# restore original
 		$cpuset->write_to_cgroup("lxc/$vmid");
 	    } else {
 		# also apply to container root cgroup
 		$newset->write_to_cgroup("lxc/$vmid");
+		$rebalance_error_count->{$vmid} = 0;
 	    }
 	};
-	warn $@ if $@;
+	if (my $err = $@) {
+	    warn $err if !$rebalance_error_count->{$vmid}++;
+	}
     };
 
     my $ctlist = PVE::LXC::config_list();
