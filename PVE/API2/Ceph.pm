@@ -850,6 +850,8 @@ __PACKAGE__->register_method ({
 
 	my $monaddrhash = {}; 
 
+	my $systemd_managed = PVE::CephTools::systemd_managed();
+
 	foreach my $section (keys %$cfg) {
 	    next if $section eq 'global';
 	    my $d = $cfg->{$section};
@@ -902,6 +904,8 @@ __PACKAGE__->register_method ({
 			    "--cap mds 'allow' " .
 			    "--cap osd 'allow *' " .
 			    "--cap mon 'allow *'");
+		run_command("cp $pve_mon_key_path.tmp /etc/ceph/ceph.client.admin.keyring") if $systemd_managed;
+		run_command("chown ceph:ceph /etc/ceph/ceph.client.admin.keyring") if $systemd_managed;
 		run_command("ceph-authtool $pve_mon_key_path.tmp --gen-key -n mon. --cap mon 'allow *'");
 		run_command("mv $pve_mon_key_path.tmp $pve_mon_key_path");
 	    }
@@ -916,6 +920,8 @@ __PACKAGE__->register_method ({
 	    eval {
 		mkdir $mondir;
 
+		run_command("chown ceph:ceph $mondir") if $systemd_managed;
+
 		if ($moncount > 0) {
 		    my $rados = PVE::RADOS->new(timeout => PVE::CephTools::get_config('long_rados_timeout'));
 		    my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
@@ -925,6 +931,7 @@ __PACKAGE__->register_method ({
 		}
 
 		run_command("ceph-mon --mkfs -i $monid --monmap $monmap --keyring $pve_mon_key_path");
+		run_command("chown ceph:ceph -R $mondir") if $systemd_managed;
 	    };
 	    my $err = $@;
 	    unlink $monmap;
