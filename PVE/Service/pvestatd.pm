@@ -334,7 +334,21 @@ sub rebalance_lxc_containers {
 	if (!$newset->is_equal($cpuset)) {
 	    syslog('info', "modified cpu set for lxc/$vmid: " .
 		   $newset->short_string());
-	    eval { $newset->write_to_cgroup("lxc/$vmid"); };
+	    eval {
+		# allow all, so that we can set new cpuset in /ns
+		$all_cpus->write_to_cgroup("lxc/$vmid");
+		eval {
+		    $newset->write_to_cgroup("lxc/$vmid/ns");
+		};
+		if (my $err = $@) {
+		    warn $err;
+		    # restore original
+		    $cpuset->write_to_cgroup("lxc/$vmid");
+		} else {
+		    # also apply to container root cgroup
+		    $newset->write_to_cgroup("lxc/$vmid");
+		}
+	    };
 	    warn $@ if $@;
 	}
     }
