@@ -66,7 +66,7 @@ Ext.define('PVE.data.DiffStore', {
 	    }
 	};
 
-	me.mon(rstore, 'load', function(s, records, success) {
+	var loadFn = function(s, records, success) {
 
 	    if (!success) {
 		return;
@@ -101,6 +101,14 @@ Ext.define('PVE.data.DiffStore', {
 	    me.resumeEvents();
 	    me.fireEvent('refresh', me);
 	    me.fireEvent('datachanged', me);
-	});
+	};
+
+	if (rstore.isLoaded()) {
+	    // if store is already loaded,
+	    // insert items instantly
+	    loadFn(rstore, [], true);
+	}
+
+	me.mon(rstore, 'load', loadFn);
     }
 });
