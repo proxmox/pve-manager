@@ -65,7 +65,7 @@ Ext.define('PVE.grid.BackupView', {
 	});
 
 	var reload = Ext.Function.createBuffered(function() {
-	    if (me.store && me.store.proxy.url) {
+	    if (me.store) {
 		me.store.load();
 	    }
 	}, 100);
@@ -231,10 +231,7 @@ Ext.define('PVE.grid.BackupView', {
 		    renderer: PVE.Utils.format_size,
 		    dataIndex: 'size'
 		}
-	    ],
-	    listeners: {
-		activate: reload
-	    }
+	    ]
 	});
 
 	me.callParent();
