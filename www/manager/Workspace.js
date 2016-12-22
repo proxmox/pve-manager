@@ -380,9 +380,17 @@ Ext.define('PVE.StdWorkspace', {
 			},
 			{
 			    minWidth: 200,
-			    flex: 1,
 			    id: 'versioninfo',
 			    html: '<span class="x-panel-header-text">Proxmox Virtual Environment</span>'
+			},
+			{
+			    flex: 1,
+			    html: '<div class="x-panel-header-text" >' +
+				'<img height=27 style="padding: 0 5 0 0;float:left" ' +
+				'src="/pve2/ext4/resources/themes/images/default/shared/icon-warning.gif" />' +
+				'<a target="_blank" href="https://pve.proxmox.com/wiki/Category:Proxmox_VE_3.x">' +
+				'Support for Proxmox VE 3.4 ends on<br />February 28, 2017. Click for details</a>' +
+				'</div>'
 			},
 			{
 			    pack: 'end',
