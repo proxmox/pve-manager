@@ -35,7 +35,7 @@ Ext.define('PVE.window.Settings', {
 	    },
 	    'button[name=reset]': {
 		click: function () {
-		    var blacklist = ['GuiCap', 'login-username'];
+		    var blacklist = ['GuiCap', 'login-username', 'dash-storages'];
 		    var sp = Ext.state.Manager.getProvider();
 		    var state;
 		    for (state in sp.state) {
@@ -60,6 +60,42 @@ Ext.define('PVE.window.Settings', {
 		    usernamefield.setValue(PVE.Utils.noneText);
 		    sp.clear('login-username');
 		}
+	    },
+	    'grid[reference=dashboard-storages]': {
+		selectionchange: function(grid, selected) {
+		    var me = this;
+		    var sp = Ext.state.Manager.getProvider();
+
+		    // saves the selected storageids as
+		    // "id1,id2,id3,..."
+		    // or clears the variable
+		    if (selected.length > 0) {
+			sp.set('dash-storages',
+			    Ext.Array.pluck(selected, 'id').join(','));
+		    } else {
+			sp.clear('dash-storages');
+		    }
+		},
+		afterrender: function(grid) {
+		    var me = grid;
+		    var sp = Ext.state.Manager.getProvider();
+		    var store = me.getStore();
+		    var items = [];
+		    me.suspendEvent('selectionchange');
+		    var storages = sp.get('dash-storages') || '';
+		    storages.split(',').forEach(function(storage){
+			// we have to get the records
+			// to be able to select them
+			if (storage !== '') {
+			    var item = store.getById(storage);
+			    if (item) {
+				items.push(item);
+			    }
+			}
+		    });
+		    me.getSelectionModel().select(items);
+		    me.resumeEvent('selectionchange');
+		}
 	    }
 	}
     },
@@ -77,6 +113,43 @@ Ext.define('PVE.window.Settings', {
 		margin: '0 0 10 0'
 	    },
 	    items: [
+		{
+		    xtype: 'displayfield',
+		    fieldLabel: gettext('Dashboard Storages'),
+		    labelAlign: 'left',
+		    labelWidth: '50%'
+		},
+		{
+		    xtype: 'grid',
+		    maxHeight: 150,
+		    reference: 'dashboard-storages',
+		    selModel: {
+			selType: 'checkboxmodel'
+		    },
+		    columns: [{
+			header: gettext('Name'),
+			dataIndex: 'storage',
+			flex: 1
+		    },{
+			header: gettext('Node'),
+			dataIndex: 'node',
+			flex: 1
+		    }],
+		    store: {
+			type: 'diff',
+			field: ['type', 'storage', 'id', 'node'],
+			rstore: PVE.data.ResourceStore,
+			filters: [{
+			    property: 'type',
+			    value: 'storage'
+			}],
+			sorters: [ 'node','storage']
+		    }
+		},
+		{
+		    xtype: 'box',
+		    autoEl: { tag: 'hr'}
+		},
 		{
 		    xtype: 'displayfield',
 		    fieldLabel: gettext('Saved User name'),
