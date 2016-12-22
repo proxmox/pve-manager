@@ -194,8 +194,21 @@ Ext.define('PVE.window.Edit', {
 
 	var form = me.formPanel.getForm();
 
+	var submitText;
+	if (me.create) {
+	    if (me.isAdd) {
+		submitText = gettext('Add');
+	    } else if (me.isRemove) {
+		submitText = gettext('Remove');
+	    } else {
+		submitText = gettext('Create');
+	    }
+	} else {
+	    submitText = gettext('OK');
+	}
+
 	var submitBtn = Ext.create('Ext.Button', {
-	    text: me.create ? (me.isAdd ? gettext('Add') : ( me.isRemove ? gettext('Remove') : gettext('Create'))) : gettext('OK'),
+	    text: submitText,
 	    disabled: !me.create,
 	    handler: function() {
 		me.submit();
