@@ -1,3 +1,9 @@
+pve-manager (4.4-4) unstable; urgency=medium
+
+  * pveceph: change remove partition order, fix parsing block device
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 22 Dec 2016 12:28:03 +0100
+
 pve-manager (4.4-3) unstable; urgency=medium
 
   * support ceph jewel
