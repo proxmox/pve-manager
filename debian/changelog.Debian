@@ -1,3 +1,9 @@
+pve-manager (4.4-5) unstable; urgency=medium
+
+  * add unpriviledged flag to container restore window
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 27 Dec 2016 11:29:31 +0100
+
 pve-manager (4.4-4) unstable; urgency=medium
 
   * pveceph: change remove partition order, fix parsing block device
