@@ -43,6 +43,25 @@ Ext.define('PVE.window.Restore', {
 	    });
 	}
 
+	var items = [
+	    {
+		xtype: 'displayfield',
+		value: me.volidText || me.volid,
+		fieldLabel: gettext('Source')
+	    },
+	    storagesel,
+	    IDfield
+	];
+
+	if (me.vmtype === 'lxc') {
+	    items.push({
+		xtype: 'pvecheckbox',
+		name: 'unprivileged',
+		value: '',
+		fieldLabel: gettext('Unprivileged container')
+	    });
+	}
+
 	me.formPanel = Ext.create('Ext.form.Panel', {
 	    bodyPadding: 10,
 	    border: false,
@@ -50,15 +69,7 @@ Ext.define('PVE.window.Restore', {
 		labelWidth: 100,
 		anchor: '100%'
 	    },
-	    items: [
-		{
-		    xtype: 'displayfield',
-		    value: me.volidText || me.volid,
-		    fieldLabel: gettext('Source')
-		},
-		storagesel,
-		IDfield
-	    ]
+	    items: items
 	});
 
 	var form = me.formPanel.getForm();
@@ -102,6 +113,7 @@ Ext.define('PVE.window.Restore', {
 		    url = '/nodes/' + me.nodename + '/lxc';
 		    params.ostemplate = me.volid;
 		    params.restore = 1;
+		    if (values.unprivileged) { params.unprivileged = 1; }
 		    msg = PVE.Utils.format_task_description('vzrestore', params.vmid);
 		} else if (me.vmtype === 'qemu') {
 		    url = '/nodes/' + me.nodename + '/qemu';
