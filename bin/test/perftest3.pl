@@ -1,7 +1,8 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 use lib '../../';
 use strict;
+use warnings;
 use Time::HiRes qw( usleep ualarm gettimeofday tv_interval );
 use PVE::INotify;
 use PVE::AccessControl;
@@ -15,7 +16,7 @@ my $hostname = PVE::INotify::read_file("hostname");
 # but we can simply create a ticket if we are root
 my $ticket = PVE::AccessControl::assemble_ticket('root@pam');
 
-my $wcount = 1;
+my $wcount = 10;
 my $qcount = 100;
 
 sub test_rpc {
@@ -65,6 +66,4 @@ sub run_tests {
     print "$host: $tpq ms per query\n";
 }
 
-# why is this faster than LWP::UserAgent?
-
-run_tests($hostname); # test 'apache'
+run_tests($hostname); # test 'pveproxy'
