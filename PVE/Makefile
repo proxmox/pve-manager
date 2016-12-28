@@ -5,7 +5,6 @@ SUBDIRS=API2 VZDump Status CLI Service
 PERLSOURCE = 			\
 	API2.pm			\
 	API2Tools.pm		\
-	API2Client.pm		\
 	ExtJSIndex.pm		\
 	TouchIndex.pm		\
 	NoVncIndex.pm		\
