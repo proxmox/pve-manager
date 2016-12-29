@@ -22,6 +22,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 
     initComponent : function() {
 	var me = this;
+	var MIN_QUORUM_VOTES = 3;
 
 	var disabledHint = Ext.createWidget({
 	    xtype: 'displayfield', //submitValue is false, so we don't get submitted
@@ -29,6 +30,39 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    value: gettext('Disabling the resource will stop the guest system. ' +
 	    'See the online help for details.'),
 	    hidden: true
+	});
+
+	var fewVotesHint = Ext.createWidget({
+	    itemId: 'fewVotesHint',
+	    xtype: 'displayfield',
+	    userCls: 'pve-hint',
+	    updateValue: function(votes) {
+		var me = this;
+		me.setValue(gettext('You need at least three quorum votes for a reliable HA cluster. ' +
+		'See the online help for details. Current votes: ') + votes);
+	    },
+	    hidden: true
+	});
+
+	PVE.Utils.API2Request({
+	    url: '/cluster/config/nodes',
+	    method: 'GET',
+	    failure: function(response) {
+		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+	    },
+	    success: function(response) {
+		var nodes = response.result.data;
+		var votes = 0;
+		Ext.Array.forEach(nodes, function(node) {
+		    var vote = parseInt(node.quorum_votes, 10); // parse as base 10
+		    votes += vote || 0; // parseInt might return NaN, which is false
+		});
+
+		if (votes < MIN_QUORUM_VOTES) {
+		    fewVotesHint.updateValue(votes);
+		    fewVotesHint.setVisible(true);
+		}
+	    }
 	});
 
 	me.column1 = [
@@ -100,7 +134,8 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		xtype: 'textfield',
 		name: 'comment',
 		fieldLabel: gettext('Comment')
-	    }
+	    },
+	    fewVotesHint
 	];
 	
 	me.callParent();
