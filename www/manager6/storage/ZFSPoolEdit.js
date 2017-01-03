@@ -108,6 +108,13 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 		checked: false,
 		uncheckedValue: 0,
 		fieldLabel: gettext('Thin provision')
+	    },
+	    {
+		xtype: 'textfield',
+		name: 'blocksize',
+		emptyText: '8k',
+		fieldLabel: gettext('Block Size'),
+		allowBlank: true
 	    }
 	];
 
