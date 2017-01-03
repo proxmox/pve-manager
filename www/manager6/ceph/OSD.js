@@ -373,6 +373,7 @@ Ext.define('PVE.node.CephOsdTree', {
                     nodename: nodename
 		});
 		win.show();
+		me.mon(win, 'close', reload, me);
 	    }
 	});
 
