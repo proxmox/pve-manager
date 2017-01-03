@@ -5,6 +5,8 @@ Ext.define('PVE.window.Clone', {
 
     isTemplate: false,
 
+    onlineHelp: 'qm_copy_and_clone',
+
     create_clone: function(values) {
 	var me = this;
 
@@ -275,14 +277,19 @@ Ext.define('PVE.window.Clone', {
 		}
 	    }
 	});
-	
+
+	var helpButton = Ext.create('PVE.button.Help', {
+	    listenToGlobalEvent: false,
+	    hidden: false,
+	    onlineHelp: me.onlineHelp});
+
 	Ext.apply(me, {
 	    modal: true,
 	    width: 600,
 	    height: 250,
 	    border: false,
 	    layout: 'fit',
-	    buttons: [ me.submitBtn ],
+	    buttons: [ helpButton, '->', me.submitBtn ],
 	    items: [ me.formPanel ]
 	});
 
