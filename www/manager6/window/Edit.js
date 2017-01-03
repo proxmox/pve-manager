@@ -111,14 +111,26 @@ Ext.define('PVE.window.Edit', {
 		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 	    },
 	    success: function(response, options) {
-		me.close();
-		if ((me.backgroundDelay || me.showProgress) && 
-		    response.result.data) {
+		var hasProgressBar = (me.backgroundDelay || me.showProgress) &&
+		    response.result.data ? true : false;
+
+		if (hasProgressBar) {
+		    // stay around so we can trigger our close events
+		    // when background action is completed
+		    me.hide();
+
 		    var upid = response.result.data;
 		    var win = Ext.create('PVE.window.TaskProgress', { 
-			upid: upid
+			upid: upid,
+			listeners: {
+			    destroy: function () {
+				me.close();
+			    }
+			}
 		    });
 		    win.show();
+		} else {
+		    me.close();
 		}
 	    }
 	});
