@@ -51,15 +51,10 @@ ${DEB} deb:
 	lintian -X binaries ${DEB}	
 
 .PHONY: upload
+.PHONY: upload
 upload: ${DEB} check
 	./repoid.pl .git check
-	umount /pve/${RELEASE}; mount /pve/${RELEASE} -o rw 
-	mkdir -p /pve/${RELEASE}/extra
-	rm -f /pve/${RELEASE}/extra/${PACKAGE}_*.deb
-	rm -f /pve/${RELEASE}/extra/Packages*
-	cp ${DEB} /pve/${RELEASE}/extra
-	cd /pve/${RELEASE}/extra; dpkg-scanpackages . /dev/null > Packages; gzip -9c Packages > Packages.gz
-	umount /pve/${RELEASE}; mount /pve/${RELEASE} -o ro
+	tar cf - ${DEB} | ssh repoman@repo.proxmox.com upload --dist wheezy
 
 #.PHONY: poupload
 #poupload:
