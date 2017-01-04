@@ -3,7 +3,6 @@
 /etc/init.d/pveproxy
 /etc/init.d/spiceproxy
 /etc/init.d/pvestatd
-/etc/vz/vznet.conf
 /etc/vzdump.conf
 /etc/logrotate.d/pve
 /etc/apt/apt.conf.d/75pveconf
