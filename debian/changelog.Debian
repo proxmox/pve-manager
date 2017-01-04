@@ -1,3 +1,9 @@
+pve-manager (3.4-16) unstable; urgency=low
+
+  * add warning about ending support in 3.4
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 04 Jan 2017 10:56:39 +0100
+
 pve-manager (3.4-15) unstable; urgency=low
 
   * use file_copy instead of an unsafe cp call (thanks to RACK911Labs.com for
