@@ -1211,12 +1211,22 @@ __PACKAGE__->register_method({
     }});
 
 my $get_start_stop_list = sub {
-    my ($nodename, $autostart) = @_;
+    my ($nodename, $autostart, $vmfilter) = @_;
 
     my $vmlist = PVE::Cluster::get_vmlist();
 
+    my $vms;
+
+    if (defined($vmfilter)) {
+	$vms = {};
+	foreach my $vmid (PVE::Tools::split_list($vmfilter)) {
+	    $vms->{$vmid} = 1;
+	}
+    }
+
     my $resList = {};
     foreach my $vmid (keys %{$vmlist->{ids}}) {
+	next if defined($vms) && !$vms->{$vmid};
 	my $d = $vmlist->{ids}->{$vmid};
 	my $startup;
 
@@ -1271,6 +1281,11 @@ __PACKAGE__->register_method ({
 		type => 'boolean',
 		description => "force if onboot=0.",
 	    },
+	    vms => {
+		description => "Only consider Guests with these IDs.",
+		type => 'string',  format => 'pve-vmid-list',
+		optional => 1,
+	    },
 	},
     },
     returns => {
@@ -1299,7 +1314,7 @@ __PACKAGE__->register_method ({
 		print "got quorum\n";
 	    }
 	    my $autostart = $force ? undef : 1;
-	    my $startList = &$get_start_stop_list($nodename, $autostart);
+	    my $startList = &$get_start_stop_list($nodename, $autostart, $param->{vms});
 
 	    # Note: use numeric sorting with <=>
 	    foreach my $order (sort {$a <=> $b} keys %$startList) {
@@ -1411,6 +1426,11 @@ __PACKAGE__->register_method ({
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
+	    vms => {
+		description => "Only consider Guests with these IDs.",
+		type => 'string',  format => 'pve-vmid-list',
+		optional => 1,
+	    },
 	},
     },
     returns => {
@@ -1429,7 +1449,7 @@ __PACKAGE__->register_method ({
 
 	    $rpcenv->{type} = 'priv'; # to start tasks in background
 
-	    my $stopList = &$get_start_stop_list($nodename);
+	    my $stopList = &$get_start_stop_list($nodename, undef, $param->{vms});
 
 	    my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
 	    my $datacenterconfig = cfs_read_file('datacenter.cfg');
@@ -1538,6 +1558,11 @@ __PACKAGE__->register_method ({
                 type => 'integer',
                 minimum => 1
             },
+	    vms => {
+		description => "Only consider Guests with these IDs.",
+		type => 'string',  format => 'pve-vmid-list',
+		optional => 1,
+	    },
 	},
     },
     returns => {
@@ -1563,7 +1588,7 @@ __PACKAGE__->register_method ({
 
 	    $rpcenv->{type} = 'priv'; # to start tasks in background
 
-	    my $migrateList = &$get_start_stop_list($nodename);
+	    my $migrateList = &$get_start_stop_list($nodename, undef, $param->{vms});
 
 	    foreach my $order (sort {$b <=> $a} keys %$migrateList) {
 		my $vmlist = $migrateList->{$order};
