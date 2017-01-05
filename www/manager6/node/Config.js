@@ -32,59 +32,46 @@ Ext.define('PVE.node.Config', {
 	};
 
 	var actionBtn = Ext.create('Ext.Button', {
-	    text: gettext('More'),
+	    text: gettext('Bulk Actions'),
 	    iconCls: 'fa fa-fw fa-ellipsis-v',
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
 	    menu: new Ext.menu.Menu({
 		items: [
 		    {
-			text: gettext('Start all VMs and Containers'),
+			text: gettext('Bulk Start'),
 			iconCls: 'fa fa-fw fa-play',
 			handler: function() {
-			    var msg = gettext('Start all VMs and Containers') + ' (' + gettext('Node') + " '" + nodename + "')";
-			    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
-				if (btn !== 'yes') {
-				    return;
-				}
-				PVE.Utils.API2Request({
-				    params: { force: 1 },
-				    url: '/nodes/' + nodename + '/startall',
-				    method: 'POST',
-				    waitMsgTarget: me,
-				    failure: function(response, opts) {
-					Ext.Msg.alert('Error', response.htmlStatus);
-				    }
-				});
+			    var win = Ext.create('PVE.window.BulkAction', {
+				nodename: nodename,
+				title: gettext('Bulk Start'),
+				btnText: gettext('Start'),
+				action: 'startall'
 			    });
+			    win.show();
 			}
 		    },
 		    {
-			text: gettext('Stop all VMs and Containers'),
-			iconCls: 'fa fa-fw fa-stop fa-red',
+			text: gettext('Bulk Stop'),
+			iconCls: 'fa fa-fw fa-stop',
 			handler: function() {
-			    var msg = gettext('Stop all VMs and Containers') + ' (' + gettext('Node') + " '" + nodename + "')";
-			    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
-				if (btn !== 'yes') {
-				    return;
-				}
-
-				PVE.Utils.API2Request({
-				    url: '/nodes/' + nodename + '/stopall',
-				    method: 'POST',
-				    waitMsgTarget: me,
-				    failure: function(response, opts) {
-					Ext.Msg.alert('Error', response.htmlStatus);
-				    }
-				});
+			    var win = Ext.create('PVE.window.BulkAction', {
+				nodename: nodename,
+				title: gettext('Bulk Stop'),
+				btnText: gettext('Stop'),
+				action: 'stopall'
 			    });
+			    win.show();
 			}
 		    },
 		    {
-			text: gettext('Migrate all VMs and Containers'),
+			text: gettext('Bulk Migrate'),
 			iconCls: 'fa fa-fw fa-send-o',
 			handler: function() {
-			    var win = Ext.create('PVE.window.MigrateAll', {
-				nodename: nodename
+			    var win = Ext.create('PVE.window.BulkAction', {
+				nodename: nodename,
+				title: gettext('Bulk Migrate'),
+				btnText: gettext('Migrate'),
+				action: 'migrateall'
 			    });
 			    win.show();
 			}

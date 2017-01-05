@@ -68,6 +68,7 @@ JSSRC= 				                 	\
 	form/FirewallPolicySelector.js			\
 	form/GlobalSearchField.js			\
 	form/QemuBiosSelector.js			\
+	form/VMSelector.js			\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
@@ -128,7 +129,7 @@ JSSRC= 				                 	\
 	node/APT.js					\
 	node/Config.js					\
 	window/Migrate.js				\
-	window/MigrateAll.js				\
+	window/BulkAction.js				\
 	qemu/Monitor.js					\
 	qemu/Summary.js					\
 	qemu/OSTypeEdit.js				\
