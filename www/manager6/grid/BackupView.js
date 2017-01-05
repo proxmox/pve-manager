@@ -123,7 +123,12 @@ Ext.define('PVE.grid.BackupView', {
 		    nodename: nodename,
 		    vmid: vmid,
 		    vmtype: vmtype,
-		    storage: storagesel.getValue()
+		    storage: storagesel.getValue(),
+		    listeners : {
+			close: function() {
+			    reload();
+			}
+		    }
 		});
 		win.show();
 	    }

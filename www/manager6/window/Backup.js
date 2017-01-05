@@ -76,13 +76,21 @@ Ext.define('PVE.window.Backup', {
 			Ext.Msg.alert('Error',response.htmlStatus);
 		    },
 		    success: function(response, options) {
+			// close later so we reload the grid
+			// after the task has completed
+			me.hide();
+
 			var upid = response.result.data;
 			
 			var win = Ext.create('PVE.window.TaskViewer', { 
-			    upid: upid
+			    upid: upid,
+			    listeners: {
+				close: function() {
+				    me.close();
+				}
+			    }
 			});
 			win.show();
-			me.close();
 		    }
 		});
 	    }
