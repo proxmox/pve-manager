@@ -503,3 +503,8 @@ table.osds td:first-of-type {
 .pointer {
     cursor: pointer;
 }
+
+.x-grid-filters-filtered-column{
+    font-style: italic;
+    font-weight: bold;
+}
