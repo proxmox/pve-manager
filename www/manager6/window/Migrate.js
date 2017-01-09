@@ -126,5 +126,11 @@ Ext.define('PVE.window.Migrate', {
 	});
 
 	me.callParent();
+
+	me.mon(me.formPanel, 'validitychange', function(fp, isValid) {
+	    submitBtn.setDisabled(!isValid);
+	});
+
+	me.formPanel.isValid();
     }
 });
