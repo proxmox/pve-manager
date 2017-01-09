@@ -98,7 +98,8 @@ Ext.define('PVE.window.BulkAction', {
 	    height: 300,
 	    selectAll: true,
 	    allowBlank: false,
-	    nodename: me.nodename
+	    nodename: me.nodename,
+	    action: me.action
 	});
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
