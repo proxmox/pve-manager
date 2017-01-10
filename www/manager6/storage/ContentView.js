@@ -331,6 +331,12 @@ Ext.define('PVE.storage.ContentView', {
 	trackOver: false,
 	loadMask: false
     },
+    features: [
+	{
+	    ftype: 'grouping',
+	    groupHeaderTpl: '{name} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})'
+	}
+    ],
     initComponent : function() {
 	var me = this;
 
@@ -359,10 +365,6 @@ Ext.define('PVE.storage.ContentView', {
 	});
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
-
-	var groupingFeature = Ext.create('Ext.grid.feature.Grouping',{
-            groupHeaderTpl: '{[ PVE.Utils.format_content_types(values.name) ]} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})'
-	});
 
 	var reload = function() {
 	    store.load();
@@ -406,7 +408,6 @@ Ext.define('PVE.storage.ContentView', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    features: [ groupingFeature ],
 	    tbar: [
 		{
 		    xtype: 'pveButton',
@@ -515,6 +516,12 @@ Ext.define('PVE.storage.ContentView', {
 		    header: gettext('Format'),
 		    width: 100,
 		    dataIndex: 'format'
+		},
+		{
+		    header: gettext('Type'),
+		    width: 100,
+		    dataIndex: 'content',
+		    renderer: PVE.Utils.format_content_types
 		},
 		{
 		    header: gettext('Size'),
