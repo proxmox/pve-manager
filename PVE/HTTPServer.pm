@@ -23,6 +23,7 @@ use Fcntl ();
 use Compress::Zlib;
 use PVE::SafeSyslog;
 use PVE::INotify;
+use PVE::Tools;
 use PVE::RPCEnvironment;
 use PVE::Cluster;
 
@@ -30,7 +31,9 @@ use Net::IP;
 use URI;
 use URI::Escape;
 use HTTP::Status qw(:constants);
+use HTTP::Date;
 use HTTP::Headers;
+use HTTP::Request;
 use HTTP::Response;
 use Data::Dumper;
 
