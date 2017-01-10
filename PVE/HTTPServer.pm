@@ -145,6 +145,28 @@ sub log_aborted_request {
     $self->log_request($reqstate);
 }
 
+sub extract_auth_cookie {
+    my ($cookie, $cookie_name) = @_;
+
+    return undef if !$cookie;
+
+    my $ticket = ($cookie =~ /(?:^|\s)\Q$cookie_name\E=([^;]*)/)[0];
+
+    if ($ticket && $ticket =~ m/^PVE%3A/) {
+	$ticket = uri_unescape($ticket);
+    }
+
+    return $ticket;
+}
+
+sub create_auth_cookie {
+    my ($ticket, $cookie_name) = @_;
+
+    my $encticket = uri_escape($ticket);
+
+    return "${cookie_name}=$encticket; path=/; secure;";
+}
+
 sub cleanup_reqstate {
     my ($reqstate) = @_;
 
@@ -586,7 +608,7 @@ sub proxy_request {
 	    PVEClientIP => $clientip,
 	};
 
-	$headers->{'cookie'} = PVE::REST::create_auth_cookie($ticket) if $ticket;
+	$headers->{'cookie'} = create_auth_cookie($ticket, $self->{cookie_name}) if $ticket;
 	$headers->{'CSRFPreventionToken'} = $token if $token;
 	$headers->{'Accept-Encoding'} = 'gzip' if $reqstate->{accept_gzip};
 
@@ -1234,7 +1256,7 @@ sub unshift_read_header {
 		} elsif ($path =~ m!$baseuri!) {
 		    my $token = $r->header('CSRFPreventionToken');
 		    my $cookie = $r->header('Cookie');
-		    my $ticket = PVE::REST::extract_auth_cookie($cookie);
+		    my $ticket = extract_auth_cookie($cookie, $self->{cookie_name});
 
 		    my ($rel_uri, $format) = split_abs_uri($path);
 		    if (!$format) {
@@ -1619,6 +1641,8 @@ sub new {
     }
 
     my $self = bless { %args }, $class;
+
+    $self->{cookie_name} //= 'PVEAuthCookie';
 
     PVE::REST::set_base_handler_class($self->{base_handler_class});
 
