@@ -24,7 +24,6 @@ use Compress::Zlib;
 use PVE::SafeSyslog;
 use PVE::INotify;
 use PVE::RPCEnvironment;
-use PVE::REST;
 use PVE::Cluster;
 
 use Net::IP;
@@ -757,7 +756,7 @@ sub handle_api2_request {
 
 	$rpcenv->init_request();
 
-	my $res = PVE::REST::rest_handler($rpcenv, $clientip, $method, $rel_uri, $auth, $params);
+	my $res = $self->rest_handler($clientip, $method, $rel_uri, $auth, $params);
 
 	AnyEvent->now_update(); # in case somebody called sleep()
 
@@ -1653,8 +1652,6 @@ sub new {
     $self->{cookie_name} //= 'PVEAuthCookie';
     $self->{baseuri} //= "/api2";
 
-    PVE::REST::set_base_handler_class($self->{base_handler_class});
-
     # init inotify
     PVE::INotify::inotify_init();
 
@@ -1780,6 +1777,105 @@ sub auth_handler {
     };
 }
 
+my $exc_to_res = sub {
+    my ($info, $err, $status) = @_;
+
+    $status = $status || HTTP_INTERNAL_SERVER_ERROR;
+
+    my $resp = { info => $info };
+    if (ref($err) eq "PVE::Exception") {
+	$resp->{status} = $err->{code} || $status;
+	$resp->{errors} = $err->{errors} if $err->{errors};
+	$resp->{message} = $err->{msg};
+    } else {
+	$resp->{status} = $status;
+	$resp->{message} = $err;
+    }
+
+    return $resp;
+};
+
+sub rest_handler {
+    my ($self, $clientip, $method, $rel_uri, $auth, $params) = @_;
+
+    my $rpcenv = $self->{rpcenv};
+
+    my $base_handler_class = $self->{base_handler_class};
+
+    die "no base handler - internal error" if !$base_handler_class;
+
+    my $uri_param = {};
+    my ($handler, $info) = $base_handler_class->find_handler($method, $rel_uri, $uri_param);
+    if (!$handler || !$info) {
+	return {
+	    status => HTTP_NOT_IMPLEMENTED,
+	    message => "Method '$method $rel_uri' not implemented",
+	};
+    }
+
+    foreach my $p (keys %{$params}) {
+	if (defined($uri_param->{$p})) {
+	    return {
+		status => HTTP_BAD_REQUEST,
+		message => "Parameter verification failed - duplicate parameter '$p'",
+	    };
+	}
+	$uri_param->{$p} = $params->{$p};
+    }
+
+    # check access permissions
+    eval { $rpcenv->check_api2_permissions($info->{permissions}, $auth->{userid}, $uri_param); };
+    if (my $err = $@) {
+	return &$exc_to_res($info, $err, HTTP_FORBIDDEN);
+    }
+
+    if ($info->{proxyto}) {
+	my $remip;
+	my $node;
+	eval {
+	    my $pn = $info->{proxyto};
+	    $node = $uri_param->{$pn};
+	    die "proxy parameter '$pn' does not exists" if !$node;
+
+	    if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
+		die "unable to proxy file uploads" if $auth->{isUpload};
+		$remip = PVE::Cluster::remote_node_ip($node);
+	    }
+	};
+	if (my $err = $@) {
+	    return &$exc_to_res($info, $err);
+	}
+	if ($remip) {
+	    return { proxy => $remip, proxynode => $node, proxy_params => $params };
+	}
+    }
+
+    my $euid = $>;
+    if ($info->{protected} && ($euid != 0)) {
+	return { proxy => 'localhost' , proxy_params => $params }
+    }
+
+    my $resp = {
+	info => $info, # useful to format output
+	status => HTTP_OK,
+    };
+
+    eval {
+	$resp->{data} = $handler->handle($info, $uri_param);
+
+	if (my $count = $rpcenv->get_result_attrib('total')) {
+	    $resp->{total} = $count;
+	}
+	if (my $diff = $rpcenv->get_result_attrib('changes')) {
+	    $resp->{changes} = $diff;
+	}
+    };
+    if (my $err = $@) {
+	return &$exc_to_res($info, $err);
+    }
+
+    return $resp;
+}
 
 sub run {
     my ($self) = @_;
