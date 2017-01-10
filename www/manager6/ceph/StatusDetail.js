@@ -166,6 +166,10 @@ Ext.define('PVE.ceph.StatusDetail', {
 	       timechecks[monTimes[i].name] = monTimes[i].health;
 	}
 
+	if (mons.length === 1) {
+	    timechecks[mons[0].name] = "HEALTH_OK";
+	}
+
 	for (i = 0; i < mons.length; i++) {
 	    var monitor = monContainer.getComponent('mon.' + mons[i].name);
 	    if (!monitor) {
