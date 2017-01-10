@@ -3,7 +3,6 @@ package PVE::API2::Formatter::HTML;
 use strict;
 use warnings;
 
-use PVE::REST;
 use PVE::HTTPServer;
 use HTTP::Status;
 use JSON;
@@ -267,7 +266,9 @@ PVE::API2->register_page_formatter(
 	my ($res, $data, $param, $path, $auth) = @_;
 
 	if (HTTP::Status::is_success($res->{status})) {
-	    my $cookie = PVE::REST::create_auth_cookie($data->{ticket});
+	    my $cookie = PVE::HTTPServer::create_auth_cookie(
+		$data->{ticket}, $auth->{cookie_name});
+
 	    my $headers = HTTP::Headers->new(Location => $baseurl,
 					     'Set-Cookie' => $cookie);
 	    return HTTP::Response->new(301, "Moved", $headers);

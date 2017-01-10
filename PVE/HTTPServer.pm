@@ -1777,6 +1777,7 @@ sub auth_handler {
 	userid => $username,
 	age => $age,
 	isUpload => $isUpload,
+	cookie_name => $self->{cookie_name},
     };
 }
 
