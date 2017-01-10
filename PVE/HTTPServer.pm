@@ -1264,9 +1264,14 @@ sub unshift_read_header {
 			return;
 		    }
 
+		    my $rpcenv = $self->{rpcenv};
+		    # set environment variables
+		    $rpcenv->set_user(undef);
+		    $rpcenv->set_language('C');
+		    $rpcenv->set_client_ip($reqstate->{peer_host});
+
 		    eval {
-			$auth = PVE::REST::auth_handler($self->{rpcenv}, $reqstate->{peer_host}, $method, 
-							$rel_uri, $ticket, $token);
+			$auth = $self->auth_handler($method, $rel_uri, $ticket, $token);
 		    };
 		    if (my $err = $@) {
 			# always delay unauthorized calls by 3 seconds
@@ -1719,6 +1724,58 @@ sub new {
 
     return $self;
 }
+
+sub auth_handler {
+    my ($self, $method, $rel_uri, $ticket, $token) = @_;
+
+    my $rpcenv = $self->{rpcenv};
+
+    my $require_auth = 1;
+
+    # explicitly allow some calls without auth
+    if (($rel_uri eq '/access/domains' && $method eq 'GET') ||
+	($rel_uri eq '/access/ticket' && ($method eq 'GET' || $method eq 'POST'))) {
+	$require_auth = 0;
+    }
+
+    my ($username, $age);
+
+    my $isUpload = 0;
+
+    if ($require_auth) {
+
+	die "No ticket\n" if !$ticket;
+
+	($username, $age) = PVE::AccessControl::verify_ticket($ticket);
+
+	$rpcenv->set_user($username);
+
+	if ($method eq 'POST' && $rel_uri =~ m|^/nodes/([^/]+)/storage/([^/]+)/upload$|) {
+	    my ($node, $storeid) = ($1, $2);
+	    # we disable CSRF checks if $isUpload is set,
+	    # to improve security we check user upload permission here
+	    my $perm = { check => ['perm', "/storage/$storeid", ['Datastore.AllocateTemplate']] };
+	    $rpcenv->check_api2_permissions($perm, $username, {});
+	    $isUpload = 1;
+	}
+
+	# we skip CSRF check for file upload, because it is
+	# difficult to pass CSRF HTTP headers with native html forms,
+	# and it should not be necessary at all.
+	my $euid = $>;
+	PVE::AccessControl::verify_csrf_prevention_token($username, $token)
+	    if !$isUpload && ($euid != 0) && ($method ne 'GET');
+    }
+
+    return {
+	ticket => $ticket,
+	token => $token,
+	userid => $username,
+	age => $age,
+	isUpload => $isUpload,
+    };
+}
+
 
 sub run {
     my ($self) = @_;
