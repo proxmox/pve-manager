@@ -982,7 +982,7 @@ sub handle_request {
 	# we re-enable timeout in response()
 	$reqstate->{hdl}->timeout(0);
 
-	if ($path =~ m!$baseuri!) {
+	if ($path =~ m/^\Q$baseuri\E/) {
 	    $self->handle_api2_request($reqstate, $auth, $method, $path);
 	    return;
 	}
@@ -1258,7 +1258,7 @@ sub unshift_read_header {
 		    }
 		    $self->handle_spice_proxy_request($reqstate, $connect_str, $vmid, $node, $port);
 		    return;
-		} elsif ($path =~ m!$baseuri!) {
+		} elsif ($path =~ m/^\Q$baseuri\E/) {
 		    my $token = $r->header('CSRFPreventionToken');
 		    my $cookie = $r->header('Cookie');
 		    my $ticket = extract_auth_cookie($cookie, $self->{cookie_name});
