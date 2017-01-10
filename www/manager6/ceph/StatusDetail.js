@@ -95,7 +95,10 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    !record.data.health ||
 	    !record.data.health.timechecks ||
 	    !record.data.monmap ||
-	    !record.data.monmap.mons) {
+	    !record.data.monmap.mons ||
+	    !record.data.health.health ||
+	    !record.data.health.health.health_services ||
+	    !record.data.health.health.health_services[0]) {
 	    // only continue if we have all the data
 	    return;
 	}
@@ -159,7 +162,9 @@ Ext.define('PVE.ceph.StatusDetail', {
 	});
 
 	var monTimes = record.data.health.timechecks.mons || [];
+	var monHealth = record.data.health.health.health_services[0].mons || [];
 	var timechecks = {};
+	var healthchecks = {};
 	var monContainer = me.getComponent('monitors');
 	var i;
 	for (i = 0; i < mons.length && i < monTimes.length; i++) {
@@ -168,6 +173,10 @@ Ext.define('PVE.ceph.StatusDetail', {
 
 	if (mons.length === 1) {
 	    timechecks[mons[0].name] = "HEALTH_OK";
+	}
+
+	for (i = 0; i < mons.length && i < monHealth.length; i++) {
+	       healthchecks[monHealth[i].name] = monHealth[i].health;
 	}
 
 	for (i = 0; i < mons.length; i++) {
@@ -181,7 +190,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 		    itemId: 'mon.' + mons[i].name
 		});
 	    }
-	    monitor.updateMonitor(timechecks[mons[i].name], mons[i], record.data.quorum_names);
+	    monitor.updateMonitor(timechecks[mons[i].name], mons[i], record.data.quorum_names, healthchecks[mons[i].name]);
 	}
 	me.suspendLayout = false;
 	me.updateLayout();
@@ -209,16 +218,22 @@ Ext.define('PVE.ceph.MonitorWidget', {
     // timestate: the status from timechecks.mons
     // data: the monmap.mons data
     // quorum_names: the quorum_names array
-    updateMonitor: function(timestate, data, quorum_names) {
+    updateMonitor: function(timestate, data, quorum_names, health) {
 	var me = this;
 	var state = 'HEALTH_ERR';
+	var healthstates = {
+	    'HEALTH_OK': 3,
+	    'HEALTH_WARN': 2,
+	    'HEALTH_ERR': 1
+	};
 
 	// if the monitor is part of the quorum
 	// and has a timestate, get the timestate,
 	// otherwise the state is ERR
-	if (timestate && quorum_names &&
+	if (timestate && health && quorum_names &&
 	    quorum_names.indexOf(data.name) !== -1) {
-	    state = timestate;
+	    state = (healthstates[health] < healthstates[timestate])?
+		    health : timestate;
 	}
 
 	me.update(Ext.apply(me.data, {
