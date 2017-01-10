@@ -4,6 +4,8 @@ include ../defines.mk
 export NOVIEW=1
 include /usr/share/pve-doc-generator/pve-doc-generator.mk
 
+export PERLLIB=..
+
 SUBDIRS = init.d ocf test
 
 SERVICES = pvestatd pveproxy pvedaemon spiceproxy
