@@ -193,7 +193,6 @@ Ext.define('PVE.node.DiskList', {
 	PVE.Utils.monStoreErrors(me, store);
 
 	Ext.apply(me, {
-	    emptyText: gettext('No Disk found'),
 	    store: store,
 	    selModel: sm,
 	    tbar: [ reloadButton, smartButton, initButton ],
