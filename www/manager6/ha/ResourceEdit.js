@@ -65,6 +65,8 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    }
 	});
 
+	// value is a string above, but a number below
+	/*jslint confusion: true */
 	me.column1 = [
 	    {
 		xtype: me.vmid ? 'displayfield' : 'pveGuestIDSelector',
@@ -93,9 +95,8 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		allowBlank: false
 	    }
 	];
+	/*jslint confusion: false */
 
-	// value is expected to be integer as it's above, ignore that
-	/*jslint confusion: true */
 	me.column2 = [
 	    {
 		xtype: 'pveHAGroupSelector',
@@ -127,7 +128,6 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    },
 	    disabledHint
 	];
-	/*jslint confusion: false */
 
 	me.columnB = [
 	    {
