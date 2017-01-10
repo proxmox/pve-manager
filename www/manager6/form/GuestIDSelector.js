@@ -17,21 +17,21 @@ Ext.define('PVE.form.GuestIDSelector', {
     initComponent: function() {
 	var me = this;
 	var label = '{0} ID';
-	var unknownID = 'This {0} ID does not exists';
-	var inUseID = 'This {0} ID is already in use';
+	var unknownID = gettext('This {0} ID does not exists');
+	var inUseID = gettext('This {0} ID is already in use');
 
 	if (me.guestType === 'lxc') {
 	    label = Ext.String.format(label, 'CT');
-	    unknownID = Ext.String.format(gettext(unknownID), 'CT');
-	    inUseID = Ext.String.format(gettext(inUseID), 'CT');
+	    unknownID = Ext.String.format(unknownID, 'CT');
+	    inUseID = Ext.String.format(inUseID, 'CT');
 	} else if (me.guestType === 'qemu') {
 	    label = Ext.String.format(label, 'VM');
-	    unknownID = Ext.String.format(gettext(unknownID), 'VM');
-	    inUseID = Ext.String.format(gettext(inUseID), 'VM');
+	    unknownID = Ext.String.format(unknownID, 'VM');
+	    inUseID = Ext.String.format(inUseID, 'VM');
 	} else {
 	    label = Ext.String.format(label, 'CT/VM');
-	    unknownID = Ext.String.format(gettext(unknownID), 'CT/VM');
-	    inUseID = Ext.String.format(gettext(inUseID), 'CT/VM');
+	    unknownID = Ext.String.format(unknownID, 'CT/VM');
+	    inUseID = Ext.String.format(inUseID, 'CT/VM');
 	}
 
 	Ext.apply(me, {

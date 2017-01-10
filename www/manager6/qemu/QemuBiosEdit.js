@@ -8,8 +8,8 @@ Ext.define('PVE.qemu.BiosEdit', {
 	var EFIHint = Ext.createWidget({
 	    xtype: 'displayfield', //submitValue is false, so we don't get submitted
 	    userCls: 'pve-hint',
-	    value: gettext('You need to add an EFI disk for storing the ' +
-	    'EFI settings. See the online help for details.'),
+	    value: 'You need to add an EFI disk for storing the ' +
+	    'EFI settings. See the online help for details.',
 	    hidden: true
 	});
 
