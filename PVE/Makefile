@@ -9,7 +9,6 @@ PERLSOURCE = 			\
 	TouchIndex.pm		\
 	NoVncIndex.pm		\
 	HTTPServer.pm		\
-	REST.pm			\
 	APLInfo.pm		\
 	AutoBalloon.pm		\
 	CephTools.pm		\
