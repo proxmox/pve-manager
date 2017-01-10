@@ -47,10 +47,10 @@ my $known_methods = {
     DELETE => 1,
 };
 
-my $baseuri = "/api2";
-
 sub split_abs_uri {
-    my ($abs_uri) = @_;
+    my ($self, $abs_uri) = @_;
+
+    my $baseuri = $self->{baseuri};
 
     my ($format, $rel_uri) = $abs_uri =~ m/^\Q$baseuri\E\/+([a-z][a-z0-9]+)(\/.*)?$/;
     $rel_uri = '/' if !$rel_uri;
@@ -730,7 +730,7 @@ sub handle_api2_request {
     eval {
 	my $r = $reqstate->{request};
 
-	my ($rel_uri, $format) = split_abs_uri($path);
+	my ($rel_uri, $format) = $self->split_abs_uri($path);
 
 	my $formatter = get_formatter($format);
 
@@ -970,6 +970,8 @@ sub handle_spice_proxy_request {
 
 sub handle_request {
     my ($self, $reqstate, $auth, $method, $path) = @_;
+
+    my $baseuri = $self->{baseuri};
 
     eval {
 	my $r = $reqstate->{request};
@@ -1231,6 +1233,7 @@ sub unshift_read_header {
 		}
 
 		my $pveclientip = $r->header('PVEClientIP');
+		my $baseuri = $self->{baseuri};
 
 		# fixme: how can we make PVEClientIP header trusted?
 		if ($self->{trusted_env} && $pveclientip) {
@@ -1258,7 +1261,7 @@ sub unshift_read_header {
 		    my $cookie = $r->header('Cookie');
 		    my $ticket = extract_auth_cookie($cookie, $self->{cookie_name});
 
-		    my ($rel_uri, $format) = split_abs_uri($path);
+		    my ($rel_uri, $format) = $self->split_abs_uri($path);
 		    if (!$format) {
 			$self->error($reqstate, HTTP_NOT_IMPLEMENTED, "no such uri");
 			return;
@@ -1648,6 +1651,7 @@ sub new {
     my $self = bless { %args }, $class;
 
     $self->{cookie_name} //= 'PVEAuthCookie';
+    $self->{baseuri} //= "/api2";
 
     PVE::REST::set_base_handler_class($self->{base_handler_class});
 
