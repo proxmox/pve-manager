@@ -43,7 +43,7 @@ Ext.define('PVE.dc.NodeView', {
 	    dataIndex: 'ip'
 	},
 	{
-	    header: gettext('CPU Usage'),
+	    header: gettext('CPU usage'),
 	    sortable: true,
 	    width: 110,
 	    dataIndex: 'cpuusage',
@@ -54,7 +54,7 @@ Ext.define('PVE.dc.NodeView', {
 	    }
 	},
 	{
-	    header: gettext('Memory Usage'),
+	    header: gettext('Memory usage'),
 	    width: 110,
 	    sortable: true,
 	    tdCls: 'x-progressbar-default-cell',

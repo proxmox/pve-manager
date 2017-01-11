@@ -83,7 +83,7 @@ Ext.define('PVE.node.StatusView', {
 	{
 	    itemId: 'cpus',
 	    printBar: false,
-	    title: gettext('CPUs'),
+	    title: gettext('CPU(s)'),
 	    textField: 'cpuinfo',
 	    renderer: function(cpuinfo) {
 		return cpuinfo.cpus + " x " + cpuinfo.model + " (" +

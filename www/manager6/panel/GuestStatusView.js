@@ -62,7 +62,7 @@ Ext.define('PVE.panel.GuestStatusView', {
 	},
 	{
 	    itemId: 'rootfs',
-	    title: gettext('Bootdisk Size'),
+	    title: gettext('Bootdisk size'),
 	    textField: 'maxdisk',
 	    printBar: false,
 	    renderer: PVE.Utils.render_size
