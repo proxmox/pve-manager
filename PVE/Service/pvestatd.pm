@@ -558,28 +558,7 @@ our $cmddef = {
     status => [ __PACKAGE__, 'status', [], undef, sub { print shift . "\n";} ],
 };
 
-#my $cmd = shift;
-#PVE::CLIHandler::handle_cmd($cmddef, $0, $cmd, \@ARGV, undef, $0);
-#exit (0);
-
 1;
-
-__END__
-
-=head1 NAME
-                                          
-pvestatd - PVE Status Daemon
-
-=head1 SYNOPSIS
-
-=include synopsis
-
-=head1 DESCRIPTION
-
-This daemom queries the status of VMs, storages and containers at
-regular intervals. The result is sent to all nodes in the cluster.
-
-=include pve_copyright
 
 
 

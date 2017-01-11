@@ -173,19 +173,3 @@ our $cmddef = {
 };
 
 1;
-
-__END__
-
-=head1 NAME
-
-pveceph - tool to manage ceph services on pve nodes
-
-=head1 SYNOPSIS
-
-=include synopsis
-
-=head1 DESCRIPTION
-
-Tool to manage ceph services on pve nodes.
-
-=include pve_copyright

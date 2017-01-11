@@ -66,19 +66,3 @@ our $cmddef = {
 };
 
 1;
-
-__END__
-
-=head1 NAME
-
-pvedaemon - the PVE configuration server
-
-=include synopsis
-
-=head1 DESCRIPTION
-
-All configuration is done using this Server. The Server only
-listens to a local address 127.0.0.1 port 85 for security
-reasons.
-
-=include pve_copyright

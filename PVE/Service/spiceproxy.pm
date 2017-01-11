@@ -80,28 +80,3 @@ our $cmddef = {
 };
 
 1;
-
-__END__
-
-=head1 NAME
-                                          
-spiceproxy - SPICE proxy server for Proxmox VE
-
-=head1 SYNOPSIS
-
-=include synopsis
-
-=head1 DESCRIPTION
-
-SPICE proxy server for Proxmox VE. Listens on port 3128.
-
-=head1 Host based access control
-
-It is possible to configure apache2 like access control lists. Values are read 
-from file /etc/default/pveproxy (see 'pveproxy' for details).
-
-=head1 FILES
-
- /etc/default/pveproxy
-
-=include pve_copyright

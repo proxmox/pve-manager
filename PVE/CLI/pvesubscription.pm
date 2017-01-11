@@ -27,19 +27,3 @@ our $cmddef = {
 };
 
 1;
-
-__END__
-
-=head1 NAME
-
-pvesubscription - Proxmox VE subscription mamager
-
-=head1 SYNOPSIS
-
-=include synopsis
-
-=head1 DESCRIPTION
-
-This tool is used to handle pve subscriptions.
-
-=include pve_copyright
