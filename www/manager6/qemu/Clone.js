@@ -191,7 +191,7 @@ Ext.define('PVE.window.Clone', {
                 name: 'newvmid',
                 guestType: 'qemu',
                 value: '',
-                loadNextGuestVMID: true,
+                loadNextFreeID: true,
                 validateExists: false
             },
 	    {
