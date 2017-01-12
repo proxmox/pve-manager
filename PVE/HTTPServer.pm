@@ -636,12 +636,12 @@ sub proxy_request {
 		# we don't care about intermediate or root certificates
 		return 1 if $depth != 0;
 		# check server certificate against cache of pinned FPs
-		return PVE::Cluster::check_cert_fingerprint($cert);
+		return $self->check_cert_fingerprint($cert);
 	    },
 	};
 
 	# load and cache cert fingerprint if first time we proxy to this node
-	PVE::Cluster::initialize_cert_cache($node);
+	$self->initialize_cert_cache($node);
 
 	my $w; $w = http_request(
 	    $method => $target,
@@ -852,8 +852,7 @@ sub handle_spice_proxy_request {
         my $remip;
 
         if ($node ne 'localhost' && PVE::INotify::nodename() !~ m/^$node$/i) {
-            $remip = PVE::Cluster::remote_node_ip($node);
-	    die "unable to get remote IP address for node '$node'\n" if !$remip;
+            $remip = $self->remote_node_ip($node);
 	    print "REMOTE CONNECT $vmid, $remip, $connect_str\n" if $self->{debug};
         } else {
 	    print "$$: CONNECT $vmid, $node, $spiceport\n" if $self->{debug};
@@ -1841,7 +1840,7 @@ sub rest_handler {
 
 	    if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
 		die "unable to proxy file uploads" if $auth->{isUpload};
-		$remip = PVE::Cluster::remote_node_ip($node);
+		$remip = $self->remote_node_ip($node);
 	    }
 	};
 	if (my $err = $@) {
@@ -1877,6 +1876,28 @@ sub rest_handler {
     }
 
     return $resp;
+}
+
+sub check_cert_fingerprint {
+    my ($self, $cert) = @_;
+
+    return PVE::Cluster::check_cert_fingerprint($cert);
+}
+
+sub initialize_cert_cache {
+    my ($self, $node) = @_;
+
+    PVE::Cluster::initialize_cert_cache($node);
+}
+
+sub remote_node_ip {
+    my ($self, $node) = @_;
+
+    my $remip = PVE::Cluster::remote_node_ip($node);
+
+    die "unable to get remote IP address for node '$node'\n" if !$remip;
+
+    return $remip;
 }
 
 sub run {
