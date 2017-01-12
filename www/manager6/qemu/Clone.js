@@ -19,6 +19,9 @@ Ext.define('PVE.window.Clone', {
 	}
     },
 
+    // if set to true, will display an extra snapshot selector combobox
+    hasSnapshots: false,
+
     create_clone: function(values) {
 	var me = this;
 
@@ -182,7 +185,7 @@ Ext.define('PVE.window.Clone', {
 	    fieldLabel: gettext('Snapshot'),
             nodename: me.nodename,
             vmid: me.vmid,
-	    hidden: me.isTemplate ? true : false,
+	    hidden: me.isTemplate || !me.hasSnapshots ? true : false,
             disabled: false,
 	    allowBlank: false,
 	    value : me.snapname,
