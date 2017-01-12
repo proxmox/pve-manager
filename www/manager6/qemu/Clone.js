@@ -97,6 +97,7 @@ Ext.define('PVE.window.Clone', {
             me.formatsel.setValue('raw');
             me.formatsel.setDisabled(true);
         } else {
+            me.formatsel.setValue('qcow2');
             me.formatsel.setDisabled(false);
         }
     },
