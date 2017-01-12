@@ -213,6 +213,13 @@ Ext.define('PVE.window.Clone', {
 		name: 'name',
 		allowBlank: true,
 		fieldLabel: gettext('Name')
+	    },
+	    {
+		    xtype: 'pvePoolSelector',
+		    fieldLabel: gettext('Resource Pool'),
+		    name: 'pool',
+		    value: '',
+		    allowBlank: true
 	    }
 	);
 
@@ -244,14 +251,6 @@ Ext.define('PVE.window.Clone', {
             disabled: true,
             hidden: false,
 	    allowBlank: false
-	});
-
-	col2.push({
-	    xtype: 'pvePoolSelector',
-	    fieldLabel: gettext('Resource Pool'),
-	    name: 'pool',
-	    value: '',
-	    allowBlank: true
 	});
 
 	col2.push(me.hdstoragesel);
