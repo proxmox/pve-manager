@@ -25,11 +25,11 @@ Ext.define('PVE.window.Clone', {
     create_clone: function(values) {
 	var me = this;
 
-        var params = { newid: values.newvmid };
+	var params = { newid: values.newvmid };
 
-        if (values.snapname && values.snapname !== 'current') {
-            params.snapname = values.snapname;
-        }
+	if (values.snapname && values.snapname !== 'current') {
+	    params.snapname = values.snapname;
+	}
 
 	if (values.pool) {
 	    params.pool = values.pool;
@@ -75,40 +75,43 @@ Ext.define('PVE.window.Clone', {
     updateVisibility: function() {
 	var me = this;
 
-	var clonemode = me.cloneModeSel.getValue();
-	var storage = me.hdstoragesel.getValue();
-	var rec = me.hdstoragesel.store.getById(storage);
+	var storagesel = me.lookupReference('storagesel');
+	var formatsel = me.lookupReference('formatsel');
 
-	me.hdstoragesel.setDisabled(clonemode === 'clone');
+	var clonemode = me.lookupReference('clonemodesel').getValue();
+	var storage = storagesel.getValue();
+	var rec = storagesel.store.getById(storage);
+
+	storagesel.setDisabled(clonemode === 'clone');
 
 	if (!rec || clonemode === 'clone') {
-            me.formatsel.setDisabled(true);
+	    formatsel.setDisabled(true);
 	    return;
 	}
 
 	if (rec.data.type === 'lvm' ||
-	    rec.data.type === 'lvmthin' ||
-            rec.data.type === 'rbd' ||
-            rec.data.type === 'iscsi' ||
-            rec.data.type === 'sheepdog' ||
-	    rec.data.type === 'zfs' ||
-	    rec.data.type === 'zfspool'
-           ) {
-            me.formatsel.setValue('raw');
-            me.formatsel.setDisabled(true);
-        } else {
-            me.formatsel.setValue('qcow2');
-            me.formatsel.setDisabled(false);
-        }
+		rec.data.type === 'lvmthin' ||
+		rec.data.type === 'rbd' ||
+		rec.data.type === 'iscsi' ||
+		rec.data.type === 'sheepdog' ||
+		rec.data.type === 'zfs' ||
+		rec.data.type === 'zfspool'
+	) {
+	    formatsel.setValue('raw');
+	    formatsel.setDisabled(true);
+	} else {
+	    formatsel.setValue('qcow2');
+	    formatsel.setDisabled(false);
+	}
     },
 
     // add to the list of valid nodes each node where
     // all the VM disks are available
     verifyFeature: function() {
 	var me = this;
-		    
-	var snapname = me.snapshotSel.getValue();
-	var clonemode = me.cloneModeSel.getValue();
+
+	var snapname = me.lookupReference('snapshotsel').getValue();
+	var clonemode = me.lookupReference('clonemodesel').getValue();
 
 	var params = { feature: clonemode };
 	if (snapname !== 'current') {
@@ -125,10 +128,10 @@ Ext.define('PVE.window.Clone', {
 		Ext.Msg.alert('Error', response.htmlStatus);
 	    },
 	    success: function(response, options) {
-                var res = response.result.data;
+		var res = response.result.data;
 
-		me.targetSel.allowedNodes = res.nodes;
-		me.targetSel.validate();
+		me.lookupReference('targetsel').allowedNodes = res.nodes;
+		me.lookupReference('targetsel').validate();
 	    }
 	});
     },
@@ -148,117 +151,117 @@ Ext.define('PVE.window.Clone', {
 	    me.snapname = 'current';
 	}
 
+	var titletext = me.isTemplate ? "Template" : "VM";
+	me.title = "Clone " + titletext + " " + me.vmid;
+
 	var col1 = [];
 	var col2 = [];
 
-	me.targetSel = Ext.create('PVE.form.NodeSelector', {
+	col1.push({
+	    xtype: 'pveNodeSelector',
 	    name: 'target',
+	    reference: 'targetsel',
 	    fieldLabel: gettext('Target node'),
 	    selectCurNode: true,
 	    allowBlank: false,
-	    onlineValidator: true
+	    onlineValidator: true,
+	    listeners: {
+		change: function(f, value) {
+		    me.lookupReference('storagesel').setTargetNode(value);
+		}
+	    }
 	});
-
-	col1.push(me.targetSel);
 
 	var modelist = [['copy', gettext('Full Clone')]];
 	if (me.isTemplate) {
 	    modelist.push(['clone', gettext('Linked Clone')]);
 	}
 
-        me.cloneModeSel = Ext.create('PVE.form.KVComboBox', {
-            fieldLabel: gettext('Mode'),
-            name: 'clonemode',
-            allowBlank: false,
-            hidden: !me.isTemplate,
+	col1.push({
+	    xtype: 'pveGuestIDSelector',
+	    name: 'newvmid',
+	    guestType: 'qemu',
+	    value: '',
+	    loadNextFreeID: true,
+	    validateExists: false
+	},
+	{
+	    xtype: 'textfield',
+	    name: 'name',
+	    allowBlank: true,
+	    fieldLabel: gettext('Name')
+	},
+	{
+	    xtype: 'pvePoolSelector',
+	    fieldLabel: gettext('Resource Pool'),
+	    name: 'pool',
+	    value: '',
+	    allowBlank: true
+	}
+	);
+
+	col2.push({
+	    xtype: 'pveKVComboBox',
+	    fieldLabel: gettext('Mode'),
+	    name: 'clonemode',
+	    reference: 'clonemodesel',
+	    allowBlank: false,
+	    hidden: !me.isTemplate,
 	    value: me.isTemplate ? 'clone' : 'copy',
-            comboItems: modelist
-        });
-
-        me.mon(me.cloneModeSel, 'change', function(t, value) {
-	    me.updateVisibility();
-	    me.verifyFeature();
-        });
-
-	col2.push(me.cloneModeSel);
-
-	me.snapshotSel = Ext.create('PVE.form.SnapshotSelector', {
+		    comboItems: modelist,
+		    listeners: {
+			change: function(t, value) {
+			    me.updateVisibility();
+			    me.verifyFeature();
+			}
+		    }
+	},
+	{
+	    xtype: 'PVE.form.SnapshotSelector',
 	    name: 'snapname',
+	    reference: 'snapshotsel',
 	    fieldLabel: gettext('Snapshot'),
-            nodename: me.nodename,
-            vmid: me.vmid,
+	    nodename: me.nodename,
+	    vmid: me.vmid,
 	    hidden: me.isTemplate || !me.hasSnapshots ? true : false,
-            disabled: false,
+	    disabled: false,
 	    allowBlank: false,
 	    value : me.snapname,
 	    listeners: {
 		change: function(f, value) {
-		// current selected snaphshot has maybe local disks
 		    me.verifyFeature();
 		}
 	    }
-	});
-
-	col2.push(me.snapshotSel);
-
-	col1.push(
-	    {
-                xtype: 'pveGuestIDSelector',
-                name: 'newvmid',
-                guestType: 'qemu',
-                value: '',
-                loadNextFreeID: true,
-                validateExists: false
-            },
-	    {
-		xtype: 'textfield',
-		name: 'name',
-		allowBlank: true,
-		fieldLabel: gettext('Name')
-	    },
-	    {
-		    xtype: 'pvePoolSelector',
-		    fieldLabel: gettext('Resource Pool'),
-		    name: 'pool',
-		    value: '',
-		    allowBlank: true
-	    }
-	);
-
-        me.hdstoragesel = Ext.create('PVE.form.StorageSelector', {
-                name: 'storage',
-                nodename: me.nodename,
-                fieldLabel: gettext('Target Storage'),
-                storageContent: 'images',
-                autoSelect: me.insideWizard,
-                allowBlank: true,
-                disabled: me.isTemplate ? true : false, // because default mode is clone for templates
-                hidden: false,
-                listeners: {
-                    change: function(f, value) {
-			me.updateVisibility();
-                    }
-                }
-
-	});
-
-	me.targetSel.on('change', function(f, value) {
-	    me.hdstoragesel.setTargetNode(value);
-	});
-
-	me.formatsel = Ext.create('PVE.form.DiskFormatSelector', {
+	},
+	{
+	    xtype: 'pveStorageSelector',
+	    name: 'storage',
+	    reference: 'storagesel',
+	    nodename: me.nodename,
+	    fieldLabel: gettext('Target Storage'),
+	    storageContent: 'images',
+	    autoSelect: true,
+	    allowBlank: true,
+	    disabled: me.isTemplate ? true : false, // because default mode is clone for templates
+		    hidden: false,
+		    listeners: {
+			change: function(f, value) {
+			    me.updateVisibility();
+			}
+		    }
+	},
+	{
+	    xtype: 'pveDiskFormatSelector',
 	    name: 'diskformat',
+	    reference: 'formatsel',
 	    fieldLabel: gettext('Format'),
 	    value: 'raw',
-            disabled: true,
-            hidden: false,
+	    disabled: true,
+	    hidden: false,
 	    allowBlank: false
 	});
 
-	col2.push(me.hdstoragesel);
-	col2.push(me.formatsel);
-
-	me.formPanel = Ext.create('Ext.form.Panel', {
+	var formPanel = Ext.create('Ext.form.Panel', {
 	    bodyPadding: 10,
 	    reference: 'cloneform',
 	    border: false,
@@ -285,36 +288,31 @@ Ext.define('PVE.window.Clone', {
 	    ]
 	});
 
-	var form = me.formPanel.getForm();
-
-	var titletext = me.isTemplate ? "Template" : "VM";
-	me.title = "Clone " + titletext + " " + me.vmid;
-	
-	me.submitBtn = Ext.create('Ext.Button', {
-	    reference: 'submitBtn',
-	    text: gettext('Clone'),
-	    disabled: true,
-	    handler: function() {
-		if (form.isValid()) {
-		    var values = form.getValues();
-		    me.create_clone(values);
-		}
-	    }
-	});
-
-	var helpButton = Ext.create('PVE.button.Help', {
-	    listenToGlobalEvent: false,
-	    hidden: false,
-	    onlineHelp: me.onlineHelp});
-
 	Ext.apply(me, {
 	    modal: true,
 	    width: 600,
 	    height: 250,
 	    border: false,
 	    layout: 'fit',
-	    buttons: [ helpButton, '->', me.submitBtn ],
-	    items: [ me.formPanel ]
+	    buttons: [ {
+		xtype: 'pveHelpButton',
+		listenToGlobalEvent: false,
+		hidden: false,
+		onlineHelp: me.onlineHelp
+	    },
+	    '->',
+	    {
+		reference: 'submitBtn',
+		text: gettext('Clone'),
+		disabled: true,
+		handler: function() {
+		    var cloneForm = me.lookupReference('cloneform');
+		    if (cloneForm.isValid()) {
+			me.create_clone(cloneForm.getValues());
+		    }
+		}
+	    } ],
+	    items: [ formPanel ]
 	});
 
 	me.callParent();
