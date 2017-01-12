@@ -7,6 +7,18 @@ Ext.define('PVE.window.Clone', {
 
     onlineHelp: 'qm_copy_and_clone',
 
+    controller: {
+	xclass: 'Ext.app.ViewController',
+	control: {
+	    'panel[reference=cloneform]': {
+		validitychange: 'disableSubmit'
+	    }
+	},
+	disableSubmit: function(form) {
+	    this.lookupReference('submitBtn').setDisabled(!form.isValid());
+	}
+    },
+
     create_clone: function(values) {
 	var me = this;
 
@@ -86,8 +98,7 @@ Ext.define('PVE.window.Clone', {
         }
     },
 
-    // check that the VM supports the requested clone mode and snapshot name
-    // and add to the list of valid nodes each node where
+    // add to the list of valid nodes each node where
     // all the VM disks are available
     verifyFeature: function() {
 	var me = this;
@@ -111,7 +122,6 @@ Ext.define('PVE.window.Clone', {
 	    },
 	    success: function(response, options) {
                 var res = response.result.data;
-		me.submitBtn.setDisabled(res.hasFeature !== 1);
 
 		me.targetSel.allowedNodes = res.nodes;
 		me.targetSel.validate();
@@ -178,6 +188,7 @@ Ext.define('PVE.window.Clone', {
 	    value : me.snapname,
 	    listeners: {
 		change: function(f, value) {
+		// current selected snaphshot has maybe local disks
 		    me.verifyFeature();
 		}
 	    }
@@ -245,6 +256,7 @@ Ext.define('PVE.window.Clone', {
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
 	    bodyPadding: 10,
+	    reference: 'cloneform',
 	    border: false,
 	    layout: 'column',
 	    defaultType: 'container',
@@ -275,6 +287,7 @@ Ext.define('PVE.window.Clone', {
 	me.title = "Clone " + titletext + " " + me.vmid;
 	
 	me.submitBtn = Ext.create('Ext.Button', {
+	    reference: 'submitBtn',
 	    text: gettext('Clone'),
 	    disabled: true,
 	    handler: function() {
