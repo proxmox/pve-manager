@@ -169,6 +169,7 @@ Ext.define('PVE.window.Clone', {
             fieldLabel: gettext('Mode'),
             name: 'clonemode',
             allowBlank: false,
+            hidden: !me.isTemplate,
 	    value: me.isTemplate ? 'clone' : 'copy',
             comboItems: modelist
         });
