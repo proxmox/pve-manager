@@ -1,3 +1,53 @@
+pve-manager (4.4-6) unstable; urgency=medium
+
+  * add setup_environment hooks to CLIHandler classes
+
+  * remove obsolete PVE::REST class
+
+  * bin/Makefile: export PERLLIB=.. so that doc generator works correctly
+
+  * HTTPServer.pm: cleanups
+
+  * Clone GUI: cleanups
+
+  * add sort to jsgettext.pl
+
+  * update po files, updated german translation
+
+  * add type column to storage content view
+
+  * check general health for ceph monitors, not only time
+
+  * fix #1247: disregard timecheck for one monitor
+
+  * disable submit button in migrate window when not valid
+
+  * make filtered columns in grid more prominent
+
+  * change Start/Stop/Migrate all to Bulk actions
+
+  * show only relevant vms in bulk action window
+
+  * add vmid filter to (start/stop/migrate)all
+
+  * ha: re-add node to service status
+
+  * remove not needed vnc code
+
+  * remove vznet.conf
+
+  * Reload the Ceph OSDTree afer adding an OSD
+
+  * fix #1230: add blocksize for ZFSPoolPlugin
+
+  * Clone.js: add onlineHelp
+
+  * HA: Add a warning/info message for HA setups < 3 votes fix: #1228
+
+  * remove PVE::API2Client class and related examples
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 12 Jan 2017 14:23:42 +0100
+
 pve-manager (4.4-5) unstable; urgency=medium
 
   * add unpriviledged flag to container restore window
