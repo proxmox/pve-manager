@@ -53,10 +53,14 @@ Ext.define('PVE.window.Clone', {
 
     },
 
+    // disable the Storage selector when clone mode is linked clone
+    // disable the disk Format selector when
+    // A) clone mode is linked clone
+    // B) clone mode is full clone and storage is block device
     updateVisibility: function() {
 	var me = this;
 
-	var clonemode = me.kv1.getValue();
+	var clonemode = me.cloneModeSel.getValue();
 	var storage = me.hdstoragesel.getValue();
 	var rec = me.hdstoragesel.store.getById(storage);
 
@@ -82,11 +86,14 @@ Ext.define('PVE.window.Clone', {
         }
     },
 
+    // check that the VM supports the requested clone mode and snapshot name
+    // and add to the list of valid nodes each node where
+    // all the VM disks are available
     verifyFeature: function() {
 	var me = this;
 		    
 	var snapname = me.snapshotSel.getValue();
-	var clonemode = me.kv1.getValue();
+	var clonemode = me.cloneModeSel.getValue();
 
 	var params = { feature: clonemode };
 	if (snapname !== 'current') {
@@ -145,7 +152,7 @@ Ext.define('PVE.window.Clone', {
 	    modelist.push(['clone', gettext('Linked Clone')]);
 	}
 
-        me.kv1 = Ext.create('PVE.form.KVComboBox', {
+        me.cloneModeSel = Ext.create('PVE.form.KVComboBox', {
             fieldLabel: gettext('Mode'),
             name: 'clonemode',
             allowBlank: false,
@@ -153,12 +160,12 @@ Ext.define('PVE.window.Clone', {
             comboItems: modelist
         });
 
-        me.mon(me.kv1, 'change', function(t, value) {
+        me.mon(me.cloneModeSel, 'change', function(t, value) {
 	    me.updateVisibility();
 	    me.verifyFeature();
         });
 
-	col2.push(me.kv1);
+	col2.push(me.cloneModeSel);
 
 	me.snapshotSel = Ext.create('PVE.form.SnapshotSelector', {
 	    name: 'snapname',
