@@ -3,10 +3,15 @@ package PVE::CLI::vzdump;
 use strict;
 use warnings;
 
+use PVE::RPCEnvironment;
 use PVE::CLIHandler;
 use PVE::API2::VZDump;
 
 use base qw(PVE::CLIHandler);
+
+sub setup_environment {
+    PVE::RPCEnvironment->setup_default_cli_env();
+}
 
 # Note: use string 'vmid' as $arg_param option, to allow vmid lists
 our $cmddef = [ 'PVE::API2::VZDump', 'vzdump', 'vmid', undef,

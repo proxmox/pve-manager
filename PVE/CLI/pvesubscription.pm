@@ -14,6 +14,10 @@ use base qw(PVE::CLIHandler);
 
 my $nodename = PVE::INotify::nodename();
 
+sub setup_environment {
+    PVE::RPCEnvironment->setup_default_cli_env();
+}
+
 our $cmddef = {
     update => [ 'PVE::API2::Subscription', 'update', undef, { node => $nodename } ],
     get => [ 'PVE::API2::Subscription', 'get', undef, { node => $nodename }, 

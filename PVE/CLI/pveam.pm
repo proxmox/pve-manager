@@ -25,6 +25,10 @@ my $upid_exit = sub {
     exit($status eq 'OK' ? 0 : -1);
 };
 
+sub setup_environment {
+    PVE::RPCEnvironment->setup_default_cli_env();
+}
+
 __PACKAGE__->register_method ({
     name => 'update',
     path => 'update',
