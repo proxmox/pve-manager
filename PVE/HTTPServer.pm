@@ -49,16 +49,14 @@ my $known_methods = {
     DELETE => 1,
 };
 
-sub split_abs_uri {
-    my ($self, $abs_uri) = @_;
+my $split_abs_uri = sub {
+    my ($abs_uri, $base_uri) = @_;
 
-    my $baseuri = $self->{baseuri};
-
-    my ($format, $rel_uri) = $abs_uri =~ m/^\Q$baseuri\E\/+([a-z][a-z0-9]+)(\/.*)?$/;
+    my ($format, $rel_uri) = $abs_uri =~ m/^\Q$base_uri\E\/+([a-z][a-z0-9]+)(\/.*)?$/;
     $rel_uri = '/' if !$rel_uri;
- 
+
     return wantarray ? ($rel_uri, $format) : $rel_uri;
-}
+};
 
 # generic formatter support
 
@@ -732,7 +730,7 @@ sub handle_api2_request {
     eval {
 	my $r = $reqstate->{request};
 
-	my ($rel_uri, $format) = $self->split_abs_uri($path);
+	my ($rel_uri, $format) = &$split_abs_uri($path, $self->{base_uri});
 
 	my $formatter = get_formatter($format);
 
@@ -973,7 +971,7 @@ sub handle_spice_proxy_request {
 sub handle_request {
     my ($self, $reqstate, $auth, $method, $path) = @_;
 
-    my $baseuri = $self->{baseuri};
+    my $base_uri = $self->{base_uri};
 
     eval {
 	my $r = $reqstate->{request};
@@ -982,7 +980,7 @@ sub handle_request {
 	# we re-enable timeout in response()
 	$reqstate->{hdl}->timeout(0);
 
-	if ($path =~ m/^\Q$baseuri\E/) {
+	if ($path =~ m/^\Q$base_uri\E/) {
 	    $self->handle_api2_request($reqstate, $auth, $method, $path);
 	    return;
 	}
@@ -1235,7 +1233,7 @@ sub unshift_read_header {
 		}
 
 		my $pveclientip = $r->header('PVEClientIP');
-		my $baseuri = $self->{baseuri};
+		my $base_uri = $self->{base_uri};
 
 		# fixme: how can we make PVEClientIP header trusted?
 		if ($self->{trusted_env} && $pveclientip) {
@@ -1258,12 +1256,12 @@ sub unshift_read_header {
 		    }
 		    $self->handle_spice_proxy_request($reqstate, $connect_str, $vmid, $node, $port);
 		    return;
-		} elsif ($path =~ m/^\Q$baseuri\E/) {
+		} elsif ($path =~ m/^\Q$base_uri\E/) {
 		    my $token = $r->header('CSRFPreventionToken');
 		    my $cookie = $r->header('Cookie');
 		    my $ticket = extract_auth_cookie($cookie, $self->{cookie_name});
 
-		    my ($rel_uri, $format) = $self->split_abs_uri($path);
+		    my ($rel_uri, $format) = &$split_abs_uri($path, $self->{base_uri});
 		    if (!$format) {
 			$self->error($reqstate, HTTP_NOT_IMPLEMENTED, "no such uri");
 			return;
@@ -1653,7 +1651,7 @@ sub new {
     my $self = bless { %args }, $class;
 
     $self->{cookie_name} //= 'PVEAuthCookie';
-    $self->{baseuri} //= "/api2";
+    $self->{base_uri} //= "/api2";
 
     # init inotify
     PVE::INotify::inotify_init();
