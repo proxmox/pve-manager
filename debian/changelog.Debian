@@ -1,3 +1,11 @@
+pve-manager (4.4-7) unstable; urgency=medium
+
+  * disable autoselect of targetstorage
+
+  * fix CSRF token generation (broke in 4.4-6)
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 13 Jan 2017 11:00:00 +0100
+
 pve-manager (4.4-6) unstable; urgency=medium
 
   * add setup_environment hooks to CLIHandler classes
