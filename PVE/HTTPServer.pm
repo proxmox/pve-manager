@@ -34,6 +34,10 @@ sub new {
 sub verify_spice_connect_url {
     my ($self, $connect_str) = @_;
 
+    my $rpcenv = $self->{rpcenv};
+
+    $rpcenv->init_request();
+
     my ($vmid, $node, $port) = PVE::AccessControl::verify_spice_connect_url($connect_str);
 
     return ($vmid, $node, $port);
@@ -46,9 +50,14 @@ sub generate_csrf_prevention_token {
 }
 
 sub auth_handler {
-    my ($self, $method, $rel_uri, $ticket, $token) = @_;
+    my ($self, $method, $rel_uri, $ticket, $token, $peer_host) = @_;
 
     my $rpcenv = $self->{rpcenv};
+
+    # set environment variables
+    $rpcenv->set_user(undef);
+    $rpcenv->set_language('C');
+    $rpcenv->set_client_ip($peer_host);
 
     my $require_auth = 1;
 
@@ -120,6 +129,8 @@ sub rest_handler {
 
     my $rpcenv = $self->{rpcenv};
 
+    $rpcenv->init_request();
+
     my $base_handler_class = $self->{base_handler_class};
 
     die "no base handler - internal error" if !$base_handler_class;
@@ -127,6 +138,7 @@ sub rest_handler {
     my $uri_param = {};
     my ($handler, $info) = $base_handler_class->find_handler($method, $rel_uri, $uri_param);
     if (!$handler || !$info) {
+	$rpcenv->set_user(undef); # clear after request
 	return {
 	    status => HTTP_NOT_IMPLEMENTED,
 	    message => "Method '$method $rel_uri' not implemented",
@@ -135,6 +147,7 @@ sub rest_handler {
 
     foreach my $p (keys %{$params}) {
 	if (defined($uri_param->{$p})) {
+	    $rpcenv->set_user(undef); # clear after request
 	    return {
 		status => HTTP_BAD_REQUEST,
 		message => "Parameter verification failed - duplicate parameter '$p'",
@@ -146,6 +159,7 @@ sub rest_handler {
     # check access permissions
     eval { $rpcenv->check_api2_permissions($info->{permissions}, $auth->{userid}, $uri_param); };
     if (my $err = $@) {
+	$rpcenv->set_user(undef); # clear after request
 	return &$exc_to_res($info, $err, HTTP_FORBIDDEN);
     }
 
@@ -163,15 +177,18 @@ sub rest_handler {
 	    }
 	};
 	if (my $err = $@) {
+	    $rpcenv->set_user(undef); # clear after request
 	    return &$exc_to_res($info, $err);
 	}
 	if ($remip) {
+	    $rpcenv->set_user(undef); # clear after request
 	    return { proxy => $remip, proxynode => $node, proxy_params => $params };
 	}
     }
 
     my $euid = $>;
     if ($info->{protected} && ($euid != 0)) {
+	$rpcenv->set_user(undef); # clear after request
 	return { proxy => 'localhost' , proxy_params => $params }
     }
 
@@ -191,9 +208,11 @@ sub rest_handler {
 	}
     };
     if (my $err = $@) {
+	$rpcenv->set_user(undef); # clear after request
 	return &$exc_to_res($info, $err);
     }
 
+    $rpcenv->set_user(undef); # clear after request
     return $resp;
 }
 
