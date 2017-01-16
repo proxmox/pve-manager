@@ -7,6 +7,7 @@ use PVE::SafeSyslog;
 use PVE::INotify;
 use PVE::Tools;
 use PVE::APIServer::AnyEvent;
+use PVE::Exception qw(raise_param_exc);
 
 use PVE::RPCEnvironment;
 use PVE::AccessControl;
@@ -108,107 +109,83 @@ sub auth_handler {
     };
 }
 
-my $exc_to_res = sub {
-    my ($info, $err, $status) = @_;
-
-    $status = $status || HTTP_INTERNAL_SERVER_ERROR;
-
-    my $resp = { info => $info };
-    if (ref($err) eq "PVE::Exception") {
-	$resp->{status} = $err->{code} || $status;
-	$resp->{errors} = $err->{errors} if $err->{errors};
-	$resp->{message} = $err->{msg};
-    } else {
-	$resp->{status} = $status;
-	$resp->{message} = $err;
-    }
-
-    return $resp;
-};
-
 sub rest_handler {
     my ($self, $clientip, $method, $rel_uri, $auth, $params) = @_;
 
     my $rpcenv = $self->{rpcenv};
 
-    my $uri_param = {};
-    my ($handler, $info) = PVE::API2->find_handler($method, $rel_uri, $uri_param);
-    if (!$handler || !$info) {
-	$rpcenv->set_user(undef); # clear after request
-	return {
-	    status => HTTP_NOT_IMPLEMENTED,
-	    message => "Method '$method $rel_uri' not implemented",
-	};
-    }
+    my $resp = {
+	status => HTTP_NOT_IMPLEMENTED,
+	message => "Method '$method $rel_uri' not implemented",
+    };
 
-    foreach my $p (keys %{$params}) {
-	if (defined($uri_param->{$p})) {
-	    $rpcenv->set_user(undef); # clear after request
-	    return {
-		status => HTTP_BAD_REQUEST,
-		message => "Parameter verification failed - duplicate parameter '$p'",
-	    };
+    my ($handler, $info);
+
+    eval {
+	my $uri_param = {};
+	($handler, $info) = PVE::API2->find_handler($method, $rel_uri, $uri_param);
+	return if !$handler || !$info;
+
+	foreach my $p (keys %{$params}) {
+	    if (defined($uri_param->{$p})) {
+		raise_param_exc({$p =>  "duplicate parameter (already defined in URI)"});
+	    }
+	    $uri_param->{$p} = $params->{$p};
 	}
-	$uri_param->{$p} = $params->{$p};
-    }
 
-    # check access permissions
-    eval { $rpcenv->check_api2_permissions($info->{permissions}, $auth->{userid}, $uri_param); };
-    if (my $err = $@) {
-	$rpcenv->set_user(undef); # clear after request
-	return &$exc_to_res($info, $err, HTTP_FORBIDDEN);
-    }
+	# check access permissions
+	$rpcenv->check_api2_permissions($info->{permissions}, $auth->{userid}, $uri_param);
 
-    if ($info->{proxyto}) {
-	my $remip;
-	my $node;
-	eval {
+	if ($info->{proxyto}) {
 	    my $pn = $info->{proxyto};
-	    $node = $uri_param->{$pn};
-	    die "proxy parameter '$pn' does not exists" if !$node;
+	    my $node = $uri_param->{$pn};
+
+	    raise_param_exc({$pn =>  "proxy parameter '$pn' does not exists"}) if !$node;
 
 	    if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
 		die "unable to proxy file uploads" if $auth->{isUpload};
-		$remip = $self->remote_node_ip($node);
+		my $remip = $self->remote_node_ip($node);
+		$resp = { proxy => $remip, proxynode => $node, proxy_params => $params };
+		return;
 	    }
+	}
+
+	my $euid = $>;
+	if ($info->{protected} && ($euid != 0)) {
+	    $resp = { proxy => 'localhost' , proxy_params => $params };
+	    return;
+	}
+
+	$resp = {
+	    data => $handler->handle($info, $uri_param),
+	    info => $info, # useful to format output
+	    status => HTTP_OK,
 	};
-	if (my $err = $@) {
-	    $rpcenv->set_user(undef); # clear after request
-	    return &$exc_to_res($info, $err);
-	}
-	if ($remip) {
-	    $rpcenv->set_user(undef); # clear after request
-	    return { proxy => $remip, proxynode => $node, proxy_params => $params };
-	}
-    }
-
-    my $euid = $>;
-    if ($info->{protected} && ($euid != 0)) {
-	$rpcenv->set_user(undef); # clear after request
-	return { proxy => 'localhost' , proxy_params => $params }
-    }
-
-    my $resp = {
-	info => $info, # useful to format output
-	status => HTTP_OK,
-    };
-
-    eval {
-	$resp->{data} = $handler->handle($info, $uri_param);
 
 	if (my $count = $rpcenv->get_result_attrib('total')) {
 	    $resp->{total} = $count;
 	}
+
 	if (my $diff = $rpcenv->get_result_attrib('changes')) {
 	    $resp->{changes} = $diff;
 	}
     };
-    if (my $err = $@) {
-	$rpcenv->set_user(undef); # clear after request
-	return &$exc_to_res($info, $err);
-    }
+    my $err = $@;
 
     $rpcenv->set_user(undef); # clear after request
+
+    if ($err) {
+	$resp = { info => $info };
+	if (ref($err) eq "PVE::Exception") {
+	    $resp->{status} = $err->{code} || HTTP_INTERNAL_SERVER_ERROR;
+	    $resp->{errors} = $err->{errors} if $err->{errors};
+	    $resp->{message} = $err->{msg};
+	} else {
+	    $resp->{status} =  HTTP_INTERNAL_SERVER_ERROR;
+	    $resp->{message} = $err;
+	}
+    }
+
     return $resp;
 }
 
