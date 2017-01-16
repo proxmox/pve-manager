@@ -34,7 +34,6 @@ sub init {
     my $socket = $self->create_reusable_socket(85, '127.0.0.1');
 
     $self->{server_config} = {
-	base_handler_class => 'PVE::API2',
 	keep_alive => 100,
 	max_conn => 500,
 	max_requests => 1000,

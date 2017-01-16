@@ -131,12 +131,8 @@ sub rest_handler {
 
     my $rpcenv = $self->{rpcenv};
 
-    my $base_handler_class = $self->{base_handler_class};
-
-    die "no base handler - internal error" if !$base_handler_class;
-
     my $uri_param = {};
-    my ($handler, $info) = $base_handler_class->find_handler($method, $rel_uri, $uri_param);
+    my ($handler, $info) = PVE::API2->find_handler($method, $rel_uri, $uri_param);
     if (!$handler || !$info) {
 	$rpcenv->set_user(undef); # clear after request
 	return {

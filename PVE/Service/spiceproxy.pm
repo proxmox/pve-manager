@@ -44,7 +44,6 @@ sub init {
     my $socket = $self->create_reusable_socket(3128, undef, $family);
 
     $self->{server_config} = {
-	base_handler_class => 'PVE::API2',
 	keep_alive => 0,
 	max_conn => 500,
 	lockfile => $accept_lock_fn,
