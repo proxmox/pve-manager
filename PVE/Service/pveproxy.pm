@@ -76,6 +76,7 @@ sub init {
 
     $self->{server_config} = {
 	base_handler_class => 'PVE::API2',
+	title => 'Proxmox VE API',
 	keep_alive => 100,
 	max_conn => 500,
 	max_requests => 1000,
