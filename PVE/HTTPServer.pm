@@ -59,6 +59,8 @@ sub auth_handler {
     $rpcenv->set_language('C');
     $rpcenv->set_client_ip($peer_host);
 
+    $rpcenv->init_request();
+
     my $require_auth = 1;
 
     # explicitly allow some calls without auth
@@ -128,8 +130,6 @@ sub rest_handler {
     my ($self, $clientip, $method, $rel_uri, $auth, $params) = @_;
 
     my $rpcenv = $self->{rpcenv};
-
-    $rpcenv->init_request();
 
     my $base_handler_class = $self->{base_handler_class};
 
