@@ -9,7 +9,6 @@ use HTTP::Response;
 use Encode;
 use URI;
 use URI::QueryParam;
-use File::Find;
 use Data::Dumper;
 use PVE::API2Tools;
 use PVE::API2;
@@ -44,17 +43,7 @@ my $daemon = __PACKAGE__->new('pveproxy', $cmdline, %daemon_options);
 sub add_dirs {
     my ($result_hash, $alias, $subdir) = @_;
 
-    $result_hash->{$alias} = $subdir;
-
-    my $wanted = sub {
-	my $dir = $File::Find::dir;
-	if ($dir =~m!^$subdir(.*)$!) {
-	    my $name = "$alias$1/";
-	    $result_hash->{$name} = "$dir/";
-	}
-    };
-
-    find({wanted => $wanted, follow => 0, no_chdir => 1}, $subdir);
+    PVE::APIServer::AnyEvent::add_dirs($result_hash, $alias, $subdir);
 }
 
 sub init {
