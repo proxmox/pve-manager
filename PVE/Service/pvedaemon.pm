@@ -6,8 +6,8 @@ use warnings;
 use PVE::SafeSyslog;
 use PVE::Daemon;
 use PVE::API2;
-use PVE::API2::Formatter::Standard;
-use PVE::API2::Formatter::HTML;
+use PVE::APIServer::Formatter::Standard;
+use PVE::APIServer::Formatter::HTML;
 use PVE::HTTPServer;
 
 use base qw(PVE::Daemon);

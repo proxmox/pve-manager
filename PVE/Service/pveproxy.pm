@@ -13,8 +13,10 @@ use File::Find;
 use Data::Dumper;
 use PVE::API2Tools;
 use PVE::API2;
-use PVE::API2::Formatter::Standard;
-use PVE::API2::Formatter::HTML;
+use PVE::APIServer::Formatter;
+use PVE::APIServer::Formatter::Standard;
+use PVE::APIServer::Formatter::HTML;
+use PVE::APIServer::AnyEvent;
 use PVE::HTTPServer;
 
 use PVE::ExtJSIndex;
@@ -181,7 +183,7 @@ sub get_index {
 		$lang = $newlang;
 	    }
 	}
-	my $ticket = PVE::HTTPServer::extract_auth_cookie($cookie, $server->{cookie_name});
+	my $ticket = PVE::APIServer::Formatter::extract_auth_cookie($cookie, $server->{cookie_name});
 	if (($username = PVE::AccessControl::verify_ticket($ticket, 1))) {
 	    $token = PVE::AccessControl::assemble_csrf_prevention_token($username);
 	}
