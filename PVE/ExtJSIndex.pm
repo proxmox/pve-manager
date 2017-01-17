@@ -50,14 +50,8 @@ _EOD
 if (typeof(PVE) === 'undefined') PVE = {};
 PVE.UserName = '$username'
 PVE.CSRFPreventionToken = '$csrftoken';
-_EOJS
-
-    my $workspace = defined($console) ?
-	"PVE.ConsoleWorkspace" : "PVE.StdWorkspace";
-
-   $jssrc .= <<_EOJS;
 Ext.History.fieldid = 'x-history-field';
-Ext.onReady(function() { Ext.create('$workspace');});
+Ext.onReady(function() { Ext.create('PVE.StdWorkspace');});
 _EOJS
 
     $page .= <<_EOD;
