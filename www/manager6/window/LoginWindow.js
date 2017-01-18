@@ -147,16 +147,14 @@ Ext.define('PVE.window.LoginWindow', {
 		name: 'username',
 		itemId: 'usernameField',
 		reference: 'usernameField',
-		stateId: 'login-username',
-		blankText: gettext("Enter your user name")
+		stateId: 'login-username'
 	    },
 	    {
 		xtype: 'textfield',
 		inputType: 'password',
 		fieldLabel: gettext('Password'),
 		name: 'password',
-		reference: 'passwordField',
-		blankText: gettext("Enter your password")
+		reference: 'passwordField'
 	    },
 	    {
 		xtype: 'textfield',

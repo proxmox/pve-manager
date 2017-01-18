@@ -53,7 +53,7 @@ Ext.define('PVE.node.CephConfigCrush', {
 
     layout: 'border',
     items: [{
-	    title: gettext('Ceph Config'),
+	    title: gettext('Configuration'),
 	    xtype: 'pveNodeCephConfig',
 	    region: 'center'
 	},
