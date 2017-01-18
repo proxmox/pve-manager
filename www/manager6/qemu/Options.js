@@ -88,7 +88,7 @@ Ext.define('PVE.qemu.Options', {
 		visible: false
 	    },
 	    boot: {
-		header: gettext('Boot order'),
+		header: gettext('Boot Order'),
 		defaultValue: 'cdn',
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.BootOrderEdit' : undefined,
 		multiKey: ['boot', 'bootdisk'],

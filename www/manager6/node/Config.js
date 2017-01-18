@@ -239,7 +239,7 @@ Ext.define('PVE.node.Config', {
 		},
 		{
 		    xtype: 'pveNodeCephConfigCrush',
-		    title: gettext('Config'),
+		    title: gettext('Configuration'),
 		    iconCls: 'fa fa-gear',
 		    groups: ['ceph'],
 		    itemId: 'ceph-config'

@@ -139,7 +139,7 @@ Ext.define('PVE.Utils', { utilities: {
 	var fa = [];
 
 	if (!value || (value === '0')) {
-	    return gettext('disabled');
+	    return gettext('Disabled');
 	}
 
 	if (value === '1') {
