@@ -126,7 +126,7 @@ __PACKAGE__->register_method ({
 
 	my $res = [];
 	foreach my $item (@$vollist) {
-	    eval { $rpcenv->check_volume_access($authuser, $cfg, undef, $item->{volid}); };
+	    eval { PVE::Storage::check_volume_access($rpcenv, $authuser, $cfg, undef, $item->{volid}); };
 	    next if $@;
 	    push @$res, $item;
 	}
@@ -168,7 +168,7 @@ __PACKAGE__->register_method ({
 
 	my $cfg = PVE::Storage::config();
 
-	$rpcenv->check_volume_access($authuser, $cfg, undef, $template);
+	PVE::Storage::check_volume_access($rpcenv, $authuser, $cfg, undef, $template);
 
 	my $abs_path = PVE::Storage::abs_filesystem_path($cfg, $template);
 
