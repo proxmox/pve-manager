@@ -177,7 +177,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		items: [
 		    {
 			xtype: 'label',
-			text: gettext('IPv4') + ':'
+			text: 'IPv4:' // do not localize
 		    },
 		    {
 			xtype: 'radiofield',
@@ -195,7 +195,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		    },
 		    {
 			xtype: 'radiofield',
-			boxLabel: gettext('DHCP'),
+			boxLabel: 'DHCP', // do not localize
 			name: 'ipv4mode',
 			inputValue: 'dhcp',
 			checked: dhcp4,
@@ -209,7 +209,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		vtype: 'IPCIDRAddress',
 		value: cdata.ip,
 		disabled: dhcp4,
-		fieldLabel: gettext('IPv4/CIDR')
+		fieldLabel: 'IPv4/CIDR' // do not localize
 	    },
 	    {
 		xtype: 'textfield',
@@ -217,7 +217,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		value: cdata.gw,
 		vtype: 'IPAddress',
 		disabled: dhcp4,
-		fieldLabel: gettext('Gateway') + ' (' + gettext('IPv4') +')',
+		fieldLabel: gettext('Gateway') + ' (IPv4)',
 		margin: '0 0 3 0' // override bottom margin to account for the menuseparator
 	    },
 	    {
@@ -235,7 +235,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		items: [
 		    {
 			xtype: 'label',
-			text: gettext('IPv6') + ':'
+			text: 'IPv6:' // do not localize
 		    },
 		    {
 			xtype: 'radiofield',
@@ -253,7 +253,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		    },
 		    {
 			xtype: 'radiofield',
-			boxLabel: gettext('DHCP'),
+			boxLabel: 'DHCP', // do not localize
 			name: 'ipv6mode',
 			inputValue: 'dhcp',
 			checked: dhcp6,
@@ -261,7 +261,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		    },
 		    {
 			xtype: 'radiofield',
-			boxLabel: gettext('SLAAC'),
+			boxLabel: 'SLAAC', // do not localize
 			name: 'ipv6mode',
 			inputValue: 'auto',
 			checked: auto6,
@@ -275,7 +275,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		value: cdata.ip6,
 		vtype: 'IP6CIDRAddress',
 		disabled: (dhcp6 || auto6),
-		fieldLabel: gettext('IPv6/CIDR')
+		fieldLabel: 'IPv6/CIDR' // do not localize
 	    },
 	    {
 		xtype: 'textfield',
@@ -283,7 +283,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		vtype: 'IP6Address',
 		value: cdata.gw6,
 		disabled: (dhcp6 || auto6),
-		fieldLabel: gettext('Gateway') + ' (' + gettext('IPv6') +')'
+		fieldLabel: gettext('Gateway') + ' (IPv6)'
 	    }
 	];
 

@@ -58,7 +58,7 @@ Ext.define('PVE.node.CephConfigCrush', {
 	    region: 'center'
 	},
 	{
-	    title: gettext('Crush Map'),
+	    title: 'Crush Map', // do not localize
 	    xtype: 'pveNodeCephCrushMap',
 	    region: 'east',
 	    split: true,

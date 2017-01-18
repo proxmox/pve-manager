@@ -116,7 +116,7 @@ Ext.define('PVE.node.CephStatus', {
 			    itemId: 'iops',
 			    xtype: 'pveRunningChart',
 			    hidden: true,
-			    title: gettext('IOPS'),
+			    title: 'IOPS', // do not localize
 			    renderer: Ext.util.Format.numberRenderer('0,000')
 			},
 			{

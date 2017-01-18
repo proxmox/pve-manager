@@ -132,7 +132,7 @@ Ext.define('PVE.dc.Health', {
 	    width: 250,
 	    columnWidth: undefined,
 	    userCls: 'pointer',
-	    title: gettext('Ceph'),
+	    title: 'Ceph',
 	    xtype: 'pveHealthWidget',
 	    hidden: true,
 	    listeners: {

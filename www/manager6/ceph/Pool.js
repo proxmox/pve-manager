@@ -35,7 +35,7 @@ Ext.define('PVE.CephCreatePool', {
 	},
 	{
 	    xtype: 'pveIntegerField',
-	    fieldLabel: gettext('Crush RuleSet'),
+	    fieldLabel: 'Crush RuleSet', // do not localize
 	    name: 'crush_ruleset',
 	    value: 0,
 	    minValue: 0,
