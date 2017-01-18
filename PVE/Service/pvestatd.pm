@@ -440,8 +440,10 @@ sub update_status {
     # update worker list. This is not really required and
     # we just call this to make sure that we have a correct
     # list in case of an unexpected crash.
+    my $rpcenv = PVE::RPCEnvironment::get();
+
     eval {
-	my $tlist = PVE::RPCEnvironment::active_workers();
+	my $tlist = $rpcenv->active_workers();
 	PVE::Cluster::broadcast_tasklist($tlist);
     };
     my $err = $@;
