@@ -2,7 +2,7 @@ Ext.define('PVE.dc.Health', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveDcHealth',
 
-    title: gettext('Datacenter Health'),
+    title: gettext('Health'),
 
     bodyPadding: '0 20 0 20',
     height: 200,

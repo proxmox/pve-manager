@@ -23,7 +23,7 @@ Ext.define('PVE.dc.Summary', {
 	    xtype: 'pveDcGuests'
 	},
 	{
-	    title: gettext('Cluster Resources'),
+	    title: gettext('Resources'),
 	    xtype: 'panel',
 	    height: 250,
 	    bodyPadding: '0 0 10 0',

@@ -123,14 +123,14 @@ Ext.define('PVE.node.CephStatus', {
 			    itemId: 'readiops',
 			    xtype: 'pveRunningChart',
 			    hidden: true,
-			    title: gettext('Read IOPS'),
+			    title: 'IOPS: ' + gettext('Reads'),
 			    renderer: Ext.util.Format.numberRenderer('0,000')
 			},
 			{
 			    itemId: 'writeiops',
 			    xtype: 'pveRunningChart',
 			    hidden: true,
-			    title: gettext('Write IOPS'),
+			    title: 'IOPS: ' + gettext('Writes'),
 			    renderer: Ext.util.Format.numberRenderer('0,000')
 			}
 		    ]

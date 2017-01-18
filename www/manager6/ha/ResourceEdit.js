@@ -168,7 +168,8 @@ Ext.define('PVE.ha.VMResourceEdit', {
 	});
 
 	Ext.apply(me, {
-            subject: gettext('CT/VM Resource'),
+	    subject: gettext('Resource') + ': ' + gettext('Container') +
+	    '/' + gettext('Virtual Machine'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});
