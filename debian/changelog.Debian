@@ -1,3 +1,19 @@
+pve-manager (4.4-9) unstable; urgency=medium
+
+  * use new PVE::Storage::check_volume_access()
+
+  * pvestatd.pm: corretly use new RPCEnvironment
+
+  * pveproxy: do not expose /pve2/js/ (no longer required)
+
+  * Remove redundant helper for login window
+
+  * Do not try to translate domain specific terms
+
+  * remove reference to PVE.ConsoleWorkspace
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 19 Jan 2017 09:22:51 +0100
+
 pve-manager (4.4-8) unstable; urgency=medium
 
   * use new libpve-http-server-perl package
