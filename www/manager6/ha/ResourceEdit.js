@@ -109,9 +109,9 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		value: 'started',
 		fieldLabel: gettext('Request State'),
 		comboItems: [
-		    ['started', gettext('Started')],
-		    ['stopped', gettext('Stopped')],
-		    ['disabled', gettext('Disabled')]
+		    ['started', 'started'],
+		    ['stopped', 'stopped'],
+		    ['disabled', 'disabled']
 		],
 		listeners: {
 		    'change': function(field, newValue) {
