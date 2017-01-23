@@ -30,7 +30,7 @@ Ext.define('PVE.FirewallOptions', {
 		header: text,
 		required: true,
 		defaultValue: defaultValue || 0,
-		renderer: PVE.Utils.format_boolean,
+		renderer: PVE.Utils.format_enabled_toggle,
 		editor: {
 		    xtype: 'pveWindowEdit',
 		    subject: text,
@@ -103,10 +103,10 @@ Ext.define('PVE.FirewallOptions', {
 
 
 	if (me.fwtype === 'node') {
-	    add_boolean_row('enable', gettext('Enable Firewall'), 1);
+	    add_boolean_row('enable', gettext('Firewall'), 1);
 	    add_boolean_row('nosmurfs', gettext('SMURFS filter'), 1);
 	    add_boolean_row('tcpflags', gettext('TCP flags filter'), 0);
-	    add_boolean_row('ndp', gettext('Enable NDP'), 1);
+	    add_boolean_row('ndp', gettext('NDP'), 1);
 	    add_integer_row('nf_conntrack_max', 'nf_conntrack_max', 120, 32768);
 	    add_integer_row('nf_conntrack_tcp_timeout_established', 
 			    'nf_conntrack_tcp_timeout_established', 250, 7875);
@@ -115,16 +115,16 @@ Ext.define('PVE.FirewallOptions', {
 	    add_log_row('tcp_flags_log_level', 120);
 	    add_log_row('smurf_log_level');
 	} else if (me.fwtype === 'vm') {
-	    add_boolean_row('enable', gettext('Enable Firewall'), 0);
-	    add_boolean_row('dhcp', gettext('Enable DHCP'), 0);
-	    add_boolean_row('ndp', gettext('Enable NDP'), 1);
-	    add_boolean_row('radv', gettext('Allow Router Advertisement'), 0);
+	    add_boolean_row('enable', gettext('Firewall'), 0);
+	    add_boolean_row('dhcp', gettext('DHCP'), 0);
+	    add_boolean_row('ndp', gettext('NDP'), 1);
+	    add_boolean_row('radv', gettext('Router Advertisement'), 0);
 	    add_boolean_row('macfilter', gettext('MAC filter'), 1);
 	    add_boolean_row('ipfilter', gettext('IP filter'), 0);
 	    add_log_row('log_level_in');
 	    add_log_row('log_level_out');
 	} else if (me.fwtype === 'dc') {
-	    add_boolean_row('enable', gettext('Enable Firewall'), 0);
+	    add_boolean_row('enable', gettext('Firewall'), 0);
 	} 
  
 	if (me.fwtype === 'dc' || me.fwtype === 'vm') {

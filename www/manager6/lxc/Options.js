@@ -57,12 +57,12 @@ Ext.define('PVE.lxc.Options', {
 		defaultValue: PVE.Utils.unknownText
 	    },
 	    console: {
-		header: gettext('Enable /dev/console'),
+		header: gettext('/dev/console'),
 		defaultValue: 1,
-		renderer: PVE.Utils.format_boolean,
+		renderer: PVE.Utils.format_enabled_toggle,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
-		    subject: gettext('Enable /dev/console'),
+		    subject: '/dev/console',
 		    items: {
 			xtype: 'pvecheckbox',
 			name: 'console',
@@ -70,7 +70,7 @@ Ext.define('PVE.lxc.Options', {
 			defaultValue: 1,
 			deleteDefaultValue: true,
 			checked: true,
-			fieldLabel: gettext('Enable /dev/console')
+			fieldLabel: '/dev/console'
 		    }
 		} : undefined
 	    },
