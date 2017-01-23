@@ -745,6 +745,8 @@ Ext.define('PVE.Utils', { utilities: {
 
     yesText: gettext('Yes'),
     noText: gettext('No'),
+    enabledText: gettext('Enabled'),
+    disabledText: gettext('Disabled'),
     noneText: gettext('none'),
     errorText: gettext('Error'),
     unknownText: gettext('Unknown'),
@@ -815,6 +817,10 @@ Ext.define('PVE.Utils', { utilities: {
 
     format_neg_boolean: function(value) {
 	return !value ? PVE.Utils.yesText : PVE.Utils.noText;
+    },
+
+    format_enabled_toggle: function(value) {
+	return value ? PVE.Utils.enabledText :PVE.Utils.disabledText;
     },
 
     format_ha: function(value) {
