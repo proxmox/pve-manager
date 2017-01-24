@@ -111,6 +111,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		comboItems: [
 		    ['started', 'started'],
 		    ['stopped', 'stopped'],
+		    ['ignored', 'ignored'],
 		    ['disabled', 'disabled']
 		],
 		listeners: {
