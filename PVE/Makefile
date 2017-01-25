@@ -1,6 +1,6 @@
 include ../defines.mk
 
-SUBDIRS=API2 VZDump Status CLI Service
+SUBDIRS=API2 Status CLI Service
 
 PERLSOURCE = 			\
 	API2.pm			\
