@@ -64,11 +64,10 @@ sub init {
 
     add_dirs($dirs, '/pve2/locale/', '/usr/share/pve-manager/locale/');
     add_dirs($dirs, '/pve2/touch/', '/usr/share/pve-manager/touch/');
-    add_dirs($dirs, '/pve2/ext6/', '/usr/share/pve-manager/ext6/');
-    add_dirs($dirs, '/pve2/manager6/', '/usr/share/pve-manager/manager6/');
-
+    add_dirs($dirs, '/pve2/ext6/', '/usr/share/javascript/extjs/');
     add_dirs($dirs, '/pve2/images/' => '/usr/share/pve-manager/images/');
     add_dirs($dirs, '/pve2/css/' => '/usr/share/pve-manager/css/');
+    add_dirs($dirs, '/pve2/js/' => '/usr/share/pve-manager/js/');
     add_dirs($dirs, '/pve-docs/' => '/usr/share/pve-docs/');
     add_dirs($dirs, '/vncterm/' => '/usr/share/vncterm/');
     add_dirs($dirs, '/novnc/' => '/usr/share/novnc-pve/');

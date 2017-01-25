@@ -1,8 +1,10 @@
 include ../../defines.mk
 
+# Note: Cookies.js is copied from ExtJS sources
+# extjs/classic/classic/src/util/Cookies.js
 
 JSSRC= 				                 	\
-	../ext6/extjs/classic/classic/src/util/Cookies.js \
+	Cookies.js 					\
 	../manager6/Utils.js				\
 	../manager6/Parser.js				\
 	Toolkit.js					\

@@ -1,4 +1,4 @@
-SUBDIRS = images ext6 css manager6 touch mobile
+SUBDIRS = images css manager6 touch mobile
 
 all: ${SUBDIRS}
 

@@ -42,7 +42,7 @@ _EOD
     }
 
 $page .= <<_EOD;
-    <script type="text/javascript" src="/pve2/ext6/pvemanagerlib.js"></script>
+    <script type="text/javascript" src="/pve2/js/pvemanagerlib.js"></script>
     <script type="text/javascript" src="/pve2/ext6/locale/locale-${lang}.js"></script>
 _EOD
 

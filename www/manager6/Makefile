@@ -231,8 +231,8 @@ all: pvemanagerlib.js
 .PHONY: install 
 install: pvemanagerlib.js
 	install -d ${WWWBASEDIR}/root
-	install -d ${WWWEXT6DIR}
-	install -m 0644 -o www-data -g www-data pvemanagerlib.js ${WWWEXT6DIR}
+	install -d ${WWWJSDIR}
+	install -m 0644 -o www-data -g www-data pvemanagerlib.js ${WWWJSDIR}
 
 .PHONY: clean
 clean:
