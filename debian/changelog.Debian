@@ -1,3 +1,17 @@
+pve-manager (4.4.-10) unstable; urgency=medium
+
+  * do no translate ha states
+
+  * Use the enabled/disabled toggler to render grid options
+
+  * Add new renderer function for toggling enabled/disabled options
+
+  * Remove technical terms from content to be translated
+
+  * Move VZDump base plugin to libpve-common-guest-perl
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 25 Jan 2017 09:37:47 +0100
+
 pve-manager (4.4-9) unstable; urgency=medium
 
   * use new PVE::Storage::check_volume_access()
