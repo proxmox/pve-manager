@@ -191,7 +191,7 @@ __PACKAGE__->register_method({
 	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Modify' ]);
 	}
 
-	PVE::RPCEnvironment::check_worker($param->{upid}, 1);
+	PVE::RPCEnvironment->check_worker($param->{upid}, 1);
 
 	return undef;
     }});
