@@ -1,4 +1,10 @@
-pve-manager (4.4.-10) unstable; urgency=medium
+pve-manager (4.4-11) unstable; urgency=medium
+
+  * depend on libjs-extjs
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 26 Jan 2017 09:22:34 +0100
+
+pve-manager (4.4-10) unstable; urgency=medium
 
   * do no translate ha states
 
