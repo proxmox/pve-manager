@@ -1,3 +1,11 @@
+pve-manager (4.4-12) unstable; urgency=medium
+
+  * REST/RPCEnvironment's check_worker is a method now
+
+  * spiceproxy: import PVE::SafeSyslog
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 27 Jan 2017 10:54:56 +0100
+
 pve-manager (4.4-11) unstable; urgency=medium
 
   * depend on libjs-extjs
