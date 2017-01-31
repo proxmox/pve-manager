@@ -350,3 +350,5 @@ __PACKAGE__->register_method({
 
 	return $task;
     }});
+
+1;
