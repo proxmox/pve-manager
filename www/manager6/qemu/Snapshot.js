@@ -80,6 +80,7 @@ Ext.define('PVE.window.Snapshot', {
 	    items.push({
 		xtype: 'displayfield',
 		name: 'snaptime',
+		renderer: PVE.Utils.render_timestamp_human_readable,
 		fieldLabel: gettext('Timestamp')
 	    });
 	} else {
@@ -199,7 +200,7 @@ Ext.define('PVE.window.Snapshot', {
 		summarystore.resumeEvents();
 		summarystore.fireEvent('refresh', summarystore);
 
-		form.findField('snaptime').setValue(new Date(data.snaptime));
+		form.findField('snaptime').setValue(data.snaptime);
 		form.findField('description').setValue(data.description);
 	    }
 	});
