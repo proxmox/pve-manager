@@ -913,6 +913,10 @@ Ext.define('PVE.Utils', { utilities: {
 	return Ext.Date.format(servertime, 'Y-m-d H:i:s');
     },
 
+    render_timestamp_human_readable: function(value) {
+	return Ext.Date.format(new Date(value * 1000), 'l d F Y H:i:s');
+    },
+
     calculate_mem_usage: function(data) {
 	if (!Ext.isNumeric(data.mem) ||
 	    data.maxmem === 0 ||
