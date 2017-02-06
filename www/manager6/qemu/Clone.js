@@ -124,7 +124,7 @@ Ext.define('PVE.window.Clone', {
 	    params: params,
 	    method: 'GET',
 	    failure: function(response, opts) {
-		me.submitBtn.setDisabled(false);
+		me.lookupReference('submitBtn').setDisabled(true);
 		Ext.Msg.alert('Error', response.htmlStatus);
 	    },
 	    success: function(response, options) {
