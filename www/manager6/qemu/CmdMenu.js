@@ -129,23 +129,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		iconCls: 'fa fa-fw fa-clone',
 		hidden: caps.vms['VM.Clone'] ? false : true,
 		handler: function() {
-		    PVE.Utils.API2Request({
-			url: '/nodes/' + nodename + '/qemu/' + vmid +'/snapshot',
-			failure: function(response, opts) {
-			    Ext.Msg.alert('Error', response.htmlStatus);
-			},
-			success: function(response, opts) {
-			    var snapshotList = response.result.data;
-			    var hasSnapshots = snapshotList.length === 1 &&
-				snapshotList[0].name === 'current' ? false : true;
-
-			    Ext.create('PVE.window.Clone', {
-				nodename: nodename,
-				vmid: vmid,
-				hasSnapshots: hasSnapshots
-			    }).show();
-			}
-		    });
+		    PVE.window.Clone.wrap(nodename, vmid, me.isTemplate);
 		}
 	    },
 	    {
