@@ -27,7 +27,7 @@ if (system('command -v multipath > /dev/null 2>&1') == 0) {
 
 my @machines = ('qm list', sub { dir2text('/etc/pve/qemu-server/', '\d.*conf') });
 
-my @net = ('ifconfig', 'cat /etc/network/interfaces', sub { dir2text('/etc/pve/firewall/', '.*fw') },
+my @net = ('ip -details -statistics address', 'cat /etc/network/interfaces', sub { dir2text('/etc/pve/firewall/', '.*fw') },
   'iptables-save');
 
 my @cluster = ('pvecm nodes', 'pvecm status');
