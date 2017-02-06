@@ -73,6 +73,15 @@ Ext.define('PVE.qemu.Config', {
 	    iconCls: 'fa fa-send-o'
 	});
 
+	var cloneBtn = Ext.create('Ext.Button', {
+		text: gettext('Clone'),
+		iconCls: 'fa fa-fw fa-clone',
+		hidden: caps.vms['VM.Clone'] ? false : true,
+		handler: function() {
+		    PVE.window.Clone.wrap(nodename, vmid, template);
+		}
+	});
+
 	var resetBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Reset'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
@@ -134,7 +143,7 @@ Ext.define('PVE.qemu.Config', {
 	    title: Ext.String.format(gettext("Virtual Machine {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'kvmtab',
 	    tbar: [ resumeBtn, startBtn, shutdownBtn, resetBtn,
-		    removeBtn, migrateBtn, consoleBtn],
+		    removeBtn, migrateBtn, cloneBtn, consoleBtn],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
