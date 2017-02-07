@@ -24,8 +24,9 @@ dinstall: ${DEB}
 country.dat: country.pl
 	./country.pl > country.dat
 
-.PHONY: ${DEB}
-${DEB} deb:
+.PHONY: deb
+deb: $(DEB)
+$(DEB):
 	make clean
 	rm -rf dest
 	mkdir dest
@@ -41,8 +42,8 @@ ${DEB} deb:
 	install -m 0755 debian/postrm dest/DEBIAN
 	install -m 0644 debian/triggers dest/DEBIAN
 	echo "git clone git://git.proxmox.com/git/pve-manager.git\\ngit checkout ${GITVERSION}" >  dest/usr/share/doc/${PACKAGE}/SOURCE
-	gzip --best dest/usr/share/man/*/*
-	gzip --best dest/usr/share/doc/${PACKAGE}/changelog.Debian
+	gzip -n --best dest/usr/share/man/*/*
+	gzip -n --best dest/usr/share/doc/${PACKAGE}/changelog.Debian
 	dpkg-deb --build dest
 	mv dest.deb ${DEB}
 	rm -rf dest
