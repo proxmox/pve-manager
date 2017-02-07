@@ -1,5 +1,5 @@
 [Unit]
-Description= PVE SPICE Proxy Server
+Description=PVE SPICE Proxy Server
 ConditionPathExists=/usr/bin/spiceproxy
 Wants=pveproxy.service
 After=pveproxy.service
