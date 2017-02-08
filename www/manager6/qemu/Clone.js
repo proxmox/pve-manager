@@ -265,12 +265,12 @@ Ext.define('PVE.window.Clone', {
 	    allowBlank: true,
 	    emptyText: gettext('Same as source'),
 	    disabled: me.isTemplate ? true : false, // because default mode is clone for templates
-		    hidden: false,
-		    listeners: {
-			change: function(f, value) {
-			    me.updateVisibility();
-			}
-		    }
+	    hidden: false,
+	    listeners: {
+		change: function(f, value) {
+		    me.updateVisibility();
+		}
+	    }
 	},
 	{
 	    xtype: 'pveDiskFormatSelector',
