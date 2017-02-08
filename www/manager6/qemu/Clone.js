@@ -263,6 +263,7 @@ Ext.define('PVE.window.Clone', {
 	    storageContent: 'images',
 	    autoSelect: false, // will use for each disk the same storage as source
 	    allowBlank: true,
+	    emptyText: gettext('Same as source'),
 	    disabled: me.isTemplate ? true : false, // because default mode is clone for templates
 		    hidden: false,
 		    listeners: {
