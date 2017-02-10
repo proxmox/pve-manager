@@ -49,10 +49,6 @@ pveupgrade.1.pod: pveupgrade
 	podselect $< > $@.tmp
 	mv $@.tmp $@
 
-pveperf.1.pod: pveperf
-	podselect $< > $@.tmp
-	mv $@.tmp $@
-
 pvesh.1.pod: pvesh
 	podselect $< > $@.tmp
 	mv $@.tmp $@
