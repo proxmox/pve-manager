@@ -39,11 +39,12 @@ Ext.define('PVE.panel.LogView', {
 
     updateView: function(start, end, total, text) {
         var me = this;
-	var el = me.dataCmp.el;
 
 	if (me.destroyed) { // return if element is not there anymore
 	    return;
 	}
+
+	var el = me.dataCmp.el;
 
 	if (me.viewInfo && me.viewInfo.start === start &&
 	    me.viewInfo.end === end && me.viewInfo.total === total &&
