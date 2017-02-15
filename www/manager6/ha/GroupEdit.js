@@ -81,6 +81,7 @@ Ext.define('PVE.ha.GroupInputPanel', {
 			xtype: 'pveIntegerField',
 			minValue: 0,
 			maxValue: 1000,
+			isFormField: false,
 			listeners: {
 			    change: function(numberfield, value, old_value) {
 				var record = numberfield.getWidgetRecord();
