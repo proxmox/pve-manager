@@ -81,11 +81,11 @@ Ext.define('PVE.form.NodeSelector', {
 	    }
 	});
 
-	if (notAllowed.length !== 0) {
+	if (value && notAllowed.length !== 0) {
 	    return "Node " + notAllowed.join(', ') + " is not allowed for this action!";
 	}
 
-	if (offline.length !== 0) {
+	if (value && offline.length !== 0) {
 	    return "Node " + offline.join(', ') + " seems to be offline!";
 	}
 	return true;
