@@ -47,6 +47,12 @@ Ext.define('PVE.window.Backup', {
 		    name: 'compress',
 		    value: 'lzo',
 		    fieldLabel: gettext('Compression')
+		},
+		{
+		    xtype: 'textfield',
+		    fieldLabel: gettext('Send email to'),
+		    name: 'mailto',
+		    emptyText: PVE.Utils.noneText
 		}
 	    ]
 	});
@@ -64,6 +70,11 @@ Ext.define('PVE.window.Backup', {
 		    mode: values.mode,
 		    remove: 0
 		};
+
+		if ( values.mailto ) {
+		    params.mailto = values.mailto;
+		}
+
 		if (values.compress) {
 		    params.compress = values.compress;
 		}
