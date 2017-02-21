@@ -14,28 +14,46 @@ Ext.define('PVE.form.GuestIDSelector', {
 
     guestType: undefined,
 
+    validator: function(value) {
+	var me = this;
+
+	if (!Ext.isNumeric(value) ||
+	    value < me.minValue ||
+	    value > me.maxValue) {
+	    // check is done by ExtJS
+	    return;
+	}
+
+	if (me.validateExists === true && !me.exists) {
+	    return me.unknownID;
+	}
+
+	if (me.validateExists === false && me.exists) {
+	    return me.inUseID;
+	}
+
+	return true;
+    },
+
     initComponent: function() {
 	var me = this;
 	var label = '{0} ID';
 	var unknownID = gettext('This {0} ID does not exists');
 	var inUseID = gettext('This {0} ID is already in use');
+	var type = 'CT/VM';
 
 	if (me.guestType === 'lxc') {
-	    label = Ext.String.format(label, 'CT');
-	    unknownID = Ext.String.format(unknownID, 'CT');
-	    inUseID = Ext.String.format(inUseID, 'CT');
+	    type = 'CT';
 	} else if (me.guestType === 'qemu') {
-	    label = Ext.String.format(label, 'VM');
-	    unknownID = Ext.String.format(unknownID, 'VM');
-	    inUseID = Ext.String.format(inUseID, 'VM');
-	} else {
-	    label = Ext.String.format(label, 'CT/VM');
-	    unknownID = Ext.String.format(unknownID, 'CT/VM');
-	    inUseID = Ext.String.format(inUseID, 'CT/VM');
+	    type = 'VM';
 	}
 
+	me.label = Ext.String.format(label, type);
+	me.unknownID = Ext.String.format(unknownID, type);
+	me.inUseID = Ext.String.format(inUseID, type);
+
 	Ext.apply(me, {
-	    fieldLabel: label,
+	    fieldLabel: me.label,
 	    listeners: {
 		'change': function(field, newValue, oldValue) {
 		    if (!Ext.isDefined(me.validateExists)) {
@@ -46,14 +64,12 @@ Ext.define('PVE.form.GuestIDSelector', {
 			url: '/cluster/nextid',
 			method: 'GET',
 			success: function(response, opts) {
-			    if (me.validateExists === true) {
-				me.markInvalid(unknownID);
-			    }
+			    me.exists = false;
+			    me.isValid();
 			},
 			failure: function(response, opts) {
-			    if (me.validateExists === false) {
-				me.markInvalid(inUseID);
-			    }
+			    me.exists = true;
+			    me.isValid();
 			}
 		    });
 		}
