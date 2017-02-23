@@ -203,7 +203,7 @@ sub update_qemu_status {
 	    my $plugin_config = $status_cfg->{ids}->{$id};
 	    next if $plugin_config->{disable};
 	    my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
-	    $plugin->update_qemu_status($plugin_config, $vmid, $d, $ctime);
+	    $plugin->update_qemu_status($plugin_config, $vmid, $d, $ctime, $nodename);
 	}
     }
 }
@@ -403,7 +403,7 @@ sub update_lxc_status {
 	    my $plugin_config = $status_cfg->{ids}->{$id};
 	    next if $plugin_config->{disable};
 	    my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
-	    $plugin->update_lxc_status($plugin_config, $vmid, $d, $ctime);
+	    $plugin->update_lxc_status($plugin_config, $vmid, $d, $ctime, $nodename);
 	}
     }
 }

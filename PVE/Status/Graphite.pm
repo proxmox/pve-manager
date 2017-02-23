@@ -45,12 +45,12 @@ sub update_node_status {
 }
 
 sub update_qemu_status {
-    my ($class, $plugin_config, $vmid, $data, $ctime) = @_;
+    my ($class, $plugin_config, $vmid, $data, $ctime, $nodename) = @_;
     write_graphite_hash($plugin_config, $data, $ctime, "qemu.$vmid");
 }
 
 sub update_lxc_status {
-    my ($class, $plugin_config, $vmid, $data, $ctime) = @_;
+    my ($class, $plugin_config, $vmid, $data, $ctime, $nodename) = @_;
 
     write_graphite_hash($plugin_config, $data, $ctime, "lxc.$vmid");
 }

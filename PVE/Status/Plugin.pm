@@ -62,13 +62,13 @@ sub update_node_status {
 }
 
 sub update_qemu_status {
-    my ($class, $plugin_config, $vmid, $data, $ctime) = @_;
+    my ($class, $plugin_config, $vmid, $data, $ctime, $nodename) = @_;
 
     die "please implement inside plugin";
 }
 
 sub update_lxc_status {
-    my ($class, $plugin_config, $vmid, $data, $ctime) = @_;
+    my ($class, $plugin_config, $vmid, $data, $ctime, $nodename) = @_;
 
     die "please implement inside plugin";
 }

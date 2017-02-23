@@ -38,11 +38,11 @@ sub update_node_status {
 }
 
 sub update_qemu_status {
-    my ($class, $plugin_config, $vmid, $data, $ctime) = @_;
+    my ($class, $plugin_config, $vmid, $data, $ctime, $nodename) = @_;
 
     $ctime *= 1000000000;
 
-    my $object = "object=qemu,vmid=$vmid";
+    my $object = "object=qemu,vmid=$vmid,nodename=$nodename";
     if($data->{name} && $data->{name} ne '') {
 	$object .= ",host=$data->{name}";
     }
@@ -51,11 +51,11 @@ sub update_qemu_status {
 }
 
 sub update_lxc_status {
-    my ($class, $plugin_config, $vmid, $data, $ctime) = @_;
+    my ($class, $plugin_config, $vmid, $data, $ctime, $nodename) = @_;
 
     $ctime *= 1000000000;
 
-    my $object = "object=lxc,vmid=$vmid";
+    my $object = "object=lxc,vmid=$vmid,nodename=$nodename";
     if($data->{name} && $data->{name} ne '') {
 	$object .= ",host=$data->{name}";
     }
