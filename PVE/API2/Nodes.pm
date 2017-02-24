@@ -1588,32 +1588,20 @@ __PACKAGE__->register_method ({
 	    die "either 'maxworkers' parameter or max_workers in datacenter.cfg must be set!\n";
 
 	my $code = sub {
-
 	    $rpcenv->{type} = 'priv'; # to start tasks in background
 
-	    my $migrateList = &$get_start_stop_list($nodename, undef, $param->{vms});
+	    my $vmlist = &$get_filtered_vmlist($nodename, $param->{vms}, 1, 1);
 
-	    foreach my $order (sort {$b <=> $a} keys %$migrateList) {
-		my $vmlist = $migrateList->{$order};
-		my $workers = {};
-		foreach my $vmid (sort {$b <=> $a} keys %$vmlist) {
-		    my $d = $vmlist->{$vmid};
-		    my $pid;
-		    eval { $pid = &$create_migrate_worker($nodename, $d->{type}, $vmid, $target); };
-		    warn $@ if $@;
-		    next if !$pid;
+	    my $workers = {};
+	    foreach my $vmid (sort keys %$vmlist) {
+		my $d = $vmlist->{$vmid};
+		my $pid;
+		eval { $pid = &$create_migrate_worker($nodename, $d->{type}, $vmid, $target); };
+		warn $@ if $@;
+		next if !$pid;
 
-		    $workers->{$pid} = 1;
-		    while (scalar(keys %$workers) >= $maxWorkers) {
-			foreach my $p (keys %$workers) {
-			    if (!PVE::ProcFSTools::check_process_running($p)) {
-				delete $workers->{$p};
-			    }
-			}
-			sleep(1);
-		    }
-		}
-		while (scalar(keys %$workers)) {
+		$workers->{$pid} = 1;
+		while (scalar(keys %$workers) >= $maxWorkers) {
 		    foreach my $p (keys %$workers) {
 			if (!PVE::ProcFSTools::check_process_running($p)) {
 			    delete $workers->{$p};
@@ -1621,6 +1609,14 @@ __PACKAGE__->register_method ({
 		    }
 		    sleep(1);
 		}
+	    }
+	    while (scalar(keys %$workers)) {
+		foreach my $p (keys %$workers) {
+		    if (!PVE::ProcFSTools::check_process_running($p)) {
+			delete $workers->{$p};
+		    }
+		}
+		sleep(1);
 	    }
 	    return;
 	};
