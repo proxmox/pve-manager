@@ -1210,53 +1210,74 @@ __PACKAGE__->register_method({
 	return PVE::Report::generate();
     }});
 
-my $get_start_stop_list = sub {
-    my ($nodename, $autostart, $vmfilter) = @_;
+# returns a list of VMIDs, those can be filtered by
+# * current parent node
+# * vmid whitelist
+# * guest is a template (default: skip)
+# * guest is HA manged (default: skip)
+my $get_filtered_vmlist = sub {
+    my ($nodename, $vmfilter, $templates, $ha_managed) = @_;
 
     my $vmlist = PVE::Cluster::get_vmlist();
 
-    my $vms;
-
+    my $vms_allowed = {};
     if (defined($vmfilter)) {
-	$vms = {};
 	foreach my $vmid (PVE::Tools::split_list($vmfilter)) {
-	    $vms->{$vmid} = 1;
+	    $vms_allowed->{$vmid} = 1;
 	}
     }
 
-    my $resList = {};
+    my $res = {};
     foreach my $vmid (keys %{$vmlist->{ids}}) {
-	next if defined($vms) && !$vms->{$vmid};
+	next if %$vms_allowed && !$vms_allowed->{$vmid};
+
 	my $d = $vmlist->{ids}->{$vmid};
-	my $startup;
+	next if $nodename && $d->{node} ne $nodename;
 
-	eval { 
-	    return if $d->{node} ne $nodename;
-	    
-	    my $bootorder = LONG_MAX;
-
-	    my $conf;
+	eval {
+	    my $class;
 	    if ($d->{type} eq 'lxc') {
-		$conf = PVE::LXC::Config->load_config($vmid);
+		$class = 'PVE::LXC::Config';
 	    } elsif ($d->{type} eq 'qemu') {
-		$conf = PVE::QemuConfig->load_config($vmid);
+		$class = 'PVE::QemuConfig';
 	    } else {
 		die "unknown VM type '$d->{type}'\n";
 	    }
 
-	    return if $autostart && !$conf->{onboot};
+	    my $conf = $class->load_config($vmid);
+	    return if !$templates && $class->is_template($conf);
+	    return if !$ha_managed && PVE::HA::Config::vm_is_ha_managed($vmid);
 
-	    if ($conf->{startup}) {
-		$startup =  PVE::JSONSchema::pve_parse_startup_order($conf->{startup});
-		$startup->{order} = $bootorder if !defined($startup->{order});
-	    } else {
-		$startup = { order => $bootorder };
-	    }
-
-	    $resList->{$startup->{order}}->{$vmid} = $startup;
-	    $resList->{$startup->{order}}->{$vmid}->{type} = $d->{type};
+	    $res->{$vmid} = $conf;
+	    $res->{$vmid}->{type} = $d->{type};
 	};
 	warn $@ if $@;
+    }
+
+    return $res;
+};
+
+# return all VMs which should get started/stopped on power up/down
+my $get_start_stop_list = sub {
+    my ($nodename, $autostart, $vmfilter) = @_;
+
+    my $vmlist = &$get_filtered_vmlist($nodename, $vmfilter);
+
+    my $resList = {};
+    foreach my $vmid (keys %$vmlist) {
+	my $conf = $vmlist->{$vmid};
+
+	next if $autostart && !$conf->{onboot};
+
+	my $startup = {};
+	if ($conf->{startup}) {
+	    $startup =  PVE::JSONSchema::pve_parse_startup_order($conf->{startup});
+	}
+
+	$startup->{order} = LONG_MAX if !defined($startup->{order});
+
+	$resList->{$startup->{order}}->{$vmid} = $startup;
+	$resList->{$startup->{order}}->{$vmid}->{type} = $conf->{type};
     }
 
     return $resList;
@@ -1323,23 +1344,8 @@ __PACKAGE__->register_method ({
 		foreach my $vmid (sort {$a <=> $b} keys %$vmlist) {
 		    my $d = $vmlist->{$vmid};
 
-		    # skip templates
-		    my $conf;
-		    if ($d->{type} eq 'lxc') {
-			$conf = PVE::LXC::Config->load_config($vmid);
-			next if PVE::LXC::Config->is_template($conf);
-		    } elsif ($d->{type} eq 'qemu') {
-			$conf = PVE::QemuConfig->load_config($vmid);
-			next if PVE::QemuConfig->is_template($conf);
-		    } else {
-			die "unknown VM type '$d->{type}'\n";
-		    }
-
-		    # skip ha managed VMs (started by pve-ha-manager)
-		    next if PVE::HA::Config::vm_is_ha_managed($vmid);
-
 		    PVE::Cluster::check_cfs_quorum(); # abort when we loose quorum
-	    
+
 		    eval {
 			my $default_delay = 0;
 			my $upid;
@@ -1470,9 +1476,6 @@ __PACKAGE__->register_method ({
 		};
 
 		foreach my $vmid (sort {$b <=> $a} keys %$vmlist) {
-		    # skip ha managed VMs (stopped by pve-ha-manager)
-		    next if PVE::HA::Config::vm_is_ha_managed($vmid);
-
 		    my $d = $vmlist->{$vmid};
 		    my $upid;
 		    eval { $upid = &$create_stop_worker($nodename, $d->{type}, $vmid, $d->{down}); };
