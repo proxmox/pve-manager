@@ -672,7 +672,7 @@ __PACKAGE__->register_method ({
 		$upgradecmd = PVE::Tools::shellquote($upgradecmd) if $remip;
 		$shcmd = [ '/bin/bash', '-c', $upgradecmd ];
 	    } else {
-		$shcmd = [ '/bin/bash', '-l' ];
+		$shcmd = [ '/bin/login', '-f', 'root' ];
 	    }
 	} else {
 	    $shcmd = [ '/bin/login' ];
@@ -829,7 +829,7 @@ __PACKAGE__->register_method ({
 		my $upgradecmd = "pveupgrade --shell";
 		$shcmd = [ '/bin/bash', '-c', $upgradecmd ];
 	    } else {
-		$shcmd = [ '/bin/bash', '-l' ];
+		$shcmd = [ '/bin/login', '-f', 'root' ];
 	    }
 	} else {
 	    $shcmd = [ '/bin/login' ];
