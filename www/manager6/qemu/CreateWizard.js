@@ -25,14 +25,11 @@ Ext.define('PVE.qemu.CreateWizard', {
 	    insideWizard: true
 	});
 
-	/*jslint confusion: true */
-	/* type confusion for 'create' between boolean and function */
 	var hdpanel = Ext.create('PVE.qemu.HDInputPanel', {
 	    title: gettext('Hard Disk'),
-	    create: true,
+	    isCreate: true,
 	    insideWizard: true
 	});
-	/*jslint confusion: false */
 
 	var networkpanel =  Ext.create('PVE.qemu.NetworkInputPanel', {
 	    title: gettext('Network'),

@@ -1,5 +1,5 @@
-// fixme: howto avoid jslint type confusion?
 /*jslint confusion: true */
+/* 'change' property is assigned a string and then a function */
 Ext.define('PVE.qemu.HDInputPanel', {
     extend: 'PVE.panel.InputPanel',
     alias: 'widget.PVE.qemu.HDInputPanel',
@@ -74,7 +74,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	if (me.unused) {
 	    me.drive.file = me.vmconfig[values.unusedId];
 	    confid = values.controller + values.deviceid;
-	} else if (me.create) {
+	} else if (me.isCreate) {
 	    if (values.hdimage) {
 		me.drive.file = values.hdimage;
 	    } else {
@@ -188,7 +188,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		allowBlank: false
 	    });
 	    me.column1.push(me.unusedDisks);
-	} else if (me.create) {
+	} else if (me.isCreate) {
 	    me.formatsel = Ext.create('PVE.form.DiskFormatSelector', {
 		name: 'diskformat',
 		fieldLabel: gettext('Format'),
@@ -269,6 +269,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	me.callParent();
     }
 });
+/*jslint confusion: false */
 
 Ext.define('PVE.qemu.HDEdit', {
     extend: 'PVE.window.Edit',
@@ -285,19 +286,19 @@ Ext.define('PVE.qemu.HDEdit', {
 
 	var unused = me.confid && me.confid.match(/^unused\d+$/);
 
-	me.create = me.confid ? unused : true;
+	me.isCreate = me.confid ? unused : true;
 
 	var ipanel = Ext.create('PVE.qemu.HDInputPanel', {
 	    confid: me.confid,
 	    nodename: nodename,
 	    unused: unused,
-	    create: me.create
+	    isCreate: me.isCreate
 	});
 
 	var subject;
 	if (unused) {
 	    me.subject = gettext('Unused Disk');
-	} else if (me.create) {
+	} else if (me.isCreate) {
             me.subject = gettext('Hard Disk');
 	} else {
            me.subject = gettext('Hard Disk') + ' (' + me.confid + ')';
@@ -306,7 +307,10 @@ Ext.define('PVE.qemu.HDEdit', {
 	me.items = [ ipanel ];
 
 	me.callParent();
-	
+	/*jslint confusion: true*/
+	/* 'data' is assigned an empty array in same file, and here we
+	 * use it like an object
+	 */
 	me.load({
 	    success: function(response, options) {
 		ipanel.setVMConfig(response.result.data);
@@ -323,5 +327,6 @@ Ext.define('PVE.qemu.HDEdit', {
 		}
 	    }
 	});
+	/*jslint confusion: false*/
     }
 });

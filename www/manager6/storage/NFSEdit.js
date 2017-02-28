@@ -63,7 +63,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	if (me.create) {
+	if (me.isCreate) {
 	    values.type = 'nfs';
 	    // hack: for now we always create nvf v3
 	    // fixme: make this configurable
@@ -84,7 +84,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 
 	me.column1 = [
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'storage',
 		value: me.storageId || '',
 		fieldLabel: 'ID',
@@ -92,14 +92,14 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		allowBlank: false
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'server',
 		value: '',
 		fieldLabel: gettext('Server'),
 		allowBlank: false,
 		listeners: {
 		    change: function(f, value) {
-			if (me.create) {
+			if (me.isCreate) {
 			    var exportField = me.down('field[name=export]');
 			    exportField.setServer(value);
 			    exportField.setValue('');
@@ -108,7 +108,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		}
 	    },
 	    {
-		xtype: me.create ? 'pveNFSScan' : 'displayfield',
+		xtype: me.isCreate ? 'pveNFSScan' : 'displayfield',
 		name: 'export',
 		value: '',
 		fieldLabel: 'Export',
@@ -147,7 +147,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		name: 'maxfiles',
 		minValue: 0,
 		maxValue: 365,
-		value: me.create ? '1' : undefined,
+		value: me.isCreate ? '1' : undefined,
 		allowBlank: false
 	    }
 	];
@@ -162,9 +162,9 @@ Ext.define('PVE.storage.NFSEdit', {
     initComponent : function() {
 	var me = this;
 
-	me.create = !me.storageId;
+	me.isCreate = !me.storageId;
 
-	if (me.create) {
+	if (me.isCreate) {
             me.url = '/api2/extjs/storage';
             me.method = 'POST';
         } else {
@@ -173,7 +173,7 @@ Ext.define('PVE.storage.NFSEdit', {
         }
 
 	var ipanel = Ext.create('PVE.storage.NFSInputPanel', {
-	    create: me.create,
+	    isCreate: me.isCreate,
 	    storageId: me.storageId
 	});
 
@@ -185,7 +185,7 @@ Ext.define('PVE.storage.NFSEdit', {
 
 	me.callParent();
 
-	if (!me.create) {
+	if (!me.isCreate) {
 	    me.load({
 		success:  function(response, options) {
 		    var values = response.result.data;

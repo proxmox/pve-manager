@@ -5,12 +5,12 @@ Ext.define('PVE.dc.GroupEdit', {
     initComponent : function() {
         var me = this;
 
-        me.create = !me.groupid;
+        me.isCreate = !me.groupid;
 
         var url;
         var method;
 
-        if (me.create) {
+        if (me.isCreate) {
             url = '/api2/extjs/access/groups';
             method = 'POST';
         } else {
@@ -24,7 +24,7 @@ Ext.define('PVE.dc.GroupEdit', {
             method: method,
             items: [
                 {
-		    xtype: me.create ? 'pvetextfield' : 'displayfield',
+		    xtype: me.isCreate ? 'pvetextfield' : 'displayfield',
 		    fieldLabel: gettext('Name'),
 		    name: 'groupid',
 		    value: me.groupid,
@@ -41,7 +41,7 @@ Ext.define('PVE.dc.GroupEdit', {
 
         me.callParent();
 
-        if (!me.create) {
+        if (!me.isCreate) {
             me.load();
         }
     }

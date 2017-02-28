@@ -4,7 +4,7 @@ Ext.define('PVE.storage.SheepdogInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	if (me.create) {
+	if (me.isCreate) {
 	    values.type = 'sheepdog';
             values.content = 'images';
 
@@ -24,7 +24,7 @@ Ext.define('PVE.storage.SheepdogInputPanel', {
 
 	me.column1 = [
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'storage',
 		value: me.storageId || '',
 		fieldLabel: 'ID',
@@ -32,7 +32,7 @@ Ext.define('PVE.storage.SheepdogInputPanel', {
 		allowBlank: false
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'portal',
 		value: '127.0.0.1:7000',
 		fieldLabel: gettext('Gateway'),
@@ -50,7 +50,7 @@ Ext.define('PVE.storage.SheepdogInputPanel', {
 	    }
 	];
 
-	if (me.create || me.storageId !== 'local') {
+	if (me.isCreate || me.storageId !== 'local') {
 	    me.column2.unshift({
 		xtype: 'pveNodeSelector',
 		name: 'nodes',
@@ -72,9 +72,9 @@ Ext.define('PVE.storage.SheepdogEdit', {
     initComponent : function() {
 	var me = this;
 
-	me.create = !me.storageId;
+	me.isCreate = !me.storageId;
 
-	if (me.create) {
+	if (me.isCreate) {
             me.url = '/api2/extjs/storage';
             me.method = 'POST';
         } else {
@@ -83,7 +83,7 @@ Ext.define('PVE.storage.SheepdogEdit', {
         }
 
 	var ipanel = Ext.create('PVE.storage.SheepdogInputPanel', {
-	    create: me.create,
+	    isCreate: me.isCreate,
 	    storageId: me.storageId
 	});
 
@@ -95,7 +95,7 @@ Ext.define('PVE.storage.SheepdogEdit', {
 
 	me.callParent();
 
-        if (!me.create) {
+        if (!me.isCreate) {
             me.load({
                 success:  function(response, options) {
                     var values = response.result.data;

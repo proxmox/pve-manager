@@ -62,7 +62,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	if (me.create) {
+	if (me.isCreate) {
 	    values.type = 'iscsi';
 	} else {
 	    delete values.storage;
@@ -83,7 +83,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 
 	me.column1 = [
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'storage',
 		value: me.storageId || '',
 		fieldLabel: 'ID',
@@ -91,14 +91,14 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		allowBlank: false
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'portal',
 		value: '',
 		fieldLabel: 'Portal',
 		allowBlank: false,
 		listeners: {
 		    change: function(f, value) {
-			if (me.create) {
+			if (me.isCreate) {
 			    var exportField = me.down('field[name=target]');
 			    exportField.setPortal(value);
 			    exportField.setValue('');
@@ -107,8 +107,8 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		}
 	    },
 	    {
-		readOnly: !me.create,
-		xtype: me.create ? 'pveIScsiScan' : 'displayfield',
+		readOnly: !me.isCreate,
+		xtype: me.isCreate ? 'pveIScsiScan' : 'displayfield',
 		name: 'target',
 		value: '',
 		fieldLabel: 'Target',
@@ -151,9 +151,9 @@ Ext.define('PVE.storage.IScsiEdit', {
     initComponent : function() {
 	var me = this;
 
-	me.create = !me.storageId;
+	me.isCreate = !me.storageId;
 
-	if (me.create) {
+	if (me.isCreate) {
             me.url = '/api2/extjs/storage';
             me.method = 'POST';
         } else {
@@ -162,7 +162,7 @@ Ext.define('PVE.storage.IScsiEdit', {
         }
 
 	var ipanel = Ext.create('PVE.storage.IScsiInputPanel', {
-	    create: me.create,
+	    isCreate: me.isCreate,
 	    storageId: me.storageId
 	});
 
@@ -174,7 +174,7 @@ Ext.define('PVE.storage.IScsiEdit', {
 
 	me.callParent();
 
-	if (!me.create) {
+	if (!me.isCreate) {
 	    me.load({
 		success:  function(response, options) {
 		    var values = response.result.data;

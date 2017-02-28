@@ -23,7 +23,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	var me = this;
 
 	var id;
-	if (me.create) {
+	if (me.isCreate) {
 	    id = values.id;
 	    delete values.id;
 	} else {
@@ -60,7 +60,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    cdata.name = 'eth0';
 	}
 	
-	if (!me.create) {
+	if (!me.isCreate) {
 	    if (!me.ifname) {
 		throw "no interface name specified";
 	    }
@@ -73,7 +73,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 
 	var i;
 	for (i = 0; i < 10; i++) {
-	    if (me.create && !me.dataCache['net'+i.toString()]) {
+	    if (me.isCreate && !me.dataCache['net'+i.toString()]) {
 		me.ifname = 'net' + i.toString();
 		break;
 	    }
@@ -291,7 +291,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
     }
 });
 	
-/*jslint confusion: true */
+
 Ext.define('PVE.lxc.NetworkEdit', {
     extend: 'PVE.window.Edit',
 
@@ -312,7 +312,7 @@ Ext.define('PVE.lxc.NetworkEdit', {
 	    ifname: me.ifname,
 	    nodename: me.nodename,
 	    dataCache: me.dataCache,
-	    create: me.create
+	    isCreate: me.isCreate
 	});
 	   
 	Ext.apply(me, {
@@ -327,7 +327,7 @@ Ext.define('PVE.lxc.NetworkEdit', {
 
 Ext.define('PVE.lxc.NetworkView', {
     extend: 'Ext.grid.GridPanel',
-    alias: ['widget.pveLxcNetworkView'],
+    alias: 'widget.pveLxcNetworkView',
 
     onlineHelp: 'pct_container_network',
 
@@ -467,7 +467,7 @@ Ext.define('PVE.lxc.NetworkView', {
 			var win = Ext.create('PVE.lxc.NetworkEdit', {
 			    url: me.url,
 			    nodename: nodename,
-			    create: true,
+			    isCreate: true,
 			    dataCache: me.dataCache
 			});
 			win.on('destroy', me.load, me);

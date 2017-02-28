@@ -5,12 +5,12 @@ Ext.define('PVE.dc.PoolEdit', {
     initComponent : function() {
         var me = this;
 
-        me.create = !me.poolid;
+        me.isCreate = !me.poolid;
 
         var url;
         var method;
 
-        if (me.create) {
+        if (me.isCreate) {
             url = '/api2/extjs/pools';
             method = 'POST';
         } else {
@@ -24,7 +24,7 @@ Ext.define('PVE.dc.PoolEdit', {
             method: method,
             items: [
                 {
-		    xtype: me.create ? 'pvetextfield' : 'displayfield',
+		    xtype: me.isCreate ? 'pvetextfield' : 'displayfield',
 		    fieldLabel: gettext('Name'),
 		    name: 'poolid',
 		    value: me.poolid,
@@ -41,7 +41,7 @@ Ext.define('PVE.dc.PoolEdit', {
 
         me.callParent();
 
-        if (!me.create) {
+        if (!me.isCreate) {
             me.load();
         }
     }

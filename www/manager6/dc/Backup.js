@@ -3,15 +3,14 @@ Ext.define('PVE.dc.BackupEdit', {
     alias: ['widget.pveDcBackupEdit'],
 
     initComponent : function() {
-	/*jslint confusion: true */
          var me = this;
 
-        me.create = !me.jobid;
+        me.isCreate = !me.jobid;
 
 	var url;
 	var method;
 
-	if (me.create) {
+	if (me.isCreate) {
             url = '/api2/extjs/cluster/backup';
             method = 'POST';
         } else {
@@ -23,6 +22,8 @@ Ext.define('PVE.dc.BackupEdit', {
 	    name: 'vmid'
 	});
 
+	/*jslint confusion: true*/
+	// 'value' can be assigned a string or an array
 	var selModeField =  Ext.create('PVE.form.KVComboBox', {
 	    xtype: 'pveKVComboBox',
 	    comboItems: [
@@ -162,14 +163,14 @@ Ext.define('PVE.dc.BackupEdit', {
 		xtype: 'pveEmailNotificationSelector',
 		fieldLabel: gettext('Email notification'),
 		name: 'mailnotification',
-		deleteEmpty: me.create ? false : true,
-		value: me.create ? 'always' : ''
+		deleteEmpty: me.isCreate ? false : true,
+		value: me.isCreate ? 'always' : ''
 	    },
 	    {
 		xtype: 'pveCompressionSelector',
 		fieldLabel: gettext('Compression'),
 		name: 'compress',
-		deleteEmpty: me.create ? false : true,
+		deleteEmpty: me.isCreate ? false : true,
 		value: 'lzo'
 	    },
 	    {
@@ -188,13 +189,14 @@ Ext.define('PVE.dc.BackupEdit', {
 	    },
 	    vmidField
 	];
+	/*jslint confusion: false*/
 
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
 	    column1: column1,
 	    column2:  column2,
 	    onGetValues: function(values) {
 		if (!values.node) {
-		    if (!me.create) {
+		    if (!me.isCreate) {
 			PVE.Utils.assemble_field_data(values, { 'delete': 'node' }); 
 		    }
 		    delete values.node;
@@ -279,7 +281,7 @@ Ext.define('PVE.dc.BackupEdit', {
 
         me.callParent();
 
-        if (me.create) {
+        if (me.isCreate) {
 	    selModeField.setValue('include');
 	} else {
             me.load({

@@ -6,12 +6,12 @@ Ext.define('PVE.FirewallAliasEdit', {
     alias_name: undefined,
 
     initComponent : function() {
-	/*jslint confusion: true */
+
 	var me = this;
 
-	me.create = (me.alias_name === undefined);
+	me.isCreate = (me.alias_name === undefined);
 
-	if (me.create) {
+	if (me.isCreate) {
             me.url = '/api2/extjs' + me.base_url;
             me.method = 'POST';
         } else {
@@ -22,7 +22,7 @@ Ext.define('PVE.FirewallAliasEdit', {
 	var items =  [
 	    {
 		xtype: 'textfield',
-		name: me.create ? 'name' : 'rename',
+		name: me.isCreate ? 'name' : 'rename',
 		fieldLabel: gettext('Name'),
 		allowBlank: false
 	    },
@@ -40,7 +40,7 @@ Ext.define('PVE.FirewallAliasEdit', {
 	];
 
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
-	    create: me.create,
+	    isCreate: me.isCreate,
 	    items: items
 	});
 
@@ -52,7 +52,7 @@ Ext.define('PVE.FirewallAliasEdit', {
 
 	me.callParent();
 
-	if (!me.create) {
+	if (!me.isCreate) {
 	    me.load({
 		success:  function(response, options) {
 		    var values = response.result.data;
@@ -78,7 +78,6 @@ Ext.define('PVE.FirewallAliases', {
     title: gettext('Alias'),
 
     initComponent : function() {
-	/*jslint confusion: true */
 
 	var me = this;
 

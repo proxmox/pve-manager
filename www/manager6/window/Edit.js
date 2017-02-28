@@ -1,5 +1,3 @@
-// fixme: how can we avoid those lint errors?
-/*jslint confusion: true */
 Ext.define('PVE.window.Edit', {
     extend: 'Ext.window.Window',
     alias: 'widget.pveWindowEdit',
@@ -10,9 +8,9 @@ Ext.define('PVE.window.Edit', {
     // Create: <subject>
     subject: undefined,
 
-    // set create to true if you want a Create button (instead 
+    // set isCreate to true if you want a Create button (instead of
     // OK and RESET) 
-    create: false, 
+    isCreate: false,
 
     // set to true if you want an Add button (instead of Create)
     isAdd: false,
@@ -184,6 +182,8 @@ Ext.define('PVE.window.Edit', {
 	    throw "no url specified";
 	}
 
+	if (me.create) {throw "deprecated parameter, use isCreate";}
+
 	var items = Ext.isArray(me.items) ? me.items : [ me.items ];
 
 	me.items = undefined;
@@ -207,7 +207,7 @@ Ext.define('PVE.window.Edit', {
 	var form = me.formPanel.getForm();
 
 	var submitText;
-	if (me.create) {
+	if (me.isCreate) {
 	    if (me.isAdd) {
 		submitText = gettext('Add');
 	    } else if (me.isRemove) {
@@ -221,7 +221,7 @@ Ext.define('PVE.window.Edit', {
 
 	var submitBtn = Ext.create('Ext.Button', {
 	    text: submitText,
-	    disabled: !me.create,
+	    disabled: !me.isCreate,
 	    handler: function() {
 		me.submit();
 	    }
@@ -238,7 +238,7 @@ Ext.define('PVE.window.Edit', {
 	var set_button_status = function() {
 	    var valid = form.isValid();
 	    var dirty = form.isDirty();
-	    submitBtn.setDisabled(!valid || !(dirty || me.create));
+	    submitBtn.setDisabled(!valid || !(dirty || me.isCreate));
 	    resetBtn.setDisabled(!dirty);
 	};
 
@@ -254,10 +254,10 @@ Ext.define('PVE.window.Edit', {
 	var twoColumn = items[0].column1 || items[0].column2;
 
 	if (me.subject && !me.title) {
-	    me.title = PVE.Utils.dialog_title(me.subject, me.create, me.isAdd);
+	    me.title = PVE.Utils.dialog_title(me.subject, me.isCreate, me.isAdd);
 	}
 
-	if (me.create) {
+	if (me.isCreate) {
 		me.buttons = [ submitBtn ] ;
 	} else {
 		me.buttons = [ submitBtn, resetBtn ];

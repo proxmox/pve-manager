@@ -1,12 +1,9 @@
-// Ext.create is a function, but
-// we defined create a bool in PVE.window.Edit
-/*jslint confusion: true*/
 Ext.define('PVE.CephCreatePool', {
     extend: 'PVE.window.Edit',
     alias: ['widget.pveCephCreatePool'],
 
     subject: 'Ceph Pool',
-    create: true,
+    isCreate: true,
     method: 'POST',
     items: [
 	{

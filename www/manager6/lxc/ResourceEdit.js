@@ -49,19 +49,19 @@ Ext.define('PVE.lxc.MountPointEdit', {
 
 	var unused = me.confid && me.confid.match(/^unused\d+$/);
 
-	me.create = me.confid ? unused : true;
+	me.isCreate = me.confid ? unused : true;
 
 	var ipanel = Ext.create('PVE.lxc.MountPointInputPanel', {
 	    confid: me.confid,
 	    nodename: nodename,
 	    unused: unused,
-	    create: me.create
+	    isCreate: me.isCreate
 	});
 
 	var subject;
 	if (unused) {
 	    subject = gettext('Unused Disk');
-	} else if (me.create) {
+	} else if (me.isCreate) {
 	    subject = gettext('Mount Point');
 	} else {
 	    subject = gettext('Mount Point') + ' (' + me.confid + ')';
@@ -231,7 +231,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	if (me.unused) {
 	    me.mpdata.file = me.vmconfig[values.unusedId];
 	    confid = values.mpsel;
-	} else if (me.create) {
+	} else if (me.isCreate) {
 	    me.mpdata.file = values.storage + ':' + values.disksize;
 	}
 
@@ -371,7 +371,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    storageContent: 'rootdir',
 	    allowBlank: false,
 	    autoSelect: true,
-	    hidden: me.unused || !me.create,
+	    hidden: me.unused || !me.isCreate,
 	    listeners: {
 		change: function(f, value) {
 		    if (!value) { // initial store loading fires an unwanted 'change'
@@ -393,7 +393,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		    } else {
 			me.quota.setDisabled(false);
 		    }
-		    if (me.unused || !me.create) {
+		    if (me.unused || !me.isCreate) {
 			return;
 		    }
 		    if (rec.data.type === 'iscsi') {
@@ -444,7 +444,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		}
 	    });
 	    me.column1.push(me.unusedDisks);
-	} else if (me.create) {
+	} else if (me.isCreate) {
 	    me.hdfilesel = Ext.create('PVE.form.FileSelector', {
 		name: 'file',
 		nodename: me.nodename,

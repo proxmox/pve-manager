@@ -40,7 +40,7 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	if (me.create) {
+	if (me.isCreate) {
 	    values.type = 'zfspool';
 	} else {
 	    delete values.storage;
@@ -57,7 +57,7 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 
 	me.column1 = [
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'storage',
 		value: me.storageId || '',
 		fieldLabel: 'ID',
@@ -66,7 +66,7 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	    }
 	];
 
-	if (me.create) {
+	if (me.isCreate) {
 	    me.column1.push(Ext.create('PVE.storage.ZFSPoolSelector', {
 		name: 'pool',
 		fieldLabel: gettext('ZFS Pool'),
@@ -118,7 +118,7 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	    }
 	];
 
-	if (me.create || me.storageId !== 'local') {
+	if (me.isCreate || me.storageId !== 'local') {
 	    me.column2.unshift({
 		xtype: 'pveNodeSelector',
 		name: 'nodes',
@@ -140,9 +140,9 @@ Ext.define('PVE.storage.ZFSPoolEdit', {
     initComponent : function() {
 	var me = this;
 
-	me.create = !me.storageId;
+	me.isCreate = !me.storageId;
 
-	if (me.create) {
+	if (me.isCreate) {
             me.url = '/api2/extjs/storage';
             me.method = 'POST';
         } else {
@@ -151,7 +151,7 @@ Ext.define('PVE.storage.ZFSPoolEdit', {
         }
 
 	var ipanel = Ext.create('PVE.storage.ZFSPoolInputPanel', {
-	    create: me.create,
+	    isCreate: me.isCreate,
 	    storageId: me.storageId
 	});
 
@@ -163,7 +163,7 @@ Ext.define('PVE.storage.ZFSPoolEdit', {
 
 	me.callParent();
 
-        if (!me.create) {
+        if (!me.isCreate) {
             me.load({
                 success:  function(response, options) {
                     var values = response.result.data;

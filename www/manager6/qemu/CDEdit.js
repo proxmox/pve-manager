@@ -1,5 +1,3 @@
-// fixme: howto avoid jslint type confusion?
-/*jslint confusion: true */
 Ext.define('PVE.qemu.CDInputPanel', {
     extend: 'PVE.panel.InputPanel',
     alias: 'widget.PVE.qemu.CDInputPanel',
@@ -158,7 +156,7 @@ Ext.define('PVE.qemu.CDEdit', {
 	    throw "no node name specified";	    
 	}
 
-	me.create = me.confid ? false : true;
+	me.isCreate = me.confid ? false : true;
 
 	var ipanel = Ext.create('PVE.qemu.CDInputPanel', {
 	    confid: me.confid,

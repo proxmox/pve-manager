@@ -14,7 +14,7 @@ Ext.define('PVE.CephCreateMon', {
     },
 
     initComponent : function() {
-	 /*jslint confusion: true */
+
         var me = this;
 
 	if (!me.nodename) {
@@ -23,7 +23,7 @@ Ext.define('PVE.CephCreateMon', {
 
 	me.setNode(me.nodename);
 
-	me.create = true;
+	me.isCreate = true;
 
         Ext.applyIf(me, {
             method: 'POST',

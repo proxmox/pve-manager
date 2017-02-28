@@ -1,5 +1,3 @@
-// fixme: howto avoid jslint type confusion?
-/*jslint confusion: true */
 Ext.define('PVE.qemu.HDThrottleInputPanel', {
     extend: 'PVE.panel.InputPanel',
     alias: 'widget.PVE.qemu.HDThrottleInputPanel',
@@ -174,7 +172,7 @@ Ext.define('PVE.qemu.HDThrottle', {
 
 	var unused = me.confid && me.confid.match(/^unused\d+$/);
 	
-	me.create = me.confid ? unused : true;
+	me.isCreate = me.confid ? unused : true;
 
 	var ipanel = Ext.create('PVE.qemu.HDThrottleInputPanel', {
 	    confid: me.confid,

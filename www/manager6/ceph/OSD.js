@@ -82,14 +82,13 @@ Ext.define('PVE.CephCreateOsd', {
     showProgress: true,
 
     initComponent : function() {
-	 /*jslint confusion: true */
         var me = this;
 
 	if (!me.nodename) {
 	    throw "no node name specified";
 	}
 
-	me.create = true;
+	me.isCreate = true;
 
         Ext.applyIf(me, {
 	    url: "/nodes/" + me.nodename + "/ceph/osd",
@@ -139,7 +138,7 @@ Ext.define('PVE.CephRemoveOsd', {
 	}
     ],
     initComponent : function() {
-	 /*jslint confusion: true */
+
         var me = this;
 
 	if (!me.nodename) {
@@ -149,12 +148,12 @@ Ext.define('PVE.CephRemoveOsd', {
 	    throw "no osdid specified";
 	}
 
-	me.create = true;
+	me.isCreate = true;
 
-	me.title = gettext('Remove') + ': ' + 'Ceph OSD osd.' + me.osdid;
+	me.title = gettext('Remove') + ': ' + 'Ceph OSD osd.' + me.osdid.toString();
 
         Ext.applyIf(me, {
-	    url: "/nodes/" + me.nodename + "/ceph/osd/" + me.osdid
+	    url: "/nodes/" + me.nodename + "/ceph/osd/" + me.osdid.toString()
         });
 
         me.callParent();

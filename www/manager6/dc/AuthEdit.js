@@ -7,13 +7,13 @@ Ext.define('PVE.dc.AuthEdit', {
     initComponent : function() {
         var me = this;
 
-        me.create = !me.realm;
+        me.isCreate = !me.realm;
 
         var url;
         var method;
         var serverlist;
 
-        if (me.create) {
+        if (me.isCreate) {
             url = '/api2/extjs/access/domains';
             method = 'POST';
         } else {
@@ -23,7 +23,7 @@ Ext.define('PVE.dc.AuthEdit', {
 
         var column1 = [
             {
-                xtype: me.create ? 'textfield' : 'displayfield',
+                xtype: me.isCreate ? 'textfield' : 'displayfield',
                 name: 'realm',
                 fieldLabel: gettext('Realm'),
                 value: me.realm,
@@ -64,7 +64,7 @@ Ext.define('PVE.dc.AuthEdit', {
             });
 	} else if (me.authType === 'pve') {
 
-	    if (me.create) {
+	    if (me.isCreate) {
 		throw 'unknown auth type';
 	    }
 
@@ -72,7 +72,7 @@ Ext.define('PVE.dc.AuthEdit', {
 
 	} else if (me.authType === 'pam') {
 
-	    if (me.create) {
+	    if (me.isCreate) {
 		throw 'unknown auth type';
 	    }
 
@@ -102,7 +102,7 @@ Ext.define('PVE.dc.AuthEdit', {
 		{
                     xtype: 'pvetextfield',
                     fieldLabel: gettext('Fallback Server'),
-		    deleteEmpty: !me.create,
+		    deleteEmpty: !me.isCreate,
 		    name: 'server2'
 		},
 		{
@@ -128,7 +128,7 @@ Ext.define('PVE.dc.AuthEdit', {
         column2.push({
             xtype: 'pveKVComboBox',
             name: 'tfa',
-	    deleteEmpty: !me.create,
+	    deleteEmpty: !me.isCreate,
 	    value: '',
             fieldLabel: gettext('TFA'),
 	    comboItems: [ ['__default__', PVE.Utils.noneText], ['oath', 'OATH'], ['yubico', 'Yubico']],
@@ -200,13 +200,13 @@ Ext.define('PVE.dc.AuthEdit', {
             }],
 	    onGetValues: function(values) {
 		if (!values.port) {
-		    if (!me.create) {
+		    if (!me.isCreate) {
 			PVE.Utils.assemble_field_data(values, { 'delete': 'port' });
 		    }
 		    delete values.port;
 		}
 
-		if (me.create) {
+		if (me.isCreate) {
 		    values.type = me.authType;
 		}
 
@@ -250,7 +250,7 @@ Ext.define('PVE.dc.AuthEdit', {
 
         me.callParent();
 
-        if (!me.create) {
+        if (!me.isCreate) {
             me.load({
                 success: function(response, options) {
 		    var data = response.result.data || {};

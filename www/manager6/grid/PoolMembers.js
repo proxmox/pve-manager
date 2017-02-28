@@ -1,14 +1,11 @@
-// Ext.create is a function
-// but we defined create as a bool in PVE.window.Edit
-/*jslint confusion: true*/
 Ext.define('PVE.pool.AddVM', {
     extend: 'PVE.window.Edit',
     width: 600,
     height: 400,
     isAdd: true,
-    create: true,
+    isCreate: true,
     initComponent : function() {
-	/*jslint confusion: true */
+
 	var me = this;
 
 	if (!me.pool) {
@@ -26,10 +23,12 @@ Ext.define('PVE.pool.AddVM', {
 
 	var vmStore = Ext.create('Ext.data.Store', {
 	    model: 'PVEResources',
-	    sorters: {
-		property: 'vmid',
-		order: 'ASC'
-	    },
+	    sorters: [
+		{
+		    property: 'vmid',
+		    order: 'ASC'
+		}
+	    ],
 	    filters: [
 		function(item) {
 		    return ((item.data.type === 'lxc' || item.data.type === 'qemu') && item.data.pool === '');
@@ -101,14 +100,14 @@ Ext.define('PVE.pool.AddStorage', {
     extend: 'PVE.window.Edit',
 
     initComponent : function() {
-	/*jslint confusion: true */
+
 	var me = this;
 
 	if (!me.pool) {
 	    throw "no pool specified";
 	}
 
-	me.create = true;
+	me.isCreate = true;
 	me.isAdd = true;
 	me.url = "/pools/" + me.pool;
 	me.method = 'PUT';

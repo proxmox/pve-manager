@@ -55,12 +55,10 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    }
 	});
 
-	/*jslint confusion: true */
-	/* type confusion for 'create' between boolean and function */
 	var rootfspanel = Ext.create('PVE.lxc.MountPointInputPanel', {
 	    title: gettext('Root Disk'),
 	    insideWizard: true,
-	    create: true,
+	    isCreate: true,
 	    unused: false,
 	    confid: 'rootfs'
 	});
@@ -69,9 +67,8 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    title: gettext('Network'),
 	    insideWizard: true,
 	    dataCache: {},
-	    create: true
+	    isCreate: true
 	});
-	/*jslint confusion: false */
 
 	var passwordfield = Ext.createWidget('textfield', {
 	    inputType: 'password',

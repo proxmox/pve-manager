@@ -5,10 +5,10 @@ Ext.define('PVE.dc.ACLAdd', {
     method: 'PUT',
     isAdd: true,
     initComponent : function() {
-	/*jslint confusion: true */
+
         var me = this;
 
-	me.create = true;
+	me.isCreate = true;
 
 	var items = [
 	    {

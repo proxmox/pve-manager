@@ -6,16 +6,16 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	if (me.create) {
+	if (me.isCreate) {
 	    values.sid = values.vmid;
 	}
 	
 
 	delete values.vmid;
 
-	PVE.Utils.delete_if_default(values, 'group', '', me.create);
-	PVE.Utils.delete_if_default(values, 'max_restart', '1', me.create);
-	PVE.Utils.delete_if_default(values, 'max_relocate', '1', me.create);
+	PVE.Utils.delete_if_default(values, 'group', '', me.isCreate);
+	PVE.Utils.delete_if_default(values, 'max_restart', '1', me.isCreate);
+	PVE.Utils.delete_if_default(values, 'max_relocate', '1', me.isCreate);
 
 	return values;
     },
@@ -151,9 +151,9 @@ Ext.define('PVE.ha.VMResourceEdit', {
     initComponent : function() {
 	var me = this;
  
-	me.create = !me.vmid;
+	me.isCreate = !me.vmid;
 
-	if (me.create) {
+	if (me.isCreate) {
             me.url = '/api2/extjs/cluster/ha/resources';
             me.method = 'POST';
         } else {
@@ -162,7 +162,7 @@ Ext.define('PVE.ha.VMResourceEdit', {
         }
 
 	var ipanel = Ext.create('PVE.ha.VMResourceInputPanel', {
-	    create: me.create,
+	    isCreate: me.isCreate,
 	    vmid: me.vmid,
 	    guestType: me.guestType
 	});
@@ -176,7 +176,7 @@ Ext.define('PVE.ha.VMResourceEdit', {
 	
 	me.callParent();
 
-	if (!me.create) {
+	if (!me.isCreate) {
 	    me.load({
 		success:  function(response, options) {
 		    var values = response.result.data;

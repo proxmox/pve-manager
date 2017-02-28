@@ -183,7 +183,7 @@ Ext.define('PVE.qemu.NetworkEdit', {
 	    throw "no node name specified";	    
 	}
 
-	me.create = me.confid ? false : true;
+	me.isCreate = me.confid ? false : true;
 
 	var ipanel = Ext.create('PVE.qemu.NetworkInputPanel', {
 	    confid: me.confid,
@@ -201,7 +201,7 @@ Ext.define('PVE.qemu.NetworkEdit', {
 	    success: function(response, options) {
 		var i, confid;
 		me.vmconfig = response.result.data;
-		if (!me.create) {
+		if (!me.isCreate) {
 		    var value = me.vmconfig[me.confid];
 		    var network = PVE.Parser.parseQemuNetwork(me.confid, value);
 		    if (!network) {

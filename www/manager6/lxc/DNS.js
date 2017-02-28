@@ -111,7 +111,7 @@ Ext.define('PVE.lxc.DNSEdit', {
 
 	me.callParent();
 
-	if (!me.create) {
+	if (!me.isCreate) {
 	    me.load({
 		success: function(response, options) {
 		    var values = response.result.data;

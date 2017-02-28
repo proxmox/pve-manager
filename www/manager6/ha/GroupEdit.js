@@ -7,7 +7,7 @@ Ext.define('PVE.ha.GroupInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	if (me.create) {
+	if (me.isCreate) {
 	    values.type = 'group';
 	}
 
@@ -151,7 +151,7 @@ Ext.define('PVE.ha.GroupInputPanel', {
 
 	me.column1 = [
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'group',
 		value: me.groupId || '',
 		fieldLabel: 'ID',
@@ -197,9 +197,9 @@ Ext.define('PVE.ha.GroupEdit', {
     initComponent : function() {
 	var me = this;
  
-	me.create = !me.groupId;
+	me.isCreate = !me.groupId;
 
-	if (me.create) {
+	if (me.isCreate) {
             me.url = '/api2/extjs/cluster/ha/groups';
             me.method = 'POST';
         } else {
@@ -208,7 +208,7 @@ Ext.define('PVE.ha.GroupEdit', {
         }
 
 	var ipanel = Ext.create('PVE.ha.GroupInputPanel', {
-	    create: me.create,
+	    isCreate: me.isCreate,
 	    groupId: me.groupId
 	});
 
@@ -219,7 +219,7 @@ Ext.define('PVE.ha.GroupEdit', {
 	
 	me.callParent();
 
-	if (!me.create) {
+	if (!me.isCreate) {
 	    me.load({
 		success:  function(response, options) {
 		    var values = response.result.data;

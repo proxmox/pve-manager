@@ -4,7 +4,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	if (me.create) {
+	if (me.isCreate) {
 	    values.type = 'zfs';
 	    values.content = 'images';
 	} else {
@@ -22,7 +22,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 
 	me.column1 = [
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'storage',
 		value: me.storageId || '',
 		fieldLabel: 'ID',
@@ -30,35 +30,35 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		allowBlank: false
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'portal',
 		value: '',
 		fieldLabel: gettext('Portal'),
 		allowBlank: false
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'pool',
 		value: '',
 		fieldLabel: gettext('Pool'),
 		allowBlank: false
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'blocksize',
 		value: '4k',
 		fieldLabel: gettext('Block Size'),
 		allowBlank: false
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'target',
 		value: '',
 		fieldLabel: gettext('Target'),
 		allowBlank: false
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'comstar_tg',
 		value: '',
 		fieldLabel: gettext('Target group'),
@@ -75,7 +75,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		fieldLabel: gettext('Enable')
 	    },
 	    {
-		xtype: me.create ? 'pveiScsiProviderSelector' : 'displayfield',
+		xtype: me.isCreate ? 'pveiScsiProviderSelector' : 'displayfield',
 		name: 'iscsiprovider',
 		value: 'comstar',
 		fieldLabel: gettext('iSCSI Provider'),
@@ -96,7 +96,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		fieldLabel: gettext('Write cache')
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'comstar_hg',
 		value: '',
 		fieldLabel: gettext('Host group'),
@@ -104,7 +104,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	    }
 	];
 
-	if (me.create || me.storageId !== 'local') {
+	if (me.isCreate || me.storageId !== 'local') {
 	    me.column2.unshift({
 		xtype: 'pveNodeSelector',
 		name: 'nodes',
@@ -126,9 +126,9 @@ Ext.define('PVE.storage.ZFSEdit', {
     initComponent : function() {
 	var me = this;
 
-	me.create = !me.storageId;
+	me.isCreate = !me.storageId;
 
-	if (me.create) {
+	if (me.isCreate) {
             me.url = '/api2/extjs/storage';
             me.method = 'POST';
         } else {
@@ -137,7 +137,7 @@ Ext.define('PVE.storage.ZFSEdit', {
         }
 
 	var ipanel = Ext.create('PVE.storage.ZFSInputPanel', {
-	    create: me.create,
+	    isCreate: me.isCreate,
 	    storageId: me.storageId
 	});
 
@@ -149,7 +149,7 @@ Ext.define('PVE.storage.ZFSEdit', {
 
 	me.callParent();
 
-        if (!me.create) {
+        if (!me.isCreate) {
             me.load({
                 success:  function(response, options) {
                     var values = response.result.data;

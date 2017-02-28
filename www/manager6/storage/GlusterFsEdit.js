@@ -63,7 +63,7 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	if (me.create) {
+	if (me.isCreate) {
 	    values.type = 'glusterfs';
 	} else {
 	    delete values.storage;
@@ -81,7 +81,7 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 
 	me.column1 = [
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'storage',
 		value: me.storageId || '',
 		fieldLabel: 'ID',
@@ -89,14 +89,14 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 		allowBlank: false
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'server',
 		value: '',
 		fieldLabel: gettext('Server'),
 		allowBlank: false,
 		listeners: {
 		    change: function(f, value) {
-			if (me.create) {
+			if (me.isCreate) {
 			    var volumeField = me.down('field[name=volume]');
 			    volumeField.setServer(value);
 			    volumeField.setValue('');
@@ -105,14 +105,14 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 		}
 	    },
 	    {
-		xtype: me.create ? 'pvetextfield' : 'displayfield',
+		xtype: me.isCreate ? 'pvetextfield' : 'displayfield',
 		name: 'server2',
 		value: '',
 		fieldLabel: gettext('Second Server'),
 		allowBlank: true
 	    },
 	    {
-		xtype: me.create ? 'pveGlusterFsScan' : 'displayfield',
+		xtype: me.isCreate ? 'pveGlusterFsScan' : 'displayfield',
 		name: 'volume',
 		value: '',
 		fieldLabel: 'Volume name',
@@ -152,7 +152,7 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 		name: 'maxfiles',
 		minValue: 0,
 		maxValue: 365,
-		value: me.create ? '1' : undefined,
+		value: me.isCreate ? '1' : undefined,
 		allowBlank: false
 	    }
 	];
@@ -167,9 +167,9 @@ Ext.define('PVE.storage.GlusterFsEdit', {
     initComponent : function() {
 	var me = this;
 
-	me.create = !me.storageId;
+	me.isCreate = !me.storageId;
 
-	if (me.create) {
+	if (me.isCreate) {
             me.url = '/api2/extjs/storage';
             me.method = 'POST';
         } else {
@@ -178,7 +178,7 @@ Ext.define('PVE.storage.GlusterFsEdit', {
         }
 
 	var ipanel = Ext.create('PVE.storage.GlusterFsInputPanel', {
-	    create: me.create,
+	    isCreate: me.isCreate,
 	    storageId: me.storageId
 	});
 
@@ -190,7 +190,7 @@ Ext.define('PVE.storage.GlusterFsEdit', {
 
 	me.callParent();
 
-	if (!me.create) {
+	if (!me.isCreate) {
 	    me.load({
 		success:  function(response, options) {
 		    var values = response.result.data;

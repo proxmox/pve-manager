@@ -14,7 +14,7 @@ Ext.define('PVE.IPSetList', {
     editBtn: undefined,
 
     initComponent: function() {
-	/*jslint confusion: true */
+
         var me = this;
 
 	if (me.ipset_panel == undefined) {
@@ -178,13 +178,13 @@ Ext.define('PVE.IPSetCidrEdit', {
     cidr: undefined,
 
     initComponent : function() {
-	/*jslint confusion: true */
+
 	var me = this;
 
-	me.create = (me.cidr === undefined);
+	me.isCreate = (me.cidr === undefined);
 
 
-	if (me.create) {
+	if (me.isCreate) {
             me.url = '/api2/extjs' + me.base_url;
             me.method = 'POST';
         } else {
@@ -194,7 +194,7 @@ Ext.define('PVE.IPSetCidrEdit', {
 
 	var column1 = [];
 
-	if (me.create) {
+	if (me.isCreate) {
 	    if (!me.list_refs_url) {
 		throw "no alias_base_url specified";
 	    }
@@ -219,7 +219,7 @@ Ext.define('PVE.IPSetCidrEdit', {
 	}
 
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
-	    create: me.create,
+	    isCreate: me.isCreate,
 	    column1: column1,
 	    column2: [
 		{
@@ -247,7 +247,7 @@ Ext.define('PVE.IPSetCidrEdit', {
 
 	me.callParent();
 
-	if (!me.create) {
+	if (!me.isCreate) {
 	    me.load({
 		success:  function(response, options) {
 		    var values = response.result.data;

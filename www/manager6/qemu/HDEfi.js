@@ -122,16 +122,13 @@ Ext.define('PVE.qemu.EFIDiskEdit', {
 	    throw "no node name specified";
 	}
 
-	/*jslint confusion: true */
-	/* because create is a method above..., really jslint? */
 	me.items = [{
 	    xtype: 'pveEFIDiskInputPanel',
 	    onlineHelp: 'qm_bios_and_uefi',
 	    confid: me.confid,
 	    nodename: nodename,
-	    create: true
+	    isCreate: true
 	}];
-	/* jslint confusion: false */
 
 	me.callParent();
     }

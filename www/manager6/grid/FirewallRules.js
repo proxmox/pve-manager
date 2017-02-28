@@ -108,7 +108,7 @@ Ext.define('PVE.FirewallRulePanel', {
 	    me.column1.push({
 		xtype: 'pvetextfield',
 		name: 'iface',
-		deleteEmpty: !me.create,
+		deleteEmpty: !me.isCreate,
 		value: '',
 		fieldLabel: gettext('Interface')
 	    });
@@ -230,7 +230,7 @@ Ext.define('PVE.FirewallRuleEdit', {
     allow_iface: false,
 
     initComponent : function() {
-	/*jslint confusion: true */
+
 	var me = this;
 
 	if (!me.base_url) {
@@ -240,9 +240,9 @@ Ext.define('PVE.FirewallRuleEdit', {
 	    throw "no list_refs_url specified";
 	}
 
-	me.create = (me.rule_pos === undefined);
+	me.isCreate = (me.rule_pos === undefined);
 
-	if (me.create) {
+	if (me.isCreate) {
             me.url = '/api2/extjs' + me.base_url;
             me.method = 'POST';
         } else {
@@ -251,7 +251,7 @@ Ext.define('PVE.FirewallRuleEdit', {
         }
 
 	var ipanel = Ext.create('PVE.FirewallRulePanel', {
-	    create: me.create,
+	    isCreate: me.isCreate,
 	    list_refs_url: me.list_refs_url,
 	    allow_iface: me.allow_iface,
 	    rule_pos: me.rule_pos
@@ -265,7 +265,7 @@ Ext.define('PVE.FirewallRuleEdit', {
 
 	me.callParent();
 
-	if (!me.create) {
+	if (!me.isCreate) {
 	    me.load({
 		success: function(response, options) {
 		    var values = response.result.data;
@@ -294,12 +294,12 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
     allow_iface: false,
 
     initComponent : function() {
-	/*jslint confusion: true */
+
 	var me = this;
 
-	me.create = (me.rule_pos === undefined);
+	me.isCreate = (me.rule_pos === undefined);
 
-	if (me.create) {
+	if (me.isCreate) {
             me.url = '/api2/extjs' + me.base_url;
             me.method = 'POST';
         } else {
@@ -326,14 +326,14 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
 	    column1.push({
 		xtype: 'pvetextfield',
 		name: 'iface',
-		deleteEmpty: !me.create,
+		deleteEmpty: !me.isCreate,
 		value: '',
 		fieldLabel: gettext('Interface')
 	    });
 	}
 
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
-	    create: me.create,
+	    isCreate: me.isCreate,
 	    column1: column1,
 	    column2: [
 		{
@@ -362,7 +362,7 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
 
 	me.callParent();
 
-	if (!me.create) {
+	if (!me.isCreate) {
 	    me.load({
 		success:  function(response, options) {
 		    var values = response.result.data;

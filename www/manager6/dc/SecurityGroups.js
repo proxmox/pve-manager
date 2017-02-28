@@ -6,10 +6,9 @@ Ext.define('PVE.SecurityGroupEdit', {
     allow_iface: false,
 
     initComponent : function() {
-	/*jslint confusion: true */
 	var me = this;
 
-	me.create = (me.group_name === undefined);
+	me.isCreate = (me.group_name === undefined);
 
 	var subject;
 
@@ -32,7 +31,7 @@ Ext.define('PVE.SecurityGroupEdit', {
 	    }
 	];
 
-	if (me.create) {
+	if (me.isCreate) {
 	    subject = gettext('Security Group');
         } else {
 	    subject = gettext('Security Group') + " '" + me.group_name + "'";
@@ -44,7 +43,8 @@ Ext.define('PVE.SecurityGroupEdit', {
         }
 
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
-	    create: me.create,
+	// InputPanel does not have a 'create' property, does it need a 'isCreate'
+	    isCreate: me.isCreate,
 	    items: items 
 	});
 

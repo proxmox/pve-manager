@@ -7,13 +7,13 @@ Ext.define('PVE.dc.UserEdit', {
     initComponent : function() {
         var me = this;
 
-        me.create = !me.userid;
+        me.isCreate = !me.userid;
 
         var url;
         var method;
         var realm;
 
-        if (me.create) {
+        if (me.isCreate) {
             url = '/api2/extjs/access/users';
             method = 'POST';
         } else {
@@ -68,12 +68,12 @@ Ext.define('PVE.dc.UserEdit', {
 
         var column1 = [
             {
-                xtype: me.create ? 'textfield' : 'displayfield',
+                xtype: me.isCreate ? 'textfield' : 'displayfield',
                 name: 'userid',
                 fieldLabel: gettext('User name'),
                 value: me.userid,
                 allowBlank: false,
-                submitValue: me.create ? true : false
+                submitValue: me.isCreate ? true : false
             },
 	    pwfield, verifypw,
 	    {
@@ -133,7 +133,7 @@ Ext.define('PVE.dc.UserEdit', {
 	    }
 	];
  
-        if (me.create) {
+        if (me.isCreate) {
             column1.splice(1,0,{
                 xtype: 'pveRealmComboBox',
                 name: 'realm',
@@ -185,7 +185,7 @@ Ext.define('PVE.dc.UserEdit', {
 
         me.callParent();
 
-        if (!me.create) {
+        if (!me.isCreate) {
             me.load({
 		success: function(response, options) {
 		    var data = response.result.data;

@@ -4,7 +4,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	if (me.create) {
+	if (me.isCreate) {
 	    values.type = 'rbd';
 	} else {
 	    delete values.storage;
@@ -22,7 +22,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 
 	me.column1 = [
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'storage',
 		value: me.storageId || '',
 		fieldLabel: 'ID',
@@ -30,14 +30,14 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		allowBlank: false
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'pool',
 		value: 'rbd',
 		fieldLabel: gettext('Pool'),
 		allowBlank: false
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'monhost',
 		vtype: 'HostList',
 		value: '',
@@ -45,7 +45,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		allowBlank: false
 	    },
 	    {
-		xtype: me.create ? 'textfield' : 'displayfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'username',
 		value: 'admin',
 		fieldLabel: gettext('User name'),
@@ -82,7 +82,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	];
 	/*jslint confusion: false*/
 
-	if (me.create || me.storageId !== 'local') {
+	if (me.isCreate || me.storageId !== 'local') {
 	    me.column2.unshift({
 		xtype: 'pveNodeSelector',
 		name: 'nodes',
@@ -104,9 +104,9 @@ Ext.define('PVE.storage.RBDEdit', {
     initComponent : function() {
 	var me = this;
 
-	me.create = !me.storageId;
+	me.isCreate = !me.storageId;
 
-	if (me.create) {
+	if (me.isCreate) {
             me.url = '/api2/extjs/storage';
             me.method = 'POST';
         } else {
@@ -115,7 +115,7 @@ Ext.define('PVE.storage.RBDEdit', {
         }
 
 	var ipanel = Ext.create('PVE.storage.RBDInputPanel', {
-	    create: me.create,
+	    isCreate: me.isCreate,
 	    storageId: me.storageId
 	});
 
@@ -127,7 +127,7 @@ Ext.define('PVE.storage.RBDEdit', {
 
 	me.callParent();
 
-        if (!me.create) {
+        if (!me.isCreate) {
             me.load({
                 success:  function(response, options) {
                     var values = response.result.data;
