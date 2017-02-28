@@ -178,9 +178,7 @@ sub run_spiceterm {
 	    $ENV{PWD} = '/';
 	    $ENV{SPICE_TICKET} = $ticket;
 
-	    # run_command sets LC_ALL, so we use system() instead
-	    system(@$cmd) == 0 || 
-		die "spiceterm failed\n";
+	    PVE::Tools::run_command($cmd, errmsg => 'spiceterm failed\n', keeplocale => 1);
 	};
 	if (my $err = $@) {
 	    syslog ('err', $err);

@@ -702,12 +702,12 @@ __PACKAGE__->register_method ({
 	    eval { 
 		foreach my $k (keys %ENV) {
 		    next if $k eq 'PVE_VNC_TICKET';
-		    next if $k eq 'PATH' || $k eq 'TERM' || $k eq 'USER' || $k eq 'HOME';
+		    next if $k eq 'PATH' || $k eq 'TERM' || $k eq 'USER' || $k eq 'HOME' || $k eq 'LANG' || $k eq 'LANGUAGE';
 		    delete $ENV{$k};
 		}
 		$ENV{PWD} = '/';
 
-		PVE::Tools::run_command($cmd, errmsg => "vncterm failed"); 
+		PVE::Tools::run_command($cmd, errmsg => "vncterm failed", keeplocale => 1);
 	    };
 	    if (my $err = $@) {
 		syslog ('err', $err);
