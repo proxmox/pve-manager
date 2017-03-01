@@ -116,8 +116,8 @@ Ext.define('PVE.FirewallOptions', {
 	    add_log_row('smurf_log_level');
 	} else if (me.fwtype === 'vm') {
 	    add_boolean_row('enable', gettext('Firewall'), 0);
-	    add_boolean_row('dhcp', gettext('DHCP'), 0);
-	    add_boolean_row('ndp', gettext('NDP'), 1);
+	    add_boolean_row('dhcp', 'DHCP', 0);
+	    add_boolean_row('ndp', 'NDP', 1);
 	    add_boolean_row('radv', gettext('Router Advertisement'), 0);
 	    add_boolean_row('macfilter', gettext('MAC filter'), 1);
 	    add_boolean_row('ipfilter', gettext('IP filter'), 0);

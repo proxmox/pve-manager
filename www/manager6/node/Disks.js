@@ -49,7 +49,7 @@ Ext.define('PVE.node.DiskList', {
 	    dataIndex: 'size'
 	},
 	{
-	    header: gettext('GPT'),
+	    header: 'GPT',
 	    width: 60,
 	    align: 'right',
 	    renderer: function(value) {

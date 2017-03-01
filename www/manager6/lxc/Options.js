@@ -57,7 +57,7 @@ Ext.define('PVE.lxc.Options', {
 		defaultValue: PVE.Utils.unknownText
 	    },
 	    console: {
-		header: gettext('/dev/console'),
+		header: '/dev/console',
 		defaultValue: 1,
 		renderer: PVE.Utils.format_enabled_toggle,
 		editor: caps.vms['VM.Config.Options'] ? {

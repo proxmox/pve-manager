@@ -152,7 +152,7 @@ Ext.define('PVE.Utils', { utilities: {
 	    } else if (el === 'network') {
 		fa.push(gettext('Network'));
 	    } else if (el === 'usb') {
-		fa.push(gettext('USB'));
+		fa.push('USB');
 	    } else if (el === 'memory') {
 		fa.push(gettext('Memory'));
 	    } else if (el === 'cpu') {
@@ -564,7 +564,7 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     task_desc_table: {
-	diskinit: [ 'Disk', gettext('Initialize GPT') ],
+	diskinit: [ 'Disk', gettext('Initialize Disk with GPT') ],
 	vncproxy: [ 'VM/CT', gettext('Console') ],
 	spiceproxy: [ 'VM/CT', gettext('Console') + ' (Spice)' ],
 	vncshell: [ '', gettext('Shell') ],
