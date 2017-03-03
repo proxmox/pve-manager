@@ -10,7 +10,8 @@ Ext.define('PVE.form.PoolSelector', {
 	var me = this;
 
 	var store = new Ext.data.Store({
-	    model: 'pve-pools'
+	    model: 'pve-pools',
+	    sorters: 'poolid'
 	});
 
 	Ext.apply(me, {
