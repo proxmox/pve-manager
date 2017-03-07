@@ -18,9 +18,7 @@ use PVE::APIServer::Formatter::HTML;
 use PVE::APIServer::AnyEvent;
 use PVE::HTTPServer;
 
-use PVE::ExtJSIndex;
-use PVE::NoVncIndex;
-use PVE::TouchIndex;
+use Template;
 
 use PVE::Tools;
 
@@ -192,16 +190,36 @@ sub get_index {
 	$mobile = $args->{mobile} ? 1 : 0;
     }
 
-    my $page;
+    my $page = '';
+    my $template = Template->new({ABSOLUTE => 1});
+
+    my $langfile = 0;
+
+    if (-f  "$basedirs->{manager}/locale/pve-lang-$lang.js") {
+	$langfile = 1;
+    }
+
+    my $vars = {
+	lang => $lang,
+	langfile => $langfile,
+	username => $username,
+	token => $token,
+	console => $args->{console},
+	nodename => $nodename,
+	debug => $server->{debug},
+    };
+
+    # by default, load the normal index
+    my $dir = $basedirs->{manager};
 
     if (defined($args->{console}) && $args->{novnc}) {
-	$page = PVE::NoVncIndex::get_index($lang, $username, $token, $args->{console}, $nodename);
+	$dir = $basedirs->{novnc};
     } elsif ($mobile) {
-	$page = PVE::TouchIndex::get_index($lang, $username, $token, $args->{console}, $nodename);
-    } else {
-	$page = PVE::ExtJSIndex::get_index($lang, $username, $token, $args->{console}, $nodename,
-	    $server->{debug});
+	$dir = "$basedirs->{manager}/touch";
     }
+
+    $template->process("$dir/index.html.tpl", $vars, \$page)
+	|| die $template->error(), "\n";
     my $headers = HTTP::Headers->new(Content_Type => "text/html; charset=utf-8");
     my $resp = HTTP::Response->new(200, "OK", $headers, $page);
 
