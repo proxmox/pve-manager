@@ -5,9 +5,6 @@ SUBDIRS=API2 Status CLI Service
 PERLSOURCE = 			\
 	API2.pm			\
 	API2Tools.pm		\
-	ExtJSIndex.pm		\
-	TouchIndex.pm		\
-	NoVncIndex.pm		\
 	HTTPServer.pm		\
 	APLInfo.pm		\
 	AutoBalloon.pm		\
