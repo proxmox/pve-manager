@@ -46,6 +46,14 @@ sub add_dirs {
     PVE::APIServer::AnyEvent::add_dirs($result_hash, $alias, $subdir);
 }
 
+my $basedirs = {
+    novnc => '/usr/share/novnc-pve',
+    extjs => '/usr/share/javascript/extjs',
+    manager => '/usr/share/pve-manager',
+    docs => '/usr/share/pve-docs',
+    vncterm => '/usr/share/vncterm',
+};
+
 sub init {
     my ($self) = @_;
 
@@ -62,15 +70,15 @@ sub init {
 
     my $dirs = {};
 
-    add_dirs($dirs, '/pve2/locale/', '/usr/share/pve-manager/locale/');
-    add_dirs($dirs, '/pve2/touch/', '/usr/share/pve-manager/touch/');
-    add_dirs($dirs, '/pve2/ext6/', '/usr/share/javascript/extjs/');
-    add_dirs($dirs, '/pve2/images/' => '/usr/share/pve-manager/images/');
-    add_dirs($dirs, '/pve2/css/' => '/usr/share/pve-manager/css/');
-    add_dirs($dirs, '/pve2/js/' => '/usr/share/pve-manager/js/');
-    add_dirs($dirs, '/pve-docs/' => '/usr/share/pve-docs/');
-    add_dirs($dirs, '/vncterm/' => '/usr/share/vncterm/');
-    add_dirs($dirs, '/novnc/' => '/usr/share/novnc-pve/');
+    add_dirs($dirs, '/pve2/locale/', "$basedirs->{manager}/locale/");
+    add_dirs($dirs, '/pve2/touch/', "$basedirs->{manager}/touch/");
+    add_dirs($dirs, '/pve2/ext6/', "$basedirs->{extjs}/");
+    add_dirs($dirs, '/pve2/images/' =>  "$basedirs->{manager}/images/");
+    add_dirs($dirs, '/pve2/css/' =>  "$basedirs->{manager}/css/");
+    add_dirs($dirs, '/pve2/js/' =>  "$basedirs->{manager}/js/");
+    add_dirs($dirs, '/pve-docs/' => "$basedirs->{docs}/");
+    add_dirs($dirs, '/vncterm/' => "$basedirs->{vncterm}/");
+    add_dirs($dirs, '/novnc/' => "$basedirs->{novnc}/");
 
     $self->{server_config} = {
 	title => 'Proxmox VE API',
@@ -101,7 +109,7 @@ sub init {
 	    '/' => sub { get_index($self->{nodename}, @_) },
 	    # avoid authentication when accessing favicon
 	    '/favicon.ico' => {
-		file => '/usr/share/pve-manager/images/favicon.ico',
+		file => "$basedirs->{manager}/images/favicon.ico",
 	    },
 	},
 	dirs => $dirs,
