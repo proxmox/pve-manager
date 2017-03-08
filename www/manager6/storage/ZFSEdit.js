@@ -14,6 +14,9 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	values.disable = values.enable ? 0 : 1;
 	delete values.enable;
 
+	values.nowritecache = values.writecache ? 0 : 1;
+	delete values.writecache;
+
 	return values;
     },
 
@@ -90,7 +93,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	    },
 	    {
 		xtype: 'pvecheckbox',
-		name: 'nowritecache',
+		name: 'writecache',
 		checked: true,
 		uncheckedValue: 0,
 		fieldLabel: gettext('Write cache')
@@ -157,6 +160,7 @@ Ext.define('PVE.storage.ZFSEdit', {
                         values.nodes = values.nodes.split(',');
                     }
                     values.enable = values.disable ? 0 : 1;
+		    values.writecache = values.nowritecache ? 0 : 1;
                     ipanel.setValues(values);
                 }
             });
