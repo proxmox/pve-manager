@@ -8,4 +8,4 @@ ExecStart=/usr/sbin/ceph-disk --log-stdout activate-all
 Type=oneshot
 
 [Install]
-WantedBy=ceph.target
+WantedBy=multi-user.target
