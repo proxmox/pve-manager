@@ -95,20 +95,7 @@ Ext.define('PVE.RestProxy', {
 	    { name: 'time', type : 'date', dateFormat: 'timestamp' }, 
 	    { name: 'pri', type: 'int' },
 	    { name: 'pid', type: 'int' },
-	    'node', 'user', 'tag', 'msg',
-	    {
-		name: 'id',
-		convert: function(value, record) {
-		    var info = record.data;
-		    var text;
-
-		    if (value) {
-			return value;
-		    }
-		    // compute unique ID
-		    return info.uid + ':' + info.node;
-		}
-	    }
+	    'node', 'user', 'tag', 'msg', 'id'
 	],
 	idProperty: 'id'
     });

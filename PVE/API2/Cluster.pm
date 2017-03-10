@@ -132,6 +132,10 @@ __PACKAGE__->register_method({
 
 	my $res = decode_json(PVE::Cluster::get_cluster_log($loguser, $max));
 
+	foreach my $entry (@{$res->{data}}) {
+	    $entry->{id} = "$entry->{uid}:$entry->{node}";
+	}
+
 	return $res->{data};
     }});
 
