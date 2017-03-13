@@ -53,7 +53,7 @@ $(DEB):
 .PHONY: upload
 upload: ${DEB} check
 	./repoid.pl .git check
-	tar cf - ${DEB} | ssh repoman@repo.proxmox.com upload
+	tar cf - ${DEB} | ssh repoman@repo.proxmox.com upload -product pve -dist jessie
 
 #.PHONY: poupload
 #poupload:
