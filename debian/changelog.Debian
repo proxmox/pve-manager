@@ -1,3 +1,9 @@
+pve-manager (5.0-1) unstable; urgency=medium
+
+  * bump version for stretch
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 13 Mar 2017 14:23:27 +0100
+
 pve-manager (4.4-13) unstable; urgency=medium
 
   * fix #1299: sort pools in pool selector by default
