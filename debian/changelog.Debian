@@ -1,3 +1,31 @@
+pve-manager (4.4-13) unstable; urgency=medium
+
+  * fix #1299: sort pools in pool selector by default
+  * fix #306: add email address field to backup-now window
+
+  * added a clone button to the VM toolbar
+
+  * change rendering of timestamps where no sorting is required
+
+  * drop net-tools dependency, use iproute2 instead
+
+  * handle references to deleted storages better
+
+  * influxdb plugins: send nodename when updating CT/VM status
+
+  * minor UI improvements:
+    - clone: use an empty-text to show the meaning of an empty storage field
+    - don't try to translate paths such as '/dev/console'
+    - don't try to translate common terms/abbreviations such as 'USB'
+    - add a css fix for chrome >= 56
+    - fix not having a node selected showing a 'Node seems to be offline' error
+
+  * correctly pass 'nowritecache' for zfs storages
+
+  * fix hangs with ceph.target and our ceph.service file with ceph >= 10.2.6
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 13 Mar 2017 12:46:43 +0100
+
 pve-manager (4.4-12) unstable; urgency=medium
 
   * REST/RPCEnvironment's check_worker is a method now
