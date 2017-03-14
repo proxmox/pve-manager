@@ -1,0 +1,3 @@
+pve-manager: package-installs-apt-sources etc/apt/sources.list.d/
+pve-manager: package-installs-apt-sources etc/apt/sources.list.d/pve-enterprise.list
+pve-manager: setgid-binary usr/bin/pvemailforward 2755 root/www-data

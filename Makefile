@@ -41,6 +41,7 @@ $(DEB):
 	install -m 0755 debian/prerm dest/DEBIAN
 	install -m 0755 debian/postrm dest/DEBIAN
 	install -m 0644 debian/triggers dest/DEBIAN
+	install -m 0644 -D debian/lintian-overrides dest/usr/share/lintian/overrides/${PACKAGE}
 	echo "git clone git://git.proxmox.com/git/pve-manager.git\\ngit checkout ${GITVERSION}" >  dest/usr/share/doc/${PACKAGE}/SOURCE
 	gzip -n --best dest/usr/share/man/*/*
 	gzip -n --best dest/usr/share/doc/${PACKAGE}/changelog.Debian
