@@ -49,7 +49,6 @@ my $basedirs = {
     extjs => '/usr/share/javascript/extjs',
     manager => '/usr/share/pve-manager',
     docs => '/usr/share/pve-docs',
-    vncterm => '/usr/share/vncterm',
 };
 
 sub init {
@@ -75,7 +74,6 @@ sub init {
     add_dirs($dirs, '/pve2/css/' =>  "$basedirs->{manager}/css/");
     add_dirs($dirs, '/pve2/js/' =>  "$basedirs->{manager}/js/");
     add_dirs($dirs, '/pve-docs/' => "$basedirs->{docs}/");
-    add_dirs($dirs, '/vncterm/' => "$basedirs->{vncterm}/");
     add_dirs($dirs, '/novnc/' => "$basedirs->{novnc}/");
 
     $self->{server_config} = {
