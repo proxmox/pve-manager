@@ -1,3 +1,15 @@
+pve-manager (5.0-2) unstable; urgency=medium
+
+  * control.in: change description to avoid lintian warning
+
+  * depend on libc6 to avoid lintian error
+
+  * pveproxy: do not serve /usr/share/vncterm - no longer required
+
+  * install lintian overrides file
+
+ -- root <root@lola.maurer-it.com>  Tue, 14 Mar 2017 07:56:29 +0100
+
 pve-manager (5.0-1) unstable; urgency=medium
 
   * bump version for stretch
