@@ -85,6 +85,14 @@ Ext.define('PVE.form.VMSelector', {
 		    un: function(){}
 		}
 	    }
+	},
+	{
+	    header: 'HA ' + gettext('Status'),
+	    dataIndex: 'hastate',
+	    flex: 1,
+	    filter: {
+		type: 'list'
+	    }
 	}
     ],
 

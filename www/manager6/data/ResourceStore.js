@@ -237,7 +237,7 @@ Ext.define('PVE.data.ResourceStore', {
 	    hastate: {
 		header: gettext('HA State'),
 		type: 'string',
-		defaultValue: '',
+		defaultValue: 'unmanaged',
 		hidden: true,
 		sortable: true
 	    }
