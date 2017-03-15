@@ -276,7 +276,7 @@ Ext.define('PVE.data.ResourceStore', {
 	Ext.apply(config, {
 	    storeid: 'PVEResources',
 	    model: 'PVEResources',
-	    defaultColums: function() {
+	    defaultColumns: function() {
 		var res = [];
 		Ext.Object.each(field_defaults, function(field, info) {
 		    var fi = Ext.apply({ dataIndex: field }, info);

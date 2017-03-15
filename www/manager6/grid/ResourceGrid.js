@@ -13,7 +13,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 	var rstore = PVE.data.ResourceStore;
 	var sp = Ext.state.Manager.getProvider();
 
-	var coldef = rstore.defaultColums();
+	var coldef = rstore.defaultColumns();
 
 	var store = Ext.create('Ext.data.Store', {
 	    model: 'PVEResources',

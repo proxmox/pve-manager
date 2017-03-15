@@ -162,7 +162,7 @@ Ext.define('PVE.grid.PoolMembers', {
 	    }
 	});
 
-	var coldef = PVE.data.ResourceStore.defaultColums();
+	var coldef = PVE.data.ResourceStore.defaultColumns();
 
 	var reload = function() {
 	    store.load();
