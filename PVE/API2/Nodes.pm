@@ -1261,7 +1261,10 @@ my $get_filtered_vmlist = sub {
 my $get_start_stop_list = sub {
     my ($nodename, $autostart, $vmfilter) = @_;
 
-    my $vmlist = &$get_filtered_vmlist($nodename, $vmfilter);
+    # do not skip HA vms on force or if a specific VMID set is wanted
+    my $include_ha_managed = defined($vmfilter) ? 1 : 0;
+
+    my $vmlist = &$get_filtered_vmlist($nodename, $vmfilter, undef, $include_ha_managed);
 
     my $resList = {};
     foreach my $vmid (keys %$vmlist) {
