@@ -247,7 +247,11 @@ Ext.define('PVE.data.ResourceStore', {
 	var fieldNames = [];
 	Ext.Object.each(field_defaults, function(key, value) {
 	    if (!Ext.isDefined(value.convert) && !Ext.isDefined(value.calculate)) {
-		fields.push({name: key, type: value.type});
+		var field = {name: key, type: value.type};
+		if (Ext.isDefined(value.defaultValue)) {
+		    field.defaultValue = value.defaultValue;
+		}
+		fields.push(field);
 		fieldNames.push(key);
 	    } else if (key === 'text' || key === 'running') {
 		fields.push({name: key, type: value.type, convert: value.convert});
