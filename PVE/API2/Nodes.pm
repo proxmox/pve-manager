@@ -1248,7 +1248,7 @@ my $get_filtered_vmlist = sub {
 	    return if !$templates && $class->is_template($conf);
 	    return if !$ha_managed && PVE::HA::Config::vm_is_ha_managed($vmid);
 
-	    $res->{$vmid} = $conf;
+	    $res->{$vmid}->{conf} = $conf;
 	    $res->{$vmid}->{type} = $d->{type};
 	};
 	warn $@ if $@;
@@ -1268,7 +1268,7 @@ my $get_start_stop_list = sub {
 
     my $resList = {};
     foreach my $vmid (keys %$vmlist) {
-	my $conf = $vmlist->{$vmid};
+	my $conf = $vmlist->{$vmid}->{conf};
 
 	next if $autostart && !$conf->{onboot};
 
