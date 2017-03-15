@@ -1250,6 +1250,7 @@ my $get_filtered_vmlist = sub {
 
 	    $res->{$vmid}->{conf} = $conf;
 	    $res->{$vmid}->{type} = $d->{type};
+	    $res->{$vmid}->{class} = $class;
 	};
 	warn $@ if $@;
     }
@@ -1284,6 +1285,26 @@ my $get_start_stop_list = sub {
     }
 
     return $resList;
+};
+
+my $remove_locks_on_startup = sub {
+    my ($nodename) = @_;
+
+    my $vmlist = &$get_filtered_vmlist($nodename, undef, undef, 1);
+
+    foreach my $vmid (keys %$vmlist) {
+	my $conf = $vmlist->{$vmid}->{conf};
+	my $class = $conf->{class};
+
+	eval {
+	    if ($class->has_lock($conf, 'backup')) {
+		$class->remove_lock($vmid, 'backup');
+		my $msg =  "removed left over backup lock from '$vmid'!";
+		warn "$msg\n"; # prints to task log
+		syslog('warning', $msg);
+	    }
+	}; warn $@ if $@;
+    }
 };
 
 __PACKAGE__->register_method ({
@@ -1337,6 +1358,11 @@ __PACKAGE__->register_method ({
 		} while (!PVE::Cluster::check_cfs_quorum(1));
 		print "got quorum\n";
 	    }
+
+	    eval { # remove backup locks, but avoid running into a scheduled backup job
+		PVE::Tools::lock_file('/var/run/vzdump.lock', 10, $remove_locks_on_startup, $nodename);
+	    }; warn $@ if $@;
+
 	    my $autostart = $force ? undef : 1;
 	    my $startList = &$get_start_stop_list($nodename, $autostart, $param->{vms});
 
