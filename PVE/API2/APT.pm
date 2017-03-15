@@ -531,10 +531,10 @@ __PACKAGE__->register_method({
 	# comment out old packages uses before 4.0
 	# clvm resource-agents-pve fence-agents-pve vzctl vzprocps vzquota
 
-	my @opt_pack = ('zfsutils', 'drbdmanage', 'fence-agents-pve',
-			'gfs2-utils', 'pve-sheepdog', 'openvswitch-switch', 'ceph');
+	my @opt_pack = ('zfsutils-linux',
+			'gfs2-utils', 'pve-sheepdog', 'openvswitch-switch', 'ceph', 'libpve-apiclient-perl');
 
-	push @list, qw(lvm2 corosync-pve libqb0 pve-cluster qemu-server pve-firmware libpve-common-perl libpve-access-control libpve-storage-perl pve-libspice-server1 vncterm pve-docs pve-qemu-kvm pve-container pve-firewall pve-ha-manager ksm-control-daemon glusterfs-client lxc-pve lxcfs criu novnc-pve smartmontools);
+	push @list, qw(libpve-http-server-perl lvm2 corosync libqb0 pve-cluster qemu-server pve-firmware libpve-common-perl libpve-guest-common-perl libpve-access-control libpve-storage-perl pve-libspice-server1 vncterm pve-docs pve-qemu-kvm pve-container pve-firewall pve-ha-manager ksm-control-daemon glusterfs-client lxc-pve lxcfs criu novnc-pve smartmontools);
 
 	@list = (@list, @opt_pack);
 	my $pkglist = [];
