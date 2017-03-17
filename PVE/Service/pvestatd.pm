@@ -66,6 +66,12 @@ sub hup {
     $restart_request = 1;
 }
 
+my $generate_rrd_string = sub {
+    my ($data) = @_;
+
+    return join(':', map { $_ // 'U' } @$data);
+};
+
 sub update_node_status {
     my ($status_cfg) = @_;
 
@@ -102,10 +108,11 @@ sub update_node_status {
     # everything not free is considered to be used
     my $dused = $dinfo->{blocks} - $dinfo->{bfree};
 
-    my $data = "$uptime:$sublevel:$ctime:$avg1:$maxcpu:$stat->{cpu}:$stat->{wait}:" .
-	"$meminfo->{memtotal}:$meminfo->{memused}:" .
-	"$meminfo->{swaptotal}:$meminfo->{swapused}:" .
-	"$dinfo->{blocks}:$dused:$netin:$netout";
+    my $data = $generate_rrd_string->(
+	[$uptime, $sublevel, $ctime, $avg1, $maxcpu, $stat->{cpu}, $stat->{wait},
+	 $meminfo->{memtotal}, $meminfo->{memused},
+	 $meminfo->{swaptotal}, $meminfo->{swapused},
+	 $dinfo->{blocks}, $dused, $netin, $netout]);
 
     PVE::Cluster::broadcast_rrd("pve2-node/$nodename", $data);
 
@@ -185,17 +192,14 @@ sub update_qemu_status {
 	my $status = $d->{qmpstatus} || $d->{status} || 'stopped';
 	my $template = $d->{template} ? $d->{template} : "0";
 	if ($d->{pid}) { # running
-	    $data = "$d->{uptime}:$d->{name}:$status:$template:" .
-		"$ctime:$d->{cpus}:$d->{cpu}:" .
-		"$d->{maxmem}:$d->{mem}:" .
-		"$d->{maxdisk}:$d->{disk}:" .
-		"$d->{netin}:$d->{netout}:" .
-		"$d->{diskread}:$d->{diskwrite}";
+	    $data = $generate_rrd_string->(
+		[$d->{uptime}, $d->{name}, $status, $template, $ctime, $d->{cpus}, $d->{cpu},
+		 $d->{maxmem}, $d->{mem}, $d->{maxdisk}, $d->{disk},
+		 $d->{netin}, $d->{netout}, $d->{diskread}, $d->{diskwrite}]);
 	} else {
-	    $data = "0:$d->{name}:$status:$template:$ctime:$d->{cpus}::" .
-		"$d->{maxmem}::" .
-		"$d->{maxdisk}:$d->{disk}:" .
-		":::";
+	    $data = $generate_rrd_string->(
+		[0, $d->{name}, $status, $template, $ctime, $d->{cpus}, undef,
+		 $d->{maxmem}, undef, $d->{maxdisk}, $d->{disk}, undef, undef, undef, undef]);
 	}
 	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
 
@@ -385,17 +389,17 @@ sub update_lxc_status {
 	my $template = $d->{template} ? $d->{template} : "0";
 	my $data;
 	if ($d->{status} eq 'running') { # running
-	    $data = "$d->{uptime}:$d->{name}:$d->{status}:$template:" .
-		"$ctime:$d->{cpus}:$d->{cpu}:" .
-		"$d->{maxmem}:$d->{mem}:" .
-		"$d->{maxdisk}:$d->{disk}:" .
-		"$d->{netin}:$d->{netout}:" .
-		"$d->{diskread}:$d->{diskwrite}";
+	    $data = $generate_rrd_string->(
+		[$d->{uptime}, $d->{name}, $d->{status}, $template,
+		 $ctime, $d->{cpus}, $d->{cpu},
+		 $d->{maxmem}, $d->{mem},
+		 $d->{maxdisk}, $d->{disk},
+		 $d->{netin}, $d->{netout},
+		 $d->{diskread}, $d->{diskwrite}]);
 	} else {
-	    $data = "0:$d->{name}:$d->{status}:$template:$ctime:$d->{cpus}::" .
-		"$d->{maxmem}::" .
-		"$d->{maxdisk}:$d->{disk}:" .
-		":::";
+	    $data = $generate_rrd_string->(
+		[0, $d->{name}, $d->{status}, $template, $ctime, $d->{cpus}, undef,
+		 $d->{maxmem}, undef, $d->{maxdisk}, $d->{disk}, undef, undef, undef, undef]);
 	}
 	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
 
@@ -421,7 +425,7 @@ sub update_storage_status {
 	my $d = $info->{$storeid};
 	next if !$d->{active};
 
-	my $data = "$ctime:$d->{total}:$d->{used}";
+	my $data = $generate_rrd_string->([$ctime, $d->{total}, $d->{used}]);
 
 	my $key = "pve2-storage/${nodename}/$storeid";
 	PVE::Cluster::broadcast_rrd($key, $data);
