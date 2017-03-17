@@ -1,3 +1,25 @@
+pve-manager (5.0-3) unstable; urgency=medium
+
+  * use 'U' to encode undefined values for RRD graphs
+
+  * remove backup locks when starting all VMs on boot
+
+  * get_filtered_vmlist: save VM conf in own subhash
+
+  * include also HA VMs if a vm list is explicit specified
+
+  * VMSelctor: add HA state and allow to filter with it
+
+  * PVEResource store: respect defaulValue of elements
+
+  * update sources.list to stretch
+
+  * APT: update packages and package names
+
+  * Fix #1305: typo
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 17 Mar 2017 12:12:16 +0100
+
 pve-manager (5.0-2) unstable; urgency=medium
 
   * control.in: change description to avoid lintian warning
