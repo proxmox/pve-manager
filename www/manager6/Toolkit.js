@@ -129,6 +129,13 @@ Ext.apply(Ext.form.field.VTypes, {
     HostListText: gettext('Not a valid list of hosts')
 });
 
+// since we always want the number in
+// x.y format and never in e.g. x,y
+Ext.define('PVE.form.field.Number', {
+    override: 'Ext.form.field.Number',
+    submitLocaleSeparator: false
+});
+
 // ExtJs 5-6 has an issue with caching
 // see https://www.sencha.com/forum/showthread.php?308989
 Ext.define('PVE.UnderlayPool', {
