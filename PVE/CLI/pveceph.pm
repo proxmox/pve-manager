@@ -77,8 +77,8 @@ __PACKAGE__->register_method ({
 	properties => {
 	    version => {
 		type => 'string',
-		#enum => ['dumpling', 'emperor', 'firefly', 'giant', 'hammer'] # for wheezy,
-		enum => ['hammer', 'jewel'], # for jessie
+		#enum => ['hammer', 'jewel'], # for jessie
+		enum => ['luminous',], # for stretch
 		optional => 1,
 	    }
 	},
@@ -87,45 +87,50 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $cephver = $param->{version} || 'hammer';
+	my $cephver = $param->{version} || 'luminous';
 
 	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
 
-	# use fixed devel repo for now, because there is no officila repo for jessie
-	my $devrepo = undef;
+	if ($cephver eq 'luminous') {
+	    PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list",
+		"deb http://download.proxmox.com/debian/ceph-luminous stretch main");
+	} else {
+	    # use fixed devel repo for now, because there is no officila repo for jessie
+	    my $devrepo = undef;
 
-	my $keyurl = $devrepo ?
-	    "https://git.ceph.com/?p=ceph.git;a=blob_plain;f=keys/autobuild.asc" :
-	    "https://git.ceph.com/?p=ceph.git;a=blob_plain;f=keys/release.asc";
+	    my $keyurl = $devrepo ?
+		"https://git.ceph.com/?p=ceph.git;a=blob_plain;f=keys/autobuild.asc" :
+		"https://git.ceph.com/?p=ceph.git;a=blob_plain;f=keys/release.asc";
 
-	print "download and import ceph repository keys\n";
+	    print "download and import ceph repository keys\n";
 
-	# Note: wget on Debian wheezy cannot handle new ceph.com certificates, so
-	# we use LWP::UserAgent
-	#system("wget -q -O- '$keyurl'| apt-key add - 2>&1 >/dev/null") == 0 ||
-	#die "unable to download ceph release key\n";
+	    # Note: wget on Debian wheezy cannot handle new ceph.com certificates, so
+	    # we use LWP::UserAgent
+	    #system("wget -q -O- '$keyurl'| apt-key add - 2>&1 >/dev/null") == 0 ||
+	    #die "unable to download ceph release key\n";
 
-	my $tmp_key_file = "/tmp/ceph-release-keys.asc";
-	my $ua = LWP::UserAgent->new(protocols_allowed => ['http', 'https'], timeout => 120);
-	$ua->env_proxy;
-	my $response = $ua->get($keyurl);
-	if ($response->is_success) {
-	    my $data = $response->decoded_content;
-	    PVE::Tools::file_set_contents($tmp_key_file, $data);
-        } else {
-	    die "unable to download ceph release key: " . $response->status_line . "\n";
+	    my $tmp_key_file = "/tmp/ceph-release-keys.asc";
+	    my $ua = LWP::UserAgent->new(protocols_allowed => ['http', 'https'], timeout => 120);
+	    $ua->env_proxy;
+	    my $response = $ua->get($keyurl);
+	    if ($response->is_success) {
+		my $data = $response->decoded_content;
+		PVE::Tools::file_set_contents($tmp_key_file, $data);
+	    } else {
+		die "unable to download ceph release key: " . $response->status_line . "\n";
+	    }
+
+	    system("apt-key add $tmp_key_file 2>&1 >/dev/null") == 0 ||
+		die "unable to download ceph release key\n";
+
+	    unlink $tmp_key_file;
+
+	    my $source = $devrepo ?
+		"deb http://gitbuilder.ceph.com/ceph-deb-jessie-x86_64-basic/ref/$devrepo jessie main\n" :
+		"deb http://download.ceph.com/debian-$cephver jessie main\n";
+
+	    PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $source);
 	}
-
-	system("apt-key add $tmp_key_file 2>&1 >/dev/null") == 0 ||
-	    die "unable to download ceph release key\n";
-
-	unlink $tmp_key_file;
-
-	my $source = $devrepo ?
-	    "deb http://gitbuilder.ceph.com/ceph-deb-jessie-x86_64-basic/ref/$devrepo jessie main\n" :
-	    "deb http://download.ceph.com/debian-$cephver jessie main\n";
-
-	PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $source);
 
 	print "update available package list\n";
 	eval { run_command(['apt-get', '-q', 'update'], outfunc => sub {}, errfunc => sub {}); };
