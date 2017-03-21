@@ -940,12 +940,20 @@ __PACKAGE__->register_method ({
 
 	    PVE::CephTools::write_ceph_config($cfg);
 
-	    PVE::CephTools::ceph_service_cmd('start', $monsection);
+	    my $create_keys_pid = fork();
+	    if (!defined($create_keys_pid)) {
+		die "Could not spawn ceph-create-keys to create bootstrap keys\n";
+	    } elsif ($create_keys_pid == 0) {
+		exit PVE::Tools::run_command(['ceph-create-keys', '-i', $monid]);
+	    } else {
+		PVE::CephTools::ceph_service_cmd('start', $monsection);
 
-	    if ($systemd_managed) {
-		#to ensure we have the correct startup order.
-		eval { PVE::Tools::run_command(['/bin/systemctl', 'enable', "ceph-mon\@${monid}.service"]); };
-		warn "Enable ceph-mon\@${monid}.service manually"if $@;
+		if ($systemd_managed) {
+		    #to ensure we have the correct startup order.
+		    eval { PVE::Tools::run_command(['/bin/systemctl', 'enable', "ceph-mon\@${monid}.service"]); };
+		    warn "Enable ceph-mon\@${monid}.service manually"if $@;
+		}
+		waitpid($create_keys_pid, 0);
 	    }
 	};
 
