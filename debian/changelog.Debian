@@ -1,3 +1,15 @@
+pve-manager (5.0-4) unstable; urgency=medium
+
+  * fix #1307: dont use language dependent separator in gui
+
+  * add beta text with link to bugtracker
+
+  * pveceph: create default keys when creating monitor
+
+  * pveceph: use luminous by default
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 21 Mar 2017 13:39:02 +0100
+
 pve-manager (5.0-3) unstable; urgency=medium
 
   * use 'U' to encode undefined values for RRD graphs
