@@ -18,7 +18,7 @@ Ext.define('PVE.CephCreatePool', {
 	    name: 'size',
 	    value: 3,
 	    minValue: 1,
-	    maxValue: 3,
+	    maxValue: 7,
 	    allowBlank: false
 	},
 	{
@@ -27,7 +27,7 @@ Ext.define('PVE.CephCreatePool', {
 	    name: 'min_size',
 	    value: 2,
 	    minValue: 1,
-	    maxValue: 3,
+	    maxValue: 7,
 	    allowBlank: false
 	},
 	{
