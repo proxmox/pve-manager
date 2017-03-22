@@ -1,1 +1,1 @@
-deb https://enterprise.proxmox.com/debian stretch pve-enterprise
+deb https://enterprise.proxmox.com/debian/pve stretch pve-enterprise
