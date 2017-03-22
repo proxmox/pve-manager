@@ -16,7 +16,7 @@ Ext.define('PVE.CephCreatePool', {
 	    xtype: 'pveIntegerField',
 	    fieldLabel: gettext('Size'),
 	    name: 'size',
-	    value: 2,
+	    value: 3,
 	    minValue: 1,
 	    maxValue: 3,
 	    allowBlank: false
@@ -25,7 +25,7 @@ Ext.define('PVE.CephCreatePool', {
 	    xtype: 'pveIntegerField',
 	    fieldLabel: gettext('Min. Size'),
 	    name: 'min_size',
-	    value: 1,
+	    value: 2,
 	    minValue: 1,
 	    maxValue: 3,
 	    allowBlank: false
