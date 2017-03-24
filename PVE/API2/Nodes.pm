@@ -1281,7 +1281,7 @@ my $get_start_stop_list = sub {
 	$startup->{order} = LONG_MAX if !defined($startup->{order});
 
 	$resList->{$startup->{order}}->{$vmid} = $startup;
-	$resList->{$startup->{order}}->{$vmid}->{type} = $conf->{type};
+	$resList->{$startup->{order}}->{$vmid}->{type} = $vmlist->{$vmid}->{type};
     }
 
     return $resList;
@@ -1294,7 +1294,7 @@ my $remove_locks_on_startup = sub {
 
     foreach my $vmid (keys %$vmlist) {
 	my $conf = $vmlist->{$vmid}->{conf};
-	my $class = $conf->{class};
+	my $class = $vmlist->{$vmid}->{class};
 
 	eval {
 	    if ($class->has_lock($conf, 'backup')) {
