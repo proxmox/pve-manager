@@ -21,7 +21,7 @@ Ext.define('PVE.form.GuestIDSelector', {
 	    value < me.minValue ||
 	    value > me.maxValue) {
 	    // check is done by ExtJS
-	    return;
+	    return true;
 	}
 
 	if (me.validateExists === true && !me.exists) {
@@ -65,11 +65,11 @@ Ext.define('PVE.form.GuestIDSelector', {
 			method: 'GET',
 			success: function(response, opts) {
 			    me.exists = false;
-			    me.isValid();
+			    me.validate();
 			},
 			failure: function(response, opts) {
 			    me.exists = true;
-			    me.isValid();
+			    me.validate();
 			}
 		    });
 		}
