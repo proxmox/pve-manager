@@ -229,7 +229,7 @@ Ext.define('PVE.window.Wizard', {
 	display_header(tabs[0]);
 
 	Ext.Array.each(me.query('field'), function(field) {
-	    field.on('change', function(f) {
+	    var validcheck = function() {
 		var tp = me.down('#wizcontent');
 		var atab = tp.getActiveTab();
 		var valid = check_card(atab);
@@ -242,7 +242,9 @@ Ext.define('PVE.window.Wizard', {
 		} else if (ntab && !atab.onSubmit) {
 		    ntab.enable();
 		}
-	    });
+	    };
+	    field.on('change', validcheck);
+	    field.on('validitychange', validcheck);
 	});
     }
 });
