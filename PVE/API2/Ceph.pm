@@ -721,7 +721,7 @@ __PACKAGE__->register_method ({
 		default => 2,
 		optional => 1,
 		minimum => 1,
-		maximum => 3,
+		maximum => 7,
 	    },
 	    pg_bits => {
 		description => "Placement group bits, used to specify the " .
@@ -1243,7 +1243,7 @@ __PACKAGE__->register_method ({
 		default => 2,
 		optional => 1,
 		minimum => 1,
-		maximum => 3,
+		maximum => 7,
 	    },
 	    min_size => {
 		description => 'Minimum number of replicas per object',
@@ -1251,7 +1251,7 @@ __PACKAGE__->register_method ({
 		default => 1,
 		optional => 1,
 		minimum => 1,
-		maximum => 3,
+		maximum => 7,
 	    },
 	    pg_num => {
 		description => "Number of placement groups.",
