@@ -1,3 +1,17 @@
+pve-manager (5.0-6) unstable; urgency=medium
+
+  * update japanese translation
+
+  * ceph: allow higher replication levels than 3/3
+
+  * ceph: change default GUI replication level to 3/2
+
+  * fix #1317: check wizard form also on validitychange
+
+  * fix start on boot
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 10 Apr 2017 16:23:11 +0200
+
 pve-manager (5.0-5) unstable; urgency=medium
 
   * update pve-enterprise repository URL
