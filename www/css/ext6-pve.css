@@ -517,3 +517,7 @@ table.osds td:first-of-type {
 .x-webkit :not(.x-form-textarea-body) > .x-form-trigger-wrap {
     height: initial;
 }
+
+.pve-invalid-row {
+    background-color: #f3d6d7;
+}

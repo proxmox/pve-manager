@@ -61,7 +61,7 @@ Ext.define('PVE.dc.Tasks', {
 		    var status = record.get('status');
 
 		    if (status && status != 'OK') {
-			return "x-form-invalid-field";
+			return "pve-invalid-row";
 		    }
 		}
 	    },
