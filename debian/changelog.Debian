@@ -1,3 +1,15 @@
+pve-manager (5.0-7) unstable; urgency=medium
+
+  * move qemu reset button into shutdown menu
+
+  * add a 'convert to template' in the vm action bar
+
+  * add right-click menu for nodes
+
+  * highlight errors in grids
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 14 Apr 2017 15:20:06 +0200
+
 pve-manager (5.0-6) unstable; urgency=medium
 
   * update japanese translation
