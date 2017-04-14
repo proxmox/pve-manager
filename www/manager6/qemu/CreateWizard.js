@@ -47,7 +47,8 @@ Ext.define('PVE.qemu.CreateWizard', {
 			{
 			    xtype: 'pveNodeSelector',
 			    name: 'nodename',
-			    selectCurNode: true,
+			    selectCurNode: !me.nodename,
+			    preferredValue: me.nodename,
 			    fieldLabel: gettext('Node'),
 			    allowBlank: false,
 			    onlineValidator: true,

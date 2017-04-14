@@ -183,7 +183,8 @@ Ext.define('PVE.lxc.CreateWizard', {
 			{
 			    xtype: 'pveNodeSelector',
 			    name: 'nodename',
-			    selectCurNode: true,
+			    selectCurNode: !me.nodename,
+			    preferredValue: me.nodename,
 			    fieldLabel: gettext('Node'),
 			    allowBlank: false,
 			    onlineValidator: true,
