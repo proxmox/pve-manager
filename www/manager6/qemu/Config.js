@@ -73,13 +73,32 @@ Ext.define('PVE.qemu.Config', {
 	    iconCls: 'fa fa-send-o'
 	});
 
-	var cloneBtn = Ext.create('Ext.Button', {
-		text: gettext('Clone'),
-		iconCls: 'fa fa-fw fa-clone',
-		hidden: caps.vms['VM.Clone'] ? false : true,
-		handler: function() {
-		    PVE.window.Clone.wrap(nodename, vmid, template);
-		}
+	var cloneBtn = Ext.create('PVE.button.Split', {
+	    text: gettext('Clone'),
+	    iconCls: 'fa fa-fw fa-clone',
+	    hidden: caps.vms['VM.Clone'] ? false : true,
+	    handler: function() {
+		PVE.window.Clone.wrap(nodename, vmid, template);
+	    },
+	    menu: {
+		items: [{
+		    text: gettext('Convert to template'),
+		    disabled: template,
+		    iconCls: 'fa fa-fw fa-file-o',
+		    hidden: caps.vms['VM.Allocate'] ? false : true,
+		    confirmMsg: PVE.Utils.format_task_description('qmtemplate', vmid),
+		    handler: function() {
+			PVE.Utils.API2Request({
+			    url: base_url + '/template',
+			    waitMsgTarget: me,
+			    method: 'POST',
+			    failure: function(response, opts) {
+				Ext.Msg.alert('Error', response.htmlStatus);
+			    }
+			});
+		    }
+		}]
+	    }
 	});
 
 	var shutdownBtn = Ext.create('PVE.button.Split', {
