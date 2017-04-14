@@ -1336,6 +1336,12 @@ Ext.define('PVE.Utils', { utilities: {
 	    });
 	    */
 	    return;
+
+	} else if (record.data.type === 'node' ){
+	    menu = Ext.create('PVE.node.CmdMenu', {
+		nodename: record.data.node
+	    });
+
 	} else {
 	    return;
 	}

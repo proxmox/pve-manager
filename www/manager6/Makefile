@@ -13,6 +13,7 @@ JSSRC= 				                 	\
 	qemu/CmdMenu.js					\
 	qemu/TemplateMenu.js				\
 	lxc/CmdMenu.js					\
+	node/CmdMenu.js					\
 	VNCConsole.js					\
 	data/TimezoneStore.js				\
 	data/reader/JsonObject.js			\
