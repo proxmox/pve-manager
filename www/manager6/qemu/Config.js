@@ -82,16 +82,6 @@ Ext.define('PVE.qemu.Config', {
 		}
 	});
 
-	var resetBtn = Ext.create('PVE.button.Button', {
-	    text: gettext('Reset'),
-	    disabled: !caps.vms['VM.PowerMgmt'],
-	    confirmMsg: PVE.Utils.format_task_description('qmreset', vmid),
-	    handler: function() {
-		vm_command("reset");
-	    },
-	    iconCls: 'fa fa-bolt'
-	});
-
 	var shutdownBtn = Ext.create('PVE.button.Split', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
@@ -109,6 +99,14 @@ Ext.define('PVE.qemu.Config', {
 			vm_command("stop", { timeout: 30 });
 		    },
 		    iconCls: 'fa fa-stop'
+		},{
+		    text: gettext('Reset'),
+		    disabled: !caps.vms['VM.PowerMgmt'],
+		    confirmMsg: PVE.Utils.format_task_description('qmreset', vmid),
+		    handler: function() {
+			vm_command("reset");
+		    },
+		    iconCls: 'fa fa-bolt'
 		}]
 	    },
 	    iconCls: 'fa fa-power-off'
@@ -142,7 +140,7 @@ Ext.define('PVE.qemu.Config', {
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Virtual Machine {0} on node {1}"), descr, "'" + nodename + "'"),
 	    hstateid: 'kvmtab',
-	    tbar: [ resumeBtn, startBtn, shutdownBtn, resetBtn,
+	    tbar: [ resumeBtn, startBtn, shutdownBtn,
 		    removeBtn, migrateBtn, cloneBtn, consoleBtn],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
@@ -309,7 +307,6 @@ Ext.define('PVE.qemu.Config', {
 	    consoleBtn.setEnableSpice(spice);
 
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
-	    resetBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running' || template);
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
 	    removeBtn.setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
 	    consoleBtn.setDisabled(template);
