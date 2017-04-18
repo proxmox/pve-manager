@@ -20,6 +20,14 @@ Ext.define('PVE.window.Edit', {
 
     backgroundDelay: 0,
 
+    // needed for finding the reference to submitbutton
+    // because we do not have a controller
+    referenceHolder: true,
+    defaultButton: 'submitbutton',
+
+    // finds the first form field
+    defaultFocus: 'field',
+
     showProgress: false,
 
     isValid: function() {
@@ -220,6 +228,7 @@ Ext.define('PVE.window.Edit', {
 	}
 
 	var submitBtn = Ext.create('Ext.Button', {
+	    reference: 'submitbutton',
 	    text: submitText,
 	    disabled: !me.isCreate,
 	    handler: function() {
