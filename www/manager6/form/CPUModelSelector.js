@@ -25,6 +25,7 @@ Ext.define('PVE.form.CPUModelSelector', {
 	['Haswell-noTSX','Haswell-noTSX'],
 	['Broadwell', 'Broadwell'],
 	['Broadwell-noTSX','Broadwell-noTSX'],
+	['Skylake-Client','Skylake-Client'],
 	['Opteron_G1', 'Opteron_G1'],
 	['Opteron_G2', 'Opteron_G2'],
 	['Opteron_G3', 'Opteron_G3'],
