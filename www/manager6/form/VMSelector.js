@@ -179,23 +179,25 @@ Ext.define('PVE.form.VMSelector', {
 
 	// only show the relevant guests by default
 	if (me.action) {
+	    var statusfilter = '';
 	    switch (me.action) {
 		case 'startall':
-		    me.store.filters.add({
-			id: 'x-gridfilter-status',
-			operator: 'in',
-			property: 'status',
-			value: ['stopped']
-		    });
+		    statusfilter = 'stopped';
 		    break;
 		case 'stopall':
-		    me.store.filters.add({
-			id: 'x-gridfilter-status',
-			operator: 'in',
-			property: 'status',
-			value: ['running']
-		    });
+		    statusfilter = 'running';
 		    break;
+	    }
+	    if (statusfilter !== '') {
+		me.store.filters.add({
+		    property: 'template',
+		    value: 0
+		},{
+		    id: 'x-gridfilter-status',
+		    operator: 'in',
+		    property: 'status',
+		    value: [statusfilter]
+		});
 	    }
 	}
 
