@@ -1,3 +1,9 @@
+pve-manager (5.0-9) unstable; urgency=medium
+
+  * update cpuset rebalance code for new libpve-common-perl package
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 20 Apr 2017 12:19:58 +0200
+
 pve-manager (5.0-8) unstable; urgency=medium
 
   * filter templates in bulk start/stop
