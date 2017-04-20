@@ -1,3 +1,13 @@
+pve-manager (5.0-8) unstable; urgency=medium
+
+  * filter templates in bulk start/stop
+
+  * add skylake to cpu types
+
+  * set default focus and default button for edit window
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 20 Apr 2017 06:25:00 +0200
+
 pve-manager (5.0-7) unstable; urgency=medium
 
   * move qemu reset button into shutdown menu
