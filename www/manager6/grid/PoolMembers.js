@@ -240,6 +240,10 @@ Ext.define('PVE.grid.PoolMembers', {
             columns: coldef,
 	    listeners: {
 		itemcontextmenu: PVE.Utils.createCmdMenu,
+		itemdblclick: function(v, record) {
+		    var ws = me.up('pveStdWorkspace');
+		    ws.selectById(record.data.id);
+		},
 		activate: reload
 	    }
 	});
