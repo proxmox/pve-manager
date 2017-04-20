@@ -235,9 +235,9 @@ sub rebalance_lxc_containers {
     my $all_cpus = PVE::CpuSet->new_from_cgroup('lxc', 'effective_cpus');
     my @allowed_cpus = $all_cpus->members();
     my $cpucount = scalar(@allowed_cpus);
-    my $max_cpuid = PVE::CpuSet::max_cpuid();
+    my $max_cpuid = $allowed_cpus[-1];
 
-    my @cpu_ctcount = (0) x $max_cpuid;
+    my @cpu_ctcount = (0) x ($max_cpuid+1);
     my @balanced_cts;
 
     my $modify_cpuset = sub {
