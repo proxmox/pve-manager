@@ -16,7 +16,7 @@ sub logmsg {
 
     chomp $msg;
 
-    my $tstr = strftime ("%b %d %H:%M:%S", localtime);
+    my $tstr = strftime ("%F %H:%M:%S", localtime);
 
     foreach my $line (split (/\n/, $msg)) {
 	print $logfd "$tstr $line\n";
