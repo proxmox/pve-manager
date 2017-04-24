@@ -213,7 +213,7 @@ sub debugmsg {
 
     my $pre = $debugstattxt->{$mtype} || $debugstattxt->{'err'};
 
-    my $timestr = strftime ("%b %d %H:%M:%S", CORE::localtime);
+    my $timestr = strftime ("%F %H:%M:%S", CORE::localtime);
 
     syslog ($mtype eq 'info' ? 'info' : 'err', "$pre $msg") if $syslog;
 
