@@ -17,7 +17,8 @@ SERVICES=			\
 	pve-manager.service 	\
 	pvedaemon.service  	\
 	pveproxy.service 	\
-	spiceproxy.service
+	spiceproxy.service	\
+	pve-storage.target
 
 .PHONY: install 
 install: ${SCRIPTS}
