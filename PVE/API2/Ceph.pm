@@ -757,7 +757,6 @@ __PACKAGE__->register_method ({
 		'auth cluster required' => 'cephx',
 		'auth service required' => 'cephx',
 		'auth client required' => 'cephx',
-		'filestore xattr use omap' => 'true',
 		'osd journal size' => $pve_osd_default_journal_size,
 		'osd pool default min size' => 1,
 	    };
