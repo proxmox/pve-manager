@@ -733,6 +733,12 @@ __PACKAGE__->register_method ({
 		minimum => 6,
 		maximum => 14,
 	    },
+	    'disable-cephx' => {
+		description => "Disable cephx authentification.",
+		type => 'boolean',
+		optional => 1,
+		default => 0,
+	    }
 	},
     },
     returns => { type => 'null' },
@@ -752,11 +758,13 @@ __PACKAGE__->register_method ({
 	    UUID::generate($uuid);
 	    UUID::unparse($uuid, $fsid);
 
+	    my $auth = $param->{'disable-cephx'} ? 'none' : 'cephx';
+
 	    $cfg->{global} = {
 		'fsid' => $fsid,
-		'auth cluster required' => 'cephx',
-		'auth service required' => 'cephx',
-		'auth client required' => 'cephx',
+		'auth cluster required' => $auth,
+		'auth service required' => $auth,
+		'auth client required' => $auth,
 		'osd journal size' => $pve_osd_default_journal_size,
 		'osd pool default min size' => 1,
 	    };
