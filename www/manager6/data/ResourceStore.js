@@ -53,11 +53,7 @@ Ext.define('PVE.data.ResourceStore', {
 		hidden: true,
 		convert: function(value, record) {
 		    var info = record.data;
-		    if (info.type === 'qemu' || info.type === 'lxc' || info.type === 'node') {
-			return (Ext.isNumeric(info.uptime) && (info.uptime > 0));
-		    } else {
-			return false;
-		    }
+		    return (Ext.isNumeric(info.uptime) && (info.uptime > 0));
 		}
 	    },
 	    text: {
