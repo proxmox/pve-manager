@@ -733,7 +733,7 @@ __PACKAGE__->register_method ({
 		minimum => 6,
 		maximum => 14,
 	    },
-	    'disable-cephx' => {
+	    disable_cephx => {
 		description => "Disable cephx authentification.\n\n" .
 		    "WARNING: cephx is a security feature protecting against " .
 		    "man-in-the-middle attacks. Only consider disabling cephx ".
@@ -741,7 +741,7 @@ __PACKAGE__->register_method ({
 		type => 'boolean',
 		optional => 1,
 		default => 0,
-	    }
+	    },
 	},
     },
     returns => { type => 'null' },
@@ -761,7 +761,7 @@ __PACKAGE__->register_method ({
 	    UUID::generate($uuid);
 	    UUID::unparse($uuid, $fsid);
 
-	    my $auth = $param->{'disable-cephx'} ? 'none' : 'cephx';
+	    my $auth = $param->{disable_cephx} ? 'none' : 'cephx';
 
 	    $cfg->{global} = {
 		'fsid' => $fsid,
