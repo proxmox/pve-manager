@@ -69,20 +69,18 @@ Ext.define('PVE.data.ResourceStore', {
 			return value;
 		    }
 
-		    if (info.type === 'node') {
-			text = info.node;
-		    } else if (info.type === 'pool') {
-			text = info.pool;
-		    } else if (info.type === 'storage') {
-			text = info.storage + ' (' + info.node + ')';
-		    } else if (info.type === 'qemu' || info.type === 'lxc') {
+		    if (Ext.isNumeric(info.vmid) && info.vmid > 0) {
 			text = String(info.vmid);
 			if (info.name) {
 			    text += " (" + info.name + ')';
 			}
-		    } else {
-			text = info.id;
+		    } else { // node, pool, storage
+			text = info[info.type] || info.id;
+			if (info.node && info.type !== 'node') {
+			    text += " (" + info.node + ")";
+			}
 		    }
+
 		    return text;
 		}
 	    },
