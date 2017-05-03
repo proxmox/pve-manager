@@ -236,7 +236,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	var updateTree = function() {
 	    var tmp;
 
-	    // fixme: suspend events ?
+	    store.suspendEvents();
 
 	    var rootnode = me.store.getRootNode();
 	    me.setIconCls(rootnode.data);
@@ -360,6 +360,8 @@ Ext.define('PVE.tree.ResourceTree', {
 	    }
 
 	    pdata.updateCount++;
+	    store.resumeEvents();
+	    store.fireEvent('refresh', store);
 	};
 
 	var statechange = function(sp, key, value) {
