@@ -770,6 +770,7 @@ __PACKAGE__->register_method ({
 		'auth client required' => $auth,
 		'osd journal size' => $pve_osd_default_journal_size,
 		'osd pool default min size' => 1,
+		'mon allow pool delete' => 'true',
 	    };
 
 	    # this does not work for default pools 
