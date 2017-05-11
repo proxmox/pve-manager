@@ -40,6 +40,7 @@ use PVE::API2::VZDump;
 use PVE::API2::APT;
 use PVE::API2::Ceph;
 use PVE::API2::Firewall::Host;
+use PVE::API2::Replication;
 use Digest::MD5;
 use Digest::SHA;
 use PVE::API2::Disks;
@@ -113,6 +114,11 @@ __PACKAGE__->register_method ({
 });
 
 __PACKAGE__->register_method ({
+    subclass => "PVE::API2::Replication",
+    path => 'replication',
+});
+
+__PACKAGE__->register_method ({
     name => 'index', 
     path => '', 
     method => 'GET',
@@ -147,6 +153,7 @@ __PACKAGE__->register_method ({
 	    { name => 'tasks' },
 	    { name => 'rrd' }, # fixme: remove?
 	    { name => 'rrddata' },# fixme: remove?
+	    { name => 'replication' },
 	    { name => 'vncshell' },
 	    { name => 'spiceshell' },
 	    { name => 'time' },

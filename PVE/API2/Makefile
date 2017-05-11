@@ -1,6 +1,8 @@
 include ../../defines.mk
 
 PERLSOURCE = 			\
+	Replication.pm		\
+	ReplicationConfig.pm	\
 	Ceph.pm			\
 	APT.pm			\
 	Subscription.pm		\

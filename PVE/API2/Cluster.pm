@@ -22,8 +22,14 @@ use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::Firewall;
 use PVE::API2::Firewall::Cluster;
+use PVE::API2::ReplicationConfig;
 
 use base qw(PVE::RESTHandler);
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::ReplicationConfig",
+    path => 'replication',
+});
 
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::ClusterConfig",
@@ -82,6 +88,7 @@ __PACKAGE__->register_method ({
 	    { name => 'log' },
 	    { name => 'options' },
 	    { name => 'resources' },
+	    { name => 'replication' },
 	    { name => 'tasks' },
 	    { name => 'backup' },
 	    { name => 'ha' },
