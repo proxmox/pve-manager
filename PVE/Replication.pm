@@ -7,6 +7,7 @@ use JSON;
 use Time::HiRes qw(gettimeofday tv_interval);
 
 use PVE::INotify;
+use PVE::ProcFSTools;
 use PVE::Tools;
 use PVE::Cluster;
 use PVE::QemuConfig;
@@ -167,10 +168,26 @@ my $run_replication = sub {
 
     my $t0 = [gettimeofday];
 
+    # cleanup stale pid/ptime state
+    foreach my $vmid (keys %$stateobj) {
+	foreach my $tid (keys %{$stateobj->{$vmid}}) {
+	    my $state = $stateobj->{$vmid}->{$tid};
+	    delete $state->{pid};
+	    delete $state->{ptime};
+	}
+    }
+
+    $state->{pid} = $$;
+    $state->{ptime} = PVE::ProcFSTools::read_proc_starttime($state->{pid});
+
+    $update_job_state->($stateobj, $jobcfg,  $state);
+
     eval { replicate($jobcfg, $start_time); };
     my $err = $@;
 
     $state->{duration} = tv_interval($t0);
+    delete $state->{pid};
+    delete $state->{ptime};
 
     if ($err) {
 	$state->{fail_count}++;

@@ -124,9 +124,11 @@ my $print_job_status = sub {
 	my $timestr = $job->{last_sync} ?
 	    strftime("%Y-%m-%d_%H:%M:%S", localtime($job->{last_sync})) : '-';
 
+	my $state = $job->{pid} ? "SYNCING" : $job->{error} // 'OK';
+
 	printf($format, $job->{id}, $job->{guest}, $tid,
 	       $timestr, $job->{duration} // '-',
-	       $job->{fail_count}, , $job->{error} // 'OK');
+	       $job->{fail_count}, $state);
     }
 };
 

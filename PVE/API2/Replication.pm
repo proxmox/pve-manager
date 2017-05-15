@@ -5,6 +5,7 @@ use strict;
 
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RPCEnvironment;
+use PVE::ProcFSTools;
 use PVE::ReplicationConfig;
 use PVE::Replication;
 
@@ -83,6 +84,11 @@ __PACKAGE__->register_method ({
 	    $d->{id} = $id;
 	    foreach my $k (qw(last_sync fail_count error duration)) {
 		$d->{$k} = $state->{$k} if defined($state->{$k});
+	    }
+	    if ($state->{pid} && $state->{ptime}) {
+		if (PVE::ProcFSTools::check_process_running($state->{pid}, $state->{ptime})) {
+		    $d->{pid} = $state->{pid};
+		}
 	    }
 	    push @$res, $d;
 	}
