@@ -150,7 +150,7 @@ Ext.define('PVE.CephRemoveOsd', {
 
 	me.isCreate = true;
 
-	me.title = gettext('Remove') + ': ' + 'Ceph OSD osd.' + me.osdid.toString();
+	me.title = gettext('Destroy') + ': Ceph OSD osd.' + me.osdid.toString();
 
         Ext.applyIf(me, {
 	    url: "/nodes/" + me.nodename + "/ceph/osd/" + me.osdid.toString()
@@ -401,7 +401,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	});
 
 	var remove_btn = new Ext.Button({
-	    text: gettext('Remove'),
+	    text: gettext('Destroy'),
 	    disabled: true,
 	    handler: function(){
 		var rec = sm.getSelection()[0];
