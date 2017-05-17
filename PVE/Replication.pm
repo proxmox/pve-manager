@@ -9,6 +9,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use PVE::INotify;
 use PVE::ProcFSTools;
 use PVE::Tools;
+use PVE::CalendarEvent;
 use PVE::Cluster;
 use PVE::QemuConfig;
 use PVE::QemuServer;
@@ -46,7 +47,8 @@ my $get_job_state = sub {
     $state = {} if !$state;
 
     $state->{last_iteration} //= 0;
-    $state->{last_sync} //= 0;
+    $state->{last_try} //= 0; # last sync start time
+    $state->{last_sync} //= 0; # last successful sync start time
     $state->{fail_count} //= 0;
 
     return $state;
@@ -93,9 +95,22 @@ sub job_status {
 
 	next if $jobcfg->{disable};
 
-	$jobcfg->{state} = $get_job_state->($stateobj, $jobcfg);
+	my $state = $get_job_state->($stateobj, $jobcfg);
+	$jobcfg->{state} = $state;
 	$jobcfg->{id} = $jobid;
 	$jobcfg->{vmtype} = $vms->{ids}->{$vmid}->{type};
+
+	my $next_sync = 0;
+	if (my $fail_count = $state->{fail_count}) {
+	    if ($fail_count < 3) {
+		$next_sync = $state->{last_try} + 5*60*$fail_count;
+	    }
+	} else {
+	    my $schedule =  $jobcfg->{schedule} || '*/15';
+	    my $calspec = PVE::CalendarEvent::parse_calendar_event($schedule);
+	    $next_sync = PVE::CalendarEvent::compute_next_event($calspec, $state->{last_try}) // 0;
+	}
+	$jobcfg->{next_sync} = $next_sync;
 
 	$jobs->{$jobid} = $jobcfg;
     }
@@ -110,15 +125,6 @@ my $get_next_job = sub {
 
     my $jobs = job_status($stateobj);
 
-    # compute next_sync here to make it easy to sort jobs
-    my $next_sync_hash = {};
-    foreach my $jobid (keys %$jobs) {
-	my $jobcfg = $jobs->{$jobid};
-	my $interval = $jobcfg->{interval} || 15;
-	my $last_sync = $jobcfg->{state}->{last_sync};
-	$next_sync_hash->{$jobid} = $last_sync + $interval * 60;
-    }
-
     my $sort_func = sub {
 	my $joba = $jobs->{$a};
 	my $jobb = $jobs->{$b};
@@ -126,20 +132,15 @@ my $get_next_job = sub {
 	my $sb =  $jobb->{state};
 	my $res = $sa->{last_iteration} cmp $sb->{last_iteration};
 	return $res if $res != 0;
-	$res = $next_sync_hash->{$a} <=> $next_sync_hash->{$b};
+	$res = $joba->{next_sync} <=> $jobb->{next_sync};
 	return $res if $res != 0;
 	return  $joba->{guest} <=> $jobb->{guest};
     };
 
     foreach my $jobid (sort $sort_func keys %$jobs) {
 	my $jobcfg = $jobs->{$jobid};
-<<<<<<< HEAD
-	next if $jobcfg->{state}->{last_iteration} >= $now;
-	if ($now >= $next_sync_hash->{$jobid}) {
-=======
 	next if $jobcfg->{state}->{last_iteration} >= $iteration;
 	if ($jobcfg->{next_sync} && ($start_time >= $jobcfg->{next_sync})) {
->>>>>>> c2eac19e... fixup iteration marker
 	    $next_jobid = $jobid;
 	    last;
 	}
@@ -179,7 +180,7 @@ my $run_replication = sub {
 
     $state->{pid} = $$;
     $state->{ptime} = PVE::ProcFSTools::read_proc_starttime($state->{pid});
-
+    $state->{last_try} = $start_time;
     $update_job_state->($stateobj, $jobcfg,  $state);
 
     eval { replicate($jobcfg, $start_time); };
@@ -193,6 +194,7 @@ my $run_replication = sub {
 	$state->{fail_count}++;
 	$state->{error} = "$err";
 	$update_job_state->($stateobj, $jobcfg,  $state);
+	warn $err;
    } else {
 	$state->{last_sync} = $start_time;
 	$state->{fail_count} = 0;

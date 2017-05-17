@@ -82,7 +82,7 @@ __PACKAGE__->register_method ({
 	    my $vmid = $d->{guest};
 	    next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ]);
 	    $d->{id} = $id;
-	    foreach my $k (qw(last_sync fail_count error duration)) {
+	    foreach my $k (qw(last_sync last_try fail_count error duration)) {
 		$d->{$k} = $state->{$k} if defined($state->{$k});
 	    }
 	    if ($state->{pid} && $state->{ptime}) {

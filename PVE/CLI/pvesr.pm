@@ -96,14 +96,14 @@ my $print_job_list = sub {
 
     my $format = "%-20s %10s %-20s %10s %5s %8s\n";
 
-    printf($format, "JobID", "GuestID", "Target", "Interval", "Rate", "Enabled");
+    printf($format, "JobID", "GuestID", "Target", "Schedule", "Rate", "Enabled");
 
     foreach my $job (sort { $a->{guest} <=> $b->{guest} } @$list) {
 	my $plugin = PVE::ReplicationConfig->lookup($job->{type});
 	my $tid = $plugin->get_unique_target_id($job);
 
 	printf($format, $job->{id}, $job->{guest}, $tid,
-	       defined($job->{interval}) ? $job->{interval} : '-',
+	       defined($job->{schedule}) ? $job->{schedule} : '*/15',
 	       defined($job->{rate}) ? $job->{rate} : '-',
 	       $job->{disable} ? 'no' : 'yes'
 	    );
@@ -113,21 +113,33 @@ my $print_job_list = sub {
 my $print_job_status = sub {
     my ($list) = @_;
 
-    my $format = "%-20s %10s %-20s %20s %10s %10s %s\n";
+    my $format = "%-20s %10s %-20s %20s %20s %10s %10s %s\n";
 
-    printf($format, "JobID", "GuestID", "Target", "LastSync", "Duration", "FailCount", "State");
+    printf($format, "JobID", "GuestID", "Target", "LastSync", "NextSync", "Duration", "FailCount", "State");
 
     foreach my $job (sort { $a->{guest} <=> $b->{guest} } @$list) {
 	my $plugin = PVE::ReplicationConfig->lookup($job->{type});
 	my $tid = $plugin->get_unique_target_id($job);
 
-	my $timestr = $job->{last_sync} ?
-	    strftime("%Y-%m-%d_%H:%M:%S", localtime($job->{last_sync})) : '-';
+	my $timestr = '-';
+	if ($job->{last_sync}) {
+	    $timestr = strftime("%Y-%m-%d_%H:%M:%S", localtime($job->{last_sync}));
+	}
+
+	my $nextstr = '-';
+	if (my $next = $job->{next_sync}) {
+	    my $now = time();
+	    if ($next > $now) {
+		$nextstr = strftime("%Y-%m-%d_%H:%M:%S", localtime($job->{next_sync}));
+	    } else {
+		$nextstr = 'now';
+	    }
+	}
 
 	my $state = $job->{pid} ? "SYNCING" : $job->{error} // 'OK';
 
 	printf($format, $job->{id}, $job->{guest}, $tid,
-	       $timestr, $job->{duration} // '-',
+	       $timestr, $nextstr, $job->{duration} // '-',
 	       $job->{fail_count}, $state);
     }
 };
@@ -135,7 +147,7 @@ my $print_job_status = sub {
 our $cmddef = {
     status => [ 'PVE::API2::Replication', 'status', [], { node => $nodename }, $print_job_status ],
 
-    jobs => [ 'PVE::API2::ReplicationConfig', 'index' , [], {}, $print_job_list ],
+    list => [ 'PVE::API2::ReplicationConfig', 'index' , [], {}, $print_job_list ],
     read => [ 'PVE::API2::ReplicationConfig', 'read' , ['id'], {},
 	     sub { my $res = shift; print to_json($res, { utf8 => 1, pretty => 1, canonical => 1}); }],
     update => [ 'PVE::API2::ReplicationConfig', 'update' , ['id'], {} ],
