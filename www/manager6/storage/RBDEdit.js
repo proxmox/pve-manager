@@ -47,7 +47,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'username',
-		value: 'admin',
+		value: me.isCreate ? 'admin': '',
 		fieldLabel: gettext('User name'),
 		allowBlank: true
 	    }
