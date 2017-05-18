@@ -215,7 +215,7 @@ sub track_jobs {
 	}
     }
 
-    PVE::Replication::run_jobs($ctime);
+    PVE::Replication::run_jobs($ctime, \&logmsg);
 
     my $new = PVE::Replication::job_status();
 

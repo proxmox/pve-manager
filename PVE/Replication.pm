@@ -156,14 +156,15 @@ my $get_next_job = sub {
     return $jobcfg;
 };
 
+
 sub replicate {
-    my ($jobcfg, $start_time) = @_;
+    my ($jobcfg, $start_time, $logfunc) = @_;
 
     die "implement me";
 }
 
 my $run_replication = sub {
-    my ($stateobj, $jobcfg, $start_time) = @_;
+    my ($stateobj, $jobcfg, $start_time, $logfunc) = @_;
 
     my $state = delete $jobcfg->{state};
 
@@ -183,7 +184,9 @@ my $run_replication = sub {
     $state->{last_try} = $start_time;
     $update_job_state->($stateobj, $jobcfg,  $state);
 
-    eval { replicate($jobcfg, $start_time); };
+    $logfunc->($start_time, "$jobcfg->{id}: start replication job") if $logfunc;
+
+    eval { replicate($jobcfg, $start_time, $logfunc); };
     my $err = $@;
 
     $state->{duration} = tv_interval($t0);
@@ -194,8 +197,14 @@ my $run_replication = sub {
 	$state->{fail_count}++;
 	$state->{error} = "$err";
 	$update_job_state->($stateobj, $jobcfg,  $state);
-	warn $err;
-   } else {
+	if ($logfunc) {
+	    chomp $err;
+	    $logfunc->($start_time, "$jobcfg->{id}: end replication job with error: $err");
+	} else {
+	    warn $err;
+	}
+    } else {
+	$logfunc->($start_time, "$jobcfg->{id}: end replication job") if $logfunc;
 	$state->{last_sync} = $start_time;
 	$state->{fail_count} = 0;
 	delete $state->{error};
@@ -204,7 +213,7 @@ my $run_replication = sub {
 };
 
 sub run_single_job {
-    my ($jobid, $now) = @_; # passing $now useful for regression testing
+    my ($jobid, $now, $logfunc) = @_; # passing $now useful for regression testing
 
     my $local_node = PVE::INotify::nodename();
 
@@ -239,7 +248,7 @@ sub run_single_job {
 	$jobcfg->{state}->{last_iteration} = $now;
 	$update_job_state->($stateobj, $jobcfg,  $jobcfg->{state});
 
-	$run_replication->($stateobj, $jobcfg, $now);
+	$run_replication->($stateobj, $jobcfg, $now, $logfunc);
     };
 
     my $res = PVE::Tools::lock_file($state_path, 60, $code);
@@ -247,7 +256,7 @@ sub run_single_job {
 }
 
 sub run_jobs {
-    my ($now) = @_; # passing $now useful for regression testing
+    my ($now, $logfunc) = @_; # useful for regression testing
 
     my $iteration = $now // time();
 
@@ -256,7 +265,7 @@ sub run_jobs {
 	my $start_time = $now // time();
 
 	while (my $jobcfg = $get_next_job->($stateobj, $iteration, $start_time)) {
-	    $run_replication->($stateobj, $jobcfg, $start_time);
+	    $run_replication->($stateobj, $jobcfg, $start_time, $logfunc);
 	    $start_time = $now // time();
 	}
     };

@@ -33,19 +33,34 @@ __PACKAGE__->register_method ({
 	additionalProperties => 0,
 	properties => {
 	    id => get_standard_option('pve-replication-id', { optional => 1 }),
+	    verbose => {
+		description => "Print more verbose logs to stdout.",
+		type => 'boolean',
+		default => 0,
+		optional => 1,
+	    },
 	},
     },
     returns => { type => 'null' },
     code => sub {
 	my ($param) = @_;
 
+	my $logfunc;
+
+	if ($param->{verbose}) {
+	    $logfunc = sub {
+		my ($start_time, $msg) = @_;
+		print "$msg\n";
+	    };
+	}
+
 	if (my $id = extract_param($param, 'id')) {
 
-	    PVE::Replication::run_single_job($id);
+	    PVE::Replication::run_single_job($id, undef, $logfunc);
 
 	} else {
 
-	    PVE::Replication::run_jobs();
+	    PVE::Replication::run_jobs(undef, $logfunc);
 	}
 
 	return undef;
