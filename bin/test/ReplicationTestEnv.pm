@@ -3,6 +3,8 @@ package ReplicationTestEnv;
 use strict;
 use warnings;
 use JSON;
+use Clone 'clone';
+use File::Basename;
 
 use lib ('.', '../..');
 
@@ -104,8 +106,8 @@ my $pve_lxc_config_module = Test::MockModule->new('PVE::LXC::Config');
 
 my $mocked_replication_config = sub {
 
-    my $res = $mocked_replication_jobs;
-    
+    my $res = clone($mocked_replication_jobs);
+
     return bless { ids => $res }, 'PVE::ReplicationConfig';
 };
 
@@ -133,11 +135,11 @@ my $mocked_storage_config = {
 };
 
 my $pve_storage_module = Test::MockModule->new('PVE::Storage');
- 
+
 sub setup {
     $pve_storage_module->mock(config => sub { return $mocked_storage_config; });
 
-    $pve_replicationconfig->mock(new => $mocked_replication_config);    
+    $pve_replicationconfig->mock(new => $mocked_replication_config);
     $pve_qemuserver_module->mock(check_running => sub { return 0; });
     $pve_qemuconfig_module->mock(load_config => $mocked_qemu_load_conf);
 
@@ -148,6 +150,116 @@ sub setup {
     $pve_inotify_module->mock('nodename' => sub { return $mocked_nodename; });
 };
 
+# code to generate/conpare test logs
+
+my $logname;
+my $logfh;
+
+sub openlog {
+    my ($filename) = @_;
+
+    if (!$filename) {
+	# compute from $0
+	$filename = basename($0);
+	if ($filename =~ m/^(\S+)\.pl$/) {
+	    $filename = "$1.log";
+	} else {
+	    die "unable to compute log name for $0";
+	}
+    }
+
+    die "log already open" if defined($logname);
+
+    open (my $fh, ">", "$filename.tmp") ||
+	die "unable to open log  - $!";
+
+    $logname = $filename;
+    $logfh = $fh;
+}
+
+sub logmsg {
+    my ($ctime, $msg) = @_;
+
+    print "$ctime $msg\n";
+    print $logfh "$ctime $msg\n";
+}
+
+sub commit_log {
+
+    close($logfh);
+
+    if (-f $logname) {
+	my $diff = `diff -u '$logname' '$logname.tmp'`;
+	if ($diff) {
+	    warn "got unexpeted output\n";
+	    print "# diff -u '$logname' '$logname.tmp'\n";
+	    print $diff;
+	    exit(-1);
+	}
+    } else {
+	rename("$logname.tmp", $logname) || die "rename log failed - $!";
+    }
+}
+
+my $status;
+
+# helper to track job status
+sub track_jobs {
+    my ($ctime) = @_;
+
+    if (!$status) {
+	$status = PVE::Replication::job_status();
+	foreach my $jobid (sort keys %$status) {
+	    my $jobcfg = $status->{$jobid};
+	    logmsg($ctime, "$jobid: new job next_sync => $jobcfg->{next_sync}");
+	}
+    }
+
+    PVE::Replication::run_jobs($ctime);
+
+    my $new = PVE::Replication::job_status();
+
+    # detect removed jobs
+    foreach my $jobid (sort keys %$status) {
+	if (!$new->{$jobid}) {
+	    logmsg($ctime, "$jobid: vanished job");
+	}
+    }
+
+    foreach my $jobid (sort keys %$new) {
+	my $jobcfg = $new->{$jobid};
+	my $oldcfg = $status->{$jobid};
+	if (!$oldcfg) {
+	    logmsg($ctime, "$jobid: new job next_sync => $jobcfg->{next_sync}");
+	    next; # no old state to compare
+	} else {
+	    foreach my $k (qw(target guest vmtype next_sync)) {
+		my $changes = '';
+		if ($oldcfg->{$k} ne $jobcfg->{$k}) {
+		    $changes .= ', ' if $changes;
+		    $changes .= "$k => $jobcfg->{$k}";
+		}
+		logmsg($ctime, "$jobid: changed config $changes") if $changes;
+	    }
+	}
+
+	my $oldstate = $oldcfg->{state};
+	my $state = $jobcfg->{state};
+
+	my $changes = '';
+	foreach my $k (qw(last_try last_sync fail_count error)) {
+	    if (($oldstate->{$k} // '') ne ($state->{$k} // '')) {
+		my $value = $state->{$k};
+		chomp $value;
+		$changes .= ', ' if $changes;
+		$changes .= "$k => $value";
+	    }
+	}
+	logmsg($ctime, "$jobid: changed state $changes") if $changes;
+
+    }
+    $status = $new;
+}
 
 
 1;
