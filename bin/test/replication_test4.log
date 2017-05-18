@@ -1,0 +1,7 @@
+1000 job_900_to_node2: new job next_sync => 900
+1000 job_900_to_node2: changed config next_sync => 1300
+1000 job_900_to_node2: changed state last_try => 1000, fail_count => 1, error => faked replication error
+1300 job_900_to_node2: changed config next_sync => 1900
+1300 job_900_to_node2: changed state last_try => 1300, fail_count => 2
+1900 job_900_to_node2: changed config next_sync => 0
+1900 job_900_to_node2: changed state last_try => 1900, fail_count => 3
