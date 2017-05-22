@@ -716,7 +716,15 @@ __PACKAGE__->register_method ({
 		maxLength => 128,
 	    },
 	    size => {
-		description => 'Number of replicas per object',
+		description => 'Targeted number of replicas per object',
+		type => 'integer',
+		default => 3,
+		optional => 1,
+		minimum => 1,
+		maximum => 7,
+	    },
+	    min_size => {
+		description => 'Minimum number of available replicas per object to allow I/O',
 		type => 'integer',
 		default => 2,
 		optional => 1,
@@ -769,7 +777,8 @@ __PACKAGE__->register_method ({
 		'auth service required' => $auth,
 		'auth client required' => $auth,
 		'osd journal size' => $pve_osd_default_journal_size,
-		'osd pool default min size' => 1,
+		'osd pool default size' => $param->{size} // 3,
+		'osd pool default min size' => $param->{min_size} // 2,
 		'mon allow pool delete' => 'true',
 	    };
 
@@ -780,8 +789,6 @@ __PACKAGE__->register_method ({
 	
 	$cfg->{global}->{keyring} = '/etc/pve/priv/$cluster.$name.keyring';
 	$cfg->{osd}->{keyring} = '/var/lib/ceph/osd/ceph-$id/keyring';
-
-	$cfg->{global}->{'osd pool default size'} = $param->{size} if $param->{size};
 
 	if ($param->{pg_bits}) {
 	    $cfg->{global}->{'osd pg bits'} = $param->{pg_bits};
