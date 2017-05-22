@@ -44,6 +44,17 @@ my $mocked_vmlist = sub {
     return { 'ids' => $res };
 };
 
+my $mocked_get_ssh_info  = sub {
+    my ($node, $network_cidr) = @_;
+
+    return { node => $node };
+};
+
+my $mocked_ssh_info_to_command = sub {
+    my ($info, @extra_options) = @_;
+
+    return ['fake_ssh', $info->{name}, @extra_options];
+};
 
 my $statefile = ".mocked_repl_state";
 
@@ -142,7 +153,7 @@ sub register_mocked_volid {
     my ($volid, $snapname) = @_;
 
     my ($storeid, $volname) = PVE::Storage::parse_volume_id($volid);
-    my $scfg = $mocked_storage_config->{ids}->{$storeid} || 
+    my $scfg = $mocked_storage_config->{ids}->{$storeid} ||
 	die "no such storage '$storeid'\n";
 
     my $d = $mocked_storage_content->{$storeid}->{$volname} //= {};
@@ -195,7 +206,10 @@ sub setup {
     $pve_lxc_config_module->mock(load_config => $mocked_lxc_load_conf);
 
 
-    $pve_cluster_module->mock(get_vmlist => sub { return $mocked_vmlist->(); });
+    $pve_cluster_module->mock(
+	get_ssh_info => $mocked_get_ssh_info,
+	ssh_info_to_command => $mocked_ssh_info_to_command,
+	get_vmlist => sub { return $mocked_vmlist->(); });
     $pve_inotify_module->mock('nodename' => sub { return $mocked_nodename; });
 };
 
