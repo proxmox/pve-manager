@@ -12,6 +12,7 @@ use PVE::ProcFSTools;
 use PVE::CpuSet;
 use Filesys::Df;
 use PVE::INotify;
+use PVE::Network;
 use PVE::Cluster qw(cfs_read_file);
 use PVE::Storage;
 use PVE::QemuServer;
@@ -94,7 +95,7 @@ sub update_node_status {
     my $netin = 0;
     my $netout = 0;
     foreach my $dev (keys %$netdev) {
-	next if $dev !~ m/^eth\d+$/;
+	next if $dev !~ m/^$PVE::Network::PHYSICAL_NIC_RE$/;
 	$netin += $netdev->{$dev}->{receive};
 	$netout += $netdev->{$dev}->{transmit};
     }
