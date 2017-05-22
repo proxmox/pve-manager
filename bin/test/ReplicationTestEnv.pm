@@ -136,8 +136,57 @@ my $mocked_storage_config = {
 
 my $pve_storage_module = Test::MockModule->new('PVE::Storage');
 
+my $mocked_storage_content = {};
+
+sub register_mocked_volid {
+    my ($volid, $snapname) = @_;
+
+    my ($storeid, $volname) = PVE::Storage::parse_volume_id($volid);
+    my $scfg = $mocked_storage_config->{ids}->{$storeid} || 
+	die "no such storage '$storeid'\n";
+
+    my $d = $mocked_storage_content->{$storeid}->{$volname} //= {};
+
+    $d->{$snapname} = 1 if $snapname;
+}
+
+my $mocked_volume_snapshot_list = sub {
+    my ($cfg, $volid, $prefix) = @_;
+
+    my ($storeid, $volname) = PVE::Storage::parse_volume_id($volid);
+    my $snaps = [];
+
+    if (my $d = $mocked_storage_content->{$storeid}->{$volname}) {
+	$snaps = [keys %$d];
+    }
+
+    return $snaps;
+};
+
+my $mocked_volume_snapshot = sub {
+    my ($cfg, $volid, $snap) = @_;
+
+    my ($storeid, $volname) = PVE::Storage::parse_volume_id($volid);
+
+    my $d = $mocked_storage_content->{$storeid}->{$volname};
+    die "no such volid '$volid'\n" if !$d;
+    $d->{$snap} = 1;
+};
+
+my $mocked_volume_snapshot_delete = sub {
+    my ($cfg, $volid, $snap, $running) = @_;
+
+    my ($storeid, $volname) = PVE::Storage::parse_volume_id($volid);
+    my $d = $mocked_storage_content->{$storeid}->{$volname};
+    die "no such volid '$volid'\n" if !$d;
+    delete $d->{$snap} || die "no such snapshot '$snap' on '$volid'\n";
+};
+
 sub setup {
     $pve_storage_module->mock(config => sub { return $mocked_storage_config; });
+    $pve_storage_module->mock(volume_snapshot_list => $mocked_volume_snapshot_list);
+    $pve_storage_module->mock(volume_snapshot => $mocked_volume_snapshot);
+    $pve_storage_module->mock(volume_snapshot_delete => $mocked_volume_snapshot_delete);
 
     $pve_replicationconfig->mock(new => $mocked_replication_config);
     $pve_qemuserver_module->mock(check_running => sub { return 0; });
