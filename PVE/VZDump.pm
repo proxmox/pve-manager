@@ -581,7 +581,12 @@ sub new {
     my $errors = '';
 
     if ($opts->{storage}) {
-	my $info = storage_info ($opts->{storage});
+	my $info;
+	eval {
+	    $info = storage_info ($opts->{storage});
+	};
+	$errors .= "could not get storage information for '$opts->{storage}': $@"
+	    if ($@);
 	$opts->{dumpdir} = $info->{dumpdir};
 	$maxfiles = $info->{maxfiles} if !defined($maxfiles) && defined($info->{maxfiles});
     } elsif ($opts->{dumpdir}) {
