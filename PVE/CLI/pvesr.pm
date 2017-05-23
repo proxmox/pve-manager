@@ -118,6 +118,74 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
+    name => 'finalize_local_job',
+    path => 'finalize_local_job',
+    method => 'POST',
+    description => "Finalize a replication job. This removes all replications snapshots with timestamps different than <last_sync>.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    id => get_standard_option('pve-replication-id'),
+	    vmid => get_standard_option('pve-vmid', { completion => \&PVE::Cluster::complete_vmid }),
+	    'extra-args' => get_standard_option('extra-args', {
+		description => "The list of volume IDs to consider." }),
+	    last_sync => {
+		description => "Time (UNIX epoch) of last successful sync. If not specified, all replication snapshots gets removed.",
+		type => 'integer',
+		minimum => 0,
+		optional => 1,
+	    },
+	},
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $jobid = $param->{id};
+	my $vmid = $param->{vmid};
+	my $last_sync = $param->{last_sync} // 0;
+
+	my $local_node = PVE::INotify::nodename();
+
+	my $vms = PVE::Cluster::get_vmlist();
+	die "guest '$vmid' is on local node\n"
+	    if $vms->{ids}->{$vmid} && $vms->{ids}->{$vmid}->{node} eq $local_node;
+
+	my $storecfg = PVE::Storage::config();
+
+	my $volids = [];
+
+	die "no volumes specified\n" if !scalar(@{$param->{'extra-args'}});
+
+	foreach my $volid (@{$param->{'extra-args'}}) {
+
+	    my ($storeid, $volname) = PVE::Storage::parse_volume_id($volid);
+	    my $scfg = PVE::Storage::storage_check_enabled($storecfg, $storeid, $local_node);
+	    die "storage '$storeid' is a shared storage\n" if $scfg->{shared};
+
+	    my ($vtype, undef, $ownervm) = PVE::Storage::parse_volname($storecfg, $volid);
+	    die "volume '$volid' has wrong vtype ($vtype != 'images')\n"
+		if $vtype ne 'images';
+	    die "volume '$volid' has wrong owner\n"
+		if !$ownervm || $vmid != $ownervm;
+
+	    push @$volids, $volid;
+	}
+
+	$volids = [ sort @$volids ];
+
+	my $logfunc = sub {
+	    my ($start_time, $msg) = @_;
+	    print STDERR "$msg\n";
+	};
+
+	my $last_snapshots = PVE::Replication::prepare(
+	    $storecfg, $volids, $jobid, $last_sync, undef, $logfunc);
+
+	return undef;
+    }});
+
+__PACKAGE__->register_method ({
     name => 'run',
     path => 'run',
     method => 'POST',
@@ -267,6 +335,7 @@ our $cmddef = {
     disable => [ __PACKAGE__, 'disable', ['id'], {}],
 
     'prepare-local-job' => [ __PACKAGE__, 'prepare_local_job', ['id', 'vmid', 'extra-args'], {} ],
+    'finalize-local-job' => [ __PACKAGE__, 'finalize_local_job', ['id', 'vmid', 'extra-args'], {} ],
 
     run => [ __PACKAGE__ , 'run'],
 };
