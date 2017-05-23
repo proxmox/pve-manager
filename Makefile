@@ -27,6 +27,7 @@ country.dat: country.pl
 .PHONY: deb
 deb: $(DEB)
 $(DEB):
+	${MAKE} -C bin/test check
 	make clean
 	rm -rf dest
 	mkdir dest
