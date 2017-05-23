@@ -165,6 +165,28 @@ sub replication_snapshot_name {
     wantarray ? ($prefix, $snapname) : $snapname;
 }
 
+sub remote_prepare_local_job {
+    my ($ssh_info, $jobid, $vmid, $volumes, $last_sync) = @_;
+
+    my $ssh_cmd = PVE::Cluster::ssh_info_to_command($ssh_info);
+    my $cmd = [@$ssh_cmd, '--', 'pvesr', 'prepare-local-job', $jobid,
+	       $vmid, @$volumes, '--last_sync', $last_sync];
+
+    my $remote_snapshots;
+
+    my $parser = sub {
+	my $line = shift;
+	$remote_snapshots = JSON::decode_json($line);
+    };
+
+    PVE::Tools::run_command($cmd, outfunc => $parser);
+
+    die "prepare remote node failed - no result\n"
+	if !defined($remote_snapshots);
+
+    return $remote_snapshots;
+}
+
 sub prepare {
     my ($storecfg, $volids, $jobid, $last_sync, $start_time, $logfunc) = @_;
 
