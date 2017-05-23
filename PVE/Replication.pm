@@ -187,6 +187,16 @@ sub remote_prepare_local_job {
     return $remote_snapshots;
 }
 
+sub remote_finalize_local_job {
+    my ($ssh_info, $jobid, $vmid, $volumes, $last_sync) = @_;
+
+    my $ssh_cmd = PVE::Cluster::ssh_info_to_command($ssh_info);
+    my $cmd = [@$ssh_cmd, '--', 'pvesr', 'finalize-local-job', $jobid,
+	       $vmid, @$volumes, '--last_sync', $last_sync];
+
+    PVE::Tools::run_command($cmd);
+}
+
 sub prepare {
     my ($storecfg, $volids, $jobid, $last_sync, $start_time, $logfunc) = @_;
 
