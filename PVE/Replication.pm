@@ -219,10 +219,136 @@ sub prepare {
     return $last_snapshots;
 }
 
-sub replicate {
-    my ($jobcfg, $start_time, $logfunc) = @_;
+sub replicate_volume {
+    my ($ssh_info, $storecfg, $volid, $base_snapshot, $sync_snapname) = @_;
 
     die "implement me";
+}
+
+sub replicate {
+    my ($jobcfg, $last_sync, $start_time, $logfunc) = @_;
+
+    $logfunc = sub {} if !$logfunc; # log nothing by default
+
+    my $local_node = PVE::INotify::nodename();
+
+    die "not implemented - internal error" if $jobcfg->{type} ne 'local';
+
+    my $dc_conf = PVE::Cluster::cfs_read_file('datacenter.cfg');
+    my $migration_network = $dc_conf->{migration_network};
+    my $ssh_info = PVE::Cluster::get_ssh_info($jobcfg->{target}, $migration_network);
+
+    my $jobid = $jobcfg->{id};
+    my $storecfg = PVE::Storage::config();
+
+    die "start time before last sync ($start_time <= $last_sync) - abort sync\n"
+	if $start_time <= $last_sync;
+
+    my $vmid = $jobcfg->{guest};
+    my $vmtype = $jobcfg->{vmtype};
+
+    my $conf;
+    my $running;
+    my $qga;
+    my $volumes;
+
+    if ($vmtype eq 'qemu') {
+	$conf = PVE::QemuConfig->load_config($vmid);
+	$running = PVE::QemuServer::check_running($vmid);
+	$qga = PVE::QemuServer::qga_check_running($vmid)
+	    if $running && $conf->{agent};
+	$volumes = PVE::QemuConfig->get_replicatable_volumes($storecfg, $conf);
+    } elsif ($vmtype eq 'lxc') {
+	$conf = PVE::LXC::Config->load_config($vmid);
+	$running = PVE::LXC::check_running($vmid);
+	$volumes = PVE::LXC::Config->get_replicatable_volumes($storecfg, $conf);
+    } else {
+	die "internal error";
+    }
+
+    my $sorted_volids = [ sort keys %$volumes ];
+
+    $logfunc->($start_time, "$jobid: guest => $vmid, type => $vmtype, running => $running");
+    $logfunc->($start_time, "$jobid: volumes => " . join(',', @$sorted_volids));
+
+    # prepare remote side
+    my $remote_snapshots = remote_prepare_local_job(
+	$ssh_info, $jobid, $vmid, $volumes, $last_sync);
+
+    # test if we have a replication_ snapshot from last sync
+    # and remove all other/stale replication snapshots
+    my $last_sync_snapname = replication_snapshot_name($jobid, $last_sync);
+    my $sync_snapname = replication_snapshot_name($jobid, $start_time);
+
+    my $last_snapshots = prepare(
+	$storecfg, $sorted_volids, $jobid, $last_sync, $start_time, $logfunc);
+
+    # freeze filesystem for data consistency
+    if ($qga) {
+	$logfunc->($start_time, "$jobid: freeze guest filesystem");
+	PVE::QemuServer::vm_mon_cmd($vmid, "guest-fsfreeze-freeze");
+    }
+
+    # make snapshot of all volumes
+    my $replicate_snapshots = {};
+    eval {
+	foreach my $volid (@$sorted_volids) {
+	    $logfunc->($start_time, "$jobid: create snapshot '${sync_snapname}' on $volid");
+	    PVE::Storage::volume_snapshot($storecfg, $volid, $sync_snapname);
+	    $replicate_snapshots->{$volid} = 1;
+	}
+    };
+    my $err = $@;
+
+    # unfreeze immediately
+    if ($qga) {
+	$logfunc->($start_time, "$jobid: unfreeze guest filesystem");
+	eval { PVE::QemuServer::vm_mon_cmd($vmid, "guest-fsfreeze-thaw"); };
+	warn $@ if $@; # ignore errors here, because we cannot fix it anyways
+    }
+
+    my $cleanup_local_snapshots = sub {
+	my ($volid_hash, $snapname) = @_;
+	foreach my $volid (sort keys %$volid_hash) {
+	    $logfunc->($start_time, "$jobid: delete snapshot '$snapname' on $volid");
+	    eval { PVE::Storage::volume_snapshot_delete($storecfg, $volid, $snapname, $running); };
+	    warn $@ if $@;
+	}
+    };
+
+    if ($err) {
+	$cleanup_local_snapshots->($replicate_snapshots, $sync_snapname); # try to cleanup
+	die $err;
+    }
+
+    eval {
+
+	# fixme: limit, insecure
+	foreach my $volid (@$sorted_volids) {
+	    if ($last_snapshots->{$volid} && $remote_snapshots->{$volid}) {
+		$logfunc->($start_time, "$jobid: incremental sync '$volid' ($last_sync_snapname => $sync_snapname)");
+		replicate_volume($ssh_info, $storecfg, $volid, $last_sync_snapname, $sync_snapname);
+	    } else {
+		$logfunc->($start_time, "$jobid: full sync '$volid' ($sync_snapname)");
+		replicate_volume($ssh_info, $storecfg, $volid, undef, $sync_snapname);
+	    }
+	}
+    };
+    $err = $@;
+
+    if ($err) {
+	$cleanup_local_snapshots->($replicate_snapshots, $sync_snapname); # try to cleanup
+	# we do not cleanup the remote side here - this is done in
+	# next run of prepare_local_job
+	die $err;
+    }
+
+    # remove old snapshots because they are no longer needed
+    $cleanup_local_snapshots->($last_snapshots, $last_sync_snapname);
+
+    remote_finalize_local_job($ssh_info, $jobid, $vmid, $sorted_volids, $start_time);
+
+    die $err if $err;
 }
 
 my $run_replication = sub {
@@ -248,7 +374,7 @@ my $run_replication = sub {
 
     $logfunc->($start_time, "$jobcfg->{id}: start replication job") if $logfunc;
 
-    eval { replicate($jobcfg, $start_time, $logfunc); };
+    eval { replicate($jobcfg, $state->{last_sync}, $start_time, $logfunc); };
     my $err = $@;
 
     $state->{duration} = tv_interval($t0);
