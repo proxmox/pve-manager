@@ -220,9 +220,13 @@ sub prepare {
 }
 
 sub replicate_volume {
-    my ($ssh_info, $storecfg, $volid, $base_snapshot, $sync_snapname) = @_;
+    my ($ssh_info, $storecfg, $volid, $base_snapshot, $sync_snapname, $rate, $insecure) = @_;
 
-    die "implement me";
+    my ($storeid, $volname) = PVE::Storage::parse_volume_id($volid);
+
+    # fixme: handle $rate, $insecure ??
+    PVE::Storage::storage_migrate($storecfg, $volid, $ssh_info, $storeid, $volname,
+				  $base_snapshot, $sync_snapname);
 }
 
 sub replicate {
@@ -235,7 +239,14 @@ sub replicate {
     die "not implemented - internal error" if $jobcfg->{type} ne 'local';
 
     my $dc_conf = PVE::Cluster::cfs_read_file('datacenter.cfg');
-    my $migration_network = $dc_conf->{migration_network};
+
+    my $migration_network;
+    my $migration_type = 'secure';
+    if (my $mc = $dc_conf->{migration}) {
+	$migration_network = $mc->{network};
+	$migration_type = $mc->{type} if defined($mc->{type});
+    }
+
     my $ssh_info = PVE::Cluster::get_ssh_info($jobcfg->{target}, $migration_network);
 
     my $jobid = $jobcfg->{id};
@@ -323,15 +334,18 @@ sub replicate {
 
     eval {
 
-	# fixme: limit, insecure
+	my $rate = $jobcfg->{rate};
+	my $insecure = $migration_type eq 'insecure';
+
 	foreach my $volid (@$sorted_volids) {
+	    my $base_snapname;
 	    if ($last_snapshots->{$volid} && $remote_snapshots->{$volid}) {
 		$logfunc->($start_time, "$jobid: incremental sync '$volid' ($last_sync_snapname => $sync_snapname)");
-		replicate_volume($ssh_info, $storecfg, $volid, $last_sync_snapname, $sync_snapname);
+		$base_snapname = $last_sync_snapname;
 	    } else {
 		$logfunc->($start_time, "$jobid: full sync '$volid' ($sync_snapname)");
-		replicate_volume($ssh_info, $storecfg, $volid, undef, $sync_snapname);
 	    }
+	    replicate_volume($ssh_info, $storecfg, $volid, $base_snapname, $sync_snapname, $rate, $insecure);
 	}
     };
     $err = $@;
