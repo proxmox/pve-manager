@@ -312,7 +312,7 @@ sub track_jobs {
 	my $changes = '';
 	foreach my $k (qw(last_try last_sync fail_count error)) {
 	    if (($oldstate->{$k} // '') ne ($state->{$k} // '')) {
-		my $value = $state->{$k};
+		my $value = $state->{$k} // '';
 		chomp $value;
 		$changes .= ', ' if $changes;
 		$changes .= "$k => $value";
