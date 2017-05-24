@@ -11,11 +11,13 @@ use PVE::ProcFSTools;
 use PVE::Tools;
 use PVE::CalendarEvent;
 use PVE::Cluster;
+use PVE::AbstractConfig;
 use PVE::QemuConfig;
 use PVE::QemuServer;
 use PVE::LXC::Config;
 use PVE::LXC;
 use PVE::Storage;
+use PVE::GuestHelpers;
 use PVE::ReplicationConfig;
 
 # Note: regression tests can overwrite $state_path for testing
@@ -388,7 +390,12 @@ my $run_replication = sub {
 
     $logfunc->($start_time, "$jobcfg->{id}: start replication job") if $logfunc;
 
-    eval { replicate($jobcfg, $state->{last_sync}, $start_time, $logfunc); };
+    eval {
+	my $timeout = 2; # do not wait too long - we repeat periodically anyways
+	PVE::GuestHelpers::guest_migration_lock(
+	    $jobcfg->{guest}, $timeout, \&replicate,
+	    $jobcfg, $state->{last_sync}, $start_time, $logfunc);
+    };
     my $err = $@;
 
     $state->{duration} = tv_interval($t0);
