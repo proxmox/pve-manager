@@ -624,6 +624,20 @@ __PACKAGE__->register_method ({
 		type => 'boolean',
 		description => "use websocket instead of standard vnc.",
 	    },
+	    width => {
+		optional => 1,
+		description => "sets the width of the console in pixels.",
+		type => 'integer',
+		minimum => 16,
+		maximum => 4096,
+	    },
+	    height => {
+		optional => 1,
+		description => "sets the height of the console in pixels.",
+		type => 'integer',
+		minimum => 16,
+		maximum => 2160,
+	    },
 	},
     },
     returns => { 
@@ -690,6 +704,14 @@ __PACKAGE__->register_method ({
 	my $cmd = ['/usr/bin/vncterm', '-rfbport', $port,
 		   '-timeout', $timeout, '-authpath', $authpath, 
 		   '-perm', 'Sys.Console'];
+
+	if ($param->{width}) {
+	    push @$cmd, '-width', $param->{width};
+	}
+
+	if ($param->{height}) {
+	    push @$cmd, '-height', $param->{height};
+	}
 
 	if ($param->{websocket}) {
 	    $ENV{PVE_VNC_TICKET} = $ticket; # pass ticket to vncterm 
