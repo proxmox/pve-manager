@@ -156,6 +156,36 @@ my $get_next_job = sub {
     return $jobcfg;
 };
 
+sub replication_snapshot_name {
+    my ($jobid, $last_sync) = @_;
+
+    my $prefix = "replicate_${jobid}_";
+    my $snapname = "${prefix}${last_sync}_snap";
+
+    wantarray ? ($prefix, $snapname) : $snapname;
+}
+
+sub prepare {
+    my ($storecfg, $volids, $jobid, $last_sync, $start_time, $logfunc) = @_;
+
+    my ($prefix, $snapname) = replication_snapshot_name($jobid, $last_sync);
+
+    my $last_snapshots = {};
+    foreach my $volid (@$volids) {
+	my $list = PVE::Storage::volume_snapshot_list($storecfg, $volid, $prefix);
+	my $found = 0;
+	foreach my $snap (@$list) {
+	    if ($snap eq $snapname) {
+		$last_snapshots->{$volid} = 1;
+	    } else {
+		$logfunc->($start_time, "$jobid: delete stale snapshot '$snap' on $volid");
+		PVE::Storage::volume_snapshot_delete($storecfg, $volid, $snap);
+	    }
+	}
+    }
+
+    return $last_snapshots;
+}
 
 sub replicate {
     my ($jobcfg, $start_time, $logfunc) = @_;
