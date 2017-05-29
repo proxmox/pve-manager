@@ -16,8 +16,8 @@ all:
 
 # icon-ram, icon-cpu, icon-cd
 # are self made (sources as .xcf)
-# icon-swap, icon-display, icon-harddisk, icon-keyboard, icon-network
-# come from fontawesome (respective fa-refresh, fa-desktop, fa-hdd-o, fa-keyboard-o, fa-exchange)
+# icon-swap, icon-display, icon-harddisk, icon-keyboard, icon-network, icon-usb
+# come from fontawesome (respective fa-refresh, fa-desktop, fa-hdd-o, fa-keyboard-o, fa-exchange, fa-usb)
 
 # ceph logos are from
 #  http://ceph.com/logos/
@@ -66,7 +66,8 @@ IMAGES = ${GNOME_IMAGES}	\
 	icon-harddisk.png	\
 	icon-keyboard.png	\
 	logo-ceph.png		\
-	logo-128.png
+	logo-128.png		\
+	icon-usb.png
 
 .PHONY: install 
 install: ${IMAGES}

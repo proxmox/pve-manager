@@ -250,7 +250,8 @@
 .pve-itype-icon-node-running,
 .pve-itype-icon-storage,
 .pve-itype-icon-pool,
-.pve-itype-icon-itype
+.pve-itype-icon-itype,
+.pve-itype-icon-usb
 {
     background-repeat: no-repeat;
     background-position:3px center;
@@ -353,6 +354,10 @@
     background-image:url(../images/virt-viewer.png);
 }
 
+.pve-itype-icon-usb
+{
+    background-image:url(../images/icon-usb.png);
+}
 
 /* displayfield minheight is wrong */
 .x-form-display-field-default {
