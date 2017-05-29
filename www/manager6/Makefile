@@ -70,6 +70,7 @@ JSSRC= 				                 	\
 	form/GlobalSearchField.js			\
 	form/QemuBiosSelector.js			\
 	form/VMSelector.js			\
+	form/USBSelector.js				\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
@@ -158,6 +159,7 @@ JSSRC= 				                 	\
 	qemu/SnapshotTree.js				\
 	qemu/Config.js					\
 	qemu/CreateWizard.js				\
+	qemu/USBEdit.js					\
 	lxc/Summary.js					\
 	lxc/Network.js					\
 	lxc/Resources.js				\
