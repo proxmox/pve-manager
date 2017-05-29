@@ -12,6 +12,7 @@ use PVE::Exception qw(raise_param_exc);
 use PVE::RPCEnvironment;
 use PVE::AccessControl;
 use PVE::Cluster;
+use PVE::API2Tools;
 
 use Data::Dumper;
 
@@ -135,11 +136,9 @@ sub rest_handler {
 	# check access permissions
 	$rpcenv->check_api2_permissions($info->{permissions}, $auth->{userid}, $uri_param);
 
-	if ($info->{proxyto}) {
-	    my $pn = $info->{proxyto};
-	    my $node = $uri_param->{$pn};
-
-	    raise_param_exc({$pn =>  "proxy parameter '$pn' does not exists"}) if !$node;
+	if ($info->{proxyto} || $info->{proxyto_callback}) {
+	    my $node = PVE::API2Tools::resolve_proxyto(
+		$rpcenv, $info->{proxyto_callback}, $info->{proxyto}, $uri_param);
 
 	    if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
 		die "unable to proxy file uploads" if $auth->{isUpload};

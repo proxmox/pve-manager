@@ -4,8 +4,10 @@ use strict;
 use warnings;
 use Net::IP;
 
+use PVE::Exception qw(raise_param_exc);
 use PVE::Tools;
 use PVE::INotify;
+use PVE::Cluster;
 use Digest::MD5 qw(md5_hex);
 use URI;
 use URI::Escape;
@@ -237,6 +239,22 @@ sub read_proxy_config {
     }
 
     return $res;
+}
+
+sub resolve_proxyto {
+    my ($rpcenv, $proxyto_callback, $proxyto, $uri_param) = @_;
+
+    my $node;
+    if ($proxyto_callback) {
+	$node = $proxyto_callback->($rpcenv, $proxyto, $uri_param);
+	die "internal error - proxyto_callback returned nothing\n"
+	    if !$node;
+    } else {
+	$node = $uri_param->{$proxyto};
+	raise_param_exc({ $proxyto =>  "proxyto parameter does not exists"})
+	    if !$node;
+    }
+    return $node;
 }
 
 1;

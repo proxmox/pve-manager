@@ -15,6 +15,7 @@ use PVE::SafeSyslog;
 use PVE::Cluster;
 use PVE::INotify;
 use PVE::RPCEnvironment;
+use PVE::API2Tools;
 use PVE::API2;
 use JSON;
 
@@ -239,10 +240,9 @@ sub map_cmd {
 sub check_proxyto {
     my ($info, $uri_param) = @_;
 
-    if ($info->{proxyto}) {
-	my $pn = $info->{proxyto};
-	my $node = $uri_param->{$pn};
-	die "proxy parameter '$pn' does not exists" if !$node;
+    if ($info->{proxyto} || $info->{proxyto_callback}) {
+	my $node = PVE::API2Tools::resolve_proxyto(
+	    $rpcenv, $info->{proxyto_callback}, $info->{proxyto}, $uri_param);
 
 	if ($node ne 'localhost' && ($node ne PVE::INotify::nodename())) {
 	    die "proxy loop detected - aborting\n" if $disable_proxy;
