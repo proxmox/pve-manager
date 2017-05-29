@@ -4,7 +4,7 @@ use warnings;
 use strict;
 
 use PVE::Tools qw(extract_param);
-use PVE::Exception qw(raise_perm_exc);
+use PVE::Exception qw(raise_perm_exc raise_param_exc);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RPCEnvironment;
 use PVE::ReplicationConfig;
@@ -112,7 +112,6 @@ __PACKAGE__->register_method ({
 	my $code = sub {
 	    my $cfg = PVE::ReplicationConfig->new();
 
-	    #die "replication job for guest '$param->{guest}' to target '$param->{target}' already exists\n"
 	    die "replication job '$id' already exists\n"
 		if $cfg->{ids}->{$id};
 
@@ -171,7 +170,7 @@ __PACKAGE__->register_method ({
     protected => 1,
     path => '{id}',
     method => 'DELETE',
-    description => "Delete replication job",
+    description => "Mark replication job for removal.",
     permissions => {
 	check => ['perm', '/storage', ['Datastore.Allocate']],
     },
@@ -191,21 +190,21 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $id = extract_param($param, 'id');
-
 	my $code = sub {
 	    my $cfg = PVE::ReplicationConfig->new();
 
-	    my $data = $cfg->{ids}->{$id};
-	    die "no such job '$id'\n" if !$data;
+	    my $id = $param->{id};
 
-	    if (!$param->{keep}) {
-		# fixme: cleanup data at target
+	    my $jobcfg = $cfg->{ids}->{$id};
+	    die "no such job '$id'\n" if !$jobcfg;
 
+	    if (!$param->{keep} && $jobcfg->{type} eq 'local') {
+		# remove local snapshots and remote volumes
+		$jobcfg->{remove_job} = 'full';
+	    } else {
+		# only remove local snapshots
+		$jobcfg->{remove_job} = 'local';
 	    }
-	    # fixme: cleanup snapshots
-
-	    delete $cfg->{ids}->{$id};
 
 	    $cfg->write();
 	};
@@ -214,4 +213,5 @@ __PACKAGE__->register_method ({
 
 	return undef;
     }});
+
 1;

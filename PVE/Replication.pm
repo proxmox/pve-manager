@@ -103,15 +103,22 @@ sub job_status {
 	$jobcfg->{vmtype} = $vms->{ids}->{$vmid}->{type};
 
 	my $next_sync = 0;
-	if (my $fail_count = $state->{fail_count}) {
-	    if ($fail_count < 3) {
-		$next_sync = $state->{last_try} + 5*60*$fail_count;
+
+	if ($jobcfg->{remove_job}) {
+	    $next_sync = 1; # lowest possible value
+	    # todo: consider fail_count? How many retries?
+	} else  {
+	    if (my $fail_count = $state->{fail_count}) {
+		if ($fail_count < 3) {
+		    $next_sync = $state->{last_try} + 5*60*$fail_count;
+		}
+	    } else {
+		my $schedule =  $jobcfg->{schedule} || '*/15';
+		my $calspec = PVE::CalendarEvent::parse_calendar_event($schedule);
+		$next_sync = PVE::CalendarEvent::compute_next_event($calspec, $state->{last_try}) // 0;
 	    }
-	} else {
-	    my $schedule =  $jobcfg->{schedule} || '*/15';
-	    my $calspec = PVE::CalendarEvent::parse_calendar_event($schedule);
-	    $next_sync = PVE::CalendarEvent::compute_next_event($calspec, $state->{last_try}) // 0;
 	}
+
 	$jobcfg->{next_sync} = $next_sync;
 
 	$jobs->{$jobid} = $jobcfg;
@@ -168,11 +175,14 @@ sub replication_snapshot_name {
 }
 
 sub remote_prepare_local_job {
-    my ($ssh_info, $jobid, $vmid, $volumes, $last_sync) = @_;
+    my ($ssh_info, $jobid, $vmid, $volumes, $last_sync, $force) = @_;
 
     my $ssh_cmd = PVE::Cluster::ssh_info_to_command($ssh_info);
-    my $cmd = [@$ssh_cmd, '--', 'pvesr', 'prepare-local-job', $jobid,
-	       $vmid, @$volumes, '--last_sync', $last_sync];
+    my $cmd = [@$ssh_cmd, '--', 'pvesr', 'prepare-local-job', $jobid, $vmid];
+    push @$cmd, @$volumes if scalar(@$volumes);
+
+    push @$cmd, '--last_sync', $last_sync;
+    push @$cmd, '--force' if $force;
 
     my $remote_snapshots;
 
@@ -231,6 +241,18 @@ sub replicate_volume {
 				  $base_snapshot, $sync_snapname);
 }
 
+sub delete_job {
+    my ($jobid) = @_;
+
+    my $code = sub {
+	my $cfg = PVE::ReplicationConfig->new();
+	delete $cfg->{ids}->{$jobid};
+	$cfg->write();
+    };
+
+    PVE::ReplicationConfig::lock($code);
+}
+
 sub replicate {
     my ($jobcfg, $last_sync, $start_time, $logfunc) = @_;
 
@@ -284,9 +306,27 @@ sub replicate {
     $logfunc->($start_time, "$jobid: guest => $vmid, type => $vmtype, running => $running");
     $logfunc->($start_time, "$jobid: volumes => " . join(',', @$sorted_volids));
 
+    if (my $remove_job = $jobcfg->{remove_job}) {
+
+	$logfunc->($start_time, "$jobid: start job removal - mode '${remove_job}'");
+
+	if ($remove_job eq 'full') {
+	    # remove all remote volumes
+	    remote_prepare_local_job($ssh_info, $jobid, $vmid, [], 0, 1);
+
+	}
+	# remove all local replication snapshots (lastsync => 0)
+	prepare($storecfg, $sorted_volids, $jobid, 0, $start_time, $logfunc);
+
+	delete_job($jobid); # update config
+	$logfunc->($start_time, "$jobid: job removed");
+
+	return;
+    }
+
     # prepare remote side
     my $remote_snapshots = remote_prepare_local_job(
-	$ssh_info, $jobid, $vmid, $volumes, $last_sync);
+	$ssh_info, $jobid, $vmid, $sorted_volids, $last_sync);
 
     # test if we have a replication_ snapshot from last sync
     # and remove all other/stale replication snapshots

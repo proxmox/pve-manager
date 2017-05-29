@@ -37,6 +37,12 @@ __PACKAGE__->register_method ({
 	    vmid => get_standard_option('pve-vmid', { completion => \&PVE::Cluster::complete_vmid }),
 	    'extra-args' => get_standard_option('extra-args', {
 		description => "The list of volume IDs to consider." }),
+	    force => {
+		description => "Allow to remove all existion volumes (empty volume list).",
+		type => 'boolean',
+		optional => 1,
+		default => 0,
+	    },
 	    last_sync => {
 		description => "Time (UNIX epoch) of last successful sync. If not specified, all replication snapshots get removed.",
 		type => 'integer',
@@ -65,7 +71,8 @@ __PACKAGE__->register_method ({
 
 	my $volids = [];
 
-	die "no volumes specified\n" if !scalar(@{$param->{'extra-args'}});
+	die "no volumes specified\n"
+	    if !$param->{force} && !scalar(@{$param->{'extra-args'}});
 
 	foreach my $volid (@{$param->{'extra-args'}}) {
 
