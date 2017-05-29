@@ -214,7 +214,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	    rows[confid] = {
 		group: 4,
 		tdCls: 'pve-itype-icon-usb',
-		never_delete: true,
+		editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.USBEdit' : undefined,
+		never_delete: caps.nodes['Sys.Console'] ? false : true,
 		header: gettext('USB Device') + ' (' + confid + ')'
 	    };
 	}
@@ -472,6 +473,14 @@ Ext.define('PVE.qemu.HardwareView', {
 	    // disable is ok in this case, because you can instantly
 	    // see that there is already one
 	    efidisk_menuitem.setDisabled(me.rstore.getData().map.efidisk0 !== undefined);
+	    // en/disable usb add button
+	    var count = 0;
+	    me.rstore.getData().items.forEach(function(item){
+		if (/^usb\d+/.test(item.id)) {
+		    count++;
+		}
+	    });
+	    me.down('#addusb').setDisabled((count >= 5));
 
 	    if (!rec) {
 		remove_btn.disable();
@@ -556,7 +565,21 @@ Ext.define('PVE.qemu.HardwareView', {
 				    win.show();
 				}
 			    },
-			    efidisk_menuitem
+			    efidisk_menuitem,
+			    {
+				text: gettext('USB Device'),
+				itemId: 'addusb',
+				iconCls: 'pve-itype-icon-usb',
+				disabled: !caps.nodes['Sys.Console'],
+				handler: function() {
+				    var win = Ext.create('PVE.qemu.USBEdit', {
+					url: '/api2/extjs/' + baseurl,
+					pveSelNode: me.pveSelNode
+				    });
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    }
 			]
 		    })
 		},
