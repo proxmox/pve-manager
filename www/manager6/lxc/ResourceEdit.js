@@ -491,18 +491,19 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	});
 
 	me.column2 = [
-	    {
-		xtype: 'pvecheckbox',
-		name: 'ro',
-		defaultValue: 0,
-		fieldLabel: gettext('Read-only'),
-		hidden: me.insideWizard
-	    },
 	    me.acl,
 	    me.quota
 	];
 
 	if (!isroot) {
+	    me.column2.unshift({
+		xtype: 'pvecheckbox',
+		name: 'ro',
+		defaultValue: 0,
+		fieldLabel: gettext('Read-only'),
+		hidden: me.insideWizard
+	    });
+
 	    me.backup = Ext.createWidget('pvecheckbox',{
 		xtype: 'pvecheckbox',
 		name: 'backup',
