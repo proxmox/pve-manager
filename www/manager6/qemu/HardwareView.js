@@ -219,9 +219,18 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('USB Device') + ' (' + confid + ')'
 	    };
 	}
+	for (i = 0; i < 4; i++) {
+	    confid = "hostpci" + i;
+	    rows[confid] = {
+		group: 5,
+		tdCls: 'pve-itype-icon-pci',
+		never_delete: caps.nodes['Sys.Console'] ? false : true,
+		header: gettext('PCI Device') + ' (' + confid + ')'
+	    };
+	}
 	for (i = 0; i < 8; i++) {
 	    rows["unused" + i] = {
-		group: 5,
+		group: 6,
 		tdCls: 'pve-itype-icon-storage',
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.HDEdit' : undefined,
 		header: gettext('Unused Disk') + ' ' + i
