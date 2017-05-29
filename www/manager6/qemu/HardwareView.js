@@ -209,9 +209,18 @@ Ext.define('PVE.qemu.HardwareView', {
 	    never_delete: caps.vms['VM.Config.Disk'] ? false : true,
 	    header: gettext('EFI Disk')
 	};
+	for (i = 0; i < 5; i++) {
+	    confid = "usb" + i;
+	    rows[confid] = {
+		group: 4,
+		tdCls: 'pve-itype-icon-usb',
+		never_delete: true,
+		header: gettext('USB Device') + ' (' + confid + ')'
+	    };
+	}
 	for (i = 0; i < 8; i++) {
 	    rows["unused" + i] = {
-		group: 4,
+		group: 5,
 		tdCls: 'pve-itype-icon-storage',
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.HDEdit' : undefined,
 		header: gettext('Unused Disk') + ' ' + i
@@ -550,7 +559,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    efidisk_menuitem
 			]
 		    })
-		}, 
+		},
 		remove_btn,
 		edit_btn,
 		resize_btn,
