@@ -251,7 +251,8 @@
 .pve-itype-icon-storage,
 .pve-itype-icon-pool,
 .pve-itype-icon-itype,
-.pve-itype-icon-usb
+.pve-itype-icon-usb,
+.pve-itype-icon-pci
 {
     background-repeat: no-repeat;
     background-position:3px center;
@@ -357,6 +358,11 @@
 .pve-itype-icon-usb
 {
     background-image:url(../images/icon-usb.png);
+}
+
+.pve-itype-icon-pci
+{
+    background-image:url(../images/icon-pci.png);
 }
 
 /* displayfield minheight is wrong */

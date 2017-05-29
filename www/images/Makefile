@@ -14,7 +14,7 @@ all:
 # unchecked.png converted from extjs examples/ux/css/images/unchecked.gif
 # swap.png downloaded from https://www.iconfinder.com/icons/17009/arrows_exchange_interact_refresh_reload_swap_sync_update_icon#size=16
 
-# icon-ram, icon-cpu, icon-cd
+# icon-ram, icon-cpu, icon-cd, icon-pci
 # are self made (sources as .xcf)
 # icon-swap, icon-display, icon-harddisk, icon-keyboard, icon-network, icon-usb
 # come from fontawesome (respective fa-refresh, fa-desktop, fa-hdd-o, fa-keyboard-o, fa-exchange, fa-usb)
@@ -67,6 +67,7 @@ IMAGES = ${GNOME_IMAGES}	\
 	icon-keyboard.png	\
 	logo-ceph.png		\
 	logo-128.png		\
+	icon-pci.png		\
 	icon-usb.png
 
 .PHONY: install 
