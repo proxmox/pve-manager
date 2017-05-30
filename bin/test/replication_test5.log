@@ -48,3 +48,12 @@
 3640 job_900_to_node2: end replication job
 3640 job_900_to_node2: changed config next_sync => 4500
 3640 job_900_to_node2: changed state last_try => 3640, last_sync => 3640
+3700 job_900_to_node2: start replication job
+3700 job_900_to_node2: guest => 900, type => qemu, running => 0
+3700 job_900_to_node2: volumes => local-zfs:vm-900-disk-1,local-zfs:vm-900-disk-2
+3700 job_900_to_node2: start job removal - mode 'full'
+3700 job_900_to_node2: delete stale snapshot 'replicate_job_900_to_node2_3640_snap' on local-zfs:vm-900-disk-1
+3700 job_900_to_node2: delete stale snapshot 'replicate_job_900_to_node2_3640_snap' on local-zfs:vm-900-disk-2
+3700 job_900_to_node2: job removed
+3700 job_900_to_node2: end replication job
+3700 job_900_to_node2: vanished job

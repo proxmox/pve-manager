@@ -4,6 +4,7 @@
 # 1.) Start replication job with single disk
 # 2.) add non-existent disk (replication fails)
 # 3.) create disk (replication continues).
+# 4.) remove job
 
 use strict;
 use warnings;
@@ -31,7 +32,7 @@ use PVE::Storage;
 my $replicated_volume_status = {};
 
 my $mocked_remote_prepare_local_job = sub {
-    my ($ssh_info, $jobid, $vmid, $volumes, $last_sync) = @_;
+    my ($ssh_info, $jobid, $vmid, $volumes, $last_sync, $force) = @_;
 
     my $target = $ssh_info->{node};
 
@@ -42,6 +43,10 @@ my $mocked_remote_prepare_local_job = sub {
     my $last_sync_snapname = PVE::Replication::replication_snapshot_name($jobid, $last_sync);
 
     foreach my $volid (keys %{$replicated_volume_status->{$target}}) {
+	if (!grep { $_ eq $volid } @$volumes) {
+	    delete $replicated_volume_status->{$target}->{$volid};
+	    next;
+	}
 	my $snapname = $replicated_volume_status->{$target}->{$volid};
 
 	$last_snapshots->{$volid} = 1 if $last_sync_snapname eq $snapname;
@@ -64,8 +69,15 @@ my $mocked_replicate_volume = sub {
     $replicated_volume_status->{$target}->{$volid} = $sync_snapname;
 };
 
+my $mocked_delete_job = sub {
+    my ($jobid) = @_;
+
+    delete $ReplicationTestEnv::mocked_replication_jobs->{$jobid};
+};
+
 my $pve_replication_module = Test::MockModule->new('PVE::Replication');
 $pve_replication_module->mock(
+    delete_job => $mocked_delete_job,
     remote_prepare_local_job => $mocked_remote_prepare_local_job,
     remote_finalize_local_job => $mocked_remote_finalize_local_job,
     replicate_volume => $mocked_replicate_volume);
@@ -122,6 +134,15 @@ for (my $i = 0; $i < 15; $i++) {
     ReplicationTestEnv::track_jobs($ctime);
     $ctime += 60;
 }
+
+# mark job for removal
+$ReplicationTestEnv::mocked_replication_jobs->{job_900_to_node2}->{remove_job} = 'full';
+for (my $i = 0; $i < 15; $i++) {
+    ReplicationTestEnv::track_jobs($ctime);
+    $ctime += 60;
+}
+
+
 
 ReplicationTestEnv::commit_log();
 
