@@ -92,10 +92,12 @@ sub job_status {
 	# only consider guest on local node
 	next if $vms->{ids}->{$vmid}->{node} ne $local_node;
 
-	# never sync to local node
-	next if $jobcfg->{target} eq $local_node;
+	if (!$jobcfg->{remove_job}) {
+	    # never sync to local node
+	    next if $jobcfg->{target} eq $local_node;
 
-	next if $jobcfg->{disable};
+	    next if $jobcfg->{disable};
+	}
 
 	my $state = $get_job_state->($stateobj, $jobcfg);
 	$jobcfg->{state} = $state;
@@ -310,7 +312,7 @@ sub replicate {
 
 	$logfunc->($start_time, "$jobid: start job removal - mode '${remove_job}'");
 
-	if ($remove_job eq 'full') {
+	if ($remove_job eq 'full' && $jobcfg->{target} ne $local_node) {
 	    # remove all remote volumes
 	    remote_prepare_local_job($ssh_info, $jobid, $vmid, [], 0, 1);
 
