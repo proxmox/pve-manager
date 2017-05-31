@@ -1,3 +1,27 @@
+pve-manager (5.0-11) unstable; urgency=medium
+
+  * add basic replication framework and API
+
+  * pvesr: new CLI tool for replication
+
+  * implement regression tests for replication code
+
+  * PVE::API2Tools::resolve_proxyto - new helper
+
+  * Fix #1386: track postfix daemon status via postfix@-
+
+  * optimize resourcestore, add suspend/resume events to updateTree
+
+  * Make a new systemd target pve-storage
+
+  * ceph: init: add optional disable_cephx option
+
+  * ceph: init: remove filestore xattr use omap
+
+  * fix #1359: change to vm when double clicking in pool member view
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 31 May 2017 09:38:17 +0200
+
 pve-manager (5.0-10) unstable; urgency=medium
 
   * PVE/APLInfo.pm: avoid locale specific time stamps
