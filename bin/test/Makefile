@@ -9,6 +9,7 @@ check:
 	./replication_test3.pl
 	./replication_test4.pl
 	./replication_test5.pl
+	./replication_test6.pl
 
 
 .PHONY: install
