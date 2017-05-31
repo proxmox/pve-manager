@@ -64,7 +64,10 @@ my $read_state = sub {
 
     return {} if $raw eq '';
 
-    return decode_json($raw);
+    # untaint $raw
+    $raw =~ m/^({.*})$/;
+
+    return decode_json($1);
 };
 
 sub job_status {
