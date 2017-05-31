@@ -276,8 +276,6 @@ sub replicate {
 	$migration_type = $mc->{type} if defined($mc->{type});
     }
 
-    my $ssh_info = PVE::Cluster::get_ssh_info($jobcfg->{target}, $migration_network);
-
     my $jobid = $jobcfg->{id};
     my $storecfg = PVE::Storage::config();
 
@@ -317,6 +315,7 @@ sub replicate {
 
 	if ($remove_job eq 'full' && $jobcfg->{target} ne $local_node) {
 	    # remove all remote volumes
+	    my $ssh_info = PVE::Cluster::get_ssh_info($jobcfg->{target});
 	    remote_prepare_local_job($ssh_info, $jobid, $vmid, [], 0, 1);
 
 	}
@@ -328,6 +327,8 @@ sub replicate {
 
 	return;
     }
+
+    my $ssh_info = PVE::Cluster::get_ssh_info($jobcfg->{target}, $migration_network);
 
     # prepare remote side
     my $remote_snapshots = remote_prepare_local_job(
