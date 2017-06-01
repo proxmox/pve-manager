@@ -10,6 +10,7 @@ Ext.define('PVE.window.NotesEdit', {
 	    height: '400px',
 	    resizable: true,
 	    layout: 'fit',
+	    defaultButton: undefined,
 	    items: {
 		xtype: 'textarea',
 		name: 'description',
