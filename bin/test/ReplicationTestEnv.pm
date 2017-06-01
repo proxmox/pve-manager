@@ -60,6 +60,7 @@ my $statefile = ".mocked_repl_state";
 
 unlink $statefile;
 $PVE::Replication::state_path = $statefile;
+$PVE::Replication::pvesr_lock_path = ".mocked_pvesr_lock";
 
 my $mocked_write_state = sub {
     my ($state) = @_;

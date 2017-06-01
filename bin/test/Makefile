@@ -18,4 +18,4 @@ install:
 
 .PHONY: clean
 clean:
-	rm -rf *~
+	rm -rf *~ .mocked_* *.tmp

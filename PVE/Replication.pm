@@ -22,6 +22,7 @@ use PVE::ReplicationConfig;
 
 # Note: regression tests can overwrite $state_path for testing
 our $state_path = "/var/lib/pve-manager/pve-replication-state.json";
+our $pvesr_lock_path = "/var/lock/pvesr.lck";
 
 my $update_job_state = sub {
     my ($stateobj, $jobcfg, $state) = @_;
@@ -506,7 +507,7 @@ sub run_single_job {
 	$run_replication->($stateobj, $jobcfg, $now, $logfunc);
     };
 
-    my $res = PVE::Tools::lock_file($state_path, 60, $code);
+    my $res = PVE::Tools::lock_file($pvesr_lock_path, 60, $code);
     die $@ if $@;
 }
 
@@ -525,7 +526,7 @@ sub run_jobs {
 	}
     };
 
-    my $res = PVE::Tools::lock_file($state_path, 60, $code);
+    my $res = PVE::Tools::lock_file($pvesr_lock_path, 60, $code);
     die $@ if $@;
 }
 
