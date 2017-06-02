@@ -57,9 +57,9 @@ __PACKAGE__->register_method ({
 	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-	    vmid => get_standard_option('pve-vmid', {
+	    guest => get_standard_option('pve-vmid', {
 		optional => 1,
-		description => "Only list replication jobs for this vmid.",
+		description => "Only list replication jobs for this guest.",
 	    }),
 	},
     },
@@ -83,9 +83,9 @@ __PACKAGE__->register_method ({
 	foreach my $id (sort keys %$jobs) {
 	    my $d = $jobs->{$id};
 	    my $state = delete $d->{state};
-	    my $vmid = $d->{guest};
-	    next if defined($param->{vmid}) && $vmid != $param->{vmid};
-	    next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ]);
+	    my $guest = $d->{guest};
+	    next if defined($param->{guest}) && $guest != $param->{guest};
+	    next if !$rpcenv->check($authuser, "/vms/$guest", [ 'VM.Audit' ]);
 	    $d->{id} = $id;
 	    foreach my $k (qw(last_sync last_try fail_count error duration)) {
 		$d->{$k} = $state->{$k} if defined($state->{$k});
