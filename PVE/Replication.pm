@@ -136,8 +136,6 @@ sub job_status {
 my $get_next_job = sub {
     my ($stateobj, $iteration, $start_time) = @_;
 
-    my $next_jobid;
-
     my $jobs = job_status($stateobj);
 
     my $sort_func = sub {
@@ -156,19 +154,11 @@ my $get_next_job = sub {
 	my $jobcfg = $jobs->{$jobid};
 	next if $jobcfg->{state}->{last_iteration} >= $iteration;
 	if ($jobcfg->{next_sync} && ($start_time >= $jobcfg->{next_sync})) {
-	    $next_jobid = $jobid;
-	    last;
+	    return $jobcfg;
 	}
     }
 
-    return undef if !$next_jobid;
-
-    my $jobcfg = $jobs->{$next_jobid};
-
-    $jobcfg->{state}->{last_iteration} = $iteration;
-    $update_job_state->($stateobj, $jobcfg,  $jobcfg->{state});
-
-    return $jobcfg;
+    return undef;
 };
 
 sub replication_snapshot_name {
@@ -415,9 +405,9 @@ sub replicate {
 }
 
 my $run_replication = sub {
-    my ($stateobj, $jobcfg, $start_time, $logfunc) = @_;
+    my ($stateobj, $jobcfg, $iteration, $start_time, $logfunc) = @_;
 
-    my $state = delete $jobcfg->{state};
+    my $state = $get_job_state->($stateobj, $jobcfg);
 
     my $t0 = [gettimeofday];
 
@@ -433,6 +423,8 @@ my $run_replication = sub {
     $state->{pid} = $$;
     $state->{ptime} = PVE::ProcFSTools::read_proc_starttime($state->{pid});
     $state->{last_try} = $start_time;
+    $state->{last_iteration} = $iteration;
+
     $update_job_state->($stateobj, $jobcfg,  $state);
 
     $logfunc->($start_time, "$jobcfg->{id}: start replication job") if $logfunc;
@@ -501,10 +493,7 @@ sub run_single_job {
 	$jobcfg->{id} = $jobid;
 	$jobcfg->{vmtype} = $vms->{ids}->{$vmid}->{type};
 
-	$jobcfg->{state}->{last_iteration} = $now;
-	$update_job_state->($stateobj, $jobcfg,  $jobcfg->{state});
-
-	$run_replication->($stateobj, $jobcfg, $now, $logfunc);
+	$run_replication->($stateobj, $jobcfg, $now, $now, $logfunc);
     };
 
     my $res = PVE::Tools::lock_file($pvesr_lock_path, 60, $code);
@@ -521,7 +510,7 @@ sub run_jobs {
 	my $start_time = $now // time();
 
 	while (my $jobcfg = $get_next_job->($stateobj, $iteration, $start_time)) {
-	    $run_replication->($stateobj, $jobcfg, $start_time, $logfunc);
+	    $run_replication->($stateobj, $jobcfg, $iteration, $start_time, $logfunc);
 	    $start_time = $now // time();
 	}
     };
