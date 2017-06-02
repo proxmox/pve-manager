@@ -13,6 +13,8 @@ use Data::Dumper;
 use PVE::INotify;
 use PVE::Cluster;
 use PVE::Storage;
+use PVE::ReplicationConfig;
+use PVE::ReplicationState;
 use PVE::Replication;
 use PVE::QemuConfig;
 use PVE::LXC::Config;
@@ -59,26 +61,9 @@ my $mocked_ssh_info_to_command = sub {
 my $statefile = ".mocked_repl_state";
 
 unlink $statefile;
-$PVE::Replication::state_path = $statefile;
+$PVE::ReplicationState::state_path = $statefile;
+$PVE::ReplicationState::state_lock = ".mocked_repl_state_lock";
 $PVE::Replication::pvesr_lock_path = ".mocked_pvesr_lock";
-
-my $mocked_write_state = sub {
-    my ($state) = @_;
-
-    PVE::Tools::file_set_contents($statefile, encode_json($state));
-};
-
-my $mocked_read_state = sub {
-
-    return {} if ! -e $statefile;
-
-    my $raw = PVE::Tools::file_get_contents($statefile);
-
-    return {} if $raw eq '';
-
-    return decode_json($raw);
-};
-
 
 my $pve_cluster_module = Test::MockModule->new('PVE::Cluster');
 
