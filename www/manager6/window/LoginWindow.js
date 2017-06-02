@@ -129,6 +129,8 @@ Ext.define('PVE.window.LoginWindow', {
 
     defaultFocus: 'usernameField',
 
+    defaultButton: 'loginButton',
+
     items: [{
 	xtype: 'form',
 	layout: 'form',
