@@ -169,6 +169,20 @@ Ext.define('PVE.UnderlayPool', {
     }
 });
 
+// 'Enter' in Textareas and aria multiline fields should not activate the
+// defaultbutton, fixed in extjs 6.0.2
+Ext.define('PVE.panel.Panel', {
+    override: 'Ext.panel.Panel',
+
+    fireDefaultButton: function(e) {
+	if (e.target.getAttribute('aria-multiline') === 'true' ||
+	    e.target.tagName === "TEXTAREA") {
+	    return true;
+	}
+	return this.callParent(arguments);
+    }
+});
+
 // if the order of the values are not the same in originalValue and value
 // extjs will not overwrite value, but marks the field dirty and thus
 // the reset button will be enabled (but clicking it changes nothing)
