@@ -69,7 +69,7 @@ __PACKAGE__->register_method ({
 	    type => "object",
 	    properties => {},
 	},
-	links => [ { rel => 'child', href => "{vmid}" } ],
+	links => [ { rel => 'child', href => "{id}" } ],
     },
     code => sub {
 	my ($param) = @_;
