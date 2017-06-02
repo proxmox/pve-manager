@@ -3,6 +3,12 @@ Ext.define('PVE.window.LxcSnapshot', {
 
     resizable: false,
 
+    // needed for finding the reference to submitbutton
+    // because we do not have a controller
+    referenceHolder: true,
+    defaultButton: 'submitbutton',
+    defaultFocus: 'field',
+
     take_snapshot: function(snapname, descr, vmstate) {
 	var me = this;
 	var params = { snapname: snapname };
@@ -133,6 +139,7 @@ Ext.define('PVE.window.LxcSnapshot', {
 	    me.title ="VM " + me.vmid + ': ' + gettext('Take Snapshot');
 	    submitBtn = Ext.create('Ext.Button', {
 		text: gettext('Take Snapshot'),
+		reference: 'submitbutton',
 		handler: function() {
 		    if (form.isValid()) {
 			var values = form.getValues();
