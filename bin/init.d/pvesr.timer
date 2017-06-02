@@ -1,0 +1,11 @@
+[Unit]
+Description=Proxmox VE replication runner
+
+[Timer]
+RemainAfterElapse=no
+
+[Timer]
+OnCalendar=minutely
+
+[Install]
+WantedBy=timers.target

@@ -95,6 +95,21 @@ EOF
 
     # same as dh_systemd_enable (code copied)
 
+    for timer in pvesr; do
+	deb-systemd-helper unmask $timer.timer >/dev/null || true
+
+	# was-enabled defaults to true, so new installations run enable.
+	if deb-systemd-helper --quiet was-enabled $timer.timer; then
+	    # Enables the unit on first installation, creates new
+	    # symlinks on upgrades if the unit file has changed.
+	    deb-systemd-helper enable $timer.timer >/dev/null || true
+	else
+	    # Update the statefile to add new symlinks (if any), which need to be
+	    # cleaned up on purge. Also remove old symlinks.
+	    deb-systemd-helper update-state $timer.timer >/dev/null || true
+	fi
+    done
+
     for service in pvedaemon pveproxy spiceproxy pvestatd pvebanner pvenetcommit pve-manager; do
 	deb-systemd-helper unmask $service.service >/dev/null || true
 
@@ -115,6 +130,8 @@ EOF
 	for service in pvedaemon pveproxy spiceproxy pvestatd; do
 	    deb-systemd-invoke reload-or-restart $service
 	done
+
+	deb-systemd-invoke start pvesr.timer >/dev/null || true
     fi
     
     # rewrite banner

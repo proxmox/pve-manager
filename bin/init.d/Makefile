@@ -18,7 +18,9 @@ SERVICES=			\
 	pvedaemon.service  	\
 	pveproxy.service 	\
 	spiceproxy.service	\
-	pve-storage.target
+	pve-storage.target	\
+	pvesr.service		\
+	pvesr.timer
 
 .PHONY: install 
 install: ${SCRIPTS}

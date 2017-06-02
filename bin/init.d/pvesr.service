@@ -1,0 +1,5 @@
+[Unit]
+Description=Proxmox VE replication runner
+
+[Service]
+ExecStart=@/usr/bin/pvesr "/usr/bin/pvesr" "run"
