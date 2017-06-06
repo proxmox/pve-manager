@@ -100,7 +100,7 @@ __PACKAGE__->register_method ({
 	$volids = [ sort @$volids ];
 
 	my $logfunc = sub {
-	    my ($start_time, $msg) = @_;
+	    my ($msg) = @_;
 	    print STDERR "$msg\n";
 	};
 
@@ -111,7 +111,7 @@ __PACKAGE__->register_method ({
 	    foreach my $info (@{$dl->{$storeid}}) {
 		my $volid = $info->{volid};
 		next if grep { $_ eq $volid } @$volids;
-		$logfunc->(undef, "$jobid: delete stale volume '$volid'");
+		$logfunc->("$jobid: delete stale volume '$volid'");
 		PVE::Storage::vdisk_free($storecfg, $volid);
 	    }
 	}
@@ -182,7 +182,7 @@ __PACKAGE__->register_method ({
 	$volids = [ sort @$volids ];
 
 	my $logfunc = sub {
-	    my ($start_time, $msg) = @_;
+	    my ($msg) = @_;
 	    print STDERR "$msg\n";
 	};
 
@@ -217,7 +217,7 @@ __PACKAGE__->register_method ({
 
 	if ($param->{verbose}) {
 	    $logfunc = sub {
-		my ($start_time, $msg) = @_;
+		my ($msg) = @_;
 		print "$msg\n";
 	    };
 	}

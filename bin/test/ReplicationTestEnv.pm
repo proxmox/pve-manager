@@ -226,13 +226,6 @@ sub openlog {
     $logfh = $fh;
 }
 
-sub logmsg {
-    my ($ctime, $msg) = @_;
-
-    print "$ctime $msg\n";
-    print $logfh "$ctime $msg\n";
-}
-
 sub commit_log {
 
     close($logfh);
@@ -256,22 +249,29 @@ my $status;
 sub track_jobs {
     my ($ctime) = @_;
 
+    my $logmsg = sub {
+	my ($msg) = @_;
+
+	print "$ctime $msg\n";
+	print $logfh "$ctime $msg\n";
+    };
+
     if (!$status) {
 	$status = PVE::Replication::job_status();
 	foreach my $jobid (sort keys %$status) {
 	    my $jobcfg = $status->{$jobid};
-	    logmsg($ctime, "$jobid: new job next_sync => $jobcfg->{next_sync}");
+	    $logmsg->("$jobid: new job next_sync => $jobcfg->{next_sync}");
 	}
     }
 
-    PVE::Replication::run_jobs($ctime, \&logmsg);
+    PVE::Replication::run_jobs($ctime, $logmsg);
 
     my $new = PVE::Replication::job_status();
 
     # detect removed jobs
     foreach my $jobid (sort keys %$status) {
 	if (!$new->{$jobid}) {
-	    logmsg($ctime, "$jobid: vanished job");
+	    $logmsg->("$jobid: vanished job");
 	}
     }
 
@@ -279,7 +279,7 @@ sub track_jobs {
 	my $jobcfg = $new->{$jobid};
 	my $oldcfg = $status->{$jobid};
 	if (!$oldcfg) {
-	    logmsg($ctime, "$jobid: new job next_sync => $jobcfg->{next_sync}");
+	    $logmsg->("$jobid: new job next_sync => $jobcfg->{next_sync}");
 	    next; # no old state to compare
 	} else {
 	    foreach my $k (qw(target guest vmtype next_sync)) {
@@ -288,7 +288,7 @@ sub track_jobs {
 		    $changes .= ', ' if $changes;
 		    $changes .= "$k => $jobcfg->{$k}";
 		}
-		logmsg($ctime, "$jobid: changed config $changes") if $changes;
+		$logmsg->("$jobid: changed config $changes") if $changes;
 	    }
 	}
 
@@ -304,7 +304,7 @@ sub track_jobs {
 		$changes .= "$k => $value";
 	    }
 	}
-	logmsg($ctime, "$jobid: changed state $changes") if $changes;
+	$logmsg->("$jobid: changed state $changes") if $changes;
 
     }
     $status = $new;

@@ -169,7 +169,7 @@ sub prepare {
 	    if ($snap eq $snapname) {
 		$last_snapshots->{$volid} = 1;
 	    } else {
-		$logfunc->($start_time, "$jobid: delete stale snapshot '$snap' on $volid");
+		$logfunc->("$jobid: delete stale snapshot '$snap' on $volid");
 		PVE::Storage::volume_snapshot_delete($storecfg, $volid, $snap);
 	    }
 	}
@@ -248,12 +248,12 @@ sub replicate {
 
     my $sorted_volids = [ sort keys %$volumes ];
 
-    $logfunc->($start_time, "$jobid: guest => $vmid, type => $vmtype, running => $running");
-    $logfunc->($start_time, "$jobid: volumes => " . join(',', @$sorted_volids));
+    $logfunc->("$jobid: guest => $vmid, type => $vmtype, running => $running");
+    $logfunc->("$jobid: volumes => " . join(',', @$sorted_volids));
 
     if (my $remove_job = $jobcfg->{remove_job}) {
 
-	$logfunc->($start_time, "$jobid: start job removal - mode '${remove_job}'");
+	$logfunc->("$jobid: start job removal - mode '${remove_job}'");
 
 	if ($remove_job eq 'full' && $jobcfg->{target} ne $local_node) {
 	    # remove all remote volumes
@@ -265,7 +265,7 @@ sub replicate {
 	prepare($storecfg, $sorted_volids, $jobid, 0, $start_time, $logfunc);
 
 	delete_job($jobid); # update config
-	$logfunc->($start_time, "$jobid: job removed");
+	$logfunc->("$jobid: job removed");
 
 	return;
     }
@@ -286,7 +286,7 @@ sub replicate {
 
     # freeze filesystem for data consistency
     if ($qga) {
-	$logfunc->($start_time, "$jobid: freeze guest filesystem");
+	$logfunc->("$jobid: freeze guest filesystem");
 	PVE::QemuServer::vm_mon_cmd($vmid, "guest-fsfreeze-freeze");
     }
 
@@ -294,7 +294,7 @@ sub replicate {
     my $replicate_snapshots = {};
     eval {
 	foreach my $volid (@$sorted_volids) {
-	    $logfunc->($start_time, "$jobid: create snapshot '${sync_snapname}' on $volid");
+	    $logfunc->("$jobid: create snapshot '${sync_snapname}' on $volid");
 	    PVE::Storage::volume_snapshot($storecfg, $volid, $sync_snapname);
 	    $replicate_snapshots->{$volid} = 1;
 	}
@@ -303,7 +303,7 @@ sub replicate {
 
     # unfreeze immediately
     if ($qga) {
-	$logfunc->($start_time, "$jobid: unfreeze guest filesystem");
+	$logfunc->("$jobid: unfreeze guest filesystem");
 	eval { PVE::QemuServer::vm_mon_cmd($vmid, "guest-fsfreeze-thaw"); };
 	warn $@ if $@; # ignore errors here, because we cannot fix it anyways
     }
@@ -311,7 +311,7 @@ sub replicate {
     my $cleanup_local_snapshots = sub {
 	my ($volid_hash, $snapname) = @_;
 	foreach my $volid (sort keys %$volid_hash) {
-	    $logfunc->($start_time, "$jobid: delete snapshot '$snapname' on $volid");
+	    $logfunc->("$jobid: delete snapshot '$snapname' on $volid");
 	    eval { PVE::Storage::volume_snapshot_delete($storecfg, $volid, $snapname, $running); };
 	    warn $@ if $@;
 	}
@@ -330,10 +330,10 @@ sub replicate {
 	foreach my $volid (@$sorted_volids) {
 	    my $base_snapname;
 	    if ($last_snapshots->{$volid} && $remote_snapshots->{$volid}) {
-		$logfunc->($start_time, "$jobid: incremental sync '$volid' ($last_sync_snapname => $sync_snapname)");
+		$logfunc->("$jobid: incremental sync '$volid' ($last_sync_snapname => $sync_snapname)");
 		$base_snapname = $last_sync_snapname;
 	    } else {
-		$logfunc->($start_time, "$jobid: full sync '$volid' ($sync_snapname)");
+		$logfunc->("$jobid: full sync '$volid' ($sync_snapname)");
 	    }
 	    replicate_volume($ssh_info, $storecfg, $volid, $base_snapname, $sync_snapname, $rate, $insecure);
 	}
@@ -373,7 +373,7 @@ my $run_replication_nolock = sub {
 
 	PVE::ReplicationState::write_job_state($jobcfg, $state);
 
-	$logfunc->($start_time, "$jobcfg->{id}: start replication job") if $logfunc;
+	$logfunc->("$jobcfg->{id}: start replication job") if $logfunc;
 
 	eval {
 	    replicate($jobcfg, $state->{last_sync}, $start_time, $logfunc);
@@ -391,12 +391,12 @@ my $run_replication_nolock = sub {
 	    PVE::ReplicationState::write_job_state($jobcfg,  $state);
 	    my $msg = "$jobcfg->{id}: end replication job with error: $err";
 	    if ($logfunc) {
-		$logfunc->($start_time, $msg);
+		$logfunc->($msg);
 	    } else {
 		warn "$msg\n";
 	    }
 	} else {
-	    $logfunc->($start_time, "$jobcfg->{id}: end replication job") if $logfunc;
+	    $logfunc->("$jobcfg->{id}: end replication job") if $logfunc;
 	    $state->{last_sync} = $start_time;
 	    $state->{fail_count} = 0;
 	    delete $state->{error};
