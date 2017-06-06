@@ -109,6 +109,9 @@ __PACKAGE__->register_method ({
 	my $plugin = PVE::ReplicationConfig->lookup($type);
 	my $id = extract_param($param, 'id');
 
+	# extract guest ID from job ID
+	my ($guest) = PVE::ReplicationConfig::parse_replication_job_id($id);
+
 	my $code = sub {
 	    my $cfg = PVE::ReplicationConfig->new();
 
@@ -116,6 +119,8 @@ __PACKAGE__->register_method ({
 		if $cfg->{ids}->{$id};
 
 	    my $opts = $plugin->check_config($id, $param, 1, 1);
+
+	    $opts->{guest} = $guest;
 
 	    $cfg->{ids}->{$id} = $opts;
 

@@ -34,7 +34,6 @@ __PACKAGE__->register_method ({
 	additionalProperties => 0,
 	properties => {
 	    id => get_standard_option('pve-replication-id'),
-	    vmid => get_standard_option('pve-vmid', { completion => \&PVE::Cluster::complete_vmid }),
 	    'extra-args' => get_standard_option('extra-args', {
 		description => "The list of volume IDs to consider." }),
 	    force => {
@@ -55,8 +54,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $jobid = $param->{id};
-	my $vmid = $param->{vmid};
+	my ($vmid, undef, $jobid) = PVE::ReplicationConfig::parse_replication_job_id($param->{id});
 	my $last_sync = $param->{last_sync} // 0;
 
 	my $local_node = PVE::INotify::nodename();
@@ -133,7 +131,6 @@ __PACKAGE__->register_method ({
 	additionalProperties => 0,
 	properties => {
 	    id => get_standard_option('pve-replication-id'),
-	    vmid => get_standard_option('pve-vmid', { completion => \&PVE::Cluster::complete_vmid }),
 	    'extra-args' => get_standard_option('extra-args', {
 		description => "The list of volume IDs to consider." }),
 	    last_sync => {
@@ -148,8 +145,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $jobid = $param->{id};
-	my $vmid = $param->{vmid};
+	my ($vmid, undef, $jobid) = PVE::ReplicationConfig::parse_replication_job_id($param->{id});
 	my $last_sync = $param->{last_sync} // 0;
 
 	my $local_node = PVE::INotify::nodename();
@@ -277,15 +273,15 @@ __PACKAGE__->register_method ({
 my $print_job_list = sub {
     my ($list) = @_;
 
-    my $format = "%-20s %10s %-20s %10s %5s %8s\n";
+    my $format = "%-20s %-20s %10s %5s %8s\n";
 
-    printf($format, "JobID", "GuestID", "Target", "Schedule", "Rate", "Enabled");
+    printf($format, "JobID", "Target", "Schedule", "Rate", "Enabled");
 
     foreach my $job (sort { $a->{guest} <=> $b->{guest} } @$list) {
 	my $plugin = PVE::ReplicationConfig->lookup($job->{type});
 	my $tid = $plugin->get_unique_target_id($job);
 
-	printf($format, $job->{id}, $job->{guest}, $tid,
+	printf($format, $job->{id}, $tid,
 	       defined($job->{schedule}) ? $job->{schedule} : '*/15',
 	       defined($job->{rate}) ? $job->{rate} : '-',
 	       $job->{disable} ? 'no' : 'yes'
@@ -296,9 +292,9 @@ my $print_job_list = sub {
 my $print_job_status = sub {
     my ($list) = @_;
 
-    my $format = "%-20s %10s %-20s %20s %20s %10s %10s %s\n";
+    my $format = "%-20s %-20s %20s %20s %10s %10s %s\n";
 
-    printf($format, "JobID", "GuestID", "Target", "LastSync", "NextSync", "Duration", "FailCount", "State");
+    printf($format, "JobID", "Target", "LastSync", "NextSync", "Duration", "FailCount", "State");
 
     foreach my $job (sort { $a->{guest} <=> $b->{guest} } @$list) {
 	my $plugin = PVE::ReplicationConfig->lookup($job->{type});
@@ -321,7 +317,7 @@ my $print_job_status = sub {
 
 	my $state = $job->{pid} ? "SYNCING" : $job->{error} // 'OK';
 
-	printf($format, $job->{id}, $job->{guest}, $tid,
+	printf($format, $job->{id}, $tid,
 	       $timestr, $nextstr, $job->{duration} // '-',
 	       $job->{fail_count}, $state);
     }
@@ -335,14 +331,14 @@ our $cmddef = {
 	     sub { my $res = shift; print to_json($res, { utf8 => 1, pretty => 1, canonical => 1}); }],
     update => [ 'PVE::API2::ReplicationConfig', 'update' , ['id'], {} ],
     delete => [ 'PVE::API2::ReplicationConfig', 'delete' , ['id'], {} ],
-    'create-local-job' => [ 'PVE::API2::ReplicationConfig', 'create' , ['id', 'guest', 'target'],
+    'create-local-job' => [ 'PVE::API2::ReplicationConfig', 'create' , ['id', 'target'],
 			    { type => 'local' } ],
 
     enable => [ __PACKAGE__, 'enable', ['id'], {}],
     disable => [ __PACKAGE__, 'disable', ['id'], {}],
 
-    'prepare-local-job' => [ __PACKAGE__, 'prepare_local_job', ['id', 'vmid', 'extra-args'], {} ],
-    'finalize-local-job' => [ __PACKAGE__, 'finalize_local_job', ['id', 'vmid', 'extra-args'], {} ],
+    'prepare-local-job' => [ __PACKAGE__, 'prepare_local_job', ['id', 'extra-args'], {} ],
+    'finalize-local-job' => [ __PACKAGE__, 'finalize_local_job', ['id', 'extra-args'], {} ],
 
     run => [ __PACKAGE__ , 'run'],
 };
