@@ -83,6 +83,7 @@ Ext.define('PVE.node.Config', {
 	var restartBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Restart'),
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
+	    dangerous: true,
 	    confirmMsg: gettext('Node') + " '" + nodename + "' - " + gettext('Restart'),
 	    handler: function() {
 		node_command('reboot');
@@ -93,6 +94,7 @@ Ext.define('PVE.node.Config', {
 	var shutdownBtn = Ext.create('PVE.button.Button', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
+	    dangerous: true,
 	    confirmMsg: gettext('Node') + " '" + nodename + "' - " + gettext('Shutdown'),
 	    handler: function() {
 		node_command('shutdown');
