@@ -19,25 +19,19 @@ $ReplicationTestEnv::mocked_nodename = 'node1';
 my $schedule = [];
 
 my $mocked_replicate = sub {
-    my ($jobcfg, $start_time) = @_;
+    my ($jobcfg, $state, $start_time, $logfunc) = @_;
 
     push @$schedule, {
 	id => $jobcfg->{id},
 	guest => $jobcfg->{guest},
 	vmtype => $jobcfg->{vmtype},
+	last_sync => $state->{last_sync},
 	start => $start_time,
     };
 };
 
 my $pve_replication_module = Test::MockModule->new('PVE::Replication');
 $pve_replication_module->mock(replicate => $mocked_replicate);
-
-
-my $testjob = {
-    'type'  => 'local',
-    'target' => 'node1',
-    'guest' => 900,
-};
 
 $ReplicationTestEnv::mocked_replication_jobs = {
     job_900_to_node2 => {
@@ -72,28 +66,32 @@ for (my $i = 0; $i < 61; $i++) {
 
 my $exptected_schedule = [
     {
-	'start' => 0,
-	'vmtype' => 'qemu',
-	'id' => 'job_900_to_node2',
-	'guest' => 900
+	last_sync => 0,
+	start => 900,
+	vmtype => 'qemu',
+	id => 'job_900_to_node2',
+	guest => 900
     },
     {
-	'guest' => 900,
-	'id' => 'job_900_to_node2',
-	'vmtype' => 'qemu',
-	'start' => 900
+	last_sync => 900,
+	start => 1800,
+	vmtype => 'qemu',
+	id => 'job_900_to_node2',
+	guest => 900,
+   },
+    {
+	last_sync => 1800,
+	start => 2700,
+	vmtype => 'qemu',
+	id => 'job_900_to_node2',
+	guest => 900
     },
     {
-	'start' => 1800,
-	'vmtype' => 'qemu',
-	'id' => 'job_900_to_node2',
-	'guest' => 900
-    },
-    {
-	'vmtype' => 'qemu',
-	'start' => 2700,
-	'id' => 'job_900_to_node2',
-	'guest' => 900
+	last_sync => 2700,
+	start => 3600,
+	vmtype => 'qemu',
+	id => 'job_900_to_node2',
+	guest => 900
     }
 ];
 

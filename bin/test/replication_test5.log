@@ -7,6 +7,7 @@
 1000 job_900_to_node2: end replication job
 1000 job_900_to_node2: changed config next_sync => 1800
 1000 job_900_to_node2: changed state last_node => node1, last_try => 1000, last_sync => 1000
+1000 job_900_to_node2: changed storeid list local-zfs
 1840 job_900_to_node2: start replication job
 1840 job_900_to_node2: guest => 900, type => qemu, running => 0
 1840 job_900_to_node2: volumes => local-zfs:vm-900-disk-1

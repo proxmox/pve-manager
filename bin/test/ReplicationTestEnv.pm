@@ -293,6 +293,7 @@ sub track_jobs {
 	}
 
 	my $oldstate = $oldcfg->{state};
+
 	my $state = $jobcfg->{state};
 
 	my $changes = '';
@@ -306,6 +307,22 @@ sub track_jobs {
 	}
 	$logmsg->("$jobid: changed state $changes") if $changes;
 
+	my $old_storeid_list = $oldstate->{storeid_list};
+	my $storeid_list = $state->{storeid_list};
+
+	my $storeid_list_changes = 0;
+	foreach my $storeid (@$storeid_list) {
+	    next if grep { $_ eq $storeid } @$old_storeid_list;
+	    $storeid_list_changes = 1;
+	}
+
+	foreach my $storeid (@$old_storeid_list) {
+	    next if grep { $_ eq $storeid } @$storeid_list;
+	    $storeid_list_changes = 1;
+	}
+
+	$logmsg->("$jobid: changed storeid list " . join(',', @$storeid_list))
+	    if $storeid_list_changes;
     }
     $status = $new;
 }

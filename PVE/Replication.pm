@@ -193,7 +193,7 @@ sub delete_job {
 }
 
 sub replicate {
-    my ($jobcfg, $last_sync, $start_time, $logfunc) = @_;
+    my ($jobcfg, $state, $start_time, $logfunc) = @_;
 
     $logfunc = sub {} if !$logfunc; # log nothing by default
 
@@ -212,6 +212,7 @@ sub replicate {
 
     my $jobid = $jobcfg->{id};
     my $storecfg = PVE::Storage::config();
+    my $last_sync = $state->{last_sync};
 
     die "start time before last sync ($start_time <= $last_sync) - abort sync\n"
 	if $start_time <= $last_sync;
@@ -277,6 +278,13 @@ sub replicate {
 
     my $last_snapshots = prepare(
 	$storecfg, $sorted_volids, $jobid, $last_sync, $start_time, $logfunc);
+
+    my $storeid_hash = {};
+    foreach my $volid (@$sorted_volids) {
+	my ($storeid) = PVE::Storage::parse_volume_id($volid);
+	$storeid_hash->{$storeid} = 1;
+    }
+    $state->{storeid_list} = [ sort keys %$storeid_hash ];
 
     # freeze filesystem for data consistency
     if ($qga) {
@@ -365,13 +373,14 @@ my $run_replication_nolock = sub {
 	$state->{last_node} = PVE::INotify::nodename();
 	$state->{last_try} = $start_time;
 	$state->{last_iteration} = $iteration;
+	$state->{storeid_list} //= [];
 
 	PVE::ReplicationState::write_job_state($jobcfg, $state);
 
 	$logfunc->("$jobcfg->{id}: start replication job") if $logfunc;
 
 	eval {
-	    replicate($jobcfg, $state->{last_sync}, $start_time, $logfunc);
+	    replicate($jobcfg, $state, $start_time, $logfunc);
 	};
 	my $err = $@;
 
