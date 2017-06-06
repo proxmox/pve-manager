@@ -368,6 +368,7 @@ my $run_replication_nolock = sub {
 
 	$state->{pid} = $$;
 	$state->{ptime} = PVE::ProcFSTools::read_proc_starttime($state->{pid});
+	$state->{last_node} = PVE::INotify::nodename();
 	$state->{last_try} = $start_time;
 	$state->{last_iteration} = $iteration;
 

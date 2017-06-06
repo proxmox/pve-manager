@@ -2,7 +2,7 @@
 1000 job_900_to_node2: start replication job
 1000 job_900_to_node2: end replication job with error: faked replication error
 1000 job_900_to_node2: changed config next_sync => 1300
-1000 job_900_to_node2: changed state last_try => 1000, fail_count => 1, error => faked replication error
+1000 job_900_to_node2: changed state last_node => node1, last_try => 1000, fail_count => 1, error => faked replication error
 1300 job_900_to_node2: start replication job
 1300 job_900_to_node2: end replication job with error: faked replication error
 1300 job_900_to_node2: changed config next_sync => 1900
