@@ -112,15 +112,6 @@ my $get_next_job = sub {
     return undef;
 };
 
-sub replication_snapshot_name {
-    my ($jobid, $last_sync) = @_;
-
-    my $prefix = "replicate_${jobid}_";
-    my $snapname = "${prefix}${last_sync}_snap";
-
-    wantarray ? ($prefix, $snapname) : $snapname;
-}
-
 sub remote_prepare_local_job {
     my ($ssh_info, $jobid, $vmid, $volumes, $last_sync, $force) = @_;
 
@@ -159,7 +150,8 @@ sub remote_finalize_local_job {
 sub prepare {
     my ($storecfg, $volids, $jobid, $last_sync, $start_time, $logfunc) = @_;
 
-    my ($prefix, $snapname) = replication_snapshot_name($jobid, $last_sync);
+    my ($prefix, $snapname) =
+	PVE::ReplicationState::replication_snapshot_name($jobid, $last_sync);
 
     my $last_snapshots = {};
     foreach my $volid (@$volids) {
@@ -278,8 +270,10 @@ sub replicate {
 
     # test if we have a replication_ snapshot from last sync
     # and remove all other/stale replication snapshots
-    my $last_sync_snapname = replication_snapshot_name($jobid, $last_sync);
-    my $sync_snapname = replication_snapshot_name($jobid, $start_time);
+    my $last_sync_snapname =
+	PVE::ReplicationState::replication_snapshot_name($jobid, $last_sync);
+    my $sync_snapname =
+	PVE::ReplicationState::replication_snapshot_name($jobid, $start_time);
 
     my $last_snapshots = prepare(
 	$storecfg, $sorted_volids, $jobid, $last_sync, $start_time, $logfunc);

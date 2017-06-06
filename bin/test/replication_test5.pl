@@ -40,7 +40,7 @@ my $mocked_remote_prepare_local_job = sub {
 
     return $last_snapshots if !defined($replicated_volume_status->{$target});
 
-    my $last_sync_snapname = PVE::Replication::replication_snapshot_name($jobid, $last_sync);
+    my $last_sync_snapname = PVE::ReplicationState::replication_snapshot_name($jobid, $last_sync);
 
     foreach my $volid (keys %{$replicated_volume_status->{$target}}) {
 	if (!grep { $_ eq $volid } @$volumes) {

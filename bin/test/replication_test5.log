@@ -2,49 +2,49 @@
 1000 job_900_to_node2: start replication job
 1000 job_900_to_node2: guest => 900, type => qemu, running => 0
 1000 job_900_to_node2: volumes => local-zfs:vm-900-disk-1
-1000 job_900_to_node2: create snapshot 'replicate_job_900_to_node2_1000_snap' on local-zfs:vm-900-disk-1
-1000 job_900_to_node2: full sync 'local-zfs:vm-900-disk-1' (replicate_job_900_to_node2_1000_snap)
+1000 job_900_to_node2: create snapshot '__replicate_job_900_to_node2_1000__' on local-zfs:vm-900-disk-1
+1000 job_900_to_node2: full sync 'local-zfs:vm-900-disk-1' (__replicate_job_900_to_node2_1000__)
 1000 job_900_to_node2: end replication job
 1000 job_900_to_node2: changed config next_sync => 1800
 1000 job_900_to_node2: changed state last_node => node1, last_try => 1000, last_sync => 1000
 1840 job_900_to_node2: start replication job
 1840 job_900_to_node2: guest => 900, type => qemu, running => 0
 1840 job_900_to_node2: volumes => local-zfs:vm-900-disk-1
-1840 job_900_to_node2: create snapshot 'replicate_job_900_to_node2_1840_snap' on local-zfs:vm-900-disk-1
-1840 job_900_to_node2: incremental sync 'local-zfs:vm-900-disk-1' (replicate_job_900_to_node2_1000_snap => replicate_job_900_to_node2_1840_snap)
-1840 job_900_to_node2: delete snapshot 'replicate_job_900_to_node2_1000_snap' on local-zfs:vm-900-disk-1
+1840 job_900_to_node2: create snapshot '__replicate_job_900_to_node2_1840__' on local-zfs:vm-900-disk-1
+1840 job_900_to_node2: incremental sync 'local-zfs:vm-900-disk-1' (__replicate_job_900_to_node2_1000__ => __replicate_job_900_to_node2_1840__)
+1840 job_900_to_node2: delete snapshot '__replicate_job_900_to_node2_1000__' on local-zfs:vm-900-disk-1
 1840 job_900_to_node2: end replication job
 1840 job_900_to_node2: changed config next_sync => 2700
 1840 job_900_to_node2: changed state last_try => 1840, last_sync => 1840
 2740 job_900_to_node2: start replication job
 2740 job_900_to_node2: guest => 900, type => qemu, running => 0
 2740 job_900_to_node2: volumes => local-zfs:vm-900-disk-1,local-zfs:vm-900-disk-2
-2740 job_900_to_node2: create snapshot 'replicate_job_900_to_node2_2740_snap' on local-zfs:vm-900-disk-1
-2740 job_900_to_node2: create snapshot 'replicate_job_900_to_node2_2740_snap' on local-zfs:vm-900-disk-2
-2740 job_900_to_node2: delete snapshot 'replicate_job_900_to_node2_2740_snap' on local-zfs:vm-900-disk-1
+2740 job_900_to_node2: create snapshot '__replicate_job_900_to_node2_2740__' on local-zfs:vm-900-disk-1
+2740 job_900_to_node2: create snapshot '__replicate_job_900_to_node2_2740__' on local-zfs:vm-900-disk-2
+2740 job_900_to_node2: delete snapshot '__replicate_job_900_to_node2_2740__' on local-zfs:vm-900-disk-1
 2740 job_900_to_node2: end replication job with error: no such volid 'local-zfs:vm-900-disk-2'
 2740 job_900_to_node2: changed config next_sync => 3040
 2740 job_900_to_node2: changed state last_try => 2740, fail_count => 1, error => no such volid 'local-zfs:vm-900-disk-2'
 3040 job_900_to_node2: start replication job
 3040 job_900_to_node2: guest => 900, type => qemu, running => 0
 3040 job_900_to_node2: volumes => local-zfs:vm-900-disk-1,local-zfs:vm-900-disk-2
-3040 job_900_to_node2: create snapshot 'replicate_job_900_to_node2_3040_snap' on local-zfs:vm-900-disk-1
-3040 job_900_to_node2: create snapshot 'replicate_job_900_to_node2_3040_snap' on local-zfs:vm-900-disk-2
-3040 job_900_to_node2: incremental sync 'local-zfs:vm-900-disk-1' (replicate_job_900_to_node2_1840_snap => replicate_job_900_to_node2_3040_snap)
-3040 job_900_to_node2: full sync 'local-zfs:vm-900-disk-2' (replicate_job_900_to_node2_3040_snap)
-3040 job_900_to_node2: delete snapshot 'replicate_job_900_to_node2_1840_snap' on local-zfs:vm-900-disk-1
+3040 job_900_to_node2: create snapshot '__replicate_job_900_to_node2_3040__' on local-zfs:vm-900-disk-1
+3040 job_900_to_node2: create snapshot '__replicate_job_900_to_node2_3040__' on local-zfs:vm-900-disk-2
+3040 job_900_to_node2: incremental sync 'local-zfs:vm-900-disk-1' (__replicate_job_900_to_node2_1840__ => __replicate_job_900_to_node2_3040__)
+3040 job_900_to_node2: full sync 'local-zfs:vm-900-disk-2' (__replicate_job_900_to_node2_3040__)
+3040 job_900_to_node2: delete snapshot '__replicate_job_900_to_node2_1840__' on local-zfs:vm-900-disk-1
 3040 job_900_to_node2: end replication job
 3040 job_900_to_node2: changed config next_sync => 3600
 3040 job_900_to_node2: changed state last_try => 3040, last_sync => 3040, fail_count => 0, error => 
 3640 job_900_to_node2: start replication job
 3640 job_900_to_node2: guest => 900, type => qemu, running => 0
 3640 job_900_to_node2: volumes => local-zfs:vm-900-disk-1,local-zfs:vm-900-disk-2
-3640 job_900_to_node2: create snapshot 'replicate_job_900_to_node2_3640_snap' on local-zfs:vm-900-disk-1
-3640 job_900_to_node2: create snapshot 'replicate_job_900_to_node2_3640_snap' on local-zfs:vm-900-disk-2
-3640 job_900_to_node2: incremental sync 'local-zfs:vm-900-disk-1' (replicate_job_900_to_node2_3040_snap => replicate_job_900_to_node2_3640_snap)
-3640 job_900_to_node2: incremental sync 'local-zfs:vm-900-disk-2' (replicate_job_900_to_node2_3040_snap => replicate_job_900_to_node2_3640_snap)
-3640 job_900_to_node2: delete snapshot 'replicate_job_900_to_node2_3040_snap' on local-zfs:vm-900-disk-1
-3640 job_900_to_node2: delete snapshot 'replicate_job_900_to_node2_3040_snap' on local-zfs:vm-900-disk-2
+3640 job_900_to_node2: create snapshot '__replicate_job_900_to_node2_3640__' on local-zfs:vm-900-disk-1
+3640 job_900_to_node2: create snapshot '__replicate_job_900_to_node2_3640__' on local-zfs:vm-900-disk-2
+3640 job_900_to_node2: incremental sync 'local-zfs:vm-900-disk-1' (__replicate_job_900_to_node2_3040__ => __replicate_job_900_to_node2_3640__)
+3640 job_900_to_node2: incremental sync 'local-zfs:vm-900-disk-2' (__replicate_job_900_to_node2_3040__ => __replicate_job_900_to_node2_3640__)
+3640 job_900_to_node2: delete snapshot '__replicate_job_900_to_node2_3040__' on local-zfs:vm-900-disk-1
+3640 job_900_to_node2: delete snapshot '__replicate_job_900_to_node2_3040__' on local-zfs:vm-900-disk-2
 3640 job_900_to_node2: end replication job
 3640 job_900_to_node2: changed config next_sync => 4500
 3640 job_900_to_node2: changed state last_try => 3640, last_sync => 3640
@@ -52,8 +52,8 @@
 3700 job_900_to_node2: guest => 900, type => qemu, running => 0
 3700 job_900_to_node2: volumes => local-zfs:vm-900-disk-1,local-zfs:vm-900-disk-2
 3700 job_900_to_node2: start job removal - mode 'full'
-3700 job_900_to_node2: delete stale snapshot 'replicate_job_900_to_node2_3640_snap' on local-zfs:vm-900-disk-1
-3700 job_900_to_node2: delete stale snapshot 'replicate_job_900_to_node2_3640_snap' on local-zfs:vm-900-disk-2
+3700 job_900_to_node2: delete stale snapshot '__replicate_job_900_to_node2_3640__' on local-zfs:vm-900-disk-1
+3700 job_900_to_node2: delete stale snapshot '__replicate_job_900_to_node2_3640__' on local-zfs:vm-900-disk-2
 3700 job_900_to_node2: job removed
 3700 job_900_to_node2: end replication job
 3700 job_900_to_node2: vanished job
