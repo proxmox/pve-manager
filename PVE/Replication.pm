@@ -113,13 +113,15 @@ my $get_next_job = sub {
 };
 
 sub remote_prepare_local_job {
-    my ($ssh_info, $jobid, $vmid, $volumes, $last_sync, $force) = @_;
+    my ($ssh_info, $jobid, $vmid, $volumes, $storeid_list, $last_sync, $parent_snapname, $force) = @_;
 
     my $ssh_cmd = PVE::Cluster::ssh_info_to_command($ssh_info);
     my $cmd = [@$ssh_cmd, '--', 'pvesr', 'prepare-local-job', $jobid];
+    push @$cmd, '--scan', join(',', @$storeid_list) if scalar(@$storeid_list);
     push @$cmd, @$volumes if scalar(@$volumes);
 
     push @$cmd, '--last_sync', $last_sync;
+    push @$cmd, '--parent_snapname', $parent_snapname;
     push @$cmd, '--force' if $force;
 
     my $remote_snapshots;
@@ -147,21 +149,25 @@ sub remote_finalize_local_job {
     PVE::Tools::run_command($cmd);
 }
 
+# finds local replication snapshots from $last_sync
+# and removes all replication snapshots with other time stamps
 sub prepare {
-    my ($storecfg, $volids, $jobid, $last_sync, $start_time, $logfunc) = @_;
+    my ($storecfg, $volids, $jobid, $last_sync, $parent_snapname, $logfunc) = @_;
+
+    $last_sync //= 0;
 
     my ($prefix, $snapname) =
 	PVE::ReplicationState::replication_snapshot_name($jobid, $last_sync);
 
     my $last_snapshots = {};
     foreach my $volid (@$volids) {
-	my $list = PVE::Storage::volume_snapshot_list($storecfg, $volid, $prefix);
+	my $list = PVE::Storage::volume_snapshot_list($storecfg, $volid);
 	my $found = 0;
 	foreach my $snap (@$list) {
-	    if ($snap eq $snapname) {
-		$last_snapshots->{$volid} = 1;
-	    } else {
-		$logfunc->("$jobid: delete stale snapshot '$snap' on $volid");
+	    if ($snap eq $snapname || (defined($parent_snapname) && ($snap eq $parent_snapname))) {
+		$last_snapshots->{$volid}->{$snap} = 1;
+	    } elsif ($snap =~ m/^\Q$prefix\E/) {
+		$logfunc->("$jobid: delete stale replication snapshot '$snap' on $volid");
 		PVE::Storage::volume_snapshot_delete($storecfg, $volid, $snap);
 	    }
 	}
@@ -251,11 +257,11 @@ sub replicate {
 	if ($remove_job eq 'full' && $jobcfg->{target} ne $local_node) {
 	    # remove all remote volumes
 	    my $ssh_info = PVE::Cluster::get_ssh_info($jobcfg->{target});
-	    remote_prepare_local_job($ssh_info, $jobid, $vmid, [], 0, 1);
+	    remote_prepare_local_job($ssh_info, $jobid, $vmid, [], $state->{storeid_list}, 0, undef, 1);
 
 	}
 	# remove all local replication snapshots (lastsync => 0)
-	prepare($storecfg, $sorted_volids, $jobid, 0, $start_time, $logfunc);
+	prepare($storecfg, $sorted_volids, $jobid, 0, undef, $logfunc);
 
 	delete_job($jobid); # update config
 	$logfunc->("$jobid: job removed");
@@ -265,19 +271,22 @@ sub replicate {
 
     my $ssh_info = PVE::Cluster::get_ssh_info($jobcfg->{target}, $migration_network);
 
-    # prepare remote side
-    my $remote_snapshots = remote_prepare_local_job(
-	$ssh_info, $jobid, $vmid, $sorted_volids, $last_sync);
-
-    # test if we have a replication_ snapshot from last sync
-    # and remove all other/stale replication snapshots
     my $last_sync_snapname =
 	PVE::ReplicationState::replication_snapshot_name($jobid, $last_sync);
     my $sync_snapname =
 	PVE::ReplicationState::replication_snapshot_name($jobid, $start_time);
 
+    my $parent_snapname = $conf->{parent};
+
+    # test if we have a replication_ snapshot from last sync
+    # and remove all other/stale replication snapshots
+
     my $last_snapshots = prepare(
-	$storecfg, $sorted_volids, $jobid, $last_sync, $start_time, $logfunc);
+	$storecfg, $sorted_volids, $jobid, $last_sync, $parent_snapname, $logfunc);
+
+    # prepare remote side
+    my $remote_snapshots = remote_prepare_local_job(
+	$ssh_info, $jobid, $vmid, $sorted_volids, $state->{storeid_list}, $last_sync, $parent_snapname, 0);
 
     my $storeid_hash = {};
     foreach my $volid (@$sorted_volids) {
@@ -313,7 +322,7 @@ sub replicate {
     my $cleanup_local_snapshots = sub {
 	my ($volid_hash, $snapname) = @_;
 	foreach my $volid (sort keys %$volid_hash) {
-	    $logfunc->("$jobid: delete snapshot '$snapname' on $volid");
+	    $logfunc->("$jobid: delete previous replication snapshot '$snapname' on $volid");
 	    eval { PVE::Storage::volume_snapshot_delete($storecfg, $volid, $snapname, $running); };
 	    warn $@ if $@;
 	}
@@ -331,12 +340,21 @@ sub replicate {
 
 	foreach my $volid (@$sorted_volids) {
 	    my $base_snapname;
-	    if ($last_snapshots->{$volid} && $remote_snapshots->{$volid}) {
-		$logfunc->("$jobid: incremental sync '$volid' ($last_sync_snapname => $sync_snapname)");
-		$base_snapname = $last_sync_snapname;
-	    } else {
-		$logfunc->("$jobid: full sync '$volid' ($sync_snapname)");
+
+	    if (defined($last_snapshots->{$volid}) && defined($remote_snapshots->{$volid})) {
+		if ($last_snapshots->{$volid}->{$last_sync_snapname} &&
+		    $remote_snapshots->{$volid}->{$last_sync_snapname}) {
+		    $logfunc->("$jobid: incremental sync '$volid' ($last_sync_snapname => $sync_snapname)");
+		    $base_snapname = $last_sync_snapname;
+		} elsif (defined($parent_snapname) &&
+			 ($last_snapshots->{$volid}->{$parent_snapname} &&
+			  $remote_snapshots->{$volid}->{$parent_snapname})) {
+		    $logfunc->("$jobid: incremental sync '$volid' ($parent_snapname => $sync_snapname)");
+		    $base_snapname = $parent_snapname;
+		}
 	    }
+
+	    $logfunc->("$jobid: full sync '$volid' ($sync_snapname)") if !defined($base_snapname);
 	    replicate_volume($ssh_info, $storecfg, $volid, $base_snapname, $sync_snapname, $rate, $insecure);
 	}
     };

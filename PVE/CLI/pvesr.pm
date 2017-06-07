@@ -25,6 +25,28 @@ sub setup_environment {
     PVE::RPCEnvironment->setup_default_cli_env();
 }
 
+# fixme: get from plugin??
+my $replicatable_storage_types = {
+    zfspool => 1,
+};
+
+my $check_wanted_volid = sub {
+    my ($storecfg, $vmid, $volid, $local_node) = @_;
+
+    my ($storeid, $volname) = PVE::Storage::parse_volume_id($volid);
+    my $scfg = PVE::Storage::storage_check_enabled($storecfg, $storeid, $local_node);
+    die "storage '$storeid' is not replicatable\n"
+	if !$replicatable_storage_types->{$scfg->{type}};
+
+    my ($vtype, undef, $ownervm) = PVE::Storage::parse_volname($storecfg, $volid);
+    die "volume '$volid' has wrong vtype ($vtype != 'images')\n"
+	if $vtype ne 'images';
+    die "volume '$volid' has wrong owner\n"
+	if !$ownervm || $vmid != $ownervm;
+
+    return $storeid;
+};
+
 __PACKAGE__->register_method ({
     name => 'prepare_local_job',
     path => 'prepare_local_job',
@@ -36,6 +58,11 @@ __PACKAGE__->register_method ({
 	    id => get_standard_option('pve-replication-id'),
 	    'extra-args' => get_standard_option('extra-args', {
 		description => "The list of volume IDs to consider." }),
+	    scan => {
+		description => "List of storage IDs to scan for stale volumes.",
+		type => 'string', format => 'pve-storage-id-list',
+		optional => 1,
+	    },
 	    force => {
 		description => "Allow to remove all existion volumes (empty volume list).",
 		type => 'boolean',
@@ -48,74 +75,87 @@ __PACKAGE__->register_method ({
 		minimum => 0,
 		optional => 1,
 	    },
+	    parent_snapname => get_standard_option('pve-snapshot-name', {
+                optional => 1,
+            }),
 	},
     },
     returns => { type => 'null' },
     code => sub {
 	my ($param) = @_;
 
-	my ($vmid, undef, $jobid) = PVE::ReplicationConfig::parse_replication_job_id($param->{id});
-	my $last_sync = $param->{last_sync} // 0;
-
-	my $local_node = PVE::INotify::nodename();
-
-	my $vms = PVE::Cluster::get_vmlist();
-	die "guest '$vmid' is on local node\n"
-	    if $vms->{ids}->{$vmid} && $vms->{ids}->{$vmid}->{node} eq $local_node;
-
-	my $storecfg = PVE::Storage::config();
-
-	my $dl = PVE::Storage::vdisk_list($storecfg, undef, $vmid);
-
-	my $volids = [];
-
-	die "no volumes specified\n"
-	    if !$param->{force} && !scalar(@{$param->{'extra-args'}});
-
-	foreach my $volid (@{$param->{'extra-args'}}) {
-
-	    my ($storeid, $volname) = PVE::Storage::parse_volume_id($volid);
-	    my $scfg = PVE::Storage::storage_check_enabled($storecfg, $storeid, $local_node);
-	    die "storage '$storeid' is a shared storage\n" if $scfg->{shared};
-
-	    my ($vtype, undef, $ownervm) = PVE::Storage::parse_volname($storecfg, $volid);
-	    die "volume '$volid' has wrong vtype ($vtype != 'images')\n"
-		if $vtype ne 'images';
-	    die "volume '$volid' has wrong owner\n"
-		if !$ownervm || $vmid != $ownervm;
-
-	    my $found = 0;
-	    foreach my $info (@{$dl->{$storeid}}) {
-		if ($info->{volid} eq $volid) {
-		    $found = 1;
-		    last;
-		}
-	    }
-
-	    push @$volids, $volid if $found;
-	}
-
-	$volids = [ sort @$volids ];
-
 	my $logfunc = sub {
 	    my ($msg) = @_;
 	    print STDERR "$msg\n";
 	};
 
-	# remove stale volumes
-	foreach my $storeid (keys %$dl) {
+	my $local_node = PVE::INotify::nodename();
+
+	die "no volumes specified\n"
+	    if !$param->{force} && !scalar(@{$param->{'extra-args'}});
+
+	my ($vmid, undef, $jobid) = PVE::ReplicationConfig::parse_replication_job_id($param->{id});
+
+	my $vms = PVE::Cluster::get_vmlist();
+	die "guest '$vmid' is on local node\n"
+	    if $vms->{ids}->{$vmid} && $vms->{ids}->{$vmid}->{node} eq $local_node;
+
+	my $last_sync = $param->{last_sync} // 0;
+	my $parent_snapname = $param->{parent_snapname};
+
+	my $storecfg = PVE::Storage::config();
+
+	# compute list of storages we want to scan
+	my $storage_hash = {};
+	foreach my $storeid (PVE::Tools::split_list($param->{scan})) {
 	    my $scfg = PVE::Storage::storage_check_enabled($storecfg, $storeid, $local_node, 1);
-	    next if !$scfg || $scfg->{shared};
-	    foreach my $info (@{$dl->{$storeid}}) {
-		my $volid = $info->{volid};
-		next if grep { $_ eq $volid } @$volids;
-		$logfunc->("$jobid: delete stale volume '$volid'");
-		PVE::Storage::vdisk_free($storecfg, $volid);
-	    }
+	    next if !$scfg; # simply ignore unavailable storages here
+	    die "storage '$storeid' is not replicatable\n" if !$replicatable_storage_types->{$scfg->{type}};
+	    $storage_hash->{$storeid} = 1;
 	}
 
-	my $last_snapshots = PVE::Replication::prepare(
-	    $storecfg, $volids, $jobid, $last_sync, undef, $logfunc);
+	my $wanted_volids = {};
+	foreach my $volid (@{$param->{'extra-args'}}) {
+	    my $storeid = $check_wanted_volid->($storecfg, $vmid, $volid, $local_node);
+	    $wanted_volids->{$volid} = 1;
+	    $storage_hash->{$storeid} = 1;
+	}
+	my $storage_list = [ sort keys %$storage_hash ];
+
+	# activate all used storage
+	my $cache = {};
+	PVE::Storage::activate_storage_list($storecfg, $storage_list, $cache);
+
+	my $snapname = PVE::ReplicationState::replication_snapshot_name($jobid, $last_sync);
+
+	# find replication snapshots
+	my $last_snapshots = {};
+	foreach my $storeid (@$storage_list) {
+	    my $scfg = PVE::Storage::storage_config($storecfg, $storeid);
+	    my $plugin = PVE::Storage::Plugin->lookup($scfg->{type});
+	    my $volids = $plugin->list_images($storeid, $scfg, $vmid, undef, $cache);
+	    foreach my $volid (@$volids) {
+		my ($storeid, $volname) = parse_volume_id($volid);
+		my $list = $plugin->volume_snapshot_list($scfg, $storeid, $volname); # fixme: pass $cache
+		my $found_replication_snapshots = 0;
+		foreach my $snap (@$list) {
+		    if ($snap eq $snapname || (defined($parent_snapname) && ($snap eq $parent_snapname))) {
+			$last_snapshots->{$volid}->{$snap} = 1 if $wanted_volids->{$volid};
+		    } elsif ($snap =~ m/^__replication_/) {
+			$found_replication_snapshots = 1;
+			if ($wanted_volids->{$volid}) {
+			    $logfunc->("$jobid: delete stale replication snapshot '$snap' on $volid");
+			    PVE::Storage::volume_snapshot_delete($storecfg, $volid, $snap);
+			}
+		    }
+		}
+		# remove stale volumes
+		if ($found_replication_snapshots && !$wanted_volids->{$volid}) {
+		    $logfunc->("$jobid: delete stale volume '$volid'");
+		    PVE::Storage::vdisk_free($storecfg, $volid);
+		}
+	    }
+	}
 
 	print to_json($last_snapshots) . "\n";
 
@@ -161,17 +201,7 @@ __PACKAGE__->register_method ({
 	die "no volumes specified\n" if !scalar(@{$param->{'extra-args'}});
 
 	foreach my $volid (@{$param->{'extra-args'}}) {
-
-	    my ($storeid, $volname) = PVE::Storage::parse_volume_id($volid);
-	    my $scfg = PVE::Storage::storage_check_enabled($storecfg, $storeid, $local_node);
-	    die "storage '$storeid' is a shared storage\n" if $scfg->{shared};
-
-	    my ($vtype, undef, $ownervm) = PVE::Storage::parse_volname($storecfg, $volid);
-	    die "volume '$volid' has wrong vtype ($vtype != 'images')\n"
-		if $vtype ne 'images';
-	    die "volume '$volid' has wrong owner\n"
-		if !$ownervm || $vmid != $ownervm;
-
+	    $check_wanted_volid->($storecfg, $vmid, $volid, $local_node);
 	    push @$volids, $volid;
 	}
 

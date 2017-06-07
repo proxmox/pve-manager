@@ -32,7 +32,7 @@ use PVE::Storage;
 my $replicated_volume_status = {};
 
 my $mocked_remote_prepare_local_job = sub {
-    my ($ssh_info, $jobid, $vmid, $volumes, $last_sync, $force) = @_;
+    my ($ssh_info, $jobid, $vmid, $volumes, $storeid_list, $last_sync, $parent_snapname, $force) = @_;
 
     my $target = $ssh_info->{node};
 
@@ -49,7 +49,7 @@ my $mocked_remote_prepare_local_job = sub {
 	}
 	my $snapname = $replicated_volume_status->{$target}->{$volid};
 
-	$last_snapshots->{$volid} = 1 if $last_sync_snapname eq $snapname;
+	$last_snapshots->{$volid}->{$snapname} = 1 if $last_sync_snapname eq $snapname;
     }
 
     return $last_snapshots;
