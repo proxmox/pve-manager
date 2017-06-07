@@ -179,7 +179,24 @@ my $mocked_volume_snapshot_delete = sub {
     delete $d->{$snap} || die "no such snapshot '$snap' on '$volid'\n";
 };
 
+my $pve_replication_module = Test::MockModule->new('PVE::Replication');
+
+my $mocked_job_logfile_name = sub {
+    my ($jobid) = @_;
+
+    return ".mocked_replication_log_$jobid";
+};
+
+my $mocked_log_time = 0;
+
+my $mocked_get_log_time = sub {
+    return $mocked_log_time;
+};
+
 sub setup {
+    $pve_replication_module->mock(job_logfile_name => $mocked_job_logfile_name);
+    $pve_replication_module->mock(get_log_time => $mocked_get_log_time);
+
     $pve_storage_module->mock(config => sub { return $mocked_storage_config; });
     $pve_storage_module->mock(volume_snapshot_list => $mocked_volume_snapshot_list);
     $pve_storage_module->mock(volume_snapshot => $mocked_volume_snapshot);
@@ -249,18 +266,20 @@ my $status;
 sub track_jobs {
     my ($ctime) = @_;
 
+    $mocked_log_time = $ctime;
+
     my $logmsg = sub {
 	my ($msg) = @_;
 
-	print "$ctime $msg\n";
-	print $logfh "$ctime $msg\n";
+	print "$msg\n";
+	print $logfh "$msg\n";
     };
 
     if (!$status) {
 	$status = PVE::Replication::job_status();
 	foreach my $jobid (sort keys %$status) {
 	    my $jobcfg = $status->{$jobid};
-	    $logmsg->("$jobid: new job next_sync => $jobcfg->{next_sync}");
+	    $logmsg->("$ctime $jobid: new job next_sync => $jobcfg->{next_sync}");
 	}
     }
 
@@ -271,7 +290,7 @@ sub track_jobs {
     # detect removed jobs
     foreach my $jobid (sort keys %$status) {
 	if (!$new->{$jobid}) {
-	    $logmsg->("$jobid: vanished job");
+	    $logmsg->("$ctime $jobid: vanished job");
 	}
     }
 
@@ -279,7 +298,7 @@ sub track_jobs {
 	my $jobcfg = $new->{$jobid};
 	my $oldcfg = $status->{$jobid};
 	if (!$oldcfg) {
-	    $logmsg->("$jobid: new job next_sync => $jobcfg->{next_sync}");
+	    $logmsg->("$ctime $jobid: new job next_sync => $jobcfg->{next_sync}");
 	    next; # no old state to compare
 	} else {
 	    foreach my $k (qw(target guest vmtype next_sync)) {
@@ -288,7 +307,7 @@ sub track_jobs {
 		    $changes .= ', ' if $changes;
 		    $changes .= "$k => $jobcfg->{$k}";
 		}
-		$logmsg->("$jobid: changed config $changes") if $changes;
+		$logmsg->("$ctime $jobid: changed config $changes") if $changes;
 	    }
 	}
 
@@ -305,7 +324,7 @@ sub track_jobs {
 		$changes .= "$k => $value";
 	    }
 	}
-	$logmsg->("$jobid: changed state $changes") if $changes;
+	$logmsg->("$ctime $jobid: changed state $changes") if $changes;
 
 	my $old_storeid_list = $oldstate->{storeid_list};
 	my $storeid_list = $state->{storeid_list};
@@ -321,7 +340,7 @@ sub track_jobs {
 	    $storeid_list_changes = 1;
 	}
 
-	$logmsg->("$jobid: changed storeid list " . join(',', @$storeid_list))
+	$logmsg->("$ctime $jobid: changed storeid list " . join(',', @$storeid_list))
 	    if $storeid_list_changes;
     }
     $status = $new;
