@@ -68,7 +68,7 @@ Ext.define('PVE.window.BulkAction', {
 		    xtype: 'pveNodeSelector',
 		    name: 'target',
 		    disallowedNodes: [me.nodename],
-		    fieldLabel: 'Target node',
+		    fieldLabel: gettext('Target node'),
 		    allowBlank: false,
 		    onlineValidator: true
 		},
@@ -78,7 +78,7 @@ Ext.define('PVE.window.BulkAction', {
 		    minValue: 1,
 		    maxValue: 100,
 		    value: 1,
-		    fieldLabel: 'Parallel jobs',
+		    fieldLabel: gettext('Parallel jobs'),
 		    allowBlank: false
 		}
 	    );
