@@ -195,6 +195,8 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
+	my $rpcenv = PVE::RPCEnvironment::get();
+
 	my $code = sub {
 	    my $cfg = PVE::ReplicationConfig->new();
 
@@ -210,6 +212,9 @@ __PACKAGE__->register_method ({
 		# only remove local snapshots
 		$jobcfg->{remove_job} = 'local';
 	    }
+
+	    warn "Replication job removal is a background task and will take some time.\n"
+		if $rpcenv->{type} eq 'cli';
 
 	    $cfg->write();
 	};
