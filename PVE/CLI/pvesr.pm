@@ -133,9 +133,10 @@ __PACKAGE__->register_method ({
 	foreach my $storeid (@$storage_list) {
 	    my $scfg = PVE::Storage::storage_config($storecfg, $storeid);
 	    my $plugin = PVE::Storage::Plugin->lookup($scfg->{type});
-	    my $volids = $plugin->list_images($storeid, $scfg, $vmid, undef, $cache);
-	    foreach my $volid (@$volids) {
-		my ($storeid, $volname) = parse_volume_id($volid);
+	    my $images = $plugin->list_images($storeid, $scfg, $vmid, undef, $cache);
+	    foreach my $disk (@$images) {
+		my $volid = $disk->{volid};
+		my ($storeid, $volname) = PVE::Storage::parse_volume_id($volid);
 		my $list = $plugin->volume_snapshot_list($scfg, $storeid, $volname); # fixme: pass $cache
 		my $found_replication_snapshots = 0;
 		foreach my $snap (@$list) {
