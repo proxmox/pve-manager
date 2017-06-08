@@ -271,6 +271,8 @@ sub replicate {
 
     my $sorted_volids = [ sort keys %$volumes ];
 
+    $running //= 0;  # to avoid undef warnings from logfunc
+
     $logfunc->("guest => $vmid, type => $vmtype, running => $running");
     $logfunc->("volumes => " . join(',', @$sorted_volids));
 
