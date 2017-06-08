@@ -187,20 +187,21 @@ sub prepare {
 	PVE::ReplicationState::replication_snapshot_name($jobid, $last_sync);
 
     my $last_snapshots = {};
+    my $cleaned_replicated_volumes = {};
     foreach my $volid (@$volids) {
 	my $list = PVE::Storage::volume_snapshot_list($storecfg, $volid);
-	my $found = 0;
 	foreach my $snap (@$list) {
 	    if ($snap eq $snapname || (defined($parent_snapname) && ($snap eq $parent_snapname))) {
 		$last_snapshots->{$volid}->{$snap} = 1;
 	    } elsif ($snap =~ m/^\Q$prefix\E/) {
 		$logfunc->("delete stale replication snapshot '$snap' on $volid");
 		PVE::Storage::volume_snapshot_delete($storecfg, $volid, $snap);
+		$cleaned_replicated_volumes->{$volid} = 1;
 	    }
 	}
     }
 
-    return $last_snapshots;
+    return wantarray ? ($last_snapshots, $cleaned_replicated_volumes) : $last_snapshots;
 }
 
 sub replicate_volume {
