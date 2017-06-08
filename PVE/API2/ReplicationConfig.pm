@@ -8,6 +8,7 @@ use PVE::Exception qw(raise_perm_exc raise_param_exc);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RPCEnvironment;
 use PVE::ReplicationConfig;
+use PVE::Cluster;
 
 use PVE::RESTHandler;
 
@@ -111,6 +112,14 @@ __PACKAGE__->register_method ({
 
 	# extract guest ID from job ID
 	my ($guest) = PVE::ReplicationConfig::parse_replication_job_id($id);
+
+	my $nodelist = PVE::Cluster::get_members();
+	my $vmlist = PVE::Cluster::get_vmlist();
+
+	die "Guest '$guest' does not exists.\n"
+	    if !defined($vmlist->{ids}->{$guest});
+	die "Target '$param->{target}' does not exists.\n"
+	    if defined($param->{target}) && !defined($nodelist->{$param->{target}});
 
 	my $code = sub {
 	    my $cfg = PVE::ReplicationConfig->new();
