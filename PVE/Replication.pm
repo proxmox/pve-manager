@@ -135,7 +135,8 @@ sub remote_prepare_local_job {
     push @$cmd, @$volumes if scalar(@$volumes);
 
     push @$cmd, '--last_sync', $last_sync;
-    push @$cmd, '--parent_snapname', $parent_snapname;
+    push @$cmd, '--parent_snapname', $parent_snapname
+	if $parent_snapname;
     push @$cmd, '--force' if $force;
 
     my $remote_snapshots;
