@@ -256,29 +256,7 @@ __PACKAGE__->register_method({
 	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ]);
 	}
 
-	my $fh = IO::File->new($filename, "r");
-	raise_param_exc({ upid => "no such task - unable to open file - $!" }) if !$fh;
-
-	my $start = $param->{start} || 0;
-	my $limit = $param->{limit} || 50;
-	my $count = 0;
-	my $line;
-	while (defined ($line = <$fh>)) {
-	    next if $count++ < $start;
-	    next if $limit <= 0;
-	    chomp $line;
-	    push @$lines, { n => $count, t => $line};
-	    $limit--;
-	}
-
-	close($fh);
-
-	# HACK: ExtJS store.guaranteeRange() does not like empty array
-	# so we add a line
-	if (!$count) {
-	    $count++;
-	    push @$lines, { n => $count, t => "no content"};
-	}
+	my ($count, $lines) = PVE::Tools::dump_logfile($filename, $param->{start}, $param->{limit});
 
 	$rpcenv->set_result_attrib('total', $count);
 	    
