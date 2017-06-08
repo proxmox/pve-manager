@@ -129,18 +129,19 @@ __PACKAGE__->register_method ({
 	my $snapname = PVE::ReplicationState::replication_snapshot_name($jobid, $last_sync);
 
 	# find replication snapshots
+	my $volids = [];
 	foreach my $storeid (@$storage_list) {
 	    my $scfg = PVE::Storage::storage_config($storecfg, $storeid);
 	    my $plugin = PVE::Storage::Plugin->lookup($scfg->{type});
 	    my $images = $plugin->list_images($storeid, $scfg, $vmid, undef, $cache);
-	    my $volids = [ map { $_->{volid} } @$images ];
-	    my ($last_snapshots, $cleaned_replicated_volumes) = PVE::Replication::prepare($storecfg, $volids, $jobid, $last_sync, $parent_snapname, $logfunc);
-	    foreach my $volid (keys %$cleaned_replicated_volumes) {
-		if (!$wanted_volids->{$volid}) {
-		    $logfunc->("$jobid: delete stale volume '$volid'");
-		    PVE::Storage::vdisk_free($storecfg, $volid);
-		    delete $last_snapshots->{$volid};
-		}
+	    push @$volids, map { $_->{volid} } @$images;
+	}
+	my ($last_snapshots, $cleaned_replicated_volumes) = PVE::Replication::prepare($storecfg, $volids, $jobid, $last_sync, $parent_snapname, $logfunc);
+	foreach my $volid (keys %$cleaned_replicated_volumes) {
+	    if (!$wanted_volids->{$volid}) {
+		$logfunc->("$jobid: delete stale volume '$volid'");
+		PVE::Storage::vdisk_free($storecfg, $volid);
+		delete $last_snapshots->{$volid};
 	    }
 	}
 
