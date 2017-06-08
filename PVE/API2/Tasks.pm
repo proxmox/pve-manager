@@ -246,8 +246,6 @@ __PACKAGE__->register_method({
 	my ($task, $filename) = PVE::Tools::upid_decode($param->{upid}, 1);
 	raise_param_exc({ upid => "unable to parse worker upid" }) if !$task;
 
-	my $lines = [];
-
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 	my $node = $param->{node};
