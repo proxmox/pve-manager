@@ -198,6 +198,12 @@ __PACKAGE__->register_method ({
 		optional => 1,
 		default => 0,
 	    },
+	    force => {
+		description => "Will remove the jobconfig entry, but will not cleanup.",
+		type => 'boolean',
+		optional => 1,
+		default => 0,
+	    },
 	}
     },
     returns => { type => 'null' },
@@ -210,21 +216,24 @@ __PACKAGE__->register_method ({
 	    my $cfg = PVE::ReplicationConfig->new();
 
 	    my $id = $param->{id};
-
-	    my $jobcfg = $cfg->{ids}->{$id};
-	    die "no such job '$id'\n" if !$jobcfg;
-
-	    if (!$param->{keep} && $jobcfg->{type} eq 'local') {
-		# remove local snapshots and remote volumes
-		$jobcfg->{remove_job} = 'full';
+	    if ($param->{force}) {
+		die "Keep will not work when force is set.\n" if $param->{keep};
+		delete $cfg->{ids}->{$id};
 	    } else {
-		# only remove local snapshots
-		$jobcfg->{remove_job} = 'local';
+		my $jobcfg = $cfg->{ids}->{$id};
+		die "no such job '$id'\n" if !$jobcfg;
+
+		if (!$param->{keep} && $jobcfg->{type} eq 'local') {
+		    # remove local snapshots and remote volumes
+		    $jobcfg->{remove_job} = 'full';
+		} else {
+		    # only remove local snapshots
+		    $jobcfg->{remove_job} = 'local';
+		}
+
+		warn "Replication job removal is a background task and will take some time.\n"
+		    if $rpcenv->{type} eq 'cli';
 	    }
-
-	    warn "Replication job removal is a background task and will take some time.\n"
-		if $rpcenv->{type} eq 'cli';
-
 	    $cfg->write();
 	};
 
