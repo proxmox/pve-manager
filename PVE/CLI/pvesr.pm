@@ -288,6 +288,37 @@ __PACKAGE__->register_method ({
 	return PVE::API2::ReplicationConfig->update($param);
     }});
 
+__PACKAGE__->register_method ({
+    name => 'set_state',
+    path => '',
+    protected => 1,
+    method => 'POST',
+    description => "Set the job replication state on migration. This call is for internal use. It will accept the job state as ja JSON obj.",
+    permissions => {
+	check => ['perm', '/storage', ['Datastore.Allocate']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    vmid => get_standard_option('pve-vmid', { completion => \&PVE::Cluster::complete_vmid }),
+	    state => {
+		description => "Job state as JSON decoded string.",
+		type => 'string',
+	    },
+	},
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $vmid = extract_param($param, 'vmid');
+	my $json_string = extract_param($param, 'state');
+	my $remote_job_state= decode_json $json_string;
+
+	PVE::ReplicationState::write_vmid_job_states($remote_job_state, $vmid);
+	return undef;
+    }});
+
 my $print_job_list = sub {
     my ($list) = @_;
 
@@ -359,6 +390,7 @@ our $cmddef = {
     'finalize-local-job' => [ __PACKAGE__, 'finalize_local_job', ['id', 'extra-args'], {} ],
 
     run => [ __PACKAGE__ , 'run'],
+    'set-state' => [ __PACKAGE__ , 'set_state', ['vmid', 'state']],
 };
 
 1;
