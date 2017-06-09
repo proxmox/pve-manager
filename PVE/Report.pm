@@ -7,6 +7,8 @@ use PVE::Tools;
 
 $ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
 
+my $cmd_timeout = 10; # generous timeout
+
 my $report;
 
 my @general = ('hostname', 'pveversion --verbose', 'cat /etc/hosts', 'top -b -n 1  | head -n 15',
@@ -92,36 +94,41 @@ sub dir2text {
 
     PVE::Tools::dir_glob_foreach($target_dir, $regexp, sub {
 	my ($file) = @_;
-	$report .=  "# cat $target_dir$file\n";
+	$report .=  "\n# cat $target_dir$file\n";
 	$report .= PVE::Tools::file_get_contents($target_dir.$file)."\n";
     });
 }
 
-# execute commands and display their output as if they've been done on a interactive shell
-# so the local sysadmin can reproduce what we're doing
-sub do_execute {
-    my ($command) = @_;
-    $report .= "# $command \n";
-    open (COMMAND, "$command 2>&1 |");
-    while (<COMMAND>) {
-	$report .= $_;
-    }
-}
-
 sub generate {
+
+    my $record_output = sub {
+	$report .= shift . "\n";
+    };
+
+    my $run_cmd_params = {
+	outfunc => $record_output,
+	errfunc => $record_output,
+	timeout => $cmd_timeout,
+	noerr => 1, # avoid checking programs exit code
+    };
+
     foreach my $subreport (@global_report) {
 	my $title = $subreport->{'title'};
 	my @commands = @{$subreport->{'commands'}};
 
 	$report .= "\n==== $title ====\n";
 	foreach my $command (@commands) {
-	    if (ref $command eq 'CODE') {
-		&$command;
-	    } else {
-		do_execute($command);
-		next;
-	    }
+	    eval {
+		if (ref $command eq 'CODE') {
+		    PVE::Tools::run_with_timeout($cmd_timeout, $command);
+		} else {
+		    $report .= "\n# $command\n";
+		    PVE::Tools::run_command($command, %$run_cmd_params);
+		}
+	    };
+	    $report .= "\nERROR: $@\n" if $@;
 	}
     }
-return $report;
+
+    return $report;
 }
