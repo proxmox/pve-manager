@@ -1,5 +1,7 @@
 include defines.mk
 
+export SOURCE_DATE_EPOCH ?= $(shell dpkg-parsechangelog -l debian/changelog.Debian -STimestamp)
+
 DESTDIR=
 
 SUBDIRS = aplinfo PVE bin www po
