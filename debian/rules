@@ -1,0 +1,17 @@
+#!/usr/bin/make -f
+
+override_dh_compress:
+	dh_compress -Xaplinfo.dat
+
+override_dh_strip_nondeterminism:
+	dh_strip_nondeterminism -X.png
+
+override_dh_fixperms:
+	dh_fixperms
+	find debian -name 'pvemailforward' -exec chmod 2755 {} +
+	find debian -name 'pvemailforward' -exec chown root:www-data {} +
+	find debian -type d -name 'pveproxy' -exec chown www-data:www-data {} +
+	find debian -type d -name 'pveproxy' -exec chmod 700 {} +
+
+%:
+	dh $@

@@ -1,6 +1,6 @@
 include defines.mk
 
-export SOURCE_DATE_EPOCH ?= $(shell dpkg-parsechangelog -l debian/changelog.Debian -STimestamp)
+export SOURCE_DATE_EPOCH ?= $(shell dpkg-parsechangelog -STimestamp)
 
 DESTDIR=
 
@@ -29,30 +29,14 @@ country.dat: country.pl
 .PHONY: deb
 deb: $(DEB)
 $(DEB):
-	${MAKE} -C bin/test check
-	make clean
 	rm -rf dest
 	mkdir dest
-	make DESTDIR=`pwd`/dest install
-	mkdir dest/DEBIAN
-	sed -e s/@VERSION@/${VERSION}/ -e s/@PACKAGE@/${PACKAGE}/ -e s/@PACKAGERELEASE@/${PACKAGERELEASE}/ debian/control.in >dest/DEBIAN/control
-	install -m 0644 debian/conffiles dest/DEBIAN
-	install -m 0755 debian/config dest/DEBIAN
-	install -m 0644 debian/templates dest/DEBIAN
-	install -m 0755 debian/preinst dest/DEBIAN
-	install -m 0755 debian/postinst dest/DEBIAN
-	install -m 0755 debian/prerm dest/DEBIAN
-	install -m 0755 debian/postrm dest/DEBIAN
-	install -m 0644 debian/triggers dest/DEBIAN
-	install -m 0644 -D debian/lintian-overrides dest/usr/share/lintian/overrides/${PACKAGE}
-	echo "git clone git://git.proxmox.com/git/pve-manager.git\\ngit checkout ${GITVERSION}" >  dest/usr/share/doc/${PACKAGE}/SOURCE
-	gzip -n --best dest/usr/share/man/*/*
-	gzip -n --best dest/usr/share/doc/${PACKAGE}/changelog.Debian
-	dpkg-deb --build dest
-	mv dest.deb ${DEB}
-	rm -rf dest
+	rsync -a * dest
+	sed -e s/@VERSION@/${VERSION}/ -e s/@PACKAGE@/${PACKAGE}/ -e s/@PACKAGERELEASE@/${PACKAGERELEASE}/ debian/control.in >dest/debian/control
+	echo "git clone git://git.proxmox.com/git/pve-manager.git\\ngit checkout ${GITVERSION}" >  dest/debian/SOURCE
+	cd dest; dpkg-buildpackage -rfakeroot -b -us -uc
 	# supress lintian error: statically-linked-binary usr/bin/pvemailforward
-	lintian -X binaries ${DEB}	
+	lintian -X binaries ${DEB}
 
 .PHONY: upload
 upload: ${DEB} check
@@ -87,11 +71,8 @@ install: country.dat vzdump.conf vzdump-hook-script.pl pve-apt.conf mtu bridgevl
 
 	install -m 0644 vzdump-hook-script.pl ${DOCDIR}/examples/vzdump-hook-script.pl
 	install -m 0644 spice-example-sh ${DOCDIR}/examples/spice-example-sh
-	install -m 0644 copyright ${DOCDIR}
-	install -m 0644 debian/changelog.Debian ${DOCDIR}
 	install -m 0644 country.dat ${DESTDIR}/usr/share/${PACKAGE}
-	# temporary: set ExtJS 6 migration devel directory
-	install -d ${DESTDIR}/usr/share/${PACKAGE}/manager6
+
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
 .PHONY: distclean

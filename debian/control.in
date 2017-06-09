@@ -1,3 +1,9 @@
+Source: @PACKAGE@
+Section: admin
+Priority: optional
+Build-Depends: liblocale-po-perl
+Maintainer: Proxmox Support Team <support@proxmox.com>
+
 Package: @PACKAGE@
 Version: @VERSION@-@PACKAGERELEASE@
 Section: admin
