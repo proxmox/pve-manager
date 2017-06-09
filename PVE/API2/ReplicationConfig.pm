@@ -217,7 +217,7 @@ __PACKAGE__->register_method ({
 
 	    my $id = $param->{id};
 	    if ($param->{force}) {
-		die "Keep will not work when force is set.\n" if $param->{keep};
+		raise_param_exc({ 'keep' => "conflicts with parameter 'force'" }) if $param->{keep};
 		delete $cfg->{ids}->{$id};
 	    } else {
 		my $jobcfg = $cfg->{ids}->{$id};
