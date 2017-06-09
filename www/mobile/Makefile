@@ -35,7 +35,6 @@ pvemanager-mobile.js: ${JSSRC}
 install: pvemanager-mobile.js
 	install -d ${WWWTOUCHDIR}
 	install -m 0644 pvemanager-mobile.js ${WWWTOUCHDIR}
-	chown -R www-data:www-data ${WWWTOUCHDIR}
 
 .PHONY: clean
 clean:

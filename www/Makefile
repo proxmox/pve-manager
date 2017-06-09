@@ -9,5 +9,5 @@ all: ${SUBDIRS} index.html.tpl
 .PHONY: install
 install:
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
-	install -m 0644 -o www-data -g www-data index.html.tpl ${WWWBASEDIR}
+	install -m 0644 index.html.tpl ${WWWBASEDIR}
 
