@@ -14,6 +14,8 @@ use Test::MockModule;
 use ReplicationTestEnv;
 use Test::More tests => 1;
 
+use PVE::API2::Replication;
+
 $ReplicationTestEnv::mocked_nodename = 'node1';
 
 my $schedule = [];
@@ -60,7 +62,7 @@ $ReplicationTestEnv::mocked_vm_configs = {
 ReplicationTestEnv::setup();
 
 for (my $i = 0; $i < 61; $i++) {
-    PVE::Replication::run_jobs($i*60);
+    PVE::API2::Replication::run_jobs($i*60);
 }
 
 #print Dumper($schedule);

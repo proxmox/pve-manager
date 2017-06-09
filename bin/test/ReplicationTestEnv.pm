@@ -15,9 +15,11 @@ use PVE::Cluster;
 use PVE::Storage;
 use PVE::ReplicationConfig;
 use PVE::ReplicationState;
+use PVE::API2::Replication;
 use PVE::Replication;
 use PVE::QemuConfig;
 use PVE::LXC::Config;
+
 
 use Test::MockModule;
 
@@ -290,7 +292,7 @@ sub track_jobs {
 	}
     }
 
-    PVE::Replication::run_jobs($ctime, $logmsg);
+    PVE::API2::Replication::run_jobs($ctime, $logmsg);
 
     my $new = PVE::Replication::job_status();
 

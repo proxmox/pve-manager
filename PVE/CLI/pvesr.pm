@@ -238,11 +238,11 @@ __PACKAGE__->register_method ({
 
 	if (my $id = extract_param($param, 'id')) {
 
-	    PVE::Replication::run_single_job($id, undef, $logfunc);
+	    PVE::API2::Replication::run_single_job($id, undef, $logfunc);
 
 	} else {
 
-	    PVE::Replication::run_jobs(undef, $logfunc);
+	    PVE::API2::Replication::run_jobs(undef, $logfunc);
 	}
 
 	return undef;

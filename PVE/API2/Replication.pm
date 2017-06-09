@@ -8,10 +8,88 @@ use PVE::RPCEnvironment;
 use PVE::ProcFSTools;
 use PVE::ReplicationConfig;
 use PVE::Replication;
+use PVE::QemuConfig;
+use PVE::QemuServer;
+use PVE::LXC::Config;
+use PVE::LXC;
 
 use PVE::RESTHandler;
 
 use base qw(PVE::RESTHandler);
+
+my $pvesr_lock_path = "/var/lock/pvesr.lck";
+
+my $lookup_guest_class = sub {
+    my ($vmtype) = @_;
+
+    if ($vmtype eq 'qemu') {
+	return 'PVE::QemuConfig';
+    } elsif ($vmtype eq 'lxc') {
+	return 'PVE::LXC::Config';
+    } else {
+	die "unknown guest type '$vmtype' - internal error";
+    }
+};
+
+# passing $now is useful for regression testing
+sub run_single_job {
+    my ($jobid, $now, $logfunc) = @_;
+
+    my $local_node = PVE::INotify::nodename();
+
+    my $code = sub {
+	$now //= time();
+
+	my $cfg = PVE::ReplicationConfig->new();
+
+	my $jobcfg = $cfg->{ids}->{$jobid};
+	die "no such job '$jobid'\n" if !$jobcfg;
+
+	die "internal error - not implemented" if $jobcfg->{type} ne 'local';
+
+	die "job '$jobid' is disabled\n" if $jobcfg->{disable};
+
+	my $vms = PVE::Cluster::get_vmlist();
+	my $vmid = $jobcfg->{guest};
+
+	die "no such guest '$vmid'\n" if !$vms->{ids}->{$vmid};
+
+	die "guest '$vmid' is not on local node\n"
+	    if $vms->{ids}->{$vmid}->{node} ne $local_node;
+
+	die "unable to sync to local node\n" if $jobcfg->{target} eq $local_node;
+
+	$jobcfg->{id} = $jobid;
+
+	$jobcfg->{vmtype} = $vms->{ids}->{$vmid}->{type};
+
+	my $guest_class = $lookup_guest_class->($jobcfg->{vmtype});
+	PVE::Replication::run_replication($guest_class, $jobcfg, $now, $now, $logfunc);
+    };
+
+    my $res = PVE::Tools::lock_file($pvesr_lock_path, 60, $code);
+    die $@ if $@;
+}
+
+# passing $now is useful for regression testing
+sub run_jobs {
+    my ($now, $logfunc) = @_;
+
+    my $iteration = $now // time();
+
+    my $code = sub {
+       my $start_time = $now // time();
+
+       while (my $jobcfg = PVE::Replication::get_next_job($iteration, $start_time)) {
+           my $guest_class = $lookup_guest_class->($jobcfg->{vmtype});
+           PVE::Replication::run_replication($guest_class, $jobcfg, $iteration, $start_time, $logfunc, 1);
+           $start_time = $now // time();
+       }
+    };
+
+    my $res = PVE::Tools::lock_file($pvesr_lock_path, 60, $code);
+    die $@ if $@;
+}
 
 my $extract_job_status = sub {
     my ($jobcfg, $jobid) = @_;

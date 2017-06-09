@@ -12,6 +12,7 @@ use Data::Dumper;
 
 use Test::MockModule;
 use ReplicationTestEnv;
+use PVE::API2::Replication;
 
 use Test::More;
 
@@ -43,7 +44,7 @@ $ReplicationTestEnv::mocked_vm_configs = {
 
 ReplicationTestEnv::setup();
 
-eval { PVE::Replication::run_single_job('job_900_to_node1', 1000); };
+eval { PVE::API2::Replication::run_single_job('job_900_to_node1', 1000); };
 my $err = $@;
 
 is($err, "unable to sync to local node\n", "test error message");
