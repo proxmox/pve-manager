@@ -64,6 +64,13 @@ unlink $statefile;
 $PVE::ReplicationState::state_path = $statefile;
 $PVE::ReplicationState::state_lock = ".mocked_repl_state_lock";
 $PVE::Replication::pvesr_lock_path = ".mocked_pvesr_lock";
+$PVE::GuestHelpers::lockdir = ".mocked_pve-manager_lock";
+
+if (!mkdir($PVE::GuestHelpers::lockdir) && !$!{EEXIST}) {
+    # If we cannot create the guest helper lockdir we'll loop endlessly, so die
+    # if it fails.
+    die "mkdir($PVE::GuestHelpers::lockdir): $!\n";
+}
 
 my $pve_cluster_module = Test::MockModule->new('PVE::Cluster');
 
