@@ -19,12 +19,13 @@ $ReplicationTestEnv::mocked_nodename = 'node1';
 my $schedule = [];
 
 my $mocked_replicate = sub {
-    my ($jobcfg, $state, $start_time, $logfunc) = @_;
+    my ($guest_class, $jobcfg, $state, $start_time, $logfunc) = @_;
 
     push @$schedule, {
 	id => $jobcfg->{id},
 	guest => $jobcfg->{guest},
 	vmtype => $jobcfg->{vmtype},
+	guest_class => $guest_class,
 	last_sync => $state->{last_sync},
 	start => $start_time,
     };
@@ -69,6 +70,7 @@ my $exptected_schedule = [
 	last_sync => 0,
 	start => 900,
 	vmtype => 'qemu',
+	guest_class => 'PVE::QemuConfig',
 	id => 'job_900_to_node2',
 	guest => 900
     },
@@ -76,6 +78,7 @@ my $exptected_schedule = [
 	last_sync => 900,
 	start => 1800,
 	vmtype => 'qemu',
+	guest_class => 'PVE::QemuConfig',
 	id => 'job_900_to_node2',
 	guest => 900,
    },
@@ -83,6 +86,7 @@ my $exptected_schedule = [
 	last_sync => 1800,
 	start => 2700,
 	vmtype => 'qemu',
+	guest_class => 'PVE::QemuConfig',
 	id => 'job_900_to_node2',
 	guest => 900
     },
@@ -90,6 +94,7 @@ my $exptected_schedule = [
 	last_sync => 2700,
 	start => 3600,
 	vmtype => 'qemu',
+	guest_class => 'PVE::QemuConfig',
 	id => 'job_900_to_node2',
 	guest => 900
     }

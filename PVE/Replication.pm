@@ -227,7 +227,7 @@ sub delete_job {
 }
 
 sub replicate {
-    my ($jobcfg, $state, $start_time, $logfunc) = @_;
+    my ($guest_class, $jobcfg, $state, $start_time, $logfunc) = @_;
 
     my $local_node = PVE::INotify::nodename();
 
@@ -252,24 +252,9 @@ sub replicate {
     my $vmid = $jobcfg->{guest};
     my $vmtype = $jobcfg->{vmtype};
 
-    my $conf;
-    my $running;
-    my $qga;
-    my $volumes;
-
-    if ($vmtype eq 'qemu') {
-	$conf = PVE::QemuConfig->load_config($vmid);
-	$running = PVE::QemuServer::check_running($vmid);
-	$qga = PVE::QemuServer::qga_check_running($vmid)
-	    if $running && $conf->{agent};
-	$volumes = PVE::QemuConfig->get_replicatable_volumes($storecfg, $conf);
-    } elsif ($vmtype eq 'lxc') {
-	$conf = PVE::LXC::Config->load_config($vmid);
-	$running = PVE::LXC::check_running($vmid);
-	$volumes = PVE::LXC::Config->get_replicatable_volumes($storecfg, $conf);
-    } else {
-	die "internal error";
-    }
+    my $conf = $guest_class->load_config($vmid);
+    my ($running, $freezefs) = $guest_class->__snapshot_check_freeze_needed($vmid, $conf, 0);
+    my $volumes = $guest_class->get_replicatable_volumes($storecfg, $conf);
 
     my $sorted_volids = [ sort keys %$volumes ];
 
@@ -324,9 +309,9 @@ sub replicate {
     $state->{storeid_list} = [ sort keys %$storeid_hash ];
 
     # freeze filesystem for data consistency
-    if ($qga) {
+    if ($freezefs) {
 	$logfunc->("freeze guest filesystem");
-	PVE::QemuServer::vm_mon_cmd($vmid, "guest-fsfreeze-freeze");
+	$guest_class->__snapshot_freeze($vmid, 0);
     }
 
     # make snapshot of all volumes
@@ -341,17 +326,15 @@ sub replicate {
     my $err = $@;
 
     # unfreeze immediately
-    if ($qga) {
-	$logfunc->("unfreeze guest filesystem");
-	eval { PVE::QemuServer::vm_mon_cmd($vmid, "guest-fsfreeze-thaw"); };
-	warn $@ if $@; # ignore errors here, because we cannot fix it anyways
+    if ($freezefs) {
+	$guest_class->__snapshot_freeze($vmid, 1);
     }
 
     my $cleanup_local_snapshots = sub {
 	my ($volid_hash, $snapname) = @_;
 	foreach my $volid (sort keys %$volid_hash) {
 	    $logfunc->("delete previous replication snapshot '$snapname' on $volid");
-	    eval { PVE::Storage::volume_snapshot_delete($storecfg, $volid, $snapname, $running); };
+	    eval { PVE::Storage::volume_snapshot_delete($storecfg, $volid, $snapname); };
 	    warn $@ if $@;
 	}
     };
@@ -404,7 +387,7 @@ sub replicate {
 }
 
 my $run_replication_nolock = sub {
-    my ($jobcfg, $iteration, $start_time, $logfunc) = @_;
+    my ($guest_class, $jobcfg, $iteration, $start_time, $logfunc) = @_;
 
     my $jobid = $jobcfg->{id};
 
@@ -441,7 +424,7 @@ my $run_replication_nolock = sub {
 	$logfunc_wrapper->("start replication job");
 
 	eval {
-	    replicate($jobcfg, $state, $start_time, $logfunc_wrapper);
+	    replicate($guest_class, $jobcfg, $state, $start_time, $logfunc_wrapper);
 	};
 	my $err = $@;
 
@@ -471,17 +454,29 @@ my $run_replication_nolock = sub {
 };
 
 my $run_replication = sub {
-    my ($jobcfg, $iteration, $start_time, $logfunc, $noerr) = @_;
+    my ($guest_class, $jobcfg, $iteration, $start_time, $logfunc, $noerr) = @_;
 
     eval {
 	my $timeout = 2; # do not wait too long - we repeat periodically anyways
 	PVE::GuestHelpers::guest_migration_lock(
 	    $jobcfg->{guest}, $timeout, $run_replication_nolock,
-	    $jobcfg, $iteration, $start_time, $logfunc);
+	    $guest_class, $jobcfg, $iteration, $start_time, $logfunc);
     };
     if (my $err = $@) {
 	return undef if $noerr;
 	die $err;
+    }
+};
+
+my $lookup_guest_class = sub {
+    my ($vmtype) = @_;
+
+    if ($vmtype eq 'qemu') {
+	return 'PVE::QemuConfig';
+    } elsif ($vmtype eq 'lxc') {
+	return 'PVE::LXCConfig';
+    } else {
+	die "unknown guest type '$vmtype' - internal error";
     }
 };
 
@@ -513,9 +508,11 @@ sub run_single_job {
 	die "unable to sync to local node\n" if $jobcfg->{target} eq $local_node;
 
 	$jobcfg->{id} = $jobid;
+
 	$jobcfg->{vmtype} = $vms->{ids}->{$vmid}->{type};
 
-	$run_replication->($jobcfg, $now, $now, $logfunc);
+	my $guest_class = $lookup_guest_class->($jobcfg->{vmtype});
+	$run_replication->($guest_class, $jobcfg, $now, $now, $logfunc);
     };
 
     my $res = PVE::Tools::lock_file($pvesr_lock_path, 60, $code);
@@ -531,7 +528,8 @@ sub run_jobs {
 	my $start_time = $now // time();
 
 	while (my $jobcfg = $get_next_job->($iteration, $start_time)) {
-	    $run_replication->($jobcfg, $iteration, $start_time, $logfunc, 1);
+	    my $guest_class = $lookup_guest_class->($jobcfg->{vmtype});
+	    $run_replication->($guest_class, $jobcfg, $iteration, $start_time, $logfunc, 1);
 	    $start_time = $now // time();
 	}
     };
