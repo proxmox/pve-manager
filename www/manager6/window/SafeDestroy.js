@@ -85,7 +85,7 @@ Ext.define('PVE.window.SafeDestroy', {
 		{
 		    itemId: 'confirmField',
 		    reference: 'confirmField',
-		    xtype: 'numberfield',
+		    xtype: 'textfield',
 		    name: 'confirm',
 		    labelWidth: 300,
 		    hideTrigger: true,
@@ -124,8 +124,10 @@ Ext.define('PVE.window.SafeDestroy', {
 	    msg = PVE.Utils.format_task_description('qmdestroy', item.id);
 	} else if (item.type === 'CT') {
 	    msg = PVE.Utils.format_task_description('vzdestroy', item.id);
+	} else if (item.type === 'CephPool') {
+	    msg = PVE.Utils.format_task_description('cephdestroypool', item.id);
 	} else {
-	    throw "unknown VM type specified";
+	    throw "unknown item type specified";
 	}
 
 	messageCmp.setHtml(msg);

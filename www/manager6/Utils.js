@@ -613,6 +613,7 @@ Ext.define('PVE.Utils', { utilities: {
 	cephdestroymon: ['Ceph Monitor', gettext('Destroy') ],
 	cephcreateosd: ['Ceph OSD', gettext('Create') ],
 	cephdestroyosd: ['Ceph OSD', gettext('Destroy') ],
+	cephdestroypool: ['Ceph Pool', gettext('Destroy') ],
 	imgcopy: ['', gettext('Copy data') ],
 	imgdel: ['', gettext('Erase data') ],
 	download: ['', gettext('Download') ],
