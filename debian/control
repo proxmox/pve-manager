@@ -64,9 +64,9 @@ Depends: libc6 (>= 2.14),
          libjs-extjs (>= 6.0.1),
          libtemplate-perl,
          lsb-base,
-	 ${perl:Depends},
-	 ${misc:Depends},
-	 ${shlibs:Depends}
+         ${perl:Depends},
+         ${misc:Depends},
+         ${shlibs:Depends}
 Conflicts: netcat-openbsd, vzdump, vlan
 Replaces: vzdump, vlan
 Provides: vzdump, vlan
