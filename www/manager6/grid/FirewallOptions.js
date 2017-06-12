@@ -106,7 +106,7 @@ Ext.define('PVE.FirewallOptions', {
 	    add_boolean_row('enable', gettext('Firewall'), 1);
 	    add_boolean_row('nosmurfs', gettext('SMURFS filter'), 1);
 	    add_boolean_row('tcpflags', gettext('TCP flags filter'), 0);
-	    add_boolean_row('ndp', gettext('NDP'), 1);
+	    add_boolean_row('ndp', 'NDP', 1);
 	    add_integer_row('nf_conntrack_max', 'nf_conntrack_max', 120, 32768);
 	    add_integer_row('nf_conntrack_tcp_timeout_established', 
 			    'nf_conntrack_tcp_timeout_established', 250, 7875);
