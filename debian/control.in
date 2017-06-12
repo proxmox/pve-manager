@@ -1,11 +1,10 @@
-Source: @PACKAGE@
+Source: pve-manager
 Section: admin
 Priority: optional
 Build-Depends: liblocale-po-perl
 Maintainer: Proxmox Support Team <support@proxmox.com>
 
-Package: @PACKAGE@
-Version: @VERSION@-@PACKAGERELEASE@
+Package: pve-manager
 Section: admin
 Priority: optional
 Architecture: amd64
@@ -64,11 +63,12 @@ Depends: libc6 (>= 2.14),
          pve-docs,
          libjs-extjs (>= 6.0.1),
          libtemplate-perl,
-         lsb-base
-Build-Depends: liblocale-po-perl
+         lsb-base,
+	 ${perl:Depends},
+	 ${misc:Depends},
+	 ${shlibs:Depends}
 Conflicts: netcat-openbsd, vzdump, vlan
 Replaces: vzdump, vlan
 Provides: vzdump, vlan
-Maintainer: Proxmox Support Team <support@proxmox.com>
 Description: Proxmox Virtual Environment Management Tools
  This package contains the Proxmox Virtual Environment management tools.
