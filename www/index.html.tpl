@@ -9,7 +9,7 @@
     <link rel="apple-touch-icon" sizes="128x128" href="/pve2/images/logo-128.png" />
     <link rel="stylesheet" type="text/css" href="/pve2/ext6/theme-crisp/resources/theme-crisp-all.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/ext6/crisp/resources/charts-all.css" />
-    <link rel="stylesheet" type="text/css" href="/pve2/css/font-awesome.css" />
+    <link rel="stylesheet" type="text/css" href="/pve2/fa/css/font-awesome.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/css/ext6-pve.css" />
     [% IF langfile %]
     <script type='text/javascript' src='/pve2/locale/pve-lang-[% lang %].js'></script>

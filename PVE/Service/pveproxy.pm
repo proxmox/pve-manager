@@ -49,6 +49,7 @@ my $basedirs = {
     extjs => '/usr/share/javascript/extjs',
     manager => '/usr/share/pve-manager',
     docs => '/usr/share/pve-docs',
+    fontawesome => '/usr/share/fonts-font-awesome',
 };
 
 sub init {
@@ -73,6 +74,8 @@ sub init {
     add_dirs($dirs, '/pve2/images/' =>  "$basedirs->{manager}/images/");
     add_dirs($dirs, '/pve2/css/' =>  "$basedirs->{manager}/css/");
     add_dirs($dirs, '/pve2/js/' =>  "$basedirs->{manager}/js/");
+    add_dirs($dirs, '/pve2/fa/fonts/' =>  "$basedirs->{fontawesome}/fonts/");
+    add_dirs($dirs, '/pve2/fa/css/' =>  "$basedirs->{fontawesome}/css/");
     add_dirs($dirs, '/pve-docs/' => "$basedirs->{docs}/");
     add_dirs($dirs, '/novnc/' => "$basedirs->{novnc}/");
 
