@@ -81,4 +81,4 @@ distclean: clean
 clean:
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 	find . -name '*~' -exec rm {} ';'
-	rm -rf dest country.dat *.deb ca-tmp
+	rm -rf dest country.dat *.deb *.buildinfo *.changes ca-tmp
