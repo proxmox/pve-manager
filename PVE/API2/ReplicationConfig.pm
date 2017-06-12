@@ -89,6 +89,8 @@ __PACKAGE__->register_method ({
 
 	$data->{id} = $param->{id};
 
+	$data->{digest} = $cfg->{digest};
+
 	return $data;
     }});
 
@@ -157,9 +159,12 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	my $id = extract_param($param, 'id');
+	my $digest = extract_param($param, 'digest');
 
 	my $code = sub {
 	    my $cfg = PVE::ReplicationConfig->new();
+
+	    PVE::SectionConfig::assert_if_modified($cfg, $digest);
 
 	    my $data = $cfg->{ids}->{$id};
 	    die "no such job '$id'\n" if !$data;
