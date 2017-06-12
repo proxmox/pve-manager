@@ -33,7 +33,7 @@ $(DEB):
 	mkdir dest
 	rsync -a * dest
 	echo "git clone git://git.proxmox.com/git/pve-manager.git\\ngit checkout ${GITVERSION}" >  dest/debian/SOURCE
-	cd dest; dpkg-buildpackage -rfakeroot -b -us -uc
+	cd dest; dpkg-buildpackage -b -us -uc
 	# supress lintian error: statically-linked-binary usr/bin/pvemailforward
 	lintian -X binaries ${DEB}
 
