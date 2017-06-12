@@ -75,9 +75,11 @@ my $mocked_delete_job = sub {
     delete $ReplicationTestEnv::mocked_replication_jobs->{$jobid};
 };
 
+my $pve_replication_config_module = Test::MockModule->new('PVE::ReplicationConfig');
+$pve_replication_config_module->mock(delete_job => $mocked_delete_job);
+
 my $pve_replication_module = Test::MockModule->new('PVE::Replication');
 $pve_replication_module->mock(
-    delete_job => $mocked_delete_job,
     remote_prepare_local_job => $mocked_remote_prepare_local_job,
     remote_finalize_local_job => $mocked_remote_finalize_local_job,
     replicate_volume => $mocked_replicate_volume);

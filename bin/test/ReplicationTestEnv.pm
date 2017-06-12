@@ -27,7 +27,8 @@ our $mocked_nodename = 'node1';
 
 our $mocked_replication_jobs = {};
 
-my $pve_replicationconfig = Test::MockModule->new('PVE::ReplicationConfig');
+my $pve_replication_config_module = Test::MockModule->new('PVE::ReplicationConfig');
+my $pve_replication_state_module = Test::MockModule->new('PVE::ReplicationState');
 
 our $mocked_vm_configs = {};
 
@@ -110,7 +111,7 @@ my $mocked_lxc_load_conf = sub {
 
 my $pve_lxc_config_module = Test::MockModule->new('PVE::LXC::Config');
 
-my $mocked_replication_config = sub {
+my $mocked_replication_config_new = sub {
 
     my $res = clone($mocked_replication_jobs);
 
@@ -203,7 +204,7 @@ my $mocked_get_log_time = sub {
 };
 
 sub setup {
-    $pve_replication_module->mock(job_logfile_name => $mocked_job_logfile_name);
+    $pve_replication_state_module->mock(job_logfile_name => $mocked_job_logfile_name);
     $pve_replication_module->mock(get_log_time => $mocked_get_log_time);
 
     $pve_storage_module->mock(config => sub { return $mocked_storage_config; });
@@ -211,7 +212,7 @@ sub setup {
     $pve_storage_module->mock(volume_snapshot => $mocked_volume_snapshot);
     $pve_storage_module->mock(volume_snapshot_delete => $mocked_volume_snapshot_delete);
 
-    $pve_replicationconfig->mock(new => $mocked_replication_config);
+    $pve_replication_config_module->mock(new => $mocked_replication_config_new);
     $pve_qemuserver_module->mock(check_running => sub { return 0; });
     $pve_qemuconfig_module->mock(load_config => $mocked_qemu_load_conf);
 
@@ -285,7 +286,7 @@ sub track_jobs {
     };
 
     if (!$status) {
-	$status = PVE::Replication::job_status();
+	$status = PVE::ReplicationState::job_status();
 	foreach my $jobid (sort keys %$status) {
 	    my $jobcfg = $status->{$jobid};
 	    $logmsg->("$ctime $jobid: new job next_sync => $jobcfg->{next_sync}");
@@ -294,7 +295,7 @@ sub track_jobs {
 
     PVE::API2::Replication::run_jobs($ctime, $logmsg);
 
-    my $new = PVE::Replication::job_status();
+    my $new = PVE::ReplicationState::job_status();
 
     # detect removed jobs
     foreach my $jobid (sort keys %$status) {

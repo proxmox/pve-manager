@@ -9,116 +9,17 @@ use Time::HiRes qw(gettimeofday tv_interval);
 use PVE::INotify;
 use PVE::ProcFSTools;
 use PVE::Tools;
-use PVE::CalendarEvent;
 use PVE::Cluster;
-use PVE::AbstractConfig;
 use PVE::Storage;
 use PVE::GuestHelpers;
 use PVE::ReplicationConfig;
 use PVE::ReplicationState;
 
-our $replicate_logdir = "/var/log/pve/replicate";
-
-# regression tests should overwrite this
-sub job_logfile_name {
-    my ($jobid) = @_;
-
-    return "${replicate_logdir}/$jobid";
-}
 
 # regression tests should overwrite this
 sub get_log_time {
 
     return time();
-}
-
-sub job_status {
-
-    my $local_node = PVE::INotify::nodename();
-
-    my $jobs = {};
-
-    my $stateobj = PVE::ReplicationState::read_state();
-
-    my $cfg = PVE::ReplicationConfig->new();
-
-    my $vms = PVE::Cluster::get_vmlist();
-
-    foreach my $jobid (sort keys %{$cfg->{ids}}) {
-	my $jobcfg = $cfg->{ids}->{$jobid};
-	my $vmid = $jobcfg->{guest};
-
-	die "internal error - not implemented" if $jobcfg->{type} ne 'local';
-
-	# skip non existing vms
-	next if !$vms->{ids}->{$vmid};
-
-	# only consider guest on local node
-	next if $vms->{ids}->{$vmid}->{node} ne $local_node;
-
-	if (!$jobcfg->{remove_job}) {
-	    # never sync to local node
-	    next if $jobcfg->{target} eq $local_node;
-
-	    next if $jobcfg->{disable};
-	}
-
-	my $state = PVE::ReplicationState::extract_job_state($stateobj, $jobcfg);
-	$jobcfg->{state} = $state;
-	$jobcfg->{id} = $jobid;
-	$jobcfg->{vmtype} = $vms->{ids}->{$vmid}->{type};
-
-	my $next_sync = 0;
-
-	if ($jobcfg->{remove_job}) {
-	    $next_sync = 1; # lowest possible value
-	    # todo: consider fail_count? How many retries?
-	} else  {
-	    if (my $fail_count = $state->{fail_count}) {
-		if ($fail_count < 3) {
-		    $next_sync = $state->{last_try} + 5*60*$fail_count;
-		}
-	    } else {
-		my $schedule =  $jobcfg->{schedule} || '*/15';
-		my $calspec = PVE::CalendarEvent::parse_calendar_event($schedule);
-		$next_sync = PVE::CalendarEvent::compute_next_event($calspec, $state->{last_try}) // 0;
-	    }
-	}
-
-	$jobcfg->{next_sync} = $next_sync;
-
-	$jobs->{$jobid} = $jobcfg;
-    }
-
-    return $jobs;
-}
-
-sub get_next_job {
-    my ($iteration, $start_time) = @_;
-
-    my $jobs = job_status();
-
-    my $sort_func = sub {
-	my $joba = $jobs->{$a};
-	my $jobb = $jobs->{$b};
-	my $sa =  $joba->{state};
-	my $sb =  $jobb->{state};
-	my $res = $sa->{last_iteration} cmp $sb->{last_iteration};
-	return $res if $res != 0;
-	$res = $joba->{next_sync} <=> $jobb->{next_sync};
-	return $res if $res != 0;
-	return  $joba->{guest} <=> $jobb->{guest};
-    };
-
-    foreach my $jobid (sort $sort_func keys %$jobs) {
-	my $jobcfg = $jobs->{$jobid};
-	next if $jobcfg->{state}->{last_iteration} >= $iteration;
-	if ($jobcfg->{next_sync} && ($start_time >= $jobcfg->{next_sync})) {
-	    return $jobcfg;
-	}
-    }
-
-    return undef;
 }
 
 sub remote_prepare_local_job {
@@ -209,17 +110,6 @@ sub replicate_volume {
 				  $base_snapshot, $sync_snapname);
 }
 
-sub delete_job {
-    my ($jobid) = @_;
-
-    my $code = sub {
-	my $cfg = PVE::ReplicationConfig->new();
-	delete $cfg->{ids}->{$jobid};
-	$cfg->write();
-    };
-
-    PVE::ReplicationConfig::lock($code);
-}
 
 sub replicate {
     my ($guest_class, $jobcfg, $state, $start_time, $logfunc) = @_;
@@ -271,7 +161,7 @@ sub replicate {
 	# remove all local replication snapshots (lastsync => 0)
 	prepare($storecfg, $sorted_volids, $jobid, 0, undef, $logfunc);
 
-	delete_job($jobid); # update config
+	PVE::ReplicationConfig::delete_job($jobid); # update config
 	$logfunc->("job removed");
 
 	return;
@@ -403,8 +293,8 @@ my $run_replication_nolock = sub {
 
 	PVE::ReplicationState::write_job_state($jobcfg, $state);
 
-	mkdir $replicate_logdir;
-	my $logfile = job_logfile_name($jobid);
+	mkdir $PVE::ReplicationState::replicate_logdir;
+	my $logfile = PVE::ReplicationState::job_logfile_name($jobid);
 	open(my $logfd, '>', $logfile) ||
 	    die "unable to open replication log '$logfile' - $!\n";
 

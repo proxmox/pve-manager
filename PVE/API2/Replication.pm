@@ -7,6 +7,7 @@ use PVE::JSONSchema qw(get_standard_option);
 use PVE::RPCEnvironment;
 use PVE::ProcFSTools;
 use PVE::ReplicationConfig;
+use PVE::ReplicationState;
 use PVE::Replication;
 use PVE::QemuConfig;
 use PVE::QemuServer;
@@ -80,7 +81,7 @@ sub run_jobs {
     my $code = sub {
        my $start_time = $now // time();
 
-       while (my $jobcfg = PVE::Replication::get_next_job($iteration, $start_time)) {
+       while (my $jobcfg = PVE::ReplicationState::get_next_job($iteration, $start_time)) {
            my $guest_class = $lookup_guest_class->($jobcfg->{vmtype});
            PVE::Replication::run_replication($guest_class, $jobcfg, $iteration, $start_time, $logfunc, 1);
            $start_time = $now // time();
@@ -150,7 +151,7 @@ __PACKAGE__->register_method ({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $authuser = $rpcenv->get_user();
 
-	my $jobs = PVE::Replication::job_status();
+	my $jobs = PVE::ReplicationState::job_status();
 
 	my $res = [];
 	foreach my $id (sort keys %$jobs) {
@@ -223,7 +224,7 @@ __PACKAGE__->register_method ({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $authuser = $rpcenv->get_user();
 
-	my $jobs = PVE::Replication::job_status();
+	my $jobs = PVE::ReplicationState::job_status();
 	my $jobid = $param->{id};
 	my $jobcfg = $jobs->{$jobid};
 
