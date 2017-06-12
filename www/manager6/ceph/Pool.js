@@ -162,32 +162,23 @@ Ext.define('PVE.node.CephPoolList', {
 	    }
 	});
 
-	var remove_btn = new PVE.button.Button({
+	var remove_btn = Ext.create('PVE.button.Button', {
 	    text: gettext('Remove'),
 	    selModel: sm,
 	    disabled: true,
-	    confirmMsg: function(rec) {
-		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
-					    "'" + rec.data.pool_name + "'");
-		msg += " " + gettext('This will permanently erase all data.');
-
-		return msg;
-	    },
 	    handler: function() {
 		var rec = sm.getSelection()[0];
 
 		if (!rec.data.pool_name) {
 		    return;
 		}
+		var base_url = '/nodes/' + nodename + '/ceph/pools/' +
+		    rec.data.pool_name;
 
-		PVE.Utils.API2Request({
-		    url: "/nodes/" + nodename + "/ceph/pools/" +
-			rec.data.pool_name,
-		    method: 'DELETE',
-		    failure: function(response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
-		});
+		Ext.create('PVE.window.SafeDestroy', {
+		    url: base_url,
+		    item: { type: 'CephPool', id: rec.data.pool_name }
+		}).show();
 	    }
 	});
 
