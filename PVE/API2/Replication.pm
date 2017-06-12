@@ -289,7 +289,7 @@ __PACKAGE__->register_method({
 	my $authuser = $rpcenv->get_user();
 
 	my $jobid = $param->{id};
-	my $filename = PVE::Replication::job_logfile_name($jobid);
+	my $filename = PVE::ReplicationState::job_logfile_name($jobid);
 
 	my $cfg = PVE::ReplicationConfig->new();
 	my $data = $cfg->{ids}->{$jobid};
