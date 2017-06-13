@@ -160,6 +160,7 @@ __PACKAGE__->register_method ({
 
 	my $id = extract_param($param, 'id');
 	my $digest = extract_param($param, 'digest');
+	my $delete = extract_param($param, 'delete');
 
 	my $code = sub {
 	    my $cfg = PVE::ReplicationConfig->new();
@@ -174,6 +175,19 @@ __PACKAGE__->register_method ({
 
 	    foreach my $k (%$opts) {
 		$data->{$k} = $opts->{$k};
+	    }
+
+	    if ($delete) {
+		my $options = $plugin->private()->{options}->{$data->{type}};
+		foreach my $k (PVE::Tools::split_list($delete)) {
+		    my $d = $options->{$k} ||
+			die "no such option '$k'\n";
+		    die "unable to delete required option '$k'\n"
+			if !$d->{optional};
+		    die "unable to delete fixed option '$k'\n"
+			if $d->{fixed};
+		    delete $data->{$k};
+		}
 	    }
 
 	    $cfg->write();
