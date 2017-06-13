@@ -918,6 +918,13 @@ Ext.define('PVE.Utils', { utilities: {
 	return Ext.Date.format(new Date(value * 1000), 'l d F Y H:i:s');
     },
 
+    render_duration: function(value) {
+	if (value === undefined) {
+	    return '-';
+	}
+	return PVE.Utils.format_duration_short(value);
+    },
+
     calculate_mem_usage: function(data) {
 	if (!Ext.isNumeric(data.mem) ||
 	    data.maxmem === 0 ||
