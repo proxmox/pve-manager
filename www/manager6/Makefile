@@ -198,6 +198,7 @@ JSSRC= 				                 	\
 	ha/Groups.js					\
 	ha/Fencing.js					\
 	dc/Summary.js					\
+	grid/Replication.js				\
 	dc/Health.js					\
 	dc/Guests.js					\
 	dc/OptionView.js				\

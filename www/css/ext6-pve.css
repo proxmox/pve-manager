@@ -532,3 +532,8 @@ table.osds td:first-of-type {
 .pve-invalid-row {
     background-color: #f3d6d7;
 }
+
+.pve-static-mask div.x-mask-msg-text {
+    padding: 10px;
+    background-image: none;
+}
