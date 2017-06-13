@@ -71,6 +71,7 @@ JSSRC= 				                 	\
 	form/QemuBiosSelector.js			\
 	form/VMSelector.js			\
 	form/USBSelector.js				\
+	form/CalendarEvent.js				\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
