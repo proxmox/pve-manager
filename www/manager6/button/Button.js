@@ -22,9 +22,12 @@ Ext.define('PVE.button.Button', {
 	/*jslint confusion: true */
 
         var me = this;
+	var grid;
 
 	if (me.handler) {
-	    me.realHandler = me.handler;
+
+	    // Note: me.realHandler may be a string (see named scopes)
+	    var realHandler = me.handler;
 
 	    me.handler = function(button, event) {
 		var rec, msg;
@@ -51,16 +54,32 @@ Ext.define('PVE.button.Button', {
 			    if (btn !== 'yes') {
 				return;
 			    }
-			    me.realHandler(button, event, rec);
+			    Ext.callback(realHandler, me.scope, [button, event, rec], 0, me);
 			}
 		    });
 		} else {
-		    me.realHandler(button, event, rec);
+		    Ext.callback(realHandler, me.scope, [button, event, rec], 0, me);
 		}
 	    };
 	}
 
 	me.callParent();
+
+	if (!me.selModel && me.selModel !== null) {
+	    grid = me.up('grid');
+	    if (grid && grid.selModel) {
+		me.selModel = grid.selModel;
+	    }
+	}
+
+	if (me.waitMsgTarget === true) {
+	    grid = me.up('grid');
+	    if (grid) {
+		me.waitMsgTarget = grid;
+	    } else {
+		throw "unable to find waitMsgTarget";
+	    }
+	}
 
 	if (me.selModel) {
 
