@@ -240,6 +240,12 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveNodeCephStatus'
 		},
 		{
+		    xtype: 'pveReplicaView',
+		    iconCls: 'fa fa-retweet',
+		    title: gettext('Replication'),
+		    itemId: 'replication'
+		},
+		{
 		    xtype: 'pveNodeCephConfigCrush',
 		    title: gettext('Configuration'),
 		    iconCls: 'fa fa-gear',

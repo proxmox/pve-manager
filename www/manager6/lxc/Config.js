@@ -190,6 +190,12 @@ Ext.define('PVE.lxc.Config', {
 		iconCls: 'fa fa-floppy-o',
 		xtype: 'pveBackupView',
 		itemId: 'backup'
+	    },
+	    {
+		title: gettext('Replication'),
+		iconCls: 'fa fa-retweet',
+		xtype: 'pveReplicaView',
+		itemId: 'replication'
 	    });
 	}
 
