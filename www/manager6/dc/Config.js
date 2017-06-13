@@ -53,6 +53,12 @@ Ext.define('PVE.dc.Config', {
 		itemId: 'backup'
 	    },
 	    {
+		xtype: 'pveReplicaView',
+		iconCls: 'fa fa-retweet',
+		title: gettext('Replication'),
+		itemId: 'replica'
+	    },
+	    {
 		xtype: 'pveACLView',
 		title: gettext('Permissions'),
 		iconCls: 'fa fa-unlock',
