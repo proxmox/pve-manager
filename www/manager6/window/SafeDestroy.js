@@ -31,7 +31,7 @@ Ext.define('PVE.window.SafeDestroy', {
 		change: function(f, value) {
 		    var view = this.getView();
 		    var removeButton = this.lookupReference('removeButton');
-		    if (value === view.getItem().id) {
+		    if (value === view.getItem().id.toString()) {
 			removeButton.enable();
 		    } else {
 			removeButton.disable();
