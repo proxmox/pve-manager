@@ -6,10 +6,13 @@ Ext.define('PVE.dc.Health', {
 
     bodyPadding: '0 20 0 20',
     height: 200,
-    layout: 'column',
+    layout: {
+	type: 'hbox',
+	align: 'stretch'
+    },
 
     defaults: {
-	columnWidth: 0.5,
+	flex: 1,
 	xtype: 'box',
 	style: {
 	    'text-align':'center'

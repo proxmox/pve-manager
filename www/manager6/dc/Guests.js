@@ -5,15 +5,23 @@ Ext.define('PVE.dc.Guests', {
 
     title: gettext('Guests'),
     height: 200,
-    layout: 'column',
+    layout: {
+	type: 'table',
+	columns: 2,
+	tableAttrs: {
+	    style: {
+		width: '100%'
+	    }
+	}
+    },
     bodyPadding: '0 20 20 20',
 
     defaults: {
-	columnWidth: 0.5,
 	xtype: 'box',
 	padding: '0 50 0 50',
 	style: {
-	    'text-align':'center'
+	    'text-align':'center',
+	    'line-height':'1.2'
 	}
     },
     items: [{
@@ -88,6 +96,7 @@ Ext.define('PVE.dc.Guests', {
 	]
     },{
 	itemId: 'error',
+	colspan: 2,
 	data: {
 	    num: 0
 	},

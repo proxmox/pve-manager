@@ -27,10 +27,10 @@ Ext.define('PVE.dc.Summary', {
 	    xtype: 'panel',
 	    height: 250,
 	    bodyPadding: '0 0 10 0',
-	    layout: 'column',
+	    layout: 'hbox',
 	    defaults: {
 		xtype: 'pveGauge',
-		columnWidth: 1/3
+		flex: 1
 	    },
 	    items:[
 		{

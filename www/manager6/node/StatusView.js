@@ -5,18 +5,19 @@ Ext.define('PVE.node.StatusView', {
     height: 300,
     bodyPadding: '20 15 20 15',
 
+    layout: {
+	type: 'table',
+	columns: 2,
+	tableAttrs: {
+	    style: {
+		width: '100%'
+	    }
+	}
+    },
+
     defaults: {
 	xtype: 'pveInfoWidget',
-	padding: '0 15 5 15',
-	// default available width on 1920x1080 is
-	// 1545, so we have for one column
-	// ~770px
-	// -10 for padding
-	// -2 for border
-	// -30 for inner padding
-	// = 728px
-	// = 364px per column inside statuspanel
-	width: 364
+	padding: '0 15 5 15'
     },
 
     items: [
@@ -30,7 +31,8 @@ Ext.define('PVE.node.StatusView', {
 	{
 	    itemId: 'wait',
 	    title: gettext('IO delay'),
-	    valueField: 'wait'
+	    valueField: 'wait',
+	    rowspan: 2
 	},
 	{
 	    itemId: 'load',
@@ -40,7 +42,7 @@ Ext.define('PVE.node.StatusView', {
 	},
 	{
 	    xtype: 'box',
-	    width: 400,
+	    colspan: 2,
 	    padding: '0 0 20 0'
 	},
 	{
@@ -77,11 +79,12 @@ Ext.define('PVE.node.StatusView', {
 	},
 	{
 	    xtype: 'box',
-	    width: 400,
+	    colspan: 2,
 	    padding: '0 0 20 0'
 	},
 	{
 	    itemId: 'cpus',
+	    colspan: 2,
 	    printBar: false,
 	    title: gettext('CPU(s)'),
 	    textField: 'cpuinfo',
@@ -93,24 +96,23 @@ Ext.define('PVE.node.StatusView', {
 		    gettext('Socket')
 		) + ")";
 	    },
-	    value: '',
-	    width: 730
+	    value: ''
 	},
 	{
 	    itemId: 'kversion',
+	    colspan: 2,
 	    title: gettext('Kernel Version'),
 	    printBar: false,
 	    textField: 'kversion',
-	    value: '',
-	    width: 730
+	    value: ''
 	},
 	{
 	    itemId: 'version',
+	    colspan: 2,
 	    printBar: false,
 	    title: gettext('PVE Manager Version'),
 	    textField: 'pveversion',
-	    value: '',
-	    width: 730
+	    value: ''
 	}
     ],
 
