@@ -7,7 +7,7 @@ Maintainer: Proxmox Support Team <support@proxmox.com>
 Package: pve-manager
 Section: admin
 Priority: optional
-Architecture: amd64
+Architecture: any
 Depends: libc6 (>= 2.14),
          perl (>= 5.10.0-19),
          libtimedate-perl,
