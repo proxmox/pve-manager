@@ -67,12 +67,13 @@ Ext.define('PVE.window.ReplicaEdit', {
 
 		    if (me.isCreate) {
 			values.type = 'local';
+			var vm = vmid || values.guest;
 			var id = -1;
-			if (me.highestids[values.guest] !== undefined) {
-			    id = me.highestids[values.guest];
+			if (me.highestids[vm] !== undefined) {
+			    id = me.highestids[vm];
 			}
 			id++;
-			values.id = values.guest + '-' + id.toString();
+			values.id = vm + '-' + id.toString();
 			delete values.guest;
 		    }
 		    return values;
