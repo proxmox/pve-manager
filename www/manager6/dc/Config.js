@@ -56,7 +56,7 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveReplicaView',
 		iconCls: 'fa fa-retweet',
 		title: gettext('Replication'),
-		itemId: 'replica'
+		itemId: 'replication'
 	    },
 	    {
 		xtype: 'pveACLView',

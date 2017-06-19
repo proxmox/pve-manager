@@ -49,6 +49,7 @@ Ext.define('PVE.StateProvider', {
     hprefix: 'v1',
 
     compDict: {
+	replication: 51,
 	system: 50,
 	monitor: 49,
 	'ha-fencing': 48,
