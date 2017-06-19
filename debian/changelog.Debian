@@ -1,3 +1,21 @@
+pve-manager (4.4-14) unstable; urgency=medium
+
+  * update default aplinfo.dat
+
+  * fix #1414: use table layout instead of columns
+
+  * Do not internationalize 'Pools' when used in Ceph Context
+
+  * remove "read-only" option from container root disk
+
+  * fix #1317: check wizard form also on validitychange
+
+  * fix #1307: dont use language dependent separator in gui
+
+  * fix #1305: typo
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 19 Jun 2017 07:16:54 +0200
+
 pve-manager (4.4-13) unstable; urgency=medium
 
   * fix #1299: sort pools in pool selector by default
