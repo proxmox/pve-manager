@@ -284,7 +284,7 @@ Ext.define('PVE.grid.ReplicaView', {
 	    {
 		text: gettext('Job'),
 		dataIndex: 'jobnum',
-		width: 65
+		width: 60
 	    },
 	    {
 		text: gettext('Target'),
@@ -361,6 +361,7 @@ Ext.define('PVE.grid.ReplicaView', {
 		{
 		    text: gettext('Last Sync'),
 		    dataIndex: 'last_sync',
+		    width: 150,
 		    renderer: function(value, metadata, record) {
 			if (!value) {
 			    return '-';
@@ -376,11 +377,13 @@ Ext.define('PVE.grid.ReplicaView', {
 		{
 		    text: gettext('Duration'),
 		    dataIndex: 'duration',
+		    width: 60,
 		    renderer: PVE.Utils.render_duration
 		},
 		{
 		    text: gettext('Next Sync'),
 		    dataIndex: 'next_sync',
+		    width: 150,
 		    renderer: function(value) {
 			if (!value) {
 			    return '-';
@@ -402,6 +405,7 @@ Ext.define('PVE.grid.ReplicaView', {
 	me.columns.push(
 	    {
 		text: gettext('Schedule'),
+		width: 75,
 		dataIndex: 'schedule'
 	    },
 	    {
