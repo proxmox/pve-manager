@@ -355,7 +355,7 @@ Ext.define('PVE.grid.ReplicaView', {
 			    return states.join(', ');
 			}
 
-			return '-';
+			return gettext('OK');
 		    }
 		},
 		{
