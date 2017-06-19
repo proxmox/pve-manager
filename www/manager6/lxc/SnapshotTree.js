@@ -278,7 +278,7 @@ Ext.define('PVE.lxc.SnapshotTree', {
 		    text: gettext('Date') + "/" + gettext("Status"),
 		    dataIndex: 'snaptime',
 		    resizable: false,
-		    width: 120,
+		    width: 150,
 		    renderer: function(value, metaData, record) {
 			if (record.data.snapstate) {
 			    return record.data.snapstate;
