@@ -727,21 +727,21 @@ Ext.define('PVE.Utils', { utilities: {
     format_duration_short: function(ut) {
 
 	if (ut < 60) {
-	    return ut.toString() + 's';
+	    return ut.toFixed(1) + 's';
 	}
 
 	if (ut < 3600) {
 	    var mins = ut / 60;
-	    return mins.toFixed(0) + 'm';
+	    return mins.toFixed(1) + 'm';
 	}
 
 	if (ut < 86400) {
 	    var hours = ut / 3600;
-	    return hours.toFixed(0) + 'h';
+	    return hours.toFixed(1) + 'h';
 	}
 
 	var days = ut / 86400;
-	return days.toFixed(0) + 'd';
+	return days.toFixed(1) + 'd';
     },
 
     yesText: gettext('Yes'),
