@@ -99,18 +99,32 @@ Description: Debian 7.0 (standard)
  A small Debian Wheezy system including all standard packages.
 
 Package: debian-8.0-standard
-Version: 8.6-1
+Version: 8.7-1
 Type: lxc
 OS: debian-8.0
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/debian-8.0-standard_8.6-1_amd64.tar.gz
-md5sum: 82f97a385da6e41dedb9ac717bf26c0e
-sha512sum: 12f29ee7e5b89b9d094f83e1c89823ee04a6252fd6d6ec68b5c8459fd97add64db11aae5c8b114cabd4b4b1cc5dc84a7531e21a2dd63b1e13609766c04b3014f
+Location: system/debian-8.0-standard_8.7-1_amd64.tar.gz
+md5sum: 3f607c37a83143e307fbb5a6805737e1
+sha512sum: 0c9a25df06b21bace7818c7b057545371e595e70099c0b9e68d248d82179e0ba5dbbffd468f878323102daaf6d239d8c9fb7b067401df0697179d3d5e234842a
 Infopage: http://pve.proxmox.com/wiki/Debian_8.0_Standard
 Description: Debian 8.0 (standard)
  A small Debian Jessie system including all standard packages.
+
+Package: debian-9.0-standard
+Version: 9.0-2
+Type: lxc
+OS: debian-9.0
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/debian-9.0-standard_9.0-2_amd64.tar.gz
+md5sum: c206a6b5984238a242091c85632c69f0
+sha512sum: 342e12495214ef315d2c4ac3c6f27396d3b23354330ccca4b0ce3b19e6e75df9729c9dfb878393f0ba113b4cbf37348ec99a435e873447a0fb0bbbc74aab5596
+Infopage: http://pve.proxmox.com/wiki/Debian_9.0_Standard
+Description: Debian 9.0 (standard)
+ A small Debian Stretch system including all standard packages.
 
 Package: fedora-24-default
 Version: 20161207
@@ -125,6 +139,19 @@ sha512sum: 2a59fa86eeddb7df36e94eae5bbc21ce22f6ab37cc248a963de8de6e4443184522af9
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 24 (20161207)
 
+Package: fedora-25-default
+Version: 20170316
+Type: lxc
+OS: fedora
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/fedora-25-default_20170316_amd64.tar.xz
+md5sum: 1231e5d4269929e497b98bc8dd08f488
+sha512sum: 8213dff0815da9ba6ccdeec08843fa6480e659268e1c6ed7ccd794d20eaafa117f3356c4328d8cab18bb72d9032991e3bdf4d0f8b1de24674f87ab7afd5902d0
+Infopage: https://linuxcontainers.org
+Description: LXC default image for fedora 25 (20170316)
+
 Package: gentoo-current-default
 Version: 20161206
 Type: lxc
@@ -137,6 +164,19 @@ md5sum: bf684c08bdd2f053a4d2f58f3c4a1f56
 sha512sum: eac7ba04c071f97050d79344e4703ea6adf12b5e7db5e2af1df19e7a9b89c83cf88cb73b940951c40c88e67ae532bee07c23f8036b92852026832f00617c2b94
 Infopage: https://linuxcontainers.org
 Description: LXC default image for gentoo current (20161206)
+
+Package: opensuse-42.2-default
+Version: 20170406
+Type: lxc
+OS: opensuse
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/opensuse-42.2-default_20170406_amd64.tar.xz
+md5sum: bd4188e3b4ca43890b93e35f0a63d420
+sha512sum: 59cf116d5bd825c23df6e22211febc0a20dd8b52515e481a5f4c2ccc8a0f60a868faea3047d4e1c8c8fc6a52ef1ddca0ef7e22be8ead8562813b2a6e3deee6f1
+Infopage: https://linuxcontainers.org
+Description: LXC default image for opensuse 42.2 (20170406)
 
 Package: ubuntu-12.04-standard
 Version: 12.04-1
@@ -193,4 +233,18 @@ sha512sum: d43b19e242e3d0fa9d48db4348dc358a8f30b5585d38af88b63b651a1bf5b74346a72
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Yakkety_Standard
 Description: Ubuntu Yakkety (standard)
  A small Ubuntu Yakkety system including all standard packages.
+
+Package: ubuntu-17.04-standard
+Version: 17.04-1
+Type: lxc
+OS: ubuntu-17.04
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-17.04-standard_17.04-1_amd64.tar.gz
+md5sum: 87b34496ef90c2d87c0c97e190871b3c
+sha512sum: 30b4018447e1d07d950ccab17c9b54c2f4b01faa748d1725c17b34198dd6bb2b982acf9e09fb94ca8e891824e8e2c2ec7040e21a41f72fcee4fa7811f81e0341
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Zesty_Standard
+Description: Ubuntu Zesty (standard)
+ A small Ubuntu Zesty system including all standard packages.
 
