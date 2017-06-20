@@ -360,7 +360,7 @@ my $print_job_status = sub {
 	    if ($next > $now) {
 		$nextstr = strftime("%Y-%m-%d_%H:%M:%S", localtime($job->{next_sync}));
 	    } else {
-		$nextstr = 'now';
+		$nextstr = 'pending';
 	    }
 	}
 

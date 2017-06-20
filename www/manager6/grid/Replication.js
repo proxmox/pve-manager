@@ -390,7 +390,7 @@ Ext.define('PVE.grid.ReplicaView', {
 			var next = new Date(value*1000);
 
 			if (next < now) {
-			    return gettext('now');
+			    return gettext('pending');
 			}
 
 			return PVE.Utils.render_timestamp(value);
