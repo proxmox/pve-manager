@@ -72,9 +72,9 @@ sub run_single_job {
     die $@ if $@;
 }
 
-# passing $now is useful for regression testing
+# passing $now and $verbose is useful for regression testing
 sub run_jobs {
-    my ($now, $logfunc) = @_;
+    my ($now, $logfunc, $verbose) = @_;
 
     my $iteration = $now // time();
 
@@ -83,7 +83,7 @@ sub run_jobs {
 
        while (my $jobcfg = PVE::ReplicationState::get_next_job($iteration, $start_time)) {
            my $guest_class = $lookup_guest_class->($jobcfg->{vmtype});
-           PVE::Replication::run_replication($guest_class, $jobcfg, $iteration, $start_time, $logfunc, 1);
+           PVE::Replication::run_replication($guest_class, $jobcfg, $iteration, $start_time, $logfunc, 1, $verbose);
            $start_time = $now // time();
        }
     };

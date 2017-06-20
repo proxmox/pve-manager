@@ -293,7 +293,7 @@ sub track_jobs {
 	}
     }
 
-    PVE::API2::Replication::run_jobs($ctime, $logmsg);
+    PVE::API2::Replication::run_jobs($ctime, $logmsg, 1);
 
     my $new = PVE::ReplicationState::job_status();
 
