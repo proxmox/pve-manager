@@ -1,3 +1,29 @@
+pve-manager (5.0-13) unstable; urgency=medium
+
+  * fix regression in gui when migrating guests
+
+  * show resume button when qmpstatus is 'suspended'
+
+  * add initramfs conf snippet disabling RESUME
+
+  * better default column sizes for replication grid
+
+  * change default replication status text to 'OK'
+
+  * change short duration format to x.y
+
+  * add replication to stateprovider dictionary
+
+  * use git rev-parse for repoid
+
+  * better Status description for jobs which are about to be run
+
+  * use also a 150 pix width for Date in LXC Snapshot Tree
+
+  * fix LXC Snapshots Edit Window timestamps
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 22 Jun 2017 12:27:55 +0200
+
 pve-manager (5.0-12) unstable; urgency=medium
 
   * OSD: rename 'remove' to 'destroy'
