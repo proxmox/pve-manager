@@ -340,6 +340,8 @@ Ext.define('PVE.tree.ResourceTree', {
 		}
 	    });
 
+	    store.resumeEvents();
+
 	    // select parent node is selection vanished
 	    if (lastsel && !rootnode.findChild('id', lastsel.data.id, true)) {
 		lastsel = rootnode;
@@ -360,7 +362,6 @@ Ext.define('PVE.tree.ResourceTree', {
 	    }
 
 	    pdata.updateCount++;
-	    store.resumeEvents();
 	    store.fireEvent('refresh', store);
 	};
 
