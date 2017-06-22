@@ -1,3 +1,86 @@
+pve-manager (5.0-12) unstable; urgency=medium
+
+  * OSD: rename 'remove' to 'destroy'
+
+  * pvereport: improve output and add timeouts to commands
+
+  * PVE/API2/Replication.pm: add $verbose parameter run_jobs()
+
+  * update default aplinfo.dat
+
+  * use 'any' for build architecture
+
+  * fix #1414: use table layout instead of columns
+
+  * add replication GUI
+
+  * Fix #1372: require manually entering the Ceph Pool id before destroying
+    a pool
+
+  * Adapt SafeDestroy component to be able to delete Ceph Pools
+
+  * implement digest checking for ReplicationConfig update
+
+  * implement pvesr set_state
+
+  * GUI: don't translate NDP
+
+  * german translation update
+
+  * italian translation update
+
+  * translate params in bulk migrate window
+
+  * change to debians font-awesome package
+
+  * mark node shutdown/reboot buttons as dangerous
+
+  * explicit set button focus respecting the 'dangerous' option
+
+  * removed PVE/Replication.pm (moved to pve-guest-common)
+
+  * use new replication helpers from pve-guest-common
+
+  * change from dpkg-deb to dpkg-buildpackage
+
+  * do not let www-data own the static js/html files
+
+  * make language js files consistent (fix sorting)
+
+  * add SOURCE_DATE_EPOCH to Makefile
+
+  * Add force parameter for delete replica job
+
+  * fix #1389: vzdump: handle storage failure in new()
+
+  * show hostpci devices in gui
+
+  * show usb devices in qemu hardware view
+
+  * fix #1385: display no rbd user by default
+
+  * use physical NIC regexp
+
+  * replication code improvements
+
+  * PVE::API2::Tasks - use PVE::Tools::dump_logfile
+
+  * mobilegui: fix title with perl template
+
+  * add defaultButton to loginWindow
+
+  * add defaultButton and focus to snapshot window
+
+  * add override for correct defaultButton behaviour
+
+  * remove "read-only" option from container root disk
+
+  * fix #1400: do not use defaultButton in NotesEdit window
+
+  * allow width and height parameter for vncshell
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 22 Jun 2017 09:31:34 +0200
+
 pve-manager (5.0-11) unstable; urgency=medium
 
   * add basic replication framework and API
