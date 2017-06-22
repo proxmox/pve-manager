@@ -68,6 +68,8 @@ install: country.dat vzdump.conf vzdump-hook-script.pl pve-apt.conf mtu bridgevl
 	install -D -m 0755 vlan ${DESTDIR}/etc/network/if-pre-up.d/vlan
 	install -D -m 0755 vlan-down ${DESTDIR}/etc/network/if-post-down.d/vlan
 
+	install -D -m 0644 pve-initramfs.conf ${DESTDIR}/etc/initramfs-tools/conf.d/pve-initramfs.conf
+
 	install -m 0644 vzdump-hook-script.pl ${DOCDIR}/examples/vzdump-hook-script.pl
 	install -m 0644 spice-example-sh ${DOCDIR}/examples/spice-example-sh
 	install -m 0644 country.dat ${DESTDIR}/usr/share/${PACKAGE}
