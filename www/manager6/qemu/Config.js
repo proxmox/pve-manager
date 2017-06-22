@@ -321,7 +321,7 @@ Ext.define('PVE.qemu.Config', {
 
 	    }
 
-	    if (qmpstatus === 'prelaunch' || qmpstatus === 'paused') {
+	    if (qmpstatus === 'prelaunch' || qmpstatus === 'paused' || qmpstatus === 'suspended') {
 		startBtn.setVisible(false);
 		resumeBtn.setVisible(true);
 	    } else {
