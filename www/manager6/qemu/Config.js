@@ -307,7 +307,6 @@ Ext.define('PVE.qemu.Config', {
 	    var spice = false;
 
 	    if (!success) {
-		me.workspace.checkVmMigration(me.pveSelNode);
 		status = qmpstatus = 'unknown';
 	    } else {
 		var rec = s.data.get('status');

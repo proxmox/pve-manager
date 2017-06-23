@@ -244,6 +244,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	    var sm = me.getSelectionModel();
 
 	    var lastsel = sm.getSelection()[0];
+	    var reselect = false;
 	    var parents = [];
 	    var p = lastsel;
 	    while (p && !!(p = p.parentNode)) {
@@ -314,6 +315,16 @@ Ext.define('PVE.tree.ResourceTree', {
 			//console.log("REM UID: " + key + " ITEM " + olditem.data.id);
 			delete index[key];
 			var parentNode = olditem.parentNode;
+			// when the selected item disappears,
+			// we have to deselect it here, and reselect it
+			// later
+			if (lastsel && olditem.data.id === lastsel.data.id) {
+			    reselect = true;
+			    sm.deselect(olditem);
+			}
+			// since the store events are suspended, we
+			// manually remove the item from the store also
+			store.remove(olditem);
 			parentNode.removeChild(olditem, true);
 		    }
 		}
@@ -352,6 +363,8 @@ Ext.define('PVE.tree.ResourceTree', {
 		    }
 		}
 		me.selectById(lastsel.data.id);
+	    } else if (lastsel && reselect) {
+		me.selectById(lastsel.data.id);
 	    }
 
 	    // on first tree load set the selection from the stateful provider
@@ -389,8 +402,10 @@ Ext.define('PVE.tree.ResourceTree', {
 		    rstore.un("load", updateTree);
 		},
 		beforecellmousedown: function (tree, td, cellIndex, record, tr, rowIndex, ev) {
+		    var sm = me.getSelectionModel();
 		    // disable selection when right clicking
-		    me.allowSelection = (ev.button !== 2);
+		    // except the record is already selected
+		    me.allowSelection = (ev.button !== 2) || sm.isSelected(record);
 		},
 		beforeselect: function (tree, record, index, eopts) {
 		    var allow = me.allowSelection;
@@ -438,20 +453,6 @@ Ext.define('PVE.tree.ResourceTree', {
 		    me.selectExpand(node);
 		}
 		return node;
-	    },
-	    checkVmMigration: function(record) {
-		if (!(record.data.type === 'qemu' || record.data.type === 'lxc')) {
-		    throw "not a vm type";
-		}
-
-		var rootnode = me.store.getRootNode();
-		var node = rootnode.findChild('id', record.data.id, true);
-
-		if (node && node.data.type === record.data.type &&
-		    node.data.node !== record.data.node) {
-		    // defer select (else we get strange errors)
-		    Ext.defer(function() { me.selectExpand(node); }, 100, me);
-		}
 	    },
 	    applyState : function(state) {
 		var sm = me.getSelectionModel();

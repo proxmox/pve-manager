@@ -273,7 +273,6 @@ Ext.define('PVE.lxc.Config', {
 	me.mon(me.statusStore, 'load', function(s, records, success) {
 	    var status;
 	    if (!success) {
-		me.workspace.checkVmMigration(me.pveSelNode);
 		status = 'unknown';
 	    } else {
 		var rec = s.data.get('status');
