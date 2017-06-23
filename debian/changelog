@@ -1,3 +1,9 @@
+pve-manager (5.0-15) unstable; urgency=medium
+
+  * pvesr.timer: set AccuracySec=1
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Jun 2017 11:43:31 +0200
+
 pve-manager (5.0-14) unstable; urgency=medium
 
   * add systemd timer unit to trigger pvesr run
