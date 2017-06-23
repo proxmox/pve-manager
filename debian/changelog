@@ -1,3 +1,9 @@
+pve-manager (5.0-14) unstable; urgency=medium
+
+  * add systemd timer unit to trigger pvesr run
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Jun 2017 10:48:20 +0200
+
 pve-manager (5.0-13) unstable; urgency=medium
 
   * fix regression in gui when migrating guests
