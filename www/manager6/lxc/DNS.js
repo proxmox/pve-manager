@@ -164,13 +164,23 @@ Ext.define('PVE.lxc.DNS', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Hostname'),
 		    items: {
-			xtype: 'textfield',
-			name: 'hostname',
-			vtype: 'DnsName',
-			value: '',
-			fieldLabel: gettext('Hostname'),
-			allowBlank: true,
-			emptyText: me.pveSelNode.data.name
+			xtype: 'inputpanel',
+			items:{
+			    fieldLabel: gettext('Hostname'),
+			    xtype: 'textfield',
+			    name: 'hostname',
+			    vtype: 'DnsName',
+			    allowBlank: true
+			},
+			onGetValues: function(values) {
+			    var params = values;
+			    if (values.hostname === undefined ||
+				values.hostname === null ||
+				values.hostname === '') {
+				params = { hostname: 'CT'+vmid.toString()};
+			    }
+			    return params;
+			}
 		    }
 		} : undefined
 	    },
@@ -231,6 +241,7 @@ Ext.define('PVE.lxc.DNS', {
 		    url: '/api2/extjs/' + baseurl
 		}, rowdef.editor);
 		win = Ext.createWidget(rowdef.editor.xtype, config);
+		win.load();
 	    }
 	    //win.load();
 	    win.show();
