@@ -1,5 +1,7 @@
 [Unit]
 Description=Proxmox VE replication runner
+ConditionPathExists=/usr/bin/pvesr
 
 [Service]
-ExecStart=@/usr/bin/pvesr "/usr/bin/pvesr" "run"
+Type=oneshot
+ExecStart=/usr/bin/pvesr run
