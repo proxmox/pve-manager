@@ -118,10 +118,15 @@ __PACKAGE__->register_method ({
 	my $nodelist = PVE::Cluster::get_members();
 	my $vmlist = PVE::Cluster::get_vmlist();
 
+	my $guest_info = $vmlist->{ids}->{$guest};
 	die "Guest '$guest' does not exists.\n"
-	    if !defined($vmlist->{ids}->{$guest});
+	    if !defined($guest_info);
 	die "Target '$param->{target}' does not exists.\n"
 	    if defined($param->{target}) && !defined($nodelist->{$param->{target}});
+
+	my $guest_class = $PVE::API2::Replication::lookup_guest_class->($guest_info->{type});
+	my $guest_conf = $guest_class->load_config($guest);
+	$guest_class->get_replicatable_volumes(PVE::Storage::config(), $guest, $guest_conf, 0, 0);
 
 	my $code = sub {
 	    my $cfg = PVE::ReplicationConfig->new();

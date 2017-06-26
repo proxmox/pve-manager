@@ -20,7 +20,7 @@ use base qw(PVE::RESTHandler);
 
 my $pvesr_lock_path = "/var/lock/pvesr.lck";
 
-my $lookup_guest_class = sub {
+our $lookup_guest_class = sub {
     my ($vmtype) = @_;
 
     if ($vmtype eq 'qemu') {
