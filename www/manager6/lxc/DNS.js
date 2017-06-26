@@ -170,7 +170,8 @@ Ext.define('PVE.lxc.DNS', {
 			    xtype: 'textfield',
 			    name: 'hostname',
 			    vtype: 'DnsName',
-			    allowBlank: true
+			    allowBlank: true,
+			    emptyText: 'CT' + vmid.toString()
 			},
 			onGetValues: function(values) {
 			    var params = values;
