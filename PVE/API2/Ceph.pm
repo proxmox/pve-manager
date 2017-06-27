@@ -180,10 +180,16 @@ __PACKAGE__->register_method ({
 		type => 'string',
 	    },
 	    fstype => {
-		description => "File system type.",
+		description => "File system type (filestore only).",
 		type => 'string',
 		enum => ['xfs', 'ext4', 'btrfs'],
 		default => 'xfs',
+		optional => 1,
+	    },
+	    bluestore => {
+		description => "Use bluestore instead of filestore.",
+		type => 'boolean',
+		default => 0,
 		optional => 1,
 	    },
 	},
@@ -195,6 +201,9 @@ __PACKAGE__->register_method ({
 	my $rpcenv = PVE::RPCEnvironment::get();
 
 	my $authuser = $rpcenv->get_user();
+
+	raise_param_exc({ 'bluestore' => "conflicts with parameter 'fstype'" })
+	    if (defined($param->{fstype}) && defined($param->{bluestore}) && $param->{bluestore});
 
 	PVE::CephTools::check_ceph_inited();
 
@@ -240,12 +249,19 @@ __PACKAGE__->register_method ({
 
 	    my $fstype = $param->{fstype} || 'xfs';
 
-	    print "create OSD on $devpath ($fstype)\n";
 
 	    my $ccname = PVE::CephTools::get_config('ccname');
 
-	    my $cmd = ['ceph-disk', 'prepare', '--zap-disk', '--fs-type', $fstype,
+	    my $cmd = ['ceph-disk', 'prepare', '--zap-disk',
 		       '--cluster', $ccname, '--cluster-uuid', $fsid ];
+
+	    if ($param->{bluestore}) {
+		print "create OSD on $devpath (bluestore)\n";
+		push @$cmd, '--bluestore';
+	    } else {
+		print "create OSD on $devpath ($fstype)\n";
+		push @$cmd, '--fs-type', $fstype;
+	    }
 
 	    if ($journal_dev) {
 		print "using device '$journal_dev' for journal\n";
