@@ -930,6 +930,7 @@ __PACKAGE__->register_method ({
 		run_command("ceph-authtool $pve_mon_key_path.tmp -n client.admin --set-uid=0 " .
 			    "--cap mds 'allow' " .
 			    "--cap osd 'allow *' " .
+			    "--cap mgr 'allow *' " .
 			    "--cap mon 'allow *'");
 		run_command("cp $pve_mon_key_path.tmp /etc/ceph/ceph.client.admin.keyring") if $systemd_managed;
 		run_command("chown ceph:ceph /etc/ceph/ceph.client.admin.keyring") if $systemd_managed;
