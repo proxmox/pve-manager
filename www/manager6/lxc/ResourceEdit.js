@@ -263,6 +263,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    delete me.mpdata.backup;
 	}
 
+	if (values.noreplicate) {
+	    me.mpdata.replicate = '0';
+	}
+	delete me.mpdata.noreplicate;
+
 	var res = {};
 	res[confid] = PVE.Parser.printLxcMountPoint(me.mpdata);
 	return res;
@@ -283,6 +288,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    me.backup.setDisabled(true);
 	    me.acl.setValue('Default');
 	    me.hdstoragesel.setDisabled(true);
+	}
+
+	if (mp.replicate) { // check box reverses the config option
+	    mp.noreplicate = !PVE.Parser.parseBoolean(mp.replicate, 1);
+	    delete mp.replicate;
 	}
 
 	me.setValues(mp);
@@ -512,6 +522,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    if (me.mpdata.type !== 'bind') {
 		me.column2.push(me.backup);
 	    }
+	    me.column2.push({
+		xtype: 'pvecheckbox',
+		name: 'noreplicate',
+		fieldLabel: gettext('Skip replication')
+	    });
 	    me.column2.push({
 		xtype: 'textfield',
 		name: 'mp',
