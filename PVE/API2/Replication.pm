@@ -81,6 +81,8 @@ sub run_jobs {
     my $code = sub {
        my $start_time = $now // time();
 
+       PVE::ReplicationState::purge_old_states();
+
        while (my $jobcfg = PVE::ReplicationState::get_next_job($iteration, $start_time)) {
            my $guest_class = $lookup_guest_class->($jobcfg->{vmtype});
            PVE::Replication::run_replication($guest_class, $jobcfg, $iteration, $start_time, $logfunc, 1, $verbose);
