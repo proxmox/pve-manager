@@ -245,9 +245,7 @@ Ext.define('PVE.grid.ReplicaView', {
 	    handler: 'removeJob',
 	    dangerous: true,
 	    confirmMsg: function(rec) {
-		var msg = Ext.String.format(gettext('Are you sure you want to remove replication job {0}'),
-					    "'" + rec.id  + "'" + '<br>' +
-					    gettext('(Note: Removal of replication job has to be replicated)'));
+		var msg = Ext.String.format(gettext("Are you sure you want to remove replication job '{0}'?"), rec.id);
 		return msg;
 	    },
 	    disabled: true
