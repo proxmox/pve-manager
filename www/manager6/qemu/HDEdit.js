@@ -89,6 +89,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    delete me.drive.backup;
 	}
 
+	if (values.noreplicate) {
+	    me.drive.replicate = 'no';
+	} else {
+	    delete me.drive.replicate;
+	}
+
 	if (values.discard) {
 	    me.drive.discard = 'on';
 	} else {
@@ -147,6 +153,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	values.hdimage = drive.file;
 	values.nobackup = !PVE.Parser.parseBoolean(drive.backup, 1);
+	values.noreplicate = !PVE.Parser.parseBoolean(drive.replicate, 1);
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '__default__';
 	values.discard = (drive.discard === 'on');
@@ -250,6 +257,13 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    xtype: 'pvecheckbox',
 	    fieldLabel: gettext('No backup'),
 	    name: 'nobackup'
+	});
+
+	me.column2.push({
+	    xtype: 'pvecheckbox',
+	    hidden: me.insideWizard,
+	    fieldLabel: gettext('Skip replication'),
+	    name: 'noreplicate'
 	});
 
 	me.column2.push({
