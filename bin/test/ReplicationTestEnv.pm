@@ -34,6 +34,14 @@ our $mocked_vm_configs = {};
 
 our $mocked_ct_configs = {};
 
+my $mocked_get_members = sub {
+    return {
+	node1 => { online => 1 },
+	node2 => { online => 1 },
+	node3 => { online => 1 },
+    };
+};
+
 my $mocked_vmlist = sub {
     my $res = {};
 
@@ -222,7 +230,8 @@ sub setup {
     $pve_cluster_module->mock(
 	get_ssh_info => $mocked_get_ssh_info,
 	ssh_info_to_command => $mocked_ssh_info_to_command,
-	get_vmlist => sub { return $mocked_vmlist->(); });
+	get_vmlist => sub { return $mocked_vmlist->(); },
+	get_members => $mocked_get_members);
     $pve_inotify_module->mock('nodename' => sub { return $mocked_nodename; });
 };
 
