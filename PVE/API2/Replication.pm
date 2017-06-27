@@ -18,7 +18,7 @@ use PVE::RESTHandler;
 
 use base qw(PVE::RESTHandler);
 
-my $pvesr_lock_path = "/var/lock/pvesr.lck";
+our $pvesr_lock_path = "/var/lock/pvesr.lck";
 
 our $lookup_guest_class = sub {
     my ($vmtype) = @_;

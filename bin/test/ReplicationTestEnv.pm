@@ -66,7 +66,7 @@ my $statefile = ".mocked_repl_state";
 unlink $statefile;
 $PVE::ReplicationState::state_path = $statefile;
 $PVE::ReplicationState::state_lock = ".mocked_repl_state_lock";
-$PVE::Replication::pvesr_lock_path = ".mocked_pvesr_lock";
+$PVE::API2::Replication::pvesr_lock_path = ".mocked_pvesr_lock";
 $PVE::GuestHelpers::lockdir = ".mocked_pve-manager_lock";
 
 if (!mkdir($PVE::GuestHelpers::lockdir) && !$!{EEXIST}) {
