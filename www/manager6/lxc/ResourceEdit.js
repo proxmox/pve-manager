@@ -506,7 +506,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	];
 
 	if (!isroot) {
-	    me.column2.unshift({
+	    me.column2.splice(1, 0, {
 		xtype: 'pvecheckbox',
 		name: 'ro',
 		defaultValue: 0,
