@@ -57,6 +57,7 @@ Ext.define('PVE.window.ReplicaEdit', {
 	    {
 		xtype: 'inputpanel',
 		itemId: 'ipanel',
+		onlineHelp: 'pvesr_schedule_time_format',
 
 		onGetValues: function(values) {
 		    var me = this.up('window');
@@ -120,8 +121,7 @@ Ext.define('PVE.grid.ReplicaView', {
     extend: 'Ext.grid.Panel',
     xtype: 'pveReplicaView',
 
-    // not here yet:
-    //onlineHelp: 'todo',
+    onlineHelp: 'chapter_pvesr',
 
     stateful: true,
     stateId: 'grid-pve-replication-status',
