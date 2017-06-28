@@ -125,7 +125,7 @@ __PACKAGE__->register_method ({
 	    if defined($param->{target}) && !defined($nodelist->{$param->{target}});
 
 	my $guest_class = $PVE::API2::Replication::lookup_guest_class->($guest_info->{type});
-	my $guest_conf = $guest_class->load_config($guest);
+	my $guest_conf = $guest_class->load_config($guest, $guest_info->{node});
 	my $rep_volumes = $guest_class->get_replicatable_volumes(PVE::Storage::config(), $guest, $guest_conf, 0, 0);
 	die "No replicatable volumes found\n" if !%$rep_volumes;
 
