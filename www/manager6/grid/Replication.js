@@ -168,6 +168,21 @@ Ext.define('PVE.grid.ReplicaView', {
 	    });
 	},
 
+	scheduleJobNow: function(button,event,rec) {
+	    var me = this.getView();
+	    var controller = this;
+
+	    PVE.Utils.API2Request({
+		url: "/api2/extjs/nodes/" + me.nodename + "/replication/" + rec.data.id + "/schedule_now",
+		method: 'POST',
+		waitMsgTarget: me,
+		callback: function() { controller.reload(); },
+		failure: function (response, opts) {
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		}
+	    });
+	},
+
 	showLog: function(button, event, rec) {
 	    var me = this.getView();
 	    var controller = this;
@@ -255,6 +270,13 @@ Ext.define('PVE.grid.ReplicaView', {
 	    text: gettext('Log'),
 	    itemId: 'logButton',
 	    handler: 'showLog',
+	    disabled: true
+	},
+	{
+	    xtype: 'pveButton',
+	    text: gettext('Schedule now'),
+	    itemId: 'scheduleNowButton',
+	    handler: 'scheduleJobNow',
 	    disabled: true
 	}
     ],
@@ -449,10 +471,12 @@ Ext.define('PVE.grid.ReplicaView', {
 
 	me.callParent();
 
-	// we cannot access the log in the datacenter, because
+	// we cannot access the log and scheduleNow button
+	// in the datacenter, because
 	// we do not know where/if the jobs runs
 	if (mode === 'dc') {
 	    me.down('#logButton').setHidden(true);
+	    me.down('#scheduleNowButton').setHidden(true);
 	}
 
 	// if we set the warning mask, we do not want to load
