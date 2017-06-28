@@ -192,6 +192,7 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	return [
+	    { name => 'schedule_now' },
 	    { name => 'log' },
 	    { name => 'status' },
 	    ];
@@ -309,6 +310,40 @@ __PACKAGE__->register_method({
 	$rpcenv->set_result_attrib('total', $count);
 
 	return $lines;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'schedule_now',
+    path => '{id}/schedule_now',
+    method => 'POST',
+    description => "Schedule replication job to start as soon as possible.",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/storage', ['Datastore.Allocate']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    id => get_standard_option('pve-replication-id'),
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'string',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $jobid = $param->{id};
+
+	my $cfg = PVE::ReplicationConfig->new();
+	my $jobcfg = $cfg->{ids}->{$jobid};
+
+	die "no such replication job '$jobid'\n" if !defined($jobcfg);
+
+	PVE::ReplicationState::schedule_job_now($jobcfg);
+
     }});
 
 1;
