@@ -1,3 +1,29 @@
+pve-manager (5.0-17) unstable; urgency=medium
+
+  * replication GUI: add schedule now button
+
+  * gui: drop cirrus from the GUI
+
+  * replication: improve schedule format example
+
+  * Add a checkbox 'Skip replication'
+
+  * ceph: keys: add mgr allow * to client.admin
+
+  * pveceph: createosd: allow to create bluestore OSDs
+
+  * pveceph: init: add min_size, change default to 3/2
+
+  * PVE/API2/Replication.pm: call purge_old_states in run_jobs
+
+  * replication/ui: improve wording for job removal
+
+  * replication: refuse to create jobs with nothing to do
+
+  * ceph: init: allow pool deletion by default
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 28 Jun 2017 13:34:21 +0200
+
 pve-manager (5.0-16) unstable; urgency=medium
 
   * fix lxc hostname input window
