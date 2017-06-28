@@ -107,6 +107,12 @@ Ext.define('PVE.window.Backup', {
 	    }
 	});
 
+	var helpBtn = Ext.create('PVE.button.Help', {
+	    onlineHelp: 'chapter_vzdump',
+	    listenToGlobalEvent: false,
+	    hidden: false
+	});
+
 	var title = gettext('Backup') + " " + 
 	    ((me.vmtype === 'lxc') ? "CT" : "VM") +
 	    " " + me.vmid;
@@ -118,7 +124,7 @@ Ext.define('PVE.window.Backup', {
 	    layout: 'auto',
 	    border: false,
 	    items: [ me.formPanel ],
-	    buttons: [ submitBtn ]
+	    buttons: [ helpBtn, '->', submitBtn ]
 	});
 
 	me.callParent();

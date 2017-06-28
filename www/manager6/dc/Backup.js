@@ -192,6 +192,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	/*jslint confusion: false*/
 
 	var ipanel = Ext.create('PVE.panel.InputPanel', {
+	    onlineHelp: 'chapter_vzdump',
 	    column1: column1,
 	    column2:  column2,
 	    onGetValues: function(values) {
