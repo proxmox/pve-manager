@@ -35,7 +35,7 @@ Ext.define('PVE.window.ReplicaEdit', {
 	    {
 		xtype: 'pveCalendarEvent',
 		fieldLabel: gettext('Schedule'),
-		emptyText: '*/15',
+		emptyText: '*/15 - ' + gettext('Every 15 minutes'),
 		name: 'schedule'
 	    },
 	    {
