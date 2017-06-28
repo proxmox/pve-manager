@@ -1,3 +1,10 @@
+pve-manager (5.0-18) unstable; urgency=medium
+
+  * replication: fix issue when creating jobs for VMs on different cluster
+    nodes
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 28 Jun 2017 14:23:30 +0200
+
 pve-manager (5.0-17) unstable; urgency=medium
 
   * replication GUI: add schedule now button
