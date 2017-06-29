@@ -40,7 +40,7 @@ Ext.define('PVE.window.ReplicaEdit', {
 	    },
 	    {
 		xtype: 'numberfield',
-		fieldLabel: gettext('Rate (MB/s)'),
+		fieldLabel: gettext('Rate limit') + ' (MB/s)',
 		step: 1,
 		minValue: 1,
 		emptyText: gettext('unlimited'),
@@ -430,7 +430,7 @@ Ext.define('PVE.grid.ReplicaView', {
 		dataIndex: 'schedule'
 	    },
 	    {
-		text: gettext('Rate'),
+		text: gettext('Rate limit'),
 		dataIndex: 'rate',
 		renderer: function(value) {
 		    if (!value) {
