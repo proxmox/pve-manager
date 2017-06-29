@@ -1,3 +1,19 @@
+pve-manager (5.0-19) unstable; urgency=medium
+
+  * pvesr status: handle disabled jobs
+
+  * replication; merge status and status text
+
+  * replication: show disabled jobs and allow enabling/disabling
+
+  * Revert "add beta text with link to bugtracker"
+
+  * replication: adapt help buttons reference
+
+  * Add Help Button for Backup Modal Windows
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 29 Jun 2017 12:01:46 +0200
+
 pve-manager (5.0-18) unstable; urgency=medium
 
   * replication: fix issue when creating jobs for VMs on different cluster
