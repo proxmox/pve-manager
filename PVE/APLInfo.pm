@@ -7,6 +7,7 @@ use PVE::SafeSyslog;
 use PVE::Tools;
 use LWP::UserAgent;
 use POSIX qw(strftime);
+use PVE::pvecfg;
 
 my $logfile = "/var/log/pveam.log";
 my $aplinfodir = "/var/lib/pve-manager/apl-info";
@@ -221,7 +222,8 @@ sub update {
     logmsg($logfd, "starting update");
 
     my $ua = LWP::UserAgent->new;
-    $ua->agent("PVE/1.0");
+    my $version = PVE::pvecfg::version();
+    $ua->agent("PVE/$version");
 
     if ($proxy) {
 	$ua->proxy(['http', 'https'], $proxy);
