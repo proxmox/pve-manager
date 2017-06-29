@@ -50,6 +50,13 @@ Ext.define('PVE.window.ReplicaEdit', {
 		xtype: 'textfield',
 		fieldLabel: gettext('Comment'),
 		name: 'comment'
+	    },
+	    {
+		xtype: 'pvecheckbox',
+		name: 'enabled',
+		defaultValue: 'on',
+		checked: true,
+		fieldLabel: gettext('Enabled')
 	    }
 	);
 
@@ -62,7 +69,11 @@ Ext.define('PVE.window.ReplicaEdit', {
 		onGetValues: function(values) {
 		    var me = this.up('window');
 
+		    values.disable = values.enabled ? 0 : 1;
+		    delete values.enabled;
+
 		    PVE.Utils.delete_if_default(values, 'rate', '', me.isCreate);
+		    PVE.Utils.delete_if_default(values, 'disable', 0, me.isCreate);
 		    PVE.Utils.delete_if_default(values, 'schedule', '*/15', me.isCreate);
 		    PVE.Utils.delete_if_default(values, 'comment', '', me.isCreate);
 
@@ -109,6 +120,7 @@ Ext.define('PVE.window.ReplicaEdit', {
 	} else {
 	    me.load({
 		success: function(response, options) {
+		    response.result.data.enabled = !response.result.data.disable;
 		    me.setValues(response.result.data);
 		    me.digest = response.result.data.digest;
 		}
@@ -290,6 +302,13 @@ Ext.define('PVE.grid.ReplicaView', {
 	me.vmid = me.pveSelNode.data.vmid;
 
 	me.columns = [
+	    {
+		text: gettext('Enabled'),
+		dataIndex: 'enabled',
+		xtype: 'checkcolumn',
+		sortable: true,
+		disabled: true
+	    },
 	    {
 		text: gettext('ID'),
 		dataIndex: 'id',
@@ -498,7 +517,9 @@ Ext.define('PVE.grid.ReplicaView', {
 	    'id', 'target', 'comment', 'rate', 'type',
 	    { name: 'guest', type: 'integer' },
 	    { name: 'jobnum', type: 'integer' },
-	    { name: 'schedule', defaultValue: '*/15' }
+	    { name: 'schedule', defaultValue: '*/15' },
+	    { name: 'disable', defaultValue: '' },
+	    { name: 'enabled', calculate: function(data) { return !data.disable; } }
 	]
     });
 
