@@ -1,6 +1,6 @@
 1000 job_900_to_node1: new job next_sync => 1
 1000 job_900_to_node1: start replication job
-1000 job_900_to_node1: guest => 900, type => qemu, running => 0
+1000 job_900_to_node1: guest => VM 900, running => 0
 1000 job_900_to_node1: volumes => local-zfs:vm-900-disk-1
 1000 job_900_to_node1: start job removal - mode 'full'
 1000 job_900_to_node1: job removed
