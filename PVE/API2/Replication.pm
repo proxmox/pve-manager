@@ -62,9 +62,9 @@ sub run_single_job {
 
 	$jobcfg->{id} = $jobid;
 
-	$jobcfg->{vmtype} = $vms->{ids}->{$vmid}->{type};
+	my $vmtype = $vms->{ids}->{$vmid}->{type};
 
-	my $guest_class = $lookup_guest_class->($jobcfg->{vmtype});
+	my $guest_class = $lookup_guest_class->($vmtype);
 	PVE::Replication::run_replication($guest_class, $jobcfg, $now, $now, $logfunc);
     };
 
