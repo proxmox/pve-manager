@@ -347,7 +347,8 @@ Ext.define('PVE.grid.ReplicaView', {
 		{
 		    text: gettext('Status'),
 		    dataIndex: 'state',
-		    width: 60,
+		    minWidth: 160,
+		    flex: 1,
 		    renderer: function(value, metadata, record) {
 
 			if (record.data.pid) {
@@ -355,46 +356,27 @@ Ext.define('PVE.grid.ReplicaView', {
 			    return '';
 			}
 
+			var icons = [];
 			var states = [];
 
 			if (record.data.remove_job) {
-			    states.push('<i class="fa fa-ban warning" title="'
+			    icons.push('<i class="fa fa-ban warning" title="'
 					+ gettext("Removal Scheduled") + '"></i>');
-			}
-
-			if (record.data.error) {
-			    states.push('<i class="fa fa-times critical" title="'
-					+ gettext("Error") + '"></i>');
-			}
-
-			if (states.length > 0) {
-			    return states.join(',');
-			}
-
-			return '<i class="fa fa-check good"></i>';
-		    }
-		},
-		{
-		    text: gettext('Status Text'),
-		    dataIndex: 'error',
-		    minWidth: 100,
-		    flex: 1,
-		    renderer: function(value, metadata, record) {
-			var states = [];
-
-			if (record.data.remove_job) {
 			    states.push(gettext("Removal Scheduled"));
 			}
 
 			if (record.data.error) {
+			    icons.push('<i class="fa fa-times critical" title="'
+					+ gettext("Error") + '"></i>');
 			    states.push(record.data.error);
 			}
 
-			if (states.length > 0) {
-			    return states.join(', ');
+			if (icons.length == 0) {
+			    icons.push('<i class="fa fa-check good"></i>');
+			    states.push(gettext('OK'));
 			}
 
-			return gettext('OK');
+			return icons.join(',') + ' ' + states.join(',');
 		    }
 		},
 		{
