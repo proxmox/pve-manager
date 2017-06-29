@@ -341,9 +341,9 @@ my $print_job_list = sub {
 my $print_job_status = sub {
     my ($list) = @_;
 
-    my $format = "%-20s %-20s %20s %20s %10s %10s %s\n";
+    my $format = "%-10s %-10s %-20s %20s %20s %10s %10s %s\n";
 
-    printf($format, "JobID", "Target", "LastSync", "NextSync", "Duration", "FailCount", "State");
+    printf($format, "JobID", "Enabled", "Target", "LastSync", "NextSync", "Duration", "FailCount", "State");
 
     foreach my $job (sort { $a->{guest} <=> $b->{guest} } @$list) {
 	my $plugin = PVE::ReplicationConfig->lookup($job->{type});
@@ -365,8 +365,9 @@ my $print_job_status = sub {
 	}
 
 	my $state = $job->{pid} ? "SYNCING" : $job->{error} // 'OK';
+	my $enabled = $job->{disable} ? 'No' : 'Yes';
 
-	printf($format, $job->{id}, $tid,
+	printf($format, $job->{id}, $enabled, $tid,
 	       $timestr, $nextstr, $job->{duration} // '-',
 	       $job->{fail_count}, $state);
     }
