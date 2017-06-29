@@ -375,6 +375,7 @@ my $print_job_status = sub {
 
 our $cmddef = {
     status => [ 'PVE::API2::Replication', 'status', [], { node => $nodename }, $print_job_status ],
+    'schedule-now' => [ 'PVE::API2::Replication', 'schedule_now', ['id'], { node => $nodename }],
 
     list => [ 'PVE::API2::ReplicationConfig', 'index' , [], {}, $print_job_list ],
     read => [ 'PVE::API2::ReplicationConfig', 'read' , ['id'], {},
