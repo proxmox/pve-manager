@@ -1,3 +1,9 @@
+pve-manager (5.0-21) unstable; urgency=medium
+
+  * update lxc template list (aplinfo.dat)
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 03 Jul 2017 16:08:10 +0200
+
 pve-manager (5.0-20) unstable; urgency=medium
 
   * update german and italian translations
