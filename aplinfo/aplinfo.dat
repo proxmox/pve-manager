@@ -30,19 +30,32 @@ sha512sum: f03d9b038c7024ad82c3bf954d56dec16e93fc66d3f94877349efcb4974c989833d01
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.4 (20161206)
 
-Package: archlinux-base
-Version: 20161207-1
+Package: alpine-3.5-default
+Version: 20170504
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.5-default_20170504_amd64.tar.xz
+md5sum: e07bf105b1f25c5d85ae62901609a2da
+sha512sum: b60613c1a431f8c3c815556b1191f7507ce8f70ab9504d12939055f598fc8ac9c4b4c0ac0a9f3137e9ed5e0f131d80748c4bf55b710f12a21a2e5f5f42ac1536
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.5 (20170504)
+
+Package: base
+Version: 20170703-1
 Type: lxc
 OS: archlinux
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/archlinux-base_20161207-1_amd64.tar.gz
-md5sum: 012a5c03e8f4e30ee509714647f18c8c
-sha512sum: b63e3f4670db7d54d69b30532f6b914332cb5d6a5676199ca09864363b8850c91c348c6e9c6cb23f0ef0a2d3710ae3d6de6245e72367399bb655cf5fd820aec4
+Location: system/archlinux-base_20170703-1_amd64.tar.gz
+md5sum: 55584876209d7cd5f698ef14a445ac6c
+sha512sum: 6ad3a5b2d55b87b929fa18665ab1bc3455a587664b5301188c7b9185d6c3e0bd9f6a5ae33ab444018f9c6f6b806abbbdd326e9ac81cf482264905f9ae7a0fb51
 Infopage: https://www.archlinux.org
 Description: ArchLinux base image.
- A small ArchLinux system including the 'base' package group.
+ ArchLinux template with the 'base' group and the 'openssh' package installed.
 
 Package: centos-6-default
 Version: 20161207
@@ -58,17 +71,17 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for centos 6 (20161207)
 
 Package: centos-7-default
-Version: 20161207
+Version: 20170504
 Type: lxc
 OS: centos
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/centos-7-default_20161207_amd64.tar.xz
-md5sum: 0a7ba79d553a6e6348bbb83015f9ee37
-sha512sum: 0e8e35ce256dc780501c08c376a8e461986c9c5047606209cbe585b038853af7925bab1d3d3455d2a15c27cc7a4950890d9f79985ab378bc04e4f7238c9116d4
+Location: system/centos-7-default_20170504_amd64.tar.xz
+md5sum: 4ef53806bf04bbecac0950685cc057bc
+sha512sum: f93cdc1938c1ef0c1433f2e3309c6b1be6db50e208d4d87a50091bb1f11b76cfb1831e78a4a8d8178f18a09f5204fff1a806b63442eb7dbbf552987ac41beccb
 Infopage: https://linuxcontainers.org
-Description: LXC default image for centos 7 (20161207)
+Description: LXC default image for centos 7 (20170504)
 
 Package: debian-6.0-standard
 Version: 6.0-7
@@ -153,17 +166,17 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 25 (20170316)
 
 Package: gentoo-current-default
-Version: 20161206
+Version: 20170503
 Type: lxc
 OS: gentoo
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/gentoo-current-default_20161206_amd64.tar.xz
-md5sum: bf684c08bdd2f053a4d2f58f3c4a1f56
-sha512sum: eac7ba04c071f97050d79344e4703ea6adf12b5e7db5e2af1df19e7a9b89c83cf88cb73b940951c40c88e67ae532bee07c23f8036b92852026832f00617c2b94
+Location: system/gentoo-current-default_20170503_amd64.tar.xz
+md5sum: 9dd789208ae0015490d7d68f35894889
+sha512sum: fb235df6330bb73e612890210c33e69d32fac370381bbada78928bc488df1838fd2ca953213a0c4e7de530f480ce94559a467fc31dccef2a539546a74817a14f
 Infopage: https://linuxcontainers.org
-Description: LXC default image for gentoo current (20161206)
+Description: LXC default image for gentoo current (20170503)
 
 Package: opensuse-42.2-default
 Version: 20170406
