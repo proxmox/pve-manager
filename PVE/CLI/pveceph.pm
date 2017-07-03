@@ -93,7 +93,7 @@ __PACKAGE__->register_method ({
 
 	if ($cephver eq 'luminous') {
 	    PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list",
-		"deb http://download.proxmox.com/debian/ceph-luminous stretch main");
+		"deb http://download.proxmox.com/debian/ceph-luminous stretch main\n");
 	} else {
 	    # use fixed devel repo for now, because there is no officila repo for jessie
 	    my $devrepo = undef;
