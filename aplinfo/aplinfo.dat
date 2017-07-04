@@ -43,16 +43,16 @@ sha512sum: b60613c1a431f8c3c815556b1191f7507ce8f70ab9504d12939055f598fc8ac9c4b4c
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.5 (20170504)
 
-Package: base
-Version: 20170703-1
+Package: archlinux-base
+Version: 20170704-1
 Type: lxc
 OS: archlinux
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/archlinux-base_20170703-1_amd64.tar.gz
-md5sum: 55584876209d7cd5f698ef14a445ac6c
-sha512sum: 6ad3a5b2d55b87b929fa18665ab1bc3455a587664b5301188c7b9185d6c3e0bd9f6a5ae33ab444018f9c6f6b806abbbdd326e9ac81cf482264905f9ae7a0fb51
+Location: system/archlinux-base_20170704-1_amd64.tar.gz
+md5sum: 4c44a69222531afcb5a4e6c836fd1d67
+sha512sum: 1bf2b94aa75fa0886e61b747ffdbb287b885ff5187bba41fdb4457049b380e70e4773dd17553a7a3135d491ee2e7668bcbec274172873c020982bd81b3298e3c
 Infopage: https://www.archlinux.org
 Description: ArchLinux base image.
  ArchLinux template with the 'base' group and the 'openssh' package installed.
