@@ -133,7 +133,10 @@ EOF
 
 	deb-systemd-invoke start pvesr.timer >/dev/null || true
     fi
-    
+
+    # enable startcom-ca2.crt for enterprise repository
+    update-ca-certificates >/dev/null 2>&1
+
     # rewrite banner
     test -e /proxmox_install_mode || pvebanner || true
 
