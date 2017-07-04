@@ -175,7 +175,7 @@ Ext.define('PVE.grid.ReplicaView', {
 		method: 'DELETE',
 		callback: function() { controller.reload(); },
 		failure: function (response, opts) {
-		    Ext.Msg.alert('Error', response.htmlStatus);
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		}
 	    });
 	},
