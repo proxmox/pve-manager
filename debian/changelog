@@ -1,3 +1,9 @@
+pve-manager (5.0-23) unstable; urgency=medium
+
+  * add certificate authority for enterprise repository
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 04 Jul 2017 11:50:24 +0200
+
 pve-manager (5.0-22) unstable; urgency=medium
 
   * update lxc template list (aplinfo.dat)
