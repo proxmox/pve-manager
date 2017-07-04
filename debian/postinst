@@ -116,7 +116,10 @@ EOF
 	    deb-systemd-invoke reload-or-restart $service
 	done
     fi
-    
+
+    # enable startcom-ca2.crt for enterprise repository
+    update-ca-certificates >/dev/null 2>&1
+
     # rewrite banner
     test -e /proxmox_install_mode || pvebanner || true
 
