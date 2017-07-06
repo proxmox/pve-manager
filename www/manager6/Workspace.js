@@ -179,8 +179,7 @@ Ext.define('PVE.StdWorkspace', {
 	var ui = me.query('#versioninfo')[0];
 
 	if (PVE.VersionInfo) {
-	    var version = PVE.VersionInfo.version + '-' + PVE.VersionInfo.release + '/' +
-		PVE.VersionInfo.repoid;
+	    var version = PVE.VersionInfo.version + '-' + PVE.VersionInfo.release;
 	    ui.update('Virtual Environment ' + version);
 	} else {
 	    ui.update('Virtual Environment');
