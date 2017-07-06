@@ -106,7 +106,7 @@ Ext.define('PVE.window.Settings', {
 	    title: gettext('Browser Settings'),
 	    layout: {
 		type: 'vbox',
-		align: 'right'
+		align: 'left'
 	    },
 	    defaults: {
 		width: '100%',
@@ -155,15 +155,13 @@ Ext.define('PVE.window.Settings', {
 		    fieldLabel: gettext('Saved User name'),
 		    labelAlign: 'left',
 		    labelWidth: '50%',
-		    fieldStyle: {
-			'text-align':'right'
-		    },
 		    stateId: 'login-username',
 		    reference: 'savedUserName',
 		    value: ''
 		},
 		{
 		    xtype: 'button',
+		    cls: 'x-btn-default-toolbar-small pve-inline-button',
 		    text: gettext('Clear User name'),
 		    width: 'auto',
 		    name: 'clear-username'
@@ -180,6 +178,7 @@ Ext.define('PVE.window.Settings', {
 		},
 		{
 		    xtype: 'button',
+		    cls: 'x-btn-default-toolbar-small pve-inline-button',
 		    text: gettext('Reset Layout'),
 		    width: 'auto',
 		    name: 'reset'
