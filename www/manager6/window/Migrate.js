@@ -25,9 +25,11 @@ Ext.define('PVE.window.Migrate', {
 	    },
 	    success: function(response, options) {
 		var upid = response.result.data;
+		var extraTitle = Ext.String.format(' ({0} ---> {1})', me.nodename, target);
 
-		var win = Ext.create('PVE.window.TaskViewer', { 
-		    upid: upid
+		var win = Ext.create('PVE.window.TaskViewer', {
+		    upid: upid,
+		    extraTitle: extraTitle
 		});
 		win.show();
 		me.close();
