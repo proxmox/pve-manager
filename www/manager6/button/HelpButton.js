@@ -10,7 +10,7 @@ Ext.define('PVE.button.Help', {
     text: gettext('Help'),
     // make help button less flashy by styling it like toolbar buttons
     iconCls: ' x-btn-icon-el-default-toolbar-small fa fa-question-circle',
-    cls: 'x-btn-default-toolbar-small pve-help-button',
+    cls: 'x-btn-default-toolbar-small pve-inline-button',
     hidden: true,
     listenToGlobalEvent: true,
     controller: {
