@@ -1,6 +1,6 @@
 Ext.define('PVE.qemu.NetworkInputPanel', {
     extend: 'PVE.panel.InputPanel',
-    alias: 'widget.PVE.qemu.NetworkInputPanel',
+    alias: 'widget.pveQemuNetworkInputPanel',
     onlineHelp: 'qm_network_device',
 
     insideWizard: false,

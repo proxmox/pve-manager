@@ -1,6 +1,6 @@
 Ext.define('PVE.qemu.CDInputPanel', {
     extend: 'PVE.panel.InputPanel',
-    alias: 'widget.PVE.qemu.CDInputPanel',
+    alias: 'widget.pveQemuCDInputPanel',
 
     insideWizard: false,
 

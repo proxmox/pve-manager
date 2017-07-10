@@ -2,7 +2,7 @@
 /* 'change' property is assigned a string and then a function */
 Ext.define('PVE.qemu.HDInputPanel', {
     extend: 'PVE.panel.InputPanel',
-    alias: 'widget.PVE.qemu.HDInputPanel',
+    alias: 'widget.pveQemuHDInputPanel',
     onlineHelp: 'qm_hard_disk',
 
     insideWizard: false,
