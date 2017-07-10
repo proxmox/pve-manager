@@ -3,6 +3,22 @@ Ext.define('PVE.qemu.CreateWizard', {
     alias: 'widget.pveQemuCreateWizard',
     qemuScsiController: undefined,
 
+    controller: {
+
+	xclass: 'Ext.app.ViewController',
+
+	control: {
+	    'field[name=nodename]': {
+		change: function(f, value) {
+		    var me = this;
+		    ['networkpanel', 'hdpanel', 'cdpanel'].forEach(function(reference) {
+			me.lookup(reference).setNodename(value);
+		    });
+		}
+	    }
+	}
+    },
+
     initComponent: function() {
 	var me = this;
 
@@ -14,26 +30,6 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    direction: 'ASC'
 		}
 	    ]
-	});
-
-	var cdpanel = Ext.create('PVE.qemu.CDInputPanel', {
-	    title: gettext('CD/DVD'),
-	    confid: 'ide2',
-	    fieldDefaults: {
-		labelWidth: 160
-	    },
-	    insideWizard: true
-	});
-
-	var hdpanel = Ext.create('PVE.qemu.HDInputPanel', {
-	    title: gettext('Hard Disk'),
-	    isCreate: true,
-	    insideWizard: true
-	});
-
-	var networkpanel =  Ext.create('PVE.qemu.NetworkInputPanel', {
-	    title: gettext('Network'),
-	    insideWizard: true
 	});
 
 	Ext.applyIf(me, {
@@ -51,14 +47,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 			    preferredValue: me.nodename,
 			    fieldLabel: gettext('Node'),
 			    allowBlank: false,
-			    onlineValidator: true,
-			    listeners: {
-				change: function(f, value) {
-				    networkpanel.setNodename(value);
-				    hdpanel.setNodename(value);
-				    cdpanel.setNodename(value);
-				}
-			    }
+			    onlineValidator: true
 			},
 			{
 			    xtype: 'pveGuestIDSelector',
@@ -101,8 +90,23 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    xtype: 'pveQemuOSTypePanel',
 		    insideWizard: true
 		},
-		cdpanel,
-		hdpanel,
+		{
+		    xtype: 'pveQemuCDInputPanel',
+		    reference: 'cdpanel',
+		    title: gettext('CD/DVD'),
+		    confid: 'ide2',
+		    fieldDefaults: {
+			labelWidth: 160
+		    },
+		    insideWizard: true
+		},
+		{
+		    xtype: 'pveQemuHDInputPanel',
+		    reference: 'hdpanel',
+		    title: gettext('Hard Disk'),
+		    isCreate: true,
+		    insideWizard: true
+		},
 		{
 		    xtype: 'pveQemuProcessorPanel',
 		    title: gettext('CPU')
@@ -112,7 +116,12 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    insideWizard: true,
 		    title: gettext('Memory')
 		},
-		networkpanel,
+		{
+		    xtype: 'pveQemuNetworkInputPanel',
+		    reference: 'networkpanel',
+		    title: gettext('Network'),
+		    insideWizard: true
+		},
 		{
 		    title: gettext('Confirm'),
 		    layout: 'fit',
