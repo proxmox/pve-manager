@@ -86,11 +86,6 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    }
 		},
 		{
-		    title: gettext('OS'),
-		    xtype: 'pveQemuOSTypePanel',
-		    insideWizard: true
-		},
-		{
 		    xtype: 'pveQemuCDInputPanel',
 		    reference: 'cdpanel',
 		    title: gettext('CD/DVD'),
@@ -98,6 +93,11 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    fieldDefaults: {
 			labelWidth: 160
 		    },
+		    insideWizard: true
+		},
+		{
+		    title: gettext('OS'),
+		    xtype: 'pveQemuOSTypePanel',
 		    insideWizard: true
 		},
 		{
