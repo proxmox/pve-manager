@@ -285,9 +285,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    me.quota.setDisabled(true);
 	    me.quota.setValue(false);
 	    me.acl.setDisabled(true);
-	    me.backup.setDisabled(true);
 	    me.acl.setValue('Default');
 	    me.hdstoragesel.setDisabled(true);
+	    if (me.confid !== 'rootfs') {
+		me.backup.setDisabled(true);
+	    }
 	}
 
 	if (mp.replicate) { // check box reverses the config option
@@ -391,8 +393,10 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 			me.quota.setDisabled(true);
 			me.quota.setValue(false);
 			me.acl.setDisabled(true);
-			me.backup.setDisabled(true);
 			me.acl.setValue('Default');
+			if (!isroot) {
+			    me.backup.setDisabled(true);
+			}
 			return;
 		    }
 		    var rec = f.store.getById(value);
