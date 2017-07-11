@@ -400,8 +400,9 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 			return;
 		    }
 		    var rec = f.store.getById(value);
-		    if (rec.data.type === 'zfs' ||
-		        rec.data.type === 'zfspool') {
+		    if (rec &&
+			(rec.data.type === 'zfs' ||
+		        rec.data.type === 'zfspool')) {
 			me.quota.setDisabled(true);
 			me.quota.setValue(false);
 		    } else {
