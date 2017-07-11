@@ -127,18 +127,13 @@ Ext.define('PVE.ceph.StatusDetail', {
 	var out_osds = total_osds - in_osds;
 	var down_osds = total_osds - up_osds;
 	var downin_osds = 0;
-	var downinregex = /(\d+)\/(\d+) in osds are down/;
+	var downinregex = /(\d+) osds down/;
 	Ext.Array.some(record.data.health.summary, function(item) {
 	    var found = item.summary.match(downinregex);
 
 	    if (found !== null) {
-		// sanity check, test if the message is
-		// consistent with the direct value
-		// for in osds
-		if (found[2] == in_osds) {
 		    downin_osds = parseInt(found[1],10);
 		    return true;
-		}
 	    }
 
 	    return false;
