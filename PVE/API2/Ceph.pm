@@ -260,7 +260,7 @@ __PACKAGE__->register_method ({
 		push @$cmd, '--bluestore';
 	    } else {
 		print "create OSD on $devpath ($fstype)\n";
-		push @$cmd, '--fs-type', $fstype;
+		push @$cmd, '--filestore', '--fs-type', $fstype;
 	    }
 
 	    if ($journal_dev) {
