@@ -11,8 +11,8 @@ override_dh_usrlocal:
 
 override_dh_fixperms:
 	dh_fixperms
-	find debian -name 'pvemailforward' -exec chmod 2755 {} +
 	find debian -name 'pvemailforward' -exec chown root:www-data {} +
+	find debian -name 'pvemailforward' -exec chmod 2755 {} +
 	find debian -type d -name 'pveproxy' -exec chown www-data:www-data {} +
 	find debian -type d -name 'pveproxy' -exec chmod 700 {} +
 
