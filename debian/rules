@@ -6,9 +6,6 @@ override_dh_compress:
 override_dh_strip_nondeterminism:
 	dh_strip_nondeterminism -X.png
 
-override_dh_usrlocal:
-	# do nothing
-
 override_dh_fixperms:
 	dh_fixperms
 	find debian -name 'pvemailforward' -exec chown root:www-data {} +
