@@ -1,3 +1,26 @@
+pve-manager (5.0-24) unstable; urgency=medium
+
+  * Fix #1450: re-enable setgid bit on pvemailforward
+
+  * Fix GUI issues with editing mount points which reside on storages
+    for which the rootfs storage type has been removed.
+
+  * Fix GUI issues when editing bind mounts for containers.
+
+  * Fix OSD count display issue in the ceph dashboard.
+
+  * Move OS type selection to after the installation medium selection in the
+    VM creation wizard.
+
+  * Fix 'pveceph createosd' to not to default to bluestore on newer ceph
+    versions. (It has a --bluestore option after all.)
+
+  * Added an informative empty-text when editing a container's DNS section.
+
+  * remove old CA entry for enterprise repository, not required anymore
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 19 Jul 2017 12:42:19 +0200
+
 pve-manager (5.0-23) unstable; urgency=medium
 
   * add certificate authority for enterprise repository
