@@ -117,9 +117,6 @@ EOF
 	done
     fi
 
-    # enable startcom-ca2.crt for enterprise repository
-    update-ca-certificates >/dev/null 2>&1
-
     # rewrite banner
     test -e /proxmox_install_mode || pvebanner || true
 
@@ -140,7 +137,11 @@ EOF
     else
       # Version $2 is the most recently configured version of this
       # package.
-      :
+      if dpkg --compare-versions "$2" '<=' '4.4-15'; then
+        # 4.4-15 temporarily reverted the removal of the startcom CA in
+        # ca-certificates; we've since switched to let's encrypt
+        update-ca-certificates >/dev/null 2>&1
+      fi
 
     fi ;;
   abort-upgrade)

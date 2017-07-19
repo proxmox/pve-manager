@@ -48,8 +48,7 @@ $(DEB):
 	mv dest.deb ${DEB}
 	rm -rf dest
 	# supress lintian error: statically-linked-binary usr/bin/pvemailforward
-	# we have a certs in /usr/local/, so we need to disbale files check
-	lintian -X 'binaries,files' ${DEB}
+	lintian -X binaries ${DEB}
 
 .PHONY: upload
 upload: ${DEB} check
@@ -72,8 +71,6 @@ install: country.dat vzdump.conf vzdump-hook-script.pl pve-apt.conf mtu bridgevl
 	install -d ${DESTDIR}/var/lib/vz/template/cache
 	install -d ${DESTDIR}/var/lib/vz/template/iso
 	install -d ${DESTDIR}/var/lib/vz/template/qemu
-	install -d ${DESTDIR}/usr/local/share/ca-certificates
-	install -m 0644 StartCom_Certification_Authority_2.crt ${DESTDIR}/usr/local/share/ca-certificates/startcom-ca2.crt
 	install -D -m 0644 pve-apt.conf ${DESTDIR}/etc/apt/apt.conf.d/75pveconf
 	install -D -m 0644 pve-sources.list ${DESTDIR}/etc/apt/sources.list.d/pve-enterprise.list
 	install -D -m 0644 pve-blacklist.conf ${DESTDIR}/etc/modprobe.d/pve-blacklist.conf
