@@ -66,7 +66,7 @@ pvereport.1.pod: pvereport
 	mv $@.tmp $@
 
 pvemailforward: pvemailforward.c
-	gcc $< -o $@ -g -O2 -Wall -ldl -lc
+	$(CC) $(CPPFLAGS) $(CFLAGS) -Wall -g -O2 $< -o $@
 
 .PHONY: install
 install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward $(addsuffix .service-bash-completion, ${SERVICES}) $(addsuffix .bash-completion, ${CLITOOLS})
