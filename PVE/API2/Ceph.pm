@@ -1186,7 +1186,9 @@ __PACKAGE__->register_method ({
 	PVE::CephTools::check_ceph_enabled();
 
 	my $rados = PVE::RADOS->new();
-	return $rados->mon_command({ prefix => 'status' });
+	my $status = $rados->mon_command({ prefix => 'status' });
+	$status->{health} = $rados->mon_command({ prefix => 'health', detail => 'detail' });
+	return $status;
     }});
 
 __PACKAGE__->register_method ({
