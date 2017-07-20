@@ -85,59 +85,55 @@ Ext.define('PVE.ceph.StatusDetail', {
 	]
     }],
 
-    updateAll: function(record) {
+    updateAll: function(health, monmap, pgmap, osdmap, quorum_names) {
 	var me = this;
 	me.suspendLayout = true;
 
-	if (!record.data.pgmap ||
-	    !record.data.osdmap ||
-	    !record.data.osdmap.osdmap ||
-	    !record.data.health ||
-	    !record.data.health.timechecks ||
-	    !record.data.monmap ||
-	    !record.data.monmap.mons ||
-	    !record.data.health.health ||
-	    !record.data.health.health.health_services ||
-	    !record.data.health.health.health_services[0]) {
-	    // only continue if we have all the data
-	    return;
-	}
-
 	// update pgs sorted
-	var pgs_by_state = record.data.pgmap.pgs_by_state || [];
+	var pgs_by_state = pgmap.pgs_by_state || [];
 	pgs_by_state.sort(function(a,b){
 	    return (a.state_name < b.state_name)?-1:(a.state_name === b.state_name)?0:1;
 	});
 	me.getComponent('pgs').update({states: pgs_by_state});
 
-	// update osds counts
-	// caution: this code is not the nicest,
-	// but since the status call only gives us
-	// the total, up and in value,
-	// we parse the health summary and look for the
-	// x/y in osds are down message
-	// to get the rest of the numbers
-	//
-	// the alternative would be to make a second api call,
-	// as soon as not all osds are up, but those are costly
+	var downinregex = /(\d+) osds down/;
+	var monnameregex = /^mon.(\S+) /;
+	var downin_osds = 0;
+	var monmsgs = {};
 
-	var total_osds = record.data.osdmap.osdmap.num_osds || 0;
-	var in_osds = record.data.osdmap.osdmap.num_in_osds || 0;
-	var up_osds = record.data.osdmap.osdmap.num_up_osds || 0;
+	// we collect monitor/osd information from the checks
+	Ext.Object.each(health.checks, function(key, value, obj) {
+	    var found = null;
+	    if (key === 'OSD_DOWN') {
+		found = value.message.match(downinregex);
+		if (found !== null) {
+		    downin_osds = parseInt(found[1],10);
+		}
+	    }
+	    else if (Ext.String.startsWith(key, 'MON_')) {
+		if (!value.detail) {
+		    return;
+		}
+		found = value.detail[0].match(monnameregex);
+		if (found !== null) {
+		    if (!monmsgs[found[1]]) {
+			monmsgs[found[1]] = [];
+		    }
+		    monmsgs[found[1]].push({
+			text: value.detail.join("\n"),
+			severity: value.severity
+		    });
+		}
+	    }
+	});
+
+	// update osds counts
+
+	var total_osds = osdmap.osdmap.num_osds || 0;
+	var in_osds = osdmap.osdmap.num_in_osds || 0;
+	var up_osds = osdmap.osdmap.num_up_osds || 0;
 	var out_osds = total_osds - in_osds;
 	var down_osds = total_osds - up_osds;
-	var downin_osds = 0;
-	var downinregex = /(\d+) osds down/;
-	Ext.Array.some(record.data.health.summary, function(item) {
-	    var found = item.summary.match(downinregex);
-
-	    if (found !== null) {
-		    downin_osds = parseInt(found[1],10);
-		    return true;
-	    }
-
-	    return false;
-	});
 
 	var downout_osds = down_osds - downin_osds;
 	var upin_osds = in_osds - downin_osds;
@@ -152,28 +148,13 @@ Ext.define('PVE.ceph.StatusDetail', {
 	me.getComponent('osds').update(osds);
 
 	// update the monitors
-	var mons = record.data.monmap.mons.sort(function(a,b) {
+	var mons = monmap.mons.sort(function(a,b) {
 	    return (a.name < b.name)?-1:(a.name > b.name)?1:0;
 	});
 
-	var monTimes = record.data.health.timechecks.mons || [];
-	var monHealth = record.data.health.health.health_services[0].mons || [];
-	var timechecks = {};
-	var healthchecks = {};
 	var monContainer = me.getComponent('monitors');
+
 	var i;
-	for (i = 0; i < mons.length && i < monTimes.length; i++) {
-	       timechecks[monTimes[i].name] = monTimes[i].health;
-	}
-
-	if (mons.length === 1) {
-	    timechecks[mons[0].name] = "HEALTH_OK";
-	}
-
-	for (i = 0; i < mons.length && i < monHealth.length; i++) {
-	       healthchecks[monHealth[i].name] = monHealth[i].health;
-	}
-
 	for (i = 0; i < mons.length; i++) {
 	    var monitor = monContainer.getComponent('mon.' + mons[i].name);
 	    if (!monitor) {
@@ -185,7 +166,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 		    itemId: 'mon.' + mons[i].name
 		});
 	    }
-	    monitor.updateMonitor(timechecks[mons[i].name], mons[i], record.data.quorum_names, healthchecks[mons[i].name]);
+	    monitor.updateMonitor(mons[i], monmsgs, quorum_names);
 	}
 	me.suspendLayout = false;
 	me.updateLayout();
@@ -200,6 +181,7 @@ Ext.define('PVE.ceph.MonitorWidget', {
     data: {
 	name: '0',
 	health: 'HEALTH_ERR',
+	text: '',
 	iconCls: PVE.Utils.get_health_icon(),
 	addr: ''
     },
@@ -213,26 +195,34 @@ Ext.define('PVE.ceph.MonitorWidget', {
     // timestate: the status from timechecks.mons
     // data: the monmap.mons data
     // quorum_names: the quorum_names array
-    updateMonitor: function(timestate, data, quorum_names, health) {
+    updateMonitor: function(data, monmsgs, quorum_names) {
 	var me = this;
 	var state = 'HEALTH_ERR';
+	var text = '';
 	var healthstates = {
 	    'HEALTH_OK': 3,
 	    'HEALTH_WARN': 2,
 	    'HEALTH_ERR': 1
 	};
 
-	// if the monitor is part of the quorum
-	// and has a timestate, get the timestate,
-	// otherwise the state is ERR
-	if (timestate && health && quorum_names &&
+	if (quorum_names &&
 	    quorum_names.indexOf(data.name) !== -1) {
-	    state = (healthstates[health] < healthstates[timestate])?
-		    health : timestate;
+	    state = 'HEALTH_OK';
+	}
+
+	if (monmsgs[data.name]) {
+	    Ext.Array.forEach(monmsgs[data.name], function(msg) {
+		if (healthstates[msg.severity] < healthstates[state]) {
+		    state = msg.severity;
+		}
+
+		text += msg.text + "\n";
+	    });
 	}
 
 	me.update(Ext.apply(me.data, {
 	    health: state,
+	    text: text,
 	    addr: data.addr,
 	    name: data.name,
 	    iconCls: PVE.Utils.get_health_icon(PVE.Utils.map_ceph_health[state])
@@ -254,7 +244,8 @@ Ext.define('PVE.ceph.MonitorWidget', {
 			renderTo: Ext.getBody(),
 			html: gettext('Monitor') + ': ' + me.data.name + '<br />' +
 			      gettext('Address') + ': ' + me.data.addr + '<br />' +
-			      gettext('Health')  + ': ' + me.data.health
+			      gettext('Health')  + ': ' + me.data.health + '<br />' + 
+			      me.data.text
 		    });
 		}
 		me.tooltip.show();
@@ -265,7 +256,8 @@ Ext.define('PVE.ceph.MonitorWidget', {
 	    fn: function(events, element) {
 		var me = this.component;
 		if (me.tooltip) {
-		    me.tooltip.hide();
+		    me.tooltip.destroy();
+		    delete me.tooltip;
 		}
 	    }
 	}

@@ -153,7 +153,12 @@ Ext.define('PVE.node.CephStatus', {
 	me.down('#warnings').getStore().loadRawData(rec.data.health.summary, false);
 
 	// update detailstatus panel
-	me.getComponent('statusdetail').updateAll(rec);
+	me.getComponent('statusdetail').updateAll(
+	    rec.data.health || {},
+	    rec.data.monmap || {},
+	    rec.data.pgmap || {},
+	    rec.data.osdmap || {},
+	    rec.data.quorum_names || []);
 
 	// add performance data
 	var used = rec.data.pgmap.bytes_used;
