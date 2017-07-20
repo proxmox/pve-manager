@@ -106,20 +106,20 @@ Ext.define('PVE.Utils', { utilities: {
 	'HEALTH_ERR':'critical'
     },
 
-    render_ceph_health: function(record) {
+    render_ceph_health: function(healthObj) {
 	var state = {
 	    iconCls: PVE.Utils.get_health_icon(),
 	    text: ''
 	};
 
-	if (!record || !record.data) {
+	if (!healthObj || !healthObj.status) {
 	    return state;
 	}
 
-	var health = PVE.Utils.map_ceph_health[record.data.health.overall_status];
+	var health = PVE.Utils.map_ceph_health[healthObj.status];
 
 	state.iconCls = PVE.Utils.get_health_icon(health, true);
-	state.text = record.data.health.overall_status;
+	state.text = healthObj.status;
 
 	return state;
     },

@@ -89,7 +89,7 @@ Ext.define('PVE.dc.Health', {
 
 	me.cepherrors = 0;
 
-	var state = PVE.Utils.render_ceph_health(records[0]);
+	var state = PVE.Utils.render_ceph_health(records[0].data.health || {});
 	cephstatus.updateHealth(state);
 	cephstatus.setVisible(true);
     },

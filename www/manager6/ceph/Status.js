@@ -148,7 +148,7 @@ Ext.define('PVE.node.CephStatus', {
 	var rec = records[0];
 
 	// add health panel
-	me.down('#overallhealth').updateHealth(PVE.Utils.render_ceph_health(rec));
+	me.down('#overallhealth').updateHealth(PVE.Utils.render_ceph_health(rec.data.health || {}));
 	// add errors to gridstore
 	me.down('#warnings').getStore().loadRawData(rec.data.health.summary, false);
 
