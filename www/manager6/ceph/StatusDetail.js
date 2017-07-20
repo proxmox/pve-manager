@@ -73,11 +73,11 @@ Ext.define('PVE.ceph.StatusDetail', {
 	itemId: 'pgs',
 	padding: '0 10',
 	data: {
-	    monitors: []
+	    states: []
 	},
 	tpl: [
 	    '<h3>' + gettext('PGs') + '</h3>',
-	    '<tpl for="monitors">',
+	    '<tpl for="states">',
 	    '<div class="left-aligned">{state_name}:</div>',
 	    '<div class="right-aligned">{count}</div><br />',
 	    '<div style="clear:both"></div>',
@@ -108,7 +108,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	pgs_by_state.sort(function(a,b){
 	    return (a.state_name < b.state_name)?-1:(a.state_name === b.state_name)?0:1;
 	});
-	me.getComponent('pgs').update({monitors: pgs_by_state});
+	me.getComponent('pgs').update({states: pgs_by_state});
 
 	// update osds counts
 	// caution: this code is not the nicest,
