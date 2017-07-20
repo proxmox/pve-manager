@@ -67,6 +67,35 @@ Ext.define('PVE.node.CephStatus', {
 			    dataIndex: 'summary',
 			    header: gettext('Summary'),
 			    flex: 1
+			},
+			{
+			    xtype: 'actioncolumn',
+			    width: 40,
+			    align: 'center',
+			    tooltip: gettext('Detail'),
+			    items: [
+				{
+				    iconCls: 'x-fa fa-info-circle',
+				    handler: function(grid, rowindex, colindex, item, e, record) {
+					var win = Ext.create('Ext.window.Window', {
+					    title: gettext('Detail'),
+					    resizable: true,
+					    width: 650,
+					    height: 400,
+					    layout: {
+						type: 'fit'
+					    },
+					    items: [{
+						scrollable: true,
+						padding: '10',
+						xtype: 'box',
+						html: record.data.detail
+					    }]
+					});
+					win.show();
+				    }
+				}
+			    ]
 			}
 		    ]
 		}
@@ -139,6 +168,24 @@ Ext.define('PVE.node.CephStatus', {
 	}
     ],
 
+    generateCheckData: function(health) {
+	var result = [];
+	var checks = health.checks || {};
+	var keys = Ext.Object.getKeys(checks).sort();
+
+	Ext.Array.forEach(keys, function(key) {
+	    var details = checks[key].detail || [];
+	    result.push({
+		id: key,
+		summary: checks[key].message,
+		detail: details.join("<br>\n"),
+		severity: checks[key].severity
+	    });
+	});
+
+	return result;
+    },
+
     updateAll: function(store, records, success) {
 	if (!success || records.length === 0) {
 	    return;
@@ -150,7 +197,7 @@ Ext.define('PVE.node.CephStatus', {
 	// add health panel
 	me.down('#overallhealth').updateHealth(PVE.Utils.render_ceph_health(rec.data.health || {}));
 	// add errors to gridstore
-	me.down('#warnings').getStore().loadRawData(rec.data.health.summary, false);
+	me.down('#warnings').getStore().loadRawData(me.generateCheckData(rec.data.health || {}), false);
 
 	// update detailstatus panel
 	me.getComponent('statusdetail').updateAll(
