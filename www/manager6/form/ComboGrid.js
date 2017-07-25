@@ -272,6 +272,29 @@ Ext.define('PVE.form.ComboGrid', {
             me.createPicker();
         }
 
+	if (me.editable) {
+	    // The trigger.picker causes first a focus event on the field then
+	    // toggles the selection picker. Thus skip expanding in this case,
+	    // else our focus listner expands and the picker.trigger then
+	    // collapses it directly afterwards.
+	    Ext.override(me.triggers.picker, {
+		onMouseDown : function (e) {
+		    // copied "should we focus" check from Ext.form.trigger.Trigger
+		    if (e.pointerType !== 'touch' && !this.field.owns(Ext.Element.getActiveElement())) {
+			me.skip_expand_on_focus = true;
+		    }
+		    this.callParent(arguments);
+		}
+	    });
+
+	    me.on("focus", function(me) {
+		if (!me.isExpanded && !me.skip_expand_on_focus) {
+		    me.expand();
+		}
+		me.skip_expand_on_focus = false;
+	    });
+	}
+
 	me.mon(me.store, 'beforeload', function() {
 	    if (!me.isDisabled()) {
 		me.enableLoadMask = true;
