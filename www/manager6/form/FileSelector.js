@@ -2,6 +2,10 @@ Ext.define('PVE.form.FileSelector', {
     extend: 'PVE.form.ComboGrid',
     alias: 'widget.pveFileSelector',
 
+    editable: true,
+    anyMatch: true,
+    forceSelection: true,
+
     setStorage: function(storage, nodename) {
 	var me = this;
 
