@@ -30,6 +30,8 @@ Ext.define('PVE.form.ComboGrid', {
     // needed to trigger onKeyUp etc.
     enableKeyEvents: true,
 
+    editable: false,
+
     // override ExtJS method
     // if the field has multiSelect enabled, the store is not loaded, and
     // the displayfield == valuefield, it saves the rawvalue as an array
@@ -253,10 +255,6 @@ Ext.define('PVE.form.ComboGrid', {
 
     initComponent: function() {
 	var me = this;
-
-	if (me.initialConfig.editable === undefined) {
-	    me.editable = false;
-	}
 
 	Ext.apply(me, {
 	    queryMode: 'local',
