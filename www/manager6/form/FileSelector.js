@@ -47,6 +47,7 @@ Ext.define('PVE.form.FileSelector', {
 	    valueField: 'volid',
 	    displayField: 'text',
             listConfig: {
+		width: 600,
 		columns: [
 		    {
 			header: gettext('Name'),
@@ -56,14 +57,14 @@ Ext.define('PVE.form.FileSelector', {
 		    },
 		    {
 			header: gettext('Format'),
-			width: 60, 
+			width: 60,
 			dataIndex: 'format'
 		    },
 		    {
 			header: gettext('Size'),
-			width: 60, 
-			dataIndex: 'size', 
-			renderer: PVE.Utils.format_size 
+			width: 100,
+			dataIndex: 'size',
+			renderer: PVE.Utils.format_size
 		    }
 		]
 	    }
