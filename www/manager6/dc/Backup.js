@@ -2,6 +2,8 @@ Ext.define('PVE.dc.BackupEdit', {
     extend: 'PVE.window.Edit',
     alias: ['widget.pveDcBackupEdit'],
 
+    defaultFocus: undefined,
+
     initComponent : function() {
          var me = this;
 
