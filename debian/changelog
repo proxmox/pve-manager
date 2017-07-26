@@ -1,3 +1,9 @@
+pve-manager (5.0-27) unstable; urgency=medium
+
+  * pveceph: allow '-' in the service name pattern
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 26 Jul 2017 16:51:29 +0200
+
 pve-manager (5.0-26) unstable; urgency=medium
 
   * Close #1268: Show migration start server and migration end server
