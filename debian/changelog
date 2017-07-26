@@ -9,6 +9,9 @@ pve-manager (5.0-26) unstable; urgency=medium
   * pveceph: creating a monitor now also creates a standard manager if not
     already present
 
+  * pveceph: monitor and manager names now default to the node name rather
+    than numeric IDs.
+
  -- Proxmox Support Team <support@proxmox.com>  Wed, 26 Jul 2017 15:37:35 +0200
 
 pve-manager (5.0-25) unstable; urgency=medium
