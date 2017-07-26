@@ -34,7 +34,7 @@ my $get_osd_status = sub {
 
     my $osdstat;
     foreach my $d (@$osdlist) {
-	$osdstat->{$d->{osd}} = $d if defined($d->{osd});    
+	$osdstat->{$d->{osd}} = $d if defined($d->{osd});
     }
     if (defined($osdid)) {
 	die "no such OSD '$osdid'\n" if !$osdstat->{$osdid};
@@ -47,12 +47,12 @@ my $get_osd_status = sub {
 my $get_osd_usage = sub {
     my ($rados) = @_;
 
-    my $osdlist = $rados->mon_command({ prefix => 'pg dump', 
+    my $osdlist = $rados->mon_command({ prefix => 'pg dump',
 					dumpcontents => [ 'osds' ]}) || [];
 
     my $osdstat;
     foreach my $d (@$osdlist) {
-	$osdstat->{$d->{osd}} = $d if defined($d->{osd});    
+	$osdstat->{$d->{osd}} = $d if defined($d->{osd});
     }
 
     return $osdstat;
@@ -69,7 +69,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -96,10 +96,10 @@ __PACKAGE__->register_method ({
 	my $newnodes = {};
 	foreach my $e (@{$res->{nodes}}) {
 	    $nodes->{$e->{id}} = $e;
-	    
-	    my $new = { 
-		id => $e->{id}, 
-		name => $e->{name}, 
+
+	    my $new = {
+		id => $e->{id},
+		name => $e->{name},
 		type => $e->{type}
 	    };
 
@@ -167,7 +167,7 @@ __PACKAGE__->register_method ({
     proxyto => 'node',
     protected => 1,
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    dev => {
@@ -226,7 +226,7 @@ __PACKAGE__->register_method ({
 	die "unable to get device info for '$devname'\n"
 	    if !$diskinfo;
 
-	die "device '$param->{dev}' is in use\n" 
+	die "device '$param->{dev}' is in use\n"
 	    if $diskinfo->{used};
 
 	my $devpath = $diskinfo->{devpath};
@@ -243,7 +243,7 @@ __PACKAGE__->register_method ({
 	    my $bindata = $rados->mon_command({ prefix => 'auth get', entity => 'client.bootstrap-osd', format => 'plain' });
 	    PVE::Tools::file_set_contents($ceph_bootstrap_osd_keyring, $bindata);
 	};
-        
+
 	my $worker = sub {
 	    my $upid = shift;
 
@@ -269,7 +269,7 @@ __PACKAGE__->register_method ({
 	    } else {
 		push @$cmd, $devpath;
 	    }
-	    
+
 	    run_command($cmd);
 	};
 
@@ -284,7 +284,7 @@ __PACKAGE__->register_method ({
     proxyto => 'node',
     protected => 1,
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    osdid => {
@@ -325,7 +325,7 @@ __PACKAGE__->register_method ({
 	    my $upid = shift;
 
 	    # reopen with longer timeout
-	    $rados = PVE::RADOS->new(timeout => PVE::CephTools::get_config('long_rados_timeout')); 
+	    $rados = PVE::RADOS->new(timeout => PVE::CephTools::get_config('long_rados_timeout'));
 
 	    print "destroy OSD $osdsection\n";
 
@@ -358,7 +358,7 @@ __PACKAGE__->register_method ({
 
 	    my $journal_part;
 	    my $data_part;
-	    
+
 	    if ($param->{cleanup}) {
 		my $jpath = "$mountpoint/journal";
 		$journal_part = abs_path($jpath);
@@ -402,7 +402,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    osdid => {
@@ -441,7 +441,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    osdid => {
@@ -502,7 +502,7 @@ use Data::Dumper; # fixme: remove
 my $pve_osd_default_journal_size = 1024*5;
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::CephOSD",  
+    subclass => "PVE::API2::CephOSD",
     path => 'osd',
 });
 
@@ -516,7 +516,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -561,7 +561,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    type => {
@@ -611,7 +611,7 @@ __PACKAGE__->register_method ({
 	    }
 
 	    $d->{dev} = "/dev/$dev";
-	    push @$res, $d; 
+	    push @$res, $d;
 	}
 
 	return $res;
@@ -626,7 +626,7 @@ __PACKAGE__->register_method ({
     },
     description => "Get Ceph configuration.",
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -653,7 +653,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -699,7 +699,7 @@ __PACKAGE__->register_method ({
 	    my $mons = $monstat->{monmap}->{mons};
 	    foreach my $d (@$mons) {
 		next if !defined($d->{name});
-		$monhash->{$d->{name}}->{rank} = $d->{rank}; 
+		$monhash->{$d->{name}}->{rank} = $d->{rank};
 		$monhash->{$d->{name}}->{addr} = $d->{addr};
 		if (grep { $_ eq $d->{rank} } @{$monstat->{quorum}}) {
 		    $monhash->{$d->{name}}->{quorum} = 1;
@@ -722,11 +722,11 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    network => {
-		description => "Use specific network for all ceph related traffic", 
+		description => "Use specific network for all ceph related traffic",
 		type => 'string', format => 'CIDR',
 		optional => 1,
 		maxLength => 128,
@@ -798,11 +798,11 @@ __PACKAGE__->register_method ({
 		'mon allow pool delete' => 'true',
 	    };
 
-	    # this does not work for default pools 
+	    # this does not work for default pools
 	    #'osd pool default pg num' => $pg_num,
-	    #'osd pool default pgp num' => $pg_num, 
+	    #'osd pool default pgp num' => $pg_num,
 	}
-	
+
 	$cfg->{global}->{keyring} = '/etc/pve/priv/$cluster.$name.keyring';
 	$cfg->{osd}->{keyring} = '/var/lib/ceph/osd/ceph-$id/keyring';
 
@@ -906,7 +906,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    id => {
@@ -939,7 +939,7 @@ __PACKAGE__->register_method ({
 
 	my $moncount = 0;
 
-	my $monaddrhash = {}; 
+	my $monaddrhash = {};
 
 	my $systemd_managed = PVE::CephTools::systemd_managed();
 
@@ -956,7 +956,7 @@ __PACKAGE__->register_method ({
 
 	my $monid = $param->{id} // $param->{node};
 
-	my $monsection = "mon.$monid"; 
+	my $monsection = "mon.$monid";
 	my $ip;
 	if (my $pubnet = $cfg->{global}->{'public network'}) {
 	    $ip = &$find_node_ip($pubnet);
@@ -968,7 +968,7 @@ __PACKAGE__->register_method ({
 	my $monname = $param->{node};
 
 	die "monitor '$monsection' already exists\n" if $cfg->{$monsection};
-	die "monitor address '$monaddr' already in use by '$monaddrhash->{$monaddr}'\n" 
+	die "monitor address '$monaddr' already in use by '$monaddrhash->{$monaddr}'\n"
 	    if $monaddrhash->{$monaddr};
 
 	my $worker = sub  {
@@ -999,7 +999,7 @@ __PACKAGE__->register_method ({
 
 	    my $mondir =  "/var/lib/ceph/mon/$ccname-$monid";
 	    -d $mondir && die "monitor filesystem '$mondir' already exist\n";
- 
+
 	    my $monmap = "/tmp/monmap";
 
 	    my $rados = PVE::RADOS->new(timeout => PVE::CephTools::get_config('long_rados_timeout'));
@@ -1069,7 +1069,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    monid => {
@@ -1096,15 +1096,15 @@ __PACKAGE__->register_method ({
 	PVE::CephTools::check_ceph_inited();
 
 	my $cfg = PVE::CephTools::parse_ceph_config();
-       
+
 	my $monid = $param->{monid};
-	my $monsection = "mon.$monid";	
+	my $monsection = "mon.$monid";
 
 	my $rados = PVE::RADOS->new();
 	my $monstat = $rados->mon_command({ prefix => 'mon_status' });
 	my $monlist = $monstat->{monmap}->{mons};
 
-	die "no such monitor id '$monid'\n" 
+	die "no such monitor id '$monid'\n"
 	    if !defined($cfg->{$monsection});
 
 	my $ccname = PVE::CephTools::get_config('ccname');
@@ -1118,7 +1118,7 @@ __PACKAGE__->register_method ({
 	    my $upid = shift;
 
 	    # reopen with longer timeout
-	    $rados = PVE::RADOS->new(timeout => PVE::CephTools::get_config('long_rados_timeout')); 
+	    $rados = PVE::RADOS->new(timeout => PVE::CephTools::get_config('long_rados_timeout'));
 
 	    $rados->mon_command({ prefix => "mon remove", name => $monid, format => 'plain' });
 
@@ -1237,7 +1237,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    service => {
@@ -1287,7 +1287,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    service => {
@@ -1337,7 +1337,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -1365,7 +1365,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -1430,7 +1430,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    name => {
@@ -1479,7 +1479,7 @@ __PACKAGE__->register_method ({
 
 	my $pve_ckeyring_path = PVE::CephTools::get_config('pve_ckeyring_path');
 
-	die "not fully configured - missing '$pve_ckeyring_path'\n" 
+	die "not fully configured - missing '$pve_ckeyring_path'\n"
 	    if ! -f $pve_ckeyring_path;
 
 	my $pg_num = $param->{pg_num} || 64;
@@ -1488,7 +1488,7 @@ __PACKAGE__->register_method ({
 	my $ruleset = $param->{crush_ruleset} || 0;
 	my $rados = PVE::RADOS->new();
 
-	$rados->mon_command({ 
+	$rados->mon_command({
 	    prefix => "osd pool create",
 	    pool => $param->{name},
 	    pg_num => int($pg_num),
@@ -1497,7 +1497,7 @@ __PACKAGE__->register_method ({
 	    format => 'plain',
 	});
 
-	$rados->mon_command({ 
+	$rados->mon_command({
 	    prefix => "osd pool set",
 	    pool => $param->{name},
 	    var => 'min_size',
@@ -1505,7 +1505,7 @@ __PACKAGE__->register_method ({
 	    format => 'plain',
 	});
 
-	$rados->mon_command({ 
+	$rados->mon_command({
 	    prefix => "osd pool set",
 	    pool => $param->{name},
 	    var => 'size',
@@ -1514,7 +1514,7 @@ __PACKAGE__->register_method ({
 	});
 
 	if (defined($param->{crush_ruleset})) {
-	    $rados->mon_command({ 
+	    $rados->mon_command({
 		prefix => "osd pool set",
 		pool => $param->{name},
 		var => 'crush_ruleset',
@@ -1657,7 +1657,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Modify' ]],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    name => {
@@ -1696,7 +1696,7 @@ __PACKAGE__->register_method ({
 
 	my $rados = PVE::RADOS->new();
 	# fixme: '--yes-i-really-really-mean-it'
-	$rados->mon_command({ 
+	$rados->mon_command({
 	    prefix => "osd pool delete",
 	    pool => $param->{name},
 	    pool2 => $param->{name},
@@ -1719,7 +1719,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -1739,7 +1739,7 @@ __PACKAGE__->register_method ({
 	my $mapdata = "/var/tmp/ceph-crush.txt.$$";
 
 	my $rados = PVE::RADOS->new();
-	
+
 	eval {
 	    my $bindata = $rados->mon_command({ prefix => 'osd getcrushmap', format => 'plain' });
 	    PVE::Tools::file_set_contents($mapfile, $bindata);
@@ -1752,13 +1752,13 @@ __PACKAGE__->register_method ({
 	unlink $mapdata;
 
 	die $err if $err;
-       
+
 	return $txt;
     }});
 
 __PACKAGE__->register_method({
-    name => 'log', 
-    path => 'log', 
+    name => 'log',
+    path => 'log',
     method => 'GET',
     description => "Read ceph log",
     proxyto => 'node',
@@ -1767,7 +1767,7 @@ __PACKAGE__->register_method({
     },
     protected => 1,
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    start => {
@@ -1784,7 +1784,7 @@ __PACKAGE__->register_method({
     },
     returns => {
 	type => 'array',
-	items => { 
+	items => {
 	    type => "object",
 	    properties => {
 		n => {
@@ -1809,8 +1809,8 @@ __PACKAGE__->register_method({
 	my ($count, $lines) = PVE::Tools::dump_logfile($logfile, $param->{start}, $param->{limit});
 
 	$rpcenv->set_result_attrib('total', $count);
-	    
-	return $lines; 
+
+	return $lines;
     }});
 
 
