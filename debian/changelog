@@ -1,3 +1,16 @@
+pve-manager (5.0-26) unstable; urgency=medium
+
+  * Close #1268: Show migration start server and migration end server
+
+  * various GUI usability improvements
+
+  * pveceph: added createmgr & destroymgr command
+
+  * pveceph: creating a monitor now also creates a standard manager if not
+    already present
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 26 Jul 2017 15:37:35 +0200
+
 pve-manager (5.0-25) unstable; urgency=medium
 
   * Update ceph ui to use the restructured data format of ceph luminous 12.1.1
