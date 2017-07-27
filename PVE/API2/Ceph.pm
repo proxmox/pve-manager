@@ -967,14 +967,13 @@ __PACKAGE__->register_method ({
  
 	    my $monmap = "/tmp/monmap";
 
-	    my $rados = PVE::RADOS->new(timeout => PVE::CephTools::get_config('long_rados_timeout'));
-
 	    eval {
 		mkdir $mondir;
 
 		run_command("chown ceph:ceph $mondir") if $systemd_managed;
 
 		if ($moncount > 0) {
+		    my $rados = PVE::RADOS->new(timeout => PVE::CephTools::get_config('long_rados_timeout'));
 		    my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
 		    PVE::Tools::file_set_contents($monmap, $mapdata);
 		} else {
@@ -1008,6 +1007,7 @@ __PACKAGE__->register_method ({
 
 	    # create manager
 	    if (!$param->{'exclude-manager'} && PVE::CephTools::check_ceph_mgr_installed(1)) {
+		my $rados = PVE::RADOS->new(timeout => PVE::CephTools::get_config('long_rados_timeout'));
 		$create_mgr->($rados, $monid);
 	    }
 	};
