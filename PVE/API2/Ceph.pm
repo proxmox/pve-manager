@@ -386,24 +386,28 @@ __PACKAGE__->register_method ({
 		warn $@ if $@;
 	    };
 
-	    my $journal_part;
-	    my $data_part;
+	    my $partitions_to_remove = [];
 
 	    if ($param->{cleanup}) {
-		my $jpath = "$mountpoint/journal";
-		$journal_part = abs_path($jpath);
-
 		if (my $fd = IO::File->new("/proc/mounts", "r")) {
 		    while (defined(my $line = <$fd>)) {
 			my ($dev, $path, $fstype) = split(/\s+/, $line);
 			next if !($dev && $path && $fstype);
 			next if $dev !~ m|^/dev/|;
 			if ($path eq $mountpoint) {
-			    $data_part = abs_path($dev);
+			    my $data_part = abs_path($dev);
+			    push @$partitions_to_remove, $data_part;
 			    last;
 			}
 		    }
 		    close($fd);
+		}
+
+		foreach my $path (qw(journal block block.db block.wal)) {
+		    my $part = abs_path("$mountpoint/$path");
+		    if ($part) {
+			push @$partitions_to_remove, $part;
+		    }
 		}
 	    }
 
@@ -413,8 +417,9 @@ __PACKAGE__->register_method ({
 		warn $err;
 	    } elsif ($param->{cleanup}) {
 		#be aware of the ceph udev rules which can remount.
-		&$remove_partition($data_part);
-		&$remove_partition($journal_part);
+		foreach my $part (@$partitions_to_remove) {
+		    $remove_partition->($part);
+		}
 	    }
 	};
 
