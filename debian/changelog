@@ -1,3 +1,9 @@
+pve-manager (5.0-29) unstable; urgency=medium
+
+  * ceph: ensure mgr starts after pve-cluster
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 31 Jul 2017 15:46:57 +0200
+
 pve-manager (5.0-28) unstable; urgency=medium
 
   * fix #1465: crush rule selection when creating pool
