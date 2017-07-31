@@ -487,6 +487,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	Ext.apply(me, {
 	    tbar: [ create_btn, reload_btn, noout_btn, '->', osd_label, start_btn, stop_btn, osd_out_btn, osd_in_btn, remove_btn ],
 	    rootVisible: false,
+	    useArrows: true,
 	    fields: ['name', 'type', 'status', 'host', 'in', 'id' ,
 		     { type: 'number', name: 'reweight' },
 		     { type: 'number', name: 'percent_used' },
@@ -494,6 +495,24 @@ Ext.define('PVE.node.CephOsdTree', {
 		     { type: 'integer', name: 'total_space' },
 		     { type: 'integer', name: 'apply_latency_ms' },
 		     { type: 'integer', name: 'commit_latency_ms' },
+		     { type: 'string', name: 'device_class' },
+		     { type: 'string', name: 'iconCls', calculate: function(data) {
+			 var iconCls = 'x-fa x-fa-tree fa-';
+			 switch (data.type) {
+			    case 'host':
+				 iconCls += 'building';
+				 break;
+			    case 'osd':
+				 iconCls += 'hdd-o';
+				 break;
+			    case 'root':
+				 iconCls += 'server';
+				 break;
+			    default:
+				 return undefined;
+			 }
+			 return iconCls;
+		     } },
 		     { type: 'number', name: 'crush_weight' }],
 	    selModel: sm,
 
