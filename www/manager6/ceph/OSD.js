@@ -112,7 +112,12 @@ Ext.define('PVE.CephCreateOsd', {
 		   autoSelect: false,
 		   allowBlank: true,
 		   emptyText: 'use OSD disk'
-	       }
+		},
+		{
+		    xtype: 'pvecheckbox',
+		    name: 'bluestore',
+		    fieldLabel: 'Bluestore'
+		}
             ]
         });
 
