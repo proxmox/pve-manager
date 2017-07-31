@@ -2,7 +2,7 @@ Ext.define('PVE.CephCreateMon', {
     extend: 'PVE.window.Edit',
     alias: ['widget.pveCephCreateMon'],
 
-    subject: 'Ceph Monitor',
+    subject: 'Ceph Monitor/Manager',
 
     showProgress: true,
 
