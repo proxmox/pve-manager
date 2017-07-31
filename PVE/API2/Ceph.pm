@@ -580,6 +580,7 @@ __PACKAGE__->register_method ({
 	    { name => 'log' },
 	    { name => 'disks' },
 	    { name => 'flags' },
+	    { name => 'rules' },
 	];
 
 	return $result;
@@ -1842,4 +1843,44 @@ __PACKAGE__->register_method({
 	return $lines;
     }});
 
+__PACKAGE__->register_method ({
+    name => 'rules',
+    path => 'rules',
+    method => 'GET',
+    description => "List ceph rules.",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {},
+	},
+	links => [ { rel => 'child', href => "{name}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
 
+	PVE::CephTools::check_ceph_inited();
+
+	my $rados = PVE::RADOS->new();
+
+	my $rules = $rados->mon_command({ prefix => 'osd crush rule ls' });
+
+	my $res = [];
+
+	foreach my $rule (@$rules) {
+	    push @$res, { name => $rule };
+	}
+
+	return $res;
+    }});

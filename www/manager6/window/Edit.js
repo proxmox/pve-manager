@@ -202,9 +202,9 @@ Ext.define('PVE.window.Edit', {
 	    trackResetOnLoad: true,
 	    bodyPadding: 10,
 	    border: false,
-	    defaults: {
+	    defaults: Ext.apply({}, me.defaults, {
 		border: false
-	    },
+	    }),
 	    fieldDefaults: Ext.apply({}, me.fieldDefaults, {
 		labelWidth: 100,
 		anchor: '100%'

@@ -31,12 +31,9 @@ Ext.define('PVE.CephCreatePool', {
 	    allowBlank: false
 	},
 	{
-	    xtype: 'pveIntegerField',
-	    fieldLabel: 'Crush RuleSet', // do not localize
-	    name: 'crush_ruleset',
-	    value: 0,
-	    minValue: 0,
-	    maxValue: 32768,
+	    xtype: 'pveCephRuleSelector',
+	    fieldLabel: 'Crush Rule', // do not localize
+	    name: 'crush_rule',
 	    allowBlank: false
 	},
 	{
@@ -57,8 +54,11 @@ Ext.define('PVE.CephCreatePool', {
 	    throw "no node name specified";
 	}
 
-        Ext.applyIf(me, {
-	    url: "/nodes/" + me.nodename + "/ceph/pools"
+        Ext.apply(me, {
+	    url: "/nodes/" + me.nodename + "/ceph/pools",
+	    defaults: {
+		nodename: me.nodename
+	    }
         });
 
         me.callParent();
@@ -205,8 +205,51 @@ Ext.define('PVE.node.CephPoolList', {
 		  { name: 'pg_num', type: 'integer'},
 		  { name: 'bytes_used', type: 'integer'},
 		  { name: 'percent_used', type: 'number'},
-		  { name: 'crush_ruleset', type: 'integer'}
+		  { name: 'crush_rule', type: 'integer'},
 		],
 	idProperty: 'pool_name'
     });
+});
+
+Ext.define('PVE.form.CephRuleSelector', {
+    extend: 'Ext.form.field.ComboBox',
+    alias: 'widget.pveCephRuleSelector',
+
+    allowBlank: false,
+    valueField: 'name',
+    displayField: 'name',
+    editable: false,
+    queryMode: 'local',
+
+    initComponent: function() {
+	var me = this;
+
+	if (!me.nodename) {
+	    throw "no nodename given";
+	}
+
+	var store = Ext.create('Ext.data.Store', {
+	    fields: ['name'],
+	    sorters: 'name',
+	    proxy: {
+		type: 'pve',
+		url: '/api2/json/nodes/' + me.nodename + '/ceph/rules'
+	    }
+	});
+
+	Ext.apply(me, {
+	    store: store,
+	});
+
+	me.callParent();
+
+	store.load({
+	    callback: function(rec, op, success){
+		if (success && rec.length > 0) {
+		    me.select(rec[0]);
+		}
+	    }
+	});
+    }
+
 });
