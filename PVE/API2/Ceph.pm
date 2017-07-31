@@ -1439,7 +1439,7 @@ __PACKAGE__->register_method ({
 	my $data = [];
 	foreach my $e (@{$res->{pools}}) {
 	    my $d = {};
-	    foreach my $attr (qw(pool pool_name size min_size pg_num crush_ruleset)) {
+	    foreach my $attr (qw(pool pool_name size min_size pg_num crush_rule)) {
 		$d->{$attr} = $e->{$attr} if defined($e->{$attr});
 	    }
 	    if (my $s = $stats->{$d->{pool}}) {
@@ -1496,12 +1496,9 @@ __PACKAGE__->register_method ({
 		minimum => 8,
 		maximum => 32768,
 	    },
-	    crush_ruleset => {
-		description => "The ruleset to use for mapping object placement in the cluster.",
-		type => 'integer',
-		minimum => 0,
-		maximum => 32768,
-		default => 0,
+	    crush_rule => {
+		description => "The rule to use for mapping object placement in the cluster.",
+		type => 'string',
 		optional => 1,
 	    },
 	},
@@ -1520,15 +1517,12 @@ __PACKAGE__->register_method ({
 	my $pg_num = $param->{pg_num} || 64;
 	my $size = $param->{size} || 2;
 	my $min_size = $param->{min_size} || 1;
-	my $ruleset = $param->{crush_ruleset} || 0;
 	my $rados = PVE::RADOS->new();
 
 	$rados->mon_command({
 	    prefix => "osd pool create",
 	    pool => $param->{name},
 	    pg_num => int($pg_num),
-# this does not work for unknown reason
-#	    properties => ["size=$size", "min_size=$min_size", "crush_ruleset=$ruleset"],
 	    format => 'plain',
 	});
 
@@ -1548,13 +1542,13 @@ __PACKAGE__->register_method ({
 	    format => 'plain',
 	});
 
-	if (defined($param->{crush_ruleset})) {
+	if (defined($param->{crush_rule})) {
 	    $rados->mon_command({
 		prefix => "osd pool set",
 		pool => $param->{name},
-		var => 'crush_ruleset',
-		val => $param->{crush_ruleset},
-	        format => 'plain',
+		var => 'crush_rule',
+		val => $param->{crush_rule},
+		format => 'plain',
 	    });
 	}
 

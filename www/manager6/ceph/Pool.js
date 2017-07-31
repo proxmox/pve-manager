@@ -97,10 +97,10 @@ Ext.define('PVE.node.CephPoolList', {
 	    dataIndex: 'pg_num'
 	},
 	{
-	    header: 'ruleset',
+	    header: 'rule',
 	    width: 50,
 	    sortable: false,
-	    dataIndex: 'crush_ruleset'
+	    dataIndex: 'crush_rule'
 	},
 	{
 	    header: gettext('Used'),
