@@ -103,7 +103,7 @@ __PACKAGE__->register_method ({
 		type => $e->{type}
 	    };
 
-	    foreach my $opt (qw(status crush_weight reweight)) {
+	    foreach my $opt (qw(status crush_weight reweight device_class)) {
 		$new->{$opt} = $e->{$opt} if defined($e->{$opt});
 	    }
 

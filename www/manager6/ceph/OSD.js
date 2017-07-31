@@ -180,6 +180,12 @@ Ext.define('PVE.node.CephOsdTree', {
 	    width: 60
 	},
 	{
+	    text: gettext("Class"),
+	    dataIndex: 'device_class',
+	    align: 'right',
+	    width: 40
+	},
+	{
 	    text: 'Status',
 	    dataIndex: 'status',
 	    align: 'right',
