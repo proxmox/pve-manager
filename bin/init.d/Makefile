@@ -30,6 +30,8 @@ install: ${SCRIPTS}
 	install -m 0644 ${SERVICES} ${SERVICEDIR}
 	install -d ${SERVICEDIR}/ceph-mon@.service.d
 	install -m 0644 ceph-after-pve-cluster.conf ${SERVICEDIR}/ceph-mon@.service.d
+	install -d ${SERVICEDIR}/ceph-mgr@.service.d
+	install -m 0644 ceph-after-pve-cluster.conf ${SERVICEDIR}/ceph-mgr@.service.d
 	install -d ${SERVICEDIR}/ceph-osd@.service.d
 	install -m 0644 ceph-after-pve-cluster.conf ${SERVICEDIR}/ceph-osd@.service.d
 	install -d ${SERVICEDIR}/ceph-disk@.service.d
