@@ -175,7 +175,12 @@ __PACKAGE__->register_method ({
 		type => 'string',
 	    },
 	    journal_dev => {
-		description => "Block device name for journal.",
+		description => "Block device name for journal (filestore) or block.db (bluestore).",
+		optional => 1,
+		type => 'string',
+	    },
+	    wal_dev => {
+		description => "Block device name for block.wal (bluestore only).",
 		optional => 1,
 		type => 'string',
 	    },
@@ -209,10 +214,23 @@ __PACKAGE__->register_method ({
 
 	PVE::CephTools::setup_pve_symlinks();
 
+	my $bluestore = $param->{bluestore} // 0;
+
 	my $journal_dev;
+	my $wal_dev;
 
 	if ($param->{journal_dev} && ($param->{journal_dev} ne $param->{dev})) {
             $journal_dev = PVE::Diskmanage::verify_blockdev_path($param->{journal_dev});
+	    # if only journal is given, also put the wal there
+	    $wal_dev = $journal_dev;
+	}
+
+	if ($param->{wal_dev} &&
+	    ($param->{wal_dev} ne $param->{dev}) &&
+	    (!$param->{journal_dev} || $param->{wal_dev} ne $param->{journal_dev})) {
+	    raise_param_exc({ 'wal_dev' => "can only be set with paramater 'bluestore'"})
+		if !$bluestore;
+            $wal_dev = PVE::Diskmanage::verify_blockdev_path($param->{wal_dev});
 	}
 
         $param->{dev} = PVE::Diskmanage::verify_blockdev_path($param->{dev});
@@ -255,20 +273,32 @@ __PACKAGE__->register_method ({
 	    my $cmd = ['ceph-disk', 'prepare', '--zap-disk',
 		       '--cluster', $ccname, '--cluster-uuid', $fsid ];
 
-	    if ($param->{bluestore}) {
+	    if ($bluestore) {
 		print "create OSD on $devpath (bluestore)\n";
 		push @$cmd, '--bluestore';
+
+		if ($journal_dev) {
+		    print "using device '$journal_dev' for block.db\n";
+		    push @$cmd, '--block.db', $journal_dev;
+		}
+
+		if ($wal_dev) {
+		    print "using device '$wal_dev' for block.wal\n";
+		    push @$cmd, '--block.wal', $wal_dev;
+		}
+
+		push @$cmd, $devpath;
 	    } else {
 		print "create OSD on $devpath ($fstype)\n";
 		push @$cmd, '--filestore', '--fs-type', $fstype;
+		if ($journal_dev) {
+		    print "using device '$journal_dev' for journal\n";
+		    push @$cmd, '--journal-dev', $devpath, $journal_dev;
+		} else {
+		    push @$cmd, $devpath;
+		}
 	    }
 
-	    if ($journal_dev) {
-		print "using device '$journal_dev' for journal\n";
-		push @$cmd, '--journal-dev', $devpath, $journal_dev;
-	    } else {
-		push @$cmd, $devpath;
-	    }
 
 	    run_command($cmd);
 	};
