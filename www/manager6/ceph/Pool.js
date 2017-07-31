@@ -1,6 +1,6 @@
 Ext.define('PVE.CephCreatePool', {
     extend: 'PVE.window.Edit',
-    alias: ['widget.pveCephCreatePool'],
+    alias: 'widget.pveCephCreatePool',
 
     subject: 'Ceph Pool',
     isCreate: true,
@@ -67,7 +67,7 @@ Ext.define('PVE.CephCreatePool', {
 
 Ext.define('PVE.node.CephPoolList', {
     extend: 'Ext.grid.GridPanel',
-    alias: ['widget.pveNodeCephPoolList'],
+    alias: 'widget.pveNodeCephPoolList',
 
     onlineHelp: 'chapter_pveceph',
     stateful: true,

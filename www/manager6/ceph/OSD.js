@@ -92,26 +92,26 @@ Ext.define('PVE.CephCreateOsd', {
 
         Ext.applyIf(me, {
 	    url: "/nodes/" + me.nodename + "/ceph/osd",
-            method: 'POST',
-            items: [
-               {
-		   xtype: 'pveCephDiskSelector',
-		   name: 'dev',
-		   nodename: me.nodename,
-		   diskType: 'unused',
-		   fieldLabel: gettext('Disk'),
-		   allowBlank: false
-	       },
-               {
-		   xtype: 'pveCephDiskSelector',
-		   name: 'journal_dev',
-		   nodename: me.nodename,
-		   diskType: 'journal_disks',
-		   fieldLabel: gettext('Journal Disk'),
-		   value: '',
-		   autoSelect: false,
-		   allowBlank: true,
-		   emptyText: 'use OSD disk'
+	    method: 'POST',
+	    items: [
+		{
+		    xtype: 'pveCephDiskSelector',
+		    name: 'dev',
+		    nodename: me.nodename,
+		    diskType: 'unused',
+		    fieldLabel: gettext('Disk'),
+		    allowBlank: false
+		},
+		{
+		    xtype: 'pveCephDiskSelector',
+		    name: 'journal_dev',
+		    nodename: me.nodename,
+		    diskType: 'journal_disks',
+		    fieldLabel: gettext('Journal/DB Disk'),
+		    value: '',
+		    autoSelect: false,
+		    allowBlank: true,
+		    emptyText: 'use OSD disk'
 		},
 		{
 		    xtype: 'pvecheckbox',
