@@ -165,6 +165,9 @@ Ext.define('PVE.node.CephPoolList', {
                     nodename: nodename
 		});
 		win.show();
+		win.on('destroy', function() {
+		    rstore.load();
+		});
 	    }
 	});
 
@@ -181,10 +184,13 @@ Ext.define('PVE.node.CephPoolList', {
 		var base_url = '/nodes/' + nodename + '/ceph/pools/' +
 		    rec.data.pool_name;
 
-		Ext.create('PVE.window.SafeDestroy', {
+		var win = Ext.create('PVE.window.SafeDestroy', {
 		    url: base_url,
 		    item: { type: 'CephPool', id: rec.data.pool_name }
 		}).show();
+		win.on('destroy', function() {
+		    rstore.load();
+		});
 	    }
 	});
 
