@@ -1436,6 +1436,12 @@ __PACKAGE__->register_method ({
 	}
 
 	$res = $rados->mon_command({ prefix => 'osd dump' });
+	my $rulestmp = $rados->mon_command({ prefix => 'osd crush rule dump'});
+
+	my $rules = {};
+	for my $rule (@$rulestmp) {
+	    $rules->{$rule->{rule_id}} = $rule->{rule_name};
+	}
 
 	my $data = [];
 	foreach my $e (@{$res->{pools}}) {
@@ -1443,6 +1449,11 @@ __PACKAGE__->register_method ({
 	    foreach my $attr (qw(pool pool_name size min_size pg_num crush_rule)) {
 		$d->{$attr} = $e->{$attr} if defined($e->{$attr});
 	    }
+
+	    if (defined($d->{crush_rule}) && defined($rules->{$d->{crush_rule}})) {
+		$d->{crush_rule_name} = $rules->{$d->{crush_rule}};
+	    }
+
 	    if (my $s = $stats->{$d->{pool}}) {
 		$d->{bytes_used} = $s->{bytes_used};
 		$d->{percent_used} = ($s->{bytes_used} / $total)*100

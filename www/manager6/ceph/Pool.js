@@ -103,6 +103,12 @@ Ext.define('PVE.node.CephPoolList', {
 	    dataIndex: 'crush_rule'
 	},
 	{
+	    header: 'rule_name',
+	    width: 50,
+	    sortable: false,
+	    dataIndex: 'crush_rule_name'
+	},
+	{
 	    header: gettext('Used'),
 	    columns: [
 		{
@@ -206,6 +212,7 @@ Ext.define('PVE.node.CephPoolList', {
 		  { name: 'bytes_used', type: 'integer'},
 		  { name: 'percent_used', type: 'number'},
 		  { name: 'crush_rule', type: 'integer'},
+		  { name: 'crush_rule_name', type: 'string'}
 		],
 	idProperty: 'pool_name'
     });
