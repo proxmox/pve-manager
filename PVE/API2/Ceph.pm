@@ -92,6 +92,13 @@ __PACKAGE__->register_method ({
 
 	my $usagehash = &$get_osd_usage($rados);
 
+	my $osdmetadata_tmp = $rados->mon_command({ prefix => 'osd metadata' });
+
+	my $osdmetadata = {};
+	foreach my $osd (@$osdmetadata_tmp) {
+	    $osdmetadata->{$osd->{id}} = $osd;
+	}
+
 	my $nodes = {};
 	my $newnodes = {};
 	foreach my $e (@{$res->{nodes}}) {
@@ -118,6 +125,18 @@ __PACKAGE__->register_method ({
 		if (my $d = $stat->{fs_perf_stat}) {
 		    $new->{commit_latency_ms} = $d->{commit_latency_ms};
 		    $new->{apply_latency_ms} = $d->{apply_latency_ms};
+		}
+	    }
+
+	    my $osdmd = $osdmetadata->{$e->{id}};
+	    if ($e->{type} eq 'osd' && $osdmd) {
+		if ($osdmd->{bluefs}) {
+		    $new->{osdtype} = 'bluestore';
+		    $new->{blfsdev} = $osdmd->{bluestore_bdev_dev_node};
+		    $new->{dbdev} = $osdmd->{bluefs_db_dev_node};
+		    $new->{waldev} = $osdmd->{bluefs_wal_dev_node};
+		} else {
+		    $new->{osdtype} = 'filestore';
 		}
 	    }
 
