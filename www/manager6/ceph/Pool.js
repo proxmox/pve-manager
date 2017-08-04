@@ -251,7 +251,7 @@ Ext.define('PVE.form.CephRuleSelector', {
 	});
 
 	Ext.apply(me, {
-	    store: store,
+	    store: store
 	});
 
 	me.callParent();
