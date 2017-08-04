@@ -191,6 +191,41 @@ Ext.define('PVE.node.CephOsdTree', {
 	    width: 40
 	},
 	{
+	    text: "OSD Type",
+	    dataIndex: 'osdtype',
+	    align: 'right',
+	    width: 40
+	},
+	{
+	    text: "Bluestore Device",
+	    dataIndex: 'blfsdev',
+	    align: 'right',
+	    width: 40,
+	    hidden: true
+	},
+	{
+	    text: "DB Device",
+	    dataIndex: 'dbdev',
+	    align: 'right',
+	    width: 40,
+	    hidden: true
+	},
+	{
+	    text: "WAL Device",
+	    dataIndex: 'waldev',
+	    align: 'right',
+	    renderer: function(value, metaData, rec) {
+		if (!value &&
+		    rec.data.osdtype === 'bluestore' &&
+		    rec.data.type === 'osd') {
+		    return 'N/A';
+		}
+		return value;
+	    },
+	    width: 40,
+	    hidden: true
+	},
+	{
 	    text: 'Status',
 	    dataIndex: 'status',
 	    align: 'right',
@@ -501,6 +536,10 @@ Ext.define('PVE.node.CephOsdTree', {
 		     { type: 'integer', name: 'apply_latency_ms' },
 		     { type: 'integer', name: 'commit_latency_ms' },
 		     { type: 'string', name: 'device_class' },
+		     { type: 'string', name: 'osdtype' },
+		     { type: 'string', name: 'blfsdev' },
+		     { type: 'string', name: 'dbdev' },
+		     { type: 'string', name: 'waldev' },
 		     { type: 'string', name: 'iconCls', calculate: function(data) {
 			 var iconCls = 'x-fa x-fa-tree fa-';
 			 switch (data.type) {
