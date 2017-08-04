@@ -33,9 +33,33 @@ Ext.define('PVE.node.DiskList', {
 	    width: 80,
 	    sortable: false,
 	    renderer: function(v, metaData, rec) {
-		if (rec && (rec.data.osdid >= 0)) {
-		    return "osd." + rec.data.osdid.toString();
+		if (rec) {
+		    if (rec.data.osdid >= 0) {
+			var bluestore = '';
+			if (rec.data.bluestore === 1) {
+			    bluestore = ' (Bluestore)';
+			}
+			return "Ceph osd." + rec.data.osdid.toString() + bluestore;
+		    }
+
+		    var types = [];
+		    if (rec.data.journals > 0) {
+			types.push('Journal');
+		    }
+
+		    if (rec.data.db > 0) {
+			types.push('DB');
+		    }
+
+		    if (rec.data.wal > 0) {
+			types.push('WAL');
+		    }
+
+		    if (types.length > 0) {
+			return 'Ceph (' + types.join(', ') + ')';
+		    }
 		}
+
 		return v || PVE.Utils.noText;
 	    },
 	    dataIndex: 'used'
