@@ -1,3 +1,9 @@
+pve-manager (5.0-30) unstable; urgency=medium
+
+  * ceph: improve bluestore information display
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 8 Aug 2017 11:08:05 +0200
+
 pve-manager (5.0-29) unstable; urgency=medium
 
   * ceph: ensure mgr starts after pve-cluster
