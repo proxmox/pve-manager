@@ -541,7 +541,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		     { type: 'string', name: 'dbdev' },
 		     { type: 'string', name: 'waldev' },
 		     { type: 'string', name: 'iconCls', calculate: function(data) {
-			 var iconCls = 'x-fa x-fa-tree fa-';
+			 var iconCls = 'fa x-fa-tree fa-';
 			 switch (data.type) {
 			    case 'host':
 				 iconCls += 'building';

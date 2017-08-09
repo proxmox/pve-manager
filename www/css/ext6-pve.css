@@ -537,3 +537,11 @@ table.osds td:first-of-type {
     padding: 10px;
     background-image: none;
 }
+
+.x-fa {
+    diplay: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
