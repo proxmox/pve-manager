@@ -1506,7 +1506,7 @@ __PACKAGE__->register_method ({
 	    size => {
 		description => 'Number of replicas per object',
 		type => 'integer',
-		default => 2,
+		default => 3,
 		optional => 1,
 		minimum => 1,
 		maximum => 7,
@@ -1514,7 +1514,7 @@ __PACKAGE__->register_method ({
 	    min_size => {
 		description => 'Minimum number of replicas per object',
 		type => 'integer',
-		default => 1,
+		default => 2,
 		optional => 1,
 		minimum => 1,
 		maximum => 7,
@@ -1546,8 +1546,8 @@ __PACKAGE__->register_method ({
 	    if ! -f $pve_ckeyring_path;
 
 	my $pg_num = $param->{pg_num} || 64;
-	my $size = $param->{size} || 2;
-	my $min_size = $param->{min_size} || 1;
+	my $size = $param->{size} || 3;
+	my $min_size = $param->{min_size} || 2;
 	my $rados = PVE::RADOS->new();
 
 	$rados->mon_command({
