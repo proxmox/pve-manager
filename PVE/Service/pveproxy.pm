@@ -17,6 +17,7 @@ use PVE::APIServer::Formatter::Standard;
 use PVE::APIServer::Formatter::HTML;
 use PVE::APIServer::AnyEvent;
 use PVE::HTTPServer;
+use PVE::pvecfg;
 
 use Template;
 
@@ -200,6 +201,9 @@ sub get_index {
 	$langfile = 1;
     }
 
+    my $ver = PVE::pvecfg::version();
+    my $release = PVE::pvecfg::release();
+
     my $vars = {
 	lang => $lang,
 	langfile => $langfile,
@@ -208,6 +212,7 @@ sub get_index {
 	console => $args->{console},
 	nodename => $nodename,
 	debug => $server->{debug},
+	version => "$ver-$release",
     };
 
     # by default, load the normal index
