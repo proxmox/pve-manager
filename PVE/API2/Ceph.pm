@@ -1532,6 +1532,12 @@ __PACKAGE__->register_method ({
 		type => 'string',
 		optional => 1,
 	    },
+	    application => {
+		description => "The application of the pool, 'rbd' by default.",
+		type => 'string',
+		enum => ['rbd', 'cephfs', 'rgw'],
+		optional => 1,
+	    }
 	},
     },
     returns => { type => 'null' },
@@ -1549,6 +1555,7 @@ __PACKAGE__->register_method ({
 	my $size = $param->{size} || 3;
 	my $min_size = $param->{min_size} || 2;
 	my $rados = PVE::RADOS->new();
+	my $application = $param->{application} // 'rbd';
 
 	$rados->mon_command({
 	    prefix => "osd pool create",
@@ -1582,6 +1589,12 @@ __PACKAGE__->register_method ({
 		format => 'plain',
 	    });
 	}
+
+	$rados->mon_command({
+		prefix => "osd pool application enable",
+		pool => $param->{name},
+		app => $application,
+	});
 
 	return undef;
     }});
