@@ -80,6 +80,7 @@ Ext.define('PVE.node.CephStatus', {
 					var win = Ext.create('Ext.window.Window', {
 					    title: gettext('Detail'),
 					    resizable: true,
+					    modal: true,
 					    width: 650,
 					    height: 400,
 					    layout: {
