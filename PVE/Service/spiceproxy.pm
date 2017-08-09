@@ -10,7 +10,6 @@ use warnings;
 use PVE::SafeSyslog;
 use PVE::Daemon;
 use PVE::API2Tools;
-use PVE::API2;
 use PVE::HTTPServer;
 
 use base qw(PVE::Daemon);
