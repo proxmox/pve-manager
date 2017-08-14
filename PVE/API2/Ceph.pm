@@ -1097,6 +1097,93 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
+    name => 'createmgr',
+    path => 'mgr',
+    method => 'POST',
+    description => "Create Ceph Manager",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    id => {
+		type => 'string',
+		optional => 1,
+		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
+		description => "The ID for the manager, when omitted the same as the nodename",
+	    },
+	},
+    },
+    returns => { type => 'string' },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::CephTools::check_ceph_inited();
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
+
+	my $mgrid = $param->{id} // $param->{node};
+
+	my $worker = sub  {
+	    my $upid = shift;
+
+	    my $rados = PVE::RADOS->new(timeout => PVE::CephTools::get_config('long_rados_timeout'));
+
+	    $create_mgr->($rados, $mgrid);
+	};
+
+	return $rpcenv->fork_worker('cephcreatemgr', "mgr.$mgrid", $authuser, $worker);
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'destroymgr',
+    path => 'mgr/{id}',
+    method => 'DELETE',
+    description => "Destroy Ceph Manager.",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    id => {
+		description => 'The ID of the manager',
+		type => 'string',
+		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
+	    },
+	},
+    },
+    returns => { type => 'string' },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
+
+	PVE::CephTools::check_ceph_inited();
+
+	my $mgrid = $param->{id};
+
+	my $worker = sub {
+	    my $upid = shift;
+
+	    $destroy_mgr->($mgrid);
+	};
+
+	return $rpcenv->fork_worker('cephdestroymgr', "mgr.$mgrid",  $authuser, $worker);
+    }});
+
+__PACKAGE__->register_method ({
     name => 'stop',
     path => 'stop',
     method => 'POST',

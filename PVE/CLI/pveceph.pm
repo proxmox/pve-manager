@@ -165,6 +165,8 @@ our $cmddef = {
     destroyosd => [ 'PVE::API2::CephOSD', 'destroyosd', ['osdid'], { node => $nodename }, $upid_exit],
     createmon => [ 'PVE::API2::Ceph', 'createmon', [], { node => $nodename }, $upid_exit],
     destroymon => [ 'PVE::API2::Ceph', 'destroymon', ['monid'], { node => $nodename }, $upid_exit],
+    createmgr => [ 'PVE::API2::Ceph', 'createmgr', [], { node => $nodename }, $upid_exit],
+    destroymgr => [ 'PVE::API2::Ceph', 'destroymgr', ['id'], { node => $nodename }, $upid_exit],
     start => [ 'PVE::API2::Ceph', 'start', ['service'], { node => $nodename }, $upid_exit],
     stop => [ 'PVE::API2::Ceph', 'stop', ['service'], { node => $nodename }, $upid_exit],
     install => [ __PACKAGE__, 'install', [] ],
