@@ -809,11 +809,63 @@ my $find_node_ip = sub {
     die "unable to find local address within network '$cidr'\n";
 };
 
+my $create_mgr = sub {
+    my ($rados, $id) = @_;
+
+    my $clustername = PVE::CephTools::get_config('ccname');
+    my $mgrdir = "/var/lib/ceph/mgr/$clustername-$id";
+    my $mgrkeyring = "$mgrdir/keyring";
+    my $mgrname = "mgr.$id";
+
+    die "ceph manager directory '$mgrdir' already exists\n"
+	if -d $mgrdir;
+
+    print "creating manager directory '$mgrdir'\n";
+    mkdir $mgrdir;
+    print "creating keys for '$mgrname'\n";
+    my $output = $rados->mon_command({ prefix => 'auth get-or-create',
+				       entity => $mgrname,
+				       caps => [
+					   mon => 'allow profile mgr',
+					   osd => 'allow *',
+					   mds => 'allow *',
+				       ],
+				       format => 'plain'});
+    PVE::Tools::file_set_contents($mgrkeyring, $output);
+
+    print "setting owner for directory\n";
+    run_command(["chown", 'ceph:ceph', '-R', $mgrdir]);
+
+    print "enabling service 'ceph-mgr\@$id.service'\n";
+    PVE::CephTools::ceph_service_cmd('enable', $mgrname);
+    print "starting service 'ceph-mgr\@$id.service'\n";
+    PVE::CephTools::ceph_service_cmd('start', $mgrname);
+};
+
+my $destroy_mgr = sub {
+    my ($mgrid) = @_;
+
+    my $clustername = PVE::CephTools::get_config('ccname');
+    my $mgrname = "mgr.$mgrid";
+    my $mgrdir = "/var/lib/ceph/mgr/$clustername-$mgrid";
+
+    die "ceph manager directory '$mgrdir' not found\n"
+	if ! -d $mgrdir;
+
+    print "disabling service 'ceph-mgr\@$mgrid.service'\n";
+    PVE::CephTools::ceph_service_cmd('disable', $mgrname);
+    print "stopping service 'ceph-mgr\@$mgrid.service'\n";
+    PVE::CephTools::ceph_service_cmd('stop', $mgrname);
+
+    print "removing manager directory '$mgrdir'\n";
+    File::Path::remove_tree($mgrdir);
+};
+
 __PACKAGE__->register_method ({
     name => 'createmon',
     path => 'mon',
     method => 'POST',
-    description => "Create Ceph Monitor",
+    description => "Create Ceph Monitor and Manager",
     proxyto => 'node',
     protected => 1,
     permissions => {
@@ -823,6 +875,18 @@ __PACKAGE__->register_method ({
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
+	    id => {
+		type => 'string',
+		optional => 1,
+		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
+		description => "The ID for the monitor, when omitted the same as the nodename",
+	    },
+	    'exclude-manager' => {
+		type => 'boolean',
+		optional => 1,
+		default => 0,
+		description => "When set, only a monitor will be created.",
+	    },
 	},
     },
     returns => { type => 'string' },
@@ -856,14 +920,7 @@ __PACKAGE__->register_method ({
 	    }
 	}
 
-	my $monid;
-	for (my $i = 0; $i < 7; $i++) {
-	    if (!$cfg->{"mon.$i"}) {
-		$monid = $i;
-		last;
-	    }
-	}
-	die "unable to find usable monitor id\n" if !defined($monid);
+	my $monid = $param->{id} // $param->{node};
 
 	my $monsection = "mon.$monid"; 
 	my $ip;
@@ -909,14 +966,15 @@ __PACKAGE__->register_method ({
 	    -d $mondir && die "monitor filesystem '$mondir' already exist\n";
  
 	    my $monmap = "/tmp/monmap";
-	
+
+	    my $rados = PVE::RADOS->new(timeout => PVE::CephTools::get_config('long_rados_timeout'));
+
 	    eval {
 		mkdir $mondir;
 
 		run_command("chown ceph:ceph $mondir") if $systemd_managed;
 
 		if ($moncount > 0) {
-		    my $rados = PVE::RADOS->new(timeout => PVE::CephTools::get_config('long_rados_timeout'));
 		    my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
 		    PVE::Tools::file_set_contents($monmap, $mapdata);
 		} else {
@@ -947,6 +1005,11 @@ __PACKAGE__->register_method ({
 		eval { PVE::Tools::run_command(['/bin/systemctl', 'enable', "ceph-mon\@${monid}.service"]); };
 		warn "Enable ceph-mon\@${monid}.service manually"if $@;
 	    }
+
+	    # create manager
+	    if (!$param->{'exclude-manager'}) {
+		$create_mgr->($rados, $monid);
+	    }
 	};
 
 	return $rpcenv->fork_worker('cephcreatemon', $monsection, $authuser, $worker);
@@ -956,7 +1019,7 @@ __PACKAGE__->register_method ({
     name => 'destroymon',
     path => 'mon/{monid}',
     method => 'DELETE',
-    description => "Destroy Ceph monitor.",
+    description => "Destroy Ceph Monitor and Manager.",
     proxyto => 'node',
     protected => 1,
     permissions => {
@@ -968,8 +1031,15 @@ __PACKAGE__->register_method ({
 	    node => get_standard_option('pve-node'),
 	    monid => {
 		description => 'Monitor ID',
-		type => 'integer',
+		type => 'string',
+		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
 	    },
+	    'exclude-manager' => {
+		type => 'boolean',
+		default => 0,
+		optional => 1,
+		description => "When set, removes only the monitor, not the manager"
+	    }
 	},
     },
     returns => { type => 'string' },
@@ -1015,6 +1085,12 @@ __PACKAGE__->register_method ({
 	    delete $cfg->{$monsection};
 	    PVE::CephTools::write_ceph_config($cfg);
 	    File::Path::remove_tree($mondir);
+
+	    # remove manager
+	    if (!$param->{'exclude-manager'}) {
+		eval { $destroy_mgr->($monid); };
+		warn $@ if $@;
+	    }
 	};
 
 	return $rpcenv->fork_worker('cephdestroymon', $monsection,  $authuser, $worker);
@@ -1038,7 +1114,7 @@ __PACKAGE__->register_method ({
 		description => 'Ceph service name.',
 		type => 'string',
 		optional => 1,
-		pattern => '(mon|mds|osd)\.[A-Za-z0-9]{1,32}',
+		pattern => '(mon|mds|osd|mgr)\.[A-Za-z0-9]{1,32}',
 	    },
 	},
     },
@@ -1088,7 +1164,7 @@ __PACKAGE__->register_method ({
 		description => 'Ceph service name.',
 		type => 'string',
 		optional => 1,
-		pattern => '(mon|mds|osd)\.[A-Za-z0-9]{1,32}',
+		pattern => '(mon|mds|osd|mgr)\.[A-Za-z0-9]{1,32}',
 	    },
 	},
     },

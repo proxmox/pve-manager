@@ -178,7 +178,7 @@ sub ceph_service_cmd {
 
     if (systemd_managed()) {
 
-	if ($service && $service =~ m/^(mon|osd|mds|radosgw)(\.([A-Za-z0-9]{1,32}))?$/) {
+	if ($service && $service =~ m/^(mon|osd|mds|mgr|radosgw)(\.([A-Za-z0-9\-]{1,32}))?$/) {
 	    $service = defined($3) ? "ceph-$1\@$3" : "ceph-$1.target";
 	} else {
 	    $service = "ceph.target";
