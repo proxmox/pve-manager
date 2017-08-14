@@ -1,3 +1,9 @@
+pve-manager (4.4-17) unstable; urgency=medium
+
+  * ceph: add check for ceph-mgr when destroying monitor
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 14 Aug 2017 14:56:31 +0200
+
 pve-manager (4.4-16) unstable; urgency=medium
 
   * remove old CA entry for enterprise repository, not required anymore
