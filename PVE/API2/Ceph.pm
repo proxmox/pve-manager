@@ -1087,7 +1087,7 @@ __PACKAGE__->register_method ({
 	    File::Path::remove_tree($mondir);
 
 	    # remove manager
-	    if (!$param->{'exclude-manager'}) {
+	    if (!$param->{'exclude-manager'} && PVE::CephTools::check_ceph_mgr_installed(1)) {
 		eval { $destroy_mgr->($monid); };
 		warn $@ if $@;
 	    }
