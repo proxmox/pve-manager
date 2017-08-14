@@ -1007,7 +1007,7 @@ __PACKAGE__->register_method ({
 	    }
 
 	    # create manager
-	    if (!$param->{'exclude-manager'}) {
+	    if (!$param->{'exclude-manager'} && PVE::CephTools::check_ceph_mgr_installed(1)) {
 		$create_mgr->($rados, $monid);
 	    }
 	};
@@ -1122,6 +1122,8 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
+	PVE::CephTools::check_ceph_mgr_installed();
+
 	PVE::CephTools::check_ceph_inited();
 
 	my $rpcenv = PVE::RPCEnvironment::get();
@@ -1169,6 +1171,8 @@ __PACKAGE__->register_method ({
 	my $rpcenv = PVE::RPCEnvironment::get();
 
 	my $authuser = $rpcenv->get_user();
+
+	PVE::CephTools::check_ceph_mgr_installed();
 
 	PVE::CephTools::check_ceph_inited();
 

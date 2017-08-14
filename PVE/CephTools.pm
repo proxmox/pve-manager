@@ -21,6 +21,7 @@ my $ceph_bootstrap_osd_keyring = "/var/lib/ceph/bootstrap-osd/$ccname.keyring";
 my $ceph_bootstrap_mds_keyring = "/var/lib/ceph/bootstrap-mds/$ccname.keyring";
 
 my $ceph_bin = "/usr/bin/ceph";
+my $ceph_mgr_bin = "/usr/bin/ceph-mgr";
 
 my $config_hash = {
     ccname => $ccname,
@@ -64,6 +65,17 @@ sub check_ceph_installed {
 
     if (! -x $ceph_bin) {
 	die "ceph binaries not installed\n" if !$noerr;
+	return undef;
+    }
+
+    return 1;
+}
+
+sub check_ceph_mgr_installed {
+    my ($noerr) = @_;
+
+    if (! -x $ceph_mgr_bin) {
+	die "ceph-mgr binaries not installed\n" if !$noerr;
 	return undef;
     }
 
