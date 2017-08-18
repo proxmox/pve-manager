@@ -94,7 +94,7 @@ Ext.define('PVE.form.NodeSelector', {
     initComponent: function() {
 	var me = this;
 
-        if (me.selectCurNode && PVE.curSelectedNode.data.node) {
+        if (me.selectCurNode && PVE.curSelectedNode && PVE.curSelectedNode.data.node) {
             me.preferredValue = PVE.curSelectedNode.data.node;
         }
 
