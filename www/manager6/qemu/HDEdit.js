@@ -69,6 +69,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
+	var params = {};
 	var confid = me.confid || (values.controller + values.deviceid);
 
 	if (me.unused) {
@@ -103,6 +104,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	if (values.iothread && confid.match(/^(virtio|scsi)\d+$/)) {
 	    me.drive.iothread = 'on';
+	    params.scsihw = 'virtio-scsi-single';
 	} else {
 	    delete me.drive.iothread;
 	}
@@ -112,8 +114,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	} else {
 	    delete me.drive.cache;
 	}
-
-	var params = {};
 
 	params[confid] = PVE.Parser.printQemuDrive(me.drive);
 

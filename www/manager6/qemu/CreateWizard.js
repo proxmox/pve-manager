@@ -164,7 +164,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 			var nodename = kv.nodename;
 			delete kv.nodename;
 
-			if (me.qemuScsiController) {
+			if (me.qemuScsiController && !kv.scsihw) {
 			    kv.scsihw = me.qemuScsiController;
 			}
 
