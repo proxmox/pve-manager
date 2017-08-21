@@ -70,7 +70,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	var me = this;
 
 	var confid = me.confid || (values.controller + values.deviceid);
-	
+
 	if (me.unused) {
 	    me.drive.file = me.vmconfig[values.unusedId];
 	    confid = values.controller + values.deviceid;
@@ -82,7 +82,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    }
 	    me.drive.format = values.diskformat;
 	}
-	
+
 	if (values.nobackup) {
 	    me.drive.backup = 'no';
 	} else {
@@ -114,10 +114,10 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	}
 
 	var params = {};
-		
+
 	params[confid] = PVE.Parser.printQemuDrive(me.drive);
-	
-	return params;	
+
+	return params;
     },
 
     setVMConfig: function(vmconfig) {
@@ -129,7 +129,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.bussel.setVMConfig(vmconfig, true);
 	}
 	if (me.unusedDisks) {
-	    var disklist = [];	    
+	    var disklist = [];
 	    Ext.Object.each(vmconfig, function(key, value) {
 		if (key.match(/^unused\d+$/)) {
 		    disklist.push([key, value]);
@@ -185,7 +185,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	if (me.unused) {
 	    me.unusedDisks = Ext.create('PVE.form.KVComboBox', {
-		name: 'unusedId',	
+		name: 'unusedId',
 		fieldLabel: gettext('Disk image'),
 		matchFieldWidth: false,
 		listConfig: {
@@ -294,8 +294,8 @@ Ext.define('PVE.qemu.HDEdit', {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;
-	if (!nodename) { 
-	    throw "no node name specified";	    
+	if (!nodename) {
+	    throw "no node name specified";
 	}
 
 	var unused = me.confid && me.confid.match(/^unused\d+$/);
