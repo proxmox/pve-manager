@@ -27,8 +27,8 @@ Ext.define('PVE.window.Migrate', {
 			target: values.target
 		    };
 
-		    if (values.online) {
-			params[view.liveMode] = values.online;
+		    if (view.liveMode) {
+			params[view.liveMode] = 1;
 		    }
 
 		    PVE.Utils.API2Request({
@@ -82,13 +82,10 @@ Ext.define('PVE.window.Migrate', {
 		    onlineValidator: true
 		},
 		{
-		    xtype: 'pvecheckbox',
-		    reference: 'onlineToggle',
-		    name: 'online',
-		    uncheckedValue: 0,
-		    defaultValue: 0,
-		    checked: false,
-		    fieldLabel: gettext('Restart Mode')
+		    xtype: 'displayfield',
+		    reference: 'migrationMode',
+		    fieldLabel: gettext('Mode'),
+		    value: gettext('Offline')
 		}
 		]
 	}
@@ -130,14 +127,12 @@ Ext.define('PVE.window.Migrate', {
 	me.liveMode = 'restart';
 
 	if (me.vmtype === 'qemu') {
-	    me.lookup('onlineToggle').setFieldLabel(gettext('Online'));
 	    me.lookup('pveHelpButton').setHelpConfig({
 		onlineHelp: 'qm_migration'
 	    });
 	    title = gettext('Migrate') + (' VM ') + me.vmid;
 	    me.liveMode = 'online';
 	}
-	me.setTitle(title);
 
 	var running = false;
 	var vmrec = PVE.data.ResourceStore.findRecord('vmid', me.vmid,
@@ -145,8 +140,19 @@ Ext.define('PVE.window.Migrate', {
 	if (vmrec && vmrec.data && vmrec.data.running) {
 	    running = true;
 	}
-	me.lookup('onlineToggle').setValue(running);
 
+	if (running) {
+	    var displayField = me.lookup('migrationMode');
+	    if (me.vmtype === 'qemu') {
+		displayField.setValue(gettext('Online'));
+		me.liveMode = 'online';
+	    } else {
+		displayField.setValue(gettext('Restart Mode'));
+		me.liveMode = 'restart';
+	    }
+	}
+
+	me.setTitle(title);
 	me.lookup('pveNodeSelector').disallowedNodes = [me.nodename];
 	me.lookup('formPanel').isValid();
     }
