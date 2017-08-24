@@ -20,7 +20,12 @@ my $pve_ckeyring_path = "/etc/pve/priv/$ccname.client.admin.keyring";
 my $ceph_bootstrap_osd_keyring = "/var/lib/ceph/bootstrap-osd/$ccname.keyring";
 my $ceph_bootstrap_mds_keyring = "/var/lib/ceph/bootstrap-mds/$ccname.keyring";
 
-my $ceph_bin = "/usr/bin/ceph";
+my $ceph_service = {
+    ceph_bin => "/usr/bin/ceph",
+    ceph_mon => "/usr/bin/ceph-mon",
+    ceph_mgr => "/usr/bin/ceph-mgr",
+    ceph_osd => "/usr/bin/ceph-osd"
+};
 
 my $config_hash = {
     ccname => $ccname,
@@ -31,6 +36,23 @@ my $config_hash = {
     ceph_bootstrap_mds_keyring => $ceph_bootstrap_mds_keyring,
     long_rados_timeout => 60,
 };
+
+sub get_local_version {
+    my ($noerr) = @_;
+
+    if (PVE::CephTools::check_ceph_installed('ceph_bin', $noerr)) {
+	my $ceph_version;
+	run_command([$ceph_service->{ceph_bin}, '--version'],
+	            noerr => $noerr,
+	            outfunc => sub { $ceph_version = shift; });
+	if ($ceph_version && $ceph_version =~ /^ceph.*\s((\d+)\.(\d+)\.(\d+))/) {
+	    # return (version, major, minor, patch) : major;
+	    return wantarray ? ($1, $2, $3, $4) : $2;
+	}
+    }
+
+    return undef;
+}
 
 sub get_config {
     my $key = shift;
@@ -60,10 +82,12 @@ sub purge_all_ceph_files {
 }
 
 sub check_ceph_installed {
-    my ($noerr) = @_;
+    my ($service, $noerr) = @_;
 
-    if (! -x $ceph_bin) {
-	die "ceph binaries not installed\n" if !$noerr;
+    $service = 'ceph_bin' if !defined($service);
+
+    if (! -x $ceph_service->{$service}) {
+	die "binary not installed: $ceph_service->{$service}\n" if !$noerr;
 	return undef;
     }
 
@@ -73,7 +97,7 @@ sub check_ceph_installed {
 sub check_ceph_inited {
     my ($noerr) = @_;
 
-    return undef if !check_ceph_installed($noerr);
+    return undef if !check_ceph_installed('ceph_bin', $noerr);
 
     if (! -f $pve_ceph_cfgpath) {
 	die "pveceph configuration not initialized\n" if !$noerr;

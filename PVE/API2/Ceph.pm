@@ -233,6 +233,8 @@ __PACKAGE__->register_method ({
 
 	PVE::CephTools::setup_pve_symlinks();
 
+	PVE::CephTools::check_ceph_installed('ceph_osd');
+
 	my $bluestore = $param->{bluestore} // 0;
 
 	my $journal_dev;
@@ -827,7 +829,13 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	PVE::CephTools::check_ceph_installed();
+	my $version = PVE::CephTools::get_local_version(1);
+
+	if (!$version || $version < 12) {
+	    die "Ceph version luminous or higher is required\n";
+	} else {
+	    PVE::CephTools::check_ceph_installed('ceph_bin');
+	}
 
 	# simply load old config if it already exists
 	my $cfg = PVE::CephTools::parse_ceph_config();
@@ -981,6 +989,11 @@ __PACKAGE__->register_method ({
     returns => { type => 'string' },
     code => sub {
 	my ($param) = @_;
+
+	PVE::CephTools::check_ceph_installed('ceph_mon');
+
+	PVE::CephTools::check_ceph_installed('ceph_mgr')
+	    if (!$param->{'exclude-manager'});
 
 	PVE::CephTools::check_ceph_inited();
 
@@ -1219,6 +1232,8 @@ __PACKAGE__->register_method ({
     returns => { type => 'string' },
     code => sub {
 	my ($param) = @_;
+
+	PVE::CephTools::check_ceph_installed('ceph_mgr');
 
 	PVE::CephTools::check_ceph_inited();
 
