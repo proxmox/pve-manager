@@ -52,6 +52,12 @@ Ext.define('PVE.button.Help', {
 	}
     },
 
+    // helper to set the onlineHelp via a config object
+    setHelpConfig: function(config) {
+	var me = this;
+	me.setOnlineHelp(config.onlineHelp);
+    },
+
     handler: function() {
 	var me = this;
 	var docsURI;
