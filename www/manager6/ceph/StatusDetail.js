@@ -105,7 +105,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	Ext.Object.each(health.checks, function(key, value, obj) {
 	    var found = null;
 	    if (key === 'OSD_DOWN') {
-		found = value.message.match(downinregex);
+		found = value.summary.message.match(downinregex);
 		if (found !== null) {
 		    downin_osds = parseInt(found[1],10);
 		}
@@ -114,13 +114,15 @@ Ext.define('PVE.ceph.StatusDetail', {
 		if (!value.detail) {
 		    return;
 		}
-		found = value.detail[0].match(monnameregex);
+		found = value.detail[0].message.match(monnameregex);
 		if (found !== null) {
 		    if (!monmsgs[found[1]]) {
 			monmsgs[found[1]] = [];
 		    }
 		    monmsgs[found[1]].push({
-			text: value.detail.join("\n"),
+			text: Ext.Array.reduce(value.detail, function(first, second) {
+			    return first + '\n' + second.message;
+			}, ''),
 			severity: value.severity
 		    });
 		}

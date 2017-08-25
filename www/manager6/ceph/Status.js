@@ -178,8 +178,14 @@ Ext.define('PVE.node.CephStatus', {
 	    var details = checks[key].detail || [];
 	    result.push({
 		id: key,
-		summary: checks[key].message,
-		detail: details.join("<br>\n"),
+		summary: checks[key].summary.message,
+		detail: Ext.Array.reduce(
+			    checks[key].detail,
+			    function(first, second) {
+				return first + '\n' + second.message;
+			    },
+			    ''
+			),
 		severity: checks[key].severity
 	    });
 	});
