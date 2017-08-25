@@ -90,7 +90,10 @@ Ext.define('PVE.node.CephStatus', {
 						scrollable: true,
 						padding: '10',
 						xtype: 'box',
-						html: record.data.detail
+						html: [
+						    '<span>' + Ext.htmlEncode(record.data.summary) + '</span>',
+						    '<pre>' + Ext.htmlEncode(record.data.detail) + '</pre>'
+						]
 					    }]
 					});
 					win.show();
