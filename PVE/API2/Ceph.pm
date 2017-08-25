@@ -832,7 +832,7 @@ __PACKAGE__->register_method ({
 	my $version = PVE::CephTools::get_local_version(1);
 
 	if (!$version || $version < 12) {
-	    die "Ceph version luminous or higher is required\n";
+	    die "Ceph Luminous required - please run 'pveceph install'\n";
 	} else {
 	    PVE::CephTools::check_ceph_installed('ceph_bin');
 	}
