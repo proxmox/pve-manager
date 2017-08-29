@@ -99,7 +99,6 @@ Ext.define('PVE.form.ControllerSelector', {
 	    fieldLabel: gettext('Bus/Device'),
 	    layout: 'hbox',
 	    defaults: {
-                flex: 1,
                 hideLabel: true
 	    },
 	    items: [
@@ -110,6 +109,7 @@ Ext.define('PVE.form.ControllerSelector', {
 		    noVirtIO: me.noVirtIO,
 		    noScsi: me.noScsi,
 		    allowBlank: false,
+		    flex: 2,
 		    listeners: {
 			change: function(t, value) {
 			    if (!me.rendered || !value) {
@@ -127,6 +127,7 @@ Ext.define('PVE.form.ControllerSelector', {
 		    minValue: 0,
 		    maxValue: PVE.form.ControllerSelector.maxIds.ide,
 		    value: '0',
+		    flex: 1,
 		    validator: function(value) {
 			/*jslint confusion: true */
 			if (!me.rendered) {
