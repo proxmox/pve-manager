@@ -27,9 +27,12 @@ Ext.define('PVE.lxc.CmdMenu', {
 	    });
 	};
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
 	var running = false;
 	var stopped = true;
 	var suspended = false;
+	var standalone = PVE.data.ResourceStore.getNodes().length < 2;
 
 	switch (me.pveSelNode.data.status) {
 	    case 'running':
@@ -108,10 +111,14 @@ Ext.define('PVE.lxc.CmdMenu', {
 		    });
 		}
 	    },
-	    { xtype: 'menuseparator' },
+	    {
+		xtype: 'menuseparator',
+		hidden: standalone || !caps.vms['VM.Migrate']
+	    },
 	    {
 		text: gettext('Migrate'),
 		iconCls: 'fa fa-fw fa-send-o',
+		hidden: standalone || !caps.vms['VM.Migrate'],
 		handler: function() {
 		    var win = Ext.create('PVE.window.Migrate', {
 			vmtype: 'lxc',

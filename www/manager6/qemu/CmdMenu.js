@@ -33,6 +33,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	var running = false;
 	var stopped = true;
 	var suspended = false;
+	var standalone = PVE.data.ResourceStore.getNodes().length < 2;
 
 	switch (me.pveSelNode.data.status) {
 	    case 'running':
@@ -110,11 +111,14 @@ Ext.define('PVE.qemu.CmdMenu', {
 		    });
 		}
 	    },
-	    { xtype: 'menuseparator' },
+	    {
+		xtype: 'menuseparator',
+		hidden: (standalone || !caps.vms['VM.Migrate']) && !caps.vms['VM.Allocate'] && !caps.vms['VM.Clone']
+	    },
 	    {
 		text: gettext('Migrate'),
 		iconCls: 'fa fa-fw fa-send-o',
-		hidden: caps.vms['VM.Migrate'] ? false : true,
+		hidden: standalone || !caps.vms['VM.Migrate'],
 		handler: function() {
 		    var win = Ext.create('PVE.window.Migrate', {
 			vmtype: 'qemu',
@@ -127,7 +131,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    {
 		text: gettext('Clone'),
 		iconCls: 'fa fa-fw fa-clone',
-		hidden: caps.vms['VM.Clone'] ? false : true,
+		hidden: !caps.vms['VM.Clone'],
 		handler: function() {
 		    PVE.window.Clone.wrap(nodename, vmid, me.isTemplate);
 		}
@@ -135,7 +139,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    {
 		text: gettext('Convert to template'),
 		iconCls: 'fa fa-fw fa-file-o',
-		hidden: caps.vms['VM.Allocate'] ? false : true,
+		hidden: !caps.vms['VM.Allocate'],
 		handler: function() {
 		    var msg = PVE.Utils.format_task_description('qmtemplate', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
