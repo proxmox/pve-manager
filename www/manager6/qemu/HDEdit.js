@@ -104,7 +104,10 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	if (values.iothread && confid.match(/^(virtio|scsi)\d+$/)) {
 	    me.drive.iothread = 'on';
-	    params.scsihw = 'virtio-scsi-single';
+	    // do not silently change a VM-wide option after creating it
+	    if (me.insideWizard) {
+		params.scsihw = 'virtio-scsi-single';
+	    }
 	} else {
 	    delete me.drive.iothread;
 	}
