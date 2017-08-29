@@ -127,7 +127,6 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    layout: 'fit',
 		    items: [
 			{
-			    title: gettext('Settings'),
 			    xtype: 'grid',
 			    store: summarystore,
 			    columns: [

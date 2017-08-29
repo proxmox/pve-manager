@@ -258,7 +258,6 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    layout: 'fit',
 		    items: [
 			{
-			    title: gettext('Settings'),
 			    xtype: 'grid',
 			    store: summarystore,
 			    columns: [
