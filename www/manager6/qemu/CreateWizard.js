@@ -137,14 +137,12 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    ],
 		    listeners: {
 			show: function(panel) {
-			    var form = me.down('form').getForm();
 			    var kv = me.getValues();
 			    var data = [];
 			    Ext.Object.each(kv, function(key, value) {
 				if (key === 'delete') { // ignore
 				    return;
 				}
-				var html = Ext.htmlEncode(Ext.JSON.encode(value));
 				data.push({ key: key, value: value });
 			    });
 			    summarystore.suspendEvents();
