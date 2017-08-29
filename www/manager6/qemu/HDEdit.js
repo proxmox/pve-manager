@@ -251,28 +251,24 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    name: 'cache',
 	    value: '__default__',
 	    fieldLabel: gettext('Cache')
-	});
-
-	me.column2.push({
+	},
+	{
 	    xtype: 'pvecheckbox',
 	    fieldLabel: gettext('No backup'),
 	    name: 'nobackup'
-	});
-
-	me.column2.push({
+	},
+	{
 	    xtype: 'pvecheckbox',
 	    hidden: me.insideWizard,
 	    fieldLabel: gettext('Skip replication'),
 	    name: 'noreplicate'
-	});
-
-	me.column2.push({
+	},
+	{
 	    xtype: 'pvecheckbox',
 	    fieldLabel: gettext('Discard'),
 	    name: 'discard'
-	});
-
-	me.column2.push({
+	},
+	{
 	    xtype: 'pvecheckbox',
 	    disabled: me.insideWizard || (me.confid && !me.confid.match(/^(virtio|scsi)/)),
 	    fieldLabel: gettext('IO thread'),
