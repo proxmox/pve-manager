@@ -17,7 +17,7 @@ Ext.define('PVE.qemu.Config', {
 	    throw "no VM ID specified";
 	}
 
-	var template = me.pveSelNode.data.template;
+	var template = !!me.pveSelNode.data.template;
 
 	var caps = Ext.state.Manager.get('GuiCap');
 
@@ -53,6 +53,7 @@ Ext.define('PVE.qemu.Config', {
 	var startBtn = Ext.create('Ext.Button', {
 	    text: gettext('Start'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
+	    hidden: template,
 	    handler: function() {
 		vm_command('start');
 	    },
@@ -62,6 +63,7 @@ Ext.define('PVE.qemu.Config', {
 	var migrateBtn = Ext.create('Ext.Button', {
 	    text: gettext('Migrate'),
 	    disabled: !caps.vms['VM.Migrate'],
+	    hidden: PVE.data.ResourceStore.getNodes().length < 2,
 	    handler: function() {
 		var win = Ext.create('PVE.window.Migrate', {
 		    vmtype: 'qemu',
@@ -104,6 +106,7 @@ Ext.define('PVE.qemu.Config', {
 	var shutdownBtn = Ext.create('PVE.button.Split', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
+	    hidden: template,
 	    confirmMsg: PVE.Utils.format_task_description('qmshutdown', vmid),
 	    handler: function() {
 		vm_command('shutdown');
@@ -147,6 +150,7 @@ Ext.define('PVE.qemu.Config', {
 
 	var consoleBtn = Ext.create('PVE.button.ConsoleButton', {
 	    disabled: !caps.vms['VM.Console'],
+	    hidden: template,
 	    consoleType: 'kvm',
 	    consoleName: vmname,
 	    nodename: nodename,
@@ -318,6 +322,10 @@ Ext.define('PVE.qemu.Config', {
 
 		spice = s.data.get('spice') ? true : false;
 
+	    }
+
+	    if (template) {
+		return;
 	    }
 
 	    if (qmpstatus === 'prelaunch' || qmpstatus === 'paused' || qmpstatus === 'suspended') {
