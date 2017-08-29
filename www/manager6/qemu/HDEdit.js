@@ -17,7 +17,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	onControllerChange: function(field) {
 	    var value = field.getValue();
-	    this.lookup('iothread').setDisabled(!value.match(/^(virtio|scsi)/));
+
+	    var allowIOthread = value.match(/^(virtio|scsi)/);
+	    this.lookup('iothread').setDisabled(!allowIOthread);
+	    if (!allowIOthread) {
+		this.lookup('iothread').setValue(false);
+	    }
 	},
 
 	control: {
@@ -102,7 +107,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    delete me.drive.discard;
 	}
 
-	if (values.iothread && confid.match(/^(virtio|scsi)\d+$/)) {
+	if (values.iothread) {
 	    me.drive.iothread = 'on';
 	    // do not silently change a VM-wide option after creating it
 	    if (me.insideWizard) {
@@ -273,7 +278,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	},
 	{
 	    xtype: 'pvecheckbox',
-	    disabled: me.insideWizard || (me.confid && !me.confid.match(/^(virtio|scsi)/)),
+	    disabled: me.confid && !me.confid.match(/^(virtio|scsi)/),
 	    fieldLabel: gettext('IO thread'),
 	    reference: 'iothread',
 	    name: 'iothread'
