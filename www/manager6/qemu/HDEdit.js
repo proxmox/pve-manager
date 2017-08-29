@@ -23,6 +23,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    if (!allowIOthread) {
 		this.lookup('iothread').setValue(false);
 	    }
+
+	    var allowDiscard = value.match(/^scsi/);
+	    this.lookup('discard').setDisabled(!allowDiscard);
+	    if (!allowDiscard) {
+		this.lookup('discard').setValue(false);
+	    }
 	},
 
 	control: {
@@ -274,6 +280,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	{
 	    xtype: 'pvecheckbox',
 	    fieldLabel: gettext('Discard'),
+	    disabled: me.confid && !me.confid.match(/^scsi/),
+	    reference: 'discard',
 	    name: 'discard'
 	},
 	{
