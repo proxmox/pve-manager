@@ -1,3 +1,27 @@
+pve-manager (5.0-31) unstable; urgency=medium
+
+  * lxc/qemu: hide migrate in contextmenu when no cluster or no rights
+
+  * lxc: hide migrate button for non cluster setups
+
+  * qemu: hide not usable buttons
+
+  * pveceph: implement checks for ceph version & binaries
+
+  * qemu: improve iothread/discard/controller type handling
+
+  * ceph: adapt to new health output style for luminous
+
+  * ceph: warning window modal
+
+  * ceph: fix gui icons
+
+  * ceph: add application parameter to createpool
+
+  * ceph: make size 3/min 2 default with createpool
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 1 Sep 2017 11:56:45 +0200
+
 pve-manager (5.0-30) unstable; urgency=medium
 
   * ceph: improve bluestore information display
