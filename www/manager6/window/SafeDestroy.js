@@ -13,6 +13,7 @@ Ext.define('PVE.window.SafeDestroy', {
     width: 450,
     layout: { type:'hbox' },
     defaultFocus: 'confirmField',
+    showProgress: false,
 
     config: {
 	item: {
@@ -61,10 +62,31 @@ Ext.define('PVE.window.SafeDestroy', {
 			method: 'DELETE',
 			waitMsgTarget: view,
 			failure: function(response, opts) {
+			    view.close();
 			    Ext.Msg.alert('Error', response.htmlStatus);
 			},
-			callback: function() {
-			    view.close();
+			success: function(response, options) {
+			    var hasProgressBar = view.showProgress &&
+				response.result.data ? true : false;
+
+			    if (hasProgressBar) {
+				// stay around so we can trigger our close events
+				// when background action is completed
+				view.hide();
+
+				var upid = response.result.data;
+				var win = Ext.create('PVE.window.TaskProgress', {
+				    upid: upid,
+				    listeners: {
+					destroy: function () {
+					    view.close();
+					}
+				    }
+				});
+				win.show();
+			    } else {
+				view.close();
+			    }
 			}
 		    });
 		}
