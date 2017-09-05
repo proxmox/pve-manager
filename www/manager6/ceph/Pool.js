@@ -44,6 +44,11 @@ Ext.define('PVE.CephCreatePool', {
 	    minValue: 8,
 	    maxValue: 32768,
 	    allowBlank: false
+	},
+	{
+	    xtype: 'pvecheckbox',
+	    fieldLabel: gettext('Add Storages'),
+	    name: 'add_storages'
 	}
     ],
     initComponent : function() {
