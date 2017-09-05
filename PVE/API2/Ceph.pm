@@ -1597,6 +1597,8 @@ __PACKAGE__->register_method ({
 	die "not fully configured - missing '$pve_ckeyring_path'\n"
 	    if ! -f $pve_ckeyring_path;
 
+	my $pool = $param->{name};
+
 	my $pg_num = $param->{pg_num} || 64;
 	my $size = $param->{size} || 3;
 	my $min_size = $param->{min_size} || 2;
@@ -1605,14 +1607,14 @@ __PACKAGE__->register_method ({
 
 	$rados->mon_command({
 	    prefix => "osd pool create",
-	    pool => $param->{name},
+	    pool => $pool,
 	    pg_num => int($pg_num),
 	    format => 'plain',
 	});
 
 	$rados->mon_command({
 	    prefix => "osd pool set",
-	    pool => $param->{name},
+	    pool => $pool,
 	    var => 'min_size',
 	    val => $min_size,
 	    format => 'plain',
@@ -1620,7 +1622,7 @@ __PACKAGE__->register_method ({
 
 	$rados->mon_command({
 	    prefix => "osd pool set",
-	    pool => $param->{name},
+	    pool => $pool,
 	    var => 'size',
 	    val => $size,
 	    format => 'plain',
@@ -1629,7 +1631,7 @@ __PACKAGE__->register_method ({
 	if (defined($param->{crush_rule})) {
 	    $rados->mon_command({
 		prefix => "osd pool set",
-		pool => $param->{name},
+		pool => $pool,
 		var => 'crush_rule',
 		val => $param->{crush_rule},
 		format => 'plain',
@@ -1638,7 +1640,7 @@ __PACKAGE__->register_method ({
 
 	$rados->mon_command({
 		prefix => "osd pool application enable",
-		pool => $param->{name},
+		pool => $pool,
 		app => $application,
 	});
 
@@ -1797,6 +1799,8 @@ __PACKAGE__->register_method ({
 
 	PVE::CephTools::check_ceph_inited();
 
+	my $pool = $param->{name};
+
 	# if not forced, destroy ceph pool only when no
 	# vm disks are on it anymore
 	if (!$param->{force}) {
@@ -1804,11 +1808,11 @@ __PACKAGE__->register_method ({
 	    foreach my $storageid (keys %{$storagecfg->{ids}}) {
 		my $storage = $storagecfg->{ids}->{$storageid};
 		next if $storage->{type} ne 'rbd';
-		next if $storage->{pool} ne $param->{name};
+		next if $storage->{pool} ne $pool;
 
 		# check if any vm disks are on the pool
 		my $res = PVE::Storage::vdisk_list($storagecfg, $storageid);
-		die "ceph pool '$param->{name}' still in use by storage '$storageid'\n"
+		die "ceph pool '$pool' still in use by storage '$storageid'\n"
 		    if @{$res->{$storageid}} != 0;
 	    }
 	}
@@ -1817,8 +1821,8 @@ __PACKAGE__->register_method ({
 	# fixme: '--yes-i-really-really-mean-it'
 	$rados->mon_command({
 	    prefix => "osd pool delete",
-	    pool => $param->{name},
-	    pool2 => $param->{name},
+	    pool => $pool,
+	    pool2 => $pool,
 	    sure => '--yes-i-really-really-mean-it',
 	    format => 'plain',
         });
