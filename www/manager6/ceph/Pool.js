@@ -178,8 +178,8 @@ Ext.define('PVE.node.CephPoolList', {
 	    }
 	});
 
-	var remove_btn = Ext.create('PVE.button.Button', {
-	    text: gettext('Remove'),
+	var destroy_btn = Ext.create('PVE.button.Button', {
+	    text: gettext('Destroy'),
 	    selModel: sm,
 	    disabled: true,
 	    handler: function() {
@@ -208,7 +208,7 @@ Ext.define('PVE.node.CephPoolList', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    tbar: [ create_btn, remove_btn ],
+	    tbar: [ create_btn, destroy_btn ],
 	    listeners: {
 		activate: rstore.startUpdate,
 		destroy: rstore.stopUpdate
