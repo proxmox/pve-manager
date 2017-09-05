@@ -19,7 +19,16 @@ Ext.define('PVE.window.SafeDestroy', {
 	    id: undefined,
 	    type: undefined
 	},
-	url: undefined
+	url: undefined,
+	params: {}
+    },
+
+    getParams: function() {
+	var me = this;
+	if (Ext.Object.isEmpty(me.params)) {
+	    return '';
+	}
+	return '?' + Ext.Object.toQueryString(me.params);
     },
 
     controller: {
@@ -48,7 +57,7 @@ Ext.define('PVE.window.SafeDestroy', {
 		click: function() {
 		    var view = this.getView();
 		    PVE.Utils.API2Request({
-			url: view.getUrl(),
+			url: view.getUrl() + view.getParams(),
 			method: 'DELETE',
 			waitMsgTarget: view,
 			failure: function(response, opts) {
