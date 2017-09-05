@@ -1846,10 +1846,8 @@ __PACKAGE__->register_method ({
 	# vm disks are on it anymore
 	if (!$param->{force}) {
 	    my $storagecfg = PVE::Storage::config();
-	    foreach my $storageid (keys %{$storagecfg->{ids}}) {
-		my $storage = $storagecfg->{ids}->{$storageid};
-		next if $storage->{type} ne 'rbd';
-		next if $storage->{pool} ne $pool;
+	    foreach my $storageid (keys %$storages) {
+		my $storage = $storages->{$storageid};
 
 		# check if any vm disks are on the pool
 		my $res = PVE::Storage::vdisk_list($storagecfg, $storageid);
