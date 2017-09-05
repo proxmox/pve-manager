@@ -116,7 +116,8 @@ Ext.define('PVE.CephCreateOsd', {
 		{
 		    xtype: 'pvecheckbox',
 		    name: 'bluestore',
-		    fieldLabel: 'Bluestore'
+		    fieldLabel: 'Bluestore',
+		    value: '1'
 		}
             ]
         });
