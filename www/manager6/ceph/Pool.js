@@ -2,6 +2,8 @@ Ext.define('PVE.CephCreatePool', {
     extend: 'PVE.window.Edit',
     alias: 'widget.pveCephCreatePool',
 
+    showProgress: true,
+
     subject: 'Ceph Pool',
     isCreate: true,
     method: 'POST',
@@ -190,6 +192,7 @@ Ext.define('PVE.node.CephPoolList', {
 		    rec.data.pool_name;
 
 		var win = Ext.create('PVE.window.SafeDestroy', {
+		    showProgress: true,
 		    url: base_url,
 		    params: {
 			remove_storages: 1
