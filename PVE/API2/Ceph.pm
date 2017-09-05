@@ -1819,7 +1819,13 @@ __PACKAGE__->register_method ({
 		type => 'boolean',
 		optional => 1,
 		default => 0,
-	    }
+	    },
+	    remove_storages => {
+		description => "Remove all pveceph-managed storages configured for this pool",
+		type => 'boolean',
+		optional => 1,
+		default => 0,
+	    },
 	},
     },
     returns => { type => 'null' },
@@ -1828,7 +1834,13 @@ __PACKAGE__->register_method ({
 
 	PVE::CephTools::check_ceph_inited();
 
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+	$rpcenv->check($user, '/storage', ['Datastore.Allocate'])
+	    if $param->{remove_storages};
+
 	my $pool = $param->{name};
+	my $storages = $get_storages->($pool);
 
 	# if not forced, destroy ceph pool only when no
 	# vm disks are on it anymore
@@ -1855,6 +1867,21 @@ __PACKAGE__->register_method ({
 	    sure => '--yes-i-really-really-mean-it',
 	    format => 'plain',
         });
+
+	if ($param->{remove_storages}) {
+	    my $err;
+	    foreach my $storeid (keys %$storages) {
+		# skip external clusters, not managed by pveceph
+		next if $storages->{$storeid}->{monhost};
+		eval { PVE::API2::Storage::Config->delete({storage => $storeid}) };
+		if ($@) {
+		    warn "failed to remove storage '$storeid': $@\n";
+		    $err = 1;
+		}
+	    }
+	    die "failed to remove (some) storages - check log and remove manually!\n"
+		if $err;
+	}
 
 	return undef;
     }});
