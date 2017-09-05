@@ -714,6 +714,22 @@ my $add_storage = sub {
     PVE::API2::Storage::Config->create($storage_params);
 };
 
+my $get_storages = sub {
+    my ($pool) = @_;
+
+    my $cfg = PVE::Storage::config();
+
+    my $storages = $cfg->{ids};
+    my $res = {};
+    foreach my $storeid (keys %$storages) {
+	my $curr = $storages->{$storeid};
+	$res->{$storeid} = $storages->{$storeid}
+	    if $curr->{type} eq 'rbd' && $pool eq $curr->{pool};
+    }
+
+    return $res;
+};
+
 __PACKAGE__->register_method ({
     name => 'listmon',
     path => 'mon',
