@@ -12,6 +12,7 @@ use PVE::INotify;
 use PVE::Cluster qw(cfs_lock_file cfs_read_file cfs_write_file);
 use PVE::AccessControl;
 use PVE::Storage;
+use PVE::API2::Storage::Config;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
@@ -698,6 +699,20 @@ __PACKAGE__->register_method ({
 	return PVE::Tools::file_get_contents($path);
 
     }});
+
+my $add_storage = sub {
+    my ($pool, $storeid, $krbd) = @_;
+
+    my $storage_params = {
+	type => 'rbd',
+	pool => $pool,
+	storage => $storeid,
+	krbd => $krbd // 0,
+	content => $krbd ? 'rootdir' : 'images',
+    };
+
+    PVE::API2::Storage::Config->create($storage_params);
+};
 
 __PACKAGE__->register_method ({
     name => 'listmon',
