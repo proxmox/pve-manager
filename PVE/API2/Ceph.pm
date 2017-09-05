@@ -243,8 +243,6 @@ __PACKAGE__->register_method ({
 
 	if ($param->{journal_dev} && ($param->{journal_dev} ne $param->{dev})) {
             $journal_dev = PVE::Diskmanage::verify_blockdev_path($param->{journal_dev});
-	    # if only journal is given, also put the wal there
-	    $wal_dev = $journal_dev;
 	}
 
 	if ($param->{wal_dev} &&
