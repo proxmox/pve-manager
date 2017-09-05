@@ -100,7 +100,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	];
 	/*jslint confusion: false*/
 
-	if (me.isCreate || me.storageId !== 'local') {
+	if (me.isCreate) {
 	    me.column2.unshift({
 		xtype: 'pveNodeSelector',
 		name: 'nodes',
