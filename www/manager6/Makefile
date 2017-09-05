@@ -72,6 +72,7 @@ JSSRC= 				                 	\
 	form/VMSelector.js			\
 	form/USBSelector.js				\
 	form/CalendarEvent.js				\
+	form/CephPoolSelector.js				\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
