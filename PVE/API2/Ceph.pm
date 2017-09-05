@@ -1591,7 +1591,7 @@ __PACKAGE__->register_method ({
 	    },
 	},
     },
-    returns => { type => 'null' },
+    returns => { type => 'string' },
     code => sub {
 	my ($param) = @_;
 
@@ -1603,10 +1603,10 @@ __PACKAGE__->register_method ({
 	    if ! -f $pve_ckeyring_path;
 
 	my $pool = $param->{name};
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
 
 	if ($param->{add_storages}) {
-	    my $rpcenv = PVE::RPCEnvironment::get();
-	    my $user = $rpcenv->get_user();
 	    $rpcenv->check($user, '/storage', ['Datastore.Allocate']);
 	    die "pool name contains characters which are illegal for storage naming\n"
 		if !PVE::JSONSchema::parse_storage_id($pool);
@@ -1615,65 +1615,68 @@ __PACKAGE__->register_method ({
 	my $pg_num = $param->{pg_num} || 64;
 	my $size = $param->{size} || 3;
 	my $min_size = $param->{min_size} || 2;
-	my $rados = PVE::RADOS->new();
 	my $application = $param->{application} // 'rbd';
 
-	$rados->mon_command({
-	    prefix => "osd pool create",
-	    pool => $pool,
-	    pg_num => int($pg_num),
-	    format => 'plain',
-	});
+	my $worker = sub {
 
-	$rados->mon_command({
-	    prefix => "osd pool set",
-	    pool => $pool,
-	    var => 'min_size',
-	    val => $min_size,
-	    format => 'plain',
-	});
+	    my $rados = PVE::RADOS->new();
+	    $rados->mon_command({
+		prefix => "osd pool create",
+		pool => $pool,
+		pg_num => int($pg_num),
+		format => 'plain',
+	    });
 
-	$rados->mon_command({
-	    prefix => "osd pool set",
-	    pool => $pool,
-	    var => 'size',
-	    val => $size,
-	    format => 'plain',
-	});
-
-	if (defined($param->{crush_rule})) {
 	    $rados->mon_command({
 		prefix => "osd pool set",
 		pool => $pool,
-		var => 'crush_rule',
-		val => $param->{crush_rule},
+		var => 'min_size',
+		val => $min_size,
 		format => 'plain',
 	    });
-	}
 
-	$rados->mon_command({
-		prefix => "osd pool application enable",
+	    $rados->mon_command({
+		prefix => "osd pool set",
 		pool => $pool,
-		app => $application,
-	});
+		var => 'size',
+		val => $size,
+		format => 'plain',
+	    });
 
-	if ($param->{add_storages}) {
-	    my $err;
-	    eval { $add_storage->($pool, "${pool}_vm", 0); };
-	    if ($@) {
-		warn "failed to add VM storage: $@";
-		$err = 1;
+	    if (defined($param->{crush_rule})) {
+		$rados->mon_command({
+		    prefix => "osd pool set",
+		    pool => $pool,
+		    var => 'crush_rule',
+		    val => $param->{crush_rule},
+		    format => 'plain',
+		});
 	    }
-	    eval { $add_storage->($pool, "${pool}_ct", 1); };
-	    if ($@) {
-		warn "failed to add CT storage: $@";
-		$err = 1;
-	    }
-	    die "adding storages for pool '$pool' failed, check log and add manually!\n"
-		if $err;
-	}
 
-	return undef;
+	    $rados->mon_command({
+		    prefix => "osd pool application enable",
+		    pool => $pool,
+		    app => $application,
+	    });
+
+	    if ($param->{add_storages}) {
+		my $err;
+		eval { $add_storage->($pool, "${pool}_vm", 0); };
+		if ($@) {
+		    warn "failed to add VM storage: $@";
+		    $err = 1;
+		}
+		eval { $add_storage->($pool, "${pool}_ct", 1); };
+		if ($@) {
+		    warn "failed to add CT storage: $@";
+		    $err = 1;
+		}
+		die "adding storages for pool '$pool' failed, check log and add manually!\n"
+		    if $err;
+	    }
+	};
+
+	return $rpcenv->fork_worker('cephcreatepool', $pool,  $user, $worker);
     }});
 
 __PACKAGE__->register_method ({
@@ -1828,7 +1831,7 @@ __PACKAGE__->register_method ({
 	    },
 	},
     },
-    returns => { type => 'null' },
+    returns => { type => 'string' },
     code => sub {
 	my ($param) = @_;
 
@@ -1856,32 +1859,33 @@ __PACKAGE__->register_method ({
 	    }
 	}
 
-	my $rados = PVE::RADOS->new();
-	# fixme: '--yes-i-really-really-mean-it'
-	$rados->mon_command({
-	    prefix => "osd pool delete",
-	    pool => $pool,
-	    pool2 => $pool,
-	    sure => '--yes-i-really-really-mean-it',
-	    format => 'plain',
-        });
+	my $worker = sub {
+	    my $rados = PVE::RADOS->new();
+	    # fixme: '--yes-i-really-really-mean-it'
+	    $rados->mon_command({
+		prefix => "osd pool delete",
+		pool => $pool,
+		pool2 => $pool,
+		sure => '--yes-i-really-really-mean-it',
+		format => 'plain',
+	    });
 
-	if ($param->{remove_storages}) {
-	    my $err;
-	    foreach my $storeid (keys %$storages) {
-		# skip external clusters, not managed by pveceph
-		next if $storages->{$storeid}->{monhost};
-		eval { PVE::API2::Storage::Config->delete({storage => $storeid}) };
-		if ($@) {
-		    warn "failed to remove storage '$storeid': $@\n";
-		    $err = 1;
+	    if ($param->{remove_storages}) {
+		my $err;
+		foreach my $storeid (keys %$storages) {
+		    # skip external clusters, not managed by pveceph
+		    next if $storages->{$storeid}->{monhost};
+		    eval { PVE::API2::Storage::Config->delete({storage => $storeid}) };
+		    if ($@) {
+			warn "failed to remove storage '$storeid': $@\n";
+			$err = 1;
+		    }
 		}
+		die "failed to remove (some) storages - check log and remove manually!\n"
+		    if $err;
 	    }
-	    die "failed to remove (some) storages - check log and remove manually!\n"
-		if $err;
-	}
-
-	return undef;
+	};
+	return $rpcenv->fork_worker('cephdestroypool', $pool,  $user, $worker);
     }});
 
 
