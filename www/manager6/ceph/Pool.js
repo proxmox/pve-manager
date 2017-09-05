@@ -191,6 +191,9 @@ Ext.define('PVE.node.CephPoolList', {
 
 		var win = Ext.create('PVE.window.SafeDestroy', {
 		    url: base_url,
+		    params: {
+			remove_storages: 1
+		    },
 		    item: { type: 'CephPool', id: rec.data.pool_name }
 		}).show();
 		win.on('destroy', function() {
