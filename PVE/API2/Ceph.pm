@@ -1843,23 +1843,25 @@ __PACKAGE__->register_method ({
 	    if $param->{remove_storages};
 
 	my $pool = $param->{name};
-	my $storages = $get_storages->($pool);
-
-	# if not forced, destroy ceph pool only when no
-	# vm disks are on it anymore
-	if (!$param->{force}) {
-	    my $storagecfg = PVE::Storage::config();
-	    foreach my $storageid (keys %$storages) {
-		my $storage = $storages->{$storageid};
-
-		# check if any vm disks are on the pool
-		my $res = PVE::Storage::vdisk_list($storagecfg, $storageid);
-		die "ceph pool '$pool' still in use by storage '$storageid'\n"
-		    if @{$res->{$storageid}} != 0;
-	    }
-	}
 
 	my $worker = sub {
+	    my $storages = $get_storages->($pool);
+
+	    # if not forced, destroy ceph pool only when no
+	    # vm disks are on it anymore
+	    if (!$param->{force}) {
+		my $storagecfg = PVE::Storage::config();
+		foreach my $storeid (keys %$storages) {
+		    my $storage = $storages->{$storeid};
+
+		    # check if any vm disks are on the pool
+		    print "checking storage '$storeid' for RBD images..\n";
+		    my $res = PVE::Storage::vdisk_list($storagecfg, $storeid);
+		    die "ceph pool '$pool' still in use by storage '$storeid'\n"
+			if @{$res->{$storeid}} != 0;
+		}
+	    }
+
 	    my $rados = PVE::RADOS->new();
 	    # fixme: '--yes-i-really-really-mean-it'
 	    $rados->mon_command({
