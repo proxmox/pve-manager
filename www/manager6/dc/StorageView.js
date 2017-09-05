@@ -62,7 +62,8 @@ Ext.define('PVE.dc.StorageView', {
 		return;
 	    }
 	    var win = Ext.create(editor, {
-		storageId: rec.data.storage
+		storageId: rec.data.storage,
+		pveceph: !rec.data.monhost
 	    });
 
 	    win.show();
@@ -161,6 +162,17 @@ Ext.define('PVE.dc.StorageView', {
 				iconCls: 'fa fa-fw fa-building',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.GlusterFsEdit', {});
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+			    {
+				text: PVE.Utils.format_storage_type('pveceph'),
+				iconCls: 'fa fa-fw fa-building',
+				handler: function() {
+				    var win = Ext.create('PVE.storage.RBDEdit', {
+					pveceph: 1
+				    });
 				    win.on('destroy', reload);
 				    win.show();
 				}

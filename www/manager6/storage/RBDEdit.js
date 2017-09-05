@@ -19,6 +19,9 @@ Ext.define('PVE.storage.RBDInputPanel', {
     initComponent : function() {
 	var me = this;
 
+	if (!me.nodename) {
+	    me.nodename = 'localhost';
+	}
 
 	me.column1 = [
 	    {
@@ -28,32 +31,47 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		fieldLabel: 'ID',
 		vtype: 'StorageId',
 		allowBlank: false
-	    },
-	    {
-		xtype: me.isCreate ? 'textfield' : 'displayfield',
-		name: 'pool',
-		value: 'rbd',
-		fieldLabel: gettext('Pool'),
-		allowBlank: false
-	    },
-	    {
-		xtype: me.isCreate ? 'textfield' : 'displayfield',
-		name: 'monhost',
-		vtype: 'HostList',
-		value: '',
-		fieldLabel: 'Monitor(s)',
-		allowBlank: false
-	    },
-	    {
-		xtype: me.isCreate ? 'textfield' : 'displayfield',
-		name: 'username',
-		value: me.isCreate ? 'admin': '',
-		fieldLabel: gettext('User name'),
-		allowBlank: true
 	    }
 	];
 
-	// here value is an array, 
+	if (me.pveceph) {
+	    me.column1.push(
+		{
+		    xtype: me.isCreate ? 'pveCephPoolSelector' : 'displayfield',
+		    nodename: me.nodename,
+		    name: 'pool',
+		    fieldLabel: gettext('Pool'),
+		    allowBlank: false
+		}
+	    );
+	} else {
+	    me.column1.push(
+		{
+		    xtype: me.isCreate ? 'textfield' : 'displayfield',
+		    name: 'pool',
+		    value: 'rbd',
+		    fieldLabel: gettext('Pool'),
+		    allowBlank: false
+		},
+		{
+		    xtype: me.isCreate ? 'textfield' : 'displayfield',
+		    name: 'monhost',
+		    vtype: 'HostList',
+		    value: '',
+		    fieldLabel: 'Monitor(s)',
+		    allowBlank: false
+		},
+		{
+		    xtype: me.isCreate ? 'textfield' : 'displayfield',
+		    name: 'username',
+		    value: me.isCreate ? 'admin': '',
+		    fieldLabel: gettext('User name'),
+		    allowBlank: true
+		}
+	    );
+	}
+
+	// here value is an array,
 	// while before it was a string
 	/*jslint confusion: true*/
 	me.column2 = [
@@ -116,11 +134,13 @@ Ext.define('PVE.storage.RBDEdit', {
 
 	var ipanel = Ext.create('PVE.storage.RBDInputPanel', {
 	    isCreate: me.isCreate,
-	    storageId: me.storageId
+	    storageId: me.storageId,
+	    nodename: me.nodename,
+	    pveceph: me.pveceph
 	});
 
 	Ext.apply(me, {
-            subject: PVE.Utils.format_storage_type('rbd'),
+	    subject: PVE.Utils.format_storage_type(me.pveceph?'pveceph':'rbd'),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});

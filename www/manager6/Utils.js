@@ -775,7 +775,10 @@ Ext.define('PVE.Utils', { utilities: {
 	return Ext.Date.format(date, "Y-m-d");
     },
 
-    format_storage_type: function(value) {
+    format_storage_type: function(value, md, record) {
+	if (value === 'rbd' && record && !record.get('monhost')) {
+	    value = 'pveceph';
+	}
 	if (value === 'dir') {
 	    return PVE.Utils.directoryText;
 	} else if (value === 'nfs') {
@@ -789,7 +792,9 @@ Ext.define('PVE.Utils', { utilities: {
 	} else if (value === 'iscsi') {
 	    return 'iSCSI';
 	} else if (value === 'rbd') {
-	    return 'RBD';
+	    return 'RBD (external)';
+	} else if (value === 'pveceph') {
+	    return 'RBD (PVE)';
 	} else if (value === 'sheepdog') {
 	    return 'Sheepdog';
 	} else if (value === 'zfs') {
