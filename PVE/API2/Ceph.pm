@@ -1583,7 +1583,12 @@ __PACKAGE__->register_method ({
 		type => 'string',
 		enum => ['rbd', 'cephfs', 'rgw'],
 		optional => 1,
-	    }
+	    },
+	    add_storages => {
+		description => "Configure VM and CT storages using the new pool.",
+		type => 'boolean',
+		optional => 1,
+	    },
 	},
     },
     returns => { type => 'null' },
@@ -1598,6 +1603,14 @@ __PACKAGE__->register_method ({
 	    if ! -f $pve_ckeyring_path;
 
 	my $pool = $param->{name};
+
+	if ($param->{add_storages}) {
+	    my $rpcenv = PVE::RPCEnvironment::get();
+	    my $user = $rpcenv->get_user();
+	    $rpcenv->check($user, '/storage', ['Datastore.Allocate']);
+	    die "pool name contains characters which are illegal for storage naming\n"
+		if !PVE::JSONSchema::parse_storage_id($pool);
+	}
 
 	my $pg_num = $param->{pg_num} || 64;
 	my $size = $param->{size} || 3;
@@ -1643,6 +1656,22 @@ __PACKAGE__->register_method ({
 		pool => $pool,
 		app => $application,
 	});
+
+	if ($param->{add_storages}) {
+	    my $err;
+	    eval { $add_storage->($pool, "${pool}_vm", 0); };
+	    if ($@) {
+		warn "failed to add VM storage: $@";
+		$err = 1;
+	    }
+	    eval { $add_storage->($pool, "${pool}_ct", 1); };
+	    if ($@) {
+		warn "failed to add CT storage: $@";
+		$err = 1;
+	    }
+	    die "adding storages for pool '$pool' failed, check log and add manually!\n"
+		if $err;
+	}
 
 	return undef;
     }});
