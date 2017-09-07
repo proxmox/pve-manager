@@ -178,7 +178,7 @@ Ext.define('PVE.dc.StorageView', {
 				}
 			    },
 			    {
-				text: PVE.Utils.format_storage_type('rbd'),
+				text: PVE.Utils.format_storage_type('rbd_ext'),
 				iconCls: 'fa fa-fw fa-building',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.RBDEdit', {});

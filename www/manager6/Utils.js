@@ -776,8 +776,8 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     format_storage_type: function(value, md, record) {
-	if (value === 'rbd' && record && !record.get('monhost')) {
-	    value = 'pveceph';
+	if (value === 'rbd' && record) {
+	    value = (record.get('monhost')?'rbd_ext':'pveceph');
 	}
 	if (value === 'dir') {
 	    return PVE.Utils.directoryText;
@@ -792,6 +792,8 @@ Ext.define('PVE.Utils', { utilities: {
 	} else if (value === 'iscsi') {
 	    return 'iSCSI';
 	} else if (value === 'rbd') {
+	    return 'RBD';
+	} else if (value === 'rbd_ext') {
 	    return 'RBD (external)';
 	} else if (value === 'pveceph') {
 	    return 'RBD (PVE)';
