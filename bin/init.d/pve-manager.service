@@ -23,8 +23,6 @@ ExecStop=-/usr/bin/vzdump -stop
 ExecStop=/usr/bin/pvesh --nooutput create /nodes/localhost/stopall
 Type=oneshot
 RemainAfterExit=yes
-StandardOutput=null
-StandardError=null
 TimeoutSec=infinity
 
 [Install]
