@@ -23,6 +23,7 @@ Type=oneshot
 RemainAfterExit=yes
 StandardOutput=null
 StandardError=null
+TimeoutSec=infinity
 
 [Install]
 WantedBy=multi-user.target
