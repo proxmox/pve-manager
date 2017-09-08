@@ -1,6 +1,8 @@
 [Unit]
 Description=PVE VM Manager
 ConditionPathExists=/usr/bin/pvesh
+RefuseManualStart=true
+RefuseManualStop=true
 Wants=pvestatd.service
 Wants=pveproxy.service
 Wants=spiceproxy.service
