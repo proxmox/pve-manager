@@ -3,7 +3,6 @@ include ../../defines.mk
 all:
 
 SCRIPTS = 		\
-	pve-manager 	\
 	pvedaemon 	\
 	pveproxy 	\
 	spiceproxy 	\
@@ -14,7 +13,7 @@ SERVICES=			\
 	pvebanner.service 	\
 	pvenetcommit.service 	\
 	pvestatd.service 	\
-	pve-manager.service 	\
+	pve-guests.service 	\
 	pvedaemon.service  	\
 	pveproxy.service 	\
 	spiceproxy.service	\

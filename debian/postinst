@@ -52,6 +52,7 @@ case "$1" in
     # remove old/usused init.d files
     rm -f /etc/init.d/pvebanner
     rm -f /etc/init.d/pvenetcommit
+    rm -f /etc/init.d/pve-manager
 
     # create new daily randomize update cronjob if not exist
     MIN="$(shuf -i 0-59 -n 1)"
@@ -110,7 +111,7 @@ EOF
 	fi
     done
 
-    for service in pvedaemon pveproxy spiceproxy pvestatd pvebanner pvenetcommit pve-manager; do
+    for service in pvedaemon pveproxy spiceproxy pvestatd pvebanner pvenetcommit pve-guests; do
 	deb-systemd-helper unmask $service.service >/dev/null || true
 
 	# was-enabled defaults to true, so new installations run enable.

@@ -22,7 +22,7 @@ esac
 # same as dh_systemd_enable (code copied)
 systemctl --system daemon-reload >/dev/null || true
 
-PVESERVICES="pvedaemon pveproxy spiceproxy pvestatd pvebanner pvenetcommit pve-manager"
+PVESERVICES="pvedaemon pveproxy spiceproxy pvestatd pvebanner pvenetcommit pve-guests"
 PVETIMERS="pvesr"
 
 if [ "$1" = "remove" ]; then

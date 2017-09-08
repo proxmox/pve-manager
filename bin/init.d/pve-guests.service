@@ -1,5 +1,5 @@
 [Unit]
-Description=PVE VM Manager
+Description=PVE guests (Service providing start-on-boot and stop-all-on-shutdown)
 ConditionPathExists=/usr/bin/pvesh
 RefuseManualStart=true
 RefuseManualStop=true
@@ -16,7 +16,7 @@ After=lxc.service
 After=pve-ha-crm.service pve-ha-lrm.service
 
 [Service]
-Environment="PVE_LOG_ID=pve-manager"
+Environment="PVE_LOG_ID=pve-guests"
 ExecStart=/usr/bin/pvesh --nooutput create /nodes/localhost/startall
 ExecStop=-/usr/bin/vzdump -stop
 ExecStop=/usr/bin/pvesh --nooutput create /nodes/localhost/stopall
@@ -26,3 +26,4 @@ TimeoutSec=infinity
 
 [Install]
 WantedBy=multi-user.target
+Alias=pve-manager.service
