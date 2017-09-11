@@ -39,6 +39,8 @@ Ext.define('PVE.lxc.CPUEdit', {
 Ext.define('PVE.lxc.MountPointEdit', {
     extend: 'PVE.window.Edit',
 
+    unprivileged: false,
+
     initComponent : function() {
 	var me = this;
 
@@ -55,6 +57,7 @@ Ext.define('PVE.lxc.MountPointEdit', {
 	    confid: me.confid,
 	    nodename: nodename,
 	    unused: unused,
+	    unprivileged: me.unprivileged,
 	    isCreate: me.isCreate
 	});
 
@@ -220,6 +223,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
     onlineHelp: 'pct_container_storage',
 
     unused: false, // ADD usused disk imaged
+
+    unprivileged: false,
 
     vmconfig: {}, // used to select usused disks
 
@@ -406,7 +411,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 			me.quota.setDisabled(true);
 			me.quota.setValue(false);
 		    } else {
-			me.quota.setDisabled(false);
+			me.quota.setDisabled(me.unprivileged);
 		    }
 		    if (me.unused || !me.isCreate) {
 			return;
@@ -502,6 +507,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	me.quota = Ext.createWidget('pvecheckbox', {
 	    name: 'quota',
 	    defaultValue: 0,
+	    disabled: me.unprivileged,
 	    fieldLabel: gettext('Enable quota')
 	});
 

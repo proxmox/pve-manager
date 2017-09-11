@@ -94,6 +94,9 @@ Ext.define('PVE.lxc.RessourceView', {
 		defaultValue: PVE.Utils.noneText,
 		editor: mpeditor,
 		tdCls: 'pve-itype-icon-storage'
+	    },
+	    unprivileged: {
+		visible: false
 	    }
 	};
 
@@ -141,6 +144,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    var win = Ext.create(editor, {
 		pveSelNode: me.pveSelNode,
 		confid: rec.data.key,
+		unprivileged: me.getObjectValue('unprivileged'),
 		url: '/api2/extjs/' + baseurl
 	    });
 
@@ -266,6 +270,7 @@ Ext.define('PVE.lxc.RessourceView', {
 				handler: function() {
 				    var win = Ext.create('PVE.lxc.MountPointEdit', {
 					url: '/api2/extjs/' + baseurl,
+					unprivileged: me.getObjectValue('unprivileged'),
 					pveSelNode: me.pveSelNode
 				    });
 				    win.on('destroy', reload);

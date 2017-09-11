@@ -60,6 +60,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    insideWizard: true,
 	    isCreate: true,
 	    unused: false,
+	    unprivileged: false,
 	    confid: 'rootfs'
 	});
 
@@ -218,6 +219,16 @@ Ext.define('PVE.lxc.CreateWizard', {
 			    xtype: 'pvecheckbox',
 			    name: 'unprivileged',
 			    value: '',
+			    listeners: {
+				change: function(f, value) {
+				    if (value) {
+					rootfspanel.down('field[name=quota]').setValue(false);
+				    }
+				    rootfspanel.unprivileged = value;
+				    var hdsel = rootfspanel.hdstoragesel;
+				    hdsel.fireEvent('change', hdsel, hdsel.getValue());
+				}
+			    },
 			    fieldLabel: gettext('Unprivileged container')
 			}
 		    ],
