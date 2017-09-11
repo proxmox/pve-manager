@@ -148,7 +148,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 		validator: function(value) {
 		    var pw = me.down('field[name=password]').getValue();
 		    if (pw !== value) {
-			return "Passwords does not match!";
+			return "Passwords do not match!";
 		    }
 		    return true;
 		}
@@ -308,8 +308,8 @@ Ext.define('PVE.lxc.CreateWizard', {
 			    params: kv,
 			    success: function(response, opts){
 				var upid = response.result.data;
-		    
-				var win = Ext.create('PVE.window.TaskViewer', { 
+
+				var win = Ext.create('PVE.window.TaskViewer', {
 				    upid: upid
 				});
 				win.show();
