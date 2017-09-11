@@ -1,5 +1,5 @@
 [Unit]
-Description=PVE guests (Service providing start-on-boot and stop-all-on-shutdown)
+Description=PVE guests
 ConditionPathExists=/usr/bin/pvesh
 RefuseManualStart=true
 RefuseManualStop=true
