@@ -1,3 +1,32 @@
+pve-manager (5.0-32) unstable; urgency=medium
+
+  * disable quota checkbox for unprivileged containers
+
+  * rename pve-manager.service to pve-guests.service and refuse manual
+    start/stop, since it's responsible for starting up autostarted guests
+    at boot time and shutting _every_ guest down on shutdown, to avoid
+    confusion about what happens when restarting the "pve manager"
+
+  * show 'RBD' instead of 'RBD (external)' on storage summary
+
+  * make bluestore the default choice when creating osds
+
+  * add new "RBD (PVE)" storage choice
+
+  * ceph: do not automatically use wal if only journal is given
+
+  * rename 'Remove' ceph pool button to 'Destroy'
+
+  * add add storages checkbox to ceph pool creation
+
+  * add remove_storages parameter to the pool destruction
+
+  * ceph/destroypool: optionally remove storages
+
+  * ceph/createpool: optionally add storages
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 12 Sep 2017 13:52:12 +0200
+
 pve-manager (5.0-31) unstable; urgency=medium
 
   * lxc/qemu: hide migrate in contextmenu when no cluster or no rights
