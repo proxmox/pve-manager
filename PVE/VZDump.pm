@@ -4,11 +4,10 @@ use strict;
 use warnings;
 use Fcntl ':flock';
 use PVE::Exception qw(raise_param_exc);
-use PVE::SafeSyslog;
 use IO::File;
 use IO::Select;
 use IPC::Open3;
-use POSIX qw(strftime);
+use POSIX;
 use File::Path;
 use PVE::RPCEnvironment;
 use PVE::Storage;
@@ -18,6 +17,7 @@ use Time::Local;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::HA::Env::PVE2;
 use PVE::HA::Config;
+use PVE::VZDump::Plugin;
 
 my @posix_filesystems = qw(ext3 ext4 nfs nfs4 reiserfs xfs);
 
@@ -198,29 +198,10 @@ foreach my $plug (@pve_vzdump_classes) {
 
 # helper functions
 
-my $debugstattxt = {
-    err =>  'ERROR:',
-    info => 'INFO:',
-    warn => 'WARN:',
-};
-
 sub debugmsg {
     my ($mtype, $msg, $logfd, $syslog) = @_;
 
-    chomp $msg;
-
-    return if !$msg;
-
-    my $pre = $debugstattxt->{$mtype} || $debugstattxt->{'err'};
-
-    my $timestr = strftime ("%F %H:%M:%S", CORE::localtime);
-
-    syslog ($mtype eq 'info' ? 'info' : 'err', "$pre $msg") if $syslog;
-
-    foreach my $line (split (/\n/, $msg)) {
-	print STDERR "$pre $line\n";
-	print $logfd "$timestr $pre $line\n" if $logfd;
-    }
+    PVE::VZDump::Plugin::debugmsg(@_);
 }
 
 sub run_command {
