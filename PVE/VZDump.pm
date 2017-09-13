@@ -727,9 +727,11 @@ sub compressor_info {
 	return ('lzop', 'lzo');
     } elsif ($opt_compress eq 'gzip') {
 	if ($opts->{pigz} > 0) {
-	    # As default use int((#cores + 1)/2), we need #cores+1 for the case that #cores = 1
-	    my $cores = POSIX::sysconf(84);
-	    my $pigz_threads = ($opts->{pigz} > 1) ? $opts->{pigz} : int(($cores + 1)/2);
+	    my $pigz_threads = $opts->{pigz};
+	    if ($pigz_threads == 1) {
+		my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
+		$pigz_threads = int(($cpuinfo->{cpus} + 1)/2);
+	    }
 	    return ("pigz -p ${pigz_threads}", 'gz');
 	} else {
 	    return ('gzip', 'gz');
