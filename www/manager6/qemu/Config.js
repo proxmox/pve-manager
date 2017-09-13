@@ -234,7 +234,7 @@ Ext.define('PVE.qemu.Config', {
 	    });
 	}
 
-	if (caps.vms['VM.Snapshot'] && !template) {
+	if ((caps.vms['VM.Snapshot'] || caps.vms['VM.Snapshot.Rollback']) && !template) {
 	    me.items.push({
 		title: gettext('Snapshots'),
 		iconCls: 'fa fa-history',
