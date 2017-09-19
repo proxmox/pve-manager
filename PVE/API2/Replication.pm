@@ -60,8 +60,6 @@ sub run_single_job {
 
 	die "unable to sync to local node\n" if $jobcfg->{target} eq $local_node;
 
-	$jobcfg->{id} = $jobid;
-
 	my $vmtype = $vms->{ids}->{$vmid}->{type};
 
 	my $guest_class = $lookup_guest_class->($vmtype);
