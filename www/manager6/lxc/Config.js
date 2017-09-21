@@ -109,21 +109,19 @@ Ext.define('PVE.lxc.Config', {
 	    iconCls: 'fa fa-trash-o'
 	});
 
-	var vmname = me.pveSelNode.data.name;
+	var vm = me.pveSelNode.data;
 
 	var consoleBtn = Ext.create('PVE.button.ConsoleButton', {
 	    disabled: !caps.vms['VM.Console'],
 	    consoleType: 'lxc',
-	    consoleName: vmname,
+	    consoleName: vm.name,
 	    nodename: nodename,
 	    vmid: vmid,
 	    iconCls: 'fa fa-terminal'
 	});
 
-	var descr = vmid + " (" + (vmname ? "'" + vmname + "' " : "'CT " + vmid + "'") + ")";
-
 	Ext.apply(me, {
-	    title: Ext.String.format(gettext("Container {0} on node {1}"), descr, "'" + nodename + "'"),
+	    title: Ext.String.format(gettext("Container {0} on node '{1}'"), vm.text, nodename),
 	    hstateid: 'lxctab',
 	    tbar: [ startBtn, shutdownBtn, umountBtn, removeBtn,
 		    migrateBtn, consoleBtn ],

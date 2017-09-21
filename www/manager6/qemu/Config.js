@@ -146,22 +146,20 @@ Ext.define('PVE.qemu.Config', {
 	    iconCls: 'fa fa-trash-o'
 	});
 
-	var vmname = me.pveSelNode.data.name;
+	var vm = me.pveSelNode.data;
 
 	var consoleBtn = Ext.create('PVE.button.ConsoleButton', {
 	    disabled: !caps.vms['VM.Console'],
 	    hidden: template,
 	    consoleType: 'kvm',
-	    consoleName: vmname,
+	    consoleName: vm.name,
 	    nodename: nodename,
 	    vmid: vmid,
 	    iconCls: 'fa fa-terminal'
 	});
 
-	var descr = vmid + " (" + (vmname ? "'" + vmname + "' " : "'VM " + vmid + "'") + ")";
-
 	Ext.apply(me, {
-	    title: Ext.String.format(gettext("Virtual Machine {0} on node {1}"), descr, "'" + nodename + "'"),
+	    title: Ext.String.format(gettext("Virtual Machine {0} on node '{1}'"), vm.text, nodename),
 	    hstateid: 'kvmtab',
 	    tbar: [ resumeBtn, startBtn, shutdownBtn,
 		    removeBtn, migrateBtn, cloneBtn, consoleBtn],
