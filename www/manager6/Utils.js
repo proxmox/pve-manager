@@ -58,16 +58,24 @@ Ext.define('PVE.Utils', { utilities: {
     noSubKeyHtml: 'You do not have a valid subscription for this server. Please visit <a target="_blank" href="http://www.proxmox.com/products/proxmox-ve/subscription-service-plans">www.proxmox.com</a> to get a list of available options.',
 
     kvm_ostypes: {
-	other: gettext('Other OS types'),
-	wxp: 'Microsoft Windows XP/2003',
-	w2k: 'Microsoft Windows 2000',
-	w2k8: 'Microsoft Windows Vista/2008',
-	win7: 'Microsoft Windows 7/2008r2',
-	win8: 'Microsoft Windows 8.x/2012/2012r2',
-	win10: 'Microsoft Windows 10/2016',
-	l24: 'Linux 2.4 Kernel',
-	l26: 'Linux 4.X/3.X/2.6 Kernel',
-	solaris: 'Solaris Kernel'
+	'Linux': [
+	    { desc: '4.X/3.X/2.6 Kernel', val: 'l26' },
+	    { desc: '2.4 Kernel', val: 'l24' }
+	],
+	'Microsoft Windows': [
+	    { desc: '10/2016', val: 'win10' },
+	    { desc: '8.x/2012/2012r2', val: 'win8' },
+	    { desc: '7/2008r2', val: 'win7' },
+	    { desc: 'Vista/2008', val: 'w2k8' },
+	    { desc: 'XP/2003', val: 'wxp' },
+	    { desc: '2000', val: 'w2k' }
+	],
+	'Solaris Kernel': [
+	    { desc: '-', val: 'solaris'}
+	],
+	'Other': [
+	    { desc: '-', val: 'other'}
+	]
     },
 
     get_health_icon: function(state, circle) {
@@ -124,15 +132,27 @@ Ext.define('PVE.Utils', { utilities: {
 	return state;
     },
 
+    get_kvm_osinfo: function(value) {
+	var info = { base: 'Other' }; // default
+	if (value) {
+	    Ext.each(Object.keys(PVE.Utils.kvm_ostypes), function(k) {
+		Ext.each(PVE.Utils.kvm_ostypes[k], function(e) {
+		    if (e.val === value) {
+			info = { desc: e.desc, base: k };
+		    }
+		});
+	    });
+	}
+	return info;
+    },
+
     render_kvm_ostype: function (value) {
-	if (!value) {
-	    return gettext('Other OS types');
+	var osinfo = PVE.Utils.get_kvm_osinfo(value);
+	if (osinfo.desc && osinfo.desc !== '-') {
+	    return osinfo.base + ' ' + osinfo.desc;
+	} else {
+	    return osinfo.base;
 	}
-	var text = PVE.Utils.kvm_ostypes[value];
-	if (text) {
-	    return text;
-	}
-	return value;
     },
 
     render_hotplug_features: function (value) {
