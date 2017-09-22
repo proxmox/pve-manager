@@ -8,25 +8,19 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 	xclass: 'Ext.app.ViewController',
 	control: {
 	    'radiogroup': {
-		    change: function(field, value) {
-			var me = this;
-			if (!me.getView().insideWizard) {
-			    return;
-			}
-
-			var targetValues;
-
-			if (PVE.qemu.OSDefaults[value.ostype]) {
-			    targetValues = PVE.qemu.OSDefaults[value.ostype];
-			} else {
-			    targetValues = PVE.qemu.OSDefaults.generic;
-			}
-
-			me.setWidget('pveBusSelector', targetValues.busType);
-			me.setWidget('pveNetworkCardSelector', targetValues.networkCard);
-			me.setWizardHiddenValue('qemuScsiController', targetValues.scsihw);
-		    }
+		change: 'onOSTypeChange'
 	    }
+	},
+	onOSTypeChange: function(field) {
+	    var me = this, ostype = field.getValue();
+	    if (!me.getView().insideWizard) {
+		return;
+	    }
+	    var targetValues = PVE.qemu.OSDefaults.getDefaults(ostype);
+
+	    me.setWidget('pveBusSelector', targetValues.busType);
+	    me.setWidget('pveNetworkCardSelector', targetValues.networkCard);
+	    me.setWizardHiddenValue('qemuScsiController', targetValues.scsihw);
 	},
 	setWidget: function(widget, newValue) {
 	    // changing a widget is safe only if ComponentQuery.query returns us

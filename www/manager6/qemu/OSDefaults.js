@@ -73,5 +73,13 @@ Ext.define('PVE.qemu.OSDefaults', {
 	    pveOS: 'wxp',
 	    parent : 'w2k'
 	});
+
+	me.getDefaults = function(ostype) {
+	    if (PVE.qemu.OSDefaults[ostype]) {
+		return PVE.qemu.OSDefaults[ostype];
+	    } else {
+		return PVE.qemu.OSDefaults.generic;
+	    }
+	};
     }
 });
