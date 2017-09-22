@@ -106,13 +106,12 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 Ext.define('PVE.qemu.OSTypeEdit', {
     extend: 'PVE.window.Edit',
 
+    subject: 'OS Type',
+
+    items: [{ xtype: 'pveQemuOSTypePanel' }],
+
     initComponent : function() {
 	var me = this;
-
-	Ext.apply(me, {
-	    subject: 'OS Type',
-	    items: [{ xtype: 'pveQemuOSTypePanel' }]
-	});
 
 	me.callParent();
 
