@@ -7,9 +7,16 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
     controller: {
 	xclass: 'Ext.app.ViewController',
 	control: {
-	    'radiogroup': {
+	    'combobox[name=osbase]': {
+		change: 'onOSBaseChange'
+	    },
+	    'combobox[name=ostype]': {
+		afterrender: 'onOSTypeChange',
 		change: 'onOSTypeChange'
 	    }
+	},
+	onOSBaseChange: function(field, value) {
+	    this.lookup('ostype').getStore().setData(PVE.Utils.kvm_ostypes[value]);
 	},
 	onOSTypeChange: function(field) {
 	    var me = this, ostype = field.getValue();
@@ -45,92 +52,55 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
     initComponent : function() {
 	var me = this;
 
-	me.column1 = [
+	/*jslint confusion: true */
+	me.items = [
 	    {
-		xtype: 'component', 
-		html: 'Microsoft Windows', 
-		cls:'x-form-check-group-label'
+		xtype: 'displayfield',
+		value: gettext('Guest OS') + ':',
+		hidden: !me.insideWizard
 	    },
 	    {
-		xtype: 'radiofield',
-		name: 'ostype',
-		inputValue: 'win10'
+		xtype: 'combobox',
+		submitValue: false,
+		name: 'osbase',
+		fieldLabel: gettext('Type'),
+		editable: false,
+		queryMode: 'local',
+		value: 'Linux',
+		store: Object.keys(PVE.Utils.kvm_ostypes)
 	    },
 	    {
-		xtype: 'radiofield',
+		xtype: 'combobox',
 		name: 'ostype',
-		inputValue: 'win8'
-	    },
-	    {
-		xtype: 'radiofield',
-		name: 'ostype',
-		inputValue: 'win7'
-	    },
-	    {
-		xtype: 'radiofield',
-		name: 'ostype',
-		inputValue: 'w2k8'
-	    },
-	    {
-		xtype: 'radiofield',
-		name: 'ostype',
-		inputValue: 'wxp'
-	    },
-	    {
-		xtype: 'radiofield',
-		name: 'ostype',
-		inputValue: 'w2k'
+		reference: 'ostype',
+		fieldLabel: gettext('Version'),
+		value: 'l26',
+		allowBlank : false,
+		editable: false,
+		queryMode: 'local',
+		valueField: 'val',
+		displayField: 'desc',
+		store: {
+		    fields: ['desc', 'val'],
+		    data: PVE.Utils.kvm_ostypes.Linux,
+		    listeners: {
+			datachanged: function (store) {
+			    var ostype = me.lookup('ostype');
+			    var old_val = ostype.getValue();
+			    if (!me.insideWizard && old_val && store.find('val', old_val) != -1) {
+				ostype.setValue(old_val);
+			    } else {
+				ostype.setValue(store.getAt(0));
+			    }
+			}
+		    }
+		}
 	    }
 	];
-
-	me.column2 = [
-	    {
-		xtype: 'component', 
-		html: 'Linux/' + gettext('Other OS types'), 
-		cls:'x-form-check-group-label'
-	    },
-	    {
-		xtype: 'radiofield',
-		name: 'ostype',
-		inputValue: 'l26'
-	    },
-	    {
-		xtype: 'radiofield',
-		name: 'ostype',
-		inputValue: 'l24'
-	    },
-	    {
-		xtype: 'radiofield',
-		name: 'ostype',
-		inputValue: 'solaris'
-	    },
-	    {
-		xtype: 'radiofield',
-		name: 'ostype',
-		inputValue: 'other'
-	    }
-	];
-
-	Ext.Array.each(me.column1, function(def) {
-	    if (def.inputValue) {
-		def.boxLabel = PVE.Utils.render_kvm_ostype(def.inputValue);
-	    }
-	});
-	Ext.Array.each(me.column2, function(def) {
-	    if (def.inputValue) {
-		def.boxLabel = PVE.Utils.render_kvm_ostype(def.inputValue);
-	    }
-	});
-
-	Ext.apply(me, {
-	    useFieldContainer: {
-		xtype: 'radiogroup',
-		allowBlank: false
-	    }
-	});
+	/*jslint confusion: false */
 
 	me.callParent();
-    }   
+    }
 });
 
 Ext.define('PVE.qemu.OSTypeEdit', {
@@ -138,10 +108,10 @@ Ext.define('PVE.qemu.OSTypeEdit', {
 
     initComponent : function() {
 	var me = this;
-	
+
 	Ext.apply(me, {
 	    subject: 'OS Type',
-	    items: Ext.create('PVE.qemu.OSTypeInputPanel')
+	    items: [{ xtype: 'pveQemuOSTypePanel' }]
 	});
 
 	me.callParent();
@@ -149,7 +119,8 @@ Ext.define('PVE.qemu.OSTypeEdit', {
 	me.load({
 	    success: function(response, options) {
 		var value = response.result.data.ostype || 'other';
-		me.setValues({ ostype: value});
+		var osinfo = PVE.Utils.get_kvm_osinfo(value);
+		me.setValues({ ostype: value, osbase: osinfo.base });
 	    }
 	});
     }
