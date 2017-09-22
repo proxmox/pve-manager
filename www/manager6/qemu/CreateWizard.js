@@ -86,19 +86,25 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    }
 		},
 		{
-		    xtype: 'pveQemuCDInputPanel',
-		    reference: 'cdpanel',
-		    title: gettext('CD/DVD'),
-		    confid: 'ide2',
-		    fieldDefaults: {
-			labelWidth: 160
+		    xtype: 'container',
+		    layout: 'hbox',
+		    defaults: {
+			flex: 1,
+			padding: '0 10'
 		    },
-		    insideWizard: true
-		},
-		{
 		    title: gettext('OS'),
-		    xtype: 'pveQemuOSTypePanel',
-		    insideWizard: true
+		    items: [
+			{
+			    xtype: 'pveQemuCDInputPanel',
+			    reference: 'cdpanel',
+			    confid: 'ide2',
+			    insideWizard: true
+			},
+			{
+			    xtype: 'pveQemuOSTypePanel',
+			    insideWizard: true
+			}
+		    ]
 		},
 		{
 		    xtype: 'pveQemuHDInputPanel',

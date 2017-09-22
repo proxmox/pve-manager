@@ -135,11 +135,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	    boxLabel: gettext('Do not use any media')
 	});
 
-	if (me.insideWizard) {
-	    me.column1 = items;
-	} else {
-	    me.items = items;
-	}
+	me.items = items;
 
 	me.callParent();
     }
