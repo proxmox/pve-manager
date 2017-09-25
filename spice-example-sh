@@ -59,7 +59,7 @@ fi
 
 NODE="${NODE%%\.*}"
 
-DATA="$(curl -f -s -S -k -d "username=$USERNAME&password=$PASSWORD" "https://$PROXY:8006/api2/json/access/ticket")"
+DATA="$(curl -f -s -S -k --data-urlencode "username=$USERNAME" --data-urlencode "password=$PASSWORD" "https://$PROXY:8006/api2/json/access/ticket")"
 
 echo "AUTH OK"
 
