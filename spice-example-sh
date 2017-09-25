@@ -66,10 +66,12 @@ echo "AUTH OK"
 TICKET="${DATA//\"/}"
 TICKET="${TICKET##*ticket:}"
 TICKET="${TICKET%%,*}"
+TICKET="${TICKET%%\}*}"
 
 CSRF="${DATA//\"/}"
 CSRF="${CSRF##*CSRFPreventionToken:}"
 CSRF="${CSRF%%,*}"
+CSRF="${CSRF%%\}*}"
 
 curl -f -s -S -k -b "PVEAuthCookie=$TICKET" -H "CSRFPreventionToken: $CSRF" "https://$PROXY:8006/api2/spiceconfig/nodes/$NODE/qemu/$VMID/spiceproxy" -d "proxy=$PROXY" > spiceproxy
 
