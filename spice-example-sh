@@ -22,10 +22,10 @@ USERNAME=""
 while getopts ":u:p:" o; do
     case "${o}" in
         u)
-            USERNAME=${OPTARG}
+            USERNAME="${OPTARG}"
             ;;
         p)
-            PASSWORD=${OPTARG}
+            PASSWORD="${OPTARG}"
             ;;
         *)
             usage
@@ -35,42 +35,42 @@ done
 
 shift $((OPTIND-1))
 
-if [ -z $PASSWORD ]; then
+if [[ -z "$PASSWORD" ]]; then
     PASSWORD=""
 fi
-if [ -z $USERNAME ]; then
-    USERNAME=root@pam
+if [[ -z "$USERNAME" ]]; then
+    USERNAME='root@pam'
 fi
 
-DEFAULTHOST=$(hostname -f)
+DEFAULTHOST="$(hostname -f)"
 
 # select VM
-[ -z $1 ] && usage
-VMID=$1
+[[ -z "$1" ]] && usage
+VMID="$1"
 
-#[ -z $2 ] && usage
-NODE=${2:-$DEFAULTHOST}
+#[[ -z "$2" ]] && usage
+NODE="${2:-$DEFAULTHOST}"
 
-if [ -z $3 ]; then
-    PROXY=$NODE
+if [[ -z "$3" ]]; then
+    PROXY="$NODE"
 else
-    PROXY=$3
+    PROXY="$3"
 fi
 
-NODE=${NODE%%\.*}
+NODE="${NODE%%\.*}"
 
-DATA=$(curl -f -s -S -k -d "username=$USERNAME&password=$PASSWORD"  https://$PROXY:8006/api2/json/access/ticket)
+DATA="$(curl -f -s -S -k -d "username=$USERNAME&password=$PASSWORD" "https://$PROXY:8006/api2/json/access/ticket")"
 
 echo "AUTH OK"
 
-TICKET=${DATA//\"/}
-TICKET=${TICKET##*ticket:}
-TICKET=${TICKET%%,*}
+TICKET="${DATA//\"/}"
+TICKET="${TICKET##*ticket:}"
+TICKET="${TICKET%%,*}"
 
-CSRF=${DATA//\"/}
-CSRF=${CSRF##*CSRFPreventionToken:}
-CSRF=${CSRF%%,*}
+CSRF="${DATA//\"/}"
+CSRF="${CSRF##*CSRFPreventionToken:}"
+CSRF="${CSRF%%,*}"
 
-curl -f -s -S -k -b "PVEAuthCookie=$TICKET" -H "CSRFPreventionToken: $CSRF" https://$PROXY:8006/api2/spiceconfig/nodes/$NODE/qemu/$VMID/spiceproxy -d "proxy=$PROXY" > spiceproxy
+curl -f -s -S -k -b "PVEAuthCookie=$TICKET" -H "CSRFPreventionToken: $CSRF" "https://$PROXY:8006/api2/spiceconfig/nodes/$NODE/qemu/$VMID/spiceproxy" -d "proxy=$PROXY" > spiceproxy
 
-remote-viewer spiceproxy
+exec remote-viewer spiceproxy
