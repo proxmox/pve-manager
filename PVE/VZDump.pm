@@ -7,7 +7,6 @@ use PVE::Exception qw(raise_param_exc);
 use IO::File;
 use IO::Select;
 use IPC::Open3;
-use POSIX;
 use File::Path;
 use PVE::RPCEnvironment;
 use PVE::Storage;
