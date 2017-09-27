@@ -25,7 +25,9 @@ Ext.define('PVE.node.Subscription', {
 
     onlineHelp: 'getting_help',
 
-    features: [ {ftype: 'selectable'}],
+    viewConfig: {
+	enableTextSelection: true
+    },
 
     showReport: function() {
 	var me = this;
