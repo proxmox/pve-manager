@@ -205,6 +205,80 @@ Ext.define('PVE.form.ComboBox', {
     }
 });
 
+// when refreshing the view of a grid/tree
+// the restoring of the focus brings the
+// focused item back in the view, even when we scrolled away
+Ext.define(null, {
+    override: 'Ext.view.Table',
+
+    jumpToFocus: false,
+
+    saveFocusState: function() {
+        var me = this,
+            store = me.dataSource,
+            actionableMode = me.actionableMode,
+            navModel = me.getNavigationModel(),
+            focusPosition = actionableMode ? me.actionPosition : navModel.getPosition(true),
+            refocusRow, refocusCol;
+
+        if (focusPosition) {
+            // Separate this from the instance that the nav model is using.
+            focusPosition = focusPosition.clone();
+
+            // Exit actionable mode.
+            // We must inform any Actionables that they must relinquish control.
+            // Tabbability must be reset.
+            if (actionableMode) {
+                me.ownerGrid.setActionableMode(false);
+            }
+
+            // Blur the focused descendant, but do not trigger focusLeave.
+            me.el.dom.focus();
+
+            // Exiting actionable mode navigates to the owning cell, so in either focus mode we must
+            // clear the navigation position
+            navModel.setPosition();
+
+            // The following function will attempt to refocus back in the same mode to the same cell
+            // as it was at before based upon the previous record (if it's still inthe store), or the row index.
+            return function() {
+                // If we still have data, attempt to refocus in the same mode.
+                if (store.getCount()) {
+
+                    // Adjust expectations of where we are able to refocus according to what kind of destruction
+                    // might have been wrought on this view's DOM during focus save.
+                    refocusRow = Math.min(focusPosition.rowIdx, me.all.getCount() - 1);
+                    refocusCol = Math.min(focusPosition.colIdx, me.getVisibleColumnManager().getColumns().length - 1);
+                    focusPosition = new Ext.grid.CellContext(me).setPosition(
+                            store.contains(focusPosition.record) ? focusPosition.record : refocusRow, refocusCol);
+
+                    if (actionableMode) {
+                        me.ownerGrid.setActionableMode(true, focusPosition);
+                    } else {
+                        me.cellFocused = true;
+
+			// we sometimes want to scroll back to where we were
+			var x = me.getScrollX();
+			var y = me.getScrollY();
+
+                        // Pass "preventNavigation" as true so that that does not cause selection.
+                        navModel.setPosition(focusPosition, null, null, null, true);
+
+			if (!me.jumpToFocus) {
+			    me.scrollTo(x,y);
+			}
+                    }
+                }
+                // No rows - focus associated column header
+                else {
+                    focusPosition.column.focus();
+                }
+            };
+        }
+        return Ext.emptyFn;
+    }
+});
+
 // should be fixed with ExtJS 6.0.2, see:
 // https://www.sencha.com/forum/showthread.php?307244-Bug-with-datefield-in-window-with-scroll
 Ext.define('PVE.Datepicker', {
