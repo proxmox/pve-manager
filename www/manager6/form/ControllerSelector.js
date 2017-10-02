@@ -58,11 +58,14 @@ Ext.define('PVE.form.ControllerSelector', {
 	me.vmconfig = Ext.apply({}, vmconfig);
 
 	var clist = ['ide', 'virtio', 'scsi', 'sata'];
+	var bussel = me.down('field[name=controller]');
+	var deviceid = me.down('field[name=deviceid]');
+
 	if (autoSelect === 'cdrom') {
 	    clist = ['ide', 'scsi', 'sata'];
 	    if (!Ext.isDefined(me.vmconfig.ide2)) {
-		me.down('field[name=controller]').setValue('ide');
-		me.down('field[name=deviceid]').setValue(2);
+		bussel.setValue('ide');
+		deviceid.setValue(2);
 		return;
 	    }
 	} else  {
@@ -76,16 +79,16 @@ Ext.define('PVE.form.ControllerSelector', {
 	    if (controller === 'virtio' && me.noVirtIO) {
 		return; //continue
 	    }
-	    me.down('field[name=controller]').setValue(controller);
+	    bussel.setValue(controller);
 	    for (i = 0; i <= PVE.form.ControllerSelector.maxIds[controller]; i++) {
 		confid = controller + i.toString();
 		if (!Ext.isDefined(me.vmconfig[confid])) {
-		    me.down('field[name=deviceid]').setValue(i);
+		    deviceid.setValue(i);
 		    return false; // break
 		}
 	    }
 	});
-	me.down('field[name=deviceid]').validate();
+	deviceid.validate();
     },
 
     initComponent: function() {
