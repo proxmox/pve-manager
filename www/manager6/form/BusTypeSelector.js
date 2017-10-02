@@ -4,8 +4,6 @@ Ext.define('PVE.form.BusTypeSelector', {
   
     noVirtIO: false,
 
-    noScsi: false,
-
     initComponent: function() {
 	var me = this;
 
@@ -15,9 +13,7 @@ Ext.define('PVE.form.BusTypeSelector', {
 	    me.comboItems.push(['virtio', 'VirtIO']);
 	}
 
-	if (!me.noScsi) {
-	    me.comboItems.push(['scsi', 'SCSI']);
-	}
+	me.comboItems.push(['scsi', 'SCSI']);
 
 	me.callParent();
     }

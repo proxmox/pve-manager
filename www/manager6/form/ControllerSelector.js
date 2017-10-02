@@ -13,8 +13,6 @@ Ext.define('PVE.form.ControllerSelector', {
 
     noVirtIO: false,
 
-    noScsi: false,
-
     vmconfig: {}, // used to check for existing devices
 
     sortByPreviousUsage: function(vmconfig, controllerList) {
@@ -75,8 +73,7 @@ Ext.define('PVE.form.ControllerSelector', {
 
 	Ext.Array.each(clist, function(controller) {
 	    var confid, i;
-	    if ((controller === 'virtio' && me.noVirtIO) ||
-		    (controller === 'scsi' && me.noScsi)) {
+	    if (controller === 'virtio' && me.noVirtIO) {
 		return; //continue
 	    }
 	    me.down('field[name=controller]').setValue(controller);
@@ -106,7 +103,6 @@ Ext.define('PVE.form.ControllerSelector', {
 		    name: 'controller',
 		    value: PVE.qemu.OSDefaults.generic.busType,
 		    noVirtIO: me.noVirtIO,
-		    noScsi: me.noScsi,
 		    allowBlank: false,
 		    flex: 2,
 		    listeners: {
