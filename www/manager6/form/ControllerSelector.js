@@ -76,9 +76,6 @@ Ext.define('PVE.form.ControllerSelector', {
 
 	Ext.Array.each(clist, function(controller) {
 	    var confid, i;
-	    if (controller === 'virtio' && me.noVirtIO) {
-		return; //continue
-	    }
 	    bussel.setValue(controller);
 	    for (i = 0; i <= PVE.form.ControllerSelector.maxIds[controller]; i++) {
 		confid = controller + i.toString();
