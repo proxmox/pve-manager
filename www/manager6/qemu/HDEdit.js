@@ -140,7 +140,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	me.vmconfig = vmconfig;
 
 	if (me.bussel) {
-	    me.bussel.setVMConfig(vmconfig, true);
+	    me.bussel.setVMConfig(vmconfig);
 	}
 	if (me.unusedDisks) {
 	    var disklist = [];

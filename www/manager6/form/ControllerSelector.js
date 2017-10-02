@@ -58,37 +58,36 @@ Ext.define('PVE.form.ControllerSelector', {
 	var me = this;
 
 	me.vmconfig = Ext.apply({}, vmconfig);
-	if (autoSelect) {
-	    var clist = ['ide', 'virtio', 'scsi', 'sata'];
-	    if (autoSelect === 'cdrom') {
-		clist = ['ide', 'scsi', 'sata'];
-		if (!Ext.isDefined(me.vmconfig.ide2)) {
-		    me.down('field[name=controller]').setValue('ide');
-		    me.down('field[name=deviceid]').setValue(2);
-		    return;
-		}
-	    } else  {
-		// in most cases we want to add a disk to the same controller
-		// we previously used
-		clist = me.sortByPreviousUsage(me.vmconfig, clist);
-	    }
 
-	    Ext.Array.each(clist, function(controller) {
-		var confid, i;
-		if ((controller === 'virtio' && me.noVirtIO) ||
-		    (controller === 'scsi' && me.noScsi)) {
-		    return; //continue
-		}
-		me.down('field[name=controller]').setValue(controller);
-		for (i = 0; i <= PVE.form.ControllerSelector.maxIds[controller]; i++) {
-		    confid = controller + i.toString();
-		    if (!Ext.isDefined(me.vmconfig[confid])) {
-			me.down('field[name=deviceid]').setValue(i);
-			return false; // break
-		    }
-		}
-	    });
+	var clist = ['ide', 'virtio', 'scsi', 'sata'];
+	if (autoSelect === 'cdrom') {
+	    clist = ['ide', 'scsi', 'sata'];
+	    if (!Ext.isDefined(me.vmconfig.ide2)) {
+		me.down('field[name=controller]').setValue('ide');
+		me.down('field[name=deviceid]').setValue(2);
+		return;
+	    }
+	} else  {
+	    // in most cases we want to add a disk to the same controller
+	    // we previously used
+	    clist = me.sortByPreviousUsage(me.vmconfig, clist);
 	}
+
+	Ext.Array.each(clist, function(controller) {
+	    var confid, i;
+	    if ((controller === 'virtio' && me.noVirtIO) ||
+		    (controller === 'scsi' && me.noScsi)) {
+		return; //continue
+	    }
+	    me.down('field[name=controller]').setValue(controller);
+	    for (i = 0; i <= PVE.form.ControllerSelector.maxIds[controller]; i++) {
+		confid = controller + i.toString();
+		if (!Ext.isDefined(me.vmconfig[confid])) {
+		    me.down('field[name=deviceid]').setValue(i);
+		    return false; // break
+		}
+	    }
+	});
 	me.down('field[name=deviceid]').validate();
     },
 
