@@ -286,6 +286,33 @@ Ext.define('PVE.Datepicker', {
     hideMode: 'visibility'
 });
 
+// this should be fixed with ExtJS 6.0.2
+// this makes mousescrolling work in firefox in the overflowhandler
+// and does not change behaviour in any other browser
+Ext.define(null, {
+    override: 'Ext.layout.container.boxOverflow.Scroller',
+
+    createWheelListener: function() {
+	var me = this;
+	if (Ext.isFirefox) {
+	    me.wheelListener = me.layout.innerCt.on('wheel', me.onMouseWheelFirefox, me, {destroyable: true});
+	} else {
+	    me.wheelListener = me.layout.innerCt.on('mousewheel', me.onMouseWheel, me, {destroyable: true});
+	}
+    },
+
+    // special wheel handler for firefox
+    // nearly the same as the default onMouseWheel handler,
+    // but using deltaY instead of wheelDeltaY
+    // and no normalizing, because it is already normalized
+    onMouseWheelFirefox: function(e) {
+	e.stopEvent();
+	var delta = e.browserEvent.deltaY || 0;
+	this.scrollBy(delta * this.wheelIncrement, false);
+    }
+
+});
+
 // force alert boxes to be rendered with an Error Icon
 // since Ext.Msg is an object and not a prototype, we need to override it
 // after the framework has been initiated
