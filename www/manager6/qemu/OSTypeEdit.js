@@ -27,7 +27,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 
 	    me.setWidget('pveBusSelector', targetValues.busType);
 	    me.setWidget('pveNetworkCardSelector', targetValues.networkCard);
-	    me.setWizardHiddenValue('qemuScsiController', targetValues.scsihw);
+	    me.setWidget('field[name=scsihw]', targetValues.scsihw);
 	},
 	setWidget: function(widget, newValue) {
 	    // changing a widget is safe only if ComponentQuery.query returns us
@@ -37,14 +37,6 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 		widgets[0].setValue(newValue);
 	    } else {
 		throw 'non unique widget :' + widget + ' in Wizard';
-	    }
-	},
-	setWizardHiddenValue: function(property, newValue) {
-	    var wizards = Ext.ComponentQuery.query('pveQemuCreateWizard ');
-	    if (wizards.length === 1) {
-		wizards[0][property] = newValue;
-	    } else {
-		throw 'non unique wizard, unable to set ' + property;
 	    }
 	}
     },
