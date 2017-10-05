@@ -45,6 +45,10 @@ Ext.define('PVE.noVncConsole', {
 	});
 
 	me.callParent();
+
+	me.on('afterrender', function() {
+	    me.focus();
+	});
     }
 });
 
