@@ -74,6 +74,15 @@ Ext.define('PVE.qemu.HDInputPanel', {
 			me.hdsizesel.setVisible(true);
 		    }
 		}
+	    },
+	    'field[name=iothread]' : {
+		change: function(f, value) {
+		    if (!this.getView().insideWizard) {
+			return;
+		    }
+		    var vmScsiType = value ? 'virtio-scsi-single': 'virtio-scsi-pci';
+		    this.lookupReference('scsiController').setValue(vmScsiType);
+		}
 	    }
 	}
     },
@@ -116,10 +125,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	if (values.iothread) {
 	    me.drive.iothread = 'on';
-	    // do not silently change a VM-wide option after creating it
-	    if (me.insideWizard) {
-		params.scsihw = 'virtio-scsi-single';
-	    }
 	} else {
 	    delete me.drive.iothread;
 	}
@@ -128,6 +133,10 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.drive.cache = values.cache;
 	} else {
 	    delete me.drive.cache;
+	}
+
+	if (values.scsihw) {
+	    params.scsihw = values.scsihw;
 	}
 
 	params[confid] = PVE.Parser.printQemuDrive(me.drive);
@@ -197,10 +206,14 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		vmconfig: me.insideWizard ? {ide2: 'cdrom'} : {}
 	    });
 	    me.column1.push(me.bussel);
+
 	    me.scsiController = Ext.create('Ext.form.field.Display', {
+		name: 'scsihw',
 		fieldLabel: gettext('SCSI Controller'),
 		reference: 'scsiController',
 		renderer: PVE.Utils.render_scsihw,
+		// do not change a VM wide option after creation
+		submitValue: me.insideWizard,
 		hidden: true
 	    });
 	    me.column1.push(me.scsiController);
