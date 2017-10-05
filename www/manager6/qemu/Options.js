@@ -175,7 +175,7 @@ Ext.define('PVE.qemu.Options', {
 		} : undefined
 	    },
 	    scsihw: {
-		header: gettext('SCSI Controller Type'),
+		header: gettext('SCSI Controller'),
 		editor: caps.vms['VM.Config.Options'] ? 'PVE.qemu.ScsiHwEdit' : undefined,
 		renderer: PVE.Utils.render_scsihw,
 		defaultValue: ''

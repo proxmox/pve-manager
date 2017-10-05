@@ -24,11 +24,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		this.lookup('iothread').setValue(false);
 	    }
 
-	    var allowDiscard = value.match(/^scsi/);
-	    this.lookup('discard').setDisabled(!allowDiscard);
-	    if (!allowDiscard) {
+	    var scsi = value.match(/^scsi/);
+	    this.lookup('discard').setDisabled(!scsi);
+	    if (!scsi) {
 		this.lookup('discard').setValue(false);
 	    }
+	    this.lookup('scsiController').setVisible(scsi);
 	},
 
 	control: {
@@ -141,6 +142,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	if (me.bussel) {
 	    me.bussel.setVMConfig(vmconfig);
+	    me.scsiController.setValue(vmconfig.scsihw);
 	}
 	if (me.unusedDisks) {
 	    var disklist = [];
@@ -195,6 +197,13 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		vmconfig: me.insideWizard ? {ide2: 'cdrom'} : {}
 	    });
 	    me.column1.push(me.bussel);
+	    me.scsiController = Ext.create('Ext.form.field.Display', {
+		fieldLabel: gettext('SCSI Controller'),
+		reference: 'scsiController',
+		renderer: PVE.Utils.render_scsihw,
+		hidden: true
+	    });
+	    me.column1.push(me.scsiController);
 	}
 
 	if (me.unused) {
