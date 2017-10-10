@@ -1,3 +1,27 @@
+pve-manager (5.0-33) unstable; urgency=medium
+
+  * ceph: disable OSD unit in destroyosd
+
+  * ceph: correctly parse 'pg dump' output
+
+  * fix #1516: fix mouse-scrolling of overflowhandlers in firefox
+
+  * imvprove spice-example-sh
+
+  * fix #1510: do not scroll back to focus when view gets refreshed
+
+  * PVE/API2/Subscription.pm - use new PVE::Subcription class
+
+  * improve VM creation wizard
+
+  * VM.Snapshot.Rollback privilege added
+
+  * vzdump/pigz: use ProcFSTools for core count, not sysconf
+
+  * Turn the offline/online checkbox of the Migrate Windows into a displayfield
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 10 Oct 2017 14:16:12 +0200
+
 pve-manager (5.0-32) unstable; urgency=medium
 
   * disable quota checkbox for unprivileged containers
