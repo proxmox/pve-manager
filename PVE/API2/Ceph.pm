@@ -123,7 +123,7 @@ __PACKAGE__->register_method ({
 		$new->{total_space} = ($stat->{kb} || 1) * 1024;
 		$new->{bytes_used} = ($stat->{kb_used} || 0) * 1024;
 		$new->{percent_used} = ($new->{bytes_used}*100)/$new->{total_space};
-		if (my $d = $stat->{fs_perf_stat}) {
+		if (my $d = $stat->{perf_stat}) {
 		    $new->{commit_latency_ms} = $d->{commit_latency_ms};
 		    $new->{apply_latency_ms} = $d->{apply_latency_ms};
 		}
