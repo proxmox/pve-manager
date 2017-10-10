@@ -379,7 +379,10 @@ __PACKAGE__->register_method ({
 
 	    print "destroy OSD $osdsection\n";
 
-	    eval { PVE::CephTools::ceph_service_cmd('stop', $osdsection); };
+	    eval {
+		PVE::CephTools::ceph_service_cmd('stop', $osdsection);
+		PVE::CephTools::ceph_service_cmd('disable', $osdsection);
+	    };
 	    warn $@ if $@;
 
 	    print "Remove $osdsection from the CRUSH map\n";
