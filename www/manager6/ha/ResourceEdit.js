@@ -65,15 +65,33 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    }
 	});
 
-	// value is a string above, but a number below
 	/*jslint confusion: true */
+	var vmidStore = (me.vmid) ? {} : {
+	    model: 'PVEResources',
+	    autoLoad: true,
+	    sorters: 'vmid',
+	    filters: [
+		{
+		    property: 'type',
+		    value: /lxc|qemu/
+		},
+		{
+		    property: 'hastate',
+		    value: /unmanaged/
+		}
+	    ]
+	};
+
+	// value is a string above, but a number below
 	me.column1 = [
 	    {
-		xtype: me.vmid ? 'displayfield' : 'pveGuestIDSelector',
+		xtype: me.vmid ? 'displayfield' : 'vmComboSelector',
+		submitValue: me.isCreate,
 		name: 'vmid',
 		fieldLabel: (me.vmid && me.guestType === 'ct') ? 'CT' : 'VM',
 		value: me.vmid,
 		loadNextGuestID: false,
+		store: vmidStore,
 		validateExists: true
 	    },
 	    {
