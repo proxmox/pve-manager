@@ -25,7 +25,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	var MIN_QUORUM_VOTES = 3;
 
 	var disabledHint = Ext.createWidget({
-	    xtype: 'displayfield', //submitValue is false, so we don't get submitted
+	    xtype: 'displayfield', // won't get submitted by default
 	    userCls: 'pve-hint',
 	    value: 'Disabling the resource will stop the guest system. ' +
 	    'See the online help for details.',
@@ -36,11 +36,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    itemId: 'fewVotesHint',
 	    xtype: 'displayfield',
 	    userCls: 'pve-hint',
-	    updateValue: function(votes) {
-		var me = this;
-		me.setValue('You need at least three quorum votes for a reliable HA cluster. ' +
-		'See the online help for details. Current votes: ' + votes);
-	    },
+	    value: 'At least three quorum votes are recommended for reliable HA.',
 	    hidden: true
 	});
 
@@ -59,7 +55,6 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		});
 
 		if (votes < MIN_QUORUM_VOTES) {
-		    fewVotesHint.updateValue(votes);
 		    fewVotesHint.setVisible(true);
 		}
 	    }
