@@ -12,6 +12,13 @@ Ext.define('PVE.data.UpdateStore', {
 
     isStopped: true,
 
+    destroy: function() {
+	var me = this;
+	me.load_task.cancel();
+	PVE.data.UpdateQueue.unqueue(me);
+	me.callParent();
+    },
+
     constructor: function(config) {
 	var me = this;
 
@@ -56,9 +63,6 @@ Ext.define('PVE.data.UpdateStore', {
 
 	me.callParent([config]);
 
-	me.on('destroy', function() {
-	    load_task.cancel();
-	    PVE.data.UpdateQueue.unqueue(me);
-	});
+	me.load_task = load_task;
     }
 });
