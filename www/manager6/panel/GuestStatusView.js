@@ -24,7 +24,7 @@ Ext.define('PVE.panel.GuestStatusView', {
 	},
 	{
 	    itemId: 'hamanaged',
-	    title: gettext('Managed by HA'),
+	    title: gettext('HA State'),
 	    printBar: false,
 	    textField: 'ha',
 	    renderer: PVE.Utils.format_ha

@@ -852,11 +852,10 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     format_ha: function(value) {
-	var text = PVE.Utils.format_boolean(value.managed);
+	var text = PVE.Utils.noneText;
 
 	if (value.managed) {
-	    text += ', ' + PVE.Utils.stateText + ': ';
-	    text += value.state || PVE.Utils.noneText;
+	    text = value.state || PVE.Utils.noneText;
 
 	    text += ', ' +  PVE.Utils.groupText + ': ';
 	    text += value.group || PVE.Utils.noneText;
