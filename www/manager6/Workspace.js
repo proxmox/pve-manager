@@ -296,7 +296,7 @@ Ext.define('PVE.StdWorkspace', {
 				'<img style="padding-top:4px;padding-right:5px" src="/pve2/images/proxmox_logo.png"/></a>'
 			},
 			{
-			    minWidth: 200,
+			    minWidth: 150,
 			    id: 'versioninfo',
 			    html: 'Virtual Environment'
 			},
