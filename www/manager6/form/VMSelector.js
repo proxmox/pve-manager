@@ -173,6 +173,7 @@ Ext.define('PVE.form.VMSelector', {
 	if (me.nodename) {
 	    me.store.filters.add({
 		property: 'node',
+		exactMatch: true,
 		value: me.nodename
 	    });
 	}
