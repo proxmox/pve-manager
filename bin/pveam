@@ -5,4 +5,4 @@ use warnings;
 
 use PVE::CLI::pveam;
 
-PVE::CLI::pveam->run_cli();
+PVE::CLI::pveam->run_cli_handler();
