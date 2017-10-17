@@ -49,15 +49,6 @@ Ext.define('PVE.lxc.Config', {
 	    iconCls: 'fa fa-play'
 	});
 
-	var umountBtn = Ext.create('Ext.Button', {
-	    text: gettext('Unmount'),
-	    disabled: true,
-	    hidden: true,
-	    handler: function() {
-		vm_command('umount');
-	    }
-	});
-
 	var stopBtn = Ext.create('Ext.menu.Item',{
 	    text: gettext('Stop'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
@@ -123,8 +114,7 @@ Ext.define('PVE.lxc.Config', {
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Container {0} on node '{1}'"), vm.text, nodename),
 	    hstateid: 'lxctab',
-	    tbar: [ startBtn, shutdownBtn, umountBtn, removeBtn,
-		    migrateBtn, consoleBtn ],
+	    tbar: [ startBtn, shutdownBtn, removeBtn, migrateBtn, consoleBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
@@ -284,16 +274,6 @@ Ext.define('PVE.lxc.Config', {
 	    stopBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'stopped');
 	    removeBtn.setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
 	    consoleBtn.setDisabled(template);
-
-	    if (status === 'mounted') {
-		umountBtn.setDisabled(false);
-		umountBtn.setVisible(true);
-		stopBtn.setDisabled(true);
-	    } else {
-		umountBtn.setDisabled(true);
-		umountBtn.setVisible(false);
-		stopBtn.setDisabled(false);
-	    }
 	});
 
 	me.on('afterrender', function() {
