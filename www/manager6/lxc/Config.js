@@ -88,16 +88,35 @@ Ext.define('PVE.lxc.Config', {
 	    iconCls: 'fa fa-send-o'
 	});
 
-	var removeBtn = Ext.create('PVE.button.Button', {
-	    text: gettext('Remove'),
-	    disabled: !caps.vms['VM.Allocate'],
-	    handler: function() {
-		Ext.create('PVE.window.SafeDestroy', {
-		    url: base_url,
-		    item: { type: 'CT', id: vmid }
-		}).show();
-	    },
-	    iconCls: 'fa fa-trash-o'
+	var moreBtn = Ext.create('PVE.button.Button', {
+	    text: gettext('More'),
+	    menu: { items: [
+		{
+		    iconCls: 'fa fa-heartbeat ',
+		    hidden: !caps.nodes['Sys.Console'],
+		    text: gettext('Manage HA'),
+		    handler: function() {
+			var ha = me.pveSelNode.data.hastate;
+			Ext.create('PVE.ha.VMResourceEdit', {
+			    vmid: vmid,
+			    guestType: 'ct',
+			    isCreate: (!ha || ha === 'unmanaged')
+			}).show();
+		    }
+		},
+		{
+		    text: gettext('Remove'),
+		    disabled: !caps.vms['VM.Allocate'],
+		    itemId: 'removeBtn',
+		    handler: function() {
+			Ext.create('PVE.window.SafeDestroy', {
+			    url: base_url,
+			    item: { type: 'CT', id: vmid }
+			}).show();
+		    },
+		    iconCls: 'fa fa-trash-o'
+		}
+	    ]}
 	});
 
 	var vm = me.pveSelNode.data;
@@ -114,7 +133,7 @@ Ext.define('PVE.lxc.Config', {
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Container {0} on node '{1}'"), vm.text, nodename),
 	    hstateid: 'lxctab',
-	    tbar: [ startBtn, shutdownBtn, removeBtn, migrateBtn, consoleBtn ],
+	    tbar: [ startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
@@ -272,7 +291,7 @@ Ext.define('PVE.lxc.Config', {
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
 	    stopBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'stopped');
-	    removeBtn.setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
+	    me.down('#removeBtn').setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
 	    consoleBtn.setDisabled(template);
 	});
 
