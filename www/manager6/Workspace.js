@@ -326,9 +326,10 @@ Ext.define('PVE.StdWorkspace', {
 			    xtype: 'pveHelpButton',
 			    hidden: false,
 			    baseCls: 'x-btn',
-			    iconCls: 'fa fa-info-circle x-btn-icon-el-default-toolbar-small ',
+			    iconCls: 'fa fa-book x-btn-icon-el-default-toolbar-small ',
 			    listenToGlobalEvent: false,
 			    onlineHelp: 'pve_documentation_index',
+			    text: gettext('Documentation'),
 			    margin: '0 5 0 0'
 			},
 			createVM, 
