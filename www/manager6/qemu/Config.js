@@ -75,17 +75,21 @@ Ext.define('PVE.qemu.Config', {
 	    iconCls: 'fa fa-send-o'
 	});
 
-	var cloneBtn = Ext.create('PVE.button.Split', {
-	    text: gettext('Clone'),
-	    iconCls: 'fa fa-fw fa-clone',
-	    hidden: caps.vms['VM.Clone'] ? false : true,
-	    handler: function() {
-		PVE.window.Clone.wrap(nodename, vmid, template);
-	    },
-	    menu: {
-		items: [{
+	var moreBtn = Ext.create('PVE.button.Button', {
+	    text: gettext('More'),
+	    menu: { items: [
+		{
+		    text: gettext('Clone'),
+		    iconCls: 'fa fa-fw fa-clone',
+		    hidden: caps.vms['VM.Clone'] ? false : true,
+		    handler: function() {
+			PVE.window.Clone.wrap(nodename, vmid, template);
+		    }
+		},
+		{
 		    text: gettext('Convert to template'),
 		    disabled: template,
+		    xtype: 'pveMenuItem',
 		    iconCls: 'fa fa-fw fa-file-o',
 		    hidden: caps.vms['VM.Allocate'] ? false : true,
 		    confirmMsg: PVE.Utils.format_task_description('qmtemplate', vmid),
@@ -99,8 +103,20 @@ Ext.define('PVE.qemu.Config', {
 			    }
 			});
 		    }
-		}]
-	    }
+		},
+		{
+		    text: gettext('Remove'),
+		    itemId: 'removeBtn',
+		    disabled: !caps.vms['VM.Allocate'],
+		    handler: function() {
+			Ext.create('PVE.window.SafeDestroy', {
+			    url: base_url,
+			    item: { type: 'VM', id: vmid }
+			}).show();
+		    },
+		    iconCls: 'fa fa-trash-o'
+		}
+	    ]}
 	});
 
 	var shutdownBtn = Ext.create('PVE.button.Split', {
@@ -134,18 +150,6 @@ Ext.define('PVE.qemu.Config', {
 	    iconCls: 'fa fa-power-off'
 	});
 
-	var removeBtn = Ext.create('PVE.button.Button', {
-	    text: gettext('Remove'),
-	    disabled: !caps.vms['VM.Allocate'],
-	    handler: function() {
-		Ext.create('PVE.window.SafeDestroy', {
-		    url: base_url,
-		    item: { type: 'VM', id: vmid }
-		}).show();
-	    },
-	    iconCls: 'fa fa-trash-o'
-	});
-
 	var vm = me.pveSelNode.data;
 
 	var consoleBtn = Ext.create('PVE.button.ConsoleButton', {
@@ -161,8 +165,7 @@ Ext.define('PVE.qemu.Config', {
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Virtual Machine {0} on node '{1}'"), vm.text, nodename),
 	    hstateid: 'kvmtab',
-	    tbar: [ resumeBtn, startBtn, shutdownBtn,
-		    removeBtn, migrateBtn, cloneBtn, consoleBtn],
+	    tbar: [ resumeBtn, startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
@@ -338,7 +341,7 @@ Ext.define('PVE.qemu.Config', {
 
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
-	    removeBtn.setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
+	    me.down('#removeBtn').setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
 	    consoleBtn.setDisabled(template);
 	});
 
