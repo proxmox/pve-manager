@@ -105,6 +105,18 @@ Ext.define('PVE.qemu.Config', {
 		    }
 		},
 		{
+		    iconCls: 'fa fa-heartbeat ',
+		    hidden: !caps.nodes['Sys.Console'],
+		    text: gettext('Manage HA'),
+		    handler: function() {
+			var ha = me.pveSelNode.data.hastate;
+			Ext.create('PVE.ha.VMResourceEdit', {
+			    vmid: vmid,
+			    isCreate: (!ha || ha === 'unmanaged')
+			}).show();
+		    }
+		},
+		{
 		    text: gettext('Remove'),
 		    itemId: 'removeBtn',
 		    disabled: !caps.vms['VM.Allocate'],

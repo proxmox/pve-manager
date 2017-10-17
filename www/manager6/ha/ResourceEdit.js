@@ -6,11 +6,9 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	if (me.isCreate) {
+	if (values.vmid) {
 	    values.sid = values.vmid;
 	}
-	
-
 	delete values.vmid;
 
 	PVE.Utils.delete_if_default(values, 'group', '', me.isCreate);
@@ -161,11 +159,14 @@ Ext.define('PVE.ha.VMResourceEdit', {
 
     vmid: undefined,
     guestType: undefined,
+    isCreate: undefined,
 
     initComponent : function() {
 	var me = this;
  
-	me.isCreate = !me.vmid;
+	if (me.isCreate === undefined) {
+	    me.isCreate = !me.vmid;
+	}
 
 	if (me.isCreate) {
             me.url = '/api2/extjs/cluster/ha/resources';
