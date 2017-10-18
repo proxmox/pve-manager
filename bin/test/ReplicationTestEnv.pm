@@ -231,7 +231,8 @@ sub setup {
 	get_ssh_info => $mocked_get_ssh_info,
 	ssh_info_to_command => $mocked_ssh_info_to_command,
 	get_vmlist => sub { return $mocked_vmlist->(); },
-	get_members => $mocked_get_members);
+	get_members => $mocked_get_members,
+	cfs_update => sub {});
     $pve_inotify_module->mock('nodename' => sub { return $mocked_nodename; });
 };
 
