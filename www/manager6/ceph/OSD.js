@@ -81,6 +81,8 @@ Ext.define('PVE.CephCreateOsd', {
 
     showProgress: true,
 
+    onlineHelp: 'pve_ceph_osds',
+
     initComponent : function() {
         var me = this;
 

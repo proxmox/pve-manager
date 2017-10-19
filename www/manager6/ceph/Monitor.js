@@ -3,6 +3,7 @@ Ext.define('PVE.CephCreateMon', {
     alias: ['widget.pveCephCreateMon'],
 
     subject: 'Ceph Monitor/Manager',
+    onlineHelp: 'pve_ceph_monitors',
 
     showProgress: true,
 

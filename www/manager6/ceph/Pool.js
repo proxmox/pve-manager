@@ -3,6 +3,7 @@ Ext.define('PVE.CephCreatePool', {
     alias: 'widget.pveCephCreatePool',
 
     showProgress: true,
+    onlineHelp: 'pve_ceph_pools',
 
     subject: 'Ceph Pool',
     isCreate: true,
