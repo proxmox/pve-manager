@@ -30,6 +30,11 @@ Ext.define('PVE.window.Edit', {
 
     showProgress: false,
 
+    // assign a reference from pve-docs, to add a help button docked to the
+    // bottom of the window. If undefined we magically fall back to the
+    // onlineHelp of our first item, if set.
+    onlineHelp: undefined,
+
     isValid: function() {
 	var me = this;
 
@@ -272,10 +277,11 @@ Ext.define('PVE.window.Edit', {
 		me.buttons = [ submitBtn, resetBtn ];
 	}
 
-	if (items[0].onlineHelp) {
+	var onlineHelp = me.onlineHelp || items[0].onlineHelp;
+	if (onlineHelp) {
 	    var helpButton = Ext.create('PVE.button.Help');
 	    me.buttons.unshift(helpButton, '->');
-	    Ext.GlobalEvents.fireEvent('pveShowHelp', items[0].onlineHelp);
+	    Ext.GlobalEvents.fireEvent('pveShowHelp', onlineHelp);
 	}
 
 	Ext.applyIf(me, {
