@@ -1,24 +1,29 @@
-pve-manager (5.0-33) unstable; urgency=medium
+pve-manager (5.0-34) unstable; urgency=medium
 
-  * ceph: disable OSD unit in destroyosd
+  * fix #1531: fix vm list in bulk actions when a cluster node's name is a
+    prefix of another node's name
 
-  * ceph: correctly parse 'pg dump' output
+  * ceph: bluestore is now the default in the api and command line interfaces
 
-  * fix #1516: fix mouse-scrolling of overflowhandlers in firefox
+  * Add a field to show which SCSI controller type we are currently using
 
-  * imvprove spice-example-sh
+  * Render full name of VirtIO Block controller
 
-  * fix #1510: do not scroll back to focus when view gets refreshed
+  * Update VM SCSI controller type after OS selection in Wizard
 
-  * PVE/API2/Subscription.pm - use new PVE::Subcription class
+  * Update VM SCSI type based on iothread value when inside the wizard
 
-  * improve VM creation wizard
+  * Collect less frequently used guest system buttons under a 'More' button
 
-  * VM.Snapshot.Rollback privilege added
+  * Rename global 'Help' button to 'Documentation'
 
-  * vzdump/pigz: use ProcFSTools for core count, not sysconf
+  * Add some help buttons to ceph UI
 
-  * Turn the offline/online checkbox of the Migrate Windows into a displayfield
+  * Use a comobo selector when adding guests to HA instead of a number field
+
+  * Simplify HA state display
+
+  * Various input focus improvements with the inline novnc console
 
  -- Proxmox Support Team <support@proxmox.com>  Tue, 10 Oct 2017 14:16:12 +0200
 
