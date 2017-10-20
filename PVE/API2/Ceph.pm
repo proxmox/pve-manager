@@ -212,9 +212,9 @@ __PACKAGE__->register_method ({
 		optional => 1,
 	    },
 	    bluestore => {
-		description => "Use bluestore instead of filestore.",
+		description => "Use bluestore instead of filestore. This is the default.",
 		type => 'boolean',
-		default => 0,
+		default => 1,
 		optional => 1,
 	    },
 	},
@@ -236,7 +236,7 @@ __PACKAGE__->register_method ({
 
 	PVE::CephTools::check_ceph_installed('ceph_osd');
 
-	my $bluestore = $param->{bluestore} // 0;
+	my $bluestore = $param->{bluestore} // 1;
 
 	my $journal_dev;
 	my $wal_dev;
