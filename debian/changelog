@@ -1,3 +1,9 @@
+pve-manager (5.1-35) unstable; urgency=medium
+
+  * bump for 5.1 release
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 23 Oct 2017 09:18:30 +0200
+
 pve-manager (5.0-34) unstable; urgency=medium
 
   * fix #1531: fix vm list in bulk actions when a cluster node's name is a
