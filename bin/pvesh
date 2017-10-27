@@ -10,6 +10,7 @@ use File::Basename;
 use Getopt::Long;
 use HTTP::Status qw(:constants :is status_message);
 use Text::ParseWords;
+use String::ShellQuote;
 use PVE::JSONSchema;
 use PVE::SafeSyslog;
 use PVE::Cluster;
@@ -257,8 +258,9 @@ sub check_proxyto {
 sub proxy_handler {
     my ($node, $remip, $dir, $cmd, $args) = @_;
 
+    my $cmdargs = [String::ShellQuote::shell_quote(@$args)];
     my $remcmd = ['ssh', '-o', 'BatchMode=yes', "root\@$remip", 
-	       'pvesh', '--noproxy', $cmd, $dir, @$args];
+	       'pvesh', '--noproxy', $cmd, $dir, @$cmdargs];
 
     system(@$remcmd) == 0 || die "proxy handler failed\n";
 }
