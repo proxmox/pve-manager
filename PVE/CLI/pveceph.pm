@@ -159,9 +159,12 @@ our $cmddef = {
     lspools => [ 'PVE::API2::Ceph', 'lspools', [], { node => $nodename }, sub {
 	my $res = shift;
 
-	printf("%-20s %10s %10s %20s\n", "Name", "size", "pg_num", "used");
+	printf("%-20s %10s %10s %10s %10s %20s\n", "Name", "size", "min_size",
+		"pg_num", "%-used", "used");
 	foreach my $p (sort {$a->{pool_name} cmp $b->{pool_name}} @$res) {
-	    printf("%-20s %10d %10d %20d\n", $p->{pool_name}, $p->{size}, $p->{pg_num}, $p->{bytes_used});
+	    printf("%-20s %10d %10d %10d %10.2f %20d\n", $p->{pool_name},
+		    $p->{size}, $p->{min_size}, $p->{pg_num},
+		    $p->{percent_used}, $p->{bytes_used});
 	}
     }],
     createpool => [ 'PVE::API2::Ceph', 'createpool', ['name'], { node => $nodename }],
