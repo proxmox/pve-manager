@@ -19,6 +19,8 @@ Ext.define('PVE.lxc.Config', {
 
 	var template = me.pveSelNode.data.template;
 
+	var running = !!me.pveSelNode.data.uptime;
+
 	var caps = Ext.state.Manager.get('GuiCap');
 
 	var base_url = '/nodes/' + nodename + '/lxc/' + vmid;
@@ -42,7 +44,7 @@ Ext.define('PVE.lxc.Config', {
 
 	var startBtn = Ext.create('Ext.Button', {
 	    text: gettext('Start'),
-	    disabled: !caps.vms['VM.PowerMgmt'],
+	    disabled: !caps.vms['VM.PowerMgmt'] || running,
 	    handler: function() {
 		vm_command('start');
 	    },
@@ -62,7 +64,7 @@ Ext.define('PVE.lxc.Config', {
 
 	var shutdownBtn = Ext.create('PVE.button.Split', {
 	    text: gettext('Shutdown'),
-	    disabled: !caps.vms['VM.PowerMgmt'],
+	    disabled: !caps.vms['VM.PowerMgmt'] || !running,
 	    confirmMsg: PVE.Utils.format_task_description('vzshutdown', vmid),
 	    handler: function() {
 		vm_command('shutdown');

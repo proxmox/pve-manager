@@ -19,6 +19,8 @@ Ext.define('PVE.qemu.Config', {
 
 	var template = !!me.pveSelNode.data.template;
 
+	var running = !!me.pveSelNode.data.uptime;
+
 	var caps = Ext.state.Manager.get('GuiCap');
 
 	var base_url = '/nodes/' + nodename + "/qemu/" + vmid;
@@ -52,7 +54,7 @@ Ext.define('PVE.qemu.Config', {
 
 	var startBtn = Ext.create('Ext.Button', {
 	    text: gettext('Start'),
-	    disabled: !caps.vms['VM.PowerMgmt'],
+	    disabled: !caps.vms['VM.PowerMgmt'] || running,
 	    hidden: template,
 	    handler: function() {
 		vm_command('start');
@@ -133,7 +135,7 @@ Ext.define('PVE.qemu.Config', {
 
 	var shutdownBtn = Ext.create('PVE.button.Split', {
 	    text: gettext('Shutdown'),
-	    disabled: !caps.vms['VM.PowerMgmt'],
+	    disabled: !caps.vms['VM.PowerMgmt'] || !running,
 	    hidden: template,
 	    confirmMsg: PVE.Utils.format_task_description('qmshutdown', vmid),
 	    handler: function() {
