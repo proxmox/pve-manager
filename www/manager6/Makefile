@@ -10,6 +10,7 @@ JSSRC= 				                 	\
 	button/ConsoleButton.js				\
 	button/Split.js					\
 	button/HelpButton.js				\
+	controller/StorageEdit.js			\
 	qemu/SendKeyMenu.js				\
 	qemu/CmdMenu.js					\
 	qemu/TemplateMenu.js				\
