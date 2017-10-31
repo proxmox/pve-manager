@@ -1,5 +1,6 @@
 Ext.define('PVE.storage.DirInputPanel', {
     extend: 'PVE.panel.InputPanel',
+    controller: 'storageEdit',
 
     onGetValues: function(values) {
 	var me = this;
@@ -63,7 +64,9 @@ Ext.define('PVE.storage.DirInputPanel', {
 	    {
 		xtype: 'pveIntegerField',
 		fieldLabel: gettext('Max Backups'),
+		disabled: true,
 		name: 'maxfiles',
+		reference: 'maxfiles',
 		minValue: 0,
 		maxValue: 365,
 		value: me.isCreate ? '1' : undefined,

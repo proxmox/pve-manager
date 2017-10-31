@@ -59,6 +59,7 @@ Ext.define('PVE.storage.NFSScan', {
 
 Ext.define('PVE.storage.NFSInputPanel', {
     extend: 'PVE.panel.InputPanel',
+    controller: 'storageEdit',
 
     onGetValues: function(values) {
 	var me = this;
@@ -144,7 +145,9 @@ Ext.define('PVE.storage.NFSInputPanel', {
 	    {
 		xtype: 'pveIntegerField',
 		fieldLabel: gettext('Max Backups'),
+		disabled: true,
 		name: 'maxfiles',
+		reference: 'maxfiles',
 		minValue: 0,
 		maxValue: 365,
 		value: me.isCreate ? '1' : undefined,
