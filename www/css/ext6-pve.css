@@ -55,7 +55,8 @@
 
 /* overwrite folder icons of theme */
 .x-tree-icon-parent,
-.x-tree-icon-parent-expanded {
+.x-tree-icon-parent-expanded,
+.x-tree-icon-leaf {
     background: none;
     display: inline-block;
     font: normal normal normal 14px/1 FontAwesome;
@@ -93,15 +94,7 @@
 /* tree icons */
 
 /* big symbols */
-.x-fa-tree,
-.x-fa-tree-running,
-.x-fa-tree-stopped,
-.x-fa-tree-paused,
-.x-fa-tree-online,
-.x-fa-tree-offline,
-.x-fa-tree-template-lxc,
-.x-fa-tree-template-qemu,
-.x-fa-tree-datacenter {
+.x-tree-icon-custom {
     font-size: 1.25em;
     line-height: 1.6em;
     color: #555;
@@ -109,41 +102,29 @@
 }
 
 /* grid icons (resources, etc) */
-.x-fa-grid,
-.x-fa-grid-running,
-.x-fa-grid-stopped,
-.x-fa-grid-paused,
-.x-fa-grid-online,
-.x-fa-grid-offline,
-.x-fa-grid-template-lxc,
-.x-fa-grid-template-qemu {
+.x-grid-icon-custom {
     font-size: 1.25em;
     color: #555;
     margin-right: 5px;
 }
 
 /* the running vms are darker */
-.x-fa-tree-running,
-.x-fa-grid-running {
+.x-tree-icon-custom.running,
+.x-grid-icon-custom.running {
     color: #000;
 }
 
+/* stopped and offline items are greyed out */
+.x-tree-icon-custom.stopped,
+.x-grid-icon-custom.stopped,
+.x-tree-icon-custom.offline,
+.x-grid-icon-custom.offline {
+    color: #cfcfcf;
+}
+
 /* the small icons */
-.x-fa-tree-running:after,
-.x-fa-tree-stopped:after,
-.x-fa-tree-paused:after,
-.x-fa-tree-template-lxc:after,
-.x-fa-tree-template-qemu:after,
-.x-fa-tree-online:after,
-.x-fa-tree-offline:after,
-.x-fa-grid:after,
-.x-fa-grid-running:after,
-.x-fa-grid-stopped:after,
-.x-fa-grid-paused:after,
-.x-fa-grid-online:after,
-.x-fa-grid-offline:after,
-.x-fa-grid-template-lxc:after,
-.x-fa-grid-template-qemu:after {
+.x-tree-icon-custom:after,
+.x-grid-icon-custom:after {
     position: relative;
     left: -5px;
     top: 1px;
@@ -152,79 +133,81 @@
     content: "\ ";
 }
 
-.x-fa-tree-online:after,
-.x-fa-grid-online:after {
+/* the green check */
+.x-tree-icon-custom.online:after,
+.x-grid-icon-custom.online:after {
     content: "\f058";
     color: #21BF4B;
 }
 
-.x-fa-tree-offline:after,
-.x-fa-grid-offline:after {
+/* the red x */
+.x-tree-icon-custom.offline:after,
+.x-grid-icon-custom.offline:after,
+.x-tree-icon-custom.ha-error:after,
+.x-grid-icon-custom.ha-error:after {
     content: "\f057";
     color: #CC1800;
 }
 
-.x-fa-tree-running:after,
-.x-fa-grid-running:after {
+/* the grey '?' */
+.x-tree-icon-custom.unknown:after,
+.x-grid-icon-custom.unknown:after {
+    content: "\f059";
+    color: #888;
+}
+
+/* the play symbol */
+.x-tree-icon-custom.running:after,
+.x-grid-icon-custom.running:after {
     content: "\f04b";
     color: #21BF4B;
 }
 
-.x-fa-tree-paused:after,
-.x-fa-grid-paused:after {
+/* the pause symbol */
+.x-tree-icon-custom.paused:after,
+.x-grid-icon-custom.paused:after {
     content: "\f04c";
     color: #CC8E00;
     font-size: 0.6em;
 }
 
-.x-fa-tree-stopped,
-.x-fa-grid-stopped,
-.x-fa-tree-offline,
-.x-fa-grid-offline {
-    color: #cfcfcf;
+/* the warning triangle symbol */
+.x-tree-icon-custom.nearfull:after,
+.x-grid-icon-custom.nearfull:after {
+    content: "\f071";
+    color: #CC8E00;
 }
 
-/*
-.x-fa-tree-stopped:after {
-  content: "\f04d";
-  color: #f5c5c5;
-  font-size: 0.5em;
+/* the error triangle symbol */
+.x-tree-icon-custom.full:after,
+.x-grid-icon-custom.full:after {
+    content: "\f071";
+    color: #CC1800;
 }
-*/
 
-.x-fa-tree-template-lxc:after,
-.x-fa-grid-template-lxc:after {
+/* the lxc template */
+.x-tree-icon-custom.lxc:after,
+.x-grid-icon-custom.lxc:after {
     content: "\f1b2";
     background: #fff;
 }
 
-
-.x-fa-tree-template-qemu:after,
-.x-fa-grid-template-qemu:after {
+/* the qemu template */
+.x-tree-icon-custom.qemu:after,
+.x-grid-icon-custom.qemu:after {
     content : "\f108";
     background: #fff;
 }
 
-.x-grid-item-over
-.x-fa-tree-template-qemu:after,
-.x-grid-item-over
-.x-fa-tree-template-lxc:after,
-.x-grid-item-over
-.x-fa-grid-template-qemu:after,
-.x-grid-item-over
-.x-fa-grid-template-lxc:after {
+/* fixes background on mouseover and selected items */
+.x-grid-item-over .qemu:after,
+.x-grid-item-over .lxc:after {
     background-color: #e2eff9;
     text-shadow: -1px 0px 2px #e2eff9;
 }
 
-.x-grid-item-selected
-.x-fa-tree-template-qemu:after,
-.x-grid-item-selected
-.x-fa-tree-template-lxc:after,
-.x-grid-item-selected
-.x-fa-grid-template-qemu:after,
-.x-grid-item-selected
-.x-fa-grid-template-lxc:after {
+.x-grid-item-selected .qemu:after,
+.x-grid-item-selected .lxc:after {
     background-color: #c2ddf2;
     text-shadow: -1px 0px 2px #c2ddf2;
 }
