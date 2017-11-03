@@ -114,7 +114,7 @@ Ext.define('PVE.tree.ResourceTree', {
 
 	var defaults;
 	if (info.groupbyid) {
-	    info.text = info.groupbyid;	    
+	    info.text = info.groupbyid;
 	    if (info.type === 'type') {
 		defaults = PVE.tree.ResourceTree.typeDefaults[info.groupbyid];
 		if (defaults && defaults.text) {
