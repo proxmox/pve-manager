@@ -118,11 +118,22 @@ sub extract_storage_stats {
 	storage => $storeid, 
 	node => $node, 
 	type => 'storage', 
+	status => 'unknown',
     }; 
 
     if (my $d = $rrd->{"pve2-storage/$node/$storeid"}) {
 	$entry->{maxdisk} = ($d->[1] || 0) + 0;
 	$entry->{disk} = ($d->[2] || 0) + 0;
+	$entry->{status} = 'available';
+	if ($entry->{disk} > 0 && $entry->{maxdisk} > 0) {
+	    my $usage = $entry->{disk} / $entry->{maxdisk};
+
+	    if ($usage >= 0.9) {
+		$entry->{status} = 'full';
+	    } elsif ($usage >= 0.6) {
+		$entry->{status} = 'nearfull';
+	    }
+	}
     }
 
     return $entry;
