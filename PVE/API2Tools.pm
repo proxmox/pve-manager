@@ -109,7 +109,7 @@ sub extract_vm_stats {
     };
 
     return $entry;
-};
+}
 
 sub extract_storage_stats {
     my ($storeid, $scfg, $node, $rrd) = @_;
@@ -138,7 +138,7 @@ sub extract_storage_stats {
     }
 
     return $entry;
-};
+}
 
 sub parse_http_proxy {
     my ($proxyenv) = @_;
