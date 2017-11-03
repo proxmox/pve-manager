@@ -1032,48 +1032,36 @@ Ext.define('PVE.Utils', { utilities: {
 	return PVE.Utils.render_size(value);
     },
 
+    get_object_icon_class: function(type, record) {
+	var status = '';
+	var objType = type;
+
+	if (type === 'type') {
+	    // for folder view
+	    objType = record.groupbyid;
+	} else if (record.template) {
+	    // templates
+	    objType = 'template';
+	    status = type;
+	} else {
+	    // everything else
+	    status = record.status + ' ha-' + record.hastate;
+	}
+
+	var defaults = PVE.tree.ResourceTree.typeDefaults[objType];
+	if (defaults && defaults.iconCls) {
+	    var retVal = defaults.iconCls + ' ' + status;
+	    return retVal;
+	}
+
+	return '';
+    },
+
     render_resource_type: function(value, metaData, record, rowIndex, colIndex, store) {
 
-	var icon = '';
-	var gridcls = '';
+	var cls = PVE.Utils.get_object_icon_class(value,record.data);
 
-	switch (value) {
-	    case 'lxc': icon = 'cube';
-			gridcls = '-stopped';
-			break;
-	    case 'qemu': icon = 'desktop';
-			 gridcls = '-stopped';
-			 break;
-	    case 'node': icon = 'building';
-			 gridcls = '-offline';
-			 break;
-	    case 'storage': icon = 'database'; break;
-	    case 'pool': icon = 'tags'; break;
-	    default: icon = 'file';
-	}
-
-	if (value === 'lxc' || value === 'qemu') {
-	    if (record.data.running && record.data.status !== 'paused') {
-		gridcls = '-running';
-	    } else if (record.data.running) {
-		gridcls = '-paused';
-	    }
-	    if (record.data.template) {
-		icon = 'file-o';
-		gridcls = '-template-' + value;
-	    }
-	} else if (value === 'node') {
-	    if (record.data.running) {
-		gridcls = '-online';
-	    }
-	}
-
-	// overwrite anything else
-	if (record.data.hastate === 'error') {
-	    gridcls = '-offline';
-	}
-
-	var fa = '<i class="fa fa-fw x-fa-grid' + gridcls  +  ' fa-' + icon  + '"></i> ';
+	var fa = '<i class="fa-fw x-grid-icon-custom ' + cls  + '"></i> ';
 	return fa + value;
     },
 
