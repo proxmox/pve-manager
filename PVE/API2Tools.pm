@@ -33,6 +33,7 @@ sub extract_node_stats {
 	id => "node/$node",
 	node => $node,
 	type => "node",
+	status => 'unknown',
     };
 
     if (my $d = $rrd->{"pve2-node/$node"}) {
@@ -43,11 +44,17 @@ sub extract_node_stats {
 	    $entry->{cpu} = ($d->[5] || 0) + 0;
 	    $entry->{mem} = ($d->[8] || 0) + 0;
 	    $entry->{disk} = ($d->[12] || 0) + 0;
+	    $entry->{status} = 'online';
 	}
 	$entry->{level} = $d->[1];
 	$entry->{maxcpu} = ($d->[4] || 0) + 0;
 	$entry->{maxmem} = ($d->[7] || 0) + 0;
 	$entry->{maxdisk} = ($d->[11] || 0) + 0;
+    }
+
+    if ($members && $members->{$node} &&
+	!$members->{$node}->{online}) {
+	$entry->{status} = 'offline';
     }
 
     return $entry;
