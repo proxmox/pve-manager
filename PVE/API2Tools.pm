@@ -68,6 +68,7 @@ sub extract_vm_stats {
 	vmid => $vmid + 0, 
 	node => $data->{node},
 	type => $data->{type},
+	status => 'unknown',
     };
 
     my $d;
