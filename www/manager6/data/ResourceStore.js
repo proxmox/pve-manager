@@ -234,6 +234,13 @@ Ext.define('PVE.data.ResourceStore', {
 		defaultValue: 'unmanaged',
 		hidden: true,
 		sortable: true
+	    },
+	    status: {
+		header: gettext('Status'),
+		type: 'string',
+		hidden: true,
+		sortable: true,
+		width: 110
 	    }
 	};
 
