@@ -238,7 +238,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	{
 	    xtype: 'pvecheckbox',
 	    disabled: me.confid && !me.confid.match(/^(virtio|scsi)/),
-	    fieldLabel: gettext('IO thread'),
+	    fieldLabel: 'IO thread',
 	    reference: 'iothread',
 	    name: 'iothread'
 	});
