@@ -37,7 +37,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    downout: 0
 	},
 	tpl: [
-	    '<h3>' + gettext('OSDs') + '</h3>',
+	    '<h3>' + 'OSDs' + '</h3>',
 	    '<table class="osds">',
 	    '<tr><td></td>',
 	    '<td><i class="fa fa-fw good fa-circle"></i>',
@@ -76,7 +76,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    states: []
 	},
 	tpl: [
-	    '<h3>' + gettext('PGs') + '</h3>',
+	    '<h3>' + 'PGs' + '</h3>',
 	    '<tpl for="states">',
 	    '<div class="left-aligned">{state_name}:</div>',
 	    '<div class="right-aligned">{count}</div><br />',
