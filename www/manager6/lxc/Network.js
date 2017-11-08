@@ -479,7 +479,7 @@ Ext.define('PVE.lxc.NetworkView', {
 	    ],
 	    columns: [
 		{
-		    header: gettext('ID'),
+		    header: 'ID',
 		    width: 50,
 		    dataIndex: 'id'
 		},

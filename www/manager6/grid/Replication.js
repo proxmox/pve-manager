@@ -310,7 +310,7 @@ Ext.define('PVE.grid.ReplicaView', {
 		disabled: true
 	    },
 	    {
-		text: gettext('ID'),
+		text: 'ID',
 		dataIndex: 'id',
 		width: 60,
 		hidden: true
