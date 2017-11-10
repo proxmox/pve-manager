@@ -34,6 +34,7 @@ Ext.define('PVE.form.FileSelector', {
 	    url: url
 	});
 
+	me.store.removeAll();
 	me.store.load();
     },
 
