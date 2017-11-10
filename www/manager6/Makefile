@@ -175,6 +175,7 @@ JSSRC= 				                 	\
 	lxc/Snapshot.js					\
 	lxc/ResourceEdit.js				\
 	lxc/MPResize.js					\
+	lxc/MPEdit.js					\
 	pool/StatusView.js				\
 	pool/Summary.js					\
 	pool/Config.js					\
