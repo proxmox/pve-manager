@@ -225,7 +225,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 					rootfspanel.down('field[name=quota]').setValue(false);
 				    }
 				    rootfspanel.unprivileged = value;
-				    var hdsel = rootfspanel.hdstoragesel;
+				    var hdsel = rootfspanel.down('#hdstorage');
 				    hdsel.fireEvent('change', hdsel, hdsel.getValue());
 				}
 			    },

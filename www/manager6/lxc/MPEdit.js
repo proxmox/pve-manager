@@ -21,7 +21,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    me.mpdata.file = me.vmconfig[values.unusedId];
 	    confid = values.mpsel;
 	} else if (me.isCreate) {
-	    me.mpdata.file = values.storage + ':' + values.disksize;
+	    me.mpdata.file = values.hdstorage + ':' + values.disksize;
 	}
 
 	if (confid !== 'rootfs') {
@@ -65,6 +65,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
     setMountPoint: function(mp) {
 	var me = this;
 
+	// the fields name is 'hdstorage',
+	// but the api expects/has 'storage'
+	mp.hdstorage = mp.storage;
+	delete mp.hdstorage;
+
 	me.mpdata = mp;
 	if (!Ext.isDefined(me.mpdata.acl)) {
 	    me.mpdata.acl = 'Default';
@@ -75,7 +80,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    me.quota.setValue(false);
 	    me.acl.setDisabled(true);
 	    me.acl.setValue('Default');
-	    me.hdstoragesel.setDisabled(true);
+	    me.down('#hdstorage').setDisabled(true);
 	    if (me.confid !== 'rootfs') {
 		me.backup.setDisabled(true);
 	    }
@@ -119,8 +124,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 
     setNodename: function(nodename) {
 	var me = this;
-	me.hdstoragesel.setNodename(nodename);
-	me.hdfilesel.setStorage(undefined, nodename);
+	me.down('#hdstorage').setNodename(nodename);
+	me.down('#hdimage').setStorage(undefined, nodename);
     },
 
     initComponent : function() {
@@ -165,69 +170,13 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    me.column1.push(me.mpsel);
 	}
 
-	// we always have this around, but only visible when creating a new mp
-	// since this handles per-filesystem capabilities
-	me.hdstoragesel = Ext.create('PVE.form.StorageSelector', {
-	    name: 'storage',
+	me.column1.push({
+	    xtype: 'pveDiskStorageSelector',
 	    nodename: me.nodename,
-	    fieldLabel: gettext('Storage'),
 	    storageContent: 'rootdir',
-	    allowBlank: false,
 	    autoSelect: true,
-	    hidden: me.unused || !me.isCreate,
-	    listeners: {
-		change: function(f, value) {
-		    if (!value) { // initial store loading fires an unwanted 'change'
-			return;
-		    }
-		    if (me.mpdata.type === 'bind') {
-			me.quota.setDisabled(true);
-			me.quota.setValue(false);
-			me.acl.setDisabled(true);
-			me.acl.setValue('Default');
-			if (!isroot) {
-			    me.backup.setDisabled(true);
-			}
-			return;
-		    }
-		    var rec = f.store.getById(value);
-		    if (rec &&
-			(rec.data.type === 'zfs' ||
-		        rec.data.type === 'zfspool')) {
-			me.quota.setDisabled(true);
-			me.quota.setValue(false);
-		    } else {
-			me.quota.setDisabled(me.unprivileged);
-		    }
-		    if (me.unused || !me.isCreate) {
-			return;
-		    }
-		    if (rec.data.type === 'iscsi') {
-			me.hdfilesel.setStorage(value);
-			me.hdfilesel.setDisabled(false);
-			me.hdfilesel.setVisible(true);
-			me.hdsizesel.setDisabled(true);
-			me.hdsizesel.setVisible(false);
-		    } else if (rec.data.type === 'lvm' ||
-			       rec.data.type === 'lvmthin' ||
-			       rec.data.type === 'rbd' ||
-			       rec.data.type === 'sheepdog' ||
-			       rec.data.type === 'zfs' ||
-			       rec.data.type === 'zfspool') {
-			me.hdfilesel.setDisabled(true);
-			me.hdfilesel.setVisible(false);
-			me.hdsizesel.setDisabled(false);
-			me.hdsizesel.setVisible(true);
-		    } else {
-			me.hdfilesel.setDisabled(true);
-			me.hdfilesel.setVisible(false);
-			me.hdsizesel.setDisabled(false);
-			me.hdsizesel.setVisible(true);
-		    }
-		}
-	    }
+	    hidden: me.unused || !me.isCreate
 	});
-	me.column1.push(me.hdstoragesel);
 
 	if (me.unused) {
 	    me.unusedDisks = Ext.create('PVE.form.KVComboBox', {
@@ -245,34 +194,12 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 			// between images on different storages:
 			var disk = me.vmconfig[value];
 			var storage = disk.split(':')[0];
-			me.hdstoragesel.setValue(storage);
+			me.down('#hdstorage').setValue(storage);
 		    }
 		}
 	    });
 	    me.column1.push(me.unusedDisks);
-	} else if (me.isCreate) {
-	    me.hdfilesel = Ext.create('PVE.form.FileSelector', {
-		name: 'file',
-		nodename: me.nodename,
-		storageContent: 'images',
-		fieldLabel: gettext('Disk image'),
-		disabled: true,
-		hidden: true,
-		allowBlank: false
-	    });
-	    me.hdsizesel = Ext.createWidget('numberfield', {
-		name: 'disksize',
-		minValue: 0.1,
-		maxValue: 128*1024,
-		decimalPrecision: 3,
-		value: '8',
-		step: 1,
-		fieldLabel: gettext('Disk size') + ' (GB)',
-		allowBlank: false
-	    });
-	    me.column1.push(me.hdfilesel);
-	    me.column1.push(me.hdsizesel);
-	} else {
+	} else if (!me.isCreate) {
 	    me.column1.push({
 		xtype: 'textfield',
 		disabled: true,
@@ -336,6 +263,24 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	}
 
 	me.callParent();
+
+	if (me.unused || me.isCreate) {
+	    me.mon(me.down('#hdstorage'), 'change', function(field, newValue) {
+		if (!newValue) {
+		    return;
+		}
+		var rec = field.store.getById(newValue);
+		if (!rec) {
+		    return;
+		}
+		if (rec.data.type === 'zfs' || rec.data.type === 'zfspool') {
+		    me.quota.setDisabled(true);
+		    me.quota.setValue(false);
+		} else {
+		    me.quota.setDisabled(me.unprivileged);
+		}
+	    });
+	}
     }
 });
 
