@@ -66,8 +66,8 @@ Ext.define('PVE.window.Clone', {
 
 	if (values.clonemode === 'copy') {
 	    params.full = 1;
-	    if (values.storage) {
-		params.storage = values.storage;
+	    if (values.hdstorage) {
+		params.storage = values.hdstorage;
 		if (values.diskformat) {
 		    params.format = values.diskformat;
 		}
@@ -90,40 +90,11 @@ Ext.define('PVE.window.Clone', {
     },
 
     // disable the Storage selector when clone mode is linked clone
-    // disable the disk Format selector when
-    // A) clone mode is linked clone
-    // B) clone mode is full clone and storage is block device
     updateVisibility: function() {
 	var me = this;
-
-	var storagesel = me.lookupReference('storagesel');
-	var formatsel = me.lookupReference('formatsel');
-
 	var clonemode = me.lookupReference('clonemodesel').getValue();
-	var storage = storagesel.getValue();
-	var rec = storagesel.store.getById(storage);
-
-	storagesel.setDisabled(clonemode === 'clone');
-
-	if (!rec || clonemode === 'clone') {
-	    formatsel.setDisabled(true);
-	    return;
-	}
-
-	if (rec.data.type === 'lvm' ||
-		rec.data.type === 'lvmthin' ||
-		rec.data.type === 'rbd' ||
-		rec.data.type === 'iscsi' ||
-		rec.data.type === 'sheepdog' ||
-		rec.data.type === 'zfs' ||
-		rec.data.type === 'zfspool'
-	) {
-	    formatsel.setValue('raw');
-	    formatsel.setDisabled(true);
-	} else {
-	    formatsel.setValue('qcow2');
-	    formatsel.setDisabled(false);
-	}
+	var disksel = me.lookup('diskselector');
+	disksel.setDisabled(clonemode === 'clone');
     },
 
     // add to the list of valid nodes each node where
@@ -188,7 +159,7 @@ Ext.define('PVE.window.Clone', {
 	    onlineValidator: true,
 	    listeners: {
 		change: function(f, value) {
-		    me.lookupReference('storagesel').setTargetNode(value);
+		    me.lookupReference('hdstorage').setTargetNode(value);
 		}
 	    }
 	});
@@ -255,32 +226,17 @@ Ext.define('PVE.window.Clone', {
 	    }
 	},
 	{
-	    xtype: 'pveStorageSelector',
-	    name: 'storage',
-	    reference: 'storagesel',
+	    xtype: 'pveDiskStorageSelector',
+	    reference: 'diskselector',
 	    nodename: me.nodename,
-	    fieldLabel: gettext('Target Storage'),
-	    storageContent: 'images',
-	    autoSelect: false, // will use for each disk the same storage as source
+	    autoSelect: false,
+	    hideSize: true,
+	    hideSelection: true,
+	    storageLabel: gettext('Target Storage'),
 	    allowBlank: true,
+	    storageContent: 'images',
 	    emptyText: gettext('Same as source'),
-	    disabled: me.isTemplate ? true : false, // because default mode is clone for templates
-	    hidden: false,
-	    listeners: {
-		change: function(f, value) {
-		    me.updateVisibility();
-		}
-	    }
-	},
-	{
-	    xtype: 'pveDiskFormatSelector',
-	    name: 'diskformat',
-	    reference: 'formatsel',
-	    fieldLabel: gettext('Format'),
-	    value: 'raw',
-	    disabled: true,
-	    hidden: false,
-	    allowBlank: false
+	    disabled: me.isTemplate ? true : false // because default mode is clone for templates
 	});
 
 	var formPanel = Ext.create('Ext.form.Panel', {
