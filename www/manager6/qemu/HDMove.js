@@ -59,53 +59,13 @@ Ext.define('PVE.window.HDMove', {
             }
         ];
 
-        me.hdstoragesel = Ext.create('PVE.form.StorageSelector', {
-                name: 'hdstorage',
-                nodename: me.nodename,
-                fieldLabel: gettext('Target Storage'),
-                storageContent: 'images',
-                autoSelect: me.insideWizard,
-                allowBlank: true,
-                disabled: false,
-                hidden: false,
-                listeners: {
-                    change: function(f, value) {
-			if (!value) { // initial store loading fires an unwanted 'change
-			    return;
-			}
-                        var rec = f.store.getById(value);
-			if (rec.data.type === 'iscsi' ||
-			    rec.data.type === 'lvm' ||
-			    rec.data.type === 'lvmthin' ||
-			    rec.data.type === 'rbd' ||
-			    rec.data.type === 'sheepdog' ||
-			    rec.data.type === 'zfs' ||
-			    rec.data.type === 'zfspool'
-                        ) {
-                            me.formatsel.setValue('raw');
-                            me.formatsel.setDisabled(true);
-                        } else {
-                            me.formatsel.setDisabled(false);
-                        }
-
-                    }
-                }
-
+	items.push({
+	    xtype: 'pveDiskStorageSelector',
+	    storageLabel: gettext('Target Storage'),
+	    nodename: me.nodename,
+	    storageContent: 'images',
+	    hideSize: true
 	});
-
-	me.formatsel = Ext.create('PVE.form.DiskFormatSelector', {
-		name: 'diskformat',
-		fieldLabel: gettext('Format'),
-		value: 'raw',
-                disabled: true,
-                hidden: false,
-		allowBlank: false
-	});
-
-
-   
-	items.push(me.hdstoragesel);
-	items.push(me.formatsel);
 
 	items.push({
 	    xtype: 'pvecheckbox',
@@ -153,6 +113,10 @@ Ext.define('PVE.window.HDMove', {
 
 	me.callParent();
 
+	me.mon(me.formPanel, 'validitychange', function(fp, isValid) {
+	    submitBtn.setDisabled(!isValid);
+	});
 
+	me.formPanel.isValid();
     }
 });
