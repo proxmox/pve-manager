@@ -76,6 +76,8 @@ Ext.define('PVE.form.FileSelector', {
 
         me.callParent();
 
-	me.setStorage(me.storage, me.nodename);
+	if (!me.disabled) {
+	    me.setStorage(me.storage, me.nodename);
+	}
     }
 });

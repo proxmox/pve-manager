@@ -39,7 +39,9 @@ Ext.define('PVE.form.StorageSelector', {
 	    return;
 	}
 
-	var params = {};
+	var params = {
+	    format: 1
+	};
 	var url = '/api2/json/nodes/' + me.nodename + '/storage';
 	if (me.storageContent) {
 	    params.content = me.storageContent;

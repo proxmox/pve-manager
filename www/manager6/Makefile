@@ -52,6 +52,7 @@ JSSRC= 				                 	\
 	form/NodeSelector.js				\
 	form/FileSelector.js				\
 	form/StorageSelector.js				\
+	form/DiskStorageSelector.js			\
 	form/BridgeSelector.js				\
 	form/SecurityGroupSelector.js			\
 	form/IPRefSelector.js				\
