@@ -37,44 +37,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		change: 'onControllerChange',
 		afterrender: 'onControllerChange'
 	    },
-	    'field[name=hdstorage]': {
-		change: function(f, value) {
-		    if (!value) { // initial store loading fires an unwanted 'change'
-			return;
-		    }
-		    var me = this.getView();
-		    var rec = f.store.getById(value);
-		    if (rec.data.type === 'iscsi') {
-			me.hdfilesel.setStorage(value);
-			me.hdfilesel.setDisabled(false);
-			me.formatsel.setValue('raw');
-			me.formatsel.setDisabled(true);
-			me.hdfilesel.setVisible(true);
-			me.hdsizesel.setDisabled(true);
-			me.hdsizesel.setVisible(false);
-		    } else if (rec.data.type === 'lvm' ||
-			       rec.data.type === 'lvmthin' ||
-			       rec.data.type === 'drbd' ||
-			       rec.data.type === 'rbd' ||
-			       rec.data.type === 'sheepdog' ||
-			       rec.data.type === 'zfs' ||
-			       rec.data.type === 'zfspool') {
-			me.hdfilesel.setDisabled(true);
-			me.hdfilesel.setVisible(false);
-			me.formatsel.setValue('raw');
-			me.formatsel.setDisabled(true);
-			me.hdsizesel.setDisabled(false);
-			me.hdsizesel.setVisible(true);
-		    } else {
-			me.hdfilesel.setDisabled(true);
-			me.hdfilesel.setVisible(false);
-			me.formatsel.setValue('qcow2');
-			me.formatsel.setDisabled(false);
-			me.hdsizesel.setDisabled(false);
-			me.hdsizesel.setVisible(true);
-		    }
-		}
-	    },
 	    'field[name=iothread]' : {
 		change: function(f, value) {
 		    if (!this.getView().insideWizard) {
@@ -189,8 +151,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
     setNodename: function(nodename) {
 	var me = this;
-	me.hdstoragesel.setNodename(nodename);
-	me.hdfilesel.setStorage(undefined, nodename);
+	me.down('#hdstorage').setNodename(nodename);
+	me.down('#hdimage').setStorage(undefined, nodename);
     },
 
     initComponent : function() {
@@ -232,46 +194,13 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    });
 	    me.column1.push(me.unusedDisks);
 	} else if (me.isCreate) {
-	    me.formatsel = Ext.create('PVE.form.DiskFormatSelector', {
-		name: 'diskformat',
-		fieldLabel: gettext('Format'),
-		value: 'qcow2',
-		allowBlank: false
-	    });
-
-	    me.hdfilesel = Ext.create('PVE.form.FileSelector', {
-		name: 'hdimage',
-		nodename: me.nodename,
+	    me.column1.push({
+		xtype: 'pveDiskStorageSelector',
 		storageContent: 'images',
-		fieldLabel: gettext('Disk image'),
-		disabled: true,
-		hidden: true,
-		allowBlank: false
-	    });
-
-	    me.hdsizesel = Ext.createWidget('numberfield', {
-		name: 'disksize',
-		minValue: 0.001,
-		maxValue: 128*1024,
-		decimalPrecision: 3,
-		value: '32',
-		fieldLabel: gettext('Disk size') + ' (GB)',
-		allowBlank: false
-	    });
-
-	    me.hdstoragesel = Ext.create('PVE.form.StorageSelector', {
-		name: 'hdstorage',
+		name: 'disk',
 		nodename: me.nodename,
-		fieldLabel: gettext('Storage'),
-		storageContent: 'images',
-		autoSelect: me.insideWizard,
-		allowBlank: false
+		autoSelect: me.insideWizard
 	    });
-	    me.column1.push(me.hdstoragesel);
-	    me.column1.push(me.hdfilesel);
-	    me.column1.push(me.hdsizesel);
-	    me.column1.push(me.formatsel);
-
 	} else {
 	    me.column1.push({
 		xtype: 'textfield',
