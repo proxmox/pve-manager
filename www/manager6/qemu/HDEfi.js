@@ -8,42 +8,6 @@ Ext.define('PVE.qemu.EFIDiskInputPanel', {
 
     vmconfig: {}, // used to select usused disks
 
-    controller: {
-
-	xclass: 'Ext.app.ViewController',
-
-	control: {
-	    'field[name=hdstorage]': {
-		change: function(f, value) {
-		    if (!value) { // initial store loading fires an unwanted 'change'
-			return;
-		    }
-		    var me = this.getView();
-		    var rec = f.store.getById(value);
-
-		    var rawArray = ['iscsi', 'lvm', 'lvmthin', 'drbd', 'rbd', 'sheepdog', 'zfs', 'zfspool'];
-
-		    me.hdfilesel.setDisabled(true);
-		    me.hdfilesel.setVisible(false);
-		    me.formatsel.setValue('qcow2');
-		    me.formatsel.setDisabled(false);
-
-		    // if rec.data.type exists in the array
-		    if (rawArray.indexOf(rec.data.type) !== -1) {
-			me.formatsel.setValue('raw');
-			me.formatsel.setDisabled(true);
-		    }
-
-		    if (rec.data.type === 'iscsi') {
-			me.hdfilesel.setStorage(value);
-			me.hdfilesel.setDisabled(false);
-			me.hdfilesel.setVisible(true);
-		    }
-		}
-	    }
-	}
-    },
-
     onGetValues: function(values) {
 	var me = this;
 
@@ -64,8 +28,8 @@ Ext.define('PVE.qemu.EFIDiskInputPanel', {
 
     setNodename: function(nodename) {
 	var me = this;
-	me.hdstoragesel.setNodename(nodename);
-	me.hdfilesel.setStorage(undefined, nodename);
+	me.down('#hdstorage').setNodename(nodename);
+	me.down('#hdimage').setStorage(undefined, nodename);
     },
 
     initComponent : function() {
@@ -75,35 +39,13 @@ Ext.define('PVE.qemu.EFIDiskInputPanel', {
 
 	me.items= [];
 
-	me.formatsel = Ext.create('PVE.form.DiskFormatSelector', {
-	    name: 'diskformat',
-	    fieldLabel: gettext('Format'),
-	    value: 'qcow2',
-	    allowBlank: false
-	});
-
-	me.hdfilesel = Ext.create('PVE.form.FileSelector', {
-	    name: 'hdimage',
-	    nodename: me.nodename,
+	me.items.push({
+	    xtype: 'pveDiskStorageSelector',
+	    name: 'efidisk0',
 	    storageContent: 'images',
-	    fieldLabel: gettext('Disk image'),
-	    disabled: true,
-	    hidden: true,
-	    allowBlank: false
-	});
-
-	me.hdstoragesel = Ext.create('PVE.form.StorageSelector', {
-	    name: 'hdstorage',
 	    nodename: me.nodename,
-	    fieldLabel: gettext('Storage'),
-	    storageContent: 'images',
-	    autoSelect: me.insideWizard,
-	    allowBlank: false
+	    hideSize: true
 	});
-	me.items.push(me.hdstoragesel);
-	me.items.push(me.hdfilesel);
-	me.items.push(me.formatsel);
-
 	me.callParent();
     }
 });
