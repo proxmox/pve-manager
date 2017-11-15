@@ -1,3 +1,13 @@
+pve-manager (4.4-20) unstable; urgency=medium
+
+  * fix #1539: fix issues with proxied commands using pvesh
+
+  * fix #1531: match nodename exactly for vmidselector
+
+  * fix #1024: issues with start-on-boot
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 15 Nov 2017 10:41:07 +0100
+
 pve-manager (4.4-18) unstable; urgency=medium
 
   * ceph: fix creation of first monitor in a cluster
