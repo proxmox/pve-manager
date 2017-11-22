@@ -1746,6 +1746,7 @@ __PACKAGE__->register_method ({
 
 	foreach my $node (@$nodelist) {
 	    my $entry = PVE::API2Tools::extract_node_stats($node, $members, $rrd);
+	    $entry->{ssl_fingerprint} = PVE::Cluster::get_node_fingerprint($node);
 	    push @$res, $entry;
 	}
 
