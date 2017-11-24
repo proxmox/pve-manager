@@ -1594,6 +1594,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
+	PVE::Cluster::check_cfs_quorum();
 	PVE::CephTools::check_ceph_inited();
 
 	my $pve_ckeyring_path = PVE::CephTools::get_config('pve_ckeyring_path');
