@@ -14,6 +14,7 @@ use PVE::Storage;
 use PVE::API2Tools;
 use PVE::API2::Backup;
 use PVE::API2::HAConfig;
+use PVE::HA::Env::PVE2;
 use PVE::HA::Config;
 use PVE::API2::ClusterConfig;
 use JSON;
@@ -188,6 +189,7 @@ __PACKAGE__->register_method({
 	my $idlist = $vmlist->{ids} || {};
 
 	my $hastatus = PVE::HA::Config::read_manager_status();
+	my $haresources = PVE::HA::Config::read_resources_config();
 	my $hatypemap = {
 	    'qemu' => 'vm',
 	    'lxc' => 'ct'
@@ -245,8 +247,11 @@ __PACKAGE__->register_method({
 		# get ha status
 		if (my $hatype = $hatypemap->{$entry->{type}}) {
 		    my $sid = "$hatype:$vmid";
-		    if (defined($hastatus->{service_status}->{$sid})) {
-			$entry->{hastate} = $hastatus->{service_status}->{$sid}->{state};
+		    my $service;
+		    if ($service = $hastatus->{service_status}->{$sid}) {
+			$entry->{hastate} = $service->{state};
+		    } elsif ($service = $haresources->{ids}->{$sid}) {
+			$entry->{hastate} = $service->{state};
 		    }
 		}
 
