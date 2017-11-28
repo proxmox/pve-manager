@@ -211,7 +211,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 
 	me.acl = Ext.createWidget('pveKVComboBox', {
 	    name: 'acl',
-	    fieldLabel: gettext('ACLs'),
+	    fieldLabel: 'ACLs',
 	    comboItems: [['Default', 'Default'], ['1', 'On'], ['0', 'Off']],
 	    value: 'Default',
 	    allowBlank: true
