@@ -1,3 +1,35 @@
+pve-manager (5.1-37) stable; urgency=medium
+
+   * fix #1523: Display the Max Backups field only if relevant
+
+   * fix #1578: api/resource hastate: fallback to resource cfg state
+
+   * fix #1539: add missing shellquote for proxied commands of pvesh
+
+   * fix #1542: use percent_used key instead of calculation
+
+   * fix wrong default value shown for the DHCP firewall option
+
+   * prevent visual flashing of button when changing element in the tree
+
+   * ceph: create pool: check for quorum at start
+
+   * logrotate: try to tell services to reload instead of doing a full restart
+
+   * add various status sub-icons in the tree
+
+   * add a new status column in the resourcestore
+
+   * add default 'unknown' status for vms and containers
+
+   * add version GET parameter for js/css files to improve cache behaviour
+
+   * reduce spiceproxy memory footpring by not loading an unused package
+
+   * Add %-used and min_size to "pveceph lspools" command
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 28 Nov 2017 16:38:15 +0100
+
 pve-manager (5.1-36) unstable; urgency=medium
 
   * rebuild to fixup permissions
