@@ -918,24 +918,32 @@ __PACKAGE__->register_method ({
 	return undef;
     }});
 
-my $find_node_ip = sub {
-    my ($cidr) = @_;
+my $find_mon_ip = sub {
+    my ($pubnet, $node, $overwrite_ip) = @_;
 
-    my $net = Net::IP->new($cidr) || die Net::IP::Error() . "\n";
-    my $id = $net->version == 6 ? 'address6' : 'address';
-
-    my $config = PVE::INotify::read_file('interfaces');
-    my $ifaces = $config->{ifaces};
-
-    foreach my $iface (keys %$ifaces) {
-	my $d = $ifaces->{$iface};
-	next if !$d->{$id};
-	my $a = Net::IP->new($d->{$id});
-	next if !$a;
-	return $d->{$id} if $net->overlaps($a);
+    if (!$pubnet) {
+	return $overwrite_ip // PVE::Cluster::remote_node_ip($node);
     }
 
-    die "unable to find local address within network '$cidr'\n";
+    my $allowed_ips = PVE::Network::get_local_ip_from_cidr($pubnet);
+    die "No IP configured and up from ceph public network '$pubnet'\n"
+	if scalar(@$allowed_ips) < 1;
+
+    if (!$overwrite_ip) {
+	if (scalar(@$allowed_ips) == 1) {
+	    return $allowed_ips->[0];
+	}
+	die "Multiple IPs for ceph public network '$pubnet' detected on $node:\n".
+	    join("\n", @$allowed_ips) ."\nuse 'mon-address' to specify one of them.\n";
+    } else {
+	if (grep { $_ eq $overwrite_ip } @$allowed_ips) {
+	    return $overwrite_ip;
+	}
+	die "Monitor IP '$overwrite_ip' not in ceph public network '$pubnet'\n"
+	    if !PVE::Network::is_ip_in_cidr($overwrite_ip, $pubnet);
+
+	die "Specified monitor IP '$overwrite_ip' not configured or up on $node!\n";
+    }
 };
 
 my $create_mgr = sub {
@@ -1016,6 +1024,12 @@ __PACKAGE__->register_method ({
 		default => 0,
 		description => "When set, only a monitor will be created.",
 	    },
+	    'mon-address' => {
+		description => 'Overwrites autodetected monitor IP address. ' .
+		               'Must be in the public network of ceph.',
+		type => 'string', format => 'ip',
+		optional => 1,
+	    },
 	},
     },
     returns => { type => 'string' },
@@ -1057,12 +1071,8 @@ __PACKAGE__->register_method ({
 	my $monid = $param->{id} // $param->{node};
 
 	my $monsection = "mon.$monid";
-	my $ip;
-	if (my $pubnet = $cfg->{global}->{'public network'}) {
-	    $ip = &$find_node_ip($pubnet);
-	} else {
-	    $ip = PVE::Cluster::remote_node_ip($param->{node});
-	}
+	my $pubnet = $cfg->{global}->{'public network'};
+	my $ip = $find_mon_ip->($pubnet, $param->{node}, $param->{'mon-address'});
 
 	my $monaddr = Net::IP::ip_is_ipv6($ip) ? "[$ip]:6789" : "$ip:6789";
 	my $monname = $param->{node};
