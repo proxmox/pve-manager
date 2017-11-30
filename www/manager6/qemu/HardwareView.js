@@ -402,9 +402,16 @@ Ext.define('PVE.qemu.HardwareView', {
 	    disabled: true,
 	    dangerous: true,
 	    confirmMsg: function(rec) {
-		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
-					    "'" + me.renderKey(rec.data.key, {}, rec) + "'");
-		if (rec.data.key.match(/^unused\d+$/)) {
+		var warn = gettext('Are you sure you want to remove entry {0}');
+		if (this.text === this.altText) {
+		    warn = gettext('Are you sure you want to detach entry {0}');
+		}
+
+		var entry = rec.data.key;
+		var msg = Ext.String.format(warn, "'"
+		    + me.renderKey(entry, {}, rec) + "'");
+
+		if (entry.match(/^unused\d+$/)) {
 		    msg += " " + gettext('This will permanently erase all data.');
 		}
 
