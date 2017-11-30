@@ -1,5 +1,3 @@
-// fixme: howto avoid jslint type confusion?
-/*jslint confusion: true */
 Ext.define('PVE.qemu.HardwareView', {
     extend: 'PVE.grid.PendingObjectGrid',
     alias: ['widget.PVE.qemu.HardwareView'],
@@ -47,7 +45,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('Memory'),
 		editor: caps.vms['VM.Config.Memory'] ? 'PVE.qemu.MemoryEdit' : undefined,
 		never_delete: true,
-		defaultValue: 512,
+		defaultValue: '512',
 		tdCls: 'pve-itype-icon-memory',
 		renderer: function(value, metaData, record) {
 		    var balloon =  me.getObjectValue('balloon');
@@ -65,7 +63,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		editor: (caps.vms['VM.Config.CPU'] || caps.vms['VM.Config.HWType']) ? 
 		    'PVE.qemu.ProcessorEdit' : undefined,
 		tdCls: 'pve-itype-icon-processor',
-		defaultValue: 1,
+		defaultValue: '1',
 		multiKey: ['sockets', 'cpu', 'cores', 'numa', 'vcpus', 'cpulimit', 'cpuunits'],
 		renderer: function(value, metaData, record, rowIndex, colIndex, store, pending) {
 
@@ -77,8 +75,9 @@ Ext.define('PVE.qemu.HardwareView', {
 		    var cpulimit = me.getObjectValue('cpulimit', undefined, pending);
 		    var cpuunits = me.getObjectValue('cpuunits', undefined, pending);
 
-		    var res = (sockets*cores) + ' (' + sockets + ' sockets, ' + cores + ' cores)';
-		    
+		    var res = Ext.String.format('{0} ({1} sockets, {2} cores)',
+			sockets*cores, sockets, cores);
+
 		    if (model) {
 			res += ' [' + model + ']';
 		    }
@@ -149,7 +148,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	};
 
 	for (i = 0; i < 4; i++) {
-	    confid = "ide" + i;
+	    confid = "ide" + i.toString();
 	    rows[confid] = {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
@@ -160,7 +159,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    };
 	}
 	for (i = 0; i < 6; i++) {
-	    confid = "sata" + i;
+	    confid = "sata" + i.toString();
 	    rows[confid] = {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
@@ -171,7 +170,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    };
 	}
 	for (i = 0; i < 16; i++) {
-	    confid = "scsi" + i;
+	    confid = "scsi" + i.toString();
 	    rows[confid] = {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
@@ -182,7 +181,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    };
 	}
 	for (i = 0; i < 16; i++) {
-	    confid = "virtio" + i;
+	    confid = "virtio" + i.toString();
 	    rows[confid] = {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
@@ -193,7 +192,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    };
 	}
 	for (i = 0; i < 32; i++) {
-	    confid = "net" + i;
+	    confid = "net" + i.toString();
 	    rows[confid] = {
 		group: 2,
 		tdCls: 'pve-itype-icon-network',
@@ -210,7 +209,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    header: gettext('EFI Disk')
 	};
 	for (i = 0; i < 5; i++) {
-	    confid = "usb" + i;
+	    confid = "usb" + i.toString();
 	    rows[confid] = {
 		group: 4,
 		tdCls: 'pve-itype-icon-usb',
@@ -220,7 +219,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    };
 	}
 	for (i = 0; i < 4; i++) {
-	    confid = "hostpci" + i;
+	    confid = "hostpci" + i.toString();
 	    rows[confid] = {
 		group: 5,
 		tdCls: 'pve-itype-icon-pci',
@@ -229,11 +228,11 @@ Ext.define('PVE.qemu.HardwareView', {
 	    };
 	}
 	for (i = 0; i < 8; i++) {
-	    rows["unused" + i] = {
+	    rows["unused" + i.toString()] = {
 		group: 6,
 		tdCls: 'pve-itype-icon-storage',
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.HDEdit' : undefined,
-		header: gettext('Unused Disk') + ' ' + i
+		header: gettext('Unused Disk') + ' ' + i.toString()
 	    };
 	}
 
