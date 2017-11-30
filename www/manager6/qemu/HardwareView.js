@@ -396,6 +396,8 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	var remove_btn = new PVE.button.Button({
 	    text: gettext('Remove'),
+	    defaultText: gettext('Remove'),
+	    altText: gettext('Detach'),
 	    selModel: sm,
 	    disabled: true,
 	    dangerous: true,
@@ -423,6 +425,22 @@ Ext.define('PVE.qemu.HardwareView', {
 			Ext.Msg.alert('Error', response.htmlStatus);
 		    }
 		});
+	    },
+	    listeners: {
+		render: function(btn) {
+		    // hack: calculate an optimal button width on first display
+		    // to prevent the whole toolbar to move when we switch
+		    // between the "Remove" and "Detach" labels
+		    var def = btn.getSize().width;
+
+		    btn.setText(btn.altText);
+		    var alt = btn.getSize().width;
+
+		    btn.setText(btn.defaultText);
+
+		    var optimal = alt > def ? alt : def;
+		    btn.setSize({ width: optimal });
+		}
 	    }
 	});
 
@@ -504,22 +522,22 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var rowdef = rows[key];
 
 	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
-	    var isDisk = !key.match(/^unused\d+/) &&
+	    var isUsedDisk = !key.match(/^unused\d+/) &&
 		rowdef.tdCls == 'pve-itype-icon-storage' &&
 		(value && !value.match(/media=cdrom/));
 
 	    var isEfi = (key === 'efidisk0');
 
-
 	    remove_btn.setDisabled(rec.data['delete'] || (rowdef.never_delete === true));
+	    remove_btn.setText(isUsedDisk ? remove_btn.altText : remove_btn.defaultText);
 
 	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor);
 
-	    resize_btn.setDisabled(pending || !isDisk);
+	    resize_btn.setDisabled(pending || !isUsedDisk);
 
-	    move_btn.setDisabled(pending || !isDisk);
+	    move_btn.setDisabled(pending || !isUsedDisk);
 
-	    diskthrottle_btn.setDisabled(pending || !isDisk || isEfi);
+	    diskthrottle_btn.setDisabled(pending || !isUsedDisk || isEfi);
 
 	    revert_btn.setDisabled(!pending);
 
