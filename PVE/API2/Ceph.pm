@@ -552,6 +552,7 @@ use PVE::JSONSchema qw(get_standard_option);
 use JSON;
 use PVE::RADOS;
 use PVE::CephTools;
+use PVE::Network;
 
 use base qw(PVE::RESTHandler);
 
