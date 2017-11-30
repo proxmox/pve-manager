@@ -91,6 +91,9 @@ __PACKAGE__->register_method ({
     name => 'get',
     path => '',
     method => 'GET',
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
+    },
     description => "Read subscription info.",
     proxyto => 'node',
     permissions => { user => 'all' },
@@ -128,6 +131,9 @@ __PACKAGE__->register_method ({
     name => 'update',
     path => '',
     method => 'POST',
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
     description => "Update subscription info.",
     proxyto => 'node',
     protected => 1,
@@ -179,6 +185,9 @@ __PACKAGE__->register_method ({
     name => 'set',
     path => '',
     method => 'PUT',
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
     description => "Set subscription key.",
     proxyto => 'node',
     protected => 1,
