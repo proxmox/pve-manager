@@ -195,7 +195,7 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 		autoSelect: false
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,

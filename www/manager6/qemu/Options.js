@@ -59,7 +59,7 @@ Ext.define('PVE.qemu.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Start at boot'),
 		    items: {
-			xtype: 'pvecheckbox',
+			xtype: 'proxmoxcheckbox',
 			name: 'onboot',
 			uncheckedValue: 0,
 			defaultValue: 0,
@@ -129,7 +129,7 @@ Ext.define('PVE.qemu.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Use tablet for pointer'),
 		    items: {
-			xtype: 'pvecheckbox',
+			xtype: 'proxmoxcheckbox',
 			name: 'tablet',
 			checked: true,
 			uncheckedValue: 0,
@@ -164,7 +164,7 @@ Ext.define('PVE.qemu.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('ACPI support'),
 		    items: {
-			xtype: 'pvecheckbox',
+			xtype: 'proxmoxcheckbox',
 			name: 'acpi',
 			checked: true,
 			uncheckedValue: 0,
@@ -194,7 +194,7 @@ Ext.define('PVE.qemu.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('KVM hardware virtualization'),
 		    items: {
-			xtype: 'pvecheckbox',
+			xtype: 'proxmoxcheckbox',
 			name: 'kvm',
 			checked: true,
 			uncheckedValue: 0,
@@ -212,7 +212,7 @@ Ext.define('PVE.qemu.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Freeze CPU at startup'),
 		    items: {
-			xtype: 'pvecheckbox',
+			xtype: 'proxmoxcheckbox',
 			name: 'freeze',
 			uncheckedValue: 0,
 			defaultValue: 0,
@@ -230,7 +230,7 @@ Ext.define('PVE.qemu.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Use local time for RTC'),
 		    items: {
-			xtype: 'pvecheckbox',
+			xtype: 'proxmoxcheckbox',
 			name: 'localtime',
 			uncheckedValue: 0,
 			defaultValue: 0,
@@ -271,7 +271,7 @@ Ext.define('PVE.qemu.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Qemu Agent'),
 		    items: {
-			xtype: 'pvecheckbox',
+			xtype: 'proxmoxcheckbox',
 			name: 'agent',
 			uncheckedValue: 0,
 			defaultValue: 0,
@@ -288,7 +288,7 @@ Ext.define('PVE.qemu.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Protection'),
 		    items: {
-			xtype: 'pvecheckbox',
+			xtype: 'proxmoxcheckbox',
 			name: 'protection',
 			uncheckedValue: 0,
 			defaultValue: 0,

@@ -36,7 +36,7 @@ Ext.define('PVE.FirewallOptions', {
 		    subject: text,
 		    fieldDefaults: { labelWidth: labelWidth || 100 },
 		    items: {
-			xtype: 'pvecheckbox',
+			xtype: 'proxmoxcheckbox',
 			defaultValue: defaultValue || 0,
 			checked: defaultValue ? true : false,
 			name: name,

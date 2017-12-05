@@ -218,25 +218,25 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    fieldLabel: gettext('Cache')
 	},
 	{
-	    xtype: 'pvecheckbox',
+	    xtype: 'proxmoxcheckbox',
 	    fieldLabel: gettext('No backup'),
 	    name: 'nobackup'
 	},
 	{
-	    xtype: 'pvecheckbox',
+	    xtype: 'proxmoxcheckbox',
 	    hidden: me.insideWizard,
 	    fieldLabel: gettext('Skip replication'),
 	    name: 'noreplicate'
 	},
 	{
-	    xtype: 'pvecheckbox',
+	    xtype: 'proxmoxcheckbox',
 	    fieldLabel: gettext('Discard'),
 	    disabled: me.confid && !me.confid.match(/^scsi/),
 	    reference: 'discard',
 	    name: 'discard'
 	},
 	{
-	    xtype: 'pvecheckbox',
+	    xtype: 'proxmoxcheckbox',
 	    disabled: me.confid && !me.confid.match(/^(virtio|scsi)/),
 	    fieldLabel: 'IO thread',
 	    reference: 'iothread',

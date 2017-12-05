@@ -71,7 +71,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 
 	me.column2 = [
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,
@@ -85,14 +85,14 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		allowBlank: false
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'sparse',
 		checked: false,
 		uncheckedValue: 0,
 		fieldLabel: gettext('Thin provision')
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'writecache',
 		checked: true,
 		uncheckedValue: 0,

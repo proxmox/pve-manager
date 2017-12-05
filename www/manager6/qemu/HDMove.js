@@ -68,7 +68,7 @@ Ext.define('PVE.window.HDMove', {
 	});
 
 	items.push({
-	    xtype: 'pvecheckbox',
+	    xtype: 'proxmoxcheckbox',
 	    fieldLabel: gettext('Delete source'),
 	    name: 'deleteDisk',
 	    uncheckedValue: 0,

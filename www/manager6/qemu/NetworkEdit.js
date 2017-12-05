@@ -100,7 +100,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    },
 	    me.bridgesel,
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Firewall'),
 		name: 'firewall',
 		labelAlign: 'right'
@@ -158,7 +158,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		allowBlank: true
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Disconnect'),
 		name: 'disconnect'
 	    }

@@ -92,7 +92,7 @@ Ext.define('PVE.dc.UserEdit', {
                 fieldLabel: gettext('Expire')
             },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Enabled'),
 		name: 'enable',
 		uncheckedValue: 0,

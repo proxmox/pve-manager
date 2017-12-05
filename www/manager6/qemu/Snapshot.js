@@ -91,7 +91,7 @@ Ext.define('PVE.window.Snapshot', {
 	    });
 	} else {
 	    items.push({
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'vmstate',
 		uncheckedValue: 0,
 		defaultValue: 0,

@@ -96,14 +96,14 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	/*jslint confusion: false*/
 	me.column2 = [
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,
 		fieldLabel: gettext('Enable')
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'sparse',
 		checked: false,
 		uncheckedValue: 0,

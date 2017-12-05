@@ -22,7 +22,6 @@ JSSRC= 				                 	\
 	data/ResourceStore.js				\
 	data/model/RRDModels.js				\
 	form/VLanField.js				\
-	form/Checkbox.js				\
 	form/RRDTypeSelector.js				\
 	form/KVComboBox.js				\
 	form/Boolean.js					\

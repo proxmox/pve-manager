@@ -52,7 +52,7 @@ Ext.define('PVE.window.ReplicaEdit', {
 		name: 'comment'
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'enabled',
 		defaultValue: 'on',
 		checked: true,

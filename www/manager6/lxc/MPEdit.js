@@ -218,7 +218,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    allowBlank: true
 	});
 
-	me.quota = Ext.createWidget('pvecheckbox', {
+	me.quota = Ext.createWidget('proxmoxcheckbox', {
 	    name: 'quota',
 	    defaultValue: 0,
 	    disabled: me.unprivileged,
@@ -232,15 +232,15 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 
 	if (!isroot) {
 	    me.column2.splice(1, 0, {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'ro',
 		defaultValue: 0,
 		fieldLabel: gettext('Read-only'),
 		hidden: me.insideWizard
 	    });
 
-	    me.backup = Ext.createWidget('pvecheckbox',{
-		xtype: 'pvecheckbox',
+	    me.backup = Ext.createWidget('proxmoxcheckbox',{
+		xtype: 'proxmoxcheckbox',
 		name: 'backup',
 		fieldLabel: gettext('Backup')
 	    });
@@ -248,7 +248,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		me.column2.push(me.backup);
 	    }
 	    me.column2.push({
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'noreplicate',
 		fieldLabel: gettext('Skip replication')
 	    });

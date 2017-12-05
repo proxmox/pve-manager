@@ -47,7 +47,7 @@ Ext.define('PVE.dc.ACLAdd', {
 
 	if (!me.path) {
 	    items.push({
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'propagate',
 		checked: true,
 		uncheckedValue: 0,

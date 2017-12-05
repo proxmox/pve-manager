@@ -83,7 +83,7 @@ Ext.define('PVE.dc.AuthEdit', {
 	}
 
         column1.push({
-            xtype: 'pvecheckbox',
+            xtype: 'proxmoxcheckbox',
             fieldLabel: gettext('Default'),
             name: 'default',
             uncheckedValue: 0
@@ -115,7 +115,7 @@ Ext.define('PVE.dc.AuthEdit', {
 		    submitEmptyText: false
 		},
 		{
-                    xtype: 'pvecheckbox',
+                    xtype: 'proxmoxcheckbox',
                     fieldLabel: 'SSL',
                     name: 'secure',
                     uncheckedValue: 0

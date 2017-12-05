@@ -42,7 +42,7 @@ Ext.define('PVE.storage.SheepdogInputPanel', {
 
 	me.column2 = [
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,

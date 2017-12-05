@@ -30,7 +30,7 @@ Ext.define('PVE.lxc.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Start at boot'),
 		    items: {
-			xtype: 'pvecheckbox',
+			xtype: 'proxmoxcheckbox',
 			name: 'onboot',
 			uncheckedValue: 0,
 			defaultValue: 0,
@@ -64,7 +64,7 @@ Ext.define('PVE.lxc.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: '/dev/console',
 		    items: {
-			xtype: 'pvecheckbox',
+			xtype: 'proxmoxcheckbox',
 			name: 'console',
 			uncheckedValue: 0,
 			defaultValue: 1,
@@ -121,7 +121,7 @@ Ext.define('PVE.lxc.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Protection'),
 		    items: {
-			xtype: 'pvecheckbox',
+			xtype: 'proxmoxcheckbox',
 			name: 'protection',
 			uncheckedValue: 0,
 			defaultValue: 0,

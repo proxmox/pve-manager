@@ -146,7 +146,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		allowBlank: true
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Firewall'),
 		name: 'firewall',
 		checked: cdata.firewall

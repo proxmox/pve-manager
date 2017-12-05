@@ -116,7 +116,7 @@ Ext.define('PVE.CephCreateOsd', {
 		    emptyText: 'use OSD disk'
 		},
 		{
-		    xtype: 'pvecheckbox',
+		    xtype: 'proxmoxcheckbox',
 		    name: 'bluestore',
 		    fieldLabel: 'Bluestore',
 		    uncheckedValue: '0',
@@ -139,7 +139,7 @@ Ext.define('PVE.CephRemoveOsd', {
     method: 'DELETE',
     items: [
 	{
-	    xtype: 'pvecheckbox',
+	    xtype: 'proxmoxcheckbox',
 	    name: 'cleanup',
 	    checked: true,
 	    labelWidth: 130,

@@ -151,7 +151,7 @@ Ext.define('PVE.FirewallRulePanel', {
 	
 	me.column2 = [
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'enable',
 		checked: false,
 		uncheckedValue: 0,
@@ -337,7 +337,7 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
 	    column1: column1,
 	    column2: [
 		{
-		    xtype: 'pvecheckbox',
+		    xtype: 'proxmoxcheckbox',
 		    name: 'enable',
 		    checked: false,
 		    uncheckedValue: 0,

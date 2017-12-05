@@ -182,7 +182,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		name: 'mode'
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Enable'),
 		name: 'enabled',
 		uncheckedValue: 0,

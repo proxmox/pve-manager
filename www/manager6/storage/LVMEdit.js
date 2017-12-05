@@ -201,14 +201,14 @@ Ext.define('PVE.storage.LVMInputPanel', {
 		autoSelect: false
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,
 		fieldLabel: gettext('Enable')
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'shared',
 		uncheckedValue: 0,
 		fieldLabel: gettext('Shared')

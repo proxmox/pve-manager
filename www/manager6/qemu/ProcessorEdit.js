@@ -93,7 +93,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 		}
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Enable NUMA'),
 		name: 'numa',
 		uncheckedValue: 0
@@ -121,7 +121,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    me.column2.push({
 		hidden: me.insideWizard,
 		disabled: me.insideWizard,
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		fieldLabel: me.flagLabels[i] || flag,
 		name: flag,
 		uncheckedValue: 0

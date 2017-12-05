@@ -127,7 +127,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		autoSelect: false
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,

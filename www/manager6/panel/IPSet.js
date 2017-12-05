@@ -213,7 +213,7 @@ Ext.define('PVE.IPSetCidrEdit', {
 	    column1: column1,
 	    column2: [
 		{
-		    xtype: 'pvecheckbox',
+		    xtype: 'proxmoxcheckbox',
 		    name: 'nomatch',
 		    checked: false,
 		    uncheckedValue: 0,

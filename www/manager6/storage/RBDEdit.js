@@ -76,7 +76,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	/*jslint confusion: true*/
 	me.column2 = [
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,
@@ -92,7 +92,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		allowBlank: false
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'krbd',
 		uncheckedValue: 0,
 		fieldLabel: 'KRBD'

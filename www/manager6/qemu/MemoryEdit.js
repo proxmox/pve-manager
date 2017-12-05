@@ -67,7 +67,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		labelWidth: labelWidth
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		hotplug: me.hotplug,
 		name: 'ballooning',
 		value: '1',

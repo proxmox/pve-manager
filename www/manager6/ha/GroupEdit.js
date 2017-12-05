@@ -164,13 +164,13 @@ Ext.define('PVE.ha.GroupInputPanel', {
 
 	me.column2 = [
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'restricted',
 		uncheckedValue: 0,
 		fieldLabel: 'restricted'
 	    },
 	    {
-		xtype: 'pvecheckbox',
+		xtype: 'proxmoxcheckbox',
 		name: 'nofailback',
 		uncheckedValue: 0,
 		fieldLabel: 'nofailback'
