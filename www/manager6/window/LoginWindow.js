@@ -162,7 +162,7 @@ Ext.define('PVE.window.LoginWindow', {
 		name: 'realm'
 	    },
 	    {
-		xtype: 'pveLanguageSelector',
+		xtype: 'proxmoxLanguageSelector',
 		fieldLabel: gettext('Language'),
 		value: Ext.util.Cookies.get('PVELangCookie') || 'en',
 		name: 'lang',
