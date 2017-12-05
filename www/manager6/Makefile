@@ -39,7 +39,6 @@ JSSRC= 				                 	\
 	form/ControllerSelector.js			\
 	form/EmailNotificationSelector.js		\
 	form/RealmComboBox.js				\
-	form/BondModeSelector.js			\
 	form/ViewSelector.js				\
 	form/NodeSelector.js				\
 	form/FileSelector.js				\
