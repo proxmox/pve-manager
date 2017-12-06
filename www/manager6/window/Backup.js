@@ -93,7 +93,7 @@ Ext.define('PVE.window.Backup', {
 
 			var upid = response.result.data;
 			
-			var win = Ext.create('PVE.window.TaskViewer', { 
+			var win = Ext.create('Proxmox.window.TaskViewer', {
 			    upid: upid,
 			    listeners: {
 				close: function() {

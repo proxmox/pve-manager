@@ -96,7 +96,7 @@ Ext.define('PVE.node.CephMonList', {
 		params: { service: "mon." + rec.data.name },
 		success: function(response, options) {
 		    var upid = response.result.data;
-		    var win = Ext.create('PVE.window.TaskProgress', { upid: upid });
+		    var win = Ext.create('Proxmox.window.TaskProgress', { upid: upid });
 		    win.show();
 		},
 		failure: function(response, opts) {
@@ -151,7 +151,7 @@ Ext.define('PVE.node.CephMonList', {
 		    method: 'DELETE',
 		    success: function(response, options) {
 			var upid = response.result.data;
-			var win = Ext.create('PVE.window.TaskProgress', { upid: upid });
+			var win = Ext.create('Proxmox.window.TaskProgress', { upid: upid });
 			win.show();
 		    },
 		    failure: function(response, opts) {

@@ -124,7 +124,7 @@ Ext.define('PVE.storage.TemplateDownload', {
 		    success: function(response, options) {
 			var upid = response.result.data;
 
-			Ext.create('PVE.window.TaskViewer', {
+			Ext.create('Proxmox.window.TaskViewer', {
 			    upid: upid,
 			    listeners: {
 				destroy: me.reloadGrid

@@ -17,7 +17,7 @@ Ext.define('PVE.window.MPResize', {
 	    },
 	    success: function(response, opts) {
 		var upid = response.result.data;
-		var win = Ext.create('PVE.window.TaskViewer', { upid: upid });
+		var win = Ext.create('Proxmox.window.TaskViewer', { upid: upid });
 		win.show();
 		me.close();
 	    }

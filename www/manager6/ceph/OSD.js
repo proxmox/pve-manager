@@ -403,7 +403,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		method: 'POST',
 		success: function(response, options) {
 		    var upid = response.result.data;
-		    var win = Ext.create('PVE.window.TaskProgress', { upid: upid });
+		    var win = Ext.create('Proxmox.window.TaskProgress', { upid: upid });
 		    win.show();
 		    me.mon(win, 'close', reload, me);
 		},

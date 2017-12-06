@@ -181,7 +181,7 @@ Ext.define('PVE.lxc.SnapshotTree', {
 		    },
 		    success: function(response, options) {
 			var upid = response.result.data;
-			var win = Ext.create('PVE.window.TaskProgress', { upid: upid });
+			var win = Ext.create('Proxmox.window.TaskProgress', { upid: upid });
 			win.show();
 		    }
 		});
@@ -217,7 +217,7 @@ Ext.define('PVE.lxc.SnapshotTree', {
 		    },
 		    success: function(response, options) {
 			var upid = response.result.data;
-			var win = Ext.create('PVE.window.TaskProgress', { upid: upid });
+			var win = Ext.create('Proxmox.window.TaskProgress', { upid: upid });
 			win.show();
 		    }
 		});

@@ -43,7 +43,7 @@ Ext.define('PVE.window.Migrate', {
 			    var upid = response.result.data;
 			    var extraTitle = Ext.String.format(' ({0} ---> {1})', view.nodename, params.target);
 
-			    Ext.create('PVE.window.TaskViewer', {
+			    Ext.create('Proxmox.window.TaskViewer', {
 				upid: upid,
 				extraTitle: extraTitle
 			    }).show();

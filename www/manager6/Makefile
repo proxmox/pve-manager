@@ -75,7 +75,6 @@ JSSRC= 				                 	\
 	panel/GaugeWidget.js				\
 	panel/HealthWidget.js				\
 	window/LoginWindow.js				\
-	window/TaskViewer.js				\
 	window/Wizard.js				\
 	window/NotesEdit.js				\
 	window/Backup.js				\

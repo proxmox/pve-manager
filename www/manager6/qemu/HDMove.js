@@ -27,7 +27,7 @@ Ext.define('PVE.window.HDMove', {
 	    },
 	    success: function(response, options) {
 		var upid = response.result.data;
-		var win = Ext.create('PVE.window.TaskViewer', { upid: upid });
+		var win = Ext.create('Proxmox.window.TaskViewer', { upid: upid });
 		win.show();
 		me.close();
 	    }

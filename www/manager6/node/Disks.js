@@ -204,7 +204,7 @@ Ext.define('PVE.node.DiskList', {
 		    },
 		    success: function(response, options) {
 			var upid = response.result.data;
-			var win = Ext.create('PVE.window.TaskProgress', {
+			var win = Ext.create('Proxmox.window.TaskProgress', {
 			    upid: upid
 			});
 			win.show();
