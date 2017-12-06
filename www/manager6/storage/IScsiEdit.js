@@ -146,7 +146,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 });
 
 Ext.define('PVE.storage.IScsiEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

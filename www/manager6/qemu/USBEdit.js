@@ -150,7 +150,7 @@ Ext.define('PVE.qemu.USBInputPanel', {
 });
 
 Ext.define('PVE.qemu.USBEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     vmconfig: undefined,
 

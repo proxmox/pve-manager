@@ -1,5 +1,5 @@
 Ext.define('PVE.dc.UserEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     alias: ['widget.pveDcUserEdit'],
 
     isAdd: true,

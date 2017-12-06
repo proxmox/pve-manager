@@ -78,7 +78,7 @@ Ext.define('PVE.qemu.Smbios1InputPanel', {
 });
 
 Ext.define('PVE.qemu.Smbios1Edit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	/*jslint confusion: true */

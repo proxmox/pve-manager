@@ -51,7 +51,7 @@ Ext.define('PVE.qemu.EFIDiskInputPanel', {
 });
 
 Ext.define('PVE.qemu.EFIDiskEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     isAdd: true,
     subject: gettext('EFI Disk'),

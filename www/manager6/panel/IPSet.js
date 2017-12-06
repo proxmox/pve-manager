@@ -62,7 +62,7 @@ Ext.define('PVE.IPSetList', {
 	    if (!rec) {
 		return;
 	    }
-	    var win = Ext.create('PVE.window.Edit', {
+	    var win = Ext.create('Proxmox.window.Edit', {
 		subject: "IPSet '" + rec.data.name + "'",
 		url: me.base_url,
 		method: 'POST',
@@ -103,7 +103,7 @@ Ext.define('PVE.IPSetList', {
 	    text: gettext('Create'),
 	    handler: function() {
 		sm.deselectAll();
-		var win = Ext.create('PVE.window.Edit', {
+		var win = Ext.create('Proxmox.window.Edit', {
 		    subject: 'IPSet',
 		    url: me.base_url,
 		    method: 'POST',
@@ -163,7 +163,7 @@ Ext.define('PVE.IPSetList', {
 });
 
 Ext.define('PVE.IPSetCidrEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     cidr: undefined,
 

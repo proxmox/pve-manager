@@ -135,7 +135,7 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 });
 
 Ext.define('PVE.storage.ZFSPoolEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

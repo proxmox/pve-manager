@@ -208,7 +208,7 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 });
 
 Ext.define('PVE.storage.LvmThinEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

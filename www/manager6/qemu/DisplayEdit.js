@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.DisplayEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     vmconfig: undefined,
 

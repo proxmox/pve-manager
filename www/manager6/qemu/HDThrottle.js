@@ -158,7 +158,7 @@ Ext.define('PVE.qemu.HDThrottleInputPanel', {
 });
 
 Ext.define('PVE.qemu.HDThrottle', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     isAdd: true,
 

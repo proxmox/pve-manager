@@ -293,7 +293,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	
 
 Ext.define('PVE.lxc.NetworkEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     isAdd: true,
 

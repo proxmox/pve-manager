@@ -1,5 +1,5 @@
 Ext.define('PVE.dc.GroupEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     alias: ['widget.pveDcGroupEdit'],
 
     initComponent : function() {

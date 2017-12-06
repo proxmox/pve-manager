@@ -97,7 +97,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 });
 
 Ext.define('PVE.lxc.DNSEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;
@@ -161,7 +161,7 @@ Ext.define('PVE.lxc.DNS', {
 		defaultValue: me.pveSelNode.data.name,
 		header: gettext('Hostname'),
 		editor: caps.vms['VM.Config.Network'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Hostname'),
 		    items: {
 			xtype: 'inputpanel',

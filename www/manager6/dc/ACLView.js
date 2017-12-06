@@ -1,5 +1,5 @@
 Ext.define('PVE.dc.ACLAdd', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     alias: ['widget.pveACLAdd'],
     url: '/access/acl',
     method: 'PUT',

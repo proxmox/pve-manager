@@ -1,5 +1,5 @@
 Ext.define('PVE.CephCreateMon', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     alias: ['widget.pveCephCreateMon'],
 
     subject: 'Ceph Monitor/Manager',

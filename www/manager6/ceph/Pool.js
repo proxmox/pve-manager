@@ -1,5 +1,5 @@
 Ext.define('PVE.CephCreatePool', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     alias: 'widget.pveCephCreatePool',
 
     showProgress: true,

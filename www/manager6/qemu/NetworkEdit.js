@@ -169,7 +169,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 });
 
 Ext.define('PVE.qemu.NetworkEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     isAdd: true,
 

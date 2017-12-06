@@ -55,7 +55,7 @@ Ext.define('PVE.panel.StartupInputPanel', {
 });
 
 Ext.define('PVE.window.StartupEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     alias: 'widget.pveWindowStartupEdit',
     onlineHelp: undefined,
 

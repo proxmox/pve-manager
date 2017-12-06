@@ -56,7 +56,7 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
 });
 
 Ext.define('PVE.qemu.CPUOptions', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

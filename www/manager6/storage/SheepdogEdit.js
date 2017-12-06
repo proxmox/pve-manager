@@ -67,7 +67,7 @@ Ext.define('PVE.storage.SheepdogInputPanel', {
 });
 
 Ext.define('PVE.storage.SheepdogEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

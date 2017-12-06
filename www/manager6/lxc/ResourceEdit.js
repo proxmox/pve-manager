@@ -2,7 +2,7 @@
 var labelWidth = 120;
 
 Ext.define('PVE.lxc.MemoryEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;
@@ -20,7 +20,7 @@ Ext.define('PVE.lxc.MemoryEdit', {
 
 
 Ext.define('PVE.lxc.CPUEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

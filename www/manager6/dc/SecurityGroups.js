@@ -6,7 +6,7 @@ Ext.define('pve-security-groups', {
 });
 
 Ext.define('PVE.SecurityGroupEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     base_url: "/cluster/firewall/groups",
 

@@ -27,7 +27,7 @@ Ext.define('PVE.qemu.Options', {
 		defaultValue: me.pveSelNode.data.name,
 		header: gettext('Name'),
 		editor: caps.vms['VM.Config.Options'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Name'),
 		    items: {
 			xtype: 'inputpanel',
@@ -56,7 +56,7 @@ Ext.define('PVE.qemu.Options', {
 		defaultValue: '',
 		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Start at boot'),
 		    items: {
 			xtype: 'proxmoxcheckbox',
@@ -126,7 +126,7 @@ Ext.define('PVE.qemu.Options', {
 		defaultValue: true,
 		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.HWType'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Use tablet for pointer'),
 		    items: {
 			xtype: 'proxmoxcheckbox',
@@ -144,7 +144,7 @@ Ext.define('PVE.qemu.Options', {
 		defaultValue: 'disk,network,usb',
 		renderer:  PVE.Utils.render_hotplug_features,
 		editor: caps.vms['VM.Config.HWType'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Hotplug'),
 		    items: {
 			xtype: 'pveHotplugFeatureSelector',
@@ -161,7 +161,7 @@ Ext.define('PVE.qemu.Options', {
 		defaultValue: true,
 		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.HWType'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('ACPI support'),
 		    items: {
 			xtype: 'proxmoxcheckbox',
@@ -191,7 +191,7 @@ Ext.define('PVE.qemu.Options', {
 		defaultValue: true,
 		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.HWType'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('KVM hardware virtualization'),
 		    items: {
 			xtype: 'proxmoxcheckbox',
@@ -209,7 +209,7 @@ Ext.define('PVE.qemu.Options', {
 		defaultValue: false,
 		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.PowerMgmt'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Freeze CPU at startup'),
 		    items: {
 			xtype: 'proxmoxcheckbox',
@@ -227,7 +227,7 @@ Ext.define('PVE.qemu.Options', {
 		defaultValue: false,
 		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Use local time for RTC'),
 		    items: {
 			xtype: 'proxmoxcheckbox',
@@ -244,7 +244,7 @@ Ext.define('PVE.qemu.Options', {
 		header: gettext('RTC start date'),
 		defaultValue: 'now',
 		editor: caps.vms['VM.Config.Options'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('RTC start date'),
 		    items: {
 			xtype: 'proxmoxtextfield',
@@ -268,7 +268,7 @@ Ext.define('PVE.qemu.Options', {
 		defaultValue: false,
 		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Qemu Agent'),
 		    items: {
 			xtype: 'proxmoxcheckbox',
@@ -285,7 +285,7 @@ Ext.define('PVE.qemu.Options', {
 		defaultValue: false,
 		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Protection'),
 		    items: {
 			xtype: 'proxmoxcheckbox',

@@ -249,7 +249,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 /*jslint confusion: false */
 
 Ext.define('PVE.qemu.HDEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     isAdd: true,
 

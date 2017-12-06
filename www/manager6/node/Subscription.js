@@ -1,6 +1,6 @@
 /*global Blob*/
 Ext.define('PVE.node.SubscriptionKeyEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     title: gettext('Upload Subscription Key'),
     width: 300,
     items: {

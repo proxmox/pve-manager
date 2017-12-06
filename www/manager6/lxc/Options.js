@@ -27,7 +27,7 @@ Ext.define('PVE.lxc.Options', {
 		defaultValue: '',
 		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Start at boot'),
 		    items: {
 			xtype: 'proxmoxcheckbox',
@@ -61,7 +61,7 @@ Ext.define('PVE.lxc.Options', {
 		defaultValue: 1,
 		renderer: Proxmox.Utils.format_enabled_toggle,
 		editor: caps.vms['VM.Config.Options'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: '/dev/console',
 		    items: {
 			xtype: 'proxmoxcheckbox',
@@ -78,7 +78,7 @@ Ext.define('PVE.lxc.Options', {
 		header: gettext('TTY count'),
 		defaultValue: 2,
 		editor: caps.vms['VM.Config.Options'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('TTY count'),
 		    items: {
 			xtype: 'proxmoxintegerfield',
@@ -96,7 +96,7 @@ Ext.define('PVE.lxc.Options', {
 		header: gettext('Console mode'),
 		defaultValue: 'tty',
 		editor: caps.vms['VM.Config.Options'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Console mode'),
 		    items: {
 			xtype: 'proxmoxKVComboBox',
@@ -118,7 +118,7 @@ Ext.define('PVE.lxc.Options', {
 		defaultValue: false,
 		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Protection'),
 		    items: {
 			xtype: 'proxmoxcheckbox',

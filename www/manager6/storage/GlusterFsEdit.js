@@ -165,7 +165,7 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 });
 
 Ext.define('PVE.storage.GlusterFsEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

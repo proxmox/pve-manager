@@ -38,7 +38,7 @@ Ext.define('PVE.FirewallOptions', {
 		required: true,
 		defaultValue: 'nolog',
 		editor: {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: name,
 		    fieldDefaults: { labelWidth: labelWidth || 100 },
 		    items: {
@@ -85,7 +85,7 @@ Ext.define('PVE.FirewallOptions', {
 		required: true,
 		defaultValue: 'DROP',
 		editor: {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Input Policy'),
 		    items: {
 			xtype: 'pveFirewallPolicySelector',
@@ -101,7 +101,7 @@ Ext.define('PVE.FirewallOptions', {
 		required: true,
 		defaultValue: 'ACCEPT',
 		editor: {
-		    xtype: 'pveWindowEdit',
+		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Output Policy'),
 		    items: {
 			xtype: 'pveFirewallPolicySelector',

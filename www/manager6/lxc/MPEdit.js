@@ -286,7 +286,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 });
 
 Ext.define('PVE.lxc.MountPointEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     unprivileged: false,
 

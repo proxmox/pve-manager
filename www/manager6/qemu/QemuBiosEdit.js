@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.BiosEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     alias: 'widget.pveQemuBiosEdit',
 
     initComponent : function() {

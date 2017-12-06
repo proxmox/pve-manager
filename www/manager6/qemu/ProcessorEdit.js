@@ -133,7 +133,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 });
 
 Ext.define('PVE.qemu.ProcessorEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

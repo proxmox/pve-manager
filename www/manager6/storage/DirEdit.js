@@ -91,7 +91,7 @@ Ext.define('PVE.storage.DirInputPanel', {
 });
 
 Ext.define('PVE.storage.DirEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

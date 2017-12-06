@@ -1,5 +1,5 @@
 Ext.define('PVE.pool.AddVM', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     width: 600,
     height: 400,
     isAdd: true,
@@ -97,7 +97,7 @@ Ext.define('PVE.pool.AddVM', {
 });
 
 Ext.define('PVE.pool.AddStorage', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 

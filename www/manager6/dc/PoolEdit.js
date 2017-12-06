@@ -1,5 +1,5 @@
 Ext.define('PVE.dc.PoolEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     alias: ['widget.pveDcPoolEdit'],
 
     initComponent : function() {

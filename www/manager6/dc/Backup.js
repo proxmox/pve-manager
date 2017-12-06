@@ -1,5 +1,5 @@
 Ext.define('PVE.dc.BackupEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     alias: ['widget.pveDcBackupEdit'],
 
     defaultFocus: undefined,

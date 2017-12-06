@@ -74,7 +74,7 @@ Ext.define('PVE.form.CephDiskSelector', {
 });
 
 Ext.define('PVE.CephCreateOsd', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     alias: ['widget.pveCephCreateOsd'],
 
     subject: 'Ceph OSD',
@@ -130,7 +130,7 @@ Ext.define('PVE.CephCreateOsd', {
 });
 
 Ext.define('PVE.CephRemoveOsd', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     alias: ['widget.pveCephRemoveOsd'],
 
     isRemove: true,

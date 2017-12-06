@@ -117,7 +117,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 });
 
 Ext.define('PVE.storage.RBDEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

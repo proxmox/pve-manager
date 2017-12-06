@@ -155,7 +155,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 });
 
 Ext.define('PVE.ha.VMResourceEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     vmid: undefined,
     guestType: undefined,

@@ -149,7 +149,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 });
 
 Ext.define('PVE.qemu.BootOrderEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     items: [{
 	xtype: 'pveQemuBootOrderPanel',

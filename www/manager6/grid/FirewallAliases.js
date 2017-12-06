@@ -1,5 +1,5 @@
 Ext.define('PVE.FirewallAliasEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     base_url: undefined,
     

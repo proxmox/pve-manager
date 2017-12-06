@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.ScsiHwEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

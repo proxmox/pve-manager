@@ -1,5 +1,5 @@
 Ext.define('PVE.window.ReplicaEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
     xtype: 'pveReplicaEdit',
 
     subject: gettext('Replication Job'),

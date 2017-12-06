@@ -149,7 +149,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 });
 
 Ext.define('PVE.qemu.MemoryEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

@@ -142,7 +142,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 });
 
 Ext.define('PVE.qemu.CDEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

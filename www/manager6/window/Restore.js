@@ -1,5 +1,5 @@
 Ext.define('PVE.window.Restore', {
-    extend: 'Ext.window.Window', // fixme: PVE.window.Edit?
+    extend: 'Ext.window.Window', // fixme: Proxmox.window.Edit?
 
     resizable: false,
 

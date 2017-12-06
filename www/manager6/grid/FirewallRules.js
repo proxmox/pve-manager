@@ -222,7 +222,7 @@ Ext.define('PVE.FirewallRulePanel', {
 });
 
 Ext.define('PVE.FirewallRuleEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     base_url: undefined,
     list_refs_url: undefined,
@@ -287,7 +287,7 @@ Ext.define('PVE.FirewallRuleEdit', {
 });
 
 Ext.define('PVE.FirewallGroupRuleEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     base_url: undefined,
 

@@ -160,7 +160,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 });
 
 Ext.define('PVE.storage.NFSEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
 	var me = this;

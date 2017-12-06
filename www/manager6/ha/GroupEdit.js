@@ -191,7 +191,7 @@ Ext.define('PVE.ha.GroupInputPanel', {
 });
 
 Ext.define('PVE.ha.GroupEdit', {
-    extend: 'PVE.window.Edit',
+    extend: 'Proxmox.window.Edit',
 
     groupId: undefined,
 
