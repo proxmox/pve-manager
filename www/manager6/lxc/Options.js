@@ -139,43 +139,7 @@ Ext.define('PVE.lxc.Options', {
 
 	var baseurl = 'nodes/' + nodename + '/lxc/' + vmid + '/config';
 
-	var reload = function() {
-	    me.rstore.load();
-	};
-
 	var sm = Ext.create('Ext.selection.RowModel', {});
-
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
-		return;
-	    }
-
-	    var rowdef = rows[rec.data.key];
-	    if (!rowdef.editor) {
-		return;
-	    }
-
-	    var win;
-	    if (Ext.isString(rowdef.editor)) {
-		win = Ext.create(rowdef.editor, {
-		    pveSelNode: me.pveSelNode,
-		    confid: rec.data.key,
-		    url: '/api2/extjs/' + baseurl
-		});
-	    } else {
-		var config = Ext.apply({
-		    pveSelNode: me.pveSelNode,
-		    confid: rec.data.key,
-		    url: '/api2/extjs/' + baseurl
-		}, rowdef.editor);
-		win = Ext.createWidget(rowdef.editor.xtype, config);
-		win.load();
-	    }
-
-	    win.show();
-	    win.on('destroy', reload);
-	};
 
 	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
@@ -185,21 +149,29 @@ Ext.define('PVE.lxc.Options', {
 		var rowdef = rows[rec.data.key];
 		return !!rowdef.editor;
 	    },
-	    handler: run_editor
+	    handler: me.run_editor
 	});
 
 	Ext.apply(me, {
-	    url: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/config",
+	    url: "/api2/json/" + baseurl,
 	    selModel: sm,
+	    interval: 5000,
 	    tbar: [ edit_btn ],
 	    rows: rows,
+	    editorConfig: {
+		url: '/api2/extjs/' + baseurl
+	    },
 	    listeners: {
-		itemdblclick: run_editor,
-		activate: reload
+		itemdblclick: me.run_editor
 	    }
 	});
 
 	me.callParent();
+
+	me.on('activate', me.rstore.startUpdate);
+	me.on('destroy', me.rstore.stopUpdate);
+	me.on('deactivate', me.rstore.stopUpdate);
+
     }
 });
 
