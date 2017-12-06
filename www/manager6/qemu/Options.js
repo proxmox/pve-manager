@@ -72,7 +72,7 @@ Ext.define('PVE.qemu.Options', {
 		header: gettext('Start/Shutdown order'),
 		defaultValue: '',
 		renderer: PVE.Utils.render_kvm_startup,
-		editor: caps.vms['VM.Config.Options'] && caps.nodes['Sys.Modify'] ? 
+		editor: caps.vms['VM.Config.Options'] && caps.nodes['Sys.Modify'] ?
 		    {
 			xtype: 'pveWindowStartupEdit',
 			onlineHelp: 'qm_startup_and_shutdown'
@@ -301,47 +301,10 @@ Ext.define('PVE.qemu.Options', {
 
 	var baseurl = 'nodes/' + nodename + '/qemu/' + vmid + '/config';
 
-	var reload = function() {
-	    me.rstore.load();
-	};
-
-	var run_editor = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
-		return;
-	    }
-
-	    var rowdef = rows[rec.data.key];
-	    if (!rowdef.editor) {
-		return;
-	    }
-
-	    var win;
-	    if (Ext.isString(rowdef.editor)) {
-		win = Ext.create(rowdef.editor, {
-		    pveSelNode: me.pveSelNode,
-		    confid: rec.data.key,
-		    url: '/api2/extjs/' + baseurl
-		});
-	    } else {
-		var config = Ext.apply({
-		    pveSelNode: me.pveSelNode,
-		    confid: rec.data.key,
-		    url: '/api2/extjs/' + baseurl
-		}, rowdef.editor);
-		win = Ext.createWidget(rowdef.editor.xtype, config);
-		win.load();
-	    }
-
-	    win.show();
-	    win.on('destroy', reload);
-	};
-
 	var edit_btn = new Ext.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
-	    handler: run_editor
+	    handler: me.run_editor
 	});
 
         var revert_btn = new Proxmox.button.Button({
@@ -366,7 +329,7 @@ Ext.define('PVE.qemu.Options', {
                         'revert': revert
                     },
                     callback: function() {
-                        reload();
+                        me.reload();
                     },
                     failure: function (response, opts) {
                         Ext.Msg.alert('Error',response.htmlStatus);
@@ -398,8 +361,11 @@ Ext.define('PVE.qemu.Options', {
 	    cwidth1: 250,
 	    tbar: [ edit_btn, revert_btn ],
 	    rows: rows,
+	    editorConfig: {
+		url: "/api2/extjs/" + baseurl
+	    },
 	    listeners: {
-		itemdblclick: run_editor,
+		itemdblclick: me.run_editor,
 		selectionchange: set_button_status
 	    }
 	});
@@ -407,7 +373,8 @@ Ext.define('PVE.qemu.Options', {
 	me.callParent();
 
 	me.on('activate', me.rstore.startUpdate);
-	me.on('destroy', me.rstore.stopUpdate);	
+	me.on('destroy', me.rstore.stopUpdate);
+	me.on('deactivate', me.rstore.stopUpdate);
 
 	me.rstore.on('datachanged', function() {
 	    set_button_status();
