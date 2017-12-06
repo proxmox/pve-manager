@@ -1,231 +1,66 @@
-Ext.define('PVE.dc.HttpProxyEdit', {
-    extend: 'PVE.window.Edit',
-
-    initComponent : function() {
-	var me = this;
-
-	Ext.applyIf(me, {
-	    subject: gettext('HTTP proxy'),
-	    items: {
-		xtype: 'proxmoxtextfield',
-		name: 'http_proxy',
-		vtype: 'HttpProxy',
-		emptyText: Proxmox.Utils.noneText,
-		deleteEmpty: true,
-		value: '',
-		fieldLabel: gettext('HTTP proxy')
-	    }
-	});
-
-	me.callParent();
-
-	me.load();
-    }
-});
-
-Ext.define('PVE.dc.KeyboardEdit', {
-    extend: 'PVE.window.Edit',
-
-    initComponent : function() {
-	var me = this;
-
-	Ext.applyIf(me, {
-	    subject: gettext('Keyboard Layout'),
-	    items: {
-		xtype: 'VNCKeyboardSelector',
-		name: 'keyboard',
-		value: '__default__',
-		fieldLabel: gettext('Keyboard Layout')
-	    }
-	});
-
-	me.callParent();
-
-	me.load();
-    }
-});
-
-Ext.define('PVE.dc.ConsoleViewerEdit', {
-    extend: 'PVE.window.Edit',
-
-    initComponent : function() {
-	var me = this;
-
-	var data = [];
-
-	Ext.Array.each(['__default__','vv', 'html5'], function(value) {
-	    data.push([value, PVE.Utils.render_console_viewer(value)]);
-	});
-
-	Ext.applyIf(me, {
-	    subject: gettext('Console Viewer'),
-	    items: {
-		xtype: 'proxmoxKVComboBox',
-		name: 'console',
-		value: '__default__',
-		fieldLabel: gettext('Console Viewer'),
-		comboItems: data
-	    }
-	});
-
-	me.callParent();
-
-	me.load();
-    }
-});
-
-Ext.define('PVE.dc.EmailFromEdit', {
-    extend: 'PVE.window.Edit',
-
-    initComponent : function() {
-	var me = this;
-
-	Ext.applyIf(me, {
-	    subject: gettext('Email from address'),
-	    items: {
-		xtype: 'proxmoxtextfield',
-		name: 'email_from',
-		vtype: 'pveMail',
-		emptyText: 'root@$hostname',
-		deleteEmpty: true,
-		value: '',
-		fieldLabel: gettext('Email from address')
-	    }
-	});
-
-	me.callParent();
-
-	me.load();
-    }
-});
-
-Ext.define('PVE.dc.MacPrefixEdit', {
-    extend: 'PVE.window.Edit',
-
-    initComponent : function() {
-	var me = this;
-
-	Ext.applyIf(me, {
-	    subject: gettext('MAC address prefix'),
-	    items: {
-		xtype: 'proxmoxtextfield',
-		name: 'mac_prefix',
-		regex: /^[a-f0-9]{2}(?::[a-f0-9]{2}){0,2}:?$/i,
-		regexText: gettext('Example') + ': 02:8f',
-		emptyText: Proxmox.Utils.noneText,
-		deleteEmpty: true,
-		value: '',
-		fieldLabel: gettext('MAC address prefix')
-	    }
-	});
-
-	me.callParent();
-
-	me.load();
-    }
-});
-
 Ext.define('PVE.dc.OptionView', {
     extend: 'Proxmox.grid.ObjectGrid',
     alias: ['widget.pveDcOptionView'],
 
     onlineHelp: 'datacenter_configuration_file',
 
+    monStoreErrors: true,
+
     initComponent : function() {
 	var me = this;
 
-	var reload = function() {
-	    me.rstore.load();
-	};
-
-	var rows = {
-	    keyboard: { 
-		header: gettext('Keyboard Layout'), 
-		editor: 'PVE.dc.KeyboardEdit',
-		renderer: PVE.Utils.render_kvm_language,
-		required: true 
-	    },
-	    http_proxy: { 
-		header: gettext('HTTP proxy'),
-		editor: 'PVE.dc.HttpProxyEdit', 
-		required: true,
-		renderer: function(value) {
-		    if (!value) {
-			return Proxmox.Utils.noneText;
-		    }
-		    return value;
-		}
-	    },
-	    console: {
-		header: gettext('Console Viewer'),
-		editor: 'PVE.dc.ConsoleViewerEdit',
-		required: true,
-		renderer: PVE.Utils.render_console_viewer
-	    },
-	    email_from: { 
-		header: gettext('Email from address'),
-		editor: 'PVE.dc.EmailFromEdit', 
-		required: true,
-		renderer: function(value) {
-		    if (!value) {
-			return 'root@$hostname';
-		    }
-		    return value;
-		}
-	    },
-	    mac_prefix: {
-		header: gettext('MAC address prefix'),
-		editor: 'PVE.dc.MacPrefixEdit',
-		required: true,
-		renderer: function(value) {
-		    if (!value) {
-			return Proxmox.Utils.noneText;
-		    }
-		    return value;
-		}
-	    }
-	};
-
-	var sm = Ext.create('Ext.selection.RowModel', {});
-
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
-		return;
-	    }
-
-	    var rowdef = rows[rec.data.key];
-	    if (!rowdef.editor) {
-		return;
-	    }
-	    
-	    var win = Ext.create(rowdef.editor, {
-		url: "/api2/extjs/cluster/options",
-		confid: rec.data.key
-	    });
-	    win.show();
-	    win.on('destroy', reload);
-	};
-
-	var edit_btn = new Proxmox.button.Button({
-	    text: gettext('Edit'),
-	    disabled: true,
-	    selModel: sm,
-	    handler: run_editor
+	me.add_combobox_row('keyboard', gettext('Keyboard Layout'), {
+	    renderer: PVE.Utils.render_kvm_language,
+	    comboItems: PVE.Utils.kvm_keymap_array(),
+	    defaultValue: '__default__',
+	    deleteEmpty: true
+	});
+	me.add_text_row('http_proxy', gettext('HTTP proxy'), {
+	    defaultValue: Proxmox.Utils.noneText,
+	    vtype: 'HttpProxy',
+	    deleteEmpty: true
+	});
+	me.add_combobox_row('console', gettext('Console Viewer'), {
+	    renderer: PVE.Utils.render_console_viewer,
+	    comboItems: PVE.Utils.console_viewer_array(),
+	    defaultValue: '__default__',
+	    deleteEmpty: true
+	});
+	me.add_text_row('email_from', gettext('Email from address'), {
+	    deleteEmpty: true,
+	    vtype: 'pveMail',
+	    defaultValue: 'root@$hostname'
+	});
+	me.add_text_row('mac_prefix', gettext('MAC address prefix'), {
+	    vtype: 'MacPrefix',
+	    defaultValue: Proxmox.Utils.noneText
 	});
 
+	me.selModel = Ext.create('Ext.selection.RowModel', {});
+
 	Ext.apply(me, {
+	    tbar: [{
+		text: gettext('Edit'),
+		xtype: 'proxmoxButton',
+		disabled: true,
+		handler: function() { me.run_editor(); },
+		selModel: me.selModel
+	    }],
 	    url: "/api2/json/cluster/options",
-	    interval: 1000,
-	    selModel: sm,
-	    tbar: [ edit_btn ],
-	    rows: rows,
+	    editorConfig: {
+		url: "/api2/extjs/cluster/options"
+	    },
+	    interval: 5000,
+	    cwidth1: 200,
 	    listeners: {
-		itemdblclick: run_editor,
-		activate: reload
+		itemdblclick: me.run_editor
 	    }
 	});
 
 	me.callParent();
+
+	me.on('activate', me.rstore.startUpdate);
+	me.on('destroy', me.rstore.stopUpdate);
+	me.on('deactivate', me.rstore.stopUpdate);
     }
 });

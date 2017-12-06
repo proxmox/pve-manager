@@ -300,6 +300,12 @@ Ext.define('PVE.Utils', { utilities: {
 	}
     },
 
+    console_viewer_array: function() {
+	return Ext.Array.map(['__default__','vv', 'html5'], function(v) {
+	    return [v, PVE.Utils.render_console_viewer(v)];
+	});
+    },
+
     render_kvm_vga_driver: function (value) {
 	if (!value) {
 	    return Proxmox.Utils.defaultText;
