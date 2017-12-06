@@ -23,65 +23,17 @@ Ext.define('PVE.FirewallOptions', {
 	    throw "unknown firewall option type";
 	}
 
-	var rows = {};
+	me.rows = {};
 
-	var add_boolean_row = function(name, text, defaultValue, labelWidth) {
-	    rows[name] = {
-		header: text,
-		required: true,
-		defaultValue: defaultValue || 0,
-		renderer: Proxmox.Utils.format_enabled_toggle,
-		editor: {
-		    xtype: 'pveWindowEdit',
-		    subject: text,
-		    fieldDefaults: { labelWidth: labelWidth || 100 },
-		    items: {
-			xtype: 'proxmoxcheckbox',
-			defaultValue: defaultValue || 0,
-			checked: defaultValue ? true : false,
-			name: name,
-			uncheckedValue: 0,
-			fieldLabel: text
-		    }
-		}
-	    };
+	var add_boolean_row = function(name, text, defaultValue) {
+	    me.add_boolean_row(name, text, { defaultValue: defaultValue });
 	};
-
-	var add_integer_row = function(name, text, labelWidth, minValue) {
-	    rows[name] = {
-		header: text,
-		required: true,
-		renderer: function(value) {
-		    return value || Proxmox.Utils.defaultText;
-		},
-		editor: {
-		    xtype: 'pveWindowEdit',
-		    subject: text,
-		    fieldDefaults: { labelWidth: labelWidth || 100 },
-		    items: {
-			xtype: 'proxmoxintegerfield',
-			name: name,
-			minValue: minValue,
-			fieldLabel: text,
-			emptyText: gettext('Default'),
-			getSubmitData: function() {
-			    var me = this;
-			    var val = me.getSubmitValue();
-			    if (val !== null && val !== '') {
-				var data = {};
-				data[name] = val;
-				return data;
-			    } else {
-				return { 'delete' : name };
-			    }
-			}
-		    }
-		}
-	    };
+	var add_integer_row = function(name, text, minValue) {
+	    me.add_boolean_row(name, text, { minValue: minValue });
 	};
 
 	var add_log_row = function(name, labelWidth) {
-	    rows[name] = {
+	    me.rows[name] = {
 		header: name,
 		required: true,
 		defaultValue: 'nolog',
@@ -107,9 +59,9 @@ Ext.define('PVE.FirewallOptions', {
 	    add_boolean_row('nosmurfs', gettext('SMURFS filter'), 1);
 	    add_boolean_row('tcpflags', gettext('TCP flags filter'), 0);
 	    add_boolean_row('ndp', 'NDP', 1);
-	    add_integer_row('nf_conntrack_max', 'nf_conntrack_max', 120, 32768);
-	    add_integer_row('nf_conntrack_tcp_timeout_established', 
-			    'nf_conntrack_tcp_timeout_established', 250, 7875);
+	    add_integer_row('nf_conntrack_max', 'nf_conntrack_max', 32768);
+	    add_integer_row('nf_conntrack_tcp_timeout_established',
+			    'nf_conntrack_tcp_timeout_established', 7875);
 	    add_log_row('log_level_in');
 	    add_log_row('log_level_out');
 	    add_log_row('tcp_flags_log_level', 120);
@@ -125,10 +77,10 @@ Ext.define('PVE.FirewallOptions', {
 	    add_log_row('log_level_out');
 	} else if (me.fwtype === 'dc') {
 	    add_boolean_row('enable', gettext('Firewall'), 0);
-	} 
- 
+	}
+
 	if (me.fwtype === 'dc' || me.fwtype === 'vm') {
-	    rows.policy_in = {
+	    me.rows.policy_in = {
 		header: gettext('Input Policy'),
 		required: true,
 		defaultValue: 'DROP',
@@ -144,7 +96,7 @@ Ext.define('PVE.FirewallOptions', {
 		}
 	    };
 
-	    rows.policy_out = {
+	    me.rows.policy_out = {
 		header: gettext('Output Policy'),
 		required: true,
 		defaultValue: 'ACCEPT',
@@ -161,47 +113,10 @@ Ext.define('PVE.FirewallOptions', {
 	    };
 	}
 
-	var reload = function() {
-	    me.rstore.load();
-	};
-
-	var run_editor = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
-		return;
-	    }
-
-	    var rowdef = rows[rec.data.key];
-	    if (!rowdef.editor) {
-		return;
-	    }
-
-	    var win;
-	    if (Ext.isString(rowdef.editor)) {
-		win = Ext.create(rowdef.editor, {
-		    pveSelNode: me.pveSelNode,
-		    confid: rec.data.key,
-		    url: '/api2/extjs' + me.base_url
-		});
-	    } else {
-		var config = Ext.apply({
-		    pveSelNode: me.pveSelNode,
-		    confid: rec.data.key,
-		    url: '/api2/extjs' + me.base_url
-		}, rowdef.editor);
-		win = Ext.createWidget(rowdef.editor.xtype, config);
-		win.load();
-	    }
-
-	    win.show();
-	    win.on('destroy', reload);
-	};
-
 	var edit_btn = new Ext.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
-	    handler: run_editor
+	    handler: me.run_editor
 	});
 
 	var set_button_status = function() {
@@ -212,22 +127,26 @@ Ext.define('PVE.FirewallOptions', {
 		edit_btn.disable();
 		return;
 	    }
-	    var rowdef = rows[rec.data.key];
+	    var rowdef = me.rows[rec.data.key];
 	    edit_btn.setDisabled(!rowdef.editor);
 	};
 
 	Ext.apply(me, {
 	    url: "/api2/json" + me.base_url,
 	    tbar: [ edit_btn ],
-	    rows: rows,
+	    editorConfig: {
+		url: '/api2/extjs/' + me.base_url
+	    },
 	    listeners: {
-		itemdblclick: run_editor,
+		itemdblclick: me.run_editor,
 		selectionchange: set_button_status
 	    }
 	});
 
 	me.callParent();
 
-	me.on('activate', reload);
+	me.on('activate', me.rstore.startUpdate);
+	me.on('destroy', me.rstore.stopUpdate);
+	me.on('deactivate', me.rstore.stopUpdate);
     }
 });
