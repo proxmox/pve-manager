@@ -1,5 +1,5 @@
 Ext.define('PVE.form.iScsiProviderSelector', {
-    extend: 'PVE.form.KVComboBox',
+    extend: 'Proxmox.form.KVComboBox',
     alias: ['widget.pveiScsiProviderSelector'],
     comboItems: [
 	['comstar', 'Comstar'],

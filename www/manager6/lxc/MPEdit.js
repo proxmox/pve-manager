@@ -144,7 +144,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		var name = 'mp' + i.toString();
 		names.push([name, name]);
 	    }
-	    me.mpsel = Ext.create('PVE.form.KVComboBox', {
+	    me.mpsel = Ext.create('Proxmox.form.KVComboBox', {
 		name: 'mpsel',
 		fieldLabel: gettext('Mount Point'),
 		matchFieldWidth: false,
@@ -180,7 +180,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	});
 
 	if (me.unused) {
-	    me.unusedDisks = Ext.create('PVE.form.KVComboBox', {
+	    me.unusedDisks = Ext.create('Proxmox.form.KVComboBox', {
 		name: 'unusedId',
 		fieldLabel: gettext('Disk image'),
 		matchFieldWidth: false,
@@ -210,7 +210,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    });
 	}
 
-	me.acl = Ext.createWidget('pveKVComboBox', {
+	me.acl = Ext.createWidget('proxmoxKVComboBox', {
 	    name: 'acl',
 	    fieldLabel: 'ACLs',
 	    comboItems: [['Default', 'Default'], ['1', 'On'], ['0', 'Off']],

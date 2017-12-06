@@ -60,7 +60,7 @@ Ext.define('PVE.dc.ConsoleViewerEdit', {
 	Ext.applyIf(me, {
 	    subject: gettext('Console Viewer'),
 	    items: {
-		xtype: 'pveKVComboBox',
+		xtype: 'proxmoxKVComboBox',
 		name: 'console',
 		value: '__default__',
 		fieldLabel: gettext('Console Viewer'),

@@ -1,5 +1,5 @@
 Ext.define('PVE.form.BackupModeSelector', {
-    extend: 'PVE.form.KVComboBox',
+    extend: 'Proxmox.form.KVComboBox',
     alias: ['widget.pveBackupModeSelector'],
     comboItems: [
                 ['snapshot', gettext('Snapshot')],

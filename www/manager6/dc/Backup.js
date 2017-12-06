@@ -26,8 +26,8 @@ Ext.define('PVE.dc.BackupEdit', {
 
 	/*jslint confusion: true*/
 	// 'value' can be assigned a string or an array
-	var selModeField =  Ext.create('PVE.form.KVComboBox', {
-	    xtype: 'pveKVComboBox',
+	var selModeField =  Ext.create('Proxmox.form.KVComboBox', {
+	    xtype: 'proxmoxKVComboBox',
 	    comboItems: [
 		['include', gettext('Include selected VMs')],
 		['all', gettext('All')],

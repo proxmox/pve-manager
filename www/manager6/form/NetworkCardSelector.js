@@ -1,5 +1,5 @@
 Ext.define('PVE.form.NetworkCardSelector', {
-    extend: 'PVE.form.KVComboBox',
+    extend: 'Proxmox.form.KVComboBox',
     alias: 'widget.pveNetworkCardSelector',
     comboItems: [
 	['e1000', 'Intel E1000'],

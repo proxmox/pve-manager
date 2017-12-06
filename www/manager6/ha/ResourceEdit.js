@@ -115,7 +115,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		fieldLabel: gettext('Group')
 	    },
 	    {
-		xtype: 'pveKVComboBox',
+		xtype: 'proxmoxKVComboBox',
 		name: 'state',
 		value: 'started',
 		fieldLabel: gettext('Request State'),

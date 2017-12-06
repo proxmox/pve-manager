@@ -193,7 +193,7 @@ Ext.define('PVE.window.Clone', {
 	);
 
 	col2.push({
-	    xtype: 'pveKVComboBox',
+	    xtype: 'proxmoxKVComboBox',
 	    fieldLabel: gettext('Mode'),
 	    name: 'clonemode',
 	    reference: 'clonemodesel',

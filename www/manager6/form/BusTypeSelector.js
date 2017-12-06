@@ -1,5 +1,5 @@
 Ext.define('PVE.form.BusTypeSelector', {
-    extend: 'PVE.form.KVComboBox',
+    extend: 'Proxmox.form.KVComboBox',
     alias: 'widget.pveBusSelector',
   
     noVirtIO: false,

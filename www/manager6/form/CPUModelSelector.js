@@ -1,5 +1,5 @@
 Ext.define('PVE.form.CPUModelSelector', {
-    extend: 'PVE.form.KVComboBox',
+    extend: 'Proxmox.form.KVComboBox',
     alias: ['widget.CPUModelSelector'],
     comboItems: [
 	['__default__', Proxmox.Utils.defaultText + ' (kvm64)'],

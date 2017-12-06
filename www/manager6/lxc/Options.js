@@ -99,7 +99,7 @@ Ext.define('PVE.lxc.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Console mode'),
 		    items: {
-			xtype: 'pveKVComboBox',
+			xtype: 'proxmoxKVComboBox',
 			name: 'cmode',
 			deleteEmpty: true,
 			value: '__default__',

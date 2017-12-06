@@ -182,7 +182,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	}
 
 	if (me.unused) {
-	    me.unusedDisks = Ext.create('PVE.form.KVComboBox', {
+	    me.unusedDisks = Ext.create('Proxmox.form.KVComboBox', {
 		name: 'unusedId',
 		fieldLabel: gettext('Disk image'),
 		matchFieldWidth: false,

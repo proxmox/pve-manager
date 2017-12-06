@@ -115,7 +115,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	// this has to be done here, because of
 	// the way our inputPanel class handles items
 	me.comboboxes = [
-		Ext.createWidget('pveKVComboBox', {
+		Ext.createWidget('proxmoxKVComboBox', {
 		fieldLabel: gettext('Boot device') + " 1",
 		labelWidth: 120,
 		name: 'bd1',
@@ -124,7 +124,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 		    change: me.recomputeSelection
 		}
 	    }),
-		Ext.createWidget('pveKVComboBox', {
+		Ext.createWidget('proxmoxKVComboBox', {
 		fieldLabel: gettext('Boot device') + " 2",
 		labelWidth: 120,
 		name: 'bd2',
@@ -133,7 +133,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 		    change: me.recomputeSelection
 		}
 	    }),
-		Ext.createWidget('pveKVComboBox', {
+		Ext.createWidget('proxmoxKVComboBox', {
 		fieldLabel: gettext('Boot device') + " 3",
 		labelWidth: 120,
 		name: 'bd3',

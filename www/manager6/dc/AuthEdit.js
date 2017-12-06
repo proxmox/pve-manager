@@ -126,7 +126,7 @@ Ext.define('PVE.dc.AuthEdit', {
 	// Two Factor Auth settings
 
         column2.push({
-            xtype: 'pveKVComboBox',
+            xtype: 'proxmoxKVComboBox',
             name: 'tfa',
 	    deleteEmpty: !me.isCreate,
 	    value: '',

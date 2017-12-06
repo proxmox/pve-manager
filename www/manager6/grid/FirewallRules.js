@@ -87,7 +87,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		value: ''
 	    },
 	    {
-		xtype: 'pveKVComboBox',
+		xtype: 'proxmoxKVComboBox',
 		name: 'type',
 		value: 'in',
 		comboItems: [['in', 'in'], ['out', 'out']],
@@ -95,7 +95,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		allowBlank: false
 	    },
 	    {
-		xtype: 'pveKVComboBox',
+		xtype: 'proxmoxKVComboBox',
 		name: 'action',
 		value: 'ACCEPT',
 		comboItems: [['ACCEPT', 'ACCEPT'], ['DROP', 'DROP'], ['REJECT', 'REJECT']],

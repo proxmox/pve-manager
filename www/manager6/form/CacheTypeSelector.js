@@ -1,5 +1,5 @@
 Ext.define('PVE.form.CacheTypeSelector', {
-    extend: 'PVE.form.KVComboBox',
+    extend: 'Proxmox.form.KVComboBox',
     alias: ['widget.CacheTypeSelector'],
     comboItems: [
 	['__default__', Proxmox.Utils.defaultText + " (" + gettext('No cache') + ")"],

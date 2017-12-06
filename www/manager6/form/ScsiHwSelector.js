@@ -1,5 +1,5 @@
 Ext.define('PVE.form.ScsiHwSelector', {
-    extend: 'PVE.form.KVComboBox',
+    extend: 'Proxmox.form.KVComboBox',
     alias: ['widget.pveScsiHwSelector'],
     comboItems: [
 	['__default__', PVE.Utils.render_scsihw('')],

@@ -1,5 +1,5 @@
 Ext.define('PVE.form.QemuBiosSelector', {
-    extend: 'PVE.form.KVComboBox',
+    extend: 'Proxmox.form.KVComboBox',
     alias: ['widget.pveQemuBiosSelector'],
 
     initComponent: function() {

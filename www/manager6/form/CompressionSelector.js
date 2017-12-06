@@ -1,5 +1,5 @@
 Ext.define('PVE.form.CompressionSelector', {
-    extend: 'PVE.form.KVComboBox',
+    extend: 'Proxmox.form.KVComboBox',
     alias: ['widget.pveCompressionSelector'],
     comboItems: [
                 ['0', Proxmox.Utils.noneText],

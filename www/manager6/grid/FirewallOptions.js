@@ -90,7 +90,7 @@ Ext.define('PVE.FirewallOptions', {
 		    subject: name,
 		    fieldDefaults: { labelWidth: labelWidth || 100 },
 		    items: {
-			xtype: 'pveKVComboBox',
+			xtype: 'proxmoxKVComboBox',
 			name: name,
 			fieldLabel: name,
 			comboItems: [['nolog', 'nolog'], ['info', 'info'], ['err', 'err'],

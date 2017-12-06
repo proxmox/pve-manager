@@ -1,5 +1,5 @@
 Ext.define('PVE.form.ContentTypeSelector', {
-    extend: 'PVE.form.KVComboBox',
+    extend: 'Proxmox.form.KVComboBox',
     alias: ['widget.pveContentTypeSelector'],
 
     cts: undefined,
