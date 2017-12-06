@@ -86,7 +86,6 @@ JSSRC= 				                 	\
 	window/Settings.js				\
 	window/StartupEdit.js				\
 	panel/NotesView.js				\
-	grid/PendingObjectGrid.js			\
 	grid/ResourceGrid.js				\
 	grid/PoolMembers.js				\
 	grid/FirewallRules.js				\

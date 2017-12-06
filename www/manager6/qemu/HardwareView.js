@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.HardwareView', {
-    extend: 'PVE.grid.PendingObjectGrid',
+    extend: 'Proxmox.grid.PendingObjectGrid',
     alias: ['widget.PVE.qemu.HardwareView'],
 
     onlineHelp: 'qm_virtual_machines_settings',

@@ -1,6 +1,6 @@
 /*jslint confusion: true */
 Ext.define('PVE.qemu.Options', {
-    extend: 'PVE.grid.PendingObjectGrid',
+    extend: 'Proxmox.grid.PendingObjectGrid',
     alias: ['widget.PVE.qemu.Options'],
 
     onlineHelp: 'qm_options',
