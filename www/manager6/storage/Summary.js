@@ -10,7 +10,7 @@ Ext.define('PVE.storage.Summary', {
     tbar: [
 	'->',
 	{
-	    xtype: 'pveRRDTypeSelector'
+	    xtype: 'proxmoxRRDTypeSelector'
 	}
     ],
     initComponent: function() {

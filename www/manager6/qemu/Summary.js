@@ -81,7 +81,7 @@ Ext.define('PVE.qemu.Summary', {
 	    });
 
 	    Ext.apply(me, {
-		tbar: [ '->', { xtype: 'pveRRDTypeSelector' } ],
+		tbar: [ '->', { xtype: 'proxmoxRRDTypeSelector' } ],
 		plugins: {
 		    ptype: 'lazyitems',
 		    items: [

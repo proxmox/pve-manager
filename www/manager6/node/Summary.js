@@ -93,7 +93,7 @@ Ext.define('PVE.node.Summary', {
 	});
 
 	Ext.apply(me, {
-	    tbar: [version_btn, '->', { xtype: 'pveRRDTypeSelector' } ],
+	    tbar: [version_btn, '->', { xtype: 'proxmoxRRDTypeSelector' } ],
 	    plugins: {
 		ptype: 'lazyitems',
 		items: [
