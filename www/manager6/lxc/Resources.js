@@ -7,16 +7,11 @@ Ext.define('PVE.lxc.RessourceView', {
 
     renderKey: function(key, metaData, rec, rowIndex, colIndex, store) {
 	var me = this;
-	var rows = me.rows;
-	var rowdef = rows[key] || {};
+	var rowdef = me.rows[key] || {};
 
 	metaData.tdAttr = "valign=middle";
-
 	if (rowdef.tdCls) {
 	    metaData.tdCls = rowdef.tdCls;
-	    if (rowdef.tdCls == 'pve-itype-icon-storage') {
-		var value = me.getObjectValue(key, '', true);
-	    }
 	}
 	return rowdef.header || key;
     },
@@ -43,7 +38,6 @@ Ext.define('PVE.lxc.RessourceView', {
 	    memory: {
 		header: gettext('Memory'),
 		editor: caps.vms['VM.Config.Memory'] ? 'PVE.lxc.MemoryEdit' : undefined,
-		never_delete: true,
 		defaultValue: 512,
 		tdCls: 'pve-itype-icon-memory',
 		renderer: function(value) {
@@ -53,7 +47,6 @@ Ext.define('PVE.lxc.RessourceView', {
 	    swap: {
 		header: gettext('Swap'),
 		editor: caps.vms['VM.Config.Memory'] ? 'PVE.lxc.MemoryEdit' : undefined,
-		never_delete: true,
 		defaultValue: 512,
 		tdCls: 'pve-itype-icon-swap',
 		renderer: function(value) {
@@ -62,7 +55,6 @@ Ext.define('PVE.lxc.RessourceView', {
 	    },
 	    cores: {
 		header: gettext('Cores'),
-		never_delete: true,
 		editor: caps.vms['VM.Config.CPU'] ? 'PVE.lxc.CPUEdit' : undefined,
 		defaultValue: '',
 		tdCls: 'pve-itype-icon-processor',
@@ -73,7 +65,6 @@ Ext.define('PVE.lxc.RessourceView', {
 	    },
 	    cpulimit: {
 		header: gettext('CPU limit'),
-		never_delete: true,
 		editor: caps.vms['VM.Config.CPU'] ? 'PVE.lxc.CPUEdit' : undefined,
 		defaultValue: 0,
 		tdCls: 'pve-itype-icon-processor',
@@ -84,7 +75,6 @@ Ext.define('PVE.lxc.RessourceView', {
 	    },
 	    cpuunits: {
 		header: gettext('CPU units'),
-		never_delete: true,
 		editor: caps.vms['VM.Config.CPU'] ? 'PVE.lxc.CPUEdit' : undefined,
 		defaultValue: 1024,
 		tdCls: 'pve-itype-icon-processor'
@@ -120,40 +110,12 @@ Ext.define('PVE.lxc.RessourceView', {
 	    };
 	}
 
-	var reload = function() {
-	    me.rstore.load();
-	};
-
 	var baseurl = 'nodes/' + nodename + '/lxc/' + vmid + '/config';
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
-
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
-		return;
-	    }
-
-	    var rowdef = rows[rec.data.key];
-	    if (!rowdef.editor) {
-		return;
-	    }
-
-	    var editor = rowdef.editor;
-
-	    var win = Ext.create(editor, {
-		pveSelNode: me.pveSelNode,
-		confid: rec.data.key,
-		unprivileged: me.getObjectValue('unprivileged'),
-		url: '/api2/extjs/' + baseurl
-	    });
-
-	    win.show();
-	    win.on('destroy', reload);
-	};
+	me.selModel = Ext.create('Ext.selection.RowModel', {});
 
 	var run_resize = function() {
-	    var rec = sm.getSelection()[0];
+	    var rec = me.selModel.getSelection()[0];
 	    if (!rec) {
 		return;
 	    }
@@ -165,8 +127,6 @@ Ext.define('PVE.lxc.RessourceView', {
 	    });
 
 	    win.show();
-
-	    win.on('destroy', reload);
 	};
 
 	var run_remove = function(b, e, rec) {
@@ -177,9 +137,6 @@ Ext.define('PVE.lxc.RessourceView', {
 		params: {
 		    'delete': rec.data.key
 		},
-		callback: function() {
-		    reload();
-		},
 		failure: function (response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
 		}
@@ -188,7 +145,7 @@ Ext.define('PVE.lxc.RessourceView', {
 
 	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
-	    selModel: sm,
+	    selModel: me.selModel,
 	    disabled: true,
 	    enableFn: function(rec) {
 		if (!rec) {
@@ -197,19 +154,19 @@ Ext.define('PVE.lxc.RessourceView', {
 		var rowdef = rows[rec.data.key];
 		return !!rowdef.editor;
 	    },
-	    handler: run_editor
+	    handler: me.run_editor
 	});
 
 	var resize_btn = new Proxmox.button.Button({
 	    text: gettext('Resize disk'),
-	    selModel: sm,
+	    selModel: me.selModel,
 	    disabled: true,
 	    handler: run_resize
 	});
 
 	var remove_btn = new Proxmox.button.Button({
 	    text: gettext('Remove'),
-	    selModel: sm,
+	    selModel: me.selModel,
 	    disabled: true,
 	    dangerous: true,
 	    confirmMsg: function(rec) {
@@ -225,8 +182,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	});
 
 	var set_button_status = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
+	    var rec = me.selModel.getSelection()[0];
 
 	    if (!rec) {
 		edit_btn.disable();
@@ -256,7 +212,8 @@ Ext.define('PVE.lxc.RessourceView', {
 	
 	Ext.apply(me, {
 	    url: '/api2/json/' + baseurl,
-	    selModel: sm,
+	    selModel: me.selModel,
+	    interval: 2000,
 	    cwidth1: 170,
 	    tbar: [
 		{
@@ -273,7 +230,6 @@ Ext.define('PVE.lxc.RessourceView', {
 					unprivileged: me.getObjectValue('unprivileged'),
 					pveSelNode: me.pveSelNode
 				    });
-				    win.on('destroy', reload);
 				    win.show();
 				}
 			    }
@@ -285,14 +241,22 @@ Ext.define('PVE.lxc.RessourceView', {
 		resize_btn
 	    ],
 	    rows: rows,
+	    editorConfig: {
+		pveSelNode: me.pveSelNode,
+		url: '/api2/extjs/' + baseurl
+	    },
 	    listeners: {
-		afterrender: reload,
-		activate: reload,
-		itemdblclick: run_editor,
+		itemdblclick: me.run_editor,
 		selectionchange: set_button_status
 	    }
 	});
 
 	me.callParent();
+
+	me.on('activate', me.rstore.startUpdate);
+	me.on('destroy', me.rstore.stopUpdate);
+	me.on('deactivate', me.rstore.stopUpdate);
+
+	Ext.apply(me.editorConfig, { unprivileged: me.getObjectValue('unprivileged') });
     }
 });
