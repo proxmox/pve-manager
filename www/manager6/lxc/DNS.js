@@ -134,7 +134,7 @@ Ext.define('PVE.lxc.DNSEdit', {
 
 /*jslint confusion: true */
 Ext.define('PVE.lxc.DNS', {
-    extend: 'PVE.grid.ObjectGrid',
+    extend: 'Proxmox.grid.ObjectGrid',
     alias: ['widget.pveLxcDNS'],
 
     onlineHelp: 'pct_container_network',

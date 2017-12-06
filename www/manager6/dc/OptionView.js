@@ -126,7 +126,7 @@ Ext.define('PVE.dc.MacPrefixEdit', {
 });
 
 Ext.define('PVE.dc.OptionView', {
-    extend: 'PVE.grid.ObjectGrid',
+    extend: 'Proxmox.grid.ObjectGrid',
     alias: ['widget.pveDcOptionView'],
 
     onlineHelp: 'datacenter_configuration_file',

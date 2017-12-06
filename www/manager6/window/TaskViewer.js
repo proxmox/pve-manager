@@ -171,7 +171,7 @@ Ext.define('PVE.window.TaskViewer', {
 	    handler: stop_task
 	});
 
-	statgrid = Ext.create('PVE.grid.ObjectGrid', {
+	statgrid = Ext.create('Proxmox.grid.ObjectGrid', {
 	    title: gettext('Status'),
 	    layout: 'fit',
 	    tbar: [ stop_btn1 ],

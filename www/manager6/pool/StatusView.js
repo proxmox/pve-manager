@@ -1,5 +1,5 @@
 Ext.define('PVE.pool.StatusView', {
-    extend: 'PVE.grid.ObjectGrid',
+    extend: 'Proxmox.grid.ObjectGrid',
     alias: ['widget.pvePoolStatusView'],
     disabled: true,
 

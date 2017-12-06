@@ -19,7 +19,7 @@ Ext.define('PVE.node.SubscriptionKeyEdit', {
 });
 
 Ext.define('PVE.node.Subscription', {
-    extend: 'PVE.grid.ObjectGrid',
+    extend: 'Proxmox.grid.ObjectGrid',
 
     alias: ['widget.pveNodeSubscription'],
 

@@ -1,5 +1,5 @@
 Ext.define('PVE.FirewallOptions', {
-    extend: 'PVE.grid.ObjectGrid',
+    extend: 'Proxmox.grid.ObjectGrid',
     alias: ['widget.pveFirewallOptions'],
 
     fwtype: undefined, // 'dc', 'node' or 'vm'

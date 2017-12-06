@@ -1,5 +1,5 @@
 Ext.define('PVE.grid.PendingObjectGrid', {
-    extend: 'PVE.grid.ObjectGrid',
+    extend: 'Proxmox.grid.ObjectGrid',
     alias: ['widget.pvePendingObjectGrid'],
 
     getObjectValue: function(key, defaultValue, pending) {

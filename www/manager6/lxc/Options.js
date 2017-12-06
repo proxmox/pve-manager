@@ -1,6 +1,6 @@
 /*jslint confusion: true */
 Ext.define('PVE.lxc.Options', {
-    extend: 'PVE.grid.ObjectGrid',
+    extend: 'Proxmox.grid.ObjectGrid',
     alias: ['widget.pveLxcOptions'],
 
     onlineHelp: 'pct_options',

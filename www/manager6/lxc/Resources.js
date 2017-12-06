@@ -1,6 +1,6 @@
 /*jslint confusion: true */
 Ext.define('PVE.lxc.RessourceView', {
-    extend: 'PVE.grid.ObjectGrid',
+    extend: 'Proxmox.grid.ObjectGrid',
     alias: ['widget.pveLxcRessourceView'],
 
     onlineHelp: 'pct_configuration',
