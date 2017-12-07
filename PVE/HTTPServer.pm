@@ -7,7 +7,7 @@ use PVE::SafeSyslog;
 use PVE::INotify;
 use PVE::Tools;
 use PVE::APIServer::AnyEvent;
-use PVE::Exception qw(raise_param_exc);
+use PVE::Exception qw(raise_param_exc raise);
 
 use PVE::RPCEnvironment;
 use PVE::AccessControl;
@@ -61,7 +61,8 @@ sub auth_handler {
     $rpcenv->set_language('C');
     $rpcenv->set_client_ip($peer_host);
 
-    $rpcenv->init_request();
+    eval { $rpcenv->init_request() };
+    raise("RPCEnvironment init request failed: $@\n") if $@;
 
     my $require_auth = 1;
 
