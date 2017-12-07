@@ -221,11 +221,20 @@ __PACKAGE__->register_method ({
 		default => 0,
 		optional => 1,
 	    },
+	    mail => {
+		description => "Send an email notification in case of a failure.",
+		type => 'boolean',
+		default => 0,
+		optional => 1,
+	    },
 	},
     },
     returns => { type => 'null' },
     code => sub {
 	my ($param) = @_;
+
+	die "Mail and id are mutually exclusive!\n"
+	    if $param->{id} && $param->{mail};
 
 	my $logfunc;
 
@@ -242,7 +251,7 @@ __PACKAGE__->register_method ({
 
 	} else {
 
-	    PVE::API2::Replication::run_jobs(undef, $logfunc);
+	    PVE::API2::Replication::run_jobs(undef, $logfunc, 0, $param->{mail});
 	}
 
 	return undef;

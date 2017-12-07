@@ -72,7 +72,7 @@ sub run_single_job {
 
 # passing $now and $verbose is useful for regression testing
 sub run_jobs {
-    my ($now, $logfunc, $verbose) = @_;
+    my ($now, $logfunc, $verbose, $mail) = @_;
 
     my $iteration = $now // time();
 
@@ -83,7 +83,21 @@ sub run_jobs {
 
 	while (my $jobcfg = PVE::ReplicationState::get_next_job($iteration, $start_time)) {
 	    my $guest_class = $lookup_guest_class->($jobcfg->{vmtype});
-	    PVE::Replication::run_replication($guest_class, $jobcfg, $iteration, $start_time, $logfunc, 1, $verbose);
+
+	    eval {
+		PVE::Replication::run_replication($guest_class, $jobcfg, $iteration, $start_time, $logfunc, $verbose);
+	    };
+	    if (my $err = $@) {
+		warn "$jobcfg->{id}: got unexpected replication job error - $err";
+		my $state = PVE::ReplicationState::read_state();
+		my $jobstate = PVE::ReplicationState::extract_job_state($state, $jobcfg);
+		eval {
+		    PVE::Tools::sendmail('root', "Replication Job: $jobcfg->{id} failed", $err)
+			if $jobstate->{fail_count} == 1 && $mail;
+		};
+		warn ": $@" if $@;
+	    };
+
 	    $start_time = $now // time();
 	}
     };

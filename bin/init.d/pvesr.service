@@ -4,4 +4,4 @@ ConditionPathExists=/usr/bin/pvesr
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/pvesr run
+ExecStart=/usr/bin/pvesr run --mail 1
