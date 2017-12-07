@@ -77,15 +77,15 @@ sub run_jobs {
     my $iteration = $now // time();
 
     my $code = sub {
-       my $start_time = $now // time();
+	my $start_time = $now // time();
 
-       PVE::ReplicationState::purge_old_states();
+	PVE::ReplicationState::purge_old_states();
 
-       while (my $jobcfg = PVE::ReplicationState::get_next_job($iteration, $start_time)) {
-           my $guest_class = $lookup_guest_class->($jobcfg->{vmtype});
-           PVE::Replication::run_replication($guest_class, $jobcfg, $iteration, $start_time, $logfunc, 1, $verbose);
-           $start_time = $now // time();
-       }
+	while (my $jobcfg = PVE::ReplicationState::get_next_job($iteration, $start_time)) {
+	    my $guest_class = $lookup_guest_class->($jobcfg->{vmtype});
+	    PVE::Replication::run_replication($guest_class, $jobcfg, $iteration, $start_time, $logfunc, 1, $verbose);
+	    $start_time = $now // time();
+	}
     };
 
     my $res = PVE::Tools::lock_file($pvesr_lock_path, 60, $code);
