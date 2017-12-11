@@ -1,3 +1,16 @@
+pve-manager (5.1-39) stable; urgency=medium
+
+  * fix #1589: auth_handler: raise proper exception on init_request error
+    (e.g., during pmxcfs restarts)
+
+  * update catalan translation
+
+  * add a proper confirmation message when we detach an used disk
+
+  * fix #1526: Use 'detach' instead of 'remove' when the disk is used
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 11 Dec 2017 15:33:11 +0100
+
 pve-manager (5.1-38) stable; urgency=medium
 
   * ceph: create mon: fix & improve check if IP is in public net
