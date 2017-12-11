@@ -51,6 +51,7 @@ my $basedirs = {
     manager => '/usr/share/pve-manager',
     docs => '/usr/share/pve-docs',
     fontawesome => '/usr/share/fonts-font-awesome',
+    xtermjs => '/usr/share/pve-xtermjs',
 };
 
 sub init {
@@ -79,6 +80,7 @@ sub init {
     add_dirs($dirs, '/pve2/fa/css/' =>  "$basedirs->{fontawesome}/css/");
     add_dirs($dirs, '/pve-docs/' => "$basedirs->{docs}/");
     add_dirs($dirs, '/novnc/' => "$basedirs->{novnc}/");
+    add_dirs($dirs, '/xtermjs/' => "$basedirs->{xtermjs}/");
 
     $self->{server_config} = {
 	title => 'Proxmox VE API',
@@ -192,6 +194,9 @@ sub get_index {
 	$mobile = $args->{mobile} ? 1 : 0;
     }
 
+    my $novnc = defined($args->{console}) && $args->{novnc};
+    my $xtermjs = defined($args->{console}) && $args->{xtermjs};
+
     my $page = '';
     my $template = Template->new({ABSOLUTE => 1});
 
@@ -218,8 +223,10 @@ sub get_index {
     # by default, load the normal index
     my $dir = $basedirs->{manager};
 
-    if (defined($args->{console}) && $args->{novnc}) {
+    if ($novnc) {
 	$dir = $basedirs->{novnc};
+    } elsif ($xtermjs) {
+	$dir = $basedirs->{xtermjs};
     } elsif ($mobile) {
 	$dir = "$basedirs->{manager}/touch";
     }
