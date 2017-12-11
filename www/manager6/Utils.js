@@ -1156,6 +1156,8 @@ Ext.define('PVE.Utils', { utilities: {
 
 	if (viewer === 'html5') {
 	    PVE.Utils.openVNCViewer(vmtype, vmid, nodename, vmname);
+	} else if (viewer === 'xtermjs') {
+	    PVE.Utils.openXtermJSviewer(vmtype, vmid, nodename, vmname);
 	} else if (viewer === 'vv') {
 	    var url;
 	    var params = { proxy: PVE.Utils.windowHostname() };
@@ -1186,6 +1188,18 @@ Ext.define('PVE.Utils', { utilities: {
 	}
 
 	return dv;
+    },
+
+    openXtermJSviewer: function(vmtype, vmid, nodename, vmname) {
+	var url = Ext.urlEncode({
+	    console: vmtype, // kvm, lxc, upgrade or shell
+	    xtermjs: 1,
+	    vmid: vmid,
+	    vmname: vmname,
+	    node: nodename
+	});
+	var nw = window.open("?" + url, '_blank', 'toolbar=no,location=no,status=no,menubar=no,resizable=yes,width=800,height=420');
+	nw.focus();
     },
 
     openVNCViewer: function(vmtype, vmid, nodename, vmname) {
