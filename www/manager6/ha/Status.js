@@ -9,7 +9,7 @@ Ext.define('PVE.ha.Status', {
     initComponent: function() {
 	var me = this;
 
-	me.rstore = Ext.create('PVE.data.ObjectStore', {
+	me.rstore = Ext.create('Proxmox.data.ObjectStore', {
 	    interval: me.interval,
 	    model: 'pve-ha-status',
 	    storeid: 'pve-store-' + (++Ext.idSeed),

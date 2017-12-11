@@ -15,7 +15,6 @@ JSSRC= 				                 	\
 	node/CmdMenu.js					\
 	VNCConsole.js					\
 	data/PVEProxy.js				\
-	data/ObjectStore.js				\
 	data/ResourceStore.js				\
 	data/model/RRDModels.js				\
 	form/VLanField.js				\

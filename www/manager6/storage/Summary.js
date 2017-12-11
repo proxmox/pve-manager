@@ -26,7 +26,7 @@ Ext.define('PVE.storage.Summary', {
 	    throw "no storage ID specified";
 	}
 
-	var rstore  = Ext.create('PVE.data.ObjectStore', {
+	var rstore  = Ext.create('Proxmox.data.ObjectStore', {
 	    url: "/api2/json/nodes/" + nodename + "/storage/" + storage + "/status",
 	    interval: 1000
 	});

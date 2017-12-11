@@ -14,7 +14,7 @@ Ext.define('PVE.node.Config', {
 
 	var caps = Ext.state.Manager.get('GuiCap');
 
-	me.statusStore = Ext.create('PVE.data.ObjectStore', {
+	me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
 	    url: "/api2/json/nodes/" + nodename + "/status",
 	    interval: 1000
 	});

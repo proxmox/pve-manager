@@ -25,7 +25,7 @@ Ext.define('PVE.lxc.Config', {
 
 	var base_url = '/nodes/' + nodename + '/lxc/' + vmid;
 
-	me.statusStore = Ext.create('PVE.data.ObjectStore', {
+	me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
 	    url: '/api2/json' + base_url + '/status/current',
 	    interval: 1000
 	});

@@ -401,7 +401,7 @@ Ext.define('PVE.storage.ContentView', {
 	    }
 	});
 
-	me.statusStore = Ext.create('PVE.data.ObjectStore', {
+	me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
 	    url: '/api2/json/nodes/' + nodename + '/storage/' + storage + '/status'
 	});
 
