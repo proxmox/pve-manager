@@ -1,6 +1,32 @@
+/*global Proxmox*/
 Ext.define('PVE.form.RealmComboBox', {
     extend: 'Ext.form.field.ComboBox',
     alias: ['widget.pveRealmComboBox'],
+
+    controller: {
+	xclass: 'Ext.app.ViewController',
+
+	init: function(view) {
+	    view.store.on('load', this.onLoad, view);
+	},
+
+	onLoad: function(store, records, success) {
+	    if (!success) {
+		return;
+	    }
+	    var me = this;
+	    var val = me.getValue();
+	    if (!val || !me.store.findRecord('realm', val)) {
+		var def = 'pam';
+		Ext.each(records, function(rec) {
+		    if (rec.data && rec.data['default']) {
+			def = rec.data.realm;
+		    }
+		});
+		me.setValue(def);
+	    }
+	}
+    },
 
     fieldLabel: gettext('Realm'),
     name: 'realm',
@@ -32,32 +58,8 @@ Ext.define('PVE.form.RealmComboBox', {
 	return rec && rec.data && rec.data.tfa ? rec.data.tfa : undefined;
     },
 
-    initComponent: function() {
-	var me = this;
-
-	me.store = Ext.create('Ext.data.Store', {
-	    model: 'pve-domains'
-	});
-
-	me.callParent();
-
-	me.store.load({
-	    callback: function(r, o, success) {
-		if (success) {
-		    var def = me.getValue();
-		    if (!def || !me.store.findRecord('realm', def)) {
-			def = 'pam';
-			Ext.each(r, function(record) {
-			    if (record.data && record.data["default"]) { 
-				def = record.data.realm;
-			    }
-			});
-		    }
-		    if (def) {
-			me.setValue(def);
-		    }
-		}
-	    }
-	});
+    store: {
+	model: 'pve-domains',
+	autoLoad: true
     }
 });
