@@ -202,7 +202,7 @@ Ext.define('PVE.node.Config', {
 		groups: ['services'],
 		disabled: !caps.nodes['Sys.Syslog'],
 		itemId: 'syslog',
-		xtype: 'pveLogView',
+		xtype: 'proxmoxLogView',
 		url: "/api2/extjs/nodes/" + nodename + "/syslog",
 		log_select_timespan: 1
 	    });
@@ -306,7 +306,7 @@ Ext.define('PVE.node.Config', {
 	if (caps.nodes['Sys.Syslog']) {
 	    me.items.push(
 		{
-		    xtype: 'pveLogView',
+		    xtype: 'proxmoxLogView',
 		    title: gettext('Log'),
 		    iconCls: 'fa fa-list',
 		    groups: ['firewall'],
@@ -320,7 +320,7 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-list',
 		    groups: ['ceph'],
 		    onlineHelp: 'chapter_pveceph',
-		    xtype: 'pveLogView',
+		    xtype: 'proxmoxLogView',
 		    url: "/api2/extjs/nodes/" + nodename + "/ceph/log"
 		});
 	}

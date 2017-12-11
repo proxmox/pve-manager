@@ -302,7 +302,7 @@ Ext.define('PVE.qemu.Config', {
 		    iconCls: 'fa fa-list',
 		    onlineHelp: 'chapter_pve_firewall',
 		    itemId: 'firewall-fwlog',
-		    xtype: 'pveLogView',
+		    xtype: 'proxmoxLogView',
 		    url: '/api2/extjs' + base_url + '/firewall/log'
 		}
 	    );

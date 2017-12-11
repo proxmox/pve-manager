@@ -186,7 +186,7 @@ Ext.define('PVE.grid.ReplicaView', {
 	showLog: function(button, event, rec) {
 	    var me = this.getView();
 	    var controller = this;
-	    var logView = Ext.create('PVE.panel.LogView', {
+	    var logView = Ext.create('Proxmox.panel.LogView', {
 		border: false,
 		url: "/api2/extjs/nodes/" + me.nodename + "/replication/" + rec.data.id + "/log"
 	    });

@@ -88,7 +88,6 @@ JSSRC= 				                 	\
 	panel/IPSet.js					\
 	panel/ConfigPanel.js				\
 	grid/BackupView.js				\
-	panel/LogView.js				\
 	ceph/Pool.js					\
 	ceph/OSD.js					\
 	ceph/Monitor.js					\
