@@ -162,7 +162,7 @@ Ext.define('PVE.node.CephPoolList', {
 	    }
 	});
 
-	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
+	var store = Ext.create('Proxmox.data.DiffStore', { rstore: rstore });
 
 	Proxmox.Utils.monStoreErrors(me, rstore);
 

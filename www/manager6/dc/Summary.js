@@ -67,7 +67,7 @@ Ext.define('PVE.dc.Summary', {
 	    }
 	});
 
-	var gridstore = Ext.create('PVE.data.DiffStore', {
+	var gridstore = Ext.create('Proxmox.data.DiffStore', {
 	    rstore: rstore,
 	    filters: {
 		property: 'type',

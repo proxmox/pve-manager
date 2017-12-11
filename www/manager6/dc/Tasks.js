@@ -19,7 +19,7 @@ Ext.define('PVE.dc.Tasks', {
 	    }
 	});
 
-	var store = Ext.create('PVE.data.DiffStore', { 
+	var store = Ext.create('Proxmox.data.DiffStore', {
 	    rstore: taskstore,
 	    sortAfterUpdate: true,
 	    appendAtStart: true,

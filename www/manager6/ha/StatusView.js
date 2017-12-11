@@ -20,7 +20,7 @@ Ext.define('PVE.ha.StatusView', {
 
 	Proxmox.Utils.monStoreErrors(me, me.rstore);
 
-	var store = Ext.create('PVE.data.DiffStore', {
+	var store = Ext.create('Proxmox.data.DiffStore', {
 	    rstore: me.rstore,
 	    sortAfterUpdate: true,
 	    sorters: [{

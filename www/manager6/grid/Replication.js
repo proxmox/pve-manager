@@ -441,7 +441,7 @@ Ext.define('PVE.grid.ReplicaView', {
 	    }
 	});
 
-	me.store = Ext.create('PVE.data.DiffStore', {
+	me.store = Ext.create('Proxmox.data.DiffStore', {
 	    rstore: me.rstore,
 	    sorters: [
 		{

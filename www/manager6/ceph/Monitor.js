@@ -77,7 +77,7 @@ Ext.define('PVE.node.CephMonList', {
 	    }
 	});
 
-	var store = Ext.create('PVE.data.DiffStore', {
+	var store = Ext.create('Proxmox.data.DiffStore', {
 	    rstore: rstore,
 	    sorters: [{ property: 'name'}]
 	});

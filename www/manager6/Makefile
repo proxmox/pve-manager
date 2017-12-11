@@ -16,7 +16,6 @@ JSSRC= 				                 	\
 	VNCConsole.js					\
 	data/TimezoneStore.js				\
 	data/PVEProxy.js				\
-	data/DiffStore.js				\
 	data/ObjectStore.js				\
 	data/ResourceStore.js				\
 	data/model/RRDModels.js				\
