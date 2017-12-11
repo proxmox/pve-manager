@@ -29,7 +29,7 @@ Ext.define('PVE.form.FWMacroSelector', {
 	    fields: [ 'macro', 'descr' ],
 	    idProperty: 'macro',
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: "/api2/json/cluster/firewall/macros"
 	    },
 	    sorters: {
@@ -413,7 +413,7 @@ Ext.define('PVE.FirewallRules', {
 		me.groupBtn.setDisabled(false);
 	    }
 	    me.store.setProxy({
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json' + url
 	    });
 

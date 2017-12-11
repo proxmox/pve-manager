@@ -51,7 +51,7 @@ Ext.define('PVE.form.StorageSelector', {
 	    params.enabled = 1; // skip disabled storages
 	}
 	me.store.setProxy({
-	    type: 'pve',
+	    type: 'proxmox',
 	    url: url,
 	    extraParams: params
 	});

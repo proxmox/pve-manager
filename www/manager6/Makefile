@@ -14,8 +14,8 @@ JSSRC= 				                 	\
 	lxc/CmdMenu.js					\
 	node/CmdMenu.js					\
 	VNCConsole.js					\
-	data/PVEProxy.js				\
 	data/ResourceStore.js				\
+	data/model/Realm.js				\
 	data/model/RRDModels.js				\
 	form/VLanField.js				\
 	form/Boolean.js					\

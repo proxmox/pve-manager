@@ -21,7 +21,7 @@ Ext.define('PVE.form.NodeSelector', {
     store: {
 	    fields: [ 'node', 'cpu', 'maxcpu', 'mem', 'maxmem', 'uptime' ],
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/nodes'
 	    },
 	    sorters: [

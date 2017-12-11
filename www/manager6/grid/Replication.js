@@ -436,7 +436,7 @@ Ext.define('PVE.grid.ReplicaView', {
 	    model: (mode === 'dc')? 'pve-replication' : 'pve-replication-state',
 	    interval: 3000,
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: "/api2/json" + url
 	    }
 	});

@@ -19,7 +19,7 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
 	    autoLoad: {}, // true,
 	    fields: [ 'pool', 'size', 'free' ],
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/zfs'
 	    }
 	});

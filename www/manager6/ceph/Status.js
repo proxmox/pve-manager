@@ -272,7 +272,7 @@ Ext.define('PVE.node.CephStatus', {
 	    storeid: 'ceph-status-' + nodename,
 	    interval: 5000,
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/nodes/' + nodename + '/ceph/status'
 	    }
 	});

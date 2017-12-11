@@ -28,7 +28,7 @@ Ext.define('PVE.form.IPRefSelector', {
 	    fields: [ 'type', 'name', 'ref', 'comment' ],
 	    idProperty: 'ref',
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: url
 	    },
 	    sorters: {

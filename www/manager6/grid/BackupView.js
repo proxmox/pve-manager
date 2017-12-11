@@ -75,7 +75,7 @@ Ext.define('PVE.grid.BackupView', {
 	    url += '?content=backup';
 
 	    me.store.setProxy({
-		type: 'pve',
+		type: 'proxmox',
 		url: url
 	    });
 

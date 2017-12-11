@@ -41,7 +41,7 @@ Ext.define('PVE.storage.IScsiScan', {
 	var store = Ext.create('Ext.data.Store', {
 	    fields: [ 'target', 'portal' ],
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/iscsi'
 	    }
 	});

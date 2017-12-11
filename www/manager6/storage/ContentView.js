@@ -20,7 +20,7 @@ Ext.define('PVE.grid.TemplateSelector', {
 	    model: 'pve-aplinfo',
 	    groupField: 'section',
 	    proxy: {
-                type: 'pve',
+                type: 'proxmox',
 		url: '/api2/json' + baseurl
 	    }
 	});
@@ -355,7 +355,7 @@ Ext.define('PVE.storage.ContentView', {
 	    model: 'pve-storage-content',
 	    groupField: 'content',
 	    proxy: {
-                type: 'pve',
+                type: 'proxmox',
 		url: '/api2/json' + baseurl
 	    },
 	    sorters: {

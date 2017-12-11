@@ -65,7 +65,7 @@ Ext.define('PVE.form.UserSelector', {
 	    { type: 'date', dateFormat: 'timestamp', name: 'expire' }
 	],
 	proxy: {
-            type: 'pve',
+            type: 'proxmox',
 	    url: "/api2/json/access/users"
 	},
 	idProperty: 'userid'

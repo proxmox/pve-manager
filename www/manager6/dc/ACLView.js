@@ -87,7 +87,7 @@ Ext.define('PVE.dc.ACLView', {
 	var store = Ext.create('Ext.data.Store',{
 	    model: 'pve-acl',
 	    proxy: {
-                type: 'pve',
+                type: 'proxmox',
 		url: "/api2/json/access/acl"
 	    },
 	    sorters: {

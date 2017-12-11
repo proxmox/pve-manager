@@ -331,7 +331,7 @@ Ext.define('PVE.dc.BackupView', {
 	var store = new Ext.data.Store({
 	    model: 'pve-cluster-backup',
 	    proxy: {
-                type: 'pve',
+                type: 'proxmox',
 		url: "/api2/json/cluster/backup"
 	    }
 	});

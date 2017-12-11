@@ -12,9 +12,9 @@ Ext.define('PVE.dc.Log', {
 
 	var logstore = Ext.create('Proxmox.data.UpdateStore', {
 	    storeid: 'pve-cluster-log',
-	    model: 'pve-cluster-log',
+	    model: 'proxmox-cluster-log',
 	    proxy: {
-                type: 'pve',
+                type: 'proxmox',
 		url: '/api2/json/cluster/log'
 	    }
 	});

@@ -268,7 +268,7 @@ Ext.define('PVE.data.ResourceStore', {
 	    extend: "Ext.data.Model",
 	    fields: fields,
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/cluster/resources'
 	    }
 	});

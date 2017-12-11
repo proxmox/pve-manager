@@ -156,7 +156,7 @@ Ext.define('PVE.grid.PoolMembers', {
 		}
 	    ],
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		root: 'data.members',
 		url: "/api2/json/pools/" + me.pool
 	    }

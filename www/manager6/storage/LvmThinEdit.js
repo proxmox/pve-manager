@@ -38,7 +38,7 @@ Ext.define('PVE.storage.TPoolSelector', {
 	var store = Ext.create('Ext.data.Store', {
 	    fields: [ 'lv' ],
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/lvmthin'
 	    }
 	});
@@ -75,7 +75,7 @@ Ext.define('PVE.storage.BaseVGSelector', {
 	    autoLoad: {},
 	    fields: [ 'vg', 'size', 'free'],
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/lvm'
 	    }
 	});

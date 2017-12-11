@@ -16,7 +16,7 @@ Ext.define('PVE.storage.VgSelector', {
 	    autoLoad: {}, // true,
 	    fields: [ 'vg', 'size', 'free' ],
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/lvm'
 	    }
 	});
@@ -66,7 +66,7 @@ Ext.define('PVE.storage.BaseStorageSelector', {
 			  }
 		      }],
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/storage/'
 	    }
 	});

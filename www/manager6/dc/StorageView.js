@@ -15,7 +15,7 @@ Ext.define('PVE.dc.StorageView', {
 	var store = new Ext.data.Store({
 	    model: 'pve-storage',
 	    proxy: {
-                type: 'pve',
+                type: 'proxmox',
 		url: "/api2/json/storage"
 	    },
 	    sorters: {

@@ -58,7 +58,7 @@ Ext.define('PVE.ha.GroupSelector', {
 	    }
 	],
 	proxy: {
-            type: 'pve',
+            type: 'proxmox',
 	    url: "/api2/json/cluster/ha/groups"
 	},
 	idProperty: 'group'

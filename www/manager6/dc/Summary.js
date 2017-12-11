@@ -62,7 +62,7 @@ Ext.define('PVE.dc.Summary', {
 	    storeid: 'pve-cluster-status',
 	    model: 'pve-dc-nodes',
 	    proxy: {
-                type: 'pve',
+                type: 'proxmox',
                 url: "/api2/json/cluster/status"
 	    }
 	});

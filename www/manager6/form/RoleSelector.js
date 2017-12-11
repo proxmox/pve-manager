@@ -41,7 +41,7 @@ Ext.define('PVE.form.RoleSelector', {
 	extend: 'Ext.data.Model',
 	fields: [ 'roleid', 'privs' ],
 	proxy: {
-            type: 'pve',
+            type: 'proxmox',
 	    url: "/api2/json/access/roles"
 	},
 	idProperty: 'roleid'

@@ -30,7 +30,7 @@ Ext.define('PVE.form.FileSelector', {
 	}
 
 	me.store.setProxy({
-	    type: 'pve',
+	    type: 'proxmox',
 	    url: url
 	});
 

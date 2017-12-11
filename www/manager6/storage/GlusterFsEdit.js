@@ -42,7 +42,7 @@ Ext.define('PVE.storage.GlusterFsScan', {
 	var store = Ext.create('Ext.data.Store', {
 	    fields: [ 'volname' ],
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/glusterfs'
 	    }
 	});

@@ -142,7 +142,7 @@ Ext.define('PVE.node.DiskList', {
 	    storeid: 'node-disk-list' + nodename,
 	    model: 'node-disk-list',
 	    proxy: {
-                type: 'pve',
+                type: 'proxmox',
                 url: "/api2/json/nodes/" + nodename + "/disks/list"
 	    },
 	    sorters: [
@@ -337,7 +337,7 @@ Ext.define('PVE.DiskSmartWindow', {
 	me.store = Ext.create('Ext.data.Store', {
 	    model: 'disk-smart',
 	    proxy: {
-                type: 'pve',
+                type: 'proxmox',
                 url: "/api2/json/nodes/" + nodename + "/disks/smart?disk=" + dev
 	    }
 	});

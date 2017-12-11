@@ -42,7 +42,7 @@ Ext.define('PVE.storage.NFSScan', {
 	var store = Ext.create('Ext.data.Store', {
 	    fields: [ 'path', 'options' ],
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/nfs'
 	    }
 	});

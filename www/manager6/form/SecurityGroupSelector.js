@@ -12,7 +12,7 @@ Ext.define('PVE.form.SecurityGroupsSelector', {
 	    fields: [ 'group', 'comment' ],
 	    idProperty: 'group',
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: "/api2/json/cluster/firewall/groups"
 	    },
 	    sorters: {

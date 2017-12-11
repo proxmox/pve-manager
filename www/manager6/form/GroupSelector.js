@@ -49,7 +49,7 @@ Ext.define('PVE.form.GroupSelector', {
 	extend: 'Ext.data.Model',
 	fields: [ 'groupid', 'comment' ],
 	proxy: {
-            type: 'pve',
+            type: 'proxmox',
 	    url: "/api2/json/access/groups"
 	},
 	idProperty: 'groupid'

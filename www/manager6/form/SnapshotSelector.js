@@ -21,7 +21,7 @@ Ext.define('PVE.form.SnapshotSelector', {
 	me.vmid = vmid;
 
 	me.store.setProxy({
-	    type: 'pve',
+	    type: 'proxmox',
 	    url: '/api2/json/nodes/' + me.nodename + '/qemu/' + me.vmid +'/snapshot'
 	});
 

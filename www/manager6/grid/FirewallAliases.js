@@ -95,7 +95,7 @@ Ext.define('PVE.FirewallAliases', {
 	var store = new Ext.data.Store({
 	    model: 'pve-fw-aliases',
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: "/api2/json" + me.base_url
 	    },
 	    sorters: {

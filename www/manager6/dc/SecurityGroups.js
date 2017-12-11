@@ -95,7 +95,7 @@ Ext.define('PVE.SecurityGroupList', {
 	var store = new Ext.data.Store({
 	    model: 'pve-security-groups',
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json' + me.base_url
 	    },
 	    sorters: {

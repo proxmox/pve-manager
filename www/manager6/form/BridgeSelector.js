@@ -49,7 +49,7 @@ Ext.define('PVE.form.BridgeSelector', {
 	me.nodename = nodename;
 
 	me.store.setProxy({
-	    type: 'pve',
+	    type: 'proxmox',
 	    url: '/api2/json/nodes/' + me.nodename + '/network?type=' +
 		me.bridgeType
 	});

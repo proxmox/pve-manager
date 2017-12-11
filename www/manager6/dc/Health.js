@@ -171,7 +171,7 @@ Ext.define('PVE.dc.Health', {
 	    interval: 3000,
 	    storeid: 'pve-cluster-ceph',
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/nodes/localhost/ceph/status'
 	    }
 	});

@@ -43,7 +43,7 @@ Ext.define('PVE.form.USBSelector', {
 	var store = new Ext.data.Store({
 	    model: 'pve-usb-' + me.type,
 	    proxy: {
-                type: 'pve',
+                type: 'proxmox',
                 url: "/api2/json/nodes/" + nodename + "/scan/usb"
 	    },
 	    filters: [

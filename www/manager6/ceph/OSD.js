@@ -42,7 +42,7 @@ Ext.define('PVE.form.CephDiskSelector', {
 	    filterOnLoad: true,
 	    model: 'ceph-disk-list',
 	    proxy: {
-                type: 'pve',
+                type: 'proxmox',
                 url: "/api2/json/nodes/" + nodename + "/ceph/disks",
 		extraParams: { type: me.diskType }
 	    },

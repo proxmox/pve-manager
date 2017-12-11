@@ -72,7 +72,7 @@ Ext.define('PVE.node.CephMonList', {
 	    storeid: 'ceph-mon-list' + nodename,
 	    model: 'ceph-mon-list',
 	    proxy: {
-                type: 'pve',
+                type: 'proxmox',
                 url: "/api2/json/nodes/" + nodename + "/ceph/mon"
 	    }
 	});

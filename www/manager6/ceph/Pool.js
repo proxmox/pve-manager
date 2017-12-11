@@ -157,7 +157,7 @@ Ext.define('PVE.node.CephPoolList', {
 	    storeid: 'ceph-pool-list' + nodename,
 	    model: 'ceph-pool-list',
 	    proxy: {
-                type: 'pve',
+                type: 'proxmox',
                 url: "/api2/json/nodes/" + nodename + "/ceph/pools"
 	    }
 	});
@@ -257,7 +257,7 @@ Ext.define('PVE.form.CephRuleSelector', {
 	    fields: ['name'],
 	    sorters: 'name',
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/ceph/rules'
 	    }
 	});

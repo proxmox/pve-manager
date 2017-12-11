@@ -33,7 +33,7 @@ Ext.define('PVE.form.GlobalSearchField', {
 	store: {
 	    model: 'PVEResources',
 	    proxy:{
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/extjs/cluster/resources'
 	    }
 	},

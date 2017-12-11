@@ -19,7 +19,7 @@ Ext.define('PVE.form.CephPoolSelector', {
 	    fields: ['name'],
 	    sorters: 'name',
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/ceph/pools'
 	    }
 	});

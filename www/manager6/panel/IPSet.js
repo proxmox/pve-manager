@@ -34,7 +34,7 @@ Ext.define('PVE.IPSetList', {
 	var store = new Ext.data.Store({
 	    model: 'pve-fw-ipsets',
 	    proxy: {
-		type: 'pve',
+		type: 'proxmox',
 		url: "/api2/json" + me.base_url
 	    },
 	    sorters: {
@@ -274,7 +274,7 @@ Ext.define('PVE.IPSetGrid', {
 	    me.addBtn.setDisabled(false);
 	    me.removeBtn.baseurl = url + '/';
 	    me.store.setProxy({
-		type: 'pve',
+		type: 'proxmox',
 		url: '/api2/json' + url
 	    });
 
