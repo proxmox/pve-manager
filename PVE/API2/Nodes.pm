@@ -155,6 +155,7 @@ __PACKAGE__->register_method ({
 	    { name => 'rrddata' },# fixme: remove?
 	    { name => 'replication' },
 	    { name => 'vncshell' },
+	    { name => 'termproxy' },
 	    { name => 'spiceshell' },
 	    { name => 'time' },
 	    { name => 'dns' },
@@ -755,6 +756,102 @@ __PACKAGE__->register_method ({
 	    port => $port, 
 	    upid => $upid, 
 	    cert => $sslcert, 
+	};
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'termproxy',
+    path => 'termproxy',
+    method => 'POST',
+    protected => 1,
+    permissions => {
+	description => "Restricted to users on realm 'pam'",
+	check => ['perm', '/nodes/{node}', [ 'Sys.Console' ]],
+    },
+    description => "Creates a VNC Shell proxy.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    upgrade => {
+		type => 'boolean',
+		description => "Run 'apt-get dist-upgrade' instead of normal shell.",
+		optional => 1,
+		default => 0,
+	    },
+	},
+    },
+    returns => {
+	additionalProperties => 0,
+	properties => {
+	    user => { type => 'string' },
+	    ticket => { type => 'string' },
+	    port => { type => 'integer' },
+	    upid => { type => 'string' },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
+
+	raise_perm_exc("realm != pam") if $realm ne 'pam';
+
+	my $node = $param->{node};
+
+	my $authpath = "/nodes/$node";
+
+	my $ticket = PVE::AccessControl::assemble_vnc_ticket($user, $authpath);
+
+	my ($remip, $family);
+
+	if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
+	    ($remip, $family) = PVE::Cluster::remote_node_ip($node);
+	} else {
+	    $family = PVE::Tools::get_host_address_family($node);
+	}
+
+	my $port = PVE::Tools::next_vnc_port($family);
+
+	my $remcmd = $remip ?
+	    ['/usr/bin/ssh', '-e', 'none', '-t', $remip , '--'] : [];
+
+	my $concmd;
+
+	if ($user eq 'root@pam') {
+	    if ($param->{upgrade}) {
+		my $upgradecmd = "pveupgrade --shell";
+		$concmd = [ '/bin/bash', '-c', $upgradecmd ];
+	    } else {
+		$concmd = [ '/bin/login', '-f', 'root' ];
+	    }
+	} else {
+	    $concmd = [ '/bin/login' ];
+	}
+
+	my $realcmd = sub {
+	    my $upid = shift;
+
+	    syslog ('info', "starting termproxy $upid\n");
+
+	    my $cmd = ['/usr/bin/termproxy', $port, '--path', $authpath,
+		       '--perm', 'Sys.Console',  '--'];
+	    push  @$cmd, @$remcmd, @$concmd;
+
+	    PVE::Tools::run_command($cmd);
+	};
+
+	my $upid = $rpcenv->fork_worker('vncshell', "", $user, $realcmd);
+
+	PVE::Tools::wait_for_vnc_port($port);
+
+	return {
+	    user => $user,
+	    ticket => $ticket,
+	    port => $port,
+	    upid => $upid,
 	};
     }});
 
