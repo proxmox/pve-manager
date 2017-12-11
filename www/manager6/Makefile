@@ -14,7 +14,6 @@ JSSRC= 				                 	\
 	lxc/CmdMenu.js					\
 	node/CmdMenu.js					\
 	VNCConsole.js					\
-	data/TimezoneStore.js				\
 	data/PVEProxy.js				\
 	data/ObjectStore.js				\
 	data/ResourceStore.js				\
