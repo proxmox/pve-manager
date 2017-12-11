@@ -121,7 +121,7 @@ Ext.define('PVE.node.CephStatus', {
 	    items: [
 		{
 		    flex: 1,
-		    xtype: 'pveGauge',
+		    xtype: 'proxmoxGauge',
 		    itemId: 'space',
 		    title: gettext('Usage')
 		},

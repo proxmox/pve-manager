@@ -68,7 +68,6 @@ JSSRC= 				                 	\
 	panel/InfoWidget.js				\
 	panel/TemplateStatusView.js			\
 	panel/InputPanel.js				\
-	panel/GaugeWidget.js				\
 	panel/HealthWidget.js				\
 	window/LoginWindow.js				\
 	window/Wizard.js				\

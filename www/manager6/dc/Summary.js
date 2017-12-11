@@ -29,7 +29,7 @@ Ext.define('PVE.dc.Summary', {
 	    bodyPadding: '0 0 10 0',
 	    layout: 'hbox',
 	    defaults: {
-		xtype: 'pveGauge',
+		xtype: 'proxmoxGauge',
 		flex: 1
 	    },
 	    items:[
