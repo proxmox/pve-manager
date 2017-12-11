@@ -190,7 +190,7 @@ Ext.define('PVE.panel.Config', {
 	    baseCls: 'x-panel-header-text'
 	});
 
-	me.helpButton = Ext.create('PVE.button.Help', {
+	me.helpButton = Ext.create('Proxmox.button.Help', {
 	    hidden: false,
 	    listenToGlobalEvent: false,
 	    onlineHelp: me.onlineHelp || undefined

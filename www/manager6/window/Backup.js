@@ -107,7 +107,7 @@ Ext.define('PVE.window.Backup', {
 	    }
 	});
 
-	var helpBtn = Ext.create('PVE.button.Help', {
+	var helpBtn = Ext.create('Proxmox.button.Help', {
 	    onlineHelp: 'chapter_vzdump',
 	    listenToGlobalEvent: false,
 	    hidden: false

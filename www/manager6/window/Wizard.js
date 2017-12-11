@@ -68,7 +68,7 @@ Ext.define('PVE.window.Wizard', {
 	    margins: '0 5 5 5',
 	    items: [  
 		{
-		    xtype: 'pveHelpButton',
+		    xtype: 'proxmoxHelpButton',
 		    itemId: 'help'
 		},
 		'->', 

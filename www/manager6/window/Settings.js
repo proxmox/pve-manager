@@ -161,7 +161,7 @@ Ext.define('PVE.window.Settings', {
 		},
 		{
 		    xtype: 'button',
-		    cls: 'x-btn-default-toolbar-small pve-inline-button',
+		    cls: 'x-btn-default-toolbar-small proxmox-inline-button',
 		    text: gettext('Clear User name'),
 		    width: 'auto',
 		    name: 'clear-username'
@@ -178,7 +178,7 @@ Ext.define('PVE.window.Settings', {
 		},
 		{
 		    xtype: 'button',
-		    cls: 'x-btn-default-toolbar-small pve-inline-button',
+		    cls: 'x-btn-default-toolbar-small proxmox-inline-button',
 		    text: gettext('Reset Layout'),
 		    width: 'auto',
 		    name: 'reset'

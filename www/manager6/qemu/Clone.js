@@ -273,7 +273,7 @@ Ext.define('PVE.window.Clone', {
 	    border: false,
 	    layout: 'fit',
 	    buttons: [ {
-		xtype: 'pveHelpButton',
+		xtype: 'proxmoxHelpButton',
 		listenToGlobalEvent: false,
 		hidden: false,
 		onlineHelp: me.onlineHelp

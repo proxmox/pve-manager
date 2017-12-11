@@ -323,7 +323,7 @@ Ext.define('PVE.StdWorkspace', {
 			    }
 			},
 			{
-			    xtype: 'pveHelpButton',
+			    xtype: 'proxmoxHelpButton',
 			    hidden: false,
 			    baseCls: 'x-btn',
 			    iconCls: 'fa fa-book x-btn-icon-el-default-toolbar-small ',

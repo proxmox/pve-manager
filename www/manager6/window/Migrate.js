@@ -92,8 +92,8 @@ Ext.define('PVE.window.Migrate', {
     ],
     buttons: [
 	{
-	    xtype: 'pveHelpButton',
-	    reference: 'pveHelpButton',
+	    xtype: 'proxmoxHelpButton',
+	    reference: 'proxmoxHelpButton',
 	    onlineHelp: 'pct_migration',
 	    listenToGlobalEvent: false,
 	    hidden: false
@@ -127,7 +127,7 @@ Ext.define('PVE.window.Migrate', {
 	me.liveMode = 'restart';
 
 	if (me.vmtype === 'qemu') {
-	    me.lookup('pveHelpButton').setHelpConfig({
+	    me.lookup('proxmoxHelpButton').setHelpConfig({
 		onlineHelp: 'qm_migration'
 	    });
 	    title = gettext('Migrate') + (' VM ') + me.vmid;
