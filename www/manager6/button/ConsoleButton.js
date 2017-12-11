@@ -12,12 +12,54 @@ Ext.define('PVE.button.ConsoleButton', {
 
     vmid: 0,
 
+    text: gettext('Console'),
+
     setEnableSpice: function(enable){
 	var me = this;
 
 	me.enableSpice = enable;
-	me.spiceMenu.setDisabled(!enable);
+	me.down('#spicemenu').setDisabled(!enable);
     },
+
+    handler: function() {
+	var me = this;
+	PVE.Utils.openDefaultConsoleWindow(me.enableSpice, me.consoleType, me.vmid,
+					   me.nodename, me.consoleName);
+    },
+
+    menu: [
+	{
+	    xtype:'menuitem',
+	    text: 'noVNC',
+	    iconCls: 'pve-itype-icon-novnc',
+	    type: 'html5',
+	    handler: function(button) {
+		var me = this.up('button');
+		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName);
+	    },
+	},
+	{
+	    xterm: 'menuitem',
+	    itemId: 'spicemenu',
+	    text: 'SPICE',
+	    type: 'vv',
+	    iconCls: 'pve-itype-icon-virt-viewer',
+	    handler: function(button) {
+		var me = this.up('button');
+		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName);
+	    },
+	},
+	{
+	    text: 'xterm.js',
+	    itemId: 'xtermjs',
+	    iconCls: 'fa fa-terminal',
+	    type: 'xtermjs',
+	    handler: function(button) {
+		var me = this.up('button');
+		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName);
+	    },
+	}
+    ],
 
     initComponent: function() {
         var me = this;
@@ -25,36 +67,6 @@ Ext.define('PVE.button.ConsoleButton', {
 	if (!me.nodename) {
 	    throw "no node name specified";
 	}
-
-	me.spiceMenu = Ext.create('Ext.menu.Item', {
-	    text: 'SPICE',
-	    iconCls: 'pve-itype-icon-virt-viewer',
-	    handler: function() {
-		PVE.Utils.openConsoleWindow('vv', me.consoleType, me.vmid, me.nodename, me.consoleName);
-	    }
-	});
-
-	var noVncMenu = Ext.create('Ext.menu.Item', {
-	    text: 'noVNC',
-	    iconCls: 'pve-itype-icon-novnc',
-	    handler: function() {
-		PVE.Utils.openConsoleWindow('html5', me.consoleType, me.vmid, me.nodename, me.consoleName);
-	    }
-	});
-
-	if (me.text === null) {
-	    me.text = gettext('Console');
-	}
-
-	Ext.apply(me, {
-	    handler: function() {
-		PVE.Utils.openDefaultConsoleWindow(me.enableSpice, me.consoleType, me.vmid,
-						   me.nodename, me.consoleName);
-	    },
-	    menu: new Ext.menu.Menu({
-		items: [ noVncMenu, me.spiceMenu ]
-	    })
-	});
 
 	me.callParent();
     }

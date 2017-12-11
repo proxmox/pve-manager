@@ -148,15 +148,27 @@ Ext.define('PVE.lxc.Config', {
 	});
 
 	if (caps.vms['VM.Console']) {
-	    me.items.push({
-		title: gettext('Console'),
-		itemId: 'console',
-		iconCls: 'fa fa-terminal',
-		xtype: 'pveNoVncConsole',
-		vmid: vmid,
-		consoleType: 'lxc',
-		nodename: nodename
-	    });
+	    me.items.push(
+		{
+		    title: gettext('Console'),
+		    itemId: 'console',
+		    iconCls: 'fa fa-terminal',
+		    xtype: 'pveNoVncConsole',
+		    vmid: vmid,
+		    consoleType: 'lxc',
+		    nodename: nodename
+		},
+		{
+		    title: gettext('Console (JS)'),
+		    itemId: 'consolejs',
+		    iconCls: 'fa fa-terminal',
+		    xtype: 'pveNoVncConsole',
+		    vmid: vmid,
+		    consoleType: 'lxc',
+		    xtermjs: true,
+		    nodename: nodename
+		}
+	    );
 	}
 
 	me.items.push(

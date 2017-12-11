@@ -139,6 +139,15 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveNoVncConsole',
 		    consoleType: 'shell',
 		    nodename: nodename
+		},
+		{
+		    title: gettext('Shell (JS)'),
+		    iconCls: 'fa fa-terminal',
+		    itemId: 'jsconsole',
+		    xtype: 'pveNoVncConsole',
+		    consoleType: 'shell',
+		    xtermjs: true,
+		    nodename: nodename
 		}
 	    );
 	}
