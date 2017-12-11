@@ -47,7 +47,7 @@ Ext.define('PVE.form.FWMacroSelector', {
 });
 
 Ext.define('PVE.FirewallRulePanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
 
     allow_iface: false,
 
@@ -332,7 +332,7 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
 	    });
 	}
 
-	var ipanel = Ext.create('PVE.panel.InputPanel', {
+	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	    isCreate: me.isCreate,
 	    column1: column1,
 	    column2: [

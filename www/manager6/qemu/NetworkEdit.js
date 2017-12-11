@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.NetworkInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveQemuNetworkInputPanel',
     onlineHelp: 'qm_network_device',
 

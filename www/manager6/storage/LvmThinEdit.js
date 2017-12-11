@@ -92,7 +92,7 @@ Ext.define('PVE.storage.BaseVGSelector', {
 });
 
 Ext.define('PVE.storage.LvmThinInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
 
     onGetValues: function(values) {
 	var me = this;

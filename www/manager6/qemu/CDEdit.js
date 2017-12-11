@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.CDInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveQemuCDInputPanel',
 
     insideWizard: false,

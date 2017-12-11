@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.OSTypeInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveQemuOSTypePanel',
     onlineHelp: 'qm_os_settings',
     insideWizard: false,

@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.BootOrderPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveQemuBootOrderPanel',
     vmconfig: {}, // store loaded vm config
 

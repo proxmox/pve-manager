@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.ProcessorInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveQemuProcessorPanel',
     onlineHelp: 'qm_cpu',
 

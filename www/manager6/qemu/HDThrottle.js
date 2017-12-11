@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.HDThrottleInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.PVE.qemu.HDThrottleInputPanel',
 
     insideWizard: false,

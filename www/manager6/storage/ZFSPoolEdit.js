@@ -35,7 +35,7 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
 });
 
 Ext.define('PVE.storage.ZFSPoolInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
 
     onGetValues: function(values) {
 	var me = this;

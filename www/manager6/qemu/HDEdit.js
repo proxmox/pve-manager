@@ -1,7 +1,7 @@
 /*jslint confusion: true */
 /* 'change' property is assigned a string and then a function */
 Ext.define('PVE.qemu.HDInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveQemuHDInputPanel',
     onlineHelp: 'qm_hard_disk',
 

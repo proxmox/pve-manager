@@ -1,5 +1,5 @@
 Ext.define('PVE.storage.DirInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     controller: 'storageEdit',
 
     onGetValues: function(values) {

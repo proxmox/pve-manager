@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.USBInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
 
     autoComplete: false,
     onlineHelp: 'qm_usb_passthrough',

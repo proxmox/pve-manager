@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.EFIDiskInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveEFIDiskInputPanel',
 
     insideWizard: false,

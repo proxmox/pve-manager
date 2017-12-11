@@ -190,7 +190,7 @@ Ext.define('PVE.dc.AuthEdit', {
             fieldLabel: 'Yubico URL'
         });
 
-	var ipanel = Ext.create('PVE.panel.InputPanel', {
+	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	    column1: column1,
 	    column2: column2,
 	    columnB: [{

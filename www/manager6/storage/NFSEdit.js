@@ -58,7 +58,7 @@ Ext.define('PVE.storage.NFSScan', {
 });
 
 Ext.define('PVE.storage.NFSInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     controller: 'storageEdit',
 
     onGetValues: function(values) {

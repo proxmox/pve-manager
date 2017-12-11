@@ -1,5 +1,5 @@
 Ext.define('PVE.ha.VMResourceInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     onlineHelp: 'ha_manager_resource_config',
     vmid: undefined,
     

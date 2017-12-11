@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.Smbios1InputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.PVE.qemu.Smbios1InputPanel',
 
     insideWizard: false,

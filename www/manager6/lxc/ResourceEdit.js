@@ -37,7 +37,7 @@ Ext.define('PVE.lxc.CPUEdit', {
 });
 
 Ext.define('PVE.lxc.CPUInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveLxcCPUInputPanel',
 
     onlineHelp: 'pct_cpu',
@@ -108,7 +108,7 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 });
 
 Ext.define('PVE.lxc.MemoryInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveLxcMemoryInputPanel',
 
     onlineHelp: 'pct_memory',

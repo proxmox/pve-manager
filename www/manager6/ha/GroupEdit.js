@@ -1,5 +1,5 @@
 Ext.define('PVE.ha.GroupInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     onlineHelp: 'ha_manager_groups',
 
     groupId: undefined,

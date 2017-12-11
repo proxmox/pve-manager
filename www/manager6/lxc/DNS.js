@@ -1,5 +1,5 @@
 Ext.define('PVE.lxc.DNSInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveLxcDNSInputPanel',
 
     insideWizard: false,

@@ -1,5 +1,5 @@
 Ext.define('PVE.lxc.MountPointInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveLxcMountPointInputPanel',
 
     insideWizard: false,

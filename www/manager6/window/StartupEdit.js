@@ -1,5 +1,5 @@
 Ext.define('PVE.panel.StartupInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     onlineHelp: 'qm_startup_and_shutdown',
 
     onGetValues: function(values) {

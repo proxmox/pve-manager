@@ -1,5 +1,5 @@
 Ext.define('PVE.storage.SheepdogInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
 
     onGetValues: function(values) {
 	var me = this;

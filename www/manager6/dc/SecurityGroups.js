@@ -49,7 +49,7 @@ Ext.define('PVE.SecurityGroupEdit', {
 	    });
         }
 
-	var ipanel = Ext.create('PVE.panel.InputPanel', {
+	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	// InputPanel does not have a 'create' property, does it need a 'isCreate'
 	    isCreate: me.isCreate,
 	    items: items 

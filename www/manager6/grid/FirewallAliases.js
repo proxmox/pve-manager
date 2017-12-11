@@ -39,7 +39,7 @@ Ext.define('PVE.FirewallAliasEdit', {
 	    }
 	];
 
-	var ipanel = Ext.create('PVE.panel.InputPanel', {
+	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	    isCreate: me.isCreate,
 	    items: items
 	});

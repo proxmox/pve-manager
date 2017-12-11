@@ -58,7 +58,7 @@ Ext.define('PVE.storage.GlusterFsScan', {
 });
 
 Ext.define('PVE.storage.GlusterFsInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     controller: 'storageEdit',
 
     onGetValues: function(values) {

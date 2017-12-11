@@ -55,7 +55,7 @@ Ext.define('PVE.dc.ACLAdd', {
 	    });
 	}
 
-	var ipanel = Ext.create('PVE.panel.InputPanel', {
+	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	    items: items,
 	    onlineHelp: 'pveum_permission_management'
 	});

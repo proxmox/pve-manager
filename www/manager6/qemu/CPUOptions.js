@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.CPUOptionsInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.PVE.qemu.CPUOptionsInputPanel',
 
     onGetValues: function(values) {

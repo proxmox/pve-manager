@@ -1,5 +1,5 @@
 Ext.define('PVE.qemu.MemoryInputPanel', {
-    extend: 'PVE.panel.InputPanel',
+    extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveQemuMemoryPanel',
     onlineHelp: 'qm_memory',
 
