@@ -10,6 +10,8 @@ Ext.define('PVE.noVncConsole', {
 
     layout: 'fit',
 
+    xtermjs: false,
+
     border: false,
 
     initComponent : function() {
@@ -31,11 +33,13 @@ Ext.define('PVE.noVncConsole', {
 	// at same time (to avoid performance problems)
 	var box = Ext.create('Ext.ux.IFrame', { itemid : "vncconsole" });
 
+	var type = me.xtermjs ? 'xtermjs' : 'novnc';
+
 	Ext.apply(me, {
 	    items: box,
 	    listeners: {
 		activate: function() {
-		    var url = '/?console=' + me.consoleType + '&novnc=1&node=' + me.nodename + '&resize=scale';
+		    var url = '/?console=' + me.consoleType + '&' + type + '=1&node=' + me.nodename + '&resize=scale';
 		    if (me.vmid) {
 			url += '&vmid='+ me.vmid;
 		    }
