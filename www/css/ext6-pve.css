@@ -171,20 +171,6 @@
     font-size: 0.6em;
 }
 
-/* the warning triangle symbol */
-.x-tree-icon-custom.nearfull:after,
-.x-grid-icon-custom.nearfull:after {
-    content: "\f071";
-    color: #CC8E00;
-}
-
-/* the error triangle symbol */
-.x-tree-icon-custom.full:after,
-.x-grid-icon-custom.full:after {
-    content: "\f071";
-    color: #CC1800;
-}
-
 /* the lxc template */
 .x-tree-icon-custom.lxc:after,
 .x-grid-icon-custom.lxc:after {
