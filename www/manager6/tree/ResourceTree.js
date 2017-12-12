@@ -68,7 +68,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		}
 	    }
 
-	    return n1.text > n2.text ? 1 : (n1.text < n2.text ? -1 : 0);
+	    return n1.id > n2.id ? 1 : (n1.id < n2.id ? -1 : 0);
 	} else if (n1.groupbyid) {
 	    return -1;
 	} else if (n2.groupbyid) {
@@ -106,11 +106,37 @@ Ext.define('PVE.tree.ResourceTree', {
 	}
     },
 
+    // add additional elements to text
+    // at the moment only the usage indicator for storages
+    setText: function(info) {
+	var me = this;
+
+	var status = '';
+	if (info.type === 'storage') {
+	    var maxdisk = info.maxdisk;
+	    var disk = info.disk;
+	    var usage = disk/maxdisk;
+	    var cls = '';
+	    if (usage <= 1.0 && usage >= 0.0) {
+		var height = (usage*100).toFixed(0);
+		var neg_height = (100-usage*100).toFixed(0);
+		status = '<div class="usage-wrapper">';
+		status += '<div class="usage-negative" style="height: ';
+		status += neg_height + '%"></div>';
+		status += '<div class="usage" style="height: '+ height +'%"></div>';
+		status += '</div> ';
+	    }
+	}
+
+	info.text = status + info.text;
+    },
+
     // private
     addChildSorted: function(node, info) {
 	var me = this;
 
 	me.setIconCls(info);
+	me.setText(info);
 
 	var defaults;
 	if (info.groupbyid) {
@@ -276,6 +302,7 @@ Ext.define('PVE.tree.ResourceTree', {
 			var info = olditem.data;
 			Ext.apply(info, item.data);
 			me.setIconCls(info);
+			me.setText(info);
 			olditem.commit();
 		    }
 		    if ((!item || moved) && olditem.isLeaf()) {
