@@ -1,3 +1,16 @@
+pve-manager (5.1-40) stable; urgency=medium
+
+  * send an email when a replication job fails
+
+  * added xterm.js as an alternative for vncterm for the host shell,
+    container terminals and qemu serial port connections
+
+  * allow users with the Sys.Audit permission to see the subscription status
+
+  * allow users with the Sys.Modify permission to see and modify subscriptions
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 13 Dec 2017 11:59:01 +0100
+
 pve-manager (5.1-39) stable; urgency=medium
 
   * fix #1589: auth_handler: raise proper exception on init_request error
