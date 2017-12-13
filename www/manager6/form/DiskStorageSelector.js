@@ -28,6 +28,10 @@ Ext.define('PVE.form.DiskStorageSelector', {
     // hides the size field (e.g, for the efi disk dialog)
     hideSize: false,
 
+    // sets the intial size value
+    // string because else we get a type confusion
+    defaultSize: '32',
+
     changeStorage: function(f, value) {
 	var me = this;
 	var formatsel = me.getComponent('diskformat');
@@ -115,7 +119,7 @@ Ext.define('PVE.form.DiskStorageSelector', {
 		minValue: 0.001,
 		maxValue: 128*1024,
 		decimalPrecision: 3,
-		value: '32',
+		value: me.defaultSize,
 		allowBlank: false
 	    },
 	    {

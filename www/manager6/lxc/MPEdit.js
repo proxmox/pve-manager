@@ -175,6 +175,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    nodename: me.nodename,
 	    storageContent: 'rootdir',
 	    autoSelect: true,
+	    defaultSize: 8,
 	    hidden: me.unused || !me.isCreate
 	});
 
