@@ -96,7 +96,7 @@ sub run_jobs {
 			if $jobstate->{fail_count} == 1 && $mail;
 		};
 		warn ": $@" if $@;
-	    };
+	    }
 
 	    $start_time = $now // time();
 	}
