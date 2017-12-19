@@ -36,7 +36,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	    handler: function(button) {
 		var me = this.up('button');
 		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName);
-	    },
+	    }
 	},
 	{
 	    xterm: 'menuitem',
@@ -47,7 +47,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	    handler: function(button) {
 		var me = this.up('button');
 		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName);
-	    },
+	    }
 	},
 	{
 	    text: 'xterm.js',
@@ -57,7 +57,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	    handler: function(button) {
 		var me = this.up('button');
 		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName);
-	    },
+	    }
 	}
     ],
 
