@@ -201,6 +201,7 @@
 .pve-itype-icon-virt-viewer,
 .pve-itype-icon-tigervnc,
 .pve-itype-icon-novnc,
+.pve-itype-icon-xtermjs,
 .pve-itype-icon-display,
 .pve-itype-icon-memory,
 .pve-itype-icon-processor,
@@ -322,6 +323,11 @@
 .pve-itype-icon-virt-viewer
 {
     background-image:url(../images/virt-viewer.png);
+}
+
+.pve-itype-icon-xtermjs
+{
+    background-image:url(../images/xtermjs.png);
 }
 
 .pve-itype-icon-usb

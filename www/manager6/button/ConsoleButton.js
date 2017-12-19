@@ -52,7 +52,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	{
 	    text: 'xterm.js',
 	    itemId: 'xtermjs',
-	    iconCls: 'fa fa-terminal',
+	    iconCls: 'pve-itype-icon-xtermjs',
 	    type: 'xtermjs',
 	    handler: function(button) {
 		var me = this.up('button');
