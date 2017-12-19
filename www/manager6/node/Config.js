@@ -106,8 +106,7 @@ Ext.define('PVE.node.Config', {
 	    disabled: !caps.nodes['Sys.Console'],
 	    text: gettext('Shell'),
 	    consoleType: 'shell',
-	    nodename: nodename,
-		iconCls: 'fa fa-terminal'
+	    nodename: nodename
 	});
 
 	me.items = [];

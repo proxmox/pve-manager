@@ -6,6 +6,8 @@ Ext.define('PVE.button.ConsoleButton', {
 
     consoleName: undefined,
 
+    iconCls: 'fa fa-terminal',
+
     enableSpice: true,
 
     nodename: undefined,

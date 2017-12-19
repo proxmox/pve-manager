@@ -128,8 +128,7 @@ Ext.define('PVE.lxc.Config', {
 	    consoleType: 'lxc',
 	    consoleName: vm.name,
 	    nodename: nodename,
-	    vmid: vmid,
-	    iconCls: 'fa fa-terminal'
+	    vmid: vmid
 	});
 
 	Ext.apply(me, {

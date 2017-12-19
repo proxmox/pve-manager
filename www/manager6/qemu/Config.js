@@ -172,8 +172,7 @@ Ext.define('PVE.qemu.Config', {
 	    consoleType: 'kvm',
 	    consoleName: vm.name,
 	    nodename: nodename,
-	    vmid: vmid,
-	    iconCls: 'fa fa-terminal'
+	    vmid: vmid
 	});
 
 	Ext.apply(me, {
