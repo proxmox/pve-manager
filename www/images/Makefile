@@ -22,6 +22,9 @@ all:
 # ceph logos are from
 #  http://ceph.com/logos/
 
+# xtermjs.png is a cropped version of the logo found on
+# https://github.com/xtermjs/xterm.js
+
 GNOME_IMAGES = 			\
 	checked.png		\
 	unchecked.png 		\
@@ -43,6 +46,7 @@ IMAGES = ${GNOME_IMAGES}	\
 	virt-viewer.png		\
 	tigervnc.png		\
 	novnc.png		\
+	xtermjs.png		\
 	favicon.ico		\
 	snapshot.png		\
 	computer-on.png		\
