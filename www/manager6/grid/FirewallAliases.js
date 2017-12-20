@@ -183,7 +183,6 @@ Ext.define('PVE.FirewallAliases', {
 	});
 
 	me.callParent();
-
-	me.on('show', reload);
+	me.on('activate', reload);
     }
 });
