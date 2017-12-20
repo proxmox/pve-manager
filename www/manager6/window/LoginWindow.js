@@ -53,18 +53,9 @@ Ext.define('PVE.window.LoginWindow', {
 		specialkey: function(f, e) {
 		    if (e.getKey() === e.ENTER) {
 			var pf = this.lookupReference('passwordField');
-			if (pf.getValue()) {
-			    this.onLogon();
-			} else {
+			if (!pf.getValue()) {
 			    pf.focus(false);
 			}
-		    }
-		}
-	    },
-	    'field[name=password]': {
-		specialkey: function(f, e) {
-		    if (e.getKey() === e.ENTER) {
-			this.onLogon();
 		    }
 		}
 	    },
