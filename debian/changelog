@@ -1,3 +1,13 @@
+pve-manager (5.1-41) stable; urgency=medium
+
+  * pveupdate - always run check for available updates
+
+  * prevent double ticket api call
+
+  * Add new icon for xtermjs consoles, based on xtermjs logo
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 21 Dec 2017 12:47:40 +0100
+
 pve-manager (5.1-40) stable; urgency=medium
 
   * send an email when a replication job fails
