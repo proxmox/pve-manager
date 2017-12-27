@@ -121,7 +121,7 @@ Ext.define('PVE.lxc.MemoryInputPanel', {
 	    {
 		xtype: 'pveIntegerField',
 		name: 'memory',
-		minValue: 32,
+		minValue: 16,
 		maxValue: 512*1024,
 		value: '512',
 		step: 32,
