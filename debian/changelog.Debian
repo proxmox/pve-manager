@@ -1,3 +1,9 @@
+pve-manager (4.4-21) unstable; urgency=medium
+
+  * add PCID checkbox to ProcessorEdit
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 10 Jan 2018 13:49:17 +0100
+
 pve-manager (4.4-20) unstable; urgency=medium
 
   * fix #1539: fix issues with proxied commands using pvesh
