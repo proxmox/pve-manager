@@ -13,7 +13,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 
 	// as long as flags is not a textfield, we
 	// have to manuall set the value
-	me.cpu.flags = (values.flags)?'+pcid':undefined;
+	me.cpu.flags = (values.flags) ? '+pcid' : undefined;
 	delete values.cputype;
 	delete values.flags;
 	var cpustring = PVE.Parser.printQemuCpu(me.cpu);
