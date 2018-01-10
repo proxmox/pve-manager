@@ -3,12 +3,19 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
     alias: 'widget.pveQemuProcessorPanel',
     onlineHelp: 'qm_cpu',
 
+    insideWizard: false,
+
     onGetValues: function(values) {
 	var me = this;
 
 	// build the cpu options:
 	me.cpu.cputype = values.cputype;
+
+	// as long as flags is not a textfield, we
+	// have to manuall set the value
+	me.cpu.flags = (values.flags)?'+pcid':undefined;
 	delete values.cputype;
+	delete values.flags;
 	var cpustring = PVE.Parser.printQemuCpu(me.cpu);
 
 	// remove cputype delete request:
@@ -95,6 +102,16 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 		fieldLabel: gettext('Total cores'),
 		name: 'totalcores',
 		value: '1'
+	    },
+	    {
+		// will be a textfield probably someday,
+		// so we name it flags
+		hidden: me.insideWizard,
+		disabled: me.insideWizard,
+		xtype: 'pvecheckbox',
+		fieldLabel: 'PCID',
+		name: 'flags',
+		uncheckedValue: 0
 	    }
 
 	];
@@ -126,6 +143,9 @@ Ext.define('PVE.qemu.ProcessorEdit', {
 		    var cpu = PVE.Parser.parseQemuCpu(value);
 		    ipanel.cpu = cpu;
 		    data.cputype = cpu.cputype;
+		    /*jslint confusion: true*/
+		    // .flags is boolean and string
+		    data.flags = (cpu.flags === '+pcid');
 		}
 		me.setValues(data);
 	    }
