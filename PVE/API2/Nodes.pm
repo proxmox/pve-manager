@@ -565,6 +565,12 @@ __PACKAGE__->register_method({
 		description => "Display all log until this date-time string.",
 		optional => 1,
 	    },
+	    service => {
+		description => "Service ID",
+		type => 'string',
+		maxLength => 128,
+		optional => 1,
+	    },
 	},
     },
     returns => {
@@ -589,9 +595,18 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 	my $node = $param->{node};
+	my $service;
+
+	if ($param->{service}) {
+	    my $service_aliases = {
+		'postfix' => 'postfix@-',
+	    };
+
+	    $service = $service_aliases->{$param->{service}} // $param->{service};
+	}
 
 	my ($count, $lines) = PVE::Tools::dump_journal($param->{start}, $param->{limit},
-						       $param->{since}, $param->{until});
+						       $param->{since}, $param->{until}, $service);
 
 	$rpcenv->set_result_attrib('total', $count);
 
