@@ -16,7 +16,7 @@ Ext.define('PVE.CephCreatePool', {
 	    allowBlank: false
 	},
 	{
-	    xtype: 'pveIntegerField',
+	    xtype: 'proxmoxintegerfield',
 	    fieldLabel: gettext('Size'),
 	    name: 'size',
 	    value: 3,
@@ -25,7 +25,7 @@ Ext.define('PVE.CephCreatePool', {
 	    allowBlank: false
 	},
 	{
-	    xtype: 'pveIntegerField',
+	    xtype: 'proxmoxintegerfield',
 	    fieldLabel: gettext('Min. Size'),
 	    name: 'min_size',
 	    value: 2,
@@ -40,7 +40,7 @@ Ext.define('PVE.CephCreatePool', {
 	    allowBlank: false
 	},
 	{
-	    xtype: 'pveIntegerField',
+	    xtype: 'proxmoxintegerfield',
 	    fieldLabel: 'pg_num',
 	    name: 'pg_num',
 	    value: 64,

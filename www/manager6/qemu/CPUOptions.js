@@ -5,7 +5,6 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	PVE.Utils.delete_if_default(values, 'vcpus', '', 0);
 	PVE.Utils.delete_if_default(values, 'cpulimit', '0', 0);
 	PVE.Utils.delete_if_default(values, 'cpuunits', '1024', 0);
 
@@ -17,12 +16,13 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
 
         var items = [
             {
-                xtype: 'pveIntegerField',
+                xtype: 'proxmoxintegerfield',
                 name: 'vcpus',
                 minValue: 1,
                 maxValue: me.maxvcpus,
                 value: '',
                 fieldLabel: gettext('VCPUs'),
+		deleteEmpty: true,
                 allowBlank: true,
                 emptyText: me.maxvcpus
             },
@@ -38,12 +38,13 @@ Ext.define('PVE.qemu.CPUOptionsInputPanel', {
                 emptyText: gettext('unlimited')
             },
 	    {
-                xtype: 'pveIntegerField',
+                xtype: 'proxmoxintegerfield',
                 name: 'cpuunits',
                 fieldLabel: gettext('CPU units'),
                 minValue: 8,
                 maxValue: 500000,
                 value: '1024',
+		deleteEmpty: true,
                 allowBlank: true
             }
 	];

@@ -59,7 +59,7 @@ Ext.define('PVE.FirewallOptions', {
 		    subject: text,
 		    fieldDefaults: { labelWidth: labelWidth || 100 },
 		    items: {
-			xtype: 'pveIntegerField',
+			xtype: 'proxmoxintegerfield',
 			name: name,
 			minValue: minValue,
 			fieldLabel: text,

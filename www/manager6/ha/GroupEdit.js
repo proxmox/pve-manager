@@ -78,7 +78,7 @@ Ext.define('PVE.ha.GroupInputPanel', {
 		    sortable: true,
 		    stopSelection: true,
 		    widget: {
-			xtype: 'pveIntegerField',
+			xtype: 'proxmoxintegerfield',
 			minValue: 0,
 			maxValue: 1000,
 			isFormField: false,

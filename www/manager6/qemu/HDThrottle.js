@@ -109,7 +109,7 @@ Ext.define('PVE.qemu.HDThrottleInputPanel', {
 
         me.column2.push(me.mbps_wr_max);
 
-        me.iops_rd = Ext.widget('pveIntegerField', {
+        me.iops_rd = Ext.widget('proxmoxintegerfield', {
             name: 'iops_rd',
             minValue: 10,
             step: 10,
@@ -120,7 +120,7 @@ Ext.define('PVE.qemu.HDThrottleInputPanel', {
 
         me.column1.push(me.iops_rd);
 
-        me.iops_rd_max = Ext.widget('pveIntegerField', {
+        me.iops_rd_max = Ext.widget('proxmoxintegerfield', {
             name: 'iops_rd_max',
             minValue: 10,
             step: 10,
@@ -131,7 +131,7 @@ Ext.define('PVE.qemu.HDThrottleInputPanel', {
 
         me.column2.push(me.iops_rd_max);
 
-        me.iops_wr = Ext.widget('pveIntegerField', {
+        me.iops_wr = Ext.widget('proxmoxintegerfield', {
             name: 'iops_wr',
             minValue: 10,
             step: 10,
@@ -142,7 +142,7 @@ Ext.define('PVE.qemu.HDThrottleInputPanel', {
 
         me.column1.push(me.iops_wr);
 
-        me.iops_wr_max = Ext.widget('pveIntegerField', {
+        me.iops_wr_max = Ext.widget('proxmoxintegerfield', {
             name: 'iops_wr_max',
             minValue: 10,
             step: 10,

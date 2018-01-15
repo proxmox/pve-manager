@@ -81,23 +81,14 @@ Ext.define('PVE.lxc.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('TTY count'),
 		    items: {
-			xtype: 'pveIntegerField',
+			xtype: 'proxmoxintegerfield',
 			name: 'tty',
 			minValue: 0,
 			maxValue: 6,
 			value: 2,
 			fieldLabel: gettext('TTY count'),
-			allowEmpty: gettext('Default'),
-			getSubmitData: function() {
-			    var me = this;
-			    var val = me.getSubmitValue();
-			    if (val !== null && val !== '' && val !== '2') {
-				return { tty: val };
-			    } else {
-				return { 'delete' : 'tty' };
-			    }
-			}
-
+			emptyText: gettext('Default'),
+			deleteEmpty: true
 		    }
 		} : undefined
 	    },

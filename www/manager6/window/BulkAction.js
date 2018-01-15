@@ -73,7 +73,7 @@ Ext.define('PVE.window.BulkAction', {
 		    onlineValidator: true
 		},
 		{
-		    xtype: 'pveIntegerField',
+		    xtype: 'proxmoxintegerfield',
 		    name: 'maxworkers',
 		    minValue: 1,
 		    maxValue: 100,

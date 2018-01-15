@@ -60,13 +60,14 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 
 	var column1 = [
             {
-                xtype: 'pveIntegerField',
+                xtype: 'proxmoxintegerfield',
                 name: 'cores',
 		minValue: 1,
 		maxValue: 128,
 		value: me.insideWizard ? 1 : '',
 		fieldLabel: gettext('Cores'),
 		allowBlank: true,
+		deleteEmpty: true,
                 emptyText: gettext('unlimited')
             }
 	];
@@ -84,7 +85,7 @@ Ext.define('PVE.lxc.CPUInputPanel', {
                 emptyText: gettext('unlimited')
 	    },
 	    {
-		xtype: 'pveIntegerField',
+		xtype: 'proxmoxintegerfield',
 		name: 'cpuunits',
 		fieldLabel: gettext('CPU units'),
 		value: 1024,
@@ -119,7 +120,7 @@ Ext.define('PVE.lxc.MemoryInputPanel', {
 
 	var items = [
 	    {
-		xtype: 'pveIntegerField',
+		xtype: 'proxmoxintegerfield',
 		name: 'memory',
 		minValue: 16,
 		maxValue: 512*1024,
@@ -130,7 +131,7 @@ Ext.define('PVE.lxc.MemoryInputPanel', {
 		allowBlank: false
 	    },
 	    {
-		xtype: 'pveIntegerField',
+		xtype: 'proxmoxintegerfield',
 		name: 'swap',
 		minValue: 0,
 		maxValue: 128*1024,

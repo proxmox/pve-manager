@@ -28,7 +28,6 @@ JSSRC= 				                 	\
 	data/RRDStore.js				\
 	form/VLanField.js				\
 	form/Checkbox.js				\
-	form/IntegerField.js				\
 	form/RRDTypeSelector.js				\
 	form/KVComboBox.js				\
 	form/Boolean.js					\

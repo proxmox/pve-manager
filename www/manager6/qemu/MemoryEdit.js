@@ -109,7 +109,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		}
 	    },
 	    {
-		xtype: 'pveIntegerField',
+		xtype: 'proxmoxintegerfield',
 		name: 'balloon',
 		disabled: true,
 		minValue: 0,
@@ -122,7 +122,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		allowBlank: false
 	    },
 	    {
-		xtype: 'pveIntegerField',
+		xtype: 'proxmoxintegerfield',
 		name: 'shares',
 		disabled: true,
 		minValue: 0,

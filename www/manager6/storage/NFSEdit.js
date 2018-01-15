@@ -143,7 +143,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		fieldLabel: gettext('Enable')
 	    },
 	    {
-		xtype: 'pveIntegerField',
+		xtype: 'proxmoxintegerfield',
 		fieldLabel: gettext('Max Backups'),
 		disabled: true,
 		name: 'maxfiles',

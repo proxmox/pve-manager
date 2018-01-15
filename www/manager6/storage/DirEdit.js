@@ -62,7 +62,7 @@ Ext.define('PVE.storage.DirInputPanel', {
 		fieldLabel: gettext('Shared')
 	    },
 	    {
-		xtype: 'pveIntegerField',
+		xtype: 'proxmoxintegerfield',
 		fieldLabel: gettext('Max Backups'),
 		disabled: true,
 		name: 'maxfiles',
