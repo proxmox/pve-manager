@@ -18,7 +18,6 @@ JSSRC= 				                 	\
 	node/CmdMenu.js					\
 	VNCConsole.js					\
 	data/TimezoneStore.js				\
-	data/reader/JsonObject.js			\
 	data/PVEProxy.js				\
 	data/UpdateQueue.js				\
 	data/UpdateStore.js				\
