@@ -181,7 +181,9 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-globe',
 		    groups: ['services'],
 		    itemId: 'dns',
-		    xtype: 'pveNodeDNSView'
+		    nodename: nodename,
+		    onlineHelp: 'sysadmin_network_configuration',
+		    xtype: 'proxmoxNodeDNSView'
 		},
 		{
 		    title: gettext('Time'),
