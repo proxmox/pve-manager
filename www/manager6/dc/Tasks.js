@@ -61,7 +61,7 @@ Ext.define('PVE.dc.Tasks', {
 		    var status = record.get('status');
 
 		    if (status && status != 'OK') {
-			return "pve-invalid-row";
+			return "proxmox-invalid-row";
 		    }
 		}
 	    },

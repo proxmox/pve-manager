@@ -504,7 +504,7 @@ table.osds td:first-of-type {
     height: initial;
 }
 
-.pve-invalid-row {
+.proxmox-invalid-row {
     background-color: #f3d6d7;
 }
 

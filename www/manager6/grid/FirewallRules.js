@@ -629,7 +629,7 @@ Ext.define('PVE.FirewallRules', {
 	var render_errors = function(name, value, metaData, record) {
 	    var errors = record.data.errors;
 	    if (errors && errors[name]) {
-		metaData.tdCls = 'pve-invalid-row';
+		metaData.tdCls = 'proxmox-invalid-row';
 		var html = '<p>' +  Ext.htmlEncode(errors[name]) + '</p>';
 		metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' + 
 		    html.replace(/\"/g,'&quot;') + '"';

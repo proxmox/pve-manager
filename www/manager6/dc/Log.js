@@ -36,7 +36,7 @@ Ext.define('PVE.dc.Log', {
 		    var pri = record.get('pri');
 
 		    if (pri && pri <= 3) {
-			return "pve-invalid-row";
+			return "proxmox-invalid-row";
 		    }
 		}
 	    },

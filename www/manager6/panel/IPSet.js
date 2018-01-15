@@ -372,7 +372,7 @@ Ext.define('PVE.IPSetGrid', {
 	    if (errors) {
 		var msg = errors.cidr || errors.nomatch;
 		if (msg) {
-		    metaData.tdCls = 'pve-invalid-row';
+		    metaData.tdCls = 'proxmox-invalid-row';
 		    var html = '<p>' +  Ext.htmlEncode(msg) + '</p>';
 		    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' + 
 			html.replace(/\"/g,'&quot;') + '"';
