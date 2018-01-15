@@ -205,7 +205,14 @@ Ext.define('PVE.node.Config', {
 		    disabled: !caps.nodes['Sys.Console'],
 		    // do we want to link to system updates instead?
 		    itemId: 'apt',
-		    xtype: 'pveNodeAPT',
+		    xtype: 'proxmoxNodeAPT',
+		    upgradeBtn: {
+			xtype: 'pveConsoleButton',
+			disabled: PVE.UserName !== 'root@pam',
+			text: gettext('Upgrade'),
+			consoleType: 'upgrade',
+			nodename: nodename
+		    },
 		    nodename: nodename
 		});
 	    }

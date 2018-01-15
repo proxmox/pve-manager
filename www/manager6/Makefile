@@ -125,7 +125,6 @@ JSSRC= 				                 	\
 	node/ServiceView.js				\
 	node/Tasks.js					\
 	node/Subscription.js				\
-	node/APT.js					\
 	node/Config.js					\
 	window/Migrate.js				\
 	window/BulkAction.js				\
