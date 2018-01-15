@@ -87,8 +87,9 @@ Ext.define('PVE.node.Summary', {
 	    }
 	});
 
-	var rrdstore = Ext.create('PVE.data.RRDStore', {
-	    rrdurl: "/api2/json/nodes/" + nodename + "/rrddata"
+	var rrdstore = Ext.create('Proxmox.data.RRDStore', {
+	    rrdurl: "/api2/json/nodes/" + nodename + "/rrddata",
+	    model: 'pve-rrd-node'
 	});
 
 	Ext.apply(me, {
@@ -110,28 +111,28 @@ Ext.define('PVE.node.Summary', {
 				pveSelNode: me.pveSelNode
 			    },
 			    {
-				xtype: 'pveRRDChart',
+				xtype: 'proxmoxRRDChart',
 				title: gettext('CPU usage'),
 				fields: ['cpu','iowait'],
 				fieldTitles: [gettext('CPU usage'), gettext('IO delay')],
 				store: rrdstore
 			    },
 			    {
-				xtype: 'pveRRDChart',
+				xtype: 'proxmoxRRDChart',
 				title: gettext('Server load'),
 				fields: ['loadavg'],
 				fieldTitles: [gettext('Load average')],
 				store: rrdstore
 			    },
 			    {
-				xtype: 'pveRRDChart',
+				xtype: 'proxmoxRRDChart',
 				title: gettext('Memory usage'),
 				fields: ['memtotal','memused'],
 				fieldTitles: [gettext('Total'), gettext('RAM usage')],
 				store: rrdstore
 			    },
 			    {
-				xtype: 'pveRRDChart',
+				xtype: 'proxmoxRRDChart',
 				title: gettext('Network traffic'),
 				fields: ['netin','netout'],
 				store: rrdstore

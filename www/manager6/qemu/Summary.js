@@ -75,8 +75,9 @@ Ext.define('PVE.qemu.Summary', {
 	    });
 
 	} else {
-	    var rrdstore = Ext.create('PVE.data.RRDStore', {
-		rrdurl: "/api2/json/nodes/" + nodename + "/qemu/" + vmid + "/rrddata"
+	    var rrdstore = Ext.create('Proxmox.data.RRDStore', {
+		rrdurl: "/api2/json/nodes/" + nodename + "/qemu/" + vmid + "/rrddata",
+		model: 'pve-rrd-guest'
 	    });
 
 	    Ext.apply(me, {
@@ -112,7 +113,7 @@ Ext.define('PVE.qemu.Summary', {
 				    ]
 				},
 				{
-				    xtype: 'pveRRDChart',
+				    xtype: 'proxmoxRRDChart',
 				    title: gettext('CPU usage'),
 				    pveSelNode: me.pveSelNode,
 				    fields: ['cpu'],
@@ -120,7 +121,7 @@ Ext.define('PVE.qemu.Summary', {
 				    store: rrdstore
 				},
 				{
-				    xtype: 'pveRRDChart',
+				    xtype: 'proxmoxRRDChart',
 				    title: gettext('Memory usage'),
 				    pveSelNode: me.pveSelNode,
 				    fields: ['maxmem', 'mem'],
@@ -128,14 +129,14 @@ Ext.define('PVE.qemu.Summary', {
 				    store: rrdstore
 				},
 				{
-				    xtype: 'pveRRDChart',
+				    xtype: 'proxmoxRRDChart',
 				    title: gettext('Network traffic'),
 				    pveSelNode: me.pveSelNode,
 				    fields: ['netin','netout'],
 				    store: rrdstore
 				},
 				{
-				    xtype: 'pveRRDChart',
+				    xtype: 'proxmoxRRDChart',
 				    title: gettext('Disk IO'),
 				    pveSelNode: me.pveSelNode,
 				    fields: ['diskread','diskwrite'],

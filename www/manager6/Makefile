@@ -25,7 +25,6 @@ JSSRC= 				                 	\
 	data/DiffStore.js				\
 	data/ObjectStore.js				\
 	data/ResourceStore.js				\
-	data/RRDStore.js				\
 	data/model/RRDModels.js				\
 	form/VLanField.js				\
 	form/Checkbox.js				\
@@ -79,8 +78,6 @@ JSSRC= 				                 	\
 	panel/StatusPanel.js				\
 	panel/StatusView.js				\
 	panel/GuestStatusView.js			\
-	panel/RRDView.js				\
-	panel/RRDChart.js				\
 	panel/RunningChart.js				\
 	panel/InfoWidget.js				\
 	panel/TemplateStatusView.js			\

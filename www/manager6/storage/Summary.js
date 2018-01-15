@@ -37,15 +37,16 @@ Ext.define('PVE.storage.Summary', {
 	    style: {'padding-top':'0px'}
 	});
 
-	var rrdstore = Ext.create('PVE.data.RRDStore', {
-	    rrdurl:  "/api2/json/nodes/" + nodename + "/storage/" + storage + "/rrddata"
+	var rrdstore = Ext.create('Proxmox.data.RRDStore', {
+	    rrdurl:  "/api2/json/nodes/" + nodename + "/storage/" + storage + "/rrddata",
+	    model: 'pve-rrd-storage'
 	});
 
 	Ext.apply(me, {
 	    items: [
 		statusview,
 		{
-		    xtype: 'pveRRDChart',
+		    xtype: 'proxmoxRRDChart',
 		    title: gettext('Usage'),
 		    fields: ['total','used'],
 		    fieldTitles: ['Total Size', 'Used Size'],
