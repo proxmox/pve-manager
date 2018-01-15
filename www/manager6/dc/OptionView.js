@@ -7,7 +7,7 @@ Ext.define('PVE.dc.HttpProxyEdit', {
 	Ext.applyIf(me, {
 	    subject: gettext('HTTP proxy'),
 	    items: {
-		xtype: 'pvetextfield',
+		xtype: 'proxmoxtextfield',
 		name: 'http_proxy',
 		vtype: 'HttpProxy',
 		emptyText: PVE.Utils.noneText,
@@ -83,7 +83,7 @@ Ext.define('PVE.dc.EmailFromEdit', {
 	Ext.applyIf(me, {
 	    subject: gettext('Email from address'),
 	    items: {
-		xtype: 'pvetextfield',
+		xtype: 'proxmoxtextfield',
 		name: 'email_from',
 		vtype: 'pveMail',
 		emptyText: 'root@$hostname',
@@ -108,7 +108,7 @@ Ext.define('PVE.dc.MacPrefixEdit', {
 	Ext.applyIf(me, {
 	    subject: gettext('MAC address prefix'),
 	    items: {
-		xtype: 'pvetextfield',
+		xtype: 'proxmoxtextfield',
 		name: 'mac_prefix',
 		regex: /^[a-f0-9]{2}(?::[a-f0-9]{2}){0,2}:?$/i,
 		regexText: gettext('Example') + ': 02:8f',

@@ -88,7 +88,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 
 	/*jslint confusion: true */
 	/* the validator function can return either a string or a boolean */
-	me.sshkeyfield = Ext.createWidget('pvetextfield', {
+	me.sshkeyfield = Ext.createWidget('proxmoxtextfield', {
 	    name: 'ssh-public-keys',
 	    value: '',
 	    fieldLabel: gettext('SSH public key'),
@@ -207,7 +207,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 			    validateExists: false
 			},
 			{
-			    xtype: 'pvetextfield',
+			    xtype: 'proxmoxtextfield',
 			    name: 'hostname',
 			    vtype: 'DnsName',
 			    value: '',

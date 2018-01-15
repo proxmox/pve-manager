@@ -209,14 +209,14 @@ Ext.define('PVE.node.NetworkEdit', {
 
 	    column1.push(
 		{
-		    xtype: 'pvetextfield',
+		    xtype: 'proxmoxtextfield',
 		    deleteEmpty: !me.isCreate,
 		    fieldLabel: gettext('IP address'),
 		    vtype: 'IPAddress',
 		    name: 'address'
 		},
 		{
-		    xtype: 'pvetextfield',
+		    xtype: 'proxmoxtextfield',
 		    deleteEmpty: !me.isCreate,
 		    fieldLabel: gettext('Subnet mask'),
 		    vtype: 'IPAddress',
@@ -241,21 +241,21 @@ Ext.define('PVE.node.NetworkEdit', {
 		    }
 		},
 		{
-		    xtype: 'pvetextfield',
+		    xtype: 'proxmoxtextfield',
 		    deleteEmpty: !me.isCreate,
 		    fieldLabel: gettext('Gateway'),
 		    vtype: 'IPAddress',
 		    name: 'gateway'
 		},
 		{
-		    xtype: 'pvetextfield',
+		    xtype: 'proxmoxtextfield',
 		    deleteEmpty: !me.isCreate,
 		    fieldLabel: gettext('IPv6 address'),
 		    vtype: 'IP6Address',
 		    name: 'address6'
 		},
 		{
-		    xtype: 'pvetextfield',
+		    xtype: 'proxmoxtextfield',
 		    deleteEmpty: !me.isCreate,
 		    fieldLabel: gettext('Prefix length'),
 		    vtype: 'IP6PrefixLength',
@@ -282,7 +282,7 @@ Ext.define('PVE.node.NetworkEdit', {
 		    }
 		},
 		{
-		    xtype: 'pvetextfield',
+		    xtype: 'proxmoxtextfield',
 		    deleteEmpty: !me.isCreate,
 		    fieldLabel: gettext('Gateway'),
 		    vtype: 'IP6Address',

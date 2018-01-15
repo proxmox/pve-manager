@@ -100,7 +100,7 @@ Ext.define('PVE.dc.AuthEdit', {
                     allowBlank: false
 		},
 		{
-                    xtype: 'pvetextfield',
+                    xtype: 'proxmoxtextfield',
                     fieldLabel: gettext('Fallback Server'),
 		    deleteEmpty: !me.isCreate,
 		    name: 'server2'

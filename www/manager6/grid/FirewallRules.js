@@ -106,7 +106,7 @@ Ext.define('PVE.FirewallRulePanel', {
 
 	if (me.allow_iface) {
 	    me.column1.push({
-		xtype: 'pvetextfield',
+		xtype: 'proxmoxtextfield',
 		name: 'iface',
 		deleteEmpty: !me.isCreate,
 		value: '',
@@ -324,7 +324,7 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
 
 	if (me.allow_iface) {
 	    column1.push({
-		xtype: 'pvetextfield',
+		xtype: 'proxmoxtextfield',
 		name: 'iface',
 		deleteEmpty: !me.isCreate,
 		value: '',

@@ -247,7 +247,7 @@ Ext.define('PVE.qemu.Options', {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('RTC start date'),
 		    items: {
-			xtype: 'pvetextfield',
+			xtype: 'proxmoxtextfield',
 			name: 'startdate',
 			deleteEmpty: true,
 			value: 'now',

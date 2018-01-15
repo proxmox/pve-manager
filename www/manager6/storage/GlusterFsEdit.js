@@ -106,7 +106,7 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 		}
 	    },
 	    {
-		xtype: me.isCreate ? 'pvetextfield' : 'displayfield',
+		xtype: me.isCreate ? 'proxmoxtextfield' : 'displayfield',
 		name: 'server2',
 		value: '',
 		fieldLabel: gettext('Second Server'),

@@ -37,7 +37,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 
 	var items = [
 	    {
-		xtype: 'pvetextfield',
+		xtype: 'proxmoxtextfield',
 		name: 'searchdomain',
 		skipEmptyText: true,
 		fieldLabel: gettext('DNS domain'),
@@ -58,7 +58,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 		}
 	    },
 	    {
-		xtype: 'pvetextfield',
+		xtype: 'proxmoxtextfield',
 		fieldLabel: gettext('DNS server') + " 1",
 		vtype: 'IP64Address',
 		allowBlank: true,
@@ -67,7 +67,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 		itemId: 'dns1'
 	    },
 	    {
-		xtype: 'pvetextfield',
+		xtype: 'proxmoxtextfield',
 		fieldLabel: gettext('DNS server') + " 2",
 		vtype: 'IP64Address',
 		skipEmptyText: true,
@@ -76,7 +76,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 		itemId: 'dns2'
 	    },
 	    {
-		xtype: 'pvetextfield',
+		xtype: 'proxmoxtextfield',
 		fieldLabel: gettext('DNS server') + " 3",
 		vtype: 'IP64Address',
 		skipEmptyText: true,
