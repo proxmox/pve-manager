@@ -123,8 +123,6 @@ JSSRC= 				                 	\
 	node/StatusView.js				\
 	node/Summary.js					\
 	node/ServiceView.js				\
-	node/NetworkEdit.js				\
-	node/NetworkView.js				\
 	node/Tasks.js					\
 	node/Subscription.js				\
 	node/APT.js					\

@@ -165,7 +165,9 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-exchange',
 		    itemId: 'network',
 		    groups: ['services'],
-		    xtype: 'pveNodeNetworkView'
+		    nodename: nodename,
+		    onlineHelp: 'sysadmin_network_configuration',
+		    xtype: 'proxmoxNodeNetworkView'
 		},
 		{
 		    title: gettext('DNS'),
