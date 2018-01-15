@@ -1,3 +1,10 @@
+Ext.define('pve-security-groups', {
+    extend: 'Ext.data.Model',
+
+    fields: [ 'group', 'comment', 'digest' ],
+    idProperty: 'group'
+});
+
 Ext.define('PVE.SecurityGroupEdit', {
     extend: 'PVE.window.Edit',
 
@@ -86,12 +93,11 @@ Ext.define('PVE.SecurityGroupList', {
 	}
 
 	var store = new Ext.data.Store({
-	    fields: [ 'group', 'comment', 'digest' ],
+	    model: 'pve-security-groups',
 	    proxy: {
 		type: 'pve',
 		url: '/api2/json' + me.base_url
 	    },
-	    idProperty: 'group',
 	    sorters: {
 		property: 'group',
 		order: 'DESC'

@@ -1,3 +1,9 @@
+Ext.define('pve-fw-ipsets', {
+    extend: 'Ext.data.Model',
+    fields: [ 'name', 'comment', 'digest' ],
+    idProperty: 'name'
+});
+
 Ext.define('PVE.IPSetList', {
     extend: 'Ext.grid.Panel',
     alias: 'widget.pveIPSetList',
@@ -26,12 +32,11 @@ Ext.define('PVE.IPSetList', {
 	}
 
 	var store = new Ext.data.Store({
-	    fields: [ 'name', 'comment', 'digest' ],
+	    model: 'pve-fw-ipsets',
 	    proxy: {
 		type: 'pve',
 		url: "/api2/json" + me.base_url
 	    },
-	    idProperty: 'name',
 	    sorters: {
 		property: 'name',
 		order: 'DESC'

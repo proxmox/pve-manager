@@ -64,6 +64,13 @@ Ext.define('PVE.FirewallAliasEdit', {
     }
 });
 
+Ext.define('pve-fw-aliases', {
+    extend: 'Ext.data.Model',
+
+    fields: [ 'name', 'cidr', 'comment', 'digest' ],
+    idProperty: 'name'
+});
+
 Ext.define('PVE.FirewallAliases', {
     extend: 'Ext.grid.Panel',
     alias: ['widget.pveFirewallAliases'],
@@ -86,12 +93,11 @@ Ext.define('PVE.FirewallAliases', {
 	}
 
 	var store = new Ext.data.Store({
-	    fields: [ 'name', 'cidr', 'comment', 'digest' ],
+	    model: 'pve-fw-aliases',
 	    proxy: {
 		type: 'pve',
 		url: "/api2/json" + me.base_url
 	    },
-	    idProperty: 'name',
 	    sorters: {
 		property: 'name',
 		order: 'DESC'

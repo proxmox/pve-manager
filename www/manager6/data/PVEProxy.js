@@ -53,6 +53,7 @@ Ext.define('PVE.RestProxy', {
 		      }
 		  }
 		],
+	idProperty: 'realm',
 	proxy: {
 	    type: 'pve',
 	    url: "/api2/json/access/domains"
