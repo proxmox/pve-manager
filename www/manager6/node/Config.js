@@ -321,7 +321,8 @@ Ext.define('PVE.node.Config', {
 		title: gettext('Task History'),
 		iconCls: 'fa fa-list',
 		itemId: 'tasks',
-		xtype: 'pveNodeTasks'
+		nodename: nodename,
+		xtype: 'proxmoxNodeTasks'
 	    },
 	    {
 		title: gettext('Subscription'),
