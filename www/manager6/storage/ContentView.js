@@ -438,30 +438,15 @@ Ext.define('PVE.storage.ContentView', {
 		    }
 		},
 		{
-		    xtype: 'pveButton',
-		    text: gettext('Remove'),
+		    xtype: 'proxmoxStdRemoveButton',
 		    selModel: sm,
-		    disabled: true,
-		    confirmMsg: function(rec) {
-			return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
-						 "'" + rec.data.volid + "'");
-		    },
 		    enableFn: function(rec) {
 			return rec && rec.data.content !== 'images';
 		    },
-		    handler: function(b, e, rec) {
-			PVE.Utils.API2Request({
-			    url: baseurl + '/' + rec.data.volid,
-			    method: 'DELETE',
-			    waitMsgTarget: me,
-			    callback: function() {
-				reload();
-			    },
-			    failure: function (response, opts) {
-				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-			    }
-			});
-		    }
+		    callback: function() {
+			reload();
+		    },
+		    baseurl: baseurl + '/'
 		},
 		templateButton,
 		uploadButton,

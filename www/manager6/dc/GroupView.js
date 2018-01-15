@@ -25,27 +25,12 @@ Ext.define('PVE.dc.GroupView', {
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
-	var remove_btn = new PVE.button.Button({
-	    text: gettext('Remove'),
-	    disabled: true,
+	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
-	    confirmMsg: function (rec) {
-		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
-					 "'" + rec.data.groupid + "'");
+	    callback: function() {
+		reload();
 	    },
-	    handler: function(btn, event, rec) {
-		PVE.Utils.API2Request({
-		    url: '/access/groups/' + rec.data.groupid,
-		    method: 'DELETE',
-		    waitMsgTarget: me,
-		    callback: function() {
-			reload();
-		    },
-		    failure: function (response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
-		});
-	    }
+	    baseurl: '/access/groups/'
 	});
 
 	var run_editor = function() {

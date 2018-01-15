@@ -36,24 +36,11 @@ Ext.define('PVE.ha.GroupsView', {
             win.show();
 	};
 
-	var remove_btn = new PVE.button.Button({
-	    text: gettext('Remove'),
-	    disabled: true,
+	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
-	    handler: function(btn, event, rec) {
-		var group = rec.data.group;
-
-		PVE.Utils.API2Request({
-		    url: '/cluster/ha/groups/' + group,
-		    method: 'DELETE',
-		    waitMsgTarget: me,
-		    callback: function() {
-			reload();
-		    },
-		    failure: function (response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
-		});
+	    baseurl: '/cluster/ha/groups/',
+	    callback: function() {
+		reload();
 	    }
 	});
 	

@@ -81,34 +81,17 @@ Ext.define('PVE.dc.UserView', {
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
-	var remove_btn = new PVE.button.Button({
-	    text: gettext('Remove'),
-	    disabled: true,
+	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
+	    baseurl: '/access/users/',
 	    enableFn: function(rec) {
 		if (!caps.access['User.Modify']) {
 		    return false;
 		}
 		return rec.data.userid !== 'root@pam';
 	    },
-	    confirmMsg: function (rec) {
-		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
-					 "'" + rec.data.userid + "'");
-	    },
-	    handler: function(btn, event, rec) {
-		var userid = rec.data.userid;
-
-		PVE.Utils.API2Request({
-		    url: '/access/users/' + userid,
-		    method: 'DELETE',
-		    waitMsgTarget: me,
-		    callback: function() {
-			reload();
-		    },
-		    failure: function (response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
-		});
+	    callback: function() {
+		reload();
 	    }
         });
  

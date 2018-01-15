@@ -25,26 +25,11 @@ Ext.define('PVE.dc.PoolView', {
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
-	var remove_btn = new PVE.button.Button({
-	    text: gettext('Remove'),
-	    disabled: true,
+	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
-	    confirmMsg: function (rec) {
-		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
-					 "'" + rec.data.poolid + "'");
-	    },
-	    handler: function(btn, event, rec) {
-		PVE.Utils.API2Request({
-		    url: '/pools/' + rec.data.poolid,
-		    method: 'DELETE',
-		    waitMsgTarget: me,
-		    callback: function() {
-			reload();
-		    },
-		    failure: function (response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
-		});
+	    baseurl: '/pools/',
+	    callback: function () {
+		reload();
 	    }
 	});
 

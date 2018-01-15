@@ -362,23 +362,11 @@ Ext.define('PVE.dc.BackupView', {
 	    handler: run_editor
 	});
 
-	var remove_btn = new PVE.button.Button({
-	    text: gettext('Remove'),
-	    disabled: true,
+	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
-	    confirmMsg: gettext('Are you sure you want to remove this entry'),
-	    handler: function(btn, event, rec) {
-		PVE.Utils.API2Request({
-		    url: '/cluster/backup/' + rec.data.id,
-		    method: 'DELETE',
-		    waitMsgTarget: me,
-		    callback: function() {
-			reload();
-		    },
-		    failure: function (response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
-		});
+	    baseurl: '/cluster/backup',
+	    callback: function() {
+		reload();
 	    }
 	});
 

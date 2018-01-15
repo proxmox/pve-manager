@@ -129,6 +129,8 @@ Ext.define('PVE.window.ReplicaEdit', {
     }
 });
 
+/*jslint confusion: true */
+/* callback is a function and string */
 Ext.define('PVE.grid.ReplicaView', {
     extend: 'Ext.grid.Panel',
     xtype: 'pveReplicaView',
@@ -164,20 +166,6 @@ Ext.define('PVE.grid.ReplicaView', {
 	    });
 	    win.on('destroy', function() { controller.reload(); });
 	    win.show();
-	},
-
-	removeJob: function(button,event,rec) {
-	    var me = this.getView();
-	    var controller = this;
-	    PVE.Utils.API2Request({
-		url: '/api2/extjs/cluster/replication/' + rec.data.id,
-		waitMsgTarget: me,
-		method: 'DELETE',
-		callback: function() { controller.reload(); },
-		failure: function (response, opts) {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
-	    });
 	},
 
 	scheduleJobNow: function(button,event,rec) {
@@ -266,16 +254,11 @@ Ext.define('PVE.grid.ReplicaView', {
 	    disabled: true
 	},
 	{
-	    xtype: 'pveButton',
-	    text: gettext('Remove'),
+	    xtype: 'proxmoxStdRemoveButton',
 	    itemId: 'removeButton',
-	    handler: 'removeJob',
+	    baseurl: '/api2/extjs/cluster/replication/',
 	    dangerous: true,
-	    confirmMsg: function(rec) {
-		var msg = Ext.String.format(gettext("Are you sure you want to remove entry {0}"), rec.id);
-		return msg;
-	    },
-	    disabled: true
+	    callback: 'reload'
 	},
 	{
 	    xtype: 'pveButton',

@@ -156,11 +156,9 @@ Ext.define('PVE.grid.BackupView', {
 	    }
 	});
 
-	var delete_btn = Ext.create('PVE.button.Button', {
-	    text: gettext('Remove'),
-	    disabled: true,
+	var delete_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
-	    dangerous: true,	    
+	    dangerous: true,
 	    confirmMsg: function(rec) {
 		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
 					    "'" + rec.data.volid + "'");
@@ -168,27 +166,12 @@ Ext.define('PVE.grid.BackupView', {
 
 		return msg;
 	    },
-	    enableFn: function(rec) {
-		return !!rec;
-	    },
-	    handler: function(b, e, rec){
+	    getUrl: function(rec) {
 		var storage = storagesel.getValue();
-		if (!storage) {
-		    return;
-		}
-
-		var volid = rec.data.volid;
-		PVE.Utils.API2Request({
-		    url: "/nodes/" + nodename + "/storage/" + storage + "/content/" + volid,
-		    method: 'DELETE',
-		    waitMsgTarget: me,
-		    failure: function(response, opts) {
-			Ext.Msg.alert('Error', response.htmlStatus);
-		    },
-		    success: function(response, options) {
-			reload();
-		    }
-		});
+		return '/nodes/' + nodename + '/storage/' + storage + '/content/' + rec.data.volid;
+	    },
+	    callback: function() {
+		reload();
 	    }
 	});
 

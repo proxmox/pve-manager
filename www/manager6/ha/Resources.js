@@ -67,24 +67,15 @@ Ext.define('PVE.ha.ResourcesView', {
             win.show();
 	};
 
-	var remove_btn = new PVE.button.Button({
-	    text: gettext('Remove'),
-	    disabled: true,
+	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
-	    handler: function(btn, event, rec) {
-		var sid = rec.data.sid;
-
-		PVE.Utils.API2Request({
-		    url: '/cluster/ha/resources/' + sid,
-		    method: 'DELETE',
-		    waitMsgTarget: me,
-		    callback: function() {
-			reload();
-		    },
-		    failure: function (response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
-		});
+	    baseurl: '/cluster/ha/resources/',
+	    getUrl: function(rec) {
+		var me = this;
+		return me.baseurl + '/' + rec.get('sid');
+	    },
+	    callback: function() {
+		reload();
 	    }
 	});
 	

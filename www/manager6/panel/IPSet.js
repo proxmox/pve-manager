@@ -129,25 +129,10 @@ Ext.define('PVE.IPSetList', {
 	    }
 	});
 
-	me.removeBtn = new PVE.button.Button({
-	    text: gettext('Remove'),
+	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
-	    disabled: true,
-	    handler: function() {
-		var rec = sm.getSelection()[0];
-		if (!rec || !me.base_url) {
-		    return;
-		}
-		PVE.Utils.API2Request({
-		    url: me.base_url + '/' + rec.data.name,
-		    method: 'DELETE',
-		    waitMsgTarget: me,
-		    failure: function(response, options) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    },
-		    callback: reload
-		});
-	    }
+	    baseurl: me.base_url + '/',
+	    callback: reload
 	});
 
 	Ext.apply(me, {
@@ -287,6 +272,7 @@ Ext.define('PVE.IPSetGrid', {
 	    me.store.removeAll();
 	} else {
 	    me.addBtn.setDisabled(false);
+	    me.removeBtn.baseurl = url + '/';
 	    me.store.setProxy({
 		type: 'pve',
 		url: '/api2/json' + url
@@ -350,26 +336,10 @@ Ext.define('PVE.IPSetGrid', {
 	    }
 	});
 
-	me.removeBtn = new PVE.button.Button({
-	    text: gettext('Remove'),
+	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
-	    disabled: true,
-	    handler: function() {
-		var rec = sm.getSelection()[0];
-		if (!rec || !me.base_url) {
-		    return;
-		}
-
-		PVE.Utils.API2Request({
-		    url: me.base_url + '/' + rec.data.cidr,
-		    method: 'DELETE',
-		    waitMsgTarget: me,
-		    failure: function(response, options) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    },
-		    callback: reload
-		});
-	    }
+	    baseurl: me.base_url + '/',
+	    callback: reload
 	});
 
 	var render_errors = function(value, metaData, record) {

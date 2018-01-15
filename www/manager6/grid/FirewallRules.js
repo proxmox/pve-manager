@@ -408,6 +408,7 @@ Ext.define('PVE.FirewallRules', {
 	    me.store.removeAll();
 	} else {
 	    me.addBtn.setDisabled(false);
+	    me.removeBtn.baseurl = url + '/';
 	    if (me.groupBtn) {
 		me.groupBtn.setDisabled(false);
 	    }
@@ -468,26 +469,6 @@ Ext.define('PVE.FirewallRules', {
 	});
     },
 
-    deleteRule: function(rule) {
-        var me = this;
-
-	if (!me.base_url) {
-	    return;
-	}
-
-	PVE.Utils.API2Request({
-	    url: me.base_url + '/' + rule.pos.toString() +
-		'?digest=' + encodeURIComponent(rule.digest),
-	    method: 'DELETE',
-	    waitMsgTarget: me,
-	    failure: function(response, options) {
-		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-	    },
-	    callback: function() {
-		me.store.load();
-	    }
-	});
-    },
 
     initComponent: function() {
 	/*jslint confusion: true */
@@ -606,16 +587,17 @@ Ext.define('PVE.FirewallRules', {
 	    });
 	}
 
-	me.removeBtn = Ext.create('PVE.button.Button',{
-	    text: gettext('Remove'),
+	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton',{
 	    selModel: sm,
-	    disabled: true,
-	    handler: function() {
-		var rec = sm.getSelection()[0];
-		if (!rec) {
-		    return;
-		}
-		me.deleteRule(rec.data);
+	    baseurl: me.base_url + '/',
+	    confirmMsg: false,
+	    getRecordName: function(rec) {
+		var rule = rec.data;
+		return rule.pos.toString() +
+		    '?digest=' + encodeURIComponent(rule.digest);
+	    },
+	    callback: function() {
+		me.store.load();
 	    }
 	});
 

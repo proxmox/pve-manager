@@ -46,31 +46,14 @@ Ext.define('PVE.dc.AuthView', {
 	    handler: run_editor
 	});
 
-	var remove_btn = new PVE.button.Button({
-	    text: gettext('Remove'),
-	    disabled: true,
+	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
+	    baseurl: '/access/domains/',
 	    selModel: sm,
-	    confirmMsg: function (rec) {
-		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
-					 "'" + rec.data.realm + "'");
-	    },
 	    enableFn: function(rec) {
 		return !(rec.data.type === 'pve' || rec.data.type === 'pam');
 	    },
-	    handler: function(btn, event, rec) {
-		var realm = rec.data.realm;
-
-		PVE.Utils.API2Request({
-		    url: '/access/domains/' + realm,
-		    method: 'DELETE',
-		    waitMsgTarget: me,
-		    callback: function() {
-			reload();
-		    },
-		    failure: function (response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
-		});
+	    callback: function() {
+		reload();
 	    }
         });
 

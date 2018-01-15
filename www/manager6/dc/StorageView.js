@@ -77,26 +77,11 @@ Ext.define('PVE.dc.StorageView', {
 	    handler: run_editor
 	});
 
-	var remove_btn = new PVE.button.Button({
-	    text: gettext('Remove'),
-	    disabled: true,
+	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
-	    confirmMsg: function (rec) {
-		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
-					 "'" + rec.data.storage + "'");
-	    },
-	    handler: function(btn, event, rec) {
-		PVE.Utils.API2Request({
-		    url: '/storage/' + rec.data.storage,
-		    method: 'DELETE',
-		    waitMsgTarget: me,
-		    callback: function() {
-			reload();
-		    },
-		    failure: function (response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
-		});
+	    baseurl: '/storage/',
+	    callback: function() {
+		reload();
 	    }
 	});
 
