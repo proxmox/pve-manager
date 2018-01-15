@@ -1,5 +1,5 @@
 Ext.define('PVE.form.CephDiskSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.pveCephDiskSelector'],
 
     diskType: 'journal_disks',

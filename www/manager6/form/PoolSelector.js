@@ -1,5 +1,5 @@
 Ext.define('PVE.form.PoolSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.pvePoolSelector'],
 
     allowBlank: false,

@@ -1,5 +1,5 @@
 Ext.define('PVE.form.SecurityGroupsSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.pveSecurityGroupsSelector'],
 
     valueField: 'group',

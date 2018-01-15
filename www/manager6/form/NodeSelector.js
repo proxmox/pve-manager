@@ -1,5 +1,5 @@
 Ext.define('PVE.form.NodeSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.pveNodeSelector'],
 
     // invalidate nodes which are offline

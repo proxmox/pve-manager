@@ -1,5 +1,5 @@
 Ext.define('PVE.form.IPRefSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.pveIPRefSelector'],
 
     base_url: undefined,

@@ -1,5 +1,5 @@
 Ext.define('PVE.form.USBSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.pveUSBSelector'],
     allowBlank: false,
     autoSelect: false,

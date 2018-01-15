@@ -1,5 +1,5 @@
 Ext.define('PVE.form.FileSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: 'widget.pveFileSelector',
 
     editable: true,

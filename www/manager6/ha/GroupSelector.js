@@ -1,5 +1,5 @@
 Ext.define('PVE.ha.GroupSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.pveHAGroupSelector'],
 
     value: [],

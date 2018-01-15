@@ -215,7 +215,7 @@ Ext.define('PVE.form.VMSelector', {
 
 
 Ext.define('PVE.form.VMComboSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: 'widget.vmComboSelector',
 
     valueField: 'vmid',

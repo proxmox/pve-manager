@@ -1,5 +1,5 @@
 Ext.define('PVE.form.StorageSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: 'widget.pveStorageSelector',
 
     allowBlank: false,

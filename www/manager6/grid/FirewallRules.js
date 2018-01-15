@@ -1,5 +1,5 @@
 Ext.define('PVE.form.FWMacroSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: 'widget.pveFWMacroSelector',
     allowBlank: true,
     autoSelect: false,

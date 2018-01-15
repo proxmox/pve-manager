@@ -1,5 +1,5 @@
 Ext.define('PVE.form.UserSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.pveUserSelector'],
     allowBlank: false,
     autoSelect: false,

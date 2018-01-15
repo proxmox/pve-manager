@@ -1,5 +1,5 @@
 Ext.define('PVE.form.SnapshotSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.PVE.form.SnapshotSelector'],
 
     valueField: 'name',

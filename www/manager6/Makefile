@@ -31,7 +31,6 @@ JSSRC= 				                 	\
 	form/TextField.js				\
 	form/IntegerField.js				\
 	form/RRDTypeSelector.js				\
-	form/ComboGrid.js				\
 	form/KVComboBox.js				\
 	form/Boolean.js					\
 	form/CompressionSelector.js			\

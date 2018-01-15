@@ -1,5 +1,5 @@
 Ext.define('PVE.form.IPProtocolSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.pveIPProtocolSelector'],
     valueField: 'p',
     displayField: 'p',

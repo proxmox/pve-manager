@@ -1,5 +1,5 @@
 Ext.define('PVE.form.RoleSelector', {
-    extend: 'PVE.form.ComboGrid',
+    extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.pveRoleSelector'],
 
     allowBlank: false,
