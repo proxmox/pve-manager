@@ -26,6 +26,7 @@ JSSRC= 				                 	\
 	data/ObjectStore.js				\
 	data/ResourceStore.js				\
 	data/RRDStore.js				\
+	data/model/RRDModels.js				\
 	form/VLanField.js				\
 	form/Checkbox.js				\
 	form/RRDTypeSelector.js				\
