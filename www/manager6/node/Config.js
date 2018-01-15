@@ -158,7 +158,14 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-cogs',
 		    itemId: 'services',
 		    expandedOnInit: true,
-		    xtype: 'pveNodeServiceView'
+		    startOnlyServices: {
+			'pveproxy': true,
+			'pvedaemon': true,
+			'pve-cluster': true
+		    },
+		    nodename: nodename,
+		    onlineHelp: 'pve_service_daemons',
+		    xtype: 'proxmoxNodeServiceView'
 		},
 		{
 		    title: gettext('Network'),

@@ -117,7 +117,6 @@ JSSRC= 				                 	\
 	node/DNSView.js					\
 	node/StatusView.js				\
 	node/Summary.js					\
-	node/ServiceView.js				\
 	node/Subscription.js				\
 	node/Config.js					\
 	window/Migrate.js				\
