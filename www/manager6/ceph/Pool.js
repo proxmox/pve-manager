@@ -152,7 +152,7 @@ Ext.define('PVE.node.CephPoolList', {
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
-	var rstore = Ext.create('PVE.data.UpdateStore', {
+	var rstore = Ext.create('Proxmox.data.UpdateStore', {
 	    interval: 3000,
 	    storeid: 'ceph-pool-list' + nodename,
 	    model: 'ceph-pool-list',

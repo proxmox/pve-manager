@@ -10,7 +10,7 @@ Ext.define('PVE.dc.Log', {
     initComponent : function() {
 	var me = this;
 
-	var logstore = new PVE.data.UpdateStore({
+	var logstore = Ext.create('Proxmox.data.UpdateStore', {
 	    storeid: 'pve-cluster-log',
 	    model: 'pve-cluster-log',
 	    proxy: {

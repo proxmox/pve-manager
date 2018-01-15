@@ -57,7 +57,7 @@ Ext.define('PVE.dc.Summary', {
     initComponent: function() {
         var me = this;
 
-	var rstore = Ext.create('PVE.data.UpdateStore', {
+	var rstore = Ext.create('Proxmox.data.UpdateStore', {
 	    interval: 3000,
 	    storeid: 'pve-cluster-status',
 	    model: 'pve-dc-nodes',

@@ -10,7 +10,7 @@ Ext.define('PVE.dc.Tasks', {
     initComponent : function() {
 	var me = this;
 
-	var taskstore = new PVE.data.UpdateStore({
+	var taskstore = Ext.create('Proxmox.data.UpdateStore', {
 	    storeid: 'pve-cluster-tasks',
 	    model: 'pve-tasks',
 	    proxy: {

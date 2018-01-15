@@ -167,7 +167,7 @@ Ext.define('PVE.dc.Health', {
     initComponent: function() {
 	var me = this;
 
-	me.cephstore = Ext.create('PVE.data.UpdateStore', {
+	me.cephstore = Ext.create('Proxmox.data.UpdateStore', {
 	    interval: 3000,
 	    storeid: 'pve-cluster-ceph',
 	    proxy: {

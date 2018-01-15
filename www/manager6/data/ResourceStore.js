@@ -1,5 +1,5 @@
 Ext.define('PVE.data.ResourceStore', {
-    extend: 'PVE.data.UpdateStore',
+    extend: 'Proxmox.data.UpdateStore',
     singleton: true,
 
     findVMID: function(vmid) {

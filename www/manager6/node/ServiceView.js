@@ -13,7 +13,7 @@ Ext.define('PVE.node.ServiceView', {
 	    throw "no node name specified";
 	}
 
-	var rstore = Ext.create('PVE.data.UpdateStore', {
+	var rstore = Ext.create('Proxmox.data.UpdateStore', {
 	    interval: 1000,
 	    storeid: 'pve-services' + nodename,
 	    model: 'pve-services',

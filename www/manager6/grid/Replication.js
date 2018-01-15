@@ -448,7 +448,7 @@ Ext.define('PVE.grid.ReplicaView', {
 	    }
 	);
 
-	me.rstore = Ext.create('PVE.data.UpdateStore', {
+	me.rstore = Ext.create('Proxmox.data.UpdateStore', {
 	    storeid: 'pve-replica-' + me.nodename + me.vmid,
 	    model: (mode === 'dc')? 'pve-replication' : 'pve-replication-state',
 	    interval: 3000,

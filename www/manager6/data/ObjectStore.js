@@ -4,7 +4,7 @@
 * Designed to work with the KeyValue model and the JsonObject data reader
 */
 Ext.define('PVE.data.ObjectStore',  {
-    extend: 'PVE.data.UpdateStore',
+    extend: 'Proxmox.data.UpdateStore',
 
     constructor: function(config) {
 	var me = this;

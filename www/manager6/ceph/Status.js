@@ -268,7 +268,7 @@ Ext.define('PVE.node.CephStatus', {
 	}
 
 	me.callParent();
-	me.store = Ext.create('PVE.data.UpdateStore', {
+	me.store = Ext.create('Proxmox.data.UpdateStore', {
 	    storeid: 'ceph-status-' + nodename,
 	    interval: 5000,
 	    proxy: {
