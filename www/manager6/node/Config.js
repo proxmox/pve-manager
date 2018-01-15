@@ -178,7 +178,8 @@ Ext.define('PVE.node.Config', {
 		    title: gettext('Time'),
 		    itemId: 'time',
 		    groups: ['services'],
-		    xtype: 'pveNodeTimeView',
+		    nodename: nodename,
+		    xtype: 'proxmoxNodeTimeView',
 		    iconCls: 'fa fa-clock-o'
 		});
 	}

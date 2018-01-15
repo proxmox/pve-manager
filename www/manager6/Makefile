@@ -120,8 +120,6 @@ JSSRC= 				                 	\
 	node/Disks.js					\
 	node/DNSEdit.js					\
 	node/DNSView.js					\
-	node/TimeView.js				\
-	node/TimeEdit.js				\
 	node/StatusView.js				\
 	node/Summary.js					\
 	node/ServiceView.js				\
