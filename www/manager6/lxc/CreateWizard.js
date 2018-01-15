@@ -312,7 +312,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 			    delete kv.password;
 			}
 
-			PVE.Utils.API2Request({
+			Proxmox.Utils.API2Request({
 			    url: '/nodes/' + nodename + '/lxc',
 			    waitMsgTarget: me,
 			    method: 'POST',

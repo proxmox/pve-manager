@@ -172,7 +172,7 @@ Ext.define('PVE.grid.ReplicaView', {
 	    var me = this.getView();
 	    var controller = this;
 
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		url: "/api2/extjs/nodes/" + me.nodename + "/replication/" + rec.data.id + "/schedule_now",
 		method: 'POST',
 		waitMsgTarget: me,
@@ -375,7 +375,7 @@ Ext.define('PVE.grid.ReplicaView', {
 			    return gettext('syncing');
 			}
 
-			return PVE.Utils.render_timestamp(value);
+			return Proxmox.Utils.render_timestamp(value);
 		    }
 		},
 		{
@@ -400,7 +400,7 @@ Ext.define('PVE.grid.ReplicaView', {
 			    return gettext('pending');
 			}
 
-			return PVE.Utils.render_timestamp(value);
+			return Proxmox.Utils.render_timestamp(value);
 		    }
 		}
 	    );
@@ -469,7 +469,7 @@ Ext.define('PVE.grid.ReplicaView', {
 	    return;
 	}
 
-	PVE.Utils.monStoreErrors(me, me.rstore);
+	Proxmox.Utils.monStoreErrors(me, me.rstore);
 
 	me.on('destroy', me.rstore.stopUpdate);
 	me.rstore.startUpdate();

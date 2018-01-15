@@ -52,7 +52,7 @@ Ext.define('PVE.window.Backup', {
 		    xtype: 'textfield',
 		    fieldLabel: gettext('Send email to'),
 		    name: 'mailto',
-		    emptyText: PVE.Utils.noneText
+		    emptyText: Proxmox.Utils.noneText
 		}
 	    ]
 	});
@@ -79,7 +79,7 @@ Ext.define('PVE.window.Backup', {
 		    params.compress = values.compress;
 		}
 
-		PVE.Utils.API2Request({
+		Proxmox.Utils.API2Request({
 		    url: '/nodes/' + me.nodename + '/vzdump',
 		    params: params,
 		    method: 'POST',

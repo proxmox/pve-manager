@@ -51,12 +51,12 @@ Ext.define('PVE.window.Edit', {
 
         form.getFields().each(function(field) {
             if (!field.up('inputpanel') && (!dirtyOnly || field.isDirty())) {
-                PVE.Utils.assemble_field_data(values, field.getSubmitData());
+                Proxmox.Utils.assemble_field_data(values, field.getSubmitData());
             }
         });
 
 	Ext.Array.each(me.query('inputpanel'), function(panel) {
-	    PVE.Utils.assemble_field_data(values, panel.getValues(dirtyOnly));
+	    Proxmox.Utils.assemble_field_data(values, panel.getValues(dirtyOnly));
 	});
 
         return values;
@@ -110,7 +110,7 @@ Ext.define('PVE.window.Edit', {
 	    values = undefined;
 	}
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: url,
 	    waitMsgTarget: me,
 	    method: me.method || (me.backgroundDelay ? 'POST' : 'PUT'),
@@ -185,7 +185,7 @@ Ext.define('PVE.window.Edit', {
 
 	createWrapper(options.success);
 
-	PVE.Utils.API2Request(newopts);
+	Proxmox.Utils.API2Request(newopts);
     },
 
     initComponent : function() {
@@ -268,7 +268,7 @@ Ext.define('PVE.window.Edit', {
 	var twoColumn = items[0].column1 || items[0].column2;
 
 	if (me.subject && !me.title) {
-	    me.title = PVE.Utils.dialog_title(me.subject, me.isCreate, me.isAdd);
+	    me.title = Proxmox.Utils.dialog_title(me.subject, me.isCreate, me.isAdd);
 	}
 
 	if (me.isCreate) {

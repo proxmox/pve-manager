@@ -22,7 +22,7 @@ Ext.define('PVE.form.GlobalSearchField', {
 	xtype: 'gridpanel',
 	focusOnToFront: false,
 	floating: true,
-	emptyText: PVE.Utils.noneText,
+	emptyText: Proxmox.Utils.noneText,
 	width: 600,
 	height: 400,
 	scrollable: {

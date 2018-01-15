@@ -69,9 +69,9 @@ Ext.define('PVE.pool.AddVM', {
 		    dataIndex: 'uptime',
 		    renderer: function(value) {
 			if (value) {
-			    return PVE.Utils.runningText;
+			    return Proxmox.Utils.runningText;
 			} else {
-			    return PVE.Utils.stoppedText;
+			    return Proxmox.Utils.stoppedText;
 			}
 		    }
 		},
@@ -188,7 +188,7 @@ Ext.define('PVE.grid.PoolMembers', {
 		    throw "unknown resource type";
 		}
 
-		PVE.Utils.API2Request({
+		Proxmox.Utils.API2Request({
 		    url: '/pools/' + me.pool,
 		    method: 'PUT',
 		    params: params,

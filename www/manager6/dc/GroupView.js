@@ -65,7 +65,7 @@ Ext.define('PVE.dc.GroupView', {
 	    edit_btn, remove_btn
         ];
 
-	PVE.Utils.monStoreErrors(me, store);
+	Proxmox.Utils.monStoreErrors(me, store);
 
 	Ext.apply(me, {
 	    store: store,

@@ -69,7 +69,7 @@ Ext.define('PVE.dc.NodeView', {
 	    sortable: true,
 	    dataIndex: 'uptime',
 	    align: 'right',
-	    renderer: PVE.Utils.render_uptime
+	    renderer: Proxmox.Utils.render_uptime
 	}
     ],
 

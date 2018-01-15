@@ -18,7 +18,7 @@ Ext.define('PVE.window.BulkAction', {
 
     submit: function(params) {
 	var me = this;
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    params: params,
 	    url: '/nodes/' + me.nodename + '/' + "/" + me.action,
 	    waitMsgTarget: me,

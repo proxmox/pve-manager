@@ -2,7 +2,7 @@ Ext.define('PVE.form.CPUModelSelector', {
     extend: 'PVE.form.KVComboBox',
     alias: ['widget.CPUModelSelector'],
     comboItems: [
-	['__default__', PVE.Utils.defaultText + ' (kvm64)'],
+	['__default__', Proxmox.Utils.defaultText + ' (kvm64)'],
 	['486', '486'],
 	['athlon', 'athlon'],
 	['core2duo', 'core2duo'],

@@ -30,7 +30,7 @@ Ext.define('PVE.FirewallOptions', {
 		header: text,
 		required: true,
 		defaultValue: defaultValue || 0,
-		renderer: PVE.Utils.format_enabled_toggle,
+		renderer: Proxmox.Utils.format_enabled_toggle,
 		editor: {
 		    xtype: 'pveWindowEdit',
 		    subject: text,
@@ -52,7 +52,7 @@ Ext.define('PVE.FirewallOptions', {
 		header: text,
 		required: true,
 		renderer: function(value) {
-		    return value || PVE.Utils.defaultText;
+		    return value || Proxmox.Utils.defaultText;
 		},
 		editor: {
 		    xtype: 'pveWindowEdit',

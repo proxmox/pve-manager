@@ -36,7 +36,7 @@ Ext.define('PVE.panel.InputPanel', {
 
 	Ext.Array.each(me.query('[isFormField]'), function(field) {
             if (!dirtyOnly || field.isDirty()) {
-                PVE.Utils.assemble_field_data(values, field.getSubmitData());
+                Proxmox.Utils.assemble_field_data(values, field.getSubmitData());
 	    }
 	});
 

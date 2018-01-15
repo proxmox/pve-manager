@@ -17,7 +17,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 	var vmname = me.pveSelNode.data.name;
 
 	var vm_command = function(cmd, params) {
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		params: params,
 		url: '/nodes/' + nodename + '/lxc/' + vmid + "/status/" + cmd,
 		method: 'POST',
@@ -63,7 +63,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 //		hidde: suspended,
 //		disabled: stopped || suspended,
 //		handler: function() {
-//		    var msg = PVE.Utils.format_task_description('vzsuspend', vmid);
+//		    var msg = Proxmox.Utils.format_task_description('vzsuspend', vmid);
 //		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 //			if (btn !== 'yes') {
 //			    return;
@@ -86,7 +86,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		iconCls: 'fa fa-fw fa-power-off',
 		disabled: stopped || suspended,
 		handler: function() {
-		    var msg = PVE.Utils.format_task_description('vzshutdown', vmid);
+		    var msg = Proxmox.Utils.format_task_description('vzshutdown', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -101,7 +101,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		iconCls: 'fa fa-fw fa-stop',
 		disabled: stopped,
 		handler: function() {
-		    var msg = PVE.Utils.format_task_description('vzstop', vmid);
+		    var msg = Proxmox.Utils.format_task_description('vzstop', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -132,13 +132,13 @@ Ext.define('PVE.lxc.CmdMenu', {
 //		text: gettext('Convert to template'),
 //		icon: '/pve2/images/forward.png',
 //		handler: function() {
-//		    var msg = PVE.Utils.format_task_description('vztemplate', vmid);
+//		    var msg = Proxmox.Utils.format_task_description('vztemplate', vmid);
 //		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 //			if (btn !== 'yes') {
 //			    return;
 //			}
 //
-//			PVE.Utils.API2Request({
+//			Proxmox.Utils.API2Request({
 //			     url: '/nodes/' + nodename + '/lxc/' + vmid + '/template',
 //			     method: 'POST',
 //			     failure: function(response, opts) {

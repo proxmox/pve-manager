@@ -47,7 +47,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		defaultValue: 512,
 		tdCls: 'pve-itype-icon-memory',
 		renderer: function(value) {
-		    return PVE.Utils.format_size(value*1024*1024);
+		    return Proxmox.Utils.format_size(value*1024*1024);
 		}
 	    },
 	    swap: {
@@ -57,7 +57,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		defaultValue: 512,
 		tdCls: 'pve-itype-icon-swap',
 		renderer: function(value) {
-		    return PVE.Utils.format_size(value*1024*1024);
+		    return Proxmox.Utils.format_size(value*1024*1024);
 		}
 	    },
 	    cores: {
@@ -91,7 +91,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    },
 	    rootfs: {
 		header: gettext('Root Disk'),
-		defaultValue: PVE.Utils.noneText,
+		defaultValue: Proxmox.Utils.noneText,
 		editor: mpeditor,
 		tdCls: 'pve-itype-icon-storage'
 	    },
@@ -170,7 +170,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	};
 
 	var run_remove = function(b, e, rec) {
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		url: '/api2/extjs/' + baseurl,
 		waitMsgTarget: me,
 		method: 'PUT',

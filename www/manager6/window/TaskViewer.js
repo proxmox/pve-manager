@@ -9,7 +9,7 @@ Ext.define('PVE.window.TaskProgress', {
 	    throw "no task specified";
 	}
 
-	var task = PVE.Utils.parse_task_upid(me.upid);
+	var task = Proxmox.Utils.parse_task_upid(me.upid);
 
 	var statstore = Ext.create('PVE.data.ObjectStore', {
             url: "/api2/json/nodes/" + task.node + "/tasks/" + me.upid + "/status",
@@ -47,7 +47,7 @@ Ext.define('PVE.window.TaskProgress', {
 	    }
 	});
 
-	var descr = PVE.Utils.format_task_description(task.type, task.id);
+	var descr = Proxmox.Utils.format_task_description(task.type, task.id);
 
 	Ext.apply(me, {
 	    title: "Task: " + descr,
@@ -93,7 +93,7 @@ Ext.define('PVE.window.TaskViewer', {
 	    throw "no task specified";
 	}
 
-	var task = PVE.Utils.parse_task_upid(me.upid);
+	var task = Proxmox.Utils.parse_task_upid(me.upid);
 
 	var statgrid;
 
@@ -133,7 +133,7 @@ Ext.define('PVE.window.TaskViewer', {
 	    starttime: {
 		header: gettext('Start Time'),
 		required: true, 
-		renderer: PVE.Utils.render_timestamp
+		renderer: Proxmox.Utils.render_timestamp
 	    },
 	    upid: {
 		header: gettext('Unique task ID')
@@ -149,7 +149,7 @@ Ext.define('PVE.window.TaskViewer', {
 	me.on('destroy', statstore.stopUpdate);	
 
 	var stop_task = function() {
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		url: "/nodes/" + task.node + "/tasks/" + me.upid,
 		waitMsgTarget: me,
 		method: 'DELETE',

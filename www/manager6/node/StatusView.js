@@ -118,7 +118,7 @@ Ext.define('PVE.node.StatusView', {
 
     updateTitle: function() {
 	var me = this;
-	var uptime = PVE.Utils.render_uptime(me.getRecordValue('uptime'));
+	var uptime = Proxmox.Utils.render_uptime(me.getRecordValue('uptime'));
 	me.setTitle(me.pveSelNode.data.node + ' (' + gettext('Uptime') + ': ' + uptime + ')');
     }
 

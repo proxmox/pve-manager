@@ -38,7 +38,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    hidden: true
 	});
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: '/cluster/config/nodes',
 	    method: 'GET',
 	    failure: function(response) {

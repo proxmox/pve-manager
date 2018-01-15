@@ -16,7 +16,7 @@ Ext.define('PVE.window.Snapshot', {
 	    params.description = descr;
 	}
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    params: params,
 	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + "/snapshot",
 	    waitMsgTarget: me,
@@ -35,7 +35,7 @@ Ext.define('PVE.window.Snapshot', {
 
     update_snapshot: function(snapname, descr) {
 	var me = this;
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    params: { description: descr },
 	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + "/snapshot/" + 
 		snapname + '/config',
@@ -182,7 +182,7 @@ Ext.define('PVE.window.Snapshot', {
 	}
 
 	// else load data
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + "/snapshot/" + 
 		me.snapname + '/config',
 	    waitMsgTarget: me,

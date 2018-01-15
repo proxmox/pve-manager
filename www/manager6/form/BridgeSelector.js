@@ -28,7 +28,7 @@ Ext.define('PVE.form.BridgeSelector', {
 		header: gettext('Active'),
 		width: 60,
 		dataIndex: 'active',
-		renderer: PVE.Utils.format_boolean
+		renderer: Proxmox.Utils.format_boolean
 	    },
 	    {
 		header: gettext('Comment'),

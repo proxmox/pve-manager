@@ -59,7 +59,7 @@ Ext.define('PVE.Datacenter', {
 		    } 
 		},
 		itemTpl: '{name}' +
-		    '<br><small>Online: {[PVE.Utils.format_boolean(values.online)]}</small>' +
+		    '<br><small>Online: {[Proxmox.Utils.format_boolean(values.online)]}</small>' +
 		    '<br><small>Support: {[PVE.Utils.render_support_level(values.level)]}</small>'
 	    }
 	]	
@@ -100,7 +100,7 @@ Ext.define('PVE.Datacenter', {
 			}
 		    } else if (el.type === "cluster") {
 			me.summary.nodes = el.nodes;
-			me.summary.quorate = PVE.Utils.format_boolean(el.quorate);
+			me.summary.quorate = Proxmox.Utils.format_boolean(el.quorate);
 			me.summary.cluster_name = el.name;
 		    }
 		});

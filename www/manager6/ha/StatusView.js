@@ -18,7 +18,7 @@ Ext.define('PVE.ha.StatusView', {
 	    throw "no rstore given";
 	}
 
-	PVE.Utils.monStoreErrors(me, me.rstore);
+	Proxmox.Utils.monStoreErrors(me, me.rstore);
 
 	var store = Ext.create('PVE.data.DiffStore', {
 	    rstore: me.rstore,

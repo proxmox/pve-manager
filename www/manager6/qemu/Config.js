@@ -31,7 +31,7 @@ Ext.define('PVE.qemu.Config', {
 	});
 
 	var vm_command = function(cmd, params) {
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		params: params,
 		url: base_url + '/status/' + cmd,
 		waitMsgTarget: me,
@@ -94,9 +94,9 @@ Ext.define('PVE.qemu.Config', {
 		    xtype: 'pveMenuItem',
 		    iconCls: 'fa fa-fw fa-file-o',
 		    hidden: caps.vms['VM.Allocate'] ? false : true,
-		    confirmMsg: PVE.Utils.format_task_description('qmtemplate', vmid),
+		    confirmMsg: Proxmox.Utils.format_task_description('qmtemplate', vmid),
 		    handler: function() {
-			PVE.Utils.API2Request({
+			Proxmox.Utils.API2Request({
 			    url: base_url + '/template',
 			    waitMsgTarget: me,
 			    method: 'POST',
@@ -137,7 +137,7 @@ Ext.define('PVE.qemu.Config', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.vms['VM.PowerMgmt'] || !running,
 	    hidden: template,
-	    confirmMsg: PVE.Utils.format_task_description('qmshutdown', vmid),
+	    confirmMsg: Proxmox.Utils.format_task_description('qmshutdown', vmid),
 	    handler: function() {
 		vm_command('shutdown');
 	    },
@@ -146,7 +146,7 @@ Ext.define('PVE.qemu.Config', {
 		    text: gettext('Stop'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
 		    dangerous: true,
-		    confirmMsg: PVE.Utils.format_task_description('qmstop', vmid),
+		    confirmMsg: Proxmox.Utils.format_task_description('qmstop', vmid),
 		    handler: function() {
 			vm_command("stop", { timeout: 30 });
 		    },
@@ -154,7 +154,7 @@ Ext.define('PVE.qemu.Config', {
 		},{
 		    text: gettext('Reset'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
-		    confirmMsg: PVE.Utils.format_task_description('qmreset', vmid),
+		    confirmMsg: Proxmox.Utils.format_task_description('qmreset', vmid),
 		    handler: function() {
 			vm_command("reset");
 		    },

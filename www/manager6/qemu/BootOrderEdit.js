@@ -33,7 +33,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 
 	me.list.push(['d', 'CD-ROM']);
 	me.list.push(['n', gettext('Network')]);
-	me.list.push(['__none__', PVE.Utils.noneText]);
+	me.list.push(['__none__', Proxmox.Utils.noneText]);
 
 	me.recomputeList();
 

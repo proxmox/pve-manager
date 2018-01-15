@@ -31,7 +31,7 @@ Ext.define('PVE.window.BackupConfig', {
 
 	me.callParent();
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: "/nodes/" + nodename + "/vzdump/extractconfig",
 	    method: 'GET',
 	    params: {

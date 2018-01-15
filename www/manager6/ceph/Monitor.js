@@ -82,7 +82,7 @@ Ext.define('PVE.node.CephMonList', {
 	    sorters: [{ property: 'name'}]
 	});
 
-	PVE.Utils.monStoreErrors(me, rstore);
+	Proxmox.Utils.monStoreErrors(me, rstore);
 
 	var service_cmd = function(cmd) {
 	    var rec = sm.getSelection()[0];
@@ -90,7 +90,7 @@ Ext.define('PVE.node.CephMonList', {
 		Ext.Msg.alert(gettext('Error'), "entry has no host");
 		return;
 	    }
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		url: "/nodes/" + rec.data.host + "/ceph/" + cmd,
 		method: 'POST',
 		params: { service: "mon." + rec.data.name },
@@ -145,7 +145,7 @@ Ext.define('PVE.node.CephMonList', {
 		    return;
 		}
 
-		PVE.Utils.API2Request({
+		Proxmox.Utils.API2Request({
 		    url: "/nodes/" + rec.data.host + "/ceph/mon/" +
 			rec.data.name,
 		    method: 'DELETE',
@@ -186,7 +186,7 @@ Ext.define('PVE.node.CephMonList', {
 		    header: gettext('Quorum'),
 		    width: 70,
 		    sortable: false,
-		    renderer: PVE.Utils.format_boolean,
+		    renderer: Proxmox.Utils.format_boolean,
 		    dataIndex: 'quorum'
 		},
 		{

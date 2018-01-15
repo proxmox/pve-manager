@@ -118,7 +118,7 @@ Ext.define('PVE.Workspace', { statics: {
     },
 
     showLogin: function() {
-	PVE.Utils.authClear();
+	Proxmox.Utils.authClear();
 	PVE.UserName = null;
 	PVE.Workspace.loginData = null;
 
@@ -147,7 +147,7 @@ Ext.define('PVE.Workspace', { statics: {
 
 	var comp;
 
-	if (!PVE.Utils.authOK()) {
+	if (!Proxmox.Utils.authOK()) {
 	    comp = Ext.create('PVE.Login', {});
 	} else {
 	    Ext.Array.each(PVE.Workspace.pages, function(p, index) {

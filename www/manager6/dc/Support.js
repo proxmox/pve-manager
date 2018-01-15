@@ -51,7 +51,7 @@ Ext.define('PVE.dc.Support', {
         var me = this;
 
 	var reload = function() {
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		url: '/nodes/localhost/subscription',
 		method: 'GET',
 		waitMsgTarget: me,

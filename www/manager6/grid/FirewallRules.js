@@ -428,7 +428,7 @@ Ext.define('PVE.FirewallRules', {
 	    return;
 	}
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: me.base_url + "/" + from,
 	    method: 'PUT',
 	    params: { moveto: to },
@@ -455,7 +455,7 @@ Ext.define('PVE.FirewallRules', {
 	delete rule.pos;
 	delete rule.errors;
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: me.base_url + '/' + pos.toString(),
 	    method: 'PUT',
 	    params: rule,

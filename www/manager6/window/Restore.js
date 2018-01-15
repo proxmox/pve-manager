@@ -75,7 +75,7 @@ Ext.define('PVE.window.Restore', {
 	var form = me.formPanel.getForm();
 
 	var doRestore = function(url, params) {
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		url: url,
 		params: params,
 		method: 'POST',
@@ -114,11 +114,11 @@ Ext.define('PVE.window.Restore', {
 		    params.ostemplate = me.volid;
 		    params.restore = 1;
 		    if (values.unprivileged) { params.unprivileged = 1; }
-		    msg = PVE.Utils.format_task_description('vzrestore', params.vmid);
+		    msg = Proxmox.Utils.format_task_description('vzrestore', params.vmid);
 		} else if (me.vmtype === 'qemu') {
 		    url = '/nodes/' + me.nodename + '/qemu';
 		    params.archive = me.volid;
-		    msg = PVE.Utils.format_task_description('qmrestore', params.vmid);
+		    msg = Proxmox.Utils.format_task_description('qmrestore', params.vmid);
 		} else {
 		    throw 'unknown VM type';
 		}

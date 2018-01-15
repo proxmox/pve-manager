@@ -7,7 +7,7 @@ Ext.define('PVE.window.HDResize', {
 	var me = this;
         var params =  { disk: disk, size: '+' + size + 'G' };
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    params: params,
 	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/resize',
 	    waitMsgTarget: me,

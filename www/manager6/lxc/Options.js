@@ -25,7 +25,7 @@ Ext.define('PVE.lxc.Options', {
 	    onboot: {
 		header: gettext('Start at boot'),
 		defaultValue: '',
-		renderer: PVE.Utils.format_boolean,
+		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Start at boot'),
@@ -50,16 +50,16 @@ Ext.define('PVE.lxc.Options', {
 	    },
 	    ostype: {
 		header: gettext('OS Type'),
-		defaultValue: PVE.Utils.unknownText
+		defaultValue: Proxmox.Utils.unknownText
 	    },
 	    arch: {
 		header: gettext('Architecture'),
-		defaultValue: PVE.Utils.unknownText
+		defaultValue: Proxmox.Utils.unknownText
 	    },
 	    console: {
 		header: '/dev/console',
 		defaultValue: 1,
-		renderer: PVE.Utils.format_enabled_toggle,
+		renderer: Proxmox.Utils.format_enabled_toggle,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: '/dev/console',
@@ -104,7 +104,7 @@ Ext.define('PVE.lxc.Options', {
 			deleteEmpty: true,
 			value: '__default__',
 			comboItems: [
-			    ['__default__', PVE.Utils.defaultText + " (tty)"],
+			    ['__default__', Proxmox.Utils.defaultText + " (tty)"],
 			    ['tty', "/dev/tty[X]"],
 			    ['console', "/dev/console"],
 			    ['shell', "shell"]
@@ -116,7 +116,7 @@ Ext.define('PVE.lxc.Options', {
 	    protection: {
 		header: gettext('Protection'),
 		defaultValue: false,
-		renderer: PVE.Utils.format_boolean,
+		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Protection'),
@@ -132,7 +132,7 @@ Ext.define('PVE.lxc.Options', {
 	    },
 	    unprivileged: {
 		header: gettext('Unprivileged container'),
-		renderer: PVE.Utils.format_boolean,
+		renderer: Proxmox.Utils.format_boolean,
 		defaultValue: 0
 	    }
 	};

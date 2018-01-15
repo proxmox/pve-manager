@@ -36,7 +36,7 @@ Ext.define('PVE.Workspace', {
     showLogin: function() {
 	var me = this;
 
-	PVE.Utils.authClear();
+	Proxmox.Utils.authClear();
 	PVE.UserName = null;
 	me.loginData = null;
 
@@ -45,7 +45,7 @@ Ext.define('PVE.Workspace', {
 		handler: function(data) {
 		    me.login = null;
 		    me.updateLoginData(data);
-		    PVE.Utils.checked_command(function() {}); // display subscription status
+		    Proxmox.Utils.checked_command(function() {}); // display subscription status
 		}
 	    });
 	}
@@ -67,7 +67,7 @@ Ext.define('PVE.Workspace', {
 
 	me.callParent();
 
-        if (!PVE.Utils.authOK()) {
+        if (!Proxmox.Utils.authOK()) {
 	    me.showLogin();
 	} else { 
 	    if (me.loginData) {
@@ -77,7 +77,7 @@ Ext.define('PVE.Workspace', {
 
 	Ext.TaskManager.start({
 	    run: function() {
-		var ticket = PVE.Utils.authOK();
+		var ticket = Proxmox.Utils.authOK();
 		if (!ticket || !PVE.UserName) {
 		    return;
 		}
@@ -117,7 +117,7 @@ Ext.define('PVE.StdWorkspace', {
 	var cur = lay.getActiveItem();
 
 	if (comp) {
-	    PVE.Utils.setErrorMask(cont, false);
+	    Proxmox.Utils.setErrorMask(cont, false);
 	    comp.border = false;
 	    cont.add(comp);
 	    if (cur !== null && lay.getNext()) {
@@ -148,7 +148,7 @@ Ext.define('PVE.StdWorkspace', {
 	if (loginData) {
 	    PVE.data.ResourceStore.startUpdate();
 
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		url: '/version',
 		method: 'GET',
 		success: function(response) {

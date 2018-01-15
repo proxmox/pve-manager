@@ -1,6 +1,6 @@
 // Sencha Touch related things
 
-PVE.Utils.toolkit = 'touch',
+Proxmox.Utils.toolkit = 'touch',
 
 Ext.Ajax.setDisableCaching(false);
 

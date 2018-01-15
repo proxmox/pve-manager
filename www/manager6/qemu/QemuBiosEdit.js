@@ -24,7 +24,7 @@ Ext.define('PVE.qemu.BiosEdit', {
 		listeners: {
 		    'change' : function(field, newValue) {
 			if (newValue == 'ovmf') {
-			    PVE.Utils.API2Request({
+			    Proxmox.Utils.API2Request({
 				url : me.url,
 				method : 'GET',
 				failure : function(response, opts) {

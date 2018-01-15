@@ -31,7 +31,7 @@ Ext.define('PVE.window.Migrate', {
 			params[view.liveMode] = 1;
 		    }
 
-		    PVE.Utils.API2Request({
+		    Proxmox.Utils.API2Request({
 			params: params,
 			url: '/nodes/' + view.nodename + '/' + view.vmtype + '/' + view.vmid + '/migrate',
 			waitMsgTarget: view,

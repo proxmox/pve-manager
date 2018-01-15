@@ -31,7 +31,7 @@ Ext.define('PVE.lxc.Config', {
 	});
 
 	var vm_command = function(cmd, params) {
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		params: params,
 		url: base_url + "/status/" + cmd,
 		waitMsgTarget: me,
@@ -54,7 +54,7 @@ Ext.define('PVE.lxc.Config', {
 	var stopBtn = Ext.create('Ext.menu.Item',{
 	    text: gettext('Stop'),
 	    disabled: !caps.vms['VM.PowerMgmt'],
-	    confirmMsg: PVE.Utils.format_task_description('vzstop', vmid),
+	    confirmMsg: Proxmox.Utils.format_task_description('vzstop', vmid),
 	    dangerous: true,
 	    handler: function() {
 		vm_command("stop");
@@ -65,7 +65,7 @@ Ext.define('PVE.lxc.Config', {
 	var shutdownBtn = Ext.create('PVE.button.Split', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.vms['VM.PowerMgmt'] || !running,
-	    confirmMsg: PVE.Utils.format_task_description('vzshutdown', vmid),
+	    confirmMsg: Proxmox.Utils.format_task_description('vzshutdown', vmid),
 	    handler: function() {
 		vm_command('shutdown');
 	    },

@@ -31,7 +31,7 @@ Ext.define('PVE.dc.RoleView', {
 	    return value.replace(/\,/g, ' ');
 	};
 
-	PVE.Utils.monStoreErrors(me, store);
+	Proxmox.Utils.monStoreErrors(me, store);
 
 	Ext.apply(me, {
 	    store: store,

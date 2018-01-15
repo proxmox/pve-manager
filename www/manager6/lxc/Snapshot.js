@@ -16,7 +16,7 @@ Ext.define('PVE.window.LxcSnapshot', {
 	    params.description = descr;
 	}
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    params: params,
 	    url: '/nodes/' + me.nodename + '/lxc/' + me.vmid + "/snapshot",
 	    waitMsgTarget: me,
@@ -35,7 +35,7 @@ Ext.define('PVE.window.LxcSnapshot', {
 
     update_snapshot: function(snapname, descr) {
 	var me = this;
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    params: { description: descr },
 	    url: '/nodes/' + me.nodename + '/lxc/' + me.vmid + "/snapshot/" +
 		snapname + '/config',
@@ -173,7 +173,7 @@ Ext.define('PVE.window.LxcSnapshot', {
 	}
 
 	// else load data
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: '/nodes/' + me.nodename + '/lxc/' + me.vmid + "/snapshot/" +
 		me.snapname + '/config',
 	    waitMsgTarget: me,

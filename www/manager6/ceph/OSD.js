@@ -19,7 +19,7 @@ Ext.define('PVE.form.CephDiskSelector', {
 		header: gettext('Size'),
 		width: 60,
 		sortable: false,
-		renderer: PVE.Utils.format_size,
+		renderer: Proxmox.Utils.format_size,
 		dataIndex: 'size'
 	    },
 	    {
@@ -351,12 +351,12 @@ Ext.define('PVE.node.CephOsdTree', {
 	var set_button_status; // defined later
 
 	var reload = function() {
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
                 url: "/nodes/" + nodename + "/ceph/osd",
 		waitMsgTarget: me,
 		method: 'GET',
 		failure: function(response, opts) {
-		    PVE.Utils.setErrorMask(me, response.htmlStatus);
+		    Proxmox.Utils.setErrorMask(me, response.htmlStatus);
 		},
 		success: function(response, opts) {
 		    sm.deselectAll();
@@ -379,7 +379,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	    if (!(rec && (rec.data.id >= 0) && rec.data.host)) {
 		return;
 	    }
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
                 url: "/nodes/" + rec.data.host + "/ceph/osd/" +
 		    rec.data.id + '/' + cmd,
 		waitMsgTarget: me,
@@ -396,7 +396,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	    if (!(rec && rec.data.name && rec.data.host)) {
 		return;
 	    }
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
                 url: "/nodes/" + rec.data.host + "/ceph/" + cmd,
 		params: { service: rec.data.name },
 		waitMsgTarget: me,
@@ -471,7 +471,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	var noout_btn = new Ext.Button({
 	    text: gettext('Set noout'),
 	    handler: function() {
-		PVE.Utils.API2Request({
+		Proxmox.Utils.API2Request({
 		    url: "/nodes/" + nodename + "/ceph/flags/noout",
 		    waitMsgTarget: me,
 		    method: noout ? 'DELETE' : 'POST',

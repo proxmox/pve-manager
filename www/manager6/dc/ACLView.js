@@ -170,7 +170,7 @@ Ext.define('PVE.dc.ACLView', {
 		    throw 'unknown data type';
 		}
 
-		PVE.Utils.API2Request({
+		Proxmox.Utils.API2Request({
 		    url: '/access/acl',
 		    params: params,
 		    method: 'PUT',
@@ -185,7 +185,7 @@ Ext.define('PVE.dc.ACLView', {
 	    }
 	});
 
-	PVE.Utils.monStoreErrors(me, store);
+	Proxmox.Utils.monStoreErrors(me, store);
 
 	Ext.apply(me, {
 	    store: store,

@@ -17,7 +17,7 @@ Ext.define('PVE.window.HDMove', {
 	    params['delete'] = 1;
 	}
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    params: params,
 	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/move_disk',
 	    waitMsgTarget: me,

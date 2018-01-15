@@ -246,14 +246,14 @@ Ext.define('PVE.dc.StorageView', {
 		    width: 80,
 		    sortable: true,
 		    dataIndex: 'shared',
-		    renderer: PVE.Utils.format_boolean
+		    renderer: Proxmox.Utils.format_boolean
 		},
 		{
 		    header: gettext('Enabled'),
 		    width: 80,
 		    sortable: true,
 		    dataIndex: 'disable',
-		    renderer: PVE.Utils.format_neg_boolean
+		    renderer: Proxmox.Utils.format_neg_boolean
 		}
 	    ],
 	    listeners: {

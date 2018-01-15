@@ -69,7 +69,7 @@ Ext.define('PVE.form.FileSelector', {
 			header: gettext('Size'),
 			width: 100,
 			dataIndex: 'size',
-			renderer: PVE.Utils.format_size
+			renderer: Proxmox.Utils.format_size
 		    }
 		]
 	    }

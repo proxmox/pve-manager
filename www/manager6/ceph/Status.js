@@ -289,7 +289,7 @@ Ext.define('PVE.node.CephStatus', {
 	me.version = me.sp.get('ceph-version');
 	me.change_version(me.version);
 
-	PVE.Utils.monStoreErrors(me,me.store);
+	Proxmox.Utils.monStoreErrors(me,me.store);
 	me.mon(me.store, 'load', me.updateAll, me);
 	me.on('destroy', me.store.stopUpdate);
 	me.store.startUpdate();

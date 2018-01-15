@@ -49,7 +49,7 @@ Ext.define('PVE.data.ResourceStore', {
 	    running: {
 		header: gettext('Online'),
 		type: 'boolean',
-		renderer: PVE.Utils.format_boolean,
+		renderer: Proxmox.Utils.format_boolean,
 		hidden: true,
 		convert: function(value, record) {
 		    var info = record.data;
@@ -166,7 +166,7 @@ Ext.define('PVE.data.ResourceStore', {
 		type: 'integer',
 		hidden: true,
 		sortable: true,
-		renderer: PVE.Utils.format_size,
+		renderer: Proxmox.Utils.format_size,
 		width: 100
 	    },
 	    diskwrite: {
@@ -174,7 +174,7 @@ Ext.define('PVE.data.ResourceStore', {
 		type: 'integer',
 		hidden: true,
 		sortable: true,
-		renderer: PVE.Utils.format_size,
+		renderer: Proxmox.Utils.format_size,
 		width: 100
 	    },
 	    netin: {
@@ -182,7 +182,7 @@ Ext.define('PVE.data.ResourceStore', {
 		type: 'integer',
 		hidden: true,
 		sortable: true,
-		renderer: PVE.Utils.format_size,
+		renderer: Proxmox.Utils.format_size,
 		width: 100
 	    },
 	    netout: {
@@ -190,7 +190,7 @@ Ext.define('PVE.data.ResourceStore', {
 		type: 'integer',
 		hidden: true,
 		sortable: true,
-		renderer: PVE.Utils.format_size,
+		renderer: Proxmox.Utils.format_size,
 		width: 100
 	    },
 	    template: {
@@ -203,7 +203,7 @@ Ext.define('PVE.data.ResourceStore', {
 	    uptime: {
 		header: gettext('Uptime'),
 		type: 'integer',
-		renderer: PVE.Utils.render_uptime,
+		renderer: Proxmox.Utils.render_uptime,
 		sortable: true,
 		width: 110
 	    },

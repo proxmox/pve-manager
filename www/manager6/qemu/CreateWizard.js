@@ -167,7 +167,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 			var nodename = kv.nodename;
 			delete kv.nodename;
 
-			PVE.Utils.API2Request({
+			Proxmox.Utils.API2Request({
 			    url: '/nodes/' + nodename + '/qemu',
 			    waitMsgTarget: me,
 			    method: 'POST',

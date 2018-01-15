@@ -49,7 +49,7 @@ Ext.define('PVE.dc.Health', {
 		cluster.text = gettext("Cluster") + ": ";
 		cluster.text += item.data.name + ", ";
 		cluster.text += gettext("Quorate") + ": ";
-		cluster.text += PVE.Utils.format_boolean(item.data.quorate);
+		cluster.text += Proxmox.Utils.format_boolean(item.data.quorate);
 		if (item.data.quorate != 1) {
 		    cluster.iconCls = PVE.Utils.get_health_icon('critical', true);
 		}

@@ -93,9 +93,9 @@ Ext.define('PVE.dc.BackupEdit', {
 		    dataIndex: 'uptime',
 		    renderer: function(value) {
 			if (value) {
-			    return PVE.Utils.runningText;
+			    return Proxmox.Utils.runningText;
 			} else {
-			    return PVE.Utils.stoppedText;
+			    return Proxmox.Utils.stoppedText;
 			}
 		    }
 		},
@@ -200,7 +200,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    onGetValues: function(values) {
 		if (!values.node) {
 		    if (!me.isCreate) {
-			PVE.Utils.assemble_field_data(values, { 'delete': 'node' }); 
+			Proxmox.Utils.assemble_field_data(values, { 'delete': 'node' }); 
 		    }
 		    delete values.node;
 		}
@@ -370,7 +370,7 @@ Ext.define('PVE.dc.BackupView', {
 	    }
 	});
 
-	PVE.Utils.monStoreErrors(me, store);
+	Proxmox.Utils.monStoreErrors(me, store);
 
 	Ext.apply(me, {
 	    store: store,

@@ -28,15 +28,15 @@ Ext.define('PVE.lxc.SnapshotTree', {
     reload: function(repeat) {
 	var me = this;
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: '/nodes/' + me.nodename + '/lxc/' + me.vmid + '/snapshot',
 	    method: 'GET',
 	    failure: function(response, opts) {
-		PVE.Utils.setErrorMask(me, response.htmlStatus);
+		Proxmox.Utils.setErrorMask(me, response.htmlStatus);
 		me.load_task.delay(me.load_delay);
 	    },
 	    success: function(response, opts) {
-		PVE.Utils.setErrorMask(me, false);
+		Proxmox.Utils.setErrorMask(me, false);
 		var digest = 'invalid';
 		var idhash = {};
 		var root = { name: '__root', expanded: true, children: [] };
@@ -78,7 +78,7 @@ Ext.define('PVE.lxc.SnapshotTree', {
 	    }
 	});
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: '/nodes/' + me.nodename + '/lxc/' + me.vmid + '/feature',
 	    params: { feature: 'snapshot' },
 	    method: 'GET',
@@ -159,7 +159,7 @@ Ext.define('PVE.lxc.SnapshotTree', {
 	    selModel: sm,
 	    enableFn: valid_snapshot_rollback,
 	    confirmMsg: function(rec) {
-		return PVE.Utils.format_task_description('vzrollback', me.vmid) +
+		return Proxmox.Utils.format_task_description('vzrollback', me.vmid) +
 		    " '" +  rec.data.name + "'";
 	    },
 	    handler: function(btn, event) {
@@ -169,7 +169,7 @@ Ext.define('PVE.lxc.SnapshotTree', {
 		}
 		var snapname = rec.data.name;
 
-		PVE.Utils.API2Request({
+		Proxmox.Utils.API2Request({
 		    url: '/nodes/' + me.nodename + '/lxc/' + me.vmid + '/snapshot/' + snapname + '/rollback',
 		    method: 'POST',
 		    waitMsgTarget: me,
@@ -205,7 +205,7 @@ Ext.define('PVE.lxc.SnapshotTree', {
 		}
 		var snapname = rec.data.name;
 
-		PVE.Utils.API2Request({
+		Proxmox.Utils.API2Request({
 		    url: '/nodes/' + me.nodename + '/lxc/' + me.vmid + '/snapshot/' + snapname,
 		    method: 'DELETE',
 		    waitMsgTarget: me,
@@ -270,7 +270,7 @@ Ext.define('PVE.lxc.SnapshotTree', {
 //		    width: 50,
 //		    renderer: function(value, metaData, record) {
 //			if (record.data.name !== 'current') {
-//			    return PVE.Utils.format_boolean(value);
+//			    return Proxmox.Utils.format_boolean(value);
 //			}
 //		    }
 //		},

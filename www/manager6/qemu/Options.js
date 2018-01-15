@@ -54,7 +54,7 @@ Ext.define('PVE.qemu.Options', {
 	    onboot: {
 		header: gettext('Start at boot'),
 		defaultValue: '',
-		renderer: PVE.Utils.format_boolean,
+		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Start at boot'),
@@ -124,7 +124,7 @@ Ext.define('PVE.qemu.Options', {
 	    tablet: {
 		header: gettext('Use tablet for pointer'),
 		defaultValue: true,
-		renderer: PVE.Utils.format_boolean,
+		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.HWType'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Use tablet for pointer'),
@@ -159,7 +159,7 @@ Ext.define('PVE.qemu.Options', {
 	    acpi: {
 		header: gettext('ACPI support'),
 		defaultValue: true,
-		renderer: PVE.Utils.format_boolean,
+		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.HWType'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('ACPI support'),
@@ -189,7 +189,7 @@ Ext.define('PVE.qemu.Options', {
 	    kvm: {
 		header: gettext('KVM hardware virtualization'),
 		defaultValue: true,
-		renderer: PVE.Utils.format_boolean,
+		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.HWType'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('KVM hardware virtualization'),
@@ -207,7 +207,7 @@ Ext.define('PVE.qemu.Options', {
 	    freeze: {
 		header: gettext('Freeze CPU at startup'),
 		defaultValue: false,
-		renderer: PVE.Utils.format_boolean,
+		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.PowerMgmt'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Freeze CPU at startup'),
@@ -225,7 +225,7 @@ Ext.define('PVE.qemu.Options', {
 	    localtime: {
 		header: gettext('Use local time for RTC'),
 		defaultValue: false,
-		renderer: PVE.Utils.format_boolean,
+		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Use local time for RTC'),
@@ -266,7 +266,7 @@ Ext.define('PVE.qemu.Options', {
 	    agent: {
 		header: gettext('Qemu Agent'),
 		defaultValue: false,
-		renderer: PVE.Utils.format_boolean,
+		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Qemu Agent'),
@@ -283,7 +283,7 @@ Ext.define('PVE.qemu.Options', {
 	    protection: {
 		header: gettext('Protection'),
 		defaultValue: false,
-		renderer: PVE.Utils.format_boolean,
+		renderer: Proxmox.Utils.format_boolean,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'pveWindowEdit',
 		    subject: gettext('Protection'),
@@ -358,7 +358,7 @@ Ext.define('PVE.qemu.Options', {
 		var keys = rowdef.multiKey ||  [ rec.data.key ];
 		var revert = keys.join(',');
 
-                PVE.Utils.API2Request({
+                Proxmox.Utils.API2Request({
                     url: '/api2/extjs/' + baseurl,
                     waitMsgTarget: me,
                     method: 'PUT',

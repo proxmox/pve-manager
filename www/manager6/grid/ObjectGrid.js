@@ -106,7 +106,7 @@ Ext.define('PVE.grid.ObjectGrid', {
 	    }
 	}));
 
-	PVE.Utils.monStoreErrors(me, rstore);
+	Proxmox.Utils.monStoreErrors(me, rstore);
 
 	Ext.applyIf(me, {
 	    store: store,

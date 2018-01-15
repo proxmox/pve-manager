@@ -32,7 +32,7 @@ Ext.define('PVE.node.Summary', {
 	    items: [ view ] 
 	});
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    waitMsgTarget: me,
 	    url: "/nodes/" + nodename + "/apt/versions",
 	    method: 'GET',
@@ -83,7 +83,7 @@ Ext.define('PVE.node.Summary', {
 	var version_btn = new Ext.Button({
 	    text: gettext('Package versions'),
 	    handler: function(){
-		PVE.Utils.checked_command(function() { me.showVersions(); });
+		Proxmox.Utils.checked_command(function() { me.showVersions(); });
 	    }
 	});
 

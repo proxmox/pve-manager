@@ -10,7 +10,7 @@ Ext.define('PVE.dc.HttpProxyEdit', {
 		xtype: 'proxmoxtextfield',
 		name: 'http_proxy',
 		vtype: 'HttpProxy',
-		emptyText: PVE.Utils.noneText,
+		emptyText: Proxmox.Utils.noneText,
 		deleteEmpty: true,
 		value: '',
 		fieldLabel: gettext('HTTP proxy')
@@ -112,7 +112,7 @@ Ext.define('PVE.dc.MacPrefixEdit', {
 		name: 'mac_prefix',
 		regex: /^[a-f0-9]{2}(?::[a-f0-9]{2}){0,2}:?$/i,
 		regexText: gettext('Example') + ': 02:8f',
-		emptyText: PVE.Utils.noneText,
+		emptyText: Proxmox.Utils.noneText,
 		deleteEmpty: true,
 		value: '',
 		fieldLabel: gettext('MAC address prefix')
@@ -151,7 +151,7 @@ Ext.define('PVE.dc.OptionView', {
 		required: true,
 		renderer: function(value) {
 		    if (!value) {
-			return PVE.Utils.noneText;
+			return Proxmox.Utils.noneText;
 		    }
 		    return value;
 		}
@@ -179,7 +179,7 @@ Ext.define('PVE.dc.OptionView', {
 		required: true,
 		renderer: function(value) {
 		    if (!value) {
-			return PVE.Utils.noneText;
+			return Proxmox.Utils.noneText;
 		    }
 		    return value;
 		}

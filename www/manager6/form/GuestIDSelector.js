@@ -59,7 +59,7 @@ Ext.define('PVE.form.GuestIDSelector', {
 		    if (!Ext.isDefined(me.validateExists)) {
 			return;
 		    }
-		    PVE.Utils.API2Request({
+		    Proxmox.Utils.API2Request({
 			params: { vmid: newValue },
 			url: '/cluster/nextid',
 			method: 'GET',
@@ -79,7 +79,7 @@ Ext.define('PVE.form.GuestIDSelector', {
         me.callParent();
 
 	if (me.loadNextFreeID) {
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		url: '/cluster/nextid',
 		method: 'GET',
 		success: function(response, opts) {

@@ -339,15 +339,15 @@ Ext.define('PVE.lxc.NetworkView', {
     load: function() {
 	var me = this;
 
-	PVE.Utils.setErrorMask(me, true);
+	Proxmox.Utils.setErrorMask(me, true);
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: me.url,
 	    failure: function(response, opts) {
-		PVE.Utils.setErrorMask(me, gettext('Error') + ': ' + response.htmlStatus);
+		Proxmox.Utils.setErrorMask(me, gettext('Error') + ': ' + response.htmlStatus);
 	    },
 	    success: function(response, opts) {
-		PVE.Utils.setErrorMask(me, false);
+		Proxmox.Utils.setErrorMask(me, false);
 		var result = Ext.decode(response.responseText);
 		var data = result.data || {};
 		me.dataCache = data;
@@ -407,7 +407,7 @@ Ext.define('PVE.lxc.NetworkView', {
 					 "'" + rec.data.id + "'");
 	    },
 	    handler: function(btn, event, rec) {
-		PVE.Utils.API2Request({
+		Proxmox.Utils.API2Request({
 		    url: me.url,
 		    waitMsgTarget: me,
 		    method: 'PUT',
@@ -497,7 +497,7 @@ Ext.define('PVE.lxc.NetworkView', {
 		    header: gettext('Firewall'),
 		    width: 80,
 		    dataIndex: 'firewall',
-		    renderer: PVE.Utils.format_boolean
+		    renderer: Proxmox.Utils.format_boolean
 		},
 		{
 		    header: gettext('VLAN Tag'),

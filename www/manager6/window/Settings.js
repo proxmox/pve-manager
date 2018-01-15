@@ -29,7 +29,7 @@ Ext.define('PVE.window.Settings', {
 		    var me = this;
 		    var sp = Ext.state.Manager.getProvider();
 
-		    var username = sp.get('login-username') || PVE.Utils.noneText;
+		    var username = sp.get('login-username') || Proxmox.Utils.noneText;
 		    me.lookupReference('savedUserName').setValue(username);
 		}
 	    },
@@ -57,7 +57,7 @@ Ext.define('PVE.window.Settings', {
 		    var usernamefield = me.lookupReference('savedUserName');
 		    var sp = Ext.state.Manager.getProvider();
 
-		    usernamefield.setValue(PVE.Utils.noneText);
+		    usernamefield.setValue(Proxmox.Utils.noneText);
 		    sp.clear('login-username');
 		}
 	    },

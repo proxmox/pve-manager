@@ -12,12 +12,12 @@ Ext.define('PVE.window.Wizard', {
 
         form.getFields().each(function(field) {
             if (!field.up('inputpanel') && (!dirtyOnly || field.isDirty())) {
-                PVE.Utils.assemble_field_data(values, field.getSubmitData());
+                Proxmox.Utils.assemble_field_data(values, field.getSubmitData());
             }
         });
 
 	Ext.Array.each(me.query('inputpanel'), function(panel) {
-	    PVE.Utils.assemble_field_data(values, panel.getValues(dirtyOnly));
+	    Proxmox.Utils.assemble_field_data(values, panel.getValues(dirtyOnly));
 	});
 
         return values;
@@ -171,7 +171,7 @@ Ext.define('PVE.window.Wizard', {
 	};
 
 	if (me.subject && !me.title) {
-	    me.title = PVE.Utils.dialog_title(me.subject, true, false);
+	    me.title = Proxmox.Utils.dialog_title(me.subject, true, false);
 	}
 
 	Ext.apply(me, {

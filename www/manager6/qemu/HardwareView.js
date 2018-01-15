@@ -50,11 +50,11 @@ Ext.define('PVE.qemu.HardwareView', {
 		renderer: function(value, metaData, record) {
 		    var balloon =  me.getObjectValue('balloon');
 		    if (balloon) {
-			return PVE.Utils.format_size(balloon*1024*1024) + "/" + 
-			    PVE.Utils.format_size(value*1024*1024);
+			return Proxmox.Utils.format_size(balloon*1024*1024) + "/" + 
+			    Proxmox.Utils.format_size(value*1024*1024);
 
 		    } 
-		    return PVE.Utils.format_size(value*1024*1024);
+		    return Proxmox.Utils.format_size(value*1024*1024);
 		}
 	    },
 	    sockets: {
@@ -418,7 +418,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		return msg;
 	    },
 	    handler: function(b, e, rec) {
-		PVE.Utils.API2Request({
+		Proxmox.Utils.API2Request({
 		    url: '/api2/extjs/' + baseurl,
 		    waitMsgTarget: me,
 		    method: 'PUT',
@@ -459,7 +459,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		var rowdef = me.rows[rec.data.key] || {};
 		var keys = rowdef.multiKey ||  [ rec.data.key ];
 		var revert = keys.join(',');
-		PVE.Utils.API2Request({
+		Proxmox.Utils.API2Request({
 		    url: '/api2/extjs/' + baseurl,
 		    waitMsgTarget: me,
 		    method: 'PUT',

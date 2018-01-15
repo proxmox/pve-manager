@@ -57,7 +57,7 @@ Ext.define('PVE.window.SafeDestroy', {
            'button[reference=removeButton]': {
 		click: function() {
 		    var view = this.getView();
-		    PVE.Utils.API2Request({
+		    Proxmox.Utils.API2Request({
 			url: view.getUrl() + view.getParams(),
 			method: 'DELETE',
 			waitMsgTarget: view,
@@ -152,11 +152,11 @@ Ext.define('PVE.window.SafeDestroy', {
 	var msg;
 
 	if (item.type === 'VM') {
-	    msg = PVE.Utils.format_task_description('qmdestroy', item.id);
+	    msg = Proxmox.Utils.format_task_description('qmdestroy', item.id);
 	} else if (item.type === 'CT') {
-	    msg = PVE.Utils.format_task_description('vzdestroy', item.id);
+	    msg = Proxmox.Utils.format_task_description('vzdestroy', item.id);
 	} else if (item.type === 'CephPool') {
-	    msg = PVE.Utils.format_task_description('cephdestroypool', item.id);
+	    msg = Proxmox.Utils.format_task_description('cephdestroypool', item.id);
 	} else {
 	    throw "unknown item type specified";
 	}

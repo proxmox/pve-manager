@@ -133,7 +133,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		labelAlign: 'right',
 		labelWidth: labelWidth,
 		allowBlank: true,
-		emptyText: PVE.Utils.defaultText + ' (1000)',
+		emptyText: Proxmox.Utils.defaultText + ' (1000)',
 		submitEmptyText: false
 	    }
 	];

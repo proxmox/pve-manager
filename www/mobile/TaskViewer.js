@@ -92,7 +92,7 @@ Ext.define('PVE.TaskViewer', {
 		kv.push({ key: gettext('Taskstatus'), value: d.status });
 		kv.push({ key: gettext('Node'), value: d.node });
 		kv.push({ key: gettext('User'), value: d.user });
-		kv.push({ key: gettext('Starttime'), value: PVE.Utils.render_timestamp(d.starttime) });
+		kv.push({ key: gettext('Starttime'), value: Proxmox.Utils.render_timestamp(d.starttime) });
 
 		me.setMasked(false);
 		statusCmp.setData(kv);
@@ -117,7 +117,7 @@ Ext.define('PVE.TaskViewer', {
        me.nodename = match[1];
        me.upid = match[2];
 
-       me.taskInfo = PVE.Utils.parse_task_upid(me.upid);
+       me.taskInfo = Proxmox.Utils.parse_task_upid(me.upid);
 
        me.down('titlebar').setTitle(me.taskInfo.desc);
 

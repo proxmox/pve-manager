@@ -20,7 +20,7 @@ Ext.define('PVE.node.Config', {
 	});
 
 	var node_command = function(cmd) {
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		params: { command: cmd },
 		url: '/nodes/' + nodename + '/status',
 		method: 'POST',

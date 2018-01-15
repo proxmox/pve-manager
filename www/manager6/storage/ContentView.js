@@ -35,7 +35,7 @@ Ext.define('PVE.grid.TemplateSelector', {
 	    store.load();
 	};
 
-	PVE.Utils.monStoreErrors(me, store);
+	Proxmox.Utils.monStoreErrors(me, store);
 
 	Ext.apply(me, {
 	    store: store,
@@ -111,7 +111,7 @@ Ext.define('PVE.storage.TemplateDownload', {
 	    disabled: true,
 	    selModel: sm,
 	    handler: function(button, event, rec) {
-		PVE.Utils.API2Request({
+		Proxmox.Utils.API2Request({
 		    url: '/nodes/' + me.nodename + '/aplinfo',
 		    params: {
 			storage: me.storage,
@@ -223,7 +223,7 @@ Ext.define('PVE.storage.Upload', {
 	var updateProgress = function(per, bytes) {
 	    var text = (per * 100).toFixed(2) + '%';
 	    if (bytes) {
-		text += " (" + PVE.Utils.format_size(bytes) + ')';
+		text += " (" + Proxmox.Utils.format_size(bytes) + ')';
 	    }
 	    pbar.updateProgress(per, text);
 	};
@@ -272,7 +272,7 @@ Ext.define('PVE.storage.Upload', {
 			var msg = gettext('Error') + " " + xhr.status.toString() + ": " + Ext.htmlEncode(xhr.statusText);
 			var result = Ext.decode(xhr.responseText);
 			result.message = msg;
-			var htmlStatus = PVE.Utils.extractRequestError(result, true);
+			var htmlStatus = Proxmox.Utils.extractRequestError(result, true);
 			Ext.Msg.alert(gettext('Error'), htmlStatus, function(btn) {
 			    me.close();
 			});
@@ -371,7 +371,7 @@ Ext.define('PVE.storage.ContentView', {
 	    me.statusStore.load();
 	};
 
-	PVE.Utils.monStoreErrors(me, store);
+	Proxmox.Utils.monStoreErrors(me, store);
 
 	var templateButton = Ext.create('Proxmox.button.Button',{
 	    itemId: 'tmpl-btn',
@@ -511,7 +511,7 @@ Ext.define('PVE.storage.ContentView', {
 		{
 		    header: gettext('Size'),
 		    width: 100,
-		    renderer: PVE.Utils.format_size,
+		    renderer: Proxmox.Utils.format_size,
 		    dataIndex: 'size'
 		}
 	    ],

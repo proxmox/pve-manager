@@ -19,7 +19,7 @@ Ext.define('PVE.qemu.TemplateMenu', {
 	var template = me.pveSelNode.data.template;
 
 	var vm_command = function(cmd, params) {
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		params: params,
 		url: '/nodes/' + nodename + '/qemu/' + vmid + "/status/" + cmd,
 		method: 'POST',

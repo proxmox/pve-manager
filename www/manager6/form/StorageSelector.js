@@ -22,13 +22,13 @@ Ext.define('PVE.form.StorageSelector', {
 		header: gettext('Avail'),
 		width: 80,
 		dataIndex: 'avail',
-		renderer: PVE.Utils.format_size
+		renderer: Proxmox.Utils.format_size
 	    },
 	    {
 		header: gettext('Capacity'),
 		width: 80,
 		dataIndex: 'total',
-		renderer: PVE.Utils.format_size
+		renderer: Proxmox.Utils.format_size
 	    }
 	]
     },

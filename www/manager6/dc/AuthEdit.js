@@ -131,7 +131,7 @@ Ext.define('PVE.dc.AuthEdit', {
 	    deleteEmpty: !me.isCreate,
 	    value: '',
             fieldLabel: gettext('TFA'),
-	    comboItems: [ ['__default__', PVE.Utils.noneText], ['oath', 'OATH'], ['yubico', 'Yubico']],
+	    comboItems: [ ['__default__', Proxmox.Utils.noneText], ['oath', 'OATH'], ['yubico', 'Yubico']],
 	    listeners: {
 		change: function(f, value) {
 		    if (!me.rendered) {
@@ -151,7 +151,7 @@ Ext.define('PVE.dc.AuthEdit', {
             name: 'oath_step',
 	    value: '',
 	    minValue: 10,
-	    emptyText: PVE.Utils.defaultText + ' (30)',
+	    emptyText: Proxmox.Utils.defaultText + ' (30)',
 	    submitEmptyText: false,
 	    hidden: true,
             fieldLabel: 'OATH time step'
@@ -163,7 +163,7 @@ Ext.define('PVE.dc.AuthEdit', {
 	    value: '',
 	    minValue: 6,
 	    maxValue: 8,
-	    emptyText: PVE.Utils.defaultText + ' (6)',
+	    emptyText: Proxmox.Utils.defaultText + ' (6)',
 	    submitEmptyText: false,
 	    hidden: true,
             fieldLabel: 'OATH password length'
@@ -201,7 +201,7 @@ Ext.define('PVE.dc.AuthEdit', {
 	    onGetValues: function(values) {
 		if (!values.port) {
 		    if (!me.isCreate) {
-			PVE.Utils.assemble_field_data(values, { 'delete': 'port' });
+			Proxmox.Utils.assemble_field_data(values, { 'delete': 'port' });
 		    }
 		    delete values.port;
 		}

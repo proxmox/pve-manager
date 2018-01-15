@@ -57,7 +57,7 @@ Ext.define('PVE.qemu.Monitor', {
 	var executeCmd = function(cmd) {
 	    addLine("# " + Ext.htmlEncode(cmd));
 	    refresh();
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		params: { command: cmd },
 		url: '/nodes/' + nodename + '/qemu/' + vmid + "/monitor",
 		method: 'POST',

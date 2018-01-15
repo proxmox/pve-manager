@@ -18,7 +18,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	var vmname = me.pveSelNode.data.name;
 
 	var vm_command = function(cmd, params) {
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		params: params,
 		url: '/nodes/' + nodename + '/qemu/' + vmid + "/status/" + cmd,
 		method: 'POST',
@@ -64,7 +64,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		hidden: suspended,
 		disabled: stopped || suspended,
 		handler: function() {
-		    var msg = PVE.Utils.format_task_description('qmsuspend', vmid);
+		    var msg = Proxmox.Utils.format_task_description('qmsuspend', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -86,7 +86,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		iconCls: 'fa fa-fw fa-power-off',
 		disabled: stopped || suspended,
 		handler: function() {
-		    var msg = PVE.Utils.format_task_description('qmshutdown', vmid);
+		    var msg = Proxmox.Utils.format_task_description('qmshutdown', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -101,7 +101,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		iconCls: 'fa fa-fw fa-stop',
 		disabled: stopped,
 		handler: function() {
-		    var msg = PVE.Utils.format_task_description('qmstop', vmid);
+		    var msg = Proxmox.Utils.format_task_description('qmstop', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -141,13 +141,13 @@ Ext.define('PVE.qemu.CmdMenu', {
 		iconCls: 'fa fa-fw fa-file-o',
 		hidden: !caps.vms['VM.Allocate'],
 		handler: function() {
-		    var msg = PVE.Utils.format_task_description('qmtemplate', vmid);
+		    var msg = Proxmox.Utils.format_task_description('qmtemplate', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
 			}
 
-			PVE.Utils.API2Request({
+			Proxmox.Utils.API2Request({
 			     url: '/nodes/' + nodename + '/qemu/' + vmid + '/template',
 			     method: 'POST',
 			     failure: function(response, opts) {
@@ -162,7 +162,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		text: gettext('Console'),
 		iconCls: 'fa fa-fw fa-terminal',
 		handler: function() {
-		    PVE.Utils.API2Request({
+		    Proxmox.Utils.API2Request({
 			url: '/nodes/' + nodename + '/qemu/' + vmid + '/status/current',
 			failure: function(response, opts) {
 			    Ext.Msg.alert('Error', response.htmlStatus);

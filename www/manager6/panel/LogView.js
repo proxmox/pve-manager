@@ -85,12 +85,12 @@ Ext.define('PVE.panel.LogView', {
 	    req_params.since = Ext.Date.format(me.since_date, 'Y-m-d');
 	}
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: me.url,
 	    params: req_params,
 	    method: 'GET',
 	    success: function(response) {
-		PVE.Utils.setErrorMask(me, false);
+		Proxmox.Utils.setErrorMask(me, false);
 		var list = response.result.data;
 		var total = response.result.total;
 		var first = 0, last = 0;
@@ -113,7 +113,7 @@ Ext.define('PVE.panel.LogView', {
 	    },
 	    failure: function(response) {
 		var msg = response.htmlStatus;
-		PVE.Utils.setErrorMask(me, msg);
+		Proxmox.Utils.setErrorMask(me, msg);
 	    }
 	});
     },

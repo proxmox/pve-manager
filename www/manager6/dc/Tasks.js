@@ -107,7 +107,7 @@ Ext.define('PVE.dc.Tasks', {
 		    header: gettext("Description"), 
 		    dataIndex: 'upid', 
 		    flex: 1,		  
-		    renderer: PVE.Utils.render_upid
+		    renderer: Proxmox.Utils.render_upid
 		},
 		{ 
 		    header: gettext("Status"), 
@@ -124,7 +124,7 @@ Ext.define('PVE.dc.Tasks', {
 			    return 'OK';
 			}
 			// metaData.attr = 'style="color:red;"'; 
-			return PVE.Utils.errorText + ': ' + value;
+			return Proxmox.Utils.errorText + ': ' + value;
 		    }
 		}
 	    ],

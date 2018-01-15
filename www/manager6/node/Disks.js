@@ -60,7 +60,7 @@ Ext.define('PVE.node.DiskList', {
 		    }
 		}
 
-		return v || PVE.Utils.noText;
+		return v || Proxmox.Utils.noText;
 	    },
 	    dataIndex: 'used'
 	},
@@ -69,7 +69,7 @@ Ext.define('PVE.node.DiskList', {
 	    width: 100,
 	    align: 'right',
 	    sortable: true,
-	    renderer: PVE.Utils.format_size,
+	    renderer: Proxmox.Utils.format_size,
 	    dataIndex: 'size'
 	},
 	{
@@ -78,9 +78,9 @@ Ext.define('PVE.node.DiskList', {
 	    align: 'right',
 	    renderer: function(value) {
 		if (value) {
-		    return PVE.Utils.yesText;
+		    return Proxmox.Utils.yesText;
 		} else {
-		    return PVE.Utils.noText;
+		    return Proxmox.Utils.noText;
 		}
 	    },
 	    dataIndex: 'gpt'
@@ -194,7 +194,7 @@ Ext.define('PVE.node.DiskList', {
 
 	    handler: function() {
 		var rec = sm.getSelection()[0];
-		PVE.Utils.API2Request({
+		Proxmox.Utils.API2Request({
 		    url: '/api2/extjs/nodes/' + nodename + '/disks/initgpt',
 		    waitMsgTarget: me,
 		    method: 'POST',
@@ -214,7 +214,7 @@ Ext.define('PVE.node.DiskList', {
 	});
 
 	me.loadCount = 1; // avoid duplicate loadmask
-	PVE.Utils.monStoreErrors(me, store);
+	Proxmox.Utils.monStoreErrors(me, store);
 
 	Ext.apply(me, {
 	    store: store,
@@ -346,7 +346,7 @@ Ext.define('PVE.DiskSmartWindow', {
 	var grid = me.down('#smarts');
 	var text = me.down('#text');
 
-	PVE.Utils.monStoreErrors(grid, me.store);
+	Proxmox.Utils.monStoreErrors(grid, me.store);
 	me.mon(me.store, 'load', function(s, records, success) {
 	    if (success && records.length > 0) {
 		var rec = records[0];

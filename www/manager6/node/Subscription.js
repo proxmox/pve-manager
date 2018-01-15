@@ -82,7 +82,7 @@ Ext.define('PVE.node.Subscription', {
 	    items: view
 	});
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: '/api2/extjs/nodes/' + me.nodename + '/report',
 	    method: 'GET',
 	    waitMsgTarget: me,
@@ -142,7 +142,7 @@ Ext.define('PVE.node.Subscription', {
 	    },
 	    checktime: {
 		header: gettext('Last checked'),
-		renderer: PVE.Utils.render_timestamp
+		renderer: Proxmox.Utils.render_timestamp
 	    },
 	    nextduedate: {
 		header: gettext('Next due date')
@@ -166,7 +166,7 @@ Ext.define('PVE.node.Subscription', {
 		{
 		    text: gettext('Check'),
 		    handler: function() {
-			PVE.Utils.API2Request({
+			Proxmox.Utils.API2Request({
 			    params: { force: 1 },
 			    url: baseurl,
 			    method: 'POST',
@@ -181,7 +181,7 @@ Ext.define('PVE.node.Subscription', {
 		{
 		    text: gettext('System Report'),
 		    handler: function() {
-			PVE.Utils.checked_command(function (){ me.showReport(); });
+			Proxmox.Utils.checked_command(function (){ me.showReport(); });
 		    }
 		}
 	    ],

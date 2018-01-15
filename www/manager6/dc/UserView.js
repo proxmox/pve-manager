@@ -186,14 +186,14 @@ Ext.define('PVE.dc.UserView', {
 		    header: gettext('Enabled'),
 		    width: 80,
 		    sortable: true,
-		    renderer: PVE.Utils.format_boolean,
+		    renderer: Proxmox.Utils.format_boolean,
 		    dataIndex: 'enable'
 		},
 		{
 		    header: gettext('Expire'),
 		    width: 80,
 		    sortable: true,
-		    renderer: PVE.Utils.format_expire, 
+		    renderer: Proxmox.Utils.format_expire, 
 		    dataIndex: 'expire'
 		},
 		{

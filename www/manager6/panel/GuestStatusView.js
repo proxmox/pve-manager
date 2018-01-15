@@ -75,7 +75,7 @@ Ext.define('PVE.panel.GuestStatusView', {
 
 	var text = "";
 	if (Number(uptime) > 0) {
-	    text = " (" + gettext('Uptime') + ': ' + PVE.Utils.format_duration_long(uptime)
+	    text = " (" + gettext('Uptime') + ': ' + Proxmox.Utils.format_duration_long(uptime)
 		+ ')';
 	}
 

@@ -115,7 +115,7 @@ Ext.define('PVE.panel.StatusView', {
 	    throw "no title given";
 	}
 
-	PVE.Utils.monStoreErrors(me, me.rstore);
+	Proxmox.Utils.monStoreErrors(me, me.rstore);
 
 	me.callParent();
 

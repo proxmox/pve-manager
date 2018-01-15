@@ -20,14 +20,14 @@ Ext.define('PVE.storage.StatusView', {
 	    title: gettext('Enabled'),
 	    printBar: false,
 	    textField: 'disabled',
-	    renderer: PVE.Utils.format_neg_boolean
+	    renderer: Proxmox.Utils.format_neg_boolean
 	},
 	{
 	    itemId: 'active',
 	    title: gettext('Active'),
 	    printBar: false,
 	    textField: 'active',
-	    renderer: PVE.Utils.format_boolean
+	    renderer: Proxmox.Utils.format_boolean
 	},
 	{
 	    itemId: 'content',

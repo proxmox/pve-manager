@@ -216,7 +216,7 @@ Ext.define('PVE.grid.BackupView', {
 		{
 		    header: gettext('Size'),
 		    width: 100,
-		    renderer: PVE.Utils.format_size,
+		    renderer: Proxmox.Utils.format_size,
 		    dataIndex: 'size'
 		}
 	    ]

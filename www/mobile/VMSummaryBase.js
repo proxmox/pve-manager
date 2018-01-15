@@ -42,7 +42,7 @@ Ext.define('PVE.VMSummaryBase', {
 		    '<tr><td>Status:</td><td>{[this.status(values)]}</td></tr>',
 		    '<tr><td>Memory:</td><td>{[this.meminfo(values)]}</td></tr>',
 		    '<tr><td>CPU:</td><td>{[this.cpuinfo(values)]}</td></tr>',
-		    '<tr><td>Uptime:</td><td>{[PVE.Utils.format_duration_long' +
+		    '<tr><td>Uptime:</td><td>{[Proxmox.Utils.format_duration_long' +
 			'(values.uptime)]}</td></tr>',
 		    '</table>',
 		    {
@@ -50,8 +50,8 @@ Ext.define('PVE.VMSummaryBase', {
 			    if (!Ext.isDefined(values.mem)) {
 				return '-';
 			    }
-			    return PVE.Utils.format_size(values.mem || 0) + " of " +
-				PVE.Utils.format_size(values.maxmem);
+			    return Proxmox.Utils.format_size(values.mem || 0) + " of " +
+				Proxmox.Utils.format_size(values.maxmem);
 			},
 			cpuinfo: function(values) {
 			    if (!Ext.isDefined(values.cpu)) {

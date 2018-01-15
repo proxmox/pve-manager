@@ -22,7 +22,7 @@ Ext.define('PVE.window.Clone', {
     statics: {
 	// display a snapshot selector only if needed
 	wrap: function(nodename, vmid, isTemplate) {
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		url: '/nodes/' + nodename + '/qemu/' + vmid +'/snapshot',
 		failure: function(response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
@@ -74,7 +74,7 @@ Ext.define('PVE.window.Clone', {
 	    }
 	}
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    params: params,
 	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/clone',
 	    waitMsgTarget: me,
@@ -110,7 +110,7 @@ Ext.define('PVE.window.Clone', {
 	    params.snapname = snapname;
 	}
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    waitMsgTarget: me,
 	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/feature',
 	    params: params,

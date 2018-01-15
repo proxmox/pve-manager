@@ -164,7 +164,7 @@ Ext.define('PVE.node.CephPoolList', {
 
 	var store = Ext.create('PVE.data.DiffStore', { rstore: rstore });
 
-	PVE.Utils.monStoreErrors(me, rstore);
+	Proxmox.Utils.monStoreErrors(me, rstore);
 
 	var create_btn = new Ext.Button({
 	    text: gettext('Create'),

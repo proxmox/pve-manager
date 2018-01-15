@@ -11,7 +11,7 @@ Ext.define('PVE.NodeInfo', {
 	    '<tr><td>Version:</td><td>{pveversion}</td></tr>',
 	    '<tr><td>Memory:</td><td>{[this.meminfo(values)]}</td></tr>',
 	    '<tr><td>CPU:</td><td>{[this.cpuinfo(values)]}</td></tr>',
-	    '<tr><td>Uptime:</td><td>{[PVE.Utils.format_duration_long(values.uptime)]}</td></tr>',
+	    '<tr><td>Uptime:</td><td>{[Proxmox.Utils.format_duration_long(values.uptime)]}</td></tr>',
 	    '</table>',
 	    {
 		meminfo: function(values) {
@@ -19,7 +19,7 @@ Ext.define('PVE.NodeInfo', {
 		    if (!d) {
 			return '-';
 		    }
-		    return PVE.Utils.format_size(d.used || 0) + " of " + PVE.Utils.format_size(d.total);
+		    return Proxmox.Utils.format_size(d.used || 0) + " of " + Proxmox.Utils.format_size(d.total);
 		},
 		cpuinfo: function(values) {
 		    if (!values.cpuinfo) {
@@ -84,7 +84,7 @@ Ext.define('PVE.NodeSummary', {
 			    if (!values.uptime) {
 				return '-';
 			    }
-			    return PVE.Utils.format_size(values.mem);
+			    return Proxmox.Utils.format_size(values.mem);
 			},
 			cpuinfo: function(values) {
 			    if (!values.uptime) {

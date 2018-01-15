@@ -80,14 +80,14 @@ Ext.define('PVE.ha.GroupsView', {
 		    header: 'restricted',
 		    width: 100,
 		    sortable: true,
-		    renderer: PVE.Utils.format_boolean,
+		    renderer: Proxmox.Utils.format_boolean,
 		    dataIndex: 'restricted'
 		},
 		{
 		    header: 'nofailback',
 		    width: 100,
 		    sortable: true,
-		    renderer: PVE.Utils.format_boolean,
+		    renderer: Proxmox.Utils.format_boolean,
 		    dataIndex: 'nofailback'
 		},
 		{

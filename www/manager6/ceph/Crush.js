@@ -10,7 +10,7 @@ Ext.define('PVE.node.CephCrushMap', {
     load: function() {
 	var me = this;
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: me.url,
 	    waitMsgTarget: me,
 	    failure: function(response, opts) {
