@@ -361,28 +361,28 @@ Ext.define('PVE.qemu.HardwareView', {
 	    win.on('destroy', reload);
 	};
 
-	var edit_btn = new PVE.button.Button({
+	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    selModel: sm,
 	    disabled: true,
 	    handler: run_editor
         });
 
-	var resize_btn = new PVE.button.Button({
+	var resize_btn = new Proxmox.button.Button({
 	    text: gettext('Resize disk'),
 	    selModel: sm,
 	    disabled: true,
 	    handler: run_resize
 	});
 
-	var move_btn = new PVE.button.Button({
+	var move_btn = new Proxmox.button.Button({
 	    text: gettext('Move disk'),
 	    selModel: sm,
 	    disabled: true,
 	    handler: run_move
 	});
 
-	var diskthrottle_btn = new PVE.button.Button({
+	var diskthrottle_btn = new Proxmox.button.Button({
 	    text: gettext('Disk Throttle'),
 	    selModel: sm,
 	    disabled: true,
@@ -394,7 +394,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    handler: run_cpuoptions
 	});
 
-	var remove_btn = new PVE.button.Button({
+	var remove_btn = new Proxmox.button.Button({
 	    text: gettext('Remove'),
 	    defaultText: gettext('Remove'),
 	    altText: gettext('Detach'),
@@ -451,7 +451,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    }
 	});
 
-	var revert_btn = new PVE.button.Button({
+	var revert_btn = new Proxmox.button.Button({
 	    text: gettext('Revert'),
 	    selModel: sm,
 	    disabled: true,

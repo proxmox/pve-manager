@@ -105,7 +105,7 @@ Ext.define('PVE.node.CephMonList', {
 	    });
 	};
 
-	var start_btn = new PVE.button.Button({
+	var start_btn = new Proxmox.button.Button({
 	    text: gettext('Start'),
 	    selModel: sm,
 	    disabled: true,
@@ -114,7 +114,7 @@ Ext.define('PVE.node.CephMonList', {
 	    }
 	});
 
-	var stop_btn = new PVE.button.Button({
+	var stop_btn = new Proxmox.button.Button({
 	    text: gettext('Stop'),
 	    selModel: sm,
 	    disabled: true,
@@ -133,7 +133,7 @@ Ext.define('PVE.node.CephMonList', {
 	    }
 	});
 
-	var remove_btn = new PVE.button.Button({
+	var remove_btn = new Proxmox.button.Button({
 	    text: gettext('Remove'),
 	    selModel: sm,
 	    disabled: true,

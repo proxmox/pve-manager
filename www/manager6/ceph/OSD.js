@@ -413,7 +413,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	    });
 	};
 
-	var create_btn = new PVE.button.Button({
+	var create_btn = new Proxmox.button.Button({
 	    text: gettext('Create') + ': OSD',
 	    handler: function() {
 		var rec = sm.getSelection()[0];

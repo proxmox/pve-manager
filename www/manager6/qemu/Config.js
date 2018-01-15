@@ -77,7 +77,7 @@ Ext.define('PVE.qemu.Config', {
 	    iconCls: 'fa fa-send-o'
 	});
 
-	var moreBtn = Ext.create('PVE.button.Button', {
+	var moreBtn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('More'),
 	    menu: { items: [
 		{

@@ -106,7 +106,7 @@ Ext.define('PVE.storage.TemplateDownload', {
 
 	var sm = grid.getSelectionModel();
 
-	var submitBtn = Ext.create('PVE.button.Button', {
+	var submitBtn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Download'),
 	    disabled: true,
 	    selModel: sm,
@@ -373,7 +373,7 @@ Ext.define('PVE.storage.ContentView', {
 
 	PVE.Utils.monStoreErrors(me, store);
 
-	var templateButton = Ext.create('PVE.button.Button',{
+	var templateButton = Ext.create('Proxmox.button.Button',{
 	    itemId: 'tmpl-btn',
 	    text: gettext('Templates'),
 	    handler: function() {
@@ -386,7 +386,7 @@ Ext.define('PVE.storage.ContentView', {
 	    }
 	});
 
-	var uploadButton = Ext.create('PVE.button.Button', {
+	var uploadButton = Ext.create('Proxmox.button.Button', {
 	    contents : ['iso','vztmpl'],
 	    text: gettext('Upload'),
 	    handler: function() {
@@ -410,7 +410,7 @@ Ext.define('PVE.storage.ContentView', {
 	    selModel: sm,
 	    tbar: [
 		{
-		    xtype: 'pveButton',
+		    xtype: 'proxmoxButton',
 		    text: gettext('Restore'),
 		    selModel: sm,
 		    disabled: true,
@@ -451,7 +451,7 @@ Ext.define('PVE.storage.ContentView', {
 		templateButton,
 		uploadButton,
 		{
-		    xtype: 'pveButton',
+		    xtype: 'proxmoxButton',
 		    text: gettext('Show Configuration'),
 		    disabled: true,
 		    selModel: sm,

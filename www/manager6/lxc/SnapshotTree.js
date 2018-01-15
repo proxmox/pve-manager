@@ -145,7 +145,7 @@ Ext.define('PVE.lxc.SnapshotTree', {
 	    }
 	};
 
-	var editBtn = new PVE.button.Button({
+	var editBtn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
@@ -153,7 +153,7 @@ Ext.define('PVE.lxc.SnapshotTree', {
 	    handler: run_editor
 	});
 
-	var rollbackBtn = new PVE.button.Button({
+	var rollbackBtn = new Proxmox.button.Button({
 	    text: gettext('Rollback'),
 	    disabled: true,
 	    selModel: sm,
@@ -188,7 +188,7 @@ Ext.define('PVE.lxc.SnapshotTree', {
 	    }
 	});
 
-	var removeBtn = new PVE.button.Button({
+	var removeBtn = new Proxmox.button.Button({
 	    text: gettext('Remove'),
 	    disabled: true,
 	    selModel: sm,

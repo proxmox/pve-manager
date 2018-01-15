@@ -170,7 +170,7 @@ Ext.define('PVE.grid.PoolMembers', {
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
-	var remove_btn = new PVE.button.Button({
+	var remove_btn = new Proxmox.button.Button({
 	    text: gettext('Remove'),
 	    disabled: true,
 	    selModel: sm,

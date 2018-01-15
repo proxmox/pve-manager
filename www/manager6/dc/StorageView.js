@@ -70,7 +70,7 @@ Ext.define('PVE.dc.StorageView', {
 	    win.on('destroy', reload);
 	};
 
-	var edit_btn = new PVE.button.Button({
+	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,

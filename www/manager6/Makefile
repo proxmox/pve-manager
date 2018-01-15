@@ -5,7 +5,6 @@ JSSRC= 				                 	\
 	Toolkit.js					\
 	Parser.js					\
 	StateProvider.js				\
-	button/Button.js				\
 	menu/MenuItem.js				\
 	button/ConsoleButton.js				\
 	button/Split.js					\

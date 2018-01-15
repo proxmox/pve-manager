@@ -179,7 +179,7 @@ Ext.define('PVE.node.CephPoolList', {
 	    }
 	});
 
-	var destroy_btn = Ext.create('PVE.button.Button', {
+	var destroy_btn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Destroy'),
 	    selModel: sm,
 	    disabled: true,

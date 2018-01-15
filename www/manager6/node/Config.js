@@ -80,7 +80,7 @@ Ext.define('PVE.node.Config', {
 	    })
 	});
 
-	var restartBtn = Ext.create('PVE.button.Button', {
+	var restartBtn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Restart'),
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
 	    dangerous: true,
@@ -91,7 +91,7 @@ Ext.define('PVE.node.Config', {
 	    iconCls: 'fa fa-undo'
 	});
 
-	var shutdownBtn = Ext.create('PVE.button.Button', {
+	var shutdownBtn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
 	    dangerous: true,

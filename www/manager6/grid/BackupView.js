@@ -134,7 +134,7 @@ Ext.define('PVE.grid.BackupView', {
 	    }
 	});
 
-	var restore_btn = Ext.create('PVE.button.Button', {
+	var restore_btn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Restore'),
 	    disabled: true,
 	    selModel: sm,
@@ -175,7 +175,7 @@ Ext.define('PVE.grid.BackupView', {
 	    }
 	});
 
-	var config_btn = Ext.create('PVE.button.Button', {
+	var config_btn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Show Configuration'),
 	    disabled: true,
 	    selModel: sm,

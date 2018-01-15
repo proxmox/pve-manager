@@ -395,7 +395,7 @@ Ext.define('PVE.lxc.NetworkView', {
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
-	var remove_btn = new PVE.button.Button({
+	var remove_btn = new Proxmox.button.Button({
 	    text: gettext('Remove'),
 	    disabled: true,
 	    selModel: sm,
@@ -442,7 +442,7 @@ Ext.define('PVE.lxc.NetworkView', {
 	    win.show();
 	};
 
-	var edit_btn = new PVE.button.Button({
+	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    selModel: sm,
 	    disabled: true,

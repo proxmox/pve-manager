@@ -108,7 +108,7 @@ Ext.define('PVE.dc.UserView', {
             win.show();
 	};
 
-	var edit_btn = new PVE.button.Button({
+	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    enableFn: function(rec) {
@@ -118,7 +118,7 @@ Ext.define('PVE.dc.UserView', {
 	    handler: run_editor
 	});
 
-	var pwchange_btn = new PVE.button.Button({
+	var pwchange_btn = new Proxmox.button.Button({
 	    text: gettext('Password'),
 	    disabled: true,
 	    selModel: sm,

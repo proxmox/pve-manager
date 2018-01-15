@@ -186,7 +186,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    });
 	};
 
-	var edit_btn = new PVE.button.Button({
+	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    selModel: sm,
 	    disabled: true,
@@ -200,14 +200,14 @@ Ext.define('PVE.lxc.RessourceView', {
 	    handler: run_editor
 	});
 
-	var resize_btn = new PVE.button.Button({
+	var resize_btn = new Proxmox.button.Button({
 	    text: gettext('Resize disk'),
 	    selModel: sm,
 	    disabled: true,
 	    handler: run_resize
 	});
 
-	var remove_btn = new PVE.button.Button({
+	var remove_btn = new Proxmox.button.Button({
 	    text: gettext('Remove'),
 	    selModel: sm,
 	    disabled: true,

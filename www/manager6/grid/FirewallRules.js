@@ -516,7 +516,7 @@ Ext.define('PVE.FirewallRules', {
 	    win.on('destroy', reload);
 	};
 
-	me.editBtn = Ext.create('PVE.button.Button',{
+	me.editBtn = Ext.create('Proxmox.button.Button',{
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
@@ -561,7 +561,7 @@ Ext.define('PVE.FirewallRules', {
 	    win.on('destroy', reload);
 	};
 
-	me.copyBtn = Ext.create('PVE.button.Button',{
+	me.copyBtn = Ext.create('Proxmox.button.Button',{
 	    text: gettext('Copy'),
 	    selModel: sm,
 	    enableFn: function(rec) {

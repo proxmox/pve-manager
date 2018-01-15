@@ -92,14 +92,14 @@ Ext.define('PVE.IPSetList', {
 	    win.on('destroy', reload);
 	};
 
-	me.editBtn = new PVE.button.Button({
+	me.editBtn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
 	    handler: run_editor
 	});
 
-	me.addBtn = new PVE.button.Button({
+	me.addBtn = new Proxmox.button.Button({
 	    text: gettext('Create'),
 	    handler: function() {
 		sm.deselectAll();
@@ -313,14 +313,14 @@ Ext.define('PVE.IPSetGrid', {
 	    win.on('destroy', reload);
 	};
 
-	me.editBtn = new PVE.button.Button({
+	me.editBtn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
 	    handler: run_editor
 	});
 
-	me.addBtn = new PVE.button.Button({
+	me.addBtn = new Proxmox.button.Button({
 	    text: gettext('Add'),
 	    disabled: true,
 	    handler: function() {

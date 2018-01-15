@@ -153,14 +153,14 @@ Ext.define('PVE.node.DiskList', {
 	    ]
 	});
 
-	var reloadButton = Ext.create('PVE.button.Button', {
+	var reloadButton = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Reload'),
 	    handler: function() {
 		me.store.load();
 	    }
 	});
 
-	var smartButton = Ext.create('PVE.button.Button', {
+	var smartButton = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Show S.M.A.R.T. values'),
 	    selModel: sm,
 	    enableFn: function() {
@@ -178,7 +178,7 @@ Ext.define('PVE.node.DiskList', {
 	    }
 	});
 
-	var initButton = Ext.create('PVE.button.Button', {
+	var initButton = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Initialize Disk with GPT'),
 	    selModel: sm,
 	    enableFn: function() {

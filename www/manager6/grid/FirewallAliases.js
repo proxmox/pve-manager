@@ -134,7 +134,7 @@ Ext.define('PVE.FirewallAliases', {
 	    win.on('destroy', reload);
 	};
 
-	me.editBtn = new PVE.button.Button({
+	me.editBtn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,

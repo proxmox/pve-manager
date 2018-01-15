@@ -247,7 +247,7 @@ Ext.define('PVE.grid.ReplicaView', {
 	    handler: 'addJob'
 	},
 	{
-	    xtype: 'pveButton',
+	    xtype: 'proxmoxButton',
 	    text: gettext('Edit'),
 	    itemId: 'editButton',
 	    handler: 'editJob',
@@ -261,14 +261,14 @@ Ext.define('PVE.grid.ReplicaView', {
 	    callback: 'reload'
 	},
 	{
-	    xtype: 'pveButton',
+	    xtype: 'proxmoxButton',
 	    text: gettext('Log'),
 	    itemId: 'logButton',
 	    handler: 'showLog',
 	    disabled: true
 	},
 	{
-	    xtype: 'pveButton',
+	    xtype: 'proxmoxButton',
 	    text: gettext('Schedule now'),
 	    itemId: 'scheduleNowButton',
 	    handler: 'scheduleJobNow',

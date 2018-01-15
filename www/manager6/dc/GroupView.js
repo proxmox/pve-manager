@@ -46,7 +46,7 @@ Ext.define('PVE.dc.GroupView', {
             win.show();
 	};
 
-	var edit_btn = new PVE.button.Button({
+	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,

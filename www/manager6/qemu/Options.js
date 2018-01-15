@@ -344,7 +344,7 @@ Ext.define('PVE.qemu.Options', {
 	    handler: run_editor
 	});
 
-        var revert_btn = new PVE.button.Button({
+        var revert_btn = new Proxmox.button.Button({
             text: gettext('Revert'),
             disabled: true,
             handler: function() {
