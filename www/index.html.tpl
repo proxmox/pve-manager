@@ -23,6 +23,14 @@
     <script type="text/javascript" src="/pve2/ext6/ext-all.js"></script>
     <script type="text/javascript" src="/pve2/ext6/charts.js"></script>
     [% END %]
+    <script type="text/javascript">
+    Proxmox = {
+	Setup: { auth_cookie_name: 'PVEAuthCookie' },
+	UserName: '[% username %]',
+	CSRFPreventionToken: '[% token %]'
+    };
+    </script>
+    <script type="text/javascript" src="/proxmoxlib.js?ver=[% wtversion %]"></script>
     <script type="text/javascript" src="/pve2/js/pvemanagerlib.js?ver=[% version %]"></script>
     <script type="text/javascript" src="/pve2/ext6/locale/locale-[% lang %].js"></script>
 

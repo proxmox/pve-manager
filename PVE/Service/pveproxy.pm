@@ -52,6 +52,7 @@ my $basedirs = {
     docs => '/usr/share/pve-docs',
     fontawesome => '/usr/share/fonts-font-awesome',
     xtermjs => '/usr/share/pve-xtermjs',
+    widgettoolkit => '/usr/share/javascript/proxmox-widget-toolkit',
 };
 
 sub init {
@@ -112,6 +113,9 @@ sub init {
 	    # avoid authentication when accessing favicon
 	    '/favicon.ico' => {
 		file => "$basedirs->{manager}/images/favicon.ico",
+	    },
+	    '/proxmoxlib.js' => {
+		file => "$basedirs->{widgettoolkit}/proxmoxlib.js",
 	    },
 	},
 	dirs => $dirs,
@@ -209,6 +213,12 @@ sub get_index {
     my $ver = PVE::pvecfg::version();
     my $release = PVE::pvecfg::release();
 
+    my $wtversionraw = PVE::Tools::file_read_firstline("$basedirs->{widgettoolkit}/proxmoxlib.js");
+    my $wtversion;
+    if ($wtversionraw =~ m|^// (.*)$|) {
+	$wtversion = $1;
+    };
+
     my $vars = {
 	lang => $lang,
 	langfile => $langfile,
@@ -218,6 +228,7 @@ sub get_index {
 	nodename => $nodename,
 	debug => $server->{debug},
 	version => "$ver-$release",
+	wtversion => $wtversion,
     };
 
     # by default, load the normal index
