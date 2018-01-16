@@ -116,7 +116,7 @@ Ext.define('PVE.dc.UserEdit', {
 		xtype: 'textfield',
 		name: 'email',
 		fieldLabel: gettext('E-Mail'),
-		vtype: 'pveMail'
+		vtype: 'proxmoxMail'
 	    }
 	];
 

@@ -28,7 +28,7 @@ Ext.define('PVE.dc.OptionView', {
 	});
 	me.add_text_row('email_from', gettext('Email from address'), {
 	    deleteEmpty: true,
-	    vtype: 'pveMail',
+	    vtype: 'proxmoxMail',
 	    defaultValue: 'root@$hostname'
 	});
 	me.add_text_row('mac_prefix', gettext('MAC address prefix'), {
