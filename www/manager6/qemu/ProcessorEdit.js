@@ -5,15 +5,27 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 
     insideWizard: false,
 
+    // defines the possible cpu flags and their labels
+    flagsAvail: ['pcid', 'spec-ctrl'],
+    flagLabels: ['PCID', 'SPEC-CTRL'],
+
     onGetValues: function(values) {
 	var me = this;
 
 	// build the cpu options:
 	me.cpu.cputype = values.cputype;
 
-	// as long as flags is not a textfield, we
-	// have to manuall set the value
-	me.cpu.flags = (values.flags)?'+pcid':undefined;
+	var flags = [];
+
+	me.flagsAvail.forEach(function(flag) {
+	    if (values[flag]) {
+		flags.push('+' + flag.toString());
+	    }
+	    delete values[flag];
+	});
+
+	me.cpu.flags = flags.length ? flags.join(';') : undefined;
+
 	delete values.cputype;
 	delete values.flags;
 	var cpustring = PVE.Parser.printQemuCpu(me.cpu);
@@ -102,19 +114,19 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 		fieldLabel: gettext('Total cores'),
 		name: 'totalcores',
 		value: '1'
-	    },
-	    {
-		// will be a textfield probably someday,
-		// so we name it flags
+	    }
+	];
+
+	me.flagsAvail.forEach(function(flag, i) {
+	    me.column2.push({
 		hidden: me.insideWizard,
 		disabled: me.insideWizard,
 		xtype: 'pvecheckbox',
-		fieldLabel: 'PCID',
-		name: 'flags',
+		fieldLabel: me.flagLabels[i] || flag,
+		name: flag,
 		uncheckedValue: 0
-	    }
-
-	];
+	    });
+	});
 
 	me.callParent();
     }
@@ -143,9 +155,14 @@ Ext.define('PVE.qemu.ProcessorEdit', {
 		    var cpu = PVE.Parser.parseQemuCpu(value);
 		    ipanel.cpu = cpu;
 		    data.cputype = cpu.cputype;
-		    /*jslint confusion: true*/
-		    // .flags is boolean and string
-		    data.flags = (cpu.flags === '+pcid');
+		    if (cpu.flags) {
+			var flags = cpu.flags.split(';');
+			flags.forEach(function(flag) {
+			    var sign = flag.substr(0,1);
+			    flag = flag.substr(1);
+			    data[flag] = (sign === '+');
+			});
+		    }
 		}
 		me.setValues(data);
 	    }
