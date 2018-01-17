@@ -822,8 +822,7 @@ __PACKAGE__->register_method ({
 
 	if ($user eq 'root@pam') {
 	    if ($param->{upgrade}) {
-		my $upgradecmd = "pveupgrade --shell";
-		$concmd = [ '/bin/bash', '-c', $upgradecmd ];
+		$concmd = [ '/usr/bin/pveupgrade', '--shell' ];
 	    } else {
 		$concmd = [ '/bin/login', '-f', 'root' ];
 	    }
