@@ -1,3 +1,11 @@
+pve-manager (5.1-43) stable; urgency=medium
+
+  * add spec-ctrl cpu flag checkbox
+
+  * add defaultSize parameter for DiskStorageSelector and set it to 8 for lxc
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 17 Jan 2018 09:06:28 +0100
+
 pve-manager (5.1-42) stable; urgency=medium
 
   * fix #1605: reflect backend values of minimum container memory limit
