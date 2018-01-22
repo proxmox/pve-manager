@@ -49,6 +49,7 @@ my $basedirs = {
     novnc => '/usr/share/novnc-pve',
     extjs => '/usr/share/javascript/extjs',
     manager => '/usr/share/pve-manager',
+    i18n => '/usr/share/pve-i18n',
     docs => '/usr/share/pve-docs',
     fontawesome => '/usr/share/fonts-font-awesome',
     xtermjs => '/usr/share/pve-xtermjs',
@@ -71,7 +72,7 @@ sub init {
 
     my $dirs = {};
 
-    add_dirs($dirs, '/pve2/locale/', "$basedirs->{manager}/locale/");
+    add_dirs($dirs, '/pve2/locale/', "$basedirs->{i18n}/");
     add_dirs($dirs, '/pve2/touch/', "$basedirs->{manager}/touch/");
     add_dirs($dirs, '/pve2/ext6/', "$basedirs->{extjs}/");
     add_dirs($dirs, '/pve2/images/' =>  "$basedirs->{manager}/images/");
@@ -206,7 +207,7 @@ sub get_index {
 
     my $langfile = 0;
 
-    if (-f  "$basedirs->{manager}/locale/pve-lang-$lang.js") {
+    if (-f  "$basedirs->{i18n}/pve-lang-$lang.js") {
 	$langfile = 1;
     }
 
