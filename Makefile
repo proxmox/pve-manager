@@ -4,7 +4,7 @@ export SOURCE_DATE_EPOCH ?= $(shell dpkg-parsechangelog -STimestamp)
 
 DESTDIR=
 
-SUBDIRS = aplinfo PVE bin www po
+SUBDIRS = aplinfo PVE bin www
 
 ARCH:=$(shell dpkg-architecture -qDEB_BUILD_ARCH)
 GITVERSION:=$(shell cat .git/refs/heads/master)
@@ -41,10 +41,6 @@ $(DEB):
 upload: ${DEB} check
 	./repoid.pl .git check
 	tar cf - ${DEB} | ssh -X repoman@repo.proxmox.com upload --product pve --dist stretch
-
-#.PHONY: poupload
-#poupload:
-#	rsync po/*.po po/pve-manager.pot pve.proxmox.com:/home/ftp/sources/po-files/
 
 .PHONY: install
 install: country.dat vzdump.conf vzdump-hook-script.pl pve-apt.conf mtu bridgevlan bridgevlanport vlan vlan-down
