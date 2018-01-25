@@ -19,8 +19,8 @@ Ext.define('PVE.Workspace', {
     updateLoginData: function(loginData) {
 	var me = this;
 	me.loginData = loginData;
-	PVE.CSRFPreventionToken = loginData.CSRFPreventionToken;
-	PVE.UserName = loginData.username;
+	Proxmox.CSRFPreventionToken = loginData.CSRFPreventionToken;
+	Proxmox.UserName = loginData.username;
 
 	if (loginData.cap) {
 	    Ext.state.Manager.set('GuiCap', loginData.cap);
@@ -37,7 +37,7 @@ Ext.define('PVE.Workspace', {
 	var me = this;
 
 	Proxmox.Utils.authClear();
-	PVE.UserName = null;
+	Proxmox.UserName = null;
 	me.loginData = null;
 
 	if (!me.login) {
@@ -78,13 +78,13 @@ Ext.define('PVE.Workspace', {
 	Ext.TaskManager.start({
 	    run: function() {
 		var ticket = Proxmox.Utils.authOK();
-		if (!ticket || !PVE.UserName) {
+		if (!ticket || !Proxmox.UserName) {
 		    return;
 		}
 
 		Ext.Ajax.request({
 		    params: { 
-			username: PVE.UserName,
+			username: Proxmox.UserName,
 			password: ticket
 		    },
 		    url: '/api2/json/access/ticket',
@@ -164,8 +164,8 @@ Ext.define('PVE.StdWorkspace', {
 
 	var ui = me.query('#userinfo')[0];
 
-	if (PVE.UserName) {
-	    var msg =  Ext.String.format(gettext("You are logged in as {0}"), "'" + PVE.UserName + "'");
+	if (Proxmox.UserName) {
+	    var msg =  Ext.String.format(gettext("You are logged in as {0}"), "'" + Proxmox.UserName + "'");
 	    ui.update('<div class="x-unselectable" style="white-space:nowrap;">' + msg + '</div>');
 	} else {
 	    ui.update('');

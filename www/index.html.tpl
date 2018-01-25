@@ -36,8 +36,6 @@
 
     <script type="text/javascript">
     if (typeof(PVE) === 'undefined') PVE = {};
-    PVE.UserName = '[% username %]'
-    PVE.CSRFPreventionToken = '[% token %]';
     Ext.History.fieldid = 'x-history-field';
     Ext.onReady(function() { Ext.create('PVE.StdWorkspace');});
     </script>

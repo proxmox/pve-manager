@@ -20,15 +20,6 @@ Ext.Ajax.defaultHeaders = {
     'Accept': 'application/json'
 };
 
-Ext.Ajax.on('beforerequest', function(conn, options) {
-    if (PVE.CSRFPreventionToken) {
-	if (!options.headers) {
-	    options.headers = {};
-	}
-	options.headers.CSRFPreventionToken = PVE.CSRFPreventionToken;
-    }
-});
-
 Ext.define('PVE.Utils', { utilities: {
 
     // this singleton contains miscellaneous utilities

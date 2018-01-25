@@ -107,8 +107,8 @@ Ext.define('PVE.Workspace', { statics: {
 
     updateLoginData: function(loginData) {
 	PVE.Workspace.loginData = loginData;
-	PVE.CSRFPreventionToken = loginData.CSRFPreventionToken;
-	PVE.UserName = loginData.username;
+	Proxmox.CSRFPreventionToken = loginData.CSRFPreventionToken;
+	Proxmox.UserName = loginData.username;
 
 	// creates a session cookie (expire = null) 
 	// that way the cookie gets deleted after browser window close
@@ -119,7 +119,7 @@ Ext.define('PVE.Workspace', { statics: {
 
     showLogin: function() {
 	Proxmox.Utils.authClear();
-	PVE.UserName = null;
+	Proxmox.UserName = null;
 	PVE.Workspace.loginData = null;
 
 	PVE.Workspace.gotoPage('');

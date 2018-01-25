@@ -217,7 +217,7 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'proxmoxNodeAPT',
 		    upgradeBtn: {
 			xtype: 'pveConsoleButton',
-			disabled: PVE.UserName !== 'root@pam',
+			disabled: Proxmox.UserName !== 'root@pam',
 			text: gettext('Upgrade'),
 			consoleType: 'upgrade',
 			nodename: nodename
