@@ -52,7 +52,7 @@ Ext.define('PVE.window.MPResize', {
 	    maxValue: 128*1024,
 	    decimalPrecision: 3,
 	    value: '0',
-	    fieldLabel: gettext('Size Increment') + ' (GB)',
+	    fieldLabel: gettext('Size Increment') + ' (GiB)',
 	    allowBlank: false
 	});
 

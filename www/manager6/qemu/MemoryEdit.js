@@ -62,7 +62,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		xtype: 'pveMemoryField',
 		name: 'memory',
 		hotplug: me.hotplug,
-		fieldLabel: gettext('Memory') + ' (MB)',
+		fieldLabel: gettext('Memory') + ' (MiB)',
 		labelAlign: 'right',
 		labelWidth: labelWidth
 	    },
@@ -94,7 +94,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		hotplug: me.hotplug,
 		disabled: true,
 		value: '1024',
-		fieldLabel: gettext('Maximum memory') + ' (MB)',
+		fieldLabel: gettext('Maximum memory') + ' (MiB)',
 		labelAlign: 'right',
 		labelWidth: labelWidth,
 		listeners: {
@@ -116,7 +116,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		maxValue: 512*1024,
 		value: '512',
 		step: 32,
-		fieldLabel: gettext('Minimum memory') + ' (MB)',
+		fieldLabel: gettext('Minimum memory') + ' (MiB)',
 		labelAlign: 'right',
 		labelWidth: labelWidth,
 		allowBlank: false
