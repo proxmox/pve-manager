@@ -1,3 +1,11 @@
+pve-manager (5.1-44) stable; urgency=medium
+
+  * fix upgrade of other cluster nodes via xtermjs not working properly
+
+  * switch to using pve-i18n and proxmox-widget-toolkit
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 25 Jan 2018 13:57:12 +0100
+
 pve-manager (5.1-43) stable; urgency=medium
 
   * add spec-ctrl cpu flag checkbox
