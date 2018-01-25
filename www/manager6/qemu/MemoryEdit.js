@@ -101,10 +101,16 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		    change: function(f, value) {
 			var bf = me.down('field[name=balloon]');
 			var balloon = bf.getValue();
+			bf.setMaxValue(value);
+			bf.validate();
+		    },
+		    blur: function(f) {
+			var value = f.getValue();
+			var bf = me.down('field[name=balloon]');
+			var balloon = bf.getValue();
 			if (balloon > value) {
 			    bf.setValue(value);
 			}
-			bf.setMaxValue(value);
 		    }
 		}
 	    },
