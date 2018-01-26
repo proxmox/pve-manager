@@ -18,6 +18,8 @@ Ext.define('PVE.qemu.Monitor', {
 	    throw "no VM ID specified";
 	}
 
+	var history = [];
+	var histNum = -1;
 	var lines = [];
 
 	var textbox = Ext.createWidget('panel', {
@@ -56,6 +58,14 @@ Ext.define('PVE.qemu.Monitor', {
 
 	var executeCmd = function(cmd) {
 	    addLine("# " + Ext.htmlEncode(cmd));
+	    if (cmd) {
+		history.unshift(cmd);
+		if (history.length > 20) {
+		    history.splice(20);
+		}
+	    }
+	    histNum = -1;
+
 	    refresh();
 	    Proxmox.Utils.API2Request({
 		params: { command: cmd },
@@ -96,14 +106,33 @@ Ext.define('PVE.qemu.Monitor', {
 			    refresh();
 			},
 			specialkey: function(f, e) {
-			    if (e.getKey() === e.ENTER) {
-				var cmd = f.getValue();
-				f.setValue('');
-				executeCmd(cmd);
-			    } else if (e.getKey() === e.PAGE_UP) {
-				textbox.scrollBy(0, -0.9*textbox.getHeight(), false);
-			    } else if (e.getKey() === e.PAGE_DOWN) {
-				textbox.scrollBy(0, 0.9*textbox.getHeight(), false);
+			    var key = e.getKey();
+			    switch (key) {
+				case e.ENTER:
+				    var cmd = f.getValue();
+				    f.setValue('');
+				    executeCmd(cmd);
+				    break;
+				case e.PAGE_UP:
+				    textbox.scrollBy(0, -0.9*textbox.getHeight(), false);
+				    break;
+				case e.PAGE_DOWN:
+				    textbox.scrollBy(0, 0.9*textbox.getHeight(), false);
+				    break;
+				case e.UP:
+				    if (histNum + 1 < history.length) {
+					f.setValue(history[++histNum]);
+				    }
+				    e.preventDefault();
+				    break;
+				case e.DOWN:
+				    if (histNum > 0) {
+					f.setValue(history[--histNum]);
+				    }
+				    e.preventDefault();
+				    break;
+				default:
+				    break;
 			    }
 			}
 		    }
