@@ -222,6 +222,7 @@
 .pve-itype-icon-pool,
 .pve-itype-icon-itype,
 .pve-itype-icon-usb,
+.pve-itype-icon-serial,
 .pve-itype-icon-pci
 {
     background-repeat: no-repeat;
@@ -338,6 +339,12 @@
 .pve-itype-icon-pci
 {
     background-image:url(../images/icon-pci.png);
+}
+
+.pve-itype-icon-serial
+{
+    background-size: 16px;
+    background-image:url(../images/icon-serial.svg);
 }
 
 /* displayfield minheight is wrong */
