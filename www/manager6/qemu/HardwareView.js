@@ -229,7 +229,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	}
 	for (i = 0; i < 8; i++) {
 	    rows["unused" + i.toString()] = {
-		group: 6,
+		group: 99,
 		tdCls: 'pve-itype-icon-storage',
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.HDEdit' : undefined,
 		header: gettext('Unused Disk') + ' ' + i.toString()
