@@ -36,6 +36,12 @@ Ext.define('PVE.widget.Info',{
     warningThreshold: 0.6,
     criticalThreshold: 0.9,
 
+    setPrintBar: function(enable) {
+	var me = this;
+	me.printBar = enable;
+	me.getComponent('progress').setVisible(enable);
+    },
+
     updateValue: function(text, usage) {
 	var me = this;
 	var label = me.getComponent('label');
