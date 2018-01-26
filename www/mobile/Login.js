@@ -90,7 +90,7 @@ Ext.define('PVE.Login', {
 	            var realm = realmField.getValue();
 		    var otp = otpField.getValue();
 
-		    PVE.Utils.API2Request({
+		    Proxmox.Utils.API2Request({
 			url: '/access/ticket',
 			method: 'POST',
 			waitMsgTarget: form,

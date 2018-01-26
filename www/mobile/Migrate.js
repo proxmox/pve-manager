@@ -58,7 +58,7 @@ Ext.define('PVE.MigrateBase', {
 		return;
 	    }
 
-	    PVE.Utils.API2Request({
+	    Proxmox.Utils.API2Request({
 		params: { target: values.target, online: values.online ? 1 : 0 },
 		url: '/nodes/' + me.nodename + '/' + me.vmtype + '/' + me.vmid + "/migrate",
 		method: 'POST',

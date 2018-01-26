@@ -74,7 +74,7 @@ Ext.define('PVE.Datacenter', {
 
 	me.summary = {};
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: '/version',
 	    method: 'GET',
 	    success: function(response) {
@@ -86,7 +86,7 @@ Ext.define('PVE.Datacenter', {
 
 	var list = me.down('list');
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: '/cluster/status',
 	    method: 'GET',
 	    success: function(response) {

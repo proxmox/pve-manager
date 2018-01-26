@@ -56,7 +56,7 @@ Ext.define('PVE.TaskViewer', {
 
 	var logCmp = me.down('#taskLog');
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: "/nodes/" + me.nodename + "/tasks/" + me.upid + "/log",
 	    method: 'GET',
 	    success: function(response) {
@@ -80,7 +80,7 @@ Ext.define('PVE.TaskViewer', {
 	var statusCmp = me.down('#taskStatus');
 	var logCmp = me.down('#taskLog');
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: "/nodes/" + me.nodename + "/tasks/" + me.upid + "/status",
 	    method: 'GET',
 	    success: function(response) {

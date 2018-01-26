@@ -103,7 +103,7 @@ Ext.define('PVE.NodeSummary', {
 
 	var ni = me.down('pveNodeInfo');
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: '/nodes/' + me.nodename + '/status',
 	    method: 'GET',
 	    success: function(response) {
@@ -124,7 +124,7 @@ Ext.define('PVE.NodeSummary', {
 	    list.setMasked({ xtype: 'loadmask', message: response.htmlStatus} );
 	};
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: '/nodes/' + me.nodename + '/lxc',
 	    method: 'GET',
 	    success: function(response) {
@@ -141,7 +141,7 @@ Ext.define('PVE.NodeSummary', {
 	    failure: error_handler
 	});
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: '/nodes/' + me.nodename + '/qemu',
 	    method: 'GET',
 	    success: function(response) {

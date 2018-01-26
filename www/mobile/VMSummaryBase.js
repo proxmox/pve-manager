@@ -11,7 +11,7 @@ Ext.define('PVE.VMSummaryBase', {
     vm_command: function(cmd, params) {
 	var me = this;
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    params: params,
 	    url: '/nodes/' + me.nodename + '/' + me.vmtype + '/' + me.vmid +
 		 '/status/' + cmd,
@@ -100,7 +100,7 @@ Ext.define('PVE.VMSummaryBase', {
 	    me.setMasked({ xtype: 'loadmask', message: response.htmlStatus });
 	};
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: '/nodes/' + me.nodename + '/' + me.vmtype + '/' + me.vmid +
 		 '/status/current',
 	    method: 'GET',
@@ -116,7 +116,7 @@ Ext.define('PVE.VMSummaryBase', {
 
 	var vm_cfg = me.down('#vmconfig');
 
-	PVE.Utils.API2Request({
+	Proxmox.Utils.API2Request({
 	    url: '/nodes/' + me.nodename + '/' + me.vmtype + '/' + me.vmid +
 		 '/config',
 	    method: 'GET',
