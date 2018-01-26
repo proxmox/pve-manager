@@ -74,7 +74,7 @@ Ext.define('PVE.panel.StatusView', {
 	    if (Ext.isFunction(field.calculate)) {
 		calculate = field.calculate;
 	    }
-	    field.updateValue(renderer(used,max), calculate(used,max));
+	    field.updateValue(renderer.call(field, used,max), calculate(used,max));
 	}
     },
 
