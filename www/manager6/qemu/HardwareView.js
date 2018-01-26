@@ -227,6 +227,15 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('PCI Device') + ' (' + confid + ')'
 	    };
 	}
+	for (i = 0; i < 4; i++) {
+	    confid = "serial" + i.toString();
+	    rows[confid] = {
+		group: 6,
+		tdCls: 'pve-itype-icon-serial',
+		never_delete: caps.nodes['Sys.Console'] ? false : true,
+		header: gettext('Serial Port') + ' (' + confid + ')'
+	    };
+	}
 	for (i = 0; i < 8; i++) {
 	    rows["unused" + i.toString()] = {
 		group: 99,
