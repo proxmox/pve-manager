@@ -324,6 +324,7 @@ Ext.define('PVE.qemu.Config', {
 	    var status;
 	    var qmpstatus;
 	    var spice = false;
+	    var xtermjs = false;
 
 	    if (!success) {
 		status = qmpstatus = 'unknown';
@@ -336,6 +337,7 @@ Ext.define('PVE.qemu.Config', {
 		template = rec.data.value || false;
 
 		spice = s.data.get('spice') ? true : false;
+		xtermjs = s.data.get('serial') ? true : false;
 
 	    }
 
@@ -352,6 +354,7 @@ Ext.define('PVE.qemu.Config', {
 	    }
 
 	    consoleBtn.setEnableSpice(spice);
+	    consoleBtn.setEnableXtermJS(xtermjs);
 
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');

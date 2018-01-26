@@ -9,6 +9,7 @@ Ext.define('PVE.button.ConsoleButton', {
     iconCls: 'fa fa-terminal',
 
     enableSpice: true,
+    enableXtermjs: true,
 
     nodename: undefined,
 
@@ -21,6 +22,13 @@ Ext.define('PVE.button.ConsoleButton', {
 
 	me.enableSpice = enable;
 	me.down('#spicemenu').setDisabled(!enable);
+    },
+
+    setEnableXtermJS: function(enable){
+	var me = this;
+
+	me.enableXtermjs = enable;
+	me.down('#xtermjs').setDisabled(!enable);
     },
 
     handler: function() {
