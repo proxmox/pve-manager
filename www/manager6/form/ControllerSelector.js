@@ -107,7 +107,7 @@ Ext.define('PVE.form.ControllerSelector', {
 		    flex: 2,
 		    listeners: {
 			change: function(t, value) {
-			    if (!me.rendered || !value) {
+			    if (!value) {
 				return;
 			    }
 			    var field = me.down('field[name=deviceid]');
