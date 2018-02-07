@@ -149,7 +149,7 @@ Ext.define('PVE.lxc.Options', {
 		var rowdef = rows[rec.data.key];
 		return !!rowdef.editor;
 	    },
-	    handler: me.run_editor
+	    handler: function() { me.run_editor(); }
 	});
 
 	Ext.apply(me, {

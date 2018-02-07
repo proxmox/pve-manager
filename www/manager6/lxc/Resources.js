@@ -154,7 +154,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		var rowdef = rows[rec.data.key];
 		return !!rowdef.editor;
 	    },
-	    handler: me.run_editor
+	    handler: function() { me.run_editor(); }
 	});
 
 	var resize_btn = new Proxmox.button.Button({

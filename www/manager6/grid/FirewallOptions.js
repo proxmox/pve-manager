@@ -116,7 +116,7 @@ Ext.define('PVE.FirewallOptions', {
 	var edit_btn = new Ext.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
-	    handler: me.run_editor
+	    handler: function() { me.run_editor(); }
 	});
 
 	var set_button_status = function() {

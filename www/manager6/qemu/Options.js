@@ -304,7 +304,7 @@ Ext.define('PVE.qemu.Options', {
 	var edit_btn = new Ext.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
-	    handler: me.run_editor
+	    handler: function() { me.run_editor(); }
 	});
 
         var revert_btn = new Proxmox.button.Button({
