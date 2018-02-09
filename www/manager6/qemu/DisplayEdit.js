@@ -3,47 +3,36 @@ Ext.define('PVE.qemu.DisplayEdit', {
 
     vmconfig: undefined,
 
+    subject: gettext('Display'),
+    width: 350,
+
+    items: [{
+	name: 'vga',
+	xtype: 'proxmoxKVComboBox',
+	value: '__default__',
+	fieldLabel: gettext('Graphic card'),
+	comboItems: PVE.Utils.kvm_vga_driver_array(),
+	validator: function() {
+	    var v = this.getValue();
+	    var cfg = this.up('proxmoxWindowEdit').vmconfig || {};
+
+	    if (v.match(/^serial\d+$/) && (!cfg[v] || cfg[v] !== 'socket')) {
+		var fmt = gettext("Serial interface '{0}' is not correctly configured.");
+		return Ext.String.format(fmt, v);
+	    }
+	    return true;
+	}
+    }],
+
     initComponent : function() {
 	var me = this;
-
-	var displayField;
-
-	var validateDisplay = function() {
-	    /*jslint confusion: true */
-	    var val = displayField.getValue();
-
-	    if (me.vmconfig && val.match(/^serial\d+$/)) {
-		if (me.vmconfig[val] && me.vmconfig[val] === 'socket') {
-		    return true;
-		}
-		return "Serial interface '" + val + "' is not correctly configured.";
-	    }
-	    
-	    return true;
-	};
-
-	displayField = Ext.createWidget('DisplaySelector', {  
-	    name: 'vga',
-	    value: '__default__',
-	    fieldLabel: gettext('Graphic card'),
-	    validator: validateDisplay
-	});
-
-	Ext.apply(me, {
-	    subject: gettext('Display'),
-	    width: 350,
-	    items: displayField
-	});
 
 	me.callParent();
 
 	me.load({
-	    success: function(response, options) {
-		var values = response.result.data;
-
-		me.vmconfig = values;
-
-		me.setValues(values);
+	    success: function(response) {
+		me.vmconfig = response.result.data;
+		me.setValues(me.vmconfig);
 	    }
 	});
     }

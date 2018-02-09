@@ -43,7 +43,6 @@ JSSRC= 				                 	\
 	form/IPProtocolSelector.js			\
 	form/CPUModelSelector.js			\
 	form/VNCKeyboardSelector.js			\
-	form/DisplaySelector.js				\
 	form/CacheTypeSelector.js			\
 	form/SnapshotSelector.js			\
 	form/ContentTypeSelector.js			\
