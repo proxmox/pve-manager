@@ -61,75 +61,6 @@ Ext.define('PVE.window.Wizard', {
 	    return valid;
 	};
 
-
-	var tbar = Ext.create('Ext.toolbar.Toolbar', {
-            ui: 'footer',
-	    region: 'south',
-	    margins: '0 5 5 5',
-	    items: [  
-		{
-		    xtype: 'proxmoxHelpButton',
-		    itemId: 'help'
-		},
-		'->', 
-		{ 
-		    text: gettext('Back'),
-		    disabled: true,
-		    itemId: 'back',
-		    minWidth: 60,
-		    handler: function() {
-			var tp = me.down('#wizcontent');
-			var atab = tp.getActiveTab();
-			var prev = tp.items.indexOf(atab) - 1;
-			if (prev < 0) {
-			    return;
-			}
-			var ntab = tp.items.getAt(prev);
-			if (ntab) {
-			    tp.setActiveTab(ntab);
-			}
-
-
-		    }
-		},
-		{
-		    text: gettext('Next'),
-		    disabled: true,
-		    itemId: 'next',
-		    minWidth: 60,
-		    handler: function() {
-
-			var form = me.down('form').getForm();
-
-			var tp = me.down('#wizcontent');
-			var atab = tp.getActiveTab();
-			if (!check_card(atab)) {
-			    return;
-			}
-				       
-			var next = tp.items.indexOf(atab) + 1;
-			var ntab = tp.items.getAt(next);
-			if (ntab) {
-			    ntab.enable();
-			    tp.setActiveTab(ntab);
-			}
-			
-		    }
-		},
-		{
-		    text: gettext('Finish'),
-		    minWidth: 60,
-		    hidden: true,
-		    itemId: 'submit',
-		    handler: function() {
-			var tp = me.down('#wizcontent');
-			var atab = tp.getActiveTab();
-			atab.onSubmit();
-		    }
-		}
-	    ]
-	});
-
 	var disable_at = function(card) {
 	    var tp = me.down('#wizcontent');
 	    var idx = tp.items.indexOf(card);
@@ -201,8 +132,67 @@ Ext.define('PVE.window.Wizard', {
 			},
 			items: tabs
 		    }]
+		}
+	    ],
+	    fbar: [
+		{
+		    xtype: 'proxmoxHelpButton',
+		    itemId: 'help'
 		},
-		tbar
+		'->',
+		{
+		    text: gettext('Back'),
+		    disabled: true,
+		    itemId: 'back',
+		    minWidth: 60,
+		    handler: function() {
+			var tp = me.down('#wizcontent');
+			var atab = tp.getActiveTab();
+			var prev = tp.items.indexOf(atab) - 1;
+			if (prev < 0) {
+			    return;
+			}
+			var ntab = tp.items.getAt(prev);
+			if (ntab) {
+			    tp.setActiveTab(ntab);
+			}
+		    }
+		},
+		{
+		    text: gettext('Next'),
+		    disabled: true,
+		    itemId: 'next',
+		    minWidth: 60,
+		    handler: function() {
+
+			var form = me.down('form').getForm();
+
+			var tp = me.down('#wizcontent');
+			var atab = tp.getActiveTab();
+			if (!check_card(atab)) {
+			    return;
+			}
+
+			var next = tp.items.indexOf(atab) + 1;
+			var ntab = tp.items.getAt(next);
+			if (ntab) {
+			    ntab.enable();
+			    tp.setActiveTab(ntab);
+			}
+
+		    }
+		},
+		{
+		    text: gettext('Finish'),
+		    minWidth: 60,
+		    hidden: true,
+		    itemId: 'submit',
+		    handler: function() {
+			var tp = me.down('#wizcontent');
+			var atab = tp.getActiveTab();
+			atab.onSubmit();
+		    }
+		}
 	    ]
 	});
 	me.callParent();
