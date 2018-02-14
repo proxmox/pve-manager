@@ -130,15 +130,6 @@ Ext.define('PVE.window.Wizard', {
 	    ]
 	});
 
-	var display_header = function(newcard) {
-	    me.activeTitle = newcard.title;
-	    var html = '<h1>' + newcard.title + '</h1>';
-	    if (newcard.descr) {
-		html += newcard.descr;
-	    }
-	    me.down('#header').update(html);
-	};
-
 	var disable_at = function(card) {
 	    var tp = me.down('#wizcontent');
 	    var idx = tp.items.indexOf(card);
@@ -185,16 +176,6 @@ Ext.define('PVE.window.Wizard', {
 	    layout: 'border',
 	    items: [
 		{
-		    // disabled for now - not really needed
-		    hidden: true, 
-		    region: 'north',
-		    itemId: 'header',
-		    layout: 'fit',
-		    margins: '5 5 0 5',
-		    bodyPadding: 10,
-		    html: ''
-		},
-		{
 		    xtype: 'form',
 		    region: 'center',
 		    layout: 'fit',
@@ -215,7 +196,6 @@ Ext.define('PVE.window.Wizard', {
 				tabchange(tp, atab);
 			    },
 			    tabchange: function(tp, newcard, oldcard) {
-				display_header(newcard);
 				tabchange(tp, newcard, oldcard);
 			    }
 			},
@@ -226,7 +206,6 @@ Ext.define('PVE.window.Wizard', {
 	    ]
 	});
 	me.callParent();
-	display_header(tabs[0]);
 
 	Ext.Array.each(me.query('field'), function(field) {
 	    var validcheck = function() {
