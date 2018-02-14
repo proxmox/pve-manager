@@ -6,6 +6,15 @@ Ext.define('PVE.form.FileSelector', {
     anyMatch: true,
     forceSelection: true,
 
+    listeners: {
+	afterrender: function() {
+	    var me = this;
+	    if (!me.disabled) {
+		me.setStorage(me.storage, me.nodename);
+	    }
+	}
+    },
+
     setStorage: function(storage, nodename) {
 	var me = this;
 
@@ -38,47 +47,35 @@ Ext.define('PVE.form.FileSelector', {
 	me.store.load();
     },
 
-    initComponent: function() {
-	var me = this;
+    store: {
+	model: 'pve-storage-content'
+    },
 
-	var store = Ext.create('Ext.data.Store', {
-	    model: 'pve-storage-content'
-	});
+    allowBlank: false,
+    autoSelect: false,
+    valueField: 'volid',
+    displayField: 'text',
 
-	Ext.apply(me, {
-	    store: store,
-	    allowBlank: false,
-	    autoSelect: false,
-	    valueField: 'volid',
-	    displayField: 'text',
-            listConfig: {
-		width: 600,
-		columns: [
-		    {
-			header: gettext('Name'),
-			dataIndex: 'text',
-			hideable: false,
-			flex: 1
-		    },
-		    {
-			header: gettext('Format'),
-			width: 60,
-			dataIndex: 'format'
-		    },
-		    {
-			header: gettext('Size'),
-			width: 100,
-			dataIndex: 'size',
-			renderer: Proxmox.Utils.format_size
-		    }
-		]
+    listConfig: {
+	width: 600,
+	columns: [
+	    {
+		header: gettext('Name'),
+		dataIndex: 'text',
+		hideable: false,
+		flex: 1
+	    },
+	    {
+		header: gettext('Format'),
+		width: 60,
+		dataIndex: 'format'
+	    },
+	    {
+		header: gettext('Size'),
+		width: 100,
+		dataIndex: 'size',
+		renderer: Proxmox.Utils.format_size
 	    }
-	});
-
-        me.callParent();
-
-	if (!me.disabled) {
-	    me.setStorage(me.storage, me.nodename);
-	}
+	]
     }
 });
