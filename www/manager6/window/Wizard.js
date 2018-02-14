@@ -2,7 +2,19 @@ Ext.define('PVE.window.Wizard', {
     extend: 'Ext.window.Window',
 
     activeTitle: '', // used for automated testing
-    
+
+    width: 700,
+    height: 510,
+
+    modal: true,
+    border: false,
+
+    draggable: true,
+    closable: true,
+    resizable: false,
+
+    layout: 'border',
+
     getValues: function(dirtyOnly) {
 	var me = this;
 
@@ -97,14 +109,6 @@ Ext.define('PVE.window.Wizard', {
 	}
 
 	Ext.apply(me, {
-	    width: 700,
-	    height: 510,
-	    modal: true,
-	    border: false,
-	    draggable: true,
-	    closable: true,
-	    resizable: false,
-	    layout: 'border',
 	    items: [
 		{
 		    xtype: 'form',
