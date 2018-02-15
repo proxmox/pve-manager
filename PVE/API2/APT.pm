@@ -518,30 +518,55 @@ __PACKAGE__->register_method({
 	my $policy = $cache->policy;
 	my $pkgrecords = $cache->packages();
 
-	# try to use a resonable ordering (most important things first)
+	# order most important things first
 	my @list = qw(proxmox-ve pve-manager);
 
-	foreach my $pkgname (keys %$cache) {
-	    if ($pkgname =~ m/pve-kernel-/) {
-		my $p = $cache->{$pkgname};
-		push @list, $pkgname if $p && $p->{CurrentState} eq 'Installed';
-	    }
-	}
+	push @list, grep { /^pve-kernel-/ && $cache->{$_}->{CurrentState} eq 'Installed' } sort keys %$cache;
 
-	# comment out old packages uses before 4.0
-	# clvm resource-agents-pve fence-agents-pve vzctl vzprocps vzquota
+        my @opt_pack = qw(
+	    ceph
+	    gfs2-utils
+	    libpve-apiclient-perl
+	    openvswitch-switch
+	    pve-sheepdog
+	    zfsutils-linux
+	);
 
-	my @opt_pack = ('zfsutils-linux',
-			'gfs2-utils', 'pve-sheepdog', 'openvswitch-switch', 'ceph', 'libpve-apiclient-perl');
+	my @pkgs = qw(
+	    corosync
+	    criu
+	    glusterfs-client
+	    ksm-control-daemon
+	    libpve-access-control
+	    libpve-common-perl
+	    libpve-guest-common-perl
+	    libpve-http-server-perl
+	    libpve-storage-perl
+	    libqb0
+	    lvm2
+	    lxc-pve
+	    lxcfs
+	    novnc-pve
+	    pve-cluster
+	    pve-container
+	    pve-docs
+	    pve-firewall
+	    pve-firmware
+	    pve-ha-manager
+	    pve-libspice-server1
+	    pve-qemu-kvm
+	    qemu-server
+	    smartmontools
+	    vncterm
+	);
 
-	push @list, qw(libpve-http-server-perl lvm2 corosync libqb0 pve-cluster qemu-server pve-firmware libpve-common-perl libpve-guest-common-perl libpve-access-control libpve-storage-perl pve-libspice-server1 vncterm pve-docs pve-qemu-kvm pve-container pve-firewall pve-ha-manager ksm-control-daemon glusterfs-client lxc-pve lxcfs criu novnc-pve smartmontools);
-
-	@list = (@list, @opt_pack);
-	my $pkglist = [];
+	# add the rest ordered by name, easier to find for humans
+	push @list, (sort @pkgs, @opt_pack);
 	
 	my (undef, undef, $kernel_release) = POSIX::uname();
 	my $pvever =  PVE::pvecfg::version_text();
 
+	my $pkglist = [];
 	foreach my $pkgname (@list) {
 	    my $p = $cache->{$pkgname};
 	    my $info = $pkgrecords->lookup($pkgname);
