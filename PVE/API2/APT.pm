@@ -529,12 +529,14 @@ __PACKAGE__->register_method({
 	    libpve-apiclient-perl
 	    openvswitch-switch
 	    pve-sheepdog
+	    pve-zsync
 	    zfsutils-linux
 	);
 
 	my @pkgs = qw(
 	    corosync
 	    criu
+	    libjs-extjs
 	    glusterfs-client
 	    ksm-control-daemon
 	    libpve-access-control
@@ -547,16 +549,20 @@ __PACKAGE__->register_method({
 	    lxc-pve
 	    lxcfs
 	    novnc-pve
+	    proxmox-widget-toolkit
 	    pve-cluster
 	    pve-container
 	    pve-docs
 	    pve-firewall
 	    pve-firmware
 	    pve-ha-manager
+	    pve-i18n
 	    pve-libspice-server1
 	    pve-qemu-kvm
+	    pve-xtermjs
 	    qemu-server
 	    smartmontools
+	    spiceterm
 	    vncterm
 	);
 
