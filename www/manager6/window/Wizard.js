@@ -53,6 +53,9 @@ Ext.define('PVE.window.Wizard', {
 	});
 	tabs[0].disabled = false;
 
+	var maxidx = 0;
+	var curidx = 0;
+
 	var check_card = function(card) {
 	    var valid = true;
 	    var fields = card.query('field, fieldcontainer');
@@ -97,7 +100,13 @@ Ext.define('PVE.window.Wizard', {
 	    me.down('#submit').setDisabled(!valid);    
 	    me.down('#back').setDisabled(tp.items.indexOf(newcard) == 0);
 
-	    var next = tp.items.indexOf(newcard) + 1;
+	    var idx = tp.items.indexOf(newcard);
+	    if (idx > maxidx) {
+		maxidx = idx;
+	    }
+	    curidx = idx;
+
+	    var next = idx + 1;
 	    var ntab = tp.items.getAt(next);
 	    if (valid && ntab && !newcard.onSubmit) {
 		ntab.enable();
@@ -204,16 +213,29 @@ Ext.define('PVE.window.Wizard', {
 	Ext.Array.each(me.query('field'), function(field) {
 	    var validcheck = function() {
 		var tp = me.down('#wizcontent');
-		var atab = tp.getActiveTab();
-		var valid = check_card(atab);
-		me.down('#next').setDisabled(!valid);
-		me.down('#submit').setDisabled(!valid);    
-		var next = tp.items.indexOf(atab) + 1;
-		var ntab = tp.items.getAt(next);
-		if (!valid) {
-		    disable_at(ntab);
-		} else if (ntab && !atab.onSubmit) {
-		    ntab.enable();
+
+		// check tabs from current to the last enabled for validity
+		// since we might have changed a validity on a later one
+		var i;
+		for (i = curidx; i <= maxidx && i < tp.items.getCount(); i++) {
+		    var tab = tp.items.getAt(i);
+		    var valid = check_card(tab);
+
+		    // only set the buttons on the current panel
+		    if (i === curidx) {
+			me.down('#next').setDisabled(!valid);
+			me.down('#submit').setDisabled(!valid);
+		    }
+
+		    // if a panel is invalid, then disable it and all following,
+		    // else enable it and go to the next
+		    var ntab = tp.items.getAt(i + 1);
+		    if (!valid) {
+			disable_at(ntab);
+			return;
+		    } else if (ntab && !tab.onSubmit) {
+			ntab.enable();
+		    }
 		}
 	    };
 	    field.on('change', validcheck);
