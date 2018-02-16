@@ -1,3 +1,33 @@
+pve-manager (5.1-45) stable; urgency=medium
+
+  * pveversion: sort kernel packages by version
+
+  * pveversion: add new pve packages
+
+  * fix wizard validity check for options spanning multiple tabs
+
+  * fix #1573: show bootdisk usage on container summary
+
+  * fix edit button for some panels
+
+  * fix #1629: improve min/max memory handling
+
+  * fix #1631: change units to binary prefix
+
+  * fix #1635: correctly change maxIds in ControllerSelector in wizard
+
+  * enable/disable xtermjs depending on the existance of a serial port
+
+  * show serial ports on the gui
+
+  * change group of unused to 99 to that we can add things in between
+
+  * add icon/class for serial ports
+
+  * qemu/Monitor: save the last 20 commands
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 16 Feb 2018 12:45:50 +0100
+
 pve-manager (5.1-44) stable; urgency=medium
 
   * fix upgrade of other cluster nodes via xtermjs not working properly
