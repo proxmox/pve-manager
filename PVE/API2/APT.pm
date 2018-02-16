@@ -24,8 +24,8 @@ use JSON;
 use PVE::JSONSchema qw(get_standard_option);
 
 use AptPkg::Cache;
-use AptPkg::Version;
 use AptPkg::PkgRecords;
+use Dpkg::Version;
 
 my $get_apt_cache = sub {
     
@@ -521,7 +521,8 @@ __PACKAGE__->register_method({
 	# order most important things first
 	my @list = qw(proxmox-ve pve-manager);
 
-	push @list, grep { /^pve-kernel-/ && $cache->{$_}->{CurrentState} eq 'Installed' } sort keys %$cache;
+	my $byver = sub { version_compare($cache->{$b}->{CurrentVer}->{VerStr}, $cache->{$a}->{CurrentVer}->{VerStr}) };
+	push @list, sort $byver grep { /^pve-kernel-/ && $cache->{$_}->{CurrentState} eq 'Installed' } keys %$cache;
 
         my @opt_pack = qw(
 	    ceph
