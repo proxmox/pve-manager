@@ -186,8 +186,6 @@ Ext.define('PVE.tree.ResourceTree', {
 		groupinfo.leaf = false;
 		groupinfo.groupbyid = v; 
 		group = me.addChildSorted(node, groupinfo);
-		// fixme: remove when EXTJS has fixed those bugs?!
-		group.expand(); group.collapse();
 	    }
 	    if (info.type === groupby) {
 		return group;
@@ -346,6 +344,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	    });
 
 	    store.resumeEvents();
+	    store.fireEvent('refresh', store);
 
 	    // select parent node is selection vanished
 	    if (lastsel && !rootnode.findChild('id', lastsel.data.id, true)) {
@@ -363,13 +362,11 @@ Ext.define('PVE.tree.ResourceTree', {
 
 	    // on first tree load set the selection from the stateful provider
 	    if (!pdata.updateCount) {
-		rootnode.collapse();
 		rootnode.expand();
 		me.applyState(sp.get(stateid));
 	    }
 
 	    pdata.updateCount++;
-	    store.fireEvent('refresh', store);
 	};
 
 	var statechange = function(sp, key, value) {
