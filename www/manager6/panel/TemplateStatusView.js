@@ -18,6 +18,14 @@ Ext.define('PVE.panel.TemplateStatusView',{
 	    height: 20
 	},
 	{
+	    itemId: 'hamanaged',
+	    iconCls: 'fa fa-heartbeat fa-fw',
+	    title: gettext('HA State'),
+	    printBar: false,
+	    textField: 'ha',
+	    renderer: PVE.Utils.format_ha
+	},
+	{
 	    itemId: 'node',
 	    iconCls: 'fa fa-fw fa-building',
 	    title: gettext('Node')
