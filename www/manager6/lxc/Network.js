@@ -49,17 +49,18 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
     initComponent : function() {
 	var me = this;
 
-	if (!me.dataCache) {
-	    throw "no dataCache specified";
-	}
-	
 	var cdata = {};
 
 	if (me.insideWizard) {
 	    me.ifname = 'net0';
 	    cdata.name = 'eth0';
+	    me.dataCache = {};
 	}
-	
+
+	if (!me.dataCache) {
+	    throw "no dataCache specified";
+	}
+
 	if (!me.isCreate) {
 	    if (!me.ifname) {
 		throw "no interface name specified";

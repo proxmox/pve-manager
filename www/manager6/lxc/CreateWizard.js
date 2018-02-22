@@ -50,7 +50,6 @@ Ext.define('PVE.lxc.CreateWizard', {
 	var networkpanel = Ext.create('PVE.lxc.NetworkInputPanel', {
 	    title: gettext('Network'),
 	    insideWizard: true,
-	    dataCache: {},
 	    isCreate: true
 	});
 
