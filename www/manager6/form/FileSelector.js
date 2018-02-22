@@ -47,6 +47,10 @@ Ext.define('PVE.form.FileSelector', {
 	me.store.load();
     },
 
+    setNodename: function(nodename) {
+	this.setStorage(undefined, nodename);
+    },
+
     store: {
 	model: 'pve-storage-content'
     },
