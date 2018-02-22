@@ -12,6 +12,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 
     vmconfig: {}, // used to select unused disks
 
+    setUnprivileged: function(unprivileged) {
+	this.unprivileged = unprivileged;
+	this.quota.setDisabled(unprivileged);
+    },
+
     onGetValues: function(values) {
 	var me = this;
 
@@ -77,7 +82,6 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 
 	if (mp.type === 'bind') {
 	    me.quota.setDisabled(true);
-	    me.quota.setValue(false);
 	    me.acl.setDisabled(true);
 	    me.acl.setValue('Default');
 	    me.down('#hdstorage').setDisabled(true);
@@ -222,7 +226,12 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    name: 'quota',
 	    defaultValue: 0,
 	    disabled: me.unprivileged,
-	    fieldLabel: gettext('Enable quota')
+	    fieldLabel: gettext('Enable quota'),
+	    listeners: {
+		disable: function() {
+		    this.reset();
+		}
+	    }
 	});
 
 	me.column2 = [
@@ -276,7 +285,6 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		}
 		if (rec.data.type === 'zfs' || rec.data.type === 'zfspool') {
 		    me.quota.setDisabled(true);
-		    me.quota.setValue(false);
 		} else {
 		    me.quota.setDisabled(me.unprivileged);
 		}
