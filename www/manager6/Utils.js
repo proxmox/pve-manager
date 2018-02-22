@@ -875,6 +875,25 @@ Ext.define('PVE.Utils', { utilities: {
 
 	    delete values[fieldname];
 	}
+    },
+
+    loadSSHKeyFromFile: function(file, callback) {
+	// ssh-keygen produces 740 bytes for an average 4096 bit rsa key, with
+	// a user@host comment, 1420 for 8192 bits; current max is 16kbit
+	// assume: 740*8 for max. 32kbit (5920 byte file)
+	// round upwards to nearest nice number => 8192 bytes, leaves lots of comment space
+	if (file.size > 8192) {
+	    Ext.Msg.alert(gettext('Error'), gettext("Invalid file size: ") + file.size);
+	    return;
+	}
+	/*global
+	  FileReader
+	*/
+	var reader = new FileReader();
+	reader.onload = function(evt) {
+	    callback(evt.target.result);
+	};
+	reader.readAsText(file);
     }
 },
 

@@ -5,23 +5,6 @@
 Ext.define('PVE.lxc.CreateWizard', {
     extend: 'PVE.window.Wizard',
 
-    loadSSHKeyFromFile: function(file) {
-	var me = this;
-	// ssh-keygen produces 740 bytes for an average 4096 bit rsa key, with
-	// a user@host comment, 1420 for 8192 bits; current max is 16kbit
-	// assume: 740*8 for max. 32kbit (5920 byte file)
-	// round upwards to nearest nice number => 8192 bytes, leaves lots of comment space
-	if (file.size > 8192) {
-	    Ext.Msg.alert(gettext('Error'), gettext("Invalid file size: ") + file.size);
-	    return;
-	}
-	var reader = new FileReader();
-	reader.onload = function(evt) {
-	    me.sshkeyfield.setValue(evt.target.result);
-	};
-	reader.readAsText(file);
-    },
-
     initComponent: function() {
 	var me = this;
 
@@ -125,7 +108,9 @@ Ext.define('PVE.lxc.CreateWizard', {
 			ev.preventDefault();
 		    }
 		    var files = ev.dataTransfer.files;
-		    me.loadSSHKeyFromFile(files[0]);
+		    PVE.Utils.loadSSHKeyFromFile(files[0], function (v) {
+			me.sshkeyfield.setValue(v);
+		    });
 		});
 	    }
 	});
@@ -166,7 +151,9 @@ Ext.define('PVE.lxc.CreateWizard', {
 		listeners: {
 		    change: function(btn, e, value) {
 			e = e.event;
-			me.loadSSHKeyFromFile(e.target.files[0]);
+			PVE.Utils.loadSSHKeyFromFile(e.target.files[0], function (v) {
+			    me.sshkeyfield.setValue(v);
+			});
 			btn.reset();
 		    }
 		}
