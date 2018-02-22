@@ -16,9 +16,16 @@ Ext.define('PVE.widget.Info',{
 	    itemId: 'label',
 	    data: {
 		title: '',
-		usage: ''
+		usage: '',
+		iconCls: undefined
 	    },
-	    tpl: '<div class="left-aligned">{title}</div><div class="right-aligned">{usage}</div>'
+	    tpl: [
+		'<div class="left-aligned">',
+		'<tpl if="iconCls">',
+		'<i class="{iconCls}"></i> ',
+		'</tpl>',
+		'{title}</div>&nbsp;<div class="right-aligned">{usage}</div>'
+	    ]
 	},
 	{
 	    height: 2,
@@ -40,6 +47,11 @@ Ext.define('PVE.widget.Info',{
 	var me = this;
 	me.printBar = enable;
 	me.getComponent('progress').setVisible(enable);
+    },
+
+    setIconCls: function(iconCls) {
+	var me = this;
+	me.getComponent('label').data.iconCls = iconCls;
     },
 
     updateValue: function(text, usage) {
@@ -78,6 +90,7 @@ Ext.define('PVE.widget.Info',{
 	me.getComponent('progress').setVisible(me.printBar);
 
 	me.updateValue(me.text, me.value);
+	me.setIconCls(me.iconCls);
     }
 
 });
