@@ -347,6 +347,13 @@
     background-image:url(../images/icon-serial.svg);
 }
 
+.pve-icon {
+    height: 16px;
+    background-position: bottom;
+    vertical-align: bottom;
+    padding: 0;
+}
+
 /* displayfield minheight is wrong */
 .x-form-display-field-default {
     min-height: 20px;

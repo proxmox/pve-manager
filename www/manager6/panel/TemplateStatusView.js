@@ -2,51 +2,60 @@ Ext.define('PVE.panel.TemplateStatusView',{
     extend: 'PVE.panel.StatusView',
     alias: 'widget.pveTemplateStatusView',
 
+    layout: {
+	type: 'vbox',
+	align: 'stretch'
+    },
+
     defaults: {
 	xtype: 'pveInfoWidget',
 	printBar: false,
-	padding: '5 0 0 20',
-	width: 400
+	padding: '2 25'
     },
     items: [
 	{
 	    xtype: 'box',
-	    padding: '20 0 0 0'
+	    height: 20
 	},
 	{
 	    itemId: 'node',
+	    iconCls: 'fa fa-fw fa-building',
 	    title: gettext('Node')
 	},
 	{
 	    xtype: 'box',
-	    padding: '20 0 0 0'
+	    height: 20
 	},
 	{
 	    itemId: 'cpus',
+	    iconCls: 'fa fa-fw pve-itype-icon-processor pve-icon',
 	    title: gettext('Processors'),
 	    textField: 'cpus'
 	},
 	{
 	    itemId: 'memory',
+	    iconCls: 'fa fa-fw pve-itype-icon-memory pve-icon',
 	    title: gettext('Memory'),
 	    textField: 'maxmem',
 	    renderer: PVE.Utils.render_size
 	},
 	{
 	    itemId: 'swap',
+	    iconCls: 'fa fa-refresh fa-fw',
 	    title: gettext('Swap'),
 	    textField: 'maxswap',
 	    renderer: PVE.Utils.render_size
 	},
 	{
 	    itemId: 'disk',
+	    iconCls: 'fa fa-hdd-o fa-fw',
 	    title: gettext('Bootdisk size'),
 	    textField: 'maxdisk',
 	    renderer: PVE.Utils.render_size
 	},
 	{
 	    xtype: 'box',
-	    padding: '25 0 0 0'
+	    height: 20
 	}
     ],
 

@@ -23,6 +23,7 @@ Ext.define('PVE.node.StatusView', {
     items: [
 	{
 	    itemId: 'cpu',
+	    iconCls: 'fa fa-fw pve-itype-icon-processor pve-icon',
 	    title: gettext('CPU usage'),
 	    valueField: 'cpu',
 	    maxField: 'cpuinfo',
@@ -30,12 +31,14 @@ Ext.define('PVE.node.StatusView', {
 	},
 	{
 	    itemId: 'wait',
+	    iconCls: 'fa fa-fw fa-clock-o',
 	    title: gettext('IO delay'),
 	    valueField: 'wait',
 	    rowspan: 2
 	},
 	{
 	    itemId: 'load',
+	    iconCls: 'fa fa-fw fa-tasks',
 	    title: gettext('Load average'),
 	    printBar: false,
 	    textField: 'loadavg'
@@ -46,6 +49,7 @@ Ext.define('PVE.node.StatusView', {
 	    padding: '0 0 20 0'
 	},
 	{
+	    iconCls: 'fa fa-fw pve-itype-icon-memory pve-icon',
 	    itemId: 'memory',
 	    title: gettext('RAM usage'),
 	    valueField: 'memory',
@@ -63,6 +67,7 @@ Ext.define('PVE.node.StatusView', {
 	    padding: '0 15 10 15'
 	},
 	{
+	    iconCls: 'fa fa-fw fa-hdd-o',
 	    itemId: 'rootfs',
 	    title: gettext('HD space') + '(root)',
 	    valueField: 'rootfs',
@@ -70,6 +75,7 @@ Ext.define('PVE.node.StatusView', {
 	    renderer: PVE.Utils.render_node_size_usage
 	},
 	{
+	    iconCls: 'fa fa-fw fa-refresh',
 	    itemId: 'swap',
 	    printSize: true,
 	    title: gettext('SWAP usage'),

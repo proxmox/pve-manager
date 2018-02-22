@@ -4,26 +4,30 @@ Ext.define('PVE.panel.GuestStatusView', {
 
     height: 300,
 
+    layout: {
+	type: 'vbox',
+	align: 'stretch'
+    },
+
     defaults: {
 	xtype: 'pveInfoWidget',
-	padding: '0 30 5 30',
-	// parent panel is 400 wide
-	// minus 2 pixels for the border
-	width: 398
+	padding: '2 25'
     },
     items: [
 	{
 	    xtype: 'box',
-	    height: 30
+	    height: 20
 	},
 	{
 	    itemId: 'status',
 	    title: gettext('Status'),
+	    iconCls: 'fa fa-info fa-fw',
 	    printBar: false,
 	    textField: 'status'
 	},
 	{
 	    itemId: 'hamanaged',
+	    iconCls: 'fa fa-heartbeat fa-fw',
 	    title: gettext('HA State'),
 	    printBar: false,
 	    textField: 'ha',
@@ -31,15 +35,17 @@ Ext.define('PVE.panel.GuestStatusView', {
 	},
 	{
 	    itemId: 'node',
+	    iconCls: 'fa fa-building fa-fw',
 	    title: gettext('Node'),
 	    printBar: false
 	},
 	{
 	    xtype: 'box',
-	    height: 20
+	    height: 15
 	},
 	{
 	    itemId: 'cpu',
+	    iconCls: 'fa fa-fw pve-itype-icon-processor pve-icon',
 	    title: gettext('CPU usage'),
 	    valueField: 'cpu',
 	    maxField: 'cpus',
@@ -50,18 +56,21 @@ Ext.define('PVE.panel.GuestStatusView', {
 	},
 	{
 	    itemId: 'memory',
+	    iconCls: 'fa fa-fw pve-itype-icon-memory pve-icon',
 	    title: gettext('Memory usage'),
 	    valueField: 'mem',
 	    maxField: 'maxmem'
 	},
 	{
 	    itemId: 'swap',
+	    iconCls: 'fa fa-refresh fa-fw',
 	    title: gettext('SWAP usage'),
 	    valueField: 'swap',
 	    maxField: 'maxswap'
 	},
 	{
 	    itemId: 'rootfs',
+	    iconCls: 'fa fa-hdd-o fa-fw',
 	    title: gettext('Bootdisk size'),
 	    valueField: 'disk',
 	    maxField: 'maxdisk',
