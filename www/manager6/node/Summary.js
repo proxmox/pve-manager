@@ -3,7 +3,7 @@ Ext.define('PVE.node.Summary', {
     alias: 'widget.pveNodeSummary',
 
     scrollable: true,
-    bodyPadding: '10 0 0 0',
+    bodyPadding: 5,
 
     showVersions: function() {
 	var me = this;
@@ -15,11 +15,11 @@ Ext.define('PVE.node.Summary', {
 
 	var view = Ext.createWidget('component', {
 	    autoScroll: true,
+	    padding: 5,
 	    style: {
 		'background-color': 'white',
 		'white-space': 'pre',
-		'font-family': 'monospace',
-		padding: '5px'
+		'font-family': 'monospace'
 	    }
 	});
 
@@ -94,53 +94,60 @@ Ext.define('PVE.node.Summary', {
 
 	Ext.apply(me, {
 	    tbar: [version_btn, '->', { xtype: 'proxmoxRRDTypeSelector' } ],
-	    plugins: {
-		ptype: 'lazyitems',
-		items: [
-		    {
-			xtype: 'container',
-			layout: 'column',
-			defaults: {
-			    padding: '0 0 10 10'
-			},
-			items: [
-			    {
-				xtype: 'pveNodeStatus',
-				rstore: rstore,
-				width: 770,
-				pveSelNode: me.pveSelNode
+	    items: [
+		{
+		    xtype: 'container',
+		    layout: 'column',
+		    defaults: {
+			minHeight: 320,
+			padding: 5,
+			plugins: 'responsive',
+			responsiveConfig: {
+			    'width < 1900': {
+				columnWidth: 1
 			    },
-			    {
-				xtype: 'proxmoxRRDChart',
-				title: gettext('CPU usage'),
-				fields: ['cpu','iowait'],
-				fieldTitles: [gettext('CPU usage'), gettext('IO delay')],
-				store: rrdstore
-			    },
-			    {
-				xtype: 'proxmoxRRDChart',
-				title: gettext('Server load'),
-				fields: ['loadavg'],
-				fieldTitles: [gettext('Load average')],
-				store: rrdstore
-			    },
-			    {
-				xtype: 'proxmoxRRDChart',
-				title: gettext('Memory usage'),
-				fields: ['memtotal','memused'],
-				fieldTitles: [gettext('Total'), gettext('RAM usage')],
-				store: rrdstore
-			    },
-			    {
-				xtype: 'proxmoxRRDChart',
-				title: gettext('Network traffic'),
-				fields: ['netin','netout'],
-				store: rrdstore
+			    'width >= 1900': {
+				columnWidth: 0.5
 			    }
-			]
-		    }
-		]
-	    },
+			}
+		    },
+		    items: [
+			{
+			    xtype: 'pveNodeStatus',
+			    rstore: rstore,
+			    width: 770,
+			    pveSelNode: me.pveSelNode
+			},
+			{
+			    xtype: 'proxmoxRRDChart',
+			    title: gettext('CPU usage'),
+			    fields: ['cpu','iowait'],
+			    fieldTitles: [gettext('CPU usage'), gettext('IO delay')],
+			    store: rrdstore
+			},
+			{
+			    xtype: 'proxmoxRRDChart',
+			    title: gettext('Server load'),
+			    fields: ['loadavg'],
+			    fieldTitles: [gettext('Load average')],
+			    store: rrdstore
+			},
+			{
+			    xtype: 'proxmoxRRDChart',
+			    title: gettext('Memory usage'),
+			    fields: ['memtotal','memused'],
+			    fieldTitles: [gettext('Total'), gettext('RAM usage')],
+			    store: rrdstore
+			},
+			{
+			    xtype: 'proxmoxRRDChart',
+			    title: gettext('Network traffic'),
+			    fields: ['netin','netout'],
+			    store: rrdstore
+			}
+		    ]
+		}
+	    ],
 	    listeners: {
 		activate: function() { rstore.startUpdate(); rrdstore.startUpdate(); },
 		destroy: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); }

@@ -3,7 +3,7 @@ Ext.define('PVE.lxc.Summary', {
     alias: 'widget.pveLxcSummary',
 
     scrollable: true,
-    bodyPadding: '10 0 0 0',
+    bodyPadding: 5,
 
     initComponent: function() {
         var me = this;
@@ -29,123 +29,112 @@ Ext.define('PVE.lxc.Summary', {
 	var template = !!me.pveSelNode.data.template;
 	var rstore = me.statusStore;
 
-	var notesview = Ext.create('PVE.panel.NotesView', {
-	    pveSelNode: me.pveSelNode,
-	    padding: '0 0 0 10',
-	    flex: 1
-	});
-
-	if (template) {
-	    Ext.apply(me, {
-		plugins: {
-		    ptype: 'lazyitems',
-		    items: [{
-			xtype: 'container',
-			layout: {
-			    type: 'column'
-			},
-			items: [{
-			    width: 800,
-			    layout: {
-				type: 'vbox',
-				align: 'stretch'
-			    },
-			    border: false,
-			    items: [
-				{
-				    xtype: 'pveTemplateStatusView',
-				    pveSelNode: me.pveSelNode,
-				    padding: '0 0 10 10',
-				    rstore: rstore
-				},
-				notesview
-			    ]
-			}]
-		    }]
+	var width = template ? 1 : 0.5;
+	var items = [
+	    {
+		xtype: template ? 'pveTemplateStatusView' : 'pveGuestStatusView',
+		responsiveConfig: {
+		    'width < 1900': {
+			columnWidth: width
+		    },
+		    'width >= 1900': {
+			columnWidth: width / 2
+		    }
 		},
-		listeners: {
-		    activate: function() { notesview.load(); }
+		itemId: 'gueststatus',
+		pveSelNode: me.pveSelNode,
+		rstore: rstore
+	    },
+	    {
+		xtype: 'pveNotesView',
+		maxHeight: 320,
+		itemId: 'notesview',
+		pveSelNode: me.pveSelNode,
+		responsiveConfig: {
+		    'width < 1900': {
+			columnWidth: width
+		    },
+		    'width >= 1900': {
+			columnWidth: width / 2
+		    }
 		}
-	    });
-	} else {
-	    var rrdstore = Ext.create('Proxmox.data.RRDStore', {
+	    }
+	];
+
+	var rrdstore;
+	if (!template) {
+
+	    rrdstore = Ext.create('Proxmox.data.RRDStore', {
 		rrdurl: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/rrddata",
 		model: 'pve-rrd-guest'
 	    });
 
-	    Ext.apply(me, {
-		tbar: [ '->' , { xtype: 'proxmoxRRDTypeSelector' } ],
-		plugins: {
-		    ptype: 'lazyitems',
-		    items: [
-			{
-			    xtype: 'container',
-			    layout: {
-				type: 'column'
-			    },
-			    defaults: {
-				padding: '0 0 10 10'
-			    },
-			    items: [
-				{
-				    width: 770,
-				    height: 300,
-				    layout: {
-					type: 'hbox',
-					align: 'stretch'
-				    },
-				    border: false,
-				    items: [
-					{
-					    xtype: 'pveGuestStatusView',
-					    pveSelNode: me.pveSelNode,
-					    width: 400,
-					    rstore: rstore
-					},
-					notesview
-				    ]
-				},
-				{
-				    xtype: 'proxmoxRRDChart',
-				    title: gettext('CPU usage'),
-				    pveSelNode: me.pveSelNode,
-				    fields: ['cpu'],
-				    fieldTitles: [gettext('CPU usage')],
-				    store: rrdstore
-				},
-				{
-				    xtype: 'proxmoxRRDChart',
-				    title: gettext('Memory usage'),
-				    pveSelNode: me.pveSelNode,
-				    fields: ['maxmem', 'mem'],
-				    fieldTitles: [gettext('Total'), gettext('RAM usage')],
-				    store: rrdstore
-				},
-				{
-				    xtype: 'proxmoxRRDChart',
-				    title: gettext('Network traffic'),
-				    pveSelNode: me.pveSelNode,
-				    fields: ['netin','netout'],
-				    store: rrdstore
-				},
-				{
-				    xtype: 'proxmoxRRDChart',
-				    title: gettext('Disk IO'),
-				    pveSelNode: me.pveSelNode,
-				    fields: ['diskread','diskwrite'],
-				    store: rrdstore
-				}
-			    ]
-			}
-		    ]
+	    items.push(
+		{
+		    xtype: 'proxmoxRRDChart',
+		    title: gettext('CPU usage'),
+		    pveSelNode: me.pveSelNode,
+		    fields: ['cpu'],
+		    fieldTitles: [gettext('CPU usage')],
+		    store: rrdstore
 		},
-		listeners: {
-		    activate: function() { notesview.load(); rrdstore.startUpdate(); },
-		    destroy: rrdstore.stopUpdate
+		{
+		    xtype: 'proxmoxRRDChart',
+		    title: gettext('Memory usage'),
+		    pveSelNode: me.pveSelNode,
+		    fields: ['maxmem', 'mem'],
+		    fieldTitles: [gettext('Total'), gettext('RAM usage')],
+		    store: rrdstore
+		},
+		{
+		    xtype: 'proxmoxRRDChart',
+		    title: gettext('Network traffic'),
+		    pveSelNode: me.pveSelNode,
+		    fields: ['netin','netout'],
+		    store: rrdstore
+		},
+		{
+		    xtype: 'proxmoxRRDChart',
+		    title: gettext('Disk IO'),
+		    pveSelNode: me.pveSelNode,
+		    fields: ['diskread','diskwrite'],
+		    store: rrdstore
 		}
-	    });
+	    );
+
 	}
 
+	Ext.apply(me, {
+	    tbar: [ '->', { xtype: 'proxmoxRRDTypeSelector' } ],
+	    items: [
+		{
+		    xtype: 'container',
+		    layout: {
+			type: 'column'
+		    },
+		    defaults: {
+			minHeight: 320,
+			padding: 5,
+			plugins: 'responsive',
+			responsiveConfig: {
+			    'width < 1900': {
+				columnWidth: 1
+			    },
+			    'width >= 1900': {
+				columnWidth: 0.5
+			    }
+			}
+		    },
+		    items: items
+		}
+	    ]
+	});
+
 	me.callParent();
+	me.down('#notesview').load();
+	if (!template) {
+	    rrdstore.startUpdate();
+	    me.on('destroy', rrdstore.stopUpdate);
+	}
     }
 });
