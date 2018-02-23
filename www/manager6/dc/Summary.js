@@ -4,13 +4,21 @@ Ext.define('PVE.dc.Summary', {
 
     scrollable: true,
 
-    bodyPadding: '10 0 0 0',
+    bodyPadding: 5,
 
     layout: 'column',
 
     defaults: {
-	width: 762,
-	padding: '0 0 10 10'
+	padding: 5,
+	plugins: 'responsive',
+	responsiveConfig: {
+	    'width < 1900': {
+		columnWidth: 1
+	    },
+	    'width >= 1900': {
+		columnWidth: 0.5
+	    }
+	}
     },
 
     items: [
@@ -25,8 +33,8 @@ Ext.define('PVE.dc.Summary', {
 	{
 	    title: gettext('Resources'),
 	    xtype: 'panel',
-	    height: 250,
-	    bodyPadding: '0 0 10 0',
+	    minHeight: 250,
+	    bodyPadding: 5,
 	    layout: 'hbox',
 	    defaults: {
 		xtype: 'proxmoxGauge',

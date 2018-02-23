@@ -4,7 +4,7 @@ Ext.define('PVE.dc.Guests', {
 
 
     title: gettext('Guests'),
-    height: 200,
+    height: 220,
     layout: {
 	type: 'table',
 	columns: 2,
