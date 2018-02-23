@@ -1,5 +1,6 @@
 Ext.define('PVE.panel.NotesView', {
     extend: 'Ext.panel.Panel',
+    xtype: 'pveNotesView',
 
     title: gettext("Notes"),
     bodyStyle: 'white-space:pre',
