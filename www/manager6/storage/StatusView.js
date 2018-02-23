@@ -5,10 +5,14 @@ Ext.define('PVE.storage.StatusView', {
     height: 230,
     title: gettext('Status'),
 
+    layout: {
+	type: 'vbox',
+	align: 'stretch'
+    },
+
     defaults: {
 	xtype: 'pveInfoWidget',
-	padding: '0 30 5 30',
-	width: 770
+	padding: '0 30 5 30'
     },
     items: [
 	{

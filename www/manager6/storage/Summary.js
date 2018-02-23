@@ -2,17 +2,20 @@ Ext.define('PVE.storage.Summary', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveStorageSummary',
     scrollable: true,
-    bodyPadding: 10,
-    defaults: {
-	style: {'padding-top':'10px'},
-	width: 770
-    },
+    bodyPadding: 5,
     tbar: [
 	'->',
 	{
 	    xtype: 'proxmoxRRDTypeSelector'
 	}
     ],
+    layout: {
+	type: 'column'
+    },
+    defaults: {
+	padding: 5,
+	columnWidth: 1
+    },
     initComponent: function() {
         var me = this;
 
