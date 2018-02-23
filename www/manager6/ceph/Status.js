@@ -6,23 +6,34 @@ Ext.define('PVE.node.CephStatus', {
 
     scrollable: true,
 
-    bodyPadding: '10 0 0 0',
+    bodyPadding: 5,
+
+    layout: {
+	type: 'column'
+    },
 
     defaults: {
-	width: 762,
-	userCls: 'inline-block',
-	padding: '0 0 10 10'
+	padding: 5
     },
 
     items: [
 	{
 	    xtype: 'panel',
 	    title: gettext('Health'),
-	    bodyPadding: '0 10 10 10',
+	    bodyPadding: 10,
+	    plugins: 'responsive',
+	    responsiveConfig: {
+		'width < 1900': {
+		    columnWidth: 1
+		},
+		'width >= 1900': {
+		    columnWidth: 0.5
+		}
+	    },
 	    minHeight: 210,
 	    layout: {
 		type: 'hbox',
-		align: 'top'
+		align: 'stretch'
 	    },
 	    items: [
 		{
@@ -36,9 +47,7 @@ Ext.define('PVE.node.CephStatus', {
 		    itemId: 'warnings',
 		    stateful: true,
 		    stateId: 'ceph-status-warnings',
-		    padding: '15 0 0 0',
 		    xtype: 'grid',
-		    minHeight: 100,
 		    // since we load the store manually,
 		    // to show the emptytext, we have to
 		    // specify an empty store
@@ -88,7 +97,7 @@ Ext.define('PVE.node.CephStatus', {
 					    },
 					    items: [{
 						scrollable: true,
-						padding: '10',
+						padding: 10,
 						xtype: 'box',
 						html: [
 						    '<span>' + Ext.htmlEncode(record.data.summary) + '</span>',
@@ -108,12 +117,22 @@ Ext.define('PVE.node.CephStatus', {
 	{
 	    xtype: 'pveCephStatusDetail',
 	    itemId: 'statusdetail',
+	    plugins: 'responsive',
+	    responsiveConfig: {
+		'width < 1900': {
+		    columnWidth: 1
+		},
+		'width >= 1900': {
+		    columnWidth: 0.5
+		}
+	    },
 	    title: gettext('Status')
 	},
 	{
 	    xtype: 'panel',
 	    title: gettext('Performance'),
-	    bodyPadding: '0 10 10 10',
+	    columnWidth: 1,
+	    bodyPadding: 5,
 	    layout: {
 		type: 'hbox',
 		align: 'center'
@@ -129,7 +148,7 @@ Ext.define('PVE.node.CephStatus', {
 		    flex: 2,
 		    xtype: 'container',
 		    defaults: {
-			padding: '0 0 0 30',
+			padding: 0,
 			height: 100
 		    },
 		    items: [
