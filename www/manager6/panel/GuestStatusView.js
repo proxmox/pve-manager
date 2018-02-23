@@ -1,6 +1,7 @@
 Ext.define('PVE.panel.GuestStatusView', {
     extend: 'PVE.panel.StatusView',
     alias: 'widget.pveGuestStatusView',
+    mixins: ['Proxmox.Mixin.CBind'],
 
     height: 300,
 
@@ -84,6 +85,18 @@ Ext.define('PVE.panel.GuestStatusView', {
 		    return PVE.Utils.render_size_usage(used,max);
 		}
 	    }
+	},
+	{
+	    xtype: 'box',
+	    height: 15
+	},
+	{
+	    itemId: 'ips',
+	    xtype: 'pveAgentIPView',
+	    cbind: {
+		rstore: '{rstore}',
+		pveSelNode: '{pveSelNode}'
+	    }
 	}
     ],
 
@@ -106,6 +119,8 @@ Ext.define('PVE.panel.GuestStatusView', {
 	me.callParent();
 	if (me.pveSelNode.data.type !== 'lxc') {
 	    me.remove(me.getComponent('swap'));
+	} else {
+	    me.remove(me.getComponent('ips'));
 	}
 	me.getComponent('node').updateValue(me.pveSelNode.data.node);
     }
