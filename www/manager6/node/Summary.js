@@ -29,7 +29,7 @@ Ext.define('PVE.node.Summary', {
 	    height: 400,
 	    layout: 'fit',
 	    modal: true,
-	    items: [ view ] 
+	    items: [ view ]
 	});
 
 	Proxmox.Utils.API2Request({
@@ -52,12 +52,12 @@ Ext.define('PVE.node.Summary', {
 		    }
 		    if (rec.RunningKernel) {
 			text += pkg + ': ' + version + ' (running kernel: ' +
-			    rec.RunningKernel + ')\n'; 
+			    rec.RunningKernel + ')\n';
 		    } else if (rec.ManagerVersion) {
 			text += pkg + ': ' + version + ' (running version: ' +
-			    rec.ManagerVersion + ')\n'; 
+			    rec.ManagerVersion + ')\n';
 		    } else {
-			text += pkg + ': ' + version + '\n'; 
+			text += pkg + ': ' + version + '\n';
 		    }
 		});
 
