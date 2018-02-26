@@ -1,3 +1,21 @@
+pve-manager (5.1-47) stable; urgency=medium
+
+  * added icons to summaries and improved spacing
+
+  * added HA info to the template summary
+
+  * show IP address in summary if the guest-agent can provide it
+
+  * let storage summary, ceph & cluster dashboards use the full browser width
+
+  * various node, lxc and qemu summary page improvements
+
+  * preparations for extjs 6.2.0
+
+  * update widget toolkit dependency
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 26 Feb 2018 10:26:44 +0100
+
 pve-manager (5.1-46) stable; urgency=medium
 
   * pveversion: sort kernel packages by version
