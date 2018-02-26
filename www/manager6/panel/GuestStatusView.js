@@ -5,6 +5,14 @@ Ext.define('PVE.panel.GuestStatusView', {
 
     height: 300,
 
+    cbindData: function (initialConfig) {
+	var me = this;
+	return {
+	    isQemu: me.pveSelNode.data.type === 'qemu',
+	    isLxc: me.pveSelNode.data.type === 'lxc'
+	};
+    },
+
     layout: {
 	type: 'vbox',
 	align: 'stretch'
@@ -35,9 +43,13 @@ Ext.define('PVE.panel.GuestStatusView', {
 	    renderer: PVE.Utils.format_ha
 	},
 	{
+	    xtype: 'pveInfoWidget',
 	    itemId: 'node',
 	    iconCls: 'fa fa-building fa-fw',
 	    title: gettext('Node'),
+	    cbind: {
+		text: '{pveSelNode.data.node}'
+	    },
 	    printBar: false
 	},
 	{
@@ -64,10 +76,15 @@ Ext.define('PVE.panel.GuestStatusView', {
 	},
 	{
 	    itemId: 'swap',
+	    xtype: 'pveInfoWidget',
 	    iconCls: 'fa fa-refresh fa-fw',
 	    title: gettext('SWAP usage'),
 	    valueField: 'swap',
-	    maxField: 'maxswap'
+	    maxField: 'maxswap',
+	    cbind: {
+		hidden: '{isQemu}',
+		disabled: '{isQemu}'
+	    }
 	},
 	{
 	    itemId: 'rootfs',
@@ -95,7 +112,9 @@ Ext.define('PVE.panel.GuestStatusView', {
 	    xtype: 'pveAgentIPView',
 	    cbind: {
 		rstore: '{rstore}',
-		pveSelNode: '{pveSelNode}'
+		pveSelNode: '{pveSelNode}',
+		hidden: '{isLxc}',
+		disabled: '{isLxc}'
 	    }
 	}
     ],
@@ -111,17 +130,5 @@ Ext.define('PVE.panel.GuestStatusView', {
 	}
 
 	me.setTitle(me.getRecordValue('name') + text);
-    },
-
-    initComponent: function() {
-	var me = this;
-
-	me.callParent();
-	if (me.pveSelNode.data.type !== 'lxc') {
-	    me.remove(me.getComponent('swap'));
-	} else {
-	    me.remove(me.getComponent('ips'));
-	}
-	me.getComponent('node').updateValue(me.pveSelNode.data.node);
     }
 });
