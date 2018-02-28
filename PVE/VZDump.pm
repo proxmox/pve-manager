@@ -729,7 +729,7 @@ sub get_backup_file_list {
 	next if $exclude_fn && $fn eq $exclude_fn;
 	if ($fn =~ m!/(${bkname}-(\d{4})_(\d{2})_(\d{2})-(\d{2})_(\d{2})_(\d{2})\.(tgz|((tar|vma)(\.(gz|lzo))?)))$!) {
 	    $fn = "$dir/$1"; # untaint
-	    my $t = timelocal ($7, $6, $5, $4, $3 - 1, $2 - 1900);
+	    my $t = timelocal ($7, $6, $5, $4, $3 - 1, $2);
 	    push @$bklist, [$fn, $t];
 	}
     }
