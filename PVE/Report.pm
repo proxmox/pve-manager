@@ -51,6 +51,9 @@ my $report_def = {
     bios => [
 	'dmidecode -t bios',
     ],
+    pci => [
+	'lspci -nnk',
+    ],
     disks => [
 	'lsblk --ascii',
     ],
@@ -61,7 +64,7 @@ my $report_def = {
 };
 
 my @report_order = ('general', 'storage', 'virtual guests', 'network',
-'firewall', 'cluster', 'bios', 'disks', 'volumes');
+'firewall', 'cluster', 'bios', 'pci', 'disks', 'volumes');
 
 push @{$report_def->{volumes}}, 'zpool status', 'zfs list' if cmd_exists('zfs');
 
