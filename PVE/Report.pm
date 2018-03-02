@@ -26,7 +26,7 @@ my $report_def = {
 	'cat /etc/pve/storage.cfg',
 	'pvesm status',
 	'cat /etc/fstab',
-	'mount',
+	'findmnt --ascii',
 	'df --human',
     ],
     'virtual guests' => [
