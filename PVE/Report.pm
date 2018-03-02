@@ -27,23 +27,14 @@ if (system('command -v multipath > /dev/null 2>&1') == 0) {
     push @disks, 'multipath -ll', 'multipath -v3'
 }
 
-my @machines = ('qm list', sub { dir2text('/etc/pve/qemu-server/', '\d.*conf') });
+my @machines = ('qm list', sub { dir2text('/etc/pve/qemu-server/', '\d.*conf') }, sub { dir2text('/etc/pve/lxc/', '\d.*conf') });
 
 my @net = ('ip -details -statistics address', 'cat /etc/network/interfaces', sub { dir2text('/etc/pve/firewall/', '.*fw') },
   'iptables-save');
 
-my @cluster = ('pvecm nodes', 'pvecm status');
+my @cluster = ('pvecm nodes', 'pvecm status', 'cat /etc/pve/corosync.conf 2> /dev/null' );
 
 my @bios = ('dmidecode -t bios');
-
-if (PVE::pvecfg::version() >= 4.0) {
-    push @cluster, 'cat /etc/pve/corosync.conf 2> /dev/null' ;
-    push @machines, sub { dir2text('/etc/pve/lxc/', '\d.*conf') };
-} else {
-    push @general, 'grep --max-count=1 "model name" /proc/cpuinfo';
-    push @machines, sub { dir2text('/etc/pve/openvz/', '\d.*conf') };
-    push @cluster,  'clustat', 'cat /etc/cluster.conf 2> /dev/null';
-}
 
 my $general_report = {
     title => 'general system info',
