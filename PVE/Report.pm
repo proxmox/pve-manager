@@ -9,75 +9,64 @@ $ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
 
 my $cmd_timeout = 10; # generous timeout
 
-my $report;
-
-my @general = ('hostname', 'pveversion --verbose', 'cat /etc/hosts', 'top -b -n 1  | head -n 15',
-  'pvesubscription get', 'lscpu');
-
-my @storage = ('cat /etc/pve/storage.cfg', 'pvesm status', 'cat /etc/fstab', 'mount', 'df --human');
-
-my @volumes = ('lvs', 'vgs');
-# command -v is the posix equivalent of 'which'
-if (system('command -v zfs > /dev/null 2>&1') == 0) {
-    push @volumes, 'zpool status', 'zfs list'
-}
-
-my @disks = ('lsblk --ascii');
-if (system('command -v multipath > /dev/null 2>&1') == 0) {
-    push @disks, 'multipath -ll', 'multipath -v3'
-}
-
-my @machines = ('qm list', sub { dir2text('/etc/pve/qemu-server/', '\d.*conf') }, sub { dir2text('/etc/pve/lxc/', '\d.*conf') });
-
-my @net = ('ip -details -statistics address', 'cat /etc/network/interfaces', sub { dir2text('/etc/pve/firewall/', '.*fw') },
-  'iptables-save');
-
-my @cluster = ('pvecm nodes', 'pvecm status', 'cat /etc/pve/corosync.conf 2> /dev/null' );
-
-my @bios = ('dmidecode -t bios');
-
-my $general_report = {
-    title => 'general system info',
-    commands => \@general,
+# NOTE: always add new sections to the report_order array!
+my $report_def = {
+    general => {
+	title => 'general system info',
+	cmds => [
+	    'hostname',
+	    'pveversion --verbose',
+	    'cat /etc/hosts',
+	    'top -b -n 1  | head -n 15',
+	    'pvesubscription get',
+	    'lscpu',
+	],
+    },
+    storage => [
+	'cat /etc/pve/storage.cfg',
+	'pvesm status',
+	'cat /etc/fstab',
+	'mount',
+	'df --human',
+    ],
+    'virtual guests' => [
+       'qm list',
+       sub { dir2text('/etc/pve/qemu-server/', '\d.*conf') },
+       sub { dir2text('/etc/pve/lxc/', '\d.*conf') },
+    ],
+    network => [
+	'ip -details -statistics address',
+	'cat /etc/network/interfaces',
+    ],
+    firewall => [
+	sub { dir2text('/etc/pve/firewall/', '.*fw') },
+	'iptables-save',
+    ],
+    cluster => [
+	'pvecm nodes',
+	'pvecm status',
+	'cat /etc/pve/corosync.conf 2>/dev/null'
+    ],
+    bios => [
+	'dmidecode -t bios',
+    ],
+    disks => [
+	'lsblk --ascii',
+    ],
+    volumes => [
+	'lvs',
+	'vgs',
+    ],
 };
 
-my $storage_report = {
-    title => 'info about storage (lvm and zfs)',
-    commands => \@storage,
-};
+my @report_order = ('general', 'storage', 'virtual guests', 'network',
+'firewall', 'cluster', 'bios', 'disks', 'volumes');
 
-my $volume_report = {
-    title => 'info about virtual machines',
-    commands => \@machines,
-};
+push @{$report_def->{volumes}}, 'zpool status', 'zfs list' if cmd_exists('zfs');
 
-my $net_report = {
-    title => 'info about network and firewall',
-    commands => \@net,
-};
+push @{$report_def->{disk}}, 'multipath -ll', 'multipath -v3' if cmd_exists('multipath');
 
-my $cluster_report = {
-    title => 'info about clustering',
-    commands => \@cluster,
-};
-
-my $bios_report = {
-    title => 'info about bios',
-    commands => \@bios,
-};
-
-my $disks_report = {
-    title => 'info about disks',
-    commands => \@disks,
-};
-
-my $volumes_report = {
-    title => 'info about volumes',
-    commands => \@volumes,
-};
-
-my @global_report = ($general_report, $storage_report, $volume_report, $net_report,
-		     $cluster_report, $bios_report, $disks_report, $volumes_report);
+my $report = '';
 
 # output the content of all the files of a directory
 sub dir2text {
@@ -89,6 +78,9 @@ sub dir2text {
 	$report .= PVE::Tools::file_get_contents($target_dir.$file)."\n";
     });
 }
+
+# command -v is the posix equivalent of 'which'
+sub cmd_exists { system("command -v '$_[0]' > /dev/null 2>&1") == 0 }
 
 sub generate {
 
@@ -103,12 +95,21 @@ sub generate {
 	noerr => 1, # avoid checking programs exit code
     };
 
-    foreach my $subreport (@global_report) {
-	my $title = $subreport->{'title'};
-	my @commands = @{$subreport->{'commands'}};
+    foreach my $section (@report_order) {
+	my $s = $report_def->{$section};
+
+	my $title = "info about $section";
+	my $commands = $s;
+
+	if (ref($s) eq 'HASH') {
+	    $commands = $s->{cmds};
+	    $title = $s->{title} if defined($s->{title});
+	} elsif (ref($s) ne 'ARRAY') {
+	    die "unknown report definition in section '$section'!";
+	}
 
 	$report .= "\n==== $title ====\n";
-	foreach my $command (@commands) {
+	foreach my $command (@$commands) {
 	    eval {
 		if (ref $command eq 'CODE') {
 		    PVE::Tools::run_with_timeout($cmd_timeout, $command);
@@ -123,3 +124,5 @@ sub generate {
 
     return $report;
 }
+
+1;
