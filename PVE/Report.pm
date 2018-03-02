@@ -32,6 +32,7 @@ my $report_def = {
     'virtual guests' => [
        'qm list',
        sub { dir2text('/etc/pve/qemu-server/', '\d.*conf') },
+       'pct list',
        sub { dir2text('/etc/pve/lxc/', '\d.*conf') },
     ],
     network => [
