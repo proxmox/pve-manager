@@ -21,7 +21,7 @@ sub type {
 sub properties {
     return {
 	path => {
-            type => 'string', format => 'graphite-path',
+	    type => 'string', format => 'graphite-path',
 	    description => "root graphite path (ex: proxmox.mycluster.mykey)",
 	},
     };
@@ -33,7 +33,7 @@ sub options {
 	port => { optional => 1 },
 	path => { optional => 1 },
 	disable => { optional => 1 },
-   };
+    };
 }
 
 # we do not want boolean/state information to export to graphite
@@ -77,9 +77,9 @@ sub write_graphite_hash {
     my $path = $plugin_config->{path} ? $plugin_config->{path} : 'proxmox';
 
     my $carbon_socket = IO::Socket::IP->new(
-        PeerAddr    => $host,
-        PeerPort    => $port,
-        Proto       => 'udp',
+	PeerAddr    => $host,
+	PeerPort    => $port,
+	Proto       => 'udp',
     ) || die "couldn't create carbon socket [$host]:$port - $@\n";
 
     write_graphite($carbon_socket, $d, $ctime, $path.".$object");
@@ -93,22 +93,22 @@ sub write_graphite {
 
     for my $key (keys %$d) {
 
-        my $value = $d->{$key};
-        my $oldpath = $path;
-        $key =~ s/\./-/g;
-        $path .= ".$key";
+	my $value = $d->{$key};
+	my $oldpath = $path;
+	$key =~ s/\./-/g;
+	$path .= ".$key";
 
-        if ( defined $value ) {
-            if ( ref $value eq 'HASH' ) {
-                write_graphite($carbon_socket, $value, $ctime, $path);
+	if ( defined $value ) {
+	    if ( ref $value eq 'HASH' ) {
+		write_graphite($carbon_socket, $value, $ctime, $path);
 	    } elsif ($value =~ m/^[+-]?[0-9]*\.?[0-9]+$/ &&
-		     !$key_blacklist->{$key}) {
+		!$key_blacklist->{$key}) {
 		$carbon_socket->send( "$path $value $ctime\n" );
 	    } else {
 		# do not send blacklisted or non-numeric values
 	    }
-        }
-        $path = $oldpath;
+	}
+	$path = $oldpath;
     }
 }
 
@@ -119,8 +119,8 @@ sub pve_verify_graphite_path {
     my $regex = "([a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?)";
 
     if ($path !~ /^(${regex}\.)*${regex}$/) {
-           return undef if $noerr;
-           die "value does not look like a valid graphite path\n";
+	return undef if $noerr;
+	die "value does not look like a valid graphite path\n";
     }
 
     return $path;
