@@ -36,6 +36,14 @@ sub options {
    };
 }
 
+# we do not want boolean/state information to export to graphite
+my $key_blacklist = {
+    'template' => 1,
+    'pid' => 1,
+    'agent' => 1,
+    'serial' => 1,
+};
+
 # Plugin implementation
 sub update_node_status {
     my ($class, $plugin_config, $node, $data, $ctime) = @_;
@@ -93,9 +101,12 @@ sub write_graphite {
         if ( defined $value ) {
             if ( ref $value eq 'HASH' ) {
                 write_graphite($carbon_socket, $value, $ctime, $path);
-            }else {
-                $carbon_socket->send( "$path $value $ctime\n" );
-            }
+	    } elsif ($value =~ m/^[+-]?[0-9]*\.?[0-9]+$/ &&
+		     !$key_blacklist->{$key}) {
+		$carbon_socket->send( "$path $value $ctime\n" );
+	    } else {
+		# do not send blacklisted or non-numeric values
+	    }
         }
         $path = $oldpath;
     }
