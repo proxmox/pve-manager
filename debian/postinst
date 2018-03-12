@@ -108,8 +108,6 @@ EOF
     # rewrite banner
     test -e /proxmox_install_mode || pvebanner || true
 
-    #a2ensite pve.conf >/dev/null 2>&1
-
     if test -z "$2"; then
       : # no old version, nothing to do
     else
