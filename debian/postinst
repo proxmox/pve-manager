@@ -105,9 +105,6 @@ EOF
 	deb-systemd-invoke start pvesr.timer >/dev/null || true
     fi
 
-    # rewrite banner
-    test -e /proxmox_install_mode || pvebanner || true
-
     if test -z "$2"; then
       : # no old version, nothing to do
     else
