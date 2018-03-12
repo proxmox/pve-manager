@@ -49,10 +49,11 @@ case "$1" in
 	rm /etc/cron.daily/pve
     fi
 
-    # remove old/usused init.d files
-    rm -f /etc/init.d/pvebanner
-    rm -f /etc/init.d/pvenetcommit
-    rm -f /etc/init.d/pve-manager
+    if dpkg --compare-versions "$2" '<=' '5.1-47'; then
+	# remove old/unused init.d files
+	OLD_INITD_FILES="pvebanner pvenetcommit pve-manager pvedaemon pveproxy pvestatd spiceproxy"
+	for f in ${OLD_INITD_FILES}; do rm -f "/etc/init.d/$f"; done
+    fi
 
     # create new daily randomize update cronjob if not exist
     MIN="$(shuf -i 0-59 -n 1)"
