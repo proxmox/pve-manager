@@ -6,7 +6,7 @@ include /usr/share/pve-doc-generator/pve-doc-generator.mk
 
 export PERLLIB=..
 
-SUBDIRS = init.d ocf test
+SUBDIRS = init.d test
 
 SERVICES = pvestatd pveproxy pvedaemon spiceproxy
 CLITOOLS = vzdump pvesubscription pveceph pveam pvesr
