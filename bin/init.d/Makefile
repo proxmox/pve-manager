@@ -2,13 +2,6 @@ include ../../defines.mk
 
 all:
 
-SCRIPTS = 		\
-	pvedaemon 	\
-	pveproxy 	\
-	spiceproxy 	\
-	pvestatd
-
-
 SERVICES=			\
 	pvebanner.service 	\
 	pvenetcommit.service 	\
@@ -21,10 +14,8 @@ SERVICES=			\
 	pvesr.service		\
 	pvesr.timer
 
-.PHONY: install 
-install: ${SCRIPTS}
-	install -d ${INITDBINDIR}
-	install -m 0755 ${SCRIPTS} ${INITDBINDIR}
+.PHONY: install
+install: ${SERVICES}
 	install -d ${SERVICEDIR}
 	install -m 0644 ${SERVICES} ${SERVICEDIR}
 	install -d ${SERVICEDIR}/ceph-mon@.service.d
