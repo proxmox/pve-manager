@@ -144,35 +144,10 @@ EOF
       fi
 
     fi ;;
-  abort-upgrade)
-    # Back out of an attempt to upgrade this package FROM THIS VERSION
-    # to version $2.  Undo the effects of "prerm upgrade $2".
-    :
 
+  abort-upgrade|abort-remove|abort-deconfigure)
     ;;
-  abort-remove)
-    if test "$2" != in-favour; then
-      echo "$0: undocumented call to \`postinst $*'" 1>&2
-      exit 0
-    fi
-    # Back out of an attempt to remove this package, which was due to
-    # a conflict with package $3 (version $4).  Undo the effects of
-    # "prerm remove in-favour $3 $4".
-    :
 
-    ;;
-  abort-deconfigure)
-    if test "$2" != in-favour -o "$5" != removing; then
-      echo "$0: undocumented call to \`postinst $*'" 1>&2
-      exit 0
-    fi
-    # Back out of an attempt to deconfigure this package, which was
-    # due to package $6 (version $7) which we depend on being removed
-    # to make way for package $3 (version $4).  Undo the effects of
-    # "prerm deconfigure in-favour $3 $4 removing $6 $7".
-    :
-
-    ;;
   *) echo "$0: didn't understand being called with \`$1'" 1>&2
      exit 0;;
 esac
