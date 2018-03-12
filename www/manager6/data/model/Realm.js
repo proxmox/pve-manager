@@ -22,6 +22,7 @@ Ext.define('pve-domains', {
 	    }
 	}
     ],
+    idProperty: 'realm',
     proxy: {
 	type: 'proxmox',
 	url: "/api2/json/access/domains"
