@@ -62,18 +62,6 @@ EOF
 	echo '|/usr/bin/pvemailforward' >>/root/.forward
     fi
 
-    if [ -f /etc/systemd/system/ceph.service ]; then
-	md5=$(md5sum /etc/systemd/system/ceph.service)
-	if [[ "$md5" == "21b2e7a7c4ffcf92ad0ec2c905e88e5b  /etc/systemd/system/ceph.service" ]]; then
-	    echo "Updating PVE ceph.service to correct install target.."
-	    cp /usr/share/doc/pve-manager/examples/ceph.service /etc/systemd/system/ceph.service
-	    systemctl --system daemon-reload >/dev/null || true
-	    systemctl --system disable ceph.service
-	    systemctl --system enable ceph.service
-	    echo " done"
-	fi
-    fi
-
     systemctl --system daemon-reload >/dev/null || true
 
     # same as dh_systemd_enable (code copied)
