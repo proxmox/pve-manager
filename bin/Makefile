@@ -41,21 +41,14 @@ all: ${SERVICE_MANS} ${CLI_MANS} pvemailforward
 	cat $<|pod2man -n $* -s 1 -r ${VERSION} -c "Proxmox Documentation" >$@.tmp
 	mv $@.tmp $@
 
+%.1.pod:
+	podselect $* > $@.tmp
+	mv $@.tmp $@
+
 pveversion.1.pod: pveversion
-	podselect $< > $@.tmp
-	mv $@.tmp $@
-
 pveupgrade.1.pod: pveupgrade
-	podselect $< > $@.tmp
-	mv $@.tmp $@
-
 pvesh.1.pod: pvesh
-	podselect $< > $@.tmp
-	mv $@.tmp $@
-
 pvereport.1.pod: pvereport
-	podselect $< > $@.tmp
-	mv $@.tmp $@
 
 %.service-bash-completion:
 	perl -I.. -T -e "use PVE::Service::$*; PVE::Service::$*->generate_bash_completions();" >$@.tmp
