@@ -10,4 +10,4 @@ override_dh_fixperms:
 	dh_fixperms -Xpvemailforward -Xvar/log/pveproxy
 
 %:
-	dh $@
+	dh $@ --with=systemd

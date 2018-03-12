@@ -19,36 +19,4 @@ case "$1" in
     ;;
 esac
 
-# same as dh_systemd_enable (code copied)
-systemctl --system daemon-reload >/dev/null || true
-
-PVESERVICES="pvedaemon pveproxy spiceproxy pvestatd pvebanner pvenetcommit pve-guests"
-PVETIMERS="pvesr"
-
-if [ "$1" = "remove" ]; then
-    for timer in ${PVETIMERS}; do
-	if [ -x "/usr/bin/deb-systemd-helper" ]; then
-	    deb-systemd-helper mask $timer.timer >/dev/null
-	fi
-    done
-    for service in ${PVESERVICES}; do
-	if [ -x "/usr/bin/deb-systemd-helper" ]; then
-	    deb-systemd-helper mask $service.service >/dev/null
-	fi
-    done
-fi
-
-if [ "$1" = purge ]; then
-    for timer in ${PVETIMERS}; do
-	if [ -x "/usr/bin/deb-systemd-helper" ]; then
-	    deb-systemd-helper purge $timer.timer >/dev/null
-	    deb-systemd-helper unmask $timer.timer >/dev/null
-	fi
-    done
-    for service in ${PVESERVICES}; do
-	if [ -x "/usr/bin/deb-systemd-helper" ]; then
-	    deb-systemd-helper purge $service.service >/dev/null
-	    deb-systemd-helper unmask $service.service >/dev/null
-	fi
-    done
-fi
+#DEBHELPER#
