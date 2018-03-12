@@ -11,6 +11,8 @@ SERVICES=			\
 	pveproxy.service 	\
 	spiceproxy.service	\
 	pve-storage.target	\
+	pve-daily-update.service\
+	pve-daily-update.timer	\
 	pvesr.service		\
 	pvesr.timer
 

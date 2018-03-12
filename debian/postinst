@@ -32,25 +32,14 @@ case "$1" in
 
     mkdir /etc/pve 2>/dev/null || true
 
-    # remove old cron.daily update job to randomize it
-    if test -e /etc/cron.daily/pve; then
-	echo "Remove old update script from cron.daily"
-	rm /etc/cron.daily/pve
-    fi
-
     if dpkg --compare-versions "$2" '<=' '5.1-47'; then
+	# remove cron update job, superseded by systemd timer
+	rm -f /etc/cron.d/pveupdate
+
 	# remove old/unused init.d files
 	OLD_INITD_FILES="pvebanner pvenetcommit pve-manager pvedaemon pveproxy pvestatd spiceproxy"
 	for f in ${OLD_INITD_FILES}; do rm -f "/etc/init.d/$f"; done
     fi
-
-    # create new daily randomize update cronjob if not exist
-    MIN="$(shuf -i 0-59 -n 1)"
-    HOUR="$(shuf -i 2-5 -n 1)"
-    cat <<EOF >/etc/cron.d/pveupdate
-# automatically generated - do not edit
-${MIN} ${HOUR} * * * root /usr/bin/pveupdate
-EOF
 
     if test ! -e /var/lib/pve-manager/apl-info/download.proxmox.com; then
 	mkdir -p /var/lib/pve-manager/apl-info
