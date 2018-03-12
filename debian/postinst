@@ -67,9 +67,6 @@ EOF
 	echo '|/usr/bin/pvemailforward' >/root/.forward
     fi
 
-    # disable fancy init messages (bad with bootlogd)
-    test -f /etc/lsb-base-logging.sh || echo "FANCYTTY=0" >/etc/lsb-base-logging.sh
-
     if [ -f /etc/systemd/system/ceph.service ]; then
 	md5=$(md5sum /etc/systemd/system/ceph.service)
 	if [[ "$md5" == "21b2e7a7c4ffcf92ad0ec2c905e88e5b  /etc/systemd/system/ceph.service" ]]; then
