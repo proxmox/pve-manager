@@ -122,28 +122,17 @@ EOF
 
     #a2ensite pve.conf >/dev/null 2>&1
 
-    # There are three sub-cases:
-    if test "${2+set}" != set; then
-      # We're being installed by an ancient dpkg which doesn't remember
-      # which version was most recently configured, or even whether
-      # there is a most recently configured version.
-      :
-
-    elif test -z "$2" -o "$2" = "<unknown>"; then
-      # The package has not ever been configured on this system, or was
-      # purged since it was last configured.
-      :
-
+    if test -z "$2"; then
+      : # no old version, nothing to do
     else
-      # Version $2 is the most recently configured version of this
-      # package.
+      # "$2" is the most recently configured version
       if dpkg --compare-versions "$2" '<=' '5.0-23'; then
         # 5.0-23 temporarily reverted the removal of the startcom CA in
         # ca-certificates; we've since switched to let's encrypt
         update-ca-certificates >/dev/null 2>&1
       fi
-
-    fi ;;
+    fi
+    ;;
 
   abort-upgrade|abort-remove|abort-deconfigure)
     ;;
