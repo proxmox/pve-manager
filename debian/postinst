@@ -32,9 +32,6 @@ case "$1" in
 
     mkdir /etc/pve 2>/dev/null || true
 
-    # remove old APL dir
-    rm -rf /var/lib/pve-manager/apl-available
-
     # remove old cron.daily update job to randomize it
     if test -e /etc/cron.daily/pve; then
 	echo "Remove old update script from cron.daily"
