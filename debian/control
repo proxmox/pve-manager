@@ -11,7 +11,6 @@ Architecture: any
 Depends: apt-transport-https,
          ca-certificates,
          cstream,
-         debconf (>= 0.5) | debconf-2.0,
          dtach,
          fonts-font-awesome,
          gdisk,

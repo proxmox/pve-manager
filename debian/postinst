@@ -8,14 +8,6 @@ set -e
 # done its automatic conffile handling, and all the packages we depend
 # of are already fully installed and configured.
 
-# The following idempotent stuff doesn't generally need protecting 
-# against being run in the abort-* cases.
-
-# Use debconf. (installs templates)
-. /usr/share/debconf/confmodule
-# all done with debconf here.
-db_stop
-
 case "$1" in
   triggered)
     # We don't print a status message here, as dpkg already said
