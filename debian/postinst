@@ -71,7 +71,9 @@ case "$1" in
 	    else
 		dh_action="start"
 	    fi
-	    deb-systemd-invoke $dh_action "$unit"
+	    if systemctl -q is-enabled "$unit"; then
+		deb-systemd-invoke $dh_action "$unit"
+	    fi
 	done
     fi
 
