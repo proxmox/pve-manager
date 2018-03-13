@@ -54,7 +54,7 @@ case "$1" in
 
     # same as dh_systemd_enable (code copied)
 
-    for timer in pvesr; do
+    for timer in pvesr pve-daily-update; do
 	deb-systemd-helper unmask $timer.timer >/dev/null || true
 
 	# was-enabled defaults to true, so new installations run enable.
@@ -90,7 +90,7 @@ case "$1" in
 	    deb-systemd-invoke reload-or-restart $service
 	done
 
-	deb-systemd-invoke start pvesr.timer >/dev/null || true
+	deb-systemd-invoke start pvesr.timer pve-daily-update.timer >/dev/null || true
     fi
 
     if test -z "$2"; then
