@@ -93,6 +93,8 @@ case "$1" in
 	    # remove old/unused init.d files
 	    OLD_INITD_FILES="pvebanner pvenetcommit pve-manager pvedaemon pveproxy pvestatd spiceproxy"
 	    for f in ${OLD_INITD_FILES}; do rm -f "/etc/init.d/$f"; done
+
+	    deb-systemd-invoke start pve-daily-update.timer
 	fi
     fi
     ;;
