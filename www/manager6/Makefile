@@ -204,7 +204,6 @@ all: pvemanagerlib.js
 
 .PHONY: install 
 install: pvemanagerlib.js
-	install -d ${WWWBASEDIR}/root
 	install -d ${WWWJSDIR}
 	install -m 0644 pvemanagerlib.js ${WWWJSDIR}
 
