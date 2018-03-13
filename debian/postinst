@@ -54,43 +54,28 @@ case "$1" in
 
     # same as dh_systemd_enable (code copied)
 
-    for timer in pvesr pve-daily-update; do
-	deb-systemd-helper unmask $timer.timer >/dev/null || true
+    UNITS="pvedaemon.service pveproxy.service spiceproxy.service pvestatd.service pvebanner.service pvesr.timer pve-daily-update.timer"
+    NO_RESTART_UNITS="pvenetcommit.service pve-guests.service"
+
+    for unit in ${UNITS} ${NO_RESTART_UNITS}; do
+	deb-systemd-helper unmask "$unit" >/dev/null || true
 
 	# was-enabled defaults to true, so new installations run enable.
-	if deb-systemd-helper --quiet was-enabled $timer.timer; then
+	if deb-systemd-helper --quiet was-enabled "$unit"; then
 	    # Enables the unit on first installation, creates new
 	    # symlinks on upgrades if the unit file has changed.
-	    deb-systemd-helper enable $timer.timer >/dev/null || true
+	    deb-systemd-helper enable "$unit" >/dev/null || true
 	else
 	    # Update the statefile to add new symlinks (if any), which need to be
 	    # cleaned up on purge. Also remove old symlinks.
-	    deb-systemd-helper update-state $timer.timer >/dev/null || true
-	fi
-    done
-
-    for service in pvedaemon pveproxy spiceproxy pvestatd pvebanner pvenetcommit pve-guests; do
-	deb-systemd-helper unmask $service.service >/dev/null || true
-
-	# was-enabled defaults to true, so new installations run enable.
-	if deb-systemd-helper --quiet was-enabled $service.service; then
-	    # Enables the unit on first installation, creates new
-	    # symlinks on upgrades if the unit file has changed.
-	    deb-systemd-helper enable $service.service >/dev/null || true
-	else
-	    # Update the statefile to add new symlinks (if any), which need to be
-	    # cleaned up on purge. Also remove old symlinks.
-	    deb-systemd-helper update-state $service.service >/dev/null || true
+	    deb-systemd-helper update-state "$unit" >/dev/null || true
 	fi
     done
 
     if test ! -e /proxmox_install_mode; then
-
-	for service in pvedaemon pveproxy spiceproxy pvestatd; do
-	    deb-systemd-invoke reload-or-restart $service
+	for unit in ${UNITS}; do
+	    deb-systemd-invoke reload-or-restart "$unit"
 	done
-
-	deb-systemd-invoke start pvesr.timer pve-daily-update.timer >/dev/null || true
     fi
 
     if test -z "$2"; then
