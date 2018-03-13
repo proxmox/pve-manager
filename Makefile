@@ -7,7 +7,7 @@ DESTDIR=
 SUBDIRS = aplinfo PVE bin www
 
 ARCH:=$(shell dpkg-architecture -qDEB_BUILD_ARCH)
-GITVERSION:=$(shell cat .git/refs/heads/master)
+GITVERSION:=$(shell git rev-parse HEAD)
 
 DEB=${PACKAGE}_${VERSION}-${PACKAGERELEASE}_${ARCH}.deb
 
