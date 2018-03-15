@@ -210,6 +210,12 @@ Ext.define('PVE.qemu.Config', {
 		xtype: 'PVE.qemu.HardwareView'
 	    },
 	    {
+		title: 'Cloud-Init',
+		itemId: 'cloudinit',
+		iconCls: 'fa fa-cloud',
+		xtype: 'pveCiPanel'
+	    },
+	    {
 		title: gettext('Options'),
 		iconCls: 'fa fa-gear',
 		itemId: 'options',

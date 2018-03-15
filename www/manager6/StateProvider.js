@@ -49,6 +49,7 @@ Ext.define('PVE.StateProvider', {
     hprefix: 'v1',
 
     compDict: {
+	cloudinit: 52,
 	replication: 51,
 	system: 50,
 	monitor: 49,
