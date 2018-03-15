@@ -7,28 +7,22 @@ Ext.define('PVE.lxc.DNSInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	if (!values.searchdomain) {
-	    if (me.insideWizard) {
-		return {};
-	    } else {
-		return { "delete": "searchdomain,nameserver" };
-	    }
+	var deletes = [];
+	if (!values.searchdomain && !me.insideWizard) {
+	    deletes.push('searchdomain');
 	}
-	var list = [];
-	Ext.Array.each(['dns1', 'dns2', 'dns3'], function(fn) {
-	    if (values[fn]) {
-		list.push(values[fn]);
-	    }
-	    delete values[fn];
-	});
 
-	if (list.length) {
+	if (values.nameserver) {
+	    var list = values.nameserver.split(/[\ \,\;]+/);
 	    values.nameserver = list.join(' ');
-	} else {
-	    if (!me.insideWizard) {
-		values['delete'] = 'nameserver';
-	    }
+	} else if(!me.insideWizard) {
+	    deletes.push('nameserver');
 	}
+
+	if (deletes.length) {
+	    values['delete'] = deletes.join(',');
+	}
+
 	return values;
     },
 
@@ -42,47 +36,16 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 		skipEmptyText: true,
 		fieldLabel: gettext('DNS domain'),
 		emptyText: gettext('use host settings'),
+		allowBlank: true
+	    },
+	    {
+		xtype: 'proxmoxtextfield',
+		fieldLabel: gettext('DNS servers'),
+		vtype: 'IP64AddressList',
 		allowBlank: true,
-		listeners: {
-		    change: function(f, value) {
-			if (!me.rendered) {
-			    return;
-			}
-			var field_ids = ['#dns1', '#dns2', '#dns3'];
-			Ext.Array.each(field_ids, function(fn) {
-			    var field = me.down(fn);
-			    field.setDisabled(!value);
-			    field.clearInvalid();
-			});
-		    }
-		}
-	    },
-	    {
-		xtype: 'proxmoxtextfield',
-		fieldLabel: gettext('DNS server') + " 1",
-		vtype: 'IP64Address',
-		allowBlank: true,
-		disabled: true,
-		name: 'dns1',
-		itemId: 'dns1'
-	    },
-	    {
-		xtype: 'proxmoxtextfield',
-		fieldLabel: gettext('DNS server') + " 2",
-		vtype: 'IP64Address',
-		skipEmptyText: true,
-		disabled: true,
-		name: 'dns2',
-		itemId: 'dns2'
-	    },
-	    {
-		xtype: 'proxmoxtextfield',
-		fieldLabel: gettext('DNS server') + " 3",
-		vtype: 'IP64Address',
-		skipEmptyText: true,
-		disabled: true,
-		name: 'dns3',
-		itemId: 'dns3'
+		emptyText: gettext('use host settings'),
+		name: 'nameserver',
+		itemId: 'nameserver'
 	    }
 	];
 
@@ -119,10 +82,6 @@ Ext.define('PVE.lxc.DNSEdit', {
 		    if (values.nameserver) {
 			values.nameserver.replace(/[,;]/, ' ');
 			values.nameserver.replace(/^\s+/, '');
-			var nslist = values.nameserver.split(/\s+/);
-			values.dns1 = nslist[0];
-			values.dns2 = nslist[1];
-			values.dns3 = nslist[2];
 		    }
 
 		    ipanel.setValues(values);
@@ -190,10 +149,7 @@ Ext.define('PVE.lxc.DNS', {
 		defaultValue: '',
 		editor: caps.vms['VM.Config.Network'] ? 'PVE.lxc.DNSEdit' : undefined,
 		renderer: function(value) {
-		    if (me.getObjectValue('nameserver') || me.getObjectValue('searchdomain')) {
-			return value;
-		    }
-		    return gettext('use host settings');
+		    return value || gettext('use host settings');
 		}
 	    },
 	    nameserver: {
@@ -201,10 +157,7 @@ Ext.define('PVE.lxc.DNS', {
 		defaultValue: '',
 		editor: caps.vms['VM.Config.Network'] ? 'PVE.lxc.DNSEdit' : undefined,
 		renderer: function(value) {
-		    if (me.getObjectValue('nameserver') || me.getObjectValue('searchdomain')) {
-			return value;
-		    }
-		    return gettext('use host settings');
+		    return value || gettext('use host settings');
 		}
 	    }
 	};
