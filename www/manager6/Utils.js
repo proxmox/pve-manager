@@ -894,6 +894,37 @@ Ext.define('PVE.Utils', { utilities: {
 	    callback(evt.target.result);
 	};
 	reader.readAsText(file);
+    },
+
+    bus_counts: { ide: 4, sata: 6, scsi: 16, virtio: 16 },
+
+    // types is either undefined (all busses), an array of busses, or a single bus
+    forEachBus: function(types, func) {
+	var busses = Object.keys(PVE.Utils.bus_counts);
+	var i, j, count, cont;
+
+	if (Ext.isArray(types)) {
+	    busses = types;
+	} else if (Ext.isDefined(types)) {
+	    busses = [ types ];
+	}
+
+	// check if we only have valid busses
+	for (i = 0; i < busses.length; i++) {
+	    if (!PVE.Utils.bus_counts[busses[i]]) {
+		throw "invalid bus: '" + busses[i] + "'";
+	    }
+	}
+
+	for (i = 0; i < busses.length; i++) {
+	    count = PVE.Utils.bus_counts[busses[i]];
+	    for (j = 0; j < count; j++) {
+		cont = func(busses[i], j);
+		if (!cont && cont !== undefined) {
+		    return;
+		}
+	    }
+	}
     }
 },
 

@@ -147,8 +147,8 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	};
 
-	for (i = 0; i < 4; i++) {
-	    confid = "ide" + i.toString();
+	PVE.Utils.forEachBus(undefined, function(type, id) {
+	    var confid = type + id;
 	    rows[confid] = {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
@@ -157,40 +157,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('Hard Disk') + ' (' + confid +')',
 		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')'
 	    };
-	}
-	for (i = 0; i < 6; i++) {
-	    confid = "sata" + i.toString();
-	    rows[confid] = {
-		group: 1,
-		tdCls: 'pve-itype-icon-storage',
-		editor: 'PVE.qemu.HDEdit',
-		never_delete: caps.vms['VM.Config.Disk'] ? false : true,
-		header: gettext('Hard Disk') + ' (' + confid +')',
-		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')'
-	    };
-	}
-	for (i = 0; i < 16; i++) {
-	    confid = "scsi" + i.toString();
-	    rows[confid] = {
-		group: 1,
-		tdCls: 'pve-itype-icon-storage',
-		editor: 'PVE.qemu.HDEdit',
-		never_delete: caps.vms['VM.Config.Disk'] ? false : true,
-		header: gettext('Hard Disk') + ' (' + confid +')',
-		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')'
-	    };
-	}
-	for (i = 0; i < 16; i++) {
-	    confid = "virtio" + i.toString();
-	    rows[confid] = {
-		group: 1,
-		tdCls: 'pve-itype-icon-storage',
-		editor: 'PVE.qemu.HDEdit',
-		never_delete: caps.vms['VM.Config.Disk'] ? false : true,
-		header: gettext('Hard Disk') + ' (' + confid +')',
-		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')'
-	    };
-	}
+	});
 	for (i = 0; i < 32; i++) {
 	    confid = "net" + i.toString();
 	    rows[confid] = {
