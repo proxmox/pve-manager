@@ -223,6 +223,7 @@
 .pve-itype-icon-itype,
 .pve-itype-icon-usb,
 .pve-itype-icon-serial,
+.pve-itype-icon-cloud,
 .pve-itype-icon-pci
 {
     background-repeat: no-repeat;
@@ -345,6 +346,12 @@
 {
     background-size: 16px;
     background-image:url(../images/icon-serial.svg);
+}
+
+.pve-itype-icon-cloud
+{
+    background-size: 16px;
+    background-image:url(../images/icon-cloud.svg);
 }
 
 .pve-icon {
