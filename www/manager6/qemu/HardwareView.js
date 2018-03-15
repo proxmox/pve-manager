@@ -15,7 +15,10 @@ Ext.define('PVE.qemu.HardwareView', {
 	    metaData.tdCls = rowdef.tdCls;
 	    if (rowdef.tdCls == 'pve-itype-icon-storage') { 
 		var value = me.getObjectValue(key, '', true);
-		if (value.match(/media=cdrom/)) {
+		if (value.match(/vm-.*-cloudinit/)) {
+		    metaData.tdCls = 'pve-itype-icon-cloud';
+		    return rowdef.cloudheader;
+		} else if (value.match(/media=cdrom/)) {
 		    metaData.tdCls = 'pve-itype-icon-cdrom';
 		    return rowdef.cdheader;
 		}
@@ -155,7 +158,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		editor: 'PVE.qemu.HDEdit',
 		never_delete: caps.vms['VM.Config.Disk'] ? false : true,
 		header: gettext('Hard Disk') + ' (' + confid +')',
-		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')'
+		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')',
+		cloudheader: gettext('CloudInit Drive') + ' (' + confid + ')'
 	    };
 	});
 	for (i = 0; i < 32; i++) {
@@ -484,12 +488,17 @@ Ext.define('PVE.qemu.HardwareView', {
 	    efidisk_menuitem.setDisabled(me.rstore.getData().map.efidisk0 !== undefined);
 	    // en/disable usb add button
 	    var count = 0;
+	    var hasCloudInit = false;
 	    me.rstore.getData().items.forEach(function(item){
 		if (/^usb\d+/.test(item.id)) {
 		    count++;
 		}
+		if (!hasCloudInit && /vm-.*-cloudinit/.test(item.data.value)) {
+		    hasCloudInit = true;
+		}
 	    });
 	    me.down('#addusb').setDisabled((count >= 5));
+	    me.down('#addci').setDisabled(hasCloudInit);
 
 	    if (!rec) {
 		remove_btn.disable();
@@ -509,12 +518,14 @@ Ext.define('PVE.qemu.HardwareView', {
 		rowdef.tdCls == 'pve-itype-icon-storage' &&
 		(value && !value.match(/media=cdrom/));
 
+	    var isCloudInit = (value && value.match(/vm-.*-cloudinit/));
+
 	    var isEfi = (key === 'efidisk0');
 
 	    remove_btn.setDisabled(rec.data['delete'] || (rowdef.never_delete === true));
 	    remove_btn.setText(isUsedDisk ? remove_btn.altText : remove_btn.defaultText);
 
-	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor);
+	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor || isCloudInit);
 
 	    resize_btn.setDisabled(pending || !isUsedDisk);
 
@@ -582,6 +593,20 @@ Ext.define('PVE.qemu.HardwareView', {
 				disabled: !caps.nodes['Sys.Console'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.USBEdit', {
+					url: '/api2/extjs/' + baseurl,
+					pveSelNode: me.pveSelNode
+				    });
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+			    {
+				text: gettext('CloudInit Drive'),
+				itemId: 'addci',
+				iconCls: 'pve-itype-icon-cloud',
+				disabled: !caps.nodes['Sys.Console'],
+				handler: function() {
+				    var win = Ext.create('PVE.qemu.CIDriveEdit', {
 					url: '/api2/extjs/' + baseurl,
 					pveSelNode: me.pveSelNode
 				    });
