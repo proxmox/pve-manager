@@ -29,7 +29,7 @@ Ext.define('PVE.FirewallOptions', {
 	    me.add_boolean_row(name, text, { defaultValue: defaultValue });
 	};
 	var add_integer_row = function(name, text, minValue) {
-	    me.add_boolean_row(name, text, { minValue: minValue });
+	    me.add_integer_row(name, text, { minValue: minValue });
 	};
 
 	var add_log_row = function(name, labelWidth) {
