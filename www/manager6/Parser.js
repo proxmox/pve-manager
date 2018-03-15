@@ -162,6 +162,63 @@ Ext.define('PVE.Parser', { statics: {
 	return drivestr;
     },
 
+    parseIPConfig: function(key, value) {
+	if (!(key && value)) {
+	    return;
+	}
+
+	var res = {};
+
+	var errors = false;
+	Ext.Array.each(value.split(','), function(p) {
+	    if (!p || p.match(/^\s*$/)) {
+		return; // continue
+	    }
+
+	    var match_res;
+	    if ((match_res = p.match(/^ip=(\S+)$/)) !== null) {
+		res.ip = match_res[1];
+	    } else if ((match_res = p.match(/^gw=(\S+)$/)) !== null) {
+		res.gw = match_res[1];
+	    } else if ((match_res = p.match(/^ip6=(\S+)$/)) !== null) {
+		res.ip6 = match_res[1];
+	    } else if ((match_res = p.match(/^gw6=(\S+)$/)) !== null) {
+		res.gw6 = match_res[1];
+	    } else {
+		errors = true;
+		return false; // break
+	    }
+	});
+
+	if (errors) {
+	    return;
+	}
+
+	return res;
+    },
+
+    printIPConfig: function(cfg) {
+	var c = "";
+	var str = "";
+	if (cfg.ip) {
+	    str += "ip=" + cfg.ip;
+	    c = ",";
+	}
+	if (cfg.gw) {
+	    str += c + "gw=" + cfg.gw;
+	    c = ",";
+	}
+	if (cfg.ip6) {
+	    str += c + "ip6=" + cfg.ip6;
+	    c = ",";
+	}
+	if (cfg.gw6) {
+	    str += c + "gw6=" + cfg.gw6;
+	    c = ",";
+	}
+	return str;
+    },
+
     parseOpenVZNetIf: function(value) {
 	if (!value) {
 	    return;
