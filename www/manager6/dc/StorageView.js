@@ -42,6 +42,8 @@ Ext.define('PVE.dc.StorageView', {
 		editor = 'PVE.storage.DirEdit';
 	    } else if (type === 'nfs') {
 		editor = 'PVE.storage.NFSEdit';
+	    } else if (type === 'cifs') {
+		editor = 'PVE.storage.CIFSEdit';
 	    } else if (type === 'glusterfs') {
 		editor = 'PVE.storage.GlusterFsEdit';
 	    } else if (type === 'lvm') {
@@ -129,6 +131,15 @@ Ext.define('PVE.dc.StorageView', {
 				iconCls: 'fa fa-fw fa-building',
 				handler: function() {
 				    var win = Ext.create('PVE.storage.NFSEdit', {});
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+			    {
+				text:  PVE.Utils.format_storage_type('cifs'),
+				iconCls: 'fa fa-fw fa-building',
+				handler: function() {
+				    var win = Ext.create('PVE.storage.CIFSEdit', {});
 				    win.on('destroy', reload);
 				    win.show();
 				}

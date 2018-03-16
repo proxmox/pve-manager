@@ -391,6 +391,8 @@ Ext.define('PVE.Utils', { utilities: {
 	    return Proxmox.Utils.directoryText;
 	} else if (value === 'nfs') {
 	    return 'NFS';
+	} else if (value === 'cifs') {
+	    return 'CIFS';
 	} else if (value === 'glusterfs') {
 	    return 'GlusterFS';
 	} else if (value === 'lvm') {

@@ -154,6 +154,7 @@ JSSRC= 				                 	\
 	storage/Browser.js				\
 	storage/DirEdit.js				\
 	storage/NFSEdit.js				\
+	storage/CIFSEdit.js				\
 	storage/GlusterFsEdit.js			\
 	storage/IScsiEdit.js				\
 	storage/LVMEdit.js				\
