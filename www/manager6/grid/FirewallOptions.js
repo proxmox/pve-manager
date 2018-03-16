@@ -28,8 +28,19 @@ Ext.define('PVE.FirewallOptions', {
 	var add_boolean_row = function(name, text, defaultValue) {
 	    me.add_boolean_row(name, text, { defaultValue: defaultValue });
 	};
-	var add_integer_row = function(name, text, minValue) {
-	    me.add_integer_row(name, text, { minValue: minValue });
+	var add_integer_row = function(name, text, minValue, labelWidth) {
+	    me.add_integer_row(name, text, {
+		minValue: minValue,
+		deleteEmpty: true,
+		labelWidth: labelWidth,
+		renderer: function(value) {
+		    if (value === undefined) {
+			return Proxmox.Utils.defaultText;
+		    }
+
+		    return value;
+		}
+	    });
 	};
 
 	var add_log_row = function(name, labelWidth) {
@@ -59,9 +70,9 @@ Ext.define('PVE.FirewallOptions', {
 	    add_boolean_row('nosmurfs', gettext('SMURFS filter'), 1);
 	    add_boolean_row('tcpflags', gettext('TCP flags filter'), 0);
 	    add_boolean_row('ndp', 'NDP', 1);
-	    add_integer_row('nf_conntrack_max', 'nf_conntrack_max', 32768);
+	    add_integer_row('nf_conntrack_max', 'nf_conntrack_max', 32768, 120);
 	    add_integer_row('nf_conntrack_tcp_timeout_established',
-			    'nf_conntrack_tcp_timeout_established', 7875);
+			    'nf_conntrack_tcp_timeout_established', 7875, 250);
 	    add_log_row('log_level_in');
 	    add_log_row('log_level_out');
 	    add_log_row('tcp_flags_log_level', 120);
