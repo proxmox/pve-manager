@@ -24,10 +24,39 @@ Ext.define('PVE.qemu.CloudInit', {
 		    !caps.vms['VM.Config.Network']) {
 		    return false;
 		}
+
+		if (record.data.key === 'cipassword' && !record.data.value) {
+		    return false;
+		}
 		return true;
 	    },
 	    handler: function() {
 		var me = this.up('grid');
+		var records = me.getSelection();
+		if (!records ||  !records.length) {
+		    return;
+		}
+
+		var id = records[0].data.key;
+		var match = id.match(/^net(\d+)$/);
+		if (match) {
+		    id = 'ipconfig' + match[1];
+		}
+
+		var params = {};
+		params['delete'] = id;
+		Proxmox.Utils.API2Request({
+		    url: me.baseurl + '/config',
+		    waitMsgTarget: me,
+		    method: 'PUT',
+		    params: params,
+		    failure: function(response, opts) {
+			Ext.Msg.alert('Error', response.htmlStatus);
+		    },
+		    callback: function() {
+			me.reload();
+		    }
+		});
 	    },
 	    text: gettext('Remove')
 	},
@@ -185,7 +214,6 @@ Ext.define('PVE.qemu.CloudInit', {
 	    cipassword: {
 		header: gettext('Password'),
 		iconCls: 'fa fa-unlock',
-		never_delete: true,
 		defaultValue: '',
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'proxmoxWindowEdit',
