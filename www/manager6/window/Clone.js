@@ -21,9 +21,9 @@ Ext.define('PVE.window.Clone', {
 
     statics: {
 	// display a snapshot selector only if needed
-	wrap: function(nodename, vmid, isTemplate) {
+	wrap: function(nodename, vmid, isTemplate, guestType) {
 	    Proxmox.Utils.API2Request({
-		url: '/nodes/' + nodename + '/qemu/' + vmid +'/snapshot',
+		url: '/nodes/' + nodename + '/' + guestType + '/' + vmid +'/snapshot',
 		failure: function(response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
 		},
@@ -34,6 +34,7 @@ Ext.define('PVE.window.Clone', {
 
 		    Ext.create('PVE.window.Clone', {
 			nodename: nodename,
+			guestType: guestType,
 			vmid: vmid,
 			isTemplate: isTemplate,
 			hasSnapshots: hasSnapshots
@@ -57,7 +58,11 @@ Ext.define('PVE.window.Clone', {
 	}
 
 	if (values.name) {
-	    params.name = values.name;
+	    if (me.guestType === 'lxc') {
+		params.hostname = values.name;
+	    } else {
+		params.name = values.name;
+	    }
 	}
 
 	if (values.target) {
@@ -68,7 +73,7 @@ Ext.define('PVE.window.Clone', {
 	    params.full = 1;
 	    if (values.hdstorage) {
 		params.storage = values.hdstorage;
-		if (values.diskformat) {
+		if (values.diskformat && me.guestType !== 'lxc') {
 		    params.format = values.diskformat;
 		}
 	    }
@@ -76,7 +81,7 @@ Ext.define('PVE.window.Clone', {
 
 	Proxmox.Utils.API2Request({
 	    params: params,
-	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/clone',
+	    url: '/nodes/' + me.nodename + '/' + me.guestType + '/' + me.vmid + '/clone',
 	    waitMsgTarget: me,
 	    method: 'POST',
 	    failure: function(response, opts) {
@@ -112,7 +117,7 @@ Ext.define('PVE.window.Clone', {
 
 	Proxmox.Utils.API2Request({
 	    waitMsgTarget: me,
-	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/feature',
+	    url: '/nodes/' + me.nodename + '/' + me.guestType + '/' + me.vmid + '/feature',
 	    params: params,
 	    method: 'GET',
 	    failure: function(response, opts) {
@@ -143,7 +148,14 @@ Ext.define('PVE.window.Clone', {
 	    me.snapname = 'current';
 	}
 
-	var titletext = me.isTemplate ? "Template" : "VM";
+	if (!me.guestType) {
+	    throw "no Guest Type specified";
+	}
+
+	var titletext = me.guestType === 'lxc' ? 'CT' : 'VM';
+	if (me.isTemplate) {
+	    titletext += ' Template';
+	}
 	me.title = "Clone " + titletext + " " + me.vmid;
 
 	var col1 = [];
@@ -172,7 +184,7 @@ Ext.define('PVE.window.Clone', {
 	col1.push({
 	    xtype: 'pveGuestIDSelector',
 	    name: 'newvmid',
-	    guestType: 'qemu',
+	    guestType: me.guestType,
 	    value: '',
 	    loadNextFreeID: true,
 	    validateExists: false
@@ -181,7 +193,7 @@ Ext.define('PVE.window.Clone', {
 	    xtype: 'textfield',
 	    name: 'name',
 	    allowBlank: true,
-	    fieldLabel: gettext('Name')
+	    fieldLabel: me.guestType === 'lxc' ? gettext('Hostname') : gettext('Name')
 	},
 	{
 	    xtype: 'pvePoolSelector',
@@ -214,6 +226,7 @@ Ext.define('PVE.window.Clone', {
 	    reference: 'snapshotsel',
 	    fieldLabel: gettext('Snapshot'),
 	    nodename: me.nodename,
+	    guestType: me.guestType,
 	    vmid: me.vmid,
 	    hidden: me.isTemplate || !me.hasSnapshots ? true : false,
 	    disabled: false,
@@ -234,7 +247,7 @@ Ext.define('PVE.window.Clone', {
 	    hideSelection: true,
 	    storageLabel: gettext('Target Storage'),
 	    allowBlank: true,
-	    storageContent: 'images',
+	    storageContent: me.guestType === 'qemu' ? 'images' : 'rootdir',
 	    emptyText: gettext('Same as source'),
 	    disabled: me.isTemplate ? true : false // because default mode is clone for templates
 	});

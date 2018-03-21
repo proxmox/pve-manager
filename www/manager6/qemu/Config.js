@@ -85,7 +85,7 @@ Ext.define('PVE.qemu.Config', {
 		    iconCls: 'fa fa-fw fa-clone',
 		    hidden: caps.vms['VM.Clone'] ? false : true,
 		    handler: function() {
-			PVE.window.Clone.wrap(nodename, vmid, template);
+			PVE.window.Clone.wrap(nodename, vmid, template, 'qemu');
 		    }
 		},
 		{

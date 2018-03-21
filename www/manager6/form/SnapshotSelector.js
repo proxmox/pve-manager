@@ -22,7 +22,7 @@ Ext.define('PVE.form.SnapshotSelector', {
 
 	me.store.setProxy({
 	    type: 'proxmox',
-	    url: '/api2/json/nodes/' + me.nodename + '/qemu/' + me.vmid +'/snapshot'
+	    url: '/api2/json/nodes/' + me.nodename + '/' + me.guestType + '/' + me.vmid +'/snapshot'
 	});
 
 	me.store.load();
@@ -38,6 +38,10 @@ Ext.define('PVE.form.SnapshotSelector', {
         if (!me.vmid) {
             throw "no VM ID specified";
         }
+
+	if (!me.guestType) {
+	    throw "no guest type specified";
+	}
 
 	var store = Ext.create('Ext.data.Store', {
 	    fields: [ 'name'],

@@ -133,7 +133,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		iconCls: 'fa fa-fw fa-clone',
 		hidden: !caps.vms['VM.Clone'],
 		handler: function() {
-		    PVE.window.Clone.wrap(nodename, vmid, me.isTemplate);
+		    PVE.window.Clone.wrap(nodename, vmid, me.isTemplate, 'qemu');
 		}
 	    },
 	    {
