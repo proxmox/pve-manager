@@ -94,6 +94,32 @@ Ext.define('PVE.lxc.Config', {
 	    text: gettext('More'),
 	    menu: { items: [
 		{
+		    text: gettext('Clone'),
+		    iconCls: 'fa fa-fw fa-clone',
+		    hidden: caps.vms['VM.Clone'] ? false : true,
+		    handler: function() {
+			PVE.window.Clone.wrap(nodename, vmid, template, 'lxc');
+		    }
+		},
+		{
+		    text: gettext('Convert to template'),
+		    disabled: template,
+		    xtype: 'pveMenuItem',
+		    iconCls: 'fa fa-fw fa-file-o',
+		    hidden: caps.vms['VM.Allocate'] ? false : true,
+		    confirmMsg: Proxmox.Utils.format_task_description('vztemplate', vmid),
+		    handler: function() {
+			Proxmox.Utils.API2Request({
+			    url: base_url + '/template',
+			    waitMsgTarget: me,
+			    method: 'POST',
+			    failure: function(response, opts) {
+				Ext.Msg.alert('Error', response.htmlStatus);
+			    }
+			});
+		    }
+		},
+		{
 		    iconCls: 'fa fa-heartbeat ',
 		    hidden: !caps.nodes['Sys.Console'],
 		    text: gettext('Manage HA'),

@@ -116,6 +116,14 @@ Ext.define('PVE.lxc.CmdMenu', {
 		hidden: standalone || !caps.vms['VM.Migrate']
 	    },
 	    {
+		text: gettext('Clone'),
+		iconCls: 'fa fa-fw fa-clone',
+		hidden: !caps.vms['VM.Clone'],
+		handler: function() {
+		    PVE.window.Clone.wrap(nodename, vmid, me.isTemplate, 'lxc');
+		}
+	    },
+	    {
 		text: gettext('Migrate'),
 		iconCls: 'fa fa-fw fa-send-o',
 		hidden: standalone || !caps.vms['VM.Migrate'],
@@ -128,26 +136,26 @@ Ext.define('PVE.lxc.CmdMenu', {
 		    win.show();
 		}
 	    },
-//	    {
-//		text: gettext('Convert to template'),
-//		icon: '/pve2/images/forward.png',
-//		handler: function() {
-//		    var msg = Proxmox.Utils.format_task_description('vztemplate', vmid);
-//		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
-//			if (btn !== 'yes') {
-//			    return;
-//			}
-//
-//			Proxmox.Utils.API2Request({
-//			     url: '/nodes/' + nodename + '/lxc/' + vmid + '/template',
-//			     method: 'POST',
-//			     failure: function(response, opts) {
-//				Ext.Msg.alert('Error', response.htmlStatus);
-//			     }
-//			});
-//		    });
-//		}
-//	    },
+	    {
+		text: gettext('Convert to template'),
+		iconCls: 'fa fa-fw fa-file-o',
+		handler: function() {
+		    var msg = Proxmox.Utils.format_task_description('vztemplate', vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+
+			Proxmox.Utils.API2Request({
+			    url: '/nodes/' + nodename + '/lxc/' + vmid + '/template',
+			    method: 'POST',
+			    failure: function(response, opts) {
+				Ext.Msg.alert('Error', response.htmlStatus);
+			    }
+			});
+		    });
+		}
+	    },
 	    { xtype: 'menuseparator' },
 	    {
 		text: gettext('Console'),

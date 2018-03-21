@@ -831,32 +831,22 @@ Ext.define('PVE.Utils', { utilities: {
 	    v.select(record);
 	}
 	var menu;
+	var template = !!record.data.template;
+	var type = record.data.type;
 
-	if (record.data.type === 'qemu' && !record.data.template) {
-	    menu = Ext.create('PVE.qemu.CmdMenu', {
-		pveSelNode: record
-	    });
-	} else if (record.data.type === 'qemu' && record.data.template) {
-	    menu = Ext.create('PVE.menu.TemplateMenu', {
-		pveSelNode: record
-	    });
-	} else if (record.data.type === 'lxc' && !record.data.template) {
-	    menu = Ext.create('PVE.lxc.CmdMenu', {
-		pveSelNode: record
-	    });
-	} else if (record.data.type === 'lxc' && record.data.template) {
-	    /* since clone does not work reliably, disable for now
-	    menu = Ext.create('PVE.lxc.TemplateMenu', {
-		pveSelNode: record
-	    });
-	    */
-	    return;
-
-	} else if (record.data.type === 'node' ){
-	    menu = Ext.create('PVE.node.CmdMenu', {
+	if (template) {
+	    if (type === 'qemu' || type == 'lxc') {
+		menu = Ext.create('PVE.menu.TemplateMenu', {
+		    pveSelNode: record
+		});
+	    }
+	} else if (type === 'qemu' ||
+		   type === 'lxc' ||
+		   type === 'node') {
+	    menu = Ext.create('PVE.' + type + '.CmdMenu', {
+		pveSelNode: record,
 		nodename: record.data.node
 	    });
-
 	} else {
 	    return;
 	}
