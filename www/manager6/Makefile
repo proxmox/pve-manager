@@ -100,6 +100,7 @@ JSSRC= 				                 	\
 	node/Config.js					\
 	window/Migrate.js				\
 	window/BulkAction.js				\
+	window/Clone.js					\
 	qemu/Monitor.js					\
 	qemu/Summary.js					\
 	qemu/OSTypeEdit.js				\
@@ -123,7 +124,6 @@ JSSRC= 				                 	\
 	qemu/QemuBiosEdit.js				\
 	qemu/Options.js					\
 	qemu/Snapshot.js				\
-	qemu/Clone.js					\
 	qemu/SnapshotTree.js				\
 	qemu/Config.js					\
 	qemu/CreateWizard.js				\
