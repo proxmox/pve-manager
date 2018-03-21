@@ -1,4 +1,4 @@
-Ext.define('PVE.qemu.TemplateMenu', {
+Ext.define('PVE.menu.TemplateMenu', {
     extend: 'Ext.menu.Menu',
 
     initComponent: function() {
@@ -14,6 +14,11 @@ Ext.define('PVE.qemu.TemplateMenu', {
 	    throw "no VM ID specified";
 	}
 
+	var guestType = me.pveSelNode.data.type;
+	if (guestType !== 'qemu' && guestType != 'lxc') {
+	    throw "invalid guest type";
+	}
+
 	var vmname = me.pveSelNode.data.name;
 
 	var template = me.pveSelNode.data.template;
@@ -21,7 +26,7 @@ Ext.define('PVE.qemu.TemplateMenu', {
 	var vm_command = function(cmd, params) {
 	    Proxmox.Utils.API2Request({
 		params: params,
-		url: '/nodes/' + nodename + '/qemu/' + vmid + "/status/" + cmd,
+		url: '/nodes/' + nodename + '/' + guestType + '/' + vmid + "/status/" + cmd,
 		method: 'POST',
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
@@ -29,7 +34,7 @@ Ext.define('PVE.qemu.TemplateMenu', {
 	    });
 	};
 
-	me.title = "VM " + vmid;
+	me.title = (guestType === 'qemu' ? 'VM ' : 'CT ') + vmid;
 
 	me.items = [
 	    {
@@ -37,7 +42,7 @@ Ext.define('PVE.qemu.TemplateMenu', {
 		iconCls: 'fa fa-fw fa-send-o',
 		handler: function() {
 		    var win = Ext.create('PVE.window.Migrate', {
-			vmtype: 'qemu',
+			vmtype: guestType,
 			nodename: nodename,
 			vmid: vmid
 		    });
@@ -50,6 +55,7 @@ Ext.define('PVE.qemu.TemplateMenu', {
 		handler: function() {
 		    var win = Ext.create('PVE.window.Clone', {
 			nodename: nodename,
+			guestType: guestType,
 			vmid: vmid,
 			isTemplate: template
 		    });

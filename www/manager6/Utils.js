@@ -837,7 +837,7 @@ Ext.define('PVE.Utils', { utilities: {
 		pveSelNode: record
 	    });
 	} else if (record.data.type === 'qemu' && record.data.template) {
-	    menu = Ext.create('PVE.qemu.TemplateMenu', {
+	    menu = Ext.create('PVE.menu.TemplateMenu', {
 		pveSelNode: record
 	    });
 	} else if (record.data.type === 'lxc' && !record.data.template) {
