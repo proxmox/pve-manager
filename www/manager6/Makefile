@@ -6,11 +6,11 @@ JSSRC= 				                 	\
 	Parser.js					\
 	StateProvider.js				\
 	menu/MenuItem.js				\
+	menu/TemplateMenu.js				\
 	button/ConsoleButton.js				\
 	button/Split.js					\
 	controller/StorageEdit.js			\
 	qemu/CmdMenu.js					\
-	qemu/TemplateMenu.js				\
 	lxc/CmdMenu.js					\
 	node/CmdMenu.js					\
 	VNCConsole.js					\
