@@ -265,6 +265,12 @@ Ext.define('PVE.dc.StorageView', {
 		    sortable: true,
 		    dataIndex: 'disable',
 		    renderer: Proxmox.Utils.format_neg_boolean
+		},
+		{
+		    header: gettext('Bandwidth Limit'),
+		    flex: 2,
+		    sortable: true,
+		    dataIndex: 'bwlimit'
 		}
 	    ],
 	    listeners: {
