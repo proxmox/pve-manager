@@ -1,3 +1,25 @@
+pve-manager (5.1-48) unstable; urgency=medium
+
+  * improve and add additional information in pvereport
+
+  * add clone UI for container
+
+  * add CIFS (SMB) UI
+
+  * add cloundinit UI
+
+  * pveupdate: replace cron job with systemd timer (pve-daily-update)
+
+  * fix #1698: add_integer_row should add an integer row
+
+  * cleanup build and packaging system
+
+  * VZDump: handle timelocal year correctly
+
+  * fix #1683: do not send non-numeric values to graphite
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 22 Mar 2018 09:36:11 +0100
+
 pve-manager (5.1-47) stable; urgency=medium
 
   * added icons to summaries and improved spacing
