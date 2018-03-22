@@ -222,27 +222,27 @@ Ext.define('PVE.dc.StorageView', {
 	    columns: [
 		{
 		    header: 'ID',
-		    width: 100,
+		    flex: 2,
 		    sortable: true,
 		    dataIndex: 'storage'
 		},
 		{
 		    header: gettext('Type'),
-		    width: 60,
+		    flex: 1,
 		    sortable: true,
 		    dataIndex: 'type',
 		    renderer: PVE.Utils.format_storage_type
 		},
 		{
 		    header: gettext('Content'),
-		    width: 150,
+		    flex: 3,
 		    sortable: true,
 		    dataIndex: 'content',
 		    renderer: PVE.Utils.format_content_types
 		},
 		{
 		    header: gettext('Path') + '/' + gettext('Target'),
-		    flex: 1,
+		    flex: 2,
 		    sortable: true,
 		    dataIndex: 'path',
 		    renderer: function(value, metaData, record) {
@@ -254,14 +254,14 @@ Ext.define('PVE.dc.StorageView', {
 		},
 		{
 		    header: gettext('Shared'),
-		    width: 80,
+		    flex: 1,
 		    sortable: true,
 		    dataIndex: 'shared',
 		    renderer: Proxmox.Utils.format_boolean
 		},
 		{
 		    header: gettext('Enabled'),
-		    width: 80,
+		    flex: 1,
 		    sortable: true,
 		    dataIndex: 'disable',
 		    renderer: Proxmox.Utils.format_neg_boolean
