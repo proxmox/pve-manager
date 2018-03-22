@@ -50,7 +50,18 @@ Ext.define('PVE.window.Restore', {
 		fieldLabel: gettext('Source')
 	    },
 	    storagesel,
-	    IDfield
+	    IDfield,
+	    {
+		xtype: 'proxmoxintegerfield',
+		name: 'bwlimit',
+		fieldLabel: gettext('Read Limit (MiB/s)'),
+		minValue: 0,
+		emptyText: gettext('Defaults to target storage restore limit'),
+		autoEl: {
+		    tag: 'div',
+		    'data-qtip': gettext("Use '0' to disable all bandwidth limits.")
+		}
+	    }
 	];
 
 	if (me.vmtype === 'lxc') {
@@ -106,6 +117,10 @@ Ext.define('PVE.window.Restore', {
 		    vmid: me.vmid || values.vmid,
 		    force: me.vmid ? 1 : 0
 		};
+
+		if (values.bwlimit !== undefined) {
+		    params.bwlimit = values.bwlimit * 1024;
+		}
 
 		var url;
 		var msg;
