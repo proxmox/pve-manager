@@ -2,8 +2,9 @@
 Description=Daily PVE download activities
 After=network-online.target
 Wants=network-online.target
+Wants=pve-cluster.service
+After=pve-cluster.service
 
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/pveupdate
-
