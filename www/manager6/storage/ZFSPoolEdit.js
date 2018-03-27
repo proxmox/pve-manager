@@ -35,36 +35,12 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
 });
 
 Ext.define('PVE.storage.ZFSPoolInputPanel', {
-    extend: 'Proxmox.panel.InputPanel',
-
-    onGetValues: function(values) {
-	var me = this;
-
-	if (me.isCreate) {
-	    values.type = 'zfspool';
-	} else {
-	    delete values.storage;
-	}
-
-	values.disable = values.enable ? 0 : 1;
-	delete values.enable;
-
-	return values;
-    },
+    extend: 'PVE.panel.StorageBase',
 
     initComponent : function() {
 	var me = this;
 
-	me.column1 = [
-	    {
-		xtype: me.isCreate ? 'textfield' : 'displayfield',
-		name: 'storage',
-		value: me.storageId || '',
-		fieldLabel: 'ID',
-		vtype: 'StorageId',
-		allowBlank: false
-	    }
-	];
+	me.column1 = [];
 
 	if (me.isCreate) {
 	    me.column1.push(Ext.create('PVE.storage.ZFSPoolSelector', {
@@ -97,13 +73,6 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	me.column2 = [
 	    {
 		xtype: 'proxmoxcheckbox',
-		name: 'enable',
-		checked: true,
-		uncheckedValue: 0,
-		fieldLabel: gettext('Enable')
-	    },
-	    {
-		xtype: 'proxmoxcheckbox',
 		name: 'sparse',
 		checked: false,
 		uncheckedValue: 0,
@@ -118,66 +87,6 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	    }
 	];
 
-	if (me.isCreate || me.storageId !== 'local') {
-	    me.column2.unshift({
-		xtype: 'pveNodeSelector',
-		name: 'nodes',
-		fieldLabel: gettext('Nodes'),
-		emptyText: gettext('All') + ' (' +
-		    gettext('No restrictions') +')',
-		multiSelect: true,
-		autoSelect: false
-	    });
-	}
-
 	me.callParent();
-    }
-});
-
-Ext.define('PVE.storage.ZFSPoolEdit', {
-    extend: 'Proxmox.window.Edit',
-
-    initComponent : function() {
-	var me = this;
-
-	me.isCreate = !me.storageId;
-
-	if (me.isCreate) {
-            me.url = '/api2/extjs/storage';
-            me.method = 'POST';
-        } else {
-            me.url = '/api2/extjs/storage/' + me.storageId;
-            me.method = 'PUT';
-        }
-
-	var ipanel = Ext.create('PVE.storage.ZFSPoolInputPanel', {
-	    isCreate: me.isCreate,
-	    storageId: me.storageId
-	});
-
-	Ext.apply(me, {
-            subject: PVE.Utils.format_storage_type('zfspool'),
-	    isAdd: true,
-	    items: [ ipanel ]
-	});
-
-	me.callParent();
-
-        if (!me.isCreate) {
-            me.load({
-                success:  function(response, options) {
-                    var values = response.result.data;
-		    var ctypes = values.content || '';
-
-		    values.content = ctypes.split(',');
-
-		    if (values.nodes) {
-                        values.nodes = values.nodes.split(',');
-                    }
-                    values.enable = values.disable ? 0 : 1;
-                    ipanel.setValues(values);
-                }
-            });
-        }
     }
 });

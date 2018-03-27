@@ -57,39 +57,26 @@ Ext.define('PVE.storage.IScsiScan', {
 });
 
 Ext.define('PVE.storage.IScsiInputPanel', {
-    extend: 'Proxmox.panel.InputPanel',
+    extend: 'PVE.panel.StorageBase',
 
     onGetValues: function(values) {
 	var me = this;
 
-	if (me.isCreate) {
-	    values.type = 'iscsi';
-	} else {
-	    delete values.storage;
-	}
-
 	values.content = values.luns ? 'images' : 'none';
 	delete values.luns;
 
-	values.disable = values.enable ? 0 : 1;
-	delete values.enable;
+	me.callParent([values]);
+    },
 
-	return values;
+    setValues: function(values) {
+	values.luns = (values.content === 'images') ? true : false;
+	this.callParent();
     },
 
     initComponent : function() {
 	var me = this;
 
-
 	me.column1 = [
-	    {
-		xtype: me.isCreate ? 'textfield' : 'displayfield',
-		name: 'storage',
-		value: me.storageId || '',
-		fieldLabel: 'ID',
-		vtype: 'StorageId',
-		allowBlank: false
-	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'portal',
@@ -118,22 +105,6 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 
 	me.column2 = [
 	    {
-		xtype: 'pveNodeSelector',
-		name: 'nodes',
-		fieldLabel: gettext('Nodes'),
-		emptyText: gettext('All') + ' (' +
-		    gettext('No restrictions') +')',
-		multiSelect: true,
-		autoSelect: false
-	    },
-	    {
-		xtype: 'proxmoxcheckbox',
-		name: 'enable',
-		checked: true,
-		uncheckedValue: 0,
-		fieldLabel: gettext('Enable')
-	    },
-	    {
 		xtype: 'checkbox',
 		name: 'luns',
 		checked: true,
@@ -142,56 +113,5 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 	];
 
 	me.callParent();
-    }
-});
-
-Ext.define('PVE.storage.IScsiEdit', {
-    extend: 'Proxmox.window.Edit',
-
-    initComponent : function() {
-	var me = this;
-
-	me.isCreate = !me.storageId;
-
-	if (me.isCreate) {
-            me.url = '/api2/extjs/storage';
-            me.method = 'POST';
-        } else {
-            me.url = '/api2/extjs/storage/' + me.storageId;
-            me.method = 'PUT';
-        }
-
-	var ipanel = Ext.create('PVE.storage.IScsiInputPanel', {
-	    isCreate: me.isCreate,
-	    storageId: me.storageId
-	});
-
-	Ext.apply(me, {
-            subject: PVE.Utils.format_storage_type('iscsi'),
-	    isAdd: true,
-	    items: [ ipanel ]
-	});
-
-	me.callParent();
-
-	if (!me.isCreate) {
-	    me.load({
-		success:  function(response, options) {
-		    var values = response.result.data;
-		    var ctypes = values.content || '';
-
-		    if (values.storage === 'local') {
-			values.content = ctypes.split(',');
-		    }
-		    if (values.nodes) {
-			values.nodes = values.nodes.split(',');
-		    }
-		    values.enable = values.disable ? 0 : 1;
-		    values.luns = (values.content === 'images') ? true : false;
-
-		    ipanel.setValues(values);
-		}
-	    });
-	}
     }
 });

@@ -1,4 +1,3 @@
-
 Ext.define('PVE.dc.StorageView', {
     extend: 'Ext.grid.GridPanel',
 
@@ -8,6 +7,23 @@ Ext.define('PVE.dc.StorageView', {
 
     stateful: true,
     stateId: 'grid-dc-storage',
+
+    createStorageEditWindow: function(type, sid) {
+	var schema = PVE.Utils.storageSchema[type];
+	if (!schema || !schema.ipanel) {
+	    throw "no editor registered for storage type: " + type;
+	}
+
+	Ext.create('PVE.storage.BaseEdit', {
+	    paneltype: 'PVE.storage.' + schema.ipanel,
+	    type: type,
+	    storageId: sid,
+	    autoShow: true,
+	    listeners: {
+		destroy: this.reloadStore
+	    }
+	});
+    },
 
     initComponent : function() {
 	var me = this;
@@ -35,41 +51,14 @@ Ext.define('PVE.dc.StorageView', {
 	    if (!rec) {
 		return;
 	    }
-	    var type = rec.data.type;
+	    var type = rec.data.type,
+	        sid = rec.data.storage;
 
-	    var editor;
-	    if (type === 'dir') {
-		editor = 'PVE.storage.DirEdit';
-	    } else if (type === 'nfs') {
-		editor = 'PVE.storage.NFSEdit';
-	    } else if (type === 'cifs') {
-		editor = 'PVE.storage.CIFSEdit';
-	    } else if (type === 'glusterfs') {
-		editor = 'PVE.storage.GlusterFsEdit';
-	    } else if (type === 'lvm') {
-		editor = 'PVE.storage.LVMEdit';
-	    } else if (type === 'lvmthin') {
-		editor = 'PVE.storage.LvmThinEdit';
-	    } else if (type === 'iscsi') {
-		editor = 'PVE.storage.IScsiEdit';
-	    } else if (type === 'rbd') {
-		editor = 'PVE.storage.RBDEdit';
-	    } else if (type === 'sheepdog') {
-		editor = 'PVE.storage.SheepdogEdit';
-	    } else if (type === 'zfs') {
-		editor = 'PVE.storage.ZFSEdit';
-	    } else if (type === 'zfspool') {
-		editor = 'PVE.storage.ZFSPoolEdit';
-	    } else {
-		return;
+	    if (type === 'rbd' && !rec.data.monhost) {
+		type = 'pveceph';
 	    }
-	    var win = Ext.create(editor, {
-		storageId: rec.data.storage,
-		pveceph: !rec.data.monhost
-	    });
 
-	    win.show();
-	    win.on('destroy', reload);
+	    me.createStorageEditWindow(type, sid);
 	};
 
 	var edit_btn = new Proxmox.button.Button({
@@ -82,13 +71,30 @@ Ext.define('PVE.dc.StorageView', {
 	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/storage/',
-	    callback: function() {
-		reload();
-	    }
+	    callback: reload
 	});
+
+	// else we cannot dynamically generate the add menu handlers
+	var addHandleGenerator = function(type) {
+	    return function() { me.createStorageEditWindow(type); };
+	};
+	var addMenuItems = [], type;
+	/*jslint forin: true */
+	for (type in PVE.Utils.storageSchema) {
+	    var storage = PVE.Utils.storageSchema[type];
+	    if (storage.hideAdd) {
+		continue;
+	    }
+	    addMenuItems.push({
+		text:  PVE.Utils.format_storage_type(type),
+		iconCls: 'fa fa-fw fa-' + storage.faIcon,
+		handler: addHandleGenerator(type)
+	    });
+	}
 
 	Ext.apply(me, {
 	    store: store,
+	    reloadStore: reload,
 	    selModel: sm,
 	    viewConfig: {
 		trackOver: false
@@ -97,123 +103,7 @@ Ext.define('PVE.dc.StorageView', {
 		{
 		    text: gettext('Add'),
 		    menu: new Ext.menu.Menu({
-			items: [
-			    {
-				text:  PVE.Utils.format_storage_type('dir'),
-				iconCls: 'fa fa-fw fa-folder',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.DirEdit', {});
-				    win.on('destroy', reload);
-				    win.show();
-				}
-
-			    },
-			    {
-				text:  PVE.Utils.format_storage_type('lvm'),
-				iconCls: 'fa fa-fw fa-folder',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.LVMEdit', {});
-				    win.on('destroy', reload);
-				    win.show();
-				}
-			    },
-			    {
-				text:  PVE.Utils.format_storage_type('lvmthin'),
-				iconCls: 'fa fa-fw fa-folder',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.LvmThinEdit', {});
-				    win.on('destroy', reload);
-				    win.show();
-				}
-			    },
-			    {
-				text:  PVE.Utils.format_storage_type('nfs'),
-				iconCls: 'fa fa-fw fa-building',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.NFSEdit', {});
-				    win.on('destroy', reload);
-				    win.show();
-				}
-			    },
-			    {
-				text:  PVE.Utils.format_storage_type('cifs'),
-				iconCls: 'fa fa-fw fa-building',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.CIFSEdit', {});
-				    win.on('destroy', reload);
-				    win.show();
-				}
-			    },
-			    {
-				text: PVE.Utils.format_storage_type('iscsi'),
-				iconCls: 'fa fa-fw fa-building',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.IScsiEdit', {});
-				    win.on('destroy', reload);
-				    win.show();
-				}
-			    },
-			    {
-				text: PVE.Utils.format_storage_type('glusterfs'),
-				iconCls: 'fa fa-fw fa-building',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.GlusterFsEdit', {});
-				    win.on('destroy', reload);
-				    win.show();
-				}
-			    },
-			    {
-				text: PVE.Utils.format_storage_type('pveceph'),
-				iconCls: 'fa fa-fw fa-building',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.RBDEdit', {
-					pveceph: 1
-				    });
-				    win.on('destroy', reload);
-				    win.show();
-				}
-			    },
-			    {
-				text: PVE.Utils.format_storage_type('rbd_ext'),
-				iconCls: 'fa fa-fw fa-building',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.RBDEdit', {});
-				    win.on('destroy', reload);
-				    win.show();
-				}
-			    },
-			    {
-				text: PVE.Utils.format_storage_type('zfs'),
-				iconCls: 'fa fa-fw fa-building',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.ZFSEdit', {});
-				    win.on('destroy', reload);
-				    win.show();
-				}
-			    },
-			    {
-                                text: PVE.Utils.format_storage_type('zfspool'),
-                                iconCls: 'fa fa-fw fa-folder',
-                                handler: function() {
-                                    var win = Ext.create('PVE.storage.ZFSPoolEdit', {});
-                                    win.on('destroy', reload);
-                                    win.show();
-                                }
-                            }
-
-/* the following type are conidered unstable
- * so we do not enable that on the GUI for now
-			    {
-				text: PVE.Utils.format_storage_type('sheepdog'),
-				iconCls: 'fa fa-fw fa-building',
-				handler: function() {
-				    var win = Ext.create('PVE.storage.SheepdogEdit', {});
-				    win.on('destroy', reload);
-				    win.show();
-				}
-			    }
-*/
-			]
+			items: addMenuItems
 		    })
 		},
 		remove_btn,

@@ -148,6 +148,7 @@ JSSRC= 				                 	\
 	pool/StatusView.js				\
 	pool/Summary.js					\
 	pool/Config.js					\
+	storage/Base.js					\
 	storage/ContentView.js				\
 	storage/StatusView.js				\
 	storage/Summary.js				\
