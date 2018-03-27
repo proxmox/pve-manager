@@ -6,6 +6,9 @@ Ext.define('PVE.controller.StorageEdit', {
 	    change: function(field, value) {
 		var hasBackups = Ext.Array.contains(value, 'backup');
 		var maxfiles = this.lookupReference('maxfiles');
+		if (!maxfiles) {
+		    return;
+		}
 
 		if (!hasBackups) {
 		// clear values which will never be submitted
