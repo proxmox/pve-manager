@@ -382,43 +382,90 @@ Ext.define('PVE.Utils', { utilities: {
     isoImageText: gettext('ISO image'),
     containersText: gettext('Container'),
 
+    storageSchema: {
+	dir: {
+	    name: Proxmox.Utils.directoryText,
+	    ipanel: 'DirInputPanel',
+	    faIcon: 'folder'
+	},
+	lvm: {
+	    name: 'LVM',
+	    ipanel: 'LVMInputPanel',
+	    faIcon: 'folder'
+	},
+	lvmthin: {
+	    name: 'LVM-Thin',
+	    ipanel: 'LvmThinInputPanel',
+	    faIcon: 'folder'
+	},
+	nfs: {
+	    name: 'NFS',
+	    ipanel: 'NFSInputPanel',
+	    faIcon: 'building'
+	},
+	cifs: {
+	    name: 'CIFS',
+	    ipanel: 'CIFSInputPanel',
+	    faIcon: 'building'
+	},
+	glusterfs: {
+	    name: 'GlusterFS',
+	    ipanel: 'GlusterFsInputPanel',
+	    faIcon: 'building'
+	},
+	iscsi: {
+	    name: 'iSCSI',
+	    ipanel: 'IScsiInputPanel',
+	    faIcon: 'building'
+	},
+	sheepdog: {
+	    name: 'Sheepdog',
+	    ipanel: 'SheepdogInputPanel',
+	    hideAdd: true,
+	    faIcon: 'building'
+	},
+	rbd: {
+	    name: 'RBD',
+	    ipanel: 'RBDInputPanel',
+	    hideAdd: true,
+	    faIcon: 'building'
+	},
+	rbd_ext: {
+	    name: 'RBD (external)',
+	    ipanel: 'RBDInputPanel',
+	    faIcon: 'building'
+	},
+	pveceph: {
+	    name: 'RBD (PVE)',
+	    ipanel: 'PVERBDInputPanel',
+	    faIcon: 'building'
+	},
+	zfs: {
+	    name: 'ZFS over iSCSI',
+	    ipanel: 'ZFSInputPanel',
+	    faIcon: 'building'
+	},
+	zfspool: {
+	    name: 'ZFS',
+	    ipanel: 'ZFSPoolInputPanel',
+	    faIcon: 'folder'
+	},
+	drbd: {
+	    name: 'DRBD',
+	    hideAdd: true
+	}
+    },
+
     format_storage_type: function(value, md, record) {
 	if (value === 'rbd' && record) {
 	    value = (record.get('monhost')?'rbd_ext':'pveceph');
 	}
-	if (value === 'dir') {
-	    return Proxmox.Utils.directoryText;
-	} else if (value === 'nfs') {
-	    return 'NFS';
-	} else if (value === 'cifs') {
-	    return 'CIFS';
-	} else if (value === 'glusterfs') {
-	    return 'GlusterFS';
-	} else if (value === 'lvm') {
-	    return 'LVM';
-	} else if (value === 'lvmthin') {
-	    return 'LVM-Thin';
-	} else if (value === 'iscsi') {
-	    return 'iSCSI';
-	} else if (value === 'rbd') {
-	    return 'RBD';
-	} else if (value === 'rbd_ext') {
-	    return 'RBD (external)';
-	} else if (value === 'pveceph') {
-	    return 'RBD (PVE)';
-	} else if (value === 'sheepdog') {
-	    return 'Sheepdog';
-	} else if (value === 'zfs') {
-	    return 'ZFS over iSCSI';
-	} else if (value === 'zfspool') {
-	    return 'ZFS';
-	} else if (value === 'iscsidirect') {
-	    return 'iSCSIDirect';
-	} else if (value === 'drbd') {
-	    return 'DRBD';
-	} else {
-	    return Proxmox.Utils.unknownText;
+
+	var schema = PVE.Utils.storageSchema[value];
+	if (schema) {
+	    return schema.name;
 	}
+	return Proxmox.Utils.unknownText;
     },
 
     format_ha: function(value) {
