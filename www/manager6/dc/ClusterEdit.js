@@ -140,6 +140,11 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
     controller: {
 	xclass: 'Ext.app.ViewController',
 	control: {
+	    '#': {
+		close: function() {
+		    delete PVE.Utils.silenceAuthFailures;
+		}
+	    },
 	    'proxmoxcheckbox[name=assistedInput]': {
 		change: 'onInputTypeChange'
 	    },
@@ -197,7 +202,14 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	}
     },
 
+    submit: function() {
+	// joining may produce temporarily auth failures, ignore as long the task runs
+	PVE.Utils.silenceAuthFailures = true;
+	this.callParent();
+    },
+
     taskDone: function(success) {
+	delete PVE.Utils.silenceAuthFailures;
 	if (success) {
 	    var txt = gettext('Cluster join task finished, node certificate may have changed, reload GUI!');
 	    // ensure user cannot do harm

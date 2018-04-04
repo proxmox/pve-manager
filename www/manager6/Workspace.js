@@ -60,7 +60,7 @@ Ext.define('PVE.Workspace', {
 
 	// fixme: what about other errors
 	Ext.Ajax.on('requestexception', function(conn, response, options) {
-	    if (response.status == 401) { // auth failure
+	    if (response.status == 401 && !PVE.Utils.silenceAuthFailures) { // auth failure
 		me.showLogin();
 	    }
 	});
