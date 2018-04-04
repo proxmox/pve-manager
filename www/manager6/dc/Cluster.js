@@ -114,6 +114,19 @@ Ext.define('PVE.ClusterAdministration', {
 			}
 		    });
 		    win.show();
+		},
+
+		onJoin: function() {
+		    var view = this.getView();
+		    view.store.stopUpdate();
+		    var win = Ext.create('PVE.ClusterJoinNodeWindow', {
+			autoShow: true,
+			listeners: {
+			    destroy: function() {
+				view.store.startUpdate();
+			    }
+			}
+		    });
 		}
 	    },
 	    tbar: [
@@ -131,6 +144,14 @@ Ext.define('PVE.ClusterAdministration', {
 		    handler: 'onClusterInfo',
 		    bind: {
 			disabled: '{!isInCluster}'
+		    }
+		},
+		{
+		    text: gettext('Join Cluster'),
+		    reference: 'joinButton',
+		    handler: 'onJoin',
+		    bind: {
+			disabled: '{isInCluster}'
 		    }
 		}
 	    ],

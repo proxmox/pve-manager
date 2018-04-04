@@ -107,3 +107,193 @@ Ext.define('PVE.ClusterInfoWindow', {
 	}]
     }]
 });
+
+Ext.define('PVE.ClusterJoinNodeWindow', {
+    extend: 'Proxmox.window.Edit',
+    xtype: 'pveClusterJoinNodeWindow',
+
+    title: gettext('Cluster Join'),
+    width: 800,
+
+    method: 'POST',
+    url: '/cluster/config/join',
+
+    defaultFocus: 'textarea[name=serializedinfo]',
+    isCreate: true,
+    submitText: gettext('Join'),
+    showTaskViewer: true,
+
+    onlineHelp: 'chapter_pvecm',
+
+    viewModel: {
+	parent: null,
+	data: {
+	    info: {
+		fp: '',
+		ip: '',
+		ring1Possible: false,
+		ring1Needed: false
+	    }
+	}
+    },
+
+    controller: {
+	xclass: 'Ext.app.ViewController',
+	control: {
+	    'proxmoxcheckbox[name=assistedInput]': {
+		change: 'onInputTypeChange'
+	    },
+	    'textarea[name=serializedinfo]': {
+		change: 'recomputeSerializedInfo',
+		enable: 'resetField'
+	    },
+	    'proxmoxtextfield[name=ring1_addr]': {
+		enable: 'ring1Needed'
+	    },
+	    'textfield': {
+		disable: 'resetField'
+	    }
+	},
+	resetField: function(field) {
+	    field.reset();
+	},
+	ring1Needed: function(f) {
+	    var vm = this.getViewModel();
+	    f.allowBlank = !vm.get('info.ring1Needed');
+	},
+	onInputTypeChange: function(field, assistedInput) {
+	    var vm = this.getViewModel();
+	    if (!assistedInput) {
+		vm.set('info.ring1Possible', true);
+	    }
+	},
+	recomputeSerializedInfo: function(field, value) {
+	    var vm = this.getViewModel();
+	    var jsons = Ext.util.Base64.decode(value);
+	    var joinInfo = Ext.JSON.decode(jsons, true);
+
+	    var info = {
+		fp: '',
+		ring1Needed: false,
+		ring1Possible: false,
+		ip: ''
+	    };
+
+	    var totem = {};
+	    if (!(joinInfo && joinInfo.totem)) {
+		field.valid = false;
+	    } else {
+		info = {
+		    ip: joinInfo.ipAddress,
+		    fp: joinInfo.fingerprint,
+		    ring1Possible: !!joinInfo.totem['interface']['1'],
+		    ring1Needed: !!joinInfo.totem['interface']['1']
+		};
+		totem = joinInfo.totem;
+		field.valid = true;
+	    }
+
+	    vm.set('info', info);
+	}
+    },
+
+    taskDone: function(success) {
+	if (success) {
+	    var txt = gettext('Cluster join task finished, node certificate may have changed, reload GUI!');
+	    // ensure user cannot do harm
+	    Ext.getBody().mask(txt, ['pve-static-mask']);
+	    // TaskView may hide above mask, so tell him directly
+	    Ext.Msg.show({
+		title: gettext('Join Task Finished'),
+		icon: Ext.Msg.INFO,
+		msg: txt
+	    });
+	    // reload always (if user wasn't faster), but wait a bit for pveproxy
+	    Ext.defer(function() {
+		window.location.reload(true);
+	    }, 5000);
+	}
+    },
+
+    items: [{
+	xtype: 'proxmoxcheckbox',
+	reference: 'assistedEntry',
+	submitValue: false,
+	value: true,
+	autoEl: {
+	    tag: 'div',
+	    'data-qtip': gettext('Select if join information should be extracted from pasted cluster information, deselect for manual entering')
+	},
+	boxLabel: gettext('Assisted join: Paste encoded cluster join information and enter password.')
+    },
+    {
+	xtype: 'textarea',
+	name: 'serializedinfo',
+	submitValue: false,
+	allowBlank: false,
+	fieldLabel: gettext('Information'),
+	emptyText: gettext('Paste encoded Cluster Information here'),
+	validator: function(val) {
+	    return val === '' || this.valid ||
+	       gettext('Does not seem like a valid encoded Cluster Information!');
+	},
+	bind: {
+	    disabled: '{!assistedEntry.checked}',
+	    hidden: '{!assistedEntry.checked}'
+	},
+	value: ''
+    },
+    {
+	xtype: 'inputpanel',
+	column1: [
+	    {
+		xtype: 'textfield',
+		fieldLabel: gettext('Peer Address'),
+		allowBlank: false,
+		bind: {
+		    value: '{info.ip}',
+		    readOnly: '{assistedEntry.checked}'
+		},
+		name: 'hostname'
+	    },
+	    {
+		xtype: 'textfield',
+		inputType: 'password',
+		emptyText: gettext("Peer's root password"),
+		fieldLabel: gettext('Password'),
+		allowBlank: false,
+		name: 'password'
+	    }
+	],
+	column2: [
+	    {
+		xtype: 'proxmoxtextfield',
+		fieldLabel: gettext('Corosync Ring 0'),
+		emptyText: gettext("Default: IP resolved by node's hostname"),
+		skipEmptyText: true,
+		name: 'ring0_addr'
+	    },
+	    {
+		xtype: 'proxmoxtextfield',
+		fieldLabel: gettext('Corosync Ring 1'),
+		skipEmptyText: true,
+		bind: {
+		    disabled: '{!info.ring1Possible}'
+		},
+		name: 'ring1_addr'
+	    }
+	],
+	columnB: [
+	    {
+		xtype: 'textfield',
+		fieldLabel: gettext('Fingerprint'),
+		allowBlank: false,
+		bind: {
+		    value: '{info.fp}',
+		    readOnly: '{assistedEntry.checked}'
+		},
+		name: 'fingerprint'
+	    }
+	]
+    }]
+});
