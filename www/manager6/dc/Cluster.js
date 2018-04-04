@@ -102,6 +102,18 @@ Ext.define('PVE.ClusterAdministration', {
 			    }
 			}
 		    });
+		},
+
+		onClusterInfo: function() {
+		    var vm = this.getViewModel();
+		    var win = Ext.create('PVE.ClusterInfoWindow', {
+			joinInfo: {
+			    ipAddress: vm.get('preferred_node.addr'),
+			    fingerprint: vm.get('preferred_node.fp'),
+			    totem: vm.get('totem')
+			}
+		    });
+		    win.show();
 		}
 	    },
 	    tbar: [
@@ -111,6 +123,14 @@ Ext.define('PVE.ClusterAdministration', {
 		    handler: 'onCreate',
 		    bind: {
 			disabled: '{isInCluster}'
+		    }
+		},
+		{
+		    text: gettext('Join Information'),
+		    reference: 'addButton',
+		    handler: 'onClusterInfo',
+		    bind: {
+			disabled: '{!isInCluster}'
 		    }
 		}
 	    ],
