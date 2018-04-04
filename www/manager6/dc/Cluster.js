@@ -90,7 +90,30 @@ Ext.define('PVE.ClusterAdministration', {
 			fp: nodeinfo.pve_fp
 		    });
 		},
+
+		onCreate: function() {
+		    var view = this.getView();
+		    view.store.stopUpdate();
+		    var win = Ext.create('PVE.ClusterCreateWindow', {
+			autoShow: true,
+			listeners: {
+			    destroy: function() {
+				view.store.startUpdate();
+			    }
+			}
+		    });
+		}
 	    },
+	    tbar: [
+		{
+		    text: gettext('Create Cluster'),
+		    reference: 'createButton',
+		    handler: 'onCreate',
+		    bind: {
+			disabled: '{isInCluster}'
+		    }
+		}
+	    ],
 	    layout: 'hbox',
 	    bodyPadding: 5,
 	    items: [
