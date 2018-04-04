@@ -22,13 +22,18 @@ Ext.define('PVE.dc.Config', {
 
 	if (caps.dc['Sys.Audit']) {
 	    me.items.push({
-	    title: gettext('Summary'),
+		title: gettext('Summary'),
 		xtype: 'pveDcSummary',
 		iconCls: 'fa fa-book',
 		itemId: 'summary'
-	    });
-
-	    me.items.push({
+	    },
+	    {
+		title: gettext('Cluster'),
+		xtype: 'pveClusterAdministration',
+		iconCls: 'fa fa-server',
+		itemId: 'cluster'
+	    },
+	    {
 		xtype: 'pveDcOptionView',
 		title: gettext('Options'),
 		iconCls: 'fa fa-gear',
