@@ -9,14 +9,12 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	var me = this;
 
 	me.network.model = values.model;
-	if (values.networkmode === 'none') {
+	if (values.nonetwork) {
 	    return {};
-	} else if (values.networkmode === 'bridge') {
+	} else {
 	    me.network.bridge = values.bridge;
 	    me.network.tag = values.tag;
 	    me.network.firewall = values.firewall;
-	} else {
-	    me.network.bridge = undefined;
 	}
 	me.network.macaddr = values.macaddr;
 	me.network.disconnect = values.disconnect;
@@ -63,66 +61,70 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	me.network = {};
 	me.confid = 'net0';
 
+	me.column1 = [];
+	me.column2 = [];
+
 	me.bridgesel = Ext.create('PVE.form.BridgeSelector', {
 	    name: 'bridge',
 	    fieldLabel: gettext('Bridge'),
 	    nodename: me.nodename,
-	    labelAlign: 'right',
 	    autoSelect: true,
 	    allowBlank: false
 	});
 
 	me.column1 = [
-	    {
-		xtype: 'radiofield',
-		name: 'networkmode',
-		inputValue: 'bridge',
-		boxLabel: gettext('Bridged mode'),
-		checked: true,
-		listeners: {
-		    change: function(f, value) {
-			if (!me.rendered) {
-			    return;
-			}
-			me.down('field[name=bridge]').setDisabled(!value);
-			me.down('field[name=bridge]').validate();
-			me.down('field[name=tag]').setDisabled(!value);
-			me.down('field[name=firewall]').setDisabled(!value);
-		    }
-		}
-	    },
 	    me.bridgesel,
 	    {
 		xtype: 'pveVlanField',
 		name: 'tag',
-		value: '',
-		labelAlign: 'right'
+		value: ''
 	    },
-	    me.bridgesel,
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Firewall'),
-		name: 'firewall',
-		labelAlign: 'right'
-	    },
+		name: 'firewall'
+	    }
+	];
+
+	me.advancedColumn1 = [
 	    {
-		xtype: 'radiofield',
-		name: 'networkmode',
-		inputValue: 'nat',
-		boxLabel: gettext('NAT mode')
+		xtype: 'proxmoxcheckbox',
+		fieldLabel: gettext('Disconnect'),
+		name: 'disconnect'
 	    }
 	];
 
 	if (me.insideWizard) {
-	    me.column1.push({
-		xtype: 'radiofield',
-		name: 'networkmode',
+	    me.column1.unshift({
+		xtype: 'checkbox',
+		name: 'nonetwork',
 		inputValue: 'none',
-		boxLabel: gettext('No network device')
+		boxLabel: gettext('No network device'),
+		listeners: {
+		    change: function(cb, value) {
+			var fields = [
+			    'disconnect',
+			    'bridge',
+			    'tag',
+			    'firewall',
+			    'model',
+			    'macaddr',
+			    'rate',
+			    'queues'
+			];
+			fields.forEach(function(fieldname) {
+			    me.down('field[name='+fieldname+']').setDisabled(value);
+			});
+			me.down('field[name=bridge]').validate();
+		    }
+		}
+	    });
+	    me.column2.unshift({
+		xtype: 'displayfield'
 	    });
 	}
 
-	me.column2 = [
+	me.column2.push(
 	    {
 		xtype: 'pveNetworkCardSelector',
 		name: 'model',
@@ -137,7 +139,8 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		vtype: 'MacAddress',
 		allowBlank: true,
 		emptyText: 'auto'
-	    },
+	    });
+	me.advancedColumn2 = [
 	    {
 		xtype: 'numberfield',
 		name: 'rate',
@@ -156,11 +159,6 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		maxValue: 8,
 		value: '',
 		allowBlank: true
-	    },
-	    {
-		xtype: 'proxmoxcheckbox',
-		fieldLabel: gettext('Disconnect'),
-		name: 'disconnect'
 	    }
 	];
 
