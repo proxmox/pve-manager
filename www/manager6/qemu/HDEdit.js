@@ -101,6 +101,22 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    params.scsihw = values.scsihw;
 	}
 
+        var names = ['mbps_rd', 'mbps_wr', 'iops_rd', 'iops_wr'];
+        Ext.Array.each(names, function(name) {
+            if (values[name]) {
+                me.drive[name] = values[name];
+            } else {
+                delete me.drive[name];
+            }
+            var burst_name = name + '_max';
+            if (values[burst_name] && values[name]) {
+                me.drive[burst_name] = values[burst_name];
+            } else {
+                delete me.drive[burst_name];
+            }
+        });
+
+
 	params[confid] = PVE.Parser.printQemuDrive(me.drive);
 
 	return params;
@@ -146,6 +162,15 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.discard = (drive.discard === 'on');
 	values.iothread = PVE.Parser.parseBoolean(drive.iothread);
 
+	values.mbps_rd = drive.mbps_rd;
+	values.mbps_wr = drive.mbps_wr;
+	values.iops_rd = drive.iops_rd;
+	values.iops_wr = drive.iops_wr;
+	values.mbps_rd_max = drive.mbps_rd_max;
+	values.mbps_wr_max = drive.mbps_wr_max;
+	values.iops_rd_max = drive.iops_rd_max;
+	values.iops_wr_max = drive.iops_wr_max;
+
 	me.setValues(values);
     },
 
@@ -157,6 +182,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
     initComponent : function() {
 	var me = this;
+
+	var labelWidth = 140;
 
 	me.drive = {};
 
@@ -237,6 +264,42 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		labelWidth: labelWidth,
 		reference: 'iothread',
 		name: 'iothread'
+	    },
+	    {
+		xtype: 'numberfield',
+		name: 'mbps_rd',
+		minValue: 1,
+		step: 1,
+		fieldLabel: gettext('Read limit') + ' (MB/s)',
+		labelWidth: labelWidth,
+		emptyText: gettext('unlimited')
+	    },
+	    {
+		xtype: 'numberfield',
+		name: 'mbps_wr',
+		minValue: 1,
+		step: 1,
+		fieldLabel: gettext('Write limit') + ' (MB/s)',
+		labelWidth: labelWidth,
+		emptyText: gettext('unlimited')
+	    },
+	    {
+		xtype: 'proxmoxintegerfield',
+		name: 'iops_rd',
+		minValue: 10,
+		step: 10,
+		fieldLabel: gettext('Read limit') + ' (ops/s)',
+		labelWidth: labelWidth,
+		emptyText: gettext('unlimited')
+	    },
+	    {
+		xtype: 'proxmoxintegerfield',
+		name: 'iops_wr',
+		minValue: 10,
+		step: 10,
+		fieldLabel: gettext('Write limit') + ' (ops/s)',
+		labelWidth: labelWidth,
+		emptyText: gettext('unlimited')
 	    }
 	);
 
@@ -252,6 +315,42 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		fieldLabel: gettext('Skip replication'),
 		labelWidth: labelWidth,
 		name: 'noreplicate'
+	    },
+	    {
+		xtype: 'numberfield',
+		name: 'mbps_rd_max',
+		minValue: 1,
+		step: 1,
+		fieldLabel: gettext('Read max burst') + ' (MB)',
+		labelWidth: labelWidth,
+		emptyText: gettext('default')
+	    },
+	    {
+		xtype: 'numberfield',
+		name: 'mbps_wr_max',
+		minValue: 1,
+		step: 1,
+		fieldLabel: gettext('Write max burst') + ' (MB)',
+		labelWidth: labelWidth,
+		emptyText: gettext('default')
+	    },
+	    {
+		xtype: 'proxmoxintegerfield',
+		name: 'iops_rd_max',
+		minValue: 10,
+		step: 10,
+		fieldLabel: gettext('Read max burst') + ' (ops)',
+		labelWidth: labelWidth,
+		emptyText: gettext('default')
+	    },
+	    {
+		xtype: 'proxmoxintegerfield',
+		name: 'iops_wr_max',
+		minValue: 10,
+		step: 10,
+		fieldLabel: gettext('Write max burst') + ' (ops)',
+		labelWidth: labelWidth,
+		emptyText: gettext('default')
 	    }
 	);
 

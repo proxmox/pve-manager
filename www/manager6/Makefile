@@ -114,7 +114,6 @@ JSSRC= 				                 	\
 	qemu/HDEdit.js					\
 	qemu/HDResize.js				\
 	qemu/HDMove.js					\
-	qemu/HDThrottle.js				\
 	qemu/HDEfi.js					\
 	qemu/DisplayEdit.js				\
 	qemu/KeyboardEdit.js				\

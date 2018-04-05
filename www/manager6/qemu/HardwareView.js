@@ -277,22 +277,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    win.on('destroy', reload);
 	};
 
-	var run_diskthrottle = function() {
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
-		return;
-	    }
-
-            var win = Ext.create('PVE.qemu.HDThrottle', {
-		pveSelNode: me.pveSelNode,
-		confid: rec.data.key,
-		url: '/api2/extjs/' + baseurl
-	    });
-
-	    win.show();
-	    win.on('destroy', reload);
-	};
-
 	var run_resize = function() {
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
@@ -346,13 +330,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    selModel: sm,
 	    disabled: true,
 	    handler: run_move
-	});
-
-	var diskthrottle_btn = new Proxmox.button.Button({
-	    text: gettext('Disk Throttle'),
-	    selModel: sm,
-	    disabled: true,
-	    handler: run_diskthrottle
 	});
 
 	var remove_btn = new Proxmox.button.Button({
@@ -486,7 +463,6 @@ Ext.define('PVE.qemu.HardwareView', {
 		edit_btn.disable();
 		resize_btn.disable();
 		move_btn.disable();
-		diskthrottle_btn.disable();
 		revert_btn.disable();
 		return;
 	    }
@@ -511,8 +487,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    resize_btn.setDisabled(pending || !isUsedDisk);
 
 	    move_btn.setDisabled(pending || !isUsedDisk);
-
-	    diskthrottle_btn.setDisabled(pending || !isUsedDisk || isEfi);
 
 	    revert_btn.setDisabled(!pending);
 
@@ -602,7 +576,6 @@ Ext.define('PVE.qemu.HardwareView', {
 		edit_btn,
 		resize_btn,
 		move_btn,
-		diskthrottle_btn,
 		revert_btn
 	    ],
 	    rows: rows,
