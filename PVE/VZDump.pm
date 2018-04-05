@@ -222,7 +222,8 @@ sub storage_info {
     my $type = $scfg->{type};
  
     die "can't use storage type '$type' for backup\n" 
-	if (!($type eq 'dir' || $type eq 'nfs' || $type eq 'glusterfs'));
+	if (!($type eq 'dir' || $type eq 'nfs' || $type eq 'glusterfs'
+	      || $type eq 'cifs'));
     die "can't use storage '$storage' for backups - wrong content type\n" 
 	if (!$scfg->{content}->{backup});
 
