@@ -62,13 +62,72 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    allowBlank: true
 		}
 	    ],
+	    advancedColumn1: [
+		{
+		    xtype: 'proxmoxcheckbox',
+		    name: 'onboot',
+		    uncheckedValue: 0,
+		    defaultValue: 0,
+		    deleteDefaultValue: true,
+		    fieldLabel: gettext('Start at boot')
+		},
+		{
+		    xtype: 'proxmoxcheckbox',
+		    name: 'agent',
+		    uncheckedValue: 0,
+		    defaultValue: 0,
+		    deleteDefaultValue: true,
+		    fieldLabel: gettext('Qemu Agent')
+		}
+	    ],
+	    advancedColumn2: [
+		{
+		    xtype: 'textfield',
+		    name: 'order',
+		    defaultValue: '',
+		    emptyText: 'any',
+		    labelWidth: 120,
+		    fieldLabel: gettext('Start/Shutdown order')
+		},
+		{
+		    xtype: 'textfield',
+		    name: 'up',
+		    defaultValue: '',
+		    emptyText: 'default',
+		    labelWidth: 120,
+		    fieldLabel: gettext('Startup delay')
+		},
+		{
+		    xtype: 'textfield',
+		    name: 'down',
+		    defaultValue: '',
+		    emptyText: 'default',
+		    labelWidth: 120,
+		    fieldLabel: gettext('Shutdown timeout')
+		}
+	    ],
 	    onGetValues: function(values) {
-		if (!values.name) {
-		    delete values.name;
+
+		['name', 'pool', 'onboot', 'agent'].forEach(function(field) {
+		    if (!values[field]) {
+			delete values[field];
+		    }
+		});
+
+		var res = PVE.Parser.printStartup({
+		    order: values.order,
+		    up: values.up,
+		    down: values.down
+		});
+
+		if (res) {
+		    values.startup = res;
 		}
-		if (!values.pool) {
-		    delete values.pool;
-		}
+
+		delete values.order;
+		delete values.up;
+		delete values.down;
+
 		return values;
 	    }
 	},
