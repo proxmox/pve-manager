@@ -90,25 +90,21 @@ Ext.define('PVE.lxc.RessourceView', {
 	    }
 	};
 
-	for (i = 0; i < 10; i++) {
-	    confid = "mp" + i;
+	PVE.Utils.forEachMP(function(bus, i) {
+	    confid = bus + i;
+	    var  header;
+	    if (bus === 'mp') {
+		header = gettext('Mount Point') + ' (' + confid + ')';
+	    } else {
+		header = gettext('Unused Disk') + ' ' + i;
+	    }
 	    rows[confid] = {
 		group: 1,
 		tdCls: 'pve-itype-icon-storage',
 		editor: mpeditor,
-		header: gettext('Mount Point') + ' (' + confid + ')'
+		header: header
 	    };
-	}
-
-	for (i = 0; i < 8; i++) {
-	    confid = "unused" + i;
-	    rows[confid] = {
-		group: 1,
-		tdCls: 'pve-itype-icon-storage',
-		editor: mpeditor,
-		header: gettext('Unused Disk') + ' ' + i
-	    };
-	}
+	}, true);
 
 	var baseurl = 'nodes/' + nodename + '/lxc/' + vmid + '/config';
 

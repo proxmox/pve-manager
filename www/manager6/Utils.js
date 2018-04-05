@@ -963,6 +963,29 @@ Ext.define('PVE.Utils', { utilities: {
 		}
 	    }
 	}
+    },
+
+    mp_counts: { mps: 10, unused: 10 },
+
+    forEachMP: function(func, includeUnused) {
+	var i, cont;
+	for (i = 0; i < PVE.Utils.mp_counts.mps; i++) {
+	    cont = func('mp', i);
+	    if (!cont && cont !== undefined) {
+		return;
+	    }
+	}
+
+	if (!includeUnused) {
+	    return;
+	}
+
+	for (i = 0; i < PVE.Utils.mp_counts.unused; i++) {
+	    cont = func('unused', i);
+	    if (!cont && cont !== undefined) {
+		return;
+	    }
+	}
     }
 },
 
