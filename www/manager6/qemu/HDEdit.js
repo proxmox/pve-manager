@@ -163,6 +163,9 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	me.column1 = [];
 	me.column2 = [];
 
+	me.advancedColumn1 = [];
+	me.advancedColumn2 = [];
+
 	if (!me.confid || me.unused) {
 	    me.bussel = Ext.create('PVE.form.ControllerSelector', {
 		vmconfig: me.insideWizard ? {ide2: 'cdrom'} : {}
@@ -216,32 +219,41 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    name: 'cache',
 	    value: '__default__',
 	    fieldLabel: gettext('Cache')
-	},
-	{
-	    xtype: 'proxmoxcheckbox',
-	    fieldLabel: gettext('No backup'),
-	    name: 'nobackup'
-	},
-	{
-	    xtype: 'proxmoxcheckbox',
-	    hidden: me.insideWizard,
-	    fieldLabel: gettext('Skip replication'),
-	    name: 'noreplicate'
-	},
-	{
-	    xtype: 'proxmoxcheckbox',
-	    fieldLabel: gettext('Discard'),
-	    disabled: me.confid && !me.confid.match(/^scsi/),
-	    reference: 'discard',
-	    name: 'discard'
-	},
-	{
-	    xtype: 'proxmoxcheckbox',
-	    disabled: me.confid && !me.confid.match(/^(virtio|scsi)/),
-	    fieldLabel: 'IO thread',
-	    reference: 'iothread',
-	    name: 'iothread'
 	});
+
+	me.advancedColumn1.push(
+	    {
+		xtype: 'proxmoxcheckbox',
+		fieldLabel: gettext('Discard'),
+		disabled: me.confid && !me.confid.match(/^scsi/),
+		reference: 'discard',
+		labelWidth: labelWidth,
+		name: 'discard'
+	    },
+	    {
+		xtype: 'proxmoxcheckbox',
+		disabled: me.confid && !me.confid.match(/^(virtio|scsi)/),
+		fieldLabel: 'IO thread',
+		labelWidth: labelWidth,
+		reference: 'iothread',
+		name: 'iothread'
+	    }
+	);
+
+	me.advancedColumn2.push(
+	    {
+		xtype: 'proxmoxcheckbox',
+		fieldLabel: gettext('No backup'),
+		labelWidth: labelWidth,
+		name: 'nobackup'
+	    },
+	    {
+		xtype: 'proxmoxcheckbox',
+		fieldLabel: gettext('Skip replication'),
+		labelWidth: labelWidth,
+		name: 'noreplicate'
+	    }
+	);
 
 	me.callParent();
     }
