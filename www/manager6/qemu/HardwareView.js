@@ -308,22 +308,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    win.on('destroy', reload);
 	};
 
-	var run_cpuoptions = function() {
-	    var sockets = me.getObjectValue('sockets', 1);
-	    var cores = me.getObjectValue('cores', 1);
-
-	    var win = Ext.create('PVE.qemu.CPUOptions', {
-		maxvcpus: sockets * cores,
-		vmid: vmid,
-		pveSelNode: me.pveSelNode,
-		url: '/api2/extjs/' + baseurl
-	    });
-
-	    win.show();
-
-	    win.on('destroy', reload);
-	};
-
 	var run_move = function() {
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
@@ -367,11 +351,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    selModel: sm,
 	    disabled: true,
 	    handler: run_diskthrottle
-	});
-
-	var cpuoptions_btn = new Ext.Button({
-	    text: gettext('CPU options'),
-	    handler: run_cpuoptions
 	});
 
 	var remove_btn = new Proxmox.button.Button({
@@ -622,7 +601,6 @@ Ext.define('PVE.qemu.HardwareView', {
 		resize_btn,
 		move_btn,
 		diskthrottle_btn,
-		cpuoptions_btn,
 		revert_btn
 	    ],
 	    rows: rows,
