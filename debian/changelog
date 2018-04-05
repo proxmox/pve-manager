@@ -1,3 +1,25 @@
+pve-manager (5.1-49) unstable; urgency=medium
+
+  * add cluster administartion panel
+
+  * ui: add storage plugin base class
+
+  * controller: StorageEdit: check if 'maxfiles' could be looked up
+
+  * ui/Utils: add storage schema
+
+  * ui/Utils: do not create non-standard console.dir fallback
+
+  * ui: restore: add bandwidth limit field
+
+  * ui: dc/storages: add bwlimit column
+
+  * ui: dc/storages: use responsive column width
+
+  * pve-daily-update.service: add Wants/After for pve-cluster.service
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 05 Apr 2018 12:30:58 +0200
+
 pve-manager (5.1-48) unstable; urgency=medium
 
   * improve and add additional information in pvereport
