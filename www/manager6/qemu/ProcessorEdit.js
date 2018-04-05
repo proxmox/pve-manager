@@ -5,19 +5,46 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 
     insideWizard: false,
 
-    // defines the possible cpu flags and their labels
-    flagsAvail: ['pcid', 'spec-ctrl'],
-    flagLabels: ['PCID', 'SPEC-CTRL'],
+    controller: {
+	xclass: 'Ext.app.ViewController',
+
+	updateCores: function() {
+	    var me = this.getView();
+	    var sockets = me.down('field[name=sockets]').getValue();
+	    var cores = me.down('field[name=cores]').getValue();
+	    me.down('field[name=totalcores]').setValue(sockets*cores);
+	    var vcpus = me.down('field[name=vcpus]');
+	    vcpus.setMaxValue(sockets*cores);
+	    vcpus.setEmptyText(sockets*cores);
+	    vcpus.validate();
+	},
+
+	control: {
+	    'field[name=sockets]': {
+		change: 'updateCores'
+	    },
+	    'field[name=cores]': {
+		change: 'updateCores'
+	    }
+	}
+    },
 
     onGetValues: function(values) {
 	var me = this;
+
+	if (Array.isArray(values['delete'])) {
+	    values['delete'] = values['delete'].join(',');
+	}
+
+	PVE.Utils.delete_if_default(values, 'cpulimit', '0', 0);
+	PVE.Utils.delete_if_default(values, 'cpuunits', '1024', 0);
 
 	// build the cpu options:
 	me.cpu.cputype = values.cputype;
 
 	var flags = [];
 
-	me.flagsAvail.forEach(function(flag) {
+	['pcid', 'spec-ctrl'].forEach(function(flag) {
 	    if (values[flag]) {
 		flags.push('+' + flag.toString());
 	    }
@@ -54,82 +81,98 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	return values;
     },
 
-    initComponent : function() {
-	var me = this;
+    cpu: {},
 
-	me.cpu = {};
+    column1: [
+	{
+	    xtype: 'proxmoxintegerfield',
+	    name: 'sockets',
+	    minValue: 1,
+	    maxValue: 4,
+	    value: '1',
+	    fieldLabel: gettext('Sockets'),
+	    allowBlank: false
+	},
+	{
+	    xtype: 'proxmoxintegerfield',
+	    name: 'cores',
+	    minValue: 1,
+	    maxValue: 128,
+	    value: '1',
+	    fieldLabel: gettext('Cores'),
+	    allowBlank: false
+	}
+    ],
 
-	me.column1 = [
-	    {
-		xtype: 'proxmoxintegerfield',
-		name: 'sockets',
-		minValue: 1,
-		maxValue: 4,
-		value: '1',
-		fieldLabel: gettext('Sockets'),
-		allowBlank: false,
-		listeners: {
-		    change: function(f, value) {
-			var sockets = me.down('field[name=sockets]').getValue();
-			var cores = me.down('field[name=cores]').getValue();
-			me.down('field[name=totalcores]').setValue(sockets*cores);
-		    }
-		}
-	    },
-	    {
-		xtype: 'proxmoxintegerfield',
-		name: 'cores',
-		minValue: 1,
-		maxValue: 128,
-		value: '1',
-		fieldLabel: gettext('Cores'),
-		allowBlank: false,
-		listeners: {
-		    change: function(f, value) {
-			var sockets = me.down('field[name=sockets]').getValue();
-			var cores = me.down('field[name=cores]').getValue();
-			me.down('field[name=totalcores]').setValue(sockets*cores);
-		    }
-		}
-	    },
-	    {
-		xtype: 'proxmoxcheckbox',
-		fieldLabel: gettext('Enable NUMA'),
-		name: 'numa',
-		uncheckedValue: 0
-	    }
+    column2: [
+	{
+	    xtype: 'CPUModelSelector',
+	    name: 'cputype',
+	    value: '__default__',
+	    fieldLabel: gettext('Type')
+	},
+	{
+	    xtype: 'displayfield',
+	    fieldLabel: gettext('Total cores'),
+	    name: 'totalcores',
+	    value: '1'
+	}
+    ],
 
-	];
+    advancedColumn1: [
+	{
+	    xtype: 'proxmoxintegerfield',
+	    name: 'vcpus',
+	    minValue: 1,
+	    value: '',
+	    fieldLabel: gettext('VCPUs'),
+	    deleteEmpty: true,
+	    allowBlank: true,
+	    emptyText: '1'
+	},
+	{
+	    xtype: 'numberfield',
+	    name: 'cpulimit',
+	    minValue: 0,
+	    maxValue: 128, // api maximum
+	    value: '',
+	    step: 1,
+	    fieldLabel: gettext('CPU limit'),
+	    allowBlank: true,
+	    emptyText: gettext('unlimited')
+	},
+	{
+	    xtype: 'proxmoxintegerfield',
+	    name: 'cpuunits',
+	    fieldLabel: gettext('CPU units'),
+	    minValue: 8,
+	    maxValue: 500000,
+	    value: '1024',
+	    deleteEmpty: true,
+	    allowBlank: true
+	}
+    ],
 
-
-	me.column2 = [
-	    {
-		xtype: 'CPUModelSelector',
-		name: 'cputype',
-		value: '__default__',
-		fieldLabel: gettext('Type')
-	    },
-	    {
-		xtype: 'displayfield',
-		fieldLabel: gettext('Total cores'),
-		name: 'totalcores',
-		value: '1'
-	    }
-	];
-
-	me.flagsAvail.forEach(function(flag, i) {
-	    me.column2.push({
-		hidden: me.insideWizard,
-		disabled: me.insideWizard,
-		xtype: 'proxmoxcheckbox',
-		fieldLabel: me.flagLabels[i] || flag,
-		name: flag,
-		uncheckedValue: 0
-	    });
-	});
-
-	me.callParent();
-    }
+    advancedColumn2: [
+	{
+	    xtype: 'proxmoxcheckbox',
+	    fieldLabel: gettext('Enable NUMA'),
+	    name: 'numa',
+	    uncheckedValue: 0
+	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    fieldLabel: 'PCID',
+	    name: 'pcid',
+	    uncheckedValue: 0
+	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    fieldLabel: 'SPEC-CTRL',
+	    name: 'spec-ctrl',
+	    uncheckedValue: 0
+	}
+    ]
 });
 
 Ext.define('PVE.qemu.ProcessorEdit', {
@@ -137,7 +180,7 @@ Ext.define('PVE.qemu.ProcessorEdit', {
 
     initComponent : function() {
 	var me = this;
-	
+
 	var ipanel = Ext.create('PVE.qemu.ProcessorInputPanel');
 
 	Ext.apply(me, {
