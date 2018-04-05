@@ -76,6 +76,15 @@ Ext.define('PVE.form.DiskStorageSelector', {
 	hdsizesel.setVisible(!select && !me.hideSize);
     },
 
+    setNodename: function(nodename) {
+	var me = this;
+	var hdstorage = me.getComponent('hdstorage');
+	var hdfilesel = me.getComponent('hdimage');
+
+	hdstorage.setNodename(nodename);
+	hdfilesel.setNodename(nodename);
+    },
+
     initComponent: function() {
 	var me = this;
 
