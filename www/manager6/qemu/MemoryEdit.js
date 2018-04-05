@@ -8,124 +8,72 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	var res;
+	var res = {};
 
-	if (values.memoryType === 'fixed') {
-	    res = { memory: values.memory };
-	    if (values.ballooning === '1') {
-		// if balloning is active if it is not explicitely set
-		res['delete'] = "balloon,shares";
-	    } else {
-		res['delete'] = "shares";
-		res.balloon = 0;
-	    }
+	res.memory = values.memory;
+	res.balloon = values.balloon;
+
+	if (!values.ballooning) {
+	    res.balloon = 0;
+	    res['delete'] = 'shares';
+	} else if (values.memory === values.balloon) {
+	    delete res.balloon;
+	    res['delete'] = 'balloon,shares';
+	} else if (Ext.isDefined(values.shares) && (values.shares !== "")) {
+	    res.shares = values.shares;
 	} else {
-	    res = { 
-		memory: values.maxmemory,
-		balloon: values.balloon
-	    };
-	    if (Ext.isDefined(values.shares) && (values.shares !== "")) {
-		res.shares = values.shares;
-	    } else {
-		res['delete'] = "shares";
-	    }
+	    res['delete'] = "shares";
 	}
 
 	return res;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 	var labelWidth = 160;
 
-	var items = [
-	    {
-		xtype: 'radiofield',
-		name: 'memoryType',
-		inputValue: 'fixed',
-		boxLabel: gettext('Use fixed size memory'),
-		checked: true,
-		listeners: {
-		    change: function(f, value) {
-			if (!me.rendered) {
-			    return;
-			}
-			me.down('field[name=memory]').setDisabled(!value);
-			me.down('field[name=ballooning]').setDisabled(!value);
-			me.down('field[name=maxmemory]').setDisabled(value);
-			me.down('field[name=balloon]').setDisabled(value);
-			me.down('field[name=shares]').setDisabled(value);
-		    }
-		}
-	    },
+	me.items= [
 	    {
 		xtype: 'pveMemoryField',
-		name: 'memory',
-		hotplug: me.hotplug,
+		labelWidth: labelWidth,
 		fieldLabel: gettext('Memory') + ' (MiB)',
-		labelAlign: 'right',
-		labelWidth: labelWidth
-	    },
-	    {
-		xtype: 'proxmoxcheckbox',
+		name: 'memory',
+		minValue: 1,
+		maxValue: 512*1024,
+		step: 32,
 		hotplug: me.hotplug,
-		name: 'ballooning',
-		value: '1',
-		labelAlign: 'right',
-		labelWidth: labelWidth,
-		fieldLabel: gettext('Ballooning')
-	    },
-	    {
-		xtype: 'radiofield',
-		name: 'memoryType',
-		inputValue: 'dynamic',
-		boxLabel: gettext('Automatically allocate memory within this range'),
 		listeners: {
-		    change: function(f, value) {
-			if (!me.rendered) {
-			    return;
-			}
-		    }
-		}
-	    },
-	    {
-		xtype: 'pveMemoryField',
-		name: 'maxmemory',
-		hotplug: me.hotplug,
-		disabled: true,
-		value: '1024',
-		fieldLabel: gettext('Maximum memory') + ' (MiB)',
-		labelAlign: 'right',
-		labelWidth: labelWidth,
-		listeners: {
-		    change: function(f, value) {
+		    change: function(f, value, old) {
 			var bf = me.down('field[name=balloon]');
 			var balloon = bf.getValue();
 			bf.setMaxValue(value);
-			bf.validate();
-		    },
-		    blur: function(f) {
-			var value = f.getValue();
-			var bf = me.down('field[name=balloon]');
-			var balloon = bf.getValue();
-			if (balloon > value) {
+			if (balloon === old) {
 			    bf.setValue(value);
 			}
+			bf.validate();
 		    }
 		}
-	    },
+	    }
+	];
+
+	me.advancedItems= [
 	    {
-		xtype: 'proxmoxintegerfield',
+		xtype: 'pveMemoryField',
 		name: 'balloon',
-		disabled: true,
-		minValue: 0,
+		minValue: 1,
 		maxValue: 512*1024,
-		value: '512',
 		step: 32,
 		fieldLabel: gettext('Minimum memory') + ' (MiB)',
-		labelAlign: 'right',
+		hotplug: me.hotplug,
 		labelWidth: labelWidth,
-		allowBlank: false
+		allowBlank: false,
+		listeners: {
+		    change: function(f, value) {
+			var memory = me.down('field[name=memory]').getValue();
+			var shares = me.down('field[name=shares]');
+			shares.setDisabled(value === memory);
+		    }
+		}
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
@@ -136,28 +84,44 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		value: '',
 		step: 10,
 		fieldLabel: gettext('Shares'),
-		labelAlign: 'right',
 		labelWidth: labelWidth,
 		allowBlank: true,
 		emptyText: Proxmox.Utils.defaultText + ' (1000)',
 		submitEmptyText: false
+	    },
+	    {
+		xtype: 'proxmoxcheckbox',
+		labelWidth: labelWidth,
+		value: '1',
+		name: 'ballooning',
+		fieldLabel: gettext('Ballooning Device'),
+		listeners: {
+		    change: function(f, value) {
+			var bf = me.down('field[name=balloon]');
+			var shares = me.down('field[name=shares]');
+			var memory = me.down('field[name=memory]');
+			bf.setDisabled(!value);
+			shares.setDisabled(!value || (bf.getValue() === memory.getValue()));
+		    }
+		}
 	    }
 	];
 
 	if (me.insideWizard) {
-	    me.column1 = items;
-	} else {
-	    me.items = items;
+	    me.column1 = me.items;
+	    me.items = undefined;
+	    me.advancedColumn1 = me.advancedItems;
+	    me.advancedItems = undefined;
 	}
-
 	me.callParent();
     }
+
 });
 
 Ext.define('PVE.qemu.MemoryEdit', {
     extend: 'Proxmox.window.Edit',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var memoryhotplug;
@@ -168,10 +132,10 @@ Ext.define('PVE.qemu.MemoryEdit', {
 	        }
 	    });
 	}
-	
-        var ipanel = Ext.create('PVE.qemu.MemoryInputPanel', {
-            hotplug: memoryhotplug
-        });
+
+	var ipanel = Ext.create('PVE.qemu.MemoryInputPanel', {
+	    hotplug: memoryhotplug
+	});
 
 	Ext.apply(me, {
 	    subject: gettext('Memory'),
@@ -188,13 +152,12 @@ Ext.define('PVE.qemu.MemoryEdit', {
 		var data = response.result.data;
 
 		var values = {
-		    memory: data.memory,
-		    maxmemory: data.memory,
-		    balloon: data.balloon,
 		    ballooning: data.balloon === 0 ? '0' : '1',
 		    shares: data.shares,
-		    memoryType: data.balloon ? 'dynamic' : 'fixed'
+		    memory: data.memory || '512',
+		    balloon: data.balloon > 0 ? data.balloon : (data.memory || '512')
 		};
+
 		ipanel.setValues(values);
 	    }
 	});
