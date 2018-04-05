@@ -219,7 +219,7 @@ Ext.define('PVE.ClusterAdministration', {
 			}
 		    }));
 		    Proxmox.Utils.monStoreErrors(view, view.rstore);
-		    view.store.on('load', this.onLoad, this);
+		    view.rstore.on('load', this.onLoad, this);
 		    view.on('destroy', view.rstore.stopUpdate);
 		},
 
