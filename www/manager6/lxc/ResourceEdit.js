@@ -55,54 +55,49 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 	return values;
     },
 
-    initComponent : function() {
+    advancedColumn1: [
+	{
+	    xtype: 'numberfield',
+	    name: 'cpulimit',
+	    minValue: 0,
+	    value: '',
+	    step: 1,
+	    fieldLabel: gettext('CPU limit'),
+	    allowBlank: true,
+	    emptyText: gettext('unlimited')
+	}
+    ],
+
+    advancedColumn2: [
+	{
+	    xtype: 'proxmoxintegerfield',
+	    name: 'cpuunits',
+	    fieldLabel: gettext('CPU units'),
+	    value: 1024,
+	    minValue: 8,
+	    maxValue: 500000,
+	    labelWidth: labelWidth,
+	    allowBlank: false
+	}
+    ],
+
+    initComponent: function() {
 	var me = this;
 
-	var column1 = [
-            {
-                xtype: 'proxmoxintegerfield',
-                name: 'cores',
+	me.column1 = [
+	    {
+		xtype: 'proxmoxintegerfield',
+		name: 'cores',
 		minValue: 1,
 		maxValue: 128,
 		value: me.insideWizard ? 1 : '',
 		fieldLabel: gettext('Cores'),
 		allowBlank: true,
 		deleteEmpty: true,
-                emptyText: gettext('unlimited')
-            }
-	];
-
-	var column2 = [
-	    {
-		xtype: 'numberfield',
-		name: 'cpulimit',
-		minValue: 0,
-		value: '',
-		step: 1,
-		fieldLabel: gettext('CPU limit'),
-		labelWidth: labelWidth,
-		allowBlank: true,
-                emptyText: gettext('unlimited')
-	    },
-	    {
-		xtype: 'proxmoxintegerfield',
-		name: 'cpuunits',
-		fieldLabel: gettext('CPU units'),
-		value: 1024,
-		minValue: 8,
-		maxValue: 500000,
-		labelWidth: labelWidth,
-		allowBlank: false
+		emptyText: gettext('unlimited')
 	    }
 	];
 
-	if (me.insideWizard) {
-	    me.column1 = column1;
-	} else {
-	    me.column1 = column1;
-	    me.column2 = column2;
-	}
-   
 	me.callParent();
     }
 });
