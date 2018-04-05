@@ -117,6 +117,9 @@ Ext.define('PVE.window.Wizard', {
 	    me.title = Proxmox.Utils.dialog_title(me.subject, true, false);
 	}
 
+	var sp = Ext.state.Manager.getProvider();
+	var advchecked = sp.get('proxmox-advanced-cb');
+
 	Ext.apply(me, {
 	    items: [
 		{
@@ -153,6 +156,22 @@ Ext.define('PVE.window.Wizard', {
 		    itemId: 'help'
 		},
 		'->',
+		{
+		    xtype: 'proxmoxcheckbox',
+		    boxLabelAlign: 'before',
+		    boxLabel: gettext('Advanced'),
+		    value: advchecked,
+		    listeners: {
+			change: function(cb, val) {
+			    var tp = me.down('#wizcontent');
+			    tp.query('inputpanel').forEach(function(ip) {
+				ip.setAdvancedVisible(val);
+			    });
+
+			    sp.set('proxmox-advanced-cb', val);
+			}
+		    }
+		},
 		{
 		    text: gettext('Back'),
 		    disabled: true,
@@ -209,6 +228,10 @@ Ext.define('PVE.window.Wizard', {
 	    ]
 	});
 	me.callParent();
+
+	Ext.Array.each(me.query('inputpanel'), function(panel) {
+	    panel.setAdvancedVisible(advchecked);
+	});
 
 	Ext.Array.each(me.query('field'), function(field) {
 	    var validcheck = function() {
