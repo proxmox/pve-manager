@@ -1,3 +1,9 @@
+pve-manager (5.1-51) unstable; urgency=medium
+
+  * overwrite the built-in 'run_editor' function
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 06 Apr 2018 14:09:51 +0200
+
 pve-manager (5.1-50) unstable; urgency=medium
 
   * better focus of lxc/MPEdit
