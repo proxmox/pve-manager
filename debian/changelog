@@ -1,3 +1,35 @@
+pve-manager (5.1-50) unstable; urgency=medium
+
+  * better focus of lxc/MPEdit
+
+  * merge cores, cpulimit and cpuunits for containers
+
+  * lxc/MPEdit: rework for advanced options
+
+  * Utils: add forEachMP
+
+  * lxc/ResoureEdit: move some cpu fields to advanced options
+
+  * qemu/CreateWizard: add advanced options on general tab
+
+  * qemu/NetworkEdit: rework panel for advanced options
+
+  * qemu/MemoryEdit: rework panel and move most things in advanced options
+
+  * qemu/HDEdit: move diskthrottling to advanced options
+
+  * fix editor and set_button_status for cloudinit
+
+  * rework ProcessorEdit and merge with CPUOptions using advanced options
+
+  * qemu/HDEdit.js: move some fields into advanced options
+
+  * add advanced checkbox to the wizard
+
+  * Add CIFS in strorage info to allow backup.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 06 Apr 2018 13:55:38 +0200
+
 pve-manager (5.1-49) unstable; urgency=medium
 
   * add cluster administartion panel
