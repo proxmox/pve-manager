@@ -229,6 +229,7 @@ Ext.define('PVE.lxc.DNS', {
 	    url: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/config",
 	    selModel: sm,
 	    cwidth1: 150,
+	    run_editor: run_editor,
 	    tbar: [ edit_btn ],
 	    rows: rows,
 	    listeners: {
