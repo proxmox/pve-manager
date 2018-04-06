@@ -59,31 +59,36 @@ Ext.define('PVE.lxc.RessourceView', {
 		defaultValue: '',
 		tdCls: 'pve-itype-icon-processor',
 		renderer: function(value) {
-		    if (value) { return value; }
-		    return gettext('unlimited');
+		    var cpulimit = me.getObjectValue('cpulimit');
+		    var cpuunits = me.getObjectValue('cpuunits');
+		    var res;
+		    if (value) {
+			res = value;
+		    } else {
+			res = gettext('unlimited');
+		    }
+
+		    if (cpulimit) {
+			res += ' [cpulimit=' + cpulimit + ']';
+		    }
+
+		    if (cpuunits) {
+			res += ' [cpuunits=' + cpuunits + ']';
+		    }
+		    return res;
 		}
-	    },
-	    cpulimit: {
-		header: gettext('CPU limit'),
-		editor: caps.vms['VM.Config.CPU'] ? 'PVE.lxc.CPUEdit' : undefined,
-		defaultValue: 0,
-		tdCls: 'pve-itype-icon-processor',
-		renderer: function(value) {
-		    if (value > 0) { return value; }
-		    return gettext('unlimited');
-		}
-	    },
-	    cpuunits: {
-		header: gettext('CPU units'),
-		editor: caps.vms['VM.Config.CPU'] ? 'PVE.lxc.CPUEdit' : undefined,
-		defaultValue: 1024,
-		tdCls: 'pve-itype-icon-processor'
 	    },
 	    rootfs: {
 		header: gettext('Root Disk'),
 		defaultValue: Proxmox.Utils.noneText,
 		editor: mpeditor,
 		tdCls: 'pve-itype-icon-storage'
+	    },
+	    cpulimit: {
+		visible: false
+	    },
+	    cpuunits: {
+		visible: false
 	    },
 	    unprivileged: {
 		visible: false
