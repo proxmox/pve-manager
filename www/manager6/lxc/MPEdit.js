@@ -324,6 +324,7 @@ Ext.define('PVE.lxc.MountPointEdit', {
 
 	Ext.apply(me, {
 	    subject: subject,
+	    defaultFocus: me.confid !== 'rootfs' ? 'textfield[name=mp]' : 'tool',
 	    items: ipanel
 	});
 
