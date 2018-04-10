@@ -50,14 +50,26 @@ Ext.define('PVE.qemu.HardwareView', {
 		never_delete: true,
 		defaultValue: '512',
 		tdCls: 'pve-itype-icon-memory',
-		renderer: function(value, metaData, record) {
-		    var balloon =  me.getObjectValue('balloon');
-		    if (balloon) {
-			return Proxmox.Utils.format_size(balloon*1024*1024) + "/" + 
-			    Proxmox.Utils.format_size(value*1024*1024);
+		multiKey: ['memory', 'balloon', 'shares'],
+		renderer: function(value, metaData, record, ri, ci, store, pending) {
+		    var res = '';
 
-		    } 
-		    return Proxmox.Utils.format_size(value*1024*1024);
+		    var max = me.getObjectValue('memory', 512, pending);
+		    var balloon =  me.getObjectValue('balloon', undefined, pending);
+		    var shares = me.getObjectValue('shares', undefined, pending);
+
+		    res  = Proxmox.Utils.format_size(max*1024*1024);
+
+		    if (balloon !== undefined && balloon > 0) {
+			res = Proxmox.Utils.format_size(balloon*1024*1024) + "/" + res;
+
+			if (shares) {
+			    res += ' [shares=' + shares +']';
+			}
+		    } else if (balloon === 0) {
+			res += ' [balloon=0]';
+		    }
+		    return res;
 		}
 	    },
 	    sockets: {
@@ -146,8 +158,10 @@ Ext.define('PVE.qemu.HardwareView', {
 	    },
 	    bios: {
 		visible: false
+	    },
+	    shares: {
+		visible: false
 	    }
-
 	};
 
 	PVE.Utils.forEachBus(undefined, function(type, id) {
