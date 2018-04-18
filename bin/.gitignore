@@ -1,1 +1,6 @@
+docinfo.xml
 *.1
+*.adoc
+*.1.pod
+*.8
+pvemailforward
