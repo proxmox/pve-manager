@@ -364,6 +364,8 @@ Ext.define('PVE.qemu.HDEdit', {
 
     isAdd: true,
 
+    backgroundDelay: 5,
+
     initComponent : function() {
 	var me = this;
 
