@@ -65,7 +65,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 	values.content = values.luns ? 'images' : 'none';
 	delete values.luns;
 
-	me.callParent([values]);
+	return me.callParent([values]);
     },
 
     setValues: function(values) {
