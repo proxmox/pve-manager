@@ -176,15 +176,6 @@ Ext.define('PVE.lxc.Config', {
 	    me.items.push(
 		{
 		    title: gettext('Console'),
-		    itemId: 'console',
-		    iconCls: 'fa fa-terminal',
-		    xtype: 'pveNoVncConsole',
-		    vmid: vmid,
-		    consoleType: 'lxc',
-		    nodename: nodename
-		},
-		{
-		    title: gettext('Console (JS)'),
 		    itemId: 'consolejs',
 		    iconCls: 'fa fa-terminal',
 		    xtype: 'pveNoVncConsole',
