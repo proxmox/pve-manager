@@ -278,20 +278,23 @@ Ext.define('PVE.Utils', { utilities: {
 	return data;
     },
 
+    console_map: {
+	'__default__': Proxmox.Utils.defaultText + ' (HTML5)',
+	'vv': 'SPICE (remote-viewer)',
+	'html5': 'HTML5 (noVNC)',
+	'xtermjs': 'xterm.js',
+    },
+
     render_console_viewer: function(value) {
-	if (!value || value === '__default__') {
-	    return Proxmox.Utils.defaultText + ' (HTML5)';
-	} else if (value === 'vv') {
-	    return  'SPICE (remote-viewer)';
-	} else if (value === 'html5') {
-	    return  'HTML5 (noVNC)';
-	} else {
-	    return value;
+	value = value || '__default__';
+	if (PVE.Utils.console_map[value]) {
+	    return PVE.Utils.console_map[value];
 	}
+	return value;
     },
 
     console_viewer_array: function() {
-	return Ext.Array.map(['__default__','vv', 'html5'], function(v) {
+	return Ext.Array.map(Object.keys(PVE.Utils.console_map), function(v) {
 	    return [v, PVE.Utils.render_console_viewer(v)];
 	});
     },
@@ -723,8 +726,8 @@ Ext.define('PVE.Utils', { utilities: {
             function(m, addr, offset, original) { return addr; });
     },
 
-    openDefaultConsoleWindow: function(allowSpice, vmtype, vmid, nodename, vmname) {
-	var dv = PVE.Utils.defaultViewer(allowSpice);
+    openDefaultConsoleWindow: function(consoles, vmtype, vmid, nodename, vmname) {
+	var dv = PVE.Utils.defaultViewer(consoles);
 	PVE.Utils.openConsoleWindow(dv, vmtype, vmid, nodename, vmname);
     },
 
@@ -765,10 +768,20 @@ Ext.define('PVE.Utils', { utilities: {
 	}
     },
 
-    defaultViewer: function(allowSpice) {
+    defaultViewer: function(consoles) {
+
+	var allowSpice, allowXtermjs;
+
+	if (consoles === true) {
+	    allowSpice = true;
+	    allowXtermjs = true;
+	} else if (typeof consoles === 'object') {
+	    allowSpice = consoles.spice;
+	    allowXtermjs = consoles.xtermjs;
+	}
 	var vncdefault = 'html5';
 	var dv = PVE.VersionInfo.console || vncdefault;
-	if (dv === 'vv' && !allowSpice) {
+	if ((dv === 'vv' && !allowSpice) || (dv === 'xtermjs' && !allowXtermjs)) {
 	    dv = vncdefault;
 	}
 

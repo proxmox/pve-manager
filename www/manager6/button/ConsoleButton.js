@@ -33,7 +33,11 @@ Ext.define('PVE.button.ConsoleButton', {
 
     handler: function() {
 	var me = this;
-	PVE.Utils.openDefaultConsoleWindow(me.enableSpice, me.consoleType, me.vmid,
+	var consoles = {
+	    spice: me.enableSpice,
+	    xtermjs: me.enableXtermjs
+	};
+	PVE.Utils.openDefaultConsoleWindow(consoles, me.consoleType, me.vmid,
 					   me.nodename, me.consoleName);
     },
 

@@ -169,7 +169,12 @@ Ext.define('PVE.qemu.CmdMenu', {
 			},
 			success: function(response, opts) {
 			    var allowSpice = response.result.data.spice;
-			    PVE.Utils.openDefaultConsoleWindow(allowSpice, 'kvm', vmid, nodename, vmname);
+			    var allowXtermjs = response.result.data.serial;
+			    var consoles = {
+				spice: allowSpice,
+				xtermjs: allowXtermjs
+			    };
+			    PVE.Utils.openDefaultConsoleWindow(consoles, 'kvm', vmid, nodename, vmname);
 			}
 		    });
 		}
