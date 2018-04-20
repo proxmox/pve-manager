@@ -59,6 +59,19 @@ Ext.define('PVE.dc.OptionView', {
 
 	me.callParent();
 
+	// set the new value for the default console
+	me.mon(me.rstore, 'load', function(store, records, success) {
+	    if (!success) {
+		return;
+	    }
+
+	    var rec = store.getById('console');
+	    PVE.VersionInfo.console = rec.data.value;
+	    if (rec.data.value === '__default__') {
+		delete PVE.VersionInfo.console;
+	    }
+	});
+
 	me.on('activate', me.rstore.startUpdate);
 	me.on('destroy', me.rstore.stopUpdate);
 	me.on('deactivate', me.rstore.stopUpdate);
