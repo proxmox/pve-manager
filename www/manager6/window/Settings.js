@@ -1,7 +1,7 @@
 Ext.define('PVE.window.Settings', {
     extend: 'Ext.window.Window',
 
-    width: '400px',
+    width: '800px',
     title: gettext('My Settings'),
     iconCls: 'fa fa-gear',
     modal: true,
@@ -16,21 +16,62 @@ Ext.define('PVE.window.Settings', {
     }],
 
     layout: {
-	type: 'vbox',
-	align: 'center'
+	type: 'hbox',
+	align: 'top'
     },
 
     controller: {
 	xclass: 'Ext.app.ViewController',
 
-	control: {
-	    '#': {
-		show: function() {
-		    var me = this;
-		    var sp = Ext.state.Manager.getProvider();
+	init: function(view) {
+	    var me = this;
+	    var sp = Ext.state.Manager.getProvider();
 
-		    var username = sp.get('login-username') || Proxmox.Utils.noneText;
-		    me.lookupReference('savedUserName').setValue(username);
+	    var username = sp.get('login-username') || Proxmox.Utils.noneText;
+	    me.lookupReference('savedUserName').setValue(username);
+
+	    var settings = ['fontSize', 'fontFamily', 'letterSpacing', 'lineHeight'];
+	    var defaultSettings = true;
+	    settings.forEach(function(setting) {
+		var val = localStorage.getItem('pve-xterm-' + setting);
+		if (val !== undefined && val !== null) {
+		    var field = me.lookup(setting);
+		    field.setValue(val);
+		    defaultSettings = false;
+		}
+	    });
+
+	    me.lookup('xtermsave').setDisabled(true);
+	    me.lookup('xtermreset').setDisabled(defaultSettings);
+	},
+
+	control: {
+	    '#xtermjs field': {
+		change: function(field) {
+		    var me = this;
+		    me.lookup('xtermsave').setDisabled(false);
+		    me.lookup('xtermreset').setDisabled(false);
+		}
+	    },
+	    '#xtermjs button': {
+		click: function(button) {
+		    var me = this;
+		    var settings = ['fontSize', 'fontFamily', 'letterSpacing', 'lineHeight'];
+		    settings.forEach(function(setting) {
+			var field = me.lookup(setting);
+			if (button.reference === 'xtermsave') {
+			    var value = field.getValue();
+			    if (value) {
+				localStorage.setItem('pve-xterm-' + setting, value);
+			    } else {
+				localStorage.removeItem('pve-xterm-' + setting);
+			    }
+			} else if (button.reference === 'xtermreset') {
+			    field.setValue(undefined);
+			    localStorage.removeItem('pve-xterm-' + setting);
+			}
+		    });
+		    button.setDisabled(true);
 		}
 	    },
 	    'button[name=reset]': {
@@ -102,8 +143,9 @@ Ext.define('PVE.window.Settings', {
 
     items: [{
 	    xtype: 'fieldset',
-	    width: '90%',
-	    title: gettext('Browser Settings'),
+	    width: '50%',
+	    title: gettext('Webinterface Settings'),
+	    margin: '5',
 	    layout: {
 		type: 'vbox',
 		align: 'left'
@@ -184,6 +226,73 @@ Ext.define('PVE.window.Settings', {
 		    name: 'reset'
 		}
 	    ]
+    },{
+	xtype: 'fieldset',
+	itemId: 'xtermjs',
+	width: '50%',
+	margin: '5',
+	    title: gettext('xterm.js Settings'),
+	layout: {
+	    type: 'vbox',
+	    algin: 'left'
+	},
+	defaults: {
+	    width: '100%',
+	    margin: '0 0 10 0'
+	},
+	items: [
+	    {
+		xtype: 'textfield',
+		name: 'fontFamily',
+		reference: 'fontFamily',
+		emptyText: Proxmox.Utils.defaultText,
+		fieldLabel: gettext('Font-Family')
+	    },
+	    {
+		xtype: 'proxmoxintegerfield',
+		emptyText: Proxmox.Utils.defaultText,
+		name: 'fontSize',
+		reference: 'fontSize',
+		minValue: 1,
+		fieldLabel: gettext('Font-Size')
+	    },
+	    {
+		xtype: 'numberfield',
+		name: 'letterSpacing',
+		reference: 'letterSpacing',
+		emptyText: Proxmox.Utils.defaultText,
+		fieldLabel: gettext('Letter Spacing')
+	    },
+	    {
+		xtype: 'numberfield',
+		name: 'lineHeight',
+		minValue: 0.1,
+		reference: 'lineHeight',
+		emptyText: Proxmox.Utils.defaultText,
+		fieldLabel: gettext('Line Height')
+	    },
+	    {
+		xtype: 'container',
+		layout: {
+		    type: 'hbox',
+		    pack: 'end'
+		},
+		items: [
+		    {
+			xtype: 'button',
+			reference: 'xtermreset',
+			disabled: true,
+			text: gettext('Reset')
+		    },
+		    {
+			xtype: 'button',
+			reference: 'xtermsave',
+			disabled: true,
+			text: gettext('Save')
+		    }
+		]
+	    }
+	]
     }],
 
     onShow: function() {
