@@ -1,3 +1,17 @@
+pve-manager (5.1-52) unstable; urgency=medium
+
+  * VM/Hardware: show memory shares
+
+  * remove the novnc panels for node/container (replaced by xtermjs)
+
+  * allow xtermjs to be the default console
+
+  * fix #1691: use asynchronous API call for VM disk creation
+
+  * fix #1732: actually post values in IScsiEdit
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 23 Apr 2018 15:40:48 +0200
+
 pve-manager (5.1-51) unstable; urgency=medium
 
   * overwrite the built-in 'run_editor' function
