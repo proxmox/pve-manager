@@ -31,27 +31,40 @@ Ext.define('PVE.window.Settings', {
 	    me.lookupReference('savedUserName').setValue(username);
 
 	    var settings = ['fontSize', 'fontFamily', 'letterSpacing', 'lineHeight'];
-	    var defaultSettings = true;
 	    settings.forEach(function(setting) {
 		var val = localStorage.getItem('pve-xterm-' + setting);
 		if (val !== undefined && val !== null) {
 		    var field = me.lookup(setting);
 		    field.setValue(val);
-		    defaultSettings = false;
+		    field.resetOriginalValue();
+		}
+	    });
+	},
+
+	set_button_status: function() {
+	    var me = this;
+
+	    var form = me.lookup('xtermform');
+	    var valid = form.isValid();
+	    var dirty = form.isDirty();
+
+	    var hasvalues = false;
+	    var values = form.getValues();
+	    Ext.Object.eachValue(values, function(value) {
+		if (value) {
+		    hasvalues = true;
+		    return false;
 		}
 	    });
 
-	    me.lookup('xtermsave').setDisabled(true);
-	    me.lookup('xtermreset').setDisabled(defaultSettings);
+	    me.lookup('xtermsave').setDisabled(!dirty || !valid);
+	    me.lookup('xtermreset').setDisabled(!hasvalues);
 	},
 
 	control: {
-	    '#xtermjs field': {
-		change: function(field) {
-		    var me = this;
-		    me.lookup('xtermsave').setDisabled(false);
-		    me.lookup('xtermreset').setDisabled(false);
-		}
+	    '#xtermjs form': {
+		dirtychange: 'set_button_status',
+		validitychange: 'set_button_status'
 	    },
 	    '#xtermjs button': {
 		click: function(button) {
@@ -70,8 +83,9 @@ Ext.define('PVE.window.Settings', {
 			    field.setValue(undefined);
 			    localStorage.removeItem('pve-xterm-' + setting);
 			}
+			field.resetOriginalValue();
 		    });
-		    button.setDisabled(true);
+		    me.set_button_status();
 		}
 	    },
 	    'button[name=reset]': {
@@ -231,68 +245,73 @@ Ext.define('PVE.window.Settings', {
 	itemId: 'xtermjs',
 	width: '50%',
 	margin: '5',
-	    title: gettext('xterm.js Settings'),
-	layout: {
-	    type: 'vbox',
-	    algin: 'left'
-	},
-	defaults: {
-	    width: '100%',
-	    margin: '0 0 10 0'
-	},
-	items: [
-	    {
-		xtype: 'textfield',
-		name: 'fontFamily',
-		reference: 'fontFamily',
-		emptyText: Proxmox.Utils.defaultText,
-		fieldLabel: gettext('Font-Family')
+	title: gettext('xterm.js Settings'),
+	items: [{
+	    xtype: 'form',
+	    reference: 'xtermform',
+	    border: false,
+	    layout: {
+		type: 'vbox',
+		algin: 'left'
 	    },
-	    {
-		xtype: 'proxmoxintegerfield',
-		emptyText: Proxmox.Utils.defaultText,
-		name: 'fontSize',
-		reference: 'fontSize',
-		minValue: 1,
-		fieldLabel: gettext('Font-Size')
+	    defaults: {
+		width: '100%',
+		margin: '0 0 10 0'
 	    },
-	    {
-		xtype: 'numberfield',
-		name: 'letterSpacing',
-		reference: 'letterSpacing',
-		emptyText: Proxmox.Utils.defaultText,
-		fieldLabel: gettext('Letter Spacing')
-	    },
-	    {
-		xtype: 'numberfield',
-		name: 'lineHeight',
-		minValue: 0.1,
-		reference: 'lineHeight',
-		emptyText: Proxmox.Utils.defaultText,
-		fieldLabel: gettext('Line Height')
-	    },
-	    {
-		xtype: 'container',
-		layout: {
-		    type: 'hbox',
-		    pack: 'end'
+	    items: [
+		{
+		    xtype: 'textfield',
+		    name: 'fontFamily',
+		    reference: 'fontFamily',
+		    emptyText: Proxmox.Utils.defaultText,
+		    fieldLabel: gettext('Font-Family')
 		},
-		items: [
-		    {
-			xtype: 'button',
-			reference: 'xtermreset',
-			disabled: true,
-			text: gettext('Reset')
+		{
+		    xtype: 'proxmoxintegerfield',
+		    emptyText: Proxmox.Utils.defaultText,
+		    name: 'fontSize',
+		    reference: 'fontSize',
+		    minValue: 1,
+		    fieldLabel: gettext('Font-Size')
+		},
+		{
+		    xtype: 'numberfield',
+		    name: 'letterSpacing',
+		    reference: 'letterSpacing',
+		    emptyText: Proxmox.Utils.defaultText,
+		    fieldLabel: gettext('Letter Spacing')
+		},
+		{
+		    xtype: 'numberfield',
+		    name: 'lineHeight',
+		    minValue: 0.1,
+		    reference: 'lineHeight',
+		    emptyText: Proxmox.Utils.defaultText,
+		    fieldLabel: gettext('Line Height')
+		},
+		{
+		    xtype: 'container',
+		    layout: {
+			type: 'hbox',
+			pack: 'end'
 		    },
-		    {
-			xtype: 'button',
-			reference: 'xtermsave',
-			disabled: true,
-			text: gettext('Save')
-		    }
-		]
-	    }
-	]
+		    items: [
+			{
+			    xtype: 'button',
+			    reference: 'xtermreset',
+			    disabled: true,
+			    text: gettext('Reset')
+			},
+			{
+			    xtype: 'button',
+			    reference: 'xtermsave',
+			    disabled: true,
+			    text: gettext('Save')
+			}
+		    ]
+		}
+	    ]
+	}]
     }],
 
     onShow: function() {
