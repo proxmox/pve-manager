@@ -7,6 +7,9 @@ use IO::File;
 use File::Find;
 use File::stat;
 
+use PVE::CertHelpers;
+use PVE::Certificate;
+use PVE::NodeConfig;
 use PVE::INotify;
 use PVE::Cluster;
 use PVE::APLInfo;
@@ -14,6 +17,7 @@ use PVE::SafeSyslog;
 use PVE::RPCEnvironment;
 use PVE::API2::Subscription;
 use PVE::API2::APT;
+use PVE::API2::ACME;
 
 initlog ('pveupdate', 'daemon');
 
@@ -50,6 +54,23 @@ eval { PVE::API2::APT->update_database({ node => $nodename, notify => $notify, q
 if (my $err = $@) {
     syslog ('err', "update apt database failed: $err");
 }
+
+eval {
+    my $node_config = PVE::NodeConfig::load_config($nodename);
+    if ($node_config && $node_config->{acme}) {
+	my $cert = PVE::CertHelpers::cert_path_prefix($nodename).".pem";
+	if (-e $cert) {
+	    if (PVE::Certificate::check_expiry($cert, time() + 30*24*60*60)) {
+		PVE::API2::ACME->renew_certificate({ node => $nodename });
+	    } else {
+		syslog ('info', 'Custom certificate does not expire soon, skipping ACME renewal.');
+	    }
+	} else {
+	    syslog ('info', 'ACME config found for node, but no custom certificate exists. Skipping ACME renewal until initial certificate has been deployed.');
+	}
+    }
+};
+syslog ('err', "Renewing ACME certificate failed: $@") if $@;
 
 sub cleanup_tasks {
 
