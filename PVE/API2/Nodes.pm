@@ -41,6 +41,7 @@ use PVE::API2::APT;
 use PVE::API2::Ceph;
 use PVE::API2::Firewall::Host;
 use PVE::API2::Replication;
+use PVE::API2::Certificates;
 use PVE::API2::NodeConfig;
 use Digest::MD5;
 use Digest::SHA;
@@ -120,6 +121,12 @@ __PACKAGE__->register_method ({
 });
 
 __PACKAGE__->register_method ({
+    subclass => "PVE::API2::Certificates",
+    path => 'certificates',
+});
+
+
+__PACKAGE__->register_method ({
     subclass => "PVE::API2::NodeConfig",
     path => 'config',
 });
@@ -177,6 +184,7 @@ __PACKAGE__->register_method ({
 	    { name => 'stopall' },
 	    { name => 'netstat' },
 	    { name => 'firewall' },
+	    { name => 'certificates' },
 	    { name => 'config' },
 	    ];
 
