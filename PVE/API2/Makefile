@@ -14,6 +14,7 @@ PERLSOURCE = 			\
 	Pool.pm			\
 	Tasks.pm		\
 	Network.pm		\
+	ACMEAccount.pm		\
 	NodeConfig.pm		\
 	Services.pm
 

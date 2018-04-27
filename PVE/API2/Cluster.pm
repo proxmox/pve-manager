@@ -24,6 +24,7 @@ use PVE::JSONSchema qw(get_standard_option);
 use PVE::Firewall;
 use PVE::API2::Firewall::Cluster;
 use PVE::API2::ReplicationConfig;
+use PVE::API2::ACMEAccount;
 
 use base qw(PVE::RESTHandler);
 
@@ -50,6 +51,11 @@ __PACKAGE__->register_method ({
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::HAConfig",  
     path => 'ha',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::ACMEAccount",
+    path => 'acme',
 });
 
 my $dc_schema = PVE::Cluster::get_datacenter_schema();
@@ -97,6 +103,7 @@ __PACKAGE__->register_method ({
 	    { name => 'nextid' },
 	    { name => 'firewall' },
 	    { name => 'config' },
+	    { name => 'acme' },
 	    ];
 
 	return $result;
