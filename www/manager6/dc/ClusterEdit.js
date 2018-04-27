@@ -145,7 +145,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		    delete PVE.Utils.silenceAuthFailures;
 		}
 	    },
-	    'proxmoxcheckbox[name=assistedInput]': {
+	    'proxmoxcheckbox[name=assistedEntry]': {
 		change: 'onInputTypeChange'
 	    },
 	    'textarea[name=serializedinfo]': {
@@ -230,6 +230,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
     items: [{
 	xtype: 'proxmoxcheckbox',
 	reference: 'assistedEntry',
+	name: 'assistedEntry',
 	submitValue: false,
 	value: true,
 	autoEl: {
