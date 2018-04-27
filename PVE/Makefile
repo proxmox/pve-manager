@@ -3,6 +3,7 @@ include ../defines.mk
 SUBDIRS=API2 Status CLI Service
 
 PERLSOURCE = 			\
+	CertHelpers.pm		\
 	API2.pm			\
 	API2Tools.pm		\
 	HTTPServer.pm		\
