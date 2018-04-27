@@ -1,0 +1,8 @@
+#!/usr/bin/perl -T
+
+use strict;
+use warnings;
+
+use PVE::CLI::pvenode;
+
+PVE::CLI::pvenode->run_cli_handler();

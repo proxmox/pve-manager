@@ -9,7 +9,7 @@ export PERLLIB=..
 SUBDIRS = init.d test
 
 SERVICES = pvestatd pveproxy pvedaemon spiceproxy
-CLITOOLS = vzdump pvesubscription pveceph pveam pvesr
+CLITOOLS = vzdump pvesubscription pveceph pveam pvesr pvenode
 
 SCRIPTS =  			\
 	${SERVICES}		\
