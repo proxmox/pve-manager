@@ -160,6 +160,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    matchFieldWidth: false,
 	    hidden: true,
 	    allowBlank: false,
+	    disabled: true,
 	    bind: {
 		hidden: '{hasMP}',
 		disabled: '{hasMP}'
@@ -218,6 +219,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    value: '',
 	    emptyText:  gettext('/some/path'),
 	    allowBlank: false,
+	    disabled: true,
 	    fieldLabel: gettext('Path'),
 	    bind: {
 		hidden: '{isRoot}',
