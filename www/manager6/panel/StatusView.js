@@ -61,8 +61,10 @@ Ext.define('PVE.panel.StatusView', {
 	if (Ext.isFunction(field.renderer)) {
 	    renderer = field.renderer;
 	}
-	if (field.textField !== undefined) {
-	    field.updateValue(renderer(me.getRecordValue(field.textField)));
+	if (field.multiField === true) {
+	    field.updateValue(renderer.call(field, me.getStore().getRecord()));
+	} else if (field.textField !== undefined) {
+	    field.updateValue(renderer.call(field, me.getRecordValue(field.textField)));
 	} else if(field.valueField !== undefined) {
 	    var used = me.getRecordValue(field.valueField);
 	    /*jslint confusion: true*/
