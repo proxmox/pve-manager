@@ -149,6 +149,17 @@
     color: #CC1800;
 }
 
+/* yellow ! triangle */
+.x-tree-icon-custom.io-error:after,
+.x-grid-icon-custom.io-error:after,
+.x-tree-icon-custom.internal-error:after,
+.x-grid-icon-custom.internal-error:after,
+.x-tree-icon-custom.guest-panicked:after,
+.x-grid-icon-custom.guest-panicked:after {
+    content: "\f071";
+    color: #FFCC00;
+}
+
 /* the grey '?' */
 .x-tree-icon-custom.unknown:after,
 .x-grid-icon-custom.unknown:after {
