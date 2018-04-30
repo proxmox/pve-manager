@@ -32,7 +32,16 @@ Ext.define('PVE.panel.GuestStatusView', {
 	    title: gettext('Status'),
 	    iconCls: 'fa fa-info fa-fw',
 	    printBar: false,
-	    textField: 'status'
+	    multiField: true,
+	    renderer: function(record) {
+		var me = this;
+		var text = record.data.status;
+		var qmpstatus = record.data.qmpstatus;
+		if (qmpstatus && qmpstatus !== record.data.status) {
+		    text += ' (' + qmpstatus + ')';
+		}
+		return text;
+	    }
 	},
 	{
 	    itemId: 'hamanaged',
