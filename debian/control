@@ -2,6 +2,7 @@ Source: pve-manager
 Section: admin
 Priority: optional
 Build-Depends: liblocale-po-perl,
+               pve-doc-generator (>= 5.1-18),
 Maintainer: Proxmox Support Team <support@proxmox.com>
 
 Package: pve-manager
@@ -35,7 +36,7 @@ Depends: apt-transport-https,
          libnet-dns-perl,
          libnet-http-perl (>= 6.06-1),
          libpve-access-control (>= 5.0-7),
-         libpve-common-perl (>= 5.0-19),
+         libpve-common-perl (>= 5.0-31),
          libpve-guest-common-perl (>= 2.0-14),
          libpve-http-server-perl,
          libpve-storage-perl (>= 5.0-18),
@@ -54,8 +55,8 @@ Depends: apt-transport-https,
          novnc-pve,
          perl (>= 5.10.0-19),
          postfix | mail-transport-agent,
-         proxmox-widget-toolkit (>= 1.0-12),
-         pve-cluster (>= 5.0-17),
+         proxmox-widget-toolkit (>= 1.0-17),
+         pve-cluster (>= 5.0-27),
          pve-container (>= 2.0-21),
          pve-docs,
          pve-firewall,
