@@ -293,35 +293,6 @@ Ext.define('PVE.node.ACME', {
 		    }
 		});
 	    }
-	},
-	{
-	    xtype: 'proxmoxButton',
-	    itemId: 'renew',
-	    text: gettext('Renew Certificate'),
-	    selModel: null,
-	    confirmMsg: gettext("Are you sure you want to force renew the certificate?"),
-	    handler: function() {
-		var me = this.up('grid');
-		Proxmox.Utils.API2Request({
-		    method: 'PUT',
-		    params: {
-			force: 1
-		    },
-		    url: '/nodes/' + me.nodename + '/certificates/acme/certificate',
-		    success: function(response, opt) {
-			var win = Ext.create('Proxmox.window.TaskViewer', {
-			    upid: response.result.data,
-			    taskDone: function(success) {
-				me.certificate_order_finished(success);
-			    }
-			});
-			win.show();
-		    },
-		    failure: function(response, opt) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
-		});
-	    }
 	}
     ],
 
@@ -345,12 +316,8 @@ Ext.define('PVE.node.ACME', {
 	var domains = acmeObj ? acmeObj.domains.length : 0;
 
 	var order = me.down('#order');
-	var renew = me.down('#renew');
 	order.setVisible(account);
 	order.setDisabled(!account || !domains);
-	renew.setVisible(account);
-	renew.setDisabled(!account || !domains);
-
 
 	me.down('#createaccount').setVisible(!account);
 	me.down('#viewaccount').setVisible(account);
