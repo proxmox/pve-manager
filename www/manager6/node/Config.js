@@ -169,6 +169,14 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'proxmoxNodeNetworkView'
 		},
 		{
+		    title: gettext('Certificates'),
+		    iconCls: 'fa fa-certificate',
+		    itemId: 'certificates',
+		    groups: ['services'],
+		    nodename: nodename,
+		    xtype: 'pveCertificatesView'
+		},
+		{
 		    title: gettext('DNS'),
 		    iconCls: 'fa fa-globe',
 		    groups: ['services'],

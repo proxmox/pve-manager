@@ -97,6 +97,7 @@ JSSRC= 				                 	\
 	node/StatusView.js				\
 	node/Summary.js					\
 	node/Subscription.js				\
+	node/Certificates.js				\
 	node/ACME.js					\
 	node/Config.js					\
 	window/Migrate.js				\
