@@ -5,6 +5,35 @@ Ext.define('PVE.Parser', { statics: {
 
     // this class only contains static functions
 
+    parseACME: function(value) {
+	if (!value) {
+	    return;
+	}
+
+	var res = {};
+	var errors = false;
+
+	Ext.Array.each(value.split(','), function(p) {
+	    if (!p || p.match(/^\s*$/)) {
+		return; //continue
+	    }
+
+	    var match_res;
+	    if ((match_res = p.match(/^(?:domains=)?((?:[a-zA-Z0-9\-\.]+[;, ]?)+)$/)) !== null) {
+		res.domains = match_res[1].split(/[;, ]/);
+	    } else {
+		errors = true;
+		return false;
+	    }
+	});
+
+	if (errors || !res) {
+	    return;
+	}
+
+	return res;
+    },
+
     parseBoolean: function(value, default_value) {
 	if (!Ext.isDefined(value)) {
 	    return default_value;
