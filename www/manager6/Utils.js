@@ -721,6 +721,27 @@ Ext.define('PVE.Utils', { utilities: {
 	return PVE.Utils.render_size_usage(record.used, record.total);
     },
 
+    render_optional_url: function(value) {
+	var match;
+	if (value && (match = value.match(/^https?:\/\//)) !== null) {
+	    return '<a href="' + value + '">' + value + '</a>';
+	}
+	return value;
+    },
+
+    render_san: function(value) {
+	var names = [];
+	if (Ext.isArray(value)) {
+	    value.forEach(function(val) {
+		if (!Ext.isNumber(val)) {
+		    names.push(val);
+		}
+	    });
+	    return names.join('<br>');
+	}
+	return value;
+    },
+
     windowHostname: function() {
 	return window.location.hostname.replace(Proxmox.Utils.IP6_bracket_match,
             function(m, addr, offset, original) { return addr; });
