@@ -144,6 +144,23 @@ Ext.define('PVE.lxc.RessourceView', {
 	    });
 	};
 
+	var run_move = function(b, e, rec) {
+	    if (!rec) {
+		return;
+	    }
+
+	    var win = Ext.create('PVE.window.HDMove', {
+		disk: rec.data.key,
+		nodename: nodename,
+		vmid: vmid,
+		type: 'lxc'
+	    });
+
+	    win.show();
+
+	    win.on('destroy', me.reload, me);
+	};
+
 	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    selModel: me.selModel,
@@ -182,6 +199,14 @@ Ext.define('PVE.lxc.RessourceView', {
 	    handler: run_remove
 	});
 
+	var move_btn = new Proxmox.button.Button({
+	    text: gettext('Move Volume'),
+	    selModel: me.selModel,
+	    disabled: true,
+	    dangerous: true,
+	    handler: run_move
+	});
+
 	var set_button_status = function() {
 	    var rec = me.selModel.getSelection()[0];
 
@@ -208,6 +233,7 @@ Ext.define('PVE.lxc.RessourceView', {
 
 	    remove_btn.setDisabled(!isDisk || rec.data.key === 'rootfs');
 	    resize_btn.setDisabled(!isDisk);
+	    move_btn.setDisabled(!isDisk);
 
 	};
 	
@@ -239,7 +265,8 @@ Ext.define('PVE.lxc.RessourceView', {
 		},
 		edit_btn,
 		remove_btn,
-		resize_btn
+		resize_btn,
+		move_btn
 	    ],
 	    rows: rows,
 	    editorConfig: {
