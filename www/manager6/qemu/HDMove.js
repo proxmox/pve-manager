@@ -6,20 +6,25 @@ Ext.define('PVE.window.HDMove', {
 
     move_disk: function(disk, storage, format, delete_disk) {
 	var me = this;
+	var qemu = (me.type === 'qemu');
+	var params = {};
+	params.storage = storage;
+	params[qemu ? 'disk':'volume'] = disk;
 
-        var params =  { disk: disk, storage: storage };
+	if (format && qemu) {
+	    params.format = format;
+	}
 
-        if (format) {
-            params.format = format;
-        }
-	
 	if (delete_disk) {
 	    params['delete'] = 1;
 	}
 
+	var url = '/nodes/' + me.nodename + '/' + me.type + '/' + me.vmid + '/';
+	url += qemu ? 'move_disk' : 'move_volume';
+
 	Proxmox.Utils.API2Request({
 	    params: params,
-	    url: '/nodes/' + me.nodename + '/qemu/' + me.vmid + '/move_disk',
+	    url: url,
 	    waitMsgTarget: me,
 	    method: 'POST',
 	    failure: function(response, opts) {
@@ -52,12 +57,18 @@ Ext.define('PVE.window.HDMove', {
 	    throw "no VM ID specified";
 	}
 
+	if (!me.type) {
+	    me.type = 'qemu';
+	}
+
+	var qemu = (me.type === 'qemu');
+
         var items = [
             {
                 xtype: 'displayfield',
-                name: 'disk',
+                name: qemu ? 'disk' : 'volume',
                 value: me.disk,
-                fieldLabel: gettext('Disk'),
+                fieldLabel: qemu ? gettext('Disk') : gettext('Mount Point'),
                 vtype: 'StorageId',
                 allowBlank: false
             }
@@ -67,7 +78,7 @@ Ext.define('PVE.window.HDMove', {
 	    xtype: 'pveDiskStorageSelector',
 	    storageLabel: gettext('Target Storage'),
 	    nodename: me.nodename,
-	    storageContent: 'images',
+	    storageContent: qemu ? 'images' : 'rootdir',
 	    hideSize: true
 	});
 
@@ -93,9 +104,9 @@ Ext.define('PVE.window.HDMove', {
 
 	var submitBtn;
 
-	me.title =  gettext("Move disk");
+	me.title = qemu ? gettext("Move disk") : gettext('Move Volume');
 	submitBtn = Ext.create('Ext.Button', {
-	    text: gettext('Move disk'),
+	    text: me.title,
 	    handler: function() {
 		if (form.isValid()) {
 		    var values = form.getValues();
