@@ -1,3 +1,25 @@
+pve-manager (5.1-53) unstable; urgency=medium
+
+  * show additional status info in the VM summary page
+
+  * added an io-error status icon for VMs
+
+  * minor keyboard interaction improvements in the UI
+
+  * added a node-specific configuration file
+
+  * added ACME API endpoints to manage ACME accounts and certificates
+
+  * added pvenode command line tool for certificate and acme account management
+
+  * added certificate renewal to pveupdate
+
+  * added certificate management to node UI
+
+  * expose 'move volume' functionality for container mount points via the UI
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 07 May 2018 15:13:02 +0200
+
 pve-manager (5.1-52) unstable; urgency=medium
 
   * VM/Hardware: show memory shares
