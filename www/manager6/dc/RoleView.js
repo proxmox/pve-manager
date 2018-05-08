@@ -13,9 +13,9 @@ Ext.define('PVE.dc.RoleView', {
 
 	var store = new Ext.data.Store({
 	    model: 'pve-roles',
-	    sorters: { 
-		property: 'roleid', 
-		order: 'DESC' 
+	    sorters: {
+		property: 'roleid',
+		order: 'DESC'
 	    }
 	});
 
@@ -33,13 +33,45 @@ Ext.define('PVE.dc.RoleView', {
 
 	Proxmox.Utils.monStoreErrors(me, store);
 
+	var sm = Ext.create('Ext.selection.RowModel', {});
+
+	var reload = function() {
+		store.load();
+	};
+
+	var run_editor = function() {
+	    var rec = sm.getSelection()[0];
+	    if (!rec) {
+		return;
+	    }
+
+	    if (rec.data.special === "1") {
+		return;
+	    }
+
+	    var win = Ext.create('PVE.dc.RoleEdit',{
+		roleid: rec.data.roleid,
+		privs: rec.data.privs,
+	    });
+	    win.on('destroy', reload);
+	    win.show();
+	};
+
 	Ext.apply(me, {
 	    store: store,
+	    selModel: sm,
 
 	    viewConfig: {
 		trackOver: false
 	    },
 	    columns: [
+		{
+		    header: gettext('Built-In'),
+		    width: 65,
+		    sortable: true,
+		    dataIndex: 'special',
+		    renderer: Proxmox.Utils.format_boolean
+		},
 		{
 		    header: gettext('Name'),
 		    width: 150,
@@ -58,8 +90,40 @@ Ext.define('PVE.dc.RoleView', {
 	    listeners: {
 		activate: function() {
 		    store.load();
+		},
+		itemdblclick: run_editor,
+	    },
+	    tbar: [
+		{
+		    text: gettext('Create'),
+		    handler: function() {
+			var win = Ext.create('PVE.dc.RoleEdit', {});
+			win.on('destroy', reload);
+			win.show();
+		    }
+		},
+		{
+		    xtype: 'proxmoxButton',
+		    text: gettext('Edit'),
+		    disabled: true,
+		    selModel: sm,
+		    handler: run_editor,
+		    enableFn: function(record) {
+			return record.data.special !== '1';
+		    }
+		},
+		{
+		    xtype: 'proxmoxStdRemoveButton',
+		    selModel: sm,
+		    callback: function() {
+			reload();
+		    },
+		    baseurl: '/access/roles/',
+		    enableFn: function(record) {
+			return record.data.special !== '1';
+		    }
 		}
-	    }
+	    ]
 	});
 
 	me.callParent();

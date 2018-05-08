@@ -21,6 +21,7 @@ JSSRC= 				                 	\
 	form/Boolean.js					\
 	form/CompressionSelector.js			\
 	form/PoolSelector.js				\
+	form/PrivilegesSelector.js			\
 	form/GroupSelector.js				\
 	form/UserSelector.js				\
 	form/RoleSelector.js				\
@@ -185,6 +186,7 @@ JSSRC= 				                 	\
 	dc/GroupView.js					\
 	dc/GroupEdit.js					\
 	dc/RoleView.js					\
+	dc/RoleEdit.js					\
 	dc/ACLView.js					\
 	dc/AuthView.js					\
 	dc/AuthEdit.js					\
