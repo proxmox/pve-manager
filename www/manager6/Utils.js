@@ -724,7 +724,7 @@ Ext.define('PVE.Utils', { utilities: {
     render_optional_url: function(value) {
 	var match;
 	if (value && (match = value.match(/^https?:\/\//)) !== null) {
-	    return '<a href="' + value + '">' + value + '</a>';
+	    return '<a target="_blank" href="' + value + '">' + value + '</a>';
 	}
 	return value;
     },
