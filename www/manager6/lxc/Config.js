@@ -17,7 +17,7 @@ Ext.define('PVE.lxc.Config', {
 	    throw "no VM ID specified";
 	}
 
-	var template = me.pveSelNode.data.template;
+	var template = !!me.pveSelNode.data.template;
 
 	var running = !!me.pveSelNode.data.uptime;
 
@@ -45,6 +45,7 @@ Ext.define('PVE.lxc.Config', {
 	var startBtn = Ext.create('Ext.Button', {
 	    text: gettext('Start'),
 	    disabled: !caps.vms['VM.PowerMgmt'] || running,
+	    hidden: template,
 	    handler: function() {
 		vm_command('start');
 	    },
@@ -65,6 +66,7 @@ Ext.define('PVE.lxc.Config', {
 	var shutdownBtn = Ext.create('PVE.button.Split', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.vms['VM.PowerMgmt'] || !running,
+	    hidden: template,
 	    confirmMsg: Proxmox.Utils.format_task_description('vzshutdown', vmid),
 	    handler: function() {
 		vm_command('shutdown');
@@ -153,6 +155,7 @@ Ext.define('PVE.lxc.Config', {
 	    disabled: !caps.vms['VM.Console'],
 	    consoleType: 'lxc',
 	    consoleName: vm.name,
+	    hidden: template,
 	    nodename: nodename,
 	    vmid: vmid
 	});
@@ -172,7 +175,7 @@ Ext.define('PVE.lxc.Config', {
 	    ]
 	});
 
-	if (caps.vms['VM.Console']) {
+	if (caps.vms['VM.Console'] && !template) {
 	    me.items.push(
 		{
 		    title: gettext('Console'),
@@ -238,7 +241,7 @@ Ext.define('PVE.lxc.Config', {
 	    });
 	}
 
-	if (caps.vms['VM.Snapshot'] || caps.vms['VM.Snapshot.Rollback']) {
+	if ((caps.vms['VM.Snapshot'] || caps.vms['VM.Snapshot.Rollback']) && !template) {
 	    me.items.push({
 		title: gettext('Snapshots'),
 		iconCls: 'fa fa-history',
