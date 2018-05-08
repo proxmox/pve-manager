@@ -11,7 +11,7 @@ Ext.define('PVE.dc.RoleEdit', {
 
 	var url;
 	var method;
-    
+
 	if (me.isCreate) {
 	    url = '/api2/extjs/access/roles';
 	    method = 'POST';
@@ -43,7 +43,7 @@ Ext.define('PVE.dc.RoleEdit', {
 	});
 
 	me.callParent();
-	
+
 	if (!me.isCreate) {
 	    me.load({
 		success: function(response) {
