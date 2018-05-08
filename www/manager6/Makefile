@@ -14,6 +14,7 @@ JSSRC= 				                 	\
 	lxc/CmdMenu.js					\
 	node/CmdMenu.js					\
 	VNCConsole.js					\
+	data/PermPathStore.js			\
 	data/ResourceStore.js				\
 	data/model/Realm.js				\
 	data/model/RRDModels.js				\
@@ -59,6 +60,7 @@ JSSRC= 				                 	\
 	form/USBSelector.js				\
 	form/CalendarEvent.js				\
 	form/CephPoolSelector.js				\
+	form/PermPathSelector.js				\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\

@@ -12,7 +12,7 @@ Ext.define('PVE.dc.ACLAdd', {
 
 	var items = [
 	    {
-		xtype: me.path ? 'hiddenfield' : 'textfield',
+		xtype: me.path ? 'hiddenfield' : 'pvePermPathSelector',
 		name: 'path',
 		value: me.path,
 		allowBlank: false,
