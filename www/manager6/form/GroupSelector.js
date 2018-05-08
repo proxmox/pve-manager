@@ -1,6 +1,16 @@
+Ext.define('pve-groups', {
+	extend: 'Ext.data.Model',
+	fields: [ 'groupid', 'comment' ],
+	proxy: {
+	    type: 'proxmox',
+	    url: "/api2/json/access/groups"
+	},
+	idProperty: 'groupid'
+});
+
 Ext.define('PVE.form.GroupSelector', {
     extend: 'Proxmox.form.ComboGrid',
-    alias: ['widget.pveGroupSelector'],
+    xtype: 'pveGroupSelector',
 
     allowBlank: false,
     autoSelect: false,
@@ -38,21 +48,8 @@ Ext.define('PVE.form.GroupSelector', {
 	    store: store
 	});
 
-        me.callParent();
+	me.callParent();
 
 	store.load();
     }
-
-}, function() {
-
-    Ext.define('pve-groups', {
-	extend: 'Ext.data.Model',
-	fields: [ 'groupid', 'comment' ],
-	proxy: {
-            type: 'proxmox',
-	    url: "/api2/json/access/groups"
-	},
-	idProperty: 'groupid'
-    });
-
 });
