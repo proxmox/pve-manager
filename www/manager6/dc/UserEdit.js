@@ -26,7 +26,7 @@ Ext.define('PVE.dc.UserEdit', {
 
 	var validate_pw = function() {
 	    if (verifypw.getValue() !== pwfield.getValue()) {
-		return gettext("Passwords does not match");
+		return gettext("Passwords do not match");
 	    }
 	    return true;
 	};
