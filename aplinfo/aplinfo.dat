@@ -4,19 +4,6 @@ Description: News displayed on the admin interface
   For more information please visit our homepage at
   <a href='http://www.proxmox.com' target='_blank'>www.proxmox.com</a>
 
-Package: alpine-3.3-default
-Version: 20160427
-Type: lxc
-OS: alpine
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/alpine-3.3-default_20160427_amd64.tar.xz
-md5sum: 5fb4ea6af895e38cea5921f92dfe1a98
-sha512sum: 991310939ef749b2c283f598c7dd81208192ea8f2e9f2e6c1afbd8c9d1e0513a61b9fcb1864763e25aad32f341c032f5a0e8580288c18218baa15406001d3c79
-Infopage: https://linuxcontainers.org
-Description: LXC default image for alpine 3.3 (20160427)
-
 Package: alpine-3.4-default
 Version: 20161206
 Type: lxc
@@ -43,16 +30,42 @@ sha512sum: b60613c1a431f8c3c815556b1191f7507ce8f70ab9504d12939055f598fc8ac9c4b4c
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.5 (20170504)
 
+Package: alpine-3.6-default
+Version: 20171211
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.6-default_20171211_amd64.tar.xz
+md5sum: fb0c7f5c420541e5399a3d6a2a9697ac
+sha512sum: 027e12ac4c3e4cf4a2c247203dd1105dfbe3867432cb9e95ff472d773a97b9361f833579347a4f18ff1d98c882a53593f4681a684e90593d8e8863d5f4dd0d57
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.6 (20171211)
+
+Package: alpine-3.7-default
+Version: 20171211
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.7-default_20171211_amd64.tar.xz
+md5sum: 00ee34152a651f76b59c82dadec2d967
+sha512sum: 7917ee4fbaa4cded16756ddbee065d6cedefe467598aff73879493727fc23444948bed47a1f6dd8f44d012f801beeea6787cd8b99c0dd4ac08dd981d6565cf4d
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.7 (20171211)
+
 Package: archlinux-base
-Version: 20170704-1
+Version: 20171214-1
 Type: lxc
 OS: archlinux
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/archlinux-base_20170704-1_amd64.tar.gz
-md5sum: 4c44a69222531afcb5a4e6c836fd1d67
-sha512sum: 1bf2b94aa75fa0886e61b747ffdbb287b885ff5187bba41fdb4457049b380e70e4773dd17553a7a3135d491ee2e7668bcbec274172873c020982bd81b3298e3c
+Location: system/archlinux-base_20171214-1_amd64.tar.gz
+md5sum: 0384abd25af50ec526585978cd3ec331
+sha512sum: c197d00bc5973e1839cad2a609dc48f6abda130b6f06b7d563db2400aba9beb6bcd2656010464b6c0c782f57ab892ba1af1ae20921bb421c5558eeec674cba97
 Infopage: https://www.archlinux.org
 Description: ArchLinux base image.
  ArchLinux template with the 'base' group and the 'openssh' package installed.
@@ -71,17 +84,17 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for centos 6 (20161207)
 
 Package: centos-7-default
-Version: 20170504
+Version: 20171212
 Type: lxc
 OS: centos
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/centos-7-default_20170504_amd64.tar.xz
-md5sum: 4ef53806bf04bbecac0950685cc057bc
-sha512sum: f93cdc1938c1ef0c1433f2e3309c6b1be6db50e208d4d87a50091bb1f11b76cfb1831e78a4a8d8178f18a09f5204fff1a806b63442eb7dbbf552987ac41beccb
+Location: system/centos-7-default_20171212_amd64.tar.xz
+md5sum: 4fc5ee8f05a1d55f0330c34524c765a0
+sha512sum: 7d1a171889aefdca51b29caa3c680afcb7492576a19a031314717334b136950d48313164e260c0c66b4b2fd288a7d4707abcba8cc1e487ef0854c7e511dc8fd2
 Infopage: https://linuxcontainers.org
-Description: LXC default image for centos 7 (20170504)
+Description: LXC default image for centos 7 (20171212)
 
 Package: debian-6.0-standard
 Version: 6.0-7
@@ -126,70 +139,70 @@ Description: Debian 8.0 (standard)
  A small Debian Jessie system including all standard packages.
 
 Package: debian-9.0-standard
-Version: 9.0-2
+Version: 9.3-1
 Type: lxc
 OS: debian-9.0
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/debian-9.0-standard_9.0-2_amd64.tar.gz
-md5sum: c206a6b5984238a242091c85632c69f0
-sha512sum: 342e12495214ef315d2c4ac3c6f27396d3b23354330ccca4b0ce3b19e6e75df9729c9dfb878393f0ba113b4cbf37348ec99a435e873447a0fb0bbbc74aab5596
+Location: system/debian-9.0-standard_9.3-1_amd64.tar.gz
+md5sum: 175180522a9529fb5e0dbb82c873f5c2
+sha512sum: d363c6ff1f6a56d3eed934002fb44906b0740f734e897049bbed6d1af4829a142f1015eb1c7400d9969c1311484b6bc22120f860fc573622564f3a1c83a78f8e
 Infopage: http://pve.proxmox.com/wiki/Debian_9.0_Standard
-Description: Debian 9.0 (standard)
+Description: Debian 9.3 (standard)
  A small Debian Stretch system including all standard packages.
 
-Package: fedora-24-default
-Version: 20161207
+Package: fedora-26-default
+Version: 20171212
 Type: lxc
 OS: fedora
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/fedora-24-default_20161207_amd64.tar.xz
-md5sum: b430161f0ec9c0f791ad54e16db32951
-sha512sum: 2a59fa86eeddb7df36e94eae5bbc21ce22f6ab37cc248a963de8de6e4443184522af9d44f95c6cf38a8586193cc033353e7abe68af3bf5c20c7e12da8366aea3
+Location: system/fedora-26-default_20171212_amd64.tar.xz
+md5sum: f6083db0428bd858cdd7ad576b927078
+sha512sum: 62b2d8782f95a8397fc52ef9b4a6adefb0da1366af7dc2f9eaa123b5e97959c341055f724e23c4f54569a02ba866455381de7c052acfebb214198a50f80f9271
 Infopage: https://linuxcontainers.org
-Description: LXC default image for fedora 24 (20161207)
+Description: LXC default image for fedora 26 (20171212)
 
-Package: fedora-25-default
-Version: 20170316
+Package: fedora-27-default
+Version: 20171212
 Type: lxc
 OS: fedora
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/fedora-25-default_20170316_amd64.tar.xz
-md5sum: 1231e5d4269929e497b98bc8dd08f488
-sha512sum: 8213dff0815da9ba6ccdeec08843fa6480e659268e1c6ed7ccd794d20eaafa117f3356c4328d8cab18bb72d9032991e3bdf4d0f8b1de24674f87ab7afd5902d0
+Location: system/fedora-27-default_20171212_amd64.tar.xz
+md5sum: 06d9f37f9d44e6692515cb33f5408533
+sha512sum: 165648672cb5b5058aafdb371d11e6d5c6c2f61869032b78fc0f67640d696478c6ecaf7ffc7479bcae2b854755fd25e4dd3dcfee333058ce994d7558a6a5eaf9
 Infopage: https://linuxcontainers.org
-Description: LXC default image for fedora 25 (20170316)
+Description: LXC default image for fedora 27 (20171212)
 
 Package: gentoo-current-default
-Version: 20170503
+Version: 20171211
 Type: lxc
 OS: gentoo
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/gentoo-current-default_20170503_amd64.tar.xz
-md5sum: 9dd789208ae0015490d7d68f35894889
-sha512sum: fb235df6330bb73e612890210c33e69d32fac370381bbada78928bc488df1838fd2ca953213a0c4e7de530f480ce94559a467fc31dccef2a539546a74817a14f
+Location: system/gentoo-current-default_20171211_amd64.tar.xz
+md5sum: 4ab70efeda881257c4a60eef87a23437
+sha512sum: 7fdcca92ab478aac168a6c6cf0e5f38e47bf7d7449f971f8ad000c8db77954e30986b76c1a0cf5e893512cb74b989f61295d9afebf7e539280951bcd6f6fb919
 Infopage: https://linuxcontainers.org
-Description: LXC default image for gentoo current (20170503)
+Description: LXC default image for gentoo current (20171211)
 
-Package: opensuse-42.2-default
-Version: 20170406
+Package: opensuse-42.3-default
+Version: 20171214
 Type: lxc
 OS: opensuse
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/opensuse-42.2-default_20170406_amd64.tar.xz
-md5sum: bd4188e3b4ca43890b93e35f0a63d420
-sha512sum: 59cf116d5bd825c23df6e22211febc0a20dd8b52515e481a5f4c2ccc8a0f60a868faea3047d4e1c8c8fc6a52ef1ddca0ef7e22be8ead8562813b2a6e3deee6f1
+Location: system/opensuse-42.3-default_20171214_amd64.tar.xz
+md5sum: 973b8f88de551a51d2ccf585143734fa
+sha512sum: 245bcd7ed4751b40d680752cfc1b696a724c4857914752cd05459e16cacf10e6372398f2b0eb073551726955396b0503733c74695c51e7143972a0a55d6c7744
 Infopage: https://linuxcontainers.org
-Description: LXC default image for opensuse 42.2 (20170406)
+Description: LXC default image for opensuse 42.3 (20171214)
 
 Package: ubuntu-12.04-standard
 Version: 12.04-1
@@ -260,4 +273,32 @@ sha512sum: 30b4018447e1d07d950ccab17c9b54c2f4b01faa748d1725c17b34198dd6bb2b982ac
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Zesty_Standard
 Description: Ubuntu Zesty (standard)
  A small Ubuntu Zesty system including all standard packages.
+
+Package: ubuntu-17.10-standard
+Version: 17.10-1
+Type: lxc
+OS: ubuntu-17.10
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-17.10-standard_17.10-1_amd64.tar.gz
+md5sum: 34cc0dcfaa733cb17bc75f9e64cb8533
+sha512sum: 64ffb641a2d111fa92a71c513f48d556af2eddb00d361509476f548e8901941d8f58dfe2ff8918071885f5d2dec5add7b0a9ec375d867331dcd9ef7ea614171a
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Artful_Standard
+Description: Ubuntu Artful (standard)
+ A small Ubuntu Artful system including all standard packages.
+
+Package: ubuntu-18.04-standard
+Version: 18.04-1
+Type: lxc
+OS: ubuntu-18.04
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-18.04-standard_18.04-1_amd64.tar.gz
+md5sum: a17211bc519d79fe5fc869d5db57474f
+sha512sum: 1a8fb93326c4424a1eaea633fbebc9f3349f11b5faca4c0f43efb816530a47800c32132427ac3023685a17a4f939e0d940a1d500dab8d51ad98495a7ea0eb29e
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Bionic_Standard
+Description: Ubuntu Bionic (standard)
+ A small Ubuntu Bionic system including all standard packages.
 
