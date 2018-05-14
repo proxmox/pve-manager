@@ -1,3 +1,21 @@
+pve-manager (5.2-1) unstable; urgency=medium
+
+  * add _blank target for optional url
+
+  * fixes #1503 Add role CRUD to the GUI.
+
+  * hide irrelevant buttons and tabs for container templates
+
+  * ui/UserEdit: fixup grammar in password match error message
+
+  * update included aplinfo.dat
+
+  * correct node free calculation
+
+  * add missing onlineHelp links
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 14 May 2018 14:04:15 +0200
+
 pve-manager (5.1-53) unstable; urgency=medium
 
   * show additional status info in the VM summary page

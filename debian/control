@@ -2,7 +2,7 @@ Source: pve-manager
 Section: admin
 Priority: optional
 Build-Depends: liblocale-po-perl,
-               pve-doc-generator (>= 5.1-18),
+               pve-doc-generator (>= 5.2-1),
 Maintainer: Proxmox Support Team <support@proxmox.com>
 
 Package: pve-manager
