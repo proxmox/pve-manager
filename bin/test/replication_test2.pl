@@ -37,12 +37,12 @@ my $pve_replication_module = Test::MockModule->new('PVE::Replication');
 $pve_replication_module->mock(replicate => $mocked_replicate);
 
 $ReplicationTestEnv::mocked_replication_jobs = {
-    job_900_to_node2 => {
+    '900-1_to_node2' => {
 	'type'  => 'local',
 	'target' => 'node2',
 	'guest' => 900,
     },
-    job_900_to_node1 => {
+    '900-2_to_node1' => {
 	'type'  => 'local',
 	'target' => 'node1', # local node, job should be skipped
 	'guest' => 900,
@@ -73,7 +73,7 @@ my $exptected_schedule = [
 	start => 900,
 	vmtype => 'qemu',
 	guest_class => 'PVE::QemuConfig',
-	id => 'job_900_to_node2',
+	id => '900-1_to_node2',
 	guest => 900
     },
     {
@@ -81,7 +81,7 @@ my $exptected_schedule = [
 	start => 1800,
 	vmtype => 'qemu',
 	guest_class => 'PVE::QemuConfig',
-	id => 'job_900_to_node2',
+	id => '900-1_to_node2',
 	guest => 900,
    },
     {
@@ -89,7 +89,7 @@ my $exptected_schedule = [
 	start => 2700,
 	vmtype => 'qemu',
 	guest_class => 'PVE::QemuConfig',
-	id => 'job_900_to_node2',
+	id => '900-1_to_node2',
 	guest => 900
     },
     {
@@ -97,7 +97,7 @@ my $exptected_schedule = [
 	start => 3600,
 	vmtype => 'qemu',
 	guest_class => 'PVE::QemuConfig',
-	id => 'job_900_to_node2',
+	id => '900-1_to_node2',
 	guest => 900
     }
 ];
