@@ -2,6 +2,8 @@ Ext.define('PVE.qemu.CloudInit', {
     extend: 'Proxmox.grid.PendingObjectGrid',
     xtype: 'pveCiPanel',
 
+    onlineHelp: 'qm_cloud_init',
+
     tbar: [
 	{
 	    xtype: 'proxmoxButton',

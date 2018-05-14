@@ -25,6 +25,7 @@ Ext.define('PVE.ClusterAdministration', {
     xtype: 'pveClusterAdministration',
 
     title: gettext('Cluster Administration'),
+    onlineHelp: 'chapter_pvecm',
 
     border: false,
     defaults: { border: false },

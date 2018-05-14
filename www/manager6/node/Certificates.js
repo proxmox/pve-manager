@@ -2,6 +2,8 @@ Ext.define('PVE.node.CertificateView', {
     extend: 'Ext.container.Container',
     xtype: 'pveCertificatesView',
 
+    onlineHelp: 'sysadmin_certificate_management',
+
     mixins: ['Proxmox.Mixin.CBind' ],
 
     items: [
