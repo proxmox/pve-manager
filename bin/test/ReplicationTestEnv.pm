@@ -211,6 +211,30 @@ my $mocked_get_log_time = sub {
     return $mocked_log_time;
 };
 
+my $locks = {};
+
+my $mocked_cfs_lock_file = sub {
+    my ($filename, $timeout, $code, @param) = @_;
+
+    die "$filename already locked\n" if ($locks->{$filename});
+
+    $locks->{$filename} = 1;
+
+    my $res = $code->(@param);
+
+    delete $locks->{$filename};
+
+    return $res;
+};
+
+my $mocked_cfs_write_file = sub {
+    my ($filename, $cfg) = @_;
+
+    die "wrong file - $filename\n" if $filename ne 'replication.cfg';
+
+    $cfg->write_config(); # checks but no actual write to pmxcfs
+};
+
 sub setup {
     $pve_replication_state_module->mock(job_logfile_name => $mocked_job_logfile_name);
     $pve_replication_module->mock(get_log_time => $mocked_get_log_time);
@@ -220,19 +244,25 @@ sub setup {
     $pve_storage_module->mock(volume_snapshot => $mocked_volume_snapshot);
     $pve_storage_module->mock(volume_snapshot_delete => $mocked_volume_snapshot_delete);
 
-    $pve_replication_config_module->mock(new => $mocked_replication_config_new);
+    $pve_replication_config_module->mock(
+	new => $mocked_replication_config_new,
+	lock => sub { $mocked_cfs_lock_file->('replication.cfg', undef, $_[0]); },
+	write => sub { $mocked_cfs_write_file->('replication.cfg', $_[0]); },
+    );
     $pve_qemuserver_module->mock(check_running => sub { return 0; });
     $pve_qemuconfig_module->mock(load_config => $mocked_qemu_load_conf);
 
     $pve_lxc_config_module->mock(load_config => $mocked_lxc_load_conf);
-
 
     $pve_cluster_module->mock(
 	get_ssh_info => $mocked_get_ssh_info,
 	ssh_info_to_command => $mocked_ssh_info_to_command,
 	get_vmlist => sub { return $mocked_vmlist->(); },
 	get_members => $mocked_get_members,
-	cfs_update => sub {});
+	cfs_update => sub {},
+	cfs_lock_file => $mocked_cfs_lock_file,
+	cfs_write_file => $mocked_cfs_write_file,
+    );
     $pve_inotify_module->mock('nodename' => sub { return $mocked_nodename; });
 };
 
