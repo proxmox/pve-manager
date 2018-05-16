@@ -51,7 +51,7 @@ Ext.define('PVE.dc.RoleView', {
 
 	    var win = Ext.create('PVE.dc.RoleEdit',{
 		roleid: rec.data.roleid,
-		privs: rec.data.privs,
+		privs: rec.data.privs
 	    });
 	    win.on('destroy', reload);
 	    win.show();
@@ -91,7 +91,7 @@ Ext.define('PVE.dc.RoleView', {
 		activate: function() {
 		    store.load();
 		},
-		itemdblclick: run_editor,
+		itemdblclick: run_editor
 	    },
 	    tbar: [
 		{

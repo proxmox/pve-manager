@@ -14,10 +14,12 @@ Ext.define('PVE.form.PrivilegesSelector', {
 	    url: '/access/roles/Administrator',
 	    method: 'GET',
 	    success: function(response, options) {
-		var data = [];
-		for (var key in response.result.data) {
+		var data = [], key;
+		/*jslint forin: true */
+		for (key in response.result.data) {
 		    data.push([key, key]);
 		}
+		/*jslint forin: false */
 
 		me.store.setData(data);
 
