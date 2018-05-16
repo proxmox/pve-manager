@@ -1,5 +1,6 @@
 Ext.define('PVE.qemu.USBInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
+    mixins: ['Proxmox.Mixin.CBind' ],
 
     autoComplete: false,
     onlineHelp: 'qm_usb_passthrough',
@@ -77,76 +78,66 @@ Ext.define('PVE.qemu.USBInputPanel', {
 	return values;
     },
 
-    initComponent: function () {
-	var me = this;
-
-	var items = [
-	    {
-		xtype: 'fieldcontainer',
-		defaultType: 'radiofield',
-		items:[
-		    {
-			name: 'usb',
-			inputValue: 'spice',
-			boxLabel: gettext('Spice Port'),
-			submitValue: false,
-			checked: true
-		    },
-		    {
-			name: 'usb',
-			inputValue: 'hostdevice',
-			boxLabel: gettext('Use USB Vendor/Device ID'),
-			submitValue: false
-		    },
-		    {
-			xtype: 'pveUSBSelector',
-			disabled: true,
-			type: 'device',
-			name: 'hostdevice',
-			pveSelNode: me.pveSelNode,
-			editable: true,
-			reference: 'hwid',
-			allowBlank: false,
-			fieldLabel: 'Choose Device',
-			labelAlign: 'right',
-			submitValue: false
-		    },
-		    {
-			name: 'usb',
-			inputValue: 'port',
-			boxLabel: gettext('Use USB Port'),
-			submitValue: false
-		    },
-		    {
-			xtype: 'pveUSBSelector',
-			disabled: true,
-			name: 'port',
-			pveSelNode: me.pveSelNode,
-			editable: true,
-			type: 'port',
-			reference: 'port',
-			allowBlank: false,
-			fieldLabel: gettext('Choose Port'),
-			labelAlign: 'right',
-			submitValue: false
-		    },
-		    {
-			xtype: 'checkbox',
-			name: 'usb3',
-			submitValue: false,
-			reference: 'usb3',
-			fieldLabel: gettext('Use USB3')
-		    }
-		]
-	    }
-	];
-
-	Ext.apply(me, {
-	    items: items
-	});
-
-	me.callParent();
-    }
+    items: [
+	{
+	    xtype: 'fieldcontainer',
+	    defaultType: 'radiofield',
+	    items:[
+		{
+		    name: 'usb',
+		    inputValue: 'spice',
+		    boxLabel: gettext('Spice Port'),
+		    submitValue: false,
+		    checked: true
+		},
+		{
+		    name: 'usb',
+		    inputValue: 'hostdevice',
+		    boxLabel: gettext('Use USB Vendor/Device ID'),
+		    submitValue: false
+		},
+		{
+		    xtype: 'pveUSBSelector',
+		    disabled: true,
+		    type: 'device',
+		    name: 'hostdevice',
+		    cbind: { pveSelNode: '{pveSelNode}' },
+		    editable: true,
+		    reference: 'hwid',
+		    allowBlank: false,
+		    fieldLabel: 'Choose Device',
+		    labelAlign: 'right',
+		    submitValue: false
+		},
+		{
+		    name: 'usb',
+		    inputValue: 'port',
+		    boxLabel: gettext('Use USB Port'),
+		    submitValue: false
+		},
+		{
+		    xtype: 'pveUSBSelector',
+		    disabled: true,
+		    name: 'port',
+		    cbind: { pveSelNode: '{pveSelNode}' },
+		    editable: true,
+		    type: 'port',
+		    reference: 'port',
+		    allowBlank: false,
+		    fieldLabel: gettext('Choose Port'),
+		    labelAlign: 'right',
+		    submitValue: false
+		},
+		{
+		    xtype: 'checkbox',
+		    name: 'usb3',
+		    submitValue: false,
+		    reference: 'usb3',
+		    fieldLabel: gettext('Use USB3')
+		}
+	    ]
+	}
+    ]
 });
 
 Ext.define('PVE.qemu.USBEdit', {
