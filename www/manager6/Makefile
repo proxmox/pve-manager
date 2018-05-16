@@ -129,6 +129,7 @@ JSSRC= 				                 	\
 	qemu/Config.js					\
 	qemu/CreateWizard.js				\
 	qemu/USBEdit.js					\
+	qemu/SerialEdit.js					\
 	qemu/AgentIPView.js				\
 	qemu/CloudInit.js				\
 	qemu/CIDriveEdit.js				\

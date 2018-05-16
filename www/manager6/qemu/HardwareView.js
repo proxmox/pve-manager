@@ -571,6 +571,19 @@ Ext.define('PVE.qemu.HardwareView', {
 				}
 			    },
 			    {
+				text: gettext('Serial Port'),
+				itemId: 'addserial',
+				iconCls: 'pve-itype-icon-serial',
+				disabled: !caps.vms['VM.Config.Options'],
+				handler: function() {
+				    var win = Ext.create('PVE.qemu.SerialEdit', {
+					url: '/api2/extjs/' + baseurl
+				    });
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+			    {
 				text: gettext('CloudInit Drive'),
 				itemId: 'addci',
 				iconCls: 'pve-itype-icon-cloud',
