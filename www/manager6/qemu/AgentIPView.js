@@ -149,7 +149,7 @@ Ext.define('PVE.qemu.AgentIPView', {
 	if (unsuccessful) {
 	    text = gettext('Guest Agent not running');
 	} else if (me.agent && me.running) {
-	    if (Ext.isArray(me.nics)) {
+	    if (Ext.isArray(me.nics) && me.nics.length) {
 		more = true;
 		var ips = me.getDefaultIps(me.nics);
 		if (ips.length !== 0) {
