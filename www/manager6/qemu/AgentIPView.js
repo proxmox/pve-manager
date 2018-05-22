@@ -138,8 +138,9 @@ Ext.define('PVE.qemu.AgentIPView', {
 
 	if (me.agent && me.running && me.ipStore.isStopped) {
 	    me.ipStore.startUpdate();
+	} else if (me.ipStore.isStopped) {
+	    me.updateStatus();
 	}
-	me.updateStatus();
     },
 
     updateStatus: function(unsuccessful, defaulttext) {
