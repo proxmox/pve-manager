@@ -131,7 +131,6 @@ Ext.define('PVE.lxc.Summary', {
 	});
 
 	me.callParent();
-	me.down('#notesview').load();
 	if (!template) {
 	    rrdstore.startUpdate();
 	    me.on('destroy', rrdstore.stopUpdate);

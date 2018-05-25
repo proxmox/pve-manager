@@ -74,5 +74,6 @@ Ext.define('PVE.panel.NotesView', {
 	});
 
 	me.callParent();
+	me.load();
     }
 });
