@@ -125,6 +125,12 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-book',
 		    itemId: 'summary',
 		    xtype: 'pveNodeSummary'
+		},
+		{
+		    title: gettext('Notes'),
+		    iconCls: 'fa fa-sticky-note-o',
+		    itemId: 'notes',
+		    xtype: 'pveNotesView'
 		}
 	    );
 	}
