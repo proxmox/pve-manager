@@ -7,9 +7,33 @@ Ext.define('PVE.panel.NotesView', {
     bodyPadding: 10,
     scrollable: true,
 
+    tbar: {
+	itemId: 'tbar',
+	hidden: true,
+	items: [
+	    {
+		text: gettext('Edit'),
+		handler: function() {
+		    var me = this.up('panel');
+		    me.run_editor();
+		}
+	    }
+	]
+    },
+
+    run_editor: function() {
+	var me = this;
+	var win = Ext.create('PVE.window.NotesEdit', {
+	    pveSelNode: me.pveSelNode,
+	    url: me.url
+	});
+	win.show();
+	win.on('destroy', me.load, me);
+    },
+
     load: function() {
 	var me = this;
-	
+
 	Proxmox.Utils.API2Request({
 	    url: me.url,
 	    waitMsgTarget: me,
@@ -23,6 +47,20 @@ Ext.define('PVE.panel.NotesView', {
 	});
     },
 
+    listeners: {
+	render: function(c) {
+	    var me = this;
+	    me.getEl().on('dblclick', me.run_editor, me);
+	}
+    },
+
+    tools: [{
+	type: 'gear',
+	handler: function() {
+	    me.run_editor();
+	}
+    }],
+
     initComponent : function() {
 	var me = this;
 
@@ -31,49 +69,29 @@ Ext.define('PVE.panel.NotesView', {
 	    throw "no node name specified";
 	}
 
+	var type = me.pveSelNode.data.type;
+	if (!Ext.Array.contains(['node', 'qemu', 'lxc'], type)) {
+	    throw 'invalid type specified';
+	}
+
 	var vmid = me.pveSelNode.data.vmid;
-	if (!vmid) {
+	if (!vmid && type !== 'node') {
 	    throw "no VM ID specified";
 	}
 
-	var vmtype = me.pveSelNode.data.type;
-	var url;
+	me.url = '/api2/extjs/nodes/' + nodename + '/';
 
-	if (vmtype === 'qemu') {
-	    me.url = '/api2/extjs/nodes/' + nodename + '/qemu/' + vmid + '/config';
-	} else if (vmtype === 'lxc') {
-	    me.url = '/api2/extjs/nodes/' + nodename + '/lxc/' + vmid + '/config';
-	} else {
-	    throw "unknown vm type '" + vmtype + "'";
+	// add the type specific path if qemu/lxc
+	if (type === 'qemu' || type === 'lxc') {
+	    me.url += type + '/' + vmid + '/';
 	}
 
-	Ext.apply(me, {
-	    listeners: {
-		render: function(c) {
-		    c.el.on('dblclick', function() { 
-			var win = Ext.create('PVE.window.NotesEdit', {
-			    pveSelNode: me.pveSelNode,
-			    url: me.url
-			});
-			win.show();
-			win.on('destroy', me.load, me);
-		    });
-		}
-	    },
-	    tools: [{
-		type: 'gear',
-		handler: function() {
-		    var win = Ext.create('PVE.window.NotesEdit', {
-			pveSelNode: me.pveSelNode,
-			url: me.url
-		    });
-		    win.show();
-		    win.on('destroy', me.load, me);
-		}
-	    }]
-	});
+	me.url += 'config';
 
 	me.callParent();
+	if (type === 'node') {
+	    me.down('#tbar').setVisible(true);
+	}
 	me.load();
     }
 });
