@@ -128,15 +128,23 @@ Ext.define('PVE.qemu.AgentIPView', {
 	me.running = (store.getById('status').data.value === 'running');
 	/*jslint confusion: false*/
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
+	if (!caps.vms['VM.Monitor']) {
+	    var errorText = gettext("Requires '{0}' Privileges");
+	    me.updateStatus(false, Ext.String.format(errorText, 'VM.Monitor'));
+	    return;
+	}
+
 	if (me.agent && me.running && me.ipStore.isStopped) {
 	    me.ipStore.startUpdate();
 	}
 	me.updateStatus();
     },
 
-    updateStatus: function(unsuccessful) {
+    updateStatus: function(unsuccessful, defaulttext) {
 	var me = this;
-	var text = gettext('No network information');
+	var text = defaulttext || gettext('No network information');
 	var more = false;
 	if (unsuccessful) {
 	    text = gettext('Guest Agent not running');
