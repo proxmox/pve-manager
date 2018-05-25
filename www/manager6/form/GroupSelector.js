@@ -1,11 +1,11 @@
 Ext.define('pve-groups', {
-	extend: 'Ext.data.Model',
-	fields: [ 'groupid', 'comment' ],
-	proxy: {
-	    type: 'proxmox',
-	    url: "/api2/json/access/groups"
-	},
-	idProperty: 'groupid'
+    extend: 'Ext.data.Model',
+    fields: [ 'groupid', 'comment' ],
+    proxy: {
+	type: 'proxmox',
+	url: "/api2/json/access/groups"
+    },
+    idProperty: 'groupid'
 });
 
 Ext.define('PVE.form.GroupSelector', {
