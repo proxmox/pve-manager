@@ -57,6 +57,7 @@ Ext.define('PVE.panel.NotesView', {
     tools: [{
 	type: 'gear',
 	handler: function() {
+	    var me = this.up('panel');
 	    me.run_editor();
 	}
     }],
