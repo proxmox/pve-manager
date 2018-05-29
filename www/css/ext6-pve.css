@@ -517,3 +517,10 @@ table.osds td:first-of-type {
 .x-webkit :not(.x-form-textarea-body) > .x-form-trigger-wrap {
     height: initial;
 }
+
+.eolicon {
+    position: relative;
+    top: 4px;
+    float: left;
+    margin-right: 5px;
+}

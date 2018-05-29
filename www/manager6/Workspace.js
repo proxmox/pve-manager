@@ -185,9 +185,8 @@ Ext.define('PVE.StdWorkspace', {
 	var ui = me.query('#versioninfo')[0];
 
 	if (PVE.VersionInfo) {
-	    var version = PVE.VersionInfo.version + '-' + PVE.VersionInfo.release + '/' +
-		PVE.VersionInfo.repoid;
-	    ui.update('Virtual Environment ' + version);
+	    var version = PVE.VersionInfo.version + '-' + PVE.VersionInfo.release;
+	    ui.update('Virtual Environment ' + version );
 	} else {
 	    ui.update('Virtual Environment');
 	}
@@ -303,13 +302,26 @@ Ext.define('PVE.StdWorkspace', {
 				'<img style="padding-top:4px;padding-right:5px" src="/pve2/images/proxmox_logo.png"/></a>'
 			},
 			{
-			    minWidth: 200,
 			    id: 'versioninfo',
 			    html: 'Virtual Environment'
 			},
 			{
 			    xtype: 'pveGlobalSearchField',
 			    tree: rtree
+			},
+			{
+			    flex: 1
+			},
+			{
+			    id: 'eolannouncement',
+			    padding: '0 0 0 15',
+			    html: '<a href="https://pve.proxmox.com/wiki/FAQ#faq-support-table" target="_blank">'+
+				    '<i class="fa fa-2x eolicon critical fa-exclamation-triangle"></i> ' +
+				    'Support for 4.4 ends<br />on 30.06.2018</a>',
+			    autoEl: {
+				tag: 'div',
+				'data-qtip': gettext("You won't get any security fixes after the EOL date, Please consider upgrading.")
+			    }
 			},
 			{
 			    flex: 1
