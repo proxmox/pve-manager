@@ -538,6 +538,12 @@ table.osds td:first-of-type {
     cursor: pointer;
 }
 
+.eolicon {
+    position: relative;
+    float: left;
+    margin-right: 5px;
+}
+
 .x-grid-filters-filtered-column{
     font-style: italic;
     font-weight: bold;

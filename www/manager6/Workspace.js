@@ -313,6 +313,20 @@ Ext.define('PVE.StdWorkspace', {
 			    flex: 1
 			},
 			{
+			    id: 'eolannouncement',
+			    padding: '0 0 0 15',
+			    html: '<a href="https://pve.proxmox.com/wiki/FAQ#faq-support-table" target="_blank">'+
+				    '<i class="fa eolicon critical fa-exclamation-triangle" style="font-size: 1.5em;"></i> ' +
+				    'Support for Proxmox VE 5.4 ends on 31.07.2020</a>',
+			    autoEl: {
+				tag: 'div',
+				'data-qtip': gettext("You won't get any security fixes after the End-Of-Life date. Please consider upgrading.")
+			    }
+			},
+			{
+			    flex: 1
+			},
+			{
 			    pack: 'end',
 			    id: 'userinfo',
 			    stateful: false
