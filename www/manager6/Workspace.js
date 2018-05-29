@@ -315,6 +315,16 @@ Ext.define('PVE.StdWorkspace', {
 			    flex: 1,
 			},
 			{
+			    xtype: 'proxmoxEOLNotice',
+			    product: 'Proxmox VE',
+			    version: '6.4',
+			    eolDate: '2022-07-31',
+			    href: 'pve.proxmox.com/wiki/FAQ#faq-support-table',
+			},
+			{
+			    flex: 1
+			},
+			{
 			    xtype: 'proxmoxHelpButton',
 			    hidden: false,
 			    baseCls: 'x-btn',
