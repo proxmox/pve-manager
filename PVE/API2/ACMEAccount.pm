@@ -157,7 +157,7 @@ __PACKAGE__->register_method ({
 my $update_account = sub {
     my ($param, $msg, %info) = @_;
 
-    my $account_name = extract_param($param, 'name');
+    my $account_name = extract_param($param, 'name') // 'default';
     my $account_file = "${acme_account_dir}/${account_name}";
 
     raise_param_exc({'name' => "ACME account config file '${account_name}' does not exist."})
@@ -265,7 +265,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $account_name = extract_param($param, 'name');
+	my $account_name = extract_param($param, 'name') // 'default';
 	my $account_file = "${acme_account_dir}/${account_name}";
 
 	raise_param_exc({'name' => "ACME account config file '${account_name}' does not exist."})
