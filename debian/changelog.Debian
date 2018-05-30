@@ -1,3 +1,9 @@
+pve-manager (4.4-24) unstable; urgency=medium
+
+  * update Promxox VE 4.4 EOL warning
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 30 May 2018 12:02:05 +0200
+
 pve-manager (4.4-23) unstable; urgency=medium
 
   * add PVE 4.4 EOL warning
