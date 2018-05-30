@@ -1,3 +1,9 @@
+pve-manager (4.4-23) unstable; urgency=medium
+
+  * add PVE 4.4 EOL warning
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 30 May 2018 10:58:52 +0200
+
 pve-manager (4.4-22) unstable; urgency=medium
 
   * add spec-ctrl cpu flag checkbox
