@@ -317,7 +317,7 @@ Ext.define('PVE.StdWorkspace', {
 			    padding: '0 0 0 15',
 			    html: '<a href="https://pve.proxmox.com/wiki/FAQ#faq-support-table" target="_blank">'+
 				    '<i class="fa fa-2x eolicon critical fa-exclamation-triangle"></i> ' +
-				    'Support for PVE 4.4<br />ends on 30.06.2018</a>',
+				    'Support for Proxmox VE 4.4<br />ends on June 30, 2018</a>',
 			    autoEl: {
 				tag: 'div',
 				'data-qtip': gettext("You won't get any security fixes after the EOL date, Please consider upgrading.")
