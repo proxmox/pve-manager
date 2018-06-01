@@ -200,6 +200,15 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    ]
 		}
 	    ],
+	    dockedItems: [
+		{
+		    xtype: 'proxmoxcheckbox',
+		    name: 'start',
+		    dock: 'bottom',
+		    margin: '5 0 0 0',
+		    boxLabel: gettext('Start after created')
+		}
+	    ],
 	    listeners: {
 		show: function(panel) {
 		    var kv = this.up('window').getValues();
