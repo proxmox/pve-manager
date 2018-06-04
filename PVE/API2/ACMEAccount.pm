@@ -309,6 +309,7 @@ __PACKAGE__->register_method ({
     path => 'tos',
     method => 'GET',
     description => "Retrieve ACME TermsOfService URL from CA.",
+    permissions => { user => 'all' },
     parameters => {
 	additionalProperties => 0,
 	properties => {
@@ -338,6 +339,7 @@ __PACKAGE__->register_method ({
     path => 'directories',
     method => 'GET',
     description => "Get named known ACME directory endpoints.",
+    permissions => { user => 'all' },
     parameters => {
 	additionalProperties => 0,
 	properties => {},
