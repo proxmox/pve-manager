@@ -1,3 +1,19 @@
+pve-manager (5.2-2) unstable; urgency=medium
+
+  * fix #1499 Implement a combobox for Permissions paths
+
+  * fix #427: add notes panel to node
+
+  * api/acme: actually fallback to default value for account name parameter
+
+  * Improve VM AgentIPView WebUI component
+
+  * allow adding socket backed serial devices to VMs in WebUI
+
+  * allow one to re-enable iSCSI storages again through WebUI
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 05 Jun 2018 15:18:13 +0200
+
 pve-manager (5.2-1) unstable; urgency=medium
 
   * add _blank target for optional url
