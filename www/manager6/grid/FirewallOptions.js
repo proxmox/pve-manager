@@ -88,6 +88,7 @@ Ext.define('PVE.FirewallOptions', {
 	    add_log_row('log_level_out');
 	} else if (me.fwtype === 'dc') {
 	    add_boolean_row('enable', gettext('Firewall'), 0);
+	    add_boolean_row('ebtables', 'ebtables', 1);
 	}
 
 	if (me.fwtype === 'dc' || me.fwtype === 'vm') {
