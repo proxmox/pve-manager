@@ -252,6 +252,15 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    ]
 		}
 	    ],
+	    dockedItems: [
+		{
+		    xtype: 'proxmoxcheckbox',
+		    name: 'start',
+		    dock: 'bottom',
+		    margin: '5 0 0 0',
+		    boxLabel: gettext('Start after created')
+		}
+	    ],
 	    listeners: {
 		show: function(panel) {
 		    var wizard = this.up('window');
