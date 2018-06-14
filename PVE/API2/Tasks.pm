@@ -11,6 +11,7 @@ use PVE::RESTHandler;
 use PVE::ProcFSTools;
 use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);
+use PVE::Exception qw(raise_param_exc);
 use PVE::AccessControl;
 
 use base qw(PVE::RESTHandler);
