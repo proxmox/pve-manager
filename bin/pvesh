@@ -16,6 +16,7 @@ use PVE::SafeSyslog;
 use PVE::Cluster;
 use PVE::INotify;
 use PVE::RPCEnvironment;
+use PVE::CLIHandler;
 use PVE::API2Tools;
 use PVE::API2;
 use JSON;
@@ -184,23 +185,10 @@ sub abs_path {
     return $ret;
 }
 
-my $read_password = sub {
-    my $attribs = $term->Attribs;
-    my $old = $attribs->{redisplay_function};
-    $attribs->{redisplay_function} = $attribs->{shadow_redisplay};
-    my $input = $term->readline('password: ');
-    my $conf = $term->readline('Retype new password: ');
-    $attribs->{redisplay_function} = $old;
+my $param_mapping = sub {
+    my ($name) = @_;
 
-    # remove password from history
-    if ($term->Features->{autohistory}) {
-	my $historyPosition = $term->where_history();
-	$term->remove_history($historyPosition);
-	$term->remove_history($historyPosition - 1);
-    }
-
-    die "Passwords do not match.\n" if ($input ne $conf);
-    return $input;
+    return [PVE::CLIHandler::get_standard_mapping('pve-password')];
 };
 
 sub reverse_map_cmd {
@@ -279,7 +267,7 @@ sub call_method {
     my ($node, $remip) = check_proxyto($info, $uri_param);
     return proxy_handler($node, $remip, $dir, $cmd, $args) if $node;
 
-    my $data = $handler->cli_handler("$cmd $dir", $info->{name}, $args, [], $uri_param, $read_password);
+    my $data = $handler->cli_handler("$cmd $dir", $info->{name}, $args, [], $uri_param, $param_mapping);
 
     return if $nooutput;
 
@@ -450,7 +438,7 @@ sub list_dir {
     return proxy_handler($node, $remip, $dir, 'ls', $args) if $node;
 
 
-    my $data = $handler->cli_handler("ls $dir", $info->{name}, $args, [], $uri_param, $read_password); 
+    my $data = $handler->cli_handler("ls $dir", $info->{name}, $args, [], $uri_param, $param_mapping);
     my $lnk = PVE::JSONSchema::method_get_child_link($info);
     my $children = extract_children($lnk, $data);
 
