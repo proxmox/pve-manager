@@ -16,6 +16,7 @@ use PVE::SafeSyslog;
 use PVE::Cluster;
 use PVE::INotify;
 use PVE::RPCEnvironment;
+use PVE::RESTHandler;
 use PVE::CLIHandler;
 use PVE::API2Tools;
 use PVE::API2;
