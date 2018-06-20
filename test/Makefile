@@ -1,6 +1,8 @@
-include ../../defines.mk
+include ../defines.mk
 
 all:
+
+export PERLLIB=..
 
 check:
 	./balloontest.pl
@@ -11,10 +13,8 @@ check:
 	./replication_test5.pl
 	./replication_test6.pl
 
-
 .PHONY: install
 install:
-	# do nothing
 
 .PHONY: clean
 clean:

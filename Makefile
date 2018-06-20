@@ -4,7 +4,7 @@ export SOURCE_DATE_EPOCH ?= $(shell dpkg-parsechangelog -STimestamp)
 
 DESTDIR=
 
-SUBDIRS = aplinfo PVE bin www services configs network-hooks
+SUBDIRS = aplinfo PVE bin www services configs network-hooks test
 
 ARCH:=$(shell dpkg-architecture -qDEB_BUILD_ARCH)
 GITVERSION:=$(shell git rev-parse HEAD)
@@ -14,7 +14,7 @@ DEB=${PACKAGE}_${VERSION}-${PACKAGERELEASE}_${ARCH}.deb
 all: ${SUBDIRS}
 
 check:
-	${MAKE} -C bin/test check
+	${MAKE} -C test check
 
 .PHONY: dinstall
 dinstall: ${DEB}

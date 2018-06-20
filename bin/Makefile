@@ -4,10 +4,6 @@ include ../defines.mk
 export NOVIEW=1
 include /usr/share/pve-doc-generator/pve-doc-generator.mk
 
-export PERLLIB=..
-
-SUBDIRS = test
-
 SERVICES = pvestatd pveproxy pvedaemon spiceproxy
 CLITOOLS = vzdump pvesubscription pveceph pveam pvesr pvenode
 
@@ -75,10 +71,8 @@ install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward $(addsuffix .serv
 	install -m 0644 ${SERVICE_MANS} ${MAN8DIR}
 	for i in ${CLITOOLS}; do install -m 0644 -D $$i.bash-completion ${BASHCOMPLDIR}/$$i; done
 	for i in ${SERVICES}; do install -m 0644 -D $$i.service-bash-completion ${BASHCOMPLDIR}/$$i; done
-	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
 .PHONY: clean
 clean:
 	make cleanup-docgen
 	rm -rf *~ *.tmp ${CLI_MANS} ${SERVICE_MANS} *.1.pod *.8.pod pvemailforward *.bash-completion *.service-bash-completion
-	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
