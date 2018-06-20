@@ -4,7 +4,7 @@ export SOURCE_DATE_EPOCH ?= $(shell dpkg-parsechangelog -STimestamp)
 
 DESTDIR=
 
-SUBDIRS = aplinfo PVE bin www services configs
+SUBDIRS = aplinfo PVE bin www services configs network-hooks
 
 ARCH:=$(shell dpkg-architecture -qDEB_BUILD_ARCH)
 GITVERSION:=$(shell git rev-parse HEAD)
@@ -38,7 +38,7 @@ upload: ${DEB} check
 	tar cf - ${DEB} | ssh -X repoman@repo.proxmox.com upload --product pve --dist stretch
 
 .PHONY: install
-install: vzdump-hook-script.pl mtu bridgevlan bridgevlanport vlan vlan-down
+install: vzdump-hook-script.pl
 	install -d -m 0700 -o www-data -g www-data ${DESTDIR}/var/log/pveproxy
 	install -d ${DESTDIR}/usr/share/${PACKAGE}
 	install -d ${DESTDIR}/usr/share/man/man1
@@ -48,15 +48,8 @@ install: vzdump-hook-script.pl mtu bridgevlan bridgevlanport vlan vlan-down
 	install -d ${DESTDIR}/var/lib/vz/template/cache
 	install -d ${DESTDIR}/var/lib/vz/template/iso
 	install -d ${DESTDIR}/var/lib/vz/template/qemu
-	install -D -m 0755 mtu ${DESTDIR}/etc/network/if-up.d/mtu
-	install -D -m 0755 bridgevlan ${DESTDIR}/etc/network/if-up.d/bridgevlan
-	install -D -m 0755 bridgevlanport ${DESTDIR}/etc/network/if-up.d/bridgevlanport
-	install -D -m 0755 vlan ${DESTDIR}/etc/network/if-pre-up.d/vlan
-	install -D -m 0755 vlan-down ${DESTDIR}/etc/network/if-post-down.d/vlan
-
 	install -m 0644 vzdump-hook-script.pl ${DOCDIR}/examples/vzdump-hook-script.pl
 	install -m 0644 spice-example-sh ${DOCDIR}/examples/spice-example-sh
-
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
 .PHONY: distclean
