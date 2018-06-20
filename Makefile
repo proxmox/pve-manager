@@ -4,7 +4,7 @@ export SOURCE_DATE_EPOCH ?= $(shell dpkg-parsechangelog -STimestamp)
 
 DESTDIR=
 
-SUBDIRS = aplinfo PVE bin www
+SUBDIRS = aplinfo PVE bin www services
 
 ARCH:=$(shell dpkg-architecture -qDEB_BUILD_ARCH)
 GITVERSION:=$(shell git rev-parse HEAD)

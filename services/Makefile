@@ -1,4 +1,4 @@
-include ../../defines.mk
+include ../defines.mk
 
 all:
 
