@@ -36,7 +36,8 @@ $(DEB):
 
 .PHONY: upload
 upload: ${DEB} check
-	./repoid.pl .git check
+	# check if working directory is clean
+	git diff --exit-code --stat && git diff --exit-code --stat --staged
 	tar cf - ${DEB} | ssh -X repoman@repo.proxmox.com upload --product pve --dist stretch
 
 .PHONY: install
