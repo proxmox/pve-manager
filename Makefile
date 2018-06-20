@@ -40,8 +40,6 @@ upload: ${DEB} check
 .PHONY: install
 install: vzdump-hook-script.pl
 	install -d -m 0700 -o www-data -g www-data ${DESTDIR}/var/log/pveproxy
-	install -d ${DESTDIR}/usr/share/${PACKAGE}
-	install -d ${DESTDIR}/usr/share/man/man1
 	install -d ${DOCDIR}/examples
 	install -d ${DESTDIR}/var/lib/${PACKAGE}
 	install -d ${DESTDIR}/var/lib/vz/images
