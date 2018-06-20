@@ -16,9 +16,6 @@ all: ${SUBDIRS}
 check:
 	${MAKE} -C bin/test check
 
-%:
-	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
-
 .PHONY: dinstall
 dinstall: ${DEB}
 	dpkg -i ${DEB}
