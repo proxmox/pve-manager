@@ -90,14 +90,36 @@ my $order_certificate = sub {
     print "\nCreating CSR\n";
     my ($csr, $key) = PVE::Certificate::generate_csr(identifiers => $order->{identifiers});
 
-    print "Finalizing order\n";
-    $acme->finalize_order($order, PVE::Certificate::pem_to_der($csr));
-
+    my $finalize_error_cnt = 0;
     print "Checking order status\n";
     while (1) {
 	$order = $acme->get_order($order_url);
 	if ($order->{status} eq 'pending') {
-	    print "still pending, trying again in 30 seconds\n";
+	    print "still pending, trying to finalize order\n";
+	    # FIXME
+	    # to be compatible with and without the order ready state
+	    # we try to finalize even at the 'pending' state
+	    # and give up after 5 unsuccessful tries
+	    # this can be removed when the letsencrypt api
+	    # definitely has implemented the 'ready' state
+	    eval {
+		$acme->finalize_order($order, PVE::Certificate::pem_to_der($csr));
+	    };
+	    if (my $err = $@) {
+		die $err if $finalize_error_cnt >= 5;
+
+		$finalize_error_cnt++;
+		warn $err;
+	    }
+	    sleep 5;
+	    next;
+	} elsif ($order->{status} eq 'ready') {
+	    print "Order is ready, finalizing order\n";
+	    $acme->finalize_order($order, PVE::Certificate::pem_to_der($csr));
+	    sleep 5;
+	    next;
+	} elsif ($order->{status} eq 'processing') {
+	    print "still processing, trying again in 30 seconds\n";
 	    sleep 30;
 	    next;
 	} elsif ($order->{status} eq 'valid') {
