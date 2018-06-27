@@ -7,6 +7,7 @@ use PVE::API2::ACME;
 use PVE::API2::ACMEAccount;
 use PVE::API2::Certificates;
 use PVE::API2::NodeConfig;
+use PVE::API2::Nodes;
 
 use PVE::CertHelpers;
 use PVE::Certificate;
@@ -164,6 +165,10 @@ our $cmddef = {
 	}],
         set => [ 'PVE::API2::NodeConfig', 'set_options', [], { node => $nodename } ],
     },
+
+    startall => [ 'PVE::API2::Nodes::Nodeinfo', 'startall', [], { node => $nodename } ],
+    stopall => [ 'PVE::API2::Nodes::Nodeinfo', 'stopall', [], { node => $nodename } ],
+    migrateall => [ 'PVE::API2::Nodes::Nodeinfo', 'migrateall', [ 'target' ], { node => $nodename } ],
 
     cert => {
 	info => [ 'PVE::API2::Certificates', 'info', [], { node => $nodename }, sub {
