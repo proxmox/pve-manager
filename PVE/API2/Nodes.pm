@@ -1533,12 +1533,15 @@ __PACKAGE__->register_method ({
 		    eval {
 			my $default_delay = 0;
 			my $upid;
+			my $typeText = '';
 
 			if ($d->{type} eq 'lxc') {
+			    $typeText = 'CT';
 			    return if PVE::LXC::check_running($vmid);
 			    print STDERR "Starting CT $vmid\n";
 			    $upid = PVE::API2::LXC::Status->vm_start({node => $nodename, vmid => $vmid });
 			} elsif ($d->{type} eq 'qemu') {
+			    $typeText = 'VM';
 			    $default_delay = 3; # to reduce load
 			    return if PVE::QemuServer::check_running($vmid, 1);
 			    print STDERR "Starting VM $vmid\n";
@@ -1563,11 +1566,7 @@ __PACKAGE__->register_method ({
 				}
 			    }
 			} else {
-			    if ($d->{type} eq 'lxc') {
-				print STDERR "Starting CT $vmid failed: $status\n";
-			    } elsif ($d->{type} eq 'qemu') {
-				print STDERR "Starting VM $vmid failed: status\n";
-			    }
+			    print STDERR "Starting $typeText $vmid failed: $status\n";
 			}
 		    };
 		    warn $@ if $@;
