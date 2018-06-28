@@ -339,7 +339,7 @@ sub print_help {
 	my $cmd = reverse_map_cmd($method);
 
 	print $mi->{handler}->usage_str($mi->{info}->{name}, "$cmd $path", [], $mi->{uri_param}, 
-					$opts->{verbose} ? 'full' : 'short', 1);
+					$opts->{verbose} ? 'full' : 'short', $param_mapping);
 	print "\n\n" if $opts->{verbose};
     }
  
