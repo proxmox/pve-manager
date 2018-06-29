@@ -267,15 +267,17 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 	my $node = $param->{node};
+	my $start = $param->{start} // 0;
+	my $limit = $param->{limit} // 50;
 
 	if ($user ne $task->{user})  {
 	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ]);
 	}
 
-	my ($count, $lines) = PVE::Tools::dump_logfile($filename, $param->{start}, $param->{limit});
+	my ($count, $lines) = PVE::Tools::dump_logfile($filename, $start, $limit);
 
 	$rpcenv->set_result_attrib('total', $count);
-	    
+
 	return $lines;
     }});
 
