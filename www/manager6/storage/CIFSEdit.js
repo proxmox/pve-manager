@@ -142,19 +142,12 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 		    }
 		}
 	    },
+	    passwordfield,
 	    {
 		xtype: me.isCreate ? 'pveCIFSScan' : 'displayfield',
 		name: 'share',
 		value: '',
 		fieldLabel: 'Share',
-		allowBlank: false
-	    },
-	    {
-		xtype: 'pveContentTypeSelector',
-		name: 'content',
-		value: 'images',
-		multiSelect: true,
-		fieldLabel: gettext('Content'),
 		allowBlank: false
 	    }
 	];
@@ -170,7 +163,14 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 		value: me.isCreate ? '1' : undefined,
 		allowBlank: false
 	    },
-	    passwordfield,
+	    {
+		xtype: 'pveContentTypeSelector',
+		name: 'content',
+		value: 'images',
+		multiSelect: true,
+		fieldLabel: gettext('Content'),
+		allowBlank: false
+	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'domain',
