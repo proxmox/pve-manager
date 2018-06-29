@@ -38,27 +38,19 @@ Ext.define('PVE.storage.CIFSScan', {
     },
 
     setServer: function(server) {
-	var me = this;
-
-	me.cifsServer = server;
+	this.cifsServer = server;
     },
 
     setUsername: function(username) {
-	var me = this;
-
-	me.cifsUsername = username;
+	this.cifsUsername = username;
     },
 
     setPassword: function(password) {
-	var me = this;
-
-	me.cifsPassword = password;
+	this.cifsPassword = password;
     },
 
     setDomain: function(domain) {
-	var me = this;
-
-	me.cifsDomain = domain;
+	this.cifsDomain = domain;
     },
 
     initComponent : function() {
