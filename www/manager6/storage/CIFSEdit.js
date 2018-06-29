@@ -88,7 +88,8 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 	    name: 'password',
 	    value: me.isCreate ? '' : '********',
 	    fieldLabel: gettext('Password'),
-	    allowBlank: true,
+	    allowBlank: false,
+	    disabled: me.isCreate,
 	    minLength: 1,
 	    listeners: {
 		change: function(f, value) {
@@ -129,13 +130,14 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 			if (me.isCreate) {
 			    var exportField = me.down('field[name=share]');
 			    exportField.setUsername(value);
+
+			    if (value == "") {
+				passwordfield.disable();
+			    } else {
+				passwordfield.enable();
+			    }
+			    passwordfield.validate();
 			}
-			if (value == "") {
-			    passwordfield.allowBlank = true;
-			} else {
-			    passwordfield.allowBlank = false;
-			}
-			passwordfield.validate();
 		    }
 		}
 	    },
