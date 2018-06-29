@@ -90,10 +90,10 @@ __PACKAGE__->register_method({
 	my $filename = "/var/log/pve/tasks/index";
 
 	my $node = $param->{node};
-	my $start = $param->{start} || 0;
-	my $limit = $param->{limit} || 50;
+	my $start = $param->{start} // 0;
+	my $limit = $param->{limit} // 50;
 	my $userfilter = $param->{userfilter};
-	my $errors = $param->{errors};
+	my $errors = $param->{errors} // 0;
 
 	my $count = 0;
 	my $line;
