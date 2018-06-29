@@ -33,23 +33,29 @@ __PACKAGE__->register_method({
 	    start => {
 		type => 'integer',
 		minimum => 0,
+		default => 0,
 		optional => 1,
+		description => "List tasks beginning from this offset.",
 	    },
 	    limit => {
 		type => 'integer',
 		minimum => 0,
+		default => 50,
 		optional => 1,
+		description => "Only list this amount of tasks.",
 	    },
 	    userfilter => {
 		type => 'string',
 		optional => 1,
+		description => "Only list tasks from this user.",
 	    },
 	    vmid => get_standard_option('pve-vmid', {
 		description => "Only list tasks for this VM.",
-		optional => 1 
+		optional => 1,
 	    }),
 	    errors => {
 		type => 'boolean',
+		default => 0,
 		optional => 1,
 	    },
 	},
@@ -59,7 +65,16 @@ __PACKAGE__->register_method({
 	items => {
 	    type => "object",
 	    properties => {
-		upid => { type => 'string' },
+		upid =>  { type => 'string', title => 'UPID', },
+		id => { type => 'string', optional => 1, title => 'ID', },
+		pid => { type => 'integer', optional => 1, title => 'PID', },
+		pstart => { type => 'integer', optional => 1, },
+		status =>  { type => 'string', optional => 1, title => 'Status', },
+		type =>  { type => 'string', optional => 1, title => 'Type', },
+		node =>  { type => 'string', optional => 1, title => 'Node', },
+		user =>  { type => 'string', optional => 1, title => 'User', },
+		starttime =>  { type => 'integer', optional => 1, title => 'Starttime', },
+		endtime =>  { type => 'integer', optional => 1, title => 'Endtime', },
 	    },
 	},
 	links => [ { rel => 'child', href => "{upid}" } ],
@@ -216,11 +231,13 @@ __PACKAGE__->register_method({
 	    start => {
 		type => 'integer',
 		minimum => 0,
+		default => 0,
 		optional => 1,
 	    },
 	    limit => {
 		type => 'integer',
 		minimum => 0,
+		default => 50,
 		optional => 1,
 	    },
 	},
