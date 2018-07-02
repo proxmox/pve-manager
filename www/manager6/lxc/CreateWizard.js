@@ -69,7 +69,6 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    xtype: 'pvePoolSelector',
 		    fieldLabel: gettext('Resource Pool'),
 		    name: 'pool',
-		    submitValue: false,
 		    value: '',
 		    allowBlank: true
 		},
@@ -294,6 +293,10 @@ Ext.define('PVE.lxc.CreateWizard', {
 		var nodename = kv.nodename;
 		delete kv.nodename;
 		delete kv.tmplstorage;
+
+		if (!kv.pool.length) {
+		    delete kv.pool;
+		}
 
 		if (!kv.password.length && kv['ssh-public-keys']) {
 		    delete kv.password;
