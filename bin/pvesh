@@ -2,12 +2,10 @@
 
 use strict;
 use warnings;
-use File::Basename;
-use Getopt::Long;
+use Data::Dumper;
 use HTTP::Status qw(:constants :is status_message);
-use Text::ParseWords;
 use String::ShellQuote;
-use PVE::JSONSchema;
+use PVE::JSONSchema qw(get_standard_option);
 use PVE::SafeSyslog;
 use PVE::Cluster;
 use PVE::INotify;
@@ -19,181 +17,77 @@ use PVE::API2Tools;
 use PVE::API2;
 use JSON;
 
-PVE::INotify::inotify_init();
+use base qw(PVE::CLIHandler);
 
-my $rpcenv = PVE::RPCEnvironment->init('cli');
-
-$rpcenv->set_language($ENV{LANG});
-$rpcenv->set_user('root@pam'); 
-
-my $logid = $ENV{PVE_LOG_ID} || 'pvesh';
-initlog($logid);
-
-my $basedir = '/api2/json';
-
-my $cdir = '';
-
-sub print_usage {
-    my $msg = shift;
-
-    print STDERR "ERROR: $msg\n" if $msg;
-    print STDERR "USAGE: pvesh [verifyapi]\n";
-    print STDERR "       pvesh CMD [OPTIONS]\n";
-
-}
+my $output_format = 'text';
 
 my $disable_proxy = 0;
 my $opt_nooutput = 0;
 
-my $cmd = shift;
-
+# compatibility code
 my $optmatch;
 do {
     $optmatch = 0;
-    if ($cmd) {
-	if ($cmd eq '--noproxy') {
-	    $cmd = shift;
+    if ($ARGV[0]) {
+	if ($ARGV[0] eq '--noproxy') {
+	    shift @ARGV;
 	    $disable_proxy = 1;
 	    $optmatch = 1;
-	} elsif ($cmd eq '--nooutput') {
+	} elsif ($ARGV[0] eq '--nooutput') {
 	    # we use this when starting task in CLI (suppress printing upid)
 	    # for example 'pvesh --nooutput create /nodes/localhost/stopall'
-	    $cmd = shift;
+	    shift @ARGV;
 	    $opt_nooutput = 1;
 	    $optmatch = 1;
 	}
-    }
+   }
 } while ($optmatch);
 
-if ($cmd) {
-    if ($cmd eq 'verifyapi') {
-	PVE::RESTHandler::validate_method_schemas();
-	exit 0;
-    } elsif ($cmd eq 'ls' || $cmd eq 'get' || $cmd eq 'create' || 
-	     $cmd eq 'set' || $cmd eq 'delete' ||$cmd eq 'help' ) {
-	pve_command([ $cmd, @ARGV],  $opt_nooutput);
-	exit(0);
-    } else {
-	print_usage ("unknown command '$cmd'");
-	exit (-1);
-    }
+sub setup_environment {
+    PVE::RPCEnvironment->setup_default_cli_env();
 }
 
-sub complete_path {
+sub complete_api_path {
     my($text) = @_;
 
     my ($dir, undef, $rest) = $text =~ m|^(.*/)?(([^/]*))?$|;
-    my $path = abs_path($cdir, $dir);
 
-    my @res = ();
+    my $path = $dir // ''; # copy
+
+    $path =~ s|/+|/|g;
+    $path =~ s|^\/||;
+    $path =~ s|\/$||;
+
+    my $res = [];
 
     my $di = dir_info($path);
     if (my $children = $di->{children}) {
 	foreach my $c (@$children) {
 	    if ($c =~ /^\Q$rest/) {
 		my $new =  $dir ? "$dir$c" : $c;
-		push @res, $new; 
+		push @$res, $new;
 	    }
 	}
     }
 
-    if (scalar(@res) == 0) {
-	return undef;
-    } elsif (scalar(@res) == 1) {
-	return ($res[0], $res[0], "$res[0]/");
-    } 
-
-    # lcd : lowest common denominator
-    my $lcd = '';
-    my $tmp = $res[0];
-    for (my $i = 1; $i <= length($tmp); $i++) {
-	my $found = 1;
-	foreach my $p (@res) {
-	    if (substr($tmp, 0, $i) ne substr($p, 0, $i)) {
-		$found = 0;
-		last;
-	    }
-	}
-	if ($found) {
-	    $lcd = substr($tmp, 0, $i);
-	} else {
-	    last;
-	}
+    if (scalar(@$res) == 1) {
+	return [$res->[0], "$res->[0]/"];
     }
 
-    return ($lcd, @res);
+    return $res;
+}
+
+my $method_map = {
+    create => 'POST',
+    set => 'PUT',
+    get => 'GET',
+    delete => 'DELETE',
 };
-
-sub abs_path {
-    my ($current, $path) = @_;
-
-    my $ret = $current;
-
-    return $current if !defined($path);
-
-    $ret = '' if $path =~ m|^\/|;
-
-    foreach my $d (split (/\/+/ , $path)) {
-	if ($d eq '.') {
-	    next;
-	} elsif ($d eq '..') {
-	    $ret = dirname($ret);
-	    $ret = '' if $ret eq '.';
-	} else {
-	    $ret = "$ret/$d";
-	}
-    }
-
-    $ret =~ s|\/+|\/|g;
-    $ret =~ s|^\/||;
-    $ret =~ s|\/$||;
-
-    return $ret;
-}
-
-my $param_mapping = sub {
-    my ($name) = @_;
-
-    return [PVE::CLIHandler::get_standard_mapping('pve-password')];
-};
-
-sub reverse_map_cmd {
-    my $method = shift;
-
-    my $mmap = {
-	GET => 'get',
-	PUT => 'set',
-	POST => 'create',
-	DELETE => 'delete',
-    };
-
-    my $cmd = $mmap->{$method};
-
-    die "got strange value for method ('$method') - internal error" if !$cmd;
-
-    return $cmd;
-}
-
-sub map_cmd {
-    my $cmd = shift;
-
-    my $mmap = {
-	create => 'POST',
-	set => 'PUT',
-	get => 'GET',
-	ls => 'GET',
-	delete => 'DELETE',
-    };
-
-    my $method = $mmap->{$cmd};
-
-    die "unable to map method" if !$method;
-
-    return $method;
-}
 
 sub check_proxyto {
     my ($info, $uri_param) = @_;
+
+    my $rpcenv = PVE::RPCEnvironment->get();
 
     if ($info->{proxyto} || $info->{proxyto_callback}) {
 	my $node = PVE::API2Tools::resolve_proxyto(
@@ -210,144 +104,29 @@ sub check_proxyto {
 }
 
 sub proxy_handler {
-    my ($node, $remip, $dir, $cmd, $args) = @_;
+    my ($node, $remip, $path, $cmd, $param, $noout) = @_;
 
-    my $cmdargs = [String::ShellQuote::shell_quote(@$args)];
-    my $remcmd = ['ssh', '-o', 'BatchMode=yes', "root\@$remip", 
-	       'pvesh', '--noproxy', $cmd, $dir, @$cmdargs];
-
-    system(@$remcmd) == 0 || die "proxy handler failed\n";
-}
-
-sub call_method {
-    my ($dir, $cmd, $args, $nooutput) = @_;
-
-    my $method = map_cmd($cmd);
-
-    my $uri_param = {};
-    my ($handler, $info) = PVE::API2->find_handler($method, $dir, $uri_param);
-    if (!$handler || !$info) {
-	die "no '$cmd' handler for '$dir'\n";
+    my $args = [];
+    foreach my $key (keys %$param) {
+	push @$args, "--$key", $param->{$key};
     }
 
-    my ($node, $remip) = check_proxyto($info, $uri_param);
-    return proxy_handler($node, $remip, $dir, $cmd, $args) if $node;
+    push @$args, '--quiet' if $noout;
 
-    my $data = $handler->cli_handler("$cmd $dir", $info->{name}, $args, [], $uri_param, $param_mapping);
+    my $remcmd = ['ssh', '-o', 'BatchMode=yes', "root\@$remip",
+		  'pvesh', '--noproxy', $cmd, $path,
+		  '--format', 'json'];
 
-    return if $nooutput;
-
-    warn "200 OK\n"; # always print OK status if successful
-
-    if ($info && $info->{returns} && $info->{returns}->{type}) {
-	my $rtype = $info->{returns}->{type};
-
-	return if $rtype eq 'null';
-
-	if ($rtype eq 'string') {
-	    print $data if $data;
-	    return;
-	}
+    if (scalar(@$args)) {
+	my $cmdargs = [String::ShellQuote::shell_quote(@$args)];
+	push @$remcmd, @$cmdargs;
     }
 
-    print to_json($data, {utf8 => 1, allow_nonref => 1, canonical => 1, pretty => 1 });
+    my $json = '';
+    PVE::Tools::run_command($remcmd, errmsg => "proxy handler failed",
+			    outfunc => sub { $json .= shift });
 
-    return;
-}
-
-sub find_resource_methods {
-    my ($path, $ihash) = @_;
-
-    for my $method (qw(GET POST PUT DELETE)) {
-	my $uri_param = {};
-	my $path_match;
-	my ($handler, $info) = PVE::API2->find_handler($method, $path, $uri_param, \$path_match);
-	if ($handler && $info && !$ihash->{$info}) {
-	    $ihash->{$info} = {
-		path => $path_match,
-		handler => $handler, 
-		info => $info, 
-		uri_param => $uri_param,
-	    };
-	}
-    }
-}
-
-sub print_help {
-    my ($path, $opts) = @_;
-
-    my $ihash = {};
-
-    find_resource_methods($path, $ihash);
-
-    if (!scalar(keys(%$ihash))) {
-	die "no such resource\n";
-    }
-
-    my $di = dir_info($path);
-    if (my $children = $di->{children}) {
-	foreach my $c (@$children) {
-	    my $cp = abs_path($path, $c);
-	    find_resource_methods($cp, $ihash);
-	}
-    }
-
-    foreach my $mi (sort { $a->{path} cmp $b->{path} } values %$ihash) {
-	my $method = $mi->{info}->{method};
-
-	# we skip index methods for now.
-	next if ($method eq 'GET') && PVE::JSONSchema::method_get_child_link($mi->{info});
-
-	my $path = $mi->{path};
-	$path =~ s|/+$||; # remove trailing slash
-
-	my $cmd = reverse_map_cmd($method);
-
-	print $mi->{handler}->usage_str($mi->{info}->{name}, "$cmd $path", [], $mi->{uri_param}, 
-					$opts->{verbose} ? 'full' : 'short', $param_mapping);
-	print "\n\n" if $opts->{verbose};
-    }
- 
-};
-
-sub resource_cap {
-    my ($path) = @_;
-
-    my $res = '';
-
-    my ($handler, $info) = PVE::API2->find_handler('GET', $path);
-    if (!($handler && $info)) {
-	$res .= '--';
-    } else {
-	if (PVE::JSONSchema::method_get_child_link($info)) {
-	    $res .= 'Dr';
-	} else {
-	    $res .= '-r';
-	}
-    }
-
-    ($handler, $info) = PVE::API2->find_handler('PUT', $path);
-    if (!($handler && $info)) {
-	$res .= '-';
-    } else {
-	$res .= 'w';
-    }
-
-    ($handler, $info) = PVE::API2->find_handler('POST', $path);
-    if (!($handler && $info)) {
-	$res .= '-';
-    } else {
-	$res .= 'c';
-    }
-
-    ($handler, $info) = PVE::API2->find_handler('DELETE', $path);
-    if (!($handler && $info)) {
-	$res .= '-';
-    } else {
-	$res .= 'd';
-    }
-
-    return $res;
+    return decode_json($json);
 }
 
 sub extract_children {
@@ -387,113 +166,252 @@ sub dir_info {
     return $res;
 }
 
-sub list_dir {
-    my ($dir, $args) = @_;
 
-    my $uri_param = {};
-    my ($handler, $info) = PVE::API2->find_handler('GET', $dir, $uri_param);
-    if (!$handler || !$info) {
-	die "no such resource\n";
+# dynamically update schema definition
+# like: pvesh <get|set|create|delete|help> <path>
+
+sub extract_path_info {
+    my ($uri_param) = @_;
+
+    my $info;
+
+    my $test_path_properties = sub {
+	my ($method, $path) = @_;
+	(undef, $info) = PVE::API2->find_handler($method, $path, $uri_param);
+    };
+
+    if (defined(my $cmd = $ARGV[0])) {
+	if (my $method = $method_map->{$cmd}) {
+	    if (my $path = $ARGV[1]) {
+		$test_path_properties->($method, $path);
+	    }
+	} elsif ($cmd eq 'bashcomplete') {
+	    my $cmdline = substr($ENV{COMP_LINE}, 0, $ENV{COMP_POINT});
+	    my $args = PVE::Tools::split_args($cmdline);
+	    if (defined(my $cmd = $args->[1])) {
+		if (my $method = $method_map->{$cmd}) {
+		    if (my $path = $args->[2]) {
+			$test_path_properties->($method, $path);
+		    }
+		}
+	    }
+	}
     }
 
-    if (!PVE::JSONSchema::method_get_child_link($info)) {
-	die "resource does not define child links\n";
+    return $info;
+}
+
+
+my $path_properties = {};
+my $path_returns = { type => 'null' };
+
+my $api_path_property = {
+    description => "API path.",
+    type => 'string',
+    completion => sub {
+	my ($cmd, $pname, $cur, $args) = @_;
+	return complete_api_path($cur);
+    },
+};
+
+my $uri_param = {};
+if (my $info = extract_path_info($uri_param)) {
+    foreach my $key (keys %{$info->{parameters}->{properties}}) {
+	next if defined($uri_param->{$key});
+	$path_properties->{$key} = $info->{parameters}->{properties}->{$key};
+    }
+    $path_returns = $info->{returns};
+}
+
+$path_properties->{format} = get_standard_option('pve-output-format');
+$path_properties->{api_path} = $api_path_property;
+$path_properties->{noproxy} = {
+    description => "Disable automatic proxying.",
+    type => 'boolean',
+    optional => 1,
+};
+$path_properties->{quiet} = {
+    description => "Suppress printing results.",
+    type => 'boolean',
+    optional => 1,
+};
+
+my $format_result = sub {
+    my ($data) = @_;
+
+    return if $opt_nooutput || $output_format eq 'none';
+
+    my $options = PVE::CLIFormatter::query_terminal_options({});
+
+    PVE::CLIFormatter::print_api_result($output_format, $data, $path_returns, undef, $options);
+};
+
+sub call_api_method {
+    my ($cmd, $param) = @_;
+
+    my $method = $method_map->{$cmd} || die "unable to map command '$cmd'";
+
+    my $path = PVE::Tools::extract_param($param, 'api_path');
+    die "missing API path\n" if !defined($path);
+
+    if (my $format = PVE::Tools::extract_param($param, 'format'))  {
+	$output_format = $format;
+    }
+
+    $opt_nooutput = 1 if PVE::Tools::extract_param($param, 'quiet');
+
+    my $uri_param = {};
+    my ($handler, $info) = PVE::API2->find_handler($method, $path, $uri_param);
+    if (!$handler || !$info) {
+	die "no '$cmd' handler for '$path'\n";
     }
 
     my ($node, $remip) = check_proxyto($info, $uri_param);
-    return proxy_handler($node, $remip, $dir, 'ls', $args) if $node;
+    return proxy_handler($node, $remip, $path, $cmd, $param, $opt_nooutput) if $node;
 
-
-    my $data = $handler->cli_handler("ls $dir", $info->{name}, $args, [], $uri_param, $param_mapping);
-    my $lnk = PVE::JSONSchema::method_get_child_link($info);
-    my $children = extract_children($lnk, $data);
-
-    foreach my $c (@$children) {
-	my $cap = resource_cap(abs_path($dir, $c));
-	print "$cap $c\n";
-    }
-}
-
-
-sub pve_command {
-    my ($args, $nooutput) = @_;
-
-    PVE::Cluster::cfs_update();
-
-    $rpcenv->init_request();
-
-    my $cmd = shift @$args;
-
-    if ($cmd eq 'cd') {
-
-	my $path =  shift @$args;
-
-	die "usage: cd [dir]\n" if scalar(@$args);
-
-	if (!defined($path)) {
-	    $cdir = '';
-	    return;
-	} else {
-	    my $new_dir = abs_path($cdir, $path);
-	    my ($handler, $info) = PVE::API2->find_handler('GET', $new_dir);
-	    die "no such resource\n" if !$handler;
-	    $cdir = $new_dir;
-	}
-
-    } elsif ($cmd eq 'help') {
-
-	my $help_usage_error = sub {
-	    die "usage: help [path] [--verbose]\n";
-	};
-
-	my $opts = {};
-
-	&$help_usage_error() if !Getopt::Long::GetOptionsFromArray($args, $opts, 'verbose');
-
-	my $path;
-	if (scalar(@$args) && $args->[0] !~ m/^\-/)  {
-	    $path = shift @$args;
-	}
-
-	&$help_usage_error() if scalar(@$args);
-
-	print "help [path] [--verbose]\n";
-	print "cd [path]\n";
-	print "ls [path]\n\n";
-
-	print_help(abs_path($cdir, $path), $opts);
-
-    } elsif ($cmd eq 'ls') {
-	my $path;
-	if (scalar(@$args) && $args->[0] !~ m/^\-/)  {
-	    $path = shift @$args;
-	}
-
-	list_dir(abs_path($cdir, $path), $args);
-
-    } elsif ($cmd =~ m/^get|delete|set$/) {
-
-	my $path;
-	if (scalar(@$args) && $args->[0] !~ m/^\-/)  {
-	    $path = shift @$args;
-	}
-
-	call_method(abs_path($cdir, $path), $cmd, $args);
-
-    } elsif ($cmd eq 'create') {
-
-	my $path;
-	if (scalar(@$args) && $args->[0] !~ m/^\-/)  {
-	    $path = shift @$args;
-	}
-
-	call_method(abs_path($cdir, $path), $cmd, $args, $nooutput);
-
-    } else {
-	die "unknown command '$cmd'\n";
+    foreach my $p (keys %$uri_param) {
+	$param->{$p} = $uri_param->{$p};
     }
 
+    my $data = $handler->handle($info, $param);
+
+    return $data;
 }
+
+__PACKAGE__->register_method ({
+    name => 'get',
+    path => 'get',
+    method => 'GET',
+    description => "Call API GET on <api_path>.",
+    parameters => {
+	additionalProperties => 0,
+	properties => $path_properties,
+    },
+    returns => $path_returns,
+    code => sub {
+	my ($param) = @_;
+
+	return call_api_method('get', $param);
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'set',
+    path => 'set',
+    method => 'PUT',
+    description => "Call API PUT on <api_path>.",
+    parameters => {
+	additionalProperties => 0,
+	properties => $path_properties,
+    },
+    returns => $path_returns,
+    code => sub {
+	my ($param) = @_;
+
+	return call_api_method('set', $param);
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'create',
+    path => 'create',
+    method => 'POST',
+    description => "Call API POST on <api_path>.",
+    parameters => {
+	additionalProperties => 0,
+	properties => $path_properties,
+    },
+    returns => $path_returns,
+    code => sub {
+	my ($param) = @_;
+
+	return call_api_method('create', $param);
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'delete',
+    path => 'delete',
+    method => 'DELETE',
+    description => "Call API DELETE on <api_path>.",
+    parameters => {
+	additionalProperties => 0,
+	properties => $path_properties,
+    },
+    returns => $path_returns,
+    code => sub {
+	my ($param) = @_;
+
+	return call_api_method('delete', $param);
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'usage',
+    path => 'usage',
+    method => 'GET',
+    description => "print API usage information for <api_path>.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    api_path => $api_path_property,
+	    verbose => {
+		description => "Verbose output format.",
+		type => 'boolean',
+		optional => 1,
+	    },
+	    command => {
+		description => "API command.",
+		type => 'string',
+		enum => [ keys %$method_map ],
+		optional => 1,
+	    },
+	},
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	$opt_nooutput = 1; # we print directly
+
+	my $path = $param->{api_path};
+
+	my $found = 0;
+	foreach my $cmd (qw(get set create delete)) {
+	    next if $param->{command} && $cmd ne $param->{command};
+	    my $method = $method_map->{$cmd};
+	    my ($handler, $info) = PVE::API2->find_handler($method, $path);
+	    next if !$handler;
+	    $found = 1;
+
+	    if ($param->{verbose}) {
+		print $handler->usage_str(
+		    $info->{name}, "pvesh $cmd $path", undef, {}, 'full');
+	    } else {
+		print "USAGE: " . $handler->usage_str(
+		    $info->{name}, "pvesh $cmd $path", undef, {}, 'short');
+	    }
+	}
+
+	if (!$found) {
+	    if ($param->{command}) {
+		die "no '$param->{command}' handler for '$path'\n";
+	    } else {
+		die "no such resource '$path'\n"
+	    }
+	}
+
+	return undef;
+    }});
+
+our $cmddef = {
+    usage => [ __PACKAGE__, 'usage', ['api_path'], {}, $format_result ],
+    get => [ __PACKAGE__, 'get', ['api_path'], {}, $format_result ],
+    set => [ __PACKAGE__, 'set', ['api_path'], {}, $format_result ],
+    create => [ __PACKAGE__, 'create', ['api_path'], {}, $format_result ],
+    delete => [ __PACKAGE__, 'delete', ['api_path'], {}, $format_result ],
+};
+
+my $cmd = $ARGV[0];
+
+__PACKAGE__->run_cli_handler();
+
 
 __END__
 
@@ -503,7 +421,7 @@ pvesh - shell interface to the Promox VE API
 
 =head1 SYNOPSIS
 
-pvesh [get|set|create|delete|help] [REST API path] [--verbose]
+pvesh [get|set|create|delete|usage] [REST API path] [--verbose]
 
 =head1 DESCRIPTION
 
@@ -517,7 +435,7 @@ pvesh get /nodes
 
 get a list of available options for the datacenter
 
-pvesh help cluster/options -v
+pvesh usage cluster/options -v
 
 set the HTMl5 NoVNC console as the default console for the datacenter
 
