@@ -1,11 +1,7 @@
 #!/usr/bin/perl
 
-# TODO:
-# implement persistent history ?
- 
 use strict;
 use warnings;
-use Term::ReadLine;
 use File::Basename;
 use Getopt::Long;
 use HTTP::Status qw(:constants :is status_message);
@@ -17,6 +13,7 @@ use PVE::Cluster;
 use PVE::INotify;
 use PVE::RPCEnvironment;
 use PVE::RESTHandler;
+use PVE::CLIFormatter;
 use PVE::CLIHandler;
 use PVE::API2Tools;
 use PVE::API2;
@@ -82,16 +79,6 @@ if ($cmd) {
     }
 }
 
-if (scalar (@ARGV) != 0) {
-    print_usage ();
-    exit (-1);
-}
-
-print "entering PVE shell - type 'help' for help\n";
-
-my $term = new Term::ReadLine ('pvesh');
-my $attribs = $term->Attribs;
-
 sub complete_path {
     my($text) = @_;
 
@@ -135,28 +122,6 @@ sub complete_path {
     }
 
     return ($lcd, @res);
-};
-
-# just to avoid an endless loop (called by attempted_completion_function)
-$attribs->{completion_entry_function} = sub {
-    my($text, $state) = @_;
-    return undef;
-};
-
-$attribs->{attempted_completion_function} = sub {
-    my ($text, $line, $start) = @_;
-
-    my $prefix = substr($line, 0, $start);
-    if ($prefix =~ /^\s*$/) { # first word (command completeion)
-	$attribs->{completion_word} = [qw(help ls cd get set create delete quit)];
-	return $term->completion_matches($text, $attribs->{list_completion_function});
-    }
-
-    if ($prefix =~ /^\s*\S+\s+$/) { # second word (path completion)
-	return complete_path($text);
-    }
-
-    return ();   
 };
 
 sub abs_path {
@@ -530,29 +495,6 @@ sub pve_command {
 
 }
 
-my $input;
-while (defined ($input = $term->readline("pve:/$cdir> "))) {
-    chomp $input;
-
-    next if $input =~ m/^\s*$/;
-
-    if ($input =~ m/^\s*q(uit)?\s*$/) {
-	exit (0);
-    }
-
-    # add input to history if it gets not
-    # automatically added
-    if (!$term->Features->{autohistory}) {
-	$term->addhistory($input);
-    }
-
-    eval {
-	my $args = [ shellwords($input) ];
-	pve_command($args);
-    };
-    warn $@ if $@;
-}
-
 __END__
 
 =head1 NAME
@@ -565,21 +507,7 @@ pvesh [get|set|create|delete|help] [REST API path] [--verbose]
 
 =head1 DESCRIPTION
 
-pvesh provides a shell-like interface to the Proxmox VE REST API, in two different modes:
-
-=over
-
-=item interactive
-
-when called without parameters, pvesh starts an interactive client, where you can navigate
-in the different parts of the API
-
-=item command line
-
-when started with parameters pvesh will send a command to the corresponding REST url, and will
-return the JSON formatted output
-
-=back
+pvesh provides a command line interface to the Proxmox VE REST API.
 
 =head1 EXAMPLES
 
