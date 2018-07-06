@@ -4,12 +4,35 @@ Ext.define('PVE.form.HotplugFeatureSelector', {
 
     columns: 1,
     vertical: true,
+
+    defaults: {
+	name: 'hotplug',
+	submitValue: false
+    },
     items: [
-	{ boxLabel: gettext('Disk'),    name: 'hotplug', inputValue: 'disk',   submitValue: false, checked: true },
-	{ boxLabel: gettext('Network'), name: 'hotplug', inputValue: 'network',submitValue: false, checked: true },
-	{ boxLabel: 'USB',              name: 'hotplug', inputValue: 'usb',    submitValue: false, checked: true },
-	{ boxLabel: gettext('Memory'),  name: 'hotplug', inputValue: 'memory', submitValue: false },
-	{ boxLabel: gettext('CPU'),     name: 'hotplug', inputValue: 'cpu',    submitValue: false }
+	{
+	    boxLabel: gettext('Disk'),
+	    inputValue: 'disk',
+	    checked: true
+	},
+	{
+	    boxLabel: gettext('Network'),
+	    inputValue: 'network',
+	    checked: true
+	},
+	{
+	    boxLabel: 'USB',
+	    inputValue: 'usb',
+	    checked: true
+	},
+	{
+	    boxLabel: gettext('Memory'),
+	    inputValue: 'memory'
+	},
+	{
+	    boxLabel: gettext('CPU'),
+	    inputValue: 'cpu'
+	}
     ],
 
     setValue: function(value) {
