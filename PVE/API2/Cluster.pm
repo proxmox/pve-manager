@@ -175,6 +175,81 @@ __PACKAGE__->register_method({
 	items => {
 	    type => "object",
 	    properties => {
+		id => { type => 'string' },
+		type => {
+		    destriction => "Resource type.",
+		    type => 'string',
+		    enum => ['node', 'storage', 'pool', 'qemu', 'lxc'],
+		},
+		status => {
+		    description => "Resource type dependent status.",
+		    type => 'string',
+		    optional => 1,
+		},
+		node => get_standard_option('pve-node', {
+		    description => "The cluster node name (when type in node,storage,qemu,lxc).",
+		    optional => 1,
+		}),
+		storage => get_standard_option('pve-storage-id', {
+		    description => "The storage identifier (when type == storage).",
+		    optional => 1,
+		}),
+		pool => {
+		    description => "The pool name (when type in pool,qemu,lxc).",
+		    type => 'string',
+		    optional => 1,
+		},
+		cpu => {
+		    description => "CPU utilization (when type in node,qemu,lxc).",
+		    type => 'number',
+		    optional => 1,
+		    renderer => 'fraction_as_percentage',
+		},
+		maxcpu => {
+		    description => "Number of available CPUs (when type in node,qemu,lxc).",
+		    type => 'integer',
+		    optional => 1,
+		},
+		mem => {
+		    description => "Used memory in bytes (when type in node,qemu,lxc).",
+		    type => 'string',
+		    optional => 1,
+		    renderer => 'bytes',
+		},
+		maxmem => {
+		    description => "Number of available memory in bytes (when type in node,qemu,lxc).",
+		    type => 'integer',
+		    optional => 1,
+		    renderer => 'bytes',
+		},
+		level => {
+		    description => "Support level (when type == node).",
+		    type => 'string',
+		    optional => 1,
+		},
+		uptime => {
+		    description => "Node uptime in seconds (when type in node,qemu,lxc).",
+		    type => 'integer',
+		    optional => 1,
+		    renderer => 'duration',
+		},
+		hastate => {
+		    description => "HA service status (for HA managed VMs).",
+		    type => 'string',
+		    optional => 1,
+		},
+		disk => {
+		    description => "Used disk space in bytes (when type in storage), used root image spave for VMs (type in qemu,lxc).",
+		    type => 'string',
+		    optional => 1,
+		    renderer => 'bytes',
+		},
+		maxdisk => {
+		    description => "Storage size in bytes (when type in storage), root image size for VMs (type in qemu,lxc).",
+		    type => 'integer',
+		    optional => 1,
+		    renderer => 'bytes',
+		},
 	    },
 	},
     },
