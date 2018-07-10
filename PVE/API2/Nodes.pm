@@ -1833,6 +1833,7 @@ use PVE::Cluster;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::API2Tools;
+use PVE::JSONSchema qw(get_standard_option);
 
 use base qw(PVE::RESTHandler);
 
@@ -1855,7 +1856,53 @@ __PACKAGE__->register_method ({
 	type => 'array',
 	items => {
 	    type => "object",
-	    properties => {},
+	    properties => {
+		node => get_standard_option('pve-node'),
+		status => {
+		    description => "Node status.",
+		    type => 'string',
+		    enum => ['unknown', 'online', 'offline'],
+		},
+		cpu => {
+		    description => "CPU utilization.",
+		    type => 'number',
+		    optional => 1,
+		    renderer => 'fraction_as_percentage',
+		},
+		maxcpu => {
+		    description => "Number of available CPUs.",
+		    type => 'integer',
+		    optional => 1,
+		},
+		mem => {
+		    description => "Used memory in bytes.",
+		    type => 'string',
+		    optional => 1,
+		    renderer => 'bytes',
+		},
+		maxmem => {
+		    description => "Number of available memory in bytes.",
+		    type => 'integer',
+		    optional => 1,
+		    renderer => 'bytes',
+		},
+		level => {
+		    description => "Support level.",
+		    type => 'string',
+		    optional => 1,
+		},
+		uptime => {
+		    description => "Node uptime in seconds.",
+		    type => 'integer',
+		    optional => 1,
+		    renderer => 'duration',
+		},
+		ssl_fingerprint => {
+		    description => "The SSL fingerprint for the node certificate.",
+		    type => 'string',
+		    optional => 1,
+		},
+	    },
 	},
 	links => [ { rel => 'child', href => "{node}" } ],
     },
