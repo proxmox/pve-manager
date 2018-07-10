@@ -177,7 +177,7 @@ __PACKAGE__->register_method({
 	    properties => {
 		id => { type => 'string' },
 		type => {
-		    destriction => "Resource type.",
+		    description => "Resource type.",
 		    type => 'string',
 		    enum => ['node', 'storage', 'pool', 'qemu', 'lxc'],
 		},
