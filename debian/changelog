@@ -1,3 +1,16 @@
+pve-manager (5.2-6) unstable; urgency=medium
+
+  * add task list, log and status commands to the pvenode cli tool
+
+  * ui/storage: cifs: only allow entering a password if user is set
+
+  * Add cephfs to allowed storages for vzdump backup
+
+  * document return properties for cluster resource and node list API
+    calls
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 10 Jul 2018 14:46:32 +0200
+
 pve-manager (5.2-5) unstable; urgency=medium
 
   * add startall, stopall and migrateall commands to the pvenode cli
