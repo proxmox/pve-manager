@@ -189,7 +189,7 @@ our $cmddef = {
 		    $task->{status} = 'ERROR';
 		}
 	    }
-	    PVE::CLIFormatter::print_api_list($data, $resultprops, ['upid', 'type', 'id', 'user', 'starttime', 'endtime', 'status' ], 0);
+	    PVE::CLIFormatter::print_api_list($data, $resultprops, ['upid', 'type', 'id', 'user', 'starttime', 'endtime', 'status' ], { noborder => 1 });
 	}],
 	status => [ 'PVE::API2::Tasks', 'read_task_status', [ 'upid' ], { node => $nodename }, sub {
 	    my ($data, $resultprops) = @_;
