@@ -364,25 +364,24 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	$opt_nooutput = 1; # we print directly
-
 	my $path = $param->{api_path};
 
 	my $found = 0;
 	foreach my $cmd (qw(get set create delete)) {
 	    next if $param->{command} && $cmd ne $param->{command};
 	    my $method = $method_map->{$cmd};
-	    my ($handler, $info) = PVE::API2->find_handler($method, $path);
+	    my $uri_param = {};
+	    my ($handler, $info) = PVE::API2->find_handler($method, $path, $uri_param);
 	    next if !$handler;
 	    $found = 1;
 
 	    if ($param->{verbose}) {
 		print $handler->usage_str(
-		    $info->{name}, "pvesh $cmd $path", undef, {}, 'full');
+		    $info->{name}, "pvesh $cmd $path", undef, $uri_param, 'full');
 
 	    } else {
 		print "USAGE: " . $handler->usage_str(
-		    $info->{name}, "pvesh $cmd $path", undef, {}, 'short');
+		    $info->{name}, "pvesh $cmd $path", undef, $uri_param, 'short');
 	    }
 	    if ($param-> {returns}) {
 		my $schema = to_json($info->{returns}, {utf8 => 1, canonical => 1, pretty => 1 });
@@ -402,7 +401,7 @@ __PACKAGE__->register_method ({
     }});
 
 our $cmddef = {
-    usage => [ __PACKAGE__, 'usage', ['api_path'], {}, $format_result ],
+    usage => [ __PACKAGE__, 'usage', ['api_path']],
     get => [ __PACKAGE__, 'get', ['api_path'], {}, $format_result ],
     set => [ __PACKAGE__, 'set', ['api_path'], {}, $format_result ],
     create => [ __PACKAGE__, 'create', ['api_path'], {}, $format_result ],
