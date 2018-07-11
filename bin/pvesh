@@ -1,8 +1,9 @@
 #!/usr/bin/perl
 
+package pvesh;
+
 use strict;
 use warnings;
-use Data::Dumper;
 use HTTP::Status qw(:constants :is status_message);
 use String::ShellQuote;
 use PVE::JSONSchema qw(get_standard_option);
@@ -18,8 +19,6 @@ use PVE::API2;
 use JSON;
 
 use base qw(PVE::CLIHandler);
-
-my $output_format = 'text';
 
 my $disable_proxy = 0;
 my $opt_nooutput = 0;
@@ -237,13 +236,11 @@ $path_properties->{quiet} = {
 };
 
 my $format_result = sub {
-    my ($data) = @_;
+    my ($data, $result_schema, $options) = @_;
 
-    return if $opt_nooutput || $output_format eq 'none';
+    return if $opt_nooutput || ($options->{format}//'') eq 'none';
 
-    my $options = PVE::CLIFormatter::query_terminal_options({});
-
-    PVE::CLIFormatter::print_api_result($output_format, $data, $path_returns, undef, $options);
+    PVE::CLIFormatter::print_api_result($data, $path_returns, undef, $options);
 };
 
 sub call_api_method {
@@ -253,12 +250,6 @@ sub call_api_method {
 
     my $path = PVE::Tools::extract_param($param, 'api_path');
     die "missing API path\n" if !defined($path);
-
-    if (my $format = PVE::Tools::extract_param($param, 'format'))  {
-	$output_format = $format;
-    }
-
-    $opt_nooutput = 1 if PVE::Tools::extract_param($param, 'quiet');
 
     my $uri_param = {};
     my ($handler, $info) = PVE::API2->find_handler($method, $path, $uri_param);
