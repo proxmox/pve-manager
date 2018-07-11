@@ -222,34 +222,30 @@ if (my $info = extract_path_info($uri_param)) {
     $path_returns = $info->{returns};
 }
 
-$path_properties->{format} = get_standard_option('pve-output-format');
 $path_properties->{api_path} = $api_path_property;
 $path_properties->{noproxy} = {
     description => "Disable automatic proxying.",
     type => 'boolean',
     optional => 1,
 };
-$path_properties->{quiet} = {
-    description => "Suppress printing results.",
-    type => 'boolean',
-    optional => 1,
-};
 
 my $format_result = sub {
-    my ($data, $result_schema, $options) = @_;
+    my ($data, $schema, $options) = @_;
 
-    return if $opt_nooutput || ($options->{format}//'') eq 'none';
+    return if $opt_nooutput || $options->{quiet}; # fixme:??
 
     PVE::CLIFormatter::print_api_result($data, $path_returns, undef, $options);
 };
 
 sub call_api_method {
-    my ($cmd, $param) = @_;
+    my ($cmd, $param, $options) = @_;
 
     my $method = $method_map->{$cmd} || die "unable to map command '$cmd'";
 
     my $path = PVE::Tools::extract_param($param, 'api_path');
     die "missing API path\n" if !defined($path);
+
+    $opt_nooutput = 1 if $options->{quiet};
 
     my $uri_param = {};
     my ($handler, $info) = PVE::API2->find_handler($method, $path, $uri_param);
@@ -264,7 +260,7 @@ sub call_api_method {
 	$param->{$p} = $uri_param->{$p};
     }
 
-    my $data = $handler->handle($info, $param);
+    my $data = $handler->handle($info, $param, $options);
 
     return $data;
 }
@@ -280,9 +276,9 @@ __PACKAGE__->register_method ({
     },
     returns => $path_returns,
     code => sub {
-	my ($param) = @_;
+	my ($param, $options) = @_;
 
-	return call_api_method('get', $param);
+	return call_api_method('get', $param, $options);
     }});
 
 __PACKAGE__->register_method ({
@@ -296,9 +292,9 @@ __PACKAGE__->register_method ({
     },
     returns => $path_returns,
     code => sub {
-	my ($param) = @_;
+	my ($param, $options) = @_;
 
-	return call_api_method('set', $param);
+	return call_api_method('set', $param, $options);
     }});
 
 __PACKAGE__->register_method ({
@@ -312,9 +308,9 @@ __PACKAGE__->register_method ({
     },
     returns => $path_returns,
     code => sub {
-	my ($param) = @_;
+	my ($param, $options) = @_;
 
-	return call_api_method('create', $param);
+	return call_api_method('create', $param, $options);
     }});
 
 __PACKAGE__->register_method ({
@@ -328,9 +324,9 @@ __PACKAGE__->register_method ({
     },
     returns => $path_returns,
     code => sub {
-	my ($param) = @_;
+	my ($param, $options) = @_;
 
-	return call_api_method('delete', $param);
+	return call_api_method('delete', $param, $options);
     }});
 
 __PACKAGE__->register_method ({
@@ -362,7 +358,7 @@ __PACKAGE__->register_method ({
     },
     returns => { type => 'null' },
     code => sub {
-	my ($param) = @_;
+	my ($param, $options) = @_;
 
 	my $path = $param->{api_path};
 
