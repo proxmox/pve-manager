@@ -183,17 +183,17 @@ our $cmddef = {
 
     task => {
 	list => [ 'PVE::API2::Tasks', 'node_tasks', [], { node => $nodename }, sub {
-	    my ($data, $resultprops) = @_;
+	    my ($data, $schema, $options) = @_;
 	    foreach my $task (@$data) {
 		if ($task->{status} ne 'OK') {
 		    $task->{status} = 'ERROR';
 		}
 	    }
-	    PVE::CLIFormatter::print_api_list($data, $resultprops, ['upid', 'type', 'id', 'user', 'starttime', 'endtime', 'status' ], { noborder => 1 });
+	    PVE::CLIFormatter::print_api_result($data, $schema, ['upid', 'type', 'id', 'user', 'starttime', 'endtime', 'status' ], $options);
 	}],
 	status => [ 'PVE::API2::Tasks', 'read_task_status', [ 'upid' ], { node => $nodename }, sub {
-	    my ($data, $resultprops) = @_;
-	    PVE::CLIFormatter::print_api_result('text', $data, $resultprops);
+	    my ($data, $schema, $options) = @_;
+	    PVE::CLIFormatter::print_api_result($data, $schema, undef, $options);
 	}],
 	# set limit to 1000000, so we see the whole log, not only the first 50 lines by default
 	log => [ 'PVE::API2::Tasks', 'read_task_log', [ 'upid' ], { node => $nodename, limit => 1000000 }, sub {
