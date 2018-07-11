@@ -347,6 +347,11 @@ __PACKAGE__->register_method ({
 		type => 'boolean',
 		optional => 1,
 	    },
+	    returns => {
+		description => "Including schema for returned data.",
+		type => 'boolean',
+		optional => 1,
+	    },
 	    command => {
 		description => "API command.",
 		type => 'string',
@@ -374,9 +379,14 @@ __PACKAGE__->register_method ({
 	    if ($param->{verbose}) {
 		print $handler->usage_str(
 		    $info->{name}, "pvesh $cmd $path", undef, {}, 'full');
+
 	    } else {
 		print "USAGE: " . $handler->usage_str(
 		    $info->{name}, "pvesh $cmd $path", undef, {}, 'short');
+	    }
+	    if ($param-> {returns}) {
+		my $schema = to_json($info->{returns}, {utf8 => 1, canonical => 1, pretty => 1 });
+		print "RETURNS: $schema\n";
 	    }
 	}
 
