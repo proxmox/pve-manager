@@ -1115,11 +1115,13 @@ __PACKAGE__->register_method({
 		description => "Seconds since 1970-01-01 00:00:00 UTC.",
 		type => 'integer',
 		minimum => 1297163644,
+		renderer => 'timestamp',
 	    },
 	    localtime => {
 		description => "Seconds since 1970-01-01 00:00:00 (local time)",
 		type => 'integer',
 		minimum => 1297163644,
+		renderer => 'timestamp_gmt',
 	    },
         },
     },
@@ -1130,7 +1132,7 @@ __PACKAGE__->register_method({
 	my $ltime = timegm_nocheck(localtime($ctime));
 	my $res = {
 	    timezone => PVE::INotify::read_file('timezone'),
-	    time => time(),
+	    time => $ctime,
 	    localtime => $ltime,
 	};
 
