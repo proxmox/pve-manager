@@ -12,7 +12,7 @@ my $node_config_lock = '/var/lock/pvenode.lock';
 PVE::JSONSchema::register_format('pve-acme-domain', sub {
     my ($domain, $noerr) = @_;
 
-    my $label = qr/[a-z][a-z0-9_-]*/i;
+    my $label = qr/[a-z0-9][a-z0-9_-]*/i;
 
     return $domain if $domain =~ /^$label(?:\.$label)+$/;
     return undef if $noerr;
