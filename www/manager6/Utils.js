@@ -815,7 +815,8 @@ Ext.define('PVE.Utils', { utilities: {
 	    novnc: 1,
 	    vmid: vmid,
 	    vmname: vmname,
-	    node: nodename
+	    node: nodename,
+	    resize: 'off'
 	});
 	var nw = window.open("?" + url, '_blank', "innerWidth=745,innerheight=427");
 	nw.focus();
