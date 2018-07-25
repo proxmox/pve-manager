@@ -17,6 +17,8 @@ use PVE::JSONSchema qw(get_standard_option);
 use PVE::NodeConfig;
 use PVE::RPCEnvironment;
 use PVE::CLIFormatter;
+use PVE::RESTHandler;
+use PVE::CLIHandler;
 
 use Term::ReadLine;
 
@@ -189,12 +191,14 @@ our $cmddef = {
 		    $task->{status} = 'ERROR';
 		}
 	    }
+	    PVE::CLIFormatter::query_terminal_options($options);
 	    PVE::CLIFormatter::print_api_result($data, $schema, ['upid', 'type', 'id', 'user', 'starttime', 'endtime', 'status' ], $options);
-	}],
+	}, $PVE::RESTHandler::standard_output_options],
 	status => [ 'PVE::API2::Tasks', 'read_task_status', [ 'upid' ], { node => $nodename }, sub {
 	    my ($data, $schema, $options) = @_;
+	    PVE::CLIFormatter::query_terminal_options($options);
 	    PVE::CLIFormatter::print_api_result($data, $schema, undef, $options);
-	}],
+	}, $PVE::RESTHandler::standard_output_options],
 	# set limit to 1000000, so we see the whole log, not only the first 50 lines by default
 	log => [ 'PVE::API2::Tasks', 'read_task_log', [ 'upid' ], { node => $nodename, limit => 1000000 }, sub {
 	    my ($data, $resultprops) = @_;
