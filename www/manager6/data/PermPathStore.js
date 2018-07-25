@@ -4,6 +4,7 @@ Ext.define('PVE.data.PermPathStore', {
     fields: [ 'value' ],
     autoLoad: false,
     data: [
+	{'value':  '/'},
 	{'value':  '/access'},
 	{'value': '/nodes'},
 	{'value': '/pool'},
