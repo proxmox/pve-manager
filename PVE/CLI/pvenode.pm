@@ -121,21 +121,11 @@ __PACKAGE__->register_method({
     }});
 
 my $print_cert_info = sub {
-    my ($cert) = @_;
+    my ($schema, $cert, $options) = @_;
 
-    print "Certificate '$cert->{filename}'\n";
-    print "\tFP: '$cert->{fingerprint}'\n" if $cert->{fingerprint};
-    print "\tSubject: '$cert->{subject}'\n" if $cert->{subject};
-    print "\tIssuer: '$cert->{issuer}'\n" if $cert->{issuer};
-    print "\tnotBefore: " . localtime($cert->{notbefore}) . "\n" if $cert->{notbefore};
-    print "\tnotAfter: " . localtime($cert->{notafter}) . "\n" if $cert->{notafter};
-    if (scalar(@{$cert->{san}})) {
-	print "\tSubjectAlternativeNames:\n";
-	for my $name (@{$cert->{san}}) {
-	    print "\t\t-$name\n";
-	}
-    }
-    print "\n";
+    my $order = [qw(filename fingerprint subject issuer notbefore notafter san)];
+    PVE::CLIFormatter::print_api_result(
+	$cert, $schema, $order, { %$options, noheader => 1, sort_key => 0 });
 };
 
 my $print_acme_account = sub {
@@ -176,10 +166,24 @@ our $cmddef = {
 
     cert => {
 	info => [ 'PVE::API2::Certificates', 'info', [], { node => $nodename }, sub {
-	    my ($res) = @_;
-	    for my $cert (@$res) { $print_cert_info->($cert); }
-	}],
-	set => [ 'PVE::API2::Certificates', 'upload_custom_cert', ['certificates', 'key'], { node => $nodename }, $print_cert_info ],
+	    my ($res, $schema, $options) = @_;
+
+	    PVE::CLIFormatter::query_terminal_options($options);
+
+	    if (!$options->{'output-format'} || $options->{'output-format'} eq 'text') {
+		for my $cert (sort { $a->{filename} cmp $b->{filename} } @$res) {
+		    $print_cert_info->($schema->{items}, $cert, $options);
+		}
+	    } else {
+		PVE::CLIFormatter::print_api_result($res, $schema, undef, $options);
+	    }
+
+	}, $PVE::RESTHandler::standard_output_options],
+	set => [ 'PVE::API2::Certificates', 'upload_custom_cert', ['certificates', 'key'], { node => $nodename }, sub {
+	    my ($res, $schema, $options) = @_;
+	    PVE::CLIFormatter::query_terminal_options($options);
+	    $print_cert_info->($schema, $res, $options);
+	}, $PVE::RESTHandler::standard_output_options],
 	delete => [ 'PVE::API2::Certificates', 'remove_custom_cert', ['restart'], { node => $nodename } ],
     },
 
