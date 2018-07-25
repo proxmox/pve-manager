@@ -164,6 +164,45 @@ sub dir_info {
     return $res;
 }
 
+sub resource_cap {
+    my ($path) = @_;
+
+    my $res = '';
+
+    my ($handler, $info) = PVE::API2->find_handler('GET', $path);
+    if (!($handler && $info)) {
+	$res .= '--';
+    } else {
+	if (PVE::JSONSchema::method_get_child_link($info)) {
+	    $res .= 'Dr';
+	} else {
+	    $res .= '-r';
+	}
+    }
+
+    ($handler, $info) = PVE::API2->find_handler('PUT', $path);
+    if (!($handler && $info)) {
+	$res .= '-';
+    } else {
+	$res .= 'w';
+    }
+
+    ($handler, $info) = PVE::API2->find_handler('POST', $path);
+    if (!($handler && $info)) {
+	$res .= '-';
+    } else {
+	$res .= 'c';
+    }
+
+    ($handler, $info) = PVE::API2->find_handler('DELETE', $path);
+    if (!($handler && $info)) {
+	$res .= '-';
+    } else {
+	$res .= 'd';
+    }
+
+    return $res;
+}
 
 # dynamically update schema definition
 # like: pvesh <get|set|create|delete|help> <path>
@@ -235,7 +274,6 @@ sub call_api_method {
     die "missing API path\n" if !defined($path);
 
     my $stdopts =  PVE::RESTHandler::extract_standard_output_properties($param);
-    PVE::CLIFormatter::query_terminal_options($stdopts);
 
     $opt_nooutput = 1 if $stdopts->{quiet};
 
@@ -261,6 +299,62 @@ sub call_api_method {
 
     PVE::CLIFormatter::print_api_result($data, $info->{returns}, undef, $stdopts);
 }
+
+__PACKAGE__->register_method ({
+    name => 'ls',
+    path => 'ls',
+    method => 'GET',
+    description => "List child objects on <api_path>.",
+    parameters => {
+	additionalProperties => 0,
+	properties => PVE::RESTHandler::add_standard_output_properties($path_properties),
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	my $path = PVE::Tools::extract_param($param, 'api_path');
+
+	my $stdopts =  PVE::RESTHandler::extract_standard_output_properties($param);
+
+	my $uri_param = {};
+	my ($handler, $info) = PVE::API2->find_handler('GET', $path, $uri_param);
+	if (!$handler || !$info) {
+	    die "no such resource '$path'\n";
+	}
+
+	my $link = PVE::JSONSchema::method_get_child_link($info);
+	die "resource '$path' does not define child links\n" if !$link;
+
+	my $res;
+
+	my ($node, $remip) = check_proxyto($info, $uri_param);
+	if ($node) {
+	    $res = proxy_handler($node, $remip, $path, 'ls', $param);
+	} else {
+	    foreach my $p (keys %$uri_param) {
+		$param->{$p} = $uri_param->{$p};
+	    }
+
+	    my $data = $handler->handle($info, $param);
+
+	    my $children = extract_children($link, $data);
+
+	    $res = [];
+	    foreach my $c (@$children) {
+		my $item = { name => $c, capabilities => resource_cap("$path/$c")};
+		push @$res, $item;
+	    }
+	}
+
+	my $schema = { type => 'array', items => { type => 'object' }};
+	$stdopts->{sort_key} = 'name';
+	$stdopts->{noborder} //= 1;
+	$stdopts->{noheader} //= 1;
+	PVE::CLIFormatter::print_api_result($res, $schema, ['capabilities', 'name'], $stdopts);
+
+	return undef;
+    }});
 
 __PACKAGE__->register_method ({
     name => 'get',
@@ -404,6 +498,7 @@ __PACKAGE__->register_method ({
 our $cmddef = {
     usage => [ __PACKAGE__, 'usage', ['api_path']],
     get => [ __PACKAGE__, 'get', ['api_path']],
+    ls => [ __PACKAGE__, 'ls', ['api_path']],
     set => [ __PACKAGE__, 'set', ['api_path']],
     create => [ __PACKAGE__, 'create', ['api_path']],
     delete => [ __PACKAGE__, 'delete', ['api_path']],
