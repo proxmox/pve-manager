@@ -5,12 +5,11 @@ export NOVIEW=1
 include /usr/share/pve-doc-generator/pve-doc-generator.mk
 
 SERVICES = pvestatd pveproxy pvedaemon spiceproxy
-CLITOOLS = vzdump pvesubscription pveceph pveam pvesr pvenode
+CLITOOLS = vzdump pvesubscription pveceph pveam pvesr pvenode pvesh
 
 SCRIPTS =  			\
 	${SERVICES}		\
 	${CLITOOLS}		\
-	pvesh			\
 	pvebanner		\
 	pveversion		\
 	pvemailforward.pl	\
@@ -26,7 +25,6 @@ CLI_MANS = 				\
 	pveversion.1			\
 	pveupgrade.1			\
 	pveperf.1			\
-	pvesh.1				\
 	pvereport.1			\
 
 
@@ -43,7 +41,6 @@ all: ${SERVICE_MANS} ${CLI_MANS} pvemailforward
 
 pveversion.1.pod: pveversion
 pveupgrade.1.pod: pveupgrade
-pvesh.1.pod: pvesh
 pvereport.1.pod: pvereport
 
 %.service-bash-completion:
