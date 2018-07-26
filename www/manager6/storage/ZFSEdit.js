@@ -88,6 +88,13 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		value: '',
 		fieldLabel: gettext('Host group'),
 		allowBlank: true
+	    },
+	    {
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
+		name: 'lio_tpg',
+		value: '',
+		fieldLabel: gettext('LIO target portal group'),
+		allowBlank: true
 	    }
 	];
 
