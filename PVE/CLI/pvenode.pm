@@ -145,8 +145,6 @@ our $cmddef = {
 	info => [ 'PVE::API2::Certificates', 'info', [], { node => $nodename }, sub {
 	    my ($res, $schema, $options) = @_;
 
-	    PVE::CLIFormatter::query_terminal_options($options);
-
 	    if (!$options->{'output-format'} || $options->{'output-format'} eq 'text') {
 		for my $cert (sort { $a->{filename} cmp $b->{filename} } @$res) {
 		    $print_cert_info->($schema->{items}, $cert, $options);
@@ -158,7 +156,6 @@ our $cmddef = {
 	}, $PVE::RESTHandler::standard_output_options],
 	set => [ 'PVE::API2::Certificates', 'upload_custom_cert', ['certificates', 'key'], { node => $nodename }, sub {
 	    my ($res, $schema, $options) = @_;
-	    PVE::CLIFormatter::query_terminal_options($options);
 	    $print_cert_info->($schema, $res, $options);
 	}, $PVE::RESTHandler::standard_output_options],
 	delete => [ 'PVE::API2::Certificates', 'remove_custom_cert', ['restart'], { node => $nodename } ],
@@ -172,12 +169,10 @@ our $cmddef = {
 		    $task->{status} = 'ERROR';
 		}
 	    }
-	    PVE::CLIFormatter::query_terminal_options($options);
 	    PVE::CLIFormatter::print_api_result($data, $schema, ['upid', 'type', 'id', 'user', 'starttime', 'endtime', 'status' ], $options);
 	}, $PVE::RESTHandler::standard_output_options],
 	status => [ 'PVE::API2::Tasks', 'read_task_status', [ 'upid' ], { node => $nodename }, sub {
 	    my ($data, $schema, $options) = @_;
-	    PVE::CLIFormatter::query_terminal_options($options);
 	    PVE::CLIFormatter::print_api_result($data, $schema, undef, $options);
 	}, $PVE::RESTHandler::standard_output_options],
 	# set limit to 1000000, so we see the whole log, not only the first 50 lines by default
@@ -201,7 +196,6 @@ our $cmddef = {
 	    deactivate => [ 'PVE::API2::ACMEAccount', 'deactivate_account', ['name'], {}, $upid_exit ],
 	    info => [ 'PVE::API2::ACMEAccount', 'get_account', ['name'], {}, sub {
 		my ($data, $schema, $options) = @_;
-		PVE::CLIFormatter::query_terminal_options($options);
 		PVE::CLIFormatter::print_api_result($data, $schema, undef, $options);
 	    }, $PVE::RESTHandler::standard_output_options],
 	    update => [ 'PVE::API2::ACMEAccount', 'update_account', ['name'], {}, $upid_exit ],
