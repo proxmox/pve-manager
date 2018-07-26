@@ -248,6 +248,7 @@ __PACKAGE__->register_method ({
 	    account => {
 		type => 'object',
 		optional => 1,
+		renderer => 'yaml',
 	    },
 	    directory => get_standard_option('pve-acme-directory-url', {
 		optional => 1,

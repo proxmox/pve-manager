@@ -128,29 +128,6 @@ my $print_cert_info = sub {
 	$cert, $schema, $order, { %$options, noheader => 1, sort_key => 0 });
 };
 
-my $print_acme_account = sub {
-    my ($account) = @_;
-
-    print "Directory URL: $account->{directory}\n" if $account->{directory};
-    print "Account URL: $account->{location}\n" if $account->{location};
-    print "Terms Of Service: $account->{tos}\n" if $account->{tos};
-
-    my $data = $account->{account};
-    if ($data) {
-	print "\nAccount information:\n";
-	print "ID: $data->{id}\n" if $data->{id};
-	if ($data->{contact}) {
-	    print "Contact:\n";
-	    for my $contact (@{$data->{contact}}) {
-		print "\t- $contact\n";
-	    }
-	}
-	print "Creation date: $data->{createdAt}\n" if $data->{createdAt};
-	print "Initial IP: $data->{initialIp}\n" if $data->{initialIp};
-	print "Status: $data->{status}\n" if $data->{status};
-    }
-};
-
 our $cmddef = {
     config => {
 	get => [ 'PVE::API2::NodeConfig', 'get_config', [], { node => $nodename }, sub {
@@ -222,7 +199,11 @@ our $cmddef = {
 	    }],
 	    register => [ __PACKAGE__, 'acme_register', ['name', 'contact'], {}, $upid_exit ],
 	    deactivate => [ 'PVE::API2::ACMEAccount', 'deactivate_account', ['name'], {}, $upid_exit ],
-	    info => [ 'PVE::API2::ACMEAccount', 'get_account', ['name'], {}, $print_acme_account],
+	    info => [ 'PVE::API2::ACMEAccount', 'get_account', ['name'], {}, sub {
+		my ($data, $schema, $options) = @_;
+		PVE::CLIFormatter::query_terminal_options($options);
+		PVE::CLIFormatter::print_api_result($data, $schema, undef, $options);
+	    }, $PVE::RESTHandler::standard_output_options],
 	    update => [ 'PVE::API2::ACMEAccount', 'update_account', ['name'], {}, $upid_exit ],
 	},
 	cert => {
