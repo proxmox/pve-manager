@@ -1,3 +1,23 @@
+pve-manager (5.2-7) unstable; urgency=medium
+
+  * pveproxy: add link to extjs for api-viewer
+
+  * pvesh: complete rewrite (removed interactive mode)
+
+  * pvenode: use print_api_result to print acme account information
+
+  * ui: permissions: allow to select root path '/' directly
+
+  * set resize to 'off' for the novnc popup
+
+  * improve xtermjs settings button behaviour
+
+  * nodeconfig acme-domain: allow domains starting with numbers
+
+  * Submit pool if non-empty in lxc CreateWizard
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 27 Jul 2018 11:47:05 +0200
+
 pve-manager (5.2-6) unstable; urgency=medium
 
   * add task list, log and status commands to the pvenode cli tool
