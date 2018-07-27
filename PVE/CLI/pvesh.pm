@@ -379,7 +379,7 @@ __PACKAGE__->register_method ({
     description => "Call API PUT on <api_path>.",
     parameters => {
 	additionalProperties => 0,
-	properties => $path_properties,
+	properties => PVE::RESTHandler::add_standard_output_properties($path_properties),
     },
     returns => { type => 'null' },
     code => sub {
@@ -397,7 +397,7 @@ __PACKAGE__->register_method ({
     description => "Call API POST on <api_path>.",
     parameters => {
 	additionalProperties => 0,
-	properties => $path_properties,
+	properties => PVE::RESTHandler::add_standard_output_properties($path_properties),
     },
     returns => { type => 'null' },
     code => sub {
@@ -415,7 +415,7 @@ __PACKAGE__->register_method ({
     description => "Call API DELETE on <api_path>.",
     parameters => {
 	additionalProperties => 0,
-	properties => $path_properties,
+	properties => PVE::RESTHandler::add_standard_output_properties($path_properties),
     },
     returns => { type => 'null' },
     code => sub {
