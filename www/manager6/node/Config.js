@@ -274,6 +274,13 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveLVMList'
 		},
 		{
+		    title: 'LVM-Thin',
+		    itemId: 'lvmthin',
+		    iconCls: 'fa fa-square-o',
+		    groups: ['storage'],
+		    xtype: 'pveLVMThinList'
+		},
+		{
 		    title: 'Ceph',
 		    itemId: 'ceph',
 		    iconCls: 'fa fa-ceph',
