@@ -30,6 +30,7 @@ JSSRC= 				                 	\
 	form/MemoryField.js				\
 	form/NetworkCardSelector.js			\
 	form/DiskFormatSelector.js			\
+	form/DiskSelector.js				\
 	form/BusTypeSelector.js				\
 	form/ControllerSelector.js			\
 	form/EmailNotificationSelector.js		\

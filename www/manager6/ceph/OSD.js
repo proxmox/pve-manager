@@ -1,78 +1,3 @@
-Ext.define('PVE.form.CephDiskSelector', {
-    extend: 'Proxmox.form.ComboGrid',
-    alias: ['widget.pveCephDiskSelector'],
-
-    diskType: 'journal_disks',
-
-    valueField: 'devpath',
-    displayField: 'devpath',
-    emptyText: gettext('No Disks unused'),
-    listConfig: {
-	columns: [
-	    {
-		header: gettext('Device'),
-		width: 80,
-		sortable: true,
-		dataIndex: 'devpath'
-	    },
-	    {
-		header: gettext('Size'),
-		width: 60,
-		sortable: false,
-		renderer: Proxmox.Utils.format_size,
-		dataIndex: 'size'
-	    },
-	    {
-		header: gettext('Serial'),
-		flex: 1,
-		sortable: true,
-		dataIndex: 'serial'
-	    }
-	]
-    },
-    initComponent: function() {
-	var me = this;
-
-	var nodename = me.nodename;
-	if (!nodename) {
-	    throw "no node name specified";
-	}
-
-	var store = Ext.create('Ext.data.Store', {
-	    filterOnLoad: true,
-	    model: 'ceph-disk-list',
-	    proxy: {
-                type: 'proxmox',
-                url: "/api2/json/nodes/" + nodename + "/ceph/disks",
-		extraParams: { type: me.diskType }
-	    },
-	    sorters: [
-		{
-		    property : 'devpath',
-		    direction: 'ASC'
-		}
-	    ]
-	});
-
-	Ext.apply(me, {
-	    store: store
-	});
-
-        me.callParent();
-
-	store.load();
-    }
-}, function() {
-
-    Ext.define('ceph-disk-list', {
-	extend: 'Ext.data.Model',
-	fields: [ 'devpath', 'used', { name: 'size', type: 'number'},
-		  {name: 'osdid', type: 'number'},
-		  'vendor', 'model', 'serial'],
-	idProperty: 'devpath'
-    });
-});
-
 Ext.define('PVE.CephCreateOsd', {
     extend: 'Proxmox.window.Edit',
     alias: ['widget.pveCephCreateOsd'],
@@ -97,7 +22,7 @@ Ext.define('PVE.CephCreateOsd', {
 	    method: 'POST',
 	    items: [
 		{
-		    xtype: 'pveCephDiskSelector',
+		    xtype: 'pveDiskSelector',
 		    name: 'dev',
 		    nodename: me.nodename,
 		    diskType: 'unused',
@@ -105,7 +30,7 @@ Ext.define('PVE.CephCreateOsd', {
 		    allowBlank: false
 		},
 		{
-		    xtype: 'pveCephDiskSelector',
+		    xtype: 'pveDiskSelector',
 		    name: 'journal_dev',
 		    nodename: me.nodename,
 		    diskType: 'journal_disks',
