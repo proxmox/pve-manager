@@ -880,7 +880,7 @@ Ext.define('PVE.Utils', { utilities: {
 		    Ext.Msg.alert('Error', response.htmlStatus);
 		},
 		success: function(response, opts) {
-		    var allowSpice = response.result.data.spice;
+		    var allowSpice = !!response.result.data.spice;
 		    PVE.Utils.openDefaultConsoleWindow(allowSpice, 'kvm', vmid, nodename, vmname);
 		}
 	    });
