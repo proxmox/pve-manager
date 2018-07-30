@@ -100,6 +100,7 @@ JSSRC= 				                 	\
 	node/Disks.js					\
 	node/LVM.js					\
 	node/LVMThin.js					\
+	node/Directory.js				\
 	node/StatusView.js				\
 	node/Summary.js					\
 	node/Subscription.js				\

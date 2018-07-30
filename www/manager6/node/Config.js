@@ -281,6 +281,13 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveLVMThinList'
 		},
 		{
+		    title: Proxmox.Utils.directoryText,
+		    itemId: 'directory',
+		    iconCls: 'fa fa-folder',
+		    groups: ['storage'],
+		    xtype: 'pveDirectoryList'
+		},
+		{
 		    title: 'Ceph',
 		    itemId: 'ceph',
 		    iconCls: 'fa fa-ceph',
