@@ -267,6 +267,13 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveNodeDiskList'
 		},
 		{
+		    title: 'LVM',
+		    itemId: 'lvm',
+		    iconCls: 'fa fa-square',
+		    groups: ['storage'],
+		    xtype: 'pveLVMList'
+		},
+		{
 		    title: 'Ceph',
 		    itemId: 'ceph',
 		    iconCls: 'fa fa-ceph',

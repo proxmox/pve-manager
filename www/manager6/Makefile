@@ -98,6 +98,7 @@ JSSRC= 				                 	\
 	ceph/StatusDetail.js				\
 	ceph/Config.js					\
 	node/Disks.js					\
+	node/LVM.js					\
 	node/StatusView.js				\
 	node/Summary.js					\
 	node/Subscription.js				\
