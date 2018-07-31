@@ -430,17 +430,12 @@ Ext.define('PVE.Utils', { utilities: {
 	rbd: {
 	    name: 'RBD',
 	    ipanel: 'RBDInputPanel',
-	    hideAdd: true,
-	    faIcon: 'building'
-	},
-	rbd_ext: {
-	    name: 'RBD (external)',
-	    ipanel: 'RBDInputPanel',
 	    faIcon: 'building'
 	},
 	pveceph: {
 	    name: 'RBD (PVE)',
-	    ipanel: 'PVERBDInputPanel',
+	    ipanel: 'RBDInputPanel',
+	    hideAdd: true,
 	    faIcon: 'building'
 	},
 	zfs: {
@@ -461,7 +456,7 @@ Ext.define('PVE.Utils', { utilities: {
 
     format_storage_type: function(value, md, record) {
 	if (value === 'rbd' && record) {
-	    value = (record.get('monhost')?'rbd_ext':'pveceph');
+	    value = (record.get('monhost') ? 'rbd' : 'pveceph');
 	}
 
 	var schema = PVE.Utils.storageSchema[value];

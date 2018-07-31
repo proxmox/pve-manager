@@ -1,5 +1,85 @@
+/*jslint confusion: true*/
 Ext.define('PVE.storage.RBDInputPanel', {
     extend: 'PVE.panel.StorageBase',
+
+    viewModel: {
+	parent: null,
+	data: {
+	    pveceph: true,
+	    pvecephPossible: true
+	}
+    },
+
+    controller: {
+	xclass: 'Ext.app.ViewController',
+	control: {
+	    '#': {
+		afterrender: 'queryMonitors'
+	    },
+	    'textfield[name=username]': {
+		disable: 'resetField'
+	    },
+	    'displayfield[name=monhost]': {
+		enable: 'queryMonitors'
+	    },
+	    'textfield[name=monhost]': {
+		disable: 'resetField',
+		enable: 'resetField'
+	    }
+	},
+	resetField: function(field) {
+	    field.reset();
+	},
+	queryMonitors: function(field, newVal, oldVal) {
+	    // we get called with two signatures, the above one for a field
+	    // change event and the afterrender from the view, this check only
+	    // can be true for the field change one and omit the API request if
+	    // pveceph got unchecked - as it's not needed there.
+	    if (field && !newVal && oldVal) {
+		return;
+	    }
+	    var view = this.getView();
+	    var vm = this.getViewModel();
+	    if (!(view.isCreate || vm.get('pveceph'))) {
+		return; // only query on create or if editing a pveceph store
+	    }
+
+	    var monhostField = this.lookupReference('monhost');
+
+	    Proxmox.Utils.API2Request({
+		url: '/api2/json/nodes/localhost/ceph/mon',
+		method: 'GET',
+		scope: this,
+		callback: function(options, success, response) {
+		    var data = response.result.data;
+		    if (response.status === 200) {
+			if (data.length > 0) {
+			    var monhost = Ext.Array.pluck(data, 'name').sort().join(',');
+			    monhostField.setValue(monhost);
+			    monhostField.resetOriginalValue();
+			    if (view.isCreate) {
+				vm.set('pvecephPossible', true);
+			    }
+			} else {
+			    vm.set('pveceph', false);
+			}
+		    } else {
+			vm.set('pveceph', false);
+			vm.set('pvecephPossible', false);
+		    }
+		}
+	    });
+	}
+    },
+
+    setValues: function(values) {
+	if (values.monhost) {
+	    this.viewModel.set('pveceph', false);
+	    this.lookupReference('pvecephRef').setValue(false);
+	    this.lookupReference('pvecephRef').resetOriginalValue();
+	}
+	this.callParent([values]);
+    },
 
     initComponent : function() {
 	var me = this;
@@ -9,48 +89,68 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	}
 	me.type = 'rbd';
 
-	me.column1 = [];
+	var getBinds = function (activeIfPVECeph, hide) {
+	    var bind = {
+		disabled: activeIfPVECeph ? '{!pveceph}' : '{pveceph}'
+	    };
 
-	if (me.pveceph) {
-	    me.column1.push(
-		{
-		    xtype: me.isCreate ? 'pveCephPoolSelector' : 'displayfield',
-		    nodename: me.nodename,
-		    name: 'pool',
-		    fieldLabel: gettext('Pool'),
-		    allowBlank: false
-		}
-	    );
-	} else {
-	    me.column1.push(
-		{
-		    xtype: me.isCreate ? 'textfield' : 'displayfield',
-		    name: 'pool',
-		    value: 'rbd',
-		    fieldLabel: gettext('Pool'),
-		    allowBlank: false
-		},
-		{
-		    xtype: me.isCreate ? 'textfield' : 'displayfield',
-		    name: 'monhost',
-		    vtype: 'HostList',
-		    value: '',
-		    fieldLabel: 'Monitor(s)',
-		    allowBlank: false
-		},
-		{
-		    xtype: me.isCreate ? 'textfield' : 'displayfield',
-		    name: 'username',
-		    value: me.isCreate ? 'admin': '',
-		    fieldLabel: gettext('User name'),
-		    allowBlank: true
-		}
-	    );
-	}
+	    // displayfield has no submitValue and bind mixin cannot handle that
+	    if (me.isCreate) {
+		bind.submitValue = activeIfPVECeph ? '{pveceph}' : '{!pveceph}';
+	    }
+	    if (hide) {
+		bind.hidden = activeIfPVECeph ? '{!pveceph}' : '{pveceph}';
+	    }
 
-	// here value is an array,
-	// while before it was a string
-	/*jslint confusion: true*/
+	    return bind;
+	};
+
+	me.column1 = [
+	    {
+		xtype: me.isCreate ? 'pveCephPoolSelector' : 'displayfield',
+		nodename: me.nodename,
+		name: 'pool',
+		bind: getBinds(true, true),
+		fieldLabel: gettext('Pool'),
+		allowBlank: false
+	    },
+	    {
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
+		name: 'pool',
+		value: 'rbd',
+		bind: getBinds(false, true),
+		fieldLabel: gettext('Pool'),
+		allowBlank: false
+	    },
+	    {
+		xtype: 'textfield',
+		name: 'monhost',
+		vtype: 'HostList',
+		bind: getBinds(false, true),
+		value: '',
+		fieldLabel: 'Monitor(s)',
+		allowBlank: false
+	    },
+	    {
+		xtype: 'displayfield',
+		reference: 'monhost',
+		bind: {
+		    disabled: '{!pveceph}',
+		    hidden: '{!pveceph}'
+		},
+		value: '',
+		fieldLabel: 'Monitor(s)'
+	    },
+	    {
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
+		name: 'username',
+		bind: me.isCreate ? getBinds(false) : {},
+		value: 'admin',
+		fieldLabel: gettext('User name'),
+		allowBlank: true
+	    }
+	];
+
 	me.column2 = [
 	    {
 		xtype: 'pveContentTypeSelector',
@@ -68,14 +168,22 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		fieldLabel: 'KRBD'
 	    }
 	];
-	/*jslint confusion: false*/
+
+	me.columnB = [{
+	    xtype: 'proxmoxcheckbox',
+	    name: 'pveceph',
+	    reference: 'pvecephRef',
+	    bind : {
+		disabled: '{!pvecephPossible}',
+		value: '{pveceph}'
+	    },
+	    checked: true,
+	    uncheckedValue: 0,
+	    submitValue: false,
+	    hidden: !me.isCreate,
+	    boxLabel: gettext('Use Proxmox VE managed hyper-converged ceph pool')
+	}];
 
 	me.callParent();
     }
-});
-
-Ext.define('PVE.storage.PVERBDInputPanel', {
-    extend: 'PVE.storage.RBDInputPanel',
-
-    pveceph: 1
 });

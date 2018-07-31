@@ -54,10 +54,6 @@ Ext.define('PVE.dc.StorageView', {
 	    var type = rec.data.type,
 	        sid = rec.data.storage;
 
-	    if (type === 'rbd' && !rec.data.monhost) {
-		type = 'pveceph';
-	    }
-
 	    me.createStorageEditWindow(type, sid);
 	};
 
