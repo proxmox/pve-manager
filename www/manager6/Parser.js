@@ -45,6 +45,49 @@ Ext.define('PVE.Parser', { statics: {
 	       value === 'true';
     },
 
+    parsePropertyString: function(value, defaultKey) {
+	var res = {},
+	errors = false;
+
+	Ext.Array.each(value.split(','), function(p) {
+	    var kv = p.split('=', 2);
+	    if (Ext.isDefined(kv[1])) {
+		res[kv[0]] = kv[1];
+	    } else if (Ext.isDefined(defaultKey)) {
+		if (Ext.isDefined(res[defaultKey])) {
+		    errors = true;
+		    return false; //break
+		}
+		res[defaultKey] = kv[0];
+	    } else {
+		errors = true;
+		return false; // break
+	    }
+	});
+
+	if (errors) {
+	    return;
+	}
+
+	return res;
+    },
+
+    printPropertyString: function(data, defaultKey) {
+	var stringparts = [];
+
+	Ext.Object.each(data, function(key, value) {
+	    var keystring = '' ;
+	    if (key === defaultKey) {
+		keystring = '';
+	    } else {
+		keystring = key + '=';
+	    }
+	    stringparts.push(keystring+value);
+	});
+
+	return stringparts.join(',');
+    },
+
     parseQemuNetwork: function(key, value) {
 	if (!(key && value)) {
 	    return;
