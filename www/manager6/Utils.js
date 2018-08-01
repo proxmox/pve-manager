@@ -175,6 +175,32 @@ Ext.define('PVE.Utils', { utilities: {
 	return fa.join(', ');
     },
 
+    render_qga_features: function(value) {
+	if (!value) {
+	    return Proxmox.Utils.defaultText + ' (' + Proxmox.Utils.disabledText  + ')';
+	}
+	var props = PVE.Parser.parsePropertyString(value, 'enabled');
+	if (!PVE.Parser.parseBoolean(props.enabled)) {
+	    return Proxmox.Utils.disabledText;
+	}
+
+	delete props.enabled;
+	var agentstring = Proxmox.Utils.enabledText;
+
+	Ext.Object.each(props, function(key, value) {
+	    var keystring = '' ;
+	    agentstring += ', ' + key + ': ';
+
+	    if (PVE.Parser.parseBoolean(value)) {
+		agentstring += Proxmox.Utils.enabledText;
+	    } else {
+		agentstring += Proxmox.Utils.disabledText;
+	    }
+	});
+
+	return agentstring;
+    },
+
     render_qemu_bios: function(value) {
 	if (!value) {
 	    return Proxmox.Utils.defaultText + ' (SeaBIOS)';

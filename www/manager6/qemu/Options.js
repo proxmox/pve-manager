@@ -266,17 +266,13 @@ Ext.define('PVE.qemu.Options', {
 	    agent: {
 		header: gettext('Qemu Agent'),
 		defaultValue: false,
-		renderer: Proxmox.Utils.format_boolean,
+		renderer: PVE.Utils.render_qga_features,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Qemu Agent'),
 		    items: {
-			xtype: 'proxmoxcheckbox',
-			name: 'agent',
-			uncheckedValue: 0,
-			defaultValue: 0,
-			deleteDefaultValue: true,
-			fieldLabel: gettext('Enabled')
+			xtype: 'pveAgentFeatureSelector',
+			name: 'agent'
 		    }
 		} : undefined
 	    },
