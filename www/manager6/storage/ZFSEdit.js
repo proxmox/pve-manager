@@ -115,6 +115,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		name: 'lio_tpg',
 		value: '',
 		bind: me.isCreate ? { disabled: '{!isLIO}' } : { hidden: '{!isLIO}' },
+		allowBlank: false,
 		fieldLabel: gettext('LIO target portal group')
 	    }
 	];
