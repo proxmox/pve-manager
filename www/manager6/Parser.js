@@ -47,7 +47,7 @@ Ext.define('PVE.Parser', { statics: {
 
     parsePropertyString: function(value, defaultKey) {
 	var res = {},
-	errors = false;
+	    error;
 
 	Ext.Array.each(value.split(','), function(p) {
 	    var kv = p.split('=', 2);
@@ -55,17 +55,18 @@ Ext.define('PVE.Parser', { statics: {
 		res[kv[0]] = kv[1];
 	    } else if (Ext.isDefined(defaultKey)) {
 		if (Ext.isDefined(res[defaultKey])) {
-		    errors = true;
-		    return false; //break
+		    error = 'defaultKey may be only defined once in propertyString';
+		    return false; // break
 		}
 		res[defaultKey] = kv[0];
 	    } else {
-		errors = true;
+		error = 'invalid propertyString, not a key=value pair and no defaultKey defined';
 		return false; // break
 	    }
 	});
 
-	if (errors) {
+	if (error !== undefined) {
+	    console.error(error);
 	    return;
 	}
 
