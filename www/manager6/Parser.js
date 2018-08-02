@@ -77,13 +77,11 @@ Ext.define('PVE.Parser', { statics: {
 	var stringparts = [];
 
 	Ext.Object.each(data, function(key, value) {
-	    var keystring = '' ;
-	    if (key === defaultKey) {
-		keystring = '';
+	    if (defaultKey !== undefined && key === defaultKey) {
+		stringparts.unshift(value);
 	    } else {
-		keystring = key + '=';
+		stringparts.push(key + '=' + value);
 	    }
-	    stringparts.push(keystring+value);
 	});
 
 	return stringparts.join(',');
