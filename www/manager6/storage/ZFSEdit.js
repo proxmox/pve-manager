@@ -1,5 +1,26 @@
+/*jslint confusion: true*/
 Ext.define('PVE.storage.ZFSInputPanel', {
     extend: 'PVE.panel.StorageBase',
+
+    viewModel: {
+	parent: null,
+	data: {
+	    isLIO: false
+	}
+    },
+
+    controller: {
+	xclass: 'Ext.app.ViewController',
+	control: {
+	    'field[name=iscsiprovider]': {
+		change: 'changeISCSIProvider'
+	    }
+	},
+	changeISCSIProvider: function(f, newVal, oldVal) {
+	    var vm = this.getViewModel();
+	    vm.set('isLIO', newVal === 'LIO');
+	}
+    },
 
     onGetValues: function(values) {
 	var me = this;
@@ -93,8 +114,8 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'lio_tpg',
 		value: '',
-		fieldLabel: gettext('LIO target portal group'),
-		allowBlank: true
+		bind: me.isCreate ? { disabled: '{!isLIO}' } : { hidden: '{!isLIO}' },
+		fieldLabel: gettext('LIO target portal group')
 	    }
 	];
 
