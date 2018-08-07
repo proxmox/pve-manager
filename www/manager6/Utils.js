@@ -122,6 +122,27 @@ Ext.define('PVE.Utils', { utilities: {
 	return state;
     },
 
+    render_zfs_health: function(value) {
+	var iconCls = 'question-circle';
+	switch (value) {
+	    case 'ONLINE':
+		iconCls = 'check-circle good';
+		break;
+	    case 'REMOVED':
+	    case 'DEGRADED':
+		iconCls = 'exclamation-circle warning';
+		break;
+	    case 'UNAVAIL':
+	    case 'FAULTED':
+	    case 'OFFLINE':
+		iconCls = 'times-circle critical';
+		break;
+	    default: //unknown
+	}
+
+	return '<i class="fa fa-' + iconCls + '"></i> ' + value;
+    },
+
     get_kvm_osinfo: function(value) {
 	var info = { base: 'Other' }; // default
 	if (value) {

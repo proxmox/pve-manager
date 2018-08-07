@@ -291,6 +291,14 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'pveDirectoryList'
 		},
 		{
+		    title: 'ZFS',
+		    itemId: 'zfs',
+		    onlineHelp: 'chapter_zfs',
+		    iconCls: 'fa fa-th-large',
+		    groups: ['storage'],
+		    xtype: 'pveZFSList'
+		},
+		{
 		    title: 'Ceph',
 		    itemId: 'ceph',
 		    iconCls: 'fa fa-ceph',
