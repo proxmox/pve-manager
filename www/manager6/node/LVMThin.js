@@ -6,7 +6,7 @@ Ext.define('PVE.node.CreateLVMThin', {
 
     showProgress: true,
 
-    onlineHelp: 'chapter_storage',
+    onlineHelp: 'chapter_lvm',
 
     initComponent : function() {
         var me = this;

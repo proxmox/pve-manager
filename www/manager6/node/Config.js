@@ -269,6 +269,7 @@ Ext.define('PVE.node.Config', {
 		{
 		    title: 'LVM',
 		    itemId: 'lvm',
+		    onlineHelp: 'chapter_lvm',
 		    iconCls: 'fa fa-square',
 		    groups: ['storage'],
 		    xtype: 'pveLVMList'
@@ -276,6 +277,7 @@ Ext.define('PVE.node.Config', {
 		{
 		    title: 'LVM-Thin',
 		    itemId: 'lvmthin',
+		    onlineHelp: 'chapter_lvm',
 		    iconCls: 'fa fa-square-o',
 		    groups: ['storage'],
 		    xtype: 'pveLVMThinList'
@@ -283,6 +285,7 @@ Ext.define('PVE.node.Config', {
 		{
 		    title: Proxmox.Utils.directoryText,
 		    itemId: 'directory',
+		    onlineHelp: 'chapter_storage',
 		    iconCls: 'fa fa-folder',
 		    groups: ['storage'],
 		    xtype: 'pveDirectoryList'
