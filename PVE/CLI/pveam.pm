@@ -36,6 +36,7 @@ __PACKAGE__->register_method ({
     description => "Update Container Template Database.",
     parameters => {
 	additionalProperties => 0,
+	properties => {},
     },
     returns => { type => 'null'},
     code => sub {
