@@ -69,8 +69,9 @@ Ext.define('PVE.node.CreateZFS', {
 			    xtype: 'proxmoxKVComboBox',
 			    fieldLabel: gettext('RAID Level'),
 			    name: 'raidlevel',
-			    value: 'mirror',
+			    value: 'single',
 			    comboItems: [
+				['single', gettext('Single Disk')],
 				['mirror', 'Mirror'],
 				['raid10', 'RAID10'],
 				['raidz', 'RAIDZ'],
