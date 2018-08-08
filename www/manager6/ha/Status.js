@@ -3,8 +3,10 @@ Ext.define('PVE.ha.Status', {
     alias: 'widget.pveHAStatus',
 
     onlineHelp: 'chapter_ha_manager',
-
-    scrollable: true,
+    layout: {
+	type: 'vbox',
+	align: 'stretch'
+    },
 
     initComponent: function() {
 	var me = this;
@@ -25,9 +27,12 @@ Ext.define('PVE.ha.Status', {
 	    title: gettext('Status'),
 	    rstore: me.rstore,
 	    border: 0,
+	    collapsible: true,
 	    padding: '0 0 20 0'
 	},{
 	    xtype: 'pveHAResourcesView',
+	    flex: 1,
+	    collapsible: true,
 	    title: gettext('Resources'),
 	    border: 0,
 	    rstore: me.rstore
