@@ -5,7 +5,9 @@ Ext.define('PVE.storage.ZFSInputPanel', {
     viewModel: {
 	parent: null,
 	data: {
-	    isLIO: false
+	    isLIO: false,
+	    isComstar: true,
+	    hasWriteCacheOption: true
 	}
     },
 
@@ -19,6 +21,8 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	changeISCSIProvider: function(f, newVal, oldVal) {
 	    var vm = this.getViewModel();
 	    vm.set('isLIO', newVal === 'LIO');
+	    vm.set('isComstar', newVal === 'comstar');
+	    vm.set('hasWriteCacheOption', newVal === 'comstar' || newVal === 'istgt');
 	}
     },
 
@@ -77,6 +81,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		name: 'comstar_tg',
 		value: '',
 		fieldLabel: gettext('Target group'),
+		bind: me.isCreate ? { disabled: '{!isComstar}' } : { hidden: '{!isComstar}' },
 		allowBlank: true
 	    }
 	];
@@ -100,6 +105,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		xtype: 'proxmoxcheckbox',
 		name: 'writecache',
 		checked: true,
+		bind: me.isCreate ? { disabled: '{!hasWriteCacheOption}' } : { hidden: '{!hasWriteCacheOption}' },
 		uncheckedValue: 0,
 		fieldLabel: gettext('Write cache')
 	    },
@@ -107,6 +113,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'comstar_hg',
 		value: '',
+		bind: me.isCreate ? { disabled: '{!isComstar}' } : { hidden: '{!isComstar}' },
 		fieldLabel: gettext('Host group'),
 		allowBlank: true
 	    },
@@ -116,7 +123,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		value: '',
 		bind: me.isCreate ? { disabled: '{!isLIO}' } : { hidden: '{!isLIO}' },
 		allowBlank: false,
-		fieldLabel: gettext('LIO target portal group')
+		fieldLabel: gettext('Target portal group')
 	    }
 	];
 
