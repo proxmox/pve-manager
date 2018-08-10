@@ -1765,7 +1765,12 @@ __PACKAGE__->register_method ({
 	my $nodename = $param->{node};
 	$nodename = PVE::INotify::nodename() if $nodename eq 'localhost';
 
-        my $target = $param->{target};
+	my $target = $param->{target};
+	raise_param_exc({ target => "target is local node."}) if $target eq $nodename;
+
+	PVE::Cluster::check_cfs_quorum();
+
+	PVE::Cluster::check_node_exists($target);
 
 	my $datacenterconfig = cfs_read_file('datacenter.cfg');
 	# prefer parameter over datacenter cfg settings
