@@ -164,7 +164,7 @@ Ext.define('PVE.window.LoginWindow', {
 	    {
 		xtype: 'proxmoxLanguageSelector',
 		fieldLabel: gettext('Language'),
-		value: Ext.util.Cookies.get('PVELangCookie') || 'en',
+		value: Ext.util.Cookies.get('PVELangCookie') || Proxmox.defaultLang || 'en',
 		name: 'lang',
 		reference: 'langField',
 		submitValue: false

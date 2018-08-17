@@ -26,6 +26,7 @@
     <script type="text/javascript">
     Proxmox = {
 	Setup: { auth_cookie_name: 'PVEAuthCookie' },
+	defaultLang: '[% lang %]',
 	UserName: '[% username %]',
 	CSRFPreventionToken: '[% token %]'
     };

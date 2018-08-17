@@ -10,6 +10,7 @@ use Encode;
 use URI;
 use URI::QueryParam;
 use Data::Dumper;
+use PVE::Cluster;
 use PVE::API2Tools;
 use PVE::API2;
 use PVE::APIServer::Formatter;
@@ -176,7 +177,7 @@ sub is_phone {
 sub get_index {
     my ($nodename, $server, $r, $args) = @_;
 
-    my $lang = 'en';
+    my $lang;
     my $username;
     my $token = 'null';
 
@@ -190,6 +191,11 @@ sub get_index {
 	if (($username = PVE::AccessControl::verify_ticket($ticket, 1))) {
 	    $token = PVE::AccessControl::assemble_csrf_prevention_token($username);
 	}
+    }
+
+    if (!$lang) {
+	my $dc_conf = PVE::Cluster::cfs_read_file('datacenter.cfg');
+	$lang = $dc_conf->{language} // 'en';
     }
 
     $username = '' if !$username;
