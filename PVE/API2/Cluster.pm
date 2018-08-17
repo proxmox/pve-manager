@@ -179,7 +179,7 @@ __PACKAGE__->register_method({
 		type => {
 		    description => "Resource type.",
 		    type => 'string',
-		    enum => ['node', 'storage', 'pool', 'qemu', 'lxc'],
+		    enum => ['node', 'storage', 'pool', 'qemu', 'lxc', 'openvz'],
 		},
 		status => {
 		    description => "Resource type dependent status.",
@@ -207,7 +207,7 @@ __PACKAGE__->register_method({
 		},
 		maxcpu => {
 		    description => "Number of available CPUs (when type in node,qemu,lxc).",
-		    type => 'integer',
+		    type => 'number',
 		    optional => 1,
 		},
 		mem => {
