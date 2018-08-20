@@ -1,3 +1,25 @@
+pve-manager (5.2-8) unstable; urgency=medium
+
+  * fix doubleclick on VM with spice console
+
+  * ui: storage: combine RBD external and hyperconverged add dialog
+
+  * add LVM, LVMThin, directory based storage and ZFS management GUI
+
+  * ui: storage: Linux LIO/targetcli support
+
+  * fix #1837: reorganize HA panel
+
+  * fix #1828: check if targetnode exists before starting mass migration
+
+  * ui: ZFS over iSCSI: allow only relevant inputs
+
+  * fix #1393: use language from datacenter.cfg as default for GUI
+
+  * fix #1872: always close VM disk move panel after its taskviewer got closed
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 20 Aug 2018 15:11:06 +0200
+
 pve-manager (5.2-7) unstable; urgency=medium
 
   * pveproxy: add link to extjs for api-viewer
