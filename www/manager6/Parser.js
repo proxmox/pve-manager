@@ -420,7 +420,7 @@ Ext.define('PVE.Parser', { statics: {
 	    if (!p || p.match(/^\s*$/)) {
 		return; // continue
 	    }
-	    var match_res = p.match(/^([a-z_]+)=(\S+)$/);
+	    var match_res = p.match(/^([a-z_]+)=(.+)$/);
 	    if (!match_res) {
 		if (!p.match(/\=/)) {
 		    res.file = p;
