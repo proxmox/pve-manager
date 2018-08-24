@@ -14,7 +14,10 @@ Ext.define('PVE.qemu.HardwareView', {
 	if (rowdef.tdCls) {
 	    metaData.tdCls = rowdef.tdCls;
 	    if (rowdef.tdCls == 'pve-itype-icon-storage') { 
-		var value = me.getObjectValue(key, '', true);
+		var value = me.getObjectValue(key, '', false);
+		if (value === '') {
+		    value = me.getObjectValue(key, '', true);
+		}
 		if (value.match(/vm-.*-cloudinit/)) {
 		    metaData.tdCls = 'pve-itype-icon-cloud';
 		    return rowdef.cloudheader;
