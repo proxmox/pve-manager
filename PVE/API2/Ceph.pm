@@ -207,7 +207,7 @@ __PACKAGE__->register_method ({
 	    fstype => {
 		description => "File system type (filestore only).",
 		type => 'string',
-		enum => ['xfs', 'ext4', 'btrfs'],
+		enum => ['xfs', 'ext4'],
 		default => 'xfs',
 		optional => 1,
 	    },
