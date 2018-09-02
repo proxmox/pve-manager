@@ -31,6 +31,7 @@ Ext.define('PVE.form.CPUModelSelector', {
 	['Opteron_G3', 'Opteron_G3'],
 	['Opteron_G4', 'Opteron_G4'],
 	['Opteron_G5', 'Opteron_G5'],
+	['EPYC', 'EPYC'],
 	['host', 'host']
 
     ]
