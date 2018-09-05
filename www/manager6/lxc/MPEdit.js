@@ -27,17 +27,17 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	var confid = me.confid || values.mpsel;
+	var confid = me.confid || "mp"+values.mpid;
 	values.file = me.down('field[name=file]').getValue();
 
 	if (me.unused) {
-	    confid = values.mpsel;
+	    confid = "mp"+values.mpid;
 	} else if (me.isCreate) {
 	    values.file = values.hdstorage + ':' + values.disksize;
 	}
 
 	// delete unnecessary fields
-	delete values.mpsel;
+	delete values.mpid;
 	delete values.hdstorage;
 	delete values.disksize;
 	delete values.diskformat;
@@ -65,7 +65,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	PVE.Utils.forEachMP(function(bus, i) {
 	    var name = "mp" + i.toString();
 	    if (!Ext.isDefined(vmconfig[name])) {
-		me.down('field[name=mpsel]').setValue(name);
+		me.down('field[name=mpid]').setValue(i);
 		return false;
 	    }
 	});
@@ -83,7 +83,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	xclass: 'Ext.app.ViewController',
 
 	control: {
-	    'field[name=mpsel]': {
+	    'field[name=mpid]': {
 		change: function(field, value) {
 		    field.validate();
 		}
@@ -154,10 +154,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 
     column1: [
 	{
-	    xtype: 'proxmoxKVComboBox',
-	    name: 'mpsel',
-	    fieldLabel: gettext('Mount Point'),
-	    matchFieldWidth: false,
+	    xtype: 'proxmoxintegerfield',
+	    name: 'mpid',
+	    fieldLabel: gettext('Mount Point ID'),
+	    minValue: 0,
+	    maxValue: PVE.Utils.mp_counts.mps - 1,
 	    hidden: true,
 	    allowBlank: false,
 	    disabled: true,
@@ -165,20 +166,12 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		hidden: '{hasMP}',
 		disabled: '{hasMP}'
 	    },
-	    comboItems: (function(){
-		var mps = [];
-		PVE.Utils.forEachMP(function(bus,i) {
-		    var name = 'mp' + i.toString();
-		    mps.push([name,name]);
-		});
-		return mps;
-	    }()),
 	    validator: function(value) {
 		var me = this.up('inputpanel');
 		if (!me.rendered) {
 		    return;
 		}
-		if (Ext.isDefined(me.vmconfig[value])) {
+		if (Ext.isDefined(me.vmconfig["mp"+value])) {
 		    return "Mount point is already in use.";
 		}
 		/*jslint confusion: true*/
