@@ -1042,7 +1042,7 @@ Ext.define('PVE.Utils', { utilities: {
 	}
     },
 
-    mp_counts: { mps: 10, unused: 10 },
+    mp_counts: { mps: 256, unused: 256 },
 
     forEachMP: function(func, includeUnused) {
 	var i, cont;
