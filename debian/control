@@ -1,8 +1,11 @@
 Source: pve-manager
 Section: admin
 Priority: optional
-Build-Depends: liblocale-po-perl,
-               pve-doc-generator (>= 5.2-1),
+Build-Depends: libfile-readbackwards-perl,
+               liblocale-po-perl,
+               libpve-http-server-perl,
+               libtemplate-perl,
+               pve-doc-generator (>= 5.2-6),
 Maintainer: Proxmox Support Team <support@proxmox.com>
 
 Package: pve-manager
