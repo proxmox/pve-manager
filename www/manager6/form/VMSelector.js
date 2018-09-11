@@ -98,7 +98,7 @@ Ext.define('PVE.form.VMSelector', {
 
     selModel: {
 	selType: 'checkboxmodel',
-	checkOnly: true
+	mode: 'SIMPLE'
     },
 
     checkChangeEvents: [
