@@ -186,6 +186,7 @@ __PACKAGE__->register_method ({
 	    { name => 'firewall' },
 	    { name => 'certificates' },
 	    { name => 'config' },
+	    { name => 'hosts' },
 	    ];
 
 	return $result;
@@ -1813,6 +1814,78 @@ __PACKAGE__->register_method ({
 
 	return $rpcenv->fork_worker('migrateall', undef, $authuser, $code);
 
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'get_etc_hosts',
+    path => 'hosts',
+    method => 'GET',
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit' ]],
+    },
+    description => "Get the content of /etc/hosts.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'object',
+	properties => {
+	    digest => get_standard_option('pve-config-digest'),
+	    data => {
+		type => 'string',
+		description => 'The content of /etc/hosts.'
+	    },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	return PVE::INotify::read_file('etchosts');
+
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'write_etc_hosts',
+    path => 'hosts',
+    method => 'POST',
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
+    description => "Write /etc/hosts.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    digest => get_standard_option('pve-config-digest'),
+	    data => {
+		type => 'string',
+		description =>  'The target content of /etc/hosts.'
+	    },
+	},
+    },
+    returns => {
+	type => 'null',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::Tools::lock_file('/var/lock/pve-etchosts.lck', undef, sub{
+	    if ($param->{digest}) {
+		my $hosts = PVE::INotify::read_file('etchosts');
+		PVE::Tools::assert_if_modified($hosts->{digest}, $param->{digest});
+	    }
+	    PVE::INotify::write_file('etchosts', $param->{data});
+	});
+	die $@ if $@;
+
+	return undef;
     }});
 
 # bash completion helper
