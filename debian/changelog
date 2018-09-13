@@ -1,3 +1,19 @@
+pve-manager (5.2-9) unstable; urgency=medium
+
+  * gui: allow whitespace in mountpoint paths
+
+  * fix #1884: vm/hardware: ensure correct value on pending changes
+
+  * pveceph: remove btrfs as fstype for new OSDs
+
+  * qemu: CPU selector: add EPYC
+
+  * fix #1897: bump max number of mountpoints to 256
+
+  * fix checkbox selection for guest selector used by bulk actions
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 13 Sep 2018 11:42:38 +0200
+
 pve-manager (5.2-8) unstable; urgency=medium
 
   * fix doubleclick on VM with spice console
