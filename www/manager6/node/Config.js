@@ -192,6 +192,15 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'proxmoxNodeDNSView'
 		},
 		{
+		    title: gettext('Hosts'),
+		    iconCls: 'fa fa-globe',
+		    groups: ['services'],
+		    itemId: 'hosts',
+		    nodename: nodename,
+		    onlineHelp: 'sysadmin_network_configuration',
+		    xtype: 'proxmoxNodeHostsView'
+		},
+		{
 		    title: gettext('Time'),
 		    itemId: 'time',
 		    groups: ['services'],
