@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Net::IP qw(:PROC);
-use PVE::Tools qw(extract_param);
+use PVE::Tools qw(extract_param dir_glob_regex);
 use PVE::SafeSyslog;
 use PVE::INotify;
 use PVE::Exception qw(raise_param_exc);
@@ -468,6 +468,156 @@ __PACKAGE__->register_method({
 	    if !$ifaces->{$param->{iface}};
 
 	return $ifaces->{$param->{iface}};
+   }});
+
+__PACKAGE__->register_method({
+    name => 'reload_network_config',
+    path => '',
+    method => 'PUT',
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
+    description => "Reload network configuration",
+    protected => 1,
+    proxyto => 'node',
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => { type => 'string' },
+    code => sub {
+
+	my ($param) = @_;
+
+        my $rpcenv = PVE::RPCEnvironment::get();
+
+        my $authuser = $rpcenv->get_user();
+
+	my $current_config_file = "/etc/network/interfaces";
+	my $new_config_file = "/etc/network/interfaces.new";
+
+	raise_param_exc({ config => "you need ifupdown2 to reload networking" }) if !-e '/usr/share/ifupdown2';
+	raise_param_exc({ config => "no new network config to apply" }) if !-e $new_config_file;
+
+	#clean-me
+	my $fh = IO::File->new("<$current_config_file");
+	my $running_config = PVE::INotify::read_etc_network_interfaces(1,$fh);
+	$fh->close();
+
+	#clean-me
+	$fh = IO::File->new("<$new_config_file");
+	my $new_config = PVE::INotify::read_etc_network_interfaces(1,$fh);
+	$fh->close();
+
+	my $ovs_changes = undef;
+	my $bridges_delete = {};
+	my $running_ifaces = $running_config->{ifaces};
+	my $new_ifaces = $new_config->{ifaces};
+
+	foreach my $iface (keys %$running_ifaces) {
+	    my $running_iface = $running_ifaces->{$iface};
+	    my $type = $running_iface->{type};
+	    my $new_iface = $new_ifaces->{$iface};
+	    my $new_type = $new_iface->{type};
+
+	    $bridges_delete->{$iface} = 1 if !defined($new_iface) && $type eq 'bridge';
+	    if ($type =~ m/^OVS/) {
+		#deleted ovs
+		$ovs_changes = 1 if !defined($new_iface);
+		#change ovs type to new type
+		$ovs_changes = 1 if $new_type ne $type;
+		#deleted or changed option
+		foreach my $iface_option (keys %$running_iface) {
+		    if (!defined($new_iface->{$iface_option}) || ($running_iface->{$iface_option} ne $new_iface->{$iface_option})) {
+			$ovs_changes = 1;
+		    }
+		}
+	    } else {
+		#change type to ovs
+		$ovs_changes = 1 if $new_type =~ m/^OVS/;
+	    }
+	}
+
+	foreach my $iface (keys %$new_ifaces) {
+	    my $new_iface = $new_ifaces->{$iface};
+	    my $new_type = $new_iface->{type};
+	    my $running_iface = $running_ifaces->{$iface};
+	    my $type = $running_iface->{type};
+
+	    if ($new_type =~ m/^OVS/) {
+		#new ovs
+		$ovs_changes = 1 if !defined($running_iface);
+		#new option
+		foreach my $iface_option (keys %$new_iface) {
+		    if (!defined($running_iface->{$iface_option})) {
+			$ovs_changes = 1;
+		    }
+		}
+	    }
+	}
+
+	raise_param_exc({ config => "reloading config with ovs changes is not possible currently\n" })
+	    if $ovs_changes;
+
+	foreach my $bridge (keys %$bridges_delete) {
+
+	    my (undef, $interface) = dir_glob_regex("/sys/class/net/$bridge/brif", '(tap|veth|fwpr).*');
+	    raise_param_exc({ config => "bridge deletion is not possible currently if vm or ct are running on this bridge\n" })
+		if defined($interface);
+	}
+
+	my $worker = sub {
+
+	    PVE::Tools::file_copy($new_config_file, $current_config_file);
+	    my $new_config = PVE::INotify::read_file('interfaces');
+
+	    my $cmd = ['ifreload', '-a'];
+	    my $ifaces_errors = {};
+	    my $ifaces_errors_final = {};
+
+	    my $err = sub {
+		my $line = shift;
+		if ($line =~ /(warning|error): (\S+):/) {
+		    $ifaces_errors->{$2} = 1;
+		    print "$2 : error reloading configuration online : try to ifdown/ifdown later : $line \n";
+		}
+	    };
+
+	    PVE::Tools::run_command($cmd,errfunc => $err);
+
+	    my $err2 = sub {
+		my $line = shift;
+		if ($line =~ /(warning|error): (\S+):/) {
+		    $ifaces_errors_final->{$2} = 1;
+		    print "$2 : error restart: $line \n";
+		}
+	    };
+
+	    #try ifdown/up for non online change options
+	    foreach my $iface (keys %$ifaces_errors) {
+		eval { PVE::Tools::run_command(['ifdown',$iface]) };
+		PVE::Tools::run_command(['ifup',$iface],errfunc => $err2);
+	    }
+
+	    #if we still have error, recopy old config of failed interfaces in running config
+	    #and keep new interface config to try to apply it later
+	    if(keys %$ifaces_errors_final > 0 ) {
+		foreach my $iface (keys %$ifaces_errors_final) {
+		    print "error: $iface config has not been applied\n";
+		    delete $new_config->{ifaces}->{$iface};
+		    $new_config->{ifaces}->{$iface} = $running_config->{ifaces}->{$iface};
+		}
+		#clean-me
+		my $fh = IO::File->new(">$current_config_file");
+		PVE::INotify::write_etc_network_interfaces(1, $fh, $new_config);
+		$fh->close();
+	     } else {
+		unlink $new_config_file;
+	     }
+	};
+	return $rpcenv->fork_worker('srvreload', 'networking', $authuser, $worker);
    }});
 
 __PACKAGE__->register_method({
