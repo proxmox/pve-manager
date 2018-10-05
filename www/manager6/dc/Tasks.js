@@ -14,7 +14,7 @@ Ext.define('PVE.dc.Tasks', {
 	    storeid: 'pve-cluster-tasks',
 	    model: 'proxmox-tasks',
 	    proxy: {
-                type: 'proxmox',
+		type: 'proxmox',
 		url: '/api2/json/cluster/tasks'
 	    }
 	});
