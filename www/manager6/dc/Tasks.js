@@ -56,7 +56,7 @@ Ext.define('PVE.dc.Tasks', {
 	    viewConfig: {
 		trackOver: false,
 		stripeRows: true, // does not work with getRowClass()
- 
+
 		getRowClass: function(record, index) {
 		    var status = record.get('status');
 
@@ -67,21 +67,21 @@ Ext.define('PVE.dc.Tasks', {
 	    },
 	    sortableColumns: false,
 	    columns: [
-		{ 
-		    header: gettext("Start Time"), 
+		{
+		    header: gettext("Start Time"),
 		    dataIndex: 'starttime',
 		    width: 150,
-		    renderer: function(value) { 
-			return Ext.Date.format(value, "M d H:i:s"); 
+		    renderer: function(value) {
+			return Ext.Date.format(value, "M d H:i:s");
 		    }
 		},
-		{ 
-		    header: gettext("End Time"), 
+		{
+		    header: gettext("End Time"),
 		    dataIndex: 'endtime',
 		    width: 150,
 		    renderer: function(value, metaData, record) {
 			if (record.data.pid) {
-			    if (record.data.type == "vncproxy" || 
+			    if (record.data.type == "vncproxy" ||
 				record.data.type == "vncshell" ||
 				record.data.type == "spiceproxy") {
 				metaData.tdCls =  "x-grid-row-console";
@@ -90,30 +90,30 @@ Ext.define('PVE.dc.Tasks', {
 			    }
 			    return "";
 			}
-			return Ext.Date.format(value, "M d H:i:s"); 
+			return Ext.Date.format(value, "M d H:i:s");
 		    }
 		},
-		{ 
-		    header: gettext("Node"), 
+		{
+		    header: gettext("Node"),
 		    dataIndex: 'node',
 		    width: 100
 		},
-		{ 
-		    header: gettext("User name"), 
+		{
+		    header: gettext("User name"),
 		    dataIndex: 'user',
 		    width: 150
 		},
-		{ 
-		    header: gettext("Description"), 
-		    dataIndex: 'upid', 
-		    flex: 1,		  
+		{
+		    header: gettext("Description"),
+		    dataIndex: 'upid',
+		    flex: 1,
 		    renderer: Proxmox.Utils.render_upid
 		},
-		{ 
-		    header: gettext("Status"), 
-		    dataIndex: 'status', 
+		{
+		    header: gettext("Status"),
+		    dataIndex: 'status',
 		    width: 200,
-		    renderer: function(value, metaData, record) { 
+		    renderer: function(value, metaData, record) {
 			if (record.data.pid) {
 			    if (record.data.type != "vncproxy") {
 				metaData.tdCls =  "x-grid-row-loading";
@@ -123,7 +123,7 @@ Ext.define('PVE.dc.Tasks', {
 			if (value == 'OK') {
 			    return 'OK';
 			}
-			// metaData.attr = 'style="color:red;"'; 
+			// metaData.attr = 'style="color:red;"';
 			return Proxmox.Utils.errorText + ': ' + value;
 		    }
 		}
