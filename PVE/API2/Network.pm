@@ -498,8 +498,8 @@ __PACKAGE__->register_method({
 	my $current_config_file = "/etc/network/interfaces";
 	my $new_config_file = "/etc/network/interfaces.new";
 
-	raise_param_exc({ config => "you need ifupdown2 to reload networking" }) if !-e '/usr/share/ifupdown2';
-	raise_param_exc({ config => "no new network config to apply" }) if !-e $new_config_file;
+	die "you need ifupdown2 to reload networking\n" if !-e '/usr/share/ifupdown2';
+	die "no new network config to apply\n" if !-e $new_config_file;
 
 	#clean-me
 	my $fh = IO::File->new("<$current_config_file");
@@ -558,13 +558,13 @@ __PACKAGE__->register_method({
 	    }
 	}
 
-	raise_param_exc({ config => "reloading config with ovs changes is not possible currently\n" })
+	die "reloading config with ovs changes is not possible currently\n"
 	    if $ovs_changes;
 
 	foreach my $bridge (keys %$bridges_delete) {
 
 	    my (undef, $interface) = dir_glob_regex("/sys/class/net/$bridge/brif", '(tap|veth|fwpr).*');
-	    raise_param_exc({ config => "bridge deletion is not possible currently if vm or ct are running on this bridge\n" })
+	    die "bridge deletion is not possible currently if vm or ct are running on this bridge\n"
 		if defined($interface);
 	}
 
