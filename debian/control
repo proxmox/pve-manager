@@ -1,11 +1,20 @@
 Source: pve-manager
 Section: admin
 Priority: optional
-Build-Depends: libfile-readbackwards-perl,
+Build-Depends: debhelper (>= 9~),
+               libfile-readbackwards-perl,
+               libhttp-daemon-perl,
                liblocale-po-perl,
+               libpve-guest-common-perl,
                libpve-http-server-perl,
+               libpve-storage-perl,
                libtemplate-perl,
+               libtest-mockmodule-perl,
+               pve-cluster,
+               pve-container,
                pve-doc-generator (>= 5.2-6),
+               qemu-server,
+               unzip,
 Maintainer: Proxmox Support Team <support@proxmox.com>
 
 Package: pve-manager
