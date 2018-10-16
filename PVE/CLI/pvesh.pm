@@ -263,6 +263,21 @@ $path_properties->{noproxy} = {
     optional => 1,
 };
 
+my $extract_std_options = 1;
+
+my $cond_add_standard_output_properties = sub {
+    my ($props) = @_;
+
+    foreach my $opt (keys %$PVE::RESTHandler::standard_output_options) {
+	if (defined($props->{$opt})) {
+	    $extract_std_options = 0;
+	    return $props;
+	}
+    }
+
+    return PVE::RESTHandler::add_standard_output_properties($props);
+};
+
 sub call_api_method {
     my ($cmd, $param) = @_;
 
@@ -271,7 +286,8 @@ sub call_api_method {
     my $path = PVE::Tools::extract_param($param, 'api_path');
     die "missing API path\n" if !defined($path);
 
-    my $stdopts =  PVE::RESTHandler::extract_standard_output_properties($param);
+    my $stdopts =  $extract_std_options ?
+	PVE::RESTHandler::extract_standard_output_properties($param) : {};
 
     $opt_nooutput = 1 if $stdopts->{quiet};
 
@@ -305,7 +321,7 @@ __PACKAGE__->register_method ({
     description => "List child objects on <api_path>.",
     parameters => {
 	additionalProperties => 0,
-	properties => PVE::RESTHandler::add_standard_output_properties($path_properties),
+	properties => $cond_add_standard_output_properties->($path_properties),
     },
     returns => { type => 'null' },
     code => sub {
@@ -361,7 +377,7 @@ __PACKAGE__->register_method ({
     description => "Call API GET on <api_path>.",
     parameters => {
 	additionalProperties => 0,
-	properties => PVE::RESTHandler::add_standard_output_properties($path_properties),
+	properties => $cond_add_standard_output_properties->($path_properties),
     },
     returns => { type => 'null' },
     code => sub {
@@ -379,7 +395,7 @@ __PACKAGE__->register_method ({
     description => "Call API PUT on <api_path>.",
     parameters => {
 	additionalProperties => 0,
-	properties => PVE::RESTHandler::add_standard_output_properties($path_properties),
+	properties => $cond_add_standard_output_properties->($path_properties),
     },
     returns => { type => 'null' },
     code => sub {
@@ -397,7 +413,7 @@ __PACKAGE__->register_method ({
     description => "Call API POST on <api_path>.",
     parameters => {
 	additionalProperties => 0,
-	properties => PVE::RESTHandler::add_standard_output_properties($path_properties),
+	properties => $cond_add_standard_output_properties->($path_properties),
     },
     returns => { type => 'null' },
     code => sub {
@@ -415,7 +431,7 @@ __PACKAGE__->register_method ({
     description => "Call API DELETE on <api_path>.",
     parameters => {
 	additionalProperties => 0,
-	properties => PVE::RESTHandler::add_standard_output_properties($path_properties),
+	properties => $cond_add_standard_output_properties->($path_properties),
     },
     returns => { type => 'null' },
     code => sub {
