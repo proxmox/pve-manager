@@ -1,3 +1,15 @@
+pve-manager (5.2-10) unstable; urgency=medium
+
+  * add /node/{NODE}/hosts API Call
+
+  * make /etc/hosts editable via gui
+
+  * API2 : Network : add network config reload
+
+  * pvesh: fix bug #1942 - add standard options conditional
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 16 Oct 2018 11:55:15 +0200
+
 pve-manager (5.2-9) unstable; urgency=medium
 
   * gui: allow whitespace in mountpoint paths
