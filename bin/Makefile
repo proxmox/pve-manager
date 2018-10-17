@@ -2,6 +2,8 @@ include ../defines.mk
 
 # this requires package pve-doc-generator
 export NOVIEW=1
+
+PERL_DOC_INC_DIRS=..
 include /usr/share/pve-doc-generator/pve-doc-generator.mk
 
 SERVICES = pvestatd pveproxy pvedaemon spiceproxy
