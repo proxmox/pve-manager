@@ -17,7 +17,9 @@ DEB=${PACKAGE}_${VERSION}-${PACKAGERELEASE}_${ARCH}.deb
 all: ${SUBDIRS}
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i; done
 
-check:
+.PHONY: check
+check: bin tests
+	${MAKE} -C bin check
 	${MAKE} -C test check
 
 .PHONY: dinstall

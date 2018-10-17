@@ -52,11 +52,12 @@ pvereport.1.pod: pvereport
 pvemailforward: pvemailforward.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -Wall -g -O2 $< -o $@
 
+.PHONY: check
+check: $(addsuffix .service-api-verified, ${SERVICES}) $(addsuffix .api-verified, ${CLITOOLS})
+	rm -f *.service-api-verified *.api-verified
+
 .PHONY: install
 install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward ${BASH_COMPLETIONS}
-	perl -I.. ./pvesh verifyapi
-	for i in ${CLITOOLS}; do perl -I.. -T -e "use PVE::CLI::$$i; PVE::CLI::$$i->verify_api();"; done
-	for i in ${SERVICES}; do perl -I.. -T -e "use PVE::Service::$$i; PVE::Service::$$i->verify_api();"; done
 	install -d ${BINDIR}
 	install -m 0755 ${SCRIPTS} ${BINDIR}
 	install -s -m 2755 -g www-data pvemailforward ${BINDIR}
@@ -70,4 +71,4 @@ install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward ${BASH_COMPLETION
 .PHONY: clean
 clean:
 	make cleanup-docgen
-	rm -rf *~ *.tmp ${CLI_MANS} ${SERVICE_MANS} *.1.pod *.8.pod pvemailforward *.bash-completion *.service-bash-completion
+	rm -rf *~ *.tmp ${CLI_MANS} ${SERVICE_MANS} *.1.pod *.8.pod pvemailforward *.bash-completion *.service-bash-completion *.api-verified *.service-api-verified
