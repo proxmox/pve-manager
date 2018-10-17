@@ -12,6 +12,7 @@ GITVERSION:=$(shell git rev-parse HEAD)
 DEB=${PACKAGE}_${VERSION}-${PACKAGERELEASE}_${ARCH}.deb
 
 all: ${SUBDIRS}
+	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i; done
 
 check:
 	${MAKE} -C test check

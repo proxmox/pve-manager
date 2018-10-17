@@ -15,6 +15,7 @@ PERLSOURCE = 			\
 	VZDump.pm
 
 all: pvecfg.pm ${SUBDIRS}
+	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i; done
 
 REPOID=$(shell git rev-parse --short=8 HEAD)
 

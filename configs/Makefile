@@ -1,6 +1,6 @@
 include ../defines.mk
 
-all:
+all: country.dat
 
 country.dat: country.pl
 	./country.pl > country.dat
