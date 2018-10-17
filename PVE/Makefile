@@ -17,8 +17,6 @@ PERLSOURCE = 			\
 all: pvecfg.pm ${SUBDIRS}
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i; done
 
-REPOID=$(shell git rev-parse --short=8 HEAD)
-
 pvecfg.pm: pvecfg.pm.in
 	sed -e s/@VERSION@/${VERSION}/ -e s/@PACKAGERELEASE@/${PACKAGERELEASE}/ -e s/@PACKAGE@/${PACKAGE}/ -e s/@REPOID@/${REPOID}/ $< >$@.tmp
 	mv $@.tmp $@

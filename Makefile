@@ -9,6 +9,9 @@ SUBDIRS = aplinfo PVE bin www services configs network-hooks test
 ARCH:=$(shell dpkg-architecture -qDEB_BUILD_ARCH)
 GITVERSION:=$(shell git rev-parse HEAD)
 
+# possibly set via debian/rules(.env)
+REPOID?=$(shell git rev-parse --short=8 HEAD)
+
 DEB=${PACKAGE}_${VERSION}-${PACKAGERELEASE}_${ARCH}.deb
 
 all: ${SUBDIRS}
@@ -28,6 +31,7 @@ $(DEB):
 	mkdir dest
 	rsync -a * dest
 	echo "git clone git://git.proxmox.com/git/pve-manager.git\\ngit checkout ${GITVERSION}" >  dest/debian/SOURCE
+	echo "REPOID_GENERATED=${REPOID}" > dest/debian/rules.env
 	cd dest; dpkg-buildpackage -b -us -uc
 	# supress lintian error: statically-linked-binary usr/bin/pvemailforward
 	lintian -X binaries ${DEB}

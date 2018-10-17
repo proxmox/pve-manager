@@ -1,5 +1,9 @@
 #!/usr/bin/make -f
 
+include debian/rules.env
+
+export REPOID=${REPOID_GENERATED}
+
 override_dh_compress:
 	dh_compress -Xaplinfo.dat
 
