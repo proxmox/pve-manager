@@ -29,6 +29,10 @@ CLI_MANS = 				\
 	pveperf.1			\
 	pvereport.1			\
 
+BASH_COMPLETIONS = 						\
+	$(addsuffix .service-bash-completion, ${SERVICES}) 	\
+	$(addsuffix .bash-completion, ${CLITOOLS}) 		\
+
 
 all: ${SERVICE_MANS} ${CLI_MANS} pvemailforward
 
@@ -45,19 +49,11 @@ pveversion.1.pod: pveversion
 pveupgrade.1.pod: pveupgrade
 pvereport.1.pod: pvereport
 
-%.service-bash-completion:
-	perl -I.. -T -e "use PVE::Service::$*; PVE::Service::$*->generate_bash_completions();" >$@.tmp
-	mv $@.tmp $@
-
-%.bash-completion:
-	perl -I.. -T -e "use PVE::CLI::$*; PVE::CLI::$*->generate_bash_completions();" >$@.tmp
-	mv $@.tmp $@
-
 pvemailforward: pvemailforward.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -Wall -g -O2 $< -o $@
 
 .PHONY: install
-install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward $(addsuffix .service-bash-completion, ${SERVICES}) $(addsuffix .bash-completion, ${CLITOOLS})
+install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward ${BASH_COMPLETIONS}
 	perl -I.. ./pvesh verifyapi
 	for i in ${CLITOOLS}; do perl -I.. -T -e "use PVE::CLI::$$i; PVE::CLI::$$i->verify_api();"; done
 	for i in ${SERVICES}; do perl -I.. -T -e "use PVE::Service::$$i; PVE::Service::$$i->verify_api();"; done
