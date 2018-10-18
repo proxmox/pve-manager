@@ -356,6 +356,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    selModel: sm,
 	    disabled: true,
 	    dangerous: true,
+	    RESTMethod: 'PUT',
 	    confirmMsg: function(rec) {
 		var warn = gettext('Are you sure you want to remove entry {0}');
 		if (this.text === this.altText) {
@@ -376,7 +377,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		Proxmox.Utils.API2Request({
 		    url: '/api2/extjs/' + baseurl,
 		    waitMsgTarget: me,
-		    method: 'PUT',
+		    method: b.RESTMethod,
 		    params: {
 			'delete': rec.data.key
 		    },
@@ -385,6 +386,20 @@ Ext.define('PVE.qemu.HardwareView', {
 		    },
 		    failure: function (response, opts) {
 			Ext.Msg.alert('Error', response.htmlStatus);
+		    },
+		    success: function(response, options) {
+			if (b.RESTMethod === 'POST') {
+			    var upid = response.result.data;
+			    var win = Ext.create('Proxmox.window.TaskProgress', {
+				upid: upid,
+				listeners: {
+				    destroy: function () {
+					me.reload();
+				    }
+				}
+			    });
+			    win.show();
+			}
 		    }
 		});
 	    },
@@ -488,7 +503,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var rowdef = rows[key];
 
 	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
-	    var isUsedDisk = !key.match(/^unused\d+/) &&
+	    var isUnusedDisk = key.match(/^unused\d+/);
+	    var isUsedDisk = !isUnusedDisk &&
 		rowdef.tdCls == 'pve-itype-icon-storage' &&
 		(value && !value.match(/media=cdrom/));
 
@@ -498,6 +514,7 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    remove_btn.setDisabled(rec.data['delete'] || (rowdef.never_delete === true));
 	    remove_btn.setText((isUsedDisk && !isCloudInit) ? remove_btn.altText : remove_btn.defaultText);
+	    remove_btn.RESTMethod = isUnusedDisk ? 'POST':'PUT';
 
 	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor || isCloudInit);
 
