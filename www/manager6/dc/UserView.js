@@ -96,7 +96,7 @@ Ext.define('PVE.dc.UserView', {
 
 	    var first = firstname || '';
 	    var last = record.data.lastname || '';
-	    return first + " " + last;
+	    return Ext.htmlEncode(first + " " + last);
 	};
 
 	var render_username = function(userid) {
