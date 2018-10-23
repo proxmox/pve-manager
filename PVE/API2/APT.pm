@@ -555,6 +555,7 @@ __PACKAGE__->register_method({
 	    pve-cluster
 	    pve-container
 	    pve-docs
+	    pve-edk2-firmware
 	    pve-firewall
 	    pve-firmware
 	    pve-ha-manager
