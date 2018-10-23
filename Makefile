@@ -18,7 +18,7 @@ all: ${SUBDIRS}
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i; done
 
 .PHONY: check
-check: bin tests
+check: bin test
 	${MAKE} -C bin check
 	${MAKE} -C test check
 
