@@ -437,7 +437,6 @@ __PACKAGE__->register_method ({
 		}
 	    }
 
-
 	    print "Unmount OSD $osdsection from  $mountpoint\n";
 	    eval { run_command(['/bin/umount', $mountpoint]); };
 	    if (my $err = $@) {
@@ -447,9 +446,10 @@ __PACKAGE__->register_method ({
 		foreach my $part (@$partitions_to_remove) {
 		    $remove_partition->($part);
 		}
+		my @wipe_cmd = qw(/bin/dd if=/dev/zero bs=1M count=200 conv=fdatasync);
 		foreach my $devpath (keys %$disks_to_wipe) {
 		    print "wipe disk: $devpath\n";
-		    eval { run_command(['/bin/dd', 'if=/dev/zero', "of=${devpath}", 'bs=1M', 'count=200', 'conv=fdatasync']); };
+		    eval { run_command([@wipe_cmd, "of=${devpath}"]) };
 		    warn $@ if $@;
 		}
 	    }
