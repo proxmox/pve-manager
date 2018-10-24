@@ -397,6 +397,7 @@ __PACKAGE__->register_method ({
 	    # try to unmount from standard mount point
 	    my $mountpoint = "/var/lib/ceph/osd/ceph-$osdid";
 
+	    my $disks_to_wipe = {};
 	    my $remove_partition = sub {
 		my ($part) = @_;
 
@@ -407,6 +408,8 @@ __PACKAGE__->register_method ({
 		print "remove partition $part (disk '${devpath}', partnum $partnum)\n";
 		eval { run_command(['/sbin/sgdisk', '-d', $partnum, "${devpath}"]); };
 		warn $@ if $@;
+
+		$disks_to_wipe->{$devpath} = 1;
 	    };
 
 	    my $partitions_to_remove = [];
@@ -434,6 +437,7 @@ __PACKAGE__->register_method ({
 		}
 	    }
 
+
 	    print "Unmount OSD $osdsection from  $mountpoint\n";
 	    eval { run_command(['/bin/umount', $mountpoint]); };
 	    if (my $err = $@) {
@@ -442,6 +446,11 @@ __PACKAGE__->register_method ({
 		#be aware of the ceph udev rules which can remount.
 		foreach my $part (@$partitions_to_remove) {
 		    $remove_partition->($part);
+		}
+		foreach my $devpath (keys %$disks_to_wipe) {
+		    print "wipe disk: $devpath\n";
+		    eval { run_command(['/bin/dd', 'if=/dev/zero', "of=${devpath}", 'bs=1M', 'count=200', 'conv=fdatasync']); };
+		    warn $@ if $@;
 		}
 	    }
 	};
