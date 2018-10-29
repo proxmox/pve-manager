@@ -35,7 +35,7 @@ if ($phase eq 'job-start' ||
 
     my $vmid = shift;
 
-    my $vmtype = $ENV{VMTYPE}; # openvz/qemu
+    my $vmtype = $ENV{VMTYPE}; # lxc/qemu
 
     my $dumpdir = $ENV{DUMPDIR};
 
