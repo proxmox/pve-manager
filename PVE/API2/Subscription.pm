@@ -91,9 +91,6 @@ __PACKAGE__->register_method ({
     name => 'get',
     path => '',
     method => 'GET',
-    permissions => {
-	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
-    },
     description => "Read subscription info.",
     proxyto => 'node',
     permissions => { user => 'all' },
@@ -110,12 +107,25 @@ __PACKAGE__->register_method ({
 	my $server_id = PVE::API2Tools::get_hwaddress();
 	my $url = "http://www.proxmox.com/products/proxmox-ve/subscription-service-plans";
 
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+	my $has_permission = PVE::AccessControl::check_permissions($authuser, '/nodes/{node}', 'Sys.Audit');
+
 	my $info = PVE::INotify::read_file('subscription');
 	if (!$info) {
-	    return {
+	    my $no_subscription_info = {
 		status => "NotFound",
 		message => "There is no subscription key",
-		serverid => $server_id,
+		url => $url,
+	    };
+	    $no_subscription_info->{serverid} = $server_id if $has_permission;
+	    return $no_subscription_info;
+	}
+
+	if (!$has_permission) {
+	    return {
+		status => $info->{status},
+		message => $info->{message},
 		url => $url,
 	    }
 	}
