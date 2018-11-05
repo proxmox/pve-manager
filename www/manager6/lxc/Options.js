@@ -134,6 +134,12 @@ Ext.define('PVE.lxc.Options', {
 		header: gettext('Unprivileged container'),
 		renderer: Proxmox.Utils.format_boolean,
 		defaultValue: 0
+	    },
+	    features: {
+		header: gettext('Features'),
+		defaultValue: Proxmox.Utils.noneText,
+		editor: Proxmox.UserName === 'root@pam' ?
+		    'PVE.lxc.FeaturesEdit' : undefined
 	    }
 	};
 

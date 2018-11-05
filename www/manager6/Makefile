@@ -146,6 +146,7 @@ JSSRC= 				                 	\
 	lxc/Summary.js					\
 	lxc/Network.js					\
 	lxc/Resources.js				\
+	lxc/FeaturesEdit.js				\
 	lxc/Options.js					\
 	lxc/DNS.js					\
 	lxc/Config.js					\
