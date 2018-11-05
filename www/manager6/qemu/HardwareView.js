@@ -232,7 +232,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('Serial Port') + ' (' + confid + ')'
 	    };
 	}
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < 256; i++) {
 	    rows["unused" + i.toString()] = {
 		group: 99,
 		order: i,
