@@ -54,7 +54,10 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
     setValues: function(values) {
 	var me = this;
 
-	me.down('field[name=keyctl]').setDisabled(!values.unprivileged);
+	var privileged = !values.unprivileged,
+	    keyctlField = me.down('field[name=keyctl]');
+	keyctlField.setDisabled(privileged);
+	keyctlField.setBoxLabel(privileged ? gettext('unprivileged only') : null);
 
 	if (values.features) {
 	    var res = PVE.Parser.parsePropertyString(values.features);
