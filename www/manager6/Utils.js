@@ -123,8 +123,12 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     render_zfs_health: function(value) {
+	if (typeof value == 'undefined'){
+	    return "";
+	}
 	var iconCls = 'question-circle';
 	switch (value) {
+	    case 'AVAIL':
 	    case 'ONLINE':
 		iconCls = 'check-circle good';
 		break;
@@ -141,6 +145,7 @@ Ext.define('PVE.Utils', { utilities: {
 	}
 
 	return '<i class="fa fa-' + iconCls + '"></i> ' + value;
+
     },
 
     get_kvm_osinfo: function(value) {
