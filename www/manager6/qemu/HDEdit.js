@@ -24,6 +24,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		this.lookup('iothread').setValue(false);
 	    }
 
+	    var virtio = value.match(/^virtio/);
+	    this.lookup('ssd').setDisabled(virtio);
+	    if (virtio) {
+		this.lookup('ssd').setValue(false);
+	    }
+
 	    var scsi = value.match(/^scsi/);
 	    this.lookup('discard').setDisabled(!scsi);
 	    if (!scsi) {
@@ -83,6 +89,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.drive.discard = 'on';
 	} else {
 	    delete me.drive.discard;
+	}
+
+	if (values.ssd) {
+	    me.drive.ssd = 'on';
+	} else {
+	    delete me.drive.ssd;
 	}
 
 	if (values.iothread) {
@@ -160,6 +172,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '__default__';
 	values.discard = (drive.discard === 'on');
+	values.ssd = PVE.Parser.parseBoolean(drive.ssd);
 	values.iothread = PVE.Parser.parseBoolean(drive.iothread);
 
 	values.mbps_rd = drive.mbps_rd;
@@ -241,21 +254,30 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    });
 	}
 
-	me.column2.push({
-	    xtype: 'CacheTypeSelector',
-	    name: 'cache',
-	    value: '__default__',
-	    fieldLabel: gettext('Cache')
-	});
-
-	me.advancedColumn1.push(
+	me.column2.push(
+	    {
+		xtype: 'CacheTypeSelector',
+		name: 'cache',
+		value: '__default__',
+		fieldLabel: gettext('Cache')
+	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Discard'),
 		disabled: me.confid && !me.confid.match(/^scsi/),
 		reference: 'discard',
-		labelWidth: labelWidth,
 		name: 'discard'
+	    }
+	);
+
+	me.advancedColumn1.push(
+	    {
+		xtype: 'proxmoxcheckbox',
+		disabled: me.confid && me.confid.match(/^virtio/),
+		fieldLabel: gettext('SSD emulation'),
+		labelWidth: labelWidth,
+		name: 'ssd',
+		reference: 'ssd'
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
