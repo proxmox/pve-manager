@@ -267,7 +267,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    } else {
 		return 0;
 	    }
-	}
+	};
 
 	Ext.apply(me, {
 	    url: '/api2/json/' + baseurl,
