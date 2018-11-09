@@ -712,14 +712,14 @@ __PACKAGE__->register_method ({
     }});
 
 my $add_storage = sub {
-    my ($pool, $storeid, $krbd) = @_;
+    my ($pool, $storeid) = @_;
 
     my $storage_params = {
 	type => 'rbd',
 	pool => $pool,
 	storage => $storeid,
-	krbd => $krbd // 0,
-	content => $krbd ? 'rootdir' : 'images',
+	krbd => 0,
+	content => 'rootdir,images',
     };
 
     PVE::API2::Storage::Config->create($storage_params);
@@ -1604,7 +1604,7 @@ __PACKAGE__->register_method ({
 		optional => 1,
 	    },
 	    add_storages => {
-		description => "Configure VM and CT storages using the new pool.",
+		description => "Configure VM and CT storage using the new pool.",
 		type => 'boolean',
 		optional => 1,
 	    },
@@ -1681,17 +1681,12 @@ __PACKAGE__->register_method ({
 
 	    if ($param->{add_storages}) {
 		my $err;
-		eval { $add_storage->($pool, "${pool}_vm", 0); };
+		eval { $add_storage->($pool, "${pool}"); };
 		if ($@) {
-		    warn "failed to add VM storage: $@";
+		    warn "failed to add storage: $@";
 		    $err = 1;
 		}
-		eval { $add_storage->($pool, "${pool}_ct", 1); };
-		if ($@) {
-		    warn "failed to add CT storage: $@";
-		    $err = 1;
-		}
-		die "adding storages for pool '$pool' failed, check log and add manually!\n"
+		die "adding storage for pool '$pool' failed, check log and add manually!\n"
 		    if $err;
 	    }
 	};
