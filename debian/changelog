@@ -1,3 +1,26 @@
+pve-manager (5.2-11) unstable; urgency=medium
+
+  * Update default CIPHERS to a more current list
+
+  * close #584: ui qemu: changed remove unused disk to asynchron call
+
+  * dc/user: render user fullnames htmlEncoded
+
+  * ceph: osd: wipe start of blockdevice when destroying ceph disk to ensure it
+    can be re-used for any purpose
+
+  * gui: expose lxc features
+
+  * Add "SSD emulation" property to IDE, SATA, and SCSI drives
+
+  * fix sorting for unused disks/mounpoints in the VM/CT Hardware/Resource view
+
+  * gui: let users edit the vga memory
+
+  * node zfs: added check for undefined & new case AVAIL
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 09 Nov 2018 17:00:03 +0100
+
 pve-manager (5.2-10) unstable; urgency=medium
 
   * add /node/{NODE}/hosts API Call
