@@ -350,7 +350,11 @@ Ext.define('PVE.Utils', { utilities: {
 	if (!value) {
 	    return Proxmox.Utils.defaultText;
 	}
-	var text = PVE.Utils.kvm_vga_drivers[value];
+	var vga = PVE.Parser.parsePropertyString(value, 'type');
+	var text = PVE.Utils.kvm_vga_drivers[vga.type];
+	if (!vga.type) {
+	    text = Proxmox.Utils.defaultText;
+	}
 	if (text) {
 	    return text + ' (' + value + ')';
 	}
