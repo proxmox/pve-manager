@@ -150,7 +150,6 @@ Ext.define('PVE.node.CreateZFS', {
 					    }
 					}
 				    }
-
 				}
 			    ]
 			}
