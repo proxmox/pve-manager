@@ -40,6 +40,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		editor: caps.vms['VM.Config.Memory'] ? 'PVE.lxc.MemoryEdit' : undefined,
 		defaultValue: 512,
 		tdCls: 'pve-itype-icon-memory',
+		group: 1,
 		renderer: function(value) {
 		    return Proxmox.Utils.format_size(value*1024*1024);
 		}
@@ -49,6 +50,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		editor: caps.vms['VM.Config.Memory'] ? 'PVE.lxc.MemoryEdit' : undefined,
 		defaultValue: 512,
 		tdCls: 'pve-itype-icon-swap',
+		group: 2,
 		renderer: function(value) {
 		    return Proxmox.Utils.format_size(value*1024*1024);
 		}
@@ -58,6 +60,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		editor: caps.vms['VM.Config.CPU'] ? 'PVE.lxc.CPUEdit' : undefined,
 		defaultValue: '',
 		tdCls: 'pve-itype-icon-processor',
+		group: 3,
 		renderer: function(value) {
 		    var cpulimit = me.getObjectValue('cpulimit');
 		    var cpuunits = me.getObjectValue('cpuunits');
@@ -82,7 +85,8 @@ Ext.define('PVE.lxc.RessourceView', {
 		header: gettext('Root Disk'),
 		defaultValue: Proxmox.Utils.noneText,
 		editor: mpeditor,
-		tdCls: 'pve-itype-icon-storage'
+		tdCls: 'pve-itype-icon-storage',
+		group: 4
 	    },
 	    cpulimit: {
 		visible: false
@@ -97,14 +101,17 @@ Ext.define('PVE.lxc.RessourceView', {
 
 	PVE.Utils.forEachMP(function(bus, i) {
 	    confid = bus + i;
-	    var  header;
+	    var group = 5;
+	    var header;
 	    if (bus === 'mp') {
 		header = gettext('Mount Point') + ' (' + confid + ')';
 	    } else {
 		header = gettext('Unused Disk') + ' ' + i;
+		group += 1;
 	    }
 	    rows[confid] = {
-		group: 1,
+		group: group,
+		order: i,
 		tdCls: 'pve-itype-icon-storage',
 		editor: mpeditor,
 		header: header
@@ -237,6 +244,31 @@ Ext.define('PVE.lxc.RessourceView', {
 
 	};
 	
+	var sorterFn = function(rec1, rec2) {
+	    var v1 = rec1.data.key;
+	    var v2 = rec2.data.key;
+	    var g1 = rows[v1].group || 0;
+	    var g2 = rows[v2].group || 0;
+	    var order1 = rows[v1].order || 0;
+	    var order2 = rows[v2].order || 0;
+
+	    if ((g1 - g2) !== 0) {
+		return g1 - g2;
+	    }
+
+	    if ((order1 - order2) !== 0) {
+		return order1 - order2;
+	    }
+
+	    if (v1 > v2) {
+		return 1;
+	    } else if (v1 < v2) {
+	        return -1;
+	    } else {
+		return 0;
+	    }
+	}
+
 	Ext.apply(me, {
 	    url: '/api2/json/' + baseurl,
 	    selModel: me.selModel,
@@ -269,6 +301,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		move_btn
 	    ],
 	    rows: rows,
+	    sorterFn: sorterFn,
 	    editorConfig: {
 		pveSelNode: me.pveSelNode,
 		url: '/api2/extjs/' + baseurl
