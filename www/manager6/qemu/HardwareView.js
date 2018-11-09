@@ -53,6 +53,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		never_delete: true,
 		defaultValue: '512',
 		tdCls: 'pve-itype-icon-memory',
+		group: 2,
 		multiKey: ['memory', 'balloon', 'shares'],
 		renderer: function(value, metaData, record, ri, ci, store, pending) {
 		    var res = '';
@@ -81,6 +82,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		editor: (caps.vms['VM.Config.CPU'] || caps.vms['VM.Config.HWType']) ? 
 		    'PVE.qemu.ProcessorEdit' : undefined,
 		tdCls: 'pve-itype-icon-processor',
+		group: 3,
 		defaultValue: '1',
 		multiKey: ['sockets', 'cpu', 'cores', 'numa', 'vcpus', 'cpulimit', 'cpuunits'],
 		renderer: function(value, metaData, record, rowIndex, colIndex, store, pending) {
@@ -124,6 +126,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		never_delete: true,
 		editor: caps.vms['VM.Config.Options'] ? 'PVE.qemu.KeyboardEdit' : undefined,
 		tdCls: 'pve-itype-icon-keyboard',
+		group: 1,
 		defaultValue: '',
 		renderer: PVE.Utils.render_kvm_language
 	    },
@@ -132,6 +135,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.DisplayEdit' : undefined,
 		never_delete: true,
 		tdCls: 'pve-itype-icon-display',
+		group:4,
 		defaultValue: '',
 		renderer: PVE.Utils.render_kvm_vga_driver		
 	    },
@@ -170,7 +174,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	PVE.Utils.forEachBus(undefined, function(type, id) {
 	    var confid = type + id;
 	    rows[confid] = {
-		group: 1,
+		group: 5,
 		tdCls: 'pve-itype-icon-storage',
 		editor: 'PVE.qemu.HDEdit',
 		never_delete: caps.vms['VM.Config.Disk'] ? false : true,
@@ -182,7 +186,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	for (i = 0; i < 32; i++) {
 	    confid = "net" + i.toString();
 	    rows[confid] = {
-		group: 2,
+		group: 6,
+		order: i,
 		tdCls: 'pve-itype-icon-network',
 		editor: caps.vms['VM.Config.Network'] ? 'PVE.qemu.NetworkEdit' : undefined,
 		never_delete: caps.vms['VM.Config.Network'] ? false : true,
@@ -190,7 +195,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    };
 	}
 	rows.efidisk0 = {
-	    group: 3,
+	    group: 7,
 	    tdCls: 'pve-itype-icon-storage',
 	    editor: null,
 	    never_delete: caps.vms['VM.Config.Disk'] ? false : true,
@@ -199,7 +204,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	for (i = 0; i < 5; i++) {
 	    confid = "usb" + i.toString();
 	    rows[confid] = {
-		group: 4,
+		group: 8,
+		order: i,
 		tdCls: 'pve-itype-icon-usb',
 		editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.USBEdit' : undefined,
 		never_delete: caps.nodes['Sys.Console'] ? false : true,
@@ -209,7 +215,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	for (i = 0; i < 4; i++) {
 	    confid = "hostpci" + i.toString();
 	    rows[confid] = {
-		group: 5,
+		group: 9,
+		order: i,
 		tdCls: 'pve-itype-icon-pci',
 		never_delete: caps.nodes['Sys.Console'] ? false : true,
 		header: gettext('PCI Device') + ' (' + confid + ')'
@@ -218,7 +225,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	for (i = 0; i < 4; i++) {
 	    confid = "serial" + i.toString();
 	    rows[confid] = {
-		group: 6,
+		group: 10,
+		order: i,
 		tdCls: 'pve-itype-icon-serial',
 		never_delete: caps.nodes['Sys.Console'] ? false : true,
 		header: gettext('Serial Port') + ' (' + confid + ')'
@@ -227,6 +235,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	for (i = 0; i < 8; i++) {
 	    rows["unused" + i.toString()] = {
 		group: 99,
+		order: i,
 		tdCls: 'pve-itype-icon-storage',
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.HDEdit' : undefined,
 		header: gettext('Unused Disk') + ' ' + i.toString()
@@ -238,9 +247,24 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var v2 = rec2.data.key;
 	    var g1 = rows[v1].group || 0;
 	    var g2 = rows[v2].group || 0;
+	    var order1 = rows[v1].order || 0;
+	    var order2 = rows[v2].order || 0;
+
+	    if ((g1 - g2) !== 0) {
+		return g1 - g2;
+	    }
 	    
-	    return (g1 !== g2) ? 
-		(g1 > g2 ? 1 : -1) : (v1 > v2 ? 1 : (v1 < v2 ? -1 : 0));
+	    if ((order1 - order2) !== 0) {
+		return order1 - order2;
+	    }
+
+	    if (v1 > v2) {
+		return 1;
+	    } else if (v1 < v2) {
+	        return -1;
+	    } else {
+		return 0;
+	    }
 	};
 
 	var reload = function() {
