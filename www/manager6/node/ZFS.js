@@ -383,6 +383,19 @@ Ext.define('PVE.node.ZFSList', {
 
     show_detail: function(zpool) {
 	var me = this;
+
+	var devicetree = Ext.create('PVE.node.ZFSDevices', {
+	    title: gettext('Devices'),
+	    nodename: me.nodename,
+	    zpool: zpool
+	});
+
+	var detailsgrid = Ext.create('PVE.node.ZFSStatus', {
+	    layout: 'fit',
+	    nodename: me.nodename,
+	    zpool: zpool
+	});
+
 	var win = Ext.create('Ext.window.Window', {
 	    modal: true,
 	    width: 800,
@@ -390,13 +403,20 @@ Ext.define('PVE.node.ZFSList', {
 	    resizable: true,
 	    layout: 'fit',
 	    title: gettext('Status') + ': ' + zpool,
-	    items: [
-		{
-		    xtype: 'pveZFSStatus',
-		    nodename: me.nodename,
-		    zpool: zpool
-		}
-	    ]
+	    items:[{
+		xtype: 'panel',
+		region: 'center',
+		items: [detailsgrid, devicetree],
+		tbar: [{
+		    text: gettext('Reload'),
+		    iconCls: 'fa fa-refresh',
+		    handler: function() {
+
+			devicetree.reload();
+			detailsgrid.reload();
+		    }
+		}]
+	    }]
 	}).show();
     },
 
