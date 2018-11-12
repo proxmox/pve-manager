@@ -163,9 +163,9 @@ Ext.define('PVE.node.CreateZFS', {
     }
 });
 
-Ext.define('PVE.node.ZFSStatus', {
+Ext.define('PVE.node.ZFSDevices', {
     extend: 'Ext.tree.Panel',
-    xtype: 'pveZFSStatus',
+    xtype: 'pveZFSDevices',
     stateful: true,
     stateId: 'grid-node-zfsstatus',
     columns: [
@@ -200,17 +200,6 @@ Ext.define('PVE.node.ZFSStatus', {
 
     rootVisible: true,
 
-    tbar: [
-	{
-	    text: gettext('Reload'),
-	    iconCls: 'fa fa-refresh',
-	    handler: function() {
-		var me = this.up('panel');
-		me.reload();
-	    }
-	}
-    ],
-
     reload: function() {
 	var me = this;
 	var sm = me.getSelectionModel();
@@ -227,13 +216,6 @@ Ext.define('PVE.node.ZFSStatus', {
 		me.expandAll();
 	    }
 	});
-    },
-
-    listeners: {
-	activate: function() {
-	    var me = this;
-	    me.reload();
-	}
     },
 
     initComponent: function() {
@@ -269,6 +251,46 @@ Ext.define('PVE.node.ZFSStatus', {
 
 	me.callParent();
 
+	me.reload();
+    }
+});
+
+Ext.define('PVE.node.ZFSStatus', {
+    extend: 'Proxmox.grid.ObjectGrid',
+    xtype: 'pveZFSStatus',
+    layout: 'fit',
+    border: false,
+
+    initComponent: function() {
+	 /*jslint confusion: true */
+        var me = this;
+
+	if (!me.nodename) {
+	    throw "no node name specified";
+	}
+
+	if (!me.zpool) {
+	    throw "no zpool specified";
+	}
+
+	me.url = "/api2/extjs/nodes/" + me.nodename + "/disks/zfs/" + me.zpool;
+
+	me.rows = {
+	    scan: {
+		header: gettext('Scan')
+	    },
+	    status: {
+		header: gettext('Status')
+	    },
+	    action: {
+		header: gettext('Action')
+	    },
+	    errors: {
+		header: gettext('Errors')
+	    }
+	};
+
+	me.callParent();
 	me.reload();
     }
 });
