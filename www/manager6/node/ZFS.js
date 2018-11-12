@@ -1,3 +1,4 @@
+/*jslint confusion: true*/
 Ext.define('PVE.node.CreateZFS', {
     extend: 'Proxmox.window.Edit',
     xtype: 'pveCreateZFS',
@@ -387,12 +388,15 @@ Ext.define('PVE.node.ZFSList', {
 	var devicetree = Ext.create('PVE.node.ZFSDevices', {
 	    title: gettext('Devices'),
 	    nodename: me.nodename,
+	    flex: 1,
 	    zpool: zpool
 	});
 
 	var detailsgrid = Ext.create('PVE.node.ZFSStatus', {
 	    layout: 'fit',
 	    nodename: me.nodename,
+	    autoScroll: true,
+	    flex: 0,
 	    zpool: zpool
 	});
 
@@ -406,6 +410,10 @@ Ext.define('PVE.node.ZFSList', {
 	    items:[{
 		xtype: 'panel',
 		region: 'center',
+		layout: {
+		    type: 'vbox',
+		    align: 'stretch'
+		},
 		items: [detailsgrid, devicetree],
 		tbar: [{
 		    text: gettext('Reload'),
