@@ -181,6 +181,18 @@ Ext.define('PVE.node.ZFSStatus', {
 	    dataIndex: 'state'
 	},
 	{
+	    text: gettext('READ'),
+	    dataIndex: 'read'
+	},
+	{
+	    text: gettext('WRITE'),
+	    dataIndex: 'write'
+	},
+	{
+	    text: gettext('CKSUM'),
+	    dataIndex: 'cksum'
+	},
+	{
 	    text: gettext('Message'),
 	    dataIndex: 'msg'
 	}
