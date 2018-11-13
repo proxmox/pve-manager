@@ -8,12 +8,20 @@ Ext.define('PVE.window.Settings', {
     bodyPadding: 10,
     resizable: false,
 
-    buttons: [{
-	text: gettext('Close'),
-	handler: function() {
-	    this.up('window').close();
+    buttons: [
+	{
+	    xtype: 'proxmoxHelpButton',
+	    onlineHelp: 'gui_my_settings',
+	    hidden: false
+	},
+	'->',
+	{
+	    text: gettext('Close'),
+	    handler: function() {
+		this.up('window').close();
+	    }
 	}
-    }],
+    ],
 
     layout: {
 	type: 'hbox',
@@ -317,6 +325,5 @@ Ext.define('PVE.window.Settings', {
     onShow: function() {
 	var me = this;
 	me.callParent();
-
     }
 });
