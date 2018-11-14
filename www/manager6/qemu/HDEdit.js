@@ -25,17 +25,14 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    }
 
 	    var virtio = value.match(/^virtio/);
+	    this.lookup('discard').setDisabled(virtio);
 	    this.lookup('ssd').setDisabled(virtio);
 	    if (virtio) {
+		this.lookup('discard').setValue(false);
 		this.lookup('ssd').setValue(false);
 	    }
 
-	    var scsi = value.match(/^scsi/);
-	    this.lookup('discard').setDisabled(!scsi);
-	    if (!scsi) {
-		this.lookup('discard').setValue(false);
-	    }
-	    this.lookup('scsiController').setVisible(scsi);
+	    this.lookup('scsiController').setVisible(value.match(/^scsi/));
 	},
 
 	control: {
@@ -264,7 +261,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Discard'),
-		disabled: me.confid && !me.confid.match(/^scsi/),
+		disabled: me.confid && me.confid.match(/^virtio/),
 		reference: 'discard',
 		name: 'discard'
 	    }
