@@ -98,28 +98,16 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	}
 	me.type = 'rbd';
 
-	var getBinds = function (activeIfPVECeph, hide) {
-	    var bind = {
-		disabled: activeIfPVECeph ? '{!pveceph}' : '{pveceph}'
-	    };
-
-	    // displayfield has no submitValue and bind mixin cannot handle that
-	    if (me.isCreate) {
-		bind.submitValue = activeIfPVECeph ? '{pveceph}' : '{!pveceph}';
-	    }
-	    if (hide) {
-		bind.hidden = activeIfPVECeph ? '{!pveceph}' : '{pveceph}';
-	    }
-
-	    return bind;
-	};
-
 	me.column1 = [
 	    {
 		xtype: me.isCreate ? 'pveCephPoolSelector' : 'displayfield',
 		nodename: me.nodename,
 		name: 'pool',
-		bind: getBinds(true, true),
+		bind: {
+		    disabled: '{!pveceph}',
+		    submitValue: '{pveceph}',
+		    hidden: '{!pveceph}'
+		},
 		fieldLabel: gettext('Pool'),
 		allowBlank: false
 	    },
@@ -127,7 +115,11 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'pool',
 		value: 'rbd',
-		bind: getBinds(false, true),
+		bind: {
+		    disabled: '{pveceph}',
+		    submitValue: '{!pveceph}',
+		    hidden: '{pveceph}'
+		},
 		fieldLabel: gettext('Pool'),
 		allowBlank: false
 	    },
@@ -135,7 +127,11 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		xtype: 'textfield',
 		name: 'monhost',
 		vtype: 'HostList',
-		bind: getBinds(false, true),
+		bind: {
+		    disabled: '{pveceph}',
+		    submitValue: '{!pveceph}',
+		    hidden: '{pveceph}'
+		},
 		value: '',
 		fieldLabel: 'Monitor(s)',
 		allowBlank: false
@@ -153,7 +149,10 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'username',
-		bind: me.isCreate ? getBinds(false) : {},
+		bind: {
+		    disabled: '{pveceph}',
+		    submitValue: '{!pveceph}'
+		},
 		value: 'admin',
 		fieldLabel: gettext('User name'),
 		allowBlank: true

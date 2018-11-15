@@ -27,3 +27,12 @@ Ext.apply(Ext.form.field.VTypes, {
     IP64AddressListText: gettext('Example') + ': 192.168.1.1,192.168.1.2',
     IP64AddressListMask: /[A-Fa-f0-9\,\:\.\;\ ]/
 });
+
+Ext.define('PVE.form.field.Display', {
+    override: 'Ext.form.field.Display',
+
+    setSubmitValue: function(value) {
+	// do nothing, this is only to allow generalized  bindings for the:
+	// `me.isCreate ? 'textfield' : 'displayfield'` cases we have.
+    }
+});
