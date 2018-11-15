@@ -1,75 +1,84 @@
 /*jslint confusion: true*/
-Ext.define('PVE.storage.RBDInputPanel', {
-    extend: 'PVE.panel.StorageBase',
+Ext.define('PVE.storage.Ceph.Model', {
+    extend: 'Ext.app.ViewModel',
+    alias: 'viewmodel.cephstorage',
 
-    viewModel: {
-	parent: null,
-	data: {
-	    pveceph: true,
-	    pvecephPossible: true
+    data: {
+	pveceph: true,
+	pvecephPossible: true
+    }
+});
+
+Ext.define('PVE.storage.Ceph.Controller', {
+    extend: 'Ext.app.ViewController',
+    alias: 'controller.cephstorage',
+
+    control: {
+	'#': {
+	    afterrender: 'queryMonitors'
+	},
+	'textfield[name=username]': {
+	    disable: 'resetField'
+	},
+	'displayfield[name=monhost]': {
+	    enable: 'queryMonitors'
+	},
+	'textfield[name=monhost]': {
+	    disable: 'resetField',
+	    enable: 'resetField'
 	}
     },
+    resetField: function(field) {
+	field.reset();
+    },
+    queryMonitors: function(field, newVal, oldVal) {
+	// we get called with two signatures, the above one for a field
+	// change event and the afterrender from the view, this check only
+	// can be true for the field change one and omit the API request if
+	// pveceph got unchecked - as it's not needed there.
+	if (field && !newVal && oldVal) {
+	    return;
+	}
+	var view = this.getView();
+	var vm = this.getViewModel();
+	if (!(view.isCreate || vm.get('pveceph'))) {
+	    return; // only query on create or if editing a pveceph store
+	}
 
-    controller: {
-	xclass: 'Ext.app.ViewController',
-	control: {
-	    '#': {
-		afterrender: 'queryMonitors'
-	    },
-	    'textfield[name=username]': {
-		disable: 'resetField'
-	    },
-	    'displayfield[name=monhost]': {
-		enable: 'queryMonitors'
-	    },
-	    'textfield[name=monhost]': {
-		disable: 'resetField',
-		enable: 'resetField'
-	    }
-	},
-	resetField: function(field) {
-	    field.reset();
-	},
-	queryMonitors: function(field, newVal, oldVal) {
-	    // we get called with two signatures, the above one for a field
-	    // change event and the afterrender from the view, this check only
-	    // can be true for the field change one and omit the API request if
-	    // pveceph got unchecked - as it's not needed there.
-	    if (field && !newVal && oldVal) {
-		return;
-	    }
-	    var view = this.getView();
-	    var vm = this.getViewModel();
-	    if (!(view.isCreate || vm.get('pveceph'))) {
-		return; // only query on create or if editing a pveceph store
-	    }
+	var monhostField = this.lookupReference('monhost');
 
-	    var monhostField = this.lookupReference('monhost');
-
-	    Proxmox.Utils.API2Request({
-		url: '/api2/json/nodes/localhost/ceph/mon',
-		method: 'GET',
-		scope: this,
-		callback: function(options, success, response) {
-		    var data = response.result.data;
-		    if (response.status === 200) {
-			if (data.length > 0) {
-			    var monhost = Ext.Array.pluck(data, 'name').sort().join(',');
-			    monhostField.setValue(monhost);
-			    monhostField.resetOriginalValue();
-			    if (view.isCreate) {
-				vm.set('pvecephPossible', true);
-			    }
-			} else {
-			    vm.set('pveceph', false);
+	Proxmox.Utils.API2Request({
+	    url: '/api2/json/nodes/localhost/ceph/mon',
+	    method: 'GET',
+	    scope: this,
+	    callback: function(options, success, response) {
+		var data = response.result.data;
+		if (response.status === 200) {
+		    if (data.length > 0) {
+			var monhost = Ext.Array.pluck(data, 'name').sort().join(',');
+			monhostField.setValue(monhost);
+			monhostField.resetOriginalValue();
+			if (view.isCreate) {
+			    vm.set('pvecephPossible', true);
 			}
 		    } else {
 			vm.set('pveceph', false);
-			vm.set('pvecephPossible', false);
 		    }
+		} else {
+		    vm.set('pveceph', false);
+		    vm.set('pvecephPossible', false);
 		}
-	    });
-	}
+	    }
+	});
+    }
+});
+
+Ext.define('PVE.storage.RBDInputPanel', {
+    extend: 'PVE.panel.StorageBase',
+    controller: 'cephstorage',
+
+    viewModel: {
+	type: 'cephstorage'
     },
 
     setValues: function(values) {
