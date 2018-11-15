@@ -483,6 +483,17 @@ Ext.define('PVE.Utils', { utilities: {
 	    hideAdd: true,
 	    faIcon: 'building'
 	},
+	cephfs: {
+	    name: 'CephFS',
+	    ipanel: 'CephFSInputPanel',
+	    faIcon: 'building'
+	},
+	pvecephfs: {
+	    name: 'CephFS (PVE)',
+	    ipanel: 'CephFSInputPanel',
+	    hideAdd: true,
+	    faIcon: 'building'
+	},
 	rbd: {
 	    name: 'RBD',
 	    ipanel: 'RBDInputPanel',
@@ -511,8 +522,10 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     format_storage_type: function(value, md, record) {
-	if (value === 'rbd' && record) {
-	    value = (record.get('monhost') ? 'rbd' : 'pveceph');
+	if (value === 'rbd') {
+	    value = (!record || record.get('monhost') ? 'rbd' : 'pveceph');
+	} else if (value === 'cephfs') {
+	    value = (!record || record.get('monhost') ? 'cephfs' : 'pvecephfs');
 	}
 
 	var schema = PVE.Utils.storageSchema[value];

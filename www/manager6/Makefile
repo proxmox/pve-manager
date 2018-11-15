@@ -171,6 +171,7 @@ JSSRC= 				                 	\
 	storage/IScsiEdit.js				\
 	storage/LVMEdit.js				\
 	storage/LvmThinEdit.js				\
+	storage/CephFSEdit.js				\
 	storage/RBDEdit.js				\
 	storage/SheepdogEdit.js				\
 	storage/ZFSEdit.js				\
