@@ -14,11 +14,11 @@ use PVE::RESTHandler;
 use base qw(PVE::RESTHandler);
 
 __PACKAGE__->register_method ({
-    name => 'index', 
-    path => '', 
+    name => 'index',
+    path => '',
     method => 'GET',
     description => "Index of available scan methods",
-    permissions => { 
+    permissions => {
 	user => 'all',
     },
     parameters => {
@@ -38,7 +38,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $res = [ 
+	my $res = [
 	    { method => 'lvm' },
 	    { method => 'iscsi' },
 	    { method => 'nfs' },
@@ -52,13 +52,13 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
-    name => 'zfsscan', 
-    path => 'zfs', 
+    name => 'zfsscan',
+    path => 'zfs',
     method => 'GET',
     description => "Scan zfs pool list on local node.",
     protected => 1,
     proxyto => "node",
-    permissions => { 
+    permissions => {
 	check => ['perm', '/storage', ['Datastore.Allocate']],
     },
     parameters => {
@@ -71,7 +71,7 @@ __PACKAGE__->register_method ({
 	type => 'array',
 	items => {
 	    type => "object",
-	    properties => { 
+	    properties => {
 		pool => {
 		    description => "ZFS pool name.",
 		    type => 'string',
@@ -86,13 +86,13 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
-    name => 'nfsscan', 
-    path => 'nfs', 
+    name => 'nfsscan',
+    path => 'nfs',
     method => 'GET',
     description => "Scan remote NFS server.",
     protected => 1,
     proxyto => "node",
-    permissions => { 
+    permissions => {
 	check => ['perm', '/storage', ['Datastore.Allocate']],
     },
     parameters => {
@@ -109,7 +109,7 @@ __PACKAGE__->register_method ({
 	type => 'array',
 	items => {
 	    type => "object",
-	    properties => { 
+	    properties => {
 		path => {
 		    description => "The exported path.",
 		    type => 'string',
@@ -206,17 +206,17 @@ __PACKAGE__->register_method ({
     }});
 
 # Note: GlusterFS currently does not have an equivalent of showmount.
-# As workaround, we simply use nfs showmount. 
+# As workaround, we simply use nfs showmount.
 # see http://www.gluster.org/category/volumes/
 
 __PACKAGE__->register_method ({
-    name => 'glusterfsscan', 
-    path => 'glusterfs', 
+    name => 'glusterfsscan',
+    path => 'glusterfs',
     method => 'GET',
     description => "Scan remote GlusterFS server.",
     protected => 1,
     proxyto => "node",
-    permissions => { 
+    permissions => {
 	check => ['perm', '/storage', ['Datastore.Allocate']],
     },
     parameters => {
@@ -233,7 +233,7 @@ __PACKAGE__->register_method ({
 	type => 'array',
 	items => {
 	    type => "object",
-	    properties => { 
+	    properties => {
 		volname => {
 		    description => "The volume name.",
 		    type => 'string',
@@ -257,13 +257,13 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
-    name => 'iscsiscan', 
-    path => 'iscsi', 
+    name => 'iscsiscan',
+    path => 'iscsi',
     method => 'GET',
     description => "Scan remote iSCSI server.",
     protected => 1,
     proxyto => "node",
-    permissions => { 
+    permissions => {
 	check => ['perm', '/storage', ['Datastore.Allocate']],
     },
     parameters => {
@@ -280,7 +280,7 @@ __PACKAGE__->register_method ({
 	type => 'array',
 	items => {
 	    type => "object",
-	    properties => { 
+	    properties => {
 		target => {
 		    description => "The iSCSI target name.",
 		    type => 'string',
@@ -306,13 +306,13 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
-    name => 'lvmscan', 
-    path => 'lvm', 
+    name => 'lvmscan',
+    path => 'lvm',
     method => 'GET',
     description => "List local LVM volume groups.",
     protected => 1,
     proxyto => "node",
-    permissions => { 
+    permissions => {
 	check => ['perm', '/storage', ['Datastore.Allocate']],
     },
     parameters => {
@@ -380,13 +380,13 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
-    name => 'usbscan', 
-    path => 'usb', 
+    name => 'usbscan',
+    path => 'usb',
     method => 'GET',
     description => "List local USB devices.",
     protected => 1,
     proxyto => "node",
-    permissions => { 
+    permissions => {
 	check => ['perm', '/', ['Sys.Modify']],
     },
     parameters => {
@@ -399,7 +399,7 @@ __PACKAGE__->register_method ({
 	type => 'array',
 	items => {
 	    type => "object",
-	    properties => { 
+	    properties => {
 		busnum => { type => 'integer'},
 		devnum => { type => 'integer'},
 		port => { type => 'integer'},
