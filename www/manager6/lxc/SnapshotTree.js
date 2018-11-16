@@ -163,9 +163,11 @@ Ext.define('PVE.lxc.SnapshotTree', {
 		var taskdescription = Proxmox.Utils.format_task_description('vzrollback', me.vmid);
 		var snaptime = Ext.Date.format(rec.data.snaptime,'Y-m-d H:i:s');
 		var snapname = rec.data.name;
-		var msg = Ext.String.format(gettext('{0} to {1} - {2}')+
-		gettext('<p>Note: Rollback stops CT</p>'),
-		taskdescription, snapname, snaptime);
+
+		var msg = Ext.String.format(gettext('{0} to {1} ({2})'),
+		                            taskdescription, snapname, snaptime);
+		msg += '<p>' + gettext('Note: Rollback stops CT') + '</p>';
+
 		return msg;
 	    },
 	    handler: function(btn, event) {
