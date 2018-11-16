@@ -6,7 +6,6 @@ use warnings;
 use PVE::SafeSyslog;
 use PVE::Storage;
 use PVE::Storage::LVMPlugin;
-use HTTP::Status qw(:constants);
 use PVE::JSONSchema qw(get_standard_option);
 
 use PVE::RESTHandler;
