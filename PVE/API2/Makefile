@@ -18,6 +18,7 @@ PERLSOURCE = 			\
 	ACME.pm			\
 	ACMEAccount.pm		\
 	NodeConfig.pm		\
+	Scan.pm			\
 	Services.pm
 
 all:

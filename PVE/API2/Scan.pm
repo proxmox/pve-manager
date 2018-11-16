@@ -1,4 +1,4 @@
-package PVE::API2::Storage::Scan;
+package PVE::API2::Scan;
 
 use strict;
 use warnings;

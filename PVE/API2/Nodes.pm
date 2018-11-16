@@ -31,7 +31,7 @@ use PVE::API2::Subscription;
 use PVE::API2::Services;
 use PVE::API2::Network;
 use PVE::API2::Tasks;
-use PVE::API2::Storage::Scan;
+use PVE::API2::Scan;
 use PVE::API2::Storage::Status;
 use PVE::API2::Qemu;
 use PVE::API2::LXC;
@@ -91,7 +91,7 @@ __PACKAGE__->register_method ({
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Storage::Scan",  
+    subclass => "PVE::API2::Scan",
     path => 'scan',
 });
 
