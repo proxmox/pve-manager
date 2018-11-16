@@ -1,10 +1,16 @@
 Ext.define('PVE.form.UserSelector', {
     extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.pveUserSelector'],
+
     allowBlank: false,
     autoSelect: false,
     valueField: 'userid',
     displayField: 'userid',
+
+    editable: true,
+    anyMatch: true,
+    forceSelection: true,
+
     initComponent: function() {
 	var me = this;
 
