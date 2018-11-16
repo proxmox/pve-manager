@@ -156,11 +156,17 @@ Ext.define('PVE.lxc.SnapshotTree', {
 	var rollbackBtn = new Proxmox.button.Button({
 	    text: gettext('Rollback'),
 	    disabled: true,
+	    dangerous: true,
 	    selModel: sm,
 	    enableFn: valid_snapshot_rollback,
 	    confirmMsg: function(rec) {
-		return Proxmox.Utils.format_task_description('vzrollback', me.vmid) +
-		    " '" +  rec.data.name + "'";
+		var taskdescription = Proxmox.Utils.format_task_description('vzrollback', me.vmid);
+		var snaptime = Ext.Date.format(rec.data.snaptime,'Y-m-d H:i:s');
+		var snapname = rec.data.name;
+		var msg = Ext.String.format(gettext('{0} to {1} - {2}')+
+		gettext('<p>Note: Rollback stops CT</p>'),
+		taskdescription, snapname, snaptime);
+		return msg;
 	    },
 	    handler: function(btn, event) {
 		var rec = sm.getSelection()[0];
