@@ -6,6 +6,7 @@ use warnings;
 use PVE::SafeSyslog;
 use PVE::Storage;
 use PVE::Storage::LVMPlugin;
+use PVE::SysFSTools;
 use PVE::JSONSchema qw(get_standard_option);
 
 use PVE::RESTHandler;
@@ -418,7 +419,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	return PVE::Storage::scan_usb();
+	return PVE::SysFSTools::scan_usb();
     }});
 
 1;
