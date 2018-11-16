@@ -410,6 +410,18 @@ Ext.define('PVE.tree.ResourceTree', {
 		me.clearTree();
 		updateTree();
 	    },
+	    setDatacenterText: function(clustername) {
+		var rootnode = me.store.getRootNode();
+
+		var rnodeText = gettext('Datacenter');
+		if (clustername !== undefined) {
+		    rnodeText += ' (' + clustername + ')';
+		}
+
+		rootnode.beginEdit();
+		rootnode.data.text = rnodeText;
+		rootnode.commit();
+	    },
 	    clearTree: function() {
 		pdata.updateCount = 0;
 		var rootnode = me.store.getRootNode();

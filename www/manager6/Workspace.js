@@ -22,6 +22,9 @@ Ext.define('PVE.Workspace', {
 	Proxmox.CSRFPreventionToken = loginData.CSRFPreventionToken;
 	Proxmox.UserName = loginData.username;
 
+	var rt = me.down('pveResourceTree');
+	rt.setDatacenterText(loginData.clustername);
+
 	if (loginData.cap) {
 	    Ext.state.Manager.set('GuiCap', loginData.cap);
 	}
@@ -346,6 +349,7 @@ Ext.define('PVE.StdWorkspace', {
 				me.showLogin(); 
 				me.setContent(null);
 				var rt = me.down('pveResourceTree');
+				rt.setDatacenterText(undefined);
 				rt.clearTree();
 
 				// empty the stores of the StatusPanel child items
