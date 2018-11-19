@@ -21,13 +21,6 @@ Ext.define('PVE.form.UserSelector', {
 	    }]
 	});
 
-	var render_full_name = function(firstname, metaData, record) {
-
-	    var first = firstname || '';
-	    var last = record.data.lastname || '';
-	    return first + " " + last;
-	};
-
 	Ext.apply(me, {
 	    store: store,
             listConfig: {
@@ -41,7 +34,7 @@ Ext.define('PVE.form.UserSelector', {
 		    {
 			header: gettext('Name'),
 			sortable: true,
-			renderer: render_full_name,
+			renderer: PVE.Utils.render_full_name,
 			dataIndex: 'firstname',
 			flex: 1
 		    },

@@ -806,6 +806,12 @@ Ext.define('PVE.Utils', { utilities: {
 	return value;
     },
 
+    render_full_name: function(firstname, metaData, record) {
+	var first = firstname || '';
+	var last = record.data.lastname || '';
+	return Ext.htmlEncode(first + " " + last);
+    },
+
     windowHostname: function() {
 	return window.location.hostname.replace(Proxmox.Utils.IP6_bracket_match,
             function(m, addr, offset, original) { return addr; });

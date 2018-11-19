@@ -92,13 +92,6 @@ Ext.define('PVE.dc.UserView', {
 	    edit_btn, remove_btn, pwchange_btn
         ];
 
-	var render_full_name = function(firstname, metaData, record) {
-
-	    var first = firstname || '';
-	    var last = record.data.lastname || '';
-	    return Ext.htmlEncode(first + " " + last);
-	};
-
 	var render_username = function(userid) {
 	    return userid.match(/^(.+)(@[^@]+)$/)[1];
 	};
@@ -147,7 +140,7 @@ Ext.define('PVE.dc.UserView', {
 		    header: gettext('Name'),
 		    width: 150,
 		    sortable: true,
-		    renderer: render_full_name,
+		    renderer: PVE.Utils.render_full_name,
 		    dataIndex: 'firstname'
 		},
 		{
