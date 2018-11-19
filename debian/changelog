@@ -1,3 +1,23 @@
+pve-manager (5.2-12) unstable; urgency=medium
+
+  * improve ZFS gui
+
+  * fix #1959: remove invalid SLAAC option
+
+  * pveceph: pool create: add_storage now only creates one storage entry
+
+  * Enable "Discard" option for IDE and SATA drives
+
+  * fix #1928: ct snapshot: changed rollback message to warning
+
+  * fix #1358: ui: show clustername besides Datacenter node, if available
+
+  * fix #1224: ui: ACLAdd: allow one to filter by username
+
+  * ui: dc/storage: allow one to add CephFS entries
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 19 Nov 2018 15:25:58 +0100
+
 pve-manager (5.2-11) unstable; urgency=medium
 
   * Update default CIPHERS to a more current list
