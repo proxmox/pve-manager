@@ -91,7 +91,8 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    {
 		xtype: 'textfield',
 		name: 'name',
-		fieldLabel: gettext('Name') + ' (i.e. eth0)',
+		fieldLabel: gettext('Name'),
+		emptyText: '(e.g., eth0)',
 		allowBlank: false,
 		value: cdata.name,
 		validator: function(value) {
