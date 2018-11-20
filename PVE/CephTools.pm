@@ -2,13 +2,11 @@ package PVE::CephTools;
 
 use strict;
 use warnings;
-use File::Basename;
-use File::Path;
-use POSIX qw (LONG_MAX);
-use Cwd qw(abs_path);
-use IO::Dir;
 
-use PVE::Tools qw(extract_param run_command file_get_contents file_read_firstline dir_glob_regex dir_glob_foreach);
+use File::Path;
+use IO::File;
+
+use PVE::Tools qw(run_command dir_glob_foreach);
 
 my $ccname = 'ceph'; # ceph cluster name
 my $ceph_cfgdir = "/etc/ceph";
