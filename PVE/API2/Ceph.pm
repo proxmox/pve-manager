@@ -2,27 +2,20 @@ package PVE::API2::CephOSD;
 
 use strict;
 use warnings;
-use Cwd qw(abs_path);
-use Net::IP;
 
-use PVE::SafeSyslog;
-use PVE::Tools qw(extract_param run_command file_get_contents file_read_firstline dir_glob_regex dir_glob_foreach);
-use PVE::Exception qw(raise raise_param_exc);
-use PVE::INotify;
-use PVE::Cluster qw(cfs_lock_file cfs_read_file cfs_write_file);
-use PVE::AccessControl;
-use PVE::Storage;
-use PVE::API2::Storage::Config;
-use PVE::RESTHandler;
-use PVE::RPCEnvironment;
-use PVE::JSONSchema qw(get_standard_option);
-use PVE::RADOS;
+use Cwd qw(abs_path);
+use IO::File;
+
 use PVE::CephTools;
 use PVE::Diskmanage;
+use PVE::Exception qw(raise_param_exc);
+use PVE::JSONSchema qw(get_standard_option);
+use PVE::RADOS;
+use PVE::RESTHandler;
+use PVE::RPCEnvironment;
+use PVE::Tools qw(run_command);
 
 use base qw(PVE::RESTHandler);
-
-use Data::Dumper; # fixme: remove
 
 my $get_osd_status = sub {
     my ($rados, $osdid) = @_;
