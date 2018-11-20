@@ -272,7 +272,7 @@ __PACKAGE__->register_method ({
 
 	if (! -f $ceph_bootstrap_osd_keyring) {
 	    my $bindata = $rados->mon_command({ prefix => 'auth get', entity => 'client.bootstrap-osd', format => 'plain' });
-	    PVE::Tools::file_set_contents($ceph_bootstrap_osd_keyring, $bindata);
+	    file_set_contents($ceph_bootstrap_osd_keyring, $bindata);
 	};
 
 	my $worker = sub {
@@ -692,7 +692,7 @@ __PACKAGE__->register_method ({
 	PVE::CephTools::check_ceph_inited();
 
 	my $path = PVE::CephTools::get_config('pve_ceph_cfgpath');
-	return PVE::Tools::file_get_contents($path);
+	return file_get_contents($path);
 
     }});
 
@@ -963,7 +963,7 @@ my $create_mgr = sub {
 					   mds => 'allow *',
 				       ],
 				       format => 'plain'});
-    PVE::Tools::file_set_contents($mgrkeyring, $output);
+    file_set_contents($mgrkeyring, $output);
 
     print "setting owner for directory\n";
     run_command(["chown", 'ceph:ceph', '-R', $mgrdir]);
@@ -1115,7 +1115,7 @@ __PACKAGE__->register_method ({
 		if ($moncount > 0) {
 		    my $rados = PVE::RADOS->new(timeout => PVE::CephTools::get_config('long_rados_timeout'));
 		    my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
-		    PVE::Tools::file_set_contents($monmap, $mapdata);
+		    file_set_contents($monmap, $mapdata);
 		} else {
 		    run_command("monmaptool --create --clobber --add $monid $monaddr --print $monmap");
 		}
@@ -1925,9 +1925,9 @@ __PACKAGE__->register_method ({
 
 	eval {
 	    my $bindata = $rados->mon_command({ prefix => 'osd getcrushmap', format => 'plain' });
-	    PVE::Tools::file_set_contents($mapfile, $bindata);
+	    file_set_contents($mapfile, $bindata);
 	    run_command(['crushtool', '-d', $mapfile, '-o', $mapdata]);
-	    $txt = PVE::Tools::file_get_contents($mapdata);
+	    $txt = file_get_contents($mapdata);
 	};
 	my $err = $@;
 
