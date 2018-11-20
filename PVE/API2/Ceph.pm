@@ -533,32 +533,24 @@ package PVE::API2::Ceph;
 
 use strict;
 use warnings;
-use File::Basename;
-use File::Path;
-use POSIX qw (LONG_MAX);
-use Cwd qw(abs_path);
-use IO::Dir;
-use UUID;
-use Net::IP;
 
-use PVE::SafeSyslog;
-use PVE::Tools qw(extract_param run_command file_get_contents file_read_firstline dir_glob_regex dir_glob_foreach);
-use PVE::Exception qw(raise raise_param_exc);
-use PVE::INotify;
-use PVE::Cluster qw(cfs_lock_file cfs_read_file cfs_write_file);
-use PVE::AccessControl;
-use PVE::Storage;
+use File::Path;
+use Net::IP;
+use UUID;
+
+use PVE::CephTools;
+use PVE::Cluster;
+use PVE::JSONSchema qw(get_standard_option);
+use PVE::Network;
+use PVE::RADOS;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
-use PVE::JSONSchema qw(get_standard_option);
-use JSON;
-use PVE::RADOS;
-use PVE::CephTools;
-use PVE::Network;
+use PVE::Storage;
+use PVE::Tools qw(run_command file_get_contents file_set_contents);
+
+use PVE::API2::Storage::Config;
 
 use base qw(PVE::RESTHandler);
-
-use Data::Dumper; # fixme: remove
 
 my $pve_osd_default_journal_size = 1024*5;
 
