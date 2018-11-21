@@ -22,6 +22,14 @@ Ext.define('PVE.data.ResourceStore', {
 	return nodes;
     },
 
+    storageIsShared: function(storage_path) {
+	var me = this;
+
+	var index = me.findExact('id', storage_path);
+
+	return me.getAt(index).data.shared;
+    },
+
     constructor: function(config) {
 	// fixme: how to avoid those warnings
 	/*jslint confusion: true */
