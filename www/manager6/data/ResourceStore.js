@@ -30,6 +30,14 @@ Ext.define('PVE.data.ResourceStore', {
 	return me.getAt(index).data.shared;
     },
 
+    guestNode: function(vmid) {
+	var me = this;
+
+	var index = me.findExact('vmid', parseInt(vmid, 10));
+
+	return me.getAt(index).data.node;
+    },
+
     constructor: function(config) {
 	// fixme: how to avoid those warnings
 	/*jslint confusion: true */
