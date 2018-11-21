@@ -120,6 +120,7 @@ sub extract_storage_stats {
 	node => $node, 
 	type => 'storage', 
 	status => 'unknown',
+	shared => $scfg->{shared} || 0,
     }; 
 
     if (my $d = $rrd->{"pve2-storage/$node/$storeid"}) {
