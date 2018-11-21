@@ -401,6 +401,20 @@ Ext.define('PVE.storage.ContentView', {
 	    }
 	});
 
+	var removeButton = Ext.create('Proxmox.button.StdRemoveButton',{
+	    selModel: sm,
+	    enableFn: function(rec) {
+		if (rec && rec.data.content !== 'images') {
+		    return true;
+		}
+		return false;
+	    },
+	    callback: function() {
+		reload();
+	    },
+	    baseurl: baseurl + '/'
+	});
+
 	me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
 	    url: '/api2/json/nodes/' + nodename + '/storage/' + storage + '/status'
 	});
@@ -437,17 +451,7 @@ Ext.define('PVE.storage.ContentView', {
 			win.on('destroy', reload);
 		    }
 		},
-		{
-		    xtype: 'proxmoxStdRemoveButton',
-		    selModel: sm,
-		    enableFn: function(rec) {
-			return rec && rec.data.content !== 'images';
-		    },
-		    callback: function() {
-			reload();
-		    },
-		    baseurl: baseurl + '/'
-		},
+		removeButton,
 		templateButton,
 		uploadButton,
 		{
