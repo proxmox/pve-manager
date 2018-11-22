@@ -158,7 +158,7 @@ Ext.define('PVE.window.SafeDestroy', {
 	} else if (item.type === 'CephPool') {
 	    msg = Proxmox.Utils.format_task_description('cephdestroypool', item.id);
 	} else if (item.type === 'Image') {
-	    msg = Proxmox.Utils.format_task_description('imgdel', item.id);
+	    msg = Proxmox.Utils.format_task_description('unknownimgdel', item.id);
 	} else {
 	    throw "unknown item type specified";
 	}

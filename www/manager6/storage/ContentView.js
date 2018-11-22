@@ -457,6 +457,7 @@ Ext.define('PVE.storage.ContentView', {
 		    }
 		}
 		var win = Ext.create('PVE.window.SafeDestroy', {
+		    title: Ext.String.format(gettext("Destroy '{0}'"), rec.data.volid),
 		    showProgress: true,
 		    url: url,
 		    item: { type: 'Image', id: vmid }
