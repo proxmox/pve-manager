@@ -401,6 +401,7 @@ Ext.define('PVE.storage.ContentView', {
 	    }
 	});
 
+	var imageRemoveButton;
 	var removeButton = Ext.create('Proxmox.button.StdRemoveButton',{
 	    selModel: sm,
 	    enableFn: function(rec) {
@@ -417,7 +418,7 @@ Ext.define('PVE.storage.ContentView', {
 	    baseurl: baseurl + '/'
 	});
 
-	var imageRemoveButton = Ext.create('Proxmox.button.Button',{
+	imageRemoveButton = Ext.create('Proxmox.button.Button',{
 	    selModel: sm,
 	    hidden: true,
 	    text: gettext('Remove'),
@@ -434,24 +435,23 @@ Ext.define('PVE.storage.ContentView', {
 
 		var url = baseurl + '/' + rec.data.volid;
 		var vmid = rec.data.vmid;
-		var storage_path = 'storage/' + nodename + '/' + storage;
 
 		var store = PVE.data.ResourceStore;
-		var vmid_exists = vmid && store.findVMID(vmid);
-		if (vmid_exists) {
+
+		if (vmid && store.findVMID(vmid)) {
 		    var guest_node = store.guestNode(vmid);
-		    var storage_is_shared = store.storageIsShared(storage_path);
+		    var storage_path = 'storage/' + nodename + '/' + storage;
 
 		    // allow to delete local backed images if a VMID exists on another node.
-		    if (storage_is_shared || guest_node == nodename) {
+		    if (store.storageIsShared(storage_path) || guest_node == nodename) {
 			var msg = Ext.String.format(
-			    gettext("Cannot remove image, a guest with VMID: '{0}' exists!"),
-			    vmid) + '</br>' +
-			    gettext("You can delete the image from the guest's hardware pane");
+			    gettext("Cannot remove image, a guest with VMID '{0}' exists!"), vmid);
+			msg += '<br />' + gettext("You can delete the image from the guest's hardware pane");
+
 			Ext.Msg.show({
 			    title: gettext('Cannot remove disk image.'),
 			    icon: Ext.Msg.ERROR,
-			    msg: msg,
+			    msg: msg
 			});
 			return;
 		    }
@@ -459,7 +459,7 @@ Ext.define('PVE.storage.ContentView', {
 		var win = Ext.create('PVE.window.SafeDestroy', {
 		    showProgress: true,
 		    url: url,
-		    item: { type: 'Image', id: vmid },
+		    item: { type: 'Image', id: vmid }
 		}).show();
 		win.on('destroy', function() {
 		    me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
@@ -468,7 +468,7 @@ Ext.define('PVE.storage.ContentView', {
 		    reload();
 
 		});
-	    },
+	    }
 	});
 
 	me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
