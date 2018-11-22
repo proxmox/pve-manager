@@ -42,6 +42,7 @@ JSSRC= 				                 	\
 	form/DiskStorageSelector.js			\
 	form/BridgeSelector.js				\
 	form/PCISelector.js				\
+	form/MDevSelector.js				\
 	form/SecurityGroupSelector.js			\
 	form/IPRefSelector.js				\
 	form/IPProtocolSelector.js			\
