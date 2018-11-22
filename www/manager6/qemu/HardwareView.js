@@ -511,8 +511,12 @@ Ext.define('PVE.qemu.HardwareView', {
 		    hasCloudInit = true;
 		}
 	    });
-	    me.down('#addusb').setDisabled((count >= 5));
-	    me.down('#addci').setDisabled(hasCloudInit);
+
+	    // heuristic only for disabling some stuff, the backend has the final word.
+	    var noSysConsolePerm = !caps.nodes['Sys.Console'];
+
+	    me.down('#addusb').setDisabled(noSysConsolePerm || (count >= 5));
+	    me.down('#addci').setDisabled(noSysConsolePerm || hasCloudInit);
 
 	    if (!rec) {
 		remove_btn.disable();
