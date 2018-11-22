@@ -81,10 +81,10 @@ Ext.define('PVE.node.Config', {
 	});
 
 	var restartBtn = Ext.create('Proxmox.button.Button', {
-	    text: gettext('Restart'),
+	    text: gettext('Reboot'),
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
 	    dangerous: true,
-	    confirmMsg: gettext('Node') + " '" + nodename + "' - " + gettext('Restart'),
+	    confirmMsg: Ext.String.format(gettext("Reboot node '{0}'?"), nodename),
 	    handler: function() {
 		node_command('reboot');
 	    },
@@ -95,7 +95,7 @@ Ext.define('PVE.node.Config', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
 	    dangerous: true,
-	    confirmMsg: gettext('Node') + " '" + nodename + "' - " + gettext('Shutdown'),
+	    confirmMsg: Ext.String.format(gettext("Shutdown node '{0}'?"), nodename),
 	    handler: function() {
 		node_command('shutdown');
 	    },
