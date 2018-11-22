@@ -405,6 +405,8 @@ Ext.define('PVE.storage.ContentView', {
 	    selModel: sm,
 	    enableFn: function(rec) {
 		if (rec && rec.data.content !== 'images') {
+		    imageRemoveButton.setVisible(false);
+		    removeButton.setVisible(true);
 		    return true;
 		}
 		return false;
@@ -413,6 +415,60 @@ Ext.define('PVE.storage.ContentView', {
 		reload();
 	    },
 	    baseurl: baseurl + '/'
+	});
+
+	var imageRemoveButton = Ext.create('Proxmox.button.Button',{
+	    selModel: sm,
+	    hidden: true,
+	    text: gettext('Remove'),
+	    enableFn: function(rec) {
+		if (rec && rec.data.content === 'images') {
+		    removeButton.setVisible(false);
+		    imageRemoveButton.setVisible(true);
+		    return true;
+		}
+		return false;
+	    },
+	    handler: function(btn, event, rec) {
+		me = this;
+
+		var url = baseurl + '/' + rec.data.volid;
+		var vmid = rec.data.vmid;
+		var storage_path = 'storage/' + nodename + '/' + storage;
+
+		var store = PVE.data.ResourceStore;
+		var vmid_exists = vmid && store.findVMID(vmid);
+		if (vmid_exists) {
+		    var guest_node = store.guestNode(vmid);
+		    var storage_is_shared = store.storageIsShared(storage_path);
+
+		    // allow to delete local backed images if a VMID exists on another node.
+		    if (storage_is_shared || guest_node == nodename) {
+			var msg = Ext.String.format(
+			    gettext("Cannot remove image, a guest with VMID: '{0}' exists!"),
+			    vmid) + '</br>' +
+			    gettext("You can delete the image from the guest's hardware pane");
+			Ext.Msg.show({
+			    title: gettext('Cannot remove disk image.'),
+			    icon: Ext.Msg.ERROR,
+			    msg: msg,
+			});
+			return;
+		    }
+		}
+		var win = Ext.create('PVE.window.SafeDestroy', {
+		    showProgress: true,
+		    url: url,
+		    item: { type: 'Image', id: vmid },
+		}).show();
+		win.on('destroy', function() {
+		    me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
+			url: '/api2/json/nodes/' + nodename + '/storage/' + storage + '/status'
+		    });
+		    reload();
+
+		});
+	    },
 	});
 
 	me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
@@ -452,6 +508,7 @@ Ext.define('PVE.storage.ContentView', {
 		    }
 		},
 		removeButton,
+		imageRemoveButton,
 		templateButton,
 		uploadButton,
 		{
