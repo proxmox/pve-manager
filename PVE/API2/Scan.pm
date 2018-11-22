@@ -1,5 +1,4 @@
 package PVE::API2::Scan;
-
 use strict;
 use warnings;
 
@@ -461,6 +460,7 @@ __PACKAGE__->register_method ({
 	},
     },
     returns => {
+	links => [ { rel => 'child', href => "{id}" } ],
 	type => 'array',
 	items => {
 	    type => "object",
@@ -544,6 +544,89 @@ __PACKAGE__->register_method ({
 	my $verbose = $param->{verbose} // 1;
 
 	return PVE::SysFSTools::lspci($filter, $verbose);
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'pciindex',
+    path => 'pci/{pciid}',
+    method => 'GET',
+    description => "Index of available pci methods",
+    permissions => {
+	user => 'all',
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    pciid => {
+		type => 'string',
+		pattern => '(?:[0-9a-fA-F]{4}:)?[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]',
+	    },
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => { method => { type => 'string'} },
+	},
+	links => [ { rel => 'child', href => "{method}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $res = [
+	    { method => 'mdev' },
+	    ];
+
+	return $res;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'mdevscan',
+    path => 'pci/{pciid}/mdev',
+    method => 'GET',
+    description => "List mediated device types for given PCI device.",
+    protected => 1,
+    proxyto => "node",
+    permissions => {
+	check => ['perm', '/', ['Sys.Modify']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    pciid => {
+		type => 'string',
+		pattern => '(?:[0-9a-fA-F]{4}:)?[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]',
+		description => "The PCI ID to list the mdev types for."
+	    },
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {
+		type => {
+		    type => 'string',
+		    description => "The name of the mdev type.",
+		},
+		available => {
+		    type => 'integer',
+		    description => "The number of still available instances of"
+				  ." this type.",
+		},
+		description => {
+		    type => 'string',
+		},
+	    },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	return PVE::SysFSTools::get_mdev_types($param->{pciid});
     }});
 
 1;
