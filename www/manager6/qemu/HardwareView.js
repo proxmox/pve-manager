@@ -219,6 +219,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		order: i,
 		tdCls: 'pve-itype-icon-pci',
 		never_delete: caps.nodes['Sys.Console'] ? false : true,
+		editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.PCIEdit' : undefined,
 		header: gettext('PCI Device') + ' (' + confid + ')'
 	    };
 	}
@@ -501,11 +502,14 @@ Ext.define('PVE.qemu.HardwareView', {
 	    // see that there is already one
 	    efidisk_menuitem.setDisabled(me.rstore.getData().map.efidisk0 !== undefined);
 	    // en/disable usb add button
-	    var count = 0;
+	    var usbcount = 0;
+	    var pcicount = 0;
 	    var hasCloudInit = false;
 	    me.rstore.getData().items.forEach(function(item){
 		if (/^usb\d+/.test(item.id)) {
-		    count++;
+		    usbcount++;
+		} else if (/^hostpci\d+/.test(item.id)) {
+		    pcicount++;
 		}
 		if (!hasCloudInit && /vm-.*-cloudinit/.test(item.data.value)) {
 		    hasCloudInit = true;
@@ -515,7 +519,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	    // heuristic only for disabling some stuff, the backend has the final word.
 	    var noSysConsolePerm = !caps.nodes['Sys.Console'];
 
-	    me.down('#addusb').setDisabled(noSysConsolePerm || (count >= 5));
+	    me.down('#addusb').setDisabled(noSysConsolePerm || (usbcount >= 5));
+	    me.down('#addpci').setDisabled(noSysConsolePerm || (pcicount >= 4));
 	    me.down('#addci').setDisabled(noSysConsolePerm || hasCloudInit);
 
 	    if (!rec) {
@@ -611,6 +616,20 @@ Ext.define('PVE.qemu.HardwareView', {
 				disabled: !caps.nodes['Sys.Console'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.USBEdit', {
+					url: '/api2/extjs/' + baseurl,
+					pveSelNode: me.pveSelNode
+				    });
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+			    {
+				text: gettext('PCI Device'),
+				itemId: 'addpci',
+				iconCls: 'pve-itype-icon-pci',
+				disabled: !caps.nodes['Sys.Console'],
+				handler: function() {
+				    var win = Ext.create('PVE.qemu.PCIEdit', {
 					url: '/api2/extjs/' + baseurl,
 					pveSelNode: me.pveSelNode
 				    });
