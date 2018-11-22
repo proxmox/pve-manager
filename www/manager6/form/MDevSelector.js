@@ -69,7 +69,7 @@ Ext.define('PVE.form.MDevSelector', {
 	var me = this;
 	me.store.setProxy({
 	    type: 'proxmox',
-	    url: '/api2/json/nodes/' + me.nodename + '/scan/pci/' + me.pciid + '/mdev'
+	    url: '/api2/json/nodes/' + me.nodename + '/hardware/pci/' + me.pciid + '/mdev'
 	});
 	me.store.load();
     },

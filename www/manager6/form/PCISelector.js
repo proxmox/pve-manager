@@ -66,7 +66,7 @@ Ext.define('PVE.form.PCISelector', {
 
 	me.store.setProxy({
 	    type: 'proxmox',
-	    url: '/api2/json/nodes/' + me.nodename + '/scan/pci'
+	    url: '/api2/json/nodes/' + me.nodename + '/hardware/pci'
 	});
 
 	me.store.load();

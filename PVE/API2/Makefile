@@ -1,5 +1,7 @@
 include ../../defines.mk
 
+SUBDIRS=Hardware
+
 PERLSOURCE = 			\
 	Replication.pm		\
 	ReplicationConfig.pm	\
@@ -19,6 +21,7 @@ PERLSOURCE = 			\
 	ACMEAccount.pm		\
 	NodeConfig.pm		\
 	Scan.pm			\
+	Hardware.pm		\
 	Services.pm
 
 all:
@@ -26,8 +29,10 @@ all:
 .PHONY: clean
 clean:
 	rm -rf *~
+	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 
 .PHONY: install 
 install: ${PERLSOURCE}
 	install -d ${PERLLIBDIR}/PVE/API2
 	install -m 0644 ${PERLSOURCE} ${PERLLIBDIR}/PVE/API2
+	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done

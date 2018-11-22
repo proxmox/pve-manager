@@ -43,6 +43,7 @@ use PVE::API2::Firewall::Host;
 use PVE::API2::Replication;
 use PVE::API2::Certificates;
 use PVE::API2::NodeConfig;
+use PVE::API2::Hardware;
 use Digest::MD5;
 use Digest::SHA;
 use PVE::API2::Disks;
@@ -94,6 +95,12 @@ __PACKAGE__->register_method ({
     subclass => "PVE::API2::Scan",
     path => 'scan',
 });
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Hardware",
+    path => 'hardware',
+});
+
 
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Storage::Status",  
