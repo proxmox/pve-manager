@@ -1,3 +1,12 @@
+pve-manager (5.2-13) unstable; urgency=medium
+
+  * allow one to remove images from a storage over the web GUI, if no VM exists
+    in the cluster or the storage is local
+
+  * allow one to passthrough PCI devices to VMs over the web GUI
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 22 Nov 2018 14:55:57 +0100
+
 pve-manager (5.2-12) unstable; urgency=medium
 
   * improve ZFS gui
