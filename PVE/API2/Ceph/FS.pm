@@ -185,9 +185,22 @@ __PACKAGE__->register_method ({
 
 		die "$err\n";
 	    }
+	    print "Successfully create CephFS '$fs_name'\n";
 
 	    if ($param->{add_storage}) {
-		my $err;
+		print "Adding '$fs_name' to storage configuration...\n";
+
+		my $waittime = 0;
+		while (!PVE::CephTools::is_any_mds_active()) {
+		    if ($waittime >= 10) {
+			die "Need MDS to add storage, but none got active!\n";
+		    }
+
+		    print "Waiting for an MDS to become active\n";
+		    sleep(1);
+		    $waittime++;
+		}
+
 		eval {
 		    PVE::API2::Storage::Config->create({
 			type => 'cephfs',

@@ -364,6 +364,24 @@ sub get_cluster_mds_state {
     return $mds_state;
 }
 
+sub is_any_mds_active {
+    my ($rados) = @_;
+
+    if (!defined($rados)) {
+	$rados = PVE::RADOS->new();
+    }
+
+    my $mds_dump = $rados->mon_command({ prefix => 'mds stat' });
+    my $fs = $mds_dump->{fsmap}->{filesystems};
+
+    if (!($fs && scalar(@$fs) > 0)) {
+	return undef;
+    }
+    my $active_mds = $fs->[0]->{mdsmap}->{info};
+
+    return scalar(keys %$active_mds) > 0;
+}
+
 sub create_mds {
     my ($id, $rados) = @_;
 
