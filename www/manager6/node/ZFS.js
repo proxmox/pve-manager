@@ -182,15 +182,15 @@ Ext.define('PVE.node.ZFSDevices', {
 	    dataIndex: 'state'
 	},
 	{
-	    text: gettext('READ'),
+	    text: 'READ',
 	    dataIndex: 'read'
 	},
 	{
-	    text: gettext('WRITE'),
+	    text: 'WRITE',
 	    dataIndex: 'write'
 	},
 	{
-	    text: gettext('CKSUM'),
+	    text: 'CKSUM',
 	    dataIndex: 'cksum'
 	},
 	{
