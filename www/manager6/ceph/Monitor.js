@@ -123,6 +123,15 @@ Ext.define('PVE.node.CephMonList', {
 	    }
 	});
 
+	var restart_btn = new Proxmox.button.Button({
+	    text: gettext('Restart'),
+	    selModel: sm,
+	    disabled: true,
+	    handler: function(){
+		service_cmd("restart");
+	    }
+	});
+
 	var create_btn = new Ext.Button({
 	    text: gettext('Create'),
 	    handler: function(){
@@ -164,7 +173,7 @@ Ext.define('PVE.node.CephMonList', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    tbar: [ start_btn, stop_btn, create_btn, remove_btn ],
+	    tbar: [ start_btn, stop_btn, restart_btn, '-', create_btn, remove_btn ],
 	    columns: [
 		{
 		    header: gettext('Name'),
