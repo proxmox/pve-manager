@@ -8,6 +8,7 @@ use PVE::JSONSchema qw(get_standard_option);
 use PVE::RADOS;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
+use PVE::Storage;
 
 use PVE::API2::Storage::Config;
 
@@ -137,6 +138,8 @@ __PACKAGE__->register_method ({
 
 	my $running_mds = PVE::CephTools::get_cluster_mds_state($rados);
 	die "no running Metadata Server (MDS) found!\n" if !scalar(keys %$running_mds);
+
+	PVE::Storage::assert_sid_unused($fs_name) if $param->{add_storage};
 
 	my $worker = sub {
 	    $rados = PVE::RADOS->new();
