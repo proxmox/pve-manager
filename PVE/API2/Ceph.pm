@@ -548,6 +548,7 @@ use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Tools qw(run_command file_get_contents file_set_contents);
 
+use PVE::API2::Ceph::FS;
 use PVE::API2::Ceph::MDS;
 use PVE::API2::Storage::Config;
 
@@ -563,6 +564,11 @@ __PACKAGE__->register_method ({
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Ceph::MDS",
     path => 'mds',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Ceph::FS",
+    path => 'fs',
 });
 
 __PACKAGE__->register_method ({
@@ -596,6 +602,7 @@ __PACKAGE__->register_method ({
 	    { name => 'mon' },
 	    { name => 'osd' },
 	    { name => 'pools' },
+	    { name => 'fs' },
 	    { name => 'mds' },
 	    { name => 'stop' },
 	    { name => 'start' },

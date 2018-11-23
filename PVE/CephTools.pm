@@ -240,6 +240,18 @@ sub create_pool {
 
 }
 
+sub ls_pools {
+    my ($pool, $rados) = @_;
+
+    if (!defined($rados)) {
+	$rados = PVE::RADOS->new();
+    }
+
+    my $res = $rados->mon_command({ prefix => "osd lspools" });
+
+    return $res;
+}
+
 sub destroy_pool {
     my ($pool, $rados) = @_;
 

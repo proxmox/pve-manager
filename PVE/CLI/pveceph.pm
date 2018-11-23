@@ -19,6 +19,7 @@ use PVE::Tools qw(run_command);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::CephTools;
 use PVE::API2::Ceph;
+use PVE::API2::Ceph::FS;
 use PVE::API2::Ceph::MDS;
 
 use PVE::CLIHandler;
@@ -170,6 +171,7 @@ our $cmddef = {
     }],
     createpool => [ 'PVE::API2::Ceph', 'createpool', ['name'], { node => $nodename }],
     destroypool => [ 'PVE::API2::Ceph', 'destroypool', ['name'], { node => $nodename } ],
+    createfs => [ 'PVE::API2::Ceph::FS', 'createfs', [], { node => $nodename }],
     createosd => [ 'PVE::API2::CephOSD', 'createosd', ['dev'], { node => $nodename }, $upid_exit],
     destroyosd => [ 'PVE::API2::CephOSD', 'destroyosd', ['osdid'], { node => $nodename }, $upid_exit],
     createmon => [ 'PVE::API2::Ceph', 'createmon', [], { node => $nodename }, $upid_exit],
