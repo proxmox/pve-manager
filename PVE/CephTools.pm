@@ -18,12 +18,14 @@ my $pve_mon_key_path = "/etc/pve/priv/$ccname.mon.keyring";
 my $pve_ckeyring_path = "/etc/pve/priv/$ccname.client.admin.keyring";
 my $ceph_bootstrap_osd_keyring = "/var/lib/ceph/bootstrap-osd/$ccname.keyring";
 my $ceph_bootstrap_mds_keyring = "/var/lib/ceph/bootstrap-mds/$ccname.keyring";
+my $ceph_mds_data_dir = '/var/lib/ceph/mds';
 
 my $ceph_service = {
     ceph_bin => "/usr/bin/ceph",
     ceph_mon => "/usr/bin/ceph-mon",
     ceph_mgr => "/usr/bin/ceph-mgr",
-    ceph_osd => "/usr/bin/ceph-osd"
+    ceph_osd => "/usr/bin/ceph-osd",
+    ceph_mds => "/usr/bin/ceph-mds",
 };
 
 my $config_hash = {
@@ -33,6 +35,7 @@ my $config_hash = {
     pve_ckeyring_path => $pve_ckeyring_path,
     ceph_bootstrap_osd_keyring => $ceph_bootstrap_osd_keyring,
     ceph_bootstrap_mds_keyring => $ceph_bootstrap_mds_keyring,
+    ceph_mds_data_dir => $ceph_mds_data_dir,
     long_rados_timeout => 60,
 };
 
@@ -296,5 +299,140 @@ sub systemd_managed {
 	return 0;
     }
 }
+
+sub list_local_mds_ids {
+    my $mds_list = [];
+
+    PVE::Tools::dir_glob_foreach($ceph_mds_data_dir, qr/$ccname-(\S+)/, sub {
+	my (undef, $mds_id) = @_;
+	push @$mds_list, $mds_id;
+    });
+
+    return $mds_list;
+}
+
+sub get_cluster_mds_state {
+    my ($rados) = @_;
+
+    my $mds_state = {};
+
+    if (!defined($rados)) {
+	$rados = PVE::RADOS->new();
+    }
+
+    my $add_state = sub {
+	my ($mds) = @_;
+
+	my $state = {};
+	$state->{addr} = $mds->{addr};
+	$state->{rank} = $mds->{rank};
+	$state->{standby_replay} = $mds->{standby_replay} ? 1 : 0;
+	$state->{state} = $mds->{state};
+
+	$mds_state->{$mds->{name}} = $state;
+    };
+
+    my $mds_dump = $rados->mon_command({ prefix => 'mds stat' });
+    my $fsmap = $mds_dump->{fsmap};
+
+
+    foreach my $mds (@{$fsmap->{standbys}}) {
+	$add_state->($mds);
+    }
+
+    my $fs_info = $fsmap->{filesystems}->[0];
+    my $active_mds = $fs_info->{mdsmap}->{info};
+
+    # normally there's only one active MDS, but we can have multiple active for
+    # different ranks (e.g., different cephs path hierarchy). So just add all.
+    foreach my $mds (values %$active_mds) {
+	$add_state->($mds);
+    }
+
+    return $mds_state;
+}
+
+sub create_mds {
+    my ($id, $rados) = @_;
+
+    # `ceph fs status` fails with numeric only ID.
+    die "ID: $id, numeric only IDs are not supported\n"
+	if $id =~ /^\d+$/;
+
+    if (!defined($rados)) {
+	$rados = PVE::RADOS->new();
+    }
+
+    my $service_dir = "/var/lib/ceph/mds/$ccname-$id";
+    my $service_keyring = "$service_dir/keyring";
+    my $service_name = "mds.$id";
+
+    die "ceph MDS directory '$service_dir' already exists\n"
+	if -d $service_dir;
+
+    print "creating MDS directory '$service_dir'\n";
+    eval { File::Path::mkpath($service_dir) };
+    my $err = $@;
+    die "creation MDS directory '$service_dir' failed\n" if $err;
+
+    # http://docs.ceph.com/docs/luminous/install/manual-deployment/#adding-mds
+    my $priv = [
+	mon => 'allow profile mds',
+	osd => 'allow rwx',
+	mds => 'allow *',
+    ];
+
+    print "creating keys for '$service_name'\n";
+    my $output = $rados->mon_command({
+	prefix => 'auth get-or-create',
+	entity => $service_name,
+	caps => $priv,
+	format => 'plain',
+    });
+
+    PVE::Tools::file_set_contents($service_keyring, $output);
+
+    print "setting ceph as owner for service directory\n";
+    run_command(["chown", 'ceph:ceph', '-R', $service_dir]);
+
+    print "enabling service 'ceph-mds\@$id.service'\n";
+    ceph_service_cmd('enable', $service_name);
+    print "starting service 'ceph-mds\@$id.service'\n";
+    ceph_service_cmd('start', $service_name);
+
+    return undef;
+};
+
+sub destroy_mds {
+    my ($id, $rados) = @_;
+
+    if (!defined($rados)) {
+	$rados = PVE::RADOS->new();
+    }
+
+    my $service_name = "mds.$id";
+    my $service_dir = "/var/lib/ceph/mds/$ccname-$id";
+
+    print "disabling service 'ceph-mds\@$id.service'\n";
+    ceph_service_cmd('disable', $service_name);
+    print "stopping service 'ceph-mds\@$id.service'\n";
+    ceph_service_cmd('stop', $service_name);
+
+    if (-d $service_dir) {
+	print "removing ceph-mds directory '$service_dir'\n";
+	File::Path::remove_tree($service_dir);
+    } else {
+	warn "cannot cleanup MDS $id directory, '$service_dir' not found\n"
+    }
+
+    print "removing ceph auth for '$service_name'\n";
+    $rados->mon_command({
+	    prefix => 'auth del',
+	    entity => $service_name,
+	    format => 'plain'
+	});
+
+    return undef;
+};
 
 1;

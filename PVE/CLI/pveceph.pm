@@ -19,6 +19,7 @@ use PVE::Tools qw(run_command);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::CephTools;
 use PVE::API2::Ceph;
+use PVE::API2::Ceph::MDS;
 
 use PVE::CLIHandler;
 
@@ -175,6 +176,8 @@ our $cmddef = {
     destroymon => [ 'PVE::API2::Ceph', 'destroymon', ['monid'], { node => $nodename }, $upid_exit],
     createmgr => [ 'PVE::API2::Ceph', 'createmgr', [], { node => $nodename }, $upid_exit],
     destroymgr => [ 'PVE::API2::Ceph', 'destroymgr', ['id'], { node => $nodename }, $upid_exit],
+    createmds => [ 'PVE::API2::Ceph::MDS', 'createmds', [], { node => $nodename }, $upid_exit],
+    destroymds => [ 'PVE::API2::Ceph::MDS', 'destroymds', ['id'], { node => $nodename }, $upid_exit],
     start => [ 'PVE::API2::Ceph', 'start', ['service'], { node => $nodename }, $upid_exit],
     stop => [ 'PVE::API2::Ceph', 'stop', ['service'], { node => $nodename }, $upid_exit],
     install => [ __PACKAGE__, 'install', [] ],

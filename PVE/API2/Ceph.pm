@@ -548,6 +548,7 @@ use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Tools qw(run_command file_get_contents file_set_contents);
 
+use PVE::API2::Ceph::MDS;
 use PVE::API2::Storage::Config;
 
 use base qw(PVE::RESTHandler);
@@ -557,6 +558,11 @@ my $pve_osd_default_journal_size = 1024*5;
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::CephOSD",
     path => 'osd',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Ceph::MDS",
+    path => 'mds',
 });
 
 __PACKAGE__->register_method ({
@@ -590,6 +596,7 @@ __PACKAGE__->register_method ({
 	    { name => 'mon' },
 	    { name => 'osd' },
 	    { name => 'pools' },
+	    { name => 'mds' },
 	    { name => 'stop' },
 	    { name => 'start' },
 	    { name => 'status' },
