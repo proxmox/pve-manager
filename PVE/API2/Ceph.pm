@@ -1434,6 +1434,56 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
+    name => 'restart',
+    path => 'restart',
+    method => 'POST',
+    description => "Restart ceph services.",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    service => {
+		description => 'Ceph service name.',
+		type => 'string',
+		optional => 1,
+		pattern => '(mon|mds|osd|mgr)\.[A-Za-z0-9\-]{1,32}',
+	    },
+	},
+    },
+    returns => { type => 'string' },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $authuser = $rpcenv->get_user();
+
+	PVE::CephTools::check_ceph_inited();
+
+	my $cfg = PVE::CephTools::parse_ceph_config();
+	scalar(keys %$cfg) || die "no configuration\n";
+
+	my $worker = sub {
+	    my $upid = shift;
+
+	    my $cmd = ['restart'];
+	    if ($param->{service}) {
+		push @$cmd, $param->{service};
+	    }
+
+	    PVE::CephTools::ceph_service_cmd(@$cmd);
+	};
+
+	return $rpcenv->fork_worker('srvrestart', $param->{service} || 'ceph',
+				    $authuser, $worker);
+    }});
+
+__PACKAGE__->register_method ({
     name => 'status',
     path => 'status',
     method => 'GET',
