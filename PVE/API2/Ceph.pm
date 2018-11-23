@@ -1677,45 +1677,7 @@ __PACKAGE__->register_method ({
 
 	my $worker = sub {
 
-	    my $rados = PVE::RADOS->new();
-	    $rados->mon_command({
-		prefix => "osd pool create",
-		pool => $pool,
-		pg_num => int($pg_num),
-		format => 'plain',
-	    });
-
-	    $rados->mon_command({
-		prefix => "osd pool set",
-		pool => $pool,
-		var => 'min_size',
-		val => $min_size,
-		format => 'plain',
-	    });
-
-	    $rados->mon_command({
-		prefix => "osd pool set",
-		pool => $pool,
-		var => 'size',
-		val => $size,
-		format => 'plain',
-	    });
-
-	    if (defined($param->{crush_rule})) {
-		$rados->mon_command({
-		    prefix => "osd pool set",
-		    pool => $pool,
-		    var => 'crush_rule',
-		    val => $param->{crush_rule},
-		    format => 'plain',
-		});
-	    }
-
-	    $rados->mon_command({
-		    prefix => "osd pool application enable",
-		    pool => $pool,
-		    app => $application,
-	    });
+	    PVE::CephTools::create_pool($pool, $param);
 
 	    if ($param->{add_storages}) {
 		my $err;
@@ -1915,15 +1877,7 @@ __PACKAGE__->register_method ({
 		}
 	    }
 
-	    my $rados = PVE::RADOS->new();
-	    # fixme: '--yes-i-really-really-mean-it'
-	    $rados->mon_command({
-		prefix => "osd pool delete",
-		pool => $pool,
-		pool2 => $pool,
-		sure => '--yes-i-really-really-mean-it',
-		format => 'plain',
-	    });
+	    PVE::CephTools::destroy_pool($pool);
 
 	    if ($param->{remove_storages}) {
 		my $err;

@@ -7,6 +7,7 @@ use File::Path;
 use IO::File;
 
 use PVE::Tools qw(run_command dir_glob_foreach);
+use PVE::RADOS;
 
 my $ccname = 'ceph'; # ceph cluster name
 my $ceph_cfgdir = "/etc/ceph";
@@ -181,6 +182,76 @@ sub write_ceph_config {
     &$cond_write_sec('osd\..*');
 
     PVE::Tools::file_set_contents($pve_ceph_cfgpath, $out);
+}
+
+sub create_pool {
+    my ($pool, $param, $rados) = @_;
+
+    if (!defined($rados)) {
+	$rados = PVE::RADOS->new();
+    }
+
+    my $pg_num = $param->{pg_num} || 64;
+    my $size = $param->{size} || 3;
+    my $min_size = $param->{min_size} || 2;
+    my $application = $param->{application} // 'rbd';
+
+    $rados->mon_command({
+	prefix => "osd pool create",
+	pool => $pool,
+	pg_num => int($pg_num),
+	format => 'plain',
+    });
+
+    $rados->mon_command({
+	prefix => "osd pool set",
+	pool => $pool,
+	var => 'min_size',
+	val => $min_size,
+	format => 'plain',
+    });
+
+    $rados->mon_command({
+	prefix => "osd pool set",
+	pool => $pool,
+	var => 'size',
+	val => $size,
+	format => 'plain',
+    });
+
+    if (defined($param->{crush_rule})) {
+	$rados->mon_command({
+	    prefix => "osd pool set",
+	    pool => $pool,
+	    var => 'crush_rule',
+	    val => $param->{crush_rule},
+	    format => 'plain',
+	});
+    }
+
+    $rados->mon_command({
+	prefix => "osd pool application enable",
+	pool => $pool,
+	app => $application,
+    });
+
+}
+
+sub destroy_pool {
+    my ($pool, $rados) = @_;
+
+    if (!defined($rados)) {
+	$rados = PVE::RADOS->new();
+    }
+
+    # fixme: '--yes-i-really-really-mean-it'
+    $rados->mon_command({
+	prefix => "osd pool delete",
+	pool => $pool,
+	pool2 => $pool,
+	sure => '--yes-i-really-really-mean-it',
+	format => 'plain',
+    });
 }
 
 sub setup_pve_symlinks {
