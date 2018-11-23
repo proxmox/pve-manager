@@ -363,6 +363,12 @@ Ext.define('PVE.node.CephOsdTree', {
 	    handler: function(){ service_cmd('stop'); }
 	});
 
+	var restart_btn = new Ext.Button({
+	    text: gettext('Restart'),
+	    disabled: true,
+	    handler: function(){ service_cmd('restart'); }
+	});
+
 	var osd_out_btn = new Ext.Button({
 	    text: 'Out',
 	    disabled: true,
@@ -428,6 +434,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	    if (!rec) {
 		start_btn.setDisabled(true);
 		stop_btn.setDisabled(true);
+		restart_btn.setDisabled(true);
 		remove_btn.setDisabled(true);
 		osd_out_btn.setDisabled(true);
 		osd_in_btn.setDisabled(true);
@@ -438,6 +445,7 @@ Ext.define('PVE.node.CephOsdTree', {
 
 	    start_btn.setDisabled(!(isOsd && (rec.data.status !== 'up')));
 	    stop_btn.setDisabled(!(isOsd && (rec.data.status !== 'down')));
+	    restart_btn.setDisabled(!(isOsd && (rec.data.status !== 'down')));
 	    remove_btn.setDisabled(!(isOsd && (rec.data.status === 'down')));
 
 	    osd_out_btn.setDisabled(!(isOsd && rec.data['in']));
@@ -454,7 +462,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	});
 
 	Ext.apply(me, {
-	    tbar: [ create_btn, reload_btn, noout_btn, '->', osd_label, start_btn, stop_btn, osd_out_btn, osd_in_btn, remove_btn ],
+	    tbar: [ create_btn, reload_btn, noout_btn, '->', osd_label, start_btn, stop_btn, restart_btn, osd_out_btn, osd_in_btn, remove_btn ],
 	    rootVisible: false,
 	    useArrows: true,
 	    fields: ['name', 'type', 'status', 'host', 'in', 'id' ,
