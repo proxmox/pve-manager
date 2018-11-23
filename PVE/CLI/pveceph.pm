@@ -158,28 +158,49 @@ __PACKAGE__->register_method ({
 
 our $cmddef = {
     init => [ 'PVE::API2::Ceph', 'init', [], { node => $nodename } ],
-    lspools => [ 'PVE::API2::Ceph', 'lspools', [], { node => $nodename }, sub {
-	my $res = shift;
+    pool => {
+	ls => [ 'PVE::API2::Ceph', 'lspools', [], { node => $nodename }, sub {
+	    my $res = shift;
 
-	printf("%-20s %10s %10s %10s %10s %20s\n", "Name", "size", "min_size",
-		"pg_num", "%-used", "used");
-	foreach my $p (sort {$a->{pool_name} cmp $b->{pool_name}} @$res) {
-	    printf("%-20s %10d %10d %10d %10.2f %20d\n", $p->{pool_name},
-		    $p->{size}, $p->{min_size}, $p->{pg_num},
-		    $p->{percent_used}, $p->{bytes_used});
-	}
-    }],
-    createpool => [ 'PVE::API2::Ceph', 'createpool', ['name'], { node => $nodename }],
-    destroypool => [ 'PVE::API2::Ceph', 'destroypool', ['name'], { node => $nodename } ],
-    createfs => [ 'PVE::API2::Ceph::FS', 'createfs', [], { node => $nodename }],
-    createosd => [ 'PVE::API2::CephOSD', 'createosd', ['dev'], { node => $nodename }, $upid_exit],
-    destroyosd => [ 'PVE::API2::CephOSD', 'destroyosd', ['osdid'], { node => $nodename }, $upid_exit],
-    createmon => [ 'PVE::API2::Ceph', 'createmon', [], { node => $nodename }, $upid_exit],
-    destroymon => [ 'PVE::API2::Ceph', 'destroymon', ['monid'], { node => $nodename }, $upid_exit],
-    createmgr => [ 'PVE::API2::Ceph', 'createmgr', [], { node => $nodename }, $upid_exit],
-    destroymgr => [ 'PVE::API2::Ceph', 'destroymgr', ['id'], { node => $nodename }, $upid_exit],
-    createmds => [ 'PVE::API2::Ceph::MDS', 'createmds', [], { node => $nodename }, $upid_exit],
-    destroymds => [ 'PVE::API2::Ceph::MDS', 'destroymds', ['id'], { node => $nodename }, $upid_exit],
+	    printf("%-20s %10s %10s %10s %10s %20s\n", "Name", "size", "min_size",
+		    "pg_num", "%-used", "used");
+	    foreach my $p (sort {$a->{pool_name} cmp $b->{pool_name}} @$res) {
+		printf("%-20s %10d %10d %10d %10.2f %20d\n", $p->{pool_name},
+			$p->{size}, $p->{min_size}, $p->{pg_num},
+			$p->{percent_used}, $p->{bytes_used});
+	    }
+	}],
+	create => [ 'PVE::API2::Ceph', 'createpool', ['name'], { node => $nodename }],
+	destroy => [ 'PVE::API2::Ceph', 'destroypool', ['name'], { node => $nodename } ],
+    },
+    lspools => { alias => 'pool ls' },
+    createpool => { alias => 'pool create' },
+    destroypool => { alias => 'pool destroy' },
+    fs => {
+	create => [ 'PVE::API2::Ceph::FS', 'createfs', [], { node => $nodename }],
+    },
+    osd => {
+	create => [ 'PVE::API2::CephOSD', 'createosd', ['dev'], { node => $nodename }, $upid_exit],
+	destroy => [ 'PVE::API2::CephOSD', 'destroyosd', ['osdid'], { node => $nodename }, $upid_exit],
+    },
+    createosd => { alias => 'osd create' },
+    destroyosd => { alias => 'osd destroy' },
+    mon => {
+	create => [ 'PVE::API2::Ceph', 'createmon', [], { node => $nodename }, $upid_exit],
+	destroy => [ 'PVE::API2::Ceph', 'destroymon', ['monid'], { node => $nodename }, $upid_exit],
+    },
+    createmon => { alias => 'mon create' },
+    destroymon => { alias => 'mon destroy' },
+    mgr => {
+	create => [ 'PVE::API2::Ceph', 'createmgr', [], { node => $nodename }, $upid_exit],
+	destroy => [ 'PVE::API2::Ceph', 'destroymgr', ['id'], { node => $nodename }, $upid_exit],
+    },
+    createmgr => { alias => 'mgr create' },
+    destroymgr => { alias => 'mgr destroy' },
+    mds => {
+	create => [ 'PVE::API2::Ceph::MDS', 'createmds', [], { node => $nodename }, $upid_exit],
+	destroy => [ 'PVE::API2::Ceph::MDS', 'destroymds', ['id'], { node => $nodename }, $upid_exit],
+    },
     start => [ 'PVE::API2::Ceph', 'start', ['service'], { node => $nodename }, $upid_exit],
     stop => [ 'PVE::API2::Ceph', 'stop', ['service'], { node => $nodename }, $upid_exit],
     install => [ __PACKAGE__, 'install', [] ],
