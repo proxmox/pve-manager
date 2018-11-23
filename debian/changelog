@@ -1,3 +1,15 @@
+pve-manager (5.3-1) unstable; urgency=medium
+
+  * ceph: add service restart api call
+
+  * gui: add ceph osd and monitor restart button
+
+  * gui: add CephFS integration
+
+  * add CephFS and MDS API integration
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Nov 2018 14:07:50 +0100
+
 pve-manager (5.2-13) unstable; urgency=medium
 
   * allow one to remove images from a storage over the web GUI, if no VM exists
