@@ -1,3 +1,9 @@
+pve-manager (5.3-2) unstable; urgency=medium
+
+  * include ceph-mds in pveceph install
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Nov 2018 15:12:04 +0100
+
 pve-manager (5.3-1) unstable; urgency=medium
 
   * ceph: add service restart api call
