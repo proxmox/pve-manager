@@ -1,3 +1,11 @@
+pve-manager (5.3-3) unstable; urgency=medium
+
+  * api: cephfs create: wait for MDS to become active before adding as storage
+
+  * api: cephfs: check if storage ID is free when add_storage is set
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Nov 2018 19:15:52 +0100
+
 pve-manager (5.3-2) unstable; urgency=medium
 
   * include ceph-mds in pveceph install
