@@ -341,6 +341,14 @@ Ext.define('PVE.node.Config', {
 		    itemId: 'ceph-osdtree'
 		},
 		{
+		    xtype: 'pveNodeCephFSPanel',
+		    title: 'CephFS',
+		    iconCls: 'fa fa-folder',
+		    groups: ['ceph'],
+		    nodename: nodename,
+		    itemId: 'ceph-cephfspanel'
+		},
+		{
 		    xtype: 'pveNodeCephPoolList',
 		    title: 'Pools',
 		    iconCls: 'fa fa-sitemap',
