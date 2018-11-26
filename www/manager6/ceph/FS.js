@@ -114,7 +114,7 @@ Ext.define('PVE.NodeCephFSPanel', {
     xtype: 'pveNodeCephFSPanel',
     mixins: ['Proxmox.Mixin.CBind'],
 
-    title: gettext('Cluster Administration'),
+    title: gettext('CephFS'),
     onlineHelp: 'chapter_pvecm',
 
     border: false,
@@ -125,17 +125,23 @@ Ext.define('PVE.NodeCephFSPanel', {
 	}
     },
 
+    viewModel: {
+	parent: null,
+	data: {
+	    cephfsConfigured: false,
+	    mdsCount: 0
+	},
+	formulas: {
+	    canCreateFS: function(get) {
+		return (!get('cephfsConfigured') && get('mdsCount') > 0);
+	    }
+	}
+    },
+
     items: [
 	{
 	    xtype: 'grid',
-	    title: gettext('CephFS'),
-	    viewModel: {
-		parent: null,
-		data: {
-		    cephfsConfigured: false
-		}
-	    },
-	    emptyText: gettext('No CephFS configured.'),
+	    emptyText: Ext.String.format(gettext('No {0} configured.'), 'CephFS'),
 	    controller: {
 		xclass: 'Ext.app.ViewController',
 
@@ -190,7 +196,7 @@ Ext.define('PVE.NodeCephFSPanel', {
 		    handler: 'onCreate',
 		    bind: {
 			// only one CephFS per Ceph cluster makes sense for now
-			disabled: '{cephfsConfigured}'
+			disabled: '{!canCreateFS}'
 		    }
 		}
 	    ],
@@ -218,6 +224,7 @@ Ext.define('PVE.NodeCephFSPanel', {
 	{
 	    xtype: 'grid',
 	    title: gettext('Metadata Servers'),
+	    emptyText: Ext.String.format(gettext('No {0} configured.'), 'MDS'),
 	    controller: {
 		xclass: 'Ext.app.ViewController',
 
@@ -238,9 +245,17 @@ Ext.define('PVE.NodeCephFSPanel', {
 			}
 		    }));
 		    Proxmox.Utils.monStoreErrors(view, view.rstore);
+		    view.rstore.on('load', this.onLoad, this);
 		    view.on('destroy', view.rstore.stopUpdate);
 		},
-
+		onLoad: function(store, records, success) {
+		    var vm = this.getViewModel();
+		    if (!success || !records) {
+			vm.set('mdsCount', 0);
+			return;
+		    }
+		    vm.set('mdsCount', records.length);
+		},
 		onCreateMDS: function() {
 		    var view = this.getView();
 		    view.rstore.stopUpdate();
