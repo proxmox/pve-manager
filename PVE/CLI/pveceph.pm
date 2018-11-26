@@ -199,7 +199,7 @@ our $cmddef = {
     destroymgr => { alias => 'mgr destroy' },
     mds => {
 	create => [ 'PVE::API2::Ceph::MDS', 'createmds', [], { node => $nodename }, $upid_exit],
-	destroy => [ 'PVE::API2::Ceph::MDS', 'destroymds', ['id'], { node => $nodename }, $upid_exit],
+	destroy => [ 'PVE::API2::Ceph::MDS', 'destroymds', ['name'], { node => $nodename }, $upid_exit],
     },
     start => [ 'PVE::API2::Ceph', 'start', ['service'], { node => $nodename }, $upid_exit],
     stop => [ 'PVE::API2::Ceph', 'stop', ['service'], { node => $nodename }, $upid_exit],
