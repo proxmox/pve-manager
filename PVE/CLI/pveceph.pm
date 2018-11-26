@@ -140,7 +140,7 @@ __PACKAGE__->register_method ({
 	system('apt-get', '--no-install-recommends',
 		'-o', 'Dpkg::Options::=--force-confnew',
 		'install', '--',
-		'ceph', 'ceph-common', 'ceph-mds', 'gdisk');
+		'ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse', 'gdisk');
 
 	if (PVE::CephTools::systemd_managed() && ! -e '/etc/systemd/system/ceph.service') {
 	    #to disable old SysV init scripts.
