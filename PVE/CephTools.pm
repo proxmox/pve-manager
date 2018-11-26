@@ -379,7 +379,11 @@ sub is_any_mds_active {
     }
     my $active_mds = $fs->[0]->{mdsmap}->{info};
 
-    return scalar(keys %$active_mds) > 0;
+    for my $mds (values %$active_mds) {
+	return 1 if $mds->{state} eq 'up:active';
+    }
+
+    return 0;
 }
 
 sub create_mds {
