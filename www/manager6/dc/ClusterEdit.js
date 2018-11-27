@@ -131,8 +131,18 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    info: {
 		fp: '',
 		ip: '',
+		ring0Needed: false,
 		ring1Possible: false,
 		ring1Needed: false
+	    }
+	},
+	formulas: {
+	    ring0EmptyText: function(get) {
+		if (get('info.ring0Needed')) {
+		    return gettext("Cannot use default address safely");
+		} else {
+		    return gettext("Default: IP resolved by node's hostname");
+		}
 	    }
 	}
     },
@@ -188,9 +198,15 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    if (!(joinInfo && joinInfo.totem)) {
 		field.valid = false;
 	    } else {
+		var ring0Needed = false;
+		if (joinInfo.ring_addr !== undefined) {
+		    ring0Needed = joinInfo.ring_addr[0] !== joinInfo.ipAddress;
+		}
+
 		info = {
 		    ip: joinInfo.ipAddress,
 		    fp: joinInfo.fingerprint,
+		    ring0Needed: ring0Needed,
 		    ring1Possible: !!joinInfo.totem['interface']['1'],
 		    ring1Needed: !!joinInfo.totem['interface']['1']
 		};
@@ -282,7 +298,10 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    {
 		xtype: 'proxmoxtextfield',
 		fieldLabel: gettext('Corosync Ring 0'),
-		emptyText: gettext("Default: IP resolved by node's hostname"),
+		bind: {
+		    emptyText: '{ring0EmptyText}',
+		    allowBlank: '{!info.ring0Needed}'
+		},
 		skipEmptyText: true,
 		name: 'ring0_addr'
 	    },

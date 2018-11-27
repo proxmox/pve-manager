@@ -88,6 +88,7 @@ Ext.define('PVE.ClusterAdministration', {
 		    vm.set('preferred_node', {
 			name: data.preferred_node,
 			addr: nodeinfo.pve_addr,
+			ring_addr: [ nodeinfo.ring0_addr, nodeinfo.ring1_addr ],
 			fp: nodeinfo.pve_fp
 		    });
 		},
@@ -111,6 +112,7 @@ Ext.define('PVE.ClusterAdministration', {
 			joinInfo: {
 			    ipAddress: vm.get('preferred_node.addr'),
 			    fingerprint: vm.get('preferred_node.fp'),
+			    ring_addr: vm.get('preferred_node.ring_addr'),
 			    totem: vm.get('totem')
 			}
 		    });
