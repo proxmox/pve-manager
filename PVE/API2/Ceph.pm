@@ -829,6 +829,14 @@ __PACKAGE__->register_method ({
 		optional => 1,
 		maxLength => 128,
 	    },
+	    'cluster-network' => {
+		description => "Declare a separate cluster network, OSDs will route" .
+		    "heartbeat, object replication and recovery traffic over it",
+		type => 'string', format => 'CIDR',
+		requires => 'network',
+		optional => 1,
+		maxLength => 128,
+	    },
 	    size => {
 		description => 'Targeted number of replicas per object',
 		type => 'integer',
@@ -918,6 +926,10 @@ __PACKAGE__->register_method ({
 	if ($param->{network}) {
 	    $cfg->{global}->{'public network'} = $param->{network};
 	    $cfg->{global}->{'cluster network'} = $param->{network};
+	}
+
+	if ($param->{'cluster-network'}) {
+	    $cfg->{global}->{'cluster network'} = $param->{'cluster-network'};
 	}
 
 	PVE::CephTools::write_ceph_config($cfg);
