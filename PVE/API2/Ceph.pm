@@ -312,6 +312,7 @@ __PACKAGE__->register_method ({
 		}
 	    }
 
+	    PVE::CephTools::wipe_disk($devpath);
 
 	    run_command($cmd);
 	};
@@ -439,12 +440,8 @@ __PACKAGE__->register_method ({
 		foreach my $part (@$partitions_to_remove) {
 		    $remove_partition->($part);
 		}
-		my @wipe_cmd = qw(/bin/dd if=/dev/zero bs=1M count=200 conv=fdatasync);
-		foreach my $devpath (keys %$disks_to_wipe) {
-		    print "wipe disk: $devpath\n";
-		    eval { run_command([@wipe_cmd, "of=${devpath}"]) };
-		    warn $@ if $@;
-		}
+
+		PVE::CephTools::wipe_disk(keys %$disks_to_wipe);
 	    }
 	};
 
