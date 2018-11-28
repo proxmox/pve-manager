@@ -471,7 +471,7 @@ sub destroy_mds {
 
 # wipe the first 200 MB to clear off leftovers from previous use, otherwise a
 # create OSD fails.
-sub wipe_disk {
+sub wipe_disks {
     my (@devs) = @_;
 
     my @wipe_cmd = qw(/bin/dd if=/dev/zero bs=1M count=200 conv=fdatasync);

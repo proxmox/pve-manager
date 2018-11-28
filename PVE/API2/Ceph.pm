@@ -312,7 +312,7 @@ __PACKAGE__->register_method ({
 		}
 	    }
 
-	    PVE::CephTools::wipe_disk($devpath);
+	    PVE::CephTools::wipe_disks($devpath);
 
 	    run_command($cmd);
 	};
@@ -441,7 +441,7 @@ __PACKAGE__->register_method ({
 		    $remove_partition->($part);
 		}
 
-		PVE::CephTools::wipe_disk(keys %$disks_to_wipe);
+		PVE::CephTools::wipe_disks(keys %$disks_to_wipe);
 	    }
 	};
 
