@@ -475,7 +475,7 @@ sub wipe_disks {
     my (@devs) = @_;
 
     my @wipe_cmd = qw(/bin/dd if=/dev/zero bs=1M count=200 conv=fdatasync);
-    foreach my $devpath (values @devs) {
+    foreach my $devpath (@devs) {
         print "wipe disk: $devpath\n";
         eval { run_command([@wipe_cmd, "of=${devpath}"]) };
         warn $@ if $@;
