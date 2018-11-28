@@ -105,7 +105,7 @@ __PACKAGE__->register_method ({
 		minimum => 8,
 		maximum => 32768,
 	    },
-	    add_storage => {
+	    'add-storage' => {
 		description => "Configure the created CephFS as storage for this cluster.",
 		type => 'boolean',
 		optional => 1,
@@ -187,7 +187,7 @@ __PACKAGE__->register_method ({
 	    }
 	    print "Successfully create CephFS '$fs_name'\n";
 
-	    if ($param->{add_storage}) {
+	    if ($param->{'add-storage'}) {
 		print "Adding '$fs_name' to storage configuration...\n";
 
 		my $waittime = 0;

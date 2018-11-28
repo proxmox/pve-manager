@@ -36,7 +36,7 @@ Ext.define('PVE.CephCreateFS', {
 	},
 	{
 	    xtype: 'proxmoxintegerfield',
-	    fieldLabel: 'pg_num',
+	    fieldLabel: 'Placement Groups',
 	    name: 'pg_num',
 	    value: 64,
 	    emptyText: 64,
@@ -48,7 +48,7 @@ Ext.define('PVE.CephCreateFS', {
 	    xtype: 'proxmoxcheckbox',
 	    fieldLabel: gettext('Add Storage'),
 	    value: true,
-	    name: 'add_storage'
+	    name: 'add-storage'
 	}
     ],
 
