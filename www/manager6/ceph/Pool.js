@@ -50,7 +50,7 @@ Ext.define('PVE.CephCreatePool', {
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
-	    fieldLabel: gettext('Add Storages'),
+	    fieldLabel: gettext('Add Storage'),
 	    name: 'add_storages'
 	}
     ],
