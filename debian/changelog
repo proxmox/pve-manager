@@ -1,3 +1,21 @@
+pve-manager (5.3-4) unstable; urgency=medium
+
+  * pveceph: ensure ceph-fuse gets uptdated when installing ceph server
+
+  * api: poll for for active MDS on CephFS creation
+
+  * fix #1430: ceph init: allow to specify separate cluster network
+
+  * pveceph: create OSD: wipe disk after initial 'free-to-use' checks to
+    ensure creating succeeds even if the disk was an OSD earlier
+
+  * ui: cluster: require ring0_addr if joinee's ring and node addr
+    differ
+
+  * ceph: update all placement groups (pg_num) defaults to 128
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 29 Nov 2018 12:49:30 +0100
+
 pve-manager (5.3-3) unstable; urgency=medium
 
   * api: cephfs create: wait for MDS to become active before adding as storage
