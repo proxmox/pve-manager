@@ -194,7 +194,7 @@ sub create_pool {
 	$rados = PVE::RADOS->new();
     }
 
-    my $pg_num = $param->{pg_num} || 64;
+    my $pg_num = $param->{pg_num} || 128;
     my $size = $param->{size} || 3;
     my $min_size = $param->{min_size} || 2;
     my $application = $param->{application} // 'rbd';

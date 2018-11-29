@@ -100,7 +100,7 @@ __PACKAGE__->register_method ({
 	    pg_num => {
 		description => "Number of placement groups for the backing data pool. The metadata pool will use a quarter of this.",
 		type => 'integer',
-		default => 64,
+		default => 128,
 		optional => 1,
 		minimum => 8,
 		maximum => 32768,
@@ -124,7 +124,7 @@ __PACKAGE__->register_method ({
 	    if ! -f $pve_ckeyring_path;
 
 	my $fs_name = $param->{name} // 'cephfs';
-	my $pg_num = $param->{pg_num} // 64;
+	my $pg_num = $param->{pg_num} // 128;
 
 	my $pool_data = "${fs_name}_data";
 	my $pool_metadata = "${fs_name}_metadata";

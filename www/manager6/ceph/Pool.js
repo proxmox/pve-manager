@@ -43,7 +43,7 @@ Ext.define('PVE.CephCreatePool', {
 	    xtype: 'proxmoxintegerfield',
 	    fieldLabel: 'pg_num',
 	    name: 'pg_num',
-	    value: 64,
+	    value: 128,
 	    minValue: 8,
 	    maxValue: 32768,
 	    allowBlank: false

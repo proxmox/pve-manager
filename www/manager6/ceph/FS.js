@@ -38,8 +38,8 @@ Ext.define('PVE.CephCreateFS', {
 	    xtype: 'proxmoxintegerfield',
 	    fieldLabel: 'Placement Groups',
 	    name: 'pg_num',
-	    value: 64,
-	    emptyText: 64,
+	    value: 128,
+	    emptyText: 128,
 	    minValue: 8,
 	    maxValue: 32768,
 	    allowBlank: false
