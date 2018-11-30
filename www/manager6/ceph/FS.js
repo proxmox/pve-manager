@@ -4,7 +4,7 @@ Ext.define('PVE.CephCreateFS', {
     alias: 'widget.pveCephCreateFS',
 
     showTaskViewer: true,
-    //onlineHelp: 'pve_ceph_fs',
+    onlineHelp: 'pveceph_fs_create',
 
     subject: 'Ceph FS',
     isCreate: true,
@@ -69,7 +69,7 @@ Ext.define('PVE.CephCreateMDS', {
     alias: 'widget.pveCephCreateMDS',
 
     showProgress: true,
-    //onlineHelp: 'pve_ceph_mds',
+    onlineHelp: 'pveceph_fs_mds',
 
     subject: 'Ceph MDS',
     isCreate: true,
@@ -115,7 +115,7 @@ Ext.define('PVE.NodeCephFSPanel', {
     mixins: ['Proxmox.Mixin.CBind'],
 
     title: gettext('CephFS'),
-    onlineHelp: 'chapter_pvecm',
+    onlineHelp: 'pveceph_fs',
 
     border: false,
     defaults: {
