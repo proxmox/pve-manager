@@ -7,11 +7,30 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 
     fstypes: ['nfs', 'cifs'],
 
+    viewModel: {
+	parent: null,
+	data: {
+	    unprivileged: false,
+	},
+	formulas: {
+	    privilegedOnly: function(get) {
+		return (get('unprivileged') ? gettext('privileged only') : '');
+	    },
+	    unprivilegedOnly: function(get) {
+		return (!get('unprivileged') ? gettext('unprivileged only') : '');
+	    }
+	}
+    },
+
     items: [
 	{
 	    xtype: 'proxmoxcheckbox',
 	    fieldLabel: gettext('keyctl'),
-	    name: 'keyctl'
+	    name: 'keyctl',
+	    bind: {
+		disabled: '{!unprivileged}',
+		boxLabel: '{unprivilegedOnly}',
+	    }
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
@@ -21,12 +40,20 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 	{
 	    xtype: 'proxmoxcheckbox',
 	    name: 'nfs',
-	    fieldLabel: 'NFS'
+	    fieldLabel: 'NFS',
+	    bind: {
+		disabled: '{unprivileged}',
+		boxLabel: '{privilegedOnly}',
+	    }
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
 	    name: 'cifs',
-	    fieldLabel: 'CIFS'
+	    fieldLabel: 'CIFS',
+	    bind: {
+		disabled: '{unprivileged}',
+		boxLabel: '{privilegedOnly}',
+	    }
 	}
     ],
 
@@ -54,10 +81,7 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
     setValues: function(values) {
 	var me = this;
 
-	var privileged = !values.unprivileged,
-	    keyctlField = me.down('field[name=keyctl]');
-	keyctlField.setDisabled(privileged);
-	keyctlField.setBoxLabel(privileged ? gettext('unprivileged only') : null);
+	me.viewModel.set({ unprivileged: values.unprivileged });
 
 	if (values.features) {
 	    var res = PVE.Parser.parsePropertyString(values.features);
