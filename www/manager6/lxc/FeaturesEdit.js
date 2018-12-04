@@ -54,6 +54,11 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 		disabled: '{unprivileged}',
 		boxLabel: '{privilegedOnly}',
 	    }
+	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    name: 'fuse',
+	    fieldLabel: 'FUSE'
 	}
     ],
 
