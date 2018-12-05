@@ -55,6 +55,10 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 	    values.rombar = 0;
 	}
 
+	if (!values.romfile) {
+	    delete values.romfile;
+	}
+
 	ret[me.confid] = PVE.Parser.printPropertyString(values, 'host');
 	return ret;
     },
