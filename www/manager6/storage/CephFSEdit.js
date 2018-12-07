@@ -76,7 +76,6 @@ Ext.define('PVE.storage.CephFSInputPanel', {
 	    {
 		xtype: 'proxmoxintegerfield',
 		fieldLabel: gettext('Max Backups'),
-		disabled: true,
 		name: 'maxfiles',
 		reference: 'maxfiles',
 		minValue: 0,
