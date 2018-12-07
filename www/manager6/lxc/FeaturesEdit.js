@@ -1,3 +1,4 @@
+/*jslint confusion: true*/
 Ext.define('PVE.lxc.FeaturesInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     xtype: 'pveLxcFeaturesInputPanel',
@@ -10,7 +11,7 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
     viewModel: {
 	parent: null,
 	data: {
-	    unprivileged: false,
+	    unprivileged: false
 	},
 	formulas: {
 	    privilegedOnly: function(get) {
@@ -29,7 +30,7 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 	    name: 'keyctl',
 	    bind: {
 		disabled: '{!unprivileged}',
-		boxLabel: '{unprivilegedOnly}',
+		boxLabel: '{unprivilegedOnly}'
 	    }
 	},
 	{
@@ -43,7 +44,7 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 	    fieldLabel: 'NFS',
 	    bind: {
 		disabled: '{unprivileged}',
-		boxLabel: '{privilegedOnly}',
+		boxLabel: '{privilegedOnly}'
 	    }
 	},
 	{
@@ -52,7 +53,7 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 	    fieldLabel: 'CIFS',
 	    bind: {
 		disabled: '{unprivileged}',
-		boxLabel: '{privilegedOnly}',
+		boxLabel: '{privilegedOnly}'
 	    }
 	},
 	{
