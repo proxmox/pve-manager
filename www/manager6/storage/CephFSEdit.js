@@ -69,8 +69,19 @@ Ext.define('PVE.storage.CephFSInputPanel', {
 		cts: ['backup', 'iso', 'vztmpl'],
 		fieldLabel: gettext('Content'),
 		name: 'content',
-		value: ['backup'],
+		value: 'backup',
 		multiSelect: true,
+		allowBlank: false
+	    },
+	    {
+		xtype: 'proxmoxintegerfield',
+		fieldLabel: gettext('Max Backups'),
+		disabled: true,
+		name: 'maxfiles',
+		reference: 'maxfiles',
+		minValue: 0,
+		maxValue: 365,
+		value: me.isCreate ? '1' : undefined,
 		allowBlank: false
 	    }
 	];

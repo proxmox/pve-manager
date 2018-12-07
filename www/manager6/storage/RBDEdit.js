@@ -10,7 +10,7 @@ Ext.define('PVE.storage.Ceph.Model', {
 });
 
 Ext.define('PVE.storage.Ceph.Controller', {
-    extend: 'Ext.app.ViewController',
+    extend: 'PVE.controller.StorageEdit',
     alias: 'controller.cephstorage',
 
     control: {
