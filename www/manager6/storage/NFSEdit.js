@@ -60,6 +60,8 @@ Ext.define('PVE.storage.NFSScan', {
 Ext.define('PVE.storage.NFSInputPanel', {
     extend: 'PVE.panel.StorageBase',
 
+    onlineHelp: 'storage_nfs',
+
     onGetValues: function(values) {
 	var me = this;
 

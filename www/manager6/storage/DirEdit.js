@@ -1,6 +1,8 @@
 Ext.define('PVE.storage.DirInputPanel', {
     extend: 'PVE.panel.StorageBase',
 
+    onlineHelp: 'storage_directory',
+
     initComponent : function() {
 	var me = this;
 

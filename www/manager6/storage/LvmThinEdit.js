@@ -94,6 +94,8 @@ Ext.define('PVE.storage.BaseVGSelector', {
 Ext.define('PVE.storage.LvmThinInputPanel', {
     extend: 'PVE.panel.StorageBase',
 
+    onlineHelp: 'storage_lvmthin',
+
     initComponent : function() {
 	var me = this;
 

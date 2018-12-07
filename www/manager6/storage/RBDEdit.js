@@ -77,6 +77,8 @@ Ext.define('PVE.storage.RBDInputPanel', {
     extend: 'PVE.panel.StorageBase',
     controller: 'cephstorage',
 
+    onlineHelp: 'ceph_rados_block_devices',
+
     viewModel: {
 	type: 'cephstorage'
     },

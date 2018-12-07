@@ -60,6 +60,8 @@ Ext.define('PVE.storage.GlusterFsScan', {
 Ext.define('PVE.storage.GlusterFsInputPanel', {
     extend: 'PVE.panel.StorageBase',
 
+    onlineHelp: 'storage_glusterfs',
+
     initComponent : function() {
 	var me = this;
 

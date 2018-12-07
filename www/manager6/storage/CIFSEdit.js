@@ -80,6 +80,8 @@ Ext.define('PVE.storage.CIFSScan', {
 Ext.define('PVE.storage.CIFSInputPanel', {
     extend: 'PVE.panel.StorageBase',
 
+    onlineHelp: 'storage_cifs',
+
     initComponent : function() {
 	var me = this;
 

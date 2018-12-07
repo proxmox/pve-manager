@@ -37,6 +37,8 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
 Ext.define('PVE.storage.ZFSPoolInputPanel', {
     extend: 'PVE.panel.StorageBase',
 
+    onlineHelp: 'storage_zfspool',
+
     initComponent : function() {
 	var me = this;
 

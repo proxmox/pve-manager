@@ -59,6 +59,8 @@ Ext.define('PVE.storage.IScsiScan', {
 Ext.define('PVE.storage.IScsiInputPanel', {
     extend: 'PVE.panel.StorageBase',
 
+    onlineHelp: 'storage_open_iscsi',
+
     onGetValues: function(values) {
 	var me = this;
 

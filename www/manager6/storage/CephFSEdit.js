@@ -3,6 +3,8 @@ Ext.define('PVE.storage.CephFSInputPanel', {
     extend: 'PVE.panel.StorageBase',
     controller: 'cephstorage',
 
+    onlineHelp: 'storage_cephfs',
+
     viewModel: {
 	type: 'cephstorage'
     },
