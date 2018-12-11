@@ -64,6 +64,8 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
+	PVE::CephTools::check_ceph_inited();
+
 	my $res = [];
 
 	my $cfg = PVE::CephTools::parse_ceph_config();

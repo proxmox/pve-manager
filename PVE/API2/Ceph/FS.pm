@@ -53,6 +53,8 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
+	PVE::CephTools::check_ceph_inited();
+
 	my $rados = PVE::RADOS->new();
 
 	my $cephfs_list = $rados->mon_command({ prefix => "fs ls" });
