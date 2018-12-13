@@ -2013,7 +2013,7 @@ __PACKAGE__->register_method({
     },
     code => sub {
 	my ($param) = @_;
-	
+
 	PVE::CephTools::check_ceph_inited();
 
 	my $rpcenv = PVE::RPCEnvironment::get();
