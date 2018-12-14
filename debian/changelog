@@ -1,3 +1,17 @@
+pve-manager (5.3-6) unstable; urgency=medium
+
+  * fix #2017: add help button to storage input panels
+
+  * Fix #2019: CephFS storage misses Max Backups
+
+  * ui: lxc/features: add fuse
+
+  * ui: lxc/features: disable nfs and cifs for unprivileged
+
+  * do not send 'undefined' as romfile when adding a pcidevice
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 14 Dec 2018 12:25:17 +0100
+
 pve-manager (5.3-5) unstable; urgency=medium
 
   * ui: CephFS: fix onlineHelp buttons
