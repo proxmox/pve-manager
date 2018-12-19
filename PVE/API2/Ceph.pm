@@ -7,6 +7,7 @@ use Cwd qw(abs_path);
 use IO::File;
 
 use PVE::Ceph::Tools;
+use PVE::Ceph::Services;
 use PVE::CephConfig;
 use PVE::Cluster qw(cfs_read_file cfs_write_file);
 use PVE::Diskmanage;
@@ -376,8 +377,8 @@ __PACKAGE__->register_method ({
 	    print "destroy OSD $osdsection\n";
 
 	    eval {
-		PVE::Ceph::Tools::ceph_service_cmd('stop', $osdsection);
-		PVE::Ceph::Tools::ceph_service_cmd('disable', $osdsection);
+		PVE::Ceph::Services::ceph_service_cmd('stop', $osdsection);
+		PVE::Ceph::Services::ceph_service_cmd('disable', $osdsection);
 	    };
 	    warn $@ if $@;
 
@@ -538,6 +539,7 @@ use Net::IP;
 use UUID;
 
 use PVE::Ceph::Tools;
+use PVE::Ceph::Services;
 use PVE::Cluster qw(cfs_read_file cfs_write_file);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::Network;
@@ -994,9 +996,9 @@ my $create_mgr = sub {
     run_command(["chown", 'ceph:ceph', '-R', $mgrdir]);
 
     print "enabling service 'ceph-mgr\@$id.service'\n";
-    PVE::Ceph::Tools::ceph_service_cmd('enable', $mgrname);
+    PVE::Ceph::Services::ceph_service_cmd('enable', $mgrname);
     print "starting service 'ceph-mgr\@$id.service'\n";
-    PVE::Ceph::Tools::ceph_service_cmd('start', $mgrname);
+    PVE::Ceph::Services::ceph_service_cmd('start', $mgrname);
 };
 
 my $destroy_mgr = sub {
@@ -1010,9 +1012,9 @@ my $destroy_mgr = sub {
 	if ! -d $mgrdir;
 
     print "disabling service 'ceph-mgr\@$mgrid.service'\n";
-    PVE::Ceph::Tools::ceph_service_cmd('disable', $mgrname);
+    PVE::Ceph::Services::ceph_service_cmd('disable', $mgrname);
     print "stopping service 'ceph-mgr\@$mgrid.service'\n";
-    PVE::Ceph::Tools::ceph_service_cmd('stop', $mgrname);
+    PVE::Ceph::Services::ceph_service_cmd('stop', $mgrname);
 
     print "removing manager directory '$mgrdir'\n";
     File::Path::remove_tree($mgrdir);
@@ -1168,7 +1170,7 @@ __PACKAGE__->register_method ({
 	    } elsif ($create_keys_pid == 0) {
 		exit PVE::Tools::run_command(['ceph-create-keys', '-i', $monid]);
 	    } else {
-		PVE::Ceph::Tools::ceph_service_cmd('start', $monsection);
+		PVE::Ceph::Services::ceph_service_cmd('start', $monsection);
 
 		if ($systemd_managed) {
 		    #to ensure we have the correct startup order.
@@ -1252,7 +1254,7 @@ __PACKAGE__->register_method ({
 
 	    $rados->mon_command({ prefix => "mon remove", name => $monid, format => 'plain' });
 
-	    eval { PVE::Ceph::Tools::ceph_service_cmd('stop', $monsection); };
+	    eval { PVE::Ceph::Services::ceph_service_cmd('stop', $monsection); };
 	    warn $@ if $@;
 
 	    delete $cfg->{$monsection};
@@ -1402,7 +1404,7 @@ __PACKAGE__->register_method ({
 		push @$cmd, $param->{service};
 	    }
 
-	    PVE::Ceph::Tools::ceph_service_cmd(@$cmd);
+	    PVE::Ceph::Services::ceph_service_cmd(@$cmd);
 	};
 
 	return $rpcenv->fork_worker('srvstop', $param->{service} || 'ceph',
@@ -1453,7 +1455,7 @@ __PACKAGE__->register_method ({
 		push @$cmd, $param->{service};
 	    }
 
-	    PVE::Ceph::Tools::ceph_service_cmd(@$cmd);
+	    PVE::Ceph::Services::ceph_service_cmd(@$cmd);
 	};
 
 	return $rpcenv->fork_worker('srvstart', $param->{service} || 'ceph',
@@ -1504,7 +1506,7 @@ __PACKAGE__->register_method ({
 		push @$cmd, $param->{service};
 	    }
 
-	    PVE::Ceph::Tools::ceph_service_cmd(@$cmd);
+	    PVE::Ceph::Services::ceph_service_cmd(@$cmd);
 	};
 
 	return $rpcenv->fork_worker('srvrestart', $param->{service} || 'ceph',

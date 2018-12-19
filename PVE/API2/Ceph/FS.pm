@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use PVE::Ceph::Tools;
+use PVE::Ceph::Services;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RADOS;
 use PVE::RESTHandler;
@@ -138,7 +139,7 @@ __PACKAGE__->register_method ({
 	die "ceph pools '$pool_data' and/or '$pool_metadata' already exist\n"
 	    if $existing_pools->{$pool_data} || $existing_pools->{$pool_metadata};
 
-	my $running_mds = PVE::Ceph::Tools::get_cluster_mds_state($rados);
+	my $running_mds = PVE::Ceph::Services::get_cluster_mds_state($rados);
 	die "no running Metadata Server (MDS) found!\n" if !scalar(keys %$running_mds);
 
 	PVE::Storage::assert_sid_unused($fs_name) if $param->{add_storage};
@@ -193,7 +194,7 @@ __PACKAGE__->register_method ({
 		print "Adding '$fs_name' to storage configuration...\n";
 
 		my $waittime = 0;
-		while (!PVE::Ceph::Tools::is_any_mds_active($rados)) {
+		while (!PVE::Ceph::Services::is_any_mds_active($rados)) {
 		    if ($waittime >= 10) {
 			die "Need MDS to add storage, but none got active!\n";
 		    }

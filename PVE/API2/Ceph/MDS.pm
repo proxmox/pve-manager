@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use PVE::Ceph::Tools;
+use PVE::Ceph::Services;
 use PVE::Cluster qw(cfs_read_file cfs_write_file);
 use PVE::INotify;
 use PVE::JSONSchema qw(get_standard_option);
@@ -89,7 +90,7 @@ __PACKAGE__->register_method ({
 	    }
 	}
 
-	my $mds_state = PVE::Ceph::Tools::get_cluster_mds_state();
+	my $mds_state = PVE::Ceph::Services::get_cluster_mds_state();
 	foreach my $name (keys %$mds_state) {
 	    my $d = $mds_state->{$name};
 	    # just overwrite, this always provides more info
@@ -174,7 +175,7 @@ __PACKAGE__->register_method ({
 
 	    cfs_write_file('ceph.conf', $cfg);
 
-	    eval { PVE::Ceph::Tools::create_mds($mds_id, $rados) };
+	    eval { PVE::Ceph::Services::create_mds($mds_id, $rados) };
 	    if (my $err = $@) {
 		# we abort early if the section is defined, so we know that we
 		# wrote it at this point. Do not auto remove the service, could
@@ -236,7 +237,7 @@ __PACKAGE__->register_method ({
 		cfs_write_file('ceph.conf', $cfg);
 	    }
 
-	    PVE::Ceph::Tools::destroy_mds($mds_id, $rados);
+	    PVE::Ceph::Services::destroy_mds($mds_id, $rados);
 	};
 
 	return $rpcenv->fork_worker('cephdestroymds', "mds.$mds_id",  $authuser, $worker);

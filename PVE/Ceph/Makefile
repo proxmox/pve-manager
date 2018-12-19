@@ -1,6 +1,7 @@
 include ../../defines.mk
 
 PERLSOURCE =   \
+	Services.pm\
 	Tools.pm
 
 all:
