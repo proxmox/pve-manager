@@ -21,6 +21,7 @@ use PVE::Tools qw(run_command file_get_contents file_set_contents);
 use PVE::API2::Ceph::OSD;
 use PVE::API2::Ceph::FS;
 use PVE::API2::Ceph::MDS;
+use PVE::API2::Ceph::MGR;
 use PVE::API2::Storage::Config;
 
 use base qw(PVE::RESTHandler);
@@ -35,6 +36,11 @@ __PACKAGE__->register_method ({
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Ceph::MDS",
     path => 'mds',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Ceph::MGR",
+    path => 'mgr',
 });
 
 __PACKAGE__->register_method ({
@@ -687,95 +693,6 @@ __PACKAGE__->register_method ({
 	};
 
 	return $rpcenv->fork_worker('cephdestroymon', $monsection,  $authuser, $worker);
-    }});
-
-__PACKAGE__->register_method ({
-    name => 'createmgr',
-    path => 'mgr',
-    method => 'POST',
-    description => "Create Ceph Manager",
-    proxyto => 'node',
-    protected => 1,
-    permissions => {
-	check => ['perm', '/', [ 'Sys.Modify' ]],
-    },
-    parameters => {
-	additionalProperties => 0,
-	properties => {
-	    node => get_standard_option('pve-node'),
-	    id => {
-		type => 'string',
-		optional => 1,
-		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
-		description => "The ID for the manager, when omitted the same as the nodename",
-	    },
-	},
-    },
-    returns => { type => 'string' },
-    code => sub {
-	my ($param) = @_;
-
-	PVE::Ceph::Tools::check_ceph_installed('ceph_mgr');
-
-	PVE::Ceph::Tools::check_ceph_inited();
-
-	my $rpcenv = PVE::RPCEnvironment::get();
-
-	my $authuser = $rpcenv->get_user();
-
-	my $mgrid = $param->{id} // $param->{node};
-
-	my $worker = sub  {
-	    my $upid = shift;
-
-	    my $rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
-
-	    PVE::Ceph::Services::create_mgr($mgrid, $rados);
-	};
-
-	return $rpcenv->fork_worker('cephcreatemgr', "mgr.$mgrid", $authuser, $worker);
-    }});
-
-__PACKAGE__->register_method ({
-    name => 'destroymgr',
-    path => 'mgr/{id}',
-    method => 'DELETE',
-    description => "Destroy Ceph Manager.",
-    proxyto => 'node',
-    protected => 1,
-    permissions => {
-	check => ['perm', '/', [ 'Sys.Modify' ]],
-    },
-    parameters => {
-	additionalProperties => 0,
-	properties => {
-	    node => get_standard_option('pve-node'),
-	    id => {
-		description => 'The ID of the manager',
-		type => 'string',
-		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
-	    },
-	},
-    },
-    returns => { type => 'string' },
-    code => sub {
-	my ($param) = @_;
-
-	my $rpcenv = PVE::RPCEnvironment::get();
-
-	my $authuser = $rpcenv->get_user();
-
-	PVE::Ceph::Tools::check_ceph_inited();
-
-	my $mgrid = $param->{id};
-
-	my $worker = sub {
-	    my $upid = shift;
-
-	    PVE::Ceph::Services::destroy_mgr($mgrid);
-	};
-
-	return $rpcenv->fork_worker('cephdestroymgr', "mgr.$mgrid",  $authuser, $worker);
     }});
 
 __PACKAGE__->register_method ({

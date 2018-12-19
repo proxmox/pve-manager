@@ -21,6 +21,7 @@ use PVE::Ceph::Tools;
 use PVE::API2::Ceph;
 use PVE::API2::Ceph::FS;
 use PVE::API2::Ceph::MDS;
+use PVE::API2::Ceph::MGR;
 use PVE::API2::Ceph::OSD;
 
 use PVE::CLIHandler;
@@ -193,8 +194,8 @@ our $cmddef = {
     createmon => { alias => 'mon create' },
     destroymon => { alias => 'mon destroy' },
     mgr => {
-	create => [ 'PVE::API2::Ceph', 'createmgr', [], { node => $nodename }, $upid_exit],
-	destroy => [ 'PVE::API2::Ceph', 'destroymgr', ['id'], { node => $nodename }, $upid_exit],
+	create => [ 'PVE::API2::Ceph::MGR', 'createmgr', [], { node => $nodename }, $upid_exit],
+	destroy => [ 'PVE::API2::Ceph::MGR', 'destroymgr', ['id'], { node => $nodename }, $upid_exit],
     },
     createmgr => { alias => 'mgr create' },
     destroymgr => { alias => 'mgr destroy' },
