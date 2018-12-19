@@ -194,4 +194,58 @@ sub destroy_mds {
     return undef;
 };
 
+# MGR
+
+sub create_mgr {
+    my ($id, $rados) = @_;
+
+    my $clustername = PVE::Ceph::Tools::get_config('ccname');
+    my $mgrdir = "/var/lib/ceph/mgr/$clustername-$id";
+    my $mgrkeyring = "$mgrdir/keyring";
+    my $mgrname = "mgr.$id";
+
+    die "ceph manager directory '$mgrdir' already exists\n"
+	if -d $mgrdir;
+
+    print "creating manager directory '$mgrdir'\n";
+    mkdir $mgrdir;
+    print "creating keys for '$mgrname'\n";
+    my $output = $rados->mon_command({ prefix => 'auth get-or-create',
+				       entity => $mgrname,
+				       caps => [
+					   mon => 'allow profile mgr',
+					   osd => 'allow *',
+					   mds => 'allow *',
+				       ],
+				       format => 'plain'});
+    PVE::Tools::file_set_contents($mgrkeyring, $output);
+
+    print "setting owner for directory\n";
+    run_command(["chown", 'ceph:ceph', '-R', $mgrdir]);
+
+    print "enabling service 'ceph-mgr\@$id.service'\n";
+    ceph_service_cmd('enable', $mgrname);
+    print "starting service 'ceph-mgr\@$id.service'\n";
+    ceph_service_cmd('start', $mgrname);
+}
+
+sub destroy_mgr {
+    my ($mgrid) = @_;
+
+    my $clustername = PVE::Ceph::Tools::get_config('ccname');
+    my $mgrname = "mgr.$mgrid";
+    my $mgrdir = "/var/lib/ceph/mgr/$clustername-$mgrid";
+
+    die "ceph manager directory '$mgrdir' not found\n"
+	if ! -d $mgrdir;
+
+    print "disabling service 'ceph-mgr\@$mgrid.service'\n";
+    ceph_service_cmd('disable', $mgrname);
+    print "stopping service 'ceph-mgr\@$mgrid.service'\n";
+    ceph_service_cmd('stop', $mgrname);
+
+    print "removing manager directory '$mgrdir'\n";
+    File::Path::remove_tree($mgrdir);
+}
+
 1;

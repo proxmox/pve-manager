@@ -438,58 +438,6 @@ my $find_mon_ip = sub {
     }
 };
 
-my $create_mgr = sub {
-    my ($rados, $id) = @_;
-
-    my $clustername = PVE::Ceph::Tools::get_config('ccname');
-    my $mgrdir = "/var/lib/ceph/mgr/$clustername-$id";
-    my $mgrkeyring = "$mgrdir/keyring";
-    my $mgrname = "mgr.$id";
-
-    die "ceph manager directory '$mgrdir' already exists\n"
-	if -d $mgrdir;
-
-    print "creating manager directory '$mgrdir'\n";
-    mkdir $mgrdir;
-    print "creating keys for '$mgrname'\n";
-    my $output = $rados->mon_command({ prefix => 'auth get-or-create',
-				       entity => $mgrname,
-				       caps => [
-					   mon => 'allow profile mgr',
-					   osd => 'allow *',
-					   mds => 'allow *',
-				       ],
-				       format => 'plain'});
-    file_set_contents($mgrkeyring, $output);
-
-    print "setting owner for directory\n";
-    run_command(["chown", 'ceph:ceph', '-R', $mgrdir]);
-
-    print "enabling service 'ceph-mgr\@$id.service'\n";
-    PVE::Ceph::Services::ceph_service_cmd('enable', $mgrname);
-    print "starting service 'ceph-mgr\@$id.service'\n";
-    PVE::Ceph::Services::ceph_service_cmd('start', $mgrname);
-};
-
-my $destroy_mgr = sub {
-    my ($mgrid) = @_;
-
-    my $clustername = PVE::Ceph::Tools::get_config('ccname');
-    my $mgrname = "mgr.$mgrid";
-    my $mgrdir = "/var/lib/ceph/mgr/$clustername-$mgrid";
-
-    die "ceph manager directory '$mgrdir' not found\n"
-	if ! -d $mgrdir;
-
-    print "disabling service 'ceph-mgr\@$mgrid.service'\n";
-    PVE::Ceph::Services::ceph_service_cmd('disable', $mgrname);
-    print "stopping service 'ceph-mgr\@$mgrid.service'\n";
-    PVE::Ceph::Services::ceph_service_cmd('stop', $mgrname);
-
-    print "removing manager directory '$mgrdir'\n";
-    File::Path::remove_tree($mgrdir);
-};
-
 __PACKAGE__->register_method ({
     name => 'createmon',
     path => 'mon',
@@ -653,7 +601,7 @@ __PACKAGE__->register_method ({
 	    # create manager
 	    if (!$param->{'exclude-manager'}) {
 		my $rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
-		$create_mgr->($rados, $monid);
+		PVE::Ceph::Services::create_mgr($monid, $rados);
 	    }
 	};
 
@@ -733,7 +681,7 @@ __PACKAGE__->register_method ({
 
 	    # remove manager
 	    if (!$param->{'exclude-manager'}) {
-		eval { $destroy_mgr->($monid); };
+		eval { PVE::Ceph::Services::destroy_mgr($mgrid) };
 		warn $@ if $@;
 	    }
 	};
@@ -782,7 +730,7 @@ __PACKAGE__->register_method ({
 
 	    my $rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
 
-	    $create_mgr->($rados, $mgrid);
+	    PVE::Ceph::Services::create_mgr($mgrid, $rados);
 	};
 
 	return $rpcenv->fork_worker('cephcreatemgr', "mgr.$mgrid", $authuser, $worker);
@@ -824,7 +772,7 @@ __PACKAGE__->register_method ({
 	my $worker = sub {
 	    my $upid = shift;
 
-	    $destroy_mgr->($mgrid);
+	    PVE::Ceph::Services::destroy_mgr($mgrid);
 	};
 
 	return $rpcenv->fork_worker('cephdestroymgr', "mgr.$mgrid",  $authuser, $worker);
