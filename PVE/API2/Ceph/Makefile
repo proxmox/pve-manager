@@ -2,6 +2,7 @@ include ../../../defines.mk
 
 PERLSOURCE= 			\
 	MGR.pm			\
+	MON.pm			\
 	OSD.pm			\
 	FS.pm			\
 	MDS.pm
