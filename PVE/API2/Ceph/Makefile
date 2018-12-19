@@ -1,6 +1,7 @@
 include ../../../defines.mk
 
 PERLSOURCE= 			\
+	OSD.pm			\
 	FS.pm			\
 	MDS.pm
 

@@ -21,6 +21,7 @@ use PVE::Ceph::Tools;
 use PVE::API2::Ceph;
 use PVE::API2::Ceph::FS;
 use PVE::API2::Ceph::MDS;
+use PVE::API2::Ceph::OSD;
 
 use PVE::CLIHandler;
 
@@ -180,8 +181,8 @@ our $cmddef = {
 	create => [ 'PVE::API2::Ceph::FS', 'createfs', [], { node => $nodename }],
     },
     osd => {
-	create => [ 'PVE::API2::CephOSD', 'createosd', ['dev'], { node => $nodename }, $upid_exit],
-	destroy => [ 'PVE::API2::CephOSD', 'destroyosd', ['osdid'], { node => $nodename }, $upid_exit],
+	create => [ 'PVE::API2::Ceph::OSD', 'createosd', ['dev'], { node => $nodename }, $upid_exit],
+	destroy => [ 'PVE::API2::Ceph::OSD', 'destroyosd', ['osdid'], { node => $nodename }, $upid_exit],
     },
     createosd => { alias => 'osd create' },
     destroyosd => { alias => 'osd destroy' },
