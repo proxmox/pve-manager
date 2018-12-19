@@ -3,7 +3,7 @@ package PVE::API2::Ceph::FS;
 use strict;
 use warnings;
 
-use PVE::CephTools;
+use PVE::Ceph::Tools;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RADOS;
 use PVE::RESTHandler;
@@ -53,7 +53,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	PVE::CephTools::check_ceph_inited();
+	PVE::Ceph::Tools::check_ceph_inited();
 
 	my $rados = PVE::RADOS->new();
 
@@ -119,9 +119,9 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	PVE::CephTools::check_ceph_inited();
+	PVE::Ceph::Tools::check_ceph_inited();
 
-	my $pve_ckeyring_path = PVE::CephTools::get_config('pve_ckeyring_path');
+	my $pve_ckeyring_path = PVE::Ceph::Tools::get_config('pve_ckeyring_path');
 	die "Ceph is not fully configured - missing '$pve_ckeyring_path'\n"
 	    if ! -f $pve_ckeyring_path;
 
@@ -132,13 +132,13 @@ __PACKAGE__->register_method ({
 	my $pool_metadata = "${fs_name}_metadata";
 
 	my $rados = PVE::RADOS->new();
-	my $ls_pools = PVE::CephTools::ls_pools();
+	my $ls_pools = PVE::Ceph::Tools::ls_pools();
 	my $existing_pools = { map { $_->{poolname} => 1 } @$ls_pools };
 
 	die "ceph pools '$pool_data' and/or '$pool_metadata' already exist\n"
 	    if $existing_pools->{$pool_data} || $existing_pools->{$pool_metadata};
 
-	my $running_mds = PVE::CephTools::get_cluster_mds_state($rados);
+	my $running_mds = PVE::Ceph::Tools::get_cluster_mds_state($rados);
 	die "no running Metadata Server (MDS) found!\n" if !scalar(keys %$running_mds);
 
 	PVE::Storage::assert_sid_unused($fs_name) if $param->{add_storage};
@@ -154,12 +154,12 @@ __PACKAGE__->register_method ({
 	    my @created_pools = ();
 	    eval {
 		print "creating data pool '$pool_data'...\n";
-		PVE::CephTools::create_pool($pool_data, $pool_param, $rados);
+		PVE::Ceph::Tools::create_pool($pool_data, $pool_param, $rados);
 		push @created_pools, $pool_data;
 
 		print "creating metadata pool '$pool_metadata'...\n";
 		$pool_param->{pg_num} = $pg_num >= 32 ? $pg_num / 4 : 8;
-		PVE::CephTools::create_pool($pool_metadata, $pool_param, $rados);
+		PVE::Ceph::Tools::create_pool($pool_metadata, $pool_param, $rados);
 		push @created_pools, $pool_metadata;
 
 		print "configuring new CephFS '$fs_name'\n";
@@ -180,7 +180,7 @@ __PACKAGE__->register_method ({
 		    $rados = PVE::RADOS->new();
 		    foreach my $pool (@created_pools) {
 			warn "cleaning up left over pool '$pool'\n";
-			eval { PVE::CephTools::destroy_pool($pool, $rados) };
+			eval { PVE::Ceph::Tools::destroy_pool($pool, $rados) };
 			warn "$@\n" if $@;
 		    }
 		}
@@ -193,7 +193,7 @@ __PACKAGE__->register_method ({
 		print "Adding '$fs_name' to storage configuration...\n";
 
 		my $waittime = 0;
-		while (!PVE::CephTools::is_any_mds_active($rados)) {
+		while (!PVE::Ceph::Tools::is_any_mds_active($rados)) {
 		    if ($waittime >= 10) {
 			die "Need MDS to add storage, but none got active!\n";
 		    }

@@ -17,7 +17,7 @@ use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Tools qw(run_command);
 use PVE::JSONSchema qw(get_standard_option);
-use PVE::CephTools;
+use PVE::Ceph::Tools;
 use PVE::API2::Ceph;
 use PVE::API2::Ceph::FS;
 use PVE::API2::Ceph::MDS;
@@ -64,7 +64,7 @@ __PACKAGE__->register_method ({
 	    if !$err;
 
 	# fixme: this is dangerous - should we really support this function?
-	PVE::CephTools::purge_all_ceph_files();
+	PVE::Ceph::Tools::purge_all_ceph_files();
 
 	return undef;
     }});
@@ -142,7 +142,7 @@ __PACKAGE__->register_method ({
 		'install', '--',
 		'ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse', 'gdisk');
 
-	if (PVE::CephTools::systemd_managed() && ! -e '/etc/systemd/system/ceph.service') {
+	if (PVE::Ceph::Tools::systemd_managed() && ! -e '/etc/systemd/system/ceph.service') {
 	    #to disable old SysV init scripts.
 	    print "replacing ceph init script with own ceph.service\n";
 	    eval {

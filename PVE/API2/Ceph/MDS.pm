@@ -3,7 +3,7 @@ package PVE::API2::Ceph::MDS;
 use strict;
 use warnings;
 
-use PVE::CephTools;
+use PVE::Ceph::Tools;
 use PVE::Cluster qw(cfs_read_file cfs_write_file);
 use PVE::INotify;
 use PVE::JSONSchema qw(get_standard_option);
@@ -65,7 +65,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	PVE::CephTools::check_ceph_inited();
+	PVE::Ceph::Tools::check_ceph_inited();
 
 	my $res = [];
 
@@ -89,7 +89,7 @@ __PACKAGE__->register_method ({
 	    }
 	}
 
-	my $mds_state = PVE::CephTools::get_cluster_mds_state();
+	my $mds_state = PVE::Ceph::Tools::get_cluster_mds_state();
 	foreach my $name (keys %$mds_state) {
 	    my $d = $mds_state->{$name};
 	    # just overwrite, this always provides more info
@@ -134,9 +134,9 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	PVE::CephTools::check_ceph_installed('ceph_mds');
+	PVE::Ceph::Tools::check_ceph_installed('ceph_mds');
 
-	PVE::CephTools::check_ceph_inited();
+	PVE::Ceph::Tools::check_ceph_inited();
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $authuser = $rpcenv->get_user();
@@ -147,7 +147,7 @@ __PACKAGE__->register_method ({
 	my $mds_id = $param->{name} // $nodename;
 
 	my $worker = sub {
-	    my $timeout = PVE::CephTools::get_config('long_rados_timeout');
+	    my $timeout = PVE::Ceph::Tools::get_config('long_rados_timeout');
 	    my $rados = PVE::RADOS->new(timeout => $timeout);
 
 	    my $cfg = cfs_read_file('ceph.conf');
@@ -174,7 +174,7 @@ __PACKAGE__->register_method ({
 
 	    cfs_write_file('ceph.conf', $cfg);
 
-	    eval { PVE::CephTools::create_mds($mds_id, $rados) };
+	    eval { PVE::Ceph::Tools::create_mds($mds_id, $rados) };
 	    if (my $err = $@) {
 		# we abort early if the section is defined, so we know that we
 		# wrote it at this point. Do not auto remove the service, could
@@ -221,12 +221,12 @@ __PACKAGE__->register_method ({
 
 	my $authuser = $rpcenv->get_user();
 
-	PVE::CephTools::check_ceph_inited();
+	PVE::Ceph::Tools::check_ceph_inited();
 
 	my $mds_id = $param->{name};
 
 	my $worker = sub {
-	    my $timeout = PVE::CephTools::get_config('long_rados_timeout');
+	    my $timeout = PVE::Ceph::Tools::get_config('long_rados_timeout');
 	    my $rados = PVE::RADOS->new(timeout => $timeout);
 
 	    my $cfg = cfs_read_file('ceph.conf');
@@ -236,7 +236,7 @@ __PACKAGE__->register_method ({
 		cfs_write_file('ceph.conf', $cfg);
 	    }
 
-	    PVE::CephTools::destroy_mds($mds_id, $rados);
+	    PVE::Ceph::Tools::destroy_mds($mds_id, $rados);
 	};
 
 	return $rpcenv->fork_worker('cephdestroymds', "mds.$mds_id",  $authuser, $worker);

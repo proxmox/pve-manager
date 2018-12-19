@@ -1,4 +1,4 @@
-package PVE::CephTools;
+package PVE::Ceph::Tools;
 
 use strict;
 use warnings;
@@ -42,7 +42,7 @@ my $config_hash = {
 sub get_local_version {
     my ($noerr) = @_;
 
-    if (PVE::CephTools::check_ceph_installed('ceph_bin', $noerr)) {
+    if (check_ceph_installed('ceph_bin', $noerr)) {
 	my $ceph_version;
 	run_command([$ceph_service->{ceph_bin}, '--version'],
 	            noerr => $noerr,
