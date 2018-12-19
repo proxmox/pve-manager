@@ -7,6 +7,8 @@ use Cwd qw(abs_path);
 use IO::File;
 
 use PVE::CephTools;
+use PVE::CephConfig;
+use PVE::Cluster qw(cfs_read_file cfs_write_file);
 use PVE::Diskmanage;
 use PVE::Exception qw(raise_param_exc);
 use PVE::JSONSchema qw(get_standard_option);
@@ -536,7 +538,7 @@ use Net::IP;
 use UUID;
 
 use PVE::CephTools;
-use PVE::Cluster;
+use PVE::Cluster qw(cfs_read_file cfs_write_file);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::Network;
 use PVE::RADOS;
@@ -771,7 +773,7 @@ __PACKAGE__->register_method ({
 
 	my $res = [];
 
-	my $cfg = PVE::CephTools::parse_ceph_config();
+	my $cfg = cfs_read_file('ceph.conf');
 
 	my $monhash = {};
 	foreach my $section (keys %$cfg) {
@@ -884,7 +886,7 @@ __PACKAGE__->register_method ({
 	}
 
 	# simply load old config if it already exists
-	my $cfg = PVE::CephTools::parse_ceph_config();
+	my $cfg = cfs_read_file('ceph.conf');
 
 	if (!$cfg->{global}) {
 
@@ -929,7 +931,7 @@ __PACKAGE__->register_method ({
 	    $cfg->{global}->{'cluster network'} = $param->{'cluster-network'};
 	}
 
-	PVE::CephTools::write_ceph_config($cfg);
+	cfs_write_file('ceph.conf', $cfg);
 
 	PVE::CephTools::setup_pve_symlinks();
 
@@ -1067,7 +1069,7 @@ __PACKAGE__->register_method ({
 
 	my $authuser = $rpcenv->get_user();
 
-	my $cfg = PVE::CephTools::parse_ceph_config();
+	my $cfg = cfs_read_file('ceph.conf');
 
 	my $moncount = 0;
 
@@ -1158,7 +1160,7 @@ __PACKAGE__->register_method ({
 		'mon addr' => $monaddr,
 	    };
 
-	    PVE::CephTools::write_ceph_config($cfg);
+	    cfs_write_file('ceph.conf', $cfg);
 
 	    my $create_keys_pid = fork();
 	    if (!defined($create_keys_pid)) {
@@ -1223,7 +1225,7 @@ __PACKAGE__->register_method ({
 
 	PVE::CephTools::check_ceph_inited();
 
-	my $cfg = PVE::CephTools::parse_ceph_config();
+	my $cfg = cfs_read_file('ceph.conf');
 
 	my $monid = $param->{monid};
 	my $monsection = "mon.$monid";
@@ -1254,7 +1256,7 @@ __PACKAGE__->register_method ({
 	    warn $@ if $@;
 
 	    delete $cfg->{$monsection};
-	    PVE::CephTools::write_ceph_config($cfg);
+	    cfs_write_file('ceph.conf', $cfg);
 	    File::Path::remove_tree($mondir);
 
 	    # remove manager
@@ -1389,7 +1391,7 @@ __PACKAGE__->register_method ({
 
 	PVE::CephTools::check_ceph_inited();
 
-	my $cfg = PVE::CephTools::parse_ceph_config();
+	my $cfg = cfs_read_file('ceph.conf');
 	scalar(keys %$cfg) || die "no configuration\n";
 
 	my $worker = sub {
@@ -1440,7 +1442,7 @@ __PACKAGE__->register_method ({
 
 	PVE::CephTools::check_ceph_inited();
 
-	my $cfg = PVE::CephTools::parse_ceph_config();
+	my $cfg = cfs_read_file('ceph.conf');
 	scalar(keys %$cfg) || die "no configuration\n";
 
 	my $worker = sub {
@@ -1491,7 +1493,7 @@ __PACKAGE__->register_method ({
 
 	PVE::CephTools::check_ceph_inited();
 
-	my $cfg = PVE::CephTools::parse_ceph_config();
+	my $cfg = cfs_read_file('ceph.conf');
 	scalar(keys %$cfg) || die "no configuration\n";
 
 	my $worker = sub {

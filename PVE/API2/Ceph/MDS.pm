@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use PVE::CephTools;
+use PVE::Cluster qw(cfs_read_file cfs_write_file);
 use PVE::INotify;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RADOS;
@@ -68,7 +69,7 @@ __PACKAGE__->register_method ({
 
 	my $res = [];
 
-	my $cfg = PVE::CephTools::parse_ceph_config();
+	my $cfg = cfs_read_file('ceph.conf');
 
 	my $mds_hash = {};
 
@@ -149,7 +150,7 @@ __PACKAGE__->register_method ({
 	    my $timeout = PVE::CephTools::get_config('long_rados_timeout');
 	    my $rados = PVE::RADOS->new(timeout => $timeout);
 
-	    my $cfg = PVE::CephTools::parse_ceph_config();
+	    my $cfg = cfs_read_file('ceph.conf');
 
 	    my $section = "mds.$mds_id";
 
@@ -171,7 +172,7 @@ __PACKAGE__->register_method ({
 		$cfg->{$section}->{"mds standby replay"} = 'true';
 	    }
 
-	    PVE::CephTools::write_ceph_config($cfg);
+	    cfs_write_file('ceph.conf', $cfg);
 
 	    eval { PVE::CephTools::create_mds($mds_id, $rados) };
 	    if (my $err = $@) {
@@ -179,9 +180,9 @@ __PACKAGE__->register_method ({
 		# wrote it at this point. Do not auto remove the service, could
 		# do real harm for previously manual setup MDS
 		warn "Encountered error, remove '$section' from ceph.conf\n";
-		$cfg = PVE::CephTools::parse_ceph_config();
+		my $cfg = cfs_read_file('ceph.conf');
 		delete $cfg->{$section};
-		PVE::CephTools::write_ceph_config($cfg);
+		cfs_write_file('ceph.conf', $cfg);
 
 		die "$err\n";
 	    }
@@ -228,11 +229,11 @@ __PACKAGE__->register_method ({
 	    my $timeout = PVE::CephTools::get_config('long_rados_timeout');
 	    my $rados = PVE::RADOS->new(timeout => $timeout);
 
-	    my $cfg = PVE::CephTools::parse_ceph_config();
+	    my $cfg = cfs_read_file('ceph.conf');
 
 	    if (defined($cfg->{"mds.$mds_id"})) {
 		delete $cfg->{"mds.$mds_id"};
-		PVE::CephTools::write_ceph_config($cfg);
+		cfs_write_file('ceph.conf', $cfg);
 	    }
 
 	    PVE::CephTools::destroy_mds($mds_id, $rados);
