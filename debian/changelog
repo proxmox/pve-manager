@@ -1,3 +1,9 @@
+pve-manager (5.3-7) unstable; urgency=medium
+
+  * refactor ceph API and modules
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 20 Dec 2018 10:59:14 +0100
+
 pve-manager (5.3-6) unstable; urgency=medium
 
   * fix #2017: add help button to storage input panels
