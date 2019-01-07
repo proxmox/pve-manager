@@ -5,6 +5,8 @@ use warnings;
 use PVE::Status::Plugin;
 use Data::Dumper;
 use PVE::SafeSyslog;
+use POSIX qw(isnan isinf);
+use Scalar::Util 'looks_like_number';
 
 # example config (/etc/pve/status.cfg)
 #influxdb:
@@ -111,8 +113,9 @@ sub build_influxdb_payload {
 	if (!ref($value) && $value ne '') {
 	    # value is scalar
 
-	    $value = prepare_value($value);
-	    push @values, "$key=$value";
+	    if (defined(my $v = prepare_value($value))) {
+		push @values, "$key=$v";
+	    }
 	} elsif (ref($value) eq 'HASH') {
 	    # value is a hash
 
@@ -145,8 +148,9 @@ sub get_recursive_values {
 	if(ref($value) eq 'HASH') {
 	    push(@values, get_recursive_values($value));
 	} elsif (!ref($value) && $value ne '') {
-	    $value = prepare_value($value);
-	    push @values, "$key=$value";
+	    if (defined(my $v = prepare_value($value))) {
+		push @values, "$key=$v";
+	    }
 	}
     }
 
@@ -156,13 +160,21 @@ sub get_recursive_values {
 sub prepare_value {
     my ($value) = @_;
 
+    if (looks_like_number($value)) {
+	if (isnan($value) || isinf($value)) {
+	    # we cannot send influxdb NaN or Inf
+	    return undef;
+	}
+
+	# influxdb also accepts 1.0e+10, etc.
+	return $value;
+    }
+
     # if value is not just a number we
     # have to replace " with \"
     # and surround it with "
-    if ($value =~ m/[^\d\.]/) {
-	$value =~ s/\"/\\\"/g;
-	$value = "\"$value\"";
-    }
+    $value =~ s/\"/\\\"/g;
+    $value = "\"$value\"";
 
     return $value;
 }
