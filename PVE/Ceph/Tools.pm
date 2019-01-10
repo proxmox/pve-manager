@@ -99,7 +99,7 @@ sub check_ceph_installed {
 sub check_ceph_inited {
     my ($noerr) = @_;
 
-    return undef if !check_ceph_installed('ceph_bin', $noerr);
+    return undef if !check_ceph_installed('ceph_mon', $noerr);
 
     if (! -f $pve_ceph_cfgpath) {
 	die "pveceph configuration not initialized\n" if !$noerr;
