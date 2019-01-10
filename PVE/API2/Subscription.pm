@@ -29,7 +29,7 @@ PVE::INotify::register_file('subscription', "/etc/subscription",
 			    \&read_etc_pve_subscription,
 			    \&write_etc_pve_subscription);
 
-my $subscription_pattern = 'pve([124])([cbsp])-[0-9a-f]{10}';
+my $subscription_pattern = 'pve([1248])([cbsp])-[0-9a-f]{10}';
 
 sub get_sockets {
     my $info = PVE::ProcFSTools::read_cpuinfo();
