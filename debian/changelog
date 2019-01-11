@@ -1,3 +1,15 @@
+pve-manager (5.3-8) unstable; urgency=medium
+
+  * fix #1997: set taskid for single-guest backups
+
+  * fix #2030: use looks_like_number for number check
+
+  * ceph: change check if installed to ceph mon binary
+
+  * allow 8-way NUMA systems
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 11 Jan 2019 10:23:42 +0100
+
 pve-manager (5.3-7) unstable; urgency=medium
 
   * refactor ceph API and modules
