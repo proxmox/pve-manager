@@ -208,17 +208,21 @@ sub resource_cap {
 sub extract_path_info {
     my ($uri_param) = @_;
 
-    my $info;
+    my ($handler, $info);
 
     my $test_path_properties = sub {
 	my ($method, $path) = @_;
-	(undef, $info) = PVE::API2->find_handler($method, $path, $uri_param);
+	($handler, $info) = PVE::API2->find_handler($method, $path, $uri_param);
     };
 
     if (defined(my $cmd = $ARGV[0])) {
 	if (my $method = $method_map->{$cmd}) {
 	    if (my $path = $ARGV[1]) {
 		$test_path_properties->($method, $path);
+		if (!defined($handler)) {
+		    print STDERR "No '$cmd' handler defined for '$path'\n";
+		    exit(1);
+		}
 	    }
 	} elsif ($cmd eq 'bashcomplete') {
 	    my $cmdline = substr($ENV{COMP_LINE}, 0, $ENV{COMP_POINT});
