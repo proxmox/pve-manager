@@ -128,11 +128,7 @@ sub parse_node_config {
 
     my @lines = split(/\n/, $content);
     foreach my $line (@lines) {
-	if ($line =~ /^\#(.*)\s*$/) {
-	    $descr .= PVE::Tools::decode_text($1) . "\n";
-	    next;
-	}
-	if ($line =~ /^description:\s*(.*\S)\s*$/) {
+	if ($line =~ /^\#(.*)\s*$/ || $line =~ /^description:\s*(.*\S)\s*$/) {
 	    $descr .= PVE::Tools::decode_text($1) . "\n";
 	    next;
 	}
