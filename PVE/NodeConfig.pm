@@ -110,12 +110,17 @@ sub check_type {
 	if (my $fmt = $confdesc->{$key}->{format}) {
 	    PVE::JSONSchema::check_format($fmt, $value);
 	    return $value;
+	} elsif (my $pattern = $confdesc->{$key}->{pattern}) {
+	    if ($value !~ m/^$pattern$/) {
+		die "value does not match the regex pattern\n";
+	    }
 	}
 	return $value;
     } else {
 	die "internal error"
     }
 }
+
 sub parse_node_config {
     my ($content) = @_;
 
