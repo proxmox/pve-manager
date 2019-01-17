@@ -48,6 +48,7 @@ use Digest::MD5;
 use Digest::SHA;
 use PVE::API2::Disks;
 use JSON;
+use Socket;
 
 use base qw(PVE::RESTHandler);
 
@@ -168,6 +169,7 @@ __PACKAGE__->register_method ({
 	    { name => 'version' },
 	    { name => 'syslog' },
 	    { name => 'status' },
+	    { name => 'wakeonlan' },
 	    { name => 'subscription' },
 	    { name => 'report' },
 	    { name => 'tasks' },
@@ -466,6 +468,51 @@ __PACKAGE__->register_method({
 	return undef;
     }});
 
+__PACKAGE__->register_method({
+    name => 'wakeonlan',
+    path => 'wakeonlan',
+    method => 'POST',
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.PowerMgmt' ]],
+    },
+    protected => 1,
+    description => "Try to wake a node via 'wake on LAN' network packet.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node', {
+		description => 'target node for wake on LAN packet',
+	    }),
+	},
+    },
+    returns => { type => "null" },
+    code => sub {
+	my ($param) = @_;
+
+	my $config = PVE::NodeConfig::load_config($param->{node});
+	my $mac_addr = $config->{wakeonlan};
+	if (!defined($mac_addr)) {
+	    die "No wake on LAN MAC address defined for '$param->{node}'!\n";
+	}
+
+	$mac_addr =~ s/://g;
+	my $packet = chr(0xff) x 6 . pack('H*', $mac_addr) x 16;
+
+	my $addr = gethostbyname('255.255.255.255');
+	my $port = getservbyname('discard', 'udp');
+	my $to = Socket::pack_sockaddr_in($port, $addr);
+	socket(my $sock, Socket::AF_INET, Socket::SOCK_DGRAM, Socket::IPPROTO_UDP)
+	    || die "Unable to open socket: $!\n";
+	setsockopt($sock, Socket::SOL_SOCKET, Socket::SO_BROADCAST, 1)
+	    || die "Unable to set socket option: $!\n";
+
+	send($sock, $packet, 0, $to)
+	    || die "Unable to send packet: $!\n";
+
+	close($sock);
+
+	return undef;
+    }});
 
 __PACKAGE__->register_method({
     name => 'rrd', 

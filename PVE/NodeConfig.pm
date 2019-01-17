@@ -61,6 +61,12 @@ my $confdesc = {
 	description => 'Node description/comment.',
 	optional => 1,
     },
+    wakeonlan => {
+	type => 'string',
+	description => 'MAC address for wake on LAN',
+	pattern => '^([0-9a-fA-F]{2}:){5}([0-9a-fA-F]{2})$',
+	optional => 1,
+    },
 };
 
 my $acmedesc = {
