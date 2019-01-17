@@ -206,6 +206,9 @@ our $cmddef = {
 	    revoke => [ 'PVE::API2::ACME', 'revoke_certificate', [], { node => $nodename }, $upid_exit ],
 	},
     },
+
+    wakeonlan => [ 'PVE::API2::Nodes::Nodeinfo', 'wakeonlan', [ 'node' ], { } ],
+
 };
 
 1;
