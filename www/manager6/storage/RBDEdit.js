@@ -100,9 +100,11 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	}
 	me.type = 'rbd';
 
-	me.column1 = [
-	    {
-		xtype: me.isCreate ? 'pveCephPoolSelector' : 'displayfield',
+	me.column1 = [];
+
+	if (me.isCreate) {
+	    me.column1.push({
+		xtype: 'pveCephPoolSelector',
 		nodename: me.nodename,
 		name: 'pool',
 		bind: {
@@ -112,9 +114,8 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		},
 		fieldLabel: gettext('Pool'),
 		allowBlank: false
-	    },
-	    {
-		xtype: me.isCreate ? 'textfield' : 'displayfield',
+	    },{
+		xtype: 'textfield',
 		name: 'pool',
 		value: 'rbd',
 		bind: {
@@ -124,7 +125,18 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		},
 		fieldLabel: gettext('Pool'),
 		allowBlank: false
-	    },
+	    });
+	} else {
+	    me.column1.push({
+		xtype: 'displayfield',
+		nodename: me.nodename,
+		name: 'pool',
+		fieldLabel: gettext('Pool'),
+		allowBlank: false
+	    });
+	}
+
+	me.column1.push(
 	    {
 		xtype: 'textfield',
 		name: 'monhost',
@@ -159,7 +171,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		fieldLabel: gettext('User name'),
 		allowBlank: true
 	    }
-	];
+	);
 
 	me.column2 = [
 	    {
