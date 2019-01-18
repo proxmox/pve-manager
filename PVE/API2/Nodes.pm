@@ -489,6 +489,7 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
+	PVE::Cluster::check_node_exists($param->{node});
 	my $config = PVE::NodeConfig::load_config($param->{node});
 	my $mac_addr = $config->{wakeonlan};
 	if (!defined($mac_addr)) {
