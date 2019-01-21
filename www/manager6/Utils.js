@@ -435,11 +435,13 @@ Ext.define('PVE.Utils', { utilities: {
 	return days.toFixed(1) + 'd';
     },
 
-    imagesText: gettext('Disk image'),
-    backupFileText: gettext('VZDump backup file'),
-    vztmplText: gettext('Container template'),
-    isoImageText: gettext('ISO image'),
-    containersText: gettext('Container'),
+    contentTypes: {
+	'images': gettext('Disk image'),
+	'backup': gettext('VZDump backup file'),
+	'vztmpl': gettext('Container template'),
+	'iso': gettext('ISO image'),
+	'rootdir': gettext('Container')
+    },
 
     storageSchema: {
 	dir: {
@@ -549,23 +551,9 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     format_content_types: function(value) {
-	var cta = [];
-
-	Ext.each(value.split(',').sort(), function(ct) {
-	    if (ct === 'images') {
-		cta.push(PVE.Utils.imagesText);
-	    } else if (ct === 'backup') {
-		cta.push(PVE.Utils.backupFileText);
-	    } else if (ct === 'vztmpl') {
-		cta.push(PVE.Utils.vztmplText);
-	    } else if (ct === 'iso') {
-		cta.push(PVE.Utils.isoImageText);
-	    } else if (ct === 'rootdir') {
-		cta.push(PVE.Utils.containersText);
-	    }
-	});
-
-	return cta.join(', ');
+	return value.split(',').sort().map(function(ct) {
+	    return PVE.Utils.contentTypes[ct] || ct;
+	}).join(', ');
     },
 
     render_storage_content: function(value, metaData, record) {
