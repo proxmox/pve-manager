@@ -489,11 +489,17 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	PVE::Cluster::check_node_exists($param->{node});
-	my $config = PVE::NodeConfig::load_config($param->{node});
+	my $node = $param->{node};
+
+	die "'$node' is local node, cannot wake my self!\n"
+	    if $node eq 'localhost' || $node eq PVE::INotify::nodename();
+
+	PVE::Cluster::check_node_exists($node);
+
+	my $config = PVE::NodeConfig::load_config($node);
 	my $mac_addr = $config->{wakeonlan};
 	if (!defined($mac_addr)) {
-	    die "No wake on LAN MAC address defined for '$param->{node}'!\n";
+	    die "No wake on LAN MAC address defined for '$node'!\n";
 	}
 
 	$mac_addr =~ s/://g;
@@ -502,6 +508,7 @@ __PACKAGE__->register_method({
 	my $addr = gethostbyname('255.255.255.255');
 	my $port = getservbyname('discard', 'udp');
 	my $to = Socket::pack_sockaddr_in($port, $addr);
+
 	socket(my $sock, Socket::AF_INET, Socket::SOCK_DGRAM, Socket::IPPROTO_UDP)
 	    || die "Unable to open socket: $!\n";
 	setsockopt($sock, Socket::SOL_SOCKET, Socket::SO_BROADCAST, 1)
