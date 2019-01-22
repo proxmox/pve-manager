@@ -485,7 +485,10 @@ __PACKAGE__->register_method({
 	    }),
 	},
     },
-    returns => { type => "null" },
+    returns => {
+	type => 'string',
+	format => 'mac-addr',
+    },
     code => sub {
 	my ($param) = @_;
 
@@ -519,7 +522,7 @@ __PACKAGE__->register_method({
 
 	close($sock);
 
-	return undef;
+	return $config->{wakeonlan};
     }});
 
 __PACKAGE__->register_method({

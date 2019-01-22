@@ -207,7 +207,11 @@ our $cmddef = {
 	},
     },
 
-    wakeonlan => [ 'PVE::API2::Nodes::Nodeinfo', 'wakeonlan', [ 'node' ], { } ],
+    wakeonlan => [ 'PVE::API2::Nodes::Nodeinfo', 'wakeonlan', [ 'node' ], {}, sub {
+	    my ($mac_addr) = @_;
+
+	    print "Wake on LAN packet send for '$mac_addr'\n";
+	} ],
 
 };
 

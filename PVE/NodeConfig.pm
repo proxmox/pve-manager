@@ -64,7 +64,7 @@ my $confdesc = {
     wakeonlan => {
 	type => 'string',
 	description => 'MAC address for wake on LAN',
-	pattern => '^([0-9a-fA-F]{2}:){5}([0-9a-fA-F]{2})$',
+	format => 'mac-addr',
 	optional => 1,
     },
 };
