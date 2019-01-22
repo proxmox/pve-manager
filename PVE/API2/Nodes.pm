@@ -488,6 +488,7 @@ __PACKAGE__->register_method({
     returns => {
 	type => 'string',
 	format => 'mac-addr',
+	description => 'MAC address used to assemble the WoL magic packet.',
     },
     code => sub {
 	my ($param) = @_;
