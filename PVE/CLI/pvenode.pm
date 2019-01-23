@@ -165,7 +165,7 @@ our $cmddef = {
 	list => [ 'PVE::API2::Tasks', 'node_tasks', [], { node => $nodename }, sub {
 	    my ($data, $schema, $options) = @_;
 	    foreach my $task (@$data) {
-		if ($task->{status} ne 'OK') {
+		if ($task->{status} ne 'OK' && $task->{status} ne 'RUNNING') {
 		    $task->{status} = 'ERROR';
 		}
 	    }
