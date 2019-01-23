@@ -58,6 +58,13 @@ __PACKAGE__->register_method({
 		default => 0,
 		optional => 1,
 	    },
+	    source => {
+		type => 'string',
+		enum => ['archive', 'active', 'all'],
+		default => 'archive',
+		optional => 1,
+		description => 'List archived, active or all tasks.',
+	    },
 	},
     },
     returns => {
@@ -94,11 +101,27 @@ __PACKAGE__->register_method({
 	my $limit = $param->{limit} // 50;
 	my $userfilter = $param->{userfilter};
 	my $errors = $param->{errors} // 0;
+	my $source = $param->{source} // 'archive';
 
 	my $count = 0;
 	my $line;
 
 	my $auditor = $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ], 1);
+
+	my $filter_task = sub {
+	    my $task = shift;
+
+	    return 1 if $userfilter && $task->{user} !~ m/\Q$userfilter\E/i;
+	    return 1 if !($auditor || $user eq $task->{user});
+
+	    return 1 if $errors && $task->{status} && $task->{status} eq 'OK';
+	    return 1 if $param->{vmid} && (!$task->{id} || $task->{id} ne $param->{vmid});
+
+	    return 1 if $count++ < $start;
+	    return 1 if $limit <= 0;
+
+	    return 0;
+	};
 
 	my $parse_line = sub {
 	    if ($line =~ m/^(\S+)(\s([0-9A-Za-z]{8})(\s(\S.*))?)?$/) {
@@ -106,36 +129,44 @@ __PACKAGE__->register_method({
 		my $endtime = $3;
 		my $status = $5;
 		if ((my $task = PVE::Tools::upid_decode($upid, 1))) {
-		    return if $userfilter && $task->{user} !~ m/\Q$userfilter\E/i;
-		    return if !($auditor || $user eq $task->{user});
-
-		    return if $errors && $status && $status eq 'OK';
-
-		    return if $param->{vmid} && (!$task->{id} || $task->{id} ne $param->{vmid});
-
-		    return if $count++ < $start;
-		    return if $limit <= 0;
 
 		    $task->{upid} = $upid;
 		    $task->{endtime} = hex($endtime) if $endtime;
 		    $task->{status} = $status if $status;
-		    push @$res, $task;
-		    $limit--;
+
+		    if (!$filter_task->($task)) {
+			push @$res, $task;
+			$limit--;
+		    }
 		}
 	    }
 	};
 
-	if (my $bw = File::ReadBackwards->new($filename)) {
-	    while (defined ($line = $bw->readline)) {
-		&$parse_line();
+	if ($source eq 'active' || $source eq 'all') {
+	    my $recent_tasks = PVE::INotify::read_file('active');
+	    for my $task (@$recent_tasks) {
+		next if $task->{saved}; # archived task, already in index(.1)
+		if (!$filter_task->($task)) {
+		    $task->{status} = 'RUNNING' if !$task->{status}; # otherwise it would be archived
+		    push @$res, $task;
+		    $limit--;
+		}
 	    }
-	    $bw->close();
 	}
-	if (my $bw = File::ReadBackwards->new("$filename.1")) {
-	    while (defined ($line = $bw->readline)) {
-		&$parse_line();
+
+	if ($source ne 'active') {
+	    if (my $bw = File::ReadBackwards->new($filename)) {
+		while (defined ($line = $bw->readline)) {
+		    &$parse_line();
+		}
+		$bw->close();
 	    }
-	    $bw->close();
+	    if (my $bw = File::ReadBackwards->new("$filename.1")) {
+		while (defined ($line = $bw->readline)) {
+		    &$parse_line();
+		}
+		$bw->close();
+	    }
 	}
 
 	$rpcenv->set_result_attrib('total', $count);
