@@ -49,6 +49,11 @@ __PACKAGE__->register_method({
 		optional => 1,
 		description => "Only list tasks from this user.",
 	    },
+	    typefilter => {
+		type => 'string',
+		optional => 1,
+		description => 'Only list tasks of this type (e.g., vzstart, vzdump).',
+	    },
 	    vmid => get_standard_option('pve-vmid', {
 		description => "Only list tasks for this VM.",
 		optional => 1,
@@ -100,6 +105,7 @@ __PACKAGE__->register_method({
 	my $start = $param->{start} // 0;
 	my $limit = $param->{limit} // 50;
 	my $userfilter = $param->{userfilter};
+	my $typefilter = $param->{typefilter};
 	my $errors = $param->{errors} // 0;
 	my $source = $param->{source} // 'archive';
 
@@ -113,6 +119,8 @@ __PACKAGE__->register_method({
 
 	    return 1 if $userfilter && $task->{user} !~ m/\Q$userfilter\E/i;
 	    return 1 if !($auditor || $user eq $task->{user});
+
+	    return 1 if $typefilter && $task->{type} ne $typefilter;
 
 	    return 1 if $errors && $task->{status} && $task->{status} eq 'OK';
 	    return 1 if $param->{vmid} && (!$task->{id} || $task->{id} ne $param->{vmid});
