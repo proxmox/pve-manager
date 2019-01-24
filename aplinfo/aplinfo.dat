@@ -44,15 +44,15 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.8 (20180913)
 
 Package: archlinux-base
-Version: 20180906-1
+Version: 20190124-1
 Type: lxc
 OS: archlinux
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/archlinux-base_20180906-1_amd64.tar.gz
-md5sum: 7c6a2c0bc28e31a69176119b5e21764d
-sha512sum: 670d94a83df6fb3ef13bc9d1cc9fd798a270f891aec3aaad2a9590e42e0864dd1ed422d3019eaf986e564ed7cb07af14d27cdf199d127dc8b5680c0de7484767
+Location: system/archlinux-base_20190124-1_amd64.tar.gz
+md5sum: 3517545b8c7fb728d98cd53b8ca44c22
+sha512sum: 723a0d8748c43b10a61d752b849da5f4bea4316c7be9d4ae7c6d9d263fb72df94d14642344812fd5ac5f535d112a367cba6eac0dbd023cd66eb4541b3a94a4b0
 Infopage: https://www.archlinux.org
 Description: ArchLinux base image.
  ArchLinux template with the 'base' group and the 'openssh' package installed.
@@ -83,34 +83,6 @@ sha512sum: 7d1a171889aefdca51b29caa3c680afcb7492576a19a031314717334b136950d48313
 Infopage: https://linuxcontainers.org
 Description: LXC default image for centos 7 (20171212)
 
-Package: debian-6.0-standard
-Version: 6.0-7
-Type: lxc
-OS: debian-6.0
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/debian-6.0-standard_6.0-7_amd64.tar.gz
-md5sum: ff39ec06497d7cc175e031d6ef76699e
-sha512sum: e267f6264446e9042039e843131520ac1195a56acf64e48202db68f196b58419711a67ea6d9b1504768266e248350033e8938d80c05d807106862245a185b7ef
-Infopage: http://pve.proxmox.com/wiki/Debian_6.0_Standard
-Description: Debian 6.0 (standard)
- A small Debian Squeeze system including all standard packages.
-
-Package: debian-7.0-standard
-Version: 7.11-1
-Type: lxc
-OS: debian-7.0
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/debian-7.0-standard_7.11-1_amd64.tar.gz
-md5sum: 2ce76da4e7440c4f219847aa4c271dba
-sha512sum: b8ddb0c08360795996567bad690a58976a9dbb285e503f5f01d8d2e4016e743634c8fd78382e0e72d38771602ad5744d0bc5ad0a37fc1f527bb7bbc41f556f3e
-Infopage: http://pve.proxmox.com/wiki/Debian_7.0_Standard
-Description: Debian 7.0 (standard)
- A small Debian Wheezy system including all standard packages.
-
 Package: debian-8.0-standard
 Version: 8.7-1
 Type: lxc
@@ -138,19 +110,6 @@ sha512sum: 68a2e0274246abe82fb47e80ada99def650bd2ac45c5756e78bdf464f27e1dc5fba01
 Infopage: http://pve.proxmox.com/wiki/Debian_9.0_Standard
 Description: Debian 9.5 (standard)
  A small Debian Stretch system including all standard packages.
-
-Package: fedora-27-default
-Version: 20171212
-Type: lxc
-OS: fedora
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/fedora-27-default_20171212_amd64.tar.xz
-md5sum: 06d9f37f9d44e6692515cb33f5408533
-sha512sum: 165648672cb5b5058aafdb371d11e6d5c6c2f61869032b78fc0f67640d696478c6ecaf7ffc7479bcae2b854755fd25e4dd3dcfee333058ce994d7558a6a5eaf9
-Infopage: https://linuxcontainers.org
-Description: LXC default image for fedora 27 (20171212)
 
 Package: fedora-28-default
 Version: 20180907
@@ -217,114 +176,58 @@ sha512sum: 245bcd7ed4751b40d680752cfc1b696a724c4857914752cd05459e16cacf10e637239
 Infopage: https://linuxcontainers.org
 Description: LXC default image for opensuse 42.3 (20171214)
 
-Package: ubuntu-12.04-standard
-Version: 12.04-1
-Type: lxc
-OS: ubuntu-12.04
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-12.04-standard_12.04-1_amd64.tar.gz
-md5sum: f93f1f090aebd558ed8769c823896caa
-sha512sum: 73e54d691d9e831206fba004bc5d28ce48a02118c479a0c5e0d93ed1411924c52a2d99a4d33136f6ec844d841475efaa4a4e8a08fda12e7b0ee56e46535dde8b
-Infopage: http://pve.proxmox.com/wiki/Ubuntu_Precise_Standard
-Description: Ubuntu Precise (standard)
- A small Ubuntu Precise system including all standard packages.
-
 Package: ubuntu-14.04-standard
-Version: 14.04-1
+Version: 14.04.5-1
 Type: lxc
 OS: ubuntu-14.04
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/ubuntu-14.04-standard_14.04-1_amd64.tar.gz
-md5sum: 153da63c710f435973a06ff28233e4e4
-sha512sum: 996a5c2d31562f006fa59520634d856c370446150abeb7ca16a00ae24fb6acef45b1db13e3d8b7a5f888138b6120c9d12bddab7ff14b4ee2137ae9056bb5f4bd
+Location: system/ubuntu-14.04-standard_14.04.5-1_amd64.tar.gz
+md5sum: 4b7fdad70cddef708f08d9dbe0e3bb84
+sha512sum: b3b5f39c8c22db980848197249fa67daa8f66e4c0dd3e51612e29b3090be9dd8585d567eaaae3e98e046a72efbfee625d9356c86500c053d0d71ce1b3800c743
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Trusty_Standard
 Description: Ubuntu Trusty (standard)
  A small Ubuntu Trusty system including all standard packages.
 
 Package: ubuntu-16.04-standard
-Version: 16.04-1
+Version: 16.04.5-1
 Type: lxc
 OS: ubuntu-16.04
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/ubuntu-16.04-standard_16.04-1_amd64.tar.gz
-md5sum: 920f741a79f559db227f684bf63f9cdb
-sha512sum: bf9e903c7bb2c6dfda47f68e31f5f6e77409933247232b332be6e822dcb4574c2deac6b7c3e8af260248e658e71015e9669828db827a5a7371539652f2a11197
+Location: system/ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz
+md5sum: 0c55ed84d157cfd87d04f1115a61baa2
+sha512sum: b0b1e6969d749404b5a9f4718e5f8bd45a118a410f2d315fef46cadb1d8bdf60f9b6771d91a3b33cbe65207be63e2eca82e71e92e9ed4227f7a5866a45a78027
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Xenial_Standard
 Description: Ubuntu Xenial (standard)
  A small Ubuntu Xenial system including all standard packages.
 
-Package: ubuntu-16.10-standard
-Version: 16.10-1
-Type: lxc
-OS: ubuntu-16.10
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-16.10-standard_16.10-1_amd64.tar.gz
-md5sum: 0d201215e9e9999ec40fa72dc0086b5a
-sha512sum: d43b19e242e3d0fa9d48db4348dc358a8f30b5585d38af88b63b651a1bf5b74346a722c40ea3dbe5c2d2de6d223bf228e3e522f6b39a405eb0f5d9656c98debc
-Infopage: http://pve.proxmox.com/wiki/Ubuntu_Yakkety_Standard
-Description: Ubuntu Yakkety (standard)
- A small Ubuntu Yakkety system including all standard packages.
-
-Package: ubuntu-17.04-standard
-Version: 17.04-1
-Type: lxc
-OS: ubuntu-17.04
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-17.04-standard_17.04-1_amd64.tar.gz
-md5sum: 87b34496ef90c2d87c0c97e190871b3c
-sha512sum: 30b4018447e1d07d950ccab17c9b54c2f4b01faa748d1725c17b34198dd6bb2b982acf9e09fb94ca8e891824e8e2c2ec7040e21a41f72fcee4fa7811f81e0341
-Infopage: http://pve.proxmox.com/wiki/Ubuntu_Zesty_Standard
-Description: Ubuntu Zesty (standard)
- A small Ubuntu Zesty system including all standard packages.
-
-Package: ubuntu-17.10-standard
-Version: 17.10-1
-Type: lxc
-OS: ubuntu-17.10
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-17.10-standard_17.10-1_amd64.tar.gz
-md5sum: 34cc0dcfaa733cb17bc75f9e64cb8533
-sha512sum: 64ffb641a2d111fa92a71c513f48d556af2eddb00d361509476f548e8901941d8f58dfe2ff8918071885f5d2dec5add7b0a9ec375d867331dcd9ef7ea614171a
-Infopage: http://pve.proxmox.com/wiki/Ubuntu_Artful_Standard
-Description: Ubuntu Artful (standard)
- A small Ubuntu Artful system including all standard packages.
-
 Package: ubuntu-18.04-standard
-Version: 18.04-1
+Version: 18.04.1-1
 Type: lxc
 OS: ubuntu-18.04
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/ubuntu-18.04-standard_18.04-1_amd64.tar.gz
-md5sum: a17211bc519d79fe5fc869d5db57474f
-sha512sum: 1a8fb93326c4424a1eaea633fbebc9f3349f11b5faca4c0f43efb816530a47800c32132427ac3023685a17a4f939e0d940a1d500dab8d51ad98495a7ea0eb29e
+Location: system/ubuntu-18.04-standard_18.04.1-1_amd64.tar.gz
+md5sum: 6da8032da517264477b844aed82cb929
+sha512sum: 64ffa07e012115567b29cc460686687528d674ba2fbcb198d9cf4e3943bc0f58149b266bf0366c2ef03c6bb8909225e2a3010f7c29878ba83e1ef388ef56b1dd
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Bionic_Standard
 Description: Ubuntu Bionic (standard)
  A small Ubuntu Bionic system including all standard packages.
 
 Package: ubuntu-18.10-standard
-Version: 18.10-1
+Version: 18.10-2
 Type: lxc
 OS: ubuntu-18.10
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/ubuntu-18.10-standard_18.10-1_amd64.tar.gz
-md5sum: 536795782c3d08b01279269c52369fe1
-sha512sum: d437cc1845ae3970261301293f13471f0ebc0824f9dd8ada01e73f5b597cfe2ab40f0c81ad32609f23806dd97d62f4287e8dca2729dd62e3052d6f91402e594e
+Location: system/ubuntu-18.10-standard_18.10-2_amd64.tar.gz
+md5sum: 970590f92f1f7c7be7029de80a492c6f
+sha512sum: c44b96a72516c752faf78addaf70553de77c5bb743c7972b6d764b0d34166a8657597e52a55ff29cfc2e9fdaefdad5956a2391a4c854d1e9f7734cc047dbd866
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Cosmic_Standard
 Description: Ubuntu Cosmic (standard)
  A small Ubuntu Cosmic system including all standard packages.
