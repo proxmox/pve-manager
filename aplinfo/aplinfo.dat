@@ -84,31 +84,31 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for centos 7 (20171212)
 
 Package: debian-8.0-standard
-Version: 8.7-1
+Version: 8.11-1
 Type: lxc
 OS: debian-8.0
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/debian-8.0-standard_8.7-1_amd64.tar.gz
-md5sum: 3f607c37a83143e307fbb5a6805737e1
-sha512sum: 0c9a25df06b21bace7818c7b057545371e595e70099c0b9e68d248d82179e0ba5dbbffd468f878323102daaf6d239d8c9fb7b067401df0697179d3d5e234842a
+Location: system/debian-8.0-standard_8.11-1_amd64.tar.gz
+md5sum: 92fa589fd24859e82ae922f5e8fe7796
+sha512sum: b45e2d46e9760dda5d7887414f566780e1e8a1079423324ea27b4627d38344cc1fc1a01edf3b947f9632610f59869f3239c0294b7cc8237a7d5b417816083a1a
 Infopage: http://pve.proxmox.com/wiki/Debian_8.0_Standard
-Description: Debian 8.0 (standard)
+Description: Debian 8.11 (standard)
  A small Debian Jessie system including all standard packages.
 
 Package: debian-9.0-standard
-Version: 9.5-1
+Version: 9.7-1
 Type: lxc
 OS: debian-9.0
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/debian-9.0-standard_9.5-1_amd64.tar.gz
-md5sum: 78c1a6b32ce95c78592ac0a1d49f334e
-sha512sum: 68a2e0274246abe82fb47e80ada99def650bd2ac45c5756e78bdf464f27e1dc5fba01d5f9544dade6a5e08b61460ab97c01f4483aa0325898e9c04027c2bf922
+Location: system/debian-9.0-standard_9.7-1_amd64.tar.gz
+md5sum: d882825f5c818d086d514d9b49a6682d
+sha512sum: 02609c1fc6685d1bd038409360a6343880059fdaf57a29d0a99169713156a650c18dd310dde2a17c6cb568280c669f56d051d8869b50863fa2527b5cf8a34fdb
 Infopage: http://pve.proxmox.com/wiki/Debian_9.0_Standard
-Description: Debian 9.5 (standard)
+Description: Debian 9.7 (standard)
  A small Debian Stretch system including all standard packages.
 
 Package: fedora-28-default
