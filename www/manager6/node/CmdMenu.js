@@ -84,6 +84,30 @@ Ext.define('PVE.node.CmdMenu', {
 		var me = this.up('menu');
 		PVE.Utils.openDefaultConsoleWindow(true, 'shell', undefined, me.nodename, undefined);
 	    }
+	},
+	{ xtype: 'menuseparator' },
+	{
+	    text: gettext('Wake-on-LAN'),
+	    itemId: 'wakeonlan',
+	    iconCls: 'fa fa-fw fa-power-off',
+	    handler: function() {
+		var me = this.up('menu');
+		Proxmox.Utils.API2Request({
+		    param: {},
+		    url: '/nodes/' + me.nodename + '/wakeonlan',
+		    method: 'POST',
+		    failure: function(response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    },
+		    success: function(response, opts) {
+			Ext.Msg.show({
+			    title: 'Success',
+			    icon: Ext.Msg.INFO,
+			    msg: Ext.String.format(gettext("Wake on LAN packet send for '{0}': '{1}'"), me.nodename, response.result.data)
+			});
+		    }
+		});
+	    }
 	}
     ],
 
@@ -108,10 +132,15 @@ Ext.define('PVE.node.CmdMenu', {
 	    me.getComponent('bulkstart').setDisabled(true);
 	    me.getComponent('bulkstop').setDisabled(true);
 	    me.getComponent('bulkmigrate').setDisabled(true);
+	    me.getComponent('wakeonlan').setDisabled(true);
 	}
 
 	if (!caps.nodes['Sys.Console']) {
 	    me.getComponent('shell').setDisabled(true);
+	}
+
+	if (me.pveSelNode.data.running) {
+	    me.getComponent('wakeonlan').setDisabled(true);
 	}
     }
 });
