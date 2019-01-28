@@ -19,6 +19,7 @@ Ext.Ajax.defaultHeaders = {
     'Accept': 'application/json'
 };
 
+/*jslint confusion: true */
 Ext.define('PVE.Utils', { utilities: {
 
     // this singleton contains miscellaneous utilities
@@ -307,7 +308,9 @@ Ext.define('PVE.Utils', { utilities: {
 	serial0: gettext('Serial terminal') + ' 0',
 	serial1: gettext('Serial terminal') + ' 1',
 	serial2: gettext('Serial terminal') + ' 2',
-	serial3: gettext('Serial terminal') + ' 3'
+	serial3: gettext('Serial terminal') + ' 3',
+	virtio: 'VirtIO-GPU',
+	none: Proxmox.Utils.noneText
     },
 
     render_kvm_language: function (value) {

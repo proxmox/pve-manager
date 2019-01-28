@@ -55,6 +55,7 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 		    case "vmware":
 			emptyText = "16";
 			break;
+		    case "none":
 		    case "serial0":
 		    case "serial1":
 		    case "serial2":
