@@ -482,6 +482,10 @@ __PACKAGE__->register_method({
 	properties => {
 	    node => get_standard_option('pve-node', {
 		description => 'target node for wake on LAN packet',
+		completion => sub {
+		    my $members = PVE::Cluster::get_members();
+		    return [ grep { !$members->{$_}->{online} } keys %$members ];
+		}
 	    }),
 	},
     },
