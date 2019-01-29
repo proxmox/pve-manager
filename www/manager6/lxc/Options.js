@@ -140,6 +140,9 @@ Ext.define('PVE.lxc.Options', {
 		defaultValue: Proxmox.Utils.noneText,
 		editor: Proxmox.UserName === 'root@pam' ?
 		    'PVE.lxc.FeaturesEdit' : undefined
+	    },
+	    hookscript: {
+		header: gettext('Hookscript')
 	    }
 	};
 

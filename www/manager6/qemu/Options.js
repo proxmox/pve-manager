@@ -292,6 +292,9 @@ Ext.define('PVE.qemu.Options', {
 			fieldLabel: gettext('Enabled')
 		    }
 		} : undefined
+	    },
+	    hookscript: {
+		header: gettext('Hookscript')
 	    }
 	};
 
