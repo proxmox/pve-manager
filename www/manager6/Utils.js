@@ -443,7 +443,8 @@ Ext.define('PVE.Utils', { utilities: {
 	'backup': gettext('VZDump backup file'),
 	'vztmpl': gettext('Container template'),
 	'iso': gettext('ISO image'),
-	'rootdir': gettext('Container')
+	'rootdir': gettext('Container'),
+	'snippets': gettext('Snippets')
     },
 
     storageSchema: {

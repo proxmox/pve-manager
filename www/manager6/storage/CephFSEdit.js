@@ -68,7 +68,7 @@ Ext.define('PVE.storage.CephFSInputPanel', {
 	me.column2 = [
 	    {
 		xtype: 'pveContentTypeSelector',
-		cts: ['backup', 'iso', 'vztmpl'],
+		cts: ['backup', 'iso', 'vztmpl', 'snippets'],
 		fieldLabel: gettext('Content'),
 		name: 'content',
 		value: 'backup',

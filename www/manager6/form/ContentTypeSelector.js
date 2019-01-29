@@ -10,7 +10,7 @@ Ext.define('PVE.form.ContentTypeSelector', {
 	me.comboItems = [];
 
 	if (me.cts === undefined) {
-	    me.cts = ['images', 'iso', 'vztmpl', 'backup', 'rootdir'];
+	    me.cts = ['images', 'iso', 'vztmpl', 'backup', 'rootdir', 'snippets'];
 	}
 
 	Ext.Array.each(me.cts, function(ct) {
