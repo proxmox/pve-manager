@@ -45,6 +45,9 @@ Ext.define('PVE.form.GlobalSearchField', {
 
 	hideMe: function() {
 	    var me = this;
+	    if (typeof me.ctxMenu !== 'undefined' && me.ctxMenu.isVisible()) {
+		return;
+	    }
 	    me.hasFocus = false;
 	    if (!me.textfield.hasFocus) {
 		me.hide();
@@ -60,6 +63,10 @@ Ext.define('PVE.form.GlobalSearchField', {
 	    rowclick: function(grid, record) {
 		var me = this;
 		me.textfield.selectAndHide(record.id);
+	    },
+	    itemcontextmenu: function(v, record, item, index, event) {
+		var me = this;
+		me.ctxMenu = PVE.Utils.createCmdMenu(v, record, item, index, event);
 	    },
 	    /* because of lint */
 	    focusleave: {

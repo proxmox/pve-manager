@@ -994,6 +994,7 @@ Ext.define('PVE.Utils', { utilities: {
 	}
 
 	menu.showAt(event.getXY());
+	return menu;
     },
 
     // helper for deleting field which are set to there default values
