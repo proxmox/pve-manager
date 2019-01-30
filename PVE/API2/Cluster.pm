@@ -3,8 +3,6 @@ package PVE::API2::Cluster;
 use strict;
 use warnings;
 
-use XML::Parser;
-
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param);
 use PVE::Exception qw(raise_param_exc);
