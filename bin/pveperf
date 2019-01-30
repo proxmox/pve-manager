@@ -2,9 +2,11 @@
 
 use strict;
 use warnings;
-use File::Sync;
+
 use Time::HiRes qw( usleep ualarm gettimeofday tv_interval );
 use Net::DNS::Resolver;
+
+use PVE::Tools;
 
 if ($#ARGV >= 1) {
     print STDERR "usage: $0 [PATH]\n";
@@ -84,7 +86,7 @@ sub test_fsync {
  
 	    print TMP $data;
 
-	    File::Sync::fsync (\*TMP);
+	    PVE::Tools::fsync(fileno(\*TMP));
 
 	    close (TMP);
 
