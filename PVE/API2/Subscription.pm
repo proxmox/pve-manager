@@ -104,13 +104,14 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $server_id = PVE::API2Tools::get_hwaddress();
-	my $url = "http://www.proxmox.com/products/proxmox-ve/subscription-service-plans";
 	my $node = $param->{node};
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $authuser = $rpcenv->get_user();
 	my $has_permission = PVE::AccessControl::check_permissions($authuser, "/nodes/$node", 'Sys.Audit');
+
+	my $server_id = PVE::API2Tools::get_hwaddress();
+	my $url = "http://www.proxmox.com/products/proxmox-ve/subscription-service-plans";
 
 	my $info = PVE::INotify::read_file('subscription');
 	if (!$info) {
