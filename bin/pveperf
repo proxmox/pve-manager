@@ -16,7 +16,6 @@ if ($#ARGV >= 1) {
 my $path = $ARGV[0] || '/';
 
 sub drop_cache {
-
     # free pagecache,dentries,inode cache
     if (-f '/proc/sys/vm/drop_caches') {
 	system ("echo 3 > /proc/sys/vm/drop_caches");
@@ -67,7 +66,6 @@ sub test_fsync {
     my $dir = "$basedir/ptest.$$";
 
     eval {
-
 	mkdir $dir;
 
 	my $data = ('A' x 4000) . "\n";
@@ -82,7 +80,7 @@ sub test_fsync {
 
 	    my $filename = "$dir/tf_$m.dat";
 
-	    open (TMP, ">$filename") || die "open failed";
+	    open (TMP, ">$filename") || die "open failed: $!\n";
  
 	    print TMP $data;
 
@@ -111,7 +109,7 @@ sub test_seektime {
 
     drop_cache ();
 
-    open (ROOTHD, "<$rootdev") || die "unable to open HD";
+    open (ROOTHD, "<$rootdev") || die "unable to open HD '$rootdev': $!\n";
 
     my $starttime = [gettimeofday];
     my $count;
@@ -124,7 +122,7 @@ sub test_seektime {
 
 	sysseek (ROOTHD, $pos, 0);
 
-	(sysread (ROOTHD, $readbuf, 512) == 512) || die "read failed";
+	(sysread (ROOTHD, $readbuf, 512) == 512) || die "read failed: $!\n";
 
 	$elapsed = tv_interval ($starttime);
 	
@@ -149,18 +147,15 @@ sub test_read {
     my $readbuf;
 
 
-    open (ROOTHD, "<$rootdev") || die "unable to open HD";
+    open (ROOTHD, "<$rootdev") || die "unable to open HD '$rootdev': $!\n";
 
- 
     for (;;) {
-
 	my $c = sysread (ROOTHD, $readbuf, 2 * 1024 *1024);
-	die "read failed" if $c < 0;
+	die "read failed: $!\n" if $c < 0;
 
 	$bytes += $c;
 
 	$elapsed = tv_interval ($starttime);
-	
 	last if $elapsed > 3;
     }
 
