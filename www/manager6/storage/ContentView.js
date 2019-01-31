@@ -40,6 +40,26 @@ Ext.define('PVE.grid.TemplateSelector', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
+	    tbar: [
+		'->',
+		gettext('Filter: '),
+		{
+		    xtype: 'textfield',
+		    width: 200,
+		    enableKeyEvents: true,
+		    listeners: {
+			buffer: 500,
+			keyup: function(field) {
+			    var value = field.getValue().toLowerCase();
+			    store.clearFilter(true);
+			    store.filterBy(function(rec) {
+				return (rec.data['package'].toLowerCase().indexOf(value) !== -1)
+				|| (rec.data.headline.toLowerCase().indexOf(value) !== -1);
+			    });
+			}
+		    }
+		}
+	    ],
 	    features: [ groupingFeature ],
 	    columns: [
 		{
@@ -92,8 +112,8 @@ Ext.define('PVE.storage.TemplateDownload', {
     modal: true,
     title: gettext('Templates'),
     layout: 'fit',
-    width: 600,
-    height: 400,
+    width: 900,
+    height: 600,
     initComponent : function() {
 	/*jslint confusion: true */
         var me = this;
