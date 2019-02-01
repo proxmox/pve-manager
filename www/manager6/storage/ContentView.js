@@ -42,7 +42,7 @@ Ext.define('PVE.grid.TemplateSelector', {
 	    selModel: sm,
 	    tbar: [
 		'->',
-		gettext('Filter: '),
+		gettext('Search'),
 		{
 		    xtype: 'textfield',
 		    width: 200,
