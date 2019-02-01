@@ -1,3 +1,23 @@
+pve-manager (5.3-9) unstable; urgency=medium
+
+  * fix #1982: pvesh: check if a handler exists for path
+
+  * fix #1752: implement wake on LAN functionality for nodes in CLI, API and GUI
+
+  * fix #2058: show correct pool for external ceph clusters
+
+  * task index: allow filtering by task type and selection of task source(s)
+
+  * add virtio-gpu and none to VMs display selection combobox
+
+  * add context menu to global search bar entries
+
+  * show hookscripts in GUI
+
+  * fix #1831: Add filter to CT template/appliances download window
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 01 Feb 2019 13:35:05 +0100
+
 pve-manager (5.3-8) unstable; urgency=medium
 
   * fix #1997: set taskid for single-guest backups
