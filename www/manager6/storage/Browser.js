@@ -35,7 +35,9 @@ Ext.define('PVE.storage.Browser', {
 	    hstateid: 'storagetab'
 	});
 
-	if (caps.storage['Datastore.Allocate']) {
+	if (caps.storage['Datastore.Allocate'] ||
+	    caps.storage['Datastore.AllocateSpace'] ||
+	    caps.storage['Datastore.Audit']) {
 	    me.items.push({
 		xtype: 'pveStorageContentView',
 		title: gettext('Content'),
