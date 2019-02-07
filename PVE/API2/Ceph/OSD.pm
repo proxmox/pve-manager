@@ -394,7 +394,6 @@ __PACKAGE__->register_method ({
 	    # try to unmount from standard mount point
 	    my $mountpoint = "/var/lib/ceph/osd/ceph-$osdid";
 
-	    my $disks_to_wipe = {};
 	    my $remove_partition = sub {
 		my ($part) = @_;
 
@@ -402,11 +401,10 @@ __PACKAGE__->register_method ({
 		my $partnum = PVE::Diskmanage::get_partnum($part);
 		my $devpath = PVE::Diskmanage::get_blockdev($part);
 
+		PVE::Ceph::Tools::wipe_disks($part);
 		print "remove partition $part (disk '${devpath}', partnum $partnum)\n";
 		eval { run_command(['/sbin/sgdisk', '-d', $partnum, "${devpath}"]); };
 		warn $@ if $@;
-
-		$disks_to_wipe->{$devpath} = 1;
 	    };
 
 	    my $partitions_to_remove = [];
@@ -418,7 +416,9 @@ __PACKAGE__->register_method ({
 			next if !($dev && $path && $fstype);
 			next if $dev !~ m|^/dev/|;
 			if ($path eq $mountpoint) {
-			    my $data_part = abs_path($dev);
+			    my ($data_part) = abs_path($dev) =~ m|^(/.+)|
+				or die "invalid path: $path \n"; # untaint $part
+
 			    push @$partitions_to_remove, $data_part;
 			    last;
 			}
@@ -427,7 +427,9 @@ __PACKAGE__->register_method ({
 		}
 
 		foreach my $path (qw(journal block block.db block.wal)) {
-		    my $part = abs_path("$mountpoint/$path");
+		    my ($part) = abs_path("$mountpoint/$path") =~ m|^(/.+)|
+			or die "invalid path: $path \n"; # untaint $part
+
 		    if ($part) {
 			push @$partitions_to_remove, $part;
 		    }
@@ -443,8 +445,6 @@ __PACKAGE__->register_method ({
 		foreach my $part (@$partitions_to_remove) {
 		    $remove_partition->($part);
 		}
-
-		PVE::Ceph::Tools::wipe_disks(keys %$disks_to_wipe);
 	    }
 	};
 
