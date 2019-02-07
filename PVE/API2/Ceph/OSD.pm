@@ -17,6 +17,7 @@ use PVE::RADOS;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::Tools qw(run_command file_set_contents);
+use PVE::ProcFSTools;
 
 use base qw(PVE::RESTHandler);
 
@@ -410,9 +411,9 @@ __PACKAGE__->register_method ({
 	    my $partitions_to_remove = [];
 
 	    if ($param->{cleanup}) {
-		if (my $fd = IO::File->new("/proc/mounts", "r")) {
-		    while (defined(my $line = <$fd>)) {
-			my ($dev, $path, $fstype) = split(/\s+/, $line);
+		if (my $mp = PVE::ProcFSTools::parse_proc_mounts()) {
+		    foreach my $line (@$mp) {
+			my ($dev, $path, $fstype) = @$line;
 			next if !($dev && $path && $fstype);
 			next if $dev !~ m|^/dev/|;
 
@@ -422,7 +423,6 @@ __PACKAGE__->register_method ({
 			    last;
 			}
 		    }
-		    close($fd);
 		}
 
 		foreach my $path (qw(journal block block.db block.wal)) {
