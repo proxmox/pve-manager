@@ -415,11 +415,10 @@ __PACKAGE__->register_method ({
 			my ($dev, $path, $fstype) = split(/\s+/, $line);
 			next if !($dev && $path && $fstype);
 			next if $dev !~ m|^/dev/|;
-			if ($path eq $mountpoint) {
-			    my ($data_part) = abs_path($dev) =~ m|^(/.+)|
-				or die "invalid path: $path \n"; # untaint $part
 
-			    push @$partitions_to_remove, $data_part;
+			if ($path eq $mountpoint) {
+			    abs_path($dev) =~ m|^(/.+)| or die "invalid dev: $dev\n";
+			    push @$partitions_to_remove, $1;
 			    last;
 			}
 		    }
@@ -427,12 +426,8 @@ __PACKAGE__->register_method ({
 		}
 
 		foreach my $path (qw(journal block block.db block.wal)) {
-		    my ($part) = abs_path("$mountpoint/$path") =~ m|^(/.+)|
-			or die "invalid path: $path \n"; # untaint $part
-
-		    if ($part) {
-			push @$partitions_to_remove, $part;
-		    }
+		    abs_path("$mountpoint/$path") =~ m|^(/.+)| or die "invalid path: $path\n";
+		    push @$partitions_to_remove, $1;
 		}
 	    }
 
