@@ -39,14 +39,13 @@ my $get_osd_status = sub {
 	return $osdstat->{$osdid};
     }
 
-    return wantarray? ($osdstat, $flags):$osdstat;
+    return wantarray ? ($osdstat, $flags) : $osdstat;
 };
 
 my $get_osd_usage = sub {
     my ($rados) = @_;
 
-    my $osdlist = $rados->mon_command({ prefix => 'pg dump',
-					dumpcontents => [ 'osds' ]}) || [];
+    my $osdlist = $rados->mon_command({ prefix => 'pg dump', dumpcontents => [ 'osds' ]}) || [];
 
     my $osdstat;
     foreach my $d (@$osdlist) {
@@ -360,12 +359,13 @@ __PACKAGE__->register_method ({
 	my $osdid = $param->{osdid};
 
 	my $rados = PVE::RADOS->new();
+	# dies if osdid is unknown
 	my $osdstat = &$get_osd_status($rados, $osdid);
 
 	die "osd is in use (in == 1)\n" if $osdstat->{in};
 	#&$run_ceph_cmd(['osd', 'out', $osdid]);
 
-	die "osd is still runnung (up == 1)\n" if $osdstat->{up};
+	die "osd is still running (up == 1)\n" if $osdstat->{up};
 
 	my $osdsection = "osd.$osdid";
 
