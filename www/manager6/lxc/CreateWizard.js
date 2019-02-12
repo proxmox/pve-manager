@@ -7,7 +7,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 	data: {
 	    nodename: '',
 	    storage: '',
-	    unprivileged: false
+	    unprivileged: true
 	}
     },
 
@@ -57,7 +57,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 		{
 		    xtype: 'proxmoxcheckbox',
 		    name: 'unprivileged',
-		    value: false,
+		    value: true,
 		    bind: {
 			value: '{unprivileged}'
 		    },
