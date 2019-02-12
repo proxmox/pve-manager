@@ -68,7 +68,7 @@ Ext.define('PVE.window.Restore', {
 	    items.push({
 		xtype: 'proxmoxcheckbox',
 		name: 'unprivileged',
-		value: '',
+		value: true,
 		fieldLabel: gettext('Unprivileged container')
 	    });
 	}
