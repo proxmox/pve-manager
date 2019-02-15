@@ -102,7 +102,7 @@ sub init {
 	policy => $proxyconf->{POLICY},
 	ssl => {
 	    # Note: older versions are considered insecure, for example
-	    # search for "Poodle"-Attac
+	    # search for "Poodle"-Attack
 	    method => 'any',
 	    sslv2 => 0,
 	    sslv3 => 0,
