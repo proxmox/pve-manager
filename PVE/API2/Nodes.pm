@@ -1779,7 +1779,7 @@ my $create_migrate_worker = sub {
 	my $online = PVE::LXC::check_running($vmid) ? 1 : 0;
 	print STDERR "Migrating CT $vmid\n";
 	$upid = PVE::API2::LXC->migrate_vm({node => $nodename, vmid => $vmid, target => $target,
-					    online => $online });
+					    restart => $online });
     } elsif ($type eq 'qemu') {
 	my $online = PVE::QemuServer::check_running($vmid, 1) ? 1 : 0;
 	print STDERR "Migrating VM $vmid\n";
