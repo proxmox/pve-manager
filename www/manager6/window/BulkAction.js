@@ -80,6 +80,13 @@ Ext.define('PVE.window.BulkAction', {
 		    value: 1,
 		    fieldLabel: gettext('Parallel jobs'),
 		    allowBlank: false
+		},
+		{
+		    itemId: 'lxcwarning',
+		    xtype: 'displayfield',
+		    userCls: 'pve-hint',
+		    value: 'Warning: Running CTs will be migrated in Restart Mode.',
+		    hidden: true // only visible if running container chosen
 		}
 	    );
 	} else if (me.action === 'startall') {
@@ -99,7 +106,18 @@ Ext.define('PVE.window.BulkAction', {
 	    selectAll: true,
 	    allowBlank: false,
 	    nodename: me.nodename,
-	    action: me.action
+	    action: me.action,
+	    listeners: {
+		selectionchange: function(vmselector, records) {
+		    if (me.action == 'migrateall') {
+			let showWarning = records.some(function(item) {
+			    return (item.data.type == 'lxc' &&
+				item.data.status == 'running');
+			});
+		    me.down('#lxcwarning').setVisible(showWarning);
+		    }
+		}
+	    }
 	});
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
