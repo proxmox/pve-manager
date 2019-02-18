@@ -40,6 +40,10 @@ Ext.define('PVE.qemu.CmdMenu', {
 		running = true;
 		stopped = false;
 		break;
+	    case 'suspended':
+		stopped = false;
+		suspended = true;
+		break;
 	    case 'paused':
 		stopped = false;
 		suspended = true;
