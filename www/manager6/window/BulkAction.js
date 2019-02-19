@@ -63,6 +63,8 @@ Ext.define('PVE.window.BulkAction', {
 	var items = [];
 
 	if (me.action === 'migrateall') {
+	    /*jslint confusion: true*/
+	    /*value is string and number*/
 	    items.push(
 		{
 		    xtype: 'pveNodeSelector',
@@ -89,6 +91,7 @@ Ext.define('PVE.window.BulkAction', {
 		    hidden: true // only visible if running container chosen
 		}
 	    );
+	    /*jslint confusion: false*/
 	} else if (me.action === 'startall') {
 	    items.push({
 		xtype: 'hiddenfield',
@@ -110,7 +113,7 @@ Ext.define('PVE.window.BulkAction', {
 	    listeners: {
 		selectionchange: function(vmselector, records) {
 		    if (me.action == 'migrateall') {
-			let showWarning = records.some(function(item) {
+			var showWarning = records.some(function(item) {
 			    return (item.data.type == 'lxc' &&
 				item.data.status == 'running');
 			});
