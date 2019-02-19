@@ -182,6 +182,14 @@
     font-size: 0.6em;
 }
 
+/* the suspend symbol */
+.x-tree-icon-custom.suspended:after,
+.x-grid-icon-custom.suspended:after {
+    content: "\f04c";
+    color: #CC8E00;
+    font-size: 0.6em;
+}
+
 /* the lxc template */
 .x-tree-icon-custom.lxc:after,
 .x-grid-icon-custom.lxc:after {
