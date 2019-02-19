@@ -222,6 +222,7 @@ sub read_proxy_config {
     $shcmd .= 'echo \"POLICY:\$POLICY\";';
     $shcmd .= 'echo \"CIPHERS:\$CIPHERS\";';
     $shcmd .= 'echo \"DHPARAMS:\$DHPARAMS\";';
+    $shcmd .= 'echo \"HONOR_CIPHER_ORDER:\$HONOR_CIPHER_ORDER\";';
 
     my $data = -f $conffile ? `bash -c "$shcmd"` : '';
 
@@ -229,7 +230,7 @@ sub read_proxy_config {
 
     while ($data =~ s/^(.*)\n//) {
 	my ($key, $value) = split(/:/, $1, 2);
-	next if !$value;
+	next if !defined($value) || $value eq '';
 	if ($key eq 'ALLOW_FROM' || $key eq 'DENY_FROM') {
 	    my $ips = [];
 	    foreach my $ip (split(/,/, $value)) {
@@ -243,6 +244,9 @@ sub read_proxy_config {
 	} elsif ($key eq 'CIPHERS') {
 	    $res->{$key} = $value;
 	} elsif ($key eq 'DHPARAMS') {
+	    $res->{$key} = $value;
+	} elsif ($key eq 'HONOR_CIPHER_ORDER') {
+	    die "unknown value '$value' - use 0 or 1\n" if $value !~ m/^(0|1)$/;
 	    $res->{$key} = $value;
 	} else {
 	    # silently skip everythin else?
