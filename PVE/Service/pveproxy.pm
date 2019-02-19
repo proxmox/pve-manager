@@ -111,6 +111,7 @@ sub init {
 	    cert_file => '/etc/pve/local/pve-ssl.pem',
 	    honor_cipher_order => $proxyconf->{HONOR_CIPHER_ORDER},
 	},
+	compression => $proxyconf->{COMPRESSION},
 	# Note: there is no authentication for those pages and dirs!
 	pages => {
 	    '/' => sub { get_index($self->{nodename}, @_) },

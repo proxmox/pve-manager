@@ -223,6 +223,7 @@ sub read_proxy_config {
     $shcmd .= 'echo \"CIPHERS:\$CIPHERS\";';
     $shcmd .= 'echo \"DHPARAMS:\$DHPARAMS\";';
     $shcmd .= 'echo \"HONOR_CIPHER_ORDER:\$HONOR_CIPHER_ORDER\";';
+    $shcmd .= 'echo \"COMPRESSION:\$COMPRESSION\";';
 
     my $data = -f $conffile ? `bash -c "$shcmd"` : '';
 
@@ -245,7 +246,7 @@ sub read_proxy_config {
 	    $res->{$key} = $value;
 	} elsif ($key eq 'DHPARAMS') {
 	    $res->{$key} = $value;
-	} elsif ($key eq 'HONOR_CIPHER_ORDER') {
+	} elsif ($key eq 'HONOR_CIPHER_ORDER' || $key eq 'COMPRESSION') {
 	    die "unknown value '$value' - use 0 or 1\n" if $value !~ m/^(0|1)$/;
 	    $res->{$key} = $value;
 	} else {
