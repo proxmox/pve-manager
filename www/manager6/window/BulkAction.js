@@ -114,7 +114,7 @@ Ext.define('PVE.window.BulkAction', {
 			    return (item.data.type == 'lxc' &&
 				item.data.status == 'running');
 			});
-		    me.down('#lxcwarning').setVisible(showWarning);
+			me.down('#lxcwarning').setVisible(showWarning);
 		    }
 		}
 	    }
