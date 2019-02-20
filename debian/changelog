@@ -1,3 +1,19 @@
+pve-manager (5.3-10) unstable; urgency=medium
+
+  * show Storage Content with Datastore.AllocateSpace/Audit permissions
+
+  * fix #2051: preserve DB/WAL disk on destroy
+
+  * fix #2096: enable resume in context menu for guest triggered sleep
+
+  * default to unpriviledged CT in the GUI
+
+  * fix #1769: restart mode for bulk lxc migration
+
+  * pveproxy: add configurable HONOR_CIPHER_ORDER and COMPRESSION settings
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 20 Feb 2019 12:27:12 +0100
+
 pve-manager (5.3-9) unstable; urgency=medium
 
   * fix #1982: pvesh: check if a handler exists for path
