@@ -146,7 +146,7 @@ sub create_pool {
 	prefix => "osd pool set",
 	pool => $pool,
 	var => 'min_size',
-	val => $min_size,
+	val => "$min_size",
 	format => 'plain',
     });
 
@@ -154,7 +154,7 @@ sub create_pool {
 	prefix => "osd pool set",
 	pool => $pool,
 	var => 'size',
-	val => $size,
+	val => "$size",
 	format => 'plain',
     });
 
