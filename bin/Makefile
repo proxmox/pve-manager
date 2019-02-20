@@ -33,6 +33,9 @@ BASH_COMPLETIONS = 						\
 	$(addsuffix .service-bash-completion, ${SERVICES}) 	\
 	$(addsuffix .bash-completion, ${CLITOOLS}) 		\
 
+ZSH_COMPLETIONS =						\
+	$(addsuffix .service-zsh-completion, ${SERVICES}) 	\
+	$(addsuffix .zsh-completion, ${CLITOOLS})		\
 
 all: ${SERVICE_MANS} ${CLI_MANS} pvemailforward
 
@@ -57,7 +60,7 @@ check: $(addsuffix .service-api-verified, ${SERVICES}) $(addsuffix .api-verified
 	rm -f *.service-api-verified *.api-verified
 
 .PHONY: install
-install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward ${BASH_COMPLETIONS}
+install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward ${BASH_COMPLETIONS} ${ZSH_COMPLETIONS}
 	install -d ${BINDIR}
 	install -m 0755 ${SCRIPTS} ${BINDIR}
 	install -s -m 2755 -g www-data pvemailforward ${BINDIR}
@@ -67,8 +70,13 @@ install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward ${BASH_COMPLETION
 	install -m 0644 ${SERVICE_MANS} ${MAN8DIR}
 	for i in ${CLITOOLS}; do install -m 0644 -D $$i.bash-completion ${BASHCOMPLDIR}/$$i; done
 	for i in ${SERVICES}; do install -m 0644 -D $$i.service-bash-completion ${BASHCOMPLDIR}/$$i; done
+	for i in ${CLITOOLS}; do install -m 0644 -D $$i.zsh-completion ${ZSHCOMPLDIR}/_$$i; done
+	for i in ${SERVICES}; do install -m 0644 -D $$i.service-zsh-completion ${ZSHCOMPLDIR}/_$$i; done
 
 .PHONY: clean
 clean:
 	make cleanup-docgen
-	rm -rf *~ *.tmp ${CLI_MANS} ${SERVICE_MANS} *.1.pod *.8.pod pvemailforward *.bash-completion *.service-bash-completion *.api-verified *.service-api-verified
+	rm -rf *~ *.tmp ${CLI_MANS} ${SERVICE_MANS} *.1.pod *.8.pod pvemailforward  \
+	    *.bash-completion *.service-bash-completion				    \
+	    *.zsh-completion *.service-zsh-completion				    \
+	    *.api-verified *.service-api-verified

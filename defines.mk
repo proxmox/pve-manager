@@ -10,6 +10,7 @@ CRONDAILYDIR=${DESTDIR}/etc/cron.daily
 INITDBINDIR=${DESTDIR}/etc/init.d
 SERVICEDIR=${DESTDIR}/lib/systemd/system
 BASHCOMPLDIR=${DESTDIR}/usr/share/bash-completion/completions/
+ZSHCOMPLDIR=${DESTDIR}/usr/share/zsh/vendor-completions/
 HARADIR=${DESTDIR}/usr/share/cluster
 DOCDIR=${DESTDIR}/usr/share/doc/${PACKAGE}
 PODDIR=${DESTDIR}/usr/share/doc/${PACKAGE}/pod
