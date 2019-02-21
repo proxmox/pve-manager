@@ -881,7 +881,9 @@ Ext.define('PVE.Utils', { utilities: {
 	    resize: 'off'
 	});
 	var nw = window.open("?" + url, '_blank', "innerWidth=745,innerheight=427");
-	nw.focus();
+	if (nw) {
+	    nw.focus();
+	}
     },
 
     openSpiceViewer: function(url, params){
