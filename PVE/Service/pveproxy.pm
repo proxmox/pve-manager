@@ -101,15 +101,10 @@ sub init {
 	deny_from => $proxyconf->{DENY_FROM},
 	policy => $proxyconf->{POLICY},
 	ssl => {
-	    # Note: older versions are considered insecure, for example
-	    # search for "Poodle"-Attack
-	    method => 'any',
-	    sslv2 => 0,
-	    sslv3 => 0,
-	    cipher_list => $proxyconf->{CIPHERS} || 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256',
+	    cipher_list => $proxyconf->{CIPHERS},
 	    key_file => '/etc/pve/local/pve-ssl.key',
 	    cert_file => '/etc/pve/local/pve-ssl.pem',
-	    honor_cipher_order => $proxyconf->{HONOR_CIPHER_ORDER} // 1,
+	    honor_cipher_order => $proxyconf->{HONOR_CIPHER_ORDER},
 	},
 	compression => $proxyconf->{COMPRESSION},
 	# Note: there is no authentication for those pages and dirs!
@@ -126,12 +121,9 @@ sub init {
 	dirs => $dirs,
     };
 
-    if ($proxyconf->{DHPARAMS}) {
+    if (defined($proxyconf->{DHPARAMS})) {
 	$self->{server_config}->{ssl}->{dh_file} = $proxyconf->{DHPARAMS};
-    } else {
-	$self->{server_config}->{ssl}->{dh} = 'skip2048';
     }
-
     if (-f '/etc/pve/local/pveproxy-ssl.pem' && -f '/etc/pve/local/pveproxy-ssl.key') {
 	$self->{server_config}->{ssl}->{cert_file} = '/etc/pve/local/pveproxy-ssl.pem';
 	$self->{server_config}->{ssl}->{key_file} = '/etc/pve/local/pveproxy-ssl.key';
