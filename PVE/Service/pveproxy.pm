@@ -11,7 +11,7 @@ use URI;
 use URI::QueryParam;
 use Data::Dumper;
 use PVE::Cluster;
-use PVE::API2Tools;
+use PVE::APIServer::Utils;
 use PVE::API2;
 use PVE::APIServer::Formatter;
 use PVE::APIServer::Formatter::Standard;
@@ -61,7 +61,7 @@ sub init {
     my ($self) = @_;
 
     # we use same ALLOW/DENY/POLICY as pveproxy
-    my $proxyconf = PVE::API2Tools::read_proxy_config();
+    my $proxyconf = PVE::APIServer::Utils::read_proxy_config($self->{name});
 
     my $accept_lock_fn = "/var/lock/pveproxy.lck";
 

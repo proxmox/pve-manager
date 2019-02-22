@@ -9,7 +9,7 @@ use warnings;
 
 use PVE::SafeSyslog;
 use PVE::Daemon;
-use PVE::API2Tools;
+use PVE::APIServer::Utils;
 use PVE::HTTPServer;
 
 use base qw(PVE::Daemon);
@@ -32,7 +32,7 @@ sub init {
     my ($self) = @_;
 
     # we use same ALLOW/DENY/POLICY as pveproxy
-    my $proxyconf = PVE::API2Tools::read_proxy_config();
+    my $proxyconf = PVE::APIServer::Utils::read_proxy_config('pveproxy');
 
     my $accept_lock_fn = "/var/lock/spiceproxy.lck";
 
