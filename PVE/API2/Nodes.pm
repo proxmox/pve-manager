@@ -704,6 +704,7 @@ my $sslcert;
 my $shell_cmd_map = {
     'login' => [ '/bin/login', '-f', 'root' ],
     'upgrade' => [ '/usr/bin/pveupgrade', '--shell' ],
+    'ceph_install' => [ '/usr/bin/pveceph', 'install' ],
 };
 
 sub get_shell_command  {
