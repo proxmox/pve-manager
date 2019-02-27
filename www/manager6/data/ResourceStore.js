@@ -257,6 +257,13 @@ Ext.define('PVE.data.ResourceStore', {
 		hidden: true,
 		sortable: true,
 		width: 110
+	    },
+	    lock: {
+		header: gettext('Lock'),
+		type: 'string',
+		hidden: true,
+		sortable: true,
+		width: 110
 	    }
 	};
 

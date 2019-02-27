@@ -783,6 +783,10 @@ Ext.define('PVE.Utils', { utilities: {
 	    status = record.status + ' ha-' + record.hastate;
 	}
 
+	if (record.lock) {
+	    status += ' locked lock-' + record.lock;
+	}
+
 	var defaults = PVE.tree.ResourceTree.typeDefaults[objType];
 	if (defaults && defaults.iconCls) {
 	    var retVal = defaults.iconCls + ' ' + status;

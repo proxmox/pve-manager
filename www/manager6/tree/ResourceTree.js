@@ -296,13 +296,18 @@ Ext.define('PVE.tree.ResourceTree', {
 			}
 
 			// tree item has been updated
-			if ((item.data.text !== olditem.data.text) ||
-			    (item.data.running !== olditem.data.running) ||
-			    (item.data.template !== olditem.data.template) ||
-			    (item.data.status !== olditem.data.status) ||
-			    (item.data.hastate!== olditem.data.hastate)) {
-			    //console.log("changed node/text/running " + olditem.data.id);
-			    changed = true;
+			var fields = [
+			    'text', 'running', 'template', 'status',
+			    'qmpstatus', 'hastate', 'lock'
+			];
+
+			var field;
+			for (i = 0; i < fields.length; i++) {
+			    field = fields[i];
+			    if (item.data[field] !== olditem.data[field]) {
+				changed = true;
+				break;
+			    }
 			}
 
 			// fixme: also test filterfn()?
