@@ -53,42 +53,42 @@ use Socket;
 use base qw(PVE::RESTHandler);
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Qemu",  
+    subclass => "PVE::API2::Qemu",
     path => 'qemu',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::LXC",  
+    subclass => "PVE::API2::LXC",
     path => 'lxc',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Ceph",  
+    subclass => "PVE::API2::Ceph",
     path => 'ceph',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::VZDump",  
+    subclass => "PVE::API2::VZDump",
     path => 'vzdump',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Services",  
+    subclass => "PVE::API2::Services",
     path => 'services',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Subscription",  
+    subclass => "PVE::API2::Subscription",
     path => 'subscription',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Network",  
+    subclass => "PVE::API2::Network",
     path => 'network',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Tasks",  
+    subclass => "PVE::API2::Tasks",
     path => 'tasks',
 });
 
@@ -104,7 +104,7 @@ __PACKAGE__->register_method ({
 
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Storage::Status",  
+    subclass => "PVE::API2::Storage::Status",
     path => 'storage',
 });
 
@@ -114,12 +114,12 @@ __PACKAGE__->register_method ({
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::APT",  
+    subclass => "PVE::API2::APT",
     path => 'apt',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Firewall::Host",  
+    subclass => "PVE::API2::Firewall::Host",
     path => 'firewall',
 });
 
@@ -140,8 +140,8 @@ __PACKAGE__->register_method ({
 });
 
 __PACKAGE__->register_method ({
-    name => 'index', 
-    path => '', 
+    name => 'index',
+    path => '',
     method => 'GET',
     permissions => { user => 'all' },
     description => "Node index.",
@@ -161,7 +161,7 @@ __PACKAGE__->register_method ({
     },
     code => sub {
 	my ($param) = @_;
-    
+
 	my $result = [
 	    { name => 'ceph' },
 	    { name => 'disks' },
@@ -202,7 +202,7 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
-    name => 'version', 
+    name => 'version',
     path => 'version',
     method => 'GET',
     proxyto => 'node',
@@ -224,13 +224,13 @@ __PACKAGE__->register_method ({
     },
     code => sub {
 	my ($resp, $param) = @_;
-    
+
 	return PVE::pvecfg::version_info();
     }});
 
 __PACKAGE__->register_method({
-    name => 'status', 
-    path => 'status', 
+    name => 'status',
+    path => 'status',
     method => 'GET',
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
@@ -259,10 +259,10 @@ __PACKAGE__->register_method({
 
 	my ($uptime, $idle) = PVE::ProcFSTools::read_proc_uptime();
 	$res->{uptime} = $uptime;
-	
+
 	my ($avg1, $avg5, $avg15) = PVE::ProcFSTools::read_loadavg();
 	$res->{loadavg} = [ $avg1, $avg5, $avg15];
-   
+
 	my ($sysname, $nodename, $release, $version, $machine) = POSIX::uname();
 
 	$res->{kversion} = "$sysname $release $version";
@@ -279,7 +279,7 @@ __PACKAGE__->register_method({
 	    total => $meminfo->{memtotal},
 	    used => $meminfo->{memused},
 	};
-	
+
 	$res->{ksm} = {
 	    shared => $meminfo->{memshared},
 	};
@@ -393,11 +393,11 @@ __PACKAGE__->register_method({
         foreach my $cmd (@$commands) {
 	    eval {
 		die "$cmd is not a valid command" if (ref($cmd) ne "HASH" || !$cmd->{path} || !$cmd->{method});
-	    
+
 		$cmd->{args} //= {};
 
 		my $path = "nodes/$param->{node}/$cmd->{path}";
-		
+
 		my $uri_param = {};
 		my ($handler, $info) = PVE::API2->find_handler($cmd->{method}, $path, $uri_param);
 		if (!$handler || !$info) {
@@ -435,8 +435,8 @@ __PACKAGE__->register_method({
 
 
 __PACKAGE__->register_method({
-    name => 'node_cmd', 
-    path => 'status', 
+    name => 'node_cmd',
+    path => 'status',
     method => 'POST',
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.PowerMgmt' ]],
@@ -531,8 +531,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'rrd', 
-    path => 'rrd', 
+    name => 'rrd',
+    path => 'rrd',
     method => 'GET',
     protected => 1, # fixme: can we avoid that?
     permissions => {
@@ -570,14 +570,14 @@ __PACKAGE__->register_method({
 	my ($param) = @_;
 
 	return PVE::Cluster::create_rrd_graph(
-	    "pve2-node/$param->{node}", $param->{timeframe}, 
+	    "pve2-node/$param->{node}", $param->{timeframe},
 	    $param->{ds}, $param->{cf});
 
     }});
 
 __PACKAGE__->register_method({
-    name => 'rrddata', 
-    path => 'rrddata', 
+    name => 'rrddata',
+    path => 'rrddata',
     method => 'GET',
     protected => 1, # fixme: can we avoid that?
     permissions => {
@@ -616,8 +616,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'syslog', 
-    path => 'syslog', 
+    name => 'syslog',
+    path => 'syslog',
     method => 'GET',
     description => "Read system log",
     proxyto => 'node',
@@ -661,7 +661,7 @@ __PACKAGE__->register_method({
     },
     returns => {
 	type => 'array',
-	items => { 
+	items => {
 	    type => "object",
 	    properties => {
 		n => {
@@ -702,8 +702,8 @@ __PACKAGE__->register_method({
 my $sslcert;
 
 __PACKAGE__->register_method ({
-    name => 'vncshell', 
-    path => 'vncshell',  
+    name => 'vncshell',
+    path => 'vncshell',
     method => 'POST',
     protected => 1,
     permissions => {
@@ -742,7 +742,7 @@ __PACKAGE__->register_method ({
 	    },
 	},
     },
-    returns => { 
+    returns => {
     	additionalProperties => 0,
 	properties => {
 	    user => { type => 'string' },
@@ -759,7 +759,7 @@ __PACKAGE__->register_method ({
 
 	my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
 
-	raise_perm_exc("realm != pam") if $realm ne 'pam'; 
+	raise_perm_exc("realm != pam") if $realm ne 'pam';
 
 	raise_perm_exc('user != root@pam') if $param->{upgrade} && $user ne 'root@pam';
 
@@ -784,7 +784,7 @@ __PACKAGE__->register_method ({
 
 	# NOTE: vncterm VNC traffic is already TLS encrypted,
 	# so we select the fastest chipher here (or 'none'?)
-	my $remcmd = $remip ? 
+	my $remcmd = $remip ?
 	    ['/usr/bin/ssh', '-e', 'none', '-t', $remip] : [];
 
 	my $shcmd;
@@ -801,10 +801,10 @@ __PACKAGE__->register_method ({
 	    $shcmd = [ '/bin/login' ];
 	}
 
-	my $timeout = 10; 
+	my $timeout = 10;
 
 	my $cmd = ['/usr/bin/vncterm', '-rfbport', $port,
-		   '-timeout', $timeout, '-authpath', $authpath, 
+		   '-timeout', $timeout, '-authpath', $authpath,
 		   '-perm', 'Sys.Console'];
 
 	if ($param->{width}) {
@@ -816,7 +816,7 @@ __PACKAGE__->register_method ({
 	}
 
 	if ($param->{websocket}) {
-	    $ENV{PVE_VNC_TICKET} = $ticket; # pass ticket to vncterm 
+	    $ENV{PVE_VNC_TICKET} = $ticket; # pass ticket to vncterm
 	    push @$cmd, '-notls', '-listen', 'localhost';
 	}
 
@@ -830,7 +830,7 @@ __PACKAGE__->register_method ({
 	    my $cmdstr = join (' ', @$cmd);
 	    syslog ('info', "launch command: $cmdstr");
 
-	    eval { 
+	    eval {
 		foreach my $k (keys %ENV) {
 		    next if $k eq 'PVE_VNC_TICKET';
 		    next if $k eq 'PATH' || $k eq 'TERM' || $k eq 'USER' || $k eq 'HOME' || $k eq 'LANG' || $k eq 'LANGUAGE';
@@ -848,15 +848,15 @@ __PACKAGE__->register_method ({
 	};
 
 	my $upid = $rpcenv->fork_worker('vncshell', "", $user, $realcmd);
-	
+
 	PVE::Tools::wait_for_vnc_port($port);
 
 	return {
 	    user => $user,
 	    ticket => $ticket,
-	    port => $port, 
-	    upid => $upid, 
-	    cert => $sslcert, 
+	    port => $port,
+	    upid => $upid,
+	    cert => $sslcert,
 	};
     }});
 
@@ -959,7 +959,7 @@ __PACKAGE__->register_method({
     name => 'vncwebsocket',
     path => 'vncwebsocket',
     method => 'GET',
-    permissions => { 
+    permissions => {
 	description => "Restricted to users on realm 'pam'. You also need to pass a valid ticket (vncticket).",
 	check => ['perm', '/nodes/{node}', [ 'Sys.Console' ]],
     },
@@ -994,20 +994,20 @@ __PACKAGE__->register_method({
 
 	my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
 
-	raise_perm_exc("realm != pam") if $realm ne 'pam'; 
+	raise_perm_exc("realm != pam") if $realm ne 'pam';
 
 	my $authpath = "/nodes/$param->{node}";
 
 	PVE::AccessControl::verify_vnc_ticket($param->{vncticket}, $user, $authpath);
 
 	my $port = $param->{port};
-	
+
 	return { port => $port };
     }});
 
 __PACKAGE__->register_method ({
-    name => 'spiceshell', 
-    path => 'spiceshell',  
+    name => 'spiceshell',
+    path => 'spiceshell',
     method => 'POST',
     protected => 1,
     proxyto => 'node',
@@ -1038,7 +1038,7 @@ __PACKAGE__->register_method ({
 
 	my ($user, undef, $realm) = PVE::AccessControl::verify_username($authuser);
 
-	raise_perm_exc("realm != pam") if $realm ne 'pam'; 
+	raise_perm_exc("realm != pam") if $realm ne 'pam';
 
 	raise_perm_exc('user != root@pam') if $param->{upgrade} && $user ne 'root@pam';
 
@@ -1067,8 +1067,8 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method({
-    name => 'dns', 
-    path => 'dns', 
+    name => 'dns',
+    path => 'dns',
     method => 'GET',
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
@@ -1094,17 +1094,17 @@ __PACKAGE__->register_method({
 		description => 'First name server IP address.',
 		type => 'string',
 		optional => 1,
-	    },		
+	    },
 	    dns2 => {
 		description => 'Second name server IP address.',
 		type => 'string',
 		optional => 1,
-	    },		
+	    },
 	    dns3 => {
 		description => 'Third name server IP address.',
 		type => 'string',
 		optional => 1,
-	    },		
+	    },
 	},
     },
     code => sub {
@@ -1116,8 +1116,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'update_dns', 
-    path => 'dns', 
+    name => 'update_dns',
+    path => 'dns',
     method => 'PUT',
     description => "Write DNS settings.",
     permissions => {
@@ -1137,17 +1137,17 @@ __PACKAGE__->register_method({
 		description => 'First name server IP address.',
 		type => 'string', format => 'ip',
 		optional => 1,
-	    },		
+	    },
 	    dns2 => {
 		description => 'Second name server IP address.',
 		type => 'string', format => 'ip',
 		optional => 1,
-	    },		
+	    },
 	    dns3 => {
 		description => 'Third name server IP address.',
 		type => 'string', format => 'ip',
 		optional => 1,
-	    },		
+	    },
 	},
     },
     returns => { type => "null" },
@@ -1160,8 +1160,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'time', 
-    path => 'time', 
+    name => 'time',
+    path => 'time',
     method => 'GET',
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
@@ -1211,8 +1211,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'set_timezone', 
-    path => 'time', 
+    name => 'set_timezone',
+    path => 'time',
     method => 'PUT',
     description => "Set time zone.",
     permissions => {
@@ -1240,8 +1240,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'aplinfo', 
-    path => 'aplinfo', 
+    name => 'aplinfo',
+    path => 'aplinfo',
     method => 'GET',
     permissions => {
 	user => 'all',
@@ -1278,8 +1278,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'apl_download', 
-    path => 'aplinfo', 
+    name => 'apl_download',
+    path => 'aplinfo',
     method => 'POST',
     permissions => {
 	check => ['perm', '/storage/{storage}', ['Datastore.AllocateTemplate']],
@@ -1325,7 +1325,7 @@ __PACKAGE__->register_method({
 	die "unknown template type '$pd->{type}'\n"
 	    if !($pd->{type} eq 'openvz' || $pd->{type} eq 'lxc');
 
-	die "storage '$param->{storage}' does not support templates\n" 
+	die "storage '$param->{storage}' does not support templates\n"
 	    if !$scfg->{content}->{vztmpl};
 
 	my $src = $pd->{location};
@@ -1335,7 +1335,7 @@ __PACKAGE__->register_method({
 
 	my $worker = sub  {
 	    my $upid = shift;
-	    
+
 	    print "starting template download from: $src\n";
 	    print "target file: $dest\n";
 
@@ -1390,7 +1390,7 @@ __PACKAGE__->register_method({
 		my ($hash, $correct) = &$check_hash($pd, $tmpdest);
 
 		die "could not calculate checksum\n" if !$hash;
-		
+
 		if (!$correct) {
 		    my $expected = $pd->{sha512sum} // $pd->{md5sum};
 		    die "wrong checksum: $hash != $expected\n";
@@ -1536,8 +1536,8 @@ my $remove_locks_on_startup = sub {
 };
 
 __PACKAGE__->register_method ({
-    name => 'startall', 
-    path => 'startall', 
+    name => 'startall',
+    path => 'startall',
     method => 'POST',
     protected => 1,
     permissions => {
@@ -1665,7 +1665,7 @@ my $create_stop_worker = sub {
 	return if !PVE::QemuServer::check_running($vmid, 1);
 	my $timeout =  defined($down_timeout) ? int($down_timeout) : 60*3;
 	print STDERR "Stopping VM $vmid (timeout = $timeout seconds)\n";
-	$upid = PVE::API2::Qemu->vm_shutdown({node => $nodename, vmid => $vmid, 
+	$upid = PVE::API2::Qemu->vm_shutdown({node => $nodename, vmid => $vmid,
 					      timeout => $timeout, forceStop => 1 });
     } else {
 	die "unknown VM type '$type'\n";
@@ -1675,8 +1675,8 @@ my $create_stop_worker = sub {
 };
 
 __PACKAGE__->register_method ({
-    name => 'stopall', 
-    path => 'stopall', 
+    name => 'stopall',
+    path => 'stopall',
     method => 'POST',
     protected => 1,
     permissions => {
@@ -1988,13 +1988,13 @@ use PVE::JSONSchema qw(get_standard_option);
 use base qw(PVE::RESTHandler);
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Nodes::Nodeinfo",  
+    subclass => "PVE::API2::Nodes::Nodeinfo",
     path => '{node}',
 });
 
 __PACKAGE__->register_method ({
-    name => 'index', 
-    path => '', 
+    name => 'index',
+    path => '',
     method => 'GET',
     permissions => { user => 'all' },
     description => "Cluster node index.",
@@ -2058,7 +2058,7 @@ __PACKAGE__->register_method ({
     },
     code => sub {
 	my ($param) = @_;
- 
+
 	my $clinfo = PVE::Cluster::get_clinfo();
 	my $res = [];
 
