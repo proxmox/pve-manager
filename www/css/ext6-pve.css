@@ -140,26 +140,6 @@
     color: #21BF4B;
 }
 
-/* the red x */
-.x-tree-icon-custom.offline:after,
-.x-grid-icon-custom.offline:after,
-.x-tree-icon-custom.ha-error:after,
-.x-grid-icon-custom.ha-error:after {
-    content: "\f057";
-    color: #CC1800;
-}
-
-/* yellow ! triangle */
-.x-tree-icon-custom.io-error:after,
-.x-grid-icon-custom.io-error:after,
-.x-tree-icon-custom.internal-error:after,
-.x-grid-icon-custom.internal-error:after,
-.x-tree-icon-custom.guest-panicked:after,
-.x-grid-icon-custom.guest-panicked:after {
-    content: "\f071";
-    color: #FFCC00;
-}
-
 /* the grey '?' */
 .x-tree-icon-custom.unknown:after,
 .x-grid-icon-custom.unknown:after {
@@ -188,6 +168,39 @@
     content: "\f04c";
     color: #CC8E00;
     font-size: 0.6em;
+}
+
+/* lock icons */
+.x-tree-icon-custom.locked:after,
+.x-grid-icon-custom.locked:after {
+    content: "\f023";
+    color: #000000;
+}
+
+.x-tree-icon-custom.lock-backup:after,
+.x-grid-icon-custom.lock-backup:after {
+    content: "\f0c7";
+    color: #000000;
+}
+
+/* yellow ! triangle */
+.x-tree-icon-custom.io-error:after,
+.x-grid-icon-custom.io-error:after,
+.x-tree-icon-custom.internal-error:after,
+.x-grid-icon-custom.internal-error:after,
+.x-tree-icon-custom.guest-panicked:after,
+.x-grid-icon-custom.guest-panicked:after {
+    content: "\f071";
+    color: #FFCC00;
+}
+
+/* the red x */
+.x-tree-icon-custom.offline:after,
+.x-grid-icon-custom.offline:after,
+.x-tree-icon-custom.ha-error:after,
+.x-grid-icon-custom.ha-error:after {
+    content: "\f057";
+    color: #CC1800;
 }
 
 /* the lxc template */
