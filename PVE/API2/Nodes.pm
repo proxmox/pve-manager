@@ -701,6 +701,25 @@ __PACKAGE__->register_method({
 
 my $sslcert;
 
+my $cmdMapper = {
+    'login' => [ '/bin/login', '-f', 'root' ],
+    'upgrade' => [ '/usr/bin/pveupgrade', '--shell' ],
+};
+
+sub get_shell_command  {
+    my ($user, $shellcmd) = @_;
+
+    if ($user eq 'root@pam') {
+	if (exists($cmdMapper->{$shellcmd})) {
+	    return $cmdMapper->{$shellcmd};
+	} else {
+	    return [ '/bin/login', '-f', 'root' ];
+	}
+    } else {
+	return [ '/bin/login' ];
+    }
+}
+
 __PACKAGE__->register_method ({
     name => 'vncshell',
     path => 'vncshell',
@@ -720,6 +739,13 @@ __PACKAGE__->register_method ({
 		description => "Run 'apt-get dist-upgrade' instead of normal shell.",
 		optional => 1,
 		default => 0,
+	    },
+	    cmd => {
+		type => 'string',
+		description => "Run specific command or default to login.",
+		enum => [keys %$cmdMapper],
+		optional => 1,
+		default => 'login',
 	    },
 	    websocket => {
 		optional => 1,
@@ -787,19 +813,10 @@ __PACKAGE__->register_method ({
 	my $remcmd = $remip ?
 	    ['/usr/bin/ssh', '-e', 'none', '-t', $remip] : [];
 
-	my $shcmd;
-
-	if ($user eq 'root@pam') {
-	    if ($param->{upgrade}) {
-		my $upgradecmd = "pveupgrade --shell";
-		$upgradecmd = PVE::Tools::shellquote($upgradecmd) if $remip;
-		$shcmd = [ '/bin/bash', '-c', $upgradecmd ];
-	    } else {
-		$shcmd = [ '/bin/login', '-f', 'root' ];
-	    }
-	} else {
-	    $shcmd = [ '/bin/login' ];
+	if ($param->{upgrade}) {
+	    $param->{cmd} = 'upgrade';
 	}
+	my $shcmd = get_shell_command($user, $param->{cmd});
 
 	my $timeout = 10;
 
@@ -880,6 +897,13 @@ __PACKAGE__->register_method ({
 		optional => 1,
 		default => 0,
 	    },
+	    cmd => {
+		type => 'string',
+		description => "Run specific command or default to login.",
+		enum => [keys %$cmdMapper],
+		optional => 1,
+		default => 'login',
+	    },
 	},
     },
     returns => {
@@ -919,17 +943,10 @@ __PACKAGE__->register_method ({
 	my $remcmd = $remip ?
 	    ['/usr/bin/ssh', '-e', 'none', '-t', $remip , '--'] : [];
 
-	my $concmd;
-
-	if ($user eq 'root@pam') {
-	    if ($param->{upgrade}) {
-		$concmd = [ '/usr/bin/pveupgrade', '--shell' ];
-	    } else {
-		$concmd = [ '/bin/login', '-f', 'root' ];
-	    }
-	} else {
-	    $concmd = [ '/bin/login' ];
+	if ($param->{upgrade}) {
+	    $param->{cmd} = 'upgrade';
 	}
+	my $shcmd = get_shell_command($user, $param->{cmd});
 
 	my $realcmd = sub {
 	    my $upid = shift;
@@ -938,7 +955,7 @@ __PACKAGE__->register_method ({
 
 	    my $cmd = ['/usr/bin/termproxy', $port, '--path', $authpath,
 		       '--perm', 'Sys.Console',  '--'];
-	    push  @$cmd, @$remcmd, @$concmd;
+	    push  @$cmd, @$remcmd, @$shcmd;
 
 	    PVE::Tools::run_command($cmd);
 	};
@@ -1027,6 +1044,13 @@ __PACKAGE__->register_method ({
 		optional => 1,
 		default => 0,
 	    },
+	    cmd => {
+		type => 'string',
+		description => "Run specific command or default to login.",
+		enum => [keys %$cmdMapper],
+		optional => 1,
+		default => 'login',
+	    },
 	},
     },
     returns => get_standard_option('remote-viewer-config'),
@@ -1048,18 +1072,10 @@ __PACKAGE__->register_method ({
 	my $authpath = "/nodes/$node";
 	my $permissions = 'Sys.Console';
 
-	my $shcmd;
-
-	if ($user eq 'root@pam') {
-	    if ($param->{upgrade}) {
-		my $upgradecmd = "pveupgrade --shell";
-		$shcmd = [ '/bin/bash', '-c', $upgradecmd ];
-	    } else {
-		$shcmd = [ '/bin/login', '-f', 'root' ];
-	    }
-	} else {
-	    $shcmd = [ '/bin/login' ];
+	if ($param->{upgrade}) {
+	    $param->{cmd} = 'upgrade';
 	}
+	my $shcmd = get_shell_command($user, $param->{cmd});
 
 	my $title = "Shell on '$node'";
 
