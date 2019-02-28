@@ -701,7 +701,7 @@ __PACKAGE__->register_method({
 
 my $sslcert;
 
-my $cmdMapper = {
+my $shell_cmd_map = {
     'login' => [ '/bin/login', '-f', 'root' ],
     'upgrade' => [ '/usr/bin/pveupgrade', '--shell' ],
 };
@@ -710,8 +710,8 @@ sub get_shell_command  {
     my ($user, $shellcmd) = @_;
 
     if ($user eq 'root@pam') {
-	if (exists($cmdMapper->{$shellcmd})) {
-	    return $cmdMapper->{$shellcmd};
+	if (exists($shell_cmd_map->{$shellcmd})) {
+	    return $shell_cmd_map->{$shellcmd};
 	} else {
 	    return [ '/bin/login', '-f', 'root' ];
 	}
@@ -743,7 +743,7 @@ __PACKAGE__->register_method ({
 	    cmd => {
 		type => 'string',
 		description => "Run specific command or default to login.",
-		enum => [keys %$cmdMapper],
+		enum => [keys %$shell_cmd_map],
 		optional => 1,
 		default => 'login',
 	    },
@@ -900,7 +900,7 @@ __PACKAGE__->register_method ({
 	    cmd => {
 		type => 'string',
 		description => "Run specific command or default to login.",
-		enum => [keys %$cmdMapper],
+		enum => [keys %$shell_cmd_map],
 		optional => 1,
 		default => 'login',
 	    },
@@ -1047,7 +1047,7 @@ __PACKAGE__->register_method ({
 	    cmd => {
 		type => 'string',
 		description => "Run specific command or default to login.",
-		enum => [keys %$cmdMapper],
+		enum => [keys %$shell_cmd_map],
 		optional => 1,
 		default => 'login',
 	    },
