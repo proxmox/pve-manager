@@ -812,7 +812,7 @@ __PACKAGE__->register_method ({
 	# so we select the fastest chipher here (or 'none'?)
 	my $remcmd = $remip ?
 	    ['/usr/bin/ssh', '-e', 'none', '-t', $remip] : [];
-	
+
 	# FIXME: remove with 6.0
 	if ($param->{upgrade}) {
 	    $param->{cmd} = 'upgrade';
