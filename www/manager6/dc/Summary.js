@@ -59,6 +59,16 @@ Ext.define('PVE.dc.Summary', {
 	    itemId: 'nodeview',
 	    xtype: 'pveDcNodeView',
 	    height: 250
+	},
+	{
+	    title: gettext('Subscriptions'),
+	    height: 220,
+	    items: [
+		{
+		    itemId: 'subscriptions',
+		    xtype: 'pveHealthWidget'
+		}
+	    ]
 	}
     ],
 
@@ -207,6 +217,48 @@ Ext.define('PVE.dc.Summary', {
 
 	var dcHealth = me.getComponent('dcHealth');
 	me.mon(rstore, 'load', dcHealth.updateStatus, dcHealth);
+
+	var subs = me.down('#subscriptions');
+	me.mon(rstore, 'load', function(store, records, success) {
+	    var i;
+	    var level;
+	    var curlevel;
+	    for (i = 0; i < records.length; i++) {
+		if (records[i].get('type') !== 'node') {
+		    continue;
+		}
+
+		curlevel = records[i].get('level');
+		if (level === undefined) {
+		    level = curlevel;
+		    continue;
+		}
+
+		if (level !== curlevel) {
+		    break;
+		}
+	    }
+
+	    if (level === '') {
+		subs.setData({
+		    title: gettext('No Subscription'),
+		    iconCls: PVE.Utils.get_health_icon('critical', true),
+		    text: gettext('You have at least one node without subscription.')
+		});
+	    } else if (level !== curlevel) {
+		subs.setData({
+		    title: gettext('Mixed Subscriptions'),
+		    iconCls: PVE.Utils.get_health_icon('warning', true),
+		    text: gettext('Warning: Your subscription levels are not the same.')
+		});
+	    } else {
+		subs.setData({
+		    title: PVE.Utils.render_support_level(level),
+		    iconCls: PVE.Utils.get_health_icon('good', true),
+		    text: gettext('Your subscription status is valid.')
+		});
+	    }
+	});
 
 	me.on('destroy', function(){
 	    rstore.stopUpdate();
