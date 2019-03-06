@@ -149,6 +149,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		fieldLabel: gettext('Start Time'),
 		name: 'starttime',
 		format: 'H:i',
+		formatText: 'HH:MM',
 		value: '00:00',
 		allowBlank: false
 	    },
