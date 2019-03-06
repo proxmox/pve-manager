@@ -809,12 +809,12 @@ Ext.define('PVE.Utils', { utilities: {
             function(m, addr, offset, original) { return addr; });
     },
 
-    openDefaultConsoleWindow: function(consoles, vmtype, vmid, nodename, vmname) {
+    openDefaultConsoleWindow: function(consoles, vmtype, vmid, nodename, vmname, cmd) {
 	var dv = PVE.Utils.defaultViewer(consoles);
-	PVE.Utils.openConsoleWindow(dv, vmtype, vmid, nodename, vmname);
+	PVE.Utils.openConsoleWindow(dv, vmtype, vmid, nodename, vmname, cmd);
     },
 
-    openConsoleWindow: function(viewer, vmtype, vmid, nodename, vmname) {
+    openConsoleWindow: function(viewer, vmtype, vmid, nodename, vmname, cmd) {
 	// kvm, lxc, shell, upgrade
 
 	if (vmid == undefined && (vmtype === 'kvm' || vmtype === 'lxc')) {
@@ -826,9 +826,9 @@ Ext.define('PVE.Utils', { utilities: {
 	}
 
 	if (viewer === 'html5') {
-	    PVE.Utils.openVNCViewer(vmtype, vmid, nodename, vmname);
+	    PVE.Utils.openVNCViewer(vmtype, vmid, nodename, vmname, cmd);
 	} else if (viewer === 'xtermjs') {
-	    Proxmox.Utils.openXtermJsViewer(vmtype, vmid, nodename, vmname);
+	    Proxmox.Utils.openXtermJsViewer(vmtype, vmid, nodename, vmname, cmd);
 	} else if (viewer === 'vv') {
 	    var url;
 	    var params = { proxy: PVE.Utils.windowHostname() };
@@ -844,6 +844,10 @@ Ext.define('PVE.Utils', { utilities: {
 	    } else if (vmtype === 'upgrade') {
 		url = '/nodes/' + nodename + '/spiceshell';
 		params.upgrade = 1;
+		PVE.Utils.openSpiceViewer(url, params);
+	    } else if (vmtype === 'cmd') {
+		url = '/nodes/' + nodename + '/spiceshell';
+		params.cmd = cmd;
 		PVE.Utils.openSpiceViewer(url, params);
 	    }
 	} else {
@@ -871,14 +875,15 @@ Ext.define('PVE.Utils', { utilities: {
 	return dv;
     },
 
-    openVNCViewer: function(vmtype, vmid, nodename, vmname) {
-	var url = Ext.urlEncode({
+    openVNCViewer: function(vmtype, vmid, nodename, vmname, cmd) {
+	var url = Ext.Object.toQueryString({
 	    console: vmtype, // kvm, lxc, upgrade or shell
 	    novnc: 1,
 	    vmid: vmid,
 	    vmname: vmname,
 	    node: nodename,
-	    resize: 'off'
+	    resize: 'off',
+	    cmd: cmd
 	});
 	var nw = window.open("?" + url, '_blank', "innerWidth=745,innerheight=427");
 	if (nw) {

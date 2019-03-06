@@ -2,7 +2,9 @@ Ext.define('PVE.button.ConsoleButton', {
     extend: 'Ext.button.Split',
     alias: 'widget.pveConsoleButton',
 
-    consoleType: 'shell', // one of 'shell', 'kvm', 'lxc', 'upgrade'
+    consoleType: 'shell', // one of 'shell', 'kvm', 'lxc', 'upgrade', 'cmd'
+
+    cmd: undefined,
 
     consoleName: undefined,
 
@@ -38,7 +40,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	    xtermjs: me.enableXtermjs
 	};
 	PVE.Utils.openDefaultConsoleWindow(consoles, me.consoleType, me.vmid,
-					   me.nodename, me.consoleName);
+					   me.nodename, me.consoleName, me.cmd);
     },
 
     menu: [
@@ -49,7 +51,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	    type: 'html5',
 	    handler: function(button) {
 		var me = this.up('button');
-		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName);
+		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName, me.cmd);
 	    }
 	},
 	{
@@ -60,7 +62,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	    iconCls: 'pve-itype-icon-virt-viewer',
 	    handler: function(button) {
 		var me = this.up('button');
-		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName);
+		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName, me.cmd);
 	    }
 	},
 	{
@@ -70,7 +72,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	    type: 'xtermjs',
 	    handler: function(button) {
 		var me = this.up('button');
-		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName);
+		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName, me.cmd);
 	    }
 	}
     ],
