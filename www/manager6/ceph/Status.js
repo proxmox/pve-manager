@@ -308,7 +308,18 @@ Ext.define('PVE.node.CephStatus', {
 	me.version = me.sp.get('ceph-version');
 	me.change_version(me.version);
 
-	Proxmox.Utils.monStoreErrors(me,me.store);
+	var regex = new RegExp("not (installed|initialized)", "i");
+	PVE.Utils.handleStoreErrorOrMask(me, me.store, regex, function(me, error){
+	    me.store.stopUpdate();
+	    PVE.Utils.showCephInstallOrMask(me, error.statusText, nodename,
+		function(win){
+		    me.mon(win, 'cephInstallWindowClosed', function(){
+			me.store.startUpdate();
+		    });
+		}
+	    );
+	});
+
 	me.mon(me.store, 'load', me.updateAll, me);
 	me.on('destroy', me.store.stopUpdate);
 	me.store.startUpdate();

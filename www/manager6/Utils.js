@@ -1102,6 +1102,52 @@ Ext.define('PVE.Utils', { utilities: {
 		}
 	    }
 	}
+    },
+
+    handleStoreErrorOrMask: function(me, store, regex, callback) {
+
+	me.mon(store, 'load', function (proxy, response, success, operation) {
+
+	    if (success) {
+		Proxmox.Utils.setErrorMask(me, false);
+		return;
+	    }
+	    var msg;
+
+	    if (operation.error.statusText) {
+		if (operation.error.statusText.match(regex)) {
+		    callback(me, operation.error);
+		    return;
+		} else {
+		    msg = operation.error.statusText + ' (' + operation.error.status + ')';
+		}
+	    } else {
+		msg = gettext('Connection error');
+	    }
+	    Proxmox.Utils.setErrorMask(me, msg);
+	});
+    },
+
+    showCephInstallOrMask: function(container, msg, nodename, callback){
+	var regex = new RegExp("not (installed|initialized)", "i");
+	if (msg.match(regex)) {
+	    if (Proxmox.UserName === 'root@pam') {
+		container.el.mask();
+		if (!container.down('pveCephInstallWindow')){
+		    var win = Ext.create('PVE.ceph.Install', {
+			nodename: nodename
+		    });
+		    container.add(win);
+		    win.show();
+		    callback(win);
+		}
+	    } else {
+		container.mask(Ext.String.format(gettext('{0} not installed.') + gettext(' Log in as root to install.'), 'Ceph'), ['pve-static-mask']);
+	    }
+	    return true;
+	} else {
+	    return false;
+	}
     }
 },
 

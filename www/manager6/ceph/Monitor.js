@@ -82,7 +82,6 @@ Ext.define('PVE.node.CephMonList', {
 	    sorters: [{ property: 'name'}]
 	});
 
-	Proxmox.Utils.monStoreErrors(me, rstore);
 
 	var service_cmd = function(cmd) {
 	    var rec = sm.getSelection()[0];
@@ -209,6 +208,18 @@ Ext.define('PVE.node.CephMonList', {
 		activate: rstore.startUpdate,
 		destroy: rstore.stopUpdate
 	    }
+	});
+
+	var regex = new RegExp("not (installed|initialized)", "i");
+	PVE.Utils.handleStoreErrorOrMask(me, rstore, regex, function(me, error){
+	    me.store.rstore.stopUpdate();
+	    PVE.Utils.showCephInstallOrMask(me, error.statusText, nodename,
+		function(win){
+		    me.mon(win, 'cephInstallWindowClosed', function(){
+			me.store.rstore.startUpdate();
+		    });
+		}
+	    );
 	});
 
 	me.callParent();

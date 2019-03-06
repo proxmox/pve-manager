@@ -582,3 +582,8 @@ table.osds td:first-of-type {
     right: 0px;
     background-color: #555;
 }
+
+.install-mask {
+    background-color: rgb(245, 245, 245);
+    color: #000;
+}

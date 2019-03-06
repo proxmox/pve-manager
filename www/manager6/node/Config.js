@@ -375,8 +375,9 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-list',
 		    groups: ['ceph'],
 		    onlineHelp: 'chapter_pveceph',
-		    xtype: 'proxmoxLogView',
-		    url: "/api2/extjs/nodes/" + nodename + "/ceph/log"
+		    xtype: 'cephLogView',
+		    url: "/api2/extjs/nodes/" + nodename + "/ceph/log",
+		    nodename: nodename
 		});
 	}
 

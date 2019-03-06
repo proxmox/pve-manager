@@ -281,7 +281,14 @@ Ext.define('PVE.node.CephOsdTree', {
 		waitMsgTarget: me,
 		method: 'GET',
 		failure: function(response, opts) {
-		    Proxmox.Utils.setErrorMask(me, response.htmlStatus);
+		    var msg = response.htmlStatus;
+		    PVE.Utils.showCephInstallOrMask(me, msg, me.pveSelNode.data.node,
+			function(win){
+			    me.mon(win, 'cephInstallWindowClosed', function(){
+				reload();
+			    });
+			}
+		    );
 		},
 		success: function(response, opts) {
 		    sm.deselectAll();

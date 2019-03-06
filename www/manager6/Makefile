@@ -83,6 +83,7 @@ JSSRC= 				                 	\
 	window/BackupConfig.js				\
 	window/Settings.js				\
 	window/StartupEdit.js				\
+	window/CephInstall.js				\
 	panel/NotesView.js				\
 	grid/ResourceGrid.js				\
 	grid/PoolMembers.js				\
@@ -101,6 +102,8 @@ JSSRC= 				                 	\
 	ceph/Status.js					\
 	ceph/StatusDetail.js				\
 	ceph/Config.js					\
+	ceph/Log.js					\
+	ceph/CephInstallWizard.js				\
 	node/Disks.js					\
 	node/LVM.js					\
 	node/LVMThin.js					\

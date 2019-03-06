@@ -161,7 +161,17 @@ Ext.define('PVE.NodeCephFSPanel', {
 			    order: 'DESC'
 			}
 		    }));
-		    Proxmox.Utils.monStoreErrors(view, view.rstore);
+		    var regex = new RegExp("not (installed|initialized)", "i");
+		    PVE.Utils.handleStoreErrorOrMask(view, view.rstore, regex, function(me, error){
+			me.rstore.stopUpdate();
+			PVE.Utils.showCephInstallOrMask(me.ownerCt, error.statusText, view.nodename,
+			    function(win){
+				me.mon(win, 'cephInstallWindowClosed', function(){
+				    me.rstore.startUpdate();
+				});
+			    }
+			);
+		    });
 		    view.rstore.on('load', this.onLoad, this);
 		    view.on('destroy', view.rstore.stopUpdate);
 		},
@@ -244,7 +254,17 @@ Ext.define('PVE.NodeCephFSPanel', {
 			    order: 'DESC'
 			}
 		    }));
-		    Proxmox.Utils.monStoreErrors(view, view.rstore);
+		    var regex = new RegExp("not (installed|initialized)", "i");
+		    PVE.Utils.handleStoreErrorOrMask(view, view.rstore, regex, function(me, error){
+			me.rstore.stopUpdate();
+			PVE.Utils.showCephInstallOrMask(me.ownerCt, error.statusText, view.nodename,
+			    function(win){
+				me.mon(win, 'cephInstallWindowClosed', function(){
+				    me.rstore.startUpdate();
+				});
+			    }
+			);
+		    });
 		    view.rstore.on('load', this.onLoad, this);
 		    view.on('destroy', view.rstore.stopUpdate);
 		},
