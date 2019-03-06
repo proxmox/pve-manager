@@ -1091,6 +1091,17 @@ Ext.define('PVE.Utils', { utilities: {
 		return;
 	    }
 	}
+    },
+
+    cleanEmptyObjectKeys: function (obj) {
+	var propName;
+	for (propName in obj) {
+	    if (obj.hasOwnProperty(propName)) {
+		if (obj[propName] === null || obj[propName] === undefined) {
+		    delete obj[propName];
+		}
+	    }
+	}
     }
 },
 
