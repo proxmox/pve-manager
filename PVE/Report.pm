@@ -20,6 +20,7 @@ my $report_def = {
 	    'top -b -n 1  | head -n 15',
 	    'pvesubscription get',
 	    'lscpu',
+	    'pvesh get /cluster/resources --type node --output-format=yaml',
 	],
     },
     storage => [
