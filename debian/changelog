@@ -1,3 +1,17 @@
+pve-manager (5.3-12) unstable; urgency=medium
+
+  * ui: fix popup behaviour in firefox with touchscreens on desktop
+
+  * pveproxy: allow one to set 'honor_cipher_order' and 'no compression'
+
+  * add possibility to call pveceph install through shell API
+
+  * fix #2122: use correct format in help text of timefield
+
+  * added basic ability to install ceph via web gui
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 12 Mar 2019 12:37:42 +0100
+
 pve-manager (5.3-11) unstable; urgency=medium
 
   * fix #2108: ceph: 'osd pools set' cannot accept integers anymore, thus ceph
