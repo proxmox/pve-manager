@@ -1142,7 +1142,8 @@ Ext.define('PVE.Utils', { utilities: {
 		    callback(win);
 		}
 	    } else {
-		container.mask(Ext.String.format(gettext('{0} not installed.') + gettext(' Log in as root to install.'), 'Ceph'), ['pve-static-mask']);
+		container.mask(Ext.String.format(gettext('{0} not installed.') +
+		    ' ' + gettext('Log in as root to install.'), 'Ceph'), ['pve-static-mask']);
 	    }
 	    return true;
 	} else {
