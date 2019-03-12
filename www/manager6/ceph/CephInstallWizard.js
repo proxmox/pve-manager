@@ -147,16 +147,16 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			name: 'network',
 			vtype: 'IPCIDRAddress',
 			value: '',
-			fieldLabel: 'Network IPv4/CIDR',
+			fieldLabel: 'Public Network IP/CIDR',
 			allowBlank: false
 		    },
 		    {
 			xtype: 'textfield',
 			name: 'cluster-network',
 			vtype: 'IPCIDRAddress',
-			fieldLabel: 'Cluster-Network IPv4/CIDR',
+			fieldLabel: 'Cluster Network IP/CIDR',
 			allowBlank: true,
-			emptyText: gettext('Network')
+			emptyText: gettext('Same as Public Network')
 		    }
 		],
 		advancedColumn1: [
