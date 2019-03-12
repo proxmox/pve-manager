@@ -33,11 +33,13 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			    Ext.GlobalEvents.fireEvent('proxmoxShowHelp', this.onlineHelp);
 			}
 			this.up('pveCephInstallWizard').down('#back').hide(true);
+			this.up('pveCephInstallWizard').down('#next').setText(gettext('Start installation'));
 		    },
 		    deactivate: function() {
 			if (this.onlineHelp) {
 			    Ext.GlobalEvents.fireEvent('proxmoxHideHelp', this.onlineHelp);
 			}
+			this.up('pveCephInstallWizard').down('#next').setText(gettext('Next'));
 		    }
 		}
 	    },
@@ -154,7 +156,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			vtype: 'IPCIDRAddress',
 			fieldLabel: 'Cluster-Network IPv4/CIDR',
 			allowBlank: true,
-			emptyText: gettext('default')
+			emptyText: gettext('Network')
 		    }
 		],
 		advancedColumn1: [
@@ -166,7 +168,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			maxValue: 7,
 			minValue: 1,
 			allowBlank: true,
-			emptyText: gettext('default')
+			emptyText: '3'
 		    },
 		    {
 			xtype: 'numberfield',
@@ -176,7 +178,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			maxValue: 7,
 			minValue: 1,
 			allowBlank: true,
-			emptyText: gettext('default')
+			emptyText: '2'
 		    },
 		    {
 			xtype: 'numberfield',
@@ -186,7 +188,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			maxValue: 14,
 			minValue: 6,
 			allowBlank: true,
-			emptyText: gettext('default')
+			emptyText: '6'
 		    }
 		],
 		onGetValues: function(values) {
@@ -234,7 +236,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		onlineHelp: 'pve_ceph_install',
 		html: '<h3>Installation successful!</h3>'+
 		'<p>The basic installation and configuration is completed, depending on your setup some of the following steps are required to start using Ceph:</p>'+
-		'<ul><li>Creating Ceph Monitors</li><li>Creating Ceph OSDs</li><li>Creating Ceph Pools</li></ul>'+
+		'<ol><li>Creating Ceph Monitors</li><li>Creating Ceph OSDs</li><li>Creating Ceph Pools</li></ol>'+
 		'<p>To learn more click on the help button below.</p>',
 		listeners: {
 		    activate: function() {
