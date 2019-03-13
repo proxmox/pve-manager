@@ -84,6 +84,7 @@ JSSRC= 				                 	\
 	window/Settings.js				\
 	window/StartupEdit.js				\
 	window/CephInstall.js				\
+	window/FirewallEnableEdit.js		    	\
 	panel/NotesView.js				\
 	grid/ResourceGrid.js				\
 	grid/PoolMembers.js				\

@@ -64,9 +64,17 @@ Ext.define('PVE.FirewallOptions', {
 	    };
 	};
 
-
 	if (me.fwtype === 'node') {
-	    add_boolean_row('enable', gettext('Firewall'), 1);
+	    me.rows.enable = {
+		required: true,
+		defaultValue: 1,
+		header: gettext('Firewall'),
+		renderer: Proxmox.Utils.format_boolean,
+		editor: {
+		    xtype: 'pveFirewallEnableEdit',
+		    defaultValue: 1
+		}
+	    };
 	    add_boolean_row('nosmurfs', gettext('SMURFS filter'), 1);
 	    add_boolean_row('tcpflags', gettext('TCP flags filter'), 0);
 	    add_boolean_row('ndp', 'NDP', 1);
@@ -78,7 +86,16 @@ Ext.define('PVE.FirewallOptions', {
 	    add_log_row('tcp_flags_log_level', 120);
 	    add_log_row('smurf_log_level');
 	} else if (me.fwtype === 'vm') {
-	    add_boolean_row('enable', gettext('Firewall'), 0);
+	    me.rows.enable = {
+		required: true,
+		defaultValue: 0,
+		header: gettext('Firewall'),
+		renderer: Proxmox.Utils.format_boolean,
+		editor: {
+		    xtype: 'pveFirewallEnableEdit',
+		    defaultValue: 0
+		}
+	    };
 	    add_boolean_row('dhcp', 'DHCP', 1);
 	    add_boolean_row('ndp', 'NDP', 1);
 	    add_boolean_row('radv', gettext('Router Advertisement'), 0);
