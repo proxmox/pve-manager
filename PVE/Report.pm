@@ -38,7 +38,8 @@ my $report_def = {
     ],
     network => [
 	'ip -details -statistics address',
-	'ip -details route show',
+	'ip -details -4 route show',
+	'ip -details -6 route show',
 	'cat /etc/network/interfaces',
     ],
     firewall => [
