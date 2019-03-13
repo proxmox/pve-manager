@@ -21,6 +21,7 @@ use PVE::LXC::Config;
 use PVE::RPCEnvironment;
 use PVE::API2::Subscription;
 use PVE::AutoBalloon;
+use PVE::AccessControl;
 
 use PVE::Status::Plugin;
 use PVE::Status::Graphite;
@@ -440,6 +441,10 @@ sub update_storage_status {
     }
 }
 
+sub rotate_authkeys {
+    PVE::AccessControl::rotate_authkey() if !PVE::AccessControl::check_authkey(1);
+}
+
 sub update_status {
 
     # update worker list. This is not really required and
@@ -491,6 +496,13 @@ sub update_status {
     };
     $err = $@;
     syslog('err', "lxc console cleanup error: $err") if $err;
+
+    eval {
+	rotate_authkeys();
+    };
+    $err = $@;
+    syslog('err', "authkey rotation error: $err") if $err;
+
 }
 
 my $next_update = 0;
