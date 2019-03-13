@@ -41,6 +41,7 @@ my $report_def = {
     ],
     firewall => [
 	sub { dir2text('/etc/pve/firewall/', '.*fw') },
+	'cat /etc/pve/local/host.fw',
 	'iptables-save',
     ],
     cluster => [
