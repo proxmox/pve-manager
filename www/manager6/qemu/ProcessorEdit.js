@@ -124,6 +124,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    xtype: 'proxmoxintegerfield',
 	    name: 'vcpus',
 	    minValue: 1,
+	    maxValue: 1,
 	    value: '',
 	    fieldLabel: gettext('VCPUs'),
 	    deleteEmpty: true,
