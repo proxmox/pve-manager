@@ -526,7 +526,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	PVE::Ceph::Tools::check_ceph_enabled();
+	PVE::Ceph::Tools::check_ceph_inited();
 
 	my $rados = PVE::RADOS->new();
 	my $status = $rados->mon_command({ prefix => 'status' });
