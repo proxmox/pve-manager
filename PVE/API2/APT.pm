@@ -512,8 +512,6 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	my $pkgname = $param->{name};
-
 	my $cache = &$get_apt_cache();
 	my $policy = $cache->policy;
 	my $pkgrecords = $cache->packages();
