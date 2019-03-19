@@ -53,12 +53,9 @@ Ext.define('PVE.FirewallOptions', {
 		    subject: name,
 		    fieldDefaults: { labelWidth: labelWidth || 100 },
 		    items: {
-			xtype: 'proxmoxKVComboBox',
+			xtype: 'pveFirewallLogLevels',
 			name: name,
-			fieldLabel: name,
-			comboItems: [['nolog', 'nolog'], ['info', 'info'], ['err', 'err'],
-			       ['warning', 'warning'], ['crit', 'crit'], ['alert', 'alert'],
-			       ['emerg', 'emerg'], ['debug', 'debug']]
+			fieldLabel: name
 		    }
 		}
 	    };
@@ -178,4 +175,17 @@ Ext.define('PVE.FirewallOptions', {
 	me.on('destroy', me.rstore.stopUpdate);
 	me.on('deactivate', me.rstore.stopUpdate);
     }
+});
+
+
+Ext.define('PVE.FirewallLogLevels', {
+    extend: 'Proxmox.form.KVComboBox',
+    alias: ['widget.pveFirewallLogLevels'],
+
+    name: 'log',
+    fieldLabel: gettext('Log level'),
+    value: 'nolog',
+    comboItems: [['nolog', 'nolog'], ['emerg', 'emerg'], ['alert', 'alert'],
+	['crit', 'crit'], ['err', 'err'], ['warning', 'warning'],
+	['notice', 'notice'], ['info', 'info'], ['debug', 'debug']]
 });

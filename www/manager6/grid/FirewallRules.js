@@ -59,7 +59,7 @@ Ext.define('PVE.FirewallRulePanel', {
 	// hack: editable ComboGrid returns nothing when empty, so we need to set ''
 	// Also, disabled text fields return nothing, so we need to set ''
 
-	Ext.Array.each(['source', 'dest', 'macro', 'proto', 'sport', 'dport'], function(key) {
+	Ext.Array.each(['source', 'dest', 'macro', 'proto', 'sport', 'dport', 'log'], function(key) {
 	    if (values[key] === undefined) {
 		values[key] = '';
 	    }
@@ -205,9 +205,14 @@ Ext.define('PVE.FirewallRulePanel', {
 		name: 'dport',
 		value: '',
 		fieldLabel: gettext('Dest. port')
+	    },
+	    {
+		xtype: 'pveFirewallLogLevels',
+		name: 'log',
+		fieldLabel: gettext('Log level')
 	    }
 	];
-	
+
 	me.columnB = [
 	    {
 		xtype: 'textfield',
@@ -732,6 +737,14 @@ Ext.define('PVE.FirewallRules', {
 		dataIndex: 'sport',
 		renderer: function(value, metaData, record) {
 		    return render_errors('sport', value, metaData, record);
+		},
+		width: 100
+	    },
+	    {
+		header: gettext('Log level'),
+		dataIndex: 'log',
+		renderer: function(value, metaData, record) {
+		    return render_errors('log', value, metaData, record);
 		},
 		width: 100
 	    },
