@@ -205,11 +205,12 @@ Ext.define('PVE.FirewallRulePanel', {
 		name: 'dport',
 		value: '',
 		fieldLabel: gettext('Dest. port')
-	    },
+	    }
+	];
+
+	me.advancedColumn1 = [
 	    {
-		xtype: 'pveFirewallLogLevels',
-		name: 'log',
-		fieldLabel: gettext('Log level')
+		xtype: 'pveFirewallLogLevels'
 	    }
 	];
 
