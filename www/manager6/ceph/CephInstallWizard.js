@@ -163,7 +163,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    {
 			xtype: 'numberfield',
 			name: 'size',
-			fieldLabel: gettext('Number of replicas'),
+			fieldLabel: 'Number of replicas',
 			value: '',
 			maxValue: 7,
 			minValue: 1,
@@ -173,7 +173,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    {
 			xtype: 'numberfield',
 			name: 'min_size',
-			fieldLabel: gettext('Minimum replicas'),
+			fieldLabel: 'Minimum replicas',
 			value: '',
 			maxValue: 7,
 			minValue: 1,
