@@ -160,10 +160,23 @@ Ext.define('PVE.lxc.Config', {
 	    vmid: vmid
 	});
 
+	var statusTxt = Ext.create('Ext.toolbar.TextItem', {
+	    data: {
+		lock: undefined
+	    },
+	    tpl: [
+		'<tpl if="lock">',
+		'<i class="fa fa-lg fa-lock"></i> ({lock})',
+		'</tpl>'
+	    ]
+	});
+
+
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Container {0} on node '{1}'"), vm.text, nodename),
 	    hstateid: 'lxctab',
-	    tbar: [ startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn ],
+	    tbarSpacing: false,
+	    tbar: [ statusTxt, '->', startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
@@ -314,6 +327,7 @@ Ext.define('PVE.lxc.Config', {
 
 	me.mon(me.statusStore, 'load', function(s, records, success) {
 	    var status;
+	    var lock;
 	    if (!success) {
 		status = 'unknown';
 	    } else {
@@ -321,7 +335,12 @@ Ext.define('PVE.lxc.Config', {
 		status = rec ? rec.data.value : 'unknown';
 		rec = s.data.get('template');
 		template = rec.data.value || false;
+		rec = s.data.get('lock');
+		lock = rec ? rec.data.value : undefined;
 	    }
+
+	    statusTxt.update({ lock: lock });
+
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
 	    stopBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'stopped');

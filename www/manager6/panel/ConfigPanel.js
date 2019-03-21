@@ -46,6 +46,8 @@ Ext.define('PVE.panel.Config', {
     showSearch: true, // add a ressource grid with a search button as first tab
     viewFilter: undefined, // a filter to pass to that ressource grid
 
+    tbarSpacing: true, // if true, adds a spacer after the title in tbar
+
     dockedItems: [{
 	// this is needed for the overflow handler
 	xtype: 'toolbar',
@@ -183,7 +185,9 @@ Ext.define('PVE.panel.Config', {
 	    }
 	}
 
-	tbar.unshift('->');
+	if (me.tbarSpacing) {
+	    tbar.unshift('->');
+	}
 	tbar.unshift({
 	    xtype: 'tbtext',
 	    text: title,

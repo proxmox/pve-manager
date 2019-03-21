@@ -175,10 +175,22 @@ Ext.define('PVE.qemu.Config', {
 	    vmid: vmid
 	});
 
+	var statusTxt = Ext.create('Ext.toolbar.TextItem', {
+	    data: {
+		lock: undefined
+	    },
+	    tpl: [
+		'<tpl if="lock">',
+		'<i class="fa fa-lg fa-lock"></i> ({lock})',
+		'</tpl>'
+	    ]
+	});
+
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Virtual Machine {0} on node '{1}'"), vm.text, nodename),
 	    hstateid: 'kvmtab',
-	    tbar: [ resumeBtn, startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn ],
+	    tbarSpacing: false,
+	    tbar: [ statusTxt, '->', resumeBtn, startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn ],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
@@ -331,6 +343,7 @@ Ext.define('PVE.qemu.Config', {
 	    var qmpstatus;
 	    var spice = false;
 	    var xtermjs = false;
+	    var lock;
 
 	    if (!success) {
 		status = qmpstatus = 'unknown';
@@ -341,6 +354,8 @@ Ext.define('PVE.qemu.Config', {
 		qmpstatus = rec ? rec.data.value : 'unknown';
 		rec = s.data.get('template');
 		template = rec.data.value || false;
+		rec = s.data.get('lock');
+		lock = rec ? rec.data.value : undefined;
 
 		spice = s.data.get('spice') ? true : false;
 		xtermjs = s.data.get('serial') ? true : false;
@@ -361,6 +376,8 @@ Ext.define('PVE.qemu.Config', {
 
 	    consoleBtn.setEnableSpice(spice);
 	    consoleBtn.setEnableXtermJS(xtermjs);
+
+	    statusTxt.update({ lock: lock });
 
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
