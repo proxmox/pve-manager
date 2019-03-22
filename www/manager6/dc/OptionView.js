@@ -32,6 +32,7 @@ Ext.define('PVE.dc.OptionView', {
 	    defaultValue: 'root@$hostname'
 	});
 	me.add_text_row('mac_prefix', gettext('MAC address prefix'), {
+	    deleteEmpty: true,
 	    vtype: 'MacPrefix',
 	    defaultValue: Proxmox.Utils.noneText
 	});
