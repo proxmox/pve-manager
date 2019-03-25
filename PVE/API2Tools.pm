@@ -166,7 +166,7 @@ sub run_spiceterm {
 
     my $timeout = 40; 
 
-    my $cmd = ['/usr/bin/spiceterm', '--port', $port, '--addr', '127.0.0.1',
+    my $cmd = ['/usr/bin/spiceterm', '--port', $port, '--addr', 'localhost',
 	       '--timeout', $timeout, '--authpath', $authpath, 
 	       '--permissions', $permissions];
 
