@@ -131,12 +131,26 @@ Ext.define('PVE.tree.ResourceTree', {
 	info.text = status + info.text;
     },
 
+    setToolTip: function(info) {
+	if (info.type === 'pool' || info.groupbyid !== undefined) {
+	    return;
+	}
+
+	var qtips = [gettext('Status') + ': ' + (info.qmpstatus || info.status)];
+	if (info.hastate != 'unmanaged') {
+	    qtips.push(gettext('HA State') + ": " + info.hastate);
+	}
+
+	info.qtip = qtips.join(', ');
+    },
+
     // private
     addChildSorted: function(node, info) {
 	var me = this;
 
 	me.setIconCls(info);
 	me.setText(info);
+	me.setToolTip(info);
 
 	var defaults;
 	if (info.groupbyid) {
@@ -301,6 +315,7 @@ Ext.define('PVE.tree.ResourceTree', {
 			Ext.apply(info, item.data);
 			me.setIconCls(info);
 			me.setText(info);
+			me.setToolTip(info);
 			olditem.commit();
 		    }
 		    if ((!item || moved) && olditem.isLeaf()) {
