@@ -120,6 +120,7 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 		disabled: '{!efi}'
 	    },
 	    hidden: true,
+	    submitValue: false,
 	    disabled: true,
 	    fieldLabel: gettext('Add EFI Disk')
 	},
