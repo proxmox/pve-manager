@@ -112,8 +112,6 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
-	    name: 'eficb',
-	    reference: 'eficb',
 	    bind: {
 		value: '{addefi}',
 		hidden: '{!efi}',
@@ -127,7 +125,6 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	{
 	    xtype: 'pveDiskStorageSelector',
 	    name: 'efidisk0',
-	    reference: 'efidisk',
 	    storageContent: 'images',
 	    bind: {
 		nodename: '{nodename}',
