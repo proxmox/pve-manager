@@ -127,14 +127,32 @@ Ext.define('PVE.qemu.HardwareView', {
 		    return res;
 		}
 	    },
+	    bios: {
+		header: 'BIOS',
+		group: 4,
+		never_delete: true,
+		editor: caps.vms['VM.Config.Options'] ? 'PVE.qemu.BiosEdit' : undefined,
+		defaultValue: '',
+		iconCls: 'microchip',
+		renderer: PVE.Utils.render_qemu_bios
+	    },
 	    vga: {
 		header: gettext('Display'),
 		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.DisplayEdit' : undefined,
 		never_delete: true,
 		tdCls: 'pve-itype-icon-display',
-		group:4,
+		group:5,
 		defaultValue: '',
 		renderer: PVE.Utils.render_kvm_vga_driver		
+	    },
+	    scsihw: {
+		header: gettext('SCSI Controller'),
+		iconCls: 'database',
+		editor: caps.vms['VM.Config.Options'] ? 'PVE.qemu.ScsiHwEdit' : undefined,
+		renderer: PVE.Utils.render_scsihw,
+		group: 7,
+		never_delete: true,
+		defaultValue: ''
 	    },
 	    cores: {
 		visible: false
@@ -158,9 +176,6 @@ Ext.define('PVE.qemu.HardwareView', {
 		visible: false
 	    },
 	    cpulimit: {
-		visible: false
-	    },
-	    bios: {
 		visible: false
 	    },
 	    shares: {
