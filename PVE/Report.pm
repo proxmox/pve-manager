@@ -62,6 +62,7 @@ my $report_def = {
 	'lsblk --ascii',
     ],
     volumes => [
+	'pvs',
 	'lvs',
 	'vgs',
     ],
