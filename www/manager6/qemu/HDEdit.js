@@ -106,10 +106,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    delete me.drive.cache;
 	}
 
-	if (values.scsihw) {
-	    params.scsihw = values.scsihw;
-	}
-
         var names = ['mbps_rd', 'mbps_wr', 'iops_rd', 'iops_wr'];
         Ext.Array.each(names, function(name) {
             if (values[name]) {
@@ -210,12 +206,13 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.column1.push(me.bussel);
 
 	    me.scsiController = Ext.create('Ext.form.field.Display', {
-		name: 'scsihw',
 		fieldLabel: gettext('SCSI Controller'),
 		reference: 'scsiController',
+		bind: me.insideWizard ? {
+		    value: '{current.scsihw}'
+		} : undefined,
 		renderer: PVE.Utils.render_scsihw,
-		// do not change a VM wide option after creation
-		submitValue: me.insideWizard,
+		submitValue: false,
 		hidden: true
 	    });
 	    me.column1.push(me.scsiController);

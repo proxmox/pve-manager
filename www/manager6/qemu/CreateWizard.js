@@ -6,7 +6,10 @@ Ext.define('PVE.qemu.CreateWizard', {
 
     viewModel: {
 	data: {
-	    nodename: ''
+	    nodename: '',
+	    current: {
+		scsihw: ''
+	    }
 	}
     },
 
@@ -70,14 +73,6 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    defaultValue: 0,
 		    deleteDefaultValue: true,
 		    fieldLabel: gettext('Start at boot')
-		},
-		{
-		    xtype: 'proxmoxcheckbox',
-		    name: 'agent',
-		    uncheckedValue: 0,
-		    defaultValue: 0,
-		    deleteDefaultValue: true,
-		    fieldLabel: gettext('Qemu Agent')
 		}
 	    ],
 	    advancedColumn2: [
@@ -153,6 +148,12 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    insideWizard: true
 		}
 	    ]
+	},
+	{
+	    xtype: 'pveQemuSystemPanel',
+	    title: gettext('System'),
+	    isCreate: true,
+	    insideWizard: true
 	},
 	{
 	    xtype: 'pveQemuHDInputPanel',
