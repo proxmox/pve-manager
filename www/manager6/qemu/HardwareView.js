@@ -8,6 +8,9 @@ Ext.define('PVE.qemu.HardwareView', {
 	var me = this;
 	var rows = me.rows;
 	var rowdef = rows[key] || {};
+	var iconCls = rowdef.iconCls;
+	var icon = '';
+	var txt = (rowdef.header || key);
 
 	metaData.tdAttr = "valign=middle";
 
@@ -26,8 +29,11 @@ Ext.define('PVE.qemu.HardwareView', {
 		    return rowdef.cdheader;
 		}
 	    }
+	} else if (iconCls) {
+	    icon = "<i class='pve-grid-fa fa fa-fw fa-" + iconCls + "'></i>";
+	    metaData.tdCls += " pve-itype-fa";
 	}
-	return rowdef.header || key;
+	return icon + txt;
     },
 
     initComponent : function() {
