@@ -180,7 +180,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	PVE.Utils.forEachBus(undefined, function(type, id) {
 	    var confid = type + id;
 	    rows[confid] = {
-		group: 5,
+		group: 10,
 		tdCls: 'pve-itype-icon-storage',
 		editor: 'PVE.qemu.HDEdit',
 		never_delete: caps.vms['VM.Config.Disk'] ? false : true,
@@ -192,7 +192,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	for (i = 0; i < 32; i++) {
 	    confid = "net" + i.toString();
 	    rows[confid] = {
-		group: 6,
+		group: 15,
 		order: i,
 		tdCls: 'pve-itype-icon-network',
 		editor: caps.vms['VM.Config.Network'] ? 'PVE.qemu.NetworkEdit' : undefined,
@@ -201,7 +201,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    };
 	}
 	rows.efidisk0 = {
-	    group: 7,
+	    group: 20,
 	    tdCls: 'pve-itype-icon-storage',
 	    editor: null,
 	    never_delete: caps.vms['VM.Config.Disk'] ? false : true,
@@ -210,7 +210,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	for (i = 0; i < 5; i++) {
 	    confid = "usb" + i.toString();
 	    rows[confid] = {
-		group: 8,
+		group: 25,
 		order: i,
 		tdCls: 'pve-itype-icon-usb',
 		editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.USBEdit' : undefined,
@@ -221,7 +221,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	for (i = 0; i < 4; i++) {
 	    confid = "hostpci" + i.toString();
 	    rows[confid] = {
-		group: 9,
+		group: 30,
 		order: i,
 		tdCls: 'pve-itype-icon-pci',
 		never_delete: caps.nodes['Sys.Console'] ? false : true,
@@ -232,7 +232,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	for (i = 0; i < 4; i++) {
 	    confid = "serial" + i.toString();
 	    rows[confid] = {
-		group: 10,
+		group: 35,
 		order: i,
 		tdCls: 'pve-itype-icon-serial',
 		never_delete: caps.nodes['Sys.Console'] ? false : true,
