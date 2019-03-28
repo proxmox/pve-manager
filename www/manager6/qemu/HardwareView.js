@@ -52,6 +52,7 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	var caps = Ext.state.Manager.get('GuiCap');
 
+	/*jslint confusion: true */
 	var rows = {
 	    memory: {
 		header: gettext('Memory'),
@@ -145,6 +146,28 @@ Ext.define('PVE.qemu.HardwareView', {
 		defaultValue: '',
 		renderer: PVE.Utils.render_kvm_vga_driver		
 	    },
+	    machine: {
+		header: gettext('Machine'),
+		editor: caps.vms['VM.Config.HWType'] ?  {
+		    xtype: 'proxmoxWindowEdit',
+		    subject: gettext('Machine'),
+		    width: 350,
+		    items: [{
+			xtype: 'proxmoxKVComboBox',
+			name: 'machine',
+			value: '__default__',
+			fieldLabel: gettext('Machine'),
+			comboItems: [
+			    ['__default__', PVE.Utils.render_qemu_machine('')],
+			    ['q35', 'q35']
+			]
+		    }]} : undefined,
+		iconCls: 'cogs',
+		never_delete: true,
+		group: 6,
+		defaultValue: '',
+		renderer: PVE.Utils.render_qemu_machine
+	    },
 	    scsihw: {
 		header: gettext('SCSI Controller'),
 		iconCls: 'database',
@@ -182,6 +205,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		visible: false
 	    }
 	};
+	/*jslint confusion: false */
 
 	PVE.Utils.forEachBus(undefined, function(type, id) {
 	    var confid = type + id;
