@@ -127,15 +127,6 @@ Ext.define('PVE.qemu.HardwareView', {
 		    return res;
 		}
 	    },
-	    keyboard: {
-		header: gettext('Keyboard Layout'),
-		never_delete: true,
-		editor: caps.vms['VM.Config.Options'] ? 'PVE.qemu.KeyboardEdit' : undefined,
-		tdCls: 'pve-itype-icon-keyboard',
-		group: 1,
-		defaultValue: '',
-		renderer: PVE.Utils.render_kvm_language
-	    },
 	    vga: {
 		header: gettext('Display'),
 		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.DisplayEdit' : undefined,
