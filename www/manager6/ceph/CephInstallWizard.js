@@ -158,9 +158,8 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		},
 		column1: [
 		    {
-			xtype: 'component',
-			html: '<h3>Create initial Ceph config:</h3>'
-		    },
+			xtype: 'displayfield',
+			value: gettext('Ceph cluster configuration') + ':'
 		    {
 			xtype: 'displayfield',
 			name: 'nodename',
@@ -191,11 +190,12 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			allowBlank: true,
 			emptyText: gettext('Same as Public Network')
 		    }
+		    // FIXME: add hint about cluster network and/or reference user to docs??
 		],
 		column2: [
 		    {
-			xtype: 'component',
-			html: '<h3>Choose a monitor node:<br><small>(create additional ones later via monitor tab)</small></h3>'
+			xtype: 'displayfield',
+			value: gettext('First Ceph monitor') + ':'
 		    },
 		    {
 			xtype: 'pveNodeSelector',
