@@ -151,6 +151,7 @@ JSSRC= 				                 	\
 	qemu/CIDriveEdit.js				\
 	qemu/SSHKey.js					\
 	qemu/IPConfigEdit.js				\
+	qemu/SystemEdit.js				\
 	lxc/Summary.js					\
 	lxc/Network.js					\
 	lxc/Resources.js				\

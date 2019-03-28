@@ -228,6 +228,10 @@ Ext.define('PVE.Utils', { utilities: {
 	return agentstring;
     },
 
+    render_qemu_machine: function(value) {
+	return value || (Proxmox.Utils.defaultText + ' (i440fx)');
+    },
+
     render_qemu_bios: function(value) {
 	if (!value) {
 	    return Proxmox.Utils.defaultText + ' (SeaBIOS)';
