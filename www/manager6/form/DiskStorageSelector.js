@@ -85,6 +85,21 @@ Ext.define('PVE.form.DiskStorageSelector', {
 	hdfilesel.setNodename(nodename);
     },
 
+    setDisabled: function(value) {
+	var me = this;
+	var hdstorage = me.getComponent('hdstorage');
+
+	// reset on disable
+	if (value) {
+	    hdstorage.setValue();
+	}
+	hdstorage.setDisabled(value);
+
+	// disabling does not always fire this event and we do not need
+	// the value of the validity
+	hdstorage.fireEvent('validitychange');
+    },
+
     initComponent: function() {
 	var me = this;
 
@@ -97,6 +112,7 @@ Ext.define('PVE.form.DiskStorageSelector', {
 		fieldLabel: me.storageLabel,
 		nodename: me.nodename,
 		storageContent: me.storageContent,
+		disabled: me.disabled,
 		autoSelect: me.autoSelect,
 		allowBlank: me.allowBlank,
 		emptyText: me.emptyText,
@@ -144,6 +160,9 @@ Ext.define('PVE.form.DiskStorageSelector', {
 		allowBlank: false
 	    }
 	];
+
+	// use it to disable the children but not ourself
+	me.disabled = false;
 
 	me.callParent();
     }
