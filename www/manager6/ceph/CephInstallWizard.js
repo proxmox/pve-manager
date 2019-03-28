@@ -160,13 +160,6 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    {
 			xtype: 'displayfield',
 			value: gettext('Ceph cluster configuration') + ':'
-		    {
-			xtype: 'displayfield',
-			name: 'nodename',
-			fieldLabel: gettext('Node'),
-			cbind: {
-			    value: '{nodename}'
-			}
 		    },
 		    {
 			xtype: 'textfield',
