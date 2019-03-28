@@ -140,10 +140,14 @@ __PACKAGE__->register_method ({
 	print "update available package list\n";
 	eval { run_command(['apt-get', '-q', 'update'], outfunc => sub {}, errfunc => sub {}); };
 
+	print "start installation\n";
 	system('apt-get', '--no-install-recommends',
 		'-o', 'Dpkg::Options::=--force-confnew',
 		'install', '--',
-		'ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse', 'gdisk');
+		'ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse', 'gdisk') == 0
+	    || die "apt failed during ceph installation ($?)\n";
+
+	print "\ninstalled ceph $cephver successfully\n";
 
 	if (PVE::Ceph::Tools::systemd_managed() && ! -e '/etc/systemd/system/ceph.service') {
 	    #to disable old SysV init scripts.
