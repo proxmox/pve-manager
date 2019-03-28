@@ -171,16 +171,11 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			name: 'size',
 			fieldLabel: 'Number of replicas',
 			bind: {
-			    value: '{replicas}',
-			    allowBlank : '{!minreplicas}'
+			    value: '{replicas}'
 			},
 			maxValue: 7,
-			minValue: 1,
-			emptyText: '3',
-			setAllowBlank: function(allowBlank) {
-			    this.allowBlank = allowBlank;
-			    this.validate();
-			}
+			minValue: 2,
+			emptyText: '3'
 		    },
 		    {
 			xtype: 'numberfield',
@@ -188,15 +183,20 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			fieldLabel: 'Minimum replicas',
 			bind: {
 			    maxValue: '{replicas}',
-			    value: '{minreplicas}',
-			    allowBlank: '{!replicas}'
+			    value: '{minreplicas}'
 			},
-			minValue: 1,
-			emptyText: '2',
-			setAllowBlank: function(allowBlank) {
-			    this.allowBlank = allowBlank;
+			minValue: 2,
+			maxValue: 3,
+			setMaxValue: function(value) {
+			    this.maxValue = Ext.Number.from(value, 2);
+			    // allow enough to avoid split brains with max 'size', but more makes simply no sense
+			    if (this.maxValue > 4) {
+				this.maxValue = 4;
+			    }
+			    this.toggleSpinners();
 			    this.validate();
-			}
+			},
+			emptyText: '2'
 		    },
 		    {
 			xtype: 'numberfield',
