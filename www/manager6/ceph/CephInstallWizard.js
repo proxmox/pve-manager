@@ -1,3 +1,4 @@
+/*jslint confusion: true*/
 Ext.define('PVE.ceph.CephInstallWizard', {
 	extend: 'PVE.window.Wizard',
 	alias: 'widget.pveCephInstallWizard',
@@ -6,13 +7,25 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 	nodename: undefined,
 	viewModel: {
 	    data: {
-		nodename: ''
+		nodename: '',
+		configuration: true
 	    }
 	},
 	cbindData: {
 	    nodename: undefined
 	},
 	title: gettext('Installation'),
+	navigateNext: function() {
+	    var tp = this.down('#wizcontent');
+	    var atab = tp.getActiveTab();
+
+	    var next = tp.items.indexOf(atab) + 1;
+	    var ntab = tp.items.getAt(next);
+	    if (ntab) {
+		ntab.enable();
+		tp.setActiveTab(ntab);
+	    }
+	},
 	items: [
 	    {
 		title: gettext('Info'),
@@ -67,20 +80,18 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 				},
 				listeners: {
 				    load: function(rec, response, success, operation) {
-					var wizard = me.up('#wizcontent');
-					var tabs = wizard.items;
-					var lastTab = tabs.items[tabs.length-1];
+
 					if (success) {
 					    me.updateStore.stopUpdate();
-					    lastTab.enable();
-					    wizard.setActiveTab(lastTab);
+					    me.down('textfield').setValue('success');
 					} else if (operation.error.statusText.match("not initialized", "i")) {
 					    me.updateStore.stopUpdate();
+					    me.up('pveCephInstallWizard').getViewModel().set('configuration',false);
 					    me.down('textfield').setValue('success');
 					} else if (operation.error.statusText.match("rados_connect failed", "i")) {
 					    me.updateStore.stopUpdate();
-					    lastTab.enable();
-					    wizard.setActiveTab(lastTab);
+					    me.up('pveCephInstallWizard').getViewModel().set('configuration',true);
+					    me.down('textfield').setValue('success');
 					} else if (!operation.error.statusText.match("not installed", "i")) {
 					    Proxmox.Utils.setErrorMask(me, operation.error.statusText);
 					}
@@ -134,19 +145,29 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    activate: function() {
 			this.up('pveCephInstallWizard').down('#submit').setText(gettext('Next'));
 		    },
+		    beforeshow: function() {
+			if (this.up('pveCephInstallWizard').getViewModel().get('configuration')) {
+			    this.mask("Coniguration already initialized",['pve-static-mask']);
+			} else {
+			    this.unmask();
+			}
+		    },
 		    deactivate: function() {
 			this.up('pveCephInstallWizard').down('#submit').setText(gettext('Finish'));
 		    }
 		},
 		column1: [
 		    {
+			xtype: 'component',
+			html: '<h3>Create initial Ceph config:</h3>'
+		    },
+		    {
 			xtype: 'displayfield',
 			name: 'nodename',
 			fieldLabel: gettext('Node'),
 			cbind: {
 			    value: '{nodename}'
-			},
-			padding: 5
+			}
 		    },
 		    {
 			xtype: 'textfield',
@@ -154,7 +175,13 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			vtype: 'IPCIDRAddress',
 			value: '',
 			fieldLabel: 'Public Network IP/CIDR',
-			allowBlank: false
+			bind: {
+			    allowBlank: '{configuration}'
+			},
+			setAllowBlank: function(allowBlank) {
+			    this.allowBlank = allowBlank;
+			    this.validate();
+			}
 		    },
 		    {
 			xtype: 'textfield',
@@ -163,6 +190,19 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			fieldLabel: 'Cluster Network IP/CIDR',
 			allowBlank: true,
 			emptyText: gettext('Same as Public Network')
+		    }
+		],
+		column2: [
+		    {
+			xtype: 'component',
+			html: '<h3>Choose a monitor node:<br><small>(create additional ones later via monitor tab)</small></h3>'
+		    },
+		    {
+			xtype: 'pveNodeSelector',
+			fieldLabel: gettext('Monitor node'),
+			name: 'mon-node',
+			selectCurNode: true,
+			allowBlank: false
 		    }
 		],
 		advancedColumn1: [
@@ -219,31 +259,40 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		},
 		onSubmit: function() {
 		    var me = this;
-		    var wizard = me.up('window');
-		    var kv = wizard.getValues();
-		    delete kv['delete'];
-		    var nodename = me.nodename;
-		    delete kv.nodename;
-		    Proxmox.Utils.API2Request({
-			url: '/nodes/'+nodename+'/ceph/init',
-			waitMsgTarget: wizard,
-			method: 'POST',
-			params: kv,
-			success: function() {
-			    var tp = me.up('#wizcontent');
-			    var atab = tp.getActiveTab();
-
-			    var next = tp.items.indexOf(atab) + 1;
-			    var ntab = tp.items.getAt(next);
-			    if (ntab) {
-				ntab.enable();
-				tp.setActiveTab(ntab);
+		    if (!this.up('pveCephInstallWizard').getViewModel().get('configuration')) {
+			var wizard = me.up('window');
+			var kv = wizard.getValues();
+			delete kv['delete'];
+			var monNode = kv['mon-node'];
+			delete kv['mon-node'];
+			var nodename = me.nodename;
+			delete kv.nodename;
+			Proxmox.Utils.API2Request({
+			    url: '/nodes/' + nodename + '/ceph/init',
+			    waitMsgTarget: wizard,
+			    method: 'POST',
+			    params: kv,
+			    success: function() {
+				Proxmox.Utils.API2Request({
+				    url: '/nodes/' + monNode + '/ceph/mon',
+				    waitMsgTarget: wizard,
+				    method: 'POST',
+				    success: function() {
+					me.up('pveCephInstallWizard').navigateNext();
+				    },
+				    failure: function(response, opts) {
+					Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+				    }
+				});
+			    },
+			    failure: function(response, opts) {
+				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 			    }
-			},
-			failure: function(response, opts) {
-			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-			}
-		    });
+			});
+
+		    } else {
+			me.up('pveCephInstallWizard').navigateNext();
+		    }
 		}
 	    },
 	    {
