@@ -172,6 +172,7 @@ __PACKAGE__->register_method ({
     name => 'config',
     path => 'config',
     method => 'GET',
+    proxyto => 'node',
     permissions => {
 	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
     },

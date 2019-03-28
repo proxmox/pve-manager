@@ -152,6 +152,10 @@ Ext.define('PVE.NodeCephFSPanel', {
 			interval: 5 * 1000,
 			autoStart: true,
 			storeid: 'pve-ceph-fs',
+			proxy: {
+			    type: 'proxmox',
+			    url: '/api2/json/nodes/' + view.nodename + '/ceph/fs'
+			},
 			model: 'pve-ceph-fs'
 		    });
 		    view.setStore(Ext.create('Proxmox.data.DiffStore', {
@@ -245,6 +249,10 @@ Ext.define('PVE.NodeCephFSPanel', {
 			interval: 3 * 1000,
 			autoStart: true,
 			storeid: 'pve-ceph-mds',
+			proxy: {
+			    type: 'proxmox',
+			    url: '/api2/json/nodes/'+ view.nodename +'/ceph/mds'
+			},
 			model: 'pve-ceph-mds'
 		    });
 		    view.setStore(Ext.create('Proxmox.data.DiffStore', {

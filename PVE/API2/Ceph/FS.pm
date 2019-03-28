@@ -19,6 +19,7 @@ __PACKAGE__->register_method ({
     name => 'index',
     path => '',
     method => 'GET',
+    proxyto => 'node',
     description => "Directory index.",
     permissions => {
 	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
