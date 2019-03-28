@@ -124,6 +124,12 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		cbind: {
 		    nodename: '{nodename}'
 		},
+		viewModel: {
+		    data: {
+			replicas: undefined,
+			minreplicas: undefined
+		    }
+		},
 		listeners: {
 		    activate: function() {
 			this.up('pveCephInstallWizard').down('#submit').setText(gettext('Next'));
@@ -164,21 +170,33 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			xtype: 'numberfield',
 			name: 'size',
 			fieldLabel: 'Number of replicas',
-			value: '',
+			bind: {
+			    value: '{replicas}',
+			    allowBlank : '{!minreplicas}'
+			},
 			maxValue: 7,
 			minValue: 1,
-			allowBlank: true,
-			emptyText: '3'
+			emptyText: '3',
+			setAllowBlank: function(allowBlank) {
+			    this.allowBlank = allowBlank;
+			    this.validate();
+			}
 		    },
 		    {
 			xtype: 'numberfield',
 			name: 'min_size',
 			fieldLabel: 'Minimum replicas',
-			value: '',
-			maxValue: 7,
+			bind: {
+			    maxValue: '{replicas}',
+			    value: '{minreplicas}',
+			    allowBlank: '{!replicas}'
+			},
 			minValue: 1,
-			allowBlank: true,
-			emptyText: '2'
+			emptyText: '2',
+			setAllowBlank: function(allowBlank) {
+			    this.allowBlank = allowBlank;
+			    this.validate();
+			}
 		    },
 		    {
 			xtype: 'numberfield',
