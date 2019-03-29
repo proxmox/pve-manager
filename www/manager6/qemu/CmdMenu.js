@@ -64,12 +64,12 @@ Ext.define('PVE.qemu.CmdMenu', {
 		}
 	    },
 	    {
-		text: gettext('Suspend'),
+		text: gettext('Pause'),
 		iconCls: 'fa fa-fw fa-pause',
 		hidden: stopped || suspended,
 		disabled: stopped || suspended,
 		handler: function() {
-		    var msg = Proxmox.Utils.format_task_description('qmsuspend', vmid);
+		    var msg = Proxmox.Utils.format_task_description('qmpause', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
