@@ -57,6 +57,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    {
 		text: gettext('Start'),
 		iconCls: 'fa fa-fw fa-play',
+		hidden: running || suspended,
 		disabled: running || suspended,
 		handler: function() {
 		    vm_command('start');
@@ -65,7 +66,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    {
 		text: gettext('Suspend'),
 		iconCls: 'fa fa-fw fa-pause',
-		hidden: suspended,
+		hidden: stopped || suspended,
 		disabled: stopped || suspended,
 		handler: function() {
 		    var msg = Proxmox.Utils.format_task_description('qmsuspend', vmid);
