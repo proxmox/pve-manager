@@ -241,20 +241,10 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			    this.validate();
 			},
 			emptyText: '2'
-		    },
-		    {
-			xtype: 'numberfield',
-			name: 'pg_bits',
-			fieldLabel: 'Placement group bits',
-			value: '',
-			maxValue: 14,
-			minValue: 6,
-			allowBlank: true,
-			emptyText: '6'
 		    }
 		],
 		onGetValues: function(values) {
-		    ['cluster-network', 'size', 'min_size', 'pg_bits'].forEach(function(field) {
+		    ['cluster-network', 'size', 'min_size'].forEach(function(field) {
 			if (!values[field]) {
 			    delete values[field];
 			}
