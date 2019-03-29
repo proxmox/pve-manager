@@ -382,7 +382,9 @@ Ext.define('PVE.qemu.Config', {
 		return;
 	    }
 
-	    if (qmpstatus === 'prelaunch' || qmpstatus === 'paused' || qmpstatus === 'suspended') {
+	    var resume = (['prelaunch', 'paused', 'suspended'].indexOf(qmpstatus) !== -1);
+
+	    if (resume || lock === 'suspended') {
 		startBtn.setVisible(false);
 		resumeBtn.setVisible(true);
 	    } else {
