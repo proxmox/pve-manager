@@ -143,6 +143,22 @@ Ext.define('PVE.qemu.Config', {
 	    },
 	    menu: {
 		items: [{
+		    text: gettext('Pause'),
+		    disabled: !caps.vms['VM.PowerMgmt'],
+		    confirmMsg: Proxmox.Utils.format_task_description('qmpause', vmid),
+		    handler: function() {
+			vm_command("suspend");
+		    },
+		    iconCls: 'fa fa-pause'
+		},{
+		    text: gettext('Hibernate'),
+		    disabled: !caps.vms['VM.PowerMgmt'],
+		    confirmMsg: Proxmox.Utils.format_task_description('qmsuspend', vmid),
+		    handler: function() {
+			vm_command("suspend", { todisk: 1 });
+		    },
+		    iconCls: 'fa fa-stop'
+		},{
 		    text: gettext('Stop'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
 		    dangerous: true,

@@ -79,6 +79,21 @@ Ext.define('PVE.qemu.CmdMenu', {
 		}
 	    },
 	    {
+		text: gettext('Hibernate'),
+		iconCls: 'fa fa-fw fa-stop',
+		hidden: stopped || suspended,
+		disabled: stopped || suspended,
+		handler: function() {
+		    var msg = Proxmox.Utils.format_task_description('qmsuspend', vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+			vm_command('suspend', { todisk: 1 });
+		    });
+		}
+	    },
+	    {
 		text: gettext('Resume'),
 		iconCls: 'fa fa-fw fa-play',
 		hidden: !suspended,
