@@ -1138,9 +1138,11 @@ Ext.define('PVE.Utils', { utilities: {
 	    if (Proxmox.UserName === 'root@pam') {
 		container.el.mask();
 		if (!container.down('pveCephInstallWindow')){
+		    var isInstalled = msg.match(/not initialized/i) ? true : false;
 		    var win = Ext.create('PVE.ceph.Install', {
 			nodename: nodename
 		    });
+		    win.getViewModel().set('isInstalled', isInstalled);
 		    container.add(win);
 		    win.show();
 		    callback(win);

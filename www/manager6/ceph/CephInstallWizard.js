@@ -8,13 +8,14 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 	viewModel: {
 	    data: {
 		nodename: '',
-		configuration: true
+		configuration: true,
+		isInstalled: false
 	    }
 	},
 	cbindData: {
 	    nodename: undefined
 	},
-	title: gettext('Installation'),
+	title: gettext('Setup'),
 	navigateNext: function() {
 	    var tp = this.down('#wizcontent');
 	    var atab = tp.getActiveTab();
@@ -63,10 +64,15 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		cbind:{
 		    nodename: '{nodename}'
 		},
+		viewModel: {}, // needed to inherit parent viewModel data
 		listeners: {
 		    afterrender: function() {
 			var me = this;
-			me.down('pveNoVncConsole').fireEvent('activate');
+			if (this.getViewModel().get('isInstalled')) {
+			    this.mask("Ceph is already installed, click next to create your configuration.",['pve-static-mask']);
+			} else {
+			    me.down('pveNoVncConsole').fireEvent('activate');
+			}
 		    },
 		    activate: function() {
 			var me = this;
