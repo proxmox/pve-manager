@@ -36,11 +36,11 @@ Ext.define('PVE.ceph.Install', {
 	    },
 	    windowText: function (get) {
 		if (get('isInstalled')) {
-		    return '<p class="install-mask">' + 
+		    return '<p class="install-mask">' +
 		    Ext.String.format(gettext('{0} is not initialized.'), 'Ceph') + ' '+
 		    gettext('You need to create a initial config once.') + '</p>';
 		} else {
-		    return '<p class="install-mask">' + 
+		    return '<p class="install-mask">' +
 		    Ext.String.format(gettext('{0} is not installed on this node.'), 'Ceph') + '<br>' +
 		    gettext('Would you like to install it now?') + '</p>';
 		}
