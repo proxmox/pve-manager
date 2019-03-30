@@ -154,6 +154,7 @@ Ext.define('PVE.qemu.Config', {
 		    text: gettext('Hibernate'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
 		    confirmMsg: Proxmox.Utils.format_task_description('qmsuspend', vmid),
+		    tooltip: gettext('Suspend to disk'),
 		    handler: function() {
 			vm_command("suspend", { todisk: 1 });
 		    },
@@ -162,6 +163,7 @@ Ext.define('PVE.qemu.Config', {
 		    text: gettext('Stop'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
 		    dangerous: true,
+		    tooltip: Ext.String.format(gettext('Stop {0} immediately'), 'VM'),
 		    confirmMsg: Proxmox.Utils.format_task_description('qmstop', vmid),
 		    handler: function() {
 			vm_command("stop", { timeout: 30 });

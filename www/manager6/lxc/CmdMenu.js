@@ -100,6 +100,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		text: gettext('Stop'),
 		iconCls: 'fa fa-fw fa-stop',
 		disabled: stopped,
+		tooltip: Ext.String.format(gettext('Stop {0} immediately'), 'CT'),
 		handler: function() {
 		    var msg = Proxmox.Utils.format_task_description('vzstop', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {

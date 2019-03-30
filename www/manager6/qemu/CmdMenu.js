@@ -83,6 +83,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		iconCls: 'fa fa-fw fa-stop',
 		hidden: stopped || suspended,
 		disabled: stopped || suspended,
+		tooltip: gettext('Suspend to disk'),
 		handler: function() {
 		    var msg = Proxmox.Utils.format_task_description('qmsuspend', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
@@ -120,6 +121,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		text: gettext('Stop'),
 		iconCls: 'fa fa-fw fa-stop',
 		disabled: stopped,
+		tooltip: Ext.String.format(gettext('Stop {0} immediately'), 'VM'),
 		handler: function() {
 		    var msg = Proxmox.Utils.format_task_description('qmstop', vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
