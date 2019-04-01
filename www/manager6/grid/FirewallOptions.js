@@ -103,6 +103,14 @@ Ext.define('PVE.FirewallOptions', {
 	} else if (me.fwtype === 'dc') {
 	    add_boolean_row('enable', gettext('Firewall'), 0);
 	    add_boolean_row('ebtables', 'ebtables', 1);
+	    me.rows.log_ratelimit = {
+		header: gettext('Log rate limit'),
+		required: true,
+		defaultValue: 'enable=0',
+		editor: {
+		    xtype: 'pveFirewallLograteEdit'
+		}
+	    };
 	}
 
 	if (me.fwtype === 'dc' || me.fwtype === 'vm') {
