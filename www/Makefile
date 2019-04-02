@@ -8,6 +8,8 @@ all: ${SUBDIRS} index.html.tpl
 install:
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
 	install -m 0644 index.html.tpl ${WWWBASEDIR}
+	install -d ${WWWJSDIR}
+	install -m 0644 u2f-api.js ${WWWJSDIR}
 
 .PHONY: clean
 clean:
