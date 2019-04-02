@@ -19,8 +19,7 @@ Ext.define('PVE.Workspace', {
     updateLoginData: function(loginData) {
 	var me = this;
 	me.loginData = loginData;
-	Proxmox.CSRFPreventionToken = loginData.CSRFPreventionToken;
-	Proxmox.UserName = loginData.username;
+	Proxmox.Utils.setAuthData(loginData);
 
 	var rt = me.down('pveResourceTree');
 	rt.setDatacenterText(loginData.clustername);
@@ -29,9 +28,6 @@ Ext.define('PVE.Workspace', {
 	    Ext.state.Manager.set('GuiCap', loginData.cap);
 	}
 
-	// creates a session cookie (expire = null) 
-	// that way the cookie gets deleted after browser window close
-	Ext.util.Cookies.set('PVEAuthCookie', loginData.ticket, null, '/', null, true);
 	me.onLogin(loginData);
     },
 

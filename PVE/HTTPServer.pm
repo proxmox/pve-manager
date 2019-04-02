@@ -85,7 +85,7 @@ sub auth_handler {
 	if (defined($challenge)) {
 	    $rpcenv->set_u2f_challenge($challenge);
 	    die "No ticket\n"
-		if ($rel_uri ne '/access/u2f' || $method ne 'POST');
+		if ($rel_uri ne '/access/tfa' || $method ne 'POST');
 	}
 
 	$rpcenv->set_user($username);

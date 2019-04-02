@@ -78,6 +78,19 @@ Ext.define('PVE.dc.UserView', {
 	    }
 	});
 
+	var tfachange_btn = new Proxmox.button.Button({
+	    text: gettext('TFA'),
+	    disabled: true,
+	    selModel: sm,
+	    handler: function(btn, event, rec) {
+		var win = Ext.create('PVE.window.TFAEdit',{
+                    userid: rec.data.userid
+		});
+		win.on('destroy', reload);
+		win.show();
+	    }
+	});
+
         var tbar = [
             {
 		text: gettext('Add'),
@@ -89,7 +102,7 @@ Ext.define('PVE.dc.UserView', {
                     win.show();
 		}
             },
-	    edit_btn, remove_btn, pwchange_btn
+	    edit_btn, remove_btn, pwchange_btn, tfachange_btn
         ];
 
 	var render_username = function(userid) {

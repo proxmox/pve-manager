@@ -200,6 +200,7 @@ JSSRC= 				                 	\
 	dc/Guests.js					\
 	dc/OptionView.js				\
 	dc/StorageView.js				\
+	dc/TFAEdit.js					\
 	dc/UserEdit.js					\
 	dc/UserView.js					\
 	dc/PoolView.js					\
