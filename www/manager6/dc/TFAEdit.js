@@ -1,3 +1,4 @@
+/*jslint confusion: true*/
 Ext.define('PVE.window.TFAEdit', {
     extend: 'Ext.window.Window',
     mixins: ['Proxmox.Mixin.CBind'],
@@ -103,7 +104,7 @@ Ext.define('PVE.window.TFAEdit', {
 	data: {
 	    in_totp_tab: true,
 	    tfa_required: false,
-	    u2f_available: true,
+	    u2f_available: true
 	}
     },
 
@@ -173,10 +174,10 @@ Ext.define('PVE.window.TFAEdit', {
 		config: PVE.Parser.printPropertyString({
 		    type: 'oath',
 		    digits: values.digits,
-		    step: values.step,
+		    step: values.step
 		}),
 		// this is used to verify that the client generates the correct codes:
-		response: me.lookup('challenge').value,
+		response: me.lookup('challenge').value
 	    };
 
 	    if (Proxmox.UserName !== 'root@pam') {
@@ -202,7 +203,7 @@ Ext.define('PVE.window.TFAEdit', {
 	    var values = me.lookup('totp-form').getValues();
 	    var params = {
 		userid: me.getView().userid,
-		action: 'delete',
+		action: 'delete'
 	    };
 
 	    if (Proxmox.UserName !== 'root@pam') {
@@ -293,7 +294,7 @@ Ext.define('PVE.window.TFAEdit', {
 			    fieldDefaults: {
 				labelWidth: 120,
 				anchor: '100%',
-				padding: '0 5',
+				padding: '0 5'
 			    },
 			    items: [
 				{
@@ -325,7 +326,7 @@ Ext.define('PVE.window.TFAEdit', {
 				    name: 'step',
 				    value: 30,
 				    minValue: 10,
-				    qrupdate: true,
+				    qrupdate: true
 				},
 				{
 				    xtype: 'numberfield',
@@ -334,23 +335,23 @@ Ext.define('PVE.window.TFAEdit', {
 				    value: 6,
 				    minValue: 6,
 				    maxValue: 8,
-				    qrupdate: true,
+				    qrupdate: true
 				},
 				{
 				    xtype: 'textfield',
 				    fieldLabel: gettext('Issuer Name'),
 				    name: 'issuer',
 				    value: 'Proxmox Web UI',
-				    qrupdate: true,
+				    qrupdate: true
 				},
 				{
 				    xtype: 'textfield',
 				    hidden: true,
 				    name: 'name',
 				    cbind: {
-					value: '{userid}',
+					value: '{userid}'
 				    },
-				    qrupdate: true,
+				    qrupdate: true
 				}
 			    ]
 			},
@@ -362,7 +363,7 @@ Ext.define('PVE.window.TFAEdit', {
 				'background-color': 'white',
 				padding: '5px',
 				width: '266px',
-				height: '266px',
+				height: '266px'
 			    }
 			},
 			{
@@ -392,7 +393,7 @@ Ext.define('PVE.window.TFAEdit', {
 			{
 			    xtype: 'label',
 			    width: 500,
-			    text: gettext('To register a U2F device, connect the device, then click the button and follow the instructions.'),
+			    text: gettext('To register a U2F device, connect the device, then click the button and follow the instructions.')
 			}
 		    ]
 		}
