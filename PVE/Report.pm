@@ -60,9 +60,9 @@ my $report_def = {
     ],
     disks => [
 	'lsblk --ascii',
-        'ls -l /dev/disk/by-*/',
-        'iscsiadm -m node',
-        'iscsiadm -m session',
+	'ls -l /dev/disk/by-*/',
+	'iscsiadm -m node',
+	'iscsiadm -m session',
     ],
     volumes => [
 	'pvs',
@@ -129,7 +129,7 @@ sub generate {
 
 	$report .= "\n==== $title ====\n";
 	foreach my $command (@$commands) {
-          print STDERR "Process ".$command."...";
+	    print STDERR "Process ".$command."...";
 	    eval {
 		if (ref $command eq 'CODE') {
 		    PVE::Tools::run_with_timeout($cmd_timeout, $command);
@@ -137,9 +137,9 @@ sub generate {
 		    $report .= "\n# $command\n";
 		    PVE::Tools::run_command($command, %$run_cmd_params);
 		}
-                print STDERR "OK";
+		print STDERR "OK";
 	    };
-            print STDERR "\n";
+	    print STDERR "\n";
 	    $report .= "\nERROR: $@\n" if $@;
 	}
     }
