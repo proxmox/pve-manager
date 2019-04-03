@@ -297,15 +297,27 @@ Ext.define('PVE.window.TFAEdit', {
 			    },
 			    items: [
 				{
-				    xtype: 'textfield',
-				    fieldLabel: gettext('Secret'),
-				    name: 'secret',
-				    reference: 'tfa-secret',
-				    validateValue: function(value) {
-					return value.match(/^[A-Z2-7=]$/);
+				    layout: 'hbox',
+				    border: false,
+				    padding: '5 0',
+				    items: [{
+					xtype: 'textfield',
+					fieldLabel: gettext('Secret'),
+					name: 'secret',
+					reference: 'tfa_secret',
+					validateValue: function(value) {
+					    return value.match(/^[A-Z2-7=]$/);
+					},
+					qrupdate: true,
+					flex: 4
 				    },
-				    qrupdate: true,
-				    padding: '5 5',
+				    {
+					xtype: 'button',
+					text: gettext('Randomize'),
+					reference: 'randomize_button',
+					handler: 'randomizeSecret',
+					flex: 1
+				    }]
 				},
 				{
 				    xtype: 'numberfield',
@@ -399,15 +411,6 @@ Ext.define('PVE.window.TFAEdit', {
     ],
 
     buttons: [
-	{
-	    text: gettext('Randomize'),
-	    reference: 'randomize-button',
-	    handler: 'randomizeSecret',
-	    bind: {
-		hidden: '{!in_totp_tab}',
-		disabled: '{!user_tfa}'
-	    }
-	},
 	{
 	    text: gettext('Apply'),
 	    handler: 'applySettings',
