@@ -333,7 +333,7 @@ Ext.define('PVE.window.TFAEdit', {
 				},
 				{
 				    xtype: 'textfield',
-				    fieldLabel: gettext('Account Name'),
+				    hidden: true,
 				    name: 'name',
 				    cbind: {
 					value: '{userid}',
