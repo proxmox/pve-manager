@@ -28,6 +28,7 @@ Ext.define('PVE.window.Restore', {
 	});
 
 	var IDfield;
+	var unique;
 	if (me.vmid) {
 	    IDfield = Ext.create('Ext.form.field.Display', {
 		name: 'vmid',
@@ -40,6 +41,11 @@ Ext.define('PVE.window.Restore', {
 		guestType: me.vmtype,
 		loadNextGuestID: true,
 		validateExists: false
+	    });
+	    unique = Ext.create('Proxmox.form.Checkbox', {
+		name: 'unique',
+		fieldLabel: gettext('Unique MAC address'),
+		checked: false
 	    });
 	}
 
@@ -61,7 +67,8 @@ Ext.define('PVE.window.Restore', {
 		    tag: 'div',
 		    'data-qtip': gettext("Use '0' to disable all bandwidth limits.")
 		}
-	    }
+	    },
+	    unique
 	];
 
 	/*jslint confusion: true*/
@@ -119,6 +126,7 @@ Ext.define('PVE.window.Restore', {
 		    vmid: me.vmid || values.vmid,
 		    force: me.vmid ? 1 : 0
 		};
+		if (values.unique) { params.unique = 1; }
 
 		if (values.bwlimit !== undefined) {
 		    params.bwlimit = values.bwlimit * 1024;
