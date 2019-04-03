@@ -17,7 +17,7 @@ Ext.define('PVE.window.TFAEdit', {
 
     updateQrCode: function() {
 	var me = this;
-	var values = me.lookup('totp-form').getValues();
+	var values = me.lookup('totp_form').getValues();
 	var algorithm = values.algorithm;
 	if (!algorithm) {
 	    algorithm = 'SHA1';
@@ -166,7 +166,7 @@ Ext.define('PVE.window.TFAEdit', {
 
 	applySettings: function() {
 	    var me = this;
-	    var values = me.lookup('totp-form').getValues();
+	    var values = me.lookup('totp_form').getValues();
 	    var params = {
 		userid: me.getView().userid,
 		action: 'new',
@@ -200,7 +200,7 @@ Ext.define('PVE.window.TFAEdit', {
 
 	deleteTFA: function() {
 	    var me = this;
-	    var values = me.lookup('totp-form').getValues();
+	    var values = me.lookup('totp_form').getValues();
 	    var params = {
 		userid: me.getView().userid,
 		action: 'delete'
@@ -240,7 +240,7 @@ Ext.define('PVE.window.TFAEdit', {
 		    data += String.fromCharCode(b-26 + 0x32);
 		}
 	    });
-	    me.lookup('tfa-secret').setValue(data);
+	    me.lookup('tfa_secret').setValue(data);
 	},
 
 	startU2FRegistration: function() {
@@ -290,7 +290,7 @@ Ext.define('PVE.window.TFAEdit', {
 			    xtype: 'form',
 			    layout: 'anchor',
 			    border: false,
-			    reference: 'totp-form',
+			    reference: 'totp_form',
 			    fieldDefaults: {
 				labelWidth: 120,
 				anchor: '100%',
@@ -379,7 +379,7 @@ Ext.define('PVE.window.TFAEdit', {
 		{
 		    title: 'U2F',
 		    itemId: 'u2f-panel',
-		    reference: 'u2f-panel',
+		    reference: 'u2f_panel',
 		    border: false,
 		    padding: '5 5',
 		    layout: {
@@ -430,7 +430,7 @@ Ext.define('PVE.window.TFAEdit', {
 	},
 	{
 	    text: gettext('Delete'),
-	    reference: 'delete-button',
+	    reference: 'delete_button',
 	    handler: 'deleteTFA',
 	    bind: {
 		disabled: '{tfa_required}'
