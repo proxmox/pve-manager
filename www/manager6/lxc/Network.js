@@ -56,6 +56,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    cdata.name = 'eth0';
 	    me.dataCache = {};
 	}
+	cdata.firewall =  (me.insideWizard || me.isCreate);
 
 	if (!me.dataCache) {
 	    throw "no dataCache specified";

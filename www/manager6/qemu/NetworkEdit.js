@@ -82,7 +82,8 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Firewall'),
-		name: 'firewall'
+		name: 'firewall',
+		checked: (me.insideWizard || me.isCreate)
 	    }
 	];
 
@@ -185,7 +186,8 @@ Ext.define('PVE.qemu.NetworkEdit', {
 
 	var ipanel = Ext.create('PVE.qemu.NetworkInputPanel', {
 	    confid: me.confid,
-	    nodename: nodename
+	    nodename: nodename,
+	    isCreate: me.isCreate
 	});
 
 	Ext.applyIf(me, {

@@ -638,7 +638,8 @@ Ext.define('PVE.qemu.HardwareView', {
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.NetworkEdit', {
 					url: '/api2/extjs/' + baseurl,
-					pveSelNode: me.pveSelNode
+					pveSelNode: me.pveSelNode,
+					isCreate: true
 				    });
 				    win.on('destroy', reload);
 				    win.show();
