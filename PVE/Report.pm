@@ -60,6 +60,9 @@ my $report_def = {
     ],
     disks => [
 	'lsblk --ascii',
+        'ls -l /dev/disk/by-*/',
+        'iscsiadm -m node',
+        'iscsiadm -m session',
     ],
     volumes => [
 	'pvs',
@@ -71,7 +74,14 @@ my $report_def = {
 my @report_order = ('general', 'storage', 'virtual guests', 'network',
 'firewall', 'cluster', 'bios', 'pci', 'disks', 'volumes');
 
-push @{$report_def->{volumes}}, 'zpool status', 'zfs list' if cmd_exists('zfs');
+push @{$report_def->{volumes}}, 'zpool status', 'zpool list -v', 'zfs list' if cmd_exists('zfs');
+
+
+if (-e '/etc/ceph/ceph.conf') {
+  my $crbd = eval "`ceph osd pool ls | sed -e 's/^/echo /' | sed 'p;s/echo/rbd ls/g'`";
+
+  push @{$report_def->{volumes}}, 'ceph status', 'ceph osd status', 'ceph df', 'pveceph status', 'pveceph lspools', $crbd;
+}
 
 push @{$report_def->{disk}}, 'multipath -ll', 'multipath -v3' if cmd_exists('multipath');
 
@@ -119,6 +129,7 @@ sub generate {
 
 	$report .= "\n==== $title ====\n";
 	foreach my $command (@$commands) {
+          print STDERR "Process ".$command."...";
 	    eval {
 		if (ref $command eq 'CODE') {
 		    PVE::Tools::run_with_timeout($cmd_timeout, $command);
@@ -126,7 +137,9 @@ sub generate {
 		    $report .= "\n# $command\n";
 		    PVE::Tools::run_command($command, %$run_cmd_params);
 		}
+                print STDERR "OK";
 	    };
+            print STDERR "\n";
 	    $report .= "\nERROR: $@\n" if $@;
 	}
     }
