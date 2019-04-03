@@ -368,7 +368,7 @@ Ext.define('PVE.window.TFAEdit', {
 			},
 			{
 			    xtype: 'textfield',
-			    fieldLabel: gettext('Code'),
+			    fieldLabel: gettext('Verification Code'),
 			    labelWidth: 120,
 			    reference: 'challenge',
 			    padding: '0 5',
