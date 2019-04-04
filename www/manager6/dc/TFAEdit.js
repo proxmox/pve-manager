@@ -145,13 +145,17 @@ Ext.define('PVE.window.TFAEdit', {
 		show: function() {
 		    var me = this.getView();
 		    me.down('#qrbox').getEl().appendChild(me.qrdiv);
-		    me.down('#qrbox').setVisible(false);
+		    if (!me.hasTFA) {
+			this.randomizeSecret();
+		    } else {
+			me.down('#qrbox').setVisible(false);
+			me.lookup('challenge').setVisible(false);
+		    }
 
 		    if (Proxmox.UserName === 'root@pam') {
 			me.lookup('password').setVisible(false);
 			me.lookup('password').setDisabled(true);
 		    }
-		    me.lookup('challenge').setVisible(false);
 		}
 	    },
 	    '#tfatabs': {
@@ -302,6 +306,7 @@ Ext.define('PVE.window.TFAEdit', {
 				    items: [{
 					xtype: 'textfield',
 					fieldLabel: gettext('Secret'),
+					emptyText: gettext('Unchanged'),
 					name: 'secret',
 					reference: 'tfa_secret',
 					validateValue: function(value) {

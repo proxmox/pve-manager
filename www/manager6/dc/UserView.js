@@ -1,3 +1,4 @@
+/*jslint confusion: true */
 Ext.define('PVE.dc.UserView', {
     extend: 'Ext.grid.GridPanel',
 
@@ -84,6 +85,7 @@ Ext.define('PVE.dc.UserView', {
 	    selModel: sm,
 	    handler: function(btn, event, rec) {
 		var win = Ext.create('PVE.window.TFAEdit',{
+                    hasTFA: rec.data.keys === 'x',
                     userid: rec.data.userid
 		});
 		win.on('destroy', reload);
