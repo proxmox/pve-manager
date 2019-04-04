@@ -18,27 +18,6 @@ Ext.define('PVE.window.LoginWindow', {
 		return;
 	    }
 
-	    var perform_u2f_fn;
-	    var finish_u2f_fn;
-
-	    var failure_fn = function(resp) {
-		view.el.unmask();
-		var handler = function() {
-		    var uf = me.lookupReference('usernameField');
-		    uf.focus(true, true);
-		};
-
-		Ext.MessageBox.alert(gettext('Error'),
-				     gettext("Login failed. Please try again"),
-				     handler);
-	    };
-
-	    var success_fn = function(data) {
-		var handler = view.handler || Ext.emptyFn;
-		handler.call(me, data);
-		view.close();
-	    };
-
 	    view.el.mask(gettext('Please wait...'), 'x-mask-loading');
 
 	    // set or clear username
@@ -52,70 +31,93 @@ Ext.define('PVE.window.LoginWindow', {
 
 	    form.submit({
 		failure: function(f, resp){
-		    failure_fn(resp);
+		    me.failure(resp);
 		},
 		success: function(f, resp){
 		    view.el.unmask();
 
 		    var data = resp.result.data;
 		    if (Ext.isDefined(data.U2FChallenge)) {
-			perform_u2f_fn(data);
+			me.perform_u2f(data);
 		    } else {
-			success_fn(data);
+			me.success(data);
 		    }
 		}
 	    });
 
-	    perform_u2f_fn = function(data) {
-		// Store first factor login information first:
-		data.LoggedOut = true;
-		Proxmox.Utils.setAuthData(data);
-		// Show the message:
-		var msg = Ext.Msg.show({
-		    title: 'U2F: '+gettext('Verification'),
-		    message: gettext('Please press the button on your U2F Device'),
-		    buttons: []
-		});
-		var chlg = data.U2FChallenge;
-		var key = {
-		    version: chlg.version,
-		    keyHandle: chlg.keyHandle
-		};
-		u2f.sign(chlg.appId, chlg.challenge, [key], function(res) {
-		    msg.close();
-		    if (res.errorCode) {
-			Proxmox.Utils.authClear();
-			Ext.Msg.alert(gettext('Error'), "U2F Error: "+res.errorCode);
-			return;
-		    }
-		    delete res.errorCode;
-		    finish_u2f_fn(res);
-		});
+	},
+	failure: function(resp) {
+	    var me = this;
+	    var view = me.getView();
+	    view.el.unmask();
+	    var handler = function() {
+		var uf = me.lookupReference('usernameField');
+		uf.focus(true, true);
 	    };
 
-	    finish_u2f_fn = function(res) {
-		view.el.mask(gettext('Please wait...'), 'x-mask-loading');
-		var params = { response: JSON.stringify(res) };
-		Proxmox.Utils.API2Request({
-		    url: '/api2/extjs/access/tfa',
-		    params: params,
-		    method: 'POST',
-		    timeout: 5000, // it'll delay both success & failure
-		    success: function(resp, opts) {
-			view.el.unmask();
-			// Fill in what we copy over from the 1st factor:
-			var data = resp.result.data;
-			data.CSRFPreventionToken = Proxmox.CSRFPreventionToken;
-			data.username = Proxmox.UserName;
-			// Finish logging in:
-			success_fn(data);
-		    },
-		    failure: function(resp, opts) {
-			Proxmox.Utils.authClear();
-			failure_fn(resp);
-		    }
-		});
+	    Ext.MessageBox.alert(gettext('Error'),
+				 gettext("Login failed. Please try again"),
+				 handler);
+	},
+	success: function(data) {
+	    var me = this;
+	    var view = me.getView();
+	    var handler = view.handler || Ext.emptyFn;
+	    handler.call(me, data);
+	    view.close();
+	},
+
+	perform_u2f: function(data) {
+	    var me = this;
+	    // Store first factor login information first:
+	    data.LoggedOut = true;
+	    Proxmox.Utils.setAuthData(data);
+	    // Show the message:
+	    var msg = Ext.Msg.show({
+		title: 'U2F: '+gettext('Verification'),
+		message: gettext('Please press the button on your U2F Device'),
+		buttons: []
+	    });
+	    var chlg = data.U2FChallenge;
+	    var key = {
+		version: chlg.version,
+		keyHandle: chlg.keyHandle
 	    };
+	    u2f.sign(chlg.appId, chlg.challenge, [key], function(res) {
+		msg.close();
+		if (res.errorCode) {
+		    Proxmox.Utils.authClear();
+		    Ext.Msg.alert(gettext('Error'), "U2F Error: "+res.errorCode);
+		    return;
+		}
+		delete res.errorCode;
+		me.finish_u2f(res);
+	    });
+	},
+	finish_u2f: function(res) {
+	    var me = this;
+	    var view = me.getView();
+	    view.el.mask(gettext('Please wait...'), 'x-mask-loading');
+	    var params = { response: JSON.stringify(res) };
+	    Proxmox.Utils.API2Request({
+		url: '/api2/extjs/access/tfa',
+		params: params,
+		method: 'POST',
+		timeout: 5000, // it'll delay both success & failure
+		success: function(resp, opts) {
+		    view.el.unmask();
+		    // Fill in what we copy over from the 1st factor:
+		    var data = resp.result.data;
+		    data.CSRFPreventionToken = Proxmox.CSRFPreventionToken;
+		    data.username = Proxmox.UserName;
+		    // Finish logging in:
+		    me.success(data);
+		},
+		failure: function(resp, opts) {
+		    Proxmox.Utils.authClear();
+		    me.failure(resp);
+		}
+	    });
 	},
 
 	control: {
