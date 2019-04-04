@@ -383,7 +383,7 @@ Ext.define('PVE.Parser', { statics: {
 	    if (match_res) {
 		data[match_res[1]] = match_res[2];
 	    } else if ((match_res = p.match(/^firewall=(\d+)$/)) !== null) {
-		data.firewall = match_res[1] !== "0" && match_res[1];
+		data.firewall = PVE.Parser.parseBoolean(match_res[1]);
 	    } else {
 		// todo: simply ignore errors ?
 		return; // continue
