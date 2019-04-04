@@ -379,12 +379,15 @@ Ext.define('PVE.Parser', { statics: {
 	    if (!p || p.match(/^\s*$/)) {
 		return; // continue
 	    }
-	    var match_res = p.match(/^(bridge|hwaddr|mtu|name|ip|ip6|gw|gw6|firewall|tag|rate)=(\S+)$/);
-	    if (!match_res) {
+	    var match_res = p.match(/^(bridge|hwaddr|mtu|name|ip|ip6|gw|gw6|tag|rate)=(\S+)$/);
+	    if (match_res) {
+		data[match_res[1]] = match_res[2];
+	    } else if ((match_res = p.match(/^firewall=(\d+)$/)) !== null) {
+		data.firewall = match_res[1] !== "0" && match_res[1];
+	    } else {
 		// todo: simply ignore errors ?
 		return; // continue
 	    }
-	    data[match_res[1]] = match_res[2];
 	});
 
 	return data;
