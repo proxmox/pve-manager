@@ -1,3 +1,49 @@
+pve-manager (5.4-1) unstable; urgency=medium
+
+  * fix #1145: Warn if datacenter firewall is disabled
+
+  * add host firewall config, ip route information, ceph, iSCSI and more
+    disk and ZFS information to pvereport
+
+  * fix #2132: gui: set vcpu default maxValue to 1
+
+  * pvestatd: preparation to rotate auth keys if necessary
+
+  * fix: # 2123 Logging of user defined firewall rules
+
+  * ui: show lock in status bar of vms/cts
+
+  * allow deletion of mac prefix
+
+  * use localhost instead of 127.0.0.1 to listen with spiceterm
+
+  * add tooltips to the tree
+
+  * ui: improve ceph installer
+
+  * ui: move VM BIOS and SCSI controller selection to hardware tab
+
+  * ui: allow to set VM machine type through hardware tab
+
+  * ui: VM command menu: rename suspend to pause
+
+  * ui: allow to hibernate (suspend to disk) VMs
+
+  * ui: allow to set the firewall log rate limit and burst
+
+  * fix: #1145 enable CT/VM NIC firewall by default on creation via WebUI,
+    so that only the one from the VM/CT options must be enabled
+
+  * ui: support user-settable u2f and TOTP authentication and
+    configuration
+
+  * ui: always show otp field on login
+
+  * fix: #1218 Expose unique MAC address generation on restore of VMs
+    and CTs in UI
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 04 Apr 2019 14:03:41 +0200
+
 pve-manager (5.3-12) unstable; urgency=medium
 
   * ui: fix popup behaviour in firefox with touchscreens on desktop
