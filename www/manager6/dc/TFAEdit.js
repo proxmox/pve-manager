@@ -104,7 +104,13 @@ Ext.define('PVE.window.TFAEdit', {
 	data: {
 	    in_totp_tab: true,
 	    tfa_required: false,
+	    has_tfa: false,
 	    u2f_available: true
+	},
+	formulas: {
+	    canDeleteTFA: function(get) {
+		return (get('has_tfa') && !get('tfa_required'));
+	    }
 	}
     },
 
@@ -144,7 +150,11 @@ Ext.define('PVE.window.TFAEdit', {
 	    '#': {
 		show: function() {
 		    var me = this.getView();
+		    var viewmodel = this.getViewModel();
+
 		    me.down('#qrbox').getEl().appendChild(me.qrdiv);
+
+		    viewmodel.set('has_tfa', me.hasTFA);
 		    if (!me.hasTFA) {
 			this.randomizeSecret();
 		    } else {
@@ -440,7 +450,7 @@ Ext.define('PVE.window.TFAEdit', {
 	    reference: 'delete_button',
 	    handler: 'deleteTFA',
 	    bind: {
-		disabled: '{tfa_required}'
+		disabled: '{!canDeleteTFA}'
 	    }
 	}
     ],
