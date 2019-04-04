@@ -157,6 +157,15 @@ Ext.define('PVE.dc.UserView', {
 		    dataIndex: 'firstname'
 		},
 		{
+		    header: 'TFA',
+		    width: 50,
+		    sortable: true,
+		    renderer: function(v) {
+			return Proxmox.Utils.format_boolean(v === 'x');
+		    },
+		    dataIndex: 'keys'
+		},
+		{
 		    header: gettext('Comment'),
 		    sortable: false,
 		    renderer: Ext.String.htmlEncode,
