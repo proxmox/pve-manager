@@ -146,7 +146,7 @@ Ext.define('PVE.dc.UserEdit', {
 		    xtype: 'textfield',
 		    name: 'comment',
 		    fieldLabel: gettext('Comment')
-		},
+		}
 	    ],
 	    advancedItems: [
 		{
