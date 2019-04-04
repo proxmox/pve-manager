@@ -130,8 +130,6 @@ Ext.define('PVE.window.TFAEdit', {
 		)
 	    );
 	}
-	//me.lookup('delete-button').setDisabled(has_tfa_configured);
-	//me.lookup('u2f-panel').setDisabled(has_tfa_configured);
     },
 
     controller: {
@@ -443,7 +441,6 @@ Ext.define('PVE.window.TFAEdit', {
 
 	me.qrdiv = document.createElement('center');
 	me.qrcode = new QRCode(me.qrdiv, {
-	    //text: "This is not the qr code you're looking for",
 	    width: 256,
 	    height: 256,
 	    correctLevel: QRCode.CorrectLevel.M

@@ -79,7 +79,7 @@ Ext.define('PVE.dc.UserView', {
 	});
 
 	var tfachange_btn = new Proxmox.button.Button({
-	    text: gettext('TFA'),
+	    text: 'TFA',
 	    disabled: true,
 	    selModel: sm,
 	    handler: function(btn, event, rec) {
