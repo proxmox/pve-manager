@@ -153,6 +153,12 @@ Ext.define('PVE.window.TFAEdit', {
 		    var me = this.getView();
 		    var viewmodel = this.getViewModel();
 
+		    me.qrdiv = document.createElement('center');
+		    me.qrcode = new QRCode(me.qrdiv, {
+			width: 256,
+			height: 256,
+			correctLevel: QRCode.CorrectLevel.M
+		    });
 		    me.down('#qrbox').getEl().appendChild(me.qrdiv);
 
 		    viewmodel.set('has_tfa', me.hasTFA);
@@ -390,7 +396,7 @@ Ext.define('PVE.window.TFAEdit', {
 			    labelWidth: 120,
 			    reference: 'challenge',
 			    padding: '0 5',
-			    emptyText: gettext('verify TOTP authentication code')
+			    emptyText: gettext('Scan QR code and enter TOTP auth. code to verify')
 			}
 		    ]
 		},
@@ -458,13 +464,6 @@ Ext.define('PVE.window.TFAEdit', {
 
     initComponent: function() {
 	var me = this;
-
-	me.qrdiv = document.createElement('center');
-	me.qrcode = new QRCode(me.qrdiv, {
-	    width: 256,
-	    height: 256,
-	    correctLevel: QRCode.CorrectLevel.M
-	});
 
 	var store = new Ext.data.Store({
 	    model: 'pve-domains',
