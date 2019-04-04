@@ -84,9 +84,10 @@ Ext.define('PVE.dc.UserView', {
 	    disabled: true,
 	    selModel: sm,
 	    handler: function(btn, event, rec) {
+		var d = rec.data;
 		var win = Ext.create('PVE.window.TFAEdit',{
-                    hasTFA: rec.data.keys === 'x',
-                    userid: rec.data.userid
+                    hasTFA: d.keys != undefined && d.keys.length,
+                    userid: d.userid
 		});
 		win.on('destroy', reload);
 		win.show();
@@ -163,7 +164,7 @@ Ext.define('PVE.dc.UserView', {
 		    width: 50,
 		    sortable: true,
 		    renderer: function(v) {
-			return Proxmox.Utils.format_boolean(v === 'x');
+			return Proxmox.Utils.format_boolean(v !== undefined && v.length);
 		    },
 		    dataIndex: 'keys'
 		},
