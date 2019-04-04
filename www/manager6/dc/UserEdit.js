@@ -120,19 +120,6 @@ Ext.define('PVE.dc.UserEdit', {
 	    }
 	];
 
-	var columnB = [
-	    {
-		xtype: 'textfield',
-		name: 'comment',
-		fieldLabel: gettext('Comment')
-	    },
-	    {
-		xtype: 'textfield',
-		name: 'keys',
-		fieldLabel: gettext('Key IDs')
-	    }
-	];
- 
         if (me.isCreate) {
             column1.splice(1,0,{
                 xtype: 'pveRealmComboBox',
@@ -154,7 +141,20 @@ Ext.define('PVE.dc.UserEdit', {
 	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	    column1: column1,
 	    column2: column2,
-	    columnB: columnB,
+	    columnB: [
+		{
+		    xtype: 'textfield',
+		    name: 'comment',
+		    fieldLabel: gettext('Comment')
+		},
+	    ],
+	    advancedItems: [
+		{
+		    xtype: 'textfield',
+		    name: 'keys',
+		    fieldLabel: gettext('Key IDs')
+		}
+	    ],
 	    onGetValues: function(values) {
 		// hack: ExtJS datefield does not submit 0, so we need to set that
 		if (!values.expire) {
