@@ -1,3 +1,4 @@
+/*global u2f*/
 Ext.define('PVE.window.LoginWindow', {
     extend: 'Ext.window.Window',
 
