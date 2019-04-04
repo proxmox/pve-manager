@@ -322,6 +322,8 @@ Ext.define('PVE.window.TFAEdit', {
 				    xtype: 'numberfield',
 				    fieldLabel: gettext('Time period'),
 				    name: 'step',
+				    // Google Authenticator ignores this and generates bogus data
+				    hidden: true,
 				    value: 30,
 				    minValue: 10,
 				    qrupdate: true
@@ -331,6 +333,8 @@ Ext.define('PVE.window.TFAEdit', {
 				    fieldLabel: gettext('Digits'),
 				    name: 'digits',
 				    value: 6,
+				    // Google Authenticator ignores this and generates bogus data
+				    hidden: true,
 				    minValue: 6,
 				    maxValue: 8,
 				    qrupdate: true
