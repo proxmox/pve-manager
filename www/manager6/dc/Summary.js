@@ -66,7 +66,16 @@ Ext.define('PVE.dc.Summary', {
 	    items: [
 		{
 		    itemId: 'subscriptions',
-		    xtype: 'pveHealthWidget'
+		    xtype: 'pveHealthWidget',
+		    userCls: 'pointer',
+		    listeners: {
+			element: 'el',
+			click: function() {
+			    if (this.component.userCls === 'pointer') {
+				window.open('https://www.proxmox.com/en/proxmox-ve/pricing', '_blank');
+			    }
+			}
+		    }
 		}
 	    ]
 	}
@@ -245,18 +254,21 @@ Ext.define('PVE.dc.Summary', {
 		    iconCls: PVE.Utils.get_health_icon('critical', true),
 		    text: gettext('You have at least one node without subscription.')
 		});
+		subs.setUserCls('pointer');
 	    } else if (level !== curlevel) {
 		subs.setData({
 		    title: gettext('Mixed Subscriptions'),
 		    iconCls: PVE.Utils.get_health_icon('warning', true),
 		    text: gettext('Warning: Your subscription levels are not the same.')
 		});
+		subs.setUserCls('pointer');
 	    } else {
 		subs.setData({
 		    title: PVE.Utils.render_support_level(level),
 		    iconCls: PVE.Utils.get_health_icon('good', true),
 		    text: gettext('Your subscription status is valid.')
 		});
+		subs.setUserCls('');
 	    }
 	});
 
