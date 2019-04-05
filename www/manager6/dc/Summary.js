@@ -229,7 +229,7 @@ Ext.define('PVE.dc.Summary', {
 		}
 
 		curlevel = records[i].get('level');
-		if (level === undefined) {
+		if (level === undefined || !curlevel) {
 		    level = curlevel;
 		    continue;
 		}
