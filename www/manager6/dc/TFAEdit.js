@@ -328,6 +328,7 @@ Ext.define('PVE.window.TFAEdit', {
 					reference: 'tfa_secret',
 					regex: /^[A-Z2-7=]+$/,
 					regexText: 'Must be base32 [A-Z2-7=]',
+					maskRe: /[A-Z2-7=]/,
 					qrupdate: true,
 					flex: 4
 				    },
