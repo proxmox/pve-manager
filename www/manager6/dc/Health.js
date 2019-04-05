@@ -19,7 +19,8 @@ Ext.define('PVE.dc.Health', {
 	}
     },
 
-    cepherrors: 0,
+    nodeList: [],
+    nodeIndex: 0,
 
     updateStatus: function(store, records, success) {
 	var me = this;
@@ -76,18 +77,17 @@ Ext.define('PVE.dc.Health', {
 	    if (cephstatus.isVisible()) {
 		return;
 	    }
-	    me.cepherrors++;
 
-	    // after 3 unsuccessful tries of
-	    // /nodes/localhost/ceph/status
-	    // we give up (there probably is no ceph installed)
-	    if (me.cepherrors >= 3) {
+	    // try all nodes until we either get a successfull api call,
+	    // or we tried all nodes
+	    if (++me.nodeIndex >= me.nodeList.length) {
 		me.cephstore.stopUpdate();
+	    } else {
+		store.getProxy().setUrl('/api2/json/nodes/' + me.nodeList[me.nodeIndex].node + '/ceph/status');
 	    }
+
 	    return;
 	}
-
-	me.cepherrors = 0;
 
 	var state = PVE.Utils.render_ceph_health(records[0].data.health || {});
 	cephstatus.updateHealth(state);
@@ -141,24 +141,15 @@ Ext.define('PVE.dc.Health', {
 	    listeners: {
 		element: 'el',
 		click: function() {
-		    var me = this;
+		    var me = this.component.up('pveDcHealth');
 		    var sp = Ext.state.Manager.getProvider();
 
 		    // preselect the ceph tab
 		    sp.set('nodetab', {value:'ceph'});
 
-		    // select the first node which is online
-		    var nodeid = '';
-		    var nodes = PVE.data.ResourceStore.getNodes();
-		    Ext.Array.some(nodes, function(node) {
-			if (node.running) {
-			    nodeid = node.id;
-			    return true;
-			}
-
-			return false;
-		    });
-		    Ext.ComponentQuery.query('pveResourceTree')[0].selectById(nodeid);
+		    // select the node that had the successfull api call
+		    var id = me.nodeList[me.nodeIndex].id;
+		    Ext.ComponentQuery.query('pveResourceTree')[0].selectById(id);
 		}
 	    }
 	}
@@ -167,16 +158,18 @@ Ext.define('PVE.dc.Health', {
     initComponent: function() {
 	var me = this;
 
+	me.nodeList = PVE.data.ResourceStore.getNodes();
+	me.nodeIndex = 0;
 	me.cephstore = Ext.create('Proxmox.data.UpdateStore', {
 	    interval: 3000,
 	    storeid: 'pve-cluster-ceph',
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/localhost/ceph/status'
+		url: '/api2/json/nodes/' + me.nodeList[me.nodeIndex].node + '/ceph/status'
 	    }
 	});
 	me.callParent();
-	me.cephstore.startUpdate();
 	me.mon(me.cephstore, 'load', me.updateCeph, me);
+	me.cephstore.startUpdate();
     }
 });
