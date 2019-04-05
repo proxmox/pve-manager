@@ -158,7 +158,7 @@ Ext.define('PVE.qemu.Config', {
 		    handler: function() {
 			vm_command("suspend", { todisk: 1 });
 		    },
-		    iconCls: 'fa fa-stop'
+		    iconCls: 'fa fa-download'
 		},{
 		    text: gettext('Stop'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
