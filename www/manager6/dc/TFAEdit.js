@@ -25,7 +25,7 @@ Ext.define('PVE.window.TFAEdit', {
 	}
 
 	me.qrcode.makeCode(
-	    'otpauth://totp/' + encodeURIComponent(values.name) +
+	    'otpauth://totp/' + encodeURIComponent(me.userid) +
 	    '?secret=' + values.secret +
 	    '&period=' + values.step +
 	    '&digits=' + values.digits +
@@ -327,7 +327,6 @@ Ext.define('PVE.window.TFAEdit', {
 			    items: [
 				{
 				    xtype: 'displayfield',
-				    name: 'name',
 				    fieldLabel: gettext('User name'),
 				    cbind: {
 					value: '{userid}'
