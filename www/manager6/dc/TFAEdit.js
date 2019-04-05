@@ -321,7 +321,6 @@ Ext.define('PVE.window.TFAEdit', {
 			    border: false,
 			    reference: 'totp_form',
 			    fieldDefaults: {
-				labelWidth: 120,
 				anchor: '100%',
 				padding: '0 5'
 			    },
@@ -329,7 +328,7 @@ Ext.define('PVE.window.TFAEdit', {
 				{
 				    layout: 'hbox',
 				    border: false,
-				    padding: '5 0',
+				    padding: '0 0 5 0',
 				    items: [{
 					xtype: 'textfield',
 					fieldLabel: gettext('Secret'),
@@ -403,7 +402,6 @@ Ext.define('PVE.window.TFAEdit', {
 			{
 			    xtype: 'textfield',
 			    fieldLabel: gettext('Verification Code'),
-			    labelWidth: 120,
 			    allowBlank: false,
 			    reference: 'challenge',
 			    padding: '0 5',
