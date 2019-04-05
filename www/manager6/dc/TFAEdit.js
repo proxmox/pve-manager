@@ -155,7 +155,8 @@ Ext.define('PVE.window.TFAEdit', {
 		    var viewModel = me.getViewModel();
 		    var form = me.lookup('totp_form');
 		    var challenge = me.lookup('challenge');
-		    viewModel.set('valid', form.isValid() && challenge.isValid());
+		    var password = me.lookup('password');
+		    viewModel.set('valid', form.isValid() && challenge.isValid() && password.isValid());
 		}
 	    },
 	    '#': {
@@ -436,8 +437,9 @@ Ext.define('PVE.window.TFAEdit', {
 	    fieldLabel: gettext('Password'),
 	    minLength: 5,
 	    reference: 'password',
-	    padding: '0 5',
-	    labelWidth: 120,
+	    allowBlank: false,
+	    validateBlank: true,
+	    padding: '0 0 5 5',
 	    emptyText: gettext('verify current password')
 	}
     ],
