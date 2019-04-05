@@ -106,6 +106,7 @@ Ext.define('PVE.window.TFAEdit', {
 	    in_totp_tab: true,
 	    tfa_required: false,
 	    has_tfa: false,
+	    valid: false,
 	    u2f_available: true
 	},
 	formulas: {
@@ -146,6 +147,15 @@ Ext.define('PVE.window.TFAEdit', {
 		change: function() {
 		    var me = this.getView();
 		    me.updateQrCode();
+		}
+	    },
+	    'field': {
+		validitychange: function(field, valid) {
+		    var me = this;
+		    var viewModel = me.getViewModel();
+		    var form = me.lookup('totp_form');
+		    var challenge = me.lookup('challenge');
+		    viewModel.set('valid', form.isValid() && challenge.isValid());
 		}
 	    },
 	    '#': {
@@ -394,6 +404,7 @@ Ext.define('PVE.window.TFAEdit', {
 			    xtype: 'textfield',
 			    fieldLabel: gettext('Verification Code'),
 			    labelWidth: 120,
+			    allowBlank: false,
 			    reference: 'challenge',
 			    padding: '0 5',
 			    emptyText: gettext('Scan QR code and enter TOTP auth. code to verify')
@@ -441,7 +452,7 @@ Ext.define('PVE.window.TFAEdit', {
 	    handler: 'applySettings',
 	    bind: {
 		hidden: '{!in_totp_tab}',
-		disabled: '{!user_tfa}'
+		disabled: '{!valid}'
 	    }
 	},
 	{
