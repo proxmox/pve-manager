@@ -326,6 +326,14 @@ Ext.define('PVE.window.TFAEdit', {
 			    },
 			    items: [
 				{
+				    xtype: 'displayfield',
+				    name: 'name',
+				    fieldLabel: gettext('User name'),
+				    cbind: {
+					value: '{userid}'
+				    }
+				},
+				{
 				    layout: 'hbox',
 				    border: false,
 				    padding: '0 0 5 0',
@@ -375,15 +383,6 @@ Ext.define('PVE.window.TFAEdit', {
 				    fieldLabel: gettext('Issuer Name'),
 				    name: 'issuer',
 				    value: 'Proxmox Web UI',
-				    qrupdate: true
-				},
-				{
-				    xtype: 'textfield',
-				    hidden: true,
-				    name: 'name',
-				    cbind: {
-					value: '{userid}'
-				    },
 				    qrupdate: true
 				}
 			    ]
