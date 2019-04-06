@@ -4,19 +4,6 @@ Description: News displayed on the admin interface
   For more information please visit our homepage at
   <a href='http://www.proxmox.com' target='_blank'>www.proxmox.com</a>
 
-Package: alpine-3.6-default
-Version: 20180913
-Type: lxc
-OS: alpine
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/alpine-3.6-default_20180913_amd64.tar.xz
-md5sum: 9856953055b6399d7cff8d00f9e5c333
-sha512sum: 3c6c476ac68a4a9c80dd15649a9e95d63718684e798de4bc562488cca938a9222ef9fbc3f80310e65862097538e5740f9d8462efadb0789fbdee0655627770d0
-Infopage: https://linuxcontainers.org
-Description: LXC default image for alpine 3.6 (20180913)
-
 Package: alpine-3.7-default
 Version: 20180913
 Type: lxc
@@ -42,6 +29,19 @@ md5sum: 80ab745fc2556d021210f4af583c049d
 sha512sum: d17b389918028574a94f2a41b0724a63706ec18433dcc317b298b821f1d5b24819d07ea68ca5f70b01d40bb45b0c869a5f6b565d37cb577dd6933cf79c11abbc
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.8 (20180913)
+
+Package: alpine-3.9-default
+Version: 20190224
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.9-default_20190224_amd64.tar.xz
+md5sum: 07e6250a1dda60222380196ed75b5078
+sha512sum: 7929bd76c96f627933a98e8b2803c47af36f52b7de6487c88db2f90036f57af002fd5160d0d68ca0e0d21a604d9aecb931b1b4ca4b63d27ff93abf5cbcc97686
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.9 (20190224)
 
 Package: archlinux-base
 Version: 20190124-1
@@ -175,6 +175,20 @@ md5sum: 973b8f88de551a51d2ccf585143734fa
 sha512sum: 245bcd7ed4751b40d680752cfc1b696a724c4857914752cd05459e16cacf10e6372398f2b0eb073551726955396b0503733c74695c51e7143972a0a55d6c7744
 Infopage: https://linuxcontainers.org
 Description: LXC default image for opensuse 42.3 (20171214)
+
+Package: proxmox-mailgateway-5.2-standard
+Version: 5.2-1
+Type: lxc
+OS: debian-9.0
+Section: mail
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: mail/proxmox-mailgateway-5.2-standard_5.2-1_amd64.tar.gz
+md5sum: dd67548057db0c59a3b3b86a52e4929d
+sha512sum: 02fb403d15a0ed193e159b886954f3b6a27002558da7d0195c5c515b506b1e2a4baca9634c68045728606eb886c4ae9f145a921fb19b5206527deba739f99582
+Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
+Description: Proxmox Mailgateway 5.2
+ A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
 Package: ubuntu-14.04-standard
 Version: 14.04.5-1
