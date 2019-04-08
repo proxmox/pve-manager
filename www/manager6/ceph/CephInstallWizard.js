@@ -53,7 +53,8 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		'<p><b>Ceph</b> is currently <b>not installed</b> on this node, click on the next button below to start the installation.'+
 		' This wizard will guide you through the necessary steps, after the initial installation you will be offered to create a initial configuration.'+
 		' The configuration step is only needed once per cluster and will be skipped if a config is already present.</p>'+
-		'<p>Please take a look at our documentation, by clicking the help button below, before starting the installation, if you want to gain deeper knowledge about Ceph visit <a href="http://docs.ceph.com/docs/master/">ceph.com</a>.</p>',
+		'<p>Please take a look at our documentation, by clicking the help button below, before starting the installation, '+
+		'if you want to gain deeper knowledge about Ceph visit <a target="_blank" href="http://docs.ceph.com/docs/master/">ceph.com</a>.</p>',
 		listeners: {
 		    activate: function() {
 			// notify owning container that it should display a help button
