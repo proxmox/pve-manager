@@ -151,18 +151,6 @@ Ext.define('PVE.window.LoginWindow', {
 		    }
 		}
 	    },
-	    'field[name=realm]': {
-		change: function(f, value) {
-		    var otp_field = this.lookupReference('otpField');
-		    if (f.needOTP(value)) {
-			otp_field.setVisible(true);
-			otp_field.setDisabled(false);
-		    } else {
-			otp_field.setVisible(false);
-			otp_field.setDisabled(true);
-		    }
-		}
-	    },
 	    'field[name=lang]': {
 		change: function(f, value) {
 		    var dt = Ext.Date.add(new Date(), Ext.Date.YEAR, 10);
@@ -240,14 +228,6 @@ Ext.define('PVE.window.LoginWindow', {
 		fieldLabel: gettext('Password'),
 		name: 'password',
 		reference: 'passwordField'
-	    },
-	    {
-		xtype: 'textfield',
-		fieldLabel: gettext('OTP'),
-		name: 'otp',
-		reference: 'otpField',
-		allowBlank: false,
-		hidden: true
 	    },
 	    {
 		xtype: 'pveRealmComboBox',
