@@ -80,10 +80,12 @@ sub auth_handler {
 
 	die "No ticket\n" if !$ticket;
 
-	($username, $age, my $challenge) = PVE::AccessControl::verify_ticket($ticket);
+	($username, $age, my $tfa_info) = PVE::AccessControl::verify_ticket($ticket);
 
-	if (defined($challenge)) {
-	    $rpcenv->set_u2f_challenge($challenge);
+	if (defined($tfa_info)) {
+	    if (defined(my $challenge = $tfa_info->{challenge})) {
+		$rpcenv->set_u2f_challenge($challenge);
+	    }
 	    die "No ticket\n"
 		if ($rel_uri ne '/access/tfa' || $method ne 'POST');
 	}
