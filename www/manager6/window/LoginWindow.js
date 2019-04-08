@@ -37,8 +37,16 @@ Ext.define('PVE.window.LoginWindow', {
 		    view.el.unmask();
 
 		    var data = resp.result.data;
-		    if (Ext.isDefined(data.U2FChallenge)) {
-			me.perform_u2f(data);
+		    if (Ext.isDefined(data.NeedTFA)) {
+			// Store first factor login information first:
+			data.LoggedOut = true;
+			Proxmox.Utils.setAuthData(data);
+
+			if (Ext.isDefined(data.U2FChallenge)) {
+			    me.perform_u2f(data);
+			} else {
+			    me.perform_otp();
+			}
 		    } else {
 			me.success(data);
 		    }
@@ -67,11 +75,23 @@ Ext.define('PVE.window.LoginWindow', {
 	    view.close();
 	},
 
+	perform_otp: function() {
+	    var me = this;
+	    var win = Ext.create('PVE.window.TFALoginWindow', {
+		onLogin: function(value) {
+		    me.finish_tfa(value);
+		},
+		onCancel: function() {
+		    Proxmox.LoggedOut = false;
+		    Proxmox.Utils.authClear();
+		    me.getView().show();
+		}
+	    });
+	    win.show();
+	},
+
 	perform_u2f: function(data) {
 	    var me = this;
-	    // Store first factor login information first:
-	    data.LoggedOut = true;
-	    Proxmox.Utils.setAuthData(data);
 	    // Show the message:
 	    var msg = Ext.Msg.show({
 		title: 'U2F: '+gettext('Verification'),
@@ -91,14 +111,14 @@ Ext.define('PVE.window.LoginWindow', {
 		    return;
 		}
 		delete res.errorCode;
-		me.finish_u2f(res);
+		me.finish_tfa(JSON.stringify(res));
 	    });
 	},
-	finish_u2f: function(res) {
+	finish_tfa: function(res) {
 	    var me = this;
 	    var view = me.getView();
 	    view.el.mask(gettext('Please wait...'), 'x-mask-loading');
-	    var params = { response: JSON.stringify(res) };
+	    var params = { response: res };
 	    Proxmox.Utils.API2Request({
 		url: '/api2/extjs/access/tfa',
 		params: params,
@@ -260,3 +280,52 @@ Ext.define('PVE.window.LoginWindow', {
 	]
     }]
  });
+Ext.define('PVE.window.TFALoginWindow', {
+    extend: 'Ext.window.Window',
+
+    modal: true,
+    resizable: false,
+    title: gettext('Two Factor Authentication'),
+    layout: 'form',
+    defaultButton: 'loginButton',
+    defaultFocus: 'otpField',
+
+    controller: {
+	xclass: 'Ext.app.ViewController',
+	login: function() {
+	    var me = this;
+	    var view = me.getView();
+	    view.onLogin(me.lookup('otpField').value);
+	    view.close();
+	},
+	cancel: function() {
+	    var me = this;
+	    var view = me.getView();
+	    view.onCancel();
+	    view.close();
+	}
+    },
+
+    items: [
+	{
+	    xtype: 'textfield',
+	    fieldLabel: gettext('Please enter your OTP token:'),
+	    name: 'otp',
+	    itemId: 'otpField',
+	    reference: 'otpField',
+	    allowBlank: false,
+	},
+    ],
+
+    buttons: [
+	{
+	    text: gettext('Login'),
+	    reference: 'loginButton',
+	    handler: 'login'
+	},
+	{
+	    text: gettext('Cancel'),
+	    handler: 'cancel'
+	}
+    ]
+});
