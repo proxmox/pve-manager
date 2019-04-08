@@ -1,3 +1,19 @@
+pve-manager (5.4-2) unstable; urgency=medium
+
+  * improve user TFA editing
+
+  * all TFA logins are now provided as two steps in the WebUI, first
+    common login credentials then, if configured, TFA. The OTP field
+    from the login window got removed, it is not necessary anymore.
+
+  * update shipped aplinfo index
+
+  * pvereport: only compute report def if we generate a report
+
+  * add onlineHelp for new WebUI windows and panels
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 08 Apr 2019 17:42:20 +0200
+
 pve-manager (5.4-1) unstable; urgency=medium
 
   * fix #1145: Warn if datacenter firewall is disabled
