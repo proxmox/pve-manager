@@ -26,7 +26,7 @@ my $find_mon_ip = sub {
     }
 
     my $allowed_ips = PVE::Network::get_local_ip_from_cidr($pubnet);
-    die "No IP configured and up from ceph public network '$pubnet'\n"
+    die "No active IP configuration for the ceph public network '$pubnet' found\n"
 	if scalar(@$allowed_ips) < 1;
 
     if (!$overwrite_ip) {
