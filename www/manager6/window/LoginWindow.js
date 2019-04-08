@@ -135,13 +135,12 @@ Ext.define('PVE.window.LoginWindow', {
 		change: function(f, value) {
 		    var otp_field = this.lookupReference('otpField');
 		    if (f.needOTP(value)) {
-			otp_field.setConfig('allowBlank', false);
-			otp_field.setEmptyText(gettext('2nd factor'));
+			otp_field.setVisible(true);
+			otp_field.setDisabled(false);
 		    } else {
-			otp_field.setConfig('allowBlank', true);
-			otp_field.setEmptyText(gettext('2nd factor, if required'));
+			otp_field.setVisible(false);
+			otp_field.setDisabled(true);
 		    }
-		    otp_field.validate();
 		}
 	    },
 	    'field[name=lang]': {
@@ -227,8 +226,8 @@ Ext.define('PVE.window.LoginWindow', {
 		fieldLabel: gettext('OTP'),
 		name: 'otp',
 		reference: 'otpField',
-		allowBlank: true,
-		emptyText: gettext('2nd factor, if required')
+		allowBlank: false,
+		hidden: true
 	    },
 	    {
 		xtype: 'pveRealmComboBox',
