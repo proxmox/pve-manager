@@ -4,6 +4,8 @@ Ext.define('PVE.window.TFAEdit', {
     extend: 'Ext.window.Window',
     mixins: ['Proxmox.Mixin.CBind'],
 
+    onlineHelp: 'pveum_tfa_auth', // fake to ensure this gets a link target
+
     modal: true,
     resizable: false,
     title: gettext('Two Factor Authentication'),
@@ -446,6 +448,10 @@ Ext.define('PVE.window.TFAEdit', {
 
     buttons: [
 	{
+	    xtype: 'proxmoxHelpButton'
+	},
+	'->',
+	{
 	    text: gettext('Apply'),
 	    handler: 'applySettings',
 	    bind: {
@@ -488,5 +494,7 @@ Ext.define('PVE.window.TFAEdit', {
 	Ext.apply(me, { store: store });
 
 	me.callParent();
+
+	Ext.GlobalEvents.fireEvent('proxmoxShowHelp', 'pveum_tfa_auth');
     }
 });
