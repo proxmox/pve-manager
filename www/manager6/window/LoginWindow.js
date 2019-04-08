@@ -265,7 +265,7 @@ Ext.define('PVE.window.TFALoginWindow', {
 
     modal: true,
     resizable: false,
-    title: gettext('Two Factor Authentication'),
+    title: 'Two-Factor Authentication',
     layout: 'form',
     defaultButton: 'loginButton',
     defaultFocus: 'otpField',
@@ -289,7 +289,7 @@ Ext.define('PVE.window.TFALoginWindow', {
     items: [
 	{
 	    xtype: 'textfield',
-	    fieldLabel: gettext('Please enter your OTP token:'),
+	    fieldLabel: gettext('Please enter your OTP verification code:'),
 	    name: 'otp',
 	    itemId: 'otpField',
 	    reference: 'otpField',
