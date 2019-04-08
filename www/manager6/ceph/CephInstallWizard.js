@@ -311,7 +311,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		onlineHelp: 'pve_ceph_install',
 		html: '<h3>Installation successful!</h3>'+
 		'<p>The basic installation and configuration is completed, depending on your setup some of the following steps are required to start using Ceph:</p>'+
-		'<ol><li>Create additional Ceph Monitors</li><li>Create Ceph OSDs</li><li>Create Ceph Pools</li></ol>'+
+		'<ol><li>Install Ceph on all other participant Ceph Nodes</li><li>Create additional Ceph Monitors</li><li>Create Ceph OSDs</li><li>Create Ceph Pools</li></ol>'+
 		'<p>To learn more click on the help button below.</p>',
 		listeners: {
 		    activate: function() {
