@@ -80,7 +80,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 	    },
 	    {
 		text: gettext('Hibernate'),
-		iconCls: 'fa fa-fw fa-stop',
+		iconCls: 'fa fa-fw fa-download',
 		hidden: stopped || suspended,
 		disabled: stopped || suspended,
 		tooltip: gettext('Suspend to disk'),
