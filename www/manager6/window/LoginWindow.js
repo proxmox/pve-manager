@@ -293,8 +293,8 @@ Ext.define('PVE.window.TFALoginWindow', {
 	    name: 'otp',
 	    itemId: 'otpField',
 	    reference: 'otpField',
-	    allowBlank: false,
-	},
+	    allowBlank: false
+	}
     ],
 
     buttons: [
