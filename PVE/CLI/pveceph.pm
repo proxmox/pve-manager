@@ -151,13 +151,18 @@ __PACKAGE__->register_method ({
 
 	if (PVE::Ceph::Tools::systemd_managed() && ! -e '/etc/systemd/system/ceph.service') {
 	    #to disable old SysV init scripts.
-	    print "replacing ceph init script with own ceph.service\n";
+	    print "\nreplacing ceph init script with own ceph.service\n";
 	    eval {
 		PVE::Tools::run_command('cp -v /usr/share/doc/pve-manager/examples/ceph.service /etc/systemd/system/ceph.service');
 		PVE::Tools::run_command('systemctl daemon-reload');
 		PVE::Tools::run_command('systemctl enable ceph.service');
 	    };
-	    warn "could not install ceph.service\n" if $@;
+	    my $err = $@;
+	    if (!$err) {
+		print "\ninstalled ceph.service successfully\n";
+	    } else {
+		warn "could not install ceph.service\n";
+	    }
 	}
 
 	return undef;
