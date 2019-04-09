@@ -51,6 +51,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	}
 
 	var caps = Ext.state.Manager.get('GuiCap');
+	var diskCap = caps.vms['VM.Config.Disk'];
 
 	/*jslint confusion: true */
 	var rows = {
@@ -325,6 +326,9 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    var editor = rowdef.editor;
 	    if (rowdef.tdCls == 'pve-itype-icon-storage') {
+		if (!diskCap) {
+		    return;
+		}
 		var value = me.getObjectValue(rec.data.key, '', true); 
 		if (value.match(/vm-.*-cloudinit/)) {
 		    return;
@@ -581,15 +585,15 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    var isEfi = (key === 'efidisk0');
 
-	    remove_btn.setDisabled(rec.data['delete'] || (rowdef.never_delete === true));
+	    remove_btn.setDisabled(rec.data['delete'] || (rowdef.never_delete === true) || (isUnusedDisk && !diskCap));
 	    remove_btn.setText((isUsedDisk && !isCloudInit) ? remove_btn.altText : remove_btn.defaultText);
 	    remove_btn.RESTMethod = isUnusedDisk ? 'POST':'PUT';
 
-	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor || isCloudInit);
+	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor || isCloudInit || !diskCap);
 
-	    resize_btn.setDisabled(pending || !isUsedDisk);
+	    resize_btn.setDisabled(pending || !isUsedDisk || !diskCap);
 
-	    move_btn.setDisabled(pending || !isUsedDisk);
+	    move_btn.setDisabled(pending || !isUsedDisk || !diskCap);
 
 	    revert_btn.setDisabled(!pending);
 

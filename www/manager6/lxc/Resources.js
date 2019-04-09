@@ -31,6 +31,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	}
 
 	var caps = Ext.state.Manager.get('GuiCap');
+	var diskCap = caps.vms['VM.Config.Disk'];
 
 	var mpeditor = caps.vms['VM.Config.Disk'] ? 'PVE.lxc.MountPointEdit' : undefined;
 
@@ -238,9 +239,9 @@ Ext.define('PVE.lxc.RessourceView', {
 	    }
 	    edit_btn.setDisabled(noedit);
 
-	    remove_btn.setDisabled(!isDisk || rec.data.key === 'rootfs');
-	    resize_btn.setDisabled(!isDisk);
-	    move_btn.setDisabled(!isDisk);
+	    remove_btn.setDisabled(!isDisk || rec.data.key === 'rootfs' || !diskCap);
+	    resize_btn.setDisabled(!isDisk || !diskCap);
+	    move_btn.setDisabled(!isDisk || !diskCap);
 
 	};
 	
@@ -277,6 +278,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    tbar: [
 		{
 		    text: gettext('Add'),
+		    disabled: !diskCap,
 		    menu: new Ext.menu.Menu({
 			items: [
 			    {
