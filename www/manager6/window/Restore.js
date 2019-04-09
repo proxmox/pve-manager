@@ -38,7 +38,7 @@ Ext.define('PVE.window.Restore', {
 	    IDfield = Ext.create('PVE.form.GuestIDSelector', {
 		name: 'vmid',
 		guestType: me.vmtype,
-		loadNextGuestID: true,
+		loadNextFreeID: true,
 		validateExists: false
 	    });
 	}
