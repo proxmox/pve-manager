@@ -278,7 +278,6 @@ Ext.define('PVE.lxc.RessourceView', {
 	    tbar: [
 		{
 		    text: gettext('Add'),
-		    disabled: !diskCap,
 		    menu: new Ext.menu.Menu({
 			items: [
 			    {
