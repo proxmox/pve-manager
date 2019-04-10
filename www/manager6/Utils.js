@@ -246,7 +246,7 @@ Ext.define('PVE.Utils', { utilities: {
 
     render_dc_ha_opts: function(value) {
 	if (!value) {
-	    return Proxmox.Utils.defaultText + ' (conditional)';
+	    return Proxmox.Utils.defaultText;
 	} else {
 	    return PVE.Parser.printPropertyString(value);
 	}
