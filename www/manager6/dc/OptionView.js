@@ -1,3 +1,4 @@
+ /*jslint confusion: true*/
 Ext.define('PVE.dc.OptionView', {
     extend: 'Proxmox.grid.ObjectGrid',
     alias: ['widget.pveDcOptionView'],
@@ -6,8 +7,52 @@ Ext.define('PVE.dc.OptionView', {
 
     monStoreErrors: true,
 
+    add_inputpanel_row: function(name, text, opts) {
+	var me = this;
+
+	opts = opts || {};
+	me.rows = me.rows || {};
+
+	var canEdit = (opts.caps === undefined || opts.caps);
+	me.rows[name] = {
+	    required: true,
+	    defaultValue: opts.defaultValue,
+	    header: text,
+	    renderer: opts.renderer,
+	    editor: canEdit ? {
+		xtype: 'proxmoxWindowEdit',
+		width: 350,
+		subject: text,
+		fieldDefaults: {
+		    labelWidth: opts.labelWidth || 100
+		},
+		setValues: function(values) {
+		    var edit_value = values[name];
+		    Ext.Array.each(this.query('inputpanel'), function(panel) {
+			panel.setValues(edit_value);
+		    });
+		},
+		url: opts.url,
+		items: [{
+		    xtype: 'inputpanel',
+		    onGetValues: function(values) {
+			if (values === undefined || Object.keys(values).length === 0) {
+			    return { 'delete': name };
+			}
+			var ret_val = {};
+			ret_val[name] = PVE.Parser.printPropertyString(values);
+			return ret_val;
+		    },
+		    items: opts.items
+		}]
+	    } : undefined
+	};
+    },
+
     initComponent : function() {
 	var me = this;
+
+	var caps = Ext.state.Manager.get('GuiCap');
 
 	me.add_combobox_row('keyboard', gettext('Keyboard Layout'), {
 	    renderer: PVE.Utils.render_kvm_language,
@@ -36,6 +81,28 @@ Ext.define('PVE.dc.OptionView', {
 	    vtype: 'MacPrefix',
 	    defaultValue: Proxmox.Utils.noneText
 	});
+	me.add_inputpanel_row('ha', gettext('HA Settings'), {
+	    renderer: PVE.Utils.render_dc_ha_opts,
+	    caps: caps.vms['Sys.Modify'],
+	    labelWidth: 120,
+	    url: "/api2/extjs/cluster/options",
+	    items: [{
+		xtype: 'proxmoxKVComboBox',
+		name: 'shutdown_policy',
+		fieldLabel: gettext('Shutdown Policy'),
+		deleteEmpty: false,
+		value: '__default__',
+		comboItems: [
+		    ['__default__', PVE.Utils.render_dc_ha_opts('')],
+		    ['freeze', 'freeze'],
+		    ['failover', 'failover'],
+		    ['conditional', 'conditional']
+		],
+		defaultValue: '__default__'
+	    }]
+	});
+
+	// TODO: bwlimits, migration net, u2f?
 
 	me.selModel = Ext.create('Ext.selection.RowModel', {});
 

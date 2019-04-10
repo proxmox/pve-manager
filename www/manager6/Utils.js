@@ -244,6 +244,14 @@ Ext.define('PVE.Utils', { utilities: {
 	}
     },
 
+    render_dc_ha_opts: function(value) {
+	if (!value) {
+	    return Proxmox.Utils.defaultText + ' (conditional)';
+	} else {
+	    return PVE.Parser.printPropertyString(value);
+	}
+    },
+
     render_scsihw: function(value) {
 	if (!value) {
 	    return Proxmox.Utils.defaultText + ' (LSI 53C895A)';
