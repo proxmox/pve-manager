@@ -40,16 +40,9 @@ Ext.define('PVE.window.TFAEdit', {
     },
 
     showError: function(error) {
-	var ErrorNames = {
-	    '1': gettext('Other Error'),
-	    '2': gettext('Bad Request'),
-	    '3': gettext('Configuration Unsupported'),
-	    '4': gettext('Device Ineligible'),
-	    '5': gettext('Timeout')
-	};
 	Ext.Msg.alert(
 	    gettext('Error'),
-	    "U2F Error: " + (ErrorNames[error] || Proxmox.Utils.unknownText)
+	    PVE.Utils.render_u2f_error(error)
 	);
     },
 
