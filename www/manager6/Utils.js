@@ -251,6 +251,10 @@ Ext.define('PVE.Utils', { utilities: {
 	    return PVE.Parser.printPropertyString(value);
 	}
     },
+    render_as_property_string: function(value) {
+	return (!value) ? Proxmox.Utils.defaultText
+	    : PVE.Parser.printPropertyString(value);
+    },
 
     render_scsihw: function(value) {
 	if (!value) {

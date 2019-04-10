@@ -27,6 +27,7 @@ Ext.define('PVE.dc.OptionView', {
 		    labelWidth: opts.labelWidth || 100
 		},
 		setValues: function(values) {
+		    // FIXME: run through parsePropertyString if not an object?
 		    var edit_value = values[name];
 		    Ext.Array.each(this.query('inputpanel'), function(panel) {
 			panel.setValues(edit_value);
@@ -81,6 +82,28 @@ Ext.define('PVE.dc.OptionView', {
 	    vtype: 'MacPrefix',
 	    defaultValue: Proxmox.Utils.noneText
 	});
+	me.add_inputpanel_row('migration', gettext('Migration Settings'), {
+	    renderer: PVE.Utils.render_dc_ha_opts,
+	    caps: caps.vms['Sys.Modify'],
+	    labelWidth: 120,
+	    url: "/api2/extjs/cluster/options",
+	    defaultKey: 'type',
+	    items: [{
+		xtype: 'displayfield',
+		name: 'type',
+		fieldLabel: gettext('Type'),
+		value: 'secure',
+		submitValue: true,
+		vtype: 'IPCIDRAddress'
+	    }, {
+		xtype: 'textfield',
+		name: 'network',
+		fieldLabel: gettext('Network'),
+		vtype: 'IPCIDRAddress',
+		emptyText: Proxmox.Utils.defaultText,
+		value: ''
+	    }]
+	});
 	me.add_inputpanel_row('ha', gettext('HA Settings'), {
 	    renderer: PVE.Utils.render_dc_ha_opts,
 	    caps: caps.vms['Sys.Modify'],
@@ -93,7 +116,7 @@ Ext.define('PVE.dc.OptionView', {
 		deleteEmpty: false,
 		value: '__default__',
 		comboItems: [
-		    ['__default__', PVE.Utils.render_dc_ha_opts('')],
+		    ['__default__', Proxmox.Utils.defaultText + ' (conditional)' ],
 		    ['freeze', 'freeze'],
 		    ['failover', 'failover'],
 		    ['conditional', 'conditional']
