@@ -44,13 +44,17 @@ sub private {
 sub parse_section_header {
     my ($class, $line) = @_;
 
-    if ($line =~ m/^(\S+):\s*$/) {
+    if ($line =~ m/^(\S+):\s*(\S+)?\s*$/) {
 	my $type = lc($1);
+	my $id = $2 // $type;
 	my $errmsg = undef; # set if you want to skip whole section
-	eval { PVE::JSONSchema::pve_verify_configid($type); };
+	eval {
+	    PVE::JSONSchema::pve_verify_configid($type);
+	    PVE::JSONSchema::pve_verify_configid($id);
+	};
 	$errmsg = $@ if $@;
 	my $config = {}; # to return additional attributes
-	return ($type, $type, $errmsg, $config);
+	return ($type, $id, $errmsg, $config);
     }
     return undef;
 }
