@@ -1,3 +1,17 @@
+pve-manager (5.4-3) unstable; urgency=medium
+
+  * use correct icon for hibernate in tree context command menu
+
+  * ui: Restore: Fix error where the textfield did not default to next
+    free VMID
+
+  * fix #1814: do not enable disk related buttons for audit user
+
+  * ui: dc/options: allow to edit migration settings and HA shutdown
+    policy
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 10 Apr 2019 16:11:05 +0200
+
 pve-manager (5.4-2) unstable; urgency=medium
 
   * improve user TFA editing
