@@ -83,7 +83,6 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		name: 'vmid',
 		fieldLabel: (me.vmid && me.guestType === 'ct') ? 'CT' : 'VM',
 		value: me.vmid,
-		loadNextGuestID: false,
 		store: vmidStore,
 		validateExists: true
 	    },
