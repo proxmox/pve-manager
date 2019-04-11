@@ -174,6 +174,9 @@ Ext.define('PVE.window.TFAEdit', {
 			me.down('#qrbox').setVisible(false);
 			me.lookup('challenge').setVisible(false);
 			this.updatePanelMask(me.down('#totp-panel'));
+			if (me.tfa_type === 'u2f') {
+			    me.lookup('tfatabs').setActiveTab(me.lookup('u2f_panel'));
+			}
 		    }
 
 		    if (Proxmox.UserName === 'root@pam') {
@@ -313,6 +316,7 @@ Ext.define('PVE.window.TFAEdit', {
 	{
 	    xtype: 'tabpanel',
 	    itemId: 'tfatabs',
+	    reference: 'tfatabs',
 	    border: false,
 	    items: [
 		{
