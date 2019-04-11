@@ -2,11 +2,13 @@ package PVE::Status::InfluxDB;
 
 use strict;
 use warnings;
-use PVE::Status::Plugin;
-use Data::Dumper;
-use PVE::SafeSyslog;
+
 use POSIX qw(isnan isinf);
 use Scalar::Util 'looks_like_number';
+
+use PVE::SafeSyslog;
+
+use PVE::Status::Plugin;
 
 # example config (/etc/pve/status.cfg)
 #influxdb:

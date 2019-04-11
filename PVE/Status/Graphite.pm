@@ -2,6 +2,7 @@ package PVE::Status::Graphite;
 
 use strict;
 use warnings;
+
 use PVE::Status::Plugin;
 
 # example config (/etc/pve/status.cfg)

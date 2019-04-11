@@ -3,11 +3,9 @@ package PVE::Status::Plugin;
 use strict;
 use warnings;
 
-use PVE::Tools;
 use PVE::JSONSchema;
 use PVE::Cluster;
-
-use Data::Dumper;
+use PVE::SectionConfig;
 
 use base qw(PVE::SectionConfig);
 
