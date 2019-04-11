@@ -164,7 +164,14 @@ Ext.define('PVE.dc.UserView', {
 		    width: 50,
 		    sortable: true,
 		    renderer: function(v) {
-			return Proxmox.Utils.format_boolean(v !== undefined && v.length);
+			var tfa_type = PVE.Parser.parseTfaType(v);
+			if (tfa_type === undefined) {
+			    return Proxmox.Utils.noText;
+			} else if (tfa_type === 1) {
+			    return Proxmox.Utils.yesText;
+			} else {
+			    return tfa_type;
+			}
 		    },
 		    dataIndex: 'keys'
 		},
