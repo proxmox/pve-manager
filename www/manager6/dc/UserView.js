@@ -85,9 +85,10 @@ Ext.define('PVE.dc.UserView', {
 	    selModel: sm,
 	    handler: function(btn, event, rec) {
 		var d = rec.data;
+		var tfa_type = PVE.Parser.parseTfaType(d.keys);
 		var win = Ext.create('PVE.window.TFAEdit',{
-                    hasTFA: d.keys != undefined && d.keys.length,
-                    userid: d.userid
+		    tfa_type: tfa_type,
+		    userid: d.userid
 		});
 		win.on('destroy', reload);
 		win.show();

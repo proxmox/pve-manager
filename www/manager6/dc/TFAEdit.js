@@ -167,12 +167,13 @@ Ext.define('PVE.window.TFAEdit', {
 		    });
 		    me.down('#qrbox').getEl().appendChild(me.qrdiv);
 
-		    viewmodel.set('has_tfa', me.hasTFA);
-		    if (!me.hasTFA) {
+		    viewmodel.set('has_tfa', me.tfa_type !== undefined);
+		    if (!me.tfa_type) {
 			this.randomizeSecret();
 		    } else {
 			me.down('#qrbox').setVisible(false);
 			me.lookup('challenge').setVisible(false);
+			this.updatePanelMask(me.down('#totp-panel'));
 		    }
 
 		    if (Proxmox.UserName === 'root@pam') {
@@ -185,7 +186,20 @@ Ext.define('PVE.window.TFAEdit', {
 		tabchange: function(panel, newcard) {
 		    var viewmodel = this.getViewModel();
 		    viewmodel.set('in_totp_tab', newcard.itemId === 'totp-panel');
+		    this.updatePanelMask(newcard);
 		}
+	    }
+	},
+
+	updatePanelMask: function(card) {
+	    var view = this.getView();
+	    var my_tfa_type = card.tfa_type;
+	    if (view.tfa_type && view.tfa_type.length && view.tfa_type !== my_tfa_type) {
+		card.mask(
+		    gettext('Another 2nd factor is currently configured.'),
+		    ['pve-static-mask']);
+	    } else {
+		card.unmask()
 	    }
 	},
 
@@ -305,6 +319,7 @@ Ext.define('PVE.window.TFAEdit', {
 		    xtype: 'panel',
 		    title: 'TOTP',
 		    itemId: 'totp-panel',
+		    tfa_type: 'totp',
 		    border: false,
 		    layout: {
 			type: 'vbox',
@@ -407,6 +422,7 @@ Ext.define('PVE.window.TFAEdit', {
 		    title: 'U2F',
 		    itemId: 'u2f-panel',
 		    reference: 'u2f_panel',
+		    tfa_type: 'u2f',
 		    border: false,
 		    padding: '5 5',
 		    layout: {
@@ -457,7 +473,8 @@ Ext.define('PVE.window.TFAEdit', {
 	    text: gettext('Register U2F Device'),
 	    handler: 'startU2FRegistration',
 	    bind: {
-		hidden: '{in_totp_tab}'
+		hidden: '{in_totp_tab}',
+		disabled: '{has_tfa}'
 	    }
 	},
 	{
