@@ -48,10 +48,7 @@ sub parse_section_header {
 	my $type = lc($1);
 	my $id = $2 // $type;
 	my $errmsg = undef; # set if you want to skip whole section
-	eval {
-	    PVE::JSONSchema::pve_verify_configid($type);
-	    PVE::JSONSchema::pve_verify_configid($id);
-	};
+	eval { PVE::JSONSchema::pve_verify_configid($id) };
 	$errmsg = $@ if $@;
 	my $config = {}; # to return additional attributes
 	return ($type, $id, $errmsg, $config);
