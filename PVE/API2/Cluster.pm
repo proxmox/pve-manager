@@ -341,7 +341,8 @@ __PACKAGE__->register_method({
 
 	if (!$param->{type} || $param->{type} eq 'node') {
 	    foreach my $node (@$nodelist) {
-		my $entry = PVE::API2Tools::extract_node_stats($node, $members, $rrd);
+		my $can_audit = $rpcenv->check($authuser, "/nodes/$node", [ 'Sys.Audit' ], 1);
+		my $entry = PVE::API2Tools::extract_node_stats($node, $members, $rrd, !$can_audit);
 		push @$res, $entry;
 	    }
 	}

@@ -2077,6 +2077,9 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+
 	my $clinfo = PVE::Cluster::get_clinfo();
 	my $res = [];
 
@@ -2085,7 +2088,8 @@ __PACKAGE__->register_method ({
 	my $rrd = PVE::Cluster::rrd_dump();
 
 	foreach my $node (@$nodelist) {
-	    my $entry = PVE::API2Tools::extract_node_stats($node, $members, $rrd);
+	    my $can_audit = $rpcenv->check($authuser, "/nodes/$node", [ 'Sys.Audit' ], 1);
+	    my $entry = PVE::API2Tools::extract_node_stats($node, $members, $rrd, !$can_audit);
 	    $entry->{ssl_fingerprint} = PVE::Cluster::get_node_fingerprint($node);
 	    push @$res, $entry;
 	}
