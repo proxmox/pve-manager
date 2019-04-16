@@ -482,6 +482,7 @@ Ext.define('PVE.window.TFAEdit', {
 	{
 	    text: gettext('Delete'),
 	    reference: 'delete_button',
+	    disabled: true,
 	    handler: 'deleteTFA',
 	    bind: {
 		disabled: '{!canDeleteTFA}'
