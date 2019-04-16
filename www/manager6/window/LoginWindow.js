@@ -275,7 +275,7 @@ Ext.define('PVE.window.TFALoginWindow', {
 	login: function() {
 	    var me = this;
 	    var view = me.getView();
-	    view.onLogin(me.lookup('otpField').value);
+	    view.onLogin(me.lookup('otpField').getValue());
 	    view.close();
 	},
 	cancel: function() {
