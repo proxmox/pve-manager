@@ -21,9 +21,7 @@ use PVE::VZDump::Plugin;
 my @posix_filesystems = qw(ext3 ext4 nfs nfs4 reiserfs xfs);
 
 my $lockfile = '/var/run/vzdump.lock';
-
 my $pidfile = '/var/run/vzdump.pid';
-
 my $logdir = '/var/log/vzdump';
 
 my @plugins = qw();
