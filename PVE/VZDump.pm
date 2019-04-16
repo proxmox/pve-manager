@@ -11,7 +11,7 @@ use File::Path;
 use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Cluster qw(cfs_read_file);
-use Time::localtime;
+use POSIX qw(strftime);
 use Time::Local;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::HA::Env::PVE2;
@@ -770,12 +770,8 @@ sub exec_backup_task {
 
 	my $tmplog = "$logdir/$vmtype-$vmid.log";
 
-	my $lt = localtime();
-
 	my $bkname = "vzdump-$vmtype-$vmid";
-	my $basename = sprintf "${bkname}-%04d_%02d_%02d-%02d_%02d_%02d", 
-	$lt->year + 1900, $lt->mon + 1, $lt->mday, 
-	$lt->hour, $lt->min, $lt->sec;
+	my $basename = $bkname . strftime("-%Y_%m_%d-%H_%M_%S", localtime());
 
 	my $maxfiles = $opts->{maxfiles};
 
