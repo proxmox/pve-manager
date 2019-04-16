@@ -1,3 +1,18 @@
+pve-manager (5.4-4) unstable; urgency=medium
+
+  * fix #1326: allow multiple status server definitions per type
+
+  * fix ceph install wizard not accepting ipv6
+
+  * ui: tfa: set initial tab based on current tfa type and disable other
+    tabs
+
+  * fix #2177: use getValue() to get otp value
+
+  * fix #263: only include node rrd stats if user has Sys.Audit
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 16 Apr 2019 14:22:47 +0000
+
 pve-manager (5.4-3) unstable; urgency=medium
 
   * use correct icon for hibernate in tree context command menu
