@@ -100,13 +100,21 @@ Ext.define('PVE.window.TFAEdit', {
 	data: {
 	    in_totp_tab: true,
 	    tfa_required: false,
-	    has_tfa: false,
+	    tfa_type: undefined,
 	    valid: false,
 	    u2f_available: true
 	},
 	formulas: {
 	    canDeleteTFA: function(get) {
-		return (get('has_tfa') && !get('tfa_required'));
+		return (get('tfa_type') !== undefined && !get('tfa_required'));
+	    },
+	    canSetupTOTP: function(get) {
+		var tfa = get('tfa_type');
+		return (tfa === undefined || tfa === 'totp');
+	    },
+	    canSetupU2F: function(get) {
+		var tfa = get('tfa_type');
+		return (get('u2f_available') && (tfa === undefined || tfa === 'u2f'));
 	    }
 	}
     },
@@ -167,15 +175,15 @@ Ext.define('PVE.window.TFAEdit', {
 		    });
 		    me.down('#qrbox').getEl().appendChild(me.qrdiv);
 
-		    viewmodel.set('has_tfa', me.tfa_type !== undefined);
+		    viewmodel.set('tfa_type', me.tfa_type);
 		    if (!me.tfa_type) {
 			this.randomizeSecret();
 		    } else {
 			me.down('#qrbox').setVisible(false);
 			me.lookup('challenge').setVisible(false);
-			this.updatePanelMask(me.down('#totp-panel'));
 			if (me.tfa_type === 'u2f') {
-			    me.lookup('tfatabs').setActiveTab(me.lookup('u2f_panel'));
+			    var u2f_panel = me.lookup('u2f_panel');
+			    me.lookup('tfatabs').setActiveTab(u2f_panel);
 			}
 		    }
 
@@ -189,20 +197,7 @@ Ext.define('PVE.window.TFAEdit', {
 		tabchange: function(panel, newcard) {
 		    var viewmodel = this.getViewModel();
 		    viewmodel.set('in_totp_tab', newcard.itemId === 'totp-panel');
-		    this.updatePanelMask(newcard);
 		}
-	    }
-	},
-
-	updatePanelMask: function(card) {
-	    var view = this.getView();
-	    var my_tfa_type = card.tfa_type;
-	    if (view.tfa_type && view.tfa_type.length && view.tfa_type !== my_tfa_type) {
-		card.mask(
-		    gettext('Another 2nd factor is currently configured.'),
-		    ['pve-static-mask']);
-	    } else {
-		card.unmask()
 	    }
 	},
 
@@ -325,6 +320,9 @@ Ext.define('PVE.window.TFAEdit', {
 		    itemId: 'totp-panel',
 		    tfa_type: 'totp',
 		    border: false,
+		    bind: {
+			disabled: '{!canSetupTOTP}'
+		    },
 		    layout: {
 			type: 'vbox',
 			align: 'stretch'
@@ -434,7 +432,7 @@ Ext.define('PVE.window.TFAEdit', {
 			align: 'middle'
 		    },
 		    bind: {
-			disabled: '{!u2f_available}'
+			disabled: '{!canSetupU2F}'
 		    },
 		    items: [
 			{
@@ -478,7 +476,7 @@ Ext.define('PVE.window.TFAEdit', {
 	    handler: 'startU2FRegistration',
 	    bind: {
 		hidden: '{in_totp_tab}',
-		disabled: '{has_tfa}'
+		disabled: '{tfa_type}'
 	    }
 	},
 	{
