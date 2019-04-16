@@ -272,7 +272,7 @@ Ext.define('PVE.window.TFAEdit', {
 	    window.crypto.getRandomValues(rnd);
 	    var data = '';
 	    rnd.forEach(function(b) {
-		// just use the first 5 bit
+		// secret must be base32, so just use the first 5 bits
 		b = b & 0x1f;
 		if (b < 26) {
 		    // A..Z
