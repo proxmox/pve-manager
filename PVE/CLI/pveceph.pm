@@ -157,11 +157,10 @@ __PACKAGE__->register_method ({
 		PVE::Tools::run_command('systemctl daemon-reload');
 		PVE::Tools::run_command('systemctl enable ceph.service');
 	    };
-	    my $err = $@;
-	    if (!$err) {
-		print "\ninstalled ceph.service successfully\n";
+	    if (my $err = $@) {
+		warn "WARNING: could not install ceph.service: $@\n";
 	    } else {
-		warn "could not install ceph.service\n";
+		print "installed ceph.service successfully\n";
 	    }
 	}
 
