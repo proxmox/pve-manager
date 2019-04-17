@@ -110,11 +110,11 @@ Ext.define('PVE.window.TFAEdit', {
 	    },
 	    canSetupTOTP: function(get) {
 		var tfa = get('tfa_type');
-		return (tfa === undefined || tfa === 'totp');
+		return (tfa === undefined || tfa === 'totp' || tfa === 1);
 	    },
 	    canSetupU2F: function(get) {
 		var tfa = get('tfa_type');
-		return (get('u2f_available') && (tfa === undefined || tfa === 'u2f'));
+		return (get('u2f_available') && (tfa === undefined || tfa === 'u2f' || tfa === 1));
 	    }
 	}
     },
