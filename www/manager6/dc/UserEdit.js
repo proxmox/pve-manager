@@ -17,7 +17,7 @@ Ext.define('PVE.dc.UserEdit', {
             url = '/api2/extjs/access/users';
             method = 'POST';
         } else {
-            url = '/api2/extjs/access/users/' + me.userid;
+            url = '/api2/extjs/access/users/' + encodeURIComponent(me.userid);
             method = 'PUT';
 	}
 
