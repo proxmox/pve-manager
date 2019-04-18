@@ -500,6 +500,9 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
+	# make sure we get current info
+	PVE::Cluster::cfs_update();
+
 	# we also add info from pmxcfs
 	my $clinfo = PVE::Cluster::get_clinfo(); 
 	my $members = PVE::Cluster::get_members();
