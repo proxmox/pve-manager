@@ -160,15 +160,8 @@ Ext.define('PVE.StdWorkspace', {
 
     updateUserInfo: function() {
 	var me = this;
-
 	var ui = me.query('#userinfo')[0];
-
-	if (Proxmox.UserName) {
-	    var msg =  Ext.String.format(gettext("You are logged in as {0}"), "'" + Proxmox.UserName + "'");
-	    ui.update('<div class="x-unselectable" style="white-space:nowrap;">' + msg + '</div>');
-	} else {
-	    ui.update('');
-	}
+	ui.setText(Proxmox.UserName || '');
 	ui.updateLayout();
     },
 
@@ -307,21 +300,6 @@ Ext.define('PVE.StdWorkspace', {
 			    flex: 1
 			},
 			{
-			    pack: 'end',
-			    id: 'userinfo',
-			    stateful: false
-			},
-			{
-			    xtype: 'button',
-			    margin: '0 10 0 3',
-			    iconCls: 'fa black fa-gear',
-			    userCls: 'pointer',
-			    handler: function() {
-				var win = Ext.create('PVE.window.Settings');
-				win.show();
-			    }
-			},
-			{
 			    xtype: 'proxmoxHelpButton',
 			    hidden: false,
 			    baseCls: 'x-btn',
@@ -336,26 +314,61 @@ Ext.define('PVE.StdWorkspace', {
 			{
 			    pack: 'end',
 			    margin: '0 5 0 0',
+			    id: 'userinfo',
 			    xtype: 'button',
 			    baseCls: 'x-btn',
-			    iconCls: 'fa fa-sign-out',
-			    text: gettext("Logout"),
-			    handler: function() { 
-				PVE.data.ResourceStore.loadData([], false);
-				me.showLogin(); 
-				me.setContent(null);
-				var rt = me.down('pveResourceTree');
-				rt.setDatacenterText(undefined);
-				rt.clearTree();
-
-				// empty the stores of the StatusPanel child items
-				var statusPanels = Ext.ComponentQuery.query('pveStatusPanel grid');
-				Ext.Array.forEach(statusPanels, function(comp) {
-				    if (comp.getStore()) {
-					comp.getStore().loadData([], false);
+			    iconCls: 'fa fa-user',
+			    menu: [
+				{
+				    iconCls: 'fa fa-gear',
+				    text: gettext('My Settings'),
+				    handler: function() {
+					var win = Ext.create('PVE.window.Settings');
+					win.show();
 				    }
-				});
-			    }
+				},
+				{
+				    text: gettext('Password'),
+				    iconCls: 'fa fa-fw fa-key',
+				    handler: function() {
+					var win = Ext.create('Proxmox.window.PasswordEdit', {
+					    userid: Proxmox.UserName
+					});
+					win.show();
+				    }
+				},
+				{
+				    text: 'TFA',
+				    iconCls: 'fa fa-fw fa-lock',
+				    handler: function(btn, event, rec) {
+					var win = Ext.create('PVE.window.TFAEdit',{
+					    userid: Proxmox.UserName
+					});
+					win.show();
+				    }
+				},
+				'-',
+				{
+				    iconCls: 'fa fa-fw fa-sign-out',
+				    text: gettext("Logout"),
+				    handler: function() {
+					PVE.data.ResourceStore.loadData([], false);
+					me.showLogin();
+					me.setContent(null);
+					var rt = me.down('pveResourceTree');
+					rt.setDatacenterText(undefined);
+					rt.clearTree();
+
+					// empty the stores of the StatusPanel child items
+					var statusPanels = Ext.ComponentQuery.query('pveStatusPanel grid');
+					Ext.Array.forEach(statusPanels, function(comp) {
+					    if (comp.getStore()) {
+						comp.getStore().loadData([], false);
+					    }
+					});
+				    }
+				}
+			    ]
 			}
 		    ]
 		},
