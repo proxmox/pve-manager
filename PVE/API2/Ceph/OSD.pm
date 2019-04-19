@@ -45,7 +45,16 @@ my $get_osd_status = sub {
 my $get_osd_usage = sub {
     my ($rados) = @_;
 
-    my $osdlist = $rados->mon_command({ prefix => 'pg dump', dumpcontents => [ 'osds' ]}) || [];
+    my $res = $rados->mon_command({ prefix => 'pg dump', dumpcontents => [ 'osds' ]}) || [];
+    my $osdlist;
+
+    if (ref($res) eq "HASH") { # since nautilus
+	$osdlist = $res->{osd_stats};
+    } elsif (ref($res) eq "ARRAY") { # until luminous
+	$osdlist = $res;
+    } else { # bail
+	die "unknown format of pg dump osds\n";
+    }
 
     my $osdstat;
     foreach my $d (@$osdlist) {
