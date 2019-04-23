@@ -827,7 +827,8 @@ sub exec_backup_task {
 
 	unlink $logfile;
 
-	debugmsg ('info',  "Starting Backup of VM $vmid ($vmtype)", $logfd, 1);
+	debugmsg ('info', "Starting Backup of VM $vmid ($vmtype)", $logfd, 1);
+	debugmsg ('info', "Backup started at " . strftime("%F %H:%M:%S", localtime()));
 
 	$plugin->set_logfd ($logfd);
 
@@ -1043,6 +1044,7 @@ sub exec_backup_task {
 	$task->{state} = 'err';
 	$task->{msg} = $err;
 	debugmsg ('err', "Backup of VM $vmid failed - $err", $logfd, 1);
+	debugmsg ('info', "Failed at " . strftime("%F %H:%M:%S", localtime()));
 
 	eval { $self->run_hook_script ('backup-abort', $task, $logfd); };
 
@@ -1050,6 +1052,7 @@ sub exec_backup_task {
 	$task->{state} = 'ok';
 	my $tstr = format_time ($delay);
 	debugmsg ('info', "Finished Backup of VM $vmid ($tstr)", $logfd, 1);
+	debugmsg ('info', "Backup finished at " . strftime("%F %H:%M:%S", localtime()));
     }
 
     close ($logfd) if $logfd;
