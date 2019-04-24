@@ -711,7 +711,7 @@ sub get_shell_command  {
     my ($user, $shellcmd) = @_;
 
     if ($user eq 'root@pam') {
-	if (exists($shell_cmd_map->{$shellcmd})) {
+	if (defined($shellcmd) && exists($shell_cmd_map->{$shellcmd})) {
 	    return $shell_cmd_map->{$shellcmd};
 	} else {
 	    return [ '/bin/login', '-f', 'root' ];
