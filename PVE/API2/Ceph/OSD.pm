@@ -97,12 +97,8 @@ __PACKAGE__->register_method ({
 
 	my $osd_usage = $get_osd_usage->($rados);
 
-	my $osdmetadata_tmp = $rados->mon_command({ prefix => 'osd metadata' });
-
-	my $osdmetadata = {};
-	foreach my $osd (@$osdmetadata_tmp) {
-	    $osdmetadata->{$osd->{id}} = $osd;
-	}
+	my $osdmetadata_res = $rados->mon_command({ prefix => 'osd metadata' });
+	my $osdmetadata = { map { $_->{id} => $_ } @$osdmetadata_res };
 
 	my $nodes = {};
 	my $newnodes = {};
