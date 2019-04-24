@@ -1,3 +1,15 @@
+pve-manager (5.4-5) unstable; urgency=medium
+
+  * ui: two factor auth: handle older TFA setups with no specific type set
+
+  * fix #1910: urlencode usernames in UserEdit
+
+  * ensure we have up-to-date information before retrieving cluster status
+
+  * fix #482: Add timestamps to backup create task log
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 24 Apr 2019 11:28:11 +0000
+
 pve-manager (5.4-4) unstable; urgency=medium
 
   * fix #1326: allow multiple status server definitions per type
