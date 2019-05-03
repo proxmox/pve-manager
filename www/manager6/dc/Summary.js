@@ -236,40 +236,60 @@ Ext.define('PVE.dc.Summary', {
 		if (records[i].get('type') !== 'node') {
 		    continue;
 		}
+		var node = records[i];
+		if (node.get('status') === 'offline') {
+		    continue;
+		}
 
-		curlevel = records[i].get('level');
-		if (level === undefined || !curlevel) {
+		curlevel = node.get('level');
+
+		// no subscription, set and break
+		if (curlevel === '') {
+		    level = '';
+		    break;
+		}
+
+		// save level
+		if (level === undefined) {
 		    level = curlevel;
 		    continue;
 		}
 
+		// detect different levels
 		if (level !== curlevel) {
 		    break;
 		}
 	    }
 
+	    var data = {
+		title: Proxmox.Utils.unknownText,
+		text: Proxmox.Utils.unknownText,
+		iconCls: PVE.Utils.get_health_icon(undefined, true)
+	    };
 	    if (level === '') {
-		subs.setData({
+		data = {
 		    title: gettext('No Subscription'),
 		    iconCls: PVE.Utils.get_health_icon('critical', true),
 		    text: gettext('You have at least one node without subscription.')
-		});
+		};
 		subs.setUserCls('pointer');
 	    } else if (level !== curlevel) {
-		subs.setData({
+		data = {
 		    title: gettext('Mixed Subscriptions'),
 		    iconCls: PVE.Utils.get_health_icon('warning', true),
 		    text: gettext('Warning: Your subscription levels are not the same.')
-		});
+		};
 		subs.setUserCls('pointer');
-	    } else {
-		subs.setData({
+	    } else if (level) {
+		data = {
 		    title: PVE.Utils.render_support_level(level),
 		    iconCls: PVE.Utils.get_health_icon('good', true),
 		    text: gettext('Your subscription status is valid.')
-		});
+		};
 		subs.setUserCls('');
 	    }
+
+	    subs.setData(data);
 	});
 
 	me.on('destroy', function(){
