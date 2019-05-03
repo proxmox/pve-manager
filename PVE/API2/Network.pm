@@ -126,6 +126,11 @@ my $confdesc = {
 	optional => 1,
 	requires => 'netmask',
     },
+    cidr => {
+	description => 'IPv4 CIDR.',
+	type => 'string', format => 'CIDRv4',
+	optional => 1,
+    },
     gateway6 => {
 	description => 'Default ipv6 gateway address.',
 	type => 'string', format => 'ipv6',
@@ -142,7 +147,12 @@ my $confdesc = {
 	type => 'string', format => 'ipv6',
 	optional => 1,
 	requires => 'netmask6',
-    }
+    },
+    cidr6 => {
+	description => 'IPv6 CIDR.',
+	type => 'string', format => 'CIDRv6',
+	optional => 1,
+    },
 };
 
 sub json_config_properties {
@@ -277,6 +287,34 @@ my $check_ipv6_settings = sub {
 	   (defined($type) && $type !~ /^(?:(?:GLOBAL|(?:UNIQUE|LINK)-LOCAL)-UNICAST)$/);
 };
 
+my $map_cidr_to_address_netmask = sub {
+    my ($param) = @_;
+
+    if ($param->{cidr}) {
+	raise_param_exc({ address => "address conflicts with cidr" })
+	    if $param->{address};
+	raise_param_exc({ netmask => "netmask conflicts with cidr" })
+	    if $param->{netmask};
+
+	my ($address, $netmask) = $param->{cidr} =~ m!^(.*)/(\d+)$!;
+	$param->{address} = $address;
+	$param->{netmask} = $netmask;
+	delete $param->{cidr};
+    }
+
+    if ($param->{cidr6}) {
+	raise_param_exc({ address6 => "address6 conflicts with cidr6" })
+	    if $param->{address6};
+	raise_param_exc({ netmask6 => "netmask6 conflicts with cidr6" })
+	    if $param->{netmask6};
+
+	my ($address, $netmask) = $param->{cidr6} =~ m!^(.*)/(\d+)$!;
+	$param->{address6} = $address;
+	$param->{netmask6} = $netmask;
+	delete $param->{cidr6};
+    }
+};
+
 __PACKAGE__->register_method({
     name => 'create_network', 
     path => '', 
@@ -311,6 +349,8 @@ __PACKAGE__->register_method({
 		if $param->{gateway};
 	    &$check_duplicate_gateway6($ifaces, $iface)
 		if $param->{gateway6};
+
+	    $map_cidr_to_address_netmask->($param);
 
 	    &$check_ipv6_settings($param->{address6}, int($param->{netmask6}))
 		if $param->{address6};
@@ -396,6 +436,8 @@ __PACKAGE__->register_method({
 		@$families = grep(!/^inet$/, @$families) if $k eq 'address';
 		@$families = grep(!/^inet6$/, @$families) if $k eq 'address6';
 	    }
+
+	    $map_cidr_to_address_netmask->($param);
 
 	    &$check_duplicate_gateway($ifaces, $iface)
 		if $param->{gateway};
