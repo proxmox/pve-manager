@@ -243,20 +243,16 @@ Ext.define('PVE.dc.Summary', {
 
 		curlevel = node.get('level');
 
-		// no subscription, set and break
-		if (curlevel === '') {
+		if (curlevel === '') { // no subscription trumps all, set and break
 		    level = '';
 		    break;
 		}
 
-		// save level
-		if (level === undefined) {
+		if (level === undefined) { // save level
 		    level = curlevel;
 		    continue;
 		}
-
-		// detect different levels
-		if (level !== curlevel) {
+		if (level !== curlevel) { // detect different levels
 		    break;
 		}
 	    }
