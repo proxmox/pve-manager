@@ -119,15 +119,27 @@ Ext.define('PVE.window.TFAEdit', {
 	}
     },
 
-    afterLoadingRealm: function(realm_tfa_type) {
+    afterLoading: function(realm_tfa_type, user_tfa_type) {
 	var me = this;
 	var viewmodel = me.getViewModel();
+	if (user_tfa_type === 'oath') {
+	    user_tfa_type = 'totp';
+	}
+	viewmodel.set('tfa_type', user_tfa_type || null);
 	if (!realm_tfa_type) {
 	    // There's no TFA enforced by the realm, everything works.
 	    viewmodel.set('u2f_available', true);
 	    viewmodel.set('tfa_required', false);
 	} else if (realm_tfa_type === 'oath') {
 	    // The realm explicitly requires TOTP
+	    if (user_tfa_type !== 'totp' && user_tfa_type !== null) {
+		// user had a different tfa method, so
+		// we have to change back to the totp tab and
+		// generate a secret
+		viewmodel.set('tfa_type', null);
+		me.lookup('tfatabs').setActiveTab(me.lookup('totp_panel'));
+		me.getController().randomizeSecret();
+	    }
 	    viewmodel.set('tfa_required', true);
 	    viewmodel.set('u2f_available', false);
 	} else {
@@ -166,6 +178,20 @@ Ext.define('PVE.window.TFAEdit', {
 		show: function() {
 		    var me = this.getView();
 		    var viewmodel = this.getViewModel();
+
+		    var loadMaskContainer = me.down('#tfatabs');
+		    Proxmox.Utils.API2Request({
+			url: '/access/users/' + encodeURIComponent(me.userid) + '/tfa',
+			waitMsgTarget: loadMaskContainer,
+			method: 'GET',
+			success: function(response, opts) {
+			    var data = response.result.data;
+			    me.afterLoading(data.realm, data.user);
+			},
+			failure: function(response, opts) {
+			    Proxmox.Utils.setErrorMask(loadMaskContainer, response.htmlStatus);
+			}
+		    });
 
 		    me.qrdiv = document.createElement('center');
 		    me.qrcode = new QRCode(me.qrdiv, {
@@ -318,6 +344,7 @@ Ext.define('PVE.window.TFAEdit', {
 		    xtype: 'panel',
 		    title: 'TOTP',
 		    itemId: 'totp-panel',
+		    reference: 'totp_panel',
 		    tfa_type: 'totp',
 		    border: false,
 		    bind: {
@@ -493,18 +520,9 @@ Ext.define('PVE.window.TFAEdit', {
     initComponent: function() {
 	var me = this;
 
-	var store = new Ext.data.Store({
-	    model: 'pve-domains',
-	    autoLoad: true
-	});
-
-	store.on('load', function() {
-	    var user_realm = me.userid.split('@')[1];
-	    var realm = me.store.findRecord('realm', user_realm);
-	    me.afterLoadingRealm(realm && realm.data && realm.data.tfa);
-	}, me);
-
-	Ext.apply(me, { store: store });
+	if (!me.userid) {
+	    throw "no userid given";
+	}
 
 	me.callParent();
 
