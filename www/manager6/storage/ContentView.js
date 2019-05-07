@@ -293,15 +293,11 @@ Ext.define('PVE.storage.Upload', {
 			if (xhr.responseText !== "") {
 			    var result = Ext.decode(xhr.responseText);
 			    result.message = msg;
-			    var htmlStatus = Proxmox.Utils.extractRequestError(result, true);
-			    Ext.Msg.alert(gettext('Error'), htmlStatus, function(btn) {
-				me.close();
-			    });
-			} else {
-			    Ext.Msg.alert(gettext('Error'), msg, function(btn) {
-				me.close();
-			    });
+			    msg = Proxmox.Utils.extractRequestError(result, true);
 			}
+			Ext.Msg.alert(gettext('Error'), msg, function(btn) {
+			    me.close();
+			});
 		    }
 		}, false);
 
