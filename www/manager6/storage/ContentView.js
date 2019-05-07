@@ -290,13 +290,18 @@ Ext.define('PVE.storage.Upload', {
 			me.close();
 		    } else {
 			var msg = gettext('Error') + " " + xhr.status.toString() + ": " + Ext.htmlEncode(xhr.statusText);
-			var result = Ext.decode(xhr.responseText);
-			result.message = msg;
-			var htmlStatus = Proxmox.Utils.extractRequestError(result, true);
-			Ext.Msg.alert(gettext('Error'), htmlStatus, function(btn) {
-			    me.close();
-			});
-
+			if (xhr.responseText !== "") {
+			    var result = Ext.decode(xhr.responseText);
+			    result.message = msg;
+			    var htmlStatus = Proxmox.Utils.extractRequestError(result, true);
+			    Ext.Msg.alert(gettext('Error'), htmlStatus, function(btn) {
+				me.close();
+			    });
+			} else {
+			    Ext.Msg.alert(gettext('Error'), msg, function(btn) {
+				me.close();
+			    });
+			}
 		    }
 		}, false);
 
