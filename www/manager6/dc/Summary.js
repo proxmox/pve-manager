@@ -231,7 +231,7 @@ Ext.define('PVE.dc.Summary', {
 	me.mon(rstore, 'load', function(store, records, success) {
 	    var i;
 	    var level;
-	    var curlevel;
+	    var mixed = false;
 	    for (i = 0; i < records.length; i++) {
 		if (records[i].get('type') !== 'node') {
 		    continue;
@@ -241,7 +241,7 @@ Ext.define('PVE.dc.Summary', {
 		    continue;
 		}
 
-		curlevel = node.get('level');
+		var curlevel = node.get('level');
 
 		if (curlevel === '') { // no subscription trumps all, set and break
 		    level = '';
@@ -250,10 +250,8 @@ Ext.define('PVE.dc.Summary', {
 
 		if (level === undefined) { // save level
 		    level = curlevel;
-		    continue;
-		}
-		if (level !== curlevel) { // detect different levels
-		    break;
+		} else if (level !== curlevel) { // detect different levels
+		    mixed = true;
 		}
 	    }
 
@@ -269,7 +267,7 @@ Ext.define('PVE.dc.Summary', {
 		    text: gettext('You have at least one node without subscription.')
 		};
 		subs.setUserCls('pointer');
-	    } else if (level !== curlevel) {
+	    } else if (mixed) {
 		data = {
 		    title: gettext('Mixed Subscriptions'),
 		    iconCls: PVE.Utils.get_health_icon('warning', true),
