@@ -100,21 +100,21 @@ Ext.define('PVE.window.TFAEdit', {
 	data: {
 	    in_totp_tab: true,
 	    tfa_required: false,
-	    tfa_type: undefined,
+	    tfa_type: null, // dependecies of formulas should not be undefined
 	    valid: false,
 	    u2f_available: true
 	},
 	formulas: {
 	    canDeleteTFA: function(get) {
-		return (get('tfa_type') !== undefined && !get('tfa_required'));
+		return (get('tfa_type') !== null && !get('tfa_required'));
 	    },
 	    canSetupTOTP: function(get) {
 		var tfa = get('tfa_type');
-		return (tfa === undefined || tfa === 'totp' || tfa === 1);
+		return (tfa === null || tfa === 'totp' || tfa === 1);
 	    },
 	    canSetupU2F: function(get) {
 		var tfa = get('tfa_type');
-		return (get('u2f_available') && (tfa === undefined || tfa === 'u2f' || tfa === 1));
+		return (get('u2f_available') && (tfa === null || tfa === 'u2f' || tfa === 1));
 	    }
 	}
     },
@@ -175,7 +175,7 @@ Ext.define('PVE.window.TFAEdit', {
 		    });
 		    me.down('#qrbox').getEl().appendChild(me.qrdiv);
 
-		    viewmodel.set('tfa_type', me.tfa_type);
+		    viewmodel.set('tfa_type', me.tfa_type || null);
 		    if (!me.tfa_type) {
 			this.randomizeSecret();
 		    } else {
