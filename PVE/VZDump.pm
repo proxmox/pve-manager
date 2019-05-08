@@ -750,7 +750,12 @@ sub exec_backup_task {
 
     my $cleanup = {};
 
-    my $vmstoptime = 0;
+    my $log_vm_online_again = sub {
+	return if !defined($task->{vmstoptime});
+	$task->{vmconttime} //= time();
+	my $delay = $task->{vmconttime} - $task->{vmstoptime};
+	debugmsg ('info', "guest is online again after $delay seconds", $logfd);
+    };
 
     eval {
 	die "unable to find VM '$vmid'\n" if !$plugin;
@@ -877,7 +882,7 @@ sub exec_backup_task {
 
 	    if ($running) {
 		debugmsg ('info', "stopping vm", $logfd);
-		$vmstoptime = time ();
+		$task->{vmstoptime} = time();
 		$self->run_hook_script ('pre-stop', $task, $logfd);
 		$plugin->stop_vm ($task, $vmid);
 		$cleanup->{restart} = 1;
@@ -896,7 +901,7 @@ sub exec_backup_task {
 	    }
 
 	    debugmsg ('info', "suspend vm", $logfd);
-	    $vmstoptime = time ();
+	    $task->{vmstoptime} = time ();
 	    $self->run_hook_script ('pre-stop', $task, $logfd);
 	    $plugin->suspend_vm ($task, $vmid);
 	    $cleanup->{resume} = 1;
@@ -910,8 +915,7 @@ sub exec_backup_task {
 		$self->run_hook_script('pre-restart', $task, $logfd);
 		$plugin->resume_vm($task, $vmid);
 		$self->run_hook_script('post-restart', $task, $logfd);
-		my $delay = time () - $vmstoptime;
-		debugmsg('info', "vm is online again after $delay seconds", $logfd);
+		$log_vm_online_again->();
 	    }
 	    
 	} elsif ($mode eq 'snapshot') {
@@ -924,7 +928,7 @@ sub exec_backup_task {
 
 	    if ($snapshot_count > 1) {
 		debugmsg ('info', "suspend vm to make snapshot", $logfd);
-		$vmstoptime = time ();
+		$task->{vmstoptime} = time ();
 		$plugin->suspend_vm ($task, $vmid);
 		$cleanup->{resume} = 1;
 	    }
@@ -937,8 +941,7 @@ sub exec_backup_task {
 		debugmsg ('info', "resume vm", $logfd);
 		$cleanup->{resume} = 0;
 		$plugin->resume_vm ($task, $vmid);
-		my $delay = time () - $vmstoptime;
-		debugmsg ('info', "vm is online again after $delay seconds", $logfd);
+		$log_vm_online_again->();
 	    }
 
 	    $self->run_hook_script ('post-restart', $task, $logfd);
@@ -1026,8 +1029,7 @@ sub exec_backup_task {
 	    if ($err) {
 		warn $err;
 	    } else {
-		my $delay = time () - $vmstoptime;
-		debugmsg ('info', "vm is online again after $delay seconds", $logfd);
+		$log_vm_online_again->();
 	    }
 	}
     }
