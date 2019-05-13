@@ -326,14 +326,13 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    var editor = rowdef.editor;
 	    if (rowdef.tdCls == 'pve-itype-icon-storage') {
-		if (!diskCap) {
-		    return;
-		}
 		var value = me.getObjectValue(rec.data.key, '', true); 
 		if (value.match(/vm-.*-cloudinit/)) {
 		    return;
 		} else if (value.match(/media=cdrom/)) {
 		    editor = 'PVE.qemu.CDEdit';
+		} else if (!diskCap) {
+		    return;
 		}
 	    }
 
@@ -576,10 +575,11 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var rowdef = rows[key];
 
 	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
+	    var isCDRom = (value && !!value.match(/media=cdrom/));
 	    var isUnusedDisk = key.match(/^unused\d+/);
 	    var isUsedDisk = !isUnusedDisk &&
 		rowdef.tdCls == 'pve-itype-icon-storage' &&
-		(value && !value.match(/media=cdrom/));
+		!isCDRom;
 
 	    var isCloudInit = (value && value.toString().match(/vm-.*-cloudinit/));
 
@@ -589,7 +589,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    remove_btn.setText((isUsedDisk && !isCloudInit) ? remove_btn.altText : remove_btn.defaultText);
 	    remove_btn.RESTMethod = isUnusedDisk ? 'POST':'PUT';
 
-	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor || isCloudInit || !diskCap);
+	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor || isCloudInit || (!isCDRom && !diskCap));
 
 	    resize_btn.setDisabled(pending || !isUsedDisk || !diskCap);
 
