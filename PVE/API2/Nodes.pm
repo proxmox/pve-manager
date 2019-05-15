@@ -168,6 +168,7 @@ __PACKAGE__->register_method ({
 	    { name => 'apt' },
 	    { name => 'version' },
 	    { name => 'syslog' },
+	    { name => 'journal' },
 	    { name => 'status' },
 	    { name => 'wakeonlan' },
 	    { name => 'subscription' },
@@ -196,7 +197,7 @@ __PACKAGE__->register_method ({
 	    { name => 'certificates' },
 	    { name => 'config' },
 	    { name => 'hosts' },
-	    ];
+	];
 
 	return $result;
     }});
