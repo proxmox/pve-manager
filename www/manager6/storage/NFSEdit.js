@@ -62,15 +62,46 @@ Ext.define('PVE.storage.NFSInputPanel', {
 
     onlineHelp: 'storage_nfs',
 
+    options : [],
+
     onGetValues: function(values) {
 	var me = this;
 
-	if (me.isCreate) {
-	    // hack: for now we always create nvf v3
-	    // fixme: make this configurable
-	    values.options = 'vers=3';
+	var i;
+	var res = [];
+	for (i = 0; i < me.options.length; i++) {
+	    var item = me.options[i];
+	    if (!item.match(/^vers=(.*)$/)) {
+		res.push(item);
+	    }
+	}
+	if (values.nfsversion && values.nfsversion !== '__default__') {
+	    res.push('vers=' + values.nfsversion);
+	}
+	delete values.nfsversion;
+	values.options = res.join(',');
+	if (values.options === '') {
+	    delete values.options;
+	    if (!me.isCreate) {
+		values["delete"] = "options";
+	    }
 	}
 
+	return me.callParent([values]);
+    },
+
+    setValues: function(values) {
+	var me = this;
+	if (values.options) {
+	    var res = values.options;
+	    me.options = values.options.split(',');
+	    me.options.forEach(function(item) {
+		var match;
+		if (match = item.match(/^vers=(.*)$/)) {
+		    values.nfsversion = match[1];
+		}
+	    });
+	}
 	return me.callParent([values]);
     },
 
@@ -123,6 +154,23 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		maxValue: 365,
 		value: me.isCreate ? '1' : undefined,
 		allowBlank: false
+	    }
+	];
+
+	me.advancedColumn1 = [
+	    {
+		xtype: 'proxmoxKVComboBox',
+		fieldLabel: gettext('NFS Version'),
+		name: 'nfsversion',
+		value: '__default__',
+		deleteEmpty: false,
+		comboItems: [
+			['__default__', Proxmox.Utils.defaultText],
+			['3', '3'],
+			['4', '4'],
+			['4.1', '4.1'],
+			['4.2', '4.2']
+		],
 	    }
 	];
 
