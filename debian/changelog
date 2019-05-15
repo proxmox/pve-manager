@@ -1,3 +1,23 @@
+pve-manager (5.4-6) unstable; urgency=medium
+
+  * gui: node: change syslog to JournalView and new (mini-)journal api
+
+  * node: add api endpoint for new mini-journalreader
+
+  * fix #2197: ui: editing CDROM doesn't require VM.Config.Disk rights
+
+  * ui: NodeSelector: check status field for offline nodes
+
+  * allow to use cidr(6) for passing IP/CIDR to the network api
+
+  * fix #2183: fix blinking subscription and show unknown status
+
+  * ui: TFAEdit: use new tfa api call
+
+  * ui: storage: handle empty response in case of file upload error
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 15 May 2019 16:18:40 +0200
+
 pve-manager (5.4-5) unstable; urgency=medium
 
   * ui: two factor auth: handle older TFA setups with no specific type set
