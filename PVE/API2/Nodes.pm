@@ -716,26 +716,26 @@ __PACKAGE__->register_method({
 	    node => get_standard_option('pve-node'),
 	    since => {
 		type=> 'number',
-		description => "Display all log since this UNIX epoch.",
+		description => "Display all log since this UNIX epoch. Conflicts with 'startcursor'.",
 		optional => 1,
 	    },
 	    until => {
 		type=> 'number',
-		description => "Display all log until this UNIX epoch.",
+		description => "Display all log until this UNIX epoch. Conflicts with 'endcursor'.",
 		optional => 1,
 	    },
 	    lastentries => {
-		description => "Limit to the last X lines.",
+		description => "Limit to the last X lines. Conflicts with any cursor or time range parameters.",
 		type => 'integer',
 		optional => 1,
 	    },
 	    startcursor => {
-		description => "Start after the given Cursor.",
+		description => "Start after the given Cursor. Conflicts with 'since'",
 		type => 'string',
 		optional => 1,
 	    },
 	    endcursor => {
-		description => "End before the given Cursor.",
+		description => "End before the given Cursor. Conflicts with 'until'",
 		type => 'string',
 		optional => 1,
 	    },
@@ -753,18 +753,28 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	my $lines = [];
+	my $cmd = ["/usr/bin/mini-journalreader"];
 
-	my $parser = sub {
-	    push @$lines, shift;
+	my $add_to_cmd = sub {
+	    my ($opt, $p, @conflicts) = @_;
+	    return if !defined($param->{$p});
+
+	    for my $c (@conflicts) {
+		die "parameters '$p' and '$c' conflict with each other!\n"
+		    if defined($param->{$c});
+	    }
+
+	    push @$cmd, $opt, $param->{$p};
 	};
 
-	my $cmd = ["/usr/bin/mini-journalreader"];
-	push @$cmd, '-n', $param->{lastentries} if $param->{lastentries};
-	push @$cmd, '-b', $param->{since} if $param->{since};
-	push @$cmd, '-e', $param->{until} if $param->{until};
-	push @$cmd, '-f', $param->{startcursor} if $param->{startcursor};
-	push @$cmd, '-t', $param->{endcursor} if $param->{endcursor};
+	$add_to_cmd->('-b', 'since', 'startcursor', 'lastentries');
+	$add_to_cmd->('-e', 'until', 'endcursor', 'lastentries');
+	$add_to_cmd->('-f', 'startcursor', 'lastentries');
+	$add_to_cmd->('-t', 'endcursor', 'lastentries');
+	$add_to_cmd->('-n', 'lastentries');
+
+	my $lines = [];
+	my $parser = sub { push @$lines, shift };
 
 	PVE::Tools::run_command($cmd, outfunc => $parser);
 
