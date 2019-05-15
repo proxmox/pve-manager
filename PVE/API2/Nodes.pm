@@ -725,7 +725,7 @@ __PACKAGE__->register_method({
 		optional => 1,
 	    },
 	    lastentries => {
-		description => "Limit to the last X lines. Conflicts with any cursor or time range parameters.",
+		description => "Limit to the last X lines. Conflicts with a range.",
 		type => 'integer',
 		optional => 1,
 	    },
@@ -754,24 +754,11 @@ __PACKAGE__->register_method({
 	my $user = $rpcenv->get_user();
 
 	my $cmd = ["/usr/bin/mini-journalreader"];
-
-	my $add_to_cmd = sub {
-	    my ($opt, $p, @conflicts) = @_;
-	    return if !defined($param->{$p});
-
-	    for my $c (@conflicts) {
-		die "parameters '$p' and '$c' conflict with each other!\n"
-		    if defined($param->{$c});
-	    }
-
-	    push @$cmd, $opt, $param->{$p};
-	};
-
-	$add_to_cmd->('-b', 'since', 'startcursor', 'lastentries');
-	$add_to_cmd->('-e', 'until', 'endcursor', 'lastentries');
-	$add_to_cmd->('-f', 'startcursor', 'lastentries');
-	$add_to_cmd->('-t', 'endcursor', 'lastentries');
-	$add_to_cmd->('-n', 'lastentries');
+	push @$cmd, '-n', $param->{lastentries} if $param->{lastentries};
+	push @$cmd, '-b', $param->{since} if $param->{since};
+	push @$cmd, '-e', $param->{until} if $param->{until};
+	push @$cmd, '-f', $param->{startcursor} if $param->{startcursor};
+	push @$cmd, '-t', $param->{endcursor} if $param->{endcursor};
 
 	my $lines = [];
 	my $parser = sub { push @$lines, shift };
