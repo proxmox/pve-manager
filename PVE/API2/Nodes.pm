@@ -699,6 +699,77 @@ __PACKAGE__->register_method({
 	return $lines;
     }});
 
+__PACKAGE__->register_method({
+    name => 'journal',
+    path => 'journal',
+    method => 'GET',
+    description => "Read Journal",
+    proxyto => 'node',
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Syslog' ]],
+    },
+    protected => 1,
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    since => {
+		type=> 'number',
+		description => "Display all log since this UNIX epoch.",
+		optional => 1,
+	    },
+	    until => {
+		type=> 'number',
+		description => "Display all log until this UNIX epoch.",
+		optional => 1,
+	    },
+	    lastentries => {
+		description => "Limit to the last X lines.",
+		type => 'integer',
+		optional => 1,
+	    },
+	    startcursor => {
+		description => "Start after the given Cursor.",
+		type => 'string',
+		optional => 1,
+	    },
+	    endcursor => {
+		description => "End before the given Cursor.",
+		type => 'string',
+		optional => 1,
+	    },
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "string",
+	}
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+
+	my $lines = [];
+
+	my $parser = sub {
+	    push @$lines, shift;
+	};
+
+	my $cmd = ["/usr/bin/mini-journalreader"];
+	push @$cmd, '-n', $param->{lastentries} if $param->{lastentries};
+	push @$cmd, '-b', $param->{since} if $param->{since};
+	push @$cmd, '-e', $param->{until} if $param->{until};
+	push @$cmd, '-f', $param->{startcursor} if $param->{startcursor};
+	push @$cmd, '-t', $param->{endcursor} if $param->{endcursor};
+
+	PVE::Tools::run_command($cmd, outfunc => $parser);
+
+	return $lines;
+    }});
+
 my $sslcert;
 
 my $shell_cmd_map = {
