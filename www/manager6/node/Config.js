@@ -217,9 +217,8 @@ Ext.define('PVE.node.Config', {
 		groups: ['services'],
 		disabled: !caps.nodes['Sys.Syslog'],
 		itemId: 'syslog',
-		xtype: 'proxmoxLogView',
-		url: "/api2/extjs/nodes/" + nodename + "/syslog",
-		log_select_timespan: 1
+		xtype: 'proxmoxJournalView',
+		url: "/api2/extjs/nodes/" + nodename + "/journal"
 	    });
 
 	    if (caps.nodes['Sys.Modify']) {
