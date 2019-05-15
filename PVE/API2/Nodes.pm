@@ -715,18 +715,21 @@ __PACKAGE__->register_method({
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    since => {
-		type=> 'number',
+		type=> 'integer',
+		minimum => 0,
 		description => "Display all log since this UNIX epoch. Conflicts with 'startcursor'.",
 		optional => 1,
 	    },
 	    until => {
-		type=> 'number',
+		type=> 'integer',
+		minimum => 0,
 		description => "Display all log until this UNIX epoch. Conflicts with 'endcursor'.",
 		optional => 1,
 	    },
 	    lastentries => {
 		description => "Limit to the last X lines. Conflicts with a range.",
 		type => 'integer',
+		minimum => 0,
 		optional => 1,
 	    },
 	    startcursor => {
