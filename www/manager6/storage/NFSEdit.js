@@ -1,3 +1,4 @@
+/*jslint confusion: true*/
 Ext.define('PVE.storage.NFSScan', {
     extend: 'Ext.form.field.ComboBox',
     alias: 'widget.pveNFSScan',
@@ -96,8 +97,8 @@ Ext.define('PVE.storage.NFSInputPanel', {
 	    var res = values.options;
 	    me.options = values.options.split(',');
 	    me.options.forEach(function(item) {
-		var match;
-		if (match = item.match(/^vers=(.*)$/)) {
+		var match = item.match(/^vers=(.*)$/);
+		if (match) {
 		    values.nfsversion = match[1];
 		}
 	    });
@@ -170,7 +171,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 			['4', '4'],
 			['4.1', '4.1'],
 			['4.2', '4.2']
-		],
+		]
 	    }
 	];
 
