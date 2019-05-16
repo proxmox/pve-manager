@@ -11,7 +11,7 @@ Ext.define('PVE.FirewallLograteInputPanel', {
 	    name: 'enable',
 	    reference: 'enable',
 	    fieldLabel: gettext('Enable'),
-	    value: false
+	    value: true
 	},
 	{
 	    layout: 'hbox',

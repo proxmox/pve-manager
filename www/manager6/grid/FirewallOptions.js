@@ -106,9 +106,10 @@ Ext.define('PVE.FirewallOptions', {
 	    me.rows.log_ratelimit = {
 		header: gettext('Log rate limit'),
 		required: true,
-		defaultValue: 'enable=0',
+		defaultValue: gettext('Default') + ' (enable=1,rate1/second,burst=5)',
 		editor: {
-		    xtype: 'pveFirewallLograteEdit'
+		    xtype: 'pveFirewallLograteEdit',
+		    defaultValue: 'enable=1'
 		}
 	    };
 	}
