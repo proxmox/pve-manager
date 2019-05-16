@@ -28,6 +28,7 @@ Ext.define('PVE.FirewallLograteInputPanel', {
 		    value: 1
 		},
 		{
+		    xtype: 'box',
 		    html: '<div style="margin: auto; padding: 2.5px;"><b>/</b></div>'
 		},
 		{
