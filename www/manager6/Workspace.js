@@ -317,6 +317,11 @@ Ext.define('PVE.StdWorkspace', {
 			    id: 'userinfo',
 			    xtype: 'button',
 			    baseCls: 'x-btn',
+			    style: {
+				// proxmox dark grey p light grey as border
+				backgroundColor: '#464d4d',
+				borderColor: '#ABBABA'
+			    },
 			    iconCls: 'fa fa-user',
 			    menu: [
 				{
