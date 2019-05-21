@@ -194,6 +194,7 @@ sub read_vzdump_defaults {
     return $res;
 }
 
+use constant MAX_MAIL_SIZE => 1024*1024;
 sub sendmail {
     my ($self, $tasklist, $totaltime, $err, $detail_pre, $detail_post) = @_;
 
@@ -255,23 +256,30 @@ sub sendmail {
 	}
     }
 
-    $text .= "\nDetailed backup logs:\n\n";
-    $text .= "$cmdline\n\n";
+    my $text_log_part;
+    $text_log_part .= "\nDetailed backup logs:\n\n";
+    $text_log_part .= "$cmdline\n\n";
 
-    $text .= $detail_pre . "\n" if defined($detail_pre);
+    $text_log_part .= $detail_pre . "\n" if defined($detail_pre);
     foreach my $task (@$tasklist) {
 	my $vmid = $task->{vmid};
 	my $log = $task->{tmplog};
 	if (!$log) {
-	    $text .= "$vmid: no log available\n\n";
+	    $text_log_part .= "$vmid: no log available\n\n";
 	    next;
 	}
-	open (TMP, "$log");
-	while (my $line = <TMP>) { $text .= encode8bit ("$vmid: $line"); }
+	if (open (TMP, "$log")) {
+	    while (my $line = <TMP>) {
+		next if $line =~ /^status: \d+/; # not useful in mails
+		$text_log_part .= encode8bit ("$vmid: $line");
+	    }
+	} else {
+	    $text_log_part .= "$vmid: Could not open log file\n\n";
+	}
 	close (TMP);
-	$text .= "\n";
+	$text_log_part .= "\n";
     }
-    $text .= $detail_post if defined($detail_post);
+    $text_log_part .= $detail_post if defined($detail_post);
 
     # html part
     my $html = "<html><body>\n";
@@ -304,34 +312,53 @@ sub sendmail {
     $html .= sprintf ("<tr><td align=left colspan=3>TOTAL<td>%s<td>%s<td></tr>",
  format_time ($totaltime), format_size ($ssize));
 
-    $html .= "</table><br><br>\n";
-    $html .= "Detailed backup logs:<br /><br />\n";
-    $html .= "<pre>\n";
-    $html .= escape_html($cmdline) . "\n\n";
+    $html .= "\n</table><br><br>\n";
+    my $html_log_part;
+    $html_log_part .= "Detailed backup logs:<br /><br />\n";
+    $html_log_part .= "<pre>\n";
+    $html_log_part .= escape_html($cmdline) . "\n\n";
 
-    $html .= escape_html($detail_pre) . "\n" if defined($detail_pre);
+    $html_log_part .= escape_html($detail_pre) . "\n" if defined($detail_pre);
     foreach my $task (@$tasklist) {
 	my $vmid = $task->{vmid};
 	my $log = $task->{tmplog};
 	if (!$log) {
-	    $html .= "$vmid: no log available\n\n";
+	    $html_log_part .= "$vmid: no log available\n\n";
 	    next;
 	}
-	open (TMP, "$log");
-	while (my $line = <TMP>) {
-	    if ($line =~ m/^\S+\s\d+\s+\d+:\d+:\d+\s+(ERROR|WARN):/) {
-		$html .= encode8bit ("$vmid: <font color=red>".
-				       escape_html ($line) . "</font>");
-	    } else {
-		$html .= encode8bit ("$vmid: " . escape_html ($line));
+	if (open (TMP, "$log")) {
+	    while (my $line = <TMP>) {
+		next if $line =~ /^status: \d+/; # not useful in mails
+		if ($line =~ m/^\S+\s\d+\s+\d+:\d+:\d+\s+(ERROR|WARN):/) {
+		    $html_log_part .= encode8bit ("$vmid: <font color=red>".
+			escape_html ($line) . "</font>");
+		} else {
+		    $html_log_part .= encode8bit ("$vmid: " . escape_html ($line));
+		}
 	    }
+	} else {
+	    $html_log_part .= "$vmid: Could not open log file\n\n";
 	}
 	close (TMP);
-	$html .= "\n";
+	$html_log_part .= "\n";
     }
-    $html .= escape_html($detail_post) if defined($detail_post);
-    $html .= "</pre></body></html>\n";
+    $html_log_part .= escape_html($detail_post) if defined($detail_post);
+    $html_log_part .= "</pre>";
+    my $html_end .= "\n</body></html>\n";
     # end html part
+
+    if (length($text) + length($text_log_part) +
+	length($html) + length($html_log_part) < MAX_MAIL_SIZE)
+    {
+	$html .= $html_log_part;
+	$text .= $text_log_part;
+    } else {
+	my $msg = "Log output was too long to be sent by mail. ".
+	    "See Task History for details!\n";
+	$text .= $msg;
+	$html .= "<p>$msg</p>";
+	$html .= $html_end;
+    }
 
     my $subject = "vzdump backup status ($hostname) : $stat";
 
