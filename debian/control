@@ -1,7 +1,7 @@
 Source: pve-manager
 Section: admin
 Priority: optional
-Build-Depends: debhelper (>= 9~),
+Build-Depends: debhelper (>= 11~),
                libapt-pkg-perl,
                libfile-readbackwards-perl,
                libhttp-daemon-perl,
