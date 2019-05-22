@@ -1,6 +1,4 @@
-VERSION=5.4
 PACKAGE=pve-manager
-PACKAGERELEASE=6
 
 BINDIR=${DESTDIR}/usr/bin
 PERLLIBDIR=${DESTDIR}/usr/share/perl5
