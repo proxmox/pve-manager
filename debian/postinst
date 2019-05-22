@@ -76,27 +76,6 @@ case "$1" in
 	    fi
 	done
     fi
-
-    if test -n "$2"; then
-	# "$2" is the most recently configured version
-
-	if dpkg --compare-versions "$2" '<=' '5.0-23'; then
-	    # 5.0-23 temporarily reverted the removal of the startcom CA in
-	    # ca-certificates; we've since switched to let's encrypt
-	    update-ca-certificates >/dev/null 2>&1
-	fi
-
-	if dpkg --compare-versions "$2" '<=' '5.1-47'; then
-	    # remove cron update job, superseded by systemd timer
-	    rm -f /etc/cron.d/pveupdate
-
-	    # remove old/unused init.d files
-	    OLD_INITD_FILES="pvebanner pvenetcommit pve-manager pvedaemon pveproxy pvestatd spiceproxy"
-	    for f in ${OLD_INITD_FILES}; do rm -f "/etc/init.d/$f"; done
-
-	    deb-systemd-invoke start pve-daily-update.timer
-	fi
-    fi
     ;;
 
   abort-upgrade|abort-remove|abort-deconfigure)
