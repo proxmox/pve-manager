@@ -1,3 +1,11 @@
+pve-manager (6.0-0+1) pve; urgency=medium
+
+  * rework log out button to general user and session management menu
+
+  * re-build for Debian Buster / PVE 6
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 22 May 2019 21:30:56 +0200
+
 pve-manager (5.4-6) unstable; urgency=medium
 
   * gui: node: change syslog to JournalView and new (mini-)journal api
