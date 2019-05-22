@@ -1,18 +1,19 @@
+include /usr/share/dpkg/pkg-info.mk
+include /usr/share/dpkg/architecture.mk
 include defines.mk
 
-export SOURCE_DATE_EPOCH ?= $(shell dpkg-parsechangelog -STimestamp)
+export VERSION=${DEB_VERSION_UPSTREAM}
 
 DESTDIR=
 
 SUBDIRS = aplinfo PVE bin www services configs network-hooks test
 
-ARCH:=$(shell dpkg-architecture -qDEB_BUILD_ARCH)
 GITVERSION:=$(shell git rev-parse HEAD)
 
 # possibly set via debian/rules(.env)
 REPOID?=$(shell git rev-parse --short=8 HEAD)
 
-DEB=${PACKAGE}_${VERSION}-${PACKAGERELEASE}_${ARCH}.deb
+DEB=${PACKAGE}_${DEB_VERSION_UPSTREAM_REVISION}_${DEB_BUILD_ARCH}.deb
 
 all: ${SUBDIRS}
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i; done
