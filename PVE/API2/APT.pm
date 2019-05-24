@@ -525,7 +525,10 @@ __PACKAGE__->register_method({
 
         my @opt_pack = qw(
 	    ceph
+	    criu
 	    gfs2-utils
+	    ksm-control-daemon
+	    ksmtuned
 	    libpve-apiclient-perl
 	    openvswitch-switch
 	    pve-sheepdog
@@ -534,11 +537,11 @@ __PACKAGE__->register_method({
 	);
 
 	my @pkgs = qw(
+	    ceph-fuse
 	    corosync
-	    criu
 	    libjs-extjs
 	    glusterfs-client
-	    ksm-control-daemon
+	    libknet1
 	    libpve-access-control
 	    libpve-common-perl
 	    libpve-guest-common-perl
@@ -549,6 +552,7 @@ __PACKAGE__->register_method({
 	    lxc-pve
 	    lxcfs
 	    novnc-pve
+	    proxmox-mini-journalreader
 	    proxmox-widget-toolkit
 	    pve-cluster
 	    pve-container
@@ -558,7 +562,6 @@ __PACKAGE__->register_method({
 	    pve-firmware
 	    pve-ha-manager
 	    pve-i18n
-	    pve-libspice-server1
 	    pve-qemu-kvm
 	    pve-xtermjs
 	    qemu-server
