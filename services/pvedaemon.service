@@ -8,7 +8,7 @@ After=corosync.service pve-cluster.service
 ExecStart=/usr/bin/pvedaemon start
 ExecStop=/usr/bin/pvedaemon stop
 ExecReload=/usr/bin/pvedaemon restart
-PIDFile=/var/run/pvedaemon.pid
+PIDFile=/run/pvedaemon.pid
 Type=forking
 
 [Install]
