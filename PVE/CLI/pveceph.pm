@@ -106,12 +106,19 @@ __PACKAGE__->register_method ({
 	print "update available package list\n";
 	eval { run_command(['apt-get', '-q', 'update'], outfunc => sub {}, errfunc => sub {}); };
 
+	my @apt_install = qw(apt-get --no-install-recommends -o Dpkg::Options::=--force-confnew install --);
+	my @ceph_packages = qw(
+	    ceph
+	    ceph-common
+	    ceph-mds
+	    ceph-fuse
+	    gdisk
+	);
+
 	print "start installation\n";
-	system('apt-get', '--no-install-recommends',
-		'-o', 'Dpkg::Options::=--force-confnew',
-		'install', '--',
-		'ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse', 'gdisk') == 0
-	    || die "apt failed during ceph installation ($?)\n";
+	if (system(@apt_install, @ceph_packages) != 0) {
+	    die "apt failed during ceph installation ($?)\n";
+	}
 
 	print "\ninstalled ceph $cephver successfully\n";
 
