@@ -209,7 +209,7 @@ __PACKAGE__->register_method ({
 	    my $pve_mon_key_path = PVE::Ceph::Tools::get_config('pve_mon_key_path');
 	    if (! -f $pve_mon_key_path) {
 		run_command("cp $pve_ckeyring_path $pve_mon_key_path.tmp");
-		run_command("ceph-authtool $pve_mon_key_path.tmp -n client.admin --set-uid=0 " .
+		run_command("ceph-authtool $pve_mon_key_path.tmp -n client.admin " .
 			    "--cap mds 'allow' " .
 			    "--cap osd 'allow *' " .
 			    "--cap mgr 'allow *' " .
