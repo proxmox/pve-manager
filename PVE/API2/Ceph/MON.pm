@@ -172,8 +172,6 @@ __PACKAGE__->register_method ({
 
 	my $monaddrhash = {};
 
-	my $systemd_managed = PVE::Ceph::Tools::systemd_managed();
-
 	foreach my $section (keys %$cfg) {
 	    next if $section eq 'global';
 	    my $d = $cfg->{$section};
@@ -216,8 +214,8 @@ __PACKAGE__->register_method ({
 			    "--cap osd 'allow *' " .
 			    "--cap mgr 'allow *' " .
 			    "--cap mon 'allow *'");
-		run_command("cp $pve_mon_key_path.tmp /etc/ceph/ceph.client.admin.keyring") if $systemd_managed;
-		run_command("chown ceph:ceph /etc/ceph/ceph.client.admin.keyring") if $systemd_managed;
+		run_command("cp $pve_mon_key_path.tmp /etc/ceph/ceph.client.admin.keyring");
+		run_command("chown ceph:ceph /etc/ceph/ceph.client.admin.keyring");
 		run_command("ceph-authtool $pve_mon_key_path.tmp --gen-key -n mon. --cap mon 'allow *'");
 		run_command("mv $pve_mon_key_path.tmp $pve_mon_key_path");
 	    }
@@ -232,7 +230,7 @@ __PACKAGE__->register_method ({
 	    eval {
 		mkdir $mondir;
 
-		run_command("chown ceph:ceph $mondir") if $systemd_managed;
+		run_command("chown ceph:ceph $mondir");
 
 		if ($moncount > 0) {
 		    my $rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
@@ -243,7 +241,7 @@ __PACKAGE__->register_method ({
 		}
 
 		run_command("ceph-mon --mkfs -i $monid --monmap $monmap --keyring $pve_mon_key_path");
-		run_command("chown ceph:ceph -R $mondir") if $systemd_managed;
+		run_command("chown ceph:ceph -R $mondir");
 	    };
 	    my $err = $@;
 	    unlink $monmap;
@@ -267,11 +265,9 @@ __PACKAGE__->register_method ({
 	    } else {
 		PVE::Ceph::Services::ceph_service_cmd('start', $monsection);
 
-		if ($systemd_managed) {
-		    #to ensure we have the correct startup order.
-		    eval { PVE::Tools::run_command(['/bin/systemctl', 'enable', "ceph-mon\@${monid}.service"]); };
-		    warn "Enable ceph-mon\@${monid}.service manually"if $@;
-		}
+		# to ensure we have the correct startup order.
+		eval { run_command(['/bin/systemctl', 'enable', "ceph-mon\@${monid}.service"]) };
+		warn "Enable ceph-mon\@${monid}.service failed, do manually: $@\n" if $@;
 		waitpid($create_keys_pid, 0);
 	    }
 

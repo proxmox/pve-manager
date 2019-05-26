@@ -217,17 +217,6 @@ sub setup_pve_symlinks {
     }
 }
 
-# Ceph versions greater Hammer use 'ceph' as user and group instead
-# of 'root', and use systemd.
-sub systemd_managed {
-
-    if (-f "/lib/systemd/system/ceph-osd\@.service") {
-	return 1;
-    } else {
-	return 0;
-    }
-}
-
 # wipe the first 200 MB to clear off leftovers from previous use, otherwise a
 # create OSD fails.
 sub wipe_disks {

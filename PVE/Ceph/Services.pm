@@ -13,21 +13,13 @@ sub ceph_service_cmd {
     my ($action, $service) = @_;
 
     my $pve_ceph_cfgpath = PVE::Ceph::Tools::get_config('pve_ceph_cfgpath');
-    if (PVE::Ceph::Tools::systemd_managed()) {
-
-	if ($service && $service =~ m/^(mon|osd|mds|mgr|radosgw)(\.([A-Za-z0-9\-]{1,32}))?$/) {
-	    $service = defined($3) ? "ceph-$1\@$3" : "ceph-$1.target";
-	} else {
-	    $service = "ceph.target";
-	}
-
-	PVE::Tools::run_command(['/bin/systemctl', $action, $service]);
-
+    if ($service && $service =~ m/^(mon|osd|mds|mgr|radosgw)(\.([A-Za-z0-9\-]{1,32}))?$/) {
+	$service = defined($3) ? "ceph-$1\@$3" : "ceph-$1.target";
     } else {
-	# ceph daemons does not call 'setsid', so we do that ourself
-	# (fork_worker send KILL to whole process group)
-	PVE::Tools::run_command(['setsid', 'service', 'ceph', '-c', $pve_ceph_cfgpath, $action, $service]);
+	$service = "ceph.target";
     }
+
+    run_command(['/bin/systemctl', $action, $service]);
 }
 
 # MDS

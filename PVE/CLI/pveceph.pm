@@ -115,8 +115,7 @@ __PACKAGE__->register_method ({
 
 	print "\ninstalled ceph $cephver successfully\n";
 
-	if (PVE::Ceph::Tools::systemd_managed() && ! -e '/etc/systemd/system/ceph.service') {
-	    #to disable old SysV init scripts.
+	if (! -e '/etc/systemd/system/ceph.service') {
 	    print "\nreplacing ceph init script with own ceph.service\n";
 	    eval {
 		PVE::Tools::run_command('cp -v /usr/share/doc/pve-manager/examples/ceph.service /etc/systemd/system/ceph.service');
