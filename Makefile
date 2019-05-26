@@ -2,7 +2,8 @@ include /usr/share/dpkg/pkg-info.mk
 include /usr/share/dpkg/architecture.mk
 include defines.mk
 
-export VERSION=${DEB_VERSION_UPSTREAM}
+export PVERELEASE=${DEB_VERSION_UPSTREAM}
+export VERSION=${DEB_VERSION_UPSTREAM_REVISION}
 
 DESTDIR=
 
@@ -13,7 +14,7 @@ GITVERSION:=$(shell git rev-parse HEAD)
 # possibly set via debian/rules(.env)
 REPOID?=$(shell git rev-parse --short=8 HEAD)
 
-DEB=${PACKAGE}_${DEB_VERSION_UPSTREAM_REVISION}_${DEB_BUILD_ARCH}.deb
+DEB=${PACKAGE}_${VERSION}_${DEB_BUILD_ARCH}.deb
 
 all: ${SUBDIRS}
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i; done

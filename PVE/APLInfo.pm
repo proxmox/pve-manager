@@ -222,8 +222,8 @@ sub update {
     logmsg($logfd, "starting update");
 
     my $ua = LWP::UserAgent->new;
-    my $version = PVE::pvecfg::version();
-    $ua->agent("PVE/$version");
+    my $release = PVE::pvecfg::release();
+    $ua->agent("PVE/$release");
 
     if ($proxy) {
 	$ua->proxy(['http', 'https'], $proxy);

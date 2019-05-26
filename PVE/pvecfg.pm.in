@@ -1,35 +1,33 @@
 package PVE::pvecfg;
 
 use strict;
-use vars qw(@ISA);
-use Carp;
+use warnings;
 
 sub package {
-	return '@PACKAGE@';
+    return '@PACKAGE@';
 }
 
 sub version {
-	return '@VERSION@';
+    return '@VERSION@';
 }
 
 sub release {
-	return '@PACKAGERELEASE@';
+    return '@PVERELEASE@';
 }
 
 sub repoid {
-	return '@REPOID@';
+    return '@REPOID@';
 }
 
-# this is diplayed on the GUI
 sub version_text {
-    return '@VERSION@-@PACKAGERELEASE@/@REPOID@';
+    return '@VERSION@/@REPOID@';
 }
 
 # this is returned by the API
 sub version_info {
     return {
 	'version' => '@VERSION@',
-	'release' => '@PACKAGERELEASE@',
+	'release' => '@PVERELEASE@',
 	'repoid' => '@REPOID@',
     }
 }

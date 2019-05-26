@@ -212,8 +212,7 @@ sub get_index {
 	$langfile = 1;
     }
 
-    my $ver = PVE::pvecfg::version();
-    my $release = PVE::pvecfg::release();
+    my $version = PVE::pvecfg::version();
 
     my $wtversionraw = PVE::Tools::file_read_firstline("$basedirs->{widgettoolkit}/proxmoxlib.js");
     my $wtversion;
@@ -229,7 +228,7 @@ sub get_index {
 	console => $args->{console},
 	nodename => $nodename,
 	debug => $server->{debug},
-	version => "$ver-$release",
+	version => "$version",
 	wtversion => $wtversion,
     };
 

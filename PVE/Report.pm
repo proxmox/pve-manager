@@ -2,7 +2,7 @@ package PVE::Report;
 
 use strict;
 use warnings;
-use PVE::pvecfg;
+
 use PVE::Tools;
 
 $ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';

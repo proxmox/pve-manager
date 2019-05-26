@@ -218,9 +218,18 @@ __PACKAGE__->register_method ({
     returns => {
 	type => "object",
 	properties => {
-	    version => { type => 'string' },
-	    release => { type => 'string' },
-	    repoid => { type => 'string' },
+	    version => {
+		type => 'string',
+		description => 'The current installed pve-manager package version',
+	    },
+	    release => {
+		type => 'string',
+		description => 'The current installed Proxmox VE Release',
+	    },
+	    repoid => {
+		type => 'string',
+		description => 'The short git commit hash ID from which this version was build',
+	    },
 	},
     },
     code => sub {
