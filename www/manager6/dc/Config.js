@@ -34,6 +34,12 @@ Ext.define('PVE.dc.Config', {
 		itemId: 'cluster'
 	    },
 	    {
+		title: 'Ceph',
+		itemId: 'ceph',
+		iconCls: 'fa fa-ceph',
+		xtype: 'pveNodeCephStatus'
+	    },
+	    {
 		xtype: 'pveDcOptionView',
 		title: gettext('Options'),
 		iconCls: 'fa fa-gear',

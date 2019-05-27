@@ -141,15 +141,8 @@ Ext.define('PVE.dc.Health', {
 	    listeners: {
 		element: 'el',
 		click: function() {
-		    var me = this.component.up('pveDcHealth');
 		    var sp = Ext.state.Manager.getProvider();
-
-		    // preselect the ceph tab
-		    sp.set('nodetab', {value:'ceph'});
-
-		    // select the node that had the successfull api call
-		    var id = me.nodeList[me.nodeIndex].id;
-		    Ext.ComponentQuery.query('pveResourceTree')[0].selectById(id);
+		    sp.set('dctab', {value:'ceph'}, true);
 		}
 	    }
 	}
