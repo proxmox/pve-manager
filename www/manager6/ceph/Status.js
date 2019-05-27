@@ -222,6 +222,7 @@ Ext.define('PVE.node.CephStatus', {
 
 	var me = this;
 	var rec = records[0];
+	me.status = rec.data;
 
 	// add health panel
 	me.down('#overallhealth').updateHealth(PVE.Utils.render_ceph_health(rec.data.health || {}));
@@ -229,12 +230,7 @@ Ext.define('PVE.node.CephStatus', {
 	me.down('#warnings').getStore().loadRawData(me.generateCheckData(rec.data.health || {}), false);
 
 	// update detailstatus panel
-	me.getComponent('statusdetail').updateAll(
-	    rec.data.health || {},
-	    rec.data.monmap || {},
-	    rec.data.pgmap || {},
-	    rec.data.osdmap || {},
-	    rec.data.quorum_names || []);
+	me.getComponent('statusdetail').updateAll(me.metadata || {}, rec.data);
 
 	// add performance data
 	var used = rec.data.pgmap.bytes_used;

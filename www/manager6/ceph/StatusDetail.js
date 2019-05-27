@@ -74,9 +74,14 @@ Ext.define('PVE.ceph.StatusDetail', {
 	]
     }],
 
-    updateAll: function(health, monmap, pgmap, osdmap, quorum_names) {
+    updateAll: function(metadata, status) {
 	var me = this;
 	me.suspendLayout = true;
+
+	var pgmap = status.pgmap || {};
+	var health = status.health || {};
+	var osdmap = status.osdmap || { osdmap: {} };
+
 
 	// update pgs sorted
 	var pgs_by_state = pgmap.pgs_by_state || [];
