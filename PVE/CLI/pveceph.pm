@@ -94,8 +94,6 @@ __PACKAGE__->register_method ({
 
 	my $cephver = $param->{version} || 'luminous';
 
-	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
-
 	if ($cephver eq 'luminous') {
 	    PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list",
 		"deb http://download.proxmox.com/debian/ceph-luminous stretch main\n");
@@ -103,8 +101,9 @@ __PACKAGE__->register_method ({
 	    die "not implemented ceph version: $cephver";
 	}
 
+	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
 	print "update available package list\n";
-	eval { run_command(['apt-get', '-q', 'update'], outfunc => sub {}, errfunc => sub {}); };
+	eval { run_command(['apt-get', '-q', 'update'], outfunc => sub {}, errfunc => sub { print STDERR "$_[0]\n" }) };
 
 	my @apt_install = qw(apt-get --no-install-recommends -o Dpkg::Options::=--force-confnew install --);
 	my @ceph_packages = qw(
