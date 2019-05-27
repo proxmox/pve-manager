@@ -451,6 +451,7 @@ sub rotate_authkeys {
 
 sub update_ceph_services {
     my $services = PVE::Ceph::Services::get_local_services();
+
     for my $type (keys %$services) {
 	my $data = encode_json($services->{$type});
 	PVE::Cluster::broadcast_node_kv("ceph-$type", $data);
@@ -459,6 +460,7 @@ sub update_ceph_services {
 
 sub update_ceph_version {
     my ($version) = PVE::Ceph::Tools::get_local_version(1);
+
     if ($version) {
 	PVE::Cluster::broadcast_node_kv("ceph-version", $version);
     }
@@ -523,10 +525,10 @@ sub update_status {
     syslog('err', "authkey rotation error: $err") if $err;
 
     eval {
-	if (PVE::Ceph::Tools::check_ceph_inited(1)) {
-	    update_ceph_services();
-	    update_ceph_version();
-	}
+	return if !PVE::Ceph::Tools::check_ceph_inited(1); # "return" from eval
+
+	update_ceph_services();
+	update_ceph_version();
     };
     $err = $@;
     syslog('err', "error getting ceph services: $err") if $err;
