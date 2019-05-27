@@ -239,13 +239,13 @@ Ext.define('PVE.StateProvider', {
 	me.callParent(arguments);
     },
 
-    set: function(name, value){
+    set: function(name, value, fireevent){
         var me = this;
 
 	//console.log("SET " + name + " " + Ext.encode(value));
 	if (typeof me.UIState[name] != "undefined") {
 	    var newvalue = value ? value.value : null;
-	    if (me.setHV(name, newvalue, false)) {
+	    if (me.setHV(name, newvalue, fireevent)) {
 		var htext = me.encodeHToken(me.UIState);
 		Ext.History.add(htext);
 	    }
