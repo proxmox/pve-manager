@@ -82,8 +82,10 @@ __PACKAGE__->register_method ({
 	properties => {
 	    version => {
 		type => 'string',
-		#enum => ['hammer', 'jewel'], # for jessie
-		enum => ['luminous',], # for stretch
+		# for buster, luminous kept for testing/upgrade purposes only! - FIXME: remove with 6.2?
+		enum => ['luminous', 'nautilus',],
+		default => 'nautilus',
+		description => "Ceph version to install.",
 		optional => 1,
 	    }
 	},
@@ -92,14 +94,22 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $cephver = $param->{version} || 'luminous';
+	my $default_vers = 'nautilus';
+	my $cephver = $param->{version} || $default_vers;
 
-	if ($cephver eq 'luminous') {
-	    PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list",
-		"deb http://download.proxmox.com/debian/ceph-luminous stretch main\n");
+	my $repolist;
+	if ($cephver eq 'nautilus') {
+		$repolist = "deb http://download.proxmox.com/debian/ceph-nautilus buster main\n";
+		# FIXME: remove non-public testing repo
+		$repolist = "deb http://repo.proxmox.com/staging/ceph-nautilus buster ceph-14.0\n";
+	} elsif ($cephver eq 'luminous') {
+		$repolist = "deb http://download.proxmox.com/debian/ceph-luminous buster main\n";
 	} else {
 	    die "not implemented ceph version: $cephver";
 	}
+	PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $repolist);
+
+	warn "WARNING: installing non-default ceph release '$cephver'!\n\n" if $cephver ne $default_vers;
 
 	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
 	print "update available package list\n";

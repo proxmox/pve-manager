@@ -23,7 +23,7 @@ Ext.define('PVE.ceph.Install', {
     },
     viewModel: {
 	data: {
-	      cephVersion: 'luminous',
+	      cephVersion: 'nautilus',
 	      isInstalled: false
 	},
 	formulas: {
