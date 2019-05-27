@@ -24,13 +24,14 @@ Ext.define('PVE.node.CephStatus', {
 	    plugins: 'responsive',
 	    responsiveConfig: {
 		'width < 1900': {
+		    minHeight: 230,
 		    columnWidth: 1
 		},
 		'width >= 1900': {
+		    minHeight: 500,
 		    columnWidth: 0.5
 		}
 	    },
-	    minHeight: 210,
 	    layout: {
 		type: 'hbox',
 		align: 'stretch'
@@ -120,10 +121,12 @@ Ext.define('PVE.node.CephStatus', {
 	    plugins: 'responsive',
 	    responsiveConfig: {
 		'width < 1900': {
-		    columnWidth: 1
+		    columnWidth: 1,
+		    minHeight: 250
 		},
 		'width >= 1900': {
-		    columnWidth: 0.5
+		    columnWidth: 0.5,
+		    minHeight: 300
 		}
 	    },
 	    title: gettext('Status')

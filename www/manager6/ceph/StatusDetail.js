@@ -7,7 +7,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	align: 'stretch'
     },
 
-    bodyPadding: '0 5 20',
+    bodyPadding: '0 5',
     defaults: {
 	xtype: 'box',
 	style: {
