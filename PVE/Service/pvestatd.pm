@@ -6,6 +6,8 @@ use warnings;
 use PVE::SafeSyslog;
 use PVE::Daemon;
 
+use JSON;
+
 use Time::HiRes qw (gettimeofday);
 use PVE::Tools qw(dir_glob_foreach file_read_firstline);
 use PVE::ProcFSTools;
@@ -22,6 +24,8 @@ use PVE::RPCEnvironment;
 use PVE::API2::Subscription;
 use PVE::AutoBalloon;
 use PVE::AccessControl;
+use PVE::Ceph::Services;
+use PVE::Ceph::Tools;
 
 use PVE::Status::Plugin;
 use PVE::Status::Graphite;
@@ -445,6 +449,21 @@ sub rotate_authkeys {
     PVE::AccessControl::rotate_authkey() if !PVE::AccessControl::check_authkey(1);
 }
 
+sub update_ceph_services {
+    my $services = PVE::Ceph::Services::get_local_services();
+    for my $type (keys %$services) {
+	my $data = encode_json($services->{$type});
+	PVE::Cluster::broadcast_node_kv("ceph-$type", $data);
+    }
+}
+
+sub update_ceph_version {
+    my ($version) = PVE::Ceph::Tools::get_local_version(1);
+    if ($version) {
+	PVE::Cluster::broadcast_node_kv("ceph-version", $version);
+    }
+}
+
 sub update_status {
 
     # update worker list. This is not really required and
@@ -502,6 +521,15 @@ sub update_status {
     };
     $err = $@;
     syslog('err', "authkey rotation error: $err") if $err;
+
+    eval {
+	if (PVE::Ceph::Tools::check_ceph_inited(1)) {
+	    update_ceph_services();
+	    update_ceph_version();
+	}
+    };
+    $err = $@;
+    syslog('err', "error getting ceph services: $err") if $err;
 
 }
 
