@@ -102,6 +102,21 @@ Ext.define('PVE.Utils', { utilities: {
 	return icon;
     },
 
+    parse_ceph_version: function(service) {
+	if (service.ceph_version_short) {
+	    return service.ceph_version_short;
+	}
+
+	if (service.ceph_version) {
+	    var match = service.ceph_version.match(/version (\d+\.\d+\.\d+)/);
+	    if (match) {
+		return match[1];
+	    }
+	}
+
+	return undefined;
+    },
+
     get_ceph_icon_html: function(health, fw) {
 	var state = PVE.Utils.map_ceph_health[health];
 	var cls = PVE.Utils.get_health_icon(state);

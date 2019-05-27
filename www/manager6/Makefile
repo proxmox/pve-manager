@@ -103,6 +103,7 @@ JSSRC= 				                 	\
 	ceph/Crush.js					\
 	ceph/Status.js					\
 	ceph/StatusDetail.js				\
+	ceph/Services.js				\
 	ceph/Config.js					\
 	ceph/Log.js					\
 	ceph/CephInstallWizard.js				\
