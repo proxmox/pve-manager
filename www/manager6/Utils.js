@@ -102,6 +102,15 @@ Ext.define('PVE.Utils', { utilities: {
 	return icon;
     },
 
+    get_ceph_icon_html: function(health, fw) {
+	var state = PVE.Utils.map_ceph_health[health];
+	var cls = PVE.Utils.get_health_icon(state);
+	if (fw) {
+	    cls += ' fa-fw';
+	}
+	return "<i class='fa " + cls + "'></i> ";
+    },
+
     map_ceph_health: {
 	'HEALTH_OK':'good',
 	'HEALTH_OLD':'old',
