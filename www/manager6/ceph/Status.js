@@ -129,6 +129,26 @@ Ext.define('PVE.node.CephStatus', {
 	    title: gettext('Status')
 	},
 	{
+	    title: gettext('Services'),
+	    xtype: 'pveCephServices',
+	    itemId: 'services',
+	    plugins: 'responsive',
+	    layout: {
+		type: 'hbox',
+		align: 'stretch'
+	    },
+	    responsiveConfig: {
+		'width < 1900': {
+		    columnWidth: 1,
+		    minHeight: 200
+		},
+		'width >= 1900': {
+		    columnWidth: 0.5,
+		    minHeight: 200
+		}
+	    }
+	},
+	{
 	    xtype: 'panel',
 	    title: gettext('Performance'),
 	    columnWidth: 1,
@@ -228,6 +248,9 @@ Ext.define('PVE.node.CephStatus', {
 	me.down('#overallhealth').updateHealth(PVE.Utils.render_ceph_health(rec.data.health || {}));
 	// add errors to gridstore
 	me.down('#warnings').getStore().loadRawData(me.generateCheckData(rec.data.health || {}), false);
+
+	// update services
+	me.getComponent('services').updateAll(me.metadata || {}, rec.data);
 
 	// update detailstatus panel
 	me.getComponent('statusdetail').updateAll(me.metadata || {}, rec.data);
@@ -331,13 +354,18 @@ Ext.define('PVE.node.CephStatus', {
 	    var rec = records[0];
 	    me.metadata = rec.data;
 
+	    // update services
+	    me.getComponent('services').updateAll(rec.data, me.status || {});
+
 	    // update detailstatus panel
 	    me.getComponent('statusdetail').updateAll(rec.data, me.status || {});
 
 	}, me);
 
 	me.on('destroy', me.store.stopUpdate);
+	me.on('destroy', me.metadatastore.stopUpdate);
 	me.store.startUpdate();
+	me.metadatastore.startUpdate();
     }
 
 });
