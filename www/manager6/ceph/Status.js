@@ -278,17 +278,15 @@ Ext.define('PVE.node.CephStatus', {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;
-	if (!nodename) {
-	    throw "no node name specified";
-	}
 
 	me.callParent();
+	var baseurl = '/api2/json' + (nodename ? '/nodes/' + nodename : '/cluster') + '/ceph/';
 	me.store = Ext.create('Proxmox.data.UpdateStore', {
-	    storeid: 'ceph-status-' + nodename,
+	    storeid: 'ceph-status-' + (nodename || 'cluster'),
 	    interval: 5000,
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + nodename + '/ceph/status'
+		url: baseurl + '/status'
 	    }
 	});
 
@@ -307,7 +305,7 @@ Ext.define('PVE.node.CephStatus', {
 	var regex = new RegExp("not (installed|initialized)", "i");
 	PVE.Utils.handleStoreErrorOrMask(me, me.store, regex, function(me, error){
 	    me.store.stopUpdate();
-	    PVE.Utils.showCephInstallOrMask(me, error.statusText, nodename,
+	    PVE.Utils.showCephInstallOrMask(me, error.statusText, (nodename || 'localhost'),
 		function(win){
 		    me.mon(win, 'cephInstallWindowClosed', function(){
 			me.store.startUpdate();
