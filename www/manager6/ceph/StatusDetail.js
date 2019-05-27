@@ -18,6 +18,9 @@ Ext.define('PVE.ceph.StatusDetail', {
     items: [{
 	flex: 1,
 	itemId: 'osds',
+	maxHeight: 250,
+	scrollable: true,
+	padding: '0 10 5 10',
 	data: {
 	    total: 0,
 	    upin: 0,
@@ -54,7 +57,17 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    '<br /><div>',
 	    gettext('Total'),
 	    ': {total}',
-	    '</div>'
+	    '</div><br />',
+	    '<tpl if="oldosds">',
+	    '<i class="fa fa-refresh warning"></i> ' + gettext('Outdated OSDs') + "<br>",
+	    '<div class="osds">',
+	    '<tpl for="oldosds">',
+	    '<div class="left-aligned">osd.{id}:</div>',
+	    '<div class="right-aligned">{version}</div><br />',
+	    '<div style="clear:both"></div>',
+	    '</tpl>',
+	    '</div>',
+	    '</tpl>'
 	]
     },
     {
@@ -77,6 +90,27 @@ Ext.define('PVE.ceph.StatusDetail', {
     updateAll: function(metadata, status) {
 	var me = this;
 	me.suspendLayout = true;
+
+	var maxversion = "00.0.00";
+	Object.values(metadata.version || {}).forEach(function(version) {
+	    if (version > maxversion) {
+		maxversion = version;
+	    }
+	});
+
+	var oldosds = [];
+
+	if (metadata.osd) {
+	    metadata.osd.forEach(function(osd) {
+		var version = PVE.Utils.parse_ceph_version(osd);
+		if (version != maxversion) {
+		    oldosds.push({
+			id: osd.id,
+			version: version
+		    });
+		}
+	    });
+	}
 
 	var pgmap = status.pgmap || {};
 	var health = status.health || {};
@@ -120,7 +154,8 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    upin: upin_osds,
 	    upout: upout_osds,
 	    downin: downin_osds,
-	    downout: downout_osds
+	    downout: downout_osds,
+	    oldosds: oldosds
 	};
 	var osdcomponent = me.getComponent('osds');
 	osdcomponent.update(Ext.apply(osdcomponent.data, osds));

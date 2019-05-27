@@ -290,6 +290,15 @@ Ext.define('PVE.node.CephStatus', {
 	    }
 	});
 
+	me.metadatastore = Ext.create('Proxmox.data.UpdateStore', {
+	    storeid: 'ceph-metadata-' + (nodename || 'cluster'),
+	    interval: 15*1000,
+	    proxy: {
+		type: 'proxmox',
+		url: baseurl + 'metadata'
+	    }
+	});
+
 	// save references for the updatefunction
 	me.iops = me.down('#iops');
 	me.readiops = me.down('#readiops');
@@ -315,6 +324,18 @@ Ext.define('PVE.node.CephStatus', {
 	});
 
 	me.mon(me.store, 'load', me.updateAll, me);
+	me.mon(me.metadatastore, 'load', function(store, records, success) {
+	    if (!success || records.length < 1) {
+		return;
+	    }
+	    var rec = records[0];
+	    me.metadata = rec.data;
+
+	    // update detailstatus panel
+	    me.getComponent('statusdetail').updateAll(rec.data, me.status || {});
+
+	}, me);
+
 	me.on('destroy', me.store.stopUpdate);
 	me.store.startUpdate();
     }
