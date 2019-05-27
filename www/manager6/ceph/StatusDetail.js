@@ -71,21 +71,120 @@ Ext.define('PVE.ceph.StatusDetail', {
 	]
     },
     {
+	flex: 1,
+	border: false,
+	itemId: 'pgchart',
+	xtype: 'polar',
+	height: 184,
+	innerPadding: 5,
+	insetPadding: 5,
+	colors: [
+	    '#CFCFCF',
+	    '#21BF4B',
+	    '#FFCC00',
+	    '#FF6C59'
+	],
+	store: { },
+	series: [
+	    {
+		type: 'pie',
+		donut: 60,
+		angleField: 'count',
+		tooltip: {
+		    trackMouse: true,
+		    renderer: function(tooltip, record, ctx) {
+			var html = record.get('text');
+			html += '<br>';
+			record.get('states').forEach(function(state) {
+			    html += '<br>' +
+				state.state_name + ': ' + state.count.toString();
+			});
+			tooltip.setHtml(html);
+		    }
+		},
+		subStyle: {
+		    strokeStyle: false
+		}
+	    }
+	]
+    },
+    {
 	flex: 1.6,
 	itemId: 'pgs',
 	padding: '0 10',
+	maxHeight: 250,
+	scrollable: true,
 	data: {
 	    states: []
 	},
 	tpl: [
 	    '<h3>' + 'PGs' + '</h3>',
 	    '<tpl for="states">',
-	    '<div class="left-aligned">{state_name}:</div>',
+	    '<div class="left-aligned"><i class ="fa fa-circle {cls}"></i> {state_name}:</div>',
 	    '<div class="right-aligned">{count}</div><br />',
 	    '<div style="clear:both"></div>',
 	    '</tpl>'
 	]
     }],
+
+    // similar to mgr dashboard
+    pgstates: {
+	// clean
+	clean: 1,
+	active: 1,
+
+	// working
+	activating: 2,
+	backfill_wait: 2,
+	backfilling: 2,
+	creating: 2,
+	deep: 2,
+	degraded: 2,
+	forced_backfill: 2,
+	forced_recovery: 2,
+	peered: 2,
+	peering: 2,
+	recovering: 2,
+	recovery_wait: 2,
+	repair: 2,
+	scrubbing: 2,
+	snaptrim: 2,
+	snaptrim_wait: 2,
+
+	// error
+	backfill_toofull: 3,
+	backfill_unfound: 3,
+	down: 3,
+	incomplete: 3,
+	inconsistent: 3,
+	recovery_toofull: 3,
+	recovery_unfound: 3,
+	remapped: 3,
+	snaptrim_error: 3,
+	stale: 3,
+	undersized: 3
+    },
+
+    statecategories: [
+	{
+	    text: gettext('Unknown'),
+	    count: 0,
+	    states: [],
+	    cls: 'faded'
+	},
+	{
+	    text: gettext('Clean'),
+	    cls: 'good'
+	},
+	{
+	    text: gettext('Working'),
+	    cls: 'warning'
+	},
+	{
+	    text: gettext('Error'),
+	    cls: 'critical'
+	}
+    ],
 
     updateAll: function(metadata, status) {
 	var me = this;
@@ -122,6 +221,29 @@ Ext.define('PVE.ceph.StatusDetail', {
 	pgs_by_state.sort(function(a,b){
 	    return (a.state_name < b.state_name)?-1:(a.state_name === b.state_name)?0:1;
 	});
+
+	me.statecategories.forEach(function(cat) {
+	    cat.count = 0;
+	    cat.states = [];
+	});
+
+	pgs_by_state.forEach(function(state) {
+	    var i;
+	    var states = state.state_name.split(/[^a-z]+/);
+	    var result = 0;
+	    for (i = 0; i < states.length; i++) {
+		if (me.pgstates[states[i]] > result) {
+		    result = me.pgstates[states[i]];
+		}
+	    }
+	    // for the list
+	    state.cls = me.statecategories[result].cls;
+
+	    me.statecategories[result].count += state.count;
+	    me.statecategories[result].states.push(state);
+	});
+
+	me.getComponent('pgchart').getStore().setData(me.statecategories);
 	me.getComponent('pgs').update({states: pgs_by_state});
 
 	var downinregex = /(\d+) osds down/;
