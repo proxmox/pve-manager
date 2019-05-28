@@ -50,7 +50,7 @@ Ext.define('PVE.Utils', { utilities: {
 
     kvm_ostypes: {
 	'Linux': [
-	    { desc: '4.X/3.X/2.6 Kernel', val: 'l26' },
+	    { desc: '5.x - 2.6 Kernel', val: 'l26' },
 	    { desc: '2.4 Kernel', val: 'l24' }
 	],
 	'Microsoft Windows': [
