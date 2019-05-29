@@ -575,7 +575,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var rowdef = rows[key];
 
 	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
-	    var isCDRom = (value && !!value.match(/media=cdrom/));
+	    var isCDRom = (value && !!value.toString().match(/media=cdrom/));
 	    var isUnusedDisk = key.match(/^unused\d+/);
 	    var isUsedDisk = !isUnusedDisk &&
 		rowdef.tdCls == 'pve-itype-icon-storage' &&
