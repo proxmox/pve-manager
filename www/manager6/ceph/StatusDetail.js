@@ -26,7 +26,8 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    upin: 0,
 	    upout: 0,
 	    downin: 0,
-	    downout: 0
+	    downout: 0,
+	    oldosds: []
 	},
 	tpl: [
 	    '<h3>' + 'OSDs' + '</h3>',
@@ -58,7 +59,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    gettext('Total'),
 	    ': {total}',
 	    '</div><br />',
-	    '<tpl if="oldosds">',
+	    '<tpl if="oldosds.length &gt; 0">',
 	    '<i class="fa fa-refresh warning"></i> ' + gettext('Outdated OSDs') + "<br>",
 	    '<div class="osds">',
 	    '<tpl for="oldosds">',
