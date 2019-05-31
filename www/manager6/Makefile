@@ -223,7 +223,7 @@ JSSRC= 				                 	\
 	Workspace.js
 
 lint: ${JSSRC}
-	jslint ${JSSRC} 
+	jslint ${JSSRC}
 
 pvemanagerlib.js: OnlineHelpInfo.js ${JSSRC}
 	cat OnlineHelpInfo.js ${JSSRC} >$@.tmp
@@ -235,14 +235,14 @@ OnlineHelpInfo.js: /usr/bin/asciidoc-pve
 
 all: pvemanagerlib.js
 
-.PHONY: install 
+.PHONY: install
 install: pvemanagerlib.js
 	install -d ${WWWJSDIR}
 	install -m 0644 pvemanagerlib.js ${WWWJSDIR}
 
 .PHONY: clean
 clean:
-	find . -name '*~' -exec rm {} ';'	
+	find . -name '*~' -exec rm {} ';'
 	rm -rf pvemanagerlib.js OnlineHelpInfo.js
 
 
