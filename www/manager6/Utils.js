@@ -117,6 +117,38 @@ Ext.define('PVE.Utils', { utilities: {
 	return undefined;
     },
 
+    compare_ceph_versions: function(a, b) {
+	if (a === b) {
+	    return 0;
+	}
+
+	var match_a = a.toString().match(/^(\d+)\.(\d+).(\d+)$/);
+	var match_b = b.toString().match(/^(\d+)\.(\d+).(\d+)$/);
+
+	if (!match_a && !match_b) {
+	    // both versions invalid/undefined
+	    return 0;
+	} else if(!match_a) {
+	    // a is undefined/invalid but b not
+	    return -1;
+	} else if(!match_b) {
+	    // b is undefined/invalid but a not
+	    return 1;
+	}
+
+	var i;
+	for (i = 1; i <= 3; i++) {
+	    var ver_a = parseInt(match_a[i], 10);
+	    var ver_b = parseInt(match_b[i], 10);
+	    if (ver_a !== ver_b) {
+		return ver_a - ver_b;
+	    }
+	}
+
+	// all parts were the same
+	return 0;
+    },
+
     get_ceph_icon_html: function(health, fw) {
 	var state = PVE.Utils.map_ceph_health[health];
 	var cls = PVE.Utils.get_health_icon(state);
