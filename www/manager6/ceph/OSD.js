@@ -188,7 +188,6 @@ Ext.define('PVE.node.CephOsdTree', {
 		}
 
 		if (!value && rec.data.type == 'host') {
-		    icon = '<i class="fa faded fa-cube"></i> ';
 		    version = me.versions[rec.data.name] || Proxmox.Utils.unknownText;
 		}
 
