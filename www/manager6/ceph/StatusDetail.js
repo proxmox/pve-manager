@@ -193,7 +193,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 
 	var maxversion = "00.0.00";
 	Object.values(metadata.version || {}).forEach(function(version) {
-	    if (version > maxversion) {
+	    if (PVE.Utils.compare_ceph_versions(version, maxversion) > 0) {
 		maxversion = version;
 	    }
 	});
