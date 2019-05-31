@@ -139,6 +139,9 @@ __PACKAGE__->register_method ({
 		} else {
 		    $new->{osdtype} = 'filestore';
 		}
+		for my $field (qw(ceph_version ceph_version_short)) {
+		    $new->{$field} = $osdmd->{$field} if $osdmd->{$field};
+		}
 	    }
 
 	    $newnodes->{$e->{id}} = $new;
@@ -175,6 +178,7 @@ __PACKAGE__->register_method ({
 
 	# we want this for the noout flag
 	$data->{flags} = $flags if $flags;
+	$data->{versions} = PVE::Cluster::get_node_kv("ceph-version");
 
 	return $data;
     }});

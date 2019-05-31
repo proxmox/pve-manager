@@ -177,6 +177,25 @@ Ext.define('PVE.node.CephOsdTree', {
 	    width: 80
 	},
 	{
+	    text: gettext('Version'),
+	    dataIndex: 'version',
+	    renderer: function(value, metadata, rec) {
+		var me = this;
+		var icon = "";
+		var version = value || "";
+		if (value && value != me.maxversion) {
+		    icon = PVE.Utils.get_ceph_icon_html('HEALTH_OLD');
+		}
+
+		if (!value && rec.data.type == 'host') {
+		    icon = '<i class="fa faded fa-cube"></i> ';
+		    version = me.versions[rec.data.name] || Proxmox.Utils.unknownText;
+		}
+
+		return icon + version;
+	    }
+	},
+	{
 	    text: 'weight',
 	    dataIndex: 'crush_weight',
 	    align: 'right',
@@ -265,6 +284,7 @@ Ext.define('PVE.node.CephOsdTree', {
 
 	// we expect noout to be not set by default
 	var noout = false;
+	me.maxversion = "00.0.00";
 
 	var nodename = me.pveSelNode.data.node;
 	if (!nodename) {
@@ -291,16 +311,24 @@ Ext.define('PVE.node.CephOsdTree', {
 		    );
 		},
 		success: function(response, opts) {
+		    var data = response.result.data;
 		    sm.deselectAll();
-		    me.setRootNode(response.result.data.root);
+		    me.setRootNode(data.root);
 		    me.expandAll();
 		    // extract noout flag
-		    if (response.result.data.flags &&
-			response.result.data.flags.search(/noout/) !== -1) {
+		    if (data.flags && data.flags.search(/noout/) !== -1) {
 			noout = true;
 		    } else {
 			noout = false;
 		    }
+
+		    me.versions = data.versions;
+		    // extract max version
+		    Object.values(data.versions || {}).forEach(function(version) {
+			if (PVE.Utils.compare_ceph_versions(version, me.maxversion) > 0) {
+			    me.maxversion = version;
+			}
+		    });
 		    set_button_status();
 		}
 	    });
@@ -484,6 +512,9 @@ Ext.define('PVE.node.CephOsdTree', {
 		     { type: 'string', name: 'blfsdev' },
 		     { type: 'string', name: 'dbdev' },
 		     { type: 'string', name: 'waldev' },
+		     { type: 'string', name: 'version', calculate: function(data) {
+			 return PVE.Utils.parse_ceph_version(data);
+		     } },
 		     { type: 'string', name: 'iconCls', calculate: function(data) {
 			 var iconCls = 'fa x-fa-tree fa-';
 			 switch (data.type) {
