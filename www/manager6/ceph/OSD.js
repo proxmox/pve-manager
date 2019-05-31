@@ -284,7 +284,7 @@ Ext.define('PVE.node.CephOsdTree', {
 
 	// we expect noout to be not set by default
 	var noout = false;
-	me.maxversion = "00.0.00";
+	me.maxversion = "0";
 
 	var nodename = me.pveSelNode.data.node;
 	if (!nodename) {
