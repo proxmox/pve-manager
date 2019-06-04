@@ -47,7 +47,7 @@ sub broadcast_ceph_services {
 
 sub get_cluster_service {
     my ($type) = @_;
-    PVE::Cluster::cfs_update();
+
     my $raw = PVE::Cluster::get_node_kv("ceph-$type");
     my $res = {};
 
