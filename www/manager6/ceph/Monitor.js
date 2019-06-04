@@ -1,234 +1,46 @@
-Ext.define('PVE.CephCreateMon', {
-    extend: 'Proxmox.window.Edit',
-    alias: ['widget.pveCephCreateMon'],
+Ext.define('PVE.node.CephMonMgrList', {
+    extend: 'Ext.container.Container',
+    xtype: 'pveNodeCephMonMgr',
 
-    subject: 'Ceph Monitor/Manager',
-    onlineHelp: 'pve_ceph_monitors',
-
-    showProgress: true,
-
-    setNode: function(nodename) {
-        var me = this;
-
-	me.nodename = nodename;
-        me.url = "/nodes/" + nodename + "/ceph/mon";
-    },
-
-    initComponent : function() {
-
-        var me = this;
-
-	if (!me.nodename) {
-	    throw "no node name specified";
-	}
-
-	me.setNode(me.nodename);
-
-	me.isCreate = true;
-
-        Ext.applyIf(me, {
-            method: 'POST',
-            items: [
-               {
-		   xtype: 'pveNodeSelector',
-		   submitValue: false,
-		   fieldLabel: gettext('Host'),
-		   selectCurNode: true,
-		   allowBlank: false,
-		   listeners: {
-		       change: function(f, value) {
-			   me.setNode(value);
-		       }
-		   }
-	       }
-            ]
-        });
-
-        me.callParent();
-    }
-});
-
-Ext.define('PVE.node.CephMonList', {
-    extend: 'Ext.grid.GridPanel',
-    alias: ['widget.pveNodeCephMonList'],
+    mixins: ['Proxmox.Mixin.CBind' ],
 
     onlineHelp: 'chapter_pveceph',
 
-    stateful: true,
-    stateId: 'grid-ceph-monitor',
+    defaults: {
+	border: false,
+	onlineHelp: 'chapter_pveceph',
+	flex: 1
+    },
 
-    initComponent: function() {
-        var me = this;
+    layout: {
+	type: 'vbox',
+	align: 'stretch'
+    },
 
-	var nodename = me.pveSelNode.data.node;
-	if (!nodename) {
-	    throw "no node name specified";
-	}
-
-	var sm = Ext.create('Ext.selection.RowModel', {});
-
-	var rstore = Ext.create('Proxmox.data.UpdateStore', {
-	    interval: 3000,
-	    storeid: 'ceph-mon-list' + nodename,
-	    model: 'ceph-mon-list',
-	    proxy: {
-                type: 'proxmox',
-                url: "/api2/json/nodes/" + nodename + "/ceph/mon"
-	    }
-	});
-
-	var store = Ext.create('Proxmox.data.DiffStore', {
-	    rstore: rstore,
-	    sorters: [{ property: 'name'}]
-	});
-
-
-	var service_cmd = function(cmd) {
-	    var rec = sm.getSelection()[0];
-	    if (!rec.data.host) {
-		Ext.Msg.alert(gettext('Error'), "entry has no host");
-		return;
-	    }
-	    Proxmox.Utils.API2Request({
-		url: "/nodes/" + rec.data.host + "/ceph/" + cmd,
-		method: 'POST',
-		params: { service: "mon." + rec.data.name },
-		success: function(response, options) {
-		    var upid = response.result.data;
-		    var win = Ext.create('Proxmox.window.TaskProgress', { upid: upid });
-		    win.show();
-		},
-		failure: function(response, opts) {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
-	    });
-	};
-
-	var start_btn = new Proxmox.button.Button({
-	    text: gettext('Start'),
-	    selModel: sm,
-	    disabled: true,
-	    handler: function(){
-		service_cmd("start");
-	    }
-	});
-
-	var stop_btn = new Proxmox.button.Button({
-	    text: gettext('Stop'),
-	    selModel: sm,
-	    disabled: true,
-	    handler: function(){
-		service_cmd("stop");
-	    }
-	});
-
-	var restart_btn = new Proxmox.button.Button({
-	    text: gettext('Restart'),
-	    selModel: sm,
-	    disabled: true,
-	    handler: function(){
-		service_cmd("restart");
-	    }
-	});
-
-	var create_btn = new Ext.Button({
-	    text: gettext('Create'),
-	    handler: function(){
-		var win = Ext.create('PVE.CephCreateMon', {
-                    nodename: nodename
-		});
-		win.show();
-	    }
-	});
-
-	var remove_btn = new Proxmox.button.Button({
-	    text: gettext('Remove'),
-	    selModel: sm,
-	    disabled: true,
-	    handler: function() {
-		var rec = sm.getSelection()[0];
-
-		if (!rec.data.host) {
-		    Ext.Msg.alert(gettext('Error'), "entry has no host");
-		    return;
-		}
-
-		Proxmox.Utils.API2Request({
-		    url: "/nodes/" + rec.data.host + "/ceph/mon/" +
-			rec.data.name,
-		    method: 'DELETE',
-		    success: function(response, options) {
-			var upid = response.result.data;
-			var win = Ext.create('Proxmox.window.TaskProgress', { upid: upid });
-			win.show();
-		    },
-		    failure: function(response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
-		});
-	    }
-	});
-
-	Ext.apply(me, {
-	    store: store,
-	    selModel: sm,
-	    tbar: [ start_btn, stop_btn, restart_btn, '-', create_btn, remove_btn ],
-	    columns: [
-		{
-		    header: gettext('Name'),
-		    width: 100,
-		    sortable: true,
-		    renderer: function(v) { return "mon." + v; },
-		    dataIndex: 'name'
-		},
-		{
-		    header: gettext('Host'),
-		    width: 100,
-		    sortable: true,
-		    renderer: function(v) {
-			return v || 'unknown';
-		    },
-		    dataIndex: 'host'
-		},
+    items: [
+	{
+	    xtype: 'pveNodeCephServiceList',
+	    cbind: { pveSelNode: '{pveSelNode}' },
+	    type: 'mon',
+	    additionalColumns: [
 		{
 		    header: gettext('Quorum'),
 		    width: 70,
-		    sortable: false,
+		    sortable: true,
 		    renderer: Proxmox.Utils.format_boolean,
 		    dataIndex: 'quorum'
-		},
-		{
-		    header: gettext('Address'),
-		    flex: 1,
-		    sortable: true,
-		    dataIndex: 'addr'
 		}
 	    ],
-	    listeners: {
-		activate: rstore.startUpdate,
-		destroy: rstore.stopUpdate
-	    }
-	});
-
-	var regex = new RegExp("not (installed|initialized)", "i");
-	PVE.Utils.handleStoreErrorOrMask(me, rstore, regex, function(me, error){
-	    me.store.rstore.stopUpdate();
-	    PVE.Utils.showCephInstallOrMask(me, error.statusText, nodename,
-		function(win){
-		    me.mon(win, 'cephInstallWindowClosed', function(){
-			me.store.rstore.startUpdate();
-		    });
-		}
-	    );
-	});
-
-	me.callParent();
-    }
-}, function() {
-
-    Ext.define('ceph-mon-list', {
-	extend: 'Ext.data.Model',
-	fields: [ 'addr', 'name', 'rank', 'host', 'quorum' ],
-	idProperty: 'name'
-    });
+	    stateId: 'grid-ceph-monitor',
+	    showCephInstallMask: true,
+	    title: gettext('Monitor')
+	},
+	{
+	    xtype: 'pveNodeCephServiceList',
+	    type: 'mgr',
+	    stateId: 'grid-ceph-manager',
+	    cbind: { pveSelNode: '{pveSelNode}' },
+	    title: gettext('Manager')
+	}
+    ]
 });

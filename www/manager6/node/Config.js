@@ -326,7 +326,7 @@ Ext.define('PVE.node.Config', {
 		    itemId: 'ceph-config'
 		},
 		{
-		    xtype: 'pveNodeCephMonList',
+		    xtype: 'pveNodeCephMonMgr',
 		    title: gettext('Monitor'),
 		    iconCls: 'fa fa-tv',
 		    groups: ['ceph'],
