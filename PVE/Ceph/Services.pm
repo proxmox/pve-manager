@@ -78,13 +78,13 @@ sub get_services_info {
     my $services = get_cluster_service($type);
 
     foreach my $host (sort keys %$services) {
-	foreach  my $id (sort keys %{$services->{$host}}) {
-	    $result->{$id} = $services->{$host}->{$id};
-	    $result->{$id}->{host} = $host;
-	    $result->{$id}->{name} = $id;
-	    $result->{$id}->{state} = 'unknown';
-	    if ($result->{$id}->{service}) {
-		$result->{$id}->{state} = 'stopped';
+	foreach my $id (sort keys %{$services->{$host}}) {
+	    my $service = $result->{$id} = $services->{$host}->{$id};
+	    $service->{host} = $host;
+	    $service->{name} = $id;
+	    $service->{state} = 'unknown';
+	    if ($service->{service}) {
+		$service->{state} = 'stopped';
 	    }
 	}
     }
@@ -97,11 +97,12 @@ sub get_services_info {
 	my $d = $cfg->{$section};
 	if ($section =~ m/^$type\.(\S+)$/) {
 	    my $id = $1;
+	    my $service = $result->{$id};
 	    my $addr = $d->{"$type addr"} // $d->{"${type}_addr"} // $d->{host};
-	    $result->{$id}->{name} //= $id;
-	    $result->{$id}->{addr} //= $addr;
-	    $result->{$id}->{state} //= 'unknown';
-	    $result->{$id}->{host} //= $d->{host};
+	    $service->{name} //= $id;
+	    $service->{addr} //= $addr;
+	    $service->{state} //= 'unknown';
+	    $service->{host} //= $d->{host};
 	}
     }
 
@@ -109,11 +110,12 @@ sub get_services_info {
 	$rados = PVE::RADOS->new();
     }
     my $metadata = $rados->mon_command({ prefix => "$type metadata" });
-    foreach my $service (@$metadata) {
-	$result->{$service->{name}}->{ceph_version_short} = $service->{ceph_version_short};
-	$result->{$service->{name}}->{ceph_version} = $service->{ceph_version};
-	$result->{$service->{name}}->{host} //= $service->{hostname};
-	$result->{$service->{name}}->{addr} //= $service->{addr};
+    foreach my $info (@$metadata) {
+	my $service = $result->{$info->{name}};
+	$service->{ceph_version_short} = $info->{ceph_version_short};
+	$service->{ceph_version} = $info->{ceph_version};
+	$service->{host} //= $info->{hostname};
+	$service->{addr} //= $info->{addr};
     }
 
     return $result;
