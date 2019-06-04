@@ -7,6 +7,7 @@ use File::Path;
 
 use PVE::Ceph::Tools;
 use PVE::Ceph::Services;
+use PVE::Cluster qw(cfs_read_file);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RADOS;
 use PVE::RPCEnvironment;

@@ -68,7 +68,8 @@ __PACKAGE__->register_method ({
 	    type => "object",
 	    properties => {
 		name => { type => 'string' },
-		addr => { type => 'string' },
+		addr => { type => 'string', optional => 1 },
+		host => { type => 'string', optional => 1 },
 	    },
 	},
 	links => [ { rel => 'child', href => "{name}" } ],
@@ -83,32 +84,23 @@ __PACKAGE__->register_method ({
 	my $cfg = cfs_read_file('ceph.conf');
 
 	my $monhash = {};
-	foreach my $section (keys %$cfg) {
-	    my $d = $cfg->{$section};
-	    if ($section =~ m/^mon\.(\S+)$/) {
-		my $monid = $1;
-		if ($d->{'mon addr'} && $d->{'host'}) {
-		    $monhash->{$monid} = {
-			addr => $d->{'mon addr'},
-			host => $d->{'host'},
-			name => $monid,
-		    }
-		}
-	    }
-	}
 
 	eval {
 	    my $rados = PVE::RADOS->new();
+	    $monhash = PVE::Ceph::Services::get_services_info("mon", $cfg, $rados);
 	    my $monstat = $rados->mon_command({ prefix => 'mon_status' });
+
 	    my $mons = $monstat->{monmap}->{mons};
 	    foreach my $d (@$mons) {
 		next if !defined($d->{name});
 		$monhash->{$d->{name}}->{rank} = $d->{rank};
 		$monhash->{$d->{name}}->{addr} = $d->{addr};
+		$monhash->{$d->{name}}->{state} = 'running';
 		if (grep { $_ eq $d->{rank} } @{$monstat->{quorum}}) {
 		    $monhash->{$d->{name}}->{quorum} = 1;
 		}
 	    }
+
 	};
 	warn $@ if $@;
 

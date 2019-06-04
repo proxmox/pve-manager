@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use PVE::Ceph::Tools;
-use PVE::Cluster;
+use PVE::Cluster qw(cfs_read_file);
 use PVE::Tools qw(run_command);
 use PVE::RADOS;
 
@@ -69,6 +69,54 @@ sub ceph_service_cmd {
     }
 
     run_command(['/bin/systemctl', $action, $service]);
+}
+
+sub get_services_info {
+    my ($type, $cfg, $rados) = @_;
+
+    my $result = {};
+    my $services = get_cluster_service($type);
+
+    foreach my $host (sort keys %$services) {
+	foreach  my $id (sort keys %{$services->{$host}}) {
+	    $result->{$id} = $services->{$host}->{$id};
+	    $result->{$id}->{host} = $host;
+	    $result->{$id}->{name} = $id;
+	    $result->{$id}->{state} = 'unknown';
+	    if ($result->{$id}->{service}) {
+		$result->{$id}->{state} = 'stopped';
+	    }
+	}
+    }
+
+    if (!$cfg) {
+	$cfg = cfs_read_file('ceph.conf');
+    }
+
+    foreach my $section (keys %$cfg) {
+	my $d = $cfg->{$section};
+	if ($section =~ m/^$type\.(\S+)$/) {
+	    my $id = $1;
+	    my $addr = $d->{"$type addr"} // $d->{"${type}_addr"} // $d->{host};
+	    $result->{$id}->{name} //= $id;
+	    $result->{$id}->{addr} //= $addr;
+	    $result->{$id}->{state} //= 'unknown';
+	    $result->{$id}->{host} //= $d->{host};
+	}
+    }
+
+    if (!$rados) {
+	$rados = PVE::RADOS->new();
+    }
+    my $metadata = $rados->mon_command({ prefix => "$type metadata" });
+    foreach my $service (@$metadata) {
+	$result->{$service->{name}}->{ceph_version_short} = $service->{ceph_version_short};
+	$result->{$service->{name}}->{ceph_version} = $service->{ceph_version};
+	$result->{$service->{name}}->{host} //= $service->{hostname};
+	$result->{$service->{name}}->{addr} //= $service->{addr};
+    }
+
+    return $result;
 }
 
 # MDS

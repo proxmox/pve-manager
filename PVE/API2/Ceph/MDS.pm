@@ -71,26 +71,11 @@ __PACKAGE__->register_method ({
 	my $res = [];
 
 	my $cfg = cfs_read_file('ceph.conf');
+	my $rados = PVE::RADOS->new();
 
-	my $mds_hash = {};
+	my $mds_hash = PVE::Ceph::Services::get_services_info("mds", $cfg, $rados);
 
-	foreach my $section (keys %$cfg) {
-	    my $d = $cfg->{$section};
-
-	    if ($section =~ m/^mds\.(\S+)$/) {
-		my $mds_id = $1;
-		if (defined($d->{host})) {
-		    $mds_hash->{$mds_id} = {
-			name => $mds_id,
-			state => 'unknown',
-			addr => $d->{host},
-			host => $d->{host},
-		    };
-		}
-	    }
-	}
-
-	my $mds_state = PVE::Ceph::Services::get_cluster_mds_state();
+	my $mds_state = PVE::Ceph::Services::get_cluster_mds_state($rados);
 	foreach my $name (keys %$mds_state) {
 	    my $d = $mds_state->{$name};
 	    # just overwrite, this always provides more info
