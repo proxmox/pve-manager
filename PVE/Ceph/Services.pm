@@ -329,7 +329,7 @@ sub create_mgr {
 }
 
 sub destroy_mgr {
-    my ($mgrid) = @_;
+    my ($mgrid, $rados) = @_;
 
     my $clustername = PVE::Ceph::Tools::get_config('ccname');
     my $mgrname = "mgr.$mgrid";
@@ -345,6 +345,13 @@ sub destroy_mgr {
 
     print "removing manager directory '$mgrdir'\n";
     File::Path::remove_tree($mgrdir);
+
+    print "removing authkeys for $mgrname\n";
+    if (!$rados) {
+	$rados = PVE::RADOS->new();
+    }
+
+    $rados->mon_command({ prefix => 'auth del', entity => "$mgrname" });
 
     broadcast_ceph_services();
 
