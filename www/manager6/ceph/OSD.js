@@ -418,9 +418,13 @@ Ext.define('PVE.node.CephOsdTree', {
 		method: 'POST',
 		success: function(response, options) {
 		    var upid = response.result.data;
-		    var win = Ext.create('Proxmox.window.TaskProgress', { upid: upid });
+		    var win = Ext.create('Proxmox.window.TaskProgress', {
+			upid: upid,
+			taskDone: function() {
+			    me.reload();
+			}
+		    });
 		    win.show();
-		    me.mon(win, 'close', reload, me);
 		},
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
@@ -434,10 +438,12 @@ Ext.define('PVE.node.CephOsdTree', {
 		var rec = sm.getSelection()[0];
 
 		var win = Ext.create('PVE.CephCreateOsd', {
-                    nodename: nodename
+                    nodename: nodename,
+		    taskDone: function(success) {
+			me.reload();
+		    }
 		});
 		win.show();
-		me.mon(win, 'close', reload, me);
 	    }
 	});
 
@@ -482,10 +488,12 @@ Ext.define('PVE.node.CephOsdTree', {
 
 		var win = Ext.create('PVE.CephRemoveOsd', {
                     nodename: rec.data.host,
-		    osdid: rec.data.id
+		    osdid: rec.data.id,
+		    taskDone: function(success) {
+			me.reload();
+		    }
 		});
 		win.show();
-		me.mon(win, 'close', reload, me);
 	    }
 	});
 
