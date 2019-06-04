@@ -16,6 +16,70 @@ use PVE::Tools qw(run_command);
 use base qw(PVE::RESTHandler);
 
 __PACKAGE__->register_method ({
+    name => 'index',
+    path => '',
+    method => 'GET',
+    description => "MGR directory index.",
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
+    },
+    proxyto => 'node',
+    protected => 1,
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {
+		name => {
+		    description => "The name (ID) for the MGR",
+		},
+		addr => {
+		    type => 'string',
+		    optional => 1,
+		},
+		host => {
+		    type => 'string',
+		    optional => 1,
+		},
+		state => {
+		    type => 'string',
+		    description => 'State of the MGR',
+		},
+	    },
+	},
+	links => [ { rel => 'child', href => "{name}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::Ceph::Tools::check_ceph_inited();
+
+	my $res = [];
+
+	my $cfg = cfs_read_file('ceph.conf');
+	my $rados = PVE::RADOS->new();
+
+	my $mgr_hash = PVE::Ceph::Services::get_services_info("mgr", $cfg, $rados);
+
+	my $mgr_dump = $rados->mon_command({ prefix => 'mgr dump' });
+
+	$mgr_hash->{$mgr_dump->{active_name}}->{state} = 'active';
+
+	foreach my $mgr (@{$mgr_dump->{standbys}}) {
+	    $mgr_hash->{$mgr->{name}}->{state} = 'standby';
+	}
+
+	return PVE::RESTHandler::hash_to_array($mgr_hash, 'name');
+    }
+});
+
+__PACKAGE__->register_method ({
     name => 'createmgr',
     path => '',
     method => 'POST',
