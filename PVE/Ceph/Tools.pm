@@ -6,8 +6,10 @@ use warnings;
 use File::Path;
 use File::Basename;
 use IO::File;
+use JSON;
 
 use PVE::Tools qw(run_command dir_glob_foreach);
+use PVE::Cluster qw(cfs_read_file);
 use PVE::RADOS;
 
 my $ccname = 'ceph'; # ceph cluster name
@@ -27,6 +29,7 @@ my $ceph_service = {
     ceph_mgr => "/usr/bin/ceph-mgr",
     ceph_osd => "/usr/bin/ceph-osd",
     ceph_mds => "/usr/bin/ceph-mds",
+    ceph_volume => '/usr/sbin/ceph-volume',
 };
 
 my $config_hash = {
@@ -239,5 +242,35 @@ sub wipe_disks {
 	warn $@ if $@;
     }
 };
+
+# get ceph-volume managed osds
+sub ceph_volume_list {
+    my $result = {};
+    my $output = '';
+
+    if (!check_ceph_installed('ceph_volume', 1)) {
+	return $result;
+    }
+
+    my $cmd = [$ceph_service->{ceph_volume}, 'lvm', 'list', '--format', 'json'];
+    run_command($cmd, outfunc => sub {
+	$output .= shift;
+    });
+
+    $result = eval { decode_json($output) };
+    warn $@ if $@;
+    return $result;
+}
+
+sub ceph_volume_zap {
+    my ($osdid, $destroy) = @_;
+
+    die "no osdid given\n" if !defined($osdid);
+
+    my $cmd = [$ceph_service->{ceph_volume}, 'lvm', 'zap', '--osd-id', $osdid];
+    push @$cmd, '--destroy' if $destroy;
+
+    run_command($cmd);
+}
 
 1;
