@@ -356,9 +356,20 @@ Ext.define('PVE.node.CephOsdTree', {
 		},
 		success: function(response, opts) {
 		    var data = response.result.data;
+		    var selected = me.getSelection();
+		    var name;
+		    if (selected.length) {
+			name = selected[0].data.name;
+		    }
 		    sm.deselectAll();
 		    me.setRootNode(data.root);
 		    me.expandAll();
+		    if (name) {
+			var node = me.getRootNode().findChild('name', name, true);
+			if (node) {
+			    me.setSelection([node]);
+			}
+		    }
 		    // extract noout flag
 		    if (data.flags && data.flags.search(/noout/) !== -1) {
 			noout = true;
