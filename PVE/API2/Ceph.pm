@@ -89,6 +89,7 @@ __PACKAGE__->register_method ({
 	    { name => 'mds' },
 	    { name => 'stop' },
 	    { name => 'start' },
+	    { name => 'restart' },
 	    { name => 'status' },
 	    { name => 'crush' },
 	    { name => 'config' },
