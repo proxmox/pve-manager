@@ -10,6 +10,7 @@ use PVE::RADOS;
 use File::Path;
 
 # checks /etc/systemd/system/ceph-* to list all services, even if not running
+# also checks /var/lib/ceph/$type
 sub get_local_services {
     my $res = {};
 
@@ -20,9 +21,14 @@ sub get_local_services {
 	my $regex = "ceph-$type\@(.*)\.service";
 	PVE::Tools::dir_glob_foreach($path, $regex, sub {
 	    my (undef, $id) = @_;
-	    $res->{$type}->{$id} = {
-		service => 1,
-	    }
+	    $res->{$type}->{$id}->{service} = 1;
+	});
+
+	$path = "/var/lib/ceph/$type";
+	$regex = "([^-]+)-(.*)";
+	PVE::Tools::dir_glob_foreach($path, $regex, sub {
+	    my (undef, $clustername, $id) = @_;
+	    $res->{$type}->{$id}->{direxists} = 1;
 	});
     }
     return $res;
