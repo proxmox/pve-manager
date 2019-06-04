@@ -246,16 +246,14 @@ sub wipe_disks {
 # get ceph-volume managed osds
 sub ceph_volume_list {
     my $result = {};
-    my $output = '';
 
     if (!check_ceph_installed('ceph_volume', 1)) {
 	return $result;
     }
 
-    my $cmd = [$ceph_service->{ceph_volume}, 'lvm', 'list', '--format', 'json'];
-    run_command($cmd, outfunc => sub {
-	$output .= shift;
-    });
+    my $output = '';
+    my $cmd = [ $ceph_service->{ceph_volume}, 'lvm', 'list', '--format', 'json' ];
+    run_command($cmd, outfunc => sub { $output .= shift });
 
     $result = eval { decode_json($output) };
     warn $@ if $@;
@@ -267,7 +265,7 @@ sub ceph_volume_zap {
 
     die "no osdid given\n" if !defined($osdid);
 
-    my $cmd = [$ceph_service->{ceph_volume}, 'lvm', 'zap', '--osd-id', $osdid];
+    my $cmd = [ $ceph_service->{ceph_volume}, 'lvm', 'zap', '--osd-id', $osdid ];
     push @$cmd, '--destroy' if $destroy;
 
     run_command($cmd);
