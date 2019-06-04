@@ -1,6 +1,6 @@
 Ext.define('PVE.CephCreateOsd', {
     extend: 'Proxmox.window.Edit',
-    alias: ['widget.pveCephCreateOsd'],
+    xtype: 'pveCephCreateOsd',
 
     subject: 'Ceph OSD',
 
@@ -22,35 +22,80 @@ Ext.define('PVE.CephCreateOsd', {
 	    method: 'POST',
 	    items: [
 		{
-		    xtype: 'pveDiskSelector',
-		    name: 'dev',
-		    nodename: me.nodename,
-		    diskType: 'unused',
-		    fieldLabel: gettext('Disk'),
-		    allowBlank: false
-		},
-		{
-		    xtype: 'pveDiskSelector',
-		    name: 'journal_dev',
-		    nodename: me.nodename,
-		    diskType: 'journal_disks',
-		    fieldLabel: gettext('Journal/DB Disk'),
-		    value: '',
-		    autoSelect: false,
-		    allowBlank: true,
-		    emptyText: 'use OSD disk'
-		},
-		{
-		    xtype: 'proxmoxcheckbox',
-		    name: 'bluestore',
-		    fieldLabel: 'Bluestore',
-		    uncheckedValue: '0',
-		    value: '1'
+		    xtype: 'inputpanel',
+		    column1: [
+			{
+			    xtype: 'pveDiskSelector',
+			    name: 'dev',
+			    nodename: me.nodename,
+			    diskType: 'unused',
+			    fieldLabel: gettext('Disk'),
+			    allowBlank: false
+			}
+		    ],
+		    column2: [
+			{
+			    xtype: 'pveDiskSelector',
+			    name: 'db_dev',
+			    nodename: me.nodename,
+			    diskType: 'journal_disks',
+			    fieldLabel: gettext('DB Disk'),
+			    value: '',
+			    autoSelect: false,
+			    allowBlank: true,
+			    emptyText: 'use OSD disk',
+			    listeners: {
+				change: function(field, val) {
+				    me.down('field[name=db_size]').setDisabled(!val);
+				}
+			    }
+			},
+			{
+			    xtype: 'numberfield',
+			    name: 'db_size',
+			    fieldLabel: gettext('DB size') + ' (GiB)',
+			    minValue: 1,
+			    maxValue: 128*1024,
+			    decimalPrecision: 2,
+			    allowBlank: true,
+			    disabled: true,
+			    emptyText: gettext('Automatic')
+			}
+		    ],
+		    advancedColumn1: [
+			{
+			    xtype: 'pveDiskSelector',
+			    name: 'wal_dev',
+			    nodename: me.nodename,
+			    diskType: 'journal_disks',
+			    fieldLabel: gettext('WAL Disk'),
+			    value: '',
+			    autoSelect: false,
+			    allowBlank: true,
+			    emptyText: 'use OSD/DB disk',
+			    listeners: {
+				change: function(field, val) {
+				    me.down('field[name=wal_size]').setDisabled(!val);
+				}
+			    }
+			},
+			{
+			    xtype: 'numberfield',
+			    name: 'wal_size',
+			    fieldLabel: gettext('WAL size') + ' (GiB)',
+			    minValue: 0.5,
+			    maxValue: 128*1024,
+			    decimalPrecision: 2,
+			    allowBlank: true,
+			    disabled: true,
+			    emptyText: gettext('Automatic')
+			}
+		    ]
 		}
-            ]
-        });
+	    ]
+	});
 
-        me.callParent();
+	me.callParent();
     }
 });
 
