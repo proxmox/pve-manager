@@ -652,13 +652,11 @@ __PACKAGE__->register_method ({
 	};
 
 	for my $type ( qw(mon mgr mds) ) {
-	    my $typedata = PVE::Cluster::get_node_kv("ceph-$type");
+	    my $typedata = PVE::Ceph::Services::get_cluster_service($type);
 	    my $data = {};
 	    for my $host (sort keys %$typedata) {
-		my $d = eval { decode_json($typedata->{$host}) };
-		for my $service (sort keys %$d) {
-		    $d->{hostname} = $host;
-		    $data->{"$service\@$host"} = $d->{$service};
+		for my $service (sort keys %{$typedata->{$host}}) {
+		    $data->{"$service\@$host"} = $typedata->{$host}->{$service};
 		}
 	    }
 

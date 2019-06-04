@@ -276,6 +276,7 @@ __PACKAGE__->register_method ({
 		my $rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
 		PVE::Ceph::Services::create_mgr($monid, $rados);
 	    }
+	    PVE::Ceph::Services::broadcast_ceph_services();
 	};
 
 	return $rpcenv->fork_worker('cephcreatemon', $monsection, $authuser, $worker);
@@ -357,6 +358,7 @@ __PACKAGE__->register_method ({
 		eval { PVE::Ceph::Services::destroy_mgr($monid) };
 		warn $@ if $@;
 	    }
+	    PVE::Ceph::Services::broadcast_ceph_services();
 	};
 
 	return $rpcenv->fork_worker('cephdestroymon', $monsection,  $authuser, $worker);

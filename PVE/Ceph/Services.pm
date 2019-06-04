@@ -4,9 +4,11 @@ use strict;
 use warnings;
 
 use PVE::Ceph::Tools;
+use PVE::Cluster;
 use PVE::Tools qw(run_command);
 use PVE::RADOS;
 
+use JSON;
 use File::Path;
 
 # checks /etc/systemd/system/ceph-* to list all services, even if not running
@@ -31,6 +33,28 @@ sub get_local_services {
 	    $res->{$type}->{$id}->{direxists} = 1;
 	});
     }
+    return $res;
+}
+
+sub broadcast_ceph_services {
+    my $services = get_local_services();
+
+    for my $type (keys %$services) {
+	my $data = encode_json($services->{$type});
+	PVE::Cluster::broadcast_node_kv("ceph-$type", $data);
+    }
+}
+
+sub get_cluster_service {
+    my ($type) = @_;
+    PVE::Cluster::cfs_update();
+    my $raw = PVE::Cluster::get_node_kv("ceph-$type");
+    my $res = {};
+
+    for my $host (keys %$raw) {
+	$res->{$host} = eval { decode_json($raw->{$host}) };
+    }
+
     return $res;
 }
 
@@ -174,6 +198,8 @@ sub create_mds {
     print "starting service 'ceph-mds\@$id.service'\n";
     ceph_service_cmd('start', $service_name);
 
+    broadcast_ceph_services();
+
     return undef;
 };
 
@@ -207,6 +233,8 @@ sub destroy_mds {
 	    entity => $service_name,
 	    format => 'plain'
 	});
+
+    broadcast_ceph_services();
 
     return undef;
 };
@@ -244,6 +272,10 @@ sub create_mgr {
     ceph_service_cmd('enable', $mgrname);
     print "starting service 'ceph-mgr\@$id.service'\n";
     ceph_service_cmd('start', $mgrname);
+
+    broadcast_ceph_services();
+
+    return undef;
 }
 
 sub destroy_mgr {
@@ -263,6 +295,10 @@ sub destroy_mgr {
 
     print "removing manager directory '$mgrdir'\n";
     File::Path::remove_tree($mgrdir);
+
+    broadcast_ceph_services();
+
+    return undef;
 }
 
 1;

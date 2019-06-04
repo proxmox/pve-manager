@@ -449,15 +449,6 @@ sub rotate_authkeys {
     PVE::AccessControl::rotate_authkey() if !PVE::AccessControl::check_authkey(1);
 }
 
-sub update_ceph_services {
-    my $services = PVE::Ceph::Services::get_local_services();
-
-    for my $type (keys %$services) {
-	my $data = encode_json($services->{$type});
-	PVE::Cluster::broadcast_node_kv("ceph-$type", $data);
-    }
-}
-
 sub update_ceph_version {
     my ($version) = PVE::Ceph::Tools::get_local_version(1);
 
@@ -527,7 +518,7 @@ sub update_status {
     eval {
 	return if !PVE::Ceph::Tools::check_ceph_inited(1); # "return" from eval
 
-	update_ceph_services();
+	PVE::Ceph::Services::broadcast_ceph_services();
 	update_ceph_version();
     };
     $err = $@;
