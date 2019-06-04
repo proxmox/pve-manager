@@ -5,12 +5,14 @@ use warnings;
 
 use Cwd qw(abs_path);
 use IO::File;
+use UUID;
 
 use PVE::Ceph::Tools;
 use PVE::Ceph::Services;
 use PVE::CephConfig;
 use PVE::Cluster qw(cfs_read_file cfs_write_file);
 use PVE::Diskmanage;
+use PVE::Storage::LVMPlugin;
 use PVE::Exception qw(raise_param_exc);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RADOS;
@@ -198,28 +200,39 @@ __PACKAGE__->register_method ({
 		description => "Block device name.",
 		type => 'string',
 	    },
-	    journal_dev => {
-		description => "Block device name for journal (filestore) or block.db (bluestore).",
+	    db_dev => {
+		description => "Block device name for block.db.",
 		optional => 1,
 		type => 'string',
+	    },
+	    db_size => {
+		description => "Size in GiB for block.db. ".
+		    "If a block.db is requested but the size is not given, will be ".
+		    "automatically selected by: bluestore_block_db_size from the ".
+		    "ceph database (osd or global section) or config (osd or global section)".
+		    "in that order. If this is not available, it will be sized 10% of the size ".
+		    "of the OSD device. Fails if the available size is not enough.",
+		optional => 1,
+		type => 'number',
+		requires => 'db_dev',
+		minimum => 1.0,
 	    },
 	    wal_dev => {
-		description => "Block device name for block.wal (bluestore only).",
+		description => "Block device name for block.wal.",
 		optional => 1,
 		type => 'string',
 	    },
-	    fstype => {
-		description => "File system type (filestore only).",
-		type => 'string',
-		enum => ['xfs', 'ext4'],
-		default => 'xfs',
+	    wal_size => {
+		description => "Size in GiB for block.wal. ".
+		    "If a block.wal is requested but the size is not given, will be ".
+		    "automatically selected by: bluestore_block_wal_size from the ".
+		    "ceph database (osd or global section) or config (osd or global section)".
+		    "in that order. If this is not available, it will be sized 1% of the size ".
+		    "of the OSD device. Fails if the available size is not enough.",
 		optional => 1,
-	    },
-	    bluestore => {
-		description => "Use bluestore instead of filestore. This is the default.",
-		type => 'boolean',
-		default => 1,
-		optional => 1,
+		minimum => 0.5,
+		requires => 'wal_dev',
+		type => 'number',
 	    },
 	},
     },
@@ -231,44 +244,53 @@ __PACKAGE__->register_method ({
 
 	my $authuser = $rpcenv->get_user();
 
-	raise_param_exc({ 'bluestore' => "conflicts with parameter 'fstype'" })
-	    if (defined($param->{fstype}) && defined($param->{bluestore}) && $param->{bluestore});
-
 	PVE::Ceph::Tools::check_ceph_inited();
 
 	PVE::Ceph::Tools::setup_pve_symlinks();
 
 	PVE::Ceph::Tools::check_ceph_installed('ceph_osd');
+	PVE::Ceph::Tools::check_ceph_installed('ceph_volume');
 
-	my $bluestore = $param->{bluestore} // 1;
-
-	my $journal_dev;
+	my $dev;
+	my $db_dev;
+	my $db_devname;
+	my $db_size;
 	my $wal_dev;
+	my $wal_devname;
+	my $wal_size;
 
-	if ($param->{journal_dev} && ($param->{journal_dev} ne $param->{dev})) {
-            $journal_dev = PVE::Diskmanage::verify_blockdev_path($param->{journal_dev});
+	if ($param->{db_dev} && ($param->{db_dev} ne $param->{dev})) {
+            $db_dev = PVE::Diskmanage::verify_blockdev_path($param->{db_dev});
+	    if (defined($param->{db_size})) {
+		$db_size = PVE::Tools::convert_size($param->{db_size}, 'gb' => 'b') ;
+	    }
+	    ($db_devname = $db_dev) =~ s|/dev/||;
 	}
 
 	if ($param->{wal_dev} &&
 	    ($param->{wal_dev} ne $param->{dev}) &&
-	    (!$param->{journal_dev} || $param->{wal_dev} ne $param->{journal_dev})) {
-	    raise_param_exc({ 'wal_dev' => "can only be set with paramater 'bluestore'"})
-		if !$bluestore;
+	    (!$param->{db_dev} || $param->{wal_dev} ne $param->{db_dev})) {
             $wal_dev = PVE::Diskmanage::verify_blockdev_path($param->{wal_dev});
+	    if (defined($param->{wal_size})) {
+		$wal_size = PVE::Tools::convert_size($param->{wal_size}, 'gb' => 'b') ;
+	    }
+	    ($wal_devname = $wal_dev) =~ s|/dev/||;
 	}
 
-        $param->{dev} = PVE::Diskmanage::verify_blockdev_path($param->{dev});
+        $dev = PVE::Diskmanage::verify_blockdev_path($param->{dev});
 
-	my $devname = $param->{dev};
-	$devname =~ s|/dev/||;
+	(my $devname = $dev) =~ s|/dev/||;
+	my $devs = [$devname];
+	push @$devs, $db_devname if $db_devname;
+	push @$devs, $wal_devname if $wal_devname;
 
-	my $disklist = PVE::Diskmanage::get_disks($devname, 1);
+	my $disklist = PVE::Diskmanage::get_disks($devs, 1);
 
 	my $diskinfo = $disklist->{$devname};
 	die "unable to get device info for '$devname'\n"
 	    if !$diskinfo;
 
-	die "device '$param->{dev}' is in use\n"
+	die "device '$dev' is in use\n"
 	    if $diskinfo->{used};
 
 	my $devpath = $diskinfo->{devpath};
@@ -286,46 +308,98 @@ __PACKAGE__->register_method ({
 	    file_set_contents($ceph_bootstrap_osd_keyring, $bindata);
 	};
 
+	my $create_part_or_lv = sub {
+	    my ($dev, $size, $type) = @_;
+
+	    if ($size =~ m/^(\d+)$/) {
+		$size = $1;
+	    } else {
+		die "invalid size '$size'\n";
+	    }
+
+	    die "'$dev->{devpath}' is smaller than requested size '$size' bytes\n"
+		if $dev->{size} < $size;
+
+	    if (!$dev->{used}) {
+		# create pv,vg,lv
+
+		my $vg = "ceph-" . UUID::uuid();
+		my $lv = $type . "-" . UUID::uuid();
+
+		PVE::Storage::LVMPlugin::lvm_create_volume_group($dev->{devpath}, $vg);
+		PVE::Storage::LVMPlugin::lvcreate($vg, $lv, "${size}b");
+
+		return "$vg/$lv";
+
+	    } elsif ($dev->{used} eq 'LVM') {
+		# check pv/vg and create lv
+
+		my $vgs = PVE::Storage::LVMPlugin::lvm_vgs(1);
+		my $vg;
+		for my $vgname ( sort keys %$vgs ) {
+		    next if $vgname !~ /^ceph-/;
+
+		    for my $pv ( @{$vgs->{$vgname}->{pvs}} ) {
+			next if $pv->{name} ne $dev->{devpath};
+			$vg = $vgname;
+			last;
+		    }
+		    last if $vg;
+		}
+
+		die "no ceph vg found on '$dev->{devpath}'\n" if !$vg;
+		die "vg '$vg' has not enough free space\n" if $vgs->{$vg}->{free} < $size;
+
+		my $lv = $type . "-" . "012345";
+
+		PVE::Storage::LVMPlugin::lvcreate($vg, $lv, "${size}b");
+
+		return "$vg/$lv";
+
+	    } elsif ($dev->{used} eq 'partitions') {
+		# create new partition at the end
+
+		return PVE::Diskmanage::append_partition($dev->{devpath}, $size);
+	    }
+
+	    die "cannot use '$dev->{devpath}' for '$type'\n";
+	};
+
 	my $worker = sub {
 	    my $upid = shift;
 
-	    my $fstype = $param->{fstype} || 'xfs';
+	    PVE::Diskmanage::locked_disk_action(sub {
+		# get db/wal size
+		if (($db_dev && !defined($db_size)) || ($wal_dev && !defined($wal_size))) {
+		    my $sizes = PVE::Ceph::Tools::get_db_wal_sizes();
+		    $db_size = $sizes->{db} // int($disklist->{$devname}->{size} / 10); # 10% of OSD
+		    $wal_size = $sizes->{wal} // int($disklist->{$devname}->{size} / 100); # 1% of OSD
+		}
 
+		my $cmd = ['ceph-volume', 'lvm', 'create', '--cluster-fsid', $fsid ];
 
-	    my $ccname = PVE::Ceph::Tools::get_config('ccname');
-
-	    my $cmd = ['ceph-disk', 'prepare', '--zap-disk',
-		       '--cluster', $ccname, '--cluster-uuid', $fsid ];
-
-	    if ($bluestore) {
 		print "create OSD on $devpath (bluestore)\n";
-		push @$cmd, '--bluestore';
 
-		if ($journal_dev) {
-		    print "using device '$journal_dev' for block.db\n";
-		    push @$cmd, '--block.db', $journal_dev;
+		if ($db_dev) {
+		    print "creating block.db on '$db_dev'\n";
+		    my $part_or_lv = $create_part_or_lv->($disklist->{$db_devname}, $db_size, 'osd-db');
+		    print "using '$part_or_lv' for block.db\n";
+		    push @$cmd, '--block.db', $part_or_lv;
 		}
 
 		if ($wal_dev) {
-		    print "using device '$wal_dev' for block.wal\n";
-		    push @$cmd, '--block.wal', $wal_dev;
+		    print "creating block.wal on '$wal_dev'\n";
+		    my $part_or_lv = $create_part_or_lv->($disklist->{$wal_devname}, $wal_size, 'osd-wal');
+		    print "using '$part_or_lv' for block.wal\n";
+		    push @$cmd, '--block.wal', $part_or_lv;
 		}
 
-		push @$cmd, $devpath;
-	    } else {
-		print "create OSD on $devpath ($fstype)\n";
-		push @$cmd, '--filestore', '--fs-type', $fstype;
-		if ($journal_dev) {
-		    print "using device '$journal_dev' for journal\n";
-		    push @$cmd, '--journal-dev', $devpath, $journal_dev;
-		} else {
-		    push @$cmd, $devpath;
-		}
-	    }
+		push @$cmd, '--data', $devpath;
 
-	    PVE::Ceph::Tools::wipe_disks($devpath);
+		PVE::Ceph::Tools::wipe_disks($devpath);
 
-	    run_command($cmd);
+		run_command($cmd);
+	    });
 	};
 
 	return $rpcenv->fork_worker('cephcreateosd', $devname,  $authuser, $worker);
