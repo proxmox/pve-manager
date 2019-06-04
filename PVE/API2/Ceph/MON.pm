@@ -249,7 +249,7 @@ __PACKAGE__->register_method ({
 		PVE::Ceph::Services::ceph_service_cmd('start', $monsection);
 
 		# to ensure we have the correct startup order.
-		eval { run_command(['/bin/systemctl', 'enable', "ceph-mon\@${monid}.service"]) };
+		eval { PVE::Ceph::Services::ceph_service_cmd('enable', $monsection) };
 		warn "Enable ceph-mon\@${monid}.service failed, do manually: $@\n" if $@;
 		waitpid($create_keys_pid, 0);
 	    }
@@ -323,6 +323,8 @@ __PACKAGE__->register_method ({
 	    delete $cfg->{$monsection};
 	    cfs_write_file('ceph.conf', $cfg);
 	    File::Path::remove_tree($mondir);
+	    eval { PVE::Ceph::Services::ceph_service_cmd('disable', $monsection) };
+	    warn $@ if $@;
 	    PVE::Ceph::Services::broadcast_ceph_services();
 	};
 
