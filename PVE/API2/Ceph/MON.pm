@@ -127,12 +127,6 @@ __PACKAGE__->register_method ({
 		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
 		description => "The ID for the monitor, when omitted the same as the nodename",
 	    },
-	    'exclude-manager' => {
-		type => 'boolean',
-		optional => 1,
-		default => 0,
-		description => "When set, only a monitor will be created.",
-	    },
 	    'mon-address' => {
 		description => 'Overwrites autodetected monitor IP address. ' .
 		               'Must be in the public network of ceph.',
@@ -146,9 +140,6 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	PVE::Ceph::Tools::check_ceph_installed('ceph_mon');
-
-	PVE::Ceph::Tools::check_ceph_installed('ceph_mgr')
-	    if (!$param->{'exclude-manager'});
 
 	PVE::Ceph::Tools::check_ceph_inited();
 
@@ -262,12 +253,6 @@ __PACKAGE__->register_method ({
 		warn "Enable ceph-mon\@${monid}.service failed, do manually: $@\n" if $@;
 		waitpid($create_keys_pid, 0);
 	    }
-
-	    # create manager
-	    if (!$param->{'exclude-manager'}) {
-		my $rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
-		PVE::Ceph::Services::create_mgr($monid, $rados);
-	    }
 	    PVE::Ceph::Services::broadcast_ceph_services();
 	};
 
@@ -293,12 +278,6 @@ __PACKAGE__->register_method ({
 		type => 'string',
 		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
 	    },
-	    'exclude-manager' => {
-		type => 'boolean',
-		default => 0,
-		optional => 1,
-		description => "When set, removes only the monitor, not the manager"
-	    }
 	},
     },
     returns => { type => 'string' },
@@ -344,12 +323,6 @@ __PACKAGE__->register_method ({
 	    delete $cfg->{$monsection};
 	    cfs_write_file('ceph.conf', $cfg);
 	    File::Path::remove_tree($mondir);
-
-	    # remove manager
-	    if (!$param->{'exclude-manager'}) {
-		eval { PVE::Ceph::Services::destroy_mgr($monid) };
-		warn $@ if $@;
-	    }
 	    PVE::Ceph::Services::broadcast_ceph_services();
 	};
 
