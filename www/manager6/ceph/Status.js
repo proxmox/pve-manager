@@ -321,7 +321,7 @@ Ext.define('PVE.node.CephStatus', {
 	    interval: 15*1000,
 	    proxy: {
 		type: 'proxmox',
-		url: baseurl + 'metadata'
+		url: '/api2/json/cluster/ceph/metadata'
 	    }
 	});
 
