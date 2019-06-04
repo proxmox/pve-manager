@@ -113,7 +113,7 @@ Ext.define('PVE.CephRemoveOsd', {
 	    name: 'cleanup',
 	    checked: true,
 	    labelWidth: 130,
-	    fieldLabel: gettext('Remove Partitions')
+	    fieldLabel: gettext('Cleanup Disks')
 	}
     ],
     initComponent : function() {
