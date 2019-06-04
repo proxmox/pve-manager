@@ -64,51 +64,6 @@ Ext.define('PVE.CephCreateFS', {
     }
 });
 
-Ext.define('PVE.CephCreateMDS', {
-    extend: 'Proxmox.window.Edit',
-    alias: 'widget.pveCephCreateMDS',
-
-    showProgress: true,
-    onlineHelp: 'pveceph_fs_mds',
-
-    subject: 'Ceph MDS',
-    isCreate: true,
-    method: 'POST',
-
-    setNode: function(nodename) {
-	var me = this;
-
-	me.nodename = nodename;
-	me.url = "/nodes/" + nodename + "/ceph/mds/" + nodename;
-    },
-
-    items: [
-	{
-	    xtype: 'pveNodeSelector',
-	    fieldLabel: gettext('Node'),
-	    selectCurNode: true,
-	    submitValue: false,
-	    allowBlank: false,
-	    listeners: {
-		change: function(f, value) {
-		    this.up('pveCephCreateMDS').setNode(value);
-		}
-	    }
-	}
-    ],
-
-    initComponent : function() {
-	var me = this;
-
-	if (!me.nodename) {
-	    throw "no node name specified";
-	}
-	me.setNode(me.nodename);
-
-	me.callParent();
-    }
-});
-
 Ext.define('PVE.NodeCephFSPanel', {
     extend: 'Ext.panel.Panel',
     xtype: 'pveNodeCephFSPanel',
@@ -236,132 +191,24 @@ Ext.define('PVE.NodeCephFSPanel', {
 	    }
 	},
 	{
-	    xtype: 'grid',
+	    xtype: 'pveNodeCephServiceList',
 	    title: gettext('Metadata Servers'),
-	    emptyText: Ext.String.format(gettext('No {0} configured.'), 'MDS'),
-	    controller: {
-		xclass: 'Ext.app.ViewController',
-
-		init: function(view) {
-		    view.rstore = Ext.create('Proxmox.data.UpdateStore', {
-			autoLoad: true,
-			xtype: 'update',
-			interval: 3 * 1000,
-			autoStart: true,
-			storeid: 'pve-ceph-mds',
-			proxy: {
-			    type: 'proxmox',
-			    url: '/api2/json/nodes/'+ view.nodename +'/ceph/mds'
-			},
-			model: 'pve-ceph-mds'
-		    });
-		    view.setStore(Ext.create('Proxmox.data.DiffStore', {
-			rstore: view.rstore,
-			sorters: {
-			    property: 'id',
-			    order: 'DESC'
-			}
-		    }));
-		    var regex = new RegExp("not (installed|initialized)", "i");
-		    PVE.Utils.handleStoreErrorOrMask(view, view.rstore, regex, function(me, error){
-			me.rstore.stopUpdate();
-			PVE.Utils.showCephInstallOrMask(me.ownerCt, error.statusText, view.nodename,
-			    function(win){
-				me.mon(win, 'cephInstallWindowClosed', function(){
-				    me.rstore.startUpdate();
-				});
-			    }
-			);
-		    });
-		    view.rstore.on('load', this.onLoad, this);
-		    view.on('destroy', view.rstore.stopUpdate);
-		},
-		onLoad: function(store, records, success) {
-		    var vm = this.getViewModel();
-		    if (!success || !records) {
-			vm.set('mdsCount', 0);
-			return;
-		    }
-		    vm.set('mdsCount', records.length);
-		},
-		onCreateMDS: function() {
-		    var view = this.getView();
-		    view.rstore.stopUpdate();
-		    var win = Ext.create('PVE.CephCreateMDS', {
-			autoShow: true,
-			nodename: view.nodename,
-			listeners: {
-			    destroy: function() {
-				view.rstore.startUpdate();
-			    }
-			}
-		    });
+	    stateId: 'grid-ceph-mds',
+	    type: 'mds',
+	    storeLoadCallback: function(store, records, success) {
+		var vm = this.getViewModel();
+		if (!success || !records) {
+		    vm.set('mdsCount', 0);
+		    return;
 		}
+		vm.set('mdsCount', records.length);
 	    },
-	    tbar: [
-		{
-		    text: gettext('Create MDS'),
-		    reference: 'createButton',
-		    handler: 'onCreateMDS'
-		},
-		{
-		    text: gettext('Destroy MDS'),
-		    xtype: 'proxmoxStdRemoveButton',
-		    getUrl: function(rec) {
-			if (!rec.data.host) {
-			    Ext.Msg.alert(gettext('Error'), "entry has no host");
-			    return;
-			}
-			return "/nodes/" + rec.data.host + "/ceph/mds/" + rec.data.name;
-		    },
-		    callback: function(options, success, response) {
-			if (!success) {
-			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-			    return;
-			}
-			var upid = response.result.data;
-			var win = Ext.create('Proxmox.window.TaskProgress', { upid: upid });
-			win.show();
-		    }
-		}
-	    ],
-	    columns: [
-		{
-		    header: gettext('Name'),
-		    flex: 1,
-		    dataIndex: 'name'
-		},
-		{
-		    header: gettext('Host'),
-		    flex: 1,
-		    dataIndex: 'host'
-		},
-		{
-		    header: gettext('Address'),
-		    flex: 1,
-		    dataIndex: 'addr'
-		},
-		{
-		    header: gettext('State'),
-		    flex: 1,
-		    dataIndex: 'state'
-		}
-	    ],
 	    cbind: {
 		nodename: '{nodename}'
 	    }
 	}
     ]
 }, function() {
-    Ext.define('pve-ceph-mds', {
-	extend: 'Ext.data.Model',
-	fields: [ 'name', 'host', 'addr', 'state' ],
-	proxy: {
-	    type: 'proxmox',
-	    url: "/api2/json/nodes/localhost/ceph/mds"
-	},
-	idProperty: 'name'
-    });
     Ext.define('pve-ceph-fs', {
 	extend: 'Ext.data.Model',
 	fields: [ 'name', 'data_pool', 'metadata_pool' ],
