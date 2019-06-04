@@ -184,7 +184,6 @@ JSSRC= 				                 	\
 	storage/LvmThinEdit.js				\
 	storage/CephFSEdit.js				\
 	storage/RBDEdit.js				\
-	storage/SheepdogEdit.js				\
 	storage/ZFSEdit.js				\
 	storage/ZFSPoolEdit.js				\
 	ha/StatusView.js				\

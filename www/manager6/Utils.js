@@ -553,12 +553,6 @@ Ext.define('PVE.Utils', { utilities: {
 	    ipanel: 'IScsiInputPanel',
 	    faIcon: 'building'
 	},
-	sheepdog: {
-	    name: 'Sheepdog',
-	    ipanel: 'SheepdogInputPanel',
-	    hideAdd: true,
-	    faIcon: 'building'
-	},
 	cephfs: {
 	    name: 'CephFS',
 	    ipanel: 'CephFSInputPanel',

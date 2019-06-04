@@ -531,7 +531,6 @@ __PACKAGE__->register_method({
 	    ksmtuned
 	    libpve-apiclient-perl
 	    openvswitch-switch
-	    pve-sheepdog
 	    pve-zsync
 	    zfsutils-linux
 	);
