@@ -271,4 +271,32 @@ sub ceph_volume_zap {
     run_command($cmd);
 }
 
+sub get_db_wal_sizes {
+    my $res = {};
+
+    my $rados = PVE::RADOS->new();
+    my $db_config = $rados->mon_command({ prefix => 'config-key dump', key => 'config/' });
+
+    $res->{db} = $db_config->{"config/osd/bluestore_block_db_size"} //
+		 $db_config->{"config/global/bluestore_block_db_size"};
+
+    $res->{wal} = $db_config->{"config/osd/bluestore_block_wal_size"} //
+		  $db_config->{"config/global/bluestore_block_wal_size"};
+
+    if (!$res->{db} || !$res->{wal}) {
+	my $cfg = cfs_read_file('ceph.conf');
+	if (!$res->{db}) {
+	    $res->{db} = $cfg->{osd}->{bluestore_block_db_size} //
+			 $cfg->{global}->{bluestore_block_db_size};
+	}
+
+	if (!$res->{wal}) {
+	    $res->{wal} = $cfg->{osd}->{bluestore_block_wal_size} //
+			 $cfg->{global}->{bluestore_block_wal_size};
+	}
+    }
+
+    return $res;
+}
+
 1;
