@@ -488,37 +488,61 @@ __PACKAGE__->register_method ({
 		warn $@ if $@;
 	    };
 
-	    my $partitions_to_remove = [];
+	    my $osd_list = PVE::Ceph::Tools::ceph_volume_list();
 
-	    if ($param->{cleanup}) {
-		if (my $mp = PVE::ProcFSTools::parse_proc_mounts()) {
-		    foreach my $line (@$mp) {
-			my ($dev, $path, $fstype) = @$line;
-			next if !($dev && $path && $fstype);
-			next if $dev !~ m|^/dev/|;
+	    if ($osd_list->{$osdid}) {
+		# ceph-volume managed
 
-			if ($path eq $mountpoint) {
-			    abs_path($dev) =~ m|^(/.+)| or die "invalid dev: $dev\n";
-			    push @$partitions_to_remove, $1;
-			    last;
-			}
+		# try to make a list of devs we want to pvremove
+		my $devices_pvremove = {};
+		for my $osd_part (@{$osd_list->{$osdid}}) {
+		    for my $dev (@{$osd_part->{devices}}) {
+			$devices_pvremove->{$dev} = 1;
 		    }
 		}
 
-		foreach my $path (qw(journal block block.db block.wal)) {
-		    abs_path("$mountpoint/$path") =~ m|^(/.+)| or die "invalid path: $path\n";
-		    push @$partitions_to_remove, $1;
+		eval {
+		    PVE::Ceph::Tools::ceph_volume_zap($osdid, $param->{cleanup});
+		};
+		warn $@ if $@;
+		if ($param->{cleanup}) {
+		    # try to remove pvs, but do not fail if it does not work
+		    for my $dev (keys %$devices_pvremove) {
+			eval { run_command(['/sbin/pvremove', $dev], errfunc => {}) };
+		    }
 		}
-	    }
+	    } else {
+		my $partitions_to_remove = [];
+		if ($param->{cleanup}) {
+		    if (my $mp = PVE::ProcFSTools::parse_proc_mounts()) {
+			foreach my $line (@$mp) {
+			    my ($dev, $path, $fstype) = @$line;
+			    next if !($dev && $path && $fstype);
+			    next if $dev !~ m|^/dev/|;
 
-	    print "Unmount OSD $osdsection from  $mountpoint\n";
-	    eval { run_command(['/bin/umount', $mountpoint]); };
-	    if (my $err = $@) {
-		warn $err;
-	    } elsif ($param->{cleanup}) {
-		#be aware of the ceph udev rules which can remount.
-		foreach my $part (@$partitions_to_remove) {
-		    $remove_partition->($part);
+			    if ($path eq $mountpoint) {
+				abs_path($dev) =~ m|^(/.+)| or die "invalid dev: $dev\n";
+				push @$partitions_to_remove, $1;
+				last;
+			    }
+			}
+		    }
+
+		    foreach my $path (qw(journal block block.db block.wal)) {
+			abs_path("$mountpoint/$path") =~ m|^(/.+)| or die "invalid path: $path\n";
+			push @$partitions_to_remove, $1;
+		    }
+		}
+
+		print "Unmount OSD $osdsection from  $mountpoint\n";
+		eval { run_command(['/bin/umount', $mountpoint]); };
+		if (my $err = $@) {
+		    warn $err;
+		} elsif ($param->{cleanup}) {
+		    #be aware of the ceph udev rules which can remount.
+		    foreach my $part (@$partitions_to_remove) {
+			$remove_partition->($part);
+		    }
 		}
 	    }
 	};
