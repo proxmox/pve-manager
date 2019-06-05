@@ -437,6 +437,7 @@ __PACKAGE__->register_method ({
 	PVE::Ceph::Tools::check_ceph_inited();
 
 	my $osdid = $param->{osdid};
+	my $cleanup = $param->{cleanup};
 
 	my $rados = PVE::RADOS->new();
 	# dies if osdid is unknown
@@ -505,7 +506,8 @@ __PACKAGE__->register_method ({
 		    PVE::Ceph::Tools::ceph_volume_zap($osdid, $param->{cleanup});
 		};
 		warn $@ if $@;
-		if ($param->{cleanup}) {
+
+		if ($cleanup) {
 		    # try to remove pvs, but do not fail if it does not work
 		    for my $dev (keys %$devices_pvremove) {
 			eval { run_command(['/sbin/pvremove', $dev], errfunc => {}) };
@@ -513,7 +515,7 @@ __PACKAGE__->register_method ({
 		}
 	    } else {
 		my $partitions_to_remove = [];
-		if ($param->{cleanup}) {
+		if ($cleanup) {
 		    if (my $mp = PVE::ProcFSTools::parse_proc_mounts()) {
 			foreach my $line (@$mp) {
 			    my ($dev, $path, $fstype) = @$line;
@@ -538,7 +540,7 @@ __PACKAGE__->register_method ({
 		eval { run_command(['/bin/umount', $mountpoint]); };
 		if (my $err = $@) {
 		    warn $err;
-		} elsif ($param->{cleanup}) {
+		} elsif ($cleanup) {
 		    #be aware of the ceph udev rules which can remount.
 		    foreach my $part (@$partitions_to_remove) {
 			$remove_partition->($part);
