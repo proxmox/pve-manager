@@ -107,11 +107,9 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	PVE::Ceph::Tools::check_ceph_installed('ceph_mgr');
-
 	PVE::Ceph::Tools::check_ceph_inited();
 
 	my $rpcenv = PVE::RPCEnvironment::get();
-
 	my $authuser = $rpcenv->get_user();
 
 	my $mgrid = $param->{id} // $param->{node};
@@ -119,7 +117,8 @@ __PACKAGE__->register_method ({
 	my $worker = sub  {
 	    my $upid = shift;
 
-	    my $rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
+	    my $rados_timeout = PVE::Ceph::Tools::get_config('long_rados_timeout');
+	    my $rados = PVE::RADOS->new(timeout => $rados_timeout);
 
 	    PVE::Ceph::Services::create_mgr($mgrid, $rados);
 	};
