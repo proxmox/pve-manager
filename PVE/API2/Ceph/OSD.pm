@@ -272,6 +272,7 @@ __PACKAGE__->register_method ({
 	if ($param->{wal_dev} &&
 	    ($param->{wal_dev} ne $param->{dev}) &&
 	    (!$param->{db_dev} || $param->{wal_dev} ne $param->{db_dev})) {
+
             $wal_dev = PVE::Diskmanage::verify_blockdev_path($param->{wal_dev});
 	    if (defined($param->{wal_size})) {
 		$wal_size = PVE::Tools::convert_size($param->{wal_size}, 'gb' => 'b') ;
@@ -289,17 +290,15 @@ __PACKAGE__->register_method ({
 	my $disklist = PVE::Diskmanage::get_disks($devs, 1);
 
 	my $diskinfo = $disklist->{$devname};
-	die "unable to get device info for '$devname'\n"
-	    if !$diskinfo;
-
-	die "device '$dev' is in use\n"
-	    if $diskinfo->{used};
+	die "unable to get device info for '$devname'\n" if !$diskinfo;
+	die "device '$dev' is already in use\n" if $diskinfo->{used};
 
 	my $devpath = $diskinfo->{devpath};
+
 	my $rados = PVE::RADOS->new();
 	my $monstat = $rados->mon_command({ prefix => 'mon_status' });
-	die "unable to get fsid\n" if !$monstat->{monmap} || !$monstat->{monmap}->{fsid};
 
+	die "unable to get fsid\n" if !$monstat->{monmap} || !$monstat->{monmap}->{fsid};
 	my $fsid = $monstat->{monmap}->{fsid};
         $fsid = $1 if $fsid =~ m/^([0-9a-f\-]+)$/;
 
@@ -313,11 +312,8 @@ __PACKAGE__->register_method ({
 	my $create_part_or_lv = sub {
 	    my ($dev, $size, $type) = @_;
 
-	    if ($size =~ m/^(\d+)$/) {
-		$size = $1;
-	    } else {
-		die "invalid size '$size'\n";
-	    }
+	    $size =~ m/^(\d+)$/ or die "invalid size '$size'\n";
+	    $size = $1;
 
 	    die "'$dev->{devpath}' is smaller than requested size '$size' bytes\n"
 		if $dev->{size} < $size;
