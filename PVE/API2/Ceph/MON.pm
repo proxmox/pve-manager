@@ -140,25 +140,21 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	PVE::Ceph::Tools::check_ceph_installed('ceph_mon');
-
 	PVE::Ceph::Tools::check_ceph_inited();
-
 	PVE::Ceph::Tools::setup_pve_symlinks();
 
 	my $rpcenv = PVE::RPCEnvironment::get();
-
 	my $authuser = $rpcenv->get_user();
 
 	my $cfg = cfs_read_file('ceph.conf');
 
 	my $moncount = 0;
-
 	my $monaddrhash = {};
-
 	foreach my $section (keys %$cfg) {
 	    next if $section eq 'global';
-	    my $d = $cfg->{$section};
+
 	    if ($section =~ m/^mon\./) {
+		my $d = $cfg->{$section};
 		$moncount++;
 		if ($d->{'mon addr'}) {
 		    $monaddrhash->{$d->{'mon addr'}} = $section;
@@ -183,7 +179,6 @@ __PACKAGE__->register_method ({
 	    my $upid = shift;
 
 	    my $pve_ckeyring_path = PVE::Ceph::Tools::get_config('pve_ckeyring_path');
-
 	    if (! -f $pve_ckeyring_path) {
 		run_command("ceph-authtool $pve_ckeyring_path --create-keyring " .
 			    "--gen-key -n client.admin");
