@@ -350,7 +350,7 @@ __PACKAGE__->register_method ({
 		die "no ceph vg found on '$dev->{devpath}'\n" if !$vg;
 		die "vg '$vg' has not enough free space\n" if $vgs->{$vg}->{free} < $size;
 
-		my $lv = $type . "-" . "012345";
+		my $lv = $type . "-" . UUID::uuid();
 
 		PVE::Storage::LVMPlugin::lvcreate($vg, $lv, "${size}b");
 
