@@ -246,55 +246,58 @@ __PACKAGE__->register_method ({
 
 	my $authuser = $rpcenv->get_user();
 
+	# test basic requirements
 	PVE::Ceph::Tools::check_ceph_inited();
-
 	PVE::Ceph::Tools::setup_pve_symlinks();
-
 	PVE::Ceph::Tools::check_ceph_installed('ceph_osd');
 	PVE::Ceph::Tools::check_ceph_installed('ceph_volume');
 
-	my $dev;
-	my $db_dev;
-	my $db_devname;
-	my $db_size;
-	my $wal_dev;
-	my $wal_devname;
-	my $wal_size;
+	# extract parameter info and fail if a device is set more than once
+	my $devs = {};
 
-	if ($param->{db_dev} && ($param->{db_dev} ne $param->{dev})) {
-            $db_dev = PVE::Diskmanage::verify_blockdev_path($param->{db_dev});
-	    if (defined($param->{db_size})) {
-		$db_size = PVE::Tools::convert_size($param->{db_size}, 'gb' => 'b') ;
+	for my $type ( qw(dev db wal) ) {
+	    my $name = $type eq 'dev' ? $type : "${type}_dev";
+
+	    next if !$param->{$name};
+
+	    my $type_dev = PVE::Diskmanage::verify_blockdev_path($param->{$name});
+	    (my $type_devname = $type_dev) =~ s|/dev/||;
+
+	    raise_param_exc({ $name => "cannot chose '$type_dev' for more than one type." })
+		if grep { $_->{name} eq $type_devname } values %$devs;
+
+	    $devs->{$type} = {
+		dev => $type_dev,
+		name => $type_devname,
+	    };
+
+	    if (my $size = $param->{"${type}_size"}) {
+		$devs->{$type}->{size} = PVE::Tools::convert_size($size, 'gb' => 'b') ;
 	    }
-	    ($db_devname = $db_dev) =~ s|/dev/||;
 	}
 
-	if ($param->{wal_dev} &&
-	    ($param->{wal_dev} ne $param->{dev}) &&
-	    (!$param->{db_dev} || $param->{wal_dev} ne $param->{db_dev})) {
+	# test osd requirements early
+	my $devlist = [ map { $_->{name} } values %$devs ];
+	my $disklist = PVE::Diskmanage::get_disks($devlist, 1);
+	my $dev = $devs->{dev}->{dev};
+	my $devname = $devs->{dev}->{name};
+	die "unable to get device info for '$dev'\n" if !$disklist->{$devname};
+	die "device '$dev' is already in use\n" if $disklist->{$devname}->{used};
 
-            $wal_dev = PVE::Diskmanage::verify_blockdev_path($param->{wal_dev});
-	    if (defined($param->{wal_size})) {
-		$wal_size = PVE::Tools::convert_size($param->{wal_size}, 'gb' => 'b') ;
-	    }
-	    ($wal_devname = $wal_dev) =~ s|/dev/||;
+	# test db/wal requirements early
+	for my $type ( qw(db wal) ) {
+	    my $d = $devs->{$type};
+	    next if !$d;
+	    my $name = $d->{name};
+	    my $info = $disklist->{$name};
+	    die "unable to get device info for '$d->{dev}' for type $type\n" if !$disklist->{$name};
+	    die "device '$d->{dev}' is not GPT partitioned\n"
+		if $info->{used} && $info->{used} eq 'partitions' && !$info->{gpt};
+	    die "device '$d->{dev}' is already in use and has no LVM on it\n"
+		if $info->{used} && $info->{used} ne 'LVM';
 	}
 
-        $dev = PVE::Diskmanage::verify_blockdev_path($param->{dev});
-
-	(my $devname = $dev) =~ s|/dev/||;
-	my $devs = [$devname];
-	push @$devs, $db_devname if $db_devname;
-	push @$devs, $wal_devname if $wal_devname;
-
-	my $disklist = PVE::Diskmanage::get_disks($devs, 1);
-
-	my $diskinfo = $disklist->{$devname};
-	die "unable to get device info for '$devname'\n" if !$diskinfo;
-	die "device '$dev' is already in use\n" if $diskinfo->{used};
-
-	my $devpath = $diskinfo->{devpath};
-
+	# get necessary ceph infos
 	my $rados = PVE::RADOS->new();
 	my $monstat = $rados->mon_command({ prefix => 'mon_status' });
 
@@ -371,29 +374,37 @@ __PACKAGE__->register_method ({
 	    my $upid = shift;
 
 	    PVE::Diskmanage::locked_disk_action(sub {
-		# get db/wal size
-		if (($db_dev && !defined($db_size)) || ($wal_dev && !defined($wal_size))) {
-		    my $sizes = PVE::Ceph::Tools::get_db_wal_sizes();
-		    $db_size = $sizes->{db} // int($disklist->{$devname}->{size} / 10); # 10% of OSD
-		    $wal_size = $sizes->{wal} // int($disklist->{$devname}->{size} / 100); # 1% of OSD
-		}
+		# update disklist
+		$disklist = PVE::Diskmanage::get_disks($devlist, 1);
 
 		my $cmd = ['ceph-volume', 'lvm', 'create', '--cluster-fsid', $fsid ];
 
+		my $devpath = $disklist->{$devname}->{devpath};
 		print "create OSD on $devpath (bluestore)\n";
 
-		if ($db_dev) {
-		    print "creating block.db on '$db_dev'\n";
-		    my $part_or_lv = $create_part_or_lv->($disklist->{$db_devname}, $db_size, 'osd-db');
-		    print "using '$part_or_lv' for block.db\n";
-		    push @$cmd, '--block.db', $part_or_lv;
-		}
+		my $osd_size = $disklist->{$devname}->{size};
+		my $size_map = {
+		    db => int($osd_size / 10), # 10% of OSD
+		    wal => int($osd_size / 100), # 1% of OSD
+		};
 
-		if ($wal_dev) {
-		    print "creating block.wal on '$wal_dev'\n";
-		    my $part_or_lv = $create_part_or_lv->($disklist->{$wal_devname}, $wal_size, 'osd-wal');
-		    print "using '$part_or_lv' for block.wal\n";
-		    push @$cmd, '--block.wal', $part_or_lv;
+		my $sizes;
+		foreach my $type ( qw(db wal) ) {
+		    my $fallback_size = $size_map->{$type};
+		    my $d = $devs->{$type};
+		    next if !$d;
+
+		    # size was not set via api, getting from config/fallback
+		    if (!defined($d->{size})) {
+			$sizes = PVE::Ceph::Tools::get_db_wal_sizes() if !$sizes;
+			$d->{size} = $sizes->{$type} // $fallback_size;
+		    }
+		    print "creating block.$type on '$d->{dev}'\n";
+		    my $name = $d->{name};
+		    my $part_or_lv = $create_part_or_lv->($disklist->{$name}, $d->{size}, "osd-$type");
+
+		    print "using '$part_or_lv' for block.$type\n";
+		    push @$cmd, "--block.$type", $part_or_lv;
 		}
 
 		push @$cmd, '--data', $devpath;
