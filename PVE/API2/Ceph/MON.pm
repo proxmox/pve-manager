@@ -109,7 +109,7 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     name => 'createmon',
-    path => '',
+    path => '{monid}',
     method => 'POST',
     description => "Create Ceph Monitor and Manager",
     proxyto => 'node',
@@ -121,7 +121,7 @@ __PACKAGE__->register_method ({
 	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-	    id => {
+	    monid => {
 		type => 'string',
 		optional => 1,
 		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
@@ -162,7 +162,7 @@ __PACKAGE__->register_method ({
 	    }
 	}
 
-	my $monid = $param->{id} // $param->{node};
+	my $monid = $param->{monid} // $param->{node};
 
 	my $monsection = "mon.$monid";
 	my $pubnet = $cfg->{global}->{'public network'};
