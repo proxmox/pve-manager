@@ -318,6 +318,10 @@ __PACKAGE__->register_method ({
 	    die "'$dev->{devpath}' is smaller than requested size '$size' bytes\n"
 		if $dev->{size} < $size;
 
+	    # sgdisk and lvcreate can only sizes divisible by 512b
+	    # so we round down to the nearest kb
+	    $size = PVE::Tools::convert_size($size, 'b' => 'kb', 1);
+
 	    if (!$dev->{used}) {
 		# create pv,vg,lv
 
@@ -325,7 +329,7 @@ __PACKAGE__->register_method ({
 		my $lv = $type . "-" . UUID::uuid();
 
 		PVE::Storage::LVMPlugin::lvm_create_volume_group($dev->{devpath}, $vg);
-		PVE::Storage::LVMPlugin::lvcreate($vg, $lv, "${size}b");
+		PVE::Storage::LVMPlugin::lvcreate($vg, $lv, "${size}k");
 
 		return "$vg/$lv";
 
@@ -350,14 +354,14 @@ __PACKAGE__->register_method ({
 
 		my $lv = $type . "-" . UUID::uuid();
 
-		PVE::Storage::LVMPlugin::lvcreate($vg, $lv, "${size}b");
+		PVE::Storage::LVMPlugin::lvcreate($vg, $lv, "${size}k");
 
 		return "$vg/$lv";
 
 	    } elsif ($dev->{used} eq 'partitions') {
 		# create new partition at the end
 
-		return PVE::Diskmanage::append_partition($dev->{devpath}, $size);
+		return PVE::Diskmanage::append_partition($dev->{devpath}, $size * 1024);
 	    }
 
 	    die "cannot use '$dev->{devpath}' for '$type'\n";
