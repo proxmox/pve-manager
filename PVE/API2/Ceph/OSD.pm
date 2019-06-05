@@ -358,7 +358,7 @@ __PACKAGE__->register_method ({
 
 		return "$vg/$lv";
 
-	    } elsif ($dev->{used} eq 'partitions') {
+	    } elsif ($dev->{used} eq 'partitions' && $dev->{gpt}) {
 		# create new partition at the end
 
 		return PVE::Diskmanage::append_partition($dev->{devpath}, $size * 1024);
