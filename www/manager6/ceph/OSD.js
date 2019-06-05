@@ -23,6 +23,15 @@ Ext.define('PVE.CephCreateOsd', {
 	    items: [
 		{
 		    xtype: 'inputpanel',
+		    onGetValues: function(values) {
+			Object.keys(values || {}).forEach(function(name) {
+			    if (values[name] === '') {
+				delete values[name];
+			    }
+			});
+
+			return values;
+		    },
 		    column1: [
 			{
 			    xtype: 'pveDiskSelector',
