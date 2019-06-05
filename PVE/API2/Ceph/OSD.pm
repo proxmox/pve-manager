@@ -491,26 +491,18 @@ __PACKAGE__->register_method ({
 
 	    my $osd_list = PVE::Ceph::Tools::ceph_volume_list();
 
-	    if ($osd_list->{$osdid}) {
-		# ceph-volume managed
+	    if ($osd_list->{$osdid}) { # ceph-volume managed
 
-		# try to make a list of devs we want to pvremove
-		my $devices_pvremove = {};
-		for my $osd_part (@{$osd_list->{$osdid}}) {
-		    for my $dev (@{$osd_part->{devices}}) {
-			$devices_pvremove->{$dev} = 1;
-		    }
-		}
-
-		eval {
-		    PVE::Ceph::Tools::ceph_volume_zap($osdid, $param->{cleanup});
-		};
+		eval { PVE::Ceph::Tools::ceph_volume_zap($osdid, $cleanup) };
 		warn $@ if $@;
 
 		if ($cleanup) {
 		    # try to remove pvs, but do not fail if it does not work
-		    for my $dev (keys %$devices_pvremove) {
-			eval { run_command(['/sbin/pvremove', $dev], errfunc => {}) };
+		    for my $osd_part (@{$osd_list->{$osdid}}) {
+			for my $dev (@{$osd_part->{devices}}) {
+			    eval { run_command(['/sbin/pvremove', $dev], errfunc => {}) };
+			    warn $@ if $@;
+			}
 		    }
 		}
 	    } else {
