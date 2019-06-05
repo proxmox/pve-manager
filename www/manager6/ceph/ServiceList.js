@@ -52,7 +52,7 @@ Ext.define('PVE.node.CephServiceList', {
     xtype: 'pveNodeCephServiceList',
 
     onlineHelp: 'chapter_pveceph',
-    emptyText: Ext.String.format(gettext('No {0} configured.'), 'MDS'),
+    emptyText: gettext('No such service configured.'),
 
     stateful: true,
 
