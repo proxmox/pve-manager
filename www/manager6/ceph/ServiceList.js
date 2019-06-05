@@ -8,7 +8,7 @@ Ext.define('PVE.CephCreateService', {
         var me = this;
 
 	me.nodename = nodename;
-        me.url = "/nodes/" + nodename + "/ceph/" + me.type;
+        me.url = "/nodes/" + nodename + "/ceph/" + me.type + "/" + nodename;
     },
 
     method: 'POST',
