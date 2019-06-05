@@ -430,7 +430,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		    var win = Ext.create('Proxmox.window.TaskProgress', {
 			upid: upid,
 			taskDone: function() {
-			    me.reload();
+			    reload();
 			}
 		    });
 		    win.show();
@@ -449,7 +449,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		var win = Ext.create('PVE.CephCreateOsd', {
                     nodename: nodename,
 		    taskDone: function(success) {
-			me.reload();
+			reload();
 		    }
 		});
 		win.show();
@@ -499,7 +499,7 @@ Ext.define('PVE.node.CephOsdTree', {
                     nodename: rec.data.host,
 		    osdid: rec.data.id,
 		    taskDone: function(success) {
-			me.reload();
+			reload();
 		    }
 		});
 		win.show();
