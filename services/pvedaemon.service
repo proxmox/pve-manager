@@ -10,6 +10,7 @@ ExecStop=/usr/bin/pvedaemon stop
 ExecReload=/usr/bin/pvedaemon restart
 PIDFile=/run/pvedaemon.pid
 Type=forking
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

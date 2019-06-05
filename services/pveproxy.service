@@ -16,6 +16,7 @@ ExecStop=/usr/bin/pveproxy stop
 ExecReload=/usr/bin/pveproxy restart
 PIDFile=/run/pveproxy/pveproxy.pid
 Type=forking
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target
