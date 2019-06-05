@@ -82,7 +82,7 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     name => 'createmgr',
-    path => '',
+    path => '{id}',
     method => 'POST',
     description => "Create Ceph Manager",
     proxyto => 'node',
