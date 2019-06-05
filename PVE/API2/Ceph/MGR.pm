@@ -69,7 +69,8 @@ __PACKAGE__->register_method ({
 
 	my $mgr_dump = $rados->mon_command({ prefix => 'mgr dump' });
 
-	$mgr_hash->{$mgr_dump->{active_name}}->{state} = 'active';
+	my $active_name = $mgr_dump->{active_name};
+	$mgr_hash->{$active_name}->{state} = 'active' if $active_name;
 
 	foreach my $mgr (@{$mgr_dump->{standbys}}) {
 	    $mgr_hash->{$mgr->{name}}->{state} = 'standby';
