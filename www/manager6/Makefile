@@ -61,6 +61,7 @@ JSSRC= 				                 	\
 	form/GlobalSearchField.js			\
 	form/QemuBiosSelector.js			\
 	form/VMSelector.js			\
+	form/VMCPUFlagSelector.js			\
 	form/USBSelector.js				\
 	form/CalendarEvent.js				\
 	form/CephPoolSelector.js				\
