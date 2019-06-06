@@ -255,15 +255,13 @@ __PACKAGE__->register_method ({
 	# extract parameter info and fail if a device is set more than once
 	my $devs = {};
 
-	for my $type ( qw(dev db wal) ) {
-	    my $name = $type eq 'dev' ? $type : "${type}_dev";
+	for my $type ( qw(dev db_dev wal_dev) ) {
+	    next if !$param->{$type};
 
-	    next if !$param->{$name};
-
-	    my $type_dev = PVE::Diskmanage::verify_blockdev_path($param->{$name});
+	    my $type_dev = PVE::Diskmanage::verify_blockdev_path($param->{$type});
 	    (my $type_devname = $type_dev) =~ s|/dev/||;
 
-	    raise_param_exc({ $name => "cannot chose '$type_dev' for more than one type." })
+	    raise_param_exc({ $type => "cannot chose '$type_dev' for more than one type." })
 		if grep { $_->{name} eq $type_devname } values %$devs;
 
 	    $devs->{$type} = {
@@ -285,7 +283,7 @@ __PACKAGE__->register_method ({
 	die "device '$dev' is already in use\n" if $disklist->{$devname}->{used};
 
 	# test db/wal requirements early
-	for my $type ( qw(db wal) ) {
+	for my $type ( qw(db_dev wal_dev) ) {
 	    my $d = $devs->{$type};
 	    next if !$d;
 	    my $name = $d->{name};
@@ -391,7 +389,7 @@ __PACKAGE__->register_method ({
 		my $sizes;
 		foreach my $type ( qw(db wal) ) {
 		    my $fallback_size = $size_map->{$type};
-		    my $d = $devs->{$type};
+		    my $d = $devs->{"${type}_dev"};
 		    next if !$d;
 
 		    # size was not set via api, getting from config/fallback
