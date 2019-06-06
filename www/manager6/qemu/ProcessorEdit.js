@@ -42,16 +42,11 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	// build the cpu options:
 	me.cpu.cputype = values.cputype;
 
-	var flags = [];
-
-	['pcid', 'spec-ctrl'].forEach(function(flag) {
-	    if (values[flag]) {
-		flags.push('+' + flag.toString());
-	    }
-	    delete values[flag];
-	});
-
-	me.cpu.flags = flags.length ? flags.join(';') : undefined;
+	if (values.flags) {
+	    me.cpu.flags = values.flags;
+	} else {
+	    delete me.cpu.flags;
+	}
 
 	delete values.cputype;
 	delete values.flags;
@@ -141,7 +136,10 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    fieldLabel: gettext('CPU limit'),
 	    allowBlank: true,
 	    emptyText: gettext('unlimited')
-	},
+	}
+    ],
+
+    advancedColumn2: [
 	{
 	    xtype: 'proxmoxintegerfield',
 	    name: 'cpuunits',
@@ -151,33 +149,30 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    value: '1024',
 	    deleteEmpty: true,
 	    allowBlank: true
-	}
-    ],
-
-    advancedColumn2: [
+	},
 	{
 	    xtype: 'proxmoxcheckbox',
 	    fieldLabel: gettext('Enable NUMA'),
 	    name: 'numa',
 	    uncheckedValue: 0
+	}
+    ],
+    advancedColumnB: [
+	{
+	    xtype: 'label',
+	    text: 'Extra CPU Flags:'
 	},
 	{
-	    xtype: 'proxmoxcheckbox',
-	    fieldLabel: 'PCID',
-	    name: 'pcid',
-	    uncheckedValue: 0
-	},
-	{
-	    xtype: 'proxmoxcheckbox',
-	    fieldLabel: 'SPEC-CTRL',
-	    name: 'spec-ctrl',
-	    uncheckedValue: 0
+	    xtype: 'vmcpuflagselector',
+	    name: 'flags'
 	}
     ]
 });
 
 Ext.define('PVE.qemu.ProcessorEdit', {
     extend: 'Proxmox.window.Edit',
+
+    width: 700,
 
     initComponent : function() {
 	var me = this;
@@ -200,12 +195,7 @@ Ext.define('PVE.qemu.ProcessorEdit', {
 		    ipanel.cpu = cpu;
 		    data.cputype = cpu.cputype;
 		    if (cpu.flags) {
-			var flags = cpu.flags.split(';');
-			flags.forEach(function(flag) {
-			    var sign = flag.substr(0,1);
-			    flag = flag.substr(1);
-			    data[flag] = (sign === '+');
-			});
+			data.flags = cpu.flags;
 		    }
 		}
 		me.setValues(data);
