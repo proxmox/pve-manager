@@ -12,23 +12,24 @@ Ext.define('PVE.form.DiskSelector', {
     displayField: 'devpath',
     emptyText: gettext('No Disks unused'),
     listConfig: {
+	width: 600,
 	columns: [
 	    {
 		header: gettext('Device'),
-		width: 80,
+		flex: 3,
 		sortable: true,
 		dataIndex: 'devpath'
 	    },
 	    {
 		header: gettext('Size'),
-		width: 60,
+		flex: 2,
 		sortable: false,
 		renderer: Proxmox.Utils.format_size,
 		dataIndex: 'size'
 	    },
 	    {
 		header: gettext('Serial'),
-		flex: 1,
+		flex: 5,
 		sortable: true,
 		dataIndex: 'serial'
 	    }
