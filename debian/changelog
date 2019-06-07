@@ -1,3 +1,15 @@
+pve-manager (5.4-7) unstable; urgency=medium
+
+  * ui: firewall log ratelimit: fix default value
+
+  * fix #2223: fix set_button_status isCDRom
+
+  * gui: ostypes: include 5.x in Linux series and reword to range
+
+  * gui: vm: add CPU flag selector with tri-state awareness
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 07 Jun 2019 16:48:24 +0200
+
 pve-manager (5.4-6) unstable; urgency=medium
 
   * gui: node: change syslog to JournalView and new (mini-)journal api
