@@ -297,10 +297,17 @@ __PACKAGE__->register_method({
 
 	# we try to generate 'numbers' by using "$X + 0"
 	if (!$param->{type} || $param->{type} eq 'vm') {
+	    my $locked_vms = PVE::Cluster::get_guest_config_property('lock');
+
 	    foreach my $vmid (keys %$idlist) {
 
 		my $data = $idlist->{$vmid};
 		my $entry = PVE::API2Tools::extract_vm_stats($vmid, $data, $rrd);
+
+		if (defined(my $lock = $locked_vms->{$vmid}->{lock})) {
+		    $entry->{lock} = $lock;
+		}
+
 		if (my $pool = $usercfg->{vms}->{$vmid}) {
 		    $entry->{pool} = $pool;
 		    if (my $pe = $pooldata->{$pool}) {
