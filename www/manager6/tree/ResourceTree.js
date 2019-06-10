@@ -137,6 +137,9 @@ Ext.define('PVE.tree.ResourceTree', {
 	}
 
 	var qtips = [gettext('Status') + ': ' + (info.qmpstatus || info.status)];
+	if (info.lock) {
+	    qtips.push('Config locked (' + info.lock + ')');
+	}
 	if (info.hastate != 'unmanaged') {
 	    qtips.push(gettext('HA State') + ": " + info.hastate);
 	}
