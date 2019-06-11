@@ -236,6 +236,12 @@ __PACKAGE__->register_method ({
 		requires => 'wal_dev',
 		type => 'number',
 	    },
+	    encrypted => {
+		type => 'boolean',
+		optional => 1,
+		default => 0,
+		description => "Enables encryption of the OSD."
+	    },
 	},
     },
     returns => { type => 'string' },
@@ -406,6 +412,7 @@ __PACKAGE__->register_method ({
 		}
 
 		push @$cmd, '--data', $devpath;
+		push @$cmd, '--dmcrypt' if $param->{encrypted};
 
 		PVE::Ceph::Tools::wipe_disks($devpath);
 
