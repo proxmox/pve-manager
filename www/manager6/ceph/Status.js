@@ -306,7 +306,7 @@ Ext.define('PVE.node.CephStatus', {
 	var nodename = me.pveSelNode.data.node;
 
 	me.callParent();
-	var baseurl = '/api2/json' + (nodename ? '/nodes/' + nodename : '/cluster') + '/ceph/';
+	var baseurl = '/api2/json' + (nodename ? '/nodes/' + nodename : '/cluster') + '/ceph';
 	me.store = Ext.create('Proxmox.data.UpdateStore', {
 	    storeid: 'ceph-status-' + (nodename || 'cluster'),
 	    interval: 5000,
