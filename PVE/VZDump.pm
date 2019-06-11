@@ -777,7 +777,9 @@ sub exec_backup_task {
 
 	if ($maxfiles && !$opts->{remove}) {
 	    my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname);
-	    die "only $maxfiles backup(s) allowed - please consider to remove old backup files.\n" 
+	    die "There is a max backup limit of ($maxfiles) enforced by the".
+	    " target storage or the vzdump parameters.".
+	    " Either increase the limit or delete old backup(s).\n"
 		if scalar(@$bklist) >= $maxfiles;
 	}
 
