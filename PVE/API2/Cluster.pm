@@ -664,7 +664,7 @@ __PACKAGE__->register_method ({
 	    my $services = $rados->mon_command({ prefix => "$type metadata" });
 	    for my $service ( @$services ) {
 		my $hostname = $service->{hostname};
-		my $servicename =  $service->{name};
+		my $servicename =  $service->{name} // $service->{id};
 		my $id = "$servicename\@$hostname";
 
 		if ($data->{$id}) {

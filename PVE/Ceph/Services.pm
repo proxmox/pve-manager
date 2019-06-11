@@ -111,7 +111,8 @@ sub get_services_info {
     }
     my $metadata = $rados->mon_command({ prefix => "$type metadata" });
     foreach my $info (@$metadata) {
-	my $service = $result->{$info->{name}};
+	my $id = $info->{name} // $info->{id};
+	my $service = $result->{$id};
 	$service->{ceph_version_short} = $info->{ceph_version_short};
 	$service->{ceph_version} = $info->{ceph_version};
 	$service->{host} //= $info->{hostname};
