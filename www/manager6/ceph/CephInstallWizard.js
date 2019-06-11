@@ -283,7 +283,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			    params: kv,
 			    success: function() {
 				Proxmox.Utils.API2Request({
-				    url: '/nodes/' + monNode + '/ceph/mon',
+				    url: '/nodes/' + monNode + '/ceph/mon/' + monNode,
 				    waitMsgTarget: wizard,
 				    method: 'POST',
 				    success: function() {
