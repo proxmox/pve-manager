@@ -203,7 +203,7 @@ sub destroy_pool {
 	prefix => "osd pool delete",
 	pool => $pool,
 	pool2 => $pool,
-	sure => '--yes-i-really-really-mean-it',
+	'yes_i_really_really_mean_it' => JSON::true,
 	format => 'plain',
     });
 }
