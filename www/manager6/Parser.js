@@ -528,12 +528,18 @@ Ext.define('PVE.Parser', { statics: {
     },
 
     parseQemuSmbios1: function(value) {
-	var res = {};
+	var res = value.split(',').reduce(function (accumulator, currentValue) {
+	    var splitted = currentValue.split(new RegExp("=(.+)"));
+	    accumulator[splitted[0]] = splitted[1];
+	    return accumulator;
+	}, {});
 
-	Ext.Array.each(value.split(','), function(p) {
-	    var kva = p.split('=', 2);
-	    res[kva[0]] = kva[1];
-	});
+	if (PVE.Parser.parseBoolean(res.base64, false)) {
+	    Ext.Object.each(res, function(key, value) {
+		if (key === 'uuid') { return; }
+		res[key] = Ext.util.Base64.decode(value);
+	    });
+	}
 
 	return res;
     },
@@ -541,10 +547,19 @@ Ext.define('PVE.Parser', { statics: {
     printQemuSmbios1: function(data) {
 
 	var datastr = '';
-
+	var base64 = false;
 	Ext.Object.each(data, function(key, value) {
 	    if (value === '') { return; }
-	    datastr += (datastr !== '' ? ',' : '') + key + '=' + value;
+	    if (key === 'uuid') {
+		datastr += (datastr !== '' ? ',' : '') + key + '=' + value;
+	    } else {
+		// values should be base64 encoded from now on, mark config strings correspondingly
+		if (!base64) {
+		    base64 = true;
+		    datastr += (datastr !== '' ? ',' : '') + 'base64=1';
+		}
+		datastr += (datastr !== '' ? ',' : '') + key + '=' + Ext.util.Base64.encode(value);
+	    }
 	});
 
 	return datastr;

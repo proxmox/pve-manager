@@ -36,39 +36,57 @@ Ext.define('PVE.qemu.Smbios1InputPanel', {
 		name: 'uuid'
 	    },
 	    {
-		xtype: 'textfield',
+		xtype: 'textareafield',
 		fieldLabel: gettext('Manufacturer'),
-		regex: /^\S+$/,
+		fieldStyle: {
+		    height: '2em',
+		    minHeight: '2em'
+		},
 		name: 'manufacturer'
 	    },
 	    {
-		xtype: 'textfield',
+		xtype: 'textareafield',
 		fieldLabel: gettext('Product'),
-		regex: /^\S+$/,
+		fieldStyle: {
+		    height: '2em',
+		    minHeight: '2em'
+		},
 		name: 'product'
 	    },
 	    {
-		xtype: 'textfield',
+		xtype: 'textareafield',
 		fieldLabel: gettext('Version'),
-		regex: /^\S+$/,
+		fieldStyle: {
+		    height: '2em',
+		    minHeight: '2em'
+		},
 		name: 'version'
 	    },
 	    {
-		xtype: 'textfield',
+		xtype: 'textareafield',
 		fieldLabel: gettext('Serial'),
-		regex: /^\S+$/,
+		fieldStyle: {
+		    height: '2em',
+		    minHeight: '2em'
+		},
 		name: 'serial'
 	    },
 	    {
-		xtype: 'textfield',
+		xtype: 'textareafield',
 		fieldLabel: 'SKU',
-		regex: /^\S+$/,
+		fieldStyle: {
+		    height: '2em',
+		    minHeight: '2em'
+		},
 		name: 'sku'
 	    },
 	    {
-		xtype: 'textfield',
+		xtype: 'textareafield',
 		fieldLabel: gettext('Family'),
-		regex: /^\S+$/,
+		fieldStyle: {
+		    height: '2em',
+		    minHeight: '2em'
+		},
 		name: 'family'
 	    }
 	];
