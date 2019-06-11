@@ -24,75 +24,68 @@ Ext.define('PVE.qemu.Smbios1InputPanel', {
 	me.setValues(me.smbios1);
     },
 
-    initComponent : function() {
-	var me = this;
-
-
-	me.items = [
-	    {
-		xtype: 'textfield',
-		fieldLabel: 'UUID',
-		regex: /^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$/,
-		name: 'uuid'
+    items: [
+	{
+	    xtype: 'textfield',
+	    fieldLabel: 'UUID',
+	    regex: /^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$/,
+	    name: 'uuid'
+	},
+	{
+	    xtype: 'textareafield',
+	    fieldLabel: gettext('Manufacturer'),
+	    fieldStyle: {
+		height: '2em',
+		minHeight: '2em'
 	    },
-	    {
-		xtype: 'textareafield',
-		fieldLabel: gettext('Manufacturer'),
-		fieldStyle: {
-		    height: '2em',
-		    minHeight: '2em'
-		},
-		name: 'manufacturer'
+	    name: 'manufacturer'
+	},
+	{
+	    xtype: 'textareafield',
+	    fieldLabel: gettext('Product'),
+	    fieldStyle: {
+		height: '2em',
+		minHeight: '2em'
 	    },
-	    {
-		xtype: 'textareafield',
-		fieldLabel: gettext('Product'),
-		fieldStyle: {
-		    height: '2em',
-		    minHeight: '2em'
-		},
-		name: 'product'
+	    name: 'product'
+	},
+	{
+	    xtype: 'textareafield',
+	    fieldLabel: gettext('Version'),
+	    fieldStyle: {
+		height: '2em',
+		minHeight: '2em'
 	    },
-	    {
-		xtype: 'textareafield',
-		fieldLabel: gettext('Version'),
-		fieldStyle: {
-		    height: '2em',
-		    minHeight: '2em'
-		},
-		name: 'version'
+	    name: 'version'
+	},
+	{
+	    xtype: 'textareafield',
+	    fieldLabel: gettext('Serial'),
+	    fieldStyle: {
+		height: '2em',
+		minHeight: '2em'
 	    },
-	    {
-		xtype: 'textareafield',
-		fieldLabel: gettext('Serial'),
-		fieldStyle: {
-		    height: '2em',
-		    minHeight: '2em'
-		},
-		name: 'serial'
+	    name: 'serial'
+	},
+	{
+	    xtype: 'textareafield',
+	    fieldLabel: 'SKU',
+	    fieldStyle: {
+		height: '2em',
+		minHeight: '2em'
 	    },
-	    {
-		xtype: 'textareafield',
-		fieldLabel: 'SKU',
-		fieldStyle: {
-		    height: '2em',
-		    minHeight: '2em'
-		},
-		name: 'sku'
+	    name: 'sku'
+	},
+	{
+	    xtype: 'textareafield',
+	    fieldLabel: gettext('Family'),
+	    fieldStyle: {
+		height: '2em',
+		minHeight: '2em'
 	    },
-	    {
-		xtype: 'textareafield',
-		fieldLabel: gettext('Family'),
-		fieldStyle: {
-		    height: '2em',
-		    minHeight: '2em'
-		},
-		name: 'family'
-	    }
-	];
-
-	me.callParent();
-    }
+	    name: 'family'
+	}
+    ]
 });
 
 Ext.define('PVE.qemu.Smbios1Edit', {
