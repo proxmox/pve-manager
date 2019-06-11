@@ -73,6 +73,13 @@ Ext.define('PVE.CephCreateOsd', {
 		    ],
 		    advancedColumn1: [
 			{
+			    xtype: 'proxmoxcheckbox',
+			    name: 'encrypted',
+			    fieldLabel: gettext('Encrypt OSD')
+			},
+		    ],
+		    advancedColumn2: [
+			{
 			    xtype: 'pveDiskSelector',
 			    name: 'wal_dev',
 			    nodename: me.nodename,
