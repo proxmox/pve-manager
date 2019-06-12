@@ -183,9 +183,8 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			value: gettext('Ceph cluster configuration') + ':'
 		    },
 		    {
-			xtype: 'textfield',
+			xtype: 'proxmoxNetworkSelector',
 			name: 'network',
-			vtype: 'IP64CIDRAddress',
 			value: '',
 			fieldLabel: 'Public Network IP/CIDR',
 			bind: {
@@ -197,11 +196,11 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			}
 		    },
 		    {
-			xtype: 'textfield',
+			xtype: 'proxmoxNetworkSelector',
 			name: 'cluster-network',
-			vtype: 'IP64CIDRAddress',
 			fieldLabel: 'Cluster Network IP/CIDR',
 			allowBlank: true,
+			autoSelect: false,
 			emptyText: gettext('Same as Public Network')
 		    }
 		    // FIXME: add hint about cluster network and/or reference user to docs??
