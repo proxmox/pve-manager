@@ -283,7 +283,7 @@ my $check_ipv6_settings = sub {
     my $type = ($binip eq $binmask) ? 'ANYCAST' : Net::IP::ip_iptypev6($binip);
 
     if (defined($type) && $type !~ /^(?:(?:GLOBAL|(?:UNIQUE|LINK)-LOCAL)-UNICAST)$/) {
-	raise_param_exc({ address => "$address with type '$type', cannot be used as host IPv6 address." })
+	raise_param_exc({ address => "$address with type '$type', cannot be used as host IPv6 address." });
     }
 };
 
