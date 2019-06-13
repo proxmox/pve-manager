@@ -554,7 +554,6 @@ __PACKAGE__->register_method({
 	$fh->close();
 
 	my $ovs_changes = undef;
-	my $bridges_delete = {};
 	my $running_ifaces = $running_config->{ifaces};
 	my $new_ifaces = $new_config->{ifaces};
 
@@ -564,7 +563,6 @@ __PACKAGE__->register_method({
 	    my $new_iface = $new_ifaces->{$iface};
 	    my $new_type = $new_iface->{type};
 
-	    $bridges_delete->{$iface} = 1 if !defined($new_iface) && $type eq 'bridge';
 	    if ($type =~ m/^OVS/) {
 		#deleted ovs
 		$ovs_changes = 1 if !defined($new_iface);
@@ -602,13 +600,6 @@ __PACKAGE__->register_method({
 
 	die "reloading config with ovs changes is not possible currently\n"
 	    if $ovs_changes;
-
-	foreach my $bridge (keys %$bridges_delete) {
-
-	    my (undef, $interface) = dir_glob_regex("/sys/class/net/$bridge/brif", '(tap|veth|fwpr).*');
-	    die "bridge deletion is not possible currently if vm or ct are running on this bridge\n"
-		if defined($interface);
-	}
 
 	my $worker = sub {
 
