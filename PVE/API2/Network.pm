@@ -612,52 +612,18 @@ __PACKAGE__->register_method({
 
 	my $worker = sub {
 
-	    PVE::Tools::file_copy($new_config_file, $current_config_file);
-	    my $new_config = PVE::INotify::read_file('interfaces');
+	    rename($new_config_file, $current_config_file) if -e $new_config_file;
 
 	    my $cmd = ['ifreload', '-a'];
-	    my $ifaces_errors = {};
-	    my $ifaces_errors_final = {};
 
 	    my $err = sub {
 		my $line = shift;
 		if ($line =~ /(warning|error): (\S+):/) {
-		    $ifaces_errors->{$2} = 1;
-		    print "$2 : error reloading configuration online : try to ifdown/ifdown later : $line \n";
+		    print "$2 : $line \n";
 		}
 	    };
 
 	    PVE::Tools::run_command($cmd,errfunc => $err);
-
-	    my $err2 = sub {
-		my $line = shift;
-		if ($line =~ /(warning|error): (\S+):/) {
-		    $ifaces_errors_final->{$2} = 1;
-		    print "$2 : error restart: $line \n";
-		}
-	    };
-
-	    #try ifdown/up for non online change options
-	    foreach my $iface (keys %$ifaces_errors) {
-		eval { PVE::Tools::run_command(['ifdown',$iface]) };
-		PVE::Tools::run_command(['ifup',$iface],errfunc => $err2);
-	    }
-
-	    #if we still have error, recopy old config of failed interfaces in running config
-	    #and keep new interface config to try to apply it later
-	    if(keys %$ifaces_errors_final > 0 ) {
-		foreach my $iface (keys %$ifaces_errors_final) {
-		    print "error: $iface config has not been applied\n";
-		    delete $new_config->{ifaces}->{$iface};
-		    $new_config->{ifaces}->{$iface} = $running_config->{ifaces}->{$iface};
-		}
-		#clean-me
-		my $fh = IO::File->new(">$current_config_file");
-		PVE::INotify::write_etc_network_interfaces(1, $fh, $new_config);
-		$fh->close();
-	     } else {
-		unlink $new_config_file;
-	     }
 	};
 	return $rpcenv->fork_worker('srvreload', 'networking', $authuser, $worker);
    }});
