@@ -541,64 +541,7 @@ __PACKAGE__->register_method({
 	my $new_config_file = "/etc/network/interfaces.new";
 
 	die "you need ifupdown2 to reload networking\n" if !-e '/usr/share/ifupdown2';
-
-	#clean-me
-	my $fh = IO::File->new("<$current_config_file");
-	my $running_config = PVE::INotify::read_etc_network_interfaces(1,$fh);
-	$fh->close();
-
-	#clean-me
-	$fh = IO::File->new("<$new_config_file");
-	my $new_config = PVE::INotify::read_etc_network_interfaces(1,$fh);
-	$fh->close();
-
-	my $ovs_changes = undef;
-	my $running_ifaces = $running_config->{ifaces};
-	my $new_ifaces = $new_config->{ifaces};
-
-	foreach my $iface (keys %$running_ifaces) {
-	    my $running_iface = $running_ifaces->{$iface};
-	    my $type = $running_iface->{type};
-	    my $new_iface = $new_ifaces->{$iface};
-	    my $new_type = $new_iface->{type};
-
-	    if ($type =~ m/^OVS/) {
-		#deleted ovs
-		$ovs_changes = 1 if !defined($new_iface);
-		#change ovs type to new type
-		$ovs_changes = 1 if $new_type ne $type;
-		#deleted or changed option
-		foreach my $iface_option (keys %$running_iface) {
-		    if (!defined($new_iface->{$iface_option}) || ($running_iface->{$iface_option} ne $new_iface->{$iface_option})) {
-			$ovs_changes = 1;
-		    }
-		}
-	    } else {
-		#change type to ovs
-		$ovs_changes = 1 if $new_type =~ m/^OVS/;
-	    }
-	}
-
-	foreach my $iface (keys %$new_ifaces) {
-	    my $new_iface = $new_ifaces->{$iface};
-	    my $new_type = $new_iface->{type};
-	    my $running_iface = $running_ifaces->{$iface};
-	    my $type = $running_iface->{type};
-
-	    if ($new_type =~ m/^OVS/) {
-		#new ovs
-		$ovs_changes = 1 if !defined($running_iface);
-		#new option
-		foreach my $iface_option (keys %$new_iface) {
-		    if (!defined($running_iface->{$iface_option})) {
-			$ovs_changes = 1;
-		    }
-		}
-	    }
-	}
-
-	die "reloading config with ovs changes is not possible currently\n"
-	    if $ovs_changes;
+	die "ifupdown2 reload is not compatible if openvswitch currently" if -x '/usr/bin/ovs-vsctl';
 
 	my $worker = sub {
 
