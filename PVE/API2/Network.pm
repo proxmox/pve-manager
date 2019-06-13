@@ -541,7 +541,6 @@ __PACKAGE__->register_method({
 	my $new_config_file = "/etc/network/interfaces.new";
 
 	die "you need ifupdown2 to reload networking\n" if !-e '/usr/share/ifupdown2';
-	die "no new network config to apply\n" if !-e $new_config_file;
 
 	#clean-me
 	my $fh = IO::File->new("<$current_config_file");
