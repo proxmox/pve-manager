@@ -274,17 +274,17 @@ my $check_ipv6_settings = sub {
     raise_param_exc({ netmask => "$netmask is not a valid subnet length for ipv6" })
 	if $netmask < 0 || $netmask > 128;
 
-    raise_param_exc({ address => "$address is not a valid host ip address." })
+    raise_param_exc({ address => "$address is not a valid host IPv6 address." })
 	if !Net::IP::ip_is_ipv6($address);
 
     my $binip = ipv6_tobin($address);
     my $binmask = Net::IP::ip_get_mask($netmask, 6);
 
-    my $type = Net::IP::ip_iptypev6($binip);
+    my $type = ($binip eq $binmask) ? 'ANYCAST' : Net::IP::ip_iptypev6($binip);
 
-    raise_param_exc({ address => "$address is not a valid host ip address." })
-	if ($binip eq $binmask) ||
-	   (defined($type) && $type !~ /^(?:(?:GLOBAL|(?:UNIQUE|LINK)-LOCAL)-UNICAST)$/);
+    if (defined($type) && $type !~ /^(?:(?:GLOBAL|(?:UNIQUE|LINK)-LOCAL)-UNICAST)$/) {
+	raise_param_exc({ address => "$address with type '$type', cannot be used as host IPv6 address." })
+    }
 };
 
 my $map_cidr_to_address_netmask = sub {
