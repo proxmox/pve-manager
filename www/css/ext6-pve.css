@@ -183,6 +183,29 @@
     color: #000000;
 }
 
+.x-tree-icon-custom.lock-migrate:after,
+.x-grid-icon-custom.lock-migrate:after {
+    content: "\f1d9";
+    #color: #21BF4B;
+    color: #000000;
+    font-size: 0.75em;
+}
+
+
+.x-tree-icon-custom.lock-suspending:after,
+.x-grid-icon-custom.lock-suspending:after {
+    content: "\f019";
+    color: #CC8E00;
+    font-size: 0.75em;
+}
+
+.x-tree-icon-custom.lock-suspended:after,
+.x-grid-icon-custom.lock-suspended:after {
+    content: "\f019";
+    color: #000000;
+    font-size: 0.75em;
+}
+
 /* yellow ! triangle */
 .x-tree-icon-custom.io-error:after,
 .x-grid-icon-custom.io-error:after,
