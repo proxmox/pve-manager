@@ -186,7 +186,7 @@
 .x-tree-icon-custom.lock-migrate:after,
 .x-grid-icon-custom.lock-migrate:after {
     content: "\f1d9";
-    #color: #21BF4B;
+    /* color: #21BF4B; */
     color: #000000;
     font-size: 0.75em;
 }
