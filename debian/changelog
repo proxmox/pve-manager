@@ -1,3 +1,35 @@
+pve-manager (6.0-0+2) pve; urgency=medium
+
+  * api: cluster/resources: add information about guest locks
+
+  * gui: tree: add lock information to tree entries and its tooltips
+
+  * api network: make IPv6 address checking spew out more useful errors
+
+  * gui: ceph install wizard: use new network selector widget for monitor
+    creation
+
+  * fix #2190: Base64 encode SMBIOS value strings in order to allow more
+    characters
+
+  * ceph: allow to enable encryption on osd create through web GUI or API
+
+  * gui: vm: add new CPU flag selector with tri-state awareness and many more
+    flags to select
+
+  * improve OSD creation compatibility with Ceph Nautilus
+
+  * gui: add initial version of cluster wide ceph dashboard
+
+  * allow to destroy OSDs under both, Ceph Luminous and Nautilus
+
+  * ui: show ceph monitor, manager & OSD versions from pveceph managed cluster
+    and warn if they are not all the same
+
+  * fix #2223: fix set_button_status isCDRom
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 14 Jun 2019 21:16:41 +0200
+
 pve-manager (6.0-0+1) pve; urgency=medium
 
   * rework log out button to general user and session management menu
