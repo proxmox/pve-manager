@@ -1395,7 +1395,7 @@ __PACKAGE__->register_method({
 		completion => \&PVE::Storage::complete_storage_enabled,
 	    }),
 	    template => { type => 'string',
-			  description => "The template wich will downloaded",
+			  description => "The template which will downloaded",
 			  maxLength => 255,
 			  completion => \&complete_templet_repo,
 	    },

@@ -190,7 +190,7 @@ sub download_aplinfo {
 	    die "update failed: unable to store data\n";
 	}
 
-	logmsg($logfd, "update sucessful");
+	logmsg($logfd, "update successful");
     };
 
     my $err = $@;

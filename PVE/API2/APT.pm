@@ -433,7 +433,7 @@ __PACKAGE__->register_method({
 		    }
 		}
 	    }
-	    die "package '$pkgname' version '$param->{version}' is not avalable\n" if !$ver;
+	    die "package '$pkgname' version '$param->{version}' is not available\n" if !$ver;
 	} else {
 	    $ver = $policy->candidate($p) || die "no installation candidate for package '$pkgname'\n";
 	}

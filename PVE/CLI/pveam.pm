@@ -88,7 +88,7 @@ __PACKAGE__->register_method ({
     method => 'GET',
     description => "Get list of all templates on storage",
     permissions => {
-	description => "Show all users the template wich have permission on that storage.",
+	description => "Show all users the template which have permission on that storage.",
 	check => ['perm', '/storage/{storage}', ['Datastore.AllocateTemplate']],
     },
     proxyto => 'node',

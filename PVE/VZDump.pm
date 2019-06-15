@@ -122,7 +122,7 @@ my $confdesc = {
     }),
     stop => {
 	type => 'boolean',
-	description => "Stop runnig backup jobs on this host.",
+	description => "Stop running backup jobs on this host.",
 	optional => 1,
 	default => 0,
     },
@@ -633,8 +633,8 @@ sub getlock {
     if (!flock (SERVER_FLCK, LOCK_EX|LOCK_NB)) {
 
 	if (!$maxwait) {
-	    debugmsg ('err', "can't aquire lock '$lockfile' (wait = 0)", undef, 1);
-	    die "can't aquire lock '$lockfile' (wait = 0)";
+	    debugmsg ('err', "can't acquire lock '$lockfile' (wait = 0)", undef, 1);
+	    die "can't acquire lock '$lockfile' (wait = 0)";
 	}
 
 	debugmsg('info', "trying to get global lock - waiting...", undef, 1);
@@ -657,8 +657,8 @@ sub getlock {
 	my $err = $@;
 	
 	if ($err) {
-	    debugmsg ('err', "can't aquire lock '$lockfile' - $err", undef, 1);
-	    die "can't aquire lock '$lockfile' - $err";
+	    debugmsg ('err', "can't acquire lock '$lockfile' - $err", undef, 1);
+	    die "can't acquire lock '$lockfile' - $err";
 	}
 
 	debugmsg('info', "got global lock", undef, 1);
@@ -1206,7 +1206,7 @@ sub stop_running_backups {
 	    last if !PVE::ProcFSTools::check_process_running(($task->{pid}, $task->{pstart}));
 	    sleep (1);
 	}
-	die "stoping backup process $task->{pid} failed\n" if $i == 0;
+	die "stopping backup process $task->{pid} failed\n" if $i == 0;
     }
 }
 

@@ -61,12 +61,12 @@ my $confdesc = {
 	optional => 1,
     },
     bridge_ports => {
-	description => "Specify the iterfaces you want to add to your bridge.",
+	description => "Specify the interfaces you want to add to your bridge.",
 	optional => 1,
 	type => 'string', format => 'pve-iface-list',
     },
     ovs_ports => {
-	description => "Specify the iterfaces you want to add to your bridge.",
+	description => "Specify the interfaces you want to add to your bridge.",
 	optional => 1,
 	type => 'string', format => 'pve-iface-list',
     },

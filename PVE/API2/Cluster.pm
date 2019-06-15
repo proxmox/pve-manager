@@ -485,7 +485,7 @@ __PACKAGE__->register_method({
     name => 'get_status', 
     path => 'status', 
     method => 'GET',
-    description => "Get cluster status informations.",
+    description => "Get cluster status information.",
     permissions => {
 	check => ['perm', '/', [ 'Sys.Audit' ]],
     },

@@ -280,7 +280,7 @@ __PACKAGE__->register_method ({
 		maximum => 14,
 	    },
 	    disable_cephx => {
-		description => "Disable cephx authentification.\n\n" .
+		description => "Disable cephx authentication.\n\n" .
 		    "WARNING: cephx is a security feature protecting against " .
 		    "man-in-the-middle attacks. Only consider disabling cephx ".
 		    "if your network is private!",

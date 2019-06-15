@@ -306,7 +306,7 @@ __PACKAGE__->register_method ({
 	my $realcmd = sub {
 	    my $upid = shift;
 
-	    syslog('info', "stoping service $param->{service}: $upid\n");
+	    syslog('info', "stopping service $param->{service}: $upid\n");
 
 	    &$service_cmd($param->{service}, 'stop');
 
