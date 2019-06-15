@@ -100,7 +100,7 @@ Ext.define('PVE.window.TFAEdit', {
 	data: {
 	    in_totp_tab: true,
 	    tfa_required: false,
-	    tfa_type: null, // dependecies of formulas should not be undefined
+	    tfa_type: null, // dependencies of formulas should not be undefined
 	    valid: false,
 	    u2f_available: true
 	},

@@ -270,7 +270,7 @@ Ext.define('PVE.node.CephStatus', {
 	// update the usage widget
 	me.down('#space').updateValue(used/total, text);
 
-	// TODO: logic for jewel (iops splitted in read/write)
+	// TODO: logic for jewel (iops split in read/write)
 
 	var iops = rec.data.pgmap.op_per_sec;
 	var readiops = rec.data.pgmap.read_op_per_sec;

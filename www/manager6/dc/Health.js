@@ -73,12 +73,12 @@ Ext.define('PVE.dc.Health', {
 	if (!success || records.length < 1) {
 
 	    // if ceph status is already visible
-	    // dont stop to update
+	    // don't stop to update
 	    if (cephstatus.isVisible()) {
 		return;
 	    }
 
-	    // try all nodes until we either get a successfull api call,
+	    // try all nodes until we either get a successful api call,
 	    // or we tried all nodes
 	    if (++me.nodeIndex >= me.nodeList.length) {
 		me.cephstore.stopUpdate();

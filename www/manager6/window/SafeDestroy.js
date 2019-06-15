@@ -1,5 +1,5 @@
 /* Popup a message window
- * where the user has to manually enter the ressource ID
+ * where the user has to manually enter the resource ID
  * to enable the destroy button
  */
 Ext.define('PVE.window.SafeDestroy', {

@@ -46,7 +46,7 @@ Ext.define('PVE.form.HotplugFeatureSelector', {
 	me.callParent([{ hotplug: newVal }]);
     },
 
-    // overide framework function to
+    // override framework function to
     // assemble the hotplug value
     getSubmitData: function() {
 	var me = this,

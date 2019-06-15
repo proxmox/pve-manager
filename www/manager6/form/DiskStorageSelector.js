@@ -28,7 +28,7 @@ Ext.define('PVE.form.DiskStorageSelector', {
     // hides the size field (e.g, for the efi disk dialog)
     hideSize: false,
 
-    // sets the intial size value
+    // sets the initial size value
     // string because else we get a type confusion
     defaultSize: '32',
 

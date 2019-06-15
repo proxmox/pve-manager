@@ -40,7 +40,7 @@ Ext.define('PVE.form.IPRefSelector', {
 	var disable_query_for_ips = function(f, value) {
 	    if (value === null || 
 		value.match(/^\d/)) { // IP address starts with \d
-		f.queryDelay = 9999999999; // hack: disbale with long delay
+		f.queryDelay = 9999999999; // hack: disable with long delay
 	    } else {
 		f.queryDelay = 10;
 	    }

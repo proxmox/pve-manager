@@ -43,8 +43,8 @@ Ext.define('PVE.panel.Config', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pvePanelConfig',
 
-    showSearch: true, // add a ressource grid with a search button as first tab
-    viewFilter: undefined, // a filter to pass to that ressource grid
+    showSearch: true, // add a resource grid with a search button as first tab
+    viewFilter: undefined, // a filter to pass to that resource grid
 
     tbarSpacing: true, // if true, adds a spacer after the title in tbar
 
@@ -79,7 +79,7 @@ Ext.define('PVE.panel.Config', {
 		    var newitem = info.node;
 
 		    // when clicking on the expand arrow,
-		    // we dont select items, but still want
+		    // we don't select items, but still want
 		    // the original behaviour
 		    if (info.select === false) {
 			return;

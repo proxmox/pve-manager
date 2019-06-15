@@ -1,5 +1,5 @@
 /*
- * Left Treepanel, containing all the ressources we manage in this datacenter: server nodes, server storages, VMs and Containers
+ * Left Treepanel, containing all the resources we manage in this datacenter: server nodes, server storages, VMs and Containers
  */
 Ext.define('PVE.tree.ResourceTree', {
     extend: 'Ext.tree.TreePanel',
@@ -291,7 +291,7 @@ Ext.define('PVE.tree.ResourceTree', {
 			    }
 			}
 
-			// explicitely check for node, since
+			// explicitly check for node, since
 			// in some views, node is not a grouping
 			// attribute
 			if (!moved && item.data.node !== olditem.data.node) {
