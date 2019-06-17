@@ -6,6 +6,7 @@ Ext.define('PVE.form.StorageSelector', {
     valueField: 'storage',
     displayField: 'storage',
     listConfig: {
+	width: 450,
 	columns: [
 	    {
 		header: gettext('Name'),
@@ -15,18 +16,18 @@ Ext.define('PVE.form.StorageSelector', {
 	    },
 	    {
 		header: gettext('Type'),
-		width: 60,
+		width: 75,
 		dataIndex: 'type'
 	    },
 	    {
 		header: gettext('Avail'),
-		width: 80,
+		width: 90,
 		dataIndex: 'avail',
 		renderer: Proxmox.Utils.format_size
 	    },
 	    {
 		header: gettext('Capacity'),
-		width: 80,
+		width: 90,
 		dataIndex: 'total',
 		renderer: Proxmox.Utils.format_size
 	    }
