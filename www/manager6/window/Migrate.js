@@ -279,6 +279,26 @@ Ext.define('PVE.window.Migrate', {
 		    xtype: 'container',
 		    columnWidth: 0.5,
 		    items: [{
+			xtype: 'displayfield',
+			name: 'source',
+			fieldLabel: gettext('Source node'),
+			bind: {
+			    value: '{nodename}'
+			}
+		    },
+		    {
+			xtype: 'displayfield',
+			reference: 'migrationMode',
+			fieldLabel: gettext('Mode'),
+			bind: {
+			    value: '{setMigrationMode}'
+			}
+		    }]
+		},
+		{
+		    xtype: 'container',
+		    columnWidth: 0.5,
+		    items: [{
 			xtype: 'pveNodeSelector',
 			reference: 'pveNodeSelector',
 			name: 'target',
@@ -291,30 +311,15 @@ Ext.define('PVE.window.Migrate', {
 			}
 		    },
 		    {
-			xtype: 'displayfield',
-			reference: 'migrationMode',
-			fieldLabel: gettext('Mode'),
-			bind: {
-			    value: '{setMigrationMode}'
-			}
-		    }
-		    ]
-		},
-		{
-		    xtype: 'container',
-		    columnWidth: 0.5,
-		    items: [
-			{
-				xtype: 'pveStorageSelector',
-				reference: 'pveDiskStorageSelector',
-				name: 'targetstorage',
-				fieldLabel: gettext('Target Storage'),
-				storageContent: 'images',
-				bind: {
-				    hidden: '{setStorageselectorHidden}'
-				}
-			}
-		    ]
+			    xtype: 'pveStorageSelector',
+			    reference: 'pveDiskStorageSelector',
+			    name: 'targetstorage',
+			    fieldLabel: gettext('Target storage'),
+			    storageContent: 'images',
+			    bind: {
+				hidden: '{setStorageselectorHidden}'
+			    }
+		    }]
 		}
 	    ]
 	},
