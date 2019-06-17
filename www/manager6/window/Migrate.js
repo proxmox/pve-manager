@@ -2,7 +2,6 @@
 Ext.define('PVE.window.Migrate', {
     extend: 'Ext.window.Window',
 
-
     vmtype: undefined,
     nodename: undefined,
     vmid: undefined,
@@ -259,7 +258,7 @@ Ext.define('PVE.window.Migrate', {
 
     },
 
-    width: 700,
+    width: 600,
     modal: true,
     layout: {
 	type: 'vbox',
