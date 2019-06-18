@@ -19,7 +19,17 @@ use PVE::Tools qw(run_command file_set_contents);
 use base qw(PVE::RESTHandler);
 
 my $find_mon_ip = sub {
-    my ($pubnet, $node, $overwrite_ip) = @_;
+    my ($cfg, $rados, $node, $overwrite_ip) = @_;
+
+    my $pubnet;
+    if ($rados) {
+	$pubnet = $rados->mon_command({ prefix => "config get" , who => "mon.",
+		key => "public_network", format => 'plain' });
+	# if not defined in the db, the result is empty, it is also always
+	# followed by a newline
+	($pubnet) = $pubnet =~ m/^(\S+)$/;
+    }
+    $pubnet //= $cfg->{global}->{public_network};
 
     if (!$pubnet) {
 	return $overwrite_ip // PVE::Cluster::remote_node_ip($node);
@@ -152,6 +162,7 @@ __PACKAGE__->register_method ({
 	my $authuser = $rpcenv->get_user();
 
 	my $cfg = cfs_read_file('ceph.conf');
+	my $rados = eval { PVE::RADOS->new() }; # try a rados connection, fails for first monitor
 
 	my $moncount = 0;
 	my $monaddrhash = {};
@@ -170,8 +181,7 @@ __PACKAGE__->register_method ({
 	my $monid = $param->{monid} // $param->{node};
 
 	my $monsection = "mon.$monid";
-	my $pubnet = $cfg->{global}->{'public network'};
-	my $ip = $find_mon_ip->($pubnet, $param->{node}, $param->{'mon-address'});
+	my $ip = $find_mon_ip->($cfg, $rados, $param->{node}, $param->{'mon-address'});
 
 	my $monaddr = Net::IP::ip_is_ipv6($ip) ? "[$ip]:6789" : "$ip:6789";
 	my $monname = $param->{node};
