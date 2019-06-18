@@ -320,7 +320,6 @@ __PACKAGE__->register_method ({
 		'auth cluster required' => $auth,
 		'auth service required' => $auth,
 		'auth client required' => $auth,
-		'osd journal size' => $pve_osd_default_journal_size,
 		'osd pool default size' => $param->{size} // 3,
 		'osd pool default min size' => $param->{min_size} // 2,
 		'mon allow pool delete' => 'true',
@@ -331,8 +330,7 @@ __PACKAGE__->register_method ({
 	    #'osd pool default pgp num' => $pg_num,
 	}
 
-	$cfg->{global}->{keyring} = '/etc/pve/priv/$cluster.$name.keyring';
-	$cfg->{osd}->{keyring} = '/var/lib/ceph/osd/ceph-$id/keyring';
+	$cfg->{client}->{keyring} = '/etc/pve/priv/$cluster.$name.keyring';
 
 	if ($param->{pg_bits}) {
 	    $cfg->{global}->{'osd pg bits'} = $param->{pg_bits};
