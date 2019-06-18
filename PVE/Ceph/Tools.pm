@@ -216,6 +216,7 @@ sub setup_pve_symlinks {
 	die "file '$ceph_cfgpath' already exists\n"
 	    if !$lnk || $lnk ne $pve_ceph_cfgpath;
     } else {
+	mkdir $ceph_cfgdir;
 	symlink($pve_ceph_cfgpath, $ceph_cfgpath) ||
 	    die "unable to create symlink '$ceph_cfgpath' - $!\n";
     }
