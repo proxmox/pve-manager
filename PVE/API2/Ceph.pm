@@ -303,52 +303,54 @@ __PACKAGE__->register_method ({
 	}
 
 	# simply load old config if it already exists
-	my $cfg = cfs_read_file('ceph.conf');
+	PVE::Cluster::cfs_lock_file('ceph.conf', undef, sub {
+	    my $cfg = cfs_read_file('ceph.conf');
 
-	if (!$cfg->{global}) {
+	    if (!$cfg->{global}) {
 
-	    my $fsid;
-	    my $uuid;
+		my $fsid;
+		my $uuid;
 
-	    UUID::generate($uuid);
-	    UUID::unparse($uuid, $fsid);
+		UUID::generate($uuid);
+		UUID::unparse($uuid, $fsid);
 
-	    my $auth = $param->{disable_cephx} ? 'none' : 'cephx';
+		my $auth = $param->{disable_cephx} ? 'none' : 'cephx';
 
-	    $cfg->{global} = {
-		'fsid' => $fsid,
-		'auth cluster required' => $auth,
-		'auth service required' => $auth,
-		'auth client required' => $auth,
-		'osd pool default size' => $param->{size} // 3,
-		'osd pool default min size' => $param->{min_size} // 2,
-		'mon allow pool delete' => 'true',
-	    };
+		$cfg->{global} = {
+		    'fsid' => $fsid,
+		    'auth cluster required' => $auth,
+		    'auth service required' => $auth,
+		    'auth client required' => $auth,
+		    'osd pool default size' => $param->{size} // 3,
+		    'osd pool default min size' => $param->{min_size} // 2,
+		    'mon allow pool delete' => 'true',
+		};
 
-	    # this does not work for default pools
-	    #'osd pool default pg num' => $pg_num,
-	    #'osd pool default pgp num' => $pg_num,
-	}
+		# this does not work for default pools
+		#'osd pool default pg num' => $pg_num,
+		#'osd pool default pgp num' => $pg_num,
+	    }
 
-	$cfg->{client}->{keyring} = '/etc/pve/priv/$cluster.$name.keyring';
+	    $cfg->{client}->{keyring} = '/etc/pve/priv/$cluster.$name.keyring';
 
-	if ($param->{pg_bits}) {
-	    $cfg->{global}->{'osd pg bits'} = $param->{pg_bits};
-	    $cfg->{global}->{'osd pgp bits'} = $param->{pg_bits};
-	}
+	    if ($param->{pg_bits}) {
+		$cfg->{global}->{'osd pg bits'} = $param->{pg_bits};
+		$cfg->{global}->{'osd pgp bits'} = $param->{pg_bits};
+	    }
 
-	if ($param->{network}) {
-	    $cfg->{global}->{'public network'} = $param->{network};
-	    $cfg->{global}->{'cluster network'} = $param->{network};
-	}
+	    if ($param->{network}) {
+		$cfg->{global}->{'public network'} = $param->{network};
+		$cfg->{global}->{'cluster network'} = $param->{network};
+	    }
 
-	if ($param->{'cluster-network'}) {
-	    $cfg->{global}->{'cluster network'} = $param->{'cluster-network'};
-	}
+	    if ($param->{'cluster-network'}) {
+		$cfg->{global}->{'cluster network'} = $param->{'cluster-network'};
+	    }
 
-	cfs_write_file('ceph.conf', $cfg);
+	    cfs_write_file('ceph.conf', $cfg);
 
-	PVE::Ceph::Tools::setup_pve_symlinks();
+	    PVE::Ceph::Tools::setup_pve_symlinks();
+	});
 
 	return undef;
     }});
