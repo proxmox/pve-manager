@@ -107,8 +107,9 @@ sub get_services_info {
     }
 
     if (!$rados) {
-	$rados = PVE::RADOS->new();
+	return $result;
     }
+
     my $metadata = $rados->mon_command({ prefix => "$type metadata" });
     foreach my $info (@$metadata) {
 	my $id = $info->{name} // $info->{id};
