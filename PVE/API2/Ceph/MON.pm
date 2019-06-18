@@ -83,11 +83,11 @@ __PACKAGE__->register_method ({
 
 	my $cfg = cfs_read_file('ceph.conf');
 
-	my $monhash = {};
+	my $rados = eval { PVE::RADOS->new() };
+	warn $@ if $@;
+	my $monhash = PVE::Ceph::Services::get_services_info("mon", $cfg, $rados);
 
-	eval {
-	    my $rados = PVE::RADOS->new();
-	    $monhash = PVE::Ceph::Services::get_services_info("mon", $cfg, $rados);
+	if ($rados) {
 	    my $monstat = $rados->mon_command({ prefix => 'mon_status' });
 
 	    my $mons = $monstat->{monmap}->{mons};
@@ -101,8 +101,13 @@ __PACKAGE__->register_method ({
 		}
 	    }
 
-	};
-	warn $@ if $@;
+	} else {
+	    # we cannot check the status if we do not have a RADOS
+	    # object, so set the state to unknown
+	    foreach my $monid (sort keys %$monhash) {
+		$monhash->{$monid}->{state} = 'unknown';
+	    }
+	}
 
 	return PVE::RESTHandler::hash_to_array($monhash, 'name');
     }});
