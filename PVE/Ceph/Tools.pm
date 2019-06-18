@@ -19,6 +19,7 @@ my $ceph_cfgpath = "$ceph_cfgdir/$ccname.conf";
 
 my $pve_mon_key_path = "/etc/pve/priv/$ccname.mon.keyring";
 my $pve_ckeyring_path = "/etc/pve/priv/$ccname.client.admin.keyring";
+my $ckeyring_path = "/etc/ceph/ceph.client.admin.keyrign";
 my $ceph_bootstrap_osd_keyring = "/var/lib/ceph/bootstrap-osd/$ccname.keyring";
 my $ceph_bootstrap_mds_keyring = "/var/lib/ceph/bootstrap-mds/$ccname.keyring";
 my $ceph_mds_data_dir = '/var/lib/ceph/mds';
@@ -218,6 +219,23 @@ sub setup_pve_symlinks {
 	symlink($pve_ceph_cfgpath, $ceph_cfgpath) ||
 	    die "unable to create symlink '$ceph_cfgpath' - $!\n";
     }
+}
+
+sub get_or_create_admin_keyring {
+    if (! -f $pve_ckeyring_path) {
+	run_command("ceph-authtool --create-keyring $pve_ckeyring_path " .
+	    "--gen-key -n client.admin " .
+	    "--cap mon 'allow *' " .
+	    "--cap osd 'allow *' " .
+	    "--cap mds 'allow *' " .
+	    "--cap mgr 'allow *' ");
+	# we do not want to overwrite it
+	if (! -f $ckeyring_path) {
+	    run_command("cp $pve_ckeyring_path $ckeyring_path");
+	    run_command("chown ceph:ceph /etc/ceph/ceph.client.admin.keyring");
+	}
+    }
+    return $pve_ckeyring_path;
 }
 
 # wipe the first 200 MB to clear off leftovers from previous use, otherwise a

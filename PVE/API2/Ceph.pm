@@ -349,6 +349,7 @@ __PACKAGE__->register_method ({
 
 	    cfs_write_file('ceph.conf', $cfg);
 
+	    PVE::Ceph::Tools::get_or_create_admin_keyring();
 	    PVE::Ceph::Tools::setup_pve_symlinks();
 	});
 

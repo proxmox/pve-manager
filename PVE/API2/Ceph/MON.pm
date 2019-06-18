@@ -193,28 +193,16 @@ __PACKAGE__->register_method ({
 	my $worker = sub  {
 	    my $upid = shift;
 
-	    my $pve_ckeyring_path = PVE::Ceph::Tools::get_config('pve_ckeyring_path');
-	    if (! -f $pve_ckeyring_path) {
-		run_command("ceph-authtool $pve_ckeyring_path --create-keyring " .
-			    "--gen-key -n client.admin");
-	    }
+	    my $client_keyring = PVE::Ceph::Tools::get_or_create_admin_keyring();
+	    my $mon_keyring = PVE::Ceph::Tools::get_config('pve_mon_key_path');
 
-	    my $pve_mon_key_path = PVE::Ceph::Tools::get_config('pve_mon_key_path');
-	    if (! -f $pve_mon_key_path) {
-		run_command("cp $pve_ckeyring_path $pve_mon_key_path.tmp");
-		run_command("ceph-authtool $pve_mon_key_path.tmp -n client.admin " .
-			    "--cap mds 'allow' " .
-			    "--cap osd 'allow *' " .
-			    "--cap mgr 'allow *' " .
-			    "--cap mon 'allow *'");
-		run_command("cp $pve_mon_key_path.tmp /etc/ceph/ceph.client.admin.keyring");
-		run_command("chown ceph:ceph /etc/ceph/ceph.client.admin.keyring");
-		run_command("ceph-authtool $pve_mon_key_path.tmp --gen-key -n mon. --cap mon 'allow *'");
-		run_command("mv $pve_mon_key_path.tmp $pve_mon_key_path");
+	    if (! -f $mon_keyring) {
+		run_command("ceph-authtool --create-keyring $mon_keyring ".
+		    " --gen-key -n mon. --cap mon 'allow *'");
+		run_command("ceph-authtool $mon_keyring --import-keyring $client_keyring");
 	    }
 
 	    my $ccname = PVE::Ceph::Tools::get_config('ccname');
-
 	    my $mondir =  "/var/lib/ceph/mon/$ccname-$monid";
 	    -d $mondir && die "monitor filesystem '$mondir' already exist\n";
 
@@ -233,7 +221,7 @@ __PACKAGE__->register_method ({
 		    run_command("monmaptool --create --clobber --add $monid $monaddr --print $monmap");
 		}
 
-		run_command("ceph-mon --mkfs -i $monid --monmap $monmap --keyring $pve_mon_key_path");
+		run_command("ceph-mon --mkfs -i $monid --monmap $monmap --keyring $mon_keyring");
 		run_command("chown ceph:ceph -R $mondir");
 	    };
 	    my $err = $@;
