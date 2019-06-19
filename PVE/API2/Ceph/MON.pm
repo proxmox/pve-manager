@@ -15,6 +15,7 @@ use PVE::RADOS;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::Tools qw(run_command file_set_contents);
+use PVE::CephConfig;
 
 use base qw(PVE::RESTHandler);
 
