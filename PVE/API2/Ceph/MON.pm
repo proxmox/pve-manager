@@ -328,21 +328,32 @@ __PACKAGE__->register_method ({
 
 	my $worker = sub {
 	    my $upid = shift;
+	    PVE::Cluster::cfs_lock_file('ceph.conf', undef, sub {
+		# reload info and recheck
+		$cfg = cfs_read_file('ceph.conf');
 
-	    # reopen with longer timeout
-	    $rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
+		# reopen with longer timeout
+		$rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
+		$monhash = PVE::Ceph::Services::get_services_info('mon', $cfg, $rados);
+		$monstat = $rados->mon_command({ prefix => 'mon_status' });
+		$monlist = $monstat->{monmap}->{mons};
 
-	    $rados->mon_command({ prefix => "mon remove", name => $monid, format => 'plain' });
+		$assert_mon_can_remove->($monhash, $monlist, $monid, $mondir);
 
-	    eval { PVE::Ceph::Services::ceph_service_cmd('stop', $monsection); };
-	    warn $@ if $@;
+		$rados->mon_command({ prefix => "mon remove", name => $monid, format => 'plain' });
 
-	    delete $cfg->{$monsection};
-	    cfs_write_file('ceph.conf', $cfg);
-	    File::Path::remove_tree($mondir);
-	    eval { PVE::Ceph::Services::ceph_service_cmd('disable', $monsection) };
-	    warn $@ if $@;
-	    PVE::Ceph::Services::broadcast_ceph_services();
+		eval { PVE::Ceph::Services::ceph_service_cmd('stop', $monsection); };
+		warn $@ if $@;
+
+		# delete section
+		delete $cfg->{$monsection};
+
+		cfs_write_file('ceph.conf', $cfg);
+		File::Path::remove_tree($mondir);
+		eval { PVE::Ceph::Services::ceph_service_cmd('disable', $monsection) };
+		warn $@ if $@;
+		PVE::Ceph::Services::broadcast_ceph_services();
+	    });
 	};
 
 	return $rpcenv->fork_worker('cephdestroymon', $monsection,  $authuser, $worker);
