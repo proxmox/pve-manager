@@ -349,10 +349,8 @@ __PACKAGE__->register_method ({
 
 		$assert_mon_can_remove->($monhash, $monlist, $monid, $mondir);
 
+		# this also stops the service
 		$rados->mon_command({ prefix => "mon remove", name => $monid, format => 'plain' });
-
-		eval { PVE::Ceph::Services::ceph_service_cmd('stop', $monsection); };
-		warn $@ if $@;
 
 		# delete section
 		delete $cfg->{$monsection};
