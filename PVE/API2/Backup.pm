@@ -16,9 +16,9 @@ use PVE::VZDump;
 
 use base qw(PVE::RESTHandler);
 
-cfs_register_file ('vzdump.cron', 
-		   \&parse_vzdump_cron_config, 
-		   \&write_vzdump_cron_config); 
+cfs_register_file ('vzdump.cron',
+		   \&parse_vzdump_cron_config,
+		   \&write_vzdump_cron_config);
 
 PVE::JSONSchema::register_format('pve-day-of-week', \&verify_day_of_week);
 sub verify_day_of_week {
@@ -64,7 +64,7 @@ sub parse_dow {
 	if ($day =~ m/^(mon|tue|wed|thu|fri|sat|sun)-(mon|tue|wed|thu|fri|sat|sun)$/i) {
 	    for (my $i = $dowmap->{lc($1)}; $i <= $dowmap->{lc($2)}; $i++) {
 		my $r = $rdowmap->{$i};
-		$res->{$r} = 1;	
+		$res->{$r} = 1;
 	    }
 	} elsif ($day =~ m/^(mon|tue|wed|thu|fri|sat|sun|[0-7])$/i) {
 	    $day = $rdowmap->{$day} if $day =~ m/\d/;
@@ -91,7 +91,7 @@ sub parse_vzdump_cron_config {
     my $ejobs = []; # mailfomerd lines
 
     my $jid = 1; # we start at 1
-    
+
     my $digest = Digest::SHA::sha1_hex(defined($raw) ? $raw : '');
 
     while ($raw && $raw =~ s/^(.*?)(\n|$)//) {
@@ -174,7 +174,7 @@ sub write_vzdump_cron_config {
 	} else {
 	    die "unable to parse job start time\n";
 	}
-	
+
 	$job->{quiet} = 1; # we do not want messages from cron
 
 	my $cmd = PVE::VZDump::command_line($job);
@@ -191,8 +191,8 @@ sub write_vzdump_cron_config {
 }
 
 __PACKAGE__->register_method({
-    name => 'index', 
-    path => '', 
+    name => 'index',
+    path => '',
     method => 'GET',
     description => "List vzdump backup schedule.",
     permissions => {
@@ -226,8 +226,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'create_job', 
-    path => '', 
+    name => 'create_job',
+    path => '',
     method => 'POST',
     protected => 1,
     description => "Create new vzdump backup job.",
@@ -288,8 +288,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'read_job', 
-    path => '{id}', 
+    name => 'read_job',
+    path => '{id}',
     method => 'GET',
     description => "Read vzdump backup job definition.",
     permissions => {
@@ -327,8 +327,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'delete_job', 
-    path => '{id}', 
+    name => 'delete_job',
+    path => '{id}',
     method => 'DELETE',
     description => "Delete vzdump backup job definition.",
     permissions => {
@@ -380,8 +380,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'update_job', 
-    path => '{id}', 
+    name => 'update_job',
+    path => '{id}',
     method => 'PUT',
     protected => 1,
     description => "Update vzdump backup job definition.",

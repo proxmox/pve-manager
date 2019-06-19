@@ -66,9 +66,9 @@ Ext.define('PVE.dc.BackupEdit', {
 
 	var store = new Ext.data.Store({
 	    model: 'PVEResources',
-	    sorters: { 
-		property: 'vmid', 
-		order: 'ASC' 
+	    sorters: {
+		property: 'vmid',
+		order: 'ASC'
 	    }
 	});
 
@@ -79,16 +79,16 @@ Ext.define('PVE.dc.BackupEdit', {
 	    selModel: sm,
 	    disabled: true,
 	    columns: [
-		{ 
+		{
 		    header: 'ID',
 		    dataIndex: 'vmid',
 		    width: 60
 		},
-		{ 
+		{
 		    header: gettext('Node'),
 		    dataIndex: 'node'
 		},
-		{ 
+		{
 		    header: gettext('Status'),
 		    dataIndex: 'uptime',
 		    renderer: function(value) {
@@ -99,13 +99,13 @@ Ext.define('PVE.dc.BackupEdit', {
 			}
 		    }
 		},
-		{ 
-		    header: gettext('Name'), 
+		{
+		    header: gettext('Name'),
 		    dataIndex: 'name',
-		    flex: 1 
+		    flex: 1
 		},
-		{ 
-		    header: gettext('Type'), 
+		{
+		    header: gettext('Type'),
 		    dataIndex: 'type'
 		}
 	    ]
@@ -201,7 +201,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    onGetValues: function(values) {
 		if (!values.node) {
 		    if (!me.isCreate) {
-			Proxmox.Utils.assemble_field_data(values, { 'delete': 'node' }); 
+			Proxmox.Utils.assemble_field_data(values, { 'delete': 'node' });
 		    }
 		    delete values.node;
 		}
@@ -255,7 +255,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    var list = vmidField.getValue();
 	    update_vmid_selection(list, value);
 	});
-		 
+
 	var reload = function() {
 	    store.load({
 		params: { type: 'vm' },
@@ -392,7 +392,7 @@ Ext.define('PVE.dc.BackupView', {
 		},
 		remove_btn,
 		edit_btn
-	    ],		
+	    ],
 	    columns: [
 		{
 		    header: gettext('Enabled'),
@@ -499,14 +499,14 @@ Ext.define('PVE.dc.BackupView', {
 		itemdblclick: run_editor
 	    }
 	});
-	
+
 	me.callParent();
     }
 }, function() {
 
     Ext.define('pve-cluster-backup', {
 	extend: 'Ext.data.Model',
-	fields: [ 
+	fields: [
 	    'id', 'starttime', 'dow',
 	    'storage', 'node', 'vmid', 'exclude',
 	    'mailto',

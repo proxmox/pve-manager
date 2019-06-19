@@ -18,7 +18,7 @@ use Data::Dumper; # fixme: remove
 use base qw(PVE::RESTHandler);
 
 __PACKAGE__->register_method ({
-    name => 'vzdump', 
+    name => 'vzdump',
     path => '',
     method => 'POST',
     description => "Create backup.",
@@ -68,7 +68,7 @@ __PACKAGE__->register_method ({
 
 	# silent exit if we run on wrong node
 	return 'OK' if $param->{node} && $param->{node} ne $nodename;
-	
+
 	my $cmdline = PVE::VZDump::command_line($param);
 
 	# convert string lists to arrays
@@ -144,8 +144,8 @@ __PACKAGE__->register_method ({
 		    PVE::VZDump::run_command(undef, "ionice -c2 -n$param->{ionice} -p $$");
 		}
 	    }
-	    $vzdump->exec_backup($rpcenv, $user); 
-	}; 
+	    $vzdump->exec_backup($rpcenv, $user);
+	};
 
 	open STDOUT, '>/dev/null' if $param->{quiet} && !$param->{stdout};
 	open STDERR, '>/dev/null' if $param->{quiet};

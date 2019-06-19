@@ -218,11 +218,11 @@ sub storage_info {
     my $cfg = PVE::Storage::config();
     my $scfg = PVE::Storage::storage_config($cfg, $storage);
     my $type = $scfg->{type};
- 
-    die "can't use storage type '$type' for backup\n" 
+
+    die "can't use storage type '$type' for backup\n"
 	if (!($type eq 'dir' || $type eq 'nfs' || $type eq 'glusterfs'
 	      || $type eq 'cifs' || $type eq 'cephfs'));
-    die "can't use storage '$storage' for backups - wrong content type\n" 
+    die "can't use storage '$storage' for backups - wrong content type\n"
 	if (!$scfg->{content}->{backup});
 
     PVE::Storage::activate_storage($cfg, $storage);
@@ -249,7 +249,7 @@ sub format_size {
     } else {
 	my $gb = $mb / 1024;
 	return sprintf ("%.2fGB", $gb);
-    } 
+    }
 }
 
 sub format_time {
@@ -569,7 +569,7 @@ sub new {
 	$errors .= "dumpdir '$opts->{dumpdir}' does not exist"
 	    if ! -d $opts->{dumpdir};
     } else {
-	die "internal error"; 
+	die "internal error";
     }
 
     if ($opts->{tmpdir} && ! -d $opts->{tmpdir}) {
@@ -620,9 +620,9 @@ sub getlock {
     my ($self, $upid) = @_;
 
     my $fh;
-	    
+
     my $maxwait = $self->{opts}->{lockwait} || $self->{lockwait};
- 
+
     die "missimg UPID" if !$upid; # should not happen
 
     if (!open (SERVER_FLCK, ">>$lockfile")) {
@@ -641,7 +641,7 @@ sub getlock {
 
 	eval {
 	    alarm ($maxwait * 60);
-	
+
 	    local $SIG{ALRM} = sub { alarm (0); die "got timeout\n"; };
 
 	    if (!flock (SERVER_FLCK, LOCK_EX)) {
@@ -653,9 +653,9 @@ sub getlock {
 	    alarm (0);
 	};
 	alarm (0);
-    
+
 	my $err = $@;
-	
+
 	if ($err) {
 	    debugmsg ('err', "can't acquire lock '$lockfile' - $err", undef, 1);
 	    die "can't acquire lock '$lockfile' - $err";
@@ -732,17 +732,17 @@ sub get_backup_file_list {
 
     return $bklist;
 }
- 
+
 sub exec_backup_task {
     my ($self, $task) = @_;
-	 
+
     my $opts = $self->{opts};
 
     my $vmid = $task->{vmid};
     my $plugin = $task->{plugin};
 
     my $vmstarttime = time ();
-    
+
     my $logfd;
 
     my $cleanup = {};
@@ -803,11 +803,11 @@ sub exec_backup_task {
 	$task->{vmtype} = $vmtype;
 
 	if ($opts->{tmpdir}) {
-	    $task->{tmpdir} = "$opts->{tmpdir}/vzdumptmp$$"; 
+	    $task->{tmpdir} = "$opts->{tmpdir}/vzdumptmp$$";
 	} else {
 	    # dumpdir is posix? then use it as temporary dir
 	    my $info = get_mount_info($opts->{dumpdir});
-	    if ($vmtype eq 'qemu' || 
+	    if ($vmtype eq 'qemu' ||
 		grep ($_ eq $info->{fstype}, @posix_filesystems)) {
 		$task->{tmpdir} = "$opts->{dumpdir}/$basename.tmp";
 	    } else {
@@ -858,7 +858,7 @@ sub exec_backup_task {
 		debugmsg ('info',  $err, $logfd);
 		debugmsg ('info',  "trying 'suspend' mode instead", $logfd);
 		$mode = 'suspend'; # so prepare is called again below
-		%$task = %saved_task; 
+		%$task = %saved_task;
 	    }
 	}
 
@@ -886,7 +886,7 @@ sub exec_backup_task {
 		$plugin->stop_vm ($task, $vmid);
 		$cleanup->{restart} = 1;
 	    }
- 
+
 
 	} elsif ($mode eq 'suspend') {
 
@@ -916,7 +916,7 @@ sub exec_backup_task {
 		$self->run_hook_script('post-restart', $task, $logfd);
 		$log_vm_online_again->();
 	    }
-	    
+
 	} elsif ($mode eq 'snapshot') {
 
 	    $self->run_hook_script ('backup-start', $task, $logfd);
@@ -951,8 +951,8 @@ sub exec_backup_task {
 
 	# assemble archive image
 	$plugin->assemble ($task, $vmid);
-	
-	# produce archive 
+
+	# produce archive
 
 	if ($opts->{stdout}) {
 	    debugmsg ('info', "sending archive to stdout", $logfd);
@@ -969,7 +969,7 @@ sub exec_backup_task {
 
 	# determine size
 	$task->{size} = (-s $task->{tarfile}) || 0;
-	my $cs = format_size ($task->{size}); 
+	my $cs = format_size ($task->{size});
 	debugmsg ('info', "archive file size: $cs", $logfd);
 
 	# purge older backup
@@ -1009,8 +1009,8 @@ sub exec_backup_task {
 	eval { $plugin->set_logfd (undef); };
 	warn $@ if $@;
 
-	if ($cleanup->{resume} || $cleanup->{restart}) {	
-	    eval { 
+	if ($cleanup->{resume} || $cleanup->{restart}) {
+	    eval {
 		$self->run_hook_script ('pre-restart', $task, $logfd);
 		if ($cleanup->{resume}) {
 		    debugmsg ('info', "resume vm", $logfd);
@@ -1057,7 +1057,7 @@ sub exec_backup_task {
     }
 
     close ($logfd) if $logfd;
-    
+
     if ($task->{tmplog} && $task->{logfile}) {
 	system {'cp'} 'cp', $task->{tmplog}, $task->{logfile};
     }
@@ -1075,7 +1075,7 @@ sub exec_backup {
     debugmsg ('info', "starting new backup job: $self->{cmdline}", undef, 1);
     debugmsg ('info', "skip external VMs: " . join(', ', @{$self->{skiplist}}))
 	if scalar(@{$self->{skiplist}});
- 
+
     my $tasklist = [];
 
     if ($opts->{all}) {
@@ -1145,7 +1145,7 @@ sub exec_backup {
 
     die $err if $err;
 
-    die "job errors\n" if $errcount; 
+    die "job errors\n" if $errcount;
 
     unlink $pidfile;
 }
@@ -1197,7 +1197,7 @@ sub stop_running_backups {
 
     my $task = PVE::Tools::upid_decode($upid);
 
-    if (PVE::ProcFSTools::check_process_running($task->{pid}, $task->{pstart}) && 
+    if (PVE::ProcFSTools::check_process_running($task->{pid}, $task->{pstart}) &&
 	PVE::ProcFSTools::read_proc_starttime($task->{pid}) == $task->{pstart}) {
 	kill(15, $task->{pid});
 	# wait max 15 seconds to shut down (else, do nothing for now)
