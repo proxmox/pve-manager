@@ -56,6 +56,23 @@ my $find_mon_ip = sub {
     }
 };
 
+my $assert_mon_prerequisites = sub {
+    my ($cfg, $monhash, $monid, $monip) = @_;
+
+    my $ip_regex = '(?:^|[^\d])' . # start or nondigit
+	       "\Q$monip\E" .  # the ip not interpreted as regex
+	       '(?:[^\d]|$)';  # end or nondigit
+
+    if (($cfg->{global}->{mon_host} && $cfg->{global}->{mon_host} =~ m/$ip_regex/) ||
+	grep { $_->{addr} && $_->{addr}  =~ m/$ip_regex/ } values %$monhash) {
+	die "monitor address '$monip' already in use\n";
+    }
+
+    if (defined($monhash->{$monid})) {
+	die "monitor '$monid' already exists\n";
+    }
+};
+
 __PACKAGE__->register_method ({
     name => 'listmon',
     path => '',
@@ -163,32 +180,20 @@ __PACKAGE__->register_method ({
 
 	my $cfg = cfs_read_file('ceph.conf');
 	my $rados = eval { PVE::RADOS->new() }; # try a rados connection, fails for first monitor
+	my $monhash = PVE::Ceph::Services::get_services_info('mon', $cfg, $rados);
 
-	my $moncount = 0;
-	my $monaddrhash = {};
-	foreach my $section (keys %$cfg) {
-	    next if $section eq 'global';
-
-	    if ($section =~ m/^mon\./) {
-		my $d = $cfg->{$section};
-		$moncount++;
-		if ($d->{'mon addr'}) {
-		    $monaddrhash->{$d->{'mon addr'}} = $section;
-		}
-	    }
+	if (!defined($rados) && (scalar(keys %$monhash) || $cfg->{global}->{mon_host})) {
+	    die "Could not connect to ceph cluster despite configured monitors\n";
 	}
 
 	my $monid = $param->{monid} // $param->{node};
-
 	my $monsection = "mon.$monid";
 	my $ip = $find_mon_ip->($cfg, $rados, $param->{node}, $param->{'mon-address'});
 
 	my $monaddr = Net::IP::ip_is_ipv6($ip) ? "[$ip]:6789" : "$ip:6789";
 	my $monname = $param->{node};
 
-	die "monitor '$monsection' already exists\n" if $cfg->{$monsection};
-	die "monitor address '$monaddr' already in use by '$monaddrhash->{$monaddr}'\n"
-	    if $monaddrhash->{$monaddr};
+	$assert_mon_prerequisites->($cfg, $monhash, $monid, $ip);
 
 	my $worker = sub  {
 	    my $upid = shift;
@@ -213,11 +218,11 @@ __PACKAGE__->register_method ({
 
 		run_command("chown ceph:ceph $mondir");
 
-		if ($moncount > 0) {
+		if (defined($rados)) { # we can only have a RADOS object if we have a monitor
 		    my $rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
 		    my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
 		    file_set_contents($monmap, $mapdata);
-		} else {
+		} else { # we need to create a monmap for the first monitor
 		    run_command("monmaptool --create --clobber --add $monid $monaddr --print $monmap");
 		}
 
