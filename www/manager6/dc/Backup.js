@@ -31,7 +31,8 @@ Ext.define('PVE.dc.BackupEdit', {
 	    comboItems: [
 		['include', gettext('Include selected VMs')],
 		['all', gettext('All')],
-		['exclude', gettext('Exclude selected VMs')]
+		['exclude', gettext('Exclude selected VMs')],
+		['pool', gettext('Pool')]
 	    ],
 	    fieldLabel: gettext('Selection mode'),
 	    name: 'selMode',
@@ -111,6 +112,33 @@ Ext.define('PVE.dc.BackupEdit', {
 	    ]
 	});
 
+	var selectPoolMembers = function(poolid) {
+	    if (!poolid) {
+		return;
+	    }
+	    sm.deselectAll(true);
+	    store.filter([
+		{
+		    id: 'poolFilter',
+		    property: 'pool',
+		    value: poolid
+		}
+	    ]);
+	    sm.selectAll(true);
+	};
+
+	var selPool = Ext.create('PVE.form.PoolSelector', {
+	    fieldLabel: gettext('Pool'),
+	    hidden: true,
+	    allowBlank: true,
+	    name: 'pool',
+	    listeners: {
+		change: function( selpool, newValue, oldValue) {
+		    selectPoolMembers(newValue);
+		}
+	    }
+	});
+
 	var nodesel = Ext.create('PVE.form.NodeSelector', {
 	    name: 'node',
 	    fieldLabel: gettext('Node'),
@@ -128,6 +156,10 @@ Ext.define('PVE.dc.BackupEdit', {
 		    });
 		    if (mode === 'all') {
 			sm.selectAll(true);
+		    }
+
+		    if (mode === 'pool') {
+			selectPoolMembers(selPool.value);
 		    }
 		}
 	    }
@@ -153,7 +185,8 @@ Ext.define('PVE.dc.BackupEdit', {
 		value: '00:00',
 		allowBlank: false
 	    },
-	    selModeField
+	    selModeField,
+	    selPool
 	];
 
 	var column2 = [
@@ -217,13 +250,19 @@ Ext.define('PVE.dc.BackupEdit', {
 		    values.all = 1;
 		    values.exclude = values.vmid;
 		    delete values.vmid;
+		} else if (selMode === 'pool') {
+		    delete values.vmid;
+		}
+
+		if (selMode !== 'pool') {
+		    delete values.pool;
 		}
 		return values;
 	    }
 	});
 
 	var update_vmid_selection = function(list, mode) {
-	    if (mode !== 'all') {
+	    if (mode !== 'all' && mode !== 'pool') {
 		sm.deselectAll(true);
 		if (list) {
 		    Ext.Array.each(list.split(','), function(vmid) {
@@ -242,15 +281,32 @@ Ext.define('PVE.dc.BackupEdit', {
 	});
 
 	selModeField.on('change', function(f, value, oldValue) {
+	    if (oldValue === 'pool') {
+		store.removeFilter('poolFilter');
+	    }
+
+	    if (oldValue === 'all') {
+		sm.deselectAll(true);
+		vmidField.setValue('');
+	    }
+
 	    if (value === 'all') {
 		sm.selectAll(true);
 		vmgrid.setDisabled(true);
 	    } else {
 		vmgrid.setDisabled(false);
 	    }
-	    if (oldValue === 'all') {
-		sm.deselectAll(true);
+
+	    if (value === 'pool') {
+		vmgrid.setDisabled(true);
 		vmidField.setValue('');
+		selPool.setVisible(true);
+		selPool.allowBlank = false;
+		selectPoolMembers(selPool.value);
+
+	    } else {
+		selPool.setVisible(false);
+		selPool.allowBlank = true;
 	    }
 	    var list = vmidField.getValue();
 	    update_vmid_selection(list, value);
@@ -269,6 +325,8 @@ Ext.define('PVE.dc.BackupEdit', {
 		    var mode = selModeField.getValue();
 		    if (mode === 'all') {
 			sm.selectAll(true);
+		    } else if (mode === 'pool'){
+			selectPoolMembers(selPool.value);
 		    } else {
 			update_vmid_selection(list, mode);
 		    }
@@ -302,6 +360,9 @@ Ext.define('PVE.dc.BackupEdit', {
 			    data.vmid = '';
 			    data.selMode = 'all';
 			}
+		    } else if (data.pool) {
+			data.selMode = 'pool';
+			data.selPool = data.pool;
 		    } else {
 			data.selMode = 'include';
 		    }
@@ -490,6 +551,10 @@ Ext.define('PVE.dc.BackupView', {
 			    return record.data.vmid;
 			}
 
+			if (record.data.pool) {
+			    return record.data.pool;
+			}
+
 			return "-";
 		    }
 		}
@@ -509,7 +574,7 @@ Ext.define('PVE.dc.BackupView', {
 	fields: [
 	    'id', 'starttime', 'dow',
 	    'storage', 'node', 'vmid', 'exclude',
-	    'mailto',
+	    'mailto', 'pool',
 	    { name: 'enabled', type: 'boolean' },
 	    { name: 'all', type: 'boolean' },
 	    { name: 'snapshot', type: 'boolean' },
