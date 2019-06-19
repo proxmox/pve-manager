@@ -190,9 +190,6 @@ __PACKAGE__->register_method ({
 	my $monsection = "mon.$monid";
 	my $ip = $find_mon_ip->($cfg, $rados, $param->{node}, $param->{'mon-address'});
 
-	my $monaddr = Net::IP::ip_is_ipv6($ip) ? "[$ip]:6789" : "$ip:6789";
-	my $monname = $param->{node};
-
 	$assert_mon_prerequisites->($cfg, $monhash, $monid, $ip);
 
 	my $worker = sub  {
@@ -223,10 +220,15 @@ __PACKAGE__->register_method ({
 		    my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
 		    file_set_contents($monmap, $mapdata);
 		} else { # we need to create a monmap for the first monitor
-		    run_command("monmaptool --create --clobber --add $monid $monaddr --print $monmap");
+		    my $monaddr = $ip;
+		    if (Net::IP::ip_is_ipv6($ip)) {
+			$monaddr = "[$ip]";
+			$cfg->{global}->{ms_bind_ipv6} = 'true';
+		    }
+		    run_command("monmaptool --create --clobber --addv $monid '[v2:$monaddr:3300,v1:$monaddr:6789]' --print $monmap");
 		}
 
-		run_command("ceph-mon --mkfs -i $monid --monmap $monmap --keyring $mon_keyring");
+		run_command("ceph-mon --mkfs -i $monid --monmap $monmap --keyring $mon_keyring --public-addr $ip");
 		run_command("chown ceph:ceph -R $mondir");
 	    };
 	    my $err = $@;
@@ -236,26 +238,18 @@ __PACKAGE__->register_method ({
 		die $err;
 	    }
 
-	    $cfg->{$monsection} = {
-		'host' => $monname,
-		'mon addr' => $monaddr,
-	    };
+	    # update ceph.conf
+	    my $monhost = $cfg->{global}->{mon_host} // "";
+	    $monhost .= " $ip";
+	    $cfg->{global}->{mon_host} = $monhost;
 
 	    cfs_write_file('ceph.conf', $cfg);
 
-	    my $create_keys_pid = fork();
-	    if (!defined($create_keys_pid)) {
-		die "Could not spawn ceph-create-keys to create bootstrap keys\n";
-	    } elsif ($create_keys_pid == 0) {
-		exit PVE::Tools::run_command(['ceph-create-keys', '-i', $monid]);
-	    } else {
-		PVE::Ceph::Services::ceph_service_cmd('start', $monsection);
+	    PVE::Ceph::Services::ceph_service_cmd('start', $monsection);
 
-		# to ensure we have the correct startup order.
-		eval { PVE::Ceph::Services::ceph_service_cmd('enable', $monsection) };
-		warn "Enable ceph-mon\@${monid}.service failed, do manually: $@\n" if $@;
-		waitpid($create_keys_pid, 0);
-	    }
+	    eval { PVE::Ceph::Services::ceph_service_cmd('enable', $monsection) };
+	    warn "Enable ceph-mon\@${monid}.service failed, do manually: $@\n" if $@;
+
 	    PVE::Ceph::Services::broadcast_ceph_services();
 	};
 
