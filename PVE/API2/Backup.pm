@@ -453,13 +453,18 @@ __PACKAGE__->register_method({
 			$job->{$k} = $param->{$k};
 		    }
 
-		    $job->{all} = 1 if defined($job->{exclude});
+		    $job->{all} = 1 if (defined($job->{exclude}) && !defined($job->{pool}));
 
 		    if (defined($param->{vmid})) {
 			delete $job->{all};
 			delete $job->{exclude};
+			delete $job->{pool};
 		    } elsif ($param->{all}) {
 			delete $job->{vmid};
+			delete $job->{pool};
+		    } elsif ($job->{pool}) {
+			delete $job->{vmid};
+			delete $job->{all};
 		    }
 
 		    PVE::VZDump::verify_vzdump_parameters($job, 1);

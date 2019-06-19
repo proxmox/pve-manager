@@ -175,6 +175,11 @@ my $confdesc = {
 	optional => 1,
 	default => 1,
     },
+    pool => {
+	type => 'string',
+	description => 'Backup all known guest systems included in the specified pool.',
+	optional => 1,
+    }
 };
 
 # Load available plugins
@@ -1176,7 +1181,10 @@ sub verify_vzdump_parameters {
     raise_param_exc({ exclude => "option conflicts with option 'vmid'"})
 	if $param->{exclude} && $param->{vmid};
 
-    $param->{all} = 1 if defined($param->{exclude});
+    raise_param_exc({ pool => "option conflicts with option 'vmid'"})
+	if $param->{pool} && $param->{vmid};
+
+    $param->{all} = 1 if (defined($param->{exclude}) && !$param->{pool});
 
     warn "option 'size' is deprecated and will be removed in a future " .
 	 "release, please update your script/configuration!\n"
@@ -1185,7 +1193,7 @@ sub verify_vzdump_parameters {
     return if !$check_missing;
 
     raise_param_exc({ vmid => "property is missing"})
-	if !($param->{all} || $param->{stop}) && !$param->{vmid};
+	if !($param->{all} || $param->{stop} || $param->{pool}) && !$param->{vmid};
 
 }
 

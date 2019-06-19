@@ -11,6 +11,7 @@ use PVE::AccessControl;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::Storage;
 use PVE::VZDump;
+use PVE::API2Tools;
 
 use Data::Dumper; # fixme: remove
 
@@ -70,9 +71,13 @@ __PACKAGE__->register_method ({
 	return 'OK' if $param->{node} && $param->{node} ne $nodename;
 
 	my $cmdline = PVE::VZDump::command_line($param);
-
+	my @vmids;
 	# convert string lists to arrays
-	my @vmids = PVE::Tools::split_list(extract_param($param, 'vmid'));
+	if ($param->{pool}) {
+	    @vmids = @{PVE::API2Tools::get_resource_pool_guest_members($param->{pool})};
+	} else {
+	    @vmids = PVE::Tools::split_list(extract_param($param, 'vmid'));
+	}
 
 	if($param->{stop}){
 	    PVE::VZDump::stop_running_backups();

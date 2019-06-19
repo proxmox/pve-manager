@@ -231,4 +231,27 @@ sub resolve_proxyto {
     return $node;
 }
 
+sub get_resource_pool_guest_members {
+    my ($pool) = @_;
+
+    my $usercfg = PVE::Cluster::cfs_read_file("user.cfg");
+
+    my $vmlist = PVE::Cluster::get_vmlist() || {};
+    my $idlist = $vmlist->{ids} || {};
+
+    my $data = $usercfg->{pools}->{$pool};
+
+    die "pool '$pool' does not exist\n"
+	if !$data;
+
+    my $members = [];
+
+    foreach my $vmid (keys %{$data->{vms}}) {
+	my $vmdata = $idlist->{$vmid};
+	next if !$vmdata;
+	push @$members, $vmid;
+    }
+    return $members;
+}
+
 1;
