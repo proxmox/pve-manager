@@ -73,6 +73,19 @@ my $assert_mon_prerequisites = sub {
     }
 };
 
+my $assert_mon_can_remove = sub {
+    my ($monhash, $monlist, $monid, $mondir) = @_;
+
+    if (!(defined($monhash->{"mon.$monid"}) ||
+	  grep { $_->{name} && $_->{name} eq $monid } @$monlist))
+    {
+	die "no such monitor id '$monid'\n"
+    }
+
+    die "monitor filesystem '$mondir' does not exist on this node\n" if ! -d $mondir;
+    die "can't remove last monitor\n" if scalar(@$monlist) <= 1;
+};
+
 __PACKAGE__->register_method ({
     name => 'listmon',
     path => '',
@@ -306,16 +319,12 @@ __PACKAGE__->register_method ({
 	my $rados = PVE::RADOS->new();
 	my $monstat = $rados->mon_command({ prefix => 'mon_status' });
 	my $monlist = $monstat->{monmap}->{mons};
-
-	die "no such monitor id '$monid'\n"
-	    if !defined($cfg->{$monsection});
+	my $monhash = PVE::Ceph::Services::get_services_info('mon', $cfg, $rados);
 
 	my $ccname = PVE::Ceph::Tools::get_config('ccname');
-
 	my $mondir =  "/var/lib/ceph/mon/$ccname-$monid";
-	-d $mondir || die "monitor filesystem '$mondir' does not exist on this node\n";
 
-	die "can't remove last monitor\n" if scalar(@$monlist) <= 1;
+	$assert_mon_can_remove->($monhash, $monlist, $monid, $mondir);
 
 	my $worker = sub {
 	    my $upid = shift;
