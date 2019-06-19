@@ -338,6 +338,15 @@ __PACKAGE__->register_method ({
 		$monstat = $rados->mon_command({ prefix => 'mon_status' });
 		$monlist = $monstat->{monmap}->{mons};
 
+		my $addr;
+		for my $mon (@$monlist) {
+		    if ($mon->{name} eq $monid) {
+			$addr = $mon->{public_addr} // $mon->{addr};
+			($addr) = $addr =~ m|^(.*):\d+/\d+$|; # extract the ip without port/nonce
+			last;
+		    }
+		}
+
 		$assert_mon_can_remove->($monhash, $monlist, $monid, $mondir);
 
 		$rados->mon_command({ prefix => "mon remove", name => $monid, format => 'plain' });
@@ -347,6 +356,33 @@ __PACKAGE__->register_method ({
 
 		# delete section
 		delete $cfg->{$monsection};
+
+		# delete from mon_host
+		if (my $monhost = $cfg->{global}->{mon_host}) {
+		    # various replaces to remove the ip
+		    # we always match the beginning or a seperator (also at the end)
+		    # so we do not accidentally remove a wrong ip
+		    # e.g. removing 10.0.0.1 should not remove 10.0.0.101 or 110.0.0.1
+
+		    # remove vector containing this ip
+		    # format is [vX:ip:port/nonce,vY:ip:port/nonce]
+		    my $vectorpart_re = "v\\d+:\Q$addr\E:\\d+\\/\\d+";
+		    $monhost =~ s/(^|[ ,;]*)\[$vectorpart_re(?:,$vectorpart_re)*\](?:[ ,;]+|$)/$1/;
+
+		    # ip (+ port)
+		    $monhost =~ s/(^|[ ,;]+)\Q$addr\E(?::\d+)?(?:[ ,;]+|$)/$1/;
+
+		    # ipv6 only without brackets
+		    if ($addr =~ m/^\[?(.*?:.*?)\]?$/) {
+			$addr = $1;
+			$monhost =~ s/(^|[ ,;]+)\Q$addr\E(?:[ ,;]+|$)/$1/;
+		    }
+
+		    # remove trailing seperators
+		    $monhost =~ s/[ ,;]+$//;
+
+		    $cfg->{global}->{mon_host} = $monhost;
+		}
 
 		cfs_write_file('ceph.conf', $cfg);
 		File::Path::remove_tree($mondir);
