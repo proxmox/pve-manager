@@ -220,6 +220,9 @@ sub setup_pve_symlinks {
 	symlink($pve_ceph_cfgpath, $ceph_cfgpath) ||
 	    die "unable to create symlink '$ceph_cfgpath' - $!\n";
     }
+    my $ceph_uid = getpwnam('ceph');
+    my $ceph_gid = getgrnam('ceph');
+    chown $ceph_uid, $ceph_gid, $ceph_cfgdir;
 }
 
 sub get_or_create_admin_keyring {
