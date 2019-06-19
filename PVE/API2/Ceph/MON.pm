@@ -195,62 +195,73 @@ __PACKAGE__->register_method ({
 	my $worker = sub  {
 	    my $upid = shift;
 
-	    my $client_keyring = PVE::Ceph::Tools::get_or_create_admin_keyring();
-	    my $mon_keyring = PVE::Ceph::Tools::get_config('pve_mon_key_path');
+	    PVE::Cluster::cfs_lock_file('ceph.conf', undef, sub {
+		# update cfg content and reassert prereqs inside the lock
+		$cfg = cfs_read_file('ceph.conf');
+		# reopen with longer timeout
+		if (defined($rados)) {
+		    $rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
+		}
+		$monhash = PVE::Ceph::Services::get_services_info('mon', $cfg, $rados);
+		$assert_mon_prerequisites->($cfg, $monhash, $monid, $ip);
 
-	    if (! -f $mon_keyring) {
-		run_command("ceph-authtool --create-keyring $mon_keyring ".
-		    " --gen-key -n mon. --cap mon 'allow *'");
-		run_command("ceph-authtool $mon_keyring --import-keyring $client_keyring");
-	    }
+		my $client_keyring = PVE::Ceph::Tools::get_or_create_admin_keyring();
+		my $mon_keyring = PVE::Ceph::Tools::get_config('pve_mon_key_path');
 
-	    my $ccname = PVE::Ceph::Tools::get_config('ccname');
-	    my $mondir =  "/var/lib/ceph/mon/$ccname-$monid";
-	    -d $mondir && die "monitor filesystem '$mondir' already exist\n";
-
-	    my $monmap = "/tmp/monmap";
-
-	    eval {
-		mkdir $mondir;
-
-		run_command("chown ceph:ceph $mondir");
-
-		if (defined($rados)) { # we can only have a RADOS object if we have a monitor
-		    my $rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
-		    my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
-		    file_set_contents($monmap, $mapdata);
-		} else { # we need to create a monmap for the first monitor
-		    my $monaddr = $ip;
-		    if (Net::IP::ip_is_ipv6($ip)) {
-			$monaddr = "[$ip]";
-			$cfg->{global}->{ms_bind_ipv6} = 'true';
-		    }
-		    run_command("monmaptool --create --clobber --addv $monid '[v2:$monaddr:3300,v1:$monaddr:6789]' --print $monmap");
+		if (! -f $mon_keyring) {
+		    run_command("ceph-authtool --create-keyring $mon_keyring ".
+			" --gen-key -n mon. --cap mon 'allow *'");
+		    run_command("ceph-authtool $mon_keyring --import-keyring $client_keyring");
 		}
 
-		run_command("ceph-mon --mkfs -i $monid --monmap $monmap --keyring $mon_keyring --public-addr $ip");
-		run_command("chown ceph:ceph -R $mondir");
-	    };
-	    my $err = $@;
-	    unlink $monmap;
-	    if ($err) {
-		File::Path::remove_tree($mondir);
-		die $err;
-	    }
+		my $ccname = PVE::Ceph::Tools::get_config('ccname');
+		my $mondir =  "/var/lib/ceph/mon/$ccname-$monid";
+		-d $mondir && die "monitor filesystem '$mondir' already exist\n";
 
-	    # update ceph.conf
-	    my $monhost = $cfg->{global}->{mon_host} // "";
-	    $monhost .= " $ip";
-	    $cfg->{global}->{mon_host} = $monhost;
+		my $monmap = "/tmp/monmap";
 
-	    cfs_write_file('ceph.conf', $cfg);
+		eval {
+		    mkdir $mondir;
 
-	    PVE::Ceph::Services::ceph_service_cmd('start', $monsection);
+		    run_command("chown ceph:ceph $mondir");
 
-	    eval { PVE::Ceph::Services::ceph_service_cmd('enable', $monsection) };
-	    warn "Enable ceph-mon\@${monid}.service failed, do manually: $@\n" if $@;
+		    if (defined($rados)) { # we can only have a RADOS object if we have a monitor
+			my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
+			file_set_contents($monmap, $mapdata);
+		    } else { # we need to create a monmap for the first monitor
+			my $monaddr = $ip;
+			if (Net::IP::ip_is_ipv6($ip)) {
+			    $monaddr = "[$ip]";
+			    $cfg->{global}->{ms_bind_ipv6} = 'true';
+			}
+			run_command("monmaptool --create --clobber --addv $monid '[v2:$monaddr:3300,v1:$monaddr:6789]' --print $monmap");
+		    }
 
-	    PVE::Ceph::Services::broadcast_ceph_services();
+		    run_command("ceph-mon --mkfs -i $monid --monmap $monmap --keyring $mon_keyring --public-addr $ip");
+		    run_command("chown ceph:ceph -R $mondir");
+		};
+		my $err = $@;
+		unlink $monmap;
+		if ($err) {
+		    File::Path::remove_tree($mondir);
+		    die $err;
+		}
+
+		# update ceph.conf
+		my $monhost = $cfg->{global}->{mon_host} // "";
+		$monhost .= " $ip";
+		$cfg->{global}->{mon_host} = $monhost;
+
+		cfs_write_file('ceph.conf', $cfg);
+
+		PVE::Ceph::Services::ceph_service_cmd('start', $monsection);
+
+		eval { PVE::Ceph::Services::ceph_service_cmd('enable', $monsection) };
+		warn "Enable ceph-mon\@${monid}.service failed, do manually: $@\n" if $@;
+
+		PVE::Ceph::Services::broadcast_ceph_services();
+	    });
+	    die $@ if $@;
 	};
 
 	return $rpcenv->fork_worker('cephcreatemon', $monsection, $authuser, $worker);
