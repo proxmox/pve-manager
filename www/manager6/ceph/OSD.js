@@ -22,14 +22,6 @@ Ext.define('PVE.CephCreateOsd', {
 	    method: 'POST',
 	    items: [
 		{
-		    xtype: 'displayfield',
-		    padding: '0 0 10 0',
-		    userCls: 'pve-hint',
-		    value: 'Note: Ceph is not compatible with disks backed by a hardware ' +
-			   'RAID controller. For details see the reference documentation ' +
-			   '<a target="_blank" href="' + Proxmox.Utils.get_help_link('chapter_pveceph') + '">here</a>.',
-		},
-		{
 		    xtype: 'inputpanel',
 		    onGetValues: function(values) {
 			Object.keys(values || {}).forEach(function(name) {
@@ -115,6 +107,14 @@ Ext.define('PVE.CephCreateOsd', {
 			    emptyText: gettext('Automatic')
 			}
 		    ]
+		},
+		{
+		    xtype: 'displayfield',
+		    padding: '5 0 0 0',
+		    userCls: 'pve-hint',
+		    value: 'Note: Ceph is not compatible with disks backed by a hardware ' +
+			   'RAID controller. For details see ' +
+			   '<a target="_blank" href="' + Proxmox.Utils.get_help_link('chapter_pveceph') + '">the reference documentation</a>.',
 		}
 	    ]
 	});

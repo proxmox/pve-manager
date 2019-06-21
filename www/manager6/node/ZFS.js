@@ -41,14 +41,6 @@ Ext.define('PVE.node.CreateZFS', {
 	    method: 'POST',
 	    items: [
 		{
-		    xtype: 'displayfield',
-		    padding: '0 0 10 0',
-		    userCls: 'pve-hint',
-		    value: 'Note: ZFS is not compatible with disks backed by a hardware ' +
-			   'RAID controller. For details see the reference documentation ' +
-			   '<a target="_blank" href="' + Proxmox.Utils.get_help_link('chapter_zfs') + '">here</a>.',
-		},
-		{
 		    xtype: 'inputpanel',
 		    onGetValues: function(values) {
 			return values;
@@ -163,6 +155,14 @@ Ext.define('PVE.node.CreateZFS', {
 			    ]
 			}
 		    ]
+		},
+		{
+		    xtype: 'displayfield',
+		    padding: '5 0 0 0',
+		    userCls: 'pve-hint',
+		    value: 'Note: ZFS is not compatible with disks backed by a hardware ' +
+			   'RAID controller. For details see ' +
+			   '<a target="_blank" href="' + Proxmox.Utils.get_help_link('chapter_zfs') + '">the reference documentation</a>.',
 		}
 	    ]
 	});
