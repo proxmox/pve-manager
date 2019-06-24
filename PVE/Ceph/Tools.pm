@@ -61,6 +61,14 @@ sub get_local_version {
     return undef;
 }
 
+sub get_cluster_versions {
+    my ($service, $noerr) = @_;
+
+    my $rados = PVE::RADOS->new();
+    my $cmd = $service ? "$service versions" : 'versions';
+    return $rados->mon_command({ prefix => $cmd });
+}
+
 sub get_config {
     my $key = shift;
 
