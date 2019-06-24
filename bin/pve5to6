@@ -1,0 +1,10 @@
+#!/usr/bin/perl -T
+
+use strict;
+use warnings;
+
+use lib qw(.);
+
+use PVE::CLI::pve5to6;
+
+PVE::CLI::pve5to6->run_cli_handler();
