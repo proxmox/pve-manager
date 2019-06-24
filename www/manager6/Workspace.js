@@ -27,6 +27,7 @@ Ext.define('PVE.Workspace', {
 	if (loginData.cap) {
 	    Ext.state.Manager.set('GuiCap', loginData.cap);
 	}
+	me.response401count = 0;
 
 	me.onLogin(loginData);
     },
@@ -60,7 +61,12 @@ Ext.define('PVE.Workspace', {
 	// fixme: what about other errors
 	Ext.Ajax.on('requestexception', function(conn, response, options) {
 	    if (response.status == 401 && !PVE.Utils.silenceAuthFailures) { // auth failure
-		me.showLogin();
+		// don't immediately show as logged out to cope better with some big
+		// upgrades, which may temporarily produce a false positive 401 err
+		me.response401count++;
+		if (me.response401count > 5) {
+		    me.showLogin();
+		}
 	    }
 	});
 
