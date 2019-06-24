@@ -270,15 +270,19 @@ __PACKAGE__->register_method({
 		if defined($param->{$key}) && ($user ne 'root@pam');
 	}
 
-	my $data = cfs_read_file('vzdump.cron');
+	my $create_job = sub {
+	    my $data = cfs_read_file('vzdump.cron');
 
-	$param->{dow} = 'mon,tue,wed,thu,fri,sat,sun' if !defined($param->{dow});
-	$param->{enabled} = 1 if !defined($param->{enabled});
-	PVE::VZDump::verify_vzdump_parameters($param, 1);
+	    $param->{dow} = 'mon,tue,wed,thu,fri,sat,sun' if !defined($param->{dow});
+	    $param->{enabled} = 1 if !defined($param->{enabled});
+	    PVE::VZDump::verify_vzdump_parameters($param, 1);
 
-	push @{$data->{jobs}}, $param;
+	    push @{$data->{jobs}}, $param;
 
-	cfs_write_file('vzdump.cron', $data);
+	    cfs_write_file('vzdump.cron', $data);
+	};
+	cfs_lock_file('vzdump.cron', undef, $create_job);
+	die "$@" if ($@);
 
 	return undef;
     }});
@@ -348,25 +352,29 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	my $data = cfs_read_file('vzdump.cron');
+	my $delete_job = sub {
+	    my $data = cfs_read_file('vzdump.cron');
 
-	my $jobs = $data->{jobs} || [];
-	my $newjobs = [];
+	    my $jobs = $data->{jobs} || [];
+	    my $newjobs = [];
 
-	my $found;
-	foreach my $job (@$jobs) {
-	    if ($job->{id} eq $param->{id}) {
-		$found = 1;
-	    } else {
-		push @$newjobs, $job;
+	    my $found;
+	    foreach my $job (@$jobs) {
+		if ($job->{id} eq $param->{id}) {
+		    $found = 1;
+		} else {
+		    push @$newjobs, $job;
+		}
 	    }
-	}
 
-	raise_param_exc({ id => "No such job '$param->{id}'" }) if !$found;
+	    raise_param_exc({ id => "No such job '$param->{id}'" }) if !$found;
 
-	$data->{jobs} = $newjobs;
+	    $data->{jobs} = $newjobs;
 
-	cfs_write_file('vzdump.cron', $data);
+	    cfs_write_file('vzdump.cron', $data);
+	};
+	cfs_lock_file('vzdump.cron', undef, $delete_job);
+	die "$@" if ($@);
 
 	return undef;
     }});
@@ -419,50 +427,52 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	my $data = cfs_read_file('vzdump.cron');
+	my $update_job = sub {
+	    my $data = cfs_read_file('vzdump.cron');
 
-	my $jobs = $data->{jobs} || [];
+	    my $jobs = $data->{jobs} || [];
 
-	die "no options specified\n" if !scalar(keys %$param);
+	    die "no options specified\n" if !scalar(keys %$param);
 
-	PVE::VZDump::verify_vzdump_parameters($param);
+	    PVE::VZDump::verify_vzdump_parameters($param);
 
-	my @delete = PVE::Tools::split_list(extract_param($param, 'delete'));
+	    my @delete = PVE::Tools::split_list(extract_param($param, 'delete'));
 
-	foreach my $job (@$jobs) {
-	    if ($job->{id} eq $param->{id}) {
+	    foreach my $job (@$jobs) {
+		if ($job->{id} eq $param->{id}) {
 
-		foreach my $k (@delete) {
-		    if (!PVE::VZDump::option_exists($k)) {
-			raise_param_exc({ delete => "unknown option '$k'" });
+		    foreach my $k (@delete) {
+			if (!PVE::VZDump::option_exists($k)) {
+			    raise_param_exc({ delete => "unknown option '$k'" });
+			}
+
+			delete $job->{$k};
 		    }
 
-		    delete $job->{$k};
+		    foreach my $k (keys %$param) {
+			$job->{$k} = $param->{$k};
+		    }
+
+		    $job->{all} = 1 if defined($job->{exclude});
+
+		    if (defined($param->{vmid})) {
+			delete $job->{all};
+			delete $job->{exclude};
+		    } elsif ($param->{all}) {
+			delete $job->{vmid};
+		    }
+
+		    PVE::VZDump::verify_vzdump_parameters($job, 1);
+
+		    cfs_write_file('vzdump.cron', $data);
+
+		    return undef;
 		}
-
-		foreach my $k (keys %$param) {
-		    $job->{$k} = $param->{$k};
-		}
-
-		$job->{all} = 1 if defined($job->{exclude});
-
-		if (defined($param->{vmid})) {
-		    delete $job->{all};
-		    delete $job->{exclude};
-		} elsif ($param->{all}) {
-		    delete $job->{vmid};
-		}
-
-		PVE::VZDump::verify_vzdump_parameters($job, 1);
-
-		cfs_write_file('vzdump.cron', $data);
-
-		return undef;
 	    }
-	}
-
-	raise_param_exc({ id => "No such job '$param->{id}'" });
-
+	    raise_param_exc({ id => "No such job '$param->{id}'" });
+	};
+	cfs_lock_file('vzdump.cron', undef, $update_job);
+	die "$@" if ($@);
     }});
 
 1;
