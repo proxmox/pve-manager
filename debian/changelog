@@ -1,3 +1,30 @@
+pve-manager (6.0-0+3) pve; urgency=medium
+
+  * VM migrate: add migration with local disks over web GUI
+
+  * VM migrate: do some initial checks before a migrate is triggered to notify
+    users about problems earlier
+
+  * ceph: init: update inital config for nautilus
+
+  * ceph: improve monitor creation and adapt for Nautilus
+
+  * ceph: mon create: detect pubnet via config database
+
+  * ceph: enable also msgr2 format for monitors
+
+  * gui: ostypes: include 5.x in Linux series and reword to range
+
+  * gui: add warnings for ceph and zfs for disks backed by hardware raid
+    controller
+
+  * gui: workspace: cope better with upgrade related false positive 401
+    HTTP codes
+
+  * backup jobs: acquire lock before modifying vzdump.cron
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 25 Jun 2019 12:37:44 +0200
+
 pve-manager (6.0-0+2) pve; urgency=medium
 
   * api: cluster/resources: add information about guest locks
