@@ -41,7 +41,7 @@ all: ${SERVICE_MANS} ${CLI_MANS} pvemailforward
 
 %.1: %.1.pod
 	rm -f $@
-	cat $<|pod2man -n $* -s 1 -r ${VERSION} -c "Proxmox Documentation" >$@.tmp
+	cat $<|pod2man -n $* -s 1 -r ${VERSION} -c"Proxmox Documentation" - >$@.tmp
 	mv $@.tmp $@
 
 %.1.pod:
