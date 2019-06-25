@@ -1,3 +1,12 @@
+pve-manager (5.4-8) unstable; urgency=medium
+
+  * add initial pve5to6 upgrade assistant
+
+  * ui: workspace: cope better with upgrade related false positive 401
+    HTTP codes
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 25 Jun 2019 12:51:54 +0200
+
 pve-manager (5.4-7) unstable; urgency=medium
 
   * ui: firewall log ratelimit: fix default value
