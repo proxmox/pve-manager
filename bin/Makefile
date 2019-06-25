@@ -48,7 +48,9 @@ all: ${SERVICE_MANS} ${CLI_MANS} pvemailforward
 	podselect $* > $@.tmp
 	mv $@.tmp $@
 
-pve5to6.1.pod: pve5to6
+pve5to6.1:
+	echo ".TH pve5to6 1" > $@
+
 pveversion.1.pod: pveversion
 pveupgrade.1.pod: pveupgrade
 pvereport.1.pod: pvereport
