@@ -404,7 +404,7 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     console_map: {
-	'__default__': Proxmox.Utils.defaultText + ' (HTML5)',
+	'__default__': Proxmox.Utils.defaultText + ' (xterm.js)',
 	'vv': 'SPICE (remote-viewer)',
 	'html5': 'HTML5 (noVNC)',
 	'xtermjs': 'xterm.js'
@@ -945,10 +945,9 @@ Ext.define('PVE.Utils', { utilities: {
 	    allowSpice = consoles.spice;
 	    allowXtermjs = !!consoles.xtermjs;
 	}
-	var vncdefault = 'html5';
-	var dv = PVE.VersionInfo.console || vncdefault;
+	var dv = PVE.VersionInfo.console || 'xtermjs';
 	if ((dv === 'vv' && !allowSpice) || (dv === 'xtermjs' && !allowXtermjs)) {
-	    dv = vncdefault;
+	    dv = 'html5';
 	}
 
 	return dv;
