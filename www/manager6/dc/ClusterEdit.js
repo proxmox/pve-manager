@@ -24,10 +24,10 @@ Ext.define('PVE.ClusterCreateWindow', {
 	    xtype: 'proxmoxtextfield',
 	    fieldLabel: gettext('Ring 0 Address'),
 	    emptyText: gettext("Optional, defaults to IP resolved by node's hostname"),
-	    name: 'ring0_addr',
+	    name: 'link0',
 	    skipEmptyText: true
 	}
-	// TODO: for advanced options: ring1_addr
+	// TODO: for advanced options: all links!
     ]
 });
 
@@ -303,7 +303,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		    allowBlank: '{!info.ring0Needed}'
 		},
 		skipEmptyText: true,
-		name: 'ring0_addr'
+		name: 'link0'
 	    },
 	    {
 		xtype: 'proxmoxtextfield',
@@ -312,7 +312,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		bind: {
 		    disabled: '{!info.ring1Possible}'
 		},
-		name: 'ring1_addr'
+		name: 'link1'
 	    }
 	],
 	columnB: [
