@@ -235,7 +235,8 @@ sub check_ceph {
     log_info("getting Ceph status/health information..");
     my $ceph_status = eval { PVE::API2::Ceph->status({ node => $nodename }); };
     my $osd_flags = eval { PVE::API2::Ceph->get_flags({ node => $nodename }); };
-    my $noout = $osd_flags =~ m/noout/;
+    my $noout;
+    $noout = $osd_flags =~ m/noout/ if $osd_flags;
 
     if (!$ceph_status || !$ceph_status->{health}) {
 	log_fail("unable to determine Ceph status!");
