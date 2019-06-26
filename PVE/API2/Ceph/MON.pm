@@ -247,6 +247,7 @@ __PACKAGE__->register_method ({
 			if (Net::IP::ip_is_ipv6($ip)) {
 			    $monaddr = "[$ip]";
 			    $cfg->{global}->{ms_bind_ipv6} = 'true';
+			    $cfg->{global}->{ms_bind_ipv4} = 'false';
 			}
 			run_command("monmaptool --create --clobber --addv $monid '[v2:$monaddr:3300,v1:$monaddr:6789]' --print $monmap");
 		    }
