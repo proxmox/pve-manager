@@ -312,8 +312,12 @@ sub check_ceph {
 sub check_misc {
     print "\nMISCELLANEOUS CHECKS\n\n";
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
-    log_fail("Unsupported SSH Cipher configured for root in /root/.ssh/config: $1")
-	if $ssh_config =~ /^Ciphers .*(blowfish|arcfour|3des).*$/m;
+    if (defined($ssh_config)) {
+	log_fail("Unsupported SSH Cipher configured for root in /root/.ssh/config: $1")
+	    if $ssh_config =~ /^Ciphers .*(blowfish|arcfour|3des).*$/m;
+    } else {
+	log_skip("No SSH config file found.");
+    }
 
     my $root_free = PVE::Tools::df('/', 10);
     log_warn("Less than 2G free space on root file system.")
