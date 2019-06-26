@@ -119,6 +119,30 @@ sub check_pve_packages {
     }
 }
 
+sub check_kvm_nested {
+    print "\nCHECKING KVM NESTED PARAMETER\n\n";
+    my $module_sysdir = "/sys/module";
+    if (-e "$module_sysdir/kvm_amd") {
+	$module_sysdir .= "/kvm_amd/parameters";
+    } elsif (-e "$module_sysdir/kvm_intel") {
+	$module_sysdir .= "/kvm_intel/parameters";
+    } else {
+	log_skip("no kvm module found");
+	return;
+    }
+
+    if (-f "$module_sysdir/nested") {
+	my $val = eval { PVE::Tools::file_read_firstline("$module_sysdir/nested") };
+	if ($val && $val =~ m/Y|1/) {
+	    log_warn("KVM nested parameter set. VMs with vmx/svm flag will not be able to live migrate to PVE 6.");
+	} else {
+	    log_pass("KVM nested parameter not set.")
+	}
+    } else {
+	log_skip("KVM nested parameter not found.");
+    }
+}
+
 sub check_storage_health {
     print "\nCHECKING CONFIGURED STORAGES\n\n";
     my $cfg = PVE::Storage::config();
@@ -359,6 +383,7 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	check_pve_packages();
+	check_kvm_nested();
 	check_cluster_corosync();
 	check_ceph();
 	check_storage_health();
