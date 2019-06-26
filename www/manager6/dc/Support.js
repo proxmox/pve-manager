@@ -6,9 +6,9 @@ Ext.define('PVE.dc.Support', {
 
     invalidHtml: '<h1>No valid subscription</h1>' + PVE.Utils.noSubKeyHtml,
 
-    communityHtml: 'Please use the public community <a target="_blank" href="http://forum.proxmox.com">forum</a> for any questions.',
+    communityHtml: 'Please use the public community <a target="_blank" href="https://forum.proxmox.com">forum</a> for any questions.',
 
-    activeHtml: 'Please use our <a target="_blank" href="https://my.proxmox.com">support portal</a> for any questions. You can also use the public community <a target="_blank" href="http://forum.proxmox.com">forum</a> to get additional information.',
+    activeHtml: 'Please use our <a target="_blank" href="https://my.proxmox.com">support portal</a> for any questions. You can also use the public community <a target="_blank" href="https://forum.proxmox.com">forum</a> to get additional information.',
 
     bugzillaHtml: '<h1>Bug Tracking</h1>Our bug tracking system is available <a target="_blank" href="https://bugzilla.proxmox.com">here</a>.',
 
