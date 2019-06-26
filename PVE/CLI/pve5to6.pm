@@ -17,6 +17,8 @@ use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Tools;
 
+use Term::ANSIColor;
+
 use PVE::CLIHandler;
 
 use base qw(PVE::CLIHandler);
@@ -47,7 +49,9 @@ my $log_line = sub {
 };
 
 sub log_pass {
+    print color('green');
     $log_line->('pass', @_);
+    print color('reset');
 }
 
 sub log_info {
@@ -57,10 +61,14 @@ sub log_skip {
     $log_line->('skip', @_);
 }
 sub log_warn {
+    print color('yellow');
     $log_line->('warn', @_);
+    print color('reset');
 }
 sub log_fail {
+    print color('red');
     $log_line->('fail', @_);
+    print color('reset');
 }
 
 my $get_pkg = sub {
@@ -357,12 +365,12 @@ __PACKAGE__->register_method ({
 	check_misc();
 
 	print "\n\nSUMMARY:\n";
-	print "PASSED: $counters->{pass}\n";
+	print colored("PASSED: $counters->{pass}\n", 'green');
 	print "SKIPPED: $counters->{skip}\n";
-	print "WARNINGS: $counters->{warn}\n";
-	print "FAILURES: $counters->{fail}\n";
+	print colored("WARNINGS: $counters->{warn}\n", 'yellow');
+	print colored("FAILURES: $counters->{fail}\n", 'red');
 
-	print "\nATTENTION: Please check the output for detailed information!\n"
+	print colored("\nATTENTION: Please check the output for detailed information!\n", 'red')
 	    if ($counters->{warn} > 0 || $counters->{fail} > 0);
 
 	return undef;
