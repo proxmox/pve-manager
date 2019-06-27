@@ -414,8 +414,8 @@ __PACKAGE__->register_method ({
 	check_misc();
 
 	print_header("SUMMARY");
-	print colored("PASSED: $counters->{pass}\n", 'green');
-	print "SKIPPED: $counters->{skip}\n";
+	print colored("PASSED:   $counters->{pass}\n", 'green');
+	print "SKIPPED:  $counters->{skip}\n";
 	print colored("WARNINGS: $counters->{warn}\n", 'yellow');
 	print colored("FAILURES: $counters->{fail}\n", 'red');
 
