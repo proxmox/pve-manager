@@ -21,10 +21,13 @@ Ext.define('PVE.ClusterCreateWindow', {
 	    name: 'clustername'
 	},
 	{
-	    xtype: 'proxmoxtextfield',
+	    xtype: 'proxmoxNetworkSelector',
 	    fieldLabel: gettext('Ring 0 Address'),
 	    emptyText: gettext("Optional, defaults to IP resolved by node's hostname"),
 	    name: 'link0',
+	    autoSelect: false,
+	    valueField: 'address',
+	    displayField: 'address',
 	    skipEmptyText: true
 	}
 	// TODO: for advanced options: all links!
@@ -296,19 +299,25 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	],
 	column2: [
 	    {
-		xtype: 'proxmoxtextfield',
+		xtype: 'proxmoxNetworkSelector',
 		fieldLabel: gettext('Corosync Ring 0'),
 		bind: {
 		    emptyText: '{ring0EmptyText}',
 		    allowBlank: '{!info.ring0Needed}'
 		},
 		skipEmptyText: true,
+		autoSelect: false,
+		valueField: 'address',
+		displayField: 'address',
 		name: 'link0'
 	    },
 	    {
-		xtype: 'proxmoxtextfield',
+		xtype: 'proxmoxNetworkSelector',
 		fieldLabel: gettext('Corosync Ring 1'),
 		skipEmptyText: true,
+		autoSelect: false,
+		valueField: 'address',
+		displayField: 'address',
 		bind: {
 		    disabled: '{!info.ring1Possible}'
 		},
