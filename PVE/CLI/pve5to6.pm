@@ -120,7 +120,6 @@ sub check_pve_packages {
 }
 
 sub check_kvm_nested {
-    print "\nCHECKING KVM NESTED PARAMETER\n\n";
     my $module_sysdir = "/sys/module";
     if (-e "$module_sysdir/kvm_amd") {
 	$module_sysdir .= "/kvm_amd/parameters";
@@ -377,6 +376,8 @@ sub check_misc {
 	my $ip_count = scalar(@$configured_ips);
 	log_warn("IP must be configured exactly once on local node - defined $ip_count times") if ($ip_count != 1);
     }
+
+    check_kvm_nested();
 }
 
 __PACKAGE__->register_method ({
@@ -394,7 +395,6 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	check_pve_packages();
-	check_kvm_nested();
 	check_cluster_corosync();
 	check_ceph();
 	check_storage_health();
