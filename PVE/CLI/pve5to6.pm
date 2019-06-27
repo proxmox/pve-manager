@@ -382,12 +382,17 @@ sub check_misc {
     my $host = PVE::INotify::nodename();
     my $local_ip = eval { PVE::Network::get_ip_from_hostname($host) };
     if ($@) {
-	log_warn("Failed to resolve hostname to IP - $@");
+	log_warn("Failed to resolve hostname '$host' to IP - $@");
     } else {
 	my $cidr = Net::IP::ip_is_ipv6($local_ip) ? "$local_ip/128" : "$local_ip/32";
 	my $configured_ips = PVE::Network::get_local_ip_from_cidr($cidr);
 	my $ip_count = scalar(@$configured_ips);
-	log_warn("IP must be configured exactly once on local node - defined $ip_count times") if ($ip_count != 1);
+
+	if ($ip_count <= 0) {
+	    log_fail("Resolved node IP '$local_ip' not configured or active for '$host'");
+	} elsif ($ip_count > 1) {
+	    log_warn("Resolved node IP '$local_ip' active on multiple ($ip_count) interfaces!");
+	}
     }
 
     check_kvm_nested();
