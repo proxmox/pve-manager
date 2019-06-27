@@ -8,7 +8,6 @@ country.dat: country.pl
 .PHONY: install
 install: country.dat vzdump.conf pve-apt.conf pve-sources.list pve-initramfs.conf pve-blacklist.conf pve.logrotate
 	install -D -m 0644 pve.logrotate ${DESTDIR}/etc/logrotate.d/pve
-	install -D -m 0644 pve-apt.conf ${DESTDIR}/etc/apt/apt.conf.d/75pveconf
 	install -D -m 0644 pve-sources.list ${DESTDIR}/etc/apt/sources.list.d/pve-enterprise.list
 	install -D -m 0644 pve-blacklist.conf ${DESTDIR}/etc/modprobe.d/pve-blacklist.conf
 	install -D -m 0644 vzdump.conf ${DESTDIR}/etc/vzdump.conf
