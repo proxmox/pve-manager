@@ -189,10 +189,6 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			fieldLabel: 'Public Network IP/CIDR',
 			bind: {
 			    allowBlank: '{configuration}'
-			},
-			setAllowBlank: function(allowBlank) {
-			    this.allowBlank = allowBlank;
-			    this.validate();
 			}
 		    },
 		    {
