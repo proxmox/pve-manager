@@ -129,6 +129,15 @@ sub check_pve_packages {
 	} else {
 	    log_fail("proxmox-ve package is too old, please upgrade to >= $min_pve_ver!");
 	}
+	print "\nChecking running kernel version..\n";
+	my $kernel_ver = $proxmox_ve->{RunningKernel};
+	if (!defined($kernel_ver)) {
+	    log_fail("unable to determine running kernel version.");
+	} elsif ($kernel_ver =~ /^5\./) {
+	    log_pass("expected running kernel '$kernel_ver'.");
+	} else {
+	    log_warn("unexpected running kernel '$kernel_ver'.");
+	}
     }
 }
 
