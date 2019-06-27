@@ -111,7 +111,7 @@ sub check_pve_packages {
 	log_fail("unable to retrieve list of package updates!");
     } elsif (@$updates > 0) {
 	my $pkgs = join(', ', map { $_->{Package} } @$updates);
-	log_warn("updates for the following packages are available: $pkgs");
+	log_warn("updates for the following packages are available:\n  $pkgs");
     } else {
 	log_pass("all packages uptodate");
     }
