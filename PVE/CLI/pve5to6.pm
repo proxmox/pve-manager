@@ -29,7 +29,8 @@ sub setup_environment {
     PVE::RPCEnvironment->setup_default_cli_env();
 }
 
-my $min_pve_rel = '5.4';
+my $min_pve_major = 5;
+my $min_pve_minor = 4;
 my $min_pve_pkgrel = 2;
 
 my $counters = {
@@ -117,9 +118,13 @@ sub check_pve_packages {
 
     print "\nChecking proxmox-ve package version..\n";
     if (defined(my $proxmox_ve = $get_pkg->('proxmox-ve'))) {
-	my $min_pve_ver = "$min_pve_rel-$min_pve_pkgrel";
+	my $min_pve_ver = "$min_pve_major.$min_pve_minor-$min_pve_pkgrel";
 
-	if ($proxmox_ve->{OldVersion} =~ m/^$min_pve_rel-(\d+)/ && $1 >= $min_pve_pkgrel) {
+	my ($maj, $min, $pkgrel) = $proxmox_ve->{OldVersion} =~ m/^(\d+)\.(\d+)-(\d+)/;
+
+	if ($maj > $min_pve_major) {
+	    log_pass("already upgraded to Proxmox VE " . ($min_pve_major + 1));
+	} elsif ($maj >= $min_pve_major && $min >= $min_pve_minor && $pkgrel >= $min_pve_pkgrel) {
 	    log_pass("proxmox-ve package has version >= $min_pve_ver");
 	} else {
 	    log_fail("proxmox-ve package is too old, please upgrade to >= $min_pve_ver!");
