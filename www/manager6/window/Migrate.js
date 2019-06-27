@@ -202,7 +202,7 @@ Ext.define('PVE.window.Migrate', {
 			    migration.possible = false;
 			    migration.preconditions.push({
 				text: 'Local storage not available on selected Node, start VM to use live storage migration or select other target node',
-				icon: '<i class="fa fa-times critical"></i>'
+				severity: 'error'
 			    });
 			}
 		    }
@@ -211,7 +211,7 @@ Ext.define('PVE.window.Migrate', {
 			migration.possible = false;
 			migration.preconditions.push({
 			    text: 'Can\'t migrate VM with local resources: '+ migrateStats.local_resources.join(', '),
-			    icon: '<i class="fa fa-times critical"></i>'
+			    severity: 'error'
 			});
 		    }
 
@@ -222,20 +222,20 @@ Ext.define('PVE.window.Migrate', {
 				migration.possible = false;
 				migration.preconditions.push({
 				    text:'Can\'t migrate VM with local CD/DVD',
-				    icon: '<i class="fa fa-times critical"></i>'
+				    severity: 'error'
 				});
 
 			    } else if (!disk.referenced_in_config) {
 				migration.possible = false;
 				migration.preconditions.push({
 				    text: 'Found not referenced/unused disk via storage: '+ disk.volid,
-				    icon: '<i class="fa fa-times critical"></i>'
+				    severity: 'error'
 				});
 			    } else {
 				migration['with-local-disks'] = 1;
 				migration.preconditions.push({
 				    text:'Migration with local disk might take long: '+ disk.volid,
-				    icon: '<i class="fa fa-exclamation-triangle warning"></i>'
+				    severity: 'warning'
 				});
 			    }
 			});
@@ -326,15 +326,33 @@ Ext.define('PVE.window.Migrate', {
 	{
 	    xtype: 'gridpanel',
 	    reference: 'preconditionGrid',
+	    selectable: false,
 	    flex: 1,
-	    columns: [
-		{text: 'Severity', dataIndex: 'icon', width: 80},
-		{text: 'Info',  dataIndex: 'text', flex: 1}
-	    ],
+	    columns: [{
+		text: '',
+		dataIndex: 'severity',
+		renderer: function(v) {
+		    switch (v) {
+			case 'warning':
+			    return '<i class="fa fa-exclamation-triangle warning"></i> ';
+			case 'error':
+			    return '<i class="fa fa-times critical"></i>';
+			default:
+			    return v;
+		    }
+		},
+		width: 35
+	    },
+	    {
+		text: 'Info',
+		dataIndex: 'text',
+		cellWrap: true,
+		flex: 1
+	    }],
 	    bind: {
 		hidden: '{!migration.preconditions.length}',
 		store: {
-		    fields: ['icon','text'],
+		    fields: ['severity','text'],
 		    data: '{migration.preconditions}'
 		}
 	    }
