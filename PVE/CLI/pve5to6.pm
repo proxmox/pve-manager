@@ -412,8 +412,9 @@ __PACKAGE__->register_method ({
 	return undef;
     }});
 
-our $cmddef = {
-    checklist => [ __PACKAGE__, 'checklist', [], {}],
-};
+our $cmddef = [ __PACKAGE__, 'checklist', [], {}];
+
+# for now drop all unknown params and just check
+@ARGV = ();
 
 1;
