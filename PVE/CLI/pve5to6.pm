@@ -71,6 +71,14 @@ sub log_fail {
     print color('reset');
 }
 
+my $print_header_first = 1;
+sub print_header {
+    my ($h) = @_;
+    print "\n" if !$print_header_first;
+    print "= $h =\n\n";
+    $print_header_first = 0;
+}
+
 my $get_pkg = sub {
     my ($pkg) = @_;
 
@@ -93,9 +101,9 @@ my $get_pkg = sub {
 };
 
 sub check_pve_packages {
-    print "CHECKING VERSION INFORMATION FOR PVE PACKAGES\n";
+    print_header("CHECKING VERSION INFORMATION FOR PVE PACKAGES");
 
-    print "\nChecking for package updates..\n";
+    print "Checking for package updates..\n";
     my $updates = eval { PVE::API2::APT->list_updates({ node => $nodename }); };
     if (!defined($updates)) {
 	log_warn("$@") if $@;
@@ -143,7 +151,7 @@ sub check_kvm_nested {
 }
 
 sub check_storage_health {
-    print "\nCHECKING CONFIGURED STORAGES\n\n";
+    print_header("CHECKING CONFIGURED STORAGES");
     my $cfg = PVE::Storage::config();
 
     my $ctime = time();
@@ -165,7 +173,7 @@ sub check_storage_health {
 }
 
 sub check_cluster_corosync {
-    print "\nCHECKING CLUSTER HEALTH/SETTINGS\n\n";
+    print_header("CHECKING CLUSTER HEALTH/SETTINGS");
 
     if (!PVE::Corosync::check_conf_exists(1)) {
 	log_skip("standalone node.");
@@ -241,7 +249,7 @@ sub check_cluster_corosync {
 	PVE::Tools::run_command(['corosync-quorumtool', '-siH'], outfunc => $prefix_info, errfunc => $prefix_info);
     };
 
-    print "\nCHECKING INSTALLED COROSYNC VERSION\n\n";
+    print_header("CHECKING INSTALLED COROSYNC VERSION");
     if (defined(my $corosync = $get_pkg->('corosync'))) {
 	if ($corosync->{OldVersion} =~ m/^2\./) {
 	    log_fail("corosync 2.x installed, cluster-wide upgrade to 3.x needed!");
@@ -254,7 +262,7 @@ sub check_cluster_corosync {
 }
 
 sub check_ceph {
-    print "\nCHECKING HYPER-CONVERGED CEPH STATUS\n\n";
+    print_header("CHECKING HYPER-CONVERGED CEPH STATUS");
 
     if (PVE::Ceph::Tools::check_ceph_inited(1)) {
 	log_info("hyper-converged ceph setup detected!");
@@ -341,7 +349,7 @@ sub check_ceph {
 }
 
 sub check_misc {
-    print "\nMISCELLANEOUS CHECKS\n\n";
+    print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
     if (defined($ssh_config)) {
 	log_fail("Unsupported SSH Cipher configured for root in /root/.ssh/config: $1")
@@ -400,7 +408,7 @@ __PACKAGE__->register_method ({
 	check_storage_health();
 	check_misc();
 
-	print "\n\nSUMMARY:\n";
+	print_header("SUMMARY");
 	print colored("PASSED: $counters->{pass}\n", 'green');
 	print "SKIPPED: $counters->{skip}\n";
 	print colored("WARNINGS: $counters->{warn}\n", 'yellow');
