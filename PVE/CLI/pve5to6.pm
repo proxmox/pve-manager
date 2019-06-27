@@ -414,6 +414,11 @@ __PACKAGE__->register_method ({
 	check_misc();
 
 	print_header("SUMMARY");
+
+	my $total = 0;
+	$total += $_ for values %$counters;
+
+	print "TOTAL:    $total\n";
 	print colored("PASSED:   $counters->{pass}\n", 'green');
 	print "SKIPPED:  $counters->{skip}\n";
 	print colored("WARNINGS: $counters->{warn}\n", 'yellow');
