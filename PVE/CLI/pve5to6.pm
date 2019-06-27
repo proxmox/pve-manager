@@ -360,6 +360,18 @@ sub check_ceph {
 	    log_warn("overall version mismatch detected, check 'ceph versions' output for details!");
 	}
     }
+
+    my $local_ceph_ver = PVE::Ceph::Tools::get_local_version(1);
+    if (defined($local_ceph_ver)) {
+	if ($local_ceph_ver == 14) {
+	    my $scanned_osds = PVE::Tools::dir_glob_regex('/etc/ceph/osd', '^.*\.json$');
+	    if (-e '/var/lib/ceph/osd/' && !defined($scanned_osds)) {
+		log_warn("local Ceph version is Nautilus, local OSDs detected, but no conversion from ceph-disk to ceph-volume done (yet).");
+	    }
+	}
+    } else {
+	log_fail("unable to determine local Ceph version.");
+    }
 }
 
 sub check_misc {
