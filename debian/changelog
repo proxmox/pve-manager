@@ -1,3 +1,9 @@
+pve-manager (5.4-9) unstable; urgency=medium
+
+  * improve PVE 5 to 6 checklist script
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 27 Jun 2019 20:29:07 +0200
+
 pve-manager (5.4-8) unstable; urgency=medium
 
   * add initial pve5to6 upgrade assistant
