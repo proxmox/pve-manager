@@ -366,6 +366,17 @@ sub check_misc {
 	if defined($cts);
     log_warn("$running_guests running guests detected - consider migrating/stopping them.")
 	if $running_guests > 0;
+
+    my $host = PVE::INotify::nodename();
+    my $local_ip = eval { PVE::Network::get_ip_from_hostname($host) };
+    if ($@) {
+	log_warn("Failed to resolve hostname to IP - $@");
+    } else {
+	my $cidr = Net::IP::ip_is_ipv6($local_ip) ? "$local_ip/128" : "$local_ip/32";
+	my $configured_ips = PVE::Network::get_local_ip_from_cidr($cidr);
+	my $ip_count = scalar(@$configured_ips);
+	log_warn("IP must be configured exactly once on local node - defined $ip_count times") if ($ip_count != 1);
+    }
 }
 
 __PACKAGE__->register_method ({
