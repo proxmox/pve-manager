@@ -2,7 +2,7 @@
 Description=PVE Storage Target
 Wants=remote-fs.target
 After=remote-fs.target
-After=ceph.service
+After=ceph.target
 After=ceph-mon.target
 After=ceph-osd.target
 After=ceph-mds.target

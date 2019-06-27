@@ -129,20 +129,6 @@ __PACKAGE__->register_method ({
 
 	print "\ninstalled ceph $cephver successfully\n";
 
-	if (! -e '/etc/systemd/system/ceph.service') {
-	    print "\nreplacing ceph init script with own ceph.service\n";
-	    eval {
-		run_command('cp -v /usr/share/doc/pve-manager/examples/ceph.service /etc/systemd/system/ceph.service');
-		run_command('systemctl daemon-reload');
-		run_command('systemctl enable ceph.service');
-	    };
-	    if (my $err = $@) {
-		warn "WARNING: could not install ceph.service: $@\n";
-	    } else {
-		print "installed ceph.service successfully\n";
-	    }
-	}
-
 	return undef;
     }});
 
