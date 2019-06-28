@@ -427,6 +427,11 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
+	if (my $pool = $param->{pool}) {
+	    $rpcenv->check_pool_exist($pool);
+	    $rpcenv->check($user, "/pool/$pool", ['VM.Backup']);
+	}
+
 	my $update_job = sub {
 	    my $data = cfs_read_file('vzdump.cron');
 
