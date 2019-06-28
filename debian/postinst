@@ -85,4 +85,7 @@ case "$1" in
      exit 0;;
 esac
 
+# FIXME: remove in 7.0
+dpkg-maintscript-helper rm_conffile /etc/apt/apt.conf.d/75pveconf 6.0-0\+3 pve-manager -- "$@"
+
 exit 0
