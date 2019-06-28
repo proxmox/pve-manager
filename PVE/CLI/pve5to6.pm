@@ -80,10 +80,11 @@ sub print_header {
     $print_header_first = 0;
 }
 
+my $versions;
 my $get_pkg = sub {
     my ($pkg) = @_;
 
-    my $versions = eval { PVE::API2::APT->versions({ node => $nodename }); };
+    $versions = eval { PVE::API2::APT->versions({ node => $nodename }) } if !defined($versions);
 
     if (!defined($versions)) {
 	my $msg = "unable to retrieve package version information";
