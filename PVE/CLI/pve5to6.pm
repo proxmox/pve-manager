@@ -122,21 +122,32 @@ sub check_pve_packages {
 
 	my ($maj, $min, $pkgrel) = $proxmox_ve->{OldVersion} =~ m/^(\d+)\.(\d+)-(\d+)/;
 
+	my $upgraded = 0;
+
 	if ($maj > $min_pve_major) {
 	    log_pass("already upgraded to Proxmox VE " . ($min_pve_major + 1));
+	    $upgraded = 1;
 	} elsif ($maj >= $min_pve_major && $min >= $min_pve_minor && $pkgrel >= $min_pve_pkgrel) {
 	    log_pass("proxmox-ve package has version >= $min_pve_ver");
 	} else {
 	    log_fail("proxmox-ve package is too old, please upgrade to >= $min_pve_ver!");
 	}
+
+	my ($krunning, $kinstalled) = (qr/5\./, 'pve-kernel-5.0');
+	if (!$upgraded) {
+	    ($krunning, $kinstalled) = (qr/4\.15/, 'pve-kernel-4.15');
+	}
+
 	print "\nChecking running kernel version..\n";
 	my $kernel_ver = $proxmox_ve->{RunningKernel};
 	if (!defined($kernel_ver)) {
 	    log_fail("unable to determine running kernel version.");
-	} elsif ($kernel_ver =~ /^5\./) {
+	} elsif ($kernel_ver =~ /^$krunning/) {
 	    log_pass("expected running kernel '$kernel_ver'.");
+	} elsif ($get_pkg->($kinstalled)) {
+	    log_warn("expected kernel '$kinstalled' intalled but not yet rebooted!");
 	} else {
-	    log_warn("unexpected running kernel '$kernel_ver'.");
+	    log_warn("unexpected running and installed kernel '$kernel_ver'.");
 	}
     }
 }
