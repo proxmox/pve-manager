@@ -197,11 +197,15 @@ Ext.define('PVE.window.Migrate', {
 
 		    if (migrateStats.allowed_nodes) {
 			migration.allowedNodes = migrateStats.allowed_nodes;
+			var target = me.lookup('pveNodeSelector').value;
+			if (target.length && !migrateStats.allowed_nodes.includes(target)) {
+			    let disallowed = migrateStats.not_allowed_nodes[target];
+			    let missing_storages = disallowed.unavailable_storages.join(', ');
 
-			if (!migrateStats.allowed_nodes.includes(me.lookup('pveNodeSelector').value)) {
 			    migration.possible = false;
 			    migration.preconditions.push({
-				text: 'Local storage not available on selected Node, start VM to use live storage migration or select other target node',
+				text: 'Storage (' + missing_storages + ') not available on selected target. ' +
+				  'Start VM to use live storage migration or select other target node',
 				severity: 'error'
 			    });
 			}
@@ -221,7 +225,7 @@ Ext.define('PVE.window.Migrate', {
 			    if (disk.cdrom && disk.cdrom === 1) {
 				migration.possible = false;
 				migration.preconditions.push({
-				    text:'Can\'t migrate VM with local CD/DVD',
+				    text: "Can't migrate VM with local CD/DVD",
 				    severity: 'error'
 				});
 
@@ -234,7 +238,8 @@ Ext.define('PVE.window.Migrate', {
 			    } else {
 				migration['with-local-disks'] = 1;
 				migration.preconditions.push({
-				    text:'Migration with local disk might take long: '+ disk.volid,
+				    text:'Migration with local disk might take long: ' + disk.volid
+					+' (' + PVE.Utils.render_size(disk.size) + ')',
 				    severity: 'warning'
 				});
 			    }
