@@ -32,7 +32,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		['include', gettext('Include selected VMs')],
 		['all', gettext('All')],
 		['exclude', gettext('Exclude selected VMs')],
-		['pool', gettext('Pool')]
+		['pool', gettext('Pool based')]
 	    ],
 	    fieldLabel: gettext('Selection mode'),
 	    name: 'selMode',
@@ -128,7 +128,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	};
 
 	var selPool = Ext.create('PVE.form.PoolSelector', {
-	    fieldLabel: gettext('Pool'),
+	    fieldLabel: gettext('Pool to backup'),
 	    hidden: true,
 	    allowBlank: true,
 	    name: 'pool',
@@ -552,7 +552,7 @@ Ext.define('PVE.dc.BackupView', {
 			}
 
 			if (record.data.pool) {
-			    return record.data.pool;
+			    return "Pool '"+ record.data.pool + "'";
 			}
 
 			return "-";
