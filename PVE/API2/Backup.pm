@@ -270,6 +270,12 @@ __PACKAGE__->register_method({
 		if defined($param->{$key}) && ($user ne 'root@pam');
 	}
 
+	if (my $pool = $param->{pool}) {
+	    $rpcenv->check_pool_exist($pool);
+	    $rpcenv->check($user, "/pool/$pool", ['VM.Backup']);
+	}
+
+
 	my $create_job = sub {
 	    my $data = cfs_read_file('vzdump.cron');
 
