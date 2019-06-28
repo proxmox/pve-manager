@@ -1,3 +1,22 @@
+pve-manager (6.0-0+4) pve; urgency=medium
+
+  * ui: switch over default console viewer to xterm.js
+
+  * improve pve5to6 upgrade checklist helper
+
+  * ui: use new network selector for cluster create and join
+
+  * remove pve-apt.conf which ensured pve-kernels did not get
+    autoremoved, replaced by a smarter version provided by proxmox-ve
+
+  * fix #1278: add possibility to backup pools over API and Web UI
+
+  * ceph: mon create: fix not starting monitor if no public_addr is in conf
+
+  * eph: disallow IPv4 in new clusters when IPv6 is enabled
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 28 Jun 2019 20:26:53 +0200
+
 pve-manager (6.0-0+3) pve; urgency=medium
 
   * VM migrate: add migration with local disks over web GUI
