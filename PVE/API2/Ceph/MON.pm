@@ -265,6 +265,11 @@ __PACKAGE__->register_method ({
 		my $monhost = $cfg->{global}->{mon_host} // "";
 		$monhost .= " $ip";
 		$cfg->{global}->{mon_host} = $monhost;
+		if (!defined($cfg->{global}->{public_network})) {
+		    # if there is no info about the public_network
+		    # we have to set it explicitely for the monitor
+		    $cfg->{$monsection}->{public_addr} = $ip;
+		}
 
 		cfs_write_file('ceph.conf', $cfg);
 
