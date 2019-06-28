@@ -8,6 +8,7 @@ use PVE::Exception qw(raise_param_exc);
 use PVE::Tools;
 use PVE::INotify;
 use PVE::Cluster;
+use PVE::RPCEnvironment;
 use Digest::MD5 qw(md5_hex);
 use URI;
 use URI::Escape;
@@ -241,17 +242,11 @@ sub get_resource_pool_guest_members {
 
     my $data = $usercfg->{pools}->{$pool};
 
-    die "pool '$pool' does not exist\n"
-	if !$data;
+    die "pool '$pool' does not exist\n" if !$data;
 
-    my $members = [];
+    my $pool_members = [ grep { $idlist->{$_} } keys %{$data->{vms}} ];
 
-    foreach my $vmid (keys %{$data->{vms}}) {
-	my $vmdata = $idlist->{$vmid};
-	next if !$vmdata;
-	push @$members, $vmid;
-    }
-    return $members;
+    return $pool_members;
 }
 
 1;
