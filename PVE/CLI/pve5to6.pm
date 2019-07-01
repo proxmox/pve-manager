@@ -16,6 +16,7 @@ use PVE::JSONSchema;
 use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Tools;
+use PVE::QemuServer;
 
 use Term::ANSIColor;
 
@@ -153,6 +154,33 @@ sub check_pve_packages {
     }
 }
 
+sub get_vms_with_vmx {
+    my $res = {
+	cpu => [],
+	flag => [],
+    };
+    my $vmlist = PVE::QemuServer::vzlist();
+    foreach my $vmid ( sort { $a <=> $b } keys %$vmlist ) {
+	my $pid = $vmlist->{$vmid}->{pid};
+	next if !$pid; # skip not running vms
+	my $cmdline = eval { PVE::Tools::file_get_contents("/proc/$pid/cmdline") };
+	if ($cmdline) {
+	    my @args = split(/\0/, $cmdline);
+	    for (my $i = 0; $i < scalar(@args); $i++) {
+		next if !$args[$i] || $args[$i] !~ m/^-?-cpu$/;
+		my $cpuarg = $args[$i+1];
+		if ($cpuarg =~ m/^(host|max)/) {
+		    push @{$res->{cpu}}, $vmid;
+		} elsif ($cpuarg =~ m/\+(vmx|svm)/) {
+		    push @{$res->{flag}}, $vmid;
+		}
+	    }
+	}
+    }
+    my $count = scalar(@{$res->{cpu}}) + scalar(@{$res->{flag}});
+    return ($count, $res);
+}
+
 sub check_kvm_nested {
     my $module_sysdir = "/sys/module";
     if (-e "$module_sysdir/kvm_amd") {
@@ -167,7 +195,23 @@ sub check_kvm_nested {
     if (-f "$module_sysdir/nested") {
 	my $val = eval { PVE::Tools::file_read_firstline("$module_sysdir/nested") };
 	if ($val && $val =~ m/Y|1/) {
-	    log_warn("KVM nested parameter set. VMs with vmx/svm flag will not be able to live migrate to PVE 6.");
+	    my ($count, $list) = get_vms_with_vmx();
+	    if (!$count) {
+		log_skip("KVM nested parameter set.\nVMs with cputype host/max " .
+			 "or vmx/svm flag will not be able to live migrate to PVE 6.");
+	    } else {
+		my $warnmsg = "KVM nested parameter set.\n" .
+			      "It will not be possible to live migrate following VMs to PVE6:\n";
+		if (@{$list->{cpu}}) {
+		    $warnmsg .= "VMs with cputype host/max: " . join(',', @{$list->{cpu}}) . "\n";
+		}
+
+		if (@{$list->{flag}}) {
+		    $warnmsg .= "VMs with cpu flag vmx/svm: " . join(',', @{$list->{flag}}) . "\n";
+		}
+
+		log_warn($warnmsg);
+	    }
 	} else {
 	    log_pass("KVM nested parameter not set.")
 	}
