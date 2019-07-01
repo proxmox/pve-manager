@@ -111,7 +111,7 @@ __PACKAGE__->register_method ({
 	my $has_permission = PVE::AccessControl::check_permissions($authuser, "/nodes/$node", 'Sys.Audit');
 
 	my $server_id = PVE::API2Tools::get_hwaddress();
-	my $url = "http://www.proxmox.com/products/proxmox-ve/subscription-service-plans";
+	my $url = "https://www.proxmox.com/products/proxmox-ve/subscription-service-plans";
 
 	my $info = PVE::INotify::read_file('subscription');
 	if (!$info) {
