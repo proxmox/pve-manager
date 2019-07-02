@@ -155,10 +155,11 @@ Ext.define('PVE.node.CephServiceList', {
 	    var win = Ext.create('Ext.window.Window', {
 		title: gettext('Syslog') + ': ' + servicename,
 		modal: true,
+		width: 800,
+		height: 400,
+		layout: 'fit',
 		items: [{
 		    xtype: 'proxmoxLogView',
-		    width: 800,
-		    height: 400,
 		    url: url,
 		    log_select_timespan: 1
 		}]
