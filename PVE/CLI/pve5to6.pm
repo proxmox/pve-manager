@@ -447,18 +447,24 @@ sub check_misc {
     log_warn("Less than 2G free space on root file system.")
 	if defined($root_free) && $root_free->{avail} < 2*1024*1024*1024;
 
+    log_info("Checking for running guests..");
     my $running_guests = 0;
+
     my $vms = eval { PVE::API2::Qemu->vmlist({ node => $nodename }) };
     log_warn("Failed to retrieve information about this node's VMs - $@") if $@;
-    $running_guests += grep { $_->{status} eq 'running' } @$vms
-	if defined($vms);
+    $running_guests += grep { $_->{status} eq 'running' } @$vms if defined($vms);
+
     my $cts = eval { PVE::API2::LXC->vmlist({ node => $nodename }) };
     log_warn("Failed to retrieve information about this node's CTs - $@") if $@;
-    $running_guests += grep { $_->{status} eq 'running' } @$cts
-	if defined($cts);
-    log_warn("$running_guests running guests detected - consider migrating/stopping them.")
-	if $running_guests > 0;
+    $running_guests += grep { $_->{status} eq 'running' } @$cts if defined($cts);
 
+    if ($running_guests > 0) {
+	log_warn("$running_guests running guest(s) detected - consider migrating or stopping them.")
+    } else {
+	log_pass("no running guest detected.")
+    }
+
+    log_info("Checking if we the local nodes address is resolvable and configured..");
     my $host = PVE::INotify::nodename();
     my $local_ip = eval { PVE::Network::get_ip_from_hostname($host) };
     if ($@) {
@@ -472,6 +478,8 @@ sub check_misc {
 	    log_fail("Resolved node IP '$local_ip' not configured or active for '$host'");
 	} elsif ($ip_count > 1) {
 	    log_warn("Resolved node IP '$local_ip' active on multiple ($ip_count) interfaces!");
+	} else {
+	    log_pass("Could resolved local nodename '$host' to active IP '$local_ip'");
 	}
     }
 
