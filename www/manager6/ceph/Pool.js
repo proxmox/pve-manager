@@ -124,10 +124,14 @@ Ext.define('PVE.node.CephPoolList', {
 		    width: 80,
 		    sortable: true,
 		    align: 'right',
-		    renderer: Ext.util.Format.numberRenderer('0.00'),
+		    renderer: function(val) {
+			return Ext.util.Format.percent(val, '0.00');
+		    },
 		    dataIndex: 'percent_used',
 		    summaryType: 'sum',
-		    summaryRenderer: Ext.util.Format.numberRenderer('0.00')
+		    summaryRenderer: function(val) {
+			return Ext.util.Format.percent(val, '0.00');
+		    },
 		},
 		{
 		    header: gettext('Total'),
