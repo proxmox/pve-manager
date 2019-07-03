@@ -309,9 +309,10 @@ __PACKAGE__->register_method ({
 	my $fsid = $monstat->{monmap}->{fsid};
         $fsid = $1 if $fsid =~ m/^([0-9a-f\-]+)$/;
 
+	my $ceph_conf = cfs_read_file('ceph.conf');
 	my $ceph_bootstrap_osd_keyring = PVE::Ceph::Tools::get_config('ceph_bootstrap_osd_keyring');
 
-	if (! -f $ceph_bootstrap_osd_keyring) {
+	if (! -f $ceph_bootstrap_osd_keyring && $ceph_conf->{global}->{auth_client_required} eq 'cephx') {
 	    my $bindata = $rados->mon_command({ prefix => 'auth get', entity => 'client.bootstrap-osd', format => 'plain' });
 	    file_set_contents($ceph_bootstrap_osd_keyring, $bindata);
 	};
