@@ -302,6 +302,8 @@ __PACKAGE__->register_method ({
 	    PVE::Ceph::Tools::check_ceph_installed('ceph_bin');
 	}
 
+	my $auth = $param->{disable_cephx} ? 'none' : 'cephx';
+
 	# simply load old config if it already exists
 	PVE::Cluster::cfs_lock_file('ceph.conf', undef, sub {
 	    my $cfg = cfs_read_file('ceph.conf');
@@ -313,8 +315,6 @@ __PACKAGE__->register_method ({
 
 		UUID::generate($uuid);
 		UUID::unparse($uuid, $fsid);
-
-		my $auth = $param->{disable_cephx} ? 'none' : 'cephx';
 
 		$cfg->{global} = {
 		    'fsid' => $fsid,
