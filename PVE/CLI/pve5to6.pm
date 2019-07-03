@@ -234,7 +234,9 @@ sub check_storage_health {
     foreach my $storeid (keys %$info) {
 	my $d = $info->{$storeid};
 	if ($d->{enabled}) {
-	    if ($d->{active}) {
+	    if ($d->{type} eq 'sheepdog') {
+		log_fail("storage '$storeid' of type 'sheepdog' is enabled - Sheepdog is no longer supported in PVE 6.x!")
+	    } elsif ($d->{active}) {
 		log_pass("storage '$storeid' enabled and active.");
 	    } else {
 		log_warn("storage '$storeid' enabled but not active!");
