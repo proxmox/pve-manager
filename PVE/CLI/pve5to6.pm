@@ -467,12 +467,13 @@ sub check_misc {
 	log_pass("no running guest detected.")
     }
 
-    log_info("Checking if we the local nodes address is resolvable and configured..");
+    log_info("Checking if the local node's hostname is resolvable..");
     my $host = PVE::INotify::nodename();
     my $local_ip = eval { PVE::Network::get_ip_from_hostname($host) };
     if ($@) {
 	log_warn("Failed to resolve hostname '$host' to IP - $@");
     } else {
+	log_info("Checking if resolved IP is configured on local node..");
 	my $cidr = Net::IP::ip_is_ipv6($local_ip) ? "$local_ip/128" : "$local_ip/32";
 	my $configured_ips = PVE::Network::get_local_ip_from_cidr($cidr);
 	my $ip_count = scalar(@$configured_ips);
@@ -482,7 +483,7 @@ sub check_misc {
 	} elsif ($ip_count > 1) {
 	    log_warn("Resolved node IP '$local_ip' active on multiple ($ip_count) interfaces!");
 	} else {
-	    log_pass("Could resolved local nodename '$host' to active IP '$local_ip'");
+	    log_pass("Resolved node IP '$local_ip' configured and active on single interface.");
 	}
     }
 
