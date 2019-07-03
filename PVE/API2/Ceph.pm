@@ -331,7 +331,9 @@ __PACKAGE__->register_method ({
 		#'osd pool default pgp num' => $pg_num,
 	    }
 
-	    $cfg->{client}->{keyring} = '/etc/pve/priv/$cluster.$name.keyring';
+	    if ($auth eq 'cephx') {
+		$cfg->{client}->{keyring} = '/etc/pve/priv/$cluster.$name.keyring';
+	    }
 
 	    if ($param->{pg_bits}) {
 		$cfg->{global}->{'osd pg bits'} = $param->{pg_bits};
@@ -349,7 +351,9 @@ __PACKAGE__->register_method ({
 
 	    cfs_write_file('ceph.conf', $cfg);
 
-	    PVE::Ceph::Tools::get_or_create_admin_keyring();
+	    if ($auth eq 'cephx') {
+		PVE::Ceph::Tools::get_or_create_admin_keyring();
+	    }
 	    PVE::Ceph::Tools::setup_pve_symlinks();
 	});
 
