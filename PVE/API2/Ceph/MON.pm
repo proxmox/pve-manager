@@ -265,6 +265,12 @@ __PACKAGE__->register_method ({
 
 		# update ceph.conf
 		my $monhost = $cfg->{global}->{mon_host} // "";
+		# add all known monitor ips to mon_host if it does not exist
+		if (!defined($cfg->{global}->{mon_host})) {
+		    for my $mon (sort keys %$monhash) {
+			$monhost .= " " . $monhash->{$mon}->{addr};
+		    }
+		}
 		$monhost .= " $ip";
 		$cfg->{global}->{mon_host} = $monhost;
 		if (!defined($cfg->{global}->{public_network})) {
