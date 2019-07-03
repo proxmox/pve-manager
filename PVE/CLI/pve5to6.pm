@@ -361,7 +361,8 @@ sub check_ceph {
 	} elsif ($ceph_health eq 'HEALTH_WARN' && $noout && (keys %{$ceph_status->{health}->{checks}} == 1)) {
 		log_pass("Ceph health reported as 'HEALTH_WARN' with a single failing check and 'noout' flag set.");
 	} else {
-		log_warn("Ceph health reported as '$ceph_health'");
+		log_warn("Ceph health reported as '$ceph_health'.\n      Use the PVE ".
+		  "dashboard or 'ceph -s' to determine the specific issues and try to resolve them.");
 	}
     }
 
