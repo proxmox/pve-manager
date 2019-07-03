@@ -16,6 +16,7 @@ use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::Tools qw(run_command file_set_contents);
 use PVE::CephConfig;
+use PVE::API2::Ceph::MGR;
 
 use base qw(PVE::RESTHandler);
 
@@ -282,6 +283,14 @@ __PACKAGE__->register_method ({
 		PVE::Ceph::Services::broadcast_ceph_services();
 	    });
 	    die $@ if $@;
+	    # automatically create manager after the first monitor is created
+	    if (scalar(keys %$monhash) eq 0) {
+
+		PVE::API2::Ceph::MGR->createmgr({
+		    node => $param->{node},
+		    id => $param->{node}
+		})
+	    }
 	};
 
 	return $rpcenv->fork_worker('cephcreatemon', $monsection, $authuser, $worker);
