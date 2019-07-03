@@ -98,7 +98,7 @@ sub get_services_info {
 	if ($section =~ m/^$type\.(\S+)$/) {
 	    my $id = $1;
 	    my $service = $result->{$id};
-	    my $addr = $d->{"$type addr"} // $d->{"${type}_addr"} // $d->{host};
+	    my $addr = $d->{"${type}_addr"} // $d->{public_addr} // $d->{host};
 	    $service->{name} //= $id;
 	    $service->{addr} //= $addr;
 	    $service->{state} //= 'unknown';
