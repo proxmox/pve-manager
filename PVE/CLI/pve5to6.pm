@@ -349,8 +349,8 @@ sub check_ceph {
     log_info("getting Ceph status/health information..");
     my $ceph_status = eval { PVE::API2::Ceph->status({ node => $nodename }); };
     my $osd_flags = eval { PVE::API2::Ceph->get_flags({ node => $nodename }); };
-    my $noout;
-    $noout = $osd_flags =~ m/noout/ if $osd_flags;
+    my $noout_wanted = 1;
+    my $noout = $osd_flags =~ m/noout/ if $osd_flags;
 
     if (!$ceph_status || !$ceph_status->{health}) {
 	log_fail("unable to determine Ceph status!");
@@ -377,11 +377,6 @@ sub check_ceph {
 		log_pass("all PGs have been scrubbed at least once while running Ceph Luminous.");
 	    } else {
 		log_fail("missing 'recovery_deletes' and/or 'purged_snapdirs' flag, scrub of all PGs required before upgrading to Nautilus!");
-	    }
-	    if ($noout) {
-		log_pass("noout flag set to prevent rebalancing during cluster-wide upgrades.");
-	    }  else {
-		log_warn("noout flag not set - recommended to prevent rebalancing during upgrades.");
 	    }
 	}
     };
@@ -418,9 +413,22 @@ sub check_ceph {
 	    log_warn("unable to determine overall Ceph daemon versions!");
 	} elsif (keys %$overall_versions == 1) {
 	    log_pass("single running overall version detected for all Ceph daemon types.");
+	    if ((keys %$overall_versions)[0] =~ /^ceph version 14\./) {
+		$noout_wanted = 0;
+	    }
 	} else {
 	    log_warn("overall version mismatch detected, check 'ceph versions' output for details!");
 	}
+    }
+
+    if ($noout) {
+	if ($noout_wanted) {
+	    log_pass("noout flag set to prevent rebalancing during cluster-wide upgrades.");
+	} else {
+	    log_warn("noout flag set, Ceph cluster upgrade seems finished.");
+	}
+    } elsif ($noout_wanted) {
+	log_warn("noout flag not set - recommended to prevent rebalancing during upgrades.");
     }
 
     my $local_ceph_ver = PVE::Ceph::Tools::get_local_version(1);
