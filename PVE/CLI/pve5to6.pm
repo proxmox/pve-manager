@@ -467,7 +467,7 @@ sub check_misc {
 	log_pass("no running guest detected.")
     }
 
-    log_info("Checking if the local node's hostname is resolvable..");
+    log_info("Checking if the local node's hostname '$nodename' is resolvable..");
     my $local_ip = eval { PVE::Network::get_ip_from_hostname($nodename) };
     if ($@) {
 	log_warn("Failed to resolve hostname '$nodename' to IP - $@");
