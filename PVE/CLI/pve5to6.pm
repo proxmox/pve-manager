@@ -256,9 +256,9 @@ sub check_cluster_corosync {
     }
 
     if (PVE::Cluster::check_cfs_quorum(1)) {
-	log_pass("Cluster is quorate.");
+	log_pass("Cluster Filesystem is quorate.");
     } else {
-	log_fail("Cluster lost quorum!");
+	log_fail("Cluster Filesystem readonly, lost quorum?!");
     }
 
     my $conf = PVE::Cluster::cfs_read_file('corosync.conf');
