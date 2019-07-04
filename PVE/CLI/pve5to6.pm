@@ -433,7 +433,7 @@ sub check_ceph {
 
     log_info("checking Ceph config..");
     my $conf = PVE::Cluster::cfs_read_file('ceph.conf');
-    if (defined($conf)) {
+    if (%$conf) {
 	my $global = $conf->{global};
 
 	my $global_monhost = $global->{mon_host} // $global->{"mon host"} // $global->{"mon-host"};
@@ -454,7 +454,7 @@ sub check_ceph {
 	    log_pass("ms_bind_ipv6 not enabled");
 	}
     } else {
-	log_skip("no ceph config found");
+	log_warn("Empty ceph config found");
     }
 
     my $local_ceph_ver = PVE::Ceph::Tools::get_local_version(1);
