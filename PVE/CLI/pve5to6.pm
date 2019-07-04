@@ -263,11 +263,38 @@ sub check_cluster_corosync {
 
     my $conf = PVE::Cluster::cfs_read_file('corosync.conf');
     my $conf_nodelist = PVE::Corosync::nodelist($conf);
+    my $node_votes = 0;
 
     if (!defined($conf_nodelist)) {
 	log_fail("unable to retrieve nodelist from corosync.conf");
-    } elsif (grep { $conf_nodelist->{$_}->{quorum_votes} != 1 } keys %$conf_nodelist) {
-	log_warn("non-default quorum_votes distribution detected!");
+    } else {
+	if (grep { $conf_nodelist->{$_}->{quorum_votes} != 1 } keys %$conf_nodelist) {
+	    log_warn("non-default quorum_votes distribution detected!");
+	}
+	map { $node_votes += $conf_nodelist->{$_}->{quorum_votes} // 0 } keys %$conf_nodelist;
+    }
+
+    my ($expected_votes, $total_votes);
+    my $filter_output = sub {
+	my $line = shift;
+	($expected_votes) = $line =~ /^Expected votes:\s*(\d+)\s*$/
+	    if !defined($expected_votes);
+	($total_votes) = $line =~ /^Total votes:\s*(\d+)\s*$/
+	    if !defined($total_votes);
+    };
+    eval {
+	PVE::Tools::run_command(['corosync-quorumtool', '-s'],
+	                        outfunc => $filter_output,
+	                        noerr => 1);
+    };
+
+    if (!defined($expected_votes)) {
+	log_fail("unable to get expected number of votes, setting to 0.");
+	$expected_votes = 0;
+    }
+    if (!defined($total_votes)) {
+	log_fail("unable to get expected number of votes, setting to 0.");
+	$expected_votes = 0;
     }
 
     my $cfs_nodelist = PVE::Cluster::get_clinfo()->{nodelist};
@@ -276,10 +303,25 @@ sub check_cluster_corosync {
 	log_fail("$offline_nodes nodes are offline!");
     }
 
+    my $qdevice_votes = 0;
+    if (my $qdevice_setup = $conf->{main}->{quorum}->{device}) {
+	$qdevice_votes = $qdevice_setup->{votes} // 1;
+    }
+
+    log_info("configured votes - nodes: $node_votes");
+    log_info("configured votes - qdevice: $qdevice_votes");
+    log_info("current expected votes: $expected_votes");
+    log_info("current total votes: $total_votes");
+
+    log_warn("expected votes set to non-standard value '$expected_votes'.")
+	if $expected_votes != $node_votes + $qdevice_votes;
+    log_warn("total votes < expected votes: $total_votes/$expected_votes!")
+	if $total_votes < $expected_votes;
+
     my $conf_nodelist_count = scalar(keys %$conf_nodelist);
     my $cfs_nodelist_count = scalar(keys %$cfs_nodelist);
     log_warn("cluster consists of less than three nodes!")
-	if $conf_nodelist_count < 3;
+	if $conf_nodelist_count < 3 && $conf_nodelist_count + $qdevice_votes < 3;
 
     log_fail("corosync.conf ($conf_nodelist_count) and pmxcfs ($cfs_nodelist_count) don't agree about size of nodelist.")
 	if $conf_nodelist_count != $cfs_nodelist_count;
