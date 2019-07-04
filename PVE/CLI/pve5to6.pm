@@ -81,6 +81,39 @@ sub print_header {
     $print_header_first = 0;
 }
 
+my $get_systemd_unit_state = sub {
+    my ($unit) = @_;
+
+    my $state;
+    my $filter_output = sub {
+	$state = shift;
+	chomp $state;
+    };
+    eval {
+	run_command(['systemctl', 'is-enabled', "$unit"], outfunc => $filter_output, noerr => 1);
+	return if !defined($state);
+	run_command(['systemctl', 'is-active', "$unit"], outfunc => $filter_output, noerr => 1);
+    };
+
+    return $state // 'unknown';
+};
+my $log_systemd_unit_state = sub {
+    my ($unit, $no_fail_on_inactive) = @_;
+
+    my $log_method = \&log_warn;
+
+    my $state = $get_systemd_unit_state->($unit);
+    if ($state eq 'active') {
+	$log_method = \&log_pass;
+    } elsif ($state eq 'inactive') {
+	$log_method = $no_fail_on_inactive ? \&log_warn : \&log_fail;
+    } elsif ($state eq 'failed') {
+	$log_method = \&log_fail;
+    }
+
+    $log_method->("systemd unit '$unit' is in state '$state'");
+};
+
 my $versions;
 my $get_pkg = sub {
     my ($pkg) = @_;
@@ -254,6 +287,9 @@ sub check_cluster_corosync {
 	log_skip("standalone node.");
 	return;
     }
+
+    $log_systemd_unit_state->('pve-cluster.service');
+    $log_systemd_unit_state->('corosync.service');
 
     if (PVE::Cluster::check_cfs_quorum(1)) {
 	log_pass("Cluster Filesystem is quorate.");
