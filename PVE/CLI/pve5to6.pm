@@ -639,8 +639,11 @@ __PACKAGE__->register_method ({
 	print colored("WARNINGS: $counters->{warn}\n", 'yellow');
 	print colored("FAILURES: $counters->{fail}\n", 'red');
 
-	print colored("\nATTENTION: Please check the output for detailed information!\n", 'red')
-	    if ($counters->{warn} > 0 || $counters->{fail} > 0);
+	if ($counters->{warn} > 0 || $counters->{fail} > 0) {
+	    my $color = $counters->{fail} > 0 ? 'red' : 'yellow';
+	    print colored("\nATTENTION: Please check the output for detailed information!\n", $color);
+	    print colored("Try to solve the problems one at a time and then run this checklist tool again.\n", $color);
+	}
 
 	return undef;
     }});
