@@ -294,7 +294,7 @@ sub check_cluster_corosync {
     }
     if (!defined($total_votes)) {
 	log_fail("unable to get expected number of votes, setting to 0.");
-	$expected_votes = 0;
+	$total_votes = 0;
     }
 
     my $cfs_nodelist = PVE::Cluster::get_clinfo()->{nodelist};
