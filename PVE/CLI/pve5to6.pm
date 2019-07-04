@@ -454,6 +454,13 @@ sub check_ceph {
 	} else {
 	    log_pass("ms_bind_ipv6 not enabled");
 	}
+
+	if (defined($global->{keyring})) {
+	    log_warn("[global] config section contains 'keyring' option, which will prevent services from starting with Nautilus.\n Move 'keyring' option to [client] section instead.");
+	} else {
+	    log_pass("no 'keyring' option in [global] section found.");
+	}
+
     } else {
 	log_warn("Empty ceph config found");
     }
