@@ -394,7 +394,7 @@ sub check_cluster_corosync {
     }
 
     print "\n";
-    log_info("run 'pvecm status' to get detailled cluster status..");
+    log_info("run 'pvecm status' to get detailed cluster status..");
 
     print_header("CHECKING INSTALLED COROSYNC VERSION");
     if (defined(my $corosync = $get_pkg->('corosync'))) {
