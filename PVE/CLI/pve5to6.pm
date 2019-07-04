@@ -435,8 +435,10 @@ sub check_ceph {
     my $conf = PVE::Cluster::cfs_read_file('ceph.conf');
     if (defined($conf)) {
 	my $global = $conf->{global};
-	if (!defined($global->{mon_host}) && !defined($global->{"mon host"})) {
-	    log_warn("No mon_host entry found in ceph config.\n  It is recommended to add mon_host with all monitor addresses(without ports) to the global section.");
+
+	my $global_monhost = $global->{mon_host} // $global->{"mon host"} // $global->{"mon-host"};
+	if (!defined($global_monhost)) {
+	    log_warn("No 'mon_host' entry found in ceph config.\n  It's recommended to add mon_host with all monitor addresses (without ports) to the global section.");
 	} else {
 	    log_pass("Found mon_host entry.");
 	}
