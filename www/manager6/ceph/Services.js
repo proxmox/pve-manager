@@ -75,26 +75,29 @@ Ext.define('PVE.ceph.Services', {
 			return;
 		    }
 
-		    var match = value.detail[0].message.match(/mon.([a-zA-Z0-9\-\.]+)/);
-		    if (!match) {
-			return;
-		    }
-		    var monid = match[1];
+		    var i;
+		    for (i = 0; i < value.detail.length; i++) {
+			var match = value.detail[i].message.match(/mon.([a-zA-Z0-9\-\.]+)/);
+			if (!match) {
+			    continue;
+			}
+			var monid = match[1];
 
-		    if (!monmessages[monid]) {
-			monmessages[monid] = {
-			    worstSeverity: healthstates.HEALTH_OK,
-			    messages: []
-			};
-		    }
+			if (!monmessages[monid]) {
+			    monmessages[monid] = {
+				worstSeverity: healthstates.HEALTH_OK,
+				messages: []
+			    };
+			}
 
 
-		    monmessages[monid].messages.push(
-			PVE.Utils.get_ceph_icon_html(value.severity, true) +
-			Ext.Array.reduce(value.detail, reduceFn, '')
-		    );
-		    if (healthstates[value.severity] < monmessages[monid].worstSeverity) {
-			monmessages[monid].worstSeverity = healthstates[value.severity];
+			monmessages[monid].messages.push(
+							 PVE.Utils.get_ceph_icon_html(value.severity, true) +
+							 Ext.Array.reduce(value.detail, reduceFn, '')
+			);
+			if (healthstates[value.severity] < monmessages[monid].worstSeverity) {
+			    monmessages[monid].worstSeverity = healthstates[value.severity];
+			}
 		    }
 		});
 	    }
