@@ -15,7 +15,7 @@ use PVE::INotify;
 use PVE::JSONSchema;
 use PVE::RPCEnvironment;
 use PVE::Storage;
-use PVE::Tools;
+use PVE::Tools qw(run_command);
 use PVE::QemuServer;
 
 use Term::ANSIColor;
@@ -283,9 +283,7 @@ sub check_cluster_corosync {
 	    if !defined($total_votes);
     };
     eval {
-	PVE::Tools::run_command(['corosync-quorumtool', '-s'],
-	                        outfunc => $filter_output,
-	                        noerr => 1);
+	run_command(['corosync-quorumtool', '-s'], outfunc => $filter_output, noerr => 1);
     };
 
     if (!defined($expected_votes)) {
