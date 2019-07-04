@@ -1,3 +1,25 @@
+pve-manager (6.0-1) pve; urgency=medium
+
+  * gui: ceph pools: fix pool percentage used display
+
+  * further improve pve5to6 upgrade checklist helper
+
+  * gui: ceph: fix syslog resize
+
+  * ceph: osd: use get-or-create to create a bootstrap-osd key on demand
+
+  * ceph: init: only handle keyring if auth is cephx
+
+  * ceph: mon create: add known monitor ips to mon_host if it is empty
+
+  * ceph: automatically create manager after the first monitor
+
+  * pveceph install: set repo URL to download.proxmox.com nautilus repo
+
+  * ceph: do not distribute obsolete ceph.service anymore
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 04 Jul 2019 15:53:18 +0200
+
 pve-manager (6.0-0+4) pve; urgency=medium
 
   * ui: switch over default console viewer to xterm.js
