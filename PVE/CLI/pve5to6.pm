@@ -560,6 +560,11 @@ sub check_misc {
 	log_skip("No SSH config file found.");
     }
 
+    log_info("Checking common daemon services..");
+    $log_systemd_unit_state->('pveproxy.service');
+    $log_systemd_unit_state->('pvedaemon.service');
+    $log_systemd_unit_state->('pvestatd.service');
+
     my $root_free = PVE::Tools::df('/', 10);
     log_warn("Less than 2G free space on root file system.")
 	if defined($root_free) && $root_free->{avail} < 2*1024*1024*1024;
