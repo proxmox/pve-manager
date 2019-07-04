@@ -100,8 +100,6 @@ __PACKAGE__->register_method ({
 	my $repolist;
 	if ($cephver eq 'nautilus') {
 		$repolist = "deb http://download.proxmox.com/debian/ceph-nautilus buster main\n";
-		# FIXME: remove non-public testing repo
-		$repolist = "deb http://repo.proxmox.com/staging/ceph-nautilus buster ceph-14.0\n";
 	} elsif ($cephver eq 'luminous') {
 		$repolist = "deb http://download.proxmox.com/debian/ceph-luminous buster main\n";
 	} else {
