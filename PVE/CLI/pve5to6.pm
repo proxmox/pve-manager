@@ -359,12 +359,8 @@ sub check_cluster_corosync {
 	log_fail("Corosync encryption cipher set to '3des', no longer supported in Corosync 3.x!");
     }
 
-    my $prefix_info = sub { my $line = shift; log_info("$line"); };
-    eval {
-	print "\n";
-	log_info("Printing detailed cluster status..");
-	PVE::Tools::run_command(['corosync-quorumtool', '-siH'], outfunc => $prefix_info, errfunc => $prefix_info);
-    };
+    print "\n";
+    log_info("run 'pvecm status' to get detailled cluster status..");
 
     print_header("CHECKING INSTALLED COROSYNC VERSION");
     if (defined(my $corosync = $get_pkg->('corosync'))) {
