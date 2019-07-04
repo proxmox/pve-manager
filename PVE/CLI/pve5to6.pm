@@ -431,6 +431,19 @@ sub check_ceph {
 	log_warn("noout flag not set - recommended to prevent rebalancing during upgrades.");
     }
 
+    log_info("checking Ceph config..");
+    my $conf = PVE::Cluster::cfs_read_file('ceph.conf');
+    if (defined($conf)) {
+	my $global = $conf->{global};
+	if (!defined($global->{mon_host}) && !defined($global->{"mon host"})) {
+	    log_warn("No mon_host entry found in ceph config.\n  It is recommended to add mon_host with all monitor addresses(without ports) to the global section.");
+	} else {
+	    log_pass("Found mon_host entry.");
+	}
+    } else {
+	log_skip("no ceph config found");
+    }
+
     my $local_ceph_ver = PVE::Ceph::Tools::get_local_version(1);
     if (defined($local_ceph_ver)) {
 	if ($local_ceph_ver == 14) {
