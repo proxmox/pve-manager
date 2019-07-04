@@ -423,12 +423,12 @@ sub check_ceph {
 
     if ($noout) {
 	if ($noout_wanted) {
-	    log_pass("noout flag set to prevent rebalancing during cluster-wide upgrades.");
+	    log_pass("'noout' flag set to prevent rebalancing during cluster-wide upgrades.");
 	} else {
-	    log_warn("noout flag set, Ceph cluster upgrade seems finished.");
+	    log_warn("'noout' flag set, Ceph cluster upgrade seems finished.");
 	}
     } elsif ($noout_wanted) {
-	log_warn("noout flag not set - recommended to prevent rebalancing during upgrades.");
+	log_warn("'noout' flag not set - recommended to prevent rebalancing during upgrades.");
     }
 
     log_info("checking Ceph config..");
@@ -440,19 +440,19 @@ sub check_ceph {
 	if (!defined($global_monhost)) {
 	    log_warn("No 'mon_host' entry found in ceph config.\n  It's recommended to add mon_host with all monitor addresses (without ports) to the global section.");
 	} else {
-	    log_pass("Found mon_host entry.");
+	    log_pass("Found 'mon_host' entry.");
 	}
 
 	my $ipv6 = $global->{ms_bind_ipv6} // $global->{"ms bind ipv6"} // $global->{"ms-bind-ipv6"};
 	if ($ipv6) {
 	    my $ipv4 = $global->{ms_bind_ipv4} // $global->{"ms bind ipv4"} // $global->{"ms-bind-ipv4"};
 	    if ($ipv6 eq 'true' && (!defined($ipv4) || $ipv4 ne 'false')) {
-		log_warn("ms_bind_ipv6 is enabled but ms_bind_ipv4 is not disabled.\n  Make sure to disable ms_bind_ipv4 for ipv6 only clusters, or add an ipv4 network to public/cluster network.");
+		log_warn("'ms_bind_ipv6' is enabled but 'ms_bind_ipv4' is not disabled.\n  Make sure to disable 'ms_bind_ipv4' for ipv6 only clusters, or add an ipv4 network to public/cluster network.");
 	    } else {
-		log_pass("ms_bind_ipv6 is enabled and ms_bind_ipv4 disabled");
+		log_pass("'ms_bind_ipv6' is enabled and 'ms_bind_ipv4' disabled");
 	    }
 	} else {
-	    log_pass("ms_bind_ipv6 not enabled");
+	    log_pass("'ms_bind_ipv6' not enabled");
 	}
 
 	if (defined($global->{keyring})) {
