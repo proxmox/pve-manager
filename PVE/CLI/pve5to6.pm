@@ -443,8 +443,9 @@ sub check_ceph {
 	    log_pass("Found mon_host entry.");
 	}
 
-	if (my $ipv6 = ($global->{ms_bind_ipv6} // $global->{"ms bind ipv6"})) {
-	    my $ipv4 = $global->{ms_bind_ipv4} // $global->{"ms bind ipv4"};
+	my $ipv6 = $global->{ms_bind_ipv6} // $global->{"ms bind ipv6"} // $global->{"ms-bind-ipv6"};
+	if ($ipv6) {
+	    my $ipv4 = $global->{ms_bind_ipv4} // $global->{"ms bind ipv4"} // $global->{"ms-bind-ipv4"};
 	    if ($ipv6 eq 'true' && (!defined($ipv4) || $ipv4 ne 'false')) {
 		log_warn("ms_bind_ipv6 is enabled but ms_bind_ipv4 is not disabled.\n  Make sure to disable ms_bind_ipv4 for ipv6 only clusters, or add an ipv4 network to public/cluster network.");
 	    } else {
