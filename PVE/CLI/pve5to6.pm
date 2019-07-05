@@ -370,8 +370,17 @@ sub check_cluster_corosync {
 	my $verify_ring_ip = sub {
 	    my $key = shift;
 	    my $ring = $entry->{$key};
-	    if (defined($ring) && !PVE::JSONSchema::pve_verify_ip($ring, 1)) {
-		log_fail("$key '$ring' of node '$cs_node' is not an IP address, consider replacing it with the currently resolved IP address.");
+	    if (defined($ring)) {
+		my ($resolved_ip, undef) = PVE::Corosync::resolve_hostname_like_corosync($ring, $conf);
+		if (defined($resolved_ip)) {
+		    if ($resolved_ip ne $ring) {
+			log_warn("$key '$ring' of node '$cs_node' resolves to '$resolved_ip'.\n Consider replacing it with the currently resolved IP address.");
+		    } else {
+			log_pass("$key is configured to use IP address '$ring'");
+		    }
+		} else {
+		    log_fail("unable to resolve $key '$ring' of node '$cs_node' to an IP address according to Corosync's resolve strategy - cluster will fail with Corosync 3.x/kronosnet!");
+		}
 	    }
 	};
 	$verify_ring_ip->('ring0_addr');
