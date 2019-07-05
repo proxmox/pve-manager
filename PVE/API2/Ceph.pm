@@ -195,6 +195,50 @@ __PACKAGE__->register_method ({
 
     }});
 
+__PACKAGE__->register_method ({
+    name => 'configdb',
+    path => 'configdb',
+    method => 'GET',
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
+    },
+    description => "Get Ceph configuration database.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => 'object',
+	    properties => {
+		section => { type => "string", },
+		name => { type => "string", },
+		value => { type => "string", },
+		level => { type => "string", },
+		'can_update_at_runtime' => { type => "boolean", },
+		mask => { type => "string" },
+	    },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::Ceph::Tools::check_ceph_inited();
+
+	my $rados = PVE::RADOS->new();
+	my $res = $rados->mon_command( { prefix => 'config dump', format => 'json' });
+	foreach my $entry (@$res) {
+	    $entry->{can_update_at_runtime} = $entry->{can_update_at_runtime}? 1 : 0; # JSON::true/false -> 1/0
+	}
+
+	return $res;
+    }});
+
 my $add_storage = sub {
     my ($pool, $storeid) = @_;
 
