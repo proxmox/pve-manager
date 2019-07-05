@@ -362,9 +362,9 @@ sub check_cluster_corosync {
 
     foreach my $cs_node (keys %$conf_nodelist) {
 	my $entry = $conf_nodelist->{$cs_node};
-	log_fail("No name entry for node '$cs_node' in corosync.conf.")
+	log_fail("$cs_node: no name entry in corosync.conf.")
 	    if !defined($entry->{name});
-	log_fail("No nodeid configured for node '$cs_node' in corosync.conf.")
+	log_fail("$cs_node: no nodeid configured in corosync.conf.")
 	    if !defined($entry->{nodeid});
 
 	my $verify_ring_ip = sub {
@@ -374,12 +374,12 @@ sub check_cluster_corosync {
 		my ($resolved_ip, undef) = PVE::Corosync::resolve_hostname_like_corosync($ring, $conf);
 		if (defined($resolved_ip)) {
 		    if ($resolved_ip ne $ring) {
-			log_warn("$key '$ring' of node '$cs_node' resolves to '$resolved_ip'.\n Consider replacing it with the currently resolved IP address.");
+			log_warn("$cs_node: $key '$ring' resolves to '$resolved_ip'.\n Consider replacing it with the currently resolved IP address.");
 		    } else {
-			log_pass("$key is configured to use IP address '$ring'");
+			log_pass("$cs_node: $key is configured to use IP address '$ring'");
 		    }
 		} else {
-		    log_fail("unable to resolve $key '$ring' of node '$cs_node' to an IP address according to Corosync's resolve strategy - cluster will fail with Corosync 3.x/kronosnet!");
+		    log_fail("$cs_node: unable to resolve $key '$ring' to an IP address according to Corosync's resolve strategy - cluster will potentially fail with Corosync 3.x/kronosnet!");
 		}
 	    }
 	};
@@ -391,7 +391,7 @@ sub check_cluster_corosync {
 
     my $transport = $totem->{transport};
     if (defined($transport)) {
-	log_fail("Corosync transport expliclitly set to '$transport' instead of implicit default!");
+	log_fail("Corosync transport explicitly set to '$transport' instead of implicit default!");
     }
 
     if ((!defined($totem->{secauth}) || $totem->{secauth} ne 'on') && (!defined($totem->{crypto_cipher}) || $totem->{crypto_cipher} eq 'none')) {
