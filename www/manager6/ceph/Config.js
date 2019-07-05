@@ -23,15 +23,17 @@ Ext.define('PVE.node.CephConfigDb', {
 	{
 	    dataIndex: 'section',
 	    text: 'WHO',
-	    width: 80,
+	    width: 100,
 	},
 	{
 	    dataIndex: 'mask',
 	    text: 'MASK',
+	    hidden: true,
 	    width: 80,
 	},
 	{
 	    dataIndex: 'level',
+	    hidden: true,
 	    text: 'LEVEL',
 	},
 	{
@@ -46,9 +48,10 @@ Ext.define('PVE.node.CephConfigDb', {
 	},
 	{
 	    dataIndex: 'can_update_at_runtime',
-	    text: 'RO',
-	    width: 50,
-	    renderer: Proxmox.Utils.format_neg_boolean
+	    text: 'Runtime Updatable',
+	    hidden: true,
+	    width: 80,
+	    renderer: Proxmox.Utils.format_boolean
 	},
     ],
 
