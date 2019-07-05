@@ -29,6 +29,9 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 
 	var confid = me.confid || "mp"+values.mpid;
 	values.file = me.down('field[name=file]').getValue();
+	if (values.mountoptions) {
+	    values.mountoptions = values.mountoptions.join(';');
+	}
 
 	if (me.unused) {
 	    confid = "mp"+values.mpid;
@@ -52,6 +55,9 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	var me = this;
 	var vm = this.getViewModel();
 	vm.set('mptype', mp.type);
+	if (mp.mountoptions) {
+	    mp.mountoptions = mp.mountoptions.split(';');
+	}
 	me.setValues(mp);
     },
 
@@ -272,6 +278,21 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    bind: {
 		disabled: '{isBind}'
 	    },
+	    allowBlank: true
+	},
+	{
+	    xtype: 'proxmoxKVComboBox',
+	    name: 'mountoptions',
+	    fieldLabel: gettext('Mount options'),
+	    deleteEmpty: false,
+	    comboItems: [
+		['noatime', 'noatime'],
+		['nodev', 'nodev'],
+		['noexec', 'noexec'],
+		['nosuid', 'nosuid']
+	    ],
+	    multiSelect: true,
+	    value: [],
 	    allowBlank: true
 	},
 	{
