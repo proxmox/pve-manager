@@ -260,7 +260,22 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		disabled: '{isRoot}'
 	    },
 	    fieldLabel: gettext('Read-only')
-	}
+	},
+	{
+	    xtype: 'proxmoxKVComboBox',
+	    name: 'mountoptions',
+	    fieldLabel: gettext('Mount options'),
+	    deleteEmpty: false,
+	    comboItems: [
+		['noatime', 'noatime'],
+		['nodev', 'nodev'],
+		['noexec', 'noexec'],
+		['nosuid', 'nosuid']
+	    ],
+	    multiSelect: true,
+	    value: [],
+	    allowBlank: true
+	},
     ],
 
     advancedColumn2: [
@@ -278,21 +293,6 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    bind: {
 		disabled: '{isBind}'
 	    },
-	    allowBlank: true
-	},
-	{
-	    xtype: 'proxmoxKVComboBox',
-	    name: 'mountoptions',
-	    fieldLabel: gettext('Mount options'),
-	    deleteEmpty: false,
-	    comboItems: [
-		['noatime', 'noatime'],
-		['nodev', 'nodev'],
-		['noexec', 'noexec'],
-		['nosuid', 'nosuid']
-	    ],
-	    multiSelect: true,
-	    value: [],
 	    allowBlank: true
 	},
 	{
