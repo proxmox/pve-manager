@@ -1,3 +1,79 @@
+Ext.define('PVE.node.CephConfigDb', {
+    extend: 'Ext.grid.Panel',
+    alias: 'widget.pveNodeCephConfigDb',
+
+    border: false,
+    load: function() {
+	var me = this;
+
+	Proxmox.Utils.API2Request({
+	    url: me.url,
+	    waitMsgTarget: me,
+	    failure: function(response, opts) {
+		console.log(response);
+	    },
+	    success: function(response, opts) {
+		var data = response.result.data;
+		me.getStore().setData(data);
+	    }
+	});
+    },
+
+    columns: [
+	{
+	    dataIndex: 'section',
+	    text: 'WHO',
+	    width: 80,
+	},
+	{
+	    dataIndex: 'mask',
+	    text: 'MASK',
+	    width: 80,
+	},
+	{
+	    dataIndex: 'level',
+	    text: 'LEVEL',
+	},
+	{
+	    dataIndex: 'name',
+	    flex: 1,
+	    text: 'OPTION',
+	},
+	{
+	    dataIndex: 'value',
+	    flex: 1,
+	    text: 'VALUE',
+	},
+	{
+	    dataIndex: 'can_update_at_runtime',
+	    text: 'RO',
+	    width: 50,
+	    renderer: Proxmox.Utils.format_neg_boolean
+	},
+    ],
+
+    initComponent: function() {
+        var me = this;
+
+	var nodename = me.pveSelNode.data.node;
+	if (!nodename) {
+	    throw "no node name specified";
+	}
+
+	Ext.apply(me, {
+	    url: '/nodes/' + nodename + '/ceph/configdb',
+	    listeners: {
+		activate: function() {
+		    me.load();
+		}
+	    }
+	});
+
+	me.callParent();
+
+	me.load();
+    }
+});
 Ext.define('PVE.node.CephConfig', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveNodeCephConfig',
@@ -72,6 +148,14 @@ Ext.define('PVE.node.CephConfigCrush', {
 	    region: 'east',
 	    split: true,
 	    width: '50%'
+	},
+	{
+	    title: gettext('Configuration Database'),
+	    xtype: 'pveNodeCephConfigDb',
+	    region: 'south',
+	    split: true,
+	    weight: -30,
+	    height: '50%'
     }],
 
     initComponent: function() {
