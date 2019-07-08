@@ -15,9 +15,10 @@ use PVE::INotify;
 use PVE::JSONSchema;
 use PVE::RPCEnvironment;
 use PVE::Storage;
-use PVE::Tools qw(run_command);
+use PVE::Tools qw(run_command $IPV4RE $IPV6RE);
 use PVE::QemuServer;
 
+use Socket qw(AF_INET AF_INET6 inet_ntop);
 use Term::ANSIColor;
 
 use PVE::CLIHandler;
@@ -134,6 +135,69 @@ my $get_pkg = sub {
     } else {
 	return $pkgs->[0];
     }
+};
+
+# taken from pve-cluster 6.0-4
+my $resolve_hostname_like_corosync = sub {
+    my ($hostname, $corosync_conf) = @_;
+
+    my $corosync_strategy = $corosync_conf->{main}->{totem}->{ip_version};
+    $corosync_strategy = lc ($corosync_strategy // "ipv6-4");
+
+    my $match_ip_and_version = sub {
+	my ($addr) = @_;
+
+	return undef if !defined($addr);
+
+	if ($addr =~ m/^$IPV4RE$/) {
+	    return ($addr, 4);
+	} elsif ($addr =~ m/^$IPV6RE$/) {
+	    return ($addr, 6);
+	}
+
+	return undef;
+    };
+
+    my ($resolved_ip, $ip_version) = $match_ip_and_version->($hostname);
+
+    return ($resolved_ip, $ip_version) if defined($resolved_ip);
+
+    my $resolved_ip4;
+    my $resolved_ip6;
+
+    my @resolved_raw;
+    eval { @resolved_raw = PVE::Tools::getaddrinfo_all($hostname); };
+
+    return undef if ($@ || !@resolved_raw);
+
+    foreach my $socket_info (@resolved_raw) {
+	next if !$socket_info->{addr};
+
+	my ($family, undef, $host) = PVE::Tools::unpack_sockaddr_in46($socket_info->{addr});
+
+	if ($family == AF_INET && !defined($resolved_ip4)) {
+	    $resolved_ip4 = inet_ntop(AF_INET, $host);
+	} elsif ($family == AF_INET6 && !defined($resolved_ip6)) {
+	    $resolved_ip6 = inet_ntop(AF_INET6, $host);
+	}
+
+	last if defined($resolved_ip4) && defined($resolved_ip6);
+    }
+
+    # corosync_strategy specifies the order in which IP addresses are resolved
+    # by corosync. We need to match that order, to ensure we create firewall
+    # rules for the correct address family.
+    if ($corosync_strategy eq "ipv4") {
+	$resolved_ip = $resolved_ip4;
+    } elsif ($corosync_strategy eq "ipv6") {
+	$resolved_ip = $resolved_ip6;
+    } elsif ($corosync_strategy eq "ipv6-4") {
+	$resolved_ip = $resolved_ip6 // $resolved_ip4;
+    } elsif ($corosync_strategy eq "ipv4-6") {
+	$resolved_ip = $resolved_ip4 // $resolved_ip6;
+    }
+
+    return $match_ip_and_version->($resolved_ip);
 };
 
 sub check_pve_packages {
