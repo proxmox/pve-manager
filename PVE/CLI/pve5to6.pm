@@ -430,6 +430,8 @@ sub check_cluster_corosync {
 	    if !defined($entry->{name});
 	log_fail("$cs_node: no nodeid configured in corosync.conf.")
 	    if !defined($entry->{nodeid});
+	log_fail("$cs_node: neither ring0_addr nor ring1_addr defined in corosync.conf.")
+	    if !defined($entry->{ring0_addr}) && !defined($entry->{ring1_addr});
 
 	my $verify_ring_ip = sub {
 	    my $key = shift;
