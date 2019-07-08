@@ -146,7 +146,10 @@ Ext.define('PVE.ha.ResourcesView', {
 		    width: 100,
 		    sortable: true,
 		    renderer: function(v) {
-			return v || '1';
+			if (v === undefined) {
+			    return '1';
+			}
+			return v;
 		    },
 		    dataIndex: 'max_restart'
 		},
@@ -155,7 +158,10 @@ Ext.define('PVE.ha.ResourcesView', {
 		    width: 100,
 		    sortable: true,
 		    renderer: function(v) {
-			return v || '1';
+			if (v === undefined) {
+			    return '1';
+			}
+			return v;
 		    },
 		    dataIndex: 'max_relocate'
 		},
