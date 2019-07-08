@@ -145,24 +145,14 @@ Ext.define('PVE.ha.ResourcesView', {
 		    header: gettext('Max. Restart'),
 		    width: 100,
 		    sortable: true,
-		    renderer: function(v) {
-			if (v === undefined) {
-			    return '1';
-			}
-			return v;
-		    },
+		    renderer: (v) => v === undefined ? '1' : v,
 		    dataIndex: 'max_restart'
 		},
 		{
 		    header: gettext('Max. Relocate'),
 		    width: 100,
 		    sortable: true,
-		    renderer: function(v) {
-			if (v === undefined) {
-			    return '1';
-			}
-			return v;
-		    },
+		    renderer: (v) => v === undefined ? '1' : v,
 		    dataIndex: 'max_relocate'
 		},
 		{
