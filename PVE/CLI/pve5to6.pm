@@ -459,15 +459,23 @@ sub check_cluster_corosync {
     my $totem = $conf->{main}->{totem};
     my $transport = $totem->{transport};
     if (defined($transport)) {
-	log_fail("Corosync transport explicitly set to '$transport' instead of implicit default!");
+	if ($transport ne 'knet') {
+	    log_fail("Corosync transport explicitly set to '$transport' instead of implicit default!");
+	} else {
+	    log_pass("Corosync transport set to '$transport'.");
+	}
+    } else {
+	log_pass("Corosync transport set to implicit default.");
     }
 
     if ((!defined($totem->{secauth}) || $totem->{secauth} ne 'on') && (!defined($totem->{crypto_cipher}) || $totem->{crypto_cipher} eq 'none')) {
 	log_fail("Corosync authentication/encryption is not explicitly enabled (secauth / crypto_cipher / crypto_hash)!");
-    }
-
-    if (defined($totem->{crypto_cipher}) && $totem->{crypto_cipher} eq '3des') {
-	log_fail("Corosync encryption cipher set to '3des', no longer supported in Corosync 3.x!");
+    } else {
+	if (defined($totem->{crypto_cipher}) && $totem->{crypto_cipher} eq '3des') {
+	    log_fail("Corosync encryption cipher set to '3des', no longer supported in Corosync 3.x!");
+	} else {
+	    log_pass("Corosync encryption and authentication enabled.");
+	}
     }
 
     print "\n";
