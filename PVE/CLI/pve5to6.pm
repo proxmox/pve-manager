@@ -365,6 +365,7 @@ sub check_cluster_corosync {
     my $conf_nodelist = PVE::Corosync::nodelist($conf);
     my $node_votes = 0;
 
+    print "\nAnalzying quorum settings and state..\n";
     if (!defined($conf_nodelist)) {
 	log_fail("unable to retrieve nodelist from corosync.conf");
     } else {
@@ -424,6 +425,7 @@ sub check_cluster_corosync {
     log_fail("corosync.conf ($conf_nodelist_count) and pmxcfs ($cfs_nodelist_count) don't agree about size of nodelist.")
 	if $conf_nodelist_count != $cfs_nodelist_count;
 
+    print "\nChecking nodelist entries..\n";
     foreach my $cs_node (keys %$conf_nodelist) {
 	my $entry = $conf_nodelist->{$cs_node};
 	log_fail("$cs_node: no name entry in corosync.conf.")
@@ -453,8 +455,8 @@ sub check_cluster_corosync {
 	$verify_ring_ip->('ring1_addr');
     }
 
+    print "\nChecking totem settings..\n";
     my $totem = $conf->{main}->{totem};
-
     my $transport = $totem->{transport};
     if (defined($transport)) {
 	log_fail("Corosync transport explicitly set to '$transport' instead of implicit default!");
