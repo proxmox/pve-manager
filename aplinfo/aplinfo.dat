@@ -4,6 +4,19 @@ Description: News displayed on the admin interface
   For more information please visit our homepage at
   <a href='http://www.proxmox.com' target='_blank'>www.proxmox.com</a>
 
+Package: alpine-3.10-default
+Version: 20190626
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.10-default_20190626_amd64.tar.xz
+md5sum: 2dc812e0236bc8c75f123f392828cd70
+sha512sum: dc1d1ba73047c95747180d80fdf43aff424808f0263bee9df88f48a815cba1a437c5a7e66e1f405711b801a087d41c0867828e8b0e26783c2b978c60fb947e3d
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.10 (20190626)
+
 Package: alpine-3.7-default
 Version: 20180913
 Type: lxc
@@ -44,15 +57,15 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.9 (20190224)
 
 Package: archlinux-base
-Version: 20190124-1
+Version: 20190426-1
 Type: lxc
 OS: archlinux
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/archlinux-base_20190124-1_amd64.tar.gz
-md5sum: 3517545b8c7fb728d98cd53b8ca44c22
-sha512sum: 723a0d8748c43b10a61d752b849da5f4bea4316c7be9d4ae7c6d9d263fb72df94d14642344812fd5ac5f535d112a367cba6eac0dbd023cd66eb4541b3a94a4b0
+Location: system/archlinux-base_20190426-1_amd64.tar.gz
+md5sum: 526f742c0a1bb528c2a02385f03e132b
+sha512sum: 32d8a2ffbf83abc3af6f28f767232a282fe6f6d37e067d62899949fa98f6df7ed64fbfdca0ae9a8331c8a757881ec7c0a898bb31ab419a62c72b39f61e5a5dd6
 Infopage: https://www.archlinux.org
 Description: ArchLinux base image.
  ArchLinux template with the 'base' group and the 'openssh' package installed.
@@ -82,6 +95,20 @@ md5sum: 4fc5ee8f05a1d55f0330c34524c765a0
 sha512sum: 7d1a171889aefdca51b29caa3c680afcb7492576a19a031314717334b136950d48313164e260c0c66b4b2fd288a7d4707abcba8cc1e487ef0854c7e511dc8fd2
 Infopage: https://linuxcontainers.org
 Description: LXC default image for centos 7 (20171212)
+
+Package: debian-10.0-standard
+Version: 10.0-1
+Type: lxc
+OS: debian-10.0
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/debian-10.0-standard_10.0-1_amd64.tar.gz
+md5sum: 5e66d2da77a034a8b6a60909a6d91c80
+sha512sum: f19d5594fccc0514b46e83ef31202e083021a0ba412f740fd6790fa88b9a83704d83342cab8286fcdd0342a704291bf243d7223d780f18828d1ec86bceab843f
+Infopage: http://pve.proxmox.com/wiki/Debian_10.0_Standard
+Description: Debian 10.0 (standard)
+ A small Debian Buster system including all standard packages.
 
 Package: debian-8.0-standard
 Version: 8.11-1
@@ -190,20 +217,6 @@ Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
 Description: Proxmox Mailgateway 5.2
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
-Package: ubuntu-14.04-standard
-Version: 14.04.5-1
-Type: lxc
-OS: ubuntu-14.04
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-14.04-standard_14.04.5-1_amd64.tar.gz
-md5sum: 4b7fdad70cddef708f08d9dbe0e3bb84
-sha512sum: b3b5f39c8c22db980848197249fa67daa8f66e4c0dd3e51612e29b3090be9dd8585d567eaaae3e98e046a72efbfee625d9356c86500c053d0d71ce1b3800c743
-Infopage: http://pve.proxmox.com/wiki/Ubuntu_Trusty_Standard
-Description: Ubuntu Trusty (standard)
- A small Ubuntu Trusty system including all standard packages.
-
 Package: ubuntu-16.04-standard
 Version: 16.04.5-1
 Type: lxc
@@ -245,3 +258,17 @@ sha512sum: c44b96a72516c752faf78addaf70553de77c5bb743c7972b6d764b0d34166a8657597
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Cosmic_Standard
 Description: Ubuntu Cosmic (standard)
  A small Ubuntu Cosmic system including all standard packages.
+
+Package: ubuntu-19.04-standard
+Version: 19.04-1
+Type: lxc
+OS: ubuntu-19.04
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-19.04-standard_19.04-1_amd64.tar.gz
+md5sum: e2ba891cf556a4cfd3c0a2e6496fecb5
+sha512sum: 2fc68d2174c27f72f3c77ad01d8772a325410a114f5e95ae3ba9e1c79f045acf39c2774c38f92b8f2195ed7b2c44aaada0c559deace83d4911d0ae056ec584d3
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Disco_Standard
+Description: Ubuntu Disco (standard)
+ A small Ubuntu Disco system including all standard packages.
