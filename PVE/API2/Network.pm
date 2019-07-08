@@ -435,6 +435,13 @@ __PACKAGE__->register_method({
 		delete $ifaces->{$iface}->{$k};
 		@$families = grep(!/^inet$/, @$families) if $k eq 'address';
 		@$families = grep(!/^inet6$/, @$families) if $k eq 'address6';
+		if ($k eq 'cidr') {
+		    delete $ifaces->{$iface}->{netmask};
+		    delete $ifaces->{$iface}->{address};
+		} elsif ($k eq 'cidr6') {
+		    delete $ifaces->{$iface}->{netmask6};
+		    delete $ifaces->{$iface}->{address6};
+		}
 	    }
 
 	    $map_cidr_to_address_netmask->($param);
