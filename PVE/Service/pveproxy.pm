@@ -220,6 +220,11 @@ sub get_index {
 	$wtversion = $1;
     };
 
+    my $debug = $server->{debug};
+    if (exists $args->{debug}) {
+	$debug = !defined($args->{debug}) || $args->{debug};
+    }
+
     my $vars = {
 	lang => $lang,
 	langfile => $langfile,
@@ -227,7 +232,7 @@ sub get_index {
 	token => $token,
 	console => $args->{console},
 	nodename => $nodename,
-	debug => $server->{debug},
+	debug => $debug,
 	version => "$version",
 	wtversion => $wtversion,
     };
