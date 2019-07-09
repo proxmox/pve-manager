@@ -1,3 +1,13 @@
+pve-manager (5.4-11) unstable; urgency=medium
+
+  * fix #2267: delete address(6) and netmas(6) with cidr(6)
+
+  * gui: HA: show 0 for max_relocate/restart correctly in overview
+
+  * further improve PVE 5 to 6 checklist script
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 09 Jul 2019 09:52:19 +0200
+
 pve-manager (5.4-10) unstable; urgency=medium
 
   * further improve PVE 5 to 6 checklist script
