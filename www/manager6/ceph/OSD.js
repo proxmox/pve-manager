@@ -443,32 +443,32 @@ Ext.define('PVE.node.CephOsdTree', {
 	    text: 'Type',
 	    dataIndex: 'type',
 	    align: 'right',
-	    width: 60
+	    width: 75
 	},
 	{
 	    text: gettext("Class"),
 	    dataIndex: 'device_class',
 	    align: 'right',
-	    width: 40
+	    width: 75
 	},
 	{
 	    text: "OSD Type",
 	    dataIndex: 'osdtype',
 	    align: 'right',
-	    width: 40
+	    width: 100
 	},
 	{
 	    text: "Bluestore Device",
 	    dataIndex: 'blfsdev',
 	    align: 'right',
-	    width: 40,
+	    width: 75,
 	    hidden: true
 	},
 	{
 	    text: "DB Device",
 	    dataIndex: 'dbdev',
 	    align: 'right',
-	    width: 40,
+	    width: 75,
 	    hidden: true
 	},
 	{
@@ -476,7 +476,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	    dataIndex: 'waldev',
 	    align: 'right',
 	    renderer: 'render_wal',
-	    width: 40,
+	    width: 75,
 	    hidden: true
 	},
 	{
@@ -484,11 +484,12 @@ Ext.define('PVE.node.CephOsdTree', {
 	    dataIndex: 'status',
 	    align: 'right',
 	    renderer: 'render_status',
-	    width: 80
+	    width: 120
 	},
 	{
 	    text: gettext('Version'),
 	    dataIndex: 'version',
+	    align: 'right',
 	    renderer: 'render_version'
 	},
 	{
@@ -496,7 +497,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	    dataIndex: 'crush_weight',
 	    align: 'right',
 	    renderer: 'render_osd_val',
-	    width: 80
+	    width: 90
 	},
 	{
 	    text: 'reweight',
@@ -537,14 +538,14 @@ Ext.define('PVE.node.CephOsdTree', {
 		    dataIndex: 'apply_latency_ms',
 		    align: 'right',
 		    renderer: 'render_osd_val',
-		    width: 60
+		    width: 75
 		},
 		{
 		    text: 'Commit',
 		    dataIndex: 'commit_latency_ms',
 		    align: 'right',
 		    renderer: 'render_osd_val',
-		    width: 60
+		    width: 75
 		}
 	    ]
 	}
@@ -558,6 +559,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		iconCls: 'fa fa-refresh',
 		handler: 'reload'
 	    },
+	    '-',
 	    {
 		text: gettext('Create') + ': OSD',
 		handler: 'create_osd',
