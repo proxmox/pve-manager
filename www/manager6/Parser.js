@@ -74,15 +74,23 @@ Ext.define('PVE.Parser', { statics: {
     },
 
     printPropertyString: function(data, defaultKey) {
-	var stringparts = [];
+	var stringparts = [],
+	    gotDefaultKeyVal = false,
+	    defaultKeyVal;
 
 	Ext.Object.each(data, function(key, value) {
 	    if (defaultKey !== undefined && key === defaultKey) {
-		stringparts.unshift(value);
+		gotDefaultKeyVal = true;
+		defaultKeyVal = value;
 	    } else {
 		stringparts.push(key + '=' + value);
 	    }
 	});
+
+	stringparts = stringparts.sort();
+	if (gotDefaultKeyVal) {
+	    stringparts.unshift(defaultKeyVal);
+	}
 
 	return stringparts.join(',');
     },
