@@ -94,12 +94,11 @@ Ext.define('PVE.dc.OptionView', {
 		fieldLabel: gettext('Type'),
 		value: 'secure',
 		submitValue: true,
-		vtype: 'IPCIDRAddress'
 	    }, {
 		xtype: 'proxmoxNetworkSelector',
 		name: 'network',
 		fieldLabel: gettext('Network'),
-		value: '',
+		value: null,
 		emptyText: Proxmox.Utils.defaultText,
 		autoSelect: false,
 		skipEmptyText: true
@@ -126,7 +125,7 @@ Ext.define('PVE.dc.OptionView', {
 	    }]
 	});
 
-	// TODO: bwlimits, migration net, u2f?
+	// TODO: bwlimits, u2f?
 
 	me.selModel = Ext.create('Ext.selection.RowModel', {});
 
