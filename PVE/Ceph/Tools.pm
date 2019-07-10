@@ -19,7 +19,7 @@ my $ceph_cfgpath = "$ceph_cfgdir/$ccname.conf";
 
 my $pve_mon_key_path = "/etc/pve/priv/$ccname.mon.keyring";
 my $pve_ckeyring_path = "/etc/pve/priv/$ccname.client.admin.keyring";
-my $ckeyring_path = "/etc/ceph/ceph.client.admin.keyrign";
+my $ckeyring_path = "/etc/ceph/ceph.client.admin.keyring";
 my $ceph_bootstrap_osd_keyring = "/var/lib/ceph/bootstrap-osd/$ccname.keyring";
 my $ceph_bootstrap_mds_keyring = "/var/lib/ceph/bootstrap-mds/$ccname.keyring";
 my $ceph_mds_data_dir = '/var/lib/ceph/mds';
