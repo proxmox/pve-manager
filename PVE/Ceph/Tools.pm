@@ -244,7 +244,7 @@ sub get_or_create_admin_keyring {
 	# we do not want to overwrite it
 	if (! -f $ckeyring_path) {
 	    run_command("cp $pve_ckeyring_path $ckeyring_path");
-	    run_command("chown ceph:ceph /etc/ceph/ceph.client.admin.keyring");
+	    run_command("chown ceph:ceph $ckeyring_path");
 	}
     }
     return $pve_ckeyring_path;
