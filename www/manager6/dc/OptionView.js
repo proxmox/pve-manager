@@ -96,12 +96,13 @@ Ext.define('PVE.dc.OptionView', {
 		submitValue: true,
 		vtype: 'IPCIDRAddress'
 	    }, {
-		xtype: 'textfield',
+		xtype: 'proxmoxNetworkSelector',
 		name: 'network',
 		fieldLabel: gettext('Network'),
-		vtype: 'IPCIDRAddress',
+		value: '',
 		emptyText: Proxmox.Utils.defaultText,
-		value: ''
+		autoSelect: false,
+		skipEmptyText: true
 	    }]
 	});
 	me.add_inputpanel_row('ha', gettext('HA Settings'), {
