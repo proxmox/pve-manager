@@ -650,4 +650,49 @@ __PACKAGE__->register_method ({
 	return undef;
     }});
 
+__PACKAGE__->register_method ({
+    name => 'scrub',
+    path => '{osdid}/scrub',
+    method => 'POST',
+    description => "Instruct the OSD to scrub.",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    osdid => {
+		description => 'OSD ID',
+		type => 'integer',
+	    },
+	    deep => {
+		description => 'If set, instructs a deep scrub instead of a normal one.',
+		type => 'boolean',
+		optional => 1,
+		default => 0,
+	    },
+	},
+    },
+    returns => { type => "null" },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::Ceph::Tools::check_ceph_inited();
+
+	my $osdid = $param->{osdid};
+	my $deep = $param->{deep} // 0;
+
+	my $rados = PVE::RADOS->new();
+
+	my $osdstat = &$get_osd_status($rados, $osdid); # osd exists?
+	my $prefix = $deep ? 'osd deep-scrub' : 'osd scrub';
+
+	$rados->mon_command({ prefix => $prefix, who => $osdid });
+
+	return undef;
+    }});
+
 1;
