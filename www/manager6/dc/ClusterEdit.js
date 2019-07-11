@@ -15,8 +15,9 @@ Ext.define('PVE.ClusterCreateWindow', {
 
     onlineHelp: 'pvecm_create_cluster',
 
-    items: [
-	{
+    items: {
+	xtype: 'inputpanel',
+	items: [{
 	    xtype: 'textfield',
 	    fieldLabel: gettext('Cluster Name'),
 	    allowBlank: false,
@@ -24,16 +25,25 @@ Ext.define('PVE.ClusterCreateWindow', {
 	},
 	{
 	    xtype: 'proxmoxNetworkSelector',
-	    fieldLabel: gettext('Ring 0 Address'),
+	    fieldLabel: Ext.String.format(gettext('Link {0}'), 0),
 	    emptyText: gettext("Optional, defaults to IP resolved by node's hostname"),
 	    name: 'link0',
 	    autoSelect: false,
 	    valueField: 'address',
 	    displayField: 'address',
 	    skipEmptyText: true
-	}
-	// TODO: for advanced options: all links!
-    ]
+	}],
+	advancedItems: [{
+	    xtype: 'proxmoxNetworkSelector',
+	    fieldLabel: Ext.String.format(gettext('Link {0}'), 1),
+	    emptyText: gettext("Optional second link for redundancy"),
+	    name: 'link1',
+	    autoSelect: false,
+	    valueField: 'address',
+	    displayField: 'address',
+	    skipEmptyText: true
+	}]
+    }
 });
 
 Ext.define('PVE.ClusterInfoWindow', {
