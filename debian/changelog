@@ -1,3 +1,49 @@
+pve-manager (6.0-2) pve; urgency=medium
+
+  * ceph: add api call for getting the ceph config database
+
+  * gui: ceph: show config database under the file config
+
+  * fix #1451: allow some extra mount options for container
+
+  * further improve 5to6 checklist script
+
+  * fix #2267: delete address(6) and netmas(6) with cidr(6)~
+
+  * gui: show a 0 value for HA resource grid max_relocate/restart
+    columns correctly
+
+  * pveproxy: allow to request debug sources directly over GET
+    parameter
+
+  * ui: dc/options: use proxmoxNetworkSelector for network
+
+  * ui/Parser: printPropertyString: sort non-defaultKey parts for
+    stability
+
+  * api/ceph: add osd scrub api call
+
+  * gui: ceph osd: refactor osd panel and add scrub button~
+
+  * ui: ceph OSD: tweak default column width a bit~
+
+  * ui: ceph/osd: only show at max 5 digits after decimal point for
+    weight
+
+  * ui: ceph/osd: merge apply + commit latency columns~
+
+  * ui: remove notify calls on viewmodel
+
+  * ui: ceph/pool: rework status grid a bit
+
+  * ui: ceph/service list: re-do column definitions with flexible widths
+
+  * ui: ceph/pool: enable add_storages by default and add tooltip~
+
+  * ui: dc/cluster: allow to create cluster with second link
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 11 Jul 2019 20:41:51 +0200
+
 pve-manager (6.0-1) pve; urgency=medium
 
   * gui: ceph pools: fix pool percentage used display
