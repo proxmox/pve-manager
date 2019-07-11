@@ -78,50 +78,57 @@ Ext.define('PVE.node.CephPoolList', {
     alias: 'widget.pveNodeCephPoolList',
 
     onlineHelp: 'chapter_pveceph',
+
     stateful: true,
     stateId: 'grid-ceph-pools',
     bufferedRenderer: false,
+
     features: [ { ftype: 'summary'} ],
+
     columns: [
 	{
 	    header: gettext('Name'),
-	    width: 100,
+	    width: 120,
 	    sortable: true,
 	    dataIndex: 'pool_name'
 	},
 	{
 	    header: gettext('Size') + '/min',
-	    width: 80,
-	    sortable: false,
+	    width: 100,
+	    align: 'right',
 	    renderer: function(v, meta, rec) {
 		return v + '/' + rec.data.min_size;
 	    },
 	    dataIndex: 'size'
 	},
 	{
-	    header: 'pg_num',
-	    width: 100,
-	    sortable: false,
+	    text: '# Placement Groups', // pg_num',
+	    width: 180,
+	    align: 'right',
 	    dataIndex: 'pg_num'
 	},
 	{
-	    header: 'rule',
-	    width: 50,
-	    sortable: false,
-	    dataIndex: 'crush_rule'
-	},
-	{
-	    header: 'rule_name',
-	    width: 50,
-	    sortable: false,
-	    dataIndex: 'crush_rule_name'
-	},
-	{
-	    header: gettext('Used'),
+	    text: 'CRUSH Rule',
 	    columns: [
 		{
-		    header: '%',
-		    width: 80,
+		    text: 'ID',
+		    align: 'right',
+		    width: 50,
+		    dataIndex: 'crush_rule'
+		},
+		{
+		    text: gettext('Name'),
+		    width: 150,
+		    dataIndex: 'crush_rule_name',
+		},
+	    ]
+	},
+	{
+	    text: gettext('Used'),
+	    columns: [
+		{
+		    text: '%',
+		    width: 100,
 		    sortable: true,
 		    align: 'right',
 		    renderer: function(val) {
@@ -134,7 +141,7 @@ Ext.define('PVE.node.CephPoolList', {
 		    },
 		},
 		{
-		    header: gettext('Total'),
+		    text: gettext('Total'),
 		    width: 100,
 		    sortable: true,
 		    renderer: PVE.Utils.render_size,
