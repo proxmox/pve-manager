@@ -641,7 +641,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	    },
 	    '-',
 	    {
-		text: gettext('Actions'),
+		text: gettext('More'),
 		iconCls: 'fa fa-bars',
 		disabled: true,
 		bind: {
