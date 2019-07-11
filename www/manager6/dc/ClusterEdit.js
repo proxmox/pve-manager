@@ -331,7 +331,8 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		valueField: 'address',
 		displayField: 'address',
 		bind: {
-		    disabled: '{!info.ring1Possible}'
+		    disabled: '{!info.ring1Possible}',
+		    allowBlank: '{!info.ring1Needed}',
 		},
 		name: 'link1'
 	    }
