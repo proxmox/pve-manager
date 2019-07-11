@@ -66,7 +66,6 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	var vm = me.getViewModel();
 	me.vmconfig = vmconfig;
 	vm.set('unpriv', vmconfig.unprivileged);
-	vm.notify();
 
 	PVE.Utils.forEachMP(function(bus, i) {
 	    var name = "mp" + i.toString();
@@ -81,7 +80,6 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	var me = this;
 	var vm = me.getViewModel();
 	vm.set('node', nodename);
-	vm.notify();
 	me.down('#diskstorage').setNodename(nodename);
     },
 
@@ -108,7 +106,6 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 
 		    var vm = me.getViewModel();
 		    vm.set('type', rec.data.type);
-		    vm.notify();
 		}
 	    }
 	},
@@ -121,7 +118,6 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    vm.set('node', view.nodename);
 	    vm.set('unpriv', view.unprivileged);
 	    vm.set('hideStorSelector', view.unused || !view.isCreate);
-	    vm.notify();
 	}
     },
 

@@ -353,7 +353,6 @@ Ext.define('PVE.node.CephOsdTree', {
 	    vm.set('outOsd', isOsd && !rec.data.in);
 	    vm.set('osdid', isOsd ? rec.data.id : undefined);
 	    vm.set('osdhost', isOsd ? rec.data.host : undefined);
-	    vm.notify();
 	},
 
 	render_status: function(value, metaData, rec) {
