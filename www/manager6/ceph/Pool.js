@@ -50,8 +50,13 @@ Ext.define('PVE.CephCreatePool', {
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
-	    fieldLabel: gettext('Add Storage'),
-	    name: 'add_storages'
+	    fieldLabel: gettext('Add as Storage'),
+	    value: true,
+	    name: 'add_storages',
+	    autoEl: {
+		tag: 'div',
+		 'data-qtip': gettext('Add the new pool to the cluster storage configuration.'),
+	    },
 	}
     ],
     initComponent : function() {
