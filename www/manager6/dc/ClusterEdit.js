@@ -13,6 +13,8 @@ Ext.define('PVE.ClusterCreateWindow', {
     subject: gettext('Cluster'),
     showTaskViewer: true,
 
+    onlineHelp: 'pvecm_create_cluster',
+
     items: [
 	{
 	    xtype: 'textfield',
