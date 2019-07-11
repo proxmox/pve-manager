@@ -95,7 +95,7 @@ __PACKAGE__->register_method ({
 
         die "no tree nodes found\n" if !($res && $res->{nodes});
 
-	my ($osdhash, $flags) = &$get_osd_status($rados);
+	my ($osdhash, $flags) = $get_osd_status->($rados);
 
 	my $osd_usage = $get_osd_usage->($rados);
 
@@ -469,7 +469,7 @@ __PACKAGE__->register_method ({
 
 	my $rados = PVE::RADOS->new();
 	# dies if osdid is unknown
-	my $osdstat = &$get_osd_status($rados, $osdid);
+	my $osdstat = $get_osd_status->($rados, $osdid);
 
 	die "osd is in use (in == 1)\n" if $osdstat->{in};
 	#&$run_ceph_cmd(['osd', 'out', $osdid]);
@@ -602,7 +602,7 @@ __PACKAGE__->register_method ({
 
 	my $rados = PVE::RADOS->new();
 
-	my $osdstat = &$get_osd_status($rados, $osdid); # osd exists?
+	$get_osd_status->($rados, $osdid); # osd exists?
 
 	my $osdsection = "osd.$osdid";
 
@@ -641,7 +641,7 @@ __PACKAGE__->register_method ({
 
 	my $rados = PVE::RADOS->new();
 
-	my $osdstat = &$get_osd_status($rados, $osdid); # osd exists?
+	$get_osd_status->($rados, $osdid); # osd exists?
 
 	my $osdsection = "osd.$osdid";
 
@@ -687,9 +687,9 @@ __PACKAGE__->register_method ({
 
 	my $rados = PVE::RADOS->new();
 
-	my $osdstat = &$get_osd_status($rados, $osdid); # osd exists?
-	my $prefix = $deep ? 'osd deep-scrub' : 'osd scrub';
+	$get_osd_status->($rados, $osdid); # osd exists?
 
+	my $prefix = $deep ? 'osd deep-scrub' : 'osd scrub';
 	$rados->mon_command({ prefix => $prefix, who => $osdid });
 
 	return undef;
