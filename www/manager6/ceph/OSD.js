@@ -408,6 +408,15 @@ Ext.define('PVE.node.CephOsdTree', {
 	    return Ext.util.Format.number(value, '0.00###');
 	},
 
+	render_osd_latency: function(value, metaData, rec) {
+	    if (rec.data.type !== 'osd') {
+		return '';
+	    }
+	    let commit_ms = rec.data.commit_latency_ms,
+	        apply_ms = rec.data.apply_latency_ms;
+	    return apply_ms + ' / ' + commit_ms;
+	},
+
 	render_osd_size: function(value, metaData, rec) {
 	    return this.render_osd_val(PVE.Utils.render_size(value), metaData, rec);
 	},
@@ -533,23 +542,11 @@ Ext.define('PVE.node.CephOsdTree', {
 	    width: 100
 	},
 	{
-	    header: gettext('Latency (ms)'),
-	    columns: [
-		{
-		    text: 'Apply',
-		    dataIndex: 'apply_latency_ms',
-		    align: 'right',
-		    renderer: 'render_osd_val',
-		    width: 75
-		},
-		{
-		    text: 'Commit',
-		    dataIndex: 'commit_latency_ms',
-		    align: 'right',
-		    renderer: 'render_osd_val',
-		    width: 75
-		}
-	    ]
+	    text: 'Apply/Commit<br>Latency (ms)',
+	    dataIndex: 'apply_latency_ms',
+	    align: 'right',
+	    renderer: 'render_osd_latency',
+	    width: 120
 	}
     ],
 
