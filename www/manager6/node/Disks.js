@@ -76,13 +76,7 @@ Ext.define('PVE.node.DiskList', {
 	    header: 'GPT',
 	    width: 60,
 	    align: 'right',
-	    renderer: function(value) {
-		if (value) {
-		    return Proxmox.Utils.yesText;
-		} else {
-		    return Proxmox.Utils.noText;
-		}
-	    },
+	    renderer: Proxmox.Utils.format_boolean,
 	    dataIndex: 'gpt'
 	},
 	{
