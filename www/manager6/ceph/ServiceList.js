@@ -261,7 +261,7 @@ Ext.define('PVE.node.CephServiceList', {
     columns: [
 	{
 	    header: gettext('Name'),
-	    width: 100,
+	    flex: 1,
 	    sortable: true,
 	    renderer: function(v) {
 		return this.type + '.' + v;
@@ -270,7 +270,7 @@ Ext.define('PVE.node.CephServiceList', {
 	},
 	{
 	    header: gettext('Host'),
-	    width: 100,
+	    flex: 1,
 	    sortable: true,
 	    renderer: function(v) {
 		return v || Proxmox.Utils.unknownText;
@@ -279,13 +279,13 @@ Ext.define('PVE.node.CephServiceList', {
 	},
 	{
 	    header: gettext('Status'),
-	    width: 70,
+	    flex: 1,
 	    sortable: false,
 	    dataIndex: 'state'
 	},
 	{
 	    header: gettext('Address'),
-	    flex: 1,
+	    flex: 3,
 	    sortable: true,
 	    renderer: function(v) {
 		return v || Proxmox.Utils.unknownText;
@@ -294,7 +294,7 @@ Ext.define('PVE.node.CephServiceList', {
 	},
 	{
 	    header: gettext('Version'),
-	    flex: 1,
+	    flex: 3,
 	    sortable: true,
 	    dataIndex: 'version'
 	}
