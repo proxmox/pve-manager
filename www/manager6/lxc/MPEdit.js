@@ -58,6 +58,14 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	if (mp.mountoptions) {
 	    mp.mountoptions = mp.mountoptions.split(';');
 	}
+
+	if (this.confid === 'rootfs') {
+	    var field = me.down('field[name=mountoptions]');
+	    var forbidden = ['nodev', 'noexec'];
+	    var filtered = field.comboItems.filter(e => !forbidden.includes(e[0]));
+	    field.setComboItems(filtered);
+	}
+
 	me.setValues(mp);
     },
 
