@@ -1,13 +1,16 @@
 Ext.define('PVE.node.DiskList', {
     extend: 'Ext.grid.GridPanel',
     alias: 'widget.pveNodeDiskList',
+
     emptyText: gettext('No Disks found'),
+
     stateful: true,
     stateId: 'grid-node-disks',
+
     columns: [
 	{
 	    header: gettext('Device'),
-	    width: 100,
+	    width: 150,
 	    sortable: true,
 	    dataIndex: 'devpath'
 	},
@@ -30,7 +33,7 @@ Ext.define('PVE.node.DiskList', {
 	},
 	{
 	    header: gettext('Usage'),
-	    width: 80,
+	    width: 150,
 	    sortable: false,
 	    renderer: function(v, metaData, rec) {
 		if (rec) {
@@ -83,6 +86,7 @@ Ext.define('PVE.node.DiskList', {
 	    header: gettext('Vendor'),
 	    width: 100,
 	    sortable: true,
+	    hidden: true,
 	    renderer: Ext.String.htmlEncode,
 	    dataIndex: 'vendor'
 	},
@@ -109,8 +113,9 @@ Ext.define('PVE.node.DiskList', {
 	},
 	{
 	    header: 'Wearout',
-	    width: 100,
+	    width: 90,
 	    sortable: true,
+	    align: 'right',
 	    dataIndex: 'wearout',
 	    renderer: function(value) {
 		if (Ext.isNumeric(value)) {
