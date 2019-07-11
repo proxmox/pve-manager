@@ -401,6 +401,12 @@ Ext.define('PVE.node.CephOsdTree', {
 	render_osd_val: function(value, metaData, rec) {
 	    return (rec.data.type === 'osd') ? value : '';
 	},
+	render_osd_weight: function(value, metaData, rec) {
+	    if (rec.data.type !== 'osd') {
+		return '';
+	    }
+	    return Ext.util.Format.number(value, '0.00###');
+	},
 
 	render_osd_size: function(value, metaData, rec) {
 	    return this.render_osd_val(PVE.Utils.render_size(value), metaData, rec);
@@ -496,14 +502,14 @@ Ext.define('PVE.node.CephOsdTree', {
 	    text: 'weight',
 	    dataIndex: 'crush_weight',
 	    align: 'right',
-	    renderer: 'render_osd_val',
+	    renderer: 'render_osd_weight',
 	    width: 90
 	},
 	{
 	    text: 'reweight',
 	    dataIndex: 'reweight',
 	    align: 'right',
-	    renderer: 'render_osd_val',
+	    renderer: 'render_osd_weight',
 	    width: 90
 	},
 	{
