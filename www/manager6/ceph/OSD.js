@@ -448,6 +448,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	{
 	    text: 'Type',
 	    dataIndex: 'type',
+	    hidden: true,
 	    align: 'right',
 	    width: 75
 	},
