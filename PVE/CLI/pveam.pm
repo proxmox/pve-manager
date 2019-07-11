@@ -60,7 +60,7 @@ __PACKAGE__->register_method ({
 	    section => {
 		type => 'string',
 		description => "Restrict list to specified section.",
-		enum => ['system', 'turnkeylinux'],
+		enum => ['system', 'mail', 'turnkeylinux'],
 		optional => 1,
 	    },
 	}
