@@ -3,20 +3,10 @@ Ext.define('PVE.node.CephConfigDb', {
     alias: 'widget.pveNodeCephConfigDb',
 
     border: false,
-    load: function() {
-	var me = this;
-
-	Proxmox.Utils.API2Request({
-	    url: me.url,
-	    waitMsgTarget: me,
-	    failure: function(response, opts) {
-		console.log(response);
-	    },
-	    success: function(response, opts) {
-		var data = response.result.data;
-		me.getStore().setData(data);
-	    }
-	});
+    store: {
+	proxy: {
+	    type: 'proxmox'
+	}
     },
 
     columns: [
@@ -63,18 +53,12 @@ Ext.define('PVE.node.CephConfigDb', {
 	    throw "no node name specified";
 	}
 
-	Ext.apply(me, {
-	    url: '/nodes/' + nodename + '/ceph/configdb',
-	    listeners: {
-		activate: function() {
-		    me.load();
-		}
-	    }
-	});
+	me.store.proxy.url = '/api2/json/nodes/' + nodename + '/ceph/configdb';
 
 	me.callParent();
 
-	me.load();
+	Proxmox.Utils.monStoreErrors(me, me.getStore());
+	me.getStore().load();
     }
 });
 Ext.define('PVE.node.CephConfig', {
