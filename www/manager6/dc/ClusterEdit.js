@@ -312,7 +312,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	column2: [
 	    {
 		xtype: 'proxmoxNetworkSelector',
-		fieldLabel: gettext('Corosync Ring 0'),
+		fieldLabel: Ext.String.format(gettext('Link {0}'), 0),
 		bind: {
 		    emptyText: '{ring0EmptyText}',
 		    allowBlank: '{!info.ring0Needed}'
@@ -325,7 +325,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    },
 	    {
 		xtype: 'proxmoxNetworkSelector',
-		fieldLabel: gettext('Corosync Ring 1'),
+		fieldLabel: Ext.String.format(gettext('Link {0}'), 1),
 		skipEmptyText: true,
 		autoSelect: false,
 		valueField: 'address',
