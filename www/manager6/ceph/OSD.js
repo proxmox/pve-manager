@@ -506,11 +506,28 @@ Ext.define('PVE.node.CephOsdTree', {
 	    width: 90
 	},
 	{
-	    text: gettext('Total'),
-	    dataIndex: 'total_space',
-	    align: 'right',
-	    renderer: 'render_osd_size',
-	    width: 100
+	    header: gettext('Used'),
+	    columns: [
+		{
+		    text: '%',
+		    dataIndex: 'percent_used',
+		    align: 'right',
+		    renderer: function(value, metaData, rec) {
+			if (rec.data.type !== 'osd') {
+			    return '';
+			}
+			return Ext.util.Format.number(value, '0.00');
+		    },
+		    width: 80
+		},
+		{
+		    text: gettext('Total'),
+		    dataIndex: 'total_space',
+		    align: 'right',
+		    renderer: 'render_osd_size',
+		    width: 100
+		}
+	    ]
 	},
 	{
 	    header: gettext('Latency (ms)'),
