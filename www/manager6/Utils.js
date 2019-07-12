@@ -1029,9 +1029,10 @@ Ext.define('PVE.Utils', { utilities: {
 		    Ext.Msg.alert('Error', response.htmlStatus);
 		},
 		success: function(response, opts) {
+		    let conf = response.result.data;
 		    var consoles = {
-			spice: !!response.result.data.spice,
-			xtermjs: !!response.result.data.serial,
+			spice: !!conf.spice,
+			xtermjs: !!conf.serial,
 		    };
 		    PVE.Utils.openDefaultConsoleWindow(consoles, 'kvm', vmid, nodename, vmname);
 		}
