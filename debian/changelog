@@ -1,3 +1,14 @@
+pve-manager (6.0-3) pve; urgency=medium
+
+  * pveam available: add 'mail' to sections
+
+  * ui: node/disks: fine tune column width and hide vendor by default
+
+  * ui: container: filter unusable lxc mount options for the special rootfs
+    mountpoint
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 12 Jul 2019 12:30:58 +0200
+
 pve-manager (6.0-2) pve; urgency=medium
 
   * ceph: add api call for getting the ceph config database
