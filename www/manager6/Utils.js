@@ -1027,8 +1027,11 @@ Ext.define('PVE.Utils', { utilities: {
 		    Ext.Msg.alert('Error', response.htmlStatus);
 		},
 		success: function(response, opts) {
-		    var allowSpice = !!response.result.data.spice;
-		    PVE.Utils.openDefaultConsoleWindow(allowSpice, 'kvm', vmid, nodename, vmname);
+		    var consoles = {
+			spice: !!response.result.data.spice,
+			xtermjs: !!response.result.data.serial,
+		    };
+		    PVE.Utils.openDefaultConsoleWindow(consoles, 'kvm', vmid, nodename, vmname);
 		}
 	    });
 	} else if (record.data.type === 'lxc' && !record.data.template) {
