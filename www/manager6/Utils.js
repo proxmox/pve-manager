@@ -946,8 +946,10 @@ Ext.define('PVE.Utils', { utilities: {
 	    allowXtermjs = !!consoles.xtermjs;
 	}
 	var dv = PVE.VersionInfo.console || 'xtermjs';
-	if ((dv === 'vv' && !allowSpice) || (dv === 'xtermjs' && !allowXtermjs)) {
-	    dv = 'html5';
+	if (dv === 'vv' && !allowSpice) {
+	    dv = (allowXtermjs) ? 'xtermjs' : 'html5';
+	} else if (dv === 'xtermjs' && !allowXtermjs) {
+	    dv = (allowSpice) ? 'vv' : 'html5';
 	}
 
 	return dv;
