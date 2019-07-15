@@ -84,7 +84,7 @@ Ext.define('PVE.window.Migrate', {
 
 
 	    view.setTitle(
-		Ext.String.format('{0} {1}{2}', gettext('Migrate'), vm.get(view.vmtype).commonName, view.vmid)
+		Ext.String.format('{0} {1} {2}', gettext('Migrate'), vm.get(view.vmtype).commonName, view.vmid)
 	    );
 	    me.lookup('proxmoxHelpButton').setHelpConfig({
 		onlineHelp: vm.get(view.vmtype).onlineHelp
