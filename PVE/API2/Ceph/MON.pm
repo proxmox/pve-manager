@@ -137,9 +137,9 @@ __PACKAGE__->register_method ({
 		next if !defined($d->{name});
 		$monhash->{$d->{name}}->{rank} = $d->{rank};
 		$monhash->{$d->{name}}->{addr} = $d->{addr};
-		$monhash->{$d->{name}}->{state} = 'running';
 		if (grep { $_ eq $d->{rank} } @{$monstat->{quorum}}) {
 		    $monhash->{$d->{name}}->{quorum} = 1;
+		    $monhash->{$d->{name}}->{state} = 'running';
 		}
 	    }
 
