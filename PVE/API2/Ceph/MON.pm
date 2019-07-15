@@ -135,11 +135,12 @@ __PACKAGE__->register_method ({
 	    my $mons = $monstat->{monmap}->{mons};
 	    foreach my $d (@$mons) {
 		next if !defined($d->{name});
-		$monhash->{$d->{name}}->{rank} = $d->{rank};
-		$monhash->{$d->{name}}->{addr} = $d->{addr};
+		my $name = $d->{name};
+		$monhash->{$name}->{rank} = $d->{rank};
+		$monhash->{$name}->{addr} = $d->{addr};
 		if (grep { $_ eq $d->{rank} } @{$monstat->{quorum}}) {
-		    $monhash->{$d->{name}}->{quorum} = 1;
-		    $monhash->{$d->{name}}->{state} = 'running';
+		    $monhash->{$name}->{quorum} = 1;
+		    $monhash->{$name}->{state} = 'running';
 		}
 	    }
 
