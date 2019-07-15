@@ -51,7 +51,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		html: '<h3>Ceph?</h3>'+
 		'<blockquote cite="https://ceph.com/"><p>"<b>Ceph</b> is a unified, distributed storage system designed for excellent performance, reliability and scalability."</p></blockquote>'+
 		'<p><b>Ceph</b> is currently <b>not installed</b> on this node, click on the next button below to start the installation.'+
-		' This wizard will guide you through the necessary steps, after the initial installation you will be offered to create a initial configuration.'+
+		' This wizard will guide you through the necessary steps, after the initial installation you will be offered to create an initial configuration.'+
 		' The configuration step is only needed once per cluster and will be skipped if a config is already present.</p>'+
 		'<p>Please take a look at our documentation, by clicking the help button below, before starting the installation, '+
 		'if you want to gain deeper knowledge about Ceph visit <a target="_blank" href="http://docs.ceph.com/docs/master/">ceph.com</a>.</p>',
