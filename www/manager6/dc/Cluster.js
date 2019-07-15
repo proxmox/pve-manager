@@ -252,12 +252,12 @@ Ext.define('PVE.ClusterAdministration', {
 		    dataIndex: 'quorum_votes'
 		},
 		{
-		    header: gettext('Ring 0'),
+		    header: Ext.String.format(gettext('Link {0}'), 0),
 		    flex: 2,
 		    dataIndex: 'ring0_addr'
 		},
 		{
-		    header: gettext('Ring 1'),
+		    header: Ext.String.format(gettext('Link {0}'), 1),
 		    flex: 2,
 		    dataIndex: 'ring1_addr'
 		}
