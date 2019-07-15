@@ -159,6 +159,7 @@ Ext.define('PVE.grid.BackupView', {
 	var delete_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    dangerous: true,
+	    delay: 5,
 	    confirmMsg: function(rec) {
 		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
 					    "'" + rec.data.volid + "'");

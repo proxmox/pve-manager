@@ -425,6 +425,7 @@ Ext.define('PVE.storage.ContentView', {
 	var imageRemoveButton;
 	var removeButton = Ext.create('Proxmox.button.StdRemoveButton',{
 	    selModel: sm,
+	    delay: 5,
 	    enableFn: function(rec) {
 		if (rec && rec.data.content !== 'images') {
 		    imageRemoveButton.setVisible(false);
