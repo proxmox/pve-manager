@@ -1,3 +1,17 @@
+pve-manager (6.0-4) pve; urgency=medium
+
+  * ui: fix wrong defaultConsole fallback in tree
+
+  * ui: dc/Cluster: rename ring columns to link
+
+  * ui: cephfs: also add new tooltip like pool create
+
+  * ceph: mon list: show only as running when monitor is quorate
+
+  * pve5to6: do not complain about native newly created Nautilus OSDs
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 15 Jul 2019 18:37:12 +0200
+
 pve-manager (6.0-3) pve; urgency=medium
 
   * pveam available: add 'mail' to sections
