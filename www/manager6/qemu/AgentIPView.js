@@ -10,6 +10,7 @@ Ext.define('PVE.window.IPInfo', {
     items: [
 	{
 	    xtype: 'grid',
+	    store: {},
 	    emptyText: gettext('No network information'),
 	    columns: [
 		{
