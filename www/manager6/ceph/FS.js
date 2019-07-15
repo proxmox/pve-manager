@@ -46,9 +46,13 @@ Ext.define('PVE.CephCreateFS', {
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
-	    fieldLabel: gettext('Add Storage'),
+	    fieldLabel: gettext('Add as Storage'),
 	    value: true,
-	    name: 'add-storage'
+	    name: 'add-storage',
+	    autoEl: {
+		tag: 'div',
+		 'data-qtip': gettext('Add the new CephFS to the cluster storage configuration.'),
+	    },
 	}
     ],
 
