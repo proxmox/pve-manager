@@ -400,6 +400,7 @@ __PACKAGE__->register_method ({
 	    }
 	    PVE::Ceph::Tools::setup_pve_symlinks();
 	});
+	die $@ if $@;
 
 	return undef;
     }});
