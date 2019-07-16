@@ -411,6 +411,8 @@ __PACKAGE__->register_method ({
 		warn $@ if $@;
 		PVE::Ceph::Services::broadcast_ceph_services();
 	    });
+
+	    die $@ if $@;
 	};
 
 	return $rpcenv->fork_worker('cephdestroymon', $monsection,  $authuser, $worker);
