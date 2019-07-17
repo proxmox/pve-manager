@@ -33,7 +33,13 @@ Ext.define('PVE.qemu.HardwareView', {
 	    icon = "<i class='pve-grid-fa fa fa-fw fa-" + iconCls + "'></i>";
 	    metaData.tdCls += " pve-itype-fa";
 	}
-	return icon + txt;
+
+	// only return icons in grid but not remove dialog
+	if (rowIndex !== undefined) {
+	    return icon + txt;
+	} else {
+	    return txt;
+	}
     },
 
     initComponent : function() {
