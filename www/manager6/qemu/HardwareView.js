@@ -434,8 +434,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		}
 
 		var entry = rec.data.key;
-		var msg = Ext.String.format(warn, "'"
-		    + me.renderKey(entry, {}, rec) + "'");
+		var rendered = me.renderKey(entry, {}, rec);
+		var msg = Ext.String.format(warn, "'" + rendered + "'");
 
 		if (entry.match(/^unused\d+$/)) {
 		    msg += " " + gettext('This will permanently erase all data.');
