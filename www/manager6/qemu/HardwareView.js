@@ -22,8 +22,9 @@ Ext.define('PVE.qemu.HardwareView', {
 		    value = me.getObjectValue(key, '', true);
 		}
 		if (value.match(/vm-.*-cloudinit/)) {
-		    metaData.tdCls = 'pve-itype-icon-cloud';
-		    return rowdef.cloudheader;
+		    icon = "<i class='pve-grid-fa fa fa-fw fa-cloud'></i>";
+		    metaData.tdCls = " pve-itype-fa";
+		    txt = rowdef.cloudheader;
 		} else if (value.match(/media=cdrom/)) {
 		    metaData.tdCls = 'pve-itype-icon-cdrom';
 		    return rowdef.cdheader;
