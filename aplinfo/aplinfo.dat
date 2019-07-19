@@ -138,19 +138,6 @@ Infopage: http://pve.proxmox.com/wiki/Debian_9.0_Standard
 Description: Debian 9.7 (standard)
  A small Debian Stretch system including all standard packages.
 
-Package: fedora-28-default
-Version: 20180907
-Type: lxc
-OS: fedora
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/fedora-28-default_20180907_amd64.tar.xz
-md5sum: 7ed32a895c1f5ac37c8fdabc7f906811
-sha512sum: 155c642a473739772a14e7460e5db49f05a33b481852de637677f141fab7ffae19a1fe1b7262deab6b97a4dcc1b37e47eb3d7445f10b190fcb26292ad17eb031
-Infopage: https://linuxcontainers.org
-Description: LXC default image for fedora 28 (20180907)
-
 Package: fedora-29-default
 Version: 20181126
 Type: lxc
@@ -164,18 +151,31 @@ sha512sum: e5fae6196207738f76169442709a4ae113d31562b67340ff50b4c7f059c90c5374f5f
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 29 (20181126)
 
+Package: fedora-30-default
+Version: 20190718
+Type: lxc
+OS: fedora
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/fedora-30-default_20190718_amd64.tar.xz
+md5sum: 816e3b708553bfe223fe6371beab7ca0
+sha512sum: b5e0d1a33834011775d1c5b5977a9cb7d1a471e9b6fda6665d5697b49d843b3ae9c306e032525ebf3f89566cbf5045dff5f698124c1e9d86d52298913061c4cf
+Infopage: https://linuxcontainers.org
+Description: LXC default image for fedora 30 (20190718)
+
 Package: gentoo-current-default
-Version: 20180906
+Version: 20190718
 Type: lxc
 OS: gentoo
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/gentoo-current-default_20180906_amd64.tar.xz
-md5sum: c23005e762c858e5078e1ab3d5660639
-sha512sum: 904f69e6798cfff8a8eb0e5fc9ca5b58a5b4c57c7989a7f8b3bfc48b1c7c421d3755697b215a2fd837d4ea642e9f91693e4341c5349b1cfc6aa4391260d3a056
+Location: system/gentoo-current-default_20190718_amd64.tar.xz
+md5sum: a37888d90a98ea128fdcd6a7b6266394
+sha512sum: ccf4857a51af25a3b5bf3244dc8362e5df6645cf28509d0be4b15ebd51ffacd731e25ece853e8594f2e8668beb92945c04f119b4ad14c592d0a4074c200664a6
 Infopage: https://linuxcontainers.org
-Description: LXC default image for gentoo current (20180906)
+Description: LXC default image for gentoo current (20190718)
 
 Package: opensuse-15.0-default
 Version: 20180907
@@ -190,18 +190,18 @@ sha512sum: cdab2b4c4bd48abf1966e817449b988e2830a9730fc1f402ad88cbef58bbc02e64c46
 Infopage: https://linuxcontainers.org
 Description: LXC default image for opensuse 15.0 (20180907)
 
-Package: opensuse-42.3-default
-Version: 20171214
+Package: opensuse-15.1-default
+Version: 20190719
 Type: lxc
 OS: opensuse
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/opensuse-42.3-default_20171214_amd64.tar.xz
-md5sum: 973b8f88de551a51d2ccf585143734fa
-sha512sum: 245bcd7ed4751b40d680752cfc1b696a724c4857914752cd05459e16cacf10e6372398f2b0eb073551726955396b0503733c74695c51e7143972a0a55d6c7744
+Location: system/opensuse-15.1-default_20190719_amd64.tar.xz
+md5sum: bdc056320ca5396069082feca630f324
+sha512sum: 261a441914cb93ac595a5b54e0c73f10fbb72a379f7dfc11fc215b6405dac330520a91aa4ea746de91a7b41cacd940c7a7aa14565493b64cef1ec17b75758488
 Infopage: https://linuxcontainers.org
-Description: LXC default image for opensuse 42.3 (20171214)
+Description: LXC default image for opensuse 15.1 (20190719)
 
 Package: proxmox-mailgateway-5.2-standard
 Version: 5.2-1
