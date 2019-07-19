@@ -42,8 +42,14 @@ __PACKAGE__->register_method ({
     code => sub {
 
 	my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
-	print STDERR "update failed - see /var/log/pveam.log for details\n"
-	    if !PVE::APLInfo::update($dccfg->{http_proxy});
+
+	my $res = PVE::APLInfo::update($dccfg->{http_proxy});
+
+	if ($res) {
+	    print STDOUT "update sucessful\n"
+	} else {
+	    print STDERR "update failed - see /var/log/pveam.log for details\n"
+	}
 
 	return undef;
 
