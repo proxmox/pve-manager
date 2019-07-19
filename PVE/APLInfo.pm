@@ -197,7 +197,7 @@ sub get_apl_sources {
 	{
 	    host => "download.proxmox.com",
 	    url => "http://download.proxmox.com/images",
-	    file => 'aplinfo.dat',
+	    file => 'aplinfo-pve-6.dat',
 	},
 	{
 	    host => "releases.turnkeylinux.org",
