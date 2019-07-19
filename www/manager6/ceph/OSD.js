@@ -173,6 +173,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	    nodename: '',
 	    flags: [],
 	    maxversion: '0',
+	    mixedversions: false,
 	    versions: {},
 	    isOsd: false,
 	    downOsd: false,
@@ -213,13 +214,36 @@ Ext.define('PVE.node.CephOsdTree', {
 		    }
 		    vm.set('versions', data.versions);
 		    // extract max version
-		    var maxversion = vm.get('maxversion');
-		    Object.values(data.versions || {}).forEach(function(version) {
-			if (PVE.Utils.compare_ceph_versions(version, maxversion) > 0) {
-			    maxversion = version;
+		    var maxversion = "0";
+		    var mixedversions = false;
+		    var traverse;
+		    traverse = function(node, fn) {
+			fn(node);
+			if (Array.isArray(node.children)) {
+			    node.children.forEach(c => { traverse(c, fn); });
 			}
+		    };
+		    traverse(data.root, node => {
+			// compatibility for old api call
+			if (node.type === 'host' && node.version === undefined) {
+			    node.version = data.versions[node.name];
+			}
+
+			if (node.version === undefined) {
+			    return;
+			}
+
+			if (node.version !== maxversion && maxversion !== "0") {
+			    mixedversions = true;
+			}
+
+			if (PVE.Utils.compare_ceph_versions(node.version, maxversion) > 0) {
+			    maxversion = node.version;
+			}
+
 		    });
 		    vm.set('maxversion', maxversion);
+		    vm.set('mixedversions', mixedversions);
 		    sm.deselectAll();
 		    me.setRootNode(data.root);
 		    me.expandAll();
@@ -386,12 +410,15 @@ Ext.define('PVE.node.CephOsdTree', {
 	    var versions = vm.get('versions');
 	    var icon = "";
 	    var version = value || "";
-	    if (value && value != vm.get('maxversion')) {
-		icon = PVE.Utils.get_ceph_icon_html('HEALTH_OLD');
-	    }
-
-	    if (!value && rec.data.type == 'host') {
-		version = versions[rec.data.name] || Proxmox.Utils.unknownText;
+	    var maxversion = vm.get('maxversion');
+	    if (value && value != maxversion) {
+		if (rec.data.type === 'host' || versions[rec.data.host] !== maxversion) {
+		    icon = PVE.Utils.get_ceph_icon_html('HEALTH_UPGRADE');
+		} else {
+		    icon = PVE.Utils.get_ceph_icon_html('HEALTH_OLD');
+		}
+	    } else if (value && vm.get('mixedversions')) {
+		icon = PVE.Utils.get_ceph_icon_html('HEALTH_OK');
 	    }
 
 	    return icon + version;
