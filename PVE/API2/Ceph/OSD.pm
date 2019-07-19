@@ -261,6 +261,10 @@ __PACKAGE__->register_method ({
 	# extract parameter info and fail if a device is set more than once
 	my $devs = {};
 
+	# FIXME: rename params on next API compatibillity change (7.0)
+	$param->{wal_dev_size} = delete $param->{wal_size};
+	$param->{db_dev_size} = delete $param->{db_size};
+
 	for my $type ( qw(dev db_dev wal_dev) ) {
 	    next if !$param->{$type};
 
