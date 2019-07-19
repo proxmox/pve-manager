@@ -206,13 +206,23 @@ Ext.define('PVE.ceph.Services', {
 		    result.statuses.push(gettext('Version') + ": " + result.version);
 
 		    if (result.version != maxversion) {
-			if (result.health > healthstates.HEALTH_OLD) {
-			    result.health = healthstates.HEALTH_OLD;
+			if (metadata.version[result.host] === maxversion) {
+			    if (result.health > healthstates.HEALTH_OLD) {
+				result.health = healthstates.HEALTH_OLD;
+			    }
+			    result.messages.push(
+				PVE.Utils.get_ceph_icon_html('HEALTH_OLD', true) +
+				gettext('Not Current Version, please restart')
+			    );
+			} else {
+			    if (result.health > healthstates.HEALTH_UPGRADE) {
+				result.health = healthstates.HEALTH_UPGRADE;
+			    }
+			    result.messages.push(
+				PVE.Utils.get_ceph_icon_html('HEALTH_UPGRADE', true) +
+				gettext('Not Current Version, please upgrade and restart')
+			    );
 			}
-			result.messages.push(
-			    PVE.Utils.get_ceph_icon_html('HEALTH_OLD', true) +
-			    gettext('Not Current Version, please upgrade')
-			);
 		    }
 		}
 
