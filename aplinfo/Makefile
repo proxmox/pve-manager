@@ -2,8 +2,8 @@
 DOCDIR=/usr/share/doc/pve-manager/
 
 TRUSTED_KEYS=				\
-	support@proxmox.com.pubkey 	\
 	proxmox-release-5.x.pubkey 	\
+	proxmox-release-6.x.pubkey 	\
 	release@turnkeylinux.com.pubkey
 
 all:
