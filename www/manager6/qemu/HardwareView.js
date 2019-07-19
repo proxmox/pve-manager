@@ -277,6 +277,13 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('Serial Port') + ' (' + confid + ')'
 	    };
 	}
+	rows.audio0 = {
+	    group: 40,
+	    iconCls: 'volume-up',
+	    editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.AudioEdit' : undefined,
+	    never_delete: caps.vms['VM.Config.HWType'] ? false : true,
+	    header: gettext('Audio Device')
+	};
 	for (i = 0; i < 256; i++) {
 	    rows["unused" + i.toString()] = {
 		group: 99,
@@ -550,12 +557,15 @@ Ext.define('PVE.qemu.HardwareView', {
 	    // en/disable usb add button
 	    var usbcount = 0;
 	    var pcicount = 0;
+	    var audiocount = 0;
 	    var hasCloudInit = false;
 	    me.rstore.getData().items.forEach(function(item){
 		if (/^usb\d+/.test(item.id)) {
 		    usbcount++;
 		} else if (/^hostpci\d+/.test(item.id)) {
 		    pcicount++;
+		} else if (/^audio\d+/.test(item.id)) {
+		    audiocount++;
 		}
 		if (!hasCloudInit && /vm-.*-cloudinit/.test(item.data.value)) {
 		    hasCloudInit = true;
@@ -564,9 +574,11 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    // heuristic only for disabling some stuff, the backend has the final word.
 	    var noSysConsolePerm = !caps.nodes['Sys.Console'];
+	    var noVMConfigHWTypePerm = !caps.vms['VM.Config.HWType'];
 
 	    me.down('#addusb').setDisabled(noSysConsolePerm || (usbcount >= 5));
 	    me.down('#addpci').setDisabled(noSysConsolePerm || (pcicount >= 4));
+	    me.down('#addaudio').setDisabled(noVMConfigHWTypePerm || (audiocount >= 1));
 	    me.down('#addci').setDisabled(noSysConsolePerm || hasCloudInit);
 
 	    if (!rec) {
@@ -707,6 +719,21 @@ Ext.define('PVE.qemu.HardwareView', {
 				    var win = Ext.create('PVE.qemu.CIDriveEdit', {
 					url: '/api2/extjs/' + baseurl,
 					pveSelNode: me.pveSelNode
+				    });
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+			    {
+				text: gettext('Audio Device'),
+				itemId: 'addaudio',
+				iconCls: 'fa fa-volume-up',
+				disabled: !caps.vms['VM.Config.HWType'],
+				handler: function() {
+				    var win = Ext.create('PVE.qemu.AudioEdit', {
+					url: '/api2/extjs/' + baseurl,
+					isCreate: true,
+					isAdd: true
 				    });
 				    win.on('destroy', reload);
 				    win.show();
