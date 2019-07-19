@@ -1,9 +1,10 @@
 #!/usr/bin/perl -w
 
 use strict;
+use warnings;
 
 use PVE::APLInfo;
-
+use Data::Dumper;
 
 my $pkglist = PVE::APLInfo::load_data();
 
@@ -11,16 +12,14 @@ my $err = 0;
 
 foreach my $k (keys %{$pkglist->{'all'}}) {
     next if $k eq 'pve-web-news';
-    my $res = $pkglist->{'all'}->{$k};
+    my $res = $pkglist->{all}->{$k};
 
-    my $template = "$res->{os}-$res->{package}_$res->{version}_ARCH.tar.gz";
-    $template =~ s/$res->{os}-$res->{os}-/$res->{os}-/;
-    
-    $k =~ s/_amd64\.tar\.gz$/_ARCH.tar.gz/;
-    $k =~ s/_i386\.tar\.gz$/_ARCH.tar.gz/;
+    # heuristic only..
+    my $template = "$res->{package}_$res->{version}_$res->{architecture}.tar";
 
-    if ($k ne $template) {
+    if ($k !~ m/^($res->{os}-)?\Q$template\E\.(gz|xz)$/) {
 	print "ERROR: $k != $template\n";
+	#print Dumper($res) . "\n";
 	$err = 1;
     }
 }
