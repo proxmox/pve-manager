@@ -156,6 +156,7 @@ JSSRC= 				                 	\
 	qemu/SSHKey.js					\
 	qemu/IPConfigEdit.js				\
 	qemu/SystemEdit.js				\
+	qemu/AudioEdit.js				\
 	lxc/Summary.js					\
 	lxc/Network.js					\
 	lxc/Resources.js				\
