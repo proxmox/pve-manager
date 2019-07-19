@@ -16,7 +16,7 @@ install: aplinfo.dat trustedkeys.gpg
 .PHONY: update
 update:
 	rm -f aplinfo.dat
-	wget http://download.proxmox.com/images/aplinfo.dat -O aplinfo.dat.tmp
+	wget http://download.proxmox.com/images/aplinfo-pve-6.dat -O aplinfo.dat.tmp
 	mv aplinfo.dat.tmp aplinfo.dat
 
 # Default list of GPG keys allowed to sign aplinfo
