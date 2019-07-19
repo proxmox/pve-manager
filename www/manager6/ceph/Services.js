@@ -43,13 +43,15 @@ Ext.define('PVE.ceph.Services', {
 	    'HEALTH_UNKNOWN': 0,
 	    'HEALTH_ERR': 1,
 	    'HEALTH_WARN': 2,
-	    'HEALTH_OLD': 3,
-	    'HEALTH_OK': 4
+	    'HEALTH_UPGRADE': 3,
+	    'HEALTH_OLD': 4,
+	    'HEALTH_OK': 5
 	};
 	var healthmap = [
 	    'HEALTH_UNKNOWN',
 	    'HEALTH_ERR',
 	    'HEALTH_WARN',
+	    'HEALTH_UPGRADE',
 	    'HEALTH_OLD',
 	    'HEALTH_OK'
 	];

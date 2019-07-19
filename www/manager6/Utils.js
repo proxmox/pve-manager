@@ -83,6 +83,9 @@ Ext.define('PVE.Utils', { utilities: {
 	    case 'good':
 		icon = 'good fa-check';
 		break;
+	    case 'upgrade':
+		icon = 'warning fa-upload';
+		break;
 	    case 'old':
 		icon = 'warning fa-refresh';
 		break;
@@ -154,6 +157,7 @@ Ext.define('PVE.Utils', { utilities: {
 
     map_ceph_health: {
 	'HEALTH_OK':'good',
+	'HEALTH_UPGRADE':'upgrade',
 	'HEALTH_OLD':'old',
 	'HEALTH_WARN':'warning',
 	'HEALTH_ERR':'critical'
