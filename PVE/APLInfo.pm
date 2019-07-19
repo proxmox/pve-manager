@@ -2,11 +2,13 @@ package PVE::APLInfo;
 
 use strict;
 use warnings;
+
 use IO::File;
-use PVE::SafeSyslog;
-use PVE::Tools;
 use LWP::UserAgent;
 use POSIX qw(strftime);
+
+use PVE::SafeSyslog;
+use PVE::Tools qw(run_command);
 use PVE::pvecfg;
 
 my $logfile = "/var/log/pveam.log";
@@ -157,38 +159,25 @@ sub download_aplinfo {
 	    die "update failed - no data file '$aplsrcurl'\n";
 	}
  
-       eval {
-           PVE::Tools::run_command(["gunzip", "-f", $tmpgz]);
-       };
+       eval { run_command(["gunzip", "-f", $tmpgz]) };
        die "update failed: unable to unpack '$tmpgz'\n" if $@;
-
-
 
 	# verify signature
 	my $trustedkeyring = "/usr/share/doc/pve-manager/trustedkeys.gpg";
 	my $cmd = "/usr/bin/gpgv -q --keyring $trustedkeyring $sigfn $tmp";
 
+	my $logfunc = sub { logmsg($logfd, "signature verification: $_[0]"); };
 	eval {
-	    my $logfunc = sub {
-		my $line = shift;
-		logmsg($logfd, "signature verification: $line");
-	    };
-
-	    PVE::Tools::run_command($cmd,
-				    outfunc => $logfunc,
-				    errfunc => $logfunc);
+	    run_command($cmd, outfunc => $logfunc, errfunc => $logfunc);
 	};
 	die "unable to verify signature - $@\n" if $@;
 
 	# test syntax
-	eval { 
-	    read_aplinfo($tmp, {}, $aplurl, 1);
-	};
+	eval { read_aplinfo($tmp, {}, $aplurl, 1) };
 	die "update failed: $@" if $@;
 
-	if (!rename($tmp, "$aplinfodir/$host")) {
-	    die "update failed: unable to store data\n";
-	}
+	rename($tmp, "$aplinfodir/$host") or
+	    die "update failed: unable to store data: $!\n";
 
 	logmsg($logfd, "update successful");
     };
