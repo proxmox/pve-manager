@@ -140,10 +140,11 @@ sub url_get {
 }
 
 sub download_aplinfo {
-    my ($ua, $aplurl, $host, $logfd) = @_;
+    my ($ua, $aplinfo, $logfd) = @_;
 
-    my $aplsrcurl = "$aplurl/aplinfo.dat.gz";
-    my $aplsigurl = "$aplurl/aplinfo.dat.asc";
+    my $aplsrcurl = "$aplinfo->{url}/$aplinfo->{file}.gz";
+    my $aplsigurl = "$aplinfo->{url}/$aplinfo->{file}.asc";
+    my $host = $aplinfo->{host};
 
     my $tmp = "$aplinfodir/pveam-${host}.tmp.$$";
     my $tmpgz = "$tmp.gz";
@@ -173,7 +174,7 @@ sub download_aplinfo {
 	die "unable to verify signature - $@\n" if $@;
 
 	# test syntax
-	eval { read_aplinfo($tmp, {}, $aplurl, 1) };
+	eval { read_aplinfo($tmp, {}, $aplinfo->{url}, 1) };
 	die "update failed: $@" if $@;
 
 	rename($tmp, "$aplinfodir/$host") or
@@ -192,12 +193,20 @@ sub download_aplinfo {
 }
 
 sub get_apl_sources {
- 
-    my $urls = [];
-    push @$urls, "http://download.proxmox.com/images";
-    push @$urls, "https://releases.turnkeylinux.org/pve";
+    my $sources = [
+	{
+	    host => "download.proxmox.com",
+	    url => "http://download.proxmox.com/images",
+	    file => 'aplinfo.dat',
+	},
+	{
+	    host => "releases.turnkeylinux.org",
+	    url => "https://releases.turnkeylinux.org/pve",
+	    file => 'aplinfo.dat',
+	},
+    ];
 
-    return $urls;
+    return $sources;
 }
 
 sub update {
@@ -220,20 +229,18 @@ sub update {
 	$ua->env_proxy;
     }
 
-    my $urls = get_apl_sources();
+    my $sources = get_apl_sources();
 
     mkdir $aplinfodir;
 
     my @dlerr = ();
-    foreach my $aplurl (@$urls) {
-	eval { 
-	    my $uri = URI->new($aplurl);
-	    my $host = $uri->host();
-	    download_aplinfo($ua, $aplurl, $host, $logfd); 
+    foreach my $info (@$sources) {
+	eval {
+	    download_aplinfo($ua, $info, $logfd);
 	};
 	if (my $err = $@) {
 	    logmsg ($logfd, $err);
-	    push @dlerr, $aplurl; 
+	    push @dlerr, $info->{url};
 	}
     } 
 
@@ -246,17 +253,13 @@ sub update {
 
 sub load_data {
 
-   my $urls = get_apl_sources();
+   my $sources = get_apl_sources();
 
     my $list = {};
-
-    foreach my $aplurl (@$urls) {
-
-	eval { 
-
-	    my $uri = URI->new($aplurl);
-	    my $host = $uri->host();
-	    read_aplinfo("$aplinfodir/$host", $list, $aplurl);
+    foreach my $info (@$sources) {
+	eval {
+	    my $host = $info->{host};
+	    read_aplinfo("$aplinfodir/$host", $list, $info->{url});
 	};
 	warn $@ if $@;
     }
