@@ -104,6 +104,7 @@ __PACKAGE__->register_method ({
 
 	my $nodes = {};
 	my $newnodes = {};
+	my $hostversions = PVE::Cluster::get_node_kv("ceph-version");
 	foreach my $e (@{$res->{nodes}}) {
 	    $nodes->{$e->{id}} = $e;
 
@@ -165,6 +166,10 @@ __PACKAGE__->register_method ({
 	    } else {
 		$new->{leaf} = ($e->{id} >= 0) ? 1 : 0;
 	    }
+
+	    if ((my $name = $e->{name}) && $e->{type} eq 'host') {
+		$new->{version} = $hostversions->{$name};
+	    }
 	}
 
 	my $roots = [];
@@ -180,7 +185,7 @@ __PACKAGE__->register_method ({
 
 	# we want this for the noout flag
 	$data->{flags} = $flags if $flags;
-	$data->{versions} = PVE::Cluster::get_node_kv("ceph-version");
+	$data->{versions} = $hostversions; # for compatibility
 
 	return $data;
     }});
