@@ -102,15 +102,18 @@ __PACKAGE__->register_method ({
 	my $osdmetadata_res = $rados->mon_command({ prefix => 'osd metadata' });
 	my $osdmetadata = { map { $_->{id} => $_ } @$osdmetadata_res };
 
+	my $hostversions = PVE::Cluster::get_node_kv("ceph-version");
+
 	my $nodes = {};
 	my $newnodes = {};
-	my $hostversions = PVE::Cluster::get_node_kv("ceph-version");
 	foreach my $e (@{$res->{nodes}}) {
-	    $nodes->{$e->{id}} = $e;
+	    my ($id, $name) = $e->@{qw(id name)};
+
+	    $nodes->{$id} = $e;
 
 	    my $new = {
-		id => $e->{id},
-		name => $e->{name},
+		id => $id,
+		name => $name,
 		type => $e->{type}
 	    };
 
@@ -118,11 +121,11 @@ __PACKAGE__->register_method ({
 		$new->{$opt} = $e->{$opt} if defined($e->{$opt});
 	    }
 
-	    if (my $stat = $osdhash->{$e->{id}}) {
+	    if (my $stat = $osdhash->{$id}) {
 		$new->{in} = $stat->{in} if defined($stat->{in});
 	    }
 
-	    if (my $stat = $osd_usage->{$e->{id}}) {
+	    if (my $stat = $osd_usage->{$id}) {
 		$new->{total_space} = ($stat->{kb} || 1) * 1024;
 		$new->{bytes_used} = ($stat->{kb_used} || 0) * 1024;
 		$new->{percent_used} = ($new->{bytes_used}*100)/$new->{total_space};
@@ -132,7 +135,7 @@ __PACKAGE__->register_method ({
 		}
 	    }
 
-	    my $osdmd = $osdmetadata->{$e->{id}};
+	    my $osdmd = $osdmetadata->{$id};
 	    if ($e->{type} eq 'osd' && $osdmd) {
 		if ($osdmd->{bluefs}) {
 		    $new->{osdtype} = 'bluestore';
@@ -147,45 +150,51 @@ __PACKAGE__->register_method ({
 		}
 	    }
 
-	    $newnodes->{$e->{id}} = $new;
+	    $newnodes->{$id} = $new;
 	}
 
 	foreach my $e (@{$res->{nodes}}) {
-	    my $new = $newnodes->{$e->{id}};
+	    my ($id, $name) = $e->@{qw(id name)};
+	    my $new = $newnodes->{$id};
+
 	    if ($e->{children} && scalar(@{$e->{children}})) {
 		$new->{children} = [];
 		$new->{leaf} = 0;
 		foreach my $cid (@{$e->{children}}) {
-		    $nodes->{$cid}->{parent} = $e->{id};
-		    if ($nodes->{$cid}->{type} eq 'osd' &&
-			$e->{type} eq 'host') {
-			$newnodes->{$cid}->{host} = $e->{name};
+		    $nodes->{$cid}->{parent} = $id;
+		    if ($nodes->{$cid}->{type} eq 'osd' && $e->{type} eq 'host') {
+			$newnodes->{$cid}->{host} = $name;
 		    }
 		    push @{$new->{children}}, $newnodes->{$cid};
 		}
 	    } else {
-		$new->{leaf} = ($e->{id} >= 0) ? 1 : 0;
+		$new->{leaf} = ($id >= 0) ? 1 : 0;
 	    }
 
-	    if ((my $name = $e->{name}) && $e->{type} eq 'host') {
+	    if ($name && $e->{type} eq 'host') {
 		$new->{version} = $hostversions->{$name};
 	    }
 	}
 
-	my $roots = [];
+	my $realroots = [];
 	foreach my $e (@{$res->{nodes}}) {
-	    if (!$nodes->{$e->{id}}->{parent}) {
-		push @$roots, $newnodes->{$e->{id}};
+	    my $id = $e->{id};
+	    if (!$nodes->{$id}->{parent}) {
+		push @$realroots, $newnodes->{$id};
 	    }
 	}
 
-	die "no root node\n" if !@$roots;
+	die "no root node\n" if scalar(@$realroots) < 1;
 
-	my $data = { root => { leaf =>  0, children => $roots } };
+	my $data = {
+	    root => {
+		leaf =>  0,
+		children => $realroots
+	    },
+	    versions => $hostversions, # for compatibility
+	};
 
-	# we want this for the noout flag
-	$data->{flags} = $flags if $flags;
-	$data->{versions} = $hostversions; # for compatibility
+	$data->{flags} = $flags if $flags; # we want this for the noout flag
 
 	return $data;
     }});
