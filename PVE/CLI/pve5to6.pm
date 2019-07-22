@@ -7,6 +7,7 @@ use PVE::API2::APT;
 use PVE::API2::Ceph;
 use PVE::API2::LXC;
 use PVE::API2::Qemu;
+use PVE::API2::Certificates;
 
 use PVE::Ceph::Tools;
 use PVE::Cluster;
@@ -626,6 +627,23 @@ sub check_misc {
 	    log_pass("Resolved node IP '$local_ip' configured and active on single interface.");
 	}
     }
+
+    log_info("Check certifiacte's RSA key size");
+    my $certs = PVE::API2::Certificates->info({ node => $nodename });
+    my $cert_nok;
+    foreach my $c (@$certs) {
+	if (($c->{'public-key-type'} eq 'rsaEncryption') && ($c->{'public-key-bits'} < 2048)) {
+	    log_fail("$c->{filename}, certificate's RSA public key size is less than 2048 bit");
+	    $cert_nok = 1;
+	} elsif (($c->{'public-key-type'} eq 'id-ecPublicKey') && ($c->{'public-key-bits'} < 224)) {
+	    log_fail("$c->{filename}, certificate's ECC public key size is less than 224 bit");
+	    $cert_nok = 1;
+	} elsif (($c->{'public-key-type'} ne 'rsaEncryption') && ($c->{'public-key-type'} ne 'id-ecPublicKey')) {
+	    log_warn("$c->{filename}, certificate's public key type unkown, check Debian Busters release notes");
+	    $cert_nok = 1;
+	}
+    }
+    log_pass("Certificates pass Debian Busters security level for TLS connections") if !defined($cert_nok);
 
     check_kvm_nested();
 }
