@@ -123,7 +123,7 @@ __PACKAGE__->register_method({
 my $print_cert_info = sub {
     my ($schema, $cert, $options) = @_;
 
-    my $order = [qw(filename fingerprint subject issuer notbefore notafter san)];
+    my $order = [qw(filename fingerprint subject issuer notbefore notafter public-key-type public-key-bits san)];
     PVE::CLIFormatter::print_api_result(
 	$cert, $schema, $order, { %$options, noheader => 1, sort_key => 0 });
 };
