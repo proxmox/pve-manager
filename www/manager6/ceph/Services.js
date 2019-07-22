@@ -212,7 +212,7 @@ Ext.define('PVE.ceph.Services', {
 			    }
 			    result.messages.push(
 				PVE.Utils.get_ceph_icon_html('HEALTH_OLD', true) +
-				gettext('Not Current Version, please restart')
+				gettext('A newer version was installed but old version still running, please restart')
 			    );
 			} else {
 			    if (result.health > healthstates.HEALTH_UPGRADE) {
@@ -220,7 +220,7 @@ Ext.define('PVE.ceph.Services', {
 			    }
 			    result.messages.push(
 				PVE.Utils.get_ceph_icon_html('HEALTH_UPGRADE', true) +
-				gettext('Not Current Version, please upgrade and restart')
+				gettext('Other cluster members use a newer version of this service, please upgrade and restart')
 			    );
 			}
 		    }
