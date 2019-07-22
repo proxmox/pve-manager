@@ -761,6 +761,64 @@ __PACKAGE__->register_method ({
 	return $rpcenv->fork_worker('cephcreatepool', $pool,  $user, $worker);
     }});
 
+my $possible_flags = {
+    pause => {
+	description => 'Pauses read and writes.',
+	type => 'boolean',
+	optional=> 1,
+    },
+    noup => {
+	description => 'OSDs are not allowed to start.',
+	type => 'boolean',
+	optional=> 1,
+    },
+    nodown => {
+	description => 'OSD failure reports are being ignored, such that the monitors will not mark OSDs down.',
+	type => 'boolean',
+	optional=> 1,
+    },
+    noout => {
+	description => 'OSDs will not automatically be marked out after the configured interval.',
+	type => 'boolean',
+	optional=> 1,
+    },
+    noin => {
+	description => 'OSDs that were previously marked out will not be marked back in when they start.',
+	type => 'boolean',
+	optional=> 1,
+    },
+    nobackfill => {
+	description => 'Backfilling of PGs is suspended.',
+	type => 'boolean',
+	optional=> 1,
+    },
+    norebalance => {
+	description => 'Rebalancing of PGs is suspended.',
+	type => 'boolean',
+	optional=> 1,
+    },
+    norecover => {
+	description => 'Recovery of PGs is suspended.',
+	type => 'boolean',
+	optional=> 1,
+    },
+    noscrub => {
+	description => 'Scrubbing is disabled.',
+	type => 'boolean',
+	optional=> 1,
+    },
+    'nodeep-scrub' => {
+	description => 'Deep Scrubbing is disabled.',
+	type => 'boolean',
+	optional=> 1,
+    },
+    notieragent => {
+	description => 'Cache tiering activity is suspended.',
+	type => 'boolean',
+	optional=> 1,
+    },
+};
+
 __PACKAGE__->register_method ({
     name => 'get_flags',
     path => 'flags',
@@ -805,9 +863,9 @@ __PACKAGE__->register_method ({
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    flag => {
-		description => 'The ceph flag to set/unset',
+		description => 'The ceph flag to set',
 		type => 'string',
-		enum => [ 'full', 'pause', 'noup', 'nodown', 'noout', 'noin', 'nobackfill', 'norebalance', 'norecover', 'noscrub', 'nodeep-scrub', 'notieragent'],
+		enum => [sort keys %$possible_flags],
 	    },
 	},
     },
@@ -843,9 +901,9 @@ __PACKAGE__->register_method ({
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    flag => {
-		description => 'The ceph flag to set/unset',
+		description => 'The ceph flag to unset',
 		type => 'string',
-		enum => [ 'full', 'pause', 'noup', 'nodown', 'noout', 'noin', 'nobackfill', 'norebalance', 'norecover', 'noscrub', 'nodeep-scrub', 'notieragent'],
+		enum => [sort keys %$possible_flags],
 	    },
 	},
     },
