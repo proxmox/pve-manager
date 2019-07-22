@@ -59,6 +59,16 @@ Ext.define('PVE.node.CertificateViewer', {
 	},
 	{
 	    xtype: 'displayfield',
+	    fieldLabel: gettext('Public Key Type'),
+	    name: 'public-key-type'
+	},
+	{
+	    xtype: 'displayfield',
+	    fieldLabel: gettext('Public Key Size'),
+	    name: 'public-key-bits'
+	},
+	{
+	    xtype: 'displayfield',
 	    fieldLabel: gettext('Valid Since'),
 	    renderer: Proxmox.Utils.render_timestamp,
 	    name: 'notbefore'
@@ -220,7 +230,7 @@ Ext.define('PVE.node.CertUpload', {
 Ext.define('pve-certificate', {
     extend: 'Ext.data.Model',
 
-    fields: [ 'filename', 'fingerprint', 'issuer', 'notafter', 'notbefore', 'subject', 'san' ],
+    fields: [ 'filename', 'fingerprint', 'issuer', 'notafter', 'notbefore', 'subject', 'san', 'public-key-bits', 'public-key-type' ],
     idProperty: 'filename'
 });
 
@@ -292,6 +302,18 @@ Ext.define('PVE.node.Certificates', {
 	    header: gettext('Subject'),
 	    flex: 1,
 	    dataIndex: 'subject'
+	},
+	{
+	    header: gettext('Public Key Alogrithm'),
+	    flex: 1,
+	    dataIndex: 'public-key-type',
+	    hidden: true
+	},
+	{
+	    header: gettext('Public Key Size'),
+	    flex: 1,
+	    dataIndex: 'public-key-bits',
+	    hidden: true
 	},
 	{
 	    header: gettext('Valid Since'),
