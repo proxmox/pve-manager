@@ -334,8 +334,6 @@ Ext.define('PVE.node.CephOsdTree', {
 
 		    var flags = data.flags.split(',');
 		    vm.set('flags', flags);
-		    var noout = flags.includes('noout');
-		    me.down('#nooutBtn').setText(noout ? gettext("Unset noout") : gettext("Set noout"));
 		}
 	    });
 	},
@@ -401,19 +399,13 @@ Ext.define('PVE.node.CephOsdTree', {
 	    }).show();
 	},
 
-	set_flag: function() {
+	set_flags: function() {
 	    var me = this;
 	    var vm = this.getViewModel();
-	    var flags = vm.get('flags');
-	    Proxmox.Utils.API2Request({
-		url: "/nodes/" + vm.get('nodename') + "/ceph/flags/noout",
-		waitMsgTarget: me.getView(),
-		method: flags.includes('noout') ? 'DELETE' : 'POST',
-		failure: function(response, opts) {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		},
-		success: () => { me.reload(); }
-	    });
+	    Ext.create('PVE.CephSetFlags', {
+		nodename: vm.get('nodename'),
+		taskDone: () => { me.reload(); }
+	    }).show();
 	},
 
 	service_cmd: function(comp) {
@@ -668,9 +660,8 @@ Ext.define('PVE.node.CephOsdTree', {
 		handler: 'create_osd',
 	    },
 	    {
-		text: gettext('Set noout'),
-		itemId: 'nooutBtn',
-		handler: 'set_flag',
+		text: gettext('Set Flags'),
+		handler: 'set_flags',
 	    },
 	    '->',
 	    {
