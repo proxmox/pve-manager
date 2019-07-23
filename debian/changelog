@@ -23,7 +23,9 @@ pve-manager (6.0-5) pve; urgency=medium
 
   * ui: Include Windows Server 2019 in OS-Type list
 
- -- Proxmox Support Team <support@proxmox.com>  Tue, 23 Jul 2019 18:25:29 +0200
+  * allow to add a SPICE audio devices to a VM
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 23 Jul 2019 19:21:08 +0200
 
 pve-manager (6.0-4) pve; urgency=medium
 
