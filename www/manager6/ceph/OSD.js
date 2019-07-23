@@ -170,9 +170,6 @@ Ext.define('PVE.CephSetFlags', {
     showProgress: true,
 
     width: 720,
-    // FIXME: hack, should be done "automatically" one your store got loaded + rendered
-    minHeight: 325,
-
     layout: 'fit',
 
     onlineHelp: 'pve_ceph_osds',
@@ -247,6 +244,8 @@ Ext.define('PVE.CephSetFlags', {
 		grid.getStore().setData(data);
 		// set the put url correctly
 		me.url = "/nodes/" + me.nodename + "/ceph/flags";
+		// re-align after store load, else the window is not centered
+		me.alignTo(Ext.getBody(), 'c-c');
 	    }
 	});
     }
