@@ -191,7 +191,13 @@ Ext.define('PVE.CephSetFlags', {
 		{
 		    xtype: 'grid',
 		    itemId: 'flaggrid',
-		    store: {},
+		    store: {
+			listeners: {
+			    update: function() {
+				this.commitChanges();
+			    }
+			}
+		    },
 
 		    columns: [
 			{
