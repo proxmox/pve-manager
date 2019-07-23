@@ -30,7 +30,9 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 	    { flag: 'virt-ssbd', desc: 'Basis for "Speculative Store Bypass" protection for AMD models' },
 	    { flag: 'amd-ssbd', desc: 'Improves Spectre mitigation performance with AMD CPUs, best used with "virt-ssbd"' },
 	    { flag: 'amd-no-ssb', desc: 'Notifies guest OS that host is not vulnerable for Spectre on AMD CPUs' },
-	    { flag: 'pdpe1gb', desc: 'Allow guest OS to use 1GB size pages, if host HW supports it' }
+	    { flag: 'pdpe1gb', desc: 'Allow guest OS to use 1GB size pages, if host HW supports it' },
+	    { flag: 'hv-tlbflush', desc: 'Improve performance in overcommitted Windows guests. May lead to guest bluescreens on old CPUs.' },
+	    { flag: 'hv-evmcs', desc: 'Improve performance for nested virtualization. Only supported on Intel CPUs.' }
 	],
 	listeners: {
 	    update: function() {
