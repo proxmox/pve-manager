@@ -990,7 +990,6 @@ __PACKAGE__->register_method ({
 
 	PVE::Ceph::Tools::check_ceph_configured();
 
-	my $set = $param->{set} // !$param->{unset};
 	my $rados = PVE::RADOS->new();
 
 	$rados->mon_command({
@@ -1028,7 +1027,6 @@ __PACKAGE__->register_method ({
 
 	PVE::Ceph::Tools::check_ceph_configured();
 
-	my $set = $param->{set} // !$param->{unset};
 	my $rados = PVE::RADOS->new();
 
 	$rados->mon_command({
