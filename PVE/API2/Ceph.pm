@@ -95,8 +95,8 @@ __PACKAGE__->register_method ({
 	    { name => 'config' },
 	    { name => 'log' },
 	    { name => 'disks' },
-	    { name => 'flags' },
-	    { name => 'flags2' },
+	    { name => 'flags' }, # FIXME: remove with 7.0
+	    { name => 'flag' },
 	    { name => 'rules' },
 	];
 
@@ -837,8 +837,8 @@ my $get_current_set_flags = sub {
 };
 
 __PACKAGE__->register_method ({
-    name => 'flags2',
-    path => 'flags2',
+    name => 'flag',
+    path => 'flag',
     method => 'GET',
     description => "get the status of all ceph flags",
     proxyto => 'node',
@@ -879,6 +879,7 @@ __PACKAGE__->register_method ({
 	return $res;
     }});
 
+# FIXME: Remove with PVE 7.0
 __PACKAGE__->register_method ({
     name => 'get_flags',
     path => 'flags',
@@ -910,7 +911,7 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     name => 'set_flags',
-    path => 'flags',
+    path => 'flag',
     method => 'PUT',
     description => "Set/Unset multiple ceph flags at once.",
     proxyto => 'node',
@@ -965,6 +966,7 @@ __PACKAGE__->register_method ({
 	return $rpcenv->fork_worker('cephsetflags', undef,  $user, $worker);
     }});
 
+# FIXME: Remove with PVE 7.0
 __PACKAGE__->register_method ({
     name => 'set_flag',
     path => 'flags/{flag}',

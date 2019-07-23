@@ -231,7 +231,7 @@ Ext.define('PVE.CephSetFlags', {
 	}
 
         Ext.applyIf(me, {
-	    url: "/nodes/" + me.nodename + "/ceph/flags2",
+	    url: "/nodes/" + me.nodename + "/ceph/flag",
 	    method: 'PUT',
 	});
 
