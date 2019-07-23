@@ -167,14 +167,13 @@ Ext.define('PVE.CephSetFlags', {
     extend: 'Proxmox.window.Edit',
     xtype: 'pveCephSetFlags',
 
-    subject: gettext('Ceph Flags'),
-
     showProgress: true,
 
     width: 600,
     onlineHelp: 'pve_ceph_osds',
     isCreate: true,
-    submitText: gettext('Set Flags'),
+    title: Ext.String.format(gettext('Manage {0}'), 'Global OSD Flags'),
+    submitText: gettext('Apply'),
 
     items: [
 	{
@@ -211,7 +210,7 @@ Ext.define('PVE.CephSetFlags', {
 			    dataIndex: 'description',
 			},
 		    ]
-		}
+		},
 	    ],
 	},
     ],
@@ -660,7 +659,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		handler: 'create_osd',
 	    },
 	    {
-		text: gettext('Set Flags'),
+		text: Ext.String.format(gettext('Manage {0}'), 'Global Flags'),
 		handler: 'set_flags',
 	    },
 	    '->',
