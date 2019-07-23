@@ -762,69 +762,8 @@ __PACKAGE__->register_method ({
 	return $rpcenv->fork_worker('cephcreatepool', $pool,  $user, $worker);
     }});
 
-my $possible_flags = {
-    pause => {
-	description => 'Pauses read and writes.',
-	type => 'boolean',
-	optional=> 1,
-    },
-    noup => {
-	description => 'OSDs are not allowed to start.',
-	type => 'boolean',
-	optional=> 1,
-    },
-    nodown => {
-	description => 'OSD failure reports are being ignored, such that the monitors will not mark OSDs down.',
-	type => 'boolean',
-	optional=> 1,
-    },
-    noout => {
-	description => 'OSDs will not automatically be marked out after the configured interval.',
-	type => 'boolean',
-	optional=> 1,
-    },
-    noin => {
-	description => 'OSDs that were previously marked out will not be marked back in when they start.',
-	type => 'boolean',
-	optional=> 1,
-    },
-    nobackfill => {
-	description => 'Backfilling of PGs is suspended.',
-	type => 'boolean',
-	optional=> 1,
-    },
-    norebalance => {
-	description => 'Rebalancing of PGs is suspended.',
-	type => 'boolean',
-	optional=> 1,
-    },
-    norecover => {
-	description => 'Recovery of PGs is suspended.',
-	type => 'boolean',
-	optional=> 1,
-    },
-    noscrub => {
-	description => 'Scrubbing is disabled.',
-	type => 'boolean',
-	optional=> 1,
-    },
-    'nodeep-scrub' => {
-	description => 'Deep Scrubbing is disabled.',
-	type => 'boolean',
-	optional=> 1,
-    },
-    notieragent => {
-	description => 'Cache tiering activity is suspended.',
-	type => 'boolean',
-	optional=> 1,
-    },
-};
-
-# the 'pause' flag gets always set to both 'pauserd' and 'pausewr'
-# so decide that the 'pause' flag is set if we detect 'pauserd'
-my $flagmap = {
-    'pause' => 'pauserd',
-};
+my $possible_flags = PVE::Ceph::Tools::get_possible_osd_flags();
+my $possible_flags_list = [ sort keys %$possible_flags ];
 
 my $get_current_set_flags = sub {
     my $rados = shift;
@@ -861,14 +800,14 @@ __PACKAGE__->register_method ({
 	my $setflags = $get_current_set_flags->();
 
 	my $res = [];
-	foreach my $flag (sort keys %$possible_flags) {
+	foreach my $flag (@$possible_flags_list) {
 	    my $el = {
 		name => $flag,
 		description => $possible_flags->{$flag}->{description},
 		value => 0,
 	    };
 
-	    my $realflag = $flagmap->{$flag} // $flag;
+	    my $realflag = PVE::Ceph::Tools::get_real_flag_name($flag);
 	    if ($setflags->{$realflag}) {
 		$el->{value} = 1;
 	    }
@@ -940,10 +879,10 @@ __PACKAGE__->register_method ({
 	    my $setflags = $get_current_set_flags->($rados);
 
 	    my $errors = 0;
-	    foreach my $flag (sort keys %$possible_flags) {
+	    foreach my $flag (@$possible_flags_list) {
 		next if !defined($param->{$flag});
 		my $val = $param->{$flag};
-		my $realflag = $flagmap->{$flag} // $flag;
+		my $realflag = PVE::Ceph::Tools::get_real_flag_name($flag);
 
 		next if !$val == !$setflags->{$realflag}; # we do not set/unset flags to the same state
 
@@ -984,7 +923,7 @@ __PACKAGE__->register_method ({
 	    flag => {
 		description => 'The ceph flag to set',
 		type => 'string',
-		enum => [sort keys %$possible_flags],
+		enum => $possible_flags_list,
 	    },
 	},
     },
@@ -1021,7 +960,7 @@ __PACKAGE__->register_method ({
 	    flag => {
 		description => 'The ceph flag to unset',
 		type => 'string',
-		enum => [sort keys %$possible_flags],
+		enum => $possible_flags_list,
 	    },
 	},
     },

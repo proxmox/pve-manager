@@ -339,5 +339,77 @@ sub get_db_wal_sizes {
 
     return $res;
 }
+sub get_possible_osd_flags {
+    my $possible_flags = {
+	pause => {
+	    description => 'Pauses read and writes.',
+	    type => 'boolean',
+	    optional=> 1,
+	},
+	noup => {
+	    description => 'OSDs are not allowed to start.',
+	    type => 'boolean',
+	    optional=> 1,
+	},
+	nodown => {
+	    description => 'OSD failure reports are being ignored, such that the monitors will not mark OSDs down.',
+	    type => 'boolean',
+	    optional=> 1,
+	},
+	noout => {
+	    description => 'OSDs will not automatically be marked out after the configured interval.',
+	    type => 'boolean',
+	    optional=> 1,
+	},
+	noin => {
+	    description => 'OSDs that were previously marked out will not be marked back in when they start.',
+	    type => 'boolean',
+	    optional=> 1,
+	},
+	nobackfill => {
+	    description => 'Backfilling of PGs is suspended.',
+	    type => 'boolean',
+	    optional=> 1,
+	},
+	norebalance => {
+	    description => 'Rebalancing of PGs is suspended.',
+	    type => 'boolean',
+	    optional=> 1,
+	},
+	norecover => {
+	    description => 'Recovery of PGs is suspended.',
+	    type => 'boolean',
+	    optional=> 1,
+	},
+	noscrub => {
+	    description => 'Scrubbing is disabled.',
+	    type => 'boolean',
+	    optional=> 1,
+	},
+	'nodeep-scrub' => {
+	    description => 'Deep Scrubbing is disabled.',
+	    type => 'boolean',
+	    optional=> 1,
+	},
+	notieragent => {
+	    description => 'Cache tiering activity is suspended.',
+	    type => 'boolean',
+	    optional=> 1,
+	},
+    };
+    return $possible_flags;
+}
+
+sub get_real_flag_name {
+    my ($flag) = @_;
+
+    # the 'pause' flag gets always set to both 'pauserd' and 'pausewr'
+    # so decide that the 'pause' flag is set if we detect 'pauserd'
+    my $flagmap = {
+	'pause' => 'pauserd',
+    };
+
+    return $flagmap->{$flag} // $flag;
+}
 
 1;
