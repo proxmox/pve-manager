@@ -252,4 +252,82 @@ __PACKAGE__->register_method ({
 	return $rpcenv->fork_worker('cephsetflags', undef,  $user, $worker);
     }});
 
+
+__PACKAGE__->register_method ({
+    name => 'get_flag',
+    path => 'flags/{flag}',
+    method => 'GET',
+    description => "Get the status of a specific ceph flag.",
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    flag => {
+		description => "The name of the flag name to get.",
+		type => 'string', enum => $possible_flags_list,
+	    },
+	},
+    },
+    returns => {
+	type => 'boolean',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::Ceph::Tools::check_ceph_configured();
+
+	my $realflag = PVE::Ceph::Tools::get_real_flag_name($param->{flag});
+
+	my $setflags = $get_current_set_flags->();
+	if ($setflags->{$realflag}) {
+	    return 1;
+	}
+
+	return 0;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'update_flag',
+    path => 'flags/{flag}',
+    method => 'PUT',
+    description => "Set or clear (unset) a specific ceph flag",
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    flag => {
+		description => 'The ceph flag to update',
+		type => 'string',
+		enum => $possible_flags_list,
+	    },
+	    value => {
+		description => 'The new value of the flag',
+		type => 'boolean',
+	    },
+	},
+    },
+    returns => { type => 'null' },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::Ceph::Tools::check_ceph_configured();
+
+	my $cmd = $param->{value} ? 'set' : 'unset';
+
+	my $rados = PVE::RADOS->new();
+	$rados->mon_command({
+	    prefix => "osd $cmd",
+	    key => $param->{flag},
+	});
+
+	return undef;
+    }});
+
+
 1;
