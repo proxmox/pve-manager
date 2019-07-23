@@ -1,3 +1,30 @@
+pve-manager (6.0-5) pve; urgency=medium
+
+  * fix #2292: ceph osd create: use size parameter for db/wal
+
+  * improve ceph error handling
+
+  * aplinfo: update from aplinfo-pve-6.dat
+
+  * gui: improve service and package version hints in ceph OSD and dashboard
+    view.
+
+  * fix #2265: enable discard for virtio-blk
+
+  * pve5to6: cert: check certificates key size
+
+  * ceph: add new OSD flag API endpoints in node-agnostic /cluster/ceph path
+
+  * gui: ceph: Allow to set much more flags than 'noout' through the Web GUI
+    with a new flag management window
+
+  * ui: add VM 'hv-tlbflush' and 'hv-evmcs' CPU flag as new optional flags, for
+    those where they do not generate problems.
+
+  * ui: Include Windows Server 2019 in OS-Type list
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 23 Jul 2019 18:25:29 +0200
+
 pve-manager (6.0-4) pve; urgency=medium
 
   * ui: fix wrong defaultConsole fallback in tree
