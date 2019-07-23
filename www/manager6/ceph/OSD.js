@@ -231,7 +231,7 @@ Ext.define('PVE.CephSetFlags', {
 	}
 
         Ext.applyIf(me, {
-	    url: "/nodes/" + me.nodename + "/ceph/flag",
+	    url: "/cluster/ceph/flags",
 	    method: 'PUT',
 	});
 
@@ -242,8 +242,6 @@ Ext.define('PVE.CephSetFlags', {
 	    success: function(response, options) {
 		var data = response.result.data;
 		grid.getStore().setData(data);
-		// set the put url correctly
-		me.url = "/nodes/" + me.nodename + "/ceph/flags";
 		// re-align after store load, else the window is not centered
 		me.alignTo(Ext.getBody(), 'c-c');
 	    }

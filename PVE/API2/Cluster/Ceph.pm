@@ -7,6 +7,7 @@ use PVE::Ceph::Services;
 use PVE::Ceph::Tools;
 use PVE::Cluster;
 use PVE::Exception qw(raise_param_exc);
+use PVE::JSONSchema qw(get_standard_option);
 use PVE::RADOS;
 use PVE::RESTHandler;
 use PVE::SafeSyslog;
@@ -38,6 +39,7 @@ __PACKAGE__->register_method ({
 	my $result = [
 	    { name => 'metadata' },
 	    { name => 'status' },
+	    { name => 'flags' },
 	];
 
 	return $result;
@@ -128,5 +130,126 @@ __PACKAGE__->register_method ({
 	return $status;
     }
 });
+
+my $possible_flags = PVE::Ceph::Tools::get_possible_osd_flags();
+my $possible_flags_list = [ sort keys %$possible_flags ];
+
+my $get_current_set_flags = sub {
+    my $rados = shift;
+
+    $rados //= PVE::RADOS->new();
+
+    my $stat = $rados->mon_command({ prefix => 'osd dump' });
+    my $setflags = $stat->{flags} // '';
+    return { map { $_ => 1 } PVE::Tools::split_list($setflags) };
+};
+
+__PACKAGE__->register_method ({
+    name => 'get_all_flags',
+    path => 'flags',
+    method => 'GET',
+    description => "get the status of all ceph flags",
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    additionalProperties => 1,
+	    properties => {
+		name => {
+		    description => "Flag name.",
+		    type => 'string', enum => $possible_flags_list,
+		},
+	    },
+	},
+	links => [ { rel => 'child', href => "{name}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::Ceph::Tools::check_ceph_configured();
+
+	my $setflags = $get_current_set_flags->();
+
+	my $res = [];
+	foreach my $flag (@$possible_flags_list) {
+	    my $el = {
+		name => $flag,
+		description => $possible_flags->{$flag}->{description},
+		value => 0,
+	    };
+
+	    my $realflag = PVE::Ceph::Tools::get_real_flag_name($flag);
+	    if ($setflags->{$realflag}) {
+		$el->{value} = 1;
+	    }
+
+	    push @$res, $el;
+	}
+
+	return $res;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'set_flags',
+    path => 'flags',
+    method => 'PUT',
+    description => "Set/Unset multiple ceph flags at once.",
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => $possible_flags,
+    },
+    returns => { type => 'string' },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+	PVE::Ceph::Tools::check_ceph_configured();
+
+	my $worker = sub {
+	    my $rados = PVE::RADOS->new(); # (re-)open for forked worker
+
+	    my $setflags = $get_current_set_flags->($rados);
+
+	    my $errors = 0;
+	    foreach my $flag (@$possible_flags_list) {
+		next if !defined($param->{$flag});
+		my $val = $param->{$flag};
+		my $realflag = PVE::Ceph::Tools::get_real_flag_name($flag);
+
+		next if !$val == !$setflags->{$realflag}; # we do not set/unset flags to the same state
+
+		my $prefix = $val ? 'set' : 'unset';
+		eval {
+		    print "$prefix $flag\n";
+		    $rados->mon_command({ prefix => "osd $prefix", key => $flag, });
+		};
+		if (my $err = $@) {
+		    warn "error with $flag: '$err'\n";
+		    $errors++;
+		}
+	    }
+
+	    if ($errors) {
+		die "could not set/unset $errors flags\n";
+	    }
+	};
+
+	return $rpcenv->fork_worker('cephsetflags', undef,  $user, $worker);
+    }});
 
 1;
