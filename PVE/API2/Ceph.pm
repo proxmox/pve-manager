@@ -96,6 +96,7 @@ __PACKAGE__->register_method ({
 	    { name => 'log' },
 	    { name => 'disks' },
 	    { name => 'flags' },
+	    { name => 'flags2' },
 	    { name => 'rules' },
 	];
 
@@ -818,6 +819,61 @@ my $possible_flags = {
 	optional=> 1,
     },
 };
+
+# the 'pause' flag gets always set to both 'pauserd' and 'pausewr'
+# so decide that the 'pause' flag is set if we detect 'pauserd'
+my $flagmap = {
+    'pause' => 'pauserd',
+};
+
+__PACKAGE__->register_method ({
+    name => 'flags2',
+    path => 'flags2',
+    method => 'GET',
+    description => "get the status of all ceph flags",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => { type => 'array' },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::Ceph::Tools::check_ceph_configured();
+
+	my $rados = PVE::RADOS->new();
+
+	my $stat = $rados->mon_command({ prefix => 'osd dump' });
+	my $setflags = {};
+	foreach my $flag (PVE::Tools::split_list($stat->{flags} // '')) {
+	    $setflags->{$flag} = 1;
+	}
+
+	my $res = [];
+	foreach my $flag (sort keys %$possible_flags) {
+	    my $el = {
+		name => $flag,
+		description => $possible_flags->{$flag}->{description},
+		value => 0,
+	    };
+
+	    my $realflag = $flagmap->{$flag} // $flag;
+	    if ($setflags->{$realflag}) {
+		$el->{value} = 1;
+	    }
+
+	    push @$res, $el;
+	}
+
+	return $res;
+    }});
 
 __PACKAGE__->register_method ({
     name => 'get_flags',
