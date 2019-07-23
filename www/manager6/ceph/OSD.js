@@ -169,7 +169,12 @@ Ext.define('PVE.CephSetFlags', {
 
     showProgress: true,
 
-    width: 600,
+    width: 720,
+    // FIXME: hack, should be done "automatically" one your store got loaded + rendered
+    minHeight: 325,
+
+    layout: 'fit',
+
     onlineHelp: 'pve_ceph_osds',
     isCreate: true,
     title: Ext.String.format(gettext('Manage {0}'), 'Global OSD Flags'),
@@ -203,7 +208,7 @@ Ext.define('PVE.CephSetFlags', {
 			{
 			    text: gettext('Enable'),
 			    xtype: 'checkcolumn',
-			    width: 60,
+			    width: 75,
 			    dataIndex: 'value',
 			},
 			{
@@ -234,6 +239,7 @@ Ext.define('PVE.CephSetFlags', {
 	});
 
 	me.callParent();
+
 	var grid = me.down('#flaggrid');
 	me.load({
 	    success: function(response, options) {
@@ -242,7 +248,7 @@ Ext.define('PVE.CephSetFlags', {
 		// set the put url correctly
 		me.url = "/nodes/" + me.nodename + "/ceph/flags";
 	    }
-	})
+	});
     }
 });
 
