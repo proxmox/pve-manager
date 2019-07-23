@@ -250,7 +250,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    rows[confid] = {
 		group: 25,
 		order: i,
-		tdCls: 'pve-itype-icon-usb',
+		iconCls: 'usb',
 		editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.USBEdit' : undefined,
 		never_delete: caps.nodes['Sys.Console'] ? false : true,
 		header: gettext('USB Device') + ' (' + confid + ')'
@@ -672,7 +672,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    {
 				text: gettext('USB Device'),
 				itemId: 'addusb',
-				iconCls: 'pve-itype-icon-usb',
+				iconCls: 'fa fa-usb black',
 				disabled: !caps.nodes['Sys.Console'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.USBEdit', {
@@ -713,7 +713,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    {
 				text: gettext('CloudInit Drive'),
 				itemId: 'addci',
-				iconCls: 'pve-itype-icon-cloud',
+				iconCls: 'fa fa-cloud black',
 				disabled: !caps.nodes['Sys.Console'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.CIDriveEdit', {
@@ -727,7 +727,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    {
 				text: gettext('Audio Device'),
 				itemId: 'addaudio',
-				iconCls: 'fa fa-volume-up',
+				iconCls: 'fa fa-volume-up black',
 				disabled: !caps.vms['VM.Config.HWType'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.AudioEdit', {
