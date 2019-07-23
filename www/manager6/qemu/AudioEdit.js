@@ -2,7 +2,8 @@ Ext.define('PVE.qemu.AudioInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     xtype: 'pveAudioInputPanel',
 
-    onlineHelp: 'qm_audio_device',
+    // FIXME: enable once we bumped doc-gen so this ref is included
+    //onlineHelp: 'qm_audio_device',
 
     onGetValues: function(values) {
 	var ret = PVE.Parser.printPropertyString(values);
