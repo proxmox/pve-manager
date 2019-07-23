@@ -21,6 +21,7 @@ use PVE::Tools qw(extract_param);
 
 use PVE::API2::ACMEAccount;
 use PVE::API2::Backup;
+use PVE::API2::Cluster::Ceph;
 use PVE::API2::ClusterConfig;
 use PVE::API2::Firewall::Cluster;
 use PVE::API2::HAConfig;
@@ -56,6 +57,11 @@ __PACKAGE__->register_method ({
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::ACMEAccount",
     path => 'acme',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Cluster::Ceph",
+    path => 'ceph',
 });
 
 my $dc_schema = PVE::Cluster::get_datacenter_schema();
@@ -604,118 +610,6 @@ __PACKAGE__->register_method({
 	}
 
 	die "unable to get any free VMID\n";
-    }});
-
-__PACKAGE__->register_method ({
-    name => 'cephindex',
-    path => 'ceph',
-    method => 'GET',
-    description => "Cluster ceph index.",
-    permissions => { user => 'all' },
-    parameters => {
-	additionalProperties => 0,
-	properties => {},
-    },
-    returns => {
-	type => 'array',
-	items => {
-	    type => "object",
-	    properties => {},
-	},
-	links => [ { rel => 'child', href => "{name}" } ],
-    },
-    code => sub {
-	my ($param) = @_;
-
-	my $result = [
-	    { name => 'metadata' },
-	    { name => 'status' },
-	];
-
-	return $result;
-    }});
-
-__PACKAGE__->register_method ({
-    name => 'ceph_metadata',
-    path => 'ceph/metadata',
-    method => 'GET',
-    description => "Get ceph metadata.",
-    protected => 1,
-    permissions => {
-	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
-    },
-    parameters => {
-	additionalProperties => 0,
-	properties => {},
-    },
-    returns => { type => 'object' },
-    code => sub {
-	my ($param) = @_;
-
-	PVE::Ceph::Tools::check_ceph_inited();
-
-	my $rados = PVE::RADOS->new();
-
-	my $res = {
-	    version => PVE::Cluster::get_node_kv("ceph-version"),
-	};
-
-	for my $type ( qw(mon mgr mds) ) {
-	    my $typedata = PVE::Ceph::Services::get_cluster_service($type);
-	    my $data = {};
-	    for my $host (sort keys %$typedata) {
-		for my $service (sort keys %{$typedata->{$host}}) {
-		    $data->{"$service\@$host"} = $typedata->{$host}->{$service};
-		}
-	    }
-
-	    # get data from metadata call and merge 'our' data
-	    my $services = $rados->mon_command({ prefix => "$type metadata" });
-	    for my $service ( @$services ) {
-		my $hostname = $service->{hostname};
-		my $servicename =  $service->{name} // $service->{id};
-		my $id = "$servicename\@$hostname";
-
-		if ($data->{$id}) {
-		    # copy values over to the metadata hash
-		    for my $k (keys %{$data->{$id}}) {
-			$service->{$k} = $data->{$id}->{$k};
-		    }
-		}
-		$data->{$id} = $service;
-	    }
-
-	    $res->{$type} = $data;
-	}
-
-	$res->{osd} = $rados->mon_command({ prefix => "osd metadata" });
-
-	return $res;
-    }});
-
-__PACKAGE__->register_method ({
-    name => 'cephstatus',
-    path => 'ceph/status',
-    method => 'GET',
-    description => "Get ceph status.",
-    protected => 1,
-    permissions => {
-	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
-    },
-    parameters => {
-	additionalProperties => 0,
-	properties => { },
-    },
-    returns => { type => 'object' },
-    code => sub {
-	my ($param) = @_;
-
-	PVE::Ceph::Tools::check_ceph_inited();
-
-	my $rados = PVE::RADOS->new();
-	my $status = $rados->mon_command({ prefix => 'status' });
-	$status->{health} = $rados->mon_command({ prefix => 'health', detail => 'detail' });
-	return $status;
     }});
 
 1;

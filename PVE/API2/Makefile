@@ -1,6 +1,6 @@
 include ../../defines.mk
 
-SUBDIRS=Hardware Ceph
+SUBDIRS=Hardware Ceph Cluster
 
 PERLSOURCE = 			\
 	Replication.pm		\
