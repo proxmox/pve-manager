@@ -826,6 +826,16 @@ my $flagmap = {
     'pause' => 'pauserd',
 };
 
+my $get_current_set_flags = sub {
+    my $rados = shift;
+
+    $rados //= PVE::RADOS->new();
+
+    my $stat = $rados->mon_command({ prefix => 'osd dump' });
+    my $setflags = $stat->{flags} // '';
+    return { map { $_ => 1 } PVE::Tools::split_list($setflags) };
+};
+
 __PACKAGE__->register_method ({
     name => 'flags2',
     path => 'flags2',
@@ -848,13 +858,7 @@ __PACKAGE__->register_method ({
 
 	PVE::Ceph::Tools::check_ceph_configured();
 
-	my $rados = PVE::RADOS->new();
-
-	my $stat = $rados->mon_command({ prefix => 'osd dump' });
-	my $setflags = {};
-	foreach my $flag (PVE::Tools::split_list($stat->{flags} // '')) {
-	    $setflags->{$flag} = 1;
-	}
+	my $setflags = $get_current_set_flags->();
 
 	my $res = [];
 	foreach my $flag (sort keys %$possible_flags) {
@@ -929,19 +933,17 @@ __PACKAGE__->register_method ({
 	my $user = $rpcenv->get_user();
 	PVE::Ceph::Tools::check_ceph_configured();
 
-	my $rados = PVE::RADOS->new();
-
 	my $worker = sub {
-	    # reopen rados object
-	    my $rados = PVE::RADOS->new();
-	    my $stat = $rados->mon_command({ prefix => 'osd dump' });
-	    my $setflags = $stat->{flags} // '';
-	    $setflags = { map { $_ => 1 } PVE::Tools::split_list($setflags) };
+	    my $rados = PVE::RADOS->new(); # (re-)open for forked worker
+
+	    my $setflags = $get_current_set_flags->($rados);
+
 	    my $errors = 0;
 	    foreach my $flag (sort keys %$possible_flags) {
 		next if !defined($param->{$flag});
 		my $val = $param->{$flag};
 		my $realflag = $flagmap->{$flag} // $flag;
+
 		next if !$val == !$setflags->{$realflag}; # we do not set/unset flags to the same state
 
 		my $prefix = $val ? 'set' : 'unset';
