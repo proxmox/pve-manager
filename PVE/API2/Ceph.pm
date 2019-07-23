@@ -725,12 +725,7 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	PVE::Cluster::check_cfs_quorum();
-	PVE::Ceph::Tools::check_ceph_inited();
-
-	my $pve_ckeyring_path = PVE::Ceph::Tools::get_config('pve_ckeyring_path');
-
-	die "not fully configured - missing '$pve_ckeyring_path'\n"
-	    if ! -f $pve_ckeyring_path;
+	PVE::Ceph::Tools::check_ceph_configured();
 
 	my $pool = $param->{name};
 	my $rpcenv = PVE::RPCEnvironment::get();
@@ -786,12 +781,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	PVE::Ceph::Tools::check_ceph_inited();
-
-	my $pve_ckeyring_path = PVE::Ceph::Tools::get_config('pve_ckeyring_path');
-
-	die "not fully configured - missing '$pve_ckeyring_path'\n"
-	    if ! -f $pve_ckeyring_path;
+	PVE::Ceph::Tools::check_ceph_configured();
 
 	my $rados = PVE::RADOS->new();
 
@@ -825,12 +815,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	PVE::Ceph::Tools::check_ceph_inited();
-
-	my $pve_ckeyring_path = PVE::Ceph::Tools::get_config('pve_ckeyring_path');
-
-	die "not fully configured - missing '$pve_ckeyring_path'\n"
-	    if ! -f $pve_ckeyring_path;
+	PVE::Ceph::Tools::check_ceph_configured();
 
 	my $set = $param->{set} // !$param->{unset};
 	my $rados = PVE::RADOS->new();
@@ -868,12 +853,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	PVE::Ceph::Tools::check_ceph_inited();
-
-	my $pve_ckeyring_path = PVE::Ceph::Tools::get_config('pve_ckeyring_path');
-
-	die "not fully configured - missing '$pve_ckeyring_path'\n"
-	    if ! -f $pve_ckeyring_path;
+	PVE::Ceph::Tools::check_ceph_configured();
 
 	my $set = $param->{set} // !$param->{unset};
 	my $rados = PVE::RADOS->new();

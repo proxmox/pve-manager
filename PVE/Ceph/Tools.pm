@@ -109,6 +109,17 @@ sub check_ceph_installed {
     return 1;
 }
 
+
+sub check_ceph_configured {
+
+    check_ceph_inited();
+
+    die "ceph not fully configured - missing '$pve_ckeyring_path'\n"
+	if ! -f $pve_ckeyring_path;
+
+    return 1;
+}
+
 sub check_ceph_inited {
     my ($noerr) = @_;
 

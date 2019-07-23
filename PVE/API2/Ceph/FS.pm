@@ -121,11 +121,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	PVE::Ceph::Tools::check_ceph_inited();
-
-	my $pve_ckeyring_path = PVE::Ceph::Tools::get_config('pve_ckeyring_path');
-	die "Ceph is not fully configured - missing '$pve_ckeyring_path'\n"
-	    if ! -f $pve_ckeyring_path;
+	PVE::Ceph::Tools::check_ceph_configured();
 
 	my $fs_name = $param->{name} // 'cephfs';
 	my $pg_num = $param->{pg_num} // 128;
