@@ -163,6 +163,84 @@ Ext.define('PVE.CephRemoveOsd', {
     }
 });
 
+Ext.define('PVE.CephSetFlags', {
+    extend: 'Proxmox.window.Edit',
+    xtype: 'pveCephSetFlags',
+
+    subject: gettext('Ceph Flags'),
+
+    showProgress: true,
+
+    width: 600,
+    onlineHelp: 'pve_ceph_osds',
+    isCreate: true,
+    submitText: gettext('Set Flags'),
+
+    items: [
+	{
+	    xtype: 'inputpanel',
+	    onGetValues: function(values) {
+		var me = this;
+		var val = {};
+		var data = me.down('#flaggrid').getStore().each((rec) => {
+		    val[rec.data.name] = rec.data.value ? 1 : 0;
+		});
+
+		return val;
+	    },
+	    items: [
+		{
+		    xtype: 'grid',
+		    itemId: 'flaggrid',
+		    store: {},
+
+		    columns: [
+			{
+			    text: gettext('Enable'),
+			    xtype: 'checkcolumn',
+			    width: 60,
+			    dataIndex: 'value',
+			},
+			{
+			    text: 'Name',
+			    dataIndex: 'name',
+			},
+			{
+			    text: 'Description',
+			    flex: 1,
+			    dataIndex: 'description',
+			},
+		    ]
+		}
+	    ],
+	},
+    ],
+
+    initComponent : function() {
+        var me = this;
+
+	if (!me.nodename) {
+	    throw "no node name specified";
+	}
+
+        Ext.applyIf(me, {
+	    url: "/nodes/" + me.nodename + "/ceph/flags2",
+	    method: 'PUT',
+	});
+
+	me.callParent();
+	var grid = me.down('#flaggrid');
+	me.load({
+	    success: function(response, options) {
+		var data = response.result.data;
+		grid.getStore().setData(data);
+		// set the put url correctly
+		me.url = "/nodes/" + me.nodename + "/ceph/flags";
+	    }
+	})
+    }
+});
+
 Ext.define('PVE.node.CephOsdTree', {
     extend: 'Ext.tree.Panel',
     alias: ['widget.pveNodeCephOsdTree'],
