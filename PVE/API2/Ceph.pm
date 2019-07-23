@@ -905,6 +905,65 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
+    name => 'set_flags',
+    path => 'flags',
+    method => 'PUT',
+    description => "Set/Unset multiple ceph flags at once.",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    %$possible_flags,
+	},
+    },
+    returns => { type => 'string' },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+	PVE::Ceph::Tools::check_ceph_configured();
+
+	my $rados = PVE::RADOS->new();
+
+	my $worker = sub {
+	    # reopen rados object
+	    my $rados = PVE::RADOS->new();
+	    my $stat = $rados->mon_command({ prefix => 'osd dump' });
+	    my $setflags = $stat->{flags} // '';
+	    $setflags = { map { $_ => 1 } PVE::Tools::split_list($setflags) };
+	    my $errors = 0;
+	    foreach my $flag (sort keys %$possible_flags) {
+		next if !defined($param->{$flag});
+		my $val = $param->{$flag};
+		my $realflag = $flagmap->{$flag} // $flag;
+		next if !$val == !$setflags->{$realflag}; # we do not set/unset flags to the same state
+
+		my $prefix = $val ? 'set' : 'unset';
+		eval {
+		    print "$prefix $flag\n";
+		    $rados->mon_command({ prefix => "osd $prefix", key => $flag, });
+		};
+		if (my $err = $@) {
+		    warn "error with $flag: '$err'\n";
+		    $errors++;
+		}
+	    }
+
+	    if ($errors) {
+		die "could not set/unset $errors flags\n";
+	    }
+	};
+
+	return $rpcenv->fork_worker('cephsetflags', undef,  $user, $worker);
+    }});
+
+__PACKAGE__->register_method ({
     name => 'set_flag',
     path => 'flags/{flag}',
     method => 'POST',
