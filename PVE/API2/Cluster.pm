@@ -3,26 +3,28 @@ package PVE::API2::Cluster;
 use strict;
 use warnings;
 
-use PVE::SafeSyslog;
-use PVE::Tools qw(extract_param);
-use PVE::Exception qw(raise_param_exc);
-use PVE::INotify;
-use PVE::Cluster qw(cfs_register_file cfs_lock_file cfs_read_file cfs_write_file);
-use PVE::Storage;
-use PVE::API2Tools;
-use PVE::API2::Backup;
-use PVE::API2::HAConfig;
-use PVE::HA::Env::PVE2;
-use PVE::HA::Config;
-use PVE::API2::ClusterConfig;
 use JSON;
+
+use PVE::API2Tools;
+use PVE::Cluster qw(cfs_register_file cfs_lock_file cfs_read_file cfs_write_file);
+use PVE::Exception qw(raise_param_exc);
+use PVE::Firewall;
+use PVE::HA::Config;
+use PVE::HA::Env::PVE2;
+use PVE::INotify;
+use PVE::JSONSchema qw(get_standard_option);
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
-use PVE::JSONSchema qw(get_standard_option);
-use PVE::Firewall;
-use PVE::API2::Firewall::Cluster;
-use PVE::API2::ReplicationConfig;
+use PVE::SafeSyslog;
+use PVE::Storage;
+use PVE::Tools qw(extract_param);
+
 use PVE::API2::ACMEAccount;
+use PVE::API2::Backup;
+use PVE::API2::ClusterConfig;
+use PVE::API2::Firewall::Cluster;
+use PVE::API2::HAConfig;
+use PVE::API2::ReplicationConfig;
 
 use base qw(PVE::RESTHandler);
 
