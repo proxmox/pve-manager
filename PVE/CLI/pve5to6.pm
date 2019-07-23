@@ -691,22 +691,40 @@ sub check_misc {
 	}
     }
 
-    log_info("Check certifiacte's RSA key size");
+    log_info("Check node certificate's RSA key size");
     my $certs = PVE::API2::Certificates->info({ node => $nodename });
-    my $cert_nok;
-    foreach my $c (@$certs) {
-	if (($c->{'public-key-type'} eq 'rsaEncryption') && ($c->{'public-key-bits'} < 2048)) {
-	    log_fail("$c->{filename}, certificate's RSA public key size is less than 2048 bit");
-	    $cert_nok = 1;
-	} elsif (($c->{'public-key-type'} eq 'id-ecPublicKey') && ($c->{'public-key-bits'} < 224)) {
-	    log_fail("$c->{filename}, certificate's ECC public key size is less than 224 bit");
-	    $cert_nok = 1;
-	} elsif (($c->{'public-key-type'} ne 'rsaEncryption') && ($c->{'public-key-type'} ne 'id-ecPublicKey')) {
-	    log_warn("$c->{filename}, certificate's public key type unkown, check Debian Busters release notes");
-	    $cert_nok = 1;
+    my $certs_check = {
+	'rsaEncryption' => {
+	    minsize => 2048,
+	    name => 'RSA',
+	},
+	'id-ecPublicKey' => {
+	    minsize => 224,
+	    name => 'ECC',
+	},
+    };
+
+    my $certs_check_failed = 0;
+    foreach my $cert (@$certs) {
+	my ($type, $size, $fn) = $cert->@{qw(public-key-type public-key-bits filename)};
+
+	if (!defined($type) || !defined($size)) {
+	    log_warn("'$fn': cannot check certificate, failed to get it's type or size!");
+	}
+
+	my $check = $certs_check->{$type};
+	if (!defined($check)) {
+	    log_warn("'$fn': certificate's public key type '$type' unknown, check Debian Busters release notes");
+	    next;
+	}
+
+	if ($size < $check->{minsize}) {
+	    log_fail("'$fn', certificate's $check->{name} public key size is less than 2048 bit");
+	    $certs_check_failed = 1;
+	} else {
+	    log_pass("Certificate '$fn' passed Debian Busters security level for TLS connections ($size >= 2048)");
 	}
     }
-    log_pass("Certificates pass Debian Busters security level for TLS connections") if !defined($cert_nok);
 
     check_kvm_nested();
 }
