@@ -54,7 +54,7 @@ Ext.define('PVE.Utils', { utilities: {
 	    { desc: '2.4 Kernel', val: 'l24' }
 	],
 	'Microsoft Windows': [
-	    { desc: '10/2016', val: 'win10' },
+	    { desc: '10/2016/2019', val: 'win10' },
 	    { desc: '8.x/2012/2012r2', val: 'win8' },
 	    { desc: '7/2008r2', val: 'win7' },
 	    { desc: 'Vista/2008', val: 'w2k8' },
