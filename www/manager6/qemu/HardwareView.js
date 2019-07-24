@@ -149,7 +149,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('Display'),
 		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.DisplayEdit' : undefined,
 		never_delete: true,
-		tdCls: 'pve-itype-icon-display',
+		iconCls: 'desktop',
 		group:5,
 		defaultValue: '',
 		renderer: PVE.Utils.render_kvm_vga_driver		
@@ -219,7 +219,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var confid = type + id;
 	    rows[confid] = {
 		group: 10,
-		tdCls: 'pve-itype-icon-storage',
+		iconCls: 'hdd-o',
 		editor: 'PVE.qemu.HDEdit',
 		never_delete: caps.vms['VM.Config.Disk'] ? false : true,
 		header: gettext('Hard Disk') + ' (' + confid +')',
@@ -232,7 +232,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    rows[confid] = {
 		group: 15,
 		order: i,
-		tdCls: 'pve-itype-icon-network',
+		iconCls: 'exchange',
 		editor: caps.vms['VM.Config.Network'] ? 'PVE.qemu.NetworkEdit' : undefined,
 		never_delete: caps.vms['VM.Config.Network'] ? false : true,
 		header: gettext('Network Device') + ' (' + confid +')'
@@ -240,7 +240,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	}
 	rows.efidisk0 = {
 	    group: 20,
-	    tdCls: 'pve-itype-icon-storage',
+	    iconCls: 'hdd-o',
 	    editor: null,
 	    never_delete: caps.vms['VM.Config.Disk'] ? false : true,
 	    header: gettext('EFI Disk')
@@ -526,7 +526,7 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	var efidisk_menuitem = Ext.create('Ext.menu.Item',{
 	    text: gettext('EFI Disk'),
-	    iconCls: 'pve-itype-icon-storage',
+	    iconCls: 'fa fa-fw fa-hdd-o black',
 	    disabled: !caps.vms['VM.Config.Disk'],
 	    handler: function() {
 
@@ -630,7 +630,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			items: [
 			    {
 				text: gettext('Hard Disk'),
-				iconCls: 'pve-itype-icon-storage',
+				iconCls: 'fa fa-fw fa-hdd-o black',
 				disabled: !caps.vms['VM.Config.Disk'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.HDEdit', {
@@ -656,7 +656,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    },
 			    {
 				text: gettext('Network Device'),
-				iconCls: 'pve-itype-icon-network',
+				iconCls: 'fa fa-fw fa-exchange black',
 				disabled: !caps.vms['VM.Config.Network'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.NetworkEdit', {
@@ -672,7 +672,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    {
 				text: gettext('USB Device'),
 				itemId: 'addusb',
-				iconCls: 'fa fa-usb black',
+				iconCls: 'fa fa-fw fa-usb black',
 				disabled: !caps.nodes['Sys.Console'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.USBEdit', {
@@ -713,7 +713,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    {
 				text: gettext('CloudInit Drive'),
 				itemId: 'addci',
-				iconCls: 'fa fa-cloud black',
+				iconCls: 'fa fa-fw fa-cloud black',
 				disabled: !caps.nodes['Sys.Console'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.CIDriveEdit', {
@@ -727,7 +727,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    {
 				text: gettext('Audio Device'),
 				itemId: 'addaudio',
-				iconCls: 'fa fa-volume-up black',
+				iconCls: 'fa fa-fw fa-volume-up black',
 				disabled: !caps.vms['VM.Config.HWType'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.AudioEdit', {
