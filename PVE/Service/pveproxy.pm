@@ -85,6 +85,8 @@ sub init {
     add_dirs($dirs, '/pve-docs/api-viewer/extjs/' => "$basedirs->{extjs}/");
     add_dirs($dirs, '/novnc/' => "$basedirs->{novnc}/");
     add_dirs($dirs, '/xtermjs/' => "$basedirs->{xtermjs}/");
+    add_dirs($dirs, '/pwt/images/' => "$basedirs->{widgettoolkit}/images/");
+    add_dirs($dirs, '/pwt/css/' => "$basedirs->{widgettoolkit}/css/");
 
     $self->{server_config} = {
 	title => 'Proxmox VE API',

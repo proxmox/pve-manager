@@ -11,6 +11,7 @@
     <link rel="stylesheet" type="text/css" href="/pve2/ext6/crisp/resources/charts-all.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/fa/css/font-awesome.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/css/ext6-pve.css?ver=[% version %]" />
+    <link rel="stylesheet" type="text/css" href="/pwt/css/ext6-pmx.css?ver=[% wtversion %]" />
     [% IF langfile %]
     <script type='text/javascript' src='/pve2/locale/pve-lang-[% lang %].js?ver=[% version %]'></script>
     [%- ELSE %]
