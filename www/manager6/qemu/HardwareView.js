@@ -14,22 +14,22 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	metaData.tdAttr = "valign=middle";
 
+	if (rowdef.isOnStorageBus) {
+	    var value = me.getObjectValue(key, '', false);
+	    if (value === '') {
+		value = me.getObjectValue(key, '', true);
+	    }
+	    if (value.match(/vm-.*-cloudinit/)) {
+		iconCls = 'cloud';
+		txt = rowdef.cloudheader;
+	    } else if (value.match(/media=cdrom/)) {
+		metaData.tdCls = 'pve-itype-icon-cdrom';
+		return rowdef.cdheader;
+	    }
+	}
+
 	if (rowdef.tdCls) {
 	    metaData.tdCls = rowdef.tdCls;
-	    if (rowdef.tdCls == 'pve-itype-icon-storage') { 
-		var value = me.getObjectValue(key, '', false);
-		if (value === '') {
-		    value = me.getObjectValue(key, '', true);
-		}
-		if (value.match(/vm-.*-cloudinit/)) {
-		    icon = "<i class='pve-grid-fa fa fa-fw fa-cloud'></i>";
-		    metaData.tdCls = " pve-itype-fa";
-		    txt = rowdef.cloudheader;
-		} else if (value.match(/media=cdrom/)) {
-		    metaData.tdCls = 'pve-itype-icon-cdrom';
-		    return rowdef.cdheader;
-		}
-	    }
 	} else if (iconCls) {
 	    icon = "<i class='pve-grid-fa fa fa-fw fa-" + iconCls + "'></i>";
 	    metaData.tdCls += " pve-itype-fa";
@@ -222,6 +222,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		iconCls: 'hdd-o',
 		editor: 'PVE.qemu.HDEdit',
 		never_delete: caps.vms['VM.Config.Disk'] ? false : true,
+		isOnStorageBus: true,
 		header: gettext('Hard Disk') + ' (' + confid +')',
 		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')',
 		cloudheader: gettext('CloudInit Drive') + ' (' + confid + ')'
@@ -288,7 +289,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    rows["unused" + i.toString()] = {
 		group: 99,
 		order: i,
-		tdCls: 'pve-itype-icon-storage',
+		iconCls: 'hdd-o',
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.HDEdit' : undefined,
 		header: gettext('Unused Disk') + ' ' + i.toString()
 	    };
@@ -339,8 +340,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	    }
 
 	    var editor = rowdef.editor;
-	    if (rowdef.tdCls == 'pve-itype-icon-storage') {
-		var value = me.getObjectValue(rec.data.key, '', true); 
+	    if (rowdef.isOnStorageBus) {
+		var value = me.getObjectValue(rec.data.key, '', true);
 		if (value.match(/vm-.*-cloudinit/)) {
 		    return;
 		} else if (value.match(/media=cdrom/)) {
@@ -596,9 +597,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
 	    var isCDRom = (value && !!value.toString().match(/media=cdrom/));
 	    var isUnusedDisk = key.match(/^unused\d+/);
-	    var isUsedDisk = !isUnusedDisk &&
-		rowdef.tdCls == 'pve-itype-icon-storage' &&
-		!isCDRom;
+	    var isUsedDisk = !isUnusedDisk && rowdef.isOnStorageBus && !isCDRom;
 
 	    var isCloudInit = (value && value.toString().match(/vm-.*-cloudinit/));
 
