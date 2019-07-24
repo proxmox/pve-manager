@@ -63,9 +63,13 @@ Ext.define('PVE.window.LoginWindow', {
 		uf.focus(true, true);
 	    };
 
-	    Ext.MessageBox.alert(gettext('Error'),
-				 gettext("Login failed. Please try again"),
-				 handler);
+	    let emsg = gettext("Login failed. Please try again");
+
+	    if (resp.failureType === "connect") {
+		emsg = gettext("Connection failure");
+	    }
+
+	    Ext.MessageBox.alert(gettext('Error'), emsg, handler);
 	},
 	success: function(data) {
 	    var me = this;
