@@ -66,7 +66,7 @@ Ext.define('PVE.window.LoginWindow', {
 	    let emsg = gettext("Login failed. Please try again");
 
 	    if (resp.failureType === "connect") {
-		emsg = gettext("Connection failure");
+		emsg = gettext("Connection failure. Network error or Proxmox VE services not running?");
 	    }
 
 	    Ext.MessageBox.alert(gettext('Error'), emsg, handler);
