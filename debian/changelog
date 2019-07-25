@@ -1,3 +1,13 @@
+pve-manager (5.4-12) unstable; urgency=medium
+
+  * pve5to6 upgrade checklist tool: check if certificates key size hold ub to
+    Busters TLS Standards
+
+  * add certification type and size infor to Web GUI, API and pvenode
+    CLI tool
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 25 Jul 2019 09:33:05 +0200
+
 pve-manager (5.4-11) unstable; urgency=medium
 
   * fix #2267: delete address(6) and netmas(6) with cidr(6)
