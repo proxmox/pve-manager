@@ -168,7 +168,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    },
 		    beforeshow: function() {
 			if (this.up('pveCephInstallWizard').getViewModel().get('configuration')) {
-			    this.mask("Coniguration already initialized",['pve-static-mask']);
+			    this.mask("Configuration already initialized",['pve-static-mask']);
 			} else {
 			    this.unmask();
 			}
