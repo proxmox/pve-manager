@@ -3,6 +3,7 @@ include /usr/share/dpkg/architecture.mk
 include defines.mk
 
 export VERSION=${DEB_VERSION_UPSTREAM}
+export PACKAGERELEASE=$(shell dpkg-parsechangelog -SVersion | cut -d- -f2)
 
 DESTDIR=
 
