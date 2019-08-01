@@ -32,7 +32,8 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 	    { flag: 'amd-no-ssb', desc: 'Notifies guest OS that host is not vulnerable for Spectre on AMD CPUs' },
 	    { flag: 'pdpe1gb', desc: 'Allow guest OS to use 1GB size pages, if host HW supports it' },
 	    { flag: 'hv-tlbflush', desc: 'Improve performance in overcommitted Windows guests. May lead to guest bluescreens on old CPUs.' },
-	    { flag: 'hv-evmcs', desc: 'Improve performance for nested virtualization. Only supported on Intel CPUs.' }
+	    { flag: 'hv-evmcs', desc: 'Improve performance for nested virtualization. Only supported on Intel CPUs.' },
+	    { flag: 'aes', desc: 'Activate AES instruction set for HW acceleration.' }
 	],
 	listeners: {
 	    update: function() {
