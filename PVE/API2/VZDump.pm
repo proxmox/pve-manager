@@ -62,9 +62,6 @@ __PACKAGE__->register_method ({
 		if defined($param->{$key}) && ($user ne 'root@pam');
 	}
 
-	# by default we set --rsyncable for gzip
-	local $ENV{GZIP} = "--rsyncable" if !$ENV{GZIP};
-
 	PVE::VZDump::verify_vzdump_parameters($param, 1);
 
 	# silent exit if we run on wrong node

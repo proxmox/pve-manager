@@ -715,7 +715,7 @@ sub compressor_info {
 	    }
 	    return ("pigz -p ${pigz_threads}", 'gz');
 	} else {
-	    return ('gzip', 'gz');
+	    return ('gzip --rsyncable', 'gz');
 	}
     } else {
 	die "internal error - unknown compression option '$opt_compress'";
