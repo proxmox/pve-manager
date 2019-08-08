@@ -60,7 +60,7 @@ Ext.define('PVE.node.Subscription', {
 			{
 			    text: gettext('Download'),
 			    handler: function() {
-				var fileContent = reportWindow.getComponent('system-report-view').html;
+				var fileContent = Ext.String.htmlDecode(reportWindow.getComponent('system-report-view').html);
 				var fileName = getReportFileName();
 
 				// Internet Explorer
