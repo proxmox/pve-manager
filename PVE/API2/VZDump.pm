@@ -83,7 +83,7 @@ __PACKAGE__->register_method ({
 
 	my $skiplist = [];
 	if (!$param->{all}) {
-	    if (!$param->{node}) {
+	    if (!$param->{node} || $param->{node} eq $nodename) {
 		my $vmlist = PVE::Cluster::get_vmlist();
 		my @localvmids = ();
 		foreach my $vmid (@vmids) {
