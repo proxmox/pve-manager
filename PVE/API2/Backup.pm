@@ -31,6 +31,11 @@ sub verify_day_of_week {
     die "invalid day '$value'\n";
 }
 
+my $vzdump_job_id_prop = {
+    type => 'string',
+    description => "The job ID.",
+    maxLength => 50
+};
 
 my $dowhash_to_dow = sub {
     my ($d, $num) = @_;
@@ -207,7 +212,7 @@ __PACKAGE__->register_method({
 	items => {
 	    type => "object",
 	    properties => {
-		id => { type => 'string' },
+		id => $vzdump_job_id_prop
 	    },
 	},
 	links => [ { rel => 'child', href => "{id}" } ],
@@ -304,11 +309,7 @@ __PACKAGE__->register_method({
     parameters => {
     	additionalProperties => 0,
 	properties => {
-	    id => {
-		type => 'string',
-		description => "The job ID.",
-		maxLength => 50,
-	    }
+	    id => $vzdump_job_id_prop
 	},
     },
     returns => {
@@ -344,11 +345,7 @@ __PACKAGE__->register_method({
     parameters => {
     	additionalProperties => 0,
 	properties => {
-	    id => {
-		type => 'string',
-		description => "The job ID.",
-		maxLength => 50,
-	    },
+	    id => $vzdump_job_id_prop
 	},
     },
     returns => { type => 'null' },
@@ -397,11 +394,7 @@ __PACKAGE__->register_method({
     parameters => {
     	additionalProperties => 0,
 	properties => PVE::VZDump::json_config_properties({
-	    id => {
-		type => 'string',
-		description => "The job ID.",
-		maxLength => 50,
-	    },
+	    id => $vzdump_job_id_prop,
 	    starttime => {
 		type => 'string',
 		description => "Job Start time.",

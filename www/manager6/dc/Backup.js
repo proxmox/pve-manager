@@ -410,11 +410,11 @@ Ext.define('PVE.dc.BackupView', {
 		return;
 	    }
 
-            var win = Ext.create('PVE.dc.BackupEdit',{
-                jobid: rec.data.id
-            });
-            win.on('destroy', reload);
-            win.show();
+	    var win = Ext.create('PVE.dc.BackupEdit', {
+		jobid: rec.data.id
+	    });
+	    win.on('destroy', reload);
+	    win.show();
 	};
 
 	var run_backup_now = function(job) {
