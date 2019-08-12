@@ -417,11 +417,97 @@ Ext.define('PVE.dc.BackupView', {
             win.show();
 	};
 
+	var run_backup_now = function(job) {
+	    job = Ext.clone(job);
+
+	    var allNodes = PVE.data.ResourceStore.getNodes();
+	    var jobNode = job.node;
+
+	    // Remove properties related to scheduling
+	    delete job.enabled;
+	    delete job.starttime;
+	    delete job.dow;
+	    delete job.id;
+	    delete job.node;
+	    job.all = job.all === true ? 1 : 0;
+
+	    var errors = [];
+	    var inProgress = allNodes.length;
+
+	    Ext.Msg.show({
+		title: gettext('Please wait...'),
+		closable: false,
+		progress: true
+	    });
+	    Ext.Msg.updateProgress(0, '0/' + allNodes.length);
+
+	    var postRequest = function () {
+		inProgress++;
+
+		Ext.Msg.updateProgress(inProgress/allNodes.length,
+		    inProgress + '/' + allNodes.length);
+
+		if (inProgress == allNodes.length) {
+		    Ext.Msg.hide();
+		    if (errors !== undefined && errors.length > 0) {
+			Ext.Msg.alert('Error', 'Some errors have been encountered:<br />---<br />'
+			    + errors.join('<br />---<br />'));
+		    }
+		}
+	    }
+
+	    allNodes.forEach(node => {
+		if (node.status !== 'online' ||
+		    (jobNode !== undefined && jobNode !== node.node)) {
+		    errors.push(node.node + ": " + gettext("Node is offline"));
+		    return;
+		}
+
+		inProgress--;
+
+		Proxmox.Utils.API2Request({
+		    url: '/nodes/' + node.node + '/vzdump',
+		    method: 'POST',
+		    params: job,
+		    failure: function (response, opts) {
+			errors.push(node.node + ': ' + response.htmlStatus);
+			postRequest();
+		    },
+		    success: postRequest
+		});
+	    });
+	}
+
 	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
 	    handler: run_editor
+	});
+
+	var run_btn = new Proxmox.button.Button({
+	    text: gettext('Run now'),
+	    disabled: true,
+	    selModel: sm,
+	    handler: function() {
+		var rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+
+		Ext.Msg.show({
+		    title: gettext('Confirm'),
+		    icon: Ext.Msg.QUESTION,
+		    msg: gettext('Start the selected backup job now?'),
+		    buttons: Ext.Msg.YESNO,
+		    callback: function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+			run_backup_now(rec.data);
+		    }
+		});
+	    }
 	});
 
 	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
@@ -452,7 +538,8 @@ Ext.define('PVE.dc.BackupView', {
 		    }
 		},
 		remove_btn,
-		edit_btn
+		edit_btn,
+		run_btn
 	    ],
 	    columns: [
 		{
@@ -574,13 +661,9 @@ Ext.define('PVE.dc.BackupView', {
 	fields: [
 	    'id', 'starttime', 'dow',
 	    'storage', 'node', 'vmid', 'exclude',
-	    'mailto', 'pool',
+	    'mailto', 'pool', 'compress', 'mode',
 	    { name: 'enabled', type: 'boolean' },
-	    { name: 'all', type: 'boolean' },
-	    { name: 'snapshot', type: 'boolean' },
-	    { name: 'stop', type: 'boolean' },
-	    { name: 'suspend', type: 'boolean' },
-	    { name: 'compress', type: 'boolean' }
+	    { name: 'all', type: 'boolean' }
 	]
     });
 });
