@@ -469,6 +469,7 @@ __PACKAGE__->register_method({
 		    } elsif ($job->{pool}) {
 			delete $job->{vmid};
 			delete $job->{all};
+			delete $job->{exclude};
 		    }
 
 		    PVE::VZDump::verify_vzdump_parameters($job, 1);
