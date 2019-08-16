@@ -1,3 +1,21 @@
+pve-manager (6.0-6) pve; urgency=medium
+
+  * ui: vm/Hardware: convert more icons from bitmap to vectorized font
+    awesome
+
+  * ui: login: do not show connection failure as login failure
+
+  * fix #582: Cope with long running deletions of backup and disk images
+    by forking a task worker into the background after some delay
+
+  * fix #2314: remove GZIP env var
+
+  * fix #1594: add "Run now" button for cluster wide backup jobs
+
+  * backup: delete "exclude" VMID list when switching a backup job to pool mode
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 16 Aug 2019 13:09:50 +0200
+
 pve-manager (6.0-5) pve; urgency=medium
 
   * fix #2292: ceph osd create: use size parameter for db/wal
