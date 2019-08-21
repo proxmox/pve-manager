@@ -27,6 +27,12 @@ use PVE::API2::Firewall::Cluster;
 use PVE::API2::HAConfig;
 use PVE::API2::ReplicationConfig;
 
+my $have_sdn;
+eval {
+    require PVE::API2::Network::SDN;
+    $have_sdn = 1;
+};
+
 use base qw(PVE::RESTHandler);
 
 __PACKAGE__->register_method ({
@@ -63,6 +69,13 @@ __PACKAGE__->register_method ({
     subclass => "PVE::API2::Cluster::Ceph",
     path => 'ceph',
 });
+
+if ($have_sdn) {
+    __PACKAGE__->register_method ({
+       subclass => "PVE::API2::Network::SDN",
+       path => 'sdn',
+    });
+}
 
 my $dc_schema = PVE::Cluster::get_datacenter_schema();
 my $dc_properties = { 
@@ -112,6 +125,10 @@ __PACKAGE__->register_method ({
 	    { name => 'acme' },
 	    { name => 'ceph' },
 	    ];
+
+	if ($have_sdn) {
+	    push(@{$result}, { name => 'sdn' });
+	}
 
 	return $result;
     }});
