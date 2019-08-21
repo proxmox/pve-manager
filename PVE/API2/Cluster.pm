@@ -190,7 +190,7 @@ __PACKAGE__->register_method({
 	    type => {
 		type => 'string',
 		optional => 1,
-		enum => ['vm', 'storage', 'node'],
+		enum => ['vm', 'storage', 'node', 'sdn'],
 	    },
 	},
     },
@@ -203,7 +203,7 @@ __PACKAGE__->register_method({
 		type => {
 		    description => "Resource type.",
 		    type => 'string',
-		    enum => ['node', 'storage', 'pool', 'qemu', 'lxc', 'openvz'],
+		    enum => ['node', 'storage', 'pool', 'qemu', 'lxc', 'openvz', 'sdn'],
 		},
 		status => {
 		    description => "Resource type dependent status.",
@@ -396,6 +396,30 @@ __PACKAGE__->register_method({
 		    my $entry = PVE::API2Tools::extract_storage_stats($storeid, $scfg, $node, $rrd);
 		    push @$res, $entry;
 		}
+	    }
+	}
+
+	if($have_sdn) {
+	    if (!$param->{type} || $param->{type} eq 'sdn') {
+
+		my $nodes = PVE::Cluster::get_node_kv("sdn");
+
+		foreach my $node (keys %{$nodes}) {
+		    my $sdns = decode_json($nodes->{$node});
+
+		    foreach my $id (keys %{$sdns}) {
+			my $sdn = $sdns->{$id};
+			#next if !$rpcenv->check($authuser, "/sdn/$id", [ 'SDN.Audit' ], 1);
+			my $entry = {
+			    id => "sdn/$node/$id",
+			    sdn => $id,
+			    node => $node,
+			    type => 'sdn',
+			    status => $sdn->{'status'},
+		        }; 		    
+		    	push @$res, $entry;
+		    }
+	        }
 	    }
 	}
 
