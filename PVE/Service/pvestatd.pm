@@ -37,6 +37,12 @@ PVE::Status::Plugin->init();
 
 use base qw(PVE::Daemon);
 
+my $have_sdn;
+eval {
+    require PVE::API2::Network::SDN;
+    $have_sdn = 1;
+};
+
 my $opt_debug;
 my $restart_request;
 
@@ -457,6 +463,16 @@ sub update_ceph_version {
     }
 }
 
+sub update_sdn_status {
+
+    if($have_sdn) {
+	my ($transport_status, $vnet_status) = PVE::Network::SDN::status();
+
+	my $status = $transport_status ? encode_json($transport_status) : undef;
+	PVE::Cluster::broadcast_node_kv("sdn", $status);
+    }
+}
+
 sub update_status {
 
     # update worker list. This is not really required and
@@ -523,6 +539,12 @@ sub update_status {
     };
     $err = $@;
     syslog('err', "error getting ceph services: $err") if $err;
+
+    eval {
+	update_sdn_status();
+    };
+    $err = $@;
+    syslog('err', "sdn status update error: $err") if $err;
 
 }
 
