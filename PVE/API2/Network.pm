@@ -16,6 +16,12 @@ use IO::File;
 
 use base qw(PVE::RESTHandler);
 
+my $have_sdn;
+eval {
+    require PVE::API2::Network::SDN;
+    $have_sdn = 1;
+};
+
 my $iflockfn = "/etc/network/.pve-interfaces.lock";
 
 my $bond_mode_enum = [
@@ -553,6 +559,11 @@ __PACKAGE__->register_method({
 	my $worker = sub {
 
 	    rename($new_config_file, $current_config_file) if -e $new_config_file;
+
+	    if ($have_sdn) {
+		my $rawconfig = PVE::Network::SDN::generate_etc_network_config();
+		PVE::Network::SDN::write_etc_network_config($rawconfig);
+	    }
 
 	    my $cmd = ['ifreload', '-a'];
 
