@@ -50,6 +50,12 @@ use PVE::API2::Disks;
 use JSON;
 use Socket;
 
+my $have_sdn;
+eval {
+    require PVE::API2::Network::SDN::Status;
+    $have_sdn = 1;
+};
+
 use base qw(PVE::RESTHandler);
 
 __PACKAGE__->register_method ({
@@ -138,6 +144,13 @@ __PACKAGE__->register_method ({
     subclass => "PVE::API2::NodeConfig",
     path => 'config',
 });
+
+if ($have_sdn) {
+    __PACKAGE__->register_method ({
+	subclass => "PVE::API2::Network::SDN::Status",
+	path => 'sdn',
+    });
+}
 
 __PACKAGE__->register_method ({
     name => 'index',
