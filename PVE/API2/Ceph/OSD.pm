@@ -313,10 +313,13 @@ __PACKAGE__->register_method ({
 	    my $name = $d->{name};
 	    my $info = $disklist->{$name};
 	    die "unable to get device info for '$d->{dev}' for type $type\n" if !$disklist->{$name};
-	    die "device '$d->{dev}' is not GPT partitioned\n"
-		if $info->{used} && $info->{used} eq 'partitions' && !$info->{gpt};
-	    die "device '$d->{dev}' is already in use and has no LVM on it\n"
-		if $info->{used} && $info->{used} ne 'LVM';
+	    if (my $usage = $info->{used}) {
+		if ($usage eq 'partitions') {
+		    die "device '$d->{dev}' is not GPT partitioned\n" if !$info->{gpt};
+		} elsif ($usage ne 'LVM') {
+		    die "device '$d->{dev}' is already in use and has no LVM on it\n";
+		}
+	    }
 	}
 
 	# get necessary ceph infos
