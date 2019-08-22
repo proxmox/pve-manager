@@ -218,7 +218,14 @@ Ext.define('PVE.storage.Upload', {
 		    xtype: 'filefield',
 		    name: 'filename',
 		    buttonText: gettext('Select File...'),
-		    allowBlank: false
+		    allowBlank: false,
+		    listeners: {
+			afterrender: function(cmp) {
+			    cmp.fileInputEl.set({
+				accept: '.img, .iso'
+			    });
+			}
+		    }
 		},
 		pbar
 	    ]
