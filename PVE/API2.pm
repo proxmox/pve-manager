@@ -17,32 +17,32 @@ use PVE::API2::AccessControl;
 use PVE::API2::Storage::Config;
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Cluster",  
+    subclass => "PVE::API2::Cluster",
     path => 'cluster',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Nodes",  
+    subclass => "PVE::API2::Nodes",
     path => 'nodes',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Storage::Config",  
+    subclass => "PVE::API2::Storage::Config",
     path => 'storage',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::AccessControl",  
+    subclass => "PVE::API2::AccessControl",
     path => 'access',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Pool",  
+    subclass => "PVE::API2::Pool",
     path => 'pools',
 });
 
 __PACKAGE__->register_method ({
-    name => 'index', 
+    name => 'index',
     path => '',
     method => 'GET',
     permissions => { user => 'all' },
@@ -62,8 +62,8 @@ __PACKAGE__->register_method ({
 	links => [ { rel => 'child', href => "{subdir}" } ],
     },
     code => sub {
-	my ($resp, $param) = @_;
-    
+	my ($param) = @_;
+
 	my $res = [ { subdir => 'version' } ];
 
 	my $ma = PVE::API2->method_attributes();
@@ -80,7 +80,7 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
-    name => 'version', 
+    name => 'version',
     path => 'version',
     method => 'GET',
     permissions => { user => 'all' },
@@ -98,15 +98,15 @@ __PACKAGE__->register_method ({
 	},
     },
     code => sub {
-	my ($resp, $param) = @_;
-    
+	my ($param) = @_;
+
 	my $res = PVE::Cluster::cfs_read_file('datacenter.cfg');
 
 	my $vi = PVE::pvecfg::version_info();
 	foreach my $k (qw(version release repoid)) {
 	    $res->{$k} = $vi->{$k};
 	}
-	
+
 	return $res;
     }});
 
