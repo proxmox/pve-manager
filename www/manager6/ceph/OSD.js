@@ -311,7 +311,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		    };
 		    traverse(data.root, node => {
 			// compatibility for old api call
-			if (node.type === 'host' && node.version === undefined) {
+			if (node.type === 'host' && !node.version) {
 			    node.version = data.versions[node.name];
 			}
 
