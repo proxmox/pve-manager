@@ -2125,7 +2125,7 @@ __PACKAGE__->register_method ({
 		},
 		mem => {
 		    description => "Used memory in bytes.",
-		    type => 'string',
+		    type => 'integer',
 		    optional => 1,
 		    renderer => 'bytes',
 		},
