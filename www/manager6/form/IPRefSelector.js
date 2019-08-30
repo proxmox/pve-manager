@@ -10,6 +10,7 @@ Ext.define('PVE.form.IPRefSelector', {
 
     valueField: 'ref',
     displayField: 'ref',
+    notFoundIsValid: true,
 
     initComponent: function() {
 	var me = this;
