@@ -41,12 +41,13 @@ Ext.define('PVE.noVncConsole', {
 	    items: box,
 	    listeners: {
 		activate: function() {
+		    var sp = Ext.state.Manager.getProvider();
 		    var queryDict = {
 			console: me.consoleType, // kvm, lxc, upgrade or shell
 			vmid: me.vmid,
 			node: me.nodename,
 			cmd: me.cmd,
-			resize: 'scale'
+			resize: sp.get('novnc-scaling'),
 		    };
 		    queryDict[type] = 1;
 		    PVE.Utils.cleanEmptyObjectKeys(queryDict);

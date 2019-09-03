@@ -37,6 +37,10 @@ Ext.define('PVE.window.Settings', {
 
 	    var username = sp.get('login-username') || Proxmox.Utils.noneText;
 	    me.lookupReference('savedUserName').setValue(username);
+	    var vncMode = sp.get('novnc-scaling');
+	    if (vncMode !== undefined) {
+		me.lookupReference('noVNCScalingGroup').setValue(vncMode);
+	    }
 
 	    var settings = ['fontSize', 'fontFamily', 'letterSpacing', 'lineHeight'];
 	    settings.forEach(function(setting) {
@@ -164,162 +168,212 @@ Ext.define('PVE.window.Settings', {
     },
 
     items: [{
-	    xtype: 'fieldset',
-	    width: '50%',
-	    title: gettext('Webinterface Settings'),
-	    margin: '5',
-	    layout: {
-		type: 'vbox',
-		align: 'left'
-	    },
-	    defaults: {
-		width: '100%',
-		margin: '0 0 10 0'
-	    },
-	    items: [
-		{
-		    xtype: 'displayfield',
-		    fieldLabel: gettext('Dashboard Storages'),
-		    labelAlign: 'left',
-		    labelWidth: '50%'
-		},
-		{
-		    xtype: 'grid',
-		    maxHeight: 150,
-		    reference: 'dashboard-storages',
-		    selModel: {
-			selType: 'checkboxmodel'
-		    },
-		    columns: [{
-			header: gettext('Name'),
-			dataIndex: 'storage',
-			flex: 1
-		    },{
-			header: gettext('Node'),
-			dataIndex: 'node',
-			flex: 1
-		    }],
-		    store: {
-			type: 'diff',
-			field: ['type', 'storage', 'id', 'node'],
-			rstore: PVE.data.ResourceStore,
-			filters: [{
-			    property: 'type',
-			    value: 'storage'
-			}],
-			sorters: [ 'node','storage']
-		    }
-		},
-		{
-		    xtype: 'box',
-		    autoEl: { tag: 'hr'}
-		},
-		{
-		    xtype: 'displayfield',
-		    fieldLabel: gettext('Saved User name'),
-		    labelAlign: 'left',
-		    labelWidth: '50%',
-		    stateId: 'login-username',
-		    reference: 'savedUserName',
-		    value: ''
-		},
-		{
-		    xtype: 'button',
-		    cls: 'x-btn-default-toolbar-small proxmox-inline-button',
-		    text: gettext('Clear User name'),
-		    width: 'auto',
-		    name: 'clear-username'
-		},
-		{
-		    xtype: 'box',
-		    autoEl: { tag: 'hr'}
-		},
-		{
-		    xtype: 'displayfield',
-		    fieldLabel: gettext('Layout'),
-		    labelAlign: 'left',
-		    labelWidth: '50%'
-		},
-		{
-		    xtype: 'button',
-		    cls: 'x-btn-default-toolbar-small proxmox-inline-button',
-		    text: gettext('Reset Layout'),
-		    width: 'auto',
-		    name: 'reset'
-		}
-	    ]
-    },{
 	xtype: 'fieldset',
-	itemId: 'xtermjs',
+	width: '50%',
+	title: gettext('Webinterface Settings'),
+	margin: '5',
+	layout: {
+	    type: 'vbox',
+	    align: 'left'
+	},
+	defaults: {
+	    width: '100%',
+	    margin: '0 0 10 0'
+	},
+	items: [
+	    {
+		xtype: 'displayfield',
+		fieldLabel: gettext('Dashboard Storages'),
+		labelAlign: 'left',
+		labelWidth: '50%'
+	    },
+	    {
+		xtype: 'grid',
+		maxHeight: 150,
+		reference: 'dashboard-storages',
+		selModel: {
+		    selType: 'checkboxmodel'
+		},
+		columns: [{
+		    header: gettext('Name'),
+		    dataIndex: 'storage',
+		    flex: 1
+		},{
+		    header: gettext('Node'),
+		    dataIndex: 'node',
+		    flex: 1
+		}],
+		store: {
+		    type: 'diff',
+		    field: ['type', 'storage', 'id', 'node'],
+		    rstore: PVE.data.ResourceStore,
+		    filters: [{
+			property: 'type',
+			value: 'storage'
+		    }],
+		    sorters: [ 'node','storage']
+		}
+	    },
+	    {
+		xtype: 'box',
+		autoEl: { tag: 'hr'}
+	    },
+	    {
+		xtype: 'displayfield',
+		fieldLabel: gettext('Saved User name'),
+		labelAlign: 'left',
+		labelWidth: '50%',
+		stateId: 'login-username',
+		reference: 'savedUserName',
+		value: ''
+	    },
+	    {
+		xtype: 'button',
+		cls: 'x-btn-default-toolbar-small proxmox-inline-button',
+		text: gettext('Clear User name'),
+		width: 'auto',
+		name: 'clear-username'
+	    },
+	    {
+		xtype: 'box',
+		autoEl: { tag: 'hr'}
+	    },
+	    {
+		xtype: 'displayfield',
+		fieldLabel: gettext('Layout'),
+		labelAlign: 'left',
+		labelWidth: '50%'
+	    },
+	    {
+		xtype: 'button',
+		cls: 'x-btn-default-toolbar-small proxmox-inline-button',
+		text: gettext('Reset Layout'),
+		width: 'auto',
+		name: 'reset'
+	    },
+	]
+    },{
+	xtype: 'container',
+	layout: 'vbox',
 	width: '50%',
 	margin: '5',
-	title: gettext('xterm.js Settings'),
-	items: [{
-	    xtype: 'form',
-	    reference: 'xtermform',
-	    border: false,
-	    layout: {
-		type: 'vbox',
-		algin: 'left'
-	    },
-	    defaults: {
-		width: '100%',
-		margin: '0 0 10 0'
-	    },
-	    items: [
-		{
-		    xtype: 'textfield',
-		    name: 'fontFamily',
-		    reference: 'fontFamily',
-		    emptyText: Proxmox.Utils.defaultText,
-		    fieldLabel: gettext('Font-Family')
-		},
-		{
-		    xtype: 'proxmoxintegerfield',
-		    emptyText: Proxmox.Utils.defaultText,
-		    name: 'fontSize',
-		    reference: 'fontSize',
-		    minValue: 1,
-		    fieldLabel: gettext('Font-Size')
-		},
-		{
-		    xtype: 'numberfield',
-		    name: 'letterSpacing',
-		    reference: 'letterSpacing',
-		    emptyText: Proxmox.Utils.defaultText,
-		    fieldLabel: gettext('Letter Spacing')
-		},
-		{
-		    xtype: 'numberfield',
-		    name: 'lineHeight',
-		    minValue: 0.1,
-		    reference: 'lineHeight',
-		    emptyText: Proxmox.Utils.defaultText,
-		    fieldLabel: gettext('Line Height')
-		},
-		{
-		    xtype: 'container',
+	defaults: {
+	    width: '100%',
+	    // right margin ensures that the right border of the fieldsets
+	    // is shown
+	    margin: '0 2 10 0'
+	},
+	items:[
+	    {
+		xtype: 'fieldset',
+		itemId: 'xtermjs',
+		title: gettext('xterm.js Settings'),
+		items: [{
+		    xtype: 'form',
+		    reference: 'xtermform',
+		    border: false,
 		    layout: {
-			type: 'hbox',
-			pack: 'end'
+			type: 'vbox',
+			algin: 'left'
+		    },
+		    defaults: {
+			width: '100%',
+			margin: '0 0 10 0',
 		    },
 		    items: [
 			{
-			    xtype: 'button',
-			    reference: 'xtermreset',
-			    disabled: true,
-			    text: gettext('Reset')
+			    xtype: 'textfield',
+			    name: 'fontFamily',
+			    reference: 'fontFamily',
+			    emptyText: Proxmox.Utils.defaultText,
+			    fieldLabel: gettext('Font-Family')
 			},
 			{
-			    xtype: 'button',
-			    reference: 'xtermsave',
-			    disabled: true,
-			    text: gettext('Save')
+			    xtype: 'proxmoxintegerfield',
+			    emptyText: Proxmox.Utils.defaultText,
+			    name: 'fontSize',
+			    reference: 'fontSize',
+			    minValue: 1,
+			    fieldLabel: gettext('Font-Size')
+			},
+			{
+			    xtype: 'numberfield',
+			    name: 'letterSpacing',
+			    reference: 'letterSpacing',
+			    emptyText: Proxmox.Utils.defaultText,
+			    fieldLabel: gettext('Letter Spacing')
+			},
+			{
+			    xtype: 'numberfield',
+			    name: 'lineHeight',
+			    minValue: 0.1,
+			    reference: 'lineHeight',
+			    emptyText: Proxmox.Utils.defaultText,
+			    fieldLabel: gettext('Line Height')
+			},
+			{
+			    xtype: 'container',
+			    layout: {
+				type: 'hbox',
+				pack: 'end'
+			    },
+			    items: [
+				{
+				    xtype: 'button',
+				    reference: 'xtermreset',
+				    disabled: true,
+				    text: gettext('Reset')
+				},
+				{
+				    xtype: 'button',
+				    reference: 'xtermsave',
+				    disabled: true,
+				    text: gettext('Save')
+				}
+			    ]
 			}
 		    ]
-		}
-	    ]
-	}]
+		}]
+	    },{
+		xtype: 'fieldset',
+		title: gettext('noVNC Settings'),
+		items: [
+		    {
+			xtype: 'displayfield',
+			fieldLabel: gettext('Scaling mode'),
+		    },
+		    {
+			xtype: 'radiogroup',
+			reference: 'noVNCScalingGroup',
+			height: '15px', // renders faster with value assigned
+			layout: {
+			    type: 'hbox',
+			},
+			items: [
+			    {
+				xtype: 'radiofield',
+				name: 'noVNCScalingField',
+				inputValue: 'scale',
+				boxLabel: 'Local Scaling',
+				checked: true,
+			    },{
+				xtype: 'radiofield',
+				name: 'noVNCScalingField',
+				inputValue: 'off',
+				boxLabel: 'Off',
+				margin: '0 0 0 10',
+			    }
+			],
+			listeners: {
+			    change: function(el, newValue, undefined) {
+				var sp = Ext.state.Manager.getProvider();
+				sp.set('novnc-scaling', newValue);
+			    }
+			},
+		    },
+		]
+	    },
+	]
     }],
 
     onShow: function() {
