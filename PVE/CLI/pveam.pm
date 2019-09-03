@@ -46,7 +46,7 @@ __PACKAGE__->register_method ({
 	my $res = PVE::APLInfo::update($dccfg->{http_proxy});
 
 	if ($res) {
-	    print STDOUT "update sucessful\n"
+	    print STDOUT "update successful\n"
 	} else {
 	    print STDERR "update failed - see /var/log/pveam.log for details\n"
 	}

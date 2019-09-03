@@ -276,7 +276,7 @@ __PACKAGE__->register_method ({
 		$cfg->{global}->{mon_host} = $monhost;
 		if (!defined($cfg->{global}->{public_network})) {
 		    # if there is no info about the public_network
-		    # we have to set it explicitely for the monitor
+		    # we have to set it explicitly for the monitor
 		    $cfg->{$monsection}->{public_addr} = $ip;
 		}
 
@@ -381,7 +381,7 @@ __PACKAGE__->register_method ({
 		# delete from mon_host
 		if (my $monhost = $cfg->{global}->{mon_host}) {
 		    # various replaces to remove the ip
-		    # we always match the beginning or a seperator (also at the end)
+		    # we always match the beginning or a separator (also at the end)
 		    # so we do not accidentally remove a wrong ip
 		    # e.g. removing 10.0.0.1 should not remove 10.0.0.101 or 110.0.0.1
 
@@ -399,7 +399,7 @@ __PACKAGE__->register_method ({
 			$monhost =~ s/(^|[ ,;]+)\Q$addr\E(?:[ ,;]+|$)/$1/;
 		    }
 
-		    # remove trailing seperators
+		    # remove trailing separators
 		    $monhost =~ s/[ ,;]+$//;
 
 		    $cfg->{global}->{mon_host} = $monhost;

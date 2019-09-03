@@ -1655,7 +1655,7 @@ __PACKAGE__->register_method ({
 		description => "Issue start command even if virtual guest have 'onboot' not set or set to off.",
 	    },
 	    vms => {
-		description => "Only consider guests from this comma seperated list of VMIDs.",
+		description => "Only consider guests from this comma separated list of VMIDs.",
 		type => 'string',  format => 'pve-vmid-list',
 		optional => 1,
 	    },
