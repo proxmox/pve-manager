@@ -1643,7 +1643,7 @@ __PACKAGE__->register_method ({
 	check => ['perm', '/', [ 'VM.PowerMgmt' ]],
     },
     proxyto => 'node',
-    description => "Start all VMs and containers (when onboot=1).",
+    description => "Start all VMs and containers located on this node (by default only those with onboot=1).",
     parameters => {
     	additionalProperties => 0,
 	properties => {
@@ -1651,10 +1651,11 @@ __PACKAGE__->register_method ({
 	    force => {
 		optional => 1,
 		type => 'boolean',
-		description => "force if onboot=0.",
+		default => 'off',
+		description => "Issue start command even if virtual guest have 'onboot' not set or set to off.",
 	    },
 	    vms => {
-		description => "Only consider Guests with these IDs.",
+		description => "Only consider guests from this comma seperated list of VMIDs.",
 		type => 'string',  format => 'pve-vmid-list',
 		optional => 1,
 	    },
