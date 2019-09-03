@@ -399,7 +399,7 @@ __PACKAGE__->register_method({
 	    }
 	}
 
-	if($have_sdn) {
+	if ($have_sdn) {
 	    if (!$param->{type} || $param->{type} eq 'sdn') {
 
 		my $nodes = PVE::Cluster::get_node_kv("sdn");
@@ -416,8 +416,8 @@ __PACKAGE__->register_method({
 			    node => $node,
 			    type => 'sdn',
 			    status => $sdn->{'status'},
-		        }; 		    
-		    	push @$res, $entry;
+			};
+			push @$res, $entry;
 		    }
 	        }
 	    }
