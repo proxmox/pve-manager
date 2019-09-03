@@ -1,3 +1,22 @@
+pve-manager (6.0-7) pve; urgency=medium
+
+  * ui: vm memory: correctly set initial maxValue for balloon
+
+  * fix #2340: gui: ceph: handle 'null' versions for hosts
+
+  * fix #2341: ceph: osd create: allow db/wal on partioned disks
+
+  * ui: allow one to add the AES flag explicitly to VMs
+
+  * ui: IPRef field: allow all valid IPs, even if not in the store
+
+  * ui: show supported file types in upload file selector
+
+  * api: add initial (experimental!) Software Defined Networ (SDN) API
+    integration if the libpve-network-perl is installed
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 03 Sep 2019 10:31:21 +0200
+
 pve-manager (6.0-6) pve; urgency=medium
 
   * ui: vm/Hardware: convert more icons from bitmap to vectorized font
