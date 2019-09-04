@@ -561,8 +561,10 @@ __PACKAGE__->register_method({
 	    rename($new_config_file, $current_config_file) if -e $new_config_file;
 
 	    if ($have_sdn) {
-		my $rawconfig = PVE::Network::SDN::generate_etc_network_config();
-		PVE::Network::SDN::write_etc_network_config($rawconfig);
+		my $network_config = PVE::Network::SDN::generate_etc_network_config();
+		PVE::Network::SDN::write_etc_network_config($network_config);
+		my $frr_config = PVE::Network::SDN::generate_frr_config();
+		PVE::Network::SDN::write_frr_config($frr_config) if $frr_config;
 	    }
 
 	    my $cmd = ['ifreload', '-a'];
@@ -575,6 +577,7 @@ __PACKAGE__->register_method({
 	    };
 
 	    PVE::Tools::run_command($cmd,errfunc => $err);
+	    PVE::Tools::run_command(['systemctl', 'reload', 'frr']) if -e "/usr/lib/frr/frr-reload.py";
 	};
 	return $rpcenv->fork_worker('srvreload', 'networking', $authuser, $worker);
    }});
