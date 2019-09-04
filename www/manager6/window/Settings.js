@@ -339,11 +339,8 @@ Ext.define('PVE.window.Settings', {
 		title: gettext('noVNC Settings'),
 		items: [
 		    {
-			xtype: 'displayfield',
-			fieldLabel: gettext('Scaling mode'),
-		    },
-		    {
 			xtype: 'radiogroup',
+			fieldLabel: gettext('Scaling mode'),
 			reference: 'noVNCScalingGroup',
 			height: '15px', // renders faster with value assigned
 			layout: {
