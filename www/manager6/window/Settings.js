@@ -239,18 +239,27 @@ Ext.define('PVE.window.Settings', {
 		autoEl: { tag: 'hr'}
 	    },
 	    {
-		xtype: 'displayfield',
-		fieldLabel: gettext('Layout'),
-		labelAlign: 'left',
-		labelWidth: '50%'
-	    },
-	    {
-		xtype: 'button',
-		cls: 'x-btn-default-toolbar-small proxmox-inline-button',
-		text: gettext('Reset Layout'),
-		width: 'auto',
-		tooltip: gettext('Reset all layout changes (for example, column widths)'),
-		name: 'reset'
+		xtype: 'panel',
+		border: false,
+		layout: {
+		    type: 'hbox',
+		    align: 'stretch'
+		},
+		items: [
+		    {
+			xtype: 'displayfield',
+			fieldLabel: gettext('Layout'),
+			flex: 2,
+		    },
+		    {
+			xtype: 'button',
+			cls: 'x-btn-default-toolbar-small proxmox-inline-button',
+			text: gettext('Reset Layout'),
+			tooltip: gettext('Reset all layout changes (for example, column widths)'),
+			name: 'reset',
+			flex: 1,
+		    },
+		]
 	    },
 	]
     },{
