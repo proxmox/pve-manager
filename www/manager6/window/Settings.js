@@ -249,6 +249,7 @@ Ext.define('PVE.window.Settings', {
 		cls: 'x-btn-default-toolbar-small proxmox-inline-button',
 		text: gettext('Reset Layout'),
 		width: 'auto',
+		tooltip: gettext('Reset all layout changes (for example, column widths)'),
 		name: 'reset'
 	    },
 	]
