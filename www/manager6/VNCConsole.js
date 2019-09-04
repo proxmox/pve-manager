@@ -47,7 +47,7 @@ Ext.define('PVE.noVncConsole', {
 			vmid: me.vmid,
 			node: me.nodename,
 			cmd: me.cmd,
-			resize: sp.get('novnc-scaling'),
+			resize: sp.get('novnc-scaling', 'scale'),
 		    };
 		    queryDict[type] = 1;
 		    PVE.Utils.cleanEmptyObjectKeys(queryDict);

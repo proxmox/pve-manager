@@ -967,7 +967,7 @@ Ext.define('PVE.Utils', { utilities: {
 	    vmid: vmid,
 	    vmname: vmname,
 	    node: nodename,
-	    resize: sp.get('novnc-scaling'),
+	    resize: sp.get('novnc-scaling', 'off'),
 	    cmd: cmd
 	});
 	var nw = window.open("?" + url, '_blank', "innerWidth=745,innerheight=427");
