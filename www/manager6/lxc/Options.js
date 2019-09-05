@@ -1,6 +1,6 @@
 /*jslint confusion: true */
 Ext.define('PVE.lxc.Options', {
-    extend: 'Proxmox.grid.ObjectGrid',
+    extend: 'Proxmox.grid.PendingObjectGrid',
     alias: ['widget.pveLxcOptions'],
 
     onlineHelp: 'pct_options',
@@ -162,7 +162,7 @@ Ext.define('PVE.lxc.Options', {
 	});
 
 	Ext.apply(me, {
-	    url: "/api2/json/" + baseurl,
+	    url: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/pending",
 	    selModel: sm,
 	    interval: 5000,
 	    tbar: [ edit_btn ],

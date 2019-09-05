@@ -1,6 +1,6 @@
 /*jslint confusion: true */
 Ext.define('PVE.lxc.RessourceView', {
-    extend: 'Proxmox.grid.ObjectGrid',
+    extend: 'Proxmox.grid.PendingObjectGrid',
     alias: ['widget.pveLxcRessourceView'],
 
     onlineHelp: 'pct_configuration',
@@ -271,7 +271,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	};
 
 	Ext.apply(me, {
-	    url: '/api2/json/' + baseurl,
+	    url: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/pending",
 	    selModel: me.selModel,
 	    interval: 2000,
 	    cwidth1: 170,

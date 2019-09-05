@@ -93,7 +93,7 @@ Ext.define('PVE.lxc.DNSEdit', {
 
 /*jslint confusion: true */
 Ext.define('PVE.lxc.DNS', {
-    extend: 'Proxmox.grid.ObjectGrid',
+    extend: 'Proxmox.grid.PendingObjectGrid',
     alias: ['widget.pveLxcDNS'],
 
     onlineHelp: 'pct_container_network',
@@ -186,13 +186,13 @@ Ext.define('PVE.lxc.DNS', {
 		win = Ext.create(rowdef.editor, {
 		    pveSelNode: me.pveSelNode,
 		    confid: rec.data.key,
-		    url: '/api2/extjs/' + baseurl
+		    url: '/api2/extjs/nodes/' + nodename + '/lxc/' + vmid + '/config'
 		});
 	    } else {
 		var config = Ext.apply({
 		    pveSelNode: me.pveSelNode,
 		    confid: rec.data.key,
-		    url: '/api2/extjs/' + baseurl
+		    url: '/api2/extjs/nodes/' + nodename + '/lxc/' + vmid + '/config'
 		}, rowdef.editor);
 		win = Ext.createWidget(rowdef.editor.xtype, config);
 		win.load();
@@ -226,12 +226,15 @@ Ext.define('PVE.lxc.DNS', {
 	};
 
 	Ext.apply(me, {
-	    url: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/config",
+	    url: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/pending",
 	    selModel: sm,
 	    cwidth1: 150,
 	    run_editor: run_editor,
 	    tbar: [ edit_btn ],
 	    rows: rows,
+	    editorConfig: {
+		url: "/api2/extjs/" + baseurl
+	    },
 	    listeners: {
 		itemdblclick: run_editor,
 		selectionchange: set_button_status,
