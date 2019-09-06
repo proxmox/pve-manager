@@ -253,7 +253,7 @@ Ext.define('PVE.window.LoginWindow', {
 		name: 'saveusername',
 		reference: 'saveunField',
 		stateId: 'login-saveusername',
-		labelWidth: 'auto',
+		labelWidth: 250,
 		labelAlign: 'right',
 		submitValue: false
 	    },
