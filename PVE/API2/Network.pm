@@ -578,8 +578,15 @@ __PACKAGE__->register_method({
 	    };
 	    PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err);
 
-	    if ($frr_config && -e "/usr/lib/frr/frr-reload.py") {
-		PVE::Tools::run_command(['systemctl', 'reload', 'frr']);
+	    my $err_frr = sub {
+		my $line = shift;
+		if ($line =~ /^line (\S+)/) {
+		    print "$line \n";
+		}
+	    };
+
+	    if ($frr_config && -e "/usr/bin/vtysh") {
+		PVE::Tools::run_command(['/usr/bin/vtysh', '-m', '-f', '/etc/frr/frr.conf'], outfunc => {}, errfunc => $err_frr);
 	    }
 	};
 	return $rpcenv->fork_worker('srvreload', 'networking', $authuser, $worker);
