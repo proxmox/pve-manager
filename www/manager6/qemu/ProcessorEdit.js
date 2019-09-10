@@ -103,7 +103,6 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	{
 	    xtype: 'CPUModelSelector',
 	    name: 'cputype',
-	    value: '__default__',
 	    fieldLabel: gettext('Type')
 	},
 	{
