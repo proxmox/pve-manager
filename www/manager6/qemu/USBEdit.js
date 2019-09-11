@@ -19,7 +19,7 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		    } else if(field.inputValue === 'port') {
 			portfield.setDisabled(!newValue);
 		    } else if(field.inputValue === 'spice') {
-			usb3field.setDisabled(newValue);
+			usb3field.setDisabled(!newValue);
 		    }
 		}
 	    },
@@ -66,14 +66,15 @@ Ext.define('PVE.qemu.USBInputPanel', {
 	    case 'hostdevice':
 	    case 'port':
 		val = me.down('pveUSBSelector[name=' + type + ']').getUSBValue();
-		if (!/usb3/.test(val) && me.down('field[name=usb3]').getValue() === true) {
-		    val += ',usb3=1';
-		}
 		break;
 	    default:
 		throw "invalid type selected";
 	}
 
+	if (values.usb3) {
+	    delete values.usb3;
+	    val += ',usb3=1';
+	}
 	values[me.confid] = val;
 	return values;
     },
@@ -131,7 +132,7 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		{
 		    xtype: 'checkbox',
 		    name: 'usb3',
-		    submitValue: false,
+		    inputValue: true,
 		    reference: 'usb3',
 		    fieldLabel: gettext('Use USB3')
 		}
