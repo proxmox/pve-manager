@@ -143,6 +143,14 @@ Ext.define('PVE.qemu.Config', {
 	    },
 	    menu: {
 		items: [{
+		    text: gettext('Reboot'),
+		    disabled: !caps.vms['VM.PowerMgmt'],
+		    confirmMsg: Proxmox.Utils.format_task_description('qmreboot', vmid),
+		    handler: function() {
+			vm_command("reboot");
+		    },
+		    iconCls: 'fa fa-refresh'
+		},{
 		    text: gettext('Pause'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
 		    confirmMsg: Proxmox.Utils.format_task_description('qmpause', vmid),
