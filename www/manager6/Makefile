@@ -14,7 +14,7 @@ JSSRC= 				                 	\
 	lxc/CmdMenu.js					\
 	node/CmdMenu.js					\
 	VNCConsole.js					\
-	data/PermPathStore.js			\
+	data/PermPathStore.js				\
 	data/ResourceStore.js				\
 	data/model/Realm.js				\
 	data/model/RRDModels.js				\
@@ -60,12 +60,12 @@ JSSRC= 				                 	\
 	form/FirewallPolicySelector.js			\
 	form/GlobalSearchField.js			\
 	form/QemuBiosSelector.js			\
-	form/VMSelector.js			\
+	form/VMSelector.js				\
 	form/VMCPUFlagSelector.js			\
 	form/USBSelector.js				\
 	form/CalendarEvent.js				\
-	form/CephPoolSelector.js				\
-	form/PermPathSelector.js				\
+	form/CephPoolSelector.js			\
+	form/PermPathSelector.js			\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
@@ -108,7 +108,7 @@ JSSRC= 				                 	\
 	ceph/Services.js				\
 	ceph/Config.js					\
 	ceph/Log.js					\
-	ceph/CephInstallWizard.js				\
+	ceph/CephInstallWizard.js			\
 	node/Disks.js					\
 	node/LVM.js					\
 	node/LVMThin.js					\
@@ -149,7 +149,7 @@ JSSRC= 				                 	\
 	qemu/CreateWizard.js				\
 	qemu/USBEdit.js					\
 	qemu/PCIEdit.js					\
-	qemu/SerialEdit.js					\
+	qemu/SerialEdit.js				\
 	qemu/AgentIPView.js				\
 	qemu/CloudInit.js				\
 	qemu/CIDriveEdit.js				\
