@@ -1,6 +1,7 @@
 Ext.define('PVE.qemu.BiosEdit', {
     extend: 'Proxmox.window.Edit',
     alias: 'widget.pveQemuBiosEdit',
+    onlineHelp: 'qm_bios_and_uefi',
 
     initComponent : function() {
 	var me = this;
