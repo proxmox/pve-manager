@@ -1,6 +1,7 @@
 Ext.define('PVE.qemu.DisplayInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     xtype: 'pveDisplayInputPanel',
+    onlineHelp: 'qm_display',
 
     onGetValues: function(values) {
 	var ret = PVE.Parser.printPropertyString(values, 'type');
