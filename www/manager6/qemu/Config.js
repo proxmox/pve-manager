@@ -145,6 +145,7 @@ Ext.define('PVE.qemu.Config', {
 		items: [{
 		    text: gettext('Reboot'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
+		    tooltip: Ext.String.format(gettext('Shutdown, apply pending changes and reboot {0}'), 'VM'),
 		    confirmMsg: Proxmox.Utils.format_task_description('qmreboot', vmid),
 		    handler: function() {
 			vm_command("reboot");
@@ -180,6 +181,7 @@ Ext.define('PVE.qemu.Config', {
 		},{
 		    text: gettext('Reset'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
+		    tooltip: Ext.String.format(gettext('Reset {0} immediately'), 'VM'),
 		    confirmMsg: Proxmox.Utils.format_task_description('qmreset', vmid),
 		    handler: function() {
 			vm_command("reset");
