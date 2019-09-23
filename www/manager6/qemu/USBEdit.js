@@ -5,21 +5,14 @@ Ext.define('PVE.qemu.USBInputPanel', {
     autoComplete: false,
     onlineHelp: 'qm_usb_passthrough',
 
+    viewModel: {
+	data: {}
+    },
+
     controller: {
 	xclass: 'Ext.app.ViewController',
 
 	control: {
-	    'field[name=usb]': {
-		change: function(field, newValue, oldValue) {
-		    var hwidfield = this.lookupReference('hwid');
-		    var portfield = this.lookupReference('port');
-		    if (field.inputValue === 'hostdevice') {
-			hwidfield.setDisabled(!newValue);
-		    } else if(field.inputValue === 'port') {
-			portfield.setDisabled(!newValue);
-		    }
-		}
-	    },
 	    'pveUSBSelector': {
 		change: function(field, newValue, oldValue) {
 		    var usbval = field.getUSBValue();
@@ -92,6 +85,7 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		    name: 'usb',
 		    inputValue: 'hostdevice',
 		    boxLabel: gettext('Use USB Vendor/Device ID'),
+		    reference: 'hostdevice',
 		    submitValue: false
 		},
 		{
@@ -100,8 +94,8 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		    type: 'device',
 		    name: 'hostdevice',
 		    cbind: { pveSelNode: '{pveSelNode}' },
+		    bind: { disabled: '{!hostdevice.checked}' },
 		    editable: true,
-		    reference: 'hwid',
 		    allowBlank: false,
 		    fieldLabel: 'Choose Device',
 		    labelAlign: 'right',
@@ -111,6 +105,7 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		    name: 'usb',
 		    inputValue: 'port',
 		    boxLabel: gettext('Use USB Port'),
+		    reference: 'port',
 		    submitValue: false
 		},
 		{
@@ -118,9 +113,9 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		    disabled: true,
 		    name: 'port',
 		    cbind: { pveSelNode: '{pveSelNode}' },
+		    bind: { disabled: '{!port.checked}' },
 		    editable: true,
 		    type: 'port',
-		    reference: 'port',
 		    allowBlank: false,
 		    fieldLabel: gettext('Choose Port'),
 		    labelAlign: 'right',
