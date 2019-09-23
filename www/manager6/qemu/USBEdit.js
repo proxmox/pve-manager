@@ -55,10 +55,12 @@ Ext.define('PVE.qemu.USBInputPanel', {
 	var type = me.down('radiofield').getGroupValue();
 	switch (type) {
 	    case 'spice':
-		val = 'spice'; break;
+		val = 'spice';
+		break;
 	    case 'hostdevice':
 	    case 'port':
-		val = me.down('pveUSBSelector[name=' + type + ']').getUSBValue();
+		val = 'host=' + values[type];
+		delete values[type];
 		break;
 	    default:
 		throw "invalid type selected";
@@ -102,7 +104,6 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		    allowBlank: false,
 		    fieldLabel: 'Choose Device',
 		    labelAlign: 'right',
-		    submitValue: false
 		},
 		{
 		    name: 'usb',
@@ -122,7 +123,6 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		    allowBlank: false,
 		    fieldLabel: gettext('Choose Port'),
 		    labelAlign: 'right',
-		    submitValue: false
 		},
 		{
 		    xtype: 'checkbox',
