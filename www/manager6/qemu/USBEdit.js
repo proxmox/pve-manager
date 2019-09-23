@@ -42,11 +42,11 @@ Ext.define('PVE.qemu.USBInputPanel', {
 
     onGetValues: function(values) {
 	var me = this;
-	if(!me.confid) {
-	    var i;
-	    for (i = 0; i < 6; i++) {
-		if (!me.vmconfig['usb' +  i.toString()]) {
-		    me.confid = 'usb' + i.toString();
+	if (!me.confid) {
+	    for (let i = 0; i < 6; i++) {
+		let id = 'usb' + i.toString();
+		if (!me.vmconfig[id]) {
+		    me.confid = id;
 		    break;
 		}
 	    }
@@ -142,9 +142,7 @@ Ext.define('PVE.qemu.USBEdit', {
     vmconfig: undefined,
 
     isAdd: true,
-
     subject: gettext('USB Device'),
-
 
     initComponent : function() {
 	var me = this;
@@ -165,35 +163,37 @@ Ext.define('PVE.qemu.USBEdit', {
 	me.load({
 	    success: function(response, options) {
 		ipanel.setVMConfig(response.result.data);
-		if (me.confid) {
-		    var data = response.result.data[me.confid].split(',');
-		    var port, hostdevice, usb3 = false;
-		    var type = 'spice';
-		    var i;
-		    for (i = 0; i < data.length; i++) {
-			if (/^(host=)?(0x)?[a-zA-Z0-9]{4}\:(0x)?[a-zA-Z0-9]{4}$/.test(data[i])) {
-			    hostdevice = data[i];
-			    hostdevice = hostdevice.replace('host=', '').replace('0x','');
-			    type = 'hostdevice';
-			} else if (/^(host=)?(\d+)\-(\d+(\.\d+)*)$/.test(data[i])) {
-			    port = data[i];
-			    port = port.replace('host=','');
-			    type = 'port';
-			}
-
-			if (/^usb3=(1|on|true)$/.test(data[i])) {
-			    usb3 = true;
-			}
-		    }
-		    var values = {
-			usb : type,
-			hostdevice: hostdevice,
-			port: port,
-			usb3: usb3
-		    };
-
-		    ipanel.setValues(values);
+		if (me.isCreate) {
+		    return;
 		}
+
+		var data = response.result.data[me.confid].split(',');
+		var port, hostdevice, usb3 = false;
+		var type = 'spice';
+
+		for (let i = 0; i < data.length; i++) {
+		    if (/^(host=)?(0x)?[a-zA-Z0-9]{4}\:(0x)?[a-zA-Z0-9]{4}$/.test(data[i])) {
+			hostdevice = data[i];
+			hostdevice = hostdevice.replace('host=', '').replace('0x','');
+			type = 'hostdevice';
+		    } else if (/^(host=)?(\d+)\-(\d+(\.\d+)*)$/.test(data[i])) {
+			port = data[i];
+			port = port.replace('host=', '');
+			type = 'port';
+		    }
+
+		    if (/^usb3=(1|on|true)$/.test(data[i])) {
+			usb3 = true;
+		    }
+		}
+		var values = {
+		    usb : type,
+		    hostdevice: hostdevice,
+		    port: port,
+		    usb3: usb3
+		};
+
+		ipanel.setValues(values);
 	    }
 	});
     }
