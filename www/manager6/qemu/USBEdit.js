@@ -13,13 +13,10 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		change: function(field, newValue, oldValue) {
 		    var hwidfield = this.lookupReference('hwid');
 		    var portfield = this.lookupReference('port');
-		    var usb3field = this.lookupReference('usb3');
 		    if (field.inputValue === 'hostdevice') {
 			hwidfield.setDisabled(!newValue);
 		    } else if(field.inputValue === 'port') {
 			portfield.setDisabled(!newValue);
-		    } else if(field.inputValue === 'spice') {
-			usb3field.setDisabled(!newValue);
 		    }
 		}
 	    },
