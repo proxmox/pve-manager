@@ -15,16 +15,19 @@ Ext.define('PVE.qemu.USBInputPanel', {
 	control: {
 	    'pveUSBSelector': {
 		change: function(field, newValue, oldValue) {
-		    var usbval = field.getUSBValue();
 		    var usb3field = this.lookupReference('usb3');
-		    var usb3 = /usb3/.test(usbval);
-		    if(usb3 && !usb3field.isDisabled()) {
+		    var usbval = field.getUSBValue();
+		    var dev_is_usb3 = /usb3=1/.test(usbval);
+
+		    if (dev_is_usb3) {
 			usb3field.savedVal = usb3field.getValue();
 			usb3field.setValue(true);
-			usb3field.setDisabled(true);
-		    } else if(!usb3 && usb3field.isDisabled()){
-			var val = (usb3field.savedVal === undefined)?usb3field.originalValue:usb3field.savedVal;
-			usb3field.setValue(val);
+		    } else {
+			if (usb3field.savedVal !== undefined) {
+			    usb3field.setValue(usb3field.savedVal);
+			} else {
+			    usb3field.setValue(usb3field.originalValue);
+			}
 			usb3field.setDisabled(false);
 		    }
 		}
