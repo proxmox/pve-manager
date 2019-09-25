@@ -102,7 +102,7 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		    bind: { disabled: '{!hostdevice.checked}' },
 		    editable: true,
 		    allowBlank: false,
-		    fieldLabel: 'Choose Device',
+		    fieldLabel: gettext('Choose Device'),
 		    labelAlign: 'right',
 		},
 		{
