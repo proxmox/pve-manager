@@ -1,14 +1,20 @@
 Ext.define('PVE.form.USBSelector', {
     extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.pveUSBSelector'],
+
     allowBlank: false,
     autoSelect: false,
-    displayField: 'usbid',
+    anyMatch: true,
+    displayField: 'product_and_id',
     valueField: 'usbid',
     editable: true,
 
     validator: function(value) {
 	var me = this;
+	if (!value) {
+	    return true; // handled later by allowEmpty in the getErrors call chain
+	}
+	value = me.getValue(); // as the valueField is not the displayfield
 	if (me.type === 'device') {
 	    return (/^[a-f0-9]{4}\:[a-f0-9]{4}$/i).test(value);
 	} else if (me.type === 'port') {
@@ -117,7 +123,16 @@ Ext.define('PVE.form.USBSelector', {
 	    { name: 'level' , type: 'number' },
 	    { name: 'class' , type: 'number' },
 	    { name: 'devnum' , type: 'number' },
-	    { name: 'busnum' , type: 'number' }
+	    { name: 'busnum' , type: 'number' },
+	    {
+		name: 'product_and_id',
+		type: 'string',
+		convert: (v, rec) => {
+		    let res = rec.data.product || gettext('Unkown');
+		    res += " (" + rec.data.usbid + ")";
+		    return res;
+		},
+	    },
 	]
     });
 
@@ -138,7 +153,16 @@ Ext.define('PVE.form.USBSelector', {
 	    { name: 'level' , type: 'number' },
 	    { name: 'class' , type: 'number' },
 	    { name: 'devnum' , type: 'number' },
-	    { name: 'busnum' , type: 'number' }
+	    { name: 'busnum' , type: 'number' },
+	    {
+		name: 'product_and_id',
+		type: 'string',
+		convert: (v, rec) => {
+		    let res = rec.data.product || gettext('Unplugged');
+		    res += " (" + rec.data.usbid + ")";
+		    return res;
+		},
+	    },
 	]
     });
 });
