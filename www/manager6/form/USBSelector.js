@@ -42,9 +42,16 @@ Ext.define('PVE.form.USBSelector', {
 		}
 	    ]
 	});
+	let emptyText = '';
+	if (me.type === 'device') {
+	    emptyText = gettext('Passthrough a specific device');
+	} else {
+	    emptyText = gettext('Passthrough a full port');
+	}
 
 	Ext.apply(me, {
 	    store: store,
+	    emptyText: emptyText,
             listConfig: {
 		width: 500,
 		columns: [
