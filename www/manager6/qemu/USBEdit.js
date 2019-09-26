@@ -9,32 +9,6 @@ Ext.define('PVE.qemu.USBInputPanel', {
 	data: {}
     },
 
-    controller: {
-	xclass: 'Ext.app.ViewController',
-
-	control: {
-	    'pveUSBSelector': {
-		change: function(field, newValue, oldValue) {
-		    var usb3field = this.lookupReference('usb3');
-		    var usbval = field.getUSBValue();
-		    var dev_is_usb3 = /usb3=1/.test(usbval);
-
-		    if (dev_is_usb3) {
-			usb3field.savedVal = usb3field.getValue();
-			usb3field.setValue(true);
-		    } else {
-			if (usb3field.savedVal !== undefined) {
-			    usb3field.setValue(usb3field.savedVal);
-			} else {
-			    usb3field.setValue(usb3field.originalValue);
-			}
-			usb3field.setDisabled(false);
-		    }
-		}
-	    }
-	}
-    },
-
     setVMConfig: function(vmconfig) {
 	var me = this;
 	me.vmconfig = vmconfig;
@@ -129,6 +103,7 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		    xtype: 'checkbox',
 		    name: 'usb3',
 		    inputValue: true,
+		    checked: true,
 		    reference: 'usb3',
 		    fieldLabel: gettext('Use USB3')
 		}
