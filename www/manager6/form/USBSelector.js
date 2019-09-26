@@ -24,7 +24,7 @@ Ext.define('PVE.form.USBSelector', {
 	} else if (me.type === 'port') {
 	    return (/^[0-9]+\-[0-9]+(\.[0-9]+)*$/).test(value);
 	}
-	return false;
+	return gettext("Invalid Value");
     },
 
     initComponent: function() {
