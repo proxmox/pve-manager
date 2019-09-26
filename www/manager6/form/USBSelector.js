@@ -56,6 +56,7 @@ Ext.define('PVE.form.USBSelector', {
 	Ext.apply(me, {
 	    store: store,
             listConfig: {
+		width: 500,
 		columns: [
 		    {
 			header: (me.type === 'device')?gettext('Device'):gettext('Port'),
@@ -67,7 +68,7 @@ Ext.define('PVE.form.USBSelector', {
 			header: gettext('Manufacturer'),
 			sortable: true,
 			dataIndex: 'manufacturer',
-			width: 100
+			width: 150
 		    },
 		    {
 			header: gettext('Product'),

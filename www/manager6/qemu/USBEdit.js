@@ -78,7 +78,8 @@ Ext.define('PVE.qemu.USBInputPanel', {
 	{
 	    xtype: 'fieldcontainer',
 	    defaultType: 'radiofield',
-	    items:[
+	    layout: 'fit',
+	    items: [
 		{
 		    name: 'usb',
 		    inputValue: 'spice',
@@ -142,6 +143,7 @@ Ext.define('PVE.qemu.USBEdit', {
     vmconfig: undefined,
 
     isAdd: true,
+    width: 400,
     subject: gettext('USB Device'),
 
     initComponent : function() {
