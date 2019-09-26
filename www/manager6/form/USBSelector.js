@@ -7,16 +7,6 @@ Ext.define('PVE.form.USBSelector', {
     valueField: 'usbid',
     editable: true,
 
-    getUSBValue: function() {
-	var me = this;
-	var rec = me.store.findRecord('usbid', me.value);
-	var val = 'host='+ me.value;
-	if (rec && rec.data.speed === "5000") {
-	    val = 'host=' + me.value + ",usb3=1";
-	}
-	return val;
-    },
-
     validator: function(value) {
 	var me = this;
 	if (me.type === 'device') {
