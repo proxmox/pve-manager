@@ -52,8 +52,8 @@ Ext.define('PVE.form.USBSelector', {
 	Ext.apply(me, {
 	    store: store,
 	    emptyText: emptyText,
-            listConfig: {
-		width: 500,
+	    listConfig: {
+		width: 520,
 		columns: [
 		    {
 			header: (me.type === 'device')?gettext('Device'):gettext('Port'),
@@ -75,21 +75,22 @@ Ext.define('PVE.form.USBSelector', {
 		    },
 		    {
 			header: gettext('Speed'),
-			width: 70,
+			width: 75,
 			sortable: true,
 			dataIndex: 'speed',
 			renderer: function(value) {
-			    if (value === "5000") {
-				return "USB 3.0";
-			    } else if (value === "480") {
-				return "USB 2.0";
-			    } else {
-				return "USB 1.x";
-			    }
+			    let speed_map = {
+				"10000"  : "USB 3.1",
+				 "5000"  : "USB 3.0",
+				  "480"  : "USB 2.0",
+				   "12"  : "USB 1.x",
+				    "1.5": "USB 1.x",
+			    };
+			    return speed_map[value] || value + " Mbps";
 			}
 		    }
 		]
-	    }
+	    },
 	});
 
         me.callParent();
