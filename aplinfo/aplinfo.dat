@@ -17,19 +17,6 @@ sha512sum: dc1d1ba73047c95747180d80fdf43aff424808f0263bee9df88f48a815cba1a437c5a
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.10 (20190626)
 
-Package: alpine-3.7-default
-Version: 20180913
-Type: lxc
-OS: alpine
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/alpine-3.7-default_20180913_amd64.tar.xz
-md5sum: e26dceccbadaeb2d0901bd5169fe2f9f
-sha512sum: 1a44563abc7edb7b903876123f812cdd8550a86afb75b9918d559ad6b2ef0286df1a3bbaafb6e9d167d783fd02d963101bacd512f25ecf1f83798cc0dec9586f
-Infopage: https://linuxcontainers.org
-Description: LXC default image for alpine 3.7 (20180913)
-
 Package: alpine-3.8-default
 Version: 20180913
 Type: lxc
@@ -57,15 +44,15 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.9 (20190224)
 
 Package: archlinux-base
-Version: 20190426-1
+Version: 20190924-1
 Type: lxc
 OS: archlinux
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/archlinux-base_20190426-1_amd64.tar.gz
-md5sum: 526f742c0a1bb528c2a02385f03e132b
-sha512sum: 32d8a2ffbf83abc3af6f28f767232a282fe6f6d37e067d62899949fa98f6df7ed64fbfdca0ae9a8331c8a757881ec7c0a898bb31ab419a62c72b39f61e5a5dd6
+Location: system/archlinux-base_20190924-1_amd64.tar.gz
+md5sum: 14f54bccc2ccc6d46f2e5667b98a20fc
+sha512sum: 5b75f81b58781fffded53ab6030962d02772f2660b50210f66fe55e3ee10c26a7e81a5f022531a1fe1a0e92ea93fb885c51253f2a7871bbe1547417ae8b08743
 Infopage: https://www.archlinux.org
 Description: ArchLinux base image.
  ArchLinux template with the 'base' group and the 'openssh' package installed.
@@ -84,17 +71,17 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for centos 6 (20161207)
 
 Package: centos-7-default
-Version: 20171212
+Version: 20190926
 Type: lxc
 OS: centos
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/centos-7-default_20171212_amd64.tar.xz
-md5sum: 4fc5ee8f05a1d55f0330c34524c765a0
-sha512sum: 7d1a171889aefdca51b29caa3c680afcb7492576a19a031314717334b136950d48313164e260c0c66b4b2fd288a7d4707abcba8cc1e487ef0854c7e511dc8fd2
+Location: system/centos-7-default_20190926_amd64.tar.xz
+md5sum: f8544ba07b07706f9b74d5f7669d0645
+sha512sum: 7b4a888c38801981a3e8f9fa493c0a233bda3901f56a87763fa3d17c204bbf4e8650d3edf8492aa34cfe2a01631e7182c571b38bea5c7761ae6ea3b63de6c1b4
 Infopage: https://linuxcontainers.org
-Description: LXC default image for centos 7 (20171212)
+Description: LXC default image for centos 7 (20190926)
 
 Package: debian-10.0-standard
 Version: 10.0-1
@@ -244,20 +231,6 @@ sha512sum: 64ffa07e012115567b29cc460686687528d674ba2fbcb198d9cf4e3943bc0f58149b2
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Bionic_Standard
 Description: Ubuntu Bionic (standard)
  A small Ubuntu Bionic system including all standard packages.
-
-Package: ubuntu-18.10-standard
-Version: 18.10-2
-Type: lxc
-OS: ubuntu-18.10
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-18.10-standard_18.10-2_amd64.tar.gz
-md5sum: 970590f92f1f7c7be7029de80a492c6f
-sha512sum: c44b96a72516c752faf78addaf70553de77c5bb743c7972b6d764b0d34166a8657597e52a55ff29cfc2e9fdaefdad5956a2391a4c854d1e9f7734cc047dbd866
-Infopage: http://pve.proxmox.com/wiki/Ubuntu_Cosmic_Standard
-Description: Ubuntu Cosmic (standard)
- A small Ubuntu Cosmic system including all standard packages.
 
 Package: ubuntu-19.04-standard
 Version: 19.04-1
