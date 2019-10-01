@@ -1,6 +1,67 @@
 Ext.define('PVE.Login', {
     extend: 'Ext.form.Panel',
     alias: "widget.pveLogin",
+
+    handleTFA: function(username, ticketResponse) {
+	let me = this;
+	let errlabel = me.down('#signInFailedLabel');
+
+	// set auth cookie with half-loggedin ticket for TFA
+	ticketResponse.LoggedOut = true;
+	Proxmox.Utils.setAuthData(ticketResponse);
+
+	if (Ext.isDefined(ticketResponse.U2FChallenge)) {
+	    Ext.Msg.show({
+		title: 'Error - U2F not implemented',
+		message: 'The U2F two factor authentication is not yet implemented on mobile.',
+		buttons: Ext.MessageBox.CANCEL,
+	    });
+	    errlabel.show();
+	} else {
+
+	    Ext.Msg.show({
+		title: 'Two-Factor Authentication',
+		message: 'Please enter your OTP verification code:',
+		buttons: Ext.MessageBox.OKCANCEL,
+		prompt: {
+		    xtype: 'tfacode',
+		},
+		fn: function(buttonId, code) {
+		    if (buttonId === "cancel") {
+			Proxmox.LoggedOut = false;
+			Proxmox.Utils.authClear();
+		    } else {
+			me.mask({
+			    xtype: 'loadmask',
+			    message: 'Loading...'
+			});
+			Proxmox.Utils.API2Request({
+			    url: '/api2/extjs/access/tfa',
+			    params: { response: code },
+			    method: 'POST',
+			    timeout: 5000, // it'll delay both success & failure
+			    success: function(resp, opts) {
+				me.unmask();
+				// Fill in what we copy over from the 1st factor:
+				let authdata = resp.result.data;
+				authdata.CSRFPreventionToken = Proxmox.CSRFPreventionToken;
+				authdata.username = username;
+				// Finish login, sets real cookie and loads page
+				PVE.Workspace.updateLoginData(authdata);
+			    },
+			    failure: function(resp, opts) {
+				me.unmask();
+				Proxmox.Utils.authClear();
+				errlabel.show();
+			    }
+			});
+		    }
+		},
+	    });
+	}
+
+    },
+
     config: {
 	title: 'Login',
 	padding: 10,
@@ -31,32 +92,9 @@ Ext.define('PVE.Login', {
 	                required: true
 	            },
 		    {
-			xtype: 'textfield',
-	                itemId: 'otpField',
-			placeHolder: gettext('OTP'), 
-			name: 'otp',
-			allowBlank: false,
-			hidden: true
-		    },
-		    {
 			xtype: 'pveRealmSelector',
 	                itemId: 'realmSelectorField',
 			name: 'realm',
-			listeners: {
-			    change: function(f, value) {
-				var form = this.up('formpanel');
-
-				var otp_field = form.down('#otpField');
-
-				if (f.needOTP(value)) {
-				    otp_field.setHidden(false);
-				    otp_field.enable();
-				} else {
-				    otp_field.setHidden(true);
-				    otp_field.disable();
-				}
-			    }
-			}
 		    }
 	        ]
 	    },
@@ -75,37 +113,53 @@ Ext.define('PVE.Login', {
 	        ui: 'action',
 	        text: 'Log In',
 		handler: function() {
-                    var form = this.up('formpanel');
+		    var form = this.up('formpanel');
 
 		    var usernameField = form.down('#userNameTextField'),
-	            passwordField = form.down('#passwordTextField'),
-		    realmField = form.down('#realmSelectorField'),
-		    otpField = form.down('#otpField'),
-	            label = form.down('#signInFailedLabel');
+	                passwordField = form.down('#passwordTextField'),
+		        realmField = form.down('#realmSelectorField'),
+		        errlabel = form.down('#signInFailedLabel');
 
-		    label.hide();
+		    errlabel.hide();
 
 		    var username = usernameField.getValue();
 	            var password = passwordField.getValue();
 	            var realm = realmField.getValue();
-		    var otp = otpField.getValue();
 
 		    Proxmox.Utils.API2Request({
 			url: '/access/ticket',
 			method: 'POST',
 			waitMsgTarget: form,
-			params: { username: username, password: password, realm: realm, otp: otp},
+			params: { username: username, password: password, realm: realm },
 			failure: function(response, options) {
-			    label.show();
+			    errlabel.show();
 			},
 			success: function(response, options) {
-			    usernameField.setValue('');
 			    passwordField.setValue('');
-			    PVE.Workspace.updateLoginData(response.result.data);
+
+			    let data = response.result.data;
+			    if (Ext.isDefined(data.NeedTFA)) {
+				form.handleTFA(username, data);
+			    } else {
+				PVE.Workspace.updateLoginData(data);
+			    }
 			}
 		    });
 		}
 	    }
 	]
     }
+});
+
+Ext.define('PVE.field.TFACode', {
+    extend: 'Ext.field.Text',
+    xtype: 'tfacode',
+
+    config: {
+	component: {
+	    type: 'number'
+	},
+	maxLength: 6,
+	required: true,
+    },
 });
