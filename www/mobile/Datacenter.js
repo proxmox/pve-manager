@@ -79,7 +79,7 @@ Ext.define('PVE.Datacenter', {
 	    method: 'GET',
 	    success: function(response) {
 		var d = response.result.data;
-		me.summary.version = d.version + '-' + d.release + '/' + d.repoid;
+		me.summary.version = d.version;
 		ci.setData(me.summary);
 	    }
 	});
