@@ -960,14 +960,18 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     openVNCViewer: function(vmtype, vmid, nodename, vmname, cmd) {
-	var sp = Ext.state.Manager.getProvider();
+	let scaling = 'off';
+	if (Proxmox.Utils.toolkit !== 'touch') {
+	    var sp = Ext.state.Manager.getProvider();
+	    scaling = sp.get('novnc-scaling', 'off');
+	}
 	var url = Ext.Object.toQueryString({
 	    console: vmtype, // kvm, lxc, upgrade or shell
 	    novnc: 1,
 	    vmid: vmid,
 	    vmname: vmname,
 	    node: nodename,
-	    resize: sp.get('novnc-scaling', 'off'),
+	    resize: scaling,
 	    cmd: cmd
 	});
 	var nw = window.open("?" + url, '_blank', "innerWidth=745,innerheight=427");
