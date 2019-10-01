@@ -187,23 +187,16 @@ Ext.define('PVE.window.LoginWindow', {
     },
 
     width: 400,
-
     modal: true,
-
     border: false,
-
     draggable: true,
-
     closable: false,
-
     resizable: false,
-
     layout: 'auto',
 
     title: gettext('Proxmox VE Login'),
 
     defaultFocus: 'usernameField',
-
     defaultButton: 'loginButton',
 
     items: [{
