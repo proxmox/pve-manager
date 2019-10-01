@@ -37,15 +37,22 @@ Ext.define('PVE.qemu.EFIDiskInputPanel', {
 
 	me.drive = {};
 
-	me.items= [];
+	me.items= [
+	    {
+		xtype: 'pveDiskStorageSelector',
+		name: 'efidisk0',
+		storageContent: 'images',
+		nodename: me.nodename,
+		hideSize: true
+	    },
+	    {
+		xtype: 'label',
+		text: gettext("Warning: The VM currently does not uses 'OVMF (UEFI)' as BIOS."),
+		userCls: 'pve-hint',
+		hidden: me.usesEFI,
+	    },
+	];
 
-	me.items.push({
-	    xtype: 'pveDiskStorageSelector',
-	    name: 'efidisk0',
-	    storageContent: 'images',
-	    nodename: me.nodename,
-	    hideSize: true
-	});
 	me.callParent();
     }
 });
@@ -56,6 +63,7 @@ Ext.define('PVE.qemu.EFIDiskEdit', {
     isAdd: true,
     subject: gettext('EFI Disk'),
 
+    width: 450,
     initComponent : function() {
 	var me = this;
 
@@ -69,7 +77,8 @@ Ext.define('PVE.qemu.EFIDiskEdit', {
 	    onlineHelp: 'qm_bios_and_uefi',
 	    confid: me.confid,
 	    nodename: nodename,
-	    isCreate: true
+	    usesEFI: me.usesEFI,
+	    isCreate: true,
 	}];
 
 	me.callParent();

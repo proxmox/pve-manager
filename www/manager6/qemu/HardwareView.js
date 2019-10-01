@@ -530,20 +530,16 @@ Ext.define('PVE.qemu.HardwareView', {
 	    iconCls: 'fa fa-fw fa-hdd-o black',
 	    disabled: !caps.vms['VM.Config.Disk'],
 	    handler: function() {
+		let bios = me.rstore.getData().map.bios;
+		let usesEFI = bios && (bios.data.value === 'ovmf' || bios.data.pending === 'ovmf');
 
-		var rstoredata = me.rstore.getData().map;
-		// check if ovmf is configured
-		if (rstoredata.bios && rstoredata.bios.data.value === 'ovmf') {
-		    var win = Ext.create('PVE.qemu.EFIDiskEdit', {
-			url: '/api2/extjs/' + baseurl,
-			pveSelNode: me.pveSelNode
-		    });
-		    win.on('destroy', reload);
-		    win.show();
-		} else {
-		    Ext.Msg.alert('Error',gettext('Please select OVMF(UEFI) as BIOS first.'));
-		}
-
+		var win = Ext.create('PVE.qemu.EFIDiskEdit', {
+		    url: '/api2/extjs/' + baseurl,
+		    pveSelNode: me.pveSelNode,
+		    usesEFI: usesEFI,
+		});
+		win.on('destroy', reload);
+		win.show();
 	    }
 	});
 
