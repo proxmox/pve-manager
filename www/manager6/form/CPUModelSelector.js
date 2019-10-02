@@ -152,23 +152,23 @@ Ext.define('PVE.form.CPUModelSelector', {
 	    },
 	    {
 		value: 'kvm32',
-		vendor: 'Other'
+		vendor: 'QEMU'
 	    },
 	    {
 		value: 'kvm64',
-		vendor: 'Other'
+		vendor: 'QEMU'
 	    },
 	    {
 		value: 'qemu32',
-		vendor: 'Other'
+		vendor: 'QEMU'
 	    },
 	    {
 		value: 'qemu64',
-		vendor: 'Other'
+		vendor: 'QEMU'
 	    },
 	    {
 		value: 'host',
-		vendor: 'Other'
+		vendor: 'Host'
 	    }
 	]
     }
