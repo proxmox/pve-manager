@@ -219,45 +219,45 @@ Ext.define('PVE.window.Settings', {
 		autoEl: { tag: 'hr'}
 	    },
 	    {
-		xtype: 'displayfield',
-		fieldLabel: gettext('Saved User name'),
-		labelAlign: 'left',
-		labelWidth: '50%',
-		stateId: 'login-username',
-		reference: 'savedUserName',
-		value: ''
-	    },
-	    {
-		xtype: 'button',
-		cls: 'x-btn-default-toolbar-small proxmox-inline-button',
-		text: gettext('Clear User name'),
-		width: 'auto',
-		name: 'clear-username'
+		xtype: 'container',
+		layout:  'hbox',
+		items: [
+		    {
+			xtype: 'displayfield',
+			fieldLabel: gettext('Saved User Name:'),
+			labelWidth: 'auto',
+			stateId: 'login-username',
+			reference: 'savedUserName',
+			flex: 1,
+			value: ''
+		    },
+		    {
+			xtype: 'button',
+			cls: 'x-btn-default-toolbar-small proxmox-inline-button',
+			text: gettext('Reset'),
+			name: 'clear-username',
+		    },
+		]
 	    },
 	    {
 		xtype: 'box',
 		autoEl: { tag: 'hr'}
 	    },
 	    {
-		xtype: 'panel',
-		border: false,
-		layout: {
-		    type: 'hbox',
-		    align: 'stretch'
-		},
+		xtype: 'container',
+		layout: 'hbox',
 		items: [
 		    {
 			xtype: 'displayfield',
-			fieldLabel: gettext('Layout'),
-			flex: 2,
+			fieldLabel: gettext('Layout:'),
+			flex: 1,
 		    },
 		    {
 			xtype: 'button',
 			cls: 'x-btn-default-toolbar-small proxmox-inline-button',
-			text: gettext('Reset Layout'),
+			text: gettext('Reset'),
 			tooltip: gettext('Reset all layout changes (for example, column widths)'),
 			name: 'reset',
-			flex: 1,
 		    },
 		]
 	    },
