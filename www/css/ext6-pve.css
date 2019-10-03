@@ -575,15 +575,6 @@ table.osds td:first-of-type {
     font-weight: bold;
 }
 
-/* chrome 56 fix */
-.x-webkit .x-form-text {
-    height: 100% !important;
-}
-
-.x-webkit :not(.x-form-textarea-body) > .x-form-trigger-wrap {
-    height: initial;
-}
-
 .proxmox-invalid-row {
     background-color: #f3d6d7;
 }
