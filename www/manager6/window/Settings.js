@@ -327,6 +327,9 @@ Ext.define('PVE.window.Settings', {
 				type: 'hbox',
 				pack: 'end'
 			    },
+			    defaults: {
+				margin: '0 0 0 5',
+			    },
 			    items: [
 				{
 				    xtype: 'button',
