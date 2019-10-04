@@ -189,6 +189,9 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			fieldLabel: 'Public Network IP/CIDR',
 			bind: {
 			    allowBlank: '{configuration}'
+			},
+			cbind: {
+			    nodename: '{nodename}'
 			}
 		    },
 		    {
@@ -197,7 +200,10 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			fieldLabel: 'Cluster Network IP/CIDR',
 			allowBlank: true,
 			autoSelect: false,
-			emptyText: gettext('Same as Public Network')
+			emptyText: gettext('Same as Public Network'),
+			cbind: {
+			    nodename: '{nodename}'
+			}
 		    }
 		    // FIXME: add hint about cluster network and/or reference user to docs??
 		],
