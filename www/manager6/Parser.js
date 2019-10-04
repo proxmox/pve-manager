@@ -49,6 +49,10 @@ Ext.define('PVE.Parser', { statics: {
 	var res = {},
 	    error;
 
+	if (typeof value !== 'string' || value === '') {
+	    return res;
+	}
+
 	Ext.Array.each(value.split(','), function(p) {
 	    var kv = p.split('=', 2);
 	    if (Ext.isDefined(kv[1])) {
