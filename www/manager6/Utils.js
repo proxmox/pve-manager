@@ -335,11 +335,9 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     render_spice_enhancements: function(values) {
-	let disabled = Proxmox.Utils.disabledText;
-
 	let props = PVE.Parser.parsePropertyString(values);
 	if (Ext.Object.isEmpty(props)) {
-	    return disabled;
+	    return Proxmox.Utils.noneText;
 	}
 
 	let output = [];
