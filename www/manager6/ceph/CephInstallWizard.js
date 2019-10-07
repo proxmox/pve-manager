@@ -222,7 +222,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    {
 			xtype: 'displayfield',
 			value: gettext('Additional monitors are recommended. They can be created at any time in the Monitor tab.'),
-			userCls: 'pve-hint'
+			userCls: 'pmx-hint'
 		    }
 		],
 		advancedColumn1: [

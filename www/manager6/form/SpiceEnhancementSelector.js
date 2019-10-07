@@ -24,7 +24,7 @@ Ext.define('PVE.form.SpiceEnhancementSelector', {
 	{
 	    xtype: 'displayfield',
 	    itemId: 'spicehint',
-	    userCls: 'pve-hint',
+	    userCls: 'pmx-hint',
 	    value: gettext('To use these features set the display to SPICE in the hardware settings of the VM.'),
 	    hidden: true,
 	}

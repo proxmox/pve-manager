@@ -25,7 +25,7 @@ Ext.define('PVE.FirewallEnableEdit', {
 	{
 	    xtype: 'displayfield',
 	    name: 'warning',
-	    userCls: 'pve-hint',
+	    userCls: 'pmx-hint',
 	    value: gettext('Warning: Firewall still disabled at datacenter level!'),
 	    hidden: true
 	}

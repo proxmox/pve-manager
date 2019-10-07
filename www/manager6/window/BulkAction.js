@@ -86,7 +86,7 @@ Ext.define('PVE.window.BulkAction', {
 		{
 		    itemId: 'lxcwarning',
 		    xtype: 'displayfield',
-		    userCls: 'pve-hint',
+		    userCls: 'pmx-hint',
 		    value: 'Warning: Running CTs will be migrated in Restart Mode.',
 		    hidden: true // only visible if running container chosen
 		}

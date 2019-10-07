@@ -24,7 +24,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 
 	var disabledHint = Ext.createWidget({
 	    xtype: 'displayfield', // won't get submitted by default
-	    userCls: 'pve-hint',
+	    userCls: 'pmx-hint',
 	    value: 'Disabling the resource will stop the guest system. ' +
 	    'See the online help for details.',
 	    hidden: true
@@ -33,7 +33,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	var fewVotesHint = Ext.createWidget({
 	    itemId: 'fewVotesHint',
 	    xtype: 'displayfield',
-	    userCls: 'pve-hint',
+	    userCls: 'pmx-hint',
 	    value: 'At least three quorum votes are recommended for reliable HA.',
 	    hidden: true
 	});

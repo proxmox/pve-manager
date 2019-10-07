@@ -159,7 +159,7 @@ Ext.define('PVE.node.CreateZFS', {
 		{
 		    xtype: 'displayfield',
 		    padding: '5 0 0 0',
-		    userCls: 'pve-hint',
+		    userCls: 'pmx-hint',
 		    value: 'Note: ZFS is not compatible with disks backed by a hardware ' +
 			   'RAID controller. For details see ' +
 			   '<a target="_blank" href="' + Proxmox.Utils.get_help_link('chapter_zfs') + '">the reference documentation</a>.',

@@ -91,7 +91,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 			    padding: '0 0 10 0',
 			    value: 'No IOMMU detected, please activate it.' +
 				   'See Documentation for further information.',
-			    userCls: 'pve-hint'
+			    userCls: 'pmx-hint'
 			});
 			me.items.insert(0, warning);
 			me.updateLayout(); // insert does not trigger that
@@ -130,7 +130,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 				    itemId: 'iommuwarning',
 				    value: 'The selected Device is not in a seperate' +
 					   'IOMMU group, make sure this is intended.',
-				    userCls: 'pve-hint'
+				    userCls: 'pmx-hint'
 				});
 				me.items.insert(0, warning);
 				me.updateLayout(); // insert does not trigger that

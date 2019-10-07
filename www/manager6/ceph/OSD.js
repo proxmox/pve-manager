@@ -111,7 +111,7 @@ Ext.define('PVE.CephCreateOsd', {
 		{
 		    xtype: 'displayfield',
 		    padding: '5 0 0 0',
-		    userCls: 'pve-hint',
+		    userCls: 'pmx-hint',
 		    value: 'Note: Ceph is not compatible with disks backed by a hardware ' +
 			   'RAID controller. For details see ' +
 			   '<a target="_blank" href="' + Proxmox.Utils.get_help_link('chapter_pveceph') + '">the reference documentation</a>.',

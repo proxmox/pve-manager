@@ -446,10 +446,6 @@
     color: black;
 }
 
-.pve-hint {
-    background-color: LightYellow;
-}
-
 /* for info widget */
 div.left-aligned {
     float: left;
