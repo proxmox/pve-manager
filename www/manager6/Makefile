@@ -66,6 +66,7 @@ JSSRC= 				                 	\
 	form/CalendarEvent.js				\
 	form/CephPoolSelector.js			\
 	form/PermPathSelector.js			\
+	form/SpiceEnhancementSelector.js		\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
