@@ -281,6 +281,20 @@ Ext.define('PVE.qemu.Options', {
 		    }
 		} : undefined
 	    },
+	    spice_enhancements: {
+		header: gettext('Spice Enhancements'),
+		defaultValue: false,
+		renderer:  PVE.Utils.render_spice_enhancements,
+		editor: caps.vms['VM.Config.Options'] ? {
+		    xtype: 'proxmoxWindowEdit',
+		    subject: gettext('Spice Enhancements'),
+		    onlineHelp: 'qm_spice_enhancements',
+		    items: {
+			xtype: 'pveSpiceEnhancementSelector',
+			name: 'spice_enhancements',
+		    }
+		} : undefined
+	    },
 	    hookscript: {
 		header: gettext('Hookscript')
 	    }

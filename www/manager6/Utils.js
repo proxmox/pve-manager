@@ -334,6 +334,24 @@ Ext.define('PVE.Utils', { utilities: {
 	}
     },
 
+    render_spice_enhancements: function(values) {
+	let disabled = Proxmox.Utils.disabledText;
+
+	let props = PVE.Parser.parsePropertyString(values);
+	if (Ext.Object.isEmpty(props)) {
+	    return disabled;
+	}
+
+	let output = [];
+	if (PVE.Parser.parseBoolean(props.foldersharing)) {
+	    output.push('Folder Sharing: ' + gettext('Enabled'));
+	}
+	if (props.videostreaming === 'all' || props.videostreaming === 'filter') {
+	    output.push('Video Streaming: ' + props.videostreaming);
+	}
+	return output.join(', ');
+    },
+
     // fixme: auto-generate this
     // for now, please keep in sync with PVE::Tools::kvmkeymaps
     kvm_keymaps: {
