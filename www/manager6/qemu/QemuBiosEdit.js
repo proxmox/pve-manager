@@ -1,57 +1,43 @@
 Ext.define('PVE.qemu.BiosEdit', {
     extend: 'Proxmox.window.Edit',
     alias: 'widget.pveQemuBiosEdit',
+
     onlineHelp: 'qm_bios_and_uefi',
+    subject: 'BIOS',
+    autoLoad: true,
 
-    initComponent : function() {
-	var me = this;
+    viewModel: {
+	data: {
+	    bios: '__default__',
+	    efidisk0: false,
+	},
+	formulas: {
+	    showEFIDiskHint: (get) => get('bios') === 'ovmf' && !get('efidisk0'),
+	},
+    },
 
-	var EFIHint = Ext.createWidget({
-	    xtype: 'displayfield', //submitValue is false, so we don't get submitted
+    items: [
+	{
+	    xtype: 'pveQemuBiosSelector',
+	    onlineHelp: 'qm_bios_and_uefi',
+	    name: 'bios',
+	    value: '__default__',
+	    bind: '{bios}',
+	    fieldLabel: 'BIOS',
+	},
+	{
+	    xtype: 'displayfield',
+	    name: 'efidisk0',
+	    bind: '{efidisk0}',
+	    hidden: true,
+	},
+	{
+	    xtype: 'displayfield',
 	    userCls: 'pmx-hint',
 	    value: gettext('You need to add an EFI disk for storing the EFI settings. See the online help for details.'),
-	    hidden: true
-	});
-
-	Ext.applyIf(me, {
-	    subject: 'BIOS',
-	    items: [ {
-		xtype: 'pveQemuBiosSelector',
-		onlineHelp: 'qm_bios_and_uefi',
-		name: 'bios',
-		value: '__default__',
-		fieldLabel: 'BIOS',
-		listeners: {
-		    'change' : function(field, newValue) {
-			if (newValue == 'ovmf') {
-			    Proxmox.Utils.API2Request({
-				url : me.url,
-				method : 'GET',
-				failure : function(response, opts) {
-				    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-				},
-				success : function(response, opts) {
-				    var vmConfig = response.result.data;
-				    // there can be only one
-				    if (!vmConfig.efidisk0) {
-					EFIHint.setVisible(true);
-				    }
-				}
-			    });
-			} else {
-			    if (EFIHint.isVisible()) {
-				EFIHint.setVisible(false);
-			    }
-			}
-		    }
-		}
+	    bind: {
+		hidden: '{!showEFIDiskHint}',
 	    },
-	    EFIHint
-	    ] });
-
-	me.callParent();
-
-	me.load();
-
-    }
+	},
+    ],
 });
