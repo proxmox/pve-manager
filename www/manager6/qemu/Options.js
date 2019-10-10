@@ -252,12 +252,13 @@ Ext.define('PVE.qemu.Options', {
 		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.Smbios1Edit' : undefined
 	    },
 	    agent: {
-		header: gettext('Qemu Agent'),
+		header: 'QEMU Guest Agent',
 		defaultValue: false,
 		renderer: PVE.Utils.render_qga_features,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Qemu Agent'),
+		    width: 350,
 		    items: {
 			xtype: 'pveAgentFeatureSelector',
 			name: 'agent'

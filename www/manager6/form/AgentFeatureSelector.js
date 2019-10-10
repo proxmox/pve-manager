@@ -7,7 +7,7 @@ Ext.define('PVE.form.AgentFeatureSelector', {
     items: [
 	{
 	    xtype: 'proxmoxcheckbox',
-	    boxLabel: gettext('Qemu Agent'),
+	    boxLabel: Ext.String.format(gettext('Use {0}'), 'QEMU Guest Agent'),
 	    name: 'enabled',
 	    reference: 'enabled',
 	    uncheckedValue: 0,
@@ -20,7 +20,15 @@ Ext.define('PVE.form.AgentFeatureSelector', {
 		disabled: '{!enabled.checked}',
 	    },
 	    disabled: true
-	}
+	},
+	{
+	    xtype: 'displayfield',
+	    userCls: 'pmx-hint',
+	    value: gettext('Make sure the QEMU Guest Agent is installed in the VM'),
+	    bind: {
+		hidden: '{!enabled.checked}',
+	    },
+	},
     ],
 
     onGetValues: function(values) {
@@ -29,8 +37,7 @@ Ext.define('PVE.form.AgentFeatureSelector', {
     },
 
     setValues: function(values) {
-	var agent = values.agent || '';
-	var res = PVE.Parser.parsePropertyString(agent, 'enabled');
+	let res = PVE.Parser.parsePropertyString(values.agent, 'enabled');
 	this.callParent([res]);
     }
 });
