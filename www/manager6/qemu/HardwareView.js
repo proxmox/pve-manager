@@ -607,7 +607,7 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    resize_btn.setDisabled(pending || !isUsedDisk || !diskCap);
 
-	    move_btn.setDisabled(pending || !isUsedDisk || !diskCap);
+	    move_btn.setDisabled(pending || !(isUsedDisk || isEfi) || !diskCap);
 
 	    revert_btn.setDisabled(!pending);
 
