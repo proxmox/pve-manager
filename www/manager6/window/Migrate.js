@@ -25,7 +25,9 @@ Ext.define('PVE.window.Migrate', {
 		preconditions: [],
 		'with-local-disks': 0,
 		mode: undefined,
-		allowedNodes: undefined
+		allowedNodes: undefined,
+		overwriteLocalResourceCheck: false,
+		hasLocalResources: false
 	    }
 
 	},
@@ -48,6 +50,14 @@ Ext.define('PVE.window.Migrate', {
 		    } else {
 			return true;
 		    }
+	    },
+	    setLocalResourceCheckboxHidden: function(get) {
+		if (get('running') || !get('migration.hasLocalResources') ||
+		    Proxmox.UserName !== 'root@pam') {
+		    return true;
+		} else {
+		    return false;
+		}
 	    }
 	}
     },
@@ -121,6 +131,10 @@ Ext.define('PVE.window.Migrate', {
 		params.targetstorage = values.targetstorage;
 	    }
 
+	    if (vm.get('migration.overwriteLocalResourceCheck')) {
+		params['force'] = 1;
+	    }
+
 	    Proxmox.Utils.API2Request({
 		params: params,
 		url: '/nodes/' + vm.get('nodename') + '/' + vm.get('vmtype') + '/' + vm.get('vmid') + '/migrate',
@@ -144,10 +158,9 @@ Ext.define('PVE.window.Migrate', {
 
 	},
 
-	checkMigratePreconditions: function() {
+	checkMigratePreconditions: function(resetMigrationPossible) {
 	    var me = this,
 		vm = me.getViewModel();
-
 
 	    var vmrec = PVE.data.ResourceStore.findRecord('vmid', vm.get('vmid'),
 			0, false, false, true);
@@ -156,9 +169,9 @@ Ext.define('PVE.window.Migrate', {
 	    }
 
 	    if (vm.get('vmtype') === 'qemu') {
-		me.checkQemuPreconditions();
+		me.checkQemuPreconditions(resetMigrationPossible);
 	    } else {
-		me.checkLxcPreconditions();
+		me.checkLxcPreconditions(resetMigrationPossible);
 	    }
 	    me.lookup('pveNodeSelector').disallowedNodes = [vm.get('nodename')];
 
@@ -170,7 +183,7 @@ Ext.define('PVE.window.Migrate', {
 
 	},
 
-	checkQemuPreconditions: function() {
+	checkQemuPreconditions: function(resetMigrationPossible) {
 	    var me = this,
 		vm = me.getViewModel(),
 		migrateStats;
@@ -193,6 +206,7 @@ Ext.define('PVE.window.Migrate', {
 		    // Get migration object from viewmodel to prevent
 		    // to many bind callbacks
 		    var migration = vm.get('migration');
+		    if (resetMigrationPossible) migration.possible = true;
 		    migration.preconditions = [];
 
 		    if (migrateStats.allowed_nodes) {
@@ -212,11 +226,22 @@ Ext.define('PVE.window.Migrate', {
 		    }
 
 		    if (migrateStats.local_resources.length) {
-			migration.possible = false;
-			migration.preconditions.push({
-			    text: 'Can\'t migrate VM with local resources: '+ migrateStats.local_resources.join(', '),
-			    severity: 'error'
-			});
+			migration.hasLocalResources = true;
+			if(!migration.overwriteLocalResourceCheck || vm.get('running')){
+			    migration.possible = false;
+			    migration.preconditions.push({
+				text: Ext.String.format('Can\'t migrate VM with local resources: {0}',
+				migrateStats.local_resources.join(', ')),
+				severity: 'error'
+			    });
+			} else {
+			    migration.preconditions.push({
+				text: Ext.String.format('Migrate VM with local resources: {0}. ' +
+				'This might fail if resources aren\'t available on the target node.',
+				migrateStats.local_resources.join(', ')),
+				severity: 'warning'
+			    });
+			}
 		    }
 
 		    if (migrateStats.local_disks.length) {
@@ -252,7 +277,7 @@ Ext.define('PVE.window.Migrate', {
 		}
 	    });
 	},
-	checkLxcPreconditions: function() {
+	checkLxcPreconditions: function(resetMigrationPossible) {
 	    var me = this,
 		vm = me.getViewModel();
 	    if (vm.get('running')) {
@@ -324,7 +349,23 @@ Ext.define('PVE.window.Migrate', {
 			    bind: {
 				hidden: '{setStorageselectorHidden}'
 			    }
-		    }]
+		    },
+		    {
+			xtype: 'proxmoxcheckbox',
+			name: 'overwriteLocalResourceCheck',
+			fieldLabel: gettext('Force'),
+			autoEl: {
+			    tag: 'div',
+			    'data-qtip': 'Overwrite local resources unavailable check'
+			},
+			bind: {
+			    hidden: '{setLocalResourceCheckboxHidden}',
+			    value: '{migration.overwriteLocalResourceCheck}'
+			},
+			listeners: {
+			    change: {fn: 'checkMigratePreconditions', extraArg: true}
+			}
+		}]
 		}
 	    ]
 	},
