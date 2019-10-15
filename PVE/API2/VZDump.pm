@@ -11,6 +11,7 @@ use PVE::AccessControl;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::Storage;
 use PVE::VZDump;
+use PVE::VZDump::Common;
 use PVE::API2Tools;
 
 use Data::Dumper; # fixme: remove
@@ -31,7 +32,7 @@ __PACKAGE__->register_method ({
     proxyto => 'node',
     parameters => {
     	additionalProperties => 0,
-	properties => PVE::VZDump::json_config_properties({
+	properties => PVE::VZDump::Common::json_config_properties({
 	    stdout => {
 		type => 'boolean',
 		description => "Write tar to stdout, not to a file.",
@@ -67,7 +68,7 @@ __PACKAGE__->register_method ({
 	# silent exit if we run on wrong node
 	return 'OK' if $param->{node} && $param->{node} ne $nodename;
 
-	my $cmdline = PVE::VZDump::command_line($param);
+	my $cmdline = PVE::VZDump::Common::command_line($param);
 	my @vmids;
 	# convert string lists to arrays
 	if ($param->{pool}) {

@@ -17,6 +17,7 @@ use PVE::JSONSchema qw(get_standard_option);
 use PVE::HA::Env::PVE2;
 use PVE::HA::Config;
 use PVE::VZDump::Plugin;
+use PVE::VZDump::Common;
 
 my @posix_filesystems = qw(ext3 ext4 nfs nfs4 reiserfs xfs);
 
@@ -26,161 +27,7 @@ my $logdir = '/var/log/vzdump';
 
 my @plugins = qw();
 
-my $confdesc = {
-    vmid => {
-	type => 'string', format => 'pve-vmid-list',
-	description => "The ID of the guest system you want to backup.",
-	completion => \&PVE::Cluster::complete_local_vmid,
-	optional => 1,
-    },
-    node => get_standard_option('pve-node', {
-	description => "Only run if executed on this node.",
-	completion => \&PVE::Cluster::get_nodelist,
-	optional => 1,
-    }),
-    all => {
-	type => 'boolean',
-	description => "Backup all known guest systems on this host.",
-	optional => 1,
-	default => 0,
-    },
-    stdexcludes => {
-	type => 'boolean',
-	description => "Exclude temporary files and logs.",
-	optional => 1,
-	default => 1,
-    },
-    compress => {
-	type => 'string',
-	description => "Compress dump file.",
-	optional => 1,
-	enum => ['0', '1', 'gzip', 'lzo'],
-	default => '0',
-    },
-    pigz=> {
-	type => "integer",
-	description => "Use pigz instead of gzip when N>0.".
-	    " N=1 uses half of cores, N>1 uses N as thread count.",
-	optional => 1,
-	default => 0,
-    },
-    quiet => {
-	type => 'boolean',
-	description => "Be quiet.",
-	optional => 1,
-	default => 0,
-    },
-    mode => {
-	type => 'string',
-	description => "Backup mode.",
-	optional => 1,
-	default => 'snapshot',
-	enum => [ 'snapshot', 'suspend', 'stop' ],
-    },
-    exclude => {
-	type => 'string', format => 'pve-vmid-list',
-	description => "Exclude specified guest systems (assumes --all)",
-	optional => 1,
-    },
-    'exclude-path' => {
-	type => 'string', format => 'string-alist',
-	description => "Exclude certain files/directories (shell globs).",
-	optional => 1,
-    },
-    mailto => {
-	type => 'string', format => 'string-list',
-	description => "Comma-separated list of email addresses that should" .
-	    " receive email notifications.",
-	optional => 1,
-    },
-    mailnotification => {
-	type => 'string',
-	description => "Specify when to send an email",
-	optional => 1,
-	enum => [ 'always', 'failure' ],
-	default => 'always',
-    },
-    tmpdir => {
-	type => 'string',
-	description => "Store temporary files to specified directory.",
-	optional => 1,
-    },
-    dumpdir => {
-	type => 'string',
-	description => "Store resulting files to specified directory.",
-	optional => 1,
-    },
-    script => {
-	type => 'string',
-	description => "Use specified hook script.",
-	optional => 1,
-    },
-    storage => get_standard_option('pve-storage-id', {
-	description => "Store resulting file to this storage.",
-	completion => \&complete_backup_storage,
-	optional => 1,
-    }),
-    stop => {
-	type => 'boolean',
-	description => "Stop running backup jobs on this host.",
-	optional => 1,
-	default => 0,
-    },
-    size => {
-	type => 'integer',
-	description => "Unused, will be removed in a future release.",
-	optional => 1,
-	minimum => 500,
-	default => 1024,
-    },
-    bwlimit => {
-	type => 'integer',
-	description => "Limit I/O bandwidth (KBytes per second).",
-	optional => 1,
-	minimum => 0,
-	default => 0,
-    },
-    ionice => {
-	type => 'integer',
-	description => "Set CFQ ionice priority.",
-	optional => 1,
-	minimum => 0,
-	maximum => 8,
-	default => 7,
-    },
-    lockwait => {
-	type => 'integer',
-	description => "Maximal time to wait for the global lock (minutes).",
-	optional => 1,
-	minimum => 0,
-	default => 3*60, # 3 hours
-    },
-    stopwait => {
-	type => 'integer',
-	description => "Maximal time to wait until a guest system is stopped (minutes).",
-	optional => 1,
-	minimum => 0,
-	default => 10, # 10 minutes
-    },
-    maxfiles => {
-	type => 'integer',
-	description => "Maximal number of backup files per guest system.",
-	optional => 1,
-	minimum => 1,
-	default => 1,
-    },
-    remove => {
-	type => 'boolean',
-	description => "Remove old backup files if there are more than 'maxfiles' backup files.",
-	optional => 1,
-	default => 1,
-    },
-    pool => {
-	type => 'string',
-	description => 'Backup all known guest systems included in the specified pool.',
-	optional => 1,
-    }
-};
+my $confdesc = PVE::VZDump::Common::get_confdesc();
 
 # Load available plugins
 my @pve_vzdump_classes = qw(PVE::VZDump::QemuServer PVE::VZDump::LXC);
@@ -1161,17 +1008,6 @@ sub option_exists {
     return defined($confdesc->{$key});
 }
 
-# add JSON properties for create and set function
-sub json_config_properties {
-    my $prop = shift;
-
-    foreach my $opt (keys %$confdesc) {
-	$prop->{$opt} = $confdesc->{$opt};
-    }
-
-    return $prop;
-}
-
 sub verify_vzdump_parameters {
     my ($param, $check_missing) = @_;
 
@@ -1216,51 +1052,6 @@ sub stop_running_backups {
 	}
 	die "stopping backup process $task->{pid} failed\n" if $i == 0;
     }
-}
-
-sub command_line {
-    my ($param) = @_;
-
-    my $cmd = "vzdump";
-
-    if ($param->{vmid}) {
-	$cmd .= " " . join(' ', PVE::Tools::split_list($param->{vmid}));
-    }
-
-    foreach my $p (keys %$param) {
-	next if $p eq 'id' || $p eq 'vmid' || $p eq 'starttime' ||
-	        $p eq 'dow' || $p eq 'stdout' || $p eq 'enabled';
-	my $v = $param->{$p};
-	my $pd = $confdesc->{$p} || die "no such vzdump option '$p'\n";
-	if ($p eq 'exclude-path') {
-	    foreach my $path (split(/\0/, $v || '')) {
-		$cmd .= " --$p " . PVE::Tools::shellquote($path);
-	    }
-	} else {
-	    $cmd .= " --$p " . PVE::Tools::shellquote($v) if defined($v) && $v ne '';
-	}
-    }
-
-    return $cmd;
-}
-
-# bash completion helpers
-sub complete_backup_storage {
-
-    my $cfg = PVE::Storage::config();
-    my $ids = $cfg->{ids};
-
-    my $nodename = PVE::INotify::nodename();
-
-    my $res = [];
-    foreach my $sid (keys %$ids) {
-	my $scfg = $ids->{$sid};
-	next if !PVE::Storage::storage_check_enabled($cfg, $sid, $nodename, 1);
-	next if !$scfg->{content}->{backup};
-	push @$res, $sid;
-    }
-
-    return $res;
 }
 
 1;

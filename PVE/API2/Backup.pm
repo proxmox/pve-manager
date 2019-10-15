@@ -6,19 +6,16 @@ use Digest::SHA;
 
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param);
-use PVE::Cluster qw(cfs_register_file cfs_lock_file cfs_read_file cfs_write_file);
+use PVE::Cluster qw(cfs_lock_file cfs_read_file cfs_write_file);
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::JSONSchema;
 use PVE::Storage;
 use PVE::Exception qw(raise_param_exc);
 use PVE::VZDump;
+use PVE::VZDump::Common;
 
 use base qw(PVE::RESTHandler);
-
-cfs_register_file ('vzdump.cron',
-		   \&parse_vzdump_cron_config,
-		   \&write_vzdump_cron_config);
 
 PVE::JSONSchema::register_format('pve-day-of-week', \&verify_day_of_week);
 sub verify_day_of_week {
@@ -36,164 +33,6 @@ my $vzdump_job_id_prop = {
     description => "The job ID.",
     maxLength => 50
 };
-
-my $dowhash_to_dow = sub {
-    my ($d, $num) = @_;
-
-    my @da = ();
-    push @da, $num ? 1 : 'mon' if $d->{mon};
-    push @da, $num ? 2 : 'tue' if $d->{tue};
-    push @da, $num ? 3 : 'wed' if $d->{wed};
-    push @da, $num ? 4 : 'thu' if $d->{thu};
-    push @da, $num ? 5 : 'fri' if $d->{fri};
-    push @da, $num ? 6 : 'sat' if $d->{sat};
-    push @da, $num ? 7 : 'sun' if $d->{sun};
-
-    return join ',', @da;
-};
-
-# parse crontab style day of week
-sub parse_dow {
-    my ($dowstr, $noerr) = @_;
-
-    my $dowmap = {mon => 1, tue => 2, wed => 3, thu => 4,
-		  fri => 5, sat => 6, sun => 7};
-    my $rdowmap = { '1' => 'mon', '2' => 'tue', '3' => 'wed', '4' => 'thu',
-		    '5' => 'fri', '6' => 'sat', '7' => 'sun', '0' => 'sun'};
-
-    my $res = {};
-
-    $dowstr = '1,2,3,4,5,6,7' if $dowstr eq '*';
-
-    foreach my $day (PVE::Tools::split_list($dowstr)) {
-	if ($day =~ m/^(mon|tue|wed|thu|fri|sat|sun)-(mon|tue|wed|thu|fri|sat|sun)$/i) {
-	    for (my $i = $dowmap->{lc($1)}; $i <= $dowmap->{lc($2)}; $i++) {
-		my $r = $rdowmap->{$i};
-		$res->{$r} = 1;
-	    }
-	} elsif ($day =~ m/^(mon|tue|wed|thu|fri|sat|sun|[0-7])$/i) {
-	    $day = $rdowmap->{$day} if $day =~ m/\d/;
-	    $res->{lc($day)} = 1;
-	} else {
-	    return undef if $noerr;
-	    die "unable to parse day of week '$dowstr'\n";
-	}
-    }
-
-    return $res;
-};
-
-my $vzdump_properties = {
-    additionalProperties => 0,
-    properties => PVE::VZDump::json_config_properties({}),
-};
-
-sub parse_vzdump_cron_config {
-    my ($filename, $raw) = @_;
-
-    my $jobs = []; # correct jobs
-
-    my $ejobs = []; # mailfomerd lines
-
-    my $jid = 1; # we start at 1
-
-    my $digest = Digest::SHA::sha1_hex(defined($raw) ? $raw : '');
-
-    while ($raw && $raw =~ s/^(.*?)(\n|$)//) {
-	my $line = $1;
-
-	next if $line =~ m/^\#/;
-	next if $line =~ m/^\s*$/;
-	next if $line =~ m/^PATH\s*=/; # we always overwrite path
-
-	if ($line =~ m|^(\d+)\s+(\d+)\s+\*\s+\*\s+(\S+)\s+root\s+(/\S+/)?(#)?vzdump(\s+(.*))?$|) {
-	    eval {
-		my $minute = int($1);
-		my $hour = int($2);
-		my $dow = $3;
-		my $param = $7;
-		my $enabled = $5;
-
-		my $dowhash = parse_dow($dow, 1);
-		die "unable to parse day of week '$dow' in '$filename'\n" if !$dowhash;
-
-		my $args = PVE::Tools::split_args($param);
-		my $opts = PVE::JSONSchema::get_options($vzdump_properties, $args, 'vmid');
-
-		$opts->{enabled} = !defined($enabled);
-		$opts->{id} = "$digest:$jid";
-		$jid++;
-		$opts->{starttime} = sprintf "%02d:%02d", $hour, $minute;
-		$opts->{dow} = &$dowhash_to_dow($dowhash);
-
-		push @$jobs, $opts;
-	    };
-	    my $err = $@;
-	    if ($err) {
-		syslog ('err', "parse error in '$filename': $err");
-		push @$ejobs, { line => $line };
-	    }
-	} elsif ($line =~ m|^\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S.*)$|) {
-	    syslog ('err', "warning: malformed line in '$filename'");
-	    push @$ejobs, { line => $line };
-	} else {
-	    syslog ('err', "ignoring malformed line in '$filename'");
-	}
-    }
-
-    my $res = {};
-    $res->{digest} = $digest;
-    $res->{jobs} = $jobs;
-    $res->{ejobs} = $ejobs;
-
-    return $res;
-}
-
-sub write_vzdump_cron_config {
-    my ($filename, $cfg) = @_;
-
-    my $out = "# cluster wide vzdump cron schedule\n";
-    $out .= "# Automatically generated file - do not edit\n\n";
-    $out .= "PATH=\"/usr/sbin:/usr/bin:/sbin:/bin\"\n\n";
-
-    my $jobs = $cfg->{jobs} || [];
-    foreach my $job (@$jobs) {
-	my $enabled = ($job->{enabled}) ? '' : '#';
-	my $dh = parse_dow($job->{dow});
-	my $dow;
-	if ($dh->{mon} && $dh->{tue} && $dh->{wed} && $dh->{thu} &&
-	    $dh->{fri} && $dh->{sat} && $dh->{sun}) {
-	    $dow = '*';
-	} else {
-	    $dow = &$dowhash_to_dow($dh, 1);
-	    $dow = '*' if !$dow;
-	}
-
-	my ($hour, $minute);
-
-	die "no job start time specified\n" if !$job->{starttime};
-	if ($job->{starttime} =~ m/^(\d{1,2}):(\d{1,2})$/) {
-	    ($hour, $minute) = (int($1), int($2));
-	    die "hour '$hour' out of range\n" if $hour < 0 || $hour > 23;
-	    die "minute '$minute' out of range\n" if $minute < 0 || $minute > 59;
-	} else {
-	    die "unable to parse job start time\n";
-	}
-
-	$job->{quiet} = 1; # we do not want messages from cron
-
-	my $cmd = PVE::VZDump::command_line($job);
-
-	$out .= sprintf "$minute $hour * * %-11s root $enabled$cmd\n", $dow;
-    }
-
-    my $ejobs = $cfg->{ejobs} || [];
-    foreach my $job (@$ejobs) {
-	$out .= "$job->{line}\n" if $job->{line};
-    }
-
-    return $out;
-}
 
 __PACKAGE__->register_method({
     name => 'index',
@@ -242,7 +81,7 @@ __PACKAGE__->register_method({
     },
     parameters => {
     	additionalProperties => 0,
-	properties => PVE::VZDump::json_config_properties({
+	properties => PVE::VZDump::Common::json_config_properties({
 	    starttime => {
 		type => 'string',
 		description => "Job Start time.",
@@ -393,7 +232,7 @@ __PACKAGE__->register_method({
     },
     parameters => {
     	additionalProperties => 0,
-	properties => PVE::VZDump::json_config_properties({
+	properties => PVE::VZDump::Common::json_config_properties({
 	    id => $vzdump_job_id_prop,
 	    starttime => {
 		type => 'string',
