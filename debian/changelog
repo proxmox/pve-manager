@@ -1,3 +1,18 @@
+pve-manager (6.0-9) pve; urgency=medium
+
+  * webinterface: vm-options: add spice enhancements
+
+  * webinterface: vm opts: clarify QEMU Guest Agent option
+
+  * webinterface: qemu: allow move disk for EFI Disk again
+
+  * webinterface: vm migrate: add checkbox to enable offline migration with
+    local resources
+
+  * aplinfo: update trusted keys to include all currently trusted ones.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 16 Oct 2019 08:25:44 +0200
+
 pve-manager (6.0-8) pve; urgency=medium
 
   * fix #2262: allow one to set noVNC default scale in setting
