@@ -19,16 +19,19 @@ update:
 	wget http://download.proxmox.com/images/aplinfo-pve-6.dat -O aplinfo.dat.tmp
 	mv aplinfo.dat.tmp aplinfo.dat
 
-# Default list of GPG keys allowed to sign aplinfo
-# pub   1024D/5CAC72FE 2004-06-24
-#       Key fingerprint = 9ABD 7E02 AD24 3AD3 C2FB  BCCC B0C1 CC22 5CAC 72FE
-# uid                  Proxmox Support Team <support@proxmox.com>
-# pub   4096R/E2EF0603 2016-08-29 [expires: 2026-08-27]
-#       Key fingerprint = 359E 9596 5E2C 3D64 3159  CD30 0D9A 1950 E2EF 0603
-# uid                  Proxmox Virtual Environment 5.x Release Key <proxmox-release@proxmox.com>
-# pub   2048R/A16EB94D 2008-08-15 [expires: 2023-08-12]
-#       Key fingerprint = 694C FF26 795A 29BA E07B  4EB5 85C2 5E95 A16E B94D
-# uid                  Turnkey Linux Release Key <release@turnkeylinux.com>
+# Default list of GPG keys allowed to sign aplinfo, generated with:
+# gpg --import-options show-only --import trustedkeys.gpg
+# pub   rsa4096 2016-08-29 [SC] [expires: 2026-08-27]
+#       359E95965E2C3D643159CD300D9A1950E2EF0603
+# uid                      Proxmox Virtual Environment 5.x Release Key <proxmox-release@proxmox.com>
+#
+# pub   rsa4096 2018-11-19 [SC] [expires: 2028-11-16]
+#       353479F83781D7F8ED5F5AC57BF2812E8A6E88E0
+# uid                      Proxmox Virtual Environment 6.x Release Key <proxmox-release@proxmox.com>
+#
+# pub   rsa2048 2008-08-15 [SC] [expires: 2023-08-12]
+#       694CFF26795A29BAE07B4EB585C25E95A16EB94D
+# uid                      Turnkey Linux Release Key <release@turnkeylinux.com>
 trustedkeys.gpg: ${TRUSTED_KEYS}
 	rm -Rf tempgpg
 	mkdir tempgpg
