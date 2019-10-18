@@ -1,3 +1,17 @@
+pve-manager (6.0-10) pve; urgency=medium
+
+  * api: subscription: use rpcenv for permission check
+
+  * updated shipped aplinfo index
+
+  * vzdump: move code needed for cfs register of vzdump.cron to guest-common
+
+  * fix #2364: allow offline migration with local cloudinit disk
+
+  * webinterface: show and allow one to edit pending container changes
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 18 Oct 2019 22:29:22 +0200
+
 pve-manager (6.0-9) pve; urgency=medium
 
   * webinterface: vm-options: add spice enhancements
