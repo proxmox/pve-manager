@@ -39,7 +39,7 @@ Ext.define('PVE.window.Settings', {
 	    me.lookupReference('savedUserName').setValue(username);
 	    var vncMode = sp.get('novnc-scaling');
 	    if (vncMode !== undefined) {
-		me.lookupReference('noVNCScalingGroup').setValue(vncMode);
+		me.lookupReference('noVNCScalingGroup').setValue({ noVNCScalingField: vncMode });
 	    }
 
 	    var settings = ['fontSize', 'fontFamily', 'letterSpacing', 'lineHeight'];
@@ -377,7 +377,7 @@ Ext.define('PVE.window.Settings', {
 			listeners: {
 			    change: function(el, newValue, undefined) {
 				var sp = Ext.state.Manager.getProvider();
-				sp.set('novnc-scaling', newValue);
+				sp.set('novnc-scaling', newValue.noVNCScalingField);
 			    }
 			},
 		    },
