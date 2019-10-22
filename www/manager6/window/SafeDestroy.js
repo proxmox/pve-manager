@@ -26,6 +26,10 @@ Ext.define('PVE.window.SafeDestroy', {
 
     getParams: function() {
 	var me = this;
+	var purgeCheckbox = me.lookupReference('purgeCheckbox');
+	if (purgeCheckbox.checked) {
+	    me.params.purge = 1;
+	}
 	if (Ext.Object.isEmpty(me.params)) {
 	    return '';
 	}
@@ -121,6 +125,18 @@ Ext.define('PVE.window.SafeDestroy', {
 		    labelWidth: 300,
 		    hideTrigger: true,
 		    allowBlank: false
+		},
+		{
+		    xtype: 'proxmoxcheckbox',
+		    name: 'purge',
+		    reference: 'purgeCheckbox',
+		    fieldLabel: gettext('Purge'),
+		    labelWidth: 300,
+		    checked: false,
+		    autoEl: {
+			tag: 'div',
+			'data-qtip': gettext('Remove from replication and backup jobs')
+		    }
 		}
 	    ]
 	}
@@ -164,6 +180,12 @@ Ext.define('PVE.window.SafeDestroy', {
 	}
 
 	messageCmp.setHtml(msg);
+
+	if (!(item.type === 'VM' || item.type === 'CT')) {
+	    let purgeCheckbox = me.lookupReference('purgeCheckbox');
+	    purgeCheckbox.setDisabled(true);
+	    purgeCheckbox.setHidden(true);
+	}
 
 	var confirmField = me.lookupReference('confirmField');
 	msg = gettext('Please enter the ID to confirm') +
