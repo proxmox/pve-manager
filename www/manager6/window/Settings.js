@@ -386,9 +386,4 @@ Ext.define('PVE.window.Settings', {
 	    },
 	]
     }],
-
-    onShow: function() {
-	var me = this;
-	me.callParent();
-    }
 });
