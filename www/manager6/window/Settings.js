@@ -24,7 +24,7 @@ Ext.define('PVE.window.Settings', {
     ],
 
     layout: {
-	type: 'hbox',
+	type: 'column',
 	align: 'top'
     },
 
@@ -169,7 +169,7 @@ Ext.define('PVE.window.Settings', {
 
     items: [{
 	xtype: 'fieldset',
-	width: '50%',
+	columnWidth: 0.5,
 	title: gettext('Webinterface Settings'),
 	margin: '5',
 	layout: {
@@ -262,10 +262,11 @@ Ext.define('PVE.window.Settings', {
 		]
 	    },
 	]
-    },{
+    },
+    {
 	xtype: 'container',
 	layout: 'vbox',
-	width: '50%',
+	columnWidth: 0.5,
 	margin: '5',
 	defaults: {
 	    width: '100%',
