@@ -130,8 +130,7 @@ Ext.define('PVE.window.SafeDestroy', {
 		    xtype: 'proxmoxcheckbox',
 		    name: 'purge',
 		    reference: 'purgeCheckbox',
-		    fieldLabel: gettext('Purge'),
-		    labelWidth: 300,
+		    boxLabel: gettext('Purge'),
 		    checked: false,
 		    autoEl: {
 			tag: 'div',
