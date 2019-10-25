@@ -88,8 +88,13 @@ Ext.define('PVE.qemu.CDInputPanel', {
 			return;
 		    }
 		    me.down('field[name=cdstorage]').setDisabled(!value);
-		    me.down('field[name=cdimage]').setDisabled(!value);
-		    me.down('field[name=cdimage]').validate();
+		    var cdImageField = me.down('field[name=cdimage]');
+		    cdImageField.setDisabled(!value);
+		    if(value) {
+			cdImageField.validate();
+		    } else {
+			cdImageField.reset();
+		    }
 		}
 	    }
 	});
