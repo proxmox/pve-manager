@@ -233,7 +233,7 @@ Ext.define('PVE.window.TFAEdit', {
 	    var params = {
 		userid: me.getView().userid,
 		action: 'new',
-		key: values.secret,
+		key: 'v2-' + values.secret,
 		config: PVE.Parser.printPropertyString({
 		    type: 'oath',
 		    digits: values.digits,
