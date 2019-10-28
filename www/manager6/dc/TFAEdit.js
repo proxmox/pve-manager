@@ -289,7 +289,7 @@ Ext.define('PVE.window.TFAEdit', {
 
 	randomizeSecret: function() {
 	    var me = this;
-	    var rnd = new Uint8Array(16);
+	    var rnd = new Uint8Array(32);
 	    window.crypto.getRandomValues(rnd);
 	    var data = '';
 	    rnd.forEach(function(b) {
