@@ -169,6 +169,7 @@ Ext.define('PVE.node.Config', {
 		    title: gettext('Network'),
 		    iconCls: 'fa fa-exchange',
 		    itemId: 'network',
+		    showApplyBtn: true,
 		    groups: ['services'],
 		    nodename: nodename,
 		    onlineHelp: 'sysadmin_network_configuration',
