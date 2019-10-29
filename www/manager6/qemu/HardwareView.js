@@ -754,9 +754,9 @@ Ext.define('PVE.qemu.HardwareView', {
 	me.callParent();
 
 	me.on('activate', me.rstore.startUpdate);
-	me.on('destroy', me.rstore.stopUpdate);	
+	me.on('destroy', me.rstore.stopUpdate);
 
-	me.mon(me.rstore, 'refresh', function() {
+	me.mon(me.getStore(), 'datachanged', function() {
 	    set_button_status();
 	});
     }
