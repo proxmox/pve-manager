@@ -161,17 +161,67 @@ Ext.define('PVE.lxc.Options', {
 	    handler: function() { me.run_editor(); }
 	});
 
+	var revert_btn = new Proxmox.button.Button({
+	    text: gettext('Revert'),
+	    disabled: true,
+	    handler: function() {
+		var sm = me.getSelectionModel();
+		var rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+
+		var rowdef = me.rows[rec.data.key] || {};
+		var keys = rowdef.multiKey ||  [ rec.data.key ];
+		var revert = keys.join(',');
+
+		Proxmox.Utils.API2Request({
+		    url: '/api2/extjs/' + baseurl,
+		    waitMsgTarget: me,
+		    method: 'PUT',
+		    params: {
+			'revert': revert
+		    },
+		    callback: function() {
+			me.reload();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert('Error',response.htmlStatus);
+		    }
+		});
+	    }
+	});
+
+	var set_button_status = function() {
+	    var sm = me.getSelectionModel();
+	    var rec = sm.getSelection()[0];
+
+	    if (!rec) {
+		edit_btn.disable();
+		return;
+	    }
+
+	    var key = rec.data.key;
+	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
+	    var rowdef = rows[key];
+
+	    edit_btn.setDisabled(!rowdef.editor);
+	    revert_btn.setDisabled(!pending);
+	};
+
+
 	Ext.apply(me, {
 	    url: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/pending",
 	    selModel: sm,
 	    interval: 5000,
-	    tbar: [ edit_btn ],
+	    tbar: [ edit_btn, revert_btn ],
 	    rows: rows,
 	    editorConfig: {
 		url: '/api2/extjs/' + baseurl
 	    },
 	    listeners: {
-		itemdblclick: me.run_editor
+		itemdblclick: me.run_editor,
+		selectionchange: set_button_status
 	    }
 	});
 
@@ -180,6 +230,10 @@ Ext.define('PVE.lxc.Options', {
 	me.on('activate', me.rstore.startUpdate);
 	me.on('destroy', me.rstore.stopUpdate);
 	me.on('deactivate', me.rstore.stopUpdate);
+
+	me.mon(me.getStore(), 'datachanged', function() {
+	    set_button_status();
+	});
 
     }
 });

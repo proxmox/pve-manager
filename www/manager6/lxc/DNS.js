@@ -213,6 +213,38 @@ Ext.define('PVE.lxc.DNS', {
 	    handler: run_editor
 	});
 
+	var revert_btn = new Proxmox.button.Button({
+	    text: gettext('Revert'),
+	    disabled: true,
+	    handler: function() {
+		var sm = me.getSelectionModel();
+		var rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+
+		var rowdef = me.rows[rec.data.key] || {};
+		var keys = rowdef.multiKey ||  [ rec.data.key ];
+		var revert = keys.join(',');
+
+		Proxmox.Utils.API2Request({
+		    url: '/api2/extjs/' + baseurl,
+		    waitMsgTarget: me,
+		    method: 'PUT',
+		    params: {
+			'revert': revert
+		    },
+		    callback: function() {
+			me.reload();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert('Error',response.htmlStatus);
+		    }
+		});
+	    }
+	});
+
+
 	var set_button_status = function() {
 	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
@@ -221,16 +253,20 @@ Ext.define('PVE.lxc.DNS', {
 		edit_btn.disable();
 		return;
 	    }
-	    var rowdef = rows[rec.data.key];
+	    var key = rec.data.key;
+	    var rowdef = rows[key];
+	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
 	    edit_btn.setDisabled(!rowdef.editor);
+	    revert_btn.setDisabled(!pending);
 	};
 
 	Ext.apply(me, {
 	    url: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/pending",
 	    selModel: sm,
 	    cwidth1: 150,
+	    interval: 5000,
 	    run_editor: run_editor,
-	    tbar: [ edit_btn ],
+	    tbar: [ edit_btn, revert_btn ],
 	    rows: rows,
 	    editorConfig: {
 		url: "/api2/extjs/" + baseurl
@@ -243,5 +279,13 @@ Ext.define('PVE.lxc.DNS', {
 	});
 
 	me.callParent();
+
+	me.on('activate', me.rstore.startUpdate);
+	me.on('destroy', me.rstore.stopUpdate);
+	me.on('deactivate', me.rstore.stopUpdate);
+
+	me.mon(me.getStore(), 'datachanged', function() {
+	    set_button_status();
+	});
     }
 });

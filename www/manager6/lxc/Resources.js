@@ -215,6 +215,31 @@ Ext.define('PVE.lxc.RessourceView', {
 	    handler: run_move
 	});
 
+	var revert_btn = new Proxmox.button.Button({
+	    text: gettext('Revert'),
+	    selModel: me.selModel,
+	    disabled: true,
+	    handler: function(b, e, rec) {
+		var rowdef = me.rows[rec.data.key] || {};
+		var keys = rowdef.multiKey ||  [ rec.data.key ];
+		var revert = keys.join(',');
+		Proxmox.Utils.API2Request({
+		    url: '/api2/extjs/' + baseurl,
+		    waitMsgTarget: me,
+		    method: 'PUT',
+		    params: {
+			'revert': revert
+		    },
+		    callback: function() {
+			me.rstore.load();
+		    },
+		    failure: function (response, opts) {
+			Ext.Msg.alert('Error',response.htmlStatus);
+		    }
+		});
+	    }
+	});
+
 	var set_button_status = function() {
 	    var rec = me.selModel.getSelection()[0];
 
@@ -222,12 +247,14 @@ Ext.define('PVE.lxc.RessourceView', {
 		edit_btn.disable();
 		remove_btn.disable();
 		resize_btn.disable();
+		revert_btn.disable();
 		return;
 	    }
 	    var key = rec.data.key;
 	    var value = rec.data.value;
 	    var rowdef = rows[key];
 
+	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
 	    var isDisk = (rowdef.tdCls == 'pve-itype-icon-storage');
 
 	    var noedit = rec.data['delete'] || !rowdef.editor;
@@ -242,6 +269,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    remove_btn.setDisabled(!isDisk || rec.data.key === 'rootfs' || !diskCap);
 	    resize_btn.setDisabled(!isDisk || !diskCap);
 	    move_btn.setDisabled(!isDisk || !diskCap);
+	    revert_btn.setDisabled(!pending);
 
 	};
 	
@@ -299,7 +327,8 @@ Ext.define('PVE.lxc.RessourceView', {
 		edit_btn,
 		remove_btn,
 		resize_btn,
-		move_btn
+		move_btn,
+		revert_btn
 	    ],
 	    rows: rows,
 	    sorterFn: sorterFn,
