@@ -215,9 +215,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    handler: run_move
 	});
 
-	var revert_btn = new PVE.button.PendingRevert({
-	    pendingGrid: me,
-	});
+	var revert_btn = new PVE.button.PendingRevert();
 
 	var set_button_status = function() {
 	    var rec = me.selModel.getSelection()[0];

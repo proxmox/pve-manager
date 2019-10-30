@@ -10,6 +10,10 @@ Ext.define('PVE.button.PendingRevert', {
     },
 
     handler: function() {
+	if (!this.pendingGrid) {
+	    this.pendingGrid = this.up('proxmoxPendingObjectGrid');
+	    if (!this.pendingGrid) throw "revert button requires a pendingGrid";
+	}
 	let view = this.pendingGrid;
 
 	let rec = view.getSelectionModel().getSelection()[0];
@@ -29,10 +33,5 @@ Ext.define('PVE.button.PendingRevert', {
 	    callback: () => view.reload(),
 	    failure: (response) => Ext.Msg.alert('Error', response.htmlStatus),
 	});
-    },
-
-    initComponent: function() {
-	if (!this.pendingGrid) throw "revert button requires a pendingGrid";
-	this.callParent(arguments);
     },
 });

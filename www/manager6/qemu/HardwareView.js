@@ -501,7 +501,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	});
 
 	var revert_btn = new PVE.button.PendingRevert({
-	    pendingGrid: me,
 	    apiurl: '/api2/extjs/' + baseurl,
 	});
 

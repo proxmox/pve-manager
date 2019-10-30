@@ -213,9 +213,7 @@ Ext.define('PVE.lxc.DNS', {
 	    handler: run_editor
 	});
 
-	var revert_btn = new PVE.button.PendingRevert({
-	    pendingGrid: me,
-	});
+	var revert_btn = new PVE.button.PendingRevert();
 
 	var set_button_status = function() {
 	    var sm = me.getSelectionModel();
