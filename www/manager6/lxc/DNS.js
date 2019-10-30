@@ -253,10 +253,12 @@ Ext.define('PVE.lxc.DNS', {
 		edit_btn.disable();
 		return;
 	    }
-	    var key = rec.data.key;
-	    var rowdef = rows[key];
-	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
+	    let key = rec.data.key;
+
+	    let rowdef = rows[key];
 	    edit_btn.setDisabled(!rowdef.editor);
+
+	    let pending = rec.data['delete'] || me.hasPendingChanges(key);
 	    revert_btn.setDisabled(!pending);
 	};
 
