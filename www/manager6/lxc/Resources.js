@@ -215,29 +215,8 @@ Ext.define('PVE.lxc.RessourceView', {
 	    handler: run_move
 	});
 
-	var revert_btn = new Proxmox.button.Button({
-	    text: gettext('Revert'),
-	    selModel: me.selModel,
-	    disabled: true,
-	    handler: function(b, e, rec) {
-		var rowdef = me.rows[rec.data.key] || {};
-		var keys = rowdef.multiKey ||  [ rec.data.key ];
-		var revert = keys.join(',');
-		Proxmox.Utils.API2Request({
-		    url: '/api2/extjs/' + baseurl,
-		    waitMsgTarget: me,
-		    method: 'PUT',
-		    params: {
-			'revert': revert
-		    },
-		    callback: function() {
-			me.rstore.load();
-		    },
-		    failure: function (response, opts) {
-			Ext.Msg.alert('Error',response.htmlStatus);
-		    }
-		});
-	    }
+	var revert_btn = new PVE.button.PendingRevert({
+	    pendingGrid: me,
 	});
 
 	var set_button_status = function() {

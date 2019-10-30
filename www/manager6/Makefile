@@ -8,6 +8,7 @@ JSSRC= 				                 	\
 	menu/MenuItem.js				\
 	menu/TemplateMenu.js				\
 	button/ConsoleButton.js				\
+	button/Revert.js				\
 	button/Split.js					\
 	controller/StorageEdit.js			\
 	qemu/CmdMenu.js					\
