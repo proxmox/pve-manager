@@ -502,7 +502,7 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	var revert_btn = new PVE.button.PendingRevert({
 	    pendingGrid: me,
-	    baseurl: '/api2/extjs/' + baseurl,
+	    apiurl: '/api2/extjs/' + baseurl,
 	});
 
 	var efidisk_menuitem = Ext.create('Ext.menu.Item',{

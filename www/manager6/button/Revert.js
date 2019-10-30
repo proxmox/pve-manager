@@ -6,7 +6,7 @@ Ext.define('PVE.button.PendingRevert', {
     disabled: true,
     config: {
 	pendingGrid: null,
-	baseurl: undefined,
+	apiurl: undefined,
     },
 
     handler: function() {
@@ -19,7 +19,7 @@ Ext.define('PVE.button.PendingRevert', {
 	let keys = rowdef.multiKey ||  [ rec.data.key ];
 
 	Proxmox.Utils.API2Request({
-	    url: this.baseurl || view.editorConfig.url,
+	    url: this.apiurl || view.editorConfig.url,
 	    waitMsgTarget: view,
 	    selModel: view.getSelectionModel(),
 	    method: 'PUT',
