@@ -1,3 +1,17 @@
+pve-manager (6.0-11) pve; urgency=medium
+
+  * fix #1291: add purge checkbox to VM/CT destroy dialog
+
+  * ui: TFA: default to a 160 bit secret
+
+  * ensure alias.db is available and up-to-date if upgrading from older versions
+
+  * ui: qemu: update grid button status with events from correct store
+
+  * ui: Container: add revert button for pending changes
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 30 Oct 2019 18:02:40 +0100
+
 pve-manager (6.0-10) pve; urgency=medium
 
   * api: subscription: use rpcenv for permission check
