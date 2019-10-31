@@ -320,10 +320,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    }
 	};
 
-	var reload = function() {
-	    me.rstore.load();
-	};
-
 	var baseurl = 'nodes/' + nodename + '/qemu/' + vmid + '/config';
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
@@ -370,7 +366,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    }
 
 	    win.show();
-	    win.on('destroy', reload);
+	    win.on('destroy', me.reload, me);
 	};
 
 	var run_resize = function() {
@@ -387,7 +383,7 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    win.show();
 
-	    win.on('destroy', reload);
+	    win.on('destroy', me.reload, me);
 	};
 
 	var run_move = function() {
@@ -404,7 +400,7 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    win.show();
 
-	    win.on('destroy', reload);
+	    win.on('destroy', me.reload, me);
 	};
 
 	var edit_btn = new Proxmox.button.Button({
@@ -460,9 +456,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		    params: {
 			'delete': rec.data.key
 		    },
-		    callback: function() {
-			reload();
-		    },
+		    callback: () => me.reload(),
 		    failure: function (response, opts) {
 			Ext.Msg.alert('Error', response.htmlStatus);
 		    },
@@ -472,9 +466,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    var win = Ext.create('Proxmox.window.TaskProgress', {
 				upid: upid,
 				listeners: {
-				    destroy: function () {
-					me.reload();
-				    }
+				    destroy: () => me.reload(),
 				}
 			    });
 			    win.show();
@@ -517,7 +509,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		    pveSelNode: me.pveSelNode,
 		    usesEFI: usesEFI,
 		});
-		win.on('destroy', reload);
+		win.on('destroy', me.reload, me);
 		win.show();
 	    }
 	});
@@ -611,7 +603,7 @@ Ext.define('PVE.qemu.HardwareView', {
 					url: '/api2/extjs/' + baseurl,
 					pveSelNode: me.pveSelNode
 				    });
-				    win.on('destroy', reload);
+				    win.on('destroy', me.reload, me);
 				    win.show();
 				}
 			    },
@@ -624,7 +616,7 @@ Ext.define('PVE.qemu.HardwareView', {
 					url: '/api2/extjs/' + baseurl,
 					pveSelNode: me.pveSelNode
 				    });
-				    win.on('destroy', reload);
+				    win.on('destroy', me.reload, me);
 				    win.show();
 				}
 			    },
@@ -638,7 +630,7 @@ Ext.define('PVE.qemu.HardwareView', {
 					pveSelNode: me.pveSelNode,
 					isCreate: true
 				    });
-				    win.on('destroy', reload);
+				    win.on('destroy', me.reload, me);
 				    win.show();
 				}
 			    },
@@ -653,7 +645,7 @@ Ext.define('PVE.qemu.HardwareView', {
 					url: '/api2/extjs/' + baseurl,
 					pveSelNode: me.pveSelNode
 				    });
-				    win.on('destroy', reload);
+				    win.on('destroy', me.reload, me);
 				    win.show();
 				}
 			    },
@@ -667,7 +659,7 @@ Ext.define('PVE.qemu.HardwareView', {
 					url: '/api2/extjs/' + baseurl,
 					pveSelNode: me.pveSelNode
 				    });
-				    win.on('destroy', reload);
+				    win.on('destroy', me.reload, me);
 				    win.show();
 				}
 			    },
@@ -680,7 +672,7 @@ Ext.define('PVE.qemu.HardwareView', {
 				    var win = Ext.create('PVE.qemu.SerialEdit', {
 					url: '/api2/extjs/' + baseurl
 				    });
-				    win.on('destroy', reload);
+				    win.on('destroy', me.reload, me);
 				    win.show();
 				}
 			    },
@@ -694,7 +686,7 @@ Ext.define('PVE.qemu.HardwareView', {
 					url: '/api2/extjs/' + baseurl,
 					pveSelNode: me.pveSelNode
 				    });
-				    win.on('destroy', reload);
+				    win.on('destroy', me.reload, me);
 				    win.show();
 				}
 			    },
@@ -709,7 +701,7 @@ Ext.define('PVE.qemu.HardwareView', {
 					isCreate: true,
 					isAdd: true
 				    });
-				    win.on('destroy', reload);
+				    win.on('destroy', me.reload, me);
 				    win.show();
 				}
 			    }
