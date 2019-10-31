@@ -28,15 +28,12 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	var me = this;
 
 	var confid = me.confid || "mp"+values.mpid;
-	values.file = me.down('field[name=file]').getValue();
-	if (values.mountoptions) {
-	    values.mountoptions = values.mountoptions.join(';');
-	}
+	me.mp.file = me.down('field[name=file]').getValue();
 
 	if (me.unused) {
 	    confid = "mp"+values.mpid;
 	} else if (me.isCreate) {
-	    values.file = values.hdstorage + ':' + values.disksize;
+	    me.mp.file = values.hdstorage + ':' + values.disksize;
 	}
 
 	// delete unnecessary fields
@@ -45,8 +42,17 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	delete values.disksize;
 	delete values.diskformat;
 
+	let mountopts = (values.mountoptions || []).join(';');
+	PVE.Utils.propertyStringSet(me.mp, values.mp, 'mp');
+	PVE.Utils.propertyStringSet(me.mp, values.mountoptions, 'mountoptions', mountopts);
+	PVE.Utils.propertyStringSet(me.mp, values.backup, 'backup');
+	PVE.Utils.propertyStringSet(me.mp, values.quota, 'quota');
+	PVE.Utils.propertyStringSet(me.mp, values.ro, 'ro');
+	PVE.Utils.propertyStringSet(me.mp, values.acl, 'acl');
+	PVE.Utils.propertyStringSet(me.mp, values.replicate, 'replicate');
+
 	var res = {};
-	res[confid] = PVE.Parser.printLxcMountPoint(values);
+	res[confid] = PVE.Parser.printLxcMountPoint(me.mp);
 	return res;
     },
 
@@ -58,6 +64,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	if (mp.mountoptions) {
 	    mp.mountoptions = mp.mountoptions.split(';');
 	}
+	me.mp = mp;
 
 	if (this.confid === 'rootfs') {
 	    var field = me.down('field[name=mountoptions]');
@@ -121,6 +128,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	init: function(view) {
 	    var me = this;
 	    var vm = this.getViewModel();
+	    view.mp = {};
 	    vm.set('confid', view.confid);
 	    vm.set('unused', view.unused);
 	    vm.set('node', view.nodename);
