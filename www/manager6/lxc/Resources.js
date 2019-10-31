@@ -295,6 +295,7 @@ Ext.define('PVE.lxc.RessourceView', {
 					unprivileged: me.getObjectValue('unprivileged'),
 					pveSelNode: me.pveSelNode
 				    });
+				    win.on('destroy', me.reload, me);
 				    win.show();
 				}
 			    }
@@ -324,6 +325,10 @@ Ext.define('PVE.lxc.RessourceView', {
 	me.on('activate', me.rstore.startUpdate);
 	me.on('destroy', me.rstore.stopUpdate);
 	me.on('deactivate', me.rstore.stopUpdate);
+
+	me.mon(me.getStore(), 'datachanged', function() {
+	    set_button_status();
+	});
 
 	Ext.apply(me.editorConfig, { unprivileged: me.getObjectValue('unprivileged') });
     }
