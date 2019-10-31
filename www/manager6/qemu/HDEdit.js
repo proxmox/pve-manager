@@ -68,55 +68,18 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.drive.format = values.diskformat;
 	}
 
-	if (values.nobackup) {
-	    me.drive.backup = 'no';
-	} else {
-	    delete me.drive.backup;
-	}
-
-	if (values.noreplicate) {
-	    me.drive.replicate = 'no';
-	} else {
-	    delete me.drive.replicate;
-	}
-
-	if (values.discard) {
-	    me.drive.discard = 'on';
-	} else {
-	    delete me.drive.discard;
-	}
-
-	if (values.ssd) {
-	    me.drive.ssd = 'on';
-	} else {
-	    delete me.drive.ssd;
-	}
-
-	if (values.iothread) {
-	    me.drive.iothread = 'on';
-	} else {
-	    delete me.drive.iothread;
-	}
-
-	if (values.cache) {
-	    me.drive.cache = values.cache;
-	} else {
-	    delete me.drive.cache;
-	}
+	PVE.Utils.propertyStringSet(me.drive, values.nobackup, 'backup', 'no');
+	PVE.Utils.propertyStringSet(me.drive, values.noreplicate, 'replicate', 'no');
+	PVE.Utils.propertyStringSet(me.drive, values.discard, 'discard', 'on');
+	PVE.Utils.propertyStringSet(me.drive, values.ssd, 'ssd', 'on');
+	PVE.Utils.propertyStringSet(me.drive, values.iothread, 'iothread', 'on');
+	PVE.Utils.propertyStringSet(me.drive, values.cache, 'cache');
 
         var names = ['mbps_rd', 'mbps_wr', 'iops_rd', 'iops_wr'];
         Ext.Array.each(names, function(name) {
-            if (values[name]) {
-                me.drive[name] = values[name];
-            } else {
-                delete me.drive[name];
-            }
             var burst_name = name + '_max';
-            if (values[burst_name] && values[name]) {
-                me.drive[burst_name] = values[burst_name];
-            } else {
-                delete me.drive[burst_name];
-            }
+	    PVE.Utils.propertyStringSet(me.drive, values[name], name);
+	    PVE.Utils.propertyStringSet(me.drive, values[burst_name], burst_name);
         });
 
 
