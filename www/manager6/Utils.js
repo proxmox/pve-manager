@@ -1260,6 +1260,18 @@ Ext.define('PVE.Utils', { utilities: {
 	} else {
 	    return false;
 	}
+    },
+
+    propertyStringSet: function(target, source, name, value) {
+	if (source) {
+	    if (value === undefined) {
+		target[name] = source;
+	    } else {
+		target[name] = value;
+	    }
+	} else {
+	    delete target[name];
+	}
     }
 },
 
