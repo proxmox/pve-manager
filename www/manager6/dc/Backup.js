@@ -432,22 +432,23 @@ Ext.define('PVE.dc.BackupView', {
 	    job.all = job.all === true ? 1 : 0;
 
 	    var errors = [];
-	    var inProgress = allNodes.length;
+	    var jobCount = jobNode === undefined ? allNodes.length : 1;
+	    var inProgress = jobCount;
 
 	    Ext.Msg.show({
 		title: gettext('Please wait...'),
 		closable: false,
 		progress: true
 	    });
-	    Ext.Msg.updateProgress(0, '0/' + allNodes.length);
+	    Ext.Msg.updateProgress(0, '0/' + jobCount);
 
 	    var postRequest = function () {
 		inProgress++;
 
-		Ext.Msg.updateProgress(inProgress/allNodes.length,
-		    inProgress + '/' + allNodes.length);
+		Ext.Msg.updateProgress(inProgress/jobCount,
+		    inProgress + '/' + jobCount);
 
-		if (inProgress == allNodes.length) {
+		if (inProgress == jobCount) {
 		    Ext.Msg.hide();
 		    if (errors !== undefined && errors.length > 0) {
 			Ext.Msg.alert('Error', 'Some errors have been encountered:<br />---<br />'
@@ -457,8 +458,11 @@ Ext.define('PVE.dc.BackupView', {
 	    }
 
 	    allNodes.forEach(node => {
-		if (node.status !== 'online' ||
-		    (jobNode !== undefined && jobNode !== node.node)) {
+		if (jobNode !== undefined && jobNode !== node.node) {
+		    return;
+		}
+
+		if (node.status !== 'online') {
 		    errors.push(node.node + ": " + gettext("Node is offline"));
 		    return;
 		}
