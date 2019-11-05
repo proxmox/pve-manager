@@ -125,19 +125,6 @@ Infopage: http://pve.proxmox.com/wiki/Debian_9.0_Standard
 Description: Debian 9.7 (standard)
  A small Debian Stretch system including all standard packages.
 
-Package: fedora-29-default
-Version: 20181126
-Type: lxc
-OS: fedora
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/fedora-29-default_20181126_amd64.tar.xz
-md5sum: 566f1f494d43bbf34e5d437cd46b614a
-sha512sum: e5fae6196207738f76169442709a4ae113d31562b67340ff50b4c7f059c90c5374f5f24ce340ea14c9fe7aec75c906256fd62f5466abe90f10ade4195ec602a4
-Infopage: https://linuxcontainers.org
-Description: LXC default image for fedora 29 (20181126)
-
 Package: fedora-30-default
 Version: 20190718
 Type: lxc
@@ -150,6 +137,19 @@ md5sum: 816e3b708553bfe223fe6371beab7ca0
 sha512sum: b5e0d1a33834011775d1c5b5977a9cb7d1a471e9b6fda6665d5697b49d843b3ae9c306e032525ebf3f89566cbf5045dff5f698124c1e9d86d52298913061c4cf
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 30 (20190718)
+
+Package: fedora-31-default
+Version: 20191029
+Type: lxc
+OS: fedora
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/fedora-31-default_20191029_amd64.tar.xz
+md5sum: e4da460e06f99bc269651f79d16a3d26
+sha512sum: 451b1effac32cccdaf8f070039146649243b5453a21960fde268afb9bc503300e20d1d71a1870e6dda65106534e6ab0881a8d05c036077189b63a80236207323
+Infopage: https://linuxcontainers.org
+Description: LXC default image for fedora 31 (20191029)
 
 Package: gentoo-current-default
 Version: 20190718
