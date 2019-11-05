@@ -4,11 +4,13 @@ use strict;
 use warnings;
 
 use PVE::Status::Plugin;
+use IO::Socket::Timeout;
 
 # example config (/etc/pve/status.cfg)
 #graphite:
 #	server test
 #	port 2003
+#	proto udp
 #	path proxmox.mycluster
 #	disable 0
 #
@@ -25,6 +27,17 @@ sub properties {
 	    type => 'string', format => 'graphite-path',
 	    description => "root graphite path (ex: proxmox.mycluster.mykey)",
 	},
+	timeout => {
+	    type => 'integer',
+	    description => "graphite tcp socket timeout (default=3)",
+	    optional => 1
+	},
+	proto => {
+	    type => 'string',
+	    enum => ['udp', 'tcp'],
+	    description => "send graphite data using tcp or udp (default)",
+	    optional => 1,
+	},
     };
 }
 
@@ -32,6 +45,8 @@ sub options {
     return {
 	server => {},
 	port => { optional => 1 },
+	proto => { optional => 1 },
+	timeout => { optional => 1 },
 	path => { optional => 1 },
 	disable => { optional => 1 },
     };
@@ -76,13 +91,21 @@ sub write_graphite_hash {
     my $host = $plugin_config->{server};
     my $port = $plugin_config->{port} ? $plugin_config->{port} : 2003;
     my $path = $plugin_config->{path} ? $plugin_config->{path} : 'proxmox';
+    my $proto = $plugin_config->{proto} ? $plugin_config->{proto} : 'udp';
+    my $timeout = $plugin_config->{timeout} ? $plugin_config->{timeout} : 3;
 
     my $carbon_socket = IO::Socket::IP->new(
 	PeerAddr    => $host,
 	PeerPort    => $port,
-	Proto       => 'udp',
+	Proto       => $proto,
+	Timeout     => $timeout,
     ) || die "couldn't create carbon socket [$host]:$port - $@\n";
 
+    if ( $proto eq 'tcp' ) {
+	IO::Socket::Timeout->enable_timeouts_on($carbon_socket);
+	$carbon_socket->read_timeout($timeout);
+	$carbon_socket->write_timeout($timeout);
+    }
     write_graphite($carbon_socket, $d, $ctime, $path.".$object");
 
     $carbon_socket->close() if $carbon_socket;
