@@ -1,11 +1,15 @@
 Ext.define('PVE.form.SpiceEnhancementSelector', {
     extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveSpiceEnhancementSelector',
+
+    viewModel: {},
+
     items: [
 	{
 	    xtype: 'proxmoxcheckbox',
 	    itemId: 'foldersharing',
 	    name: 'foldersharing',
+	    reference: 'foldersharing',
 	    fieldLabel: 'Folder Sharing',
 	    uncheckedValue: 0,
 	},
@@ -27,6 +31,15 @@ Ext.define('PVE.form.SpiceEnhancementSelector', {
 	    userCls: 'pmx-hint',
 	    value: gettext('To use these features set the display to SPICE in the hardware settings of the VM.'),
 	    hidden: true,
+	},
+	{
+	    xtype: 'displayfield',
+	    itemId: 'spicefolderhint',
+	    userCls: 'pmx-hint',
+	    value: gettext('Make sure the SPICE WebDav daemon is installed in the VM.'),
+	    bind: {
+		hidden: '{!foldersharing.checked}',
+	    }
 	}
     ],
 
