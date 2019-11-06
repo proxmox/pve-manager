@@ -536,8 +536,10 @@ Ext.define('PVE.dc.BackupView', {
 			win.show();
 		    }
 		},
+		'-',
 		remove_btn,
 		edit_btn,
+		'-',
 		run_btn
 	    ],
 	    columns: [
