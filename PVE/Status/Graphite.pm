@@ -89,10 +89,10 @@ sub write_graphite_hash {
     my ($plugin_config, $d, $ctime, $object) = @_;
 
     my $host = $plugin_config->{server};
-    my $port = $plugin_config->{port} ? $plugin_config->{port} : 2003;
-    my $path = $plugin_config->{path} ? $plugin_config->{path} : 'proxmox';
-    my $proto = $plugin_config->{proto} ? $plugin_config->{proto} : 'udp';
-    my $timeout = $plugin_config->{timeout} ? $plugin_config->{timeout} : 3;
+    my $port = $plugin_config->{port} || 2003;
+    my $path = $plugin_config->{path} // 'proxmox';
+    my $proto = $plugin_config->{proto} || 'udp';
+    my $timeout = $plugin_config->{timeout} // 3;
 
     my $carbon_socket = IO::Socket::IP->new(
 	PeerAddr    => $host,
