@@ -29,7 +29,7 @@ sub properties {
 	},
 	timeout => {
 	    type => 'integer',
-	    description => "graphite tcp socket timeout (default=3)",
+	    description => "graphite tcp socket timeout (default=1)",
 	    optional => 1
 	},
 	proto => {
@@ -92,7 +92,7 @@ sub write_graphite_hash {
     my $port = $plugin_config->{port} || 2003;
     my $path = $plugin_config->{path} // 'proxmox';
     my $proto = $plugin_config->{proto} || 'udp';
-    my $timeout = $plugin_config->{timeout} // 3;
+    my $timeout = $plugin_config->{timeout} // 1;
 
     my $carbon_socket = IO::Socket::IP->new(
 	PeerAddr    => $host,
