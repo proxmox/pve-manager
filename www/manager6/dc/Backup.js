@@ -420,9 +420,7 @@ Ext.define('PVE.dc.BackupView', {
 	var run_backup_now = function(job) {
 	    job = Ext.clone(job);
 
-	    var allNodes = PVE.data.ResourceStore.getNodes();
-	    var jobNode = job.node;
-
+	    let jobNode = job.node;
 	    // Remove properties related to scheduling
 	    delete job.enabled;
 	    delete job.starttime;
@@ -431,56 +429,53 @@ Ext.define('PVE.dc.BackupView', {
 	    delete job.node;
 	    job.all = job.all === true ? 1 : 0;
 
-	    var errors = [];
-	    var jobCount = jobNode === undefined ? allNodes.length : 1;
-	    var inProgress = jobCount;
+	    let allNodes = PVE.data.ResourceStore.getNodes();
+	    let nodes = allNodes.filter(node => node.status === 'online').map(node => node.node);
+	    let errors = [];
+
+	    if (jobNode !== undefined) {
+		if (!nodes.includes(jobNode)) {
+		    Ext.Msg.alert('Error', "Node '"+ jobNode +"' from backup job isn't online!");
+		    return;
+		}
+		nodes = [ jobNode ];
+	    } else {
+		let unkownNodes = allNodes.filter(node => node.status !== 'online');
+		if (unkownNodes.length > 0)
+		    errors.push(unkownNodes.map(node => node.node + ": " + gettext("Node is offline")));
+	    }
+	    let jobTotalCount = nodes.length, jobsStarted = 0;
 
 	    Ext.Msg.show({
 		title: gettext('Please wait...'),
 		closable: false,
-		progress: true
+		progress: true,
+		progressText: '0/' + jobTotalCount,
 	    });
-	    Ext.Msg.updateProgress(0, '0/' + jobCount);
 
-	    var postRequest = function () {
-		inProgress++;
+	    let postRequest = function () {
+		jobsStarted++;
+		Ext.Msg.updateProgress(jobsStarted / jobTotalCount, jobsStarted + '/' + jobTotalCount);
 
-		Ext.Msg.updateProgress(inProgress/jobCount,
-		    inProgress + '/' + jobCount);
-
-		if (inProgress == jobCount) {
+		if (jobsStarted == jobTotalCount) {
 		    Ext.Msg.hide();
-		    if (errors !== undefined && errors.length > 0) {
-			Ext.Msg.alert('Error', 'Some errors have been encountered:<br />---<br />'
-			    + errors.join('<br />---<br />'));
+		    if (errors.length > 0) {
+			Ext.Msg.alert('Error', 'Some errors have been encountered:<br />' + errors.join('<br />'));
 		    }
 		}
-	    }
+	    };
 
-	    allNodes.forEach(node => {
-		if (jobNode !== undefined && jobNode !== node.node) {
-		    return;
-		}
-
-		if (node.status !== 'online') {
-		    errors.push(node.node + ": " + gettext("Node is offline"));
-		    return;
-		}
-
-		inProgress--;
-
-		Proxmox.Utils.API2Request({
-		    url: '/nodes/' + node.node + '/vzdump',
-		    method: 'POST',
-		    params: job,
-		    failure: function (response, opts) {
-			errors.push(node.node + ': ' + response.htmlStatus);
-			postRequest();
-		    },
-		    success: postRequest
-		});
-	    });
-	}
+	    nodes.forEach(node => Proxmox.Utils.API2Request({
+		url: '/nodes/' + node + '/vzdump',
+		method: 'POST',
+		params: job,
+		failure: function (response, opts) {
+		    errors.push(node + ': ' + response.htmlStatus);
+		    postRequest();
+		},
+		success: postRequest
+	    }));
+	};
 
 	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
