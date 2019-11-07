@@ -3,8 +3,11 @@ package PVE::Status::Graphite;
 use strict;
 use warnings;
 
-use PVE::Status::Plugin;
+use IO::Socket::IP;
 use IO::Socket::Timeout;
+
+use PVE::Status::Plugin;
+use PVE::JSONSchema;
 
 # example config (/etc/pve/status.cfg)
 #graphite:
