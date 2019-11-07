@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use IO::Socket::IP;
-use IO::Socket::Timeout;
+use Socket qw(SOL_SOCKET SO_SNDTIMEO SO_RCVTIMEO);
 
 use PVE::Status::Plugin;
 use PVE::JSONSchema;
@@ -105,9 +105,10 @@ sub write_graphite_hash {
     ) || die "couldn't create carbon socket [$host]:$port - $@\n";
 
     if ( $proto eq 'tcp' ) {
-	IO::Socket::Timeout->enable_timeouts_on($carbon_socket);
-	$carbon_socket->read_timeout($timeout);
-	$carbon_socket->write_timeout($timeout);
+	# seconds and µs
+	my $timeout_struct = pack( 'l!l!', $timeout, 0);
+	setsockopt($carbon_socket, SOL_SOCKET, SO_SNDTIMEO, $timeout_struct);
+	setsockopt($carbon_socket, SOL_SOCKET, SO_RCVTIMEO, $timeout_struct);
     }
     write_graphite($carbon_socket, $d, $ctime, $path.".$object");
 
