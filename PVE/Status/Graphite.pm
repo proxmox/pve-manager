@@ -55,14 +55,6 @@ sub options {
     };
 }
 
-# we do not want boolean/state information to export to graphite
-my $key_blacklist = {
-    'template' => 1,
-    'pid' => 1,
-    'agent' => 1,
-    'serial' => 1,
-};
-
 # Plugin implementation
 sub update_node_status {
     my ($class, $plugin_config, $node, $data, $ctime) = @_;
@@ -119,25 +111,35 @@ sub write_graphite_hash {
 sub write_graphite {
     my ($carbon_socket, $d, $ctime, $path) = @_;
 
-    for my $key (keys %$d) {
+    # we do not want boolean/state information to export to graphite
+    my $key_blacklist = {
+	'template' => 1,
+	'pid' => 1,
+	'agent' => 1,
+	'serial' => 1,
+    };
 
-	my $value = $d->{$key};
-	my $oldpath = $path;
-	$key =~ s/\./-/g;
-	$path .= ".$key";
+    my $graphite_data = '';
+    my $assemble_graphite_data;
+    $assemble_graphite_data = sub {
+	my ($metric, $path) = @_;
 
-	if ( defined $value ) {
-	    if ( ref $value eq 'HASH' ) {
-		write_graphite($carbon_socket, $value, $ctime, $path);
-	    } elsif ($value =~ m/^[+-]?[0-9]*\.?[0-9]+$/ &&
-		!$key_blacklist->{$key}) {
-		$carbon_socket->send( "$path $value $ctime\n" );
-	    } else {
-		# do not send blacklisted or non-numeric values
+	for my $key (sort keys %$metric) {
+	    my $value = $d->{$key} // next;
+
+	    $key =~ s/\./-/g;
+	    my $metricpath = $path . ".$key";
+
+	    if (ref($value) eq 'HASH') {
+		$assemble_graphite_data->($value, $metricpath);
+	    } elsif ($value =~ m/^[+-]?[0-9]*\.?[0-9]+$/ && !$key_blacklist->{$key}) {
+		$graphite_data .= "$metricpath $value $ctime\n";
 	    }
 	}
-	$path = $oldpath;
-    }
+    };
+    $assemble_graphite_data->($d, $path);
+
+    $carbon_socket->send($graphite_data) if $graphite_data ne '';
 }
 
 PVE::JSONSchema::register_format('graphite-path', \&pve_verify_graphite_path);
