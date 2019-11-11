@@ -11,6 +11,7 @@ After=pvedaemon.service
 After=ssh.service
 
 [Service]
+ExecStartPre=-/usr/bin/pvecm updatecerts --silent
 ExecStart=/usr/bin/pveproxy start
 ExecStop=/usr/bin/pveproxy stop
 ExecReload=/usr/bin/pveproxy restart
