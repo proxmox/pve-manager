@@ -11,6 +11,7 @@ use PVE::Exception qw(raise_param_exc raise);
 
 use PVE::RPCEnvironment;
 use PVE::AccessControl;
+use PVE::CertCache;
 use PVE::Cluster;
 use PVE::API2Tools;
 
@@ -199,13 +200,13 @@ sub rest_handler {
 sub check_cert_fingerprint {
     my ($self, $cert) = @_;
 
-    return PVE::Cluster::check_cert_fingerprint($cert);
+    return PVE::CertCache::check_cert_fingerprint($cert);
 }
 
 sub initialize_cert_cache {
     my ($self, $node) = @_;
 
-    PVE::Cluster::initialize_cert_cache($node);
+    PVE::CertCache::initialize_cert_cache($node);
 }
 
 sub remote_node_ip {

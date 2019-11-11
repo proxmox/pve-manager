@@ -7,6 +7,7 @@ PERLSOURCE = 			\
 	API2Tools.pm		\
 	APLInfo.pm		\
 	AutoBalloon.pm		\
+	CertCache.pm		\
 	CertHelpers.pm		\
 	ExtMetric.pm		\
 	HTTPServer.pm		\
