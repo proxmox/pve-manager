@@ -229,6 +229,13 @@ my $mocked_cfs_lock_file = sub {
     return $res;
 };
 
+my $mocked_cfs_read_file = sub {
+    my ($filename) = @_;
+
+    return {} if $filename eq 'datacenter.cfg';
+    return PVE::Cluster::cfs_read_file($filename);
+};
+
 my $mocked_cfs_write_file = sub {
     my ($filename, $cfg) = @_;
 
@@ -267,6 +274,7 @@ sub setup {
 	cfs_update => sub {},
 	cfs_lock_file => $mocked_cfs_lock_file,
 	cfs_write_file => $mocked_cfs_write_file,
+	cfs_read_file => $mocked_cfs_read_file,
     );
     $pve_inotify_module->mock('nodename' => sub { return $mocked_nodename; });
 };
