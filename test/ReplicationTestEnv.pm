@@ -83,6 +83,8 @@ if (!mkdir($PVE::GuestHelpers::lockdir) && !$!{EEXIST}) {
     die "mkdir($PVE::GuestHelpers::lockdir): $!\n";
 }
 
+my $pve_sshinfo_module = Test::MockModule->new('PVE::SSHInfo');
+
 my $pve_cluster_module = Test::MockModule->new('PVE::Cluster');
 
 my $pve_inotify_module = Test::MockModule->new('PVE::INotify');
@@ -254,9 +256,12 @@ sub setup {
 
     $pve_lxc_config_module->mock(load_config => $mocked_lxc_load_conf);
 
-    $pve_cluster_module->mock(
+    $pve_sshinfo_module->mock(
 	get_ssh_info => $mocked_get_ssh_info,
 	ssh_info_to_command => $mocked_ssh_info_to_command,
+    );
+
+    $pve_cluster_module->mock(
 	get_vmlist => sub { return $mocked_vmlist->(); },
 	get_members => $mocked_get_members,
 	cfs_update => sub {},
