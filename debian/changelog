@@ -1,3 +1,17 @@
+pve-manager (6.0-13) pve; urgency=medium
+
+  * takeover CertCache from pve-cluster
+
+  * use PVE::DataCenterConfig
+
+  * use PVE::RRD for RRD data
+
+  * pveproxy.service: take over pvecm call from pve-cluster.service
+
+  * update (build-)dependencies after pve-cluster refactor
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 18 Nov 2019 12:22:30 +0100
+
 pve-manager (6.0-12) pve; urgency=medium
 
   * pveversion: track libspice-server1 version again
