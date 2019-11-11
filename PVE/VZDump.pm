@@ -11,6 +11,7 @@ use File::Path;
 use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Cluster qw(cfs_read_file);
+use PVE::DataCenterConfig;
 use POSIX qw(strftime);
 use Time::Local;
 use PVE::JSONSchema qw(get_standard_option);

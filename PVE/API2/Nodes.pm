@@ -47,6 +47,7 @@ use PVE::API2::Hardware;
 use Digest::MD5;
 use Digest::SHA;
 use PVE::API2::Disks;
+use PVE::DataCenterConfig;
 use JSON;
 use Socket;
 

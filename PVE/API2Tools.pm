@@ -8,6 +8,7 @@ use PVE::Exception qw(raise_param_exc);
 use PVE::Tools;
 use PVE::INotify;
 use PVE::Cluster;
+use PVE::DataCenterConfig;
 use PVE::RPCEnvironment;
 use Digest::MD5 qw(md5_hex);
 use URI;

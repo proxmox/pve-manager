@@ -13,6 +13,7 @@ use PVE::ProcFSTools;
 use PVE::Exception qw(raise_param_exc);
 use PVE::INotify;
 use PVE::Cluster qw (cfs_read_file cfs_write_file);
+use PVE::DataCenterConfig;
 use PVE::AccessControl;
 use PVE::Storage;
 use PVE::JSONSchema qw(get_standard_option);

@@ -7,6 +7,7 @@ use JSON;
 
 use PVE::API2Tools;
 use PVE::Cluster qw(cfs_register_file cfs_lock_file cfs_read_file cfs_write_file);
+use PVE::DataCenterConfig;
 use PVE::Exception qw(raise_param_exc);
 use PVE::Firewall;
 use PVE::HA::Config;
@@ -77,7 +78,7 @@ if ($have_sdn) {
     });
 }
 
-my $dc_schema = PVE::Cluster::get_datacenter_schema();
+my $dc_schema = PVE::DataCenterConfig::get_datacenter_schema();
 my $dc_properties = { 
     delete => {
 	type => 'string', format => 'pve-configid-list',

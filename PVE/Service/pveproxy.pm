@@ -11,6 +11,7 @@ use URI;
 use URI::QueryParam;
 use Data::Dumper;
 use PVE::Cluster;
+use PVE::DataCenterConfig;
 use PVE::APIServer::Utils;
 use PVE::API2;
 use PVE::APIServer::Formatter;

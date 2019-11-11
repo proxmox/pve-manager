@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use PVE::pvecfg;
+use PVE::DataCenterConfig;
 use PVE::RESTHandler;
 use PVE::JSONSchema;
 

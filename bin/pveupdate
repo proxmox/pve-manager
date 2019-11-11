@@ -12,6 +12,7 @@ use PVE::Certificate;
 use PVE::NodeConfig;
 use PVE::INotify;
 use PVE::Cluster;
+use PVE::DataCenterConfig;
 use PVE::APLInfo;
 use PVE::SafeSyslog;
 use PVE::RPCEnvironment;

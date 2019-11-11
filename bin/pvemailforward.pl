@@ -6,6 +6,7 @@ use PVE::Tools;
 use PVE::SafeSyslog;
 use PVE::AccessControl;
 use PVE::Cluster qw (cfs_read_file);
+use PVE::DataCenterConfig;
 
 # NOTE: we need to run this with setgid www-data
 # else we cant read /etc/pve/user.cfg

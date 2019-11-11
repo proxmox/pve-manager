@@ -8,6 +8,7 @@ use PVE::APLInfo;
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param);
 use PVE::Cluster;
+use PVE::DataCenterConfig;
 use PVE::INotify;
 use PVE::RPCEnvironment;
 use PVE::JSONSchema qw(get_standard_option);

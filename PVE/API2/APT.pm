@@ -13,6 +13,7 @@ use LWP::UserAgent;
 use PVE::pvecfg;
 use PVE::Tools qw(extract_param);
 use PVE::Cluster;
+use PVE::DataCenterConfig;
 use PVE::SafeSyslog;
 use PVE::INotify;
 use PVE::Exception;
