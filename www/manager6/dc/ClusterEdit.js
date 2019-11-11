@@ -138,7 +138,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
     submitText: gettext('Join'),
     showTaskViewer: true,
 
-    onlineHelp: 'chapter_pvecm',
+    onlineHelp: 'pvecm_join_node_to_cluster',
 
     viewModel: {
 	parent: null,
