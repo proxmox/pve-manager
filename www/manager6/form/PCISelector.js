@@ -27,7 +27,7 @@ Ext.define('PVE.form.PCISelector', {
 	    {
 		header: 'ID',
 		dataIndex: 'id',
-		width: 80
+		width: 100
 	    },
 	    {
 		header: gettext('IOMMU Group'),

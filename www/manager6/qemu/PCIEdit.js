@@ -10,7 +10,10 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 	var hostpci = me.vmconfig[me.confid] || '';
 
 	var values = PVE.Parser.parsePropertyString(hostpci, 'host');
-	if (values.host && values.host.length < 6) { // 00:00 format not 00:00.0
+	if (!values.host.match(/^[0-9a-f]{4}:/i)) { // add optional domain
+	    values.host = "0000:" + values.host;
+	}
+	if (values.host && values.host.length < 11) { // 0000:00:00 format not 0000:00:00.0
 	    values.host += ".0";
 	    values.multifunction = true;
 	}
@@ -43,9 +46,13 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 		}
 	    }
 	}
+	// remove optional '0000' domain
+	if (values.host.substring(0,5) === '0000:') {
+	    values.host = values.host.substring(5);
+	}
 	if (values.multifunction) {
 	    // modify host to skip the '.X'
-	    values.host = values.host.substring(0,5);
+	    values.host = values.host.substring(0, values.host.indexOf('.'));
 	    delete values.multifunction;
 	}
 
