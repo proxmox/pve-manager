@@ -322,6 +322,7 @@ __PACKAGE__->register_method ({
     },
     returns => {
 	type => 'string',
+	optional => 1,
 	description => 'ACME TermsOfService URL.',
     },
     code => sub {
