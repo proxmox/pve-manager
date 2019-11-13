@@ -87,45 +87,38 @@ my $generate_rrd_string = sub {
 sub update_node_status {
     my ($status_cfg) = @_;
 
-    my ($avg1, $avg5, $avg15) = PVE::ProcFSTools::read_loadavg();
-
-    my $stat = PVE::ProcFSTools::read_proc_stat();
-
-    my $netdev = PVE::ProcFSTools::read_proc_net_dev();
-
     my ($uptime) = PVE::ProcFSTools::read_proc_uptime();
 
+    my ($avg1, $avg5, $avg15) = PVE::ProcFSTools::read_loadavg();
+    my $stat = PVE::ProcFSTools::read_proc_stat();
     my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
-
-    my $maxcpu = $cpuinfo->{cpus}; 
+    my $maxcpu = $cpuinfo->{cpus};
 
     my $subinfo = PVE::INotify::read_file('subscription');
     my $sublevel = $subinfo->{level} || '';
 
+    my $netdev = PVE::ProcFSTools::read_proc_net_dev();
     # traffic from/to physical interface cards
-    my $netin = 0;
-    my $netout = 0;
-    foreach my $dev (keys %$netdev) {
-	next if $dev !~ m/^$PVE::Network::PHYSICAL_NIC_RE$/;
+    my ($netin, $netout) = (0, 0);
+    for my $dev (grep { /^$PVE::Network::PHYSICAL_NIC_RE$/ } keys %$netdev) {
 	$netin += $netdev->{$dev}->{receive};
 	$netout += $netdev->{$dev}->{transmit};
     }
- 
+
     my $meminfo = PVE::ProcFSTools::read_meminfo();
 
     my $dinfo = df('/', 1);     # output is bytes
-
-    my $ctime = time();
-
     # everything not free is considered to be used
     my $dused = $dinfo->{blocks} - $dinfo->{bfree};
+
+    my $ctime = time();
 
     my $data = $generate_rrd_string->(
 	[$uptime, $sublevel, $ctime, $avg1, $maxcpu, $stat->{cpu}, $stat->{wait},
 	 $meminfo->{memtotal}, $meminfo->{memused},
 	 $meminfo->{swaptotal}, $meminfo->{swapused},
-	 $dinfo->{blocks}, $dused, $netin, $netout]);
-
+	 $dinfo->{blocks}, $dused, $netin, $netout]
+    );
     PVE::Cluster::broadcast_rrd("pve2-node/$nodename", $data);
 
     foreach my $id (keys %{$status_cfg->{ids}}) {
