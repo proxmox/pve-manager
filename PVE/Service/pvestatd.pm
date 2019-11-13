@@ -144,40 +144,28 @@ sub update_node_status {
 sub auto_balloning {
     my ($vmstatus) =  @_;
 
-    my $log = sub {
-       return if !$opt_debug;
-       print @_;
-    };
+    my $log = sub { $opt_debug and printf @_ };
 
     my $hostmeminfo = PVE::ProcFSTools::read_meminfo();
-
-    # to debug, run 'pvestatd -d' and set  memtotal here
+    # NOTE: to debug, run 'pvestatd -d' and set  memtotal here
     #$hostmeminfo->{memtotal} = int(2*1024*1024*1024/0.8); # you can set this to test
-
     my $hostfreemem = $hostmeminfo->{memtotal} - $hostmeminfo->{memused};
 
-    # we try to use about 80% host memory
-    # goal: we want to change memory usage by this amount (positive or negative)
-    my $goal = int($hostmeminfo->{memtotal}*0.8 - $hostmeminfo->{memused});
+    # try to use ~80% host memory; goal is the change amount required to achieve that
+    my $goal = int($hostmeminfo->{memtotal} * 0.8 - $hostmeminfo->{memused});
+    $log->("host goal: $goal free: $hostfreemem total: $hostmeminfo->{memtotal}\n");
 
     my $maxchange = 100*1024*1024;
     my $res = PVE::AutoBalloon::compute_alg1($vmstatus, $goal, $maxchange);
- 
-    &$log("host goal: $goal free: $hostfreemem total: $hostmeminfo->{memtotal}\n");
 
-    foreach my $vmid (keys %$vmstatus) {
-	next if !$res->{$vmid};
-	my $d = $vmstatus->{$vmid};
-	my $diff = int($res->{$vmid} - $d->{balloon});
-	my $absdiff = $diff < 0 ? -$diff : $diff;
-	if ($absdiff > 0) {
-	    &$log("BALLOON $vmid to $res->{$vmid} ($diff)\n");
-	    eval {
-		PVE::QemuServer::vm_mon_cmd($vmid, "balloon", 
-					    value => int($res->{$vmid}));
-	    };
-	    warn $@ if $@;
-	}
+    for my $vmid (sort keys %$res) {
+	my $target = int($res->{$vmid});
+	my $current = int($vmstatus->{$vmid}->{balloon});
+	next if $target == $current; # no need to change
+
+	$log->("BALLOON $vmid to $target (%d)\n", $target - $current);
+	eval { PVE::QemuServer::vm_mon_cmd($vmid, "balloon", value => $target) };
+	warn $@ if $@;
     }
 }
 
