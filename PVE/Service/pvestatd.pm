@@ -374,7 +374,6 @@ sub update_lxc_status {
     my ($status_cfg) = @_;
 
     my $ctime = time();
-
     my $vmstatus = PVE::LXC::vmstatus();
 
     foreach my $vmid (keys %$vmstatus) {
@@ -409,9 +408,7 @@ sub update_storage_status {
     my ($status_cfg) = @_;
 
     my $cfg = PVE::Storage::config();
-
     my $ctime = time();
-
     my $info = PVE::Storage::storage_info($cfg);
 
     foreach my $storeid (keys %$info) {
