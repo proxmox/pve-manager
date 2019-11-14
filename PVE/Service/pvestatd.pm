@@ -121,24 +121,17 @@ sub update_node_status {
     );
     PVE::Cluster::broadcast_rrd("pve2-node/$nodename", $data);
 
-    foreach my $id (keys %{$status_cfg->{ids}}) {
-	my $plugin_config = $status_cfg->{ids}->{$id};
-	next if $plugin_config->{disable};
-	my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
+    my $node_metric = {
+	uptime => $uptime,
+	cpustat => $stat,
+	memory => $meminfo,
+	blockstat => $dinfo,
+	nics => $netdev,
+    };
+    $node_metric->{cpustat}->@{qw(avg1 avg5 avg15)} = ($avg1, $avg5, $avg15);
+    $node_metric->{cpustat}->{cpus} = $maxcpu;
 
-	my $d = {};
-	$d->{uptime} = $uptime;
-	$d->{cpustat} = $stat;
-	$d->{cpustat}->{avg1} = $avg1;
-	$d->{cpustat}->{avg5} = $avg5;
-	$d->{cpustat}->{avg15} = $avg15;
-	$d->{cpustat}->{cpus} = $maxcpu;
-	$d->{memory} = $meminfo;
-	$d->{blockstat} = $dinfo;
-	$d->{nics} = $netdev;
-
-	$plugin->update_node_status($plugin_config, $nodename, $d, $ctime);
-    }
+    PVE::Status::Plugin::update_all($status_cfg, 'node', $nodename, $node_metric, $ctime);
 }
 
 sub auto_balloning {
@@ -196,12 +189,7 @@ sub update_qemu_status {
 	}
 	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
 
-	foreach my $id (keys %{$status_cfg->{ids}}) {
-	    my $plugin_config = $status_cfg->{ids}->{$id};
-	    next if $plugin_config->{disable};
-	    my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
-	    $plugin->update_qemu_status($plugin_config, $vmid, $d, $ctime, $nodename);
-	}
+	PVE::Status::Plugin::update_all($status_cfg, 'qemu', $vmid, $d, $ctime, $nodename);
     }
 }
 
@@ -395,12 +383,7 @@ sub update_lxc_status {
 	}
 	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
 
-	foreach my $id (keys %{$status_cfg->{ids}}) {
-	    my $plugin_config = $status_cfg->{ids}->{$id};
-	    next if $plugin_config->{disable};
-	    my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
-	    $plugin->update_lxc_status($plugin_config, $vmid, $d, $ctime, $nodename);
-	}
+	PVE::Status::Plugin::update_all($status_cfg, 'lxc', $vmid, $d, $ctime, $nodename);
     }
 }
 
@@ -420,12 +403,7 @@ sub update_storage_status {
 	my $key = "pve2-storage/${nodename}/$storeid";
 	PVE::Cluster::broadcast_rrd($key, $data);
 
-	foreach my $id (keys %{$status_cfg->{ids}}) {
-	    my $plugin_config = $status_cfg->{ids}->{$id};
-	    next if $plugin_config->{disable};
-	    my $plugin = PVE::Status::Plugin->lookup($plugin_config->{type});
-	    $plugin->update_storage_status($plugin_config, $nodename, $storeid, $d, $ctime);
-	}
+	PVE::Status::Plugin::update_all($status_cfg, 'storage', $nodename, $storeid, $d, $ctime);
     }
 }
 

@@ -54,6 +54,27 @@ sub parse_section_header {
     return undef;
 }
 
+sub foreach_plug($&) {
+    my ($status_cfg, $code) = @_;
+
+    for my $plugin_config (values %{$status_cfg->{ids}}) {
+	next if $plugin_config->{disable};
+	my $plugin = __PACKAGE__->lookup($plugin_config->{type});
+	$code->($plugin, $plugin_config);
+    }
+}
+
+sub update_all($$@) {
+    my ($cfg, $subsystem, @params) = @_;
+
+    my $method = "update_${subsystem}_status";
+
+    foreach_plug($cfg, sub {
+	my ($plugin, $plugin_config) = @_;
+	$plugin->$method($plugin_config, @params);
+    });
+}
+
 sub update_node_status {
     my ($class, $plugin_config, $node, $data, $ctime) = @_;
 
