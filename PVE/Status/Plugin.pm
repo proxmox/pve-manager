@@ -75,6 +75,12 @@ sub update_all($$@) {
     });
 }
 
+sub _connect {
+    my ($class, $cfg) = @_;
+
+    die "please implement inside plugin";
+}
+
 sub update_node_status {
     my ($class, $plugin_config, $node, $data, $ctime) = @_;
 

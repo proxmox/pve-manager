@@ -80,14 +80,13 @@ sub update_storage_status {
     write_graphite_hash($plugin_config, $data, $ctime, "storages.$nodename.$storeid");
 }
 
-sub write_graphite_hash {
-    my ($plugin_config, $d, $ctime, $object) = @_;
+sub _connect {
+    my ($class, $cfg) = @_;
 
-    my $host = $plugin_config->{server};
-    my $port = $plugin_config->{port} || 2003;
-    my $path = $plugin_config->{path} // 'proxmox';
-    my $proto = $plugin_config->{proto} || 'udp';
-    my $timeout = $plugin_config->{timeout} // 1;
+    my $host    = $cfg->{server};
+    my $port    = $cfg->{port} || 2003;
+    my $proto   = $cfg->{proto} || 'udp';
+    my $timeout = $cfg->{timeout} // 1;
 
     my $carbon_socket = IO::Socket::IP->new(
 	PeerAddr    => $host,
@@ -96,12 +95,23 @@ sub write_graphite_hash {
 	Timeout     => $timeout,
     ) || die "couldn't create carbon socket [$host]:$port - $@\n";
 
-    if ( $proto eq 'tcp' ) {
+    if ($proto eq 'tcp') {
 	# seconds and µs
 	my $timeout_struct = pack( 'l!l!', $timeout, 0);
 	setsockopt($carbon_socket, SOL_SOCKET, SO_SNDTIMEO, $timeout_struct);
 	setsockopt($carbon_socket, SOL_SOCKET, SO_RCVTIMEO, $timeout_struct);
     }
+
+    return $carbon_socket;
+}
+
+sub write_graphite_hash {
+    my ($plugin_config, $d, $ctime, $object) = @_;
+
+    my $path = $plugin_config->{path} // 'proxmox';
+
+    my $carbon_socket = __PACKAGE__->_connect($plugin_config);
+
     write_graphite($carbon_socket, $d, $ctime, $path.".$object");
 
     $carbon_socket->close() if $carbon_socket;

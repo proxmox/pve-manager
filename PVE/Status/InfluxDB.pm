@@ -82,15 +82,11 @@ sub update_storage_status {
     write_influxdb_hash($plugin_config, $data, $ctime, $object);
 }
 
-sub write_influxdb_hash {
-    my ($plugin_config, $d, $ctime, $tags) = @_;
+sub _connect {
+    my ($class, $cfg) = @_;
 
-    my $payload = {};
-
-    build_influxdb_payload($payload, $d, $ctime, $tags);
-
-    my $host = $plugin_config->{server};
-    my $port = $plugin_config->{port};
+    my $host = $cfg->{server};
+    my $port = $cfg->{port};
 
     my $socket = IO::Socket::IP->new(
         PeerAddr    => $host,
@@ -98,9 +94,21 @@ sub write_influxdb_hash {
         Proto       => 'udp',
     ) || die "couldn't create influxdb socket [$host]:$port - $@\n";
 
-    $socket->send($payload->{string});
-    $socket->close() if $socket;
+    return $socket;
+}
 
+sub write_influxdb_hash {
+    my ($plugin_config, $d, $ctime, $tags) = @_;
+
+    my $payload = {};
+
+    build_influxdb_payload($payload, $d, $ctime, $tags);
+
+    my $socket = __PACKAGE__->_connect($plugin_config);
+
+    $socket->send($payload->{string});
+
+    $socket->close() if $socket;
 }
 
 sub build_influxdb_payload {
