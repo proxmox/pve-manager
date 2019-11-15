@@ -416,9 +416,23 @@ sub update_ceph_metadata {
 
     PVE::Ceph::Services::broadcast_ceph_services();
 
-    my ($version) = PVE::Ceph::Tools::get_local_version(1);
+    my ($version, $buildcommit, $vers_parts) = PVE::Ceph::Tools::get_local_version(1);
+
+
+    my $local_last_version = PVE::Cluster::get_node_kv('ceph-versions');
+
     if ($version) {
+	# FIXME: remove with 7.0 - for backward compat only
 	PVE::Cluster::broadcast_node_kv("ceph-version", $version);
+
+	my $node_versions = {
+	    version => {
+		str => $version,
+		parts => $vers_parts,
+	    },
+	    buildcommit => $buildcommit,
+	};
+	PVE::Cluster::broadcast_node_kv("ceph-versions", encode_json($node_versions));
     }
 }
 

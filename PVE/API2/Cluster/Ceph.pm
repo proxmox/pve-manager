@@ -3,6 +3,8 @@ package PVE::API2::Cluster::Ceph;
 use strict;
 use warnings;
 
+use JSON;
+
 use PVE::Ceph::Services;
 use PVE::Ceph::Tools;
 use PVE::Cluster;
@@ -68,8 +70,15 @@ __PACKAGE__->register_method ({
 	my $rados = PVE::RADOS->new();
 
 	my $res = {
+	    # FIXME: remove with 7.0 depreacated by structured 'versions'
 	    version => PVE::Cluster::get_node_kv("ceph-version"),
 	};
+
+	if (defined(my $vers = PVE::Cluster::get_node_kv("ceph-versions"))) {
+	    $res->{node} = {
+		map { eval { $_ => decode_json($vers->{$_}) } } keys %$vers
+	    };
+	}
 
 	for my $type ( qw(mon mgr mds) ) {
 	    my $typedata = PVE::Ceph::Services::get_cluster_service($type);
