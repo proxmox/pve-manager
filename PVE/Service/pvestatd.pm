@@ -494,7 +494,7 @@ sub update_status {
 	update_ceph_metadata();
     };
     $err = $@;
-    syslog('err', "error getting ceph services: $err") if $err;
+    syslog('err', "ceph metadata update error: $err") if $err;
 
     eval {
 	update_sdn_status();
