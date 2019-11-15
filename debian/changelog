@@ -1,3 +1,21 @@
+pve-manager (6.0-12) pve; urgency=medium
+
+  * pveversion: track libspice-server1 version again
+
+  * ui: fix backup "Run now" with specific node selected
+
+  * add initial graphite TCP support
+
+  * gui: lxc/Resources: improve reload behaviour
+
+  * ui: vm opts: add hint for spice foldersharing
+
+  * api: ceph version: actually get full version
+
+  * api: ceph/metadata: add structured node versions information
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 15 Nov 2019 19:04:46 +0100
+
 pve-manager (6.0-11) pve; urgency=medium
 
   * fix #1291: add purge checkbox to VM/CT destroy dialog
