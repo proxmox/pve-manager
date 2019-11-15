@@ -4,14 +4,15 @@ use strict;
 use warnings;
 
 use PVE::JSONSchema;
-use PVE::Cluster;
+use PVE::Cluster qw(cfs_register_file);
 use PVE::SectionConfig;
 
 use base qw(PVE::SectionConfig);
 
-PVE::Cluster::cfs_register_file('status.cfg',
-				 sub { __PACKAGE__->parse_config(@_); },
-				 sub { __PACKAGE__->write_config(@_); });
+cfs_register_file('status.cfg',
+    sub { __PACKAGE__->parse_config(@_); },
+    sub { __PACKAGE__->write_config(@_); }
+);
 
 my $defaultData = {
     propertyList => {
