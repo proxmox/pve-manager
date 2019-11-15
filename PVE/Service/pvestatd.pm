@@ -411,9 +411,12 @@ sub rotate_authkeys {
     PVE::AccessControl::rotate_authkey() if !PVE::AccessControl::check_authkey(1);
 }
 
-sub update_ceph_version {
-    my ($version) = PVE::Ceph::Tools::get_local_version(1);
+sub update_ceph_metadata {
+    return if !PVE::Ceph::Tools::check_ceph_inited(1); # nothing to do
 
+    PVE::Ceph::Services::broadcast_ceph_services();
+
+    my ($version) = PVE::Ceph::Tools::get_local_version(1);
     if ($version) {
 	PVE::Cluster::broadcast_node_kv("ceph-version", $version);
     }
@@ -488,10 +491,7 @@ sub update_status {
     syslog('err', "authkey rotation error: $err") if $err;
 
     eval {
-	return if !PVE::Ceph::Tools::check_ceph_inited(1); # "return" from eval
-
-	PVE::Ceph::Services::broadcast_ceph_services();
-	update_ceph_version();
+	update_ceph_metadata();
     };
     $err = $@;
     syslog('err', "error getting ceph services: $err") if $err;
