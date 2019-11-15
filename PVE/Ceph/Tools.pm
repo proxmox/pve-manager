@@ -49,12 +49,21 @@ sub get_local_version {
 
     if (check_ceph_installed('ceph_bin', $noerr)) {
 	my $ceph_version;
-	run_command([$ceph_service->{ceph_bin}, '--version'],
-	            noerr => $noerr,
-	            outfunc => sub { $ceph_version = shift; });
-	if ($ceph_version && $ceph_version =~ /^ceph.*\s((\d+)\.(\d+)\.(\d+))/) {
-	    # return (version, major, minor, patch) : major;
-	    return wantarray ? ($1, $2, $3, $4) : $2;
+	run_command(
+	    [ $ceph_service->{ceph_bin}, '--version' ],
+	    noerr => $noerr,
+	    outfunc => sub { $ceph_version = shift if !defined $ceph_version },
+	);
+	return undef if !defined $ceph_version;
+
+	if ($ceph_version =~ /^ceph.*\s(\d+(?:\.\d+)+)\s+(?:\(([a-zA-Z0-9]+)\))?/) {
+	    my ($version, $buildcommit) = ($1, $2);
+	    my $subversions = [ split(/\.|-/, $version) ];
+
+	    # return (version, buildid, major, minor, ...) : major;
+	    return wantarray
+		? ($version, $buildcommit, $subversions)
+		: $subversions->[0];
 	}
     }
 
