@@ -58,7 +58,6 @@ Ext.define('PVE.ceph.Services', {
 	var reduceFn = function(first, second) {
 	    return first + '\n' + second.message;
 	};
-	var services = ['mon','mgr','mds'];
 	var maxversion = "00.0.00";
 	Object.values(metadata.version || {}).forEach(function(version) {
 	    if (PVE.Utils.compare_ceph_versions(version, maxversion) > 0) {
@@ -157,14 +156,11 @@ Ext.define('PVE.ceph.Services', {
 	    }
 	};
 
-	for (i = 0; i < services.length; i++) {
-	    var type = services[i];
+	for (let type of ['mon', 'mgr', 'mds']) {
 	    var ids = Object.keys(metadata[type] || {});
 	    me[type] = {};
 
-	    var j;
-	    for (j = 0; j < ids.length; j++) {
-		var id = ids[j];
+	    for (let id of ids) {
 		var tmp = id.split('@');
 		var name = tmp[0];
 		var host = tmp[1];
@@ -270,14 +266,10 @@ Ext.define('PVE.ceph.ServiceList', {
 	me.suspendLayout = true;
 
 	var i;
-	list.sort(function(a,b) {
-	    return a.id > b.id ? 1 : a.id < b.id ? -1 : 0;
-	});
+	list.sort((a, b) => a.id > b.id ? 1 : a.id < b.id ? -1 : 0);
 	var ids = {};
 	if (me.ids) {
-	    me.ids.forEach(function(id) {
-		ids[id] = true;
-	    });
+	    me.ids.forEach(id => ids[id] = true);
 	}
 	for (i = 0; i < list.length; i++) {
 	    var service = me.getComponent(list[i].id);
