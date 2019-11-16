@@ -8,6 +8,7 @@ PERLSOURCE = 			\
 	APLInfo.pm		\
 	AutoBalloon.pm		\
 	CertHelpers.pm		\
+	ExtMetric.pm		\
 	HTTPServer.pm		\
 	NodeConfig.pm		\
 	Report.pm		\

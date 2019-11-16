@@ -27,13 +27,8 @@ use PVE::AccessControl;
 use PVE::Ceph::Services;
 use PVE::Ceph::Tools;
 
+use PVE::ExtMetric;
 use PVE::Status::Plugin;
-use PVE::Status::Graphite;
-use PVE::Status::InfluxDB;
-
-PVE::Status::Graphite->register();
-PVE::Status::InfluxDB->register();
-PVE::Status::Plugin->init();
 
 use base qw(PVE::Daemon);
 
@@ -131,7 +126,7 @@ sub update_node_status {
     $node_metric->{cpustat}->@{qw(avg1 avg5 avg15)} = ($avg1, $avg5, $avg15);
     $node_metric->{cpustat}->{cpus} = $maxcpu;
 
-    PVE::Status::Plugin::update_all($status_cfg, 'node', $nodename, $node_metric, $ctime);
+    PVE::ExtMetric::update_all($status_cfg, 'node', $nodename, $node_metric, $ctime);
 }
 
 sub auto_balloning {
@@ -189,7 +184,7 @@ sub update_qemu_status {
 	}
 	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
 
-	PVE::Status::Plugin::update_all($status_cfg, 'qemu', $vmid, $d, $ctime, $nodename);
+	PVE::ExtMetric::update_all($status_cfg, 'qemu', $vmid, $d, $ctime, $nodename);
     }
 }
 
@@ -383,7 +378,7 @@ sub update_lxc_status {
 	}
 	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
 
-	PVE::Status::Plugin::update_all($status_cfg, 'lxc', $vmid, $d, $ctime, $nodename);
+	PVE::ExtMetric::update_all($status_cfg, 'lxc', $vmid, $d, $ctime, $nodename);
     }
 }
 
@@ -403,7 +398,7 @@ sub update_storage_status {
 	my $key = "pve2-storage/${nodename}/$storeid";
 	PVE::Cluster::broadcast_rrd($key, $data);
 
-	PVE::Status::Plugin::update_all($status_cfg, 'storage', $nodename, $storeid, $d, $ctime);
+	PVE::ExtMetric::update_all($status_cfg, 'storage', $nodename, $storeid, $d, $ctime);
     }
 }
 
