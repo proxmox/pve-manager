@@ -3,14 +3,14 @@ include ../defines.mk
 SUBDIRS=API2 Status CLI Service Ceph
 
 PERLSOURCE = 			\
-	CertHelpers.pm		\
 	API2.pm			\
 	API2Tools.pm		\
-	HTTPServer.pm		\
 	APLInfo.pm		\
 	AutoBalloon.pm		\
-	Report.pm		\
+	CertHelpers.pm		\
+	HTTPServer.pm		\
 	NodeConfig.pm		\
+	Report.pm		\
 	VZDump.pm
 
 all: pvecfg.pm ${SUBDIRS}
