@@ -568,7 +568,7 @@ sub run {
 	    $initial_memory_usage = $resident_kb;
 	} else {
 	    my $diff = $resident_kb - $initial_memory_usage;
-	    if ($diff > 5 * 1024) {
+	    if ($diff > 15 * 1024) {
 		syslog ('info', "restarting server after $cycle cycles to " .
 			"reduce memory usage (free $resident_kb ($diff) KB)");
 		$self->restart_daemon();
