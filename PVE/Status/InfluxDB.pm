@@ -33,16 +33,15 @@ sub options {
 
 # Plugin implementation
 sub update_node_status {
-    my ($class, $plugin_config, $node, $data, $ctime) = @_;
+    my ($class, $txn, $node, $data, $ctime) = @_;
 
     $ctime *= 1000000000;
 
-    write_influxdb_hash($plugin_config, $data, $ctime, "object=nodes,host=$node");
-
+    build_influxdb_payload(\$txn->{data}, $data, $ctime, "object=nodes,host=$node");
 }
 
 sub update_qemu_status {
-    my ($class, $plugin_config, $vmid, $data, $ctime, $nodename) = @_;
+    my ($class, $txn, $vmid, $data, $ctime, $nodename) = @_;
 
     $ctime *= 1000000000;
 
@@ -51,11 +50,12 @@ sub update_qemu_status {
 	$object .= ",host=$data->{name}";
     }
     $object =~ s/\s/\\ /g;
-    write_influxdb_hash($plugin_config, $data, $ctime, $object);
+
+    build_influxdb_payload(\$txn->{data}, $data, $ctime, $object);
 }
 
 sub update_lxc_status {
-    my ($class, $plugin_config, $vmid, $data, $ctime, $nodename) = @_;
+    my ($class, $txn, $vmid, $data, $ctime, $nodename) = @_;
 
     $ctime *= 1000000000;
 
@@ -65,11 +65,11 @@ sub update_lxc_status {
     }
     $object =~ s/\s/\\ /g;
 
-    write_influxdb_hash($plugin_config, $data, $ctime, $object);
+    build_influxdb_payload(\$txn->{data}, $data, $ctime, $object);
 }
 
 sub update_storage_status {
-    my ($class, $plugin_config, $nodename, $storeid, $data, $ctime) = @_;
+    my ($class, $txn, $nodename, $storeid, $data, $ctime) = @_;
 
     $ctime *= 1000000000;
 
@@ -79,7 +79,7 @@ sub update_storage_status {
     }
     $object =~ s/\s/\\ /g;
 
-    write_influxdb_hash($plugin_config, $data, $ctime, $object);
+    build_influxdb_payload(\$txn->{data}, $data, $ctime, $object);
 }
 
 sub _connect {
@@ -95,20 +95,6 @@ sub _connect {
     ) || die "couldn't create influxdb socket [$host]:$port - $@\n";
 
     return $socket;
-}
-
-sub write_influxdb_hash {
-    my ($plugin_config, $d, $ctime, $tags) = @_;
-
-    my $payload = {};
-
-    build_influxdb_payload($payload, $d, $ctime, $tags);
-
-    my $socket = __PACKAGE__->_connect($plugin_config);
-
-    $socket->send($payload->{string});
-
-    $socket->close() if $socket;
 }
 
 sub build_influxdb_payload {
@@ -144,7 +130,7 @@ sub build_influxdb_payload {
 	my $tagstring = $tags;
 	$tagstring .= ",instance=$instance" if defined($instance);
 	my $valuestr =  join(',', @values);
-	$payload->{string} .= "$mm,$tagstring $valuestr $ctime\n";
+	$$payload .= "$mm,$tagstring $valuestr $ctime\n";
     }
 }
 

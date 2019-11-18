@@ -32,13 +32,15 @@ sub properties {
 	},
 	timeout => {
 	    type => 'integer',
-	    description => "graphite tcp socket timeout (default=1)",
+	    description => "graphite TCP socket timeout (default=1)",
+	    minimum => 0,
+	    default => 1,
 	    optional => 1
 	},
 	proto => {
 	    type => 'string',
 	    enum => ['udp', 'tcp'],
-	    description => "send graphite data using tcp or udp (default)",
+	    description => "Protocol to send graphite data. TCP or UDP (default)",
 	    optional => 1,
 	},
     };
@@ -57,27 +59,27 @@ sub options {
 
 # Plugin implementation
 sub update_node_status {
-    my ($class, $plugin_config, $node, $data, $ctime) = @_;
+    my ($class, $txn, $node, $data, $ctime) = @_;
 
-    write_graphite_hash($plugin_config, $data, $ctime, "nodes.$node");
+    assemble($txn, $data, $ctime, "nodes.$node");
 
 }
 
 sub update_qemu_status {
-    my ($class, $plugin_config, $vmid, $data, $ctime, $nodename) = @_;
-    write_graphite_hash($plugin_config, $data, $ctime, "qemu.$vmid");
+    my ($class, $txn, $vmid, $data, $ctime, $nodename) = @_;
+    assemble($txn, $data, $ctime, "qemu.$vmid");
 }
 
 sub update_lxc_status {
-    my ($class, $plugin_config, $vmid, $data, $ctime, $nodename) = @_;
+    my ($class, $txn, $vmid, $data, $ctime, $nodename) = @_;
 
-    write_graphite_hash($plugin_config, $data, $ctime, "lxc.$vmid");
+    assemble($txn, $data, $ctime, "lxc.$vmid");
 }
 
 sub update_storage_status {
-    my ($class, $plugin_config, $nodename, $storeid, $data, $ctime) = @_;
+    my ($class, $txn, $nodename, $storeid, $data, $ctime) = @_;
 
-    write_graphite_hash($plugin_config, $data, $ctime, "storages.$nodename.$storeid");
+    assemble($txn, $data, $ctime, "storages.$nodename.$storeid");
 }
 
 sub _connect {
@@ -105,21 +107,11 @@ sub _connect {
     return $carbon_socket;
 }
 
-sub write_graphite_hash {
-    my ($plugin_config, $d, $ctime, $object) = @_;
+sub assemble {
+    my ($txn, $data, $ctime, $object) = @_;
 
-    my $path = $plugin_config->{path} // 'proxmox';
-
-    my $carbon_socket = __PACKAGE__->_connect($plugin_config);
-
-    write_graphite($carbon_socket, $d, $ctime, $path.".$object");
-
-    $carbon_socket->close() if $carbon_socket;
-
-}
-
-sub write_graphite {
-    my ($carbon_socket, $d, $ctime, $path) = @_;
+    my $path = $txn->{cfg}->{path} // 'proxmox';
+    $path .= ".$object";
 
     # we do not want boolean/state information to export to graphite
     my $key_blacklist = {
@@ -129,13 +121,14 @@ sub write_graphite {
 	'serial' => 1,
     };
 
-    my $graphite_data = '';
+    $txn->{data} //= '';
     my $assemble_graphite_data;
     $assemble_graphite_data = sub {
 	my ($metric, $path) = @_;
 
 	for my $key (sort keys %$metric) {
-	    my $value = $d->{$key} // next;
+	    my $value = $data->{$key};
+	    next if !defined($value);
 
 	    $key =~ s/\./-/g;
 	    my $metricpath = $path . ".$key";
@@ -143,13 +136,11 @@ sub write_graphite {
 	    if (ref($value) eq 'HASH') {
 		$assemble_graphite_data->($value, $metricpath);
 	    } elsif ($value =~ m/^[+-]?[0-9]*\.?[0-9]+$/ && !$key_blacklist->{$key}) {
-		$graphite_data .= "$metricpath $value $ctime\n";
+		$txn->{data} .= "$metricpath $value $ctime\n";
 	    }
 	}
     };
-    $assemble_graphite_data->($d, $path);
-
-    $carbon_socket->send($graphite_data) if $graphite_data ne '';
+    $assemble_graphite_data->($data, $path);
 }
 
 PVE::JSONSchema::register_format('graphite-path', \&pve_verify_graphite_path);

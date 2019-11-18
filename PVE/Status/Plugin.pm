@@ -57,31 +57,39 @@ sub parse_section_header {
 
 sub _connect {
     my ($class, $cfg) = @_;
-
     die "please implement inside plugin";
 }
 
-sub update_node_status {
-    my ($class, $plugin_config, $node, $data, $ctime) = @_;
+sub _disconnect {
+    my ($class, $connection) = @_;
 
+    $connection->close(); # overwrite if not a simple socket
+}
+
+sub send {
+    my ($class, $connection, $data) = @_;
+
+    defined($connection->send($data))
+	or die "failed to send metrics: $!\n";
+}
+
+sub update_node_status {
+    my ($class, $txn, $node, $data, $ctime) = @_;
     die "please implement inside plugin";
 }
 
 sub update_qemu_status {
-    my ($class, $plugin_config, $vmid, $data, $ctime, $nodename) = @_;
-
+    my ($class, $txn, $vmid, $data, $ctime, $nodename) = @_;
     die "please implement inside plugin";
 }
 
 sub update_lxc_status {
-    my ($class, $plugin_config, $vmid, $data, $ctime, $nodename) = @_;
-
+    my ($class, $txn, $vmid, $data, $ctime, $nodename) = @_;
     die "please implement inside plugin";
 }
 
 sub update_storage_status {
-    my ($class, $plugin_config, $nodename, $storeid, $data, $ctime) = @_;
-
+    my ($class, $txn, $nodename, $storeid, $data, $ctime) = @_;
     die "please implement inside plugin";
 }
 

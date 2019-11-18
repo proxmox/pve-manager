@@ -126,7 +126,9 @@ sub update_node_status {
     $node_metric->{cpustat}->@{qw(avg1 avg5 avg15)} = ($avg1, $avg5, $avg15);
     $node_metric->{cpustat}->{cpus} = $maxcpu;
 
-    PVE::ExtMetric::update_all($status_cfg, 'node', $nodename, $node_metric, $ctime);
+    my $transactions = PVE::ExtMetric::transactions_start($status_cfg);
+    PVE::ExtMetric::update_all($transactions, 'node', $nodename, $node_metric, $ctime);
+    PVE::ExtMetric::transactions_finish($transactions);
 }
 
 sub auto_balloning {
@@ -161,12 +163,12 @@ sub update_qemu_status {
     my ($status_cfg) = @_;
 
     my $ctime = time();
-
     my $vmstatus = PVE::QemuServer::vmstatus(undef, 1);
 
     eval { auto_balloning($vmstatus); };
     syslog('err', "auto ballooning error: $@") if $@;
 
+    my $transactions = PVE::ExtMetric::transactions_start($status_cfg);
     foreach my $vmid (keys %$vmstatus) {
 	my $d = $vmstatus->{$vmid};
 	my $data;
@@ -184,8 +186,10 @@ sub update_qemu_status {
 	}
 	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
 
-	PVE::ExtMetric::update_all($status_cfg, 'qemu', $vmid, $d, $ctime, $nodename);
+	PVE::ExtMetric::update_all($transactions, 'qemu', $vmid, $d, $ctime, $nodename);
     }
+
+    PVE::ExtMetric::transactions_finish($transactions);
 }
 
 sub remove_stale_lxc_consoles {
@@ -359,6 +363,8 @@ sub update_lxc_status {
     my $ctime = time();
     my $vmstatus = PVE::LXC::vmstatus();
 
+    my $transactions = PVE::ExtMetric::transactions_start($status_cfg);
+
     foreach my $vmid (keys %$vmstatus) {
 	my $d = $vmstatus->{$vmid};
 	my $template = $d->{template} ? $d->{template} : "0";
@@ -378,8 +384,9 @@ sub update_lxc_status {
 	}
 	PVE::Cluster::broadcast_rrd("pve2.3-vm/$vmid", $data);
 
-	PVE::ExtMetric::update_all($status_cfg, 'lxc', $vmid, $d, $ctime, $nodename);
+	PVE::ExtMetric::update_all($transactions, 'lxc', $vmid, $d, $ctime, $nodename);
     }
+    PVE::ExtMetric::transactions_finish($transactions);
 }
 
 sub update_storage_status {
@@ -388,6 +395,8 @@ sub update_storage_status {
     my $cfg = PVE::Storage::config();
     my $ctime = time();
     my $info = PVE::Storage::storage_info($cfg);
+
+    my $transactions = PVE::ExtMetric::transactions_start($status_cfg);
 
     foreach my $storeid (keys %$info) {
 	my $d = $info->{$storeid};
@@ -398,8 +407,9 @@ sub update_storage_status {
 	my $key = "pve2-storage/${nodename}/$storeid";
 	PVE::Cluster::broadcast_rrd($key, $data);
 
-	PVE::ExtMetric::update_all($status_cfg, 'storage', $nodename, $storeid, $d, $ctime);
+	PVE::ExtMetric::update_all($transactions, 'storage', $nodename, $storeid, $d, $ctime);
     }
+    PVE::ExtMetric::transactions_finish($transactions);
 }
 
 sub rotate_authkeys {
