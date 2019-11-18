@@ -48,11 +48,10 @@ sub update_all($$@) {
 #    connection => ..., # the connected socket
 #    data => '', # payload, will be sent at the trannsaction flush
 # }
-my $transactions;
 sub transactions_start {
     my ($cfg) = @_;
 
-    @$transactions = ();
+    my $transactions = [];
 
     foreach_plug($cfg, sub {
 	my ($plugin, $id, $plugin_config) = @_;
