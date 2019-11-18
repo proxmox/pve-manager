@@ -562,14 +562,15 @@ sub run {
 	$cycle++;
 
 	my $mem = PVE::ProcFSTools::read_memory_usage();
+	my $resident_kb = $mem->{resident} / 1024;
 
 	if (!defined($initial_memory_usage) || ($cycle < 10)) {
-	    $initial_memory_usage = $mem->{resident};
+	    $initial_memory_usage = $resident_kb;
 	} else {
-	    my $diff = $mem->{resident} - $initial_memory_usage;
-	    if ($diff > 5*1024*1024) {
+	    my $diff = $resident_kb - $initial_memory_usage;
+	    if ($diff > 5 * 1024) {
 		syslog ('info', "restarting server after $cycle cycles to " .
-			"reduce memory usage (free $mem->{resident} ($diff) bytes)");
+			"reduce memory usage (free $resident_kb ($diff) KB)");
 		$self->restart_daemon();
 	    }
 	}
