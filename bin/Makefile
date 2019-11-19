@@ -66,6 +66,8 @@ check: $(addsuffix .service-api-verified, ${SERVICES}) $(addsuffix .api-verified
 install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward ${BASH_COMPLETIONS} ${ZSH_COMPLETIONS}
 	install -d ${BINDIR}
 	install -m 0755 ${SCRIPTS} ${BINDIR}
+	install -d ${USRSHARE}/helpers
+	install -m 0755 pve-startall-delay ${USRSHARE}/helpers
 	install -s -m 2755 -g www-data pvemailforward ${BINDIR}
 	install -d ${MAN1DIR}
 	install -m 0644 ${CLI_MANS} ${MAN1DIR}

@@ -67,6 +67,14 @@ my $confdesc = {
 	format => 'mac-addr',
 	optional => 1,
     },
+    'startall-onboot-delay' => {
+	description => 'Initial delay in seconds, before starting all the Virtual Guests with on-boot enabled.',
+	type => 'integer',
+	minimum => 0,
+	maximum => 300,
+	default => 0,
+	optional => 1,
+    },
 };
 
 my $acmedesc = {

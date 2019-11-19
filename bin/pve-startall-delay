@@ -1,0 +1,18 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use PVE::INotify;
+use PVE::NodeConfig;
+
+my $local_node = PVE::INotify::nodename();
+
+my $node_config = eval { PVE::NodeConfig::load_config($local_node) } // {};
+
+if (my $delay = $node_config->{'startall-onboot-delay'}) {
+    warn "Delaying on-boot 'startall' command for $delay second(s).\n";
+    sleep($delay); # don't care for interrupts, best effort only
+}
+
+exit 0;

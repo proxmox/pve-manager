@@ -12,6 +12,7 @@ ZSHCOMPLDIR=${DESTDIR}/usr/share/zsh/vendor-completions/
 HARADIR=${DESTDIR}/usr/share/cluster
 DOCDIR=${DESTDIR}/usr/share/doc/${PACKAGE}
 PODDIR=${DESTDIR}/usr/share/doc/${PACKAGE}/pod
+USRSHARE=${DESTDIR}/usr/share/${PACKAGE}
 WWWBASEDIR=${DESTDIR}/usr/share/${PACKAGE}
 WWWIMAGEDIR=${WWWBASEDIR}/images
 WWWTOUCHDIR=${WWWBASEDIR}/touch
