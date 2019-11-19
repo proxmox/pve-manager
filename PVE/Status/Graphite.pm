@@ -141,6 +141,8 @@ sub assemble {
 	}
     };
     $assemble_graphite_data->($data, $path);
+
+    $assemble_graphite_data = undef; # avoid cyclic reference!
 }
 
 PVE::JSONSchema::register_format('graphite-path', \&pve_verify_graphite_path);
