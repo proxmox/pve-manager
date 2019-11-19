@@ -31,6 +31,20 @@ Ext.define('PVE.form.AgentFeatureSelector', {
 	},
     ],
 
+    advancedItems: [
+	{
+	    xtype: 'proxmoxKVComboBox',
+	    name: 'type',
+	    value: '__default__',
+	    deleteEmpty: false,
+	    fieldLabel: 'Type',
+	    comboItems: [
+		['__default__', Proxmox.Utils.defaultText + " (VirtIO)"],
+		['isa', 'ISA'],
+	    ],
+	}
+    ],
+
     onGetValues: function(values) {
 	var agentstr = PVE.Parser.printPropertyString(values, 'enabled');
 	return { agent: agentstr };

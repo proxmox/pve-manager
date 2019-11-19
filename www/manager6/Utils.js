@@ -276,10 +276,17 @@ Ext.define('PVE.Utils', { utilities: {
 	    var keystring = '' ;
 	    agentstring += ', ' + key + ': ';
 
-	    if (PVE.Parser.parseBoolean(value)) {
-		agentstring += Proxmox.Utils.enabledText;
+	    if (key === 'type') {
+		let map = {
+		    isa: "ISA",
+		};
+	        agentstring += map[value] || Proxmox.Utils.unknownText;
 	    } else {
-		agentstring += Proxmox.Utils.disabledText;
+		if (PVE.Parser.parseBoolean(value)) {
+		    agentstring += Proxmox.Utils.enabledText;
+		} else {
+		    agentstring += Proxmox.Utils.disabledText;
+		}
 	    }
 	});
 
