@@ -18,6 +18,7 @@ use PVE::Network;
 use PVE::Cluster qw(cfs_read_file);
 use PVE::Storage;
 use PVE::QemuServer;
+use PVE::QemuServer::Monitor;
 use PVE::LXC;
 use PVE::LXC::Config;
 use PVE::RPCEnvironment;
@@ -154,7 +155,7 @@ sub auto_balloning {
 	next if $target == $current; # no need to change
 
 	$log->("BALLOON $vmid to $target (%d)\n", $target - $current);
-	eval { PVE::QemuServer::vm_mon_cmd($vmid, "balloon", value => $target) };
+	eval { PVE::QemuServer::Monitor::mon_cmd($vmid, "balloon", value => $target) };
 	warn $@ if $@;
     }
 }
