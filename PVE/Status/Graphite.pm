@@ -127,7 +127,7 @@ sub assemble {
 	my ($metric, $path) = @_;
 
 	for my $key (sort keys %$metric) {
-	    my $value = $data->{$key};
+	    my $value = $metric->{$key};
 	    next if !defined($value);
 
 	    $key =~ s/\./-/g;
