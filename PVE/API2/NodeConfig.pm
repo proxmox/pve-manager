@@ -10,6 +10,7 @@ use PVE::Tools qw(extract_param);
 use base qw(PVE::RESTHandler);
 
 my $node_config_schema = PVE::NodeConfig::get_nodeconfig_schema();
+my $node_config_keys = [ sort keys %$node_config_schema ];
 my $node_config_properties = {
     delete => {
 	type => 'string', format => 'pve-configid-list',
@@ -42,6 +43,13 @@ __PACKAGE__->register_method({
 	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
+	    property => {
+		type => 'string',
+		description => 'Return only a specific property from the node configuration.',
+		enum => $node_config_keys,
+		optional => 1,
+		default => 'all',
+	    },
 	},
     },
     returns => {
@@ -51,7 +59,14 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	return PVE::NodeConfig::load_config($param->{node});
+	my $config = PVE::NodeConfig::load_config($param->{node});
+
+	if (defined (my $prop = $param->{property})) {
+	    return {} if !exists $config->{$prop};
+	    return { $prop => $config->{$prop} };
+	}
+
+	return $config;
     }});
 
 __PACKAGE__->register_method({
