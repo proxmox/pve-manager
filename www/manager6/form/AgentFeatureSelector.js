@@ -40,6 +40,7 @@ Ext.define('PVE.form.AgentFeatureSelector', {
 	    fieldLabel: 'Type',
 	    comboItems: [
 		['__default__', Proxmox.Utils.defaultText + " (VirtIO)"],
+		['virtio', 'VirtIO'],
 		['isa', 'ISA'],
 	    ],
 	}

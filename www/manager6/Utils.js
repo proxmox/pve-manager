@@ -279,6 +279,7 @@ Ext.define('PVE.Utils', { utilities: {
 	    if (key === 'type') {
 		let map = {
 		    isa: "ISA",
+		    virtio: "VirtIO",
 		};
 	        agentstring += map[value] || Proxmox.Utils.unknownText;
 	    } else {
