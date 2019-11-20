@@ -1,3 +1,24 @@
+pve-manager (6.0-14) pve; urgency=medium
+
+  * add reboot button for container
+
+  * improve pvestatd memory usage when a Graphite External Metric status plugin
+    is enabled
+
+  * fix #352: Limit the length of backup logs for mails
+
+  * fix #2436: ui: pci passthrough: consider domain in PCISelector
+
+  * fix #844: allow to set an initial delay for the start-all-marked guests on
+    boot command, in the per-node config.
+
+  * api: node/config: allow to return only a specific config property
+
+  * VM guest agent: allow to set QGA socket type also to ISA for guest
+    operating systems not supporting VirtIO serial sockets
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 20 Nov 2019 20:45:36 +0100
+
 pve-manager (6.0-13) pve; urgency=medium
 
   * takeover CertCache from pve-cluster
