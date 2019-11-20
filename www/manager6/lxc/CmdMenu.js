@@ -113,6 +113,22 @@ Ext.define('PVE.lxc.CmdMenu', {
 		}
 	    },
 	    {
+		text: gettext('Reboot'),
+		iconCls: 'fa fa-fw fa-refresh',
+		disabled: stopped,
+		tooltip: Ext.String.format(gettext('Reboot {0}'), 'CT'),
+		handler: function() {
+		    var msg = Proxmox.Utils.format_task_description('vzreboot', vmid);
+		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
+			if (btn !== 'yes') {
+			    return;
+			}
+
+			vm_command("reboot");
+		    });
+		}
+	    },
+	    {
 		xtype: 'menuseparator',
 		hidden: standalone || !caps.vms['VM.Migrate']
 	    },
