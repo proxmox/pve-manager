@@ -52,18 +52,6 @@ Ext.define('PVE.lxc.Config', {
 	    iconCls: 'fa fa-play'
 	});
 
-	var stopBtn = Ext.create('Ext.menu.Item',{
-	    text: gettext('Stop'),
-	    disabled: !caps.vms['VM.PowerMgmt'],
-	    confirmMsg: Proxmox.Utils.format_task_description('vzstop', vmid),
-	    tooltip: Ext.String.format(gettext('Stop {0} immediately'), 'CT'),
-	    dangerous: true,
-	    handler: function() {
-		vm_command("stop");
-	    },
-	    iconCls: 'fa fa-stop'
-	});
-
 	var shutdownBtn = Ext.create('PVE.button.Split', {
 	    text: gettext('Shutdown'),
 	    disabled: !caps.vms['VM.PowerMgmt'] || !running,
@@ -73,7 +61,17 @@ Ext.define('PVE.lxc.Config', {
 		vm_command('shutdown');
 	    },
 	    menu: {
-		items:[stopBtn]
+		items:[{
+		    text: gettext('Stop'),
+		    disabled: !caps.vms['VM.PowerMgmt'],
+		    confirmMsg: Proxmox.Utils.format_task_description('vzstop', vmid),
+		    tooltip: Ext.String.format(gettext('Stop {0} immediately'), 'CT'),
+		    dangerous: true,
+		    handler: function() {
+			vm_command("stop");
+		    },
+		    iconCls: 'fa fa-stop'
+		}]
 	    },
 	    iconCls: 'fa fa-power-off'
 	});
@@ -344,7 +342,6 @@ Ext.define('PVE.lxc.Config', {
 
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
-	    stopBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'stopped');
 	    me.down('#removeBtn').setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
 	    consoleBtn.setDisabled(template);
 	});
