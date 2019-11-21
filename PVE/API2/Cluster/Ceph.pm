@@ -93,6 +93,8 @@ __PACKAGE__->register_method ({
 	    my $services = $rados->mon_command({ prefix => "$type metadata" });
 	    for my $service ( @$services ) {
 		my $hostname = $service->{hostname};
+		next if !defined($hostname); # can happen if node is dead
+
 		my $servicename =  $service->{name} // $service->{id};
 		my $id = "$servicename\@$hostname";
 
