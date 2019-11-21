@@ -74,6 +74,47 @@ sub hup {
     $restart_request = 1;
 }
 
+my $cached_kvm_version = '';
+my $next_flag_update_time;
+my $failed_flag_update_delay_sec = 120;
+
+sub update_supported_cpuflags {
+    my $kvm_version = PVE::QemuServer::kvm_user_version();
+
+    # only update when QEMU/KVM version has changed, as that is the only reason
+    # why flags could change without restarting pvestatd
+    return if $cached_kvm_version && $cached_kvm_version eq $kvm_version;
+
+    if ($next_flag_update_time && $next_flag_update_time > time()) {
+	return;
+    }
+    $next_flag_update_time = 0;
+
+    my $supported_cpuflags = eval { PVE::QemuServer::query_supported_cpu_flags() };
+    warn $@ if $@;
+
+    if (!$supported_cpuflags ||
+	(!$supported_cpuflags->{tcg} && !$supported_cpuflags->{kvm})) {
+	# something went wrong, clear broadcast flags and set try-again delay
+	warn "CPU flag detection failed, will try again after delay\n";
+	$next_flag_update_time = time() + $failed_flag_update_delay_sec;
+
+	$supported_cpuflags = {};
+    } else {
+	# only set cached version if there's actually something to braodcast
+	$cached_kvm_version = $kvm_version;
+    }
+
+    for my $accel ("tcg", "kvm") {
+	if ($supported_cpuflags->{$accel}) {
+	    PVE::Cluster::broadcast_node_kv("cpuflags-$accel", join(' ', @{$supported_cpuflags->{$accel}}));
+	} else {
+	    # clear potentially invalid data
+	    PVE::Cluster::broadcast_node_kv("cpuflags-$accel", '');
+	}
+    }
+}
+
 my $generate_rrd_string = sub {
     my ($data) = @_;
 
@@ -89,6 +130,8 @@ sub update_node_status {
     my $stat = PVE::ProcFSTools::read_proc_stat();
     my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
     my $maxcpu = $cpuinfo->{cpus};
+
+    update_supported_cpuflags();
 
     my $subinfo = PVE::INotify::read_file('subscription');
     my $sublevel = $subinfo->{level} || '';
