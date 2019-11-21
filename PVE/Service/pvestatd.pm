@@ -155,7 +155,7 @@ sub auto_balloning {
 	next if $target == $current; # no need to change
 
 	$log->("BALLOON $vmid to $target (%d)\n", $target - $current);
-	eval { PVE::QemuServer::Monitor::mon_cmd($vmid, "balloon", value => $target) };
+	eval { PVE::QemuServer::Monitor::mon_cmd($vmid, "balloon", value => int($target)) };
 	warn $@ if $@;
     }
 }
