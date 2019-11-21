@@ -96,8 +96,7 @@ __PACKAGE__->register_method ({
 		my $servicename =  $service->{name} // $service->{id};
 		my $id = "$servicename\@$hostname";
 
-		if ($data->{$id}) {
-		    # copy values over to the metadata hash
+		if ($data->{$id}) { # copy values over to the metadata hash
 		    for my $k (keys %{$data->{$id}}) {
 			$service->{$k} = $data->{$id}->{$k};
 		    }
