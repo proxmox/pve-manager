@@ -1,3 +1,11 @@
+pve-manager (6.0-15) pve; urgency=medium
+
+  * api/ceph: skip merging metadata if hostname is undefined
+
+  * Fix #2476: Fix auto-ballooning QMP command
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 21 Nov 2019 15:16:27 +0100
+
 pve-manager (6.0-14) pve; urgency=medium
 
   * add reboot button for container
