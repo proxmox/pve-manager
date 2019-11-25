@@ -62,6 +62,16 @@ Ext.define('PVE.lxc.Config', {
 	    },
 	    menu: {
 		items:[{
+		    text: gettext('Reboot'),
+		    disabled: !caps.vms['VM.PowerMgmt'],
+		    confirmMsg: Proxmox.Utils.format_task_description('vzreboot', vmid),
+		    tooltip: Ext.String.format(gettext('Reboot {0}'), 'CT'),
+		    handler: function() {
+			vm_command("reboot");
+		    },
+		    iconCls: 'fa fa-refresh'
+		},
+		{
 		    text: gettext('Stop'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
 		    confirmMsg: Proxmox.Utils.format_task_description('vzstop', vmid),
@@ -71,15 +81,6 @@ Ext.define('PVE.lxc.Config', {
 			vm_command("stop");
 		    },
 		    iconCls: 'fa fa-stop'
-		},{
-		    text: gettext('Reboot'),
-		    disabled: !caps.vms['VM.PowerMgmt'],
-		    confirmMsg: Proxmox.Utils.format_task_description('vzreboot', vmid),
-		    tooltip: Ext.String.format(gettext('Reboot {0}'), 'CT'),
-		    handler: function() {
-			vm_command("reboot");
-		    },
-		    iconCls: 'fa fa-refresh'
 		}]
 	    },
 	    iconCls: 'fa fa-power-off'
