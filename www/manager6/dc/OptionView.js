@@ -119,6 +119,7 @@ Ext.define('PVE.dc.OptionView', {
 		    ['__default__', Proxmox.Utils.defaultText + ' (conditional)' ],
 		    ['freeze', 'freeze'],
 		    ['failover', 'failover'],
+		    ['migrate', 'migrate'],
 		    ['conditional', 'conditional']
 		],
 		defaultValue: '__default__'
