@@ -38,6 +38,12 @@ sub cert_path_prefix {
     return "/etc/pve/nodes/${node}/pveproxy-ssl";
 }
 
+sub default_cert_path_prefix {
+    my ($node) = @_;
+
+    return "/etc/pve/nodes/${node}/pve-ssl";
+}
+
 sub cert_lock {
     my ($timeout, $code, @param) = @_;
 

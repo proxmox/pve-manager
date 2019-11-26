@@ -12,10 +12,12 @@ use PVE::Certificate;
 use PVE::NodeConfig;
 use PVE::INotify;
 use PVE::Cluster;
+use PVE::Cluster::Setup;
 use PVE::DataCenterConfig;
 use PVE::APLInfo;
 use PVE::SafeSyslog;
 use PVE::RPCEnvironment;
+use PVE::Tools;
 use PVE::API2::Subscription;
 use PVE::API2::APT;
 use PVE::API2::ACME;
@@ -72,6 +74,36 @@ eval {
     }
 };
 syslog ('err', "Renewing ACME certificate failed: $@") if $@;
+
+eval {
+    my $certpath = PVE::CertHelpers::default_cert_path_prefix($nodename).".pem";
+    my $capath = "/etc/pve/pve-root-ca.pem";
+
+    # check if expiry is < 2W
+    if (PVE::Certificate::check_expiry($certpath, time() + 14*24*60*60)) {
+	# get CA info
+	my $cainfo = PVE::Certificate::get_certificate_info($capath);
+
+	# get cert and check issuer and chain metadata
+	my $certinfo = PVE::Certificate::get_certificate_info($certpath);
+	if ($certinfo->{issuer} ne $cainfo->{subject}) {
+	    die "SSL Certificate is not issued by root CA";
+	}
+
+	# check if cert is really signed by the ca
+
+	# TODO
+	# replace by low level interface in ssleay if version 1.86 is available
+	PVE::Tools::run_command(['/usr/bin/openssl', 'verify', '-CAfile', $capath, $certpath]);
+
+	# create new certificate
+	my $ip = PVE::Cluster::remote_node_ip($nodename);
+	PVE::Cluster::Setup::gen_pve_ssl_cert(1, $nodename, $ip);
+	print "Restarting pveproxy after renewing certificate\n";
+	PVE::Tools::run_command(['systemctl', 'reload-or-restart', 'pveproxy']);
+    }
+};
+syslog ('err', "Checking/Renewing SSL certificate failed: $@") if $@;
 
 sub cleanup_tasks {
 
