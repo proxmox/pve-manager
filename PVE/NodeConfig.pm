@@ -151,7 +151,7 @@ sub parse_node_config {
 	    $descr .= PVE::Tools::decode_text($1) . "\n";
 	    next;
 	}
-	if ($line =~ /^([a-z][a-z_]*\d*):\s*(\S.*)\s*$/) {
+	if ($line =~ /^([a-z][a-z-_]*\d*):\s*(\S.*)\s*$/) {
 	    my $key = $1;
 	    my $value = $2;
 	    eval { $value = check_type($key, $value); };
