@@ -21,7 +21,7 @@ Ext.define('PVE.dc.OptionView', {
 	    renderer: opts.renderer,
 	    editor: canEdit ? {
 		xtype: 'proxmoxWindowEdit',
-		width: 350,
+		width: opts.width || 350,
 		subject: text,
 		fieldDefaults: {
 		    labelWidth: opts.labelWidth || 100
@@ -123,6 +123,37 @@ Ext.define('PVE.dc.OptionView', {
 		    ['conditional', 'conditional']
 		],
 		defaultValue: '__default__'
+	    }]
+	});
+	me.add_inputpanel_row('u2f', gettext('U2F Settings'), {
+	    renderer: PVE.Utils.render_dc_ha_opts,
+	    caps: caps.vms['Sys.Modify'],
+	    width: 450,
+	    url: "/api2/extjs/cluster/options",
+	    items: [{
+		xtype: 'textfield',
+		name: 'appid',
+		fieldLabel: gettext('U2F AppID URL'),
+		emptyText: gettext('Defaults to origin'),
+		value: '',
+		skipEmptyText: true,
+		deleteEmpty: true,
+		submitEmptyText: false,
+		skipEmptyText: true,
+	    }, {
+		xtype: 'textfield',
+		name: 'origin',
+		fieldLabel: gettext('U2F Origin'),
+		emptyText: gettext('Defaults to requesting host URI'),
+		value: '',
+		deleteEmpty: true,
+		skipEmptyText: true,
+		submitEmptyText: false,
+	    },
+	    {
+		xtype: 'displayfield',
+		userCls: 'pmx-hint',
+		value: gettext('NOTE: Changing an AppID breaks existing U2F registrations!'),
 	    }]
 	});
 
