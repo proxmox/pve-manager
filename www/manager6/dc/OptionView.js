@@ -157,7 +157,7 @@ Ext.define('PVE.dc.OptionView', {
 	    }]
 	});
 
-	// TODO: bwlimits, u2f?
+	// TODO: bwlimits
 
 	me.selModel = Ext.create('Ext.selection.RowModel', {});
 

@@ -152,6 +152,35 @@ if ($have_sdn) {
 	subclass => "PVE::API2::Network::SDN::Zones::Status",
 	path => 'sdn/zones',
     });
+
+__PACKAGE__->register_method ({
+    name => 'sdnindex',
+    path => 'sdn',
+    method => 'GET',
+    permissions => { user => 'all' },
+    description => "SDN index.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {},
+	},
+	links => [ { rel => 'child', href => "{name}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $result = [
+	    { name => 'zones' },
+	];
+	return $result;
+    }});
 }
 
 __PACKAGE__->register_method ({
