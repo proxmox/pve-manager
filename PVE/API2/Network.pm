@@ -554,7 +554,25 @@ __PACKAGE__->register_method({
 	my $new_config_file = "/etc/network/interfaces.new";
 
 	die "you need ifupdown2 to reload networking\n" if !-e '/usr/share/ifupdown2';
-	die "ifupdown2 reload is not compatible if openvswitch currently" if -x '/usr/bin/ovs-vsctl';
+
+	if (-x '/usr/bin/ovs-vsctl') {
+	    my $ovs_configured = sub {
+		my $ifaces = shift;
+		my @ovstypes = grep { $_->{type} =~ /^ovs\S+/i } values %$ifaces;
+		return scalar(@ovstypes) > 0;
+	    };
+	    my $tmp = PVE::INotify::read_file('interfaces', 1);
+	    my $ifaces = $tmp->{data}->{ifaces};
+	    my $changes = $tmp->{changes};
+
+	    if ($ovs_configured->($ifaces)) {
+		die "There are OpenVSwitch configured interfaces, but ifupdown2 ".
+		    " reload is not compatible with openvswitch currently\n";
+	    } elsif ($changes && $changes =~ /^\s*(?:[+-])?\s*(ovs_type|allow-ovs)/mi) {
+		die "Changes include OpenVSwitch interfaces, but ifupdown2 ".
+		    "reload is not compatible with openvswitch currently\n";
+	    }
+	}
 
 	my $worker = sub {
 
