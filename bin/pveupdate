@@ -87,18 +87,18 @@ eval {
 	# get cert and check issuer and chain metadata
 	my $certinfo = PVE::Certificate::get_certificate_info($certpath);
 	if ($certinfo->{issuer} ne $cainfo->{subject}) {
-	    die "SSL Certificate is not issued by root CA";
+	    die "SSL certificate ($certpath) is not issued by root CA ($capath)!\n";
 	}
 
 	# check if cert is really signed by the ca
-
-	# TODO
-	# replace by low level interface in ssleay if version 1.86 is available
+	# TODO: replace by low level ssleay interface if version 1.86 is available
 	PVE::Tools::run_command(['/usr/bin/openssl', 'verify', '-CAfile', $capath, $certpath]);
 
+	print "PVE certificate expires soon, renewing...\n";
 	# create new certificate
 	my $ip = PVE::Cluster::remote_node_ip($nodename);
 	PVE::Cluster::Setup::gen_pve_ssl_cert(1, $nodename, $ip);
+
 	print "Restarting pveproxy after renewing certificate\n";
 	PVE::Tools::run_command(['systemctl', 'reload-or-restart', 'pveproxy']);
     }
