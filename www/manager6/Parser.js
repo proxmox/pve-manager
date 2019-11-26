@@ -86,7 +86,7 @@ Ext.define('PVE.Parser', { statics: {
 	    if (defaultKey !== undefined && key === defaultKey) {
 		gotDefaultKeyVal = true;
 		defaultKeyVal = value;
-	    } else {
+	    } else if (value !== '') {
 		stringparts.push(key + '=' + value);
 	    }
 	});
