@@ -243,7 +243,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    }
 	    edit_btn.setDisabled(noedit);
 
-	    remove_btn.setDisabled(!isDisk || rec.data.key === 'rootfs' || !diskCap);
+	    remove_btn.setDisabled(!isDisk || rec.data.key === 'rootfs' || !diskCap || pending);
 	    resize_btn.setDisabled(!isDisk || !diskCap);
 	    move_btn.setDisabled(!isDisk || !diskCap);
 	    revert_btn.setDisabled(!pending);
