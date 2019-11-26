@@ -35,7 +35,7 @@ use base qw(PVE::Daemon);
 
 my $have_sdn;
 eval {
-    require PVE::API2::Network::SDN;
+    require PVE::Network::SDN;
     $have_sdn = 1;
 };
 
