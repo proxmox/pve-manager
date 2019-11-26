@@ -42,7 +42,7 @@ my $find_mon_ip = sub {
 	if scalar(@$allowed_ips) < 1;
 
     if (!$overwrite_ip) {
-	if (scalar(@$allowed_ips) == 1) {
+	if (scalar(@$allowed_ips) == 1 || !grep { $_ ne $allowed_ips->[0] } @$allowed_ips) {
 	    return $allowed_ips->[0];
 	}
 	die "Multiple IPs for ceph public network '$pubnet' detected on $node:\n".
