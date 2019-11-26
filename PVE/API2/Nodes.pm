@@ -54,7 +54,7 @@ use Socket;
 
 my $have_sdn;
 eval {
-    require PVE::API2::Network::SDN::Status;
+    require PVE::API2::Network::SDN::Zones::Status;
     $have_sdn = 1;
 };
 
@@ -149,8 +149,8 @@ __PACKAGE__->register_method ({
 
 if ($have_sdn) {
     __PACKAGE__->register_method ({
-	subclass => "PVE::API2::Network::SDN::Status",
-	path => 'sdn',
+	subclass => "PVE::API2::Network::SDN::Zones::Status",
+	path => 'sdn/zones',
     });
 }
 
@@ -213,6 +213,8 @@ __PACKAGE__->register_method ({
 	    { name => 'config' },
 	    { name => 'hosts' },
 	];
+
+	push @$result, { name => 'sdn' } if $have_sdn;
 
 	return $result;
     }});
