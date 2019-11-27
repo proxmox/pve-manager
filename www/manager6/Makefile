@@ -21,6 +21,7 @@ JSSRC= 				                 	\
 	data/model/RRDModels.js				\
 	form/VLanField.js				\
 	form/Boolean.js					\
+	form/BandwidthSelector.js			\
 	form/CompressionSelector.js			\
 	form/PoolSelector.js				\
 	form/PrivilegesSelector.js			\
