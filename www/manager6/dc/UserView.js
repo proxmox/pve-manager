@@ -191,5 +191,7 @@ Ext.define('PVE.dc.UserView', {
 	});
 
 	me.callParent();
+
+	Proxmox.Utils.monStoreErrors(me, store);
     }
 });
