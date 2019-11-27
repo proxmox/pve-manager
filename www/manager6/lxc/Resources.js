@@ -233,6 +233,7 @@ Ext.define('PVE.lxc.RessourceView', {
 
 	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
 	    var isDisk = (rowdef.tdCls == 'pve-itype-icon-storage');
+	    var isUnusedDisk = key.match(/^unused\d+/);
 
 	    var noedit = rec.data['delete'] || !rowdef.editor;
 	    if (!noedit && Proxmox.UserName !== 'root@pam' && key.match(/^mp\d+$/)) {
@@ -244,7 +245,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    edit_btn.setDisabled(noedit);
 
 	    remove_btn.setDisabled(!isDisk || rec.data.key === 'rootfs' || !diskCap || pending);
-	    resize_btn.setDisabled(!isDisk || !diskCap);
+	    resize_btn.setDisabled(!isDisk || !diskCap || isUnusedDisk);
 	    move_btn.setDisabled(!isDisk || !diskCap);
 	    revert_btn.setDisabled(!pending);
 
