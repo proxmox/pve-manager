@@ -1,3 +1,29 @@
+pve-manager (6.1-1) pve; urgency=medium
+
+  * fix #2462: ACMEAccount: make tos in get_tos optional
+
+  * ui: lxc: switch reboot and stop button to match the interface of VMs
+
+  * ui: allow to set 'migrate' HA shutdown policy in datacenter options
+
+  * ui: node network: enable apply config button
+
+  * api: network reload: more granular "is OVS used" check
+
+  * automatically renew pve-ssl.pem when it nearly expires
+
+  * api: ceph monitor: allow full-mesh routed setup for monitor IP
+
+  * ui: dc/options: allow one to setup U2F AppID and origin
+
+  * lxc: disable remove button for pending resource changes
+
+  * adaptions for the experimental SDN package
+
+  * ui: dc/options: add clusterwide IO bandwidth limit editor
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 27 Nov 2019 11:35:57 +0100
+
 pve-manager (6.0-15) pve; urgency=medium
 
   * api/ceph: skip merging metadata if hostname is undefined
