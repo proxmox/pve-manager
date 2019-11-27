@@ -1,5 +1,5 @@
  /*jslint confusion: true*/
-Ext.define('PVE.dc.OptionView', {
+ Ext.define('PVE.dc.OptionView', {
     extend: 'Proxmox.grid.ObjectGrid',
     alias: ['widget.pveDcOptionView'],
 
@@ -27,8 +27,12 @@ Ext.define('PVE.dc.OptionView', {
 		    labelWidth: opts.labelWidth || 100
 		},
 		setValues: function(values) {
-		    // FIXME: run through parsePropertyString if not an object?
 		    var edit_value = values[name];
+
+		    if (opts.parseBeforeSet) {
+			edit_value = PVE.Parser.parsePropertyString(edit_value);
+		    }
+
 		    Ext.Array.each(this.query('inputpanel'), function(panel) {
 			panel.setValues(edit_value);
 		    });
@@ -154,6 +158,43 @@ Ext.define('PVE.dc.OptionView', {
 		xtype: 'displayfield',
 		userCls: 'pmx-hint',
 		value: gettext('NOTE: Changing an AppID breaks existing U2F registrations!'),
+	    }]
+	});
+	me.add_inputpanel_row('bwlimit', gettext('Bandwidth Limits'), {
+	    renderer: (v) => !v ? gettext('None') : v,
+	    caps: caps.vms['Sys.Modify'],
+	    width: 450,
+	    url: "/api2/extjs/cluster/options",
+	    parseBeforeSet: true,
+	    items: [{
+		xtype: 'pveBandwidthField',
+		name: 'default',
+		fieldLabel: gettext('Default'),
+		emptyText: gettext('none')
+	    },
+	    {
+		xtype: 'pveBandwidthField',
+		name: 'restore',
+		fieldLabel: gettext('Backup Restore'),
+		emptyText: gettext('default')
+	    },
+	    {
+		xtype: 'pveBandwidthField',
+		name: 'migration',
+		fieldLabel: gettext('Migration'),
+		emptyText: gettext('default')
+	    },
+	    {
+		xtype: 'pveBandwidthField',
+		name: 'clone',
+		fieldLabel: gettext('Clone'),
+		emptyText: gettext('default')
+	    },
+	    {
+		xtype: 'pveBandwidthField',
+		name: 'move',
+		fieldLabel: gettext('Disk Move'),
+		emptyText: gettext('default')
 	    }]
 	});
 
