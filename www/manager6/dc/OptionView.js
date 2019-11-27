@@ -23,6 +23,7 @@ Ext.define('PVE.dc.OptionView', {
 		xtype: 'proxmoxWindowEdit',
 		width: opts.width || 350,
 		subject: text,
+		onlineHelp: opts.onlineHelp,
 		fieldDefaults: {
 		    labelWidth: opts.labelWidth || 100
 		},
@@ -113,6 +114,7 @@ Ext.define('PVE.dc.OptionView', {
 	    caps: caps.vms['Sys.Modify'],
 	    labelWidth: 120,
 	    url: "/api2/extjs/cluster/options",
+	    onlineHelp: 'ha_manager_shutdown_policy',
 	    items: [{
 		xtype: 'proxmoxKVComboBox',
 		name: 'shutdown_policy',
@@ -134,6 +136,7 @@ Ext.define('PVE.dc.OptionView', {
 	    caps: caps.vms['Sys.Modify'],
 	    width: 450,
 	    url: "/api2/extjs/cluster/options",
+	    onlineHelp: 'pveum_configure_u2f',
 	    items: [{
 		xtype: 'textfield',
 		name: 'appid',
