@@ -166,6 +166,7 @@ Ext.define('PVE.dc.OptionView', {
 	    width: 450,
 	    url: "/api2/extjs/cluster/options",
 	    parseBeforeSet: true,
+	    labelWidth: 120,
 	    items: [{
 		xtype: 'pveBandwidthField',
 		name: 'default',
