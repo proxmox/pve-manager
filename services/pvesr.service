@@ -1,6 +1,7 @@
 [Unit]
 Description=Proxmox VE replication runner
 ConditionPathExists=/usr/bin/pvesr
+After=pve-cluster.service
 
 [Service]
 Type=oneshot
