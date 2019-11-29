@@ -185,6 +185,11 @@ Ext.define('PVE.qemu.HardwareView', {
 		never_delete: true,
 		defaultValue: ''
 	    },
+	    vmstate: {
+		header: gettext('VM State'),
+		iconCls: 'download',
+		group: 8,
+	    },
 	    cores: {
 		visible: false
 	    },
