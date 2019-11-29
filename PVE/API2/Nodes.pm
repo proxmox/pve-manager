@@ -1928,6 +1928,25 @@ my $create_migrate_worker = sub {
 					    restart => $online });
     } elsif ($type eq 'qemu') {
 	my $online = PVE::QemuServer::check_running($vmid, 1) ? 1 : 0;
+	my $preconditions = PVE::API2::Qemu->migrate_vm_precondition({node => $nodename, vmid => $vmid, target => $target});
+	my $invalidConditions = 0;
+	print STDERR "Check VM $vmid:\n";
+	if ($online && !$with_local_disks && @{$preconditions->{local_disks}}) {
+	    $invalidConditions = 1;
+	    my $local_disks = [];
+	    foreach my $disk (@{$preconditions->{local_disks}}) {
+		push @$local_disks, $disk->{volid};
+	    }
+	    print STDERR "Has local disks -> ". join(",",@$local_disks) . "\n";
+	}
+
+	if (@{$preconditions->{local_resources}}) {
+	    $invalidConditions = 1;
+	    print STDERR "Has local resources -> " . join(',',@{$preconditions->{local_resources}}) . "\n";
+	}
+
+	die "Skip VM $vmid: Precondition check failed\n" if $invalidConditions;
+	print STDERR "Precondition check passed\n";
 	print STDERR "Migrating VM $vmid\n";
 	$upid = PVE::API2::Qemu->migrate_vm({node => $nodename, vmid => $vmid, target => $target,
 					     online => $online, 'with-local-disks' => $with_local_disks});
