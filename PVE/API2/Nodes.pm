@@ -1918,7 +1918,7 @@ __PACKAGE__->register_method ({
     }});
 
 my $create_migrate_worker = sub {
-    my ($nodename, $type, $vmid, $target) = @_;
+    my ($nodename, $type, $vmid, $target, $with_local_disks) = @_;
 
     my $upid;
     if ($type eq 'lxc') {
@@ -1930,7 +1930,7 @@ my $create_migrate_worker = sub {
 	my $online = PVE::QemuServer::check_running($vmid, 1) ? 1 : 0;
 	print STDERR "Migrating VM $vmid\n";
 	$upid = PVE::API2::Qemu->migrate_vm({node => $nodename, vmid => $vmid, target => $target,
-					     online => $online });
+					     online => $online, 'with-local-disks' => $with_local_disks});
     } else {
 	die "unknown VM type '$type'\n";
     }
@@ -1968,6 +1968,11 @@ __PACKAGE__->register_method ({
 		type => 'string',  format => 'pve-vmid-list',
 		optional => 1,
 	    },
+	    "with-local-disks" => {
+		type => 'boolean',
+		description => "Enable live storage migration for local disk",
+		optional => 1,
+	    },
 	},
     },
     returns => {
@@ -1983,6 +1988,7 @@ __PACKAGE__->register_method ({
 	$nodename = PVE::INotify::nodename() if $nodename eq 'localhost';
 
 	my $target = $param->{target};
+	my $with_local_disks = $param->{'with-local-disks'};
 	raise_param_exc({ target => "target is local node."}) if $target eq $nodename;
 
 	PVE::Cluster::check_cfs_quorum();
@@ -2003,7 +2009,7 @@ __PACKAGE__->register_method ({
 	    foreach my $vmid (sort keys %$vmlist) {
 		my $d = $vmlist->{$vmid};
 		my $pid;
-		eval { $pid = &$create_migrate_worker($nodename, $d->{type}, $vmid, $target); };
+		eval { $pid = &$create_migrate_worker($nodename, $d->{type}, $vmid, $target, $with_local_disks); };
 		warn $@ if $@;
 		next if !$pid;
 
