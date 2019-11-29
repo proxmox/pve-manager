@@ -111,7 +111,7 @@ Ext.define('PVE.dc.OptionView', {
 	});
 	me.add_inputpanel_row('ha', gettext('HA Settings'), {
 	    renderer: PVE.Utils.render_dc_ha_opts,
-	    caps: caps.vms['Sys.Modify'],
+	    caps: caps.dc['Sys.Modify'],
 	    labelWidth: 120,
 	    url: "/api2/extjs/cluster/options",
 	    onlineHelp: 'ha_manager_shutdown_policy',
@@ -133,7 +133,7 @@ Ext.define('PVE.dc.OptionView', {
 	});
 	me.add_inputpanel_row('u2f', gettext('U2F Settings'), {
 	    renderer: PVE.Utils.render_dc_ha_opts,
-	    caps: caps.vms['Sys.Modify'],
+	    caps: caps.dc['Sys.Modify'],
 	    width: 450,
 	    url: "/api2/extjs/cluster/options",
 	    onlineHelp: 'pveum_configure_u2f',
@@ -165,7 +165,7 @@ Ext.define('PVE.dc.OptionView', {
 	});
 	me.add_inputpanel_row('bwlimit', gettext('Bandwidth Limits'), {
 	    renderer: (v) => !v ? gettext('None') : v,
-	    caps: caps.vms['Sys.Modify'],
+	    caps: caps.dc['Sys.Modify'],
 	    width: 450,
 	    url: "/api2/extjs/cluster/options",
 	    parseBeforeSet: true,
@@ -201,8 +201,6 @@ Ext.define('PVE.dc.OptionView', {
 		emptyText: gettext('default')
 	    }]
 	});
-
-	// TODO: bwlimits
 
 	me.selModel = Ext.create('Ext.selection.RowModel', {});
 
