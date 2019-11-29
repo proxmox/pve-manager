@@ -18,6 +18,7 @@ Ext.define('PVE.window.BulkAction', {
 
     submit: function(params) {
 	var me = this;
+
 	Proxmox.Utils.API2Request({
 	    params: params,
 	    url: '/nodes/' + me.nodename + '/' + me.action,
@@ -82,6 +83,26 @@ Ext.define('PVE.window.BulkAction', {
 		    value: 1,
 		    fieldLabel: gettext('Parallel jobs'),
 		    allowBlank: false
+		},
+		{
+		    xtype: 'proxmoxcheckbox',
+		    name: 'with-local-disks',
+		    checked: false,
+		    uncheckedValue: 0,
+		    fieldLabel: gettext('Migrate VMs with local disks'),
+		    listeners: {
+			change: function(cb, val) {
+			    me.down('#localdiskwarning').setVisible(val);
+			}
+		    }
+
+		},
+		{
+		    itemId: 'localdiskwarning',
+		    xtype: 'displayfield',
+		    userCls: 'pmx-hint',
+		    value: 'Warning: Migration with local disks might take long.',
+		    hidden: true
 		},
 		{
 		    itemId: 'lxcwarning',
