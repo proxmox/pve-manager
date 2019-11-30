@@ -295,6 +295,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 99,
 		order: i,
 		iconCls: 'hdd-o',
+		del_extra_msg: gettext('This will permanently erase all data.'),
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.HDEdit' : undefined,
 		header: gettext('Unused Disk') + ' ' + i.toString()
 	    };
@@ -442,13 +443,14 @@ Ext.define('PVE.qemu.HardwareView', {
 		if (this.text === this.altText) {
 		    warn = gettext('Are you sure you want to detach entry {0}');
 		}
+		var key = rec.data.key;
+		var entry = rows[key];
 
-		var entry = rec.data.key;
-		var rendered = me.renderKey(entry, {}, rec);
+		var rendered = me.renderKey(key, {}, rec);
 		var msg = Ext.String.format(warn, "'" + rendered + "'");
 
-		if (entry.match(/^unused\d+$/)) {
-		    msg += " " + gettext('This will permanently erase all data.');
+		if (entry.del_extra_msg) {
+		    msg += '<br>' + entry.del_extra_msg;
 		}
 
 		return msg;
