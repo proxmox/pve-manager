@@ -2054,6 +2054,7 @@ __PACKAGE__->register_method ({
 	    }
 	    while (scalar(keys %$workers)) {
 		foreach my $p (keys %$workers) {
+		    # FIXME: what about PID re-use ?!?!
 		    if (!PVE::ProcFSTools::check_process_running($p)) {
 			delete $workers->{$p};
 		    }
