@@ -186,7 +186,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		defaultValue: ''
 	    },
 	    vmstate: {
-		header: gettext('VM State'),
+		header: gettext('Hibernation VM State'),
 		iconCls: 'download',
 		del_extra_msg: gettext('The saved VM state will be permanently lost.'),
 		group: 100,
