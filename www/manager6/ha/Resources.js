@@ -142,6 +142,21 @@ Ext.define('PVE.ha.ResourcesView', {
 		    dataIndex: 'crm_state'
 		},
 		{
+		    header: gettext('Name'),
+		    width: 100,
+		    sortable: true,
+		    dataIndex: 'sid',
+		    renderer: function(value, metaData, record) {
+			let res = value.match(/^(\S+):(\S+)$/);
+			if (res[1] !== 'vm' && res[1] !== 'ct') {
+			    return '-';
+			}
+			//var guestType = res[1];
+			let vmid = res[2];
+			return PVE.data.ResourceStore.guestName(vmid);
+		    }
+		},
+		{
 		    header: gettext('Max. Restart'),
 		    width: 100,
 		    sortable: true,

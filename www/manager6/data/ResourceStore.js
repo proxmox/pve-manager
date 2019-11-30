@@ -38,6 +38,19 @@ Ext.define('PVE.data.ResourceStore', {
 	return me.getAt(index).data.node;
     },
 
+    guestName: function(vmid) {
+	let me = this;
+	let index = me.findExact('vmid', parseInt(vmid, 10));
+	if (index < 0) {
+	    return '-';
+	}
+	let rec = me.getAt(index).data;
+	if ('name' in rec) {
+	    return rec.name;
+	}
+	return '';
+    },
+
     constructor: function(config) {
 	// fixme: how to avoid those warnings
 	/*jslint confusion: true */
