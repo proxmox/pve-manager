@@ -2027,8 +2027,13 @@ __PACKAGE__->register_method ({
 	    $rpcenv->{type} = 'priv'; # to start tasks in background
 
 	    my $vmlist = &$get_filtered_vmlist($nodename, $param->{vms}, 1, 1);
+	    if (!scalar(keys %$vmlist)) {
+		warn "no virtual guests matched, nothing to do..\n";
+		return;
+	    }
 
 	    my $workers = {};
+	    my $workers_started = 0;
 	    foreach my $vmid (sort keys %$vmlist) {
 		my $d = $vmlist->{$vmid};
 		my $pid;
@@ -2036,6 +2041,7 @@ __PACKAGE__->register_method ({
 		warn $@ if $@;
 		next if !$pid;
 
+		$workers_started++;
 		$workers->{$pid} = 1;
 		while (scalar(keys %$workers) >= $maxWorkers) {
 		    foreach my $p (keys %$workers) {
@@ -2054,6 +2060,10 @@ __PACKAGE__->register_method ({
 		}
 		sleep(1);
 	    }
+	    if ($workers_started <= 0) {
+		die "no migrations worker started...\n";
+	    }
+	    print STDERR "All jobs finished, used $workers_started workers in total.\n";
 	    return;
 	};
 
