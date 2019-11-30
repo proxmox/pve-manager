@@ -1927,26 +1927,25 @@ my $create_migrate_worker = sub {
 	$upid = PVE::API2::LXC->migrate_vm({node => $nodename, vmid => $vmid, target => $target,
 					    restart => $online });
     } elsif ($type eq 'qemu') {
+	print STDERR "Check VM $vmid: ";
+	*STDERR->flush();
 	my $online = PVE::QemuServer::check_running($vmid, 1) ? 1 : 0;
 	my $preconditions = PVE::API2::Qemu->migrate_vm_precondition({node => $nodename, vmid => $vmid, target => $target});
-	my $invalidConditions = 0;
-	print STDERR "Check VM $vmid:\n";
-	if ($online && !$with_local_disks && @{$preconditions->{local_disks}}) {
-	    $invalidConditions = 1;
-	    my $local_disks = [];
-	    foreach my $disk (@{$preconditions->{local_disks}}) {
-		push @$local_disks, $disk->{volid};
-	    }
-	    print STDERR "Has local disks -> ". join(",",@$local_disks) . "\n";
+	my $invalidConditions = '';
+	if ($online && !$with_local_disks && scalar @{$preconditions->{local_disks}}) {
+	    $invalidConditions .= "\n  Has local disks: " .
+	        join(', ', map { $_->{volid} } @{$preconditions->{local_disks}});
 	}
 
 	if (@{$preconditions->{local_resources}}) {
-	    $invalidConditions = 1;
-	    print STDERR "Has local resources -> " . join(',',@{$preconditions->{local_resources}}) . "\n";
+	    $invalidConditions .= "\n  Has local resources: " . join(', ', @{$preconditions->{local_resources}});
 	}
 
-	die "Skip VM $vmid: Precondition check failed\n" if $invalidConditions;
-	print STDERR "Precondition check passed\n";
+	if ($invalidConditions && $invalidConditions ne '') {
+	    print STDERR "skip VM $vmid - precondition check failed:";
+	    die "$invalidConditions\n";
+	}
+	print STDERR "precondition check passed\n";
 	print STDERR "Migrating VM $vmid\n";
 	$upid = PVE::API2::Qemu->migrate_vm({node => $nodename, vmid => $vmid, target => $target,
 					     online => $online, 'with-local-disks' => $with_local_disks});
