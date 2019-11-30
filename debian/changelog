@@ -1,3 +1,21 @@
+pve-manager (6.1-2) pve; urgency=medium
+
+  * ui: dc/options: add onlineHelp to u2f and ha edit window
+
+  * LXC: Disable resize button when volume is unusued
+
+  * ui: dc/options: fix capabillities for u2f, bwlimits, ha settings
+
+  * api: apt/versions: track ifupdown and ifupdown2 as optional package
+
+  * api: add migrate precondition checks to bulk migrate api
+
+  * ui: add checkbox to bulk migrate window to allow migration with local disks
+
+  * ui; qemu/HardwareView: show vmstate and allow removal
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 30 Nov 2019 18:41:21 +0100
+
 pve-manager (6.1-1) pve; urgency=medium
 
   * fix #2462: ACMEAccount: make tos in get_tos optional
