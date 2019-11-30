@@ -48,15 +48,12 @@ Ext.define('PVE.window.BulkAction', {
 	if (!me.nodename) {
 	    throw "no node name specified";
 	}
-
 	if (!me.action) {
 	    throw "no action specified";
 	}
-
 	if (!me.btnText) {
 	    throw "no button text specified";
 	}
-
 	if (!me.title) {
 	    throw "no title specified";
 	}
@@ -85,24 +82,27 @@ Ext.define('PVE.window.BulkAction', {
 		    allowBlank: false
 		},
 		{
-		    xtype: 'proxmoxcheckbox',
-		    name: 'with-local-disks',
-		    checked: false,
-		    uncheckedValue: 0,
-		    fieldLabel: gettext('Migrate VMs with local disks'),
-		    listeners: {
-			change: function(cb, val) {
-			    me.down('#localdiskwarning').setVisible(val);
+		    xtype: 'fieldcontainer',
+		    fieldLabel: gettext('Allow local disk migration'),
+		    layout: 'hbox',
+		    items: [{
+			xtype: 'proxmoxcheckbox',
+			name: 'with-local-disks',
+			checked: true,
+			uncheckedValue: 0,
+			listeners: {
+			    change: (cb, val) => me.down('#localdiskwarning').setVisible(val),
 			}
-		    }
 
-		},
-		{
-		    itemId: 'localdiskwarning',
-		    xtype: 'displayfield',
-		    userCls: 'pmx-hint',
-		    value: 'Warning: Migration with local disks might take long.',
-		    hidden: true
+		    },
+		    {
+			itemId: 'localdiskwarning',
+			xtype: 'displayfield',
+			flex: 1,
+			padding: '0 0 0 10',
+			userCls: 'pmx-hint',
+			value: 'Note: Migration with local disks might take long.',
+		    }],
 		},
 		{
 		    itemId: 'lxcwarning',
