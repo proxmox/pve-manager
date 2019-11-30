@@ -130,7 +130,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 	    },
 	    {
 		xtype: 'menuseparator',
-		hidden: standalone || !caps.vms['VM.Migrate']
+		hidden: (standalone || !caps.vms['VM.Migrate']) && !caps.vms['VM.Allocate'] && !caps.vms['VM.Clone']
 	    },
 	    {
 		text: gettext('Clone'),
