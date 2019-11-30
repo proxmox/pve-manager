@@ -528,6 +528,8 @@ __PACKAGE__->register_method({
 	    ceph
 	    criu
 	    gfs2-utils
+	    ifupdown
+	    ifupdown2
 	    ksm-control-daemon
 	    ksmtuned
 	    libpve-apiclient-perl
