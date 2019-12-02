@@ -11,6 +11,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
     vmconfig: {}, // used to select usused disks
 
+    viewModel: {},
+
     controller: {
 
 	xclass: 'Ext.app.ViewController',
@@ -47,6 +49,13 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		    this.lookupReference('scsiController').setValue(vmScsiType);
 		}
 	    }
+	},
+
+	init: function(view) {
+	    var vm = this.getViewModel();
+	    if (view.isCreate) {
+		vm.set('isIncludedInBackup', true);
+	    }
 	}
     },
 
@@ -68,7 +77,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.drive.format = values.diskformat;
 	}
 
-	PVE.Utils.propertyStringSet(me.drive, values.nobackup, 'backup', 'no');
+	PVE.Utils.propertyStringSet(me.drive, values.backup, 'backup');
 	PVE.Utils.propertyStringSet(me.drive, values.noreplicate, 'replicate', 'no');
 	PVE.Utils.propertyStringSet(me.drive, values.discard, 'discard', 'on');
 	PVE.Utils.propertyStringSet(me.drive, values.ssd, 'ssd', 'on');
@@ -121,7 +130,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	}
 
 	values.hdimage = drive.file;
-	values.nobackup = !PVE.Parser.parseBoolean(drive.backup, 1);
+	values.backup = PVE.Parser.parseBoolean(drive.backup, 1);
 	values.noreplicate = !PVE.Parser.parseBoolean(drive.replicate, 1);
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '__default__';
@@ -282,9 +291,13 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	me.advancedColumn2.push(
 	    {
 		xtype: 'proxmoxcheckbox',
-		fieldLabel: gettext('No backup'),
+		fieldLabel: gettext('Include in backup'),
+		uncheckedValue: 'no',
 		labelWidth: labelWidth,
-		name: 'nobackup'
+		name: 'backup',
+		bind: {
+		    value: '{isIncludedInBackup}',
+		},
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
