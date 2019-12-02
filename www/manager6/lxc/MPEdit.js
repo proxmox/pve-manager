@@ -134,6 +134,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    vm.set('node', view.nodename);
 	    vm.set('unpriv', view.unprivileged);
 	    vm.set('hideStorSelector', view.unused || !view.isCreate);
+
+	    // can be array if created from unused disk
+	    if (view.isCreate) {
+		vm.set('isIncludedInBackup', true);
+	    }
 	}
     },
 
@@ -240,10 +245,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	{
 	    xtype: 'proxmoxcheckbox',
 	    name: 'backup',
-	    fieldLabel: gettext('Backup'),
+	    fieldLabel: gettext('Include in backup'),
 	    bind: {
 		hidden: '{isRoot}',
-		disabled: '{isBindOrRoot}'
+		disabled: '{isBindOrRoot}',
+		value: '{isIncludedInBackup}'
 	    }
 	}
     ],
