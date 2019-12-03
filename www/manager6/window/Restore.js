@@ -62,16 +62,29 @@ Ext.define('PVE.window.Restore', {
 		}
 	    },
 	    {
-		xtype: 'proxmoxcheckbox',
-		name: 'unique',
-		fieldLabel: gettext('Unique'),
-		hidden: !!me.vmid,
-		autoEl: {
-		    tag: 'div',
-		    'data-qtip': gettext('Autogenerate unique properties, e.g., MAC addresses')
+		xtype: 'fieldcontainer',
+		layout: 'hbox',
+		items: [{
+		    xtype: 'proxmoxcheckbox',
+		    name: 'unique',
+		    fieldLabel: gettext('Unique'),
+		    hidden: !!me.vmid,
+		    flex: 1,
+		    autoEl: {
+			tag: 'div',
+			'data-qtip': gettext('Autogenerate unique properties, e.g., MAC addresses')
+		    },
+		    checked: false
 		},
-		checked: false
-	    }
+		{
+		    xtype: 'proxmoxcheckbox',
+		    name: 'start',
+		    flex: 1,
+		    fieldLabel: gettext('Start after restore'),
+		    labelWidth: 105,
+		    checked: false
+		}],
+	    },
 	];
 
 	/*jslint confusion: true*/
@@ -130,6 +143,7 @@ Ext.define('PVE.window.Restore', {
 		    force: me.vmid ? 1 : 0
 		};
 		if (values.unique) { params.unique = 1; }
+		if (values.start) { params.start = 1; }
 
 		if (values.bwlimit !== undefined) {
 		    params.bwlimit = values.bwlimit * 1024;
