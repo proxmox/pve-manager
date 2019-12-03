@@ -89,7 +89,8 @@ my $get_changelog_url =sub {
     my ($pkgname, $info, $pkgver, $origin, $component) = @_;
 
     my $changelog_url;
-    my $base = dirname($info->{FileName});
+    my $base;
+    $base = dirname($info->{FileName}) if defined($info->{FileName});
     if ($origin && $base) {
 	$pkgver =~ s/^\d+://; # strip epoch
 	my $srcpkg = $info->{SourcePkg} || $pkgname;
