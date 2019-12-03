@@ -189,16 +189,4 @@ Ext.define('PVE.ha.ResourcesView', {
 
 	me.callParent();
     }
-}, function() {
-
-    Ext.define('pve-ha-resources', {
-	extend: 'Ext.data.Model',
-	fields: [ 
-	  'sid', 'state', 'digest', 'errors', 'group', 'comment',
-	  'max_restart', 'max_relocate', 'type', 'status', 'node',
-	  'crm_state', 'request_state'
-	],
-	idProperty: 'sid'
-    });
-
 });
