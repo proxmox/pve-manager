@@ -52,10 +52,9 @@ Ext.define('PVE.window.Restore', {
 	    storagesel,
 	    IDfield,
 	    {
-		xtype: 'proxmoxintegerfield',
+		xtype: 'pveBandwidthField',
 		name: 'bwlimit',
-		fieldLabel: gettext('Read Limit (MiB/s)'),
-		minValue: 0,
+		fieldLabel: gettext('Read Limit'),
 		emptyText: gettext('Defaults to target storage restore limit'),
 		autoEl: {
 		    tag: 'div',
