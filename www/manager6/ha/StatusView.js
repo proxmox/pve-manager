@@ -72,7 +72,21 @@ Ext.define('PVE.ha.StatusView', {
 	    'id', 'type', 'node', 'status', 'sid',
 	    'state', 'group', 'comment',
 	    'max_restart', 'max_relocate', 'type',
-	    'crm_state', 'request_state'
+	    'crm_state', 'request_state',
+	    {
+		name: 'vname',
+		convert: function(value, record) {
+		    let sid = record.data.sid;
+		    if (!sid) return '';
+
+		    let res = sid.match(/^(\S+):(\S+)$/);
+		    if (res[1] !== 'vm' && res[1] !== 'ct') {
+			return '-';
+		    }
+		    let vmid = res[2];
+		    return PVE.data.ResourceStore.guestName(vmid);
+		},
+	    },
 	],
 	idProperty: 'id'
     });
