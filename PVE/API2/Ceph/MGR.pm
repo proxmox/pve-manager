@@ -108,6 +108,7 @@ __PACKAGE__->register_method ({
 
 	PVE::Ceph::Tools::check_ceph_installed('ceph_mgr');
 	PVE::Ceph::Tools::check_ceph_inited();
+	PVE::Ceph::Tools::setup_pve_symlinks();
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $authuser = $rpcenv->get_user();
