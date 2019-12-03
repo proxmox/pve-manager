@@ -589,6 +589,11 @@ Ext.define('PVE.storage.ContentView', {
 		    dataIndex: 'text'
 		},
 		{
+		    header: gettext('Date'),
+		    width: 150,
+		    dataIndex: 'vdate'
+		},
+		{
 		    header: gettext('Format'),
 		    width: 100,
 		    dataIndex: 'format'
@@ -661,7 +666,28 @@ Ext.define('PVE.storage.ContentView', {
 		    }
 		    return PVE.Utils.render_storage_content(value, {}, record);
 		}
-	    }
+	    },
+	    {
+		name: 'vdate',
+		convert: function(value, record) {
+		    // check for volid, because if you click on a grouping header,
+		    // it calls convert (but with an empty volid)
+		    if (value || record.data.volid === null) {
+			return value;
+		    }
+		    let t = record.data.content;
+		    if (t === "backup") {
+			let v = record.data.volid;
+			let match = v.match(/(\d{4}_\d{2}_\d{2})-(\d{2}_\d{2}_\d{2})/);
+			if (match) {
+			    let date = match[1].replace(/_/g, '.');
+			    let time = match[2].replace(/_/g, ':');
+			    return date + " " + time;
+			}
+		    }
+		    return '';
+		}
+	    },
 	],
 	idProperty: 'volid'
     });
