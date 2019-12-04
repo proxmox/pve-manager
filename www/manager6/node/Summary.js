@@ -99,6 +99,7 @@ Ext.define('PVE.node.Summary', {
 		    xtype: 'container',
 		    itemId: 'itemcontainer',
 		    layout: 'column',
+		    minWidth: 700,
 		    defaults: {
 			minHeight: 320,
 			padding: 5,

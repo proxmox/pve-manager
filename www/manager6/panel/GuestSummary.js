@@ -112,6 +112,7 @@ Ext.define('PVE.qemu.Summary', {
 		    layout: {
 			type: 'column'
 		    },
+		    minWidth: 700,
 		    defaults: {
 			minHeight: 330,
 			padding: 5,
