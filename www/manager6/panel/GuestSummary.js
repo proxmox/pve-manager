@@ -30,40 +30,38 @@ Ext.define('PVE.qemu.Summary', {
 	var template = !!me.pveSelNode.data.template;
 	var rstore = me.statusStore;
 
-	var width = template ? 1 : 0.5;
 	var items = [
 	    {
 		xtype: template ? 'pveTemplateStatusView' : 'pveGuestStatusView',
-		responsiveConfig: {
-		    'width < 1900': {
-			columnWidth: width
-		    },
-		    'width >= 1900': {
-			columnWidth: width / 2
-		    }
-		},
+		flex: 1,
+		padding: template ? '5' : '0 5 0 0',
 		itemId: 'gueststatus',
 		pveSelNode: me.pveSelNode,
 		rstore: rstore
 	    },
 	    {
 		xtype: 'pveNotesView',
-		maxHeight: 330,
+		flex: 1,
+		padding: template ? '5' : '0 0 0 5',
 		itemId: 'notesview',
 		pveSelNode: me.pveSelNode,
-		responsiveConfig: {
-		    'width < 1900': {
-			columnWidth: width
-		    },
-		    'width >= 1900': {
-			columnWidth: width / 2
-		    }
-		}
-	    }
+	    },
 	];
 
 	var rrdstore;
 	if (!template) {
+
+	    // in non-template mode put the two panels always together
+	    items = [
+		{
+		    xtype: 'container',
+		    layout: {
+			type: 'hbox',
+			align: 'stretch',
+		    },
+		    items: items
+		}
+	    ];
 
 	    rrdstore = Ext.create('Proxmox.data.RRDStore', {
 		rrdurl: `/api2/json/nodes/${nodename}/${type}/${vmid}/rrddata`,
@@ -110,23 +108,20 @@ Ext.define('PVE.qemu.Summary', {
 	    items: [
 		{
 		    xtype: 'container',
+		    itemId: 'itemcontainer',
 		    layout: {
 			type: 'column'
 		    },
 		    defaults: {
 			minHeight: 330,
 			padding: 5,
-			plugins: 'responsive',
-			responsiveConfig: {
-			    'width < 1900': {
-				columnWidth: 1
-			    },
-			    'width >= 1900': {
-				columnWidth: 0.5
-			    }
-			}
 		    },
-		    items: items
+		    items: items,
+		    listeners: {
+			resize: function(container) {
+			    PVE.Utils.updateColumns(container);
+			}
+		    }
 		}
 	    ]
 	});
