@@ -153,5 +153,13 @@ Ext.define('PVE.node.Summary', {
 	});
 
 	me.callParent();
+
+	let sp = Ext.state.Manager.getProvider();
+	me.mon(sp, 'statechange', function(provider, key, value) {
+	    if (key !== 'summarycolumns') {
+		return;
+	    }
+	    PVE.Utils.updateColumns(me.getComponent('itemcontainer'));
+	});
     }
 });

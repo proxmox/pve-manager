@@ -288,6 +288,13 @@ Ext.define('PVE.dc.Summary', {
 	    rstore.stopUpdate();
 	});
 
+	me.mon(sp, 'statechange', function(provider, key, value) {
+	    if (key !== 'summarycolumns') {
+		return;
+	    }
+	    PVE.Utils.updateColumns(me);
+	});
+
 	rstore.startUpdate();
     }
 

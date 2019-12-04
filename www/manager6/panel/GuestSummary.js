@@ -131,5 +131,12 @@ Ext.define('PVE.qemu.Summary', {
 	    rrdstore.startUpdate();
 	    me.on('destroy', rrdstore.stopUpdate);
 	}
+	let sp = Ext.state.Manager.getProvider();
+	me.mon(sp, 'statechange', function(provider, key, value) {
+	    if (key !== 'summarycolumns') {
+		return;
+	    }
+	    PVE.Utils.updateColumns(me.getComponent('itemcontainer'));
+	});
     }
 });

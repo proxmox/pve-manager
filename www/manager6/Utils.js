@@ -1283,7 +1283,16 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     updateColumns: function(container) {
-	let factor = container.getSize().width < 1400 ? 1 : 2;
+	let mode = Ext.state.Manager.get('summarycolumns') || 'auto';
+	let factor;
+	if (mode !== 'auto') {
+	    factor = parseInt(mode, 10);
+	    if (Number.isNaN(factor)) {
+		factor = 1;
+	    }
+	} else {
+	    factor = container.getSize().width < 1400 ? 1 : 2;
+	}
 
 	if (container.oldFactor === factor) {
 	    return;

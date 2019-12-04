@@ -42,6 +42,9 @@ Ext.define('PVE.window.Settings', {
 		me.lookupReference('noVNCScalingGroup').setValue({ noVNCScalingField: vncMode });
 	    }
 
+	    let summarycolumns = sp.get('summarycolumns');
+	    me.lookup('summarycolumns').setValue(summarycolumns || 'auto');
+
 	    var settings = ['fontSize', 'fontFamily', 'letterSpacing', 'lineHeight'];
 	    settings.forEach(function(setting) {
 		var val = localStorage.getItem('pve-xterm-' + setting);
@@ -163,6 +166,12 @@ Ext.define('PVE.window.Settings', {
 		    me.getSelectionModel().select(items);
 		    me.resumeEvent('selectionchange');
 		}
+	    },
+	    'field[reference=summarycolumns]': {
+		change: function(el, newValue) {
+		    var sp = Ext.state.Manager.getProvider();
+		    sp.set('summarycolumns', newValue);
+		}
 	    }
 	}
     },
@@ -260,6 +269,23 @@ Ext.define('PVE.window.Settings', {
 			name: 'reset',
 		    },
 		]
+	    },
+	    {
+		xtype: 'box',
+		autoEl: { tag: 'hr'}
+	    },
+	    {
+		xtype: 'proxmoxKVComboBox',
+		fieldLabel: gettext('Summary columns') + ':',
+		labelWidth: 150,
+		stateId: 'summarycolumns',
+		reference: 'summarycolumns',
+		comboItems: [
+		    ['auto', 'auto'],
+		    ['1', '1'],
+		    ['2', '2'],
+		    ['3', '3'],
+		],
 	    },
 	]
     },
