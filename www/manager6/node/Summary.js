@@ -97,19 +97,12 @@ Ext.define('PVE.node.Summary', {
 	    items: [
 		{
 		    xtype: 'container',
+		    itemId: 'itemcontainer',
 		    layout: 'column',
 		    defaults: {
 			minHeight: 320,
 			padding: 5,
-			plugins: 'responsive',
-			responsiveConfig: {
-			    'width < 1900': {
-				columnWidth: 1
-			    },
-			    'width >= 1900': {
-				columnWidth: 0.5
-			    }
-			}
+			columnWidth: 1
 		    },
 		    items: [
 			{
@@ -145,8 +138,13 @@ Ext.define('PVE.node.Summary', {
 			    fields: ['netin','netout'],
 			    store: rrdstore
 			}
-		    ]
-		}
+		    ],
+		    listeners: {
+			resize: function(panel) {
+			    PVE.Utils.updateColumns(panel);
+			},
+		    },
+		},
 	    ],
 	    listeners: {
 		activate: function() { rstore.startUpdate(); rrdstore.startUpdate(); },

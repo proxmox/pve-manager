@@ -10,15 +10,7 @@ Ext.define('PVE.dc.Summary', {
 
     defaults: {
 	padding: 5,
-	plugins: 'responsive',
-	responsiveConfig: {
-	    'width < 1900': {
-		columnWidth: 1
-	    },
-	    'width >= 1900': {
-		columnWidth: 0.5
-	    }
-	}
+	columnWidth: 1,
     },
 
     items: [
@@ -80,6 +72,12 @@ Ext.define('PVE.dc.Summary', {
 	    ]
 	}
     ],
+
+    listeners: {
+	resize: function(panel) {
+	    PVE.Utils.updateColumns(panel);
+	},
+    },
 
     initComponent: function() {
         var me = this;
