@@ -223,7 +223,7 @@ Ext.define('PVE.qemu.Config', {
 	    items: [
 		{
 		    title: gettext('Summary'),
-		    xtype: 'pveQemuSummary',
+		    xtype: 'pveGuestSummary',
 		    iconCls: 'fa fa-book',
 		    itemId: 'summary'
 		}

@@ -190,7 +190,7 @@ Ext.define('PVE.lxc.Config', {
 	    items: [
 		{
 		    title: gettext('Summary'),
-		    xtype: 'pveLxcSummary',
+		    xtype: 'pveGuestSummary',
 		    iconCls: 'fa fa-book',
 		    itemId: 'summary'
 		}

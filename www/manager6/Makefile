@@ -78,6 +78,7 @@ JSSRC= 				                 	\
 	panel/InfoWidget.js				\
 	panel/TemplateStatusView.js			\
 	panel/HealthWidget.js				\
+	panel/GuestSummary.js				\
 	window/LoginWindow.js				\
 	window/Wizard.js				\
 	window/NotesEdit.js				\
@@ -127,7 +128,6 @@ JSSRC= 				                 	\
 	window/BulkAction.js				\
 	window/Clone.js					\
 	qemu/Monitor.js					\
-	qemu/Summary.js					\
 	qemu/OSTypeEdit.js				\
 	qemu/OSDefaults.js				\
 	qemu/ProcessorEdit.js				\
@@ -160,7 +160,6 @@ JSSRC= 				                 	\
 	qemu/IPConfigEdit.js				\
 	qemu/SystemEdit.js				\
 	qemu/AudioEdit.js				\
-	lxc/Summary.js					\
 	lxc/Network.js					\
 	lxc/Resources.js				\
 	lxc/FeaturesEdit.js				\

@@ -1,6 +1,6 @@
-Ext.define('PVE.lxc.Summary', {
+Ext.define('PVE.qemu.Summary', {
     extend: 'Ext.panel.Panel',
-    alias: 'widget.pveLxcSummary',
+    xtype: 'pveGuestSummary',
 
     scrollable: true,
     bodyPadding: 5,
@@ -26,6 +26,7 @@ Ext.define('PVE.lxc.Summary', {
 	    throw "no status storage specified";
 	}
 
+	var type = me.pveSelNode.data.type;
 	var template = !!me.pveSelNode.data.template;
 	var rstore = me.statusStore;
 
@@ -47,7 +48,7 @@ Ext.define('PVE.lxc.Summary', {
 	    },
 	    {
 		xtype: 'pveNotesView',
-		maxHeight: 320,
+		maxHeight: 330,
 		itemId: 'notesview',
 		pveSelNode: me.pveSelNode,
 		responsiveConfig: {
@@ -65,7 +66,7 @@ Ext.define('PVE.lxc.Summary', {
 	if (!template) {
 
 	    rrdstore = Ext.create('Proxmox.data.RRDStore', {
-		rrdurl: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/rrddata",
+		rrdurl: `/api2/json/nodes/${nodename}/${type}/${vmid}/rrddata`,
 		model: 'pve-rrd-guest'
 	    });
 
@@ -113,7 +114,7 @@ Ext.define('PVE.lxc.Summary', {
 			type: 'column'
 		    },
 		    defaults: {
-			minHeight: 320,
+			minHeight: 330,
 			padding: 5,
 			plugins: 'responsive',
 			responsiveConfig: {
