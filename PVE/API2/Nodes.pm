@@ -1947,13 +1947,16 @@ my $create_migrate_worker = sub {
 	}
 	print STDERR "precondition check passed\n";
 	print STDERR "Migrating VM $vmid\n";
-	$upid = PVE::API2::Qemu->migrate_vm({
+
+	my $params = {
 	    node => $nodename,
 	    vmid => $vmid,
 	    target => $target,
 	    online => $online,
 	    'with-local-disks' => $with_local_disks
-	});
+	};
+
+	$upid = PVE::API2::Qemu->migrate_vm($params);
     } else {
 	die "unknown VM type '$type'\n";
     }
