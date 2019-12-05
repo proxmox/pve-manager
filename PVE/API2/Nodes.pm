@@ -1953,8 +1953,8 @@ my $create_migrate_worker = sub {
 	    vmid => $vmid,
 	    target => $target,
 	    online => $online,
-	    'with-local-disks' => $with_local_disks
 	};
+	$params->{'with-local-disks'} = $with_local_disks if defined($with_local_disks);
 
 	$upid = PVE::API2::Qemu->migrate_vm($params);
     } else {
