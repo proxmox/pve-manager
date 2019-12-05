@@ -54,6 +54,7 @@ Ext.define('PVE.window.Restore', {
 	    {
 		xtype: 'pveBandwidthField',
 		name: 'bwlimit',
+		backendUnit: 'KiB',
 		fieldLabel: gettext('Read Limit'),
 		emptyText: gettext('Defaults to target storage restore limit'),
 		autoEl: {
@@ -146,7 +147,7 @@ Ext.define('PVE.window.Restore', {
 		if (values.start) { params.start = 1; }
 
 		if (values.bwlimit !== undefined) {
-		    params.bwlimit = values.bwlimit * 1024;
+		    params.bwlimit = values.bwlimit;
 		}
 
 		var url;
