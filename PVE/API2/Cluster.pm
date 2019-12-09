@@ -583,7 +583,7 @@ __PACKAGE__->register_method({
 		ip => {
 		    type => 'string',
 		    optional => 1,
-		    description => '[node] Ip of the node.',
+		    description => '[node] IP of the resolved nodename.',
 		},
 		'local' => {
 		    type => 'boolean',
