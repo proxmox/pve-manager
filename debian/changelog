@@ -1,3 +1,25 @@
+pve-manager (6.1-4) pve; urgency=medium
+
+  * ui: add date column for backups in storage content view
+
+  * ui: backup restore: add start-after-restore checkbox
+
+  * bulk migration: only pass 'with-local-disks' along if defined, to avoid
+    warnings
+
+  * ceph: Create symlink on standalone MGR creation
+
+  * ui: improve choosing column per-row-count based on width in DC Node, VM, CT
+    summary panels
+
+  * ui: local browser settings: let users overwrite the number of columns in
+    summary panels
+
+  * ui: Mountpoint Edit/Create: default to true for "backup inclusion" on MP
+    creation
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 09 Dec 2019 15:33:12 +0100
+
 pve-manager (6.1-3) pve; urgency=medium
 
   * api: apt/versions: improve stabillity under edge cases
