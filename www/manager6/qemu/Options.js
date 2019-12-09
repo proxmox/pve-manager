@@ -296,6 +296,27 @@ Ext.define('PVE.qemu.Options', {
 		    }
 		} : undefined
 	    },
+	    vmstatestorage: {
+		header: gettext('VM State storage'),
+		defaultValue: '',
+		renderer: val => val || gettext('Automatic'),
+		editor: caps.vms['VM.Config.Options'] ? {
+		    xtype: 'proxmoxWindowEdit',
+		    subject: gettext('VM State storage'),
+		    onlineHelp: 'qm_vmstatestorage',
+		    items: {
+			xtype: 'pveStorageSelector',
+			storageContent: 'images',
+			allowBlank: true,
+			emptyText: gettext('Automatic'),
+			autoSelect: false,
+			deleteEmpty: true,
+			skipEmptyText: true,
+			nodename: nodename,
+			name: 'vmstatestorage',
+		    }
+		} : undefined
+	    },
 	    hookscript: {
 		header: gettext('Hookscript')
 	    }
