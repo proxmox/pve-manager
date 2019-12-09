@@ -636,13 +636,16 @@ __PACKAGE__->register_method({
 		    id => "node/$node",
 		    name => $node,
 		    nodeid => $d->{id},
-		    ip => $d->{ip},
 		    'local' => ($node eq $nodename) ? 1 : 0,
 		    online => $d->{online},
 		};
 
+		if (defined($d->{ip})) {
+		    $entry->{ip} = $d->{ip};
+		}
+
 		if (my $d = PVE::API2Tools::extract_node_stats($node, $members, $rrd)) {
-		    $entry->{level} = $d->{level};
+		    $entry->{level} = $d->{level} || '';
 		}
 
 		push @$res, $entry;
