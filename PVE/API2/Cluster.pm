@@ -47,17 +47,17 @@ __PACKAGE__->register_method ({
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Firewall::Cluster",  
+    subclass => "PVE::API2::Firewall::Cluster",
     path => 'firewall',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Backup",  
+    subclass => "PVE::API2::Backup",
     path => 'backup',
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::HAConfig",  
+    subclass => "PVE::API2::HAConfig",
     path => 'ha',
 });
 
@@ -79,7 +79,7 @@ if ($have_sdn) {
 }
 
 my $dc_schema = PVE::DataCenterConfig::get_datacenter_schema();
-my $dc_properties = { 
+my $dc_properties = {
     delete => {
 	type => 'string', format => 'pve-configid-list',
 	description => "A list of settings you want to delete.",
@@ -91,8 +91,8 @@ foreach my $opt (keys %{$dc_schema->{properties}}) {
 }
 
 __PACKAGE__->register_method ({
-    name => 'index', 
-    path => '', 
+    name => 'index',
+    path => '',
     method => 'GET',
     description => "Cluster index.",
     permissions => { user => 'all' },
@@ -110,7 +110,7 @@ __PACKAGE__->register_method ({
     },
     code => sub {
 	my ($param) = @_;
-    
+
 	my $result = [
 	    { name => 'log' },
 	    { name => 'options' },
@@ -135,8 +135,8 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method({
-    name => 'log', 
-    path => 'log', 
+    name => 'log',
+    path => 'log',
     method => 'GET',
     description => "Read cluster log",
     permissions => { user => 'all' },
@@ -180,8 +180,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'resources', 
-    path => 'resources', 
+    name => 'resources',
+    path => 'resources',
     method => 'GET',
     description => "Resources index (cluster wide).",
     permissions => { user => 'all' },
@@ -311,7 +311,7 @@ __PACKAGE__->register_method({
 
 		my $entry = {
 		    id => "/pool/$pool",
-		    pool => $pool, 
+		    pool => $pool,
 		    type => 'pool',
 		};
 
@@ -355,7 +355,7 @@ __PACKAGE__->register_method({
 			}
 		    }
 		}
-		
+
 		next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ], 1);
 
 		# get ha status
@@ -428,8 +428,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'tasks', 
-    path => 'tasks', 
+    name => 'tasks',
+    path => 'tasks',
     method => 'GET',
     description => "List recent tasks (cluster wide).",
     permissions => { user => 'all' },
@@ -463,13 +463,13 @@ __PACKAGE__->register_method({
 	foreach my $task (@$tlist) {
 	    push @$res, $task if $all || ($task->{user} eq $authuser);
 	}
-   
+
 	return $res;
     }});
 
 __PACKAGE__->register_method({
-    name => 'get_options', 
-    path => 'options', 
+    name => 'get_options',
+    path => 'options',
     method => 'GET',
     description => "Get datacenter options.",
     permissions => {
@@ -490,8 +490,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'set_options', 
-    path => 'options', 
+    name => 'set_options',
+    path => 'options',
     method => 'PUT',
     description => "Set datacenter options.",
     permissions => {
@@ -532,8 +532,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'get_status', 
-    path => 'status', 
+    name => 'get_status',
+    path => 'status',
     method => 'GET',
     description => "Get cluster status information.",
     permissions => {
@@ -562,7 +562,7 @@ __PACKAGE__->register_method({
 	PVE::Cluster::cfs_update();
 
 	# we also add info from pmxcfs
-	my $clinfo = PVE::Cluster::get_clinfo(); 
+	my $clinfo = PVE::Cluster::get_clinfo();
 	my $members = PVE::Cluster::get_members();
 	my $nodename = PVE::INotify::nodename();
 	my $rrd = PVE::Cluster::rrd_dump();
@@ -580,10 +580,10 @@ __PACKAGE__->register_method({
 		    quorate => $d->{quorate},
 		};
 	    }
-	    
+
 	    foreach my $node (keys %$members) {
 		my $d = $members->{$node};
-		my $entry = { 
+		my $entry = {
 		    type => 'node',
 		    id => "node/$node",
 		    name => $node,
@@ -592,11 +592,11 @@ __PACKAGE__->register_method({
 		    'local' => ($node eq $nodename) ? 1 : 0,
 		    online => $d->{online},
 		};
-		
+
 		if (my $d = PVE::API2Tools::extract_node_stats($node, $members, $rrd)) {
 		    $entry->{level} = $d->{level};
 		}
-		
+
 		push @$res, $entry;
 	    }
 	    return $res;
@@ -621,8 +621,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'nextid', 
-    path => 'nextid', 
+    name => 'nextid',
+    path => 'nextid',
     method => 'GET',
     description => "Get next free VMID. If you pass an VMID it will raise an error if the ID is already used.",
     permissions => { user => 'all' },
