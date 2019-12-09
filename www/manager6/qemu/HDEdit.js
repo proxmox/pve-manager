@@ -130,7 +130,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	}
 
 	values.hdimage = drive.file;
-	values.backup = PVE.Parser.parseBoolean(drive.backup, 1);
+	values.backup = PVE.Parser.parseBoolean(drive.backup, 0);
 	values.noreplicate = !PVE.Parser.parseBoolean(drive.replicate, 1);
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '__default__';
@@ -296,7 +296,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		    tag: 'div',
 		    'data-qtip': gettext('Include volume in backup job'),
 		},
-		uncheckedValue: 'no',
 		labelWidth: labelWidth,
 		name: 'backup',
 		bind: {
