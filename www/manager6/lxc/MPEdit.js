@@ -245,7 +245,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	{
 	    xtype: 'proxmoxcheckbox',
 	    name: 'backup',
-	    fieldLabel: gettext('Include in backup'),
+	    fieldLabel: gettext('Backup'),
+	    autoEl: {
+		tag: 'div',
+		'data-qtip': gettext('Include volume in backup job'),
+	    },
 	    bind: {
 		hidden: '{isRoot}',
 		disabled: '{isBindOrRoot}',

@@ -291,7 +291,11 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	me.advancedColumn2.push(
 	    {
 		xtype: 'proxmoxcheckbox',
-		fieldLabel: gettext('Include in backup'),
+		fieldLabel: gettext('Backup'),
+		autoEl: {
+		    tag: 'div',
+		    'data-qtip': gettext('Include volume in backup job'),
+		},
 		uncheckedValue: 'no',
 		labelWidth: labelWidth,
 		name: 'backup',
