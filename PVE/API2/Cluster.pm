@@ -550,8 +550,56 @@ __PACKAGE__->register_method({
 	    type => "object",
 	    properties => {
 		type => {
-		    type => 'string'
+		    type => 'string',
+		    enum => ['cluster', 'node'],
+		    description => 'Indicates the type, either cluster or node. The type defines the object properties e.g. quorate available for type cluster.'
 		},
+		id => {
+		    type => 'string',
+		},
+		name => {
+		    type => 'string',
+		},
+		nodes => {
+		    type => 'integer',
+		    optional => 1,
+		    description => '[cluster] Nodes count, including offline nodes.',
+		},
+		version => {
+		    type => 'integer',
+		    optional => 1,
+		    description => '[cluster] Current version of the corosync configuration file.',
+		},
+		quorate => {
+		    type => 'boolean',
+		    optional => 1,
+		    description => '[cluster] Indicates if there is a majority of nodes online to make decisions',
+		},
+		nodeid => {
+		    type => 'integer',
+		    optional => 1,
+		    description => '[node] ID of the node from the corosync configuration.',
+		},
+		ip => {
+		    type => 'string',
+		    optional => 1,
+		    description => '[node] Ip of the node.',
+		},
+		'local' => {
+		    type => 'boolean',
+		    optional => 1,
+		    description => '[node] Indicates if this is the responding node.',
+		},
+		online => {
+		    type => 'boolean',
+		    optional => 1,
+		    description => '[node] Indicates if the node is online or offline.',
+		},
+		level => {
+		    type => 'string',
+		    optional => 1,
+		    description => '[node] Proxmox VE Subscription level, indicates if eligible for enterprise support as well as access to the stable Proxmox VE Enterprise Repository.',
+		}
 	    },
 	},
     },
