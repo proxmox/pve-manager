@@ -77,7 +77,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.drive.format = values.diskformat;
 	}
 
-	PVE.Utils.propertyStringSet(me.drive, values.backup, 'backup');
+	PVE.Utils.propertyStringSet(me.drive, !values.backup, 'backup', '0');
 	PVE.Utils.propertyStringSet(me.drive, values.noreplicate, 'replicate', 'no');
 	PVE.Utils.propertyStringSet(me.drive, values.discard, 'discard', 'on');
 	PVE.Utils.propertyStringSet(me.drive, values.ssd, 'ssd', 'on');
@@ -130,7 +130,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	}
 
 	values.hdimage = drive.file;
-	values.backup = PVE.Parser.parseBoolean(drive.backup, 0);
+	values.backup = PVE.Parser.parseBoolean(drive.backup, 1);
 	values.noreplicate = !PVE.Parser.parseBoolean(drive.replicate, 1);
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '__default__';
