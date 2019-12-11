@@ -304,11 +304,12 @@ Ext.define('PVE.qemu.Options', {
 		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('VM State storage'),
 		    onlineHelp: 'chapter_virtual_machines', // FIXME: use 'qm_vmstatestorage' once available
+		    width: 350,
 		    items: {
 			xtype: 'pveStorageSelector',
 			storageContent: 'images',
 			allowBlank: true,
-			emptyText: gettext('Automatic'),
+			emptyText: gettext("Automatic (Storage used by the VM, or 'local')"),
 			autoSelect: false,
 			deleteEmpty: true,
 			skipEmptyText: true,
