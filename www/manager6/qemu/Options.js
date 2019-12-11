@@ -303,7 +303,7 @@ Ext.define('PVE.qemu.Options', {
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('VM State storage'),
-		    onlineHelp: 'qm_vmstatestorage',
+		    onlineHelp: 'chapter_virtual_machines', // FIXME: use 'qm_vmstatestorage' once available
 		    items: {
 			xtype: 'pveStorageSelector',
 			storageContent: 'images',
