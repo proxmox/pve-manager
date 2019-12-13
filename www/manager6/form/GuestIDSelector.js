@@ -38,7 +38,7 @@ Ext.define('PVE.form.GuestIDSelector', {
     initComponent: function() {
 	var me = this;
 	var label = '{0} ID';
-	var unknownID = gettext('This {0} ID does not exists');
+	var unknownID = gettext('This {0} ID does not exist');
 	var inUseID = gettext('This {0} ID is already in use');
 	var type = 'CT/VM';
 

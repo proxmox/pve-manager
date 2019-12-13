@@ -162,7 +162,7 @@ Ext.define('PVE.panel.Config', {
 	if (stateid) {
 	    var state = me.sp.get(stateid);
 	    if (state && state.value) {
-		// if this tab does not exists, it chooses the first
+		// if this tab does not exist, it chooses the first
 		activeTab = state.value;
 	    }
 	}
