@@ -119,9 +119,9 @@ __PACKAGE__->register_method ({
 	my $vmlist = PVE::Cluster::get_vmlist();
 
 	my $guest_info = $vmlist->{ids}->{$guest};
-	die "Guest '$guest' does not exists.\n"
+	die "Guest '$guest' does not exist.\n"
 	    if !defined($guest_info);
-	die "Target '$param->{target}' does not exists.\n"
+	die "Target '$param->{target}' does not exist.\n"
 	    if defined($param->{target}) && !defined($nodelist->{$param->{target}});
 
 	my $guest_class = $PVE::API2::Replication::lookup_guest_class->($guest_info->{type});

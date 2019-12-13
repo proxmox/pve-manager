@@ -227,7 +227,7 @@ sub resolve_proxyto {
 	    if !$node;
     } else {
 	$node = $uri_param->{$proxyto};
-	raise_param_exc({ $proxyto =>  "proxyto parameter does not exists"})
+	raise_param_exc({ $proxyto =>  "proxyto parameter does not exist"})
 	    if !$node;
     }
     return $node;
