@@ -69,9 +69,9 @@ Ext.define('PVE.form.BandwidthField', {
 		let v = this.processRawValue(this.getRawValue());
 		v = v.replace(this.decimalSeparator, '.')
 
-		if (v === undefined) return v;
+		if (v === undefined) return null;
 		// FIXME: make it configurable, as this only works if 0 === default
-		if (v == 0 || v == 0.0) return '';
+		if (v == 0 || v == 0.0) return null;
 
 		let fieldct = this.up('pveBandwidthField');
 		let vm = fieldct.getViewModel();
