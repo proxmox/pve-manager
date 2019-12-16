@@ -20,6 +20,7 @@ use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::Tools qw(run_command file_set_contents);
 use PVE::ProcFSTools;
+use PVE::Network;
 
 use base qw(PVE::RESTHandler);
 
@@ -275,6 +276,21 @@ __PACKAGE__->register_method ({
 	# extract parameter info and fail if a device is set more than once
 	my $devs = {};
 
+	my $ceph_conf = cfs_read_file('ceph.conf');
+
+	# check if network is configured
+	my $osd_network = $ceph_conf->{global}->{cluster_network}
+			    // $ceph_conf->{global}->{public_network};
+
+	my $cluster_net_ips = PVE::Network::get_local_ip_from_cidr($osd_network);
+	if (scalar(@$cluster_net_ips) < 1) {
+	    my $osd_net_obj = PVE::Network::IP_from_cidr($osd_network);
+	    my $osd_base_cidr = $osd_net_obj->{ip} . "/" . $osd_net_obj->{prefixlen};
+
+	    die "No network interface configured for subnet ${osd_base_cidr}. ".
+		"Check your network config.\n";
+	}
+
 	# FIXME: rename params on next API compatibillity change (7.0)
 	$param->{wal_dev_size} = delete $param->{wal_size};
 	$param->{db_dev_size} = delete $param->{db_size};
@@ -330,7 +346,6 @@ __PACKAGE__->register_method ({
 	my $fsid = $monstat->{monmap}->{fsid};
         $fsid = $1 if $fsid =~ m/^([0-9a-f\-]+)$/;
 
-	my $ceph_conf = cfs_read_file('ceph.conf');
 	my $ceph_bootstrap_osd_keyring = PVE::Ceph::Tools::get_config('ceph_bootstrap_osd_keyring');
 
 	if (! -f $ceph_bootstrap_osd_keyring && $ceph_conf->{global}->{auth_client_required} eq 'cephx') {
