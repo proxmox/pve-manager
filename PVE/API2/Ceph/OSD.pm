@@ -15,6 +15,7 @@ use PVE::Diskmanage;
 use PVE::Storage::LVMPlugin;
 use PVE::Exception qw(raise_param_exc);
 use PVE::JSONSchema qw(get_standard_option);
+use PVE::INotify;
 use PVE::RADOS;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
@@ -23,6 +24,8 @@ use PVE::ProcFSTools;
 use PVE::Network;
 
 use base qw(PVE::RESTHandler);
+
+my $nodename = PVE::INotify::nodename();
 
 my $get_osd_status = sub {
     my ($rados, $osdid) = @_;
@@ -278,16 +281,15 @@ __PACKAGE__->register_method ({
 
 	my $ceph_conf = cfs_read_file('ceph.conf');
 
-	# check if network is configured
-	my $osd_network = $ceph_conf->{global}->{cluster_network}
-			    // $ceph_conf->{global}->{public_network};
+	my $osd_network = $ceph_conf->{global}->{cluster_network};
+	$osd_network //= $ceph_conf->{global}->{public_network}; # fallback
 
 	my $cluster_net_ips = PVE::Network::get_local_ip_from_cidr($osd_network);
 	if (scalar(@$cluster_net_ips) < 1) {
 	    my $osd_net_obj = PVE::Network::IP_from_cidr($osd_network);
 	    my $osd_base_cidr = $osd_net_obj->{ip} . "/" . $osd_net_obj->{prefixlen};
 
-	    die "No network interface configured for subnet ${osd_base_cidr}. ".
+	    die "No address from ceph cluster network (${osd_base_cidr}) found on node '$nodename'. ".
 		"Check your network config.\n";
 	}
 
