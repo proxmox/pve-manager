@@ -1,3 +1,17 @@
+pve-manager (6.1-5) pve; urgency=medium
+
+  * ui: make storage where VM-state is saved configurable
+
+  * ui: vm/HDEdit: fix backup checkbox default
+
+  * ui: fix Bandwidth-Selector component for empty return values
+
+  * fix #2509: add --rsyncable to backups using pigz again
+
+  * fix #2496: api: create OSD: check if ceph cluster network is configured
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 16 Dec 2019 15:12:19 +0100
+
 pve-manager (6.1-4) pve; urgency=medium
 
   * ui: add date column for backups in storage content view
