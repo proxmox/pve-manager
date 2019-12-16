@@ -588,7 +588,7 @@ sub compressor_info {
 		my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
 		$pigz_threads = int(($cpuinfo->{cpus} + 1)/2);
 	    }
-	    return ("pigz -p ${pigz_threads}", 'gz');
+	    return ("pigz -p ${pigz_threads} --rsyncable", 'gz');
 	} else {
 	    return ('gzip --rsyncable', 'gz');
 	}
