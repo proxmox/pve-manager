@@ -365,6 +365,7 @@ Ext.define('PVE.qemu.Config', {
 
 	me.callParent();
 
+	var prevQmpstatus = 'unknown';
         me.mon(me.statusStore, 'load', function(s, records, success) {
 	    var status;
 	    var qmpstatus;
@@ -412,6 +413,16 @@ Ext.define('PVE.qemu.Config', {
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
 	    me.down('#removeBtn').setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
 	    consoleBtn.setDisabled(template);
+
+	    if (['prelaunch', 'stopped', 'suspended'].indexOf(prevQmpstatus) !== -1
+		&& qmpstatus === 'running') {
+		var con = me.down('#console');
+		if (con) {
+		    con.reloadConsole();
+		}
+	    }
+
+	    prevQmpstatus = qmpstatus;
 	});
 
 	me.on('afterrender', function() {

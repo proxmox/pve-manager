@@ -57,6 +57,12 @@ Ext.define('PVE.noVncConsole', {
 	me.on('afterrender', function() {
 	    me.focus();
 	});
+    },
+
+    reloadConsole: function() {
+	// reload IFrame content to forcibly reconnect VNC/xterm.js to VM
+	var box = this.down();
+	box.getWin().location.reload();
     }
 });
 
