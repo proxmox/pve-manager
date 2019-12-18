@@ -3,21 +3,16 @@ Ext.define('PVE.noVncConsole', {
     alias: 'widget.pveNoVncConsole',
 
     nodename: undefined,
-
     vmid: undefined,
-
     cmd: undefined,
 
     consoleType: undefined, // lxc, kvm, shell, cmd
-
-    layout: 'fit',
-
     xtermjs: false,
 
+    layout: 'fit',
     border: false,
 
-
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
