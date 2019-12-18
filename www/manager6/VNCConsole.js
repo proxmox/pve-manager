@@ -59,9 +59,9 @@ Ext.define('PVE.noVncConsole', {
 	});
     },
 
-    reloadConsole: function() {
+    reload: function() {
 	// reload IFrame content to forcibly reconnect VNC/xterm.js to VM
-	var box = this.down();
+	var box = this.down('[itemid=vncconsole]');
 	box.getWin().location.reload();
     }
 });
