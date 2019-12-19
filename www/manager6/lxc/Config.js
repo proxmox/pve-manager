@@ -333,6 +333,7 @@ Ext.define('PVE.lxc.Config', {
 
 	me.callParent();
 
+	var prevStatus = 'unknown';
 	me.mon(me.statusStore, 'load', function(s, records, success) {
 	    var status;
 	    var lock;
@@ -353,6 +354,15 @@ Ext.define('PVE.lxc.Config', {
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
 	    me.down('#removeBtn').setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
 	    consoleBtn.setDisabled(template);
+
+	    if (prevStatus === 'stopped' && status === 'running') {
+		let con = me.down('#consolejs');
+		if (con) {
+		    con.reload();
+		}
+	    }
+
+	    prevStatus = status;
 	});
 
 	me.on('afterrender', function() {
