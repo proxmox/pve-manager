@@ -6,20 +6,21 @@ Ext.define('PVE.lxc.Config', {
 
     initComponent: function() {
         var me = this;
+	var vm = me.pveSelNode.data;
 
-	var nodename = me.pveSelNode.data.node;
+	var nodename = vm.node;
 	if (!nodename) {
 	    throw "no node name specified";
 	}
 
-	var vmid = me.pveSelNode.data.vmid;
+	var vmid = vm.vmid;
 	if (!vmid) {
 	    throw "no VM ID specified";
 	}
 
-	var template = !!me.pveSelNode.data.template;
+	var template = !!vm.template;
 
-	var running = !!me.pveSelNode.data.uptime;
+	var running = !!vm.uptime;
 
 	var caps = Ext.state.Manager.get('GuiCap');
 
@@ -135,7 +136,7 @@ Ext.define('PVE.lxc.Config', {
 		    hidden: !caps.nodes['Sys.Console'],
 		    text: gettext('Manage HA'),
 		    handler: function() {
-			var ha = me.pveSelNode.data.hastate;
+			var ha = vm.hastate;
 			Ext.create('PVE.ha.VMResourceEdit', {
 			    vmid: vmid,
 			    guestType: 'ct',
@@ -157,8 +158,6 @@ Ext.define('PVE.lxc.Config', {
 		}
 	    ]}
 	});
-
-	var vm = me.pveSelNode.data;
 
 	var consoleBtn = Ext.create('PVE.button.ConsoleButton', {
 	    disabled: !caps.vms['VM.Console'],
