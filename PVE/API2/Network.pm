@@ -143,6 +143,13 @@ my $confdesc = {
 	type => 'string', format => 'CIDRv4',
 	optional => 1,
     },
+    mtu => {
+	description => 'MTU.',
+	optional => 1,
+	type => 'integer',
+	minimum => 1280,
+	maximum => 65520,
+    },
     gateway6 => {
 	description => 'Default ipv6 gateway address.',
 	type => 'string', format => 'ipv6',
