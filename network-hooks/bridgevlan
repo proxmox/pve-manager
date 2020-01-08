@@ -41,7 +41,10 @@ do
         # we allow vlan to pass through attached interface
         if [ -n "$IF_BRIDGE_VIDS" ]
 	then
-            bridge vlan add dev $port vid $IF_BRIDGE_VIDS
+            for VID in $IF_BRIDGE_VIDS
+            do
+                bridge vlan add dev $port vid $VID
+            done
 	else
             bridge vlan add dev $port vid 2-4094
         fi
