@@ -110,6 +110,11 @@ my $confdesc = {
 	optional => 1,
 	type => 'string', enum => $bond_mode_enum,
     },
+    'bond-primary' => {
+	description => "Specify the primary interface for active-backup bond.",
+	optional => 1,
+	type => 'string', format => 'pve-iface',
+    },
     bond_xmit_hash_policy => {
 	description => "Selects the transmit hash policy to use for slave selection in balance-xor and 802.3ad modes.",
 	optional => 1,
