@@ -65,6 +65,10 @@ Ext.define('PVE.qemu.CloudInit', {
 	{
 	    xtype: 'proxmoxButton',
 	    disabled: true,
+	    enableFn: function(rec) {
+		let me = this.up('pveCiPanel');
+		return !!me.rows[rec.data.key].editor;
+	    },
 	    handler: function() {
 		var me = this.up('grid');
 		me.run_editor();
