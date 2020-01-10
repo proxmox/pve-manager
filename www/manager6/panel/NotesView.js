@@ -6,6 +6,7 @@ Ext.define('PVE.panel.NotesView', {
     bodyStyle: 'white-space:pre',
     bodyPadding: 10,
     scrollable: true,
+    animCollapse: false,
 
     tbar: {
 	itemId: 'tbar',
@@ -39,10 +40,15 @@ Ext.define('PVE.panel.NotesView', {
 	    waitMsgTarget: me,
 	    failure: function(response, opts) {
 		me.update(gettext('Error') + " " + response.htmlStatus);
+		me.setCollapsed(false);
 	    },
 	    success: function(response, opts) {
 		var data = response.result.data.description || '';
 		me.update(Ext.htmlEncode(data));
+
+		if (me.collapsible && me.collapseMode === 'auto') {
+		    me.setCollapsed(data === '');
+		}
 	    }
 	});
     },
@@ -51,7 +57,14 @@ Ext.define('PVE.panel.NotesView', {
 	render: function(c) {
 	    var me = this;
 	    me.getEl().on('dblclick', me.run_editor, me);
-	}
+	},
+	afterlayout: function() {
+	    let me = this;
+	    if (me.collapsible && !me.getCollapsed() && me.collapseMode === 'always') {
+		me.setCollapsed(true);
+		me.collapseMode = ''; // only once, on initial load!
+	    }
+	},
     },
 
     tools: [{
@@ -92,6 +105,16 @@ Ext.define('PVE.panel.NotesView', {
 	me.callParent();
 	if (type === 'node') {
 	    me.down('#tbar').setVisible(true);
+	} else {
+	    me.setCollapsible(true);
+	    me.collapseDirection = 'right';
+
+	    let sp = Ext.state.Manager.getProvider();
+	    me.collapseMode = sp.get('guest-notes-collapse', 'never');
+
+	    if (me.collapseMode === 'auto') {
+		me.setCollapsed(true);
+	    }
 	}
 	me.load();
     }

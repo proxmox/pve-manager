@@ -45,6 +45,8 @@ Ext.define('PVE.window.Settings', {
 	    let summarycolumns = sp.get('summarycolumns', 'auto');
 	    me.lookup('summarycolumns').setValue(summarycolumns);
 
+	    me.lookup('guestNotesCollapse').setValue(sp.get('guest-notes-collapse', 'never'));
+
 	    var settings = ['fontSize', 'fontFamily', 'letterSpacing', 'lineHeight'];
 	    settings.forEach(function(setting) {
 		var val = localStorage.getItem('pve-xterm-' + setting);
@@ -172,7 +174,12 @@ Ext.define('PVE.window.Settings', {
 		    var sp = Ext.state.Manager.getProvider();
 		    sp.set('summarycolumns', newValue);
 		}
-	    }
+	    },
+	    'field[reference=guestNotesCollapse]': {
+		change: function(e, v) {
+		    Ext.state.Manager.getProvider().set('guest-notes-collapse', v);
+		},
+	    },
 	}
     },
 
@@ -285,6 +292,18 @@ Ext.define('PVE.window.Settings', {
 		    ['1', '1'],
 		    ['2', '2'],
 		    ['3', '3'],
+		],
+	    },
+	    {
+		xtype: 'proxmoxKVComboBox',
+		fieldLabel: gettext('Guest Notes') + ':',
+		labelWidth: 150,
+		stateId: 'guest-notes-collapse',
+		reference: 'guestNotesCollapse',
+		comboItems: [
+		    ['never', 'Show by default'],
+		    ['always', 'Collapse by default'],
+		    ['auto', 'auto (Collapse if empty)'],
 		],
 	    },
 	]
