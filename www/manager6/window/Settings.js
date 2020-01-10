@@ -42,8 +42,8 @@ Ext.define('PVE.window.Settings', {
 		me.lookupReference('noVNCScalingGroup').setValue({ noVNCScalingField: vncMode });
 	    }
 
-	    let summarycolumns = sp.get('summarycolumns');
-	    me.lookup('summarycolumns').setValue(summarycolumns || 'auto');
+	    let summarycolumns = sp.get('summarycolumns', 'auto');
+	    me.lookup('summarycolumns').setValue(summarycolumns);
 
 	    var settings = ['fontSize', 'fontFamily', 'letterSpacing', 'lineHeight'];
 	    settings.forEach(function(setting) {
