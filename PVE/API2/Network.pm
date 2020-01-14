@@ -538,6 +538,23 @@ __PACKAGE__->register_method({
 	return $ifaces->{$param->{iface}};
    }});
 
+sub ifupdown2_version {
+    my $v;
+    PVE::Tools::run_command(['ifreload', '-V'], outfunc => sub { $v //= shift });
+    return if !defined($v) || $v !~ /^\s*ifupdown2:(\S+)\s*$/;
+    $v = $1;
+    my ($major, $minor, $extra, $pve) = split(/\.|-/, $v);
+    my $is_pve = defined($pve) && $pve =~ /pve/;
+
+    return ($major * 100000 + $minor * 1000 + $extra * 10, $is_pve, $v);
+}
+sub assert_ifupdown2_installed {
+    die "you need ifupdown2 to reload network configuration\n" if ! -e '/usr/share/ifupdown2';
+    my ($v, $pve, $v_str) = ifupdown2_version();
+    die "incompatible 'ifupdown2' package version '$v_str'! Did you installed from Proxmox repositories?\n"
+        if $v < (1*100000 + 2*1000 + 8*10) || !$pve;
+}
+
 __PACKAGE__->register_method({
     name => 'reload_network_config',
     path => '',
@@ -566,7 +583,7 @@ __PACKAGE__->register_method({
 	my $current_config_file = "/etc/network/interfaces";
 	my $new_config_file = "/etc/network/interfaces.new";
 
-	die "you need ifupdown2 to reload networking\n" if !-e '/usr/share/ifupdown2';
+	assert_ifupdown2_installed();
 
 	if (-x '/usr/bin/ovs-vsctl') {
 	    my $ovs_configured = sub {
