@@ -198,6 +198,11 @@ Ext.define('PVE.dc.UserEdit', {
 			}
 		    }
 		    me.setValues(data);
+		    if (data.keys) {
+			if ( data.keys === 'x!oath' || data.keys === 'x!u2f' ) {
+			    me.down('[name="keys"]').setDisabled(1);
+			}
+		    }
                 }
             });
         }
