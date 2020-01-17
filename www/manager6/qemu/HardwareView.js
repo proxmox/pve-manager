@@ -234,7 +234,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		cloudheader: gettext('CloudInit Drive') + ' (' + confid + ')'
 	    };
 	});
-	for (i = 0; i < 32; i++) {
+	for (i = 0; i < PVE.Utils.hardware_counts.net; i++) {
 	    confid = "net" + i.toString();
 	    rows[confid] = {
 		group: 15,
@@ -252,7 +252,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    never_delete: caps.vms['VM.Config.Disk'] ? false : true,
 	    header: gettext('EFI Disk')
 	};
-	for (i = 0; i < 5; i++) {
+	for (i = 0; i < PVE.Utils.hardware_counts.usb; i++) {
 	    confid = "usb" + i.toString();
 	    rows[confid] = {
 		group: 25,
@@ -263,7 +263,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('USB Device') + ' (' + confid + ')'
 	    };
 	}
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < PVE.Utils.hardware_counts.hostpci; i++) {
 	    confid = "hostpci" + i.toString();
 	    rows[confid] = {
 		group: 30,
@@ -274,7 +274,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('PCI Device') + ' (' + confid + ')'
 	    };
 	}
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < PVE.Utils.hardware_counts.serial; i++) {
 	    confid = "serial" + i.toString();
 	    rows[confid] = {
 		group: 35,
