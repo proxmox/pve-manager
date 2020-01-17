@@ -522,39 +522,48 @@ Ext.define('PVE.qemu.HardwareView', {
 	    }
 	});
 
+	let counts = {};
+	let isAtLimit = (type) => (counts[type] >= PVE.Utils.hardware_counts[type]);
+
 	var set_button_status = function() {
 	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 
-	    // disable button when we have an efidisk already
-	    // disable is ok in this case, because you can instantly
-	    // see that there is already one
-	    efidisk_menuitem.setDisabled(me.rstore.getData().map.efidisk0 !== undefined);
-	    // en/disable usb add button
-	    var usbcount = 0;
-	    var pcicount = 0;
-	    var audiocount = 0;
+	    // en/disable hardwarebuttons
+	    counts = {};
 	    var hasCloudInit = false;
 	    me.rstore.getData().items.forEach(function(item){
-		if (/^usb\d+/.test(item.id)) {
-		    usbcount++;
-		} else if (/^hostpci\d+/.test(item.id)) {
-		    pcicount++;
-		} else if (/^audio\d+/.test(item.id)) {
-		    audiocount++;
-		}
-		if (!hasCloudInit && /vm-.*-cloudinit/.test(item.data.value)) {
+		if (!hasCloudInit && (
+		    /vm-.*-cloudinit/.test(item.data.value) ||
+		    /vm-.*-cloudinit/.test(item.data.pending)
+		)) {
 		    hasCloudInit = true;
+		    return;
 		}
+
+		let match = item.id.match(/^([^\d]+)\d+$/);
+		let type;
+		if (match && PVE.Utils.hardware_counts[match[1]] !== undefined) {
+		    type = match[1];
+		} else {
+		    return;
+		}
+
+		counts[type] = (counts[type] || 0) + 1;
 	    });
 
 	    // heuristic only for disabling some stuff, the backend has the final word.
 	    var noSysConsolePerm = !caps.nodes['Sys.Console'];
 	    var noVMConfigHWTypePerm = !caps.vms['VM.Config.HWType'];
+	    var noVMConfigNetPerm = !caps.vms['VM.Config.Network'];
 
-	    me.down('#addusb').setDisabled(noSysConsolePerm || (usbcount >= 5));
-	    me.down('#addpci').setDisabled(noSysConsolePerm || (pcicount >= 4));
-	    me.down('#addaudio').setDisabled(noVMConfigHWTypePerm || (audiocount >= 1));
+
+	    me.down('#addusb').setDisabled(noSysConsolePerm || isAtLimit('usb'));
+	    me.down('#addpci').setDisabled(noSysConsolePerm || isAtLimit('hostpci'));
+	    me.down('#addaudio').setDisabled(noVMConfigHWTypePerm || isAtLimit('audio'));
+	    me.down('#addserial').setDisabled(noVMConfigHWTypePerm || isAtLimit('serial'));
+	    me.down('#addnet').setDisabled(noVMConfigNetPerm || isAtLimit('net'));
+	    efidisk_menuitem.setDisabled(isAtLimit('efidisk'));
 	    me.down('#addci').setDisabled(noSysConsolePerm || hasCloudInit);
 
 	    if (!rec) {
@@ -630,6 +639,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    },
 			    {
 				text: gettext('Network Device'),
+				itemId: 'addnet',
 				iconCls: 'fa fa-fw fa-exchange black',
 				disabled: !caps.vms['VM.Config.Network'],
 				handler: function() {
