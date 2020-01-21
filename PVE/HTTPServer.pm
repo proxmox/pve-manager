@@ -7,7 +7,7 @@ use PVE::SafeSyslog;
 use PVE::INotify;
 use PVE::Tools;
 use PVE::APIServer::AnyEvent;
-use PVE::Exception qw(raise_param_exc raise);
+use PVE::Exception qw(raise_param_exc raise_perm_exc raise);
 
 use PVE::RPCEnvironment;
 use PVE::AccessControl;
@@ -147,6 +147,9 @@ sub rest_handler {
 	    }
 	    $uri_param->{$p} = $params->{$p};
 	}
+
+	raise_perm_exc("URI '$rel_uri' not available with API token, need proper ticket.\n")
+	    if $auth->{api_token} && !$info->{allowtoken};
 
 	# check access permissions
 	$rpcenv->check_api2_permissions($info->{permissions}, $auth->{userid}, $uri_param);
