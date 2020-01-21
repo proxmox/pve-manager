@@ -87,6 +87,14 @@ Ext.define('PVE.dc.Config', {
 	    itemId: 'users'
 	});
 
+	me.items.push({
+	    xtype: 'pveTokenView',
+	    groups: ['permissions'],
+	    iconCls: 'fa fa-user-o',
+	    title: gettext('API Tokens'),
+	    itemId: 'apitokens'
+	});
+
 	if (caps.dc['Sys.Audit']) {
 	    me.items.push({
 		xtype: 'pveGroupView',

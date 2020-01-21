@@ -241,6 +241,9 @@ JSSRC= 				                 	\
 	dc/Cluster.js					\
 	dc/ClusterEdit.js				\
 	dc/PermissionView.js				\
+	dc/TokenView.js					\
+	dc/TokenEdit.js					\
+	form/TokenSelector.js 				\
 	Workspace.js
 
 lint: ${JSSRC}
