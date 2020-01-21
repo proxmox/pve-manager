@@ -461,6 +461,9 @@ __PACKAGE__->register_method({
 	my $all = $rpcenv->check($authuser, "/", [ 'Sys.Audit' ], 1);
 
 	foreach my $task (@$tlist) {
+	    if (PVE::AccessControl::pve_verify_tokenid($task->{user}, 1)) {
+		($task->{user}, $task->{tokenid}) = PVE::AccessControl::split_tokenid($task->{user});
+	    }
 	    push @$res, $task if $all || ($task->{user} eq $authuser);
 	}
 

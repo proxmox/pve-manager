@@ -16,6 +16,14 @@ use PVE::AccessControl;
 
 use base qw(PVE::RESTHandler);
 
+my $convert_token_task = sub {
+    my ($task) = @_;
+
+    if (PVE::AccessControl::pve_verify_tokenid($task->{user}, 1)) {
+	($task->{user}, $task->{tokenid}) = PVE::AccessControl::split_tokenid($task->{user});
+    }
+};
+
 __PACKAGE__->register_method({
     name => 'node_tasks',
     path => '',
@@ -142,6 +150,7 @@ __PACKAGE__->register_method({
 		    $task->{endtime} = hex($endtime) if $endtime;
 		    $task->{status} = $status if $status;
 
+		    $convert_token_task->($task);
 		    if (!$filter_task->($task)) {
 			push @$res, $task;
 			$limit--;
@@ -242,6 +251,8 @@ __PACKAGE__->register_method({
 	my $user = $rpcenv->get_user();
 	my $node = $param->{node};
 
+	$convert_token_task->($task);
+
 	if ($user ne $task->{user}) {
 	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Modify' ]);
 	}
@@ -309,6 +320,8 @@ __PACKAGE__->register_method({
 	my $start = $param->{start} // 0;
 	my $limit = $param->{limit} // 50;
 
+	$convert_token_task->($task);
+
 	if ($user ne $task->{user})  {
 	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ]);
 	}
@@ -364,6 +377,8 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 	my $node = $param->{node};
+
+	$convert_token_task->($task);
 
 	if ($user ne $task->{user}) {
 	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ]);
