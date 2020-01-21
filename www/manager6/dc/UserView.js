@@ -95,6 +95,18 @@ Ext.define('PVE.dc.UserView', {
 	    }
 	});
 
+	var perm_btn = new Proxmox.button.Button({
+	    text: gettext('Permissions'),
+	    disabled: false,
+	    selModel: sm,
+	    handler: function(btn, event, rec) {
+		var win = Ext.create('PVE.dc.PermissionView', {
+                    userid: rec.data.userid
+		});
+		win.show();
+	    }
+	});
+
         var tbar = [
             {
 		text: gettext('Add'),
@@ -106,7 +118,7 @@ Ext.define('PVE.dc.UserView', {
                     win.show();
 		}
             },
-	    edit_btn, remove_btn, pwchange_btn, tfachange_btn
+	    edit_btn, remove_btn, pwchange_btn, tfachange_btn, perm_btn
         ];
 
 	var render_username = function(userid) {

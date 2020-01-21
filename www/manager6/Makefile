@@ -224,6 +224,7 @@ JSSRC= 				                 	\
 	dc/NodeView.js					\
 	dc/Cluster.js					\
 	dc/ClusterEdit.js				\
+	dc/PermissionView.js				\
 	Workspace.js
 
 lint: ${JSSRC}
