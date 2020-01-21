@@ -34,6 +34,13 @@ Ext.define('PVE.dc.ACLAdd', {
 		name: 'users',
 		fieldLabel: gettext('User')
 	    });
+	} else if (me.aclType === 'token') {
+	    me.subject = gettext("API Token Permission");
+	    items.push({
+		xtype: 'pveTokenSelector',
+		name: 'tokens',
+		fieldLabel: gettext('API Token')
+	    });
 	} else {
 	    throw "unknown ACL type";
 	}
@@ -116,7 +123,7 @@ Ext.define('PVE.dc.ACLView', {
 
 	var columns = [
 	    {
-		header: gettext('User') + '/' + gettext('Group'),
+		header: gettext('User') + '/' + gettext('Group') + '/' + gettext('API Token'),
 		flex: 1,
 		sortable: true,
 		renderer: render_ugid,
@@ -166,6 +173,8 @@ Ext.define('PVE.dc.ACLView', {
 		    params.groups = rec.data.ugid;
 		} else if (rec.data.type === 'user') {
 		    params.users = rec.data.ugid;
+		} else if (rec.data.type === 'token') {
+		    params.tokens = rec.data.ugid;
 		} else {
 		    throw 'unknown data type';
 		}
@@ -214,6 +223,18 @@ Ext.define('PVE.dc.ACLView', {
 				handler: function() {
 				    var win = Ext.create('PVE.dc.ACLAdd',{
 					aclType: 'user',
+					path: me.path
+				    });
+				    win.on('destroy', reload);
+				    win.show();
+				}
+			    },
+			    {
+				text: gettext('API Token Permission'),
+				iconCls: 'fa fa-fw fa-user-o',
+				handler: function() {
+				    var win = Ext.create('PVE.dc.ACLAdd',{
+					aclType: 'token',
 					path: me.path
 				    });
 				    win.on('destroy', reload);
