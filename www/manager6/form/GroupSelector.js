@@ -1,6 +1,6 @@
 Ext.define('pve-groups', {
     extend: 'Ext.data.Model',
-    fields: [ 'groupid', 'comment' ],
+    fields: [ 'groupid', 'comment', 'users' ],
     proxy: {
 	type: 'proxmox',
 	url: "/api2/json/access/groups"
@@ -29,6 +29,12 @@ Ext.define('PVE.form.GroupSelector', {
 		sortable: false,
 		dataIndex: 'comment',
 		renderer: Ext.String.htmlEncode,
+		flex: 1
+	    },
+	    {
+		header: gettext('Users'),
+		sortable: false,
+		dataIndex: 'users',
 		flex: 1
 	    }
 	]
