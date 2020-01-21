@@ -23,7 +23,7 @@ Ext.define('PVE.dc.TokenEdit', {
 
 	var column1 = [
 	    {
-		xtype: me.isCreate ? 'pveUserSelector' : 'displayfield',
+		xtype: me.isCreate && !me.fixedUser ? 'pveUserSelector' : 'displayfield',
 		name: 'userid',
 		fieldLabel: gettext('User'),
 		value: me.userid,
