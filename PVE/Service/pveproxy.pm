@@ -184,7 +184,7 @@ sub get_index {
 		$lang = $newlang;
 	    }
 	}
-	my $ticket = PVE::APIServer::Formatter::extract_auth_cookie($cookie, $server->{cookie_name});
+	my $ticket = PVE::APIServer::Formatter::extract_auth_value($cookie, $server->{cookie_name});
 	if (($username = PVE::AccessControl::verify_ticket($ticket, 1))) {
 	    $token = PVE::AccessControl::assemble_csrf_prevention_token($username);
 	}
