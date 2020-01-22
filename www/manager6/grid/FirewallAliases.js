@@ -166,9 +166,22 @@ Ext.define('PVE.FirewallAliases', {
 	    tbar: [ me.addBtn, me.removeBtn, me.editBtn ],
 	    selModel: sm,
 	    columns: [
-		{ header: gettext('Name'), dataIndex: 'name', width: 100 },
-		{ header:  gettext('IP/CIDR'), dataIndex: 'cidr', width: 100 },
-		{ header: gettext('Comment'), dataIndex: 'comment', renderer: Ext.String.htmlEncode, flex: 1 }
+		{
+		    header: gettext('Name'),
+		    dataIndex: 'name',
+		    flex: 1,
+		},
+		{
+		    header:  gettext('IP/CIDR'),
+		    dataIndex: 'cidr',
+		    flex: 1,
+		},
+		{
+		    header: gettext('Comment'),
+		    dataIndex: 'comment',
+		    renderer: Ext.String.htmlEncode,
+		    flex: 3,
+		}
 	    ],
 	    listeners: {
 		itemdblclick: run_editor
