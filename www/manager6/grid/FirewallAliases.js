@@ -2,8 +2,10 @@ Ext.define('PVE.FirewallAliasEdit', {
     extend: 'Proxmox.window.Edit',
 
     base_url: undefined,
-    
+
     alias_name: undefined,
+
+    width: 400,
 
     initComponent : function() {
 
