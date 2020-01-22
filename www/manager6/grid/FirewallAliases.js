@@ -14,12 +14,12 @@ Ext.define('PVE.FirewallAliasEdit', {
 	me.isCreate = (me.alias_name === undefined);
 
 	if (me.isCreate) {
-            me.url = '/api2/extjs' + me.base_url;
-            me.method = 'POST';
-        } else {
-            me.url = '/api2/extjs' + me.base_url + '/' + me.alias_name;
-            me.method = 'PUT';
-        }
+	    me.url = '/api2/extjs' + me.base_url;
+	    me.method = 'POST';
+	} else {
+	    me.url = '/api2/extjs' + me.base_url + '/' + me.alias_name;
+	    me.method = 'PUT';
+	}
 
 	var items =  [
 	    {
@@ -56,7 +56,7 @@ Ext.define('PVE.FirewallAliasEdit', {
 
 	if (!me.isCreate) {
 	    me.load({
-		success:  function(response, options) {
+		success: function(response, options) {
 		    var values = response.result.data;
 		    values.rename = values.name;
 		    ipanel.setValues(values);
