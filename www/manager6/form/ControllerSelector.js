@@ -1,29 +1,15 @@
 Ext.define('PVE.form.ControllerSelector', {
     extend: 'Ext.form.FieldContainer',
     alias: 'widget.pveControllerSelector',
-   
-    statics: {
-	maxIds: {
-	    ide: 3,
-	    sata: 5,
-	    virtio: 15,
-	    scsi: 13
-	}
-    },
 
     noVirtIO: false,
 
     vmconfig: {}, // used to check for existing devices
 
     sortByPreviousUsage: function(vmconfig, controllerList) {
-
-	var usedControllers = Ext.clone(PVE.form.ControllerSelector.maxIds);
-
-	var type;
-	for (type in usedControllers) {
-	    if(usedControllers.hasOwnProperty(type)) {
-		usedControllers[type] = 0;
-	    }
+	let usedControllers = {};
+	for (const type of PVE.Utils.diskControllerMaxIDs) {
+	    usedControllers[type] = 0;
 	}
 
 	var property;
@@ -77,7 +63,7 @@ Ext.define('PVE.form.ControllerSelector', {
 	Ext.Array.each(clist, function(controller) {
 	    var confid, i;
 	    bussel.setValue(controller);
-	    for (i = 0; i <= PVE.form.ControllerSelector.maxIds[controller]; i++) {
+	    for (i = 0; i < PVE.Utils.diskControllerMaxIDs[controller]; i++) {
 		confid = controller + i.toString();
 		if (!Ext.isDefined(me.vmconfig[confid])) {
 		    deviceid.setValue(i);
@@ -111,7 +97,7 @@ Ext.define('PVE.form.ControllerSelector', {
 				return;
 			    }
 			    var field = me.down('field[name=deviceid]');
-			    field.setMaxValue(PVE.form.ControllerSelector.maxIds[value]);
+			    field.setMaxValue(PVE.Utils.diskControllerMaxIDs[value]);
 			    field.validate();
 			}
 		    }
@@ -120,7 +106,7 @@ Ext.define('PVE.form.ControllerSelector', {
 		    xtype: 'proxmoxintegerfield',
 		    name: 'deviceid',
 		    minValue: 0,
-		    maxValue: PVE.form.ControllerSelector.maxIds.ide,
+		    maxValue: PVE.Utils.diskControllerMaxIDs.ide,
 		    value: '0',
 		    flex: 1,
 		    allowBlank: false,
