@@ -12,13 +12,10 @@ Ext.define('PVE.form.ControllerSelector', {
 	    usedControllers[type] = 0;
 	}
 
-	var property;
-	for (property in vmconfig) {
-	    if (vmconfig.hasOwnProperty(property)) {
-		if (property.match(PVE.Utils.bus_match) && !vmconfig[property].match(/media=cdrom/)) {
-		    var foundController = property.match(PVE.Utils.bus_match)[1];
-		    usedControllers[foundController]++;
-		}
+	for (const property of vmconfig) {
+	    if (property.match(PVE.Utils.bus_match) && !vmconfig[property].match(/media=cdrom/)) {
+		const foundController = property.match(PVE.Utils.bus_match)[1];
+		usedControllers[foundController]++;
 	    }
 	}
 
@@ -28,13 +25,13 @@ Ext.define('PVE.form.ControllerSelector', {
 	    ? vmDefaults.busPriority : PVE.qemu.OSDefaults.generic;
 
 	var sortedList = Ext.clone(controllerList);
-	sortedList.sort(function(a,b) {
+	sortedList.sort(function(a, b) {
 	    if (usedControllers[b] == usedControllers[a]) {
 		return sortPriority[b] - sortPriority[a];
 	    }
 	    return usedControllers[b] - usedControllers[a];
 	});
-	
+
 	return sortedList;
     },
 
@@ -48,29 +45,28 @@ Ext.define('PVE.form.ControllerSelector', {
 	var deviceid = me.down('field[name=deviceid]');
 
 	if (autoSelect === 'cdrom') {
-	    clist = ['ide', 'scsi', 'sata'];
 	    if (!Ext.isDefined(me.vmconfig.ide2)) {
 		bussel.setValue('ide');
 		deviceid.setValue(2);
 		return;
 	    }
+	    clist = ['ide', 'scsi', 'sata'];
 	} else  {
 	    // in most cases we want to add a disk to the same controller
 	    // we previously used
 	    clist = me.sortByPreviousUsage(me.vmconfig, clist);
 	}
 
-	Ext.Array.each(clist, function(controller) {
-	    var confid, i;
+	for (const controller of clist) {
 	    bussel.setValue(controller);
-	    for (i = 0; i < PVE.Utils.diskControllerMaxIDs[controller]; i++) {
-		confid = controller + i.toString();
+	    for (let i = 0; i < PVE.Utils.diskControllerMaxIDs[controller]; i++) {
+		let confid = controller + i.toString();
 		if (!Ext.isDefined(me.vmconfig[confid])) {
 		    deviceid.setValue(i);
-		    return false; // break
+		    break;
 		}
 	    }
-	});
+	}
 	deviceid.validate();
     },
 
