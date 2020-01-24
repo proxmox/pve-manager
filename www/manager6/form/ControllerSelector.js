@@ -19,10 +19,7 @@ Ext.define('PVE.form.ControllerSelector', {
 	    }
 	}
 
-	var vmDefaults = PVE.qemu.OSDefaults[vmconfig.ostype];
-
-	var sortPriority = vmDefaults && vmDefaults.busPriority
-	    ? vmDefaults.busPriority : PVE.qemu.OSDefaults.generic;
+	var sortPriority = PVE.qemu.OSDefaults.getDefaults(vmconfig.ostype).busPriority;
 
 	var sortedList = Ext.clone(controllerList);
 	sortedList.sort(function(a, b) {
