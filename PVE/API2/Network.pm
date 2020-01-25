@@ -121,6 +121,18 @@ my $confdesc = {
 	type => 'string', 
 	enum => ['layer2', 'layer2+3', 'layer3+4' ],
     },
+    'vlan-raw-device' => {
+	description => "Specify the raw interface for the vlan interface.",
+	optional => 1,
+	type => 'string', format => 'pve-iface',
+    },
+    'vlan-id' => {
+	description => "vlan-id for a custom named vlan interface (ifupdown2 only).",
+	optional => 1,
+	type => 'integer',
+	minimum => 1,
+	maximum => 4094,
+    },
     gateway => {
 	description => 'Default gateway address.',
 	type => 'string', format => 'ipv4',
