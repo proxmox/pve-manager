@@ -122,12 +122,11 @@ Ext.define('PVE.qemu.AgentIPView', {
 
     startIPStore: function(store, records, success) {
 	var me = this;
-	var agentRec = store.getById('agent');
-	/*jslint confusion: true*/
-	/* value is number and string */
+	let agentRec = store.getById('agent');
+	let state = store.getById('status');
+
 	me.agent = (agentRec && agentRec.data.value === 1);
-	me.running = (store.getById('status').data.value === 'running');
-	/*jslint confusion: false*/
+	me.running = (state && state.data.value === 'running');
 
 	var caps = Ext.state.Manager.get('GuiCap');
 
