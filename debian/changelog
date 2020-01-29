@@ -1,3 +1,27 @@
+pve-manager (6.1-6) pve; urgency=medium
+
+  * ui: reload embedded xterm.js console if CT starts during viewing it
+
+  * fix #2334: gui/cloudinit: enable edit button only when editor is set
+
+  * ifupdown1: bridgevlan: add bridge-vids list support
+
+  * api2: network: add bond-primary, MTU, vlan-raw-device and vlan-id options
+
+  * fix #2552: ui: allow one to collapse notes panel from guest summary
+
+  * pvestatd: broadcast supported node CPU flags
+
+  * www: add 'users' columns to Groups model
+
+  * integrate authentication with API tokens
+
+  * implement 'allowtoken' property for REST API endpoint schema
+
+  * ui: add permissions button to userview
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 29 Jan 2020 21:28:52 +0100
+
 pve-manager (6.1-5) pve; urgency=medium
 
   * ui: make storage where VM-state is saved configurable
