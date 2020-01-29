@@ -21,6 +21,7 @@ Ext.define('PVE.ClusterCreateWindow', {
 	    xtype: 'textfield',
 	    fieldLabel: gettext('Cluster Name'),
 	    allowBlank: false,
+	    maxLength: 15,
 	    name: 'clustername'
 	},
 	{
