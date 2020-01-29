@@ -85,10 +85,14 @@ Ext.define('PVE.ClusterAdministration', {
 			return el.name === data.preferred_node;
 		    });
 
+		    var links = [];
+		    PVE.Utils.forEachCorosyncLink(nodeinfo,
+			(num, link) => links.push(link));
+
 		    vm.set('preferred_node', {
 			name: data.preferred_node,
 			addr: nodeinfo.pve_addr,
-			ring_addr: [ nodeinfo.ring0_addr, nodeinfo.ring1_addr ],
+			ring_addr: links,
 			fp: nodeinfo.pve_fp
 		    });
 		},
@@ -202,6 +206,8 @@ Ext.define('PVE.ClusterAdministration', {
 	{
 	    xtype: 'grid',
 	    title: gettext('Cluster Nodes'),
+	    autoScroll: true,
+	    enableColumnHide: false,
 	    controller: {
 		xclass: 'Ext.app.ViewController',
 
@@ -227,41 +233,109 @@ Ext.define('PVE.ClusterAdministration', {
 		},
 
 		onLoad: function(store, records, success) {
+		    var view = this.getView();
 		    var vm = this.getViewModel();
-		    if (!success || !records) {
+
+		    if (!success || !records || !records.length) {
 			vm.set('nodecount', 0);
 			return;
 		    }
 		    vm.set('nodecount', records.length);
+
+		    // show/hide columns according to used links
+		    var linkIndex = view.columns.length;
+		    var columns = Ext.each(view.columns, (col, i) => {
+			if (col.linkNumber !== undefined) {
+			    col.setHidden(true);
+
+			    // save offset at which link columns start, so we
+			    // can address them directly below
+			    if (i < linkIndex) {
+				linkIndex = i;
+			    }
+			}
+		    });
+
+		    PVE.Utils.forEachCorosyncLink(records[0].data,
+			(linknum, val) => {
+			    if (linknum > 7) {
+				return;
+			    }
+			    view.columns[linkIndex+linknum].setHidden(false);
+			}
+		    );
 		}
 	    },
-	    columns: [
-		{
-		    header: gettext('Nodename'),
-		    flex: 2,
-		    dataIndex: 'name'
-		},
-		{
-		    header: gettext('ID'),
+	    columns: {
+		items: [
+		    {
+			header: gettext('Nodename'),
+			hidden: false,
+			dataIndex: 'name'
+		    },
+		    {
+			header: gettext('ID'),
+			minWidth: 100,
+			width: 100,
+			flex: 0,
+			hidden: false,
+			dataIndex: 'nodeid'
+		    },
+		    {
+			header: gettext('Votes'),
+			minWidth: 100,
+			width: 100,
+			flex: 0,
+			hidden: false,
+			dataIndex: 'quorum_votes'
+		    },
+		    {
+			header: Ext.String.format(gettext('Link {0}'), 0),
+			dataIndex: 'ring0_addr',
+			linkNumber: 0
+		    },
+		    {
+			header: Ext.String.format(gettext('Link {0}'), 1),
+			dataIndex: 'ring1_addr',
+			linkNumber: 1
+		    },
+		    {
+			header: Ext.String.format(gettext('Link {0}'), 2),
+			dataIndex: 'ring2_addr',
+			linkNumber: 2
+		    },
+		    {
+			header: Ext.String.format(gettext('Link {0}'), 3),
+			dataIndex: 'ring3_addr',
+			linkNumber: 3
+		    },
+		    {
+			header: Ext.String.format(gettext('Link {0}'), 4),
+			dataIndex: 'ring4_addr',
+			linkNumber: 4
+		    },
+		    {
+			header: Ext.String.format(gettext('Link {0}'), 5),
+			dataIndex: 'ring5_addr',
+			linkNumber: 5
+		    },
+		    {
+			header: Ext.String.format(gettext('Link {0}'), 6),
+			dataIndex: 'ring6_addr',
+			linkNumber: 6
+		    },
+		    {
+			header: Ext.String.format(gettext('Link {0}'), 7),
+			dataIndex: 'ring7_addr',
+			linkNumber: 7
+		    }
+		],
+		defaults: {
 		    flex: 1,
-		    dataIndex: 'nodeid'
-		},
-		{
-		    header: gettext('Votes'),
-		    flex: 1,
-		    dataIndex: 'quorum_votes'
-		},
-		{
-		    header: Ext.String.format(gettext('Link {0}'), 0),
-		    flex: 2,
-		    dataIndex: 'ring0_addr'
-		},
-		{
-		    header: Ext.String.format(gettext('Link {0}'), 1),
-		    flex: 2,
-		    dataIndex: 'ring1_addr'
+		    hidden: true,
+		    minWidth: 150
 		}
-	    ]
+	    }
 	}
     ]
 });

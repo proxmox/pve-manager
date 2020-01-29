@@ -1318,6 +1318,16 @@ Ext.define('PVE.Utils', { utilities: {
 	container.updateLayout();
 	container.updateLayout();
     },
+
+    forEachCorosyncLink: function(nodeinfo, cb) {
+	let re = /(?:ring|link)(\d+)_addr/;
+	Ext.iterate(nodeinfo, (prop, val) => {
+	    let match = re.exec(prop);
+	    if (match) {
+		cb(Number(match[1]), val);
+	    }
+	});
+    },
 },
 
     singleton: true,
