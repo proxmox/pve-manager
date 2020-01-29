@@ -147,6 +147,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    info: {
 		fp: '',
 		ip: '',
+		clusterName: '',
 		ring0Needed: false,
 		ring1Possible: false,
 		ring1Needed: false
@@ -207,7 +208,8 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		fp: '',
 		ring1Needed: false,
 		ring1Possible: false,
-		ip: ''
+		ip: '',
+		clusterName: ''
 	    };
 
 	    var totem = {};
@@ -224,7 +226,8 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		    fp: joinInfo.fingerprint,
 		    ring0Needed: ring0Needed,
 		    ring1Possible: !!joinInfo.totem['interface']['1'],
-		    ring1Needed: !!joinInfo.totem['interface']['1']
+		    ring1Needed: !!joinInfo.totem['interface']['1'],
+		    clusterName: joinInfo.totem['cluster_name']
 		};
 		totem = joinInfo.totem;
 		field.valid = true;
@@ -287,6 +290,16 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    hidden: '{!assistedEntry.checked}'
 	},
 	value: ''
+    },
+    {
+	xtype: 'textfield',
+	fieldLabel: gettext('Cluster name'),
+	readOnly: true,
+	submitValue: false,
+	bind: {
+	    hidden: '{!assistedEntry.checked}',
+	    value: '{info.clusterName}'
+	},
     },
     {
 	xtype: 'inputpanel',
