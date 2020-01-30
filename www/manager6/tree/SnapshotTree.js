@@ -102,9 +102,12 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    });
 	},
 
-	rollback: function() { this.snapshotAction('rollback', 'POST'); },
-	remove: function() { this.snapshotAction('', 'DELETE'); },
-
+	rollback: function() {
+	    this.snapshotAction('rollback', 'POST');
+	},
+	remove: function() {
+	    this.snapshotAction('', 'DELETE');
+	},
 	cancel: function() {
 	    this.load_task.cancel();
 	},
@@ -175,7 +178,9 @@ Ext.define('PVE.guest.SnapshotTree', {
 		params: { feature: 'snapshot' },
 		method: 'GET',
 		success: function(response, options) {
-		    var res = response.result.data; vm.set('snapshotFeature', !!res.hasFeature); }
+		    let res = response.result.data;
+		    vm.set('snapshotFeature', !!res.hasFeature);
+		}
 	    });
 	},
 

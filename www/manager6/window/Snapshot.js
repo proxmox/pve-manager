@@ -77,8 +77,16 @@ Ext.define('PVE.window.Snapshot', {
 		    ]
 		},
 		columns: [
-		    {header: gettext('Key'), width: 150, dataIndex: 'key'},
-		    {header: gettext('Value'), flex: 1, dataIndex: 'value'}
+		    {
+			header: gettext('Key'),
+			width: 150,
+			dataIndex: 'key',
+		    },
+		    {
+			header: gettext('Value'),
+			flex: 1,
+			dataIndex: 'value',
+		    }
 		]
 	    }
 	];
