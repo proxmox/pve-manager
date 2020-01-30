@@ -8,11 +8,11 @@ Ext.define('PVE.form.ControllerSelector', {
 
     sortByPreviousUsage: function(vmconfig, controllerList) {
 	let usedControllers = {};
-	for (const type of PVE.Utils.diskControllerMaxIDs) {
+	for (const type of Object.keys(PVE.Utils.diskControllerMaxIDs)) {
 	    usedControllers[type] = 0;
 	}
 
-	for (const property of vmconfig) {
+	for (const property of Object.keys(vmconfig)) {
 	    if (property.match(PVE.Utils.bus_match) && !vmconfig[property].match(/media=cdrom/)) {
 		const foundController = property.match(PVE.Utils.bus_match)[1];
 		usedControllers[foundController]++;
