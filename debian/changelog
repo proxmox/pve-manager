@@ -1,3 +1,13 @@
+pve-manager (6.1-7) pve; urgency=medium
+
+  * ui: show cluster name from joinInfo in join dialog
+
+  * fix #2572: gui: make snapshot panel visible for VM.Audit
+
+  * ui: fix disk controllers sortByPreviousUsage iteration when re-attaching a disk
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 30 Jan 2020 20:31:58 +0100
+
 pve-manager (6.1-6) pve; urgency=medium
 
   * ui: reload embedded xterm.js console if CT starts during viewing it
