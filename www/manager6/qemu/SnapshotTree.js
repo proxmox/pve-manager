@@ -134,6 +134,7 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    var rec = sm.getSelection()[0];
 	    if (valid_snapshot(rec)) {
 		var win = Ext.create('PVE.window.Snapshot', { 
+		    type: 'qemu',
 		    snapname: rec.data.name,
 		    nodename: me.nodename,
 		    vmid: me.vmid
@@ -228,6 +229,9 @@ Ext.define('PVE.qemu.SnapshotTree', {
 	    disabled: true,
 	    handler: function() {
 		var win = Ext.create('PVE.window.Snapshot', { 
+		    isCreate: true,
+		    type: 'qemu',
+		    submitText: gettext('Take Snapshot'),
 		    nodename: me.nodename,
 		    vmid: me.vmid
 		});

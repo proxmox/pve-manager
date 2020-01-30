@@ -127,6 +127,7 @@ JSSRC= 				                 	\
 	window/Migrate.js				\
 	window/BulkAction.js				\
 	window/Clone.js					\
+	window/Snapshot.js				\
 	qemu/Monitor.js					\
 	qemu/OSTypeEdit.js				\
 	qemu/OSDefaults.js				\
@@ -146,7 +147,6 @@ JSSRC= 				                 	\
 	qemu/ScsiHwEdit.js				\
 	qemu/QemuBiosEdit.js				\
 	qemu/Options.js					\
-	qemu/Snapshot.js				\
 	qemu/SnapshotTree.js				\
 	qemu/Config.js					\
 	qemu/CreateWizard.js				\
@@ -168,7 +168,6 @@ JSSRC= 				                 	\
 	lxc/Config.js					\
 	lxc/CreateWizard.js				\
 	lxc/SnapshotTree.js				\
-	lxc/Snapshot.js					\
 	lxc/ResourceEdit.js				\
 	lxc/MPResize.js					\
 	lxc/MPEdit.js					\

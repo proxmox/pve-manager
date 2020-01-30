@@ -136,6 +136,7 @@ Ext.define('PVE.lxc.SnapshotTree', {
 	    var rec = sm.getSelection()[0];
 	    if (valid_snapshot(rec)) {
 		var win = Ext.create('PVE.window.LxcSnapshot', {
+		    type: 'lxc',
 		    snapname: rec.data.name,
 		    nodename: me.nodename,
 		    vmid: me.vmid
@@ -238,6 +239,9 @@ Ext.define('PVE.lxc.SnapshotTree', {
 	    disabled: true,
 	    handler: function() {
 		var win = Ext.create('PVE.window.LxcSnapshot', {
+		    type: 'lxc',
+		    isCreate: true,
+		    submitText: gettext('Take Snapshot'),
 		    nodename: me.nodename,
 		    vmid: me.vmid
 		});
