@@ -298,7 +298,8 @@ Ext.define('PVE.qemu.Config', {
 	    me.items.push({
 		title: gettext('Snapshots'),
 		iconCls: 'fa fa-history',
-		xtype: 'pveQemuSnapshotTree',
+		type: 'qemu',
+		xtype: 'pveGuestSnapshotTree',
 		itemId: 'snapshot'
 	    });
 	}

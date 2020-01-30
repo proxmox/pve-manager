@@ -266,7 +266,8 @@ Ext.define('PVE.lxc.Config', {
 	    me.items.push({
 		title: gettext('Snapshots'),
 		iconCls: 'fa fa-history',
-		xtype: 'pveLxcSnapshotTree',
+		xtype: 'pveGuestSnapshotTree',
+		type: 'lxc',
 		itemId: 'snapshot'
 	    });
 	}

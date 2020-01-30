@@ -98,6 +98,7 @@ JSSRC= 				                 	\
 	grid/FirewallAliases.js				\
 	grid/FirewallOptions.js				\
 	tree/ResourceTree.js				\
+	tree/SnapshotTree.js				\
 	panel/IPSet.js					\
 	panel/ConfigPanel.js				\
 	grid/BackupView.js				\
@@ -147,7 +148,6 @@ JSSRC= 				                 	\
 	qemu/ScsiHwEdit.js				\
 	qemu/QemuBiosEdit.js				\
 	qemu/Options.js					\
-	qemu/SnapshotTree.js				\
 	qemu/Config.js					\
 	qemu/CreateWizard.js				\
 	qemu/USBEdit.js					\
@@ -167,7 +167,6 @@ JSSRC= 				                 	\
 	lxc/DNS.js					\
 	lxc/Config.js					\
 	lxc/CreateWizard.js				\
-	lxc/SnapshotTree.js				\
 	lxc/ResourceEdit.js				\
 	lxc/MPResize.js					\
 	lxc/MPEdit.js					\
