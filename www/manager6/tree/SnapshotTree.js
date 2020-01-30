@@ -164,6 +164,11 @@ Ext.define('PVE.guest.SnapshotTree', {
 		params: { feature: 'snapshot' },
 		method: 'GET',
 		success: function(response, options) {
+		    if (me.destroyed) {
+			// this is in a delayed task, the current view could been
+			// destroyed already; then we mustn't do viemodel set
+			return;
+		    }
 		    let res = response.result.data;
 		    vm.set('snapshotFeature', !!res.hasFeature);
 		}
