@@ -233,6 +233,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    },
 	    handler: 'newSnapshot',
 	},
+	'-',
 	{
 	    xtype: 'proxmoxButton',
 	    text: gettext('Rollback'),
@@ -276,7 +277,15 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    disabled: true,
 	    edit: true,
 	    handler: 'editSnapshot',
-	}
+	},
+	{
+	    xtype: 'label',
+	    text: gettext("The current guest configuration does not support taking new snapshots"),
+	    hidden: true,
+	    bind: {
+		hidden: "{canSnapshot}",
+	    },
+	},
     ],
 
     columnLines: true,
