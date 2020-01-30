@@ -18,26 +18,12 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    load_delay: 3000,
 	},
 	formulas: {
-	    canSnapshot: function(get) {
-		return get('snapshotAllowed') && get('snapshotFeature');
-	    },
-	    canRollback: function(get) {
-		return get('rollbackAllowed')  &&
-		    get('selected') && get('selected') !== 'current';
-	    },
-	    canRemove: function(get) {
-		return get('snapshotAllowed') &&
-		    get('selected') && get('selected') !== 'current';
-	    },
-	    isSnapshot: function(get) {
-		return get('selected') && get('selected') !== 'current';
-	    },
-	    buttonText: function(get) {
-		return get('snapshotAllowed') ? gettext('Edit') : gettext('View');
-	    },
-	    showMemory: function(get) {
-		return get('type') === 'qemu';
-	    },
+	    canSnapshot: (get) => get('snapshotAllowed') && get('snapshotFeature'),
+	    canRollback: (get) => get('rollbackAllowed') && get('isSnapshot'),
+	    canRemove: (get) => get('snapshotAllowed') && get('isSnapshot'),
+	    isSnapshot: (get) => get('selected') && get('selected') !== 'current',
+	    buttonText: (get) => gettext(get('snapshotAllowed') ? 'Edit' : 'View'),
+	    showMemory: (get) => get('type') === 'qemu',
 	},
     },
 
