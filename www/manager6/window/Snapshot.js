@@ -95,7 +95,7 @@ Ext.define('PVE.window.Snapshot', {
 
 	let subject;
 	if (me.snapname) {
-	    subject = gettext('Snapshot') + ` ${me.snapname}`;
+	    subject = `${gettext('Snapshot')} ${me.snapname}`;
 	    me.url += `/${me.snapname}/config`;
 	} else {
 	    subject = (me.type === 'qemu' ? 'VM' : 'CT') + me.vmid + ' ' + gettext('Snapshot');
