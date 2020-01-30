@@ -262,7 +262,8 @@ Ext.define('PVE.lxc.Config', {
 	    });
 	}
 
-	if ((caps.vms['VM.Snapshot'] || caps.vms['VM.Snapshot.Rollback']) && !template) {
+	if ((caps.vms['VM.Snapshot'] || caps.vms['VM.Snapshot.Rollback'] ||
+	    caps.vms['VM.Audit']) && !template) {
 	    me.items.push({
 		title: gettext('Snapshots'),
 		iconCls: 'fa fa-history',
