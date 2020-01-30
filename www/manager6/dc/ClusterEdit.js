@@ -136,7 +136,9 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 
     defaultFocus: 'textarea[name=serializedinfo]',
     isCreate: true,
-    submitText: gettext('Join'),
+    bind: {
+	submitText: '{submittxt}',
+    },
     showTaskViewer: true,
 
     onlineHelp: 'pvecm_join_node_to_cluster',
@@ -160,8 +162,15 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		} else {
 		    return gettext("Default: IP resolved by node's hostname");
 		}
-	    }
-	}
+	    },
+	    submittxt: function(get) {
+		let cn = get('info.clusterName');
+		if (cn) {
+		    return `${gettext('Join')} '${cn}'`;
+		}
+		return gettext('Join');
+	    },
+	},
     },
 
     controller: {
@@ -290,16 +299,6 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    hidden: '{!assistedEntry.checked}'
 	},
 	value: ''
-    },
-    {
-	xtype: 'textfield',
-	fieldLabel: gettext('Cluster name'),
-	readOnly: true,
-	submitValue: false,
-	bind: {
-	    hidden: '{!assistedEntry.checked}',
-	    value: '{info.clusterName}'
-	},
     },
     {
 	xtype: 'inputpanel',
