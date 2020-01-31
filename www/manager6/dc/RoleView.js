@@ -45,7 +45,7 @@ Ext.define('PVE.dc.RoleView', {
 		return;
 	    }
 
-	    if (rec.data.special === "1") {
+	    if (!!rec.data.special) {
 		return;
 	    }
 
@@ -108,9 +108,7 @@ Ext.define('PVE.dc.RoleView', {
 		    disabled: true,
 		    selModel: sm,
 		    handler: run_editor,
-		    enableFn: function(record) {
-			return record.data.special !== '1';
-		    }
+		    enableFn: (rec) => !rec.data.special,
 		},
 		{
 		    xtype: 'proxmoxStdRemoveButton',
@@ -119,9 +117,7 @@ Ext.define('PVE.dc.RoleView', {
 			reload();
 		    },
 		    baseurl: '/access/roles/',
-		    enableFn: function(record) {
-			return record.data.special !== '1';
-		    }
+		    enableFn: (rec) => !rec.data.special,
 		}
 	    ]
 	});
