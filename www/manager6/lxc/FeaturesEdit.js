@@ -87,7 +87,7 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
     setValues: function(values) {
 	var me = this;
 
-	me.viewModel.set({ unprivileged: values.unprivileged });
+	me.viewModel.set('unprivileged', values.unprivileged);
 
 	if (values.features) {
 	    var res = PVE.Parser.parsePropertyString(values.features);
@@ -111,16 +111,10 @@ Ext.define('PVE.lxc.FeaturesEdit', {
     xtype: 'pveLxcFeaturesEdit',
 
     subject: gettext('Features'),
+    autoLoad: true,
+    width: 350,
 
     items: [{
 	xtype: 'pveLxcFeaturesInputPanel'
     }],
-
-    initComponent : function() {
-	var me = this;
-
-	me.callParent();
-
-	me.load();
-    }
 });
