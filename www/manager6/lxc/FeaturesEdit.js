@@ -60,7 +60,13 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 	    xtype: 'proxmoxcheckbox',
 	    name: 'fuse',
 	    fieldLabel: 'FUSE'
-	}
+	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    name: 'mknod',
+	    fieldLabel: gettext('Create Device Nodes'),
+	    boxLabel: gettext('Experimental'),
+	},
     ],
 
     onGetValues: function(values) {
