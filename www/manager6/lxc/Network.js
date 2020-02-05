@@ -8,7 +8,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 
     setNodename: function(nodename) {
 	var me = this;
-	
+
 	if (!nodename || (me.nodename === nodename)) {
 	    return;
 	}
@@ -18,7 +18,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	var bridgesel = me.query("[isFormField][name=bridge]")[0];
 	bridgesel.setNodename(nodename);
     },
-    
+
     onGetValues: function(values) {
 	var me = this;
 
@@ -293,7 +293,6 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	me.callParent();
     }
 });
-	
 
 Ext.define('PVE.lxc.NetworkEdit', {
     extend: 'Proxmox.window.Edit',
@@ -317,7 +316,7 @@ Ext.define('PVE.lxc.NetworkEdit', {
 	    dataCache: me.dataCache,
 	    isCreate: me.isCreate
 	});
-	   
+
 	Ext.apply(me, {
 	    subject: gettext('Network Device') + ' (veth)',
 	    digest: me.dataCache.digest,
