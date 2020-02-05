@@ -22,7 +22,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    canRollback: (get) => get('rollbackAllowed') && get('isSnapshot'),
 	    canRemove: (get) => get('snapshotAllowed') && get('isSnapshot'),
 	    isSnapshot: (get) => get('selected') && get('selected') !== 'current',
-	    buttonText: (get) => gettext(get('snapshotAllowed') ? 'Edit' : 'View'),
+	    buttonText: (get) => get('snapshotAllowed') ? gettext('Edit') : gettext('View'),
 	    showMemory: (get) => get('type') === 'qemu',
 	},
     },
