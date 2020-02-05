@@ -1159,7 +1159,7 @@ Ext.define('PVE.Utils', { utilities: {
     diskControllerMaxIDs: {
 	ide: 4,
 	sata: 6,
-	scsi: 14,
+	scsi: 31,
 	virtio: 16,
     },
 
