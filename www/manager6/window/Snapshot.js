@@ -23,7 +23,7 @@ Ext.define('PVE.window.Snapshot', {
 	}
 
 	if (!me.type) {
-	    throw "no VM ID specified";
+	    throw "no type specified";
 	}
 
 	me.items = [
