@@ -45,8 +45,8 @@ Ext.define('PVE.window.Snapshot', {
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
-		hidden: me.type !== 'qemu' || !me.isCreate,
-		disabled: me.type !== 'qemu' || !me.isCreate,
+		hidden: me.type !== 'qemu' || !me.isCreate || !me.running,
+		disabled: me.type !== 'qemu' || !me.isCreate || !me.running,
 		name: 'vmstate',
 		uncheckedValue: 0,
 		defaultValue: 0,

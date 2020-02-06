@@ -14,6 +14,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    snapshotAllowed: false,
 	    rollbackAllowed: false,
 	    snapshotFeature: false,
+	    running: false,
 	    selected: '',
 	    load_delay: 3000,
 	},
@@ -54,6 +55,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 		isCreate: !edit,
 		submitText: !edit ? gettext('Take Snapshot') : undefined,
 		snapname: snapname,
+		running: vm.get('running'),
 	    });
 	    win.show();
 	    me.mon(win, 'destroy', me.reload, me);
@@ -129,6 +131,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 			item.leaf = true;
 			item.children = [];
 			if (item.name === 'current') {
+			    vm.set('running', !!item.running);
 			    digest = item.digest + item.running;
 			    item.iconCls = PVE.Utils.get_object_icon_class(vm.get('type'), item);
 			} else {
