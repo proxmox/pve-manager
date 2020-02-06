@@ -1,6 +1,19 @@
 Ext.define('PVE.window.Snapshot', {
     extend: 'Proxmox.window.Edit',
 
+    viewModel: {
+	data: {
+	    type: undefined,
+	    isCreate: undefined,
+	    running: false,
+	    guestAgentEnabled: false,
+	},
+	formulas: {
+	    runningWithoutGuestAgent: (get) => get('type') === 'qemu' && get('running') && !get('guestAgentEnabled'),
+	    shouldWarnAboutFS: (get) => get('isCreate') && get('runningWithoutGuestAgent') && get('!vmstate.checked'),
+	},
+    },
+
     onGetValues: function(values) {
 	let me = this;
 
@@ -13,6 +26,7 @@ Ext.define('PVE.window.Snapshot', {
 
     initComponent : function() {
 	var me = this;
+	var vm = me.getViewModel();
 
 	if (!me.nodename) {
 	    throw "no node name specified";
@@ -26,7 +40,34 @@ Ext.define('PVE.window.Snapshot', {
 	    throw "no type specified";
 	}
 
+	vm.set('type', me.type);
+	vm.set('running', me.running);
+	vm.set('isCreate', me.isCreate);
+
+	if (me.type === 'qemu' && me.isCreate) {
+	    Proxmox.Utils.API2Request({
+		url: `/nodes/${me.nodename}/${me.type}/${me.vmid}/config`,
+		params: { 'current': '1' },
+		method: 'GET',
+		success: function(response, options) {
+		    let res = response.result.data;
+		    let enabled = PVE.Parser.parsePropertyString(res.agent, 'enabled');
+		    vm.set('guestAgentEnabled', !!PVE.Parser.parseBoolean(enabled.enabled));
+		}
+	    });
+	}
+
 	me.items = [
+	    {
+		xtype: 'displayfield',
+		userCls: 'pmx-hint',
+		name: 'fswarning',
+		hidden: true,
+		value: gettext('It is recommended to either include the RAM or enable the QEMU Guest Agent when taking a snapshot of a running VM. Otherwise the file system might be in an inconsistent state when the snapshot is taken.'),
+		bind: {
+		    hidden: '{!shouldWarnAboutFS}',
+		},
+	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'snapname',
@@ -48,6 +89,7 @@ Ext.define('PVE.window.Snapshot', {
 		hidden: me.type !== 'qemu' || !me.isCreate || !me.running,
 		disabled: me.type !== 'qemu' || !me.isCreate || !me.running,
 		name: 'vmstate',
+		reference: 'vmstate',
 		uncheckedValue: 0,
 		defaultValue: 0,
 		checked: 1,
