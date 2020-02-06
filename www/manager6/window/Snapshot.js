@@ -28,7 +28,7 @@ Ext.define('PVE.window.Snapshot', {
 
 	me.items = [
 	    {
-		xtype: me.snapname ? 'displayfield' : 'textfield',
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'snapname',
 		value: me.snapname,
 		fieldLabel: gettext('Name'),
@@ -37,16 +37,16 @@ Ext.define('PVE.window.Snapshot', {
 	    },
 	    {
 		xtype: 'displayfield',
-		hidden: !me.snapname,
-		disabled: !me.snapname,
+		hidden: me.isCreate,
+		disabled: me.isCreate,
 		name: 'snaptime',
 		renderer: PVE.Utils.render_timestamp_human_readable,
 		fieldLabel: gettext('Timestamp')
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
-		hidden: me.type !== 'qemu' || me.snapname,
-		disabled: me.type !== 'qemu' || me.snapname,
+		hidden: me.type !== 'qemu' || !me.isCreate,
+		disabled: me.type !== 'qemu' || !me.isCreate,
 		name: 'vmstate',
 		uncheckedValue: 0,
 		defaultValue: 0,
@@ -62,7 +62,7 @@ Ext.define('PVE.window.Snapshot', {
 	    },
 	    {
 		title: gettext('Settings'),
-		hidden: !me.snapname,
+		hidden: me.isCreate,
 		xtype: 'grid',
 		itemId: 'summary',
 		border: true,
@@ -94,19 +94,19 @@ Ext.define('PVE.window.Snapshot', {
 	me.url = `/nodes/${me.nodename}/${me.type}/${me.vmid}/snapshot`;
 
 	let subject;
-	if (me.snapname) {
-	    subject = `${gettext('Snapshot')} ${me.snapname}`;
-	    me.url += `/${me.snapname}/config`;
-	} else {
+	if (me.isCreate) {
 	    subject = (me.type === 'qemu' ? 'VM' : 'CT') + me.vmid + ' ' + gettext('Snapshot');
 	    me.method = 'POST';
 	    me.showProgress = true;
+	} else {
+	    subject = `${gettext('Snapshot')} ${me.snapname}`;
+	    me.url += `/${me.snapname}/config`;
 	}
 
 	Ext.apply(me, {
 	    subject: subject,
-	    width: me.snapname ? 620 : 450,
-	    height: me.snapname ? 420 : undefined,
+	    width: me.isCreate ? 450 : 620,
+	    height: me.isCreate ? undefined : 420,
 	});
 
 	me.callParent();
