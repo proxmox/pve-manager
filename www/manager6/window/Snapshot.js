@@ -59,16 +59,6 @@ Ext.define('PVE.window.Snapshot', {
 
 	me.items = [
 	    {
-		xtype: 'displayfield',
-		userCls: 'pmx-hint',
-		name: 'fswarning',
-		hidden: true,
-		value: gettext('It is recommended to either include the RAM or enable the QEMU Guest Agent when taking a snapshot of a running VM. Otherwise the file system might be in an inconsistent state when the snapshot is taken.'),
-		bind: {
-		    hidden: '{!shouldWarnAboutFS}',
-		},
-	    },
-	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'snapname',
 		value: me.snapname,
@@ -101,6 +91,16 @@ Ext.define('PVE.window.Snapshot', {
 		editable: !me.viewonly,
 		name: 'description',
 		fieldLabel: gettext('Description')
+	    },
+	    {
+		xtype: 'displayfield',
+		userCls: 'pmx-hint',
+		name: 'fswarning',
+		hidden: true,
+		value: gettext('It is recommended to either include the RAM or use the QEMU Guest Agent when taking a snapshot of a running VM to avoid inconsistencies.'),
+		bind: {
+		    hidden: '{!shouldWarnAboutFS}',
+		},
 	    },
 	    {
 		title: gettext('Settings'),
