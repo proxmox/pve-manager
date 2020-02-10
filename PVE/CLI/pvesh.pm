@@ -122,7 +122,14 @@ sub proxy_handler {
     PVE::Tools::run_command($remcmd, errmsg => "proxy handler failed",
 			    outfunc => sub { $json .= shift });
 
-    return decode_json($json);
+    my $decoded_json = undef;
+    eval {
+	$decoded_json = decode_json($json);
+    };
+    if ($@) {
+	return $json;
+    }
+    return $decoded_json;
 }
 
 sub extract_children {
