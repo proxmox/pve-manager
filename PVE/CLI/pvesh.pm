@@ -118,16 +118,13 @@ sub proxy_handler {
 	push @$remcmd, @$cmdargs;
     }
 
-    my $json = '';
+    my $res = '';
     PVE::Tools::run_command($remcmd, errmsg => "proxy handler failed",
-			    outfunc => sub { $json .= shift });
+			    outfunc => sub { $res .= shift });
 
-    my $decoded_json = undef;
-    eval {
-	$decoded_json = decode_json($json);
-    };
+    my $decoded_json = eval { decode_json($res) };
     if ($@) {
-	return $json;
+	return $res; # do not error, '' (null) is valid too
     }
     return $decoded_json;
 }
