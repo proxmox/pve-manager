@@ -191,6 +191,9 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 			margin: '0 0 0 10',
 			listeners: {
 			    change: function(cb, value) {
+				me.down('field[name=ip]').setEmptyText(
+				    !!value ? Proxmox.Utils.NoneText : ""
+				);
 				me.down('field[name=ip]').setDisabled(!value);
 				me.down('field[name=gw]').setDisabled(!value);
 			    }
@@ -211,6 +214,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		name: 'ip',
 		vtype: 'IPCIDRAddress',
 		value: cdata.ip,
+		emptyText: Proxmox.Utils.NoneText,
 		disabled: dhcp4,
 		fieldLabel: 'IPv4/CIDR' // do not localize
 	    },
@@ -249,6 +253,9 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 			margin: '0 0 0 10',
 			listeners: {
 			    change: function(cb, value) {
+				me.down('field[name=ip6]').setEmptyText(
+				    !!value ? Proxmox.Utils.NoneText : ""
+				);
 				me.down('field[name=ip6]').setDisabled(!value);
 				me.down('field[name=gw6]').setDisabled(!value);
 			    }
@@ -276,6 +283,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		xtype: 'textfield',
 		name: 'ip6',
 		value: cdata.ip6,
+		emptyText: Proxmox.Utils.NoneText,
 		vtype: 'IP6CIDRAddress',
 		disabled: (dhcp6 || auto6),
 		fieldLabel: 'IPv6/CIDR' // do not localize
