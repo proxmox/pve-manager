@@ -102,9 +102,13 @@ Ext.define('PVE.window.TFAEdit', {
 	    tfa_required: false,
 	    tfa_type: null, // dependencies of formulas should not be undefined
 	    valid: false,
-	    u2f_available: true
+	    u2f_available: true,
+	    secret: "",
 	},
 	formulas: {
+	    showTOTPVerifiction: function(get) {
+		return get('secret').length > 0 && get('canSetupTOTP');
+	    },
 	    canDeleteTFA: function(get) {
 		return (get('tfa_type') !== null && !get('tfa_required'));
 	    },
@@ -115,7 +119,13 @@ Ext.define('PVE.window.TFAEdit', {
 	    canSetupU2F: function(get) {
 		var tfa = get('tfa_type');
 		return (get('u2f_available') && (tfa === null || tfa === 'u2f' || tfa === 1));
-	    }
+	    },
+	    secretEmpty: function(get) {
+		return get('secret').length === 0;
+	    },
+	    selectedTab: function(get) {
+		return (get('tfa_type') || 'totp') + '-panel';
+	    },
 	}
     },
 
@@ -124,7 +134,14 @@ Ext.define('PVE.window.TFAEdit', {
 	var viewmodel = me.getViewModel();
 	if (user_tfa_type === 'oath') {
 	    user_tfa_type = 'totp';
+	    viewmodel.set('secret', '');
 	}
+
+	// if the user has no tfa, generate a secret for him
+	if (!user_tfa_type) {
+	    me.getController().randomizeSecret();
+	}
+
 	viewmodel.set('tfa_type', user_tfa_type || null);
 	if (!realm_tfa_type) {
 	    // There's no TFA enforced by the realm, everything works.
@@ -136,8 +153,7 @@ Ext.define('PVE.window.TFAEdit', {
 		// user had a different tfa method, so
 		// we have to change back to the totp tab and
 		// generate a secret
-		viewmodel.set('tfa_type', null);
-		me.lookup('tfatabs').setActiveTab(me.lookup('totp_panel'));
+		viewmodel.set('tfa_type', 'totp');
 		me.getController().randomizeSecret();
 	    }
 	    viewmodel.set('tfa_required', true);
@@ -200,18 +216,6 @@ Ext.define('PVE.window.TFAEdit', {
 			correctLevel: QRCode.CorrectLevel.M
 		    });
 		    me.down('#qrbox').getEl().appendChild(me.qrdiv);
-
-		    viewmodel.set('tfa_type', me.tfa_type || null);
-		    if (!me.tfa_type) {
-			this.randomizeSecret();
-		    } else {
-			me.down('#qrbox').setVisible(false);
-			me.lookup('challenge').setVisible(false);
-			if (me.tfa_type === 'u2f') {
-			    var u2f_panel = me.lookup('u2f_panel');
-			    me.lookup('tfatabs').setActiveTab(u2f_panel);
-			}
-		    }
 
 		    if (Proxmox.UserName === 'root@pam') {
 			me.lookup('password').setVisible(false);
@@ -303,7 +307,7 @@ Ext.define('PVE.window.TFAEdit', {
 		    data += String.fromCharCode(b-26 + 0x32);
 		}
 	    });
-	    me.lookup('tfa_secret').setValue(data);
+	    me.getViewModel().set('secret', data);
 	},
 
 	startU2FRegistration: function() {
@@ -339,6 +343,9 @@ Ext.define('PVE.window.TFAEdit', {
 	    itemId: 'tfatabs',
 	    reference: 'tfatabs',
 	    border: false,
+	    bind: {
+		activeTab: '{selectedTab}',
+	    },
 	    items: [
 		{
 		    xtype: 'panel',
@@ -386,6 +393,9 @@ Ext.define('PVE.window.TFAEdit', {
 					regexText: 'Must be base32 [A-Z2-7=]',
 					maskRe: /[A-Z2-7=]/,
 					qrupdate: true,
+					bind: {
+					    value: "{secret}",
+					},
 					flex: 4
 				    },
 				    {
@@ -430,6 +440,9 @@ Ext.define('PVE.window.TFAEdit', {
 			    xtype: 'box',
 			    itemId: 'qrbox',
 			    visible: false, // will be enabled when generating a qr code
+			    bind: {
+				visible: '{!secretEmpty}',
+			    },
 			    style: {
 				'background-color': 'white',
 				padding: '5px',
@@ -442,6 +455,10 @@ Ext.define('PVE.window.TFAEdit', {
 			    fieldLabel: gettext('Verification Code'),
 			    allowBlank: false,
 			    reference: 'challenge',
+			    bind: {
+				disabled: '{!showTOTPVerifiction}',
+				visible: '{showTOTPVerifiction}',
+			    },
 			    padding: '0 5',
 			    emptyText: gettext('Scan QR code and enter TOTP auth. code to verify')
 			}
