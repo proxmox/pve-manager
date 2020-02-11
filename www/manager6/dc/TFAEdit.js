@@ -205,7 +205,8 @@ Ext.define('PVE.window.TFAEdit', {
 			    me.afterLoading(data.realm, data.user);
 			},
 			failure: function(response, opts) {
-			    Proxmox.Utils.setErrorMask(loadMaskContainer, response.htmlStatus);
+			    me.close();
+			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 			}
 		    });
 
