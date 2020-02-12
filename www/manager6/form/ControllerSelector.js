@@ -54,13 +54,14 @@ Ext.define('PVE.form.ControllerSelector', {
 	    clist = me.sortByPreviousUsage(me.vmconfig, clist);
 	}
 
+clist_loop:
 	for (const controller of clist) {
 	    bussel.setValue(controller);
 	    for (let i = 0; i < PVE.Utils.diskControllerMaxIDs[controller]; i++) {
 		let confid = controller + i.toString();
 		if (!Ext.isDefined(me.vmconfig[confid])) {
 		    deviceid.setValue(i);
-		    break;
+		    break clist_loop; // we found the desired controller/id combo
 		}
 	    }
 	}
