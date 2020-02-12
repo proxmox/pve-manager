@@ -183,8 +183,7 @@ Ext.define('PVE.dc.Summary', {
 			    break;
 			}
 			if (!countedStorages[item.data.storage] ||
-			    (item.data.storage === 'local' &&
-			    !countedStorages[item.data.id])) {
+			    (!item.data.shared && !countedStorages[item.data.id])) {
 			    used += item.data.disk;
 			    total += item.data.maxdisk;
 
