@@ -10,13 +10,16 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 	var hostpci = me.vmconfig[me.confid] || '';
 
 	var values = PVE.Parser.parsePropertyString(hostpci, 'host');
-	if (!values.host.match(/^[0-9a-f]{4}:/i)) { // add optional domain
-	    values.host = "0000:" + values.host;
+	if (values.host) {
+	    if (!values.host.match(/^[0-9a-f]{4}:/i)) { // add optional domain
+		values.host = "0000:" + values.host;
+	    }
+	    if (values.host.length < 11) { // 0000:00:00 format not 0000:00:00.0
+		values.host += ".0";
+		values.multifunction = true;
+	    }
 	}
-	if (values.host && values.host.length < 11) { // 0000:00:00 format not 0000:00:00.0
-	    values.host += ".0";
-	    values.multifunction = true;
-	}
+
 	values['x-vga'] = PVE.Parser.parseBoolean(values['x-vga'], 0);
 	values.pcie = PVE.Parser.parseBoolean(values.pcie, 0);
 	values.rombar = PVE.Parser.parseBoolean(values.rombar, 1);
