@@ -177,8 +177,8 @@ our $cmddef = {
 	create => [ 'PVE::API2::Ceph::MDS', 'createmds', [], { node => $nodename }, $upid_exit],
 	destroy => [ 'PVE::API2::Ceph::MDS', 'destroymds', ['name'], { node => $nodename }, $upid_exit],
     },
-    start => [ 'PVE::API2::Ceph', 'start', ['service'], { node => $nodename }, $upid_exit],
-    stop => [ 'PVE::API2::Ceph', 'stop', ['service'], { node => $nodename }, $upid_exit],
+    start => [ 'PVE::API2::Ceph', 'start', [], { node => $nodename }, $upid_exit],
+    stop => [ 'PVE::API2::Ceph', 'stop', [], { node => $nodename }, $upid_exit],
     install => [ __PACKAGE__, 'install', [] ],
     purge => [  __PACKAGE__, 'purge', [] ],
     status => [ 'PVE::API2::Ceph', 'status', [], { node => $nodename }, sub {
