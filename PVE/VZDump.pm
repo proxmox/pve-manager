@@ -76,16 +76,24 @@ sub storage_info {
 
     die "can't use storage type '$type' for backup\n"
 	if (!($type eq 'dir' || $type eq 'nfs' || $type eq 'glusterfs'
-	      || $type eq 'cifs' || $type eq 'cephfs'));
+	      || $type eq 'cifs' || $type eq 'cephfs' || $type eq 'pbs'));
     die "can't use storage '$storage' for backups - wrong content type\n"
 	if (!$scfg->{content}->{backup});
 
     PVE::Storage::activate_storage($cfg, $storage);
 
-    return {
-	dumpdir => PVE::Storage::get_backup_dir($cfg, $storage),
-	maxfiles => $scfg->{maxfiles},
-    };
+    if ($type eq 'pbs') {
+	return {
+	    scfg => $scfg,
+	    maxfiles => $scfg->{maxfiles},
+	};
+    } else {
+	return {
+	    scfg => $scfg,
+	    dumpdir => PVE::Storage::get_backup_dir($cfg, $storage),
+	    maxfiles => $scfg->{maxfiles},
+	};
+    }
 }
 
 sub format_size {
@@ -435,6 +443,10 @@ sub new {
 	push @{$self->{plugins}}, $pd;
     }
 
+    if (defined($opts->{storage}) && $opts->{stdout}) {
+	die "unable to use option 'storage' with option 'stdout'\n";
+    }
+
     if (!$opts->{dumpdir} && !$opts->{storage}) {
 	$opts->{storage} = 'local';
     }
@@ -446,6 +458,7 @@ sub new {
 	$errors .= "could not get storage information for '$opts->{storage}': $@"
 	    if ($@);
 	$opts->{dumpdir} = $info->{dumpdir};
+	$opts->{scfg} = $info->{scfg};
 	$maxfiles //= $info->{maxfiles};
     } elsif ($opts->{dumpdir}) {
 	$errors .= "dumpdir '$opts->{dumpdir}' does not exist"
@@ -622,6 +635,24 @@ sub exec_backup_task {
 
     my $vmid = $task->{vmid};
     my $plugin = $task->{plugin};
+    my $vmtype = $plugin->type();
+
+    $task->{backup_time} = time();
+
+    my $pbs_group_name;
+    my $pbs_snapshot_name;
+
+    if ($opts->{scfg}->{type} eq 'pbs') {
+	if ($vmtype eq 'lxc') {
+	    $pbs_group_name = "ct/$vmid";
+	} elsif  ($vmtype eq 'qemu') {
+	    $pbs_group_name = "vm/$vmid";
+	} else {
+	    die "pbs backup not implemented for plugin type '$vmtype'\n";
+	}
+	my $btime = strftime("%FT%TZ", gmtime($task->{backup_time}));
+	$pbs_snapshot_name = "$pbs_group_name/$btime";
+    }
 
     my $vmstarttime = time ();
 
@@ -648,24 +679,31 @@ sub exec_backup_task {
 		" enabled Service. Use snapshot mode or disable the Service.\n";
 	}
 
-	my $vmtype = $plugin->type();
-
 	my $tmplog = "$logdir/$vmtype-$vmid.log";
 
 	my $bkname = "vzdump-$vmtype-$vmid";
-	my $basename = $bkname . strftime("-%Y_%m_%d-%H_%M_%S", localtime());
+	my $basename = $bkname . strftime("-%Y_%m_%d-%H_%M_%S", localtime($task->{backup_time}));
 
 	my $maxfiles = $opts->{maxfiles};
 
 	if ($maxfiles && !$opts->{remove}) {
-	    my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname);
+	    my $count;
+	    if ($opts->{scfg}->{type} eq 'pbs') {
+		my $res = PVE::Storage::PBSPlugin::run_client_cmd($opts->{scfg}, $opts->{storage}, 'snapshots', $pbs_group_name);
+		$count = scalar(@$res);
+	    } else {
+		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname);
+		$count = scalar(@$bklist);
+	    }
 	    die "There is a max backup limit of ($maxfiles) enforced by the".
-	    " target storage or the vzdump parameters.".
-	    " Either increase the limit or delete old backup(s).\n"
-		if scalar(@$bklist) >= $maxfiles;
+		" target storage or the vzdump parameters.".
+		" Either increase the limit or delete old backup(s).\n"
+		if $count >= $maxfiles;
 	}
 
-	my $logfile = $task->{logfile} = "$opts->{dumpdir}/$basename.log";
+	if ($opts->{scfg}->{type} ne 'pbs') {
+	    $task->{logfile} = "$opts->{dumpdir}/$basename.log";
+	}
 
 	my $ext = $vmtype eq 'qemu' ? '.vma' : '.tar';
 	my ($comp, $comp_ext) = compressor_info($opts);
@@ -673,18 +711,24 @@ sub exec_backup_task {
 	    $ext .= ".${comp_ext}";
 	}
 
-	if ($opts->{stdout}) {
-	    $task->{tarfile} = '-';
+	if ($opts->{scfg}->{type} eq 'pbs') {
+	    die "unable to pipe backup to stdout\n" if $opts->{stdout};
 	} else {
-	    my $tarfile = $task->{tarfile} = "$opts->{dumpdir}/$basename$ext";
-	    $task->{tmptar} = $task->{tarfile};
-	    $task->{tmptar} =~ s/\.[^\.]+$/\.dat/;
-	    unlink $task->{tmptar};
+	    if ($opts->{stdout}) {
+		$task->{tarfile} = '-';
+	    } else {
+		my $tarfile = $task->{tarfile} = "$opts->{dumpdir}/$basename$ext";
+		$task->{tmptar} = $task->{tarfile};
+		$task->{tmptar} =~ s/\.[^\.]+$/\.dat/;
+		unlink $task->{tmptar};
+	    }
 	}
 
 	$task->{vmtype} = $vmtype;
 
-	if ($opts->{tmpdir}) {
+	if ($opts->{scfg}->{type} eq 'pbs') {
+	    $task->{tmpdir} = "/var/tmp/vzdumptmp$$"; #fixme
+	} elsif ($opts->{tmpdir}) {
 	    $task->{tmpdir} = "$opts->{tmpdir}/vzdumptmp$$";
 	} else {
 	    # dumpdir is posix? then use it as temporary dir
@@ -709,9 +753,10 @@ sub exec_backup_task {
 
 	$task->{dumpdir} = $opts->{dumpdir};
 	$task->{storeid} = $opts->{storage};
+	$task->{scfg} = $opts->{scfg};
 	$task->{tmplog} = $tmplog;
 
-	unlink $logfile;
+	unlink $task->{logfile} if defined($task->{logfile});
 
 	debugmsg ('info', "Starting Backup of VM $vmid ($vmtype)", $logfd, 1);
 	debugmsg ('info', "Backup started at " . strftime("%F %H:%M:%S", localtime()));
@@ -843,30 +888,47 @@ sub exec_backup_task {
 	    return;
 	}
 
-	debugmsg ('info', "creating archive '$task->{tarfile}'", $logfd);
+	# fixme: ??
+	if ($opts->{scfg}->{type} eq 'pbs') {
+	    debugmsg ('info', "creating pbs archive on storage '$opts->{storage}'", $logfd);
+	} else {
+	    debugmsg ('info', "creating archive '$task->{tarfile}'", $logfd);
+	}
 	$plugin->archive($task, $vmid, $task->{tmptar}, $comp);
 
-	rename ($task->{tmptar}, $task->{tarfile}) ||
-	    die "unable to rename '$task->{tmptar}' to '$task->{tarfile}'\n";
+	if ($opts->{scfg}->{type} eq 'pbs') {
+	    # fixme: log size ?
+	    debugmsg ('info', "pbs upload finished", $logfd);
+	} else {
+	    rename ($task->{tmptar}, $task->{tarfile}) ||
+		die "unable to rename '$task->{tmptar}' to '$task->{tarfile}'\n";
 
-	# determine size
-	$task->{size} = (-s $task->{tarfile}) || 0;
-	my $cs = format_size ($task->{size});
-	debugmsg ('info', "archive file size: $cs", $logfd);
+	    # determine size
+	    $task->{size} = (-s $task->{tarfile}) || 0;
+	    my $cs = format_size ($task->{size});
+	    debugmsg ('info', "archive file size: $cs", $logfd);
+	}
 
 	# purge older backup
-
 	if ($maxfiles && $opts->{remove}) {
-	    my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname, $task->{tarfile});
-	    $bklist = [ sort { $b->[1] <=> $a->[1] } @$bklist ];
 
-	    while (scalar (@$bklist) >= $maxfiles) {
-		my $d = pop @$bklist;
-		debugmsg ('info', "delete old backup '$d->[0]'", $logfd);
-		unlink $d->[0];
-		my $logfn = $d->[0];
-		$logfn =~ s/\.(tgz|((tar|vma)(\.(gz|lzo))?))$/\.log/;
-		unlink $logfn;
+	    if ($opts->{scfg}->{type} eq 'pbs') {
+		my $args = [$pbs_group_name, '--keep-last', $maxfiles];
+		my $logfunc = sub { my $line = shift; debugmsg ('info', $line, $logfd); };
+		PVE::Storage::PBSPlugin::run_raw_client_cmd(
+		    $opts->{scfg}, $opts->{storage}, 'prune', $args, logfunc => $logfunc);
+	    } else {
+		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname, $task->{tarfile});
+		$bklist = [ sort { $b->[1] <=> $a->[1] } @$bklist ];
+
+		while (scalar (@$bklist) >= $maxfiles) {
+		    my $d = pop @$bklist;
+		    debugmsg ('info', "delete old backup '$d->[0]'", $logfd);
+		    unlink $d->[0];
+		    my $logfn = $d->[0];
+		    $logfn =~ s/\.(tgz|((tar|vma)(\.(gz|lzo))?))$/\.log/;
+		    unlink $logfn;
+		}
 	    }
 	}
 
@@ -940,8 +1002,16 @@ sub exec_backup_task {
 
     close ($logfd) if $logfd;
 
-    if ($task->{tmplog} && $task->{logfile}) {
-	system {'cp'} 'cp', $task->{tmplog}, $task->{logfile};
+    if ($task->{tmplog}) {
+	if ($opts->{scfg}->{type} eq 'pbs') {
+	    if ($task->{state} eq 'ok') {
+		my $param = [$pbs_snapshot_name, $task->{tmplog}];
+		PVE::Storage::PBSPlugin::run_raw_client_cmd(
+		    $opts->{scfg}, $opts->{storage}, 'upload-log', $param, errmsg => "upload log failed");
+	    }
+	} elsif ($task->{logfile}) {
+	    system {'cp'} 'cp', $task->{tmplog}, $task->{logfile};
+	}
     }
 
     eval { $self->run_hook_script ('log-end', $task); };
