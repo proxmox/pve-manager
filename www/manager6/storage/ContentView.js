@@ -519,9 +519,9 @@ Ext.define('PVE.storage.ContentView', {
 		    },
 		    handler: function(b, e, rec) {
 			var vmtype;
-			if (rec.data.volid.match(/vzdump-qemu-/)) {
+			if (PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format)) {
 			    vmtype = 'qemu';
-			} else if (rec.data.volid.match(/vzdump-openvz-/) || rec.data.volid.match(/vzdump-lxc-/)) {
+			} else if (PVE.Utils.volume_is_lxc_backup(rec.data.volid, rec.data.format)) {
 			    vmtype = 'lxc';
 			} else {
 			    return;

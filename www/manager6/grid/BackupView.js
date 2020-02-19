@@ -27,17 +27,13 @@ Ext.define('PVE.grid.BackupView', {
 	}
 
 	var vmtypeFilter;
-	if (vmtype === 'openvz') {
+	if (vmtype === 'lxc' || vmtype === 'openvz') {
 	    vmtypeFilter = function(item) {
-		return item.data.volid.match(':backup/vzdump-openvz-');
-	    };
-	} else if (vmtype === 'lxc') {
-	    vmtypeFilter = function(item) {
-		return item.data.volid.match(':backup/vzdump-lxc-');
+		return PVE.Utils.volume_is_lxc_backup(item.data.volid, item.data.format);
 	    };
 	} else if (vmtype === 'qemu') {
 	    vmtypeFilter = function(item) {
-		return item.data.volid.match(':backup/vzdump-qemu-');
+		return PVE.Utils.volume_is_qemu_backup(item.data.volid, item.data.format);
 	    };
 	} else {
 	    throw "unsupported VM type '" + vmtype + "'";

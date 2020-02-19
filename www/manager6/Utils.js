@@ -545,6 +545,14 @@ Ext.define('PVE.Utils', { utilities: {
 	'snippets': gettext('Snippets')
     },
 
+    volume_is_qemu_backup: function(volid, format) {
+	return format === 'pbs-vm' || volid.match(':backup/vzdump-qemu-');
+    },
+
+    volume_is_lxc_backup: function(volid, format) {
+	return format === 'pbs-ct' || volid.match(':backup/vzdump-(lxc|openvz)-');
+    },
+
     storageSchema: {
 	dir: {
 	    name: Proxmox.Utils.directoryText,
@@ -661,7 +669,7 @@ Ext.define('PVE.Utils', { utilities: {
 		Ext.String.leftPad(data.channel,2, '0') +
 		" ID " + data.id + " LUN " + data.lun;
 	}
-	return data.volid.replace(/^.*:(.*\/)?/,'');
+	return data.volid.replace(/^.*?:(.*?\/)?/,'');
     },
 
     render_serverity: function (value) {
@@ -1337,4 +1345,3 @@ Ext.define('PVE.Utils', { utilities: {
     }
 
 });
-
