@@ -610,6 +610,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		{
 		    text: gettext('Add'),
 		    menu: new Ext.menu.Menu({
+			cls: 'pve-add-hw-menu',
 			items: [
 			    {
 				text: gettext('Hard Disk'),

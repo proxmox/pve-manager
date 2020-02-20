@@ -286,6 +286,11 @@
     padding-left: 20px;
 }
 
+/* fix alignment for VM hardware add menu */
+.pve-add-hw-menu .x-menu-item-icon:not(.fa) {
+    left: 1px;
+}
+
 .pve-itype-fa > .x-grid-cell-inner{
     padding-left: 3px;
 }
