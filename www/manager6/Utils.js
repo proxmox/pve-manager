@@ -1223,7 +1223,7 @@ Ext.define('PVE.Utils', { utilities: {
 	}
     },
 
-    hardware_counts: { net: 32, usb: 5, hostpci: 16, audio: 1, efidisk: 1, serial: 4 },
+    hardware_counts: { net: 32, usb: 5, hostpci: 16, audio: 1, efidisk: 1, serial: 4, rng: 1 },
 
     cleanEmptyObjectKeys: function (obj) {
 	var propName;

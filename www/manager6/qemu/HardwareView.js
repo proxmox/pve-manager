@@ -301,6 +301,13 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('Unused Disk') + ' ' + i.toString()
 	    };
 	}
+	rows.rng0 = {
+	    group: 45,
+	    iconCls: 'cogs',
+	    editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.RNGEdit' : undefined,
+	    never_delete: caps.nodes['Sys.Console'] ? false : true,
+	    header: gettext("VirtIO RNG")
+	};
 
 	var sorterFn = function(rec1, rec2) {
 	    var v1 = rec1.data.key;
@@ -563,6 +570,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    me.down('#addaudio').setDisabled(noVMConfigHWTypePerm || isAtLimit('audio'));
 	    me.down('#addserial').setDisabled(noVMConfigHWTypePerm || isAtLimit('serial'));
 	    me.down('#addnet').setDisabled(noVMConfigNetPerm || isAtLimit('net'));
+	    me.down('#addrng').setDisabled(noSysConsolePerm || isAtLimit('rng'));
 	    efidisk_menuitem.setDisabled(isAtLimit('efidisk'));
 	    me.down('#addci').setDisabled(noSysConsolePerm || hasCloudInit);
 
@@ -716,6 +724,21 @@ Ext.define('PVE.qemu.HardwareView', {
 				disabled: !caps.vms['VM.Config.HWType'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.AudioEdit', {
+					url: '/api2/extjs/' + baseurl,
+					isCreate: true,
+					isAdd: true
+				    });
+				    win.on('destroy', me.reload, me);
+				    win.show();
+				}
+			    },
+			    {
+				text: gettext("VirtIO RNG"),
+				itemId: 'addrng',
+				iconCls: 'fa fa-fw fa-cogs black',
+				disabled: !caps.nodes['Sys.Console'],
+				handler: function() {
+				    var win = Ext.create('PVE.qemu.RNGEdit', {
 					url: '/api2/extjs/' + baseurl,
 					isCreate: true,
 					isAdd: true

@@ -160,6 +160,7 @@ JSSRC= 				                 	\
 	qemu/IPConfigEdit.js				\
 	qemu/SystemEdit.js				\
 	qemu/AudioEdit.js				\
+	qemu/RNGEdit.js					\
 	lxc/Network.js					\
 	lxc/Resources.js				\
 	lxc/FeaturesEdit.js				\
