@@ -279,7 +279,8 @@
 .pve-itype-icon-usb,
 .pve-itype-icon-serial,
 .pve-itype-icon-cloud,
-.pve-itype-icon-pci
+.pve-itype-icon-pci,
+.pve-itype-icon-die
 {
     background-repeat: no-repeat;
     background-position:3px center;
@@ -420,6 +421,12 @@
 {
     background-size: 16px;
     background-image:url(../images/icon-cloud.svg);
+}
+
+.pve-itype-icon-die
+{
+    background-size: 16px;
+    background-image:url(../images/icon-die.svg);
 }
 
 .pve-icon {

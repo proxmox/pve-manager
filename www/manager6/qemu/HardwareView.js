@@ -303,7 +303,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	}
 	rows.rng0 = {
 	    group: 45,
-	    iconCls: 'cogs',
+	    tdCls: 'pve-itype-icon-die',
 	    editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.RNGEdit' : undefined,
 	    never_delete: caps.nodes['Sys.Console'] ? false : true,
 	    header: gettext("VirtIO RNG")
@@ -735,7 +735,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    {
 				text: gettext("VirtIO RNG"),
 				itemId: 'addrng',
-				iconCls: 'fa fa-fw fa-cogs black',
+				iconCls: 'pve-itype-icon-die',
 				disabled: !caps.nodes['Sys.Console'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.RNGEdit', {

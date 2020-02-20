@@ -78,7 +78,8 @@ IMAGES = ${GNOME_IMAGES}	\
 	icon-serial.svg		\
 	icon-cloud.svg		\
 	icon-pci.png		\
-	icon-usb.png
+	icon-usb.png 		\
+	icon-die.svg
 
 .PHONY: install 
 install: ${IMAGES}
