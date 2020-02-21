@@ -206,6 +206,11 @@ Ext.define('PVE.grid.BackupView', {
 		    dataIndex: 'volid'
 		},
 		{
+		    header: gettext('Date'),
+		    width: 150,
+		    dataIndex: 'vdate'
+		},
+		{
 		    header: gettext('Format'),
 		    width: 100,
 		    dataIndex: 'format'
