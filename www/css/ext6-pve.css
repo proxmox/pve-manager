@@ -630,3 +630,12 @@ table.osds td:first-of-type {
     background-color: rgb(245, 245, 245);
     color: #000;
 }
+
+.x-grid-filters-filtered-column .x-column-header-text:after {
+    font: normal normal normal 14px/1 FontAwesome;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    content: " \f0b0 ";
+    color: #555;
+}
