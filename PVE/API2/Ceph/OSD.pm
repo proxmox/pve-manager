@@ -284,13 +284,15 @@ __PACKAGE__->register_method ({
 	my $osd_network = $ceph_conf->{global}->{cluster_network};
 	$osd_network //= $ceph_conf->{global}->{public_network}; # fallback
 
-	my $cluster_net_ips = PVE::Network::get_local_ip_from_cidr($osd_network);
-	if (scalar(@$cluster_net_ips) < 1) {
-	    my $osd_net_obj = PVE::Network::IP_from_cidr($osd_network);
-	    my $osd_base_cidr = $osd_net_obj->{ip} . "/" . $osd_net_obj->{prefixlen};
+	if ($osd_network) { # check only if something is configured
+	    my $cluster_net_ips = PVE::Network::get_local_ip_from_cidr($osd_network);
+	    if (scalar(@$cluster_net_ips) < 1) {
+		my $osd_net_obj = PVE::Network::IP_from_cidr($osd_network);
+		my $osd_base_cidr = $osd_net_obj->{ip} . "/" . $osd_net_obj->{prefixlen};
 
-	    die "No address from ceph cluster network (${osd_base_cidr}) found on node '$nodename'. ".
-		"Check your network config.\n";
+		die "No address from ceph cluster network (${osd_base_cidr}) found on node '$nodename'. ".
+		    "Check your network config.\n";
+	    }
 	}
 
 	# FIXME: rename params on next API compatibillity change (7.0)
