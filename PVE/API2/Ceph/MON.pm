@@ -172,7 +172,8 @@ __PACKAGE__->register_method ({
 	    monid => {
 		type => 'string',
 		optional => 1,
-		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
+		pattern => PVE::Ceph::Services::SERVICE_REGEX,
+		maxLength => 200,
 		description => "The ID for the monitor, when omitted the same as the nodename",
 	    },
 	    'mon-address' => {
@@ -320,7 +321,7 @@ __PACKAGE__->register_method ({
 	    monid => {
 		description => 'Monitor ID',
 		type => 'string',
-		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
+		pattern => PVE::Ceph::Services::SERVICE_REGEX,
 	    },
 	},
     },

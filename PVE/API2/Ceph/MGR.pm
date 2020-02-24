@@ -97,7 +97,8 @@ __PACKAGE__->register_method ({
 	    id => {
 		type => 'string',
 		optional => 1,
-		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
+		pattern => PVE::Ceph::Services::SERVICE_REGEX,
+		maxLength => 200,
 		description => "The ID for the manager, when omitted the same as the nodename",
 	    },
 	},
@@ -144,7 +145,7 @@ __PACKAGE__->register_method ({
 	    id => {
 		description => 'The ID of the manager',
 		type => 'string',
-		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
+		pattern => PVE::Ceph::Services::SERVICE_REGEX,
 	    },
 	},
     },

@@ -104,7 +104,8 @@ __PACKAGE__->register_method ({
 		type => 'string',
 		optional => 1,
 		default => 'nodename',
-		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
+		pattern => PVE::Ceph::Services::SERVICE_REGEX,
+		maxLength => 200,
 		description => "The ID for the mds, when omitted the same as the nodename",
 	    },
 	    hotstandby => {
@@ -195,7 +196,7 @@ __PACKAGE__->register_method ({
 	    name => {
 		description => 'The name (ID) of the mds',
 		type => 'string',
-		pattern => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?',
+		pattern => PVE::Ceph::Services::SERVICE_REGEX,
 	    },
 	},
     },

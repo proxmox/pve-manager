@@ -11,6 +11,8 @@ use PVE::RADOS;
 use JSON;
 use File::Path;
 
+use constant SERVICE_REGEX => '[a-zA-Z0-9]([a-zA-Z0-9\-]*[a-zA-Z0-9])?';
+
 # checks /etc/systemd/system/ceph-* to list all services, even if not running
 # also checks /var/lib/ceph/$type
 sub get_local_services {
@@ -62,7 +64,7 @@ sub ceph_service_cmd {
     my ($action, $service) = @_;
 
     my $pve_ceph_cfgpath = PVE::Ceph::Tools::get_config('pve_ceph_cfgpath');
-    if ($service && $service =~ m/^(mon|osd|mds|mgr|radosgw)(\.([A-Za-z0-9\-]{1,32}))?$/) {
+    if ($service && $service =~ m/^(mon|osd|mds|mgr|radosgw)(\.(${\SERVICE_REGEX}))?$/) {
 	$service = defined($3) ? "ceph-$1\@$3" : "ceph-$1.target";
     } else {
 	$service = "ceph.target";
