@@ -55,6 +55,27 @@ Ext.define('PVE.dc.OptionView', {
 	};
     },
 
+    render_bwlimits: function(value) {
+	if (!value) {
+	    return gettext("None");
+	}
+
+	let retval = "";
+	let first = true;
+	let parsed = PVE.Parser.parsePropertyString(value);
+
+	Ext.Object.each(parsed, (k, v) => {
+	    if (!first) {
+		retval += ", ";
+	    }
+	    // v is in KiB/s
+	    retval += k + ": " + Proxmox.Utils.format_size(v * 1024) + "/s";
+	    first = false;
+	});
+
+	return retval;
+    },
+
     initComponent : function() {
 	var me = this;
 
@@ -164,7 +185,7 @@ Ext.define('PVE.dc.OptionView', {
 	    }]
 	});
 	me.add_inputpanel_row('bwlimit', gettext('Bandwidth Limits'), {
-	    renderer: (v) => !v ? gettext('None') : v,
+	    renderer: me.render_bwlimits,
 	    caps: caps.dc['Sys.Modify'],
 	    width: 450,
 	    url: "/api2/extjs/cluster/options",
@@ -174,31 +195,36 @@ Ext.define('PVE.dc.OptionView', {
 		xtype: 'pveBandwidthField',
 		name: 'default',
 		fieldLabel: gettext('Default'),
-		emptyText: gettext('none')
+		emptyText: gettext('none'),
+		backendUnit: "KiB"
 	    },
 	    {
 		xtype: 'pveBandwidthField',
 		name: 'restore',
 		fieldLabel: gettext('Backup Restore'),
-		emptyText: gettext('default')
+		emptyText: gettext('default'),
+		backendUnit: "KiB"
 	    },
 	    {
 		xtype: 'pveBandwidthField',
 		name: 'migration',
 		fieldLabel: gettext('Migration'),
-		emptyText: gettext('default')
+		emptyText: gettext('default'),
+		backendUnit: "KiB"
 	    },
 	    {
 		xtype: 'pveBandwidthField',
 		name: 'clone',
 		fieldLabel: gettext('Clone'),
-		emptyText: gettext('default')
+		emptyText: gettext('default'),
+		backendUnit: "KiB"
 	    },
 	    {
 		xtype: 'pveBandwidthField',
 		name: 'move',
 		fieldLabel: gettext('Disk Move'),
-		emptyText: gettext('default')
+		emptyText: gettext('default'),
+		backendUnit: "KiB"
 	    }]
 	});
 
