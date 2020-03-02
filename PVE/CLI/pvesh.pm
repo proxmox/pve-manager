@@ -276,14 +276,9 @@ my $extract_std_options = 1;
 my $cond_add_standard_output_properties = sub {
     my ($props) = @_;
 
-    foreach my $opt (keys %$PVE::RESTHandler::standard_output_options) {
-	if (defined($props->{$opt})) {
-	    $extract_std_options = 0;
-	    return $props;
-	}
-    }
+    my $keys = [ grep { !defined($props->{$_}) } keys %$PVE::RESTHandler::standard_output_options ];
 
-    return PVE::RESTHandler::add_standard_output_properties($props);
+    return PVE::RESTHandler::add_standard_output_properties($props, $keys);
 };
 
 sub call_api_method {
