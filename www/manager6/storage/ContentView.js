@@ -680,10 +680,14 @@ Ext.define('PVE.storage.ContentView', {
 			let v = record.data.volid;
 			let match = v.match(/(\d{4}_\d{2}_\d{2})-(\d{2}_\d{2}_\d{2})/);
 			if (match) {
-			    let date = match[1].replace(/_/g, '.');
+			    let date = match[1].replace(/_/g, '-');
 			    let time = match[2].replace(/_/g, ':');
 			    return date + " " + time;
 			}
+		    }
+		    if (record.data.ctime) {
+			let ctime = new Date(record.data.ctime * 1000);
+			return Ext.Date.format(ctime,'Y-m-d H:i:s');
 		    }
 		    return '';
 		}
