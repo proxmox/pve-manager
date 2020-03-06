@@ -196,35 +196,35 @@ Ext.define('PVE.dc.OptionView', {
 		name: 'default',
 		fieldLabel: gettext('Default'),
 		emptyText: gettext('none'),
-		backendUnit: "KiB"
+		backendUnit: "KiB",
 	    },
 	    {
 		xtype: 'pveBandwidthField',
 		name: 'restore',
 		fieldLabel: gettext('Backup Restore'),
 		emptyText: gettext('default'),
-		backendUnit: "KiB"
+		backendUnit: "KiB",
 	    },
 	    {
 		xtype: 'pveBandwidthField',
 		name: 'migration',
 		fieldLabel: gettext('Migration'),
 		emptyText: gettext('default'),
-		backendUnit: "KiB"
+		backendUnit: "KiB",
 	    },
 	    {
 		xtype: 'pveBandwidthField',
 		name: 'clone',
 		fieldLabel: gettext('Clone'),
 		emptyText: gettext('default'),
-		backendUnit: "KiB"
+		backendUnit: "KiB",
 	    },
 	    {
 		xtype: 'pveBandwidthField',
 		name: 'move',
 		fieldLabel: gettext('Disk Move'),
 		emptyText: gettext('default'),
-		backendUnit: "KiB"
+		backendUnit: "KiB",
 	    }]
 	});
 
