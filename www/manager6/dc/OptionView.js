@@ -217,6 +217,12 @@ Ext.define('PVE.dc.OptionView', {
 		backendUnit: "KiB",
 	    }]
 	});
+	me.add_integer_row('max_workers', gettext('Maximal Workers/bulk-action'), {
+	    deleteEmpty: true,
+	    defaultValue: 4,
+	    minValue: 1,
+	    maxValue: 64, // arbitrary but generous limit as limits are good
+	});
 
 	me.selModel = Ext.create('Ext.selection.RowModel', {});
 
