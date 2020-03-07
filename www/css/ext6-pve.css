@@ -594,6 +594,8 @@ table.osds td:first-of-type {
     -moz-osx-font-smoothing: grayscale;
     content: " \f0b0 ";
     color: #555;
+    float: right;
+    padding-right: 1em;
 }
 
 .proxmox-invalid-row {
