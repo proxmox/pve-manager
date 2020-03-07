@@ -582,9 +582,18 @@ table.osds td:first-of-type {
     cursor: pointer;
 }
 
-.x-grid-filters-filtered-column{
+.x-grid-filters-filtered-column {
     font-style: italic;
     font-weight: bold;
+}
+
+.x-grid-filters-filtered-column .x-column-header-text:after {
+    font: normal normal normal 14px/1 FontAwesome;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    content: " \f0b0 ";
+    color: #555;
 }
 
 .proxmox-invalid-row {
@@ -629,13 +638,4 @@ table.osds td:first-of-type {
 .install-mask {
     background-color: rgb(245, 245, 245);
     color: #000;
-}
-
-.x-grid-filters-filtered-column .x-column-header-text:after {
-    font: normal normal normal 14px/1 FontAwesome;
-    text-rendering: auto;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    content: " \f0b0 ";
-    color: #555;
 }
