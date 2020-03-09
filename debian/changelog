@@ -1,3 +1,41 @@
+pve-manager (6.1-8) pve; urgency=medium
+
+  * ui CT Features: add checkbox for new allow unproblematic mknod device
+    creation in CT feature.
+
+  * ui: do not suggest that it's allow to edit 'special' permission roles
+
+  * ui: snapshots: hide 'Include RAM' when VM isn't running
+
+  * ui: TFAEdit: use viemodel binding for hiding/showing qr code
+
+  * ui: dc/Summary: improve dashboard storage calculation
+
+  * ui/cluster: show all corosync/knet links (up to 8) in cluster overview
+
+  * gui: pci passthrough: fix 'Add PCI' dialog for new devices
+
+  * vzdump: add support for proxmox backup server
+
+  * storage content GUI: improve detection of backup volumes
+
+  * pvesh: Add all standard output options that are not yet defined
+
+  * ceph: do not check IPs if no explicit puvlic/cluster networks got set in
+    the ceph configuration
+
+  * ui: qemu: allow one to add a virtio-rng device
+
+  * ui: ContentView: consider new ctime value
+
+  * fix #2611: gui: use backendUnit and pretty renderer
+
+  * ui: dc/options: add max_workers setting
+
+  * ui: make grid column filter more obvious
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 09 Mar 2020 19:05:11 +0100
+
 pve-manager (6.1-7) pve; urgency=medium
 
   * ui: show cluster name from joinInfo in join dialog
