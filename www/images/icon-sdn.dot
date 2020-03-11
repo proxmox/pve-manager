@@ -1,0 +1,9 @@
+ graph sdn {
+     bgcolor="transparent";
+     node[label="",shape=circle,fillcolor=black,style=filled];
+     edge[penwidth=6];
+     a -- b -- d;
+     a -- c -- d;
+     a -- d;
+     a -- e;
+ }

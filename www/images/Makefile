@@ -79,7 +79,13 @@ IMAGES = ${GNOME_IMAGES}	\
 	icon-cloud.svg		\
 	icon-pci.png		\
 	icon-usb.png 		\
-	icon-die.svg
+	icon-die.svg		\
+	icon-sdn.svg		\
+	icon-fa-network-wired.svg\
+
+
+icon-sdn.svg: icon-sdn.dot
+	fdp -Tsvg $< > $@
 
 .PHONY: install 
 install: ${IMAGES}

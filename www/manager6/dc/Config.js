@@ -61,7 +61,7 @@ Ext.define('PVE.dc.Config', {
 	    me.items.push({
 		xtype: 'pveSDNStatus',
 		title: gettext('SDN'),
-		iconCls: 'fa fa-unlock',
+		iconCls: 'fa fa-sdn',
 		itemId: 'sdn',
 		expandedOnInit: true
 	    });
@@ -70,7 +70,7 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveSDNControllerView',
 		groups: ['sdn'],
 		title: gettext('Controllers'),
-		iconCls: 'fa fa-database',
+		iconCls: 'fa fa-crosshairs',
 		itemId: 'sdncontroller'
 	    });
 
@@ -78,14 +78,14 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveSDNZoneView',
 		groups: ['sdn'],
 		title: gettext('Zones'),
-		iconCls: 'fa fa-database',
+		iconCls: 'fa fa-th',
 		itemId: 'sdnzone'
 	    });
 	    me.items.push({
 		xtype: 'pveSDNVnetView',
 		groups: ['sdn'],
 		title: gettext('Vnets'),
-		iconCls: 'fa fa-database',
+		iconCls: 'fa fa-network-wired',
 		itemId: 'sdnvnet'
 	    });
 	}
