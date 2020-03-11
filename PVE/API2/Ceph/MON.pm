@@ -255,7 +255,7 @@ __PACKAGE__->register_method ({
 			run_command("monmaptool --create --clobber --addv $monid '[v2:$monaddr:3300,v1:$monaddr:6789]' --print $monmap");
 		    }
 
-		    run_command("ceph-mon --mkfs -i $monid --monmap $monmap --keyring $mon_keyring --public-addr $ip");
+		    run_command("ceph-mon --mkfs -i $monid --monmap $monmap --keyring $mon_keyring");
 		    run_command("chown ceph:ceph -R $mondir");
 		};
 		my $err = $@;
@@ -275,11 +275,8 @@ __PACKAGE__->register_method ({
 		}
 		$monhost .= " $ip";
 		$cfg->{global}->{mon_host} = $monhost;
-		if (!defined($cfg->{global}->{public_network})) {
-		    # if there is no info about the public_network
-		    # we have to set it explicitly for the monitor
-		    $cfg->{$monsection}->{public_addr} = $ip;
-		}
+		# The IP is needed in the ceph.conf for the first boot
+		$cfg->{$monsection}->{public_addr} = $ip;
 
 		cfs_write_file('ceph.conf', $cfg);
 
