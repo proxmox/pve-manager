@@ -161,6 +161,14 @@ Ext.define('PVE.StdWorkspace', {
 		    me.updateVersionInfo();
 		}
 	    });
+
+	    Proxmox.Utils.API2Request({
+		url: '/cluster/sdn',
+		method: 'GET',
+		success: function(response) {
+		    PVE.SDNInfo = response.result.data;
+		}
+	    });
 	}
     },
 

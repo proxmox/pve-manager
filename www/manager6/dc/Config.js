@@ -56,7 +56,7 @@ Ext.define('PVE.dc.Config', {
 	    });
 	}
 
-	if (caps.dc['Sys.Audit']) {
+	if (caps.dc['Sys.Audit'] && PVE.SDNInfo) {
 
 	    me.items.push({
 		xtype: 'pveSDNStatus',
@@ -73,6 +73,7 @@ Ext.define('PVE.dc.Config', {
 		iconCls: 'fa fa-database',
 		itemId: 'sdncontroller'
 	    });
+
 	    me.items.push({
 		xtype: 'pveSDNZoneView',
 		groups: ['sdn'],
