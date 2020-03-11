@@ -93,7 +93,6 @@ sub get_cluster_service {
 sub ceph_service_cmd {
     my ($action, $service) = @_;
 
-    my $pve_ceph_cfgpath = PVE::Ceph::Tools::get_config('pve_ceph_cfgpath');
     if ($service && $service =~ m/^(mon|osd|mds|mgr|radosgw)(\.(${\SERVICE_REGEX}))?$/) {
 	$service = defined($3) ? "ceph-$1\@$3" : "ceph-$1.target";
     } else {
