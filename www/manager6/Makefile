@@ -69,6 +69,8 @@ JSSRC= 				                 	\
 	form/CephPoolSelector.js			\
 	form/PermPathSelector.js			\
 	form/SpiceEnhancementSelector.js		\
+	form/SDNZoneSelector.js   	                \
+	form/SDNControllerSelector.js  	                \
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
@@ -190,6 +192,21 @@ JSSRC= 				                 	\
 	storage/RBDEdit.js				\
 	storage/ZFSEdit.js				\
 	storage/ZFSPoolEdit.js				\
+	sdn/Browser.js					\
+	sdn/Status.js					\
+	sdn/StatusView.js				\
+	sdn/ZoneView.js					\
+	sdn/ZoneContentView.js				\
+	sdn/VnetView.js					\
+	sdn/VnetEdit.js					\
+	sdn/zones/Base.js				\
+	sdn/zones/VlanEdit.js				\
+	sdn/zones/VxlanEdit.js				\
+	sdn/zones/QinQEdit.js				\
+	sdn/zones/EvpnEdit.js				\
+	sdn/ControllerView.js				\
+	sdn/controllers/Base.js				\
+	sdn/controllers/EvpnEdit.js			\
 	ha/StatusView.js				\
 	ha/Status.js					\
 	ha/GroupSelector.js				\

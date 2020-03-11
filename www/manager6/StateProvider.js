@@ -40,6 +40,7 @@ Ext.define('PVE.StateProvider', {
 	['ltab', 'tasks'],
 	['nodetab', ''],
 	['storagetab', ''],
+	['sdntab', ''],
 	['pooltab', ''],
 	['kvmtab', ''],
 	['lxctab', ''],
@@ -49,6 +50,7 @@ Ext.define('PVE.StateProvider', {
     hprefix: 'v1',
 
     compDict: {
+	sdn: 53,
 	cloudinit: 52,
 	replication: 51,
 	system: 50,
@@ -221,7 +223,7 @@ Ext.define('PVE.StateProvider', {
 	} else {
 	    data = me.callParent(arguments);
 	    if (!data && name === 'GuiCap') {
-		data = { vms: {}, storage: {}, access: {}, nodes: {}, dc: {} };
+		data = { vms: {}, storage: {}, access: {}, nodes: {}, dc: {}, sdn: {} };
 	    }
 	}
 

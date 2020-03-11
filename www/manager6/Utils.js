@@ -627,6 +627,76 @@ Ext.define('PVE.Utils', { utilities: {
 	}
     },
 
+    sdnvnetSchema: {
+	vnet: {
+	    name: 'vnet',
+	    faIcon: 'folder'
+	},
+    },
+
+    sdnzoneSchema: {
+	zone: {
+	     name: 'zone',
+	     hideAdd: true
+	},
+	vlan: {
+	    name: 'vlan',
+	    ipanel: 'VlanInputPanel',
+	    faIcon: 'folder'
+	},
+	qinq: {
+	    name: 'qinq',
+	    ipanel: 'QinQInputPanel',
+	    faIcon: 'folder'
+	},
+	vxlan: {
+	    name: 'vxlan',
+	    ipanel: 'VxlanInputPanel',
+	    faIcon: 'folder'
+	},
+	evpn: {
+	    name: 'evpn',
+	    ipanel: 'EvpnInputPanel',
+	    faIcon: 'folder'
+	},
+    },
+
+    sdncontrollerSchema: {
+	controller: {
+	     name: 'controller',
+	     hideAdd: true
+	},
+	evpn: {
+	    name: 'evpn',
+	    ipanel: 'EvpnInputPanel',
+	    faIcon: 'folder'
+	},
+    },
+
+    format_sdnvnet_type: function(value, md, record) {
+	var schema = PVE.Utils.sdnvnetSchema[value];
+	if (schema) {
+	    return schema.name;
+	}
+	return Proxmox.Utils.unknownText;
+    },
+
+    format_sdnzone_type: function(value, md, record) {
+	var schema = PVE.Utils.sdnzoneSchema[value];
+	if (schema) {
+	    return schema.name;
+	}
+	return Proxmox.Utils.unknownText;
+    },
+
+    format_sdncontroller_type: function(value, md, record) {
+	var schema = PVE.Utils.sdncontrollerSchema[value];
+	if (schema) {
+	    return schema.name;
+	}
+	return Proxmox.Utils.unknownText;
+    },
+
     format_storage_type: function(value, md, record) {
 	if (value === 'rbd') {
 	    value = (!record || record.get('monhost') ? 'rbd' : 'pveceph');

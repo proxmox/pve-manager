@@ -19,6 +19,10 @@ Ext.define('PVE.tree.ResourceTree', {
 		iconCls: 'fa fa-database',
 		text: gettext('Storage')
 	    },
+	    sdn: {
+		iconCls: 'fa fa-database',
+		text: gettext('Sdn')
+	    },
 	    qemu: {
 		iconCls: 'fa fa-desktop',
 		text: gettext('Virtual Machine')

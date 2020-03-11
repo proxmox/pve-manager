@@ -210,6 +210,7 @@ Ext.define('PVE.StdWorkspace', {
 				qemu: 'PVE.qemu.Config',
 				lxc: 'PVE.lxc.Config',
 				storage: 'PVE.storage.Browser',
+				sdn: 'PVE.sdn.Browser',
 				pool: 'pvePoolConfig'
 			    };
 			    var comp = {

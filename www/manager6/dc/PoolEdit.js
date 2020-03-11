@@ -43,6 +43,17 @@ Ext.define('PVE.dc.PoolEdit', {
 
         if (!me.isCreate) {
             me.load();
-        }
+        } else {
+	    me.type = 'vnet'
+/*
+                    for (i = 0; i < 100; i++) {
+                        confid = 'net' + i.toString();
+                        if (!Ext.isDefined(me.vmconfig[confid])) {
+                            me.confid = confid;
+                            break;
+                        }
+                    }
+*/
+	}
     }
 });

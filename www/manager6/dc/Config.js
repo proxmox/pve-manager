@@ -57,6 +57,39 @@ Ext.define('PVE.dc.Config', {
 	}
 
 	if (caps.dc['Sys.Audit']) {
+
+	    me.items.push({
+		xtype: 'pveSDNStatus',
+		title: gettext('SDN'),
+		iconCls: 'fa fa-unlock',
+		itemId: 'sdn',
+		expandedOnInit: true
+	    });
+
+	    me.items.push({
+		xtype: 'pveSDNControllerView',
+		groups: ['sdn'],
+		title: gettext('Controllers'),
+		iconCls: 'fa fa-database',
+		itemId: 'sdncontroller'
+	    });
+	    me.items.push({
+		xtype: 'pveSDNZoneView',
+		groups: ['sdn'],
+		title: gettext('Zones'),
+		iconCls: 'fa fa-database',
+		itemId: 'sdnzone'
+	    });
+	    me.items.push({
+		xtype: 'pveSDNVnetView',
+		groups: ['sdn'],
+		title: gettext('Vnets'),
+		iconCls: 'fa fa-database',
+		itemId: 'sdnvnet'
+	    });
+	}
+
+	if (caps.dc['Sys.Audit']) {
 	    me.items.push({
 		xtype: 'pveDcBackupView',
 		iconCls: 'fa fa-floppy-o',
