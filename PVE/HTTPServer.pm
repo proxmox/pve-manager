@@ -85,6 +85,7 @@ sub auth_handler {
 	    die "No ticket\n" if !$ticket;
 
 	    ($username, $age, my $tfa_info) = PVE::AccessControl::verify_ticket($ticket);
+	    $rpcenv->check_user_enabled($username);
 
 	    if (defined($tfa_info)) {
 		if (defined(my $challenge = $tfa_info->{challenge})) {
