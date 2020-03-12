@@ -568,21 +568,17 @@ sub run_hook_script {
     my $opts = $self->{opts};
 
     my $script = $opts->{script};
-
     return if !$script;
 
     if (!-x $script) {
-	    die "The hook-script '$script' is not executable.\n"
+	die "The hook script '$script' is not executable.\n";
     }
-
-
 
     my $cmd = "$script $phase";
 
     $cmd .= " $task->{mode} $task->{vmid}" if ($task);
 
     local %ENV;
-
     # set immutable opts directly (so they are available in all phases)
     $ENV{STOREID} = $opts->{storage} if $opts->{storage};
     $ENV{DUMPDIR} = $opts->{dumpdir} if $opts->{dumpdir};
