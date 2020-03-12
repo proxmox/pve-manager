@@ -571,6 +571,12 @@ sub run_hook_script {
 
     return if !$script;
 
+    if (!-x $script) {
+	    die "The hook-script '$script' is not executable.\n"
+    }
+
+
+
     my $cmd = "$script $phase";
 
     $cmd .= " $task->{mode} $task->{vmid}" if ($task);
