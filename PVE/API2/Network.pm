@@ -152,7 +152,7 @@ my $confdesc = {
     },
     cidr => {
 	description => 'IPv4 CIDR.',
-	type => 'string', format => 'CIDRv4-list',
+	type => 'string', format => 'CIDRv4',
 	optional => 1,
     },
     mtu => {
@@ -181,7 +181,7 @@ my $confdesc = {
     },
     cidr6 => {
 	description => 'IPv6 CIDR.',
-	type => 'string', format => 'CIDRv6-list',
+	type => 'string', format => 'CIDRv6',
 	optional => 1,
     },
 };
@@ -326,14 +326,11 @@ my $map_cidr_to_address_netmask = sub {
 	    if $param->{address};
 	raise_param_exc({ netmask => "netmask conflicts with cidr" })
 	    if $param->{netmask};
-	my @cidrs = split /,/, $param->{cidr};
-	foreach my $cidr (@cidrs) {
-	    push @{$param->{address}}, $cidr;
-	}
 
+	my ($address, $netmask) = $param->{cidr} =~ m!^(.*)/(\d+)$!;
+	$param->{address} = $address;
+	$param->{netmask} = $netmask;
 	delete $param->{cidr};
-    } elsif ($param->{address} && $param->{netmask}) {
-	$param->{address} = ["$param->{address}/$param->{netmask}"];
     }
 
     if ($param->{cidr6}) {
@@ -342,14 +339,10 @@ my $map_cidr_to_address_netmask = sub {
 	raise_param_exc({ netmask6 => "netmask6 conflicts with cidr6" })
 	    if $param->{netmask6};
 
-	my @cidrs = split /,/, $param->{cidr6};
-	foreach my $cidr (@cidrs) {
-	    push @{$param->{address6}}, $cidr;
-	}
+	my ($address, $netmask) = $param->{cidr6} =~ m!^(.*)/(\d+)$!;
+	$param->{address6} = $address;
+	$param->{netmask6} = $netmask;
 	delete $param->{cidr6};
-
-    } elsif ($param->{address6} && $param->{netmask6}) {
-        $param->{address} = ["$param->{address6}/$param->{netmask6}"];
     }
 };
 
