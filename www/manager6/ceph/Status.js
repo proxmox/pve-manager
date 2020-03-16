@@ -38,10 +38,39 @@ Ext.define('PVE.node.CephStatus', {
 	    },
 	    items: [
 		{
+		    xtype: 'container',
+		    layout: {
+			type: 'vbox',
+			align: 'stretch',
+		    },
 		    flex: 1,
-		    itemId: 'overallhealth',
-		    xtype: 'pveHealthWidget',
-		    title: gettext('Status')
+		    items: [
+			{
+			    flex: 1,
+			    itemId: 'overallhealth',
+			    xtype: 'pveHealthWidget',
+			    title: gettext('Status')
+			},
+			{
+			    itemId: 'versioninfo',
+			    xtype: 'component',
+			    data: {
+				version: "",
+				git: "",
+			    },
+			    padding: '10 0 0 0',
+			    style: {
+				'text-align': 'center',
+			    },
+			    tpl: [
+				'<tpl if="version">',
+				'<b>', gettext('Highest Version in Cluster'), '</b>',
+				'<br>',
+				'{version} (git: {git})',
+				'</tpl>'
+			    ],
+			}
+		    ]
 		},
 		{
 		    flex: 2,
@@ -363,6 +392,22 @@ Ext.define('PVE.node.CephStatus', {
 	    // update detailstatus panel
 	    me.getComponent('statusdetail').updateAll(rec.data, me.status || {});
 
+	    let maxversion = [];
+	    let maxversiontext = "";
+	    let git = "";
+	    for (const [nodename, data] of Object.entries(me.metadata.node)) {
+		let version = data.version.parts;
+		if (PVE.Utils.compare_ceph_versions(version, maxversion) > 0) {
+		    maxversion = version;
+		    git = data.buildcommit.substr(0,8);
+		    maxversiontext = data.version.str;
+		}
+	    }
+
+	    me.down('#versioninfo').update({
+		version: maxversiontext,
+		git: git,
+	    });
 	}, me);
 
 	me.on('destroy', me.store.stopUpdate);
