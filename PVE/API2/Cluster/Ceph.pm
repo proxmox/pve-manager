@@ -59,7 +59,14 @@ __PACKAGE__->register_method ({
     },
     parameters => {
 	additionalProperties => 0,
-	properties => {},
+	properties => {
+	    scope => {
+		type => 'string',
+		optional => 1,
+		default => 'all',
+		enum => ['all', 'versions', ],
+	    },
+	},
     },
     returns => { type => 'object' },
     code => sub {
@@ -68,6 +75,7 @@ __PACKAGE__->register_method ({
 	PVE::Ceph::Tools::check_ceph_inited();
 
 	my $rados = PVE::RADOS->new();
+	my $scope = $param->{scope} // 'all';
 
 	my $res = {
 	    # FIXME: remove with 7.0 depreacated by structured 'versions'
@@ -77,6 +85,8 @@ __PACKAGE__->register_method ({
 	if (defined(my $vers = PVE::Ceph::Services::get_ceph_versions())) {
 	    $res->{node} = $vers;
 	}
+
+	return $res if ($scope eq 'versions');
 
 	for my $type ( qw(mon mgr mds) ) {
 	    my $typedata = PVE::Ceph::Services::get_cluster_service($type);
