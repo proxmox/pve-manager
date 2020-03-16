@@ -65,6 +65,48 @@ Ext.define('PVE.node.CephServiceList', {
     controller: {
 	xclass: 'Ext.app.ViewController',
 
+	render_version: function(value, metadata, rec) {
+	    let me = this.getView();
+	    let host = rec.data.host;
+	    let icon = "";
+	    let v = value;
+	    let nodev = [0];
+	    if (me.nodeversions[host] !== undefined) {
+		nodev = me.nodeversions[host].version.parts;
+	    }
+	    let maxv = me.maxversion;
+
+	    if (PVE.Utils.compare_ceph_versions(maxv, nodev) > 0) {
+		icon = PVE.Utils.get_ceph_icon_html('HEALTH_UPGRADE');
+	    } else if (PVE.Utils.compare_ceph_versions(nodev, v) > 0) {
+		icon = PVE.Utils.get_ceph_icon_html('HEALTH_OLD');
+	    } else if (me.mixedversions) {
+		icon = PVE.Utils.get_ceph_icon_html('HEALTH_OK');
+	    }
+
+	    return icon + v;
+	},
+
+	getMaxVersions: function(store, records, success) {
+	    if (!success || records.length < 1) {
+		return;
+	    }
+	    let me = this;
+	    let view = me.getView();
+
+	    view.nodeversions = records[0].data.node;
+	    view.maxversion = [];
+	    view.mixedversions = false;
+	    for (const [nodename, data] of Object.entries(view.nodeversions)) {
+		if (PVE.Utils.compare_ceph_versions(data.version.parts, view.maxversion) > 0) {
+		    if (view.maxversion.length > 0) {
+			view.mixedversions = true;
+		    }
+		    view.maxversion = data.version.parts;
+		}
+	    }
+	},
+
 	init: function(view) {
 	    if (view.pveSelNode) {
 		view.nodename = view.pveSelNode.data.node;
@@ -76,6 +118,19 @@ Ext.define('PVE.node.CephServiceList', {
 	    if (!view.type) {
 		throw "no type specified";
 	    }
+
+	    view.versionsstore = Ext.create('Proxmox.data.UpdateStore', {
+		autoLoad: true,
+		autoStart: true,
+		interval: 10000,
+		storeid: 'ceph-versions-' + view.type + '-list' + view.nodename,
+		proxy: {
+		    type: 'proxmox',
+		    url: "/api2/json/cluster/ceph/metadata?scope=versions"
+		}
+	    });
+
+	    view.versionsstore.on('load', this.getMaxVersions, this);
 
 	    view.rstore = Ext.create('Proxmox.data.UpdateStore', {
 		autoLoad: true,
@@ -296,7 +351,8 @@ Ext.define('PVE.node.CephServiceList', {
 	    header: gettext('Version'),
 	    flex: 3,
 	    sortable: true,
-	    dataIndex: 'version'
+	    dataIndex: 'version',
+	    renderer: 'render_version',
 	}
     ],
 
