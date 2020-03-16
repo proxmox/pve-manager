@@ -74,10 +74,8 @@ __PACKAGE__->register_method ({
 	    version => PVE::Cluster::get_node_kv("ceph-version"),
 	};
 
-	if (defined(my $vers = PVE::Cluster::get_node_kv("ceph-versions"))) {
-	    $res->{node} = {
-		map { eval { $_ => decode_json($vers->{$_}) } } keys %$vers
-	    };
+	if (defined(my $vers = PVE::Ceph::Services::get_ceph_versions())) {
+	    $res->{node} = $vers;
 	}
 
 	for my $type ( qw(mon mgr mds) ) {
