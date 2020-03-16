@@ -121,11 +121,24 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     compare_ceph_versions: function(a, b) {
+	let avers = [];
+	let bvers = [];
+
 	if (a === b) {
 	    return 0;
 	}
-	let avers = a.toString().split('.');
-	let bvers = b.toString().split('.');
+
+	if (Ext.isArray(a)) {
+	    avers = a.slice(); // copy array
+	} else {
+	    avers = a.toString().split('.');
+	}
+
+	if (Ext.isArray(b)) {
+	    bvers = b.slice(); // copy array
+	} else {
+	    bvers = b.toString().split('.');
+	}
 
 	while (true) {
 	    let av = avers.shift();
