@@ -597,25 +597,6 @@ __PACKAGE__->register_method({
 
 	assert_ifupdown2_installed();
 
-	if (-x '/usr/bin/ovs-vsctl') {
-	    my $ovs_configured = sub {
-		my $ifaces = shift;
-		my @ovstypes = grep { $_->{type} =~ /^ovs\S+/i } values %$ifaces;
-		return scalar(@ovstypes) > 0;
-	    };
-	    my $tmp = PVE::INotify::read_file('interfaces', 1);
-	    my $ifaces = $tmp->{data}->{ifaces};
-	    my $changes = $tmp->{changes};
-
-	    if ($ovs_configured->($ifaces)) {
-		die "There are OpenVSwitch configured interfaces, but ifupdown2 ".
-		    " reload is not compatible with openvswitch currently\n";
-	    } elsif ($changes && $changes =~ /^\s*(?:[+-])?\s*(ovs_type|allow-ovs)/mi) {
-		die "Changes include OpenVSwitch interfaces, but ifupdown2 ".
-		    "reload is not compatible with openvswitch currently\n";
-	    }
-	}
-
 	my $worker = sub {
 
 	    rename($new_config_file, $current_config_file) if -e $new_config_file;
