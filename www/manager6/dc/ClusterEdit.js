@@ -166,7 +166,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    submittxt: function(get) {
 		let cn = get('info.clusterName');
 		if (cn) {
-		    return `${gettext('Join')} '${cn}'`;
+		    return Ext.String.format(gettext('Join {0}'), `'${cn}'`);
 		}
 		return gettext('Join');
 	    },
