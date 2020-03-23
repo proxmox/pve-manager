@@ -244,6 +244,7 @@ JSSRC= 				                 	\
 	dc/NodeView.js					\
 	dc/Cluster.js					\
 	dc/ClusterEdit.js				\
+	dc/CorosyncLinkEdit.js				\
 	dc/PermissionView.js				\
 	dc/TokenView.js					\
 	dc/TokenEdit.js					\

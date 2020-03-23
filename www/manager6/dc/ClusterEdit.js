@@ -25,24 +25,24 @@ Ext.define('PVE.ClusterCreateWindow', {
 	    name: 'clustername'
 	},
 	{
-	    xtype: 'proxmoxNetworkSelector',
-	    fieldLabel: Ext.String.format(gettext('Link {0}'), 0),
-	    emptyText: gettext("Optional, defaults to IP resolved by node's hostname"),
-	    name: 'link0',
-	    autoSelect: false,
-	    valueField: 'address',
-	    displayField: 'address',
-	    skipEmptyText: true
-	}],
-	advancedItems: [{
-	    xtype: 'proxmoxNetworkSelector',
-	    fieldLabel: Ext.String.format(gettext('Link {0}'), 1),
-	    emptyText: gettext("Optional second link for redundancy"),
-	    name: 'link1',
-	    autoSelect: false,
-	    valueField: 'address',
-	    displayField: 'address',
-	    skipEmptyText: true
+	    xtype: 'fieldcontainer',
+	    fieldLabel: gettext("Cluster Links"),
+	    style: {
+		'padding-top': '5px',
+	    },
+	    items: [
+		{
+		    xtype: 'pveCorosyncLinkEditor',
+		    style: {
+			'padding-bottom': '5px',
+		    },
+		    name: 'links'
+		},
+		{
+		    xtype: 'label',
+		    text: gettext("Multiple links are used as failover, lower numbers have higher priority.")
+		}
+	    ]
 	}]
     }
 });
@@ -149,20 +149,10 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    info: {
 		fp: '',
 		ip: '',
-		clusterName: '',
-		ring0Needed: false,
-		ring1Possible: false,
-		ring1Needed: false
+		clusterName: ''
 	    }
 	},
 	formulas: {
-	    ring0EmptyText: function(get) {
-		if (get('info.ring0Needed')) {
-		    return gettext("Cannot use default address safely");
-		} else {
-		    return gettext("Default: IP resolved by node's hostname");
-		}
-	    },
 	    submittxt: function(get) {
 		let cn = get('info.clusterName');
 		if (cn) {
@@ -188,9 +178,6 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		change: 'recomputeSerializedInfo',
 		enable: 'resetField'
 	    },
-	    'proxmoxtextfield[name=ring1_addr]': {
-		enable: 'ring1Needed'
-	    },
 	    'textfield': {
 		disable: 'resetField'
 	    }
@@ -198,47 +185,67 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	resetField: function(field) {
 	    field.reset();
 	},
-	ring1Needed: function(f) {
-	    var vm = this.getViewModel();
-	    f.allowBlank = !vm.get('info.ring1Needed');
-	},
 	onInputTypeChange: function(field, assistedInput) {
-	    var vm = this.getViewModel();
+	    let linkEditor = this.lookup('linkEditor');
+
+	    // this also clears all links
+	    linkEditor.setAllowNumberEdit(!assistedInput);
+
 	    if (!assistedInput) {
-		vm.set('info.ring1Possible', true);
+		linkEditor.setInfoText();
+		linkEditor.setDefaultLinks();
 	    }
 	},
 	recomputeSerializedInfo: function(field, value) {
-	    var vm = this.getViewModel();
-	    var jsons = Ext.util.Base64.decode(value);
-	    var joinInfo = Ext.JSON.decode(jsons, true);
+	    let vm = this.getViewModel();
 
-	    var info = {
+	    let assistedEntryBox = this.lookup('assistedEntry');
+	    if (!assistedEntryBox.getValue()) {
+		// not in assisted entry mode, nothing to do
+		return;
+	    }
+
+	    let linkEditor = this.lookup('linkEditor');
+
+	    let jsons = Ext.util.Base64.decode(value);
+	    let joinInfo = Ext.JSON.decode(jsons, true);
+
+	    let info = {
 		fp: '',
-		ring1Needed: false,
-		ring1Possible: false,
 		ip: '',
 		clusterName: ''
 	    };
 
-	    var totem = {};
 	    if (!(joinInfo && joinInfo.totem)) {
 		field.valid = false;
+		linkEditor.setLinks([]);
+		linkEditor.setInfoText();
 	    } else {
-		var ring0Needed = false;
-		if (joinInfo.ring_addr !== undefined) {
-		    ring0Needed = joinInfo.ring_addr[0] !== joinInfo.ipAddress;
+		let interfaces = joinInfo.totem.interface;
+		let links = Object.values(interfaces).map(iface => {
+		    return {
+			number: iface.linknumber,
+			value: '',
+			text: '',
+			allowBlank: false
+		    };
+		});
+
+		linkEditor.setInfoText();
+		if (links.length == 1 && joinInfo.ring_addr !== undefined &&
+		    joinInfo.ring_addr[0] === joinInfo.ipAddress) {
+
+		    links[0].allowBlank = true;
+		    linkEditor.setInfoText(gettext("Leave empty to use IP resolved by node's hostname"));
 		}
+
+		linkEditor.setLinks(links);
 
 		info = {
 		    ip: joinInfo.ipAddress,
 		    fp: joinInfo.fingerprint,
-		    ring0Needed: ring0Needed,
-		    ring1Possible: !!joinInfo.totem['interface']['1'],
-		    ring1Needed: !!joinInfo.totem['interface']['1'],
-		    clusterName: joinInfo.totem['cluster_name']
+		    clusterName: joinInfo.totem.cluster_name
 		};
-		totem = joinInfo.totem;
 		field.valid = true;
 	    }
 
@@ -275,6 +282,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	xtype: 'proxmoxcheckbox',
 	reference: 'assistedEntry',
 	name: 'assistedEntry',
+	itemId: 'assistedEntry',
 	submitValue: false,
 	value: true,
 	autoEl: {
@@ -301,10 +309,17 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	value: ''
     },
     {
-	xtype: 'inputpanel',
-	column1: [
+	xtype: 'panel',
+	width: 776,
+	layout: {
+	    type: 'hbox',
+	    align: 'center'
+	},
+	items: [
 	    {
 		xtype: 'textfield',
+		flex: 1,
+		margin: '0 5px 0 0',
 		fieldLabel: gettext('Peer Address'),
 		allowBlank: false,
 		bind: {
@@ -315,52 +330,36 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    },
 	    {
 		xtype: 'textfield',
+		flex: 1,
+		margin: '0 0 10px 5px',
 		inputType: 'password',
 		emptyText: gettext("Peer's root password"),
 		fieldLabel: gettext('Password'),
 		allowBlank: false,
 		name: 'password'
-	    }
-	],
-	column2: [
-	    {
-		xtype: 'proxmoxNetworkSelector',
-		fieldLabel: Ext.String.format(gettext('Link {0}'), 0),
-		bind: {
-		    emptyText: '{ring0EmptyText}',
-		    allowBlank: '{!info.ring0Needed}'
-		},
-		skipEmptyText: true,
-		autoSelect: false,
-		valueField: 'address',
-		displayField: 'address',
-		name: 'link0'
 	    },
+	]
+    },
+    {
+	xtype: 'textfield',
+	fieldLabel: gettext('Fingerprint'),
+	allowBlank: false,
+	bind: {
+	    value: '{info.fp}',
+	    readOnly: '{assistedEntry.checked}'
+	},
+	name: 'fingerprint'
+    },
+    {
+	xtype: 'fieldcontainer',
+	fieldLabel: gettext("Cluster Links"),
+	items: [
 	    {
-		xtype: 'proxmoxNetworkSelector',
-		fieldLabel: Ext.String.format(gettext('Link {0}'), 1),
-		skipEmptyText: true,
-		autoSelect: false,
-		valueField: 'address',
-		displayField: 'address',
-		bind: {
-		    disabled: '{!info.ring1Possible}',
-		    allowBlank: '{!info.ring1Needed}',
-		},
-		name: 'link1'
-	    }
-	],
-	columnB: [
-	    {
-		xtype: 'textfield',
-		fieldLabel: gettext('Fingerprint'),
-		allowBlank: false,
-		bind: {
-		    value: '{info.fp}',
-		    readOnly: '{assistedEntry.checked}'
-		},
-		name: 'fingerprint'
-	    }
+		xtype: 'pveCorosyncLinkEditor',
+		itemId: 'linkEditor',
+		reference: 'linkEditor',
+		allowNumberEdit: false
+	    },
 	]
     }]
 });
