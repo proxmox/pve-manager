@@ -85,14 +85,18 @@ Ext.define('PVE.ClusterAdministration', {
 			return el.name === data.preferred_node;
 		    });
 
-		    var links = [];
-		    PVE.Utils.forEachCorosyncLink(nodeinfo,
-			(num, link) => links.push(link));
+		    let links = {};
+		    let ring_addr = [];
+		    PVE.Utils.forEachCorosyncLink(nodeinfo, (num, link) => {
+			links[num] = link;
+			ring_addr.push(link);
+		    });
 
 		    vm.set('preferred_node', {
 			name: data.preferred_node,
 			addr: nodeinfo.pve_addr,
-			ring_addr: links,
+			peerLinks: links,
+			ring_addr: ring_addr,
 			fp: nodeinfo.pve_fp
 		    });
 		},
@@ -116,6 +120,7 @@ Ext.define('PVE.ClusterAdministration', {
 			joinInfo: {
 			    ipAddress: vm.get('preferred_node.addr'),
 			    fingerprint: vm.get('preferred_node.fp'),
+			    peerLinks: vm.get('preferred_node.peerLinks'),
 			    ring_addr: vm.get('preferred_node.ring_addr'),
 			    totem: vm.get('totem')
 			}

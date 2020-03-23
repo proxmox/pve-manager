@@ -223,10 +223,15 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    } else {
 		let interfaces = joinInfo.totem.interface;
 		let links = Object.values(interfaces).map(iface => {
+		    let linkNumber = iface.linknumber;
+		    let peerLink;
+		    if (joinInfo.peerLinks) {
+			peerLink = joinInfo.peerLinks[linkNumber];
+		    }
 		    return {
-			number: iface.linknumber,
+			number: linkNumber,
 			value: '',
-			text: '',
+			text: peerLink ? Ext.String.format(gettext("peer's link address: {0}"), peerLink) : '',
 			allowBlank: false
 		    };
 		});

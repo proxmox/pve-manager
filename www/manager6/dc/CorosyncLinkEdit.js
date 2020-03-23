@@ -14,7 +14,7 @@ Ext.define('PVE.form.CorosyncLinkEditorController', {
 	this.addLink();
     },
 
-    addLink: function(number, value, allowBlank) {
+    addLink: function(number, value, allowBlank, text) {
 	let me = this;
 	let view = me.getView();
 	let vm = view.getViewModel();
@@ -37,6 +37,7 @@ Ext.define('PVE.form.CorosyncLinkEditorController', {
 	    allowBlankNetwork: allowBlank,
 	    initNumber: number,
 	    initNetwork: value,
+	    text: text,
 
 	    // needs to be set here, because we need to update the viewmodel
 	    removeBtnHandler: function() {
@@ -130,6 +131,7 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
     // values
     initNumber: 0,
     initNetwork: '',
+    text: '',
 
     layout: 'hbox',
     bodyPadding: 5,
@@ -189,6 +191,17 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 		if (parent.removeBtnHandler !== undefined) {
 		    parent.removeBtnHandler();
 		}
+	    }
+	},
+	{
+	    xtype: 'label',
+	    margin: '-1px 0 0 5px',
+
+	    // for muted effect
+	    cls: 'x-form-item-label-default',
+
+	    cbind: {
+		text: '{text}'
 	    }
 	}
     ],
@@ -327,7 +340,8 @@ Ext.define('PVE.form.CorosyncLinkEditor', {
 	vm.set('linkCount', 0);
 
 	Ext.Array.each(links, link => {
-	    controller.addLink(link['number'], link['value'], link['allowBlank']);
+	    controller.addLink(link['number'], link['value'],
+		link['allowBlank'], link['text']);
 	});
     },
 
