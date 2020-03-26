@@ -255,6 +255,10 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
     taskDone: function(success) {
 	delete PVE.Utils.silenceAuthFailures;
 	if (success) {
+	    // reload always (if user wasn't faster), but wait a bit for pveproxy
+	    Ext.defer(function() {
+		window.location.reload(true);
+	    }, 5000);
 	    var txt = gettext('Cluster join task finished, node certificate may have changed, reload GUI!');
 	    // ensure user cannot do harm
 	    Ext.getBody().mask(txt, ['pve-static-mask']);
@@ -264,10 +268,6 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		icon: Ext.Msg.INFO,
 		msg: txt
 	    });
-	    // reload always (if user wasn't faster), but wait a bit for pveproxy
-	    Ext.defer(function() {
-		window.location.reload(true);
-	    }, 5000);
 	}
     },
 
