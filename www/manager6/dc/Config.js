@@ -56,39 +56,6 @@ Ext.define('PVE.dc.Config', {
 	    });
 	}
 
-	if (caps.dc['Sys.Audit'] && PVE.SDNInfo) {
-
-	    me.items.push({
-		xtype: 'pveSDNStatus',
-		title: gettext('SDN'),
-		iconCls: 'fa fa-sdn',
-		itemId: 'sdn',
-		expandedOnInit: true
-	    });
-
-	    me.items.push({
-		xtype: 'pveSDNControllerView',
-		groups: ['sdn'],
-		title: gettext('Controllers'),
-		iconCls: 'fa fa-crosshairs',
-		itemId: 'sdncontroller'
-	    });
-
-	    me.items.push({
-		xtype: 'pveSDNZoneView',
-		groups: ['sdn'],
-		title: gettext('Zones'),
-		iconCls: 'fa fa-th',
-		itemId: 'sdnzone'
-	    });
-	    me.items.push({
-		xtype: 'pveSDNVnetView',
-		groups: ['sdn'],
-		title: gettext('Vnets'),
-		iconCls: 'fa fa-network-wired',
-		itemId: 'sdnvnet'
-	    });
-	}
 
 	if (caps.dc['Sys.Audit']) {
 	    me.items.push({
@@ -168,8 +135,42 @@ Ext.define('PVE.dc.Config', {
 		iconCls: 'fa fa-bolt',
 		xtype: 'pveFencingView',
 		itemId: 'ha-fencing'
-	    },
-	    {
+	    });
+	    if (PVE.SDNInfo || PVE.SDNInfo === undefined) {
+		me.items.push({
+		    xtype: 'pveSDNStatus',
+		    title: gettext('SDN'),
+		    iconCls: 'fa fa-sdn',
+		    hidden: true,
+		    itemId: 'sdn',
+		    expandedOnInit: true
+		},
+		{
+		    xtype: 'pveSDNControllerView',
+		    groups: ['sdn'],
+		    title: gettext('Controllers'),
+		    hidden: true,
+		    iconCls: 'fa fa-crosshairs',
+		    itemId: 'sdncontroller'
+		},
+		{
+		    xtype: 'pveSDNZoneView',
+		    groups: ['sdn'],
+		    title: gettext('Zones'),
+		    hidden: true,
+		    iconCls: 'fa fa-th',
+		    itemId: 'sdnzone'
+		},
+		{
+		    xtype: 'pveSDNVnetView',
+		    groups: ['sdn'],
+		    title: gettext('Vnets'),
+		    hidden: true,
+		    iconCls: 'fa fa-network-wired',
+		    itemId: 'sdnvnet'
+		});
+	    }
+	    me.items.push({
 		xtype: 'pveFirewallRules',
 		title: gettext('Firewall'),
 		allow_iface: true,

@@ -167,7 +167,14 @@ Ext.define('PVE.StdWorkspace', {
 		method: 'GET',
 		success: function(response) {
 		    PVE.SDNInfo = response.result.data;
-		}
+		},
+		failure: function(response) {
+		    PVE.SDNInfo = null;
+		    let ui = Ext.ComponentQuery.query('treelistitem[text="SDN"]')[0];
+		    if (ui) {
+			ui.addCls('x-hidden-display');
+		    }
+		},
 	    });
 	}
     },
