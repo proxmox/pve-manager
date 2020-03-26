@@ -18,6 +18,7 @@ use base qw(PVE::RESTHandler);
 
 my $have_sdn;
 eval {
+    require PVE::Network::SDN;
     require PVE::Network::SDN::Zones;
     require PVE::Network::SDN::Controllers;
     $have_sdn = 1;
@@ -245,6 +246,13 @@ __PACKAGE__->register_method({
 		    ($param->{type} eq 'any_bridge') && 
 		    ($type eq 'bridge' || $type eq 'OVSBridge'));
 		delete $ifaces->{$k} if !$match;
+	    }
+
+	    if ($have_sdn && $param->{type} eq 'any_bridge') {
+		my $vnets = PVE::Network::SDN::get_local_vnets();
+		map {
+		    $ifaces->{$_} = $vnets->{$_};
+		} keys %$vnets;
 	    }
 	}
 
