@@ -1,9 +1,0 @@
-diff a/www/manager6/Makefile b/www/manager6/Makefile	(rejected hunks)
-@@ -66,6 +66,7 @@ JSSRC= 				                 	\
- 	form/CalendarEvent.js				\
- 	form/CephPoolSelector.js				\
- 	form/PermPathSelector.js				\
-+	form/SDNTransportSelector.js			\
- 	dc/Tasks.js					\
- 	dc/Log.js					\
- 	panel/StatusPanel.js				\
