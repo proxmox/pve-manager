@@ -76,7 +76,7 @@ Ext.define('PVE.qemu.RNGInputPanel', {
 	step: 1,
 	fieldLabel: gettext('Period') + ' (ms)',
 	labelWidth: 130,
-	emptyText: gettext('1000')
+	emptyText: '1000',
     },
     {
 	xtype: 'displayfield',
