@@ -1,7 +1,5 @@
-/*jslint confusion: true */
 Ext.define('PVE.dc.TokenView', {
     extend: 'Ext.grid.GridPanel',
-
     alias: ['widget.pveTokenView'],
 
     onlineHelp: 'chapter_user_management',
@@ -12,34 +10,21 @@ Ext.define('PVE.dc.TokenView', {
     // use fixed user
     fixedUser: undefined,
 
-    initComponent : function() {
-	var me = this;
+    initComponent: function() {
+	let me = this;
 
-	fixedUser = me.userid;
+	let caps = Ext.state.Manager.get('GuiCap');
 
-	var caps = Ext.state.Manager.get('GuiCap');
-
-	var store = new Ext.data.Store({
+	let store = new Ext.data.Store({
             id: "tokens",
 	    model: 'pve-tokens',
-	    sorters: [
-		{
-		    property: 'userid',
-		    order: 'ASC'
-		},
-		{
-		    property: 'tokenid',
-		    order: 'ASC',
-		}
-	    ]
+	    sorters: 'id',
 	});
 
-	var reload = function() {
-	    var me = this;
-
+	let reload = function() {
 	    if (me.fixedUser) {
 		Proxmox.Utils.API2Request({
-		    url: '/access/users/' + encodeURIComponent(me.fixedUser) + '/token',
+		    url: `/access/users/${encodeURIComponent(me.fixedUser)}/token`,
 		    method: 'GET',
 		    failure: function(response, opts) {
 			Proxmox.Utils.setErrorMask(me, response.htmlStatus);
@@ -47,192 +32,178 @@ Ext.define('PVE.dc.TokenView', {
 		    },
 		    success: function(response, opts) {
 			Proxmox.Utils.setErrorMask(me, false);
-			var result = Ext.decode(response.responseText);
-			var data = result.data || [];
-			var records = [];
+			let result = Ext.decode(response.responseText);
+			let data = result.data || [];
+			let records = [];
 			Ext.Array.each(data, function(token) {
-			    var r = {};
+			    let r = {};
 			    r.id = me.fixedUser + '!' + token.tokenid;
 			    r.userid = me.fixedUser;
 			    r.tokenid = token.tokenid;
 			    r.comment = token.comment;
 			    r.expire = token.expire;
-			    r.privsep = token.privsep === 1 ? true : false;
+			    r.privsep = token.privsep === 1;
 			    records.push(r);
 			});
 			store.loadData(records);
 		    },
 		});
-	    } else {
-		Proxmox.Utils.API2Request({
-		    url: '/access/users/?full=1',
-		    method: 'GET',
-		    failure: function(response, opts) {
-			Proxmox.Utils.setErrorMask(me, response.htmlStatus);
-			me.load_task.delay(me.load_delay);
-		    },
-		    success: function(response, opts) {
-			Proxmox.Utils.setErrorMask(me, false);
-			var result = Ext.decode(response.responseText);
-			var data = result.data || [];
-			var records = [];
-			Ext.Array.each(data, function(user) {
-			    tokens = user.tokens || [];
-			    Ext.Array.each(tokens, function(token) {
-				var r = {};
-				r.id = user.userid + '!' + token.tokenid;
-				r.userid = user.userid;
-				r.tokenid = token.tokenid;
-				r.comment = token.comment;
-				r.expire = token.expire;
-				r.privsep = token.privsep === 1 ? true : false;
-				records.push(r);
-			    });
-			});
-			store.loadData(records);
-		    },
-		});
+		return;
 	    }
+	    Proxmox.Utils.API2Request({
+		url: '/access/users/?full=1',
+		method: 'GET',
+		failure: function(response, opts) {
+		    Proxmox.Utils.setErrorMask(me, response.htmlStatus);
+		    me.load_task.delay(me.load_delay);
+		},
+		success: function(response, opts) {
+		    Proxmox.Utils.setErrorMask(me, false);
+		    let result = Ext.decode(response.responseText);
+		    let data = result.data || [];
+		    let records = [];
+		    Ext.Array.each(data, function(user) {
+			let tokens = user.tokens || [];
+			Ext.Array.each(tokens, function(token) {
+			    let r = {};
+			    r.id = user.userid + '!' + token.tokenid;
+			    r.userid = user.userid;
+			    r.tokenid = token.tokenid;
+			    r.comment = token.comment;
+			    r.expire = token.expire;
+			    r.privsep = token.privsep === 1;
+			    records.push(r);
+			});
+		    });
+		    store.loadData(records);
+		},
+	    });
 	};
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
+	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
-	    selModel: sm,
-	    enableFn: function(rec) {
-		return !!caps.access['User.Modify'];
-	    },
-	    callback: function() {
-		reload();
-	    },
-	    getUrl: function(rec) {
-		return '/access/users/' + encodeURIComponent(rec.data.userid) + '/token/' + encodeURIComponent(rec.data.tokenid);
-	    }
-        });
- 
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
-	    if (!rec || !caps.access['User.Modify']) {
+	let urlFromRecord = (rec) => {
+	    let uid = encodeURIComponent(rec.data.userid);
+	    let tid = encodeURIComponent(rec.data.tokenid);
+	    return `/access/users/${uid}/token/${tid}`;
+	};
+
+	let run_editor = function(rec) {
+	    if (!caps.access['User.Modify']) {
 		return;
 	    }
 
-            var win = Ext.create('PVE.dc.TokenEdit', {
-		userid: rec.data.userid,
-		tokenid: rec.data.tokenid
-            });
-            win.on('destroy', reload);
-            win.show();
+	    let win = Ext.create('PVE.dc.TokenEdit', {
+		method: 'PUT',
+		url: urlFromRecord(rec),
+	    });
+	    win.setValues(rec.data);
+	    win.on('destroy', reload);
+	    win.show();
 	};
 
-	var edit_btn = new Proxmox.button.Button({
-	    text: gettext('Edit'),
-	    disabled: true,
-	    enableFn: function(rec) {
-		return !!caps.access['User.Modify'];
-	    },
-	    selModel: sm,
-	    handler: run_editor
-	});
-
-	var perm_btn = new Proxmox.button.Button({
-	    text: gettext('Permissions'),
-	    disabled: false,
-	    selModel: sm,
-	    handler: function(btn, event, rec) {
-		var rec = sm.getSelection()[0];
-		var win = Ext.create('PVE.dc.PermissionView', {
-		    userid: rec.data.id
-		});
-		win.show();
-	    }
-	});
-
-        var tbar = [
+        let tbar = [
             {
 		text: gettext('Add'),
 		disabled: !caps.access['User.Modify'],
-		handler: function() {
-		    var rec = sm.getSelection()[0];
-		    var data = {};
+		handler: function(btn, e, rec) {
+		    let data = {};
 		    if (me.fixedUser) {
 			data.userid = me.fixedUser;
 			data.fixedUser = true;
 		    } else if (rec && rec.data) {
 			data.userid = rec.data.userid;
 		    }
-		    var win = Ext.create('PVE.dc.TokenEdit', data);
+		    let win = Ext.create('PVE.dc.TokenEdit', {
+			isCreate: true,
+			fixedUser: me.fixedUser,
+		    });
+		    win.setValues(data);
 		    win.on('destroy', reload);
 		    win.show();
-		}
+		},
             },
-	    edit_btn, remove_btn, perm_btn
+	    {
+		xtype: 'proxmoxButton',
+		text: gettext('Edit'),
+		disabled: true,
+		enableFn: (rec) => !!caps.access['User.Modify'],
+		selModel: sm,
+		handler: (btn, e, rec) => run_editor(rec),
+	    },
+	    {
+		xtype: 'proxmoxStdRemoveButton',
+		selModel: sm,
+		enableFn: (rec) => !!caps.access['User.Modify'],
+		callback: reload,
+		getUrl: urlFromRecord,
+	    },
+	    '-',
+	    {
+		xtype: 'proxmoxButton',
+		text: gettext('Show Permissions'),
+		disabled: true,
+		selModel: sm,
+		handler: function(btn, event, rec) {
+		    Ext.create('PVE.dc.PermissionView', {
+			autoShow: true,
+			userid: rec.data.id,
+		    });
+		},
+	    },
         ];
-
-	var render_username = function(userid) {
-	    return userid.match(/^(.+)(@[^@]+)$/)[1];
-	};
-
-	var render_realm = function(userid) {
-	    return userid.match(/@([^@]+)$/)[1];
-	};
-
 
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
 	    tbar: tbar,
 	    viewConfig: {
-		trackOver: false
+		trackOver: false,
 	    },
 	    columns: [
 		{
 		    header: gettext('User name'),
-		    width: 200,
-		    sortable: true,
-		    renderer: render_username,
 		    dataIndex: 'userid',
-		    hidden: !!me.fixedUser
+		    renderer: (uid) => {
+			let realmIndex = uid.lastIndexOf('@');
+			let user = uid.substr(0, realmIndex);
+			let realm = uid.substr(realmIndex);
+			return `${user} <span style='float:right;'>${realm}</span>`;
+		    },
+		    hidden: !!me.fixedUser,
+		    flex: 2,
 		},
 		{
-		    header: gettext('Realm'),
-		    width: 100,
-		    sortable: true,
-		    renderer: render_realm,
-		    dataIndex: 'userid',
-		    hidden: !!me.fixedUser
-		},
-		{
-		    header: gettext('Token name'),
-		    width: 100,
-		    sortable: true,
-		    dataIndex: 'tokenid'
+		    header: gettext('Token Name'),
+		    dataIndex: 'tokenid',
+		    hideable: false,
+		    flex: 1,
 		},
 		{
 		    header: gettext('Expire'),
-		    width: 80,
-		    sortable: true,
+		    dataIndex: 'expire',
+		    hideable: false,
 		    renderer: Proxmox.Utils.format_expire,
-		    dataIndex: 'expire'
+		    flex: 1,
 		},
 		{
 		    header: gettext('Comment'),
-		    sortable: false,
-		    renderer: Ext.String.htmlEncode,
 		    dataIndex: 'comment',
-		    flex: 1
+		    renderer: Ext.String.htmlEncode,
+		    flex: 3,
 		},
 		{
 		    header: gettext('Privilege Separation'),
-		    width: 80,
-		    sortable: true,
+		    dataIndex: 'privsep',
+		    hideable: false,
 		    renderer: Proxmox.Utils.format_boolean,
-		    dataIndex: 'privsep'
+		    flex: 1,
 		},
 	    ],
 	    listeners: {
 		activate: reload,
-		itemdblclick: run_editor
-	    }
+		itemdblclick: (view, rec) => run_editor(rec),
+	    },
 	});
 
 	if (me.fixedUser) {
@@ -240,36 +211,26 @@ Ext.define('PVE.dc.TokenView', {
 	}
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.window.TokenView', {
     extend: 'Ext.window.Window',
+    mixins: ['Proxmox.Mixin.CBind'],
 
     modal: true,
-    title: gettext('API Tokens'),
     subject: gettext('API Tokens'),
     scrollable: true,
     layout: 'fit',
     width: 800,
     height: 400,
-
-    initComponent: function() {
-	var me = this;
-
-	if (!me.userid) {
-	    throw "no userid given";
-	}
-
-	Ext.apply(me, {
-	    subject: gettext('API Tokens') + ' - ' + me.userid,
-	    items: [
-		Ext.create('PVE.dc.TokenView', {
-		    fixedUser: me.userid
-		})
-	    ]
-	});
-
-	me.callParent();
-    }
+    cbind: {
+	title: gettext('API Tokens') + ' - {userid}',
+    },
+    items: [{
+	xtype: 'pveTokenView',
+	cbind: {
+	    fixedUser: '{userid}',
+	},
+    }],
 });

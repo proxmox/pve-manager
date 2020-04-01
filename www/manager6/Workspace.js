@@ -378,10 +378,10 @@ Ext.define('PVE.StdWorkspace', {
 				    text: gettext('API Tokens'),
 				    iconCls: 'fa fa-fw fa-user-o',
 				    handler: function(btn, event, rec) {
-					var win = Ext.create('PVE.window.TokenView',{
-					    userid: Proxmox.UserName
+					Ext.create('PVE.window.TokenView', {
+					    autoShow: true,
+					    userid: Proxmox.UserName,
 					});
-					win.show();
 				    }
 				},
 				'-',

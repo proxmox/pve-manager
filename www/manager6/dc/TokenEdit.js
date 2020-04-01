@@ -1,125 +1,163 @@
 Ext.define('PVE.dc.TokenEdit', {
     extend: 'Proxmox.window.Edit',
     alias: ['widget.pveDcTokenEdit'],
+    mixins: ['Proxmox.Mixin.CBind'],
+
+    subject: gettext('User'),
 
     isAdd: true,
+    isCreate: false,
+    fixedUser: false,
 
-    initComponent: function() {
-	var me = this;
+    method: 'POST',
+    url: '/api2/extjs/access/users/',
 
-	me.isCreate = !me.tokenid;
+    items: {
+	xtype: 'inputpanel',
+	onGetValues: function(values) {
+	    let me = this;
+	    let win = me.up('pveDcTokenEdit');
+	    if (win.isCreate) {
+		let uid = encodeURIComponent(values.userid);
+		let tid = encodeURIComponent(values.tokenid);
+		delete values.userid;
+		delete values.tokenid;
 
-	var url;
-	var method;
-	var realm;
-
-	if (me.isCreate) {
-	    url = '/invalid';
-	    method = 'POST';
-	} else {
-	    url = '/api2/extjs/access/users/' + encodeURIComponent(me.userid) + '/token/' + encodeURIComponent(me.tokenid);
-	    method = 'PUT';
-	}
-
-	var column1 = [
+		win.url += `${uid}/token/${tid}`;
+	    }
+	    return values;
+	},
+	column1: [
 	    {
-		xtype: me.isCreate && !me.fixedUser ? 'pveUserSelector' : 'displayfield',
+		xtype: 'pmxDisplayEditField',
+		cbind: {
+		    editable: (get) => get('isCreate') && !get('fixedUser'),
+		    submitValue: (get) => get('isCreate') || get('fixedUser'),
+		},
+		editConfig: {
+		    xtype: 'pveUserSelector',
+		    allowBlank: false,
+		},
 		name: 'userid',
+		value: Proxmox.UserName,
 		fieldLabel: gettext('User'),
-		value: me.userid,
-		allowBlank: false,
-		submitValue: me.isCreate ? true : false
 	    },
 	    {
-		xtype: me.isCreate ? 'textfield' : 'displayfield',
+		xtype: 'pmxDisplayEditField',
+		cbind: {
+		    editable: '{isCreate}',
+		},
 		name: 'tokenid',
 		fieldLabel: gettext('Token ID'),
-		value: me.tokenid,
+		minLength: 2,
 		allowBlank: false,
-		submitValue: me.isCreate ? true : false
-	    }
-	];
-
-	var column2 = [
+	    },
+	],
+	column2: [
 	    {
 		xtype: 'proxmoxcheckbox',
 		name: 'privsep',
 		checked: true,
 		uncheckedValue: 0,
-		fieldLabel: gettext('Privilege Separation')
+		fieldLabel: gettext('Privilege Separation'),
 	    },
 	    {
-		xtype: 'datefield',
+		xtype: 'pmxExpireDate',
 		name: 'expire',
-		emptyText: 'never',
-		format: 'Y-m-d',
-		submitFormat: 'U',
-		fieldLabel: gettext('Expire')
-	    }
-	];
-
-	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
-	    column1: column1,
-	    column2: column2,
-	    columnB: [
-		{
-		    xtype: 'textfield',
-		    name: 'comment',
-		    fieldLabel: gettext('Comment')
-		}
-	    ],
-	    onGetValues: function(values) {
-		// hack: ExtJS datefield does not submit 0, so we need to set that
-		if (!values.expire) {
-		    values.expire = 0;
-		}
-
-		if (me.isCreate) {
-		    if (values.tokenid && values.userid) {
-			me.url = '/api2/extjs/access/users/' + encodeURIComponent(values.userid) + '/token/' + encodeURIComponent(values.tokenid);
-		    } else {
-			me.url = '/invalid';
-		    }
-		    delete values.userid;
-		    delete values.tokenid;
-		}
-
-		return values;
-	    }
-	});
-
-	Ext.applyIf(me, {
-	    subject: gettext('User'),
-	    url: url,
-	    method: method,
-	    fieldDefaults: {
-		labelWidth: 110 // for spanish translation 
 	    },
-	    items: [ ipanel ]
-	});
+	],
+	columnB: [
+	    {
+		xtype: 'textfield',
+		name: 'comment',
+		fieldLabel: gettext('Comment'),
+	    },
+	],
+    },
+
+    initComponent: function() {
+	let me = this;
 
 	me.callParent();
 
 	if (!me.isCreate) {
 	    me.load({
 		success: function(response, options) {
-		    var data = response.result.data;
-		    if (Ext.isDefined(data.expire)) {
-			if (data.expire) {
-			    data.expire = new Date(data.expire * 1000);
-			} else {
-			    // display 'never' instead of '1970-01-01'
-			    data.expire = null;
-			}
-		    }
-		    me.setValues(data);
-		}
+		    me.setValues(response.result.data);
+		},
 	    });
 	}
     },
     apiCallDone: function(success, response, options) {
-	if (success && response.result.data.value) {
-	    Ext.Msg.alert(gettext('API Token'), gettext('Please record the following API token value - it will only be displayed now') + ':<br/>' + response.result.data.value);
+	let res = response.result.data;
+	if (!success || !res.value) {
+	    return;
 	}
-    }
+
+	Ext.create('PVE.dc.TokenShow', {
+	    autoShow: true,
+	    tokenid: res['full-tokenid'],
+	    secret: res.value,
+	});
+    },
+});
+
+Ext.define('PVE.dc.TokenShow', {
+    extend: 'Ext.window.Window',
+    alias: ['widget.pveTokenShow'],
+    mixins: ['Proxmox.Mixin.CBind'],
+
+    width: 600,
+    modal: true,
+    resizable: false,
+    title: gettext('Token Secret'),
+
+    items: [
+	{
+	    xtype: 'container',
+	    layout: 'form',
+	    bodyPadding: 10,
+	    border: false,
+	    fieldDefaults: {
+		labelWidth: 100,
+		anchor: '100%',
+            },
+	    padding: '0 10 10 10',
+	    items: [
+		{
+		    xtype: 'textfield',
+		    fieldLabel: gettext('Token ID'),
+		    cbind: {
+			value: '{tokenid}',
+		    },
+		    editable: false,
+		},
+		{
+		    xtype: 'textfield',
+		    fieldLabel: gettext('Secret'),
+		    inputId: 'token-secret-value',
+		    cbind: {
+			value: '{secret}',
+		    },
+		    editable: false,
+		},
+	    ],
+	},
+	{
+	    xtype: 'component',
+	    border: false,
+	    padding: '10 10 10 10',
+	    userCls: 'pmx-hint',
+	    html: gettext('Please record the API token secret - it will only be displayed now'),
+	},
+    ],
+    buttons: [
+	{
+	    handler: function(b) {
+		document.getElementById('token-secret-value').select();
+		document.execCommand("copy");
+	    },
+	    text: gettext('Copy Secret Value'),
+	},
+    ],
 });
