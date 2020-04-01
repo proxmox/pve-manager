@@ -53,24 +53,19 @@ Ext.define('PVE.node.CephStatus', {
 			},
 			{
 			    itemId: 'versioninfo',
-			    xtype: 'component',
-			    data: {
-				version: "",
-				git: "",
+			    xtype: 'displayfield',
+			    fieldLabel: gettext('Ceph Version'),
+			    value: "",
+			    autoEl: {
+				tag: 'div',
+				'data-qtip': gettext('The newest version installed in the Cluster.'),
 			    },
 			    padding: '10 0 0 0',
 			    style: {
 				'text-align': 'center',
 			    },
-			    tpl: [
-				'<tpl if="version">',
-				'<b>', gettext('Highest Version in Cluster'), '</b>',
-				'<br>',
-				'{version} (git: {git})',
-				'</tpl>'
-			    ],
 			}
-		    ]
+		    ],
 		},
 		{
 		    flex: 2,
@@ -394,20 +389,14 @@ Ext.define('PVE.node.CephStatus', {
 
 	    let maxversion = [];
 	    let maxversiontext = "";
-	    let git = "";
 	    for (const [nodename, data] of Object.entries(me.metadata.node)) {
 		let version = data.version.parts;
 		if (PVE.Utils.compare_ceph_versions(version, maxversion) > 0) {
 		    maxversion = version;
-		    git = data.buildcommit.substr(0,8);
 		    maxversiontext = data.version.str;
 		}
 	    }
-
-	    me.down('#versioninfo').update({
-		version: maxversiontext,
-		git: git,
-	    });
+	    me.down('#versioninfo').setValue(maxversiontext);
 	}, me);
 
 	me.on('destroy', me.store.stopUpdate);
