@@ -13,7 +13,7 @@ Ext.define('PVE.dc.OptionView', {
 	opts = opts || {};
 	me.rows = me.rows || {};
 
-	var canEdit = (opts.caps === undefined || opts.caps);
+	let canEdit = (!opts.hasOwnProperty('caps') || opts.caps);
 	me.rows[name] = {
 	    required: true,
 	    defaultValue: opts.defaultValue,
@@ -100,7 +100,6 @@ Ext.define('PVE.dc.OptionView', {
 	});
 	me.add_inputpanel_row('migration', gettext('Migration Settings'), {
 	    renderer: PVE.Utils.render_dc_ha_opts,
-	    caps: caps.vms['Sys.Modify'],
 	    labelWidth: 120,
 	    url: "/api2/extjs/cluster/options",
 	    defaultKey: 'type',
@@ -122,7 +121,6 @@ Ext.define('PVE.dc.OptionView', {
 	});
 	me.add_inputpanel_row('ha', gettext('HA Settings'), {
 	    renderer: PVE.Utils.render_dc_ha_opts,
-	    caps: caps.dc['Sys.Modify'],
 	    labelWidth: 120,
 	    url: "/api2/extjs/cluster/options",
 	    onlineHelp: 'ha_manager_shutdown_policy',
@@ -144,7 +142,6 @@ Ext.define('PVE.dc.OptionView', {
 	});
 	me.add_inputpanel_row('u2f', gettext('U2F Settings'), {
 	    renderer: PVE.Utils.render_dc_ha_opts,
-	    caps: caps.dc['Sys.Modify'],
 	    width: 450,
 	    url: "/api2/extjs/cluster/options",
 	    onlineHelp: 'pveum_configure_u2f',
@@ -176,7 +173,6 @@ Ext.define('PVE.dc.OptionView', {
 	});
 	me.add_inputpanel_row('bwlimit', gettext('Bandwidth Limits'), {
 	    renderer: me.render_bwlimits,
-	    caps: caps.dc['Sys.Modify'],
 	    width: 450,
 	    url: "/api2/extjs/cluster/options",
 	    parseBeforeSet: true,
