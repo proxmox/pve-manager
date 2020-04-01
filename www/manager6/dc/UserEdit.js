@@ -84,12 +84,8 @@ Ext.define('PVE.dc.UserEdit', {
 		fieldLabel: gettext('Group')
 	    },
             {
-                xtype: 'datefield',
-                name: 'expire',
-		emptyText: 'never',
-		format: 'Y-m-d',
-		submitFormat: 'U',
-                fieldLabel: gettext('Expire')
+		xtype: 'pmxExpireDate',
+		name: 'expire',
             },
 	    {
 		xtype: 'proxmoxcheckbox',
@@ -156,11 +152,6 @@ Ext.define('PVE.dc.UserEdit', {
 		}
 	    ],
 	    onGetValues: function(values) {
-		// hack: ExtJS datefield does not submit 0, so we need to set that
-		if (!values.expire) {
-		    values.expire = 0;
-		}
-
 		if (realm) {
 		    values.userid = values.userid + '@' + realm;
 		}
@@ -189,14 +180,6 @@ Ext.define('PVE.dc.UserEdit', {
             me.load({
 		success: function(response, options) {
 		    var data = response.result.data;
-		    if (Ext.isDefined(data.expire)) {
-			if (data.expire) {
-			    data.expire = new Date(data.expire * 1000);
-			} else {
-			    // display 'never' instead of '1970-01-01'
-			    data.expire = null;
-			}
-		    }
 		    me.setValues(data);
 		    if (data.keys) {
 			if ( data.keys === 'x!oath' || data.keys === 'x!u2f' ) {
