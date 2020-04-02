@@ -98,10 +98,11 @@ Ext.define('PVE.node.CephServiceList', {
 	    view.maxversion = [];
 	    view.mixedversions = false;
 	    for (const [nodename, data] of Object.entries(view.nodeversions)) {
-		if (PVE.Utils.compare_ceph_versions(data.version.parts, view.maxversion) > 0) {
-		    if (view.maxversion.length > 0) {
-			view.mixedversions = true;
-		    }
+		let res = PVE.Utils.compare_ceph_versions(data.version.parts, view.maxversion);
+		if (res !== 0 && view.maxversion.length > 0) {
+		    view.mixedversions = true;
+		}
+		if (res > 0) {
 		    view.maxversion = data.version.parts;
 		}
 	    }
