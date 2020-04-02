@@ -134,7 +134,6 @@ Ext.define('PVE.node.CephServiceList', {
 	    view.on('destroy', view.versionsstore.stopUpdate);
 
 	    view.rstore = Ext.create('Proxmox.data.UpdateStore', {
-		autoLoad: true,
 		autoStart: true,
 		interval: 3000,
 		storeid: 'ceph-' + view.type + '-list' + view.nodename,
