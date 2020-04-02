@@ -132,6 +132,7 @@ Ext.define('PVE.node.CephServiceList', {
 	    });
 
 	    view.versionsstore.on('load', this.getMaxVersions, this);
+	    view.on('destroy', view.versionsstore.stopUpdate);
 
 	    view.rstore = Ext.create('Proxmox.data.UpdateStore', {
 		autoLoad: true,
