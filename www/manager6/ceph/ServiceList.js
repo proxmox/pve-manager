@@ -121,7 +121,6 @@ Ext.define('PVE.node.CephServiceList', {
 	    }
 
 	    view.versionsstore = Ext.create('Proxmox.data.UpdateStore', {
-		autoLoad: true,
 		autoStart: true,
 		interval: 10000,
 		storeid: 'ceph-versions-' + view.type + '-list' + view.nodename,
