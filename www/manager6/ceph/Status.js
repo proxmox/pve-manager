@@ -73,10 +73,11 @@ Ext.define('PVE.node.CephStatus', {
 		    stateful: true,
 		    stateId: 'ceph-status-warnings',
 		    xtype: 'grid',
-		    // since we load the store manually,
-		    // to show the emptytext, we have to
-		    // specify an empty store
-		    store: { data:[] },
+		    // since we load the store manually to show the emptytext,
+		    // we have to specify an empty one here
+		    store: {
+			data: [],
+		    },
 		    emptyText: gettext('No Warnings/Errors'),
 		    columns: [
 			{

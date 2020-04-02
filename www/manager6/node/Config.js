@@ -80,7 +80,7 @@ Ext.define('PVE.node.Config', {
 	    })
 	});
 
-	var restartBtn = Ext.create('Proxmox.button.Button', {
+	let restartBtn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Reboot'),
 	    disabled: !caps.nodes['Sys.PowerMgmt'],
 	    dangerous: true,
@@ -114,7 +114,9 @@ Ext.define('PVE.node.Config', {
 	Ext.apply(me, {
 	    title: gettext('Node') + " '" + nodename + "'",
 	    hstateid: 'nodetab',
-	    defaults: { statusStore: me.statusStore },
+	    defaults: {
+		statusStore: me.statusStore
+	    },
 	    tbar: [ restartBtn, shutdownBtn, shellBtn, actionBtn]
 	});
 
@@ -400,9 +402,9 @@ Ext.define('PVE.node.Config', {
 
 	me.callParent();
 
-	me.mon(me.statusStore, 'load', function(s, records, success) {
-	    var uptimerec = s.data.get('uptime');
-	    var powermgmt = uptimerec ? uptimerec.data.value : false;
+	me.mon(me.statusStore, 'load', function(store, records, success) {
+	    let uptimerec = store.data.get('uptime');
+	    let powermgmt = uptimerec ? uptimerec.data.value : false;
 	    if (!caps.nodes['Sys.PowerMgmt']) {
 		powermgmt = false;
 	    }
