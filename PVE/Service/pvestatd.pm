@@ -20,6 +20,7 @@ use PVE::Storage;
 use PVE::QemuServer;
 use PVE::QemuServer::Monitor;
 use PVE::LXC;
+use PVE::LXC::CGroup;
 use PVE::LXC::Config;
 use PVE::RPCEnvironment;
 use PVE::API2::Subscription;
@@ -252,17 +253,28 @@ sub remove_stale_lxc_consoles {
 
 my $rebalance_error_count = {};
 
+my $NO_REBALANCE;
 sub rebalance_lxc_containers {
+    # Make sure we can find the cpuset controller path:
+    return if $NO_REBALANCE;
+    my $cpuset_base = eval { PVE::LXC::CGroup::cpuset_controller_path() };
+    if (!defined($cpuset_base)) {
+	$NO_REBALANCE = 1;
+	return;
+    }
 
-    return if !-d '/sys/fs/cgroup/cpuset/lxc'; # nothing to do...
-
-    my $all_cpus = PVE::CpuSet->new_from_cgroup('lxc', 'effective_cpus');
+    # Figure out the cpu count & highest ID
+    my $all_cpus = PVE::CpuSet->new_from_path($cpuset_base, 1);
     my @allowed_cpus = $all_cpus->members();
     my $cpucount = scalar(@allowed_cpus);
     my $max_cpuid = $allowed_cpus[-1];
 
     my @cpu_ctcount = (0) x ($max_cpuid+1);
     my @balanced_cts;
+
+    # A mapping { vmid => cgroup_payload_path } for containers where namespace
+    # separation is active and recognized.
+    my $ctinfo = {};
 
     my $modify_cpuset = sub {
 	my ($vmid, $cpuset, $newset) = @_;
@@ -273,25 +285,26 @@ sub rebalance_lxc_containers {
 	}
 
 	eval {
+	    my $cgbase = $ctinfo->{$vmid};
 
-	    if (-d "/sys/fs/cgroup/cpuset/lxc/$vmid/ns") {
+	    if (defined($cgbase)) {
 		# allow all, so that we can set new cpuset in /ns
-		$all_cpus->write_to_cgroup("lxc/$vmid");
+		$all_cpus->write_to_path($cgbase);
 		eval {
-		    $newset->write_to_cgroup("lxc/$vmid/ns");
+		    $newset->write_to_path("$cgbase/ns");
 		};
 		if (my $err = $@) {
 		    warn $err if !$rebalance_error_count->{$vmid}++;
 		    # restore original
-		    $cpuset->write_to_cgroup("lxc/$vmid");
+		    $cpuset->write_to_path($cgbase);
 		} else {
 		    # also apply to container root cgroup
-		    $newset->write_to_cgroup("lxc/$vmid");
+		    $newset->write_to_path($cgbase);
 		    $rebalance_error_count->{$vmid} = 0;
 		}
 	    } else {
 		# old style container
-		$newset->write_to_cgroup("lxc/$vmid");
+		$newset->write_to_path($cgbase);
 		$rebalance_error_count->{$vmid} = 0;
 	    }
 	};
@@ -303,14 +316,21 @@ sub rebalance_lxc_containers {
     my $ctlist = PVE::LXC::config_list();
 
     foreach my $vmid (sort keys %$ctlist) {
-	next if ! -d "/sys/fs/cgroup/cpuset/lxc/$vmid";
+	my $cgpath = "$cpuset_base/lxc/$vmid";
+
+	if (-d "$cgpath/ns") {
+	    $ctinfo->{$vmid} = $cgpath;
+	} else {
+	    # old style container
+	    next;
+	}
 
 	my ($conf, $cpuset);
 	eval {
 
 	    $conf = PVE::LXC::Config->load_config($vmid);
 
-	    $cpuset = PVE::CpuSet->new_from_cgroup("lxc/$vmid");
+	    $cpuset = PVE::CpuSet->new_from_path($cgpath);
 	};
 	if (my $err = $@) {
 	    warn $err;
