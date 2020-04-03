@@ -404,10 +404,8 @@ Ext.define('PVE.node.Config', {
 
 	me.mon(me.statusStore, 'load', function(store, records, success) {
 	    let uptimerec = store.data.get('uptime');
-	    let powermgmt = uptimerec ? uptimerec.data.value : false;
-	    if (!caps.nodes['Sys.PowerMgmt']) {
-		powermgmt = false;
-	    }
+	    let powermgmt = caps.nodes['Sys.PowerMgmt'] && uptimerec && uptimerec.data.value;
+
 	    restartBtn.setDisabled(!powermgmt);
 	    shutdownBtn.setDisabled(!powermgmt);
 	    shellBtn.setDisabled(!powermgmt);
