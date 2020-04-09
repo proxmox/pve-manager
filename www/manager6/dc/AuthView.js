@@ -8,54 +8,74 @@ Ext.define('PVE.dc.AuthView', {
     stateful: true,
     stateId: 'grid-authrealms',
 
-    initComponent : function() {
-	var me = this;
+    viewConfig: {
+	trackOver: false,
+    },
 
-	var store = new Ext.data.Store({
-	    model: 'pve-domains',
-	    sorters: { 
-		property: 'realm', 
-		order: 'DESC' 
-	    }
-	});
+    columns: [
+	{
+	    header: gettext('Realm'),
+	    width: 100,
+	    sortable: true,
+	    dataIndex: 'realm',
+	},
+	{
+	    header: gettext('Type'),
+	    width: 100,
+	    sortable: true,
+	    dataIndex: 'type',
+	},
+	{
+	    header: gettext('TFA'),
+	    width: 100,
+	    sortable: true,
+	    dataIndex: 'tfa',
+	},
+	{
+	    header: gettext('Comment'),
+	    sortable: false,
+	    dataIndex: 'comment',
+	    renderer: Ext.String.htmlEncode,
+	    flex: 1,
+	},
+    ],
 
-	var reload = function() {
-	    store.load();
-	};
+    store: {
+	model: 'pve-domains',
+	sorters: {
+	    property: 'realm',
+	    order: 'DESC',
+	},
+    },
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
-
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
-		return;
-	    }
-	    Ext.create('PVE.dc.AuthEditBase', {
-		realm: rec.data.realm,
-		authType: rec.data.type,
-		listeners: {
-		    destroy: reload,
-		},
-	    }).show();
-	};
-
-	var edit_btn = new Proxmox.button.Button({
-	    text: gettext('Edit'),
-	    disabled: true,
-	    selModel: sm,
-	    handler: run_editor
-	});
-
-	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
-	    baseurl: '/access/domains/',
-	    selModel: sm,
-	    enableFn: function(rec) {
-		return !(rec.data.type === 'pve' || rec.data.type === 'pam');
+    openEditWindow: function(authType, realm) {
+	let me = this;
+	Ext.create('PVE.dc.AuthEditBase', {
+	    authType,
+	    realm,
+	    listeners: {
+		destroy: () => me.reload(),
 	    },
-	    callback: function() {
-		reload();
-	    }
-        });
+	}).show();
+    },
+
+    reload: function() {
+	let me = this;
+	me.getStore().load();
+    },
+
+    run_editor: function() {
+	let me = this;
+	let rec = me.getSelection()[0];
+	if (!rec) {
+	    return;
+	}
+	me.openEditWindow(rec.data.type, rec.data.realm);
+    },
+
+
+    initComponent: function() {
+	var me = this;
 
 	let items = [];
 	for (const [authType, config] of Object.entries(PVE.Utils.authSchema)) {
@@ -63,67 +83,37 @@ Ext.define('PVE.dc.AuthView', {
 
 	    items.push({
 		text: config.name,
-		handler: function() {
-		    Ext.create('PVE.dc.AuthEditBase', {
-			authType,
-			listeners: {
-			    destroy: reload,
-			},
-		    }).show();
-		},
+		handler: () => me.openEditWindow(authType),
 	    });
 	}
 
-        var tbar = [
-	    {
-		text: gettext('Add'),
-		menu: new Ext.menu.Menu({
-		    items: items,
-		}),
-	    },
-	    edit_btn, remove_btn
-        ];
-
 	Ext.apply(me, {
-	    store: store,
-	    selModel: sm,
-            tbar: tbar,
-	    viewConfig: {
-		trackOver: false
-	    },
-	    columns: [
+	    tbar: [
 		{
-		    header: gettext('Realm'),
-		    width: 100,
-		    sortable: true,
-		    dataIndex: 'realm'
+		    text: gettext('Add'),
+		    menu: {
+			items: items,
+		    },
 		},
 		{
-		    header: gettext('Type'),
-		    width: 100,
-		    sortable: true,
-		    dataIndex: 'type'
+		    xtype: 'proxmoxButton',
+		    text: gettext('Edit'),
+		    disabled: true,
+		    handler: () => me.run_editor(),
 		},
 		{
-		    header: gettext('TFA'),
-		    width: 100,
-		    sortable: true,
-		    dataIndex: 'tfa'
+		    xtype: 'proxmoxStdRemoveButton',
+		    baseurl: '/access/domains/',
+		    enableFn: (rec) => PVE.Utils.authSchema[rec.data.type].add,
+		    callback: () => me.reload(),
 		},
-		{
-		    header: gettext('Comment'),
-		    sortable: false,
-		    dataIndex: 'comment',
-		    renderer: Ext.String.htmlEncode,
-		    flex: 1
-		}
 	    ],
 	    listeners: {
-		activate: reload,
-		itemdblclick: run_editor
-	    }
+		activate: () => me.reload(),
+		itemdblclick: () => me.run_editor(),
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });
