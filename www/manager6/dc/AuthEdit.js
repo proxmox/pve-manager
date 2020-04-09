@@ -123,72 +123,9 @@ Ext.define('PVE.dc.AuthEdit', {
             );
 	}
 
-	// Two Factor Auth settings
-
-        column2.push({
-            xtype: 'proxmoxKVComboBox',
-            name: 'tfa',
-	    deleteEmpty: !me.isCreate,
-	    value: '',
-            fieldLabel: gettext('TFA'),
-	    comboItems: [ ['__default__', Proxmox.Utils.noneText], ['oath', 'OATH'], ['yubico', 'Yubico']],
-	    listeners: {
-		change: function(f, value) {
-		    if (!me.rendered) {
-			return;
-		    }
-		    me.down('field[name=oath_step]').setVisible(value === 'oath');
-		    me.down('field[name=oath_digits]').setVisible(value === 'oath');
-		    me.down('field[name=yubico_api_id]').setVisible(value === 'yubico');
-		    me.down('field[name=yubico_api_key]').setVisible(value === 'yubico');
-		    me.down('field[name=yubico_url]').setVisible(value === 'yubico');
-		}
-	    }
-        });
-
 	column2.push({
-            xtype: 'proxmoxintegerfield',
-            name: 'oath_step',
-	    value: '',
-	    minValue: 10,
-	    emptyText: Proxmox.Utils.defaultText + ' (30)',
-	    submitEmptyText: false,
-	    hidden: true,
-            fieldLabel: 'OATH time step'
-        });
-
-	column2.push({
-            xtype: 'proxmoxintegerfield',
-            name: 'oath_digits',
-	    value: '',
-	    minValue: 6,
-	    maxValue: 8,
-	    emptyText: Proxmox.Utils.defaultText + ' (6)',
-	    submitEmptyText: false,
-	    hidden: true,
-            fieldLabel: 'OATH password length'
-        });
-
-	column2.push({
-            xtype: 'textfield',
-            name: 'yubico_api_id',
-	    hidden: true,
-            fieldLabel: 'Yubico API Id'
-        });
-
-	column2.push({
-            xtype: 'textfield',
-            name: 'yubico_api_key',
-	    hidden: true,
-            fieldLabel: 'Yubico API Key'
-        });
-
-	column2.push({
-            xtype: 'textfield',
-            name: 'yubico_url',
-	    hidden: true,
-            fieldLabel: 'Yubico URL'
-        });
+	    xtype: 'pveTFASelector',
+	});
 
 	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	    column1: column1,
@@ -210,31 +147,6 @@ Ext.define('PVE.dc.AuthEdit', {
 		    values.type = me.authType;
 		}
 
-		if (values.tfa === 'oath') {
-		    values.tfa = "type=oath";
-		    if (values.oath_step) {
-			values.tfa += ",step=" + values.oath_step;
-		    }
-		    if (values.oath_digits) {
-			values.tfa += ",digits=" + values.oath_digits;
-		    }
-		} else if (values.tfa === 'yubico') {
-		    values.tfa = "type=yubico";
-		    values.tfa += ",id=" + values.yubico_api_id;
-		    values.tfa += ",key=" + values.yubico_api_key;
-		    if (values.yubico_url) {
-			values.tfa += ",url=" + values.yubico_url;
-		    }
-		} else {
-		    delete values.tfa;
-		}
-
-		delete values.oath_step;
-		delete values.oath_digits;
-		delete values.yubico_api_id;
-		delete values.yubico_api_key;
-		delete values.yubico_url;
-		
 		return values;
 	    }
 	});
@@ -258,22 +170,6 @@ Ext.define('PVE.dc.AuthEdit', {
 		    if (data.type !== me.authType) {
 			me.close();
 			throw "got wrong auth type";
-		    }
-
-		    if (data.tfa) {
-			var tfacfg = PVE.Parser.parseTfaConfig(data.tfa);
-			data.tfa = tfacfg.type;
-			if (tfacfg.type === 'yubico') {
-			    data.yubico_api_key = tfacfg.key;
-			    data.yubico_api_id = tfacfg.id;
-			    data.yubico_url = tfacfg.url;
-			} else if (tfacfg.type === 'oath') {
-			    // step is a number before
-			    /*jslint confusion: true*/
-			    data.oath_step = tfacfg.step;
-			    data.oath_digits = tfacfg.digits;
-			    /*jslint confusion: false*/
-			}
 		    }
 
                     me.setValues(data);

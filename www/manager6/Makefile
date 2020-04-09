@@ -69,8 +69,9 @@ JSSRC= 				                 	\
 	form/CephPoolSelector.js			\
 	form/PermPathSelector.js			\
 	form/SpiceEnhancementSelector.js		\
-	form/SDNZoneSelector.js   	                \
-	form/SDNControllerSelector.js  	                \
+	form/SDNZoneSelector.js				\
+	form/SDNControllerSelector.js			\
+	form/TFASelector.js				\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
