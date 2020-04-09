@@ -208,7 +208,7 @@ Ext.define('PVE.qemu.AgentIPView', {
 	    me.updateStatus(!success);
 	});
 
-	me.on('destroy', me.ipStore.stopUpdate);
+	me.on('destroy', me.ipStore.stopUpdate, me.ipStore);
 
 	// if we already have info about the vm, use it immediately
 	if (me.rstore.getCount()) {

@@ -1,7 +1,9 @@
 Ext.define('PVE.ceph.Log', {
     extend: 'Proxmox.panel.LogView',
     xtype: 'cephLogView',
+
     nodename: undefined,
+
     failCallback: function(response) {
 	var me = this;
 	var msg = response.htmlStatus;

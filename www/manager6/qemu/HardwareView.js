@@ -766,11 +766,9 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	me.callParent();
 
-	me.on('activate', me.rstore.startUpdate);
-	me.on('destroy', me.rstore.stopUpdate);
+	me.on('activate', me.rstore.startUpdate, me.rstore);
+	me.on('destroy', me.rstore.stopUpdate, me.rstore);
 
-	me.mon(me.getStore(), 'datachanged', function() {
-	    set_button_status();
-	});
+	me.mon(me.getStore(), 'datachanged', set_button_status, me);
     }
 });

@@ -83,9 +83,9 @@ Ext.define('PVE.dc.Log', {
 		}
 	    ],
 	    listeners: {
-		activate: logstore.startUpdate,
-		deactivate: logstore.stopUpdate,
-		destroy: logstore.stopUpdate
+		activate: () => logstore.startUpdate(),
+		deactivate: () => logstore.stopUpdate(),
+		destroy: () => logstore.stopUpdate(),
 	    }
 	});
 
