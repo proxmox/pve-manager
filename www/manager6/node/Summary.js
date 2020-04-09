@@ -148,8 +148,15 @@ Ext.define('PVE.node.Summary', {
 		},
 	    ],
 	    listeners: {
-		activate: function() { rstore.startUpdate(); rrdstore.startUpdate(); },
-		destroy: function() { rstore.stopUpdate(); rrdstore.stopUpdate(); }
+		activate: function() {
+		    rstore.setInterval(1000);
+		    rstore.startUpdate(); // just to be sure
+		    rrdstore.startUpdate();
+		},
+		destroy: function() {
+		    rstore.setInterval(5000); // don't stop it, it's not ours!
+		    rrdstore.stopUpdate();
+		},
 	    }
 	});
 

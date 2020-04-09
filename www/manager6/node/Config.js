@@ -16,7 +16,7 @@ Ext.define('PVE.node.Config', {
 
 	me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
 	    url: "/api2/json/nodes/" + nodename + "/status",
-	    interval: 1000
+	    interval: 5000
 	});
 
 	var node_command = function(cmd) {
