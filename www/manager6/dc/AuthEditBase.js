@@ -92,13 +92,44 @@ Ext.define('PVE.dc.AuthEditBase', {
 
 	me.subject = authConfig.name;
 
-	Ext.apply(me, {
-	    items: [{
+	let items;
+	let bodyPadding;
+	if (authConfig.syncipanel) {
+	    bodyPadding = 0;
+	    items = {
+		xtype: 'tabpanel',
+		region: 'center',
+		layout: 'fit',
+		bodyPadding: 10,
+		items: [
+		    {
+			title: gettext('General'),
+			realm: me.realm,
+			xtype: authConfig.ipanel,
+			isCreate: me.isCreate,
+			type: me.authType,
+		    },
+		    {
+			title: gettext('Sync Options'),
+			realm: me.realm,
+			xtype: authConfig.syncipanel,
+			isCreate: me.isCreate,
+			type: me.authType,
+		    },
+		],
+	    };
+	} else {
+	    items = [{
 		realm: me.realm,
 		xtype: authConfig.ipanel,
 		isCreate: me.isCreate,
 		type: me.authType,
-	    }],
+	    }];
+	}
+
+	Ext.apply(me, {
+	    items,
+	    bodyPadding,
 	});
 
 	me.callParent();

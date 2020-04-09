@@ -570,11 +570,13 @@ Ext.define('PVE.Utils', { utilities: {
 	ad: {
 	    name: gettext('Active Directory Server'),
 	    ipanel: 'pveAuthADPanel',
+	    syncipanel: 'pveAuthLDAPSyncPanel',
 	    add: true,
 	},
 	ldap: {
 	    name: gettext('LDAP Server'),
 	    ipanel: 'pveAuthLDAPPanel',
+	    syncipanel: 'pveAuthLDAPSyncPanel',
 	    add: true,
 	},
 	pam: {
