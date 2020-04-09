@@ -30,13 +30,13 @@ Ext.define('PVE.dc.AuthView', {
 	    if (!rec) {
 		return;
 	    }
-
-            var win = Ext.create('PVE.dc.AuthEdit',{
-                realm: rec.data.realm,
-		authType: rec.data.type
-            });
-            win.on('destroy', reload);
-            win.show();
+	    Ext.create('PVE.dc.AuthEditBase', {
+		realm: rec.data.realm,
+		authType: rec.data.type,
+		listeners: {
+		    destroy: reload,
+		},
+	    }).show();
 	};
 
 	var edit_btn = new Proxmox.button.Button({
@@ -57,33 +57,29 @@ Ext.define('PVE.dc.AuthView', {
 	    }
         });
 
+	let items = [];
+	for (const [authType, config] of Object.entries(PVE.Utils.authSchema)) {
+	    if (!config.add) { continue; }
+
+	    items.push({
+		text: config.name,
+		handler: function() {
+		    Ext.create('PVE.dc.AuthEditBase', {
+			authType,
+			listeners: {
+			    destroy: reload,
+			},
+		    }).show();
+		},
+	    });
+	}
+
         var tbar = [
 	    {
 		text: gettext('Add'),
 		menu: new Ext.menu.Menu({
-		    items: [
-			{
-			    text: gettext('Active Directory Server'),
-			    handler: function() {
-				var win = Ext.create('PVE.dc.AuthEdit', {
-				    authType: 'ad'
-				});
-				win.on('destroy', reload);
-				win.show();
-			    }
-			},
-			{
-			    text: gettext('LDAP Server'),
-			    handler: function() {
-				var win = Ext.create('PVE.dc.AuthEdit',{
-				    authType: 'ldap'
-				});
-				win.on('destroy', reload);
-				win.show();
-			    }
-			}
-		    ]
-		})
+		    items: items,
+		}),
 	    },
 	    edit_btn, remove_btn
         ];

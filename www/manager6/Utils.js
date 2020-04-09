@@ -566,6 +566,29 @@ Ext.define('PVE.Utils', { utilities: {
 	return format === 'pbs-ct' || volid.match(':backup/vzdump-(lxc|openvz)-');
     },
 
+    authSchema: {
+	ad: {
+	    name: gettext('Active Directory Server'),
+	    ipanel: 'pveAuthADPanel',
+	    add: true,
+	},
+	ldap: {
+	    name: gettext('LDAP Server'),
+	    ipanel: 'pveAuthLDAPPanel',
+	    add: true,
+	},
+	pam: {
+	    name: 'Linux PAM',
+	    ipanel: 'pveAuthBasePanel',
+	    add: false,
+	},
+	pve: {
+	    name: 'Proxmox VE authentication server',
+	    ipanel: 'pveAuthBasePanel',
+	    add: false,
+	},
+    },
+
     storageSchema: {
 	dir: {
 	    name: Proxmox.Utils.directoryText,
