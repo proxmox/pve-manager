@@ -1247,7 +1247,11 @@ Ext.define('PVE.Utils', { utilities: {
 	if (values[fieldname] === '' || values[fieldname] === default_val) {
 	    if (!create) {
 		if (values['delete']) {
-		    values['delete'] += ',' + fieldname;
+		    if (Ext.isArray(values['delete'])) {
+			values['delete'].push(fieldname);
+		    } else {
+			values['delete'] += ',' + fieldname;
+		    }
 		} else {
 		    values['delete'] = fieldname;
 		}
