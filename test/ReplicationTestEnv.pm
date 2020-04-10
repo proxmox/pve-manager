@@ -313,7 +313,7 @@ sub commit_log {
     if (-f $logname) {
 	my $diff = `diff -u '$logname' '$logname.tmp'`;
 	if ($diff) {
-	    warn "got unexpeted output\n";
+	    warn "got unexpected output\n";
 	    print "# diff -u '$logname' '$logname.tmp'\n";
 	    print $diff;
 	    exit(-1);
