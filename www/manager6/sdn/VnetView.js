@@ -67,22 +67,6 @@ Ext.define('PVE.sdn.VnetView', {
 		},
 		remove_btn,
 		edit_btn,
-		{
-		    text: gettext('Revert'),
-		    handler: function() {
-			Proxmox.Utils.API2Request({
-			    url: '/cluster/sdn/vnets/',
-			    method: 'DELETE',
-			    waitMsgTarget: me,
-			    callback: function() {
-				reload();
-			    },
-			    failure: function(response, opts) {
-				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-			    }
-			});
-		    }
-		},
 	    ],
 	    columns: [
 		{

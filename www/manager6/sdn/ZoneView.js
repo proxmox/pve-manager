@@ -103,22 +103,6 @@ Ext.define('PVE.sdn.ZoneView', {
 		},
 		remove_btn,
 		edit_btn,
-		{
-		    text: gettext('Revert'),
-		    handler: function() {
-			Proxmox.Utils.API2Request({
-			    url: '/cluster/sdn/zones/',
-			    method: 'DELETE',
-			    waitMsgTarget: me,
-			    callback: function() {
-				reload();
-			    },
-			    failure: function(response, opts) {
-				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-			    }
-			});
-		    }
-		},
 	    ],
 	    columns: [
 		{
