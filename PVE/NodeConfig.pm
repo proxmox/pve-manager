@@ -81,7 +81,7 @@ my $confdesc = {
     },
 };
 
-my $acme_additional_desc = {
+my $acme_domain_desc = {
     domain => {
 	type => 'string',
 	format => 'pve-acme-domain',
@@ -122,10 +122,10 @@ $confdesc->{acme} = {
 };
 
 for my $i (0..$MAXDOMAINS) {
-    $confdesc->{"acme_additional_domain$i"} = {
+    $confdesc->{"acmedomain$i"} = {
 	type => 'string',
-	description => 'ACME additional Domain',
-	format => $acme_additional_desc,
+	description => 'ACME domain and validation plugin',
+	format => $acme_domain_desc,
 	optional => 1,
     };
 };
@@ -249,12 +249,12 @@ sub get_acme_conf {
     $res->{account} //= 'default';
 
     for my $index (0..$MAXDOMAINS) {
-	my $domain_rec = $data->{"acme_additional_domain$index"};
+	my $domain_rec = $data->{"acmedomain$index"};
 	next if !defined($domain_rec);
 
 	my $parsed = eval {
 	    PVE::JSONSchema::parse_property_string(
-		$acme_additional_desc,
+		$acme_domain_desc,
 		$domain_rec);
 	};
 	if ($@) {
