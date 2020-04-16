@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use PVE::ACME;
-use PVE::ACME::StandAlone;
 use PVE::CertHelpers;
 use PVE::Certificate;
 use PVE::Exception qw(raise raise_param_exc);
@@ -51,20 +50,39 @@ my $order_certificate = sub {
     print "Placing ACME order\n";
     my ($order_url, $order) = $acme->new_order($domains);
     print "Order URL: $order_url\n";
+    my $index = 0;
     for my $auth_url (@{$order->{authorizations}}) {
 	print "\nGetting authorization details from '$auth_url'\n";
 	my $auth = $acme->get_authorization($auth_url);
+	my $domain = $auth->{identifier}->{value};
 	if ($auth->{status} eq 'valid') {
-	    print "... already validated!\n";
+	    $domain = %{@{$order->{identifiers}}[$index]}{value};
+	    print "$domain is already validated!\n";
 	} else {
-	    print "... pending!\n";
-	    print "Setting up webserver\n";
-	    my $validation = eval { PVE::ACME::StandAlone->setup($acme, $auth) };
-	    die "failed setting up webserver - $@\n" if $@;
+	    print "The validation for $domain is pending!\n";
+
+	    my ($plugin_type, $plugin_config) = &$get_plugin_type($domain, $acme_node_config);
+
+	    my $plugin = PVE::ACME::Challenge->lookup($plugin_type);
+
+	    my $challenge = $plugin->extract_challenge($auth->{challenges});
+	    my $key_auth = $acme->key_authorization($challenge->{token});
+	    my $data = {
+		key_authorization => $key_auth,
+		token => $challenge->{token},
+		url => $challenge->{url},
+		domain => $domain,
+	    };
+
+	    foreach my $key (keys %$plugin_config) {
+		$data->{plugin}->{$key} = $plugin_config->{$key};
+	    }
+
+	    $plugin->setup($data);
 
 	    print "Triggering validation\n";
 	    eval {
-		$acme->request_challenge_validation($validation->{url}, $validation->{key_auth});
+		$acme->request_challenge_validation($data->{url}, $data->{key_authorization});
 		print "Sleeping for 5 seconds\n";
 		sleep 5;
 		while (1) {
@@ -81,10 +99,11 @@ my $order_certificate = sub {
 		}
 	    };
 	    my $err = $@;
-	    eval { $validation->teardown() };
+	    eval { $plugin->teardown($data) };
 	    warn "$@\n" if $@;
 	    die $err if $err;
 	}
+	$index++;
     }
     print "\nAll domains validated!\n";
     print "\nCreating CSR\n";
