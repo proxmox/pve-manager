@@ -19,6 +19,7 @@ PERLSOURCE = 			\
 	Certificates.pm		\
 	ACME.pm			\
 	ACMEAccount.pm		\
+	ACMEPlugin.pm		\
 	NodeConfig.pm		\
 	Scan.pm			\
 	Hardware.pm		\

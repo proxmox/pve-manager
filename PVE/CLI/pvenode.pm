@@ -5,6 +5,7 @@ use warnings;
 
 use PVE::API2::ACME;
 use PVE::API2::ACMEAccount;
+use PVE::API2::ACMEPlugin;
 use PVE::API2::Certificates;
 use PVE::API2::NodeConfig;
 use PVE::API2::Nodes;
@@ -207,6 +208,27 @@ our $cmddef = {
 	    renew => [ 'PVE::API2::ACME', 'renew_certificate', [], { node => $nodename }, $upid_exit ],
 	    revoke => [ 'PVE::API2::ACME', 'revoke_certificate', [], { node => $nodename }, $upid_exit ],
 	},
+	plugin => {
+	    get => [ 'PVE::API2::ACMEPlugin', 'get_plugin_config', [], {},
+		     sub {
+			 my $conf = shift;
+			 print "Name\tType\tStatus\tapi\tdata\n";
+			 foreach my $key (keys %{$conf->{ids}} ) {
+			     my $type = $conf->{ids}->{$key}->{type};
+			     my $status = $conf->{ids}->{$key}->{disable} ?
+				 "disabled" : "active";
+			     my $api = $conf->{ids}->{$key}->{api} ?
+				 $conf->{ids}->{$key}->{api} : "none";
+			     my $data = $conf->{ids}->{$key}->{data} ?
+				 $conf->{ids}->{$key}->{data} : "none";
+
+			     print "$key\t$type\t$status\t$api\t$data\n";
+			 }
+		     } ],
+	    add => [ 'PVE::API2::ACMEPlugin', 'add_plugin', ['type', 'id'] ],
+	    del => [ 'PVE::API2::ACMEPlugin', 'delete_plugin', ['id'] ],
+	},
+
     },
 
     wakeonlan => [ 'PVE::API2::Nodes::Nodeinfo', 'wakeonlan', [ 'node' ], {}, sub {
