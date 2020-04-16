@@ -243,13 +243,6 @@ sub parse_acme {
     return $res;
 }
 
-sub print_acme {
-    my ($acme) = @_;
-
-    $acme->{domains} = join(';', $acme->{domains}) if $acme->{domains};
-    return PVE::JSONSchema::print_property_string($acme, $acmedesc);
-}
-
 sub get_nodeconfig_schema {
 
     return $confdesc;
