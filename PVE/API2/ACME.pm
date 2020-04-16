@@ -45,6 +45,33 @@ __PACKAGE__->register_method ({
 	];
     }});
 
+my $get_plugin_type = sub {
+    my ($domain, $acme_node_config) = @_;
+
+    my $plugin;
+    my $alias;
+    foreach my $index (keys %$acme_node_config) {
+	next if $index eq 'domains';
+
+	my $domain_config = $acme_node_config->{$index};
+	if (defined($domain_config->{domain}) &&
+	    $domain_config->{domain} eq $domain) {
+	    $plugin = $domain_config->{plugin};
+	    $alias = $domain_config->{alias};
+	    last;
+	}
+    }
+    return "standalone" if !defined($plugin);
+
+    my $plugin_conf = PVE::API2::ACMEPlugin::load_config();
+    my $data = $plugin_conf->{ids}->{$plugin};
+    my $plugin_type = $data->{type};
+
+    $data->{alias} = $alias;
+
+    return ($plugin_type, $data);
+};
+
 my $order_certificate = sub {
     my ($acme, $domains) = @_;
     print "Placing ACME order\n";
