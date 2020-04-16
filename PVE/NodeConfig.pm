@@ -87,6 +87,7 @@ my $acme_domain_desc = {
 	format => 'pve-acme-domain',
 	format_description => 'domain',
 	description => 'domain for this node\'s ACME certificate',
+	default_key => 1,
     },
     plugin => {
 	type => 'string',
