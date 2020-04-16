@@ -48,20 +48,13 @@ __PACKAGE__->register_method ({
 my $get_plugin_type = sub {
     my ($domain, $acme_node_config) = @_;
 
-    my $plugin;
-    my $alias;
-    foreach my $index (keys %$acme_node_config) {
-	next if $index eq 'domains';
+    my $domain_config = $acme_node_config->{domains}->{$domain};
 
-	my $domain_config = $acme_node_config->{$index};
-	if (defined($domain_config->{domain}) &&
-	    $domain_config->{domain} eq $domain) {
-	    $plugin = $domain_config->{plugin};
-	    $alias = $domain_config->{alias};
-	    last;
-	}
-    }
-    return "standalone" if !defined($plugin);
+    die "no config for domain '$domain'\n"
+	if !$domain_config;
+
+    my $plugin = $domain_config->{plugin};
+    my $alias = $domain_config->{alias};
 
     my $plugin_conf = PVE::API2::ACMEPlugin::load_config();
     my $data = $plugin_conf->{ids}->{$plugin};
@@ -75,7 +68,7 @@ my $get_plugin_type = sub {
 my $order_certificate = sub {
     my ($acme, $acme_node_config) = @_;
     print "Placing ACME order\n";
-    my ($order_url, $order) = $acme->new_order($acme_node_config->{domains});
+    my ($order_url, $order) = $acme->new_order([ keys %{$acme_node_config->{domains}} ]);
     print "Order URL: $order_url\n";
     my $index = 0;
     for my $auth_url (@{$order->{authorizations}}) {
@@ -215,7 +208,7 @@ __PACKAGE__->register_method ({
 	my $node_config = PVE::NodeConfig::load_config($node);
 	my $acme_node_config = PVE::NodeConfig::get_acme_conf($node_config);
 	raise("ACME domain list in node configuration is missing!", 400)
-	    if !$acme_node_config || !$acme_node_config->{domains};
+	    if !$acme_node_config || !%{$acme_node_config->{domains}};
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
@@ -287,7 +280,7 @@ __PACKAGE__->register_method ({
 	my $node_config = PVE::NodeConfig::load_config($node);
 	my $acme_node_config = PVE::NodeConfig::get_acme_conf($node_config);
 	raise("ACME domain list in node configuration is missing!", 400)
-	    if !$acme_node_config || !$acme_node_config->{domains};
+	    if !$acme_node_config || !%{$acme_node_config->{domains}};
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
@@ -351,7 +344,7 @@ __PACKAGE__->register_method ({
 	my $node_config = PVE::NodeConfig::load_config($node);
 	my $acme_node_config = PVE::NodeConfig::get_acme_conf($node_config);
 	raise("ACME domain list in node configuration is missing!", 400)
-	    if !$acme_node_config || !$acme_node_config->{domains};
+	    if !$acme_node_config || !%{$acme_node_config->{domains}};
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 

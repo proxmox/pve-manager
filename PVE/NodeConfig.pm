@@ -235,23 +235,26 @@ sub get_acme_conf {
     my $res = {};
 
     if (defined($data->{acme})) {
-	$res->{0} = eval {
+	$res = eval {
 	    PVE::JSONSchema::parse_property_string($acmedesc, $data->{acme});
 	};
 	if ($@) {
 	    return undef if $noerr;
 	    die $@;
 	}
+	my $standalone_domains = delete($res->{domains}) // '';
+	foreach my $domain (split(";", $standalone_domains)) {
+	    $res->{domains}->{$domain}->{plugin} = 'standalone';
+	}
     }
-    $res->{account} = delete $res->{0}->{account} // "default";
-    my $domainlist = [];
+
+    $res->{account} //= 'default';
 
     for my $index (0..$MAXDOMAINS) {
 	my $domain_rec = $data->{"acme_additional_domain$index"};
 	next if !defined($domain_rec);
 
-	# index = 0 is used by acme see above
-	$res->{($index+1)} = eval {
+	my $parsed = eval {
 	    PVE::JSONSchema::parse_property_string(
 		$acme_additional_desc,
 		$domain_rec);
@@ -260,17 +263,13 @@ sub get_acme_conf {
 	    return undef if $noerr;
 	    die $@;
 	}
-	push @$domainlist, $res->{($index+1)}->{domain};
+	my $domain = delete $parsed->{domain};
+	if ($res->{domains}->{$domain}) {
+	    return undef if $noerr;
+	    die "duplicate ACME config for domain '$domain'\n";
+	}
+	$res->{domains}->{$domain} = $parsed;
     }
-
-    # If additional domain are used it is not allowed
-    # to have a domain(list) at acme entry
-    my @domains = split(";", $res->{0}->{domains})
-	if $res->{0}->{domains};
-    die "Mutual exclusion of setting domains in acme and additional domains\n"
-	if (0 < @domains && defined(@$domainlist[0]));
-
-    $res->{"domains"} = @domains ? \@domains : $domainlist;
 
     return $res;
 }
