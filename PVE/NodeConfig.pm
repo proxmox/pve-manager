@@ -102,7 +102,6 @@ my $acme_additional_desc = {
 	optional => 1,
     },
 };
-PVE::JSONSchema::register_format('pve-acme-additional-node-conf', $acme_additional_desc);
 
 my $acmedesc = {
     account => get_standard_option('pve-acme-account-name'),
@@ -114,7 +113,6 @@ my $acmedesc = {
 	optional => 1,
     },
 };
-PVE::JSONSchema::register_format('pve-acme-node-conf', $acmedesc);
 
 $confdesc->{acme} = {
     type => 'string',
