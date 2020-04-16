@@ -265,13 +265,6 @@ Ext.define('PVE.window.Migrate', {
 					severity: 'error'
 				    });
 				}
-
-			    } else if (!disk.referenced_in_config) {
-				migration.possible = false;
-				migration.preconditions.push({
-				    text: 'Found not referenced/unused disk via storage: '+ disk.volid,
-				    severity: 'error'
-				});
 			    } else {
 				migration['with-local-disks'] = 1;
 				migration.preconditions.push({
