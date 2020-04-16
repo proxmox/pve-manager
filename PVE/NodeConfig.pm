@@ -243,7 +243,7 @@ sub get_acme_conf {
 	    die $@;
 	}
     }
-    $res->{0}->{account} = $res->{0}->{account} // "default";
+    $res->{account} = delete $res->{0}->{account} // "default";
     my $domainlist = [];
 
     for my $index (0..$MAXDOMAINS) {

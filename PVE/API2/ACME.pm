@@ -223,7 +223,7 @@ __PACKAGE__->register_method ({
 
 	my $realcmd = sub {
 	    STDOUT->autoflush(1);
-	    my $account = $acme_node_config->{account} // 'default';
+	    my $account = $acme_node_config->{account};
 	    my $account_file = "${acme_account_dir}/${account}";
 	    die "ACME account config file '$account' does not exist.\n"
 		if ! -e $account_file;
@@ -297,7 +297,7 @@ __PACKAGE__->register_method ({
 
 	my $realcmd = sub {
 	    STDOUT->autoflush(1);
-	    my $account = $acme_node_config->{account} // 'default';
+	    my $account = $acme_node_config->{account};
 	    my $account_file = "${acme_account_dir}/${account}";
 	    die "ACME account config file '$account' does not exist.\n"
 		if ! -e $account_file;
@@ -361,7 +361,7 @@ __PACKAGE__->register_method ({
 
 	my $realcmd = sub {
 	    STDOUT->autoflush(1);
-	    my $account = $acme_node_config->{account} // 'default';
+	    my $account = $acme_node_config->{account};
 	    my $account_file = "${acme_account_dir}/${account}";
 	    die "ACME account config file '$account' does not exist.\n"
 		if ! -e $account_file;
