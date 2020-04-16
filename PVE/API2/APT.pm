@@ -550,6 +550,7 @@ __PACKAGE__->register_method({
 	    libpve-guest-common-perl
 	    libpve-http-server-perl
 	    libpve-storage-perl
+	    libproxmox-acme-perl
 	    libqb0
 	    libspice-server1
 	    lvm2
