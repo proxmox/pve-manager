@@ -6,6 +6,10 @@ use warnings;
 use PVE::CertHelpers;
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::Tools qw(file_get_contents file_set_contents lock_file);
+use PVE::ACME;
+
+# register up to 20 domain names
+my $MAXDOMAINS = 20;
 
 my $node_config_lock = '/var/lock/pvenode.lock';
 
@@ -77,6 +81,29 @@ my $confdesc = {
     },
 };
 
+my $acme_additional_desc = {
+    domain => {
+	type => 'string',
+	format => 'pve-acme-domain',
+	format_description => 'domain',
+	description => 'domain for this node\'s ACME certificate',
+    },
+    plugin => {
+	type => 'string',
+	format => 'pve-configid',
+	description => 'The plugin ID, default is standalone http',
+	format_description => 'name of the plugin configuration',
+    },
+    alias => {
+	type => 'string',
+	format => 'pve-acme-domain',
+	format_description => 'domain',
+	description => 'Alias for the Domain to verify ACME Challenge over DNS',
+	optional => 1,
+    },
+};
+PVE::JSONSchema::register_format('pve-acme-additional-node-conf', $acme_additional_desc);
+
 my $acmedesc = {
     account => get_standard_option('pve-acme-account-name'),
     domains => {
@@ -84,6 +111,7 @@ my $acmedesc = {
 	format => 'pve-acme-domain-list',
 	format_description => 'domain[;domain;...]',
 	description => 'List of domains for this node\'s ACME certificate',
+	optional => 1,
     },
 };
 PVE::JSONSchema::register_format('pve-acme-node-conf', $acmedesc);
@@ -93,6 +121,15 @@ $confdesc->{acme} = {
     description => 'Node specific ACME settings.',
     format => $acmedesc,
     optional => 1,
+};
+
+for my $i (0..$MAXDOMAINS) {
+    $confdesc->{"acme_additional_domain$i"} = {
+	type => 'string',
+	description => 'ACME additional Domain',
+	format => $acme_additional_desc,
+	optional => 1,
+    };
 };
 
 sub check_type {
@@ -214,6 +251,7 @@ sub print_acme {
 }
 
 sub get_nodeconfig_schema {
+
     return $confdesc;
 }
 
