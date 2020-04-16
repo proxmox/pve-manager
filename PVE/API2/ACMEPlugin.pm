@@ -100,6 +100,7 @@ __PACKAGE__->register_method({
 	my $type = extract_param($param, 'type');
 
 	PVE::Cluster::cfs_lock_file($FILENAME, undef, $update_config, $id, "add", $type, $param);
+	die "$@" if $@;
 
 	return undef;
     }});
@@ -129,6 +130,7 @@ __PACKAGE__->register_method({
 	my $id = extract_param($param, 'id');
 
 	PVE::Cluster::cfs_lock_file($FILENAME, undef, $update_config, $id, "del", undef, $param );
+	die "$@" if $@;
 
 	return undef;
     }});
