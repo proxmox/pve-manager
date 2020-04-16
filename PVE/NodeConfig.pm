@@ -227,18 +227,50 @@ sub write_node_config {
     return $raw;
 }
 
-sub parse_acme {
+sub get_acme_conf {
     my ($data, $noerr) = @_;
 
     $data //= '';
 
-    my $res = eval { PVE::JSONSchema::parse_property_string($acmedesc, $data); };
-    if ($@) {
-	return undef if $noerr;
-	die $@;
+    my $res = {};
+
+    if (defined($data->{acme})) {
+	$res->{0} = eval {
+	    PVE::JSONSchema::parse_property_string($acmedesc, $data->{acme});
+	};
+	if ($@) {
+	    return undef if $noerr;
+	    die $@;
+	}
+    }
+    $res->{0}->{account} = $res->{0}->{account} // "default";
+    my $domainlist = [];
+
+    for my $index (0..$MAXDOMAINS) {
+	my $domain_rec = $data->{"acme_additional_domain$index"};
+	next if !defined($domain_rec);
+
+	# index = 0 is used by acme see above
+	$res->{($index+1)} = eval {
+	    PVE::JSONSchema::parse_property_string(
+		$acme_additional_desc,
+		$domain_rec);
+	};
+	if ($@) {
+	    return undef if $noerr;
+	    die $@;
+	}
+	push @$domainlist, $res->{($index+1)}->{domain};
     }
 
-    $res->{domains} = [ PVE::Tools::split_list($res->{domains}) ];
+    # If additional domain are used it is not allowed
+    # to have a domain(list) at acme entry
+    my @domains = split(";", $res->{0}->{domains})
+	if $res->{0}->{domains};
+    die "Mutual exclusion of setting domains in acme and additional domains\n"
+	if (0 < @domains && defined(@$domainlist[0]));
+
+    $res->{"domains"} = @domains ? \@domains : $domainlist;
 
     return $res;
 }

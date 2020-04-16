@@ -73,9 +73,9 @@ my $get_plugin_type = sub {
 };
 
 my $order_certificate = sub {
-    my ($acme, $domains) = @_;
+    my ($acme, $acme_node_config) = @_;
     print "Placing ACME order\n";
-    my ($order_url, $order) = $acme->new_order($domains);
+    my ($order_url, $order) = $acme->new_order($acme_node_config->{domains});
     print "Order URL: $order_url\n";
     my $index = 0;
     for my $auth_url (@{$order->{authorizations}}) {
@@ -213,11 +213,9 @@ __PACKAGE__->register_method ({
 	    if !$param->{force} && -e "${cert_prefix}.pem";
 
 	my $node_config = PVE::NodeConfig::load_config($node);
-	raise("ACME settings in node configuration are missing!", 400)
-	    if !$node_config || !$node_config->{acme};
-	my $acme_node_config = PVE::NodeConfig::parse_acme($node_config->{acme});
+	my $acme_node_config = PVE::NodeConfig::get_acme_conf($node_config);
 	raise("ACME domain list in node configuration is missing!", 400)
-	    if !$acme_node_config;
+	    if !$acme_node_config || !$acme_node_config->{domains};
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
@@ -235,7 +233,7 @@ __PACKAGE__->register_method ({
 	    print "Loading ACME account details\n";
 	    $acme->load();
 
-	    my ($cert, $key) = $order_certificate->($acme, $acme_node_config->{domains});
+	    my ($cert, $key) = $order_certificate->($acme, $acme_node_config);
 
 	    my $code = sub {
 		print "Setting pveproxy certificate and key\n";
@@ -287,11 +285,9 @@ __PACKAGE__->register_method ({
 	    if !$expires_soon && !$param->{force};
 
 	my $node_config = PVE::NodeConfig::load_config($node);
-	raise("ACME settings in node configuration are missing!", 400)
-	    if !$node_config || !$node_config->{acme};
-	my $acme_node_config = PVE::NodeConfig::parse_acme($node_config->{acme});
+	my $acme_node_config = PVE::NodeConfig::get_acme_conf($node_config);
 	raise("ACME domain list in node configuration is missing!", 400)
-	    if !$acme_node_config;
+	    if !$acme_node_config || !$acme_node_config->{domains};
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
@@ -311,7 +307,7 @@ __PACKAGE__->register_method ({
 	    print "Loading ACME account details\n";
 	    $acme->load();
 
-	    my ($cert, $key) = $order_certificate->($acme, $acme_node_config->{domains});
+	    my ($cert, $key) = $order_certificate->($acme, $acme_node_config);
 
 	    my $code = sub {
 		print "Setting pveproxy certificate and key\n";
@@ -353,11 +349,9 @@ __PACKAGE__->register_method ({
 	my $cert_prefix = PVE::CertHelpers::cert_path_prefix($node);
 
 	my $node_config = PVE::NodeConfig::load_config($node);
-	raise("ACME settings in node configuration are missing!", 400)
-	    if !$node_config || !$node_config->{acme};
-	my $acme_node_config = PVE::NodeConfig::parse_acme($node_config->{acme});
+	my $acme_node_config = PVE::NodeConfig::get_acme_conf($node_config);
 	raise("ACME domain list in node configuration is missing!", 400)
-	    if !$acme_node_config;
+	    if !$acme_node_config || !$acme_node_config->{domains};
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 
