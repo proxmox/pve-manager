@@ -45,26 +45,6 @@ __PACKAGE__->register_method ({
 	];
     }});
 
-my $get_plugin_type = sub {
-    my ($domain, $acme_node_config) = @_;
-
-    my $domain_config = $acme_node_config->{domains}->{$domain};
-
-    die "no config for domain '$domain'\n"
-	if !$domain_config;
-
-    my $plugin = $domain_config->{plugin};
-    my $alias = $domain_config->{alias};
-
-    my $plugin_conf = PVE::API2::ACMEPlugin::load_config();
-    my $data = $plugin_conf->{ids}->{$plugin};
-    my $plugin_type = $data->{type};
-
-    $data->{alias} = $alias;
-
-    return ($plugin_type, $data);
-};
-
 my $order_certificate = sub {
     my ($acme, $acme_node_config) = @_;
     print "Placing ACME order\n";
@@ -81,24 +61,25 @@ my $order_certificate = sub {
 	} else {
 	    print "The validation for $domain is pending!\n";
 
-	    my ($plugin_type, $plugin_config) = &$get_plugin_type($domain, $acme_node_config);
+	    my $domain_config = $acme_node_config->{domains}->{$domain};
 
-	    my $plugin = PVE::ACME::Challenge->lookup($plugin_type);
+	    die "no config for domain '$domain'\n"
+		if !$domain_config;
 
-	    my $challenge = $plugin->extract_challenge($auth->{challenges});
-	    my $key_auth = $acme->key_authorization($challenge->{token});
+	    my $pluginid = $domain_config->{plugin};
+
+	    my $plugin_conf = PVE::API2::ACMEPlugin::load_config();
+	    my $plugin_data = $plugin_conf->{ids}->{$pluginid};
+	    die "domain '$domain' is configured to use non-existent plugin '$pluginid'\n"
+		if !defined($plugin_conf->{ids}->{$pluginid});
+
 	    my $data = {
-		key_authorization => $key_auth,
-		token => $challenge->{token},
-		url => $challenge->{url},
-		domain => $domain,
+		plugin => $plugin_data,
+		alias => $domain_config->{alias},
 	    };
 
-	    foreach my $key (keys %$plugin_config) {
-		$data->{plugin}->{$key} = $plugin_config->{$key};
-	    }
-
-	    $plugin->setup($data);
+	    my $plugin = PVE::ACME::Challenge->lookup($plugin_data->{type});
+	    $plugin->setup($acme, $auth, $data);
 
 	    print "Triggering validation\n";
 	    eval {
@@ -119,7 +100,7 @@ my $order_certificate = sub {
 		}
 	    };
 	    my $err = $@;
-	    eval { $plugin->teardown($data) };
+	    eval { $plugin->teardown($acme, $auth, $data) };
 	    warn "$@\n" if $@;
 	    die $err if $err;
 	}
