@@ -81,6 +81,9 @@ my $order_certificate = sub {
 
 	    print "Triggering validation\n";
 	    eval {
+		die "no validation url returned by plugin\n"
+		    if !defined($data->{url});
+
 		$acme->request_challenge_validation($data->{url});
 		print "Sleeping for 5 seconds\n";
 		sleep 5;
