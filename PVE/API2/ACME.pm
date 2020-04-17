@@ -83,7 +83,7 @@ my $order_certificate = sub {
 
 	    print "Triggering validation\n";
 	    eval {
-		$acme->request_challenge_validation($data->{url}, $data->{key_authorization});
+		$acme->request_challenge_validation($data->{url});
 		print "Sleeping for 5 seconds\n";
 		sleep 5;
 		while (1) {
