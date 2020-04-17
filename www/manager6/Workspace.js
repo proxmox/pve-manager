@@ -374,6 +374,14 @@ Ext.define('PVE.StdWorkspace', {
 					win.show();
 				    }
 				},
+				{
+				    iconCls: 'fa fa-language',
+				    text: gettext('Language'),
+				    handler: function() {
+					Ext.create('Proxmox.window.LanguageEditWindow')
+					    .show();
+				    },
+				},
 				'-',
 				{
 				    iconCls: 'fa fa-fw fa-sign-out',
