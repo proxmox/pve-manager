@@ -46,6 +46,9 @@ sub param_mapping {
 	    'certificates',
 	    'key',
 	],
+	'add_plugin' => [
+	    'data',
+	],
     };
 
     return $mapping->{$name};

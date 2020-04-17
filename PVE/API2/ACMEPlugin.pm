@@ -44,20 +44,6 @@ __PACKAGE__->register_method({
 	return  load_config();
     }});
 
-my $encode_data_field = sub {
-    my ($data) = @_;
-
-    my $encoded_data;
-    while ($data) {
-	$data =~ /^([a-zA-Z]\w*=)([\w.,-]*)(,([a-zA-Z]\w*=.*))?$/;
-	$encoded_data .= $1;
-	$encoded_data .= MIME::Base64::encode_base64($2, '');
-	$encoded_data .= "," if $4;
-	$data = $4 ? $4 : undef;
-    }
-    return $encoded_data;
-};
-
 my $update_config = sub {
     my ($id, $op, $type, $param) = @_;
 
@@ -66,18 +52,13 @@ my $update_config = sub {
     if ( $op eq "add" ) {
 	die "Section with ID: $id already exists\n"
 	    if defined($conf->{ids}->{$id});
+
+	$conf->{ids}->{$id} = $param;
 	$conf->{ids}->{$id}->{type} = $type;
     } elsif ($op eq "del") {
 	delete $conf->{ids}->{$id};
     }
 
-    foreach my $opt (keys %$param) {
-	my $value = $param->{$opt};
-	if ($opt eq 'data'){
-	    $value = &$encode_data_field($value);
-	}
-	$conf->{ids}->{$id}->{$opt} = $value;
-    }
 
     PVE::Cluster::cfs_write_file($FILENAME, $conf);
 };
