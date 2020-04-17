@@ -11,24 +11,25 @@ Ext.define('PVE.Parser', { statics: {
 	}
 
 	var res = {};
-	var errors = false;
+	var error;
 
 	Ext.Array.each(value.split(','), function(p) {
-	    if (!p || p.match(/^\s*$/)) {
-		return; //continue
-	    }
-
-	    var match_res;
-	    if ((match_res = p.match(/^(?:domains=)?((?:[a-zA-Z0-9\-\.]+[;, ]?)+)$/)) !== null) {
-		res.domains = match_res[1].split(/[;, ]/);
+	    var kv = p.split('=', 2);
+	    if (Ext.isDefined(kv[1])) {
+		res[kv[0]] = kv[1];
 	    } else {
-		errors = true;
+		error = 'Failed to parse key-value pair: '+p;
 		return false;
 	    }
 	});
 
-	if (errors || !res) {
+	if (error !== undefined) {
+	    console.error(error);
 	    return;
+	}
+
+	if (res.domains !== undefined) {
+	    res.domains = res.domains.split(/;/);
 	}
 
 	return res;
