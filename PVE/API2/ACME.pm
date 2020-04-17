@@ -50,13 +50,11 @@ my $order_certificate = sub {
     print "Placing ACME order\n";
     my ($order_url, $order) = $acme->new_order([ keys %{$acme_node_config->{domains}} ]);
     print "Order URL: $order_url\n";
-    my $index = 0;
     for my $auth_url (@{$order->{authorizations}}) {
 	print "\nGetting authorization details from '$auth_url'\n";
 	my $auth = $acme->get_authorization($auth_url);
 	my $domain = $auth->{identifier}->{value};
 	if ($auth->{status} eq 'valid') {
-	    $domain = %{@{$order->{identifiers}}[$index]}{value};
 	    print "$domain is already validated!\n";
 	} else {
 	    print "The validation for $domain is pending!\n";
@@ -104,7 +102,6 @@ my $order_certificate = sub {
 	    warn "$@\n" if $@;
 	    die $err if $err;
 	}
-	$index++;
     }
     print "\nAll domains validated!\n";
     print "\nCreating CSR\n";
