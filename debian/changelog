@@ -1,3 +1,11 @@
+pve-manager (6.1-10) pve; urgency=medium
+
+  * acme: use new proxmox-acme-perl
+
+  * acme: allow configuring DNS plugin options in nodeconfig
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 02 May 2020 18:33:27 +0200
+
 pve-manager (6.1-9) pve; urgency=medium
 
   * fix #2634: print specific error if hook-script is not executable
