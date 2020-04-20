@@ -10,6 +10,13 @@ use PVE::JSONSchema qw(get_standard_option);
 use PVE::RPCEnvironment;
 use PVE::Tools qw(extract_param);
 
+use PVE::API2::ACMEPlugin;
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::ACMEPlugin",
+    path => 'plugins',
+});
+
 use base qw(PVE::RESTHandler);
 
 my $acme_directories = [
@@ -58,6 +65,7 @@ __PACKAGE__->register_method ({
 	    { name => 'account' },
 	    { name => 'tos' },
 	    { name => 'directories' },
+	    { name => 'plugins' },
 	];
     }});
 

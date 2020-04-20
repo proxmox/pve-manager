@@ -11,6 +11,7 @@ use PVE::API2::NodeConfig;
 use PVE::API2::Nodes;
 use PVE::API2::Tasks;
 
+use PVE::ACME::Challenge;
 use PVE::CertHelpers;
 use PVE::Certificate;
 use PVE::Exception qw(raise_param_exc raise);
@@ -41,13 +42,22 @@ my $upid_exit = sub {
 sub param_mapping {
     my ($name) = @_;
 
+    my $load_file_and_encode = sub {
+	my ($filename) = @_;
+
+	return PVE::ACME::Challenge->encode_value('string', 'data', PVE::Tools::file_get_contents($filename));
+    };
+
     my $mapping = {
 	'upload_custom_cert' => [
 	    'certificates',
 	    'key',
 	],
 	'add_plugin' => [
-	    'data',
+	    ['data', $load_file_and_encode, "File with one key-value pair per line, will be base64url encode for storage in plugin config.", 0],
+	],
+	'update_plugin' => [
+	    ['data', $load_file_and_encode, "File with one key-value pair per line, will be base64url encode for storage in plugin config.", 0],
 	],
     };
 
@@ -212,24 +222,17 @@ our $cmddef = {
 	    revoke => [ 'PVE::API2::ACME', 'revoke_certificate', [], { node => $nodename }, $upid_exit ],
 	},
 	plugin => {
-	    get => [ 'PVE::API2::ACMEPlugin', 'get_plugin_config', [], {},
-		     sub {
-			 my $conf = shift;
-			 print "Name\tType\tStatus\tapi\tdata\n";
-			 foreach my $key (keys %{$conf->{ids}} ) {
-			     my $type = $conf->{ids}->{$key}->{type};
-			     my $status = $conf->{ids}->{$key}->{disable} ?
-				 "disabled" : "active";
-			     my $api = $conf->{ids}->{$key}->{api} ?
-				 $conf->{ids}->{$key}->{api} : "none";
-			     my $data = $conf->{ids}->{$key}->{data} ?
-				 $conf->{ids}->{$key}->{data} : "none";
-
-			     print "$key\t$type\t$status\t$api\t$data\n";
-			 }
-		     } ],
+	    list => [ 'PVE::API2::ACMEPlugin', 'index', [], {}, sub {
+		my ($data, $schema, $options) = @_;
+		PVE::CLIFormatter::print_api_result($data, $schema, undef, $options);
+	    }, $PVE::RESTHandler::standard_output_options ],
+	    config => [ 'PVE::API2::ACMEPlugin', 'get_plugin_config', ['id'], {}, sub {
+		my ($data, $schema, $options) = @_;
+		PVE::CLIFormatter::print_api_result($data, $schema, undef, $options);
+	    }, $PVE::RESTHandler::standard_output_options ],
 	    add => [ 'PVE::API2::ACMEPlugin', 'add_plugin', ['type', 'id'] ],
-	    del => [ 'PVE::API2::ACMEPlugin', 'delete_plugin', ['id'] ],
+	    set => [ 'PVE::API2::ACMEPlugin', 'update_plugin', ['id'] ],
+	    remove => [ 'PVE::API2::ACMEPlugin', 'delete_plugin', ['id'] ],
 	},
 
     },
