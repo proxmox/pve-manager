@@ -92,8 +92,10 @@ my $acme_domain_desc = {
     plugin => {
 	type => 'string',
 	format => 'pve-configid',
-	description => 'The plugin ID, default is standalone http',
+	description => 'The ACME plugin ID',
 	format_description => 'name of the plugin configuration',
+	optional => 1,
+	default => 'standalone',
     },
     alias => {
 	type => 'string',
@@ -267,6 +269,7 @@ sub get_acme_conf {
 	    return undef if $noerr;
 	    die "duplicate ACME config for domain '$domain'\n";
 	}
+	$parsed->{plugin} //= 'standalone';
 	$res->{domains}->{$domain} = $parsed;
     }
 
