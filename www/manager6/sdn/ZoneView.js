@@ -7,7 +7,7 @@ Ext.define('PVE.sdn.ZoneView', {
     stateId: 'grid-sdn-zone',
 
     createSDNEditWindow: function(type, sid) {
-	var schema = PVE.Utils.sdnzoneSchema[type];
+	let schema = PVE.Utils.sdnzoneSchema[type];
 	if (!schema || !schema.ipanel) {
 	    throw "no editor registered for zone type: " + type;
 	}
@@ -24,9 +24,9 @@ Ext.define('PVE.sdn.ZoneView', {
     },
 
     initComponent : function() {
-	var me = this;
+	let me = this;
 
-	var store = new Ext.data.Store({
+	let store = new Ext.data.Store({
 	    model: 'pve-sdn-zone',
 	    proxy: {
                 type: 'proxmox',
@@ -38,45 +38,45 @@ Ext.define('PVE.sdn.ZoneView', {
 	    },
 	});
 
-	var reload = function() {
+	let reload = function() {
 	    store.load();
 	};
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
+	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
+	let run_editor = function() {
+	    let rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
 	    }
-	    var type = rec.data.type,
+	    let type = rec.data.type,
 	        zone = rec.data.zone;
 
 	    me.createSDNEditWindow(type, zone);
 	};
 
-	var edit_btn = new Proxmox.button.Button({
+	let edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
 	    handler: run_editor
 	});
 
-	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
+	let remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/cluster/sdn/zones/',
 	    callback: reload
 	});
 
 	// else we cannot dynamically generate the add menu handlers
-	var addHandleGenerator = function(type) {
+	let addHandleGenerator = function(type) {
 	    return function() { me.createSDNEditWindow(type); };
 	};
-	var addMenuItems = [], type;
+	let addMenuItems = [], type;
 	/*jslint forin: true */
 
 	for (type in PVE.Utils.sdnzoneSchema) {
-	    var zone = PVE.Utils.sdnzoneSchema[type];
+	    let zone = PVE.Utils.sdnzoneSchema[type];
 	    if (zone.hideAdd) {
 		continue;
 	    }
@@ -103,41 +103,38 @@ Ext.define('PVE.sdn.ZoneView', {
 		},
 		remove_btn,
 		edit_btn,
-                {
-                    text: gettext('Revert'),
-                    handler: function() {
-                        Proxmox.Utils.API2Request({
-                            url: '/cluster/sdn/zones/',
-                            method: 'DELETE',
-                            waitMsgTarget: me,
-                            callback: function() {
-                                reload();
-                            },
-                            failure: function(response, opts) {
-                                Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-                            }
-                        });
-                    }
-                },
+		{
+		    text: gettext('Revert'),
+		    handler: function() {
+			Proxmox.Utils.API2Request({
+			    url: '/cluster/sdn/zones/',
+			    method: 'DELETE',
+			    waitMsgTarget: me,
+			    callback: function() {
+				reload();
+			    },
+			    failure: function(response, opts) {
+				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+			    }
+			});
+		    }
+		},
 	    ],
 	    columns: [
 		{
 		    header: 'ID',
 		    flex: 2,
-		    sortable: true,
 		    dataIndex: 'zone'
 		},
 		{
 		    header: gettext('Type'),
 		    flex: 1,
-		    sortable: true,
 		    dataIndex: 'type',
 		    renderer: PVE.Utils.format_sdnzone_type
 		},
 		{
 		    header: gettext('Nodes'),
-		    flex: 1,
-		    sortable: true,
+		    flex: 3,
 		    dataIndex: 'nodes',
 		},
 	    ],

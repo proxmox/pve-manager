@@ -7,9 +7,9 @@ Ext.define('PVE.sdn.VnetView', {
     stateId: 'grid-sdn-vnet',
 
     initComponent : function() {
-	var me = this;
+	let me = this;
 
-	var store = new Ext.data.Store({
+	let store = new Ext.data.Store({
 	    model: 'pve-sdn-vnet',
 	    proxy: {
                 type: 'proxmox',
@@ -20,31 +20,28 @@ Ext.define('PVE.sdn.VnetView', {
 		order: 'DESC'
 	    }
 	});
+	let reload = () => store.load();
 
-	var reload = function() {
-	    store.load();
-	};
+	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
+        let run_editor = function() {
+	    let rec = sm.getSelection()[0];
 
-        var run_editor = function() {
-            var rec = sm.getSelection()[0];
-
-            var win = Ext.create('PVE.sdn.VnetEdit',{
-                vnet: rec.data.vnet
-            });
-            win.on('destroy', reload);
-            win.show();
+	    let win = Ext.create('PVE.sdn.VnetEdit',{
+		autoShow: true,
+		vnet: rec.data.vnet,
+	    });
+	    win.on('destroy', reload);
         };
 
-	var edit_btn = new Proxmox.button.Button({
+	let edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
-	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
+	let remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/cluster/sdn/vnets/',
 	    callback: reload
@@ -58,83 +55,74 @@ Ext.define('PVE.sdn.VnetView', {
 		trackOver: false
 	    },
 	    tbar: [
-                {
-                    text: gettext('Create'),
-                    handler: function() {
-                        var win = Ext.create('PVE.sdn.VnetEdit',{
-			    type: 'vnet'
+		{
+		    text: gettext('Create'),
+		    handler: function() {
+			let win = Ext.create('PVE.sdn.VnetEdit', {
+			    autoShow: true,
+			    type: 'vnet',
 			});
-                        win.on('destroy', reload);
-                        win.show();
-                    }
-                },
+			win.on('destroy', reload);
+		    }
+		},
 		remove_btn,
 		edit_btn,
-                {
-                    text: gettext('Revert'),
-                    handler: function() {
-                        Proxmox.Utils.API2Request({
-                            url: '/cluster/sdn/vnets/',
-                            method: 'DELETE',
-                            waitMsgTarget: me,
-                            callback: function() {
-                                reload();
-                            },
-                            failure: function(response, opts) {
-                                Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-                            }
-                        });
-                    }
-                },
-
+		{
+		    text: gettext('Revert'),
+		    handler: function() {
+			Proxmox.Utils.API2Request({
+			    url: '/cluster/sdn/vnets/',
+			    method: 'DELETE',
+			    waitMsgTarget: me,
+			    callback: function() {
+				reload();
+			    },
+			    failure: function(response, opts) {
+				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+			    }
+			});
+		    }
+		},
 	    ],
 	    columns: [
 		{
 		    header: 'ID',
 		    flex: 2,
-		    sortable: true,
 		    dataIndex: 'vnet'
 		},
 		{
-		    header: gettext('alias'),
+		    header: gettext('Alias'),
 		    flex: 1,
-		    sortable: true,
 		    dataIndex: 'alias',
 		},
 		{
-		    header: gettext('zone'),
+		    header: gettext('Zone'),
 		    flex: 1,
-		    sortable: true,
 		    dataIndex: 'zone',
 		},
 		{
-		    header: gettext('tag'),
+		    header: gettext('Tag'),
 		    flex: 1,
-		    sortable: true,
 		    dataIndex: 'tag',
 		},
 		{
-		    header: gettext('ipv4'),
+		    header: 'IPv4/CIDR',
 		    flex: 1,
-		    sortable: true,
 		    dataIndex: 'ipv4',
 		},
 		{
-		    header: gettext('ipv6'),
+		    header: 'IPv6/CIDR',
 		    flex: 1,
-		    sortable: true,
 		    dataIndex: 'ipv6',
 		},
 		{
-		    header: gettext('mac'),
+		    header: 'MAC',
 		    flex: 1,
-		    sortable: true,
 		    dataIndex: 'mac',
 		},
 		{
-		    header: gettext('mtu'),
+		    header: 'MTU',
 		    flex: 1,
-		    sortable: true,
 		    dataIndex: 'mtu',
 		},
 	    ],
@@ -151,7 +139,15 @@ Ext.define('PVE.sdn.VnetView', {
     Ext.define('pve-sdn-vnet', {
 	extend: 'Ext.data.Model',
 	fields: [
-	    'type'
+	    'alias',
+	    'ipv4',
+	    'ipv6',
+	    'mac',
+	    'mtu',
+	    'tag',
+	    'type',
+	    'vnet',
+	    'zone',
 	],
 	idProperty: 'vnet'
     });

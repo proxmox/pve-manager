@@ -38,32 +38,32 @@ Ext.define('PVE.sdn.StatusView', {
 	Ext.apply(me, {
 	    store: store,
 	    stateful: false,
-            tbar: [
-                {
-                    text: gettext('Apply'),
-                    handler: function() {
-                        Proxmox.Utils.API2Request({
-                            url: '/cluster/sdn/',
-                            method: 'PUT',
-                            waitMsgTarget: me,
-                            failure: function(response, opts) {
-                                Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-                            }
-                        });
-                    }
-                },
-            ],
+	    tbar: [
+		{
+		    text: gettext('Apply'),
+		    handler: function() {
+			Proxmox.Utils.API2Request({
+			    url: '/cluster/sdn/',
+			    method: 'PUT',
+			    waitMsgTarget: me,
+			    failure: function(response, opts) {
+				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+			    }
+			});
+		    }
+		},
+	    ],
 	    viewConfig: {
 		trackOver: false
 	    },
 	    columns: [
 		{
-		    header: gettext('sdn'),
+		    header: 'SDN',
 		    width: 80,
 		    dataIndex: 'sdn'
 		},
 		{
-		    header: gettext('node'),
+		    header: gettext('Node'),
 		    width: 80,
 		    dataIndex: 'node'
 		},

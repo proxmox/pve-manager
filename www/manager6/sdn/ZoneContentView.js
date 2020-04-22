@@ -1,6 +1,5 @@
 Ext.define('PVE.sdn.ZoneContentView', {
     extend: 'Ext.grid.GridPanel',
-
     alias: 'widget.pveSDNZoneContentView',
 
     stateful: true,
@@ -57,7 +56,7 @@ Ext.define('PVE.sdn.ZoneContentView', {
 	    ],
 	    columns: [
 		{
-		    header: gettext('Vnet'),
+		    header: 'VNet',
 		    flex: 1,
 		    sortable: true,
 		    dataIndex: 'vnet'
@@ -68,7 +67,7 @@ Ext.define('PVE.sdn.ZoneContentView', {
 		    dataIndex: 'status',
 		},
 		{
-		    header: gettext('Status details'),
+		    header: gettext('Details'),
 		    width: 20,
 		    dataIndex: 'statusmsg',
 		},
