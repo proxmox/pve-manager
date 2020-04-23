@@ -79,8 +79,9 @@ eval {
     my $certpath = PVE::CertHelpers::default_cert_path_prefix($nodename).".pem";
     my $capath = "/etc/pve/pve-root-ca.pem";
 
-    # check if expiry is < 2W
-    if (PVE::Certificate::check_expiry($certpath, time() + 14*24*60*60)) {
+    my $renew = sub {
+	my ($msg) = @_;
+
 	# get CA info
 	my $cainfo = PVE::Certificate::get_certificate_info($capath);
 
@@ -94,13 +95,21 @@ eval {
 	# TODO: replace by low level ssleay interface if version 1.86 is available
 	PVE::Tools::run_command(['/usr/bin/openssl', 'verify', '-CAfile', $capath, $certpath]);
 
-	print "PVE certificate expires soon, renewing...\n";
+	print "PVE certificate $msg\n";
 	# create new certificate
 	my $ip = PVE::Cluster::remote_node_ip($nodename);
 	PVE::Cluster::Setup::gen_pve_ssl_cert(1, $nodename, $ip);
 
 	print "Restarting pveproxy after renewing certificate\n";
 	PVE::Tools::run_command(['systemctl', 'reload-or-restart', 'pveproxy']);
+    };
+
+    if (PVE::Certificate::check_expiry($certpath, time() + 14*24*60*60)) {
+	# expires in next 2 weeks
+	$renew->("expires soon, renewing...");
+    } elsif (!PVE::Certificate::check_expiry($certpath, time() + 2*365*24*60*60)) {
+	# expires in more than 2 years
+	$renew->("expires in more than 2 years, renewing to reduce certificate life-span...");
     }
 };
 syslog ('err', "Checking/Renewing SSL certificate failed: $@") if $@;
