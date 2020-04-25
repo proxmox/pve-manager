@@ -697,7 +697,7 @@ Ext.define('PVE.Utils', { utilities: {
     format_sdnzone_type: function(value, md, record) {
 	var schema = PVE.Utils.sdnzoneSchema[value];
 	if (schema) {
-	    return schema.name;
+	    return schema.name.toUpperCase();
 	}
 	return Proxmox.Utils.unknownText;
     },
