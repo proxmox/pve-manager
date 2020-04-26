@@ -76,8 +76,12 @@ Ext.define('PVE.form.TFASelector', {
 	    value: '__default__',
 	    deleteEmpty: false,
 	    submitValue: false,
-	    fieldLabel: gettext('TFA'),
-	    comboItems: [['__default__', Proxmox.Utils.noneText], ['oath', 'OATH'], ['yubico', 'Yubico']],
+	    fieldLabel: gettext('Require TFA'),
+	    comboItems: [
+		['__default__', Proxmox.Utils.noneText],
+		['oath', 'OATH/TOTP'],
+		['yubico', 'Yubico'],
+	    ],
 	    bind: {
 		value: "{type}",
 	    },
@@ -88,7 +92,7 @@ Ext.define('PVE.form.TFASelector', {
 	    minValue: 10,
 	    submitValue: false,
 	    emptyText: Proxmox.Utils.defaultText + ' (30)',
-	    fieldLabel: 'OATH time step',
+	    fieldLabel: gettext('Time Step'),
 	    bind: {
 		value: "{step}",
 		hidden: "{!isOath}",
@@ -99,7 +103,7 @@ Ext.define('PVE.form.TFASelector', {
 	    xtype: 'proxmoxintegerfield',
 	    hidden: true,
 	    submitValue: false,
-	    fieldLabel: 'OATH password length',
+	    fieldLabel: gettext('Secret Length'),
 	    minValue: 6,
 	    maxValue: 8,
 	    emptyText: Proxmox.Utils.defaultText + ' (6)',
