@@ -3,7 +3,8 @@ Ext.define('PVE.dc.TokenEdit', {
     alias: ['widget.pveDcTokenEdit'],
     mixins: ['Proxmox.Mixin.CBind'],
 
-    subject: gettext('User'),
+    subject: gettext('Token'),
+    onlineHelp: 'pveum_tokens',
 
     isAdd: true,
     isCreate: false,
