@@ -15,7 +15,7 @@ Ext.define('PVE.panel.AuthBase', {
 	}
 
 	if (me.isCreate) {
-	    values.type = me.authType;
+	    values.type = me.type;
 	}
 
 	return values;
