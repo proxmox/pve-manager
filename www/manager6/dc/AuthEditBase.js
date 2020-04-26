@@ -104,16 +104,15 @@ Ext.define('PVE.dc.AuthEditBase', {
 
 	if (!me.isCreate) {
 	    me.load({
-		    success: function(response, options) {
-			var data = response.result.data || {};
-			// just to be sure (should not happen)
-			if (data.type !== me.authType) {
-			    me.close();
-			    throw "got wrong auth type";
-			}
-
-			me.setValues(data);
-		    },
+		success: function(response, options) {
+		    var data = response.result.data || {};
+		    // just to be sure (should not happen)
+		    if (data.type !== me.authType) {
+			me.close();
+			throw "got wrong auth type";
+		    }
+		    me.setValues(data);
+		},
 	    });
 	}
     },
