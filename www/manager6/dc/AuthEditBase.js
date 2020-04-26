@@ -48,6 +48,7 @@ Ext.define('PVE.panel.AuthBase', {
 	// last field of column2is tfa
 	me.column2.push({
 	    xtype: 'pveTFASelector',
+	    deleteEmpty: !me.isCreate,
 	});
 
 	me.columnB.push({

@@ -1,6 +1,9 @@
 Ext.define('PVE.form.TFASelector', {
     extend: 'Ext.container.Container',
     xtype: 'pveTFASelector',
+    mixins: ['Proxmox.Mixin.CBind'],
+
+    deleteEmpty: true,
 
     viewModel: {
 	data: {
@@ -66,7 +69,9 @@ Ext.define('PVE.form.TFASelector', {
 	    name: 'tfa',
 	    hidden: true,
 	    submitValue: true,
-	    deleteEmpty: true,
+	    cbind: {
+		deleteEmpty: '{deleteEmpty}',
+	    },
 	    bind: {
 		value: "{tfavalue}",
 	    },
