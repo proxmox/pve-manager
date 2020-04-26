@@ -634,10 +634,16 @@ Ext.define('PVE.Utils', { utilities: {
 	    ipanel: 'ZFSPoolInputPanel',
 	    faIcon: 'folder'
 	},
+	pbs: {
+	    name: 'Proxmox Backup Server',
+	    //ipanel: '', // TODO
+	    hideAdd: true,
+	    faIcon: 'database',
+	},
 	drbd: {
 	    name: 'DRBD',
-	    hideAdd: true
-	}
+	    hideAdd: true,
+	},
     },
 
     sdnvnetSchema: {
