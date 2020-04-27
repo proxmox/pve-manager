@@ -17,29 +17,29 @@ sha512sum: dc1d1ba73047c95747180d80fdf43aff424808f0263bee9df88f48a815cba1a437c5a
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.10 (20190626)
 
-Package: alpine-3.9-default
-Version: 20190224
+Package: alpine-3.11-default
+Version: 20200425
 Type: lxc
 OS: alpine
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/alpine-3.9-default_20190224_amd64.tar.xz
-md5sum: 07e6250a1dda60222380196ed75b5078
-sha512sum: 7929bd76c96f627933a98e8b2803c47af36f52b7de6487c88db2f90036f57af002fd5160d0d68ca0e0d21a604d9aecb931b1b4ca4b63d27ff93abf5cbcc97686
+Location: system/alpine-3.11-default_20200425_amd64.tar.xz
+md5sum: 6a4e3b1d5654f233147257110f157049
+sha512sum: 150f926ecb3e75b00fc6e188590144dad7c8c0ef209d3f028bbfabf81fe6f8d0bb4c33034207573730c4bb668be1274aaf8e9e15cfc6c99eaf9d8cd3bf3be40c
 Infopage: https://linuxcontainers.org
-Description: LXC default image for alpine 3.9 (20190224)
+Description: LXC default image for alpine 3.11 (20200425)
 
 Package: archlinux-base
-Version: 20190924-1
+Version: 20200425-1
 Type: lxc
 OS: archlinux
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/archlinux-base_20190924-1_amd64.tar.gz
-md5sum: 14f54bccc2ccc6d46f2e5667b98a20fc
-sha512sum: 5b75f81b58781fffded53ab6030962d02772f2660b50210f66fe55e3ee10c26a7e81a5f022531a1fe1a0e92ea93fb885c51253f2a7871bbe1547417ae8b08743
+Location: system/archlinux-base_20200425-1_amd64.tar.gz
+md5sum: 6a5165003ab0ce0c254a54ab2c1b7b48
+sha512sum: c56569ef2cf627c9190b066b5274a175cc50f450f73f9d35f75aeee7a8ea946c82b6247687ab8ea72d0fce786cff0669f2c5f67343f640f01d47e5d20d042edd
 Infopage: https://www.archlinux.org
 Description: ArchLinux base image.
  ArchLinux template with the 'base' group and the 'openssh' package installed.
@@ -152,30 +152,17 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 31 (20191029)
 
 Package: gentoo-current-default
-Version: 20190718
+Version: 20200310
 Type: lxc
 OS: gentoo
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/gentoo-current-default_20190718_amd64.tar.xz
-md5sum: a37888d90a98ea128fdcd6a7b6266394
-sha512sum: ccf4857a51af25a3b5bf3244dc8362e5df6645cf28509d0be4b15ebd51ffacd731e25ece853e8594f2e8668beb92945c04f119b4ad14c592d0a4074c200664a6
+Location: system/gentoo-current-default_20200310_amd64.tar.xz
+md5sum: c5b500f065b25651b763865c547952f1
+sha512sum: dc12b2fe0917ab779f92e4632504280663fac2c05c12479f98db67a9a617d9c2ce2fa3114ebf0a255e4e3f0cfd4b109a1b30f0330ab2adbc3703c4f548dbdc4c
 Infopage: https://linuxcontainers.org
-Description: LXC default image for gentoo current (20190718)
-
-Package: opensuse-15.0-default
-Version: 20180907
-Type: lxc
-OS: opensuse
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/opensuse-15.0-default_20180907_amd64.tar.xz
-md5sum: 1a150afac0d49ed51fddce9437af8b57
-sha512sum: cdab2b4c4bd48abf1966e817449b988e2830a9730fc1f402ad88cbef58bbc02e64c466c5658755020843f8143cf9cdad20676db4f3f230b751aae9b049c765e2
-Infopage: https://linuxcontainers.org
-Description: LXC default image for opensuse 15.0 (20180907)
+Description: LXC default image for gentoo current (20200310)
 
 Package: opensuse-15.1-default
 Version: 20190719
@@ -232,20 +219,6 @@ Infopage: http://pve.proxmox.com/wiki/Ubuntu_Bionic_Standard
 Description: Ubuntu Bionic (standard)
  A small Ubuntu Bionic system including all standard packages.
 
-Package: ubuntu-19.04-standard
-Version: 19.04-1
-Type: lxc
-OS: ubuntu-19.04
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-19.04-standard_19.04-1_amd64.tar.gz
-md5sum: e2ba891cf556a4cfd3c0a2e6496fecb5
-sha512sum: 2fc68d2174c27f72f3c77ad01d8772a325410a114f5e95ae3ba9e1c79f045acf39c2774c38f92b8f2195ed7b2c44aaada0c559deace83d4911d0ae056ec584d3
-Infopage: http://pve.proxmox.com/wiki/Ubuntu_Disco_Standard
-Description: Ubuntu Disco (standard)
- A small Ubuntu Disco system including all standard packages.
-
 Package: ubuntu-19.10-standard
 Version: 19.10-1
 Type: lxc
@@ -259,3 +232,17 @@ sha512sum: 61dfb3f23c7ecbdab1cccdc5a7ce6c43eb6362d79e36a57ddced4881292cd5d1ea632
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Disco_Standard
 Description: Ubuntu Eoan (standard)
  A small Ubuntu 19.10 Eoan system including all standard packages.
+
+Package: ubuntu-20.04-standard
+Version: 20.04-1
+Type: lxc
+OS: ubuntu-20.04
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-20.04-standard_20.04-1_amd64.tar.gz
+md5sum: 2ceda507834a0a08ce9662257acb7dde
+sha512sum: 9ebcf6cce7c3b760d27c2bfe03d00acf3d40a489cd98230b9ab8dd436f82f4ae8dc2de69b012dcd0affae62ffe4ab4863f624a665f3493983d330e6c015a26dd
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Disco_Standard
+Description: Ubuntu Focal (standard)
+ A small Ubuntu 20.04 Focal Fossa system including all standard packages.
