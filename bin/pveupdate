@@ -109,7 +109,7 @@ eval {
 	$renew->("expires soon, renewing...");
     } elsif (!PVE::Certificate::check_expiry($certpath, time() + 2*365*24*60*60)) {
 	# expires in more than 2 years
-	$renew->("expires in more than 2 years, renewing to reduce certificate life-span...");
+	$renew->("expires in more than 2 years, renewing to reduce certificate life-span for client compatibility...");
     }
 };
 syslog ('err', "Checking/Renewing SSL certificate failed: $@") if $@;
