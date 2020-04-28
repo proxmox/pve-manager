@@ -4,6 +4,7 @@ Ext.define('PVE.form.CompressionSelector', {
     comboItems: [
                 ['0', Proxmox.Utils.noneText],
                 ['lzo', 'LZO (' + gettext('fast') + ')'],
-                ['gzip', 'GZIP (' + gettext('good') + ')']
+                ['gzip', 'GZIP (' + gettext('good') + ')'],
+                ['zstd', 'ZSTD (' + gettext('better') + ')'],
     ]
 });

@@ -609,6 +609,13 @@ sub compressor_info {
 	} else {
 	    return ('gzip --rsyncable', 'gz');
 	}
+    } elsif ($opt_compress eq 'zstd') {
+	my $zstd_threads = $opts->{zstd} // 1;
+	if ($zstd_threads == 0) {
+	    my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
+	    $zstd_threads = int(($cpuinfo->{cpus} + 1)/2);
+	}
+	return ("zstd --threads=${zstd_threads}", 'zst');
     } else {
 	die "internal error - unknown compression option '$opt_compress'";
     }
@@ -620,7 +627,7 @@ sub get_backup_file_list {
     my $bklist = [];
     foreach my $fn (<$dir/${bkname}-*>) {
 	next if $exclude_fn && $fn eq $exclude_fn;
-	if ($fn =~ m!/(${bkname}-(\d{4})_(\d{2})_(\d{2})-(\d{2})_(\d{2})_(\d{2})\.(tgz|((tar|vma)(\.(gz|lzo))?)))$!) {
+	if ($fn =~ m!/(${bkname}-(\d{4})_(\d{2})_(\d{2})-(\d{2})_(\d{2})_(\d{2})\.(tgz|((tar|vma)(\.(${\PVE::Storage::Plugin::COMPRESSOR_RE}))?)))$!) {
 	    $fn = "$dir/$1"; # untaint
 	    my $t = timelocal ($7, $6, $5, $4, $3 - 1, $2);
 	    push @$bklist, [$fn, $t];
@@ -928,7 +935,7 @@ sub exec_backup_task {
 		    debugmsg ('info', "delete old backup '$d->[0]'", $logfd);
 		    unlink $d->[0];
 		    my $logfn = $d->[0];
-		    $logfn =~ s/\.(tgz|((tar|vma)(\.(gz|lzo))?))$/\.log/;
+		    $logfn =~ s/\.(tgz|((tar|vma)(\.(${\PVE::Storage::Plugin::COMPRESSOR_RE}))?))$/\.log/;
 		    unlink $logfn;
 		}
 	    }
