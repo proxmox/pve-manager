@@ -177,18 +177,18 @@ sha512sum: 261a441914cb93ac595a5b54e0c73f10fbb72a379f7dfc11fc215b6405dac330520a9
 Infopage: https://linuxcontainers.org
 Description: LXC default image for opensuse 15.1 (20190719)
 
-Package: proxmox-mailgateway-6.0-standard
-Version: 6.0-2
+Package: proxmox-mailgateway-6.2-standard
+Version: 6.2-1
 Type: lxc
 OS: debian-10.0
 Section: mail
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: mail/proxmox-mailgateway-6.0-standard_6.0-2_amd64.tar.gz
-md5sum: e0e97e98e721d713b166c6a34d0e6ed7
-sha512sum: 4005c3f68edf36942b3cfc7566e14f47ebfb49047518b8f381bfb2c93467056ac81c911091a578532c29c23196d4d70b57b4b850f0091af2d193dfed0d83d4c4
+Location: mail/proxmox-mailgateway-6.2-standard_6.2-1_amd64.tar.gz
+md5sum: ea199cea6d0580d9ddc3d9184f9d4673
+sha512sum: 1665079852f1565df641df62b9eb7d8813ede7ca0014ae97ff4f5a002895155e371e291fbf7dbe45a5aa064b0094452f6213f07b79bd02988da004a87b7a6fbc
 Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
-Description: Proxmox Mailgateway 6.0
+Description: Proxmox Mailgateway 6.2
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
 Package: ubuntu-16.04-standard
