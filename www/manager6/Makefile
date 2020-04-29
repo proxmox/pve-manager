@@ -232,6 +232,7 @@ JSSRC= 				                 	\
 	dc/RoleView.js					\
 	dc/RoleEdit.js					\
 	dc/ACLView.js					\
+	dc/SyncWindow.js				\
 	dc/AuthView.js					\
 	dc/AuthEditBase.js				\
 	dc/AuthEditAD.js				\

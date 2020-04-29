@@ -73,6 +73,19 @@ Ext.define('PVE.dc.AuthView', {
 	me.openEditWindow(rec.data.type, rec.data.realm);
     },
 
+    open_sync_window: function() {
+	let me = this;
+	let rec = me.getSelection()[0];
+	if (!rec) {
+	    return;
+	}
+	Ext.create('PVE.dc.SyncWindow', {
+	    realm: rec.data.realm,
+	    listeners: {
+		destroy: () => me.reload(),
+	    },
+	}).show();
+    },
 
     initComponent: function() {
 	var me = this;
@@ -106,6 +119,14 @@ Ext.define('PVE.dc.AuthView', {
 		    baseurl: '/access/domains/',
 		    enableFn: (rec) => PVE.Utils.authSchema[rec.data.type].add,
 		    callback: () => me.reload(),
+		},
+		'-',
+		{
+		    xtype: 'proxmoxButton',
+		    text: gettext('Sync'),
+		    disabled: true,
+		    enableFn: (rec) => Boolean(PVE.Utils.authSchema[rec.data.type].syncipanel),
+		    handler: () => me.open_sync_window(),
 		},
 	    ],
 	    listeners: {
