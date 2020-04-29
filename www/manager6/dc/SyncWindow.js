@@ -78,6 +78,7 @@ Ext.define('PVE.dc.SyncWindow', {
 			name: 'scope',
 			fieldLabel: gettext('Scope'),
 			value: '',
+			emptyText: gettext('No default available'),
 			deleteEmpty: false,
 			allowBlank: false,
 			comboItems: [
@@ -89,6 +90,7 @@ Ext.define('PVE.dc.SyncWindow', {
 		    {
 			xtype: 'proxmoxKVComboBox',
 			value: '',
+			emptyText: gettext('No default available'),
 			deleteEmpty: false,
 			allowBlank: false,
 			comboItems: [
@@ -116,6 +118,7 @@ Ext.define('PVE.dc.SyncWindow', {
 		    {
 			xtype: 'proxmoxKVComboBox',
 			value: '',
+			emptyText: gettext('No default available'),
 			deleteEmpty: false,
 			allowBlank: false,
 			comboItems: [
@@ -123,7 +126,7 @@ Ext.define('PVE.dc.SyncWindow', {
 			    ['0', Proxmox.Utils.noText],
 			],
 			name: 'purge',
-			fieldLabel: gettext('Purge'),
+			fieldLabel: gettext('Purge ACLs'),
 		    },
 		],
 
