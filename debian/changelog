@@ -1,3 +1,30 @@
+pve-manager (6.1-9) pve; urgency=medium
+
+  * fix #2634: print specific error if hook-script is not executable
+
+  * API: allow one to OVS network live reloading
+
+  * add experimental SDN gui
+
+  * ui: ceph: add icons for versions in MON/MGR/MDS ServiceList panels
+
+  * ui: ceph: add highest cluster version in summary
+
+  * ui: add API token management interfaces
+
+  * ui: add user and API token "effective-permission" explorer
+
+  * ui: add Language selection in user menu
+
+  * ui: datacenter/Authentication: allow one to sync LDAP and AD realms
+
+  * certs: early renew long-lived certificates to cope with clients which do
+    not accept certificates with a lifetime of more than two years
+
+  * ui: don't block offline migration due non-referenced disk in the config
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 29 Apr 2020 17:15:38 +0200
+
 pve-manager (6.1-8) pve; urgency=medium
 
   * ui CT Features: add checkbox for new allow unproblematic mknod device
