@@ -50,7 +50,13 @@ sub write_config {
 }
 
 sub lock_config {
-    my ($node, $code, @param) = @_;
+    my ($node, $realcode, @param) = @_;
+
+    # make sure configuration file is up-to-date
+    my $code = sub {
+	PVE::Cluster::cfs_update();
+	$realcode->(@_);
+    };
 
     my $res = lock_file($node_config_lock, 10, $code, @param);
 
