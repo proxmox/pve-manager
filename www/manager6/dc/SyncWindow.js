@@ -21,6 +21,7 @@ Ext.define('PVE.dc.SyncWindow', {
 	    },
 	    'button': {
 		click: function(btn) {
+		    if (btn.reference === 'help_btn') return;
 		    this.sync_realm(btn.reference === 'preview_btn');
 		},
 	    },
@@ -144,6 +145,13 @@ Ext.define('PVE.dc.SyncWindow', {
     ],
 
     buttons: [
+	{
+	    xtype: 'proxmoxHelpButton',
+	    reference: 'help_btn',
+	    onlineHelp: 'pveum_ldap_sync',
+	    hidden: false,
+	},
+	'->',
 	{
 	    text: gettext('Preview'),
 	    reference: 'preview_btn',
