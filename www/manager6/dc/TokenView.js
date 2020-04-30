@@ -166,8 +166,8 @@ Ext.define('PVE.dc.TokenView', {
 		    dataIndex: 'userid',
 		    renderer: (uid) => {
 			let realmIndex = uid.lastIndexOf('@');
-			let user = uid.substr(0, realmIndex);
-			let realm = uid.substr(realmIndex);
+			let user = Ext.String.htmlEncode(uid.substr(0, realmIndex));
+			let realm = Ext.String.htmlEncode(uid.substr(realmIndex));
 			return `${user} <span style='float:right;'>${realm}</span>`;
 		    },
 		    hidden: !!me.fixedUser,

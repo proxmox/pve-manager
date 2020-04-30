@@ -44,6 +44,7 @@ Ext.define('PVE.form.TokenSelector', {
 		header: gettext('API Token'),
 		sortable: true,
 		dataIndex: 'id',
+		renderer: Ext.String.htmlEncode,
 		flex: 1
 	    },
 	    {

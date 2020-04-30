@@ -92,6 +92,7 @@ Ext.define('PVE.dc.GroupView', {
 		    header: gettext('Users'),
 		    sortable: false,
 		    dataIndex: 'users',
+		    renderer: Ext.String.htmlEncode,
 		    flex: 1
 		}
 	    ],

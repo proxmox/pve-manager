@@ -183,7 +183,7 @@ Ext.define('PVE.StdWorkspace', {
     updateUserInfo: function() {
 	var me = this;
 	var ui = me.query('#userinfo')[0];
-	ui.setText(Proxmox.UserName || '');
+	ui.setText(Ext.String.htmlEncode(Proxmox.UserName || ''));
 	ui.updateLayout();
     },
 

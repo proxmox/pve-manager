@@ -41,6 +41,7 @@ Ext.define('PVE.dc.TokenEdit', {
 		},
 		name: 'userid',
 		value: Proxmox.UserName,
+		renderer: Ext.String.htmlEncode,
 		fieldLabel: gettext('User'),
 	    },
 	    {

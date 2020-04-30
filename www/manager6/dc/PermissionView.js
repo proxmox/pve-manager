@@ -140,7 +140,8 @@ Ext.define('PVE.dc.PermissionView', {
     height: 600,
     layout: 'fit',
     cbind: {
-	title: '{userid} - ' + gettext('Granted Permissions'),
+	title: (get) => Ext.String.htmlEncode(get('userid')) +
+	    ` - ${gettext('Granted Permissions')}`,
     },
     items: [{
 	xtype: 'pveUserPermissionGrid',

@@ -68,6 +68,7 @@ Ext.define('PVE.dc.Log', {
 		{ 
 		    header: gettext("User name"), 
 		    dataIndex: 'user',
+		    renderer: Ext.String.htmlEncode,
 		    width: 150
 		},
 		{ 
@@ -79,6 +80,7 @@ Ext.define('PVE.dc.Log', {
 		{ 
 		    header: gettext("Message"), 
 		    dataIndex: 'msg',
+		    renderer: Ext.String.htmlEncode,
 		    flex: 1	  
 		}
 	    ],

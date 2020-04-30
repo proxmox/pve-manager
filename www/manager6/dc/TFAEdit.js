@@ -376,6 +376,7 @@ Ext.define('PVE.window.TFAEdit', {
 				{
 				    xtype: 'displayfield',
 				    fieldLabel: gettext('User name'),
+				    renderer: Ext.String.htmlEncode,
 				    cbind: {
 					value: '{userid}'
 				    }

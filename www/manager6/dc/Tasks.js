@@ -101,6 +101,7 @@ Ext.define('PVE.dc.Tasks', {
 		{
 		    header: gettext("User name"),
 		    dataIndex: 'user',
+		    renderer: Ext.String.htmlEncode,
 		    width: 150
 		},
 		{

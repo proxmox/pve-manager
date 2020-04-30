@@ -36,7 +36,7 @@ Ext.define('PVE.window.Settings', {
 	    var sp = Ext.state.Manager.getProvider();
 
 	    var username = sp.get('login-username') || Proxmox.Utils.noneText;
-	    me.lookupReference('savedUserName').setValue(username);
+	    me.lookupReference('savedUserName').setValue(Ext.String.htmlEncode(username));
 	    var vncMode = sp.get('novnc-scaling');
 	    if (vncMode !== undefined) {
 		me.lookupReference('noVNCScalingGroup').setValue({ noVNCScalingField: vncMode });
