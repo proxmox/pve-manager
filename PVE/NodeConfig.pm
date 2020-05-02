@@ -192,8 +192,8 @@ sub parse_node_config {
 	if ($line =~ /^([a-z][a-z-_]*\d*):\s*(\S.*)\s*$/) {
 	    my $key = $1;
 	    my $value = $2;
-	    eval { $value = check_type($key, $value); };
-	    warn "cannot parse value of '$key' in node config: $@" if $@;
+	    $value = eval { check_type($key, $value) };
+	    die "cannot parse value of '$key' in node config: $@" if $@;
 	    $conf->{$key} = $value;
 	} else {
 	    warn "cannot parse line '$line' in node config\n";
