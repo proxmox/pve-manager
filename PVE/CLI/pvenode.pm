@@ -95,11 +95,11 @@ __PACKAGE__->register_method({
 
 	    my $term = Term::ReadLine->new('pvenode');
 	    my $get_dir_selection = sub {
-		my $selection = $term->readline("Enter selection:\n");
+		my $selection = $term->readline("Enter selection: ");
 		if ($selection =~ /^(\d+)$/) {
 		    $selection = $1;
 		    if ($selection == $i) {
-			$param->{directory} = $term->readline("Enter URL:\n");
+			$param->{directory} = $term->readline("Enter custom URL: ");
 			return;
 		    } elsif ($selection < $i && $selection >= 0) {
 			$param->{directory} = $directories->[$selection]->{url};
@@ -121,7 +121,7 @@ __PACKAGE__->register_method({
 	if ($tos) {
 	    print "Terms of Service: $tos\n";
 	    my $term = Term::ReadLine->new('pvenode');
-	    my $agreed = $term->readline('Do you agree to the above terms? [y|N]');
+	    my $agreed = $term->readline('Do you agree to the above terms? [y|N]: ');
 	    die "Cannot continue without agreeing to ToS, aborting.\n"
 		if ($agreed !~ /^y$/i);
 
