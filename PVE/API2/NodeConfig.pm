@@ -104,6 +104,7 @@ __PACKAGE__->register_method({
 		delete $conf->{$opt};
 	    };
 
+	    PVE::NodeConfig::verify_conf($conf);
 	    PVE::NodeConfig::write_config($node, $conf);
 	};
 

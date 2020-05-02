@@ -245,6 +245,7 @@ sub get_acme_conf {
 	my $standalone_domains = delete($res->{domains}) // '';
 	for my $domain (split(";", $standalone_domains)) {
 	    $res->{domains}->{$domain}->{plugin} = 'standalone';
+	    $res->{domains}->{$domain}->{_configkey} = 'acme';
 	}
     }
 
@@ -262,15 +263,30 @@ sub get_acme_conf {
 	    die $err;
 	}
 	my $domain = delete $parsed->{domain};
-	if ($res->{domains}->{$domain}) {
+	if (my $exists = $res->{domains}->{$domain}) {
 	    return undef if $noerr;
-	    die "duplicate ACME config for domain '$domain'\n";
+	    die "duplicate domain '$domain' in ACME config properties"
+	        ." 'acmedomain$index' and '$exists->{_configkey}'\n";
 	}
 	$parsed->{plugin} //= 'standalone';
+	$parsed->{_configkey} = "acmedomain$index";
 	$res->{domains}->{$domain} = $parsed;
     }
 
     return $res;
+}
+
+# expects that basic format verification was already done, this is more higher
+# level verification
+sub verify_conf {
+    my ($node_conf) = @_;
+
+    # verify ACME domain uniqueness
+    my $tmp = get_acme_conf($node_conf);
+
+    # TODO: what else?
+
+    return 1; # OK
 }
 
 sub get_nodeconfig_schema {

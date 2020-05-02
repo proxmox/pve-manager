@@ -85,8 +85,8 @@ my $order_certificate = sub {
 		    if !defined($data->{url});
 
 		$acme->request_challenge_validation($data->{url});
-		print "Sleeping for 5 seconds\n";
-		sleep 5;
+		print "Sleeping for 30 seconds\n";
+		sleep 30;
 		while (1) {
 		    $auth = $acme->get_authorization($auth_url);
 		    if ($auth->{status} eq 'pending') {
