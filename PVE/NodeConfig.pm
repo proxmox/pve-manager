@@ -229,22 +229,21 @@ sub write_node_config {
 }
 
 sub get_acme_conf {
-    my ($data, $noerr) = @_;
+    my ($node_conf, $noerr) = @_;
 
-    $data //= '';
+    $node_conf //= {};
 
     my $res = {};
-
-    if (defined($data->{acme})) {
+    if (defined($node_conf->{acme})) {
 	$res = eval {
-	    PVE::JSONSchema::parse_property_string($acmedesc, $data->{acme});
+	    PVE::JSONSchema::parse_property_string($acmedesc, $node_conf->{acme})
 	};
-	if ($@) {
+	if (my $err = $@) {
 	    return undef if $noerr;
-	    die $@;
+	    die $err;
 	}
 	my $standalone_domains = delete($res->{domains}) // '';
-	foreach my $domain (split(";", $standalone_domains)) {
+	for my $domain (split(";", $standalone_domains)) {
 	    $res->{domains}->{$domain}->{plugin} = 'standalone';
 	}
     }
@@ -252,17 +251,15 @@ sub get_acme_conf {
     $res->{account} //= 'default';
 
     for my $index (0..$MAXDOMAINS) {
-	my $domain_rec = $data->{"acmedomain$index"};
+	my $domain_rec = $node_conf->{"acmedomain$index"};
 	next if !defined($domain_rec);
 
 	my $parsed = eval {
-	    PVE::JSONSchema::parse_property_string(
-		$acme_domain_desc,
-		$domain_rec);
+	    PVE::JSONSchema::parse_property_string($acme_domain_desc, $domain_rec)
 	};
-	if ($@) {
+	if (my $err = $@) {
 	    return undef if $noerr;
-	    die $@;
+	    die $err;
 	}
 	my $domain = delete $parsed->{domain};
 	if ($res->{domains}->{$domain}) {
@@ -277,7 +274,6 @@ sub get_acme_conf {
 }
 
 sub get_nodeconfig_schema {
-
     return $confdesc;
 }
 

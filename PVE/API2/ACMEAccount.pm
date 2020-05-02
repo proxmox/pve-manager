@@ -124,20 +124,18 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+
 	my $account_name = extract_param($param, 'name') // 'default';
 	my $account_file = "${acme_account_dir}/${account_name}";
-
-	mkdir $acme_account_dir;
+	mkdir $acme_account_dir if ! -e $acme_account_dir;
 
 	raise_param_exc({'name' => "ACME account config file '${account_name}' already exists."})
 	    if -e $account_file;
 
 	my $directory = extract_param($param, 'directory') // $acme_default_directory_url;
 	my $contact = $account_contact_from_param->($param);
-
-	my $rpcenv = PVE::RPCEnvironment::get();
-
-	my $authuser = $rpcenv->get_user();
 
 	my $realcmd = sub {
 	    PVE::Cluster::cfs_lock_acme($account_name, 10, sub {
@@ -149,10 +147,9 @@ __PACKAGE__->register_method ({
 		$acme->init(4096);
 		print "Registering ACME account..\n";
 		eval { $acme->new_account($param->{tos_url}, contact => $contact); };
-		if ($@) {
-		    warn "$@\n";
+		if (my $err = $@) {
 		    unlink $account_file;
-		    die "Registration failed!\n";
+		    die "Registration failed: $err\n";
 		}
 		print "Registration successful, account URL: '$acme->{location}'\n";
 	    });
@@ -173,7 +170,6 @@ my $update_account = sub {
 
 
     my $rpcenv = PVE::RPCEnvironment::get();
-
     my $authuser = $rpcenv->get_user();
 
     my $realcmd = sub {

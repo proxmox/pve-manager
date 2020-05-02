@@ -3,16 +3,16 @@ package PVE::API2::ACMEPlugin;
 use strict;
 use warnings;
 
-use PVE::ACME::Challenge;
-use PVE::ACME::DNSChallenge;
-use PVE::ACME::StandAlone;
-use PVE::JSONSchema qw(register_standard_option get_standard_option);
-use PVE::Tools qw(extract_param);
-use PVE::Cluster qw(cfs_read_file cfs_write_file cfs_register_file);
-
 use MIME::Base64;
 use Storable qw(dclone);
 
+
+use PVE::ACME::Challenge;
+use PVE::ACME::DNSChallenge;
+use PVE::ACME::StandAlone;
+use PVE::Cluster qw(cfs_read_file cfs_write_file cfs_register_file);
+use PVE::JSONSchema qw(register_standard_option get_standard_option);
+use PVE::Tools qw(extract_param);
 use base qw(PVE::RESTHandler);
 
 my $FILENAME = "priv/acme/plugins.cfg";
@@ -241,15 +241,15 @@ __PACKAGE__->register_method({
 
 sub load_config {
 
-    my $raw = eval { cfs_read_file($FILENAME); };
-    return !$raw ? {} : $raw;
+    my $raw = eval { cfs_read_file($FILENAME) };
+    return $raw || {};
 }
 
 sub write_conf {
     my ($conf) = @_;
 
     my $raw = PVE::ACME::Challenge->write_config($FILENAME, $conf);
-
     cfs_write_file($FILENAME, $raw);
 }
+
 1;

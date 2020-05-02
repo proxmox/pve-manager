@@ -96,7 +96,7 @@ __PACKAGE__->register_method({
 
 	    PVE::Tools::assert_if_modified($digest, $conf->{digest});
 
-	    foreach my $opt (keys %$param) {
+	    foreach my $opt (sort keys %$param) {
 		$conf->{$opt} = $param->{$opt};
 	    }
 
