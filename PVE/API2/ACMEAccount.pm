@@ -12,12 +12,12 @@ use PVE::Tools qw(extract_param);
 
 use PVE::API2::ACMEPlugin;
 
+use base qw(PVE::RESTHandler);
+
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::ACMEPlugin",
     path => 'plugins',
 });
-
-use base qw(PVE::RESTHandler);
 
 my $acme_directories = [
     {
@@ -29,14 +29,11 @@ my $acme_directories = [
 	url => 'https://acme-staging-v02.api.letsencrypt.org/directory',
     },
 ];
-
 my $acme_default_directory_url = $acme_directories->[0]->{url};
-
 my $account_contact_from_param = sub {
-    my ($param) = @_;
-    return [ map { "mailto:$_" } PVE::Tools::split_list(extract_param($param, 'contact')) ];
+    my @addresses = PVE::Tools::split_list(extract_param($_[0], 'contact'));
+    return [ map { "mailto:$_" } @addresses ];
 };
-
 my $acme_account_dir = PVE::CertHelpers::acme_account_dir();
 
 __PACKAGE__->register_method ({
