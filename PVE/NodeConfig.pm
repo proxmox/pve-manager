@@ -8,8 +8,8 @@ use PVE::JSONSchema qw(get_standard_option);
 use PVE::Tools qw(file_get_contents file_set_contents lock_file);
 use PVE::ACME;
 
-# register up to 20 domain names
-my $MAXDOMAINS = 20;
+# register up to 5 domain names per node for now
+my $MAXDOMAINS = 5;
 
 my $node_config_lock = '/var/lock/pvenode.lock';
 
