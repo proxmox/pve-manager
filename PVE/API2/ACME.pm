@@ -85,13 +85,13 @@ my $order_certificate = sub {
 		    if !defined($data->{url});
 
 		$acme->request_challenge_validation($data->{url});
-		print "Sleeping for 30 seconds\n";
-		sleep 30;
+		print "Sleeping for 10 seconds\n";
+		sleep 10;
 		while (1) {
 		    $auth = $acme->get_authorization($auth_url);
 		    if ($auth->{status} eq 'pending') {
-			print "Status is still 'pending', trying again in 30 seconds\n";
-			sleep 30;
+			print "Status is still 'pending', trying again in 20 seconds\n";
+			sleep 20;
 			next;
 		    } elsif ($auth->{status} eq 'valid') {
 			print "Status is 'valid', domain '$domain' OK!\n";
