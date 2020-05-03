@@ -212,13 +212,13 @@ Ext.define('PVE.window.Clone', {
 	    allowBlank: false,
 	    hidden: !me.isTemplate,
 	    value: me.isTemplate ? 'clone' : 'copy',
-		    comboItems: modelist,
-		    listeners: {
-			change: function(t, value) {
-			    me.updateVisibility();
-			    me.verifyFeature();
-			}
-		    }
+	    comboItems: modelist,
+	    listeners: {
+		change: function(t, value) {
+		    me.updateVisibility();
+		    me.verifyFeature();
+		}
+	    }
 	},
 	{
 	    xtype: 'PVE.form.SnapshotSelector',
