@@ -47,6 +47,9 @@ __PACKAGE__->register_method ({
 
 my $order_certificate = sub {
     my ($acme, $acme_node_config) = @_;
+
+    my $plugins = PVE::API2::ACMEPlugin::load_config();
+
     print "Placing ACME order\n";
     my ($order_url, $order) = $acme->new_order([ keys %{$acme_node_config->{domains}} ]);
     print "Order URL: $order_url\n";
@@ -64,7 +67,6 @@ my $order_certificate = sub {
 
 	    my $plugin_id = $domain_config->{plugin};
 
-	    my $plugins = PVE::API2::ACMEPlugin::load_config();
 	    my $plugin_cfg = $plugins->{ids}->{$plugin_id};
 	    die "plugin '$plugin_id' for domain '$domain' not found!\n"
 		if !$plugin_cfg;
