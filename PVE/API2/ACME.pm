@@ -60,28 +60,26 @@ my $order_certificate = sub {
 	    print "The validation for $domain is pending!\n";
 
 	    my $domain_config = $acme_node_config->{domains}->{$domain};
+	    die "no config for domain '$domain'\n" if !$domain_config;
 
-	    die "no config for domain '$domain'\n"
-		if !$domain_config;
+	    my $plugin_id = $domain_config->{plugin};
 
-	    my $pluginid = $domain_config->{plugin};
-
-	    my $plugin_conf = PVE::API2::ACMEPlugin::load_config();
-	    my $plugin_data = $plugin_conf->{ids}->{$pluginid};
-	    die "domain '$domain' is configured to use non-existent plugin '$pluginid'\n"
-		if !defined($plugin_conf->{ids}->{$pluginid});
+	    my $plugins = PVE::API2::ACMEPlugin::load_config();
+	    my $plugin_cfg = $plugins->{ids}->{$plugin_id};
+	    die "plugin '$plugin_id' for domain '$domain' not found!\n"
+		if !$plugin_cfg;
 
 	    my $data = {
-		plugin => $plugin_data,
+		plugin => $plugin_cfg,
 		alias => $domain_config->{alias},
 	    };
 
-	    my $plugin = PVE::ACME::Challenge->lookup($plugin_data->{type});
+	    my $plugin = PVE::ACME::Challenge->lookup($plugin_cfg->{type});
 	    $plugin->setup($acme, $auth, $data);
 
 	    print "Triggering validation\n";
 	    eval {
-		die "no validation url returned by plugin\n"
+		die "no validation URL returned by plugin '$plugin_id' for domain '$domain'\n"
 		    if !defined($data->{url});
 
 		$acme->request_challenge_validation($data->{url});
@@ -94,7 +92,7 @@ my $order_certificate = sub {
 			sleep 30;
 			next;
 		    } elsif ($auth->{status} eq 'valid') {
-			print "Status is 'valid'!\n";
+			print "Status is 'valid', domain '$domain' OK!\n";
 			last;
 		    }
 		    die "validating challenge '$auth_url' failed\n";
@@ -117,10 +115,9 @@ my $order_certificate = sub {
 	if ($order->{status} eq 'pending') {
 	    print "still pending, trying to finalize order\n";
 	    # FIXME
-	    # to be compatible with and without the order ready state
-	    # we try to finalize even at the 'pending' state
-	    # and give up after 5 unsuccessful tries
-	    # this can be removed when the letsencrypt api
+	    # to be compatible with and without the order ready state we try to
+	    # finalize even at the 'pending' state and give up after 5
+	    # unsuccessful tries this can be removed when the letsencrypt api
 	    # definitely has implemented the 'ready' state
 	    eval {
 		$acme->finalize_order($order, PVE::Certificate::pem_to_der($csr));
