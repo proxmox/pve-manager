@@ -18,6 +18,9 @@ case "$1" in
     test -f /etc/pve/local/pve-ssl.pem || exit 0;
     test -e /proxmox_install_mode && exit 0;
 
+    # the ExecStartPre doesn't triggers on service reload, so just in case
+    /usr/bin/pvecm updatecerts --silent || true
+
     deb-systemd-invoke reload-or-try-restart pvedaemon.service
     deb-systemd-invoke reload-or-try-restart pvestatd.service
     deb-systemd-invoke reload-or-try-restart pveproxy.service
