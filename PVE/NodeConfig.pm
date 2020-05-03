@@ -8,6 +8,8 @@ use PVE::JSONSchema qw(get_standard_option);
 use PVE::Tools qw(file_get_contents file_set_contents lock_file);
 use PVE::ACME;
 
+use PVE::API2::ACMEPlugin;
+
 # register up to 5 domain names per node for now
 my $MAXDOMAINS = 5;
 
@@ -275,6 +277,14 @@ sub get_acme_conf {
 	        ." 'acmedomain$index' and '$exists->{_configkey}'\n";
 	}
 	$parsed->{plugin} //= 'standalone';
+
+	my $plugin_id = $parsed->{plugin};
+	if ($plugin_id ne 'standalone') {
+	    my $plugins = PVE::API2::ACMEPlugin::load_config();
+	    die "plugin '$plugin_id' for domain '$domain' not found!\n"
+		if !$plugins->{ids}->{$plugin_id};
+	}
+
 	$parsed->{_configkey} = "acmedomain$index";
 	$res->{domains}->{$domain} = $parsed;
     }
