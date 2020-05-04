@@ -9,6 +9,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	data: {
 	    socketCount: 1,
 	    coreCount: 1,
+	    showCustomModelPermWarning: false,
 	},
 	formulas: {
 	    totalCoreCount: get => get('socketCount') * get('coreCount'),
@@ -66,6 +67,33 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	return values;
     },
 
+    setValues: function(values) {
+	let me = this;
+
+	let type = values.cputype;
+	let typeSelector = me.lookupReference('cputype');
+	let typeStore = typeSelector.getStore();
+	typeStore.on('load', (store, records, success) => {
+	    if (!success || !type || records.some(x => x.data.name === type)) {
+		return;
+	    }
+
+	    // if we get here, a custom CPU model is selected for the VM but we
+	    // don't have permission to configure it - it will not be in the
+	    // list retrieved from the API, so add it manually to allow changing
+	    // other processor options
+	    typeStore.add({
+		name: type,
+		displayname: type.replace(/^custom-/, ''),
+		custom: 1,
+		vendor: gettext("Unknown"),
+	    });
+	    typeSelector.select(type);
+	});
+
+	me.callParent([values]);
+    },
+
     cpu: {},
 
     column1: [
@@ -99,6 +127,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	{
 	    xtype: 'CPUModelSelector',
 	    name: 'cputype',
+	    reference: 'cputype',
 	    fieldLabel: gettext('Type')
 	},
 	{
@@ -108,6 +137,18 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    isFormField: false,
 	    bind: {
 		value: '{totalCoreCount}',
+	    },
+	},
+    ],
+
+    columnB: [
+	{
+	    xtype: 'displayfield',
+	    userCls: 'pmx-hint',
+	    value: gettext('WARNING: You do not have permission to configure custom CPU types, if you change the type you will not be able to go back!'),
+	    hidden: true,
+	    bind: {
+		hidden: '{!showCustomModelPermWarning}',
 	    },
 	},
     ],
@@ -198,6 +239,14 @@ Ext.define('PVE.qemu.ProcessorEdit', {
 		    data.cputype = cpu.cputype;
 		    if (cpu.flags) {
 			data.flags = cpu.flags;
+		    }
+
+		    let caps = Ext.state.Manager.get('GuiCap');
+		    if (data.cputype.indexOf('custom-') === 0 &&
+			!caps.nodes['Sys.Audit'])
+		    {
+			let vm = ipanel.getViewModel();
+			vm.set("showCustomModelPermWarning", true);
 		    }
 		}
 		me.setValues(data);
