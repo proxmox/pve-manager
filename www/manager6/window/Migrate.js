@@ -266,10 +266,11 @@ Ext.define('PVE.window.Migrate', {
 				    });
 				}
 			    } else {
+				var size_string = disk.size ? '(' + PVE.Utils.render_size(disk.size) + ')' : '';
 				migration['with-local-disks'] = 1;
 				migration.preconditions.push({
-				    text:'Migration with local disk might take long: ' + disk.volid
-					+' (' + PVE.Utils.render_size(disk.size) + ')',
+				    text: Ext.String.format('Migration with local disk might take long: {0} {1}',
+				          disk.volid, size_string),
 				    severity: 'warning'
 				});
 			    }
