@@ -126,8 +126,9 @@ Ext.define('PVE.window.Migrate', {
 	    if (vm.get('migration.with-local-disks')) {
 		params['with-local-disks'] = 1;
 	    }
-	    //only submit targetstorage if vm is running, storage migration to different storage is only possible online
-	    if (vm.get('migration.with-local-disks') && vm.get('running')) {
+	    //offline migration to a different storage currently might fail at a late stage
+	    //(i.e. after some disks have been moved), so don't expose it yet in the GUI
+	    if (vm.get('migration.with-local-disks') && vm.get('running') && values.targetstorage) {
 		params.targetstorage = values.targetstorage;
 	    }
 
@@ -352,6 +353,9 @@ Ext.define('PVE.window.Migrate', {
 			    name: 'targetstorage',
 			    fieldLabel: gettext('Target storage'),
 			    storageContent: 'images',
+			    allowBlank: true,
+			    autoSelect: false,
+			    emptyText: 'use current layout',
 			    bind: {
 				hidden: '{setStorageselectorHidden}'
 			    }
