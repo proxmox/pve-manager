@@ -5,28 +5,18 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 
     insideWizard: false,
 
+    viewModel: {
+	data: {
+	    socketCount: 1,
+	    coreCount: 1,
+	},
+	formulas: {
+	    totalCoreCount: get => get('socketCount') * get('coreCount'),
+	},
+    },
+
     controller: {
 	xclass: 'Ext.app.ViewController',
-
-	updateCores: function() {
-	    var me = this.getView();
-	    var sockets = me.down('field[name=sockets]').getValue();
-	    var cores = me.down('field[name=cores]').getValue();
-	    me.down('field[name=totalcores]').setValue(sockets*cores);
-	    var vcpus = me.down('field[name=vcpus]');
-	    vcpus.setMaxValue(sockets*cores);
-	    vcpus.setEmptyText(sockets*cores);
-	    vcpus.validate();
-	},
-
-	control: {
-	    'field[name=sockets]': {
-		change: 'updateCores'
-	    },
-	    'field[name=cores]': {
-		change: 'updateCores'
-	    }
-	}
     },
 
     onGetValues: function(values) {
@@ -86,7 +76,10 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    maxValue: 4,
 	    value: '1',
 	    fieldLabel: gettext('Sockets'),
-	    allowBlank: false
+	    allowBlank: false,
+	    bind: {
+		value: '{socketCount}',
+	    },
 	},
 	{
 	    xtype: 'proxmoxintegerfield',
@@ -95,8 +88,11 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    maxValue: 128,
 	    value: '1',
 	    fieldLabel: gettext('Cores'),
-	    allowBlank: false
-	}
+	    allowBlank: false,
+	    bind: {
+		value: '{coreCount}',
+	    },
+	},
     ],
 
     column2: [
@@ -109,8 +105,11 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Total cores'),
 	    name: 'totalcores',
-	    value: '1'
-	}
+	    isFormField: false,
+	    bind: {
+		value: '{totalCoreCount}',
+	    },
+	},
     ],
 
     advancedColumn1: [
@@ -123,7 +122,11 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    fieldLabel: gettext('VCPUs'),
 	    deleteEmpty: true,
 	    allowBlank: true,
-	    emptyText: '1'
+	    emptyText: '1',
+	    bind: {
+		emptyText: '{totalCoreCount}',
+		maxValue: '{totalCoreCount}',
+	    },
 	},
 	{
 	    xtype: 'numberfield',
