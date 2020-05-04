@@ -1,9 +1,19 @@
+Ext.define('PVE.data.CPUModel', {
+    extend: 'Ext.data.Model',
+    fields: [
+	{name: 'name'},
+	{name: 'vendor'},
+	{name: 'custom'},
+	{name: 'displayname'}
+    ]
+});
+
 Ext.define('PVE.form.CPUModelSelector', {
     extend: 'Proxmox.form.ComboGrid',
     alias: ['widget.CPUModelSelector'],
 
-    valueField: 'value',
-    displayField: 'value',
+    valueField: 'name',
+    displayField: 'displayname',
 
     emptyText: Proxmox.Utils.defaultText + ' (kvm64)',
     allowBlank: true,
@@ -19,157 +29,76 @@ Ext.define('PVE.form.CPUModelSelector', {
 	columns: [
 	    {
 		header: gettext('Model'),
-		dataIndex: 'value',
+		dataIndex: 'displayname',
 		hideable: false,
 		sortable: true,
-		flex: 2
+		flex: 3
 	    },
 	    {
 		header: gettext('Vendor'),
 		dataIndex: 'vendor',
 		hideable: false,
 		sortable: true,
-		flex: 1
+		flex: 2
 	    }
 	],
-	width: 320
+	width: 360
     },
 
     store: {
-	fields: [ 'value', 'vendor' ],
-	data: [
+	autoLoad: true,
+	model: 'PVE.data.CPUModel',
+	proxy: {
+	    type: 'proxmox',
+	    url: '/api2/json/nodes/localhost/cpu'
+	},
+	sorters: [
 	    {
-		value: 'athlon',
-		vendor: 'AMD'
-	    },
-	    {
-		value: 'phenom',
-		vendor: 'AMD'
-	    },
-	    {
-		value: 'Opteron_G1',
-		vendor: 'AMD'
-	    },
-	    {
-		value: 'Opteron_G2',
-		vendor: 'AMD'
-	    },
-	    {
-		value: 'Opteron_G3',
-		vendor: 'AMD'
-	    },
-	    {
-		value: 'Opteron_G4',
-		vendor: 'AMD'
-	    },
-	    {
-		value: 'Opteron_G5',
-		vendor: 'AMD'
-	    },
-	    {
-		value: 'EPYC',
-		vendor: 'AMD'
-	    },
-	    {
-		value: '486',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'core2duo',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'coreduo',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'pentium',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'pentium2',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'pentium3',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'Conroe',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'Penryn',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'Nehalem',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'Westmere',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'SandyBridge',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'IvyBridge',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'Haswell',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'Haswell-noTSX',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'Broadwell',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'Broadwell-noTSX',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'Skylake-Client',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'Skylake-Server',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'Cascadelake-Server',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'KnightsMill',
-		vendor: 'Intel'
-	    },
-	    {
-		value: 'kvm32',
-		vendor: 'QEMU'
-	    },
-	    {
-		value: 'kvm64',
-		vendor: 'QEMU'
-	    },
-	    {
-		value: 'qemu32',
-		vendor: 'QEMU'
-	    },
-	    {
-		value: 'qemu64',
-		vendor: 'QEMU'
-	    },
-	    {
-		value: 'host',
-		vendor: 'Host'
+		sorterFn: function(recordA, recordB) {
+		    let a = recordA.data;
+		    let b = recordB.data;
+
+		    let vendorOrder = PVE.Utils.cpu_vendor_order;
+		    let orderA = vendorOrder[a.vendor] || vendorOrder['_default_'];
+		    let orderB = vendorOrder[b.vendor] || vendorOrder['_default_'];
+
+		    if (orderA > orderB) {
+			return 1;
+		    } else if (orderA < orderB) {
+			return -1;
+		    }
+
+		    // Within same vendor, sort alphabetically
+		    return a.name.localeCompare(b.name);
+		},
+		direction: 'ASC'
 	    }
-	]
+	],
+	listeners: {
+	    load: function(store, records, success) {
+		if (success) {
+		    records.forEach(rec => {
+			rec.data.displayname = rec.data.name.replace(/^custom-/, '');
+
+			let vendor = rec.data.vendor;
+
+			if (rec.data.name === 'host') {
+			    vendor = 'Host';
+			}
+
+			// We receive vendor names as given to QEMU as CPUID
+			vendor = PVE.Utils.cpu_vendor_map[vendor] || vendor;
+
+			if (rec.data.custom) {
+			    vendor = gettext('Custom') + ` (${vendor})`;
+			}
+
+			rec.data.vendor = vendor;
+		    });
+
+		    store.sort();
+		}
+	    }
+	}
     }
 });

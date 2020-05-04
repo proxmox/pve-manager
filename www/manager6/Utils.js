@@ -1455,6 +1455,20 @@ Ext.define('PVE.Utils', { utilities: {
 	    }
 	});
     },
+
+    cpu_vendor_map: {
+	'default': 'QEMU',
+	'AuthenticAMD': 'AMD',
+	'GenuineIntel': 'Intel'
+    },
+
+    cpu_vendor_order: {
+	"AMD": 1,
+	"Intel": 2,
+	"QEMU": 3,
+	"Host": 4,
+	"_default_": 5, // includes custom models
+    },
 },
 
     singleton: true,
