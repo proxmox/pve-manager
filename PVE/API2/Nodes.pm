@@ -34,6 +34,7 @@ use PVE::API2::Tasks;
 use PVE::API2::Scan;
 use PVE::API2::Storage::Status;
 use PVE::API2::Qemu;
+use PVE::API2::Qemu::CPU;
 use PVE::API2::LXC;
 use PVE::API2::LXC::Status;
 use PVE::API2::VZDump;
@@ -63,6 +64,11 @@ use base qw(PVE::RESTHandler);
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Qemu",
     path => 'qemu',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Qemu::CPU",
+    path => 'cpu',
 });
 
 __PACKAGE__->register_method ({
@@ -241,6 +247,7 @@ __PACKAGE__->register_method ({
 	    { name => 'certificates' },
 	    { name => 'config' },
 	    { name => 'hosts' },
+	    { name => 'cpu' },
 	];
 
 	push @$result, { name => 'sdn' } if $have_sdn;
