@@ -14,7 +14,7 @@ Ext.define('PVE.form.CorosyncLinkEditorController', {
 	this.addLink();
     },
 
-    addLink: function(number, value, allowBlank, text) {
+    addLink: function(link) {
 	let me = this;
 	let view = me.getView();
 	let vm = view.getViewModel();
@@ -24,20 +24,23 @@ Ext.define('PVE.form.CorosyncLinkEditorController', {
 	    return;
 	}
 
-	if (number === undefined) {
-	    number = me.getNextFreeNumber();
+	link = link || {};
+
+	if (link.number === undefined) {
+	    link.number = me.getNextFreeNumber();
 	}
-	if (value === undefined) {
-	    value = me.getNextFreeNetwork();
+	if (link.value === undefined) {
+	    link.value = me.getNextFreeNetwork();
 	}
 
 	let linkSelector = Ext.create('PVE.form.CorosyncLinkSelector', {
 	    maxLinkNumber: vm.get('maxLinkCount') - 1,
 	    allowNumberEdit: vm.get('allowNumberEdit'),
-	    allowBlankNetwork: allowBlank,
-	    initNumber: number,
-	    initNetwork: value,
-	    text: text,
+	    allowBlankNetwork: link.allowBlank,
+	    initNumber: link.number,
+	    initNetwork: link.value,
+	    text: link.text,
+	    emptyText: link.emptyText,
 
 	    // needs to be set here, because we need to update the viewmodel
 	    removeBtnHandler: function() {
@@ -127,6 +130,7 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
     allowNumberEdit: true,
     allowBlankNetwork: false,
     removeBtnHandler: undefined,
+    emptyText: '',
 
     // values
     initNumber: 0,
@@ -348,10 +352,7 @@ Ext.define('PVE.form.CorosyncLinkEditor', {
 	me.removeAll();
 	vm.set('linkCount', 0);
 
-	Ext.Array.each(links, link => {
-	    controller.addLink(link['number'], link['value'],
-		link['allowBlank'], link['text']);
-	});
+	Ext.Array.each(links, link => controller.addLink(link));
     },
 
     setDefaultLinks: function() {

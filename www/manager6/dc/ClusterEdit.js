@@ -241,7 +241,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		    joinInfo.ring_addr[0] === joinInfo.ipAddress) {
 
 		    links[0].allowBlank = true;
-		    linkEditor.setInfoText(gettext("Leave empty to use IP resolved by node's hostname"));
+		    links[0].emptyText = gettext("IP resolved by node's hostname");
 		}
 
 		linkEditor.setLinks(links);
