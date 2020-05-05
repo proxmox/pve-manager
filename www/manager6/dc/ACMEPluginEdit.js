@@ -53,6 +53,7 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 		    schema.fields = {};
 		}
 		// create custom fields according to schema
+		let gotSchemaField = false;
 		for (const [name, definition] of Object.entries(schema.fields).sort((a, b) => a[0].localeCompare(b[0]))) {
 		    let xtype;
 		    switch (definition.type) {
@@ -86,7 +87,9 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 
 		    me.createdFields[name] = field;
 		    container.add(field);
+		    gotSchemaField = true;
 		}
+		datafield.setHidden(gotSchemaField); // prefer schema-fields
 
 		// parse data from field and set it to the custom ones
 		let extradata = [];
