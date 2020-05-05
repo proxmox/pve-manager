@@ -18,6 +18,7 @@ use PVE::Storage;
 use PVE::Tools qw(run_command);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::Ceph::Tools;
+use PVE::Ceph::Services;
 use PVE::API2::Ceph;
 use PVE::API2::Ceph::FS;
 use PVE::API2::Ceph::MDS;
@@ -49,25 +50,58 @@ __PACKAGE__->register_method ({
     parameters => {
 	additionalProperties => 0,
 	properties => {
+	    logs => {
+		description => 'Additionally purge Ceph logs, /var/log/ceph.',
+		type => 'boolean',
+		optional => 1,
+	    },
+	    crash => {
+		description => 'Additionally purge Ceph crash logs, /var/lib/ceph/crash.',
+		type => 'boolean',
+		optional => 1,
+	    },
 	},
     },
     returns => { type => 'null' },
     code => sub {
 	my ($param) = @_;
 
-	my $monstat;
+	my $message;
+	my $pools = [];
+	my $monstat = {};
+	my $mdsstat = {};
+	my $osdstat = [];
 
 	eval {
 	    my $rados = PVE::RADOS->new();
-	    my $monstat = $rados->mon_command({ prefix => 'mon_status' });
+	    $pools = PVE::Ceph::Tools::ls_pools(undef, $rados);
+	    $monstat = PVE::Ceph::Services::get_services_info('mon', undef, $rados);
+	    $mdsstat = PVE::Ceph::Services::get_services_info('mds', undef, $rados);
+	    $osdstat = $rados->mon_command({ prefix => 'osd metadata' });
 	};
-	my $err = $@;
+	warn "Could not connect: $@" if $@;
 
-	die "detected running ceph services- unable to purge data\n"
-	    if !$err;
+	my $osd = grep { $_->{hostname} eq $nodename } @$osdstat;
+	my $mds = grep { $mdsstat->{$_}->{host} eq $nodename } keys %$mdsstat;
+	my $mon = grep { $monstat->{$_}->{host} eq $nodename } keys %$monstat;
 
-	# fixme: this is dangerous - should we really support this function?
-	PVE::Ceph::Tools::purge_all_ceph_files();
+	# no pools = no data
+	$message .= "- remove pools, this will !!DESTROY DATA!!\n" if @$pools;
+	$message .= "- remove active OSD on $nodename\n" if $osd;
+	$message .= "- remove active MDS on $nodename\n" if $mds;
+	$message .= "- remove other MONs, $nodename is not the last MON\n"
+	    if scalar(keys %$monstat) > 1 && $mon;
+
+	# display all steps at once
+	die "Unable to purge Ceph!\n\nTo continue:\n$message" if $message;
+
+	my $services = PVE::Ceph::Services::get_local_services();
+	$services->{mon} = $monstat if $mon;
+	$services->{crash}->{$nodename} = { direxists => 1 } if $param->{crash};
+	$services->{logs}->{$nodename} = { direxists => 1 } if $param->{logs};
+
+	PVE::Ceph::Tools::purge_all_ceph_services($services);
+	PVE::Ceph::Tools::purge_all_ceph_files($services);
 
 	return undef;
     }});

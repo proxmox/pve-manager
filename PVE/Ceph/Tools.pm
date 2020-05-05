@@ -11,6 +11,8 @@ use JSON;
 use PVE::Tools qw(run_command dir_glob_foreach);
 use PVE::Cluster qw(cfs_read_file);
 use PVE::RADOS;
+use PVE::Ceph::Services;
+use PVE::CephConfig;
 
 my $ccname = 'ceph'; # ceph cluster name
 my $ceph_cfgdir = "/etc/ceph";
@@ -42,6 +44,7 @@ my $config_hash = {
     ceph_bootstrap_mds_keyring => $ceph_bootstrap_mds_keyring,
     ceph_mds_data_dir => $ceph_mds_data_dir,
     long_rados_timeout => 60,
+    ceph_cfgpath => $ceph_cfgpath,
 };
 
 sub get_local_version {
@@ -89,20 +92,64 @@ sub get_config {
 }
 
 sub purge_all_ceph_files {
-    # fixme: this is very dangerous - should we really support this function?
+    my ($services) = @_;
+    my $is_local_mon;
+    my $monlist = [ split(',', PVE::CephConfig::get_monaddr_list($pve_ceph_cfgpath)) ];
 
-    unlink $ceph_cfgpath;
+    foreach my $service (keys %$services) {
+	my $type = $services->{$service};
+	next if (!%$type);
 
-    unlink $pve_ceph_cfgpath;
-    unlink $pve_ckeyring_path;
-    unlink $pve_mon_key_path;
+	foreach my $name (keys %$type) {
+	    my $dir_exists = $type->{$name}->{direxists};
 
-    unlink $ceph_bootstrap_osd_keyring;
-    unlink $ceph_bootstrap_mds_keyring;
+	    $is_local_mon = grep($type->{$name}->{addr}, @$monlist)
+		if $service eq 'mon';
 
-    system("rm -rf /var/lib/ceph/mon/ceph-*");
+	    my $path = "/var/lib/ceph/$service";
+	    $path = '/var/log/ceph' if $service eq 'logs';
+	    if ($dir_exists) {
+		my $err;
+		File::Path::remove_tree($path, {
+			keep_root => 1,
+			error => \$err,
+		    });
+		warn "Error removing path, '$path'\n" if @$err;
+	    }
+	}
+    }
 
-    # remove osd?
+    if (scalar @$monlist > 0 && !$is_local_mon) {
+	warn "Foreign MON address in ceph.conf. Keeping config & keyrings\n"
+    } else {
+	print "Removing config & keyring files\n";
+	foreach my $file (%$config_hash) {
+	    unlink $file if (-e $file);
+	}
+    }
+}
+
+sub purge_all_ceph_services {
+    my ($services) = @_;
+
+    foreach my $service (keys %$services) {
+	my $type = $services->{$service};
+	next if (!%$type);
+
+	foreach my $name (keys %$type) {
+	    my $service_exists = $type->{$name}->{service};
+
+	    if ($service_exists) {
+		eval {
+		    PVE::Ceph::Services::ceph_service_cmd('disable', "$service.$name");
+		    PVE::Ceph::Services::ceph_service_cmd('stop', "$service.$name");
+		};
+		my $err = $@ if $@;
+		warn "Could not disable/stop ceph-$service\@$name, error: $err\n"
+		if $err;
+	    }
+	}
+    }
 }
 
 sub check_ceph_installed {
