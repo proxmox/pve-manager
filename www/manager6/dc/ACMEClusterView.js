@@ -184,17 +184,12 @@ Ext.define('PVE.dc.ACMEClusterView', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveACMEClusterView',
 
-    stateful: true,
-    stateId: 'grid-acme',
-
-    layout: 'border',
+    onlineHelp: 'sysadmin_certificate_management',
 
     items: [
 	{
-	    region: 'west',
-	    width: '25%',
+	    region: 'north',
 	    border: false,
-	    split: true,
 	    xtype: 'pveACMEAccountView',
 	},
 	{
