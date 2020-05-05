@@ -49,8 +49,11 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 
 		me.createdFields = {};
 
+		if (typeof schema.fields !== 'object') {
+		    schema.fields = {};
+		}
 		// create custom fields according to schema
-		for (const [name, definition] of Object.entries(schema)) {
+		for (const [name, definition] of Object.entries(schema.fields)) {
 		    let xtype;
 		    switch (definition.type) {
 			case 'string':

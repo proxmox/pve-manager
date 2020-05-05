@@ -1,11 +1,11 @@
 Ext.define('pve-acme-challenges', {
     extend: 'Ext.data.Model',
-    fields: ['name', 'schema'],
+    fields: ['id', 'type', 'schema'],
     proxy: {
 	type: 'proxmox',
-	    url: "/api2/json/cluster/acme/challengeschema",
+	    url: "/api2/json/cluster/acme/challenge-schema",
     },
-    idProperty: 'name',
+    idProperty: 'id',
 });
 
 Ext.define('PVE.form.ACMEApiSelector', {
@@ -14,7 +14,7 @@ Ext.define('PVE.form.ACMEApiSelector', {
 
     fieldLabel: gettext('API'),
     displayField: 'name',
-    valueField: 'name',
+    valueField: 'id',
 
     store: {
 	model: 'pve-acme-challenges',
@@ -30,7 +30,7 @@ Ext.define('PVE.form.ACMEApiSelector', {
 	let me = this;
 	let val = me.getValue();
 	if (val) {
-	    let record = me.getStore().findRecord('name', val);
+	    let record = me.getStore().findRecord('id', val);
 	    if (record) {
 		return record.data.schema;
 	    }
