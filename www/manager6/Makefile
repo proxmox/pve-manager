@@ -72,6 +72,7 @@ JSSRC= 				                 	\
 	form/SDNZoneSelector.js				\
 	form/SDNControllerSelector.js			\
 	form/TFASelector.js				\
+	form/ACMEAPiSelector.js				\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
