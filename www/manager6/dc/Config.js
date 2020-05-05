@@ -178,6 +178,16 @@ Ext.define('PVE.dc.Config', {
 		    itemId: 'sdnvnet'
 		});
 	    }
+
+	    if (Proxmox.UserName === 'root@pam') {
+		me.items.push({
+		    xtype: 'pveACMEClusterView',
+		    title: gettext('ACME'),
+		    iconCls: 'fa fa-certificate',
+		    itemId: 'acme'
+		});
+	    }
+
 	    me.items.push({
 		xtype: 'pveFirewallRules',
 		title: gettext('Firewall'),

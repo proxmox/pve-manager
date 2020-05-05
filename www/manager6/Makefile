@@ -217,6 +217,7 @@ JSSRC= 				                 	\
 	ha/GroupEdit.js					\
 	ha/Groups.js					\
 	ha/Fencing.js					\
+	dc/ACMEClusterView.js					\
 	dc/ACMEPluginEdit.js				\
 	dc/Summary.js					\
 	grid/Replication.js				\
