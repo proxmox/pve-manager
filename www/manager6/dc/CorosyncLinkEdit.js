@@ -139,38 +139,47 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 
     items: [
 	{
-	    xtype: 'numberfield',
+	    xtype: 'displayfield',
+	    fieldLabel: 'Link',
 	    cbind: {
-		maxValue: '{maxLinkNumber}',
-		readOnly: '{!allowNumberEdit}',
+		hidden: '{allowNumberEdit}',
 		value: '{initNumber}'
 	    },
-
-	    minValue: 0,
+	    width: 45,
+	    labelWidth: 30,
 	    allowBlank: false,
+	},
+	{
+	    xtype: 'numberfield',
+	    fieldLabel: 'Link',
+	    cbind: {
+		maxValue: '{maxLinkNumber}',
+		hidden: '{!allowNumberEdit}',
+		value: '{initNumber}'
+	    },
 	    width: 80,
 	    labelWidth: 30,
-	    fieldLabel: gettext('Link'),
-
-	    // see getSubmitValue of network selector
-	    submitValue: false
+	    minValue: 0,
+	    submitValue: false, // see getSubmitValue of network selector
+	    allowBlank: false,
 	},
 	{
 	    xtype: 'proxmoxNetworkSelector',
 	    cbind: {
 		allowBlank: '{allowBlankNetwork}',
-		value: '{initNetwork}'
+		value: '{initNetwork}',
+		emptyText: '{emptyText}',
 	    },
-
 	    autoSelect: false,
 	    valueField: 'address',
 	    displayField: 'address',
+	    width: 220,
 	    margin: '0 5px 0 5px',
 	    getSubmitValue: function() {
-		// link number is encoded into key, so we need to set
-		// field name before value retrieval
+		// link number is encoded into key, so we need to set field
+		// name before value retrieval
 		let me = this;
-		let numSelect = me.prev('numberfield');
+		let numSelect = me.prev('numberfield'); // always the correct one
 		let linkNumber = numSelect.getValue();
 		me.name = 'link' + linkNumber;
 		return me.getValue();
@@ -180,11 +189,9 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 	    xtype: 'button',
 	    iconCls: 'fa fa-trash-o',
 	    cls: 'removeLinkBtn',
-
 	    cbind: {
 		hidden: '{!allowNumberEdit}'
 	    },
-
 	    handler: function() {
 		let me = this;
 		let parent = me.up('pveCorosyncLinkSelector');
@@ -302,6 +309,8 @@ Ext.define('PVE.form.CorosyncLinkEditor', {
 	xtype: 'toolbar',
 	dock: 'bottom',
 	defaultButtonUI : 'default',
+	border: false,
+	padding: '6 0 6 0',
 	bind: {
 	    hidden: '{dockHidden}'
 	},
