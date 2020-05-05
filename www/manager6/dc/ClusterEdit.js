@@ -26,22 +26,13 @@ Ext.define('PVE.ClusterCreateWindow', {
 	},
 	{
 	    xtype: 'fieldcontainer',
-	    fieldLabel: gettext("Cluster Links"),
-	    style: {
-		'padding-top': '5px',
-	    },
+	    fieldLabel: gettext("Cluster Network"),
 	    items: [
 		{
 		    xtype: 'pveCorosyncLinkEditor',
-		    style: {
-			'padding-bottom': '5px',
-		    },
+		    infoText: gettext("Multiple links are used as failover, lower numbers have higher priority."),
 		    name: 'links'
 		},
-		{
-		    xtype: 'label',
-		    text: gettext("Multiple links are used as failover, lower numbers have higher priority.")
-		}
 	    ]
 	}]
     }
@@ -357,7 +348,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
     },
     {
 	xtype: 'fieldcontainer',
-	fieldLabel: gettext("Cluster Links"),
+	fieldLabel: gettext("Cluster Network"),
 	items: [
 	    {
 		xtype: 'pveCorosyncLinkEditor',

@@ -391,6 +391,7 @@ Ext.define('PVE.form.CorosyncLinkEditor', {
 	let controller = me.getController();
 
 	vm.set('allowNumberEdit', me.allowNumberEdit);
+	vm.set('infoText', me.infoText || '');
 
 	me.callParent();
 
