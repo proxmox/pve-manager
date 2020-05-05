@@ -173,9 +173,11 @@ __PACKAGE__->register_method({
 
 	my $id = extract_param($param, 'id');
 	my $delete = extract_param($param, 'delete');
+	my $digest = extract_param($param, 'digest');
 
 	cfs_lock_file($plugin_config_file, undef, sub {
 	    my $cfg = load_config();
+	    PVE::Tools::assert_if_modified($cfg->{digest}, $digest);
 	    my $plugin_cfg = $cfg->{ids}->{$id};
 	    die "ACME plugin ID '$id' does not exist\n" if !$plugin_cfg;
 
