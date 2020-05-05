@@ -57,6 +57,13 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 
     items: [
 	{
+	    xtype: 'proxmoxtextfield',
+	    fieldLabel: gettext('Name'),
+	    name: 'name',
+	    emptyText: 'default',
+	    allowBlank: true,
+	},
+	{
 	    xtype: 'proxmoxComboGrid',
 	    name: 'directory',
 	    allowBlank: false,
