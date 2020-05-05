@@ -24,7 +24,10 @@ Ext.define('PVE.form.ACMEApiSelector', {
     triggerAction: 'all',
     queryMode: 'local',
     allowBlank: false,
-    editable: false,
+    editable: true,
+    forceSelection: true,
+    anyMatch: true,
+    selectOnFocus: true,
 
     getSchema: function() {
 	let me = this;
