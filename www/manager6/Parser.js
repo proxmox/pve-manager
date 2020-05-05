@@ -696,5 +696,20 @@ Ext.define('PVE.Parser', { statics: {
 	    };
 	}
 	return null;
-    }
+    },
+
+    parseACMEPluginData: function(data) {
+	let res = {};
+	let extradata = [];
+	data.split('\n').forEach((line) => {
+	    // capture everything after the first = as value
+	    let [key, value] = line.split(/=(.+)/);
+	    if (value !== undefined) {
+		res[key] = value;
+	    } else {
+		extradata.push(line);
+	    }
+	});
+	return [res, extradata];
+    },
 }});
