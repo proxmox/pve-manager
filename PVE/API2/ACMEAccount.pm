@@ -9,6 +9,7 @@ use PVE::Exception qw(raise_param_exc);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RPCEnvironment;
 use PVE::Tools qw(extract_param);
+use PVE::ACME::Challenge;
 
 use PVE::API2::ACMEPlugin;
 
@@ -63,6 +64,7 @@ __PACKAGE__->register_method ({
 	    { name => 'tos' },
 	    { name => 'directories' },
 	    { name => 'plugins' },
+	    { name => 'challengeschema' },
 	];
     }});
 
@@ -364,6 +366,65 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	return $acme_directories;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'challengeschema',
+    path => 'challenge-schema',
+    method => 'GET',
+    description => "Get schema of ACME challenge types.",
+    permissions => { user => 'all' },
+    parameters => {
+	additionalProperties => 0,
+	properties => {},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => 'object',
+	    additionalProperties => 0,
+	    properties => {
+		id => {
+		    type => 'string',
+		},
+		name => {
+		    description => 'Human readable name, falls back to id',
+		    type => 'string',
+		},
+		type => {
+		    type => 'string',
+		},
+		schema => {
+		    type => 'object',
+		},
+	    },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $plugin_type_enum = PVE::ACME::Challenge->lookup_types();
+
+	my $res = [];
+
+	for my $type (@$plugin_type_enum) {
+	    my $plugin = PVE::ACME::Challenge->lookup($type);
+	    next if !$plugin->can('get_supported_plugins');
+
+	    my $plugin_type = $plugin->type();
+	    my $plugins = $plugin->get_supported_plugins();
+	    for my $id (sort keys %$plugins) {
+		my $schema = $plugins->{$id};
+		push @$res, {
+		    id => $id,
+		    name => $schema->{name} // $id,
+		    type => $plugin_type,
+		    schema => $schema,
+		};
+	    }
+	}
+
+	return $res;
     }});
 
 1;
