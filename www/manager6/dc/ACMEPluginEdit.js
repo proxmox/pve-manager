@@ -77,6 +77,7 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 			fieldLabel: name,
 			width: '100%',
 			labelWidth: 120,
+			emptyText: definition.default || '',
 			autoEl: definition.description ? {
 			    tag: 'div',
 			    'data-qtip': definition.description,
