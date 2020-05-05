@@ -12,7 +12,7 @@ Ext.define('PVE.form.ACMEApiSelector', {
     extend: 'Ext.form.field.ComboBox',
     alias: 'widget.pveACMEApiSelector',
 
-    fieldLabel: gettext('API'),
+    fieldLabel: gettext('DNS API'),
     displayField: 'name',
     valueField: 'id',
 

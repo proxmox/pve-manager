@@ -6,7 +6,7 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
     isAdd: true,
     isCreate: false,
 
-    width: 400,
+    width: 450,
     url: '/cluster/acme/plugins/',
 
     subject: gettext('Plugin'),
@@ -144,7 +144,7 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 		    },
 		    name: 'plugin',
 		    labelWidth: 120,
-		    fieldLabel: gettext('Plugin'),
+		    fieldLabel: gettext('Plugin ID'),
 		},
 		{
 		    xtype: 'proxmoxintegerfield',
@@ -156,7 +156,7 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 			deleteEmpty: '{!isCreate}',
 		    },
 		    minValue: 0,
-		    maxValue: 172800,
+		    maxValue: 48*60*60,
 		},
 		{
 		    xtype: 'pveACMEApiSelector',
@@ -170,9 +170,9 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 		    },
 		},
 		{
+		    xtype: 'textarea',
 		    fieldLabel: gettext('API Data'),
 		    labelWidth: 120,
-		    xtype: 'textarea',
 		    name: 'data',
 		},
 	    ],
