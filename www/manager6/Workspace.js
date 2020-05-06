@@ -37,6 +37,7 @@ Ext.define('PVE.Workspace', {
 	var me = this;
 
 	Proxmox.Utils.authClear();
+	Ext.state.Manager.clear('GuiCap');
 	Proxmox.UserName = null;
 	me.loginData = null;
 
