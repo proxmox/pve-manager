@@ -1,49 +1,3 @@
-Ext.define('PVE.node.ACMEEditor', {
-    extend: 'Proxmox.window.Edit',
-    xtype: 'pveACMEEditor',
-
-    subject: gettext('Domains'),
-    items: [
-	{
-	    xtype: 'inputpanel',
-	    items: [
-		{
-		    xtype: 'textarea',
-		    fieldLabel: gettext('Domains'),
-		    emptyText: "domain1.example.com\ndomain2.example.com",
-		    name: 'domains'
-		}
-	    ],
-	    onGetValues: function(values) {
-		if (!values.domains) {
-		    return {
-			'delete': 'acme'
-		    };
-		}
-		var domains = values.domains.split(/\n/).join(';');
-		return {
-		    'acme': 'domains=' + domains
-		};
-	    }
-	}
-    ],
-
-    initComponent: function() {
-	var me = this;
-	me.callParent();
-
-	me.load({
-	    success: function(response, opts) {
-		var res = PVE.Parser.parseACME(response.result.data.acme);
-		if (res) {
-		    res.domains = res.domains.join(' ');
-		    me.setValues(res);
-		}
-	    }
-	});
-    }
-});
-
 Ext.define('PVE.node.ACMEAccountCreate', {
     extend: 'Proxmox.window.Edit',
 
@@ -366,138 +320,330 @@ Ext.define('PVE.node.ACMEDomainEdit', {
     },
 });
 
+Ext.define('pve-acme-domains', {
+    extend: 'Ext.data.Model',
+    fields: ['domain', 'type', 'alias', 'plugin', 'configkey'],
+    idProperty: 'domain',
+});
+
 Ext.define('PVE.node.ACME', {
-    extend: 'Proxmox.grid.ObjectGrid',
-    xtype: 'pveACMEView',
+    extend: 'Ext.grid.Panel',
+    alias: 'widget.pveACMEView',
 
     margin: '10 0 0 0',
     title: 'ACME',
 
+    viewModel: {
+	data: {
+	    account: null,
+	    accountEditable: false,
+	},
+
+	formulas: {
+	    editBtnIcon: (get) => {
+		return 'fa black fa-' + (get('accountEditable') ? 'check' : 'pencil');
+	    },
+	},
+    },
+
+    controller: {
+	xclass: 'Ext.app.ViewController',
+
+	addDomain: function() {
+	    let me = this;
+	    let view = me.getView();
+
+	    Ext.create('PVE.node.ACMEDomainEdit', {
+		nodename: view.nodename,
+		nodeconfig: view.nodeconfig,
+		apiCallDone: function() {
+		    me.reload();
+		},
+	    }).show();
+	},
+
+	editDomain: function() {
+	    let me = this;
+	    let view = me.getView();
+
+	    let selection = view.getSelection();
+	    if (selection.length < 1) return;
+
+	    Ext.create('PVE.node.ACMEDomainEdit', {
+		nodename: view.nodename,
+		nodeconfig: view.nodeconfig,
+		domain: selection[0].data,
+		apiCallDone: function() {
+		    me.reload();
+		},
+	    }).show();
+	},
+
+	removeDomain: function() {
+	    let me = this;
+	    let view = me.getView();
+	    let selection = view.getSelection();
+	    if (selection.length < 1) return;
+
+	    let rec = selection[0].data;
+	    let params = {};
+	    if (rec.configkey !== 'acme') {
+		params.delete = rec.configkey;
+	    } else {
+		let acme = PVE.Parser.parseACME(view.nodeconfig.acme);
+		PVE.Utils.remove_domain_from_acme(acme, rec.domain);
+		params.acme = PVE.Parser.printACME(acme);
+	    }
+
+	    Proxmox.Utils.API2Request({
+		method: 'PUT',
+		url: `/nodes/${view.nodename}/config`,
+		params,
+		success: function(response, opt) {
+		    me.reload();
+		},
+		failure: function(response, opt) {
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		},
+	    });
+	},
+
+	toggleEditAccount: function() {
+	    let me = this;
+	    let vm = me.getViewModel();
+	    let editable = vm.get('accountEditable');
+	    if (editable) {
+		me.changeAccount(vm.get('account'), function() {
+		    vm.set('accountEditable', false);
+		    me.reload();
+		});
+	    } else {
+		vm.set('accountEditable', true);
+	    }
+	},
+
+	changeAccount: function(account, callback) {
+	    let me = this;
+	    let view = me.getView();
+	    let params = {};
+
+	    let acme = PVE.Parser.parseACME(view.nodeconfig.acme);
+	    acme.account = account;
+	    params.acme = PVE.Parser.printACME(acme);
+
+	    Proxmox.Utils.API2Request({
+		method: 'PUT',
+		waitMsgTarget: view,
+		url: `/nodes/${view.nodename}/config`,
+		params,
+		success: function(response, opt) {
+		    if (Ext.isFunction(callback)) {
+			callback();
+		    }
+		},
+		failure: function(response, opt) {
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		},
+	    });
+	},
+
+	order: function() {
+	    let me = this;
+	    let view = me.getView();
+
+	    Proxmox.Utils.API2Request({
+		method: 'POST',
+		params: {
+		    force: 1,
+		},
+		url: `/nodes/${view.nodename}/certificates/acme/certificate`,
+		success: function(response, opt) {
+		    Ext.create('Proxmox.window.TaskViewer', {
+		        upid: response.result.data,
+		        taskDone: function(success) {
+			    me.orderFinished(success);
+		        },
+		    }).show();
+		},
+		failure: function(response, opt) {
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		},
+	    });
+	},
+
+	orderFinished: function(success) {
+	    if (!success) return;
+	    var txt = gettext('pveproxy will be restarted with new certificates, please reload the GUI!');
+	    Ext.getBody().mask(txt, ['pve-static-mask']);
+	    // reload after 10 seconds automatically
+	    Ext.defer(function() {
+		window.location.reload(true);
+	    }, 10000);
+	},
+
+	reload: function() {
+	    let me = this;
+	    let view = me.getView();
+	    view.rstore.load();
+	},
+
+	gotoAccounts: function() {
+	    let sp = Ext.state.Manager.getProvider();
+	    sp.set('dctab', { value: 'acme' }, true);
+	    Ext.ComponentQuery.query('pveResourceTree')[0].selectById('root');
+	},
+    },
+
     tbar: [
 	{
-	    xtype: 'button',
-	    itemId: 'edit',
-	    text: gettext('Edit Domains'),
-	    handler: function() {
-		this.up('grid').run_editor();
-	    }
+	    xtype: 'proxmoxButton',
+	    text: gettext('Add'),
+	    handler: 'addDomain',
+	    selModel: false,
 	},
 	{
-	    xtype: 'button',
-	    itemId: 'createaccount',
-	    text: gettext('Register Account'),
-	    handler: function() {
-		var me = this.up('grid');
-		var win = Ext.create('PVE.node.ACMEAccountCreate', {
-		    taskDone: function() {
-			me.load_account();
-			me.reload();
-		    }
-		});
-		win.show();
-	    }
+	    xtype: 'proxmoxButton',
+	    text: gettext('Edit'),
+	    disabled: true,
+	    handler: 'editDomain',
 	},
 	{
-	    xtype: 'button',
-	    itemId: 'viewaccount',
-	    text: gettext('View Account'),
-	    handler: function() {
-		var me = this.up('grid');
-		var win = Ext.create('PVE.node.ACMEAccountView', {
-		    accountname: 'default'
-		});
-		win.show();
-	    }
+	    xtype: 'proxmoxStdRemoveButton',
+	    handler: 'removeDomain',
 	},
+	'-',
 	{
 	    xtype: 'button',
-	    itemId: 'order',
+	    reference: 'order',
 	    text: gettext('Order Certificate'),
-	    handler: function() {
-		var me = this.up('grid');
-
-		Proxmox.Utils.API2Request({
-		    method: 'POST',
-		    params: {
-			force: 1
-		    },
-		    url: '/nodes/' + me.nodename + '/certificates/acme/certificate',
-		    success: function(response, opt) {
-			var win = Ext.create('Proxmox.window.TaskViewer', {
-			    upid: response.result.data,
-			    taskDone: function(success) {
-				me.certificate_order_finished(success);
-			    }
-			});
-			win.show();
-		    },
-		    failure: function(response, opt) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
-		});
-	    }
+	    handler: 'order',
+	},
+	'-',
+	{
+	    xtype: 'displayfield',
+	    value: gettext('Used Account'),
+	},
+	{
+	    xtype: 'displayfield',
+	    reference: 'accounttext',
+	    bind: {
+		value: '{account}',
+		hidden: '{accountEditable}'
+	    },
+	},
+	{
+	    xtype: 'pveACMEAccountSelector',
+	    hidden: true,
+	    reference: 'accountselector',
+	    bind: {
+		value: '{account}',
+		hidden: '{!accountEditable}'
+	    },
+	},
+	{
+	    xtype: 'button',
+	    iconCls: 'fa black fa-pencil',
+	    baseCls: 'x-plain',
+	    userCls: 'pointer',
+	    bind: {
+		iconCls: '{editBtnIcon}'
+	    },
+	    handler: 'toggleEditAccount',
+	},
+	{
+	    xtype: 'button',
+	    hidden: true,
+	    reference: 'accountlink',
+	    text: gettext('Go to ACME Accounts'),
+	    handler: 'gotoAccounts',
 	}
     ],
 
-    certificate_order_finished: function(success) {
-	if (!success) {
-	    return;
+    updateStore: function(store, records, success) {
+	let me = this;
+	let data = [];
+	let rec;
+	if (success && records.length > 0) {
+	    rec = records[0];
+	} else {
+	    rec = {
+		data: {}
+	    };
 	}
-	var txt = gettext('pveproxy will be restarted with new certificates, please reload the GUI!');
-	Ext.getBody().mask(txt, ['pve-static-mask']);
-	// reload after 10 seconds automatically
-	Ext.defer(function() {
-	    window.location.reload(true);
-	}, 10000);
-    },
 
-    set_button_status: function() {
-	var me = this;
+	me.nodeconfig = rec.data; // save nodeconfig for updates
 
-	var account = !!me.account;
-	var acmeObj = PVE.Parser.parseACME(me.getObjectValue('acme'));
-	var domains = acmeObj ? acmeObj.domains.length : 0;
+	let account = 'default';
 
-	var order = me.down('#order');
-	order.setVisible(account);
-	order.setDisabled(!account || !domains);
+	if (rec.data.acme) {
+	    let obj = PVE.Parser.parseACME(rec.data.acme);
+	    (obj.domains || []).forEach(domain => {
+		if (domain === '') return;
+		let record = {
+		    domain,
+		    type: 'standalone',
+		    configkey: 'acme',
+		};
+		data.push(record);
+	    });
 
-	me.down('#createaccount').setVisible(!account);
-	me.down('#viewaccount').setVisible(account);
-    },
-
-    load_account: function() {
-	var me = this;
-
-	// for now we only use the 'default' account
-	Proxmox.Utils.API2Request({
-	    url: '/cluster/acme/account/default',
-	    success: function(response, opt) {
-		me.account = response.result.data;
-		me.set_button_status();
-	    },
-	    failure: function(response, opt) {
-		me.account = undefined;
-		me.set_button_status();
+	    if (obj.account) {
+		account = obj.account;
 	    }
-	});
-    },
+	}
 
-    run_editor: function() {
-	var me = this;
-	var win = Ext.create(me.rows.acme.editor, me.editorConfig);
-	win.show();
-	win.on('destroy', me.reload, me);
+	let accounttext = me.lookup('accounttext');
+	let vm = me.getViewModel();
+	let oldaccount = vm.get('account');
+
+	// account changed, and we do not edit currently, load again to verify
+	if (oldaccount !== account && !vm.get('accountEditable')) {
+	    Proxmox.Utils.API2Request({
+		url: `/cluster/acme/account/${account}`,
+		waitMsgTarget: me,
+		success: function(response, opt) {
+		    vm.set('account', account);
+		},
+		failure: function(response, opt) {
+		    vm.set('account', Proxmox.Utils.NoneText);
+		},
+	    });
+	}
+
+	for (let i = 0; i < PVE.Utils.acmedomain_count; i++) {
+	    let acmedomain = rec.data[`acmedomain${i}`];
+	    if (!acmedomain) continue;
+
+	    let record = PVE.Parser.parsePropertyString(acmedomain, 'domain');
+	    record.type = 'dns';
+	    record.configkey = `acmedomain${i}`;
+	    data.push(record);
+	}
+
+	me.store.loadData(data, false);
     },
 
     listeners: {
-	itemdblclick: 'run_editor'
+	itemdblclick: 'editDomain',
     },
 
-    // account data gets loaded here
-    account: undefined,
-
-    disableSelection: true,
+    columns: [
+	{
+	    dataIndex: 'domain',
+	    flex: 1,
+	    text: gettext('Domain'),
+	},
+	{
+	    dataIndex: 'type',
+	    width: 100,
+	    text: gettext('Type'),
+	},
+	{
+	    dataIndex: 'plugin',
+	    width: 100,
+	    text: gettext('Plugin'),
+	},
+    ],
 
     initComponent: function() {
 	var me = this;
@@ -506,32 +652,23 @@ Ext.define('PVE.node.ACME', {
 	    throw "no nodename given";
 	}
 
-	me.url = '/api2/json/nodes/' + me.nodename + '/config';
+	me.rstore = Ext.create('Proxmox.data.UpdateStore', {
+	    interval: 5 * 1000,
+	    autoStart: true,
+	    storeid: `pve-node-domains-${me.nodename}`,
+	    proxy: {
+		type: 'proxmox',
+		url: `/api2/json/nodes/${me.nodename}/config`,
+	    },
+	});
 
-	me.editorConfig = {
-	    url: '/api2/extjs/nodes/' + me.nodename + '/config'
-	};
-	/*jslint confusion: true*/
-	/*acme is a string above*/
-	me.rows = {
-	    acme: {
-		defaultValue: '',
-		header: gettext('Domains'),
-		editor: 'PVE.node.ACMEEditor',
-		renderer: function(value) {
-		    var acmeObj = PVE.Parser.parseACME(value);
-		    if (acmeObj) {
-			return acmeObj.domains.join('<br>');
-		    }
-		    return Proxmox.Utils.noneText;
-		}
-	    }
-	};
-	/*jslint confusion: false*/
+	me.store = Ext.create('Ext.data.Store', {
+	    model: 'pve-acme-domains',
+	    sorters: 'domain',
+	});
 
 	me.callParent();
-	me.mon(me.rstore, 'load', me.set_button_status, me);
-	me.rstore.startUpdate();
-	me.load_account();
-    }
+	me.mon(me.rstore, 'load', 'updateStore', me);
+	Proxmox.Utils.monStoreErrors(me, me.rstore);
+    },
 });
