@@ -64,6 +64,8 @@ Ext.define('PVE.panel.AuthBase', {
 Ext.define('PVE.dc.AuthEditBase', {
     extend: 'Proxmox.window.Edit',
 
+    onlineHelp: 'pveum_authentication_realms',
+
     isAdd: true,
 
     fieldDefaults: {
