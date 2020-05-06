@@ -5,6 +5,13 @@ Ext.define('PVE.Parser', { statics: {
 
     // this class only contains static functions
 
+    printACME: function(value) {
+	if (Ext.isArray(value.domains)) {
+	    value.domains = value.domains.join(';');
+	}
+	return PVE.Parser.printPropertyString(value);
+    },
+
     parseACME: function(value) {
 	if (!value) {
 	    return;
