@@ -74,7 +74,7 @@ Ext.define('PVE.Workspace', {
 
         if (!Proxmox.Utils.authOK()) {
 	    me.showLogin();
-	} else { 
+	} else {
 	    if (me.loginData) {
 		me.onLogin(me.loginData);
 	    }
@@ -88,7 +88,7 @@ Ext.define('PVE.Workspace', {
 		}
 
 		Ext.Ajax.request({
-		    params: { 
+		    params: {
 			username: Proxmox.UserName,
 			password: ticket
 		    },
@@ -114,7 +114,7 @@ Ext.define('PVE.StdWorkspace', {
     // private
     setContent: function(comp) {
 	var me = this;
-	
+
 	var cont = me.child('#content');
 
 	var lay = cont.getLayout();
@@ -229,7 +229,7 @@ Ext.define('PVE.StdWorkspace', {
 				pool: 'pvePoolConfig'
 			    };
 			    var comp = {
-				xtype: tlckup[n.data.type || 'root'] || 
+				xtype: tlckup[n.data.type || 'root'] ||
 				    'pvePanelConfig',
 				showSearch: (n.data.id === 'root') ||
 				    Ext.isDefined(n.data.groupbyid),
@@ -245,7 +245,7 @@ Ext.define('PVE.StdWorkspace', {
 	    }
 	});
 
-	selview.on('select', function(combo, records) { 
+	selview.on('select', function(combo, records) {
 	    if (records) {
 		var view = combo.getViewFilter();
 		rtree.setViewFilter(view);
@@ -264,7 +264,7 @@ Ext.define('PVE.StdWorkspace', {
 	    handler: function() {
 		var wiz = Ext.create('PVE.qemu.CreateWizard', {});
 		wiz.show();
-	    } 
+	    }
 	});
 
 	var createCT = Ext.createWidget('button', {
@@ -277,7 +277,7 @@ Ext.define('PVE.StdWorkspace', {
 	    handler: function() {
 		var wiz = Ext.create('PVE.lxc.CreateWizard', {});
 		wiz.show();
-	    } 
+	    }
 	});
 
 	sprovider.on('statechange', function(sp, key, value) {
@@ -294,13 +294,13 @@ Ext.define('PVE.StdWorkspace', {
 	    items: [
 		{
 		    region: 'north',
-		    layout: { 
+		    layout: {
 			type: 'hbox',
 			align: 'middle'
 		    },
-		    baseCls: 'x-plain',		
+		    baseCls: 'x-plain',
 		    defaults: {
-			baseCls: 'x-plain'			
+			baseCls: 'x-plain'
 		    },
 		    border: false,
 		    margin: '2 0 2 5',
@@ -331,7 +331,7 @@ Ext.define('PVE.StdWorkspace', {
 			    text: gettext('Documentation'),
 			    margin: '0 5 0 0'
 			},
-			createVM, 
+			createVM,
 			createCT,
 			{
 			    pack: 'end',
