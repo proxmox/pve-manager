@@ -105,7 +105,7 @@ Ext.define('PVE.panel.NotesView', {
 	me.callParent();
 	if (type === 'node') {
 	    me.down('#tbar').setVisible(true);
-	} else {
+	} else if (me.pveSelNode.data.template !== 1) {
 	    me.setCollapsible(true);
 	    me.collapseDirection = 'right';
 
