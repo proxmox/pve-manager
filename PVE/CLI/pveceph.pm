@@ -79,7 +79,7 @@ __PACKAGE__->register_method ({
 	    $mdsstat = PVE::Ceph::Services::get_services_info('mds', undef, $rados);
 	    $osdstat = $rados->mon_command({ prefix => 'osd metadata' });
 	};
-	warn "Could not connect: $@" if $@;
+	warn "Error gathering ceph info, already purged? Message: $@" if $@;
 
 	my $osd = grep { $_->{hostname} eq $nodename } @$osdstat;
 	my $mds = grep { $mdsstat->{$_}->{host} eq $nodename } keys %$mdsstat;
