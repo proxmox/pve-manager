@@ -248,7 +248,7 @@ Ext.define('PVE.node.ACMEDomainEdit', {
 		    allowBlank: false,
 		    value: 'standalone',
 		    comboItems: [
-			['standalone', 'standalone'],
+			['standalone', 'HTTP'],
 			['dns', 'DNS'],
 		    ],
 		    validator: function(value) {
