@@ -19,7 +19,7 @@ Build-Depends: debhelper (>= 11~),
                lintian,
                pve-cluster,
                pve-container,
-               pve-doc-generator (>= 6.1-1),
+               pve-doc-generator (>= 6.2-1),
                qemu-server (>= 6.0-15),
                unzip,
 Maintainer: Proxmox Support Team <support@proxmox.com>
