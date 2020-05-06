@@ -191,6 +191,7 @@ Ext.define('PVE.node.ACMEDomainEdit', {
     subject: gettext('Domain'),
     isCreate: false,
     width: 450,
+    onlineHelp: 'sysadmin_certificate_management',
 
     items: [
 	{
