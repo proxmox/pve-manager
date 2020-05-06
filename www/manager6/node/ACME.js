@@ -230,6 +230,142 @@ Ext.define('PVE.node.ACMEAccountView', {
     }
 });
 
+Ext.define('PVE.node.ACMEDomainEdit', {
+    extend: 'Proxmox.window.Edit',
+    alias: 'widget.pveACMEDomainEdit',
+
+    subject: gettext('Domain'),
+    isCreate: false,
+
+    items: [
+	{
+	    xtype: 'inputpanel',
+	    onGetValues: function(values) {
+		let me = this;
+		let win = me.up('pveACMEDomainEdit');
+		let nodeconfig = win.nodeconfig;
+		let olddomain = win.domain || {};
+
+		let params = {
+		    digest: nodeconfig.digest,
+		};
+
+		let configkey = olddomain.configkey;
+		let acmeObj = PVE.Parser.parseACME(nodeconfig.acme) || {};
+
+		if (values.type === 'dns') {
+		    if (!olddomain.configkey || olddomain.configkey === 'acme') {
+			// look for first free slot
+			for (let i = 0; i < PVE.Utils.acmedomain_count; i++) {
+			    if (nodeconfig[`acmedomain${i}`] === undefined) {
+				configkey = `acmedomain${i}`;
+				break;
+			    }
+			}
+			if (olddomain.domain) {
+			    // we have to remove the domain from the acme domainlist
+			    PVE.Utils.remove_domain_from_acme(acmeObj, olddomain.domain);
+			    params.acme = PVE.Parser.printACME(acmeObj);
+			}
+		    }
+
+		    delete values.type;
+		    params[configkey] = PVE.Parser.printPropertyString(values, 'domain');
+		} else {
+		    if (olddomain.configkey && olddomain.configkey !== 'acme') {
+			// delete the old dns entry
+			params.delete = [olddomain.configkey];
+		    }
+
+		    // add new, remove old and make entries unique
+		    PVE.Utils.add_domain_to_acme(acmeObj, values.domain);
+		    PVE.Utils.remove_domain_from_acme(acmeObj, olddomain.domain);
+		    params.acme = PVE.Parser.printACME(acmeObj);
+		}
+
+		return params;
+	    },
+	    items: [
+		{
+		    xtype: 'proxmoxKVComboBox',
+		    name: 'type',
+		    fieldLabel: gettext('Type'),
+		    allowBlank: false,
+		    comboItems: [
+			['standalone', 'standalone'],
+			['dns', 'DNS'],
+		    ],
+		    validator: function(value) {
+			let me = this;
+			let win = me.up('pveACMEDomainEdit');
+			let oldconfigkey = win.domain ? win.domain.configkey : undefined;
+			let val = me.getValue();
+			if (val === 'dns' && (!oldconfigkey || oldconfigkey === 'acme')) {
+			    // we have to check if there is a 'acmedomain' slot left
+			    let found = false;
+			    for (let i = 0; i < PVE.Utils.acmedomain_count; i++) {
+				if (!win.nodeconfig[`acmedomain${i}`]) {
+				    found = true;
+				}
+			    }
+			    if (!found) {
+				return gettext('Only 5 Domains with type DNS can be configured');
+			    }
+			}
+
+			return true;
+		    },
+		    listeners: {
+			change: function(cb, value) {
+			    let me = this;
+			    let view = me.up('pveACMEDomainEdit');
+			    view.down('field[name=plugin]').setDisabled(value !== 'dns');
+			},
+		    },
+		},
+		{
+		    xtype: 'hidden',
+		    name: 'alias',
+		},
+		{
+		    xtype: 'proxmoxtextfield',
+		    name: 'domain',
+		    allowBlank: false,
+		    fieldLabel: gettext('Domain'),
+		},
+		{
+		    xtype: 'pveACMEPluginSelector',
+		    name: 'plugin',
+		    disabled: true,
+		    allowBlank: false,
+		},
+	    ],
+	},
+    ],
+
+    initComponent: function() {
+	let me = this;
+
+	if (!me.nodename) {
+	    throw 'no nodename given';
+	}
+
+	if (!me.nodeconfig) {
+	    throw 'no nodeconfig given';
+	}
+
+	me.isCreate = !me.domain;
+
+	me.url = `/api2/extjs/nodes/${me.nodename}/config`;
+
+	me.callParent();
+
+	if (!me.isCreate) {
+	    me.setValues(me.domain);
+	}
+    },
+});
+
 Ext.define('PVE.node.ACME', {
     extend: 'Proxmox.grid.ObjectGrid',
     xtype: 'pveACMEView',
