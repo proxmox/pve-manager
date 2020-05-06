@@ -86,6 +86,7 @@ sub storage_info {
 	return {
 	    scfg => $scfg,
 	    maxfiles => $scfg->{maxfiles},
+	    pbs => 1,
 	};
     } else {
 	return {
@@ -459,6 +460,7 @@ sub new {
 	    if ($@);
 	$opts->{dumpdir} = $info->{dumpdir};
 	$opts->{scfg} = $info->{scfg};
+	$opts->{pbs} = $info->{pbs};
 	$maxfiles //= $info->{maxfiles};
     } elsif ($opts->{dumpdir}) {
 	$errors .= "dumpdir '$opts->{dumpdir}' does not exist"
@@ -651,7 +653,7 @@ sub exec_backup_task {
     my $pbs_group_name;
     my $pbs_snapshot_name;
 
-    if ($opts->{scfg}->{type} eq 'pbs') {
+    if ($self->{opts}->{pbs}) {
 	if ($vmtype eq 'lxc') {
 	    $pbs_group_name = "ct/$vmid";
 	} elsif  ($vmtype eq 'qemu') {
@@ -697,7 +699,7 @@ sub exec_backup_task {
 
 	if ($maxfiles && !$opts->{remove}) {
 	    my $count;
-	    if ($opts->{scfg}->{type} eq 'pbs') {
+	    if ($self->{opts}->{pbs}) {
 		my $res = PVE::Storage::PBSPlugin::run_client_cmd($opts->{scfg}, $opts->{storage}, 'snapshots', $pbs_group_name);
 		$count = scalar(@$res);
 	    } else {
@@ -710,7 +712,7 @@ sub exec_backup_task {
 		if $count >= $maxfiles;
 	}
 
-	if ($opts->{scfg}->{type} ne 'pbs') {
+	if (!$self->{opts}->{pbs}) {
 	    $task->{logfile} = "$opts->{dumpdir}/$basename.log";
 	}
 
@@ -720,7 +722,7 @@ sub exec_backup_task {
 	    $ext .= ".${comp_ext}";
 	}
 
-	if ($opts->{scfg}->{type} eq 'pbs') {
+	if ($self->{opts}->{pbs}) {
 	    die "unable to pipe backup to stdout\n" if $opts->{stdout};
 	} else {
 	    if ($opts->{stdout}) {
@@ -735,7 +737,7 @@ sub exec_backup_task {
 
 	$task->{vmtype} = $vmtype;
 
-	if ($opts->{scfg}->{type} eq 'pbs') {
+	if ($self->{opts}->{pbs}) {
 	    $task->{tmpdir} = "/var/tmp/vzdumptmp$$"; #fixme
 	} elsif ($opts->{tmpdir}) {
 	    $task->{tmpdir} = "$opts->{tmpdir}/vzdumptmp$$";
@@ -898,14 +900,14 @@ sub exec_backup_task {
 	}
 
 	# fixme: ??
-	if ($opts->{scfg}->{type} eq 'pbs') {
+	if ($self->{opts}->{pbs}) {
 	    debugmsg ('info', "creating pbs archive on storage '$opts->{storage}'", $logfd);
 	} else {
 	    debugmsg ('info', "creating archive '$task->{tarfile}'", $logfd);
 	}
 	$plugin->archive($task, $vmid, $task->{tmptar}, $comp);
 
-	if ($opts->{scfg}->{type} eq 'pbs') {
+	if ($self->{opts}->{pbs}) {
 	    # fixme: log size ?
 	    debugmsg ('info', "pbs upload finished", $logfd);
 	} else {
@@ -921,7 +923,7 @@ sub exec_backup_task {
 	# purge older backup
 	if ($maxfiles && $opts->{remove}) {
 
-	    if ($opts->{scfg}->{type} eq 'pbs') {
+	    if ($self->{opts}->{pbs}) {
 		my $args = [$pbs_group_name, '--keep-last', $maxfiles];
 		my $logfunc = sub { my $line = shift; debugmsg ('info', $line, $logfd); };
 		PVE::Storage::PBSPlugin::run_raw_client_cmd(
@@ -1012,7 +1014,7 @@ sub exec_backup_task {
     close ($logfd) if $logfd;
 
     if ($task->{tmplog}) {
-	if ($opts->{scfg}->{type} eq 'pbs') {
+	if ($self->{opts}->{pbs}) {
 	    if ($task->{state} eq 'ok') {
 		my $param = [$pbs_snapshot_name, $task->{tmplog}];
 		PVE::Storage::PBSPlugin::run_raw_client_cmd(
