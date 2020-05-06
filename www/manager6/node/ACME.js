@@ -275,7 +275,9 @@ Ext.define('PVE.node.ACMEDomainEdit', {
 			change: function(cb, value) {
 			    let me = this;
 			    let view = me.up('pveACMEDomainEdit');
-			    view.down('field[name=plugin]').setDisabled(value !== 'dns');
+			    let pluginField = view.down('field[name=plugin]');
+			    pluginField.setDisabled(value !== 'dns');
+			    pluginField.setHidden(value !== 'dns');
 			},
 		    },
 		},
@@ -284,16 +286,19 @@ Ext.define('PVE.node.ACMEDomainEdit', {
 		    name: 'alias',
 		},
 		{
-		    xtype: 'proxmoxtextfield',
-		    name: 'domain',
-		    allowBlank: false,
-		    fieldLabel: gettext('Domain'),
-		},
-		{
 		    xtype: 'pveACMEPluginSelector',
 		    name: 'plugin',
 		    disabled: true,
+		    hidden: true,
 		    allowBlank: false,
+		},
+		{
+		    xtype: 'proxmoxtextfield',
+		    name: 'domain',
+		    allowBlank: false,
+		    vtype: 'DnsName',
+		    value: '',
+		    fieldLabel: gettext('Domain'),
 		},
 	    ],
 	},
