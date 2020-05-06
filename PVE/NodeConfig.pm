@@ -22,7 +22,7 @@ PVE::JSONSchema::register_format('pve-acme-domain', sub {
 
     return $domain if $domain =~ /^$label(?:\.$label)+$/;
     return undef if $noerr;
-    die "value does not look like a valid domain name";
+    die "value '$domain' does not look like a valid domain name!\n";
 });
 
 sub config_file {
