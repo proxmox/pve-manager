@@ -1,3 +1,16 @@
+pve-manager (6.2-1) pve; urgency=medium
+
+  * ui: support up to 8 corosync/kronosnet links on cluster create or join
+
+  * initial gui-integration of DNS based ACME (Let's Encrypt) certificate
+    configuration and management
+
+  * fix #1210: ceph: extend pveceph purge
+
+  * ui: switch backup default compression selection to ZSTD
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 06 May 2020 20:17:51 +0200
+
 pve-manager (6.1-11) pve; urgency=medium
 
   * Fix #2124: Add support for zstd
