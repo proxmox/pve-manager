@@ -14,6 +14,7 @@ Ext.define('PVE.form.ACMEAccountSelector', {
     queryMode: 'local',
     allowBlank: false,
     editable: false,
+    forceSelection: true,
 
     isEmpty: function() {
 	return this.getStore().getData().length === 0;

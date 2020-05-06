@@ -190,6 +190,7 @@ Ext.define('PVE.node.ACMEDomainEdit', {
 
     subject: gettext('Domain'),
     isCreate: false,
+    width: 450,
 
     items: [
 	{
@@ -243,8 +244,9 @@ Ext.define('PVE.node.ACMEDomainEdit', {
 		{
 		    xtype: 'proxmoxKVComboBox',
 		    name: 'type',
-		    fieldLabel: gettext('Type'),
+		    fieldLabel: gettext('Challenge Type'),
 		    allowBlank: false,
+		    value: 'standalone',
 		    comboItems: [
 			['standalone', 'standalone'],
 			['dns', 'DNS'],
@@ -658,17 +660,17 @@ Ext.define('PVE.node.ACME', {
     columns: [
 	{
 	    dataIndex: 'domain',
-	    flex: 1,
+	    flex: 5,
 	    text: gettext('Domain'),
 	},
 	{
 	    dataIndex: 'type',
-	    width: 100,
+	    flex: 1,
 	    text: gettext('Type'),
 	},
 	{
 	    dataIndex: 'plugin',
-	    width: 100,
+	    flex: 1,
 	    text: gettext('Plugin'),
 	},
     ],
