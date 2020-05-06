@@ -45,7 +45,7 @@ Ext.define('PVE.window.Backup', {
 		{
 		    xtype: 'pveCompressionSelector',
 		    name: 'compress',
-		    value: 'lzo',
+		    value: 'zstd',
 		    fieldLabel: gettext('Compression')
 		},
 		{
