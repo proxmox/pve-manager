@@ -1354,6 +1354,29 @@ Ext.define('PVE.Utils', { utilities: {
 	}
     },
 
+    acmedomain_count: 5,
+
+    add_domain_to_acme: function(acme, domain) {
+	if (acme.domains === undefined) {
+	    acme.domains = [domain];
+	} else {
+	    acme.domains.push(domain);
+	    acme.domains = acme.domains.filter((value, index, self) => {
+		return self.indexOf(value) === index;
+	    });
+	}
+	return acme;
+    },
+
+    remove_domain_from_acme: function(acme, domain) {
+	if (acme.domains !== undefined) {
+	    acme.domains = acme.domains.filter((value, index, self) => {
+		return self.indexOf(value) === index && value !== domain;
+	    });
+	}
+	return acme;
+    },
+
     handleStoreErrorOrMask: function(me, store, regex, callback) {
 
 	me.mon(store, 'load', function (proxy, response, success, operation) {
