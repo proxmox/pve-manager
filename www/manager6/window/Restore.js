@@ -24,7 +24,11 @@ Ext.define('PVE.window.Restore', {
 	    value: '',
 	    fieldLabel: gettext('Storage'),
 	    storageContent: (me.vmtype === 'lxc') ? 'rootdir' : 'images',
-	    allowBlank: true
+	    // when restoring a container without specifying a storage, the backend defaults
+	    // to 'local', which is unintuitive and 'rootdir' might not even be allowed on it
+	    allowBlank: me.vmtype !== 'lxc',
+	    emptyText: (me.vmtype === 'lxc') ? '' : gettext('From backup configuration'),
+	    autoSelect: me.vmtype === 'lxc',
 	});
 
 	var IDfield;
@@ -135,16 +139,15 @@ Ext.define('PVE.window.Restore', {
 	var submitBtn = Ext.create('Ext.Button', {
 	    text: gettext('Restore'),
 	    handler: function(){
-		var storage = storagesel.getValue();
 		var values = form.getValues();
 
 		var params = {
-		    storage: storage,
 		    vmid: me.vmid || values.vmid,
 		    force: me.vmid ? 1 : 0
 		};
 		if (values.unique) { params.unique = 1; }
 		if (values.start) { params.start = 1; }
+		if (values.storage) { params.storage = values.storage; }
 
 		if (values.bwlimit !== undefined) {
 		    params.bwlimit = values.bwlimit;
