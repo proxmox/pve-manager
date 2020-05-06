@@ -373,6 +373,13 @@ Ext.define('PVE.node.ACME', {
 	onAccountsLoad: function(store, records, success) {
 	    let vm = this.getViewModel();
 	    vm.set('accountsAvailable', records.length > 0);
+	    if (this.autoChangeAccount && records.length > 0) {
+		this.changeAccount(records[0].data.name, () => {
+		    vm.set('accountEditable', false);
+		    this.reload();
+		});
+		me.autoChangeAccount = false;
+	    }
 	},
 
 	addDomain: function() {
@@ -513,10 +520,17 @@ Ext.define('PVE.node.ACME', {
 	    view.rstore.load();
 	},
 
-	gotoAccounts: function() {
-	    let sp = Ext.state.Manager.getProvider();
-	    sp.set('dctab', { value: 'acme' }, true);
-	    Ext.ComponentQuery.query('pveResourceTree')[0].selectById('root');
+	addAccount: function() {
+	    let me = this;
+	    Ext.create('PVE.node.ACMEAccountCreate', {
+		autoShow: true,
+		taskDone: function() {
+		    me.reload();
+		    let accountSelector = me.lookup('accountselector');
+		    me.autoChangeAccount = true;
+		    accountSelector.store.load();
+		},
+	    });
 	},
     },
 
@@ -542,6 +556,9 @@ Ext.define('PVE.node.ACME', {
 	    xtype: 'button',
 	    reference: 'order',
 	    text: gettext('Order Certificates Now'),
+	    bind: {
+		disabled: '{!accountsAvailable}',
+	    },
 	    handler: 'order',
 	},
 	'-',
@@ -591,11 +608,11 @@ Ext.define('PVE.node.ACME', {
 	    xtype: 'button',
 	    hidden: true,
 	    reference: 'accountlink',
-	    text: gettext('Go to ACME Accounts'),
+	    text: gettext('Add ACME Account'),
 	    bind: {
 		hidden: '{accountsAvailable}',
 	    },
-	    handler: 'gotoAccounts',
+	    handler: 'addAccount',
 	}
     ],
 
