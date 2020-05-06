@@ -73,6 +73,8 @@ JSSRC= 				                 	\
 	form/SDNControllerSelector.js			\
 	form/TFASelector.js				\
 	form/ACMEAPiSelector.js				\
+	form/ACMEAccountSelector.js			\
+	form/ACMEPluginSelector.js			\
 	dc/Tasks.js					\
 	dc/Log.js					\
 	panel/StatusPanel.js				\
