@@ -205,7 +205,7 @@ Ext.define('PVE.node.ACMEDomainEdit', {
 		};
 
 		let configkey = olddomain.configkey;
-		let acmeObj = PVE.Parser.parseACME(nodeconfig.acme) || {};
+		let acmeObj = PVE.Parser.parseACME(nodeconfig.acme);
 
 		if (values.type === 'dns') {
 		    if (!olddomain.configkey || olddomain.configkey === 'acme') {

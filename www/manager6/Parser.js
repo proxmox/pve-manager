@@ -14,7 +14,7 @@ Ext.define('PVE.Parser', { statics: {
 
     parseACME: function(value) {
 	if (!value) {
-	    return;
+	    return {};
 	}
 
 	var res = {};
