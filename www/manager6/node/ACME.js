@@ -316,6 +316,9 @@ Ext.define('PVE.node.ACMEDomainEdit', {
 	}
 
 	me.isCreate = !me.domain;
+	if (me.isCreate) {
+	    me.domain = `${me.nodename}.`; // TODO: FQDN of node
+	}
 
 	me.url = `/api2/extjs/nodes/${me.nodename}/config`;
 
@@ -323,6 +326,8 @@ Ext.define('PVE.node.ACMEDomainEdit', {
 
 	if (!me.isCreate) {
 	    me.setValues(me.domain);
+	} else {
+	    me.setValues({ domain: me.domain });
 	}
     },
 });
