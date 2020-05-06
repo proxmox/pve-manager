@@ -683,7 +683,7 @@ Ext.define('PVE.node.ACME', {
 	}
 
 	me.rstore = Ext.create('Proxmox.data.UpdateStore', {
-	    interval: 5 * 1000,
+	    interval: 10 * 1000,
 	    autoStart: true,
 	    storeid: `pve-node-domains-${me.nodename}`,
 	    proxy: {
