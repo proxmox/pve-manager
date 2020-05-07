@@ -346,6 +346,8 @@ Ext.define('PVE.node.ACME', {
     margin: '10 0 0 0',
     title: 'ACME',
 
+    emptyText: gettext('No Domains configured'),
+
     viewModel: {
 	data: {
 	    account: undefined,

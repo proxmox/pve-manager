@@ -53,6 +53,9 @@ Ext.define('PVE.dc.ACMEAccountView', {
 	},
     },
 
+    minHeight: 150,
+    emptyText: gettext('No Accounts configured'),
+
     columns: [
 	{
 	    dataIndex: 'name',
@@ -132,6 +135,9 @@ Ext.define('PVE.dc.ACMEPluginView', {
 	    view.getStore().load();
 	},
     },
+
+    minHeight: 150,
+    emptyText: gettext('No Plugins configured'),
 
     columns: [
 	{
