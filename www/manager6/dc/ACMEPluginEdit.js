@@ -3,6 +3,8 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
     xtype: 'pveACMEPluginEditor',
     mixins: ['Proxmox.Mixin.CBind'],
 
+    onlineHelp: 'sysadmin_certs_acme_plugins',
+
     isAdd: true,
     isCreate: false,
 
