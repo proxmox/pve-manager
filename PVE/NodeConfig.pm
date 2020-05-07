@@ -251,6 +251,7 @@ sub get_acme_conf {
 	    die $err;
 	}
 	my $standalone_domains = delete($res->{domains}) // '';
+	$res->{domains} = {};
 	for my $domain (split(";", $standalone_domains)) {
 	    $res->{domains}->{$domain}->{plugin} = 'standalone';
 	    $res->{domains}->{$domain}->{_configkey} = 'acme';
