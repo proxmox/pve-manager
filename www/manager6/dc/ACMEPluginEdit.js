@@ -30,6 +30,7 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 		// we know where to add because we define it right below
 		let container = me.down('container');
 		let datafield = me.down('field[name=data]');
+		let hintfield = me.down('field[name=hint]');
 		if (!me.createdInitially) {
 		    [me.originalValues] = PVE.Parser.parseACMEPluginData(datafield.getValue());
 		}
@@ -75,10 +76,15 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 			    break;
 		    }
 
+		    let label = name;
+		    if (typeof definition.name === "string") {
+			label = definition.name;
+		    }
+
 		    let field = Ext.create({
 			xtype,
 			name: `custom_${name}`,
-			fieldLabel: name,
+			fieldLabel: label,
 			width: '100%',
 			labelWidth: 150,
 			labelSeparator: '=',
@@ -94,6 +100,14 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 		    gotSchemaField = true;
 		}
 		datafield.setHidden(gotSchemaField); // prefer schema-fields
+
+		if (schema.description) {
+		    hintfield.setValue(schema.description);
+		    hintfield.setHidden(false);
+		} else {
+		    hintfield.setValue('');
+		    hintfield.setHidden(true);
+		}
 
 		// parse data from field and set it to the custom ones
 		let extradata = [];
@@ -178,6 +192,13 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 		    fieldLabel: gettext('API Data'),
 		    labelWidth: 150,
 		    name: 'data',
+		},
+		{
+		    xtype: 'displayfield',
+		    fieldLabel: gettext('Hint'),
+		    labelWidth: 150,
+		    name: 'hint',
+		    hidden: true,
 		},
 	    ],
 	},
