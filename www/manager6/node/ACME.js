@@ -356,9 +356,7 @@ Ext.define('PVE.node.ACME', {
 	},
 
 	formulas: {
-	    editBtnIcon: (get) => {
-		return 'fa black fa-' + (get('accountEditable') ? 'check' : 'pencil');
-	    },
+	    editBtnIcon: (get) => 'fa black fa-' + (get('accountEditable') ? 'check' : 'pencil'),
 	    accountTextHidden: (get) => get('accountEditable') || !get('accountsAvailable'),
 	    accountValueHidden: (get) => !get('accountEditable') || !get('accountsAvailable'),
 	},
@@ -368,18 +366,18 @@ Ext.define('PVE.node.ACME', {
 	xclass: 'Ext.app.ViewController',
 
 	init: function(view) {
-	    let vm = this.getViewModel();
 	    let accountSelector = this.lookup('accountselector');
 	    accountSelector.store.on('load', this.onAccountsLoad, this);
 	},
 
 	onAccountsLoad: function(store, records, success) {
-	    let vm = this.getViewModel();
+	    let me = this;
+	    let vm = me.getViewModel();
 	    vm.set('accountsAvailable', records.length > 0);
-	    if (this.autoChangeAccount && records.length > 0) {
-		this.changeAccount(records[0].data.name, () => {
+	    if (me.autoChangeAccount && records.length > 0) {
+		me.changeAccount(records[0].data.name, () => {
 		    vm.set('accountEditable', false);
-		    this.reload();
+		    me.reload();
 		});
 		me.autoChangeAccount = false;
 	    }
@@ -616,7 +614,7 @@ Ext.define('PVE.node.ACME', {
 		hidden: '{accountsAvailable}',
 	    },
 	    handler: 'addAccount',
-	}
+	},
     ],
 
     updateStore: function(store, records, success) {
@@ -627,7 +625,7 @@ Ext.define('PVE.node.ACME', {
 	    rec = records[0];
 	} else {
 	    rec = {
-		data: {}
+		data: {},
 	    };
 	}
 
@@ -652,7 +650,6 @@ Ext.define('PVE.node.ACME', {
 	    }
 	}
 
-	let accounttext = me.lookup('accounttext');
 	let vm = me.getViewModel();
 	let oldaccount = vm.get('account');
 
