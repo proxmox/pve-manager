@@ -731,5 +731,6 @@ Ext.define('PVE.node.ACME', {
 	me.callParent();
 	me.mon(me.rstore, 'load', 'updateStore', me);
 	Proxmox.Utils.monStoreErrors(me, me.rstore);
+	me.on('destroy', me.rstore.stopUpdate, me.rstore);
     },
 });

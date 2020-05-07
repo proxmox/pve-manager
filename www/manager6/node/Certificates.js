@@ -399,5 +399,6 @@ Ext.define('PVE.node.Certificates', {
 
 	me.mon(me.rstore, 'load', me.set_button_status, me);
 	me.rstore.startUpdate();
+	me.on('destroy', me.rstore.stopUpdate, me.rstore);
     }
 });
