@@ -54,6 +54,19 @@ Ext.define('PVE.dc.ACMEAccountView', {
 	    let view = me.getView();
 	    view.getStore().rstore.load();
 	},
+
+	showTaskAndReload: function(options, success, response) {
+	    let me = this;
+	    if (!success) return;
+
+	    let upid = response.result.data;
+	    Ext.create('Proxmox.window.TaskProgress', {
+		upid,
+		taskDone: function() {
+		    me.reload();
+		},
+	    }).show();
+	},
     },
 
     minHeight: 150,
@@ -84,7 +97,7 @@ Ext.define('PVE.dc.ACMEAccountView', {
 	{
 	    xtype: 'proxmoxStdRemoveButton',
 	    baseurl: '/cluster/acme/account',
-	    callback: 'reload',
+	    callback: 'showTaskAndReload',
 	},
     ],
 
