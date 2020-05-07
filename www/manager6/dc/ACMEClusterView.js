@@ -52,7 +52,7 @@ Ext.define('PVE.dc.ACMEAccountView', {
 	reload: function() {
 	    let me = this;
 	    let view = me.getView();
-	    view.getStore().load();
+	    view.getStore().rstore.load();
 	},
     },
 
@@ -142,7 +142,7 @@ Ext.define('PVE.dc.ACMEPluginView', {
 	reload: function() {
 	    let me = this;
 	    let view = me.getView();
-	    view.getStore().load();
+	    view.getStore().rstore.load();
 	},
     },
 
