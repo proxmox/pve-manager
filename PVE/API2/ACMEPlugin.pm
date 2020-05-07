@@ -245,6 +245,8 @@ __PACKAGE__->register_method({
 });
 
 sub load_config {
+    # auto-adds the standalone plugin if no config is there for backwards
+    # compatibility, so ALWAYS call the cfs registered parser
     return cfs_read_file($plugin_config_file);
 }
 
