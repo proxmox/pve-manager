@@ -350,7 +350,8 @@ Ext.define('PVE.node.ACME', {
 
     viewModel: {
 	data: {
-	    account: undefined,
+	    account: undefined, // the account we display
+	    configaccount: undefined, // the account set in the config
 	    accountEditable: false,
 	    accountsAvailable: false,
 	},
@@ -373,6 +374,7 @@ Ext.define('PVE.node.ACME', {
 	onAccountsLoad: function(store, records, success) {
 	    let me = this;
 	    let vm = me.getViewModel();
+	    let configaccount = vm.get('configaccount');
 	    vm.set('accountsAvailable', records.length > 0);
 	    if (me.autoChangeAccount && records.length > 0) {
 		me.changeAccount(records[0].data.name, () => {
@@ -380,6 +382,12 @@ Ext.define('PVE.node.ACME', {
 		    me.reload();
 		});
 		me.autoChangeAccount = false;
+	    } else if (configaccount) {
+		if (store.findExact('name', configaccount) !== -1) {
+		    vm.set('account', configaccount);
+		} else {
+		    vm.set('account', null);
+		}
 	    }
 	},
 
@@ -573,6 +581,7 @@ Ext.define('PVE.node.ACME', {
 	{
 	    xtype: 'displayfield',
 	    reference: 'accounttext',
+	    renderer: (val) => val || Proxmox.Utils.NoneText,
 	    bind: {
 		value: '{account}',
 		hidden: '{accountTextHidden}',
@@ -655,16 +664,8 @@ Ext.define('PVE.node.ACME', {
 
 	// account changed, and we do not edit currently, load again to verify
 	if (oldaccount !== account && !vm.get('accountEditable')) {
-	    Proxmox.Utils.API2Request({
-		url: `/cluster/acme/account/${account}`,
-		waitMsgTarget: me,
-		success: function(response, opt) {
-		    vm.set('account', account);
-		},
-		failure: function(response, opt) {
-		    vm.set('account', Proxmox.Utils.NoneText);
-		},
-	    });
+	    vm.set('configaccount', account);
+	    me.lookup('accountselector').store.load();
 	}
 
 	for (let i = 0; i < PVE.Utils.acmedomain_count; i++) {
