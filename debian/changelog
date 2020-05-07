@@ -1,3 +1,11 @@
+pve-manager (6.2-2) pve; urgency=medium
+
+  * fix #2708: ui: increase default memory in VM create wizard to 2GiB
+
+  * improve ACME and certificate related user interface
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 07 May 2020 21:49:10 +0200
+
 pve-manager (6.2-1) pve; urgency=medium
 
   * ui: support up to 8 corosync/kronosnet links on cluster create or join
