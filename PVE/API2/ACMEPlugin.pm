@@ -245,9 +245,7 @@ __PACKAGE__->register_method({
 });
 
 sub load_config {
-    my $cfg = {};
-    $cfg = cfs_read_file($plugin_config_file) if -e "/etc/pve/$plugin_config_file";
-    return $cfg;
+    return cfs_read_file($plugin_config_file);
 }
 
 1;
