@@ -350,6 +350,7 @@ Ext.define('PVE.node.ACME', {
 
     viewModel: {
 	data: {
+	    domaincount: 0,
 	    account: undefined, // the account we display
 	    configaccount: undefined, // the account set in the config
 	    accountEditable: false,
@@ -357,6 +358,7 @@ Ext.define('PVE.node.ACME', {
 	},
 
 	formulas: {
+	    canOrder: (get) => !!get('account') && get('domaincount') > 0,
 	    editBtnIcon: (get) => 'fa black fa-' + (get('accountEditable') ? 'check' : 'pencil'),
 	    accountTextHidden: (get) => get('accountEditable') || !get('accountsAvailable'),
 	    accountValueHidden: (get) => !get('accountEditable') || !get('accountsAvailable'),
@@ -566,7 +568,7 @@ Ext.define('PVE.node.ACME', {
 	    reference: 'order',
 	    text: gettext('Order Certificates Now'),
 	    bind: {
-		disabled: '{!accountsAvailable}',
+		disabled: '{!canOrder}',
 	    },
 	    handler: 'order',
 	},
@@ -678,6 +680,7 @@ Ext.define('PVE.node.ACME', {
 	    data.push(record);
 	}
 
+	vm.set('domaincount', data.length);
 	me.store.loadData(data, false);
     },
 
