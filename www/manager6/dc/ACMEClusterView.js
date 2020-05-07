@@ -123,7 +123,7 @@ Ext.define('PVE.dc.ACMEPluginView', {
     extend: 'Ext.grid.Panel',
     alias: 'widget.pveACMEPluginView',
 
-    title: gettext('Plugins'),
+    title: gettext('Challenge Plugins'),
 
     controller: {
 	xclass: 'Ext.app.ViewController',
