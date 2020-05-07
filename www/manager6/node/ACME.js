@@ -1,5 +1,6 @@
 Ext.define('PVE.node.ACMEAccountCreate', {
     extend: 'Proxmox.window.Edit',
+    mixins: ['Proxmox.Mixin.CBind'],
 
     width: 400,
     title: gettext('Register Account'),
@@ -8,14 +9,17 @@ Ext.define('PVE.node.ACMEAccountCreate', {
     submitText: gettext('Register'),
     url: '/cluster/acme/account',
     showTaskViewer: true,
+    defaultExists: false,
 
     items: [
 	{
 	    xtype: 'proxmoxtextfield',
 	    fieldLabel: gettext('Name'),
 	    name: 'name',
-	    emptyText: 'default',
-	    allowBlank: true,
+	    cbind: {
+		emptyText: (get) => get('defaultExists') ? '' : 'default',
+		allowBlank: (get) => !get('defaultExists'),
+	    },
 	},
 	{
 	    xtype: 'proxmoxComboGrid',

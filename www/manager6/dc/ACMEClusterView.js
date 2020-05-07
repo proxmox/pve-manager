@@ -29,7 +29,10 @@ Ext.define('PVE.dc.ACMEAccountView', {
 
 	addAccount: function() {
 	    let me = this;
+	    let view = me.getView();
+	    let defaultExists = view.getStore().findExact('name', 'default') !== -1;
 	    Ext.create('PVE.node.ACMEAccountCreate', {
+		defaultExists,
 		taskDone: function() {
 		    me.reload();
 		},
