@@ -8,10 +8,11 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
     isAdd: true,
     isCreate: false,
 
-    width: 450,
+    width: 550,
     url: '/cluster/acme/plugins/',
 
-    subject: gettext('Plugin'),
+    subject: gettext('ACME DNS Plugin'),
+
     items: [
 	{
 	    xtype: 'inputpanel',
@@ -79,7 +80,8 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 			name: `custom_${name}`,
 			fieldLabel: name,
 			width: '100%',
-			labelWidth: 120,
+			labelWidth: 150,
+			labelSeparator: '=',
 			emptyText: definition.default || '',
 			autoEl: definition.description ? {
 			    tag: 'div',
@@ -145,13 +147,13 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 			allowBlank: false,
 		    },
 		    name: 'plugin',
-		    labelWidth: 120,
+		    labelWidth: 150,
 		    fieldLabel: gettext('Plugin ID'),
 		},
 		{
 		    xtype: 'proxmoxintegerfield',
 		    name: 'validation-delay',
-		    labelWidth: 120,
+		    labelWidth: 150,
 		    fieldLabel: gettext('Validation Delay'),
 		    emptyText: 30,
 		    cbind: {
@@ -163,7 +165,7 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 		{
 		    xtype: 'pveACMEApiSelector',
 		    name: 'api',
-		    labelWidth: 120,
+		    labelWidth: 150,
 		    listeners: {
 			change: function(selector) {
 			    let schema = selector.getSchema();
@@ -174,7 +176,7 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
 		{
 		    xtype: 'textarea',
 		    fieldLabel: gettext('API Data'),
-		    labelWidth: 120,
+		    labelWidth: 150,
 		    name: 'data',
 		},
 	    ],
