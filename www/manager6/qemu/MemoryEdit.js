@@ -38,6 +38,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		labelWidth: labelWidth,
 		fieldLabel: gettext('Memory') + ' (MiB)',
 		name: 'memory',
+		value: me.insideWizard ? '2048' : '512',
 		minValue: 1,
 		step: 32,
 		hotplug: me.hotplug,
