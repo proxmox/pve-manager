@@ -90,8 +90,15 @@ Ext.define('PVE.dc.ACMEAccountView', {
     },
 
     store: {
-	model: 'pve-acme-accounts',
-	autoLoad: true,
+	type: 'diff',
+	autoDestroy: true,
+	autoDestroyRstore: true,
+	rstore: {
+	    type: 'update',
+	    storeid: 'pve-acme-accounts',
+	    model: 'pve-acme-accounts',
+	    autoStart: true,
+	},
 	sorters: 'name',
     },
 });
@@ -179,9 +186,16 @@ Ext.define('PVE.dc.ACMEPluginView', {
     },
 
     store: {
-	model: 'pve-acme-plugins',
-	autoLoad: true,
-	filters: item => !!item.data.api,
+	type: 'diff',
+	autoDestroy: true,
+	autoDestroyRstore: true,
+	rstore: {
+	    type: 'update',
+	    storeid: 'pve-acme-plugins',
+	    model: 'pve-acme-plugins',
+	    autoStart: true,
+	    filters: item => !!item.data.api,
+	},
 	sorters: 'plugin',
     },
 });
