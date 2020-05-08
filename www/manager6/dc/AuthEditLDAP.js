@@ -66,6 +66,8 @@ Ext.define('PVE.panel.LDAPSyncInputPanel', {
 
     editableAttributes: ['email'],
     editableDefaults: ['scope', 'full', 'enable-new', 'purge'],
+    default_opts: {},
+    sync_attributes: {},
 
     // (de)construct the sync-attributes from the list above,
     // not touching all others
@@ -93,12 +95,15 @@ Ext.define('PVE.panel.LDAPSyncInputPanel', {
 	PVE.Utils.delete_if_default(values, 'sync-defaults-options');
 	PVE.Utils.delete_if_default(values, 'sync_attributes');
 
+	if (me.isCreate) {
+	    delete values.delete; // on create we cannot delete values
+	}
+
 	return values;
     },
 
     setValues: function(values) {
 	let me = this;
-	me.sync_attributes = {};
 	if (values.sync_attributes) {
 	    me.sync_attributes = PVE.Parser.parsePropertyString(values.sync_attributes);
 	    delete values.sync_attributes;
@@ -108,7 +113,6 @@ Ext.define('PVE.panel.LDAPSyncInputPanel', {
 		}
 	    });
 	}
-	me.default_opts = {};
 	if (values['sync-defaults-options']) {
 	    me.default_opts = PVE.Parser.parsePropertyString(values['sync-defaults-options']);
 	    delete values.default_opts;
