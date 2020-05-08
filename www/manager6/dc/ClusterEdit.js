@@ -70,21 +70,27 @@ Ext.define('PVE.ClusterInfoWindow', {
 		{
 		    xtype: 'textfield',
 		    fieldLabel: gettext('IP Address'),
-		    cbind: { value: '{joinInfo.ipAddress}' },
-		    editable: false
+		    cbind: {
+			value: '{joinInfo.ipAddress}',
+		    },
+		    editable: false,
 		},
 		{
 		    xtype: 'textfield',
 		    fieldLabel: gettext('Fingerprint'),
-		    cbind: { value: '{joinInfo.fingerprint}' },
-		    editable: false
+		    cbind: {
+			value: '{joinInfo.fingerprint}',
+		    },
+		    editable: false,
 		},
 		{
 		    xtype: 'textarea',
 		    inputId: 'pveSerializedClusterInfo',
 		    fieldLabel: gettext('Join Information'),
 		    grow: true,
-		    cbind: { joinInfo: '{joinInfo}' },
+		    cbind: {
+			joinInfo: '{joinInfo}',
+		    },
 		    editable: false,
 		    listeners: {
 			afterrender: function(field) {
@@ -320,7 +326,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		allowBlank: false,
 		bind: {
 		    value: '{info.ip}',
-		    readOnly: '{assistedEntry.checked}'
+		    readOnly: '{assistedEntry.checked}',
 		},
 		name: 'hostname'
 	    },
