@@ -197,6 +197,8 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    let vm = this.getViewModel();
 
 	    let assistedEntryBox = this.lookup('assistedEntry');
+	    let linkEditorContainer = this.lookup('linkEditorContainer');
+
 	    if (!assistedEntryBox.getValue()) {
 		// not in assisted entry mode, nothing to do
 		return;
@@ -217,6 +219,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		field.valid = false;
 		linkEditor.setLinks([]);
 		linkEditor.setInfoText();
+		linkEditorContainer.setVisible(false);
 	    } else {
 		let interfaces = joinInfo.totem.interface;
 		let links = Object.values(interfaces).map(iface => {
@@ -249,8 +252,8 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		    clusterName: joinInfo.totem.cluster_name
 		};
 		field.valid = true;
+		linkEditorContainer.setVisible(true);
 	    }
-
 	    vm.set('info', info);
 	}
     },
@@ -355,6 +358,10 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
     {
 	xtype: 'fieldcontainer',
 	fieldLabel: gettext("Cluster Network"),
+	bind: {
+	    hidden: '{assistedEntry.checked}'
+	},
+	reference: 'linkEditorContainer',
 	items: [
 	    {
 		xtype: 'pveCorosyncLinkEditor',
