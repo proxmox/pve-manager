@@ -147,7 +147,8 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		fp: '',
 		ip: '',
 		clusterName: ''
-	    }
+	    },
+	    hasAssistedInfo: false,
 	},
 	formulas: {
 	    submittxt: function(get) {
@@ -156,6 +157,10 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		    return Ext.String.format(gettext('Join {0}'), `'${cn}'`);
 		}
 		return gettext('Join');
+	    },
+	    showClusterFields: (get) => {
+		let manualMode = !get('assistedEntry.checked');
+		return get('hasAssistedInfo') || manualMode;
 	    },
 	},
     },
@@ -197,10 +202,10 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    let vm = this.getViewModel();
 
 	    let assistedEntryBox = this.lookup('assistedEntry');
-	    let linkEditorContainer = this.lookup('linkEditorContainer');
 
 	    if (!assistedEntryBox.getValue()) {
 		// not in assisted entry mode, nothing to do
+		vm.set('hasAssistedInfo', false);
 		return;
 	    }
 
@@ -219,7 +224,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		field.valid = false;
 		linkEditor.setLinks([]);
 		linkEditor.setInfoText();
-		linkEditorContainer.setVisible(false);
+		vm.set('hasAssistedInfo', false);
 	    } else {
 		let interfaces = joinInfo.totem.interface;
 		let links = Object.values(interfaces).map(iface => {
@@ -252,7 +257,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		    clusterName: joinInfo.totem.cluster_name
 		};
 		field.valid = true;
-		linkEditorContainer.setVisible(true);
+		vm.set('hasAssistedInfo', true);
 	    }
 	    vm.set('info', info);
 	}
@@ -320,6 +325,9 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    type: 'hbox',
 	    align: 'center'
 	},
+	bind: {
+	    hidden: '{!showClusterFields}',
+	},
 	items: [
 	    {
 		xtype: 'textfield',
@@ -351,7 +359,8 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	allowBlank: false,
 	bind: {
 	    value: '{info.fp}',
-	    readOnly: '{assistedEntry.checked}'
+	    readOnly: '{assistedEntry.checked}',
+	    hidden: '{!showClusterFields}',
 	},
 	name: 'fingerprint'
     },
@@ -359,9 +368,8 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	xtype: 'fieldcontainer',
 	fieldLabel: gettext("Cluster Network"),
 	bind: {
-	    hidden: '{assistedEntry.checked}'
+	    hidden: '{!showClusterFields}',
 	},
-	reference: 'linkEditorContainer',
 	items: [
 	    {
 		xtype: 'pveCorosyncLinkEditor',
