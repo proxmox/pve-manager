@@ -31,15 +31,15 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.11 (20200425)
 
 Package: archlinux-base
-Version: 20200425-1
+Version: 20200508-1
 Type: lxc
 OS: archlinux
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/archlinux-base_20200425-1_amd64.tar.gz
-md5sum: 6a5165003ab0ce0c254a54ab2c1b7b48
-sha512sum: c56569ef2cf627c9190b066b5274a175cc50f450f73f9d35f75aeee7a8ea946c82b6247687ab8ea72d0fce786cff0669f2c5f67343f640f01d47e5d20d042edd
+Location: system/archlinux-base_20200508-1_amd64.tar.gz
+md5sum: a499a3fbdb4fc5dfc43bdf7bc0656396
+sha512sum: 2415ec4b47ee92c43fa5be39b0fe4802de0052bfd2a44fa595274c7ab30aeb086ed403cc8724fcaadc50306dbc43b9abb0c5f7605f37bc01b61df0ce8a0d7ca1
 Infopage: https://www.archlinux.org
 Description: ArchLinux base image.
  ArchLinux template with the 'base' group and the 'openssh' package installed.
