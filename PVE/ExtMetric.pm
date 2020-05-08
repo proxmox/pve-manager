@@ -28,17 +28,10 @@ sub update_all($$@) {
 
     my $method = "update_${subsystem}_status";
 
-    my (undef, $fn, $line, $subr) = caller(1);
     for my $txn (@$transactions) {
 	my $plugin = PVE::Status::Plugin->lookup($txn->{cfg}->{type});
 
 	$plugin->$method($txn, @params);
-
-	if (length($txn->{data}) > 48000) {
-	    # UDP stack cannot handle messages > 65k, if we've alot of data we
-	    # do smaller batch sends then, but keep the connection alive
-	    transaction_flush($txn, 1);
-	}
     }
 }
 
@@ -69,36 +62,20 @@ sub transactions_start {
     return $transactions;
 }
 
-sub transaction_flush {
-    my ($txn, $keepconnected) = @_;
-
-    if (!$txn->{connection}) {
-	return if !$txn->{data}; # OK, if data was already sent/flushed
-	die "cannot flush metric data, no connection available!\n";
-    }
-    return if !defined($txn->{data}) || $txn->{data} eq '';
-
-    my $plugin = PVE::Status::Plugin->lookup($txn->{cfg}->{type});
-
-    my $data = delete $txn->{data};
-    eval { $plugin->send($txn->{connection}, $data) };
-    my $senderr = $@;
-
-    if (!$keepconnected) {
-	$plugin->_disconnect($txn->{connection});
-	$txn->{connection} = undef;
-	# avoid log spam, already got a send error; disconnect would fail too
-	warn "disconnect failed: $@" if $@ && !$senderr;
-    }
-    die "metrics send error '$txn->{id}': $senderr" if $senderr;
-};
-
 sub transactions_finish {
     my ($transactions) = @_;
 
     for my $txn (@$transactions) {
-	eval { transaction_flush($txn) };
-	warn "$@" if $@;
+	my $plugin = PVE::Status::Plugin->lookup($txn->{cfg}->{type});
+
+	eval { $plugin->flush_data($txn) };
+	my $flush_err = $@;
+	warn "$flush_err" if $flush_err;
+
+	$plugin->_disconnect($txn->{connection});
+	$txn->{connection} = undef;
+	# avoid log spam, already got a send error; disconnect would fail too
+	warn "disconnect failed: $@" if $@ && !$flush_err;
     }
 }
 

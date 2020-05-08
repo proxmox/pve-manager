@@ -5,6 +5,7 @@ use warnings;
 
 use POSIX qw(isnan isinf);
 use Scalar::Util 'looks_like_number';
+use IO::Socket::IP;
 
 use PVE::SafeSyslog;
 
@@ -37,7 +38,7 @@ sub update_node_status {
 
     $ctime *= 1000000000;
 
-    build_influxdb_payload(\$txn->{data}, $data, $ctime, "object=nodes,host=$node");
+    build_influxdb_payload($class, $txn, $data, $ctime, "object=nodes,host=$node");
 }
 
 sub update_qemu_status {
@@ -51,7 +52,7 @@ sub update_qemu_status {
     }
     $object =~ s/\s/\\ /g;
 
-    build_influxdb_payload(\$txn->{data}, $data, $ctime, $object);
+    build_influxdb_payload($class, $txn, $data, $ctime, $object);
 }
 
 sub update_lxc_status {
@@ -65,7 +66,7 @@ sub update_lxc_status {
     }
     $object =~ s/\s/\\ /g;
 
-    build_influxdb_payload(\$txn->{data}, $data, $ctime, $object);
+    build_influxdb_payload($class, $txn, $data, $ctime, $object);
 }
 
 sub update_storage_status {
@@ -79,7 +80,7 @@ sub update_storage_status {
     }
     $object =~ s/\s/\\ /g;
 
-    build_influxdb_payload(\$txn->{data}, $data, $ctime, $object);
+    build_influxdb_payload($class, $txn, $data, $ctime, $object);
 }
 
 sub _connect {
@@ -94,11 +95,13 @@ sub _connect {
         Proto       => 'udp',
     ) || die "couldn't create influxdb socket [$host]:$port - $@\n";
 
+    $socket->blocking(0);
+
     return $socket;
 }
 
 sub build_influxdb_payload {
-    my ($payload, $data, $ctime, $tags, $measurement, $instance) = @_;
+    my ($class, $txn, $data, $ctime, $tags, $measurement, $instance) = @_;
 
     my @values = ();
 
@@ -116,9 +119,9 @@ sub build_influxdb_payload {
 	    # value is a hash
 
 	    if (!defined($measurement)) {
-		build_influxdb_payload($payload, $value, $ctime, $tags, $key);
+		build_influxdb_payload($class, $txn, $value, $ctime, $tags, $key);
 	    } elsif(!defined($instance)) {
-		build_influxdb_payload($payload, $value, $ctime, $tags, $measurement, $key);
+		build_influxdb_payload($class, $txn, $value, $ctime, $tags, $measurement, $key);
 	    } else {
 		push @values, get_recursive_values($value);
 	    }
@@ -129,8 +132,8 @@ sub build_influxdb_payload {
 	my $mm = $measurement // 'system';
 	my $tagstring = $tags;
 	$tagstring .= ",instance=$instance" if defined($instance);
-	my $valuestr =  join(',', @values);
-	$$payload .= "$mm,$tagstring $valuestr $ctime\n";
+	my $valuestr = join(',', @values);
+	$class->add_metric_data($txn, "$mm,$tagstring $valuestr $ctime\n");
     }
 }
 

@@ -61,25 +61,26 @@ sub options {
 sub update_node_status {
     my ($class, $txn, $node, $data, $ctime) = @_;
 
-    assemble($txn, $data, $ctime, "nodes.$node");
+    return assemble($class, $txn, $data, $ctime, "nodes.$node");
 
 }
 
 sub update_qemu_status {
     my ($class, $txn, $vmid, $data, $ctime, $nodename) = @_;
-    assemble($txn, $data, $ctime, "qemu.$vmid");
+
+    return assemble($class, $txn, $data, $ctime, "qemu.$vmid");
 }
 
 sub update_lxc_status {
     my ($class, $txn, $vmid, $data, $ctime, $nodename) = @_;
 
-    assemble($txn, $data, $ctime, "lxc.$vmid");
+    return assemble($class, $txn, $data, $ctime, "lxc.$vmid");
 }
 
 sub update_storage_status {
     my ($class, $txn, $nodename, $storeid, $data, $ctime) = @_;
 
-    assemble($txn, $data, $ctime, "storages.$nodename.$storeid");
+    return assemble($class, $txn, $data, $ctime, "storages.$nodename.$storeid");
 }
 
 sub _connect {
@@ -108,7 +109,7 @@ sub _connect {
 }
 
 sub assemble {
-    my ($txn, $data, $ctime, $object) = @_;
+    my ($class, $txn, $data, $ctime, $object) = @_;
 
     my $path = $txn->{cfg}->{path} // 'proxmox';
     $path .= ".$object";
@@ -121,7 +122,6 @@ sub assemble {
 	'serial' => 1,
     };
 
-    $txn->{data} //= '';
     my $assemble_graphite_data;
     $assemble_graphite_data = sub {
 	my ($metric, $path) = @_;
@@ -136,7 +136,7 @@ sub assemble {
 	    if (ref($value) eq 'HASH') {
 		$assemble_graphite_data->($value, $metricpath);
 	    } elsif ($value =~ m/^[+-]?[0-9]*\.?[0-9]+$/ && !$key_blacklist->{$key}) {
-		$txn->{data} .= "$metricpath $value $ctime\n";
+		$class->add_metric_data($txn, "$metricpath $value $ctime\n");
 	    }
 	}
     };

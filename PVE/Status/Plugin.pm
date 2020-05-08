@@ -66,6 +66,42 @@ sub _disconnect {
     $connection->close(); # overwrite if not a simple socket
 }
 
+# UDP cannot do more than 64k at once. Overwrite for different protocol limits.
+sub _send_batch_size {
+    my ($class, $cfg) = @_;
+    return 48000;
+}
+
+# call with the smalles $data chunks possible
+sub add_metric_data {
+    my ($class, $txn, $data) = @_;
+    return if !defined($data);
+
+    my $batch_size = $class->_send_batch_size();
+    my $data_length = length($data) // 0;
+    my $dataq_len = length($txn->{data}) // 0;
+
+    if ($dataq_len > ($batch_size / 2) && ($dataq_len + $data_length) > $batch_size) {
+	$class->flush_data($txn);
+    }
+    $txn->{data} //= '';
+    $txn->{data} .= "$data";
+}
+
+sub flush_data {
+    my ($class, $txn) = @_;
+
+    if (!$txn->{connection}) {
+	return if !$txn->{data}; # OK, if data was already sent/flushed
+	die "cannot flush metric data, no connection available!\n";
+    }
+    return if !defined($txn->{data}) || $txn->{data} eq '';
+
+    my $data = delete $txn->{data};
+    eval { $class->send($txn->{connection}, $data) };
+    die "metrics send error '$txn->{id}': $@" if $@;
+}
+
 sub send {
     my ($class, $connection, $data) = @_;
 
