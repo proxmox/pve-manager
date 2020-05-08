@@ -69,7 +69,7 @@ sub _disconnect {
 # UDP cannot do more than 64k at once. Overwrite for different protocol limits.
 sub _send_batch_size {
     my ($class, $cfg) = @_;
-    return 48000;
+    return 1200; # FIXME: why??? MTU fragmentation should be handled by layer2
 }
 
 # call with the smalles $data chunks possible
