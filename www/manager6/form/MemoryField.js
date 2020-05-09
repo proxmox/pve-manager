@@ -12,7 +12,7 @@ Ext.define('PVE.form.MemoryField', {
 
     step: 32,
 
-    value: '512', // qm default
+    value: '512', // qm backend default
 
     allowDecimals: false,
 
