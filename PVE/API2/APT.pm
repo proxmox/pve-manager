@@ -534,6 +534,7 @@ __PACKAGE__->register_method({
 	    ksm-control-daemon
 	    ksmtuned
 	    libpve-apiclient-perl
+	    libpve-network-perl
 	    openvswitch-switch
 	    pve-zsync
 	    zfsutils-linux
