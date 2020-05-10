@@ -1,6 +1,8 @@
 Ext.define('PVE.sdn.zones.VlanInputPanel', {
     extend: 'PVE.panel.SDNZoneBase',
 
+    onlineHelp: 'pvesdn_zone_plugin_vlan',
+
     onGetValues: function(values) {
         var me = this;
 
@@ -28,7 +30,7 @@ Ext.define('PVE.sdn.zones.VlanInputPanel', {
           {
             xtype: 'textfield',
             name: 'bridge',
-            fieldLabel: gettext('bridge'),
+            fieldLabel: 'Bridge',
             allowBlank: false,
           },
           {

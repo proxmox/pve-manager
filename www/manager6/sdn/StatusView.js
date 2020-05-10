@@ -1,14 +1,13 @@
 Ext.define('PVE.sdn.StatusView', {
     extend: 'Ext.grid.GridPanel',
-    alias: ['widget.pveSDNStatusView'],
+    alias: 'widget.pveSDNStatusView',
 
     sortPriority: {
-	quorum: 1,
-	master: 2,
-	lrm: 3,
-	service: 4
+	sdn: 1,
+	node: 2,
+	status: 3,
     },
-    
+
     initComponent : function() {
 	var me = this;
 
@@ -86,11 +85,8 @@ Ext.define('PVE.sdn.StatusView', {
 
     Ext.define('pve-sdn-status', {
 	extend: 'Ext.data.Model',
-	fields: [ 
-	    'id', 'type', 'node', 'status', 'sid',
-	    'state', 'group', 'comment',
-	    'max_restart', 'max_relocate', 'type',
-	    'crm_state', 'request_state'
+	fields: [
+	    'id', 'type', 'node', 'status', 'sdn',
 	],
 	idProperty: 'id'
     });

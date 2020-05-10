@@ -4,22 +4,16 @@ Ext.define('PVE.panel.SDNControllerBase', {
     type: '',
 
     onGetValues: function(values) {
-        var me = this;
+	var me = this;
 
-        if (me.isCreate) {
-            values.type = me.type;
-        } else {
-            delete values.controller;
-        }
+	if (me.isCreate) {
+	    values.type = me.type;
+	} else {
+	    delete values.controller;
+	}
 
-        return values;
+	return values;
     },
-
-    initComponent : function() {
-        var me = this;
-
-        me.callParent();
-    }
 });
 
 Ext.define('PVE.sdn.controllers.BaseEdit', {
@@ -31,12 +25,12 @@ Ext.define('PVE.sdn.controllers.BaseEdit', {
 	me.isCreate = !me.controllerid;
 
 	if (me.isCreate) {
-            me.url = '/api2/extjs/cluster/sdn/controllers';
-            me.method = 'POST';
-        } else {
-            me.url = '/api2/extjs/cluster/sdn/controllers/' + me.controllerid;
-            me.method = 'PUT';
-        }
+	    me.url = '/api2/extjs/cluster/sdn/controllers';
+	    me.method = 'POST';
+	} else {
+	    me.url = '/api2/extjs/cluster/sdn/controllers/' + me.controllerid;
+	    me.method = 'PUT';
+	}
 
 	var ipanel = Ext.create(me.paneltype, {
 	    type: me.type,
@@ -45,7 +39,7 @@ Ext.define('PVE.sdn.controllers.BaseEdit', {
 	});
 
 	Ext.apply(me, {
-            subject: PVE.Utils.format_sdncontroller_type(me.type),
+	    subject: PVE.Utils.format_sdncontroller_type(me.type),
 	    isAdd: true,
 	    items: [ ipanel ]
 	});

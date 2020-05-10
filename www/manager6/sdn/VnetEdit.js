@@ -30,6 +30,7 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 		editable: '{isCreate}',
 	    },
 	    maxLength: 10,
+	    flex: 1,
 	    allowBlank: false,
 	    fieldLabel: gettext('Name'),
 	},
@@ -59,6 +60,7 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	    name: 'ipv4',
 	    vtype: 'IPCIDRAddress',
 	    fieldLabel: 'IPv4/CIDR', // do not localize
+	    emptyText: 'Optional anycast addr. for BGP',
 	    skipEmptyText: true,
 	    allowBlank: true,
 	},
@@ -67,6 +69,7 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	    name: 'ipv6',
 	    vtype: 'IP6CIDRAddress',
 	    fieldLabel: 'IPv6/CIDR', // do not localize
+	    emptyText: 'Optional anycast addr. for BGP',
 	    skipEmptyText: true,
 	    allowBlank: true,
 	},
@@ -88,6 +91,8 @@ Ext.define('PVE.sdn.VnetEdit', {
     subject: gettext('VNet'),
 
     vnet: undefined,
+
+    width: 350,
 
     initComponent: function() {
 	var me = this;

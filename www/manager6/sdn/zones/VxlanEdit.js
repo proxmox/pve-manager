@@ -1,6 +1,8 @@
 Ext.define('PVE.sdn.zones.VxlanInputPanel', {
     extend: 'PVE.panel.SDNZoneBase',
 
+    onlineHelp: 'pvesdn_zone_plugin_vxlan',
+
     onGetValues: function(values) {
         var me = this;
 
@@ -30,7 +32,7 @@ Ext.define('PVE.sdn.zones.VxlanInputPanel', {
 	  {
 	    xtype: 'textfield',
 	    name: 'peers',
-	    fieldLabel: gettext('peers address list'),
+	    fieldLabel: gettext('Peer Address List'),
 	    allowBlank: false,
 	  },
           {
@@ -38,7 +40,7 @@ Ext.define('PVE.sdn.zones.VxlanInputPanel', {
             name: 'mtu',
             minValue: 100,
             maxValue: 65000,
-            fieldLabel: gettext('mtu'),
+            fieldLabel: 'MTU',
             skipEmptyText: true,
             allowBlank: true,
             emptyText: 'auto'

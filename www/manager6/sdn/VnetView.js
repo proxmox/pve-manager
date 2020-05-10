@@ -1,7 +1,8 @@
 Ext.define('PVE.sdn.VnetView', {
     extend: 'Ext.grid.GridPanel',
+    alias: 'widget.pveSDNVnetView',
 
-    alias: ['widget.pveSDNVnetView'],
+    onlineHelp: 'pvesdn_config_vnet',
 
     stateful: true,
     stateId: 'grid-sdn-vnet',
@@ -29,6 +30,7 @@ Ext.define('PVE.sdn.VnetView', {
 
 	    let win = Ext.create('PVE.sdn.VnetEdit',{
 		autoShow: true,
+		onlineHelp: 'pvesdn_config_vnet',
 		vnet: rec.data.vnet,
 	    });
 	    win.on('destroy', reload);
@@ -60,6 +62,7 @@ Ext.define('PVE.sdn.VnetView', {
 		    handler: function() {
 			let win = Ext.create('PVE.sdn.VnetEdit', {
 			    autoShow: true,
+			    onlineHelp: 'pvesdn_config_vnet',
 			    type: 'vnet',
 			});
 			win.on('destroy', reload);

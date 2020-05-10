@@ -1,6 +1,8 @@
 Ext.define('PVE.sdn.zones.EvpnInputPanel', {
     extend: 'PVE.panel.SDNZoneBase',
 
+    onlineHelp: 'pvesdn_zone_plugin_evpn',
+
     onGetValues: function(values) {
         var me = this;
 
@@ -30,7 +32,7 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 	    name: 'vrf-vxlan',
 	    minValue: 1,
 	    maxValue: 16000000,
-	    fieldLabel: gettext('vrf vxlan tag'),
+	    fieldLabel: 'VRF-VXLAN Tag',
 	    allowBlank: false
 	  },
 	  {
@@ -45,7 +47,7 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
             name: 'mtu',
             minValue: 100,
             maxValue: 65000,
-            fieldLabel: gettext('mtu'),
+            fieldLabel: 'MTU',
             skipEmptyText: true,
             allowBlank: true,
             emptyText: 'auto'

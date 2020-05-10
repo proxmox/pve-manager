@@ -63,12 +63,12 @@ Ext.define('PVE.storage.BaseEdit', {
 	me.isCreate = !me.storageId;
 
 	if (me.isCreate) {
-            me.url = '/api2/extjs/storage';
-            me.method = 'POST';
-        } else {
-            me.url = '/api2/extjs/storage/' + me.storageId;
-            me.method = 'PUT';
-        }
+	    me.url = '/api2/extjs/storage';
+	    me.method = 'POST';
+	} else {
+	    me.url = '/api2/extjs/storage/' + me.storageId;
+	    me.method = 'PUT';
+	}
 
 	var ipanel = Ext.create(me.paneltype, {
 	    type: me.type,

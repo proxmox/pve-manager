@@ -2,6 +2,8 @@ Ext.define('PVE.sdn.Status', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveSDNStatus',
 
+    onlineHelp: 'chapter_pvesdn',
+
     layout: {
 	type: 'vbox',
 	align: 'stretch'

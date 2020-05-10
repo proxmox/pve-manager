@@ -1,7 +1,8 @@
 Ext.define('PVE.sdn.ZoneView', {
     extend: 'Ext.grid.GridPanel',
-
     alias: ['widget.pveSDNZoneView'],
+
+    onlineHelp: 'pvesdn_zone_plugins',
 
     stateful: true,
     stateId: 'grid-sdn-zone',

@@ -1,6 +1,8 @@
 Ext.define('PVE.sdn.zones.QinQInputPanel', {
     extend: 'PVE.panel.SDNZoneBase',
 
+    onlineHelp: 'pvesdn_zone_plugin_qinq',
+
     onGetValues: function(values) {
         var me = this;
 
@@ -28,7 +30,7 @@ Ext.define('PVE.sdn.zones.QinQInputPanel', {
           {
             xtype: 'textfield',
             name: 'bridge',
-            fieldLabel: gettext('bridge'),
+            fieldLabel: 'Bridge',
             allowBlank: false,
           },
 	  {
@@ -42,7 +44,7 @@ Ext.define('PVE.sdn.zones.QinQInputPanel', {
             name: 'mtu',
             minValue: 100,
             maxValue: 65000,
-            fieldLabel: gettext('mtu'),
+            fieldLabel: 'MTU',
             skipEmptyText: true,
             allowBlank: true,
             emptyText: 'auto'

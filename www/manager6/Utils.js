@@ -684,24 +684,24 @@ Ext.define('PVE.Utils', { utilities: {
 	     hideAdd: true
 	},
 	vlan: {
-	    name: 'vlan',
+	    name: 'VLAN',
 	    ipanel: 'VlanInputPanel',
-	    faIcon: 'folder'
+	    faIcon: 'th'
 	},
 	qinq: {
-	    name: 'qinq',
+	    name: 'QinQ',
 	    ipanel: 'QinQInputPanel',
-	    faIcon: 'folder'
+	    faIcon: 'th'
 	},
 	vxlan: {
-	    name: 'vxlan',
+	    name: 'VXLAN',
 	    ipanel: 'VxlanInputPanel',
-	    faIcon: 'folder'
+	    faIcon: 'th'
 	},
 	evpn: {
-	    name: 'evpn',
+	    name: 'EVPN',
 	    ipanel: 'EvpnInputPanel',
-	    faIcon: 'folder'
+	    faIcon: 'th'
 	},
     },
 
@@ -713,7 +713,7 @@ Ext.define('PVE.Utils', { utilities: {
 	evpn: {
 	    name: 'evpn',
 	    ipanel: 'EvpnInputPanel',
-	    faIcon: 'folder'
+	    faIcon: 'crosshairs'
 	},
     },
 
@@ -728,7 +728,7 @@ Ext.define('PVE.Utils', { utilities: {
     format_sdnzone_type: function(value, md, record) {
 	var schema = PVE.Utils.sdnzoneSchema[value];
 	if (schema) {
-	    return schema.name.toUpperCase();
+	    return schema.name;
 	}
 	return Proxmox.Utils.unknownText;
     },
