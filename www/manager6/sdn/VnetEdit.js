@@ -57,6 +57,17 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	},
 	{
 	    xtype: 'textfield',
+	    name: 'mac',
+	    fieldLabel: gettext('MAC Address'),
+	    vtype: 'MacAddress',
+	    skipEmptyText: true,
+	    allowBlank: true,
+	    emptyText: 'auto',
+	},
+    ],
+    advancedItems: [
+	{
+	    xtype: 'textfield',
 	    name: 'ipv4',
 	    vtype: 'IPCIDRAddress',
 	    fieldLabel: 'IPv4/CIDR', // do not localize
@@ -72,15 +83,6 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	    emptyText: 'Optional anycast addr. for BGP',
 	    skipEmptyText: true,
 	    allowBlank: true,
-	},
-	{
-	    xtype: 'textfield',
-	    name: 'mac',
-	    fieldLabel: gettext('MAC Address'),
-	    vtype: 'MacAddress',
-	    skipEmptyText: true,
-	    allowBlank: true,
-	    emptyText: 'auto',
 	},
     ],
 });
