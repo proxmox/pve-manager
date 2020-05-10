@@ -1,3 +1,13 @@
+pve-manager (6.2-4) pve; urgency=medium
+
+  * add online help references to new experimental Software Defined Network web
+    interface, it is now also included in the documentation.
+
+  * api: apt/versions: track the version of the optional 'libpve-network-perl'
+    package
+
+ -- Proxmox Support Team <support@proxmox.com>  Sun, 10 May 2020 21:06:56 +0200
+
 pve-manager (6.2-3) pve; urgency=medium
 
   * ui: dc authentication: improve adding ad new LDAP based realm
