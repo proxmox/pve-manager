@@ -10,7 +10,7 @@ Ext.define('pve-acme-accounts', {
 
 Ext.define('pve-acme-plugins', {
     extend: 'Ext.data.Model',
-    fields: ['type', 'plugin'],
+    fields: ['type', 'plugin', 'api'],
     proxy: {
 	type: 'proxmox',
 	url: "/api2/json/cluster/acme/plugins",
