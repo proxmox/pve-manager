@@ -356,7 +356,7 @@ sub check_kvm_nested {
 }
 
 sub check_vms_with_uefi {
-    log_info("Checking VMs with OVMF enabled, which may need manual intervention...");
+    log_info("Checking VMs with OVMF enabled and bad efidisk sizes...");
 
     my $vmlist = PVE::QemuServer::vzlist();
 
@@ -378,12 +378,13 @@ sub check_vms_with_uefi {
     }
 
     if (scalar(@$vms) > 0) {
-	my $warnmsg = "VMs with OVMF configured and potentially broken EFI disks: \n";
+	my $warnmsg = "VMs with OVMF configured and problematic EFI disks: \n";
 	$warnmsg .= " " . join(',', @$vms);
-	$warnmsg .= "\nThere may be manual intervention required. See Known upgrade issues for details\n";
+	$warnmsg .= "\nThere may be manual intervention required. For details see:\n";
+	$warnmsg .= "<https://pve.proxmox.com/wiki/Upgrade_from_5.x_to_6.0#Known_upgrade_issues>";
 	log_warn($warnmsg);
     } else {
-	log_pass("No VMs with OVMF and potentially broken EFI disk found.");
+	log_pass("No VMs with OVMF and problematic efidisk found.");
     }
 }
 
