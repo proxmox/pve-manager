@@ -18,6 +18,7 @@ use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Tools qw(run_command $IPV4RE $IPV6RE);
 use PVE::QemuServer;
+use PVE::QemuConfig;
 
 use AptPkg::Cache;
 use Socket qw(AF_INET AF_INET6 inet_ntop);
@@ -332,6 +333,38 @@ sub check_kvm_nested {
 	}
     } else {
 	log_skip("KVM nested parameter not found.");
+    }
+}
+
+sub check_vms_with_uefi {
+    log_info("Checking VMs with OVMF enabled, which may need manual intervention...");
+
+    my $vmlist = PVE::QemuServer::vzlist();
+
+    my $vms = [];
+
+    foreach my $vmid ( sort { $a <=> $b } keys %$vmlist ) {
+	my $conf = PVE::QemuConfig->load_config($vmid);
+	if ($conf->{bios} && $conf->{bios} eq 'ovmf' && $conf->{efidisk0}) {
+	    my $disk = PVE::QemuServer::parse_drive('efidisk0', $conf->{efidisk0});
+	    if (!defined($disk->{size}) || $disk->{size} > 128*1024) {
+		# all efidisks bigger than the default 128k and those
+		# without size in the config
+		push @$vms, $vmid;
+	    } elsif ($disk->{file} !~ /\.(raw|qcow2|vmdk)$/) {
+		# all efidisks not on file storage
+		push @$vms, $vmid;
+	    }
+	}
+    }
+
+    if (scalar(@$vms) > 0) {
+	my $warnmsg = "VMs with OVMF configured and potentially broken EFI disks: \n";
+	$warnmsg .= " " . join(',', @$vms);
+	$warnmsg .= "\nThere may be manual intervention required. See Known upgrade issues for details\n";
+	log_warn($warnmsg);
+    } else {
+	log_pass("No VMs with OVMF and potentially broken EFI disk found.");
     }
 }
 
@@ -741,6 +774,8 @@ sub check_misc {
     }
 
     check_kvm_nested();
+
+    check_vms_with_uefi();
 }
 
 __PACKAGE__->register_method ({
