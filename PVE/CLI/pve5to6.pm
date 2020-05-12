@@ -140,6 +140,31 @@ my $get_pkg = sub {
     }
 };
 
+my $apt_cache;
+my $get_apt_package_state = sub {
+    my ($pkg) = @_;
+
+    if (!$apt_cache) {
+	if (!($apt_cache = AptPkg::Cache->new())) {
+	    log_fail("unable to initialize AptPkg::Cache\n"); # should not happen at all
+	    return undef;
+	}
+    }
+    my $p = $apt_cache->{'linux-image-amd64'};
+    if ($p) {
+	return $p->{SelectedState};
+    }
+    return undef;
+};
+
+my $is_pkg_installed = sub {
+    my ($pkg) = @_;
+
+    my $state = $get_apt_package_state->($pkg);
+    return undef if !defined($state); # better die?
+    return lc($state) eq 'install';
+};
+
 # taken from pve-cluster 6.0-4
 my $resolve_hostname_like_corosync = sub {
     my ($hostname, $corosync_conf) = @_;
@@ -253,17 +278,11 @@ sub check_pve_packages {
 	}
 
     }
-    print "\nChecking for installed Debian Kernel..\n";
-    if(my $apt_cache = AptPkg::Cache->new()) {
-	my $p = $apt_cache->{'linux-image-amd64'};
-	if ($p && $p->{SelectedState} eq 'Install') {
-	    log_fail("Stock Debian kernel package installed. Please remove package 'linux-image-amd64'.");
-	} else {
-	    log_pass("Stock Debian kernel package not installed.");
-	}
-
+    print "\nChecking for installed stock Debian Kernel..\n";
+    if ($is_pkg_installed->('linux-image-amd64')) {
+	log_fail("Stock Debian kernel package installed. Please remove package 'linux-image-amd64'.");
     } else {
-	log_fail("unable to initialize AptPkg::Cache\n");
+	log_pass("Stock Debian kernel package not installed.");
     }
 }
 
