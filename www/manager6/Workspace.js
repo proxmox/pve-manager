@@ -170,7 +170,7 @@ Ext.define('PVE.StdWorkspace', {
 	var ui = me.query('#userinfo')[0];
 
 	if (Proxmox.UserName) {
-	    var msg =  Ext.String.format(gettext("You are logged in as {0}"), "'" + Proxmox.UserName + "'");
+	    var msg =  Ext.String.format(gettext("You are logged in as {0}"), "'" + Ext.String.htmlEncode(Proxmox.UserName) + "'");
 	    ui.update('<div class="x-unselectable" style="white-space:nowrap;">' + msg + '</div>');
 	} else {
 	    ui.update('');

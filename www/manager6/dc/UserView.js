@@ -110,11 +110,11 @@ Ext.define('PVE.dc.UserView', {
         ];
 
 	var render_username = function(userid) {
-	    return userid.match(/^(.+)(@[^@]+)$/)[1];
+	    return Ext.String.htmlEncode(userid.match(/^(.+)(@[^@]+)$/)[1]);
 	};
 
 	var render_realm = function(userid) {
-	    return userid.match(/@([^@]+)$/)[1];
+	    return Ext.String.htmlEncode(userid.match(/@([^@]+)$/)[1]);
 	};
 
 	Ext.apply(me, {

@@ -29,6 +29,7 @@ Ext.define('PVE.form.UserSelector', {
 			header: gettext('User'),
 			sortable: true,
 			dataIndex: 'userid',
+			renderer: Ext.String.htmlEncode,
 			flex: 1
 		    },
 		    {

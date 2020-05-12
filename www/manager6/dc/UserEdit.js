@@ -72,6 +72,7 @@ Ext.define('PVE.dc.UserEdit', {
                 name: 'userid',
                 fieldLabel: gettext('User name'),
                 value: me.userid,
+		renderer: Ext.String.htmlEncode,
                 allowBlank: false,
                 submitValue: me.isCreate ? true : false
             },

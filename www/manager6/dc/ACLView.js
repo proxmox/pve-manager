@@ -111,7 +111,7 @@ Ext.define('PVE.dc.ACLView', {
 		return '@' + ugid;
 	    }
 
-	    return ugid;
+	    return Ext.String.htmlEncode(ugid);
 	};
 
 	var columns = [
