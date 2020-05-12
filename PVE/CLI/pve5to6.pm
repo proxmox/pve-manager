@@ -19,6 +19,7 @@ use PVE::Storage;
 use PVE::Tools qw(run_command $IPV4RE $IPV6RE);
 use PVE::QemuServer;
 
+use AptPkg::Cache;
 use Socket qw(AF_INET AF_INET6 inet_ntop);
 use Term::ANSIColor;
 
@@ -249,6 +250,19 @@ sub check_pve_packages {
 	} else {
 	    log_warn("unexpected running and installed kernel '$kernel_ver'.");
 	}
+
+    }
+    print "\nChecking for installed Debian Kernel..\n";
+    if(my $apt_cache = AptPkg::Cache->new()) {
+	my $p = $apt_cache->{'linux-image-amd64'};
+	if ($p && $p->{SelectedState} eq 'Install') {
+	    log_fail("Stock Debian kernel package installed. Please remove package 'linux-image-amd64'.");
+	} else {
+	    log_pass("Stock Debian kernel package not installed.");
+	}
+
+    } else {
+	log_fail("unable to initialize AptPkg::Cache\n");
     }
 }
 
