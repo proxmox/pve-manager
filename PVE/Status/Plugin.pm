@@ -69,7 +69,7 @@ sub _disconnect {
 # UDP cannot do more than 64k at once. Overwrite for different protocol limits.
 sub _send_batch_size {
     my ($class, $cfg) = @_;
-    return 1200; # FIXME: why??? MTU fragmentation should be handled by layer2
+    return 1450; # assume 1500 MTU, empty IPv6 UDP packet needs 48 bytes overhead
 }
 
 # call with the smalles $data chunks possible
@@ -77,7 +77,7 @@ sub add_metric_data {
     my ($class, $txn, $data) = @_;
     return if !defined($data);
 
-    my $batch_size = $class->_send_batch_size();
+    my $batch_size = $class->_send_batch_size($txn->{cfg});
     my $data_length = length($data) // 0;
     my $dataq_len = length($txn->{data}) // 0;
 

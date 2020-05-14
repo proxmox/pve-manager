@@ -76,6 +76,7 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 		    disp.setValue(gettext('Loading'));
 		    field.setValue(undefined);
 		    checkbox.setValue(undefined);
+		    checkbox.setHidden(true);
 
 		    Proxmox.Utils.API2Request({
 			url: '/cluster/acme/tos',
@@ -84,8 +85,9 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 			    directory: value
 			},
 			success: function(response, opt) {
-			    me.up('window').down('#tos_url').setValue(response.result.data);
-			    me.up('window').down('#tos_url_display').setValue(response.result.data);
+			    field.setValue(response.result.data);
+			    disp.setValue(response.result.data);
+			    checkbox.setHidden(false);
 			},
 			failure: function(response, opt) {
 			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);

@@ -83,6 +83,15 @@ sub update_storage_status {
     return assemble($class, $txn, $data, $ctime, "storages.$nodename.$storeid");
 }
 
+sub _send_batch_size {
+    my ($class, $cfg) = @_;
+    my $proto = $cfg->{proto} || 'udp';
+    if ($proto eq 'tcp') {
+	return 56000;
+    }
+    return $class->SUPER::_send_batch_size($cfg);
+}
+
 sub _connect {
     my ($class, $cfg) = @_;
 
