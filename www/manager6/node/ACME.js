@@ -14,7 +14,7 @@ Ext.define('PVE.node.ACMEAccountCreate', {
     items: [
 	{
 	    xtype: 'proxmoxtextfield',
-	    fieldLabel: gettext('Name'),
+	    fieldLabel: gettext('Account Name'),
 	    name: 'name',
 	    cbind: {
 		emptyText: (get) => get('defaultExists') ? '' : 'default',
