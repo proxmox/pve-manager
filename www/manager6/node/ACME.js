@@ -2,7 +2,7 @@ Ext.define('PVE.node.ACMEAccountCreate', {
     extend: 'Proxmox.window.Edit',
     mixins: ['Proxmox.Mixin.CBind'],
 
-    width: 400,
+    width: 450,
     title: gettext('Register Account'),
     isCreate: true,
     method: 'POST',
@@ -20,6 +20,13 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 		emptyText: (get) => get('defaultExists') ? '' : 'default',
 		allowBlank: (get) => !get('defaultExists'),
 	    },
+	},
+	{
+	    xtype: 'textfield',
+	    name: 'contact',
+	    vtype: 'email',
+	    allowBlank: false,
+	    fieldLabel: gettext('E-Mail')
 	},
 	{
 	    xtype: 'proxmoxComboGrid',
@@ -90,7 +97,6 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 	{
 	    xtype: 'displayfield',
 	    itemId: 'tos_url_display',
-	    fieldLabel: gettext('Terms of Service'),
 	    renderer: PVE.Utils.render_optional_url,
 	    name: 'tos_url_display'
 	},
@@ -102,7 +108,7 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 	{
 	    xtype: 'proxmoxcheckbox',
 	    itemId: 'tos_checkbox',
-	    fieldLabel: gettext('Accept TOS'),
+	    boxLabel: gettext('Accept TOS'),
 	    submitValue: false,
 	    validateValue: function(value) {
 		if (value && this.checked) {
@@ -111,13 +117,6 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 		return false;
 	    }
 	},
-	{
-	    xtype: 'textfield',
-	    name: 'contact',
-	    vtype: 'email',
-	    allowBlank: false,
-	    fieldLabel: gettext('E-Mail')
-	}
     ]
 
 });
