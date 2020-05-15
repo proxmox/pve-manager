@@ -227,7 +227,7 @@ Ext.define('PVE.window.LoginWindow', {
 		reference: 'passwordField'
 	    },
 	    {
-		xtype: 'pveRealmComboBox',
+		xtype: 'pmxRealmComboBox',
 		name: 'realm'
 	    },
 	    {

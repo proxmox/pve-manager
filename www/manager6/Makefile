@@ -17,7 +17,6 @@ JSSRC= 				                 	\
 	VNCConsole.js					\
 	data/PermPathStore.js				\
 	data/ResourceStore.js				\
-	data/model/Realm.js				\
 	data/model/RRDModels.js				\
 	form/VLanField.js				\
 	form/Boolean.js					\
@@ -36,7 +35,6 @@ JSSRC= 				                 	\
 	form/BusTypeSelector.js				\
 	form/ControllerSelector.js			\
 	form/EmailNotificationSelector.js		\
-	form/RealmComboBox.js				\
 	form/ViewSelector.js				\
 	form/NodeSelector.js				\
 	form/FileSelector.js				\
