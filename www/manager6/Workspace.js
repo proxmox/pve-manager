@@ -307,8 +307,7 @@ Ext.define('PVE.StdWorkspace', {
 		    margin: '2 0 2 5',
 		    items: [
 			{
-			    html: '<a class="x-unselectable" target=_blank href="https://www.proxmox.com">' +
-				'<img style="padding-top:4px;padding-right:5px" src="/pve2/images/proxmox_logo.png"/></a>'
+			    xtype: 'proxmoxlogo',
 			},
 			{
 			    minWidth: 150,
