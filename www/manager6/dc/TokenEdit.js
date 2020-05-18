@@ -18,6 +18,7 @@ Ext.define('PVE.dc.TokenEdit', {
 	onGetValues: function(values) {
 	    let me = this;
 	    let win = me.up('pveDcTokenEdit');
+	    win.url = '/api2/extjs/access/users/';
 	    if (win.isCreate) {
 		let uid = encodeURIComponent(values.userid);
 		let tid = encodeURIComponent(values.tokenid);
