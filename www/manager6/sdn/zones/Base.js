@@ -31,12 +31,12 @@ Ext.define('PVE.sdn.zones.BaseEdit', {
 	me.isCreate = !me.zone;
 
 	if (me.isCreate) {
-            me.url = '/api2/extjs/cluster/sdn/zones';
-            me.method = 'POST';
-        } else {
-            me.url = '/api2/extjs/cluster/sdn/zones/' + me.zone;
-            me.method = 'PUT';
-        }
+	    me.url = '/api2/extjs/cluster/sdn/zones';
+	    me.method = 'POST';
+	} else {
+	    me.url = '/api2/extjs/cluster/sdn/zones/' + me.zone;
+	    me.method = 'PUT';
+	}
 
 	var ipanel = Ext.create(me.paneltype, {
 	    type: me.type,
