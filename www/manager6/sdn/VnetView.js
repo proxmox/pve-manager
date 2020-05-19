@@ -130,7 +130,6 @@ Ext.define('PVE.sdn.VnetView', {
 	    'ipv4',
 	    'ipv6',
 	    'mac',
-	    'mtu',
 	    'tag',
 	    'type',
 	    'vnet',

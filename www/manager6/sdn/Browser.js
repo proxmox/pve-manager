@@ -25,14 +25,14 @@ Ext.define('PVE.sdn.Browser', {
 	    hstateid: 'sdntab'
 	});
 
-//	if (caps.sdn['SDN.Audit']) {
+	if (caps.sdn['SDN.Audit']) {
 	    me.items.push({
 		xtype: 'pveSDNZoneContentView',
 		title: gettext('Content'),
 		iconCls: 'fa fa-th',
 		itemId: 'content'
 	    });
-//	}
+	}
 
 //	if (caps.sdn['Permissions.Modify']) {
 	    me.items.push({
