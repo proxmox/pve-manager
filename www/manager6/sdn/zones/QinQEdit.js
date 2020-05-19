@@ -40,6 +40,14 @@ Ext.define('PVE.sdn.zones.QinQInputPanel', {
 	    allowBlank: false
 	  },
           {
+            xtype: 'proxmoxKVComboBox',
+            name: 'vlan-protocol',
+            fieldLabel: gettext('Service vlan protocol'),
+            allowBlank: true,
+            value: '802.1q',
+            comboItems: [['802.1q', '802.1q'], ['802.1ad', '802.1ad']]
+          },
+          {
             xtype: 'proxmoxintegerfield',
             name: 'mtu',
             minValue: 100,
