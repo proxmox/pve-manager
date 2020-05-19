@@ -119,7 +119,7 @@ Ext.define('PVE.dc.UserEdit', {
 
         if (me.isCreate) {
             column1.splice(1,0,{
-                xtype: 'pveRealmComboBox',
+                xtype: 'pmxRealmComboBox',
                 name: 'realm',
                 fieldLabel: gettext('Realm'),
                 allowBlank: false,
