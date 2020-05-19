@@ -23,7 +23,7 @@ Ext.define('PVE.sdn.zones.VxlanInputPanel', {
         me.items = [
            {
             xtype: me.isCreate ? 'textfield' : 'displayfield',
-	    maxLength: 10,
+	    maxLength: 8,
             name: 'zone',
             value: me.zone || '',
             fieldLabel: 'ID',

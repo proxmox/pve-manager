@@ -29,7 +29,7 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	    cbind: {
 		editable: '{isCreate}',
 	    },
-	    maxLength: 10,
+	    maxLength: 8,
 	    flex: 1,
 	    allowBlank: false,
 	    fieldLabel: gettext('Name'),

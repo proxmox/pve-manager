@@ -10,7 +10,7 @@ Ext.define('PVE.sdn.controllers.EvpnInputPanel', {
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'controller',
-		maxLength: 10,
+		maxLength: 8,
 		value: me.controllerid || '',
 		fieldLabel: 'ID',
 		allowBlank: false

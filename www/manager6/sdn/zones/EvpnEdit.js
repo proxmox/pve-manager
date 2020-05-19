@@ -22,7 +22,7 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
            {
             xtype: me.isCreate ? 'textfield' : 'displayfield',
             name: 'zone',
-            maxLength: 10,
+            maxLength: 8,
             value: me.zone || '',
             fieldLabel: 'ID',
             allowBlank: false
