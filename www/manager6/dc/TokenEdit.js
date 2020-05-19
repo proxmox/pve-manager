@@ -13,6 +13,8 @@ Ext.define('PVE.dc.TokenEdit', {
     method: 'POST',
     url: '/api2/extjs/access/users/',
 
+    defaultFocus: 'field[disabled=false][hidden=false][name=tokenid]',
+
     items: {
 	xtype: 'inputpanel',
 	onGetValues: function(values) {
