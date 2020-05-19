@@ -46,7 +46,7 @@ Ext.define('PVE.dc.ACLAdd', {
 	}
 
 	items.push({
-	    xtype: 'pveRoleSelector',
+	    xtype: 'pmxRoleSelector',
 	    name: 'roles',
 	    value: 'NoAccess',
 	    fieldLabel: gettext('Role')

@@ -26,7 +26,6 @@ JSSRC= 				                 	\
 	form/PrivilegesSelector.js			\
 	form/GroupSelector.js				\
 	form/UserSelector.js				\
-	form/RoleSelector.js				\
 	form/GuestIDSelector.js				\
 	form/MemoryField.js				\
 	form/NetworkCardSelector.js			\
