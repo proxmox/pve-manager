@@ -273,6 +273,13 @@ Ext.define('PVE.Utils', { utilities: {
 	return fa.join(', ');
     },
 
+    render_localtime: function(value) {
+	if (value === '__default__') {
+	    return Proxmox.Utils.defaultText + ' (' + gettext('Enabled for Windows') + ')';
+	}
+	return Proxmox.Utils.format_boolean(value);
+    },
+
     render_qga_features: function(value) {
 	if (!value) {
 	    return Proxmox.Utils.defaultText + ' (' + Proxmox.Utils.disabledText  + ')';

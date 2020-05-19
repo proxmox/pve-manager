@@ -212,17 +212,20 @@ Ext.define('PVE.qemu.Options', {
 	    },
 	    localtime: {
 		header: gettext('Use local time for RTC'),
-		defaultValue: false,
-		renderer: Proxmox.Utils.format_boolean,
+		defaultValue: '__default__',
+		renderer: PVE.Utils.render_localtime,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Use local time for RTC'),
 		    items: {
-			xtype: 'proxmoxcheckbox',
+			xtype: 'proxmoxKVComboBox',
 			name: 'localtime',
-			uncheckedValue: 0,
-			defaultValue: 0,
-			deleteDefaultValue: true,
+			value: '__default__',
+			comboItems: [
+			    ['__default__', PVE.Utils.render_localtime('__default__')],
+			    [1, PVE.Utils.render_localtime(1)],
+			    [0, PVE.Utils.render_localtime(0)],
+			],
 			labelWidth: 140,
 			fieldLabel: gettext('Use local time for RTC')
 		    }
