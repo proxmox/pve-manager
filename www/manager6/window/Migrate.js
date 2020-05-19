@@ -5,6 +5,7 @@ Ext.define('PVE.window.Migrate', {
     vmtype: undefined,
     nodename: undefined,
     vmid: undefined,
+    maxHeight: 450,
 
     viewModel: {
 	data: {
