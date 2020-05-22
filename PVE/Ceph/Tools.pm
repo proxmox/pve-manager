@@ -59,7 +59,7 @@ sub get_local_version {
 	);
 	return undef if !defined $ceph_version;
 
-	if ($ceph_version =~ /^ceph.*\s(\d+(?:\.\d+)+(?:-pve\d+)?)\s+(?:\(([a-zA-Z0-9]+)\))?/) {
+	if ($ceph_version =~ /^ceph.*\sv?(\d+(?:\.\d+)+(?:-pve\d+)?)\s+(?:\(([a-zA-Z0-9]+)\))?/) {
 	    my ($version, $buildcommit) = ($1, $2);
 	    my $subversions = [ split(/\.|-/, $version) ];
 
