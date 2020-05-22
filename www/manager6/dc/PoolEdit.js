@@ -1,59 +1,37 @@
 Ext.define('PVE.dc.PoolEdit', {
     extend: 'Proxmox.window.Edit',
     alias: ['widget.pveDcPoolEdit'],
+    mixins: ['Proxmox.Mixin.CBind'],
 
-    initComponent : function() {
-        var me = this;
+    subject: gettext('Pool'),
 
-        me.isCreate = !me.poolid;
+    cbindData: {
+	poolid: '',
+	isCreate: (cfg) => !cfg.poolid,
+    },
 
-        var url;
-        var method;
+    cbind: {
+	autoLoad: get => !get('isCreate'),
+	url: get => `/api2/extjs/pools/${get('poolid')}`,
+	method: get => get('isCreate') ? 'POST' : 'PUT',
+    },
 
-        if (me.isCreate) {
-            url = '/api2/extjs/pools';
-            method = 'POST';
-        } else {
-            url = '/api2/extjs/pools/' + me.poolid;
-            method = 'PUT';
-        }
-
-        Ext.applyIf(me, {
-            subject: gettext('Pool'),
-            url: url,
-            method: method,
-            items: [
-                {
-		    xtype: me.isCreate ? 'proxmoxtextfield' : 'displayfield',
-		    fieldLabel: gettext('Name'),
-		    name: 'poolid',
-		    value: me.poolid,
-		    allowBlank: false
-		},
-                {
-		    xtype: 'textfield',
-		    fieldLabel: gettext('Comment'),
-		    name: 'comment',
-		    allowBlank: true
-		}
-            ]
-        });
-
-        me.callParent();
-
-        if (!me.isCreate) {
-            me.load();
-        } else {
-	    me.type = 'vnet'
-/*
-                    for (i = 0; i < 100; i++) {
-                        confid = 'net' + i.toString();
-                        if (!Ext.isDefined(me.vmconfig[confid])) {
-                            me.confid = confid;
-                            break;
-                        }
-                    }
-*/
-	}
-    }
+    items: [
+	{
+	    xtype: 'pmxDisplayEditField',
+	    fieldLabel: gettext('Name'),
+	    cbind: {
+		editable: '{isCreate}',
+		value: '{poolid}',
+	    },
+	    name: 'poolid',
+	    allowBlank: false,
+	},
+	{
+	    xtype: 'textfield',
+	    fieldLabel: gettext('Comment'),
+	    name: 'comment',
+	    allowBlank: true,
+	},
+    ],
 });
