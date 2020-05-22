@@ -367,9 +367,9 @@ Ext.define('PVE.qemu.Options', {
 
 	me.callParent();
 
-	me.on('activate', me.rstore.startUpdate);
-	me.on('destroy', me.rstore.stopUpdate);
-	me.on('deactivate', me.rstore.stopUpdate);
+	me.on('activate', () => me.rstore.startUpdate());
+	me.on('destroy', () => me.rstore.stopUpdate());
+	me.on('deactivate', () => me.rstore.stopUpdate());
 
 	me.mon(me.getStore(), 'datachanged', function() {
 	    set_button_status();
