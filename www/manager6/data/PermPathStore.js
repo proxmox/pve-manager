@@ -19,27 +19,25 @@ Ext.define('PVE.data.PermPathStore', {
 
 	me.callParent([config]);
 
+	let donePaths = {};
 	me.suspendEvents();
 	PVE.data.ResourceStore.each(function(record) {
+	    let path;
 	    switch (record.get('type')) {
-		case 'node':
-		    me.add({value: '/nodes/' + record.get('text')});
+		case 'node': path = '/nodes/' + record.get('text');
 		    break;
-
-		case 'qemu':
-		    me.add({value: '/vms/' + record.get('vmid')});
+		case 'qemu': path = '/vms/' + record.get('vmid');
 		    break;
-
-		case 'lxc':
-		    me.add({value: '/vms/' + record.get('vmid')});
+		case 'lxc': path = '/vms/' + record.get('vmid');
 		    break;
-
-		case 'storage':
-		    me.add({value: '/storage/' + record.get('storage')});
+		case 'storage': path = '/storage/' + record.get('storage');
 		    break;
-		case 'pool':
-		    me.add({value: '/pool/' + record.get('pool')});
+		case 'pool': path = '/pool/' + record.get('pool');
 		    break;
+	    }
+	    if (path !== undefined && !donePaths[path]) {
+		me.add({ value: path });
+		donePaths[path] = 1;
 	    }
 	});
 	me.resumeEvents();
