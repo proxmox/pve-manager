@@ -1,15 +1,15 @@
 Ext.define('PVE.data.PermPathStore', {
     extend: 'Ext.data.Store',
     alias: 'store.pvePermPath',
-    fields: [ 'value' ],
+    fields: ['value'],
     autoLoad: false,
     data: [
-	{'value':  '/'},
-	{'value':  '/access'},
-	{'value': '/nodes'},
-	{'value': '/pool'},
-	{'value': '/storage'},
-	{'value': '/vms'}
+	{ 'value': '/' },
+	{ 'value': '/access' },
+	{ 'value': '/nodes' },
+	{ 'value': '/pool' },
+	{ 'value': '/storage' },
+	{ 'value': '/vms' },
     ],
 
     constructor: function(config) {
@@ -49,7 +49,7 @@ Ext.define('PVE.data.PermPathStore', {
 
 	me.sort({
 	    property: 'value',
-	    direction: 'ASC'
+	    direction: 'ASC',
 	});
-    }
+    },
 });
