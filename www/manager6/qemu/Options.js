@@ -217,6 +217,7 @@ Ext.define('PVE.qemu.Options', {
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Use local time for RTC'),
+		    width: 400,
 		    items: {
 			xtype: 'proxmoxKVComboBox',
 			name: 'localtime',
