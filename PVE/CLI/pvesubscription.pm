@@ -28,6 +28,7 @@ our $cmddef = {
 		 }
 	     }],
     set => [ 'PVE::API2::Subscription', 'set', ['key'], { node => $nodename } ],
+    delete => [ 'PVE::API2::Subscription', 'delete', undef, { node => $nodename } ],
 };
 
 1;

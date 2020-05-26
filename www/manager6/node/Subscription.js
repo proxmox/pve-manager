@@ -164,6 +164,15 @@ Ext.define('PVE.node.Subscription', {
 		    }
 		},
 		{
+		    text: gettext('Remove Subscription'),
+		    xtype: 'proxmoxStdRemoveButton',
+		    confirmMsg: gettext('Are you sure to remove the subscription key?'),
+		    baseurl: baseurl,
+		    dangerous: true,
+		    selModel: false,
+		    callback: reload,
+		},
+		{
 		    text: gettext('Check'),
 		    handler: function() {
 			Proxmox.Utils.API2Request({
