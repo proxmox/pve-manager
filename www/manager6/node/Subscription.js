@@ -177,7 +177,7 @@ Ext.define('PVE.node.Subscription', {
 		{
 		    text: gettext('Remove Subscription'),
 		    xtype: 'proxmoxStdRemoveButton',
-		    confirmMsg: gettext('Are you sure to remove the subscription key?'),
+		    confirmMsg: gettext('Are you sure you want to remove the subscription key?'),
 		    baseurl: baseurl,
 		    dangerous: true,
 		    selModel: false,
