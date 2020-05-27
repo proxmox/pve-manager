@@ -1,4 +1,3 @@
-/*global Blob*/
 Ext.define('PVE.node.SubscriptionKeyEdit', {
     extend: 'Proxmox.window.Edit',
     title: gettext('Upload Subscription Key'),
@@ -7,15 +6,15 @@ Ext.define('PVE.node.SubscriptionKeyEdit', {
 	xtype: 'textfield',
 	name: 'key',
 	value: '',
-	fieldLabel: gettext('Subscription Key')
+	fieldLabel: gettext('Subscription Key'),
     },
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.callParent();
 
 	me.load();
-    }
+    },
 });
 
 Ext.define('PVE.node.Subscription', {
@@ -26,16 +25,15 @@ Ext.define('PVE.node.Subscription', {
     onlineHelp: 'getting_help',
 
     viewConfig: {
-	enableTextSelection: true
+	enableTextSelection: true,
     },
 
     showReport: function() {
 	var me = this;
-	var nodename = me.pveSelNode.data.node;
 
 	var getReportFileName = function() {
 	    var now = Ext.Date.format(new Date(), 'D-d-F-Y-G-i');
-	    return me.nodename + '-report-'  + now + '.txt';
+	    return `${me.nodename}-pve-report-${now}.txt`;
 	};
 
 	var view = Ext.createWidget('component', {
@@ -45,8 +43,8 @@ Ext.define('PVE.node.Subscription', {
 		'background-color': 'white',
 		'white-space': 'pre',
 		'font-family': 'monospace',
-		padding: '5px'
-	    }
+		padding: '5px',
+	    },
 	});
 
 	var reportWindow = Ext.create('Ext.window.Window', {
@@ -68,18 +66,18 @@ Ext.define('PVE.node.Subscription', {
 			    navigator.msSaveOrOpenBlob(new Blob([fileContent]), fileName);
 			} else {
 			    var element = document.createElement('a');
-			    element.setAttribute('href', 'data:text/plain;charset=utf-8,'
-			      + encodeURIComponent(fileContent));
+			    element.setAttribute('href', 'data:text/plain;charset=utf-8,' +
+			      encodeURIComponent(fileContent));
 			    element.setAttribute('download', fileName);
 			    element.style.display = 'none';
 			    document.body.appendChild(element);
 			    element.click();
 			    document.body.removeChild(element);
 			}
-		    }
-		}
+		    },
+		},
 	    ],
-	    items: view
+	    items: view,
 	});
 
 	Proxmox.Utils.API2Request({
@@ -93,11 +91,11 @@ Ext.define('PVE.node.Subscription', {
 		var report = Ext.htmlEncode(response.result.data);
 		reportWindow.show();
 		view.update(report);
-	    }
+	    },
 	});
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -120,46 +118,46 @@ Ext.define('PVE.node.Subscription', {
 
 	var rows = {
 	    productname: {
-		header: gettext('Type')
+		header: gettext('Type'),
 	    },
 	    key: {
-		header: gettext('Subscription Key')
+		header: gettext('Subscription Key'),
 	    },
 	    status: {
 		header: gettext('Status'),
-		renderer: render_status
+		renderer: render_status,
 	    },
 	    message: {
-		visible: false
+		visible: false,
 	    },
 	    serverid: {
-		header: gettext('Server ID')
+		header: gettext('Server ID'),
 	    },
 	    sockets: {
-		header: gettext('Sockets')
+		header: gettext('Sockets'),
 	    },
 	    checktime: {
 		header: gettext('Last checked'),
-		renderer: Proxmox.Utils.render_timestamp
+		renderer: Proxmox.Utils.render_timestamp,
 	    },
 	    nextduedate: {
-		header: gettext('Next due date')
-	    }
+		header: gettext('Next due date'),
+	    },
 	};
 
 	Ext.apply(me, {
 	    url: '/api2/json' + baseurl,
 	    cwidth1: 170,
-	    tbar: [ 
+	    tbar: [
 		{
 		    text: gettext('Upload Subscription Key'),
 		    handler: function() {
 			var win = Ext.create('PVE.node.SubscriptionKeyEdit', {
-			    url: '/api2/extjs/' + baseurl 
+			    url: '/api2/extjs/' + baseurl,
 			});
 			win.show();
 			win.on('destroy', reload);
-		    }
+		    },
 		},
 		{
 		    text: gettext('Check'),
@@ -172,9 +170,9 @@ Ext.define('PVE.node.Subscription', {
 			    failure: function(response, opts) {
 				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 			    },
-			    callback: reload
+			    callback: reload,
 			});
-		    }
+		    },
 		},
 		{
 		    text: gettext('Remove Subscription'),
@@ -189,16 +187,16 @@ Ext.define('PVE.node.Subscription', {
 		{
 		    text: gettext('System Report'),
 		    handler: function() {
-			Proxmox.Utils.checked_command(function (){ me.showReport(); });
-		    }
-		}
+			Proxmox.Utils.checked_command(function() { me.showReport(); });
+		    },
+		},
 	    ],
 	    rows: rows,
 	    listeners: {
-		activate: reload
-	    }
+		activate: reload,
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });
