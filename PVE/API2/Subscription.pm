@@ -205,7 +205,7 @@ __PACKAGE__->register_method ({
     proxyto => 'node',
     protected => 1,
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    key => {
@@ -252,11 +252,11 @@ __PACKAGE__->register_method ({
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
     },
-    description => "Set subscription key.",
+    description => "Delete subscription key.",
     proxyto => 'node',
     protected => 1,
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -264,7 +264,7 @@ __PACKAGE__->register_method ({
     returns => { type => 'null'},
     code => sub {
 	my $subscription_file = '/etc/subscription';
-	return if ! -e $subscription_file; 
+	return if ! -e $subscription_file;
 	unlink($subscription_file) or die "cannot delete subscription key: $!";
 	return undef;
     }});
