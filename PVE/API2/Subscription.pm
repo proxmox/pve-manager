@@ -252,7 +252,7 @@ __PACKAGE__->register_method ({
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
     },
-    description => "Delete subscription key.",
+    description => "Delete subscription key of this node.",
     proxyto => 'node',
     protected => 1,
     parameters => {
