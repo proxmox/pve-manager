@@ -1,3 +1,20 @@
+pve-manager (6.2-5) pve; urgency=medium
+
+  * improve ACME interaces
+
+  * fix #2747: ui: API token create: always reset base submit URL
+
+  * sdn: restrict zone and vnet name to 8 characters
+
+  * fix #2574: ui: permission-path selector: push each unique permission object
+    path only once
+
+  * fix #2718: ui: qemu: handle localtime option correctly, allow all tree states
+
+  * api, ui: allow to remove subscription key
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 27 May 2020 14:31:00 +0200
+
 pve-manager (6.2-4) pve; urgency=medium
 
   * add online help references to new experimental Software Defined Network web
