@@ -532,31 +532,6 @@ div.right-aligned {
     color: #000;
 }
 
-/* some icons have to be color manually */
-.black {
-    color: #000;
-}
-
-.normal {
-    color: #c2ddf2;
-}
-
-.faded {
-    color: #cfcfcf;
-}
-
-.good {
-    color: #21BF4B;
-}
-
-.warning {
-    color: #fc0;
-}
-
-.critical {
-    color: #FF6C59;
-}
-
 /* for the ceph monitor widgets */
 div.monitor {
 	text-align:left;
