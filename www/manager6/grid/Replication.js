@@ -382,7 +382,7 @@ Ext.define('PVE.grid.ReplicaView', {
 		    text: gettext('Duration'),
 		    dataIndex: 'duration',
 		    width: 60,
-		    renderer: PVE.Utils.render_duration
+		    renderer: Proxmox.Utils.render_duration
 		},
 		{
 		    text: gettext('Next Sync'),

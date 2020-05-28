@@ -536,26 +536,6 @@ Ext.define('PVE.Utils', { utilities: {
 	return msg;
     },
 
-    format_duration_short: function(ut) {
-
-	if (ut < 60) {
-	    return ut.toFixed(1) + 's';
-	}
-
-	if (ut < 3600) {
-	    var mins = ut / 60;
-	    return mins.toFixed(1) + 'm';
-	}
-
-	if (ut < 86400) {
-	    var hours = ut / 3600;
-	    return hours.toFixed(1) + 'h';
-	}
-
-	var days = ut / 86400;
-	return days.toFixed(1) + 'd';
-    },
-
     contentTypes: {
 	'images': gettext('Disk image'),
 	'backup': gettext('VZDump backup file'),
@@ -834,13 +814,6 @@ Ext.define('PVE.Utils', { utilities: {
 
     render_timestamp_human_readable: function(value) {
 	return Ext.Date.format(new Date(value * 1000), 'l d F Y H:i:s');
-    },
-
-    render_duration: function(value) {
-	if (value === undefined) {
-	    return '-';
-	}
-	return PVE.Utils.format_duration_short(value);
     },
 
     calculate_mem_usage: function(data) {
