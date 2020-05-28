@@ -141,6 +141,7 @@ __PACKAGE__->register_method ({
 	if ($cephver eq 'nautilus') {
 	    $repolist = "deb http://download.proxmox.com/debian/ceph-nautilus buster main\n";
 	} elsif ($cephver eq 'luminous') {
+	    die "Not allowed to select version '$cephver'\n" if !$param->{'allow-experimental'};
 	    $repolist = "deb http://download.proxmox.com/debian/ceph-luminous buster main\n";
 	} elsif ($cephver eq 'octopus') {
 	    die "Not allowed to select version '$cephver'\n" if !$param->{'allow-experimental'};
