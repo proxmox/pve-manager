@@ -117,11 +117,17 @@ __PACKAGE__->register_method ({
 	    version => {
 		type => 'string',
 		# for buster, luminous kept for testing/upgrade purposes only! - FIXME: remove with 6.2?
-		enum => ['luminous', 'nautilus',],
+		enum => ['luminous', 'nautilus', 'octopus'],
 		default => 'nautilus',
 		description => "Ceph version to install.",
 		optional => 1,
-	    }
+	    },
+	    'allow-experimental' => {
+		type => 'boolean',
+		default => 0,
+		optional => 1,
+		description => "Allow experimental versions. Use with care!",
+	    },
 	},
     },
     returns => { type => 'null' },
@@ -133,9 +139,14 @@ __PACKAGE__->register_method ({
 
 	my $repolist;
 	if ($cephver eq 'nautilus') {
-		$repolist = "deb http://download.proxmox.com/debian/ceph-nautilus buster main\n";
+	    $repolist = "deb http://download.proxmox.com/debian/ceph-nautilus buster main\n";
 	} elsif ($cephver eq 'luminous') {
-		$repolist = "deb http://download.proxmox.com/debian/ceph-luminous buster main\n";
+	    $repolist = "deb http://download.proxmox.com/debian/ceph-luminous buster main\n";
+	} elsif ($cephver eq 'octopus') {
+	    die "Not allowed to select version '$cephver'\n" if !$param->{'allow-experimental'};
+	    $repolist = "deb http://repo.proxmox.com/staging/ceph-octopus buster ceph-15\n";
+	    # FIXME: use public mirror once available
+	    #$repolist = "deb http://download.proxmox.com/debian/ceph-octopus buster main\n";
 	} else {
 	    die "not implemented ceph version: $cephver";
 	}
