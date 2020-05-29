@@ -6,7 +6,7 @@ Ext.define('PVE.form.HotplugFeatureSelector', {
     vertical: true,
 
     defaults: {
-	name: 'hotplug',
+	name: 'hotplugCbGroup',
 	submitValue: false
     },
     items: [
@@ -43,7 +43,7 @@ Ext.define('PVE.form.HotplugFeatureSelector', {
 	} else if (value !== '0') {
 	    newVal = value.split(',');
 	}
-	me.callParent([{ hotplug: newVal }]);
+	me.callParent([{ hotplugCbGroup: newVal }]);
     },
 
     // override framework function to
