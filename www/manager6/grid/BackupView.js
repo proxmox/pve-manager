@@ -41,11 +41,14 @@ Ext.define('PVE.grid.BackupView', {
 
 	var searchFilter = {
 	    property: 'volid',
-	// on initial store display only our vmid backups
-	// surround with minus sign to prevent the 2016 VMID bug
-	    value: vmtype + '-' + vmid + '-',
+	    value: '',
 	    anyMatch: true,
 	    caseSensitive: false
+	};
+
+	var vmidFilter = {
+	    property: 'vmid',
+	    value: vmid,
 	};
 
 	me.store = Ext.create('Ext.data.Store', {
@@ -56,9 +59,18 @@ Ext.define('PVE.grid.BackupView', {
 	    },
 	    filters: [
 	        vmtypeFilter,
-		searchFilter
+		searchFilter,
+		vmidFilter,
 		]
 	});
+
+	let updateFilter = function() {
+	    me.store.filter([
+		vmtypeFilter,
+		searchFilter,
+		vmidFilter,
+	    ]);
+	};
 
 	var reload = Ext.Function.createBuffered(function() {
 	    if (me.store) {
@@ -102,12 +114,21 @@ Ext.define('PVE.grid.BackupView', {
 		keyup: function(field) {
 		    me.store.clearFilter(true);
 		    searchFilter.value = field.getValue();
-		    me.store.filter([
-			vmtypeFilter,
-			searchFilter
-		    ]);
+		    updateFilter();
 		}
 	    }
+	});
+
+	var vmidfilterCB = Ext.create('Ext.form.field.Checkbox', {
+	    fieldLabel: gettext('Filter ID'),
+	    labelAlign: 'right',
+	    value: '1',
+	    listeners: {
+		change: function(cb, value) {
+		    vmidFilter.value = !!value ? vmid : '';
+		    updateFilter();
+		},
+	    },
 	});
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
@@ -196,7 +217,10 @@ Ext.define('PVE.grid.BackupView', {
 
 	Ext.apply(me, {
 	    selModel: sm,
-	    tbar: [ backup_btn, restore_btn, delete_btn,config_btn, '->', storagesel, storagefilter ],
+	    tbar: {
+		overflowHandler: 'scroller',
+		items: [ backup_btn, restore_btn, delete_btn,config_btn, '->', storagesel, vmidfilterCB, storagefilter ],
+	    },
 	    columns: [
 		{
 		    header: gettext('Name'),
@@ -220,7 +244,12 @@ Ext.define('PVE.grid.BackupView', {
 		    width: 100,
 		    renderer: Proxmox.Utils.format_size,
 		    dataIndex: 'size'
-		}
+		},
+		{
+		    header: gettext('VMID'),
+		    dataIndex: 'vmid',
+		    hidden: true,
+		},
 	    ]
 	});
 
