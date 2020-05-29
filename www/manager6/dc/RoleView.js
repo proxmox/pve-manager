@@ -12,7 +12,7 @@ Ext.define('PVE.dc.RoleView', {
 	var me = this;
 
 	var store = new Ext.data.Store({
-	    model: 'pve-roles',
+	    model: 'pmx-roles',
 	    sorters: {
 		property: 'roleid',
 		order: 'DESC'

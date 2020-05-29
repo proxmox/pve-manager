@@ -41,7 +41,7 @@ Ext.define('PVE.dc.AuthView', {
     ],
 
     store: {
-	model: 'pve-domains',
+	model: 'pmx-domains',
 	sorters: {
 	    property: 'realm',
 	    order: 'DESC',
