@@ -5,7 +5,7 @@ Ext.define('PVE.dc.Health', {
     title: gettext('Health'),
 
     bodyPadding: 10,
-    height: 220,
+    height: 250,
     layout: {
 	type: 'hbox',
 	align: 'stretch'

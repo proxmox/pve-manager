@@ -16,11 +16,11 @@ Ext.define('PVE.dc.Summary', {
     items: [
 	{
 	    itemId: 'dcHealth',
-	    xtype: 'pveDcHealth'
+	    xtype: 'pveDcHealth',
 	},
 	{
 	    itemId: 'dcGuests',
-	    xtype: 'pveDcGuests'
+	    xtype: 'pveDcGuests',
 	},
 	{
 	    title: gettext('Resources'),
