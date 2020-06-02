@@ -2261,7 +2261,10 @@ __PACKAGE__->register_method ({
 	foreach my $node (@$nodelist) {
 	    my $can_audit = $rpcenv->check($authuser, "/nodes/$node", [ 'Sys.Audit' ], 1);
 	    my $entry = PVE::API2Tools::extract_node_stats($node, $members, $rrd, !$can_audit);
-	    $entry->{ssl_fingerprint} = PVE::Cluster::get_node_fingerprint($node);
+
+	    $entry->{ssl_fingerprint} = eval { PVE::Cluster::get_node_fingerprint($node) };
+	    warn "$@" if $@;
+
 	    push @$res, $entry;
 	}
 
