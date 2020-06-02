@@ -34,6 +34,16 @@ Ext.define('PVE.sdn.zones.VlanInputPanel', {
             allowBlank: false,
           },
           {
+            xtype: 'proxmoxintegerfield',
+            name: 'mtu',
+            minValue: 100,
+            maxValue: 65000,
+            fieldLabel: 'MTU',
+            skipEmptyText: true,
+            allowBlank: true,
+            emptyText: 'auto'
+          },
+          {
             xtype: 'pveNodeSelector',
             name: 'nodes',
             fieldLabel: gettext('Nodes'),
