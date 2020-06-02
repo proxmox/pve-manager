@@ -56,6 +56,13 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	    allowBlank: false,
 	},
 	{
+	    xtype: 'proxmoxcheckbox',
+	    name: 'vlanaware',
+	    uncheckedValue: 0,
+	    checked: false,
+	    fieldLabel: gettext('VLAN aware')
+	},
+	{
 	    xtype: 'textfield',
 	    name: 'mac',
 	    fieldLabel: gettext('MAC Address'),
