@@ -107,10 +107,21 @@ Ext.define('PVE.node.CephPoolList', {
 	    dataIndex: 'size'
 	},
 	{
-	    text: '# Placement Groups', // pg_num',
-	    width: 180,
-	    align: 'right',
-	    dataIndex: 'pg_num'
+	    text: 'Placement Groups',
+	    columns: [
+		{
+		    text: '# of PGs', // pg_num',
+		    width: 100,
+		    align: 'right',
+		    dataIndex: 'pg_num'
+		},
+		{
+		    text: 'Autoscale Mode',
+		    width: 140,
+		    align: 'right',
+		    dataIndex: 'pg_autoscale_mode'
+		},
+	    ]
 	},
 	{
 	    text: 'CRUSH Rule',

@@ -607,6 +607,7 @@ __PACKAGE__->register_method ({
 		pool => { type => 'integer' },
 		pool_name => { type => 'string' },
 		size => { type => 'integer' },
+		pg_autoscale_mode => { type => 'string', optional => 1 },
 	    },
 	},
 	links => [ { rel => 'child', href => "{pool_name}" } ],
@@ -636,9 +637,19 @@ __PACKAGE__->register_method ({
 	}
 
 	my $data = [];
+	my $attr_list = [
+	    'pool',
+	    'pool_name',
+	    'size',
+	    'min_size',
+	    'pg_num',
+	    'crush_rule',
+	    'pg_autoscale_mode',
+	];
+
 	foreach my $e (@{$res->{pools}}) {
 	    my $d = {};
-	    foreach my $attr (qw(pool pool_name size min_size pg_num crush_rule)) {
+	    foreach my $attr (@$attr_list) {
 		$d->{$attr} = $e->{$attr} if defined($e->{$attr});
 	    }
 
