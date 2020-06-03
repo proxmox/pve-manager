@@ -213,26 +213,17 @@ Ext.define('PVE.node.CephStatus', {
 			    renderer: PVE.Utils.render_bandwidth
 			},
 			{
-			    itemId: 'iops',
-			    xtype: 'pveRunningChart',
-			    hidden: true,
-			    title: 'IOPS', // do not localize
-			    renderer: Ext.util.Format.numberRenderer('0,000')
-			},
-			{
 			    itemId: 'readiops',
 			    xtype: 'pveRunningChart',
-			    hidden: true,
 			    title: 'IOPS: ' + gettext('Reads'),
 			    renderer: Ext.util.Format.numberRenderer('0,000')
 			},
 			{
 			    itemId: 'writeiops',
 			    xtype: 'pveRunningChart',
-			    hidden: true,
 			    title: 'IOPS: ' + gettext('Writes'),
 			    renderer: Ext.util.Format.numberRenderer('0,000')
-			}
+			},
 		    ]
 		}
 	    ]
@@ -284,8 +275,9 @@ Ext.define('PVE.node.CephStatus', {
 	me.getComponent('statusdetail').updateAll(me.metadata || {}, rec.data);
 
 	// add performance data
-	var used = rec.data.pgmap.bytes_used;
-	var total = rec.data.pgmap.bytes_total;
+	let pgmap = rec.data.pgmap;
+	let used = pgmap.bytes_used;
+	let total = pgmap.bytes_total;
 
 	var text = Ext.String.format(gettext('{0} of {1}'),
 	    PVE.Utils.render_size(used),
@@ -295,34 +287,16 @@ Ext.define('PVE.node.CephStatus', {
 	// update the usage widget
 	me.down('#space').updateValue(used/total, text);
 
-	// TODO: logic for jewel (iops split in read/write)
+	let readiops = pgmap.read_op_per_sec;
+	let writeiops = pgmap.write_op_per_sec;
+	let reads = pgmap.read_bytes_sec || 0;
+	let writes = pgmap.write_bytes_sec || 0;
 
-	var iops = rec.data.pgmap.op_per_sec;
-	var readiops = rec.data.pgmap.read_op_per_sec;
-	var writeiops = rec.data.pgmap.write_op_per_sec;
-	var reads = rec.data.pgmap.read_bytes_sec || 0;
-	var writes = rec.data.pgmap.write_bytes_sec || 0;
-
-	if (iops !== undefined && me.version !== 'hammer') {
-	    me.change_version('hammer');
-	} else if((readiops !== undefined || writeiops !== undefined) && me.version !== 'jewel') {
-	    me.change_version('jewel');
-	}
 	// update the graphs
 	me.reads.addDataPoint(reads);
 	me.writes.addDataPoint(writes);
-	me.iops.addDataPoint(iops);
 	me.readiops.addDataPoint(readiops);
 	me.writeiops.addDataPoint(writeiops);
-    },
-
-    change_version: function(version) {
-	var me = this;
-	me.version = version;
-	me.sp.set('ceph-version', version);
-	me.iops.setVisible(version === 'hammer');
-	me.readiops.setVisible(version === 'jewel');
-	me.writeiops.setVisible(version === 'jewel');
     },
 
     initComponent: function() {
@@ -356,11 +330,6 @@ Ext.define('PVE.node.CephStatus', {
 	me.writeiops = me.down('#writeiops');
 	me.reads = me.down('#reads');
 	me.writes = me.down('#writes');
-
-	// get ceph version
-	me.sp = Ext.state.Manager.getProvider();
-	me.version = me.sp.get('ceph-version');
-	me.change_version(me.version);
 
 	var regex = new RegExp("not (installed|initialized)", "i");
 	PVE.Utils.handleStoreErrorOrMask(me, me.store, regex, function(me, error){
