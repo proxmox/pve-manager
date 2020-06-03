@@ -46,7 +46,8 @@ Ext.define('PVE.CephCreatePool', {
 	    value: 128,
 	    minValue: 8,
 	    maxValue: 32768,
-	    allowBlank: false
+	    allowBlank: true,
+	    emptyText: gettext('Autoscale'),
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
@@ -111,12 +112,12 @@ Ext.define('PVE.node.CephPoolList', {
 	    columns: [
 		{
 		    text: '# of PGs', // pg_num',
-		    width: 100,
+		    width: 150,
 		    align: 'right',
 		    dataIndex: 'pg_num'
 		},
 		{
-		    text: 'Autoscale Mode',
+		    text: gettext('Autoscale'),
 		    width: 140,
 		    align: 'right',
 		    dataIndex: 'pg_autoscale_mode'
