@@ -924,7 +924,7 @@ sub exec_backup_task {
 	if ($maxfiles && $opts->{remove}) {
 
 	    if ($self->{opts}->{pbs}) {
-		my $args = [$pbs_group_name, '--keep-last', $maxfiles];
+		my $args = [$pbs_group_name, '--quiet', '1', '--keep-last', $maxfiles];
 		my $logfunc = sub { my $line = shift; debugmsg ('info', $line, $logfd); };
 		PVE::Storage::PBSPlugin::run_raw_client_cmd(
 		    $opts->{scfg}, $opts->{storage}, 'prune', $args, logfunc => $logfunc);
