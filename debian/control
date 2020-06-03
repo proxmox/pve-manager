@@ -91,5 +91,6 @@ Replaces: vlan,
           vzdump,
 Provides: vlan,
           vzdump,
+Breaks: libpve-network-perl (<< 0.4-6)
 Description: Proxmox Virtual Environment Management Tools
  This package contains the Proxmox Virtual Environment management tools.

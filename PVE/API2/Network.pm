@@ -19,8 +19,6 @@ use base qw(PVE::RESTHandler);
 my $have_sdn;
 eval {
     require PVE::Network::SDN;
-    require PVE::Network::SDN::Zones;
-    require PVE::Network::SDN::Controllers;
     $have_sdn = 1;
 };
 
@@ -610,8 +608,7 @@ __PACKAGE__->register_method({
 	    rename($new_config_file, $current_config_file) if -e $new_config_file;
 
 	    if ($have_sdn) {
-		my $network_sdn_config = PVE::Network::SDN::Zones::generate_etc_network_config();
-		PVE::Network::SDN::Zones::write_etc_network_config($network_sdn_config);
+		PVE::Network::SDN::generate_zone_config();
 	    }
 
 	    my $err = sub {
@@ -623,9 +620,7 @@ __PACKAGE__->register_method({
 	    PVE::Tools::run_command(['ifreload', '-a'], errfunc => $err);
 
 	    if ($have_sdn) {
-		my $controller_config = PVE::Network::SDN::Controllers::generate_controller_config();
-		PVE::Network::SDN::Controllers::write_controller_config($controller_config) if ($controller_config);
-		PVE::Network::SDN::Controllers::reload_controller();
+		PVE::Network::SDN::generate_controller_config(1);
 	    }
 	};
 	return $rpcenv->fork_worker('srvreload', 'networking', $authuser, $worker);
