@@ -93,7 +93,7 @@ Ext.define('PVE.sdn.VnetView', {
 		    dataIndex: 'tag',
 		},
 		{
-		    header: gettext('VLAN aware'),
+		    header: gettext('VLAN Aware'),
 		    flex: 1,
 		    dataIndex: 'vlanaware',
 		},
