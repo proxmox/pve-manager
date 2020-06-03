@@ -212,15 +212,8 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    });
 	}
 
+	// update PGs sorted
 	var pgmap = status.pgmap || {};
-	var health = status.health || {};
-	var osdmap = status.osdmap || {};
-
-	if (typeof osdmap.osdmap != "undefined") {
-	    osdmap = osdmap.osdmap;
-	}
-
-	// update pgs sorted
 	var pgs_by_state = pgmap.pgs_by_state || [];
 	pgs_by_state.sort(function(a,b){
 	    return (a.state_name < b.state_name)?-1:(a.state_name === b.state_name)?0:1;
@@ -253,6 +246,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	var downinregex = /(\d+) osds down/;
 	var downin_osds = 0;
 
+	var health = status.health || {};
 	// we collect monitor/osd information from the checks
 	Ext.Object.each(health.checks, function(key, value, obj) {
 	    var found = null;
@@ -264,9 +258,11 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    }
 	});
 
+	var osdmap = status.osdmap || {};
+	if (typeof osdmap.osdmap != "undefined") {
+	    osdmap = osdmap.osdmap;
+	}
 	// update osds counts
-
-	// pre-octopus || octopus || 0
 	var total_osds = osdmap.num_osds || 0;
 	var in_osds = osdmap.num_in_osds || 0;
 	var up_osds = osdmap.num_up_osds || 0;
