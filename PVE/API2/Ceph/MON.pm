@@ -130,7 +130,7 @@ __PACKAGE__->register_method ({
 	my $monhash = PVE::Ceph::Services::get_services_info("mon", $cfg, $rados);
 
 	if ($rados) {
-	    my $monstat = $rados->mon_command({ prefix => 'mon_status' });
+	    my $monstat = $rados->mon_command({ prefix => 'quorum_status' });
 
 	    my $mons = $monstat->{monmap}->{mons};
 	    foreach my $d (@$mons) {
@@ -338,7 +338,7 @@ __PACKAGE__->register_method ({
 	my $monsection = "mon.$monid";
 
 	my $rados = PVE::RADOS->new();
-	my $monstat = $rados->mon_command({ prefix => 'mon_status' });
+	my $monstat = $rados->mon_command({ prefix => 'quorum_status' });
 	my $monlist = $monstat->{monmap}->{mons};
 	my $monhash = PVE::Ceph::Services::get_services_info('mon', $cfg, $rados);
 
@@ -356,7 +356,7 @@ __PACKAGE__->register_method ({
 		# reopen with longer timeout
 		$rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
 		$monhash = PVE::Ceph::Services::get_services_info('mon', $cfg, $rados);
-		$monstat = $rados->mon_command({ prefix => 'mon_status' });
+		$monstat = $rados->mon_command({ prefix => 'quorum_status' });
 		$monlist = $monstat->{monmap}->{mons};
 
 		my $addr;

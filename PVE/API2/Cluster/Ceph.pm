@@ -142,10 +142,7 @@ __PACKAGE__->register_method ({
 
 	PVE::Ceph::Tools::check_ceph_inited();
 
-	my $rados = PVE::RADOS->new();
-	my $status = $rados->mon_command({ prefix => 'status' });
-	$status->{health} = $rados->mon_command({ prefix => 'health', detail => 'detail' });
-	return $status;
+	return PVE::Ceph::Tools::ceph_cluster_status();
     }
 });
 

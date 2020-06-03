@@ -344,7 +344,7 @@ __PACKAGE__->register_method ({
 
 	# get necessary ceph infos
 	my $rados = PVE::RADOS->new();
-	my $monstat = $rados->mon_command({ prefix => 'mon_status' });
+	my $monstat = $rados->mon_command({ prefix => 'quorum_status' });
 
 	die "unable to get fsid\n" if !$monstat->{monmap} || !$monstat->{monmap}->{fsid};
 	my $fsid = $monstat->{monmap}->{fsid};

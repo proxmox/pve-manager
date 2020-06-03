@@ -214,8 +214,11 @@ Ext.define('PVE.ceph.StatusDetail', {
 
 	var pgmap = status.pgmap || {};
 	var health = status.health || {};
-	var osdmap = status.osdmap || { osdmap: {} };
+	var osdmap = status.osdmap || {};
 
+	if (typeof osdmap.osdmap != "undefined") {
+	    osdmap = osdmap.osdmap;
+	}
 
 	// update pgs sorted
 	var pgs_by_state = pgmap.pgs_by_state || [];
@@ -263,9 +266,10 @@ Ext.define('PVE.ceph.StatusDetail', {
 
 	// update osds counts
 
-	var total_osds = osdmap.osdmap.num_osds || 0;
-	var in_osds = osdmap.osdmap.num_in_osds || 0;
-	var up_osds = osdmap.osdmap.num_up_osds || 0;
+	// pre-octopus || octopus || 0
+	var total_osds = osdmap.num_osds || 0;
+	var in_osds = osdmap.num_in_osds || 0;
+	var up_osds = osdmap.num_up_osds || 0;
 	var out_osds = total_osds - in_osds;
 	var down_osds = total_osds - up_osds;
 

@@ -468,4 +468,21 @@ sub get_real_flag_name {
     return $flagmap->{$flag} // $flag;
 }
 
+sub ceph_cluster_status {
+    my ($rados) = @_;
+    $rados = PVE::RADOS->new() if !$rados;
+
+    my $ceph_version = get_local_version(1);
+    my $status = $rados->mon_command({ prefix => 'status' });
+
+    $status->{health} = $rados->mon_command({ prefix => 'health', detail => 'detail' });
+
+    if (!$ceph_version < 15) {
+	$status->{monmap} = $rados->mon_command({ prefix => 'mon dump' });
+	$status->{mgrmap} = $rados->mon_command({ prefix => 'mgr dump' });
+    }
+
+    return $status;
+}
+
 1;
