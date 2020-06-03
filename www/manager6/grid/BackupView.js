@@ -120,8 +120,7 @@ Ext.define('PVE.grid.BackupView', {
 	});
 
 	var vmidfilterCB = Ext.create('Ext.form.field.Checkbox', {
-	    fieldLabel: gettext('Filter ID'),
-	    labelAlign: 'right',
+	    boxLabel: gettext('Filter VMID'),
 	    value: '1',
 	    listeners: {
 		change: function(cb, value) {
@@ -219,7 +218,7 @@ Ext.define('PVE.grid.BackupView', {
 	    selModel: sm,
 	    tbar: {
 		overflowHandler: 'scroller',
-		items: [ backup_btn, restore_btn, delete_btn,config_btn, '->', storagesel, vmidfilterCB, storagefilter ],
+		items: [ backup_btn, restore_btn, delete_btn,config_btn, '->', storagesel, '-', vmidfilterCB, storagefilter ],
 	    },
 	    columns: [
 		{
