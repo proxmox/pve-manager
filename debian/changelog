@@ -1,3 +1,19 @@
+pve-manager (6.2-6) pve; urgency=medium
+
+  * api: improve node index with missing/broken cert
+
+  * sdn: add VLAN-aware option to VNet edit dialog
+
+  * sdn: add mtu field to VLAN edit dialog
+
+  * initial support for upgrading to ceph octopus
+
+  * show if a ceph pool is using the PG autoscaler
+
+  * ui: improve filtering by VMID and search for the backup list view
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 03 Jun 2020 16:37:56 +0200
+
 pve-manager (6.2-5) pve; urgency=medium
 
   * improve ACME interaces
