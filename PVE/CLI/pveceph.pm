@@ -182,16 +182,20 @@ our $cmddef = {
     init => [ 'PVE::API2::Ceph', 'init', [], { node => $nodename } ],
     pool => {
 	ls => [ 'PVE::API2::Ceph', 'lspools', [], { node => $nodename }, sub {
-	    my $res = shift;
-
-	    printf("%-20s %10s %10s %10s %10s %20s\n", "Name", "size", "min_size",
-		    "pg_num", "%-used", "used");
-	    foreach my $p (sort {$a->{pool_name} cmp $b->{pool_name}} @$res) {
-		printf("%-20s %10d %10d %10d %10.2f %20d\n", $p->{pool_name},
-			$p->{size}, $p->{min_size}, $p->{pg_num},
-			$p->{percent_used}, $p->{bytes_used});
-	    }
-	}],
+	    my ($data, $schema, $options) = @_;
+	    PVE::CLIFormatter::print_api_result($data, $schema,
+		[
+		    'pool_name',
+		    'size',
+		    'min_size',
+		    'pg_num',
+		    'pg_autoscale_mode',
+		    'crush_rule_name',
+		    'percent_used',
+		    'bytes_used',
+		],
+		$options);
+	}, $PVE::RESTHandler::standard_output_options],
 	create => [ 'PVE::API2::Ceph', 'createpool', ['name'], { node => $nodename }],
 	destroy => [ 'PVE::API2::Ceph', 'destroypool', ['name'], { node => $nodename } ],
     },
