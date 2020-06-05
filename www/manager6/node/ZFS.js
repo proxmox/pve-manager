@@ -8,6 +8,8 @@ Ext.define('PVE.node.CreateZFS', {
 
     onlineHelp: 'chapter_zfs',
 
+    width: 800,
+
     initComponent : function() {
         var me = this;
 
@@ -122,22 +124,30 @@ Ext.define('PVE.node.CreateZFS', {
 				{
 				    text: gettext('Device'),
 				    dataIndex: 'devpath',
-				    flex: 1
+				    flex: 2,
+				},
+				{
+				    text: gettext('Model'),
+				    dataIndex: 'model',
+				    flex: 2,
 				},
 				{
 				    text: gettext('Serial'),
-				    dataIndex: 'serial'
+				    dataIndex: 'serial',
+				    flex: 2,
 				},
 				{
 				    text: gettext('Size'),
 				    dataIndex: 'size',
-				    renderer: PVE.Utils.render_size
+				    renderer: PVE.Utils.render_size,
+				    flex: 1,
 				},
 				{
 				    header: gettext('Order'),
 				    xtype: 'widgetcolumn',
 				    dataIndex: 'order',
 				    sortable: true,
+				    flex: 1,
 				    widget: {
 					xtype: 'proxmoxintegerfield',
 					minValue: 1,
