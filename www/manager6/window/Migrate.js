@@ -355,7 +355,7 @@ Ext.define('PVE.window.Migrate', {
 			    storageContent: 'images',
 			    allowBlank: true,
 			    autoSelect: false,
-			    emptyText: 'use current layout',
+			    emptyText: gettext('Current layout'),
 			    bind: {
 				hidden: '{setStorageselectorHidden}'
 			    }
@@ -408,8 +408,9 @@ Ext.define('PVE.window.Migrate', {
 	    bind: {
 		hidden: '{!migration.preconditions.length}',
 		store: {
-		    fields: ['severity','text'],
-		    data: '{migration.preconditions}'
+		    fields: ['severity', 'text'],
+		    data: '{migration.preconditions}',
+		    sorters: 'text',
 		}
 	    }
 	}
