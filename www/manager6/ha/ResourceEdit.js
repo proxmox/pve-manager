@@ -58,7 +58,6 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    }
 	});
 
-	/*jslint confusion: true */
 	var vmidStore = (me.vmid) ? {} : {
 	    model: 'PVEResources',
 	    autoLoad: true,
@@ -105,7 +104,6 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		allowBlank: false
 	    }
 	];
-	/*jslint confusion: false */
 
 	me.column2 = [
 	    {

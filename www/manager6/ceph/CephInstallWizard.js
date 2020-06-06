@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.ceph.CephInstallWizard', {
 	extend: 'PVE.window.Wizard',
 	alias: 'widget.pveCephInstallWizard',

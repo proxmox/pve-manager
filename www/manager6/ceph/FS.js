@@ -1,4 +1,3 @@
-/*jslint confusion: true */
 Ext.define('PVE.CephCreateFS', {
     extend: 'Proxmox.window.Edit',
     alias: 'widget.pveCephCreateFS',

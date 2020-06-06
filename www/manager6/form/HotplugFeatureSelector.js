@@ -59,7 +59,6 @@ Ext.define('PVE.form.HotplugFeatureSelector', {
 	});
 
 	/* because above is hotplug an array */
-	/*jslint confusion: true*/
 	if (data.length === 0) {
 	    return { 'hotplug':'0' };
 	} else {

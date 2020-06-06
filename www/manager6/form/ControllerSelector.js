@@ -105,7 +105,6 @@ clist_loop:
 		    flex: 1,
 		    allowBlank: false,
 		    validator: function(value) {
-			/*jslint confusion: true */
 			if (!me.rendered) {
 			    return;
 			}

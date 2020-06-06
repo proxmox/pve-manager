@@ -155,7 +155,6 @@ Ext.define('PVE.node.LVMThinList', {
     },
 
     initComponent: function() {
-	 /*jslint confusion: true */
         var me = this;
 
 	me.nodename = me.pveSelNode.data.node;

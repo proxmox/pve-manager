@@ -1,4 +1,3 @@
-/*jslint confusion: true */
 Ext.define('PVE.lxc.Options', {
     extend: 'Proxmox.grid.PendingObjectGrid',
     alias: ['widget.pveLxcOptions'],

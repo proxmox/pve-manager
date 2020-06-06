@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.qemu.SystemInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     xtype: 'pveQemuSystemPanel',

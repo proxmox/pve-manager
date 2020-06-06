@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('pve-cluster-nodes', {
     extend: 'Ext.data.Model',
     fields: [

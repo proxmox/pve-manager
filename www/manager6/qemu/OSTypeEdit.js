@@ -45,7 +45,6 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
     initComponent : function() {
 	var me = this;
 
-	/*jslint confusion: true */
 	me.items = [
 	    {
 		xtype: 'displayfield',
@@ -90,7 +89,6 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 		}
 	    }
 	];
-	/*jslint confusion: false */
 
 	me.callParent();
     }

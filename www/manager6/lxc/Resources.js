@@ -1,4 +1,3 @@
-/*jslint confusion: true */
 Ext.define('PVE.lxc.RessourceView', {
     extend: 'Proxmox.grid.PendingObjectGrid',
     alias: ['widget.pveLxcRessourceView'],

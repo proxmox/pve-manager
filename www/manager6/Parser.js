@@ -342,9 +342,7 @@ Ext.define('PVE.Parser', { statics: {
 		    }
 		    data.bridge = bridge_res[1];
 		    data.tag = bridge_res[4];
-		    /*jslint confusion: true*/
 		    data.firewall = bridge_res[5] ? 1 : 0;
-		    /*jslint confusion: false*/
 		} else {
 		    data[match_res[1]] = match_res[2];
 		}
@@ -423,11 +421,9 @@ Ext.define('PVE.Parser', { statics: {
 		}
 	});
 
-	/*jslint confusion: true*/
 	if (data.rate > 0) {
 	    tmparray.push('rate=' + data.rate);
 	}
-	/*jslint confusion: false*/
 	return tmparray.join(',');
     },
 
@@ -597,7 +593,6 @@ Ext.define('PVE.Parser', { statics: {
     },
 
     parseTfaType: function(value) {
-	/*jslint confusion: true*/
 	var match;
 	if (!value || !value.length) {
 	    return undefined;

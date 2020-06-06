@@ -91,7 +91,6 @@ Ext.define('PVE.lxc.DNSEdit', {
     }
 });
 
-/*jslint confusion: true */
 Ext.define('PVE.lxc.DNS', {
     extend: 'Proxmox.grid.PendingObjectGrid',
     alias: ['widget.pveLxcDNS'],

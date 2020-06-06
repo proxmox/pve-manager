@@ -1,5 +1,4 @@
 /*global u2f,QRCode,Uint8Array*/
-/*jslint confusion: true*/
 Ext.define('PVE.window.TFAEdit', {
     extend: 'Ext.window.Window',
     mixins: ['Proxmox.Mixin.CBind'],

@@ -74,7 +74,6 @@ Ext.define('PVE.sdn.ZoneView', {
 	    return function() { me.createSDNEditWindow(type); };
 	};
 	let addMenuItems = [], type;
-	/*jslint forin: true */
 
 	for (type in PVE.Utils.sdnzoneSchema) {
 	    let zone = PVE.Utils.sdnzoneSchema[type];

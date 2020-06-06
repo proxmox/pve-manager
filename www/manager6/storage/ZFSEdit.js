@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.storage.ZFSInputPanel', {
     extend: 'PVE.panel.StorageBase',
 

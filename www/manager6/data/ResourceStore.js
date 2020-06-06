@@ -53,7 +53,6 @@ Ext.define('PVE.data.ResourceStore', {
 
     constructor: function(config) {
 	// fixme: how to avoid those warnings
-	/*jslint confusion: true */
 
 	var me = this;
 

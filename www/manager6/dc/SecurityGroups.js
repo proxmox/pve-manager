@@ -81,7 +81,6 @@ Ext.define('PVE.SecurityGroupList', {
     base_url: "/cluster/firewall/groups",
 
     initComponent: function() {
-	/*jslint confusion: true */
         var me = this;
 
 	if (me.rule_panel == undefined) {

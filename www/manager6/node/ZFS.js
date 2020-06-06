@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.node.CreateZFS', {
     extend: 'Proxmox.window.Edit',
     xtype: 'pveCreateZFS',
@@ -228,7 +227,6 @@ Ext.define('PVE.node.ZFSDevices', {
     },
 
     initComponent: function() {
-	 /*jslint confusion: true */
         var me = this;
 
 	if (!me.nodename) {
@@ -271,7 +269,6 @@ Ext.define('PVE.node.ZFSStatus', {
     border: false,
 
     initComponent: function() {
-	 /*jslint confusion: true */
         var me = this;
 
 	if (!me.nodename) {
@@ -463,7 +460,6 @@ Ext.define('PVE.node.ZFSList', {
     },
 
     initComponent: function() {
-	 /*jslint confusion: true */
         var me = this;
 
 	me.nodename = me.pveSelNode.data.node;

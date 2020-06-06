@@ -61,7 +61,6 @@ Ext.define('PVE.CephCreatePool', {
 	}
     ],
     initComponent : function() {
-	 /*jslint confusion: true */
         var me = this;
 
 	if (!me.nodename) {

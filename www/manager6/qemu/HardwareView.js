@@ -60,7 +60,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	var caps = Ext.state.Manager.get('GuiCap');
 	var diskCap = caps.vms['VM.Config.Disk'];
 
-	/*jslint confusion: true */
 	var rows = {
 	    memory: {
 		header: gettext('Memory'),
@@ -219,7 +218,6 @@ Ext.define('PVE.qemu.HardwareView', {
 		visible: false
 	    }
 	};
-	/*jslint confusion: false */
 
 	PVE.Utils.forEachBus(undefined, function(type, id) {
 	    var confid = type + id;

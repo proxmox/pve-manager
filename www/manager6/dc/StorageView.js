@@ -75,7 +75,6 @@ Ext.define('PVE.dc.StorageView', {
 	    return function() { me.createStorageEditWindow(type); };
 	};
 	var addMenuItems = [], type;
-	/*jslint forin: true */
 	for (type in PVE.Utils.storageSchema) {
 	    var storage = PVE.Utils.storageSchema[type];
 	    if (storage.hideAdd) {

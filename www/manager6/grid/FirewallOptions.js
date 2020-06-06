@@ -7,7 +7,6 @@ Ext.define('PVE.FirewallOptions', {
     base_url: undefined,
 
     initComponent : function() {
-	/*jslint confusion: true */
 
 	var me = this;
 

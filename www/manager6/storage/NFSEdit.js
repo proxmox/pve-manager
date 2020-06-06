@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.storage.NFSScan', {
     extend: 'Ext.form.field.ComboBox',
     alias: 'widget.pveNFSScan',

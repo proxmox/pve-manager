@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.storage.CephFSInputPanel', {
     extend: 'PVE.panel.StorageBase',
     controller: 'cephstorage',

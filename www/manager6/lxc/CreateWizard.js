@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.lxc.CreateWizard', {
     extend: 'PVE.window.Wizard',
     mixins: ['Proxmox.Mixin.CBind'],

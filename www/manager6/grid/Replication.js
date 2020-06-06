@@ -129,7 +129,6 @@ Ext.define('PVE.window.ReplicaEdit', {
     }
 });
 
-/*jslint confusion: true */
 /* callback is a function and string */
 Ext.define('PVE.grid.ReplicaView', {
     extend: 'Ext.grid.Panel',

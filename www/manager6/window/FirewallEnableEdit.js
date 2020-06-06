@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.FirewallEnableEdit', {
     extend: 'Proxmox.window.Edit',
     alias: ['widget.pveFirewallEnableEdit'],

@@ -67,7 +67,6 @@ Ext.define('PVE.panel.StatusView', {
 	    field.updateValue(renderer.call(field, me.getRecordValue(field.textField)));
 	} else if(field.valueField !== undefined) {
 	    var used = me.getRecordValue(field.valueField);
-	    /*jslint confusion: true*/
 	    /* string and int */
 	    var max = field.maxField !== undefined ? me.getRecordValue(field.maxField) : 1;
 

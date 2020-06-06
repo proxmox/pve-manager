@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 /* filter is a javascript builtin, but extjs calls it also filter */
 Ext.define('PVE.form.VMSelector', {
     extend: 'Ext.grid.Panel',

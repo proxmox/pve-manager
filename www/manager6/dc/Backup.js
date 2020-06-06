@@ -24,7 +24,6 @@ Ext.define('PVE.dc.BackupEdit', {
 	    name: 'vmid'
 	});
 
-	/*jslint confusion: true*/
 	// 'value' can be assigned a string or an array
 	var selModeField =  Ext.create('Proxmox.form.KVComboBox', {
 	    xtype: 'proxmoxKVComboBox',
@@ -225,7 +224,6 @@ Ext.define('PVE.dc.BackupEdit', {
 	    },
 	    vmidField
 	];
-	/*jslint confusion: false*/
 
 	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	    onlineHelp: 'chapter_vzdump',
@@ -628,7 +626,6 @@ Ext.define('PVE.dc.BackupView', {
 		    sortable: false,
 		    dataIndex: 'vmid',
 		    renderer: function(value, metaData, record) {
-			/*jslint confusion: true */
 			if (record.data.all) {
 			    if (record.data.exclude) {
 				return Ext.String.format(me.allExceptText, record.data.exclude);

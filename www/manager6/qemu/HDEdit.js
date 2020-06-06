@@ -1,4 +1,3 @@
-/*jslint confusion: true */
 /* 'change' property is assigned a string and then a function */
 Ext.define('PVE.qemu.HDInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
@@ -349,7 +348,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	me.callParent();
     }
 });
-/*jslint confusion: false */
 
 Ext.define('PVE.qemu.HDEdit', {
     extend: 'Proxmox.window.Edit',
@@ -389,7 +387,6 @@ Ext.define('PVE.qemu.HDEdit', {
 	me.items = [ ipanel ];
 
 	me.callParent();
-	/*jslint confusion: true*/
 	/* 'data' is assigned an empty array in same file, and here we
 	 * use it like an object
 	 */
@@ -409,6 +406,5 @@ Ext.define('PVE.qemu.HDEdit', {
 		}
 	    }
 	});
-	/*jslint confusion: false*/
     }
 });

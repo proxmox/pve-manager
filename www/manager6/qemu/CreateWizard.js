@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.qemu.CreateWizard', {
     extend: 'PVE.window.Wizard',
     alias: 'widget.pveQemuCreateWizard',

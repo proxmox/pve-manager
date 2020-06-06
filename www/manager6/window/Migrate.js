@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.window.Migrate', {
     extend: 'Ext.window.Window',
 

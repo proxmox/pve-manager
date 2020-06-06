@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.ceph.Install', {
     extend: 'Ext.window.Window',
     xtype: 'pveCephInstallWindow',

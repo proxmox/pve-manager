@@ -192,7 +192,6 @@ Ext.define('PVE.qemu.CloudInit', {
 	me.editorConfig.url = me.baseurl + '/config';
 	me.editorConfig.pveSelNode = me.pveSelNode;
 
-	/*jslint confusion: true*/
 	/* editor is string and object */
 	me.rows = {
 	    ciuser: {
@@ -314,7 +313,6 @@ Ext.define('PVE.qemu.CloudInit', {
 		visible: false
 	    };
 	}
-	/*jslint confusion: false*/
 
 	PVE.Utils.forEachBus(['ide', 'scsi', 'sata'], function(type, id) {
 	    me.rows[type+id] = {

@@ -173,7 +173,6 @@ Ext.define('PVE.qemu.NetworkEdit', {
     isAdd: true,
 
     initComponent : function() {
-	/*jslint confusion: true */
 
 	var me = this;
 

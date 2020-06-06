@@ -127,7 +127,6 @@ Ext.define('PVE.node.DiskList', {
     ],
 
     initComponent: function() {
-	 /*jslint confusion: true */
         var me = this;
 
 	var nodename = me.pveSelNode.data.node;
@@ -358,7 +357,6 @@ Ext.define('PVE.DiskSmartWindow', {
 		    default:
 			// includes 'ata'
 			// cannot use empty case because
-			// of jslint
 			grid.setVisible(true);
 			text.setVisible(false);
 			grid.setStore(rec.attributes());

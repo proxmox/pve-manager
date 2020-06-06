@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 /* hidden: boolean and string
  * bind: function and object
  * disabled: boolean and string
@@ -197,7 +196,6 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		if (Ext.isDefined(me.vmconfig["mp"+value])) {
 		    return "Mount point is already in use.";
 		}
-		/*jslint confusion: true*/
 		/* returns a string above */
 		return true;
 	    }
@@ -372,10 +370,8 @@ Ext.define('PVE.lxc.MountPointEdit', {
 	    success: function(response, options) {
 		ipanel.setVMConfig(response.result.data);
 		if (me.confid) {
-		    /*jslint confusion: true*/
 		    /*data is defined as array above*/
 		    var value = response.result.data[me.confid];
-		    /*jslint confusion: false*/
 		    var mp = PVE.Parser.parseLxcMountPoint(value);
 
 		    if (!mp) {

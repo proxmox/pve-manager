@@ -283,7 +283,6 @@ Ext.define('PVE.IPSetGrid', {
     },
 
     initComponent: function() {
-	/*jslint confusion: true */
         var me = this;
 
 	if (!me.list_refs_url) {

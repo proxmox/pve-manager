@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.storage.Ceph.Model', {
     extend: 'Ext.app.ViewModel',
     alias: 'viewmodel.cephstorage',

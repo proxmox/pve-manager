@@ -188,7 +188,6 @@ Ext.define('PVE.qemu.IPConfigEdit', {
     isAdd: true,
 
     initComponent : function() {
-	/*jslint confusion: true */
 
 	var me = this;
 

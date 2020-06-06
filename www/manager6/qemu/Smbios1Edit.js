@@ -92,7 +92,6 @@ Ext.define('PVE.qemu.Smbios1Edit', {
     extend: 'Proxmox.window.Edit',
 
     initComponent : function() {
-	/*jslint confusion: true */
 
 	var me = this;
 

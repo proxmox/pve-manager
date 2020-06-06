@@ -115,7 +115,6 @@ Ext.define('PVE.storage.TemplateDownload', {
     width: 900,
     height: 600,
     initComponent : function() {
-	/*jslint confusion: true */
         var me = this;
 
 	var grid = Ext.create('PVE.grid.TemplateSelector', {
@@ -175,7 +174,6 @@ Ext.define('PVE.storage.Upload', {
     modal: true,
 
     initComponent : function() {
-	/*jslint confusion: true */
         var me = this;
 
 	var xhr;

@@ -92,7 +92,6 @@ Ext.define('PVE.window.Restore', {
 	    },
 	];
 
-	/*jslint confusion: true*/
 	if (me.vmtype === 'lxc') {
 	    items.push({
 		xtype: 'proxmoxcheckbox',
@@ -101,7 +100,6 @@ Ext.define('PVE.window.Restore', {
 		fieldLabel: gettext('Unprivileged container')
 	    });
 	}
-	/*jslint confusion: false*/
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
 	    bodyPadding: 10,

@@ -307,7 +307,6 @@ Ext.define('PVE.ceph.ServiceList', {
     }
 });
 
-/*jslint confusion: true*/
 Ext.define('PVE.ceph.ServiceWidget', {
     extend: 'Ext.Component',
     alias: 'widget.pveCephServiceWidget',

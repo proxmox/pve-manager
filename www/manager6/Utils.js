@@ -19,7 +19,6 @@ Ext.Ajax.defaultHeaders = {
     'Accept': 'application/json'
 };
 
-/*jslint confusion: true */
 Ext.define('PVE.Utils', { utilities: {
 
     // this singleton contains miscellaneous utilities
@@ -795,7 +794,6 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     render_size: function(value, metaData, record, rowIndex, colIndex, store) {
-	/*jslint confusion: true */
 
 	if (!Ext.isNumeric(value)) {
 	    return '';

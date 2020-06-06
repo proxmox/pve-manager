@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.FirewallLograteInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     xtype: 'pveFirewallLograteInputPanel',

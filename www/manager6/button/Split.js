@@ -33,11 +33,9 @@ Ext.define('PVE.button.Split', {
 	if (me.confirmMsg) {
 	    msg = me.confirmMsg;
 	    // confirMsg can be boolean or function
-	    /*jslint confusion: true*/
 	    if (Ext.isFunction(me.confirmMsg)) {
 		msg = me.confirmMsg(rec);
 	    }
-	    /*jslint confusion: false*/
 	    Ext.MessageBox.defaultButton = me.dangerous ? 2 : 1;
 	    Ext.Msg.show({
 		title: gettext('Confirm'),
@@ -57,7 +55,6 @@ Ext.define('PVE.button.Split', {
     },
 
     initComponent: function() {
-	/*jslint confusion: true */
 
         var me = this;
 

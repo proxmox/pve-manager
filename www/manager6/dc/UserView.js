@@ -1,4 +1,3 @@
-/*jslint confusion: true */
 Ext.define('PVE.dc.UserView', {
     extend: 'Ext.grid.GridPanel',
 

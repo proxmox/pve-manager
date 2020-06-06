@@ -74,7 +74,6 @@ Ext.define('PVE.sdn.ControllerView', {
 	    return function() { me.createSDNControllerEditWindow(type); };
 	};
 	var addMenuItems = [], type;
-	/*jslint forin: true */
 
 	for (type in PVE.Utils.sdncontrollerSchema) {
 	    var controller = PVE.Utils.sdncontrollerSchema[type];

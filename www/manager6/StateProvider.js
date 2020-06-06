@@ -214,7 +214,6 @@ Ext.define('PVE.StateProvider', {
     },
 
     get: function(name, defaultValue){
-	/*jslint confusion: true */
 	var me = this;
 	var data;
 

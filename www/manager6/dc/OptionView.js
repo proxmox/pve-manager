@@ -1,4 +1,3 @@
- /*jslint confusion: true*/
 Ext.define('PVE.dc.OptionView', {
     extend: 'Proxmox.grid.ObjectGrid',
     alias: ['widget.pveDcOptionView'],

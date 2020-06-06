@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.form.VMCPUFlagSelector', {
     extend: 'Ext.grid.Panel',
     alias: 'widget.vmcpuflagselector',

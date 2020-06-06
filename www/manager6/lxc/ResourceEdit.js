@@ -1,4 +1,3 @@
-/*jslint confusion: true */
 var labelWidth = 120;
 
 Ext.define('PVE.lxc.MemoryEdit', {

@@ -1,4 +1,3 @@
-/*jslint confusion: true*/
 Ext.define('PVE.lxc.FeaturesInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     xtype: 'pveLxcFeaturesInputPanel',

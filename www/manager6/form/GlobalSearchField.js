@@ -238,7 +238,6 @@ Ext.define('PVE.form.GlobalSearchField', {
 
 	me.callParent();
 
-	/*jslint confusion: true*/
 	/*because shift is also a function*/
 	// bind ctrl+shift+f and ctrl+space
 	// to open/close the search

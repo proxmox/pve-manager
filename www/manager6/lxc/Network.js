@@ -112,7 +112,6 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 			return result;
 		    }
 		    // validator can return bool/string
-		    /*jslint confusion:true*/
 		    return true;
 		}
 	    },

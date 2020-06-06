@@ -131,7 +131,6 @@ Ext.define('PVE.node.Directorylist', {
     },
 
     initComponent: function() {
-	 /*jslint confusion: true */
         var me = this;
 
 	me.nodename = me.pveSelNode.data.node;

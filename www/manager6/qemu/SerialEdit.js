@@ -1,4 +1,3 @@
-/*jslint confusion: true */
 Ext.define('PVE.qemu.SerialnputPanel', {
     extend: 'Proxmox.panel.InputPanel',
 

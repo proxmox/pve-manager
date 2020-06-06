@@ -61,7 +61,6 @@ Ext.define('PVE.window.BulkAction', {
 	var items = [];
 
 	if (me.action === 'migrateall') {
-	    /*jslint confusion: true*/
 	    /*value is string and number*/
 	    items.push(
 		{
@@ -112,7 +111,6 @@ Ext.define('PVE.window.BulkAction', {
 		    hidden: true // only visible if running container chosen
 		}
 	    );
-	    /*jslint confusion: false*/
 	} else if (me.action === 'startall') {
 	    items.push({
 		xtype: 'hiddenfield',
