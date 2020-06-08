@@ -21,6 +21,8 @@ use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::VZDump::Common;
 use PVE::VZDump::Plugin;
+use PVE::Tools qw(extract_param);
+use PVE::API2Tools;
 
 my @posix_filesystems = qw(ext3 ext4 nfs nfs4 reiserfs xfs);
 
@@ -1165,6 +1167,41 @@ sub stop_running_backups {
 	}
 	die "stopping backup process $task->{pid} failed\n" if $i == 0;
     }
+}
+
+sub get_included_guests {
+    my ($job) = @_;
+
+    my $nodename = PVE::INotify::nodename();
+    my $vmids = [];
+
+    # convert string lists to arrays
+    if ($job->{pool}) {
+	$vmids = PVE::API2Tools::get_resource_pool_guest_members($job->{pool});
+    } else {
+	$vmids = [ PVE::Tools::split_list(extract_param($job, 'vmid')) ];
+    }
+
+    my $skiplist = [];
+    if (!$job->{all}) {
+	if (!$job->{node} || $job->{node} eq $nodename) {
+	    my $vmlist = PVE::Cluster::get_vmlist();
+	    my $localvmids = [];
+	    foreach my $vmid (@{$vmids}) {
+		my $d = $vmlist->{ids}->{$vmid};
+		if ($d && ($d->{node} ne $nodename)) {
+		    push @{$skiplist}, $vmid;
+		} else {
+		    push @{$localvmids}, $vmid;
+		}
+	    }
+	    $vmids = $localvmids;
+	}
+
+	$job->{vmids} = PVE::VZDump::check_vmids(@{$vmids})
+    }
+
+    return ($vmids, $skiplist);
 }
 
 1;
