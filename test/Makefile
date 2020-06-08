@@ -5,7 +5,7 @@ all:
 export PERLLIB=..
 
 .PHONY: check
-check: replication_test balloon_test mail_test
+check: replication_test balloon_test mail_test vzdump_test
 
 balloon_test:
 	./balloontest.pl
@@ -20,6 +20,9 @@ replication_test:
 
 mail_test:
 	./mail_test.pl
+
+vzdump_test:
+	./vzdump_guest_included_test.pl
 
 .PHONY: install
 install:
