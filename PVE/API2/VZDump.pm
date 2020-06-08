@@ -143,7 +143,7 @@ __PACKAGE__->register_method ({
 	}
 
 	my $taskid;
-	$taskid = ${$vmids}[0] if scalar(@{$vmids}) == 1;
+	$taskid = $vmids->[0] if scalar(@{$vmids}) == 1;
 
 	return $rpcenv->fork_worker('vzdump', $taskid, $user, $worker);
    }});
