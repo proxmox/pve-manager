@@ -107,13 +107,15 @@ sub format_size {
     }
 
     my $mb = $size / (1024*1024);
-
     if ($mb < 1024) {
 	return int ($mb) . "MB";
-    } else {
-	my $gb = $mb / 1024;
+    }
+    my $gb = $mb / 1024;
+    if ($gb < 1024) {
 	return sprintf ("%.2fGB", $gb);
     }
+    my $tb = $gb / 1024;
+    return sprintf ("%.2fTB", $tb);
 }
 
 sub format_time {
