@@ -34,7 +34,7 @@ Ext.define('PVE.sdn.Browser', {
 	    });
 	}
 
-//	if (caps.sdn['Permissions.Modify']) {
+	if (caps.sdn['Permissions.Modify']) {
 	    me.items.push({
 		xtype: 'pveACLView',
 		title: gettext('Permissions'),
@@ -42,7 +42,7 @@ Ext.define('PVE.sdn.Browser', {
 		itemId: 'permissions',
 		path: '/sdn/zones/' + sdnid
 	    });
-//	}
+	}
 
 	me.callParent();
    }
