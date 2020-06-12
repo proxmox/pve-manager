@@ -411,7 +411,7 @@ __PACKAGE__->register_method({
 
 		    foreach my $id (keys %{$sdns}) {
 			my $sdn = $sdns->{$id};
-			#next if !$rpcenv->check($authuser, "/sdn/$id", [ 'SDN.Audit' ], 1);
+			next if !$rpcenv->check($authuser, "/sdn/zones/$id", [ 'SDN.Audit' ], 1);
 			my $entry = {
 			    id => "sdn/$node/$id",
 			    sdn => $id,
