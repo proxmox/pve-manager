@@ -116,7 +116,6 @@ JSSRC= 				                 	\
 	ceph/Config.js					\
 	ceph/Log.js					\
 	ceph/CephInstallWizard.js			\
-	node/Disks.js					\
 	node/LVM.js					\
 	node/LVMThin.js					\
 	node/Directory.js				\

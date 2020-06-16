@@ -275,7 +275,8 @@ Ext.define('PVE.node.Config', {
 		    itemId: 'storage',
 		    expandedOnInit: true,
 		    iconCls: 'fa fa-hdd-o',
-		    xtype: 'pveNodeDiskList'
+		    nodename: nodename,
+		    xtype: 'pmxDiskList'
 		},
 		{
 		    title: 'LVM',
