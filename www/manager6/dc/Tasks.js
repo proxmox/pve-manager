@@ -44,7 +44,8 @@ Ext.define('PVE.dc.Tasks', {
 	    }
 
 	    var win = Ext.create('Proxmox.window.TaskViewer', {
-		upid: rec.data.upid
+		upid: rec.data.upid,
+		endtime: rec.data.endtime,
 	    });
 	    win.show();
 	};
