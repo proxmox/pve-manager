@@ -22,7 +22,7 @@ Ext.define('PVE.node.CreateDirectory', {
 	    method: 'POST',
 	    items: [
 		{
-		    xtype: 'pveDiskSelector',
+		    xtype: 'pmxDiskSelector',
 		    name: 'device',
 		    nodename: me.nodename,
 		    diskType: 'unused',

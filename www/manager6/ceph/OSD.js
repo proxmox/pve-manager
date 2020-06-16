@@ -34,7 +34,7 @@ Ext.define('PVE.CephCreateOsd', {
 		    },
 		    column1: [
 			{
-			    xtype: 'pveDiskSelector',
+			    xtype: 'pmxDiskSelector',
 			    name: 'dev',
 			    nodename: me.nodename,
 			    diskType: 'unused',
@@ -44,7 +44,7 @@ Ext.define('PVE.CephCreateOsd', {
 		    ],
 		    column2: [
 			{
-			    xtype: 'pveDiskSelector',
+			    xtype: 'pmxDiskSelector',
 			    name: 'db_dev',
 			    nodename: me.nodename,
 			    diskType: 'journal_disks',
@@ -80,7 +80,7 @@ Ext.define('PVE.CephCreateOsd', {
 		    ],
 		    advancedColumn2: [
 			{
-			    xtype: 'pveDiskSelector',
+			    xtype: 'pmxDiskSelector',
 			    name: 'wal_dev',
 			    nodename: me.nodename,
 			    diskType: 'journal_disks',
