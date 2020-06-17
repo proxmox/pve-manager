@@ -81,7 +81,7 @@ sub add_metric_data {
     my $data_length = length($data) // 0;
     my $dataq_len = length($txn->{data}) // 0;
 
-    if ($dataq_len > ($batch_size / 2) && ($dataq_len + $data_length) > $batch_size) {
+    if (($dataq_len + $data_length) >= $batch_size) {
 	$class->flush_data($txn);
     }
     $txn->{data} //= '';
