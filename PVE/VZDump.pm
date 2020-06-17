@@ -1044,29 +1044,23 @@ sub exec_backup {
 	if scalar(@{$self->{skiplist}});
 
     my $tasklist = [];
+    my $vzdump_plugins =  {};
+    foreach my $plugin (@{$self->{plugins}}) {
+	my $type = $plugin->type();
+	next if exists $vzdump_plugins->{$type};
+	$vzdump_plugins->{$type} = $plugin;
+    }
 
-    if ($opts->{all}) {
-	foreach my $plugin (@{$self->{plugins}}) {
-	    my $vmlist = $plugin->vmlist();
-	    foreach my $vmid (sort @$vmlist) {
-		next if grep { $_ eq  $vmid } @{$opts->{exclude}};
-		next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Backup' ], 1);
-	        push @$tasklist, { vmid => $vmid,  state => 'todo', plugin => $plugin, mode => $opts->{mode} };
-	    }
-	}
-    } else {
-	foreach my $vmid (sort @{$opts->{vmids}}) {
-	    my $plugin;
-	    foreach my $pg (@{$self->{plugins}}) {
-		my $vmlist = $pg->vmlist();
-		if (grep { $_ eq  $vmid } @$vmlist) {
-		    $plugin = $pg;
-		    last;
-		}
-	    }
-	    $rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Backup' ]);
-	    push @$tasklist, { vmid => $vmid,  state => 'todo', plugin => $plugin, mode => $opts->{mode} };
-	}
+    my $vmlist = PVE::Cluster::get_vmlist();
+    foreach my $vmid (sort @{$opts->{vmids}}) {
+	my $guest_type = $vmlist->{ids}->{$vmid}->{type};
+	my $plugin = $vzdump_plugins->{$guest_type};
+	next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Backup' ], $opts->{all});
+	push @$tasklist, {
+	    vmid => $vmid,
+	    state => 'todo',
+	    plugin => $plugin,
+	    mode => $opts->{mode} };
     }
 
     # Use in-memory files for the outer hook logs to pass them to sendmail.
@@ -1174,34 +1168,38 @@ sub get_included_guests {
 
     my $nodename = PVE::INotify::nodename();
     my $vmids = [];
+    my $vmids_per_node = {};
 
-    # convert string lists to arrays
+    my $vmlist = PVE::Cluster::get_vmlist();
+
     if ($job->{pool}) {
 	$vmids = PVE::API2Tools::get_resource_pool_guest_members($job->{pool});
+    } elsif ($job->{vmid}) {
+	$vmids = [ PVE::Tools::split_list($job->{vmid}) ];
     } else {
-	$vmids = [ PVE::Tools::split_list(extract_param($job, 'vmid')) ];
-    }
+	# all or exclude
+	my @exclude = PVE::Tools::split_list($job->{exclude});
+	@exclude = @{PVE::VZDump::check_vmids(@exclude)};
+	my $excludehash = { map { $_ => 1 } @exclude };
 
-    my $skiplist = [];
-    if (!$job->{all}) {
-	if (!$job->{node} || $job->{node} eq $nodename) {
-	    my $vmlist = PVE::Cluster::get_vmlist();
-	    my $localvmids = [];
-	    foreach my $vmid (@{$vmids}) {
-		my $d = $vmlist->{ids}->{$vmid};
-		if ($d && ($d->{node} ne $nodename)) {
-		    push @{$skiplist}, $vmid;
-		} else {
-		    push @{$localvmids}, $vmid;
-		}
-	    }
-	    $vmids = $localvmids;
+	for my $id (keys %{ $vmlist->{ids} }) {
+	    next if $excludehash->{$id};
+	    push @$vmids, $id;
 	}
+    }
+    $vmids = [ sort {$a <=> $b} @$vmids];
 
-	$job->{vmids} = PVE::VZDump::check_vmids(@{$vmids})
+    $vmids = PVE::VZDump::check_vmids(@$vmids);
+
+    foreach my $vmid (@$vmids) {
+	my $vmid_data = $vmlist->{ids}->{$vmid};
+	my $node = $vmid_data->{node};
+
+	next if (defined $job->{node} && $job->{node} ne $node);
+	push @{$vmids_per_node->{$node}}, $vmid;
     }
 
-    return ($vmids, $skiplist);
+    return $vmids_per_node;
 }
 
 1;

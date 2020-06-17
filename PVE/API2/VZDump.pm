@@ -69,18 +69,20 @@ __PACKAGE__->register_method ({
 	return 'OK' if $param->{node} && $param->{node} ne $nodename;
 
 	my $cmdline = PVE::VZDump::Common::command_line($param);
-	my ($vmids, $skiplist) = PVE::VZDump::get_included_guests($param);
+
+	my $vmids_per_node = PVE::VZDump::get_included_guests($param);
+
+	my $local_vmids = delete $vmids_per_node->{$nodename} // [];
+
+	my $skiplist = [ map { @$_ } values $vmids_per_node->%* ];
 
 	if($param->{stop}){
 	    PVE::VZDump::stop_running_backups();
-	    return 'OK' if !scalar(@{$vmids});
+	    return 'OK' if !scalar(@{$local_vmids});
 	}
 
 	# silent exit if specified VMs run on other nodes
-	return "OK" if !scalar(@{$vmids}) && !$param->{all};
-
-	my @exclude = PVE::Tools::split_list(extract_param($param, 'exclude'));
-	$param->{exclude} = PVE::VZDump::check_vmids(@exclude);
+	return "OK" if !scalar(@{$local_vmids}) && !$param->{all};
 
 	# exclude-path list need to be 0 separated
 	if (defined($param->{'exclude-path'})) {
@@ -94,7 +96,7 @@ __PACKAGE__->register_method ({
 	}
 
 	die "you can only backup a single VM with option --stdout\n"
-	    if $param->{stdout} && scalar(@{$vmids}) != 1;
+	    if $param->{stdout} && scalar(@{$local_vmids}) != 1;
 
 	$rpcenv->check($user, "/storage/$param->{storage}", [ 'Datastore.AllocateSpace' ])
 	    if $param->{storage};
@@ -106,6 +108,7 @@ __PACKAGE__->register_method ({
 		die "interrupted by signal\n";
 	    };
 
+	    $param->{vmids} = $local_vmids;
 	    my $vzdump = PVE::VZDump->new($cmdline, $param, $skiplist);
 
 	    eval {
@@ -143,7 +146,7 @@ __PACKAGE__->register_method ({
 	}
 
 	my $taskid;
-	$taskid = $vmids->[0] if scalar(@{$vmids}) == 1;
+	$taskid = $local_vmids->[0] if scalar(@{$local_vmids}) == 1;
 
 	return $rpcenv->fork_worker('vzdump', $taskid, $user, $worker);
    }});
