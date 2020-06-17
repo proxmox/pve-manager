@@ -91,6 +91,9 @@ __PACKAGE__->register_method ({
     name => 'upload_custom_cert',
     path => 'custom',
     method => 'POST',
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
     description => 'Upload or update custom certificate chain and key.',
     protected => 1,
     proxyto => 'node',
@@ -163,6 +166,9 @@ __PACKAGE__->register_method ({
     name => 'remove_custom_cert',
     path => 'custom',
     method => 'DELETE',
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
     description => 'DELETE custom certificate chain and key.',
     protected => 1,
     proxyto => 'node',
