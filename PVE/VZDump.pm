@@ -166,7 +166,7 @@ sub check_vmids {
     my (@vmids) = @_;
 
     my $res = [];
-    foreach my $vmid (@vmids) {
+    for my $vmid (sort {$a <=> $b} @vmids) {
 	die "ERROR: strange VM ID '${vmid}'\n" if $vmid !~ m/^\d+$/;
 	$vmid = int ($vmid); # remove leading zeros
 	next if !$vmid;
@@ -1187,15 +1187,12 @@ sub get_included_guests {
 	    push @$vmids, $id;
 	}
     }
-    $vmids = [ sort {$a <=> $b} @$vmids];
+    $vmids = check_vmids(@$vmids);
 
-    $vmids = PVE::VZDump::check_vmids(@$vmids);
-
-    foreach my $vmid (@$vmids) {
-	my $vmid_data = $vmlist->{ids}->{$vmid};
-	my $node = $vmid_data->{node};
-
+    for my $vmid (@$vmids) {
+	my $node = $vmlist->{ids}->{$vmid}->{node};
 	next if (defined $job->{node} && $job->{node} ne $node);
+
 	push @{$vmids_per_node->{$node}}, $vmid;
     }
 
