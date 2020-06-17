@@ -1057,10 +1057,11 @@ sub exec_backup {
 	my $plugin = $vzdump_plugins->{$guest_type};
 	next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Backup' ], $opts->{all});
 	push @$tasklist, {
-	    vmid => $vmid,
-	    state => 'todo',
+	    mode => $opts->{mode},
 	    plugin => $plugin,
-	    mode => $opts->{mode} };
+	    state => 'todo',
+	    vmid => $vmid,
+	};
     }
 
     # Use in-memory files for the outer hook logs to pass them to sendmail.
