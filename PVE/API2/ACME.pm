@@ -56,7 +56,9 @@ my $order_certificate = sub {
     for my $auth_url (@{$order->{authorizations}}) {
 	print "\nGetting authorization details from '$auth_url'\n";
 	my $auth = $acme->get_authorization($auth_url);
-	my $domain = $auth->{identifier}->{value};
+
+	# force lower case, like get_acme_conf does
+	my $domain = lc($auth->{identifier}->{value});
 	if ($auth->{status} eq 'valid') {
 	    print "$domain is already validated!\n";
 	} else {

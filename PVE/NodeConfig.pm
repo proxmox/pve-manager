@@ -236,6 +236,9 @@ sub write_node_config {
     return $raw;
 }
 
+# we always convert domain values to lower case, since DNS entries are not case
+# sensitive and ACME implementations might convert the ordered identifiers
+# to lower case
 sub get_acme_conf {
     my ($node_conf, $noerr) = @_;
 
@@ -253,6 +256,10 @@ sub get_acme_conf {
 	my $standalone_domains = delete($res->{domains}) // '';
 	$res->{domains} = {};
 	for my $domain (split(";", $standalone_domains)) {
+	    $domain = lc($domain);
+	    die "duplicate domain '$domain' in ACME config properties\n"
+		if defined($res->{domains}->{$domain});
+
 	    $res->{domains}->{$domain}->{plugin} = 'standalone';
 	    $res->{domains}->{$domain}->{_configkey} = 'acme';
 	}
@@ -271,7 +278,7 @@ sub get_acme_conf {
 	    return undef if $noerr;
 	    die $err;
 	}
-	my $domain = delete $parsed->{domain};
+	my $domain = lc(delete $parsed->{domain});
 	if (my $exists = $res->{domains}->{$domain}) {
 	    return undef if $noerr;
 	    die "duplicate domain '$domain' in ACME config properties"
