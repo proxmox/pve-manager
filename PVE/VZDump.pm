@@ -21,7 +21,7 @@ use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::VZDump::Common;
 use PVE::VZDump::Plugin;
-use PVE::Tools qw(extract_param);
+use PVE::Tools qw(extract_param split_list);
 use PVE::API2Tools;
 
 my @posix_filesystems = qw(ext3 ext4 nfs nfs4 reiserfs xfs);
@@ -198,7 +198,7 @@ sub read_vzdump_defaults {
 	$res->{'exclude-path'} = PVE::Tools::split_args($excludes);
     }
     if (defined($res->{mailto})) {
-	my @mailto = PVE::Tools::split_list($res->{mailto});
+	my @mailto = split_list($res->{mailto});
 	$res->{mailto} = [ @mailto ];
     }
 
@@ -1176,14 +1176,13 @@ sub get_included_guests {
     if ($job->{pool}) {
 	$vmids = PVE::API2Tools::get_resource_pool_guest_members($job->{pool});
     } elsif ($job->{vmid}) {
-	$vmids = [ PVE::Tools::split_list($job->{vmid}) ];
+	$vmids = [ split_list($job->{vmid}) ];
     } else {
 	# all or exclude
-	my @exclude = PVE::Tools::split_list($job->{exclude});
-	@exclude = @{PVE::VZDump::check_vmids(@exclude)};
-	my $excludehash = { map { $_ => 1 } @exclude };
+	my $exclude = check_vmids(split_list($job->{exclude}));
+	my $excludehash = { map { $_ => 1 } @$exclude };
 
-	for my $id (keys %{ $vmlist->{ids} }) {
+	for my $id (keys %{$vmlist->{ids}}) {
 	    next if $excludehash->{$id};
 	    push @$vmids, $id;
 	}
