@@ -207,6 +207,8 @@
 }
 
 /* yellow ! triangle */
+.x-tree-icon-custom.pending:after,
+.x-grid-icon-custom.pending:after,
 .x-tree-icon-custom.io-error:after,
 .x-grid-icon-custom.io-error:after,
 .x-tree-icon-custom.internal-error:after,
@@ -218,6 +220,8 @@
 }
 
 /* the red x */
+.x-tree-icon-custom.error:after,
+.x-grid-icon-custom.error:after,
 .x-tree-icon-custom.offline:after,
 .x-grid-icon-custom.offline:after,
 .x-tree-icon-custom.ha-error:after,
