@@ -25,6 +25,16 @@ PVE::JSONSchema::register_format('pve-acme-domain', sub {
     die "value '$domain' does not look like a valid domain name!\n";
 });
 
+PVE::JSONSchema::register_format('pve-acme-alias', sub {
+    my ($domain, $noerr) = @_;
+
+    my $label = qr/[a-z0-9_][a-z0-9_-]*/i;
+
+    return $domain if $domain =~ /^$label(?:\.$label)+$/;
+    return undef if $noerr;
+    die "value '$domain' does not look like a valid domain name!\n";
+});
+
 sub config_file {
     my ($node) = @_;
 
@@ -107,7 +117,7 @@ my $acme_domain_desc = {
     },
     alias => {
 	type => 'string',
-	format => 'pve-acme-domain',
+	format => 'pve-acme-alias',
 	format_description => 'domain',
 	description => 'Alias for the Domain to verify ACME Challenge over DNS',
 	optional => 1,
