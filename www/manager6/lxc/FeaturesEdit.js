@@ -108,7 +108,13 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 	    }
 	    this.callParent([res]);
 	}
-    }
+    },
+
+    initComponent: function() {
+	let me = this;
+	me.mounts = []; // reset state
+	me.callParent();
+    },
 });
 
 Ext.define('PVE.lxc.FeaturesEdit', {
