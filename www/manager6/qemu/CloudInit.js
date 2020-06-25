@@ -192,6 +192,8 @@ Ext.define('PVE.qemu.CloudInit', {
 	me.editorConfig.url = me.baseurl + '/config';
 	me.editorConfig.pveSelNode = me.pveSelNode;
 
+	let caps_ci = caps.vms['VM.Config.Cloudinit'];
+	    || caps.vms['VM.Config.Network'];
 	/* editor is string and object */
 	me.rows = {
 	    ciuser: {
@@ -199,7 +201,7 @@ Ext.define('PVE.qemu.CloudInit', {
 		iconCls: 'fa fa-user',
 		never_delete: true,
 		defaultValue: '',
-		editor: caps.vms['VM.Config.Options'] ? {
+		editor: caps_ci ? {
 		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('User'),
 		    items: [
@@ -220,7 +222,7 @@ Ext.define('PVE.qemu.CloudInit', {
 		header: gettext('Password'),
 		iconCls: 'fa fa-unlock',
 		defaultValue: '',
-		editor: caps.vms['VM.Config.Options'] ? {
+		editor: caps_ci ? {
 		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Password'),
 		    items: [
@@ -255,7 +257,7 @@ Ext.define('PVE.qemu.CloudInit', {
 	    sshkeys: {
 		header: gettext('SSH public key'),
 		iconCls: 'fa fa-key',
-		editor: caps.vms['VM.Config.Network'] ? 'PVE.qemu.SSHKeyEdit' : undefined,
+		editor: caps_ci ? 'PVE.qemu.SSHKeyEdit' : undefined,
 		never_delete: true,
 		renderer: function(value) {
 		    value = decodeURIComponent(value);
