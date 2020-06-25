@@ -26,13 +26,13 @@ PVE::JSONSchema::register_format('pve-acme-domain', sub {
 });
 
 PVE::JSONSchema::register_format('pve-acme-alias', sub {
-    my ($domain, $noerr) = @_;
+    my ($alias, $noerr) = @_;
 
     my $label = qr/[a-z0-9_][a-z0-9_-]*/i;
 
-    return $domain if $domain =~ /^$label(?:\.$label)+$/;
+    return $alias if $alias =~ /^$label(?:\.$label)+$/;
     return undef if $noerr;
-    die "value '$domain' does not look like a valid domain name!\n";
+    die "value '$alias' does not look like a valid alias name!\n";
 });
 
 sub config_file {
