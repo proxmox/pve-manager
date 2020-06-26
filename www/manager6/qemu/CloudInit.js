@@ -192,8 +192,7 @@ Ext.define('PVE.qemu.CloudInit', {
 	me.editorConfig.url = me.baseurl + '/config';
 	me.editorConfig.pveSelNode = me.pveSelNode;
 
-	let caps_ci = caps.vms['VM.Config.Cloudinit'];
-	    || caps.vms['VM.Config.Network'];
+	let caps_ci = caps.vms['VM.Config.Cloudinit'] || caps.vms['VM.Config.Network'];
 	/* editor is string and object */
 	me.rows = {
 	    ciuser: {
