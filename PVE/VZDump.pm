@@ -449,7 +449,9 @@ sub new {
     }
 
     if (defined($opts->{storage}) && $opts->{stdout}) {
-	die "unable to use option 'storage' with option 'stdout'\n";
+	die "cannot use options 'storage' and 'stdout' at the same time\n";
+    } elsif (defined($opts->{storage}) && defined($opts->{dumpdir})) {
+	die "cannot use options 'storage' and 'dumpdir' at the same time\n";
     }
 
     if (!$opts->{dumpdir} && !$opts->{storage}) {
