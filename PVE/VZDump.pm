@@ -405,12 +405,10 @@ sub new {
 
     my $defaults = read_vzdump_defaults();
 
-    my $maxfiles = $opts->{maxfiles}; # save here, because we overwrite with default
-
     $opts->{remove} = 1 if !defined($opts->{remove});
 
     foreach my $k (keys %$defaults) {
-	next if $k eq 'exclude-path'; # dealt with separately
+	next if $k eq 'exclude-path' || $k eq 'maxfiles'; # dealt with separately
 	if ($k eq 'dumpdir' || $k eq 'storage') {
 	    $opts->{$k} = $defaults->{$k} if !defined ($opts->{dumpdir}) &&
 		!defined ($opts->{storage});
@@ -466,13 +464,15 @@ sub new {
 	$opts->{dumpdir} = $info->{dumpdir};
 	$opts->{scfg} = $info->{scfg};
 	$opts->{pbs} = $info->{pbs};
-	$maxfiles //= $info->{maxfiles};
+	$opts->{maxfiles} //= $info->{maxfiles};
     } elsif ($opts->{dumpdir}) {
 	$errors .= "dumpdir '$opts->{dumpdir}' does not exist"
 	    if ! -d $opts->{dumpdir};
     } else {
 	die "internal error";
     }
+
+    $opts->{maxfiles} //= $defaults->{maxfiles};
 
     if ($opts->{tmpdir} && ! -d $opts->{tmpdir}) {
 	$errors .= "\n" if $errors;
@@ -485,10 +485,7 @@ sub new {
 	die "$errors\n";
     }
 
-    $opts->{maxfiles} = $maxfiles if defined($maxfiles);
-
     return $self;
-
 }
 
 sub get_mount_info {
