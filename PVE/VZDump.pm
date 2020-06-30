@@ -84,19 +84,18 @@ sub storage_info {
 
     PVE::Storage::activate_storage($cfg, $storage);
 
+    my $info = {
+	scfg => $scfg,
+	maxfiles => $scfg->{maxfiles},
+    };
+
     if ($type eq 'pbs') {
-	return {
-	    scfg => $scfg,
-	    maxfiles => $scfg->{maxfiles},
-	    pbs => 1,
-	};
+	$info->{pbs} = 1;
     } else {
-	return {
-	    scfg => $scfg,
-	    dumpdir => PVE::Storage::get_backup_dir($cfg, $storage),
-	    maxfiles => $scfg->{maxfiles},
-	};
+	$info->{dumpdir} = PVE::Storage::get_backup_dir($cfg, $storage);
     }
+
+    return $info;
 }
 
 sub format_size {
