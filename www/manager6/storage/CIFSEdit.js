@@ -36,18 +36,39 @@ Ext.define('PVE.storage.CIFSScan', {
 	me.callParent();
     },
 
-    setServer: function(server) {
-	this.cifsServer = server;
+    resetProxy: function() {
+	let me = this;
+	me.lastQuery = null;
+	if (!me.readOnly && !me.disabled) {
+	    if (me.isExpanded) {
+		me.collapse();
+	    }
+	}
     },
 
+    setServer: function(server) {
+	if (this.cifsServer !== server) {
+	    this.cifsServer = server;
+	    this.resetProxy();
+	}
+    },
     setUsername: function(username) {
-	this.cifsUsername = username;
+	if (this.cifsUsername !== username) {
+	    this.cifsUsername = username;
+	    this.resetProxy();
+	}
     },
     setPassword: function(password) {
-	this.cifsPassword = password;
+	if (this.cifsPassword !== password) {
+	    this.cifsPassword = password;
+	    this.resetProxy();
+	}
     },
     setDomain: function(domain) {
-	this.cifsDomain = domain;
+	if (this.cifsDomain !== domain) {
+	    this.cifsDomain = domain;
+	    this.resetProxy();
+	}
     },
 
     initComponent: function() {
