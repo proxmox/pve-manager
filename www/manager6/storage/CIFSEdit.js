@@ -9,10 +9,9 @@ Ext.define('PVE.storage.CIFSScan', {
     matchFieldWidth: false,
     listConfig: {
 	loadingText: gettext('Scanning...'),
-	width: 350
+	width: 350,
     },
-    doRawQuery: function() {
-    },
+    doRawQuery: Ext.emptyFn,
 
     onTriggerClick: function() {
 	var me = this;
@@ -44,37 +43,35 @@ Ext.define('PVE.storage.CIFSScan', {
     setUsername: function(username) {
 	this.cifsUsername = username;
     },
-
     setPassword: function(password) {
 	this.cifsPassword = password;
     },
-
     setDomain: function(domain) {
 	this.cifsDomain = domain;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
 	    me.nodename = 'localhost';
 	}
 
-	var store = Ext.create('Ext.data.Store', {
+	let store = Ext.create('Ext.data.Store', {
 	    fields: ['description', 'share'],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/cifs'
-	    }
+		url: '/api2/json/nodes/' + me.nodename + '/scan/cifs',
+	    },
 	});
 	store.sort('share', 'ASC');
 
 	Ext.apply(me, {
-	    store: store
+	    store: store,
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.storage.CIFSInputPanel', {
@@ -82,7 +79,7 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 
     onlineHelp: 'storage_cifs',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var passwordfield = Ext.createWidget(me.isCreate ? 'textfield' : 'displayfield', {
@@ -95,13 +92,12 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 	    minLength: 1,
 	    listeners: {
 		change: function(f, value) {
-
 		    if (me.isCreate) {
 			var exportField = me.down('field[name=share]');
 			exportField.setPassword(value);
 		    }
-		}
-	    }
+		},
+	    },
 	});
 
 	me.column1 = [
@@ -117,8 +113,8 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 			    var exportField = me.down('field[name=share]');
 			    exportField.setServer(value);
 			}
-		    }
-		}
+		    },
+		},
 	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
@@ -135,14 +131,14 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 			var exportField = me.down('field[name=share]');
 			exportField.setUsername(value);
 
-			if (value == "") {
+			if (value === "") {
 			    passwordfield.disable();
 			} else {
 			    passwordfield.enable();
 			}
 			passwordfield.validate();
-		    }
-		}
+		    },
+		},
 	    },
 	    passwordfield,
 	    {
@@ -150,8 +146,8 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 		name: 'share',
 		value: '',
 		fieldLabel: 'Share',
-		allowBlank: false
-	    }
+		allowBlank: false,
+	    },
 	];
 
 	me.column2 = [
@@ -163,7 +159,7 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 		minValue: 0,
 		maxValue: 365,
 		value: me.isCreate ? '1' : undefined,
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'pveContentTypeSelector',
@@ -171,7 +167,7 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 		value: 'images',
 		multiSelect: true,
 		fieldLabel: gettext('Content'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
@@ -182,15 +178,14 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 		listeners: {
 		    change: function(f, value) {
 			if (me.isCreate) {
-
-			    var exportField = me.down('field[name=share]');
+			    let exportField = me.down('field[name=share]');
 			    exportField.setDomain(value);
 			}
-		    }
-		}
-	    }
+		    },
+		},
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });
