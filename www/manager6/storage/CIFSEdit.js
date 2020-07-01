@@ -21,11 +21,12 @@ Ext.define('PVE.storage.CIFSScan', {
 	}
 
 	var params = {};
-	if (me.cifsUsername && me.cifsPassword) {
-	    params.username =  me.cifsUsername;
+	if (me.cifsUsername) {
+	    params.username = me.cifsUsername;
+	}
+	if (me.cifsPassword) {
 	    params.password = me.cifsPassword;
 	}
-
 	if (me.cifsDomain) {
 	    params.domain = me.cifsDomain;
 	}
@@ -122,24 +123,6 @@ Ext.define('PVE.storage.CIFSInputPanel', {
     initComponent: function() {
 	var me = this;
 
-	var passwordfield = Ext.createWidget(me.isCreate ? 'textfield' : 'displayfield', {
-	    inputType: 'password',
-	    name: 'password',
-	    value: me.isCreate ? '' : '********',
-	    fieldLabel: gettext('Password'),
-	    allowBlank: false,
-	    disabled: me.isCreate,
-	    minLength: 1,
-	    listeners: {
-		change: function(f, value) {
-		    if (me.isCreate) {
-			var exportField = me.down('field[name=share]');
-			exportField.setPassword(value);
-		    }
-		},
-	    },
-	});
-
 	me.column1 = [
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
@@ -162,7 +145,6 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 		value: '',
 		fieldLabel: gettext('Username'),
 		emptyText: gettext('Guest user'),
-		allowBlank: true,
 		listeners: {
 		    change: function(f, value) {
 			if (!me.isCreate) {
@@ -170,17 +152,24 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 			}
 			var exportField = me.down('field[name=share]');
 			exportField.setUsername(value);
-
-			if (value === "") {
-			    passwordfield.disable();
-			} else {
-			    passwordfield.enable();
-			}
-			passwordfield.validate();
 		    },
 		},
 	    },
-	    passwordfield,
+	    {
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
+		inputType: 'password',
+		name: 'password',
+		value: me.isCreate ? '' : '********',
+		emptyText: me.isCreate ? gettext('None') : '',
+		fieldLabel: gettext('Password'),
+		minLength: 1,
+		listeners: {
+		    change: function(f, value) {
+			let exportField = me.down('field[name=share]');
+			exportField.setPassword(value);
+		    },
+		},
+	    },
 	    {
 		xtype: me.isCreate ? 'pveCIFSScan' : 'displayfield',
 		name: 'share',
