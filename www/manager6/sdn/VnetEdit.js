@@ -51,9 +51,9 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	    xtype: 'proxmoxintegerfield',
 	    name: 'tag',
 	    minValue: 1,
-	    maxValue: 16000000,
+	    maxValue: 16777216,
 	    fieldLabel: gettext('Tag'),
-	    allowBlank: false,
+	    allowBlank: true,
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
