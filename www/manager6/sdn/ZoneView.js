@@ -117,6 +117,11 @@ Ext.define('PVE.sdn.ZoneView', {
 		    renderer: PVE.Utils.format_sdnzone_type
 		},
 		{
+		    header: 'MTU',
+		    flex: 1,
+		    dataIndex: 'mtu',
+		},
+		{
 		    header: gettext('Nodes'),
 		    flex: 3,
 		    dataIndex: 'nodes',

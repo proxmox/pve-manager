@@ -111,12 +111,7 @@ Ext.define('PVE.sdn.VnetView', {
 		    header: 'MAC',
 		    flex: 1,
 		    dataIndex: 'mac',
-		},
-		{
-		    header: 'MTU',
-		    flex: 1,
-		    dataIndex: 'mtu',
-		},
+		}
 	    ],
 	    listeners: {
 		activate: reload,
