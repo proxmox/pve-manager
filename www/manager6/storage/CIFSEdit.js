@@ -92,6 +92,25 @@ Ext.define('PVE.storage.CIFSScan', {
 	});
 
 	me.callParent();
+
+	let picker = me.getPicker();
+	// don't use monStoreErrors directly, it doesn't copes well with comboboxes
+	picker.mon(store, 'beforeload', function(s, operation, eOpts) {
+	    picker.unmask();
+	    delete picker.minHeight;
+	});
+	picker.mon(store.proxy, 'afterload', function(proxy, request, success) {
+	    if (success) {
+		Proxmox.Utils.setErrorMask(picker, false);
+		return;
+	    }
+	    let error = request._operation.getError();
+	    let msg = Proxmox.Utils.getResponseErrorMessage(error);
+	    if (msg) {
+		picker.minHeight = 100;
+	    }
+	    Proxmox.Utils.setErrorMask(picker, msg);
+	});
     },
 });
 
