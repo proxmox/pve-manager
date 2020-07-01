@@ -855,6 +855,23 @@ sub get_shell_command  {
     }
 }
 
+my $get_vnc_connection_info = sub {
+    my $node = shift;
+
+    my $remote_cmd = [];
+
+    my ($remip, $family);
+    if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
+	($remip, $family) = PVE::Cluster::remote_node_ip($node);
+	$remote_cmd = ['/usr/bin/ssh', '-e', 'none', '-t', $remip , '--'];
+    } else {
+	$family = PVE::Tools::get_host_address_family($node);
+    }
+    my $port = PVE::Tools::next_vnc_port($family);
+
+    return ($port, $remote_cmd);
+};
+
 __PACKAGE__->register_method ({
     name => 'vncshell',
     path => 'vncshell',
@@ -917,36 +934,20 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	my $rpcenv = PVE::RPCEnvironment::get();
-
 	my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
 
 	raise_perm_exc("realm != pam") if $realm ne 'pam';
-
 	raise_perm_exc('user != root@pam') if $param->{upgrade} && $user ne 'root@pam';
 
 	my $node = $param->{node};
 
 	my $authpath = "/nodes/$node";
-
 	my $ticket = PVE::AccessControl::assemble_vnc_ticket($user, $authpath);
 
 	$sslcert = PVE::Tools::file_get_contents("/etc/pve/pve-root-ca.pem", 8192)
 	    if !$sslcert;
 
-	my ($remip, $family);
-
-	if ($node ne PVE::INotify::nodename()) {
-	    ($remip, $family) = PVE::Cluster::remote_node_ip($node);
-	} else {
-	    $family = PVE::Tools::get_host_address_family($node);
-	}
-
-	my $port = PVE::Tools::next_vnc_port($family);
-
-	# NOTE: vncterm VNC traffic is already TLS encrypted,
-	# so we select the fastest chipher here (or 'none'?)
-	my $remcmd = $remip ?
-	    ['/usr/bin/ssh', '-e', 'none', '-t', $remip] : [];
+	my ($port, $remcmd) = $get_vnc_connection_info->($node);
 
 	# FIXME: remove with 6.0
 	if ($param->{upgrade}) {
@@ -956,17 +957,15 @@ __PACKAGE__->register_method ({
 
 	my $timeout = 10;
 
-	my $cmd = ['/usr/bin/vncterm', '-rfbport', $port,
-		   '-timeout', $timeout, '-authpath', $authpath,
-		   '-perm', 'Sys.Console'];
+	my $cmd = ['/usr/bin/vncterm',
+	    '-rfbport', $port,
+	    '-timeout', $timeout,
+	    '-authpath', $authpath,
+	    '-perm', 'Sys.Console',
+	];
 
-	if ($param->{width}) {
-	    push @$cmd, '-width', $param->{width};
-	}
-
-	if ($param->{height}) {
-	    push @$cmd, '-height', $param->{height};
-	}
+	push @$cmd, '-width', $param->{width} if $param->{width};
+	push @$cmd, '-height', $param->{height} if $param->{height};
 
 	if ($param->{websocket}) {
 	    $ENV{PVE_VNC_TICKET} = $ticket; # pass ticket to vncterm
@@ -1055,29 +1054,15 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	my $rpcenv = PVE::RPCEnvironment::get();
-
 	my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
-
 	raise_perm_exc("realm != pam") if $realm ne 'pam';
 
 	my $node = $param->{node};
-
 	my $authpath = "/nodes/$node";
-
 	my $ticket = PVE::AccessControl::assemble_vnc_ticket($user, $authpath);
 
-	my ($remip, $family);
+	my ($port, $remcmd) = $get_vnc_connection_info->($node);
 
-	if ($node ne 'localhost' && $node ne PVE::INotify::nodename()) {
-	    ($remip, $family) = PVE::Cluster::remote_node_ip($node);
-	} else {
-	    $family = PVE::Tools::get_host_address_family($node);
-	}
-
-	my $port = PVE::Tools::next_vnc_port($family);
-
-	my $remcmd = $remip ?
-	    ['/usr/bin/ssh', '-e', 'none', '-t', $remip , '--'] : [];
 	# FIXME: remove with 6.0
 	if ($param->{upgrade}) {
 	    $param->{cmd} = 'upgrade';
@@ -1089,13 +1074,16 @@ __PACKAGE__->register_method ({
 
 	    syslog ('info', "starting termproxy $upid\n");
 
-	    my $cmd = ['/usr/bin/termproxy', $port, '--path', $authpath,
-		       '--perm', 'Sys.Console',  '--'];
+	    my $cmd = ['/usr/bin/termproxy',
+	        $port,
+		'--path', $authpath,
+		'--perm', 'Sys.Console',
+		'--'
+	    ];
 	    push  @$cmd, @$remcmd, @$shcmd;
 
 	    PVE::Tools::run_command($cmd);
 	};
-
 	my $upid = $rpcenv->fork_worker('vncshell', "", $user, $realcmd);
 
 	PVE::Tools::wait_for_vnc_port($port);
@@ -1199,7 +1187,6 @@ __PACKAGE__->register_method ({
 	my ($user, undef, $realm) = PVE::AccessControl::verify_username($authuser);
 
 	raise_perm_exc("realm != pam") if $realm ne 'pam';
-
 	raise_perm_exc('user != root@pam') if $param->{upgrade} && $user ne 'root@pam';
 
 	my $node = $param->{node};
