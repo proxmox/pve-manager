@@ -668,6 +668,11 @@ Ext.define('PVE.Utils', { utilities: {
 	     name: 'zone',
 	     hideAdd: true
 	},
+	simple: {
+	    name: 'Simple',
+	    ipanel: 'SimpleInputPanel',
+	    faIcon: 'th'
+	},
 	vlan: {
 	    name: 'VLAN',
 	    ipanel: 'VlanInputPanel',

@@ -214,6 +214,7 @@ JSSRC= 							\
 	sdn/zones/Base.js				\
 	sdn/zones/EvpnEdit.js				\
 	sdn/zones/QinQEdit.js				\
+	sdn/zones/SimpleEdit.js				\
 	sdn/zones/VlanEdit.js				\
 	sdn/zones/VxlanEdit.js				\
 	storage/Base.js					\
