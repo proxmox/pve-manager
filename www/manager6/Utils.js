@@ -1016,49 +1016,42 @@ Ext.define('PVE.Utils', { utilities: {
             function(m, addr, offset, original) { return addr; });
     },
 
-    openDefaultConsoleWindow: function(consoles, vmtype, vmid, nodename, vmname, cmd) {
+    openDefaultConsoleWindow: function(consoles, consoleType, vmid, nodename, vmname, cmd) {
 	var dv = PVE.Utils.defaultViewer(consoles);
-	PVE.Utils.openConsoleWindow(dv, vmtype, vmid, nodename, vmname, cmd);
+	PVE.Utils.openConsoleWindow(dv, consoleType, vmid, nodename, vmname, cmd);
     },
 
-    openConsoleWindow: function(viewer, vmtype, vmid, nodename, vmname, cmd) {
-	// kvm, lxc, shell, upgrade
-
-	if (vmid == undefined && (vmtype === 'kvm' || vmtype === 'lxc')) {
+    openConsoleWindow: function(viewer, consoleType, vmid, nodename, vmname, cmd) {
+	if (vmid == undefined && (consoleType === 'kvm' || consoleType === 'lxc')) {
 	    throw "missing vmid";
 	}
-
 	if (!nodename) {
 	    throw "no nodename specified";
 	}
 
 	if (viewer === 'html5') {
-	    PVE.Utils.openVNCViewer(vmtype, vmid, nodename, vmname, cmd);
+	    PVE.Utils.openVNCViewer(consoleType, vmid, nodename, vmname, cmd);
 	} else if (viewer === 'xtermjs') {
-	    Proxmox.Utils.openXtermJsViewer(vmtype, vmid, nodename, vmname, cmd);
+	    Proxmox.Utils.openXtermJsViewer(consoleType, vmid, nodename, vmname, cmd);
 	} else if (viewer === 'vv') {
-	    var url;
-	    var params = { proxy: PVE.Utils.windowHostname() };
-	    if (vmtype === 'kvm') {
+	    let url = '/nodes/' + nodename + '/spiceshell';
+	    let params = {
+		proxy: PVE.Utils.windowHostname(),
+	    };
+	    if (consoleType === 'kvm') {
 		url = '/nodes/' + nodename + '/qemu/' + vmid.toString() + '/spiceproxy';
-		PVE.Utils.openSpiceViewer(url, params);
-	    } else if (vmtype === 'lxc') {
+	    } else if (consoleType === 'lxc') {
 		url = '/nodes/' + nodename + '/lxc/' + vmid.toString() + '/spiceproxy';
-		PVE.Utils.openSpiceViewer(url, params);
-	    } else if (vmtype === 'shell') {
-		url = '/nodes/' + nodename + '/spiceshell';
-		PVE.Utils.openSpiceViewer(url, params);
-	    } else if (vmtype === 'upgrade') {
-		url = '/nodes/' + nodename + '/spiceshell';
-		params.upgrade = 1;
-		PVE.Utils.openSpiceViewer(url, params);
-	    } else if (vmtype === 'cmd') {
-		url = '/nodes/' + nodename + '/spiceshell';
+	    } else if (consoleType === 'upgrade') {
+		params.cmd = 'upgrade';
+	    } else if (consoleType === 'cmd') {
 		params.cmd = cmd;
-		PVE.Utils.openSpiceViewer(url, params);
+	    } else if (consoleType !== 'shell') {
+		throw `unknown spice viewer type '${consoleType}'`;
 	    }
+	    PVE.Utils.openSpiceViewer(url, params);
 	} else {
-	    throw "unknown viewer type";
+	    throw `unknown viewer type '${viewer}'`;
 	}
     },
 
@@ -1124,8 +1117,8 @@ Ext.define('PVE.Utils', { utilities: {
 	    if (link.fireEvent) {
 		link.fireEvent('onclick');
 	    } else {
-                var evt = document.createEvent("MouseEvents");
-                evt.initMouseEvent('click', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
+		let evt = document.createEvent("MouseEvents");
+		evt.initMouseEvent('click', true, true, window, 1, 0, 0, 0, 0, false, false, false, false, 0, null);
 		link.dispatchEvent(evt);
 	    }
 	};

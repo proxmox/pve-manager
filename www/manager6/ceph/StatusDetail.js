@@ -147,6 +147,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	peering: 2,
 	recovering: 2,
 	recovery_wait: 2,
+	remapped: 2,
 	repair: 2,
 	scrubbing: 2,
 	snaptrim: 2,
@@ -160,7 +161,6 @@ Ext.define('PVE.ceph.StatusDetail', {
 	inconsistent: 3,
 	recovery_toofull: 3,
 	recovery_unfound: 3,
-	remapped: 3,
 	snaptrim_error: 3,
 	stale: 3,
 	undersized: 3
