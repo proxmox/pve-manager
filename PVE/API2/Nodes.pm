@@ -384,11 +384,11 @@ __PACKAGE__->register_method({
 	},
     },
     returns => {
-        type => "array",
-        items => {
-            type => "object",
-            properties => {},
-        },
+	type => "array",
+	items => {
+	    type => "object",
+	    properties => {},
+	},
     },
     code => sub {
 	my ($param) = @_;
@@ -396,20 +396,16 @@ __PACKAGE__->register_method({
 	my $res = [ ];
 
 	my $netdev = PVE::ProcFSTools::read_proc_net_dev();
-	foreach my $dev (keys %$netdev) {
-		next if $dev !~ m/^(?:tap|veth)([1-9]\d*)i(\d+)$/;
-	        my $vmid = $1;
-	        my $netid = $2;
+	foreach my $dev (sort keys %$netdev) {
+	    next if $dev !~ m/^(?:tap|veth)([1-9]\d*)i(\d+)$/;
+	    my ($vmid, $netid) = ($1, $2);
 
-                push(
-                    @$res,
-                    {
-                        vmid => $vmid,
-                        dev  => "net$netid",
-                        in   => $netdev->{$dev}->{transmit},
-                        out  => $netdev->{$dev}->{receive},
-                    }
-                );
+	    push @$res, {
+		vmid => $vmid,
+		dev  => "net$netid",
+		in   => $netdev->{$dev}->{transmit},
+		out  => $netdev->{$dev}->{receive},
+	    };
 	}
 
 	return $res;
