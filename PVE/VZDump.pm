@@ -726,6 +726,7 @@ sub exec_backup_task {
 
 	if ($self->{opts}->{pbs}) {
 	    die "unable to pipe backup to stdout\n" if $opts->{stdout};
+	    $task->{target} = $pbs_snapshot_name;
 	} else {
 	    if ($opts->{stdout}) {
 		$task->{target} = '-';
@@ -900,12 +901,8 @@ sub exec_backup_task {
 	    return;
 	}
 
-	# fixme: ??
-	if ($self->{opts}->{pbs}) {
-	    debugmsg ('info', "creating pbs archive on storage '$opts->{storage}'", $logfd);
-	} else {
-	    debugmsg ('info', "creating archive '$task->{target}'", $logfd);
-	}
+	my $archive_txt = $self->{opts}->{pbs} ? 'Proxmox Backup Server' : 'vzdump';
+	debugmsg('info', "creating $archive_txt archive '$task->{target}'", $logfd);
 	$plugin->archive($task, $vmid, $task->{tmptar}, $comp);
 
 	if ($self->{opts}->{pbs}) {
