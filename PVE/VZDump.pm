@@ -226,7 +226,7 @@ sub sendmail {
 	chomp $task->{msg} if $task->{msg};
 	$task->{backuptime} = 0 if !$task->{backuptime};
 	$task->{size} = 0 if !$task->{size};
-	$task->{tarfile} = 'unknown' if !$task->{tarfile};
+	$task->{target} = 'unknown' if !$task->{target};
 	$task->{hostname} = "VM $task->{vmid}" if !$task->{hostname};
 
 	if ($task->{state} eq 'todo') {
@@ -261,7 +261,7 @@ sub sendmail {
 				$task->{state},
 				format_time($task->{backuptime}),
 				format_size ($task->{size}),
-				$task->{tarfile});
+				$task->{target});
 	} else {
 	    $text .= sprintf ("%-10s %-6s %10s %8.2fMB  %s\n", $vmid,
 				$task->{state},
@@ -315,7 +315,7 @@ sub sendmail {
 				$vmid, $name,
 				format_time($task->{backuptime}),
 				format_size ($task->{size}),
-				escape_html ($task->{tarfile}));
+				escape_html ($task->{target}));
 	} else {
 	    $html .= sprintf ("<tr><td>%s<td>%s<td><font color=red>FAILED<td>%s<td colspan=2>%s</tr>\n",
 				$vmid, $name, format_time($task->{backuptime}),
@@ -587,7 +587,7 @@ sub run_hook_script {
     $ENV{STOREID} = $opts->{storage} if $opts->{storage};
     $ENV{DUMPDIR} = $opts->{dumpdir} if $opts->{dumpdir};
 
-    foreach my $ek (qw(vmtype hostname tarfile logfile)) {
+    foreach my $ek (qw(vmtype hostname target logfile)) {
 	$ENV{uc($ek)} = $task->{$ek} if $task->{$ek};
     }
 
@@ -728,10 +728,9 @@ sub exec_backup_task {
 	    die "unable to pipe backup to stdout\n" if $opts->{stdout};
 	} else {
 	    if ($opts->{stdout}) {
-		$task->{tarfile} = '-';
+		$task->{target} = '-';
 	    } else {
-		my $tarfile = $task->{tarfile} = "$opts->{dumpdir}/$basename$ext";
-		$task->{tmptar} = $task->{tarfile};
+		$task->{target} = $task->{tmptar} = "$opts->{dumpdir}/$basename$ext";
 		$task->{tmptar} =~ s/\.[^\.]+$/\.dat/;
 		unlink $task->{tmptar};
 	    }
@@ -905,7 +904,7 @@ sub exec_backup_task {
 	if ($self->{opts}->{pbs}) {
 	    debugmsg ('info', "creating pbs archive on storage '$opts->{storage}'", $logfd);
 	} else {
-	    debugmsg ('info', "creating archive '$task->{tarfile}'", $logfd);
+	    debugmsg ('info', "creating archive '$task->{target}'", $logfd);
 	}
 	$plugin->archive($task, $vmid, $task->{tmptar}, $comp);
 
@@ -913,11 +912,11 @@ sub exec_backup_task {
 	    # fixme: log size ?
 	    debugmsg ('info', "pbs upload finished", $logfd);
 	} else {
-	    rename ($task->{tmptar}, $task->{tarfile}) ||
-		die "unable to rename '$task->{tmptar}' to '$task->{tarfile}'\n";
+	    rename ($task->{tmptar}, $task->{target}) ||
+		die "unable to rename '$task->{tmptar}' to '$task->{target}'\n";
 
 	    # determine size
-	    $task->{size} = (-s $task->{tarfile}) || 0;
+	    $task->{size} = (-s $task->{target}) || 0;
 	    my $cs = format_size ($task->{size});
 	    debugmsg ('info', "archive file size: $cs", $logfd);
 	}
@@ -931,7 +930,7 @@ sub exec_backup_task {
 		PVE::Storage::PBSPlugin::run_raw_client_cmd(
 		    $opts->{scfg}, $opts->{storage}, 'prune', $args, logfunc => $logfunc);
 	    } else {
-		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname, $task->{tarfile});
+		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname, $task->{target});
 		$bklist = [ sort { $b->[1] <=> $a->[1] } @$bklist ];
 
 		while (scalar (@$bklist) >= $maxfiles) {
