@@ -1,3 +1,39 @@
+pve-manager (6.2-7) pve; urgency=medium
+
+  * ui: migration dialog: Allow setting no target storage to reuse
+    current, and make that default
+
+  * api: cluster resources: add sdn audit permission
+
+  * dc/Tasks: pass endtime to make duration calculation correct
+
+  * fix #2802: metric flush check should not care about current usage
+
+  * fix #2771: relax cert API endpoints permissions
+
+  * fix #2784: always compare ACME domains in lower case
+
+  * api: register /nodes/X/cpu call for CPU models
+
+  * ui: improve ProcessorEdit and load models dynamically
+
+  * fix #2810: fix setting Container mounts for multiple guests in a
+    browser session
+
+  * node_config: Allow leading underscore in ACME aliases
+
+  * change permissions for non-network cloudinit settings
+
+  * ui: cifs: reset proxy cache also if user or password change and make
+    user and password fields independent from each other
+
+  * ui: ceph: downgrade remapped from error to warning/working
+
+  * vzdump: set target for PBS based backups to show in the vzdump mail
+    log overview
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 06 Jul 2020 22:11:08 +0200
+
 pve-manager (6.2-6) pve; urgency=medium
 
   * api: improve node index with missing/broken cert
