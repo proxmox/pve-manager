@@ -906,8 +906,7 @@ sub exec_backup_task {
 	$plugin->archive($task, $vmid, $task->{tmptar}, $comp);
 
 	if ($self->{opts}->{pbs}) {
-	    # fixme: log size ?
-	    debugmsg ('info', "pbs upload finished", $logfd);
+	    # size is added to task struct in guest vzdump plugins
 	} else {
 	    rename ($task->{tmptar}, $task->{target}) ||
 		die "unable to rename '$task->{tmptar}' to '$task->{target}'\n";
