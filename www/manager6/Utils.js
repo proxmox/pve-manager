@@ -647,9 +647,8 @@ Ext.define('PVE.Utils', { utilities: {
 	},
 	pbs: {
 	    name: 'Proxmox Backup Server',
-	    //ipanel: '', // TODO
-	    hideAdd: true,
-	    faIcon: 'database',
+	    ipanel: 'PBSInputPanel',
+	    faIcon: 'floppy-o',
 	},
 	drbd: {
 	    name: 'DRBD',

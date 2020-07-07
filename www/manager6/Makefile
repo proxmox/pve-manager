@@ -227,6 +227,7 @@ JSSRC= 							\
 	storage/LVMEdit.js				\
 	storage/LvmThinEdit.js				\
 	storage/NFSEdit.js				\
+	storage/PBSEdit.js				\
 	storage/RBDEdit.js				\
 	storage/StatusView.js				\
 	storage/Summary.js				\
