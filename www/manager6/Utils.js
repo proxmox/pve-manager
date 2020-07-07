@@ -219,6 +219,66 @@ Ext.define('PVE.Utils', { utilities: {
 
     },
 
+    render_backup_days_of_week: function(val) {
+	var dows = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+	var selected = [];
+	var cur = -1;
+	val.split(',').forEach(function(day){
+	    cur++;
+	    var dow = (dows.indexOf(day)+6)%7;
+	    if (cur === dow) {
+		if (selected.length === 0 || selected[selected.length-1] === 0) {
+		    selected.push(1);
+		} else {
+		    selected[selected.length-1]++;
+		}
+	    } else {
+		while (cur < dow) {
+		    cur++;
+		    selected.push(0);
+		}
+		selected.push(1);
+	    }
+	});
+
+	cur = -1;
+	var days = [];
+	selected.forEach(function(item) {
+	    cur++;
+	    if (item > 2) {
+		days.push(Ext.Date.dayNames[(cur+1)] + '-' + Ext.Date.dayNames[(cur+item)%7]);
+		cur += item-1;
+	    } else if (item == 2) {
+		days.push(Ext.Date.dayNames[cur+1]);
+		days.push(Ext.Date.dayNames[(cur+2)%7]);
+		cur++;
+	    } else if (item == 1) {
+		days.push(Ext.Date.dayNames[(cur+1)%7]);
+	    }
+	});
+	return days.join(', ');
+    },
+
+    render_backup_selection: function(value, metaData, record) {
+	let allExceptText = gettext('All except {0}');
+	let allText = '-- ' + gettext('All') + ' --';
+	if (record.data.all) {
+	    if (record.data.exclude) {
+		return Ext.String.format(allExceptText, record.data.exclude);
+	    }
+	    return allText;
+	}
+	if (record.data.vmid) {
+	    return record.data.vmid;
+	}
+
+	if (record.data.pool) {
+	    return "Pool '"+ record.data.pool + "'";
+	}
+
+	return "-";
+    },
+
     get_kvm_osinfo: function(value) {
 	var info = { base: 'Other' }; // default
 	if (value) {

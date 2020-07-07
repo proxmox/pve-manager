@@ -383,7 +383,6 @@ Ext.define('PVE.dc.BackupView', {
     onlineHelp: 'chapter_vzdump',
 
     allText: '-- ' + gettext('All') + ' --',
-    allExceptText: gettext('All except {0}'),
 
     initComponent : function() {
 	var me = this;
@@ -568,45 +567,7 @@ Ext.define('PVE.dc.BackupView', {
 		    width: 200,
 		    sortable: false,
 		    dataIndex: 'dow',
-		    renderer: function(val) {
-			var dows = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-			var selected = [];
-			var cur = -1;
-			val.split(',').forEach(function(day){
-			    cur++;
-			    var dow = (dows.indexOf(day)+6)%7;
-			    if (cur === dow) {
-				if (selected.length === 0 || selected[selected.length-1] === 0) {
-				    selected.push(1);
-				} else {
-				    selected[selected.length-1]++;
-				}
-			    } else {
-				while (cur < dow) {
-				    cur++;
-				    selected.push(0);
-				}
-				selected.push(1);
-			    }
-			});
-
-			cur = -1;
-			var days = [];
-			selected.forEach(function(item) {
-			    cur++;
-			    if (item > 2) {
-				days.push(Ext.Date.dayNames[(cur+1)] + '-' + Ext.Date.dayNames[(cur+item)%7]);
-				cur += item-1;
-			    } else if (item == 2) {
-				days.push(Ext.Date.dayNames[cur+1]);
-				days.push(Ext.Date.dayNames[(cur+2)%7]);
-				cur++;
-			    } else if (item == 1) {
-				days.push(Ext.Date.dayNames[(cur+1)%7]);
-			    }
-			});
-			return days.join(', ');
-		    }
+		    renderer: PVE.Utils.render_backup_days_of_week
 		},
 		{
 		    header: gettext('Start Time'),
@@ -625,23 +586,7 @@ Ext.define('PVE.dc.BackupView', {
 		    flex: 1,
 		    sortable: false,
 		    dataIndex: 'vmid',
-		    renderer: function(value, metaData, record) {
-			if (record.data.all) {
-			    if (record.data.exclude) {
-				return Ext.String.format(me.allExceptText, record.data.exclude);
-			    }
-			    return me.allText;
-			}
-			if (record.data.vmid) {
-			    return record.data.vmid;
-			}
-
-			if (record.data.pool) {
-			    return "Pool '"+ record.data.pool + "'";
-			}
-
-			return "-";
-		    }
+		    renderer: PVE.Utils.render_backup_selection
 		}
 	    ],
 	    listeners: {
