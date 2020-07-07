@@ -696,6 +696,89 @@ Ext.define('PVE.dc.BackupInfo', {
     }
 });
 
+
+Ext.define('PVE.dc.BackedGuests', {
+    extend: 'Ext.grid.GridPanel',
+    alias: 'widget.pveBackedGuests',
+
+    textfilter: '',
+
+    columns: [
+	{
+	    header: gettext('Type'),
+	    dataIndex: "type",
+	    renderer: PVE.Utils.render_resource_type,
+	    flex: 1,
+	    sortable: true,
+	},
+	{
+	    header: gettext('VMID'),
+	    dataIndex: 'vmid',
+	    flex: 1,
+	    sortable: true,
+	},
+	{
+	    header: gettext('Name'),
+	    dataIndex: 'name',
+	    flex: 2,
+	    sortable: true,
+	},
+    ],
+
+    initComponent: function() {
+	let me = this;
+
+	me.store.clearFilter(true);
+
+	Ext.apply(me, {
+	    stateful: true,
+	    stateId: 'grid-dc-backed-guests',
+	    tbar: [
+	        '->',
+		gettext('Search') + ':', ' ',
+		{
+		    xtype: 'textfield',
+		    width: 200,
+		    enableKeyEvents: true,
+		    listeners: {
+			buffer: 500,
+			keyup: function(field) {
+			    let searchValue = field.getValue();
+			    searchValue = searchValue.toLowerCase();
+
+			    me.store.clearFilter(true);
+			    me.store.filterBy(function(record) {
+				let match = false;
+
+				Ext.each(['name', 'vmid', 'type'], function(property) {
+				    if (record.data[property] == null) {
+					return;
+				    }
+
+				    let v = record.data[property].toString();
+				    if (v !== undefined) {
+					v = v.toLowerCase();
+					if (v.includes(searchValue)) {
+					    match = true;
+					    return;
+					}
+				    }
+				});
+				return match;
+			    });
+			}
+		    }
+		}
+	    ],
+	    viewConfig: {
+		stripeRows: true,
+		trackOver: false,
+            },
+	});
+	me.callParent();
+    },
+});
+
 Ext.define('PVE.dc.BackupView', {
     extend: 'Ext.grid.GridPanel',
 
@@ -716,8 +799,27 @@ Ext.define('PVE.dc.BackupView', {
 	    }
 	});
 
+	var not_backed_store = new Ext.data.Store({
+	    sorters: 'vmid',
+	    proxy:{
+		type: 'proxmox',
+		url: 'api2/json/cluster/backupinfo/not_backed_up',
+	    },
+	});
+
 	var reload = function() {
 	    store.load();
+	    not_backed_store.load({
+		callback: function(records, operation, success) {
+		    if (records.length) {
+			not_backed_warning.setVisible(true);
+			not_backed_btn.setVisible(true);
+		    } else {
+			not_backed_warning.setVisible(false);
+			not_backed_btn.setVisible(false);
+		    }
+		},
+	    });
 	};
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
@@ -834,6 +936,34 @@ Ext.define('PVE.dc.BackupView', {
 	    }));
 	};
 
+	var run_show_not_backed = function() {
+	    var me = this;
+	    var backedinfo = Ext.create('PVE.dc.BackedGuests', {
+		flex: 1,
+		layout: 'fit',
+		store: not_backed_store,
+	    });
+
+	    var win = Ext.create('Ext.window.Window', {
+		modal: true,
+		width: 600,
+		height: 500,
+		resizable: true,
+		layout: 'fit',
+		title: gettext('Guests without backup job'),
+
+		items:[{
+		    xtype: 'panel',
+		    region: 'center',
+		    layout: {
+			type: 'vbox',
+			align: 'stretch'
+		    },
+		    items: [backedinfo],
+		}]
+	    }).show();
+	};
+
 	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
@@ -882,6 +1012,17 @@ Ext.define('PVE.dc.BackupView', {
 	    handler: run_detail,
 	});
 
+	var not_backed_warning = Ext.create('Ext.toolbar.TextItem', {
+	    html: '<i class="fa fa-fw fa-exclamation-circle"></i>' + gettext('Some guests are not covered by any backup job.'),
+	    hidden: true,
+	});
+
+	var not_backed_btn = new Proxmox.button.Button({
+	    text: gettext('Show'),
+	    hidden: true,
+	    handler: run_show_not_backed,
+	});
+
 	Proxmox.Utils.monStoreErrors(me, store);
 
 	Ext.apply(me, {
@@ -907,7 +1048,9 @@ Ext.define('PVE.dc.BackupView', {
 		detail_btn,
 		'-',
 		run_btn,
-		'-',
+		'->',
+		not_backed_warning,
+		not_backed_btn,
 	    ],
 	    columns: [
 		{
