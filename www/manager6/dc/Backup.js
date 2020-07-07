@@ -375,6 +375,327 @@ Ext.define('PVE.dc.BackupEdit', {
 });
 
 
+Ext.define('PVE.dc.BackupDiskTree', {
+    extend: 'Ext.tree.Panel',
+    alias: 'widget.pveBackupDiskTree',
+
+    folderSort: true,
+    rootVisible: false,
+
+    store: {
+	sorters: 'id',
+	data: {},
+    },
+
+    tools: [
+	{
+	    type: 'expand',
+	    tooltip: gettext('Expand All'),
+	    scope: this,
+	    callback: function(panel) {
+		panel.expandAll();
+	    },
+	},
+	{
+	    type: 'collapse',
+	    tooltip: gettext('Collapse All'),
+	    scope: this,
+	    callback: function(panel) {
+		panel.collapseAll();
+	    }
+	},
+    ],
+
+    columns: [
+	{
+	    xtype: 'treecolumn',
+	    text: gettext('Guest Image'),
+	    renderer: function(value, meta, record) {
+		if (record.data.type) {
+		    // guest level
+		    let ret = value;
+		    if (record.data.name) {
+			ret += " (" + record.data.name + ")";
+		    }
+		    return ret;
+		} else {
+		    // volume level
+		    // extJS needs unique IDs but we only want to show the
+		    // volumes key from "vmid:key"
+		    return value.split(':')[1] + " - " + record.data.name;
+		}
+	    },
+	    dataIndex: 'id',
+	    flex: 6,
+	},
+	{
+	    text: gettext('Type'),
+	    dataIndex: 'type',
+	    flex: 1,
+	},
+	{
+	    text: gettext('Backup Job'),
+	    renderer: PVE.Utils.render_backup_status,
+	    dataIndex: 'included',
+	    flex: 3,
+	},
+    ],
+
+    reload: function() {
+	var me = this;
+	var sm = me.getSelectionModel();
+
+	Proxmox.Utils.API2Request({
+	    url: "/cluster/backup/" + me.jobid + "/included_volumes",
+	    waitMsgTarget: me,
+	    method: 'GET',
+	    failure: function(response, opts) {
+		Proxmox.Utils.setErrorMask(me, response.htmlStatus);
+	    },
+	    success: function(response, opts) {
+		sm.deselectAll();
+		me.setRootNode(response.result.data);
+		me.expandAll();
+	    },
+	});
+    },
+
+    initComponent: function() {
+	var me = this;
+
+	if (!me.jobid) {
+	    throw "no job id specified";
+	}
+
+	var sm = Ext.create('Ext.selection.TreeModel', {});
+
+	Ext.apply(me, {
+	    selModel: sm,
+	    fields: ['id', 'type',
+		{
+		    type: 'string',
+		    name: 'iconCls',
+		    calculate: function(data) {
+			var txt = 'fa x-fa-tree fa-';
+			if (data.leaf && !data.type) {
+			    return txt + 'hdd-o';
+			} else if (data.type === 'qemu') {
+			    return txt + 'desktop';
+			} else if (data.type === 'lxc') {
+			    return txt + 'cube';
+			} else {
+			    return txt + 'question-circle';
+			}
+		    }
+		}
+	    ],
+	    tbar: [
+	        '->',
+		gettext('Search') + ':', ' ',
+		{
+		    xtype: 'textfield',
+		    width: 200,
+		    enableKeyEvents: true,
+		    listeners: {
+			buffer: 500,
+			keyup: function(field) {
+			    let searchValue = field.getValue();
+			    searchValue = searchValue.toLowerCase();
+
+			    me.store.clearFilter(true);
+			    me.store.filterBy(function(record) {
+				let match = false;
+
+				let data = '';
+				if (record.data.depth == 0) {
+				    return true;
+				} else if (record.data.depth == 1) {
+				    data = record.data;
+				} else if (record.data.depth == 2) {
+				    data = record.parentNode.data;
+				}
+
+				Ext.each(['name', 'id', 'type'], function(property) {
+				    if (data[property] == null) {
+					return;
+				    }
+
+				    let v = data[property].toString();
+				    if (v !== undefined) {
+					v = v.toLowerCase();
+					if (v.includes(searchValue)) {
+					    match = true;
+					    return;
+					}
+				    }
+				});
+				return match;
+			    });
+			}
+		    }
+		}
+	    ],
+	});
+
+	me.callParent();
+
+	me.reload();
+    }
+});
+
+Ext.define('PVE.dc.BackupInfo', {
+    extend: 'Proxmox.panel.InputPanel',
+    alias: 'widget.pveBackupInfo',
+
+    padding: 10,
+
+    column1: [
+	{
+	    name: 'node',
+	    fieldLabel: gettext('Node'),
+	    xtype: 'displayfield',
+	    renderer: function (value) {
+		if (!value) {
+		    return '-- ' + gettext('All') + ' --';
+		} else {
+		    return value;
+		}
+	    },
+	},
+	{
+	    name: 'storage',
+	    fieldLabel: gettext('Storage'),
+	    xtype: 'displayfield',
+	},
+	{
+	    name: 'dow',
+	    fieldLabel: gettext('Day of week'),
+	    xtype: 'displayfield',
+	    renderer: PVE.Utils.render_backup_days_of_week,
+	},
+	{
+	    name: 'starttime',
+	    fieldLabel: gettext('Start Time'),
+	    xtype: 'displayfield',
+	},
+	{
+	    name: 'selMode',
+	    fieldLabel: gettext('Selection mode'),
+	    xtype: 'displayfield',
+	},
+	{
+	    name: 'pool',
+	    fieldLabel: gettext('Pool to backup'),
+	    xtype: 'displayfield',
+	}
+    ],
+    column2: [
+	{
+	    name: 'mailto',
+	    fieldLabel: gettext('Send email to'),
+	    xtype: 'displayfield',
+	},
+	{
+	    name: 'mailnotification',
+	    fieldLabel: gettext('Email notification'),
+	    xtype: 'displayfield',
+	    renderer: function (value) {
+		let msg;
+		switch (value) {
+		    case 'always':
+			msg = gettext('Always');
+			break;
+		    case 'failure':
+			msg = gettext('On failure only');
+			break;
+		}
+		return msg;
+	    },
+	},
+	{
+	    name: 'compress',
+	    fieldLabel: gettext('Compression'),
+	    xtype: 'displayfield',
+	},
+	{
+	    name: 'mode',
+	    fieldLabel: gettext('Mode'),
+	    xtype: 'displayfield',
+	    renderer: function (value) {
+		let msg;
+		switch (value) {
+		    case 'snapshot':
+			msg = gettext('Snapshot');
+			break;
+		    case 'suspend':
+			msg = gettext('Suspend');
+			break;
+		    case 'stop':
+			msg = gettext('Stop');
+			break;
+		}
+		return msg;
+	    },
+	},
+	{
+	    name: 'enabled',
+	    fieldLabel: gettext('Enabled'),
+	    xtype: 'displayfield',
+	    renderer: function (value) {
+		if (PVE.Parser.parseBoolean(value.toString())) {
+		    return gettext('Yes');
+		} else {
+		    return gettext('No');
+		}
+	    },
+	},
+    ],
+
+    setValues: function(values) {
+	var me = this;
+
+        Ext.iterate(values, function(fieldId, val) {
+	    let field = me.query('[isFormField][name=' + fieldId + ']')[0];
+	    if (field) {
+		field.setValue(val);
+            }
+	});
+
+	// selection Mode depends on the presence/absence of several keys
+	let selModeField = me.query('[isFormField][name=selMode]')[0];
+	let selMode = 'none';
+	if (values.vmid) {
+	    selMode = gettext('Include selected VMs');
+	}
+	if (values.all) {
+	    selMode = gettext('All');
+	}
+	if (values.exclude) {
+	     selMode = gettext('Exclude selected VMs');
+	}
+	if (values.pool) {
+	    selMode = gettext('Pool based');
+	}
+	selModeField.setValue(selMode);
+
+	if (!values.pool) {
+	    let poolField = me.query('[isFormField][name=pool]')[0];
+	    poolField.setVisible(0);
+	}
+    },
+
+    initComponent: function() {
+	var me = this;
+
+	if (!me.record) {
+	    throw "no data provided";
+	}
+	me.callParent();
+
+	me.setValues(me.record);
+    }
+});
+
 Ext.define('PVE.dc.BackupView', {
     extend: 'Ext.grid.GridPanel',
 
@@ -412,6 +733,45 @@ Ext.define('PVE.dc.BackupView', {
 	    });
 	    win.on('destroy', reload);
 	    win.show();
+	};
+
+	var run_detail = function() {
+	    let record = sm.getSelection()[0]
+	    if (!record) {
+		return;
+	    }
+	    var me = this;
+	    var infoview = Ext.create('PVE.dc.BackupInfo', {
+		flex: 0,
+		layout: 'fit',
+		record: record.data,
+	    });
+	    var disktree = Ext.create('PVE.dc.BackupDiskTree', {
+		title: gettext('Included disks'),
+		flex: 1,
+		jobid: record.data.id,
+	    });
+
+	    var win = Ext.create('Ext.window.Window', {
+		modal: true,
+		width: 600,
+		height: 500,
+		stateful: true,
+		stateId: 'backup-detail-view',
+		resizable: true,
+		layout: 'fit',
+		title: gettext('Backup Details'),
+
+		items:[{
+		    xtype: 'panel',
+		    region: 'center',
+		    layout: {
+			type: 'vbox',
+			align: 'stretch'
+		    },
+		    items: [infoview, disktree],
+		}]
+	    }).show();
 	};
 
 	var run_backup_now = function(job) {
@@ -514,6 +874,14 @@ Ext.define('PVE.dc.BackupView', {
 	    }
 	});
 
+	var detail_btn = new Proxmox.button.Button({
+	    text: gettext('Detail'),
+	    disabled: true,
+	    tooltip: gettext('Show job details and which guests and volumes are affected by the backup job'),
+	    selModel: sm,
+	    handler: run_detail,
+	});
+
 	Proxmox.Utils.monStoreErrors(me, store);
 
 	Ext.apply(me, {
@@ -536,8 +904,10 @@ Ext.define('PVE.dc.BackupView', {
 		'-',
 		remove_btn,
 		edit_btn,
+		detail_btn,
 		'-',
-		run_btn
+		run_btn,
+		'-',
 	    ],
 	    columns: [
 		{

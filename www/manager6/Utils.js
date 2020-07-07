@@ -219,6 +219,31 @@ Ext.define('PVE.Utils', { utilities: {
 
     },
 
+    render_backup_status: function(value, meta, record) {
+	if (typeof value == 'undefined') {
+	    return "";
+	}
+
+	let iconCls = 'check-circle good';
+	let text = gettext('Yes');
+
+	if (!PVE.Parser.parseBoolean(value.toString())) {
+	    iconCls = 'times-circle critical';
+
+	    text = gettext('No');
+
+	    let reason = record.get('reason');
+	    if (typeof reason !== 'undefined') {
+		if (reason in PVE.Utils.backup_reasons_table) {
+		    reason = PVE.Utils.backup_reasons_table[record.get('reason')];
+		}
+		text = `${text} - ${reason}`;
+	    }
+	}
+
+	return `<i class="fa fa-${iconCls}"></i> ${text}`;
+    },
+
     render_backup_days_of_week: function(val) {
 	var dows = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 	var selected = [];
@@ -277,6 +302,15 @@ Ext.define('PVE.Utils', { utilities: {
 	}
 
 	return "-";
+    },
+
+    backup_reasons_table: {
+	'backup=yes': gettext('Enabled'),
+	'backup=no': gettext('Disabled'),
+	'enabled': gettext('Enabled'),
+	'disabled': gettext('Disabled'),
+	'not a volume': gettext('Not a volume'),
+	'efidisk but no OMVF BIOS': gettext('EFI Disk without OMVF BIOS'),
     },
 
     get_kvm_osinfo: function(value) {
