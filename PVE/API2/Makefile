@@ -10,6 +10,7 @@ PERLSOURCE = 			\
 	Subscription.pm		\
 	VZDump.pm		\
 	Backup.pm		\
+	BackupInfo.pm		\
 	Cluster.pm		\
 	HAConfig.pm		\
 	Nodes.pm		\

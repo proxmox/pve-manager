@@ -23,6 +23,7 @@ use PVE::Tools qw(extract_param);
 use PVE::API2::ACMEAccount;
 use PVE::API2::ACMEPlugin;
 use PVE::API2::Backup;
+use PVE::API2::BackupInfo;
 use PVE::API2::Cluster::Ceph;
 use PVE::API2::ClusterConfig;
 use PVE::API2::Firewall::Cluster;
@@ -55,6 +56,11 @@ __PACKAGE__->register_method ({
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Backup",
     path => 'backup',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::BackupInfo",
+    path => 'backupinfo',
 });
 
 __PACKAGE__->register_method ({
