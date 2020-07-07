@@ -1,3 +1,15 @@
+pve-manager (6.2-8) pve; urgency=medium
+
+  * fix #1623: replace apt-get with apt
+
+  * ui: sdn: add simple zone plugin
+
+  * ui: sdn: move mtu from vnetview to zoneview
+
+  * ui: add PBS edit input panel
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 07 Jul 2020 19:16:36 +0200
+
 pve-manager (6.2-7) pve; urgency=medium
 
   * ui: migration dialog: Allow setting no target storage to reuse
