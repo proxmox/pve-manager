@@ -265,6 +265,12 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
+	foreach my $key (qw(tmpdir dumpdir script)) {
+	    raise_param_exc({ $key => "Only root may set this option."})
+		if defined($param->{$key}) && ($user ne 'root@pam');
+	}
+
+
 	if (my $pool = $param->{pool}) {
 	    $rpcenv->check_pool_exist($pool);
 	    $rpcenv->check($user, "/pool/$pool", ['VM.Backup']);
