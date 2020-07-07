@@ -42,13 +42,13 @@ if (!$st || (time() - $st->mtime) > (3*24*3600)) {
 
 } else {
 
-    my $cmdstr = 'apt-get dist-upgrade';
+    my $cmdstr = 'apt dist-upgrade';
 
-    print "Starting system upgrade: apt-get dist-upgrade\n";
+    print "Starting system upgrade: apt dist-upgrade\n";
 
     my $oldlist = PVE::API2::APT->list_updates({ node => $nodename});
 
-    system('apt-get', 'dist-upgrade'); 
+    system('apt', 'dist-upgrade'); 
 
     my $pkglist = PVE::API2::APT->list_updates({ node => $nodename});
 
@@ -88,7 +88,7 @@ __END__
 
 =head1 NAME
 
-pveupgrade - wrapper arournd "apt-get dist-upgrade"
+pveupgrade - wrapper arournd "apt dist-upgrade"
 
 =head1 SYNOPSIS
 
@@ -96,6 +96,6 @@ pveupgrade - wrapper arournd "apt-get dist-upgrade"
 
 =head1 DESCRIPTION
 
-This is a small wrapper around "apt-get dist-upgrade". We use this to
+This is a small wrapper around "apt dist-upgrade". We use this to
 print additional information (kernel restart required?), and
 optionally run an interactive shell after the update (--shell)
