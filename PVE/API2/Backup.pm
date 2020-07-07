@@ -333,4 +333,178 @@ __PACKAGE__->register_method({
 	die "$@" if ($@);
     }});
 
+__PACKAGE__->register_method({
+    name => 'get_volume_backup_included',
+    path => '{id}/included_volumes',
+    method => 'GET',
+    protected => 1,
+    description => "Returns included guests and the backup status of their disks. Optimized to be used in ExtJS tree views.",
+    permissions => {
+	check => ['perm', '/', ['Sys.Audit']],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    id => $vzdump_job_id_prop
+	},
+    },
+    returns => {
+	type => 'object',
+	description => 'Root node of the tree object. Children represent guests, grandchildren represent volumes of that guest.',
+	properties => {
+	    children => {
+		type => 'array',
+		items => {
+		    type => 'object',
+		    properties => {
+			id => {
+			    type => 'integer',
+			    description => 'VMID of the guest.',
+			},
+			name => {
+			    type => 'string',
+			    description => 'Name of the guest',
+			    optional => 1,
+			},
+			type => {
+			    type => 'string',
+			    description => 'Type of the guest, VM, CT or unknown for removed but not purged guests.',
+			    enum => ['qemu', 'lxc', 'unknown'],
+			},
+			children => {
+			    type => 'array',
+			    optional => 1,
+			    description => 'The volumes of the guest with the information if they will be included in backups.',
+			    items => {
+				type => 'object',
+				properties => {
+				    id => {
+					type => 'string',
+					description => 'Configuration key of the volume.',
+				    },
+				    name => {
+					type => 'string',
+					description => 'Name of the volume.',
+				    },
+				    included => {
+					type => 'boolean',
+					description => 'Whether the volume is included in the backup or not.',
+				    },
+				    reason => {
+					type => 'string',
+					description => 'The reason why the volume is included (or excluded).',
+				    },
+				},
+			    },
+			},
+		    },
+		},
+	    },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+
+	my $user = $rpcenv->get_user();
+
+	my $vzconf = cfs_read_file('vzdump.cron');
+	my $all_jobs = $vzconf->{jobs} || [];
+	my $job;
+	my $rrd = PVE::Cluster::rrd_dump();
+
+	for my $j (@$all_jobs) {
+	    if ($j->{id} eq $param->{id}) {
+	       $job = $j;
+	       last;
+	    }
+	}
+	raise_param_exc({ id => "No such job '$param->{id}'" }) if !$job;
+
+	my $vmlist = PVE::Cluster::get_vmlist();
+
+	my @job_vmids;
+
+	my $included_guests = PVE::VZDump::get_included_guests($job);
+
+	for my $node (keys %{$included_guests}) {
+	    my $node_vmids = $included_guests->{$node};
+	    push(@job_vmids, @{$node_vmids});
+	}
+
+	# remove VMIDs to which the user has no permission to not leak infos
+	# like the guest name
+	my @allowed_vmids = grep {
+		$rpcenv->check($user, "/vms/$_", [ 'VM.Audit' ], 1);
+	} @job_vmids;
+
+	my $result = {
+	    children => [],
+	};
+
+	for my $vmid (@allowed_vmids) {
+
+	    my $children = [];
+
+	    # It's possible that a job has VMIDs configured that are not in
+	    # vmlist. This could be because a guest was removed but not purged.
+	    # Since there is no more data available we can only deliver the VMID
+	    # and no volumes.
+	    if (!defined $vmlist->{ids}->{$vmid}) {
+		push(@{$result->{children}}, {
+		    id => int($vmid),
+		    type => 'unknown',
+		    leaf => 1,
+		});
+		next;
+	    }
+
+	    my $type = $vmlist->{ids}->{$vmid}->{type};
+	    my $node = $vmlist->{ids}->{$vmid}->{node};
+
+	    my $conf;
+	    my $volumes;
+	    my $name = "";
+
+	    if ($type eq 'qemu') {
+		$conf = PVE::QemuConfig->load_config($vmid, $node);
+		$volumes = PVE::QemuConfig->get_backup_volumes($conf);
+		$name = $conf->{name};
+	    } elsif ($type eq 'lxc') {
+		$conf = PVE::LXC::Config->load_config($vmid, $node);
+		$volumes = PVE::LXC::Config->get_backup_volumes($conf);
+		$name = $conf->{hostname};
+	    } else {
+		die "VMID $vmid is neither Qemu nor LXC guest\n";
+	    }
+
+	    foreach my $volume (@$volumes) {
+		my $disk = {
+		    # id field must be unique for ExtJS tree view
+		    id => "$vmid:$volume->{key}",
+		    name => $volume->{volume_config}->{file} // $volume->{volume_config}->{volume},
+		    included=> $volume->{included},
+		    reason => $volume->{reason},
+		    leaf => 1,
+		};
+		push(@{$children}, $disk);
+	    }
+
+	    my $leaf = 0;
+	    # it's possible for a guest to have no volumes configured
+	    $leaf = 1 if !@{$children};
+
+	    push(@{$result->{children}}, {
+		    id => int($vmid),
+		    type => $type,
+		    name => $name,
+		    children => $children,
+		    leaf => $leaf,
+	    });
+	}
+
+	return $result;
+    }});
+
 1;
