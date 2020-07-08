@@ -235,6 +235,7 @@ __PACKAGE__->register_method({
     description => "Update vzdump backup job definition.",
     permissions => {
 	check => ['perm', '/', ['Sys.Modify']],
+	description => "The 'tmpdir', 'dumpdir' and 'script' parameters are additionally restricted to the 'root\@pam' user.",
     },
     parameters => {
     	additionalProperties => 0,
