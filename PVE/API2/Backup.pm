@@ -34,6 +34,15 @@ my $vzdump_job_id_prop = {
     maxLength => 50
 };
 
+my $assert_param_permission = sub {
+    my ($param, $user) = @_;
+    return if $user eq 'root@pam'; # always OK
+
+    for my $key (qw(tmpdir dumpdir script)) {
+	raise_param_exc({ $key => "Only root may set this option."}) if exists $param->{$key};
+    }
+};
+
 __PACKAGE__->register_method({
     name => 'index',
     path => '',
@@ -109,10 +118,7 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	foreach my $key (qw(tmpdir dumpdir script)) {
-	    raise_param_exc({ $key => "Only root may set this option."})
-		if defined($param->{$key}) && ($user ne 'root@pam');
-	}
+	$assert_param_permission->($param, $user);
 
 	if (my $pool = $param->{pool}) {
 	    $rpcenv->check_pool_exist($pool);
@@ -265,11 +271,7 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	foreach my $key (qw(tmpdir dumpdir script)) {
-	    raise_param_exc({ $key => "Only root may set this option."})
-		if defined($param->{$key}) && ($user ne 'root@pam');
-	}
-
+	$assert_param_permission->($param, $user);
 
 	if (my $pool = $param->{pool}) {
 	    $rpcenv->check_pool_exist($pool);
