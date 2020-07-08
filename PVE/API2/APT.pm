@@ -275,7 +275,7 @@ __PACKAGE__->register_method({
     name => 'update_database', 
     path => 'update', 
     method => 'POST',
-    description => "This is used to resynchronize the package index files from their sources (apt update).",
+    description => "This is used to resynchronize the package index files from their sources (apt-get update).",
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
     },
@@ -322,9 +322,9 @@ __PACKAGE__->register_method({
 	    my $aptcfn = "/etc/apt/apt.conf.d/76pveproxy";
 	    PVE::Tools::file_set_contents($aptcfn, $aptconf);
 
-	    my $cmd = ['apt', 'update'];
+	    my $cmd = ['apt-get', 'update'];
 
-	    print "starting apt update\n" if !$param->{quiet};
+	    print "starting apt-get update\n" if !$param->{quiet};
 	    
 	    if ($param->{quiet}) {
 		PVE::Tools::run_command($cmd, outfunc => sub {}, errfunc => sub {});

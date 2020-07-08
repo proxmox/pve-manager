@@ -884,7 +884,7 @@ __PACKAGE__->register_method ({
 	    node => get_standard_option('pve-node'),
 	    upgrade => {
 		type => 'boolean',
-		description => "Deprecated, use the 'cmd' property instead! Run 'apt dist-upgrade' instead of normal shell.",
+		description => "Deprecated, use the 'cmd' property instead! Run 'apt-get dist-upgrade' instead of normal shell.",
 		optional => 1,
 		default => 0,
 	    },
@@ -1024,7 +1024,7 @@ __PACKAGE__->register_method ({
 	    node => get_standard_option('pve-node'),
 	    upgrade => {
 		type => 'boolean',
-		description => "Deprecated, use the 'cmd' property instead! Run 'apt dist-upgrade' instead of normal shell.",
+		description => "Deprecated, use the 'cmd' property instead! Run 'apt-get dist-upgrade' instead of normal shell.",
 		optional => 1,
 		default => 0,
 	    },
@@ -1160,7 +1160,7 @@ __PACKAGE__->register_method ({
 	    proxy => get_standard_option('spice-proxy', { optional => 1 }),
 	    upgrade => {
 		type => 'boolean',
-		description => "Deprecated, use the 'cmd' property instead! Run 'apt dist-upgrade' instead of normal shell.",
+		description => "Deprecated, use the 'cmd' property instead! Run 'apt-get dist-upgrade' instead of normal shell.",
 		optional => 1,
 		default => 0,
 	    },

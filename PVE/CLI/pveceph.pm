@@ -157,9 +157,9 @@ __PACKAGE__->register_method ({
 
 	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
 	print "update available package list\n";
-	eval { run_command(['apt', '-q', 'update'], outfunc => sub {}, errfunc => sub { print STDERR "$_[0]\n" }) };
+	eval { run_command(['apt-get', '-q', 'update'], outfunc => sub {}, errfunc => sub { print STDERR "$_[0]\n" }) };
 
-	my @apt_install = qw(apt --no-install-recommends -o Dpkg::Options::=--force-confnew install --);
+	my @apt_install = qw(apt-get --no-install-recommends -o Dpkg::Options::=--force-confnew install --);
 	my @ceph_packages = qw(
 	    ceph
 	    ceph-common
