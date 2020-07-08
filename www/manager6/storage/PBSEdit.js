@@ -74,6 +74,11 @@ Ext.define('PVE.storage.PBSInputPanel', {
 		regexText: gettext('Example') + ': AB:CD:EF:...',
 		allowBlank: true,
 	    },
+	    {
+		xtype: 'displayfield',
+		userCls: 'pmx-hint',
+		value: `Proxmox Backup Server is currently in beta, use with caution.`,
+	    }
 	];
 
 	me.callParent();
