@@ -1007,7 +1007,7 @@ Ext.define('PVE.dc.BackupView', {
 	});
 
 	var detail_btn = new Proxmox.button.Button({
-	    text: gettext('Detail'),
+	    text: gettext('Job Detail'),
 	    disabled: true,
 	    tooltip: gettext('Show job details and which guests and volumes are affected by the backup job'),
 	    selModel: sm,
