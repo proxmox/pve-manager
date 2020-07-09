@@ -18,13 +18,32 @@ Ext.define('PVE.window.Backup', {
 	    throw "no VM type specified";
 	}
 
+	let compressionSelector = Ext.create('PVE.form.CompressionSelector', {
+	    name: 'compress',
+	    value: 'zstd',
+	    fieldLabel: gettext('Compression'),
+	});
+
 	var storagesel = Ext.create('PVE.form.StorageSelector', {
 	    nodename: me.nodename,
 	    name: 'storage',
 	    value: me.storage,
 	    fieldLabel: gettext('Storage'),
 	    storageContent: 'backup',
-	    allowBlank: false
+	    allowBlank: false,
+	    listeners: {
+		change: function(f, v) {
+		    let store = f.getStore();
+		    let rec = store.findRecord('storage', v);
+
+		    if (rec && rec.data && rec.data.type === 'pbs') {
+			compressionSelector.setValue('zstd');
+			compressionSelector.setDisabled(true);
+		    } else if (!compressionSelector.getEditable()) {
+			compressionSelector.setDisabled(false);
+		    }
+		}
+	    },
 	});
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
@@ -42,12 +61,7 @@ Ext.define('PVE.window.Backup', {
 		    value: 'snapshot',
 		    name: 'mode'
 		},
-		{
-		    xtype: 'pveCompressionSelector',
-		    name: 'compress',
-		    value: 'zstd',
-		    fieldLabel: gettext('Compression')
-		},
+		compressionSelector,
 		{
 		    xtype: 'textfield',
 		    fieldLabel: gettext('Send email to'),
