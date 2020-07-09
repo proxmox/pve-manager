@@ -1170,7 +1170,7 @@ sub get_included_guests {
 	$vmids = PVE::API2Tools::get_resource_pool_guest_members($job->{pool});
     } elsif ($job->{vmid}) {
 	$vmids = [ split_list($job->{vmid}) ];
-    } else {
+    } elsif ($job->{all}) {
 	# all or exclude
 	my $exclude = check_vmids(split_list($job->{exclude}));
 	my $excludehash = { map { $_ => 1 } @$exclude };
@@ -1179,6 +1179,8 @@ sub get_included_guests {
 	    next if $excludehash->{$id};
 	    push @$vmids, $id;
 	}
+    } else {
+	return $vmids_per_node;
     }
     $vmids = check_vmids(@$vmids);
 
