@@ -77,7 +77,7 @@ Ext.define('PVE.storage.PBSInputPanel', {
 	    {
 		xtype: 'displayfield',
 		userCls: 'pmx-hint',
-		value: `Proxmox Backup Server is currently in beta, use with caution.`,
+		value: `Proxmox Backup Server is currently in beta.`,
 	    }
 	];
 
