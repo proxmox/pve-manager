@@ -489,12 +489,14 @@ Ext.define('PVE.dc.BackupDiskTree', {
 		    }
 		}
 	    ],
-	    tbar: [
-	        '->',
-		gettext('Search') + ':', ' ',
-		{
+	    header: {
+		items: [{
 		    xtype: 'textfield',
+		    fieldLabel: gettext('Search'),
+		    labelWidth: 50,
+		    emptyText: 'Name, VMID, Type',
 		    width: 200,
+		    padding: '0 5 0 0',
 		    enableKeyEvents: true,
 		    listeners: {
 			buffer: 500,
@@ -516,7 +518,7 @@ Ext.define('PVE.dc.BackupDiskTree', {
 				}
 
 				Ext.each(['name', 'id', 'type'], function(property) {
-				    if (data[property] == null) {
+				    if (data[property] === null) {
 					return;
 				    }
 
@@ -534,7 +536,7 @@ Ext.define('PVE.dc.BackupDiskTree', {
 			}
 		    }
 		}
-	    ],
+	    ]},
 	});
 
 	me.callParent();
