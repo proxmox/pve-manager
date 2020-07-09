@@ -549,7 +549,7 @@ Ext.define('PVE.dc.BackupInfo', {
     extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveBackupInfo',
 
-    padding: 10,
+    padding: '5 0 5 10',
 
     column1: [
 	{
@@ -840,26 +840,26 @@ Ext.define('PVE.dc.BackupView', {
 	};
 
 	var run_detail = function() {
+	    let me = this;
 	    let record = sm.getSelection()[0]
 	    if (!record) {
 		return;
 	    }
-	    var me = this;
-	    var infoview = Ext.create('PVE.dc.BackupInfo', {
+	    let infoview = Ext.create('PVE.dc.BackupInfo', {
 		flex: 0,
 		layout: 'fit',
 		record: record.data,
 	    });
-	    var disktree = Ext.create('PVE.dc.BackupDiskTree', {
+	    let disktree = Ext.create('PVE.dc.BackupDiskTree', {
 		title: gettext('Included disks'),
 		flex: 1,
 		jobid: record.data.id,
 	    });
 
-	    var win = Ext.create('Ext.window.Window', {
+	    Ext.create('Ext.window.Window', {
 		modal: true,
-		width: 600,
-		height: 500,
+		width: 800,
+		height: 600,
 		stateful: true,
 		stateId: 'backup-detail-view',
 		resizable: true,
