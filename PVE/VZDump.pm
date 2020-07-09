@@ -633,10 +633,15 @@ sub get_backup_file_list {
     my $bklist = [];
     foreach my $fn (<$dir/${bkname}-*>) {
 	next if $exclude_fn && $fn eq $exclude_fn;
-	if ($fn =~ m!/(${bkname}-(\d{4})_(\d{2})_(\d{2})-(\d{2})_(\d{2})_(\d{2})\.(tgz|((tar|vma)(\.(${\PVE::Storage::Plugin::COMPRESSOR_RE}))?)))$!) {
-	    $fn = "$dir/$1"; # untaint
-	    my $t = timelocal ($7, $6, $5, $4, $3 - 1, $2);
-	    push @$bklist, [$fn, $t];
+
+	my $archive_info = eval { PVE::Storage::archive_info($fn) } // {};
+	if ($archive_info->{is_std_name}) {
+	    my $filename = $archive_info->{filename};
+	    my $backup = {
+		'path' => "$dir/$filename",
+		'ctime' => $archive_info->{ctime},
+	    };
+	    push @{$bklist}, $backup;
 	}
     }
 
@@ -930,15 +935,13 @@ sub exec_backup_task {
 		    $opts->{scfg}, $opts->{storage}, 'prune', $args, logfunc => $logfunc);
 	    } else {
 		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname, $task->{target});
-		$bklist = [ sort { $b->[1] <=> $a->[1] } @$bklist ];
+		$bklist = [ sort { $b->{ctime} <=> $a->{ctime} } @$bklist ];
 
 		while (scalar (@$bklist) >= $maxfiles) {
 		    my $d = pop @$bklist;
-		    debugmsg ('info', "delete old backup '$d->[0]'", $logfd);
-		    unlink $d->[0];
-		    my $logfn = $d->[0];
-		    $logfn =~ s/\.(tgz|((tar|vma)(\.(${\PVE::Storage::Plugin::COMPRESSOR_RE}))?))$/\.log/;
-		    unlink $logfn;
+		    my $archive_path = $d->{path};
+		    debugmsg ('info', "delete old backup '$archive_path'", $logfd);
+		    PVE::Storage::archive_remove($archive_path);
 		}
 	    }
 	}
