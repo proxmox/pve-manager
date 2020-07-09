@@ -1,3 +1,15 @@
+pve-manager (6.2-9) pve; urgency=medium
+
+  * fix #2609: ui: backup: add info and status view for guests without any
+    backup job
+
+  * ui: dc/backup: add new backup job detail view
+
+  * Revert "Close #1623: replace apt-get to apt", avoid possible breakage due
+    to not having a stable CLI interface yet.
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 09 Jul 2020 20:12:13 +0200
+
 pve-manager (6.2-8) pve; urgency=medium
 
   * fix #1623: replace apt-get with apt
