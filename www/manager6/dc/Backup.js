@@ -741,6 +741,7 @@ Ext.define('PVE.dc.BackedGuests', {
 		{
 		    xtype: 'textfield',
 		    width: 200,
+		    emptyText: 'Name, VMID, Type',
 		    enableKeyEvents: true,
 		    listeners: {
 			buffer: 500,
