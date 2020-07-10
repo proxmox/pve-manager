@@ -27,7 +27,6 @@ Ext.define('PVE.window.Backup', {
 	var storagesel = Ext.create('PVE.form.StorageSelector', {
 	    nodename: me.nodename,
 	    name: 'storage',
-	    value: me.storage,
 	    fieldLabel: gettext('Storage'),
 	    storageContent: 'backup',
 	    allowBlank: false,
@@ -45,6 +44,7 @@ Ext.define('PVE.window.Backup', {
 		}
 	    },
 	});
+	storagesel.setValue(me.storage);
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
 	    bodyPadding: 10,
