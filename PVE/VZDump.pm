@@ -840,7 +840,7 @@ sub exec_backup_task {
 		$plugin->copy_data_phase1($task, $vmid);
 	    }
 
-	    debugmsg ('info', "suspend vm", $logfd);
+	    debugmsg ('info', "suspending guest", $logfd);
 	    $task->{vmstoptime} = time ();
 	    $self->run_hook_script ('pre-stop', $task, $logfd);
 	    $plugin->suspend_vm ($task, $vmid);
@@ -850,7 +850,7 @@ sub exec_backup_task {
 		# post-suspend rsync
 		$plugin->copy_data_phase2($task, $vmid);
 
-		debugmsg ('info', "resume vm", $logfd);
+		debugmsg ('info', "resuming guest", $logfd);
 		$cleanup->{resume} = 0;
 		$self->run_hook_script('pre-restart', $task, $logfd);
 		$plugin->resume_vm($task, $vmid);
