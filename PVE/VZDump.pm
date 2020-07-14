@@ -677,6 +677,7 @@ sub exec_backup_task {
 	return if !defined($task->{vmstoptime});
 	$task->{vmconttime} //= time();
 	my $delay = $task->{vmconttime} - $task->{vmstoptime};
+	$delay = '<1' if $delay < 1;
 	debugmsg ('info', "guest is online again after $delay seconds", $logfd);
     };
 
