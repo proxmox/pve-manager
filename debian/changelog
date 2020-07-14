@@ -1,3 +1,10 @@
+pve-manager (6.2-10) pve; urgency=medium
+
+  * vzdump-hook-script: rename TARFILE to TARGET and add fallback to TARFILE
+    for compatibility reasons
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 14 Jul 2020 10:28:42 +0200
+
 pve-manager (6.2-9) pve; urgency=medium
 
   * fix #2609: ui: backup: add info and status view for guests without any
