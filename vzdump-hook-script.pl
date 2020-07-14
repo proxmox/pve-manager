@@ -43,17 +43,17 @@ if ($phase eq 'job-start' ||
 
     my $hostname = $ENV{HOSTNAME};
 
-    # tarfile is only available in phase 'backup-end'
-    my $tarfile = $ENV{TARFILE};
+    # target is only available in phase 'backup-end'
+    my $target = $ENV{TARGET};
 
     # logfile is only available in phase 'log-end'
     my $logfile = $ENV{LOGFILE};
 
-    print "HOOK-ENV: vmtype=$vmtype;dumpdir=$dumpdir;storeid=$storeid;hostname=$hostname;tarfile=$tarfile;logfile=$logfile\n";
+    print "HOOK-ENV: vmtype=$vmtype;dumpdir=$dumpdir;storeid=$storeid;hostname=$hostname;target=$target;logfile=$logfile\n";
 
     # example: copy resulting backup file to another host using scp
     if ($phase eq 'backup-end') {
-        #system ("scp $tarfile backup-host:/backup-dir") == 0 ||
+        #system ("scp $target backup-host:/backup-dir") == 0 ||
         #    die "copy tar file to backup-host failed";
     }
 
