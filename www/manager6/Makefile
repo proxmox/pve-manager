@@ -254,6 +254,8 @@ JSSRC= 							\
 	window/Wizard.js				\
 # end of JSSRC list
 
+all: pvemanagerlib.js
+
 lint: ${JSSRC}
 	jslint ${JSSRC}
 
@@ -264,8 +266,6 @@ pvemanagerlib.js: OnlineHelpInfo.js ${JSSRC}
 OnlineHelpInfo.js: /usr/bin/asciidoc-pve
 	/usr/bin/asciidoc-pve scan-extjs ${JSSRC} >$@.tmp
 	mv $@.tmp $@
-
-all: pvemanagerlib.js
 
 .PHONY: install
 install: pvemanagerlib.js
