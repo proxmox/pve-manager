@@ -208,7 +208,7 @@ Ext.define('PVE.node.CephStatus', {
 				{
 				    itemId: 'recoverychart',
 				    xtype: 'pveRunningChart',
-				    title: gettext('Recovery'),
+				    title: gettext('Recovery') +'/ '+ gettext('Rebalance'),
 				    renderer: PVE.Utils.render_bandwidth,
 				    height: 100,
 				},
