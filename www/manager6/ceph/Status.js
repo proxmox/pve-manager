@@ -188,9 +188,37 @@ Ext.define('PVE.node.CephStatus', {
 	    items: [
 		{
 		    flex: 1,
-		    xtype: 'proxmoxGauge',
-		    itemId: 'space',
-		    title: gettext('Usage')
+		    xtype: 'container',
+		    items: [
+			{
+			    xtype: 'proxmoxGauge',
+			    itemId: 'space',
+			    title: gettext('Usage')
+			},
+			{
+			    flex: 1,
+			    border: false,
+			},
+			{
+			    xtype: 'container',
+			    itemId: 'recovery',
+			    hidden: true,
+			    padding: 25,
+			    items: [
+				{
+				    itemId: 'recoverychart',
+				    xtype: 'pveRunningChart',
+				    title: gettext('Recovery'),
+				    renderer: PVE.Utils.render_bandwidth,
+				    height: 100,
+				},
+				{
+				    xtype: 'progressbar',
+				    itemId: 'recoveryprogress',
+				},
+			    ]
+			},
+		    ]
 		},
 		{
 		    flex: 2,
@@ -297,6 +325,35 @@ Ext.define('PVE.node.CephStatus', {
 	me.writes.addDataPoint(writes);
 	me.readiops.addDataPoint(readiops);
 	me.writeiops.addDataPoint(writeiops);
+
+	let degraded = pgmap.degraded_objects || 0;
+	let misplaced = pgmap.misplaced_objects || 0;
+	let unfound = pgmap.unfound_objects || 0;
+	let unhealthy = degraded + unfound + misplaced;
+	// update recovery
+	if (pgmap.recovering_objects_per_sec !== undefined || unhealthy > 0) {
+	    let total = pgmap.misplaced_total || pgmap.unfound_total || pgmap.degraded_total || 0;
+	    if (total === 0) return;
+	    let recovered = (total - unhealthy) || 0;
+	    let speed = pgmap.recovering_bytes_per_sec || 0;
+	    let speedTxt = PVE.Utils.render_bandwidth(speed);
+	    let obj_per_sec = speed / (4*1024*1024); // 4MiB per Object
+	    let duration = Proxmox.Utils.format_duration_human(unhealthy/obj_per_sec);
+
+	    let percentage = recovered/total;
+	    let txt = `${(percentage*100).toFixed(2)}%`;
+	    if (speed > 0) {
+		txt += ` (${speedTxt} - ${duration} left)`;
+	    }
+
+	    me.down('#recovery').setVisible(true);
+	    me.down('#recoveryprogress').updateValue(percentage);
+	    me.down('#recoveryprogress').updateText(txt);
+	    me.down('#recoverychart').addDataPoint(speed);
+	} else {
+	    me.down('#recovery').setVisible(false);
+	    me.down('#recoverychart').addDataPoint(0);
+	}
     },
 
     initComponent: function() {
