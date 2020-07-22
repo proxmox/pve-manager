@@ -1,8 +1,6 @@
 /*
- * This is a running chart widget
- * you add time datapoints to it,
- * and we only show the last x of it
- * used for ceph performance charts
+ * This is a running chart widget you add time datapoints to it, and we only
+ * show the last x of it used for ceph performance charts
  */
 Ext.define('PVE.widget.RunningChart', {
     extend: 'Ext.container.Container',
@@ -93,12 +91,10 @@ Ext.define('PVE.widget.RunningChart', {
 	}
     ],
 
-    // the renderer for the tooltip and last value,
-    // default just the value
+    // the renderer for the tooltip and last value, default just the value
     renderer: Ext.identityFn,
 
-    // show the last x seconds
-    // default is 5 minutes
+    // show the last x seconds default is 5 minutes
     timeFrame: 5*60,
 
     addDataPoint: function(value, time) {
