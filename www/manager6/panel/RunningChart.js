@@ -41,7 +41,8 @@ Ext.define('PVE.widget.RunningChart', {
 	    ],
 
 	    store: {
-		data: {}
+		trackRemoved: false,
+		data: {},
 	    },
 
 	    sprites: [{

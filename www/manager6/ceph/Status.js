@@ -76,6 +76,7 @@ Ext.define('PVE.node.CephStatus', {
 		    // since we load the store manually to show the emptytext,
 		    // we have to specify an empty one here
 		    store: {
+			trackRemoved: false,
 			data: [],
 		    },
 		    emptyText: gettext('No Warnings/Errors'),
