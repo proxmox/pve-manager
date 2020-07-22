@@ -100,13 +100,13 @@ Ext.define('PVE.widget.RunningChart', {
     timeFrame: 5*60,
 
     addDataPoint: function(value, time) {
-	var me = this.chart;
-	var panel = me.up();
-	var now = new Date();
-	var begin = new Date(now.getTime() - (1000*panel.timeFrame));
+	let me = this.chart;
+	let panel = me.up();
+	let now = new Date().getTime();
+	let begin = new Date(now - (1000 * panel.timeFrame)).getTime();
 
 	me.store.add({
-	    time: time || now.getTime(),
+	    time: time || now,
 	    val: value || 0
 	});
 
@@ -119,14 +119,14 @@ Ext.define('PVE.widget.RunningChart', {
 	// with minimal graphical glitches
 	if (me.store.count() > panel.timeFrame * 20) {
 	    var oldData = me.store.getData().createFiltered(function(item) {
-		return item.data.time < begin.getTime();
+		return item.data.time < begin;
 	    });
 
 	    me.store.remove(oldData.getRange());
 	}
 
-	me.timeaxis.setMinimum(begin.getTime());
-	me.timeaxis.setMaximum(now.getTime());
+	me.timeaxis.setMinimum(begin);
+	me.timeaxis.setMaximum(now);
 	me.valuesprite.setText(panel.renderer(value || 0).toString());
 	me.valuesprite.setAttributes({
 	    x: me.getWidth() - 15,
