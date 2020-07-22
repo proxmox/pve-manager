@@ -62,9 +62,10 @@ Ext.define('PVE.widget.RunningChart', {
 		tooltip: {
 		    trackMouse: true,
 		    renderer: function( tooltip, record, ctx) {
-			var me = this.getChart();
-			var date = new Date(record.data.time);
-			var value = me.up().renderer(record.data.val);
+			let me = this.getChart();
+			if (!record || !record.data) return;
+			let date = new Date(record.data.time);
+			let value = me.up().renderer(record.data.val);
 			tooltip.setHtml(
 			    me.up().title + ': ' + value + '<br />' +
 			    Ext.Date.format(date, 'H:i:s')
