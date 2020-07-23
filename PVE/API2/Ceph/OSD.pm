@@ -260,6 +260,11 @@ __PACKAGE__->register_method ({
 		default => 0,
 		description => "Enables encryption of the OSD."
 	    },
+	    'crush-device-class' => {
+		optional => 1,
+		type => 'string',
+		description => "Set the device class of the OSD in crush."
+	    },
 	},
     },
     returns => { type => 'string' },
@@ -429,7 +434,9 @@ __PACKAGE__->register_method ({
 		# update disklist
 		$disklist = PVE::Diskmanage::get_disks($devlist, 1);
 
+		my $dev_class = $param->{'crush-device-class'};
 		my $cmd = ['ceph-volume', 'lvm', 'create', '--cluster-fsid', $fsid ];
+		push @$cmd, '--crush-device-class', $dev_class if $dev_class;
 
 		my $devpath = $disklist->{$devname}->{devpath};
 		print "create OSD on $devpath (bluestore)\n";
