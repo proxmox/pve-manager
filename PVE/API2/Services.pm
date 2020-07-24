@@ -319,7 +319,7 @@ __PACKAGE__->register_method ({
     name => 'service_restart',
     path => '{service}/restart',
     method => 'POST',
-    description => "Restart service.",
+    description => "Hard restart service. Use reload if you want to reduce interruptions.",
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
     },
@@ -355,7 +355,7 @@ __PACKAGE__->register_method ({
     name => 'service_reload',
     path => '{service}/reload',
     method => 'POST',
-    description => "Reload service.",
+    description => "Reload service. Falls back to restart if service cannot be reloaded.",
     permissions => {
 	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
     },
@@ -381,7 +381,7 @@ __PACKAGE__->register_method ({
 	    my $upid = shift;
 	    syslog('info', "reloading service $param->{service}: $upid\n");
 
-	    $service_cmd->($param->{service}, 'reload');
+	    $service_cmd->($param->{service}, 'try-reload-or-restart');
 
 	};
 
