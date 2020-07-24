@@ -16,7 +16,7 @@ Ext.define('PVE.node.Config', {
 
 	me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
 	    url: "/api2/json/nodes/" + nodename + "/status",
-	    interval: 5000
+	    interval: 5000,
 	});
 
 	var node_command = function(cmd) {
@@ -27,7 +27,7 @@ Ext.define('PVE.node.Config', {
 		waitMsgTarget: me,
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
+		},
 	    });
 	};
 
@@ -45,10 +45,10 @@ Ext.define('PVE.node.Config', {
 				nodename: nodename,
 				title: gettext('Bulk Start'),
 				btnText: gettext('Start'),
-				action: 'startall'
+				action: 'startall',
 			    });
 			    win.show();
-			}
+			},
 		    },
 		    {
 			text: gettext('Bulk Stop'),
@@ -58,10 +58,10 @@ Ext.define('PVE.node.Config', {
 				nodename: nodename,
 				title: gettext('Bulk Stop'),
 				btnText: gettext('Stop'),
-				action: 'stopall'
+				action: 'stopall',
 			    });
 			    win.show();
-			}
+			},
 		    },
 		    {
 			text: gettext('Bulk Migrate'),
@@ -71,13 +71,13 @@ Ext.define('PVE.node.Config', {
 				nodename: nodename,
 				title: gettext('Bulk Migrate'),
 				btnText: gettext('Migrate'),
-				action: 'migrateall'
+				action: 'migrateall',
 			    });
 			    win.show();
-			}
-		    }
-		]
-	    })
+			},
+		    },
+		],
+	    }),
 	});
 
 	let restartBtn = Ext.create('Proxmox.button.Button', {
@@ -88,7 +88,7 @@ Ext.define('PVE.node.Config', {
 	    handler: function() {
 		node_command('reboot');
 	    },
-	    iconCls: 'fa fa-undo'
+	    iconCls: 'fa fa-undo',
 	});
 
 	var shutdownBtn = Ext.create('Proxmox.button.Button', {
@@ -99,14 +99,14 @@ Ext.define('PVE.node.Config', {
 	    handler: function() {
 		node_command('shutdown');
 	    },
-	    iconCls: 'fa fa-power-off'
+	    iconCls: 'fa fa-power-off',
 	});
 
 	var shellBtn = Ext.create('PVE.button.ConsoleButton', {
 	    disabled: !caps.nodes['Sys.Console'],
 	    text: gettext('Shell'),
 	    consoleType: 'shell',
-	    nodename: nodename
+	    nodename: nodename,
 	});
 
 	me.items = [];
@@ -115,45 +115,46 @@ Ext.define('PVE.node.Config', {
 	    title: gettext('Node') + " '" + nodename + "'",
 	    hstateid: 'nodetab',
 	    defaults: {
-		statusStore: me.statusStore
+		statusStore: me.statusStore,
 	    },
-	    tbar: [ restartBtn, shutdownBtn, shellBtn, actionBtn]
+	    tbar: [restartBtn, shutdownBtn, shellBtn, actionBtn],
 	});
 
 	if (caps.nodes['Sys.Audit']) {
 	    me.items.push(
 		{
+		    xtype: 'pveNodeSummary',
 		    title: gettext('Summary'),
 		    iconCls: 'fa fa-book',
 		    itemId: 'summary',
-		    xtype: 'pveNodeSummary'
 		},
 		{
+		    xtype: 'pveNotesView',
 		    title: gettext('Notes'),
 		    iconCls: 'fa fa-sticky-note-o',
 		    itemId: 'notes',
-		    xtype: 'pveNotesView'
-		}
+		},
 	    );
 	}
 
 	if (caps.nodes['Sys.Console']) {
 	    me.items.push(
 		{
+		    xtype: 'pveNoVncConsole',
 		    title: gettext('Shell'),
 		    iconCls: 'fa fa-terminal',
 		    itemId: 'jsconsole',
-		    xtype: 'pveNoVncConsole',
 		    consoleType: 'shell',
 		    xtermjs: true,
-		    nodename: nodename
-		}
+		    nodename: nodename,
+		},
 	    );
 	}
 
 	if (caps.nodes['Sys.Audit']) {
 	    me.items.push(
 		{
+		    xtype: 'proxmoxNodeServiceView',
 		    title: gettext('System'),
 		    iconCls: 'fa fa-cogs',
 		    itemId: 'services',
@@ -161,13 +162,13 @@ Ext.define('PVE.node.Config', {
 		    startOnlyServices: {
 			'pveproxy': true,
 			'pvedaemon': true,
-			'pve-cluster': true
+			'pve-cluster': true,
 		    },
 		    nodename: nodename,
 		    onlineHelp: 'pve_service_daemons',
-		    xtype: 'proxmoxNodeServiceView'
 		},
 		{
+		    xtype: 'proxmoxNodeNetworkView',
 		    title: gettext('Network'),
 		    iconCls: 'fa fa-exchange',
 		    itemId: 'network',
@@ -175,71 +176,70 @@ Ext.define('PVE.node.Config', {
 		    groups: ['services'],
 		    nodename: nodename,
 		    onlineHelp: 'sysadmin_network_configuration',
-		    xtype: 'proxmoxNodeNetworkView'
 		},
 		{
+		    xtype: 'pveCertificatesView',
 		    title: gettext('Certificates'),
 		    iconCls: 'fa fa-certificate',
 		    itemId: 'certificates',
 		    groups: ['services'],
 		    nodename: nodename,
-		    xtype: 'pveCertificatesView'
 		},
 		{
+		    xtype: 'proxmoxNodeDNSView',
 		    title: gettext('DNS'),
 		    iconCls: 'fa fa-globe',
 		    groups: ['services'],
 		    itemId: 'dns',
 		    nodename: nodename,
 		    onlineHelp: 'sysadmin_network_configuration',
-		    xtype: 'proxmoxNodeDNSView'
 		},
 		{
+		    xtype: 'proxmoxNodeHostsView',
 		    title: gettext('Hosts'),
 		    iconCls: 'fa fa-globe',
 		    groups: ['services'],
 		    itemId: 'hosts',
 		    nodename: nodename,
 		    onlineHelp: 'sysadmin_network_configuration',
-		    xtype: 'proxmoxNodeHostsView'
 		},
 		{
+		    xtype: 'proxmoxNodeTimeView',
 		    title: gettext('Time'),
 		    itemId: 'time',
 		    groups: ['services'],
 		    nodename: nodename,
-		    xtype: 'proxmoxNodeTimeView',
-		    iconCls: 'fa fa-clock-o'
+		    iconCls: 'fa fa-clock-o',
 		});
 	}
 
 	if (caps.nodes['Sys.Syslog']) {
 	    me.items.push({
+		xtype: 'proxmoxJournalView',
 		title: 'Syslog',
 		iconCls: 'fa fa-list',
 		groups: ['services'],
 		disabled: !caps.nodes['Sys.Syslog'],
 		itemId: 'syslog',
-		xtype: 'proxmoxJournalView',
-		url: "/api2/extjs/nodes/" + nodename + "/journal"
+		url: "/api2/extjs/nodes/" + nodename + "/journal",
 	    });
 
 	    if (caps.nodes['Sys.Modify']) {
 		me.items.push({
+		    xtype: 'proxmoxNodeAPT',
 		    title: gettext('Updates'),
 		    iconCls: 'fa fa-refresh',
 		    disabled: !caps.nodes['Sys.Console'],
 		    // do we want to link to system updates instead?
 		    itemId: 'apt',
-		    xtype: 'proxmoxNodeAPT',
 		    upgradeBtn: {
 			xtype: 'pveConsoleButton',
 			disabled: Proxmox.UserName !== 'root@pam',
 			text: gettext('Upgrade'),
 			consoleType: 'upgrade',
-			nodename: nodename
+			nodename: nodename,
 		    },
-		    nodename: nodename
+		    nodename: nodename,
 		});
 	    }
 	}
@@ -253,7 +253,7 @@ Ext.define('PVE.node.Config', {
 		    allow_iface: true,
 		    base_url: '/nodes/' + nodename + '/firewall/rules',
 		    list_refs_url: '/cluster/firewall/refs',
-		    itemId: 'firewall'
+		    itemId: 'firewall',
 		},
 		{
 		    xtype: 'pveFirewallOptions',
@@ -263,7 +263,7 @@ Ext.define('PVE.node.Config', {
 		    groups: ['firewall'],
 		    base_url: '/nodes/' + nodename + '/firewall/options',
 		    fwtype: 'node',
-		    itemId: 'firewall-options'
+		    itemId: 'firewall-options',
 		});
 	}
 
@@ -271,36 +271,36 @@ Ext.define('PVE.node.Config', {
 	if (caps.nodes['Sys.Audit']) {
 	    me.items.push(
 		{
+		    xtype: 'pmxDiskList',
 		    title: gettext('Disks'),
 		    itemId: 'storage',
 		    expandedOnInit: true,
 		    iconCls: 'fa fa-hdd-o',
 		    nodename: nodename,
-		    xtype: 'pmxDiskList'
 		},
 		{
+		    xtype: 'pveLVMList',
 		    title: 'LVM',
 		    itemId: 'lvm',
 		    onlineHelp: 'chapter_lvm',
 		    iconCls: 'fa fa-square',
 		    groups: ['storage'],
-		    xtype: 'pveLVMList'
 		},
 		{
+		    xtype: 'pveLVMThinList',
 		    title: 'LVM-Thin',
 		    itemId: 'lvmthin',
 		    onlineHelp: 'chapter_lvm',
 		    iconCls: 'fa fa-square-o',
 		    groups: ['storage'],
-		    xtype: 'pveLVMThinList'
 		},
 		{
+		    xtype: 'pveDirectoryList',
 		    title: Proxmox.Utils.directoryText,
 		    itemId: 'directory',
 		    onlineHelp: 'chapter_storage',
 		    iconCls: 'fa fa-folder',
 		    groups: ['storage'],
-		    xtype: 'pveDirectoryList'
 		},
 		{
 		    title: 'ZFS',
@@ -308,40 +308,40 @@ Ext.define('PVE.node.Config', {
 		    onlineHelp: 'chapter_zfs',
 		    iconCls: 'fa fa-th-large',
 		    groups: ['storage'],
-		    xtype: 'pveZFSList'
+		    xtype: 'pveZFSList',
 		},
 		{
+		    xtype: 'pveNodeCephStatus',
 		    title: 'Ceph',
 		    itemId: 'ceph',
 		    iconCls: 'fa fa-ceph',
-		    xtype: 'pveNodeCephStatus'
 		},
 		{
 		    xtype: 'pveReplicaView',
 		    iconCls: 'fa fa-retweet',
 		    title: gettext('Replication'),
-		    itemId: 'replication'
+		    itemId: 'replication',
 		},
 		{
 		    xtype: 'pveNodeCephConfigCrush',
 		    title: gettext('Configuration'),
 		    iconCls: 'fa fa-gear',
 		    groups: ['ceph'],
-		    itemId: 'ceph-config'
+		    itemId: 'ceph-config',
 		},
 		{
 		    xtype: 'pveNodeCephMonMgr',
 		    title: gettext('Monitor'),
 		    iconCls: 'fa fa-tv',
 		    groups: ['ceph'],
-		    itemId: 'ceph-monlist'
+		    itemId: 'ceph-monlist',
 		},
 		{
 		    xtype: 'pveNodeCephOsdTree',
 		    title: 'OSD',
 		    iconCls: 'fa fa-hdd-o',
 		    groups: ['ceph'],
-		    itemId: 'ceph-osdtree'
+		    itemId: 'ceph-osdtree',
 		},
 		{
 		    xtype: 'pveNodeCephFSPanel',
@@ -349,15 +349,15 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-folder',
 		    groups: ['ceph'],
 		    nodename: nodename,
-		    itemId: 'ceph-cephfspanel'
+		    itemId: 'ceph-cephfspanel',
 		},
 		{
 		    xtype: 'pveNodeCephPoolList',
 		    title: 'Pools',
 		    iconCls: 'fa fa-sitemap',
 		    groups: ['ceph'],
-		    itemId: 'ceph-pools'
-		}
+		    itemId: 'ceph-pools',
+		},
 	    );
 	}
 
@@ -370,17 +370,17 @@ Ext.define('PVE.node.Config', {
 		    groups: ['firewall'],
 		    onlineHelp: 'chapter_pve_firewall',
 		    url: '/api2/extjs/nodes/' + nodename + '/firewall/log',
-		    itemId: 'firewall-fwlog'
+		    itemId: 'firewall-fwlog',
 		},
 		{
+		    xtype: 'cephLogView',
 		    title: gettext('Log'),
 		    itemId: 'ceph-log',
 		    iconCls: 'fa fa-list',
 		    groups: ['ceph'],
 		    onlineHelp: 'chapter_pveceph',
-		    xtype: 'cephLogView',
 		    url: "/api2/extjs/nodes/" + nodename + "/ceph/log",
-		    nodename: nodename
+		    nodename: nodename,
 		});
 	}
 
@@ -390,15 +390,15 @@ Ext.define('PVE.node.Config', {
 		iconCls: 'fa fa-list',
 		itemId: 'tasks',
 		nodename: nodename,
-		xtype: 'proxmoxNodeTasks'
+		xtype: 'proxmoxNodeTasks',
 	    },
 	    {
 		title: gettext('Subscription'),
 		iconCls: 'fa fa-support',
 		itemId: 'support',
 		xtype: 'pveNodeSubscription',
-		nodename: nodename
-	    }
+		nodename: nodename,
+	    },
 	);
 
 	me.callParent();
@@ -419,5 +419,5 @@ Ext.define('PVE.node.Config', {
 	me.on('destroy', function() {
 	    me.statusStore.stopUpdate();
 	});
-    }
+    },
 });
