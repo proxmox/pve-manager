@@ -34,6 +34,11 @@ my $service_name_list = [
     'ksmtuned',
     'systemd-timesyncd',
 ];
+my $essential_services = {
+    pveproxy => 1,
+    pvedaemon => 1,
+    'pve-cluster' => 1,
+};
 
 # since postfix package 3.1.0-3.1 the postfix unit is only here to
 # manage subinstances, of which the  default is called "-".
@@ -92,17 +97,12 @@ my $service_cmd = sub {
 
     my $initd_cmd;
 
-    die "unknown service command '$cmd'\n"
-	if $cmd !~ m/^(start|stop|restart|reload)$/;
+    die "unknown service command '$cmd'\n" if $cmd !~ m/^(start|stop|restart|reload|try-reload-or-restart)$/;
 
-    if ($service eq 'pvecluster' || $service eq 'pvedaemon' || $service eq 'pveproxy') {
-	if ($cmd eq 'restart') {    
-	    # OK
-	} else {
-	    die "invalid service cmd '$service $cmd': ERROR";
-	}
+    if ($essential_services->{$service} && $cmd eq 'stop') {
+	die "invalid service cmd '$service $cmd': refusing to stop essential service!\n";
     }
-    
+
     PVE::Tools::run_command(['systemctl', $cmd, $service]);
 };
 
