@@ -159,6 +159,7 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-cogs',
 		    itemId: 'services',
 		    expandedOnInit: true,
+		    restartCommand: 'reload', // avoid disruptions
 		    startOnlyServices: {
 			'pveproxy': true,
 			'pvedaemon': true,
