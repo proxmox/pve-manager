@@ -1,3 +1,66 @@
+Ext.define('Proxmox.form.PBSEncryptionCheckbox', {
+    extend: 'Ext.form.field.Checkbox',
+    xtype: 'pbsEncryptionCheckbox',
+
+    viewModel: {
+	data: {
+	    value: null,
+	    originalValue: null,
+	},
+	formulas: {
+	    blabel: (get) => {
+		let v = get('value');
+		let original = get('originalValue');
+		if (get('isCreate')) {
+		    return gettext('Auto-generate a client encryption key, safed privately on cluster.');
+		}
+		if (original) {
+		    if (!v) {
+			return gettext('Warning: Existing encryption Key will be deleted!');
+		    }
+		    return gettext('Active');
+		} else {
+		    return gettext('Auto-generate a client encryption key, safed privately on cluster filesystem');
+		}
+	    },
+	},
+    },
+
+    bind: {
+	value: '{value}',
+	boxLabel: '{blabel}',
+    },
+    resetOriginalValue: function() {
+	let me = this;
+	let vm = me.getViewModel();
+	vm.set('originalValue', me.value);
+
+	me.callParent(arguments);
+    },
+
+    getSubmitData: function() {
+	let me = this;
+	let val = me.getSubmitValue();
+	if (!me.isCreate) {
+	    if (val === null) {
+	       return { 'delete': 'encryption-key' };
+	    } else if (val && val !== me.originalValue) {
+	       return { 'encryption-key': 'autogen' };
+	    }
+	} else if (val) {
+	   return { 'encryption-key': 'autogen' };
+	}
+	return null;
+    },
+
+    initComponent: function() {
+	let me = this;
+	me.callParent();
+
+	let vm = me.getViewModel();
+	vm.set('isCreate', me.isCreate);
+    },
+});
 Ext.define('PVE.storage.PBSInputPanel', {
     extend: 'PVE.panel.StorageBase',
 
@@ -32,6 +95,7 @@ Ext.define('PVE.storage.PBSInputPanel', {
 		value: me.isCreate ? '' : '********',
 		emptyText: me.isCreate ? gettext('None') : '',
 		fieldLabel: gettext('Password'),
+		allowBlank: false,
 		minLength: 5,
 	    },
 	    {
@@ -44,7 +108,7 @@ Ext.define('PVE.storage.PBSInputPanel', {
 	];
 
 	me.column2 = [
-	    {  // FIXME: prune settings
+	    { // FIXME: prune settings
 		xtype: 'proxmoxintegerfield',
 		fieldLabel: gettext('Max Backups'),
 		name: 'maxfiles',
@@ -75,10 +139,17 @@ Ext.define('PVE.storage.PBSInputPanel', {
 		allowBlank: true,
 	    },
 	    {
+		// FIXME: allow uploading their own, maybe export for root@pam?
+		xtype: 'pbsEncryptionCheckbox',
+		name: 'encryption-key',
+		isCreate: me.isCreate,
+		fieldLabel: gettext('Encryption Key'),
+	    },
+	    {
 		xtype: 'displayfield',
 		userCls: 'pmx-hint',
 		value: `Proxmox Backup Server is currently in beta.`,
-	    }
+	    },
 	];
 
 	me.callParent();
