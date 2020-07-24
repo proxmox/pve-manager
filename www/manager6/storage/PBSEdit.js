@@ -2,6 +2,8 @@ Ext.define('Proxmox.form.PBSEncryptionCheckbox', {
     extend: 'Ext.form.field.Checkbox',
     xtype: 'pbsEncryptionCheckbox',
 
+    inputValue: true,
+
     viewModel: {
 	data: {
 	    value: null,
@@ -44,7 +46,7 @@ Ext.define('Proxmox.form.PBSEncryptionCheckbox', {
 	if (!me.isCreate) {
 	    if (val === null) {
 	       return { 'delete': 'encryption-key' };
-	    } else if (val && val !== me.originalValue) {
+	    } else if (val && !!val !== !!me.originalValue) {
 	       return { 'encryption-key': 'autogen' };
 	    }
 	} else if (val) {
