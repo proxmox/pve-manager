@@ -1,3 +1,17 @@
+pve-manager (6.2-11) pve; urgency=medium
+
+  * ui: add ceph recovery graph and progressbar
+
+  * pveceph: allow setting device class on osd create
+
+  * api/services: improve essential service check, allow reload and start
+
+  * ui: storage: Proxmox Backup: allow one to setting up and deleting an
+    encryption key. For now only autogeneration over UI. Use pvesm if you want
+    to use a pre-existing key file.
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 24 Jul 2020 19:19:19 +0200
+
 pve-manager (6.2-10) pve; urgency=medium
 
   * vzdump-hook-script: rename TARFILE to TARGET and add fallback to TARFILE
