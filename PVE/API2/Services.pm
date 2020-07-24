@@ -17,7 +17,7 @@ use IO::File;
 use base qw(PVE::RESTHandler);
 
 my $service_name_list = [
-    'pveproxy', 
+    'pveproxy',
     'pvedaemon',
     'spiceproxy',
     'pvestatd',
@@ -33,7 +33,7 @@ my $service_name_list = [
     'postfix',
     'ksmtuned',
     'systemd-timesyncd',
-    ];
+];
 
 # since postfix package 3.1.0-3.1 the postfix unit is only here to
 # manage subinstances, of which the  default is called "-".
@@ -46,7 +46,7 @@ my $get_full_service_state = sub {
     my ($service) = @_;
     $service = $unit_extra_names->{$service} if $unit_extra_names->{$service};
     my $res;
-    
+
     my $parser = sub {
 	my $line = shift;
 	if ($line =~ m/^([^=\s]+)=(.*)$/) {
@@ -54,8 +54,8 @@ my $get_full_service_state = sub {
 	}
     };
 
-    PVE::Tools::run_command(['systemctl', 'show', $service], outfunc => $parser); 
-    
+    PVE::Tools::run_command(['systemctl', 'show', $service], outfunc => $parser);
+
     return $res;
 };
 
@@ -64,7 +64,7 @@ my $static_service_list;
 sub get_service_list {
 
     return $static_service_list if $static_service_list;
-    
+
     my $list = {};
     foreach my $name (@$service_name_list) {
 	my $ss;
@@ -76,7 +76,7 @@ sub get_service_list {
     }
 
     $static_service_list = $list;
-    
+
     return $static_service_list;
 }
 
@@ -269,7 +269,7 @@ __PACKAGE__->register_method ({
 
 	    syslog('info', "starting service $param->{service}: $upid\n");
 
-	    &$service_cmd($param->{service}, 'start');
+	    $service_cmd->($param->{service}, 'start');
 
 	};
 
@@ -308,7 +308,7 @@ __PACKAGE__->register_method ({
 
 	    syslog('info', "stopping service $param->{service}: $upid\n");
 
-	    &$service_cmd($param->{service}, 'stop');
+	    $service_cmd->($param->{service}, 'stop');
 
 	};
 
@@ -316,8 +316,8 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
-    name => 'service_restart', 
-    path => '{service}/restart', 
+    name => 'service_restart',
+    path => '{service}/restart',
     method => 'POST',
     description => "Restart service.",
     permissions => {
@@ -326,7 +326,7 @@ __PACKAGE__->register_method ({
     proxyto => 'node',
     protected => 1,
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    service => $service_prop_desc,
@@ -337,26 +337,23 @@ __PACKAGE__->register_method ({
     },
     code => sub {
 	my ($param) = @_;
-  
-	my $rpcenv = PVE::RPCEnvironment::get();
 
+	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
 	my $realcmd = sub {
 	    my $upid = shift;
-
 	    syslog('info', "re-starting service $param->{service}: $upid\n");
 
-	    &$service_cmd($param->{service}, 'restart');
-
+	    $service_cmd->($param->{service}, 'restart');
 	};
 
 	return $rpcenv->fork_worker('srvrestart', $param->{service}, $user, $realcmd);
     }});
 
 __PACKAGE__->register_method ({
-    name => 'service_reload', 
-    path => '{service}/reload', 
+    name => 'service_reload',
+    path => '{service}/reload',
     method => 'POST',
     description => "Reload service.",
     permissions => {
@@ -365,7 +362,7 @@ __PACKAGE__->register_method ({
     proxyto => 'node',
     protected => 1,
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    service => $service_prop_desc,
@@ -376,17 +373,15 @@ __PACKAGE__->register_method ({
     },
     code => sub {
 	my ($param) = @_;
-  
-	my $rpcenv = PVE::RPCEnvironment::get();
 
+	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
 	my $realcmd = sub {
 	    my $upid = shift;
-
 	    syslog('info', "reloading service $param->{service}: $upid\n");
 
-	    &$service_cmd($param->{service}, 'reload');
+	    $service_cmd->($param->{service}, 'reload');
 
 	};
 
