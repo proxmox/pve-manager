@@ -49,6 +49,7 @@ Ext.define('PVE.grid.BackupView', {
 	var vmidFilter = {
 	    property: 'vmid',
 	    value: vmid,
+	    exactMatch: true,
 	};
 
 	me.store = Ext.create('Ext.data.Store', {
