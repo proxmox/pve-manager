@@ -60,7 +60,8 @@ if (my $err = $@) {
 
 eval {
     my $node_config = PVE::NodeConfig::load_config($nodename);
-    if ($node_config && $node_config->{acme}) {
+    my $acme_node_config = PVE::NodeConfig::get_acme_conf($node_config);
+    if ($acme_node_config && $acme_node_config->{domains}) {
 	my $cert = PVE::CertHelpers::cert_path_prefix($nodename).".pem";
 	if (-e $cert) {
 	    if (PVE::Certificate::check_expiry($cert, time() + 30*24*60*60)) {
