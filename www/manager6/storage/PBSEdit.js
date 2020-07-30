@@ -98,7 +98,6 @@ Ext.define('PVE.storage.PBSInputPanel', {
 		emptyText: me.isCreate ? gettext('None') : '',
 		fieldLabel: gettext('Password'),
 		allowBlank: false,
-		minLength: 5,
 	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
