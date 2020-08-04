@@ -1048,7 +1048,7 @@ sub exec_backup {
     }
 
     my $vmlist = PVE::Cluster::get_vmlist();
-    foreach my $vmid (sort @{$opts->{vmids}}) {
+    foreach my $vmid (@{$opts->{vmids}}) {
 	my $guest_type = $vmlist->{ids}->{$vmid}->{type};
 	my $plugin = $vzdump_plugins->{$guest_type};
 	next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Backup' ], $opts->{all});
