@@ -742,10 +742,10 @@ sub exec_backup_task {
 
 	$task->{vmtype} = $vmtype;
 
-	if ($self->{opts}->{pbs}) {
-	    $task->{tmpdir} = "/var/tmp/vzdumptmp$$"; #fixme
-	} elsif ($opts->{tmpdir}) {
+	if ($opts->{tmpdir}) {
 	    $task->{tmpdir} = "$opts->{tmpdir}/vzdumptmp$$";
+	} elsif ($self->{opts}->{pbs}) {
+	    $task->{tmpdir} = "/var/tmp/vzdumptmp$$"; #fixme
 	} else {
 	    # dumpdir is posix? then use it as temporary dir
 	    my $info = get_mount_info($opts->{dumpdir});
