@@ -138,6 +138,7 @@ __PACKAGE__->register_method ({
 	    my $opts = $plugin->check_config($id, $param, 1, 1);
 
 	    $opts->{guest} = $guest;
+	    $opts->{source} //= $vmlist->{ids}->{$guest}->{node};
 
 	    $cfg->{ids}->{$id} = $opts;
 
