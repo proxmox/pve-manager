@@ -119,13 +119,20 @@ __PACKAGE__->register_method ({
 	my $vmlist = PVE::Cluster::get_vmlist();
 
 	my $guest_info = $vmlist->{ids}->{$guest};
+
 	die "Guest '$guest' does not exist.\n"
 	    if !defined($guest_info);
 	die "Target '$param->{target}' does not exist.\n"
 	    if defined($param->{target}) && !defined($nodelist->{$param->{target}});
 
+	my $source = $guest_info->{node};
+	die "Source '$param->{source}' does not match current node of guest '$guest'\n"
+	    if defined($param->{source}) && $param->{source} ne $source;
+
+	$param->{source} //= $source;
+
 	my $guest_class = $PVE::API2::Replication::lookup_guest_class->($guest_info->{type});
-	my $guest_conf = $guest_class->load_config($guest, $guest_info->{node});
+	my $guest_conf = $guest_class->load_config($guest, $source);
 	my $rep_volumes = $guest_class->get_replicatable_volumes(PVE::Storage::config(), $guest, $guest_conf, 0, 0);
 	die "No replicatable volumes found\n" if !%$rep_volumes;
 
@@ -138,7 +145,6 @@ __PACKAGE__->register_method ({
 	    my $opts = $plugin->check_config($id, $param, 1, 1);
 
 	    $opts->{guest} = $guest;
-	    $opts->{source} //= $vmlist->{ids}->{$guest}->{node};
 
 	    $cfg->{ids}->{$id} = $opts;
 
