@@ -123,7 +123,7 @@ __PACKAGE__->register_method ({
 	die "Guest '$guest' does not exist.\n"
 	    if !defined($guest_info);
 	die "Target '$param->{target}' does not exist.\n"
-	    if defined($param->{target}) && !defined($nodelist->{$param->{target}});
+	    if !defined($nodelist->{$param->{target}});
 
 	my $source = $guest_info->{node};
 	die "Source '$param->{source}' does not match current node of guest '$guest'\n"
