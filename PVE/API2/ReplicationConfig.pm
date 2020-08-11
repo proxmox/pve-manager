@@ -131,6 +131,9 @@ __PACKAGE__->register_method ({
 
 	$param->{source} //= $source;
 
+	die "Source and target must not be identical\n"
+	    if $param->{target} eq $source;
+
 	my $guest_class = $PVE::API2::Replication::lookup_guest_class->($guest_info->{type});
 	my $guest_conf = $guest_class->load_config($guest, $source);
 	my $rep_volumes = $guest_class->get_replicatable_volumes(PVE::Storage::config(), $guest, $guest_conf, 0, 0);
