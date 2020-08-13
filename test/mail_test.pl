@@ -35,11 +35,22 @@ sub prepare_long_mail {
 
 my ($result_text, $result_html);
 
-my $mock_module = Test::MockModule->new('PVE::Tools');
-$mock_module->mock('sendmail', sub {
+my $mock_tools_module = Test::MockModule->new('PVE::Tools');
+$mock_tools_module->mock('sendmail', sub {
     my (undef, undef, $text, $html, undef, undef) = @_;
     $result_text = $text;
     $result_html = $html;
+});
+
+my $mock_cluster_module = Test::MockModule->new('PVE::Cluster');
+$mock_cluster_module->mock('cfs_read_file', sub {
+    my $path = shift;
+
+    if ($path eq 'datacenter.cfg') {
+	return {};
+    } else {
+	die "unexpected cfs_read_file\n";
+    }
 });
 
 my $MAILTO = ['test_address@proxmox.com'];
