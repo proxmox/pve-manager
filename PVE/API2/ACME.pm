@@ -357,7 +357,11 @@ __PACKAGE__->register_method ({
 	    $acme->load();
 
 	    print "Revoking old certificate\n";
-	    $acme->revoke_certificate($cert);
+	    eval { $acme->revoke_certificate($cert) };
+	    if (my $err = $@) {
+		# is there a better check?
+		die "Revoke request to CA failed: $err" if $err !~ /"Certificate is expired"/;
+	    }
 
 	    my $code = sub {
 		print "Deleting certificate files\n";
