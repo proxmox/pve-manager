@@ -301,7 +301,8 @@ __PACKAGE__->register_method ({
 	    die "$@\n" if $@;
 
 	    print "Revoking old certificate\n";
-            $acme->revoke_certificate($old_cert);
+	    eval { $acme->revoke_certificate($old_cert) };
+	    warn "Revoke request to CA failed: $@" if $@;
 	};
 
 	return $rpcenv->fork_worker("acmerenew", undef, $authuser, $realcmd);
