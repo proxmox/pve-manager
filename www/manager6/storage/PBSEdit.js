@@ -13,16 +13,13 @@ Ext.define('Proxmox.form.PBSEncryptionCheckbox', {
 	    blabel: (get) => {
 		let v = get('value');
 		let original = get('originalValue');
-		if (get('isCreate')) {
-		    return gettext('Auto-generate a client encryption key, safed privately on cluster.');
-		}
-		if (original) {
+		if (!get('isCreate') && original) {
 		    if (!v) {
-			return gettext('Warning: Existing encryption Key will be deleted!');
+			return gettext('Warning: Existing encryption key will be deleted!');
 		    }
 		    return gettext('Active');
 		} else {
-		    return gettext('Auto-generate a client encryption key, safed privately on cluster filesystem');
+		    return gettext('Auto-generate a client encryption key, saved privately on cluster filesystem');
 		}
 	    },
 	},
