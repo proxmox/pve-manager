@@ -126,7 +126,7 @@ __PACKAGE__->register_method ({
 	    if !defined($nodelist->{$param->{target}});
 
 	my $source = $guest_info->{node};
-	die "Source '$param->{source}' does not match current node of guest '$guest'\n"
+	die "Source '$param->{source}' does not match current node of guest '$guest' ($source)\n"
 	    if defined($param->{source}) && $param->{source} ne $source;
 
 	$param->{source} //= $source;
