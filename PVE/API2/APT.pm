@@ -558,6 +558,7 @@ __PACKAGE__->register_method({
 	    lxc-pve
 	    lxcfs
 	    novnc-pve
+	    proxmox-backup-client
 	    proxmox-mini-journalreader
 	    proxmox-widget-toolkit
 	    pve-cluster
