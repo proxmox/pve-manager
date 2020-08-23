@@ -74,7 +74,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	}
 
 	var i;
-	for (i = 0; i < 10; i++) {
+	for (i = 0; i < 32; i++) {
 	    if (me.isCreate && !me.dataCache['net'+i.toString()]) {
 		me.ifname = 'net' + i.toString();
 		break;
@@ -370,7 +370,7 @@ Ext.define('PVE.lxc.NetworkView', {
 		    records.push(net);
 		});
 		me.store.loadData(records);
-		me.down('button[name=addButton]').setDisabled((records.length >= 10));
+		me.down('button[name=addButton]').setDisabled((records.length >= 32));
 	    }
 	});
     },
