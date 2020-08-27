@@ -432,7 +432,8 @@ Ext.define('PVE.storage.ContentView', {
 	    selModel: sm,
 	    delay: 5,
 	    enableFn: function(rec) {
-		if (rec && rec.data.content !== 'images') {
+		if (rec && rec.data.content !== 'images' &&
+			   rec.data.content !== 'rootdir') {
 		    imageRemoveButton.setVisible(false);
 		    removeButton.setVisible(true);
 		    return true;
@@ -450,7 +451,8 @@ Ext.define('PVE.storage.ContentView', {
 	    hidden: true,
 	    text: gettext('Remove'),
 	    enableFn: function(rec) {
-		if (rec && rec.data.content === 'images') {
+		if (rec && (rec.data.content === 'images' ||
+			    rec.data.content === 'rootdir')) {
 		    removeButton.setVisible(false);
 		    imageRemoveButton.setVisible(true);
 		    return true;
