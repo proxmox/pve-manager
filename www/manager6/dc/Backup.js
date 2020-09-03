@@ -61,7 +61,21 @@ Ext.define('PVE.dc.BackupEdit', {
 	    nodename: 'localhost',
 	    storageContent: 'backup',
 	    allowBlank: false,
-	    name: 'storage'
+	    name: 'storage',
+	    listeners: {
+		change: function(f, v) {
+		    let store = f.getStore();
+		    let rec = store.findRecord('storage', v);
+		    let compressionSelector = me.down('pveCompressionSelector');
+
+		    if (rec && rec.data && rec.data.type === 'pbs') {
+			compressionSelector.setValue('zstd');
+			compressionSelector.setDisabled(true);
+		    } else if (!compressionSelector.getEditable()) {
+			compressionSelector.setDisabled(false);
+		    }
+		}
+	    }
 	});
 
 	var store = new Ext.data.Store({
