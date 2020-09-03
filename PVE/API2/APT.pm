@@ -344,15 +344,9 @@ __PACKAGE__->register_method({
 		    my $hostname = `hostname -f` || PVE::INotify::nodename();
 		    chomp $hostname;
 		    my $mailfrom = $dcconf->{email_from} || "root";
+		    my $subject = "New software packages available ($hostname)";
 
-		    my $data = "Content-Type: text/plain;charset=\"UTF8\"\n";
-		    $data .= "Content-Transfer-Encoding: 8bit\n";
-		    $data .= "FROM: <$mailfrom>\n";
-		    $data .= "TO: $mailto\n";
-		    $data .= "SUBJECT: New software packages available ($hostname)\n";
-		    $data .= "\n";
-
-		    $data .= "The following updates are available:\n\n";
+		    my $data = "The following updates are available:\n\n";
 
 		    my $count = 0;
 		    foreach my $p (sort {$a->{Package} cmp $b->{Package} } @$pkglist) {
@@ -365,14 +359,9 @@ __PACKAGE__->register_method({
 			}
 		    }
 
-		    return if !$count; 
+		    return if !$count;
 
-		    my $fh = IO::File->new("|sendmail -B 8BITMIME -f $mailfrom $mailto") || 
-			die "unable to open 'sendmail' - $!";
-
-		    print $fh $data;
-
-		    $fh->close() || die "unable to close 'sendmail' - $!";
+		    PVE::Tools::sendmail($mailto, $subject, $data, undef, $mailfrom, '');
 
 		    foreach my $pi (@$pkglist) {
 			$pi->{NotifyStatus} = $pi->{Version};
