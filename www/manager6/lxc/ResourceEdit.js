@@ -88,7 +88,7 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 		xtype: 'proxmoxintegerfield',
 		name: 'cores',
 		minValue: 1,
-		maxValue: 128,
+		maxValue: 8192,
 		value: me.insideWizard ? 1 : '',
 		fieldLabel: gettext('Cores'),
 		allowBlank: true,
