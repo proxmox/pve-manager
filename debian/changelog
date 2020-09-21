@@ -1,3 +1,33 @@
+pve-manager (6.2-12) pve; urgency=medium
+
+  * fix #2890: also detect & renew DNS-only ACME certs
+
+  * fix #2908: fixed password validator for adding PBS as storage
+
+  * vzdump: use configured tmpdir for PBS
+
+  * fix #2913: order backup jobs numerically by VMID
+
+  * fix #2842: ui: filter on exact vmid
+
+  * api: ACME renew: handle error from revoking old cert gracefully
+
+  * api: ACME revoke: do not abort if CA is just expired
+
+  * replication: improve various checks and fallback/default settings
+
+  * pveversion: track proxmox-backup-client
+
+  * ui: block removal of in-use container image
+
+  * ui: dc/Backup: disable pveCompressionSelector for pbs storages
+
+  * lxc: increase max cores from 128 to 8192
+
+  * lxc: increase max number of net interfaces from 10 to 32
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 21 Sep 2020 11:28:07 +0200
+
 pve-manager (6.2-11) pve; urgency=medium
 
   * ui: add ceph recovery graph and progressbar
