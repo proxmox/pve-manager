@@ -104,7 +104,8 @@ Ext.define('PVE.qemu.AgentIPView', {
 	var ips = [];
 	nics.forEach(function(nic) {
 	    if (nic['hardware-address'] &&
-		nic['hardware-address'] != '00:00:00:00:00:00') {
+		nic['hardware-address'] != '00:00:00:00:00:00' &&
+		nic['hardware-address'] != '0:0:0:0:0:0') {
 
 		var nic_ips = nic['ip-addresses'] || [];
 		nic_ips.forEach(function(ip) {
