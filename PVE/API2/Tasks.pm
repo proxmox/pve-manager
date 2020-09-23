@@ -24,6 +24,18 @@ my $convert_token_task = sub {
     }
 };
 
+my $check_task_user = sub {
+    my ($task, $user) = @_;
+
+    if ($task->{tokenid}) {
+	my $fulltoken = PVE::AccessControl::join_tokenid($task->{user}, $task->{tokenid});
+	# token only sees token tasks, user sees user + token tasks
+	return $user eq $fulltoken || $user eq $task->{user};
+    } else {
+	return $user eq $task->{user};
+    }
+};
+
 __PACKAGE__->register_method({
     name => 'node_tasks',
     path => '',
@@ -126,7 +138,7 @@ __PACKAGE__->register_method({
 	    my $task = shift;
 
 	    return 1 if $userfilter && $task->{user} !~ m/\Q$userfilter\E/i;
-	    return 1 if !($auditor || $user eq $task->{user});
+	    return 1 if !($auditor || $check_task_user->($task, $user));
 
 	    return 1 if $typefilter && $task->{type} ne $typefilter;
 
@@ -253,7 +265,7 @@ __PACKAGE__->register_method({
 
 	$convert_token_task->($task);
 
-	if ($user ne $task->{user}) {
+	if (!$check_task_user->($task, $user)) {
 	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Modify' ]);
 	}
 
@@ -322,7 +334,7 @@ __PACKAGE__->register_method({
 
 	$convert_token_task->($task);
 
-	if ($user ne $task->{user})  {
+	if (!$check_task_user->($task, $user)) {
 	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ]);
 	}
 
@@ -380,7 +392,7 @@ __PACKAGE__->register_method({
 
 	$convert_token_task->($task);
 
-	if ($user ne $task->{user}) {
+	if (!$check_task_user->($task, $user)) {
 	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ]);
 	}
 
