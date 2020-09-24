@@ -126,6 +126,7 @@ Ext.define('PVE.grid.BackupView', {
 	    listeners: {
 		change: function(cb, value) {
 		    vmidFilter.value = !!value ? vmid : '';
+		    vmidFilter.exactMatch = !!value;
 		    updateFilter();
 		},
 	    },
