@@ -484,8 +484,10 @@ sub new {
 	die "internal error";
     }
 
-    if (!defined($opts->{'prune-backups'}) && !defined($opts->{maxfiles})) {
-	$opts->{maxfiles} = $defaults->{maxfiles};
+    if (!defined($opts->{'prune-backups'})) {
+	$opts->{maxfiles} //= $defaults->{maxfiles};
+	$opts->{'prune-backups'} = { 'keep-last' => $opts->{maxfiles} };
+	delete $opts->{maxfiles};
     }
 
     if ($opts->{tmpdir} && ! -d $opts->{tmpdir}) {
@@ -720,16 +722,11 @@ sub exec_backup_task {
 	my $bkname = "vzdump-$vmtype-$vmid";
 	my $basename = $bkname . strftime("-%Y_%m_%d-%H_%M_%S", localtime($task->{backup_time}));
 
-	my $maxfiles = $opts->{maxfiles};
 	my $prune_options = $opts->{'prune-backups'};
 
 	my $backup_limit = 0;
-	if (defined($maxfiles)) {
-	    $backup_limit = $maxfiles;
-	} elsif (defined($prune_options)) {
-	    foreach my $keep (values %{$prune_options}) {
-		$backup_limit += $keep;
-	    }
+	foreach my $keep (values %{$prune_options}) {
+	    $backup_limit += $keep;
 	}
 
 	if ($backup_limit && !$opts->{remove}) {
@@ -952,25 +949,18 @@ sub exec_backup_task {
 
 	# purge older backup
 	if ($opts->{remove}) {
-	    if ($maxfiles) {
+	    if (!defined($opts->{storage})) {
+		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname, $task->{target});
+		PVE::Storage::prune_mark_backup_group($bklist, $prune_options);
 
-		if ($self->{opts}->{pbs}) {
-		    my $args = [$pbs_group_name, '--quiet', '1', '--keep-last', $maxfiles];
-		    my $logfunc = sub { my $line = shift; debugmsg ('info', $line, $logfd); };
-		    PVE::Storage::PBSPlugin::run_raw_client_cmd(
-			$opts->{scfg}, $opts->{storage}, 'prune', $args, logfunc => $logfunc);
-		} else {
-		    my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname, $task->{target});
-		    $bklist = [ sort { $b->{ctime} <=> $a->{ctime} } @$bklist ];
+		foreach my $prune_entry (@{$bklist}) {
+		    next if $prune_entry->{mark} ne 'remove';
 
-		    while (scalar (@$bklist) >= $maxfiles) {
-			my $d = pop @$bklist;
-			my $archive_path = $d->{path};
-			debugmsg ('info', "delete old backup '$archive_path'", $logfd);
-			PVE::Storage::archive_remove($archive_path);
-		    }
+		    my $archive_path = $prune_entry->{path};
+		    debugmsg ('info', "delete old backup '$archive_path'", $logfd);
+		    PVE::Storage::archive_remove($archive_path);
 		}
-	    } elsif (defined($prune_options)) {
+	    } else {
 		my $logfunc = sub { debugmsg($_[0], $_[1], $logfd) };
 		PVE::Storage::prune_backups($cfg, $opts->{storage}, $prune_options, $vmid, $vmtype, 0, $logfunc);
 	    }
