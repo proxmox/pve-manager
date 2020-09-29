@@ -89,6 +89,12 @@ sub storage_info {
 	maxfiles => $scfg->{maxfiles},
     };
 
+    $info->{'prune-backups'} = PVE::JSONSchema::parse_property_string('prune-backups', $scfg->{'prune-backups'})
+	if defined($scfg->{'prune-backups'});
+
+    die "cannot have 'maxfiles' and 'prune-backups' configured at the same time\n"
+	if defined($info->{'prune-backups'}) && defined($info->{maxfiles});
+
     if ($type eq 'pbs') {
 	$info->{pbs} = 1;
     } else {
@@ -459,12 +465,18 @@ sub new {
 
     if ($opts->{storage}) {
 	my $info = eval { storage_info ($opts->{storage}) };
-	$errors .= "could not get storage information for '$opts->{storage}': $@"
-	    if ($@);
-	$opts->{dumpdir} = $info->{dumpdir};
-	$opts->{scfg} = $info->{scfg};
-	$opts->{pbs} = $info->{pbs};
-	$opts->{maxfiles} //= $info->{maxfiles};
+	if (my $err = $@) {
+	    $errors .= "could not get storage information for '$opts->{storage}': $err";
+	} else {
+	    $opts->{dumpdir} = $info->{dumpdir};
+	    $opts->{scfg} = $info->{scfg};
+	    $opts->{pbs} = $info->{pbs};
+
+	    if (!defined($opts->{'prune-backups'}) && !defined($opts->{maxfiles})) {
+		$opts->{'prune-backups'} = $info->{'prune-backups'};
+		$opts->{maxfiles} = $info->{maxfiles};
+	    }
+	}
     } elsif ($opts->{dumpdir}) {
 	$errors .= "dumpdir '$opts->{dumpdir}' does not exist"
 	    if ! -d $opts->{dumpdir};
@@ -472,7 +484,9 @@ sub new {
 	die "internal error";
     }
 
-    $opts->{maxfiles} //= $defaults->{maxfiles};
+    if (!defined($opts->{'prune-backups'}) && !defined($opts->{maxfiles})) {
+	$opts->{maxfiles} = $defaults->{maxfiles};
+    }
 
     if ($opts->{tmpdir} && ! -d $opts->{tmpdir}) {
 	$errors .= "\n" if $errors;
@@ -653,6 +667,7 @@ sub exec_backup_task {
 
     my $opts = $self->{opts};
 
+    my $cfg = PVE::Storage::config();
     my $vmid = $task->{vmid};
     my $plugin = $task->{plugin};
     my $vmtype = $plugin->type();
@@ -706,8 +721,18 @@ sub exec_backup_task {
 	my $basename = $bkname . strftime("-%Y_%m_%d-%H_%M_%S", localtime($task->{backup_time}));
 
 	my $maxfiles = $opts->{maxfiles};
+	my $prune_options = $opts->{'prune-backups'};
 
-	if ($maxfiles && !$opts->{remove}) {
+	my $backup_limit = 0;
+	if (defined($maxfiles)) {
+	    $backup_limit = $maxfiles;
+	} elsif (defined($prune_options)) {
+	    foreach my $keep (values %{$prune_options}) {
+		$backup_limit += $keep;
+	    }
+	}
+
+	if ($backup_limit && !$opts->{remove}) {
 	    my $count;
 	    if ($self->{opts}->{pbs}) {
 		my $res = PVE::Storage::PBSPlugin::run_client_cmd($opts->{scfg}, $opts->{storage}, 'snapshots', $pbs_group_name);
@@ -716,10 +741,10 @@ sub exec_backup_task {
 		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname);
 		$count = scalar(@$bklist);
 	    }
-	    die "There is a max backup limit of ($maxfiles) enforced by the".
+	    die "There is a max backup limit of $backup_limit enforced by the".
 		" target storage or the vzdump parameters.".
 		" Either increase the limit or delete old backup(s).\n"
-		if $count >= $maxfiles;
+		if $count >= $backup_limit;
 	}
 
 	if (!$self->{opts}->{pbs}) {
@@ -926,23 +951,28 @@ sub exec_backup_task {
 	}
 
 	# purge older backup
-	if ($maxfiles && $opts->{remove}) {
+	if ($opts->{remove}) {
+	    if ($maxfiles) {
 
-	    if ($self->{opts}->{pbs}) {
-		my $args = [$pbs_group_name, '--quiet', '1', '--keep-last', $maxfiles];
-		my $logfunc = sub { my $line = shift; debugmsg ('info', $line, $logfd); };
-		PVE::Storage::PBSPlugin::run_raw_client_cmd(
-		    $opts->{scfg}, $opts->{storage}, 'prune', $args, logfunc => $logfunc);
-	    } else {
-		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname, $task->{target});
-		$bklist = [ sort { $b->{ctime} <=> $a->{ctime} } @$bklist ];
+		if ($self->{opts}->{pbs}) {
+		    my $args = [$pbs_group_name, '--quiet', '1', '--keep-last', $maxfiles];
+		    my $logfunc = sub { my $line = shift; debugmsg ('info', $line, $logfd); };
+		    PVE::Storage::PBSPlugin::run_raw_client_cmd(
+			$opts->{scfg}, $opts->{storage}, 'prune', $args, logfunc => $logfunc);
+		} else {
+		    my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname, $task->{target});
+		    $bklist = [ sort { $b->{ctime} <=> $a->{ctime} } @$bklist ];
 
-		while (scalar (@$bklist) >= $maxfiles) {
-		    my $d = pop @$bklist;
-		    my $archive_path = $d->{path};
-		    debugmsg ('info', "delete old backup '$archive_path'", $logfd);
-		    PVE::Storage::archive_remove($archive_path);
+		    while (scalar (@$bklist) >= $maxfiles) {
+			my $d = pop @$bklist;
+			my $archive_path = $d->{path};
+			debugmsg ('info', "delete old backup '$archive_path'", $logfd);
+			PVE::Storage::archive_remove($archive_path);
+		    }
 		}
+	    } elsif (defined($prune_options)) {
+		my $logfunc = sub { debugmsg($_[0], $_[1], $logfd) };
+		PVE::Storage::prune_backups($cfg, $opts->{storage}, $prune_options, $vmid, $vmtype, 0, $logfunc);
 	    }
 	}
 
@@ -1128,6 +1158,12 @@ sub verify_vzdump_parameters {
 
     raise_param_exc({ pool => "option conflicts with option 'vmid'"})
 	if $param->{pool} && $param->{vmid};
+
+    raise_param_exc({ 'prune-backups' => "option conflicts with option 'maxfiles'"})
+	if defined($param->{'prune-backups'}) && defined($param->{maxfiles});
+
+    $param->{'prune-backups'} = PVE::JSONSchema::parse_property_string('prune-backups', $param->{'prune-backups'})
+	if defined($param->{'prune-backups'});
 
     $param->{all} = 1 if (defined($param->{exclude}) && !$param->{pool});
 
