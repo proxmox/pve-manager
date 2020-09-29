@@ -522,7 +522,7 @@ sub getlock {
 
     my $maxwait = $self->{opts}->{lockwait} || $self->{lockwait};
 
-    die "missimg UPID" if !$upid; # should not happen
+    die "missing UPID" if !$upid; # should not happen
 
     if (!open (SERVER_FLCK, ">>$lockfile")) {
 	debugmsg ('err', "can't open lock on file '$lockfile' - $!", undef, 1);
