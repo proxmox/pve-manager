@@ -629,7 +629,7 @@ Ext.define('PVE.FirewallRules', {
 		// similar to xtype: 'rownumberer',
 		dataIndex: 'pos',
 		resizable: false,
-		width: 23,
+		width: 42,
 		sortable: false,
 		align: 'right',
 		hideable: false,
