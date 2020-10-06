@@ -92,27 +92,45 @@ Ext.define('PVE.qemu.Options', {
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.BootOrderEdit' : undefined,
 		multiKey: ['boot', 'bootdisk'],
 		renderer: function(order, metaData, record, rowIndex, colIndex, store, pending) {
+		    if (/^\s*$/.test(order)) {
+			return gettext('(No boot device selected)');
+		    }
+		    let boot = PVE.Parser.parsePropertyString(order, "legacy");
+		    if (boot.order) {
+			let list = boot.order.split(';');
+			let ret = '';
+			let i = 1;
+			list.forEach(dev => {
+			    if (ret) {
+				ret += ', ';
+			    }
+			    ret += dev;
+			});
+			return ret;
+		    }
+
+		    // legacy style and fallback
 		    var i;
 		    var text = '';
 		    var bootdisk = me.getObjectValue('bootdisk', undefined, pending);
-		    order = order || 'cdn';
+		    order = boot.legacy || 'cdn';
 		    for (i = 0; i < order.length; i++) {
-			var sel = order.substring(i, i + 1);
 			if (text) {
 			    text += ', ';
 			}
+			var sel = order.substring(i, i + 1);
 			if (sel === 'c') {
 			    if (bootdisk) {
-				text += "Disk '" + bootdisk + "'";
+				text += bootdisk;
 			    } else {
-				text += "Disk";
+				text += gettext('(no bootdisk)');
 			    }
 			} else if (sel === 'n') {
-			    text += 'Network';
+			    text += gettext('any net');
 			} else if (sel === 'a') {
-			    text += 'Floppy';
+			    text += gettext('Floppy');
 			} else if (sel === 'd') {
-			    text += 'CD-ROM';
+			    text += gettext('any CD-ROM');
 			} else {
 			    text += sel;
 			}
