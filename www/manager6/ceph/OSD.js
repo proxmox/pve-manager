@@ -77,6 +77,23 @@ Ext.define('PVE.CephCreateOsd', {
 			    name: 'encrypted',
 			    fieldLabel: gettext('Encrypt OSD')
 			},
+			{
+			    xtype: 'proxmoxKVComboBox',
+			    comboItems: [
+				['hdd', 'HDD'],
+				['ssd', 'SSD'],
+				['nvme', 'NVME'],
+			    ],
+			    name: 'crush-device-class',
+			    nodename: me.nodename,
+			    fieldLabel: gettext('Device Class'),
+			    value: '',
+			    autoSelect: false,
+			    allowBlank: true,
+			    editable: true,
+			    emptyText: 'auto detect',
+			    deleteEmpty: me.isCreate ? false : true,
+			},
 		    ],
 		    advancedColumn2: [
 			{
