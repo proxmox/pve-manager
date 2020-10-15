@@ -53,10 +53,45 @@ Ext.define('PVE.panel.LDAPInputPanel', {
 		fieldLabel: 'SSL',
 		name: 'secure',
 		uncheckedValue: 0,
+		listeners: {
+		    change: function(me, newValue) {
+			let verifyCheckbox = me.nextSibling('proxmoxcheckbox[name=verify]');
+			if (newValue === true) {
+			    verifyCheckbox.enable();
+			} else {
+			    verifyCheckbox.disable();
+			    verifyCheckbox.setValue(0);
+			}
+		    },
+		},
+	    },
+	    {
+		xtype: 'proxmoxcheckbox',
+		fieldLabel: gettext('Verify Certificate'),
+		name: 'verify',
+		unceckedValue: 0,
+		disabled: true,
+		checked: false,
+		autoEl: {
+		    tag: 'div',
+		    'data-qtip': gettext('Verify SSL certificate of the server'),
+		},
 	    },
 	];
 
 	me.callParent();
+    },
+    onGetValues: function(values) {
+	let me = this;
+
+	if (!values.verify) {
+	    if (!me.isCreate) {
+		Proxmox.Utils.assemble_field_data(values, { 'delete': 'verify' });
+	    }
+	    delete values.verify;
+	}
+
+	return me.callParent([values]);
     },
 });
 
