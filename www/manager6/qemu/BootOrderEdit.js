@@ -119,6 +119,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	    xtype: 'grid',
 	    reference: 'grid',
 	    margin: '0 0 5 0',
+	    minHeight: 150,
 	    defaults: {
 		sortable: false,
 		hideable: false,
