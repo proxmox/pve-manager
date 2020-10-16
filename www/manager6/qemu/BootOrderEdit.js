@@ -149,6 +149,24 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 		    header: gettext('Device'),
 		    dataIndex: 'name',
 		    flex: 6,
+		    renderer: (value, metaData, record, rowIndex) => {
+			let desc = record.get('desc');
+
+			let icon = '', iconCls;
+			if (value.match(/^net\d+$/)) {
+			    iconCls = 'exchange';
+			} else if (desc.match(/media=cdrom/)) {
+			    metaData.tdCls = 'pve-itype-icon-cdrom';
+			} else {
+			    iconCls = 'hdd-o';
+			}
+			if (iconCls !== undefined) {
+			    metaData.tdCls += 'pve-itype-fa';
+			    icon = `<i class="pve-grid-fa fa fa-fw fa-${iconCls}"></i>`;
+			}
+
+			return icon + value;
+		    },
 		},
 		{
 		    header: gettext('Description'),
