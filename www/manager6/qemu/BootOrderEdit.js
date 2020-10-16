@@ -119,21 +119,20 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	    xtype: 'grid',
 	    reference: 'grid',
 	    margin: '0 0 5 0',
+	    defaults: {
+		sortable: false,
+		hideable: false,
+		draggable: false,
+	    },
 	    columns: [
 		{
 		    header: '',
 		    renderer: () => "<i class='fa fa-reorder cursor-move'></i>",
 		    width: 30,
-		    sortable: false,
-		    hideable: false,
-		    draggable: false,
 		},
 		{
 		    header: '#',
 		    width: 30,
-		    sortable: false,
-		    hideable: false,
-		    draggable: false,
 		    renderer: (value, metaData, record, rowIndex) => {
 			let idx = (rowIndex + 1).toString();
 			if (record.get('enabled')) {
@@ -148,25 +147,16 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 		    header: gettext('Enabled'),
 		    dataIndex: 'enabled',
 		    width: 70,
-		    sortable: false,
-		    hideable: false,
-		    draggable: false,
 		},
 		{
 		    header: gettext('Device'),
 		    dataIndex: 'name',
 		    width: 70,
-		    sortable: false,
-		    hideable: false,
-		    draggable: false,
 		},
 		{
 		    header: gettext('Description'),
 		    dataIndex: 'desc',
 		    flex: true,
-		    sortable: false,
-		    hideable: false,
-		    draggable: false,
 		},
 	    ],
 	    viewConfig: {
