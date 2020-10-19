@@ -674,6 +674,63 @@ __PACKAGE__->register_method ({
 	return $data;
     }});
 
+
+my $ceph_pool_common_options = sub {
+    my ($nodefault) = shift;
+    my $options = {
+	name => {
+	    description => "The name of the pool. It must be unique.",
+	    type => 'string',
+	},
+	size => {
+	    description => 'Number of replicas per object',
+	    type => 'integer',
+	    default => 3,
+	    optional => 1,
+	    minimum => 1,
+	    maximum => 7,
+	},
+	min_size => {
+	    description => 'Minimum number of replicas per object',
+	    type => 'integer',
+	    default => 2,
+	    optional => 1,
+	    minimum => 1,
+	    maximum => 7,
+	},
+	pg_num => {
+	    description => "Number of placement groups.",
+	    type => 'integer',
+	    default => 128,
+	    optional => 1,
+	    minimum => 8,
+	    maximum => 32768,
+	},
+	crush_rule => {
+	    description => "The rule to use for mapping object placement in the cluster.",
+	    type => 'string',
+	    optional => 1,
+	},
+	application => {
+	    description => "The application of the pool.",
+	    default => 'rbd',
+	    type => 'string',
+	    enum => ['rbd', 'cephfs', 'rgw'],
+	    optional => 1,
+	},
+    };
+
+    if (!$nodefault) {
+	return $options;
+    } else {
+	foreach my $key (keys %$options) {
+	    delete $options->{$key}->{default} if defined($options->{$key}->{default});
+	}
+	return $options;
+    }
+};
+
+
 __PACKAGE__->register_method ({
     name => 'createpool',
     path => 'pools',
@@ -971,6 +1028,47 @@ __PACKAGE__->register_method ({
 	    }
 	};
 	return $rpcenv->fork_worker('cephdestroypool', $pool,  $user, $worker);
+    }});
+
+
+__PACKAGE__->register_method ({
+    name => 'setpool',
+    path => 'pools/{name}',
+    method => 'PUT',
+    description => "Change POOL settings",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Modify' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    %{ $ceph_pool_common_options->('nodefault') },
+	},
+    },
+    returns => { type => 'string' },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::Ceph::Tools::check_ceph_configured();
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+
+	my $pool = $param->{name};
+	my $ceph_param = \%$param;
+	for my $item ('name', 'node') {
+	    # not ceph parameters
+	    delete $ceph_param->{$item};
+	}
+
+	my $worker = sub {
+	    PVE::Ceph::Tools::set_pool($pool, $ceph_param);
+	};
+
+	return $rpcenv->fork_worker('cephsetpool', $pool,  $authuser, $worker);
     }});
 
 

@@ -198,6 +198,7 @@ our $cmddef = {
 	}, $PVE::RESTHandler::standard_output_options],
 	create => [ 'PVE::API2::Ceph', 'createpool', ['name'], { node => $nodename }],
 	destroy => [ 'PVE::API2::Ceph', 'destroypool', ['name'], { node => $nodename } ],
+	set => [ 'PVE::API2::Ceph', 'setpool', ['name'], { node => $nodename } ],
     },
     lspools => { alias => 'pool ls' },
     createpool => { alias => 'pool create' },
