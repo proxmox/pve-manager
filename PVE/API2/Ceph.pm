@@ -751,14 +751,21 @@ __PACKAGE__->register_method ({
 		if !PVE::JSONSchema::parse_storage_id($pool);
 	}
 
-	my $pg_num = $param->{pg_num} || 128;
-	my $size = $param->{size} || 3;
-	my $min_size = $param->{min_size} || 2;
-	my $application = $param->{application} // 'rbd';
+	my $ceph_param = \%$param;
+	for my $item ('add_storages', 'name', 'node') {
+	    # not ceph parameters
+	    delete $ceph_param->{$item};
+	}
+
+	# pool defaults
+	$ceph_param->{pg_num} //= 128;
+	$ceph_param->{size} //= 3;
+	$ceph_param->{min_size} //= 2;
+	$ceph_param->{application} //= 'rbd';
 
 	my $worker = sub {
 
-	    PVE::Ceph::Tools::create_pool($pool, $param);
+	    PVE::Ceph::Tools::create_pool($pool, $ceph_param);
 
 	    if ($param->{add_storages}) {
 		my $err;

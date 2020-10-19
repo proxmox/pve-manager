@@ -202,6 +202,45 @@ sub check_ceph_enabled {
     return 1;
 }
 
+sub set_pool {
+    my ($pool, $param) = @_;
+
+    foreach my $setting (keys %$param) {
+	my $value = $param->{$setting};
+
+	my $command;
+	if ($setting eq 'application') {
+	    $command = {
+		prefix => "osd pool application enable",
+		pool   => "$pool",
+		app    => "$value",
+	    };
+	} else {
+	    $command = {
+		prefix => "osd pool set",
+		pool   => "$pool",
+		var    => "$setting",
+		val    => "$value",
+		format => 'plain',
+	    };
+	}
+
+	my $rados = PVE::RADOS->new();
+	eval { $rados->mon_command($command); };
+	if ($@) {
+	    print "$@";
+	} else {
+	    delete $param->{$setting};
+	}
+    }
+
+    if ((keys %$param) > 0) {
+	my @missing = join(', ', keys %$param );
+	die "Could not set: @missing\n";
+    }
+
+}
+
 sub create_pool {
     my ($pool, $param, $rados) = @_;
 
@@ -210,9 +249,6 @@ sub create_pool {
     }
 
     my $pg_num = $param->{pg_num} || 128;
-    my $size = $param->{size} || 3;
-    my $min_size = $param->{min_size} || 2;
-    my $application = $param->{application} // 'rbd';
 
     $rados->mon_command({
 	prefix => "osd pool create",
@@ -221,37 +257,7 @@ sub create_pool {
 	format => 'plain',
     });
 
-    $rados->mon_command({
-	prefix => "osd pool set",
-	pool => $pool,
-	var => 'min_size',
-	val => "$min_size",
-	format => 'plain',
-    });
-
-    $rados->mon_command({
-	prefix => "osd pool set",
-	pool => $pool,
-	var => 'size',
-	val => "$size",
-	format => 'plain',
-    });
-
-    if (defined($param->{crush_rule})) {
-	$rados->mon_command({
-	    prefix => "osd pool set",
-	    pool => $pool,
-	    var => 'crush_rule',
-	    val => $param->{crush_rule},
-	    format => 'plain',
-	});
-    }
-
-    $rados->mon_command({
-	prefix => "osd pool application enable",
-	pool => $pool,
-	app => $application,
-    });
+    set_pool($pool, $param);
 
 }
 
