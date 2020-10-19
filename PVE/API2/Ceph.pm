@@ -718,6 +718,13 @@ my $ceph_pool_common_options = sub {
 	    enum => ['rbd', 'cephfs', 'rgw'],
 	    optional => 1,
 	},
+	pg_autoscale_mode => {
+	    description => "The automatic PG scaling mode of the pool.",
+	    type => 'string',
+	    enum => ['on', 'off', 'warn'],
+	    default => 'warn',
+	    optional => 1,
+	},
     };
 
     if (!$nodefault) {
@@ -781,6 +788,7 @@ __PACKAGE__->register_method ({
 	$ceph_param->{size} //= 3;
 	$ceph_param->{min_size} //= 2;
 	$ceph_param->{application} //= 'rbd';
+	$ceph_param->{pg_autoscale_mode} //= 'warn';
 
 	my $worker = sub {
 
