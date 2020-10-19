@@ -411,7 +411,10 @@ Ext.define('PVE.qemu.Config', {
 
 	    statusTxt.update({ lock: lock });
 
-	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
+	    let guest_running = status === 'running' &&
+		!(qmpstatus === "shutdown" || qmpstatus === "prelaunch");
+	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || template || guest_running);
+
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
 	    me.down('#removeBtn').setDisabled(!caps.vms['VM.Allocate'] || status !== 'stopped');
 	    consoleBtn.setDisabled(template);
