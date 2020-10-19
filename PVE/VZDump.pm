@@ -769,10 +769,11 @@ sub exec_backup_task {
 
 	$task->{vmtype} = $vmtype;
 
+	my $pid = $$;
 	if ($opts->{tmpdir}) {
-	    $task->{tmpdir} = "$opts->{tmpdir}/vzdumptmp$$";
+	    $task->{tmpdir} = "$opts->{tmpdir}/vzdumptmp${pid}_$vmid/";
 	} elsif ($self->{opts}->{pbs}) {
-	    $task->{tmpdir} = "/var/tmp/vzdumptmp$$"; #fixme
+	    $task->{tmpdir} = "/var/tmp/vzdumptmp${pid}_$vmid";
 	} else {
 	    # dumpdir is posix? then use it as temporary dir
 	    my $info = get_mount_info($opts->{dumpdir});
@@ -780,7 +781,7 @@ sub exec_backup_task {
 		grep ($_ eq $info->{fstype}, @posix_filesystems)) {
 		$task->{tmpdir} = "$opts->{dumpdir}/$basename.tmp";
 	    } else {
-		$task->{tmpdir} = "/var/tmp/vzdumptmp$$";
+		$task->{tmpdir} = "/var/tmp/vzdumptmp${pid}_$vmid";
 		debugmsg ('info', "filesystem type on dumpdir is '$info->{fstype}' -" .
 			  "using $task->{tmpdir} for temporary files", $logfd);
 	    }
