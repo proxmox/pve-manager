@@ -40,6 +40,19 @@ Ext.define('PVE.CephCreatePool', {
 	    allowBlank: false
 	},
 	{
+	    xtype: 'proxmoxKVComboBox',
+	    fieldLabel: 'PG Autoscale Mode', // do not localize
+	    name: 'pg_autoscale_mode',
+	    comboItems: [
+		['warn', 'warn'],
+		['on', 'on'],
+		['off', 'off'],
+	    ],
+	    value: 'warn',
+	    allowBlank: false,
+	    autoSelect: false,
+	},
+	{
 	    xtype: 'proxmoxintegerfield',
 	    fieldLabel: 'pg_num',
 	    name: 'pg_num',
