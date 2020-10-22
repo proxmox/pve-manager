@@ -672,24 +672,11 @@ sub exec_backup_task {
     my $cfg = PVE::Storage::config();
     my $vmid = $task->{vmid};
     my $plugin = $task->{plugin};
-    my $vmtype = $plugin->type();
 
     $task->{backup_time} = time();
 
     my $pbs_group_name;
     my $pbs_snapshot_name;
-
-    if ($self->{opts}->{pbs}) {
-	if ($vmtype eq 'lxc') {
-	    $pbs_group_name = "ct/$vmid";
-	} elsif  ($vmtype eq 'qemu') {
-	    $pbs_group_name = "vm/$vmid";
-	} else {
-	    die "pbs backup not implemented for plugin type '$vmtype'\n";
-	}
-	my $btime = strftime("%FT%TZ", gmtime($task->{backup_time}));
-	$pbs_snapshot_name = "$pbs_group_name/$btime";
-    }
 
     my $vmstarttime = time ();
 
@@ -707,6 +694,20 @@ sub exec_backup_task {
 
     eval {
 	die "unable to find VM '$vmid'\n" if !$plugin;
+
+	my $vmtype = $plugin->type();
+
+	if ($self->{opts}->{pbs}) {
+	    if ($vmtype eq 'lxc') {
+		$pbs_group_name = "ct/$vmid";
+	    } elsif  ($vmtype eq 'qemu') {
+		$pbs_group_name = "vm/$vmid";
+	    } else {
+		die "pbs backup not implemented for plugin type '$vmtype'\n";
+	    }
+	    my $btime = strftime("%FT%TZ", gmtime($task->{backup_time}));
+	    $pbs_snapshot_name = "$pbs_group_name/$btime";
+	}
 
 	# for now we deny backups of a running ha managed service in *stop* mode
 	# as it interferes with the HA stack (started services should not stop).
