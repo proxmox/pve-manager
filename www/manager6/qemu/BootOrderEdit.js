@@ -19,12 +19,14 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	xclass: 'Ext.app.ViewController',
     },
 
+    isCloudinit: (v) => v.match(/media=cdrom/) && v.match(/[:/]vm-\d+-cloudinit/),
+
     isDisk: function(value) {
 	return PVE.Utils.bus_match.test(value);
     },
 
     isBootdev: function(dev, value) {
-	return this.isDisk(dev) ||
+	return (this.isDisk(dev) && !this.isCloudinit(value)) ||
 	    (/^net\d+/).test(dev) ||
 	    (/^hostpci\d+/).test(dev) ||
 	    ((/^usb\d+/).test(dev) && !(/spice/).test(value));
@@ -59,7 +61,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 		    }
 		} else if (orderList[i] === 'd') {
 		    Ext.Object.each(me.vmconfig, function(key, value) {
-			if (me.isDisk(key) && (/media=cdrom/).test(value)) {
+			if (me.isDisk(key) && value.match(/media=cdrom/) && !me.isCloudinit(value)) {
 			    list.push(key);
 			}
 		    });
