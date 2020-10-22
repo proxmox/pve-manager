@@ -727,14 +727,10 @@ my $ceph_pool_common_options = sub {
 	},
     };
 
-    if (!$nodefault) {
-	return $options;
-    } else {
-	foreach my $key (keys %$options) {
-	    delete $options->{$key}->{default} if defined($options->{$key}->{default});
-	}
-	return $options;
+    if ($nodefault) {
+	delete $options->{$_}->{default} for keys %$options;
     }
+    return $options;
 };
 
 
