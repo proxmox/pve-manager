@@ -1073,7 +1073,8 @@ sub exec_backup {
     }
 
     my $vmlist = PVE::Cluster::get_vmlist();
-    foreach my $vmid (@{$opts->{vmids}}) {
+    my $vmids = [ sort { $a <=> $b } @{$opts->{vmids}} ];
+    foreach my $vmid (@{$vmids}) {
 	my $plugin;
 	if (defined($vmlist->{ids}->{$vmid})) {
 	    my $guest_type = $vmlist->{ids}->{$vmid}->{type};
