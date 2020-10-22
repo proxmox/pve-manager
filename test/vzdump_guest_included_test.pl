@@ -1,9 +1,5 @@
 #!/usr/bin/perl
 
-# Some of the tests can only be applied once the whole include logic is moved
-# into one single method. Right now parts of it, (all, exclude)  are in the
-# PVE::VZDump->exec_backup() method.
-
 use strict;
 use warnings;
 
