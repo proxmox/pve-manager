@@ -75,8 +75,8 @@ my $init_report_cmds = sub {
     push @{$report_def->{volumes}}, 'zpool status', 'zpool list -v', 'zfs list' if cmd_exists('zfs');
 
     if (-e '/etc/ceph/ceph.conf') {
-	my $crbd = eval "`ceph osd pool ls | sed -e 's/^/echo /' | sed 'p;s/echo/rbd ls/g'`";
-	push @{$report_def->{volumes}}, 'ceph status', 'ceph osd status', 'ceph df', 'pveceph status', 'pveceph lspools', $crbd;
+	# TODO: add (now working) rdb ls over all pools? really needed?
+	push @{$report_def->{volumes}}, 'ceph status', 'ceph osd status', 'ceph df', 'pveceph status', 'pveceph pool ls';
     }
 
     push @{$report_def->{disk}}, 'multipath -ll', 'multipath -v3' if cmd_exists('multipath');

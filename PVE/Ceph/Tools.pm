@@ -140,13 +140,11 @@ sub purge_all_ceph_services {
 	    my $service_exists = $type->{$name}->{service};
 
 	    if ($service_exists) {
-		eval {
-		    PVE::Ceph::Services::ceph_service_cmd('disable', "$service.$name");
-		    PVE::Ceph::Services::ceph_service_cmd('stop', "$service.$name");
-		};
-		my $err = $@ if $@;
-		warn "Could not disable/stop ceph-$service\@$name, error: $err\n"
-		if $err;
+		eval { PVE::Ceph::Services::ceph_service_cmd('disable', "$service.$name") };
+		warn "Could not disable ceph-$service\@$name, error: $@\n" if $@;
+
+		eval { PVE::Ceph::Services::ceph_service_cmd('stop', "$service.$name") };
+		warn "Could not stop ceph-$service\@$name, error: $@\n" if $@;
 	    }
 	}
     }
