@@ -54,8 +54,8 @@ Ext.define('PVE.panel.LDAPInputPanel', {
 		name: 'secure',
 		uncheckedValue: 0,
 		listeners: {
-		    change: function(me, newValue) {
-			let verifyCheckbox = me.nextSibling('proxmoxcheckbox[name=verify]');
+		    change: function(field, newValue) {
+			let verifyCheckbox = field.nextSibling('proxmoxcheckbox[name=verify]');
 			if (newValue === true) {
 			    verifyCheckbox.enable();
 			} else {
