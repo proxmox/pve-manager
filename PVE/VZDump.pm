@@ -1074,9 +1074,12 @@ sub exec_backup {
 
     my $vmlist = PVE::Cluster::get_vmlist();
     foreach my $vmid (@{$opts->{vmids}}) {
-	my $guest_type = $vmlist->{ids}->{$vmid}->{type};
-	my $plugin = $vzdump_plugins->{$guest_type};
-	next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Backup' ], $opts->{all});
+	my $plugin;
+	if (defined($vmlist->{ids}->{$vmid})) {
+	    my $guest_type = $vmlist->{ids}->{$vmid}->{type};
+	    $plugin = $vzdump_plugins->{$guest_type};
+	    next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Backup' ], $opts->{all});
+	}
 	push @$tasklist, {
 	    mode => $opts->{mode},
 	    plugin => $plugin,
@@ -1218,10 +1221,14 @@ sub get_included_guests {
     $vmids = check_vmids(@$vmids);
 
     for my $vmid (@$vmids) {
-	my $node = $vmlist->{ids}->{$vmid}->{node};
-	next if (defined $job->{node} && $job->{node} ne $node);
+	if (defined($vmlist->{ids}->{$vmid})) {
+	    my $node = $vmlist->{ids}->{$vmid}->{node};
+	    next if (defined $job->{node} && $job->{node} ne $node);
 
-	push @{$vmids_per_node->{$node}}, $vmid;
+	    push @{$vmids_per_node->{$node}}, $vmid;
+	} else {
+	    push @{$vmids_per_node->{''}}, $vmid;
+	}
     }
 
     return $vmids_per_node;

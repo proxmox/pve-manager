@@ -74,6 +74,10 @@ __PACKAGE__->register_method ({
 
 	my $local_vmids = delete $vmids_per_node->{$nodename} // [];
 
+	# include IDs for deleted guests, and visibly fail later
+	my $orphaned_vmids = delete $vmids_per_node->{''} // [];
+	push @{$local_vmids}, @{$orphaned_vmids};
+
 	my $skiplist = [ map { @$_ } values $vmids_per_node->%* ];
 
 	if($param->{stop}){

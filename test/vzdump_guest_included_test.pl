@@ -5,7 +5,7 @@ use warnings;
 
 use lib '..';
 
-use Test::More tests => 9;
+use Test::More tests => 10;
 use Test::MockModule;
 
 use PVE::VZDump;
@@ -171,6 +171,17 @@ $addtest->('Test selected VMIDs on other nodes', {
     param => {
 	vmid => '201, 212',
 	node => 'node1',
+    }
+});
+
+$addtest->('Test VMID not present in vmlist', {
+    expected => {
+	node1 => [ 100 ],
+	node2 => [ 201, 212 ],
+	'' => [ 7654 ],
+   },
+    param => {
+	vmid => '100, 201, 212, 7654',
     }
 });
 
