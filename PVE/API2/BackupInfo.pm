@@ -17,30 +17,18 @@ use PVE::VZDump::Common;
 
 use base qw(PVE::RESTHandler);
 
-sub map_job_vmids {
-    my ($job_included_guests, $included_vmids) = @_;
-
-    for my $node_vmids (values %{$job_included_guests}) {
-	for my $vmid (@{$node_vmids}) {
-	    $included_vmids->{$vmid} = 1;
-	}
-    }
-
-    return $included_vmids;
-}
-
 sub get_included_vmids {
-    my $included_vmids = {};
     my $vzconf = cfs_read_file('vzdump.cron');
 
     my $all_jobs = $vzconf->{jobs} || [];
+    my @all_vmids = ();
 
     for my $job (@$all_jobs) {
 	my $job_included_guests = PVE::VZDump::get_included_guests($job);
-	$included_vmids = map_job_vmids($job_included_guests, $included_vmids);
+	push @all_vmids, ( map { @{$_} } values %{$job_included_guests} );
     }
 
-    return $included_vmids;
+    return { map { $_ => 1 } @all_vmids };
 }
 
 __PACKAGE__->register_method({
