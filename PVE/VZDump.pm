@@ -1061,8 +1061,11 @@ sub exec_backup {
     my $opts = $self->{opts};
 
     debugmsg ('info', "starting new backup job: $self->{cmdline}", undef, 1);
-    debugmsg ('info', "skip external VMs: " . join(', ', @{$self->{skiplist}}))
-	if scalar(@{$self->{skiplist}});
+
+    if (scalar(@{$self->{skiplist}})) {
+	my $skip_string = join(', ', sort { $a <=> $b } @{$self->{skiplist}});
+	debugmsg ('info', "skip external VMs: $skip_string");
+    }
 
     my $tasklist = [];
     my $vzdump_plugins =  {};
