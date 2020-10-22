@@ -1,3 +1,37 @@
+pve-manager (6.2-13) pve; urgency=medium
+
+  * tasks: allow API tokens to query their own UPIDs
+
+  * ui: pbs: allow empty fingerprint
+
+  * ui: fix unchecking 'Filter VMID'
+
+  * ui: VM: guest agent IP View: also filter out 0:0:0:0:0:0
+
+  * vzdump: allow prune-backups as an alternative to maxfiles
+
+  * fix #3049: ui: Firewall Rules: wider rule number column
+
+  * fix #3010, #3011: ui: VM options: re-do boot order editor, making it much
+    more flexible and powerful
+
+  * backup: include IDs for non-existent guests and error again if they are
+    left over configured in a job
+
+  * partially fix #3056: namespace vzdump temporary directory with VMID
+
+  * ceph: allow to alter settings of an exisiting pool, only over API/CLI for
+    now
+
+  * ceph: add option to control placement-group autoscale mode on pool create
+
+  * ui: ceph: allow one to specify the device class on OSD create as advanced
+    option
+
+  * fix #2827: ui: add "verify SSL certificated" checkbox for LDAP realms
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 22 Oct 2020 18:50:07 +0200
+
 pve-manager (6.2-12) pve; urgency=medium
 
   * fix #2890: also detect & renew DNS-only ACME certs
