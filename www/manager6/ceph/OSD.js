@@ -82,7 +82,7 @@ Ext.define('PVE.CephCreateOsd', {
 			    comboItems: [
 				['hdd', 'HDD'],
 				['ssd', 'SSD'],
-				['nvme', 'NVME'],
+				['nvme', 'NVMe'],
 			    ],
 			    name: 'crush-device-class',
 			    nodename: me.nodename,
