@@ -1,10 +1,10 @@
 Ext.define('pve-boot-order-entry', {
     extend: 'Ext.data.Model',
     fields: [
-	{name: 'name', type: 'string'},
-	{name: 'enabled', type: 'bool'},
-	{name: 'desc', type: 'string'},
-    ]
+	{ name: 'name', type: 'string' },
+	{ name: 'enabled', type: 'bool' },
+	{ name: 'desc', type: 'string' },
+    ],
 });
 
 Ext.define('PVE.qemu.BootOrderPanel', {
@@ -40,7 +40,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 
 	let bootorder = [];
 	if (boot.order) {
-	    bootorder = boot.order.split(';').map(dev => ({name: dev, enabled: true}));
+	    bootorder = boot.order.split(';').map(dev => ({ name: dev, enabled: true }));
 	} else if (!(/^\s*$/).test(me.vmconfig.boot)) {
 	    // legacy style, transform to new bootorder
 	    let order = boot.legacy || 'cdn';
@@ -48,7 +48,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 
 	    // get the first 4 characters (acdn)
 	    // ignore the rest (there should never be more than 4)
-	    let orderList = order.split('').slice(0,4);
+	    let orderList = order.split('').slice(0, 4);
 
 	    // build bootdev list
 	    for (let i = 0; i < orderList.length; i++) {
@@ -73,7 +73,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 
 		// Object.each iterates in random order, sort alphabetically
 		list.sort();
-		list.forEach(dev => bootorder.push({name: dev, enabled: true}));
+		list.forEach(dev => bootorder.push({ name: dev, enabled: true }));
 	    }
 	}
 
@@ -81,13 +81,12 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	let disabled = [];
 	Ext.Object.each(me.vmconfig, function(key, value) {
 	    if (me.isBootdev(key, value) &&
-		!Ext.Array.some(bootorder, x => x.name === key))
-	    {
+		!Ext.Array.some(bootorder, x => x.name === key)) {
 		disabled.push(key);
 	    }
 	});
 	disabled.sort();
-	disabled.forEach(dev => bootorder.push({name: dev, enabled: false}));
+	disabled.forEach(dev => bootorder.push({ name: dev, enabled: false }));
 
 	// add descriptions
 	bootorder.forEach(entry => {
@@ -178,13 +177,13 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 		plugins: {
 		    ptype: 'gridviewdragdrop',
 		    dragText: gettext('Drag and drop to reorder'),
-		}
+		},
 	    },
 	    listeners: {
 		drop: function() {
 		    // doesn't fire automatically on reorder
 		    this.getStore().fireEvent("update");
-		}
+		},
 	    },
 	},
 	{
@@ -214,7 +213,7 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 		// not a subclass, so no callParent; just do it manually
 		me.setRawValue(me.valueToRaw(val));
 		return me.mixins.field.setValue.call(me, val);
-	    }
+	    },
 	},
     ],
 
@@ -246,11 +245,11 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 		    marker.checkDirty();
 		    emptyWarning.setHidden(val !== '');
 		    grid.getView().refresh();
-		}
-	    }
+		},
+	    },
 	});
 	grid.setStore(me.store);
-    }
+    },
 });
 
 Ext.define('PVE.qemu.BootOrderEdit', {
@@ -258,19 +257,19 @@ Ext.define('PVE.qemu.BootOrderEdit', {
 
     items: [{
 	xtype: 'pveQemuBootOrderPanel',
-	itemId: 'inputpanel'
+	itemId: 'inputpanel',
     }],
 
     subject: gettext('Boot Order'),
     width: 640,
 
-    initComponent : function() {
+    initComponent: function() {
 	let me = this;
 	me.callParent();
 	me.load({
 	    success: function(response, options) {
 		me.down('#inputpanel').setVMConfig(response.result.data);
-	    }
+	    },
 	});
-    }
+    },
 });
