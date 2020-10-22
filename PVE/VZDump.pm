@@ -1193,7 +1193,6 @@ sub stop_running_backups {
 sub get_included_guests {
     my ($job) = @_;
 
-    my $nodename = PVE::INotify::nodename();
     my $vmids = [];
     my $vmids_per_node = {};
 
