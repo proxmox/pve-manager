@@ -942,6 +942,56 @@ Ext.define('PVE.Utils', {
 	return per.toFixed(1) + '% of ' + maxcpu.toString() + (maxcpu > 1 ? 'CPUs' : 'CPU');
     },
 
+    calculate_hostcpu: function(data) {
+
+	if (!(data.uptime && Ext.isNumeric(data.cpu))) {
+	    return -1;
+	}
+
+	if (data.type !== 'qemu' && data.type !== 'lxc') {
+	    return -1;
+	}
+
+	var index = PVE.data.ResourceStore.findExact('id', 'node/' + data.node);
+	var node = PVE.data.ResourceStore.getAt(index);
+	if (!Ext.isDefined(node) || node === null) {
+	    return -1;
+	}
+	var maxcpu = node.data.maxcpu || 1;
+
+	if (!Ext.isNumeric(maxcpu) && (maxcpu >= 1)) {
+	    return -1;
+	}
+
+	return ((data.cpu/maxcpu) * data.maxcpu);
+    },
+
+    render_hostcpu: function(value, metaData, record, rowIndex, colIndex, store) {
+
+	if (!(record.data.uptime && Ext.isNumeric(record.data.cpu))) {
+	    return '';
+	}
+
+	if (record.data.type !== 'qemu' && record.data.type !== 'lxc') {
+	    return '';
+	}
+
+	var index = PVE.data.ResourceStore.findExact('id', 'node/' + record.data.node);
+	var node = PVE.data.ResourceStore.getAt(index);
+	if (!Ext.isDefined(node) || node === null) {
+	    return '';
+	}
+	var maxcpu = node.data.maxcpu || 1;
+
+	if (!Ext.isNumeric(maxcpu) && (maxcpu >= 1)) {
+	    return '';
+	}
+
+	var per = (record.data.cpu/maxcpu) * record.data.maxcpu * 100;
+
+	return per.toFixed(1) + '% of ' + maxcpu.toString() + (maxcpu > 1 ? 'CPUs' : 'CPU');
+    },
+
     render_size: function(value, metaData, record, rowIndex, colIndex, store) {
 	if (!Ext.isNumeric(value)) {
 	    return '';
@@ -972,6 +1022,29 @@ Ext.define('PVE.Utils', {
 	return data.mem / data.maxmem;
     },
 
+    calculate_hostmem_usage: function(data) {
+
+	if (data.type !== 'qemu' && data.type !== 'lxc') {
+	    return -1;
+	}
+
+        var index = PVE.data.ResourceStore.findExact('id', 'node/' + data.node);
+	var node = PVE.data.ResourceStore.getAt(index);
+
+        if (!Ext.isDefined(node) || node === null) {
+	    return -1;
+        }
+	var maxmem = node.data.maxmem || 0;
+
+	if (!Ext.isNumeric(data.mem) ||
+	    maxmem === 0 ||
+	    data.uptime < 1) {
+	    return -1;
+	}
+
+	return (data.mem / maxmem);
+    },
+
     render_mem_usage_percent: function(value, metaData, record, rowIndex, colIndex, store) {
 	if (!Ext.isNumeric(value) || value === -1) {
 	    return '';
@@ -987,6 +1060,34 @@ Ext.define('PVE.Utils', {
 	    }
 
 	    return (mem*100/maxmem).toFixed(1) + " %";
+	}
+	return (value*100).toFixed(1) + " %";
+    },
+
+    render_hostmem_usage_percent: function(value, metaData, record, rowIndex, colIndex, store) {
+
+	if (!Ext.isNumeric(record.data.mem) || value === -1) {
+	    return '';
+	}
+
+	if (record.data.type !== 'qemu' && record.data.type !== 'lxc') {
+	    return '';
+	}
+
+	var index = PVE.data.ResourceStore.findExact('id', 'node/' + record.data.node);
+	var node = PVE.data.ResourceStore.getAt(index);
+	var maxmem = node.data.maxmem || 0;
+
+	if (record.data.mem > 1 ) {
+	    // we got no percentage but bytes
+	    var mem = record.data.mem;
+	    if (!record.data.uptime ||
+		maxmem === 0 ||
+		!Ext.isNumeric(mem)) {
+		return '';
+	    }
+
+	    return ((mem*100)/maxmem).toFixed(1) + " %";
 	}
 	return (value*100).toFixed(1) + " %";
     },

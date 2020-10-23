@@ -277,6 +277,24 @@ Ext.define('PVE.data.ResourceStore', {
 		sortable: true,
 		width: 110,
 	    },
+	    hostcpu: {
+		header: gettext('Host CPU usage'),
+		type: 'float',
+		renderer: PVE.Utils.render_hostcpu,
+		calculate: PVE.Utils.calculate_hostcpu,
+		sortType: 'asFloat',
+		sortable: true,
+		width: 100
+	    },
+	    hostmemuse: {
+		header: gettext('Host Memory usage') + " %",
+		type: 'number',
+		renderer: PVE.Utils.render_hostmem_usage_percent,
+		calculate: PVE.Utils.calculate_hostmem_usage,
+		sortType: 'asFloat',
+		sortable: true,
+		width: 100
+	    },
 	};
 
 	var fields = [];
