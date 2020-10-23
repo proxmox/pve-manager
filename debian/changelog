@@ -1,3 +1,11 @@
+pve-manager (6.2-14) pve; urgency=medium
+
+  * vzdump: avoid passing zero to prune 'keep-last' option in legacy handling
+    of the older 'maxfiles' option, which makes problems if it was set
+    explicitly to zero
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Oct 2020 10:38:25 +0200
+
 pve-manager (6.2-13) pve; urgency=medium
 
   * tasks: allow API tokens to query their own UPIDs
