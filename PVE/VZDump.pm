@@ -485,9 +485,8 @@ sub new {
     }
 
     if (!defined($opts->{'prune-backups'})) {
-	$opts->{maxfiles} //= $defaults->{maxfiles};
-	$opts->{'prune-backups'} = { 'keep-last' => $opts->{maxfiles} };
-	delete $opts->{maxfiles};
+	my $maxfiles = delete $opts->{maxfiles} // $defaults->{maxfiles};
+	$opts->{'prune-backups'} = { 'keep-last' => $maxfiles } if $maxfiles;
     }
 
     if ($opts->{tmpdir} && ! -d $opts->{tmpdir}) {
