@@ -8,8 +8,8 @@ Ext.define('PVE.CephCreateOsd', {
 
     onlineHelp: 'pve_ceph_osds',
 
-    initComponent : function() {
-        var me = this;
+    initComponent: function() {
+        let me = this;
 
 	if (!me.nodename) {
 	    throw "no node name specified";
@@ -39,8 +39,8 @@ Ext.define('PVE.CephCreateOsd', {
 			    nodename: me.nodename,
 			    diskType: 'unused',
 			    fieldLabel: gettext('Disk'),
-			    allowBlank: false
-			}
+			    allowBlank: false,
+			},
 		    ],
 		    column2: [
 			{
@@ -56,8 +56,8 @@ Ext.define('PVE.CephCreateOsd', {
 			    listeners: {
 				change: function(field, val) {
 				    me.down('field[name=db_size]').setDisabled(!val);
-				}
-			    }
+				},
+			    },
 			},
 			{
 			    xtype: 'numberfield',
@@ -68,14 +68,14 @@ Ext.define('PVE.CephCreateOsd', {
 			    decimalPrecision: 2,
 			    allowBlank: true,
 			    disabled: true,
-			    emptyText: gettext('Automatic')
-			}
+			    emptyText: gettext('Automatic'),
+			},
 		    ],
 		    advancedColumn1: [
 			{
 			    xtype: 'proxmoxcheckbox',
 			    name: 'encrypted',
-			    fieldLabel: gettext('Encrypt OSD')
+			    fieldLabel: gettext('Encrypt OSD'),
 			},
 			{
 			    xtype: 'proxmoxKVComboBox',
@@ -92,7 +92,7 @@ Ext.define('PVE.CephCreateOsd', {
 			    allowBlank: true,
 			    editable: true,
 			    emptyText: 'auto detect',
-			    deleteEmpty: me.isCreate ? false : true,
+			    deleteEmpty: !me.isCreate,
 			},
 		    ],
 		    advancedColumn2: [
@@ -109,8 +109,8 @@ Ext.define('PVE.CephCreateOsd', {
 			    listeners: {
 				change: function(field, val) {
 				    me.down('field[name=wal_size]').setDisabled(!val);
-				}
-			    }
+				},
+			    },
 			},
 			{
 			    xtype: 'numberfield',
@@ -121,9 +121,9 @@ Ext.define('PVE.CephCreateOsd', {
 			    decimalPrecision: 2,
 			    allowBlank: true,
 			    disabled: true,
-			    emptyText: gettext('Automatic')
-			}
-		    ]
+			    emptyText: gettext('Automatic'),
+			},
+		    ],
 		},
 		{
 		    xtype: 'displayfield',
@@ -132,12 +132,12 @@ Ext.define('PVE.CephCreateOsd', {
 		    value: 'Note: Ceph is not compatible with disks backed by a hardware ' +
 			   'RAID controller. For details see ' +
 			   '<a target="_blank" href="' + Proxmox.Utils.get_help_link('chapter_pveceph') + '">the reference documentation</a>.',
-		}
-	    ]
+		},
+	    ],
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.CephRemoveOsd', {
@@ -154,12 +154,11 @@ Ext.define('PVE.CephRemoveOsd', {
 	    name: 'cleanup',
 	    checked: true,
 	    labelWidth: 130,
-	    fieldLabel: gettext('Cleanup Disks')
-	}
+	    fieldLabel: gettext('Cleanup Disks'),
+	},
     ],
-    initComponent : function() {
-
-        var me = this;
+    initComponent: function() {
+        let me = this;
 
 	if (!me.nodename) {
 	    throw "no node name specified";
@@ -173,11 +172,11 @@ Ext.define('PVE.CephRemoveOsd', {
 	me.title = gettext('Destroy') + ': Ceph OSD osd.' + me.osdid.toString();
 
         Ext.applyIf(me, {
-	    url: "/nodes/" + me.nodename + "/ceph/osd/" + me.osdid.toString()
+	    url: "/nodes/" + me.nodename + "/ceph/osd/" + me.osdid.toString(),
         });
 
         me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.CephSetFlags', {
@@ -198,9 +197,9 @@ Ext.define('PVE.CephSetFlags', {
 	{
 	    xtype: 'inputpanel',
 	    onGetValues: function(values) {
-		var me = this;
-		var val = {};
-		var data = me.down('#flaggrid').getStore().each((rec) => {
+		let me = this;
+		let val = {};
+		me.down('#flaggrid').getStore().each((rec) => {
 		    val[rec.data.name] = rec.data.value ? 1 : 0;
 		});
 
@@ -214,8 +213,8 @@ Ext.define('PVE.CephSetFlags', {
 			listeners: {
 			    update: function() {
 				this.commitChanges();
-			    }
-			}
+			    },
+			},
 		    },
 
 		    columns: [
@@ -234,14 +233,14 @@ Ext.define('PVE.CephSetFlags', {
 			    flex: 1,
 			    dataIndex: 'description',
 			},
-		    ]
+		    ],
 		},
 	    ],
 	},
     ],
 
-    initComponent : function() {
-        var me = this;
+    initComponent: function() {
+        let me = this;
 
 	if (!me.nodename) {
 	    throw "no node name specified";
@@ -254,16 +253,16 @@ Ext.define('PVE.CephSetFlags', {
 
 	me.callParent();
 
-	var grid = me.down('#flaggrid');
+	let grid = me.down('#flaggrid');
 	me.load({
 	    success: function(response, options) {
-		var data = response.result.data;
+		let data = response.result.data;
 		grid.getStore().setData(data);
 		// re-align after store load, else the window is not centered
 		me.alignTo(Ext.getBody(), 'c-c');
-	    }
+	    },
 	});
-    }
+    },
 });
 
 Ext.define('PVE.node.CephOsdTree', {
@@ -285,17 +284,17 @@ Ext.define('PVE.node.CephOsdTree', {
 	    outOsd: false,
 	    osdid: '',
 	    osdhost: '',
-	}
+	},
     },
 
     controller: {
 	xclass: 'Ext.app.ViewController',
 
 	reload: function() {
-	    var me = this.getView();
-	    var vm = this.getViewModel();
-	    var nodename = vm.get('nodename');
-	    var sm = me.getSelectionModel();
+	    let me = this.getView();
+	    let vm = this.getViewModel();
+	    let nodename = vm.get('nodename');
+	    let sm = view.getSelectionModel();
 	    Proxmox.Utils.API2Request({
                 url: "/nodes/" + nodename + "/ceph/osd",
 		waitMsgTarget: me,
@@ -309,17 +308,17 @@ Ext.define('PVE.node.CephOsdTree', {
 		    );
 		},
 		success: function(response, opts) {
-		    var data = response.result.data;
-		    var selected = me.getSelection();
-		    var name;
+		    let data = response.result.data;
+		    let selected = me.getSelection();
+		    let name;
 		    if (selected.length) {
 			name = selected[0].data.name;
 		    }
 		    vm.set('versions', data.versions);
 		    // extract max version
-		    var maxversion = "0";
-		    var mixedversions = false;
-		    var traverse;
+		    let maxversion = "0";
+		    let mixedversions = false;
+		    let traverse;
 		    traverse = function(node, fn) {
 			fn(node);
 			if (Array.isArray(node.children)) {
@@ -343,34 +342,33 @@ Ext.define('PVE.node.CephOsdTree', {
 			if (PVE.Utils.compare_ceph_versions(node.version, maxversion) > 0) {
 			    maxversion = node.version;
 			}
-
 		    });
 		    vm.set('maxversion', maxversion);
 		    vm.set('mixedversions', mixedversions);
 		    sm.deselectAll();
-		    me.setRootNode(data.root);
-		    me.expandAll();
+		    view.setRootNode(data.root);
+		    view.expandAll();
 		    if (name) {
-			var node = me.getRootNode().findChild('name', name, true);
+			let node = me.getRootNode().findChild('name', name, true);
 			if (node) {
-			    me.setSelection([node]);
+			    view.setSelection([node]);
 			}
 		    }
 
-		    var flags = data.flags.split(',');
+		    let flags = data.flags.split(',');
 		    vm.set('flags', flags);
-		}
+		},
 	    });
 	},
 
 	osd_cmd: function(comp) {
-	    var me = this;
-	    var vm = this.getViewModel();
-	    var cmd = comp.cmd;
-	    var params = comp.params || {};
-	    var osdid = vm.get('osdid');
+	    let me = this;
+	    let vm = this.getViewModel();
+	    let cmd = comp.cmd;
+	    let params = comp.params || {};
+	    let osdid = vm.get('osdid');
 
-	    var doRequest = function() {
+	    let doRequest = function() {
 		Proxmox.Utils.API2Request({
 		    url: "/nodes/" + vm.get('osdhost') + "/ceph/osd/" + osdid + '/' + cmd,
 		    waitMsgTarget: me.getView(),
@@ -379,7 +377,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		    success: () => { me.reload(); },
 		    failure: function(response, opts) {
 			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
+		    },
 		});
 	    };
 
@@ -388,9 +386,9 @@ Ext.define('PVE.node.CephOsdTree', {
 		Ext.Msg.show({
 		    title: gettext('Confirm'),
 		    icon: params.deep === 1 ? Ext.Msg.WARNING : Ext.Msg.QUESTION,
-		    msg: params.deep !== 1 ?
-		       Ext.String.format(gettext("Scrub OSD.{0}"), osdid) :
-		       Ext.String.format(gettext("Deep Scrub OSD.{0}"), osdid) +
+		    msg: params.deep !== 1
+		       ? Ext.String.format(gettext("Scrub OSD.{0}"), osdid)
+		       : Ext.String.format(gettext("Deep Scrub OSD.{0}"), osdid) +
 			   "<br>Caution: This can reduce performance while it is running.",
 		    buttons: Ext.Msg.YESNO,
 		    callback: function(btn) {
@@ -398,7 +396,7 @@ Ext.define('PVE.node.CephOsdTree', {
 			    return;
 			}
 			doRequest();
-		    }
+		    },
 		});
 	    } else {
 		doRequest();
@@ -406,53 +404,53 @@ Ext.define('PVE.node.CephOsdTree', {
 	},
 
 	create_osd: function() {
-	    var me = this;
-	    var vm = this.getViewModel();
+	    let me = this;
+	    let vm = this.getViewModel();
 	    Ext.create('PVE.CephCreateOsd', {
 		nodename: vm.get('nodename'),
-		taskDone: () => { me.reload(); }
+		taskDone: () => { me.reload(); },
 	    }).show();
 	},
 
 	destroy_osd: function() {
-	    var me = this;
-	    var vm = this.getViewModel();
+	    let me = this;
+	    let vm = this.getViewModel();
 	    Ext.create('PVE.CephRemoveOsd', {
 		nodename: vm.get('osdhost'),
 		osdid: vm.get('osdid'),
-		taskDone: () => { me.reload(); }
+		taskDone: () => { me.reload(); },
 	    }).show();
 	},
 
 	set_flags: function() {
-	    var me = this;
-	    var vm = this.getViewModel();
+	    let me = this;
+	    let vm = this.getViewModel();
 	    Ext.create('PVE.CephSetFlags', {
 		nodename: vm.get('nodename'),
-		taskDone: () => { me.reload(); }
+		taskDone: () => { me.reload(); },
 	    }).show();
 	},
 
 	service_cmd: function(comp) {
-	    var me = this;
-	    var vm = this.getViewModel();
-	    var cmd = comp.cmd || comp;
+	    let me = this;
+	    let vm = this.getViewModel();
+	    let cmd = comp.cmd || comp;
 	    Proxmox.Utils.API2Request({
                 url: "/nodes/" + vm.get('osdhost') + "/ceph/" + cmd,
 		params: { service: "osd." + vm.get('osdid') },
 		waitMsgTarget: me.getView(),
 		method: 'POST',
 		success: function(response, options) {
-		    var upid = response.result.data;
-		    var win = Ext.create('Proxmox.window.TaskProgress', {
+		    let upid = response.result.data;
+		    let win = Ext.create('Proxmox.window.TaskProgress', {
 			upid: upid,
-			taskDone: () => { me.reload(); }
+			taskDone: () => { me.reload(); },
 		    });
 		    win.show();
 		},
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
+		},
 	    });
 	},
 
@@ -460,10 +458,10 @@ Ext.define('PVE.node.CephOsdTree', {
 	    if (selection.length < 1) {
 		return;
 	    }
-	    var rec = selection[0];
-	    var vm = this.getViewModel();
+	    let rec = selection[0];
+	    let vm = this.getViewModel();
 
-	    var isOsd = (rec.data.host && (rec.data.type === 'osd') && (rec.data.id >= 0));
+	    let isOsd = rec.data.host && (rec.data.type === 'osd') && (rec.data.id >= 0);
 
 	    vm.set('isOsd', isOsd);
 	    vm.set('downOsd', isOsd && rec.data.status === 'down');
@@ -478,14 +476,14 @@ Ext.define('PVE.node.CephOsdTree', {
 	    if (!value) {
 		return value;
 	    }
-	    var inout = rec.data['in'] ? 'in' : 'out';
-	    var updownicon = value === 'up' ? 'good fa-arrow-circle-up' :
-		'critical fa-arrow-circle-down';
+	    let inout = rec.data.in ? 'in' : 'out';
+	    let updownicon = value === 'up' ? 'good fa-arrow-circle-up'
+		: 'critical fa-arrow-circle-down';
 
-	    var inouticon = rec.data['in'] ? 'good fa-circle' :
-		'warning fa-circle-o';
+	    let inouticon = rec.data.in ? 'good fa-circle'
+		: 'warning fa-circle-o';
 
-	    var text = value + ' <i class="fa ' + updownicon + '"></i> / ' +
+	    let text = value + ' <i class="fa ' + updownicon + '"></i> / ' +
 		inout + ' <i class="fa ' + inouticon + '"></i>';
 
 	    return text;
@@ -501,12 +499,12 @@ Ext.define('PVE.node.CephOsdTree', {
 	},
 
 	render_version: function(value, metadata, rec) {
-	    var vm = this.getViewModel();
-	    var versions = vm.get('versions');
-	    var icon = "";
-	    var version = value || "";
-	    var maxversion = vm.get('maxversion');
-	    if (value && value != maxversion) {
+	    let vm = this.getViewModel();
+	    let versions = vm.get('versions');
+	    let icon = "";
+	    let version = value || "";
+	    let maxversion = vm.get('maxversion');
+	    if (value && value !== maxversion) {
 		if (rec.data.type === 'host' || versions[rec.data.host] !== maxversion) {
 		    icon = PVE.Utils.get_ceph_icon_html('HEALTH_UPGRADE');
 		} else {
@@ -520,7 +518,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	},
 
 	render_osd_val: function(value, metaData, rec) {
-	    return (rec.data.type === 'osd') ? value : '';
+	    return rec.data.type === 'osd' ? value : '';
 	},
 	render_osd_weight: function(value, metaData, rec) {
 	    if (rec.data.type !== 'osd') {
@@ -544,13 +542,13 @@ Ext.define('PVE.node.CephOsdTree', {
 
 	control: {
 	    '#': {
-		selectionchange: 'set_selection_status'
-	    }
+		selectionchange: 'set_selection_status',
+	    },
 	},
 
 	init: function(view) {
-	    var me = this;
-	    var vm = this.getViewModel();
+	    let me = this;
+	    let vm = this.getViewModel();
 
 	    if (!view.pveSelNode.data.node) {
 		throw "no node name specified";
@@ -560,7 +558,7 @@ Ext.define('PVE.node.CephOsdTree', {
 
 	    me.callParent();
 	    me.reload();
-	}
+	},
     },
 
     stateful: true,
@@ -573,40 +571,40 @@ Ext.define('PVE.node.CephOsdTree', {
 	    xtype: 'treecolumn',
 	    text: 'Name',
 	    dataIndex: 'name',
-	    width: 150
+	    width: 150,
 	},
 	{
 	    text: 'Type',
 	    dataIndex: 'type',
 	    hidden: true,
 	    align: 'right',
-	    width: 75
+	    width: 75,
 	},
 	{
 	    text: gettext("Class"),
 	    dataIndex: 'device_class',
 	    align: 'right',
-	    width: 75
+	    width: 75,
 	},
 	{
 	    text: "OSD Type",
 	    dataIndex: 'osdtype',
 	    align: 'right',
-	    width: 100
+	    width: 100,
 	},
 	{
 	    text: "Bluestore Device",
 	    dataIndex: 'blfsdev',
 	    align: 'right',
 	    width: 75,
-	    hidden: true
+	    hidden: true,
 	},
 	{
 	    text: "DB Device",
 	    dataIndex: 'dbdev',
 	    align: 'right',
 	    width: 75,
-	    hidden: true
+	    hidden: true,
 	},
 	{
 	    text: "WAL Device",
@@ -614,34 +612,34 @@ Ext.define('PVE.node.CephOsdTree', {
 	    align: 'right',
 	    renderer: 'render_wal',
 	    width: 75,
-	    hidden: true
+	    hidden: true,
 	},
 	{
 	    text: 'Status',
 	    dataIndex: 'status',
 	    align: 'right',
 	    renderer: 'render_status',
-	    width: 120
+	    width: 120,
 	},
 	{
 	    text: gettext('Version'),
 	    dataIndex: 'version',
 	    align: 'right',
-	    renderer: 'render_version'
+	    renderer: 'render_version',
 	},
 	{
 	    text: 'weight',
 	    dataIndex: 'crush_weight',
 	    align: 'right',
 	    renderer: 'render_osd_weight',
-	    width: 90
+	    width: 90,
 	},
 	{
 	    text: 'reweight',
 	    dataIndex: 'reweight',
 	    align: 'right',
 	    renderer: 'render_osd_weight',
-	    width: 90
+	    width: 90,
 	},
 	{
 	    text: gettext('Used') + ' (%)',
@@ -653,22 +651,22 @@ Ext.define('PVE.node.CephOsdTree', {
 		}
 		return Ext.util.Format.number(value, '0.00');
 	    },
-	    width: 100
+	    width: 100,
 	},
 	{
 	    text: gettext('Total'),
 	    dataIndex: 'total_space',
 	    align: 'right',
 	    renderer: 'render_osd_size',
-	    width: 100
+	    width: 100,
 	},
 	{
 	    text: 'Apply/Commit<br>Latency (ms)',
 	    dataIndex: 'apply_latency_ms',
 	    align: 'right',
 	    renderer: 'render_osd_latency',
-	    width: 120
-	}
+	    width: 120,
+	},
     ],
 
 
@@ -677,7 +675,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	    {
 		text: gettext('Reload'),
 		iconCls: 'fa fa-refresh',
-		handler: 'reload'
+		handler: 'reload',
 	    },
 	    '-',
 	    {
@@ -692,50 +690,50 @@ Ext.define('PVE.node.CephOsdTree', {
 	    {
 		xtype: 'tbtext',
 		data: {
-		    osd: undefined
+		    osd: undefined,
 		},
 		bind: {
 		    data: {
-			osd: "{osdid}"
-		    }
+			osd: "{osdid}",
+		    },
 		},
 		tpl: [
 		    '<tpl if="osd">',
 		    'osd.{osd}:',
 		    '<tpl else>',
 		    gettext('No OSD selected'),
-		    '</tpl>'
-		]
+		    '</tpl>',
+		],
 	    },
 	    {
 		text: gettext('Start'),
 		iconCls: 'fa fa-play',
 		disabled: true,
 		bind: {
-		    disabled: '{!downOsd}'
+		    disabled: '{!downOsd}',
 		},
 		cmd: 'start',
-		handler: 'service_cmd'
+		handler: 'service_cmd',
 	    },
 	    {
 		text: gettext('Stop'),
 		iconCls: 'fa fa-stop',
 		disabled: true,
 		bind: {
-		    disabled: '{!upOsd}'
+		    disabled: '{!upOsd}',
 		},
 		cmd: 'stop',
-		handler: 'service_cmd'
+		handler: 'service_cmd',
 	    },
 	    {
 		text: gettext('Restart'),
 		iconCls: 'fa fa-refresh',
 		disabled: true,
 		bind: {
-		    disabled: '{!upOsd}'
+		    disabled: '{!upOsd}',
 		},
 		cmd: 'restart',
-		handler: 'service_cmd'
+		handler: 'service_cmd',
 	    },
 	    '-',
 	    {
@@ -743,20 +741,20 @@ Ext.define('PVE.node.CephOsdTree', {
 		iconCls: 'fa fa-circle-o',
 		disabled: true,
 		bind: {
-		    disabled: '{!inOsd}'
+		    disabled: '{!inOsd}',
 		},
 		cmd: 'out',
-		handler: 'osd_cmd'
+		handler: 'osd_cmd',
 	    },
 	    {
 		text: 'In',
 		iconCls: 'fa fa-circle',
 		disabled: true,
 		bind: {
-		    disabled: '{!outOsd}'
+		    disabled: '{!outOsd}',
 		},
 		cmd: 'in',
-		handler: 'osd_cmd'
+		handler: 'osd_cmd',
 	    },
 	    '-',
 	    {
@@ -764,14 +762,14 @@ Ext.define('PVE.node.CephOsdTree', {
 		iconCls: 'fa fa-bars',
 		disabled: true,
 		bind: {
-		    disabled: '{!isOsd}'
+		    disabled: '{!isOsd}',
 		},
 		menu: [
 		    {
 			text: gettext('Scrub'),
 			iconCls: 'fa fa-shower',
 			cmd: 'scrub',
-			handler: 'osd_cmd'
+			handler: 'osd_cmd',
 		    },
 		    {
 			text: gettext('Deep Scrub'),
@@ -780,24 +778,24 @@ Ext.define('PVE.node.CephOsdTree', {
 			params: {
 			    deep: 1,
 			},
-			handler: 'osd_cmd'
+			handler: 'osd_cmd',
 		    },
 		    {
 			text: gettext('Destroy'),
 			itemId: 'remove',
 			iconCls: 'fa fa-fw fa-trash-o',
 			bind: {
-			    disabled: '{!downOsd}'
+			    disabled: '{!downOsd}',
 			},
-			handler: 'destroy_osd'
-		    }
+			handler: 'destroy_osd',
+		    },
 		],
-	    }
-	]
+	    },
+	],
     },
 
     fields: [
-	'name', 'type', 'status', 'host', 'in', 'id' ,
+	'name', 'type', 'status', 'host', 'in', 'id',
 	{ type: 'number', name: 'reweight' },
 	{ type: 'number', name: 'percent_used' },
 	{ type: 'integer', name: 'bytes_used' },
@@ -809,17 +807,21 @@ Ext.define('PVE.node.CephOsdTree', {
 	{ type: 'string', name: 'blfsdev' },
 	{ type: 'string', name: 'dbdev' },
 	{ type: 'string', name: 'waldev' },
-	{ type: 'string', name: 'version', calculate: function(data) {
+	{
+ type: 'string', name: 'version', calculate: function(data) {
 	    return PVE.Utils.parse_ceph_version(data);
-	} },
-	{ type: 'string', name: 'iconCls', calculate: function(data) {
-	    var iconMap = {
+	},
+},
+	{
+ type: 'string', name: 'iconCls', calculate: function(data) {
+	    let iconMap = {
 		host: 'fa-building',
 		osd: 'fa-hdd-o',
 		root: 'fa-server',
 	    };
 	    return 'fa x-fa-tree ' + iconMap[data.type];
-	} },
-	{ type: 'number', name: 'crush_weight' }
+	},
+},
+	{ type: 'number', name: 'crush_weight' },
     ],
 });
