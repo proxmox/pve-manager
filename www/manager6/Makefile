@@ -3,64 +3,16 @@ include ../../defines.mk
 JSSRC= 							\
 	Parser.js					\
 	StateProvider.js				\
-	Toolkit.js					\
 	Utils.js					\
+	Toolkit.js					\
 	VNCConsole.js					\
-	Workspace.js					\
 	button/ConsoleButton.js				\
 	button/Revert.js				\
 	button/Split.js					\
-	ceph/CephInstallWizard.js			\
-	ceph/Config.js					\
-	ceph/Crush.js					\
-	ceph/FS.js					\
-	ceph/Log.js					\
-	ceph/Monitor.js					\
-	ceph/OSD.js					\
-	ceph/Pool.js					\
-	ceph/ServiceList.js				\
-	ceph/Services.js				\
-	ceph/Status.js					\
-	ceph/StatusDetail.js				\
 	controller/StorageEdit.js			\
 	data/PermPathStore.js				\
 	data/ResourceStore.js				\
 	data/model/RRDModels.js				\
-	dc/ACLView.js					\
-	dc/ACMEClusterView.js				\
-	dc/ACMEPluginEdit.js				\
-	dc/AuthEditAD.js				\
-	dc/AuthEditBase.js				\
-	dc/AuthEditLDAP.js				\
-	dc/AuthView.js					\
-	dc/Backup.js					\
-	dc/Cluster.js					\
-	dc/ClusterEdit.js				\
-	dc/Config.js					\
-	dc/CorosyncLinkEdit.js				\
-	dc/GroupEdit.js					\
-	dc/GroupView.js					\
-	dc/Guests.js					\
-	dc/Health.js					\
-	dc/Log.js					\
-	dc/NodeView.js					\
-	dc/OptionView.js				\
-	dc/PermissionView.js				\
-	dc/PoolEdit.js					\
-	dc/PoolView.js					\
-	dc/RoleEdit.js					\
-	dc/RoleView.js					\
-	dc/SecurityGroups.js				\
-	dc/StorageView.js				\
-	dc/Summary.js					\
-	dc/Support.js					\
-	dc/SyncWindow.js				\
-	dc/TFAEdit.js					\
-	dc/Tasks.js					\
-	dc/TokenEdit.js					\
-	dc/TokenView.js					\
-	dc/UserEdit.js					\
-	dc/UserView.js					\
 	form/ACMEAPISelector.js 			\
 	form/ACMEAccountSelector.js			\
 	form/ACMEPluginSelector.js			\
@@ -122,6 +74,35 @@ JSSRC= 							\
 	grid/PoolMembers.js				\
 	grid/Replication.js				\
 	grid/ResourceGrid.js				\
+	panel/ConfigPanel.js				\
+	panel/HealthWidget.js				\
+	panel/IPSet.js					\
+	panel/InfoWidget.js				\
+	panel/NotesView.js				\
+	panel/RunningChart.js				\
+	panel/StatusPanel.js				\
+	panel/StatusView.js				\
+	panel/GuestStatusView.js			\
+	panel/GuestSummary.js				\
+	panel/TemplateStatusView.js			\
+	tree/ResourceTree.js				\
+	tree/SnapshotTree.js				\
+	window/Backup.js				\
+	window/BackupConfig.js				\
+	window/BulkAction.js				\
+	window/CephInstall.js				\
+	window/Clone.js					\
+	window/FirewallEnableEdit.js			\
+	window/FirewallLograteEdit.js			\
+	window/LoginWindow.js				\
+	window/Migrate.js				\
+	window/NotesEdit.js				\
+	window/Restore.js				\
+	window/SafeDestroy.js				\
+	window/Settings.js				\
+	window/Snapshot.js				\
+	window/StartupEdit.js				\
+	window/Wizard.js				\
 	ha/Fencing.js					\
 	ha/GroupEdit.js					\
 	ha/GroupSelector.js				\
@@ -130,6 +111,41 @@ JSSRC= 							\
 	ha/Resources.js					\
 	ha/Status.js					\
 	ha/StatusView.js				\
+	dc/ACLView.js					\
+	dc/ACMEClusterView.js				\
+	dc/ACMEPluginEdit.js				\
+	dc/AuthEditBase.js				\
+	dc/AuthEditAD.js				\
+	dc/AuthEditLDAP.js				\
+	dc/AuthView.js					\
+	dc/Backup.js					\
+	dc/Cluster.js					\
+	dc/ClusterEdit.js				\
+	dc/Config.js					\
+	dc/CorosyncLinkEdit.js				\
+	dc/GroupEdit.js					\
+	dc/GroupView.js					\
+	dc/Guests.js					\
+	dc/Health.js					\
+	dc/Log.js					\
+	dc/NodeView.js					\
+	dc/OptionView.js				\
+	dc/PermissionView.js				\
+	dc/PoolEdit.js					\
+	dc/PoolView.js					\
+	dc/RoleEdit.js					\
+	dc/RoleView.js					\
+	dc/SecurityGroups.js				\
+	dc/StorageView.js				\
+	dc/Summary.js					\
+	dc/Support.js					\
+	dc/SyncWindow.js				\
+	dc/TFAEdit.js					\
+	dc/Tasks.js					\
+	dc/TokenEdit.js					\
+	dc/TokenView.js					\
+	dc/UserEdit.js					\
+	dc/UserView.js					\
 	lxc/CmdMenu.js					\
 	lxc/Config.js					\
 	lxc/CreateWizard.js				\
@@ -143,6 +159,18 @@ JSSRC= 							\
 	lxc/Resources.js				\
 	menu/MenuItem.js				\
 	menu/TemplateMenu.js				\
+	ceph/CephInstallWizard.js			\
+	ceph/Config.js					\
+	ceph/Crush.js					\
+	ceph/FS.js					\
+	ceph/Log.js					\
+	ceph/Monitor.js					\
+	ceph/OSD.js					\
+	ceph/Pool.js					\
+	ceph/ServiceList.js				\
+	ceph/Services.js				\
+	ceph/Status.js					\
+	ceph/StatusDetail.js				\
 	node/ACME.js					\
 	node/Certificates.js				\
 	node/CmdMenu.js					\
@@ -154,17 +182,6 @@ JSSRC= 							\
 	node/Subscription.js				\
 	node/Summary.js					\
 	node/ZFS.js					\
-	panel/ConfigPanel.js				\
-	panel/GuestStatusView.js			\
-	panel/GuestSummary.js				\
-	panel/HealthWidget.js				\
-	panel/IPSet.js					\
-	panel/InfoWidget.js				\
-	panel/NotesView.js				\
-	panel/RunningChart.js				\
-	panel/StatusPanel.js				\
-	panel/StatusView.js				\
-	panel/TemplateStatusView.js			\
 	pool/Config.js					\
 	pool/StatusView.js				\
 	pool/Summary.js					\
@@ -234,24 +251,7 @@ JSSRC= 							\
 	storage/Summary.js				\
 	storage/ZFSEdit.js				\
 	storage/ZFSPoolEdit.js				\
-	tree/ResourceTree.js				\
-	tree/SnapshotTree.js				\
-	window/Backup.js				\
-	window/BackupConfig.js				\
-	window/BulkAction.js				\
-	window/CephInstall.js				\
-	window/Clone.js					\
-	window/FirewallEnableEdit.js			\
-	window/FirewallLograteEdit.js			\
-	window/LoginWindow.js				\
-	window/Migrate.js				\
-	window/NotesEdit.js				\
-	window/Restore.js				\
-	window/SafeDestroy.js				\
-	window/Settings.js				\
-	window/Snapshot.js				\
-	window/StartupEdit.js				\
-	window/Wizard.js				\
+	Workspace.js					\
 # end of JSSRC list
 
 all: pvemanagerlib.js
