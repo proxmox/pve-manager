@@ -291,25 +291,24 @@ Ext.define('PVE.node.CephOsdTree', {
 	xclass: 'Ext.app.ViewController',
 
 	reload: function() {
-	    let me = this.getView();
-	    let vm = this.getViewModel();
+	    let me = this;
+	    let view = me.getView();
+	    let vm = me.getViewModel();
 	    let nodename = vm.get('nodename');
 	    let sm = view.getSelectionModel();
 	    Proxmox.Utils.API2Request({
                 url: "/nodes/" + nodename + "/ceph/osd",
-		waitMsgTarget: me,
+		waitMsgTarget: view,
 		method: 'GET',
 		failure: function(response, opts) {
-		    var msg = response.htmlStatus;
-		    PVE.Utils.showCephInstallOrMask(me, msg, nodename,
-			function(win){
-			    me.mon(win, 'cephInstallWindowClosed', this.reload);
-			}
+		    let msg = response.htmlStatus;
+		    PVE.Utils.showCephInstallOrMask(view, msg, nodename, win =>
+			view.mon(win, 'cephInstallWindowClosed', me.reload),
 		    );
 		},
 		success: function(response, opts) {
 		    let data = response.result.data;
-		    let selected = me.getSelection();
+		    let selected = view.getSelection();
 		    let name;
 		    if (selected.length) {
 			name = selected[0].data.name;
