@@ -78,9 +78,9 @@ sub _disconnect {
 sub _send_batch_size {
     my ($class, $cfg) = @_;
 
-    # default to 1500 MTU, empty IPv6 UDP packet needs 48 bytes overhead 
+    # default to 1500 MTU, empty IPv6 UDP packet needs 48 bytes overhead
     my $mtu = $cfg->{mtu} // 1500;
-    return $mtu - 50;
+    return $mtu - 50; # a bit more than 48byte to allow for safe room
 }
 
 # call with the smalles $data chunks possible
