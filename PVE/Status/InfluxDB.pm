@@ -28,6 +28,7 @@ sub options {
     return {
 	server => {},
 	port => {},
+	mtu => { optional => 1 },
 	disable => { optional => 1 },
    };
 }

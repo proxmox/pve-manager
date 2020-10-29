@@ -33,6 +33,14 @@ my $defaultData = {
 	    type => 'integer',
 	    description => "server network port",
 	},
+	mtu => {
+	    type => 'integer',
+	    description => "MTU for metrics transmission over UDP",
+	    default => 1500,
+	    min => 512,
+	    maximum => 64*1024,
+	    optional => 1,
+	},
     },
 };
 
@@ -69,7 +77,10 @@ sub _disconnect {
 # UDP cannot do more than 64k at once. Overwrite for different protocol limits.
 sub _send_batch_size {
     my ($class, $cfg) = @_;
-    return 1450; # assume 1500 MTU, empty IPv6 UDP packet needs 48 bytes overhead
+
+    # default to 1500 MTU, empty IPv6 UDP packet needs 48 bytes overhead 
+    my $mtu = $cfg->{mtu} // 1500;
+    return $mtu - 50;
 }
 
 # call with the smalles $data chunks possible

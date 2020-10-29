@@ -50,6 +50,7 @@ sub options {
     return {
 	server => {},
 	port => { optional => 1 },
+	mtu => { optional => 1 },
 	proto => { optional => 1 },
 	timeout => { optional => 1 },
 	path => { optional => 1 },
