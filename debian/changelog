@@ -1,10 +1,15 @@
-pve-manager (6.2-14) pve; urgency=medium
+pve-manager (6.2-15) pve; urgency=medium
 
-  * vzdump: avoid passing zero to prune 'keep-last' option in legacy handling
-    of the older 'maxfiles' option, which makes problems if it was set
-    explicitly to zero
+  * fix #2802: status/metrics: make MTU configurable for tunneled or otherwise
+    MTU-reduced networks
 
- -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Oct 2020 10:38:25 +0200
+  * ui: authentication: add "verify SSL cert" checkbox for AD realms
+
+  * vzdump: fix regression with "keep forever" legacy handling logic of the
+    older 'maxfiles' option, which makes problems if it was set explicitly to
+    zero
+
+ -- Proxmox Support Team <support@proxmox.com>  Sun, 01 Nov 2020 20:34:56 +0100
 
 pve-manager (6.2-13) pve; urgency=medium
 
