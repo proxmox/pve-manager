@@ -23,10 +23,7 @@ Ext.define('PVE.window.Settings', {
 	}
     ],
 
-    layout: {
-	type: 'column',
-	align: 'top'
-    },
+    layout: 'hbox',
 
     controller: {
 	xclass: 'Ext.app.ViewController',
@@ -185,7 +182,7 @@ Ext.define('PVE.window.Settings', {
 
     items: [{
 	xtype: 'fieldset',
-	columnWidth: 0.5,
+	flex: 1,
 	title: gettext('Webinterface Settings'),
 	margin: '5',
 	layout: {
@@ -311,7 +308,7 @@ Ext.define('PVE.window.Settings', {
     {
 	xtype: 'container',
 	layout: 'vbox',
-	columnWidth: 0.5,
+	flex: 1,
 	margin: '5',
 	defaults: {
 	    width: '100%',

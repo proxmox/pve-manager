@@ -308,13 +308,11 @@ Ext.define('PVE.window.Migrate', {
 	    reference: 'formPanel',
 	    bodyPadding: 10,
 	    border: false,
-	    layout: {
-		type: 'column'
-	    },
+	    layout: 'hbox',
 	    items: [
 		{
 		    xtype: 'container',
-		    columnWidth: 0.5,
+		    flex: 1,
 		    items: [{
 			xtype: 'displayfield',
 			name: 'source',
@@ -334,7 +332,7 @@ Ext.define('PVE.window.Migrate', {
 		},
 		{
 		    xtype: 'container',
-		    columnWidth: 0.5,
+		    flex: 1,
 		    items: [{
 			xtype: 'pveNodeSelector',
 			reference: 'pveNodeSelector',

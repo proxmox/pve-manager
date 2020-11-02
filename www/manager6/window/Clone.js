@@ -256,22 +256,21 @@ Ext.define('PVE.window.Clone', {
 	    bodyPadding: 10,
 	    reference: 'cloneform',
 	    border: false,
-	    layout: 'column',
+	    layout: 'hbox',
 	    defaultType: 'container',
-	    columns: 2,
 	    fieldDefaults: {
 		labelWidth: 100,
 		anchor: '100%'
 	    },
 	    items: [
 		{
-		    columnWidth: 0.5,
+		    flex: 1,
 		    padding: '0 10 0 0',
 		    layout: 'anchor',
 		    items: col1
 		},
 		{
-		    columnWidth: 0.5,
+		    flex: 1,
 		    padding: '0 0 0 10',
 		    layout: 'anchor',
 		    items: col2
