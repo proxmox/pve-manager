@@ -474,7 +474,7 @@ sub new {
 
 	    if (!defined($opts->{'prune-backups'}) && !defined($opts->{maxfiles})) {
 		$opts->{'prune-backups'} = $info->{'prune-backups'};
-		$opts->{maxfiles} = $info->{maxfiles};
+		$opts->{maxfiles} = $info->{maxfiles} // 0;
 		if ($opts->{maxfiles} == 0) {
 		    # zero means keep all, so avoid triggering any remove code path to be safe
 		    $opts->{remove} = 0;
