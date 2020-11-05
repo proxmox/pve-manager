@@ -541,6 +541,7 @@ __PACKAGE__->register_method({
 	    libpve-http-server-perl
 	    libpve-storage-perl
 	    libproxmox-acme-perl
+	    libproxmox-backup-qemu0
 	    libqb0
 	    libspice-server1
 	    lvm2
