@@ -34,7 +34,7 @@ Ext.define('PVE.node.Summary', {
 
 	Proxmox.Utils.API2Request({
 	    waitMsgTarget: me,
-	    url: "/nodes/" + nodename + "/apt/versions",
+	    url: `/nodes/${nodename}/apt/versions`,
 	    method: 'GET',
 	    failure: function(response, opts) {
 		win.close();
@@ -42,22 +42,19 @@ Ext.define('PVE.node.Summary', {
 	    },
 	    success: function(response, opts) {
 		win.show();
-		var text = '';
-
+		let text = '';
 		Ext.Array.each(response.result.data, function(rec) {
-		    var version = "not correctly installed";
-		    var pkg = rec.Package;
+		    let version = "not correctly installed";
+		    let pkg = rec.Package;
 		    if (rec.OldVersion && rec.CurrentState === 'Installed') {
 			version = rec.OldVersion;
 		    }
 		    if (rec.RunningKernel) {
-			text += pkg + ': ' + version + ' (running kernel: ' +
-			    rec.RunningKernel + ')\n';
+			text += `${pkg}: ${version} (running kernel: ${rec.RunningKernel})\n`;
 		    } else if (rec.ManagerVersion) {
-			text += pkg + ': ' + version + ' (running version: ' +
-			    rec.ManagerVersion + ')\n';
+			text += `${pkg}: ${version} (running version: ${rec.ManagerVersion})\n`;
 		    } else {
-			text += pkg + ': ' + version + '\n';
+			text += `${pkg}: ${version}\n`;
 		    }
 		});
 
