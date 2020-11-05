@@ -15,6 +15,7 @@ Ext.define('PVE.node.Summary', {
 
 	var view = Ext.createWidget('component', {
 	    autoScroll: true,
+	    id: 'pkgversions',
 	    padding: 5,
 	    style: {
 		'background-color': 'white',
@@ -26,10 +27,29 @@ Ext.define('PVE.node.Summary', {
 	var win = Ext.create('Ext.window.Window', {
 	    title: gettext('Package versions'),
 	    width: 600,
-	    height: 400,
+	    height: 600,
 	    layout: 'fit',
 	    modal: true,
-	    items: [ view ]
+	    items: [ view ],
+	    buttons: [
+		{
+		    xtype: 'button',
+		    iconCls: 'fa fa-clipboard',
+		    handler: function(button) {
+			window.getSelection().selectAllChildren(
+			    document.getElementById('pkgversions')
+			);
+			document.execCommand("copy");
+		    },
+		    text: gettext('Copy'),
+		},
+		{
+		    text: gettext('Ok'),
+		    handler: function() {
+			this.up('window').close();
+		    },
+		},
+	    ],
 	});
 
 	Proxmox.Utils.API2Request({
