@@ -476,11 +476,7 @@ sub new {
 
 	    if (!defined($opts->{'prune-backups'}) && !defined($opts->{maxfiles})) {
 		$opts->{'prune-backups'} = $info->{'prune-backups'};
-		$opts->{maxfiles} = $info->{maxfiles} // 0;
-		if ($opts->{maxfiles} == 0) {
-		    # zero means keep all, so avoid triggering any remove code path to be safe
-		    $opts->{remove} = 0;
-		}
+		$opts->{maxfiles} = $info->{maxfiles};
 	    }
 	}
     } elsif ($opts->{dumpdir}) {
@@ -492,7 +488,13 @@ sub new {
 
     if (!defined($opts->{'prune-backups'})) {
 	my $maxfiles = delete $opts->{maxfiles} // $defaults->{maxfiles};
-	$opts->{'prune-backups'} = { 'keep-last' => $maxfiles } if $maxfiles;
+	$maxfiles = int($maxfiles); # shouldn't be necessary, but be safe
+	if ($maxfiles) {
+	    $opts->{'prune-backups'} = { 'keep-last' => $maxfiles };
+	} else {
+	    # maxfiles being zero means keep all, so avoid triggering any remove code path to be safe
+	    $opts->{remove} = 0;
+	}
     }
 
     if ($opts->{tmpdir} && ! -d $opts->{tmpdir}) {
