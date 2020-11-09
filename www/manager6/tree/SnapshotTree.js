@@ -266,8 +266,20 @@ Ext.define('PVE.guest.SnapshotTree', {
 	},
 	{
 	    xtype: 'proxmoxButton',
+	    text: gettext('Edit'),
+	    bind: {
+		text: '{buttonText}',
+		disabled: '{!isSnapshot}',
+	    },
+	    disabled: true,
+	    edit: true,
+	    handler: 'editSnapshot',
+	},
+	{
+	    xtype: 'proxmoxButton',
 	    text: gettext('Remove'),
 	    disabled: true,
+	    dangerous: true,
 	    bind: {
 		disabled: '{!canRemove}',
 	    },
@@ -280,17 +292,6 @@ Ext.define('PVE.guest.SnapshotTree', {
 		);
 	    },
 	    handler: 'remove',
-	},
-	{
-	    xtype: 'proxmoxButton',
-	    text: gettext('Edit'),
-	    bind: {
-		text: '{buttonText}',
-		disabled: '{!isSnapshot}',
-	    },
-	    disabled: true,
-	    edit: true,
-	    handler: 'editSnapshot',
 	},
 	{
 	    xtype: 'label',
