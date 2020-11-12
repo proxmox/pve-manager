@@ -101,10 +101,10 @@ Ext.define('PVE.grid.BackupView', {
 		change: function(f, value) {
 		    let storage = f.getStore().findRecord('storage', value);
 		    if (storage) {
-			let isPbs = storage.data.type === 'pbs';
+			let isPBS = storage.data.type === 'pbs';
 			me.getColumns().forEach((column) => {
 			    if (column.dataIndex === 'verification') {
-				column.setHidden(!isPbs);
+				column.setHidden(!isPBS);
 			    }
 			});
 		    }
@@ -134,7 +134,7 @@ Ext.define('PVE.grid.BackupView', {
 	    value: '1',
 	    listeners: {
 		change: function(cb, value) {
-		    vmidFilter.value = !!value ? vmid : '';
+		    vmidFilter.value = value ? vmid : '';
 		    vmidFilter.exactMatch = !!value;
 		    updateFilter();
 		},
@@ -169,9 +169,7 @@ Ext.define('PVE.grid.BackupView', {
 		return !!rec;
 	    },
 	    handler: function(b, e, rec) {
-		var volid = rec.data.volid;
-
-		var win = Ext.create('PVE.window.Restore', {
+		let win = Ext.create('PVE.window.Restore', {
 		    nodename: nodename,
 		    vmid: vmid,
 		    volid: rec.data.volid,
