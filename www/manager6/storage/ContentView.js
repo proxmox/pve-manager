@@ -609,6 +609,12 @@ Ext.define('PVE.storage.ContentView', {
 		    width: 100,
 		    renderer: Proxmox.Utils.format_size,
 		    dataIndex: 'size'
+		},
+		{
+		    header: gettext('Comment'),
+		    width: 100,
+		    renderer: Ext.htmlEncode,
+		    dataIndex: 'comment',
 		}
 	    ],
 	    listeners: {
@@ -655,7 +661,7 @@ Ext.define('PVE.storage.ContentView', {
 	extend: 'Ext.data.Model',
 	fields: [
 	    'volid', 'content', 'format', 'size', 'used', 'vmid',
-	    'channel', 'id', 'lun',
+	    'channel', 'id', 'lun', 'comment', 'verification',
 	    {
 		name: 'text',
 		convert: function(value, record) {

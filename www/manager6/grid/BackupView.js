@@ -99,6 +99,15 @@ Ext.define('PVE.grid.BackupView', {
 	    allowBlank: false,
 	    listeners: {
 		change: function(f, value) {
+		    let storage = f.getStore().findRecord('storage', value);
+		    if (storage) {
+			let isPbs = storage.data.type === 'pbs';
+			me.getColumns().forEach((column) => {
+			    if (column.dataIndex === 'verification') {
+				column.setHidden(!isPbs);
+			    }
+			});
+		    }
 		    setStorage(value);
 		}
 	    }
@@ -251,6 +260,36 @@ Ext.define('PVE.grid.BackupView', {
 		    dataIndex: 'vmid',
 		    hidden: true,
 		},
+		{
+		    header: gettext('Comment'),
+		    dataIndex: 'comment',
+		    width: 100,
+		    renderer: Ext.htmlEncode,
+		},
+		{
+		    header: gettext('Verify State'),
+		    dataIndex: 'verification',
+		    renderer: function(v) {
+			let i = (cls, txt) => `<i class="fa fa-fw fa-${cls}"></i> ${txt}`;
+			if (v === undefined || v === null) {
+			    return i('question-circle-o warning', gettext('None'));
+			}
+			let tip = ""
+			let txt = gettext('Failed');
+			let iconCls = 'times critical';
+			if (v.state === 'ok') {
+			    txt = gettext('OK');
+			    iconCls = 'check good';
+			    let now = Date.now() / 1000;
+			    let task = Proxmox.Utils.parse_task_upid(v.upid);
+			    if (now - v.starttime > 30 * 24 * 60 * 60) {
+				tip = `Last verify task over 30 days ago: ${verify_time}`;
+				iconCls = 'check warning';
+			    }
+			}
+			return `<span data-qtip="${tip}"> ${i(iconCls, txt)} </span>`;
+		    }
+		}
 	    ]
 	});
 
