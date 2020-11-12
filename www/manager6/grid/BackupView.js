@@ -232,10 +232,16 @@ Ext.define('PVE.grid.BackupView', {
 	    columns: [
 		{
 		    header: gettext('Name'),
-		    flex: 1,
+		    flex: 2,
 		    sortable: true,
 		    renderer: PVE.Utils.render_storage_content,
 		    dataIndex: 'volid'
+		},
+		{
+		    header: gettext('Comment'),
+		    dataIndex: 'comment',
+		    flex: 1,
+		    renderer: Ext.htmlEncode,
 		},
 		{
 		    header: gettext('Date'),
@@ -257,12 +263,6 @@ Ext.define('PVE.grid.BackupView', {
 		    header: gettext('VMID'),
 		    dataIndex: 'vmid',
 		    hidden: true,
-		},
-		{
-		    header: gettext('Comment'),
-		    dataIndex: 'comment',
-		    width: 100,
-		    renderer: Ext.htmlEncode,
 		},
 		{
 		    header: gettext('Verify State'),

@@ -583,10 +583,16 @@ Ext.define('PVE.storage.ContentView', {
 	    columns: [
 		{
 		    header: gettext('Name'),
-		    flex: 1,
+		    flex: 2,
 		    sortable: true,
 		    renderer: PVE.Utils.render_storage_content,
 		    dataIndex: 'text'
+		},
+		{
+		    header: gettext('Comment'),
+		    flex: 1,
+		    renderer: Ext.htmlEncode,
+		    dataIndex: 'comment',
 		},
 		{
 		    header: gettext('Date'),
@@ -610,12 +616,6 @@ Ext.define('PVE.storage.ContentView', {
 		    renderer: Proxmox.Utils.format_size,
 		    dataIndex: 'size'
 		},
-		{
-		    header: gettext('Comment'),
-		    width: 100,
-		    renderer: Ext.htmlEncode,
-		    dataIndex: 'comment',
-		}
 	    ],
 	    listeners: {
 		activate: reload
