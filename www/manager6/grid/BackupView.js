@@ -280,6 +280,8 @@ Ext.define('PVE.grid.BackupView', {
 			    iconCls = 'check good';
 			    let now = Date.now() / 1000;
 			    let task = Proxmox.Utils.parse_task_upid(v.upid);
+			    let verify_time = Proxmox.Utils.render_timestamp(task.starttime);
+			    tip = `Last verify task started on ${verify_time}`;
 			    if (now - v.starttime > 30 * 24 * 60 * 60) {
 				tip = `Last verify task over 30 days ago: ${verify_time}`;
 				iconCls = 'check warning';
