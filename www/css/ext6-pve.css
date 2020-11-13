@@ -230,11 +230,28 @@
     color: #CC1800;
 }
 
+/*
+ * using background-image doesn't work for treelist-items, so use content. See:
+ * https://forum.sencha.com/forum/showthread.php?339656-extjs-6-treelist-custom-iconcls-can-not-working
+ */
+.pve-itype-treelist-item-icon-cdrom {
+    top: 50%;
+    transform: translateY(-50%);
+    content: url(../images/icon-cd.png);
+}
+
 /* the lxc template */
 .x-tree-icon-custom.lxc:after,
 .x-grid-icon-custom.lxc:after {
     content: "\f1b2";
     background: #fff;
+}
+
+.x-treelist-item-icon.lxc:after {
+    content: "\f1b2";
+    background: #fff;
+    font-size: 0.75em;
+    margin-left: -25%;
 }
 
 /* the qemu template */
@@ -245,12 +262,14 @@
 }
 
 /* fixes background on mouseover and selected items */
+.x-treelist-item-over .lxc:after,
 .x-grid-item-over .qemu:after,
 .x-grid-item-over .lxc:after {
     background-color: #e2eff9;
     text-shadow: -1px 0px 2px #e2eff9;
 }
 
+.x-treelist-item-selected .lxc:after,
 .x-grid-item-selected .qemu:after,
 .x-grid-item-selected .lxc:after {
     background-color: #c2ddf2;
