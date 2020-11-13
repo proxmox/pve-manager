@@ -227,48 +227,7 @@ Ext.define('PVE.panel.Config', {
 	    }
 	});
 	var root = me.store.getRoot();
-	me.items.forEach(function(item){
-	    var treeitem = Ext.create('Ext.data.TreeModel',{
-		id: item.itemId,
-		text: item.title,
-		iconCls: item.iconCls,
-		leaf: true,
-		expanded: item.expandedOnInit
-	    });
-	    item.header = false;
-	    if (me.savedItems[item.itemId] !== undefined) {
-		throw "itemId already exists, please use another";
-	    }
-	    me.savedItems[item.itemId] = item;
-
-	    var group;
-	    var curnode = root;
-
-	    // get/create the group items
-	    while (Ext.isArray(item.groups) && item.groups.length > 0) {
-		group = item.groups.shift();
-
-		var child = curnode.findChild('id', group);
-		if (child === null) {
-		    // did not find the group item
-		    // so add it where we are
-		    break;
-		}
-		curnode = child;
-	    }
-
-	    // insert the item
-
-	    // lets see if it already exists
-	    var node = curnode.findChild('id', item.itemId);
-
-	    if (node === null) {
-		curnode.appendChild(treeitem);
-	    } else {
-		// should not happen!
-		throw "id already exists";
-	    }
-	});
+	me.insertNodes(me.items);
 
 	delete me.items;
 	me.defaults = me.defaults || {};
@@ -310,5 +269,53 @@ Ext.define('PVE.panel.Config', {
 	if (stateid) {
 	    me.mon(me.sp, 'statechange', statechange);
 	}
-    }
+    },
+
+    insertNodes: function(items) {
+	var me = this;
+	var root = me.store.getRoot();
+
+	items.forEach(function(item) {
+	    var treeitem = Ext.create('Ext.data.TreeModel',{
+		id: item.itemId,
+		text: item.title,
+		iconCls: item.iconCls,
+		leaf: true,
+		expanded: item.expandedOnInit
+	    });
+	    item.header = false;
+	    if (me.savedItems[item.itemId] !== undefined) {
+		throw "itemId already exists, please use another";
+	    }
+	    me.savedItems[item.itemId] = item;
+
+	    var group;
+	    var curnode = root;
+
+	    // get/create the group items
+	    while (Ext.isArray(item.groups) && item.groups.length > 0) {
+		group = item.groups.shift();
+
+		var child = curnode.findChild('id', group);
+		if (child === null) {
+		    // did not find the group item
+		    // so add it where we are
+		    break;
+		}
+		curnode = child;
+	    }
+
+	    // insert the item
+
+	    // lets see if it already exists
+	    var node = curnode.findChild('id', item.itemId);
+
+	    if (node === null) {
+		curnode.appendChild(treeitem);
+	    } else {
+		// should not happen!
+		throw "id already exists";
+	    }
+	});
+    },
 });
