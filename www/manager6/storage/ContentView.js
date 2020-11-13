@@ -518,81 +518,86 @@ Ext.define('PVE.storage.ContentView', {
 	    }
 	});
 
+	if (!me.tbar) {
+	    me.tbar = [];
+	}
+	me.tbar.push(
+	    {
+		xtype: 'proxmoxButton',
+		text: gettext('Restore'),
+		selModel: sm,
+		disabled: true,
+		enableFn: function(rec) {
+		    return rec && rec.data.content === 'backup';
+		},
+		handler: function(b, e, rec) {
+		    var vmtype;
+		    if (PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format)) {
+			vmtype = 'qemu';
+		    } else if (PVE.Utils.volume_is_lxc_backup(rec.data.volid, rec.data.format)) {
+			vmtype = 'lxc';
+		    } else {
+			return;
+		    }
+
+		    var win = Ext.create('PVE.window.Restore', {
+			nodename: nodename,
+			volid: rec.data.volid,
+			volidText: PVE.Utils.render_storage_content(rec.data.volid, {}, rec),
+			vmtype: vmtype
+		    });
+		    win.show();
+		    win.on('destroy', reload);
+		}
+	    },
+	    removeButton,
+	    imageRemoveButton,
+	    templateButton,
+	    uploadButton,
+	    {
+		xtype: 'proxmoxButton',
+		text: gettext('Show Configuration'),
+		disabled: true,
+		selModel: sm,
+		enableFn: function(rec) {
+		    return rec && rec.data.content === 'backup';
+		},
+		handler: function(b,e,rec) {
+		    var win = Ext.create('PVE.window.BackupConfig', {
+			volume: rec.data.volid,
+			pveSelNode: me.pveSelNode
+		    });
+
+		    win.show();
+		}
+	    },
+	    '->',
+	    gettext('Search') + ':', ' ',
+	    {
+		xtype: 'textfield',
+		width: 200,
+		enableKeyEvents: true,
+		listeners: {
+		    buffer: 500,
+		    keyup: function(field) {
+			store.clearFilter(true);
+			store.filter([
+			    {
+				property: 'text',
+				value: field.getValue(),
+				anyMatch: true,
+				caseSensitive: false
+			    }
+			]);
+		    }
+		}
+	    }
+	);
+
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    tbar: [
-		{
-		    xtype: 'proxmoxButton',
-		    text: gettext('Restore'),
-		    selModel: sm,
-		    disabled: true,
-		    enableFn: function(rec) {
-			return rec && rec.data.content === 'backup';
-		    },
-		    handler: function(b, e, rec) {
-			var vmtype;
-			if (PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format)) {
-			    vmtype = 'qemu';
-			} else if (PVE.Utils.volume_is_lxc_backup(rec.data.volid, rec.data.format)) {
-			    vmtype = 'lxc';
-			} else {
-			    return;
-			}
-
-			var win = Ext.create('PVE.window.Restore', {
-			    nodename: nodename,
-			    volid: rec.data.volid,
-			    volidText: PVE.Utils.render_storage_content(rec.data.volid, {}, rec),
-			    vmtype: vmtype
-			});
-			win.show();
-			win.on('destroy', reload);
-		    }
-		},
-		removeButton,
-		imageRemoveButton,
-		templateButton,
-		uploadButton,
-		{
-		    xtype: 'proxmoxButton',
-		    text: gettext('Show Configuration'),
-		    disabled: true,
-		    selModel: sm,
-		    enableFn: function(rec) {
-			return rec && rec.data.content === 'backup';
-		    },
-		    handler: function(b,e,rec) {
-			var win = Ext.create('PVE.window.BackupConfig', {
-			    volume: rec.data.volid,
-			    pveSelNode: me.pveSelNode
-			});
-
-			win.show();
-		    }
-		},
-		'->',
-		gettext('Search') + ':', ' ',
-		{
-		    xtype: 'textfield',
-		    width: 200,
-		    enableKeyEvents: true,
-		    listeners: {
-			buffer: 500,
-			keyup: function(field) {
-			    store.clearFilter(true);
-			    store.filter([
-				{
-				    property: 'text',
-				    value: field.getValue(),
-				    anyMatch: true,
-				    caseSensitive: false
-				}
-			    ]);
-			}
-		    }
-		}
-	    ],
+	    tbar: me.tbar,
 	    columns: [
 		{
 		    header: gettext('Name'),
