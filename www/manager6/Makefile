@@ -249,6 +249,7 @@ JSSRC= 							\
 	storage/RBDEdit.js				\
 	storage/StatusView.js				\
 	storage/Summary.js				\
+	storage/TemplateView.js				\
 	storage/ZFSEdit.js				\
 	storage/ZFSPoolEdit.js				\
 	Workspace.js					\

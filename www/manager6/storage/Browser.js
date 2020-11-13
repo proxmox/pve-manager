@@ -107,14 +107,10 @@ Ext.define('PVE.storage.Browser', {
 		    }
 		    if (contents.includes('vztmpl')) {
 			items.push({
-			    xtype: 'pveStorageContentView',
+			    xtype: 'pveStorageTemplateView',
 			    title: gettext('Container Templates'),
 			    iconCls: 'fa fa-file-o lxc',
 			    itemId: 'contentVztmpl',
-			    content: 'vztmpl',
-			    stateful: true,
-			    stateId: 'grid-storage-content-vztmpl',
-			    useUploadButton: true,
 			});
 		    }
 		    me.insertNodes(items);
