@@ -33,9 +33,6 @@ Ext.define('PVE.storage.BackupView', {
 		text: gettext('Restore'),
 		selModel: sm,
 		disabled: true,
-		enableFn: function(rec) {
-		    return rec && rec.data.content === 'backup';
-		},
 		handler: function(b, e, rec) {
 		    var vmtype;
 		    if (PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format)) {
@@ -61,9 +58,6 @@ Ext.define('PVE.storage.BackupView', {
 		text: gettext('Show Configuration'),
 		disabled: true,
 		selModel: sm,
-		enableFn: function(rec) {
-		    return rec && rec.data.content === 'backup';
-		},
 		handler: function(b,e,rec) {
 		    var win = Ext.create('PVE.window.BackupConfig', {
 			volume: rec.data.volid,
