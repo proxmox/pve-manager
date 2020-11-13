@@ -164,10 +164,6 @@ Ext.define('PVE.node.CephPoolList', {
 			return Ext.util.Format.percent(val, '0.00');
 		    },
 		    dataIndex: 'percent_used',
-		    summaryType: 'sum',
-		    summaryRenderer: function(val) {
-			return Ext.util.Format.percent(val, '0.00');
-		    },
 		},
 		{
 		    text: gettext('Total'),
