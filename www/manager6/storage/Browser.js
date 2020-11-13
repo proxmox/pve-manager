@@ -41,14 +41,83 @@ Ext.define('PVE.storage.Browser', {
 	if (caps.storage['Datastore.Allocate'] ||
 	    caps.storage['Datastore.AllocateSpace'] ||
 	    caps.storage['Datastore.Audit']) {
-	    me.insertNodes([
-		{
-		    xtype: 'pveStorageContentView',
-		    title: gettext('Content'),
-		    iconCls: 'fa fa-th',
-		    itemId: 'content'
+
+	    Proxmox.Utils.API2Request({
+		url: "/nodes/" + nodename + "/storage/" + storeid + "/status",
+		method: 'GET',
+		success: function(response, opts) {
+		    var contents = response.result.data.content.split(',');
+		    var items = [];
+
+		    if (contents.includes('backup')) {
+			items.push({
+			    xtype: 'pveStorageContentView',
+			    title: gettext('Backups'),
+			    iconCls: 'fa fa-floppy-o',
+			    itemId: 'contentBackup',
+			    content: 'backup',
+			    stateful: true,
+			    stateId: 'grid-storage-content-backup',
+			});
+		    }
+		    if (contents.includes('images')) {
+			items.push({
+			    xtype: 'pveStorageContentView',
+			    title: gettext('Disk Images'),
+			    iconCls: 'fa fa-hdd-o',
+			    itemId: 'contentImages',
+			    content: 'images',
+			    stateful: true,
+			    stateId: 'grid-storage-content-images',
+			});
+		    }
+		    if (contents.includes('iso')) {
+			items.push({
+			    xtype: 'pveStorageContentView',
+			    title: gettext('ISO Images'),
+			    iconCls: 'pve-itype-treelist-item-icon-cdrom',
+			    itemId: 'contentIso',
+			    content: 'iso',
+			    stateful: true,
+			    stateId: 'grid-storage-content-iso',
+			});
+		    }
+		    if (contents.includes('rootdir')) {
+			items.push({
+			    xtype: 'pveStorageContentView',
+			    title: gettext('Container Data'),
+			    iconCls: 'fa fa-hdd-o',
+			    itemId: 'contentRootdir',
+			    content: 'rootdir',
+			    stateful: true,
+			    stateId: 'grid-storage-content-rootdir',
+			});
+		    }
+		    if (contents.includes('snippets')) {
+			items.push({
+			    xtype: 'pveStorageContentView',
+			    title: gettext('Snippets'),
+			    iconCls: 'fa fa-file-code-o',
+			    itemId: 'contentSnippets',
+			    content: 'snippets',
+			    stateful: true,
+			    stateId: 'grid-storage-content-snippets',
+			});
+		    }
+		    if (contents.includes('vztmpl')) {
+			items.push({
+			    xtype: 'pveStorageContentView',
+			    title: gettext('Container Templates'),
+			    iconCls: 'fa fa-file-o lxc',
+			    itemId: 'contentVztmpl',
+			    content: 'vztmpl',
+			    stateful: true,
+			    stateId: 'grid-storage-content-vztmpl',
+			});
+		    }
+		    me.insertNodes(items);
 		},
-	    ]);
+	    });
 	}
 
 	if (caps.storage['Permissions.Modify']) {

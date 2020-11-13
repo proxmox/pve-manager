@@ -368,8 +368,6 @@ Ext.define('PVE.storage.ContentView', {
 
     alias: 'widget.pveStorageContentView',
 
-    stateful: true,
-    stateId: 'grid-storage-content',
     viewConfig: {
 	trackOver: false,
 	loadMask: false
@@ -393,13 +391,21 @@ Ext.define('PVE.storage.ContentView', {
 	    throw "no storage ID specified";
 	}
 
+	var content = me.content;
+	if (!content) {
+	    throw "no content type specified";
+	}
+
 	var baseurl = "/nodes/" + nodename + "/storage/" + storage + "/content";
 	var store = Ext.create('Ext.data.Store',{
 	    model: 'pve-storage-content',
 	    groupField: 'content',
 	    proxy: {
                 type: 'proxmox',
-		url: '/api2/json' + baseurl
+		url: '/api2/json' + baseurl,
+		extraParams: {
+		    content: content,
+		},
 	    },
 	    sorters: {
 		property: 'volid',
@@ -411,7 +417,6 @@ Ext.define('PVE.storage.ContentView', {
 
 	var reload = function() {
 	    store.load();
-	    me.statusStore.load();
 	};
 
 	Proxmox.Utils.monStoreErrors(me, store);
@@ -428,6 +433,9 @@ Ext.define('PVE.storage.ContentView', {
 		win.show();
 	    }
 	});
+	if (content !== 'vztmpl') {
+	    templateButton.setDisabled(true);
+	}
 
 	var uploadButton = Ext.create('Proxmox.button.Button', {
 	    contents : ['iso','vztmpl'],
@@ -443,6 +451,11 @@ Ext.define('PVE.storage.ContentView', {
 		win.on('destroy', reload);
 	    }
 	});
+	if (content === 'iso' || content === 'vztmpl') {
+	    uploadButton.contents = [content];
+	} else {
+	    uploadButton.setDisabled(true);
+	}
 
 	var imageRemoveButton;
 	var removeButton = Ext.create('Proxmox.button.StdRemoveButton',{
@@ -477,8 +490,6 @@ Ext.define('PVE.storage.ContentView', {
 		return false;
 	    },
 	    handler: function(btn, event, rec) {
-		me = this;
-
 		var url = baseurl + '/' + rec.data.volid;
 		var vmid = rec.data.vmid;
 
@@ -509,17 +520,9 @@ Ext.define('PVE.storage.ContentView', {
 		    item: { type: 'Image', id: vmid }
 		}).show();
 		win.on('destroy', function() {
-		    me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
-			url: '/api2/json/nodes/' + nodename + '/storage/' + storage + '/status'
-		    });
 		    reload();
-
 		});
 	    }
-	});
-
-	me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
-	    url: '/api2/json/nodes/' + nodename + '/storage/' + storage + '/status'
 	});
 
 	Ext.apply(me, {
@@ -640,37 +643,6 @@ Ext.define('PVE.storage.ContentView', {
 	});
 
 	me.callParent();
-
-	// disable the buttons/restrict the upload window
-	// if templates or uploads are not allowed
-	me.mon(me.statusStore, 'load', function(s, records, success) {
-	    var availcontent = [];
-	    Ext.Array.each(records, function(item){
-		if (item.id === 'content') {
-		    availcontent = item.data.value.split(',');
-		}
-	    });
-	    var templ = false;
-	    var upload = false;
-	    var cts = [];
-
-	    Ext.Array.each(availcontent, function(content) {
-		if (content === 'vztmpl') {
-		    templ = true;
-		    cts.push('vztmpl');
-		} else if (content === 'iso') {
-		    upload = true;
-		    cts.push('iso');
-		}
-	    });
-
-	    if (templ !== upload) {
-		uploadButton.contents = cts;
-	    }
-
-	    templateButton.setDisabled(!templ);
-	    uploadButton.setDisabled(!upload && !templ);
-	});
     }
 }, function() {
 
