@@ -234,6 +234,7 @@ JSSRC= 							\
 	sdn/zones/SimpleEdit.js				\
 	sdn/zones/VlanEdit.js				\
 	sdn/zones/VxlanEdit.js				\
+	storage/BackupView.js				\
 	storage/Base.js					\
 	storage/Browser.js				\
 	storage/CIFSEdit.js				\

@@ -51,13 +51,10 @@ Ext.define('PVE.storage.Browser', {
 
 		    if (contents.includes('backup')) {
 			items.push({
-			    xtype: 'pveStorageContentView',
+			    xtype: 'pveStorageBackupView',
 			    title: gettext('Backups'),
 			    iconCls: 'fa fa-floppy-o',
 			    itemId: 'contentBackup',
-			    content: 'backup',
-			    stateful: true,
-			    stateId: 'grid-storage-content-backup',
 			});
 		    }
 		    if (contents.includes('images')) {
