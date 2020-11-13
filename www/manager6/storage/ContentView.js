@@ -311,41 +311,51 @@ Ext.define('PVE.storage.ContentView', {
 	    }
 	);
 
+	var availableColumns = {
+	    'name': {
+		header: gettext('Name'),
+		flex: 2,
+		sortable: true,
+		renderer: PVE.Utils.render_storage_content,
+		dataIndex: 'text'
+	    },
+	    'comment': {
+		header: gettext('Comment'),
+		flex: 1,
+		renderer: Ext.htmlEncode,
+		dataIndex: 'comment',
+	    },
+	    'date': {
+		header: gettext('Date'),
+		width: 150,
+		dataIndex: 'vdate'
+	    },
+	    'format': {
+		header: gettext('Format'),
+		width: 100,
+		dataIndex: 'format'
+	    },
+	    'size': {
+		header: gettext('Size'),
+		width: 100,
+		renderer: Proxmox.Utils.format_size,
+		dataIndex: 'size'
+	    },
+	};
+
+	if (!me.showColumns) {
+	    me.showColumns = ['name', 'comment', 'date', 'format', 'size'];
+	}
+	var columns = [];
+	me.showColumns.forEach(function(datum) {
+	    columns.push(availableColumns[datum]);
+	});
+
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
 	    tbar: me.tbar,
-	    columns: [
-		{
-		    header: gettext('Name'),
-		    flex: 2,
-		    sortable: true,
-		    renderer: PVE.Utils.render_storage_content,
-		    dataIndex: 'text'
-		},
-		{
-		    header: gettext('Comment'),
-		    flex: 1,
-		    renderer: Ext.htmlEncode,
-		    dataIndex: 'comment',
-		},
-		{
-		    header: gettext('Date'),
-		    width: 150,
-		    dataIndex: 'vdate'
-		},
-		{
-		    header: gettext('Format'),
-		    width: 100,
-		    dataIndex: 'format'
-		},
-		{
-		    header: gettext('Size'),
-		    width: 100,
-		    renderer: Proxmox.Utils.format_size,
-		    dataIndex: 'size'
-		},
-	    ],
+	    columns: columns,
 	    listeners: {
 		activate: reload
 	    }
