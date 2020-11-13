@@ -618,12 +618,6 @@ Ext.define('PVE.storage.ContentView', {
 		    dataIndex: 'format'
 		},
 		{
-		    header: gettext('Type'),
-		    width: 100,
-		    dataIndex: 'content',
-		    renderer: PVE.Utils.format_content_types
-		},
-		{
 		    header: gettext('Size'),
 		    width: 100,
 		    renderer: Proxmox.Utils.format_size,
