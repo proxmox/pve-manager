@@ -63,9 +63,7 @@ Ext.define('PVE.storage.ImageView', {
 			url: url,
 			item: { type: 'Image', id: vmid }
 		    }).show();
-		    win.on('destroy', function() {
-			reload();
-		    });
+		    win.on('destroy', reload);
 		}
 	    },
 	];
