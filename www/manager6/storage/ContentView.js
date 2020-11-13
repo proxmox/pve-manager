@@ -375,15 +375,21 @@ Ext.define('PVE.storage.ContentView', {
     initComponent : function() {
 	var me = this;
 
-	var nodename = me.pveSelNode.data.node;
-	if (!nodename) {
-	    throw "no node name specified";
+	if (!me.nodename) {
+	    me.nodename = me.pveSelNode.data.node;
+	    if (!me.nodename) {
+		throw "no node name specified";
+	    }
 	}
+	var nodename = me.nodename;
 
-	var storage = me.pveSelNode.data.storage;
-	if (!storage) {
-	    throw "no storage ID specified";
+	if (!me.storage) {
+	    me.storage = me.pveSelNode.data.storage;
+	    if (!me.storage) {
+		throw "no storage ID specified";
+	    }
 	}
+	var storage = me.storage;
 
 	var content = me.content;
 	if (!content) {
@@ -391,7 +397,7 @@ Ext.define('PVE.storage.ContentView', {
 	}
 
 	var baseurl = "/nodes/" + nodename + "/storage/" + storage + "/content";
-	var store = Ext.create('Ext.data.Store',{
+	var store = me.store = Ext.create('Ext.data.Store', {
 	    model: 'pve-storage-content',
 	    proxy: {
                 type: 'proxmox',
@@ -406,7 +412,10 @@ Ext.define('PVE.storage.ContentView', {
 	    }
 	});
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
+	if (!me.sm) {
+	    me.sm = Ext.create('Ext.selection.RowModel', {});
+	}
+	var sm = me.sm;
 
 	var reload = function() {
 	    store.load();
