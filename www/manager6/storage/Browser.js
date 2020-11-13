@@ -80,6 +80,7 @@ Ext.define('PVE.storage.Browser', {
 			    content: 'iso',
 			    stateful: true,
 			    stateId: 'grid-storage-content-iso',
+			    useUploadButton: true,
 			});
 		    }
 		    if (contents.includes('rootdir')) {
@@ -113,6 +114,7 @@ Ext.define('PVE.storage.Browser', {
 			    content: 'vztmpl',
 			    stateful: true,
 			    stateId: 'grid-storage-content-vztmpl',
+			    useUploadButton: true,
 			});
 		    }
 		    me.insertNodes(items);

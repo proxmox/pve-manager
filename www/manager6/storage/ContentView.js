@@ -440,24 +440,17 @@ Ext.define('PVE.storage.ContentView', {
 	}
 
 	var uploadButton = Ext.create('Proxmox.button.Button', {
-	    contents : ['iso','vztmpl'],
 	    text: gettext('Upload'),
 	    handler: function() {
-		var me = this;
 		var win = Ext.create('PVE.storage.Upload', {
 		    nodename: nodename,
 		    storage: storage,
-		    contents: me.contents
+		    contents: [content],
 		});
 		win.show();
 		win.on('destroy', reload);
 	    }
 	});
-	if (content === 'iso' || content === 'vztmpl') {
-	    uploadButton.contents = [content];
-	} else {
-	    uploadButton.setDisabled(true);
-	}
 
 	var imageRemoveButton;
 	var removeButton = Ext.create('Proxmox.button.StdRemoveButton',{
@@ -530,6 +523,9 @@ Ext.define('PVE.storage.ContentView', {
 	if (!me.tbar) {
 	    me.tbar = [];
 	}
+	if (me.useUploadButton) {
+	    me.tbar.push(uploadButton);
+	}
 	me.tbar.push(
 	    {
 		xtype: 'proxmoxButton',
@@ -562,7 +558,6 @@ Ext.define('PVE.storage.ContentView', {
 	    removeButton,
 	    imageRemoveButton,
 	    templateButton,
-	    uploadButton,
 	    {
 		xtype: 'proxmoxButton',
 		text: gettext('Show Configuration'),
