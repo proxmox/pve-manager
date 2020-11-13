@@ -193,6 +193,30 @@ Ext.define('PVE.storage.Upload', {
 	    hidden: true
 	});
 
+	let acceptedExtensions = {
+	    iso: ".img, .iso",
+	    vztmpl: ".tar.gz, .tar.xz",
+	};
+
+	let defaultContent = me.contents[0] || '';
+
+	let fileField = Ext.create('Ext.form.field.File', {
+	    name: 'filename',
+	    buttonText: gettext('Select File...'),
+	    allowBlank: false,
+	    setAccept: function(content) {
+		let acceptString = acceptedExtensions[content] || '';
+		this.fileInputEl.set({
+		    accept: acceptString,
+		});
+	    },
+	    listeners: {
+		afterrender: function(cmp) {
+		    cmp.setAccept(defaultContent);
+		},
+	    },
+	});
+
 	me.formPanel = Ext.create('Ext.form.Panel', {
 	    method: 'POST',
 	    waitMsgTarget: true,
@@ -209,22 +233,15 @@ Ext.define('PVE.storage.Upload', {
 		    cts: me.contents,
 		    fieldLabel: gettext('Content'),
 		    name: 'content',
-		    value: me.contents[0] || '',
-		    allowBlank: false
-		},
-		{
-		    xtype: 'filefield',
-		    name: 'filename',
-		    buttonText: gettext('Select File...'),
+		    value: defaultContent,
 		    allowBlank: false,
 		    listeners: {
-			afterrender: function(cmp) {
-			    cmp.fileInputEl.set({
-				accept: '.img, .iso'
-			    });
-			}
-		    }
+			change: function(cmp, newValue, oldValue) {
+			    fileField.setAccept(newValue);
+			},
+		    },
 		},
+		fileField,
 		pbar
 	    ]
 	});
