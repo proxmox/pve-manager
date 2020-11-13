@@ -269,72 +269,13 @@ Ext.define('PVE.storage.ContentView', {
 	    }
 	});
 
-	var imageRemoveButton;
 	var removeButton = Ext.create('Proxmox.button.StdRemoveButton',{
 	    selModel: sm,
 	    delay: 5,
-	    enableFn: function(rec) {
-		if (rec && rec.data.content !== 'images' &&
-			   rec.data.content !== 'rootdir') {
-		    imageRemoveButton.setVisible(false);
-		    removeButton.setVisible(true);
-		    return true;
-		}
-		return false;
-	    },
 	    callback: function() {
 		reload();
 	    },
 	    baseurl: baseurl + '/'
-	});
-
-	imageRemoveButton = Ext.create('Proxmox.button.Button',{
-	    selModel: sm,
-	    hidden: true,
-	    text: gettext('Remove'),
-	    enableFn: function(rec) {
-		if (rec && (rec.data.content === 'images' ||
-			    rec.data.content === 'rootdir')) {
-		    removeButton.setVisible(false);
-		    imageRemoveButton.setVisible(true);
-		    return true;
-		}
-		return false;
-	    },
-	    handler: function(btn, event, rec) {
-		var url = baseurl + '/' + rec.data.volid;
-		var vmid = rec.data.vmid;
-
-		var store = PVE.data.ResourceStore;
-
-		if (vmid && store.findVMID(vmid)) {
-		    var guest_node = store.guestNode(vmid);
-		    var storage_path = 'storage/' + nodename + '/' + storage;
-
-		    // allow to delete local backed images if a VMID exists on another node.
-		    if (store.storageIsShared(storage_path) || guest_node == nodename) {
-			var msg = Ext.String.format(
-			    gettext("Cannot remove image, a guest with VMID '{0}' exists!"), vmid);
-			msg += '<br />' + gettext("You can delete the image from the guest's hardware pane");
-
-			Ext.Msg.show({
-			    title: gettext('Cannot remove disk image.'),
-			    icon: Ext.Msg.ERROR,
-			    msg: msg
-			});
-			return;
-		    }
-		}
-		var win = Ext.create('PVE.window.SafeDestroy', {
-		    title: Ext.String.format(gettext("Destroy '{0}'"), rec.data.volid),
-		    showProgress: true,
-		    url: url,
-		    item: { type: 'Image', id: vmid }
-		}).show();
-		win.on('destroy', function() {
-		    reload();
-		});
-	    }
 	});
 
 	if (!me.tbar) {
@@ -343,9 +284,10 @@ Ext.define('PVE.storage.ContentView', {
 	if (me.useUploadButton) {
 	    me.tbar.push(uploadButton);
 	}
+	if (!me.useCustomRemoveButton) {
+	    me.tbar.push(removeButton);
+	}
 	me.tbar.push(
-	    removeButton,
-	    imageRemoveButton,
 	    '->',
 	    gettext('Search') + ':', ' ',
 	    {

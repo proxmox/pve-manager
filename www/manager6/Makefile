@@ -242,6 +242,7 @@ JSSRC= 							\
 	storage/ContentView.js				\
 	storage/DirEdit.js				\
 	storage/GlusterFsEdit.js			\
+	storage/ImageView.js				\
 	storage/IScsiEdit.js				\
 	storage/LVMEdit.js				\
 	storage/LvmThinEdit.js				\

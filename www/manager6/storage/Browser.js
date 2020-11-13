@@ -59,7 +59,7 @@ Ext.define('PVE.storage.Browser', {
 		    }
 		    if (contents.includes('images')) {
 			items.push({
-			    xtype: 'pveStorageContentView',
+			    xtype: 'pveStorageImageView',
 			    title: gettext('Disk Images'),
 			    iconCls: 'fa fa-hdd-o',
 			    itemId: 'contentImages',
@@ -82,7 +82,7 @@ Ext.define('PVE.storage.Browser', {
 		    }
 		    if (contents.includes('rootdir')) {
 			items.push({
-			    xtype: 'pveStorageContentView',
+			    xtype: 'pveStorageImageView',
 			    title: gettext('Container Data'),
 			    iconCls: 'fa fa-hdd-o',
 			    itemId: 'contentRootdir',
