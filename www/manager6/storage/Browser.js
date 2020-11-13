@@ -35,27 +35,32 @@ Ext.define('PVE.storage.Browser', {
 	    hstateid: 'storagetab'
 	});
 
+	// call here, so there is a root for insertNodes()
+	me.callParent();
+
 	if (caps.storage['Datastore.Allocate'] ||
 	    caps.storage['Datastore.AllocateSpace'] ||
 	    caps.storage['Datastore.Audit']) {
-	    me.items.push({
-		xtype: 'pveStorageContentView',
-		title: gettext('Content'),
-		iconCls: 'fa fa-th',
-		itemId: 'content'
-	    });
+	    me.insertNodes([
+		{
+		    xtype: 'pveStorageContentView',
+		    title: gettext('Content'),
+		    iconCls: 'fa fa-th',
+		    itemId: 'content'
+		},
+	    ]);
 	}
 
 	if (caps.storage['Permissions.Modify']) {
-	    me.items.push({
-		xtype: 'pveACLView',
-		title: gettext('Permissions'),
-		iconCls: 'fa fa-unlock',
-		itemId: 'permissions',
-		path: '/storage/' + storeid
-	    });
+	    me.insertNodes([
+		{
+		    xtype: 'pveACLView',
+		    title: gettext('Permissions'),
+		    iconCls: 'fa fa-unlock',
+		    itemId: 'permissions',
+		    path: '/storage/' + storeid
+		},
+	    ]);
 	}
-
-	me.callParent();
    }
 });
