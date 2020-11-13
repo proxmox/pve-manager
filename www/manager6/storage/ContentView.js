@@ -372,12 +372,6 @@ Ext.define('PVE.storage.ContentView', {
 	trackOver: false,
 	loadMask: false
     },
-    features: [
-	{
-	    ftype: 'grouping',
-	    groupHeaderTpl: '{name} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})'
-	}
-    ],
     initComponent : function() {
 	var me = this;
 
@@ -399,7 +393,6 @@ Ext.define('PVE.storage.ContentView', {
 	var baseurl = "/nodes/" + nodename + "/storage/" + storage + "/content";
 	var store = Ext.create('Ext.data.Store',{
 	    model: 'pve-storage-content',
-	    groupField: 'content',
 	    proxy: {
                 type: 'proxmox',
 		url: '/api2/json' + baseurl,
