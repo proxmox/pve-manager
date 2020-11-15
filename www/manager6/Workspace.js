@@ -23,6 +23,7 @@ Ext.define('PVE.Workspace', {
 
 	var rt = me.down('pveResourceTree');
 	rt.setDatacenterText(loginData.clustername);
+	PVE.ClusterName = loginData.clustername;
 
 	if (loginData.cap) {
 	    Ext.state.Manager.set('GuiCap', loginData.cap);
