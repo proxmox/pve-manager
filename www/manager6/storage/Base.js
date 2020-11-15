@@ -57,6 +57,13 @@ Ext.define('PVE.panel.StorageBase', {
 Ext.define('PVE.storage.BaseEdit', {
     extend: 'Proxmox.window.Edit',
 
+    apiCallDone: function(success, response, options) {
+	let me = this;
+	if (typeof me.ipanel.apiCallDone === "function") {
+	    me.ipanel.apiCallDone(success, response, options);
+	}
+    },
+
     initComponent : function() {
 	var me = this;
 
@@ -70,7 +77,7 @@ Ext.define('PVE.storage.BaseEdit', {
 	    me.method = 'PUT';
 	}
 
-	var ipanel = Ext.create(me.paneltype, {
+	me.ipanel = Ext.create(me.paneltype, {
 	    type: me.type,
 	    isCreate: me.isCreate,
 	    storageId: me.storageId
@@ -79,7 +86,7 @@ Ext.define('PVE.storage.BaseEdit', {
 	Ext.apply(me, {
             subject: PVE.Utils.format_storage_type(me.type),
 	    isAdd: true,
-	    items: [ ipanel ]
+	    items: [ me.ipanel ]
 	});
 
 	me.callParent();
@@ -97,7 +104,7 @@ Ext.define('PVE.storage.BaseEdit', {
 		    }
 		    values.enable = values.disable ? 0 : 1;
 
-		    ipanel.setValues(values);
+		    me.ipanel.setValues(values);
 		}
 	    });
 	}
