@@ -143,11 +143,6 @@ Ext.define('PVE.storage.PBSInputPanel', {
 		isCreate: me.isCreate,
 		fieldLabel: gettext('Encryption Key'),
 	    },
-	    {
-		xtype: 'displayfield',
-		userCls: 'pmx-hint',
-		value: `Proxmox Backup Server is currently in beta.`,
-	    },
 	];
 
 	me.callParent();
