@@ -311,7 +311,7 @@ Ext.define('PVE.storage.ContentView', {
 	    }
 	);
 
-	var availableColumns = {
+	let availableColumns = {
 	    'name': {
 		header: gettext('Name'),
 		flex: 2,
@@ -343,13 +343,12 @@ Ext.define('PVE.storage.ContentView', {
 	    },
 	};
 
-	if (!me.showColumns) {
-	    me.showColumns = ['name', 'comment', 'date', 'format', 'size'];
+	if (me.hideColumns) {
+	    me.hideColumns.forEach(key => delete availableColumns[key]);
+	} else if (!me.hasCommentColumn) {
+	    delete availableColumns.comment;
 	}
-	var columns = [];
-	me.showColumns.forEach(function(datum) {
-	    columns.push(availableColumns[datum]);
-	});
+	const columns = Object.values(availableColumns);
 
 	Ext.apply(me, {
 	    store: store,
