@@ -163,6 +163,7 @@ Ext.define('PVE.dc.TokenShow', {
 		document.execCommand("copy");
 	    },
 	    text: gettext('Copy Secret Value'),
+	    iconCls: 'fa fa-clipboard',
 	},
     ],
 });
