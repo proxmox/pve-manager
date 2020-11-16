@@ -288,21 +288,41 @@ Ext.define('PVE.storage.ContentView', {
 		xtype: 'textfield',
 		width: 200,
 		enableKeyEvents: true,
+		emptyText: gettext('Name, Format'),
 		listeners: {
-		    buffer: 500,
-		    keyup: function(field) {
-			store.clearFilter(true);
-			store.filter([
-			    {
-				property: 'text',
-				value: field.getValue(),
-				anyMatch: true,
-				caseSensitive: false
-			    }
-			]);
-		    }
-		}
-	    }
+		    keyup: {
+			buffer: 500,
+			fn: function(field) {
+			    store.clearFilter(true);
+			    store.filter([
+				{
+				    property: 'text',
+				    value: field.getValue(),
+				    anyMatch: true,
+				    caseSensitive: false,
+				},
+			    ]);
+			},
+		    },
+		    change: function(field, newValue, oldValue) {
+			if (newValue !== this.originalValue) {
+			    this.triggers.clear.setVisible(true);
+			}
+		    },
+		},
+		triggers: {
+		    clear: {
+			cls: 'pmx-clear-trigger',
+			weight: -1,
+			hidden: true,
+			handler: function() {
+			    this.triggers.clear.setVisible(false);
+			    this.setValue(this.originalValue);
+			    store.clearFilter();
+			},
+		    },
+		},
+	    },
 	);
 
 	let availableColumns = {
