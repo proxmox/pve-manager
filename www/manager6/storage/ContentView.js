@@ -6,24 +6,21 @@ Ext.define('PVE.storage.Upload', {
 
     modal: true,
 
-    initComponent : function() {
+    initComponent: function() {
         var me = this;
-
-	var xhr;
 
 	if (!me.nodename) {
 	    throw "no node name specified";
 	}
-
 	if (!me.storage) {
 	    throw "no storage ID specified";
 	}
 
-	var baseurl = "/nodes/" + me.nodename + "/storage/" + me.storage + "/upload";
+	let baseurl = `/nodes/${me.nodename}/storage/${me.storage}/upload`;
 
-	var pbar = Ext.create('Ext.ProgressBar', {
+	let pbar = Ext.create('Ext.ProgressBar', {
             text: 'Ready',
-	    hidden: true
+	    hidden: true,
 	});
 
 	let acceptedExtensions = {
@@ -58,7 +55,7 @@ Ext.define('PVE.storage.Upload', {
 	    width: 300,
 	    fieldDefaults: {
 		labelWidth: 100,
-		anchor: '100%'
+		anchor: '100%',
             },
 	    items: [
 		{
@@ -75,13 +72,13 @@ Ext.define('PVE.storage.Upload', {
 		    },
 		},
 		fileField,
-		pbar
-	    ]
+		pbar,
+	    ],
 	});
 
-	var form = me.formPanel.getForm();
+	let form = me.formPanel.getForm();
 
-	var doStandardSubmit = function() {
+	let doStandardSubmit = function() {
 	    form.submit({
 		url: "/api2/htmljs" + baseurl,
 		waitMsg: gettext('Uploading file...'),
@@ -91,11 +88,11 @@ Ext.define('PVE.storage.Upload', {
 		failure: function(f, action) {
 		    var msg = PVE.Utils.extractFormActionError(action);
                     Ext.Msg.alert(gettext('Error'), msg);
-		}
+		},
 	    });
 	};
 
-	var updateProgress = function(per, bytes) {
+	let updateProgress = function(per, bytes) {
 	    var text = (per * 100).toFixed(2) + '%';
 	    if (bytes) {
 		text += " (" + Proxmox.Utils.format_size(bytes) + ')';
@@ -103,15 +100,15 @@ Ext.define('PVE.storage.Upload', {
 	    pbar.updateProgress(per, text);
 	};
 
-	var abortBtn = Ext.create('Ext.Button', {
+	let abortBtn = Ext.create('Ext.Button', {
 	    text: gettext('Abort'),
 	    disabled: true,
 	    handler: function() {
 		me.close();
-	    }
+	    },
 	});
 
-	var submitBtn = Ext.create('Ext.Button', {
+	let submitBtn = Ext.create('Ext.Button', {
 	    text: gettext('Upload'),
 	    disabled: true,
 	    handler: function(button) {
@@ -138,62 +135,60 @@ Ext.define('PVE.storage.Upload', {
 		pbar.setVisible(true);
 		updateProgress(0);
 
-		xhr = new XMLHttpRequest();
+		let xhr = new XMLHttpRequest();
+		me.xhr = xhr;
 
 		xhr.addEventListener("load", function(e) {
-		    if (xhr.status == 200) {
+		    if (xhr.status === 200) {
 			me.close();
-		    } else {
-			var msg = gettext('Error') + " " + xhr.status.toString() + ": " + Ext.htmlEncode(xhr.statusText);
-			if (xhr.responseText !== "") {
-			    var result = Ext.decode(xhr.responseText);
-			    result.message = msg;
-			    msg = Proxmox.Utils.extractRequestError(result, true);
-			}
-			Ext.Msg.alert(gettext('Error'), msg, function(btn) {
-			    me.close();
-			});
+			return;
 		    }
+		    let err = Ext.htmlEncode(xhr.statusText);
+		    let msg = `${gettext('Error')} ${xhr.status.toString()}: ${err}`;
+		    if (xhr.responseText !== "") {
+			let result = Ext.decode(xhr.responseText);
+			result.message = msg;
+			msg = Proxmox.Utils.extractRequestError(result, true);
+		    }
+		    Ext.Msg.alert(gettext('Error'), msg, btn => me.close());
 		}, false);
 
 		xhr.addEventListener("error", function(e) {
-		    var msg = "Error " + e.target.status.toString() + " occurred while receiving the document.";
-		    Ext.Msg.alert(gettext('Error'), msg, function(btn) {
-			me.close();
-		    });
+		    let err = e.target.status.toString();
+		    let msg = `Error '${err}' occurred while receiving the document.`;
+		    Ext.Msg.alert(gettext('Error'), msg, btn => me.close());
 		});
 
 		xhr.upload.addEventListener("progress", function(evt) {
 		    if (evt.lengthComputable) {
-			var percentComplete = evt.loaded / evt.total;
+			let percentComplete = evt.loaded / evt.total;
 			updateProgress(percentComplete, evt.loaded);
 		    }
 		}, false);
 
-		xhr.open("POST", "/api2/json" + baseurl, true);
+		xhr.open("POST", `/api2/json${baseurl}`, true);
 		xhr.send(fd);
-	    }
+	    },
 	});
 
-	form.on('validitychange', function(f, valid) {
-	    submitBtn.setDisabled(!valid);
-	});
+	form.on('validitychange', (f, valid) => submitBtn.setDisabled(!valid));
 
-        Ext.apply(me, {
-            title: gettext('Upload'),
+	Ext.apply(me, {
+	    title: gettext('Upload'),
 	    items: me.formPanel,
-	    buttons: [ abortBtn, submitBtn ],
+	    buttons: [abortBtn, submitBtn],
 	    listeners: {
 		close: function() {
-		    if (xhr) {
-			xhr.abort();
+		    if (me.xhr) {
+			me.xhr.abort();
+			delete me.xhr;
 		    }
-		}
-	    }
+		},
+	    },
 	});
 
         me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.storage.ContentView', {
@@ -203,9 +198,9 @@ Ext.define('PVE.storage.ContentView', {
 
     viewConfig: {
 	trackOver: false,
-	loadMask: false
+	loadMask: false,
     },
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -214,7 +209,7 @@ Ext.define('PVE.storage.ContentView', {
 		throw "no node name specified";
 	    }
 	}
-	var nodename = me.nodename;
+	const nodename = me.nodename;
 
 	if (!me.storage) {
 	    me.storage = me.pveSelNode.data.storage;
@@ -222,15 +217,15 @@ Ext.define('PVE.storage.ContentView', {
 		throw "no storage ID specified";
 	    }
 	}
-	var storage = me.storage;
+	const storage = me.storage;
 
 	var content = me.content;
 	if (!content) {
 	    throw "no content type specified";
 	}
 
-	var baseurl = "/nodes/" + nodename + "/storage/" + storage + "/content";
-	var store = me.store = Ext.create('Ext.data.Store', {
+	const baseurl = `/nodes/${nodename}/storage/${storage}/content`;
+	let store = me.store = Ext.create('Ext.data.Store', {
 	    model: 'pve-storage-content',
 	    proxy: {
                 type: 'proxmox',
@@ -241,41 +236,39 @@ Ext.define('PVE.storage.ContentView', {
 	    },
 	    sorters: {
 		property: 'volid',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
 	if (!me.sm) {
 	    me.sm = Ext.create('Ext.selection.RowModel', {});
 	}
-	var sm = me.sm;
+	let sm = me.sm;
 
-	var reload = function() {
-	    store.load();
-	};
+	let reload = () => store.load();
 
 	Proxmox.Utils.monStoreErrors(me, store);
 
-	var uploadButton = Ext.create('Proxmox.button.Button', {
+	let uploadButton = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Upload'),
 	    handler: function() {
-		var win = Ext.create('PVE.storage.Upload', {
+		let win = Ext.create('PVE.storage.Upload', {
 		    nodename: nodename,
 		    storage: storage,
 		    contents: [content],
 		});
 		win.show();
 		win.on('destroy', reload);
-	    }
+	    },
 	});
 
-	var removeButton = Ext.create('Proxmox.button.StdRemoveButton',{
+	let removeButton = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    delay: 5,
 	    callback: function() {
 		reload();
 	    },
-	    baseurl: baseurl + '/'
+	    baseurl: baseurl + '/',
 	});
 
 	if (!me.tbar) {
@@ -289,7 +282,8 @@ Ext.define('PVE.storage.ContentView', {
 	}
 	me.tbar.push(
 	    '->',
-	    gettext('Search') + ':', ' ',
+	    gettext('Search') + ':',
+	    ' ',
 	    {
 		xtype: 'textfield',
 		width: 200,
@@ -317,7 +311,7 @@ Ext.define('PVE.storage.ContentView', {
 		flex: 2,
 		sortable: true,
 		renderer: PVE.Utils.render_storage_content,
-		dataIndex: 'text'
+		dataIndex: 'text',
 	    },
 	    'comment': {
 		header: gettext('Comment'),
@@ -328,18 +322,18 @@ Ext.define('PVE.storage.ContentView', {
 	    'date': {
 		header: gettext('Date'),
 		width: 150,
-		dataIndex: 'vdate'
+		dataIndex: 'vdate',
 	    },
 	    'format': {
 		header: gettext('Format'),
 		width: 100,
-		dataIndex: 'format'
+		dataIndex: 'format',
 	    },
 	    'size': {
 		header: gettext('Size'),
 		width: 100,
 		renderer: Proxmox.Utils.format_size,
-		dataIndex: 'size'
+		dataIndex: 'size',
 	    },
 	};
 
@@ -356,14 +350,13 @@ Ext.define('PVE.storage.ContentView', {
 	    tbar: me.tbar,
 	    columns: columns,
 	    listeners: {
-		activate: reload
-	    }
+		activate: reload,
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 }, function() {
-
     Ext.define('pve-storage-content', {
 	extend: 'Ext.data.Model',
 	fields: [
@@ -378,7 +371,7 @@ Ext.define('PVE.storage.ContentView', {
 			return value;
 		    }
 		    return PVE.Utils.render_storage_content(value, {}, record);
-		}
+		},
 	    },
 	    {
 		name: 'vdate',
@@ -400,13 +393,12 @@ Ext.define('PVE.storage.ContentView', {
 		    }
 		    if (record.data.ctime) {
 			let ctime = new Date(record.data.ctime * 1000);
-			return Ext.Date.format(ctime,'Y-m-d H:i:s');
+			return Ext.Date.format(ctime, 'Y-m-d H:i:s');
 		    }
 		    return '';
-		}
+		},
 	    },
 	],
-	idProperty: 'volid'
+	idProperty: 'volid',
     });
-
 });
