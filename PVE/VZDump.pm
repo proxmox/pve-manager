@@ -258,18 +258,20 @@ sub sendmail {
 
     # text part
     my $text = $err ? "$err\n\n" : '';
-    $text .= sprintf ("%-10s %-6s %10s %10s  %s\n", qw(VMID STATUS TIME SIZE FILENAME));
+    $text .= sprintf ("%-10s %-20s %-6s %10s %10s  %s\n", qw(VMID NAME STATUS TIME SIZE FILENAME));
     foreach my $task (@$tasklist) {
 	my $vmid = $task->{vmid};
 	if  ($task->{state} eq 'ok') {
 
-	    $text .= sprintf ("%-10s %-6s %10s %10s  %s\n", $vmid,
+	    $text .= sprintf ("%-10s %-20s %-6s %10s %10s  %s\n", $vmid,
+				substr($task->{hostname}, 0, 20),
 				$task->{state},
 				format_time($task->{backuptime}),
 				format_size ($task->{size}),
 				$task->{target});
 	} else {
-	    $text .= sprintf ("%-10s %-6s %10s %8.2fMB  %s\n", $vmid,
+	    $text .= sprintf ("%-10s %-20s %-6s %10s %8.2fMB  %s\n", $vmid,
+				substr($task->{hostname}, 0, 20),
 				$task->{state},
 				format_time($task->{backuptime}),
 				0, '-');
