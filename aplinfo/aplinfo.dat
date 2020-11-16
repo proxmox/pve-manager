@@ -4,19 +4,6 @@ Description: News displayed on the admin interface
   For more information please visit our homepage at
   <a href='http://www.proxmox.com' target='_blank'>www.proxmox.com</a>
 
-Package: alpine-3.10-default
-Version: 20190626
-Type: lxc
-OS: alpine
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/alpine-3.10-default_20190626_amd64.tar.xz
-md5sum: 2dc812e0236bc8c75f123f392828cd70
-sha512sum: dc1d1ba73047c95747180d80fdf43aff424808f0263bee9df88f48a815cba1a437c5a7e66e1f405711b801a087d41c0867828e8b0e26783c2b978c60fb947e3d
-Infopage: https://linuxcontainers.org
-Description: LXC default image for alpine 3.10 (20190626)
-
 Package: alpine-3.11-default
 Version: 20200425
 Type: lxc
@@ -29,6 +16,19 @@ md5sum: 6a4e3b1d5654f233147257110f157049
 sha512sum: 150f926ecb3e75b00fc6e188590144dad7c8c0ef209d3f028bbfabf81fe6f8d0bb4c33034207573730c4bb668be1274aaf8e9e15cfc6c99eaf9d8cd3bf3be40c
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.11 (20200425)
+
+Package: alpine-3.12-default
+Version: 20200823
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.12-default_20200823_amd64.tar.xz
+md5sum: 5fd699ef5297fba13ab2edb9ab9e3f3c
+sha512sum: 623f024cdd181dd1202902acf0cf91a088a4173c0b4d69e213c8072869bedff41fa5b5e1303c3c59ac665e65655af74d612b84b5c7173d9f1ea28f15e00c913b
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.12 (20200823)
 
 Package: archlinux-base
 Version: 20200508-1
@@ -44,18 +44,19 @@ Infopage: https://www.archlinux.org
 Description: ArchLinux base image.
  ArchLinux template with the 'base' group and the 'openssh' package installed.
 
-Package: centos-6-default
-Version: 20191016
+Package: archlinux-base
+Version: 20201116-1
 Type: lxc
-OS: centos
+OS: archlinux
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/centos-6-default_20191016_amd64.tar.xz
-md5sum: 294e6d5e1587af0a831e9c054eed354c
-sha512sum: e7f41df6aa34a9422b0f1d54d9d060a432996cc4ad146547162af3af59d1a150c5bcbcd085412e5e4dd93ae9c0844c776ebb4c9227a233024793ef9bc67364b6
-Infopage: https://linuxcontainers.org
-Description: LXC default image for centos 6 (20191016)
+Location: system/archlinux-base_20201116-1_amd64.tar.gz
+md5sum: 82271bfc9daae3f7dcb98f155606dd5a
+sha512sum: 547fb6b9b1964a891d0aff8e2374b4ecead29509302e758506a60af8e8e418ae89ecbea6395b04b1478302f89e131cfbd503712ea993bf1230e107e5bc83add5
+Infopage: https://www.archlinux.org
+Description: ArchLinux base image.
+ ArchLinux template with the 'base' group and the 'openssh' package installed.
 
 Package: centos-7-default
 Version: 20190926
@@ -83,33 +84,19 @@ sha512sum: 53fb790b6f436f496ebc2fe6f312ce02fa0014761f8cbeb81beebdd7e2b00dea1264b
 Infopage: https://linuxcontainers.org
 Description: LXC default image for centos 8 (20191016)
 
-Package: debian-10.0-standard
-Version: 10.0-1
+Package: debian-10-standard
+Version: 10.5-1
 Type: lxc
-OS: debian-10.0
+OS: debian-10
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/debian-10.0-standard_10.0-1_amd64.tar.gz
-md5sum: 5e66d2da77a034a8b6a60909a6d91c80
-sha512sum: f19d5594fccc0514b46e83ef31202e083021a0ba412f740fd6790fa88b9a83704d83342cab8286fcdd0342a704291bf243d7223d780f18828d1ec86bceab843f
+Location: system/debian-10-standard_10.5-1_amd64.tar.gz
+md5sum: 1c487731c77b7ca01ed6bb95cf7b769a
+sha512sum: a41f64b5b66895234413e1d7e35a85f404223721299e18a150f60a61b5160f56e2c980cb669056ee77fb2b0538c80fab2e99ef0dda01fd6db367324318f47355
 Infopage: http://pve.proxmox.com/wiki/Debian_10.0_Standard
-Description: Debian 10.0 (standard)
+Description: Debian 10 Buster (standard)
  A small Debian Buster system including all standard packages.
-
-Package: debian-8.0-standard
-Version: 8.11-1
-Type: lxc
-OS: debian-8.0
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/debian-8.0-standard_8.11-1_amd64.tar.gz
-md5sum: 92fa589fd24859e82ae922f5e8fe7796
-sha512sum: b45e2d46e9760dda5d7887414f566780e1e8a1079423324ea27b4627d38344cc1fc1a01edf3b947f9632610f59869f3239c0294b7cc8237a7d5b417816083a1a
-Infopage: http://pve.proxmox.com/wiki/Debian_8.0_Standard
-Description: Debian 8.11 (standard)
- A small Debian Jessie system including all standard packages.
 
 Package: debian-9.0-standard
 Version: 9.7-1
@@ -125,19 +112,6 @@ Infopage: http://pve.proxmox.com/wiki/Debian_9.0_Standard
 Description: Debian 9.7 (standard)
  A small Debian Stretch system including all standard packages.
 
-Package: fedora-31-default
-Version: 20191029
-Type: lxc
-OS: fedora
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/fedora-31-default_20191029_amd64.tar.xz
-md5sum: e4da460e06f99bc269651f79d16a3d26
-sha512sum: 451b1effac32cccdaf8f070039146649243b5453a21960fde268afb9bc503300e20d1d71a1870e6dda65106534e6ab0881a8d05c036077189b63a80236207323
-Infopage: https://linuxcontainers.org
-Description: LXC default image for fedora 31 (20191029)
-
 Package: fedora-32-default
 Version: 20200430
 Type: lxc
@@ -150,6 +124,19 @@ md5sum: 0b8ba4a36a6b875b677ece1d1a198955
 sha512sum: bfe34436ddada3ef3162c5a4d72df54d48e11c798a54f9722c9316371bdb33cf771994dfe7ca8bfd91562ae92cfc0c83c55cf209d64e765be1ca7ee4c05ea52f
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 32 (20200430)
+
+Package: fedora-33-default
+Version: 20201115
+Type: lxc
+OS: fedora
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/fedora-33-default_20201115_amd64.tar.xz
+md5sum: 391e2a431179b24c474e225b61dd415d
+sha512sum: 48787a928769627a05ccb9969e5419d97d2aa0fb17a6cffe1e281b95b5b4ab0d4a43a3b903ffbcd79a3a5d06a9edf71c5bda583773423d018ed2a519a8b64afb
+Infopage: https://linuxcontainers.org
+Description: LXC default image for fedora 33 (20201115)
 
 Package: gentoo-current-default
 Version: 20200310
@@ -164,18 +151,18 @@ sha512sum: dc12b2fe0917ab779f92e4632504280663fac2c05c12479f98db67a9a617d9c2ce2fa
 Infopage: https://linuxcontainers.org
 Description: LXC default image for gentoo current (20200310)
 
-Package: opensuse-15.1-default
-Version: 20190719
+Package: opensuse-15.2-default
+Version: 20200824
 Type: lxc
 OS: opensuse
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/opensuse-15.1-default_20190719_amd64.tar.xz
-md5sum: bdc056320ca5396069082feca630f324
-sha512sum: 261a441914cb93ac595a5b54e0c73f10fbb72a379f7dfc11fc215b6405dac330520a91aa4ea746de91a7b41cacd940c7a7aa14565493b64cef1ec17b75758488
+Location: system/opensuse-15.2-default_20200824_amd64.tar.xz
+md5sum: 727f9371bbf39515d2d1a328161036ec
+sha512sum: d4c057c236e81115c844cc1dc164b186b38e2f9d696bf24254401c0e8749a11582af79de9db2c01d5ca3b94a4048fe3a5c059ea5f3531b7f3f778986efe585a2
 Infopage: https://linuxcontainers.org
-Description: LXC default image for opensuse 15.1 (20190719)
+Description: LXC default image for opensuse 15.2 (20200824)
 
 Package: proxmox-mailgateway-6.2-standard
 Version: 6.2-1
@@ -219,20 +206,6 @@ Infopage: http://pve.proxmox.com/wiki/Ubuntu_Bionic_Standard
 Description: Ubuntu Bionic (standard)
  A small Ubuntu Bionic system including all standard packages.
 
-Package: ubuntu-19.10-standard
-Version: 19.10-1
-Type: lxc
-OS: ubuntu-19.10
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-19.10-standard_19.10-1_amd64.tar.gz
-md5sum: 8ceb3daf401d30c2a9408b0003f4b882
-sha512sum: 61dfb3f23c7ecbdab1cccdc5a7ce6c43eb6362d79e36a57ddced4881292cd5d1ea632b3f8b9b1a8abd27c9c7e10cd066733838cf3d7d6690e729c92e6331395c
-Infopage: http://pve.proxmox.com/wiki/Ubuntu_Disco_Standard
-Description: Ubuntu Eoan (standard)
- A small Ubuntu 19.10 Eoan system including all standard packages.
-
 Package: ubuntu-20.04-standard
 Version: 20.04-1
 Type: lxc
@@ -246,3 +219,17 @@ sha512sum: 9ebcf6cce7c3b760d27c2bfe03d00acf3d40a489cd98230b9ab8dd436f82f4ae8dc2d
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Disco_Standard
 Description: Ubuntu Focal (standard)
  A small Ubuntu 20.04 Focal Fossa system including all standard packages.
+
+Package: ubuntu-20.10-standard
+Version: 20.10-1
+Type: lxc
+OS: ubuntu-20.10
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-20.10-standard_20.10-1_amd64.tar.gz
+md5sum: 0a6452096cf8402895717005f44cca19
+sha512sum: 30fe89a4c5b5afa470240016fc588a4ea12de20d94804c8bd3999d618ef0f78348a9a6d383a7140b8677d6041d05d4f56f35c0e17cf9141139b200183ec69664
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Groovy_Standard
+Description: Ubuntu Groovy (standard)
+ A small Ubuntu 20.10 Groovy Gorilla system including all standard packages.
