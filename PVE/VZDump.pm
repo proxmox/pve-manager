@@ -258,24 +258,26 @@ sub sendmail {
 
     # text part
     my $text = $err ? "$err\n\n" : '';
-    $text .= sprintf ("%-10s %-20s %-6s %10s %10s  %s\n", qw(VMID NAME STATUS TIME SIZE FILENAME));
+    my $namelength = 20;
+    $text .= sprintf (
+	"%-10s %-${namelength}s %-6s %10s %10s  %s\n",
+	qw(VMID NAME STATUS TIME SIZE FILENAME)
+    );
     foreach my $task (@$tasklist) {
-	my $vmid = $task->{vmid};
-	if  ($task->{state} eq 'ok') {
-
-	    $text .= sprintf ("%-10s %-20s %-6s %10s %10s  %s\n", $vmid,
-				substr($task->{hostname}, 0, 20),
-				$task->{state},
-				format_time($task->{backuptime}),
-				format_size ($task->{size}),
-				$task->{target});
-	} else {
-	    $text .= sprintf ("%-10s %-20s %-6s %10s %8.2fMB  %s\n", $vmid,
-				substr($task->{hostname}, 0, 20),
-				$task->{state},
-				format_time($task->{backuptime}),
-				0, '-');
-	}
+	my $name = substr($task->{hostname}, 0, $namelength);
+	my $successful = $task->{state} eq 'ok';
+	my $size = $successful ? format_size ($task->{size}) : 0;
+	my $filename = $successful ? $task->{target} : '-';
+	my $size_fmt = $successful ? "%10s": "%8.2fMB";
+	$text .= sprintf(
+	    "%-10s %-${namelength}s %-6s %10s $size_fmt  %s\n",
+	    $task->{vmid},
+	    $name,
+	    $task->{state},
+	    format_time($task->{backuptime}),
+	    $size,
+	    $filename,
+	);
     }
 
     my $text_log_part;
