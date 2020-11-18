@@ -3,9 +3,6 @@ Ext.define('PVE.storage.BackupView', {
 
     alias: 'widget.pveStorageBackupView',
 
-    stateful: true,
-    stateId: 'grid-storage-content-backup',
-
     initComponent: function() {
 	var me = this;
 

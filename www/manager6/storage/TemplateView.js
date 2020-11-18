@@ -170,9 +170,6 @@ Ext.define('PVE.storage.TemplateView', {
 
     alias: 'widget.pveStorageTemplateView',
 
-    stateful: true,
-    stateId: 'grid-storage-content-vztmpl',
-
     initComponent: function() {
 	var me = this;
 
