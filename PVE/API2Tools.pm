@@ -14,6 +14,7 @@ use Digest::MD5 qw(md5_hex);
 use URI;
 use URI::Escape;
 use PVE::SafeSyslog;
+use PVE::Storage::Plugin;
 
 my $hwaddress;
 
@@ -120,6 +121,8 @@ sub extract_vm_stats {
 sub extract_storage_stats {
     my ($storeid, $scfg, $node, $rrd) = @_;
 
+    my $content = PVE::Storage::Plugin::content_hash_to_string($scfg->{content});
+
     my $entry = {
 	id => "storage/$node/$storeid",
 	storage => $storeid,
@@ -127,6 +130,7 @@ sub extract_storage_stats {
 	type => 'storage',
 	status => 'unknown',
 	shared => $scfg->{shared} || 0,
+	content => $content,
     };
 
     if (my $d = $rrd->{"pve2-storage/$node/$storeid"}) {

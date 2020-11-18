@@ -289,6 +289,12 @@ __PACKAGE__->register_method({
 		    optional => 1,
 		    renderer => 'bytes',
 		},
+		content => {
+		    description => "Allowed storage content types (when type == storage).",
+		    type => 'string',
+		    format => 'pve-storage-content-list',
+		    optional => 1,
+		},
 	    },
 	},
     },
