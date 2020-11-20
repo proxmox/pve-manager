@@ -232,6 +232,12 @@ Ext.define('PVE.dc.Config', {
 		itemId: 'firewall-ipset'
 	    },
 	    {
+		xtype: 'pveMetricServerView',
+		title: gettext('Metric Server'),
+		iconCls: 'fa fa-bar-chart',
+		itemId: 'metricservers',
+	    },
+	    {
 		xtype: 'pveDcSupport',
 		title: gettext('Support'),
 		itemId: 'support',

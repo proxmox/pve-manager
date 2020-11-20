@@ -146,6 +146,7 @@ JSSRC= 							\
 	dc/TokenView.js					\
 	dc/UserEdit.js					\
 	dc/UserView.js					\
+	dc/MetricServerView.js				\
 	lxc/CmdMenu.js					\
 	lxc/Config.js					\
 	lxc/CreateWizard.js				\
