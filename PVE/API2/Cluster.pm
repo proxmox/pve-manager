@@ -25,6 +25,7 @@ use PVE::API2::ACMEPlugin;
 use PVE::API2::Backup;
 use PVE::API2::BackupInfo;
 use PVE::API2::Cluster::Ceph;
+use PVE::API2::Cluster::MetricServerConfig;
 use PVE::API2::ClusterConfig;
 use PVE::API2::Firewall::Cluster;
 use PVE::API2::HAConfig;
@@ -41,6 +42,11 @@ use base qw(PVE::RESTHandler);
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::ReplicationConfig",
     path => 'replication',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Cluster::MetricServerConfig",
+    path => 'metricserver',
 });
 
 __PACKAGE__->register_method ({
@@ -132,6 +138,7 @@ __PACKAGE__->register_method ({
 	    { name => 'config' },
 	    { name => 'acme' },
 	    { name => 'ceph' },
+	    { name => 'metricserver' },
 	    ];
 
 	if ($have_sdn) {
