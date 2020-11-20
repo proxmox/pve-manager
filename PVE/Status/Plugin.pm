@@ -16,6 +16,10 @@ cfs_register_file('status.cfg',
 
 my $defaultData = {
     propertyList => {
+	id => {
+	    description => "The ID of the entry.",
+	    type => 'string', format => 'pve-configid',
+	},
 	type => { 
 	    description => "Plugin type.",
 	    type => 'string', format => 'pve-configid',
