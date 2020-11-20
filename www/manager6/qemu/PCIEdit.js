@@ -93,8 +93,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 			return;
 		    }
 
-		    var first = records[0];
-		    if (first.data.iommugroup === -1) {
+		    if (records.every((val) => val.data.iommugroup === -1)) {
 			// no iommu groups
 			var warning = Ext.create('Ext.form.field.Display', {
 			    columnWidth: 1,
