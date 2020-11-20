@@ -25,7 +25,7 @@ use PVE::API2::ACMEPlugin;
 use PVE::API2::Backup;
 use PVE::API2::BackupInfo;
 use PVE::API2::Cluster::Ceph;
-use PVE::API2::Cluster::MetricServerConfig;
+use PVE::API2::Cluster::MetricServer;
 use PVE::API2::ClusterConfig;
 use PVE::API2::Firewall::Cluster;
 use PVE::API2::HAConfig;
@@ -45,7 +45,7 @@ __PACKAGE__->register_method ({
 });
 
 __PACKAGE__->register_method ({
-    subclass => "PVE::API2::Cluster::MetricServerConfig",
+    subclass => "PVE::API2::Cluster::MetricServer",
     path => 'metricserver',
 });
 

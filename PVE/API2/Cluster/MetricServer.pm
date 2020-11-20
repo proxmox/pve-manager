@@ -1,4 +1,4 @@
-package PVE::API2::Cluster::MetricServerConfig;
+package PVE::API2::Cluster::MetricServer;
 
 use warnings;
 use strict;
