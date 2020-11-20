@@ -37,7 +37,7 @@ my $defaultData = {
 	    type => 'integer',
 	    description => "MTU for metrics transmission over UDP",
 	    default => 1500,
-	    min => 512,
+	    minimum => 512,
 	    maximum => 64*1024,
 	    optional => 1,
 	},
