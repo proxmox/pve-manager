@@ -189,7 +189,7 @@ __PACKAGE__->register_method ({
 	    my $plugin = PVE::ReplicationConfig->lookup($data->{type});
 	    my $opts = $plugin->check_config($id, $param, 0, 1);
 
-	    foreach my $k (%$opts) {
+	    foreach my $k (keys %$opts) {
 		$data->{$k} = $opts->{$k};
 	    }
 
