@@ -204,21 +204,21 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 		    },
 		},
 		{
+		    xtype: 'proxmoxtextfield',
+		    name: 'server',
+		    fieldLabel: gettext('Server'),
+		    allowBlank: false,
+		},
+	    ],
+
+	    column2: [
+		{
 		    xtype: 'checkbox',
 		    name: 'enable',
 		    fieldLabel: gettext('Enabled'),
 		    inputValue: 1,
 		    uncheckedValue: 0,
 		    checked: true,
-		},
-	    ],
-
-	    column2: [
-		{
-		    xtype: 'proxmoxtextfield',
-		    name: 'server',
-		    fieldLabel: gettext('Server'),
-		    allowBlank: false,
 		},
 		{
 		    xtype: 'proxmoxintegerfield',
@@ -283,21 +283,21 @@ Ext.define('PVE.dc.GraphiteEdit', {
 		    },
 		},
 		{
+		    xtype: 'proxmoxtextfield',
+		    name: 'server',
+		    fieldLabel: gettext('Server'),
+		    allowBlank: false,
+		},
+	    ],
+
+	    column2: [
+		{
 		    xtype: 'checkbox',
 		    name: 'enable',
 		    fieldLabel: gettext('Enabled'),
 		    inputValue: 1,
 		    uncheckedValue: 0,
 		    checked: true,
-		},
-	    ],
-
-	    column2: [
-		{
-		    xtype: 'proxmoxtextfield',
-		    name: 'server',
-		    fieldLabel: gettext('Server'),
-		    allowBlank: false,
 		},
 		{
 		    xtype: 'proxmoxintegerfield',
