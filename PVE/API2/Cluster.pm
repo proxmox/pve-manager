@@ -46,7 +46,7 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Cluster::MetricServer",
-    path => 'metricserver',
+    path => 'metrics',
 });
 
 __PACKAGE__->register_method ({
@@ -138,8 +138,8 @@ __PACKAGE__->register_method ({
 	    { name => 'config' },
 	    { name => 'acme' },
 	    { name => 'ceph' },
-	    { name => 'metricserver' },
-	    ];
+	    { name => 'metrics' },
+	];
 
 	if ($have_sdn) {
 	    push(@{$result}, { name => 'sdn' });

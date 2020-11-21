@@ -17,6 +17,35 @@ __PACKAGE__->register_method ({
     name => 'index',
     path => '',
     method => 'GET',
+    description => "Metrics index.",
+    permissions => { user => 'all' },
+    parameters => {
+	additionalProperties => 0,
+	properties => {},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {},
+	},
+	links => [ { rel => 'child', href => "{name}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $result = [
+	    { name => 'server' },
+	];
+
+	return $result;
+    }
+});
+
+__PACKAGE__->register_method ({
+    name => 'server_index',
+    path => 'server',
+    method => 'GET',
     description => "List configured metric servers.",
     permissions => {
 	check => ['perm', '/', ['Sys.Audit']],
@@ -76,7 +105,7 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     name => 'read',
-    path => '{id}',
+    path => 'server/{id}',
     method => 'GET',
     description => "Read metric server configuration.",
     permissions => {
@@ -107,7 +136,7 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     name => 'create',
-    path => '',
+    path => 'server/{id}',
     protected => 1,
     method => 'POST',
     description => "Create a new external metric server config",
@@ -143,7 +172,7 @@ __PACKAGE__->register_method ({
 __PACKAGE__->register_method ({
     name => 'update',
     protected => 1,
-    path => '{id}',
+    path => 'server/{id}',
     method => 'PUT',
     description => "Update metric server configuration.",
     permissions => {
@@ -194,7 +223,7 @@ __PACKAGE__->register_method ({
 __PACKAGE__->register_method ({
     name => 'delete',
     protected => 1,
-    path => '{id}',
+    path => 'server/{id}',
     method => 'DELETE',
     description => "Remove Metric server.",
     permissions => {

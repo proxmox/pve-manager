@@ -16,10 +16,10 @@ Ext.define('PVE.dc.MetricServerView', {
 	    }
 	},
 
-	addInfluxDB: function() {
+	editWindow: function(xtype, id) {
 	    let me = this;
-	    Ext.create(`PVE.dc.InfluxDBEdit`, {
-		url: `/api2/extjs/cluster/metricserver`,
+	    Ext.create(`PVE.dc.${xtype}Edit`, {
+		serverid: id,
 		autoShow: true,
 		listeners: {
 		    destroy: () => me.reload(),
@@ -27,15 +27,8 @@ Ext.define('PVE.dc.MetricServerView', {
 	    });
 	},
 
-	addGraphite: function() {
-	    let me = this;
-	    Ext.create(`PVE.dc.GraphiteEdit`, {
-		url: `/api2/extjs/cluster/metricserver`,
-		autoShow: true,
-		listeners: {
-		    destroy: () => me.reload(),
-		},
-	    });
+	addServer: function(button) {
+	    this.editWindow(button.text);
 	},
 
 	editServer: function() {
@@ -46,17 +39,10 @@ Ext.define('PVE.dc.MetricServerView', {
 		return;
 	    }
 
-	    let rec = selection[0];
+	    let cfg = selection[0].data;
 
-	    let xtype = me.render_type(rec.data.type);
-	    Ext.create(`PVE.dc.${xtype}Edit`, {
-		url: `/api2/extjs/cluster/metricserver/${rec.data.id}`,
-		serverid: rec.data.id,
-		autoShow: true,
-		listeners: {
-		    destroy: () => me.reload(),
-		},
-	    });
+	    let xtype = me.render_type(cfg.type);
+	    me.editWindow(xtype, cfg.id);
 	},
 
 	reload: function() {
@@ -69,7 +55,7 @@ Ext.define('PVE.dc.MetricServerView', {
 	id: 'metricservers',
 	proxy: {
 	    type: 'proxmox',
-	    url: '/api2/json/cluster/metricserver',
+	    url: '/api2/json/cluster/metrics/server',
 	},
     },
 
@@ -109,11 +95,11 @@ Ext.define('PVE.dc.MetricServerView', {
 	    menu: [
 		{
 		    text: 'Graphite',
-		    handler: 'addGraphite',
+		    handler: 'addServer',
 		},
 		{
 		    text: 'InfluxDB',
-		    handler: 'addInfluxDB',
+		    handler: 'addServer',
 		},
 	    ],
 	},
@@ -125,7 +111,7 @@ Ext.define('PVE.dc.MetricServerView', {
 	},
 	{
 	    xtype: 'proxmoxStdRemoveButton',
-	    baseurl: `/api2/extjs/cluster/metricserver`,
+	    baseurl: `/api2/extjs/cluster/metrics/server`,
 	    callback: 'reload',
 	},
     ],
@@ -151,11 +137,16 @@ Ext.define('PVE.dc.MetricServerBaseEdit', {
 	let me = this;
 	me.isCreate = !me.serverid;
 	me.serverid = me.serverid || "";
+	me.url = `/api2/extjs/cluster/metrics/server/${me.serverid}`;
 	me.method = me.isCreate ? 'POST' : 'PUT';
 	if (!me.isCreate) {
 	    me.subject = `${me.subject}: ${me.serverid}`;
 	}
 	return {};
+    },
+
+    submitUrl: function(url, values) {
+	return this.isCreate ? `${url}/${values.id}` : url;
     },
 
     initComponent: function() {
