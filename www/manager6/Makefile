@@ -260,7 +260,7 @@ JSSRC= 							\
 all: pvemanagerlib.js
 
 lint: ${JSSRC}
-	jslint ${JSSRC}
+	eslint --strict ${JSSRC}
 
 pvemanagerlib.js: OnlineHelpInfo.js ${JSSRC}
 	cat OnlineHelpInfo.js ${JSSRC} >$@.tmp
