@@ -142,9 +142,11 @@ sub rest_handler {
 	($handler, $info) = PVE::API2->find_handler($method, $rel_uri, $uri_param);
 	return if !$handler || !$info;
 
-	foreach my $p (keys %{$params}) {
-	    if (defined($uri_param->{$p})) {
-		raise_param_exc({$p =>  "duplicate parameter (already defined in URI)"});
+	foreach my $p (sort keys %{$params}) {
+	    if (defined($uri_param->{$p}) && $uri_param->{$p} ne $params->{$p}) {
+		raise_param_exc({
+		    $p => "duplicate parameter (already defined in URI) with conflicting values!"
+		});
 	    }
 	    $uri_param->{$p} = $params->{$p};
 	}
