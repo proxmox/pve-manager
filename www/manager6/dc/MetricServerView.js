@@ -95,10 +95,12 @@ Ext.define('PVE.dc.MetricServerView', {
 	    menu: [
 		{
 		    text: 'Graphite',
+		    iconCls: 'fa fa-fw fa-bar-chart',
 		    handler: 'addServer',
 		},
 		{
 		    text: 'InfluxDB',
+		    iconCls: 'fa fa-fw fa-bar-chart',
 		    handler: 'addServer',
 		},
 	    ],
