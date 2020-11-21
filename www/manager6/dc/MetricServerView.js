@@ -230,8 +230,6 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 		},
 	    ],
 
-	    advancedColumn1: [], // has to exists to render any advanced columns
-
 	    advancedColumn2: [
 		{
 		    fieldLabel: 'MTU',
