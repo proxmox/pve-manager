@@ -170,9 +170,7 @@ sub prepare_value {
 	return $value;
     }
 
-    # if value is not just a number we
-    # have to replace " with \"
-    # and surround it with "
+    # non-numeric values require to be quoted, so escape " with \"
     $value =~ s/\"/\\\"/g;
     $value = "\"$value\"";
 
