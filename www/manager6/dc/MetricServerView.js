@@ -143,11 +143,9 @@ Ext.define('PVE.dc.MetricServerView', {
     },
 });
 
-Ext.define('PVE.dc.InfluxDBEdit', {
+Ext.define('PVE.dc.MetricServerBaseEdit', {
     extend: 'Proxmox.window.Edit',
     mixins: ['Proxmox.Mixin.CBind'],
-
-    subject: 'InfluxDB',
 
     cbindData: function() {
 	let me = this;
@@ -155,10 +153,33 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 	me.serverid = me.serverid || "";
 	me.method = me.isCreate ? 'POST' : 'PUT';
 	if (!me.isCreate) {
-	    me.subject = `InfluxDB: ${me.serverid}`;
+	    me.subject = `${me.subject}: ${me.serverid}`;
 	}
 	return {};
     },
+
+    initComponent: function() {
+	let me = this;
+
+	me.callParent();
+
+	if (me.serverid) {
+	    me.load({
+		success: function(response, options) {
+		    let values = response.result.data;
+		    values.enable = !values.disable;
+		    me.down('inputpanel').setValues(values);
+		},
+	    });
+	}
+    },
+});
+
+Ext.define('PVE.dc.InfluxDBEdit', {
+    extend: 'PVE.dc.MetricServerBaseEdit',
+    mixins: ['Proxmox.Mixin.CBind'],
+
+    subject: 'InfluxDB',
 
     items: [
 	{
@@ -233,38 +254,13 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 	    ],
 	},
     ],
-
-    initComponent: function() {
-	let me = this;
-	me.callParent();
-	if (!me.serverid) { return; }
-
-	me.load({
-	    success: function(response, options) {
-		let values = response.result.data;
-		values.enable = !values.disable;
-		me.down('inputpanel').setValues(values);
-	    },
-	});
-    },
 });
 
 Ext.define('PVE.dc.GraphiteEdit', {
-    extend: 'Proxmox.window.Edit',
+    extend: 'PVE.dc.MetricServerBaseEdit',
     mixins: ['Proxmox.Mixin.CBind'],
 
     subject: 'Graphite',
-
-    cbindData: function() {
-	let me = this;
-	me.isCreate = !me.serverid;
-	me.serverid = me.serverid || "";
-	me.method = me.isCreate ? 'POST' : 'PUT';
-	if (!me.isCreate) {
-	    me.subject = `Graphite: ${me.serverid}`;
-	}
-	return {};
-    },
 
     items: [
 	{
@@ -380,18 +376,4 @@ Ext.define('PVE.dc.GraphiteEdit', {
 	    ],
 	},
     ],
-
-    initComponent: function() {
-	let me = this;
-	me.callParent();
-	if (!me.serverid) { return; }
-
-	me.load({
-	    success: function(response, options) {
-		let values = response.result.data;
-		values.enable = !values.disable;
-		me.down('inputpanel').setValues(values);
-	    },
-	});
-    },
 });
