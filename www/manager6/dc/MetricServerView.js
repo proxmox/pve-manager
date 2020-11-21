@@ -194,9 +194,9 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 		    },
 		},
 		{
-		    fieldLabel: gettext('Name'),
 		    xtype: 'pmxDisplayEditField',
 		    name: 'id',
+		    fieldLabel: gettext('Name'),
 		    allowBlank: false,
 		    cbind: {
 			editable: '{isCreate}',
@@ -204,37 +204,37 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 		    },
 		},
 		{
-		    fieldLabel: gettext('Enabled'),
 		    xtype: 'checkbox',
+		    name: 'enable',
+		    fieldLabel: gettext('Enabled'),
 		    inputValue: 1,
 		    uncheckedValue: 0,
 		    checked: true,
-		    name: 'enable',
 		},
 	    ],
 
 	    column2: [
 		{
-		    fieldLabel: gettext('Server'),
 		    xtype: 'proxmoxtextfield',
 		    name: 'server',
+		    fieldLabel: gettext('Server'),
 		    allowBlank: false,
 		},
 		{
-		    fieldLabel: gettext('Port'),
 		    xtype: 'proxmoxintegerfield',
+		    name: 'port',
+		    fieldLabel: gettext('Port'),
 		    minValue: 1,
 		    maximum: 65536,
-		    name: 'port',
 		    allowBlank: false,
 		},
 	    ],
 
 	    advancedColumn2: [
 		{
-		    fieldLabel: 'MTU',
 		    xtype: 'proxmoxintegerfield',
 		    name: 'mtu',
+		    fieldLabel: 'MTU',
 		    minValue: 1,
 		    emptyText: '1500',
 		    submitEmpty: false,
@@ -273,9 +273,9 @@ Ext.define('PVE.dc.GraphiteEdit', {
 		    },
 		},
 		{
-		    fieldLabel: gettext('Name'),
 		    xtype: 'pmxDisplayEditField',
 		    name: 'id',
+		    fieldLabel: gettext('Name'),
 		    allowBlank: false,
 		    cbind: {
 			editable: '{isCreate}',
@@ -283,28 +283,28 @@ Ext.define('PVE.dc.GraphiteEdit', {
 		    },
 		},
 		{
-		    fieldLabel: gettext('Enabled'),
 		    xtype: 'checkbox',
+		    name: 'enable',
+		    fieldLabel: gettext('Enabled'),
 		    inputValue: 1,
 		    uncheckedValue: 0,
 		    checked: true,
-		    name: 'enable',
 		},
 	    ],
 
 	    column2: [
 		{
-		    fieldLabel: gettext('Server'),
 		    xtype: 'proxmoxtextfield',
 		    name: 'server',
+		    fieldLabel: gettext('Server'),
 		    allowBlank: false,
 		},
 		{
-		    fieldLabel: gettext('Port'),
 		    xtype: 'proxmoxintegerfield',
+		    name: 'port',
+		    fieldLabel: gettext('Port'),
 		    minimum: 1,
 		    maximum: 65536,
-		    name: 'port',
 		    allowBlank: false,
 		},
 		{
@@ -320,9 +320,9 @@ Ext.define('PVE.dc.GraphiteEdit', {
 
 	    advancedColumn1: [
 		{
-		    fieldLabel: gettext('Protocol'),
 		    xtype: 'proxmoxKVComboBox',
 		    name: 'proto',
+		    fieldLabel: gettext('Protocol'),
 		    value: '__default__',
 		    cbind: {
 			deleteEmpty: '{!isCreate}',
@@ -343,9 +343,9 @@ Ext.define('PVE.dc.GraphiteEdit', {
 
 	    advancedColumn2: [
 		{
-		    fieldLabel: 'MTU',
 		    xtype: 'proxmoxintegerfield',
 		    name: 'mtu',
+		    fieldLabel: 'MTU',
 		    minimum: 1,
 		    emptyText: '1500',
 		    submitEmpty: false,
@@ -354,9 +354,9 @@ Ext.define('PVE.dc.GraphiteEdit', {
 		    },
 		},
 		{
-		    fieldLabel: gettext('TCP Timeout'),
 		    xtype: 'proxmoxintegerfield',
 		    name: 'timeout',
+		    fieldLabel: gettext('TCP Timeout'),
 		    disabled: true,
 		    cbind: {
 			deleteEmpty: '{!isCreate}',
