@@ -144,7 +144,6 @@ __PACKAGE__->register_method ({
 	    die "Not allowed to select version '$cephver'\n" if !$param->{'allow-experimental'};
 	    $repolist = "deb http://download.proxmox.com/debian/ceph-luminous buster main\n";
 	} elsif ($cephver eq 'octopus') {
-	    die "Not allowed to select version '$cephver'\n" if !$param->{'allow-experimental'};
 	    $repolist = "deb http://download.proxmox.com/debian/ceph-octopus buster test\n";
 	    # FIXME: use production component once available
 	    #$repolist = "deb http://download.proxmox.com/debian/ceph-octopus buster main\n";
