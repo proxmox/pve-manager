@@ -832,23 +832,37 @@ __PACKAGE__->register_method({
 my $sslcert;
 
 my $shell_cmd_map = {
-    'login' => [ '/bin/login', '-f', 'root' ],
-    'upgrade' => [ '/usr/bin/pveupgrade', '--shell' ],
-    'ceph_install' => [ '/usr/bin/pveceph', 'install' ],
+    'login' => {
+	cmd => [ '/bin/login', '-f', 'root' ],
+    },
+    'upgrade' => {
+	cmd => [ '/usr/bin/pveupgrade', '--shell' ],
+    },
+    'ceph_install' => {
+	cmd => [ '/usr/bin/pveceph', 'install' ],
+	allow_args => 1,
+    },
 };
 
 sub get_shell_command  {
-    my ($user, $shellcmd) = @_;
+    my ($user, $shellcmd, $args) = @_;
 
+    my $cmd;
     if ($user eq 'root@pam') {
 	if (defined($shellcmd) && exists($shell_cmd_map->{$shellcmd})) {
-	    return $shell_cmd_map->{$shellcmd};
+	    my $def = $shell_cmd_map->{$shellcmd};
+	    $cmd = [ @{$def->{cmd}} ]; # clone
+	    if (defined($args) && $def->{allow_args}) {
+		push @$cmd, split("\0", $args);
+	    }
 	} else {
-	    return [ '/bin/login', '-f', 'root' ];
+	    $cmd = [ '/bin/login', '-f', 'root' ];
 	}
     } else {
-	return [ '/bin/login' ];
+	# non-root must always login for now, we do not have a superuser role!
+	$cmd = [ '/bin/login' ];
     }
+    return $cmd;
 }
 
 my $get_vnc_connection_info = sub {
@@ -894,6 +908,13 @@ __PACKAGE__->register_method ({
 		enum => [keys %$shell_cmd_map],
 		optional => 1,
 		default => 'login',
+	    },
+	    'cmd-opts' => {
+		type => 'string',
+		description => "Add parameters to a command. Encoded as null terminated strings.",
+		requires => 'cmd',
+		optional => 1,
+		default => '',
 	    },
 	    websocket => {
 		optional => 1,
@@ -949,7 +970,7 @@ __PACKAGE__->register_method ({
 	if ($param->{upgrade}) {
 	    $param->{cmd} = 'upgrade';
 	}
-	my $shcmd = get_shell_command($user, $param->{cmd});
+	my $shcmd = get_shell_command($user, $param->{cmd}, $param->{'cmd-opts'});
 
 	my $timeout = 10;
 
@@ -1035,6 +1056,13 @@ __PACKAGE__->register_method ({
 		optional => 1,
 		default => 'login',
 	    },
+	    'cmd-opts' => {
+		type => 'string',
+		description => "Add parameters to a command. Encoded as null terminated strings.",
+		requires => 'cmd',
+		optional => 1,
+		default => '',
+	    },
 	},
     },
     returns => {
@@ -1051,7 +1079,7 @@ __PACKAGE__->register_method ({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
-	raise_perm_exc("realm != pam") if $realm ne 'pam';
+	raise_perm_exc("realm $realm != pam") if $realm ne 'pam';
 
 	my $node = $param->{node};
 	my $authpath = "/nodes/$node";
@@ -1059,19 +1087,20 @@ __PACKAGE__->register_method ({
 
 	my ($port, $remcmd) = $get_vnc_connection_info->($node);
 
-	# FIXME: remove with 6.0
+	# FIXME: remove with 7.0
 	if ($param->{upgrade}) {
 	    $param->{cmd} = 'upgrade';
 	}
-	my $shcmd = get_shell_command($user, $param->{cmd});
+	my $shcmd = get_shell_command($user, $param->{cmd}, $param->{'cmd-opts'});
 
 	my $realcmd = sub {
 	    my $upid = shift;
 
 	    syslog ('info', "starting termproxy $upid\n");
 
-	    my $cmd = ['/usr/bin/termproxy',
-	        $port,
+	    my $cmd = [
+		'/usr/bin/termproxy',
+		$port,
 		'--path', $authpath,
 		'--perm', 'Sys.Console',
 		'--'
@@ -1171,6 +1200,13 @@ __PACKAGE__->register_method ({
 		optional => 1,
 		default => 'login',
 	    },
+	    'cmd-opts' => {
+		type => 'string',
+		description => "Add parameters to a command. Encoded as null terminated strings.",
+		requires => 'cmd',
+		optional => 1,
+		default => '',
+	    },
 	},
     },
     returns => get_standard_option('remote-viewer-config'),
@@ -1194,7 +1230,7 @@ __PACKAGE__->register_method ({
 	if ($param->{upgrade}) {
 	    $param->{cmd} = 'upgrade';
 	}
-	my $shcmd = get_shell_command($user, $param->{cmd});
+	my $shcmd = get_shell_command($user, $param->{cmd}, $param->{'cmd-opts'});
 
 	my $title = "Shell on '$node'";
 
