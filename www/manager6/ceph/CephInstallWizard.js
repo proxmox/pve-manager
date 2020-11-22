@@ -20,6 +20,117 @@ Ext.define('PVE.ceph.CephInstallWizardInfo', {
     </p>`,
 });
 
+Ext.define('PVE.ceph.CephVersionSelector', {
+    extend: 'Ext.form.field.ComboBox',
+    xtype: 'pveCephVersionSelector',
+
+    fieldLabel: gettext('Ceph version to install'),
+
+    displayField: 'display',
+    valueField: 'release',
+
+    queryMode: 'local',
+    editable: false,
+    forceSelection: true,
+
+    store: {
+	fields: [
+	    'release',
+	    'version',
+	    {
+		name: 'display',
+		calculate: d => `${d.release} (${d.version})`,
+	    },
+	],
+	proxy: {
+	    type: 'memory',
+	    reader: {
+		type: 'json',
+	    },
+	},
+	data: [
+	    {release: "nautilus", version: "14.2"},
+	    {release: "octopus", version: "15.2"},
+	    //{release: "pacific", version: "16.1"},
+	],
+    },
+});
+
+Ext.define('PVE.ceph.CephHighestVersionDisplay', {
+    extend: 'Ext.form.field.Display',
+    xtype: 'pveCephHighestVersionDisplay',
+
+    fieldLabel: gettext('Ceph in the cluster'),
+
+    value: 'unknown',
+
+    // called on success with (release, versionTxt, versionParts)
+    gotNewestVersion: Ext.emptyFn,
+
+    initComponent: function() {
+	let me = this;
+
+	me.callParent(arguments);
+
+	Proxmox.Utils.API2Request({
+	    method: 'GET',
+	    url: '/cluster/ceph/metadata',
+	    params: {
+		scope: 'versions',
+	    },
+	    waitMsgTarget: me,
+	    success: (response) => {
+		let res = response.result;
+		if (!res || !res.data || !res.data.node) {
+		    me.setValue(
+			gettext('Could not detect a ceph installation in the cluster'),
+		    );
+		    return;
+		}
+		let nodes = res.data.node;
+		if (me.nodename) {
+		    // can happen on ceph purge, we do not yet cleanup old version data
+		    delete nodes[me.nodename];
+		}
+
+		let maxversion = [];
+		let maxversiontext = "";
+		for (const [nodename, data] of Object.entries(nodes)) {
+		    let version = data.version.parts;
+		    if (PVE.Utils.compare_ceph_versions(version, maxversion) > 0) {
+			maxversion = version;
+			maxversiontext = data.version.str;
+		    }
+		}
+		// FIXME: get from version selector store
+		const major2release = {
+		    13: 'luminous',
+		    14: 'nautilus',
+		    15: 'octopus',
+		    16: 'pacific',
+		};
+		let release = major2release[maxversion[0]] || 'unknown';
+		let newestVersionTxt = `${Ext.String.capitalize(release)} (${maxversiontext})`;
+
+		if (release === 'unknown') {
+		    me.setValue(
+			gettext('Could not detect a ceph installation in the cluster'),
+		    );
+		} else {
+		    me.setValue(Ext.String.format(
+			gettext('Newest ceph version in cluster is {0}'),
+			newestVersionTxt,
+		    ));
+		}
+		me.gotNewestVersion(release, maxversiontext, maxversion);
+	    },
+	    failure: function(response, opts) {
+		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+	    }
+	});
+    },
+});
+
 Ext.define('PVE.ceph.CephInstallWizard', {
 	extend: 'PVE.window.Wizard',
 	alias: 'widget.pveCephInstallWizard',
@@ -31,6 +142,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 	viewModel: {
 	    data: {
 		nodename: '',
+		cephRelease: 'octopus',
 		configuration: true,
 		isInstalled: false,
 	    }
@@ -69,6 +181,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 	    {
 		xtype: 'panel',
 		title: gettext('Info'),
+		viewModel: {}, // needed to inherit parent viewModel data
 		border: false,
 		bodyBorder: false,
 		onlineHelp: 'chapter_pveceph',
@@ -84,6 +197,39 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    {
 			xtype: 'pveCephInstallWizardInfo',
 		    },
+		    {
+			flex: 1,
+		    },
+		    {
+			xtype: 'pveCephHighestVersionDisplay',
+			labelWidth: 180,
+			cbind:{
+			    nodename: '{nodename}'
+			},
+			gotNewestVersion: function(release, maxversiontext, maxversion) {
+			    if (release === 'unknown') {
+				return;
+			    }
+			    let wizard = this.up('pveCephInstallWizard');
+			    wizard.getViewModel().set('cephRelease', release);
+			},
+		    },
+		    {
+			xtype: 'pveCephVersionSelector',
+			labelWidth: 180,
+			submitValue: false,
+			bind: {
+			    value: '{cephRelease}',
+			},
+			listeners: {
+			    change: function(field, release) {
+				let wizard = this.up('pveCephInstallWizard');
+				wizard.down('#next').setText(
+				    Ext.String.format(gettext('Start {0} installation'), release),
+				);
+			    },
+			},
+		    },
 		],
 		listeners: {
 		    activate: function() {
@@ -91,8 +237,12 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			if (this.onlineHelp) {
 			    Ext.GlobalEvents.fireEvent('proxmoxShowHelp', this.onlineHelp);
 			}
-			this.up('pveCephInstallWizard').down('#back').hide(true);
-			this.up('pveCephInstallWizard').down('#next').setText(gettext('Start installation'));
+			let wizard = this.up('pveCephInstallWizard');
+			let release = wizard.getViewModel().get('cephRelease');
+			wizard.down('#back').hide(true);
+			wizard.down('#next').setText(
+			    Ext.String.format(gettext('Start {0} installation'), release),
+			);
 		    },
 		    deactivate: function() {
 			if (this.onlineHelp) {
@@ -120,8 +270,8 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			}
 		    },
 		    activate: function() {
-			var me = this;
-			var nodename = me.nodename;
+			let me = this;
+			const nodename = me.nodename;
 			me.updateStore = Ext.create('Proxmox.data.UpdateStore', {
 				storeid: 'ceph-status-' + nodename,
 				interval: 1000,
@@ -160,14 +310,20 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		},
 		items: [
 		    {
+			xtype: 'pveNoVncConsole',
 			itemId: 'jsconsole',
 			consoleType: 'cmd',
 			xtermjs: true,
-			xtype: 'pveNoVncConsole',
-			cbind:{
-			    nodename: '{nodename}'
+			cbind: {
+			    nodename: '{nodename}',
 			},
-			cmd: 'ceph_install'
+			beforeLoad: function() {
+			    let me = this;
+			    let wizard = me.up('pveCephInstallWizard');
+			    let release = wizard.getViewModel().get('cephRelease');
+			    me.cmdOpts = `--version\0${release}`;
+			},
+			cmd: 'ceph_install',
 		    },
 		    {
 			xtype: 'textfield',
@@ -376,4 +532,4 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		}
 	    }
 	]
-    });
+});
