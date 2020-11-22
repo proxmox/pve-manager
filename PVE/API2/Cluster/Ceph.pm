@@ -72,9 +72,6 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	PVE::Ceph::Tools::check_ceph_inited();
-
-	my $rados = PVE::RADOS->new();
 	my $scope = $param->{scope} // 'all';
 
 	my $res = {
@@ -82,11 +79,15 @@ __PACKAGE__->register_method ({
 	    version => PVE::Cluster::get_node_kv("ceph-version"),
 	};
 
-	if (defined(my $vers = PVE::Ceph::Services::get_ceph_versions())) {
-	    $res->{node} = $vers;
+	if (defined(my $versions = PVE::Ceph::Services::get_ceph_versions())) {
+	    $res->{node} = $versions;
 	}
 
 	return $res if ($scope eq 'versions');
+
+	# only check now, we want to allow calls with scope 'versions' on non-ceph nodes too!
+	PVE::Ceph::Tools::check_ceph_inited();
+	my $rados = PVE::RADOS->new();
 
 	for my $type ( qw(mon mgr mds) ) {
 	    my $typedata = PVE::Ceph::Services::get_cluster_service($type);
