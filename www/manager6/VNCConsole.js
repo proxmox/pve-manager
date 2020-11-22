@@ -36,12 +36,16 @@ Ext.define('PVE.noVncConsole', {
 	    items: box,
 	    listeners: {
 		activate: function() {
-		    var sp = Ext.state.Manager.getProvider();
-		    var queryDict = {
+		    let sp = Ext.state.Manager.getProvider();
+		    if (Ext.isFunction(me.beforeLoad)) {
+			me.beforeLoad();
+		    }
+		    let queryDict = {
 			console: me.consoleType, // kvm, lxc, upgrade or shell
 			vmid: me.vmid,
 			node: me.nodename,
 			cmd: me.cmd,
+			'cmd-opts': me.cmdOpts,
 			resize: sp.get('novnc-scaling', 'scale'),
 		    };
 		    queryDict[type] = 1;
