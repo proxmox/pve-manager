@@ -22,7 +22,6 @@ Ext.define('PVE.ceph.Install', {
     },
     viewModel: {
 	data: {
-	      cephVersion: 'nautilus',
 	      isInstalled: false
 	},
 	formulas: {
@@ -30,7 +29,7 @@ Ext.define('PVE.ceph.Install', {
 		if (get('isInstalled')) {
 		    return gettext('Configure Ceph');
 		} else {
-		    return gettext('Install Ceph-') + get('cephVersion');
+		    return gettext('Install Ceph');
 		}
 	    },
 	    windowText: function (get) {
