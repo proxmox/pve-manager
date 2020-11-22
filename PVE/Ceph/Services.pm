@@ -68,9 +68,9 @@ sub broadcast_ceph_versions {
 sub get_ceph_versions {
     my $res;
 
-    if (defined(my $vers = PVE::Cluster::get_node_kv("ceph-versions"))) {
+    if (defined(my $versions = PVE::Cluster::get_node_kv("ceph-versions"))) {
 	$res = {
-	    map { eval { $_ => decode_json($vers->{$_}) } } keys %$vers
+	    map { eval { $_ => decode_json($versions->{$_}) } } keys %$versions
 	};
     }
 
