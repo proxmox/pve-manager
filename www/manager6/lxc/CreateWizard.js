@@ -140,10 +140,8 @@ Ext.define('PVE.lxc.CreateWizard', {
 			    if (ev.preventDefault) {
 				ev.preventDefault();
 			    }
-			    var files = ev.dataTransfer.files;
-			    PVE.Utils.loadSSHKeyFromFile(files[0], function(v) {
-				field.setValue(v);
-			    });
+			    let files = ev.dataTransfer.files;
+			    PVE.Utils.loadSSHKeyFromFile(files[0], v => field.setValue(v));
 			});
 		    }
 		},
