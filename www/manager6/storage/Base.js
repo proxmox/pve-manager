@@ -31,7 +31,7 @@ Ext.define('PVE.panel.StorageBase', {
 	    allowBlank: false
 	});
 
-	me.column2 ||= [];
+	me.column2 = me.column2 || [];
 	me.column2.unshift(
 	    {
 		xtype: 'pveNodeSelector',
@@ -106,7 +106,7 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
 		let panel = field.up('pveStoragePruneInputPanel');
 		let anyValue = false;
 		panel.query('pmxPruneKeepField').forEach(field => {
-		    anyValue ||= field.getValue() !== null;
+		    anyValue = anyValue || field.getValue() !== null;
 		    field.setDisabled(newValue);
 		});
 		panel.down('component[name=no-keeps-hint]').setHidden(anyValue || newValue);
