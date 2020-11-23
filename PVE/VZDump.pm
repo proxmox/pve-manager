@@ -737,10 +737,7 @@ sub exec_backup_task {
 	my $prune_options = $opts->{'prune-backups'};
 
 	my $backup_limit = 0;
-	my $keep_all = delete $prune_options->{'keep-all'};
-	if ($keep_all) {
-	    $prune_options = { 'keep-all' => 1 };
-	} else {
+	if (!$prune_options->{'keep-all'}) {
 	    foreach my $keep (values %{$prune_options}) {
 		$backup_limit += $keep;
 	    }
