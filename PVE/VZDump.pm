@@ -494,10 +494,12 @@ sub new {
 	if ($maxfiles) {
 	    $opts->{'prune-backups'} = { 'keep-last' => $maxfiles };
 	} else {
-	    # maxfiles being zero means keep all, so avoid triggering any remove code path to be safe
-	    $opts->{remove} = 0;
+	    $opts->{'prune-backups'} = { 'keep-all' => 1 };
 	}
     }
+
+    # avoid triggering any remove code path if keep-all is set
+    $opts->{remove} = 0 if $opts->{'prune-backups'}->{'keep-all'};
 
     if ($opts->{tmpdir} && ! -d $opts->{tmpdir}) {
 	$errors .= "\n" if $errors;
@@ -735,8 +737,13 @@ sub exec_backup_task {
 	my $prune_options = $opts->{'prune-backups'};
 
 	my $backup_limit = 0;
-	foreach my $keep (values %{$prune_options}) {
-	    $backup_limit += $keep;
+	my $keep_all = delete $prune_options->{'keep-all'};
+	if ($keep_all) {
+	    $prune_options = { 'keep-all' => 1 };
+	} else {
+	    foreach my $keep (values %{$prune_options}) {
+		$backup_limit += $keep;
+	    }
 	}
 
 	if ($backup_limit && !$opts->{remove}) {
