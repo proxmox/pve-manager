@@ -79,6 +79,7 @@ Ext.define('PVE.storage.BaseEdit', {
 	}
 
 	me.ipanel = Ext.create(me.paneltype, {
+	    title: gettext('General'),
 	    type: me.type,
 	    isCreate: me.isCreate,
 	    storageId: me.storageId
@@ -87,7 +88,16 @@ Ext.define('PVE.storage.BaseEdit', {
 	Ext.apply(me, {
             subject: PVE.Utils.format_storage_type(me.type),
 	    isAdd: true,
-	    items: [ me.ipanel ]
+	    bodyPadding: 0,
+	    items: {
+		xtype: 'tabpanel',
+		region: 'center',
+		layout: 'fit',
+		bodyPadding: 10,
+		items: [
+		    me.ipanel,
+		],
+	    },
 	});
 
 	me.callParent();
@@ -105,7 +115,9 @@ Ext.define('PVE.storage.BaseEdit', {
 		    }
 		    values.enable = values.disable ? 0 : 1;
 
-		    me.ipanel.setValues(values);
+		    me.query('inputpanel').forEach(panel => {
+			panel.setValues(values);
+		    });
 		}
 	    });
 	}
