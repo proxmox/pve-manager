@@ -258,6 +258,8 @@ Ext.define('PVE.storage.PBSInputPanel', {
 	});
     },
 
+    isPBS: true, // HACK
+
     initComponent: function() {
 	var me = this;
 

@@ -93,6 +93,7 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
 		});
 		panel.down('proxmoxcheckbox[name=keep-all]').setValue(true);
 	    }
+	    panel.down('component[name=pbs-hint]').setHidden(!panel.isPBS);
 	},
     },
 
@@ -113,14 +114,24 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
 	},
     },
 
-    columnB: {
-	xtype: 'component',
-	userCls: 'pmx-hint',
-	name: 'no-keeps-hint',
-	hidden: true,
-	padding: '5 1',
-	html: gettext('Without any keep option, the nodes vzdump.conf or `keep-last 1` is used as fallback for backup jobs'),
-    },
+    columnB: [
+	{
+	    xtype: 'component',
+	    userCls: 'pmx-hint',
+	    name: 'no-keeps-hint',
+	    hidden: true,
+	    padding: '5 1',
+	    html: gettext('Without any keep option, the nodes vzdump.conf or `keep-last 1` is used as fallback for backup jobs'),
+	},
+	{
+	    xtype: 'component',
+	    userCls: 'pmx-hint',
+	    name: 'pbs-hint',
+	    hidden: true,
+	    padding: '5 1',
+	    html: gettext("It's preferred to configure backup retention directly on the Proxmox Backup Server."),
+	},
+    ],
 });
 
 Ext.define('PVE.storage.BaseEdit', {
@@ -168,6 +179,7 @@ Ext.define('PVE.storage.BaseEdit', {
 			xtype: 'pveStoragePruneInputPanel',
 			title: gettext('Backup Retention'),
 			isCreate: me.isCreate,
+			isPBS: me.ipanel.isPBS,
 		    },
 		],
 	    },
