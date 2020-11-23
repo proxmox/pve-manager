@@ -31,6 +31,7 @@ Ext.define('PVE.panel.StorageBase', {
 	    allowBlank: false
 	});
 
+	me.column2 ||= [];
 	me.column2.unshift(
 	    {
 		xtype: 'pveNodeSelector',
