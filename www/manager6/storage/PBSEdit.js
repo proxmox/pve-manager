@@ -299,16 +299,6 @@ Ext.define('PVE.storage.PBSInputPanel', {
 	];
 
 	me.column2 = [
-	    { // FIXME: prune settings
-		xtype: 'proxmoxintegerfield',
-		fieldLabel: gettext('Max Backups'),
-		name: 'maxfiles',
-		reference: 'maxfiles',
-		minValue: 0,
-		maxValue: 365,
-		value: me.isCreate ? '0' : undefined,
-		allowBlank: false,
-	    },
 	    {
 		xtype: 'displayfield',
 		name: 'content',

@@ -107,20 +107,6 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 	    }
 	];
 
-	me.column2 = [
-	    {
-		xtype: 'proxmoxintegerfield',
-		fieldLabel: gettext('Max Backups'),
-		disabled: true,
-		name: 'maxfiles',
-		reference: 'maxfiles',
-		minValue: 0,
-		maxValue: 365,
-		value: me.isCreate ? '1' : undefined,
-		allowBlank: false
-	    }
-	];
-
 	me.callParent();
     }
 });

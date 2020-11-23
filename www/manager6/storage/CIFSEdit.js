@@ -181,16 +181,6 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 
 	me.column2 = [
 	    {
-		xtype: 'proxmoxintegerfield',
-		fieldLabel: gettext('Max Backups'),
-		name: 'maxfiles',
-		reference: 'maxfiles',
-		minValue: 0,
-		maxValue: 365,
-		value: me.isCreate ? '1' : undefined,
-		allowBlank: false,
-	    },
-	    {
 		xtype: 'pveContentTypeSelector',
 		name: 'content',
 		value: 'images',

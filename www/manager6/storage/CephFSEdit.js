@@ -74,16 +74,6 @@ Ext.define('PVE.storage.CephFSInputPanel', {
 		multiSelect: true,
 		allowBlank: false
 	    },
-	    {
-		xtype: 'proxmoxintegerfield',
-		fieldLabel: gettext('Max Backups'),
-		name: 'maxfiles',
-		reference: 'maxfiles',
-		minValue: 0,
-		maxValue: 365,
-		value: me.isCreate ? '1' : undefined,
-		allowBlank: false
-	    }
 	];
 
 	me.columnB = [{

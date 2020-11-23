@@ -143,20 +143,6 @@ Ext.define('PVE.storage.NFSInputPanel', {
 	    }
 	];
 
-	me.column2 = [
-	    {
-		xtype: 'proxmoxintegerfield',
-		fieldLabel: gettext('Max Backups'),
-		disabled: true,
-		name: 'maxfiles',
-		reference: 'maxfiles',
-		minValue: 0,
-		maxValue: 365,
-		value: me.isCreate ? '1' : undefined,
-		allowBlank: false
-	    }
-	];
-
 	me.advancedColumn1 = [
 	    {
 		xtype: 'proxmoxKVComboBox',
