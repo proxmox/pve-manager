@@ -1,3 +1,45 @@
+pve-manager (6.2-16) pve; urgency=medium
+
+  * apt: add libproxmox-backup-qemu0 to displayed packages
+
+  * ui: qemu: set correct disabled state for start button
+
+  * ui: guest backup: add comment and verification columns
+
+  * ui: storage content: add comment column for backups
+
+  * ui: storage/PBS: drop beta hint
+
+  * ui: storage/PBS: allow one to copy, download or print new auto-generated
+    encryption key
+
+  * ui: fix extension filter for upload window for container templates
+
+  * ui: storage content: use separate view for each content type
+
+  * fix #3136: vzdump notification mail: add name also to plain-text part
+
+  * ui: improve column behavior with browser scaling and non-default DPI
+
+  * cluster: add 'metrics/server' API endpoints and user interface
+
+  * ceph: do not require setting 'allow-experimental' flag when installing
+    Octopus
+
+  * ui: ceph: allow one to select which version to install
+
+  * close #3114: ui: snapshots: make it harder to delete snapshot by accident
+
+  * vzdump: adapt to new keep-all prune option
+
+  * ui: storage edit: add Backup Retention tab for those storage with backup
+    content type support.
+
+  * ui: storage edit: drop max backup field, replaced by backup retention
+    keep-last field
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 23 Nov 2020 19:33:03 +0100
+
 pve-manager (6.2-15) pve; urgency=medium
 
   * fix #2802: status/metrics: make MTU configurable for tunneled or otherwise
