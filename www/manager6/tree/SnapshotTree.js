@@ -264,6 +264,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    },
 	    handler: 'rollback',
 	},
+	'-',
 	{
 	    xtype: 'proxmoxButton',
 	    text: gettext('Edit'),
