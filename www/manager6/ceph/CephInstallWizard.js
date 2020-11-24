@@ -16,7 +16,7 @@ Ext.define('PVE.ceph.CephInstallWizardInfo', {
     <p>
     Please take a look at our documentation, by clicking the help button below,
     before starting the installation, if you want to gain deeper knowledge about
-    Ceph visit <a target="_blank" href="http://docs.ceph.com/docs/master/">ceph.com</a>.
+    Ceph visit <a target="_blank" href="https://docs.ceph.com/en/latest/">ceph.com</a>.
     </p>`,
 });
 
