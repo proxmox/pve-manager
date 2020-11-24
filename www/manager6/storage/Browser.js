@@ -53,7 +53,7 @@ Ext.define('PVE.storage.Browser', {
 		    title: gettext('Backups'),
 		    iconCls: 'fa fa-floppy-o',
 		    itemId: 'contentBackup',
-		    hasCommentColumn: true,
+		    hasNotesColumn: true,
 		});
 	    }
 	    if (contents.includes('images')) {

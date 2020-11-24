@@ -238,8 +238,8 @@ Ext.define('PVE.grid.BackupView', {
 		    dataIndex: 'volid'
 		},
 		{
-		    header: gettext('Comment'),
-		    dataIndex: 'comment',
+		    header: gettext('Notes'),
+		    dataIndex: 'notes',
 		    flex: 1,
 		    renderer: Ext.htmlEncode,
 		},

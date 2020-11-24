@@ -333,11 +333,11 @@ Ext.define('PVE.storage.ContentView', {
 		renderer: PVE.Utils.render_storage_content,
 		dataIndex: 'text',
 	    },
-	    'comment': {
-		header: gettext('Comment'),
+	    'notes': {
+		header: gettext('Notes'),
 		flex: 1,
 		renderer: Ext.htmlEncode,
-		dataIndex: 'comment',
+		dataIndex: 'notes',
 	    },
 	    'date': {
 		header: gettext('Date'),
@@ -359,8 +359,8 @@ Ext.define('PVE.storage.ContentView', {
 
 	if (me.hideColumns) {
 	    me.hideColumns.forEach(key => delete availableColumns[key]);
-	} else if (!me.hasCommentColumn) {
-	    delete availableColumns.comment;
+	} else if (!me.hasNotesColumn) {
+	    delete availableColumns.notes;
 	}
 	const columns = Object.values(availableColumns);
 
@@ -381,7 +381,7 @@ Ext.define('PVE.storage.ContentView', {
 	extend: 'Ext.data.Model',
 	fields: [
 	    'volid', 'content', 'format', 'size', 'used', 'vmid',
-	    'channel', 'id', 'lun', 'comment', 'verification',
+	    'channel', 'id', 'lun', 'notes', 'verification',
 	    {
 		name: 'text',
 		convert: function(value, record) {
