@@ -65,18 +65,14 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
     onGetValues: function(formValues) {
 	delete formValues.delete;
 	let retention = PVE.Parser.printPropertyString(formValues)
-	// always delete old 'maxfiles', we map it to keep-last on edit win load
 	if (retention === '') {
 	    if (this.isCreate) {
 		return {};
-	    } else {
-		return {
-		    delete: [
-			'prune-backups',
-			'maxfiles',
-		    ],
-		};
 	    }
+	    // always delete old 'maxfiles' on edit, we map it to keep-last on window load
+	    return {
+		delete: ['prune-backups','maxfiles'],
+	    };
 	}
 	let options = { 'prune-backups': retention };
 	if (!this.isCreate) {
