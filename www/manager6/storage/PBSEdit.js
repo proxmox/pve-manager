@@ -479,13 +479,6 @@ Ext.define('PVE.storage.PBSInputPanel', {
 		fieldLabel: gettext('Password'),
 		allowBlank: false,
 	    },
-	    {
-		xtype: me.isCreate ? 'textfield' : 'displayfield',
-		name: 'datastore',
-		value: '',
-		fieldLabel: 'Datastore',
-		allowBlank: false,
-	    },
 	];
 
 	me.column2 = [
@@ -495,6 +488,13 @@ Ext.define('PVE.storage.PBSInputPanel', {
 		value: 'backup',
 		submitValue: true,
 		fieldLabel: gettext('Content'),
+	    },
+	    {
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
+		name: 'datastore',
+		value: '',
+		fieldLabel: 'Datastore',
+		allowBlank: false,
 	    },
 	];
 
