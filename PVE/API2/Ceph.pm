@@ -16,7 +16,7 @@ use PVE::RADOS;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
 use PVE::Storage;
-use PVE::Tools qw(run_command file_get_contents file_set_contents);
+use PVE::Tools qw(run_command file_get_contents file_set_contents extract_param);
 
 use PVE::API2::Ceph::OSD;
 use PVE::API2::Ceph::FS;
@@ -763,34 +763,31 @@ __PACKAGE__->register_method ({
 	PVE::Cluster::check_cfs_quorum();
 	PVE::Ceph::Tools::check_ceph_configured();
 
-	my $pool = $param->{name};
+	my $pool = extract_param($param, 'name');
+	my $node = extract_param($param, 'node');
+	my $add_storages = extract_param($param, 'add_storages');
+
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	if ($param->{add_storages}) {
+	if ($add_storages) {
 	    $rpcenv->check($user, '/storage', ['Datastore.Allocate']);
 	    die "pool name contains characters which are illegal for storage naming\n"
 		if !PVE::JSONSchema::parse_storage_id($pool);
 	}
 
-	my $ceph_param = \%$param;
-	for my $item ('add_storages', 'name', 'node') {
-	    # not ceph parameters
-	    delete $ceph_param->{$item};
-	}
-
 	# pool defaults
-	$ceph_param->{pg_num} //= 128;
-	$ceph_param->{size} //= 3;
-	$ceph_param->{min_size} //= 2;
-	$ceph_param->{application} //= 'rbd';
-	$ceph_param->{pg_autoscale_mode} //= 'warn';
+	$param->{pg_num} //= 128;
+	$param->{size} //= 3;
+	$param->{min_size} //= 2;
+	$param->{application} //= 'rbd';
+	$param->{pg_autoscale_mode} //= 'warn';
 
 	my $worker = sub {
 
-	    PVE::Ceph::Tools::create_pool($pool, $ceph_param);
+	    PVE::Ceph::Tools::create_pool($pool, $param);
 
-	    if ($param->{add_storages}) {
+	    if ($add_storages) {
 		my $err;
 		eval { $add_storage->($pool, "${pool}"); };
 		if ($@) {
