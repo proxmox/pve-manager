@@ -227,7 +227,56 @@ Ext.define('PVE.grid.BackupView', {
 	    selModel: sm,
 	    tbar: {
 		overflowHandler: 'scroller',
-		items: [ backup_btn, restore_btn, delete_btn,config_btn, '->', storagesel, '-', vmidfilterCB, storagefilter ],
+		items: [
+		    backup_btn,
+		    restore_btn,
+		    delete_btn,
+		    config_btn,
+		    {
+			xtype: 'proxmoxButton',
+			text: gettext('Edit Notes'),
+			disabled: true,
+			enableFn: function() {
+			    let storageVal = storagesel.getValue();
+			    let storage = storagesel.getStore().findRecord('storage', storageVal);
+			    if (storage) {
+				return storage.data.type !== 'pbs';
+			    }
+			    return true;
+			},
+			handler: function() {
+			    let volid = sm.getSelection()[0].data.volid;
+			    var storage = storagesel.getValue();
+			    Ext.create('Proxmox.window.Edit', {
+				autoLoad: true,
+				width: 600,
+				height: 400,
+				resizable: true,
+				title: gettext('Comment'),
+				url: `/api2/extjs/nodes/${nodename}/storage/${storage}/content/${volid}`,
+				layout: 'fit',
+				items: [
+				    {
+					xtype: 'textarea',
+					layout: 'fit',
+					name: 'notes',
+					height: '100%',
+				    },
+				],
+				listeners: {
+				    destroy: function() {
+					reload();
+				    },
+				},
+			    }).show();
+			},
+		    },
+		    '->',
+		    storagesel,
+		    '-',
+		    vmidfilterCB,
+		    storagefilter
+		],
 	    },
 	    columns: [
 		{
