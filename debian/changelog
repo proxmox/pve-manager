@@ -1,3 +1,21 @@
+pve-manager (6.3-1) pve; urgency=medium
+
+  * api: osd destroy: untaint device before pvremove
+
+  * ui: storage content: add encryption and verification columns for
+    Proxmox Backup Server
+
+  * ui: guest backup view: add encrypted column for Proxmox Backup Server
+    storages
+
+  * ui: storage: Proxmox Backup Server paperkey: print short fingerprint in
+    heading
+
+  * ui: storage: Proxmox Backup Server: improve encryption key handling, allow
+    upload of existing key, warn visible on deletion.
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 24 Nov 2020 23:43:20 +0100
+
 pve-manager (6.2-17) pve; urgency=medium
 
   * ui: ceph wizard: improve language and fix ceph docs link
