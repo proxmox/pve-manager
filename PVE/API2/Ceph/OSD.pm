@@ -575,7 +575,7 @@ __PACKAGE__->register_method ({
 		    # try to remove pvs, but do not fail if it does not work
 		    for my $osd_part (@{$osd_list->{$osdid}}) {
 			for my $dev (@{$osd_part->{devices}}) {
-			    eval { run_command(['/sbin/pvremove', $dev], errfunc => {}) };
+			    eval { run_command(['/sbin/pvremove', $dev], errfunc => sub {}) };
 			    warn $@ if $@;
 			}
 		    }
