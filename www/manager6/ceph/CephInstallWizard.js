@@ -4,19 +4,19 @@ Ext.define('PVE.ceph.CephInstallWizardInfo', {
 
     html: `<h3>Ceph?</h3>
     <blockquote cite="https://ceph.com/"><p>"<b>Ceph</b> is a unified,
-    distributed storage system designed for excellent performance, reliability
+    distributed storage system, designed for excellent performance, reliability,
     and scalability."</p></blockquote>
     <p>
-    <b>Ceph</b> is currently <b>not installed</b> on this node, click on the
-    next button below to start the installation. This wizard will guide you
-    through the necessary steps, after the initial installation you will be
-    offered to create an initial configuration. The configuration step is only
+    <b>Ceph</b> is currently <b>not installed</b> on this node. This wizard
+    will guide you through the installation. Click on the next button below
+    to begin. After the initial installation, the wizard will offer to create
+    an initial configuration. This configuration step is only
     needed once per cluster and will be skipped if a config is already present.
     </p>
     <p>
-    Please take a look at our documentation, by clicking the help button below,
-    before starting the installation, if you want to gain deeper knowledge about
-    Ceph visit <a target="_blank" href="https://docs.ceph.com/en/latest/">ceph.com</a>.
+    Before starting the installation, please take a look at our documentation,
+    by clicking the help button below. If you want to gain deeper knowledge about
+    Ceph, visit <a target="_blank" href="https://docs.ceph.com/en/latest/">ceph.com</a>.
     </p>`,
 });
 
@@ -498,12 +498,12 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 	    bodyBorder: false,
 	    onlineHelp: 'pve_ceph_install',
 	    html: '<h3>Installation successful!</h3>'+
-	    '<p>The basic installation and configuration is completed, depending on your setup some of the following steps are required to start using Ceph:</p>'+
+	    '<p>The basic installation and configuration is complete. Depending on your setup, some of the following steps are required to start using Ceph:</p>'+
 		'<ol><li>Install Ceph on other nodes</li>'+
 		'<li>Create additional Ceph Monitors</li>'+
 		'<li>Create Ceph OSDs</li>'+
 		'<li>Create Ceph Pools</li></ol>'+
-	    '<p>To learn more click on the help button below.</p>',
+	    '<p>To learn more, click on the help button below.</p>',
 	    listeners: {
 		activate: function() {
 		    // notify owning container that it should display a help button
