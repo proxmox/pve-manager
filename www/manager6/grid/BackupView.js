@@ -231,7 +231,9 @@ Ext.define('PVE.grid.BackupView', {
 		    backup_btn,
 		    restore_btn,
 		    delete_btn,
+		    '-',
 		    config_btn,
+		    '-',
 		    {
 			xtype: 'proxmoxButton',
 			text: gettext('Edit Notes'),
@@ -252,7 +254,7 @@ Ext.define('PVE.grid.BackupView', {
 				width: 600,
 				height: 400,
 				resizable: true,
-				title: gettext('Comment'),
+				title: gettext('Notes'),
 				url: `/api2/extjs/nodes/${nodename}/storage/${storage}/content/${volid}`,
 				layout: 'fit',
 				items: [
@@ -264,9 +266,7 @@ Ext.define('PVE.grid.BackupView', {
 				    },
 				],
 				listeners: {
-				    destroy: function() {
-					reload();
-				    },
+				    destroy: () => reload(),
 				},
 			    }).show();
 			},
