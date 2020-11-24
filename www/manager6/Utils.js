@@ -234,6 +234,29 @@ Ext.define('PVE.Utils', { utilities: {
 	return `<span data-qtip="${tip}">${icon} ${gettext('Encrypted')}</span>`;
     },
 
+    render_backup_verification: function(v, meta, record) {
+	let i = (cls, txt) => `<i class="fa fa-fw fa-${cls}"></i> ${txt}`;
+	if (v === undefined || v === null) {
+	    return i('question-circle-o warning', gettext('None'));
+	}
+	let tip = ""
+	let txt = gettext('Failed');
+	let iconCls = 'times critical';
+	if (v.state === 'ok') {
+	    txt = gettext('OK');
+	    iconCls = 'check good';
+	    let now = Date.now() / 1000;
+	    let task = Proxmox.Utils.parse_task_upid(v.upid);
+	    let verify_time = Proxmox.Utils.render_timestamp(task.starttime);
+	    tip = `Last verify task started on ${verify_time}`;
+	    if (now - v.starttime > 30 * 24 * 60 * 60) {
+		tip = `Last verify task over 30 days ago: ${verify_time}`;
+		iconCls = 'check warning';
+	    }
+	}
+	return `<span data-qtip="${tip}"> ${i(iconCls, txt)} </span>`;
+    },
+
     render_backup_status: function(value, meta, record) {
 	if (typeof value == 'undefined') {
 	    return "";
