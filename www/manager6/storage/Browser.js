@@ -45,7 +45,9 @@ Ext.define('PVE.storage.Browser', {
 		'id',
 		`storage/${nodename}/${storeid}`,
 	    );
-	    let contents = storageInfo.data.content.split(',');
+	    let res = storageInfo.data;
+	    let plugin = res.plugintype;
+	    let contents = res.content.split(',');
 
 	    if (contents.includes('backup')) {
 		me.items.push({
@@ -53,6 +55,7 @@ Ext.define('PVE.storage.Browser', {
 		    title: gettext('Backups'),
 		    iconCls: 'fa fa-floppy-o',
 		    itemId: 'contentBackup',
+		    pluginType: plugin,
 		    hasNotesColumn: true,
 		});
 	    }
@@ -63,6 +66,7 @@ Ext.define('PVE.storage.Browser', {
 		    iconCls: 'fa fa-hdd-o',
 		    itemId: 'contentImages',
 		    content: 'images',
+		    pluginType: plugin,
 		});
 	    }
 	    if (contents.includes('rootdir')) {
@@ -72,6 +76,7 @@ Ext.define('PVE.storage.Browser', {
 		    iconCls: 'fa fa-hdd-o lxc',
 		    itemId: 'contentRootdir',
 		    content: 'rootdir',
+		    pluginType: plugin,
 		});
 	    }
 	    if (contents.includes('iso')) {
@@ -81,6 +86,7 @@ Ext.define('PVE.storage.Browser', {
 		    iconCls: 'pve-itype-treelist-item-icon-cdrom',
 		    itemId: 'contentIso',
 		    content: 'iso',
+		    pluginType: plugin,
 		    useUploadButton: true,
 		});
 	    }
@@ -90,6 +96,7 @@ Ext.define('PVE.storage.Browser', {
 		    title: gettext('CT Templates'),
 		    iconCls: 'fa fa-file-o lxc',
 		    itemId: 'contentVztmpl',
+		    pluginType: plugin,
 		});
 	    }
 	    if (contents.includes('snippets')) {
@@ -99,6 +106,7 @@ Ext.define('PVE.storage.Browser', {
 		    iconCls: 'fa fa-file-code-o',
 		    itemId: 'contentSnippets',
 		    content: 'snippets',
+		    pluginType: plugin,
 		});
 	    }
 	}
