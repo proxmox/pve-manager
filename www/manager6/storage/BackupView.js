@@ -24,6 +24,56 @@ Ext.define('PVE.storage.BackupView', {
 	    me.store.load();
 	};
 
+	let pruneButton = Ext.create('Proxmox.button.Button', {
+	    text: gettext('Prune group'),
+	    disabled: true,
+	    selModel: sm,
+	    setBackupGroup: function(backup) {
+		if (backup) {
+		    let name = backup.text;
+		    let vmid = backup.vmid;
+		    let format = backup.format;
+
+		    let vmtype;
+		    if (name.startsWith('vzdump-lxc-') || format === "pbs-ct") {
+			vmtype = 'lxc';
+		    } else if (name.startsWith('vzdump-qemu-') || format === "pbs-vm") {
+			vmtype = 'qemu';
+		    }
+
+		    if (vmid && vmtype) {
+			this.setText(gettext('Prune group') + ` ${vmtype}/${vmid}`);
+			this.vmid = vmid;
+			this.vmtype = vmtype;
+			this.setDisabled(false);
+			return;
+		    }
+		}
+		this.setText(gettext('Prune group'));
+		this.vmid = null;
+		this.vmtype = null;
+		this.setDisabled(true);
+	    },
+	    handler: function(b, e, rec) {
+		let win = Ext.create('PVE.window.Prune', {
+		    nodename: nodename,
+		    storage: storage,
+		    backup_id: this.vmid,
+		    backup_type: this.vmtype,
+		});
+		win.show();
+		win.on('destroy', reload);
+	    },
+	});
+
+	me.on('selectionchange', function(model, srecords, eOpts) {
+	    if (srecords.length === 1) {
+		pruneButton.setBackupGroup(srecords[0].data);
+	    } else {
+		pruneButton.setBackupGroup(null);
+	    }
+	});
+
 	me.tbar = [
 	    {
 		xtype: 'proxmoxButton',
@@ -64,6 +114,7 @@ Ext.define('PVE.storage.BackupView', {
 		    win.show();
 		}
 	    },
+	    pruneButton,
 	];
 
 	me.callParent();

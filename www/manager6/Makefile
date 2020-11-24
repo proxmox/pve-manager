@@ -97,6 +97,7 @@ JSSRC= 							\
 	window/LoginWindow.js				\
 	window/Migrate.js				\
 	window/NotesEdit.js				\
+	window/Prune.js					\
 	window/Restore.js				\
 	window/SafeDestroy.js				\
 	window/Settings.js				\
