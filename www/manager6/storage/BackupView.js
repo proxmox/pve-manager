@@ -117,6 +117,21 @@ Ext.define('PVE.storage.BackupView', {
 	    pruneButton,
 	];
 
+	if (me.pluginType === 'pbs') {
+	    me.extraColumns = {
+		encrypted: {
+		    header: gettext('Encrypted'),
+		    dataIndex: 'encrypted',
+		    renderer: PVE.Utils.render_backup_encryption,
+		},
+		verification: {
+		    header: gettext('Verify State'),
+		    dataIndex: 'verification',
+		    renderer: PVE.Utils.render_backup_verification,
+		}
+	    };
+	}
+
 	me.callParent();
     },
 });
