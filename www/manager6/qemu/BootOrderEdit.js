@@ -11,6 +11,8 @@ Ext.define('PVE.qemu.BootOrderPanel', {
     extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveQemuBootOrderPanel',
 
+    onlineHelp: 'qm_bootorder',
+
     vmconfig: {}, // store loaded vm config
     store: undefined,
 
