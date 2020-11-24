@@ -1,3 +1,15 @@
+pve-manager (6.2-17) pve; urgency=medium
+
+  * ui: ceph wizard: improve language and fix ceph docs link
+
+  * ui: guest backup view: add ability to show and edit comments
+
+  * ui: storage backup view: add button for prune group window
+
+  * api: ceph: fix pool creation 'add as storage' parameter
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 24 Nov 2020 16:01:42 +0100
+
 pve-manager (6.2-16) pve; urgency=medium
 
   * apt: add libproxmox-backup-qemu0 to displayed packages
