@@ -239,16 +239,6 @@ Ext.define('PVE.grid.BackupView', {
 			xtype: 'proxmoxButton',
 			text: gettext('Edit Notes'),
 			disabled: true,
-			enableFn: function() {
-			    let storageVal = storagesel.getValue();
-			    let storage = storagesel
-				.getStore()
-				.findRecord('storage', storageVal, 0, false, true, true);
-			    if (storage) {
-				return storage.data.type !== 'pbs';
-			    }
-			    return true;
-			},
 			handler: function() {
 			    let volid = sm.getSelection()[0].data.volid;
 			    var storage = storagesel.getValue();
