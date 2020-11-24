@@ -1351,6 +1351,20 @@ Ext.define('PVE.Utils', { utilities: {
 	reader.readAsText(file);
     },
 
+    loadTextFromFile: function(file, callback, maxBytes) {
+	let maxSize = maxBytes || 8192;
+	if (file.size > maxSize) {
+	    Ext.Msg.alert(gettext('Error'), gettext("Invalid file size: ") + file.size);
+	    return;
+	}
+	/*global
+	  FileReader
+	*/
+	let reader = new FileReader();
+	reader.onload = evt => callback(evt.target.result);
+	reader.readAsText(file);
+    },
+
     diskControllerMaxIDs: {
 	ide: 4,
 	sata: 6,
