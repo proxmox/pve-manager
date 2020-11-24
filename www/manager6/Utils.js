@@ -221,6 +221,19 @@ Ext.define('PVE.Utils', { utilities: {
 
     render_pbs_fingerprint: fp => fp.substring(0, 23),
 
+    render_backup_encryption: function(v, meta, record) {
+	if (!v) {
+	    return gettext('No');
+	}
+
+	let tip = '';
+	if (v.match(/^[a-fA-F0-9]{2}:/)) { // fingerprint
+	    tip = `Key fingerprint ${PVE.Utils.render_pbs_fingerprint(v)}`;
+	}
+	let icon = `<i class="fa fa-fw fa-lock good"></i>`;
+	return `<span data-qtip="${tip}">${icon} ${gettext('Encrypted')}</span>`;
+    },
+
     render_backup_status: function(value, meta, record) {
 	if (typeof value == 'undefined') {
 	    return "";

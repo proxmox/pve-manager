@@ -103,7 +103,8 @@ Ext.define('PVE.grid.BackupView', {
 		    if (storage) {
 			let isPBS = storage.data.type === 'pbs';
 			me.getColumns().forEach((column) => {
-			    if (column.dataIndex === 'verification') {
+			    let id = column.dataIndex;
+			    if (id === 'verification' || id === 'encrypted') {
 				column.setHidden(!isPBS);
 			    }
 			});
@@ -312,6 +313,11 @@ Ext.define('PVE.grid.BackupView', {
 		    header: gettext('VMID'),
 		    dataIndex: 'vmid',
 		    hidden: true,
+		},
+		{
+		    header: gettext('Encrypted'),
+		    dataIndex: 'encrypted',
+		    renderer: PVE.Utils.render_backup_encryption,
 		},
 		{
 		    header: gettext('Verify State'),
