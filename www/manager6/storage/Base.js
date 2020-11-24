@@ -60,6 +60,8 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
     xtype: 'pveStoragePruneInputPanel',
     mixins: ['Proxmox.Mixin.CBind'],
 
+    onlineHelp: 'vzdump_retention',
+
     keepLastEmptyText: gettext('1'),
 
     onGetValues: function(formValues) {
