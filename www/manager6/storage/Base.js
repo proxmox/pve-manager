@@ -197,6 +197,13 @@ Ext.define('PVE.storage.BaseEdit', {
 	    },
 	});
 
+	if (me.ipanel.extraTabs) {
+	    me.ipanel.extraTabs.forEach(panel => {
+		panel.isCreate = me.isCreate;
+		me.items.items.push(panel);
+	    });
+	}
+
 	me.callParent();
 
 	let contentTypeField = me.ipanel.down('pveContentTypeSelector');
