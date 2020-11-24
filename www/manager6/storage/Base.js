@@ -81,6 +81,18 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
 	return options;
     },
 
+    updateComponents: function() {
+	let panel = this;
+
+	let keepAll = panel.down('proxmoxcheckbox[name=keep-all]').getValue();
+	let anyValue = false;
+	panel.query('pmxPruneKeepField').forEach(field => {
+	    anyValue = anyValue || field.getValue() !== null;
+	    field.setDisabled(keepAll);
+	});
+	panel.down('component[name=no-keeps-hint]').setHidden(anyValue || keepAll);
+    },
+
     listeners: {
 	afterrender: function(panel) {
 	    if (panel.needMask) {
@@ -89,12 +101,14 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
 		    gettext('Backup content type not available for this storage.'),
 		);
 	    } else if (panel.isCreate) {
-		panel.query('pmxPruneKeepField').forEach(field => {
-		    field.setDisabled(true);
-		});
 		panel.down('proxmoxcheckbox[name=keep-all]').setValue(true);
 	    }
 	    panel.down('component[name=pbs-hint]').setHidden(!panel.isPBS);
+
+	    panel.query('pmxPruneKeepField').forEach(field => {
+		field.on('change', panel.updateComponents, panel);
+	    });
+	    panel.updateComponents();
 	},
     },
 
@@ -105,12 +119,7 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
 	listeners: {
 	    change: function(field, newValue) {
 		let panel = field.up('pveStoragePruneInputPanel');
-		let anyValue = false;
-		panel.query('pmxPruneKeepField').forEach(field => {
-		    anyValue = anyValue || field.getValue() !== null;
-		    field.setDisabled(newValue);
-		});
-		panel.down('component[name=no-keeps-hint]').setHidden(anyValue || newValue);
+		panel.updateComponents();
 	    },
 	},
     },
