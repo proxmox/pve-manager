@@ -359,8 +359,12 @@ Ext.define('PVE.storage.ContentView', {
 
 	if (me.hideColumns) {
 	    me.hideColumns.forEach(key => delete availableColumns[key]);
-	} else if (!me.hasNotesColumn) {
+	}
+	if (!me.hasNotesColumn) {
 	    delete availableColumns.notes;
+	}
+	if (me.extraColumns && typeof me.extraColumns === 'object') {
+	    Object.assign(availableColumns, me.extraColumns);
 	}
 	const columns = Object.values(availableColumns);
 
