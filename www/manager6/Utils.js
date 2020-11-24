@@ -219,6 +219,8 @@ Ext.define('PVE.Utils', { utilities: {
 
     },
 
+    render_pbs_fingerprint: fp => fp.substring(0, 23),
+
     render_backup_status: function(value, meta, record) {
 	if (typeof value == 'undefined') {
 	    return "";
