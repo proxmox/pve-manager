@@ -295,6 +295,11 @@ __PACKAGE__->register_method({
 		    format => 'pve-storage-content-list',
 		    optional => 1,
 		},
+		plugintype => {
+		    description => "More specific type, if available.",
+		    type => 'string',
+		    optional => 1,
+		},
 	    },
 	},
     },

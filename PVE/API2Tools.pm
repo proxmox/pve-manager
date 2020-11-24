@@ -128,6 +128,7 @@ sub extract_storage_stats {
 	storage => $storeid,
 	node => $node,
 	type => 'storage',
+	plugintype => $scfg->{type},
 	status => 'unknown',
 	shared => $scfg->{shared} || 0,
 	content => $content,
