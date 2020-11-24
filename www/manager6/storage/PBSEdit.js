@@ -1,7 +1,7 @@
 /*global QRCode*/
 Ext.define('PVE.Storage.PBSKeyShow', {
     extend: 'Ext.window.Window',
-    alias: ['widget.pveKeyShow'],
+    xtype: 'pvePBSKeyShow',
     mixins: ['Proxmox.Mixin.CBind'],
 
     width: 600,
@@ -136,8 +136,10 @@ Ext.define('PVE.Storage.PBSKeyShow', {
 	    },
 	},
     ],
-    paperkey: function(key) {
+    paperkey: function(keyString) {
 	let me = this;
+
+	const key = JSON.parse(keyString);
 
 	const qrwidth = 500;
 	let qrdiv = document.createElement('div');
@@ -146,7 +148,12 @@ Ext.define('PVE.Storage.PBSKeyShow', {
 	    height: qrwidth,
 	    correctLevel: QRCode.CorrectLevel.H,
 	});
-	qrcode.makeCode(key);
+	qrcode.makeCode(keyString);
+
+	let shortKeyFP = '';
+	if (key.fingerprint) {
+	    shortKeyFP = PVE.Utils.render_pbs_fingerprint(key.fingerprint);
+	}
 
 	let printFrame = document.createElement("iframe");
 	Object.assign(printFrame.style, {
@@ -157,15 +164,15 @@ Ext.define('PVE.Storage.PBSKeyShow', {
 	    height: "0",
 	    border: "0",
 	});
-	const prettifiedKey = JSON.stringify(JSON.parse(key), null, 2);
+	const prettifiedKey = JSON.stringify(key, null, 2);
 	const keyQrBase64 = qrdiv.children[0].toDataURL("image/png");
 	const html = `<html><head><script>
 	    window.addEventListener('DOMContentLoaded', (ev) => window.print());
 	</script><style>@media print and (max-height: 150mm) {
 	  h4, p { margin: 0; font-size: 1em; }
 	}</style></head><body style="padding: 5px;">
-	<h4>Encryption Key - Storage '${me.sid}'</h4>
-<p style="font-size: 1.2em; font-family: monospace; white-space: pre-wrap;">
+	<h4>Encryption Key - Storage '${me.sid}' (${shortKeyFP})</h4>
+<p style="font-size:1.2em;font-family:monospace;white-space:pre-wrap;overflow-wrap:break-word;">
 -----BEGIN PROXMOX BACKUP KEY-----
 ${prettifiedKey}
 -----END PROXMOX BACKUP KEY-----</p>
