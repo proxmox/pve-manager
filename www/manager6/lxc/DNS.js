@@ -41,7 +41,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 	    {
 		xtype: 'proxmoxtextfield',
 		fieldLabel: gettext('DNS servers'),
-		vtype: 'IP64AddressList',
+		vtype: 'IP64AddressWithSuffixList',
 		allowBlank: true,
 		emptyText: gettext('use host settings'),
 		name: 'nameserver',

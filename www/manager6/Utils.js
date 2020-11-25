@@ -1612,6 +1612,33 @@ Ext.define('PVE.Utils', { utilities: {
 	"Host": 4,
 	"_default_": 5, // includes custom models
     },
+
+    verify_ip64_address_list: function(value, with_suffix) {
+	for (let addr of value.split(/[ ,;]+/)) {
+	    if (addr === '') {
+		continue;
+	    }
+
+	    if (with_suffix) {
+		let parts = addr.split('%');
+		addr = parts[0];
+
+		if (parts.length > 2) {
+		    return false;
+		}
+
+		if (parts.length > 1 && !addr.startsWith('fe80:')) {
+		    return false;
+		}
+	    }
+
+	    if (!Proxmox.Utils.IP64_match.test(addr)) {
+		return false;
+	    }
+	}
+
+	return true;
+    },
 },
 
     singleton: true,
