@@ -65,6 +65,9 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
     keepLastEmptyText: gettext('1'),
 
     onGetValues: function(formValues) {
+	if (this.needMask) { // isMasked() may not yet be true if not rendered once
+	    return {};
+	}
 	delete formValues.delete;
 	let retention = PVE.Parser.printPropertyString(formValues)
 	if (retention === '') {
