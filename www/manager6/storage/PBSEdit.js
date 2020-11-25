@@ -31,7 +31,7 @@ Ext.define('PVE.Storage.PBSKeyShow', {
 		{
 		    xtype: 'textfield',
 		    fieldLabel: gettext('Key'),
-		    labelWidth: 30,
+		    labelWidth: 80,
 		    inputId: 'encryption-key-value',
 		    cbind: {
 			value: '{key}',
