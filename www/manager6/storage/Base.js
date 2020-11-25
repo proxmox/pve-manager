@@ -67,6 +67,8 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
     onGetValues: function(formValues) {
 	if (this.needMask) { // isMasked() may not yet be true if not rendered once
 	    return {};
+	} else if (this.isCreate && !this.rendered) {
+	    return { 'prune-backups': 'keep-all=1' };
 	}
 	delete formValues.delete;
 	let retention = PVE.Parser.printPropertyString(formValues)
