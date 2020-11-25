@@ -1,3 +1,18 @@
+pve-manager (6.3-2) pve; urgency=medium
+
+  * fix #3140: allow interface suffix in dns entries
+
+  * ui: storage: improve passint prune settings one edge cases
+
+  * ui: add onlineHelp buttons for VM boot order, and some storage edit windows
+
+  * api: metrics/server: test heuristically if we can connect
+    successfully on add/update
+
+  * api: metrics/server: add minimum and maximum to port schema
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 25 Nov 2020 16:20:25 +0100
+
 pve-manager (6.3-1) pve; urgency=medium
 
   * api: osd destroy: untaint device before pvremove
