@@ -159,6 +159,9 @@ __PACKAGE__->register_method ({
 		if $cfg->{ids}->{$id};
 
 	    my $opts = $plugin->check_config($id, $param, 1, 1);
+
+	    $plugin->test_connection($opts);
+
 	    $cfg->{ids}->{$id} = $opts;
 
 	    PVE::Cluster::cfs_write_file('status.cfg', $cfg);
@@ -197,6 +200,8 @@ __PACKAGE__->register_method ({
 
 	    my $plugin = PVE::Status::Plugin->lookup($data->{type});
 	    my $opts = $plugin->check_config($id, $param, 0, 1);
+
+	    $plugin->test_connection($opts);
 
 	    for my $k (keys %$opts) {
 		$data->{$k} = $opts->{$k};

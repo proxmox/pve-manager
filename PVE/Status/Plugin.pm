@@ -126,6 +126,13 @@ sub send {
 	or die "failed to send metrics: $!\n";
 }
 
+sub test_connection {
+    my ($class, $cfg) = @_;
+
+    my $conn = $class->_connect($cfg);
+    $class->_disconnect($conn);
+}
+
 sub update_node_status {
     my ($class, $txn, $node, $data, $ctime) = @_;
     die "please implement inside plugin";
