@@ -124,7 +124,7 @@ Ext.define('PVE.Storage.PBSKeyShow', {
 	    border: false,
 	    padding: '10 10 10 10',
 	    userCls: 'pmx-hint',
-	    html: gettext('Please save the encryption key - loosing it will render any backup created with it unuseable'),
+	    html: gettext('Please save the encryption key - losing it will render any backup created with it unusable'),
 	},
     ],
     buttons: [
