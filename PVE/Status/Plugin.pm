@@ -36,6 +36,8 @@ my $defaultData = {
 	port => {
 	    type => 'integer',
 	    description => "server network port",
+	    minimum => 1,
+	    maximum => 64*1024,
 	},
 	mtu => {
 	    type => 'integer',
