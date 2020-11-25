@@ -236,6 +236,7 @@ Ext.define('PVE.dc.Config', {
 		title: gettext('Metric Server'),
 		iconCls: 'fa fa-bar-chart',
 		itemId: 'metricservers',
+		onlineHelp: 'external_metric_server',
 	    },
 	    {
 		xtype: 'pveDcSupport',
