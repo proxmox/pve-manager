@@ -189,6 +189,8 @@ Ext.define('PVE.panel.PBSEncryptionKeyTab', {
     xtype: 'pvePBSEncryptionKeyTab',
     mixins: ['Proxmox.Mixin.CBind'],
 
+    onlineHelp: 'storage_pbs_encryption',
+
     onGetValues: function(form) {
 	let values = {};
 	if (form.cryptMode === 'upload') {
@@ -431,7 +433,7 @@ Ext.define('PVE.panel.PBSEncryptionKeyTab', {
 Ext.define('PVE.storage.PBSInputPanel', {
     extend: 'PVE.panel.StorageBase',
 
-    //onlineHelp: 'storage_pbs',
+    onlineHelp: 'storage_pbs',
 
     apiCallDone: function(success, response, options) {
 	let res = response.result.data;
