@@ -72,7 +72,7 @@ Ext.define('PVE.form.NodeSelector', {
 	var notAllowed = [];
 
 	Ext.Array.each(value.split(/\s*,\s*/), function(node) {
-	    var rec = me.store.findRecord(me.valueField, node);
+	    var rec = me.store.findRecord(me.valueField, node, 0, false, true, true);
 	    if (!(rec && rec.data) || rec.data.status !== 'online') {
 		offline.push(node);
 	    } else if (me.allowedNodes && !Ext.Array.contains(me.allowedNodes, node)) {

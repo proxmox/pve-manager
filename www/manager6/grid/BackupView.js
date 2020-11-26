@@ -99,7 +99,7 @@ Ext.define('PVE.grid.BackupView', {
 	    allowBlank: false,
 	    listeners: {
 		change: function(f, value) {
-		    let storage = f.getStore().findRecord('storage', value);
+		    let storage = f.getStore().findRecord('storage', value, 0, false, true, true);
 		    if (storage) {
 			let isPBS = storage.data.type === 'pbs';
 			me.getColumns().forEach((column) => {
@@ -241,7 +241,9 @@ Ext.define('PVE.grid.BackupView', {
 			disabled: true,
 			enableFn: function() {
 			    let storageVal = storagesel.getValue();
-			    let storage = storagesel.getStore().findRecord('storage', storageVal);
+			    let storage = storagesel
+				.getStore()
+				.findRecord('storage', storageVal, 0, false, true, true);
 			    if (storage) {
 				return storage.data.type !== 'pbs';
 			    }

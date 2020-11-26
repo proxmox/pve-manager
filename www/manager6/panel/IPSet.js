@@ -49,7 +49,7 @@ Ext.define('PVE.IPSetList', {
 	    var oldrec = sm.getSelection()[0];
 	    store.load(function(records, operation, success) {
 		if (oldrec) {
-		    var rec = store.findRecord('name', oldrec.data.name);
+		    var rec = store.findRecord('name', oldrec.data.name, 0, false, true, true);
 		    if (rec) {
 			sm.select(rec);
 		    }

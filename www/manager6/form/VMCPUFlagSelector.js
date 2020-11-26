@@ -81,7 +81,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 	    var sign = flag.substr(0, 1);
 	    flag = flag.substr(1);
 
-	    var rec = store.findRecord('flag', flag);
+	    var rec = store.findRecord('flag', flag, 0, false, true, true);
 	    if (rec !== null) {
 		rec.set('state', sign);
 	    } else {

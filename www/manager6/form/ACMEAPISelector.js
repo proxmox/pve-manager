@@ -33,7 +33,7 @@ Ext.define('PVE.form.ACMEApiSelector', {
 	let me = this;
 	let val = me.getValue();
 	if (val) {
-	    let record = me.getStore().findRecord('id', val);
+	    let record = me.getStore().findRecord('id', val, 0, false, true, true);
 	    if (record) {
 		return record.data.schema;
 	    }

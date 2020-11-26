@@ -65,7 +65,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    listeners: {
 		change: function(f, v) {
 		    let store = f.getStore();
-		    let rec = store.findRecord('storage', v);
+		    let rec = store.findRecord('storage', v, 0, false, true, true);
 		    let compressionSelector = me.down('pveCompressionSelector');
 
 		    if (rec && rec.data && rec.data.type === 'pbs') {
@@ -278,7 +278,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		sm.deselectAll(true);
 		if (list) {
 		    Ext.Array.each(list.split(','), function(vmid) {
-			var rec = store.findRecord('vmid', vmid);
+			var rec = store.findRecord('vmid', vmid, 0, false, true, true);
 			if (rec) {
 			    sm.select(rec, true);
 			}

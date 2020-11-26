@@ -109,7 +109,7 @@ Ext.define('PVE.SecurityGroupList', {
 	    var oldrec = sm.getSelection()[0];
 	    store.load(function(records, operation, success) {
 		if (oldrec) {
-		    var rec = store.findRecord('group', oldrec.data.group);
+		    var rec = store.findRecord('group', oldrec.data.group, 0, false, true, true);
 		    if (rec) {
 			sm.select(rec);
 		    }

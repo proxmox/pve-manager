@@ -33,7 +33,7 @@ Ext.define('PVE.window.Backup', {
 	    listeners: {
 		change: function(f, v) {
 		    let store = f.getStore();
-		    let rec = store.findRecord('storage', v);
+		    let rec = store.findRecord('storage', v, 0, false, true, true);
 
 		    if (rec && rec.data && rec.data.type === 'pbs') {
 			compressionSelector.setValue('zstd');

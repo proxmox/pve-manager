@@ -74,7 +74,7 @@ Ext.define('PVE.form.ViewSelector', {
 	    applyState : function(state, doSelect) {
 		var view = me.getValue();
 		if (state && state.value && (view != state.value)) {
-		    var record = store.findRecord('key', state.value);
+		    var record = store.findRecord('key', state.value, 0, false, true, true);
 		    if (record) {
 			me.setValue(state.value, true);
 			if (doSelect) {
