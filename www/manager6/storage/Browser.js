@@ -44,6 +44,10 @@ Ext.define('PVE.storage.Browser', {
 	    let storageInfo = PVE.data.ResourceStore.findRecord(
 		'id',
 		`storage/${nodename}/${storeid}`,
+		0, // startIndex
+		false, // anyMatch
+		true, // caseSensitive
+		true, // exactMatch
 	    );
 	    let res = storageInfo.data;
 	    let plugin = res.plugintype;
