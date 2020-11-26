@@ -40,7 +40,7 @@ Ext.define('PVE.Storage.PBSKeyShow', {
 		},
 		{
 		    xtype: 'component',
-		    html: gettext('Keep your master key safe, but easily accessible for disaster recovery.')
+		    html: gettext('Keep your encryption key safe, but easily accessible for disaster recovery.')
 		        + '<br>' + gettext('We recommend the following safe-keeping strategy:'),
 		},
 		{
