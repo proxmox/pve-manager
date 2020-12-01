@@ -230,6 +230,8 @@ sub read_vzdump_defaults {
 	$res->{$key} = $defaults->{$key} if !defined($res->{$key});
     }
 
+    $parse_prune_backups_maxfiles->($res, "options in '$fn'");
+
     return $res;
 }
 
@@ -437,7 +439,7 @@ sub new {
     $opts->{remove} = 1 if !defined($opts->{remove});
 
     foreach my $k (keys %$defaults) {
-	next if $k eq 'exclude-path' || $k eq 'maxfiles'; # dealt with separately
+	next if $k eq 'exclude-path' || $k eq 'prune-backups'; # dealt with separately
 	if ($k eq 'dumpdir' || $k eq 'storage') {
 	    $opts->{$k} = $defaults->{$k} if !defined ($opts->{dumpdir}) &&
 		!defined ($opts->{storage});
@@ -494,11 +496,7 @@ sub new {
 	    $opts->{dumpdir} = $info->{dumpdir};
 	    $opts->{scfg} = $info->{scfg};
 	    $opts->{pbs} = $info->{pbs};
-
-	    if (!defined($opts->{'prune-backups'}) && !defined($opts->{maxfiles})) {
-		$opts->{'prune-backups'} = $info->{'prune-backups'};
-		$opts->{maxfiles} = $info->{maxfiles};
-	    }
+	    $opts->{'prune-backups'} //= $info->{'prune-backups'};
 	}
     } elsif ($opts->{dumpdir}) {
 	$errors .= "dumpdir '$opts->{dumpdir}' does not exist"
@@ -507,15 +505,7 @@ sub new {
 	die "internal error";
     }
 
-    if (!defined($opts->{'prune-backups'})) {
-	my $maxfiles = delete $opts->{maxfiles} // $defaults->{maxfiles};
-	$maxfiles = int($maxfiles); # shouldn't be necessary, but be safe
-	if ($maxfiles) {
-	    $opts->{'prune-backups'} = { 'keep-last' => $maxfiles };
-	} else {
-	    $opts->{'prune-backups'} = { 'keep-all' => 1 };
-	}
-    }
+    $opts->{'prune-backups'} //= $defaults->{'prune-backups'};
 
     # avoid triggering any remove code path if keep-all is set
     $opts->{remove} = 0 if $opts->{'prune-backups'}->{'keep-all'};

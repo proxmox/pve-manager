@@ -165,6 +165,61 @@ my @tests = (
 	},
     },
     {
+	description => 'prune-backups vzdump 1',
+	vzdump_param => {
+	    'prune-backups' => 'keep-last=1,keep-hourly=2,keep-daily=3,' .
+		'keep-weekly=4,keep-monthly=5,keep-yearly=6',
+	},
+	expected => {
+	    'prune-backups' => {
+		'keep-last' => 1,
+		'keep-hourly' => 2,
+		'keep-daily' => 3,
+		'keep-weekly' => 4,
+		'keep-monthly' => 5,
+		'keep-yearly' => 6,
+	    },
+	    remove => 1,
+	},
+    },
+    {
+	description => 'prune-backups vzdump 2',
+	vzdump_param => {
+	    'prune-backups' => 'keep-all=1',
+	},
+	expected => {
+	    'prune-backups' => {
+		'keep-all' => 1,
+	    },
+	    remove => 0,
+	},
+    },
+    {
+	description => 'prune-backups vzdump 3',
+	vzdump_param => {
+	    'prune-backups' => 'keep-hourly=0,keep-monthly=0,keep-yearly=0',
+	},
+	expected => {
+	    'prune-backups' => {
+		'keep-all' => 1,
+	    },
+	    remove => 0,
+	},
+    },
+    {
+	description => 'both vzdump 1',
+	vzdump_param => {
+	    'prune-backups' => 'keep-all=1',
+	    maxfiles => 7,
+	},
+	expected => {
+	    'prune-backups' => {
+		'keep-all' => 1,
+	    },
+	    remove => 0,
+	},
+    },
+    {
 	description => 'prune-backups storage 1',
 	storage_param => {
 	    'prune-backups' => 'keep-last=1,keep-hourly=2,keep-daily=3,' .
@@ -377,6 +432,36 @@ my @tests = (
 		'keep-last' => 10,
 	    },
 	    remove => 1,
+	},
+    },
+    {
+	description => 'mixed 8',
+	storage_param => {
+	    'prune-backups' => 'keep-last=10',
+	},
+	vzdump_param => {
+	    'prune-backups' => 'keep-all=1',
+	},
+	expected => {
+	    'prune-backups' => {
+		'keep-last' => 10,
+	    },
+	    remove => 1,
+	},
+    },
+    {
+	description => 'mixed 9',
+	vzdump_param => {
+	    'prune-backups' => 'keep-last=10',
+	},
+	cli_param => {
+	    'prune-backups' => 'keep-all=1',
+	},
+	expected => {
+	    'prune-backups' => {
+		'keep-all' => 1,
+	    },
+	    remove => 0,
 	},
     },
 );
