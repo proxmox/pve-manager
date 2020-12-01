@@ -86,14 +86,10 @@ sub storage_info {
 
     my $info = {
 	scfg => $scfg,
-	maxfiles => $scfg->{maxfiles},
     };
 
     $info->{'prune-backups'} = PVE::JSONSchema::parse_property_string('prune-backups', $scfg->{'prune-backups'})
 	if defined($scfg->{'prune-backups'});
-
-    die "cannot have 'maxfiles' and 'prune-backups' configured at the same time\n"
-	if defined($info->{'prune-backups'}) && defined($info->{maxfiles});
 
     if ($type eq 'pbs') {
 	$info->{pbs} = 1;
