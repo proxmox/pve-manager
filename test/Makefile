@@ -23,6 +23,7 @@ mail_test:
 
 vzdump_test:
 	./vzdump_guest_included_test.pl
+	./vzdump_new_retention_test.pl
 
 .PHONY: install
 install:
