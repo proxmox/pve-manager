@@ -69,6 +69,29 @@ sub run_command {
     PVE::Tools::run_command($cmdstr, %param, logfunc => $logfunc);
 }
 
+my $parse_prune_backups_maxfiles = sub {
+    my ($param, $kind) = @_;
+
+    my $maxfiles = delete $param->{maxfiles};
+    my $prune_backups = $param->{'prune-backups'};
+
+    warn "both 'maxfiles' and 'prune-backups' defined as ${kind} - ignoring 'maxfiles'\n"
+        if defined($maxfiles) && defined($prune_backups);
+
+    if (defined($prune_backups)) {
+	$param->{'prune-backups'} = PVE::JSONSchema::parse_property_string(
+	    'prune-backups',
+	    $prune_backups
+	);
+    } elsif (defined($maxfiles)) {
+	if ($maxfiles) {
+	    $param->{'prune-backups'} = { 'keep-last' => $maxfiles };
+	} else {
+	    $param->{'prune-backups'} = { 'keep-all' => 1 };
+	}
+    }
+};
+
 sub storage_info {
     my $storage = shift;
 
@@ -1170,8 +1193,7 @@ sub verify_vzdump_parameters {
     raise_param_exc({ 'prune-backups' => "option conflicts with option 'maxfiles'"})
 	if defined($param->{'prune-backups'}) && defined($param->{maxfiles});
 
-    $param->{'prune-backups'} = PVE::JSONSchema::parse_property_string('prune-backups', $param->{'prune-backups'})
-	if defined($param->{'prune-backups'});
+    $parse_prune_backups_maxfiles->($param, 'CLI parameters');
 
     $param->{all} = 1 if (defined($param->{exclude}) && !$param->{pool});
 
