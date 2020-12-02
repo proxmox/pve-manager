@@ -1,7 +1,8 @@
 include ../../../defines.mk
 
 PERLSOURCE=			\
-	PCI.pm
+	PCI.pm			\
+	USB.pm			\
 
 all:
 

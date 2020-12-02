@@ -7,6 +7,7 @@ use PVE::JSONSchema qw(get_standard_option);
 use PVE::RESTHandler;
 
 use PVE::API2::Hardware::PCI;
+use PVE::API2::Hardware::USB;
 
 use base qw(PVE::RESTHandler);
 
@@ -14,6 +15,12 @@ __PACKAGE__->register_method ({
     subclass => "PVE::API2::Hardware::PCI",
     path => 'pci',
 });
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Hardware::USB",
+    path => 'usb',
+});
+
 
 __PACKAGE__->register_method ({
     name => 'index',
@@ -42,7 +49,7 @@ __PACKAGE__->register_method ({
 
 	my $res = [
 	    { type => 'pci' },
-	    # TODO: move usb scan here (6.0 api change)
+	    { type => 'usb' },
 	];
 
 	return $res;
