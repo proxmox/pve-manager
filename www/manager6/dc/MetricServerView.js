@@ -174,6 +174,13 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 
     subject: 'InfluxDB',
 
+    cbindData: function() {
+	let me = this;
+	me.callParent();
+	me.tokenEmptyText = me.isCreate ? '' : gettext('unchanged');
+	return {};
+    },
+
     items: [
 	{
 	    xtype: 'inputpanel',
@@ -209,6 +216,41 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 		    fieldLabel: gettext('Server'),
 		    allowBlank: false,
 		},
+		{
+		    xtype: 'proxmoxintegerfield',
+		    name: 'port',
+		    fieldLabel: gettext('Port'),
+		    value: 8089,
+		    minValue: 1,
+		    maximum: 65536,
+		    allowBlank: false,
+		},
+		{
+		    xtype: 'proxmoxKVComboBox',
+		    name: 'influxdbproto',
+		    fieldLabel: gettext('Protocol'),
+		    value: '__default__',
+		    cbind: {
+			deleteEmpty: '{!isCreate}',
+		    },
+		    comboItems: [
+			['__default__', 'UDP'],
+			['http', 'HTTP'],
+			['https', 'HTTPS'],
+		    ],
+		    listeners: {
+			change: function(field, value) {
+			    let me = this;
+			    let isUdp = value !== 'http' && value !== 'https';
+			    me.up('inputpanel').down('field[name=organization]').setDisabled(isUdp);
+			    me.up('inputpanel').down('field[name=bucket]').setDisabled(isUdp);
+			    me.up('inputpanel').down('field[name=token]').setDisabled(isUdp);
+			    me.up('inputpanel').down('field[name=mtu]').setDisabled(!isUdp);
+			    me.up('inputpanel').down('field[name=timeout]').setDisabled(isUdp);
+			    me.up('inputpanel').down('field[name=max-body-size]').setDisabled(isUdp);
+			},
+		    },
+		},
 	    ],
 
 	    column2: [
@@ -221,17 +263,66 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 		    checked: true,
 		},
 		{
+		    xtype: 'proxmoxtextfield',
+		    name: 'organization',
+		    fieldLabel: gettext('Organization'),
+		    emptyText: 'proxmox',
+		    disabled: true,
+		    cbind: {
+			deleteEmpty: '{!isCreate}',
+		    },
+		},
+		{
+		    xtype: 'proxmoxtextfield',
+		    name: 'bucket',
+		    fieldLabel: gettext('Bucket'),
+		    emptyText: 'proxmox',
+		    disabled: true,
+		    cbind: {
+			deleteEmpty: '{!isCreate}',
+		    },
+		},
+		{
+		    xtype: 'proxmoxtextfield',
+		    name: 'token',
+		    fieldLabel: gettext('Token'),
+		    disabled: true,
+		    allowBlank: true,
+		    deleteEmpty: false,
+		    submitEmpty: false,
+		    cbind: {
+			disabled: '{!isCreate}',
+			emptyText: '{tokenEmptyText}',
+		    },
+		},
+	    ],
+
+	    advancedColumn1: [
+		{
 		    xtype: 'proxmoxintegerfield',
-		    name: 'port',
-		    fieldLabel: gettext('Port'),
-		    value: 8089,
+		    name: 'timeout',
+		    fieldLabel: gettext('Timeout (s)'),
+		    disabled: true,
+		    cbind: {
+			deleteEmpty: '{!isCreate}',
+		    },
 		    minValue: 1,
-		    maximum: 65536,
-		    allowBlank: false,
+		    emptyText: 1,
 		},
 	    ],
 
 	    advancedColumn2: [
+		{
+		    xtype: 'proxmoxintegerfield',
+		    name: 'max-body-size',
+		    fieldLabel: gettext('Batch Size (b)'),
+		    minValue: 1,
+		    emptyText: '25000000',
+		    submitEmpty: false,
+		    cbind: {
+			deleteEmpty: '{!isCreate}',
+		    },
+		},
 		{
 		    xtype: 'proxmoxintegerfield',
 		    name: 'mtu',
