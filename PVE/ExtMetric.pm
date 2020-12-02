@@ -49,7 +49,7 @@ sub transactions_start {
     foreach_plug($cfg, sub {
 	my ($plugin, $id, $plugin_config) = @_;
 
-	my $connection = $plugin->_connect($plugin_config);
+	my $connection = $plugin->_connect($plugin_config, $id);
 
 	push @$transactions, {
 	    connection => $connection,
@@ -72,7 +72,7 @@ sub transactions_finish {
 	my $flush_err = $@;
 	warn "$flush_err" if $flush_err;
 
-	$plugin->_disconnect($txn->{connection});
+	$plugin->_disconnect($txn->{connection}, $txn->{cfg});
 	$txn->{connection} = undef;
 	# avoid log spam, already got a send error; disconnect would fail too
 	warn "disconnect failed: $@" if $@ && !$flush_err;

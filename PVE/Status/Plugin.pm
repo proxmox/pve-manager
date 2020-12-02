@@ -70,12 +70,12 @@ sub parse_section_header {
 }
 
 sub _connect {
-    my ($class, $cfg) = @_;
+    my ($class, $cfg, $id) = @_;
     die "please implement inside plugin";
 }
 
 sub _disconnect {
-    my ($class, $connection) = @_;
+    my ($class, $connection, $cfg) = @_;
 
     $connection->close(); # overwrite if not a simple socket
 }
@@ -115,25 +115,25 @@ sub flush_data {
     return if !defined($txn->{data}) || $txn->{data} eq '';
 
     my $data = delete $txn->{data};
-    eval { $class->send($txn->{connection}, $data) };
+    eval { $class->send($txn->{connection}, $data, $txn->{cfg}) };
     die "metrics send error '$txn->{id}': $@" if $@;
 }
 
 sub send {
-    my ($class, $connection, $data) = @_;
+    my ($class, $connection, $data, $cfg) = @_;
 
     defined($connection->send($data))
 	or die "failed to send metrics: $!\n";
 }
 
 sub test_connection {
-    my ($class, $cfg) = @_;
+    my ($class, $cfg, $id) = @_;
 
     # do not check connection for disabled plugins
     return if $cfg->{disable};
 
-    my $conn = $class->_connect($cfg);
-    $class->_disconnect($conn);
+    my $conn = $class->_connect($cfg, $id);
+    $class->_disconnect($conn, $cfg);
 }
 
 sub update_node_status {
