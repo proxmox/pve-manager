@@ -172,6 +172,8 @@ Ext.define('PVE.dc.InfluxDBEdit', {
     extend: 'PVE.dc.MetricServerBaseEdit',
     mixins: ['Proxmox.Mixin.CBind'],
 
+    onlineHelp: 'metric_server_influxdb',
+
     subject: 'InfluxDB',
 
     cbindData: function() {
@@ -342,6 +344,8 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 Ext.define('PVE.dc.GraphiteEdit', {
     extend: 'PVE.dc.MetricServerBaseEdit',
     mixins: ['Proxmox.Mixin.CBind'],
+
+    onlineHelp: 'metric_server_graphite',
 
     subject: 'Graphite',
 
