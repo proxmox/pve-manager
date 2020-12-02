@@ -213,6 +213,8 @@ __PACKAGE__->register_method ({
 		    my $d = $options->{$k} || die "no such option '$k'\n";
 		    die "unable to delete required option '$k'\n" if !$d->{optional};
 		    die "unable to delete fixed option '$k'\n" if $d->{fixed};
+		    die "cannot set and delete property '$k' at the same time!\n"
+			if defined($opts->{$k});
 
 		    delete $data->{$k};
 		}
