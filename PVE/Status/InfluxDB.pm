@@ -13,13 +13,6 @@ use PVE::SafeSyslog;
 
 use PVE::Status::Plugin;
 
-# example config (/etc/pve/status.cfg)
-#influxdb:
-#	server test
-#	port 8089
-#	disable 0
-#
-
 use base('PVE::Status::Plugin');
 
 sub type {
