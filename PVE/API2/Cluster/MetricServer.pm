@@ -3,7 +3,7 @@ package PVE::API2::Cluster::MetricServer;
 use warnings;
 use strict;
 
-use PVE::Tools qw(extract_param);
+use PVE::Tools qw(extract_param extract_sensitive_params);
 use PVE::Exception qw(raise_perm_exc raise_param_exc);
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::RPCEnvironment;
@@ -152,6 +152,8 @@ __PACKAGE__->register_method ({
 	my $plugin = PVE::Status::Plugin->lookup($type);
 	my $id = extract_param($param, 'id');
 
+	my $sensitive_params = extract_sensitive_params($param, ['token'], []);
+
 	PVE::Cluster::cfs_lock_file('status.cfg', undef, sub {
 	    my $cfg = PVE::Cluster::cfs_read_file('status.cfg');
 
@@ -160,9 +162,19 @@ __PACKAGE__->register_method ({
 
 	    my $opts = $plugin->check_config($id, $param, 1, 1);
 
-	    $plugin->test_connection($opts);
-
 	    $cfg->{ids}->{$id} = $opts;
+
+	    $plugin->on_add_hook($id, $opts, $sensitive_params);
+
+	    eval {
+		$plugin->test_connection($opts, $id);
+	    };
+
+	    if (my $err = $@) {
+		eval { $plugin->on_delete_hook($id, $opts) };
+		warn "$@\n" if $@;
+		die $err;
+	    }
 
 	    PVE::Cluster::cfs_write_file('status.cfg', $cfg);
 	});
@@ -190,6 +202,12 @@ __PACKAGE__->register_method ({
 	my $digest = extract_param($param, 'digest');
 	my $delete = extract_param($param, 'delete');
 
+	if ($delete) {
+	    $delete = [PVE::Tools::split_list($delete)];
+	}
+
+	my $sensitive_params = extract_sensitive_params($param, ['token'], $delete);
+
 	PVE::Cluster::cfs_lock_file('status.cfg', undef, sub {
 	    my $cfg = PVE::Cluster::cfs_read_file('status.cfg');
 
@@ -201,15 +219,13 @@ __PACKAGE__->register_method ({
 	    my $plugin = PVE::Status::Plugin->lookup($data->{type});
 	    my $opts = $plugin->check_config($id, $param, 0, 1);
 
-	    $plugin->test_connection($opts);
-
 	    for my $k (keys %$opts) {
 		$data->{$k} = $opts->{$k};
 	    }
 
 	    if ($delete) {
 		my $options = $plugin->private()->{options}->{$data->{type}};
-		for my $k (PVE::Tools::split_list($delete)) {
+		for my $k (@$delete) {
 		    my $d = $options->{$k} || die "no such option '$k'\n";
 		    die "unable to delete required option '$k'\n" if !$d->{optional};
 		    die "unable to delete fixed option '$k'\n" if $d->{fixed};
@@ -219,6 +235,10 @@ __PACKAGE__->register_method ({
 		    delete $data->{$k};
 		}
 	    }
+
+	    $plugin->on_update_hook($id, $data, $sensitive_params);
+
+	    $plugin->test_connection($opts, $id);
 
 	    PVE::Cluster::cfs_write_file('status.cfg', $cfg);
 	});
@@ -253,6 +273,13 @@ __PACKAGE__->register_method ({
 	    my $cfg = PVE::Cluster::cfs_read_file('status.cfg');
 
 	    my $id = $param->{id};
+
+	    my $plugin_cfg = $cfg->{ids}->{$id};
+
+	    my $plugin = PVE::Status::Plugin->lookup($plugin_cfg->{type});
+
+	    $plugin->on_delete_hook($id, $plugin_cfg);
+
 	    delete $cfg->{ids}->{$id};
 	    PVE::Cluster::cfs_write_file('status.cfg', $cfg);
 	});

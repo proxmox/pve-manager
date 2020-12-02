@@ -156,4 +156,28 @@ sub update_storage_status {
     die "please implement inside plugin";
 }
 
+sub on_add_hook {
+    my ($class, $id, $opts, $sensitive_opts) = @_;
+
+    # implement in subclass
+
+    return undef;
+}
+
+sub on_update_hook {
+    my ($class, $id, $opts, $sensitive_opts) = @_;
+
+    # implement in subclass
+
+    return undef;
+}
+
+sub on_delete_hook {
+    my ($class, $id, $opts) = @_;
+
+    # implement in subclass
+
+    return undef;
+}
+
 1;
