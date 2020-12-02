@@ -713,78 +713,93 @@ Ext.define('PVE.Utils', { utilities: {
 	dir: {
 	    name: Proxmox.Utils.directoryText,
 	    ipanel: 'DirInputPanel',
-	    faIcon: 'folder'
+	    faIcon: 'folder',
+	    backups: true,
 	},
 	lvm: {
 	    name: 'LVM',
 	    ipanel: 'LVMInputPanel',
-	    faIcon: 'folder'
+	    faIcon: 'folder',
+	    backups: false,
 	},
 	lvmthin: {
 	    name: 'LVM-Thin',
 	    ipanel: 'LvmThinInputPanel',
-	    faIcon: 'folder'
+	    faIcon: 'folder',
+	    backups: false,
 	},
 	nfs: {
 	    name: 'NFS',
 	    ipanel: 'NFSInputPanel',
-	    faIcon: 'building'
+	    faIcon: 'building',
+	    backups: true,
 	},
 	cifs: {
 	    name: 'CIFS',
 	    ipanel: 'CIFSInputPanel',
-	    faIcon: 'building'
+	    faIcon: 'building',
+	    backups: true,
 	},
 	glusterfs: {
 	    name: 'GlusterFS',
 	    ipanel: 'GlusterFsInputPanel',
-	    faIcon: 'building'
+	    faIcon: 'building',
+	    backups: true,
 	},
 	iscsi: {
 	    name: 'iSCSI',
 	    ipanel: 'IScsiInputPanel',
-	    faIcon: 'building'
+	    faIcon: 'building',
+	    backups: false,
 	},
 	cephfs: {
 	    name: 'CephFS',
 	    ipanel: 'CephFSInputPanel',
-	    faIcon: 'building'
+	    faIcon: 'building',
+	    backups: true,
 	},
 	pvecephfs: {
 	    name: 'CephFS (PVE)',
 	    ipanel: 'CephFSInputPanel',
 	    hideAdd: true,
-	    faIcon: 'building'
+	    faIcon: 'building',
+	    backups: true,
 	},
 	rbd: {
 	    name: 'RBD',
 	    ipanel: 'RBDInputPanel',
-	    faIcon: 'building'
+	    faIcon: 'building',
+	    backups: false,
 	},
 	pveceph: {
 	    name: 'RBD (PVE)',
 	    ipanel: 'RBDInputPanel',
 	    hideAdd: true,
-	    faIcon: 'building'
+	    faIcon: 'building',
+	    backups: false,
 	},
 	zfs: {
 	    name: 'ZFS over iSCSI',
 	    ipanel: 'ZFSInputPanel',
-	    faIcon: 'building'
+	    faIcon: 'building',
+	    backups: false,
 	},
 	zfspool: {
 	    name: 'ZFS',
 	    ipanel: 'ZFSPoolInputPanel',
-	    faIcon: 'folder'
+	    faIcon: 'folder',
+	    backups: false,
 	},
 	pbs: {
 	    name: 'Proxmox Backup Server',
 	    ipanel: 'PBSInputPanel',
 	    faIcon: 'floppy-o',
+	    backups: true,
 	},
 	drbd: {
 	    name: 'DRBD',
 	    hideAdd: true,
+	    backups: false,
 	},
     },
 

@@ -211,8 +211,7 @@ Ext.define('PVE.storage.BaseEdit', {
 
 	me.callParent();
 
-	let contentTypeField = me.ipanel.down('pveContentTypeSelector');
-	if (contentTypeField && !contentTypeField.cts.includes('backup')) {
+	if (!me.canDoBackups) {
 	    // cannot mask now, not fully rendered until activated
 	    me.down('pmxPruneInputPanel').needMask = true;
 	}

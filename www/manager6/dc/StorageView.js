@@ -18,6 +18,7 @@ Ext.define('PVE.dc.StorageView', {
 	    paneltype: 'PVE.storage.' + schema.ipanel,
 	    type: type,
 	    storageId: sid,
+	    canDoBackups: schema.backups,
 	    autoShow: true,
 	    listeners: {
 		destroy: this.reloadStore
