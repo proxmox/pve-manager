@@ -21,8 +21,13 @@ test-replication:
 test-mail:
 	./mail_test.pl
 
-test-vzdump:
+test-vzdump: test-vzdump-guest-included test-vzdump-retention
+
+.PHONY: test-vzdump-guest-included test-vzdump-retention
+test-vzdump-guest-included:
 	./vzdump_guest_included_test.pl
+
+test-vzdump-retention:
 	./vzdump_new_retention_test.pl
 
 .PHONY: install
