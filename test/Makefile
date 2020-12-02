@@ -4,13 +4,13 @@ all:
 
 export PERLLIB=..
 
-.PHONY: check
-check: replication_test balloon_test mail_test vzdump_test
+.PHONY: check balloon-test replication-test mail-test vzdump-test
+check: test-replication test-balloon test-mail test-vzdump
 
-balloon_test:
+test-balloon:
 	./balloontest.pl
 
-replication_test:
+test-replication:
 	./replication_test1.pl
 	./replication_test2.pl
 	./replication_test3.pl
@@ -18,10 +18,10 @@ replication_test:
 	./replication_test5.pl
 	./replication_test6.pl
 
-mail_test:
+test-mail:
 	./mail_test.pl
 
-vzdump_test:
+test-vzdump:
 	./vzdump_guest_included_test.pl
 	./vzdump_new_retention_test.pl
 
