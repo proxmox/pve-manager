@@ -10,13 +10,10 @@ check: test-replication test-balloon test-mail test-vzdump
 test-balloon:
 	./balloontest.pl
 
-test-replication:
-	./replication_test1.pl
-	./replication_test2.pl
-	./replication_test3.pl
-	./replication_test4.pl
-	./replication_test5.pl
-	./replication_test6.pl
+test-replication: replication1.t replication2.t replication3.t replication4.t replication5.t replication6.t
+
+replication%.t: replication_test%.pl
+	./$<
 
 test-mail:
 	./mail_test.pl
