@@ -8,12 +8,10 @@ use JSON;
 
 use lib ('.', '../..');
 
-use Data::Dumper;
-
 use Test::MockModule;
-use ReplicationTestEnv;
 use Test::More tests => 1;
 
+use ReplicationTestEnv;
 use PVE::API2::Replication;
 
 $ReplicationTestEnv::mocked_nodename = 'node1';
@@ -64,8 +62,6 @@ ReplicationTestEnv::setup();
 for (my $i = 0; $i < 61; $i++) {
     PVE::API2::Replication::run_jobs($i*60);
 }
-
-#print Dumper($schedule);
 
 my $exptected_schedule = [
     {

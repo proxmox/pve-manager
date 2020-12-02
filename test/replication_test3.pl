@@ -4,17 +4,16 @@
 
 use strict;
 use warnings;
+
 use JSON;
 
 use lib ('.', '../..');
 
-use Data::Dumper;
-
 use Test::MockModule;
+use Test::More;
+
 use ReplicationTestEnv;
 use PVE::API2::Replication;
-
-use Test::More;
 
 $ReplicationTestEnv::mocked_nodename = 'node1';
 

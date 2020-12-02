@@ -4,11 +4,10 @@
 
 use strict;
 use warnings;
+
 use JSON;
 
 use lib ('.', '../..');
-
-use Data::Dumper;
 
 use ReplicationTestEnv;
 use Test::More tests => 3;

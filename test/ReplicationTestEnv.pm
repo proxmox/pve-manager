@@ -2,24 +2,23 @@ package ReplicationTestEnv;
 
 use strict;
 use warnings;
-use JSON;
+
 use Clone 'clone';
 use File::Basename;
+use JSON;
 
 use lib ('.', '../..');
 
-use Data::Dumper;
-
-use PVE::INotify;
 use PVE::Cluster;
+use PVE::INotify;
+use PVE::LXC::Config;
+use PVE::QemuConfig;
 use PVE::Storage;
-use PVE::ReplicationConfig;
-use PVE::ReplicationState;
+
 use PVE::API2::Replication;
 use PVE::Replication;
-use PVE::QemuConfig;
-use PVE::LXC::Config;
-
+use PVE::ReplicationConfig;
+use PVE::ReplicationState;
 
 use Test::MockModule;
 

@@ -12,8 +12,6 @@ use JSON;
 
 use lib ('.', '../..');
 
-use Data::Dumper;
-
 use Test::MockModule;
 use ReplicationTestEnv;
 
