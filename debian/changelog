@@ -1,3 +1,15 @@
+pve-manager (6.3-3) pve; urgency=medium
+
+  * pvestatd: adapt to new CGRoup module path
+
+  * fix #3182 #3183: change backup retention mask logic
+
+  * ui: fix various usages of the findRecord emthod, ensuring it matches exact
+
+  * test: add regression tests for retention parameters for vzdump
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 03 Dec 2020 18:14:45 +0100
+
 pve-manager (6.3-2) pve; urgency=medium
 
   * fix #3140: allow interface suffix in dns entries
