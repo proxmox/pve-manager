@@ -20,7 +20,7 @@ use PVE::Storage;
 use PVE::QemuServer;
 use PVE::QemuServer::Monitor;
 use PVE::LXC;
-use PVE::LXC::CGroup;
+use PVE::CGroup;
 use PVE::LXC::Config;
 use PVE::RPCEnvironment;
 use PVE::API2::Subscription;
@@ -257,7 +257,11 @@ my $NO_REBALANCE;
 sub rebalance_lxc_containers {
     # Make sure we can find the cpuset controller path:
     return if $NO_REBALANCE;
-    my $cpuset_base = eval { PVE::LXC::CGroup::cpuset_controller_path() };
+    my $cpuset_base = eval { PVE::CGroup::cpuset_controller_path() };
+    if (my $err = $@) {
+	syslog('info', "could not get cpuset controller path: $err");
+    }
+
     if (!defined($cpuset_base)) {
 	$NO_REBALANCE = 1;
 	return;
