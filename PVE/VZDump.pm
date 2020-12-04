@@ -230,6 +230,11 @@ sub read_vzdump_defaults {
 	$res->{$key} = $defaults->{$key} if !defined($res->{$key});
     }
 
+    if (defined($res->{storage}) && defined($res->{dumpdir})) {
+	debugmsg('warn', "both 'storage' and 'dumpdir' defined in '$fn' - ignoring 'dumpdir'");
+	delete $res->{dumpdir};
+    }
+
     $parse_prune_backups_maxfiles->($res, "options in '$fn'");
 
     return $res;
