@@ -75,7 +75,7 @@ my $parse_prune_backups_maxfiles = sub {
     my $maxfiles = delete $param->{maxfiles};
     my $prune_backups = $param->{'prune-backups'};
 
-    warn "both 'maxfiles' and 'prune-backups' defined as ${kind} - ignoring 'maxfiles'\n"
+    debugmsg('warn', "both 'maxfiles' and 'prune-backups' defined as ${kind} - ignoring 'maxfiles'")
         if defined($maxfiles) && defined($prune_backups);
 
     if (defined($prune_backups)) {
