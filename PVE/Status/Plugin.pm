@@ -129,6 +129,9 @@ sub send {
 sub test_connection {
     my ($class, $cfg) = @_;
 
+    # do not check connection for disabled plugins
+    return if $cfg->{disable};
+
     my $conn = $class->_connect($cfg);
     $class->_disconnect($conn);
 }
