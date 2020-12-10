@@ -134,7 +134,7 @@ Ext.define('PVE.window.SafeDestroy', {
 		    checked: false,
 		    autoEl: {
 			tag: 'div',
-			'data-qtip': gettext('Remove from replication and backup jobs')
+			'data-qtip': gettext('Remove from replication & backup jobs and HA resource configuration.')
 		    }
 		}
 	    ]
