@@ -31,20 +31,6 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.12 (20200823)
 
 Package: archlinux-base
-Version: 20200508-1
-Type: lxc
-OS: archlinux
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/archlinux-base_20200508-1_amd64.tar.gz
-md5sum: a499a3fbdb4fc5dfc43bdf7bc0656396
-sha512sum: 2415ec4b47ee92c43fa5be39b0fe4802de0052bfd2a44fa595274c7ab30aeb086ed403cc8724fcaadc50306dbc43b9abb0c5f7605f37bc01b61df0ce8a0d7ca1
-Infopage: https://www.archlinux.org
-Description: ArchLinux base image.
- ArchLinux template with the 'base' group and the 'openssh' package installed.
-
-Package: archlinux-base
 Version: 20201116-1
 Type: lxc
 OS: archlinux
@@ -72,28 +58,28 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for centos 7 (20190926)
 
 Package: centos-8-default
-Version: 20191016
+Version: 20201210
 Type: lxc
 OS: centos
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/centos-8-default_20191016_amd64.tar.xz
-md5sum: e2333e1a77a33babe1a8a3cc0b7b7075
-sha512sum: 53fb790b6f436f496ebc2fe6f312ce02fa0014761f8cbeb81beebdd7e2b00dea1264b336b6e671b4f9ed6fe44916600493c50af86941afd2186273adefc3537f
+Location: system/centos-8-default_20201210_amd64.tar.xz
+md5sum: 56c3c7623ec4b326e9459fe2e2f2fd06
+sha512sum: 006e9aadcbd018d4b5db0b250acd39299ad4b8fcb5f6c4ceb6fc0e9323c504c3f763f0238ecaba1b6dd75e652fe703a1d93333ed1d3d0d3ba4ea73a38f34cf94
 Infopage: https://linuxcontainers.org
-Description: LXC default image for centos 8 (20191016)
+Description: LXC default image for centos 8 (20201210)
 
 Package: debian-10-standard
-Version: 10.5-1
+Version: 10.7-1
 Type: lxc
 OS: debian-10
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/debian-10-standard_10.5-1_amd64.tar.gz
-md5sum: 1c487731c77b7ca01ed6bb95cf7b769a
-sha512sum: a41f64b5b66895234413e1d7e35a85f404223721299e18a150f60a61b5160f56e2c980cb669056ee77fb2b0538c80fab2e99ef0dda01fd6db367324318f47355
+Location: system/debian-10-standard_10.7-1_amd64.tar.gz
+md5sum: f132e041a6e9c0c7f2bee8575be57af6
+sha512sum: 20abf18e40be931a71ec77fac4bc55cc1d87a826e96f7ab9a4f5bc24016533c20992fb0646810dff510c806080a244231d7f3e7d0b94775ddecfb0618a15eedd
 Infopage: http://pve.proxmox.com/wiki/Debian_10.0_Standard
 Description: Debian 10 Buster (standard)
  A small Debian Buster system including all standard packages.
@@ -111,6 +97,20 @@ sha512sum: 02609c1fc6685d1bd038409360a6343880059fdaf57a29d0a99169713156a650c18dd
 Infopage: http://pve.proxmox.com/wiki/Debian_9.0_Standard
 Description: Debian 9.7 (standard)
  A small Debian Stretch system including all standard packages.
+
+Package: devuan-3.0-standard
+Version: 3.0
+Type: lxc
+OS: devuan-3.0
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/devuan-3.0-standard_3.0_amd64.tar.gz
+md5sum: 955cb0a7f6608dd396dc629794f57473
+sha512sum: 95319b369324482abc1fe67d5ced2561367b8f8a727797c4f75ee04b30472281991593b79a1ec8390d80f9f24c2fbbf66f612db6bc82b5f4f61f4bed2c1a8a14
+Infopage: https://devuan.org
+Description: Devuan 3.0 (standard)
+ A small Devuan Beowulf system including a minimal set of essential packages.
 
 Package: fedora-32-default
 Version: 20200430
@@ -164,18 +164,18 @@ sha512sum: d4c057c236e81115c844cc1dc164b186b38e2f9d696bf24254401c0e8749a11582af7
 Infopage: https://linuxcontainers.org
 Description: LXC default image for opensuse 15.2 (20200824)
 
-Package: proxmox-mailgateway-6.2-standard
-Version: 6.2-1
+Package: proxmox-mailgateway-6.3-standard
+Version: 6.3-1
 Type: lxc
-OS: debian-10.0
+OS: debian-10
 Section: mail
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: mail/proxmox-mailgateway-6.2-standard_6.2-1_amd64.tar.gz
-md5sum: ea199cea6d0580d9ddc3d9184f9d4673
-sha512sum: 1665079852f1565df641df62b9eb7d8813ede7ca0014ae97ff4f5a002895155e371e291fbf7dbe45a5aa064b0094452f6213f07b79bd02988da004a87b7a6fbc
+Location: mail/proxmox-mailgateway-6.3-standard_6.3-1_amd64.tar.gz
+md5sum: d67d6da71df661e476128850d10f0375
+sha512sum: 60748cfc9fce68988d76f670a1cd1af939376b6f8567276d85eaac715bdd4f3bd99a28c7713df0025997202ad75305c4816d27fdb67089b27e6f4c522c7dbdcd
 Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
-Description: Proxmox Mailgateway 6.2
+Description: Proxmox Mailgateway 6.3
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
 Package: ubuntu-16.04-standard
