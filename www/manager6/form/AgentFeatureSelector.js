@@ -14,7 +14,7 @@ Ext.define('PVE.form.AgentFeatureSelector', {
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
-	    boxLabel: gettext('Run guest-trim after clone disk'),
+	    boxLabel: gettext('Run guest-trim after a disk move or VM migration'),
 	    name: 'fstrim_cloned_disks',
 	    bind: {
 		disabled: '{!enabled.checked}',
