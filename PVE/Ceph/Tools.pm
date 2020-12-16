@@ -292,7 +292,7 @@ sub setup_pve_symlinks {
     # fail if we find a real file instead of a link
     if (-f $ceph_cfgpath) {
 	my $lnk = readlink($ceph_cfgpath);
-	die "file '$ceph_cfgpath' already exists\n"
+	die "file '$ceph_cfgpath' already exists and is not a symlink to $pve_ceph_cfgpath\n"
 	    if !$lnk || $lnk ne $pve_ceph_cfgpath;
     } else {
 	mkdir $ceph_cfgdir;
