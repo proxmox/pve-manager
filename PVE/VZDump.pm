@@ -394,13 +394,15 @@ sub sendmail {
     }
     $html_log_part .= escape_html($detail_post) if defined($detail_post);
     $html_log_part .= "</pre>";
-    my $html_end .= "\n</body></html>\n";
+    my $html_end = "\n</body></html>\n";
     # end html part
 
     if (length($text) + length($text_log_part) +
-	length($html) + length($html_log_part) < MAX_MAIL_SIZE)
+	length($html) + length($html_log_part) +
+	length($html_end) < MAX_MAIL_SIZE)
     {
 	$html .= $html_log_part;
+	$html .= $html_end;
 	$text .= $text_log_part;
     } else {
 	my $msg = "Log output was too long to be sent by mail. ".
