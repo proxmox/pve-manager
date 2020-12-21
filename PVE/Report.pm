@@ -51,7 +51,8 @@ my $init_report_cmds = sub {
 	cluster => [
 	    'pvecm nodes',
 	    'pvecm status',
-	    'cat /etc/pve/corosync.conf 2>/dev/null'
+	    'cat /etc/pve/corosync.conf 2>/dev/null',
+	    'ha-manager status',
 	],
 	bios => [
 	    'dmidecode -t bios',
@@ -76,7 +77,9 @@ my $init_report_cmds = sub {
 
     if (-e '/etc/ceph/ceph.conf') {
 	# TODO: add (now working) rdb ls over all pools? really needed?
-	push @{$report_def->{volumes}}, 'ceph status', 'ceph osd status', 'ceph df', 'pveceph status', 'pveceph pool ls';
+	push @{$report_def->{volumes}}, 'pveceph status', 'ceph osd status',
+		'ceph df', 'ceph osd df tree', 'cat /etc/ceph/ceph.conf',
+		'ceph config dump', 'pveceph pool ls', 'ceph versions';
     }
 
     push @{$report_def->{disks}}, 'multipath -ll', 'multipath -v3'
