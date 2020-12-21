@@ -79,7 +79,8 @@ my $init_report_cmds = sub {
 	push @{$report_def->{volumes}}, 'ceph status', 'ceph osd status', 'ceph df', 'pveceph status', 'pveceph pool ls';
     }
 
-    push @{$report_def->{disk}}, 'multipath -ll', 'multipath -v3' if cmd_exists('multipath');
+    push @{$report_def->{disks}}, 'multipath -ll', 'multipath -v3'
+	if cmd_exists('multipath');
 
     return $report_def;
 };
