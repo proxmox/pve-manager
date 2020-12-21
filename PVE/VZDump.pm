@@ -498,6 +498,7 @@ sub new {
     if ($opts->{storage}) {
 	my $info = eval { storage_info ($opts->{storage}) };
 	if (my $err = $@) {
+	    chomp($err);
 	    $errors .= "could not get storage information for '$opts->{storage}': $err";
 	} else {
 	    $opts->{dumpdir} = $info->{dumpdir};
