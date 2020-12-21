@@ -211,6 +211,7 @@ sub read_vzdump_defaults {
 	     defined($default) ? ($_ => $default) : ()
 	} keys %$confdesc
     };
+    $parse_prune_backups_maxfiles->($defaults, "defaults in VZDump schema");
 
     my $raw;
     eval { $raw = PVE::Tools::file_get_contents($fn); };
@@ -225,6 +226,7 @@ sub read_vzdump_defaults {
 	my @mailto = split_list($res->{mailto});
 	$res->{mailto} = [ @mailto ];
     }
+    $parse_prune_backups_maxfiles->($res, "options in '$fn'");
 
     foreach my $key (keys %$defaults) {
 	$res->{$key} = $defaults->{$key} if !defined($res->{$key});
@@ -234,8 +236,6 @@ sub read_vzdump_defaults {
 	debugmsg('warn', "both 'storage' and 'dumpdir' defined in '$fn' - ignoring 'dumpdir'");
 	delete $res->{dumpdir};
     }
-
-    $parse_prune_backups_maxfiles->($res, "options in '$fn'");
 
     return $res;
 }
