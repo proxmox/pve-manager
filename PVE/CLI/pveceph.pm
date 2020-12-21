@@ -175,6 +175,26 @@ __PACKAGE__->register_method ({
 	return undef;
     }});
 
+__PACKAGE__->register_method ({
+    name => 'status',
+    path => 'status',
+    method => 'GET',
+    description => "Get Ceph Status.",
+    parameters => {
+	additionalProperties => 0,
+    },
+    returns => { type => 'null' },
+    code => sub {
+	PVE::Ceph::Tools::check_ceph_inited();
+
+	run_command(
+	    ['ceph', '-s'],
+	    outfunc => sub { print "$_[0]\n" },
+	    errfunc => sub { print STDERR "$_[0]\n" }
+	);
+	return undef;
+    }});
+
 our $cmddef = {
     init => [ 'PVE::API2::Ceph', 'init', [], { node => $nodename } ],
     pool => {
@@ -229,11 +249,7 @@ our $cmddef = {
     stop => [ 'PVE::API2::Ceph', 'stop', [], { node => $nodename }, $upid_exit],
     install => [ __PACKAGE__, 'install', [] ],
     purge => [  __PACKAGE__, 'purge', [] ],
-    status => [ 'PVE::API2::Ceph', 'status', [], { node => $nodename }, sub {
-	my $res = shift;
-	my $json = JSON->new->allow_nonref;
-	print $json->pretty->encode($res) . "\n";
-    }],
+    status => [ __PACKAGE__, 'status', []],
 };
 
 1;
