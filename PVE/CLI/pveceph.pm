@@ -190,7 +190,8 @@ __PACKAGE__->register_method ({
 	run_command(
 	    ['ceph', '-s'],
 	    outfunc => sub { print "$_[0]\n" },
-	    errfunc => sub { print STDERR "$_[0]\n" }
+	    errfunc => sub { print STDERR "$_[0]\n" },
+	    timeout => 15,
 	);
 	return undef;
     }});
