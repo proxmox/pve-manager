@@ -217,7 +217,14 @@ Ext.define('PVE.qemu.NetworkEdit', {
 			    break;
 			}
 		    }
-		    ipanel.setNetwork(me.confid);		    
+
+		    let ostype = me.vmconfig.ostype;
+		    let defaults = PVE.qemu.OSDefaults.getDefaults(ostype);
+		    let data = {
+			model: defaults.networkCard,
+		    };
+
+		    ipanel.setNetwork(me.confid, data);
 		}
 	    }
 	});
