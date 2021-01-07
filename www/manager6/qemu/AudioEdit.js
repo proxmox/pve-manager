@@ -29,10 +29,14 @@ Ext.define('PVE.qemu.AudioInputPanel', {
 	]
     }, {
 	name: 'driver',
-	xtype: 'displayfield',
+	xtype: 'proxmoxKVComboBox',
 	value: 'spice',
 	submitValue: true,
 	fieldLabel: gettext('Backend Driver'),
+	comboItems: [
+	    ['spice', 'spice'],
+	    ['none', 'none'],
+	]
     }]
 });
 
