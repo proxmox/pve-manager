@@ -11,7 +11,7 @@ Ext.define('PVE.dc.ACMEPluginEditor', {
     width: 550,
     url: '/cluster/acme/plugins/',
 
-    subject: gettext('ACME DNS Plugin'),
+    subject: 'ACME DNS Plugin',
 
     items: [
 	{

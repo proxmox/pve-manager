@@ -182,7 +182,7 @@ Ext.define('PVE.dc.Config', {
 	    if (Proxmox.UserName === 'root@pam') {
 		me.items.push({
 		    xtype: 'pveACMEClusterView',
-		    title: gettext('ACME'),
+		    title: 'ACME',
 		    iconCls: 'fa fa-certificate',
 		    itemId: 'acme'
 		});

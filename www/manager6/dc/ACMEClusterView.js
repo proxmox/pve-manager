@@ -171,7 +171,7 @@ Ext.define('PVE.dc.ACMEPluginView', {
 	},
 	{
 	    dataIndex: 'api',
-	    text: gettext('API'),
+	    text: 'API',
 	    renderer: Ext.String.htmlEncode,
 	    flex: 1,
 	},
