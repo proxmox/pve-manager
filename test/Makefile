@@ -5,7 +5,7 @@ all:
 export PERLLIB=..
 
 .PHONY: check balloon-test replication-test mail-test vzdump-test
-check: test-replication test-balloon test-mail test-vzdump
+check: test-replication test-balloon test-mail test-vzdump test-osd
 
 test-balloon:
 	./balloontest.pl
@@ -26,6 +26,9 @@ test-vzdump-guest-included:
 
 test-vzdump-new:
 	./vzdump_new_test.pl
+
+test-osd:
+	./OSD_test.pl
 
 .PHONY: install
 install:
