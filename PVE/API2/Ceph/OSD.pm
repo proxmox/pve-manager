@@ -478,6 +478,22 @@ __PACKAGE__->register_method ({
 	return $rpcenv->fork_worker('cephcreateosd', $devname,  $authuser, $worker);
     }});
 
+# Check if $osdid belongs to $nodename
+# $tree ... rados osd tree (passing the tree makes it easy to test)
+sub osd_belongs_to_node {
+    my ($tree, $nodename, $osdid) = @_;
+
+    die "No tree nodes found\n" if !($tree && $tree->{nodes});
+    my $allNodes = $tree->{nodes};
+
+    my @match = grep($_->{name} eq $nodename, @$allNodes);
+    my $node = shift @match; # contains rados information about $nodename
+    die "There must not be more than one such node in the list" if @match;
+
+    my $osds = $node->{children};
+    return grep($_ == $osdid, @$osds);
+}
+
 __PACKAGE__->register_method ({
     name => 'destroyosd',
     path => '{osdid}',
@@ -515,6 +531,15 @@ __PACKAGE__->register_method ({
 	my $cleanup = $param->{cleanup};
 
 	my $rados = PVE::RADOS->new();
+
+	my $osd_belongs_to_node = osd_belongs_to_node(
+	    $rados->mon_command({ prefix => 'osd tree' }),
+	    $param->{node},
+	    $osdid,
+	);
+	die "OSD osd.$osdid does not belong to node $param->{node}!"
+	    if !$osd_belongs_to_node;
+
 	# dies if osdid is unknown
 	my $osdstat = $get_osd_status->($rados, $osdid);
 
