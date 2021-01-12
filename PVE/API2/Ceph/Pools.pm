@@ -112,10 +112,12 @@ my $ceph_pool_common_options = sub {
     my ($nodefault) = shift;
     my $options = {
 	name => {
+	    title => 'Name',
 	    description => "The name of the pool. It must be unique.",
 	    type => 'string',
 	},
 	size => {
+	    title => 'Size',
 	    description => 'Number of replicas per object',
 	    type => 'integer',
 	    default => 3,
@@ -124,6 +126,7 @@ my $ceph_pool_common_options = sub {
 	    maximum => 7,
 	},
 	min_size => {
+	    title => 'Min Size',
 	    description => 'Minimum number of replicas per object',
 	    type => 'integer',
 	    default => 2,
@@ -132,6 +135,7 @@ my $ceph_pool_common_options = sub {
 	    maximum => 7,
 	},
 	pg_num => {
+	    title => 'PG Num',
 	    description => "Number of placement groups.",
 	    type => 'integer',
 	    default => 128,
@@ -140,11 +144,13 @@ my $ceph_pool_common_options = sub {
 	    maximum => 32768,
 	},
 	crush_rule => {
+	    title => 'Crush Rule Name',
 	    description => "The rule to use for mapping object placement in the cluster.",
 	    type => 'string',
 	    optional => 1,
 	},
 	application => {
+	    title => 'Application',
 	    description => "The application of the pool.",
 	    default => 'rbd',
 	    type => 'string',
@@ -152,6 +158,7 @@ my $ceph_pool_common_options = sub {
 	    optional => 1,
 	},
 	pg_autoscale_mode => {
+	    title => 'PG Autoscale Mode',
 	    description => "The automatic PG scaling mode of the pool.",
 	    type => 'string',
 	    enum => ['on', 'off', 'warn'],
