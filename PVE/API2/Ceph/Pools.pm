@@ -377,15 +377,11 @@ __PACKAGE__->register_method ({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $authuser = $rpcenv->get_user();
 
-	my $pool = $param->{name};
-	my $ceph_param = \%$param;
-	for my $item ('name', 'node') {
-	    # not ceph parameters
-	    delete $ceph_param->{$item};
-	}
+	my $pool = extract_param($param, 'name');
+	my $node = extract_param($param, 'node');
 
 	my $worker = sub {
-	    PVE::Ceph::Tools::set_pool($pool, $ceph_param);
+	    PVE::Ceph::Tools::set_pool($pool, $param);
 	};
 
 	return $rpcenv->fork_worker('cephsetpool', $pool,  $authuser, $worker);
