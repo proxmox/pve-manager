@@ -33,8 +33,8 @@ Ext.define('PVE.qemu.AudioInputPanel', {
 	value: 'spice',
 	fieldLabel: gettext('Backend Driver'),
 	comboItems: [
-	    ['spice', 'spice'],
-	    ['none', 'none'],
+	    ['spice', 'SPICE'],
+	    ['none', `${Proxmox.Utils.NoneText} (${gettext('Dummy Device')})`],
 	]
     }]
 });
