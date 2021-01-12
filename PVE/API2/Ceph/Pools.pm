@@ -395,4 +395,103 @@ __PACKAGE__->register_method ({
     }});
 
 
+__PACKAGE__->register_method ({
+    name => 'getpool',
+    path => '{name}',
+    method => 'GET',
+    description => "List pool settings.",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    name => {
+		description => "The name of the pool. It must be unique.",
+		type => 'string',
+	    },
+	    verbose => {
+		type => 'boolean',
+		default => 0,
+		optional => 1,
+		description => "If enabled, will display additional data".
+		    "(eg. statistics).",
+	    },
+	},
+    },
+    returns => {
+	type => "object",
+	properties => {
+	    id                     => { type => 'integer', title => 'ID' },
+	    pgp_num                => { type => 'integer', title => 'PGP num' },
+	    noscrub                => { type => 'boolean', title => 'noscrub' },
+	    'nodeep-scrub'         => { type => 'boolean', title => 'nodeep-scrub' },
+	    nodelete               => { type => 'boolean', title => 'nodelete' },
+	    nopgchange             => { type => 'boolean', title => 'nopgchange' },
+	    nosizechange           => { type => 'boolean', title => 'nosizechange' },
+	    write_fadvise_dontneed => { type => 'boolean', title => 'write_fadvise_dontneed' },
+	    hashpspool             => { type => 'boolean', title => 'hashpspool' },
+	    use_gmt_hitset         => { type => 'boolean', title => 'use_gmt_hitset' },
+	    fast_read              => { type => 'boolean', title => 'Fast Read' },
+	    application_list       => { type => 'array', title => 'Application', optional => 1 },
+	    statistics             => { type => 'object', title => 'Statistics', optional => 1 },
+	    %{ $ceph_pool_common_options->() },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::Ceph::Tools::check_ceph_inited();
+
+	my $verbose = $param->{verbose};
+	my $pool = $param->{name};
+
+	my $rados = PVE::RADOS->new();
+	my $res = $rados->mon_command({
+		prefix => 'osd pool get',
+		pool   => "$pool",
+		var    => 'all',
+	    });
+
+	my $data = {
+	    id                     => $res->{pool_id},
+	    name                   => $pool,
+	    size                   => $res->{size},
+	    min_size               => $res->{min_size},
+	    pg_num                 => $res->{pg_num},
+	    pgp_num                => $res->{pgp_num},
+	    crush_rule             => $res->{crush_rule},
+	    pg_autoscale_mode      => $res->{pg_autoscale_mode},
+	    noscrub                => "$res->{noscrub}",
+	    'nodeep-scrub'         => "$res->{'nodeep-scrub'}",
+	    nodelete               => "$res->{nodelete}",
+	    nopgchange             => "$res->{nopgchange}",
+	    nosizechange           => "$res->{nosizechange}",
+	    write_fadvise_dontneed => "$res->{write_fadvise_dontneed}",
+	    hashpspool             => "$res->{hashpspool}",
+	    use_gmt_hitset         => "$res->{use_gmt_hitset}",
+	    fast_read              => "$res->{fast_read}",
+	};
+
+	if ($verbose) {
+	    my $stats;
+	    my $res = $rados->mon_command({ prefix => 'df' });
+
+	    foreach my $d (@{$res->{pools}}) {
+		next if !$d->{stats};
+		next if !defined($d->{name}) && !$d->{name} ne "$pool";
+		$data->{statistics} = $d->{stats};
+	    }
+
+	    my $apps = $rados->mon_command({ prefix => "osd pool application get", pool => "$pool", });
+	    $data->{application_list} = [ keys %$apps ];
+	}
+
+	return $data;
+    }});
+
+
 1;

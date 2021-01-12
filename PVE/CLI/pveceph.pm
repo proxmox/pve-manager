@@ -217,6 +217,10 @@ our $cmddef = {
 	create => [ 'PVE::API2::Ceph::Pools', 'createpool', ['name'], { node => $nodename }],
 	destroy => [ 'PVE::API2::Ceph::Pools', 'destroypool', ['name'], { node => $nodename } ],
 	set => [ 'PVE::API2::Ceph::Pools', 'setpool', ['name'], { node => $nodename } ],
+	get => [ 'PVE::API2::Ceph::Pools', 'getpool', ['name'], { node => $nodename }, sub {
+	    my ($data, $schema, $options) = @_;
+	    PVE::CLIFormatter::print_api_result($data, $schema, undef, $options);
+	}, $PVE::RESTHandler::standard_output_options],
     },
     lspools => { alias => 'pool ls' },
     createpool => { alias => 'pool create' },
