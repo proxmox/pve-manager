@@ -79,6 +79,7 @@ my $parse_prune_backups_maxfiles = sub {
         if defined($maxfiles) && defined($prune_backups);
 
     if (defined($prune_backups)) {
+	return if ref($prune_backups) eq 'HASH'; # already parsed
 	$param->{'prune-backups'} = PVE::JSONSchema::parse_property_string(
 	    'prune-backups',
 	    $prune_backups
