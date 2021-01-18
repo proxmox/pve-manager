@@ -26,7 +26,10 @@ Ext.define('PVE.window.TFAEdit', {
 	}
 
 	me.qrcode.makeCode(
-	    'otpauth://totp/' + encodeURIComponent(me.userid) +
+	    'otpauth://totp/' +
+	    encodeURIComponent(values.issuer) +
+	    ':' +
+	    encodeURIComponent(values.userid) +
 	    '?secret=' + values.secret +
 	    '&period=' + values.step +
 	    '&digits=' + values.digits +
