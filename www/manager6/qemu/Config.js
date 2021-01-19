@@ -85,7 +85,7 @@ Ext.define('PVE.qemu.Config', {
 		{
 		    text: gettext('Clone'),
 		    iconCls: 'fa fa-fw fa-clone',
-		    hidden: caps.vms['VM.Clone'] ? false : true,
+		    hidden: !caps.vms['VM.Clone'],
 		    handler: function() {
 			PVE.window.Clone.wrap(nodename, vmid, template, 'qemu');
 		    },
@@ -95,7 +95,7 @@ Ext.define('PVE.qemu.Config', {
 		    disabled: template,
 		    xtype: 'pveMenuItem',
 		    iconCls: 'fa fa-fw fa-file-o',
-		    hidden: caps.vms['VM.Allocate'] ? false : true,
+		    hidden: !caps.vms['VM.Allocate'],
 		    confirmMsg: Proxmox.Utils.format_task_description('qmtemplate', vmid),
 		    handler: function() {
 			Proxmox.Utils.API2Request({
@@ -389,8 +389,8 @@ Ext.define('PVE.qemu.Config', {
 		rec = s.data.get('lock');
 		lock = rec ? rec.data.value : undefined;
 
-		spice = s.data.get('spice') ? true : false;
-		xtermjs = s.data.get('serial') ? true : false;
+		spice = !!s.data.get('spice');
+		xtermjs = !!s.data.get('serial');
 	    }
 
 	    if (template) {

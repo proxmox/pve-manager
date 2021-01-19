@@ -73,7 +73,7 @@ Ext.define('PVE.dc.UserEdit', {
                 value: me.userid,
 		renderer: Ext.String.htmlEncode,
                 allowBlank: false,
-                submitValue: me.isCreate ? true : false,
+                submitValue: !!me.isCreate,
             },
 	    pwfield, verifypw,
 	    {

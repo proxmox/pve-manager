@@ -29,8 +29,8 @@ Ext.define('PVE.window.Clone', {
 		},
 		success: function(response, opts) {
 		    var snapshotList = response.result.data;
-		    var hasSnapshots = snapshotList.length === 1 &&
-			snapshotList[0].name === 'current' ? false : true;
+		    var hasSnapshots = !(snapshotList.length === 1 &&
+			snapshotList[0].name === 'current');
 
 		    Ext.create('PVE.window.Clone', {
 			nodename: nodename,
@@ -227,7 +227,7 @@ Ext.define('PVE.window.Clone', {
 	    nodename: me.nodename,
 	    guestType: me.guestType,
 	    vmid: me.vmid,
-	    hidden: me.isTemplate || !me.hasSnapshots ? true : false,
+	    hidden: !!(me.isTemplate || !me.hasSnapshots),
 	    disabled: false,
 	    allowBlank: false,
 	    value: me.snapname,
@@ -248,7 +248,7 @@ Ext.define('PVE.window.Clone', {
 	    allowBlank: true,
 	    storageContent: me.guestType === 'qemu' ? 'images' : 'rootdir',
 	    emptyText: gettext('Same as source'),
-	    disabled: me.isTemplate ? true : false, // because default mode is clone for templates
+	    disabled: !!me.isTemplate, // because default mode is clone for templates
 	});
 
 	var formPanel = Ext.create('Ext.form.Panel', {

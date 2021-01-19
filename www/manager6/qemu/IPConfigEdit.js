@@ -202,7 +202,7 @@ Ext.define('PVE.qemu.IPConfigEdit', {
 	    throw "no node name specified";
 	}
 
-	me.isCreate = me.confid ? false : true;
+	me.isCreate = !me.confid;
 
 	var ipanel = Ext.create('PVE.qemu.IPConfigPanel', {
 	    confid: me.confid,

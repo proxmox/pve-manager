@@ -1251,7 +1251,7 @@ Ext.define('PVE.Utils', {
 	    // Note: we need to tell android the correct file name extension
 	    // but we do not set 'download' tag for other environments, because
 	    // It can have strange side effects (additional user prompt on firefox)
-	    var andriod = navigator.userAgent.match(/Android/i) ? true : false;
+	    var andriod = !!navigator.userAgent.match(/Android/i);
 	    if (andriod) {
 		link.download = name;
 	    }
@@ -1527,7 +1527,7 @@ Ext.define('PVE.Utils', {
 	    if (Proxmox.UserName === 'root@pam') {
 		container.el.mask();
 		if (!container.down('pveCephInstallWindow')) {
-		    var isInstalled = msg.match(/not initialized/i) ? true : false;
+		    var isInstalled = !!msg.match(/not initialized/i);
 		    var win = Ext.create('PVE.ceph.Install', {
 			nodename: nodename,
 		    });

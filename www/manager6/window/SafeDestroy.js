@@ -70,8 +70,8 @@ Ext.define('PVE.window.SafeDestroy', {
 			    Ext.Msg.alert('Error', response.htmlStatus);
 			},
 			success: function(response, options) {
-			    var hasProgressBar = view.showProgress &&
-				response.result.data ? true : false;
+			    var hasProgressBar = !!(view.showProgress &&
+				response.result.data);
 
 			    if (hasProgressBar) {
 				// stay around so we can trigger our close events

@@ -225,7 +225,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 10,
 		iconCls: 'hdd-o',
 		editor: 'PVE.qemu.HDEdit',
-		never_delete: caps.vms['VM.Config.Disk'] ? false : true,
+		never_delete: !caps.vms['VM.Config.Disk'],
 		isOnStorageBus: true,
 		header: gettext('Hard Disk') + ' (' + confid +')',
 		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')',
@@ -239,7 +239,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		order: i,
 		iconCls: 'exchange',
 		editor: caps.vms['VM.Config.Network'] ? 'PVE.qemu.NetworkEdit' : undefined,
-		never_delete: caps.vms['VM.Config.Network'] ? false : true,
+		never_delete: !caps.vms['VM.Config.Network'],
 		header: gettext('Network Device') + ' (' + confid +')',
 	    };
 	}
@@ -247,7 +247,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    group: 20,
 	    iconCls: 'hdd-o',
 	    editor: null,
-	    never_delete: caps.vms['VM.Config.Disk'] ? false : true,
+	    never_delete: !caps.vms['VM.Config.Disk'],
 	    header: gettext('EFI Disk'),
 	};
 	for (i = 0; i < PVE.Utils.hardware_counts.usb; i++) {
@@ -257,7 +257,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		order: i,
 		iconCls: 'usb',
 		editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.USBEdit' : undefined,
-		never_delete: caps.nodes['Sys.Console'] ? false : true,
+		never_delete: !caps.nodes['Sys.Console'],
 		header: gettext('USB Device') + ' (' + confid + ')',
 	    };
 	}
@@ -267,7 +267,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 30,
 		order: i,
 		tdCls: 'pve-itype-icon-pci',
-		never_delete: caps.nodes['Sys.Console'] ? false : true,
+		never_delete: !caps.nodes['Sys.Console'],
 		editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.PCIEdit' : undefined,
 		header: gettext('PCI Device') + ' (' + confid + ')',
 	    };
@@ -278,7 +278,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 35,
 		order: i,
 		tdCls: 'pve-itype-icon-serial',
-		never_delete: caps.nodes['Sys.Console'] ? false : true,
+		never_delete: !caps.nodes['Sys.Console'],
 		header: gettext('Serial Port') + ' (' + confid + ')',
 	    };
 	}
@@ -286,7 +286,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    group: 40,
 	    iconCls: 'volume-up',
 	    editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.AudioEdit' : undefined,
-	    never_delete: caps.vms['VM.Config.HWType'] ? false : true,
+	    never_delete: !caps.vms['VM.Config.HWType'],
 	    header: gettext('Audio Device'),
 	};
 	for (i = 0; i < 256; i++) {
@@ -303,7 +303,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    group: 45,
 	    tdCls: 'pve-itype-icon-die',
 	    editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.RNGEdit' : undefined,
-	    never_delete: caps.nodes['Sys.Console'] ? false : true,
+	    never_delete: !caps.nodes['Sys.Console'],
 	    header: gettext("VirtIO RNG"),
 	};
 

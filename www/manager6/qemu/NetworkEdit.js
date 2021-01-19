@@ -180,7 +180,7 @@ Ext.define('PVE.qemu.NetworkEdit', {
 	    throw "no node name specified";
 	}
 
-	me.isCreate = me.confid ? false : true;
+	me.isCreate = !me.confid;
 
 	var ipanel = Ext.create('PVE.qemu.NetworkInputPanel', {
 	    confid: me.confid,

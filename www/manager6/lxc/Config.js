@@ -109,7 +109,7 @@ Ext.define('PVE.lxc.Config', {
 		{
 		    text: gettext('Clone'),
 		    iconCls: 'fa fa-fw fa-clone',
-		    hidden: caps.vms['VM.Clone'] ? false : true,
+		    hidden: !caps.vms['VM.Clone'],
 		    handler: function() {
 			PVE.window.Clone.wrap(nodename, vmid, template, 'lxc');
 		    },
@@ -119,7 +119,7 @@ Ext.define('PVE.lxc.Config', {
 		    disabled: template,
 		    xtype: 'pveMenuItem',
 		    iconCls: 'fa fa-fw fa-file-o',
-		    hidden: caps.vms['VM.Allocate'] ? false : true,
+		    hidden: !caps.vms['VM.Allocate'],
 		    confirmMsg: Proxmox.Utils.format_task_description('vztemplate', vmid),
 		    handler: function() {
 			Proxmox.Utils.API2Request({

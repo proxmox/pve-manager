@@ -212,14 +212,14 @@ Ext.define('PVE.dc.BackupEdit', {
 		xtype: 'pveEmailNotificationSelector',
 		fieldLabel: gettext('Email notification'),
 		name: 'mailnotification',
-		deleteEmpty: me.isCreate ? false : true,
+		deleteEmpty: !me.isCreate,
 		value: me.isCreate ? 'always' : '',
 	    },
 	    {
 		xtype: 'pveCompressionSelector',
 		fieldLabel: gettext('Compression'),
 		name: 'compress',
-		deleteEmpty: me.isCreate ? false : true,
+		deleteEmpty: !me.isCreate,
 		value: 'zstd',
 	    },
 	    {
