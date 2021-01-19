@@ -132,7 +132,7 @@ Ext.define('PVE.qemu.Config', {
 		    },
 		    iconCls: 'fa fa-trash-o',
 		},
-	    ]
+	    ],
 },
 	});
 

@@ -711,5 +711,5 @@ Ext.define('PVE.Parser', {
 	});
 	return [res, extradata];
     },
-}
+},
 });

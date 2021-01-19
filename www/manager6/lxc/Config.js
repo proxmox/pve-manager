@@ -157,7 +157,7 @@ Ext.define('PVE.lxc.Config', {
 		    },
 		    iconCls: 'fa fa-trash-o',
 		},
-	    ]
+	    ],
 },
 	});
 

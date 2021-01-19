@@ -549,7 +549,7 @@ Ext.define('PVE.dc.BackupDiskTree', {
 			},
 		    },
 		},
-	    ]
+	    ],
 },
 	});
 

@@ -167,7 +167,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    ['__default__', PVE.Utils.render_qemu_machine('')],
 			    ['q35', 'q35'],
 			],
-		    }]
+		    }],
 } : undefined,
 		iconCls: 'cogs',
 		never_delete: true,

@@ -374,7 +374,7 @@ Ext.define('PVE.node.CephServiceList', {
 	    {
  type: 'string', name: 'version', calculate: function(data) {
 		return PVE.Utils.parse_ceph_version(data);
-	    }
+	    },
 },
 	],
 	idProperty: 'name',
