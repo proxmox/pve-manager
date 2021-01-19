@@ -14,7 +14,7 @@ Ext.define('PVE.ha.Status', {
 	me.rstore = Ext.create('Proxmox.data.ObjectStore', {
 	    interval: me.interval,
 	    model: 'pve-ha-status',
-	    storeid: 'pve-store-' + (++Ext.idSeed),
+	    storeid: 'pve-store-' + ++Ext.idSeed,
 	    groupField: 'type',
 	    proxy: {
                 type: 'proxmox',

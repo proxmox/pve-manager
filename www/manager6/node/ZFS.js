@@ -27,7 +27,7 @@ Ext.define('PVE.node.CreateZFS', {
 	    disks.sort(function(a, b) {
 		var aorder = a.get('order') || 0;
 		var border = b.get('order') || 0;
-		return (aorder - border);
+		return aorder - border;
 	    });
 
 	    disks.forEach(function(disk) {

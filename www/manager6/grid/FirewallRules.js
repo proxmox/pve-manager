@@ -245,7 +245,7 @@ Ext.define('PVE.FirewallRuleEdit', {
 	    throw "no list_refs_url specified";
 	}
 
-	me.isCreate = (me.rule_pos === undefined);
+	me.isCreate = me.rule_pos === undefined;
 
 	if (me.isCreate) {
             me.url = '/api2/extjs' + me.base_url;
@@ -301,7 +301,7 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
     initComponent: function() {
 	var me = this;
 
-	me.isCreate = (me.rule_pos === undefined);
+	me.isCreate = me.rule_pos === undefined;
 
 	if (me.isCreate) {
             me.url = '/api2/extjs' + me.base_url;
@@ -568,7 +568,7 @@ Ext.define('PVE.FirewallRules', {
 	    text: gettext('Copy'),
 	    selModel: sm,
 	    enableFn: function(rec) {
-		return (rec.data.type === 'in' || rec.data.type === 'out');
+		return rec.data.type === 'in' || rec.data.type === 'out';
 	    },
 	    disabled: true,
 	    handler: run_copy_editor,

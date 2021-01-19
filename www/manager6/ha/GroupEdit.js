@@ -104,7 +104,7 @@ Ext.define('PVE.ha.GroupInputPanel', {
 	    },
 	    isValid: function() {
 		var value = nodefield.getValue();
-		return (value && 0 !== value.length);
+		return value && 0 !== value.length;
 	    },
 	});
 

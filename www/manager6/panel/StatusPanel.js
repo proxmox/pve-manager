@@ -50,7 +50,7 @@ Ext.define('PVE.panel.StatusPanel', {
 	    if (key === stateid) {
 		var atab = me.getActiveTab().itemId;
 		var ntab = state.value;
-		if (state && ntab && (atab != ntab)) {
+		if (state && ntab && atab != ntab) {
 		    me.setActiveTab(ntab);
 		}
 	    }

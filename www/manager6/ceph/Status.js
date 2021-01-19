@@ -335,7 +335,7 @@ Ext.define('PVE.node.CephStatus', {
 	if (pgmap.recovering_objects_per_sec !== undefined || unhealthy > 0) {
 	    let total = pgmap.misplaced_total || pgmap.unfound_total || pgmap.degraded_total || 0;
 	    if (total === 0) return;
-	    let recovered = (total - unhealthy) || 0;
+	    let recovered = total - unhealthy || 0;
 	    let speed = pgmap.recovering_bytes_per_sec || 0;
 	    let speedTxt = PVE.Utils.render_bandwidth(speed);
 	    let obj_per_sec = speed / (4*1024*1024); // 4MiB per Object
@@ -392,7 +392,7 @@ Ext.define('PVE.node.CephStatus', {
 	var regex = new RegExp("not (installed|initialized)", "i");
 	PVE.Utils.handleStoreErrorOrMask(me, me.store, regex, function(me, error) {
 	    me.store.stopUpdate();
-	    PVE.Utils.showCephInstallOrMask(me, error.statusText, (nodename || 'localhost'),
+	    PVE.Utils.showCephInstallOrMask(me, error.statusText, nodename || 'localhost',
 		function(win) {
 		    me.mon(win, 'cephInstallWindowClosed', function() {
 			me.store.startUpdate();

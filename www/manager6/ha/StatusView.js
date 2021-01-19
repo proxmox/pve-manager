@@ -27,7 +27,7 @@ Ext.define('PVE.ha.StatusView', {
 		sorterFn: function(rec1, rec2) {
 		    var p1 = me.sortPriority[rec1.data.type];
 		    var p2 = me.sortPriority[rec2.data.type];
-		    return (p1 !== p2) ? ((p1 > p2) ? 1 : -1) : 0;
+		    return p1 !== p2 ? p1 > p2 ? 1 : -1 : 0;
 		},
 	    }],
 	    filters: {

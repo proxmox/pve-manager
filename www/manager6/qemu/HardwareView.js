@@ -10,7 +10,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	var rowdef = rows[key] || {};
 	var iconCls = rowdef.iconCls;
 	var icon = '';
-	var txt = (rowdef.header || key);
+	var txt = rowdef.header || key;
 
 	metaData.tdAttr = "valign=middle";
 
@@ -93,7 +93,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    sockets: {
 		header: gettext('Processors'),
 		never_delete: true,
-		editor: (caps.vms['VM.Config.CPU'] || caps.vms['VM.Config.HWType'])
+		editor: caps.vms['VM.Config.CPU'] || caps.vms['VM.Config.HWType']
 		    ? 'PVE.qemu.ProcessorEdit' : undefined,
 		tdCls: 'pve-itype-icon-processor',
 		group: 3,
@@ -315,11 +315,11 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var order1 = rows[v1].order || 0;
 	    var order2 = rows[v2].order || 0;
 
-	    if ((g1 - g2) !== 0) {
+	    if (g1 - g2 !== 0) {
 		return g1 - g2;
 	    }
 
-	    if ((order1 - order2) !== 0) {
+	    if (order1 - order2 !== 0) {
 		return order1 - order2;
 	    }
 
@@ -528,7 +528,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	});
 
 	let counts = {};
-	let isAtLimit = (type) => (counts[type] >= PVE.Utils.hardware_counts[type]);
+	let isAtLimit = (type) => counts[type] >= PVE.Utils.hardware_counts[type];
 
 	var set_button_status = function() {
 	    var sm = me.getSelectionModel();
@@ -585,19 +585,19 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var rowdef = rows[key];
 
 	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
-	    var isCDRom = (value && !!value.toString().match(/media=cdrom/));
+	    var isCDRom = value && !!value.toString().match(/media=cdrom/);
 	    var isUnusedDisk = key.match(/^unused\d+/);
 	    var isUsedDisk = !isUnusedDisk && rowdef.isOnStorageBus && !isCDRom;
 
-	    var isCloudInit = (value && value.toString().match(/vm-.*-cloudinit/));
+	    var isCloudInit = value && value.toString().match(/vm-.*-cloudinit/);
 
-	    var isEfi = (key === 'efidisk0');
+	    var isEfi = key === 'efidisk0';
 
-	    remove_btn.setDisabled(rec.data['delete'] || (rowdef.never_delete === true) || (isUnusedDisk && !diskCap));
-	    remove_btn.setText((isUsedDisk && !isCloudInit) ? remove_btn.altText : remove_btn.defaultText);
+	    remove_btn.setDisabled(rec.data['delete'] || rowdef.never_delete === true || isUnusedDisk && !diskCap);
+	    remove_btn.setText(isUsedDisk && !isCloudInit ? remove_btn.altText : remove_btn.defaultText);
 	    remove_btn.RESTMethod = isUnusedDisk ? 'POST':'PUT';
 
-	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor || isCloudInit || (!isCDRom && !diskCap));
+	    edit_btn.setDisabled(rec.data['delete'] || !rowdef.editor || isCloudInit || !isCDRom && !diskCap);
 
 	    resize_btn.setDisabled(pending || !isUsedDisk || !diskCap);
 

@@ -19,12 +19,12 @@ Ext.define('PVE.form.FileSelector', {
 	var me = this;
 
 	var change = false;
-	if (storage && (me.storage !== storage)) {
+	if (storage && me.storage !== storage) {
 	    me.storage = storage;
 	    change = true;
 	}
 
-	if (nodename && (me.nodename !== nodename)) {
+	if (nodename && me.nodename !== nodename) {
 	    me.nodename = nodename;
 	    change = true;
 	}

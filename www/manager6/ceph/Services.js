@@ -65,7 +65,7 @@ Ext.define('PVE.ceph.Services', {
 	    }
 	});
 	var i;
-	var quorummap = (status && status.quorum_names) ? status.quorum_names : [];
+	var quorummap = status && status.quorum_names ? status.quorum_names : [];
 	var monmessages = {};
 	var mgrmessages = {};
 	var mdsmessages = {};

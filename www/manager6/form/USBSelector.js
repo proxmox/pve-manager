@@ -62,7 +62,7 @@ Ext.define('PVE.form.USBSelector', {
 		width: 520,
 		columns: [
 		    {
-			header: (me.type === 'device')?gettext('Device'):gettext('Port'),
+			header: me.type === 'device'?gettext('Device'):gettext('Port'),
 			sortable: true,
 			dataIndex: 'usbid',
 			width: 80,

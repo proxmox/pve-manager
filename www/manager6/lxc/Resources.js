@@ -231,7 +231,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    var rowdef = rows[key];
 
 	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
-	    var isDisk = (rowdef.tdCls == 'pve-itype-icon-storage');
+	    var isDisk = rowdef.tdCls == 'pve-itype-icon-storage';
 	    var isUnusedDisk = key.match(/^unused\d+/);
 
 	    var noedit = rec.data['delete'] || !rowdef.editor;
@@ -257,11 +257,11 @@ Ext.define('PVE.lxc.RessourceView', {
 	    var order1 = rows[v1].order || 0;
 	    var order2 = rows[v2].order || 0;
 
-	    if ((g1 - g2) !== 0) {
+	    if (g1 - g2 !== 0) {
 		return g1 - g2;
 	    }
 
-	    if ((order1 - order2) !== 0) {
+	    if (order1 - order2 !== 0) {
 		return order1 - order2;
 	    }
 

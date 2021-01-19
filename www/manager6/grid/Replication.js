@@ -17,7 +17,7 @@ Ext.define('PVE.window.ReplicaEdit', {
 	var items = [];
 
 	items.push({
-	    xtype: (me.isCreate && !vmid)?'pveGuestIDSelector':'displayfield',
+	    xtype: me.isCreate && !vmid?'pveGuestIDSelector':'displayfield',
 	    name: 'guest',
 	    fieldLabel: 'CT/VM ID',
 	    value: vmid || '',
@@ -430,7 +430,7 @@ Ext.define('PVE.grid.ReplicaView', {
 
 	me.rstore = Ext.create('Proxmox.data.UpdateStore', {
 	    storeid: 'pve-replica-' + me.nodename + me.vmid,
-	    model: (mode === 'dc')? 'pve-replication' : 'pve-replication-state',
+	    model: mode === 'dc'? 'pve-replication' : 'pve-replication-state',
 	    interval: 3000,
 	    proxy: {
 		type: 'proxmox',

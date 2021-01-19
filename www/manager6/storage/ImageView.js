@@ -16,7 +16,7 @@ Ext.define('PVE.storage.ImageView', {
 	    throw "no storage ID specified";
 	}
 
-	if (!me.content || (me.content !== 'images' && me.content !== 'rootdir')) {
+	if (!me.content || me.content !== 'images' && me.content !== 'rootdir') {
 	    throw "content needs to be either 'images' or 'rootdir'";
 	}
 

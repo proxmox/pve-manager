@@ -58,7 +58,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    },
 	});
 
-	var vmidStore = (me.vmid) ? {} : {
+	var vmidStore = me.vmid ? {} : {
 	    model: 'PVEResources',
 	    autoLoad: true,
 	    sorters: 'vmid',
@@ -80,7 +80,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		xtype: me.vmid ? 'displayfield' : 'vmComboSelector',
 		submitValue: me.isCreate,
 		name: 'vmid',
-		fieldLabel: (me.vmid && me.guestType === 'ct') ? 'CT' : 'VM',
+		fieldLabel: me.vmid && me.guestType === 'ct' ? 'CT' : 'VM',
 		value: me.vmid,
 		store: vmidStore,
 		validateExists: true,

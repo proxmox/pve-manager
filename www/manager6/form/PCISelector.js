@@ -58,7 +58,7 @@ Ext.define('PVE.form.PCISelector', {
     setNodename: function(nodename) {
 	var me = this;
 
-	if (!nodename || (me.nodename === nodename)) {
+	if (!nodename || me.nodename === nodename) {
 	    return;
 	}
 

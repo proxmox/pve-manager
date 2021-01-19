@@ -19,7 +19,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 	} else if (values.memory === values.balloon) {
 	    delete res.balloon;
 	    res['delete'] = 'balloon,shares';
-	} else if (Ext.isDefined(values.shares) && (values.shares !== "")) {
+	} else if (Ext.isDefined(values.shares) && values.shares !== "") {
 	    res.shares = values.shares;
 	} else {
 	    res['delete'] = "shares";
@@ -102,7 +102,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 			var shares = me.down('field[name=shares]');
 			var memory = me.down('field[name=memory]');
 			bf.setDisabled(!value);
-			shares.setDisabled(!value || (bf.getValue() === memory.getValue()));
+			shares.setDisabled(!value || bf.getValue() === memory.getValue());
 		    },
 		},
 	    },
@@ -156,7 +156,7 @@ Ext.define('PVE.qemu.MemoryEdit', {
 		    ballooning: data.balloon === 0 ? '0' : '1',
 		    shares: data.shares,
 		    memory: data.memory || '512',
-		    balloon: data.balloon > 0 ? data.balloon : (data.memory || '512'),
+		    balloon: data.balloon > 0 ? data.balloon : data.memory || '512',
 		};
 
 		ipanel.setValues(values);

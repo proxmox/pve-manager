@@ -53,8 +53,8 @@ Ext.define('PVE.grid.TemplateSelector', {
 			    var value = field.getValue().toLowerCase();
 			    store.clearFilter(true);
 			    store.filterBy(function(rec) {
-				return (rec.data['package'].toLowerCase().indexOf(value) !== -1) ||
-				(rec.data.headline.toLowerCase().indexOf(value) !== -1);
+				return rec.data['package'].toLowerCase().indexOf(value) !== -1 ||
+				rec.data.headline.toLowerCase().indexOf(value) !== -1;
 			    });
 			},
 		    },

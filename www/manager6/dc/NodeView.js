@@ -25,7 +25,7 @@ Ext.define('PVE.dc.NodeView', {
 	    sortable: true,
 	    dataIndex: 'online',
 	    renderer: function(value) {
-		var cls = (value)?'good':'critical';
+		var cls = value?'good':'critical';
 		return '<i class="fa ' + PVE.Utils.get_health_icon(cls) + '"><i/>';
 	    },
 	},

@@ -216,7 +216,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	var pgmap = status.pgmap || {};
 	var pgs_by_state = pgmap.pgs_by_state || [];
 	pgs_by_state.sort(function(a, b) {
-	    return (a.state_name < b.state_name)?-1:(a.state_name === b.state_name)?0:1;
+	    return a.state_name < b.state_name?-1:a.state_name === b.state_name?0:1;
 	});
 
 	me.statecategories.forEach(function(cat) {

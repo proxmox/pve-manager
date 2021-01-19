@@ -91,7 +91,7 @@ Ext.define('PVE.NodeCephFSPanel', {
 	},
 	formulas: {
 	    canCreateFS: function(get) {
-		return (!get('cephfsConfigured') && get('mdsCount') > 0);
+		return !get('cephfsConfigured') && get('mdsCount') > 0;
 	    },
 	},
     },

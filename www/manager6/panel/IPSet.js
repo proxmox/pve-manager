@@ -168,7 +168,7 @@ Ext.define('PVE.IPSetCidrEdit', {
     initComponent: function() {
 	var me = this;
 
-	me.isCreate = (me.cidr === undefined);
+	me.isCreate = me.cidr === undefined;
 
 
 	if (me.isCreate) {

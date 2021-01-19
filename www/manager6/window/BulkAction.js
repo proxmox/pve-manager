@@ -133,8 +133,8 @@ Ext.define('PVE.window.BulkAction', {
 		selectionchange: function(vmselector, records) {
 		    if (me.action == 'migrateall') {
 			var showWarning = records.some(function(item) {
-			    return (item.data.type == 'lxc' &&
-				item.data.status == 'running');
+			    return item.data.type == 'lxc' &&
+				item.data.status == 'running';
 			});
 			me.down('#lxcwarning').setVisible(showWarning);
 		    }

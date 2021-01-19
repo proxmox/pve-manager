@@ -64,7 +64,7 @@ Ext.define('PVE.form.NodeSelector', {
 
     validator: function(value) {
 	var me = this;
-	if (!me.onlineValidator || (me.allowBlank && !value)) {
+	if (!me.onlineValidator || me.allowBlank && !value) {
 	    return true;
 	}
 

@@ -112,15 +112,15 @@ Ext.define('PVE.window.TFAEdit', {
 		return get('secret').length > 0 && get('canSetupTOTP');
 	    },
 	    canDeleteTFA: function(get) {
-		return (get('tfa_type') !== null && !get('tfa_required'));
+		return get('tfa_type') !== null && !get('tfa_required');
 	    },
 	    canSetupTOTP: function(get) {
 		var tfa = get('tfa_type');
-		return (tfa === null || tfa === 'totp' || tfa === 1);
+		return tfa === null || tfa === 'totp' || tfa === 1;
 	    },
 	    canSetupU2F: function(get) {
 		var tfa = get('tfa_type');
-		return (get('u2f_available') && (tfa === null || tfa === 'u2f' || tfa === 1));
+		return get('u2f_available') && (tfa === null || tfa === 'u2f' || tfa === 1);
 	    },
 	    secretEmpty: function(get) {
 		return get('secret').length === 0;

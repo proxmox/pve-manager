@@ -10,7 +10,7 @@ Ext.define('PVE.FirewallAliasEdit', {
     initComponent: function() {
 	var me = this;
 
-	me.isCreate = (me.alias_name === undefined);
+	me.isCreate = me.alias_name === undefined;
 
 	if (me.isCreate) {
 	    me.url = '/api2/extjs' + me.base_url;

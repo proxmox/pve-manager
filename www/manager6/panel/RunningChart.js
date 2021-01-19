@@ -103,7 +103,7 @@ Ext.define('PVE.widget.RunningChart', {
 	let me = this.chart;
 	let panel = me.up();
 	let now = new Date().getTime();
-	let begin = new Date(now - (1000 * panel.timeFrame)).getTime();
+	let begin = new Date(now - 1000 * panel.timeFrame).getTime();
 
 	me.store.add({
 	    time: time || now,

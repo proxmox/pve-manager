@@ -165,7 +165,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		    var mode = selModeField.getValue();
 		    store.clearFilter();
 		    store.filterBy(function(rec) {
-			return (!value || rec.get('node') === value);
+			return !value || rec.get('node') === value;
 		    });
 		    if (mode === 'all') {
 			sm.selectAll(true);
@@ -330,7 +330,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		    var node = nodesel.getValue();
 		    store.clearFilter();
 		    store.filterBy(function(rec) {
-			return (!node || node.length === 0 || rec.get('node') === node);
+			return !node || node.length === 0 || rec.get('node') === node;
 		    });
 		    var list = vmidField.getValue();
 		    var mode = selModeField.getValue();

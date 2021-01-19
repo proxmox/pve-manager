@@ -128,7 +128,7 @@ Ext.define('PVE.window.Backup', {
 	});
 
 	var title = gettext('Backup') + " " +
-	    ((me.vmtype === 'lxc') ? "CT" : "VM") +
+	    (me.vmtype === 'lxc' ? "CT" : "VM") +
 	    " " + me.vmid;
 
 	Ext.apply(me, {

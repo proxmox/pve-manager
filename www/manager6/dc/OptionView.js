@@ -12,7 +12,7 @@ Ext.define('PVE.dc.OptionView', {
 	opts = opts || {};
 	me.rows = me.rows || {};
 
-	let canEdit = (!opts.hasOwnProperty('caps') || opts.caps);
+	let canEdit = !opts.hasOwnProperty('caps') || opts.caps;
 	me.rows[name] = {
 	    required: true,
 	    defaultValue: opts.defaultValue,

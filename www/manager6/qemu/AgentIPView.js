@@ -125,8 +125,8 @@ Ext.define('PVE.qemu.AgentIPView', {
 	let agentRec = store.getById('agent');
 	let state = store.getById('status');
 
-	me.agent = (agentRec && agentRec.data.value === 1);
-	me.running = (state && state.data.value === 'running');
+	me.agent = agentRec && agentRec.data.value === 1;
+	me.running = state && state.data.value === 'running';
 
 	var caps = Ext.state.Manager.get('GuiCap');
 

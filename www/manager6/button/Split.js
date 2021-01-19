@@ -25,7 +25,7 @@ Ext.define('PVE.button.Split', {
 	var rec, msg;
 	if (me.selModel) {
 	    rec = me.selModel.getSelection()[0];
-	    if (!rec || (me.enableFn(rec) === false)) {
+	    if (!rec || me.enableFn(rec) === false) {
 		return;
 	    }
 	}
@@ -72,7 +72,7 @@ Ext.define('PVE.button.Split', {
 		if (item.selModel) {
 		    me.mon(item.selModel, "selectionchange", function() {
 			var rec = item.selModel.getSelection()[0];
-			if (!rec || (item.enableFn(rec) === false)) {
+			if (!rec || item.enableFn(rec) === false) {
 			    item.setDisabled(true);
 			} else {
 			    item.setDisabled(false);
@@ -87,7 +87,7 @@ Ext.define('PVE.button.Split', {
 	if (me.selModel) {
 	    me.mon(me.selModel, "selectionchange", function() {
 		var rec = me.selModel.getSelection()[0];
-		if (!rec || (me.enableFn(rec) === false)) {
+		if (!rec || me.enableFn(rec) === false) {
 		    me.setDisabled(true);
 		} else {
 		    me.setDisabled(false);

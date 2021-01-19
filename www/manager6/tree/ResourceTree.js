@@ -45,14 +45,14 @@ Ext.define('PVE.tree.ResourceTree', {
 	var n1 = node1.data;
 	var n2 = node2.data;
 
-	if ((n1.groupbyid && n2.groupbyid) ||
+	if (n1.groupbyid && n2.groupbyid ||
 	    !(n1.groupbyid || n2.groupbyid)) {
 	    var tcmp;
 
 	    var v1 = n1.type;
 	    var v2 = n2.type;
 
-	    if ((tcmp = v1 > v2 ? 1 : (v1 < v2 ? -1 : 0)) != 0) {
+	    if ((tcmp = v1 > v2 ? 1 : v1 < v2 ? -1 : 0) != 0) {
 		return tcmp;
 	    }
 
@@ -66,12 +66,12 @@ Ext.define('PVE.tree.ResourceTree', {
 		}
 		v1 = n1.vmid;
 		v2 = n2.vmid;
-		if ((tcmp = v1 > v2 ? 1 : (v1 < v2 ? -1 : 0)) != 0) {
+		if ((tcmp = v1 > v2 ? 1 : v1 < v2 ? -1 : 0) != 0) {
 		    return tcmp;
 		}
 	    }
 
-	    return n1.id > n2.id ? 1 : (n1.id < n2.id ? -1 : 0);
+	    return n1.id > n2.id ? 1 : n1.id < n2.id ? -1 : 0;
 	} else if (n1.groupbyid) {
 	    return -1;
 	} else if (n2.groupbyid) {
@@ -422,7 +422,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		    var sm = me.getSelectionModel();
 		    // disable selection when right clicking
 		    // except the record is already selected
-		    me.allowSelection = (ev.button !== 2) || sm.isSelected(record);
+		    me.allowSelection = ev.button !== 2 || sm.isSelected(record);
 		},
 		beforeselect: function(tree, record, index, eopts) {
 		    var allow = me.allowSelection;

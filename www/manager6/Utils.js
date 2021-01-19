@@ -308,7 +308,7 @@ Ext.define('PVE.Utils', {
 	selected.forEach(function(item) {
 	    cur++;
 	    if (item > 2) {
-		days.push(Ext.Date.dayNames[(cur+1)] + '-' + Ext.Date.dayNames[(cur+item)%7]);
+		days.push(Ext.Date.dayNames[cur+1] + '-' + Ext.Date.dayNames[(cur+item)%7]);
 		cur += item-1;
 	    } else if (item == 2) {
 		days.push(Ext.Date.dayNames[cur+1]);
@@ -376,7 +376,7 @@ Ext.define('PVE.Utils', {
     render_hotplug_features: function(value) {
 	var fa = [];
 
-	if (!value || (value === '0')) {
+	if (!value || value === '0') {
 	    return gettext('Disabled');
 	}
 
@@ -445,7 +445,7 @@ Ext.define('PVE.Utils', {
     },
 
     render_qemu_machine: function(value) {
-	return value || (Proxmox.Utils.defaultText + ' (i440fx)');
+	return value || Proxmox.Utils.defaultText + ' (i440fx)';
     },
 
     render_qemu_bios: function(value) {
@@ -468,7 +468,7 @@ Ext.define('PVE.Utils', {
 	}
     },
     render_as_property_string: function(value) {
-	return (!value) ? Proxmox.Utils.defaultText
+	return !value ? Proxmox.Utils.defaultText
 	    : PVE.Parser.printPropertyString(value);
     },
 
@@ -879,9 +879,9 @@ Ext.define('PVE.Utils', {
 
     format_storage_type: function(value, md, record) {
 	if (value === 'rbd') {
-	    value = (!record || record.get('monhost') ? 'rbd' : 'pveceph');
+	    value = !record || record.get('monhost') ? 'rbd' : 'pveceph';
 	} else if (value === 'cephfs') {
-	    value = (!record || record.get('monhost') ? 'cephfs' : 'pvecephfs');
+	    value = !record || record.get('monhost') ? 'cephfs' : 'pvecephfs';
 	}
 
 	var schema = PVE.Utils.storageSchema[value];
@@ -933,7 +933,7 @@ Ext.define('PVE.Utils', {
 
 	var maxcpu = record.data.maxcpu || 1;
 
-	if (!Ext.isNumeric(maxcpu) && (maxcpu >= 1)) {
+	if (!Ext.isNumeric(maxcpu) && maxcpu >= 1) {
 	    return '';
 	}
 
@@ -969,7 +969,7 @@ Ext.define('PVE.Utils', {
 	    return -1;
 	}
 
-	return (data.mem / data.maxmem);
+	return data.mem / data.maxmem;
     },
 
     render_mem_usage_percent: function(value, metaData, record, rowIndex, colIndex, store) {
@@ -986,7 +986,7 @@ Ext.define('PVE.Utils', {
 		return '';
 	    }
 
-	    return ((mem*100)/maxmem).toFixed(1) + " %";
+	    return (mem*100/maxmem).toFixed(1) + " %";
 	}
 	return (value*100).toFixed(1) + " %";
     },
@@ -1009,12 +1009,12 @@ Ext.define('PVE.Utils', {
     calculate_disk_usage: function(data) {
 	if (!Ext.isNumeric(data.disk) ||
 	    data.type === 'qemu' ||
-	    (data.type === 'lxc' && data.uptime === 0) ||
+	    data.type === 'lxc' && data.uptime === 0 ||
 	    data.maxdisk === 0) {
 	    return -1;
 	}
 
-	return (data.disk / data.maxdisk);
+	return data.disk / data.maxdisk;
     },
 
     render_disk_usage_percent: function(value, metaData, record, rowIndex, colIndex, store) {
@@ -1033,7 +1033,7 @@ Ext.define('PVE.Utils', {
 	if (!Ext.isNumeric(disk) ||
 	    type === 'qemu' ||
 	    maxdisk === 0 ||
-	    (type === 'lxc' && record.data.uptime === 0)) {
+	    type === 'lxc' && record.data.uptime === 0) {
 	    return '';
 	}
 
@@ -1211,9 +1211,9 @@ Ext.define('PVE.Utils', {
 	}
 	var dv = PVE.VersionInfo.console || 'xtermjs';
 	if (dv === 'vv' && !allowSpice) {
-	    dv = (allowXtermjs) ? 'xtermjs' : 'html5';
+	    dv = allowXtermjs ? 'xtermjs' : 'html5';
 	} else if (dv === 'xtermjs' && !allowXtermjs) {
-	    dv = (allowSpice) ? 'vv' : 'html5';
+	    dv = allowSpice ? 'vv' : 'html5';
 	}
 
 	return dv;

@@ -23,11 +23,11 @@ Ext.define('PVE.window.Restore', {
 	    name: 'storage',
 	    value: '',
 	    fieldLabel: gettext('Storage'),
-	    storageContent: (me.vmtype === 'lxc') ? 'rootdir' : 'images',
+	    storageContent: me.vmtype === 'lxc' ? 'rootdir' : 'images',
 	    // when restoring a container without specifying a storage, the backend defaults
 	    // to 'local', which is unintuitive and 'rootdir' might not even be allowed on it
 	    allowBlank: me.vmtype !== 'lxc',
-	    emptyText: (me.vmtype === 'lxc') ? '' : gettext('From backup configuration'),
+	    emptyText: me.vmtype === 'lxc' ? '' : gettext('From backup configuration'),
 	    autoSelect: me.vmtype === 'lxc',
 	});
 
@@ -36,7 +36,7 @@ Ext.define('PVE.window.Restore', {
 	    IDfield = Ext.create('Ext.form.field.Display', {
 		name: 'vmid',
 		value: me.vmid,
-		fieldLabel: (me.vmtype === 'lxc') ? 'CT' : 'VM',
+		fieldLabel: me.vmtype === 'lxc' ? 'CT' : 'VM',
 	    });
 	} else {
 	    IDfield = Ext.create('PVE.form.GuestIDSelector', {
@@ -186,7 +186,7 @@ Ext.define('PVE.window.Restore', {
 	});
 
 	var title = gettext('Restore') + ": " + (
-	    (me.vmtype === 'lxc') ? 'CT' : 'VM');
+	    me.vmtype === 'lxc' ? 'CT' : 'VM');
 
 	if (me.vmid) {
 	    title += " " + me.vmid;

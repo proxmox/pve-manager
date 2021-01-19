@@ -262,7 +262,7 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 		return true;
 	    }
 
-	    if (val === undefined || (val instanceof String && val.length === 0)) {
+	    if (val === undefined || val instanceof String && val.length === 0) {
 		// let this be caught by allowBlank, if at all
 		return true;
 	    }

@@ -14,10 +14,10 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 	},
 	formulas: {
 	    privilegedOnly: function(get) {
-		return (get('unprivileged') ? gettext('privileged only') : '');
+		return get('unprivileged') ? gettext('privileged only') : '';
 	    },
 	    unprivilegedOnly: function(get) {
-		return (!get('unprivileged') ? gettext('unprivileged only') : '');
+		return !get('unprivileged') ? gettext('unprivileged only') : '';
 	    },
 	},
     },

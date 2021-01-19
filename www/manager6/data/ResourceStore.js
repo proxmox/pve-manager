@@ -5,7 +5,7 @@ Ext.define('PVE.data.ResourceStore', {
     findVMID: function(vmid) {
 	var me = this, i;
 
-	return (me.findExact('vmid', parseInt(vmid, 10)) >= 0);
+	return me.findExact('vmid', parseInt(vmid, 10)) >= 0;
     },
 
     // returns the cached data from all nodes
@@ -81,7 +81,7 @@ Ext.define('PVE.data.ResourceStore', {
 		hidden: true,
 		convert: function(value, record) {
 		    var info = record.data;
-		    return (Ext.isNumeric(info.uptime) && (info.uptime > 0));
+		    return Ext.isNumeric(info.uptime) && info.uptime > 0;
 		},
 	    },
 	    text: {

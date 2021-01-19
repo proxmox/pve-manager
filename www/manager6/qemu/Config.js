@@ -116,7 +116,7 @@ Ext.define('PVE.qemu.Config', {
 			var ha = vm.hastate;
 			Ext.create('PVE.ha.VMResourceEdit', {
 			    vmid: vmid,
-			    isCreate: (!ha || ha === 'unmanaged'),
+			    isCreate: !ha || ha === 'unmanaged',
 			}).show();
 		    },
 		},
@@ -397,7 +397,7 @@ Ext.define('PVE.qemu.Config', {
 		return;
 	    }
 
-	    var resume = (['prelaunch', 'paused', 'suspended'].indexOf(qmpstatus) !== -1);
+	    var resume = ['prelaunch', 'paused', 'suspended'].indexOf(qmpstatus) !== -1;
 
 	    if (resume || lock === 'suspended') {
 		startBtn.setVisible(false);

@@ -141,7 +141,7 @@ Ext.define('PVE.form.GlobalSearchField', {
 	}
 	// give the row the 'relevance' value
 	item.data.relevance = match;
-	return (match > 0);
+	return match > 0;
     },
 
     updateFilter: function(field, newValue, oldValue) {

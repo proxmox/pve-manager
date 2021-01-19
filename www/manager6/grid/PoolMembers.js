@@ -30,7 +30,7 @@ Ext.define('PVE.pool.AddVM', {
 	    ],
 	    filters: [
 		function(item) {
-		    return ((item.data.type === 'lxc' || item.data.type === 'qemu') && item.data.pool === '');
+		    return (item.data.type === 'lxc' || item.data.type === 'qemu') && item.data.pool === '';
 		},
 	    ],
 	});

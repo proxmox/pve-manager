@@ -9,7 +9,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
     setNodename: function(nodename) {
 	var me = this;
 
-	if (!nodename || (me.nodename === nodename)) {
+	if (!nodename || me.nodename === nodename) {
 	    return;
 	}
 
@@ -56,7 +56,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    cdata.name = 'eth0';
 	    me.dataCache = {};
 	}
-	cdata.firewall = (me.insideWizard || me.isCreate);
+	cdata.firewall = me.insideWizard || me.isCreate;
 
 	if (!me.dataCache) {
 	    throw "no dataCache specified";
@@ -155,14 +155,14 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    },
 	];
 
-	var dhcp4 = (cdata.ip === 'dhcp');
+	var dhcp4 = cdata.ip === 'dhcp';
 	if (dhcp4) {
 	    cdata.ip = '';
 	    cdata.gw = '';
 	}
 
-	var auto6 = (cdata.ip6 === 'auto');
-	var dhcp6 = (cdata.ip6 === 'dhcp');
+	var auto6 = cdata.ip6 === 'auto';
+	var dhcp6 = cdata.ip6 === 'dhcp';
 	if (auto6 || dhcp6) {
 	    cdata.ip6 = '';
 	    cdata.gw6 = '';
@@ -284,7 +284,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		value: cdata.ip6,
 		emptyText: dhcp6 || auto6 ? '' : Proxmox.Utils.NoneText,
 		vtype: 'IP6CIDRAddress',
-		disabled: (dhcp6 || auto6),
+		disabled: dhcp6 || auto6,
 		fieldLabel: 'IPv6/CIDR', // do not localize
 	    },
 	    {
@@ -292,7 +292,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		name: 'gw6',
 		vtype: 'IP6Address',
 		value: cdata.gw6,
-		disabled: (dhcp6 || auto6),
+		disabled: dhcp6 || auto6,
 		fieldLabel: gettext('Gateway') + ' (IPv6)',
 	    },
 	];
@@ -370,7 +370,7 @@ Ext.define('PVE.lxc.NetworkView', {
 		    records.push(net);
 		});
 		me.store.loadData(records);
-		me.down('button[name=addButton]').setDisabled((records.length >= 32));
+		me.down('button[name=addButton]').setDisabled(records.length >= 32);
 	    },
 	});
     },

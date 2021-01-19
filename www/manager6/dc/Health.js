@@ -59,7 +59,7 @@ Ext.define('PVE.dc.Health', {
 	    }
 	}
 
-	if (numNodes !== (nodes.online + nodes.offline)) {
+	if (numNodes !== nodes.online + nodes.offline) {
 	    nodes.offline = numNodes - nodes.online;
 	}
 

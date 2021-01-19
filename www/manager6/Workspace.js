@@ -231,7 +231,7 @@ Ext.define('PVE.StdWorkspace', {
 			    var comp = {
 				xtype: tlckup[n.data.type || 'root'] ||
 				    'pvePanelConfig',
-				showSearch: (n.data.id === 'root') ||
+				showSearch: n.data.id === 'root' ||
 				    Ext.isDefined(n.data.groupbyid),
 				pveSelNode: n,
 				workspace: me,
@@ -455,7 +455,7 @@ Ext.define('PVE.StdWorkspace', {
 		    listeners: {
 			resize: function(panel, width, height) {
 			    var viewHeight = me.getSize().height;
-			    if (height > (viewHeight - 150)) {
+			    if (height > viewHeight - 150) {
 				panel.setHeight(viewHeight - 150);
 			    }
 			},

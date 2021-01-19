@@ -164,7 +164,7 @@ Ext.define('PVE.node.LVMList', {
 		    name: 'iconCls',
 		    calculate: function(data) {
 			var txt = 'fa x-fa-tree fa-';
-			txt += (data.leaf) ? 'hdd-o' : 'object-group';
+			txt += data.leaf ? 'hdd-o' : 'object-group';
 			return txt;
 		    },
 		},
@@ -172,7 +172,7 @@ Ext.define('PVE.node.LVMList', {
 		    type: 'number',
 		    name: 'usage',
 		    calculate: function(data) {
-			return ((data.size-data.free)/data.size);
+			return (data.size-data.free)/data.size;
 		    },
 		},
 	    ],

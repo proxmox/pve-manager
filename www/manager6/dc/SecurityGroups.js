@@ -15,7 +15,7 @@ Ext.define('PVE.SecurityGroupEdit', {
     initComponent: function() {
 	var me = this;
 
-	me.isCreate = (me.group_name === undefined);
+	me.isCreate = me.group_name === undefined;
 
 	var subject;
 
@@ -152,7 +152,7 @@ Ext.define('PVE.SecurityGroupList', {
 	    selModel: sm,
 	    baseurl: me.base_url + '/',
 	    enableFn: function(rec) {
-		return (rec && me.base_url);
+		return rec && me.base_url;
 	    },
 	    callback: function() {
 		reload();

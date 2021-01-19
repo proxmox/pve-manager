@@ -6,7 +6,7 @@ Ext.define('PVE.window.HDMove', {
 
     move_disk: function(disk, storage, format, delete_disk) {
 	var me = this;
-	var qemu = (me.type === 'qemu');
+	var qemu = me.type === 'qemu';
 	var params = {};
 	params.storage = storage;
 	params[qemu ? 'disk':'volume'] = disk;
@@ -58,7 +58,7 @@ Ext.define('PVE.window.HDMove', {
 	    me.type = 'qemu';
 	}
 
-	var qemu = (me.type === 'qemu');
+	var qemu = me.type === 'qemu';
 
         var items = [
             {

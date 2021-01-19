@@ -45,7 +45,7 @@ Ext.define('PVE.form.MDevSelector', {
     setPciID: function(pciid, force) {
 	var me = this;
 
-	if (!force && (!pciid || (me.pciid === pciid))) {
+	if (!force && (!pciid || me.pciid === pciid)) {
 	    return;
 	}
 
@@ -57,7 +57,7 @@ Ext.define('PVE.form.MDevSelector', {
     setNodename: function(nodename) {
 	var me = this;
 
-	if (!nodename || (me.nodename === nodename)) {
+	if (!nodename || me.nodename === nodename) {
 	    return;
 	}
 

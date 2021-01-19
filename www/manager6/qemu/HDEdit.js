@@ -62,7 +62,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	var me = this;
 
 	var params = {};
-	var confid = me.confid || (values.controller + values.deviceid);
+	var confid = me.confid || values.controller + values.deviceid;
 
 	if (me.unused) {
 	    me.drive.file = me.vmconfig[values.unusedId];
@@ -133,7 +133,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.noreplicate = !PVE.Parser.parseBoolean(drive.replicate, 1);
 	values.diskformat = drive.format || 'raw';
 	values.cache = drive.cache || '__default__';
-	values.discard = (drive.discard === 'on');
+	values.discard = drive.discard === 'on';
 	values.ssd = PVE.Parser.parseBoolean(drive.ssd);
 	values.iothread = PVE.Parser.parseBoolean(drive.iothread);
 

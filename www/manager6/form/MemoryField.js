@@ -36,10 +36,10 @@ Ext.define('PVE.form.MemoryField', {
 	var i, j;
 	for (j = 0; j < 9; j++) {
 	    for (i = 0; i < 32; i++) {
-		if ((value >= current_size) && (value < (current_size + dimm_size))) {
+		if (value >= current_size && value < current_size + dimm_size) {
 		    value_start = current_size;
 		    value_up = current_size + dimm_size;
-		    value_down = current_size - ((i === 0) ? prev_dimm_size : dimm_size);
+		    value_down = current_size - (i === 0 ? prev_dimm_size : dimm_size);
 		}
 		current_size += dimm_size;
 	    }

@@ -7,7 +7,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
-	var confid = me.confid || (values.controller + values.deviceid);
+	var confid = me.confid || values.controller + values.deviceid;
 
 	me.drive.media = 'cdrom';
 	if (values.mediaType === 'iso') {

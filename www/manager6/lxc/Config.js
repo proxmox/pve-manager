@@ -141,7 +141,7 @@ Ext.define('PVE.lxc.Config', {
 			Ext.create('PVE.ha.VMResourceEdit', {
 			    vmid: vmid,
 			    guestType: 'ct',
-			    isCreate: (!ha || ha === 'unmanaged'),
+			    isCreate: !ha || ha === 'unmanaged',
 			}).show();
 		    },
 		},

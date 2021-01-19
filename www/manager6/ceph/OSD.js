@@ -460,7 +460,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	    let rec = selection[0];
 	    let vm = this.getViewModel();
 
-	    let isOsd = rec.data.host && (rec.data.type === 'osd') && (rec.data.id >= 0);
+	    let isOsd = rec.data.host && rec.data.type === 'osd' && rec.data.id >= 0;
 
 	    vm.set('isOsd', isOsd);
 	    vm.set('downOsd', isOsd && rec.data.status === 'down');

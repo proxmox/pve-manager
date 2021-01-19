@@ -28,7 +28,7 @@ Ext.define('PVE.qemu.OSDefaults', {
 		    var child = Ext.clone(me[settings.parent]);
 		    me[settings.pveOS] = Ext.apply(child, settings);
 		} else {
-		    throw ("Could not find your genitor");
+		    throw "Could not find your genitor";
 		}
 	    };
 

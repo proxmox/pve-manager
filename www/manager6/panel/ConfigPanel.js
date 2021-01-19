@@ -254,12 +254,12 @@ Ext.define('PVE.panel.Config', {
 	// select the new item
 	var statechange = function(sp, key, state) {
 	    // it the state change is for this panel
-	    if (stateid && (key === stateid) && state) {
+	    if (stateid && key === stateid && state) {
 		// get active item
 		var acard = me.getLayout().getActiveItem().itemId;
 		// get the itemid of the new value
 		var ncard = state.value || me.firstItem;
-		if (ncard && (acard != ncard)) {
+		if (ncard && acard != ncard) {
 		    // select the chosen item
 		    menu.setSelection(root.findChild('id', ncard, true) || root.firstChild);
 		}

@@ -58,7 +58,7 @@ Ext.define('PVE.form.DiskStorageSelector', {
 	if (rec.data.format) {
 	    var format = rec.data.format[0]; // 0 is the formats, 1 the default in the backend
 	    delete format.subvol; // we never need subvol in the gui
-	    selectformat = (Ext.Object.getSize(format) > 1);
+	    selectformat = Ext.Object.getSize(format) > 1;
 	}
 
 	var select = !!rec.data.select_existing && !me.hideSelection;

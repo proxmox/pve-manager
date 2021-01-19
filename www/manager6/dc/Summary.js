@@ -157,7 +157,7 @@ Ext.define('PVE.dc.Summary', {
 		var item = results[i];
 		switch (item.data.type) {
 		    case 'node':
-			cpu += (item.data.cpu * item.data.maxcpu);
+			cpu += item.data.cpu * item.data.maxcpu;
 			maxcpu += item.data.maxcpu || 0;
 			memory += item.data.mem || 0;
 			maxmem += item.data.maxmem || 0;
@@ -183,7 +183,7 @@ Ext.define('PVE.dc.Summary', {
 			    break;
 			}
 			if (!countedStorages[item.data.storage] ||
-			    (!item.data.shared && !countedStorages[item.data.id])) {
+			    !item.data.shared && !countedStorages[item.data.id]) {
 			    used += item.data.disk;
 			    total += item.data.maxdisk;
 
@@ -207,13 +207,13 @@ Ext.define('PVE.dc.Summary', {
 	    }
 
 	    var text = Ext.String.format(gettext('of {0} CPU(s)'), maxcpu);
-	    cpustat.updateValue((cpu/maxcpu), text);
+	    cpustat.updateValue(cpu/maxcpu, text);
 
 	    text = Ext.String.format(gettext('{0} of {1}'), PVE.Utils.render_size(memory), PVE.Utils.render_size(maxmem));
-	    memorystat.updateValue((memory/maxmem), text);
+	    memorystat.updateValue(memory/maxmem, text);
 
 	    text = Ext.String.format(gettext('{0} of {1}'), PVE.Utils.render_size(used), PVE.Utils.render_size(total));
-	    storagestat.updateValue((used/total), text);
+	    storagestat.updateValue(used/total, text);
 
 	    gueststatus.updateValues(qemu, lxc, error);
 
