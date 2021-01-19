@@ -10,7 +10,7 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
     viewModel: {
 	parent: null,
 	data: {
-	    unprivileged: false
+	    unprivileged: false,
 	},
 	formulas: {
 	    privilegedOnly: function(get) {
@@ -18,8 +18,8 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 	    },
 	    unprivilegedOnly: function(get) {
 		return (!get('unprivileged') ? gettext('unprivileged only') : '');
-	    }
-	}
+	    },
+	},
     },
 
     items: [
@@ -29,13 +29,13 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 	    name: 'keyctl',
 	    bind: {
 		disabled: '{!unprivileged}',
-		boxLabel: '{unprivilegedOnly}'
-	    }
+		boxLabel: '{unprivilegedOnly}',
+	    },
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
 	    fieldLabel: gettext('Nesting'),
-	    name: 'nesting'
+	    name: 'nesting',
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
@@ -43,8 +43,8 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 	    fieldLabel: 'NFS',
 	    bind: {
 		disabled: '{unprivileged}',
-		boxLabel: '{privilegedOnly}'
-	    }
+		boxLabel: '{privilegedOnly}',
+	    },
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
@@ -52,13 +52,13 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 	    fieldLabel: 'CIFS',
 	    bind: {
 		disabled: '{unprivileged}',
-		boxLabel: '{privilegedOnly}'
-	    }
+		boxLabel: '{privilegedOnly}',
+	    },
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
 	    name: 'fuse',
-	    fieldLabel: 'FUSE'
+	    fieldLabel: 'FUSE',
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
@@ -126,6 +126,6 @@ Ext.define('PVE.lxc.FeaturesEdit', {
     width: 350,
 
     items: [{
-	xtype: 'pveLxcFeaturesInputPanel'
+	xtype: 'pveLxcFeaturesInputPanel',
     }],
 });

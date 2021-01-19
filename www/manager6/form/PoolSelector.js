@@ -11,7 +11,7 @@ Ext.define('PVE.form.PoolSelector', {
 
 	var store = new Ext.data.Store({
 	    model: 'pve-pools',
-	    sorters: 'poolid'
+	    sorters: 'poolid',
 	});
 
 	Ext.apply(me, {
@@ -23,23 +23,23 @@ Ext.define('PVE.form.PoolSelector', {
 			header: gettext('Pool'),
 			sortable: true,
 			dataIndex: 'poolid',
-			flex: 1
+			flex: 1,
 		    },
 		    {
 			header: gettext('Comment'),
 			sortable: false,
 			dataIndex: 'comment',
 			renderer: Ext.String.htmlEncode,
-			flex: 1
-		    }
-		]
-	    }
+			flex: 1,
+		    },
+		],
+	    },
 	});
 
         me.callParent();
 
 	store.load();
-    }
+    },
 
 }, function() {
 
@@ -48,9 +48,9 @@ Ext.define('PVE.form.PoolSelector', {
 	fields: [ 'poolid', 'comment' ],
 	proxy: {
             type: 'proxmox',
-	    url: "/api2/json/pools"
+	    url: "/api2/json/pools",
 	},
-	idProperty: 'poolid'
+	idProperty: 'poolid',
     });
 
 });

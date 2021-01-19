@@ -33,9 +33,9 @@ Ext.define('PVE.lxc.Options', {
 			name: 'onboot',
 			uncheckedValue: 0,
 			defaultValue: 0,
-			fieldLabel: gettext('Start at boot')
-		    }
-		} : undefined
+			fieldLabel: gettext('Start at boot'),
+		    },
+		} : undefined,
 	    },
 	    startup: {
 		header: gettext('Start/Shutdown order'),
@@ -44,16 +44,16 @@ Ext.define('PVE.lxc.Options', {
 		editor: caps.vms['VM.Config.Options'] && caps.nodes['Sys.Modify'] ?
 		    {
 			xtype: 'pveWindowStartupEdit',
-			onlineHelp: 'pct_startup_and_shutdown'
-		    } : undefined
+			onlineHelp: 'pct_startup_and_shutdown',
+		    } : undefined,
 	    },
 	    ostype: {
 		header: gettext('OS Type'),
-		defaultValue: Proxmox.Utils.unknownText
+		defaultValue: Proxmox.Utils.unknownText,
 	    },
 	    arch: {
 		header: gettext('Architecture'),
-		defaultValue: Proxmox.Utils.unknownText
+		defaultValue: Proxmox.Utils.unknownText,
 	    },
 	    console: {
 		header: '/dev/console',
@@ -69,9 +69,9 @@ Ext.define('PVE.lxc.Options', {
 			defaultValue: 1,
 			deleteDefaultValue: true,
 			checked: true,
-			fieldLabel: '/dev/console'
-		    }
-		} : undefined
+			fieldLabel: '/dev/console',
+		    },
+		} : undefined,
 	    },
 	    tty: {
 		header: gettext('TTY count'),
@@ -87,9 +87,9 @@ Ext.define('PVE.lxc.Options', {
 			value: 2,
 			fieldLabel: gettext('TTY count'),
 			emptyText: gettext('Default'),
-			deleteEmpty: true
-		    }
-		} : undefined
+			deleteEmpty: true,
+		    },
+		} : undefined,
 	    },
 	    cmode: {
 		header: gettext('Console mode'),
@@ -106,11 +106,11 @@ Ext.define('PVE.lxc.Options', {
 			    ['__default__', Proxmox.Utils.defaultText + " (tty)"],
 			    ['tty', "/dev/tty[X]"],
 			    ['console', "/dev/console"],
-			    ['shell', "shell"]
+			    ['shell', "shell"],
 			],
-			fieldLabel: gettext('Console mode')
-		    }
-		} : undefined
+			fieldLabel: gettext('Console mode'),
+		    },
+		} : undefined,
 	    },
 	    protection: {
 		header: gettext('Protection'),
@@ -125,24 +125,24 @@ Ext.define('PVE.lxc.Options', {
 			uncheckedValue: 0,
 			defaultValue: 0,
 			deleteDefaultValue: true,
-			fieldLabel: gettext('Enabled')
-		    }
-		} : undefined
+			fieldLabel: gettext('Enabled'),
+		    },
+		} : undefined,
 	    },
 	    unprivileged: {
 		header: gettext('Unprivileged container'),
 		renderer: Proxmox.Utils.format_boolean,
-		defaultValue: 0
+		defaultValue: 0,
 	    },
 	    features: {
 		header: gettext('Features'),
 		defaultValue: Proxmox.Utils.noneText,
 		editor: Proxmox.UserName === 'root@pam' ?
-		    'PVE.lxc.FeaturesEdit' : undefined
+		    'PVE.lxc.FeaturesEdit' : undefined,
 	    },
 	    hookscript: {
-		header: gettext('Hookscript')
-	    }
+		header: gettext('Hookscript'),
+	    },
 	};
 
 	var baseurl = 'nodes/' + nodename + '/lxc/' + vmid + '/config';
@@ -157,7 +157,7 @@ Ext.define('PVE.lxc.Options', {
 		var rowdef = rows[rec.data.key];
 		return !!rowdef.editor;
 	    },
-	    handler: function() { me.run_editor(); }
+	    handler: function() { me.run_editor(); },
 	});
 
 	var revert_btn = new PVE.button.PendingRevert();
@@ -187,12 +187,12 @@ Ext.define('PVE.lxc.Options', {
 	    tbar: [ edit_btn, revert_btn ],
 	    rows: rows,
 	    editorConfig: {
-		url: '/api2/extjs/' + baseurl
+		url: '/api2/extjs/' + baseurl,
 	    },
 	    listeners: {
 		itemdblclick: me.run_editor,
-		selectionchange: set_button_status
-	    }
+		selectionchange: set_button_status,
+	    },
 	});
 
 	me.callParent();
@@ -205,6 +205,6 @@ Ext.define('PVE.lxc.Options', {
 	    set_button_status();
 	});
 
-    }
+    },
 });
 

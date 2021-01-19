@@ -33,11 +33,11 @@ Ext.define('PVE.window.HDMove', {
 	    success: function(response, options) {
 		var upid = response.result.data;
 		var win = Ext.create('Proxmox.window.TaskViewer', {
-		    upid: upid
+		    upid: upid,
 		});
 		win.show();
 		win.on('destroy', function() { me.close(); });
-	    }
+	    },
 	});
 
     },
@@ -68,8 +68,8 @@ Ext.define('PVE.window.HDMove', {
                 value: me.disk,
                 fieldLabel: qemu ? gettext('Disk') : gettext('Mount Point'),
                 vtype: 'StorageId',
-                allowBlank: false
-            }
+                allowBlank: false,
+            },
         ];
 
 	items.push({
@@ -77,7 +77,7 @@ Ext.define('PVE.window.HDMove', {
 	    storageLabel: gettext('Target Storage'),
 	    nodename: me.nodename,
 	    storageContent: qemu ? 'images' : 'rootdir',
-	    hideSize: true
+	    hideSize: true,
 	});
 
 	items.push({
@@ -85,7 +85,7 @@ Ext.define('PVE.window.HDMove', {
 	    fieldLabel: gettext('Delete source'),
 	    name: 'deleteDisk',
 	    uncheckedValue: 0,
-	    checked: false
+	    checked: false,
 	});
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
@@ -93,9 +93,9 @@ Ext.define('PVE.window.HDMove', {
 	    border: false,
 	    fieldDefaults: {
 		labelWidth: 100,
-		anchor: '100%'
+		anchor: '100%',
 	    },
-	    items: items
+	    items: items,
 	});
 
 	var form = me.formPanel.getForm();
@@ -111,7 +111,7 @@ Ext.define('PVE.window.HDMove', {
 		    me.move_disk(me.disk, values.hdstorage, values.diskformat,
 				 values.deleteDisk);
 		}
-	    }
+	    },
 	});
 
 	Ext.apply(me, {
@@ -120,7 +120,7 @@ Ext.define('PVE.window.HDMove', {
 	    border: false,
 	    layout: 'fit',
 	    buttons: [ submitBtn ],
-	    items: [ me.formPanel ]
+	    items: [ me.formPanel ],
 	});
 
 
@@ -131,5 +131,5 @@ Ext.define('PVE.window.HDMove', {
 	});
 
 	me.formPanel.isValid();
-    }
+    },
 });

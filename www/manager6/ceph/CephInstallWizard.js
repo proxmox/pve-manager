@@ -126,7 +126,7 @@ Ext.define('PVE.ceph.CephHighestVersionDisplay', {
 	    },
 	    failure: function(response, opts) {
 		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-	    }
+	    },
 	});
     },
 });
@@ -145,10 +145,10 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 	    cephRelease: 'octopus',
 	    configuration: true,
 	    isInstalled: false,
-	}
+	},
     },
     cbindData: {
-	nodename: undefined
+	nodename: undefined,
     },
 
     title: gettext('Setup'),
@@ -204,7 +204,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    xtype: 'pveCephHighestVersionDisplay',
 		    labelWidth: 180,
 		    cbind:{
-			nodename: '{nodename}'
+			nodename: '{nodename}',
 		    },
 		    gotNewestVersion: function(release, maxversiontext, maxversion) {
 			if (release === 'unknown') {
@@ -249,22 +249,22 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			Ext.GlobalEvents.fireEvent('proxmoxHideHelp', this.onlineHelp);
 		    }
 		    this.up('pveCephInstallWizard').down('#next').setText(gettext('Next'));
-		}
-	    }
+		},
+	    },
 	},
 	{
 	    title: gettext('Installation'),
 	    xtype: 'panel',
 	    layout: 'fit',
 	    cbind:{
-		nodename: '{nodename}'
+		nodename: '{nodename}',
 	    },
 	    viewModel: {}, // needed to inherit parent viewModel data
 	    listeners: {
 		afterrender: function() {
 		    var me = this;
 		    if (this.getViewModel().get('isInstalled')) {
-			this.mask("Ceph is already installed, click next to create your configuration.",['pve-static-mask']);
+			this.mask("Ceph is already installed, click next to create your configuration.", ['pve-static-mask']);
 		    } else {
 			me.down('pveNoVncConsole').fireEvent('activate');
 		    }
@@ -277,7 +277,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			interval: 1000,
 			proxy: {
 			    type: 'proxmox',
-			    url: '/api2/json/nodes/' + nodename + '/ceph/status'
+			    url: '/api2/json/nodes/' + nodename + '/ceph/status',
 			},
 			listeners: {
 			    load: function(rec, response, success, operation) {
@@ -287,17 +287,17 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 				    me.down('textfield').setValue('success');
 				} else if (operation.error.statusText.match("not initialized", "i")) {
 				    me.updateStore.stopUpdate();
-				    me.up('pveCephInstallWizard').getViewModel().set('configuration',false);
+				    me.up('pveCephInstallWizard').getViewModel().set('configuration', false);
 				    me.down('textfield').setValue('success');
 				} else if (operation.error.statusText.match("rados_connect failed", "i")) {
 				    me.updateStore.stopUpdate();
-				    me.up('pveCephInstallWizard').getViewModel().set('configuration',true);
+				    me.up('pveCephInstallWizard').getViewModel().set('configuration', true);
 				    me.down('textfield').setValue('success');
 				} else if (!operation.error.statusText.match("not installed", "i")) {
 				    Proxmox.Utils.setErrorMask(me, operation.error.statusText);
 				}
-			    }
-			}
+			    },
+			},
 		    });
 		    me.updateStore.startUpdate();
 		},
@@ -306,7 +306,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    if (me.updateStore) {
 			me.updateStore.stopUpdate();
 		    }
-		}
+		},
 	    },
 	    items: [
 		{
@@ -331,22 +331,22 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    value: '',
 		    allowBlank: false,
 		    submitValue: false,
-		    hidden: true
-		}
-	    ]
+		    hidden: true,
+		},
+	    ],
 	},
 	{
 	    xtype: 'inputpanel',
 	    title: gettext('Configuration'),
 	    onlineHelp: 'chapter_pveceph',
 	    cbind: {
-		nodename: '{nodename}'
+		nodename: '{nodename}',
 	    },
 	    viewModel: {
 		data: {
 		    replicas: undefined,
-		    minreplicas: undefined
-		}
+		    minreplicas: undefined,
+		},
 	    },
 	    listeners: {
 		activate: function() {
@@ -354,19 +354,19 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		},
 		beforeshow: function() {
 		    if (this.up('pveCephInstallWizard').getViewModel().get('configuration')) {
-			this.mask("Configuration already initialized",['pve-static-mask']);
+			this.mask("Configuration already initialized", ['pve-static-mask']);
 		    } else {
 			this.unmask();
 		    }
 		},
 		deactivate: function() {
 		    this.up('pveCephInstallWizard').down('#submit').setText(gettext('Finish'));
-		}
+		},
 	    },
 	    column1: [
 		{
 		    xtype: 'displayfield',
-		    value: gettext('Ceph cluster configuration') + ':'
+		    value: gettext('Ceph cluster configuration') + ':',
 		},
 		{
 		    xtype: 'proxmoxNetworkSelector',
@@ -374,11 +374,11 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    value: '',
 		    fieldLabel: 'Public Network IP/CIDR',
 		    bind: {
-			allowBlank: '{configuration}'
+			allowBlank: '{configuration}',
 		    },
 		    cbind: {
-			nodename: '{nodename}'
-		    }
+			nodename: '{nodename}',
+		    },
 		},
 		{
 		    xtype: 'proxmoxNetworkSelector',
@@ -388,28 +388,28 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    autoSelect: false,
 		    emptyText: gettext('Same as Public Network'),
 		    cbind: {
-			nodename: '{nodename}'
-		    }
-		}
+			nodename: '{nodename}',
+		    },
+		},
 		// FIXME: add hint about cluster network and/or reference user to docs??
 	    ],
 	    column2: [
 		{
 		    xtype: 'displayfield',
-		    value: gettext('First Ceph monitor') + ':'
+		    value: gettext('First Ceph monitor') + ':',
 		},
 		{
 		    xtype: 'pveNodeSelector',
 		    fieldLabel: gettext('Monitor node'),
 		    name: 'mon-node',
 		    selectCurNode: true,
-		    allowBlank: false
+		    allowBlank: false,
 		},
 		{
 		    xtype: 'displayfield',
 		    value: gettext('Additional monitors are recommended. They can be created at any time in the Monitor tab.'),
-		    userCls: 'pmx-hint'
-		}
+		    userCls: 'pmx-hint',
+		},
 	    ],
 	    advancedColumn1: [
 		{
@@ -417,11 +417,11 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    name: 'size',
 		    fieldLabel: 'Number of replicas',
 		    bind: {
-			value: '{replicas}'
+			value: '{replicas}',
 		    },
 		    maxValue: 7,
 		    minValue: 2,
-		    emptyText: '3'
+		    emptyText: '3',
 		},
 		{
 		    xtype: 'numberfield',
@@ -429,7 +429,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    fieldLabel: 'Minimum replicas',
 		    bind: {
 			maxValue: '{replicas}',
-			value: '{minreplicas}'
+			value: '{minreplicas}',
 		    },
 		    minValue: 2,
 		    maxValue: 3,
@@ -442,8 +442,8 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			this.toggleSpinners();
 			this.validate();
 		    },
-		    emptyText: '2'
-		}
+		    emptyText: '2',
+		},
 	    ],
 	    onGetValues: function(values) {
 		['cluster-network', 'size', 'min_size'].forEach(function(field) {
@@ -478,18 +478,18 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 				},
 				failure: function(response, opts) {
 				    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-				}
+				},
 			    });
 			},
 			failure: function(response, opts) {
 			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-			}
+			},
 		    });
 
 		} else {
 		    me.up('pveCephInstallWizard').navigateNext();
 		}
-	    }
+	    },
 	},
 	{
 	    title: gettext('Success'),
@@ -524,12 +524,12 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    if (this.onlineHelp) {
 			Ext.GlobalEvents.fireEvent('proxmoxHideHelp', this.onlineHelp);
 		    }
-		}
+		},
 	    },
 	    onSubmit: function() {
 		var wizard = this.up('pveCephInstallWizard');
 		wizard.close();
-	    }
-	}
-    ]
+	    },
+	},
+    ],
 });

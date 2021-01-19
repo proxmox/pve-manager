@@ -8,7 +8,7 @@ Ext.define('PVE.widget.RunningChart', {
 
     layout: {
 	type: 'hbox',
-	align: 'center'
+	align: 'center',
     },
     items: [
 	{
@@ -16,9 +16,9 @@ Ext.define('PVE.widget.RunningChart', {
 	    xtype: 'box',
 	    itemId: 'title',
 	    data: {
-		title: ''
+		title: '',
 	    },
-	    tpl: '<h3>{title}:</h3>'
+	    tpl: '<h3>{title}:</h3>',
 	},
 	{
 	    flex: 1,
@@ -31,13 +31,13 @@ Ext.define('PVE.widget.RunningChart', {
 		    type: 'numeric',
 		    position: 'left',
 		    hidden: true,
-		    minimum: 0
+		    minimum: 0,
 		},
 		{
 		    type: 'numeric',
 		    position: 'bottom',
-		    hidden: true
-		}
+		    hidden: true,
+		},
 	    ],
 
 	    store: {
@@ -51,7 +51,7 @@ Ext.define('PVE.widget.RunningChart', {
 		text: '0 B/s',
 		textAlign: 'end',
 		textBaseline: 'middle',
-		fontSize: 14
+		fontSize: 14,
 	    }],
 
 	    series: [{
@@ -69,28 +69,28 @@ Ext.define('PVE.widget.RunningChart', {
 			let value = me.up().renderer(record.data.val);
 			tooltip.setHtml(
 			    me.up().title + ': ' + value + '<br />' +
-			    Ext.Date.format(date, 'H:i:s')
+			    Ext.Date.format(date, 'H:i:s'),
 			);
-		    }
+		    },
 		},
 		style: {
 		    lineWidth: 1.5,
-		    opacity: 0.60
+		    opacity: 0.60,
 		},
 		marker: {
 		    opacity: 0,
 		    scaling: 0.01,
 		    fx: {
 			duration: 200,
-			easing: 'easeOut'
-		    }
+			easing: 'easeOut',
+		    },
 		},
 		highlightCfg: {
 		    opacity: 1,
-		    scaling: 1.5
-		}
-	    }]
-	}
+		    scaling: 1.5,
+		},
+	    }],
+	},
     ],
 
     // the renderer for the tooltip and last value, default just the value
@@ -107,7 +107,7 @@ Ext.define('PVE.widget.RunningChart', {
 
 	me.store.add({
 	    time: time || now,
-	    val: value || 0
+	    val: value || 0,
 	});
 
 	// delete all old records when we have 20 times more datapoints
@@ -130,7 +130,7 @@ Ext.define('PVE.widget.RunningChart', {
 	me.valuesprite.setText(panel.renderer(value || 0).toString());
 	me.valuesprite.setAttributes({
 	    x: me.getWidth() - 15,
-	    y: me.getHeight()/2
+	    y: me.getHeight()/2,
 	}, true);
 	me.redraw();
     },
@@ -154,8 +154,8 @@ Ext.define('PVE.widget.RunningChart', {
 	if (me.color) {
 	    me.chart.series[0].setStyle({
 		fill: me.color,
-		stroke: me.color
+		stroke: me.color,
 	    });
 	}
-    }
+    },
 });

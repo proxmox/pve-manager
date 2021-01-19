@@ -24,8 +24,8 @@ Ext.define('PVE.ha.GroupInputPanel', {
 	    listeners: {
 		selectionchange: function(model, selected) {
 		    update_nodefield(selected);
-		}
-	    }
+		},
+	    },
 	});
 
 	// use already cached data to avoid an API call
@@ -36,14 +36,14 @@ Ext.define('PVE.ha.GroupInputPanel', {
 	    data: data,
 	    proxy: {
 		type: 'memory',
-		reader: {type: 'json'}
+		reader: {type: 'json'},
 	    },
 	    sorters: [
 		{
 		    property : 'node',
-		    direction: 'ASC'
-		}
-	    ]
+		    direction: 'ASC',
+		},
+	    ],
 	});
 
 	var nodegrid = Ext.createWidget('grid', {
@@ -55,21 +55,21 @@ Ext.define('PVE.ha.GroupInputPanel', {
 		{
 		    header: gettext('Node'),
 		    flex: 1,
-		    dataIndex: 'node'
+		    dataIndex: 'node',
 		},
 		{
 		    header: gettext('Memory usage') + " %",
 		    renderer: PVE.Utils.render_mem_usage_percent,
 		    sortable: true,
 		    width: 150,
-		    dataIndex: 'mem'
+		    dataIndex: 'mem',
 		},
 		{
 		    header: gettext('CPU usage'),
 		    renderer: PVE.Utils.render_cpu,
 		    sortable: true,
 		    width: 150,
-		    dataIndex: 'cpu'
+		    dataIndex: 'cpu',
 		},
 		{
 		    header: 'Priority',
@@ -87,11 +87,11 @@ Ext.define('PVE.ha.GroupInputPanel', {
 				var record = numberfield.getWidgetRecord();
 				record.set('priority', value);
 				update_nodefield(sm.getSelection());
-			    }
-			}
-		    }
-		}
-	    ]
+			    },
+			},
+		    },
+		},
+	    ],
 	});
 
 	var nodefield = Ext.create('Ext.form.field.Hidden', {
@@ -100,12 +100,12 @@ Ext.define('PVE.ha.GroupInputPanel', {
 	    listeners: {
 		change: function (nodefield, value) {
 		    update_node_selection(value);
-		}
+		},
 	    },
 	    isValid: function () {
 		var value = nodefield.getValue();
 		return (value && 0 !== value.length);
-	    }
+	    },
 	});
 
 	update_node_selection = function(string) {
@@ -157,9 +157,9 @@ Ext.define('PVE.ha.GroupInputPanel', {
 		value: me.groupId || '',
 		fieldLabel: 'ID',
 		vtype: 'StorageId',
-		allowBlank: false
+		allowBlank: false,
 	    },
-	    nodefield
+	    nodefield,
 	];
 
 	me.column2 = [
@@ -167,27 +167,27 @@ Ext.define('PVE.ha.GroupInputPanel', {
 		xtype: 'proxmoxcheckbox',
 		name: 'restricted',
 		uncheckedValue: 0,
-		fieldLabel: 'restricted'
+		fieldLabel: 'restricted',
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		name: 'nofailback',
 		uncheckedValue: 0,
-		fieldLabel: 'nofailback'
-	    }
+		fieldLabel: 'nofailback',
+	    },
 	];
 
 	me.columnB = [
 	    {
 		xtype: 'textfield',
 		name: 'comment',
-		fieldLabel: gettext('Comment')
+		fieldLabel: gettext('Comment'),
 	    },
-	    nodegrid
+	    nodegrid,
 	];
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.ha.GroupEdit', {
@@ -210,12 +210,12 @@ Ext.define('PVE.ha.GroupEdit', {
 
 	var ipanel = Ext.create('PVE.ha.GroupInputPanel', {
 	    isCreate: me.isCreate,
-	    groupId: me.groupId
+	    groupId: me.groupId,
 	});
 
 	Ext.apply(me, {
             subject: gettext('HA Group'),
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -226,8 +226,8 @@ Ext.define('PVE.ha.GroupEdit', {
 		    var values = response.result.data;
 
 		    ipanel.setValues(values);
-		}
+		},
 	    });
 	}
-    }
+    },
 });

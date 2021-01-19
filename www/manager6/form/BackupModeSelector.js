@@ -4,6 +4,6 @@ Ext.define('PVE.form.BackupModeSelector', {
     comboItems: [
                 ['snapshot', gettext('Snapshot')],
                 ['suspend', gettext('Suspend')],
-                ['stop', gettext('Stop')]
-    ]
+                ['stop', gettext('Stop')],
+    ],
 });

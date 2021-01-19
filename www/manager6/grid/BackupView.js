@@ -43,7 +43,7 @@ Ext.define('PVE.grid.BackupView', {
 	    property: 'volid',
 	    value: '',
 	    anyMatch: true,
-	    caseSensitive: false
+	    caseSensitive: false,
 	};
 
 	var vmidFilter = {
@@ -56,13 +56,13 @@ Ext.define('PVE.grid.BackupView', {
 	    model: 'pve-storage-content',
 	    sorters: {
 		property: 'volid',
-		order: 'DESC'
+		order: 'DESC',
 	    },
 	    filters: [
 	        vmtypeFilter,
 		searchFilter,
 		vmidFilter,
-		]
+		],
 	});
 
 	let updateFilter = function() {
@@ -85,7 +85,7 @@ Ext.define('PVE.grid.BackupView', {
 
 	    me.store.setProxy({
 		type: 'proxmox',
-		url: url
+		url: url,
 	    });
 
 	    reload();
@@ -110,8 +110,8 @@ Ext.define('PVE.grid.BackupView', {
 			});
 		    }
 		    setStorage(value);
-		}
-	    }
+		},
+	    },
 	});
 
 	var storagefilter = Ext.create('Ext.form.field.Text', {
@@ -126,8 +126,8 @@ Ext.define('PVE.grid.BackupView', {
 		    me.store.clearFilter(true);
 		    searchFilter.value = field.getValue();
 		    updateFilter();
-		}
-	    }
+		},
+	    },
 	});
 
 	var vmidfilterCB = Ext.create('Ext.form.field.Checkbox', {
@@ -155,11 +155,11 @@ Ext.define('PVE.grid.BackupView', {
 		    listeners : {
 			close: function() {
 			    reload();
-			}
-		    }
+			},
+		    },
 		});
 		win.show();
-	    }
+	    },
 	});
 
 	var restore_btn = Ext.create('Proxmox.button.Button', {
@@ -175,11 +175,11 @@ Ext.define('PVE.grid.BackupView', {
 		    vmid: vmid,
 		    volid: rec.data.volid,
 		    volidText: PVE.Utils.render_storage_content(rec.data.volid, {}, rec),
-		    vmtype: vmtype
+		    vmtype: vmtype,
 		});
 		win.show();
 		win.on('destroy', reload);
-	    }
+	    },
 	});
 
 	var delete_btn = Ext.create('Proxmox.button.StdRemoveButton', {
@@ -199,7 +199,7 @@ Ext.define('PVE.grid.BackupView', {
 	    },
 	    callback: function() {
 		reload();
-	    }
+	    },
 	});
 
 	var config_btn = Ext.create('Proxmox.button.Button', {
@@ -217,11 +217,11 @@ Ext.define('PVE.grid.BackupView', {
 
 		var win = Ext.create('PVE.window.BackupConfig', {
 		    volume: rec.data.volid,
-		    pveSelNode: me.pveSelNode
+		    pveSelNode: me.pveSelNode,
 		});
 
 		win.show();
-	    }
+	    },
 	});
 
 	Ext.apply(me, {
@@ -278,7 +278,7 @@ Ext.define('PVE.grid.BackupView', {
 		    storagesel,
 		    '-',
 		    vmidfilterCB,
-		    storagefilter
+		    storagefilter,
 		],
 	    },
 	    columns: [
@@ -287,7 +287,7 @@ Ext.define('PVE.grid.BackupView', {
 		    flex: 2,
 		    sortable: true,
 		    renderer: PVE.Utils.render_storage_content,
-		    dataIndex: 'volid'
+		    dataIndex: 'volid',
 		},
 		{
 		    header: gettext('Notes'),
@@ -298,18 +298,18 @@ Ext.define('PVE.grid.BackupView', {
 		{
 		    header: gettext('Date'),
 		    width: 150,
-		    dataIndex: 'vdate'
+		    dataIndex: 'vdate',
 		},
 		{
 		    header: gettext('Format'),
 		    width: 100,
-		    dataIndex: 'format'
+		    dataIndex: 'format',
 		},
 		{
 		    header: gettext('Size'),
 		    width: 100,
 		    renderer: Proxmox.Utils.format_size,
-		    dataIndex: 'size'
+		    dataIndex: 'size',
 		},
 		{
 		    header: gettext('VMID'),
@@ -325,10 +325,10 @@ Ext.define('PVE.grid.BackupView', {
 		    header: gettext('Verify State'),
 		    dataIndex: 'verification',
 		    renderer: PVE.Utils.render_backup_verification,
-		}
-	    ]
+		},
+	    ],
 	});
 
 	me.callParent();
-    }
+    },
 });

@@ -21,13 +21,13 @@ Ext.define('PVE.node.CephCrushMap', {
 			me.mon(win, 'cephInstallWindowClosed', function(){
 			    me.load();
 			});
-		    }
+		    },
 		);
 	    },
 	    success: function(response, opts) {
 		var data = response.result.data;
 		me.update(Ext.htmlEncode(data));
-	    }
+	    },
 	});
     },
 
@@ -45,12 +45,12 @@ Ext.define('PVE.node.CephCrushMap', {
 	    listeners: {
 		activate: function() {
 		    me.load();
-		}
-	    }
+		},
+	    },
 	});
 
 	me.callParent();
 
 	me.load();
-    }
+    },
 });

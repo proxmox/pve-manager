@@ -6,7 +6,7 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
     queryMode: 'local',
     editable: false,
     listConfig: {
-	loadingText: gettext('Scanning...')
+	loadingText: gettext('Scanning...'),
     },
     initComponent : function() {
 	var me = this;
@@ -20,18 +20,18 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
 	    fields: [ 'pool', 'size', 'free' ],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/zfs'
-	    }
+		url: '/api2/json/nodes/' + me.nodename + '/scan/zfs',
+	    },
 	});
 
 	store.sort('pool', 'ASC');
 
 	Ext.apply(me, {
-	    store: store
+	    store: store,
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.storage.ZFSPoolInputPanel', {
@@ -48,14 +48,14 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	    me.column1.push(Ext.create('PVE.storage.ZFSPoolSelector', {
 		name: 'pool',
 		fieldLabel: gettext('ZFS Pool'),
-		allowBlank: false
+		allowBlank: false,
 	    }));
 	} else {
 	    me.column1.push(Ext.createWidget('displayfield', {
 		name: 'pool',
 		value: '',
 		fieldLabel: gettext('ZFS Pool'),
-		allowBlank: false
+		allowBlank: false,
 	    }));
 	}
 
@@ -68,7 +68,7 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	     name: 'content',
 	     value: ['images', 'rootdir'],
 	     multiSelect: true,
-	     allowBlank: false
+	     allowBlank: false,
 	});
 	me.column2 = [
 	    {
@@ -76,17 +76,17 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 		name: 'sparse',
 		checked: false,
 		uncheckedValue: 0,
-		fieldLabel: gettext('Thin provision')
+		fieldLabel: gettext('Thin provision'),
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'blocksize',
 		emptyText: '8k',
 		fieldLabel: gettext('Block Size'),
-		allowBlank: true
-	    }
+		allowBlank: true,
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

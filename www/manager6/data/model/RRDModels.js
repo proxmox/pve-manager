@@ -6,14 +6,14 @@ Ext.define('pve-rrd-node', {
 	    // percentage
 	    convert: function(value) {
 		return value*100;
-	    }
+	    },
 	},
 	{
 	    name:'iowait',
 	    // percentage
 	    convert: function(value) {
 		return value*100;
-	    }
+	    },
 	},
 	'loadavg',
 	'maxcpu',
@@ -25,8 +25,8 @@ Ext.define('pve-rrd-node', {
 	'rootused',
 	'swaptotal',
 	'swapused',
-	{ type: 'date', dateFormat: 'timestamp', name: 'time' }
-    ]
+	{ type: 'date', dateFormat: 'timestamp', name: 'time' },
+    ],
 });
 
 Ext.define('pve-rrd-guest', {
@@ -37,7 +37,7 @@ Ext.define('pve-rrd-guest', {
 	    // percentage
 	    convert: function(value) {
 		return value*100;
-	    }
+	    },
 	},
 	'maxcpu',
 	'netin',
@@ -48,8 +48,8 @@ Ext.define('pve-rrd-guest', {
 	'maxdisk',
 	'diskread',
 	'diskwrite',
-	{ type: 'date', dateFormat: 'timestamp', name: 'time' }
-    ]
+	{ type: 'date', dateFormat: 'timestamp', name: 'time' },
+    ],
 });
 
 Ext.define('pve-rrd-storage', {
@@ -57,6 +57,6 @@ Ext.define('pve-rrd-storage', {
     fields: [
 	'used',
 	'total',
-	{ type: 'date', dateFormat: 'timestamp', name: 'time' }
-    ]
+	{ type: 'date', dateFormat: 'timestamp', name: 'time' },
+    ],
 });

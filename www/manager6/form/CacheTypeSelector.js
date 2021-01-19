@@ -7,6 +7,6 @@ Ext.define('PVE.form.CacheTypeSelector', {
 	['writethrough', 'Write through'],
 	['writeback', 'Write back'],
 	['unsafe', 'Write back (' + gettext('unsafe') + ')'],
-	['none', gettext('No cache')]
-    ]
+	['none', gettext('No cache')],
+    ],
 });

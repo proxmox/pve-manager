@@ -25,7 +25,7 @@ Ext.define('PVE.sdn.zones.SimpleInputPanel', {
             maxLength: 10,
             value: me.zone || '',
             fieldLabel: 'ID',
-            allowBlank: false
+            allowBlank: false,
           },
           {
             xtype: 'proxmoxintegerfield',
@@ -35,7 +35,7 @@ Ext.define('PVE.sdn.zones.SimpleInputPanel', {
             fieldLabel: 'MTU',
             skipEmptyText: true,
             allowBlank: true,
-            emptyText: 'auto'
+            emptyText: 'auto',
           },
           {
             xtype: 'pveNodeSelector',
@@ -43,11 +43,11 @@ Ext.define('PVE.sdn.zones.SimpleInputPanel', {
             fieldLabel: gettext('Nodes'),
             emptyText: gettext('All') + ' (' + gettext('No restrictions') +')',
             multiSelect: true,
-            autoSelect: false
+            autoSelect: false,
           },
 
 	];
 
 	me.callParent();
-    }
+    },
 });

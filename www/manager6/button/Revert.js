@@ -28,7 +28,7 @@ Ext.define('PVE.button.PendingRevert', {
 	    selModel: view.getSelectionModel(),
 	    method: 'PUT',
 	    params: {
-		'revert': keys.join(',')
+		'revert': keys.join(','),
 	    },
 	    callback: () => view.reload(),
 	    failure: (response) => Ext.Msg.alert('Error', response.htmlStatus),

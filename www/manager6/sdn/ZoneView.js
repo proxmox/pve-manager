@@ -19,8 +19,8 @@ Ext.define('PVE.sdn.ZoneView', {
 	    zone: sid,
 	    autoShow: true,
 	    listeners: {
-		destroy: this.reloadStore
-	    }
+		destroy: this.reloadStore,
+	    },
 	});
     },
 
@@ -31,11 +31,11 @@ Ext.define('PVE.sdn.ZoneView', {
 	    model: 'pve-sdn-zone',
 	    proxy: {
                 type: 'proxmox',
-		url: "/api2/json/cluster/sdn/zones"
+		url: "/api2/json/cluster/sdn/zones",
 	    },
 	    sorters: {
 		property: 'zone',
-		order: 'DESC'
+		order: 'DESC',
 	    },
 	});
 
@@ -60,13 +60,13 @@ Ext.define('PVE.sdn.ZoneView', {
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	let remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/cluster/sdn/zones/',
-	    callback: reload
+	    callback: reload,
 	});
 
 	// else we cannot dynamically generate the add menu handlers
@@ -83,7 +83,7 @@ Ext.define('PVE.sdn.ZoneView', {
 	    addMenuItems.push({
 		text:  PVE.Utils.format_sdnzone_type(type),
 		iconCls: 'fa fa-fw fa-' + zone.faIcon,
-		handler: addHandleGenerator(type)
+		handler: addHandleGenerator(type),
 	    });
 	}
 
@@ -92,14 +92,14 @@ Ext.define('PVE.sdn.ZoneView', {
 	    reloadStore: reload,
 	    selModel: sm,
 	    viewConfig: {
-		trackOver: false
+		trackOver: false,
 	    },
 	    tbar: [
 		{
 		    text: gettext('Add'),
 		    menu: new Ext.menu.Menu({
-			items: addMenuItems
-		    })
+			items: addMenuItems,
+		    }),
 		},
 		remove_btn,
 		edit_btn,
@@ -108,13 +108,13 @@ Ext.define('PVE.sdn.ZoneView', {
 		{
 		    header: 'ID',
 		    flex: 2,
-		    dataIndex: 'zone'
+		    dataIndex: 'zone',
 		},
 		{
 		    header: gettext('Type'),
 		    flex: 1,
 		    dataIndex: 'type',
-		    renderer: PVE.Utils.format_sdnzone_type
+		    renderer: PVE.Utils.format_sdnzone_type,
 		},
 		{
 		    header: 'MTU',
@@ -129,10 +129,10 @@ Ext.define('PVE.sdn.ZoneView', {
 	    ],
 	    listeners: {
 		activate: reload,
-		itemdblclick: run_editor
-	    }
+		itemdblclick: run_editor,
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });

@@ -7,19 +7,19 @@ Ext.define('PVE.qemu.SystemInputPanel', {
     viewModel: {
 	data: {
 	    efi: false,
-	    addefi: true
+	    addefi: true,
 	},
 
 	formulas: {
 	    efidisk: function(get) {
 		return get('efi') && get('addefi');
-	    }
-	}
+	    },
+	},
     },
 
     onGetValues: function(values) {
-	if (values.vga && values.vga.substr(0,6) === 'serial') {
-	    values['serial' + values.vga.substr(6,1)] = 'socket';
+	if (values.vga && values.vga.substr(0, 6) === 'serial') {
+	    values['serial' + values.vga.substr(6, 1)] = 'socket';
 	}
 
 	var efidrive = {};
@@ -63,12 +63,12 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 
 	control: {
 	    'pveScsiHwSelector': {
-		change: 'scsihwChange'
+		change: 'scsihwChange',
 	    },
 	    'pveQemuBiosSelector': {
-		change: 'biosChange'
-	    }
-	}
+		change: 'biosChange',
+	    },
+	},
     },
 
     column1: [
@@ -78,7 +78,7 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    deleteEmpty: false,
 	    fieldLabel: gettext('Graphic card'),
 	    name: 'vga',
-	    comboItems: PVE.Utils.kvm_vga_driver_array()
+	    comboItems: PVE.Utils.kvm_vga_driver_array(),
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
@@ -86,8 +86,8 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    uncheckedValue: 0,
 	    defaultValue: 0,
 	    deleteDefaultValue: true,
-	    fieldLabel: gettext('Qemu Agent')
-	}
+	    fieldLabel: gettext('Qemu Agent'),
+	},
     ],
 
     column2: [
@@ -96,10 +96,10 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    name: 'scsihw',
 	    value: '__default__',
 	    bind: {
-		value: '{current.scsihw}'
+		value: '{current.scsihw}',
 	    },
-	    fieldLabel: gettext('SCSI Controller')
-	}
+	    fieldLabel: gettext('SCSI Controller'),
+	},
     ],
 
     advancedColumn1: [
@@ -107,19 +107,19 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    xtype: 'pveQemuBiosSelector',
 	    name: 'bios',
 	    value: '__default__',
-	    fieldLabel: 'BIOS'
+	    fieldLabel: 'BIOS',
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
 	    bind: {
 		value: '{addefi}',
 		hidden: '{!efi}',
-		disabled: '{!efi}'
+		disabled: '{!efi}',
 	    },
 	    hidden: true,
 	    submitValue: false,
 	    disabled: true,
-	    fieldLabel: gettext('Add EFI Disk')
+	    fieldLabel: gettext('Add EFI Disk'),
 	},
 	{
 	    xtype: 'pveDiskStorageSelector',
@@ -128,13 +128,13 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    bind: {
 		nodename: '{nodename}',
 		hidden: '{!efi}',
-		disabled: '{!efidisk}'
+		disabled: '{!efidisk}',
 	    },
 	    autoSelect: false,
 	    disabled: true,
 	    hidden: true,
-	    hideSize: true
-	}
+	    hideSize: true,
+	},
     ],
 
     advancedColumn2: [
@@ -145,9 +145,9 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    fieldLabel: gettext('Machine'),
 	    comboItems: [
 		['__default__', PVE.Utils.render_qemu_machine('')],
-		['q35', 'q35']
-	    ]
-	}
-    ]
+		['q35', 'q35'],
+	    ],
+	},
+    ],
 
 });

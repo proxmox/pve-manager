@@ -15,8 +15,8 @@ Ext.define('PVE.dc.Tasks', {
 	    model: 'proxmox-tasks',
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/cluster/tasks'
-	    }
+		url: '/api2/json/cluster/tasks',
+	    },
 	});
 
 	var store = Ext.create('Proxmox.data.DiffStore', {
@@ -26,13 +26,13 @@ Ext.define('PVE.dc.Tasks', {
 	    sorters: [
 		{
 		    property : 'pid',
-		    direction: 'DESC'
+		    direction: 'DESC',
 		},
 		{
 		    property : 'starttime',
-		    direction: 'DESC'
-		}
-	    ]
+		    direction: 'DESC',
+		},
+	    ],
 
 	});
 
@@ -64,7 +64,7 @@ Ext.define('PVE.dc.Tasks', {
 		    if (status && status != 'OK') {
 			return "proxmox-invalid-row";
 		    }
-		}
+		},
 	    },
 	    sortableColumns: false,
 	    columns: [
@@ -74,7 +74,7 @@ Ext.define('PVE.dc.Tasks', {
 		    width: 150,
 		    renderer: function(value) {
 			return Ext.Date.format(value, "M d H:i:s");
-		    }
+		    },
 		},
 		{
 		    header: gettext("End Time"),
@@ -92,24 +92,24 @@ Ext.define('PVE.dc.Tasks', {
 			    return "";
 			}
 			return Ext.Date.format(value, "M d H:i:s");
-		    }
+		    },
 		},
 		{
 		    header: gettext("Node"),
 		    dataIndex: 'node',
-		    width: 100
+		    width: 100,
 		},
 		{
 		    header: gettext("User name"),
 		    dataIndex: 'user',
 		    renderer: Ext.String.htmlEncode,
-		    width: 150
+		    width: 150,
 		},
 		{
 		    header: gettext("Description"),
 		    dataIndex: 'upid',
 		    flex: 1,
-		    renderer: Proxmox.Utils.render_upid
+		    renderer: Proxmox.Utils.render_upid,
 		},
 		{
 		    header: gettext("Status"),
@@ -127,16 +127,16 @@ Ext.define('PVE.dc.Tasks', {
 			}
 			// metaData.attr = 'style="color:red;"';
 			return Proxmox.Utils.errorText + ': ' + value;
-		    }
-		}
+		    },
+		},
 	    ],
 	    listeners: {
 		itemdblclick: run_task_viewer,
 		show: () => taskstore.startUpdate(),
 		destroy: () => taskstore.stopUpdate(),
-	    }
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });

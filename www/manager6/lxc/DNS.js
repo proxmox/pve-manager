@@ -36,7 +36,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 		skipEmptyText: true,
 		fieldLabel: gettext('DNS domain'),
 		emptyText: gettext('use host settings'),
-		allowBlank: true
+		allowBlank: true,
 	    },
 	    {
 		xtype: 'proxmoxtextfield',
@@ -45,8 +45,8 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 		allowBlank: true,
 		emptyText: gettext('use host settings'),
 		name: 'nameserver',
-		itemId: 'nameserver'
-	    }
+		itemId: 'nameserver',
+	    },
 	];
 
 	if (me.insideWizard) {
@@ -56,7 +56,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 	}
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.lxc.DNSEdit', {
@@ -69,7 +69,7 @@ Ext.define('PVE.lxc.DNSEdit', {
 
 	Ext.apply(me, {
 	    subject: gettext('Resources'),
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -85,10 +85,10 @@ Ext.define('PVE.lxc.DNSEdit', {
 		    }
 
 		    ipanel.setValues(values);
-		}
+		},
 	    });
 	}
-    }
+    },
 });
 
 Ext.define('PVE.lxc.DNS', {
@@ -129,7 +129,7 @@ Ext.define('PVE.lxc.DNS', {
 			    name: 'hostname',
 			    vtype: 'DnsName',
 			    allowBlank: true,
-			    emptyText: 'CT' + vmid.toString()
+			    emptyText: 'CT' + vmid.toString(),
 			},
 			onGetValues: function(values) {
 			    var params = values;
@@ -139,9 +139,9 @@ Ext.define('PVE.lxc.DNS', {
 				params = { hostname: 'CT'+vmid.toString()};
 			    }
 			    return params;
-			}
-		    }
-		} : undefined
+			},
+		    },
+		} : undefined,
 	    },
 	    searchdomain: {
 		header: gettext('DNS domain'),
@@ -149,7 +149,7 @@ Ext.define('PVE.lxc.DNS', {
 		editor: caps.vms['VM.Config.Network'] ? 'PVE.lxc.DNSEdit' : undefined,
 		renderer: function(value) {
 		    return value || gettext('use host settings');
-		}
+		},
 	    },
 	    nameserver: {
 		header: gettext('DNS server'),
@@ -157,8 +157,8 @@ Ext.define('PVE.lxc.DNS', {
 		editor: caps.vms['VM.Config.Network'] ? 'PVE.lxc.DNSEdit' : undefined,
 		renderer: function(value) {
 		    return value || gettext('use host settings');
-		}
-	    }
+		},
+	    },
 	};
 
 	var baseurl = 'nodes/' + nodename + '/lxc/' + vmid + '/config';
@@ -185,13 +185,13 @@ Ext.define('PVE.lxc.DNS', {
 		win = Ext.create(rowdef.editor, {
 		    pveSelNode: me.pveSelNode,
 		    confid: rec.data.key,
-		    url: '/api2/extjs/nodes/' + nodename + '/lxc/' + vmid + '/config'
+		    url: '/api2/extjs/nodes/' + nodename + '/lxc/' + vmid + '/config',
 		});
 	    } else {
 		var config = Ext.apply({
 		    pveSelNode: me.pveSelNode,
 		    confid: rec.data.key,
-		    url: '/api2/extjs/nodes/' + nodename + '/lxc/' + vmid + '/config'
+		    url: '/api2/extjs/nodes/' + nodename + '/lxc/' + vmid + '/config',
 		}, rowdef.editor);
 		win = Ext.createWidget(rowdef.editor.xtype, config);
 		win.load();
@@ -209,7 +209,7 @@ Ext.define('PVE.lxc.DNS', {
 		var rowdef = rows[rec.data.key];
 		return !!rowdef.editor;
 	    },
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	var revert_btn = new PVE.button.PendingRevert();
@@ -240,13 +240,13 @@ Ext.define('PVE.lxc.DNS', {
 	    tbar: [ edit_btn, revert_btn ],
 	    rows: rows,
 	    editorConfig: {
-		url: "/api2/extjs/" + baseurl
+		url: "/api2/extjs/" + baseurl,
 	    },
 	    listeners: {
 		itemdblclick: run_editor,
 		selectionchange: set_button_status,
-		activate: reload
-	    }
+		activate: reload,
+	    },
 	});
 
 	me.callParent();
@@ -258,5 +258,5 @@ Ext.define('PVE.lxc.DNS', {
 	me.mon(me.getStore(), 'datachanged', function() {
 	    set_button_status();
 	});
-    }
+    },
 });

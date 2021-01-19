@@ -4,15 +4,15 @@ Ext.define('PVE.ceph.Services', {
 
     layout: {
 	type: 'hbox',
-	align: 'stretch'
+	align: 'stretch',
     },
 
     bodyPadding: '0 5 20',
     defaults: {
 	xtype: 'box',
 	style: {
-	    'text-align':'center'
-	}
+	    'text-align':'center',
+	},
     },
 
     items: [
@@ -20,20 +20,20 @@ Ext.define('PVE.ceph.Services', {
 	    flex: 1,
 	    xtype: 'pveCephServiceList',
 	    itemId: 'mons',
-	    title: gettext('Monitors')
+	    title: gettext('Monitors'),
 	},
 	{
 	    flex: 1,
 	    xtype: 'pveCephServiceList',
 	    itemId: 'mgrs',
-	    title: gettext('Managers')
+	    title: gettext('Managers'),
 	},
 	{
 	    flex: 1,
 	    xtype: 'pveCephServiceList',
 	    itemId: 'mdss',
-	    title: gettext('Meta Data Servers')
-	}
+	    title: gettext('Meta Data Servers'),
+	},
     ],
 
     updateAll: function(metadata, status) {
@@ -45,7 +45,7 @@ Ext.define('PVE.ceph.Services', {
 	    'HEALTH_WARN': 2,
 	    'HEALTH_UPGRADE': 3,
 	    'HEALTH_OLD': 4,
-	    'HEALTH_OK': 5
+	    'HEALTH_OK': 5,
 	};
 	var healthmap = [
 	    'HEALTH_UNKNOWN',
@@ -53,7 +53,7 @@ Ext.define('PVE.ceph.Services', {
 	    'HEALTH_WARN',
 	    'HEALTH_UPGRADE',
 	    'HEALTH_OLD',
-	    'HEALTH_OK'
+	    'HEALTH_OK',
 	];
 	var reduceFn = function(first, second) {
 	    return first + '\n' + second.message;
@@ -87,14 +87,14 @@ Ext.define('PVE.ceph.Services', {
 			if (!monmessages[monid]) {
 			    monmessages[monid] = {
 				worstSeverity: healthstates.HEALTH_OK,
-				messages: []
+				messages: [],
 			    };
 			}
 
 
 			monmessages[monid].messages.push(
 							 PVE.Utils.get_ceph_icon_html(value.severity, true) +
-							 Ext.Array.reduce(value.detail, reduceFn, '')
+							 Ext.Array.reduce(value.detail, reduceFn, ''),
 			);
 			if (healthstates[value.severity] < monmessages[monid].worstSeverity) {
 			    monmessages[monid].worstSeverity = healthstates[value.severity];
@@ -153,7 +153,7 @@ Ext.define('PVE.ceph.Services', {
 		}
 
 		return mds;
-	    }
+	    },
 	};
 
 	for (let type of ['mon', 'mgr', 'mds']) {
@@ -174,12 +174,12 @@ Ext.define('PVE.ceph.Services', {
 		    host: host,
 		    version: PVE.Utils.parse_ceph_version(metadata[type][id]),
 		    service: metadata[type][id].service,
-		    addr: metadata[type][id].addr || metadata[type][id].addrs || Proxmox.Utils.unknownText
+		    addr: metadata[type][id].addr || metadata[type][id].addrs || Proxmox.Utils.unknownText,
 		};
 
 		result.statuses = [
 		    gettext('Host') + ": " + result.host,
-		    gettext('Address') + ": " + result.addr
+		    gettext('Address') + ": " + result.addr,
 		];
 
 		if (checks[type]) {
@@ -189,7 +189,7 @@ Ext.define('PVE.ceph.Services', {
 		if (result.service && !result.version) {
 		    result.messages.push(
 			PVE.Utils.get_ceph_icon_html('HEALTH_UNKNOWN', true) +
-			gettext('Stopped')
+			gettext('Stopped'),
 		    );
 		    result.health = healthstates.HEALTH_UNKNOWN;
 		}
@@ -208,7 +208,7 @@ Ext.define('PVE.ceph.Services', {
 			    }
 			    result.messages.push(
 				PVE.Utils.get_ceph_icon_html('HEALTH_OLD', true) +
-				gettext('A newer version was installed but old version still running, please restart')
+				gettext('A newer version was installed but old version still running, please restart'),
 			    );
 			} else {
 			    if (result.health > healthstates.HEALTH_UPGRADE) {
@@ -216,7 +216,7 @@ Ext.define('PVE.ceph.Services', {
 			    }
 			    result.messages.push(
 				PVE.Utils.get_ceph_icon_html('HEALTH_UPGRADE', true) +
-				gettext('Other cluster members use a newer version of this service, please upgrade and restart')
+				gettext('Other cluster members use a newer version of this service, please upgrade and restart'),
 			    );
 			}
 		    }
@@ -234,7 +234,7 @@ Ext.define('PVE.ceph.Services', {
 	me.getComponent('mons').updateAll(Object.values(me.mon));
 	me.getComponent('mgrs').updateAll(Object.values(me.mgr));
 	me.getComponent('mdss').updateAll(Object.values(me.mds));
-    }
+    },
 });
 
 Ext.define('PVE.ceph.ServiceList', {
@@ -242,23 +242,23 @@ Ext.define('PVE.ceph.ServiceList', {
     xtype: 'pveCephServiceList',
 
     style: {
-	'text-align':'center'
+	'text-align':'center',
     },
     defaults: {
 	xtype: 'box',
 	style: {
-	    'text-align':'center'
-	}
+	    'text-align':'center',
+	},
     },
 
     items: [
 	{
 	    itemId: 'title',
 	    data: {
-		title: ''
+		title: '',
 	    },
-	    tpl: '<h3>{title}</h3>'
-	}
+	    tpl: '<h3>{title}</h3>',
+	},
     ],
 
     updateAll: function(list) {
@@ -279,7 +279,7 @@ Ext.define('PVE.ceph.ServiceList', {
 		// we can add it at the service+1 position (because of the title)
 		service = me.insert(i+1, {
 		    xtype: 'pveCephServiceWidget',
-		    itemId: list[i].id
+		    itemId: list[i].id,
 		});
 		if (!me.ids) {
 		    me.ids = [];
@@ -302,9 +302,9 @@ Ext.define('PVE.ceph.ServiceList', {
 	var me = this;
 	me.callParent();
 	me.getComponent('title').update({
-	    title: me.title
+	    title: me.title,
 	});
-    }
+    },
 });
 
 Ext.define('PVE.ceph.ServiceWidget', {
@@ -316,12 +316,12 @@ Ext.define('PVE.ceph.ServiceWidget', {
 	title: '0',
 	health: 'HEALTH_ERR',
 	text: '',
-	iconCls: PVE.Utils.get_health_icon()
+	iconCls: PVE.Utils.get_health_icon(),
     },
 
     tpl: [
 	'{title}: ',
-	'<i class="fa fa-fw {iconCls}"></i>'
+	'<i class="fa fa-fw {iconCls}"></i>',
     ],
 
     updateService: function(title, text, health) {
@@ -331,7 +331,7 @@ Ext.define('PVE.ceph.ServiceWidget', {
 	    health: health,
 	    text: text,
 	    title: title,
-	    iconCls: PVE.Utils.get_health_icon(PVE.Utils.map_ceph_health[health])
+	    iconCls: PVE.Utils.get_health_icon(PVE.Utils.map_ceph_health[health]),
 	}));
 
 	if (me.tooltip) {
@@ -360,11 +360,11 @@ Ext.define('PVE.ceph.ServiceWidget', {
 			trackMouse: true,
 			dismissDelay: 0,
 			renderTo: Ext.getBody(),
-			html: me.data.text
+			html: me.data.text,
 		    });
 		}
 		me.tooltip.show();
-	    }
+	    },
 	},
 	mouseleave: {
 	    element: 'el',
@@ -374,7 +374,7 @@ Ext.define('PVE.ceph.ServiceWidget', {
 		    me.tooltip.destroy();
 		    delete me.tooltip;
 		}
-	    }
-	}
-    }
+	    },
+	},
+    },
 });

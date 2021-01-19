@@ -26,30 +26,30 @@ Ext.define('PVE.FirewallAliasEdit', {
 		xtype: 'textfield',
 		name: me.isCreate ? 'name' : 'rename',
 		fieldLabel: gettext('Name'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'cidr',
 		fieldLabel: gettext('IP/CIDR'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'comment',
-		fieldLabel: gettext('Comment')
-	    }
+		fieldLabel: gettext('Comment'),
+	    },
 	];
 
 	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	    isCreate: me.isCreate,
-	    items: items
+	    items: items,
 	});
 
 	Ext.apply(me, {
             subject: gettext('Alias'),
 	    isAdd: true,
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -60,17 +60,17 @@ Ext.define('PVE.FirewallAliasEdit', {
 		    var values = response.result.data;
 		    values.rename = values.name;
 		    ipanel.setValues(values);
-		}
+		},
 	    });
 	}
-    }
+    },
 });
 
 Ext.define('pve-fw-aliases', {
     extend: 'Ext.data.Model',
 
     fields: [ 'name', 'cidr', 'comment', 'digest' ],
-    idProperty: 'name'
+    idProperty: 'name',
 });
 
 Ext.define('PVE.FirewallAliases', {
@@ -98,12 +98,12 @@ Ext.define('PVE.FirewallAliases', {
 	    model: 'pve-fw-aliases',
 	    proxy: {
 		type: 'proxmox',
-		url: "/api2/json" + me.base_url
+		url: "/api2/json" + me.base_url,
 	    },
 	    sorters: {
 		property: 'name',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
@@ -129,7 +129,7 @@ Ext.define('PVE.FirewallAliases', {
 
 	    var win = Ext.create('PVE.FirewallAliasEdit', {
 		base_url: me.base_url,
-		alias_name: rec.data.name
+		alias_name: rec.data.name,
 	    });
 
 	    win.show();
@@ -140,24 +140,24 @@ Ext.define('PVE.FirewallAliases', {
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	me.addBtn =  Ext.create('Ext.Button', {
 	    text: gettext('Add'),
 	    handler: function() {
 		var win = Ext.create('PVE.FirewallAliasEdit', {
-		    base_url: me.base_url
+		    base_url: me.base_url,
 		});
 		win.on('destroy', reload);
 		win.show();
-	    }
+	    },
 	});
 
 	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: me.base_url + '/',
-	    callback: reload
+	    callback: reload,
 	});
 
 
@@ -181,14 +181,14 @@ Ext.define('PVE.FirewallAliases', {
 		    dataIndex: 'comment',
 		    renderer: Ext.String.htmlEncode,
 		    flex: 3,
-		}
+		},
 	    ],
 	    listeners: {
-		itemdblclick: run_editor
-	    }
+		itemdblclick: run_editor,
+	    },
 	});
 
 	me.callParent();
 	me.on('activate', reload);
-    }
+    },
 });

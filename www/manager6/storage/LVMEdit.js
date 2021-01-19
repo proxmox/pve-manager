@@ -17,8 +17,8 @@ Ext.define('PVE.storage.VgSelector', {
 	    fields: [ 'vg', 'size', 'free' ],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/lvm'
-	    }
+		url: '/api2/json/nodes/' + me.nodename + '/scan/lvm',
+	    },
 	});
 
 	store.sort('vg', 'ASC');
@@ -26,12 +26,12 @@ Ext.define('PVE.storage.VgSelector', {
 	Ext.apply(me, {
 	    store: store,
 	    listConfig: {
-		loadingText: gettext('Scanning...')
-	    }
+		loadingText: gettext('Scanning...'),
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.storage.BaseStorageSelector', {
@@ -51,8 +51,8 @@ Ext.define('PVE.storage.BaseStorageSelector', {
 	    autoLoad: {
 		addRecords: true,
 		params: {
-		    type: 'iscsi'
-		}
+		    type: 'iscsi',
+		},
 	    },
 	    fields: [ 'storage', 'type', 'content',
 		      {
@@ -63,12 +63,12 @@ Ext.define('PVE.storage.BaseStorageSelector', {
 			      } else {
 				  return me.existingGroupsText;
 			      }
-			  }
+			  },
 		      }],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/storage/'
-	    }
+		url: '/api2/json/storage/',
+	    },
 	});
 
 	store.loadData([{ storage: '' }], true);
@@ -76,11 +76,11 @@ Ext.define('PVE.storage.BaseStorageSelector', {
 	store.sort('storage', 'ASC');
 
 	Ext.apply(me, {
-	    store: store
+	    store: store,
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.storage.LVMInputPanel', {
@@ -99,14 +99,14 @@ Ext.define('PVE.storage.LVMInputPanel', {
 	    disabled: !!me.isCreate,
 	    value: '',
 	    fieldLabel: gettext('Volume group'),
-	    allowBlank: false
+	    allowBlank: false,
 	});
 
 	if (me.isCreate) {
 	    var vgField = Ext.create('PVE.storage.VgSelector', {
 		name: 'vgname',
 		fieldLabel: gettext('Volume group'),
-		allowBlank: false
+		allowBlank: false,
 	    });
 
 	    var baseField = Ext.createWidget('pveFileSelector', {
@@ -116,7 +116,7 @@ Ext.define('PVE.storage.LVMInputPanel', {
 		nodename: 'localhost',
 		storageContent: 'images',
 		fieldLabel: gettext('Base volume'),
-		allowBlank: false
+		allowBlank: false,
 	    });
 
 	    me.column1.push({
@@ -142,8 +142,8 @@ Ext.define('PVE.storage.LVMInputPanel', {
 			    baseField.setDisabled(true);
 			}
 			baseField.setStorage(value);
-		    }
-		}
+		    },
+		},
 	    });
 
 	    me.column1.push(baseField);
@@ -162,7 +162,7 @@ Ext.define('PVE.storage.LVMInputPanel', {
 	    name: 'content',
 	    value: ['images', 'rootdir'],
 	    multiSelect: true,
-	    allowBlank: false
+	    allowBlank: false,
 	});
 
 	me.column2 = [
@@ -170,10 +170,10 @@ Ext.define('PVE.storage.LVMInputPanel', {
 		xtype: 'proxmoxcheckbox',
 		name: 'shared',
 		uncheckedValue: 0,
-		fieldLabel: gettext('Shared')
-	    }
+		fieldLabel: gettext('Shared'),
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

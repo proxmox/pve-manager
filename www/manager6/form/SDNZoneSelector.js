@@ -13,7 +13,7 @@ Ext.define('PVE.form.SDNZoneSelector', {
 	    model: 'pve-sdn-zone',
             sorters: {
                 property: 'zone',
-                order: 'DESC'
+                order: 'DESC',
             },
 	});
 
@@ -26,16 +26,16 @@ Ext.define('PVE.form.SDNZoneSelector', {
 			header: gettext('Zone'),
 			sortable: true,
 			dataIndex: 'zone',
-			flex: 1
+			flex: 1,
 		    },
-		]
-	    }
+		],
+	    },
 	});
 
         me.callParent();
 
 	store.load();
-    }
+    },
 
 }, function() {
 
@@ -44,9 +44,9 @@ Ext.define('PVE.form.SDNZoneSelector', {
 	fields: [ 'zone' ],
 	proxy: {
             type: 'proxmox',
-	    url: "/api2/json/cluster/sdn/zones"
+	    url: "/api2/json/cluster/sdn/zones",
 	},
-	idProperty: 'zone'
+	idProperty: 'zone',
     });
 
 });

@@ -4,7 +4,7 @@ Ext.define('PVE.window.IPInfo', {
     title: gettext('Guest Agent Network Information'),
     height: 300,
     layout: {
-	type: 'fit'
+	type: 'fit',
     },
     modal: true,
     items: [
@@ -16,12 +16,12 @@ Ext.define('PVE.window.IPInfo', {
 		{
 		    dataIndex: 'name',
 		    text: gettext('Name'),
-		    flex: 3
+		    flex: 3,
 		},
 		{
 		    dataIndex: 'hardware-address',
 		    text: gettext('MAC address'),
-		    width: 140
+		    width: 140,
 		},
 		{
 		    dataIndex: 'ip-addresses',
@@ -41,11 +41,11 @@ Ext.define('PVE.window.IPInfo', {
 			    }
 			});
 			return ips.join('<br>');
-		    }
-		}
-	    ]
-	}
-    ]
+		    },
+		},
+	    ],
+	},
+    ],
 });
 
 Ext.define('PVE.qemu.AgentIPView', {
@@ -54,7 +54,7 @@ Ext.define('PVE.qemu.AgentIPView', {
 
     layout: {
 	type: 'hbox',
-	align: 'top'
+	align: 'top',
     },
 
     nics: [],
@@ -62,7 +62,7 @@ Ext.define('PVE.qemu.AgentIPView', {
     items: [
 	{
 	    xtype: 'box',
-	    html: '<i class="fa fa-exchange"></i> IPs'
+	    html: '<i class="fa fa-exchange"></i> IPs',
 	},
 	{
 	    xtype: 'container',
@@ -70,7 +70,7 @@ Ext.define('PVE.qemu.AgentIPView', {
 	    layout: {
 		type: 'vbox',
 		align: 'right',
-		pack: 'end'
+		pack: 'end',
 	    },
 	    items: [
 		{
@@ -78,8 +78,8 @@ Ext.define('PVE.qemu.AgentIPView', {
 		    flex: 1,
 		    itemId: 'ipBox',
 		    style: {
-			'text-align': 'right'
-		    }
+			'text-align': 'right',
+		    },
 		},
 		{
 		    xtype: 'button',
@@ -93,10 +93,10 @@ Ext.define('PVE.qemu.AgentIPView', {
 			win.down('grid').getStore().setData(me.nics);
 			win.show();
 		    },
-		    text: gettext('More')
-		}
-	    ]
-	}
+		    text: gettext('More'),
+		},
+	    ],
+	},
     ],
 
     getDefaultIps: function(nics) {
@@ -194,8 +194,8 @@ Ext.define('PVE.qemu.AgentIPView', {
 	    method: 'POST',
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + nodename + '/qemu/' + vmid + '/agent/network-get-interfaces'
-	    }
+		url: '/api2/json/nodes/' + nodename + '/qemu/' + vmid + '/agent/network-get-interfaces',
+	    },
 	});
 
 	me.callParent();
@@ -218,5 +218,5 @@ Ext.define('PVE.qemu.AgentIPView', {
 
 	// check if the guest agent is there on every statusstore load
 	me.mon(me.rstore, 'load', me.startIPStore, me);
-    }
+    },
 });

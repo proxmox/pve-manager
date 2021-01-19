@@ -69,7 +69,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    fieldLabel: gettext('Bridge'),
 	    nodename: me.nodename,
 	    autoSelect: true,
-	    allowBlank: false
+	    allowBlank: false,
 	});
 
 	me.column1 = [
@@ -77,22 +77,22 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    {
 		xtype: 'pveVlanField',
 		name: 'tag',
-		value: ''
+		value: '',
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Firewall'),
 		name: 'firewall',
-		checked: (me.insideWizard || me.isCreate)
-	    }
+		checked: (me.insideWizard || me.isCreate),
+	    },
 	];
 
 	me.advancedColumn1 = [
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Disconnect'),
-		name: 'disconnect'
-	    }
+		name: 'disconnect',
+	    },
 	];
 
 	if (me.insideWizard) {
@@ -111,17 +111,17 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 			    'model',
 			    'macaddr',
 			    'rate',
-			    'queues'
+			    'queues',
 			];
 			fields.forEach(function(fieldname) {
 			    me.down('field[name='+fieldname+']').setDisabled(value);
 			});
 			me.down('field[name=bridge]').validate();
-		    }
-		}
+		    },
+		},
 	    });
 	    me.column2.unshift({
-		xtype: 'displayfield'
+		xtype: 'displayfield',
 	    });
 	}
 
@@ -131,7 +131,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		name: 'model',
 		fieldLabel: gettext('Model'),
 		value: PVE.qemu.OSDefaults.generic.networkCard,
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'textfield',
@@ -139,7 +139,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		fieldLabel: gettext('MAC address'),
 		vtype: 'MacAddress',
 		allowBlank: true,
-		emptyText: 'auto'
+		emptyText: 'auto',
 	    });
 	me.advancedColumn2 = [
 	    {
@@ -150,7 +150,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		maxValue: 10*1024,
 		value: '',
 		emptyText: 'unlimited',
-		allowBlank: true
+		allowBlank: true,
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
@@ -159,12 +159,12 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		minValue: 1,
 		maxValue: 8,
 		value: '',
-		allowBlank: true
-	    }
+		allowBlank: true,
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.qemu.NetworkEdit', {
@@ -186,12 +186,12 @@ Ext.define('PVE.qemu.NetworkEdit', {
 	var ipanel = Ext.create('PVE.qemu.NetworkInputPanel', {
 	    confid: me.confid,
 	    nodename: nodename,
-	    isCreate: me.isCreate
+	    isCreate: me.isCreate,
 	});
 
 	Ext.applyIf(me, {
 	    subject: gettext('Network Device'),
-	    items: ipanel
+	    items: ipanel,
 	});
 
 	me.callParent();
@@ -226,7 +226,7 @@ Ext.define('PVE.qemu.NetworkEdit', {
 
 		    ipanel.setNetwork(me.confid, data);
 		}
-	    }
+	    },
 	});
-    }
+    },
 });

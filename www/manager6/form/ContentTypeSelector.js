@@ -18,5 +18,5 @@ Ext.define('PVE.form.ContentTypeSelector', {
 	});
 
 	me.callParent();
-    }
+    },
 });

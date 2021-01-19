@@ -28,10 +28,10 @@ Ext.define('PVE.CephCreateFS', {
 	    listeners: {
 		change: function(f, value) {
 		    this.up('pveCephCreateFS').setFSName(value);
-		}
+		},
 	    },
 	    submitValue: false, // already encoded in apicall URL
-	    emptyText: 'cephfs'
+	    emptyText: 'cephfs',
 	},
 	{
 	    xtype: 'proxmoxintegerfield',
@@ -41,7 +41,7 @@ Ext.define('PVE.CephCreateFS', {
 	    emptyText: 128,
 	    minValue: 8,
 	    maxValue: 32768,
-	    allowBlank: false
+	    allowBlank: false,
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
@@ -52,7 +52,7 @@ Ext.define('PVE.CephCreateFS', {
 		tag: 'div',
 		 'data-qtip': gettext('Add the new CephFS to the cluster storage configuration.'),
 	    },
-	}
+	},
     ],
 
     initComponent : function() {
@@ -64,7 +64,7 @@ Ext.define('PVE.CephCreateFS', {
 	me.setFSName();
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.NodeCephFSPanel', {
@@ -79,21 +79,21 @@ Ext.define('PVE.NodeCephFSPanel', {
     defaults: {
 	border: false,
 	cbind: {
-	    nodename: '{nodename}'
-	}
+	    nodename: '{nodename}',
+	},
     },
 
     viewModel: {
 	parent: null,
 	data: {
 	    cephfsConfigured: false,
-	    mdsCount: 0
+	    mdsCount: 0,
 	},
 	formulas: {
 	    canCreateFS: function(get) {
 		return (!get('cephfsConfigured') && get('mdsCount') > 0);
-	    }
-	}
+	    },
+	},
     },
 
     items: [
@@ -112,16 +112,16 @@ Ext.define('PVE.NodeCephFSPanel', {
 			storeid: 'pve-ceph-fs',
 			proxy: {
 			    type: 'proxmox',
-			    url: '/api2/json/nodes/' + view.nodename + '/ceph/fs'
+			    url: '/api2/json/nodes/' + view.nodename + '/ceph/fs',
 			},
-			model: 'pve-ceph-fs'
+			model: 'pve-ceph-fs',
 		    });
 		    view.setStore(Ext.create('Proxmox.data.DiffStore', {
 			rstore: view.rstore,
 			sorters: {
 			    property: 'name',
-			    order: 'DESC'
-			}
+			    order: 'DESC',
+			},
 		    }));
 		    var regex = new RegExp("not (installed|initialized)", "i");
 		    PVE.Utils.handleStoreErrorOrMask(view, view.rstore, regex, function(me, error){
@@ -131,7 +131,7 @@ Ext.define('PVE.NodeCephFSPanel', {
 				me.mon(win, 'cephInstallWindowClosed', function(){
 				    me.rstore.startUpdate();
 				});
-			    }
+			    },
 			);
 		    });
 		    view.rstore.on('load', this.onLoad, this);
@@ -147,8 +147,8 @@ Ext.define('PVE.NodeCephFSPanel', {
 			listeners: {
 			    destroy: function() {
 				view.rstore.startUpdate();
-			    }
-			}
+			    },
+			},
 		    });
 		},
 
@@ -159,7 +159,7 @@ Ext.define('PVE.NodeCephFSPanel', {
 			return;
 		    }
 		    vm.set('cephfsConfigured', true);
-		}
+		},
 	    },
 	    tbar: [
 		{
@@ -168,30 +168,30 @@ Ext.define('PVE.NodeCephFSPanel', {
 		    handler: 'onCreate',
 		    bind: {
 			// only one CephFS per Ceph cluster makes sense for now
-			disabled: '{!canCreateFS}'
-		    }
-		}
+			disabled: '{!canCreateFS}',
+		    },
+		},
 	    ],
 	    columns: [
 		{
 		    header: gettext('Name'),
 		    flex: 1,
-		    dataIndex: 'name'
+		    dataIndex: 'name',
 		},
 		{
 		    header: 'Data Pool',
 		    flex: 1,
-		    dataIndex: 'data_pool'
+		    dataIndex: 'data_pool',
 		},
 		{
 		    header: 'Metadata Pool',
 		    flex: 1,
-		    dataIndex: 'metadata_pool'
-		}
+		    dataIndex: 'metadata_pool',
+		},
 	    ],
 	    cbind: {
-		nodename: '{nodename}'
-	    }
+		nodename: '{nodename}',
+	    },
 	},
 	{
 	    xtype: 'pveNodeCephServiceList',
@@ -207,18 +207,18 @@ Ext.define('PVE.NodeCephFSPanel', {
 		vm.set('mdsCount', records.length);
 	    },
 	    cbind: {
-		nodename: '{nodename}'
-	    }
-	}
-    ]
+		nodename: '{nodename}',
+	    },
+	},
+    ],
 }, function() {
     Ext.define('pve-ceph-fs', {
 	extend: 'Ext.data.Model',
 	fields: [ 'name', 'data_pool', 'metadata_pool' ],
 	proxy: {
 	    type: 'proxmox',
-	    url: "/api2/json/nodes/localhost/ceph/fs"
+	    url: "/api2/json/nodes/localhost/ceph/fs",
 	},
-	idProperty: 'name'
+	idProperty: 'name',
     });
 });

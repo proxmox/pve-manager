@@ -53,7 +53,7 @@ Ext.define('PVE.window.Snapshot', {
 		    let res = response.result.data;
 		    let enabled = PVE.Parser.parsePropertyString(res.agent, 'enabled');
 		    vm.set('guestAgentEnabled', !!PVE.Parser.parseBoolean(enabled.enabled));
-		}
+		},
 	    });
 	}
 
@@ -64,7 +64,7 @@ Ext.define('PVE.window.Snapshot', {
 		value: me.snapname,
 		fieldLabel: gettext('Name'),
 		vtype: 'ConfigId',
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'displayfield',
@@ -72,7 +72,7 @@ Ext.define('PVE.window.Snapshot', {
 		disabled: me.isCreate,
 		name: 'snaptime',
 		renderer: PVE.Utils.render_timestamp_human_readable,
-		fieldLabel: gettext('Timestamp')
+		fieldLabel: gettext('Timestamp'),
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
@@ -83,14 +83,14 @@ Ext.define('PVE.window.Snapshot', {
 		uncheckedValue: 0,
 		defaultValue: 0,
 		checked: 1,
-		fieldLabel: gettext('Include RAM')
+		fieldLabel: gettext('Include RAM'),
 	    },
 	    {
 		xtype: 'textareafield',
 		grow: true,
 		editable: !me.viewonly,
 		name: 'description',
-		fieldLabel: gettext('Description')
+		fieldLabel: gettext('Description'),
 	    },
 	    {
 		xtype: 'displayfield',
@@ -114,9 +114,9 @@ Ext.define('PVE.window.Snapshot', {
 		    sorters: [
 			{
 			    property : 'key',
-			    direction: 'ASC'
-			}
-		    ]
+			    direction: 'ASC',
+			},
+		    ],
 		},
 		columns: [
 		    {
@@ -128,9 +128,9 @@ Ext.define('PVE.window.Snapshot', {
 			header: gettext('Value'),
 			flex: 1,
 			dataIndex: 'value',
-		    }
-		]
-	    }
+		    },
+		],
+	    },
 	];
 
 	me.url = `/nodes/${me.nodename}/${me.type}/${me.vmid}/snapshot`;
@@ -175,7 +175,7 @@ Ext.define('PVE.window.Snapshot', {
 		summarystore.fireEvent('refresh', summarystore);
 
 		me.setValues(response.result.data);
-	    }
+	    },
 	});
-    }
+    },
 });

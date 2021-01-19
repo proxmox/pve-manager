@@ -41,9 +41,9 @@ Ext.define('PVE.qemu.OSDefaults', {
 		    ide: 4,
 		    sata: 3,
 		    scsi: 2,
-		    virtio: 1
+		    virtio: 1,
 	    },
-	    scsihw: 'virtio-scsi-pci'
+	    scsihw: 'virtio-scsi-pci',
 	};
 
        // virtio-net is in kernel since 2.6.25
@@ -56,9 +56,9 @@ Ext.define('PVE.qemu.OSDefaults', {
 		    scsi: 4,
 		    virtio: 3,
 		    sata: 2,
-		    ide: 1
+		    ide: 1,
 	    },
-	    networkCard: 'virtio'
+	    networkCard: 'virtio',
 	});
 
 	// recommandation from http://wiki.qemu.org/Windows2000
@@ -66,12 +66,12 @@ Ext.define('PVE.qemu.OSDefaults', {
 	    pveOS: 'w2k',
 	    parent : 'generic',
 	    networkCard: 'rtl8139',
-	    scsihw: ''
+	    scsihw: '',
 	});
 	// https://pve.proxmox.com/wiki/Windows_XP_Guest_Notes
 	addOS({
 	    pveOS: 'wxp',
-	    parent : 'w2k'
+	    parent : 'w2k',
 	});
 
 	me.getDefaults = function(ostype) {
@@ -81,5 +81,5 @@ Ext.define('PVE.qemu.OSDefaults', {
 		return PVE.qemu.OSDefaults.generic;
 	    }
 	};
-    }
+    },
 });

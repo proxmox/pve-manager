@@ -6,13 +6,13 @@ Ext.define('PVE.sdn.ZoneContentView', {
     stateId: 'grid-sdnzone-content',
     viewConfig: {
 	trackOver: false,
-	loadMask: false
+	loadMask: false,
     },
     features: [
 	{
 	    ftype: 'grouping',
-	    groupHeaderTpl: '{name} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})'
-	}
+	    groupHeaderTpl: '{name} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})',
+	},
     ],
     initComponent : function() {
 	var me = this;
@@ -28,17 +28,17 @@ Ext.define('PVE.sdn.ZoneContentView', {
 	}
 
 	var baseurl = "/nodes/" + nodename + "/sdn/zones/" + zone + "/content";
-	var store = Ext.create('Ext.data.Store',{
+	var store = Ext.create('Ext.data.Store', {
 	    model: 'pve-sdnzone-content',
 	    groupField: 'content',
 	    proxy: {
                 type: 'proxmox',
-		url: '/api2/json' + baseurl
+		url: '/api2/json' + baseurl,
 	    },
 	    sorters: {
 		property: 'vnet',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
@@ -59,7 +59,7 @@ Ext.define('PVE.sdn.ZoneContentView', {
 		    header: 'VNet',
 		    flex: 1,
 		    sortable: true,
-		    dataIndex: 'vnet'
+		    dataIndex: 'vnet',
 		},
 		{
 		    header: gettext('Status'),
@@ -73,13 +73,13 @@ Ext.define('PVE.sdn.ZoneContentView', {
 		},
 	    ],
 	    listeners: {
-		activate: reload
-	    }
+		activate: reload,
+	    },
 	});
 
 	me.callParent();
 
-    }
+    },
 }, function() {
 
     Ext.define('pve-sdnzone-content', {
@@ -95,10 +95,10 @@ Ext.define('PVE.sdn.ZoneContentView', {
 			return value;
 		    }
 		    return PVE.Utils.format_sdnvnet_type(value, {}, record);
-		}
-	    }
+		},
+	    },
 	],
-	idProperty: 'vnet'
+	idProperty: 'vnet',
     });
 
 });

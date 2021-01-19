@@ -22,7 +22,7 @@ Ext.define('PVE.form.SnapshotSelector', {
 
 	me.store.setProxy({
 	    type: 'proxmox',
-	    url: '/api2/json/nodes/' + me.nodename + '/' + me.guestType + '/' + me.vmid +'/snapshot'
+	    url: '/api2/json/nodes/' + me.nodename + '/' + me.guestType + '/' + me.vmid +'/snapshot',
 	});
 
 	me.store.load();
@@ -45,7 +45,7 @@ Ext.define('PVE.form.SnapshotSelector', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    fields: [ 'name'],
-	    filterOnLoad: true
+	    filterOnLoad: true,
 	});
 
 	Ext.apply(me, {
@@ -56,14 +56,14 @@ Ext.define('PVE.form.SnapshotSelector', {
 			header: gettext('Snapshot'),
 			dataIndex: 'name',
 			hideable: false,
-			flex: 1
-		    }
-		]
-	    }
+			flex: 1,
+		    },
+		],
+	    },
 	});
 
         me.callParent();
 
 	me.loadStore(me.nodename, me.vmid);
-    }
+    },
 });

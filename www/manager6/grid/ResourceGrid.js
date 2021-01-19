@@ -5,7 +5,7 @@ Ext.define('PVE.grid.ResourceGrid', {
     border: false,
     defaultSorter: {
 	property: 'type',
-	direction: 'ASC'
+	direction: 'ASC',
     },
     initComponent : function() {
 	var me = this;
@@ -18,7 +18,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 	var store = Ext.create('Ext.data.Store', {
 	    model: 'PVEResources',
 	    sorters: me.defaultSorter,
-	    proxy: { type: 'memory' }
+	    proxy: { type: 'memory' },
 	});
 
 	var textfilter = '';
@@ -162,12 +162,12 @@ Ext.define('PVE.grid.ResourceGrid', {
 			    var v = field.getValue();
 			    textfilter = v.toLowerCase();
 			    filter_task.delay(500);
-			}
-		    }
-		}
+			},
+		    },
+		},
 	    ],
 	    viewConfig: {
-		stripeRows: true
+		stripeRows: true,
             },
 	    listeners: {
 		itemcontextmenu: PVE.Utils.createCmdMenu,
@@ -177,12 +177,12 @@ Ext.define('PVE.grid.ResourceGrid', {
 		},
 		destroy: function() {
 		    rstore.un("load", load_cb);
-		}
+		},
 	    },
-            columns: coldef
+            columns: coldef,
 	});
 	me.callParent();
 	updateGrid();
 	rstore.on("load", load_cb);
-    }
+    },
 });

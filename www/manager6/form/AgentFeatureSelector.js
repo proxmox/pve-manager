@@ -19,7 +19,7 @@ Ext.define('PVE.form.AgentFeatureSelector', {
 	    bind: {
 		disabled: '{!enabled.checked}',
 	    },
-	    disabled: true
+	    disabled: true,
 	},
 	{
 	    xtype: 'displayfield',
@@ -43,7 +43,7 @@ Ext.define('PVE.form.AgentFeatureSelector', {
 		['virtio', 'VirtIO'],
 		['isa', 'ISA'],
 	    ],
-	}
+	},
     ],
 
     onGetValues: function(values) {
@@ -54,5 +54,5 @@ Ext.define('PVE.form.AgentFeatureSelector', {
     setValues: function(values) {
 	let res = PVE.Parser.parsePropertyString(values.agent, 'enabled');
 	this.callParent([res]);
-    }
+    },
 });

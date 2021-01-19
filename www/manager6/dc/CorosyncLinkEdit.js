@@ -56,7 +56,7 @@ Ext.define('PVE.form.CorosyncLinkEditorController', {
 		view.remove(this);
 
 		me.updateDeleteButtonState();
-	    }
+	    },
 	});
 
 	view.add(linkSelector);
@@ -115,7 +115,7 @@ Ext.define('PVE.form.CorosyncLinkEditorController', {
 	// all numbers in use, this should never happen since add button is
 	// disabled automatically
 	return 0;
-    }
+    },
 });
 
 Ext.define('PVE.form.CorosyncLinkSelector', {
@@ -147,7 +147,7 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 	    fieldLabel: 'Link',
 	    cbind: {
 		hidden: '{allowNumberEdit}',
-		value: '{initNumber}'
+		value: '{initNumber}',
 	    },
 	    width: 45,
 	    labelWidth: 30,
@@ -159,7 +159,7 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 	    cbind: {
 		maxValue: '{maxLinkNumber}',
 		hidden: '{!allowNumberEdit}',
-		value: '{initNumber}'
+		value: '{initNumber}',
 	    },
 	    width: 80,
 	    labelWidth: 30,
@@ -187,14 +187,14 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 		let linkNumber = numSelect.getValue();
 		me.name = 'link' + linkNumber;
 		return me.getValue();
-	    }
+	    },
 	},
 	{
 	    xtype: 'button',
 	    iconCls: 'fa fa-trash-o',
 	    cls: 'removeLinkBtn',
 	    cbind: {
-		hidden: '{!allowNumberEdit}'
+		hidden: '{!allowNumberEdit}',
 	    },
 	    handler: function() {
 		let me = this;
@@ -202,7 +202,7 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 		if (parent.removeBtnHandler !== undefined) {
 		    parent.removeBtnHandler();
 		}
-	    }
+	    },
 	},
 	{
 	    xtype: 'label',
@@ -212,9 +212,9 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 	    cls: 'x-form-item-label-default',
 
 	    cbind: {
-		text: '{text}'
-	    }
-	}
+		text: '{text}',
+	    },
+	},
     ],
 
     initComponent: function() {
@@ -227,12 +227,12 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 
 	numSelect.validator = this.createNoDuplicatesValidator(
 		'numberfield',
-		gettext("Duplicate link number not allowed.")
+		gettext("Duplicate link number not allowed."),
 	);
 
 	netSelect.validator = this.createNoDuplicatesValidator(
 		'proxmoxNetworkSelector',
-		gettext("Duplicate link address not allowed.")
+		gettext("Duplicate link address not allowed."),
 	);
     },
 
@@ -278,7 +278,7 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 
 	    return err || true;
 	};
-    }
+    },
 });
 
 Ext.define('PVE.form.CorosyncLinkEditor', {
@@ -296,7 +296,7 @@ Ext.define('PVE.form.CorosyncLinkEditor', {
 	    maxLinkCount: 8,
 	    networks: null,
 	    allowNumberEdit: true,
-	    infoText: ''
+	    infoText: '',
 	},
 	formulas: {
 	    addDisabled: function(get) {
@@ -305,8 +305,8 @@ Ext.define('PVE.form.CorosyncLinkEditor', {
 	    },
 	    dockHidden: function(get) {
 		return !(get('allowNumberEdit') || get('infoText'));
-	    }
-	}
+	    },
+	},
     },
 
     dockedItems: [{
@@ -316,7 +316,7 @@ Ext.define('PVE.form.CorosyncLinkEditor', {
 	border: false,
 	padding: '6 0 6 0',
 	bind: {
-	    hidden: '{dockHidden}'
+	    hidden: '{dockHidden}',
 	},
 	items: [
 	    {
@@ -324,17 +324,17 @@ Ext.define('PVE.form.CorosyncLinkEditor', {
 		text: gettext('Add'),
 		bind: {
 		    disabled: '{addDisabled}',
-		    hidden: '{!allowNumberEdit}'
+		    hidden: '{!allowNumberEdit}',
 		},
-		handler: 'addEmptyLink'
+		handler: 'addEmptyLink',
 	    },
 	    {
 		xtype: 'label',
 		bind: {
-		    text: '{infoText}'
-		}
-	    }
-	]
+		    text: '{infoText}',
+		},
+	    },
+	],
     }],
 
     setInfoText: function(text) {
@@ -382,7 +382,7 @@ Ext.define('PVE.form.CorosyncLinkEditor', {
 	    let me = this;
 	    let vm = me.up('pveCorosyncLinkEditor').getViewModel();
 	    return vm.get('linkCount') > 0;
-	}
+	},
     }],
 
     initComponent: function() {
@@ -429,8 +429,8 @@ Ext.define('PVE.form.CorosyncLinkEditor', {
 		if (vm.get('allowNumberEdit')) {
 		    controller.addLinkIfEmpty();
 		}
-	    }
+	    },
 	});
-    }
+    },
 });
 

@@ -12,7 +12,7 @@ Ext.define('PVE.storage.DirInputPanel', {
 		name: 'path',
 		value: '',
 		fieldLabel: gettext('Directory'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'pveContentTypeSelector',
@@ -20,8 +20,8 @@ Ext.define('PVE.storage.DirInputPanel', {
 		value: 'images',
 		multiSelect: true,
 		fieldLabel: gettext('Content'),
-		allowBlank: false
-	    }
+		allowBlank: false,
+	    },
 	];
 
 	me.column2 = [
@@ -29,10 +29,10 @@ Ext.define('PVE.storage.DirInputPanel', {
 		xtype: 'proxmoxcheckbox',
 		name: 'shared',
 		uncheckedValue: 0,
-		fieldLabel: gettext('Shared')
+		fieldLabel: gettext('Shared'),
 	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

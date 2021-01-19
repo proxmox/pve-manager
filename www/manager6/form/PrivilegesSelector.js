@@ -23,13 +23,13 @@ Ext.define('PVE.form.PrivilegesSelector', {
 
 		me.store.sort({
 		    property: 'key',
-		    direction: 'ASC'
+		    direction: 'ASC',
 		});
 	    },
 
 	    failure: function (response, opts) {
 		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-	    }
+	    },
 	});
-    }
+    },
 });

@@ -28,7 +28,7 @@ Ext.define('PVE.panel.StorageBase', {
 	    value: me.storageId || '',
 	    fieldLabel: 'ID',
 	    vtype: 'StorageId',
-	    allowBlank: false
+	    allowBlank: false,
 	});
 
 	me.column2 = me.column2 || [];
@@ -40,19 +40,19 @@ Ext.define('PVE.panel.StorageBase', {
 		fieldLabel: gettext('Nodes'),
 		emptyText: gettext('All') + ' (' + gettext('No restrictions') +')',
 		multiSelect: true,
-		autoSelect: false
+		autoSelect: false,
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		name: 'enable',
 		checked: true,
 		uncheckedValue: 0,
-		fieldLabel: gettext('Enable')
-	    }
+		fieldLabel: gettext('Enable'),
+	    },
 	);
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.panel.StoragePruneInputPanel', {
@@ -78,7 +78,7 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
 	    }
 	    // always delete old 'maxfiles' on edit, we map it to keep-last on window load
 	    return {
-		delete: ['prune-backups','maxfiles'],
+		delete: ['prune-backups', 'maxfiles'],
 	    };
 	}
 	let options = { 'prune-backups': retention };
@@ -178,7 +178,7 @@ Ext.define('PVE.storage.BaseEdit', {
 	    title: gettext('General'),
 	    type: me.type,
 	    isCreate: me.isCreate,
-	    storageId: me.storageId
+	    storageId: me.storageId,
 	});
 
 	Ext.apply(me, {
@@ -242,8 +242,8 @@ Ext.define('PVE.storage.BaseEdit', {
 		    me.query('inputpanel').forEach(panel => {
 			panel.setValues(values);
 		    });
-		}
+		},
 	    });
 	}
-    }
+    },
 });

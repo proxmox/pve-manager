@@ -21,7 +21,7 @@ Ext.define('PVE.ClusterCreateWindow', {
 	    fieldLabel: gettext('Cluster Name'),
 	    allowBlank: false,
 	    maxLength: 15,
-	    name: 'clustername'
+	    name: 'clustername',
 	},
 	{
 	    xtype: 'fieldcontainer',
@@ -30,11 +30,11 @@ Ext.define('PVE.ClusterCreateWindow', {
 		{
 		    xtype: 'pveCorosyncLinkEditor',
 		    infoText: gettext("Multiple links are used as failover, lower numbers have higher priority."),
-		    name: 'links'
+		    name: 'links',
 		},
-	    ]
-	}]
-    }
+	    ],
+	}],
+    },
 });
 
 Ext.define('PVE.ClusterInfoWindow', {
@@ -50,7 +50,7 @@ Ext.define('PVE.ClusterInfoWindow', {
     joinInfo: {
 	ipAddress: undefined,
 	fingerprint: undefined,
-	totem: {}
+	totem: {},
     },
 
     items: [
@@ -58,7 +58,7 @@ Ext.define('PVE.ClusterInfoWindow', {
 	    xtype: 'component',
 	    border: false,
 	    padding: '10 10 10 10',
-	    html: gettext("Copy the Join Information here and use it on the node you want to add.")
+	    html: gettext("Copy the Join Information here and use it on the node you want to add."),
 	},
 	{
 	    xtype: 'container',
@@ -99,11 +99,11 @@ Ext.define('PVE.ClusterInfoWindow', {
 			    var jsons = Ext.JSON.encode(field.joinInfo);
 			    var base64s = Ext.util.Base64.encode(jsons);
 			    field.setValue(base64s);
-			}
-		    }
-		}
-	    ]
-	}
+			},
+		    },
+		},
+	    ],
+	},
     ],
     dockedItems: [{
 	dock: 'bottom',
@@ -115,9 +115,9 @@ Ext.define('PVE.ClusterInfoWindow', {
 		el.select();
 		document.execCommand("copy");
 	    },
-	    text: gettext('Copy Information')
-	}]
-    }]
+	    text: gettext('Copy Information'),
+	}],
+    }],
 });
 
 Ext.define('PVE.ClusterJoinNodeWindow', {
@@ -145,7 +145,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    info: {
 		fp: '',
 		ip: '',
-		clusterName: ''
+		clusterName: '',
 	    },
 	    hasAssistedInfo: false,
 	},
@@ -170,18 +170,18 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    '#': {
 		close: function() {
 		    delete PVE.Utils.silenceAuthFailures;
-		}
+		},
 	    },
 	    'proxmoxcheckbox[name=assistedEntry]': {
-		change: 'onInputTypeChange'
+		change: 'onInputTypeChange',
 	    },
 	    'textarea[name=serializedinfo]': {
 		change: 'recomputeSerializedInfo',
-		enable: 'resetField'
+		enable: 'resetField',
 	    },
 	    'textfield': {
-		disable: 'resetField'
-	    }
+		disable: 'resetField',
+	    },
 	},
 	resetField: function(field) {
 	    field.reset();
@@ -216,7 +216,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    let info = {
 		fp: '',
 		ip: '',
-		clusterName: ''
+		clusterName: '',
 	    };
 
 	    if (!(joinInfo && joinInfo.totem)) {
@@ -236,7 +236,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 			number: linkNumber,
 			value: '',
 			text: peerLink ? Ext.String.format(gettext("peer's link address: {0}"), peerLink) : '',
-			allowBlank: false
+			allowBlank: false,
 		    };
 		});
 
@@ -253,13 +253,13 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		info = {
 		    ip: joinInfo.ipAddress,
 		    fp: joinInfo.fingerprint,
-		    clusterName: joinInfo.totem.cluster_name
+		    clusterName: joinInfo.totem.cluster_name,
 		};
 		field.valid = true;
 		vm.set('hasAssistedInfo', true);
 	    }
 	    vm.set('info', info);
-	}
+	},
     },
 
     submit: function() {
@@ -282,7 +282,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    Ext.Msg.show({
 		title: gettext('Join Task Finished'),
 		icon: Ext.Msg.INFO,
-		msg: txt
+		msg: txt,
 	    });
 	}
     },
@@ -296,9 +296,9 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	value: true,
 	autoEl: {
 	    tag: 'div',
-	    'data-qtip': gettext('Select if join information should be extracted from pasted cluster information, deselect for manual entering')
+	    'data-qtip': gettext('Select if join information should be extracted from pasted cluster information, deselect for manual entering'),
 	},
-	boxLabel: gettext('Assisted join: Paste encoded cluster join information and enter password.')
+	boxLabel: gettext('Assisted join: Paste encoded cluster join information and enter password.'),
     },
     {
 	xtype: 'textarea',
@@ -313,16 +313,16 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	},
 	bind: {
 	    disabled: '{!assistedEntry.checked}',
-	    hidden: '{!assistedEntry.checked}'
+	    hidden: '{!assistedEntry.checked}',
 	},
-	value: ''
+	value: '',
     },
     {
 	xtype: 'panel',
 	width: 776,
 	layout: {
 	    type: 'hbox',
-	    align: 'center'
+	    align: 'center',
 	},
 	bind: {
 	    hidden: '{!showClusterFields}',
@@ -338,7 +338,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		    value: '{info.ip}',
 		    readOnly: '{assistedEntry.checked}',
 		},
-		name: 'hostname'
+		name: 'hostname',
 	    },
 	    {
 		xtype: 'textfield',
@@ -348,9 +348,9 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		emptyText: gettext("Peer's root password"),
 		fieldLabel: gettext('Password'),
 		allowBlank: false,
-		name: 'password'
+		name: 'password',
 	    },
-	]
+	],
     },
     {
 	xtype: 'textfield',
@@ -361,7 +361,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    readOnly: '{assistedEntry.checked}',
 	    hidden: '{!showClusterFields}',
 	},
-	name: 'fingerprint'
+	name: 'fingerprint',
     },
     {
 	xtype: 'fieldcontainer',
@@ -374,8 +374,8 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		xtype: 'pveCorosyncLinkEditor',
 		itemId: 'linkEditor',
 		reference: 'linkEditor',
-		allowNumberEdit: false
+		allowNumberEdit: false,
 	    },
-	]
-    }]
+	],
+    }],
 });

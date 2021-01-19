@@ -28,19 +28,19 @@ Ext.define('PVE.form.GlobalSearchField', {
 	scrollable: {
 	    xtype: 'scroller',
 	    y: true,
-	    x:false
+	    x:false,
 	},
 	store: {
 	    model: 'PVEResources',
 	    proxy:{
 		type: 'proxmox',
-		url: '/api2/extjs/cluster/resources'
-	    }
+		url: '/api2/extjs/cluster/resources',
+	    },
 	},
 	plugins: {
 	    ptype: 'bufferedrenderer',
 	    trailingBufferZone: 20,
-	    leadingBufferZone: 20
+	    leadingBufferZone: 20,
 	},
 
 	hideMe: function() {
@@ -70,9 +70,9 @@ Ext.define('PVE.form.GlobalSearchField', {
 	    },
 	    /* because of lint */
 	    focusleave: {
-		fn: 'hideMe'
+		fn: 'hideMe',
 	    },
-	    focusenter: 'setFocus'
+	    focusenter: 'setFocus',
 	},
 
 	columns: [
@@ -80,29 +80,29 @@ Ext.define('PVE.form.GlobalSearchField', {
 		text: gettext('Type'),
 		dataIndex: 'type',
 		width: 100,
-		renderer: PVE.Utils.render_resource_type
+		renderer: PVE.Utils.render_resource_type,
 	    },
 	    {
 		text: gettext('Description'),
 		flex: 1,
-		dataIndex: 'text'
+		dataIndex: 'text',
 	    },
 	    {
 		text: gettext('Node'),
-		dataIndex: 'node'
+		dataIndex: 'node',
 	    },
 	    {
 		text: gettext('Pool'),
-		dataIndex: 'pool'
-	    }
-	]
+		dataIndex: 'pool',
+	    },
+	],
     },
 
     customFilter: function(item) {
 	var me = this;
 	var match = 0;
 	var fieldArr = [];
-	var i,j, fields;
+	var i, j, fields;
 
 	// different types of objects have different fields to search
 	// for example, a node will never have a pool and vice versa
@@ -208,14 +208,14 @@ Ext.define('PVE.form.GlobalSearchField', {
     listeners: {
 	change: {
 	    fn: 'updateFilter',
-	    buffer: 250
+	    buffer: 250,
 	},
 	specialkey: 'onKey',
 	focusenter: 'loadValues',
 	focusleave: {
 	    fn: 'hideGrid',
-	    delay: 100
-	}
+	    delay: 100,
+	},
     },
 
     toggleFocus: function() {
@@ -248,13 +248,13 @@ Ext.define('PVE.form.GlobalSearchField', {
 		ctrl: true,
 		shift: true,
 		fn: me.toggleFocus,
-		scope: me
-	    },{
+		scope: me,
+	    }, {
 		key:' ',
 		ctrl: true,
 		fn: me.toggleFocus,
-		scope: me
-	    }]
+		scope: me,
+	    }],
 	});
 
 	// always select first item and
@@ -263,9 +263,9 @@ Ext.define('PVE.form.GlobalSearchField', {
 	    me.grid.getSelectionModel().select(0);
 	    me.grid.store.sort({
 		property: 'relevance',
-		direction: 'DESC'
+		direction: 'DESC',
 	    });
 	});
-    }
+    },
 
 });

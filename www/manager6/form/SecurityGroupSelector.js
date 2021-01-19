@@ -13,12 +13,12 @@ Ext.define('PVE.form.SecurityGroupsSelector', {
 	    idProperty: 'group',
 	    proxy: {
 		type: 'proxmox',
-		url: "/api2/json/cluster/firewall/groups"
+		url: "/api2/json/cluster/firewall/groups",
 	    },
 	    sorters: {
 		property: 'group',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
 	Ext.apply(me, {
@@ -29,19 +29,19 @@ Ext.define('PVE.form.SecurityGroupsSelector', {
 			header: gettext('Security Group'),
 			dataIndex: 'group',
 			hideable: false,
-			width: 100
+			width: 100,
 		    },
 		    {
 			header: gettext('Comment'),
 			dataIndex: 'comment',
 			renderer: Ext.String.htmlEncode,
-			flex: 1
-		    }
-		]
-	    }
+			flex: 1,
+		    },
+		],
+	    },
 	});
 
         me.callParent();
-    }
+    },
 });
 

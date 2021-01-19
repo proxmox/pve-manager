@@ -5,7 +5,7 @@ Ext.define('PVE.FirewallEnableEdit', {
 
     subject: gettext('Firewall'),
     cbindData: {
-	defaultValue: 0
+	defaultValue: 0,
     },
     width: 350,
 
@@ -16,18 +16,18 @@ Ext.define('PVE.FirewallEnableEdit', {
 	    uncheckedValue: 0,
 	    cbind: {
 		defaultValue: '{defaultValue}',
-		checked: '{defaultValue}'
+		checked: '{defaultValue}',
 	    },
 	    deleteDefaultValue: false,
-	    fieldLabel: gettext('Firewall')
+	    fieldLabel: gettext('Firewall'),
 	},
 	{
 	    xtype: 'displayfield',
 	    name: 'warning',
 	    userCls: 'pmx-hint',
 	    value: gettext('Warning: Firewall still disabled at datacenter level!'),
-	    hidden: true
-	}
+	    hidden: true,
+	},
     ],
 
     beforeShow: function() {
@@ -43,7 +43,7 @@ Ext.define('PVE.FirewallEnableEdit', {
 		if (!response.result.data.enable) {
 		    me.down('displayfield[name=warning]').setVisible(true);
 		}
-	    }
+	    },
 	});
-    }
+    },
 });

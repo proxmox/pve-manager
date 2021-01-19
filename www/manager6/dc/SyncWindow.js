@@ -137,7 +137,7 @@ Ext.define('PVE.dc.SyncWindow', {
 			reference: 'defaulthint',
 			value: gettext('Default sync options can be set by editing the realm.'),
 			userCls: 'pmx-hint',
-			hidden: true
+			hidden: true,
 		    },
 		],
 	    }],

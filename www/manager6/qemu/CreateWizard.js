@@ -7,13 +7,13 @@ Ext.define('PVE.qemu.CreateWizard', {
 	data: {
 	    nodename: '',
 	    current: {
-		scsihw: ''
-	    }
-	}
+		scsihw: '',
+	    },
+	},
     },
 
     cbindData: {
-	nodename: undefined
+	nodename: undefined,
     },
 
     subject: gettext('Virtual Machine'),
@@ -29,14 +29,14 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    name: 'nodename',
 		    cbind: {
 			selectCurNode: '{!nodename}',
-			preferredValue: '{nodename}'
+			preferredValue: '{nodename}',
 		    },
 		    bind: {
-			value: '{nodename}'
+			value: '{nodename}',
 		    },
 		    fieldLabel: gettext('Node'),
 		    allowBlank: false,
-		    onlineValidator: true
+		    onlineValidator: true,
 		},
 		{
 		    xtype: 'pveGuestIDSelector',
@@ -44,7 +44,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    guestType: 'qemu',
 		    value: '',
 		    loadNextFreeID: true,
-		    validateExists: false
+		    validateExists: false,
 		},
 		{
 		    xtype: 'textfield',
@@ -52,8 +52,8 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    vtype: 'DnsName',
 		    value: '',
 		    fieldLabel: gettext('Name'),
-		    allowBlank: true
-		}
+		    allowBlank: true,
+		},
 	    ],
 	    column2: [
 		{
@@ -61,8 +61,8 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    fieldLabel: gettext('Resource Pool'),
 		    name: 'pool',
 		    value: '',
-		    allowBlank: true
-		}
+		    allowBlank: true,
+		},
 	    ],
 	    advancedColumn1: [
 		{
@@ -71,8 +71,8 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    uncheckedValue: 0,
 		    defaultValue: 0,
 		    deleteDefaultValue: true,
-		    fieldLabel: gettext('Start at boot')
-		}
+		    fieldLabel: gettext('Start at boot'),
+		},
 	    ],
 	    advancedColumn2: [
 		{
@@ -81,7 +81,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    defaultValue: '',
 		    emptyText: 'any',
 		    labelWidth: 120,
-		    fieldLabel: gettext('Start/Shutdown order')
+		    fieldLabel: gettext('Start/Shutdown order'),
 		},
 		{
 		    xtype: 'textfield',
@@ -89,7 +89,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    defaultValue: '',
 		    emptyText: 'default',
 		    labelWidth: 120,
-		    fieldLabel: gettext('Startup delay')
+		    fieldLabel: gettext('Startup delay'),
 		},
 		{
 		    xtype: 'textfield',
@@ -97,8 +97,8 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    defaultValue: '',
 		    emptyText: 'default',
 		    labelWidth: 120,
-		    fieldLabel: gettext('Shutdown timeout')
-		}
+		    fieldLabel: gettext('Shutdown timeout'),
+		},
 	    ],
 	    onGetValues: function(values) {
 
@@ -111,7 +111,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 		var res = PVE.Parser.printStartup({
 		    order: values.order,
 		    up: values.up,
-		    down: values.down
+		    down: values.down,
 		});
 
 		if (res) {
@@ -123,63 +123,63 @@ Ext.define('PVE.qemu.CreateWizard', {
 		delete values.down;
 
 		return values;
-	    }
+	    },
 	},
 	{
 	    xtype: 'container',
 	    layout: 'hbox',
 	    defaults: {
 		flex: 1,
-		padding: '0 10'
+		padding: '0 10',
 	    },
 	    title: gettext('OS'),
 	    items: [
 		{
 		    xtype: 'pveQemuCDInputPanel',
 		    bind: {
-			nodename: '{nodename}'
+			nodename: '{nodename}',
 		    },
 		    confid: 'ide2',
-		    insideWizard: true
+		    insideWizard: true,
 		},
 		{
 		    xtype: 'pveQemuOSTypePanel',
-		    insideWizard: true
-		}
-	    ]
+		    insideWizard: true,
+		},
+	    ],
 	},
 	{
 	    xtype: 'pveQemuSystemPanel',
 	    title: gettext('System'),
 	    isCreate: true,
-	    insideWizard: true
+	    insideWizard: true,
 	},
 	{
 	    xtype: 'pveQemuHDInputPanel',
 	    bind: {
-		nodename: '{nodename}'
+		nodename: '{nodename}',
 	    },
 	    title: gettext('Hard Disk'),
 	    isCreate: true,
-	    insideWizard: true
+	    insideWizard: true,
 	},
 	{
 	    xtype: 'pveQemuProcessorPanel',
 	    insideWizard: true,
-	    title: gettext('CPU')
+	    title: gettext('CPU'),
 	},
 	{
 	    xtype: 'pveQemuMemoryPanel',
 	    insideWizard: true,
-	    title: gettext('Memory')
+	    title: gettext('Memory'),
 	},
 	{
 	    xtype: 'pveQemuNetworkInputPanel',
 	    bind: {
-		nodename: '{nodename}'
+		nodename: '{nodename}',
 	    },
 	    title: gettext('Network'),
-	    insideWizard: true
+	    insideWizard: true,
 	},
 	{
 	    title: gettext('Confirm'),
@@ -191,14 +191,14 @@ Ext.define('PVE.qemu.CreateWizard', {
 			model: 'KeyValue',
 			sorters: [{
 			    property : 'key',
-			    direction: 'ASC'
-			}]
+			    direction: 'ASC',
+			}],
 		    },
 		    columns: [
 			{header: 'Key', width: 150, dataIndex: 'key'},
-			{header: 'Value', flex: 1, dataIndex: 'value'}
-		    ]
-		}
+			{header: 'Value', flex: 1, dataIndex: 'value'},
+		    ],
+		},
 	    ],
 	    dockedItems: [
 		{
@@ -206,8 +206,8 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    name: 'start',
 		    dock: 'bottom',
 		    margin: '5 0 0 0',
-		    boxLabel: gettext('Start after created')
-		}
+		    boxLabel: gettext('Start after created'),
+		},
 	    ],
 	    listeners: {
 		show: function(panel) {
@@ -228,7 +228,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    summarystore.resumeEvents();
 		    summarystore.fireEvent('refresh');
 
-		}
+		},
 	    },
 	    onSubmit: function() {
 		var wizard = this.up('window');
@@ -248,11 +248,11 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    },
 		    failure: function(response, opts) {
 			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
+		    },
 		});
-	    }
-	}
-    ]
+	    },
+	},
+    ],
 });
 
 

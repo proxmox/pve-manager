@@ -3,7 +3,7 @@ Ext.define('PVE.panel.StatusView', {
     alias: 'widget.pveStatusView',
 
     layout: {
-	type: 'column'
+	type: 'column',
     },
 
     title: gettext('Status'),
@@ -26,7 +26,7 @@ Ext.define('PVE.panel.StatusView', {
 	return '';
     },
 
-    fieldRenderer: function(val,max) {
+    fieldRenderer: function(val, max) {
 	if (max === undefined) {
 	    return val;
 	}
@@ -34,7 +34,7 @@ Ext.define('PVE.panel.StatusView', {
 	if (!Ext.isNumeric(max) || max === 1) {
 	    return PVE.Utils.render_usage(val);
 	}
-	return PVE.Utils.render_size_usage(val,max);
+	return PVE.Utils.render_size_usage(val, max);
     },
 
     fieldCalculator: function(used, max) {
@@ -75,7 +75,7 @@ Ext.define('PVE.panel.StatusView', {
 	    if (Ext.isFunction(field.calculate)) {
 		calculate = field.calculate;
 	    }
-	    field.updateValue(renderer.call(field, used,max), calculate(used,max));
+	    field.updateValue(renderer.call(field, used, max), calculate(used, max));
 	}
     },
 
@@ -121,6 +121,6 @@ Ext.define('PVE.panel.StatusView', {
 	me.callParent();
 
 	me.mon(me.rstore, 'load', 'updateValues');
-    }
+    },
 
 });

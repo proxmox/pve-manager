@@ -12,35 +12,35 @@ Ext.define('PVE.ha.GroupSelector', {
 		header: gettext('Group'),
 		width: 100,
 		sortable: true,
-		dataIndex: 'group'
+		dataIndex: 'group',
 	    },
 	    {
 		header: gettext('Nodes'),
 		width: 100,
 		sortable: false,
-		dataIndex: 'nodes'
+		dataIndex: 'nodes',
 	    },
 	    {
 		header: gettext('Comment'),
 		flex: 1,
 		dataIndex: 'comment',
-		renderer: Ext.String.htmlEncode
-	    }
-	]
+		renderer: Ext.String.htmlEncode,
+	    },
+	],
     },
     store: {
 	    model: 'pve-ha-groups',
 	    sorters: {
 		property: 'group',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
     },
 
     initComponent: function() {
 	var me = this;
 	me.callParent();
 	me.getStore().load();
-    }
+    },
 
 }, function() {
 
@@ -50,17 +50,17 @@ Ext.define('PVE.ha.GroupSelector', {
 	    'group', 'type', 'digest', 'nodes', 'comment',
 	    {
 		name : 'restricted',
-		type: 'boolean'
+		type: 'boolean',
 	    },
 	    {
 		name : 'nofailback',
-		type: 'boolean'
-	    }
+		type: 'boolean',
+	    },
 	],
 	proxy: {
             type: 'proxmox',
-	    url: "/api2/json/cluster/ha/groups"
+	    url: "/api2/json/cluster/ha/groups",
 	},
-	idProperty: 'group'
+	idProperty: 'group',
     });
 });

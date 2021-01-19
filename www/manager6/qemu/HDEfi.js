@@ -43,7 +43,7 @@ Ext.define('PVE.qemu.EFIDiskInputPanel', {
 		name: 'efidisk0',
 		storageContent: 'images',
 		nodename: me.nodename,
-		hideSize: true
+		hideSize: true,
 	    },
 	    {
 		xtype: 'label',
@@ -54,7 +54,7 @@ Ext.define('PVE.qemu.EFIDiskInputPanel', {
 	];
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.qemu.EFIDiskEdit', {
@@ -82,5 +82,5 @@ Ext.define('PVE.qemu.EFIDiskEdit', {
 	}];
 
 	me.callParent();
-    }
+    },
 });

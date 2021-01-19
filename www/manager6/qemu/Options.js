@@ -36,7 +36,7 @@ Ext.define('PVE.qemu.Options', {
 			    vtype: 'DnsName',
 			    value: '',
 			    fieldLabel: gettext('Name'),
-			    allowBlank: true
+			    allowBlank: true,
 			},
 			onGetValues: function(values) {
 			    var params = values;
@@ -46,9 +46,9 @@ Ext.define('PVE.qemu.Options', {
 				params = { 'delete':'name'};
 			    }
 			    return params;
-			}
-		    }
-		} : undefined
+			},
+		    },
+		} : undefined,
 	    },
 	    onboot: {
 		header: gettext('Start at boot'),
@@ -63,9 +63,9 @@ Ext.define('PVE.qemu.Options', {
 			uncheckedValue: 0,
 			defaultValue: 0,
 			deleteDefaultValue: true,
-			fieldLabel: gettext('Start at boot')
-		    }
-		} : undefined
+			fieldLabel: gettext('Start at boot'),
+		    },
+		} : undefined,
 	    },
 	    startup: {
 		header: gettext('Start/Shutdown order'),
@@ -74,17 +74,17 @@ Ext.define('PVE.qemu.Options', {
 		editor: caps.vms['VM.Config.Options'] && caps.nodes['Sys.Modify'] ?
 		    {
 			xtype: 'pveWindowStartupEdit',
-			onlineHelp: 'qm_startup_and_shutdown'
-		    } : undefined
+			onlineHelp: 'qm_startup_and_shutdown',
+		    } : undefined,
 	    },
 	    ostype: {
 		header: gettext('OS Type'),
 		editor: caps.vms['VM.Config.Options'] ? 'PVE.qemu.OSTypeEdit' : undefined,
 		renderer: PVE.Utils.render_kvm_ostype,
-		defaultValue: 'other'
+		defaultValue: 'other',
 	    },
 	    bootdisk: {
-		visible: false
+		visible: false,
 	    },
 	    boot: {
 		header: gettext('Boot Order'),
@@ -136,7 +136,7 @@ Ext.define('PVE.qemu.Options', {
 			}
 		    }
 		    return text;
-		}
+		},
 	    },
 	    tablet: {
 		header: gettext('Use tablet for pointer'),
@@ -152,9 +152,9 @@ Ext.define('PVE.qemu.Options', {
 			uncheckedValue: 0,
 			defaultValue: 1,
 			deleteDefaultValue: true,
-			fieldLabel: gettext('Enabled')
-		    }
-		} : undefined
+			fieldLabel: gettext('Enabled'),
+		    },
+		} : undefined,
 	    },
 	    hotplug: {
 		header: gettext('Hotplug'),
@@ -169,9 +169,9 @@ Ext.define('PVE.qemu.Options', {
 			value: '',
 			multiSelect: true,
 			fieldLabel: gettext('Hotplug'),
-			allowBlank: true
-		    }
-		} : undefined
+			allowBlank: true,
+		    },
+		} : undefined,
 	    },
 	    acpi: {
 		header: gettext('ACPI support'),
@@ -187,9 +187,9 @@ Ext.define('PVE.qemu.Options', {
 			uncheckedValue: 0,
 			defaultValue: 1,
 			deleteDefaultValue: true,
-			fieldLabel: gettext('Enabled')
-		    }
-		} : undefined
+			fieldLabel: gettext('Enabled'),
+		    },
+		} : undefined,
 	    },
 	    kvm: {
 		header: gettext('KVM hardware virtualization'),
@@ -205,9 +205,9 @@ Ext.define('PVE.qemu.Options', {
 			uncheckedValue: 0,
 			defaultValue: 1,
 			deleteDefaultValue: true,
-			fieldLabel: gettext('Enabled')
-		    }
-		} : undefined
+			fieldLabel: gettext('Enabled'),
+		    },
+		} : undefined,
 	    },
 	    freeze: {
 		header: gettext('Freeze CPU at startup'),
@@ -223,9 +223,9 @@ Ext.define('PVE.qemu.Options', {
 			defaultValue: 0,
 			deleteDefaultValue: true,
 			labelWidth: 140,
-			fieldLabel: gettext('Freeze CPU at startup')
-		    }
-		} : undefined
+			fieldLabel: gettext('Freeze CPU at startup'),
+		    },
+		} : undefined,
 	    },
 	    localtime: {
 		header: gettext('Use local time for RTC'),
@@ -245,9 +245,9 @@ Ext.define('PVE.qemu.Options', {
 			    [0, PVE.Utils.render_localtime(0)],
 			],
 			labelWidth: 140,
-			fieldLabel: gettext('Use local time for RTC')
-		    }
-		} : undefined
+			fieldLabel: gettext('Use local time for RTC'),
+		    },
+		} : undefined,
 	    },
 	    startdate: {
 		header: gettext('RTC start date'),
@@ -262,15 +262,15 @@ Ext.define('PVE.qemu.Options', {
 			value: 'now',
 			fieldLabel: gettext('RTC start date'),
 			vtype: 'QemuStartDate',
-			allowBlank: true
-		    }
-		} : undefined
+			allowBlank: true,
+		    },
+		} : undefined,
 	    },
 	    smbios1: {
 		header: gettext('SMBIOS settings (type1)'),
 		defaultValue: '',
 		renderer: Ext.String.htmlEncode,
-		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.Smbios1Edit' : undefined
+		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.Smbios1Edit' : undefined,
 	    },
 	    agent: {
 		header: 'QEMU Guest Agent',
@@ -282,9 +282,9 @@ Ext.define('PVE.qemu.Options', {
 		    width: 350,
 		    items: {
 			xtype: 'pveAgentFeatureSelector',
-			name: 'agent'
-		    }
-		} : undefined
+			name: 'agent',
+		    },
+		} : undefined,
 	    },
 	    protection: {
 		header: gettext('Protection'),
@@ -299,9 +299,9 @@ Ext.define('PVE.qemu.Options', {
 			uncheckedValue: 0,
 			defaultValue: 0,
 			deleteDefaultValue: true,
-			fieldLabel: gettext('Enabled')
-		    }
-		} : undefined
+			fieldLabel: gettext('Enabled'),
+		    },
+		} : undefined,
 	    },
 	    spice_enhancements: {
 		header: gettext('Spice Enhancements'),
@@ -314,8 +314,8 @@ Ext.define('PVE.qemu.Options', {
 		    items: {
 			xtype: 'pveSpiceEnhancementSelector',
 			name: 'spice_enhancements',
-		    }
-		} : undefined
+		    },
+		} : undefined,
 	    },
 	    vmstatestorage: {
 		header: gettext('VM State storage'),
@@ -336,12 +336,12 @@ Ext.define('PVE.qemu.Options', {
 			skipEmptyText: true,
 			nodename: nodename,
 			name: 'vmstatestorage',
-		    }
-		} : undefined
+		    },
+		} : undefined,
 	    },
 	    hookscript: {
-		header: gettext('Hookscript')
-	    }
+		header: gettext('Hookscript'),
+	    },
 	};
 
 	var baseurl = 'nodes/' + nodename + '/qemu/' + vmid + '/config';
@@ -349,7 +349,7 @@ Ext.define('PVE.qemu.Options', {
 	var edit_btn = new Ext.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
-	    handler: function() { me.run_editor(); }
+	    handler: function() { me.run_editor(); },
 	});
 
 	var revert_btn = new PVE.button.PendingRevert();
@@ -378,12 +378,12 @@ Ext.define('PVE.qemu.Options', {
 	    tbar: [ edit_btn, revert_btn ],
 	    rows: rows,
 	    editorConfig: {
-		url: "/api2/extjs/" + baseurl
+		url: "/api2/extjs/" + baseurl,
 	    },
 	    listeners: {
 		itemdblclick: me.run_editor,
-		selectionchange: set_button_status
-	    }
+		selectionchange: set_button_status,
+	    },
 	});
 
 	me.callParent();
@@ -395,6 +395,6 @@ Ext.define('PVE.qemu.Options', {
 	me.mon(me.getStore(), 'datachanged', function() {
 	    set_button_status();
 	});
-    }
+    },
 });
 

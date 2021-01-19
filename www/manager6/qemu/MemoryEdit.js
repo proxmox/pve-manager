@@ -51,9 +51,9 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 			    bf.setValue(value);
 			}
 			bf.validate();
-		    }
-		}
-	    }
+		    },
+		},
+	    },
 	];
 
 	me.advancedItems= [
@@ -73,8 +73,8 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 			var memory = me.down('field[name=memory]').getValue();
 			var shares = me.down('field[name=shares]');
 			shares.setDisabled(value === memory);
-		    }
-		}
+		    },
+		},
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
@@ -88,7 +88,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		labelWidth: labelWidth,
 		allowBlank: true,
 		emptyText: Proxmox.Utils.defaultText + ' (1000)',
-		submitEmptyText: false
+		submitEmptyText: false,
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
@@ -103,9 +103,9 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 			var memory = me.down('field[name=memory]');
 			bf.setDisabled(!value);
 			shares.setDisabled(!value || (bf.getValue() === memory.getValue()));
-		    }
-		}
-	    }
+		    },
+		},
+	    },
 	];
 
 	if (me.insideWizard) {
@@ -115,7 +115,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 	    me.advancedItems = undefined;
 	}
 	me.callParent();
-    }
+    },
 
 });
 
@@ -135,7 +135,7 @@ Ext.define('PVE.qemu.MemoryEdit', {
 	}
 
 	var ipanel = Ext.create('PVE.qemu.MemoryInputPanel', {
-	    hotplug: memoryhotplug
+	    hotplug: memoryhotplug,
 	});
 
 	Ext.apply(me, {
@@ -143,7 +143,7 @@ Ext.define('PVE.qemu.MemoryEdit', {
 	    items: [ ipanel ],
 	    // uncomment the following to use the async configiguration API
 	    // backgroundDelay: 5,
-	    width: 400
+	    width: 400,
 	});
 
 	me.callParent();
@@ -156,11 +156,11 @@ Ext.define('PVE.qemu.MemoryEdit', {
 		    ballooning: data.balloon === 0 ? '0' : '1',
 		    shares: data.shares,
 		    memory: data.memory || '512',
-		    balloon: data.balloon > 0 ? data.balloon : (data.memory || '512')
+		    balloon: data.balloon > 0 ? data.balloon : (data.memory || '512'),
 		};
 
 		ipanel.setValues(values);
-	    }
+	    },
 	});
-    }
+    },
 });

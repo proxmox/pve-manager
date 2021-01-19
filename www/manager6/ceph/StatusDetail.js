@@ -4,15 +4,15 @@ Ext.define('PVE.ceph.StatusDetail', {
 
     layout: {
 	type: 'hbox',
-	align: 'stretch'
+	align: 'stretch',
     },
 
     bodyPadding: '0 5',
     defaults: {
 	xtype: 'box',
 	style: {
-	    'text-align':'center'
-	}
+	    'text-align':'center',
+	},
     },
 
     items: [{
@@ -27,7 +27,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    upout: 0,
 	    downin: 0,
 	    downout: 0,
-	    oldosds: []
+	    oldosds: [],
 	},
 	tpl: [
 	    '<h3>' + 'OSDs' + '</h3>',
@@ -68,8 +68,8 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    '<div style="clear:both"></div>',
 	    '</tpl>',
 	    '</div>',
-	    '</tpl>'
-	]
+	    '</tpl>',
+	],
     },
     {
 	flex: 1,
@@ -83,7 +83,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    '#CFCFCF',
 	    '#21BF4B',
 	    '#FFCC00',
-	    '#FF6C59'
+	    '#FF6C59',
 	],
 	store: { },
 	series: [
@@ -101,13 +101,13 @@ Ext.define('PVE.ceph.StatusDetail', {
 				state.state_name + ': ' + state.count.toString();
 			});
 			tooltip.setHtml(html);
-		    }
+		    },
 		},
 		subStyle: {
-		    strokeStyle: false
-		}
-	    }
-	]
+		    strokeStyle: false,
+		},
+	    },
+	],
     },
     {
 	flex: 1.6,
@@ -116,7 +116,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	maxHeight: 250,
 	scrollable: true,
 	data: {
-	    states: []
+	    states: [],
 	},
 	tpl: [
 	    '<h3>' + 'PGs' + '</h3>',
@@ -124,8 +124,8 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    '<div class="left-aligned"><i class ="fa fa-circle {cls}"></i> {state_name}:</div>',
 	    '<div class="right-aligned">{count}</div><br />',
 	    '<div style="clear:both"></div>',
-	    '</tpl>'
-	]
+	    '</tpl>',
+	],
     }],
 
     // similar to mgr dashboard
@@ -163,7 +163,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	recovery_unfound: 3,
 	snaptrim_error: 3,
 	stale: 3,
-	undersized: 3
+	undersized: 3,
     },
 
     statecategories: [
@@ -171,20 +171,20 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    text: gettext('Unknown'),
 	    count: 0,
 	    states: [],
-	    cls: 'faded'
+	    cls: 'faded',
 	},
 	{
 	    text: gettext('Clean'),
-	    cls: 'good'
+	    cls: 'good',
 	},
 	{
 	    text: gettext('Working'),
-	    cls: 'warning'
+	    cls: 'warning',
 	},
 	{
 	    text: gettext('Error'),
-	    cls: 'critical'
-	}
+	    cls: 'critical',
+	},
     ],
 
     updateAll: function(metadata, status) {
@@ -206,7 +206,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 		if (version != maxversion) {
 		    oldosds.push({
 			id: osd.id,
-			version: version
+			version: version,
 		    });
 		}
 	    });
@@ -215,7 +215,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	// update PGs sorted
 	var pgmap = status.pgmap || {};
 	var pgs_by_state = pgmap.pgs_by_state || [];
-	pgs_by_state.sort(function(a,b){
+	pgs_by_state.sort(function(a, b){
 	    return (a.state_name < b.state_name)?-1:(a.state_name === b.state_name)?0:1;
 	});
 
@@ -253,7 +253,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    if (key === 'OSD_DOWN') {
 		found = value.summary.message.match(downinregex);
 		if (found !== null) {
-		    downin_osds = parseInt(found[1],10);
+		    downin_osds = parseInt(found[1], 10);
 		}
 	    }
 	});
@@ -278,13 +278,13 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    upout: upout_osds,
 	    downin: downin_osds,
 	    downout: downout_osds,
-	    oldosds: oldosds
+	    oldosds: oldosds,
 	};
 	var osdcomponent = me.getComponent('osds');
 	osdcomponent.update(Ext.apply(osdcomponent.data, osds));
 
 	me.suspendLayout = false;
 	me.updateLayout();
-    }
+    },
 });
 

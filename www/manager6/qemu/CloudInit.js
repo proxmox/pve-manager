@@ -57,10 +57,10 @@ Ext.define('PVE.qemu.CloudInit', {
 		    },
 		    callback: function() {
 			me.reload();
-		    }
+		    },
 		});
 	    },
-	    text: gettext('Remove')
+	    text: gettext('Remove'),
 	},
 	{
 	    xtype: 'proxmoxButton',
@@ -73,7 +73,7 @@ Ext.define('PVE.qemu.CloudInit', {
 		var me = this.up('grid');
 		me.run_editor();
 	    },
-	    text: gettext('Edit')
+	    text: gettext('Edit'),
 	},
 	'-',
 	{
@@ -112,12 +112,12 @@ Ext.define('PVE.qemu.CloudInit', {
 			    failure: failure,
 			    callback: function() {
 				me.reload();
-			    }
+			    },
 			});
-		    }
+		    },
 		});
-	    }
-	}
+	    },
+	},
     ],
 
     border: false,
@@ -171,7 +171,7 @@ Ext.define('PVE.qemu.CloudInit', {
 	itemdblclick: function() {
 	    var me = this;
 	    me.run_editor();
-	}
+	},
     },
 
     initComponent: function() {
@@ -209,13 +209,13 @@ Ext.define('PVE.qemu.CloudInit', {
 			    deleteEmpty: true,
 			    emptyText: Proxmox.Utils.defaultText,
 			    fieldLabel: gettext('User'),
-			    name: 'ciuser'
-			}
-		    ]
+			    name: 'ciuser',
+			},
+		    ],
 		} : undefined,
 		renderer: function(value) {
 		    return value || Proxmox.Utils.defaultText;
-		}
+		},
 	    },
 	    cipassword: {
 		header: gettext('Password'),
@@ -231,27 +231,27 @@ Ext.define('PVE.qemu.CloudInit', {
 			    deleteEmpty: true,
 			    emptyText: Proxmox.Utils.noneText,
 			    fieldLabel: gettext('Password'),
-			    name: 'cipassword'
-			}
-		    ]
+			    name: 'cipassword',
+			},
+		    ],
 		} : undefined,
 		renderer: function(value) {
 		    return value || Proxmox.Utils.noneText;
-		}
+		},
 	    },
 	    searchdomain: {
 		header: gettext('DNS domain'),
 		iconCls: 'fa fa-globe',
 		editor: caps.vms['VM.Config.Network'] ? 'PVE.lxc.DNSEdit' : undefined,
 		never_delete: true,
-		defaultValue: gettext('use host settings')
+		defaultValue: gettext('use host settings'),
 	    },
 	    nameserver: {
 		header: gettext('DNS servers'),
 		iconCls: 'fa fa-globe',
 		editor: caps.vms['VM.Config.Network'] ? 'PVE.lxc.DNSEdit' : undefined,
 		never_delete: true,
-		defaultValue: gettext('use host settings')
+		defaultValue: gettext('use host settings'),
 	    },
 	    sshkeys: {
 		header: gettext('SSH public key'),
@@ -287,8 +287,8 @@ Ext.define('PVE.qemu.CloudInit', {
 			return Proxmox.Utils.noneText;
 		    }
 		},
-		defaultValue: ''
-	    }
+		defaultValue: '',
+	    },
 	};
 	var i;
 	var ipconfig_renderer = function(value, md, record, ri, ci, store, pending) {
@@ -308,19 +308,19 @@ Ext.define('PVE.qemu.CloudInit', {
 		header: gettext('IP Config') + ' (net' + i.toString() +')',
 		editor: caps.vms['VM.Config.Network'] ? 'PVE.qemu.IPConfigEdit' : undefined,
 		iconCls: 'fa fa-exchange',
-		renderer: ipconfig_renderer
+		renderer: ipconfig_renderer,
 	    };
 	    me.rows['ipconfig' + i.toString()] = {
-		visible: false
+		visible: false,
 	    };
 	}
 
 	PVE.Utils.forEachBus(['ide', 'scsi', 'sata'], function(type, id) {
 	    me.rows[type+id] = {
-		visible: false
+		visible: false,
 	    };
 	});
 	me.callParent();
 	me.mon(me.rstore, 'load', me.set_button_status, me);
-    }
+    },
 });

@@ -12,10 +12,10 @@ Ext.define('PVE.ceph.Log', {
 		me.mon(win, 'cephInstallWindowClosed', function(){
 		    me.loadTask.delay(200);
 		});
-	    }
+	    },
 	);
 	if (!windowShow) {
 	    Proxmox.Utils.setErrorMask(me, msg);
 	}
-    }
+    },
 });

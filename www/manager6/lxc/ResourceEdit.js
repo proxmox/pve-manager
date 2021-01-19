@@ -8,13 +8,13 @@ Ext.define('PVE.lxc.MemoryEdit', {
 
 	Ext.apply(me, {
 	    subject: gettext('Memory'),
-	    items: Ext.create('PVE.lxc.MemoryInputPanel')
+	    items: Ext.create('PVE.lxc.MemoryInputPanel'),
 	});
 
 	me.callParent();
 
 	me.load();
-    }
+    },
 });
 
 
@@ -26,13 +26,13 @@ Ext.define('PVE.lxc.CPUEdit', {
 
 	Ext.apply(me, {
 	    subject: gettext('CPU'),
-	    items: Ext.create('PVE.lxc.CPUInputPanel')
+	    items: Ext.create('PVE.lxc.CPUInputPanel'),
 	});
 
 	me.callParent();
 
 	me.load();
-    }
+    },
 });
 
 Ext.define('PVE.lxc.CPUInputPanel', {
@@ -63,8 +63,8 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 	    step: 1,
 	    fieldLabel: gettext('CPU limit'),
 	    allowBlank: true,
-	    emptyText: gettext('unlimited')
-	}
+	    emptyText: gettext('unlimited'),
+	},
     ],
 
     advancedColumn2: [
@@ -76,8 +76,8 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 	    minValue: 8,
 	    maxValue: 500000,
 	    labelWidth: labelWidth,
-	    allowBlank: false
-	}
+	    allowBlank: false,
+	},
     ],
 
     initComponent: function() {
@@ -93,12 +93,12 @@ Ext.define('PVE.lxc.CPUInputPanel', {
 		fieldLabel: gettext('Cores'),
 		allowBlank: true,
 		deleteEmpty: true,
-		emptyText: gettext('unlimited')
-	    }
+		emptyText: gettext('unlimited'),
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.lxc.MemoryInputPanel', {
@@ -121,7 +121,7 @@ Ext.define('PVE.lxc.MemoryInputPanel', {
 		step: 32,
 		fieldLabel: gettext('Memory') + ' (MiB)',
 		labelWidth: labelWidth,
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
@@ -131,8 +131,8 @@ Ext.define('PVE.lxc.MemoryInputPanel', {
 		step: 32,
 		fieldLabel: gettext('Swap') + ' (MiB)',
 		labelWidth: labelWidth,
-		allowBlank: false
-	    }
+		allowBlank: false,
+	    },
 	];
 
 	if (me.insideWizard) {
@@ -142,5 +142,5 @@ Ext.define('PVE.lxc.MemoryInputPanel', {
 	}
 
 	me.callParent();
-    }
+    },
 });

@@ -21,7 +21,7 @@ Ext.define('PVE.dc.BackupEdit', {
         }
 
 	var vmidField = Ext.create('Ext.form.field.Hidden', {
-	    name: 'vmid'
+	    name: 'vmid',
 	});
 
 	// 'value' can be assigned a string or an array
@@ -31,11 +31,11 @@ Ext.define('PVE.dc.BackupEdit', {
 		['include', gettext('Include selected VMs')],
 		['all', gettext('All')],
 		['exclude', gettext('Exclude selected VMs')],
-		['pool', gettext('Pool based')]
+		['pool', gettext('Pool based')],
 	    ],
 	    fieldLabel: gettext('Selection mode'),
 	    name: 'selMode',
-	    value: ''
+	    value: '',
 	});
 
 	var sm = Ext.create('Ext.selection.CheckboxModel', {
@@ -52,8 +52,8 @@ Ext.define('PVE.dc.BackupEdit', {
 		    vmidField.suspendEvent('change');
 		    vmidField.setValue(sel);
 		    vmidField.resumeEvent('change');
-		}
-	    }
+		},
+	    },
 	});
 
 	var storagesel = Ext.create('PVE.form.StorageSelector', {
@@ -74,16 +74,16 @@ Ext.define('PVE.dc.BackupEdit', {
 		    } else if (!compressionSelector.getEditable()) {
 			compressionSelector.setDisabled(false);
 		    }
-		}
-	    }
+		},
+	    },
 	});
 
 	var store = new Ext.data.Store({
 	    model: 'PVEResources',
 	    sorters: {
 		property: 'vmid',
-		order: 'ASC'
-	    }
+		order: 'ASC',
+	    },
 	});
 
 	var vmgrid = Ext.createWidget('grid', {
@@ -96,11 +96,11 @@ Ext.define('PVE.dc.BackupEdit', {
 		{
 		    header: 'ID',
 		    dataIndex: 'vmid',
-		    width: 60
+		    width: 60,
 		},
 		{
 		    header: gettext('Node'),
-		    dataIndex: 'node'
+		    dataIndex: 'node',
 		},
 		{
 		    header: gettext('Status'),
@@ -111,18 +111,18 @@ Ext.define('PVE.dc.BackupEdit', {
 			} else {
 			    return Proxmox.Utils.stoppedText;
 			}
-		    }
+		    },
 		},
 		{
 		    header: gettext('Name'),
 		    dataIndex: 'name',
-		    flex: 1
+		    flex: 1,
 		},
 		{
 		    header: gettext('Type'),
-		    dataIndex: 'type'
-		}
-	    ]
+		    dataIndex: 'type',
+		},
+	    ],
 	});
 
 	var selectPoolMembers = function(poolid) {
@@ -134,8 +134,8 @@ Ext.define('PVE.dc.BackupEdit', {
 		{
 		    id: 'poolFilter',
 		    property: 'pool',
-		    value: poolid
-		}
+		    value: poolid,
+		},
 	    ]);
 	    sm.selectAll(true);
 	};
@@ -148,8 +148,8 @@ Ext.define('PVE.dc.BackupEdit', {
 	    listeners: {
 		change: function( selpool, newValue, oldValue) {
 		    selectPoolMembers(newValue);
-		}
-	    }
+		},
+	    },
 	});
 
 	var nodesel = Ext.create('PVE.form.NodeSelector', {
@@ -174,8 +174,8 @@ Ext.define('PVE.dc.BackupEdit', {
 		    if (mode === 'pool') {
 			selectPoolMembers(selPool.value);
 		    }
-		}
-	    }
+		},
+	    },
 	});
 
 	var column1 = [
@@ -187,7 +187,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		fieldLabel: gettext('Day of week'),
 		multiSelect: true,
 		value: ['sat'],
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'timefield',
@@ -196,37 +196,37 @@ Ext.define('PVE.dc.BackupEdit', {
 		format: 'H:i',
 		formatText: 'HH:MM',
 		value: '00:00',
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    selModeField,
-	    selPool
+	    selPool,
 	];
 
 	var column2 = [
 	    {
 		xtype: 'textfield',
 		fieldLabel: gettext('Send email to'),
-		name: 'mailto'
+		name: 'mailto',
 	    },
 	    {
 		xtype: 'pveEmailNotificationSelector',
 		fieldLabel: gettext('Email notification'),
 		name: 'mailnotification',
 		deleteEmpty: me.isCreate ? false : true,
-		value: me.isCreate ? 'always' : ''
+		value: me.isCreate ? 'always' : '',
 	    },
 	    {
 		xtype: 'pveCompressionSelector',
 		fieldLabel: gettext('Compression'),
 		name: 'compress',
 		deleteEmpty: me.isCreate ? false : true,
-		value: 'zstd'
+		value: 'zstd',
 	    },
 	    {
 		xtype: 'pveBackupModeSelector',
 		fieldLabel: gettext('Mode'),
 		value: 'snapshot',
-		name: 'mode'
+		name: 'mode',
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
@@ -234,9 +234,9 @@ Ext.define('PVE.dc.BackupEdit', {
 		name: 'enabled',
 		uncheckedValue: 0,
 		defaultValue: 1,
-		checked: true
+		checked: true,
 	    },
-	    vmidField
+	    vmidField,
 	];
 
 	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
@@ -270,7 +270,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		    delete values.pool;
 		}
 		return values;
-	    }
+	    },
 	});
 
 	var update_vmid_selection = function(list, mode) {
@@ -342,7 +342,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		    } else {
 			update_vmid_selection(list, mode);
 		    }
-		}
+		},
 	    });
 	};
 
@@ -350,7 +350,7 @@ Ext.define('PVE.dc.BackupEdit', {
             subject: gettext("Backup Job"),
             url: url,
             method: method,
-	    items: [ ipanel, vmgrid ]
+	    items: [ ipanel, vmgrid ],
         });
 
         me.callParent();
@@ -380,12 +380,12 @@ Ext.define('PVE.dc.BackupEdit', {
 		    }
 
 		    me.setValues(data);
-               }
+               },
             });
         }
 
 	reload();
-    }
+    },
 });
 
 
@@ -416,7 +416,7 @@ Ext.define('PVE.dc.BackupDiskTree', {
 	    scope: this,
 	    callback: function(panel) {
 		panel.collapseAll();
-	    }
+	    },
 	},
     ],
 
@@ -500,8 +500,8 @@ Ext.define('PVE.dc.BackupDiskTree', {
 			} else {
 			    return txt + 'question-circle';
 			}
-		    }
-		}
+		    },
+		},
 	    ],
 	    header: {
 		items: [{
@@ -547,16 +547,16 @@ Ext.define('PVE.dc.BackupDiskTree', {
 				});
 				return match;
 			    });
-			}
-		    }
-		}
+			},
+		    },
+		},
 	    ]},
 	});
 
 	me.callParent();
 
 	me.reload();
-    }
+    },
 });
 
 Ext.define('PVE.dc.BackupInfo', {
@@ -603,7 +603,7 @@ Ext.define('PVE.dc.BackupInfo', {
 	    name: 'pool',
 	    fieldLabel: gettext('Pool to backup'),
 	    xtype: 'displayfield',
-	}
+	},
     ],
     column2: [
 	{
@@ -709,7 +709,7 @@ Ext.define('PVE.dc.BackupInfo', {
 	me.callParent();
 
 	me.setValues(me.record);
-    }
+    },
 });
 
 
@@ -783,9 +783,9 @@ Ext.define('PVE.dc.BackedGuests', {
 				});
 				return match;
 			    });
-			}
-		    }
-		}
+			},
+		    },
+		},
 	    ],
 	    viewConfig: {
 		stripeRows: true,
@@ -812,8 +812,8 @@ Ext.define('PVE.dc.BackupView', {
 	    model: 'pve-cluster-backup',
 	    proxy: {
                 type: 'proxmox',
-		url: "/api2/json/cluster/backup"
-	    }
+		url: "/api2/json/cluster/backup",
+	    },
 	});
 
 	var not_backed_store = new Ext.data.Store({
@@ -848,7 +848,7 @@ Ext.define('PVE.dc.BackupView', {
 	    }
 
 	    var win = Ext.create('PVE.dc.BackupEdit', {
-		jobid: rec.data.id
+		jobid: rec.data.id,
 	    });
 	    win.on('destroy', reload);
 	    win.show();
@@ -886,10 +886,10 @@ Ext.define('PVE.dc.BackupView', {
 		    region: 'center',
 		    layout: {
 			type: 'vbox',
-			align: 'stretch'
+			align: 'stretch',
 		    },
 		    items: [infoview, disktree],
-		}]
+		}],
 	    }).show();
 	};
 
@@ -949,7 +949,7 @@ Ext.define('PVE.dc.BackupView', {
 		    errors.push(node + ': ' + response.htmlStatus);
 		    postRequest();
 		},
-		success: postRequest
+		success: postRequest,
 	    }));
 	};
 
@@ -974,10 +974,10 @@ Ext.define('PVE.dc.BackupView', {
 		    region: 'center',
 		    layout: {
 			type: 'vbox',
-			align: 'stretch'
+			align: 'stretch',
 		    },
 		    items: [backedinfo],
-		}]
+		}],
 	    }).show();
 	};
 
@@ -985,7 +985,7 @@ Ext.define('PVE.dc.BackupView', {
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	var run_btn = new Proxmox.button.Button({
@@ -1008,9 +1008,9 @@ Ext.define('PVE.dc.BackupView', {
 			    return;
 			}
 			run_backup_now(rec.data);
-		    }
+		    },
 		});
-	    }
+	    },
 	});
 
 	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
@@ -1018,7 +1018,7 @@ Ext.define('PVE.dc.BackupView', {
 	    baseurl: '/cluster/backup',
 	    callback: function() {
 		reload();
-	    }
+	    },
 	});
 
 	var detail_btn = new Proxmox.button.Button({
@@ -1048,16 +1048,16 @@ Ext.define('PVE.dc.BackupView', {
 	    stateful: true,
 	    stateId: 'grid-dc-backup',
 	    viewConfig: {
-		trackOver: false
+		trackOver: false,
 	    },
 	    tbar: [
 		{
 		    text: gettext('Add'),
 		    handler: function() {
-			var win = Ext.create('PVE.dc.BackupEdit',{});
+			var win = Ext.create('PVE.dc.BackupEdit', {});
 			win.on('destroy', reload);
 			win.show();
-		    }
+		    },
 		},
 		'-',
 		remove_btn,
@@ -1078,7 +1078,7 @@ Ext.define('PVE.dc.BackupView', {
 		    sortable: true,
 		    disabled: true,
 		    disabledCls: 'x-item-enabled',
-		    stopSelection: false
+		    stopSelection: false,
 		},
 		{
 		    header: gettext('Node'),
@@ -1090,43 +1090,43 @@ Ext.define('PVE.dc.BackupView', {
 			    return value;
 			}
 			return me.allText;
-		    }
+		    },
 		},
 		{
 		    header: gettext('Day of week'),
 		    width: 200,
 		    sortable: false,
 		    dataIndex: 'dow',
-		    renderer: PVE.Utils.render_backup_days_of_week
+		    renderer: PVE.Utils.render_backup_days_of_week,
 		},
 		{
 		    header: gettext('Start Time'),
 		    width: 60,
 		    sortable: true,
-		    dataIndex: 'starttime'
+		    dataIndex: 'starttime',
 		},
 		{
 		    header: gettext('Storage'),
 		    width: 100,
 		    sortable: true,
-		    dataIndex: 'storage'
+		    dataIndex: 'storage',
 		},
 		{
 		    header: gettext('Selection'),
 		    flex: 1,
 		    sortable: false,
 		    dataIndex: 'vmid',
-		    renderer: PVE.Utils.render_backup_selection
-		}
+		    renderer: PVE.Utils.render_backup_selection,
+		},
 	    ],
 	    listeners: {
 		activate: reload,
-		itemdblclick: run_editor
-	    }
+		itemdblclick: run_editor,
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 }, function() {
 
     Ext.define('pve-cluster-backup', {
@@ -1136,7 +1136,7 @@ Ext.define('PVE.dc.BackupView', {
 	    'storage', 'node', 'vmid', 'exclude',
 	    'mailto', 'pool', 'compress', 'mode',
 	    { name: 'enabled', type: 'boolean' },
-	    { name: 'all', type: 'boolean' }
-	]
+	    { name: 'all', type: 'boolean' },
+	],
     });
 });

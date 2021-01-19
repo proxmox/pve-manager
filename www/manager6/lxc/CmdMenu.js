@@ -23,7 +23,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		method: 'POST',
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
+		},
 	    });
 	};
 
@@ -55,7 +55,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		disabled: running,
 		handler: function() {
 		    vm_command('start');
-		}
+		},
 	    },
 //	    {
 //		text: gettext('Suspend'),
@@ -94,7 +94,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 
 			vm_command('shutdown');
 		    });
-		}
+		},
 	    },
 	    {
 		text: gettext('Stop'),
@@ -110,7 +110,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 
 			vm_command("stop");
 		    });
-		}
+		},
 	    },
 	    {
 		text: gettext('Reboot'),
@@ -126,11 +126,11 @@ Ext.define('PVE.lxc.CmdMenu', {
 
 			vm_command("reboot");
 		    });
-		}
+		},
 	    },
 	    {
 		xtype: 'menuseparator',
-		hidden: (standalone || !caps.vms['VM.Migrate']) && !caps.vms['VM.Allocate'] && !caps.vms['VM.Clone']
+		hidden: (standalone || !caps.vms['VM.Migrate']) && !caps.vms['VM.Allocate'] && !caps.vms['VM.Clone'],
 	    },
 	    {
 		text: gettext('Clone'),
@@ -138,7 +138,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		hidden: !caps.vms['VM.Clone'],
 		handler: function() {
 		    PVE.window.Clone.wrap(nodename, vmid, me.isTemplate, 'lxc');
-		}
+		},
 	    },
 	    {
 		text: gettext('Migrate'),
@@ -148,10 +148,10 @@ Ext.define('PVE.lxc.CmdMenu', {
 		    var win = Ext.create('PVE.window.Migrate', {
 			vmtype: 'lxc',
 			nodename: nodename,
-			vmid: vmid
+			vmid: vmid,
 		    });
 		    win.show();
-		}
+		},
 	    },
 	    {
 		text: gettext('Convert to template'),
@@ -168,10 +168,10 @@ Ext.define('PVE.lxc.CmdMenu', {
 			    method: 'POST',
 			    failure: function(response, opts) {
 				Ext.Msg.alert('Error', response.htmlStatus);
-			    }
+			    },
 			});
 		    });
-		}
+		},
 	    },
 	    { xtype: 'menuseparator' },
 	    {
@@ -179,10 +179,10 @@ Ext.define('PVE.lxc.CmdMenu', {
 		iconCls: 'fa fa-fw fa-terminal',
 		handler: function() {
 		    PVE.Utils.openDefaultConsoleWindow(true, 'lxc', vmid, nodename, vmname);
-		}
-	    }
+		},
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

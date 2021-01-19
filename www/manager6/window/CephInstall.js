@@ -18,11 +18,11 @@ Ext.define('PVE.ceph.Install', {
     layout: {
         align: 'stretch',
         pack: 'center',
-	type: 'vbox'
+	type: 'vbox',
     },
     viewModel: {
 	data: {
-	      isInstalled: false
+	      isInstalled: false,
 	},
 	formulas: {
 	    buttonText: function (get){
@@ -42,41 +42,41 @@ Ext.define('PVE.ceph.Install', {
 		    Ext.String.format(gettext('{0} is not installed on this node.'), 'Ceph') + '<br>' +
 		    gettext('Would you like to install it now?') + '</p>';
 		}
-	    }
-	}
+	    },
+	},
     },
     items: [
 	{
 	    bind: {
-		html: '{windowText}'
+		html: '{windowText}',
 	    },
 	    border: false,
 	    padding: 5,
-	    bodyCls: 'install-mask'
+	    bodyCls: 'install-mask',
 
 	},
 	{
 	    xtype: 'button',
 	    bind: {
-		text: '{buttonText}'
+		text: '{buttonText}',
 	    },
 	    viewModel: {},
 	    cbind: {
-		nodename: '{nodename}'
+		nodename: '{nodename}',
 	    },
 	    handler: function() {
 		var me = this.up('pveCephInstallWindow');
-		var win = Ext.create('PVE.ceph.CephInstallWizard',{
-		    nodename: me.nodename
+		var win = Ext.create('PVE.ceph.CephInstallWizard', {
+		    nodename: me.nodename,
 		});
 		win.getViewModel().set('isInstalled', this.getViewModel().get('isInstalled'));
 		win.show();
-		me.mon(win,'beforeClose', function(){
+		me.mon(win, 'beforeClose', function(){
 		    me.fireEvent("cephInstallWindowClosed");
 		    me.close();
 		});
 
-	    }
-	}
-    ]
+	    },
+	},
+    ],
 });

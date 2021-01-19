@@ -8,15 +8,15 @@ Ext.define('PVE.dc.Health', {
     height: 250,
     layout: {
 	type: 'hbox',
-	align: 'stretch'
+	align: 'stretch',
     },
 
     defaults: {
 	flex: 1,
 	xtype: 'box',
 	style: {
-	    'text-align':'center'
-	}
+	    'text-align':'center',
+	},
     },
 
     nodeList: [],
@@ -30,12 +30,12 @@ Ext.define('PVE.dc.Health', {
 
 	var cluster = {
 	    iconCls: PVE.Utils.get_health_icon('good', true),
-	    text: gettext("Standalone node - no cluster defined")
+	    text: gettext("Standalone node - no cluster defined"),
 	};
 
 	var nodes = {
 	    online: 0,
-	    offline: 0
+	    offline: 0,
 	};
 
 	// by default we have one node
@@ -98,20 +98,20 @@ Ext.define('PVE.dc.Health', {
 	destroy: function() {
 	    var me = this;
 	    me.cephstore.stopUpdate();
-	}
+	},
     },
 
     items: [
 	{
 	    itemId: 'clusterstatus',
 	    xtype: 'pveHealthWidget',
-	    title: gettext('Status')
+	    title: gettext('Status'),
 	},
 	{
 	    itemId: 'nodestatus',
 	    data: {
 		online: 0,
-		offline: 0
+		offline: 0,
 	    },
 	    tpl: [
 		'<h3>' + gettext('Nodes') + '</h3><br />',
@@ -127,8 +127,8 @@ Ext.define('PVE.dc.Health', {
 		gettext('Offline'),
 		'</div>',
 		'<div class="right-aligned">{offline}</div>',
-		'</div>'
-	    ]
+		'</div>',
+	    ],
 	},
 	{
 	    itemId: 'ceph',
@@ -143,9 +143,9 @@ Ext.define('PVE.dc.Health', {
 		click: function() {
 		    var sp = Ext.state.Manager.getProvider();
 		    sp.set('dctab', {value:'ceph'}, true);
-		}
-	    }
-	}
+		},
+	    },
+	},
     ],
 
     initComponent: function() {
@@ -158,11 +158,11 @@ Ext.define('PVE.dc.Health', {
 	    storeid: 'pve-cluster-ceph',
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodeList[me.nodeIndex].node + '/ceph/status'
-	    }
+		url: '/api2/json/nodes/' + me.nodeList[me.nodeIndex].node + '/ceph/status',
+	    },
 	});
 	me.callParent();
 	me.mon(me.cephstore, 'load', me.updateCeph, me);
 	me.cephstore.startUpdate();
-    }
+    },
 });

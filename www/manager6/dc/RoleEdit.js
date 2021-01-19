@@ -30,16 +30,16 @@ Ext.define('PVE.dc.RoleEdit', {
 		    name: 'roleid',
 		    value: me.roleid,
 		    allowBlank: false,
-		    fieldLabel: gettext('Name')
+		    fieldLabel: gettext('Name'),
 		},
 		{
 		    xtype: 'pvePrivilegesSelector',
 		    name: 'privs',
 		    value: me.privs,
 		    allowBlank: false,
-		    fieldLabel: gettext('Privileges')
-		}
-	    ]
+		    fieldLabel: gettext('Privileges'),
+		},
+	    ],
 	});
 
 	me.callParent();
@@ -52,10 +52,10 @@ Ext.define('PVE.dc.RoleEdit', {
 
 		    me.setValues({
 			privs: keys,
-			roleid: me.roleid
+			roleid: me.roleid,
 		    });
-		}
+		},
 	    });
 	}
-    }
+    },
 });

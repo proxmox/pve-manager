@@ -30,12 +30,12 @@ Ext.define('PVE.form.IPRefSelector', {
 	    idProperty: 'ref',
 	    proxy: {
 		type: 'proxmox',
-		url: url
+		url: url,
 	    },
 	    sorters: {
 		property: 'ref',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
 	var disable_query_for_ips = function(f, value) {
@@ -54,7 +54,7 @@ Ext.define('PVE.form.IPRefSelector', {
 		header: gettext('Type'),
 		dataIndex: 'type',
 		hideable: false,
-		width: 60
+		width: 60,
 	    });
 	}
 
@@ -63,24 +63,24 @@ Ext.define('PVE.form.IPRefSelector', {
 		header: gettext('Name'),
 		dataIndex: 'ref',
 		hideable: false,
-		width: 140
+		width: 140,
 	    },
 	    {
 		header: gettext('Comment'),
 		dataIndex: 'comment',
 		renderer: Ext.String.htmlEncode,
-		flex: 1
-	    }
+		flex: 1,
+	    },
 	);
 
 	Ext.apply(me, {
 	    store: store,
-            listConfig: { columns: columns }
+            listConfig: { columns: columns },
 	});
 
 	me.on('change', disable_query_for_ips);
 
         me.callParent();
-    }
+    },
 });
 

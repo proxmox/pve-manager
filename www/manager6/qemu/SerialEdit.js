@@ -43,9 +43,9 @@ Ext.define('PVE.qemu.SerialnputPanel', {
 			return "This device is already in use.";
 		}
 		return true;
-	    }
-	}
-    ]
+	    },
+	},
+    ],
 });
 
 Ext.define('PVE.qemu.SerialEdit', {
@@ -66,7 +66,7 @@ Ext.define('PVE.qemu.SerialEdit', {
 	var ipanel = Ext.create('PVE.qemu.SerialnputPanel', {});
 
 	Ext.apply(me, {
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -74,7 +74,7 @@ Ext.define('PVE.qemu.SerialEdit', {
 	me.load({
 	    success: function(response, options) {
 		ipanel.setVMConfig(response.result.data);
-	    }
+	    },
 	});
-    }
+    },
 });

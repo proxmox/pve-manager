@@ -15,7 +15,7 @@ Ext.define('PVE.controller.StorageEdit', {
 		    maxfiles.reset();
 		}
 		maxfiles.setDisabled(!hasBackups);
-	    }
-	}
-    }
+	    },
+	},
+    },
 });

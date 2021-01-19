@@ -70,10 +70,10 @@ Ext.define('PVE.form.GuestIDSelector', {
 			failure: function(response, opts) {
 			    me.exists = true;
 			    me.validate();
-			}
+			},
 		    });
-		}
-	    }
+		},
+	    },
 	});
 
         me.callParent();
@@ -84,8 +84,8 @@ Ext.define('PVE.form.GuestIDSelector', {
 		method: 'GET',
 		success: function(response, opts) {
 		    me.setRawValue(response.result.data);
-		}
+		},
 	    });
 	}
-    }
+    },
 });

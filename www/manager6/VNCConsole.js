@@ -52,8 +52,8 @@ Ext.define('PVE.noVncConsole', {
 		    PVE.Utils.cleanEmptyObjectKeys(queryDict);
 		    var url = '/?' + Ext.Object.toQueryString(queryDict);
 		    box.load(url);
-		}
-	    }
+		},
+	    },
 	});
 
 	me.callParent();
@@ -67,6 +67,6 @@ Ext.define('PVE.noVncConsole', {
 	// reload IFrame content to forcibly reconnect VNC/xterm.js to VM
 	var box = this.down('[itemid=vncconsole]');
 	box.getWin().location.reload();
-    }
+    },
 });
 

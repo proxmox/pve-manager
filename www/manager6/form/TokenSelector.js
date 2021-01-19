@@ -45,16 +45,16 @@ Ext.define('PVE.form.TokenSelector', {
 		sortable: true,
 		dataIndex: 'id',
 		renderer: Ext.String.htmlEncode,
-		flex: 1
+		flex: 1,
 	    },
 	    {
 		header: gettext('Comment'),
 		sortable: false,
 		dataIndex: 'comment',
 		renderer: Ext.String.htmlEncode,
-		flex: 1
-	    }
-	]
+		flex: 1,
+	    },
+	],
     },
 }, function() {
     Ext.define('pve-tokens', {
@@ -62,8 +62,8 @@ Ext.define('PVE.form.TokenSelector', {
 	fields: [
 	    'id', 'userid', 'tokenid', 'comment',
 	    { type: 'boolean', name: 'privsep' },
-	    { type: 'date', dateFormat: 'timestamp', name: 'expire' }
+	    { type: 'date', dateFormat: 'timestamp', name: 'expire' },
 	],
-	idProperty: 'id'
+	idProperty: 'id',
     });
 });

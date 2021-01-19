@@ -20,7 +20,7 @@ Ext.define('PVE.window.MPResize', {
 		var win = Ext.create('Proxmox.window.TaskViewer', { upid: upid });
 		win.show();
 		me.close();
-	    }
+	    },
 	});
     },
 
@@ -42,8 +42,8 @@ Ext.define('PVE.window.MPResize', {
 		value: me.disk,
 		fieldLabel: gettext('Disk'),
 		vtype: 'StorageId',
-		allowBlank: false
-	    }
+		allowBlank: false,
+	    },
 	];
 
 	me.hdsizesel = Ext.createWidget('numberfield', {
@@ -53,7 +53,7 @@ Ext.define('PVE.window.MPResize', {
 	    decimalPrecision: 3,
 	    value: '0',
 	    fieldLabel: gettext('Size Increment') + ' (GiB)',
-	    allowBlank: false
+	    allowBlank: false,
 	});
 
 	items.push(me.hdsizesel);
@@ -63,9 +63,9 @@ Ext.define('PVE.window.MPResize', {
 	    border: false,
 	    fieldDefaults: {
 		labelWidth: 120,
-		anchor: '100%'
+		anchor: '100%',
 	    },
-	    items: items
+	    items: items,
 	});
 
 	var form = me.formPanel.getForm();
@@ -80,7 +80,7 @@ Ext.define('PVE.window.MPResize', {
 		    var values = form.getValues();
 		    me.resize_disk(me.disk, values.size);
 		}
-	    }
+	    },
 	});
 
 	Ext.apply(me, {
@@ -88,7 +88,7 @@ Ext.define('PVE.window.MPResize', {
 	    border: false,
 	    layout: 'fit',
 	    buttons: [ submitBtn ],
-	    items: [ me.formPanel ]
+	    items: [ me.formPanel ],
 	});
 
 
@@ -98,5 +98,5 @@ Ext.define('PVE.window.MPResize', {
 	    return;
 	}
 
-    }
+    },
 });

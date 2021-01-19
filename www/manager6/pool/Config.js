@@ -20,25 +20,25 @@ Ext.define('PVE.pool.Config', {
 		    title: gettext('Summary'),
 		    iconCls: 'fa fa-book',
 		    xtype: 'pvePoolSummary',
-		    itemId: 'summary'
+		    itemId: 'summary',
 		},
 		{
 		    title: gettext('Members'),
 		    xtype: 'pvePoolMembers',
 		    iconCls: 'fa fa-th',
 		    pool: pool,
-		    itemId: 'members'
+		    itemId: 'members',
 		},
 		{
 		    xtype: 'pveACLView',
 		    title: gettext('Permissions'),
 		    iconCls: 'fa fa-unlock',
 		    itemId: 'permissions',
-		    path: '/pool/' + pool
-		}
-	    ]
+		    path: '/pool/' + pool,
+		},
+	    ],
 	});
 
 	me.callParent();
-   }
+   },
 });

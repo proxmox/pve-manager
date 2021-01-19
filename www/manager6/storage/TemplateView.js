@@ -6,7 +6,7 @@ Ext.define('PVE.grid.TemplateSelector', {
     stateful: true,
     stateId: 'grid-template-selector',
     viewConfig: {
-	trackOver: false
+	trackOver: false,
     },
     initComponent : function() {
 	var me = this;
@@ -21,14 +21,14 @@ Ext.define('PVE.grid.TemplateSelector', {
 	    groupField: 'section',
 	    proxy: {
                 type: 'proxmox',
-		url: '/api2/json' + baseurl
-	    }
+		url: '/api2/json' + baseurl,
+	    },
 	});
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
-	var groupingFeature = Ext.create('Ext.grid.feature.Grouping',{
-            groupHeaderTpl: '{[ "Section: " + values.name ]} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})'
+	var groupingFeature = Ext.create('Ext.grid.feature.Grouping', {
+            groupHeaderTpl: '{[ "Section: " + values.name ]} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})',
 	});
 
 	var reload = function() {
@@ -56,41 +56,41 @@ Ext.define('PVE.grid.TemplateSelector', {
 				return (rec.data['package'].toLowerCase().indexOf(value) !== -1)
 				|| (rec.data.headline.toLowerCase().indexOf(value) !== -1);
 			    });
-			}
-		    }
-		}
+			},
+		    },
+		},
 	    ],
 	    features: [ groupingFeature ],
 	    columns: [
 		{
 		    header: gettext('Type'),
 		    width: 80,
-		    dataIndex: 'type'
+		    dataIndex: 'type',
 		},
 		{
 		    header: gettext('Package'),
 		    flex: 1,
-		    dataIndex: 'package'
+		    dataIndex: 'package',
 		},
 		{
 		    header: gettext('Version'),
 		    width: 80,
-		    dataIndex: 'version'
+		    dataIndex: 'version',
 		},
 		{
 		    header: gettext('Description'),
 		    flex: 1.5,
 		    renderer: Ext.String.htmlEncode,
-		    dataIndex: 'headline'
-		}
+		    dataIndex: 'headline',
+		},
 	    ],
 	    listeners: {
-		afterRender: reload
-	    }
+		afterRender: reload,
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 
 }, function() {
 
@@ -98,9 +98,9 @@ Ext.define('PVE.grid.TemplateSelector', {
 	extend: 'Ext.data.Model',
 	fields: [
 	    'template', 'type', 'package', 'version', 'headline', 'infopage',
-	    'description', 'os', 'section'
+	    'description', 'os', 'section',
 	],
-	idProperty: 'template'
+	idProperty: 'template',
     });
 
 });
@@ -120,7 +120,7 @@ Ext.define('PVE.storage.TemplateDownload', {
 	var grid = Ext.create('PVE.grid.TemplateSelector', {
 	    border: false,
 	    scrollable: true,
-	    nodename: me.nodename
+	    nodename: me.nodename,
 	});
 
 	var sm = grid.getSelectionModel();
@@ -134,7 +134,7 @@ Ext.define('PVE.storage.TemplateDownload', {
 		    url: '/nodes/' + me.nodename + '/aplinfo',
 		    params: {
 			storage: me.storage,
-			template: rec.data.template
+			template: rec.data.template,
 		    },
 		    method: 'POST',
 		    failure: function (response, opts) {
@@ -146,23 +146,23 @@ Ext.define('PVE.storage.TemplateDownload', {
 			Ext.create('Proxmox.window.TaskViewer', {
 			    upid: upid,
 			    listeners: {
-				destroy: me.reloadGrid
-			    }
+				destroy: me.reloadGrid,
+			    },
 			}).show();
 
 			me.close();
-		    }
+		    },
 		});
-	    }
+	    },
 	});
 
         Ext.apply(me, {
 	    items: grid,
-	    buttons: [ submitBtn ]
+	    buttons: [ submitBtn ],
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.storage.TemplateView', {
@@ -191,17 +191,17 @@ Ext.define('PVE.storage.TemplateView', {
 	    me.store.load();
 	}
 
-	var templateButton = Ext.create('Proxmox.button.Button',{
+	var templateButton = Ext.create('Proxmox.button.Button', {
 	    itemId: 'tmpl-btn',
 	    text: gettext('Templates'),
 	    handler: function() {
 		var win = Ext.create('PVE.storage.TemplateDownload', {
 		    nodename: nodename,
 		    storage: storage,
-		    reloadGrid: reload
+		    reloadGrid: reload,
 		});
 		win.show();
-	    }
+	    },
 	});
 
 	me.tbar = [ templateButton ];

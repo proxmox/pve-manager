@@ -8,9 +8,9 @@ Ext.define('PVE.form.QemuBiosSelector', {
         me.comboItems = [
 	    ['__default__', PVE.Utils.render_qemu_bios('')],
 	    ['seabios', PVE.Utils.render_qemu_bios('seabios')],
-	    ['ovmf', PVE.Utils.render_qemu_bios('ovmf')]
+	    ['ovmf', PVE.Utils.render_qemu_bios('ovmf')],
 	];
 
 	me.callParent();
-    }
+    },
 });

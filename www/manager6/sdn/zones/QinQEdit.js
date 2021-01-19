@@ -25,7 +25,7 @@ Ext.define('PVE.sdn.zones.QinQInputPanel', {
 		maxLength: 8,
 		value: me.zone || '',
 		fieldLabel: 'ID',
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'textfield',
@@ -39,7 +39,7 @@ Ext.define('PVE.sdn.zones.QinQInputPanel', {
 		minValue: 0,
 		maxValue: 4096,
 		fieldLabel: gettext('Service VLAN'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'proxmoxKVComboBox',
@@ -60,7 +60,7 @@ Ext.define('PVE.sdn.zones.QinQInputPanel', {
 		fieldLabel: 'MTU',
 		skipEmptyText: true,
 		allowBlank: true,
-		emptyText: 'auto'
+		emptyText: 'auto',
 	    },
 	    {
 		xtype: 'pveNodeSelector',
@@ -68,10 +68,10 @@ Ext.define('PVE.sdn.zones.QinQInputPanel', {
 		fieldLabel: gettext('Nodes'),
 		emptyText: gettext('All') + ' (' + gettext('No restrictions') +')',
 		multiSelect: true,
-		autoSelect: false
+		autoSelect: false,
 	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

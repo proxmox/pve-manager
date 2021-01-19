@@ -9,11 +9,11 @@ Ext.define('PVE.qemu.AudioInputPanel', {
 	var ret = PVE.Parser.printPropertyString(values);
 	if (ret === '') {
 	    return {
-		'delete': 'audio0'
+		'delete': 'audio0',
 	    };
 	}
 	return {
-	    audio0: ret
+	    audio0: ret,
 	};
     },
 
@@ -25,8 +25,8 @@ Ext.define('PVE.qemu.AudioInputPanel', {
 	comboItems: [
 	    ['ich9-intel-hda', 'ich9-intel-hda'],
 	    ['intel-hda', 'intel-hda'],
-	    ['AC97', 'AC97']
-	]
+	    ['AC97', 'AC97'],
+	],
     }, {
 	name: 'driver',
 	xtype: 'proxmoxKVComboBox',
@@ -35,8 +35,8 @@ Ext.define('PVE.qemu.AudioInputPanel', {
 	comboItems: [
 	    ['spice', 'SPICE'],
 	    ['none', `${Proxmox.Utils.NoneText} (${gettext('Dummy Device')})`],
-	]
-    }]
+	],
+    }],
 });
 
 Ext.define('PVE.qemu.AudioEdit', {
@@ -47,7 +47,7 @@ Ext.define('PVE.qemu.AudioEdit', {
     subject: gettext('Audio Device'),
 
     items: [{
-	xtype: 'pveAudioInputPanel'
+	xtype: 'pveAudioInputPanel',
     }],
 
     initComponent : function() {
@@ -63,7 +63,7 @@ Ext.define('PVE.qemu.AudioEdit', {
 		if (audio0) {
 		    me.setValues(PVE.Parser.parsePropertyString(audio0));
 		}
-	    }
+	    },
 	});
-    }
+    },
 });

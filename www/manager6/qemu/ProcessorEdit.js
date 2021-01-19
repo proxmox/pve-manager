@@ -128,7 +128,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    xtype: 'CPUModelSelector',
 	    name: 'cputype',
 	    reference: 'cputype',
-	    fieldLabel: gettext('Type')
+	    fieldLabel: gettext('Type'),
 	},
 	{
 	    xtype: 'displayfield',
@@ -178,8 +178,8 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    step: 1,
 	    fieldLabel: gettext('CPU limit'),
 	    allowBlank: true,
-	    emptyText: gettext('unlimited')
-	}
+	    emptyText: gettext('unlimited'),
+	},
     ],
 
     advancedColumn2: [
@@ -191,25 +191,25 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    maxValue: 500000,
 	    value: '1024',
 	    deleteEmpty: true,
-	    allowBlank: true
+	    allowBlank: true,
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
 	    fieldLabel: gettext('Enable NUMA'),
 	    name: 'numa',
-	    uncheckedValue: 0
-	}
+	    uncheckedValue: 0,
+	},
     ],
     advancedColumnB: [
 	{
 	    xtype: 'label',
-	    text: 'Extra CPU Flags:'
+	    text: 'Extra CPU Flags:',
 	},
 	{
 	    xtype: 'vmcpuflagselector',
-	    name: 'flags'
-	}
-    ]
+	    name: 'flags',
+	},
+    ],
 });
 
 Ext.define('PVE.qemu.ProcessorEdit', {
@@ -224,7 +224,7 @@ Ext.define('PVE.qemu.ProcessorEdit', {
 
 	Ext.apply(me, {
 	    subject: gettext('Processors'),
-	    items: ipanel
+	    items: ipanel,
 	});
 
 	me.callParent();
@@ -250,7 +250,7 @@ Ext.define('PVE.qemu.ProcessorEdit', {
 		    }
 		}
 		me.setValues(data);
-	    }
+	    },
 	});
-    }
+    },
 });

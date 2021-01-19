@@ -18,8 +18,8 @@ Ext.define('PVE.dc.UserView', {
 	    model: 'pve-users',
 	    sorters: {
 		property: 'userid',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
 	var reload = function() {
@@ -39,7 +39,7 @@ Ext.define('PVE.dc.UserView', {
 	    },
 	    callback: function() {
 		reload();
-	    }
+	    },
         });
 
 	var run_editor = function() {
@@ -48,8 +48,8 @@ Ext.define('PVE.dc.UserView', {
 		return;
 	    }
 
-            var win = Ext.create('PVE.dc.UserEdit',{
-                userid: rec.data.userid
+            var win = Ext.create('PVE.dc.UserEdit', {
+                userid: rec.data.userid,
             });
             win.on('destroy', reload);
             win.show();
@@ -62,7 +62,7 @@ Ext.define('PVE.dc.UserView', {
 		return !!caps.access['User.Modify'];
 	    },
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	var pwchange_btn = new Proxmox.button.Button({
@@ -71,11 +71,11 @@ Ext.define('PVE.dc.UserView', {
 	    selModel: sm,
 	    handler: function(btn, event, rec) {
 		var win = Ext.create('Proxmox.window.PasswordEdit', {
-                    userid: rec.data.userid
+                    userid: rec.data.userid,
 		});
 		win.on('destroy', reload);
 		win.show();
-	    }
+	    },
 	});
 
 	var tfachange_btn = new Proxmox.button.Button({
@@ -85,13 +85,13 @@ Ext.define('PVE.dc.UserView', {
 	    handler: function(btn, event, rec) {
 		var d = rec.data;
 		var tfa_type = PVE.Parser.parseTfaType(d.keys);
-		var win = Ext.create('PVE.window.TFAEdit',{
+		var win = Ext.create('PVE.window.TFAEdit', {
 		    tfa_type: tfa_type,
-		    userid: d.userid
+		    userid: d.userid,
 		});
 		win.on('destroy', reload);
 		win.show();
-	    }
+	    },
 	});
 
 	var perm_btn = new Proxmox.button.Button({
@@ -100,10 +100,10 @@ Ext.define('PVE.dc.UserView', {
 	    selModel: sm,
 	    handler: function(btn, event, rec) {
 		var win = Ext.create('PVE.dc.PermissionView', {
-                    userid: rec.data.userid
+                    userid: rec.data.userid,
 		});
 		win.show();
-	    }
+	    },
 	});
 
         var tbar = [
@@ -111,13 +111,13 @@ Ext.define('PVE.dc.UserView', {
 		text: gettext('Add'),
 		disabled: !caps.access['User.Modify'],
 		handler: function() {
-                    var win = Ext.create('PVE.dc.UserEdit',{
+                    var win = Ext.create('PVE.dc.UserEdit', {
                     });
                     win.on('destroy', reload);
                     win.show();
-		}
+		},
             },
-	    edit_btn, remove_btn, pwchange_btn, tfachange_btn, perm_btn
+	    edit_btn, remove_btn, pwchange_btn, tfachange_btn, perm_btn,
         ];
 
 	var render_username = function(userid) {
@@ -133,7 +133,7 @@ Ext.define('PVE.dc.UserView', {
 	    selModel: sm,
 	    tbar: tbar,
 	    viewConfig: {
-		trackOver: false
+		trackOver: false,
 	    },
 	    columns: [
 		{
@@ -141,35 +141,35 @@ Ext.define('PVE.dc.UserView', {
 		    width: 200,
 		    sortable: true,
 		    renderer: render_username,
-		    dataIndex: 'userid'
+		    dataIndex: 'userid',
 		},
 		{
 		    header: gettext('Realm'),
 		    width: 100,
 		    sortable: true,
 		    renderer: render_realm,
-		    dataIndex: 'userid'
+		    dataIndex: 'userid',
 		},
 		{
 		    header: gettext('Enabled'),
 		    width: 80,
 		    sortable: true,
 		    renderer: Proxmox.Utils.format_boolean,
-		    dataIndex: 'enable'
+		    dataIndex: 'enable',
 		},
 		{
 		    header: gettext('Expire'),
 		    width: 80,
 		    sortable: true,
 		    renderer: Proxmox.Utils.format_expire,
-		    dataIndex: 'expire'
+		    dataIndex: 'expire',
 		},
 		{
 		    header: gettext('Name'),
 		    width: 150,
 		    sortable: true,
 		    renderer: PVE.Utils.render_full_name,
-		    dataIndex: 'firstname'
+		    dataIndex: 'firstname',
 		},
 		{
 		    header: 'TFA',
@@ -185,24 +185,24 @@ Ext.define('PVE.dc.UserView', {
 			    return tfa_type;
 			}
 		    },
-		    dataIndex: 'keys'
+		    dataIndex: 'keys',
 		},
 		{
 		    header: gettext('Comment'),
 		    sortable: false,
 		    renderer: Ext.String.htmlEncode,
 		    dataIndex: 'comment',
-		    flex: 1
-		}
+		    flex: 1,
+		},
 	    ],
 	    listeners: {
 		activate: reload,
-		itemdblclick: run_editor
-	    }
+		itemdblclick: run_editor,
+	    },
 	});
 
 	me.callParent();
 
 	Proxmox.Utils.monStoreErrors(me, store);
-    }
+    },
 });

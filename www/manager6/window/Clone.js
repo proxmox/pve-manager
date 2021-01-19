@@ -11,12 +11,12 @@ Ext.define('PVE.window.Clone', {
 	xclass: 'Ext.app.ViewController',
 	control: {
 	    'panel[reference=cloneform]': {
-		validitychange: 'disableSubmit'
-	    }
+		validitychange: 'disableSubmit',
+	    },
 	},
 	disableSubmit: function(form) {
 	    this.lookupReference('submitBtn').setDisabled(!form.isValid());
-	}
+	},
     },
 
     statics: {
@@ -37,11 +37,11 @@ Ext.define('PVE.window.Clone', {
 			guestType: guestType,
 			vmid: vmid,
 			isTemplate: isTemplate,
-			hasSnapshots: hasSnapshots
+			hasSnapshots: hasSnapshots,
 		    }).show();
-		}
+		},
 	    });
-	}
+	},
     },
 
     create_clone: function(values) {
@@ -89,7 +89,7 @@ Ext.define('PVE.window.Clone', {
 	    },
 	    success: function(response, options) {
 		me.close();
-	    }
+	    },
 	});
 
     },
@@ -129,7 +129,7 @@ Ext.define('PVE.window.Clone', {
 
 		me.lookupReference('targetsel').allowedNodes = res.nodes;
 		me.lookupReference('targetsel').validate();
-	    }
+	    },
 	});
     },
 
@@ -172,8 +172,8 @@ Ext.define('PVE.window.Clone', {
 	    listeners: {
 		change: function(f, value) {
 		    me.lookupReference('hdstorage').setTargetNode(value);
-		}
-	    }
+		},
+	    },
 	});
 
 	var modelist = [['copy', gettext('Full Clone')]];
@@ -187,21 +187,21 @@ Ext.define('PVE.window.Clone', {
 	    guestType: me.guestType,
 	    value: '',
 	    loadNextFreeID: true,
-	    validateExists: false
+	    validateExists: false,
 	},
 	{
 	    xtype: 'textfield',
 	    name: 'name',
 	    allowBlank: true,
-	    fieldLabel: me.guestType === 'lxc' ? gettext('Hostname') : gettext('Name')
+	    fieldLabel: me.guestType === 'lxc' ? gettext('Hostname') : gettext('Name'),
 	},
 	{
 	    xtype: 'pvePoolSelector',
 	    fieldLabel: gettext('Resource Pool'),
 	    name: 'pool',
 	    value: '',
-	    allowBlank: true
-	}
+	    allowBlank: true,
+	},
 	);
 
 	col2.push({
@@ -217,8 +217,8 @@ Ext.define('PVE.window.Clone', {
 		change: function(t, value) {
 		    me.updateVisibility();
 		    me.verifyFeature();
-		}
-	    }
+		},
+	    },
 	},
 	{
 	    xtype: 'PVE.form.SnapshotSelector',
@@ -235,8 +235,8 @@ Ext.define('PVE.window.Clone', {
 	    listeners: {
 		change: function(f, value) {
 		    me.verifyFeature();
-		}
-	    }
+		},
+	    },
 	},
 	{
 	    xtype: 'pveDiskStorageSelector',
@@ -249,7 +249,7 @@ Ext.define('PVE.window.Clone', {
 	    allowBlank: true,
 	    storageContent: me.guestType === 'qemu' ? 'images' : 'rootdir',
 	    emptyText: gettext('Same as source'),
-	    disabled: me.isTemplate ? true : false // because default mode is clone for templates
+	    disabled: me.isTemplate ? true : false, // because default mode is clone for templates
 	});
 
 	var formPanel = Ext.create('Ext.form.Panel', {
@@ -260,22 +260,22 @@ Ext.define('PVE.window.Clone', {
 	    defaultType: 'container',
 	    fieldDefaults: {
 		labelWidth: 100,
-		anchor: '100%'
+		anchor: '100%',
 	    },
 	    items: [
 		{
 		    flex: 1,
 		    padding: '0 10 0 0',
 		    layout: 'anchor',
-		    items: col1
+		    items: col1,
 		},
 		{
 		    flex: 1,
 		    padding: '0 0 0 10',
 		    layout: 'anchor',
-		    items: col2
-		}
-	    ]
+		    items: col2,
+		},
+	    ],
 	});
 
 	Ext.apply(me, {
@@ -288,7 +288,7 @@ Ext.define('PVE.window.Clone', {
 		xtype: 'proxmoxHelpButton',
 		listenToGlobalEvent: false,
 		hidden: false,
-		onlineHelp: me.onlineHelp
+		onlineHelp: me.onlineHelp,
 	    },
 	    '->',
 	    {
@@ -300,13 +300,13 @@ Ext.define('PVE.window.Clone', {
 		    if (cloneForm.isValid()) {
 			me.create_clone(cloneForm.getValues());
 		    }
-		}
+		},
 	    } ],
-	    items: [ formPanel ]
+	    items: [ formPanel ],
 	});
 
 	me.callParent();
 
 	me.verifyFeature();
-    }
+    },
 });

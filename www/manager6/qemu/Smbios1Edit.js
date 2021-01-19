@@ -10,7 +10,7 @@ Ext.define('PVE.qemu.Smbios1InputPanel', {
 	var me = this;
 
 	var params = {
-	    smbios1: PVE.Parser.printQemuSmbios1(values)
+	    smbios1: PVE.Parser.printQemuSmbios1(values),
 	};
 
 	return params;
@@ -29,63 +29,63 @@ Ext.define('PVE.qemu.Smbios1InputPanel', {
 	    xtype: 'textfield',
 	    fieldLabel: 'UUID',
 	    regex: /^[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$/,
-	    name: 'uuid'
+	    name: 'uuid',
 	},
 	{
 	    xtype: 'textareafield',
 	    fieldLabel: gettext('Manufacturer'),
 	    fieldStyle: {
 		height: '2em',
-		minHeight: '2em'
+		minHeight: '2em',
 	    },
-	    name: 'manufacturer'
+	    name: 'manufacturer',
 	},
 	{
 	    xtype: 'textareafield',
 	    fieldLabel: gettext('Product'),
 	    fieldStyle: {
 		height: '2em',
-		minHeight: '2em'
+		minHeight: '2em',
 	    },
-	    name: 'product'
+	    name: 'product',
 	},
 	{
 	    xtype: 'textareafield',
 	    fieldLabel: gettext('Version'),
 	    fieldStyle: {
 		height: '2em',
-		minHeight: '2em'
+		minHeight: '2em',
 	    },
-	    name: 'version'
+	    name: 'version',
 	},
 	{
 	    xtype: 'textareafield',
 	    fieldLabel: gettext('Serial'),
 	    fieldStyle: {
 		height: '2em',
-		minHeight: '2em'
+		minHeight: '2em',
 	    },
-	    name: 'serial'
+	    name: 'serial',
 	},
 	{
 	    xtype: 'textareafield',
 	    fieldLabel: 'SKU',
 	    fieldStyle: {
 		height: '2em',
-		minHeight: '2em'
+		minHeight: '2em',
 	    },
-	    name: 'sku'
+	    name: 'sku',
 	},
 	{
 	    xtype: 'textareafield',
 	    fieldLabel: gettext('Family'),
 	    fieldStyle: {
 		height: '2em',
-		minHeight: '2em'
+		minHeight: '2em',
 	    },
-	    name: 'family'
-	}
-    ]
+	    name: 'family',
+	},
+    ],
 });
 
 Ext.define('PVE.qemu.Smbios1Edit', {
@@ -100,7 +100,7 @@ Ext.define('PVE.qemu.Smbios1Edit', {
 	Ext.applyIf(me, {
 	    subject: gettext('SMBIOS settings (type1)'),
 	    width: 450,
-	    items: ipanel
+	    items: ipanel,
 	});
 
 	me.callParent();
@@ -119,7 +119,7 @@ Ext.define('PVE.qemu.Smbios1Edit', {
 		    }
 		    ipanel.setSmbios1(data);
 		}
-	    }
+	    },
 	});
-    }
+    },
 });

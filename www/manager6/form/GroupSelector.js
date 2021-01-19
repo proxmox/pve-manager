@@ -3,9 +3,9 @@ Ext.define('pve-groups', {
     fields: [ 'groupid', 'comment', 'users' ],
     proxy: {
 	type: 'proxmox',
-	url: "/api2/json/access/groups"
+	url: "/api2/json/access/groups",
     },
-    idProperty: 'groupid'
+    idProperty: 'groupid',
 });
 
 Ext.define('PVE.form.GroupSelector', {
@@ -22,23 +22,23 @@ Ext.define('PVE.form.GroupSelector', {
 		header: gettext('Group'),
 		sortable: true,
 		dataIndex: 'groupid',
-		flex: 1
+		flex: 1,
 	    },
 	    {
 		header: gettext('Comment'),
 		sortable: false,
 		dataIndex: 'comment',
 		renderer: Ext.String.htmlEncode,
-		flex: 1
+		flex: 1,
 	    },
 	    {
 		header: gettext('Users'),
 		sortable: false,
 		dataIndex: 'users',
 		renderer: Ext.String.htmlEncode,
-		flex: 1
-	    }
-	]
+		flex: 1,
+	    },
+	],
     },
 
     initComponent: function() {
@@ -47,16 +47,16 @@ Ext.define('PVE.form.GroupSelector', {
 	var store = new Ext.data.Store({
 	    model: 'pve-groups',
 	    sorters: [{
-		property: 'groupid'
-	    }]
+		property: 'groupid',
+	    }],
 	});
 
 	Ext.apply(me, {
-	    store: store
+	    store: store,
 	});
 
 	me.callParent();
 
 	store.load();
-    }
+    },
 });

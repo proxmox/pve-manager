@@ -4,7 +4,7 @@ Ext.define('PVE.form.VMSelector', {
     alias: 'widget.vmselector',
 
     mixins: {
-	field: 'Ext.form.field.Field'
+	field: 'Ext.form.field.Field',
     },
 
     allowBlank: true,
@@ -19,8 +19,8 @@ Ext.define('PVE.form.VMSelector', {
 	sorters: 'vmid',
 	filters: [{
 	    property: 'type',
-	    value: /lxc|qemu/
-	}]
+	    value: /lxc|qemu/,
+	}],
     },
     columns: [
 	{
@@ -28,34 +28,34 @@ Ext.define('PVE.form.VMSelector', {
 	    dataIndex: 'vmid',
 	    width: 80,
 	    filter: {
-		type: 'number'
-	    }
+		type: 'number',
+	    },
 	},
 	{
 	    header: gettext('Node'),
-	    dataIndex: 'node'
+	    dataIndex: 'node',
 	},
 	{
 	    header: gettext('Status'),
 	    dataIndex: 'status',
 	    filter: {
-		type: 'list'
-	    }
+		type: 'list',
+	    },
 	},
 	{
 	    header: gettext('Name'),
 	    dataIndex: 'name',
 	    flex: 1,
 	    filter: {
-		type: 'string'
-	    }
+		type: 'string',
+	    },
 	},
 	{
 	    header: gettext('Pool'),
 	    dataIndex: 'pool',
 	    filter: {
-		type: 'list'
-	    }
+		type: 'list',
+	    },
 	},
 	{
 	    header: gettext('Type'),
@@ -75,41 +75,41 @@ Ext.define('PVE.form.VMSelector', {
 		store: {
 		    data: [
 			{id: 'qemu', text: gettext('Virtual Machine')},
-			{id: 'lxc', text: gettext('LXC Container')}
+			{id: 'lxc', text: gettext('LXC Container')},
 		    ],
 		    // due to EXTJS-18711
 		    // we have to do a static list via a store
 		    // but to avoid creating an object,
 		    // we have to have a pseudo un function
-		    un: function(){}
-		}
-	    }
+		    un: function(){},
+		},
+	    },
 	},
 	{
 	    header: 'HA ' + gettext('Status'),
 	    dataIndex: 'hastate',
 	    flex: 1,
 	    filter: {
-		type: 'list'
-	    }
-	}
+		type: 'list',
+	    },
+	},
     ],
 
     selModel: {
 	selType: 'checkboxmodel',
-	mode: 'SIMPLE'
+	mode: 'SIMPLE',
     },
 
     checkChangeEvents: [
 	'selectionchange',
-	'change'
+	'change',
     ],
 
     listeners: {
 	selectionchange: function() {
 	    // to trigger validity and error checks
 	    this.checkChange();
-	}
+	},
     },
 
     getValue: function() {
@@ -138,7 +138,7 @@ Ext.define('PVE.form.VMSelector', {
 	var store = me.getStore();
 
 	value.forEach(function(item) {
-	    var rec = store.findRecord('vmid',item, 0, false, true, true);
+	    var rec = store.findRecord('vmid', item, 0, false, true, true);
 	    console.log(store);
 
 	    if (rec) {
@@ -156,11 +156,11 @@ Ext.define('PVE.form.VMSelector', {
 	var me = this;
 	if (me.allowBlank ===  false &&
 	    me.getSelectionModel().getCount() === 0) {
-	    me.addBodyCls(['x-form-trigger-wrap-default','x-form-trigger-wrap-invalid']);
+	    me.addBodyCls(['x-form-trigger-wrap-default', 'x-form-trigger-wrap-invalid']);
 	    return [gettext('No VM selected')];
 	}
 
-	me.removeBodyCls(['x-form-trigger-wrap-default','x-form-trigger-wrap-invalid']);
+	me.removeBodyCls(['x-form-trigger-wrap-default', 'x-form-trigger-wrap-invalid']);
 	return [];
     },
 
@@ -173,7 +173,7 @@ Ext.define('PVE.form.VMSelector', {
 	    me.store.filters.add({
 		property: 'node',
 		exactMatch: true,
-		value: me.nodename
+		value: me.nodename,
 	    });
 	}
 
@@ -191,12 +191,12 @@ Ext.define('PVE.form.VMSelector', {
 	    if (statusfilter !== '') {
 		me.store.filters.add({
 		    property: 'template',
-		    value: 0
-		},{
+		    value: 0,
+		}, {
 		    id: 'x-gridfilter-status',
 		    operator: 'in',
 		    property: 'status',
-		    value: [statusfilter]
+		    value: [statusfilter],
 		});
 	    }
 	}
@@ -205,11 +205,11 @@ Ext.define('PVE.form.VMSelector', {
 	var sm = me.getSelectionModel();
 
 	if (me.selectAll) {
-	    me.mon(store,'load', function(){
+	    me.mon(store, 'load', function(){
 		me.getSelectionModel().selectAll(false);
 	    });
 	}
-    }
+    },
 });
 
 
@@ -231,8 +231,8 @@ Ext.define('PVE.form.VMComboSelector', {
 	sorters: 'vmid',
 	filters: [{
 	    property: 'type',
-	    value: /lxc|qemu/
-	}]
+	    value: /lxc|qemu/,
+	}],
     },
 
     listConfig: {
@@ -244,35 +244,35 @@ Ext.define('PVE.form.VMComboSelector', {
 		dataIndex: 'vmid',
 		width: 80,
 		filter: {
-		    type: 'number'
-		}
+		    type: 'number',
+		},
 	    },
 	    {
 		header: gettext('Name'),
 		dataIndex: 'name',
 		flex: 1,
 		filter: {
-		    type: 'string'
-		}
+		    type: 'string',
+		},
 	    },
 	    {
 		header: gettext('Node'),
-		dataIndex: 'node'
+		dataIndex: 'node',
 	    },
 	    {
 		header: gettext('Status'),
 		dataIndex: 'status',
 		filter: {
-		    type: 'list'
-		}
+		    type: 'list',
+		},
 	    },
 	    {
 		header: gettext('Pool'),
 		dataIndex: 'pool',
 		hidden: true,
 		filter: {
-		    type: 'list'
-		}
+		    type: 'list',
+		},
 	    },
 	    {
 		header: gettext('Type'),
@@ -292,11 +292,11 @@ Ext.define('PVE.form.VMComboSelector', {
 		    store: {
 			data: [
 			    {id: 'qemu', text: gettext('Virtual Machine')},
-			    {id: 'lxc', text: gettext('LXC Container')}
+			    {id: 'lxc', text: gettext('LXC Container')},
 			],
-			un: function(){} // due to EXTJS-18711
-		    }
-		}
+			un: function(){}, // due to EXTJS-18711
+		    },
+		},
 	    },
 	    {
 		header: 'HA ' + gettext('Status'),
@@ -304,9 +304,9 @@ Ext.define('PVE.form.VMComboSelector', {
 		hidden: true,
 		flex: 1,
 		filter: {
-		    type: 'list'
-		}
-	    }
-	]
-    }
+		    type: 'list',
+		},
+	    },
+	],
+    },
 });

@@ -28,7 +28,7 @@ Ext.define('PVE.qemu.Config', {
 
 	me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
 	    url: '/api2/json' + base_url + '/status/current',
-	    interval: 1000
+	    interval: 1000,
 	});
 
 	var vm_command = function(cmd, params) {
@@ -39,7 +39,7 @@ Ext.define('PVE.qemu.Config', {
 		method: 'POST',
 		failure: function(response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
-		}
+		},
 	    });
 	};
 
@@ -50,7 +50,7 @@ Ext.define('PVE.qemu.Config', {
 	    handler: function() {
 		vm_command('resume');
 	    },
-	    iconCls: 'fa fa-play'
+	    iconCls: 'fa fa-play',
 	});
 
 	var startBtn = Ext.create('Ext.Button', {
@@ -60,7 +60,7 @@ Ext.define('PVE.qemu.Config', {
 	    handler: function() {
 		vm_command('start');
 	    },
-	    iconCls: 'fa fa-play'
+	    iconCls: 'fa fa-play',
 	});
 
 	var migrateBtn = Ext.create('Ext.Button', {
@@ -71,11 +71,11 @@ Ext.define('PVE.qemu.Config', {
 		var win = Ext.create('PVE.window.Migrate', {
 		    vmtype: 'qemu',
 		    nodename: nodename,
-		    vmid: vmid
+		    vmid: vmid,
 		});
 		win.show();
 	    },
-	    iconCls: 'fa fa-send-o'
+	    iconCls: 'fa fa-send-o',
 	});
 
 	var moreBtn = Ext.create('Proxmox.button.Button', {
@@ -87,7 +87,7 @@ Ext.define('PVE.qemu.Config', {
 		    hidden: caps.vms['VM.Clone'] ? false : true,
 		    handler: function() {
 			PVE.window.Clone.wrap(nodename, vmid, template, 'qemu');
-		    }
+		    },
 		},
 		{
 		    text: gettext('Convert to template'),
@@ -103,9 +103,9 @@ Ext.define('PVE.qemu.Config', {
 			    method: 'POST',
 			    failure: function(response, opts) {
 				Ext.Msg.alert('Error', response.htmlStatus);
-			    }
+			    },
 			});
-		    }
+		    },
 		},
 		{
 		    iconCls: 'fa fa-heartbeat ',
@@ -115,9 +115,9 @@ Ext.define('PVE.qemu.Config', {
 			var ha = vm.hastate;
 			Ext.create('PVE.ha.VMResourceEdit', {
 			    vmid: vmid,
-			    isCreate: (!ha || ha === 'unmanaged')
+			    isCreate: (!ha || ha === 'unmanaged'),
 			}).show();
-		    }
+		    },
 		},
 		{
 		    text: gettext('Remove'),
@@ -126,12 +126,12 @@ Ext.define('PVE.qemu.Config', {
 		    handler: function() {
 			Ext.create('PVE.window.SafeDestroy', {
 			    url: base_url,
-			    item: { type: 'VM', id: vmid }
+			    item: { type: 'VM', id: vmid },
 			}).show();
 		    },
-		    iconCls: 'fa fa-trash-o'
-		}
-	    ]}
+		    iconCls: 'fa fa-trash-o',
+		},
+	    ]},
 	});
 
 	var shutdownBtn = Ext.create('PVE.button.Split', {
@@ -151,16 +151,16 @@ Ext.define('PVE.qemu.Config', {
 		    handler: function() {
 			vm_command("reboot");
 		    },
-		    iconCls: 'fa fa-refresh'
-		},{
+		    iconCls: 'fa fa-refresh',
+		}, {
 		    text: gettext('Pause'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
 		    confirmMsg: Proxmox.Utils.format_task_description('qmpause', vmid),
 		    handler: function() {
 			vm_command("suspend");
 		    },
-		    iconCls: 'fa fa-pause'
-		},{
+		    iconCls: 'fa fa-pause',
+		}, {
 		    text: gettext('Hibernate'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
 		    confirmMsg: Proxmox.Utils.format_task_description('qmsuspend', vmid),
@@ -168,8 +168,8 @@ Ext.define('PVE.qemu.Config', {
 		    handler: function() {
 			vm_command("suspend", { todisk: 1 });
 		    },
-		    iconCls: 'fa fa-download'
-		},{
+		    iconCls: 'fa fa-download',
+		}, {
 		    text: gettext('Stop'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
 		    dangerous: true,
@@ -178,8 +178,8 @@ Ext.define('PVE.qemu.Config', {
 		    handler: function() {
 			vm_command("stop", { timeout: 30 });
 		    },
-		    iconCls: 'fa fa-stop'
-		},{
+		    iconCls: 'fa fa-stop',
+		}, {
 		    text: gettext('Reset'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
 		    tooltip: Ext.String.format(gettext('Reset {0} immediately'), 'VM'),
@@ -187,10 +187,10 @@ Ext.define('PVE.qemu.Config', {
 		    handler: function() {
 			vm_command("reset");
 		    },
-		    iconCls: 'fa fa-bolt'
-		}]
+		    iconCls: 'fa fa-bolt',
+		}],
 	    },
-	    iconCls: 'fa fa-power-off'
+	    iconCls: 'fa fa-power-off',
 	});
 
 	var consoleBtn = Ext.create('PVE.button.ConsoleButton', {
@@ -199,18 +199,18 @@ Ext.define('PVE.qemu.Config', {
 	    consoleType: 'kvm',
 	    consoleName: vm.name,
 	    nodename: nodename,
-	    vmid: vmid
+	    vmid: vmid,
 	});
 
 	var statusTxt = Ext.create('Ext.toolbar.TextItem', {
 	    data: {
-		lock: undefined
+		lock: undefined,
 	    },
 	    tpl: [
 		'<tpl if="lock">',
 		'<i class="fa fa-lg fa-lock"></i> ({lock})',
-		'</tpl>'
-	    ]
+		'</tpl>',
+	    ],
 	});
 
 	Ext.apply(me, {
@@ -224,9 +224,9 @@ Ext.define('PVE.qemu.Config', {
 		    title: gettext('Summary'),
 		    xtype: 'pveGuestSummary',
 		    iconCls: 'fa fa-book',
-		    itemId: 'summary'
-		}
-	    ]
+		    itemId: 'summary',
+		},
+	    ],
 	});
 
 	if (caps.vms['VM.Console'] && !template) {
@@ -237,7 +237,7 @@ Ext.define('PVE.qemu.Config', {
 		xtype: 'pveNoVncConsole',
 		vmid: vmid,
 		consoleType: 'kvm',
-		nodename: nodename
+		nodename: nodename,
 	    });
 	}
 
@@ -246,19 +246,19 @@ Ext.define('PVE.qemu.Config', {
 		title: gettext('Hardware'),
 		itemId: 'hardware',
 		iconCls: 'fa fa-desktop',
-		xtype: 'PVE.qemu.HardwareView'
+		xtype: 'PVE.qemu.HardwareView',
 	    },
 	    {
 		title: 'Cloud-Init',
 		itemId: 'cloudinit',
 		iconCls: 'fa fa-cloud',
-		xtype: 'pveCiPanel'
+		xtype: 'pveCiPanel',
 	    },
 	    {
 		title: gettext('Options'),
 		iconCls: 'fa fa-gear',
 		itemId: 'options',
-		xtype: 'PVE.qemu.Options'
+		xtype: 'PVE.qemu.Options',
 	    },
 	    {
 		title: gettext('Task History'),
@@ -266,8 +266,8 @@ Ext.define('PVE.qemu.Config', {
 		xtype: 'proxmoxNodeTasks',
 		iconCls: 'fa fa-list',
 		nodename: nodename,
-		vmidFilter: vmid
-	    }
+		vmidFilter: vmid,
+	    },
 	);
 
 	if (caps.vms['VM.Monitor'] && !template) {
@@ -275,7 +275,7 @@ Ext.define('PVE.qemu.Config', {
 		title: gettext('Monitor'),
 		iconCls: 'fa fa-eye',
 		itemId: 'monitor',
-		xtype: 'pveQemuMonitor'
+		xtype: 'pveQemuMonitor',
 	    });
 	}
 
@@ -284,13 +284,13 @@ Ext.define('PVE.qemu.Config', {
 		title: gettext('Backup'),
 		iconCls: 'fa fa-floppy-o',
 		xtype: 'pveBackupView',
-		itemId: 'backup'
+		itemId: 'backup',
 	    },
 	    {
 		title: gettext('Replication'),
 		iconCls: 'fa fa-retweet',
 		xtype: 'pveReplicaView',
-		itemId: 'replication'
+		itemId: 'replication',
 	    });
 	}
 
@@ -301,7 +301,7 @@ Ext.define('PVE.qemu.Config', {
 		iconCls: 'fa fa-history',
 		type: 'qemu',
 		xtype: 'pveGuestSnapshotTree',
-		itemId: 'snapshot'
+		itemId: 'snapshot',
 	    });
 	}
 
@@ -314,7 +314,7 @@ Ext.define('PVE.qemu.Config', {
 		    allow_iface: true,
 		    base_url: base_url + '/firewall/rules',
 		    list_refs_url: base_url + '/firewall/refs',
-		    itemId: 'firewall'
+		    itemId: 'firewall',
 		},
 		{
 		    xtype: 'pveFirewallOptions',
@@ -324,7 +324,7 @@ Ext.define('PVE.qemu.Config', {
 		    title: gettext('Options'),
 		    base_url: base_url + '/firewall/options',
 		    fwtype: 'vm',
-		    itemId: 'firewall-options'
+		    itemId: 'firewall-options',
 		},
 		{
 		    xtype: 'pveFirewallAliases',
@@ -332,7 +332,7 @@ Ext.define('PVE.qemu.Config', {
 		    groups: ['firewall'],
 		    iconCls: 'fa fa-external-link',
 		    base_url: base_url + '/firewall/aliases',
-		    itemId: 'firewall-aliases'
+		    itemId: 'firewall-aliases',
 		},
 		{
 		    xtype: 'pveIPSet',
@@ -341,7 +341,7 @@ Ext.define('PVE.qemu.Config', {
 		    iconCls: 'fa fa-list-ol',
 		    base_url: base_url + '/firewall/ipset',
 		    list_refs_url: base_url + '/firewall/refs',
-		    itemId: 'firewall-ipset'
+		    itemId: 'firewall-ipset',
 		},
 		{
 		    title: gettext('Log'),
@@ -350,8 +350,8 @@ Ext.define('PVE.qemu.Config', {
 		    onlineHelp: 'chapter_pve_firewall',
 		    itemId: 'firewall-fwlog',
 		    xtype: 'proxmoxLogView',
-		    url: '/api2/extjs' + base_url + '/firewall/log'
-		}
+		    url: '/api2/extjs' + base_url + '/firewall/log',
+		},
 	    );
 	}
 
@@ -361,7 +361,7 @@ Ext.define('PVE.qemu.Config', {
 		title: gettext('Permissions'),
 		iconCls: 'fa fa-unlock',
 		itemId: 'permissions',
-		path: '/vms/' + vmid
+		path: '/vms/' + vmid,
 	    });
 	}
 
@@ -437,5 +437,5 @@ Ext.define('PVE.qemu.Config', {
 	me.on('destroy', function() {
 	    me.statusStore.stopUpdate();
 	});
-   }
+   },
 });

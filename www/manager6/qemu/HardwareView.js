@@ -88,7 +88,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			res += ' [balloon=0]';
 		    }
 		    return res;
-		}
+		},
 	    },
 	    sockets: {
 		header: gettext('Processors'),
@@ -133,7 +133,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		    }
 
 		    return res;
-		}
+		},
 	    },
 	    bios: {
 		header: 'BIOS',
@@ -142,7 +142,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		editor: caps.vms['VM.Config.Options'] ? 'PVE.qemu.BiosEdit' : undefined,
 		defaultValue: '',
 		iconCls: 'microchip',
-		renderer: PVE.Utils.render_qemu_bios
+		renderer: PVE.Utils.render_qemu_bios,
 	    },
 	    vga: {
 		header: gettext('Display'),
@@ -151,7 +151,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		iconCls: 'desktop',
 		group:5,
 		defaultValue: '',
-		renderer: PVE.Utils.render_kvm_vga_driver
+		renderer: PVE.Utils.render_kvm_vga_driver,
 	    },
 	    machine: {
 		header: gettext('Machine'),
@@ -166,14 +166,14 @@ Ext.define('PVE.qemu.HardwareView', {
 			fieldLabel: gettext('Machine'),
 			comboItems: [
 			    ['__default__', PVE.Utils.render_qemu_machine('')],
-			    ['q35', 'q35']
-			]
+			    ['q35', 'q35'],
+			],
 		    }]} : undefined,
 		iconCls: 'cogs',
 		never_delete: true,
 		group: 6,
 		defaultValue: '',
-		renderer: PVE.Utils.render_qemu_machine
+		renderer: PVE.Utils.render_qemu_machine,
 	    },
 	    scsihw: {
 		header: gettext('SCSI Controller'),
@@ -182,7 +182,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		renderer: PVE.Utils.render_scsihw,
 		group: 7,
 		never_delete: true,
-		defaultValue: ''
+		defaultValue: '',
 	    },
 	    vmstate: {
 		header: gettext('Hibernation VM State'),
@@ -191,32 +191,32 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 100,
 	    },
 	    cores: {
-		visible: false
+		visible: false,
 	    },
 	    cpu: {
-		visible: false
+		visible: false,
 	    },
 	    numa: {
-		visible: false
+		visible: false,
 	    },
 	    balloon: {
-		visible: false
+		visible: false,
 	    },
 	    hotplug: {
-		visible: false
+		visible: false,
 	    },
 	    vcpus: {
-		visible: false
+		visible: false,
 	    },
 	    cpuunits: {
-		visible: false
+		visible: false,
 	    },
 	    cpulimit: {
-		visible: false
+		visible: false,
 	    },
 	    shares: {
-		visible: false
-	    }
+		visible: false,
+	    },
 	};
 
 	PVE.Utils.forEachBus(undefined, function(type, id) {
@@ -229,7 +229,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		isOnStorageBus: true,
 		header: gettext('Hard Disk') + ' (' + confid +')',
 		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')',
-		cloudheader: gettext('CloudInit Drive') + ' (' + confid + ')'
+		cloudheader: gettext('CloudInit Drive') + ' (' + confid + ')',
 	    };
 	});
 	for (i = 0; i < PVE.Utils.hardware_counts.net; i++) {
@@ -240,7 +240,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		iconCls: 'exchange',
 		editor: caps.vms['VM.Config.Network'] ? 'PVE.qemu.NetworkEdit' : undefined,
 		never_delete: caps.vms['VM.Config.Network'] ? false : true,
-		header: gettext('Network Device') + ' (' + confid +')'
+		header: gettext('Network Device') + ' (' + confid +')',
 	    };
 	}
 	rows.efidisk0 = {
@@ -248,7 +248,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    iconCls: 'hdd-o',
 	    editor: null,
 	    never_delete: caps.vms['VM.Config.Disk'] ? false : true,
-	    header: gettext('EFI Disk')
+	    header: gettext('EFI Disk'),
 	};
 	for (i = 0; i < PVE.Utils.hardware_counts.usb; i++) {
 	    confid = "usb" + i.toString();
@@ -258,7 +258,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		iconCls: 'usb',
 		editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.USBEdit' : undefined,
 		never_delete: caps.nodes['Sys.Console'] ? false : true,
-		header: gettext('USB Device') + ' (' + confid + ')'
+		header: gettext('USB Device') + ' (' + confid + ')',
 	    };
 	}
 	for (i = 0; i < PVE.Utils.hardware_counts.hostpci; i++) {
@@ -269,7 +269,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		tdCls: 'pve-itype-icon-pci',
 		never_delete: caps.nodes['Sys.Console'] ? false : true,
 		editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.PCIEdit' : undefined,
-		header: gettext('PCI Device') + ' (' + confid + ')'
+		header: gettext('PCI Device') + ' (' + confid + ')',
 	    };
 	}
 	for (i = 0; i < PVE.Utils.hardware_counts.serial; i++) {
@@ -279,7 +279,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		order: i,
 		tdCls: 'pve-itype-icon-serial',
 		never_delete: caps.nodes['Sys.Console'] ? false : true,
-		header: gettext('Serial Port') + ' (' + confid + ')'
+		header: gettext('Serial Port') + ' (' + confid + ')',
 	    };
 	}
 	rows.audio0 = {
@@ -287,7 +287,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    iconCls: 'volume-up',
 	    editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.AudioEdit' : undefined,
 	    never_delete: caps.vms['VM.Config.HWType'] ? false : true,
-	    header: gettext('Audio Device')
+	    header: gettext('Audio Device'),
 	};
 	for (i = 0; i < 256; i++) {
 	    rows["unused" + i.toString()] = {
@@ -296,7 +296,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		iconCls: 'hdd-o',
 		del_extra_msg: gettext('This will permanently erase all data.'),
 		editor: caps.vms['VM.Config.Disk'] ? 'PVE.qemu.HDEdit' : undefined,
-		header: gettext('Unused Disk') + ' ' + i.toString()
+		header: gettext('Unused Disk') + ' ' + i.toString(),
 	    };
 	}
 	rows.rng0 = {
@@ -304,7 +304,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    tdCls: 'pve-itype-icon-die',
 	    editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.RNGEdit' : undefined,
 	    never_delete: caps.nodes['Sys.Console'] ? false : true,
-	    header: gettext("VirtIO RNG")
+	    header: gettext("VirtIO RNG"),
 	};
 
 	var sorterFn = function(rec1, rec2) {
@@ -365,13 +365,13 @@ Ext.define('PVE.qemu.HardwareView', {
 		win = Ext.create(editor, {
 		    pveSelNode: me.pveSelNode,
 		    confid: rec.data.key,
-		    url: '/api2/extjs/' + baseurl
+		    url: '/api2/extjs/' + baseurl,
 		});
 	    } else {
 		var config = Ext.apply({
 		    pveSelNode: me.pveSelNode,
 		    confid: rec.data.key,
-		    url: '/api2/extjs/' + baseurl
+		    url: '/api2/extjs/' + baseurl,
 		}, rowdef.editor);
 		win = Ext.createWidget(rowdef.editor.xtype, config);
 		win.load();
@@ -390,7 +390,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var win = Ext.create('PVE.window.HDResize', {
 		disk: rec.data.key,
 		nodename: nodename,
-		vmid: vmid
+		vmid: vmid,
 	    });
 
 	    win.show();
@@ -407,7 +407,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    var win = Ext.create('PVE.window.HDMove', {
 		disk: rec.data.key,
 		nodename: nodename,
-		vmid: vmid
+		vmid: vmid,
 	    });
 
 	    win.show();
@@ -419,21 +419,21 @@ Ext.define('PVE.qemu.HardwareView', {
 	    text: gettext('Edit'),
 	    selModel: sm,
 	    disabled: true,
-	    handler: run_editor
+	    handler: run_editor,
         });
 
 	var resize_btn = new Proxmox.button.Button({
 	    text: gettext('Resize disk'),
 	    selModel: sm,
 	    disabled: true,
-	    handler: run_resize
+	    handler: run_resize,
 	});
 
 	var move_btn = new Proxmox.button.Button({
 	    text: gettext('Move disk'),
 	    selModel: sm,
 	    disabled: true,
-	    handler: run_move
+	    handler: run_move,
 	});
 
 	var remove_btn = new Proxmox.button.Button({
@@ -467,7 +467,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		    waitMsgTarget: me,
 		    method: b.RESTMethod,
 		    params: {
-			'delete': rec.data.key
+			'delete': rec.data.key,
 		    },
 		    callback: () => me.reload(),
 		    failure: function (response, opts) {
@@ -480,11 +480,11 @@ Ext.define('PVE.qemu.HardwareView', {
 				upid: upid,
 				listeners: {
 				    destroy: () => me.reload(),
-				}
+				},
 			    });
 			    win.show();
 			}
-		    }
+		    },
 		});
 	    },
 	    listeners: {
@@ -501,15 +501,15 @@ Ext.define('PVE.qemu.HardwareView', {
 
 		    var optimal = alt > def ? alt : def;
 		    btn.setSize({ width: optimal });
-		}
-	    }
+		},
+	    },
 	});
 
 	var revert_btn = new PVE.button.PendingRevert({
 	    apiurl: '/api2/extjs/' + baseurl,
 	});
 
-	var efidisk_menuitem = Ext.create('Ext.menu.Item',{
+	var efidisk_menuitem = Ext.create('Ext.menu.Item', {
 	    text: gettext('EFI Disk'),
 	    iconCls: 'fa fa-fw fa-hdd-o black',
 	    disabled: !caps.vms['VM.Config.Disk'],
@@ -524,7 +524,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		});
 		win.on('destroy', me.reload, me);
 		win.show();
-	    }
+	    },
 	});
 
 	let counts = {};
@@ -625,11 +625,11 @@ Ext.define('PVE.qemu.HardwareView', {
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.HDEdit', {
 					url: '/api2/extjs/' + baseurl,
-					pveSelNode: me.pveSelNode
+					pveSelNode: me.pveSelNode,
 				    });
 				    win.on('destroy', me.reload, me);
 				    win.show();
-				}
+				},
 			    },
 			    {
 				text: gettext('CD/DVD Drive'),
@@ -638,11 +638,11 @@ Ext.define('PVE.qemu.HardwareView', {
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.CDEdit', {
 					url: '/api2/extjs/' + baseurl,
-					pveSelNode: me.pveSelNode
+					pveSelNode: me.pveSelNode,
 				    });
 				    win.on('destroy', me.reload, me);
 				    win.show();
-				}
+				},
 			    },
 			    {
 				text: gettext('Network Device'),
@@ -653,11 +653,11 @@ Ext.define('PVE.qemu.HardwareView', {
 				    var win = Ext.create('PVE.qemu.NetworkEdit', {
 					url: '/api2/extjs/' + baseurl,
 					pveSelNode: me.pveSelNode,
-					isCreate: true
+					isCreate: true,
 				    });
 				    win.on('destroy', me.reload, me);
 				    win.show();
-				}
+				},
 			    },
 			    efidisk_menuitem,
 			    {
@@ -668,11 +668,11 @@ Ext.define('PVE.qemu.HardwareView', {
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.USBEdit', {
 					url: '/api2/extjs/' + baseurl,
-					pveSelNode: me.pveSelNode
+					pveSelNode: me.pveSelNode,
 				    });
 				    win.on('destroy', me.reload, me);
 				    win.show();
-				}
+				},
 			    },
 			    {
 				text: gettext('PCI Device'),
@@ -682,11 +682,11 @@ Ext.define('PVE.qemu.HardwareView', {
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.PCIEdit', {
 					url: '/api2/extjs/' + baseurl,
-					pveSelNode: me.pveSelNode
+					pveSelNode: me.pveSelNode,
 				    });
 				    win.on('destroy', me.reload, me);
 				    win.show();
-				}
+				},
 			    },
 			    {
 				text: gettext('Serial Port'),
@@ -695,11 +695,11 @@ Ext.define('PVE.qemu.HardwareView', {
 				disabled: !caps.vms['VM.Config.Options'],
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.SerialEdit', {
-					url: '/api2/extjs/' + baseurl
+					url: '/api2/extjs/' + baseurl,
 				    });
 				    win.on('destroy', me.reload, me);
 				    win.show();
-				}
+				},
 			    },
 			    {
 				text: gettext('CloudInit Drive'),
@@ -709,11 +709,11 @@ Ext.define('PVE.qemu.HardwareView', {
 				handler: function() {
 				    var win = Ext.create('PVE.qemu.CIDriveEdit', {
 					url: '/api2/extjs/' + baseurl,
-					pveSelNode: me.pveSelNode
+					pveSelNode: me.pveSelNode,
 				    });
 				    win.on('destroy', me.reload, me);
 				    win.show();
-				}
+				},
 			    },
 			    {
 				text: gettext('Audio Device'),
@@ -724,11 +724,11 @@ Ext.define('PVE.qemu.HardwareView', {
 				    var win = Ext.create('PVE.qemu.AudioEdit', {
 					url: '/api2/extjs/' + baseurl,
 					isCreate: true,
-					isAdd: true
+					isAdd: true,
 				    });
 				    win.on('destroy', me.reload, me);
 				    win.show();
-				}
+				},
 			    },
 			    {
 				text: gettext("VirtIO RNG"),
@@ -739,27 +739,27 @@ Ext.define('PVE.qemu.HardwareView', {
 				    var win = Ext.create('PVE.qemu.RNGEdit', {
 					url: '/api2/extjs/' + baseurl,
 					isCreate: true,
-					isAdd: true
+					isAdd: true,
 				    });
 				    win.on('destroy', me.reload, me);
 				    win.show();
-				}
-			    }
-			]
-		    })
+				},
+			    },
+			],
+		    }),
 		},
 		remove_btn,
 		edit_btn,
 		resize_btn,
 		move_btn,
-		revert_btn
+		revert_btn,
 	    ],
 	    rows: rows,
 	    sorterFn: sorterFn,
 	    listeners: {
 		itemdblclick: run_editor,
-		selectionchange: set_button_status
-	    }
+		selectionchange: set_button_status,
+	    },
 	});
 
 	me.callParent();
@@ -768,5 +768,5 @@ Ext.define('PVE.qemu.HardwareView', {
 	me.on('destroy', me.rstore.stopUpdate, me.rstore);
 
 	me.mon(me.getStore(), 'datachanged', set_button_status, me);
-    }
+    },
 });

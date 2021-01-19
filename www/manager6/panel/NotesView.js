@@ -17,16 +17,16 @@ Ext.define('PVE.panel.NotesView', {
 		handler: function() {
 		    var me = this.up('panel');
 		    me.run_editor();
-		}
-	    }
-	]
+		},
+	    },
+	],
     },
 
     run_editor: function() {
 	var me = this;
 	var win = Ext.create('PVE.window.NotesEdit', {
 	    pveSelNode: me.pveSelNode,
-	    url: me.url
+	    url: me.url,
 	});
 	win.show();
 	win.on('destroy', me.load, me);
@@ -49,7 +49,7 @@ Ext.define('PVE.panel.NotesView', {
 		if (me.collapsible && me.collapseMode === 'auto') {
 		    me.setCollapsed(data === '');
 		}
-	    }
+	    },
 	});
     },
 
@@ -72,7 +72,7 @@ Ext.define('PVE.panel.NotesView', {
 	handler: function() {
 	    var me = this.up('panel');
 	    me.run_editor();
-	}
+	},
     }],
 
     initComponent : function() {
@@ -117,5 +117,5 @@ Ext.define('PVE.panel.NotesView', {
 	    }
 	}
 	me.load();
-    }
+    },
 });

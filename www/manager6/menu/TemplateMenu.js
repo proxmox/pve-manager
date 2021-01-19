@@ -30,7 +30,7 @@ Ext.define('PVE.menu.TemplateMenu', {
 		method: 'POST',
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
+		},
 	    });
 	};
 
@@ -44,10 +44,10 @@ Ext.define('PVE.menu.TemplateMenu', {
 		    var win = Ext.create('PVE.window.Migrate', {
 			vmtype: guestType,
 			nodename: nodename,
-			vmid: vmid
+			vmid: vmid,
 		    });
 		    win.show();
-		}
+		},
 	    },
 	    {
 		text: gettext('Clone'),
@@ -57,13 +57,13 @@ Ext.define('PVE.menu.TemplateMenu', {
 			nodename: nodename,
 			guestType: guestType,
 			vmid: vmid,
-			isTemplate: template
+			isTemplate: template,
 		    });
 		    win.show();
-		}
-	    }
+		},
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

@@ -22,7 +22,7 @@ Ext.define('PVE.sdn.Browser', {
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Zone {0} on node {1}"),
 				     "'" + sdnid + "'", "'" + nodename + "'"),
-	    hstateid: 'sdntab'
+	    hstateid: 'sdntab',
 	});
 
 	if (caps.sdn['SDN.Audit']) {
@@ -30,7 +30,7 @@ Ext.define('PVE.sdn.Browser', {
 		xtype: 'pveSDNZoneContentView',
 		title: gettext('Content'),
 		iconCls: 'fa fa-th',
-		itemId: 'content'
+		itemId: 'content',
 	    });
 	}
 
@@ -40,10 +40,10 @@ Ext.define('PVE.sdn.Browser', {
 		title: gettext('Permissions'),
 		iconCls: 'fa fa-unlock',
 		itemId: 'permissions',
-		path: '/sdn/zones/' + sdnid
+		path: '/sdn/zones/' + sdnid,
 	    });
 	}
 
 	me.callParent();
-   }
+   },
 });

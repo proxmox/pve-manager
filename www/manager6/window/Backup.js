@@ -41,7 +41,7 @@ Ext.define('PVE.window.Backup', {
 		    } else if (!compressionSelector.getEditable()) {
 			compressionSelector.setDisabled(false);
 		    }
-		}
+		},
 	    },
 	});
 	storagesel.setValue(me.storage);
@@ -51,7 +51,7 @@ Ext.define('PVE.window.Backup', {
 	    border: false,
 	    fieldDefaults: {
 		labelWidth: 100,
-		anchor: '100%'
+		anchor: '100%',
 	    },
 	    items: [
 		storagesel,
@@ -59,16 +59,16 @@ Ext.define('PVE.window.Backup', {
 		    xtype: 'pveBackupModeSelector',
 		    fieldLabel: gettext('Mode'),
 		    value: 'snapshot',
-		    name: 'mode'
+		    name: 'mode',
 		},
 		compressionSelector,
 		{
 		    xtype: 'textfield',
 		    fieldLabel: gettext('Send email to'),
 		    name: 'mailto',
-		    emptyText: Proxmox.Utils.noneText
-		}
-	    ]
+		    emptyText: Proxmox.Utils.noneText,
+		},
+	    ],
 	});
 
 	var form = me.formPanel.getForm();
@@ -82,7 +82,7 @@ Ext.define('PVE.window.Backup', {
 		    storage: storage,
 		    vmid: me.vmid,
 		    mode: values.mode,
-		    remove: 0
+		    remove: 0,
 		};
 
 		if ( values.mailto ) {
@@ -98,7 +98,7 @@ Ext.define('PVE.window.Backup', {
 		    params: params,
 		    method: 'POST',
 		    failure: function (response, opts) {
-			Ext.Msg.alert('Error',response.htmlStatus);
+			Ext.Msg.alert('Error', response.htmlStatus);
 		    },
 		    success: function(response, options) {
 			// close later so we reload the grid
@@ -112,19 +112,19 @@ Ext.define('PVE.window.Backup', {
 			    listeners: {
 				close: function() {
 				    me.close();
-				}
-			    }
+				},
+			    },
 			});
 			win.show();
-		    }
+		    },
 		});
-	    }
+	    },
 	});
 
 	var helpBtn = Ext.create('Proxmox.button.Help', {
 	    onlineHelp: 'chapter_vzdump',
 	    listenToGlobalEvent: false,
-	    hidden: false
+	    hidden: false,
 	});
 
 	var title = gettext('Backup') + " " +
@@ -138,9 +138,9 @@ Ext.define('PVE.window.Backup', {
 	    layout: 'auto',
 	    border: false,
 	    items: [ me.formPanel ],
-	    buttons: [ helpBtn, '->', submitBtn ]
+	    buttons: [ helpBtn, '->', submitBtn ],
 	});
 
 	me.callParent();
-    }
+    },
 });

@@ -366,7 +366,7 @@ Ext.define('PVE.Parser', { statics: {
 
 	Ext.Object.each(netif, function(iface, data) {
 	    var tmparray = [];
-	    Ext.Array.each(['ifname', 'mac', 'bridge', 'host_ifname' , 'host_mac', 'mac_filter', 'tag', 'firewall'], function(key) {
+	    Ext.Array.each(['ifname', 'mac', 'bridge', 'host_ifname', 'host_mac', 'mac_filter', 'tag', 'firewall'], function(key) {
 		var value = data[key];
 		if (key === 'bridge'){
 		    if(data.tag){
@@ -686,7 +686,7 @@ Ext.define('PVE.Parser', { statics: {
 	    return {
 		type: m[1],
 		key: m[2],
-		comment: m[3]
+		comment: m[3],
 	    };
 	}
 	if (m[2].match(typere)) {
@@ -694,7 +694,7 @@ Ext.define('PVE.Parser', { statics: {
 		options: m[1],
 		type: m[2],
 		key: m[3],
-		comment: m[4]
+		comment: m[4],
 	    };
 	}
 	return null;

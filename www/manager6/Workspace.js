@@ -48,7 +48,7 @@ Ext.define('PVE.Workspace', {
 		    me.login = null;
 		    me.updateLoginData(data);
 		    Proxmox.Utils.checked_command(function() {}); // display subscription status
-		}
+		},
 	    });
 	}
 	me.onLogin(null);
@@ -92,20 +92,20 @@ Ext.define('PVE.Workspace', {
 		Ext.Ajax.request({
 		    params: {
 			username: Proxmox.UserName,
-			password: ticket
+			password: ticket,
 		    },
 		    url: '/api2/json/access/ticket',
 		    method: 'POST',
 		    success: function(response, opts) {
 			var obj = Ext.decode(response.responseText);
 			me.updateLoginData(obj.data);
-		    }
+		    },
 		});
 	    },
-	    interval: 15*60*1000
+	    interval: 15*60*1000,
 	});
 
-    }
+    },
 });
 
 Ext.define('PVE.StdWorkspace', {
@@ -161,7 +161,7 @@ Ext.define('PVE.StdWorkspace', {
 		success: function(response) {
 		    PVE.VersionInfo = response.result.data;
 		    me.updateVersionInfo();
-		}
+		},
 	    });
 
 	    Proxmox.Utils.API2Request({
@@ -228,7 +228,7 @@ Ext.define('PVE.StdWorkspace', {
 				lxc: 'PVE.lxc.Config',
 				storage: 'PVE.storage.Browser',
 				sdn: 'PVE.sdn.Browser',
-				pool: 'pvePoolConfig'
+				pool: 'pvePoolConfig',
 			    };
 			    var comp = {
 				xtype: tlckup[n.data.type || 'root'] ||
@@ -237,14 +237,14 @@ Ext.define('PVE.StdWorkspace', {
 				    Ext.isDefined(n.data.groupbyid),
 				pveSelNode: n,
 				workspace: me,
-				viewFilter: selview.getViewFilter()
+				viewFilter: selview.getViewFilter(),
 			    };
 			    PVE.curSelectedNode = n;
 			    me.setContent(comp);
 			}
-		    }
-		}
-	    }
+		    },
+		},
+	    },
 	});
 
 	selview.on('select', function(combo, records) {
@@ -266,7 +266,7 @@ Ext.define('PVE.StdWorkspace', {
 	    handler: function() {
 		var wiz = Ext.create('PVE.qemu.CreateWizard', {});
 		wiz.show();
-	    }
+	    },
 	});
 
 	var createCT = Ext.createWidget('button', {
@@ -279,7 +279,7 @@ Ext.define('PVE.StdWorkspace', {
 	    handler: function() {
 		var wiz = Ext.create('PVE.lxc.CreateWizard', {});
 		wiz.show();
-	    }
+	    },
 	});
 
 	sprovider.on('statechange', function(sp, key, value) {
@@ -298,11 +298,11 @@ Ext.define('PVE.StdWorkspace', {
 		    region: 'north',
 		    layout: {
 			type: 'hbox',
-			align: 'middle'
+			align: 'middle',
 		    },
 		    baseCls: 'x-plain',
 		    defaults: {
-			baseCls: 'x-plain'
+			baseCls: 'x-plain',
 		    },
 		    border: false,
 		    margin: '2 0 2 5',
@@ -313,14 +313,14 @@ Ext.define('PVE.StdWorkspace', {
 			{
 			    minWidth: 150,
 			    id: 'versioninfo',
-			    html: 'Virtual Environment'
+			    html: 'Virtual Environment',
 			},
 			{
 			    xtype: 'pveGlobalSearchField',
-			    tree: rtree
+			    tree: rtree,
 			},
 			{
-			    flex: 1
+			    flex: 1,
 			},
 			{
 			    xtype: 'proxmoxHelpButton',
@@ -330,7 +330,7 @@ Ext.define('PVE.StdWorkspace', {
 			    listenToGlobalEvent: false,
 			    onlineHelp: 'pve_documentation_index',
 			    text: gettext('Documentation'),
-			    margin: '0 5 0 0'
+			    margin: '0 5 0 0',
 			},
 			createVM,
 			createCT,
@@ -343,7 +343,7 @@ Ext.define('PVE.StdWorkspace', {
 			    style: {
 				// proxmox dark grey p light grey as border
 				backgroundColor: '#464d4d',
-				borderColor: '#ABBABA'
+				borderColor: '#ABBABA',
 			    },
 			    iconCls: 'fa fa-user',
 			    menu: [
@@ -353,27 +353,27 @@ Ext.define('PVE.StdWorkspace', {
 				    handler: function() {
 					var win = Ext.create('PVE.window.Settings');
 					win.show();
-				    }
+				    },
 				},
 				{
 				    text: gettext('Password'),
 				    iconCls: 'fa fa-fw fa-key',
 				    handler: function() {
 					var win = Ext.create('Proxmox.window.PasswordEdit', {
-					    userid: Proxmox.UserName
+					    userid: Proxmox.UserName,
 					});
 					win.show();
-				    }
+				    },
 				},
 				{
 				    text: 'TFA',
 				    iconCls: 'fa fa-fw fa-lock',
 				    handler: function(btn, event, rec) {
-					var win = Ext.create('PVE.window.TFAEdit',{
-					    userid: Proxmox.UserName
+					var win = Ext.create('PVE.window.TFAEdit', {
+					    userid: Proxmox.UserName,
 					});
 					win.show();
-				    }
+				    },
 				},
 				{
 				    iconCls: 'fa fa-language',
@@ -402,11 +402,11 @@ Ext.define('PVE.StdWorkspace', {
 						comp.getStore().loadData([], false);
 					    }
 					});
-				    }
-				}
-			    ]
-			}
-		    ]
+				    },
+				},
+			    ],
+			},
+		    ],
 		},
 		{
 		    region: 'center',
@@ -419,7 +419,7 @@ Ext.define('PVE.StdWorkspace', {
 		    layout: { type: 'card' },
 		    border: false,
 		    margin: '0 5 0 0',
-		    items: []
+		    items: [],
 		},
 		{
 		    region: 'west',
@@ -439,8 +439,8 @@ Ext.define('PVE.StdWorkspace', {
 			    if (width > viewWidth - 100) {
 				panel.setWidth(viewWidth - 100);
 			    }
-			}
-		    }
+			},
+		    },
 		},
 		{
 		    xtype: 'pveStatusPanel',
@@ -460,10 +460,10 @@ Ext.define('PVE.StdWorkspace', {
 			    if (height > (viewHeight - 150)) {
 				panel.setHeight(viewHeight - 150);
 			    }
-			}
-		    }
-		}
-	    ]
+			},
+		    },
+		},
+	    ],
 	});
 
 	me.callParent();
@@ -479,6 +479,6 @@ Ext.define('PVE.StdWorkspace', {
 		});
 	    }
 	});
-    }
+    },
 });
 

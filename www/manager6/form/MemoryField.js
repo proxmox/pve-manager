@@ -83,5 +83,5 @@ Ext.define('PVE.form.MemoryField', {
 	}
 
         me.callParent();
-    }
+    },
 });

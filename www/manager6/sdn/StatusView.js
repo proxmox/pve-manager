@@ -25,13 +25,13 @@ Ext.define('PVE.sdn.StatusView', {
 		    var p1 = me.sortPriority[rec1.data.type];
 		    var p2 = me.sortPriority[rec2.data.type];
 		    return (p1 !== p2) ? ((p1 > p2) ? 1 : -1) : 0;
-		}
+		},
 	    }],
 	    filters: {
 		property: 'type',
 		value: 'sdn',
-		operator: '=='
-	    }
+		operator: '==',
+	    },
 	});
 
 	Ext.apply(me, {
@@ -47,32 +47,32 @@ Ext.define('PVE.sdn.StatusView', {
 			    waitMsgTarget: me,
 			    failure: function(response, opts) {
 				Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-			    }
+			    },
 			});
-		    }
+		    },
 		},
 	    ],
 	    viewConfig: {
-		trackOver: false
+		trackOver: false,
 	    },
 	    columns: [
 		{
 		    header: 'SDN',
 		    width: 80,
-		    dataIndex: 'sdn'
+		    dataIndex: 'sdn',
 		},
 		{
 		    header: gettext('Node'),
 		    width: 80,
-		    dataIndex: 'node'
+		    dataIndex: 'node',
 		},
 		{
 		    header: gettext('Status'),
 		    width: 80,
 		    flex: 1,
-		    dataIndex: 'status'
-		}
-	    ]
+		    dataIndex: 'status',
+		},
+	    ],
 	});
 
 	me.callParent();
@@ -80,7 +80,7 @@ Ext.define('PVE.sdn.StatusView', {
 	me.on('activate', me.rstore.startUpdate);
 	me.on('destroy', me.rstore.stopUpdate);
 
-    }
+    },
 }, function() {
 
     Ext.define('pve-sdn-status', {
@@ -88,7 +88,7 @@ Ext.define('PVE.sdn.StatusView', {
 	fields: [
 	    'id', 'type', 'node', 'status', 'sdn',
 	],
-	idProperty: 'id'
+	idProperty: 'id',
     });
 
 });

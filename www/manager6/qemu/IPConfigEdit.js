@@ -64,19 +64,19 @@ Ext.define('PVE.qemu.IPConfigPanel', {
 	    {
 		xtype: 'displayfield',
 		fieldLabel: gettext('Network Device'),
-		value: me.netid
+		value: me.netid,
 	    },
 	    {
 		layout: {
 		    type: 'hbox',
-		    align: 'middle'
+		    align: 'middle',
 		},
 		border: false,
 		margin: '0 0 5 0',
 		items: [
 		    {
 			xtype: 'label',
-			text: gettext('IPv4') + ':'
+			text: gettext('IPv4') + ':',
 		    },
 		    {
 			xtype: 'radiofield',
@@ -89,8 +89,8 @@ Ext.define('PVE.qemu.IPConfigPanel', {
 			    change: function(cb, value) {
 				me.down('field[name=ip]').setDisabled(!value);
 				me.down('field[name=gw]').setDisabled(!value);
-			    }
-			}
+			    },
+			},
 		    },
 		    {
 			xtype: 'radiofield',
@@ -98,9 +98,9 @@ Ext.define('PVE.qemu.IPConfigPanel', {
 			name: 'ipv4mode',
 			inputValue: 'dhcp',
 			checked: false,
-			margin: '0 0 0 10'
-		    }
-		]
+			margin: '0 0 0 10',
+		    },
+		],
 	    },
 	    {
 		xtype: 'textfield',
@@ -108,7 +108,7 @@ Ext.define('PVE.qemu.IPConfigPanel', {
 		vtype: 'IPCIDRAddress',
 		value: '',
 		disabled: true,
-		fieldLabel: gettext('IPv4/CIDR')
+		fieldLabel: gettext('IPv4/CIDR'),
 	    },
 	    {
 		xtype: 'textfield',
@@ -116,25 +116,25 @@ Ext.define('PVE.qemu.IPConfigPanel', {
 		value: '',
 		vtype: 'IPAddress',
 		disabled: true,
-		fieldLabel: gettext('Gateway') + ' (' + gettext('IPv4') +')'
-	    }
+		fieldLabel: gettext('Gateway') + ' (' + gettext('IPv4') +')',
+	    },
 	];
 
 	me.column2 = [
 	    {
-		xtype: 'displayfield'
+		xtype: 'displayfield',
 	    },
 	    {
 		layout: {
 		    type: 'hbox',
-		    align: 'middle'
+		    align: 'middle',
 		},
 		border: false,
 		margin: '0 0 5 0',
 		items: [
 		    {
 			xtype: 'label',
-			text: gettext('IPv6') + ':'
+			text: gettext('IPv6') + ':',
 		    },
 		    {
 			xtype: 'radiofield',
@@ -147,8 +147,8 @@ Ext.define('PVE.qemu.IPConfigPanel', {
 			    change: function(cb, value) {
 				me.down('field[name=ip6]').setDisabled(!value);
 				me.down('field[name=gw6]').setDisabled(!value);
-			    }
-			}
+			    },
+			},
 		    },
 		    {
 			xtype: 'radiofield',
@@ -156,9 +156,9 @@ Ext.define('PVE.qemu.IPConfigPanel', {
 			name: 'ipv6mode',
 			inputValue: 'dhcp',
 			checked: false,
-			margin: '0 0 0 10'
-		    }
-		]
+			margin: '0 0 0 10',
+		    },
+		],
 	    },
 	    {
 		xtype: 'textfield',
@@ -166,7 +166,7 @@ Ext.define('PVE.qemu.IPConfigPanel', {
 		value: '',
 		vtype: 'IP6CIDRAddress',
 		disabled: true,
-		fieldLabel: gettext('IPv6/CIDR')
+		fieldLabel: gettext('IPv6/CIDR'),
 	    },
 	    {
 		xtype: 'textfield',
@@ -174,12 +174,12 @@ Ext.define('PVE.qemu.IPConfigPanel', {
 		vtype: 'IP6Address',
 		value: '',
 		disabled: true,
-		fieldLabel: gettext('Gateway') + ' (' + gettext('IPv6') +')'
-	    }
+		fieldLabel: gettext('Gateway') + ' (' + gettext('IPv6') +')',
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.qemu.IPConfigEdit', {
@@ -208,12 +208,12 @@ Ext.define('PVE.qemu.IPConfigEdit', {
 	var ipanel = Ext.create('PVE.qemu.IPConfigPanel', {
 	    confid: me.confid,
 	    netid: me.netid,
-	    nodename: nodename
+	    nodename: nodename,
 	});
 
 	Ext.applyIf(me, {
 	    subject: gettext('Network Config'),
-	    items: ipanel
+	    items: ipanel,
 	});
 
 	me.callParent();
@@ -233,7 +233,7 @@ Ext.define('PVE.qemu.IPConfigEdit', {
 		}
 		ipanel.setIPConfig(me.confid, ipconfig);
 		ipanel.setVMConfig(me.vmconfig);
-	    }
+	    },
 	});
-    }
+    },
 });

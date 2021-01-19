@@ -17,7 +17,7 @@ Ext.define('PVE.dc.Config', {
 
 	Ext.apply(me, {
 	    title: gettext("Datacenter"),
-	    hstateid: 'dctab'
+	    hstateid: 'dctab',
 	});
 
 	if (caps.dc['Sys.Audit']) {
@@ -25,25 +25,25 @@ Ext.define('PVE.dc.Config', {
 		title: gettext('Summary'),
 		xtype: 'pveDcSummary',
 		iconCls: 'fa fa-book',
-		itemId: 'summary'
+		itemId: 'summary',
 	    },
 	    {
 		title: gettext('Cluster'),
 		xtype: 'pveClusterAdministration',
 		iconCls: 'fa fa-server',
-		itemId: 'cluster'
+		itemId: 'cluster',
 	    },
 	    {
 		title: 'Ceph',
 		itemId: 'ceph',
 		iconCls: 'fa fa-ceph',
-		xtype: 'pveNodeCephStatus'
+		xtype: 'pveNodeCephStatus',
 	    },
 	    {
 		xtype: 'pveDcOptionView',
 		title: gettext('Options'),
 		iconCls: 'fa fa-gear',
-		itemId: 'options'
+		itemId: 'options',
 	    });
 	}
 
@@ -52,7 +52,7 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveStorageView',
 		title: gettext('Storage'),
 		iconCls: 'fa fa-database',
-		itemId: 'storage'
+		itemId: 'storage',
 	    });
 	}
 
@@ -62,20 +62,20 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveDcBackupView',
 		iconCls: 'fa fa-floppy-o',
 		title: gettext('Backup'),
-		itemId: 'backup'
+		itemId: 'backup',
 	    },
 	    {
 		xtype: 'pveReplicaView',
 		iconCls: 'fa fa-retweet',
 		title: gettext('Replication'),
-		itemId: 'replication'
+		itemId: 'replication',
 	    },
 	    {
 		xtype: 'pveACLView',
 		title: gettext('Permissions'),
 		iconCls: 'fa fa-unlock',
 		itemId: 'permissions',
-		expandedOnInit: true
+		expandedOnInit: true,
 	    });
 	}
 
@@ -84,7 +84,7 @@ Ext.define('PVE.dc.Config', {
 	    groups: ['permissions'],
 	    iconCls: 'fa fa-user',
 	    title: gettext('Users'),
-	    itemId: 'users'
+	    itemId: 'users',
 	});
 
 	me.items.push({
@@ -92,7 +92,7 @@ Ext.define('PVE.dc.Config', {
 	    groups: ['permissions'],
 	    iconCls: 'fa fa-user-o',
 	    title: gettext('API Tokens'),
-	    itemId: 'apitokens'
+	    itemId: 'apitokens',
 	});
 
 	if (caps.dc['Sys.Audit']) {
@@ -101,48 +101,48 @@ Ext.define('PVE.dc.Config', {
 		title: gettext('Groups'),
 		iconCls: 'fa fa-users',
 		groups: ['permissions'],
-		itemId: 'groups'
+		itemId: 'groups',
 	    },
 	    {
 		xtype: 'pvePoolView',
 		title: gettext('Pools'),
 		iconCls: 'fa fa-tags',
 		groups: ['permissions'],
-		itemId: 'pools'
+		itemId: 'pools',
 	    },
 	    {
 		xtype: 'pveRoleView',
 		title: gettext('Roles'),
 		iconCls: 'fa fa-male',
 		groups: ['permissions'],
-		itemId: 'roles'
+		itemId: 'roles',
 	    },
 	    {
 		xtype: 'pveAuthView',
 		title: gettext('Authentication'),
 		groups: ['permissions'],
 		iconCls: 'fa fa-key',
-		itemId: 'domains'
+		itemId: 'domains',
 	    },
 	    {
 		xtype: 'pveHAStatus',
 		title: 'HA',
 		iconCls: 'fa fa-heartbeat',
-		itemId: 'ha'
+		itemId: 'ha',
 	    },
 	    {
 		title: gettext('Groups'),
 		groups: ['ha'],
 		xtype: 'pveHAGroupsView',
 		iconCls: 'fa fa-object-group',
-		itemId: 'ha-groups'
+		itemId: 'ha-groups',
 	    },
 	    {
 		title: gettext('Fencing'),
 		groups: ['ha'],
 		iconCls: 'fa fa-bolt',
 		xtype: 'pveFencingView',
-		itemId: 'ha-fencing'
+		itemId: 'ha-fencing',
 	    });
 	    if (PVE.SDNInfo || PVE.SDNInfo === undefined) {
 		me.items.push({
@@ -151,7 +151,7 @@ Ext.define('PVE.dc.Config', {
 		    iconCls: 'fa fa-sdn',
 		    hidden: true,
 		    itemId: 'sdn',
-		    expandedOnInit: true
+		    expandedOnInit: true,
 		},
 		{
 		    xtype: 'pveSDNControllerView',
@@ -159,7 +159,7 @@ Ext.define('PVE.dc.Config', {
 		    title: gettext('Controllers'),
 		    hidden: true,
 		    iconCls: 'fa fa-crosshairs',
-		    itemId: 'sdncontroller'
+		    itemId: 'sdncontroller',
 		},
 		{
 		    xtype: 'pveSDNZoneView',
@@ -167,7 +167,7 @@ Ext.define('PVE.dc.Config', {
 		    title: gettext('Zones'),
 		    hidden: true,
 		    iconCls: 'fa fa-th',
-		    itemId: 'sdnzone'
+		    itemId: 'sdnzone',
 		},
 		{
 		    xtype: 'pveSDNVnetView',
@@ -175,7 +175,7 @@ Ext.define('PVE.dc.Config', {
 		    title: gettext('Vnets'),
 		    hidden: true,
 		    iconCls: 'fa fa-network-wired',
-		    itemId: 'sdnvnet'
+		    itemId: 'sdnvnet',
 		});
 	    }
 
@@ -184,7 +184,7 @@ Ext.define('PVE.dc.Config', {
 		    xtype: 'pveACMEClusterView',
 		    title: 'ACME',
 		    iconCls: 'fa fa-certificate',
-		    itemId: 'acme'
+		    itemId: 'acme',
 		});
 	    }
 
@@ -195,7 +195,7 @@ Ext.define('PVE.dc.Config', {
 		base_url: '/cluster/firewall/rules',
 		list_refs_url: '/cluster/firewall/refs',
 		iconCls: 'fa fa-shield',
-		itemId: 'firewall'
+		itemId: 'firewall',
 	    },
 	    {
 		xtype: 'pveFirewallOptions',
@@ -205,14 +205,14 @@ Ext.define('PVE.dc.Config', {
 		base_url: '/cluster/firewall/options',
 		onlineHelp: 'pve_firewall_cluster_wide_setup',
 		fwtype: 'dc',
-		itemId: 'firewall-options'
+		itemId: 'firewall-options',
 	    },
 	    {
 		xtype: 'pveSecurityGroups',
 		title: gettext('Security Group'),
 		groups: ['firewall'],
 		iconCls: 'fa fa-group',
-		itemId: 'firewall-sg'
+		itemId: 'firewall-sg',
 	    },
 	    {
 		xtype: 'pveFirewallAliases',
@@ -220,7 +220,7 @@ Ext.define('PVE.dc.Config', {
 		groups: ['firewall'],
 		iconCls: 'fa fa-external-link',
 		base_url: '/cluster/firewall/aliases',
-		itemId: 'firewall-aliases'
+		itemId: 'firewall-aliases',
 	    },
 	    {
 		xtype: 'pveIPSet',
@@ -229,7 +229,7 @@ Ext.define('PVE.dc.Config', {
 		iconCls: 'fa fa-list-ol',
 		base_url: '/cluster/firewall/ipset',
 		list_refs_url: '/cluster/firewall/refs',
-		itemId: 'firewall-ipset'
+		itemId: 'firewall-ipset',
 	    },
 	    {
 		xtype: 'pveMetricServerView',
@@ -242,10 +242,10 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveDcSupport',
 		title: gettext('Support'),
 		itemId: 'support',
-		iconCls: 'fa fa-comments-o'
+		iconCls: 'fa fa-comments-o',
 	    });
 	}
 
 	me.callParent();
-   }
+   },
 });

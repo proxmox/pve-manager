@@ -5,8 +5,8 @@ Ext.define('PVE.node.CephConfigDb', {
     border: false,
     store: {
 	proxy: {
-	    type: 'proxmox'
-	}
+	    type: 'proxmox',
+	},
     },
 
     columns: [
@@ -41,7 +41,7 @@ Ext.define('PVE.node.CephConfigDb', {
 	    text: 'Runtime Updatable',
 	    hidden: true,
 	    width: 80,
-	    renderer: Proxmox.Utils.format_boolean
+	    renderer: Proxmox.Utils.format_boolean,
 	},
     ],
 
@@ -59,7 +59,7 @@ Ext.define('PVE.node.CephConfigDb', {
 
 	Proxmox.Utils.monStoreErrors(me, me.getStore());
 	me.getStore().load();
-    }
+    },
 });
 Ext.define('PVE.node.CephConfig', {
     extend: 'Ext.panel.Panel',
@@ -83,14 +83,14 @@ Ext.define('PVE.node.CephConfig', {
 			me.mon(win, 'cephInstallWindowClosed', function(){
 			    me.load();
 			});
-		    }
+		    },
 		);
 
 	    },
 	    success: function(response, opts) {
 		var data = response.result.data;
 		me.update(Ext.htmlEncode(data));
-	    }
+	    },
 	});
     },
 
@@ -107,14 +107,14 @@ Ext.define('PVE.node.CephConfig', {
 	    listeners: {
 		activate: function() {
 		    me.load();
-		}
-	    }
+		},
+	    },
 	});
 
 	me.callParent();
 
 	me.load();
-    }
+    },
 });
 
 Ext.define('PVE.node.CephConfigCrush', {
@@ -127,14 +127,14 @@ Ext.define('PVE.node.CephConfigCrush', {
     items: [{
 	    title: gettext('Configuration'),
 	    xtype: 'pveNodeCephConfig',
-	    region: 'center'
+	    region: 'center',
 	},
 	{
 	    title: 'Crush Map', // do not localize
 	    xtype: 'pveNodeCephCrushMap',
 	    region: 'east',
 	    split: true,
-	    width: '50%'
+	    width: '50%',
 	},
 	{
 	    title: gettext('Configuration Database'),
@@ -142,14 +142,14 @@ Ext.define('PVE.node.CephConfigCrush', {
 	    region: 'south',
 	    split: true,
 	    weight: -30,
-	    height: '50%'
+	    height: '50%',
     }],
 
     initComponent: function() {
 	var me = this;
 	me.defaults = {
-	    pveSelNode: me.pveSelNode
+	    pveSelNode: me.pveSelNode,
 	};
 	me.callParent();
-    }
+    },
 });

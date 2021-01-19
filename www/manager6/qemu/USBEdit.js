@@ -6,7 +6,7 @@ Ext.define('PVE.qemu.USBInputPanel', {
     onlineHelp: 'qm_usb_passthrough',
 
     viewModel: {
-	data: {}
+	data: {},
     },
 
     setVMConfig: function(vmconfig) {
@@ -59,14 +59,14 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		    inputValue: 'spice',
 		    boxLabel: gettext('Spice Port'),
 		    submitValue: false,
-		    checked: true
+		    checked: true,
 		},
 		{
 		    name: 'usb',
 		    inputValue: 'hostdevice',
 		    boxLabel: gettext('Use USB Vendor/Device ID'),
 		    reference: 'hostdevice',
-		    submitValue: false
+		    submitValue: false,
 		},
 		{
 		    xtype: 'pveUSBSelector',
@@ -85,7 +85,7 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		    inputValue: 'port',
 		    boxLabel: gettext('Use USB Port'),
 		    reference: 'port',
-		    submitValue: false
+		    submitValue: false,
 		},
 		{
 		    xtype: 'pveUSBSelector',
@@ -105,11 +105,11 @@ Ext.define('PVE.qemu.USBInputPanel', {
 		    inputValue: true,
 		    checked: true,
 		    reference: 'usb3',
-		    fieldLabel: gettext('Use USB3')
-		}
-	    ]
-	}
-    ]
+		    fieldLabel: gettext('Use USB3'),
+		},
+	    ],
+	},
+    ],
 });
 
 Ext.define('PVE.qemu.USBEdit', {
@@ -128,11 +128,11 @@ Ext.define('PVE.qemu.USBEdit', {
 
 	var ipanel = Ext.create('PVE.qemu.USBInputPanel', {
 	    confid: me.confid,
-	    pveSelNode: me.pveSelNode
+	    pveSelNode: me.pveSelNode,
 	});
 
 	Ext.apply(me, {
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -151,7 +151,7 @@ Ext.define('PVE.qemu.USBEdit', {
 		for (let i = 0; i < data.length; i++) {
 		    if (/^(host=)?(0x)?[a-zA-Z0-9]{4}\:(0x)?[a-zA-Z0-9]{4}$/.test(data[i])) {
 			hostdevice = data[i];
-			hostdevice = hostdevice.replace('host=', '').replace('0x','');
+			hostdevice = hostdevice.replace('host=', '').replace('0x', '');
 			type = 'hostdevice';
 		    } else if (/^(host=)?(\d+)\-(\d+(\.\d+)*)$/.test(data[i])) {
 			port = data[i];
@@ -167,11 +167,11 @@ Ext.define('PVE.qemu.USBEdit', {
 		    usb : type,
 		    hostdevice: hostdevice,
 		    port: port,
-		    usb3: usb3
+		    usb3: usb3,
 		};
 
 		ipanel.setValues(values);
-	    }
+	    },
 	});
-    }
+    },
 });

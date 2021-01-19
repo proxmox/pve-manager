@@ -39,8 +39,8 @@ Ext.define('PVE.form.SpiceEnhancementSelector', {
 	    value: gettext('Make sure the SPICE WebDav daemon is installed in the VM.'),
 	    bind: {
 		hidden: '{!foldersharing.checked}',
-	    }
-	}
+	    },
+	},
     ],
 
     onGetValues: function(values) {

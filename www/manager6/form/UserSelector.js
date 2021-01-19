@@ -17,8 +17,8 @@ Ext.define('PVE.form.UserSelector', {
 	var store = new Ext.data.Store({
 	    model: 'pve-users',
 	    sorters: [{
-		property: 'userid'
-	    }]
+		property: 'userid',
+	    }],
 	});
 
 	Ext.apply(me, {
@@ -30,45 +30,45 @@ Ext.define('PVE.form.UserSelector', {
 			sortable: true,
 			dataIndex: 'userid',
 			renderer: Ext.String.htmlEncode,
-			flex: 1
+			flex: 1,
 		    },
 		    {
 			header: gettext('Name'),
 			sortable: true,
 			renderer: PVE.Utils.render_full_name,
 			dataIndex: 'firstname',
-			flex: 1
+			flex: 1,
 		    },
 		    {
 			header: gettext('Comment'),
 			sortable: false,
 			dataIndex: 'comment',
 			renderer: Ext.String.htmlEncode,
-			flex: 1
-		    }
-		]
-	    }
+			flex: 1,
+		    },
+		],
+	    },
 	});
 
         me.callParent();
 
 	store.load({ params: { enabled: 1 }});
-    }
+    },
 
 }, function() {
 
     Ext.define('pve-users', {
 	extend: 'Ext.data.Model',
 	fields: [
-	    'userid', 'firstname', 'lastname' , 'email', 'comment',
+	    'userid', 'firstname', 'lastname', 'email', 'comment',
 	    { type: 'boolean', name: 'enable' },
-	    { type: 'date', dateFormat: 'timestamp', name: 'expire' }
+	    { type: 'date', dateFormat: 'timestamp', name: 'expire' },
 	],
 	proxy: {
             type: 'proxmox',
-	    url: "/api2/json/access/users"
+	    url: "/api2/json/access/users",
 	},
-	idProperty: 'userid'
+	idProperty: 'userid',
     });
 
 });

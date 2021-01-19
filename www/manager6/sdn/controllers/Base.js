@@ -35,13 +35,13 @@ Ext.define('PVE.sdn.controllers.BaseEdit', {
 	var ipanel = Ext.create(me.paneltype, {
 	    type: me.type,
 	    isCreate: me.isCreate,
-	    controllerid: me.controllerid
+	    controllerid: me.controllerid,
 	});
 
 	Ext.apply(me, {
 	    subject: PVE.Utils.format_sdncontroller_type(me.type),
 	    isAdd: true,
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -60,8 +60,8 @@ Ext.define('PVE.sdn.controllers.BaseEdit', {
 		    values.enable = values.disable ? 0 : 1;
 
 		    ipanel.setValues(values);
-		}
+		},
 	    });
 	}
-    }
+    },
 });

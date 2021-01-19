@@ -4,8 +4,8 @@ Ext.define('PVE.data.CPUModel', {
 	{name: 'name'},
 	{name: 'vendor'},
 	{name: 'custom'},
-	{name: 'displayname'}
-    ]
+	{name: 'displayname'},
+    ],
 });
 
 Ext.define('PVE.form.CPUModelSelector', {
@@ -32,17 +32,17 @@ Ext.define('PVE.form.CPUModelSelector', {
 		dataIndex: 'displayname',
 		hideable: false,
 		sortable: true,
-		flex: 3
+		flex: 3,
 	    },
 	    {
 		header: gettext('Vendor'),
 		dataIndex: 'vendor',
 		hideable: false,
 		sortable: true,
-		flex: 2
-	    }
+		flex: 2,
+	    },
 	],
-	width: 360
+	width: 360,
     },
 
     store: {
@@ -50,7 +50,7 @@ Ext.define('PVE.form.CPUModelSelector', {
 	model: 'PVE.data.CPUModel',
 	proxy: {
 	    type: 'proxmox',
-	    url: '/api2/json/nodes/localhost/cpu'
+	    url: '/api2/json/nodes/localhost/cpu',
 	},
 	sorters: [
 	    {
@@ -71,8 +71,8 @@ Ext.define('PVE.form.CPUModelSelector', {
 		    // Within same vendor, sort alphabetically
 		    return a.name.localeCompare(b.name);
 		},
-		direction: 'ASC'
-	    }
+		direction: 'ASC',
+	    },
 	],
 	listeners: {
 	    load: function(store, records, success) {
@@ -98,7 +98,7 @@ Ext.define('PVE.form.CPUModelSelector', {
 
 		    store.sort();
 		}
-	    }
-	}
-    }
+	    },
+	},
+    },
 });

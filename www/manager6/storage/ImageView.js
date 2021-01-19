@@ -52,7 +52,7 @@ Ext.define('PVE.storage.ImageView', {
 			    Ext.Msg.show({
 				title: gettext('Cannot remove disk image.'),
 				icon: Ext.Msg.ERROR,
-				msg: msg
+				msg: msg,
 			    });
 			    return;
 			}
@@ -61,10 +61,10 @@ Ext.define('PVE.storage.ImageView', {
 			title: Ext.String.format(gettext("Destroy '{0}'"), rec.data.volid),
 			showProgress: true,
 			url: url,
-			item: { type: 'Image', id: vmid }
+			item: { type: 'Image', id: vmid },
 		    }).show();
 		    win.on('destroy', reload);
-		}
+		},
 	    },
 	];
 	me.useCustomRemoveButton = true;

@@ -15,8 +15,8 @@ Ext.define('PVE.dc.PoolView', {
 	    model: 'pve-pools',
 	    sorters: {
 		property: 'poolid',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
         var reload = function() {
@@ -30,7 +30,7 @@ Ext.define('PVE.dc.PoolView', {
 	    baseurl: '/pools/',
 	    callback: function () {
 		reload();
-	    }
+	    },
 	});
 
 	var run_editor = function() {
@@ -39,8 +39,8 @@ Ext.define('PVE.dc.PoolView', {
 		return;
 	    }
 
-            var win = Ext.create('PVE.dc.PoolEdit',{
-                poolid: rec.data.poolid
+            var win = Ext.create('PVE.dc.PoolEdit', {
+                poolid: rec.data.poolid,
             });
             win.on('destroy', reload);
             win.show();
@@ -50,7 +50,7 @@ Ext.define('PVE.dc.PoolView', {
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	var tbar = [
@@ -60,9 +60,9 @@ Ext.define('PVE.dc.PoolView', {
 		    var win = Ext.create('PVE.dc.PoolEdit', {});
 		    win.on('destroy', reload);
 		    win.show();
-		}
+		},
             },
-	    edit_btn, remove_btn
+	    edit_btn, remove_btn,
         ];
 
 	Proxmox.Utils.monStoreErrors(me, store);
@@ -72,29 +72,29 @@ Ext.define('PVE.dc.PoolView', {
 	    selModel: sm,
 	    tbar: tbar,
 	    viewConfig: {
-		trackOver: false
+		trackOver: false,
 	    },
 	    columns: [
 		{
 		    header: gettext('Name'),
 		    width: 200,
 		    sortable: true,
-		    dataIndex: 'poolid'
+		    dataIndex: 'poolid',
 		},
 		{
 		    header: gettext('Comment'),
 		    sortable: false,
 		    renderer: Ext.String.htmlEncode,
 		    dataIndex: 'comment',
-		    flex: 1
-		}
+		    flex: 1,
+		},
 	    ],
 	    listeners: {
 		activate: reload,
-		itemdblclick: run_editor
-	    }
+		itemdblclick: run_editor,
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });

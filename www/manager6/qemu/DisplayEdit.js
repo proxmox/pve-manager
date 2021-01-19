@@ -7,11 +7,11 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 	var ret = PVE.Parser.printPropertyString(values, 'type');
 	if (ret === '') {
 	    return {
-		'delete': 'vga'
+		'delete': 'vga',
 	    };
 	}
 	return {
-	    vga: ret
+	    vga: ret,
 	};
     },
 
@@ -73,17 +73,17 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 		var memoryfield = me.down('field[name=memory]');
 		memoryfield.setEmptyText(emptyText);
 		memoryfield.setDisabled(disable);
-	    }
-	}
-    },{
+	    },
+	},
+    }, {
 	xtype: 'proxmoxintegerfield',
 	emptyText: Proxmox.Utils.defaultText,
 	fieldLabel: gettext('Memory') + ' (MiB)',
 	minValue: 4,
 	maxValue: 512,
 	step: 4,
-	name: 'memory'
-    }]
+	name: 'memory',
+    }],
 });
 
 Ext.define('PVE.qemu.DisplayEdit', {
@@ -95,7 +95,7 @@ Ext.define('PVE.qemu.DisplayEdit', {
     width: 350,
 
     items: [{
-	xtype: 'pveDisplayInputPanel'
+	xtype: 'pveDisplayInputPanel',
     }],
 
     initComponent : function() {
@@ -108,7 +108,7 @@ Ext.define('PVE.qemu.DisplayEdit', {
 		me.vmconfig = response.result.data;
 		var vga = me.vmconfig.vga || '__default__';
 		me.setValues(PVE.Parser.parsePropertyString(vga, 'type'));
-	    }
+	    },
 	});
-    }
+    },
 });

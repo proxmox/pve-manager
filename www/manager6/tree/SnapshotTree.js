@@ -86,7 +86,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 		    var upid = response.result.data;
 		    var win = Ext.create('Proxmox.window.TaskProgress', { upid: upid });
 		    win.show();
-		}
+		},
 	    });
 	},
 
@@ -159,7 +159,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 		    }
 
 		    me.load_task.delay(load_delay);
-		}
+		},
 	    });
 
 	    // if we do not have the permissions, we don't have to check
@@ -180,7 +180,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 		    }
 		    let res = response.result.data;
 		    vm.set('snapshotFeature', !!res.hasFeature);
-		}
+		},
 	    });
 	},
 
@@ -289,7 +289,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 		let rec = view.getSelection()[0];
 		return Ext.String.format(
 		    gettext('Are you sure you want to remove entry {0}'),
-		    `'${rec.data.name}'`
+		    `'${rec.data.name}'`,
 		);
 	    },
 	    handler: 'remove',
@@ -313,8 +313,8 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    name: 'order',
 	    calculate: function(data) {
 		return data.snaptime || (data.name === 'current' ? 'ZZZ' : data.snapstate);
-	    }
-	}
+	    },
+	},
     ],
 
     columns: [
@@ -329,7 +329,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 		} else {
 		    return value;
 		}
-	    }
+	    },
 	},
 	{
 	    text: gettext('RAM'),
@@ -345,7 +345,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 		if (record.data.name !== 'current') {
 		    return Proxmox.Utils.format_boolean(value);
 		}
-	    }
+	    },
 	},
 	{
 	    text: gettext('Date') + "/" + gettext("Status"),
@@ -356,9 +356,9 @@ Ext.define('PVE.guest.SnapshotTree', {
 		    return record.data.snapstate;
 		}
 		if (value) {
-		    return Ext.Date.format(value,'Y-m-d H:i:s');
+		    return Ext.Date.format(value, 'Y-m-d H:i:s');
 		}
-	    }
+	    },
 	},
 	{
 	    text: gettext('Description'),
@@ -370,8 +370,8 @@ Ext.define('PVE.guest.SnapshotTree', {
 		} else {
 		    return Ext.String.htmlEncode(value);
 		}
-	    }
-	}
+	    },
+	},
     ],
 
 });

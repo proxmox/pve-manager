@@ -37,7 +37,7 @@ Ext.define('PVE.qemu.Summary', {
 		padding: template ? '5' : '0 5 0 0',
 		itemId: 'gueststatus',
 		pveSelNode: me.pveSelNode,
-		rstore: rstore
+		rstore: rstore,
 	    },
 	    {
 		xtype: 'pveNotesView',
@@ -59,13 +59,13 @@ Ext.define('PVE.qemu.Summary', {
 			type: 'hbox',
 			align: 'stretch',
 		    },
-		    items: items
-		}
+		    items: items,
+		},
 	    ];
 
 	    rrdstore = Ext.create('Proxmox.data.RRDStore', {
 		rrdurl: `/api2/json/nodes/${nodename}/${type}/${vmid}/rrddata`,
-		model: 'pve-rrd-guest'
+		model: 'pve-rrd-guest',
 	    });
 
 	    items.push(
@@ -75,7 +75,7 @@ Ext.define('PVE.qemu.Summary', {
 		    pveSelNode: me.pveSelNode,
 		    fields: ['cpu'],
 		    fieldTitles: [gettext('CPU usage')],
-		    store: rrdstore
+		    store: rrdstore,
 		},
 		{
 		    xtype: 'proxmoxRRDChart',
@@ -83,22 +83,22 @@ Ext.define('PVE.qemu.Summary', {
 		    pveSelNode: me.pveSelNode,
 		    fields: ['maxmem', 'mem'],
 		    fieldTitles: [gettext('Total'), gettext('RAM usage')],
-		    store: rrdstore
+		    store: rrdstore,
 		},
 		{
 		    xtype: 'proxmoxRRDChart',
 		    title: gettext('Network traffic'),
 		    pveSelNode: me.pveSelNode,
-		    fields: ['netin','netout'],
-		    store: rrdstore
+		    fields: ['netin', 'netout'],
+		    store: rrdstore,
 		},
 		{
 		    xtype: 'proxmoxRRDChart',
 		    title: gettext('Disk IO'),
 		    pveSelNode: me.pveSelNode,
-		    fields: ['diskread','diskwrite'],
-		    store: rrdstore
-		}
+		    fields: ['diskread', 'diskwrite'],
+		    store: rrdstore,
+		},
 	    );
 
 	}
@@ -110,7 +110,7 @@ Ext.define('PVE.qemu.Summary', {
 		    xtype: 'container',
 		    itemId: 'itemcontainer',
 		    layout: {
-			type: 'column'
+			type: 'column',
 		    },
 		    minWidth: 700,
 		    defaults: {
@@ -121,10 +121,10 @@ Ext.define('PVE.qemu.Summary', {
 		    listeners: {
 			resize: function(container) {
 			    PVE.Utils.updateColumns(container);
-			}
-		    }
-		}
-	    ]
+			},
+		    },
+		},
+	    ],
 	});
 
 	me.callParent();
@@ -139,5 +139,5 @@ Ext.define('PVE.qemu.Summary', {
 	    }
 	    PVE.Utils.updateColumns(me.getComponent('itemcontainer'));
 	});
-    }
+    },
 });

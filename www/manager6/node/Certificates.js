@@ -11,17 +11,17 @@ Ext.define('PVE.node.CertificateView', {
 	    xtype: 'pveCertView',
 	    border: 0,
 	    cbind: {
-		nodename: '{nodename}'
-	    }
+		nodename: '{nodename}',
+	    },
 	},
 	{
 	    xtype: 'pveACMEView',
 	    border: 0,
 	    cbind: {
-		nodename: '{nodename}'
-	    }
-	}
-    ]
+		nodename: '{nodename}',
+	    },
+	},
+    ],
 
 });
 
@@ -31,7 +31,7 @@ Ext.define('PVE.node.CertificateViewer', {
     title: gettext('Certificate'),
 
     fieldDefaults: {
-	labelWidth: 120
+	labelWidth: 120,
     },
     width: 800,
     resizable: true,
@@ -40,50 +40,50 @@ Ext.define('PVE.node.CertificateViewer', {
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Name'),
-	    name: 'filename'
+	    name: 'filename',
 	},
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Fingerprint'),
-	    name: 'fingerprint'
+	    name: 'fingerprint',
 	},
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Issuer'),
-	    name: 'issuer'
+	    name: 'issuer',
 	},
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Subject'),
-	    name: 'subject'
+	    name: 'subject',
 	},
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Public Key Type'),
-	    name: 'public-key-type'
+	    name: 'public-key-type',
 	},
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Public Key Size'),
-	    name: 'public-key-bits'
+	    name: 'public-key-bits',
 	},
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Valid Since'),
 	    renderer: Proxmox.Utils.render_timestamp,
-	    name: 'notbefore'
+	    name: 'notbefore',
 	},
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Expires'),
 	    renderer: Proxmox.Utils.render_timestamp,
-	    name: 'notafter'
+	    name: 'notafter',
 	},
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Subject Alternative Names'),
 	    name: 'san',
-	    renderer: PVE.Utils.render_san
+	    renderer: PVE.Utils.render_san,
 	},
 	{
 	    xtype: 'textarea',
@@ -91,8 +91,8 @@ Ext.define('PVE.node.CertificateViewer', {
 	    grow: true,
 	    growMax: 200,
 	    fieldLabel: gettext('Certificate'),
-	    name: 'pem'
-	}
+	    name: 'pem',
+	},
     ],
 
     initComponent: function() {
@@ -122,9 +122,9 @@ Ext.define('PVE.node.CertificateViewer', {
 			}
 		    });
 		}
-	    }
+	    },
 	});
-    }
+    },
 });
 
 Ext.define('PVE.node.CertUpload', {
@@ -157,7 +157,7 @@ Ext.define('PVE.node.CertUpload', {
 	    labelAlign: 'top',
 	    emptyText: gettext('No change'),
 	    name: 'key',
-	    xtype: 'textarea'
+	    xtype: 'textarea',
 	},
 	{
 	    xtype: 'filebutton',
@@ -172,19 +172,19 @@ Ext.define('PVE.node.CertUpload', {
 			});
 		    });
 		    btn.reset();
-		}
-	    }
+		},
+	    },
 	},
 	{
 	    xtype: 'box',
-	    autoEl: 'hr'
+	    autoEl: 'hr',
 	},
 	{
 	    fieldLabel: gettext('Certificate Chain'),
 	    labelAlign: 'top',
 	    allowBlank: false,
 	    name: 'certificates',
-	    xtype: 'textarea'
+	    xtype: 'textarea',
 	},
 	{
 	    xtype: 'filebutton',
@@ -199,19 +199,19 @@ Ext.define('PVE.node.CertUpload', {
 			});
 		    });
 		    btn.reset();
-		}
-	    }
+		},
+	    },
 	},
 	{
 	    xtype: 'hidden',
 	    name: 'restart',
-	    value: '1'
+	    value: '1',
 	},
 	{
 	    xtype: 'hidden',
 	    name: 'force',
-	    value: '1'
-	}
+	    value: '1',
+	},
     ],
 
     initComponent: function() {
@@ -224,14 +224,14 @@ Ext.define('PVE.node.CertUpload', {
 	me.url = '/nodes/' + me.nodename + '/certificates/custom';
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('pve-certificate', {
     extend: 'Ext.data.Model',
 
     fields: [ 'filename', 'fingerprint', 'issuer', 'notafter', 'notbefore', 'subject', 'san', 'public-key-bits', 'public-key-type' ],
-    idProperty: 'filename'
+    idProperty: 'filename',
 });
 
 Ext.define('PVE.node.Certificates', {
@@ -245,11 +245,11 @@ Ext.define('PVE.node.Certificates', {
 	    handler: function() {
 		var me = this.up('grid');
 		var win = Ext.create('PVE.node.CertUpload', {
-		    nodename: me.nodename
+		    nodename: me.nodename,
 		});
 		win.show();
 		win.on('destroy', me.reload, me);
-	    }
+	    },
 	},
 	{
 	    xtype: 'button',
@@ -270,9 +270,9 @@ Ext.define('PVE.node.Certificates', {
 		    },
 		    failure: function(response, opt) {
 			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
+		    },
 		});
-	    }
+	    },
 	},
 	'-',
 	{
@@ -283,66 +283,66 @@ Ext.define('PVE.node.Certificates', {
 	    handler: function() {
 		var me = this.up('grid');
 		me.view_certificate();
-	    }
-	}
+	    },
+	},
     ],
 
     columns: [
 	{
 	    header: gettext('File'),
 	    width: 150,
-	    dataIndex: 'filename'
+	    dataIndex: 'filename',
 	},
 	{
 	    header: gettext('Issuer'),
 	    flex: 1,
-	    dataIndex: 'issuer'
+	    dataIndex: 'issuer',
 	},
 	{
 	    header: gettext('Subject'),
 	    flex: 1,
-	    dataIndex: 'subject'
+	    dataIndex: 'subject',
 	},
 	{
 	    header: gettext('Public Key Alogrithm'),
 	    flex: 1,
 	    dataIndex: 'public-key-type',
-	    hidden: true
+	    hidden: true,
 	},
 	{
 	    header: gettext('Public Key Size'),
 	    flex: 1,
 	    dataIndex: 'public-key-bits',
-	    hidden: true
+	    hidden: true,
 	},
 	{
 	    header: gettext('Valid Since'),
 	    width: 150,
 	    dataIndex: 'notbefore',
-	    renderer: Proxmox.Utils.render_timestamp
+	    renderer: Proxmox.Utils.render_timestamp,
 	},
 	{
 	    header: gettext('Expires'),
 	    width: 150,
 	    dataIndex: 'notafter',
-	    renderer: Proxmox.Utils.render_timestamp
+	    renderer: Proxmox.Utils.render_timestamp,
 	},
 	{
 	    header: gettext('Subject Alternative Names'),
 	    flex: 1,
 	    dataIndex: 'san',
-	    renderer: PVE.Utils.render_san
+	    renderer: PVE.Utils.render_san,
 	},
 	{
 	    header: gettext('Fingerprint'),
 	    dataIndex: 'fingerprint',
-	    hidden: true
+	    hidden: true,
 	},
 	{
 	    header: gettext('PEM'),
 	    dataIndex: 'pem',
-	    hidden: true
-	}
+	    hidden: true,
+	},
     ],
 
     reload: function() {
@@ -365,13 +365,13 @@ Ext.define('PVE.node.Certificates', {
 	}
 	var win = Ext.create('PVE.node.CertificateViewer', {
 	    cert: selection[0].data.filename,
-	    nodename : me.nodename
+	    nodename : me.nodename,
 	});
 	win.show();
     },
 
     listeners: {
-	itemdblclick: 'view_certificate'
+	itemdblclick: 'view_certificate',
     },
 
     initComponent: function() {
@@ -386,13 +386,13 @@ Ext.define('PVE.node.Certificates', {
 	    model: 'pve-certificate',
 	    proxy: {
 		type: 'proxmox',
-		    url: '/api2/json/nodes/' + me.nodename + '/certificates/info'
-	    }
+		    url: '/api2/json/nodes/' + me.nodename + '/certificates/info',
+	    },
 	});
 
 	me.store = {
 	    type: 'diff',
-	    rstore: me.rstore
+	    rstore: me.rstore,
 	};
 
 	me.callParent();
@@ -400,5 +400,5 @@ Ext.define('PVE.node.Certificates', {
 	me.mon(me.rstore, 'load', me.set_button_status, me);
 	me.rstore.startUpdate();
 	me.on('destroy', me.rstore.stopUpdate, me.rstore);
-    }
+    },
 });

@@ -3,14 +3,14 @@ Ext.define('PVE.form.PCISelector', {
     xtype: 'pvePCISelector',
 
     store: {
-	fields: [ 'id','vendor_name', 'device_name', 'vendor', 'device', 'iommugroup', 'mdev' ],
+	fields: [ 'id', 'vendor_name', 'device_name', 'vendor', 'device', 'iommugroup', 'mdev' ],
 	filterOnLoad: true,
 	sorters: [
 	    {
 		property : 'id',
-		direction: 'ASC'
-	    }
-	]
+		direction: 'ASC',
+	    },
+	],
     },
 
     autoSelect: false,
@@ -27,22 +27,22 @@ Ext.define('PVE.form.PCISelector', {
 	    {
 		header: 'ID',
 		dataIndex: 'id',
-		width: 100
+		width: 100,
 	    },
 	    {
 		header: gettext('IOMMU Group'),
 		dataIndex: 'iommugroup',
-		width: 50
+		width: 50,
 	    },
 	    {
 		header: gettext('Vendor'),
 		dataIndex: 'vendor_name',
-		flex: 2
+		flex: 2,
 	    },
 	    {
 		header: gettext('Device'),
 		dataIndex: 'device_name',
-		flex: 6
+		flex: 6,
 	    },
 	    {
 		header: gettext('Mediated Devices'),
@@ -50,9 +50,9 @@ Ext.define('PVE.form.PCISelector', {
 		flex: 1,
 		renderer: function(val) {
 		    return Proxmox.Utils.format_boolean(!!val);
-		}
-	    }
-	]
+		},
+	    },
+	],
     },
 
     setNodename: function(nodename) {
@@ -66,7 +66,7 @@ Ext.define('PVE.form.PCISelector', {
 
 	me.store.setProxy({
 	    type: 'proxmox',
-	    url: '/api2/json/nodes/' + me.nodename + '/hardware/pci'
+	    url: '/api2/json/nodes/' + me.nodename + '/hardware/pci',
 	});
 
 	me.store.load();
@@ -85,6 +85,6 @@ Ext.define('PVE.form.PCISelector', {
 	}
 
 	me.setNodename(nodename);
-    }
+    },
 });
 

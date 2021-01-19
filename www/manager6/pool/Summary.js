@@ -12,7 +12,7 @@ Ext.define('PVE.pool.Summary', {
 
 	var statusview = Ext.create('PVE.pool.StatusView', {
 	    pveSelNode: me.pveSelNode,
-	    style: 'padding-top:0px'
+	    style: 'padding-top:0px',
 	});
 
 	var rstore = statusview.rstore;
@@ -22,14 +22,14 @@ Ext.define('PVE.pool.Summary', {
 	    bodyStyle: 'padding:10px',
 	    defaults: {
 		style: 'padding-top:10px',
-		width: 800
+		width: 800,
 	    },
-	    items: [ statusview ]
+	    items: [ statusview ],
 	});
 
 	me.on('activate', rstore.startUpdate);
 	me.on('destroy', rstore.stopUpdate);
 
 	me.callParent();
-    }
+    },
 });

@@ -5,7 +5,7 @@ Ext.define('PVE.storage.CephFSInputPanel', {
     onlineHelp: 'storage_cephfs',
 
     viewModel: {
-	type: 'cephstorage'
+	type: 'cephstorage',
     },
 
     setValues: function(values) {
@@ -36,20 +36,20 @@ Ext.define('PVE.storage.CephFSInputPanel', {
 		bind: {
 		    disabled: '{pveceph}',
 		    submitValue: '{!pveceph}',
-		    hidden: '{pveceph}'
+		    hidden: '{pveceph}',
 		},
 		fieldLabel: 'Monitor(s)',
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'displayfield',
 		reference: 'monhost',
 		bind: {
 		    disabled: '{!pveceph}',
-		    hidden: '{!pveceph}'
+		    hidden: '{!pveceph}',
 		},
 		value: '',
-		fieldLabel: 'Monitor(s)'
+		fieldLabel: 'Monitor(s)',
 	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
@@ -57,11 +57,11 @@ Ext.define('PVE.storage.CephFSInputPanel', {
 		value: 'admin',
 		bind:  {
 		    disabled: '{pveceph}',
-		    submitValue: '{!pveceph}'
+		    submitValue: '{!pveceph}',
 		},
 		fieldLabel: gettext('User name'),
-		allowBlank: true
-	    }
+		allowBlank: true,
+	    },
 	);
 
 	me.column2 = [
@@ -72,7 +72,7 @@ Ext.define('PVE.storage.CephFSInputPanel', {
 		name: 'content',
 		value: 'backup',
 		multiSelect: true,
-		allowBlank: false
+		allowBlank: false,
 	    },
 	];
 
@@ -82,15 +82,15 @@ Ext.define('PVE.storage.CephFSInputPanel', {
 	    reference: 'pvecephRef',
 	    bind : {
 		disabled: '{!pvecephPossible}',
-		value: '{pveceph}'
+		value: '{pveceph}',
 	    },
 	    checked: true,
 	    uncheckedValue: 0,
 	    submitValue: false,
 	    hidden: !me.isCreate,
-	    boxLabel: gettext('Use Proxmox VE managed hyper-converged cephFS')
+	    boxLabel: gettext('Use Proxmox VE managed hyper-converged cephFS'),
 	}];
 
 	me.callParent();
-    }
+    },
 });

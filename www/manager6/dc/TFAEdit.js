@@ -14,7 +14,7 @@ Ext.define('PVE.window.TFAEdit', {
 
     layout: {
 	type: 'vbox',
-	align: 'stretch'
+	align: 'stretch',
     },
 
     updateQrCode: function() {
@@ -34,7 +34,7 @@ Ext.define('PVE.window.TFAEdit', {
 	    '&period=' + values.step +
 	    '&digits=' + values.digits +
 	    '&algorithm=' + algorithm +
-	    '&issuer=' + encodeURIComponent(values.issuer)
+	    '&issuer=' + encodeURIComponent(values.issuer),
 	);
 
 	me.lookup('challenge').setVisible(true);
@@ -44,7 +44,7 @@ Ext.define('PVE.window.TFAEdit', {
     showError: function(error) {
 	Ext.Msg.alert(
 	    gettext('Error'),
-	    PVE.Utils.render_u2f_error(error)
+	    PVE.Utils.render_u2f_error(error),
 	);
     },
 
@@ -56,7 +56,7 @@ Ext.define('PVE.window.TFAEdit', {
 	var msg = Ext.Msg.show({
 	    title: 'U2F: '+gettext('Setup'),
 	    message: gettext('Please press the button on your U2F Device'),
-	    buttons: []
+	    buttons: [],
 	});
 	Ext.Function.defer(function() {
 	    u2f.register(data.appId, [data], [], function(data) {
@@ -75,7 +75,7 @@ Ext.define('PVE.window.TFAEdit', {
 	var params = {
 	    userid: me.userid,
 	    action: 'confirm',
-	    response: JSON.stringify(data)
+	    response: JSON.stringify(data),
 	};
 	if (Proxmox.UserName !== 'root@pam') {
 	    params.password = me.lookup('password').value;
@@ -89,12 +89,12 @@ Ext.define('PVE.window.TFAEdit', {
 		Ext.Msg.show({
 		    title: gettext('Success'),
 		    message: gettext('U2F Device successfully connected.'),
-		    buttons: Ext.Msg.OK
+		    buttons: Ext.Msg.OK,
 		});
 	    },
 	    failure: function(response, opts) {
 		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-	    }
+	    },
 	});
     },
 
@@ -128,7 +128,7 @@ Ext.define('PVE.window.TFAEdit', {
 	    selectedTab: function(get) {
 		return (get('tfa_type') || 'totp') + '-panel';
 	    },
-	}
+	},
     },
 
     afterLoading: function(realm_tfa_type, user_tfa_type) {
@@ -167,8 +167,8 @@ Ext.define('PVE.window.TFAEdit', {
 		gettext('Error'),
 		Ext.String.format(
 		    gettext("Custom 2nd factor configuration is not supported on realms with '{0}' TFA."),
-		    realm_tfa_type
-		)
+		    realm_tfa_type,
+		),
 	    );
 	}
     },
@@ -180,7 +180,7 @@ Ext.define('PVE.window.TFAEdit', {
 		change: function() {
 		    var me = this.getView();
 		    me.updateQrCode();
-		}
+		},
 	    },
 	    'field': {
 		validitychange: function(field, valid) {
@@ -190,7 +190,7 @@ Ext.define('PVE.window.TFAEdit', {
 		    var challenge = me.lookup('challenge');
 		    var password = me.lookup('password');
 		    viewModel.set('valid', form.isValid() && challenge.isValid() && password.isValid());
-		}
+		},
 	    },
 	    '#': {
 		show: function() {
@@ -209,14 +209,14 @@ Ext.define('PVE.window.TFAEdit', {
 			failure: function(response, opts) {
 			    me.close();
 			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-			}
+			},
 		    });
 
 		    me.qrdiv = document.createElement('center');
 		    me.qrcode = new QRCode(me.qrdiv, {
 			width: 256,
 			height: 256,
-			correctLevel: QRCode.CorrectLevel.M
+			correctLevel: QRCode.CorrectLevel.M,
 		    });
 		    me.down('#qrbox').getEl().appendChild(me.qrdiv);
 
@@ -224,14 +224,14 @@ Ext.define('PVE.window.TFAEdit', {
 			me.lookup('password').setVisible(false);
 			me.lookup('password').setDisabled(true);
 		    }
-		}
+		},
 	    },
 	    '#tfatabs': {
 		tabchange: function(panel, newcard) {
 		    var viewmodel = this.getViewModel();
 		    viewmodel.set('in_totp_tab', newcard.itemId === 'totp-panel');
-		}
-	    }
+		},
+	    },
 	},
 
 	applySettings: function() {
@@ -244,10 +244,10 @@ Ext.define('PVE.window.TFAEdit', {
 		config: PVE.Parser.printPropertyString({
 		    type: 'oath',
 		    digits: values.digits,
-		    step: values.step
+		    step: values.step,
 		}),
 		// this is used to verify that the client generates the correct codes:
-		response: me.lookup('challenge').value
+		response: me.lookup('challenge').value,
 	    };
 
 	    if (Proxmox.UserName !== 'root@pam') {
@@ -264,7 +264,7 @@ Ext.define('PVE.window.TFAEdit', {
 		},
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
+		},
 	    });
 	},
 
@@ -273,7 +273,7 @@ Ext.define('PVE.window.TFAEdit', {
 	    var values = me.lookup('totp_form').getValues();
 	    var params = {
 		userid: me.getView().userid,
-		action: 'delete'
+		action: 'delete',
 	    };
 
 	    if (Proxmox.UserName !== 'root@pam') {
@@ -290,7 +290,7 @@ Ext.define('PVE.window.TFAEdit', {
 		},
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
+		},
 	    });
 	},
 
@@ -318,7 +318,7 @@ Ext.define('PVE.window.TFAEdit', {
 
 	    var params = {
 		userid: me.getView().userid,
-		action: 'new'
+		action: 'new',
 	    };
 
 	    if (Proxmox.UserName !== 'root@pam') {
@@ -335,9 +335,9 @@ Ext.define('PVE.window.TFAEdit', {
 		},
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
+		},
 	    });
-	}
+	},
     },
 
     items: [
@@ -358,11 +358,11 @@ Ext.define('PVE.window.TFAEdit', {
 		    tfa_type: 'totp',
 		    border: false,
 		    bind: {
-			disabled: '{!canSetupTOTP}'
+			disabled: '{!canSetupTOTP}',
 		    },
 		    layout: {
 			type: 'vbox',
-			align: 'stretch'
+			align: 'stretch',
 		    },
 		    items: [
 			{
@@ -372,7 +372,7 @@ Ext.define('PVE.window.TFAEdit', {
 			    reference: 'totp_form',
 			    fieldDefaults: {
 				anchor: '100%',
-				padding: '0 5'
+				padding: '0 5',
 			    },
 			    items: [
 				{
@@ -380,8 +380,8 @@ Ext.define('PVE.window.TFAEdit', {
 				    fieldLabel: gettext('User name'),
 				    renderer: Ext.String.htmlEncode,
 				    cbind: {
-					value: '{userid}'
-				    }
+					value: '{userid}',
+				    },
 				},
 				{
 				    layout: 'hbox',
@@ -400,15 +400,15 @@ Ext.define('PVE.window.TFAEdit', {
 					bind: {
 					    value: "{secret}",
 					},
-					flex: 4
+					flex: 4,
 				    },
 				    {
 					xtype: 'button',
 					text: gettext('Randomize'),
 					reference: 'randomize_button',
 					handler: 'randomizeSecret',
-					flex: 1
-				    }]
+					flex: 1,
+				    }],
 				},
 				{
 				    xtype: 'numberfield',
@@ -418,7 +418,7 @@ Ext.define('PVE.window.TFAEdit', {
 				    hidden: true,
 				    value: 30,
 				    minValue: 10,
-				    qrupdate: true
+				    qrupdate: true,
 				},
 				{
 				    xtype: 'numberfield',
@@ -429,16 +429,16 @@ Ext.define('PVE.window.TFAEdit', {
 				    hidden: true,
 				    minValue: 6,
 				    maxValue: 8,
-				    qrupdate: true
+				    qrupdate: true,
 				},
 				{
 				    xtype: 'textfield',
 				    fieldLabel: gettext('Issuer Name'),
 				    name: 'issuer',
 				    value: 'Proxmox Web UI',
-				    qrupdate: true
-				}
-			    ]
+				    qrupdate: true,
+				},
+			    ],
 			},
 			{
 			    xtype: 'box',
@@ -451,8 +451,8 @@ Ext.define('PVE.window.TFAEdit', {
 				'background-color': 'white',
 				padding: '5px',
 				width: '266px',
-				height: '266px'
-			    }
+				height: '266px',
+			    },
 			},
 			{
 			    xtype: 'textfield',
@@ -464,9 +464,9 @@ Ext.define('PVE.window.TFAEdit', {
 				visible: '{showTOTPVerifiction}',
 			    },
 			    padding: '0 5',
-			    emptyText: gettext('Scan QR code and enter TOTP auth. code to verify')
-			}
-		    ]
+			    emptyText: gettext('Scan QR code and enter TOTP auth. code to verify'),
+			},
+		    ],
 		},
 		{
 		    title: 'U2F',
@@ -477,20 +477,20 @@ Ext.define('PVE.window.TFAEdit', {
 		    padding: '5 5',
 		    layout: {
 			type: 'vbox',
-			align: 'middle'
+			align: 'middle',
 		    },
 		    bind: {
-			disabled: '{!canSetupU2F}'
+			disabled: '{!canSetupU2F}',
 		    },
 		    items: [
 			{
 			    xtype: 'label',
 			    width: 500,
-			    text: gettext('To register a U2F device, connect the device, then click the button and follow the instructions.')
-			}
-		    ]
-		}
-	    ]
+			    text: gettext('To register a U2F device, connect the device, then click the button and follow the instructions.'),
+			},
+		    ],
+		},
+	    ],
 	},
 	{
 	    xtype: 'textfield',
@@ -501,13 +501,13 @@ Ext.define('PVE.window.TFAEdit', {
 	    allowBlank: false,
 	    validateBlank: true,
 	    padding: '0 0 5 5',
-	    emptyText: gettext('verify current password')
-	}
+	    emptyText: gettext('verify current password'),
+	},
     ],
 
     buttons: [
 	{
-	    xtype: 'proxmoxHelpButton'
+	    xtype: 'proxmoxHelpButton',
 	},
 	'->',
 	{
@@ -515,8 +515,8 @@ Ext.define('PVE.window.TFAEdit', {
 	    handler: 'applySettings',
 	    bind: {
 		hidden: '{!in_totp_tab}',
-		disabled: '{!valid}'
-	    }
+		disabled: '{!valid}',
+	    },
 	},
 	{
 	    xtype: 'button',
@@ -524,8 +524,8 @@ Ext.define('PVE.window.TFAEdit', {
 	    handler: 'startU2FRegistration',
 	    bind: {
 		hidden: '{in_totp_tab}',
-		disabled: '{tfa_type}'
-	    }
+		disabled: '{tfa_type}',
+	    },
 	},
 	{
 	    text: gettext('Delete'),
@@ -533,9 +533,9 @@ Ext.define('PVE.window.TFAEdit', {
 	    disabled: true,
 	    handler: 'deleteTFA',
 	    bind: {
-		disabled: '{!canDeleteTFA}'
-	    }
-	}
+		disabled: '{!canDeleteTFA}',
+	    },
+	},
     ],
 
     initComponent: function() {
@@ -548,5 +548,5 @@ Ext.define('PVE.window.TFAEdit', {
 	me.callParent();
 
 	Ext.GlobalEvents.fireEvent('proxmoxShowHelp', 'pveum_tfa_auth');
-    }
+    },
 });

@@ -20,12 +20,12 @@ Ext.define('PVE.form.CephPoolSelector', {
 	    sorters: 'name',
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/ceph/pools'
-	    }
+		url: '/api2/json/nodes/' + me.nodename + '/ceph/pools',
+	    },
 	});
 
 	Ext.apply(me, {
-	    store: store
+	    store: store,
 	});
 
         me.callParent();
@@ -35,8 +35,8 @@ Ext.define('PVE.form.CephPoolSelector', {
 		if (success && rec.length > 0) {
 		    me.select(rec[0]);
 		}
-	    }
+	    },
 	});
-    }
+    },
 
 });

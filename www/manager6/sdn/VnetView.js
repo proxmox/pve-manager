@@ -14,12 +14,12 @@ Ext.define('PVE.sdn.VnetView', {
 	    model: 'pve-sdn-vnet',
 	    proxy: {
                 type: 'proxmox',
-		url: "/api2/json/cluster/sdn/vnets"
+		url: "/api2/json/cluster/sdn/vnets",
 	    },
 	    sorters: {
 		property: 'vnet',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 	let reload = () => store.load();
 
@@ -28,7 +28,7 @@ Ext.define('PVE.sdn.VnetView', {
         let run_editor = function() {
 	    let rec = sm.getSelection()[0];
 
-	    let win = Ext.create('PVE.sdn.VnetEdit',{
+	    let win = Ext.create('PVE.sdn.VnetEdit', {
 		autoShow: true,
 		onlineHelp: 'pvesdn_config_vnet',
 		vnet: rec.data.vnet,
@@ -46,7 +46,7 @@ Ext.define('PVE.sdn.VnetView', {
 	let remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/cluster/sdn/vnets/',
-	    callback: reload
+	    callback: reload,
 	});
 
 	Ext.apply(me, {
@@ -54,7 +54,7 @@ Ext.define('PVE.sdn.VnetView', {
 	    reloadStore: reload,
 	    selModel: sm,
 	    viewConfig: {
-		trackOver: false
+		trackOver: false,
 	    },
 	    tbar: [
 		{
@@ -66,7 +66,7 @@ Ext.define('PVE.sdn.VnetView', {
 			    type: 'vnet',
 			});
 			win.on('destroy', reload);
-		    }
+		    },
 		},
 		remove_btn,
 		edit_btn,
@@ -75,7 +75,7 @@ Ext.define('PVE.sdn.VnetView', {
 		{
 		    header: 'ID',
 		    flex: 2,
-		    dataIndex: 'vnet'
+		    dataIndex: 'vnet',
 		},
 		{
 		    header: gettext('Alias'),
@@ -111,16 +111,16 @@ Ext.define('PVE.sdn.VnetView', {
 		    header: 'MAC',
 		    flex: 1,
 		    dataIndex: 'mac',
-		}
+		},
 	    ],
 	    listeners: {
 		activate: reload,
-		itemdblclick: run_editor
-	    }
+		itemdblclick: run_editor,
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 }, function() {
 
     Ext.define('pve-sdn-vnet', {
@@ -135,7 +135,7 @@ Ext.define('PVE.sdn.VnetView', {
 	    'vnet',
 	    'zone',
 	],
-	idProperty: 'vnet'
+	idProperty: 'vnet',
     });
 
 });

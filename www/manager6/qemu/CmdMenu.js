@@ -24,7 +24,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		method: 'POST',
 		failure: function(response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
-		}
+		},
 	    });
 	};
 
@@ -61,7 +61,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		disabled: running || suspended,
 		handler: function() {
 		    vm_command('start');
-		}
+		},
 	    },
 	    {
 		text: gettext('Pause'),
@@ -76,7 +76,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 			}
 			vm_command('suspend');
 		    });
-		}
+		},
 	    },
 	    {
 		text: gettext('Hibernate'),
@@ -92,7 +92,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 			}
 			vm_command('suspend', { todisk: 1 });
 		    });
-		}
+		},
 	    },
 	    {
 		text: gettext('Resume'),
@@ -100,7 +100,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		hidden: !suspended,
 		handler: function() {
 		    vm_command('resume');
-		}
+		},
 	    },
 	    {
 		text: gettext('Shutdown'),
@@ -115,7 +115,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 
 			vm_command('shutdown');
 		    });
-		}
+		},
 	    },
 	    {
 		text: gettext('Stop'),
@@ -131,7 +131,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 
 			vm_command("stop");
 		    });
-		}
+		},
 	    },
 	    {
 		text: gettext('Reboot'),
@@ -147,11 +147,11 @@ Ext.define('PVE.qemu.CmdMenu', {
 
 			vm_command("reboot");
 		    });
-		}
+		},
 	    },
 	    {
 		xtype: 'menuseparator',
-		hidden: (standalone || !caps.vms['VM.Migrate']) && !caps.vms['VM.Allocate'] && !caps.vms['VM.Clone']
+		hidden: (standalone || !caps.vms['VM.Migrate']) && !caps.vms['VM.Allocate'] && !caps.vms['VM.Clone'],
 	    },
 	    {
 		text: gettext('Migrate'),
@@ -161,10 +161,10 @@ Ext.define('PVE.qemu.CmdMenu', {
 		    var win = Ext.create('PVE.window.Migrate', {
 			vmtype: 'qemu',
 			nodename: nodename,
-			vmid: vmid
+			vmid: vmid,
 		    });
 		    win.show();
-		}
+		},
 	    },
 	    {
 		text: gettext('Clone'),
@@ -172,7 +172,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		hidden: !caps.vms['VM.Clone'],
 		handler: function() {
 		    PVE.window.Clone.wrap(nodename, vmid, me.isTemplate, 'qemu');
-		}
+		},
 	    },
 	    {
 		text: gettext('Convert to template'),
@@ -190,10 +190,10 @@ Ext.define('PVE.qemu.CmdMenu', {
 			     method: 'POST',
 			     failure: function(response, opts) {
 				Ext.Msg.alert('Error', response.htmlStatus);
-			     }
+			     },
 			});
 		    });
-		}
+		},
 	    },
 	    { xtype: 'menuseparator' },
 	    {
@@ -210,15 +210,15 @@ Ext.define('PVE.qemu.CmdMenu', {
 			    var allowXtermjs = response.result.data.serial;
 			    var consoles = {
 				spice: allowSpice,
-				xtermjs: allowXtermjs
+				xtermjs: allowXtermjs,
 			    };
 			    PVE.Utils.openDefaultConsoleWindow(consoles, 'kvm', vmid, nodename, vmname);
-			}
+			},
 		    });
-		}
-	    }
+		},
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

@@ -43,7 +43,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		group: 1,
 		renderer: function(value) {
 		    return Proxmox.Utils.format_size(value*1024*1024);
-		}
+		},
 	    },
 	    swap: {
 		header: gettext('Swap'),
@@ -53,7 +53,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		group: 2,
 		renderer: function(value) {
 		    return Proxmox.Utils.format_size(value*1024*1024);
-		}
+		},
 	    },
 	    cores: {
 		header: gettext('Cores'),
@@ -79,24 +79,24 @@ Ext.define('PVE.lxc.RessourceView', {
 			res += ' [cpuunits=' + cpuunits + ']';
 		    }
 		    return res;
-		}
+		},
 	    },
 	    rootfs: {
 		header: gettext('Root Disk'),
 		defaultValue: Proxmox.Utils.noneText,
 		editor: mpeditor,
 		tdCls: 'pve-itype-icon-storage',
-		group: 4
+		group: 4,
 	    },
 	    cpulimit: {
-		visible: false
+		visible: false,
 	    },
 	    cpuunits: {
-		visible: false
+		visible: false,
 	    },
 	    unprivileged: {
-		visible: false
-	    }
+		visible: false,
+	    },
 	};
 
 	PVE.Utils.forEachMP(function(bus, i) {
@@ -114,7 +114,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		order: i,
 		tdCls: 'pve-itype-icon-storage',
 		editor: mpeditor,
-		header: header
+		header: header,
 	    };
 	}, true);
 
@@ -131,7 +131,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    var win = Ext.create('PVE.window.MPResize', {
 		disk: rec.data.key,
 		nodename: nodename,
-		vmid: vmid
+		vmid: vmid,
 	    });
 
 	    win.show();
@@ -143,11 +143,11 @@ Ext.define('PVE.lxc.RessourceView', {
 		waitMsgTarget: me,
 		method: 'PUT',
 		params: {
-		    'delete': rec.data.key
+		    'delete': rec.data.key,
 		},
 		failure: function (response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
-		}
+		},
 	    });
 	};
 
@@ -160,7 +160,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		disk: rec.data.key,
 		nodename: nodename,
 		vmid: vmid,
-		type: 'lxc'
+		type: 'lxc',
 	    });
 
 	    win.show();
@@ -179,14 +179,14 @@ Ext.define('PVE.lxc.RessourceView', {
 		var rowdef = rows[rec.data.key];
 		return !!rowdef.editor;
 	    },
-	    handler: function() { me.run_editor(); }
+	    handler: function() { me.run_editor(); },
 	});
 
 	var resize_btn = new Proxmox.button.Button({
 	    text: gettext('Resize disk'),
 	    selModel: me.selModel,
 	    disabled: true,
-	    handler: run_resize
+	    handler: run_resize,
 	});
 
 	var remove_btn = new Proxmox.button.Button({
@@ -203,7 +203,7 @@ Ext.define('PVE.lxc.RessourceView', {
 
 		return msg;
 	    },
-	    handler: run_remove
+	    handler: run_remove,
 	});
 
 	var move_btn = new Proxmox.button.Button({
@@ -211,7 +211,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    selModel: me.selModel,
 	    disabled: true,
 	    dangerous: true,
-	    handler: run_move
+	    handler: run_move,
 	});
 
 	var revert_btn = new PVE.button.PendingRevert();
@@ -293,31 +293,31 @@ Ext.define('PVE.lxc.RessourceView', {
 				    var win = Ext.create('PVE.lxc.MountPointEdit', {
 					url: '/api2/extjs/' + baseurl,
 					unprivileged: me.getObjectValue('unprivileged'),
-					pveSelNode: me.pveSelNode
+					pveSelNode: me.pveSelNode,
 				    });
 				    win.on('destroy', me.reload, me);
 				    win.show();
-				}
-			    }
-			]
-		    })
+				},
+			    },
+			],
+		    }),
 		},
 		edit_btn,
 		remove_btn,
 		resize_btn,
 		move_btn,
-		revert_btn
+		revert_btn,
 	    ],
 	    rows: rows,
 	    sorterFn: sorterFn,
 	    editorConfig: {
 		pveSelNode: me.pveSelNode,
-		url: '/api2/extjs/' + baseurl
+		url: '/api2/extjs/' + baseurl,
 	    },
 	    listeners: {
 		itemdblclick: me.run_editor,
-		selectionchange: set_button_status
-	    }
+		selectionchange: set_button_status,
+	    },
 	});
 
 	me.callParent();
@@ -331,5 +331,5 @@ Ext.define('PVE.lxc.RessourceView', {
 	});
 
 	Ext.apply(me.editorConfig, { unprivileged: me.getObjectValue('unprivileged') });
-    }
+    },
 });

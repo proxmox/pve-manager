@@ -9,23 +9,23 @@ Ext.define('PVE.panel.GuestStatusView', {
 	var me = this;
 	return {
 	    isQemu: me.pveSelNode.data.type === 'qemu',
-	    isLxc: me.pveSelNode.data.type === 'lxc'
+	    isLxc: me.pveSelNode.data.type === 'lxc',
 	};
     },
 
     layout: {
 	type: 'vbox',
-	align: 'stretch'
+	align: 'stretch',
     },
 
     defaults: {
 	xtype: 'pveInfoWidget',
-	padding: '2 25'
+	padding: '2 25',
     },
     items: [
 	{
 	    xtype: 'box',
-	    height: 20
+	    height: 20,
 	},
 	{
 	    itemId: 'status',
@@ -41,7 +41,7 @@ Ext.define('PVE.panel.GuestStatusView', {
 		    text += ' (' + qmpstatus + ')';
 		}
 		return text;
-	    }
+	    },
 	},
 	{
 	    itemId: 'hamanaged',
@@ -49,7 +49,7 @@ Ext.define('PVE.panel.GuestStatusView', {
 	    title: gettext('HA State'),
 	    printBar: false,
 	    textField: 'ha',
-	    renderer: PVE.Utils.format_ha
+	    renderer: PVE.Utils.format_ha,
 	},
 	{
 	    xtype: 'pveInfoWidget',
@@ -57,13 +57,13 @@ Ext.define('PVE.panel.GuestStatusView', {
 	    iconCls: 'fa fa-building fa-fw',
 	    title: gettext('Node'),
 	    cbind: {
-		text: '{pveSelNode.data.node}'
+		text: '{pveSelNode.data.node}',
 	    },
-	    printBar: false
+	    printBar: false,
 	},
 	{
 	    xtype: 'box',
-	    height: 15
+	    height: 15,
 	},
 	{
 	    itemId: 'cpu',
@@ -74,14 +74,14 @@ Ext.define('PVE.panel.GuestStatusView', {
 	    renderer: PVE.Utils.render_cpu_usage,
 	    // in this specific api call
 	    // we already have the correct value for the usage
-	    calculate: Ext.identityFn
+	    calculate: Ext.identityFn,
 	},
 	{
 	    itemId: 'memory',
 	    iconCls: 'fa fa-fw pve-itype-icon-memory pve-icon',
 	    title: gettext('Memory usage'),
 	    valueField: 'mem',
-	    maxField: 'maxmem'
+	    maxField: 'maxmem',
 	},
 	{
 	    itemId: 'swap',
@@ -92,8 +92,8 @@ Ext.define('PVE.panel.GuestStatusView', {
 	    maxField: 'maxswap',
 	    cbind: {
 		hidden: '{isQemu}',
-		disabled: '{isQemu}'
-	    }
+		disabled: '{isQemu}',
+	    },
 	},
 	{
 	    itemId: 'rootfs',
@@ -108,13 +108,13 @@ Ext.define('PVE.panel.GuestStatusView', {
 		if (used === 0) {
 		    return PVE.Utils.render_size(max);
 		} else {
-		    return PVE.Utils.render_size_usage(used,max);
+		    return PVE.Utils.render_size_usage(used, max);
 		}
-	    }
+	    },
 	},
 	{
 	    xtype: 'box',
-	    height: 15
+	    height: 15,
 	},
 	{
 	    itemId: 'ips',
@@ -123,9 +123,9 @@ Ext.define('PVE.panel.GuestStatusView', {
 		rstore: '{rstore}',
 		pveSelNode: '{pveSelNode}',
 		hidden: '{isLxc}',
-		disabled: '{isLxc}'
-	    }
-	}
+		disabled: '{isLxc}',
+	    },
+	},
     ],
 
     updateTitle: function() {
@@ -139,5 +139,5 @@ Ext.define('PVE.panel.GuestStatusView', {
 	}
 
 	me.setTitle(me.getRecordValue('name') + text);
-    }
+    },
 });

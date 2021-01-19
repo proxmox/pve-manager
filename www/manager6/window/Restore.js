@@ -36,14 +36,14 @@ Ext.define('PVE.window.Restore', {
 	    IDfield = Ext.create('Ext.form.field.Display', {
 		name: 'vmid',
 		value: me.vmid,
-		fieldLabel: (me.vmtype === 'lxc') ? 'CT' : 'VM'
+		fieldLabel: (me.vmtype === 'lxc') ? 'CT' : 'VM',
 	    });
 	} else {
 	    IDfield = Ext.create('PVE.form.GuestIDSelector', {
 		name: 'vmid',
 		guestType: me.vmtype,
 		loadNextFreeID: true,
-		validateExists: false
+		validateExists: false,
 	    });
 	}
 
@@ -51,7 +51,7 @@ Ext.define('PVE.window.Restore', {
 	    {
 		xtype: 'displayfield',
 		value: me.volidText || me.volid,
-		fieldLabel: gettext('Source')
+		fieldLabel: gettext('Source'),
 	    },
 	    storagesel,
 	    IDfield,
@@ -63,8 +63,8 @@ Ext.define('PVE.window.Restore', {
 		emptyText: gettext('Defaults to target storage restore limit'),
 		autoEl: {
 		    tag: 'div',
-		    'data-qtip': gettext("Use '0' to disable all bandwidth limits.")
-		}
+		    'data-qtip': gettext("Use '0' to disable all bandwidth limits."),
+		},
 	    },
 	    {
 		xtype: 'fieldcontainer',
@@ -77,9 +77,9 @@ Ext.define('PVE.window.Restore', {
 		    flex: 1,
 		    autoEl: {
 			tag: 'div',
-			'data-qtip': gettext('Autogenerate unique properties, e.g., MAC addresses')
+			'data-qtip': gettext('Autogenerate unique properties, e.g., MAC addresses'),
 		    },
-		    checked: false
+		    checked: false,
 		},
 		{
 		    xtype: 'proxmoxcheckbox',
@@ -87,7 +87,7 @@ Ext.define('PVE.window.Restore', {
 		    flex: 1,
 		    fieldLabel: gettext('Start after restore'),
 		    labelWidth: 105,
-		    checked: false
+		    checked: false,
 		}],
 	    },
 	];
@@ -97,7 +97,7 @@ Ext.define('PVE.window.Restore', {
 		xtype: 'proxmoxcheckbox',
 		name: 'unprivileged',
 		value: true,
-		fieldLabel: gettext('Unprivileged container')
+		fieldLabel: gettext('Unprivileged container'),
 	    });
 	}
 
@@ -106,9 +106,9 @@ Ext.define('PVE.window.Restore', {
 	    border: false,
 	    fieldDefaults: {
 		labelWidth: 100,
-		anchor: '100%'
+		anchor: '100%',
 	    },
-	    items: items
+	    items: items,
 	});
 
 	var form = me.formPanel.getForm();
@@ -126,11 +126,11 @@ Ext.define('PVE.window.Restore', {
 		    var upid = response.result.data;
 
 		    var win = Ext.create('Proxmox.window.TaskViewer', {
-			upid: upid
+			upid: upid,
 		    });
 		    win.show();
 		    me.close();
-		}
+		},
 	    });
 	};
 
@@ -141,7 +141,7 @@ Ext.define('PVE.window.Restore', {
 
 		var params = {
 		    vmid: me.vmid || values.vmid,
-		    force: me.vmid ? 1 : 0
+		    force: me.vmid ? 1 : 0,
 		};
 		if (values.unique) { params.unique = 1; }
 		if (values.start) { params.start = 1; }
@@ -178,7 +178,7 @@ Ext.define('PVE.window.Restore', {
 		} else {
 		    doRestore(url, params);
 		}
-	    }
+	    },
 	});
 
 	form.on('validitychange', function(f, valid) {
@@ -199,9 +199,9 @@ Ext.define('PVE.window.Restore', {
 	    layout: 'auto',
 	    border: false,
 	    items: [ me.formPanel ],
-	    buttons: [ submitBtn ]
+	    buttons: [ submitBtn ],
 	});
 
 	me.callParent();
-    }
+    },
 });

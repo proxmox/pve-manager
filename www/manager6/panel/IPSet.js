@@ -1,7 +1,7 @@
 Ext.define('pve-fw-ipsets', {
     extend: 'Ext.data.Model',
     fields: [ 'name', 'comment', 'digest' ],
-    idProperty: 'name'
+    idProperty: 'name',
 });
 
 Ext.define('PVE.IPSetList', {
@@ -35,12 +35,12 @@ Ext.define('PVE.IPSetList', {
 	    model: 'pve-fw-ipsets',
 	    proxy: {
 		type: 'proxmox',
-		url: "/api2/json" + me.base_url
+		url: "/api2/json" + me.base_url,
 	    },
 	    sorters: {
 		property: 'name',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
@@ -71,22 +71,22 @@ Ext.define('PVE.IPSetList', {
 		    {
 			xtype: 'hiddenfield',
 			name: 'rename',
-			value: rec.data.name
+			value: rec.data.name,
 		    },
 		    {
 			xtype: 'textfield',
 			name: 'name',
 			value: rec.data.name,
 			fieldLabel: gettext('Name'),
-			allowBlank: false
+			allowBlank: false,
 		    },
 		    {
 			xtype: 'textfield',
 			name: 'comment',
 			value: rec.data.comment,
-			fieldLabel: gettext('Comment')
-		    }
-		]
+			fieldLabel: gettext('Comment'),
+		    },
+		],
 	    });
 	    win.show();
 	    win.on('destroy', reload);
@@ -96,7 +96,7 @@ Ext.define('PVE.IPSetList', {
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	me.addBtn = new Proxmox.button.Button({
@@ -113,26 +113,26 @@ Ext.define('PVE.IPSetList', {
 			    name: 'name',
 			    value: '',
 			    fieldLabel: gettext('Name'),
-			    allowBlank: false
+			    allowBlank: false,
 			},
 			{
 			    xtype: 'textfield',
 			    name: 'comment',
 			    value: '',
-			    fieldLabel: gettext('Comment')
-			}
-		    ]
+			    fieldLabel: gettext('Comment'),
+			},
+		    ],
 		});
 		win.show();
 		win.on('destroy', reload);
 
-	    }
+	    },
 	});
 
 	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: me.base_url + '/',
-	    callback: reload
+	    callback: reload,
 	});
 
 	Ext.apply(me, {
@@ -141,7 +141,7 @@ Ext.define('PVE.IPSetList', {
 	    selModel: sm,
 	    columns: [
 		{ header: 'IPSet', dataIndex: 'name', width: '100' },
-		{ header: gettext('Comment'), dataIndex: 'comment', renderer: Ext.String.htmlEncode, flex: 1 }
+		{ header: gettext('Comment'), dataIndex: 'comment', renderer: Ext.String.htmlEncode, flex: 1 },
 	    ],
 	    listeners: {
 		itemdblclick: run_editor,
@@ -152,14 +152,14 @@ Ext.define('PVE.IPSetList', {
 		deselect: function() {
 		    me.ipset_panel.setBaseUrl(undefined);
 		},
-		show: reload
-	    }
+		show: reload,
+	    },
 	});
 
 	me.callParent();
 
 	store.load();
-    }
+    },
 });
 
 Ext.define('PVE.IPSetCidrEdit', {
@@ -197,14 +197,14 @@ Ext.define('PVE.IPSetCidrEdit', {
 		editable: true,
 		base_url: me.list_refs_url,
 		value: '',
-		fieldLabel: gettext('IP/CIDR')
+		fieldLabel: gettext('IP/CIDR'),
 	    });
 	} else {
 	    column1.push({
 		xtype: 'displayfield',
 		name: 'cidr',
 		value: '',
-		fieldLabel: gettext('IP/CIDR')
+		fieldLabel: gettext('IP/CIDR'),
 	    });
 	}
 
@@ -217,22 +217,22 @@ Ext.define('PVE.IPSetCidrEdit', {
 		    name: 'nomatch',
 		    checked: false,
 		    uncheckedValue: 0,
-		    fieldLabel: 'nomatch'
-		}
+		    fieldLabel: 'nomatch',
+		},
 	    ],
 	    columnB: [
 		{
 		    xtype: 'textfield',
 		    name: 'comment',
 		    value: '',
-		    fieldLabel: gettext('Comment')
-		}
-	    ]
+		    fieldLabel: gettext('Comment'),
+		},
+	    ],
 	});
 
 	Ext.apply(me, {
 	    subject: gettext('IP/CIDR'),
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -242,10 +242,10 @@ Ext.define('PVE.IPSetCidrEdit', {
 		success:  function(response, options) {
 		    var values = response.result.data;
 		    ipanel.setValues(values);
-		}
+		},
 	    });
 	}
-    }
+    },
 });
 
 Ext.define('PVE.IPSetGrid', {
@@ -275,7 +275,7 @@ Ext.define('PVE.IPSetGrid', {
 	    me.removeBtn.baseurl = url + '/';
 	    me.store.setProxy({
 		type: 'proxmox',
-		url: '/api2/json' + url
+		url: '/api2/json' + url,
 	    });
 
 	    me.store.load();
@@ -290,7 +290,7 @@ Ext.define('PVE.IPSetGrid', {
 	}
 
 	var store = new Ext.data.Store({
-	    model: 'pve-ipset'
+	    model: 'pve-ipset',
 	});
 
 	var reload = function() {
@@ -306,7 +306,7 @@ Ext.define('PVE.IPSetGrid', {
 	    }
 	    var win = Ext.create('PVE.IPSetCidrEdit', {
 		base_url: me.base_url,
-		cidr: rec.data.cidr
+		cidr: rec.data.cidr,
 	    });
 	    win.show();
 	    win.on('destroy', reload);
@@ -316,7 +316,7 @@ Ext.define('PVE.IPSetGrid', {
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	me.addBtn = new Proxmox.button.Button({
@@ -328,17 +328,17 @@ Ext.define('PVE.IPSetGrid', {
 		}
 		var win = Ext.create('PVE.IPSetCidrEdit', {
 		    base_url: me.base_url,
-		    list_refs_url: me.list_refs_url
+		    list_refs_url: me.list_refs_url,
 		});
 		win.show();
 		win.on('destroy', reload);
-	    }
+	    },
 	});
 
 	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: me.base_url + '/',
-	    callback: reload
+	    callback: reload,
 	});
 
 	var render_errors = function(value, metaData, record) {
@@ -349,7 +349,7 @@ Ext.define('PVE.IPSetGrid', {
 		    metaData.tdCls = 'proxmox-invalid-row';
 		    var html = '<p>' +  Ext.htmlEncode(msg) + '</p>';
 		    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' +
-			html.replace(/\"/g,'&quot;') + '"';
+			html.replace(/\"/g, '&quot;') + '"';
 		}
 	    }
 	    return value;
@@ -360,11 +360,11 @@ Ext.define('PVE.IPSetGrid', {
 	    store: store,
 	    selModel: sm,
 	    listeners: {
-		itemdblclick: run_editor
+		itemdblclick: run_editor,
 	    },
 	    columns: [
 		{
-		    xtype: 'rownumberer'
+		    xtype: 'rownumberer',
 		},
 		{
 		    header: gettext('IP/CIDR'),
@@ -376,7 +376,7 @@ Ext.define('PVE.IPSetGrid', {
 			    return '<b>! </b>' + value;
 			}
 			return value;
-		    }
+		    },
 		},
 		{
 		    header: gettext('Comment'),
@@ -384,9 +384,9 @@ Ext.define('PVE.IPSetGrid', {
 		    flex: 1,
 		    renderer: function(value) {
 			return Ext.util.Format.htmlEncode(value);
-		    }
-		}
-	    ]
+		    },
+		},
+	    ],
 	});
 
 	me.callParent();
@@ -394,14 +394,14 @@ Ext.define('PVE.IPSetGrid', {
 	if (me.base_url) {
 	    me.setBaseUrl(me.base_url); // load
 	}
-    }
+    },
 }, function() {
 
     Ext.define('pve-ipset', {
 	extend: 'Ext.data.Model',
 	fields: [ { name: 'nomatch', type: 'boolean' },
 		  'cidr', 'comment', 'errors' ],
-	idProperty: 'cidr'
+	idProperty: 'cidr',
     });
 
 });
@@ -426,7 +426,7 @@ Ext.define('PVE.IPSet', {
 	var ipset_panel = Ext.createWidget('pveIPSetGrid', {
 	    region: 'center',
 	    list_refs_url: me.list_refs_url,
-	    border: false
+	    border: false,
 	});
 
 	var ipset_list = Ext.createWidget('pveIPSetList', {
@@ -435,7 +435,7 @@ Ext.define('PVE.IPSet', {
 	    base_url: me.base_url,
 	    width: '50%',
 	    border: false,
-	    split: true
+	    split: true,
 	});
 
 	Ext.apply(me, {
@@ -444,10 +444,10 @@ Ext.define('PVE.IPSet', {
 	    listeners: {
 		show: function() {
 		    ipset_list.fireEvent('show', ipset_list);
-		}
-	    }
+		},
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });

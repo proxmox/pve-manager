@@ -6,12 +6,12 @@ Ext.define('PVE.lxc.CreateWizard', {
 	data: {
 	    nodename: '',
 	    storage: '',
-	    unprivileged: true
-	}
+	    unprivileged: true,
+	},
     },
 
     cbindData: {
-	nodename: undefined
+	nodename: undefined,
     },
 
     subject: gettext('LXC Container'),
@@ -27,14 +27,14 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    name: 'nodename',
 		    cbind: {
 			selectCurNode: '{!nodename}',
-			preferredValue: '{nodename}'
+			preferredValue: '{nodename}',
 		    },
 		    bind: {
-			value: '{nodename}'
+			value: '{nodename}',
 		    },
 		    fieldLabel: gettext('Node'),
 		    allowBlank: false,
-		    onlineValidator: true
+		    onlineValidator: true,
 		},
 		{
 		    xtype: 'pveGuestIDSelector',
@@ -42,7 +42,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    guestType: 'lxc',
 		    value: '',
 		    loadNextFreeID: true,
-		    validateExists: false
+		    validateExists: false,
 		},
 		{
 		    xtype: 'proxmoxtextfield',
@@ -51,17 +51,17 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    value: '',
 		    fieldLabel: gettext('Hostname'),
 		    skipEmptyText: true,
-		    allowBlank: true
+		    allowBlank: true,
 		},
 		{
 		    xtype: 'proxmoxcheckbox',
 		    name: 'unprivileged',
 		    value: true,
 		    bind: {
-			value: '{unprivileged}'
+			value: '{unprivileged}',
 		    },
-		    fieldLabel: gettext('Unprivileged container')
-		}
+		    fieldLabel: gettext('Unprivileged container'),
+		},
 	    ],
 	    column2: [
 		{
@@ -69,7 +69,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    fieldLabel: gettext('Resource Pool'),
 		    name: 'pool',
 		    value: '',
-		    allowBlank: true
+		    allowBlank: true,
 		},
 		{
 		    xtype: 'textfield',
@@ -83,7 +83,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 			if (f.rendered) {
 			    f.up().down('field[name=confirmpw]').validate();
 			}
-		    }
+		    },
 		},
 		{
 		    xtype: 'textfield',
@@ -99,7 +99,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 			    return "Passwords do not match!";
 			}
 			return true;
-		    }
+		    },
 		},
 		{
 		    xtype: 'proxmoxtextfield',
@@ -143,7 +143,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 			    let files = ev.dataTransfer.files;
 			    PVE.Utils.loadSSHKeyFromFile(files[0], v => field.setValue(v));
 			});
-		    }
+		    },
 		},
 		{
 		    xtype: 'filebutton',
@@ -158,10 +158,10 @@ Ext.define('PVE.lxc.CreateWizard', {
 				field.setValue(v);
 			    });
 			    btn.reset();
-			}
-		    }
-		}
-	    ]
+			},
+		    },
+		},
+	    ],
 	},
 	{
 	    xtype: 'inputpanel',
@@ -177,8 +177,8 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    allowBlank: false,
 		    bind: {
 			value: '{storage}',
-			nodename: '{nodename}'
-		    }
+			nodename: '{nodename}',
+		    },
 		},
 		{
 		    xtype: 'pveFileSelector',
@@ -187,11 +187,11 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    fieldLabel: gettext('Template'),
 		    bind: {
 			storage: '{storage}',
-			nodename: '{nodename}'
+			nodename: '{nodename}',
 		    },
-		    allowBlank: false
-		}
-	    ]
+		    allowBlank: false,
+		},
+	    ],
 	},
 	{
 	    xtype: 'pveLxcMountPointInputPanel',
@@ -201,33 +201,33 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    unused: false,
 	    bind: {
 		nodename: '{nodename}',
-		unprivileged: '{unprivileged}'
+		unprivileged: '{unprivileged}',
 	    },
-	    confid: 'rootfs'
+	    confid: 'rootfs',
 	},
 	{
 	    xtype: 'pveLxcCPUInputPanel',
 	    title: gettext('CPU'),
-	    insideWizard: true
+	    insideWizard: true,
 	},
 	{
 	    xtype: 'pveLxcMemoryInputPanel',
 	    title: gettext('Memory'),
-	    insideWizard: true
+	    insideWizard: true,
 	},
 	{
 	    xtype: 'pveLxcNetworkInputPanel',
 	    title: gettext('Network'),
 	    insideWizard: true,
 	    bind: {
-		nodename: '{nodename}'
+		nodename: '{nodename}',
 	    },
-	    isCreate: true
+	    isCreate: true,
 	},
 	{
 	    xtype: 'pveLxcDNSInputPanel',
 	    title: gettext('DNS'),
-	    insideWizard: true
+	    insideWizard: true,
 	},
 	{
 	    title: gettext('Confirm'),
@@ -239,14 +239,14 @@ Ext.define('PVE.lxc.CreateWizard', {
 			model: 'KeyValue',
 			sorters: [{
 				property : 'key',
-				direction: 'ASC'
-			}]
+				direction: 'ASC',
+			}],
 		    },
 		    columns: [
 			{header: 'Key', width: 150, dataIndex: 'key'},
-			{header: 'Value', flex: 1, dataIndex: 'value'}
-		    ]
-		}
+			{header: 'Value', flex: 1, dataIndex: 'value'},
+		    ],
+		},
 	    ],
 	    dockedItems: [
 		{
@@ -254,8 +254,8 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    name: 'start',
 		    dock: 'bottom',
 		    margin: '5 0 0 0',
-		    boxLabel: gettext('Start after created')
-		}
+		    boxLabel: gettext('Start after created'),
+		},
 	    ],
 	    listeners: {
 		show: function(panel) {
@@ -280,7 +280,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    summarystore.sort();
 		    summarystore.resumeEvents();
 		    summarystore.fireEvent('refresh');
-		}
+		},
 	    },
 	    onSubmit: function() {
 		var wizard = this.up('window');
@@ -308,18 +308,18 @@ Ext.define('PVE.lxc.CreateWizard', {
 			var upid = response.result.data;
 
 			var win = Ext.create('Proxmox.window.TaskViewer', {
-			    upid: upid
+			    upid: upid,
 			});
 			win.show();
 			wizard.close();
 		    },
 		    failure: function(response, opts) {
 			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
+		    },
 		});
-	    }
-	}
-    ]
+	    },
+	},
+    ],
 });
 
 

@@ -15,8 +15,8 @@ Ext.define('PVE.dc.RoleView', {
 	    model: 'pmx-roles',
 	    sorters: {
 		property: 'roleid',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
 	var render_privs = function(value, metaData) {
@@ -49,9 +49,9 @@ Ext.define('PVE.dc.RoleView', {
 		return;
 	    }
 
-	    var win = Ext.create('PVE.dc.RoleEdit',{
+	    var win = Ext.create('PVE.dc.RoleEdit', {
 		roleid: rec.data.roleid,
-		privs: rec.data.privs
+		privs: rec.data.privs,
 	    });
 	    win.on('destroy', reload);
 	    win.show();
@@ -62,7 +62,7 @@ Ext.define('PVE.dc.RoleView', {
 	    selModel: sm,
 
 	    viewConfig: {
-		trackOver: false
+		trackOver: false,
 	    },
 	    columns: [
 		{
@@ -70,13 +70,13 @@ Ext.define('PVE.dc.RoleView', {
 		    width: 65,
 		    sortable: true,
 		    dataIndex: 'special',
-		    renderer: Proxmox.Utils.format_boolean
+		    renderer: Proxmox.Utils.format_boolean,
 		},
 		{
 		    header: gettext('Name'),
 		    width: 150,
 		    sortable: true,
-		    dataIndex: 'roleid'
+		    dataIndex: 'roleid',
 		},
 		{
 		    itemid: 'privs',
@@ -84,14 +84,14 @@ Ext.define('PVE.dc.RoleView', {
 		    sortable: false,
 		    renderer: render_privs,
 		    dataIndex: 'privs',
-		    flex: 1
-		}
+		    flex: 1,
+		},
 	    ],
 	    listeners: {
 		activate: function() {
 		    store.load();
 		},
-		itemdblclick: run_editor
+		itemdblclick: run_editor,
 	    },
 	    tbar: [
 		{
@@ -100,7 +100,7 @@ Ext.define('PVE.dc.RoleView', {
 			var win = Ext.create('PVE.dc.RoleEdit', {});
 			win.on('destroy', reload);
 			win.show();
-		    }
+		    },
 		},
 		{
 		    xtype: 'proxmoxButton',
@@ -118,10 +118,10 @@ Ext.define('PVE.dc.RoleView', {
 		    },
 		    baseurl: '/access/roles/',
 		    enableFn: (rec) => !rec.data.special,
-		}
-	    ]
+		},
+	    ],
 	});
 
 	me.callParent();
-    }
+    },
 });

@@ -13,8 +13,8 @@ Ext.define('PVE.window.BackupConfig', {
 	    'background-color': 'white',
 	    'white-space': 'pre',
 	    'font-family': 'monospace',
-	    padding: '5px'
-	}
+	    padding: '5px',
+	},
     },
 
     initComponent: function() {
@@ -35,16 +35,16 @@ Ext.define('PVE.window.BackupConfig', {
 	    url: "/nodes/" + nodename + "/vzdump/extractconfig",
 	    method: 'GET',
 	    params: {
-		volume: me.volume
+		volume: me.volume,
 	    },
 	    failure: function(response, opts) {
 		me.close();
 		Ext.Msg.alert('Error', response.htmlStatus);
 	    },
-	    success: function(response,options) {
+	    success: function(response, options) {
 		me.show();
 		me.down('#configtext').update(Ext.htmlEncode(response.result.data));
-	    }
+	    },
 	});
-    }
+    },
 });

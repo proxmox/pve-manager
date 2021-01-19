@@ -56,7 +56,7 @@ Ext.define('PVE.panel.Config', {
 	style: {
 	    backgroundColor: '#f5f5f5',
 	    padding: 0,
-	    margin: 0
+	    margin: 0,
 	},
 	items: {
 	    xtype: 'treelist',
@@ -94,16 +94,16 @@ Ext.define('PVE.panel.Config', {
 		    } else {
 			info.toggle = true;
 		    }
-		}
-	    }
-	}
+		},
+	    },
+	},
     },
     {
 	xtype: 'toolbar',
 	itemId: 'toolbar',
 	dock: 'top',
 	height: 36,
-	overflowHandler: 'scroller'
+	overflowHandler: 'scroller',
     }],
 
     firstItem: '',
@@ -191,13 +191,13 @@ Ext.define('PVE.panel.Config', {
 	tbar.unshift({
 	    xtype: 'tbtext',
 	    text: title,
-	    baseCls: 'x-panel-header-text'
+	    baseCls: 'x-panel-header-text',
 	});
 
 	me.helpButton = Ext.create('Proxmox.button.Help', {
 	    hidden: false,
 	    listenToGlobalEvent: false,
-	    onlineHelp: me.onlineHelp || undefined
+	    onlineHelp: me.onlineHelp || undefined,
 	});
 
 	tbar.push(me.helpButton);
@@ -212,7 +212,7 @@ Ext.define('PVE.panel.Config', {
 		title: gettext('Search'),
 		iconCls: 'fa fa-search',
 		xtype: 'pveResourceGrid',
-		pveSelNode: me.pveSelNode
+		pveSelNode: me.pveSelNode,
 	    });
 	}
 
@@ -223,8 +223,8 @@ Ext.define('PVE.panel.Config', {
 
 	me.store = Ext.create('Ext.data.TreeStore', {
 	    root: {
-		expanded: true
-	    }
+		expanded: true,
+	    },
 	});
 	var root = me.store.getRoot();
 	me.insertNodes(me.items);
@@ -235,7 +235,7 @@ Ext.define('PVE.panel.Config', {
 	    pveSelNode: me.pveSelNode,
 	    viewFilter: me.viewFilter,
 	    workspace: me.workspace,
-	    border: 0
+	    border: 0,
 	});
 
 	me.callParent();
@@ -276,12 +276,12 @@ Ext.define('PVE.panel.Config', {
 	var root = me.store.getRoot();
 
 	items.forEach(function(item) {
-	    var treeitem = Ext.create('Ext.data.TreeModel',{
+	    var treeitem = Ext.create('Ext.data.TreeModel', {
 		id: item.itemId,
 		text: item.title,
 		iconCls: item.iconCls,
 		leaf: true,
-		expanded: item.expandedOnInit
+		expanded: item.expandedOnInit,
 	    });
 	    item.header = false;
 	    if (me.savedItems[item.itemId] !== undefined) {

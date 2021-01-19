@@ -1,10 +1,10 @@
-Ext.define('PVE.widget.Info',{
+Ext.define('PVE.widget.Info', {
     extend: 'Ext.container.Container',
     alias: 'widget.pveInfoWidget',
 
     layout: {
 	type: 'vbox',
-	align: 'stretch'
+	align: 'stretch',
     },
 
     value: 0,
@@ -17,27 +17,27 @@ Ext.define('PVE.widget.Info',{
 	    data: {
 		title: '',
 		usage: '',
-		iconCls: undefined
+		iconCls: undefined,
 	    },
 	    tpl: [
 		'<div class="left-aligned">',
 		'<tpl if="iconCls">',
 		'<i class="{iconCls}"></i> ',
 		'</tpl>',
-		'{title}</div>&nbsp;<div class="right-aligned">{usage}</div>'
-	    ]
+		'{title}</div>&nbsp;<div class="right-aligned">{usage}</div>',
+	    ],
 	},
 	{
 	    height: 2,
-	    border: 0
+	    border: 0,
 	},
 	{
 	    xtype: 'progressbar',
 	    itemId: 'progress',
 	    height: 5,
 	    value: 0,
-	    animate: true
-	}
+	    animate: true,
+	},
     ],
 
     warningThreshold: 0.6,
@@ -91,6 +91,6 @@ Ext.define('PVE.widget.Info',{
 
 	me.updateValue(me.text, me.value);
 	me.setIconCls(me.iconCls);
-    }
+    },
 
 });

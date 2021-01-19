@@ -13,7 +13,7 @@ Ext.define('PVE.CephCreatePool', {
 	    xtype: 'textfield',
 	    fieldLabel: gettext('Name'),
 	    name: 'name',
-	    allowBlank: false
+	    allowBlank: false,
 	},
 	{
 	    xtype: 'proxmoxintegerfield',
@@ -22,7 +22,7 @@ Ext.define('PVE.CephCreatePool', {
 	    value: 3,
 	    minValue: 1,
 	    maxValue: 7,
-	    allowBlank: false
+	    allowBlank: false,
 	},
 	{
 	    xtype: 'proxmoxintegerfield',
@@ -31,13 +31,13 @@ Ext.define('PVE.CephCreatePool', {
 	    value: 2,
 	    minValue: 1,
 	    maxValue: 7,
-	    allowBlank: false
+	    allowBlank: false,
 	},
 	{
 	    xtype: 'pveCephRuleSelector',
 	    fieldLabel: 'Crush Rule', // do not localize
 	    name: 'crush_rule',
-	    allowBlank: false
+	    allowBlank: false,
 	},
 	{
 	    xtype: 'proxmoxKVComboBox',
@@ -71,7 +71,7 @@ Ext.define('PVE.CephCreatePool', {
 		tag: 'div',
 		 'data-qtip': gettext('Add the new pool to the cluster storage configuration.'),
 	    },
-	}
+	},
     ],
     initComponent : function() {
         var me = this;
@@ -83,12 +83,12 @@ Ext.define('PVE.CephCreatePool', {
         Ext.apply(me, {
 	    url: "/nodes/" + me.nodename + "/ceph/pools",
 	    defaults: {
-		nodename: me.nodename
-	    }
+		nodename: me.nodename,
+	    },
         });
 
         me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.node.CephPoolList', {
@@ -108,7 +108,7 @@ Ext.define('PVE.node.CephPoolList', {
 	    header: gettext('Name'),
 	    width: 120,
 	    sortable: true,
-	    dataIndex: 'pool_name'
+	    dataIndex: 'pool_name',
 	},
 	{
 	    header: gettext('Size') + '/min',
@@ -117,7 +117,7 @@ Ext.define('PVE.node.CephPoolList', {
 	    renderer: function(v, meta, rec) {
 		return v + '/' + rec.data.min_size;
 	    },
-	    dataIndex: 'size'
+	    dataIndex: 'size',
 	},
 	{
 	    text: 'Placement Groups',
@@ -126,15 +126,15 @@ Ext.define('PVE.node.CephPoolList', {
 		    text: '# of PGs', // pg_num',
 		    width: 150,
 		    align: 'right',
-		    dataIndex: 'pg_num'
+		    dataIndex: 'pg_num',
 		},
 		{
 		    text: gettext('Autoscale'),
 		    width: 140,
 		    align: 'right',
-		    dataIndex: 'pg_autoscale_mode'
+		    dataIndex: 'pg_autoscale_mode',
 		},
-	    ]
+	    ],
 	},
 	{
 	    text: 'CRUSH Rule',
@@ -143,14 +143,14 @@ Ext.define('PVE.node.CephPoolList', {
 		    text: 'ID',
 		    align: 'right',
 		    width: 50,
-		    dataIndex: 'crush_rule'
+		    dataIndex: 'crush_rule',
 		},
 		{
 		    text: gettext('Name'),
 		    width: 150,
 		    dataIndex: 'crush_rule_name',
 		},
-	    ]
+	    ],
 	},
 	{
 	    text: gettext('Used'),
@@ -173,10 +173,10 @@ Ext.define('PVE.node.CephPoolList', {
 		    align: 'right',
 		    dataIndex: 'bytes_used',
 		    summaryType: 'sum',
-		    summaryRenderer: PVE.Utils.render_size
-		}
-	    ]
-	}
+		    summaryRenderer: PVE.Utils.render_size,
+		},
+	    ],
+	},
     ],
     initComponent: function() {
         var me = this;
@@ -194,8 +194,8 @@ Ext.define('PVE.node.CephPoolList', {
 	    model: 'ceph-pool-list',
 	    proxy: {
                 type: 'proxmox',
-                url: "/api2/json/nodes/" + nodename + "/ceph/pools"
-	    }
+                url: "/api2/json/nodes/" + nodename + "/ceph/pools",
+	    },
 	});
 
 	var store = Ext.create('Proxmox.data.DiffStore', { rstore: rstore });
@@ -208,7 +208,7 @@ Ext.define('PVE.node.CephPoolList', {
 		    me.mon(win, 'cephInstallWindowClosed', function(){
 			me.store.rstore.startUpdate();
 		    });
-		}
+		},
 	    );
 	});
 
@@ -216,13 +216,13 @@ Ext.define('PVE.node.CephPoolList', {
 	    text: gettext('Create'),
 	    handler: function() {
 		var win = Ext.create('PVE.CephCreatePool', {
-                    nodename: nodename
+                    nodename: nodename,
 		});
 		win.show();
 		win.on('destroy', function() {
 		    rstore.load();
 		});
-	    }
+	    },
 	});
 
 	var destroy_btn = Ext.create('Proxmox.button.Button', {
@@ -242,14 +242,14 @@ Ext.define('PVE.node.CephPoolList', {
 		    showProgress: true,
 		    url: base_url,
 		    params: {
-			remove_storages: 1
+			remove_storages: 1,
 		    },
-		    item: { type: 'CephPool', id: rec.data.pool_name }
+		    item: { type: 'CephPool', id: rec.data.pool_name },
 		}).show();
 		win.on('destroy', function() {
 		    rstore.load();
 		});
-	    }
+	    },
 	});
 
 	Ext.apply(me, {
@@ -259,11 +259,11 @@ Ext.define('PVE.node.CephPoolList', {
 	    listeners: {
 		activate: () => rstore.startUpdate(),
 		destroy: () => rstore.stopUpdate(),
-	    }
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 }, function() {
 
     Ext.define('ceph-pool-list', {
@@ -276,9 +276,9 @@ Ext.define('PVE.node.CephPoolList', {
 		  { name: 'bytes_used', type: 'integer'},
 		  { name: 'percent_used', type: 'number'},
 		  { name: 'crush_rule', type: 'integer'},
-		  { name: 'crush_rule_name', type: 'string'}
+		  { name: 'crush_rule_name', type: 'string'},
 		],
-	idProperty: 'pool_name'
+	idProperty: 'pool_name',
     });
 });
 
@@ -304,12 +304,12 @@ Ext.define('PVE.form.CephRuleSelector', {
 	    sorters: 'name',
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/ceph/rules'
-	    }
+		url: '/api2/json/nodes/' + me.nodename + '/ceph/rules',
+	    },
 	});
 
 	Ext.apply(me, {
-	    store: store
+	    store: store,
 	});
 
 	me.callParent();
@@ -319,8 +319,8 @@ Ext.define('PVE.form.CephRuleSelector', {
 		if (success && rec.length > 0) {
 		    me.select(rec[0]);
 		}
-	    }
+	    },
 	});
-    }
+    },
 
 });

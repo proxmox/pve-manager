@@ -24,7 +24,7 @@ Ext.define('PVE.dc.OptionView', {
 		subject: text,
 		onlineHelp: opts.onlineHelp,
 		fieldDefaults: {
-		    labelWidth: opts.labelWidth || 100
+		    labelWidth: opts.labelWidth || 100,
 		},
 		setValues: function(values) {
 		    var edit_value = values[name];
@@ -48,9 +48,9 @@ Ext.define('PVE.dc.OptionView', {
 			ret_val[name] = PVE.Parser.printPropertyString(values);
 			return ret_val;
 		    },
-		    items: opts.items
-		}]
-	    } : undefined
+		    items: opts.items,
+		}],
+	    } : undefined,
 	};
     },
 
@@ -74,28 +74,28 @@ Ext.define('PVE.dc.OptionView', {
 	    renderer: PVE.Utils.render_kvm_language,
 	    comboItems: PVE.Utils.kvm_keymap_array(),
 	    defaultValue: '__default__',
-	    deleteEmpty: true
+	    deleteEmpty: true,
 	});
 	me.add_text_row('http_proxy', gettext('HTTP proxy'), {
 	    defaultValue: Proxmox.Utils.noneText,
 	    vtype: 'HttpProxy',
-	    deleteEmpty: true
+	    deleteEmpty: true,
 	});
 	me.add_combobox_row('console', gettext('Console Viewer'), {
 	    renderer: PVE.Utils.render_console_viewer,
 	    comboItems: PVE.Utils.console_viewer_array(),
 	    defaultValue: '__default__',
-	    deleteEmpty: true
+	    deleteEmpty: true,
 	});
 	me.add_text_row('email_from', gettext('Email from address'), {
 	    deleteEmpty: true,
 	    vtype: 'proxmoxMail',
-	    defaultValue: 'root@$hostname'
+	    defaultValue: 'root@$hostname',
 	});
 	me.add_text_row('mac_prefix', gettext('MAC address prefix'), {
 	    deleteEmpty: true,
 	    vtype: 'MacPrefix',
-	    defaultValue: Proxmox.Utils.noneText
+	    defaultValue: Proxmox.Utils.noneText,
 	});
 	me.add_inputpanel_row('migration', gettext('Migration Settings'), {
 	    renderer: PVE.Utils.render_dc_ha_opts,
@@ -115,8 +115,8 @@ Ext.define('PVE.dc.OptionView', {
 		value: null,
 		emptyText: Proxmox.Utils.defaultText,
 		autoSelect: false,
-		skipEmptyText: true
-	    }]
+		skipEmptyText: true,
+	    }],
 	});
 	me.add_inputpanel_row('ha', gettext('HA Settings'), {
 	    renderer: PVE.Utils.render_dc_ha_opts,
@@ -134,10 +134,10 @@ Ext.define('PVE.dc.OptionView', {
 		    ['freeze', 'freeze'],
 		    ['failover', 'failover'],
 		    ['migrate', 'migrate'],
-		    ['conditional', 'conditional']
+		    ['conditional', 'conditional'],
 		],
-		defaultValue: '__default__'
-	    }]
+		defaultValue: '__default__',
+	    }],
 	});
 	me.add_inputpanel_row('u2f', gettext('U2F Settings'), {
 	    renderer: PVE.Utils.render_dc_ha_opts,
@@ -168,7 +168,7 @@ Ext.define('PVE.dc.OptionView', {
 		xtype: 'displayfield',
 		userCls: 'pmx-hint',
 		value: gettext('NOTE: Changing an AppID breaks existing U2F registrations!'),
-	    }]
+	    }],
 	});
 	me.add_inputpanel_row('bwlimit', gettext('Bandwidth Limits'), {
 	    renderer: me.render_bwlimits,
@@ -210,7 +210,7 @@ Ext.define('PVE.dc.OptionView', {
 		fieldLabel: gettext('Disk Move'),
 		emptyText: gettext('default'),
 		backendUnit: "KiB",
-	    }]
+	    }],
 	});
 	me.add_integer_row('max_workers', gettext('Maximal Workers/bulk-action'), {
 	    deleteEmpty: true,
@@ -227,17 +227,17 @@ Ext.define('PVE.dc.OptionView', {
 		xtype: 'proxmoxButton',
 		disabled: true,
 		handler: function() { me.run_editor(); },
-		selModel: me.selModel
+		selModel: me.selModel,
 	    }],
 	    url: "/api2/json/cluster/options",
 	    editorConfig: {
-		url: "/api2/extjs/cluster/options"
+		url: "/api2/extjs/cluster/options",
 	    },
 	    interval: 5000,
 	    cwidth1: 200,
 	    listeners: {
-		itemdblclick: me.run_editor
-	    }
+		itemdblclick: me.run_editor,
+	    },
 	});
 
 	me.callParent();
@@ -258,5 +258,5 @@ Ext.define('PVE.dc.OptionView', {
 	me.on('activate', me.rstore.startUpdate);
 	me.on('destroy', me.rstore.stopUpdate);
 	me.on('deactivate', me.rstore.stopUpdate);
-    }
+    },
 });

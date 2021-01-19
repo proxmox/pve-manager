@@ -10,14 +10,14 @@ Ext.define('PVE.form.BandwidthField', {
 	},
 	formulas: {
 	    unitlabel: (get) => get('unit') + '/s',
-	}
+	},
     },
 
     emptyText: '',
 
     layout: 'hbox',
     defaults: {
-	hideLabel: true
+	hideLabel: true,
     },
 
     units: {

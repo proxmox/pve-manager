@@ -44,7 +44,7 @@ Ext.define('PVE.StateProvider', {
 	['pooltab', ''],
 	['kvmtab', ''],
 	['lxctab', ''],
-	['dctab', '']
+	['dctab', ''],
     ],
 
     hprefix: 'v1',
@@ -103,7 +103,7 @@ Ext.define('PVE.StateProvider', {
 	clog: 3,
 	storage: 2,
 	folder: 1,
-	server: 0
+	server: 0,
     },
 
     decodeHToken: function(token) {
@@ -253,5 +253,5 @@ Ext.define('PVE.StateProvider', {
 	} else {
 	    me.callParent(arguments);
 	}
-    }
+    },
 });

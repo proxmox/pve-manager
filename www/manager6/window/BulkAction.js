@@ -5,7 +5,7 @@ Ext.define('PVE.window.BulkAction', {
     width: 800,
     modal: true,
     layout: {
-	type: 'fit'
+	type: 'fit',
     },
     border: false,
 
@@ -31,14 +31,14 @@ Ext.define('PVE.window.BulkAction', {
 		var upid = response.result.data;
 
 		var win = Ext.create('Proxmox.window.TaskViewer', {
-		    upid: upid
+		    upid: upid,
 		});
 		win.show();
 		me.hide();
 		win.on('destroy', function() {
 		    me.close();
 		});
-	    }
+	    },
 	});
     },
 
@@ -69,7 +69,7 @@ Ext.define('PVE.window.BulkAction', {
 		    disallowedNodes: [me.nodename],
 		    fieldLabel: gettext('Target node'),
 		    allowBlank: false,
-		    onlineValidator: true
+		    onlineValidator: true,
 		},
 		{
 		    xtype: 'proxmoxintegerfield',
@@ -78,7 +78,7 @@ Ext.define('PVE.window.BulkAction', {
 		    maxValue: 100,
 		    value: 1,
 		    fieldLabel: gettext('Parallel jobs'),
-		    allowBlank: false
+		    allowBlank: false,
 		},
 		{
 		    xtype: 'fieldcontainer',
@@ -91,7 +91,7 @@ Ext.define('PVE.window.BulkAction', {
 			uncheckedValue: 0,
 			listeners: {
 			    change: (cb, val) => me.down('#localdiskwarning').setVisible(val),
-			}
+			},
 
 		    },
 		    {
@@ -108,14 +108,14 @@ Ext.define('PVE.window.BulkAction', {
 		    xtype: 'displayfield',
 		    userCls: 'pmx-hint',
 		    value: 'Warning: Running CTs will be migrated in Restart Mode.',
-		    hidden: true // only visible if running container chosen
-		}
+		    hidden: true, // only visible if running container chosen
+		},
 	    );
 	} else if (me.action === 'startall') {
 	    items.push({
 		xtype: 'hiddenfield',
 		name: 'force',
-		value: 1
+		value: 1,
 	    });
 	}
 
@@ -138,8 +138,8 @@ Ext.define('PVE.window.BulkAction', {
 			});
 			me.down('#lxcwarning').setVisible(showWarning);
 		    }
-		}
-	    }
+		},
+	    },
 	});
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
@@ -147,13 +147,13 @@ Ext.define('PVE.window.BulkAction', {
 	    border: false,
 	    layout: {
 		type: 'vbox',
-		align: 'stretch'
+		align: 'stretch',
 	    },
 	    fieldDefaults: {
 		labelWidth: 300,
-		anchor: '100%'
+		anchor: '100%',
 	    },
-	    items: items
+	    items: items,
 	});
 
 	var form = me.formPanel.getForm();
@@ -163,12 +163,12 @@ Ext.define('PVE.window.BulkAction', {
 	    handler: function() {
 		form.isValid();
 		me.submit(form.getValues());
-	    }
+	    },
 	});
 
 	Ext.apply(me, {
 	    items: [ me.formPanel ],
-	    buttons: [ submitBtn ]
+	    buttons: [ submitBtn ],
 	});
 
 	me.callParent();
@@ -178,5 +178,5 @@ Ext.define('PVE.window.BulkAction', {
 	    submitBtn.setDisabled(!valid);
 	});
 	form.isValid();
-    }
+    },
 });

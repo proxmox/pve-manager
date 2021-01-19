@@ -39,18 +39,18 @@ Ext.define('PVE.qemu.CIDriveInputPanel', {
 		noVirtIO: true,
 		itemId: 'drive',
 		fieldLabel: gettext('CloudInit Drive'),
-		name: 'drive'
+		name: 'drive',
 	    },
 	    {
 		xtype: 'pveDiskStorageSelector',
 		itemId: 'storselector',
 		storageContent: 'images',
 		nodename: me.nodename,
-		hideSize: true
-	    }
+		hideSize: true,
+	    },
 	];
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.qemu.CIDriveEdit', {
@@ -71,7 +71,7 @@ Ext.define('PVE.qemu.CIDriveEdit', {
 	me.items = [{
 	    xtype: 'pveCIDriveInputPanel',
 	    itemId: 'cipanel',
-	    nodename: nodename
+	    nodename: nodename,
 	}];
 
 	me.callParent();
@@ -79,7 +79,7 @@ Ext.define('PVE.qemu.CIDriveEdit', {
 	me.load({
 	    success: function(response, opts) {
 		me.down('#cipanel').setVMConfig(response.result.data);
-	    }
+	    },
 	});
-    }
+    },
 });

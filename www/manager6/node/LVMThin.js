@@ -27,25 +27,25 @@ Ext.define('PVE.node.CreateLVMThin', {
 		    nodename: me.nodename,
 		    diskType: 'unused',
 		    fieldLabel: gettext('Disk'),
-		    allowBlank: false
+		    allowBlank: false,
 		},
 		{
 		    xtype: 'proxmoxtextfield',
 		    name: 'name',
 		    fieldLabel: gettext('Name'),
-		    allowBlank: false
+		    allowBlank: false,
 		},
 		{
 		    xtype: 'proxmoxcheckbox',
 		    name: 'add_storage',
 		    fieldLabel: gettext('Add Storage'),
-		    value: '1'
-		}
-            ]
+		    value: '1',
+		},
+            ],
         });
 
         me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.node.LVMThinList', {
@@ -59,7 +59,7 @@ Ext.define('PVE.node.LVMThinList', {
 	{
 	    text: gettext('Name'),
 	    dataIndex: 'lv',
-	    flex: 1
+	    flex: 1,
 	},
 	{
 	    header: gettext('Usage'),
@@ -68,8 +68,8 @@ Ext.define('PVE.node.LVMThinList', {
 	    tdCls: 'x-progressbar-default-cell',
 	    xtype: 'widgetcolumn',
 	    widget: {
-		xtype: 'pveProgressBar'
-	    }
+		xtype: 'pveProgressBar',
+	    },
 	},
 	{
 	    header: gettext('Size'),
@@ -77,7 +77,7 @@ Ext.define('PVE.node.LVMThinList', {
 	    align: 'right',
 	    sortable: true,
 	    renderer: Proxmox.Utils.format_size,
-	    dataIndex: 'lv_size'
+	    dataIndex: 'lv_size',
 	},
 	{
 	    header: gettext('Used'),
@@ -85,7 +85,7 @@ Ext.define('PVE.node.LVMThinList', {
 	    align: 'right',
 	    sortable: true,
 	    renderer: Proxmox.Utils.format_size,
-	    dataIndex: 'used'
+	    dataIndex: 'used',
 	},
 	{
 	    header: gettext('Metadata Usage'),
@@ -94,8 +94,8 @@ Ext.define('PVE.node.LVMThinList', {
 	    tdCls: 'x-progressbar-default-cell',
 	    xtype: 'widgetcolumn',
 	    widget: {
-		xtype: 'pveProgressBar'
-	    }
+		xtype: 'pveProgressBar',
+	    },
 	},
 	{
 	    header: gettext('Metadata Size'),
@@ -103,7 +103,7 @@ Ext.define('PVE.node.LVMThinList', {
 	    align: 'right',
 	    sortable: true,
 	    renderer: Proxmox.Utils.format_size,
-	    dataIndex: 'metadata_size'
+	    dataIndex: 'metadata_size',
 	},
 	{
 	    header: gettext('Metadata Used'),
@@ -111,8 +111,8 @@ Ext.define('PVE.node.LVMThinList', {
 	    align: 'right',
 	    sortable: true,
 	    renderer: Proxmox.Utils.format_size,
-	    dataIndex: 'metadata_used'
-	}
+	    dataIndex: 'metadata_used',
+	},
     ],
 
     rootVisible: false,
@@ -125,7 +125,7 @@ Ext.define('PVE.node.LVMThinList', {
 	    handler: function() {
 		var me = this.up('panel');
 		me.reload();
-	    }
+	    },
 	},
 	{
 	    text: gettext('Create') + ': Thinpool',
@@ -135,10 +135,10 @@ Ext.define('PVE.node.LVMThinList', {
 		    nodename: me.nodename,
 		    taskDone: function() {
 			me.reload();
-		    }
+		    },
 		}).show();
-	    }
-	}
+	    },
+	},
     ],
 
     reload: function() {
@@ -151,7 +151,7 @@ Ext.define('PVE.node.LVMThinList', {
 	activate: function() {
 	    var me = this;
 	    me.reload();
-	}
+	},
     },
 
     initComponent: function() {
@@ -170,28 +170,28 @@ Ext.define('PVE.node.LVMThinList', {
 			name: 'usage',
 			calculate: function(data) {
 			    return data.used/data.lv_size;
-			}
+			},
 		    },
 		    {
 			type: 'number',
 			name: 'metadata_usage',
 			calculate: function(data) {
 			    return data.metadata_used/data.metadata_size;
-			}
-		    }
+			},
+		    },
 		],
 		proxy: {
 		    type: 'proxmox',
-		    url: "/api2/json/nodes/" + me.nodename + '/disks/lvmthin'
+		    url: "/api2/json/nodes/" + me.nodename + '/disks/lvmthin',
 		},
-		sorters: 'lv'
-	    }
+		sorters: 'lv',
+	    },
 	});
 
 	me.callParent();
 
 	Proxmox.Utils.monStoreErrors(me, me.getStore(), true);
 	me.reload();
-    }
+    },
 });
 

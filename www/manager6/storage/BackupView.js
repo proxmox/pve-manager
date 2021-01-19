@@ -94,25 +94,25 @@ Ext.define('PVE.storage.BackupView', {
 			nodename: nodename,
 			volid: rec.data.volid,
 			volidText: PVE.Utils.render_storage_content(rec.data.volid, {}, rec),
-			vmtype: vmtype
+			vmtype: vmtype,
 		    });
 		    win.show();
 		    win.on('destroy', reload);
-		}
+		},
 	    },
 	    {
 		xtype: 'proxmoxButton',
 		text: gettext('Show Configuration'),
 		disabled: true,
 		selModel: sm,
-		handler: function(b,e,rec) {
+		handler: function(b, e, rec) {
 		    var win = Ext.create('PVE.window.BackupConfig', {
 			volume: rec.data.volid,
-			pveSelNode: me.pveSelNode
+			pveSelNode: me.pveSelNode,
 		    });
 
 		    win.show();
-		}
+		},
 	    },
 	    pruneButton,
 	];
@@ -128,7 +128,7 @@ Ext.define('PVE.storage.BackupView', {
 		    header: gettext('Verify State'),
 		    dataIndex: 'verification',
 		    renderer: PVE.Utils.render_backup_verification,
-		}
+		},
 	    };
 	}
 

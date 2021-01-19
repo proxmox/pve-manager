@@ -47,7 +47,7 @@ Ext.define('PVE.button.Split', {
 			return;
 		    }
 		    me.realHandler(button, event, rec);
-		}
+		},
 	    });
 	} else {
 	    me.realHandler(button, event, rec);
@@ -96,5 +96,5 @@ Ext.define('PVE.button.Split', {
 		}
 	    });
 	}
-    }
+    },
 });

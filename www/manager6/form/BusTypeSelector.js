@@ -16,5 +16,5 @@ Ext.define('PVE.form.BusTypeSelector', {
 	me.comboItems.push(['scsi', 'SCSI']);
 
 	me.callParent();
-    }
+    },
 });

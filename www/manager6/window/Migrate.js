@@ -14,11 +14,11 @@ Ext.define('PVE.window.Migrate', {
 	    running: false,
 	    qemu: {
 		onlineHelp: 'qm_migration',
-		commonName: 'VM'
+		commonName: 'VM',
 	    },
 	    lxc: {
 		onlineHelp: 'pct_migration',
-		commonName: 'CT'
+		commonName: 'CT',
 	    },
 	    migration: {
 		possible: true,
@@ -27,8 +27,8 @@ Ext.define('PVE.window.Migrate', {
 		mode: undefined,
 		allowedNodes: undefined,
 		overwriteLocalResourceCheck: false,
-		hasLocalResources: false
-	    }
+		hasLocalResources: false,
+	    },
 
 	},
 
@@ -58,8 +58,8 @@ Ext.define('PVE.window.Migrate', {
 		} else {
 		    return false;
 		}
-	    }
-	}
+	    },
+	},
     },
 
     controller: {
@@ -69,8 +69,8 @@ Ext.define('PVE.window.Migrate', {
 		validityChange: function(panel, isValid) {
 		    this.getViewModel().set('migration.possible', isValid);
 		    this.checkMigratePreconditions();
-		}
-	    }
+		},
+	    },
 	},
 
 	init: function(view) {
@@ -94,10 +94,10 @@ Ext.define('PVE.window.Migrate', {
 
 
 	    view.setTitle(
-		Ext.String.format('{0} {1} {2}', gettext('Migrate'), vm.get(view.vmtype).commonName, view.vmid)
+		Ext.String.format('{0} {1} {2}', gettext('Migrate'), vm.get(view.vmtype).commonName, view.vmid),
 	    );
 	    me.lookup('proxmoxHelpButton').setHelpConfig({
-		onlineHelp: vm.get(view.vmtype).onlineHelp
+		onlineHelp: vm.get(view.vmtype).onlineHelp,
 	    });
 	    me.checkMigratePreconditions();
 	    me.lookup('formPanel').isValid();
@@ -117,7 +117,7 @@ Ext.define('PVE.window.Migrate', {
 
 	    var values = me.lookup('formPanel').getValues();
 	    var params = {
-		target: values.target
+		target: values.target,
 	    };
 
 	    if (vm.get('migration.mode')) {
@@ -150,11 +150,11 @@ Ext.define('PVE.window.Migrate', {
 
 		    Ext.create('Proxmox.window.TaskViewer', {
 			upid: upid,
-			extraTitle: extraTitle
+			extraTitle: extraTitle,
 		    }).show();
 
 		    view.close();
-		}
+		},
 	    });
 
 	},
@@ -221,7 +221,7 @@ Ext.define('PVE.window.Migrate', {
 			    migration.preconditions.push({
 				text: 'Storage (' + missing_storages + ') not available on selected target. ' +
 				  'Start VM to use live storage migration or select other target node',
-				severity: 'error'
+				severity: 'error',
 			    });
 			}
 		    }
@@ -233,14 +233,14 @@ Ext.define('PVE.window.Migrate', {
 			    migration.preconditions.push({
 				text: Ext.String.format('Can\'t migrate VM with local resources: {0}',
 				migrateStats.local_resources.join(', ')),
-				severity: 'error'
+				severity: 'error',
 			    });
 			} else {
 			    migration.preconditions.push({
 				text: Ext.String.format('Migrate VM with local resources: {0}. ' +
 				'This might fail if resources aren\'t available on the target node.',
 				migrateStats.local_resources.join(', ')),
-				severity: 'warning'
+				severity: 'warning',
 			    });
 			}
 		    }
@@ -254,7 +254,7 @@ Ext.define('PVE.window.Migrate', {
 					migration.possible = false;
 					migration.preconditions.push({
 					     text: "Can't live migrate VM with local cloudinit disk, use shared storage instead",
-					     severity: 'error'
+					     severity: 'error',
 					});
 				    } else {
 					return;
@@ -263,7 +263,7 @@ Ext.define('PVE.window.Migrate', {
 				    migration.possible = false;
 				    migration.preconditions.push({
 					text: "Can't migrate VM with local CD/DVD",
-					severity: 'error'
+					severity: 'error',
 				    });
 				}
 			    } else {
@@ -272,7 +272,7 @@ Ext.define('PVE.window.Migrate', {
 				migration.preconditions.push({
 				    text: Ext.String.format('Migration with local disk might take long: {0} {1}',
 				          disk.volid, size_string),
-				    severity: 'warning'
+				    severity: 'warning',
 				});
 			    }
 			});
@@ -281,7 +281,7 @@ Ext.define('PVE.window.Migrate', {
 
 		    vm.set('migration', migration);
 
-		}
+		},
 	    });
 	},
 	checkLxcPreconditions: function(resetMigrationPossible) {
@@ -290,7 +290,7 @@ Ext.define('PVE.window.Migrate', {
 	    if (vm.get('running')) {
 		vm.set('migration.mode', 'restart');
 	    }
-	}
+	},
 
 
     },
@@ -299,7 +299,7 @@ Ext.define('PVE.window.Migrate', {
     modal: true,
     layout: {
 	type: 'vbox',
-	align: 'stretch'
+	align: 'stretch',
     },
     border: false,
     items: [
@@ -318,17 +318,17 @@ Ext.define('PVE.window.Migrate', {
 			name: 'source',
 			fieldLabel: gettext('Source node'),
 			bind: {
-			    value: '{nodename}'
-			}
+			    value: '{nodename}',
+			},
 		    },
 		    {
 			xtype: 'displayfield',
 			reference: 'migrationMode',
 			fieldLabel: gettext('Mode'),
 			bind: {
-			    value: '{setMigrationMode}'
-			}
-		    }]
+			    value: '{setMigrationMode}',
+			},
+		    }],
 		},
 		{
 		    xtype: 'container',
@@ -342,8 +342,8 @@ Ext.define('PVE.window.Migrate', {
 			disallowedNodes: undefined,
 			onlineValidator: true,
 			listeners: {
-			    change: 'onTargetChange'
-			}
+			    change: 'onTargetChange',
+			},
 		    },
 		    {
 			    xtype: 'pveStorageSelector',
@@ -355,8 +355,8 @@ Ext.define('PVE.window.Migrate', {
 			    autoSelect: false,
 			    emptyText: gettext('Current layout'),
 			    bind: {
-				hidden: '{setStorageselectorHidden}'
-			    }
+				hidden: '{setStorageselectorHidden}',
+			    },
 		    },
 		    {
 			xtype: 'proxmoxcheckbox',
@@ -364,18 +364,18 @@ Ext.define('PVE.window.Migrate', {
 			fieldLabel: gettext('Force'),
 			autoEl: {
 			    tag: 'div',
-			    'data-qtip': 'Overwrite local resources unavailable check'
+			    'data-qtip': 'Overwrite local resources unavailable check',
 			},
 			bind: {
 			    hidden: '{setLocalResourceCheckboxHidden}',
-			    value: '{migration.overwriteLocalResourceCheck}'
+			    value: '{migration.overwriteLocalResourceCheck}',
 			},
 			listeners: {
-			    change: {fn: 'checkMigratePreconditions', extraArg: true}
-			}
-		}]
-		}
-	    ]
+			    change: {fn: 'checkMigratePreconditions', extraArg: true},
+			},
+		}],
+		},
+	    ],
 	},
 	{
 	    xtype: 'gridpanel',
@@ -395,13 +395,13 @@ Ext.define('PVE.window.Migrate', {
 			    return v;
 		    }
 		},
-		width: 35
+		width: 35,
 	    },
 	    {
 		text: 'Info',
 		dataIndex: 'text',
 		cellWrap: true,
-		flex: 1
+		flex: 1,
 	    }],
 	    bind: {
 		hidden: '{!migration.preconditions.length}',
@@ -409,9 +409,9 @@ Ext.define('PVE.window.Migrate', {
 		    fields: ['severity', 'text'],
 		    data: '{migration.preconditions}',
 		    sorters: 'text',
-		}
-	    }
-	}
+		},
+	    },
+	},
 
     ],
     buttons: [
@@ -420,7 +420,7 @@ Ext.define('PVE.window.Migrate', {
 	    reference: 'proxmoxHelpButton',
 	    onlineHelp: 'pct_migration',
 	    listenToGlobalEvent: false,
-	    hidden: false
+	    hidden: false,
 	},
 	'->',
 	{
@@ -429,8 +429,8 @@ Ext.define('PVE.window.Migrate', {
 	    text: gettext('Migrate'),
 	    handler: 'startMigration',
 	    bind: {
-		disabled: '{!migration.possible}'
-	    }
-	}
-    ]
+		disabled: '{!migration.possible}',
+	    },
+	},
+    ],
 });

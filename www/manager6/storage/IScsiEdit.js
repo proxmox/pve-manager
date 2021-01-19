@@ -8,7 +8,7 @@ Ext.define('PVE.storage.IScsiScan', {
     matchFieldWidth: false,
     listConfig: {
 	loadingText: gettext('Scanning...'),
-	width: 350
+	width: 350,
     },
     doRawQuery: function() {
     },
@@ -42,18 +42,18 @@ Ext.define('PVE.storage.IScsiScan', {
 	    fields: [ 'target', 'portal' ],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/iscsi'
-	    }
+		url: '/api2/json/nodes/' + me.nodename + '/scan/iscsi',
+	    },
 	});
 
 	store.sort('target', 'ASC');
 
 	Ext.apply(me, {
-	    store: store
+	    store: store,
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.storage.IScsiInputPanel', {
@@ -92,8 +92,8 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 			    exportField.setPortal(value);
 			    exportField.setValue('');
 			}
-		    }
-		}
+		    },
+		},
 	    },
 	    {
 		readOnly: !me.isCreate,
@@ -101,8 +101,8 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		name: 'target',
 		value: '',
 		fieldLabel: 'Target',
-		allowBlank: false
-	    }
+		allowBlank: false,
+	    },
 	];
 
 	me.column2 = [
@@ -110,10 +110,10 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		xtype: 'checkbox',
 		name: 'luns',
 		checked: true,
-		fieldLabel: gettext('Use LUNs directly')
-	    }
+		fieldLabel: gettext('Use LUNs directly'),
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

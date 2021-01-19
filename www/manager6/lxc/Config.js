@@ -28,7 +28,7 @@ Ext.define('PVE.lxc.Config', {
 
 	me.statusStore = Ext.create('Proxmox.data.ObjectStore', {
 	    url: '/api2/json' + base_url + '/status/current',
-	    interval: 1000
+	    interval: 1000,
 	});
 
 	var vm_command = function(cmd, params) {
@@ -39,7 +39,7 @@ Ext.define('PVE.lxc.Config', {
 		method: 'POST',
 		failure: function(response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
-		}
+		},
 	    });
 	};
 
@@ -50,7 +50,7 @@ Ext.define('PVE.lxc.Config', {
 	    handler: function() {
 		vm_command('start');
 	    },
-	    iconCls: 'fa fa-play'
+	    iconCls: 'fa fa-play',
 	});
 
 	var shutdownBtn = Ext.create('PVE.button.Split', {
@@ -70,7 +70,7 @@ Ext.define('PVE.lxc.Config', {
 		    handler: function() {
 			vm_command("reboot");
 		    },
-		    iconCls: 'fa fa-refresh'
+		    iconCls: 'fa fa-refresh',
 		},
 		{
 		    text: gettext('Stop'),
@@ -81,10 +81,10 @@ Ext.define('PVE.lxc.Config', {
 		    handler: function() {
 			vm_command("stop");
 		    },
-		    iconCls: 'fa fa-stop'
-		}]
+		    iconCls: 'fa fa-stop',
+		}],
 	    },
-	    iconCls: 'fa fa-power-off'
+	    iconCls: 'fa fa-power-off',
 	});
 
 	var migrateBtn = Ext.create('Ext.Button', {
@@ -95,11 +95,11 @@ Ext.define('PVE.lxc.Config', {
 		var win = Ext.create('PVE.window.Migrate', {
 		    vmtype: 'lxc',
 		    nodename: nodename,
-		    vmid: vmid
+		    vmid: vmid,
 		});
 		win.show();
 	    },
-	    iconCls: 'fa fa-send-o'
+	    iconCls: 'fa fa-send-o',
 	});
 
 	var moreBtn = Ext.create('Proxmox.button.Button', {
@@ -111,7 +111,7 @@ Ext.define('PVE.lxc.Config', {
 		    hidden: caps.vms['VM.Clone'] ? false : true,
 		    handler: function() {
 			PVE.window.Clone.wrap(nodename, vmid, template, 'lxc');
-		    }
+		    },
 		},
 		{
 		    text: gettext('Convert to template'),
@@ -127,9 +127,9 @@ Ext.define('PVE.lxc.Config', {
 			    method: 'POST',
 			    failure: function(response, opts) {
 				Ext.Msg.alert('Error', response.htmlStatus);
-			    }
+			    },
 			});
-		    }
+		    },
 		},
 		{
 		    iconCls: 'fa fa-heartbeat ',
@@ -140,9 +140,9 @@ Ext.define('PVE.lxc.Config', {
 			Ext.create('PVE.ha.VMResourceEdit', {
 			    vmid: vmid,
 			    guestType: 'ct',
-			    isCreate: (!ha || ha === 'unmanaged')
+			    isCreate: (!ha || ha === 'unmanaged'),
 			}).show();
-		    }
+		    },
 		},
 		{
 		    text: gettext('Remove'),
@@ -151,12 +151,12 @@ Ext.define('PVE.lxc.Config', {
 		    handler: function() {
 			Ext.create('PVE.window.SafeDestroy', {
 			    url: base_url,
-			    item: { type: 'CT', id: vmid }
+			    item: { type: 'CT', id: vmid },
 			}).show();
 		    },
-		    iconCls: 'fa fa-trash-o'
-		}
-	    ]}
+		    iconCls: 'fa fa-trash-o',
+		},
+	    ]},
 	});
 
 	var consoleBtn = Ext.create('PVE.button.ConsoleButton', {
@@ -165,18 +165,18 @@ Ext.define('PVE.lxc.Config', {
 	    consoleName: vm.name,
 	    hidden: template,
 	    nodename: nodename,
-	    vmid: vmid
+	    vmid: vmid,
 	});
 
 	var statusTxt = Ext.create('Ext.toolbar.TextItem', {
 	    data: {
-		lock: undefined
+		lock: undefined,
 	    },
 	    tpl: [
 		'<tpl if="lock">',
 		'<i class="fa fa-lg fa-lock"></i> ({lock})',
-		'</tpl>'
-	    ]
+		'</tpl>',
+	    ],
 	});
 
 
@@ -191,9 +191,9 @@ Ext.define('PVE.lxc.Config', {
 		    title: gettext('Summary'),
 		    xtype: 'pveGuestSummary',
 		    iconCls: 'fa fa-book',
-		    itemId: 'summary'
-		}
-	    ]
+		    itemId: 'summary',
+		},
+	    ],
 	});
 
 	if (caps.vms['VM.Console'] && !template) {
@@ -206,8 +206,8 @@ Ext.define('PVE.lxc.Config', {
 		    vmid: vmid,
 		    consoleType: 'lxc',
 		    xtermjs: true,
-		    nodename: nodename
-		}
+		    nodename: nodename,
+		},
 	    );
 	}
 
@@ -217,25 +217,25 @@ Ext.define('PVE.lxc.Config', {
 		itemId: 'resources',
 		expandedOnInit: true,
 		iconCls: 'fa fa-cube',
-		xtype: 'pveLxcRessourceView'
+		xtype: 'pveLxcRessourceView',
 	    },
 	    {
 		title: gettext('Network'),
 		iconCls: 'fa fa-exchange',
 		itemId: 'network',
-		xtype: 'pveLxcNetworkView'
+		xtype: 'pveLxcNetworkView',
 	    },
 	    {
 		title: gettext('DNS'),
 		iconCls: 'fa fa-globe',
 		itemId: 'dns',
-		xtype: 'pveLxcDNS'
+		xtype: 'pveLxcDNS',
 	    },
 	    {
 		title: gettext('Options'),
 		itemId: 'options',
 		iconCls: 'fa fa-gear',
-		xtype: 'pveLxcOptions'
+		xtype: 'pveLxcOptions',
 	    },
 	    {
 		title: gettext('Task History'),
@@ -243,8 +243,8 @@ Ext.define('PVE.lxc.Config', {
 		iconCls: 'fa fa-list',
 		xtype: 'proxmoxNodeTasks',
 		nodename: nodename,
-		vmidFilter: vmid
-	    }
+		vmidFilter: vmid,
+	    },
 	);
 
 	if (caps.vms['VM.Backup']) {
@@ -252,13 +252,13 @@ Ext.define('PVE.lxc.Config', {
 		title: gettext('Backup'),
 		iconCls: 'fa fa-floppy-o',
 		xtype: 'pveBackupView',
-		itemId: 'backup'
+		itemId: 'backup',
 	    },
 	    {
 		title: gettext('Replication'),
 		iconCls: 'fa fa-retweet',
 		xtype: 'pveReplicaView',
-		itemId: 'replication'
+		itemId: 'replication',
 	    });
 	}
 
@@ -269,7 +269,7 @@ Ext.define('PVE.lxc.Config', {
 		iconCls: 'fa fa-history',
 		xtype: 'pveGuestSnapshotTree',
 		type: 'lxc',
-		itemId: 'snapshot'
+		itemId: 'snapshot',
 	    });
 	}
 
@@ -282,7 +282,7 @@ Ext.define('PVE.lxc.Config', {
 		    allow_iface: true,
 		    base_url: base_url + '/firewall/rules',
 		    list_refs_url: base_url + '/firewall/refs',
-		    itemId: 'firewall'
+		    itemId: 'firewall',
 		},
 		{
 		    xtype: 'pveFirewallOptions',
@@ -292,7 +292,7 @@ Ext.define('PVE.lxc.Config', {
 		    title: gettext('Options'),
 		    base_url: base_url + '/firewall/options',
 		    fwtype: 'vm',
-		    itemId: 'firewall-options'
+		    itemId: 'firewall-options',
 		},
 		{
 		    xtype: 'pveFirewallAliases',
@@ -300,7 +300,7 @@ Ext.define('PVE.lxc.Config', {
 		    groups: ['firewall'],
 		    iconCls: 'fa fa-external-link',
 		    base_url: base_url + '/firewall/aliases',
-		    itemId: 'firewall-aliases'
+		    itemId: 'firewall-aliases',
 		},
 		{
 		    xtype: 'pveIPSet',
@@ -309,7 +309,7 @@ Ext.define('PVE.lxc.Config', {
 		    iconCls: 'fa fa-list-ol',
 		    base_url: base_url + '/firewall/ipset',
 		    list_refs_url: base_url + '/firewall/refs',
-		    itemId: 'firewall-ipset'
+		    itemId: 'firewall-ipset',
 		},
 		{
 		    title: gettext('Log'),
@@ -318,8 +318,8 @@ Ext.define('PVE.lxc.Config', {
 		    onlineHelp: 'chapter_pve_firewall',
 		    itemId: 'firewall-fwlog',
 		    xtype: 'proxmoxLogView',
-		    url: '/api2/extjs' + base_url + '/firewall/log'
-		}
+		    url: '/api2/extjs' + base_url + '/firewall/log',
+		},
 	    );
 	}
 
@@ -329,7 +329,7 @@ Ext.define('PVE.lxc.Config', {
 		title: gettext('Permissions'),
 		itemId: 'permissions',
 		iconCls: 'fa fa-unlock',
-		path: '/vms/' + vmid
+		path: '/vms/' + vmid,
 	    });
 	}
 
@@ -374,5 +374,5 @@ Ext.define('PVE.lxc.Config', {
 	me.on('destroy', function() {
 	    me.statusStore.stopUpdate();
 	});
-    }
+    },
 });

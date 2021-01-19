@@ -130,7 +130,7 @@ Ext.define('PVE.window.Wizard', {
 		    margins: '5 5 0 5',
 		    fieldDefaults: {
 			labelWidth: 100,
-			anchor: '100%'
+			anchor: '100%',
 		    },
 		    items: [{
 			itemId: 'wizcontent',
@@ -144,16 +144,16 @@ Ext.define('PVE.window.Wizard', {
 			    },
 			    tabchange: function(tp, newcard, oldcard) {
 				tabchange(tp, newcard, oldcard);
-			    }
+			    },
 			},
-			items: tabs
-		    }]
-		}
+			items: tabs,
+		    }],
+		},
 	    ],
 	    fbar: [
 		{
 		    xtype: 'proxmoxHelpButton',
-		    itemId: 'help'
+		    itemId: 'help',
 		},
 		'->',
 		{
@@ -169,8 +169,8 @@ Ext.define('PVE.window.Wizard', {
 			    });
 
 			    sp.set('proxmox-advanced-cb', val);
-			}
-		    }
+			},
+		    },
 		},
 		{
 		    text: gettext('Back'),
@@ -188,7 +188,7 @@ Ext.define('PVE.window.Wizard', {
 			if (ntab) {
 			    tp.setActiveTab(ntab);
 			}
-		    }
+		    },
 		},
 		{
 		    text: gettext('Next'),
@@ -212,7 +212,7 @@ Ext.define('PVE.window.Wizard', {
 			    tp.setActiveTab(ntab);
 			}
 
-		    }
+		    },
 		},
 		{
 		    text: gettext('Finish'),
@@ -223,9 +223,9 @@ Ext.define('PVE.window.Wizard', {
 			var tp = me.down('#wizcontent');
 			var atab = tp.getActiveTab();
 			atab.onSubmit();
-		    }
-		}
-	    ]
+		    },
+		},
+	    ],
 	});
 	me.callParent();
 
@@ -264,5 +264,5 @@ Ext.define('PVE.window.Wizard', {
 	    field.on('change', validcheck);
 	    field.on('validitychange', validcheck);
 	});
-    }
+    },
 });

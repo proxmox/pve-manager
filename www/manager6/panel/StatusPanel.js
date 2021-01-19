@@ -26,20 +26,20 @@ Ext.define('PVE.panel.StatusPanel', {
 		    var atab = me.getActiveTab().itemId;
 		    var state = { value: atab };
 		    sp.set(stateid, state);
-		}
+		},
 	    },
 	    items: [
 		{
 		    itemId: 'tasks',
 		    title: gettext('Tasks'),
-		    xtype: 'pveClusterTasks'
+		    xtype: 'pveClusterTasks',
 		},
 		{
 		    itemId: 'clog',
 		    title: gettext('Cluster log'),
-		    xtype: 'pveClusterLog'
-		}
-	    ]
+		    xtype: 'pveClusterLog',
+		},
+	    ],
 	});
 
 	me.callParent();
@@ -61,5 +61,5 @@ Ext.define('PVE.panel.StatusPanel', {
 	    sp.un('statechange', statechange);
 	});
 
-    }
+    },
 });

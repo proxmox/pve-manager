@@ -18,7 +18,7 @@ Ext.define('PVE.pool.AddVM', {
 	var vmsField = Ext.create('Ext.form.field.Text', {
 	    name: 'vms',
 	    hidden: true,
-	    allowBlank: false
+	    allowBlank: false,
 	});
 
 	var vmStore = Ext.create('Ext.data.Store', {
@@ -26,17 +26,17 @@ Ext.define('PVE.pool.AddVM', {
 	    sorters: [
 		{
 		    property: 'vmid',
-		    order: 'ASC'
-		}
+		    order: 'ASC',
+		},
 	    ],
 	    filters: [
 		function(item) {
 		    return ((item.data.type === 'lxc' || item.data.type === 'qemu') && item.data.pool === '');
-		}
-	    ]
+		},
+	    ],
 	});
 
-	var vmGrid = Ext.create('widget.grid',{
+	var vmGrid = Ext.create('widget.grid', {
 	    store: vmStore,
 	    border: true,
 	    height: 300,
@@ -51,18 +51,18 @@ Ext.define('PVE.pool.AddVM', {
 			    selectedVms.push(vm.data.vmid);
 			});
 			vmsField.setValue(selectedVms);
-		    }
-		}
+		    },
+		},
 	    },
 	    columns: [
 		{
 		    header: 'ID',
 		    dataIndex: 'vmid',
-		    width: 60
+		    width: 60,
 		},
 		{
 		    header: gettext('Node'),
-		    dataIndex: 'node'
+		    dataIndex: 'node',
 		},
 		{
 		    header: gettext('Status'),
@@ -73,27 +73,27 @@ Ext.define('PVE.pool.AddVM', {
 			} else {
 			    return Proxmox.Utils.stoppedText;
 			}
-		    }
+		    },
 		},
 		{
 		    header: gettext('Name'),
 		    dataIndex: 'name',
-		    flex: 1
+		    flex: 1,
 		},
 		{
 		    header: gettext('Type'),
-		    dataIndex: 'type'
-		}
-	    ]
+		    dataIndex: 'type',
+		},
+	    ],
 	});
 	Ext.apply(me, {
 	    subject: gettext('Virtual Machine'),
-	    items: [ vmsField, vmGrid ]
+	    items: [ vmsField, vmGrid ],
 	});
 
 	me.callParent();
 	vmStore.load();
-    }
+    },
 });
 
 Ext.define('PVE.pool.AddStorage', {
@@ -122,13 +122,13 @@ Ext.define('PVE.pool.AddStorage', {
 		    nodename: 'localhost',
 		    autoSelect: false,
 		    value:  '',
-		    fieldLabel: gettext("Storage")
-		}
-	    ]
+		    fieldLabel: gettext("Storage"),
+		},
+	    ],
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.grid.PoolMembers', {
@@ -152,14 +152,14 @@ Ext.define('PVE.grid.PoolMembers', {
 	    sorters: [
 		{
 		    property : 'type',
-		    direction: 'ASC'
-		}
+		    direction: 'ASC',
+		},
 	    ],
 	    proxy: {
 		type: 'proxmox',
 		root: 'data.members',
-		url: "/api2/json/pools/" + me.pool
-	    }
+		url: "/api2/json/pools/" + me.pool,
+	    },
 	});
 
 	var coldef = PVE.data.ResourceStore.defaultColumns();
@@ -198,9 +198,9 @@ Ext.define('PVE.grid.PoolMembers', {
 		    },
 		    failure: function (response, opts) {
 			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
+		    },
 		});
-	    }
+	    },
 	});
 
 	Ext.apply(me, {
@@ -218,7 +218,7 @@ Ext.define('PVE.grid.PoolMembers', {
 				    var win = Ext.create('PVE.pool.AddVM', { pool: me.pool });
 				    win.on('destroy', reload);
 				    win.show();
-				}
+				},
 			    },
 			    {
 				text: gettext('Storage'),
@@ -227,15 +227,15 @@ Ext.define('PVE.grid.PoolMembers', {
 				    var win = Ext.create('PVE.pool.AddStorage', { pool: me.pool });
 				    win.on('destroy', reload);
 				    win.show();
-				}
-			    }
-			]
-		    })
+				},
+			    },
+			],
+		    }),
 		},
-		remove_btn
+		remove_btn,
 	    ],
 	    viewConfig: {
-		stripeRows: true
+		stripeRows: true,
             },
             columns: coldef,
 	    listeners: {
@@ -244,10 +244,10 @@ Ext.define('PVE.grid.PoolMembers', {
 		    var ws = me.up('pveStdWorkspace');
 		    ws.selectById(record.data.id);
 		},
-		activate: reload
-	    }
+		activate: reload,
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });

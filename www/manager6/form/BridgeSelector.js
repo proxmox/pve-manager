@@ -10,9 +10,9 @@ Ext.define('PVE.form.BridgeSelector', {
 	sorters: [
 	    {
 		property : 'iface',
-		direction: 'ASC'
-	    }
-	]
+		direction: 'ASC',
+	    },
+	],
     },
     valueField: 'iface',
     displayField: 'iface',
@@ -22,21 +22,21 @@ Ext.define('PVE.form.BridgeSelector', {
 		header: gettext('Bridge'),
 		dataIndex: 'iface',
 		hideable: false,
-		width: 100
+		width: 100,
 	    },
 	    {
 		header: gettext('Active'),
 		width: 60,
 		dataIndex: 'active',
-		renderer: Proxmox.Utils.format_boolean
+		renderer: Proxmox.Utils.format_boolean,
 	    },
 	    {
 		header: gettext('Comment'),
 		dataIndex: 'comments',
 		renderer: Ext.String.htmlEncode,
-		flex: 1
-	    }
-	]
+		flex: 1,
+	    },
+	],
     },
 
     setNodename: function(nodename) {
@@ -51,7 +51,7 @@ Ext.define('PVE.form.BridgeSelector', {
 	me.store.setProxy({
 	    type: 'proxmox',
 	    url: '/api2/json/nodes/' + me.nodename + '/network?type=' +
-		me.bridgeType
+		me.bridgeType,
 	});
 
 	me.store.load();
@@ -66,6 +66,6 @@ Ext.define('PVE.form.BridgeSelector', {
         me.callParent();
 
 	me.setNodename(nodename);
-    }
+    },
 });
 

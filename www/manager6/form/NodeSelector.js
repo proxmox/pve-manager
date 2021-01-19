@@ -22,18 +22,18 @@ Ext.define('PVE.form.NodeSelector', {
 	    fields: [ 'node', 'cpu', 'maxcpu', 'mem', 'maxmem', 'uptime' ],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes'
+		url: '/api2/json/nodes',
 	    },
 	    sorters: [
 		{
 		    property : 'node',
-		    direction: 'ASC'
+		    direction: 'ASC',
 		},
 		{
 		    property : 'mem',
-		    direction: 'DESC'
-		}
-	    ]
+		    direction: 'DESC',
+		},
+	    ],
 	},
 
     listConfig: {
@@ -43,23 +43,23 @@ Ext.define('PVE.form.NodeSelector', {
 		dataIndex: 'node',
 		sortable: true,
 		hideable: false,
-		flex: 1
+		flex: 1,
 	    },
 	    {
 		header: gettext('Memory usage') + " %",
 		renderer: PVE.Utils.render_mem_usage_percent,
 		sortable: true,
 		width: 100,
-		dataIndex: 'mem'
+		dataIndex: 'mem',
 	    },
 	    {
 		header: gettext('CPU usage'),
 		renderer: PVE.Utils.render_cpu,
 		sortable: true,
 		width: 100,
-		dataIndex: 'cpu'
-	    }
-	]
+		dataIndex: 'cpu',
+	    },
+	],
     },
 
     validator: function(value) {
@@ -108,11 +108,11 @@ Ext.define('PVE.form.NodeSelector', {
 		} else {
 		    return true;
 		}
-	    }
+	    },
 	}));
 
 	me.mon(me.getStore(), 'load', function(){
 	    me.isValid();
 	});
-    }
+    },
 });

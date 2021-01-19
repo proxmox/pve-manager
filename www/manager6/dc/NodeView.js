@@ -11,13 +11,13 @@ Ext.define('PVE.dc.NodeView', {
 	    header: gettext('Name'),
 	    flex: 1,
 	    sortable: true,
-	    dataIndex: 'name'
+	    dataIndex: 'name',
 	},
 	{
 	    header: 'ID',
 	    width: 40,
 	    sortable: true,
-	    dataIndex: 'nodeid'
+	    dataIndex: 'nodeid',
 	},
 	{
 	    header: gettext('Online'),
@@ -27,20 +27,20 @@ Ext.define('PVE.dc.NodeView', {
 	    renderer: function(value) {
 		var cls = (value)?'good':'critical';
 		return  '<i class="fa ' + PVE.Utils.get_health_icon(cls) + '"><i/>';
-	    }
+	    },
 	},
 	{
 	    header: gettext('Support'),
 	    width: 100,
 	    sortable: true,
 	    dataIndex: 'level',
-	    renderer: PVE.Utils.render_support_level
+	    renderer: PVE.Utils.render_support_level,
 	},
 	{
 	    header: gettext('Server Address'),
 	    width: 115,
 	    sortable: true,
-	    dataIndex: 'ip'
+	    dataIndex: 'ip',
 	},
 	{
 	    header: gettext('CPU usage'),
@@ -50,8 +50,8 @@ Ext.define('PVE.dc.NodeView', {
 	    tdCls: 'x-progressbar-default-cell',
 	    xtype: 'widgetcolumn',
 	    widget: {
-		xtype: 'pveProgressBar'
-	    }
+		xtype: 'pveProgressBar',
+	    },
 	},
 	{
 	    header: gettext('Memory usage'),
@@ -61,16 +61,16 @@ Ext.define('PVE.dc.NodeView', {
 	    dataIndex: 'memoryusage',
 	    xtype: 'widgetcolumn',
 	    widget: {
-		xtype: 'pveProgressBar'
-	    }
+		xtype: 'pveProgressBar',
+	    },
 	},
 	{
 	    header: gettext('Uptime'),
 	    sortable: true,
 	    dataIndex: 'uptime',
 	    align: 'right',
-	    renderer: Proxmox.Utils.render_uptime
-	}
+	    renderer: Proxmox.Utils.render_uptime,
+	},
     ],
 
     stateful: true,
@@ -82,7 +82,7 @@ Ext.define('PVE.dc.NodeView', {
 		var me = this.up('grid');
 		var height = Math.max(me.getHeight()-50, 250);
 		me.setHeight(height);
-	    }
+	    },
 	},
 	{
 	    type: 'down',
@@ -90,26 +90,26 @@ Ext.define('PVE.dc.NodeView', {
 		var me = this.up('grid');
 		var height = me.getHeight()+50;
 		me.setHeight(height);
-	    }
-	}
-    ]
+	    },
+	},
+    ],
 }, function() {
 
     Ext.define('pve-dc-nodes', {
 	extend: 'Ext.data.Model',
 	fields: [ 'id', 'type', 'name', 'nodeid', 'ip', 'level', 'local', 'online'],
-	idProperty: 'id'
+	idProperty: 'id',
     });
 
 });
 
-Ext.define('PVE.widget.ProgressBar',{
+Ext.define('PVE.widget.ProgressBar', {
     extend: 'Ext.Progress',
     alias: 'widget.pveProgressBar',
 
     animate: true,
     textTpl: [
-	'{percent}%'
+	'{percent}%',
     ],
 
     setValue: function(value){
@@ -123,5 +123,5 @@ Ext.define('PVE.widget.ProgressBar',{
 	} else if (value > 0.59) {
 	    me.addCls('warning');
 	}
-    }
+    },
 });

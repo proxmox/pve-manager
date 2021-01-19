@@ -7,32 +7,32 @@ Ext.define('PVE.form.HotplugFeatureSelector', {
 
     defaults: {
 	name: 'hotplugCbGroup',
-	submitValue: false
+	submitValue: false,
     },
     items: [
 	{
 	    boxLabel: gettext('Disk'),
 	    inputValue: 'disk',
-	    checked: true
+	    checked: true,
 	},
 	{
 	    boxLabel: gettext('Network'),
 	    inputValue: 'network',
-	    checked: true
+	    checked: true,
 	},
 	{
 	    boxLabel: 'USB',
 	    inputValue: 'usb',
-	    checked: true
+	    checked: true,
 	},
 	{
 	    boxLabel: gettext('Memory'),
-	    inputValue: 'memory'
+	    inputValue: 'memory',
 	},
 	{
 	    boxLabel: gettext('CPU'),
-	    inputValue: 'cpu'
-	}
+	    inputValue: 'cpu',
+	},
     ],
 
     setValue: function(value) {
@@ -64,6 +64,6 @@ Ext.define('PVE.form.HotplugFeatureSelector', {
 	} else {
 	    return { 'hotplug': data.join(',') };
 	}
-    }
+    },
 
 });

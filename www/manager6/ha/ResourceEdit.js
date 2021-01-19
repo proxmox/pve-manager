@@ -27,7 +27,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    userCls: 'pmx-hint',
 	    value: 'Disabling the resource will stop the guest system. ' +
 	    'See the online help for details.',
-	    hidden: true
+	    hidden: true,
 	});
 
 	var fewVotesHint = Ext.createWidget({
@@ -35,7 +35,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    xtype: 'displayfield',
 	    userCls: 'pmx-hint',
 	    value: 'At least three quorum votes are recommended for reliable HA.',
-	    hidden: true
+	    hidden: true,
 	});
 
 	Proxmox.Utils.API2Request({
@@ -55,7 +55,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		if (votes < MIN_QUORUM_VOTES) {
 		    fewVotesHint.setVisible(true);
 		}
-	    }
+	    },
 	});
 
 	var vmidStore = (me.vmid) ? {} : {
@@ -65,13 +65,13 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    filters: [
 		{
 		    property: 'type',
-		    value: /lxc|qemu/
+		    value: /lxc|qemu/,
 		},
 		{
 		    property: 'hastate',
-		    value: /unmanaged/
-		}
-	    ]
+		    value: /unmanaged/,
+		},
+	    ],
 	};
 
 	// value is a string above, but a number below
@@ -83,7 +83,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		fieldLabel: (me.vmid && me.guestType === 'ct') ? 'CT' : 'VM',
 		value: me.vmid,
 		store: vmidStore,
-		validateExists: true
+		validateExists: true,
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
@@ -92,7 +92,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		value: 1,
 		minValue: 0,
 		maxValue: 10,
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
@@ -101,15 +101,15 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		value: 1,
 		minValue: 0,
 		maxValue: 10,
-		allowBlank: false
-	    }
+		allowBlank: false,
+	    },
 	];
 
 	me.column2 = [
 	    {
 		xtype: 'pveHAGroupSelector',
 		name: 'group',
-		fieldLabel: gettext('Group')
+		fieldLabel: gettext('Group'),
 	    },
 	    {
 		xtype: 'proxmoxKVComboBox',
@@ -120,7 +120,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		    ['started', 'started'],
 		    ['stopped', 'stopped'],
 		    ['ignored', 'ignored'],
-		    ['disabled', 'disabled']
+		    ['disabled', 'disabled'],
 		],
 		listeners: {
 		    'change': function(field, newValue) {
@@ -132,23 +132,23 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 				disabledHint.setVisible(false);
 			    }
 			}
-		    }
-		}
+		    },
+		},
 	    },
-	    disabledHint
+	    disabledHint,
 	];
 
 	me.columnB = [
 	    {
 		xtype: 'textfield',
 		name: 'comment',
-		fieldLabel: gettext('Comment')
+		fieldLabel: gettext('Comment'),
 	    },
-	    fewVotesHint
+	    fewVotesHint,
 	];
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.ha.VMResourceEdit', {
@@ -176,14 +176,14 @@ Ext.define('PVE.ha.VMResourceEdit', {
 	var ipanel = Ext.create('PVE.ha.VMResourceInputPanel', {
 	    isCreate: me.isCreate,
 	    vmid: me.vmid,
-	    guestType: me.guestType
+	    guestType: me.guestType,
 	});
 
 	Ext.apply(me, {
 	    subject: gettext('Resource') + ': ' + gettext('Container') +
 	    '/' + gettext('Virtual Machine'),
 	    isAdd: true,
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -203,8 +203,8 @@ Ext.define('PVE.ha.VMResourceEdit', {
 		    values.vmid = res[2];
 
 		    ipanel.setValues(values);
-		}
+		},
 	    });
 	}
-    }
+    },
 });

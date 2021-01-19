@@ -9,7 +9,7 @@ Ext.define('PVE.storage.NFSScan', {
     matchFieldWidth: false,
     listConfig: {
 	loadingText: gettext('Scanning...'),
-	width: 350
+	width: 350,
     },
     doRawQuery: function() {
     },
@@ -43,18 +43,18 @@ Ext.define('PVE.storage.NFSScan', {
 	    fields: [ 'path', 'options' ],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/nfs'
-	    }
+		url: '/api2/json/nodes/' + me.nodename + '/scan/nfs',
+	    },
 	});
 
 	store.sort('path', 'ASC');
 
 	Ext.apply(me, {
-	    store: store
+	    store: store,
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.storage.NFSInputPanel', {
@@ -123,15 +123,15 @@ Ext.define('PVE.storage.NFSInputPanel', {
 			    exportField.setServer(value);
 			    exportField.setValue('');
 			}
-		    }
-		}
+		    },
+		},
 	    },
 	    {
 		xtype: me.isCreate ? 'pveNFSScan' : 'displayfield',
 		name: 'export',
 		value: '',
 		fieldLabel: 'Export',
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'pveContentTypeSelector',
@@ -139,8 +139,8 @@ Ext.define('PVE.storage.NFSInputPanel', {
 		value: 'images',
 		multiSelect: true,
 		fieldLabel: gettext('Content'),
-		allowBlank: false
-	    }
+		allowBlank: false,
+	    },
 	];
 
 	me.advancedColumn1 = [
@@ -155,11 +155,11 @@ Ext.define('PVE.storage.NFSInputPanel', {
 			['3', '3'],
 			['4', '4'],
 			['4.1', '4.1'],
-			['4.2', '4.2']
-		]
-	    }
+			['4.2', '4.2'],
+		],
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

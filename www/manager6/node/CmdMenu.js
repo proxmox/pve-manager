@@ -12,10 +12,10 @@ Ext.define('PVE.node.CmdMenu', {
 	    handler: function() {
 		var me = this.up('menu');
 		var wiz = Ext.create('PVE.qemu.CreateWizard', {
-		    nodename: me.nodename
+		    nodename: me.nodename,
 		});
 		wiz.show();
-	    }
+	    },
 	},
 	{
 	    text: gettext('Create CT'),
@@ -24,10 +24,10 @@ Ext.define('PVE.node.CmdMenu', {
 	    handler: function() {
 		var me = this.up('menu');
 		var wiz = Ext.create('PVE.lxc.CreateWizard', {
-		    nodename: me.nodename
+		    nodename: me.nodename,
 		});
 		wiz.show();
-	    }
+	    },
 	},
 	{ xtype: 'menuseparator' },
 	{
@@ -40,10 +40,10 @@ Ext.define('PVE.node.CmdMenu', {
 		    nodename: me.nodename,
 		    title: gettext('Bulk Start'),
 		    btnText: gettext('Start'),
-		    action: 'startall'
+		    action: 'startall',
 		});
 		win.show();
-	    }
+	    },
 	},
 	{
 	    text: gettext('Bulk Stop'),
@@ -55,10 +55,10 @@ Ext.define('PVE.node.CmdMenu', {
 		    nodename: me.nodename,
 		    title: gettext('Bulk Stop'),
 		    btnText: gettext('Stop'),
-		    action: 'stopall'
+		    action: 'stopall',
 		});
 		win.show();
-	    }
+	    },
 	},
 	{
 	    text: gettext('Bulk Migrate'),
@@ -70,10 +70,10 @@ Ext.define('PVE.node.CmdMenu', {
 		    nodename: me.nodename,
 		    title: gettext('Bulk Migrate'),
 		    btnText: gettext('Migrate'),
-		    action: 'migrateall'
+		    action: 'migrateall',
 		});
 		win.show();
-	    }
+	    },
 	},
 	{ xtype: 'menuseparator' },
 	{
@@ -83,7 +83,7 @@ Ext.define('PVE.node.CmdMenu', {
 	    handler: function() {
 		var me = this.up('menu');
 		PVE.Utils.openDefaultConsoleWindow(true, 'shell', undefined, me.nodename, undefined);
-	    }
+	    },
 	},
 	{ xtype: 'menuseparator' },
 	{
@@ -103,12 +103,12 @@ Ext.define('PVE.node.CmdMenu', {
 			Ext.Msg.show({
 			    title: 'Success',
 			    icon: Ext.Msg.INFO,
-			    msg: Ext.String.format(gettext("Wake on LAN packet send for '{0}': '{1}'"), me.nodename, response.result.data)
+			    msg: Ext.String.format(gettext("Wake on LAN packet send for '{0}': '{1}'"), me.nodename, response.result.data),
 			});
-		    }
+		    },
 		});
-	    }
-	}
+	    },
+	},
     ],
 
     initComponent: function() {
@@ -142,5 +142,5 @@ Ext.define('PVE.node.CmdMenu', {
 	if (me.pveSelNode.data.running) {
 	    me.getComponent('wakeonlan').setDisabled(true);
 	}
-    }
+    },
 });

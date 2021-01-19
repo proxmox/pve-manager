@@ -25,7 +25,7 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
             maxLength: 8,
             value: me.zone || '',
             fieldLabel: 'ID',
-            allowBlank: false
+            allowBlank: false,
           },
 	  {
 	    xtype: 'proxmoxintegerfield',
@@ -33,14 +33,14 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 	    minValue: 1,
 	    maxValue: 16000000,
 	    fieldLabel: 'VRF-VXLAN Tag',
-	    allowBlank: false
+	    allowBlank: false,
 	  },
 	  {
 	    xtype: 'pveSDNControllerSelector',
 	    fieldLabel: gettext('Controller'),
 	    name: 'controller',
 	    value: '',
-	    allowBlank: false
+	    allowBlank: false,
 	  },
           {
             xtype: 'proxmoxintegerfield',
@@ -50,7 +50,7 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
             fieldLabel: 'MTU',
             skipEmptyText: true,
             allowBlank: true,
-            emptyText: 'auto'
+            emptyText: 'auto',
           },
           {
             xtype: 'pveNodeSelector',
@@ -58,11 +58,11 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
             fieldLabel: gettext('Nodes'),
             emptyText: gettext('All') + ' (' + gettext('No restrictions') +')',
             multiSelect: true,
-            autoSelect: false
+            autoSelect: false,
           },
 
 	];
 
 	me.callParent();
-    }
+    },
 });

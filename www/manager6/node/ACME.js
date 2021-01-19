@@ -26,7 +26,7 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 	    name: 'contact',
 	    vtype: 'email',
 	    allowBlank: false,
-	    fieldLabel: gettext('E-Mail')
+	    fieldLabel: gettext('E-Mail'),
 	},
 	{
 	    xtype: 'proxmoxComboGrid',
@@ -41,26 +41,26 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 		idProperty: ['name'],
 		proxy: {
 		    type: 'proxmox',
-		    url: '/api2/json/cluster/acme/directories'
+		    url: '/api2/json/cluster/acme/directories',
 		},
 		sorters: {
 		    property: 'name',
-		    order: 'ASC'
-		}
+		    order: 'ASC',
+		},
 	    },
 	    listConfig: {
 		columns: [
 		    {
 			header: gettext('Name'),
 			dataIndex: 'name',
-			flex: 1
+			flex: 1,
 		    },
 		    {
 			header: gettext('URL'),
 			dataIndex: 'url',
-			flex: 1
-		    }
-		]
+			flex: 1,
+		    },
+		],
 	    },
 	    listeners: {
 		change: function(combogrid, value) {
@@ -82,7 +82,7 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 			url: '/cluster/acme/tos',
 			method: 'GET',
 			params: {
-			    directory: value
+			    directory: value,
 			},
 			success: function(response, opt) {
 			    field.setValue(response.result.data);
@@ -91,21 +91,21 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 			},
 			failure: function(response, opt) {
 			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-			}
+			},
 		    });
-		}
-	    }
+		},
+	    },
 	},
 	{
 	    xtype: 'displayfield',
 	    itemId: 'tos_url_display',
 	    renderer: PVE.Utils.render_optional_url,
-	    name: 'tos_url_display'
+	    name: 'tos_url_display',
 	},
 	{
 	    xtype: 'hidden',
 	    itemId: 'tos_url',
-	    name: 'tos_url'
+	    name: 'tos_url',
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
@@ -117,9 +117,9 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 		    return true;
 		}
 		return false;
-	    }
+	    },
 	},
-    ]
+    ],
 
 });
 
@@ -128,7 +128,7 @@ Ext.define('PVE.node.ACMEAccountView', {
 
     width: 600,
     fieldDefaults: {
-	labelWidth: 140
+	labelWidth: 140,
     },
 
     title: gettext('Account'),
@@ -137,30 +137,30 @@ Ext.define('PVE.node.ACMEAccountView', {
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('E-Mail'),
-	    name: 'email'
+	    name: 'email',
 	},
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Created'),
-	    name: 'createdAt'
+	    name: 'createdAt',
 	},
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Status'),
-	    name: 'status'
+	    name: 'status',
 	},
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Directory'),
 	    renderer: PVE.Utils.render_optional_url,
-	    name: 'directory'
+	    name: 'directory',
 	},
 	{
 	    xtype: 'displayfield',
 	    fieldLabel: gettext('Terms of Services'),
 	    renderer: PVE.Utils.render_optional_url,
-	    name: 'tos'
-	}
+	    name: 'tos',
+	},
     ],
 
     initComponent: function() {
@@ -184,9 +184,9 @@ Ext.define('PVE.node.ACMEAccountView', {
 		data.createdAt = data.account.createdAt;
 		data.status = data.account.status;
 		me.setValues(data);
-	    }
+	    },
 	});
-    }
+    },
 });
 
 Ext.define('PVE.node.ACMEDomainEdit', {

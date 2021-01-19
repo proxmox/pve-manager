@@ -3,7 +3,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
     alias: 'widget.vmcpuflagselector',
 
     mixins: {
-	field: 'Ext.form.field.Field'
+	field: 'Ext.form.field.Field',
     },
 
     disableSelection: true,
@@ -32,13 +32,13 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 	    { flag: 'pdpe1gb', desc: 'Allow guest OS to use 1GB size pages, if host HW supports it' },
 	    { flag: 'hv-tlbflush', desc: 'Improve performance in overcommitted Windows guests. May lead to guest bluescreens on old CPUs.' },
 	    { flag: 'hv-evmcs', desc: 'Improve performance for nested virtualization. Only supported on Intel CPUs.' },
-	    { flag: 'aes', desc: 'Activate AES instruction set for HW acceleration.' }
+	    { flag: 'aes', desc: 'Activate AES instruction set for HW acceleration.' },
 	],
 	listeners: {
 	    update: function() {
 		this.commitChanges();
-	    }
-	}
+	    },
+	},
     },
 
     getValue: function() {
@@ -105,7 +105,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 		    default: return 'Unknown';
 		}
 	    },
-	    width: 65
+	    width: 65,
 	},
 	{
 	    xtype: 'widgetcolumn',
@@ -131,34 +131,34 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 			view.dirty = view.getValue() !== view.originalValue;
 			view.checkDirty();
 			//view.checkChange();
-		    }
+		    },
 		},
 		items: [
 		    {
 			boxLabel: '-',
 			boxLabelAlign: 'before',
-			inputValue: '-'
+			inputValue: '-',
 		    },
 		    {
 			checked: true,
-			inputValue: '='
+			inputValue: '=',
 		    },
 		    {
 			boxLabel: '+',
-			inputValue: '+'
-		    }
-		]
-	    }
+			inputValue: '+',
+		    },
+		],
+	    },
 	},
 	{
 	    dataIndex: 'flag',
-	    width: 100
+	    width: 100,
 	},
 	{
 	    dataIndex: 'desc',
 	    cellWrap: true,
-	    flex: 1
-	}
+	    flex: 1,
+	},
     ],
 
     initComponent: function() {
@@ -172,5 +172,5 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 	me.value = me.originalValue = '';
 
 	me.callParent(arguments);
-    }
+    },
 });

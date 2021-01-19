@@ -32,26 +32,26 @@ Ext.define('PVE.panel.StartupInputPanel', {
 		name: 'order',
 		defaultValue: '',
 		emptyText: 'any',
-		fieldLabel: gettext('Start/Shutdown order')
+		fieldLabel: gettext('Start/Shutdown order'),
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'up',
 		defaultValue: '',
 		emptyText: 'default',
-		fieldLabel: gettext('Startup delay')
+		fieldLabel: gettext('Startup delay'),
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'down',
 		defaultValue: '',
 		emptyText: 'default',
-		fieldLabel: gettext('Shutdown timeout')
-	    }
+		fieldLabel: gettext('Shutdown timeout'),
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.window.StartupEdit', {
@@ -68,9 +68,9 @@ Ext.define('PVE.window.StartupEdit', {
 	Ext.applyIf(me, {
 	    subject: gettext('Start/Shutdown order'),
 	    fieldDefaults: {
-		labelWidth: 120
+		labelWidth: 120,
 	    },
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -80,7 +80,7 @@ Ext.define('PVE.window.StartupEdit', {
 		var i, confid;
 		me.vmconfig = response.result.data;
 		ipanel.setStartup(me.vmconfig.startup);
-	    }
+	    },
 	});
-    }
+    },
 });

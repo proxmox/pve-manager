@@ -5,6 +5,6 @@ Ext.define('PVE.form.Boolean', {
     comboItems: [
 	['__default__', gettext('Default')],
 	[1, gettext('Yes')],
-	[0, gettext('No')]
-    ]
+	[0, gettext('No')],
+    ],
 });

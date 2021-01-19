@@ -3,14 +3,14 @@ Ext.define('PVE.form.MDevSelector', {
     xtype: 'pveMDevSelector',
 
     store: {
-	fields: [ 'type','available', 'description' ],
+	fields: [ 'type', 'available', 'description' ],
 	filterOnLoad: true,
 	sorters: [
 	    {
 		property : 'type',
-		direction: 'ASC'
-	    }
-	]
+		direction: 'ASC',
+	    },
+	],
     },
     autoSelect: false,
     valueField: 'type',
@@ -20,12 +20,12 @@ Ext.define('PVE.form.MDevSelector', {
 	    {
 		header: gettext('Type'),
 		dataIndex: 'type',
-		flex: 1
+		flex: 1,
 	    },
 	    {
 		header: gettext('Available'),
 		dataIndex: 'available',
-		width: 80
+		width: 80,
 	    },
 	    {
 		header: gettext('Description'),
@@ -37,9 +37,9 @@ Ext.define('PVE.form.MDevSelector', {
 		    }
 
 		    return value.split('\n').join('<br>');
-		}
-	    }
-	]
+		},
+	    },
+	],
     },
 
     setPciID: function(pciid, force) {
@@ -69,7 +69,7 @@ Ext.define('PVE.form.MDevSelector', {
 	var me = this;
 	me.store.setProxy({
 	    type: 'proxmox',
-	    url: '/api2/json/nodes/' + me.nodename + '/hardware/pci/' + me.pciid + '/mdev'
+	    url: '/api2/json/nodes/' + me.nodename + '/hardware/pci/' + me.pciid + '/mdev',
 	});
 	me.store.load();
     },
@@ -86,6 +86,6 @@ Ext.define('PVE.form.MDevSelector', {
 	if (me.pciid) {
 	    me.setPciID(me.pciid, true);
 	}
-    }
+    },
 });
 

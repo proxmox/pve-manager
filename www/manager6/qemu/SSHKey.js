@@ -24,7 +24,7 @@ Ext.define('PVE.qemu.SSHKeyInputPanel', {
 	    xtype: 'textarea',
 	    itemId: 'sshkeys',
 	    name: 'sshkeys',
-	    height: 250
+	    height: 250,
 	},
 	{
 	    xtype: 'filebutton',
@@ -44,9 +44,9 @@ Ext.define('PVE.qemu.SSHKeyInputPanel', {
 			});
 		    });
 		    btn.reset();
-		}
-	    }
-	}
+		},
+	    },
+	},
     ],
 
     initComponent: function() {
@@ -57,7 +57,7 @@ Ext.define('PVE.qemu.SSHKeyInputPanel', {
 	    me.down('#filebutton').setVisible(false);
 	}
 
-    }
+    },
 });
 
 Ext.define('PVE.qemu.SSHKeyEdit', {
@@ -72,7 +72,7 @@ Ext.define('PVE.qemu.SSHKeyEdit', {
 
 	Ext.apply(me, {
 	    subject: gettext('SSH Keys'),
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -85,8 +85,8 @@ Ext.define('PVE.qemu.SSHKeyEdit', {
 			data.sshkeys = decodeURIComponent(data.sshkeys);
 			ipanel.setValues(data);
 		    }
-		}
+		},
 	    });
 	}
-    }
+    },
 });

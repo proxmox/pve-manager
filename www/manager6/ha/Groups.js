@@ -16,8 +16,8 @@ Ext.define('PVE.ha.GroupsView', {
 	    model: 'pve-ha-groups',
 	    sorters: {
 		property: 'group',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
 	var reload = function() {
@@ -29,8 +29,8 @@ Ext.define('PVE.ha.GroupsView', {
 	var run_editor = function() {
 	    var rec = sm.getSelection()[0];
 
-            var win = Ext.create('PVE.ha.GroupEdit',{
-                groupId: rec.data.group
+            var win = Ext.create('PVE.ha.GroupEdit', {
+                groupId: rec.data.group,
             });
             win.on('destroy', reload);
             win.show();
@@ -41,67 +41,67 @@ Ext.define('PVE.ha.GroupsView', {
 	    baseurl: '/cluster/ha/groups/',
 	    callback: function() {
 		reload();
-	    }
+	    },
 	});
 
 	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
 	    viewConfig: {
-		trackOver: false
+		trackOver: false,
 	    },
 	    tbar: [
 		{
 		    text: gettext('Create'),
 		    disabled: !caps.nodes['Sys.Console'],
 		    handler: function() {
-			var win = Ext.create('PVE.ha.GroupEdit',{});
+			var win = Ext.create('PVE.ha.GroupEdit', {});
 			win.on('destroy', reload);
 			win.show();
-		    }
+		    },
 		},
-		edit_btn, remove_btn
+		edit_btn, remove_btn,
 	    ],
 	    columns: [
 		{
 		    header: gettext('Group'),
 		    width: 150,
 		    sortable: true,
-		    dataIndex: 'group'
+		    dataIndex: 'group',
 		},
 		{
 		    header: 'restricted',
 		    width: 100,
 		    sortable: true,
 		    renderer: Proxmox.Utils.format_boolean,
-		    dataIndex: 'restricted'
+		    dataIndex: 'restricted',
 		},
 		{
 		    header: 'nofailback',
 		    width: 100,
 		    sortable: true,
 		    renderer: Proxmox.Utils.format_boolean,
-		    dataIndex: 'nofailback'
+		    dataIndex: 'nofailback',
 		},
 		{
 		    header: gettext('Nodes'),
 		    flex: 1,
 		    sortable: false,
-		    dataIndex: 'nodes'
+		    dataIndex: 'nodes',
 		},
 		{
 		    header: gettext('Comment'),
 		    flex: 1,
 		    renderer: Ext.String.htmlEncode,
-		    dataIndex: 'comment'
-		}
+		    dataIndex: 'comment',
+		},
 	    ],
 	    listeners: {
 		activate: reload,
@@ -110,10 +110,10 @@ Ext.define('PVE.ha.GroupsView', {
 			return false;
 		    }
 		},
-		itemdblclick: run_editor
-	    }
+		itemdblclick: run_editor,
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });

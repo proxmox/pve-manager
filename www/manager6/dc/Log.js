@@ -15,13 +15,13 @@ Ext.define('PVE.dc.Log', {
 	    model: 'proxmox-cluster-log',
 	    proxy: {
                 type: 'proxmox',
-		url: '/api2/json/cluster/log'
-	    }
+		url: '/api2/json/cluster/log',
+	    },
 	});
 
 	var store = Ext.create('Proxmox.data.DiffStore', {
 	    rstore: logstore,
-	    appendAtStart: true
+	    appendAtStart: true,
 	});
 
 	Ext.apply(me, {
@@ -38,7 +38,7 @@ Ext.define('PVE.dc.Log', {
 		    if (pri && pri <= 3) {
 			return "proxmox-invalid-row";
 		    }
-		}
+		},
 	    },
 	    sortableColumns: false,
 	    columns: [
@@ -48,49 +48,49 @@ Ext.define('PVE.dc.Log', {
 		    width: 150,
 		    renderer: function(value) {
 			return Ext.Date.format(value, "M d H:i:s");
-		    }
+		    },
 		},
 		{
 		    header: gettext("Node"),
 		    dataIndex: 'node',
-		    width: 150
+		    width: 150,
 		},
 		{
 		    header: gettext("Service"),
 		    dataIndex: 'tag',
-		    width: 100
+		    width: 100,
 		},
 		{
 		    header: "PID",
 		    dataIndex: 'pid',
-		    width: 100
+		    width: 100,
 		},
 		{
 		    header: gettext("User name"),
 		    dataIndex: 'user',
 		    renderer: Ext.String.htmlEncode,
-		    width: 150
+		    width: 150,
 		},
 		{
 		    header: gettext("Severity"),
 		    dataIndex: 'pri',
 		    renderer: PVE.Utils.render_serverity,
-		    width: 100
+		    width: 100,
 		},
 		{
 		    header: gettext("Message"),
 		    dataIndex: 'msg',
 		    renderer: Ext.String.htmlEncode,
-		    flex: 1
-		}
+		    flex: 1,
+		},
 	    ],
 	    listeners: {
 		activate: () => logstore.startUpdate(),
 		deactivate: () => logstore.stopUpdate(),
 		destroy: () => logstore.stopUpdate(),
-	    }
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });

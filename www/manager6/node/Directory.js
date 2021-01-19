@@ -27,36 +27,36 @@ Ext.define('PVE.node.CreateDirectory', {
 		    nodename: me.nodename,
 		    diskType: 'unused',
 		    fieldLabel: gettext('Disk'),
-		    allowBlank: false
+		    allowBlank: false,
 		},
 		{
 		    xtype: 'proxmoxKVComboBox',
 		    comboItems: [
 			['ext4', 'ext4'],
-			['xfs', 'xfs']
+			['xfs', 'xfs'],
 		    ],
 		    fieldLabel: gettext('Filesystem'),
 		    name: 'filesystem',
 		    value: '',
-		    allowBlank: false
+		    allowBlank: false,
 		},
 		{
 		    xtype: 'proxmoxtextfield',
 		    name: 'name',
 		    fieldLabel: gettext('Name'),
-		    allowBlank: false
+		    allowBlank: false,
 		},
 		{
 		    xtype: 'proxmoxcheckbox',
 		    name: 'add_storage',
 		    fieldLabel: gettext('Add Storage'),
-		    value: '1'
-		}
-            ]
+		    value: '1',
+		},
+            ],
         });
 
         me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.node.Directorylist', {
@@ -69,28 +69,28 @@ Ext.define('PVE.node.Directorylist', {
 	{
 	    text: gettext('Path'),
 	    dataIndex: 'path',
-	    flex: 1
+	    flex: 1,
 	},
 	{
 	    header: gettext('Device'),
 	    flex: 1,
-	    dataIndex: 'device'
+	    dataIndex: 'device',
 	},
 	{
 	    header: gettext('Type'),
 	    width: 100,
-	    dataIndex: 'type'
+	    dataIndex: 'type',
 	},
 	{
 	    header: gettext('Options'),
 	    width: 100,
-	    dataIndex: 'options'
+	    dataIndex: 'options',
 	},
 	{
 	    header: gettext('Unit File'),
 	    hidden: true,
-	    dataIndex: 'unitfile'
-	}
+	    dataIndex: 'unitfile',
+	},
     ],
 
     rootVisible: false,
@@ -103,18 +103,18 @@ Ext.define('PVE.node.Directorylist', {
 	    handler: function() {
 		var me = this.up('panel');
 		me.reload();
-	    }
+	    },
 	},
 	{
 	    text: gettext('Create') + ': Directory',
 	    handler: function() {
 		var me = this.up('panel');
 		var win = Ext.create('PVE.node.CreateDirectory', {
-		    nodename: me.nodename
+		    nodename: me.nodename,
 		}).show();
 		win.on('destroy', function() { me.reload(); });
-	    }
-	}
+	    },
+	},
     ],
 
     reload: function() {
@@ -127,7 +127,7 @@ Ext.define('PVE.node.Directorylist', {
 	activate: function() {
 	    var me = this;
 	    me.reload();
-	}
+	},
     },
 
     initComponent: function() {
@@ -143,16 +143,16 @@ Ext.define('PVE.node.Directorylist', {
 		fields: ['path', 'device', 'type', 'options', 'unitfile' ],
 		proxy: {
 		    type: 'proxmox',
-		    url: "/api2/json/nodes/" + me.nodename + '/disks/directory'
+		    url: "/api2/json/nodes/" + me.nodename + '/disks/directory',
 		},
-		sorters: 'path'
-	    }
+		sorters: 'path',
+	    },
 	});
 
 	me.callParent();
 
 	Proxmox.Utils.monStoreErrors(me, me.getStore(), true);
 	me.reload();
-    }
+    },
 });
 

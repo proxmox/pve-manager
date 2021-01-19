@@ -2,21 +2,21 @@ Ext.define('pve-cluster-nodes', {
     extend: 'Ext.data.Model',
     fields: [
 	'node', { type: 'integer', name: 'nodeid' }, 'ring0_addr', 'ring1_addr',
-	{ type: 'integer', name: 'quorum_votes' }
+	{ type: 'integer', name: 'quorum_votes' },
     ],
     proxy: {
         type: 'proxmox',
-	url: "/api2/json/cluster/config/nodes"
+	url: "/api2/json/cluster/config/nodes",
     },
-    idProperty: 'nodeid'
+    idProperty: 'nodeid',
 });
 
 Ext.define('pve-cluster-info', {
     extend: 'Ext.data.Model',
     proxy: {
         type: 'proxmox',
-	url: "/api2/json/cluster/config/join"
-    }
+	url: "/api2/json/cluster/config/join",
+    },
 });
 
 Ext.define('PVE.ClusterAdministration', {
@@ -37,11 +37,11 @@ Ext.define('PVE.ClusterAdministration', {
 	    preferred_node: {
 		name: '',
 		fp: '',
-		addr: ''
+		addr: '',
 	    },
 	    isInCluster: false,
-	    nodecount: 0
-	}
+	    nodecount: 0,
+	},
     },
 
     items: [
@@ -56,7 +56,7 @@ Ext.define('PVE.ClusterAdministration', {
 			autoStart: true,
 			interval: 15 * 1000,
 			storeid: 'pve-cluster-info',
-			model: 'pve-cluster-info'
+			model: 'pve-cluster-info',
 		    });
 		    view.store.on('load', this.onLoad, this);
 		    view.on('destroy', view.store.stopUpdate);
@@ -71,7 +71,7 @@ Ext.define('PVE.ClusterAdministration', {
 			vm.set('preferred_node', {
 			    name: '',
 			    addr: '',
-			    fp: ''
+			    fp: '',
 			});
 			return;
 		    }
@@ -96,7 +96,7 @@ Ext.define('PVE.ClusterAdministration', {
 			addr: nodeinfo.pve_addr,
 			peerLinks: links,
 			ring_addr: ring_addr,
-			fp: nodeinfo.pve_fp
+			fp: nodeinfo.pve_fp,
 		    });
 		},
 
@@ -108,8 +108,8 @@ Ext.define('PVE.ClusterAdministration', {
 			listeners: {
 			    destroy: function() {
 				view.store.startUpdate();
-			    }
-			}
+			    },
+			},
 		    });
 		},
 
@@ -121,8 +121,8 @@ Ext.define('PVE.ClusterAdministration', {
 			    fingerprint: vm.get('preferred_node.fp'),
 			    peerLinks: vm.get('preferred_node.peerLinks'),
 			    ring_addr: vm.get('preferred_node.ring_addr'),
-			    totem: vm.get('totem')
-			}
+			    totem: vm.get('totem'),
+			},
 		    });
 		    win.show();
 		},
@@ -135,10 +135,10 @@ Ext.define('PVE.ClusterAdministration', {
 			listeners: {
 			    destroy: function() {
 				view.store.startUpdate();
-			    }
-			}
+			    },
+			},
 		    });
-		}
+		},
 	    },
 	    tbar: [
 		{
@@ -146,25 +146,25 @@ Ext.define('PVE.ClusterAdministration', {
 		    reference: 'createButton',
 		    handler: 'onCreate',
 		    bind: {
-			disabled: '{isInCluster}'
-		    }
+			disabled: '{isInCluster}',
+		    },
 		},
 		{
 		    text: gettext('Join Information'),
 		    reference: 'addButton',
 		    handler: 'onClusterInfo',
 		    bind: {
-			disabled: '{!isInCluster}'
-		    }
+			disabled: '{!isInCluster}',
+		    },
 		},
 		{
 		    text: gettext('Join Cluster'),
 		    reference: 'joinButton',
 		    handler: 'onJoin',
 		    bind: {
-			disabled: '{isInCluster}'
-		    }
-		}
+			disabled: '{isInCluster}',
+		    },
+		},
 	    ],
 	    layout: 'hbox',
 	    bodyPadding: 5,
@@ -174,18 +174,18 @@ Ext.define('PVE.ClusterAdministration', {
 		    fieldLabel: gettext('Cluster Name'),
 		    bind: {
 			value: '{totem.cluster_name}',
-			hidden: '{!isInCluster}'
+			hidden: '{!isInCluster}',
 		    },
-		    flex: 1
+		    flex: 1,
 		},
 		{
 		    xtype: 'displayfield',
 		    fieldLabel: gettext('Config Version'),
 		    bind: {
 			value: '{totem.config_version}',
-			hidden: '{!isInCluster}'
+			hidden: '{!isInCluster}',
 		    },
-		    flex: 1
+		    flex: 1,
 		},
 		{
 		    xtype: 'displayfield',
@@ -193,19 +193,19 @@ Ext.define('PVE.ClusterAdministration', {
 		    labelWidth: 120,
 		    bind: {
 			value: '{nodecount}',
-			hidden: '{!isInCluster}'
+			hidden: '{!isInCluster}',
 		    },
-		    flex: 1
+		    flex: 1,
 		},
 		{
 		    xtype: 'displayfield',
 		    value: gettext('Standalone node - no cluster defined'),
 		    bind: {
-			hidden: '{isInCluster}'
+			hidden: '{isInCluster}',
 		    },
-		    flex: 1
-		}
-	    ]
+		    flex: 1,
+		},
+	    ],
 	},
 	{
 	    xtype: 'grid',
@@ -222,14 +222,14 @@ Ext.define('PVE.ClusterAdministration', {
 			interval: 5 * 1000,
 			autoStart: true,
 			storeid: 'pve-cluster-nodes',
-			model: 'pve-cluster-nodes'
+			model: 'pve-cluster-nodes',
 		    });
 		    view.setStore(Ext.create('Proxmox.data.DiffStore', {
 			rstore: view.rstore,
 			sorters: {
 			    property: 'nodeid',
-			    order: 'DESC'
-			}
+			    order: 'DESC',
+			},
 		    }));
 		    Proxmox.Utils.monStoreErrors(view, view.rstore);
 		    view.rstore.on('load', this.onLoad, this);
@@ -266,16 +266,16 @@ Ext.define('PVE.ClusterAdministration', {
 				return;
 			    }
 			    view.columns[linkIndex+linknum].setHidden(false);
-			}
+			},
 		    );
-		}
+		},
 	    },
 	    columns: {
 		items: [
 		    {
 			header: gettext('Nodename'),
 			hidden: false,
-			dataIndex: 'name'
+			dataIndex: 'name',
 		    },
 		    {
 			header: gettext('ID'),
@@ -283,7 +283,7 @@ Ext.define('PVE.ClusterAdministration', {
 			width: 100,
 			flex: 0,
 			hidden: false,
-			dataIndex: 'nodeid'
+			dataIndex: 'nodeid',
 		    },
 		    {
 			header: gettext('Votes'),
@@ -291,55 +291,55 @@ Ext.define('PVE.ClusterAdministration', {
 			width: 100,
 			flex: 0,
 			hidden: false,
-			dataIndex: 'quorum_votes'
+			dataIndex: 'quorum_votes',
 		    },
 		    {
 			header: Ext.String.format(gettext('Link {0}'), 0),
 			dataIndex: 'ring0_addr',
-			linkNumber: 0
+			linkNumber: 0,
 		    },
 		    {
 			header: Ext.String.format(gettext('Link {0}'), 1),
 			dataIndex: 'ring1_addr',
-			linkNumber: 1
+			linkNumber: 1,
 		    },
 		    {
 			header: Ext.String.format(gettext('Link {0}'), 2),
 			dataIndex: 'ring2_addr',
-			linkNumber: 2
+			linkNumber: 2,
 		    },
 		    {
 			header: Ext.String.format(gettext('Link {0}'), 3),
 			dataIndex: 'ring3_addr',
-			linkNumber: 3
+			linkNumber: 3,
 		    },
 		    {
 			header: Ext.String.format(gettext('Link {0}'), 4),
 			dataIndex: 'ring4_addr',
-			linkNumber: 4
+			linkNumber: 4,
 		    },
 		    {
 			header: Ext.String.format(gettext('Link {0}'), 5),
 			dataIndex: 'ring5_addr',
-			linkNumber: 5
+			linkNumber: 5,
 		    },
 		    {
 			header: Ext.String.format(gettext('Link {0}'), 6),
 			dataIndex: 'ring6_addr',
-			linkNumber: 6
+			linkNumber: 6,
 		    },
 		    {
 			header: Ext.String.format(gettext('Link {0}'), 7),
 			dataIndex: 'ring7_addr',
-			linkNumber: 7
-		    }
+			linkNumber: 7,
+		    },
 		],
 		defaults: {
 		    flex: 1,
 		    hidden: true,
-		    minWidth: 150
-		}
-	    }
-	}
-    ]
+		    minWidth: 150,
+		},
+	    },
+	},
+    ],
 });

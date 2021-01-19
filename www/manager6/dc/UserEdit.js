@@ -38,7 +38,7 @@ Ext.define('PVE.dc.UserEdit', {
 	    submitValue: false,
 	    disabled: true,
 	    hidden: true,
-	    validator: validate_pw
+	    validator: validate_pw,
 	});
 
 	pwfield = Ext.createWidget('textfield', {
@@ -48,7 +48,7 @@ Ext.define('PVE.dc.UserEdit', {
 	    name: 'password',
 	    disabled: true,
 	    hidden: true,
-	    validator: validate_pw
+	    validator: validate_pw,
 	});
 
 	var update_passwd_field = function(realm) {
@@ -74,7 +74,7 @@ Ext.define('PVE.dc.UserEdit', {
                 value: me.userid,
 		renderer: Ext.String.htmlEncode,
                 allowBlank: false,
-                submitValue: me.isCreate ? true : false
+                submitValue: me.isCreate ? true : false,
             },
 	    pwfield, verifypw,
 	    {
@@ -82,7 +82,7 @@ Ext.define('PVE.dc.UserEdit', {
 		name: 'groups',
 		multiSelect: true,
 		allowBlank: true,
-		fieldLabel: gettext('Group')
+		fieldLabel: gettext('Group'),
 	    },
             {
 		xtype: 'pmxExpireDate',
@@ -94,31 +94,31 @@ Ext.define('PVE.dc.UserEdit', {
 		name: 'enable',
 		uncheckedValue: 0,
 		defaultValue: 1,
-		checked: true
-	    }
+		checked: true,
+	    },
         ];
 
         var column2 = [
 	    {
 		xtype: 'textfield',
 		name: 'firstname',
-		fieldLabel: gettext('First Name')
+		fieldLabel: gettext('First Name'),
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'lastname',
-		fieldLabel: gettext('Last Name')
+		fieldLabel: gettext('Last Name'),
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'email',
 		fieldLabel: gettext('E-Mail'),
-		vtype: 'proxmoxMail'
-	    }
+		vtype: 'proxmoxMail',
+	    },
 	];
 
         if (me.isCreate) {
-            column1.splice(1,0,{
+            column1.splice(1, 0, {
                 xtype: 'pmxRealmComboBox',
                 name: 'realm',
                 fieldLabel: gettext('Realm'),
@@ -129,9 +129,9 @@ Ext.define('PVE.dc.UserEdit', {
                     change: function(combo, newValue){
                         realm = newValue;
 			update_passwd_field(realm);
-                    }
+                    },
                 },
-                submitValue: false
+                submitValue: false,
             });
         }
 
@@ -142,15 +142,15 @@ Ext.define('PVE.dc.UserEdit', {
 		{
 		    xtype: 'textfield',
 		    name: 'comment',
-		    fieldLabel: gettext('Comment')
-		}
+		    fieldLabel: gettext('Comment'),
+		},
 	    ],
 	    advancedItems: [
 		{
 		    xtype: 'textfield',
 		    name: 'keys',
-		    fieldLabel: gettext('Key IDs')
-		}
+		    fieldLabel: gettext('Key IDs'),
+		},
 	    ],
 	    onGetValues: function(values) {
 		if (realm) {
@@ -162,7 +162,7 @@ Ext.define('PVE.dc.UserEdit', {
 		}
 
 		return values;
-	    }
+	    },
 	});
 
 	Ext.applyIf(me, {
@@ -170,9 +170,9 @@ Ext.define('PVE.dc.UserEdit', {
             url: url,
             method: method,
 	    fieldDefaults: {
-		labelWidth: 110 // for spanish translation
+		labelWidth: 110, // for spanish translation
 	    },
-	    items: [ ipanel ]
+	    items: [ ipanel ],
         });
 
         me.callParent();
@@ -187,8 +187,8 @@ Ext.define('PVE.dc.UserEdit', {
 			    me.down('[name="keys"]').setDisabled(1);
 			}
 		    }
-                }
+                },
             });
         }
-    }
+    },
 });

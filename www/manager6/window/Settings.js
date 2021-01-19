@@ -12,15 +12,15 @@ Ext.define('PVE.window.Settings', {
 	{
 	    xtype: 'proxmoxHelpButton',
 	    onlineHelp: 'gui_my_settings',
-	    hidden: false
+	    hidden: false,
 	},
 	'->',
 	{
 	    text: gettext('Close'),
 	    handler: function() {
 		this.up('window').close();
-	    }
-	}
+	    },
+	},
     ],
 
     layout: 'hbox',
@@ -78,7 +78,7 @@ Ext.define('PVE.window.Settings', {
 	control: {
 	    '#xtermjs form': {
 		dirtychange: 'set_button_status',
-		validitychange: 'set_button_status'
+		validitychange: 'set_button_status',
 	    },
 	    '#xtermjs button': {
 		click: function(button) {
@@ -100,7 +100,7 @@ Ext.define('PVE.window.Settings', {
 			field.resetOriginalValue();
 		    });
 		    me.set_button_status();
-		}
+		},
 	    },
 	    'button[name=reset]': {
 		click: function () {
@@ -118,7 +118,7 @@ Ext.define('PVE.window.Settings', {
 		    }
 
 		    window.location.reload();
-		}
+		},
 	    },
 	    'button[name=clear-username]': {
 		click: function () {
@@ -128,7 +128,7 @@ Ext.define('PVE.window.Settings', {
 
 		    usernamefield.setValue(Proxmox.Utils.noneText);
 		    sp.clear('login-username');
-		}
+		},
 	    },
 	    'grid[reference=dashboard-storages]': {
 		selectionchange: function(grid, selected) {
@@ -164,20 +164,20 @@ Ext.define('PVE.window.Settings', {
 		    });
 		    me.getSelectionModel().select(items);
 		    me.resumeEvent('selectionchange');
-		}
+		},
 	    },
 	    'field[reference=summarycolumns]': {
 		change: function(el, newValue) {
 		    var sp = Ext.state.Manager.getProvider();
 		    sp.set('summarycolumns', newValue);
-		}
+		},
 	    },
 	    'field[reference=guestNotesCollapse]': {
 		change: function(e, v) {
 		    Ext.state.Manager.getProvider().set('guest-notes-collapse', v);
 		},
 	    },
-	}
+	},
     },
 
     items: [{
@@ -187,34 +187,34 @@ Ext.define('PVE.window.Settings', {
 	margin: '5',
 	layout: {
 	    type: 'vbox',
-	    align: 'left'
+	    align: 'left',
 	},
 	defaults: {
 	    width: '100%',
-	    margin: '0 0 10 0'
+	    margin: '0 0 10 0',
 	},
 	items: [
 	    {
 		xtype: 'displayfield',
 		fieldLabel: gettext('Dashboard Storages'),
 		labelAlign: 'left',
-		labelWidth: '50%'
+		labelWidth: '50%',
 	    },
 	    {
 		xtype: 'grid',
 		maxHeight: 150,
 		reference: 'dashboard-storages',
 		selModel: {
-		    selType: 'checkboxmodel'
+		    selType: 'checkboxmodel',
 		},
 		columns: [{
 		    header: gettext('Name'),
 		    dataIndex: 'storage',
-		    flex: 1
-		},{
+		    flex: 1,
+		}, {
 		    header: gettext('Node'),
 		    dataIndex: 'node',
-		    flex: 1
+		    flex: 1,
 		}],
 		store: {
 		    type: 'diff',
@@ -222,14 +222,14 @@ Ext.define('PVE.window.Settings', {
 		    rstore: PVE.data.ResourceStore,
 		    filters: [{
 			property: 'type',
-			value: 'storage'
+			value: 'storage',
 		    }],
-		    sorters: [ 'node','storage']
-		}
+		    sorters: [ 'node', 'storage'],
+		},
 	    },
 	    {
 		xtype: 'box',
-		autoEl: { tag: 'hr'}
+		autoEl: { tag: 'hr'},
 	    },
 	    {
 		xtype: 'container',
@@ -242,7 +242,7 @@ Ext.define('PVE.window.Settings', {
 			stateId: 'login-username',
 			reference: 'savedUserName',
 			flex: 1,
-			value: ''
+			value: '',
 		    },
 		    {
 			xtype: 'button',
@@ -250,11 +250,11 @@ Ext.define('PVE.window.Settings', {
 			text: gettext('Reset'),
 			name: 'clear-username',
 		    },
-		]
+		],
 	    },
 	    {
 		xtype: 'box',
-		autoEl: { tag: 'hr'}
+		autoEl: { tag: 'hr'},
 	    },
 	    {
 		xtype: 'container',
@@ -272,11 +272,11 @@ Ext.define('PVE.window.Settings', {
 			tooltip: gettext('Reset all layout changes (for example, column widths)'),
 			name: 'reset',
 		    },
-		]
+		],
 	    },
 	    {
 		xtype: 'box',
-		autoEl: { tag: 'hr'}
+		autoEl: { tag: 'hr'},
 	    },
 	    {
 		xtype: 'proxmoxKVComboBox',
@@ -303,7 +303,7 @@ Ext.define('PVE.window.Settings', {
 		    ['auto', 'auto (Collapse if empty)'],
 		],
 	    },
-	]
+	],
     },
     {
 	xtype: 'container',
@@ -314,7 +314,7 @@ Ext.define('PVE.window.Settings', {
 	    width: '100%',
 	    // right margin ensures that the right border of the fieldsets
 	    // is shown
-	    margin: '0 2 10 0'
+	    margin: '0 2 10 0',
 	},
 	items:[
 	    {
@@ -327,7 +327,7 @@ Ext.define('PVE.window.Settings', {
 		    border: false,
 		    layout: {
 			type: 'vbox',
-			algin: 'left'
+			algin: 'left',
 		    },
 		    defaults: {
 			width: '100%',
@@ -339,7 +339,7 @@ Ext.define('PVE.window.Settings', {
 			    name: 'fontFamily',
 			    reference: 'fontFamily',
 			    emptyText: Proxmox.Utils.defaultText,
-			    fieldLabel: gettext('Font-Family')
+			    fieldLabel: gettext('Font-Family'),
 			},
 			{
 			    xtype: 'proxmoxintegerfield',
@@ -347,14 +347,14 @@ Ext.define('PVE.window.Settings', {
 			    name: 'fontSize',
 			    reference: 'fontSize',
 			    minValue: 1,
-			    fieldLabel: gettext('Font-Size')
+			    fieldLabel: gettext('Font-Size'),
 			},
 			{
 			    xtype: 'numberfield',
 			    name: 'letterSpacing',
 			    reference: 'letterSpacing',
 			    emptyText: Proxmox.Utils.defaultText,
-			    fieldLabel: gettext('Letter Spacing')
+			    fieldLabel: gettext('Letter Spacing'),
 			},
 			{
 			    xtype: 'numberfield',
@@ -362,13 +362,13 @@ Ext.define('PVE.window.Settings', {
 			    minValue: 0.1,
 			    reference: 'lineHeight',
 			    emptyText: Proxmox.Utils.defaultText,
-			    fieldLabel: gettext('Line Height')
+			    fieldLabel: gettext('Line Height'),
 			},
 			{
 			    xtype: 'container',
 			    layout: {
 				type: 'hbox',
-				pack: 'end'
+				pack: 'end',
 			    },
 			    defaults: {
 				margin: '0 0 0 5',
@@ -378,19 +378,19 @@ Ext.define('PVE.window.Settings', {
 				    xtype: 'button',
 				    reference: 'xtermreset',
 				    disabled: true,
-				    text: gettext('Reset')
+				    text: gettext('Reset'),
 				},
 				{
 				    xtype: 'button',
 				    reference: 'xtermsave',
 				    disabled: true,
-				    text: gettext('Save')
-				}
-			    ]
-			}
-		    ]
-		}]
-	    },{
+				    text: gettext('Save'),
+				},
+			    ],
+			},
+		    ],
+		}],
+	    }, {
 		xtype: 'fieldset',
 		title: gettext('noVNC Settings'),
 		items: [
@@ -409,23 +409,23 @@ Ext.define('PVE.window.Settings', {
 				inputValue: 'scale',
 				boxLabel: 'Local Scaling',
 				checked: true,
-			    },{
+			    }, {
 				xtype: 'radiofield',
 				name: 'noVNCScalingField',
 				inputValue: 'off',
 				boxLabel: 'Off',
 				margin: '0 0 0 10',
-			    }
+			    },
 			],
 			listeners: {
 			    change: function(el, newValue, undefined) {
 				var sp = Ext.state.Manager.getProvider();
 				sp.set('novnc-scaling', newValue.noVNCScalingField);
-			    }
+			    },
 			},
 		    },
-		]
+		],
 	    },
-	]
+	],
     }],
 });

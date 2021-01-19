@@ -7,59 +7,59 @@ Ext.define('PVE.storage.StatusView', {
 
     layout: {
 	type: 'vbox',
-	align: 'stretch'
+	align: 'stretch',
     },
 
     defaults: {
 	xtype: 'pveInfoWidget',
-	padding: '0 30 5 30'
+	padding: '0 30 5 30',
     },
     items: [
 	{
 	    xtype: 'box',
-	    height: 30
+	    height: 30,
 	},
 	{
 	    itemId: 'enabled',
 	    title: gettext('Enabled'),
 	    printBar: false,
 	    textField: 'disabled',
-	    renderer: Proxmox.Utils.format_neg_boolean
+	    renderer: Proxmox.Utils.format_neg_boolean,
 	},
 	{
 	    itemId: 'active',
 	    title: gettext('Active'),
 	    printBar: false,
 	    textField: 'active',
-	    renderer: Proxmox.Utils.format_boolean
+	    renderer: Proxmox.Utils.format_boolean,
 	},
 	{
 	    itemId: 'content',
 	    title: gettext('Content'),
 	    printBar: false,
 	    textField: 'content',
-	    renderer: PVE.Utils.format_content_types
+	    renderer: PVE.Utils.format_content_types,
 	},
 	{
 	    itemId: 'type',
 	    title: gettext('Type'),
 	    printBar: false,
 	    textField: 'type',
-	    renderer: PVE.Utils.format_storage_type
+	    renderer: PVE.Utils.format_storage_type,
 	},
 	{
 	    xtype: 'box',
-	    height: 10
+	    height: 10,
 	},
 	{
 	    itemId: 'usage',
 	    title: gettext('Usage'),
 	    valueField: 'used',
-	    maxField: 'total'
-	}
+	    maxField: 'total',
+	},
     ],
 
     updateTitle: function() {
 	return;
-    }
+    },
 });

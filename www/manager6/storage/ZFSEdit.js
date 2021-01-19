@@ -6,23 +6,23 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	data: {
 	    isLIO: false,
 	    isComstar: true,
-	    hasWriteCacheOption: true
-	}
+	    hasWriteCacheOption: true,
+	},
     },
 
     controller: {
 	xclass: 'Ext.app.ViewController',
 	control: {
 	    'field[name=iscsiprovider]': {
-		change: 'changeISCSIProvider'
-	    }
+		change: 'changeISCSIProvider',
+	    },
 	},
 	changeISCSIProvider: function(f, newVal, oldVal) {
 	    var vm = this.getViewModel();
 	    vm.set('isLIO', newVal === 'LIO');
 	    vm.set('isComstar', newVal === 'comstar');
 	    vm.set('hasWriteCacheOption', newVal === 'comstar' || newVal === 'istgt');
-	}
+	},
     },
 
     onGetValues: function(values) {
@@ -52,28 +52,28 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		name: 'portal',
 		value: '',
 		fieldLabel: gettext('Portal'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'pool',
 		value: '',
 		fieldLabel: gettext('Pool'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'blocksize',
 		value: '4k',
 		fieldLabel: gettext('Block Size'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'target',
 		value: '',
 		fieldLabel: gettext('Target'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
@@ -81,8 +81,8 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		value: '',
 		fieldLabel: gettext('Target group'),
 		bind: me.isCreate ? { disabled: '{!isComstar}' } : { hidden: '{!isComstar}' },
-		allowBlank: true
-	    }
+		allowBlank: true,
+	    },
 	];
 
 	me.column2 = [
@@ -91,14 +91,14 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		name: 'iscsiprovider',
 		value: 'comstar',
 		fieldLabel: gettext('iSCSI Provider'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		name: 'sparse',
 		checked: false,
 		uncheckedValue: 0,
-		fieldLabel: gettext('Thin provision')
+		fieldLabel: gettext('Thin provision'),
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
@@ -106,7 +106,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		checked: true,
 		bind: me.isCreate ? { disabled: '{!hasWriteCacheOption}' } : { hidden: '{!hasWriteCacheOption}' },
 		uncheckedValue: 0,
-		fieldLabel: gettext('Write cache')
+		fieldLabel: gettext('Write cache'),
 	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
@@ -114,7 +114,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		value: '',
 		bind: me.isCreate ? { disabled: '{!isComstar}' } : { hidden: '{!isComstar}' },
 		fieldLabel: gettext('Host group'),
-		allowBlank: true
+		allowBlank: true,
 	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
@@ -122,10 +122,10 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 		value: '',
 		bind: me.isCreate ? { disabled: '{!isLIO}' } : { hidden: '{!isLIO}' },
 		allowBlank: false,
-		fieldLabel: gettext('Target portal group')
-	    }
+		fieldLabel: gettext('Target portal group'),
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

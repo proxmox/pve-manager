@@ -16,20 +16,20 @@ Ext.define('PVE.form.CalendarEvent', {
 	    { value: '2,22:30', text: gettext("Every day") + " 02:30, 22:30"},
 	    { value: 'mon..fri', text: gettext("Monday to Friday") + " 00:00"},
 	    { value: 'mon..fri */1:00', text: gettext("Monday to Friday") + ': ' +  gettext("hourly")},
-	    { value: 'sun 01:00', text: gettext("Sunday") + " 01:00"}
-	]
+	    { value: 'sun 01:00', text: gettext("Sunday") + " 01:00"},
+	],
     },
 
     tpl: [
 	'<ul class="x-list-plain"><tpl for=".">',
 	    '<li role="option" class="x-boundlist-item">{text}</li>',
-	'</tpl></ul>'
+	'</tpl></ul>',
     ],
 
     displayTpl: [
 	'<tpl for=".">',
 	'{value}',
-	'</tpl>'
-    ]
+	'</tpl>',
+    ],
 
 });

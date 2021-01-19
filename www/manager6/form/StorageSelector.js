@@ -12,26 +12,26 @@ Ext.define('PVE.form.StorageSelector', {
 		header: gettext('Name'),
 		dataIndex: 'storage',
 		hideable: false,
-		flex: 1
+		flex: 1,
 	    },
 	    {
 		header: gettext('Type'),
 		width: 75,
-		dataIndex: 'type'
+		dataIndex: 'type',
 	    },
 	    {
 		header: gettext('Avail'),
 		width: 90,
 		dataIndex: 'avail',
-		renderer: Proxmox.Utils.format_size
+		renderer: Proxmox.Utils.format_size,
 	    },
 	    {
 		header: gettext('Capacity'),
 		width: 90,
 		dataIndex: 'total',
-		renderer: Proxmox.Utils.format_size
-	    }
-	]
+		renderer: Proxmox.Utils.format_size,
+	    },
+	],
     },
 
     reloadStorageList: function() {
@@ -41,7 +41,7 @@ Ext.define('PVE.form.StorageSelector', {
 	}
 
 	var params = {
-	    format: 1
+	    format: 1,
 	};
 	var url = '/api2/json/nodes/' + me.nodename + '/storage';
 	if (me.storageContent) {
@@ -54,7 +54,7 @@ Ext.define('PVE.form.StorageSelector', {
 	me.store.setProxy({
 	    type: 'proxmox',
 	    url: url,
-	    extraParams: params
+	    extraParams: params,
 	});
 
 	me.store.load();
@@ -95,12 +95,12 @@ Ext.define('PVE.form.StorageSelector', {
 	    model: 'pve-storage-status',
 	    sorters: {
 		property: 'storage',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
 	Ext.apply(me, {
-	    store: store
+	    store: store,
 	});
 
         me.callParent();
@@ -108,13 +108,13 @@ Ext.define('PVE.form.StorageSelector', {
 	if (nodename) {
 	    me.setNodename(nodename);
 	}
-    }
+    },
 }, function() {
 
     Ext.define('pve-storage-status', {
 	extend: 'Ext.data.Model',
 	fields: [ 'storage', 'active', 'type', 'avail', 'total' ],
-	idProperty: 'storage'
+	idProperty: 'storage',
     });
 
 });

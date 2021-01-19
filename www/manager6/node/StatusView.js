@@ -10,14 +10,14 @@ Ext.define('PVE.node.StatusView', {
 	columns: 2,
 	tableAttrs: {
 	    style: {
-		width: '100%'
-	    }
-	}
+		width: '100%',
+	    },
+	},
     },
 
     defaults: {
 	xtype: 'pveInfoWidget',
-	padding: '0 15 5 15'
+	padding: '0 15 5 15',
     },
 
     items: [
@@ -27,26 +27,26 @@ Ext.define('PVE.node.StatusView', {
 	    title: gettext('CPU usage'),
 	    valueField: 'cpu',
 	    maxField: 'cpuinfo',
-	    renderer: PVE.Utils.render_node_cpu_usage
+	    renderer: PVE.Utils.render_node_cpu_usage,
 	},
 	{
 	    itemId: 'wait',
 	    iconCls: 'fa fa-fw fa-clock-o',
 	    title: gettext('IO delay'),
 	    valueField: 'wait',
-	    rowspan: 2
+	    rowspan: 2,
 	},
 	{
 	    itemId: 'load',
 	    iconCls: 'fa fa-fw fa-tasks',
 	    title: gettext('Load average'),
 	    printBar: false,
-	    textField: 'loadavg'
+	    textField: 'loadavg',
 	},
 	{
 	    xtype: 'box',
 	    colspan: 2,
-	    padding: '0 0 20 0'
+	    padding: '0 0 20 0',
 	},
 	{
 	    iconCls: 'fa fa-fw pve-itype-icon-memory pve-icon',
@@ -54,7 +54,7 @@ Ext.define('PVE.node.StatusView', {
 	    title: gettext('RAM usage'),
 	    valueField: 'memory',
 	    maxField: 'memory',
-	    renderer: PVE.Utils.render_node_size_usage
+	    renderer: PVE.Utils.render_node_size_usage,
 	},
 	{
 	    itemId: 'ksm',
@@ -64,7 +64,7 @@ Ext.define('PVE.node.StatusView', {
 	    renderer: function(record) {
 		return PVE.Utils.render_size(record.shared);
 	    },
-	    padding: '0 15 10 15'
+	    padding: '0 15 10 15',
 	},
 	{
 	    iconCls: 'fa fa-fw fa-hdd-o',
@@ -72,7 +72,7 @@ Ext.define('PVE.node.StatusView', {
 	    title: gettext('HD space') + '(root)',
 	    valueField: 'rootfs',
 	    maxField: 'rootfs',
-	    renderer: PVE.Utils.render_node_size_usage
+	    renderer: PVE.Utils.render_node_size_usage,
 	},
 	{
 	    iconCls: 'fa fa-fw fa-refresh',
@@ -81,12 +81,12 @@ Ext.define('PVE.node.StatusView', {
 	    title: gettext('SWAP usage'),
 	    valueField: 'swap',
 	    maxField: 'swap',
-	    renderer: PVE.Utils.render_node_size_usage
+	    renderer: PVE.Utils.render_node_size_usage,
 	},
 	{
 	    xtype: 'box',
 	    colspan: 2,
-	    padding: '0 0 20 0'
+	    padding: '0 0 20 0',
 	},
 	{
 	    itemId: 'cpus',
@@ -102,7 +102,7 @@ Ext.define('PVE.node.StatusView', {
 		    gettext('Socket')
 		) + ")";
 	    },
-	    value: ''
+	    value: '',
 	},
 	{
 	    itemId: 'kversion',
@@ -110,7 +110,7 @@ Ext.define('PVE.node.StatusView', {
 	    title: gettext('Kernel Version'),
 	    printBar: false,
 	    textField: 'kversion',
-	    value: ''
+	    value: '',
 	},
 	{
 	    itemId: 'version',
@@ -118,14 +118,14 @@ Ext.define('PVE.node.StatusView', {
 	    printBar: false,
 	    title: gettext('PVE Manager Version'),
 	    textField: 'pveversion',
-	    value: ''
-	}
+	    value: '',
+	},
     ],
 
     updateTitle: function() {
 	var me = this;
 	var uptime = Proxmox.Utils.render_uptime(me.getRecordValue('uptime'));
 	me.setTitle(me.pveSelNode.data.node + ' (' + gettext('Uptime') + ': ' + uptime + ')');
-    }
+    },
 
 });

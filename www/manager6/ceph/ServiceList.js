@@ -25,9 +25,9 @@ Ext.define('PVE.CephCreateService', {
 		change: function(f, value) {
 		    var me = this.up('pveCephCreateService');
 		    me.setNode(value);
-		}
-	    }
-	}
+		},
+	    },
+	},
     ],
 
     initComponent : function() {
@@ -44,7 +44,7 @@ Ext.define('PVE.CephCreateService', {
 	me.setNode(me.nodename);
 
         me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.node.CephServiceList', {
@@ -126,8 +126,8 @@ Ext.define('PVE.node.CephServiceList', {
 		storeid: 'ceph-versions-' + view.type + '-list' + view.nodename,
 		proxy: {
 		    type: 'proxmox',
-		    url: "/api2/json/cluster/ceph/metadata?scope=versions"
-		}
+		    url: "/api2/json/cluster/ceph/metadata?scope=versions",
+		},
 	    });
 
 	    view.versionsstore.on('load', this.getMaxVersions, this);
@@ -140,13 +140,13 @@ Ext.define('PVE.node.CephServiceList', {
 		model: 'ceph-service-list',
 		proxy: {
 		    type: 'proxmox',
-		    url: "/api2/json/nodes/" + view.nodename + "/ceph/" + view.type
-		}
+		    url: "/api2/json/nodes/" + view.nodename + "/ceph/" + view.type,
+		},
 	    });
 
 	    view.setStore(Ext.create('Proxmox.data.DiffStore', {
 		rstore: view.rstore,
-		sorters: [{ property: 'name' }]
+		sorters: [{ property: 'name' }],
 	    }));
 
 	    if (view.storeLoadCallback) {
@@ -163,7 +163,7 @@ Ext.define('PVE.node.CephServiceList', {
 			    me.mon(win, 'cephInstallWindowClosed', function(){
 				view.rstore.startUpdate();
 			    });
-			}
+			},
 		    );
 		});
 	    }
@@ -185,13 +185,13 @@ Ext.define('PVE.node.CephServiceList', {
 			upid: upid,
 			taskDone: function() {
 			    view.rstore.load();
-			}
+			},
 		    });
 		    win.show();
 		},
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
+		},
 	    });
 	},
 	onChangeService: function(btn) {
@@ -216,8 +216,8 @@ Ext.define('PVE.node.CephServiceList', {
 		items: [{
 		    xtype: 'proxmoxLogView',
 		    url: url,
-		    log_select_timespan: 1
-		}]
+		    log_select_timespan: 1,
+		}],
 	    });
 	    win.show();
 	},
@@ -231,9 +231,9 @@ Ext.define('PVE.node.CephServiceList', {
 		type: view.type,
 		taskDone: function() {
 		    view.rstore.load();
-		}
+		},
 	    });
-	}
+	},
     },
 
     tbar: [
@@ -247,7 +247,7 @@ Ext.define('PVE.node.CephServiceList', {
 		return rec.data.state === 'stopped' ||
 		  rec.data.state === 'unknown';
 	    },
-	    handler: 'onChangeService'
+	    handler: 'onChangeService',
 	},
 	{
 	    xtype: 'proxmoxButton',
@@ -258,7 +258,7 @@ Ext.define('PVE.node.CephServiceList', {
 		return rec.data.state !== 'stopped';
 	    },
 	    disabled: true,
-	    handler: 'onChangeService'
+	    handler: 'onChangeService',
 	},
 	{
 	    xtype: 'proxmoxButton',
@@ -269,13 +269,13 @@ Ext.define('PVE.node.CephServiceList', {
 	    enableFn: function(rec) {
 		return rec.data.state !== 'stopped';
 	    },
-	    handler: 'onChangeService'
+	    handler: 'onChangeService',
 	},
 	'-',
 	{
 	    text: gettext('Create'),
 	    reference: 'createButton',
-	    handler: 'onCreate'
+	    handler: 'onCreate',
 	},
 	{
 	    text: gettext('Destroy'),
@@ -299,18 +299,18 @@ Ext.define('PVE.node.CephServiceList', {
 		    upid: upid,
 		    taskDone: function() {
 			view.rstore.load();
-		    }
+		    },
 		});
 		win.show();
-	    }
+	    },
 	},
 	'-',
 	{
 	    xtype: 'proxmoxButton',
 	    text: gettext('Syslog'),
 	    disabled: true,
-	    handler: 'showSyslog'
-	}
+	    handler: 'showSyslog',
+	},
     ],
 
     columns: [
@@ -321,7 +321,7 @@ Ext.define('PVE.node.CephServiceList', {
 	    renderer: function(v) {
 		return this.type + '.' + v;
 	    },
-	    dataIndex: 'name'
+	    dataIndex: 'name',
 	},
 	{
 	    header: gettext('Host'),
@@ -330,13 +330,13 @@ Ext.define('PVE.node.CephServiceList', {
 	    renderer: function(v) {
 		return v || Proxmox.Utils.unknownText;
 	    },
-	    dataIndex: 'host'
+	    dataIndex: 'host',
 	},
 	{
 	    header: gettext('Status'),
 	    flex: 1,
 	    sortable: false,
-	    dataIndex: 'state'
+	    dataIndex: 'state',
 	},
 	{
 	    header: gettext('Address'),
@@ -345,7 +345,7 @@ Ext.define('PVE.node.CephServiceList', {
 	    renderer: function(v) {
 		return v || Proxmox.Utils.unknownText;
 	    },
-	    dataIndex: 'addr'
+	    dataIndex: 'addr',
 	},
 	{
 	    header: gettext('Version'),
@@ -353,7 +353,7 @@ Ext.define('PVE.node.CephServiceList', {
 	    sortable: true,
 	    dataIndex: 'version',
 	    renderer: 'render_version',
-	}
+	},
     ],
 
     initComponent: function() {
@@ -364,7 +364,7 @@ Ext.define('PVE.node.CephServiceList', {
 	}
 
 	me.callParent();
-    }
+    },
 
 }, function() {
 
@@ -374,8 +374,8 @@ Ext.define('PVE.node.CephServiceList', {
 	    'ceph_version', 'ceph_version_short',
 	    { type: 'string', name: 'version', calculate: function(data) {
 		return PVE.Utils.parse_ceph_version(data);
-	    } }
+	    } },
 	],
-	idProperty: 'name'
+	idProperty: 'name',
     });
 });

@@ -84,7 +84,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	var idselector = {
 	    xtype: 'hidden',
 	    name: 'id',
-	    value: me.ifname
+	    value: me.ifname,
 	};
 
 	me.column1 = [
@@ -113,7 +113,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		    }
 		    // validator can return bool/string
 		    return true;
-		}
+		},
 	    },
 	    {
 		xtype: 'textfield',
@@ -122,7 +122,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		vtype: 'MacAddress',
 		value: cdata.hwaddr,
 		allowBlank: true,
-		emptyText: 'auto'
+		emptyText: 'auto',
 	    },
 	    {
 		xtype: 'PVE.form.BridgeSelector',
@@ -130,12 +130,12 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		nodename: me.nodename,
 		fieldLabel: gettext('Bridge'),
 		value: cdata.bridge,
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'pveVlanField',
 		name: 'tag',
-		value: cdata.tag
+		value: cdata.tag,
 	    },
 	    {
 		xtype: 'numberfield',
@@ -145,14 +145,14 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		maxValue: 10*1024,
 		value: cdata.rate,
 		emptyText: 'unlimited',
-		allowBlank: true
+		allowBlank: true,
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Firewall'),
 		name: 'firewall',
-		value: cdata.firewall
-	    }
+		value: cdata.firewall,
+	    },
 	];
 
 	var dhcp4 = (cdata.ip === 'dhcp');
@@ -172,14 +172,14 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    {
 		layout: {
 		    type: 'hbox',
-		    align: 'middle'
+		    align: 'middle',
 		},
 		border: false,
 		margin: '0 0 5 0',
 		items: [
 		    {
 			xtype: 'label',
-			text: 'IPv4:' // do not localize
+			text: 'IPv4:', // do not localize
 		    },
 		    {
 			xtype: 'radiofield',
@@ -191,12 +191,12 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 			listeners: {
 			    change: function(cb, value) {
 				me.down('field[name=ip]').setEmptyText(
-				    !!value ? Proxmox.Utils.NoneText : ""
+				    !!value ? Proxmox.Utils.NoneText : "",
 				);
 				me.down('field[name=ip]').setDisabled(!value);
 				me.down('field[name=gw]').setDisabled(!value);
-			    }
-			}
+			    },
+			},
 		    },
 		    {
 			xtype: 'radiofield',
@@ -204,9 +204,9 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 			name: 'ipv4mode',
 			inputValue: 'dhcp',
 			checked: dhcp4,
-			margin: '0 0 0 10'
-		    }
-		]
+			margin: '0 0 0 10',
+		    },
+		],
 	    },
 	    {
 		xtype: 'textfield',
@@ -215,7 +215,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		value: cdata.ip,
 		emptyText: dhcp4 ? '' : Proxmox.Utils.NoneText,
 		disabled: dhcp4,
-		fieldLabel: 'IPv4/CIDR' // do not localize
+		fieldLabel: 'IPv4/CIDR', // do not localize
 	    },
 	    {
 		xtype: 'textfield',
@@ -224,24 +224,24 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		vtype: 'IPAddress',
 		disabled: dhcp4,
 		fieldLabel: gettext('Gateway') + ' (IPv4)',
-		margin: '0 0 3 0' // override bottom margin to account for the menuseparator
+		margin: '0 0 3 0', // override bottom margin to account for the menuseparator
 	    },
 	    {
 		xtype: 'menuseparator',
 		height: '3',
-		margin: '0'
+		margin: '0',
 	    },
 	    {
 		layout: {
 		    type: 'hbox',
-		    align: 'middle'
+		    align: 'middle',
 		},
 		border: false,
 		margin: '0 0 5 0',
 		items: [
 		    {
 			xtype: 'label',
-			text: 'IPv6:' // do not localize
+			text: 'IPv6:', // do not localize
 		    },
 		    {
 			xtype: 'radiofield',
@@ -253,12 +253,12 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 			listeners: {
 			    change: function(cb, value) {
 				me.down('field[name=ip6]').setEmptyText(
-				    !!value ? Proxmox.Utils.NoneText : ""
+				    !!value ? Proxmox.Utils.NoneText : "",
 				);
 				me.down('field[name=ip6]').setDisabled(!value);
 				me.down('field[name=gw6]').setDisabled(!value);
-			    }
-			}
+			    },
+			},
 		    },
 		    {
 			xtype: 'radiofield',
@@ -266,7 +266,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 			name: 'ipv6mode',
 			inputValue: 'dhcp',
 			checked: dhcp6,
-			margin: '0 0 0 10'
+			margin: '0 0 0 10',
 		    },
 		    {
 			xtype: 'radiofield',
@@ -274,9 +274,9 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 			name: 'ipv6mode',
 			inputValue: 'auto',
 			checked: auto6,
-			margin: '0 0 0 10'
-		    }
-		]
+			margin: '0 0 0 10',
+		    },
+		],
 	    },
 	    {
 		xtype: 'textfield',
@@ -285,7 +285,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		emptyText: dhcp6 || auto6 ? '' : Proxmox.Utils.NoneText,
 		vtype: 'IP6CIDRAddress',
 		disabled: (dhcp6 || auto6),
-		fieldLabel: 'IPv6/CIDR' // do not localize
+		fieldLabel: 'IPv6/CIDR', // do not localize
 	    },
 	    {
 		xtype: 'textfield',
@@ -293,12 +293,12 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		vtype: 'IP6Address',
 		value: cdata.gw6,
 		disabled: (dhcp6 || auto6),
-		fieldLabel: gettext('Gateway') + ' (IPv6)'
-	    }
+		fieldLabel: gettext('Gateway') + ' (IPv6)',
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.lxc.NetworkEdit', {
@@ -321,17 +321,17 @@ Ext.define('PVE.lxc.NetworkEdit', {
 	    ifname: me.ifname,
 	    nodename: me.nodename,
 	    dataCache: me.dataCache,
-	    isCreate: me.isCreate
+	    isCreate: me.isCreate,
 	});
 
 	Ext.apply(me, {
 	    subject: gettext('Network Device') + ' (veth)',
 	    digest: me.dataCache.digest,
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.lxc.NetworkView', {
@@ -371,7 +371,7 @@ Ext.define('PVE.lxc.NetworkView', {
 		});
 		me.store.loadData(records);
 		me.down('button[name=addButton]').setDisabled((records.length >= 32));
-	    }
+	    },
 	});
     },
 
@@ -397,9 +397,9 @@ Ext.define('PVE.lxc.NetworkView', {
 	    sorters: [
 		{
 		    property : 'id',
-		    direction: 'ASC'
-		}
-	    ]
+		    direction: 'ASC',
+		},
+	    ],
 	});
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
@@ -426,9 +426,9 @@ Ext.define('PVE.lxc.NetworkView', {
 		    },
 		    failure: function (response, opts) {
 			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    }
+		    },
 		});
-	    }
+	    },
 	});
 
 	var run_editor = function() {
@@ -445,7 +445,7 @@ Ext.define('PVE.lxc.NetworkView', {
 		url: me.url,
 		nodename: nodename,
 		dataCache: me.dataCache,
-		ifname: rec.data.id
+		ifname: rec.data.id,
 	    });
 	    win.on('destroy', me.load, me);
 	    win.show();
@@ -461,7 +461,7 @@ Ext.define('PVE.lxc.NetworkView', {
 		}
 		return true;
 	    },
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	Ext.apply(me, {
@@ -477,46 +477,46 @@ Ext.define('PVE.lxc.NetworkView', {
 			    url: me.url,
 			    nodename: nodename,
 			    isCreate: true,
-			    dataCache: me.dataCache
+			    dataCache: me.dataCache,
 			});
 			win.on('destroy', me.load, me);
 			win.show();
-		    }
+		    },
 		},
 		remove_btn,
-		edit_btn
+		edit_btn,
 	    ],
 	    columns: [
 		{
 		    header: 'ID',
 		    width: 50,
-		    dataIndex: 'id'
+		    dataIndex: 'id',
 		},
 		{
 		    header: gettext('Name'),
 		    width: 80,
-		    dataIndex: 'name'
+		    dataIndex: 'name',
 		},
 		{
 		    header: gettext('Bridge'),
 		    width: 80,
-		    dataIndex: 'bridge'
+		    dataIndex: 'bridge',
 		},
 		{
 		    header: gettext('Firewall'),
 		    width: 80,
 		    dataIndex: 'firewall',
-		    renderer: Proxmox.Utils.format_boolean
+		    renderer: Proxmox.Utils.format_boolean,
 		},
 		{
 		    header: gettext('VLAN Tag'),
 		    width: 80,
-		    dataIndex: 'tag'
+		    dataIndex: 'tag',
 		},
 		{
 		    header: gettext('MAC address'),
 		    width: 110,
-		    dataIndex: 'hwaddr'
+		    dataIndex: 'hwaddr',
 		},
 		{
 		    header: gettext('IP address'),
@@ -530,7 +530,7 @@ Ext.define('PVE.lxc.NetworkView', {
 			} else {
 			    return rec.data.ip;
 			}
-		    }
+		    },
 		},
 		{
 		    header: gettext('Gateway'),
@@ -544,24 +544,24 @@ Ext.define('PVE.lxc.NetworkView', {
 			} else {
 			    return rec.data.gw;
 			}
-		    }
-		}
+		    },
+		},
 	    ],
 	    listeners: {
 		activate: me.load,
-		itemdblclick: run_editor
-	    }
+		itemdblclick: run_editor,
+	    },
 	});
 
 	me.callParent();
-   }
+   },
 }, function() {
 
     Ext.define('pve-lxc-network', {
 	extend: "Ext.data.Model",
 	proxy: { type: 'memory' },
 	fields: [ 'id', 'name', 'hwaddr', 'bridge',
-		  'ip', 'gw', 'ip6', 'gw6', 'tag', 'firewall' ]
+		  'ip', 'gw', 'ip6', 'gw6', 'tag', 'firewall' ],
     });
 
 });

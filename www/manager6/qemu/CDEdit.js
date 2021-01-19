@@ -71,7 +71,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 
 	if (!me.confid) {
 	    me.bussel = Ext.create('PVE.form.ControllerSelector', {
-		noVirtIO: true
+		noVirtIO: true,
 	    });
 	    items.push(me.bussel);
 	}
@@ -95,8 +95,8 @@ Ext.define('PVE.qemu.CDInputPanel', {
 		    } else {
 			cdImageField.reset();
 		    }
-		}
-	    }
+		},
+	    },
 	});
 
 	me.cdfilesel = Ext.create('PVE.form.FileSelector', {
@@ -105,7 +105,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	    storageContent: 'iso',
 	    fieldLabel: gettext('ISO image'),
 	    labelAlign: 'right',
-	    allowBlank: false
+	    allowBlank: false,
 	});
 
 	me.cdstoragesel = Ext.create('PVE.form.StorageSelector', {
@@ -119,8 +119,8 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	    listeners: {
 		change: function(f, value) {
 		    me.cdfilesel.setStorage(value);
-		}
-	    }
+		},
+	    },
 	});
 
 	items.push(me.cdstoragesel);
@@ -130,20 +130,20 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	    xtype: 'radiofield',
 	    name: 'mediaType',
 	    inputValue: 'cdrom',
-	    boxLabel: gettext('Use physical CD/DVD Drive')
+	    boxLabel: gettext('Use physical CD/DVD Drive'),
 	});
 
 	items.push({
 	    xtype: 'radiofield',
 	    name: 'mediaType',
 	    inputValue: 'none',
-	    boxLabel: gettext('Do not use any media')
+	    boxLabel: gettext('Do not use any media'),
 	});
 
 	me.items = items;
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.qemu.CDEdit', {
@@ -163,12 +163,12 @@ Ext.define('PVE.qemu.CDEdit', {
 
 	var ipanel = Ext.create('PVE.qemu.CDInputPanel', {
 	    confid: me.confid,
-	    nodename: nodename
+	    nodename: nodename,
 	});
 
 	Ext.applyIf(me, {
 	    subject: 'CD/DVD Drive',
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -186,7 +186,7 @@ Ext.define('PVE.qemu.CDEdit', {
 		    }
 		    ipanel.setDrive(drive);
 		}
-	    }
+	    },
 	});
-    }
+    },
 });

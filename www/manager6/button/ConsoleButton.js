@@ -37,7 +37,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	var me = this;
 	var consoles = {
 	    spice: me.enableSpice,
-	    xtermjs: me.enableXtermjs
+	    xtermjs: me.enableXtermjs,
 	};
 	PVE.Utils.openDefaultConsoleWindow(consoles, me.consoleType, me.vmid,
 					   me.nodename, me.consoleName, me.cmd);
@@ -52,7 +52,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	    handler: function(button) {
 		var me = this.up('button');
 		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName, me.cmd);
-	    }
+	    },
 	},
 	{
 	    xterm: 'menuitem',
@@ -63,7 +63,7 @@ Ext.define('PVE.button.ConsoleButton', {
 	    handler: function(button) {
 		var me = this.up('button');
 		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName, me.cmd);
-	    }
+	    },
 	},
 	{
 	    text: 'xterm.js',
@@ -73,8 +73,8 @@ Ext.define('PVE.button.ConsoleButton', {
 	    handler: function(button) {
 		var me = this.up('button');
 		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName, me.cmd);
-	    }
-	}
+	    },
+	},
     ],
 
     initComponent: function() {
@@ -85,5 +85,5 @@ Ext.define('PVE.button.ConsoleButton', {
 	}
 
 	me.callParent();
-    }
+    },
 });

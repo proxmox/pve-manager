@@ -37,7 +37,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	control: {
 	    'field[name=controller]': {
 		change: 'onControllerChange',
-		afterrender: 'onControllerChange'
+		afterrender: 'onControllerChange',
 	    },
 	    'field[name=iothread]' : {
 		change: function(f, value) {
@@ -46,8 +46,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		    }
 		    var vmScsiType = value ? 'virtio-scsi-single': 'virtio-scsi-pci';
 		    this.lookupReference('scsiController').setValue(vmScsiType);
-		}
-	    }
+		},
+	    },
 	},
 
 	init: function(view) {
@@ -55,7 +55,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    if (view.isCreate) {
 		vm.set('isIncludedInBackup', true);
 	    }
-	}
+	},
     },
 
     onGetValues: function(values) {
@@ -170,7 +170,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	if (!me.confid || me.unused) {
 	    me.bussel = Ext.create('PVE.form.ControllerSelector', {
-		vmconfig: me.insideWizard ? {ide2: 'cdrom'} : {}
+		vmconfig: me.insideWizard ? {ide2: 'cdrom'} : {},
 	    });
 	    me.column1.push(me.bussel);
 
@@ -178,11 +178,11 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		fieldLabel: gettext('SCSI Controller'),
 		reference: 'scsiController',
 		bind: me.insideWizard ? {
-		    value: '{current.scsihw}'
+		    value: '{current.scsihw}',
 		} : undefined,
 		renderer: PVE.Utils.render_scsihw,
 		submitValue: false,
-		hidden: true
+		hidden: true,
 	    });
 	    me.column1.push(me.scsiController);
 	}
@@ -193,10 +193,10 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		fieldLabel: gettext('Disk image'),
 		matchFieldWidth: false,
 		listConfig: {
-		    width: 350
+		    width: 350,
 		},
 		data: [],
-		allowBlank: false
+		allowBlank: false,
 	    });
 	    me.column1.push(me.unusedDisks);
 	} else if (me.isCreate) {
@@ -205,7 +205,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		storageContent: 'images',
 		name: 'disk',
 		nodename: me.nodename,
-		autoSelect: me.insideWizard
+		autoSelect: me.insideWizard,
 	    });
 	} else {
 	    me.column1.push({
@@ -213,7 +213,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		disabled: true,
 		submitValue: false,
 		fieldLabel: gettext('Disk image'),
-                name: 'hdimage'
+                name: 'hdimage',
 	    });
 	}
 
@@ -222,14 +222,14 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		xtype: 'CacheTypeSelector',
 		name: 'cache',
 		value: '__default__',
-		fieldLabel: gettext('Cache')
+		fieldLabel: gettext('Cache'),
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Discard'),
 		reference: 'discard',
-		name: 'discard'
-	    }
+		name: 'discard',
+	    },
 	);
 
 	me.advancedColumn1.push(
@@ -239,7 +239,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		fieldLabel: gettext('SSD emulation'),
 		labelWidth: labelWidth,
 		name: 'ssd',
-		reference: 'ssd'
+		reference: 'ssd',
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
@@ -247,7 +247,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		fieldLabel: 'IO thread',
 		labelWidth: labelWidth,
 		reference: 'iothread',
-		name: 'iothread'
+		name: 'iothread',
 	    },
 	    {
 		xtype: 'numberfield',
@@ -256,7 +256,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		step: 1,
 		fieldLabel: gettext('Read limit') + ' (MB/s)',
 		labelWidth: labelWidth,
-		emptyText: gettext('unlimited')
+		emptyText: gettext('unlimited'),
 	    },
 	    {
 		xtype: 'numberfield',
@@ -265,7 +265,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		step: 1,
 		fieldLabel: gettext('Write limit') + ' (MB/s)',
 		labelWidth: labelWidth,
-		emptyText: gettext('unlimited')
+		emptyText: gettext('unlimited'),
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
@@ -274,7 +274,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		step: 10,
 		fieldLabel: gettext('Read limit') + ' (ops/s)',
 		labelWidth: labelWidth,
-		emptyText: gettext('unlimited')
+		emptyText: gettext('unlimited'),
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
@@ -283,8 +283,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		step: 10,
 		fieldLabel: gettext('Write limit') + ' (ops/s)',
 		labelWidth: labelWidth,
-		emptyText: gettext('unlimited')
-	    }
+		emptyText: gettext('unlimited'),
+	    },
 	);
 
 	me.advancedColumn2.push(
@@ -305,7 +305,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Skip replication'),
 		labelWidth: labelWidth,
-		name: 'noreplicate'
+		name: 'noreplicate',
 	    },
 	    {
 		xtype: 'numberfield',
@@ -314,7 +314,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		step: 1,
 		fieldLabel: gettext('Read max burst') + ' (MB)',
 		labelWidth: labelWidth,
-		emptyText: gettext('default')
+		emptyText: gettext('default'),
 	    },
 	    {
 		xtype: 'numberfield',
@@ -323,7 +323,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		step: 1,
 		fieldLabel: gettext('Write max burst') + ' (MB)',
 		labelWidth: labelWidth,
-		emptyText: gettext('default')
+		emptyText: gettext('default'),
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
@@ -332,7 +332,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		step: 10,
 		fieldLabel: gettext('Read max burst') + ' (ops)',
 		labelWidth: labelWidth,
-		emptyText: gettext('default')
+		emptyText: gettext('default'),
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
@@ -341,12 +341,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		step: 10,
 		fieldLabel: gettext('Write max burst') + ' (ops)',
 		labelWidth: labelWidth,
-		emptyText: gettext('default')
-	    }
+		emptyText: gettext('default'),
+	    },
 	);
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.qemu.HDEdit', {
@@ -372,7 +372,7 @@ Ext.define('PVE.qemu.HDEdit', {
 	    confid: me.confid,
 	    nodename: nodename,
 	    unused: unused,
-	    isCreate: me.isCreate
+	    isCreate: me.isCreate,
 	});
 
 	var subject;
@@ -404,7 +404,7 @@ Ext.define('PVE.qemu.HDEdit', {
 		    ipanel.setDrive(drive);
 		    me.isValid(); // trigger validation
 		}
-	    }
+	    },
 	});
-    }
+    },
 });

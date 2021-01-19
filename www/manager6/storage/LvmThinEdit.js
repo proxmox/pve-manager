@@ -39,8 +39,8 @@ Ext.define('PVE.storage.TPoolSelector', {
 	    fields: [ 'lv' ],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/lvmthin'
-	    }
+		url: '/api2/json/nodes/' + me.nodename + '/scan/lvmthin',
+	    },
 	});
 
 	store.sort('lv', 'ASC');
@@ -48,12 +48,12 @@ Ext.define('PVE.storage.TPoolSelector', {
 	Ext.apply(me, {
 	    store: store,
 	    listConfig: {
-		loadingText: gettext('Scanning...')
-	    }
+		loadingText: gettext('Scanning...'),
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.storage.BaseVGSelector', {
@@ -76,19 +76,19 @@ Ext.define('PVE.storage.BaseVGSelector', {
 	    fields: [ 'vg', 'size', 'free'],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/lvm'
-	    }
+		url: '/api2/json/nodes/' + me.nodename + '/scan/lvm',
+	    },
 	});
 
 	Ext.apply(me, {
 	    store: store,
 	    listConfig: {
-		loadingText: gettext('Scanning...')
-	    }
+		loadingText: gettext('Scanning...'),
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.storage.LvmThinInputPanel', {
@@ -107,7 +107,7 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 	    disabled: !!me.isCreate,
 	    value: '',
 	    fieldLabel: gettext('Volume group'),
-	    allowBlank: false
+	    allowBlank: false,
 	});
 
 	var thinpoolField = Ext.createWidget(me.isCreate ? 'textfield' : 'displayfield', {
@@ -116,14 +116,14 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 	    disabled: !!me.isCreate,
 	    value: '',
 	    fieldLabel: gettext('Thin Pool'),
-	    allowBlank: false
+	    allowBlank: false,
 	});
 
 	if (me.isCreate) {
 	    var vgField = Ext.create('PVE.storage.TPoolSelector', {
 		name: 'thinpool',
 		fieldLabel: gettext('Thin Pool'),
-		allowBlank: false
+		allowBlank: false,
 	    });
 
 	    me.column1.push({
@@ -136,8 +136,8 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 			    vgField.setVG(value);
 			    vgField.setValue('');
 			}
-		    }
-		}
+		    },
+		},
 	    });
 
 	    me.column1.push(vgField);
@@ -156,11 +156,11 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 	    name: 'content',
 	    value: ['images', 'rootdir'],
 	    multiSelect: true,
-	    allowBlank: false
+	    allowBlank: false,
 	});
 
 	me.column2 = [];
 
 	me.callParent();
-    }
+    },
 });

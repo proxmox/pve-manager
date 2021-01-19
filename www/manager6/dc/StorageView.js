@@ -21,8 +21,8 @@ Ext.define('PVE.dc.StorageView', {
 	    canDoBackups: schema.backups,
 	    autoShow: true,
 	    listeners: {
-		destroy: this.reloadStore
-	    }
+		destroy: this.reloadStore,
+	    },
 	});
     },
 
@@ -33,12 +33,12 @@ Ext.define('PVE.dc.StorageView', {
 	    model: 'pve-storage',
 	    proxy: {
                 type: 'proxmox',
-		url: "/api2/json/storage"
+		url: "/api2/json/storage",
 	    },
 	    sorters: {
 		property: 'storage',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
 	var reload = function() {
@@ -62,13 +62,13 @@ Ext.define('PVE.dc.StorageView', {
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/storage/',
-	    callback: reload
+	    callback: reload,
 	});
 
 	// else we cannot dynamically generate the add menu handlers
@@ -84,7 +84,7 @@ Ext.define('PVE.dc.StorageView', {
 	    addMenuItems.push({
 		text:  PVE.Utils.format_storage_type(type),
 		iconCls: 'fa fa-fw fa-' + storage.faIcon,
-		handler: addHandleGenerator(type)
+		handler: addHandleGenerator(type),
 	    });
 	}
 
@@ -93,38 +93,38 @@ Ext.define('PVE.dc.StorageView', {
 	    reloadStore: reload,
 	    selModel: sm,
 	    viewConfig: {
-		trackOver: false
+		trackOver: false,
 	    },
 	    tbar: [
 		{
 		    text: gettext('Add'),
 		    menu: new Ext.menu.Menu({
-			items: addMenuItems
-		    })
+			items: addMenuItems,
+		    }),
 		},
 		remove_btn,
-		edit_btn
+		edit_btn,
 	    ],
 	    columns: [
 		{
 		    header: 'ID',
 		    flex: 2,
 		    sortable: true,
-		    dataIndex: 'storage'
+		    dataIndex: 'storage',
 		},
 		{
 		    header: gettext('Type'),
 		    flex: 1,
 		    sortable: true,
 		    dataIndex: 'type',
-		    renderer: PVE.Utils.format_storage_type
+		    renderer: PVE.Utils.format_storage_type,
 		},
 		{
 		    header: gettext('Content'),
 		    flex: 3,
 		    sortable: true,
 		    dataIndex: 'content',
-		    renderer: PVE.Utils.format_content_types
+		    renderer: PVE.Utils.format_content_types,
 		},
 		{
 		    header: gettext('Path') + '/' + gettext('Target'),
@@ -136,37 +136,37 @@ Ext.define('PVE.dc.StorageView', {
 			    return record.data.target;
 			}
 			return value;
-		    }
+		    },
 		},
 		{
 		    header: gettext('Shared'),
 		    flex: 1,
 		    sortable: true,
 		    dataIndex: 'shared',
-		    renderer: Proxmox.Utils.format_boolean
+		    renderer: Proxmox.Utils.format_boolean,
 		},
 		{
 		    header: gettext('Enabled'),
 		    flex: 1,
 		    sortable: true,
 		    dataIndex: 'disable',
-		    renderer: Proxmox.Utils.format_neg_boolean
+		    renderer: Proxmox.Utils.format_neg_boolean,
 		},
 		{
 		    header: gettext('Bandwidth Limit'),
 		    flex: 2,
 		    sortable: true,
-		    dataIndex: 'bwlimit'
-		}
+		    dataIndex: 'bwlimit',
+		},
 	    ],
 	    listeners: {
 		activate: reload,
-		itemdblclick: run_editor
-	    }
+		itemdblclick: run_editor,
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 }, function() {
 
     Ext.define('pve-storage', {
@@ -174,9 +174,9 @@ Ext.define('PVE.dc.StorageView', {
 	fields: [
 	    'path', 'type', 'content', 'server', 'portal', 'target', 'export', 'storage',
 	    { name: 'shared', type: 'boolean'},
-	    { name: 'disable', type: 'boolean'}
+	    { name: 'disable', type: 'boolean'},
 	],
-	idProperty: 'storage'
+	idProperty: 'storage',
     });
 
 });

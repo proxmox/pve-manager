@@ -2,7 +2,7 @@ Ext.define('pve-security-groups', {
     extend: 'Ext.data.Model',
 
     fields: [ 'group', 'comment', 'digest' ],
-    idProperty: 'group'
+    idProperty: 'group',
 });
 
 Ext.define('PVE.SecurityGroupEdit', {
@@ -28,14 +28,14 @@ Ext.define('PVE.SecurityGroupEdit', {
 		name: 'group',
 		value: me.group_name || '',
 		fieldLabel: gettext('Name'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'comment',
 		value: me.group_comment || '',
-		fieldLabel: gettext('Comment')
-	    }
+		fieldLabel: gettext('Comment'),
+	    },
 	];
 
 	if (me.isCreate) {
@@ -45,24 +45,24 @@ Ext.define('PVE.SecurityGroupEdit', {
 	    items.push({
 		xtype: 'hiddenfield',
 		name: 'rename',
-		value: me.group_name
+		value: me.group_name,
 	    });
         }
 
 	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	// InputPanel does not have a 'create' property, does it need a 'isCreate'
 	    isCreate: me.isCreate,
-	    items: items
+	    items: items,
 	});
 
 
 	Ext.apply(me, {
             subject: subject,
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.SecurityGroupList', {
@@ -95,12 +95,12 @@ Ext.define('PVE.SecurityGroupList', {
 	    model: 'pve-security-groups',
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json' + me.base_url
+		url: '/api2/json' + me.base_url,
 	    },
 	    sorters: {
 		property: 'group',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
@@ -125,7 +125,7 @@ Ext.define('PVE.SecurityGroupList', {
 	    var win = Ext.create('PVE.SecurityGroupEdit', {
 		digest: rec.data.digest,
 		group_name: rec.data.group,
-		group_comment: rec.data.comment
+		group_comment: rec.data.comment,
 	    });
 	    win.show();
 	    win.on('destroy', reload);
@@ -135,7 +135,7 @@ Ext.define('PVE.SecurityGroupList', {
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	me.addBtn = new Proxmox.button.Button({
@@ -145,7 +145,7 @@ Ext.define('PVE.SecurityGroupList', {
 		var win = Ext.create('PVE.SecurityGroupEdit', {});
 		win.show();
 		win.on('destroy', reload);
-	    }
+	    },
 	});
 
 	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
@@ -156,7 +156,7 @@ Ext.define('PVE.SecurityGroupList', {
 	    },
 	    callback: function() {
 		reload();
-	    }
+	    },
 	});
 
 	Ext.apply(me, {
@@ -165,7 +165,7 @@ Ext.define('PVE.SecurityGroupList', {
 	    selModel: sm,
 	    columns: [
 		{ header: gettext('Group'), dataIndex: 'group', width: '100' },
-		{ header: gettext('Comment'), dataIndex: 'comment', renderer: Ext.String.htmlEncode, flex: 1 }
+		{ header: gettext('Comment'), dataIndex: 'comment', renderer: Ext.String.htmlEncode, flex: 1 },
 	    ],
 	    listeners: {
 		itemdblclick: run_editor,
@@ -176,14 +176,14 @@ Ext.define('PVE.SecurityGroupList', {
 		deselect: function() {
 		    me.rule_panel.setBaseUrl(undefined);
 		},
-		show: reload
-	    }
+		show: reload,
+	    },
 	});
 
 	me.callParent();
 
 	store.load();
-    }
+    },
 });
 
 Ext.define('PVE.SecurityGroups', {
@@ -200,7 +200,7 @@ Ext.define('PVE.SecurityGroups', {
 	    allow_groups: false,
 	    list_refs_url: '/cluster/firewall/refs',
 	    tbar_prefix: '<b>' + gettext('Rules') + ':</b>',
-	    border: false
+	    border: false,
 	});
 
 	var sglist = Ext.createWidget('pveSecurityGroupList', {
@@ -208,7 +208,7 @@ Ext.define('PVE.SecurityGroups', {
 	    rule_panel: rule_panel,
 	    width: '25%',
 	    border: false,
-	    split: true
+	    split: true,
 	});
 
 
@@ -218,10 +218,10 @@ Ext.define('PVE.SecurityGroups', {
 	    listeners: {
 		show: function() {
 		    sglist.fireEvent('show', sglist);
-		}
-	    }
+		},
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });

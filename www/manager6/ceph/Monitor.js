@@ -9,12 +9,12 @@ Ext.define('PVE.node.CephMonMgrList', {
     defaults: {
 	border: false,
 	onlineHelp: 'chapter_pveceph',
-	flex: 1
+	flex: 1,
     },
 
     layout: {
 	type: 'vbox',
-	align: 'stretch'
+	align: 'stretch',
     },
 
     items: [
@@ -28,19 +28,19 @@ Ext.define('PVE.node.CephMonMgrList', {
 		    width: 70,
 		    sortable: true,
 		    renderer: Proxmox.Utils.format_boolean,
-		    dataIndex: 'quorum'
-		}
+		    dataIndex: 'quorum',
+		},
 	    ],
 	    stateId: 'grid-ceph-monitor',
 	    showCephInstallMask: true,
-	    title: gettext('Monitor')
+	    title: gettext('Monitor'),
 	},
 	{
 	    xtype: 'pveNodeCephServiceList',
 	    type: 'mgr',
 	    stateId: 'grid-ceph-manager',
 	    cbind: { pveSelNode: '{pveSelNode}' },
-	    title: gettext('Manager')
-	}
-    ]
+	    title: gettext('Manager'),
+	},
+    ],
 });

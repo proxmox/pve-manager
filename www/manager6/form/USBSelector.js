@@ -45,8 +45,8 @@ Ext.define('PVE.form.USBSelector', {
 	    filters: [
 		function (item) {
 		    return !!item.data.usbpath && !!item.data.prodid && item.data['class'] != 9;
-		}
-	    ]
+		},
+	    ],
 	});
 	let emptyText = '';
 	if (me.type === 'device') {
@@ -65,19 +65,19 @@ Ext.define('PVE.form.USBSelector', {
 			header: (me.type === 'device')?gettext('Device'):gettext('Port'),
 			sortable: true,
 			dataIndex: 'usbid',
-			width: 80
+			width: 80,
 		    },
 		    {
 			header: gettext('Manufacturer'),
 			sortable: true,
 			dataIndex: 'manufacturer',
-			width: 150
+			width: 150,
 		    },
 		    {
 			header: gettext('Product'),
 			sortable: true,
 			dataIndex: 'product',
-			flex: 1
+			flex: 1,
 		    },
 		    {
 			header: gettext('Speed'),
@@ -93,16 +93,16 @@ Ext.define('PVE.form.USBSelector', {
 				    "1.5": "USB 1.x",
 			    };
 			    return speed_map[value] || value + " Mbps";
-			}
-		    }
-		]
+			},
+		    },
+		],
 	    },
 	});
 
         me.callParent();
 
 	store.load();
-    }
+    },
 
 }, function() {
 
@@ -116,14 +116,14 @@ Ext.define('PVE.form.USBSelector', {
 			return val;
 		    }
 		    return data.get('vendid') + ':' + data.get('prodid');
-		}
+		},
 	    },
 	    'speed', 'product', 'manufacturer', 'vendid', 'prodid', 'usbpath',
-	    { name: 'port' , type: 'number' },
-	    { name: 'level' , type: 'number' },
-	    { name: 'class' , type: 'number' },
-	    { name: 'devnum' , type: 'number' },
-	    { name: 'busnum' , type: 'number' },
+	    { name: 'port', type: 'number' },
+	    { name: 'level', type: 'number' },
+	    { name: 'class', type: 'number' },
+	    { name: 'devnum', type: 'number' },
+	    { name: 'busnum', type: 'number' },
 	    {
 		name: 'product_and_id',
 		type: 'string',
@@ -133,7 +133,7 @@ Ext.define('PVE.form.USBSelector', {
 		    return res;
 		},
 	    },
-	]
+	],
     });
 
     Ext.define('pve-usb-port', {
@@ -141,19 +141,19 @@ Ext.define('PVE.form.USBSelector', {
 	fields: [
 	    {
 		name: 'usbid',
-		convert: function(val,data) {
+		convert: function(val, data) {
 		    if (val) {
 			return val;
 		    }
 		    return data.get('busnum') + '-' + data.get('usbpath');
-		}
+		},
 	    },
 	    'speed', 'product', 'manufacturer', 'vendid', 'prodid', 'usbpath',
-	    { name: 'port' , type: 'number' },
-	    { name: 'level' , type: 'number' },
-	    { name: 'class' , type: 'number' },
-	    { name: 'devnum' , type: 'number' },
-	    { name: 'busnum' , type: 'number' },
+	    { name: 'port', type: 'number' },
+	    { name: 'level', type: 'number' },
+	    { name: 'class', type: 'number' },
+	    { name: 'devnum', type: 'number' },
+	    { name: 'busnum', type: 'number' },
 	    {
 		name: 'product_and_id',
 		type: 'string',
@@ -163,6 +163,6 @@ Ext.define('PVE.form.USBSelector', {
 		    return res;
 		},
 	    },
-	]
+	],
     });
 });

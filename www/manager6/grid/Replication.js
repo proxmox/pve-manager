@@ -20,7 +20,7 @@ Ext.define('PVE.window.ReplicaEdit', {
 	    xtype: (me.isCreate && !vmid)?'pveGuestIDSelector':'displayfield',
 	    name: 'guest',
 	    fieldLabel: 'CT/VM ID',
-	    value: vmid || ''
+	    value: vmid || '',
 	});
 
 	items.push(
@@ -30,13 +30,13 @@ Ext.define('PVE.window.ReplicaEdit', {
 		disallowedNodes: [nodename],
 		allowBlank: false,
 		onlineValidator: true,
-		fieldLabel: gettext("Target")
+		fieldLabel: gettext("Target"),
 	    },
 	    {
 		xtype: 'pveCalendarEvent',
 		fieldLabel: gettext('Schedule'),
 		emptyText: '*/15 - ' + Ext.String.format(gettext('Every {0} minutes'), 15),
-		name: 'schedule'
+		name: 'schedule',
 	    },
 	    {
 		xtype: 'numberfield',
@@ -44,20 +44,20 @@ Ext.define('PVE.window.ReplicaEdit', {
 		step: 1,
 		minValue: 1,
 		emptyText: gettext('unlimited'),
-		name: 'rate'
+		name: 'rate',
 	    },
 	    {
 		xtype: 'textfield',
 		fieldLabel: gettext('Comment'),
-		name: 'comment'
+		name: 'comment',
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		name: 'enabled',
 		defaultValue: 'on',
 		checked: true,
-		fieldLabel: gettext('Enabled')
-	    }
+		fieldLabel: gettext('Enabled'),
+	    },
 	);
 
 	me.items = [
@@ -90,8 +90,8 @@ Ext.define('PVE.window.ReplicaEdit', {
 		    }
 		    return values;
 		},
-		items: items
-	    }
+		items: items,
+	    },
 	];
 
 	me.callParent();
@@ -104,8 +104,8 @@ Ext.define('PVE.window.ReplicaEdit', {
 		    Ext.Array.forEach(jobs, function(job) {
 			var match = /^([0-9]+)\-([0-9]+)$/.exec(job.id);
 			if (match) {
-			    var vmid = parseInt(match[1],10);
-			    var id = parseInt(match[2],10);
+			    var vmid = parseInt(match[1], 10);
+			    var id = parseInt(match[2], 10);
 			    if (highestids[vmid] < id ||
 				highestids[vmid] === undefined) {
 				highestids[vmid] = id;
@@ -114,7 +114,7 @@ Ext.define('PVE.window.ReplicaEdit', {
 		    });
 
 		    me.highestids = highestids;
-		}
+		},
 	    });
 
 	} else {
@@ -123,10 +123,10 @@ Ext.define('PVE.window.ReplicaEdit', {
 		    response.result.data.enabled = !response.result.data.disable;
 		    me.setValues(response.result.data);
 		    me.digest = response.result.data.digest;
-		}
+		},
 	    });
 	}
-    }
+    },
 });
 
 /* callback is a function and string */
@@ -142,32 +142,32 @@ Ext.define('PVE.grid.ReplicaView', {
     controller: {
 	xclass: 'Ext.app.ViewController',
 
-	addJob: function(button,event,rec) {
+	addJob: function(button, event, rec) {
 	    var me = this.getView();
 	    var controller = this;
 	    var win = Ext.create('PVE.window.ReplicaEdit', {
 		isCreate: true,
 		method: 'POST',
-		pveSelNode: me.pveSelNode
+		pveSelNode: me.pveSelNode,
 	    });
 	    win.on('destroy', function() { controller.reload(); });
 	    win.show();
 	},
 
-	editJob: function(button,event,rec) {
+	editJob: function(button, event, rec) {
 	    var me = this.getView();
 	    var controller = this;
 	    var data = rec.data;
 	    var win = Ext.create('PVE.window.ReplicaEdit', {
 		url: '/cluster/replication/' + data.id,
 		method: 'PUT',
-		pveSelNode: me.pveSelNode
+		pveSelNode: me.pveSelNode,
 	    });
 	    win.on('destroy', function() { controller.reload(); });
 	    win.show();
 	},
 
-	scheduleJobNow: function(button,event,rec) {
+	scheduleJobNow: function(button, event, rec) {
 	    var me = this.getView();
 	    var controller = this;
 
@@ -178,7 +178,7 @@ Ext.define('PVE.grid.ReplicaView', {
 		callback: function() { controller.reload(); },
 		failure: function (response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		}
+		},
 	    });
 	},
 
@@ -187,7 +187,7 @@ Ext.define('PVE.grid.ReplicaView', {
 	    var controller = this;
 	    var logView = Ext.create('Proxmox.panel.LogView', {
 		border: false,
-		url: "/api2/extjs/nodes/" + me.nodename + "/replication/" + rec.data.id + "/log"
+		url: "/api2/extjs/nodes/" + me.nodename + "/replication/" + rec.data.id + "/log",
 	    });
 	    var win = Ext.create('Ext.window.Window', {
 		items: [ logView ],
@@ -195,13 +195,13 @@ Ext.define('PVE.grid.ReplicaView', {
 		width: 800,
 		height: 400,
 		modal: true,
-		title: gettext("Replication Log")
+		title: gettext("Replication Log"),
 	    });
 	    var task = {
 		run: function() {
 		    logView.requestUpdate();
 		},
-		interval: 1000
+		interval: 1000,
 	    };
 	    Ext.TaskManager.start(task);
 	    win.on('destroy', function() {
@@ -234,45 +234,45 @@ Ext.define('PVE.grid.ReplicaView', {
 	control: {
 	    '#': {
 		itemdblclick: 'dblClick',
-		afterlayout: 'checkPrerequisites'
-	    }
-	}
+		afterlayout: 'checkPrerequisites',
+	    },
+	},
     },
 
     tbar: [
 	{
 	    text: gettext('Add'),
 	    itemId: 'addButton',
-	    handler: 'addJob'
+	    handler: 'addJob',
 	},
 	{
 	    xtype: 'proxmoxButton',
 	    text: gettext('Edit'),
 	    itemId: 'editButton',
 	    handler: 'editJob',
-	    disabled: true
+	    disabled: true,
 	},
 	{
 	    xtype: 'proxmoxStdRemoveButton',
 	    itemId: 'removeButton',
 	    baseurl: '/api2/extjs/cluster/replication/',
 	    dangerous: true,
-	    callback: 'reload'
+	    callback: 'reload',
 	},
 	{
 	    xtype: 'proxmoxButton',
 	    text: gettext('Log'),
 	    itemId: 'logButton',
 	    handler: 'showLog',
-	    disabled: true
+	    disabled: true,
 	},
 	{
 	    xtype: 'proxmoxButton',
 	    text: gettext('Schedule now'),
 	    itemId: 'scheduleNowButton',
 	    handler: 'scheduleJobNow',
-	    disabled: true
-	}
+	    disabled: true,
+	},
     ],
 
     initComponent: function() {
@@ -289,28 +289,28 @@ Ext.define('PVE.grid.ReplicaView', {
 		dataIndex: 'enabled',
 		xtype: 'checkcolumn',
 		sortable: true,
-		disabled: true
+		disabled: true,
 	    },
 	    {
 		text: 'ID',
 		dataIndex: 'id',
 		width: 60,
-		hidden: true
+		hidden: true,
 	    },
 	    {
 		text: gettext('Guest'),
 		dataIndex: 'guest',
-		width: 75
+		width: 75,
 	    },
 	    {
 		text: gettext('Job'),
 		dataIndex: 'jobnum',
-		width: 60
+		width: 60,
 	    },
 	    {
 		text: gettext('Target'),
-		dataIndex: 'target'
-	    }
+		dataIndex: 'target',
+	    },
 	];
 
 	if (!me.nodename) {
@@ -359,7 +359,7 @@ Ext.define('PVE.grid.ReplicaView', {
 			}
 
 			return icons.join(',') + ' ' + states.join(',');
-		    }
+		    },
 		},
 		{
 		    text: gettext('Last Sync'),
@@ -375,13 +375,13 @@ Ext.define('PVE.grid.ReplicaView', {
 			}
 
 			return Proxmox.Utils.render_timestamp(value);
-		    }
+		    },
 		},
 		{
 		    text: gettext('Duration'),
 		    dataIndex: 'duration',
 		    width: 60,
-		    renderer: Proxmox.Utils.render_duration
+		    renderer: Proxmox.Utils.render_duration,
 		},
 		{
 		    text: gettext('Next Sync'),
@@ -400,8 +400,8 @@ Ext.define('PVE.grid.ReplicaView', {
 			}
 
 			return Proxmox.Utils.render_timestamp(value);
-		    }
-		}
+		    },
+		},
 	    );
 	}
 
@@ -409,7 +409,7 @@ Ext.define('PVE.grid.ReplicaView', {
 	    {
 		text: gettext('Schedule'),
 		width: 75,
-		dataIndex: 'schedule'
+		dataIndex: 'schedule',
 	    },
 	    {
 		text: gettext('Rate limit'),
@@ -421,13 +421,13 @@ Ext.define('PVE.grid.ReplicaView', {
 
 		    return value.toString() + ' MB/s';
 		},
-		hidden: true
+		hidden: true,
 	    },
 	    {
 		text: gettext('Comment'),
 		dataIndex: 'comment',
-		renderer: Ext.htmlEncode
-	    }
+		renderer: Ext.htmlEncode,
+	    },
 	);
 
 	me.rstore = Ext.create('Proxmox.data.UpdateStore', {
@@ -436,20 +436,20 @@ Ext.define('PVE.grid.ReplicaView', {
 	    interval: 3000,
 	    proxy: {
 		type: 'proxmox',
-		url: "/api2/json" + url
-	    }
+		url: "/api2/json" + url,
+	    },
 	});
 
 	me.store = Ext.create('Proxmox.data.DiffStore', {
 	    rstore: me.rstore,
 	    sorters: [
 		{
-		    property: 'guest'
+		    property: 'guest',
 		},
 		{
-		    property: 'jobnum'
-		}
-	    ]
+		    property: 'jobnum',
+		},
+	    ],
 	});
 
 	me.callParent();
@@ -472,7 +472,7 @@ Ext.define('PVE.grid.ReplicaView', {
 
 	me.on('destroy', me.rstore.stopUpdate);
 	me.rstore.startUpdate();
-    }
+    },
 }, function() {
 
     Ext.define('pve-replication', {
@@ -483,16 +483,16 @@ Ext.define('PVE.grid.ReplicaView', {
 	    { name: 'jobnum', type: 'integer' },
 	    { name: 'schedule', defaultValue: '*/15' },
 	    { name: 'disable', defaultValue: '' },
-	    { name: 'enabled', calculate: function(data) { return !data.disable; } }
-	]
+	    { name: 'enabled', calculate: function(data) { return !data.disable; } },
+	],
     });
 
     Ext.define('pve-replication-state', {
 	extend: 'pve-replication',
 	fields: [
 	    'last_sync', 'next_sync', 'error', 'duration', 'state',
-	    'fail_count', 'remove_job', 'pid'
-	]
+	    'fail_count', 'remove_job', 'pid',
+	],
     });
 
 });

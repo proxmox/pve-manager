@@ -5,7 +5,7 @@ Ext.define('PVE.ha.Status', {
     onlineHelp: 'chapter_ha_manager',
     layout: {
 	type: 'vbox',
-	align: 'stretch'
+	align: 'stretch',
     },
 
     initComponent: function() {
@@ -18,8 +18,8 @@ Ext.define('PVE.ha.Status', {
 	    groupField: 'type',
 	    proxy: {
                 type: 'proxmox',
-		url: '/api2/json/cluster/ha/status/current'
-	    }
+		url: '/api2/json/cluster/ha/status/current',
+	    },
 	});
 
 	me.items = [{
@@ -28,17 +28,17 @@ Ext.define('PVE.ha.Status', {
 	    rstore: me.rstore,
 	    border: 0,
 	    collapsible: true,
-	    padding: '0 0 20 0'
-	},{
+	    padding: '0 0 20 0',
+	}, {
 	    xtype: 'pveHAResourcesView',
 	    flex: 1,
 	    collapsible: true,
 	    title: gettext('Resources'),
 	    border: 0,
-	    rstore: me.rstore
+	    rstore: me.rstore,
 	}];
 
 	me.callParent();
 	me.on('activate', me.rstore.startUpdate);
-    }
+    },
 });

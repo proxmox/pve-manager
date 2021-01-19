@@ -22,8 +22,8 @@ Ext.define('PVE.ha.ResourcesView', {
 	    rstore: me.rstore,
 	    filters: {
 		property: 'type',
-		value: 'service'
-	    }
+		value: 'service',
+	    },
 	});
 
 	var reload = function() {
@@ -38,7 +38,7 @@ Ext.define('PVE.ha.ResourcesView', {
 		    metaData.tdCls = 'proxmox-invalid-row';
 		    var html = '<p>' +  Ext.htmlEncode(msg) + '</p>';
 		    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' +
-			html.replace(/\"/g,'&quot;') + '"';
+			html.replace(/\"/g, '&quot;') + '"';
 		}
 	    }
 	    return value;
@@ -59,9 +59,9 @@ Ext.define('PVE.ha.ResourcesView', {
 	    var guestType = res[1];
 	    var vmid = res[2];
 
-            var win = Ext.create('PVE.ha.VMResourceEdit',{
+            var win = Ext.create('PVE.ha.VMResourceEdit', {
                 guestType: guestType,
-                vmid: vmid
+                vmid: vmid,
             });
             win.on('destroy', reload);
             win.show();
@@ -76,33 +76,33 @@ Ext.define('PVE.ha.ResourcesView', {
 	    },
 	    callback: function() {
 		reload();
-	    }
+	    },
 	});
 
 	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
 	    viewConfig: {
-		trackOver: false
+		trackOver: false,
 	    },
 	    tbar: [
 		{
 		    text: gettext('Add'),
 		    disabled: !caps.nodes['Sys.Console'],
 		    handler: function() {
-			var win = Ext.create('PVE.ha.VMResourceEdit',{});
+			var win = Ext.create('PVE.ha.VMResourceEdit', {});
 			win.on('destroy', reload);
 			win.show();
-		    }
+		    },
 		},
-		edit_btn, remove_btn
+		edit_btn, remove_btn,
 	    ],
 
 	    columns: [
@@ -110,19 +110,19 @@ Ext.define('PVE.ha.ResourcesView', {
 		    header: 'ID',
 		    width: 100,
 		    sortable: true,
-		    dataIndex: 'sid'
+		    dataIndex: 'sid',
 		},
 		{
 		    header: gettext('State'),
 		    width: 100,
 		    sortable: true,
-		    dataIndex: 'state'
+		    dataIndex: 'state',
 		},
 		{
 		    header: gettext('Node'),
 		    width: 100,
 		    sortable: true,
-		    dataIndex: 'node'
+		    dataIndex: 'node',
 		},
 		{
 		    header: gettext('Request State'),
@@ -132,14 +132,14 @@ Ext.define('PVE.ha.ResourcesView', {
 		    renderer: function(v) {
 			return v || 'started';
 		    },
-		    dataIndex: 'request_state'
+		    dataIndex: 'request_state',
 		},
 		{
 		    header: gettext('CRM State'),
 		    width: 100,
 		    hidden: true,
 		    sortable: true,
-		    dataIndex: 'crm_state'
+		    dataIndex: 'crm_state',
 		},
 		{
 		    header: gettext('Name'),
@@ -152,14 +152,14 @@ Ext.define('PVE.ha.ResourcesView', {
 		    width: 100,
 		    sortable: true,
 		    renderer: (v) => v === undefined ? '1' : v,
-		    dataIndex: 'max_restart'
+		    dataIndex: 'max_restart',
 		},
 		{
 		    header: gettext('Max. Relocate'),
 		    width: 100,
 		    sortable: true,
 		    renderer: (v) => v === undefined ? '1' : v,
-		    dataIndex: 'max_relocate'
+		    dataIndex: 'max_relocate',
 		},
 		{
 		    header: gettext('Group'),
@@ -168,14 +168,14 @@ Ext.define('PVE.ha.ResourcesView', {
 		    renderer: function(value, metaData, record) {
 			return render_error('group', value, metaData, record);
 		    },
-		    dataIndex: 'group'
+		    dataIndex: 'group',
 		},
 		{
 		    header: gettext('Description'),
 		    flex: 1,
 		    renderer: Ext.String.htmlEncode,
-		    dataIndex: 'comment'
-		}
+		    dataIndex: 'comment',
+		},
 	    ],
 	    listeners: {
 		beforeselect: function(grid, record, index, eOpts) {
@@ -183,10 +183,10 @@ Ext.define('PVE.ha.ResourcesView', {
 			return false;
 		    }
 		},
-		itemdblclick: run_editor
-	    }
+		itemdblclick: run_editor,
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });

@@ -10,13 +10,13 @@ Ext.enableAriaPanels = false;
 // avoid errors when running without development tools
 if (!Ext.isDefined(Ext.global.console)) {
     var console = {
-	log: function() {}
+	log: function() {},
     };
 }
 console.log("Starting PVE Manager");
 
 Ext.Ajax.defaultHeaders = {
-    'Accept': 'application/json'
+    'Accept': 'application/json',
 };
 
 Ext.define('PVE.Utils', { utilities: {
@@ -35,14 +35,14 @@ Ext.define('PVE.Utils', { utilities: {
 	4: "warning",
 	5: "notice",
 	6: "info",
-	7: "debug"
+	7: "debug",
     },
 
     support_level_hash: {
 	'c': gettext('Community'),
 	'b': gettext('Basic'),
 	's': gettext('Standard'),
-	'p': gettext('Premium')
+	'p': gettext('Premium'),
     },
 
     noSubKeyHtml: 'You do not have a valid subscription for this server. Please visit <a target="_blank" href="https://www.proxmox.com/products/proxmox-ve/subscription-service-plans">www.proxmox.com</a> to get a list of available options.',
@@ -50,7 +50,7 @@ Ext.define('PVE.Utils', { utilities: {
     kvm_ostypes: {
 	'Linux': [
 	    { desc: '5.x - 2.6 Kernel', val: 'l26' },
-	    { desc: '2.4 Kernel', val: 'l24' }
+	    { desc: '2.4 Kernel', val: 'l24' },
 	],
 	'Microsoft Windows': [
 	    { desc: '10/2016/2019', val: 'win10' },
@@ -58,14 +58,14 @@ Ext.define('PVE.Utils', { utilities: {
 	    { desc: '7/2008r2', val: 'win7' },
 	    { desc: 'Vista/2008', val: 'w2k8' },
 	    { desc: 'XP/2003', val: 'wxp' },
-	    { desc: '2000', val: 'w2k' }
+	    { desc: '2000', val: 'w2k' },
 	],
 	'Solaris Kernel': [
-	    { desc: '-', val: 'solaris'}
+	    { desc: '-', val: 'solaris'},
 	],
 	'Other': [
-	    { desc: '-', val: 'other'}
-	]
+	    { desc: '-', val: 'other'},
+	],
     },
 
     get_health_icon: function(state, circle) {
@@ -172,13 +172,13 @@ Ext.define('PVE.Utils', { utilities: {
 	'HEALTH_UPGRADE':'upgrade',
 	'HEALTH_OLD':'old',
 	'HEALTH_WARN':'warning',
-	'HEALTH_ERR':'critical'
+	'HEALTH_ERR':'critical',
     },
 
     render_ceph_health: function(healthObj) {
 	var state = {
 	    iconCls: PVE.Utils.get_health_icon(),
-	    text: ''
+	    text: '',
 	};
 
 	if (!healthObj || !healthObj.status) {
@@ -544,7 +544,7 @@ Ext.define('PVE.Utils', { utilities: {
 	sl: 'Slovenian',
 	sv: 'Swedish',
 	//th: 'Thai',
-	tr: 'Turkish'
+	tr: 'Turkish',
     },
 
     kvm_vga_drivers: {
@@ -559,7 +559,7 @@ Ext.define('PVE.Utils', { utilities: {
 	serial2: gettext('Serial terminal') + ' 2',
 	serial3: gettext('Serial terminal') + ' 3',
 	virtio: 'VirtIO-GPU',
-	none: Proxmox.Utils.noneText
+	none: Proxmox.Utils.noneText,
     },
 
     render_kvm_language: function (value) {
@@ -586,7 +586,7 @@ Ext.define('PVE.Utils', { utilities: {
 	'__default__': Proxmox.Utils.defaultText + ' (xterm.js)',
 	'vv': 'SPICE (remote-viewer)',
 	'html5': 'HTML5 (noVNC)',
-	'xtermjs': 'xterm.js'
+	'xtermjs': 'xterm.js',
     },
 
     render_console_viewer: function(value) {
@@ -673,7 +673,7 @@ Ext.define('PVE.Utils', { utilities: {
 	'vztmpl': gettext('Container template'),
 	'iso': gettext('ISO image'),
 	'rootdir': gettext('Container'),
-	'snippets': gettext('Snippets')
+	'snippets': gettext('Snippets'),
     },
 
     volume_is_qemu_backup: function(volid, format) {
@@ -806,51 +806,51 @@ Ext.define('PVE.Utils', { utilities: {
     sdnvnetSchema: {
 	vnet: {
 	    name: 'vnet',
-	    faIcon: 'folder'
+	    faIcon: 'folder',
 	},
     },
 
     sdnzoneSchema: {
 	zone: {
 	     name: 'zone',
-	     hideAdd: true
+	     hideAdd: true,
 	},
 	simple: {
 	    name: 'Simple',
 	    ipanel: 'SimpleInputPanel',
-	    faIcon: 'th'
+	    faIcon: 'th',
 	},
 	vlan: {
 	    name: 'VLAN',
 	    ipanel: 'VlanInputPanel',
-	    faIcon: 'th'
+	    faIcon: 'th',
 	},
 	qinq: {
 	    name: 'QinQ',
 	    ipanel: 'QinQInputPanel',
-	    faIcon: 'th'
+	    faIcon: 'th',
 	},
 	vxlan: {
 	    name: 'VXLAN',
 	    ipanel: 'VxlanInputPanel',
-	    faIcon: 'th'
+	    faIcon: 'th',
 	},
 	evpn: {
 	    name: 'EVPN',
 	    ipanel: 'EvpnInputPanel',
-	    faIcon: 'th'
+	    faIcon: 'th',
 	},
     },
 
     sdncontrollerSchema: {
 	controller: {
 	     name: 'controller',
-	     hideAdd: true
+	     hideAdd: true,
 	},
 	evpn: {
 	    name: 'evpn',
 	    ipanel: 'EvpnInputPanel',
-	    faIcon: 'crosshairs'
+	    faIcon: 'crosshairs',
 	},
     },
 
@@ -917,10 +917,10 @@ Ext.define('PVE.Utils', { utilities: {
 	    Ext.isNumber(data.id) &&
 	    Ext.isNumber(data.lun)) {
 	    return "CH " +
-		Ext.String.leftPad(data.channel,2, '0') +
+		Ext.String.leftPad(data.channel, 2, '0') +
 		" ID " + data.id + " LUN " + data.lun;
 	}
-	return data.volid.replace(/^.*?:(.*?\/)?/,'');
+	return data.volid.replace(/^.*?:(.*?\/)?/, '');
     },
 
     render_serverity: function (value) {
@@ -1077,7 +1077,7 @@ Ext.define('PVE.Utils', { utilities: {
 
     render_resource_type: function(value, metaData, record, rowIndex, colIndex, store) {
 
-	var cls = PVE.Utils.get_object_icon_class(value,record.data);
+	var cls = PVE.Utils.get_object_icon_class(value, record.data);
 
 	var fa = '<i class="fa-fw x-grid-icon-custom ' + cls  + '"></i> ';
 	return fa + value;
@@ -1157,7 +1157,7 @@ Ext.define('PVE.Utils', { utilities: {
 	    '2': gettext('Bad Request'),
 	    '3': gettext('Configuration Unsupported'),
 	    '4': gettext('Device Ineligible'),
-	    '5': gettext('Timeout')
+	    '5': gettext('Timeout'),
 	};
 	return "U2F Error: "  + ErrorNames[error] || Proxmox.Utils.unknownText;
     },
@@ -1240,7 +1240,7 @@ Ext.define('PVE.Utils', { utilities: {
 	    vmname: vmname,
 	    node: nodename,
 	    resize: scaling,
-	    cmd: cmd
+	    cmd: cmd,
 	});
 	var nw = window.open("?" + url, '_blank', "innerWidth=745,innerheight=427");
 	if (nw) {
@@ -1254,7 +1254,7 @@ Ext.define('PVE.Utils', { utilities: {
 	    var link = Ext.DomHelper.append(document.body, {
 		tag: 'a',
 		href: uri,
-		css : 'display:none;visibility:hidden;height:0px;'
+		css : 'display:none;visibility:hidden;height:0px;',
 	    });
 
 	    // Note: we need to tell android the correct file name extension
@@ -1290,7 +1290,7 @@ Ext.define('PVE.Utils', { utilities: {
 		    encodeURIComponent(raw);
 
 		downloadWithName(url, "pve-spice.vv");
-	    }
+	    },
 	});
     },
 
@@ -1312,7 +1312,7 @@ Ext.define('PVE.Utils', { utilities: {
 			xtermjs: !!conf.serial,
 		    };
 		    PVE.Utils.openDefaultConsoleWindow(consoles, 'kvm', vmid, nodename, vmname);
-		}
+		},
 	    });
 	} else if (record.data.type === 'lxc' && !record.data.template) {
 	    PVE.Utils.openDefaultConsoleWindow(true, 'lxc', vmid, nodename, vmname);
@@ -1348,7 +1348,7 @@ Ext.define('PVE.Utils', { utilities: {
 	if (template) {
 	    if (type === 'qemu' || type == 'lxc') {
 		menu = Ext.create('PVE.menu.TemplateMenu', {
-		    pveSelNode: record
+		    pveSelNode: record,
 		});
 	    }
 	} else if (type === 'qemu' ||
@@ -1356,7 +1356,7 @@ Ext.define('PVE.Utils', { utilities: {
 		   type === 'node') {
 	    menu = Ext.create('PVE.' + type + '.CmdMenu', {
 		pveSelNode: record,
-		nodename: record.data.node
+		nodename: record.data.node,
 	    });
 	} else {
 	    return;
@@ -1545,7 +1545,7 @@ Ext.define('PVE.Utils', { utilities: {
 		if (!container.down('pveCephInstallWindow')){
 		    var isInstalled = msg.match(/not initialized/i) ? true : false;
 		    var win = Ext.create('PVE.ceph.Install', {
-			nodename: nodename
+			nodename: nodename,
 		    });
 		    win.getViewModel().set('isInstalled', isInstalled);
 		    container.add(win);
@@ -1617,7 +1617,7 @@ Ext.define('PVE.Utils', { utilities: {
     cpu_vendor_map: {
 	'default': 'QEMU',
 	'AuthenticAMD': 'AMD',
-	'GenuineIntel': 'Intel'
+	'GenuineIntel': 'Intel',
     },
 
     cpu_vendor_order: {
@@ -1745,6 +1745,6 @@ Ext.define('PVE.Utils', { utilities: {
 	    vzumount: ['CT', gettext('Unmount')],
 	    zfscreate: [gettext('ZFS Storage'), gettext('Create')],
 	});
-    }
+    },
 
 });

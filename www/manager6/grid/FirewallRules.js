@@ -11,15 +11,15 @@ Ext.define('PVE.form.FWMacroSelector', {
 		header: gettext('Macro'),
 		dataIndex: 'macro',
 		hideable: false,
-		width: 100
+		width: 100,
 	    },
 	    {
 		header: gettext('Description'),
 		renderer: Ext.String.htmlEncode,
 		flex: 1,
-		dataIndex: 'descr'
-	    }
-	]
+		dataIndex: 'descr',
+	    },
+	],
     },
     initComponent: function() {
 	var me = this;
@@ -30,20 +30,20 @@ Ext.define('PVE.form.FWMacroSelector', {
 	    idProperty: 'macro',
 	    proxy: {
 		type: 'proxmox',
-		url: "/api2/json/cluster/firewall/macros"
+		url: "/api2/json/cluster/firewall/macros",
 	    },
 	    sorters: {
 		property: 'macro',
-		order: 'DESC'
-	    }
+		order: 'DESC',
+	    },
 	});
 
 	Ext.apply(me, {
-	    store: store
+	    store: store,
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.FirewallRulePanel', {
@@ -84,7 +84,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		// form again.
 		xtype: 'hiddenfield',
 		name: 'modified_marker',
-		value: ''
+		value: '',
 	    },
 	    {
 		xtype: 'proxmoxKVComboBox',
@@ -92,7 +92,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		value: 'in',
 		comboItems: [['in', 'in'], ['out', 'out']],
 		fieldLabel: gettext('Direction'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'proxmoxKVComboBox',
@@ -100,8 +100,8 @@ Ext.define('PVE.FirewallRulePanel', {
 		value: 'ACCEPT',
 		comboItems: [['ACCEPT', 'ACCEPT'], ['DROP', 'DROP'], ['REJECT', 'REJECT']],
 		fieldLabel: gettext('Action'),
-		allowBlank: false
-	    }
+		allowBlank: false,
+	    },
         ];
 
 	if (me.allow_iface) {
@@ -110,13 +110,13 @@ Ext.define('PVE.FirewallRulePanel', {
 		name: 'iface',
 		deleteEmpty: !me.isCreate,
 		value: '',
-		fieldLabel: gettext('Interface')
+		fieldLabel: gettext('Interface'),
 	    });
 	} else {
 	    me.column1.push({
 		xtype: 'displayfield',
 		fieldLabel: '',
-		value: ''
+		value: '',
 	    });
 	}
 
@@ -125,7 +125,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		xtype: 'displayfield',
 		fieldLabel: '',
 		height: 7,
-		value: ''
+		value: '',
 	    },
 	    {
 		xtype: 'pveIPRefSelector',
@@ -134,7 +134,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		editable: true,
 		base_url: me.list_refs_url,
 		value: '',
-		fieldLabel: gettext('Source')
+		fieldLabel: gettext('Source'),
 
 	    },
 	    {
@@ -144,8 +144,8 @@ Ext.define('PVE.FirewallRulePanel', {
 		editable: true,
 		base_url: me.list_refs_url,
 		value: '',
-		fieldLabel: gettext('Destination')
-	    }
+		fieldLabel: gettext('Destination'),
+	    },
 	);
 
 
@@ -155,7 +155,7 @@ Ext.define('PVE.FirewallRulePanel', {
 		name: 'enable',
 		checked: false,
 		uncheckedValue: 0,
-		fieldLabel: gettext('Enable')
+		fieldLabel: gettext('Enable'),
 	    },
 	    {
 		xtype: 'pveFWMacroSelector',
@@ -177,8 +177,8 @@ Ext.define('PVE.FirewallRulePanel', {
 			    me.down('field[name=dport]').setDisabled(true);
 			    me.down('field[name=dport]').setValue('');
                        }
-                    }
-                }
+                    },
+                },
 	    },
 	    {
 		xtype: 'pveIPProtocolSelector',
@@ -186,32 +186,32 @@ Ext.define('PVE.FirewallRulePanel', {
 		autoSelect: false,
 		editable: true,
 		value: '',
-		fieldLabel: gettext('Protocol')
+		fieldLabel: gettext('Protocol'),
 	    },
 	    {
 		xtype: 'displayfield',
 		fieldLabel: '',
 		height: 7,
-		value: ''
+		value: '',
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'sport',
 		value: '',
-		fieldLabel: gettext('Source port')
+		fieldLabel: gettext('Source port'),
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'dport',
 		value: '',
-		fieldLabel: gettext('Dest. port')
-	    }
+		fieldLabel: gettext('Dest. port'),
+	    },
 	];
 
 	me.advancedColumn1 = [
 	    {
-		xtype: 'pveFirewallLogLevels'
-	    }
+		xtype: 'pveFirewallLogLevels',
+	    },
 	];
 
 	me.columnB = [
@@ -219,12 +219,12 @@ Ext.define('PVE.FirewallRulePanel', {
 		xtype: 'textfield',
 		name: 'comment',
 		value: '',
-		fieldLabel: gettext('Comment')
-	    }
+		fieldLabel: gettext('Comment'),
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.FirewallRuleEdit', {
@@ -260,13 +260,13 @@ Ext.define('PVE.FirewallRuleEdit', {
 	    isCreate: me.isCreate,
 	    list_refs_url: me.list_refs_url,
 	    allow_iface: me.allow_iface,
-	    rule_pos: me.rule_pos
+	    rule_pos: me.rule_pos,
 	});
 
 	Ext.apply(me, {
             subject: gettext('Rule'),
 	    isAdd: true,
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -284,12 +284,12 @@ Ext.define('PVE.FirewallRuleEdit', {
 			    form.markInvalid(values.errors);
 			}, 100);
 		    }
-		}
+		},
 	    });
 	} else if (me.rec) {
 	    ipanel.setValues(me.rec.data);
 	}
-    }
+    },
 });
 
 Ext.define('PVE.FirewallGroupRuleEdit', {
@@ -317,15 +317,15 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
 	    {
 		xtype: 'hiddenfield',
 		name: 'type',
-		value: 'group'
+		value: 'group',
 	    },
 	    {
 		xtype: 'pveSecurityGroupsSelector',
 		name: 'action',
 		value: '',
 		fieldLabel: gettext('Security Group'),
-		allowBlank: false
-	    }
+		allowBlank: false,
+	    },
 	];
 
 	if (me.allow_iface) {
@@ -334,7 +334,7 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
 		name: 'iface',
 		deleteEmpty: !me.isCreate,
 		value: '',
-		fieldLabel: gettext('Interface')
+		fieldLabel: gettext('Interface'),
 	    });
 	}
 
@@ -347,23 +347,23 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
 		    name: 'enable',
 		    checked: false,
 		    uncheckedValue: 0,
-		    fieldLabel: gettext('Enable')
-		}
+		    fieldLabel: gettext('Enable'),
+		},
 	    ],
 	    columnB: [
 		{
 		    xtype: 'textfield',
 		    name: 'comment',
 		    value: '',
-		    fieldLabel: gettext('Comment')
-		}
-	    ]
+		    fieldLabel: gettext('Comment'),
+		},
+	    ],
 	});
 
 	Ext.apply(me, {
             subject: gettext('Rule'),
 	    isAdd: true,
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -373,10 +373,10 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
 		success:  function(response, options) {
 		    var values = response.result.data;
 		    ipanel.setValues(values);
-		}
+		},
 	    });
 	}
-    }
+    },
 });
 
 Ext.define('PVE.FirewallRules', {
@@ -420,7 +420,7 @@ Ext.define('PVE.FirewallRules', {
 	    }
 	    me.store.setProxy({
 		type: 'proxmox',
-		url: '/api2/json' + url
+		url: '/api2/json' + url,
 	    });
 
 	    me.store.load();
@@ -444,7 +444,7 @@ Ext.define('PVE.FirewallRules', {
 	    },
 	    callback: function() {
 		me.store.load();
-	    }
+	    },
 	});
     },
 
@@ -471,7 +471,7 @@ Ext.define('PVE.FirewallRules', {
 	    },
 	    callback: function() {
 		me.store.load();
-	    }
+	    },
 	});
     },
 
@@ -483,8 +483,8 @@ Ext.define('PVE.FirewallRules', {
 	    throw "no list_refs_url specified";
 	}
 
-	var store = Ext.create('Ext.data.Store',{
-	    model: 'pve-fw-rule'
+	var store = Ext.create('Ext.data.Store', {
+	    model: 'pve-fw-rule',
 	});
 
 	var reload = function() {
@@ -514,18 +514,18 @@ Ext.define('PVE.FirewallRules', {
 		allow_iface: me.allow_iface,
 		base_url: me.base_url,
 		list_refs_url: me.list_refs_url,
-		rule_pos: rec.data.pos
+		rule_pos: rec.data.pos,
 	    });
 
 	    win.show();
 	    win.on('destroy', reload);
 	};
 
-	me.editBtn = Ext.create('Proxmox.button.Button',{
+	me.editBtn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	me.addBtn =  Ext.create('Ext.Button', {
@@ -535,11 +535,11 @@ Ext.define('PVE.FirewallRules', {
 		var win = Ext.create('PVE.FirewallRuleEdit', {
 		    allow_iface: me.allow_iface,
 		    base_url: me.base_url,
-		    list_refs_url: me.list_refs_url
+		    list_refs_url: me.list_refs_url,
 		});
 		win.on('destroy', reload);
 		win.show();
-	    }
+	    },
 	});
 
 	var run_copy_editor = function() {
@@ -559,21 +559,21 @@ Ext.define('PVE.FirewallRules', {
 		allow_iface: me.allow_iface,
 		base_url: me.base_url,
 		list_refs_url: me.list_refs_url,
-		rec: rec
+		rec: rec,
 	    });
 
 	    win.show();
 	    win.on('destroy', reload);
 	};
 
-	me.copyBtn = Ext.create('Proxmox.button.Button',{
+	me.copyBtn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Copy'),
 	    selModel: sm,
 	    enableFn: function(rec) {
 		return (rec.data.type === 'in' || rec.data.type === 'out');
 	    },
 	    disabled: true,
-	    handler: run_copy_editor
+	    handler: run_copy_editor,
 	});
 
 	if (me.allow_groups) {
@@ -584,15 +584,15 @@ Ext.define('PVE.FirewallRules', {
 		handler: function() {
 		    var win = Ext.create('PVE.FirewallGroupRuleEdit', {
 			allow_iface: me.allow_iface,
-			base_url: me.base_url
+			base_url: me.base_url,
 		    });
 		    win.on('destroy', reload);
 		    win.show();
-		}
+		},
 	    });
 	}
 
-	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton',{
+	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: me.base_url + '/',
 	    confirmMsg: false,
@@ -603,7 +603,7 @@ Ext.define('PVE.FirewallRules', {
 	    },
 	    callback: function() {
 		me.store.load();
-	    }
+	    },
 	});
 
 	var tbar = me.tbar_prefix ? [ me.tbar_prefix ] : [];
@@ -619,7 +619,7 @@ Ext.define('PVE.FirewallRules', {
 		metaData.tdCls = 'proxmox-invalid-row';
 		var html = '<p>' +  Ext.htmlEncode(errors[name]) + '</p>';
 		metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' +
-		    html.replace(/\"/g,'&quot;') + '"';
+		    html.replace(/\"/g, '&quot;') + '"';
 	    }
 	    return value;
 	};
@@ -640,7 +640,7 @@ Ext.define('PVE.FirewallRules', {
 			return value;
 		    }
 		    return '';
-		}
+		},
 	    },
 	    {
 		xtype: 'checkcolumn',
@@ -658,9 +658,9 @@ Ext.define('PVE.FirewallRules', {
 			    delete data.iface;
 			}
 			me.updateRule(data);
-		    }
+		    },
 		},
-		width: 50
+		width: 50,
 	    },
 	    {
 		header: gettext('Type'),
@@ -668,7 +668,7 @@ Ext.define('PVE.FirewallRules', {
 		renderer: function(value, metaData, record) {
 		    return render_errors('type', value, metaData, record);
 		},
-		width: 50
+		width: 50,
 	    },
 	    {
 		header: gettext('Action'),
@@ -676,7 +676,7 @@ Ext.define('PVE.FirewallRules', {
 		renderer: function(value, metaData, record) {
 		    return render_errors('action', value, metaData, record);
 		},
-		width: 80
+		width: 80,
 	    },
 	    {
 		header: gettext('Macro'),
@@ -684,8 +684,8 @@ Ext.define('PVE.FirewallRules', {
 		renderer: function(value, metaData, record) {
 		    return render_errors('macro', value, metaData, record);
 		},
-		width: 80
-	    }
+		width: 80,
+	    },
 	];
 
 	if (me.allow_iface) {
@@ -695,7 +695,7 @@ Ext.define('PVE.FirewallRules', {
 		renderer: function(value, metaData, record) {
 		    return render_errors('iface', value, metaData, record);
 		},
-		width: 80
+		width: 80,
 	    });
 	}
 
@@ -706,7 +706,7 @@ Ext.define('PVE.FirewallRules', {
 		renderer: function(value, metaData, record) {
 		    return render_errors('source', value, metaData, record);
 		},
-		width: 100
+		width: 100,
 	    },
 	    {
 		header: gettext('Destination'),
@@ -714,7 +714,7 @@ Ext.define('PVE.FirewallRules', {
 		renderer: function(value, metaData, record) {
 		    return render_errors('dest', value, metaData, record);
 		},
-		width: 100
+		width: 100,
 	    },
 	    {
 		header: gettext('Protocol'),
@@ -722,7 +722,7 @@ Ext.define('PVE.FirewallRules', {
 		renderer: function(value, metaData, record) {
 		    return render_errors('proto', value, metaData, record);
 		},
-		width: 100
+		width: 100,
 	    },
 	    {
 		header: gettext('Dest. port'),
@@ -730,7 +730,7 @@ Ext.define('PVE.FirewallRules', {
 		renderer: function(value, metaData, record) {
 		    return render_errors('dport', value, metaData, record);
 		},
-		width: 100
+		width: 100,
 	    },
 	    {
 		header: gettext('Source port'),
@@ -738,7 +738,7 @@ Ext.define('PVE.FirewallRules', {
 		renderer: function(value, metaData, record) {
 		    return render_errors('sport', value, metaData, record);
 		},
-		width: 100
+		width: 100,
 	    },
 	    {
 		header: gettext('Log level'),
@@ -746,7 +746,7 @@ Ext.define('PVE.FirewallRules', {
 		renderer: function(value, metaData, record) {
 		    return render_errors('log', value, metaData, record);
 		},
-		width: 100
+		width: 100,
 	    },
 	    {
 		header: gettext('Comment'),
@@ -754,8 +754,8 @@ Ext.define('PVE.FirewallRules', {
 		flex: 1,
 		renderer: function(value, metaData, record) {
 		    return render_errors('comment', Ext.util.Format.htmlEncode(value), metaData, record);
-		}
-	    }
+		},
+	    },
 	);
 
 	Ext.apply(me, {
@@ -767,8 +767,8 @@ Ext.define('PVE.FirewallRules', {
 		    {
 			ptype: 'gridviewdragdrop',
 			dragGroup: 'FWRuleDDGroup',
-			dropGroup: 'FWRuleDDGroup'
-		    }
+			dropGroup: 'FWRuleDDGroup',
+		    },
 		],
 		listeners: {
                     beforedrop: function(node, data, dropRec, dropPosition) {
@@ -783,11 +783,11 @@ Ext.define('PVE.FirewallRules', {
 			me.moveRule(pos, moveto);
 			return 0;
                     },
-		    itemdblclick: run_editor
-		}
+		    itemdblclick: run_editor,
+		},
 	    },
 	    sortableColumns: false,
-	    columns: columns
+	    columns: columns,
 	});
 
 	me.callParent();
@@ -795,7 +795,7 @@ Ext.define('PVE.FirewallRules', {
 	if (me.base_url) {
 	    me.setBaseUrl(me.base_url); // load
 	}
-    }
+    },
 }, function() {
 
     Ext.define('pve-fw-rule', {
@@ -803,7 +803,7 @@ Ext.define('PVE.FirewallRules', {
 	fields: [ { name: 'enable', type: 'boolean' },
 		  'type', 'action', 'macro', 'source', 'dest', 'proto', 'iface',
 		  'dport', 'sport', 'comment', 'pos', 'digest', 'errors' ],
-	idProperty: 'pos'
+	idProperty: 'pos',
     });
 
 });

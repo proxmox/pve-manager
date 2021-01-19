@@ -19,7 +19,7 @@ Ext.define('PVE.panel.SDNZoneBase', {
         var me = this;
 
         me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.sdn.zones.BaseEdit', {
@@ -41,13 +41,13 @@ Ext.define('PVE.sdn.zones.BaseEdit', {
 	var ipanel = Ext.create(me.paneltype, {
 	    type: me.type,
 	    isCreate: me.isCreate,
-	    zone: me.zone
+	    zone: me.zone,
 	});
 
 	Ext.apply(me, {
             subject: PVE.Utils.format_sdnzone_type(me.type),
 	    isAdd: true,
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -66,8 +66,8 @@ Ext.define('PVE.sdn.zones.BaseEdit', {
 		    values.enable = values.disable ? 0 : 1;
 
 		    ipanel.setValues(values);
-		}
+		},
 	    });
 	}
-    }
+    },
 });

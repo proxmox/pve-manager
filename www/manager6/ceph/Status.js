@@ -9,11 +9,11 @@ Ext.define('PVE.node.CephStatus', {
     bodyPadding: 5,
 
     layout: {
-	type: 'column'
+	type: 'column',
     },
 
     defaults: {
-	padding: 5
+	padding: 5,
     },
 
     items: [
@@ -25,16 +25,16 @@ Ext.define('PVE.node.CephStatus', {
 	    responsiveConfig: {
 		'width < 1900': {
 		    minHeight: 230,
-		    columnWidth: 1
+		    columnWidth: 1,
 		},
 		'width >= 1900': {
 		    minHeight: 500,
-		    columnWidth: 0.5
-		}
+		    columnWidth: 0.5,
+		},
 	    },
 	    layout: {
 		type: 'hbox',
-		align: 'stretch'
+		align: 'stretch',
 	    },
 	    items: [
 		{
@@ -49,7 +49,7 @@ Ext.define('PVE.node.CephStatus', {
 			    flex: 1,
 			    itemId: 'overallhealth',
 			    xtype: 'pveHealthWidget',
-			    title: gettext('Status')
+			    title: gettext('Status'),
 			},
 			{
 			    itemId: 'versioninfo',
@@ -64,7 +64,7 @@ Ext.define('PVE.node.CephStatus', {
 			    style: {
 				'text-align': 'center',
 			    },
-			}
+			},
 		    ],
 		},
 		{
@@ -93,16 +93,16 @@ Ext.define('PVE.node.CephStatus', {
 				return '<i class="fa fa-fw ' + classes + '"></i>';
 			    },
 			    sorter: {
-				sorterFn: function(a,b) {
+				sorterFn: function(a, b) {
 				    var healthArr = ['HEALTH_ERR', 'HEALTH_WARN', 'HEALTH_OK'];
 				    return healthArr.indexOf(b.data.severity) - healthArr.indexOf(a.data.severity);
-				}
-			    }
+				},
+			    },
 			},
 			{
 			    dataIndex: 'summary',
 			    header: gettext('Summary'),
-			    flex: 1
+			    flex: 1,
 			},
 			{
 			    xtype: 'actioncolumn',
@@ -120,7 +120,7 @@ Ext.define('PVE.node.CephStatus', {
 					    width: 650,
 					    height: 400,
 					    layout: {
-						type: 'fit'
+						type: 'fit',
 					    },
 					    items: [{
 						scrollable: true,
@@ -128,18 +128,18 @@ Ext.define('PVE.node.CephStatus', {
 						xtype: 'box',
 						html: [
 						    '<span>' + Ext.htmlEncode(record.data.summary) + '</span>',
-						    '<pre>' + Ext.htmlEncode(record.data.detail) + '</pre>'
-						]
-					    }]
+						    '<pre>' + Ext.htmlEncode(record.data.detail) + '</pre>',
+						],
+					    }],
 					});
 					win.show();
-				    }
-				}
-			    ]
-			}
-		    ]
-		}
-	    ]
+				    },
+				},
+			    ],
+			},
+		    ],
+		},
+	    ],
 	},
 	{
 	    xtype: 'pveCephStatusDetail',
@@ -148,14 +148,14 @@ Ext.define('PVE.node.CephStatus', {
 	    responsiveConfig: {
 		'width < 1900': {
 		    columnWidth: 1,
-		    minHeight: 250
+		    minHeight: 250,
 		},
 		'width >= 1900': {
 		    columnWidth: 0.5,
-		    minHeight: 300
-		}
+		    minHeight: 300,
+		},
 	    },
-	    title: gettext('Status')
+	    title: gettext('Status'),
 	},
 	{
 	    title: gettext('Services'),
@@ -164,18 +164,18 @@ Ext.define('PVE.node.CephStatus', {
 	    plugins: 'responsive',
 	    layout: {
 		type: 'hbox',
-		align: 'stretch'
+		align: 'stretch',
 	    },
 	    responsiveConfig: {
 		'width < 1900': {
 		    columnWidth: 1,
-		    minHeight: 200
+		    minHeight: 200,
 		},
 		'width >= 1900': {
 		    columnWidth: 0.5,
-		    minHeight: 200
-		}
-	    }
+		    minHeight: 200,
+		},
+	    },
 	},
 	{
 	    xtype: 'panel',
@@ -184,7 +184,7 @@ Ext.define('PVE.node.CephStatus', {
 	    bodyPadding: 5,
 	    layout: {
 		type: 'hbox',
-		align: 'center'
+		align: 'center',
 	    },
 	    items: [
 		{
@@ -194,7 +194,7 @@ Ext.define('PVE.node.CephStatus', {
 			{
 			    xtype: 'proxmoxGauge',
 			    itemId: 'space',
-			    title: gettext('Usage')
+			    title: gettext('Usage'),
 			},
 			{
 			    flex: 1,
@@ -217,46 +217,46 @@ Ext.define('PVE.node.CephStatus', {
 				    xtype: 'progressbar',
 				    itemId: 'recoveryprogress',
 				},
-			    ]
+			    ],
 			},
-		    ]
+		    ],
 		},
 		{
 		    flex: 2,
 		    xtype: 'container',
 		    defaults: {
 			padding: 0,
-			height: 100
+			height: 100,
 		    },
 		    items: [
 			{
 			    itemId: 'reads',
 			    xtype: 'pveRunningChart',
 			    title: gettext('Reads'),
-			    renderer: PVE.Utils.render_bandwidth
+			    renderer: PVE.Utils.render_bandwidth,
 			},
 			{
 			    itemId: 'writes',
 			    xtype: 'pveRunningChart',
 			    title: gettext('Writes'),
-			    renderer: PVE.Utils.render_bandwidth
+			    renderer: PVE.Utils.render_bandwidth,
 			},
 			{
 			    itemId: 'readiops',
 			    xtype: 'pveRunningChart',
 			    title: 'IOPS: ' + gettext('Reads'),
-			    renderer: Ext.util.Format.numberRenderer('0,000')
+			    renderer: Ext.util.Format.numberRenderer('0,000'),
 			},
 			{
 			    itemId: 'writeiops',
 			    xtype: 'pveRunningChart',
 			    title: 'IOPS: ' + gettext('Writes'),
-			    renderer: Ext.util.Format.numberRenderer('0,000')
+			    renderer: Ext.util.Format.numberRenderer('0,000'),
 			},
-		    ]
-		}
-	    ]
-	}
+		    ],
+		},
+	    ],
+	},
     ],
 
     generateCheckData: function(health) {
@@ -274,9 +274,9 @@ Ext.define('PVE.node.CephStatus', {
 			    function(first, second) {
 				return first + '\n' + second.message;
 			    },
-			    ''
+			    '',
 			),
-		severity: checks[key].severity
+		severity: checks[key].severity,
 	    });
 	});
 
@@ -310,7 +310,7 @@ Ext.define('PVE.node.CephStatus', {
 
 	var text = Ext.String.format(gettext('{0} of {1}'),
 	    PVE.Utils.render_size(used),
-	    PVE.Utils.render_size(total)
+	    PVE.Utils.render_size(total),
 	);
 
 	// update the usage widget
@@ -369,8 +369,8 @@ Ext.define('PVE.node.CephStatus', {
 	    interval: 5000,
 	    proxy: {
 		type: 'proxmox',
-		url: baseurl + '/status'
-	    }
+		url: baseurl + '/status',
+	    },
 	});
 
 	me.metadatastore = Ext.create('Proxmox.data.UpdateStore', {
@@ -378,8 +378,8 @@ Ext.define('PVE.node.CephStatus', {
 	    interval: 15*1000,
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/cluster/ceph/metadata'
-	    }
+		url: '/api2/json/cluster/ceph/metadata',
+	    },
 	});
 
 	// save references for the updatefunction
@@ -397,7 +397,7 @@ Ext.define('PVE.node.CephStatus', {
 		    me.mon(win, 'cephInstallWindowClosed', function(){
 			me.store.startUpdate();
 		    });
-		}
+		},
 	    );
 	});
 
@@ -431,6 +431,6 @@ Ext.define('PVE.node.CephStatus', {
 	me.on('destroy', me.metadatastore.stopUpdate);
 	me.store.startUpdate();
 	me.metadatastore.startUpdate();
-    }
+    },
 
 });

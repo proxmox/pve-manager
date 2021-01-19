@@ -30,27 +30,27 @@ Ext.define('PVE.dc.Summary', {
 	    layout: 'hbox',
 	    defaults: {
 		xtype: 'proxmoxGauge',
-		flex: 1
+		flex: 1,
 	    },
 	    items:[
 		{
 		    title: gettext('CPU'),
-		    itemId: 'cpu'
+		    itemId: 'cpu',
 		},
 		{
 		    title: gettext('Memory'),
-		    itemId: 'memory'
+		    itemId: 'memory',
 		},
 		{
 		    title: gettext('Storage'),
-		    itemId: 'storage'
-		}
-	    ]
+		    itemId: 'storage',
+		},
+	    ],
 	},
 	{
 	    itemId: 'nodeview',
 	    xtype: 'pveDcNodeView',
-	    height: 250
+	    height: 250,
 	},
 	{
 	    title: gettext('Subscriptions'),
@@ -66,11 +66,11 @@ Ext.define('PVE.dc.Summary', {
 			    if (this.component.userCls === 'pointer') {
 				window.open('https://www.proxmox.com/en/proxmox-ve/pricing', '_blank');
 			    }
-			}
-		    }
-		}
-	    ]
-	}
+			},
+		    },
+		},
+	    ],
+	},
     ],
 
     listeners: {
@@ -88,20 +88,20 @@ Ext.define('PVE.dc.Summary', {
 	    model: 'pve-dc-nodes',
 	    proxy: {
                 type: 'proxmox',
-                url: "/api2/json/cluster/status"
-	    }
+                url: "/api2/json/cluster/status",
+	    },
 	});
 
 	var gridstore = Ext.create('Proxmox.data.DiffStore', {
 	    rstore: rstore,
 	    filters: {
 		property: 'type',
-		value: 'node'
+		value: 'node',
 	    },
 	    sorters: {
 		property: 'id',
-		direction: 'ASC'
-	    }
+		direction: 'ASC',
+	    },
 	});
 
 	me.callParent();
@@ -141,13 +141,13 @@ Ext.define('PVE.dc.Summary', {
 		running: 0,
 		paused: 0,
 		stopped: 0,
-		template: 0
+		template: 0,
 	    };
 	    var lxc = {
 		running: 0,
 		paused: 0,
 		stopped: 0,
-		template: 0
+		template: 0,
 	    };
 	    var error = 0;
 
@@ -215,7 +215,7 @@ Ext.define('PVE.dc.Summary', {
 	    text = Ext.String.format(gettext('{0} of {1}'), PVE.Utils.render_size(used), PVE.Utils.render_size(total));
 	    storagestat.updateValue((used/total), text);
 
-	    gueststatus.updateValues(qemu,lxc,error);
+	    gueststatus.updateValues(qemu, lxc, error);
 
 	    me.suspendLayout = false;
 	    me.updateLayout(true);
@@ -255,27 +255,27 @@ Ext.define('PVE.dc.Summary', {
 	    var data = {
 		title: Proxmox.Utils.unknownText,
 		text: Proxmox.Utils.unknownText,
-		iconCls: PVE.Utils.get_health_icon(undefined, true)
+		iconCls: PVE.Utils.get_health_icon(undefined, true),
 	    };
 	    if (level === '') {
 		data = {
 		    title: gettext('No Subscription'),
 		    iconCls: PVE.Utils.get_health_icon('critical', true),
-		    text: gettext('You have at least one node without subscription.')
+		    text: gettext('You have at least one node without subscription.'),
 		};
 		subs.setUserCls('pointer');
 	    } else if (mixed) {
 		data = {
 		    title: gettext('Mixed Subscriptions'),
 		    iconCls: PVE.Utils.get_health_icon('warning', true),
-		    text: gettext('Warning: Your subscription levels are not the same.')
+		    text: gettext('Warning: Your subscription levels are not the same.'),
 		};
 		subs.setUserCls('pointer');
 	    } else if (level) {
 		data = {
 		    title: PVE.Utils.render_support_level(level),
 		    iconCls: PVE.Utils.get_health_icon('good', true),
-		    text: gettext('Your subscription status is valid.')
+		    text: gettext('Your subscription status is valid.'),
 		};
 		subs.setUserCls('');
 	    }
@@ -295,6 +295,6 @@ Ext.define('PVE.dc.Summary', {
 	});
 
 	rstore.startUpdate();
-    }
+    },
 
 });

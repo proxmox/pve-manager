@@ -9,7 +9,7 @@ Ext.define('PVE.ha.FencingView', {
 
 	var store = new Ext.data.Store({
 	    model: 'pve-ha-fencing',
-	    data: []
+	    data: [],
 	});
 
 	Ext.apply(me, {
@@ -18,32 +18,32 @@ Ext.define('PVE.ha.FencingView', {
 	    viewConfig: {
 		trackOver: false,
 		deferEmptyText: false,
-		emptyText: 'Use watchdog based fencing.'
+		emptyText: 'Use watchdog based fencing.',
 	    },
 	    columns: [
 		{
 		    header: 'Node',
 		    width: 100,
 		    sortable: true,
-		    dataIndex: 'node'
+		    dataIndex: 'node',
 		},
 		{
 		    header: gettext('Command'),
 		    flex: 1,
-		    dataIndex: 'command'
-		}
-	    ]
+		    dataIndex: 'command',
+		},
+	    ],
 	});
 
 	me.callParent();
-    }
+    },
 }, function() {
 
     Ext.define('pve-ha-fencing', {
 	extend: 'Ext.data.Model',
 	fields: [
-	    'node', 'command', 'digest'
-	]
+	    'node', 'command', 'digest',
+	],
     });
 
 });

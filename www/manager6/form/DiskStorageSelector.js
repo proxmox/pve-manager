@@ -4,7 +4,7 @@ Ext.define('PVE.form.DiskStorageSelector', {
 
     layout: 'fit',
     defaults: {
-	margin: '0 0 5 0'
+	margin: '0 0 5 0',
     },
 
     // the fieldLabel for the storageselector
@@ -119,9 +119,9 @@ Ext.define('PVE.form.DiskStorageSelector', {
 		listeners: {
 		    change: {
 			fn: me.changeStorage,
-			scope: me
-		    }
-		}
+			scope: me,
+		    },
+		},
 	    },
 	    {
 		xtype: 'pveFileSelector',
@@ -131,7 +131,7 @@ Ext.define('PVE.form.DiskStorageSelector', {
 		fieldLabel: gettext('Disk image'),
 		nodename: me.nodename,
 		disabled: true,
-		hidden: true
+		hidden: true,
 	    },
 	    {
 		xtype: 'numberfield',
@@ -145,7 +145,7 @@ Ext.define('PVE.form.DiskStorageSelector', {
 		maxValue: 128*1024,
 		decimalPrecision: 3,
 		value: me.defaultSize,
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'pveDiskFormatSelector',
@@ -157,13 +157,13 @@ Ext.define('PVE.form.DiskStorageSelector', {
 		disabled: true,
 		hidden: me.storageContent === 'rootdir',
 		value: 'qcow2',
-		allowBlank: false
-	    }
+		allowBlank: false,
+	    },
 	];
 
 	// use it to disable the children but not ourself
 	me.disabled = false;
 
 	me.callParent();
-    }
+    },
 });

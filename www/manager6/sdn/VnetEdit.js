@@ -60,7 +60,7 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	    name: 'vlanaware',
 	    uncheckedValue: 0,
 	    checked: false,
-	    fieldLabel: gettext('VLAN Aware')
+	    fieldLabel: gettext('VLAN Aware'),
 	},
 	{
 	    xtype: 'textfield',

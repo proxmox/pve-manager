@@ -10,9 +10,9 @@ Ext.define('PVE.dc.Guests', {
 	columns: 2,
 	tableAttrs: {
 	    style: {
-		width: '100%'
-	    }
-	}
+		width: '100%',
+	    },
+	},
     },
     bodyPadding: '0 20 20 20',
 
@@ -21,8 +21,8 @@ Ext.define('PVE.dc.Guests', {
 	padding: '0 50 0 50',
 	style: {
 	    'text-align':'center',
-	    'line-height':'1.2'
-	}
+	    'line-height':'1.2',
+	},
     },
     items: [{
 	itemId: 'qemu',
@@ -30,7 +30,7 @@ Ext.define('PVE.dc.Guests', {
 	    running: 0,
 	    paused: 0,
 	    stopped: 0,
-	    template: 0
+	    template: 0,
 	},
 	tpl: [
 	    '<h3>' + gettext("Virtual Machines") + '</h3>',
@@ -57,15 +57,15 @@ Ext.define('PVE.dc.Guests', {
 		    gettext('Templates'),
 		'</div>',
 		'<div class="right-aligned">{template}</div>',
-	    '</tpl>'
-	]
-    },{
+	    '</tpl>',
+	],
+    }, {
 	itemId: 'lxc',
 	data: {
 	    running: 0,
 	    paused: 0,
 	    stopped: 0,
-	    template: 0
+	    template: 0,
 	},
 	tpl: [
 	    '<h3>' + gettext("LXC Container") + '</h3>',
@@ -92,13 +92,13 @@ Ext.define('PVE.dc.Guests', {
 		    gettext('Templates'),
 		'</div>',
 		'<div class="right-aligned">{template}</div>',
-	    '</tpl>'
-	]
-    },{
+	    '</tpl>',
+	],
+    }, {
 	itemId: 'error',
 	colspan: 2,
 	data: {
-	    num: 0
+	    num: 0,
 	},
 	columnWidth: 1,
 	padding: '10 250 0 250',
@@ -109,8 +109,8 @@ Ext.define('PVE.dc.Guests', {
 		    gettext('Error'),
 		'</div>',
 		'<div class="right-aligned">{num}</div>',
-	    '</tpl>'
-	]
+	    '</tpl>',
+	],
     }],
 
     updateValues: function(qemu, lxc, error) {
@@ -118,5 +118,5 @@ Ext.define('PVE.dc.Guests', {
 	me.getComponent('qemu').update(qemu);
 	me.getComponent('lxc').update(lxc);
 	me.getComponent('error').update({num: error});
-    }
+    },
 });

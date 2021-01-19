@@ -27,25 +27,25 @@ Ext.define('PVE.node.CreateLVM', {
 		    nodename: me.nodename,
 		    diskType: 'unused',
 		    fieldLabel: gettext('Disk'),
-		    allowBlank: false
+		    allowBlank: false,
 		},
 		{
 		    xtype: 'proxmoxtextfield',
 		    name: 'name',
 		    fieldLabel: gettext('Name'),
-		    allowBlank: false
+		    allowBlank: false,
 		},
 		{
 		    xtype: 'proxmoxcheckbox',
 		    name: 'add_storage',
 		    fieldLabel: gettext('Add Storage'),
-		    value: '1'
-		}
-            ]
+		    value: '1',
+		},
+            ],
         });
 
         me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.node.LVMList', {
@@ -59,13 +59,13 @@ Ext.define('PVE.node.LVMList', {
 	    xtype: 'treecolumn',
 	    text: gettext('Name'),
 	    dataIndex: 'name',
-	    flex: 1
+	    flex: 1,
 	},
 	{
 	    text: gettext('Number of LVs'),
 	    dataIndex: 'lvcount',
 	    width: 150,
-	    align: 'right'
+	    align: 'right',
 	},
 	{
 	    header: gettext('Usage'),
@@ -74,8 +74,8 @@ Ext.define('PVE.node.LVMList', {
 	    tdCls: 'x-progressbar-default-cell',
 	    xtype: 'widgetcolumn',
 	    widget: {
-		xtype: 'pveProgressBar'
-	    }
+		xtype: 'pveProgressBar',
+	    },
 	},
 	{
 	    header: gettext('Size'),
@@ -83,7 +83,7 @@ Ext.define('PVE.node.LVMList', {
 	    align: 'right',
 	    sortable: true,
 	    renderer: Proxmox.Utils.format_size,
-	    dataIndex: 'size'
+	    dataIndex: 'size',
 	},
 	{
 	    header: gettext('Free'),
@@ -91,8 +91,8 @@ Ext.define('PVE.node.LVMList', {
 	    align: 'right',
 	    sortable: true,
 	    renderer: Proxmox.Utils.format_size,
-	    dataIndex: 'free'
-	}
+	    dataIndex: 'free',
+	},
     ],
 
     rootVisible: false,
@@ -105,7 +105,7 @@ Ext.define('PVE.node.LVMList', {
 	    handler: function() {
 		var me = this.up('panel');
 		me.reload();
-	    }
+	    },
 	},
 	{
 	    text: gettext('Create') + ': Volume Group',
@@ -115,10 +115,10 @@ Ext.define('PVE.node.LVMList', {
 		    nodename: me.nodename,
 		    taskDone: function() {
 			me.reload();
-		    }
+		    },
 		}).show();
-	    }
-	}
+	    },
+	},
     ],
 
     reload: function() {
@@ -135,7 +135,7 @@ Ext.define('PVE.node.LVMList', {
 		sm.deselectAll();
 		me.setRootNode(response.result.data);
 		me.expandAll();
-	    }
+	    },
 	});
     },
 
@@ -143,7 +143,7 @@ Ext.define('PVE.node.LVMList', {
 	activate: function() {
 	    var me = this;
 	    me.reload();
-	}
+	},
     },
 
     initComponent: function() {
@@ -166,22 +166,22 @@ Ext.define('PVE.node.LVMList', {
 			var txt = 'fa x-fa-tree fa-';
 			txt += (data.leaf) ? 'hdd-o' : 'object-group';
 			return txt;
-		    }
+		    },
 		},
 		{
 		    type: 'number',
 		    name: 'usage',
 		    calculate: function(data) {
 			return ((data.size-data.free)/data.size);
-		    }
-		}
+		    },
+		},
 	    ],
-	    sorters: 'name'
+	    sorters: 'name',
 	});
 
 	me.callParent();
 
 	me.reload();
-    }
+    },
 });
 

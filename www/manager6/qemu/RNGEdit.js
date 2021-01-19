@@ -15,7 +15,7 @@ Ext.define('PVE.qemu.RNGInputPanel', {
 	var ret = PVE.Parser.printPropertyString(values);
 
 	return {
-	    rng0: ret
+	    rng0: ret,
 	};
     },
 
@@ -34,15 +34,15 @@ Ext.define('PVE.qemu.RNGInputPanel', {
 		change: function(el, newVal) {
 		    let limitWarning = this.lookupReference('limitWarning');
 		    limitWarning.setHidden(!!newVal);
-		}
+		},
 	    },
 	    '#source': {
 		change: function(el, newVal) {
 		    let limitWarning = this.lookupReference('sourceWarning');
 		    limitWarning.setHidden(newVal !== '/dev/random');
-		}
-	    }
-	}
+		},
+	    },
+	},
     },
 
     items: [{
@@ -55,8 +55,8 @@ Ext.define('PVE.qemu.RNGInputPanel', {
 	comboItems: [
 	    ['/dev/urandom', '/dev/urandom'],
 	    ['/dev/random', '/dev/random'],
-	    ['/dev/hwrng', '/dev/hwrng']
-	]
+	    ['/dev/hwrng', '/dev/hwrng'],
+	],
     },
     {
 	xtype: 'numberfield',
@@ -67,7 +67,7 @@ Ext.define('PVE.qemu.RNGInputPanel', {
 	value: 1024,
 	fieldLabel: gettext('Limit (Bytes/Period)'),
 	labelWidth: 130,
-	emptyText: gettext('unlimited')
+	emptyText: gettext('unlimited'),
     },
     {
 	xtype: 'numberfield',
@@ -83,15 +83,15 @@ Ext.define('PVE.qemu.RNGInputPanel', {
 	reference: 'sourceWarning',
 	value: gettext('Using /dev/random as entropy source is discouraged, as it can lead to host entropy starvation. /dev/urandom is preferred, and does not lead to a decrease in security in practice.'),
 	userCls: 'pmx-hint',
-	hidden: true
+	hidden: true,
     },
     {
 	xtype: 'displayfield',
 	reference: 'limitWarning',
 	value: gettext('Disabling the limiter can potentially allow a guest to overload the host. Proceed with caution.'),
 	userCls: 'pmx-hint',
-	hidden: true
-    }]
+	hidden: true,
+    }],
 });
 
 Ext.define('PVE.qemu.RNGEdit', {
@@ -100,7 +100,7 @@ Ext.define('PVE.qemu.RNGEdit', {
     subject: gettext('VirtIO RNG'),
 
     items: [{
-	xtype: 'pveRNGInputPanel'
+	xtype: 'pveRNGInputPanel',
     }],
 
     initComponent : function() {
@@ -117,8 +117,8 @@ Ext.define('PVE.qemu.RNGEdit', {
 		    if (rng0) {
 			me.setValues(PVE.Parser.parsePropertyString(rng0));
 		    }
-		}
+		},
 	    });
 	}
-    }
+    },
 });

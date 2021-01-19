@@ -10,23 +10,23 @@ Ext.define('PVE.form.IPProtocolSelector', {
 		dataIndex: 'p',
 		hideable: false,
 		sortable: false,
-		width: 100
+		width: 100,
 	    },
 	    {
 		header: gettext('Number'),
 		dataIndex: 'n',
 		hideable: false,
 		sortable: false,
-		width: 50
+		width: 50,
 	    },
 	    {
 		header: gettext('Description'),
 		dataIndex: 'd',
 		hideable: false,
 		sortable: false,
-		flex: 1
-	    }
-	]
+		flex: 1,
+	    },
+	],
     },
     store: {
 	    fields: [ 'p', 'd', 'n'],
@@ -81,7 +81,7 @@ Ext.define('PVE.form.IPProtocolSelector', {
 		{ p: 'hip', n: 139, d: 'Host Identity Protocol' },
 		{ p: 'shim6', n: 140, d: 'Shim6 Protocol [RFC5533]' },
 		{ p: 'wesp', n: 141, d: 'Wrapped Encapsulating Security Payload' },
-		{ p: 'rohc', n: 142, d: 'Robust Header Compression' }
-	    ]
-	}
+		{ p: 'rohc', n: 142, d: 'Robust Header Compression' },
+	    ],
+	},
 });

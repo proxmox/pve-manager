@@ -104,7 +104,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    'field[name=mpid]': {
 		change: function(field, value) {
 		    field.validate();
-		}
+		},
 	    },
 	    '#hdstorage': {
 		change: function(field, newValue) {
@@ -120,8 +120,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 
 		    var vm = me.getViewModel();
 		    vm.set('type', rec.data.type);
-		}
-	    }
+		},
+	    },
 	},
 
 	init: function(view) {
@@ -138,7 +138,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    if (view.isCreate) {
 		vm.set('isIncludedInBackup', true);
 	    }
-	}
+	},
     },
 
     viewModel: {
@@ -149,7 +149,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    mptype: '',
 	    type: '',
 	    confid: '',
-	    node: ''
+	    node: '',
 	},
 
 	formulas: {
@@ -170,8 +170,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    },
 	    isBindOrRoot: function(get) {
 		return get('isBind') || get('isRoot');
-	    }
-	}
+	    },
+	},
     },
 
     column1: [
@@ -186,7 +186,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    disabled: true,
 	    bind: {
 		hidden: '{hasMP}',
-		disabled: '{hasMP}'
+		disabled: '{hasMP}',
 	    },
 	    validator: function(value) {
 		var me = this.up('inputpanel');
@@ -198,7 +198,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		}
 		/* returns a string above */
 		return true;
-	    }
+	    },
 	},
 	{
 	    xtype: 'pveDiskStorageSelector',
@@ -211,8 +211,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    bind: {
 		hidden: '{hideStorSelector}',
 		disabled: '{hideStorSelector}',
-		nodename: '{node}'
-	    }
+		nodename: '{node}',
+	    },
 	},
 	{
 	    xtype: 'textfield',
@@ -221,9 +221,9 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    fieldLabel: gettext('Disk image'),
 	    name: 'file',
 	    bind: {
-		hidden: '{!hideStorSelector}'
-	    }
-	}
+		hidden: '{!hideStorSelector}',
+	    },
+	},
     ],
 
     column2: [
@@ -237,8 +237,8 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    fieldLabel: gettext('Path'),
 	    bind: {
 		hidden: '{isRoot}',
-		disabled: '{isRoot}'
-	    }
+		disabled: '{isRoot}',
+	    },
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
@@ -251,9 +251,9 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    bind: {
 		hidden: '{isRoot}',
 		disabled: '{isBindOrRoot}',
-		value: '{isIncludedInBackup}'
-	    }
-	}
+		value: '{isIncludedInBackup}',
+	    },
+	},
     ],
 
     advancedColumn1: [
@@ -262,14 +262,14 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    name: 'quota',
 	    defaultValue: 0,
 	    bind: {
-		disabled: '{!quota}'
+		disabled: '{!quota}',
 	    },
 	    fieldLabel: gettext('Enable quota'),
 	    listeners: {
 		disable: function() {
 		    this.reset();
-		}
-	    }
+		},
+	    },
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
@@ -277,9 +277,9 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    defaultValue: 0,
 	    bind: {
 		hidden: '{isRoot}',
-		disabled: '{isRoot}'
+		disabled: '{isRoot}',
 	    },
-	    fieldLabel: gettext('Read-only')
+	    fieldLabel: gettext('Read-only'),
 	},
 	{
 	    xtype: 'proxmoxKVComboBox',
@@ -290,11 +290,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		['noatime', 'noatime'],
 		['nodev', 'nodev'],
 		['noexec', 'noexec'],
-		['nosuid', 'nosuid']
+		['nosuid', 'nosuid'],
 	    ],
 	    multiSelect: true,
 	    value: [],
-	    allowBlank: true
+	    allowBlank: true,
 	},
     ],
 
@@ -307,21 +307,21 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    comboItems: [
 		['__default__', Proxmox.Utils.defaultText],
 		['1', Proxmox.Utils.enabledText],
-		['0', Proxmox.Utils.disabledText]
+		['0', Proxmox.Utils.disabledText],
 	    ],
 	    value: '__default__',
 	    bind: {
-		disabled: '{isBind}'
+		disabled: '{isBind}',
 	    },
-	    allowBlank: true
+	    allowBlank: true,
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
 	    inputValue: '0', // reverses the logic
 	    name: 'replicate',
-	    fieldLabel: gettext('Skip replication')
-	}
-    ]
+	    fieldLabel: gettext('Skip replication'),
+	},
+    ],
 });
 
 Ext.define('PVE.lxc.MountPointEdit', {
@@ -346,7 +346,7 @@ Ext.define('PVE.lxc.MountPointEdit', {
 	    nodename: nodename,
 	    unused: unused,
 	    unprivileged: me.unprivileged,
-	    isCreate: me.isCreate
+	    isCreate: me.isCreate,
 	});
 
 	var subject;
@@ -361,7 +361,7 @@ Ext.define('PVE.lxc.MountPointEdit', {
 	Ext.apply(me, {
 	    subject: subject,
 	    defaultFocus: me.confid !== 'rootfs' ? 'textfield[name=mp]' : 'tool',
-	    items: ipanel
+	    items: ipanel,
 	});
 
 	me.callParent();
@@ -383,7 +383,7 @@ Ext.define('PVE.lxc.MountPointEdit', {
 		    ipanel.setMountPoint(mp);
 		    me.isValid(); // trigger validation
 		}
-	    }
+	    },
 	});
-    }
+    },
 });

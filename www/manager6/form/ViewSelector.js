@@ -20,18 +20,18 @@ Ext.define('PVE.form.ViewSelector', {
 	var default_views = {
 	    server: {
 		text: gettext('Server View'),
-		groups: ['node']
+		groups: ['node'],
 	    },
 	    folder: {
 		text: gettext('Folder View'),
-		groups: ['type']
+		groups: ['type'],
 	    },
 	    storage: {
 		text: gettext('Storage View'),
 		groups: ['node'],
 		filterfn: function(node) {
 		    return node.data.type === 'storage' || node.data.type === 'node';
-		}
+		},
 	    },
 	    pool: {
 		text: gettext('Pool View'),
@@ -40,8 +40,8 @@ Ext.define('PVE.form.ViewSelector', {
                 filterfn: function(node) {
                     return node.data.type === 'qemu' || node.data.type === 'lxc' || node.data.type === 'openvz' ||
 			node.data.type === 'pool';
-                }
-	    }
+                },
+	    },
 	};
 
 	var groupdef = [];
@@ -53,10 +53,10 @@ Ext.define('PVE.form.ViewSelector', {
 	    model: 'KeyValue',
             proxy: {
 		type: 'memory',
-		reader: 'array'
+		reader: 'array',
             },
 	    data: groupdef,
-	    autoload: true
+	    autoload: true,
 	});
 
 	Ext.apply(me, {
@@ -86,7 +86,7 @@ Ext.define('PVE.form.ViewSelector', {
 	    stateEvents: [ 'select' ],
 	    stateful: true,
 	    stateId: 'pveview',
-	    id: 'view'
+	    id: 'view',
 	});
 
 	me.callParent();
@@ -99,5 +99,5 @@ Ext.define('PVE.form.ViewSelector', {
 
 	var sp = Ext.state.Manager.getProvider();
 	me.mon(sp, 'statechange', statechange, me);
-    }
+    },
 });

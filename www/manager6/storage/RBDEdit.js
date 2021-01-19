@@ -4,8 +4,8 @@ Ext.define('PVE.storage.Ceph.Model', {
 
     data: {
 	pveceph: true,
-	pvecephPossible: true
-    }
+	pvecephPossible: true,
+    },
 });
 
 Ext.define('PVE.storage.Ceph.Controller', {
@@ -14,18 +14,18 @@ Ext.define('PVE.storage.Ceph.Controller', {
 
     control: {
 	'#': {
-	    afterrender: 'queryMonitors'
+	    afterrender: 'queryMonitors',
 	},
 	'textfield[name=username]': {
-	    disable: 'resetField'
+	    disable: 'resetField',
 	},
 	'displayfield[name=monhost]': {
-	    enable: 'queryMonitors'
+	    enable: 'queryMonitors',
 	},
 	'textfield[name=monhost]': {
 	    disable: 'resetField',
-	    enable: 'resetField'
-	}
+	    enable: 'resetField',
+	},
     },
     resetField: function(field) {
 	field.reset();
@@ -67,9 +67,9 @@ Ext.define('PVE.storage.Ceph.Controller', {
 		    vm.set('pveceph', false);
 		    vm.set('pvecephPossible', false);
 		}
-	    }
+	    },
 	});
-    }
+    },
 });
 
 Ext.define('PVE.storage.RBDInputPanel', {
@@ -79,7 +79,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
     onlineHelp: 'ceph_rados_block_devices',
 
     viewModel: {
-	type: 'cephstorage'
+	type: 'cephstorage',
     },
 
     setValues: function(values) {
@@ -109,21 +109,21 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		bind: {
 		    disabled: '{!pveceph}',
 		    submitValue: '{pveceph}',
-		    hidden: '{!pveceph}'
+		    hidden: '{!pveceph}',
 		},
 		fieldLabel: gettext('Pool'),
-		allowBlank: false
-	    },{
+		allowBlank: false,
+	    }, {
 		xtype: 'textfield',
 		name: 'pool',
 		value: 'rbd',
 		bind: {
 		    disabled: '{pveceph}',
 		    submitValue: '{!pveceph}',
-		    hidden: '{pveceph}'
+		    hidden: '{pveceph}',
 		},
 		fieldLabel: gettext('Pool'),
-		allowBlank: false
+		allowBlank: false,
 	    });
 	} else {
 	    me.column1.push({
@@ -131,7 +131,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		nodename: me.nodename,
 		name: 'pool',
 		fieldLabel: gettext('Pool'),
-		allowBlank: false
+		allowBlank: false,
 	    });
 	}
 
@@ -143,33 +143,33 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		bind: {
 		    disabled: '{pveceph}',
 		    submitValue: '{!pveceph}',
-		    hidden: '{pveceph}'
+		    hidden: '{pveceph}',
 		},
 		value: '',
 		fieldLabel: 'Monitor(s)',
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'displayfield',
 		reference: 'monhost',
 		bind: {
 		    disabled: '{!pveceph}',
-		    hidden: '{!pveceph}'
+		    hidden: '{!pveceph}',
 		},
 		value: '',
-		fieldLabel: 'Monitor(s)'
+		fieldLabel: 'Monitor(s)',
 	    },
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'username',
 		bind: {
 		    disabled: '{pveceph}',
-		    submitValue: '{!pveceph}'
+		    submitValue: '{!pveceph}',
 		},
 		value: 'admin',
 		fieldLabel: gettext('User name'),
-		allowBlank: true
-	    }
+		allowBlank: true,
+	    },
 	);
 
 	me.column2 = [
@@ -180,14 +180,14 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		name: 'content',
 		value: ['images'],
 		multiSelect: true,
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		name: 'krbd',
 		uncheckedValue: 0,
-		fieldLabel: 'KRBD'
-	    }
+		fieldLabel: 'KRBD',
+	    },
 	];
 
 	me.columnB = [{
@@ -196,15 +196,15 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	    reference: 'pvecephRef',
 	    bind : {
 		disabled: '{!pvecephPossible}',
-		value: '{pveceph}'
+		value: '{pveceph}',
 	    },
 	    checked: true,
 	    uncheckedValue: 0,
 	    submitValue: false,
 	    hidden: !me.isCreate,
-	    boxLabel: gettext('Use Proxmox VE managed hyper-converged ceph pool')
+	    boxLabel: gettext('Use Proxmox VE managed hyper-converged ceph pool'),
 	}];
 
 	me.callParent();
-    }
+    },
 });

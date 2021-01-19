@@ -25,7 +25,7 @@ Ext.define('PVE.sdn.zones.VlanInputPanel', {
             maxLength: 10,
             value: me.zone || '',
             fieldLabel: 'ID',
-            allowBlank: false
+            allowBlank: false,
           },
           {
             xtype: 'textfield',
@@ -41,7 +41,7 @@ Ext.define('PVE.sdn.zones.VlanInputPanel', {
             fieldLabel: 'MTU',
             skipEmptyText: true,
             allowBlank: true,
-            emptyText: 'auto'
+            emptyText: 'auto',
           },
           {
             xtype: 'pveNodeSelector',
@@ -49,11 +49,11 @@ Ext.define('PVE.sdn.zones.VlanInputPanel', {
             fieldLabel: gettext('Nodes'),
             emptyText: gettext('All') + ' (' + gettext('No restrictions') +')',
             multiSelect: true,
-            autoSelect: false
+            autoSelect: false,
           },
 
 	];
 
 	me.callParent();
-    }
+    },
 });

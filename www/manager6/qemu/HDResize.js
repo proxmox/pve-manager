@@ -17,7 +17,7 @@ Ext.define('PVE.window.HDResize', {
 	    },
 	    success: function(response, options) {
 		me.close();
-	    }
+	    },
 	});
     },
 
@@ -39,8 +39,8 @@ Ext.define('PVE.window.HDResize', {
 		value: me.disk,
 		fieldLabel: gettext('Disk'),
 		vtype: 'StorageId',
-		allowBlank: false
-	    }
+		allowBlank: false,
+	    },
 	];
 
 	me.hdsizesel = Ext.createWidget('numberfield', {
@@ -50,7 +50,7 @@ Ext.define('PVE.window.HDResize', {
 	    decimalPrecision: 3,
 	    value: '0',
 	    fieldLabel: gettext('Size Increment') + ' (GiB)',
-	    allowBlank: false
+	    allowBlank: false,
 	});
 
 	items.push(me.hdsizesel);
@@ -60,9 +60,9 @@ Ext.define('PVE.window.HDResize', {
 	    border: false,
 	    fieldDefaults: {
 		labelWidth: 140,
-		anchor: '100%'
+		anchor: '100%',
 	    },
-	    items: items
+	    items: items,
 	});
 
 	var form = me.formPanel.getForm();
@@ -77,7 +77,7 @@ Ext.define('PVE.window.HDResize', {
 		    var values = form.getValues();
 		    me.resize_disk(me.disk, values.size);
 		}
-	    }
+	    },
 	});
 
 	Ext.apply(me, {
@@ -87,7 +87,7 @@ Ext.define('PVE.window.HDResize', {
 	    border: false,
 	    layout: 'fit',
 	    buttons: [ submitBtn ],
-	    items: [ me.formPanel ]
+	    items: [ me.formPanel ],
 	});
 
 
@@ -97,5 +97,5 @@ Ext.define('PVE.window.HDResize', {
 	    return;
 	}
 
-    }
+    },
 });

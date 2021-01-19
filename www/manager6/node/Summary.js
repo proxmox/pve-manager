@@ -20,8 +20,8 @@ Ext.define('PVE.node.Summary', {
 	    style: {
 		'background-color': 'white',
 		'white-space': 'pre',
-		'font-family': 'monospace'
-	    }
+		'font-family': 'monospace',
+	    },
 	});
 
 	var win = Ext.create('Ext.window.Window', {
@@ -37,7 +37,7 @@ Ext.define('PVE.node.Summary', {
 		    iconCls: 'fa fa-clipboard',
 		    handler: function(button) {
 			window.getSelection().selectAllChildren(
-			    document.getElementById('pkgversions')
+			    document.getElementById('pkgversions'),
 			);
 			document.execCommand("copy");
 		    },
@@ -79,7 +79,7 @@ Ext.define('PVE.node.Summary', {
 		});
 
 		view.update(Ext.htmlEncode(text));
-	    }
+	    },
 	});
     },
 
@@ -101,12 +101,12 @@ Ext.define('PVE.node.Summary', {
 	    text: gettext('Package versions'),
 	    handler: function(){
 		Proxmox.Utils.checked_command(function() { me.showVersions(); });
-	    }
+	    },
 	});
 
 	var rrdstore = Ext.create('Proxmox.data.RRDStore', {
 	    rrdurl: "/api2/json/nodes/" + nodename + "/rrddata",
-	    model: 'pve-rrd-node'
+	    model: 'pve-rrd-node',
 	});
 
 	Ext.apply(me, {
@@ -120,42 +120,42 @@ Ext.define('PVE.node.Summary', {
 		    defaults: {
 			minHeight: 320,
 			padding: 5,
-			columnWidth: 1
+			columnWidth: 1,
 		    },
 		    items: [
 			{
 			    xtype: 'pveNodeStatus',
 			    rstore: rstore,
 			    width: 770,
-			    pveSelNode: me.pveSelNode
+			    pveSelNode: me.pveSelNode,
 			},
 			{
 			    xtype: 'proxmoxRRDChart',
 			    title: gettext('CPU usage'),
-			    fields: ['cpu','iowait'],
+			    fields: ['cpu', 'iowait'],
 			    fieldTitles: [gettext('CPU usage'), gettext('IO delay')],
-			    store: rrdstore
+			    store: rrdstore,
 			},
 			{
 			    xtype: 'proxmoxRRDChart',
 			    title: gettext('Server load'),
 			    fields: ['loadavg'],
 			    fieldTitles: [gettext('Load average')],
-			    store: rrdstore
+			    store: rrdstore,
 			},
 			{
 			    xtype: 'proxmoxRRDChart',
 			    title: gettext('Memory usage'),
-			    fields: ['memtotal','memused'],
+			    fields: ['memtotal', 'memused'],
 			    fieldTitles: [gettext('Total'), gettext('RAM usage')],
-			    store: rrdstore
+			    store: rrdstore,
 			},
 			{
 			    xtype: 'proxmoxRRDChart',
 			    title: gettext('Network traffic'),
-			    fields: ['netin','netout'],
-			    store: rrdstore
-			}
+			    fields: ['netin', 'netout'],
+			    store: rrdstore,
+			},
 		    ],
 		    listeners: {
 			resize: function(panel) {
@@ -174,7 +174,7 @@ Ext.define('PVE.node.Summary', {
 		    rstore.setInterval(5000); // don't stop it, it's not ours!
 		    rrdstore.stopUpdate();
 		},
-	    }
+	    },
 	});
 
 	me.callParent();
@@ -186,5 +186,5 @@ Ext.define('PVE.node.Summary', {
 	    }
 	    PVE.Utils.updateColumns(me.getComponent('itemcontainer'));
 	});
-    }
+    },
 });

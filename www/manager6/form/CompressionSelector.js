@@ -6,5 +6,5 @@ Ext.define('PVE.form.CompressionSelector', {
                 ['lzo', 'LZO (' + gettext('fast') + ')'],
                 ['gzip', 'GZIP (' + gettext('good') + ')'],
                 ['zstd', 'ZSTD (' + gettext('fast and good') + ')'],
-    ]
+    ],
 });

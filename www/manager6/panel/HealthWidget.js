@@ -5,18 +5,18 @@ Ext.define('PVE.widget.HealthWidget', {
     data: {
 	iconCls: PVE.Utils.get_health_icon(undefined, true),
 	text: '',
-	title: ''
+	title: '',
     },
 
     style: {
-	'text-align':'center'
+	'text-align':'center',
     },
 
     tpl: [
 	'<h3>{title}</h3>',
 	'<i class="fa fa-5x {iconCls}"></i>',
 	'<br /><br/>',
-	'{text}'
+	'{text}',
     ],
 
     updateHealth: function(data) {
@@ -32,6 +32,6 @@ Ext.define('PVE.widget.HealthWidget', {
 	}
 
 	me.callParent();
-    }
+    },
 
 });

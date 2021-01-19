@@ -18,5 +18,5 @@ Ext.define('PVE.form.ACMEAccountSelector', {
 
     isEmpty: function() {
 	return this.getStore().getData().length === 0;
-    }
+    },
 });

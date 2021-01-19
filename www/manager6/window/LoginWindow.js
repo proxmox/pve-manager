@@ -50,7 +50,7 @@ Ext.define('PVE.window.LoginWindow', {
 		    } else {
 			me.success(data);
 		    }
-		}
+		},
 	    });
 
 	},
@@ -89,7 +89,7 @@ Ext.define('PVE.window.LoginWindow', {
 		    Proxmox.LoggedOut = false;
 		    Proxmox.Utils.authClear();
 		    me.getView().show();
-		}
+		},
 	    });
 	    win.show();
 	},
@@ -100,12 +100,12 @@ Ext.define('PVE.window.LoginWindow', {
 	    var msg = Ext.Msg.show({
 		title: 'U2F: '+gettext('Verification'),
 		message: gettext('Please press the button on your U2F Device'),
-		buttons: []
+		buttons: [],
 	    });
 	    var chlg = data.U2FChallenge;
 	    var key = {
 		version: chlg.version,
-		keyHandle: chlg.keyHandle
+		keyHandle: chlg.keyHandle,
 	    };
 	    u2f.sign(chlg.appId, chlg.challenge, [key], function(res) {
 		msg.close();
@@ -140,7 +140,7 @@ Ext.define('PVE.window.LoginWindow', {
 		failure: function(resp, opts) {
 		    Proxmox.Utils.authClear();
 		    me.failure(resp);
-		}
+		},
 	    });
 	},
 
@@ -153,7 +153,7 @@ Ext.define('PVE.window.LoginWindow', {
 			    pf.focus(false);
 			}
 		    }
-		}
+		},
 	    },
 	    'field[name=lang]': {
 		change: function(f, value) {
@@ -161,10 +161,10 @@ Ext.define('PVE.window.LoginWindow', {
 		    Ext.util.Cookies.set('PVELangCookie', value, dt);
 		    this.getView().mask(gettext('Please wait...'), 'x-mask-loading');
 		    window.location.reload();
-		}
+		},
 	    },
             'button[reference=loginButton]': {
-		click: 'onLogon'
+		click: 'onLogon',
             },
 	    '#': {
 		show: function() {
@@ -181,9 +181,9 @@ Ext.define('PVE.window.LoginWindow', {
 			var pwField = this.lookupReference('passwordField');
 			pwField.focus();
 		    }
-		}
-	    }
-	}
+		},
+	    },
+	},
     },
 
     width: 400,
@@ -207,7 +207,7 @@ Ext.define('PVE.window.LoginWindow', {
 
 	fieldDefaults: {
 	    labelAlign: 'right',
-	    allowBlank: false
+	    allowBlank: false,
 	},
 
 	items: [
@@ -217,18 +217,18 @@ Ext.define('PVE.window.LoginWindow', {
 		name: 'username',
 		itemId: 'usernameField',
 		reference: 'usernameField',
-		stateId: 'login-username'
+		stateId: 'login-username',
 	    },
 	    {
 		xtype: 'textfield',
 		inputType: 'password',
 		fieldLabel: gettext('Password'),
 		name: 'password',
-		reference: 'passwordField'
+		reference: 'passwordField',
 	    },
 	    {
 		xtype: 'pmxRealmComboBox',
-		name: 'realm'
+		name: 'realm',
 	    },
 	    {
 		xtype: 'proxmoxLanguageSelector',
@@ -236,8 +236,8 @@ Ext.define('PVE.window.LoginWindow', {
 		value: Ext.util.Cookies.get('PVELangCookie') || Proxmox.defaultLang || 'en',
 		name: 'lang',
 		reference: 'langField',
-		submitValue: false
-	    }
+		submitValue: false,
+	    },
 	],
 	buttons: [
 	    {
@@ -248,14 +248,14 @@ Ext.define('PVE.window.LoginWindow', {
 		stateId: 'login-saveusername',
 		labelWidth: 250,
 		labelAlign: 'right',
-		submitValue: false
+		submitValue: false,
 	    },
 	    {
 		text: gettext('Login'),
-		reference: 'loginButton'
-	    }
-	]
-    }]
+		reference: 'loginButton',
+	    },
+	],
+    }],
  });
 Ext.define('PVE.window.TFALoginWindow', {
     extend: 'Ext.window.Window',
@@ -280,7 +280,7 @@ Ext.define('PVE.window.TFALoginWindow', {
 	    var view = me.getView();
 	    view.onCancel();
 	    view.close();
-	}
+	},
     },
 
     items: [
@@ -290,19 +290,19 @@ Ext.define('PVE.window.TFALoginWindow', {
 	    name: 'otp',
 	    itemId: 'otpField',
 	    reference: 'otpField',
-	    allowBlank: false
-	}
+	    allowBlank: false,
+	},
     ],
 
     buttons: [
 	{
 	    text: gettext('Login'),
 	    reference: 'loginButton',
-	    handler: 'login'
+	    handler: 'login',
 	},
 	{
 	    text: gettext('Cancel'),
-	    handler: 'cancel'
-	}
-    ]
+	    handler: 'cancel',
+	},
+    ],
 });

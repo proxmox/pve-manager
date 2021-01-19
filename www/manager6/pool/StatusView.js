@@ -19,15 +19,15 @@ Ext.define('PVE.pool.StatusView', {
 	    comment: {
 		header: gettext('Comment'),
 		renderer: Ext.String.htmlEncode,
-		required: true
-	    }
+		required: true,
+	    },
 	};
 
 	Ext.apply(me, {
 	    url: "/api2/json/pools/" + pool,
-	    rows: rows
+	    rows: rows,
 	});
 
 	me.callParent();
-    }
+    },
 });

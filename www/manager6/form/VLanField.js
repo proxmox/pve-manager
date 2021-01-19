@@ -32,9 +32,9 @@ Ext.define('PVE.form.VlanField', {
 
 	Ext.apply(me, {
 	    minValue: 1,
-	    maxValue: 4094
+	    maxValue: 4094,
 	});
 
 	me.callParent();
-    }
+    },
 });

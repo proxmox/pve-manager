@@ -12,7 +12,7 @@ Ext.define('PVE.form.FileSelector', {
 	    if (!me.disabled) {
 		me.setStorage(me.storage, me.nodename);
 	    }
-	}
+	},
     },
 
     setStorage: function(storage, nodename) {
@@ -40,7 +40,7 @@ Ext.define('PVE.form.FileSelector', {
 
 	me.store.setProxy({
 	    type: 'proxmox',
-	    url: url
+	    url: url,
 	});
 
 	me.store.removeAll();
@@ -52,7 +52,7 @@ Ext.define('PVE.form.FileSelector', {
     },
 
     store: {
-	model: 'pve-storage-content'
+	model: 'pve-storage-content',
     },
 
     allowBlank: false,
@@ -67,19 +67,19 @@ Ext.define('PVE.form.FileSelector', {
 		header: gettext('Name'),
 		dataIndex: 'text',
 		hideable: false,
-		flex: 1
+		flex: 1,
 	    },
 	    {
 		header: gettext('Format'),
 		width: 60,
-		dataIndex: 'format'
+		dataIndex: 'format',
 	    },
 	    {
 		header: gettext('Size'),
 		width: 100,
 		dataIndex: 'size',
-		renderer: Proxmox.Utils.format_size
-	    }
-	]
-    }
+		renderer: Proxmox.Utils.format_size,
+	    },
+	],
+    },
 });

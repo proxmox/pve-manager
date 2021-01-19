@@ -8,6 +8,6 @@ Ext.define('PVE.form.PermPathSelector', {
     queryMode: 'local',
 
     store: {
-	type: 'pvePermPath'
-    }
+	type: 'pvePermPath',
+    },
 });

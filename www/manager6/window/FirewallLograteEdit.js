@@ -10,7 +10,7 @@ Ext.define('PVE.FirewallLograteInputPanel', {
 	    name: 'enable',
 	    reference: 'enable',
 	    fieldLabel: gettext('Enable'),
-	    value: true
+	    value: true,
 	},
 	{
 	    layout: 'hbox',
@@ -24,11 +24,11 @@ Ext.define('PVE.FirewallLograteInputPanel', {
 		    maxValue: 99,
 		    allowBlank: false,
 		    flex: 2,
-		    value: 1
+		    value: 1,
 		},
 		{
 		    xtype: 'box',
-		    html: '<div style="margin: auto; padding: 2.5px;"><b>/</b></div>'
+		    html: '<div style="margin: auto; padding: 2.5px;"><b>/</b></div>',
 		},
 		{
 		    xtype: 'proxmoxKVComboBox',
@@ -37,9 +37,9 @@ Ext.define('PVE.FirewallLograteInputPanel', {
 			['hour', 'hour'], ['day', 'day']],
 		    allowBlank: false,
 		    flex: 1,
-		    value: 'second'
-		}
-	    ]
+		    value: 'second',
+		},
+	    ],
 	},
 	{
 	    xtype: 'numberfield',
@@ -47,8 +47,8 @@ Ext.define('PVE.FirewallLograteInputPanel', {
 	    fieldLabel: gettext('Log burst limit'),
 	    minValue: 1,
 	    maxValue: 99,
-	    value: 5
-	}
+	    value: 5,
+	},
     ],
 
     onGetValues: function(values) {
@@ -80,7 +80,7 @@ Ext.define('PVE.FirewallLograteInputPanel', {
 	    }
 	}
 	me.callParent([properties]);
-    }
+    },
 });
 
 Ext.define('PVE.FirewallLograteEdit', {
@@ -90,7 +90,7 @@ Ext.define('PVE.FirewallLograteEdit', {
     subject: gettext('Log rate limit'),
 
     items: [{
-	xtype: 'pveFirewallLograteInputPanel'
+	xtype: 'pveFirewallLograteInputPanel',
     }],
-    autoLoad: true
+    autoLoad: true,
 });

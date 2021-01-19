@@ -3,6 +3,6 @@ Ext.define('PVE.form.EmailNotificationSelector', {
     alias: ['widget.pveEmailNotificationSelector'],
     comboItems: [
                 ['always', gettext('Always')],
-                ['failure', gettext('On failure only')]
-    ]
+                ['failure', gettext('On failure only')],
+    ],
 });

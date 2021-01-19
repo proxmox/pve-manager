@@ -23,8 +23,8 @@ Ext.define('PVE.storage.Browser', {
 		title: gettext('Summary'),
 		xtype: 'pveStorageSummary',
 		iconCls: 'fa fa-book',
-		itemId: 'summary'
-	    }
+		itemId: 'summary',
+	    },
 	];
 
 	var caps = Ext.state.Manager.get('GuiCap');
@@ -33,9 +33,9 @@ Ext.define('PVE.storage.Browser', {
 	    title: Ext.String.format(
 	        gettext("Storage {0} on node {1}"),
 	        `'${storeid}'`,
-	        `'${nodename}'`
+	        `'${nodename}'`,
 	    ),
-	    hstateid: 'storagetab'
+	    hstateid: 'storagetab',
 	});
 
 	if (caps.storage['Datastore.Allocate'] ||
@@ -121,10 +121,10 @@ Ext.define('PVE.storage.Browser', {
 		title: gettext('Permissions'),
 		iconCls: 'fa fa-unlock',
 		itemId: 'permissions',
-		path: '/storage/' + storeid
+		path: '/storage/' + storeid,
 	    });
 	}
 
 	me.callParent();
-   }
+   },
 });

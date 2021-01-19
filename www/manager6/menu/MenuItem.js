@@ -36,11 +36,11 @@ Ext.define('PVE.menu.Item', {
 			if (btn === 'yes') {
 			    Ext.callback(fn, me.scope, [me, e], 0, me);
 			}
-		    }
+		    },
 		});
 	    } else {
 		Ext.callback(fn, me.scope, [me, e], 0, me);
 	    }
 	};
-    }
+    },
 });

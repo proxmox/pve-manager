@@ -13,7 +13,7 @@ Ext.define('PVE.form.SDNControllerSelector', {
 	    model: 'pve-sdn-controller',
             sorters: {
                 property: 'controller',
-                order: 'DESC'
+                order: 'DESC',
             },
 	});
 
@@ -26,16 +26,16 @@ Ext.define('PVE.form.SDNControllerSelector', {
 			header: gettext('Controller'),
 			sortable: true,
 			dataIndex: 'controller',
-			flex: 1
+			flex: 1,
 		    },
-		]
-	    }
+		],
+	    },
 	});
 
         me.callParent();
 
 	store.load();
-    }
+    },
 
 }, function() {
 
@@ -44,9 +44,9 @@ Ext.define('PVE.form.SDNControllerSelector', {
 	fields: [ 'controller' ],
 	proxy: {
             type: 'proxmox',
-	    url: "/api2/json/cluster/sdn/controllers"
+	    url: "/api2/json/cluster/sdn/controllers",
 	},
-	idProperty: 'controller'
+	idProperty: 'controller',
     });
 
 });

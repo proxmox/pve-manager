@@ -75,7 +75,7 @@ clist_loop:
 	    fieldLabel: gettext('Bus/Device'),
 	    layout: 'hbox',
 	    defaults: {
-                hideLabel: true
+                hideLabel: true,
 	    },
 	    items: [
 		{
@@ -93,8 +93,8 @@ clist_loop:
 			    var field = me.down('field[name=deviceid]');
 			    field.setMaxValue(PVE.Utils.diskControllerMaxIDs[value]);
 			    field.validate();
-			}
-		    }
+			},
+		    },
 		},
 		{
 		    xtype: 'proxmoxintegerfield',
@@ -115,11 +115,11 @@ clist_loop:
 			    return "This device is already in use.";
 			}
 			return true;
-		    }
-		}
-	    ]
+		    },
+		},
+	    ],
 	});
 
 	me.callParent();
-    }
+    },
 });

@@ -13,7 +13,7 @@ Ext.define('PVE.sdn.controllers.EvpnInputPanel', {
 		maxLength: 8,
 		value: me.controllerid || '',
 		fieldLabel: 'ID',
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
@@ -22,29 +22,29 @@ Ext.define('PVE.sdn.controllers.EvpnInputPanel', {
 		maxValue: 4294967295,
 		value: 65000,
 		fieldLabel: 'ASN #',
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'peers',
 		fieldLabel: gettext('Peers'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'gateway-external-peers',
 		fieldLabel: gettext('External Gateway Peers'),
-		allowBlank: true
+		allowBlank: true,
 	    },
 	    {
 		xtype: 'pveNodeSelector',
 		name: 'gateway-nodes',
 		fieldLabel: gettext('Gateway Nodes'),
 		multiSelect: true,
-		autoSelect: false
+		autoSelect: false,
 	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

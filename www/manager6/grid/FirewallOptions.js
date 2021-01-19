@@ -38,7 +38,7 @@ Ext.define('PVE.FirewallOptions', {
 		    }
 
 		    return value;
-		}
+		},
 	    });
 	};
 
@@ -54,9 +54,9 @@ Ext.define('PVE.FirewallOptions', {
 		    items: {
 			xtype: 'pveFirewallLogLevels',
 			name: name,
-			fieldLabel: name
-		    }
-		}
+			fieldLabel: name,
+		    },
+		},
 	    };
 	};
 
@@ -68,8 +68,8 @@ Ext.define('PVE.FirewallOptions', {
 		renderer: Proxmox.Utils.format_boolean,
 		editor: {
 		    xtype: 'pveFirewallEnableEdit',
-		    defaultValue: 1
-		}
+		    defaultValue: 1,
+		},
 	    };
 	    add_boolean_row('nosmurfs', gettext('SMURFS filter'), 1);
 	    add_boolean_row('tcpflags', gettext('TCP flags filter'), 0);
@@ -89,8 +89,8 @@ Ext.define('PVE.FirewallOptions', {
 		renderer: Proxmox.Utils.format_boolean,
 		editor: {
 		    xtype: 'pveFirewallEnableEdit',
-		    defaultValue: 0
-		}
+		    defaultValue: 0,
+		},
 	    };
 	    add_boolean_row('dhcp', 'DHCP', 1);
 	    add_boolean_row('ndp', 'NDP', 1);
@@ -108,8 +108,8 @@ Ext.define('PVE.FirewallOptions', {
 		defaultValue: gettext('Default') + ' (enable=1,rate1/second,burst=5)',
 		editor: {
 		    xtype: 'pveFirewallLograteEdit',
-		    defaultValue: 'enable=1'
-		}
+		    defaultValue: 'enable=1',
+		},
 	    };
 	}
 
@@ -125,9 +125,9 @@ Ext.define('PVE.FirewallOptions', {
 			xtype: 'pveFirewallPolicySelector',
 			name: 'policy_in',
 			value: 'DROP',
-			fieldLabel: gettext('Input Policy')
-		    }
-		}
+			fieldLabel: gettext('Input Policy'),
+		    },
+		},
 	    };
 
 	    me.rows.policy_out = {
@@ -141,16 +141,16 @@ Ext.define('PVE.FirewallOptions', {
 			xtype: 'pveFirewallPolicySelector',
 			name: 'policy_out',
 			value: 'ACCEPT',
-			fieldLabel: gettext('Output Policy')
-		    }
-		}
+			fieldLabel: gettext('Output Policy'),
+		    },
+		},
 	    };
 	}
 
 	var edit_btn = new Ext.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
-	    handler: function() { me.run_editor(); }
+	    handler: function() { me.run_editor(); },
 	});
 
 	var set_button_status = function() {
@@ -169,12 +169,12 @@ Ext.define('PVE.FirewallOptions', {
 	    url: "/api2/json" + me.base_url,
 	    tbar: [ edit_btn ],
 	    editorConfig: {
-		url: '/api2/extjs/' + me.base_url
+		url: '/api2/extjs/' + me.base_url,
 	    },
 	    listeners: {
 		itemdblclick: me.run_editor,
-		selectionchange: set_button_status
-	    }
+		selectionchange: set_button_status,
+	    },
 	});
 
 	me.callParent();
@@ -182,7 +182,7 @@ Ext.define('PVE.FirewallOptions', {
 	me.on('activate', me.rstore.startUpdate);
 	me.on('destroy', me.rstore.stopUpdate);
 	me.on('deactivate', me.rstore.stopUpdate);
-    }
+    },
 });
 
 
@@ -195,5 +195,5 @@ Ext.define('PVE.FirewallLogLevels', {
     value: 'nolog',
     comboItems: [['nolog', 'nolog'], ['emerg', 'emerg'], ['alert', 'alert'],
 	['crit', 'crit'], ['err', 'err'], ['warning', 'warning'],
-	['notice', 'notice'], ['info', 'info'], ['debug', 'debug']]
+	['notice', 'notice'], ['info', 'info'], ['debug', 'debug']],
 });

@@ -50,7 +50,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 	    }
 	}
 	// remove optional '0000' domain
-	if (values.host.substring(0,5) === '0000:') {
+	if (values.host.substring(0, 5) === '0000:') {
 	    values.host = values.host.substring(5);
 	}
 	if (values.multifunction) {
@@ -100,7 +100,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 			    padding: '0 0 10 0',
 			    value: 'No IOMMU detected, please activate it.' +
 				   'See Documentation for further information.',
-			    userCls: 'pmx-hint'
+			    userCls: 'pmx-hint',
 			});
 			me.items.insert(0, warning);
 			me.updateLayout(); // insert does not trigger that
@@ -117,7 +117,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 			if (!pcidev) {
 			    return;
 			}
-			var id = pcidev.data.id.substring(0,5); // 00:00
+			var id = pcidev.data.id.substring(0, 5); // 00:00
 			var iommu = pcidev.data.iommugroup;
 			// try to find out if there are more devices
 			// in that iommu group
@@ -125,7 +125,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 			    var count = 0;
 			    pcisel.getStore().each(function(record) {
 				if (record.data.iommugroup === iommu &&
-				    record.data.id.substring(0,5) !== id)
+				    record.data.id.substring(0, 5) !== id)
 				{
 				    count++;
 				    return false;
@@ -139,7 +139,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 				    itemId: 'iommuwarning',
 				    value: 'The selected Device is not in a seperate' +
 					   'IOMMU group, make sure this is intended.',
-				    userCls: 'pmx-hint'
+				    userCls: 'pmx-hint',
 				});
 				me.items.insert(0, warning);
 				me.updateLayout(); // insert does not trigger that
@@ -150,14 +150,14 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 			if (pcidev.data.mdev) {
 			    mdevfield.setPciID(value);
 			}
-		    }
-		}
+		    },
+		},
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('All Functions'),
-		name: 'multifunction'
-	    }
+		name: 'multifunction',
+	    },
 	];
 
 	me.column2 = [
@@ -174,41 +174,41 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 			    mf.setValue(false);
 			}
 			mf.setDisabled(!!value);
-		    }
-		}
+		    },
+		},
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Primary GPU'),
-		name: 'x-vga'
-	    }
+		name: 'x-vga',
+	    },
 	];
 
 	me.advancedColumn1 = [
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: 'ROM-Bar',
-		name: 'rombar'
+		name: 'rombar',
 	    },
 	    {
 		xtype: 'displayfield',
 		submitValue: true,
 		hidden: true,
 		fieldLabel: 'ROM-File',
-		name: 'romfile'
-	    }
+		name: 'romfile',
+	    },
 	];
 
 	me.advancedColumn2 = [
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: 'PCI-Express',
-		name: 'pcie'
-	    }
+		name: 'pcie',
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.qemu.PCIEdit', {
@@ -228,11 +228,11 @@ Ext.define('PVE.qemu.PCIEdit', {
 
 	var ipanel = Ext.create('PVE.qemu.PCIInputPanel', {
 	    confid: me.confid,
-	    pveSelNode: me.pveSelNode
+	    pveSelNode: me.pveSelNode,
 	});
 
 	Ext.apply(me, {
-	    items: [ ipanel ]
+	    items: [ ipanel ],
 	});
 
 	me.callParent();
@@ -240,7 +240,7 @@ Ext.define('PVE.qemu.PCIEdit', {
 	me.load({
 	    success: function(response) {
 		ipanel.setVMConfig(response.result.data);
-	    }
+	    },
 	});
-    }
+    },
 });

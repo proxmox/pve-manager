@@ -9,33 +9,33 @@ Ext.define('PVE.tree.ResourceTree', {
 	typeDefaults: {
 	    node: {
 		iconCls: 'fa fa-building',
-		text: gettext('Nodes')
+		text: gettext('Nodes'),
 	    },
 	    pool: {
 		iconCls: 'fa fa-tags',
-		text: gettext('Resource Pool')
+		text: gettext('Resource Pool'),
 	    },
 	    storage: {
 		iconCls: 'fa fa-database',
-		text: gettext('Storage')
+		text: gettext('Storage'),
 	    },
 	    sdn: {
 		iconCls: 'fa fa-th',
-		text: gettext('SDN')
+		text: gettext('SDN'),
 	    },
 	    qemu: {
 		iconCls: 'fa fa-desktop',
-		text: gettext('Virtual Machine')
+		text: gettext('Virtual Machine'),
 	    },
 	    lxc: {
 		//iconCls: 'x-tree-node-lxc',
 		iconCls: 'fa fa-cube',
-		text: gettext('LXC Container')
+		text: gettext('LXC Container'),
 	    },
 	    template: {
-		iconCls: 'fa fa-file-o'
-	    }
-	}
+		iconCls: 'fa fa-file-o',
+	    },
+	},
     },
 
     useArrows: true,
@@ -198,7 +198,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		} else {
 		    groupinfo = {
 			type: groupby,
-			id : groupby + "/" + v
+			id : groupby + "/" + v,
 		    };
 		    if (groupby !== 'type') {
 			groupinfo[groupby] = v;
@@ -231,7 +231,7 @@ Ext.define('PVE.tree.ResourceTree', {
 
 	var pdata = {
 	    dataIndex: {},
-	    updateCount: 0
+	    updateCount: 0,
 	};
 
 	var store = Ext.create('Ext.data.TreeStore', {
@@ -240,8 +240,8 @@ Ext.define('PVE.tree.ResourceTree', {
 		expanded: true,
 		id: 'root',
 		text: gettext('Datacenter'),
-		iconCls: 'fa fa-server'
-	    }
+		iconCls: 'fa fa-server',
+	    },
 	});
 
 	var stateid = 'rid';
@@ -305,7 +305,7 @@ Ext.define('PVE.tree.ResourceTree', {
 			// tree item has been updated
 			var fields = [
 			    'text', 'running', 'template', 'status',
-			    'qmpstatus', 'hastate', 'lock'
+			    'qmpstatus', 'hastate', 'lock',
 			];
 
 			var field;
@@ -409,7 +409,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	    store: store,
 	    viewConfig: {
 		// note: animate cause problems with applyState
-		animate: false
+		animate: false,
 	    },
 	    //useArrows: true,
             //rootVisible: false,
@@ -430,7 +430,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		    me.allowSelection = true;
 		    return allow;
 		},
-		itemdblclick: PVE.Utils.openTreeConsole
+		itemdblclick: PVE.Utils.openTreeConsole,
 	    },
 	    setViewFilter: function(view) {
 		me.viewFilter = view;
@@ -491,7 +491,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		} else {
 		    sm.deselectAll();
 		}
-	    }
+	    },
 	});
 
 	me.callParent();
@@ -504,6 +504,6 @@ Ext.define('PVE.tree.ResourceTree', {
 	rstore.on("load", updateTree);
 	rstore.startUpdate();
 	//rstore.stopUpdate();
-    }
+    },
 
 });

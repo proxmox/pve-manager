@@ -6,7 +6,7 @@ Ext.define('PVE.sdn.Status', {
 
     layout: {
 	type: 'vbox',
-	align: 'stretch'
+	align: 'stretch',
     },
 
     initComponent: function() {
@@ -19,8 +19,8 @@ Ext.define('PVE.sdn.Status', {
 	    groupField: 'type',
 	    proxy: {
                 type: 'proxmox',
-		url: '/api2/json/cluster/resources'
-	    }
+		url: '/api2/json/cluster/resources',
+	    },
 	});
 
 	me.items = [{
@@ -29,10 +29,10 @@ Ext.define('PVE.sdn.Status', {
 	    rstore: me.rstore,
 	    border: 0,
 	    collapsible: true,
-	    padding: '0 0 20 0'
+	    padding: '0 0 20 0',
 	}];
 
 	me.callParent();
 	me.on('activate', me.rstore.startUpdate);
-    }
+    },
 });

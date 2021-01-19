@@ -18,10 +18,10 @@ Ext.define('PVE.window.SafeDestroy', {
     config: {
 	item: {
 	    id: undefined,
-	    type: undefined
+	    type: undefined,
 	},
 	url: undefined,
-	params: {}
+	params: {},
     },
 
     getParams: function() {
@@ -56,7 +56,7 @@ Ext.define('PVE.window.SafeDestroy', {
 		    if (!removeButton.isDisabled() && event.getKey() == event.ENTER) {
 			removeButton.fireEvent('click', removeButton, event);
 		    }
-		}
+		},
 	    },
            'button[reference=removeButton]': {
 		click: function() {
@@ -84,18 +84,18 @@ Ext.define('PVE.window.SafeDestroy', {
 				    listeners: {
 					destroy: function () {
 					    view.close();
-					}
-				    }
+					},
+				    },
 				});
 				win.show();
 			    } else {
 				view.close();
 			    }
-			}
+			},
 		    });
-		}
-            }
-	}
+		},
+            },
+	},
     },
 
     items: [
@@ -103,19 +103,19 @@ Ext.define('PVE.window.SafeDestroy', {
 	    xtype: 'component',
 	    cls: [ Ext.baseCSSPrefix + 'message-box-icon',
 		   Ext.baseCSSPrefix + 'message-box-warning',
-		   Ext.baseCSSPrefix + 'dlg-icon']
+		   Ext.baseCSSPrefix + 'dlg-icon'],
 	},
 	{
 	    xtype: 'container',
 	    flex: 1,
 	    layout: {
 		type: 'vbox',
-		align: 'stretch'
+		align: 'stretch',
 	    },
 	    items: [
 		{
 		    xtype: 'component',
-		    reference: 'messageCmp'
+		    reference: 'messageCmp',
 		},
 		{
 		    itemId: 'confirmField',
@@ -124,7 +124,7 @@ Ext.define('PVE.window.SafeDestroy', {
 		    name: 'confirm',
 		    labelWidth: 300,
 		    hideTrigger: true,
-		    allowBlank: false
+		    allowBlank: false,
 		},
 		{
 		    xtype: 'proxmoxcheckbox',
@@ -134,18 +134,18 @@ Ext.define('PVE.window.SafeDestroy', {
 		    checked: false,
 		    autoEl: {
 			tag: 'div',
-			'data-qtip': gettext('Remove from replication & backup jobs and HA resource configuration.')
-		    }
-		}
-	    ]
-	}
+			'data-qtip': gettext('Remove from replication & backup jobs and HA resource configuration.'),
+		    },
+		},
+	    ],
+	},
     ],
     buttons: [
 	{
 	    reference: 'removeButton',
 	    text: gettext('Remove'),
-	    disabled: true
-	}
+	    disabled: true,
+	},
     ],
 
     initComponent : function() {
@@ -190,5 +190,5 @@ Ext.define('PVE.window.SafeDestroy', {
 	msg = gettext('Please enter the ID to confirm') +
 	    ' (' + item.id + ')';
 	confirmField.setFieldLabel(msg);
-    }
+    },
 });

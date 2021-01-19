@@ -9,7 +9,7 @@ Ext.define('PVE.storage.GlusterFsScan', {
     matchFieldWidth: false,
     listConfig: {
 	loadingText: 'Scanning...',
-	width: 350
+	width: 350,
     },
     doRawQuery: function() {
     },
@@ -43,18 +43,18 @@ Ext.define('PVE.storage.GlusterFsScan', {
 	    fields: [ 'volname' ],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/glusterfs'
-	    }
+		url: '/api2/json/nodes/' + me.nodename + '/scan/glusterfs',
+	    },
 	});
 
 	store.sort('volname', 'ASC');
 
 	Ext.apply(me, {
-	    store: store
+	    store: store,
 	});
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.storage.GlusterFsInputPanel', {
@@ -79,22 +79,22 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 			    volumeField.setServer(value);
 			    volumeField.setValue('');
 			}
-		    }
-		}
+		    },
+		},
 	    },
 	    {
 		xtype: me.isCreate ? 'proxmoxtextfield' : 'displayfield',
 		name: 'server2',
 		value: '',
 		fieldLabel: gettext('Second Server'),
-		allowBlank: true
+		allowBlank: true,
 	    },
 	    {
 		xtype: me.isCreate ? 'pveGlusterFsScan' : 'displayfield',
 		name: 'volume',
 		value: '',
 		fieldLabel: 'Volume name',
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'pveContentTypeSelector',
@@ -103,10 +103,10 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 		value: 'images',
 		multiSelect: true,
 		fieldLabel: gettext('Content'),
-		allowBlank: false
-	    }
+		allowBlank: false,
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

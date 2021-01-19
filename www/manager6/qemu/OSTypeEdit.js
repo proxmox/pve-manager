@@ -8,12 +8,12 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 	xclass: 'Ext.app.ViewController',
 	control: {
 	    'combobox[name=osbase]': {
-		change: 'onOSBaseChange'
+		change: 'onOSBaseChange',
 	    },
 	    'combobox[name=ostype]': {
 		afterrender: 'onOSTypeChange',
-		change: 'onOSTypeChange'
-	    }
+		change: 'onOSTypeChange',
+	    },
 	},
 	onOSBaseChange: function(field, value) {
 	    this.lookup('ostype').getStore().setData(PVE.Utils.kvm_ostypes[value]);
@@ -39,7 +39,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 	    } else {
 		throw 'non unique widget :' + widget + ' in Wizard';
 	    }
-	}
+	},
     },
 
     initComponent : function() {
@@ -49,7 +49,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 	    {
 		xtype: 'displayfield',
 		value: gettext('Guest OS') + ':',
-		hidden: !me.insideWizard
+		hidden: !me.insideWizard,
 	    },
 	    {
 		xtype: 'combobox',
@@ -59,7 +59,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 		editable: false,
 		queryMode: 'local',
 		value: 'Linux',
-		store: Object.keys(PVE.Utils.kvm_ostypes)
+		store: Object.keys(PVE.Utils.kvm_ostypes),
 	    },
 	    {
 		xtype: 'combobox',
@@ -84,14 +84,14 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 			    } else {
 				ostype.setValue(store.getAt(0));
 			    }
-			}
-		    }
-		}
-	    }
+			},
+		    },
+		},
+	    },
 	];
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.qemu.OSTypeEdit', {
@@ -111,7 +111,7 @@ Ext.define('PVE.qemu.OSTypeEdit', {
 		var value = response.result.data.ostype || 'other';
 		var osinfo = PVE.Utils.get_kvm_osinfo(value);
 		me.setValues({ ostype: value, osbase: osinfo.base });
-	    }
+	    },
 	});
-    }
+    },
 });

@@ -28,15 +28,15 @@ Ext.define('PVE.dc.GroupEdit', {
 		    fieldLabel: gettext('Name'),
 		    name: 'groupid',
 		    value: me.groupid,
-		    allowBlank: false
+		    allowBlank: false,
 		},
                 {
 		    xtype: 'textfield',
 		    fieldLabel: gettext('Comment'),
 		    name: 'comment',
-		    allowBlank: true
-		}
-            ]
+		    allowBlank: true,
+		},
+            ],
         });
 
         me.callParent();
@@ -44,5 +44,5 @@ Ext.define('PVE.dc.GroupEdit', {
         if (!me.isCreate) {
             me.load();
         }
-    }
+    },
 });

@@ -28,7 +28,7 @@ Ext.define('PVE.qemu.Monitor', {
 	    autoScroll: true,
 	    border: true,
 	    margins: '5 5 5 5',
-	    bodyStyle: 'font-family: monospace;'
+	    bodyStyle: 'font-family: monospace;',
 	});
 
 	var scrollToEnd = function() {
@@ -81,7 +81,7 @@ Ext.define('PVE.qemu.Monitor', {
 		},
 		failure: function(response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
-		}
+		},
 	    });
 	};
 
@@ -134,18 +134,18 @@ Ext.define('PVE.qemu.Monitor', {
 				default:
 				    break;
 			    }
-			}
-		    }
-		}
+			},
+		    },
+		},
 	    ],
 	    listeners: {
 		show: function() {
 		    var field = me.query('textfield[name="cmd"]')[0];
 		    field.focus(false, true);
-		}
-	    }
+		},
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });

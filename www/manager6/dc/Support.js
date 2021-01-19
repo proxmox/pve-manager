@@ -71,7 +71,7 @@ Ext.define('PVE.dc.Support', {
 		    } else {
 			me.updateInactive(data);
 		    }
-		}
+		},
 	    });
 	};
 
@@ -79,10 +79,10 @@ Ext.define('PVE.dc.Support', {
 	    autoScroll: true,
 	    bodyStyle: 'padding:10px',
 	    listeners: {
-		activate: reload
-	    }
+		activate: reload,
+	    },
 	});
 
 	me.callParent();
-    }
+    },
 });

@@ -5,6 +5,6 @@ Ext.define('PVE.form.iScsiProviderSelector', {
 	['comstar', 'Comstar'],
 	[ 'istgt', 'istgt'],
 	[ 'iet', 'IET'],
-	[ 'LIO', 'LIO']
-    ]
+	[ 'LIO', 'LIO'],
+    ],
 });
