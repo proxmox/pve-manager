@@ -457,7 +457,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		if (!this.up('pveCephInstallWizard').getViewModel().get('configuration')) {
 		    var wizard = me.up('window');
 		    var kv = wizard.getValues();
-		    delete kv['delete'];
+		    delete kv.delete;
 		    var monNode = kv['mon-node'];
 		    delete kv['mon-node'];
 		    var nodename = me.nodename;

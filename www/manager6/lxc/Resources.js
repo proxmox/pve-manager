@@ -230,11 +230,11 @@ Ext.define('PVE.lxc.RessourceView', {
 	    var value = rec.data.value;
 	    var rowdef = rows[key];
 
-	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
+	    var pending = rec.data.delete || me.hasPendingChanges(key);
 	    var isDisk = rowdef.tdCls == 'pve-itype-icon-storage';
 	    var isUnusedDisk = key.match(/^unused\d+/);
 
-	    var noedit = rec.data['delete'] || !rowdef.editor;
+	    var noedit = rec.data.delete || !rowdef.editor;
 	    if (!noedit && Proxmox.UserName !== 'root@pam' && key.match(/^mp\d+$/)) {
 		var mp = PVE.Parser.parseLxcMountPoint(value);
 		if (mp.type !== 'volume') {

@@ -59,8 +59,8 @@ Ext.define('PVE.form.CPUModelSelector', {
 		    let b = recordB.data;
 
 		    let vendorOrder = PVE.Utils.cpu_vendor_order;
-		    let orderA = vendorOrder[a.vendor] || vendorOrder['_default_'];
-		    let orderB = vendorOrder[b.vendor] || vendorOrder['_default_'];
+		    let orderA = vendorOrder[a.vendor] || vendorOrder._default_;
+		    let orderB = vendorOrder[b.vendor] || vendorOrder._default_;
 
 		    if (orderA > orderB) {
 			return 1;

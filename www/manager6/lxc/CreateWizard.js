@@ -285,7 +285,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    onSubmit: function() {
 		var wizard = this.up('window');
 		var kv = wizard.getValues();
-		delete kv['delete'];
+		delete kv.delete;
 
 		var nodename = kv.nodename;
 		delete kv.nodename;

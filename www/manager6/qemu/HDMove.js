@@ -16,7 +16,7 @@ Ext.define('PVE.window.HDMove', {
 	}
 
 	if (delete_disk) {
-	    params['delete'] = 1;
+	    params.delete = 1;
 	}
 
 	var url = '/nodes/' + me.nodename + '/' + me.type + '/' + me.vmid + '/';

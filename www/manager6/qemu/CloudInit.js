@@ -46,7 +46,7 @@ Ext.define('PVE.qemu.CloudInit', {
 		}
 
 		var params = {};
-		params['delete'] = id;
+		params.delete = id;
 		Proxmox.Utils.API2Request({
 		    url: me.baseurl + '/config',
 		    waitMsgTarget: me,

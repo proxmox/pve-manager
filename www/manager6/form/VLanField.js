@@ -21,7 +21,7 @@ Ext.define('PVE.form.VlanField', {
                 data[me.getName()] = val;
             } else if (me.deleteEmpty) {
 		data = {};
-                data['delete'] = me.getName();
+                data.delete = me.getName();
 	    }
         }
         return data;

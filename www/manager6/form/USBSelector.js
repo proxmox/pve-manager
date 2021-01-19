@@ -44,7 +44,7 @@ Ext.define('PVE.form.USBSelector', {
 	    },
 	    filters: [
 		function(item) {
-		    return !!item.data.usbpath && !!item.data.prodid && item.data['class'] != 9;
+		    return !!item.data.usbpath && !!item.data.prodid && item.data.class != 9;
 		},
 	    ],
 	});

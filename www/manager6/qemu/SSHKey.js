@@ -11,7 +11,7 @@ Ext.define('PVE.qemu.SSHKeyInputPanel', {
 	}
 	if (!values.sshkeys.length) {
 	    values = {};
-	    values['delete'] = 'sshkeys';
+	    values.delete = 'sshkeys';
 	    return values;
 	} else {
 	    values.sshkeys = encodeURIComponent(values.sshkeys);

@@ -15,14 +15,14 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 
 	if (!values.ballooning) {
 	    res.balloon = 0;
-	    res['delete'] = 'shares';
+	    res.delete = 'shares';
 	} else if (values.memory === values.balloon) {
 	    delete res.balloon;
-	    res['delete'] = 'balloon,shares';
+	    res.delete = 'balloon,shares';
 	} else if (Ext.isDefined(values.shares) && values.shares !== "") {
 	    res.shares = values.shares;
 	} else {
-	    res['delete'] = "shares";
+	    res.delete = "shares";
 	}
 
 	return res;

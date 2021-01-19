@@ -1360,14 +1360,14 @@ Ext.define('PVE.Utils', {
     delete_if_default: function(values, fieldname, default_val, create) {
 	if (values[fieldname] === '' || values[fieldname] === default_val) {
 	    if (!create) {
-		if (values['delete']) {
-		    if (Ext.isArray(values['delete'])) {
-			values['delete'].push(fieldname);
+		if (values.delete) {
+		    if (Ext.isArray(values.delete)) {
+			values.delete.push(fieldname);
 		    } else {
-			values['delete'] += ',' + fieldname;
+			values.delete += ',' + fieldname;
 		    }
 		} else {
-		    values['delete'] = fieldname;
+		    values.delete = fieldname;
 		}
 	    }
 

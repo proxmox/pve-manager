@@ -132,7 +132,7 @@ Ext.define('PVE.window.Migrate', {
 	    }
 
 	    if (vm.get('migration.overwriteLocalResourceCheck')) {
-		params['force'] = 1;
+		params.force = 1;
 	    }
 
 	    Proxmox.Utils.API2Request({

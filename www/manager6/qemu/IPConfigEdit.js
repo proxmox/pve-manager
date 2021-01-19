@@ -21,7 +21,7 @@ Ext.define('PVE.qemu.IPConfigPanel', {
 
 	var cfg = PVE.Parser.printIPConfig(values);
 	if (cfg === '') {
-	    params['delete'] = [me.confid];
+	    params.delete = [me.confid];
 	} else {
 	    params[me.confid] = cfg;
 	}

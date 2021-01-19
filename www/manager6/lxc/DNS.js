@@ -20,7 +20,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 	}
 
 	if (deletes.length) {
-	    values['delete'] = deletes.join(',');
+	    values.delete = deletes.join(',');
 	}
 
 	return values;
@@ -227,7 +227,7 @@ Ext.define('PVE.lxc.DNS', {
 	    let rowdef = rows[key];
 	    edit_btn.setDisabled(!rowdef.editor);
 
-	    let pending = rec.data['delete'] || me.hasPendingChanges(key);
+	    let pending = rec.data.delete || me.hasPendingChanges(key);
 	    revert_btn.setDisabled(!pending);
 	};
 

@@ -195,7 +195,7 @@ Ext.define('PVE.Parser', {
 	if (!match_res) {
 	    return;
 	}
-	res['interface'] = match_res[1];
+	res.interface = match_res[1];
 	res.index = match_res[2];
 
 	var errors = false;

@@ -83,7 +83,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 	if (values.options === '') {
 	    delete values.options;
 	    if (!me.isCreate) {
-		values["delete"] = "options";
+		values.delete = "options";
 	    }
 	}
 

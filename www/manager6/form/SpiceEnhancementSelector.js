@@ -66,7 +66,7 @@ Ext.define('PVE.form.SpiceEnhancementSelector', {
 	}
 	if (values.spice_enhancements) {
 	    var enhancements = PVE.Parser.parsePropertyString(values.spice_enhancements);
-	    enhancements['foldersharing'] = PVE.Parser.parseBoolean(enhancements['foldersharing'], 0);
+	    enhancements.foldersharing = PVE.Parser.parseBoolean(enhancements.foldersharing, 0);
 	    this.callParent([enhancements]);
 	}
     },

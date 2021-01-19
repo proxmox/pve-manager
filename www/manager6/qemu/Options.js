@@ -364,7 +364,7 @@ Ext.define('PVE.qemu.Options', {
 	    }
 
 	    var key = rec.data.key;
-	    var pending = rec.data['delete'] || me.hasPendingChanges(key);
+	    var pending = rec.data.delete || me.hasPendingChanges(key);
 	    var rowdef = rows[key];
 
 	    edit_btn.setDisabled(!rowdef.editor);
