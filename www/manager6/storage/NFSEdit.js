@@ -32,7 +32,7 @@ Ext.define('PVE.storage.NFSScan', {
 	me.nfsServer = server;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -40,7 +40,7 @@ Ext.define('PVE.storage.NFSScan', {
 	}
 
 	var store = Ext.create('Ext.data.Store', {
-	    fields: [ 'path', 'options' ],
+	    fields: ['path', 'options'],
 	    proxy: {
 		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/nfs',
@@ -62,7 +62,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 
     onlineHelp: 'storage_nfs',
 
-    options : [],
+    options: [],
 
     onGetValues: function(values) {
 	var me = this;
@@ -105,7 +105,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 	return me.callParent([values]);
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 

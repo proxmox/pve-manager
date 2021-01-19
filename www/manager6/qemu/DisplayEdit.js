@@ -98,7 +98,7 @@ Ext.define('PVE.qemu.DisplayEdit', {
 	xtype: 'pveDisplayInputPanel',
     }],
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.callParent();

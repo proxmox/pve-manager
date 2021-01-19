@@ -75,7 +75,7 @@ Ext.define('PVE.panel.NotesView', {
 	},
     }],
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;

@@ -42,7 +42,7 @@ Ext.define('PVE.window.BulkAction', {
 	});
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -167,8 +167,8 @@ Ext.define('PVE.window.BulkAction', {
 	});
 
 	Ext.apply(me, {
-	    items: [ me.formPanel ],
-	    buttons: [ submitBtn ],
+	    items: [me.formPanel],
+	    buttons: [submitBtn],
 	});
 
 	me.callParent();

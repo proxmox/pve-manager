@@ -7,7 +7,7 @@ Ext.define('PVE.sdn.VnetView', {
     stateful: true,
     stateId: 'grid-sdn-vnet',
 
-    initComponent : function() {
+    initComponent: function() {
 	let me = this;
 
 	let store = new Ext.data.Store({
@@ -122,7 +122,6 @@ Ext.define('PVE.sdn.VnetView', {
 	me.callParent();
     },
 }, function() {
-
     Ext.define('pve-sdn-vnet', {
 	extend: 'Ext.data.Model',
 	fields: [
@@ -137,5 +136,4 @@ Ext.define('PVE.sdn.VnetView', {
 	],
 	idProperty: 'vnet',
     });
-
 });

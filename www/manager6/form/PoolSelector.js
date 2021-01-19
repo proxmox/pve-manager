@@ -42,15 +42,13 @@ Ext.define('PVE.form.PoolSelector', {
     },
 
 }, function() {
-
     Ext.define('pve-pools', {
 	extend: 'Ext.data.Model',
-	fields: [ 'poolid', 'comment' ],
+	fields: ['poolid', 'comment'],
 	proxy: {
             type: 'proxmox',
 	    url: "/api2/json/pools",
 	},
 	idProperty: 'poolid',
     });
-
 });

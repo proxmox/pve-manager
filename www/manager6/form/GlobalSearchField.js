@@ -28,11 +28,11 @@ Ext.define('PVE.form.GlobalSearchField', {
 	scrollable: {
 	    xtype: 'scroller',
 	    y: true,
-	    x:false,
+	    x: false,
 	},
 	store: {
 	    model: 'PVEResources',
-	    proxy:{
+	    proxy: {
 		type: 'proxmox',
 		url: '/api2/extjs/cluster/resources',
 	    },
@@ -125,14 +125,14 @@ Ext.define('PVE.form.GlobalSearchField', {
 	//
 	// results gets sorted by points (descending)
 	fields = me.filterVal.split(/\s+/);
-	for(i = 0; i < fieldArr.length; i++) {
+	for (i = 0; i < fieldArr.length; i++) {
 	    var v = item.data[fieldArr[i]];
 	    if (v !== undefined) {
 		v = v.toString().toLowerCase();
-		for(j = 0; j < fields.length; j++) {
+		for (j = 0; j < fields.length; j++) {
 		    if (v.indexOf(fields[j]) !== -1) {
 			match++;
-			if(v === fields[j]) {
+			if (v === fields[j]) {
 			    match++;
 			}
 		    }
@@ -166,7 +166,7 @@ Ext.define('PVE.form.GlobalSearchField', {
 	var me = this;
 	var key = e.getKey();
 
-	switch(key) {
+	switch (key) {
 	    case Ext.event.Event.ENTER:
 		// go to first entry if there is one
 		if (me.grid.store.getCount() > 0) {
@@ -244,13 +244,13 @@ Ext.define('PVE.form.GlobalSearchField', {
 	me.keymap = new Ext.KeyMap({
 	    target: Ext.get(document),
 	    binding: [{
-		key:'F',
+		key: 'F',
 		ctrl: true,
 		shift: true,
 		fn: me.toggleFocus,
 		scope: me,
 	    }, {
-		key:' ',
+		key: ' ',
 		ctrl: true,
 		fn: me.toggleFocus,
 		scope: me,

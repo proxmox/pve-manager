@@ -103,7 +103,7 @@ Ext.define('PVE.window.Settings', {
 		},
 	    },
 	    'button[name=reset]': {
-		click: function () {
+		click: function() {
 		    var blacklist = ['GuiCap', 'login-username', 'dash-storages'];
 		    var sp = Ext.state.Manager.getProvider();
 		    var state;
@@ -121,7 +121,7 @@ Ext.define('PVE.window.Settings', {
 		},
 	    },
 	    'button[name=clear-username]': {
-		click: function () {
+		click: function() {
 		    var me = this;
 		    var usernamefield = me.lookupReference('savedUserName');
 		    var sp = Ext.state.Manager.getProvider();
@@ -152,7 +152,7 @@ Ext.define('PVE.window.Settings', {
 		    var items = [];
 		    me.suspendEvent('selectionchange');
 		    var storages = sp.get('dash-storages') || '';
-		    storages.split(',').forEach(function(storage){
+		    storages.split(',').forEach(function(storage) {
 			// we have to get the records
 			// to be able to select them
 			if (storage !== '') {
@@ -224,16 +224,16 @@ Ext.define('PVE.window.Settings', {
 			property: 'type',
 			value: 'storage',
 		    }],
-		    sorters: [ 'node', 'storage'],
+		    sorters: ['node', 'storage'],
 		},
 	    },
 	    {
 		xtype: 'box',
-		autoEl: { tag: 'hr'},
+		autoEl: { tag: 'hr' },
 	    },
 	    {
 		xtype: 'container',
-		layout:  'hbox',
+		layout: 'hbox',
 		items: [
 		    {
 			xtype: 'displayfield',
@@ -254,7 +254,7 @@ Ext.define('PVE.window.Settings', {
 	    },
 	    {
 		xtype: 'box',
-		autoEl: { tag: 'hr'},
+		autoEl: { tag: 'hr' },
 	    },
 	    {
 		xtype: 'container',
@@ -276,7 +276,7 @@ Ext.define('PVE.window.Settings', {
 	    },
 	    {
 		xtype: 'box',
-		autoEl: { tag: 'hr'},
+		autoEl: { tag: 'hr' },
 	    },
 	    {
 		xtype: 'proxmoxKVComboBox',
@@ -316,7 +316,7 @@ Ext.define('PVE.window.Settings', {
 	    // is shown
 	    margin: '0 2 10 0',
 	},
-	items:[
+	items: [
 	    {
 		xtype: 'fieldset',
 		itemId: 'xtermjs',

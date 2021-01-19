@@ -36,7 +36,7 @@ Ext.define('PVE.window.IPInfo', {
 			val.forEach(function(ip) {
 			    var addr = ip['ip-address'];
 			    var pref = ip.prefix;
-			    if  (addr && pref) {
+			    if (addr && pref) {
 				ips.push(addr + '/' + pref);
 			    }
 			});
@@ -106,7 +106,6 @@ Ext.define('PVE.qemu.AgentIPView', {
 	    if (nic['hardware-address'] &&
 		nic['hardware-address'] != '00:00:00:00:00:00' &&
 		nic['hardware-address'] != '0:0:0:0:0:0') {
-
 		var nic_ips = nic['ip-addresses'] || [];
 		nic_ips.forEach(function(ip) {
 		    var p = ip['ip-address'];

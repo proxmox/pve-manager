@@ -1,6 +1,6 @@
 Ext.define('PVE.qemu.USBInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
-    mixins: ['Proxmox.Mixin.CBind' ],
+    mixins: ['Proxmox.Mixin.CBind'],
 
     autoComplete: false,
     onlineHelp: 'qm_usb_passthrough',
@@ -121,7 +121,7 @@ Ext.define('PVE.qemu.USBEdit', {
     width: 400,
     subject: gettext('USB Device'),
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.isCreate = !me.confid;
@@ -132,7 +132,7 @@ Ext.define('PVE.qemu.USBEdit', {
 	});
 
 	Ext.apply(me, {
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();
@@ -164,7 +164,7 @@ Ext.define('PVE.qemu.USBEdit', {
 		    }
 		}
 		var values = {
-		    usb : type,
+		    usb: type,
 		    hostdevice: hostdevice,
 		    port: port,
 		    usb3: usb3,

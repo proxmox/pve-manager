@@ -15,7 +15,7 @@ Ext.define('PVE.panel.SDNZoneBase', {
         return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
         var me = this;
 
         me.callParent();
@@ -25,7 +25,7 @@ Ext.define('PVE.panel.SDNZoneBase', {
 Ext.define('PVE.sdn.zones.BaseEdit', {
     extend: 'Proxmox.window.Edit',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.isCreate = !me.zone;
@@ -47,14 +47,14 @@ Ext.define('PVE.sdn.zones.BaseEdit', {
 	Ext.apply(me, {
             subject: PVE.Utils.format_sdnzone_type(me.type),
 	    isAdd: true,
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();
 
 	if (!me.isCreate) {
 	    me.load({
-		success:  function(response, options) {
+		success: function(response, options) {
 		    var values = response.result.data;
 		    var ctypes = values.content || '';
 

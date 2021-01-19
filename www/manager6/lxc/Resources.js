@@ -15,7 +15,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	return rowdef.header || key;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 	var i, confid;
 
@@ -145,7 +145,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		params: {
 		    'delete': rec.data.key,
 		},
-		failure: function (response, opts) {
+		failure: function(response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
 		},
 	    });
@@ -247,7 +247,6 @@ Ext.define('PVE.lxc.RessourceView', {
 	    resize_btn.setDisabled(!isDisk || !diskCap || isUnusedDisk);
 	    move_btn.setDisabled(!isDisk || !diskCap);
 	    revert_btn.setDisabled(!pending);
-
 	};
 
 	var sorterFn = function(rec1, rec2) {

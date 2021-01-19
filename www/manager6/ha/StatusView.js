@@ -11,7 +11,7 @@ Ext.define('PVE.ha.StatusView', {
 	service: 4,
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.rstore) {
@@ -62,10 +62,8 @@ Ext.define('PVE.ha.StatusView', {
 
 	me.on('activate', me.rstore.startUpdate);
 	me.on('destroy', me.rstore.stopUpdate);
-
     },
 }, function() {
-
     Ext.define('pve-ha-status', {
 	extend: 'Ext.data.Model',
 	fields: [
@@ -90,5 +88,4 @@ Ext.define('PVE.ha.StatusView', {
 	],
 	idProperty: 'id',
     });
-
 });

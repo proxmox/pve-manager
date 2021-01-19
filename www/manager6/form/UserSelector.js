@@ -52,11 +52,10 @@ Ext.define('PVE.form.UserSelector', {
 
         me.callParent();
 
-	store.load({ params: { enabled: 1 }});
+	store.load({ params: { enabled: 1 } });
     },
 
 }, function() {
-
     Ext.define('pve-users', {
 	extend: 'Ext.data.Model',
 	fields: [
@@ -70,7 +69,6 @@ Ext.define('PVE.form.UserSelector', {
 	},
 	idProperty: 'userid',
     });
-
 });
 
 

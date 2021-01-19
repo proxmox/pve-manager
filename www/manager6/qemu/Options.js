@@ -4,7 +4,7 @@ Ext.define('PVE.qemu.Options', {
 
     onlineHelp: 'qm_options',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 	var i;
 
@@ -30,7 +30,7 @@ Ext.define('PVE.qemu.Options', {
 		    subject: gettext('Name'),
 		    items: {
 			xtype: 'inputpanel',
-			items:{
+			items: {
 			    xtype: 'textfield',
 			    name: 'name',
 			    vtype: 'DnsName',
@@ -43,7 +43,7 @@ Ext.define('PVE.qemu.Options', {
 			    if (values.name === undefined ||
 				values.name === null ||
 				values.name === '') {
-				params = { 'delete':'name'};
+				params = { 'delete': 'name' };
 			    }
 			    return params;
 			},
@@ -71,8 +71,8 @@ Ext.define('PVE.qemu.Options', {
 		header: gettext('Start/Shutdown order'),
 		defaultValue: '',
 		renderer: PVE.Utils.render_kvm_startup,
-		editor: caps.vms['VM.Config.Options'] && caps.nodes['Sys.Modify'] ?
-		    {
+		editor: caps.vms['VM.Config.Options'] && caps.nodes['Sys.Modify']
+		    ? {
 			xtype: 'pveWindowStartupEdit',
 			onlineHelp: 'qm_startup_and_shutdown',
 		    } : undefined,
@@ -159,7 +159,7 @@ Ext.define('PVE.qemu.Options', {
 	    hotplug: {
 		header: gettext('Hotplug'),
 		defaultValue: 'disk,network,usb',
-		renderer:  PVE.Utils.render_hotplug_features,
+		renderer: PVE.Utils.render_hotplug_features,
 		editor: caps.vms['VM.Config.HWType'] ? {
 		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Hotplug'),
@@ -306,7 +306,7 @@ Ext.define('PVE.qemu.Options', {
 	    spice_enhancements: {
 		header: gettext('Spice Enhancements'),
 		defaultValue: false,
-		renderer:  PVE.Utils.render_spice_enhancements,
+		renderer: PVE.Utils.render_spice_enhancements,
 		editor: caps.vms['VM.Config.Options'] ? {
 		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Spice Enhancements'),
@@ -375,7 +375,7 @@ Ext.define('PVE.qemu.Options', {
 	    url: "/api2/json/nodes/" + nodename + "/qemu/" + vmid + "/pending",
 	    interval: 5000,
 	    cwidth1: 250,
-	    tbar: [ edit_btn, revert_btn ],
+	    tbar: [edit_btn, revert_btn],
 	    rows: rows,
 	    editorConfig: {
 		url: "/api2/extjs/" + baseurl,

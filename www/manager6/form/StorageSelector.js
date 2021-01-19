@@ -58,7 +58,6 @@ Ext.define('PVE.form.StorageSelector', {
 	});
 
 	me.store.load();
-
     },
 
     setTargetNode: function(targetNode) {
@@ -110,11 +109,9 @@ Ext.define('PVE.form.StorageSelector', {
 	}
     },
 }, function() {
-
     Ext.define('pve-storage-status', {
 	extend: 'Ext.data.Model',
-	fields: [ 'storage', 'active', 'type', 'avail', 'total' ],
+	fields: ['storage', 'active', 'type', 'avail', 'total'],
 	idProperty: 'storage',
     });
-
 });

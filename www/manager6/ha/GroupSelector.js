@@ -43,17 +43,16 @@ Ext.define('PVE.ha.GroupSelector', {
     },
 
 }, function() {
-
     Ext.define('pve-ha-groups', {
 	extend: 'Ext.data.Model',
 	fields: [
 	    'group', 'type', 'digest', 'nodes', 'comment',
 	    {
-		name : 'restricted',
+		name: 'restricted',
 		type: 'boolean',
 	    },
 	    {
-		name : 'nofailback',
+		name: 'nofailback',
 		type: 'boolean',
 	    },
 	],

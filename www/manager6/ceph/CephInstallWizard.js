@@ -49,8 +49,8 @@ Ext.define('PVE.ceph.CephVersionSelector', {
 	    },
 	},
 	data: [
-	    {release: "nautilus", version: "14.2"},
-	    {release: "octopus", version: "15.2"},
+	    { release: "nautilus", version: "14.2" },
+	    { release: "octopus", version: "15.2" },
 	    //{release: "pacific", version: "16.1"},
 	],
     },
@@ -163,7 +163,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 	    tp.setActiveTab(ntab);
 	}
     },
-    setInitialTab: function (index) {
+    setInitialTab: function(index) {
 	var tp = this.down('#wizcontent');
 	var initialTab = tp.items.getAt(index);
 	initialTab.enable();
@@ -203,7 +203,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		{
 		    xtype: 'pveCephHighestVersionDisplay',
 		    labelWidth: 180,
-		    cbind:{
+		    cbind: {
 			nodename: '{nodename}',
 		    },
 		    gotNewestVersion: function(release, maxversiontext, maxversion) {
@@ -256,7 +256,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 	    title: gettext('Installation'),
 	    xtype: 'panel',
 	    layout: 'fit',
-	    cbind:{
+	    cbind: {
 		nodename: '{nodename}',
 	    },
 	    viewModel: {}, // needed to inherit parent viewModel data
@@ -281,7 +281,6 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			},
 			listeners: {
 			    load: function(rec, response, success, operation) {
-
 				if (success) {
 				    me.updateStore.stopUpdate();
 				    me.down('textfield').setValue('success');
@@ -485,7 +484,6 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 			},
 		    });
-
 		} else {
 		    me.up('pveCephInstallWizard').navigateNext();
 		}
@@ -513,7 +511,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 
 		    var tp = this.up('#wizcontent');
 		    var idx = tp.items.indexOf(this)-1;
-		    for(;idx >= 0;idx--) {
+		    for (;idx >= 0; idx--) {
 			var nc = tp.items.getAt(idx);
 			if (nc) {
 			    nc.disable();

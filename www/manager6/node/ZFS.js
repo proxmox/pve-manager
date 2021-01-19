@@ -10,7 +10,7 @@ Ext.define('PVE.node.CreateZFS', {
 
     width: 800,
 
-    initComponent : function() {
+    initComponent: function() {
         var me = this;
 
 	if (!me.nodename) {
@@ -422,7 +422,7 @@ Ext.define('PVE.node.ZFSList', {
 	    resizable: true,
 	    layout: 'fit',
 	    title: gettext('Status') + ': ' + zpool,
-	    items:[{
+	    items: [{
 		xtype: 'panel',
 		region: 'center',
 		layout: {
@@ -434,7 +434,6 @@ Ext.define('PVE.node.ZFSList', {
 		    text: gettext('Reload'),
 		    iconCls: 'fa fa-refresh',
 		    handler: function() {
-
 			devicetree.reload();
 			detailsgrid.reload();
 		    },

@@ -101,7 +101,6 @@ Ext.define('PVE.qemu.CreateWizard', {
 		},
 	    ],
 	    onGetValues: function(values) {
-
 		['name', 'pool', 'onboot', 'agent'].forEach(function(field) {
 		    if (!values[field]) {
 			delete values[field];
@@ -190,13 +189,13 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    store: {
 			model: 'KeyValue',
 			sorters: [{
-			    property : 'key',
+			    property: 'key',
 			    direction: 'ASC',
 			}],
 		    },
 		    columns: [
-			{header: 'Key', width: 150, dataIndex: 'key'},
-			{header: 'Value', flex: 1, dataIndex: 'value'},
+			{ header: 'Key', width: 150, dataIndex: 'key' },
+			{ header: 'Value', flex: 1, dataIndex: 'value' },
 		    ],
 		},
 	    ],
@@ -227,7 +226,6 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    summarystore.sort();
 		    summarystore.resumeEvents();
 		    summarystore.fireEvent('refresh');
-
 		},
 	    },
 	    onSubmit: function() {
@@ -243,7 +241,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 		    waitMsgTarget: wizard,
 		    method: 'POST',
 		    params: kv,
-		    success: function(response){
+		    success: function(response) {
 			wizard.close();
 		    },
 		    failure: function(response, opts) {
@@ -254,7 +252,5 @@ Ext.define('PVE.qemu.CreateWizard', {
 	},
     ],
 });
-
-
 
 

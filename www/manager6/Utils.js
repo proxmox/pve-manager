@@ -19,7 +19,8 @@ Ext.Ajax.defaultHeaders = {
     'Accept': 'application/json',
 };
 
-Ext.define('PVE.Utils', { utilities: {
+Ext.define('PVE.Utils', {
+ utilities: {
 
     // this singleton contains miscellaneous utilities
 
@@ -61,10 +62,10 @@ Ext.define('PVE.Utils', { utilities: {
 	    { desc: '2000', val: 'w2k' },
 	],
 	'Solaris Kernel': [
-	    { desc: '-', val: 'solaris'},
+	    { desc: '-', val: 'solaris' },
 	],
 	'Other': [
-	    { desc: '-', val: 'other'},
+	    { desc: '-', val: 'other' },
 	],
     },
 
@@ -78,7 +79,7 @@ Ext.define('PVE.Utils', { utilities: {
 	}
 
 	var icon = 'faded fa-question';
-	switch(state) {
+	switch (state) {
 	    case 'good':
 		icon = 'good fa-check';
 		break;
@@ -145,7 +146,7 @@ Ext.define('PVE.Utils', { utilities: {
 
 	    if (av === undefined && bv === undefined) {
 		return 0;
-	    } else if (av === undefined)  {
+	    } else if (av === undefined) {
 		return -1;
 	    } else if (bv === undefined) {
 		return 1;
@@ -155,7 +156,6 @@ Ext.define('PVE.Utils', { utilities: {
 		// else we need to look at the next parts
 	    }
 	}
-
     },
 
     get_ceph_icon_html: function(health, fw) {
@@ -168,11 +168,11 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     map_ceph_health: {
-	'HEALTH_OK':'good',
-	'HEALTH_UPGRADE':'upgrade',
-	'HEALTH_OLD':'old',
-	'HEALTH_WARN':'warning',
-	'HEALTH_ERR':'critical',
+	'HEALTH_OK': 'good',
+	'HEALTH_UPGRADE': 'upgrade',
+	'HEALTH_OLD': 'old',
+	'HEALTH_WARN': 'warning',
+	'HEALTH_ERR': 'critical',
     },
 
     render_ceph_health: function(healthObj) {
@@ -194,7 +194,7 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     render_zfs_health: function(value) {
-	if (typeof value == 'undefined'){
+	if (typeof value == 'undefined') {
 	    return "";
 	}
 	var iconCls = 'question-circle';
@@ -216,7 +216,6 @@ Ext.define('PVE.Utils', { utilities: {
 	}
 
 	return '<i class="fa fa-' + iconCls + '"></i> ' + value;
-
     },
 
     render_pbs_fingerprint: fp => fp.substring(0, 23),
@@ -239,7 +238,7 @@ Ext.define('PVE.Utils', { utilities: {
 	if (v === undefined || v === null) {
 	    return i('question-circle-o warning', gettext('None'));
 	}
-	let tip = ""
+	let tip = "";
 	let txt = gettext('Failed');
 	let iconCls = 'times critical';
 	if (v.state === 'ok') {
@@ -286,7 +285,7 @@ Ext.define('PVE.Utils', { utilities: {
 	var dows = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 	var selected = [];
 	var cur = -1;
-	val.split(',').forEach(function(day){
+	val.split(',').forEach(function(day) {
 	    cur++;
 	    var dow = (dows.indexOf(day)+6)%7;
 	    if (cur === dow) {
@@ -365,7 +364,7 @@ Ext.define('PVE.Utils', { utilities: {
 	return info;
     },
 
-    render_kvm_ostype: function (value) {
+    render_kvm_ostype: function(value) {
 	var osinfo = PVE.Utils.get_kvm_osinfo(value);
 	if (osinfo.desc && osinfo.desc !== '-') {
 	    return osinfo.base + ' ' + osinfo.desc;
@@ -374,7 +373,7 @@ Ext.define('PVE.Utils', { utilities: {
 	}
     },
 
-    render_hotplug_features: function (value) {
+    render_hotplug_features: function(value) {
 	var fa = [];
 
 	if (!value || (value === '0')) {
@@ -413,7 +412,7 @@ Ext.define('PVE.Utils', { utilities: {
 
     render_qga_features: function(value) {
 	if (!value) {
-	    return Proxmox.Utils.defaultText + ' (' + Proxmox.Utils.disabledText  + ')';
+	    return Proxmox.Utils.defaultText + ' (' + Proxmox.Utils.disabledText + ')';
 	}
 	var props = PVE.Parser.parsePropertyString(value, 'enabled');
 	if (!PVE.Parser.parseBoolean(props.enabled)) {
@@ -424,7 +423,7 @@ Ext.define('PVE.Utils', { utilities: {
 	var agentstring = Proxmox.Utils.enabledText;
 
 	Ext.Object.each(props, function(key, value) {
-	    var keystring = '' ;
+	    var keystring = '';
 	    agentstring += ', ' + key + ': ';
 
 	    if (key === 'type') {
@@ -562,7 +561,7 @@ Ext.define('PVE.Utils', { utilities: {
 	none: Proxmox.Utils.noneText,
     },
 
-    render_kvm_language: function (value) {
+    render_kvm_language: function(value) {
 	if (!value || value === '__default__') {
 	    return Proxmox.Utils.defaultText;
 	}
@@ -603,7 +602,7 @@ Ext.define('PVE.Utils', { utilities: {
 	});
     },
 
-    render_kvm_vga_driver: function (value) {
+    render_kvm_vga_driver: function(value) {
 	if (!value) {
 	    return Proxmox.Utils.defaultText;
 	}
@@ -898,7 +897,7 @@ Ext.define('PVE.Utils', { utilities: {
 	if (value.managed) {
 	    text = value.state || Proxmox.Utils.noneText;
 
-	    text += ', ' +  Proxmox.Utils.groupText + ': ';
+	    text += ', ' + Proxmox.Utils.groupText + ': ';
 	    text += value.group || Proxmox.Utils.noneText;
 	}
 
@@ -923,12 +922,11 @@ Ext.define('PVE.Utils', { utilities: {
 	return data.volid.replace(/^.*?:(.*?\/)?/, '');
     },
 
-    render_serverity: function (value) {
+    render_serverity: function(value) {
 	return PVE.Utils.log_severity_hash[value] || value;
     },
 
     render_cpu: function(value, metaData, record, rowIndex, colIndex, store) {
-
 	if (!(record.data.uptime && Ext.isNumeric(value))) {
 	    return '';
 	}
@@ -945,7 +943,6 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     render_size: function(value, metaData, record, rowIndex, colIndex, store) {
-
 	if (!Ext.isNumeric(value)) {
 	    return '';
 	}
@@ -979,7 +976,7 @@ Ext.define('PVE.Utils', { utilities: {
 	if (!Ext.isNumeric(value) || value === -1) {
 	    return '';
 	}
-	if (value > 1 ) {
+	if (value > 1) {
 	    // we got no percentage but bytes
 	    var mem = value;
 	    var maxmem = record.data.maxmem;
@@ -995,7 +992,6 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     render_mem_usage: function(value, metaData, record, rowIndex, colIndex, store) {
-
 	var mem = value;
 	var maxmem = record.data.maxmem;
 
@@ -1011,7 +1007,6 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     calculate_disk_usage: function(data) {
-
 	if (!Ext.isNumeric(data.disk) ||
 	    data.type === 'qemu' ||
 	    (data.type === 'lxc' && data.uptime === 0) ||
@@ -1031,7 +1026,6 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     render_disk_usage: function(value, metaData, record, rowIndex, colIndex, store) {
-
 	var disk = value;
 	var maxdisk = record.data.maxdisk;
 	var type = record.data.type;
@@ -1076,10 +1070,9 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     render_resource_type: function(value, metaData, record, rowIndex, colIndex, store) {
-
 	var cls = PVE.Utils.get_object_icon_class(value, record.data);
 
-	var fa = '<i class="fa-fw x-grid-icon-custom ' + cls  + '"></i> ';
+	var fa = '<i class="fa-fw x-grid-icon-custom ' + cls + '"></i> ';
 	return fa + value;
     },
 
@@ -1159,7 +1152,7 @@ Ext.define('PVE.Utils', { utilities: {
 	    '4': gettext('Device Ineligible'),
 	    '5': gettext('Timeout'),
 	};
-	return "U2F Error: "  + ErrorNames[error] || Proxmox.Utils.unknownText;
+	return "U2F Error: " + ErrorNames[error] || Proxmox.Utils.unknownText;
     },
 
     windowHostname: function() {
@@ -1207,7 +1200,6 @@ Ext.define('PVE.Utils', { utilities: {
     },
 
     defaultViewer: function(consoles) {
-
 	var allowSpice, allowXtermjs;
 
 	if (consoles === true) {
@@ -1248,13 +1240,12 @@ Ext.define('PVE.Utils', { utilities: {
 	}
     },
 
-    openSpiceViewer: function(url, params){
-
+    openSpiceViewer: function(url, params) {
 	var downloadWithName = function(uri, name) {
 	    var link = Ext.DomHelper.append(document.body, {
 		tag: 'a',
 		href: uri,
-		css : 'display:none;visibility:hidden;height:0px;',
+		css: 'display:none;visibility:hidden;height:0px;',
 	    });
 
 	    // Note: we need to tell android the correct file name extension
@@ -1278,10 +1269,10 @@ Ext.define('PVE.Utils', { utilities: {
 	    url: url,
 	    params: params,
 	    method: 'POST',
-	    failure: function(response, opts){
+	    failure: function(response, opts) {
 		Ext.Msg.alert('Error', response.htmlStatus);
 	    },
-	    success: function(response, opts){
+	    success: function(response, opts) {
 		var raw = "[virt-viewer]\n";
 		Ext.Object.each(response.result.data, function(k, v) {
 		    raw += k + "=" + v + "\n";
@@ -1321,7 +1312,6 @@ Ext.define('PVE.Utils', { utilities: {
 
     // test automation helper
     call_menu_handler: function(menu, text) {
-
 	var list = menu.query('menuitem');
 
 	Ext.Array.each(list, function(item) {
@@ -1433,7 +1423,7 @@ Ext.define('PVE.Utils', { utilities: {
 	if (Ext.isArray(types)) {
 	    busses = types;
 	} else if (Ext.isDefined(types)) {
-	    busses = [ types ];
+	    busses = [types];
 	}
 
 	// check if we only have valid busses
@@ -1479,7 +1469,7 @@ Ext.define('PVE.Utils', { utilities: {
 
     hardware_counts: { net: 32, usb: 5, hostpci: 16, audio: 1, efidisk: 1, serial: 4, rng: 1 },
 
-    cleanEmptyObjectKeys: function (obj) {
+    cleanEmptyObjectKeys: function(obj) {
 	var propName;
 	for (propName in obj) {
 	    if (obj.hasOwnProperty(propName)) {
@@ -1497,26 +1487,20 @@ Ext.define('PVE.Utils', { utilities: {
 	    acme.domains = [domain];
 	} else {
 	    acme.domains.push(domain);
-	    acme.domains = acme.domains.filter((value, index, self) => {
-		return self.indexOf(value) === index;
-	    });
+	    acme.domains = acme.domains.filter((value, index, self) => self.indexOf(value) === index);
 	}
 	return acme;
     },
 
     remove_domain_from_acme: function(acme, domain) {
 	if (acme.domains !== undefined) {
-	    acme.domains = acme.domains.filter((value, index, self) => {
-		return self.indexOf(value) === index && value !== domain;
-	    });
+	    acme.domains = acme.domains.filter((value, index, self) => self.indexOf(value) === index && value !== domain);
 	}
 	return acme;
     },
 
     handleStoreErrorOrMask: function(me, store, regex, callback) {
-
-	me.mon(store, 'load', function (proxy, response, success, operation) {
-
+	me.mon(store, 'load', function(proxy, response, success, operation) {
 	    if (success) {
 		Proxmox.Utils.setErrorMask(me, false);
 		return;
@@ -1537,12 +1521,12 @@ Ext.define('PVE.Utils', { utilities: {
 	});
     },
 
-    showCephInstallOrMask: function(container, msg, nodename, callback){
+    showCephInstallOrMask: function(container, msg, nodename, callback) {
 	var regex = new RegExp("not (installed|initialized)", "i");
 	if (msg.match(regex)) {
 	    if (Proxmox.UserName === 'root@pam') {
 		container.el.mask();
-		if (!container.down('pveCephInstallWindow')){
+		if (!container.down('pveCephInstallWindow')) {
 		    var isInstalled = msg.match(/not initialized/i) ? true : false;
 		    var win = Ext.create('PVE.ceph.Install', {
 			nodename: nodename,

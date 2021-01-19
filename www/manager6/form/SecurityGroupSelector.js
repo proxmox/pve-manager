@@ -9,7 +9,7 @@ Ext.define('PVE.form.SecurityGroupsSelector', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    autoLoad: true,
-	    fields: [ 'group', 'comment' ],
+	    fields: ['group', 'comment'],
 	    idProperty: 'group',
 	    proxy: {
 		type: 'proxmox',

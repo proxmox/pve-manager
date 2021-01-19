@@ -390,11 +390,11 @@ Ext.define('PVE.node.CephStatus', {
 	me.writes = me.down('#writes');
 
 	var regex = new RegExp("not (installed|initialized)", "i");
-	PVE.Utils.handleStoreErrorOrMask(me, me.store, regex, function(me, error){
+	PVE.Utils.handleStoreErrorOrMask(me, me.store, regex, function(me, error) {
 	    me.store.stopUpdate();
 	    PVE.Utils.showCephInstallOrMask(me, error.statusText, (nodename || 'localhost'),
-		function(win){
-		    me.mon(win, 'cephInstallWindowClosed', function(){
+		function(win) {
+		    me.mon(win, 'cephInstallWindowClosed', function() {
 			me.store.startUpdate();
 		    });
 		},

@@ -176,12 +176,12 @@ Ext.define('PVE.panel.Config', {
 	me.tbar = undefined;
 
 	if (!me.onlineHelp) {
-	    switch(me.pveSelNode.data.id) {
-		case 'type/storage':me.onlineHelp = 'chapter-pvesm.html'; break;
-		case 'type/qemu':me.onlineHelp = 'chapter-qm.html'; break;
-		case 'type/lxc':me.onlineHelp = 'chapter-pct.html'; break;
-		case 'type/pool':me.onlineHelp = 'chapter-pveum.html#_pools'; break;
-		case 'type/node':me.onlineHelp = 'chapter-sysadmin.html'; break;
+	    switch (me.pveSelNode.data.id) {
+		case 'type/storage': me.onlineHelp = 'chapter-pvesm.html'; break;
+		case 'type/qemu': me.onlineHelp = 'chapter-qm.html'; break;
+		case 'type/lxc': me.onlineHelp = 'chapter-pct.html'; break;
+		case 'type/pool': me.onlineHelp = 'chapter-pveum.html#_pools'; break;
+		case 'type/node': me.onlineHelp = 'chapter-sysadmin.html'; break;
 	    }
 	}
 

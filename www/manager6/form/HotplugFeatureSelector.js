@@ -52,7 +52,7 @@ Ext.define('PVE.form.HotplugFeatureSelector', {
 	var me = this,
 	boxes = me.getBoxes(),
 	data = [];
-	Ext.Array.forEach(boxes, function(box){
+	Ext.Array.forEach(boxes, function(box) {
 	    if (box.getValue()) {
 		data.push(box.inputValue);
 	    }
@@ -60,7 +60,7 @@ Ext.define('PVE.form.HotplugFeatureSelector', {
 
 	/* because above is hotplug an array */
 	if (data.length === 0) {
-	    return { 'hotplug':'0' };
+	    return { 'hotplug': '0' };
 	} else {
 	    return { 'hotplug': data.join(',') };
 	}

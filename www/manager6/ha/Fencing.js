@@ -4,7 +4,7 @@ Ext.define('PVE.ha.FencingView', {
 
     onlineHelp: 'ha_manager_fencing',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var store = new Ext.data.Store({
@@ -38,12 +38,10 @@ Ext.define('PVE.ha.FencingView', {
 	me.callParent();
     },
 }, function() {
-
     Ext.define('pve-ha-fencing', {
 	extend: 'Ext.data.Model',
 	fields: [
 	    'node', 'command', 'digest',
 	],
     });
-
 });

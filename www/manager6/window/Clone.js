@@ -91,7 +91,6 @@ Ext.define('PVE.window.Clone', {
 		me.close();
 	    },
 	});
-
     },
 
     // disable the Storage selector when clone mode is linked clone
@@ -133,7 +132,7 @@ Ext.define('PVE.window.Clone', {
 	});
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -231,7 +230,7 @@ Ext.define('PVE.window.Clone', {
 	    hidden: me.isTemplate || !me.hasSnapshots ? true : false,
 	    disabled: false,
 	    allowBlank: false,
-	    value : me.snapname,
+	    value: me.snapname,
 	    listeners: {
 		change: function(f, value) {
 		    me.verifyFeature();
@@ -284,7 +283,7 @@ Ext.define('PVE.window.Clone', {
 	    height: 250,
 	    border: false,
 	    layout: 'fit',
-	    buttons: [ {
+	    buttons: [{
 		xtype: 'proxmoxHelpButton',
 		listenToGlobalEvent: false,
 		hidden: false,
@@ -301,8 +300,8 @@ Ext.define('PVE.window.Clone', {
 			me.create_clone(cloneForm.getValues());
 		    }
 		},
-	    } ],
-	    items: [ formPanel ],
+	    }],
+	    items: [formPanel],
 	});
 
 	me.callParent();

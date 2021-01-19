@@ -57,7 +57,7 @@ Ext.define('PVE.widget.Info', {
     updateValue: function(text, usage) {
 	var me = this;
 	var label = me.getComponent('label');
-	label.update(Ext.apply(label.data, {title: me.title, usage:text}));
+	label.update(Ext.apply(label.data, { title: me.title, usage: text }));
 
 	if (usage !== undefined &&
 	    me.printBar &&

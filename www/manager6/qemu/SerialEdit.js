@@ -8,13 +8,12 @@ Ext.define('PVE.qemu.SerialnputPanel', {
 	me.vmconfig = vmconfig;
 
 	for (i = 0; i < 4; i++) {
-	    var port = 'serial' +  i.toString();
+	    var port = 'serial' + i.toString();
 	    if (!me.vmconfig[port]) {
 		me.down('field[name=serialid]').setValue(i);
 		break;
 	    }
 	}
-
     },
 
     onGetValues: function(values) {
@@ -57,7 +56,7 @@ Ext.define('PVE.qemu.SerialEdit', {
 
     subject: gettext('Serial Port'),
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	// for now create of (socket) serial port only
@@ -66,7 +65,7 @@ Ext.define('PVE.qemu.SerialEdit', {
 	var ipanel = Ext.create('PVE.qemu.SerialnputPanel', {});
 
 	Ext.apply(me, {
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();

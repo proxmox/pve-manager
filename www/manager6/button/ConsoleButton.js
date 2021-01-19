@@ -19,14 +19,14 @@ Ext.define('PVE.button.ConsoleButton', {
 
     text: gettext('Console'),
 
-    setEnableSpice: function(enable){
+    setEnableSpice: function(enable) {
 	var me = this;
 
 	me.enableSpice = enable;
 	me.down('#spicemenu').setDisabled(!enable);
     },
 
-    setEnableXtermJS: function(enable){
+    setEnableXtermJS: function(enable) {
 	var me = this;
 
 	me.enableXtermjs = enable;
@@ -45,7 +45,7 @@ Ext.define('PVE.button.ConsoleButton', {
 
     menu: [
 	{
-	    xtype:'menuitem',
+	    xtype: 'menuitem',
 	    text: 'noVNC',
 	    iconCls: 'pve-itype-icon-novnc',
 	    type: 'html5',

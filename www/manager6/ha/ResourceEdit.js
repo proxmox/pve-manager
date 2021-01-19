@@ -18,7 +18,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 	var MIN_QUORUM_VOTES = 3;
 
@@ -126,8 +126,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		    'change': function(field, newValue) {
 			if (newValue === 'disabled') {
 			    disabledHint.setVisible(true);
-			}
-			else {
+			} else {
 			    if (disabledHint.isVisible()) {
 				disabledHint.setVisible(false);
 			    }
@@ -158,7 +157,7 @@ Ext.define('PVE.ha.VMResourceEdit', {
     guestType: undefined,
     isCreate: undefined,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (me.isCreate === undefined) {
@@ -183,17 +182,17 @@ Ext.define('PVE.ha.VMResourceEdit', {
 	    subject: gettext('Resource') + ': ' + gettext('Container') +
 	    '/' + gettext('Virtual Machine'),
 	    isAdd: true,
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();
 
 	if (!me.isCreate) {
 	    me.load({
-		success:  function(response, options) {
+		success: function(response, options) {
 		    var values = response.result.data;
 
-		    var regex =  /^(\S+):(\S+)$/;
+		    var regex = /^(\S+):(\S+)$/;
 		    var res = regex.exec(values.sid);
 
 		    if (res[1] !== 'vm' && res[1] !== 'ct') {

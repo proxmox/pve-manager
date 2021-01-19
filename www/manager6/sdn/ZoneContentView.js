@@ -14,7 +14,7 @@ Ext.define('PVE.sdn.ZoneContentView', {
 	    groupHeaderTpl: '{name} ({rows.length} Item{[values.rows.length > 1 ? "s" : ""]})',
 	},
     ],
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;
@@ -78,10 +78,8 @@ Ext.define('PVE.sdn.ZoneContentView', {
 	});
 
 	me.callParent();
-
     },
 }, function() {
-
     Ext.define('pve-sdnzone-content', {
 	extend: 'Ext.data.Model',
 	fields: [
@@ -100,5 +98,4 @@ Ext.define('PVE.sdn.ZoneContentView', {
 	],
 	idProperty: 'vnet',
     });
-
 });

@@ -20,7 +20,7 @@ Ext.define('PVE.button.PendingRevert', {
 	if (!rec) return;
 
 	let rowdef = view.rows[rec.data.key] || {};
-	let keys = rowdef.multiKey ||  [ rec.data.key ];
+	let keys = rowdef.multiKey || [rec.data.key];
 
 	Proxmox.Utils.API2Request({
 	    url: this.apiurl || view.editorConfig.url,

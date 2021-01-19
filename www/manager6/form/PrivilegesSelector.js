@@ -27,7 +27,7 @@ Ext.define('PVE.form.PrivilegesSelector', {
 		});
 	    },
 
-	    failure: function (response, opts) {
+	    failure: function(response, opts) {
 		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 	    },
 	});

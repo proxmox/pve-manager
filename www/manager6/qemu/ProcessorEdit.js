@@ -217,7 +217,7 @@ Ext.define('PVE.qemu.ProcessorEdit', {
 
     width: 700,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var ipanel = Ext.create('PVE.qemu.ProcessorInputPanel');
@@ -243,8 +243,7 @@ Ext.define('PVE.qemu.ProcessorEdit', {
 
 		    let caps = Ext.state.Manager.get('GuiCap');
 		    if (data.cputype.indexOf('custom-') === 0 &&
-			!caps.nodes['Sys.Audit'])
-		    {
+			!caps.nodes['Sys.Audit']) {
 			let vm = ipanel.getViewModel();
 			vm.set("showCustomModelPermWarning", true);
 		    }

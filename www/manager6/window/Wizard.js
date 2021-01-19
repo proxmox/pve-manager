@@ -79,7 +79,7 @@ Ext.define('PVE.window.Wizard', {
 	var disable_at = function(card) {
 	    var tp = me.down('#wizcontent');
 	    var idx = tp.items.indexOf(card);
-	    for(;idx < tp.items.getCount();idx++) {
+	    for (;idx < tp.items.getCount(); idx++) {
 		var nc = tp.items.getAt(idx);
 		if (nc) {
 		    nc.disable();
@@ -196,7 +196,6 @@ Ext.define('PVE.window.Wizard', {
 		    itemId: 'next',
 		    minWidth: 60,
 		    handler: function() {
-
 			var form = me.down('form').getForm();
 
 			var tp = me.down('#wizcontent');
@@ -211,7 +210,6 @@ Ext.define('PVE.window.Wizard', {
 			    ntab.enable();
 			    tp.setActiveTab(ntab);
 			}
-
 		    },
 		},
 		{

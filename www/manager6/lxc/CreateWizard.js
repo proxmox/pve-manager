@@ -238,13 +238,13 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    store: {
 			model: 'KeyValue',
 			sorters: [{
-				property : 'key',
+				property: 'key',
 				direction: 'ASC',
 			}],
 		    },
 		    columns: [
-			{header: 'Key', width: 150, dataIndex: 'key'},
-			{header: 'Value', flex: 1, dataIndex: 'value'},
+			{ header: 'Key', width: 150, dataIndex: 'key' },
+			{ header: 'Value', flex: 1, dataIndex: 'value' },
 		    ],
 		},
 	    ],
@@ -304,7 +304,7 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    waitMsgTarget: wizard,
 		    method: 'POST',
 		    params: kv,
-		    success: function(response, opts){
+		    success: function(response, opts) {
 			var upid = response.result.data;
 
 			var win = Ext.create('Proxmox.window.TaskViewer', {
@@ -321,6 +321,5 @@ Ext.define('PVE.lxc.CreateWizard', {
 	},
     ],
 });
-
 
 

@@ -7,8 +7,7 @@ Ext.define('PVE.FirewallAliasEdit', {
 
     width: 400,
 
-    initComponent : function() {
-
+    initComponent: function() {
 	var me = this;
 
 	me.isCreate = (me.alias_name === undefined);
@@ -21,7 +20,7 @@ Ext.define('PVE.FirewallAliasEdit', {
 	    me.method = 'PUT';
 	}
 
-	var items =  [
+	var items = [
 	    {
 		xtype: 'textfield',
 		name: me.isCreate ? 'name' : 'rename',
@@ -49,7 +48,7 @@ Ext.define('PVE.FirewallAliasEdit', {
 	Ext.apply(me, {
             subject: gettext('Alias'),
 	    isAdd: true,
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();
@@ -69,7 +68,7 @@ Ext.define('PVE.FirewallAliasEdit', {
 Ext.define('pve-fw-aliases', {
     extend: 'Ext.data.Model',
 
-    fields: [ 'name', 'cidr', 'comment', 'digest' ],
+    fields: ['name', 'cidr', 'comment', 'digest'],
     idProperty: 'name',
 });
 
@@ -86,8 +85,7 @@ Ext.define('PVE.FirewallAliases', {
 
     title: gettext('Alias'),
 
-    initComponent : function() {
-
+    initComponent: function() {
 	var me = this;
 
 	if (!me.base_url) {
@@ -143,7 +141,7 @@ Ext.define('PVE.FirewallAliases', {
 	    handler: run_editor,
 	});
 
-	me.addBtn =  Ext.create('Ext.Button', {
+	me.addBtn = Ext.create('Ext.Button', {
 	    text: gettext('Add'),
 	    handler: function() {
 		var win = Ext.create('PVE.FirewallAliasEdit', {
@@ -163,7 +161,7 @@ Ext.define('PVE.FirewallAliases', {
 
 	Ext.apply(me, {
 	    store: store,
-	    tbar: [ me.addBtn, me.removeBtn, me.editBtn ],
+	    tbar: [me.addBtn, me.removeBtn, me.editBtn],
 	    selModel: sm,
 	    columns: [
 		{
@@ -172,7 +170,7 @@ Ext.define('PVE.FirewallAliases', {
 		    flex: 1,
 		},
 		{
-		    header:  gettext('IP/CIDR'),
+		    header: gettext('IP/CIDR'),
 		    dataIndex: 'cidr',
 		    flex: 1,
 		},

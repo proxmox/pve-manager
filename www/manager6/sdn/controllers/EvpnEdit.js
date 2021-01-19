@@ -3,7 +3,7 @@ Ext.define('PVE.sdn.controllers.EvpnInputPanel', {
 
     onlineHelp: 'pvesdn_controller_plugin_evpn',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.items = [

@@ -4,6 +4,6 @@ Ext.define('PVE.form.FirewallPolicySelector', {
     comboItems: [
 	    ['ACCEPT', 'ACCEPT'],
 	    ['REJECT', 'REJECT'],
-	    [ 'DROP', 'DROP'],
+	    ['DROP', 'DROP'],
 	],
 });

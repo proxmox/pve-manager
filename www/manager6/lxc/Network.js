@@ -46,7 +46,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	return newdata;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var cdata = {};
@@ -56,7 +56,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    cdata.name = 'eth0';
 	    me.dataCache = {};
 	}
-	cdata.firewall =  (me.insideWizard || me.isCreate);
+	cdata.firewall = (me.insideWizard || me.isCreate);
 
 	if (!me.dataCache) {
 	    throw "no dataCache specified";
@@ -306,7 +306,7 @@ Ext.define('PVE.lxc.NetworkEdit', {
 
     isAdd: true,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.dataCache) {
@@ -327,7 +327,7 @@ Ext.define('PVE.lxc.NetworkEdit', {
 	Ext.apply(me, {
 	    subject: gettext('Network Device') + ' (veth)',
 	    digest: me.dataCache.digest,
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();
@@ -375,7 +375,7 @@ Ext.define('PVE.lxc.NetworkView', {
 	});
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;
@@ -396,7 +396,7 @@ Ext.define('PVE.lxc.NetworkView', {
 	    model: 'pve-lxc-network',
 	    sorters: [
 		{
-		    property : 'id',
+		    property: 'id',
 		    direction: 'ASC',
 		},
 	    ],
@@ -411,7 +411,7 @@ Ext.define('PVE.lxc.NetworkView', {
 	    enableFn: function(rec) {
 		return !!caps.vms['VM.Config.Network'];
 	    },
-	    confirmMsg: function (rec) {
+	    confirmMsg: function(rec) {
 		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
 					 "'" + rec.data.id + "'");
 	    },
@@ -420,11 +420,11 @@ Ext.define('PVE.lxc.NetworkView', {
 		    url: me.url,
 		    waitMsgTarget: me,
 		    method: 'PUT',
-		    params: { 'delete': rec.data.id,  digest: me.dataCache.digest },
+		    params: { 'delete': rec.data.id, digest: me.dataCache.digest },
 		    callback: function() {
 			me.load();
 		    },
-		    failure: function (response, opts) {
+		    failure: function(response, opts) {
 			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		    },
 		});
@@ -556,13 +556,11 @@ Ext.define('PVE.lxc.NetworkView', {
 	me.callParent();
    },
 }, function() {
-
     Ext.define('pve-lxc-network', {
 	extend: "Ext.data.Model",
 	proxy: { type: 'memory' },
-	fields: [ 'id', 'name', 'hwaddr', 'bridge',
-		  'ip', 'gw', 'ip6', 'gw6', 'tag', 'firewall' ],
+	fields: ['id', 'name', 'hwaddr', 'bridge',
+		  'ip', 'gw', 'ip6', 'gw6', 'tag', 'firewall'],
     });
-
 });
 

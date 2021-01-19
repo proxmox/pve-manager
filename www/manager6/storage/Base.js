@@ -19,7 +19,7 @@ Ext.define('PVE.panel.StorageBase', {
 	return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.column1.unshift({
@@ -71,7 +71,7 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
 	    return { 'prune-backups': 'keep-all=1' };
 	}
 	delete formValues.delete;
-	let retention = PVE.Parser.printPropertyString(formValues)
+	let retention = PVE.Parser.printPropertyString(formValues);
 	if (retention === '') {
 	    if (this.isCreate) {
 		return {};
@@ -161,7 +161,7 @@ Ext.define('PVE.storage.BaseEdit', {
 	}
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.isCreate = !me.storageId;
@@ -218,7 +218,7 @@ Ext.define('PVE.storage.BaseEdit', {
 
 	if (!me.isCreate) {
 	    me.load({
-		success:  function(response, options) {
+		success: function(response, options) {
 		    var values = response.result.data;
 		    var ctypes = values.content || '';
 

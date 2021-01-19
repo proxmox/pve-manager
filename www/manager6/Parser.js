@@ -1,7 +1,8 @@
 // Some configuration values are complex strings -
 // so we need parsers/generators for them.
 
-Ext.define('PVE.Parser', { statics: {
+Ext.define('PVE.Parser', {
+ statics: {
 
     // this class only contains static functions
 
@@ -155,7 +156,6 @@ Ext.define('PVE.Parser', { statics: {
     },
 
     printQemuNetwork: function(net) {
-
 	var netstr = net.model;
 	if (net.macaddr) {
 	    netstr += "=" + net.macaddr;
@@ -239,7 +239,6 @@ Ext.define('PVE.Parser', { statics: {
     },
 
     printQemuDrive: function(drive) {
-
 	var drivestr = drive.file;
 
 	Ext.Object.each(drive, function(key, value) {
@@ -333,7 +332,7 @@ Ext.define('PVE.Parser', { statics: {
 		    errors = true;
 		    return false; // break
 		}
-		if (match_res[1] === 'bridge'){
+		if (match_res[1] === 'bridge') {
 		    var bridgevlanf = match_res[2];
 		    var bridge_res = bridgevlanf.match(/^(vmbr(\d+))(v(\d+))?(f)?$/);
 		    if (!bridge_res) {
@@ -368,18 +367,17 @@ Ext.define('PVE.Parser', { statics: {
 	    var tmparray = [];
 	    Ext.Array.each(['ifname', 'mac', 'bridge', 'host_ifname', 'host_mac', 'mac_filter', 'tag', 'firewall'], function(key) {
 		var value = data[key];
-		if (key === 'bridge'){
-		    if(data.tag){
+		if (key === 'bridge') {
+		    if (data.tag) {
 			value = value + 'v' + data.tag;
 		    }
-		    if (data.firewall){
+		    if (data.firewall) {
 			value = value + 'f';
 		    }
 		}
 		if (value) {
 		    tmparray.push(key + '=' + value);
 		}
-
 	    });
 	    netarray.push(tmparray.join(','));
 	});
@@ -544,7 +542,7 @@ Ext.define('PVE.Parser', { statics: {
     },
 
     parseQemuSmbios1: function(value) {
-	var res = value.split(',').reduce(function (accumulator, currentValue) {
+	var res = value.split(',').reduce(function(accumulator, currentValue) {
 	    var splitted = currentValue.split(new RegExp("=(.+)"));
 	    accumulator[splitted[0]] = splitted[1];
 	    return accumulator;
@@ -561,7 +559,6 @@ Ext.define('PVE.Parser', { statics: {
     },
 
     printQemuSmbios1: function(data) {
-
 	var datastr = '';
 	var base64 = false;
 	Ext.Object.each(data, function(key, value) {
@@ -714,4 +711,5 @@ Ext.define('PVE.Parser', { statics: {
 	});
 	return [res, extradata];
     },
-}});
+}
+});

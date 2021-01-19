@@ -62,7 +62,7 @@ Ext.define('PVE.lxc.Config', {
 		vm_command('shutdown');
 	    },
 	    menu: {
-		items:[{
+		items: [{
 		    text: gettext('Reboot'),
 		    disabled: !caps.vms['VM.PowerMgmt'],
 		    confirmMsg: Proxmox.Utils.format_task_description('vzreboot', vmid),
@@ -104,7 +104,8 @@ Ext.define('PVE.lxc.Config', {
 
 	var moreBtn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('More'),
-	    menu: { items: [
+	    menu: {
+ items: [
 		{
 		    text: gettext('Clone'),
 		    iconCls: 'fa fa-fw fa-clone',
@@ -156,7 +157,8 @@ Ext.define('PVE.lxc.Config', {
 		    },
 		    iconCls: 'fa fa-trash-o',
 		},
-	    ]},
+	    ]
+},
 	});
 
 	var consoleBtn = Ext.create('PVE.button.ConsoleButton', {
@@ -184,7 +186,7 @@ Ext.define('PVE.lxc.Config', {
 	    title: Ext.String.format(gettext("Container {0} on node '{1}'"), vm.text, nodename),
 	    hstateid: 'lxctab',
 	    tbarSpacing: false,
-	    tbar: [ statusTxt, '->', startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn ],
+	    tbar: [statusTxt, '->', startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{

@@ -2,7 +2,7 @@ Ext.define('PVE.form.BandwidthField', {
     extend: 'Ext.form.FieldContainer',
     alias: 'widget.pveBandwidthField',
 
-    mixins: ['Proxmox.Mixin.CBind' ],
+    mixins: ['Proxmox.Mixin.CBind'],
 
     viewModel: {
 	data: {
@@ -67,7 +67,7 @@ Ext.define('PVE.form.BandwidthField', {
 	    },
 	    getSubmitValue: function() {
 		let v = this.processRawValue(this.getRawValue());
-		v = v.replace(this.decimalSeparator, '.')
+		v = v.replace(this.decimalSeparator, '.');
 
 		if (v === undefined) return null;
 		// FIXME: make it configurable, as this only works if 0 === default
@@ -85,7 +85,7 @@ Ext.define('PVE.form.BandwidthField', {
 	    listeners: {
 		// our setValue gets only called if we have a value, avoid
 		// transformation of the first user-entered value
-		keydown: function () { this._transformed = true; },
+		keydown: function() { this._transformed = true; },
 	    },
 	},
 	{

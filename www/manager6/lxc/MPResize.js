@@ -5,7 +5,7 @@ Ext.define('PVE.window.MPResize', {
 
     resize_disk: function(disk, size) {
 	var me = this;
-        var params =  { disk: disk, size: '+' + size + 'G' };
+        var params = { disk: disk, size: '+' + size + 'G' };
 
 	Proxmox.Utils.API2Request({
 	    params: params,
@@ -24,7 +24,7 @@ Ext.define('PVE.window.MPResize', {
 	});
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -87,8 +87,8 @@ Ext.define('PVE.window.MPResize', {
 	    modal: true,
 	    border: false,
 	    layout: 'fit',
-	    buttons: [ submitBtn ],
-	    items: [ me.formPanel ],
+	    buttons: [submitBtn],
+	    items: [me.formPanel],
 	});
 
 
@@ -97,6 +97,5 @@ Ext.define('PVE.window.MPResize', {
 	if (!me.disk) {
 	    return;
 	}
-
     },
 });

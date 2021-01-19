@@ -1,6 +1,6 @@
 Ext.define('pve-fw-ipsets', {
     extend: 'Ext.data.Model',
-    fields: [ 'name', 'comment', 'digest' ],
+    fields: ['name', 'comment', 'digest'],
     idProperty: 'name',
 });
 
@@ -20,7 +20,6 @@ Ext.define('PVE.IPSetList', {
     editBtn: undefined,
 
     initComponent: function() {
-
         var me = this;
 
 	if (me.ipset_panel == undefined) {
@@ -125,7 +124,6 @@ Ext.define('PVE.IPSetList', {
 		});
 		win.show();
 		win.on('destroy', reload);
-
 	    },
 	});
 
@@ -137,7 +135,7 @@ Ext.define('PVE.IPSetList', {
 
 	Ext.apply(me, {
 	    store: store,
-	    tbar: [ '<b>IPSet:</b>', me.addBtn, me.removeBtn, me.editBtn ],
+	    tbar: ['<b>IPSet:</b>', me.addBtn, me.removeBtn, me.editBtn],
 	    selModel: sm,
 	    columns: [
 		{ header: 'IPSet', dataIndex: 'name', width: '100' },
@@ -167,8 +165,7 @@ Ext.define('PVE.IPSetCidrEdit', {
 
     cidr: undefined,
 
-    initComponent : function() {
-
+    initComponent: function() {
 	var me = this;
 
 	me.isCreate = (me.cidr === undefined);
@@ -232,14 +229,14 @@ Ext.define('PVE.IPSetCidrEdit', {
 
 	Ext.apply(me, {
 	    subject: gettext('IP/CIDR'),
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();
 
 	if (!me.isCreate) {
 	    me.load({
-		success:  function(response, options) {
+		success: function(response, options) {
 		    var values = response.result.data;
 		    ipanel.setValues(values);
 		},
@@ -347,7 +344,7 @@ Ext.define('PVE.IPSetGrid', {
 		var msg = errors.cidr || errors.nomatch;
 		if (msg) {
 		    metaData.tdCls = 'proxmox-invalid-row';
-		    var html = '<p>' +  Ext.htmlEncode(msg) + '</p>';
+		    var html = '<p>' + Ext.htmlEncode(msg) + '</p>';
 		    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' +
 			html.replace(/\"/g, '&quot;') + '"';
 		}
@@ -356,7 +353,7 @@ Ext.define('PVE.IPSetGrid', {
 	};
 
 	Ext.apply(me, {
-	    tbar: [ '<b>IP/CIDR:</b>', me.addBtn, me.removeBtn, me.editBtn ],
+	    tbar: ['<b>IP/CIDR:</b>', me.addBtn, me.removeBtn, me.editBtn],
 	    store: store,
 	    selModel: sm,
 	    listeners: {
@@ -396,14 +393,12 @@ Ext.define('PVE.IPSetGrid', {
 	}
     },
 }, function() {
-
     Ext.define('pve-ipset', {
 	extend: 'Ext.data.Model',
-	fields: [ { name: 'nomatch', type: 'boolean' },
-		  'cidr', 'comment', 'errors' ],
+	fields: [{ name: 'nomatch', type: 'boolean' },
+		  'cidr', 'comment', 'errors'],
 	idProperty: 'cidr',
     });
-
 });
 
 Ext.define('PVE.IPSet', {
@@ -440,7 +435,7 @@ Ext.define('PVE.IPSet', {
 
 	Ext.apply(me, {
             layout: 'border',
-            items: [ ipset_list, ipset_panel ],
+            items: [ipset_list, ipset_panel],
 	    listeners: {
 		show: function() {
 		    ipset_list.fireEvent('show', ipset_list);

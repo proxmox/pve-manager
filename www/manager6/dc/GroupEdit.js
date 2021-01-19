@@ -2,7 +2,7 @@ Ext.define('PVE.dc.GroupEdit', {
     extend: 'Proxmox.window.Edit',
     alias: ['widget.pveDcGroupEdit'],
 
-    initComponent : function() {
+    initComponent: function() {
         var me = this;
 
         me.isCreate = !me.groupid;

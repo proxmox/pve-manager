@@ -55,7 +55,7 @@ Ext.define('PVE.CephCreateFS', {
 	},
     ],
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -124,11 +124,11 @@ Ext.define('PVE.NodeCephFSPanel', {
 			},
 		    }));
 		    var regex = new RegExp("not (installed|initialized)", "i");
-		    PVE.Utils.handleStoreErrorOrMask(view, view.rstore, regex, function(me, error){
+		    PVE.Utils.handleStoreErrorOrMask(view, view.rstore, regex, function(me, error) {
 			me.rstore.stopUpdate();
 			PVE.Utils.showCephInstallOrMask(me.ownerCt, error.statusText, view.nodename,
-			    function(win){
-				me.mon(win, 'cephInstallWindowClosed', function(){
+			    function(win) {
+				me.mon(win, 'cephInstallWindowClosed', function() {
 				    me.rstore.startUpdate();
 				});
 			    },
@@ -214,7 +214,7 @@ Ext.define('PVE.NodeCephFSPanel', {
 }, function() {
     Ext.define('pve-ceph-fs', {
 	extend: 'Ext.data.Model',
-	fields: [ 'name', 'data_pool', 'metadata_pool' ],
+	fields: ['name', 'data_pool', 'metadata_pool'],
 	proxy: {
 	    type: 'proxmox',
 	    url: "/api2/json/nodes/localhost/ceph/fs",

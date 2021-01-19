@@ -6,8 +6,7 @@ Ext.define('PVE.FirewallOptions', {
 
     base_url: undefined,
 
-    initComponent : function() {
-
+    initComponent: function() {
 	var me = this;
 
 	if (!me.base_url) {
@@ -167,7 +166,7 @@ Ext.define('PVE.FirewallOptions', {
 
 	Ext.apply(me, {
 	    url: "/api2/json" + me.base_url,
-	    tbar: [ edit_btn ],
+	    tbar: [edit_btn],
 	    editorConfig: {
 		url: '/api2/extjs/' + me.base_url,
 	    },

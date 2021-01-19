@@ -7,7 +7,7 @@ Ext.define('PVE.ha.ResourcesView', {
     stateful: true,
     stateId: 'grid-ha-resources',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var caps = Ext.state.Manager.get('GuiCap');
@@ -36,7 +36,7 @@ Ext.define('PVE.ha.ResourcesView', {
 		var msg = errors[dataIndex];
 		if (msg) {
 		    metaData.tdCls = 'proxmox-invalid-row';
-		    var html = '<p>' +  Ext.htmlEncode(msg) + '</p>';
+		    var html = '<p>' + Ext.htmlEncode(msg) + '</p>';
 		    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' +
 			html.replace(/\"/g, '&quot;') + '"';
 		}
@@ -50,7 +50,7 @@ Ext.define('PVE.ha.ResourcesView', {
 	    var rec = sm.getSelection()[0];
 	    var sid = rec.data.sid;
 
-	    var regex =  /^(\S+):(\S+)$/;
+	    var regex = /^(\S+):(\S+)$/;
 	    var res = regex.exec(sid);
 
 	    if (res[1] !== 'vm' && res[1] !== 'ct') {

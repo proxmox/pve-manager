@@ -39,10 +39,9 @@ Ext.define('PVE.window.HDMove', {
 		win.on('destroy', function() { me.close(); });
 	    },
 	});
-
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var diskarray = [];
@@ -119,8 +118,8 @@ Ext.define('PVE.window.HDMove', {
 	    width: 350,
 	    border: false,
 	    layout: 'fit',
-	    buttons: [ submitBtn ],
-	    items: [ me.formPanel ],
+	    buttons: [submitBtn],
+	    items: [me.formPanel],
 	});
 
 

@@ -56,7 +56,6 @@ Ext.define('PVE.qemu.SSHKeyInputPanel', {
 	if (!window.FileReader) {
 	    me.down('#filebutton').setVisible(false);
 	}
-
     },
 });
 
@@ -65,14 +64,14 @@ Ext.define('PVE.qemu.SSHKeyEdit', {
 
     width: 800,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var ipanel = Ext.create('PVE.qemu.SSHKeyInputPanel');
 
 	Ext.apply(me, {
 	    subject: gettext('SSH Keys'),
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();

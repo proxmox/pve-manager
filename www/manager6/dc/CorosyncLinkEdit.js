@@ -77,7 +77,7 @@ Ext.define('PVE.form.CorosyncLinkEditorController', {
 	let deleteButtons = view.query('button[cls=removeLinkBtn]');
 	Ext.Array.each(deleteButtons, btn => {
 	    btn.setDisabled(disabled);
-	})
+	});
     },
 
     getNextFreeNetwork: function() {
@@ -122,7 +122,7 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
     extend: 'Ext.panel.Panel',
     xtype: 'pveCorosyncLinkSelector',
 
-    mixins: ['Proxmox.Mixin.CBind' ],
+    mixins: ['Proxmox.Mixin.CBind'],
     cbindData: [],
 
     // config
@@ -312,7 +312,7 @@ Ext.define('PVE.form.CorosyncLinkEditor', {
     dockedItems: [{
 	xtype: 'toolbar',
 	dock: 'bottom',
-	defaultButtonUI : 'default',
+	defaultButtonUI: 'default',
 	border: false,
 	padding: '6 0 6 0',
 	bind: {

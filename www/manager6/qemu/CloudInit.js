@@ -35,7 +35,7 @@ Ext.define('PVE.qemu.CloudInit', {
 	    handler: function() {
 		var me = this.up('grid');
 		var records = me.getSelection();
-		if (!records ||  !records.length) {
+		if (!records || !records.length) {
 		    return;
 		}
 
@@ -164,7 +164,7 @@ Ext.define('PVE.qemu.CloudInit', {
     },
 
     listeners: {
-	activate: function () {
+	activate: function() {
 	    var me = this;
 	    me.rstore.startUpdate();
 	},
@@ -188,7 +188,7 @@ Ext.define('PVE.qemu.CloudInit', {
 	}
 	var caps = Ext.state.Manager.get('GuiCap');
 	me.baseurl = '/api2/extjs/nodes/' + nodename + '/qemu/' + vmid;
-	me.url =  me.baseurl + '/pending';
+	me.url = me.baseurl + '/pending';
 	me.editorConfig.url = me.baseurl + '/config';
 	me.editorConfig.pveSelNode = me.pveSelNode;
 

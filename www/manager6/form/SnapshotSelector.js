@@ -44,7 +44,7 @@ Ext.define('PVE.form.SnapshotSelector', {
 	}
 
 	var store = Ext.create('Ext.data.Store', {
-	    fields: [ 'name'],
+	    fields: ['name'],
 	    filterOnLoad: true,
 	});
 

@@ -39,7 +39,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		change: 'onControllerChange',
 		afterrender: 'onControllerChange',
 	    },
-	    'field[name=iothread]' : {
+	    'field[name=iothread]': {
 		change: function(f, value) {
 		    if (!this.getView().insideWizard) {
 			return;
@@ -155,7 +155,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	me.down('#hdimage').setStorage(undefined, nodename);
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var labelWidth = 140;
@@ -170,7 +170,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	if (!me.confid || me.unused) {
 	    me.bussel = Ext.create('PVE.form.ControllerSelector', {
-		vmconfig: me.insideWizard ? {ide2: 'cdrom'} : {},
+		vmconfig: me.insideWizard ? { ide2: 'cdrom' } : {},
 	    });
 	    me.column1.push(me.bussel);
 
@@ -356,7 +356,7 @@ Ext.define('PVE.qemu.HDEdit', {
 
     backgroundDelay: 5,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;
@@ -384,7 +384,7 @@ Ext.define('PVE.qemu.HDEdit', {
            me.subject = gettext('Hard Disk') + ' (' + me.confid + ')';
 	}
 
-	me.items = [ ipanel ];
+	me.items = [ipanel];
 
 	me.callParent();
 	/* 'data' is assigned an empty array in same file, and here we

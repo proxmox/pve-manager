@@ -1,7 +1,7 @@
 Ext.define('pve-security-groups', {
     extend: 'Ext.data.Model',
 
-    fields: [ 'group', 'comment', 'digest' ],
+    fields: ['group', 'comment', 'digest'],
     idProperty: 'group',
 });
 
@@ -12,7 +12,7 @@ Ext.define('PVE.SecurityGroupEdit', {
 
     allow_iface: false,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.isCreate = (me.group_name === undefined);
@@ -58,7 +58,7 @@ Ext.define('PVE.SecurityGroupEdit', {
 
 	Ext.apply(me, {
             subject: subject,
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();
@@ -161,7 +161,7 @@ Ext.define('PVE.SecurityGroupList', {
 
 	Ext.apply(me, {
 	    store: store,
-	    tbar: [ '<b>' + gettext('Group') + ':</b>', me.addBtn, me.removeBtn, me.editBtn ],
+	    tbar: ['<b>' + gettext('Group') + ':</b>', me.addBtn, me.removeBtn, me.editBtn],
 	    selModel: sm,
 	    columns: [
 		{ header: gettext('Group'), dataIndex: 'group', width: '100' },
@@ -214,7 +214,7 @@ Ext.define('PVE.SecurityGroups', {
 
 	Ext.apply(me, {
             layout: 'border',
-            items: [ sglist, rule_panel ],
+            items: [sglist, rule_panel],
 	    listeners: {
 		show: function() {
 		    sglist.fireEvent('show', sglist);

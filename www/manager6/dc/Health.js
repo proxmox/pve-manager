@@ -15,7 +15,7 @@ Ext.define('PVE.dc.Health', {
 	flex: 1,
 	xtype: 'box',
 	style: {
-	    'text-align':'center',
+	    'text-align': 'center',
 	},
     },
 
@@ -46,7 +46,7 @@ Ext.define('PVE.dc.Health', {
 	    var item = records[i];
 	    if (item.data.type === 'node') {
 		nodes[item.data.online === 1 ? 'online':'offline']++;
-	    } else if(item.data.type === 'cluster') {
+	    } else if (item.data.type === 'cluster') {
 		cluster.text = gettext("Cluster") + ": ";
 		cluster.text += item.data.name + ", ";
 		cluster.text += gettext("Quorate") + ": ";
@@ -71,7 +71,6 @@ Ext.define('PVE.dc.Health', {
 	var me = this;
 	var cephstatus = me.getComponent('ceph');
 	if (!success || records.length < 1) {
-
 	    // if ceph status is already visible
 	    // don't stop to update
 	    if (cephstatus.isVisible()) {
@@ -142,7 +141,7 @@ Ext.define('PVE.dc.Health', {
 		element: 'el',
 		click: function() {
 		    var sp = Ext.state.Manager.getProvider();
-		    sp.set('dctab', {value:'ceph'}, true);
+		    sp.set('dctab', { value: 'ceph' }, true);
 		},
 	    },
 	},

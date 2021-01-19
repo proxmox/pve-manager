@@ -31,7 +31,7 @@ Ext.define('PVE.form.CephPoolSelector', {
         me.callParent();
 
 	store.load({
-	    callback: function(rec, op, success){
+	    callback: function(rec, op, success) {
 		if (success && rec.length > 0) {
 		    me.select(rec[0]);
 		}

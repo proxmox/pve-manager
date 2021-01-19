@@ -30,7 +30,7 @@ Ext.define('PVE.node.Summary', {
 	    height: 600,
 	    layout: 'fit',
 	    modal: true,
-	    items: [ view ],
+	    items: [view],
 	    buttons: [
 		{
 		    xtype: 'button',
@@ -99,7 +99,7 @@ Ext.define('PVE.node.Summary', {
 
 	var version_btn = new Ext.Button({
 	    text: gettext('Package versions'),
-	    handler: function(){
+	    handler: function() {
 		Proxmox.Utils.checked_command(function() { me.showVersions(); });
 	    },
 	});
@@ -110,7 +110,7 @@ Ext.define('PVE.node.Summary', {
 	});
 
 	Ext.apply(me, {
-	    tbar: [version_btn, '->', { xtype: 'proxmoxRRDTypeSelector' } ],
+	    tbar: [version_btn, '->', { xtype: 'proxmoxRRDTypeSelector' }],
 	    items: [
 		{
 		    xtype: 'container',

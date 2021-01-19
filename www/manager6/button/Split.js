@@ -55,7 +55,6 @@ Ext.define('PVE.button.Split', {
     },
 
     initComponent: function() {
-
         var me = this;
 
 	if (me.handler) {
@@ -73,7 +72,7 @@ Ext.define('PVE.button.Split', {
 		if (item.selModel) {
 		    me.mon(item.selModel, "selectionchange", function() {
 			var rec = item.selModel.getSelection()[0];
-			if (!rec || (item.enableFn(rec) === false )) {
+			if (!rec || (item.enableFn(rec) === false)) {
 			    item.setDisabled(true);
 			} else {
 			    item.setDisabled(false);
@@ -86,7 +85,6 @@ Ext.define('PVE.button.Split', {
 	me.callParent();
 
 	if (me.selModel) {
-
 	    me.mon(me.selModel, "selectionchange", function() {
 		var rec = me.selModel.getSelection()[0];
 		if (!rec || (me.enableFn(rec) === false)) {

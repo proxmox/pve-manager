@@ -32,7 +32,7 @@ Ext.define('PVE.dc.Summary', {
 		xtype: 'proxmoxGauge',
 		flex: 1,
 	    },
-	    items:[
+	    items: [
 		{
 		    title: gettext('CPU'),
 		    itemId: 'cpu',
@@ -131,7 +131,7 @@ Ext.define('PVE.dc.Summary', {
 	    var total = 0;
 	    var usableStorages = {};
 	    var storages = sp.get('dash-storages') || '';
-	    storages.split(',').forEach(function(storage){
+	    storages.split(',').forEach(function(storage) {
 		if (storage !== '') {
 		    usableStorages[storage] = true;
 		}
@@ -155,7 +155,7 @@ Ext.define('PVE.dc.Summary', {
 
 	    for (i = 0; i < results.length; i++) {
 		var item = results[i];
-		switch(item.data.type) {
+		switch (item.data.type) {
 		    case 'node':
 			cpu += (item.data.cpu * item.data.maxcpu);
 			maxcpu += item.data.maxcpu || 0;
@@ -283,7 +283,7 @@ Ext.define('PVE.dc.Summary', {
 	    subs.setData(data);
 	});
 
-	me.on('destroy', function(){
+	me.on('destroy', function() {
 	    rstore.stopUpdate();
 	});
 

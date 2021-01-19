@@ -8,7 +8,7 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
     listConfig: {
 	loadingText: gettext('Scanning...'),
     },
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -17,7 +17,7 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    autoLoad: {}, // true,
-	    fields: [ 'pool', 'size', 'free' ],
+	    fields: ['pool', 'size', 'free'],
 	    proxy: {
 		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/zfs',
@@ -39,7 +39,7 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 
     onlineHelp: 'storage_zfspool',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.column1 = [];
@@ -62,7 +62,8 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	// value is an array,
 	// while before it was a string
 	me.column1.push(
-	    {xtype: 'pveContentTypeSelector',
+	    {
+xtype: 'pveContentTypeSelector',
 	     cts: ['images', 'rootdir'],
 	     fieldLabel: gettext('Content'),
 	     name: 'content',

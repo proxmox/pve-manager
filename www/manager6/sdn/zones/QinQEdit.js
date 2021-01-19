@@ -15,7 +15,7 @@ Ext.define('PVE.sdn.zones.QinQInputPanel', {
 	return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	let me = this;
 
 	me.items = [

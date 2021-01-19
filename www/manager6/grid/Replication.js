@@ -116,7 +116,6 @@ Ext.define('PVE.window.ReplicaEdit', {
 		    me.highestids = highestids;
 		},
 	    });
-
 	} else {
 	    me.load({
 		success: function(response, options) {
@@ -176,7 +175,7 @@ Ext.define('PVE.grid.ReplicaView', {
 		method: 'POST',
 		waitMsgTarget: me,
 		callback: function() { controller.reload(); },
-		failure: function (response, opts) {
+		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		},
 	    });
@@ -190,7 +189,7 @@ Ext.define('PVE.grid.ReplicaView', {
 		url: "/api2/extjs/nodes/" + me.nodename + "/replication/" + rec.data.id + "/log",
 	    });
 	    var win = Ext.create('Ext.window.Window', {
-		items: [ logView ],
+		items: [logView],
 		layout: 'fit',
 		width: 800,
 		height: 400,
@@ -332,7 +331,6 @@ Ext.define('PVE.grid.ReplicaView', {
 		    minWidth: 160,
 		    flex: 1,
 		    renderer: function(value, metadata, record) {
-
 			if (record.data.pid) {
 			    metadata.tdCls = 'x-grid-row-loading';
 			    return '';
@@ -474,7 +472,6 @@ Ext.define('PVE.grid.ReplicaView', {
 	me.rstore.startUpdate();
     },
 }, function() {
-
     Ext.define('pve-replication', {
 	extend: 'Ext.data.Model',
 	fields: [
@@ -494,5 +491,4 @@ Ext.define('PVE.grid.ReplicaView', {
 	    'fail_count', 'remove_job', 'pid',
 	],
     });
-
 });

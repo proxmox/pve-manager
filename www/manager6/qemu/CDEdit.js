@@ -62,7 +62,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	me.cdfilesel.setStorage(undefined, nodename);
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.drive = {};
@@ -90,7 +90,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 		    me.down('field[name=cdstorage]').setDisabled(!value);
 		    var cdImageField = me.down('field[name=cdimage]');
 		    cdImageField.setDisabled(!value);
-		    if(value) {
+		    if (value) {
 			cdImageField.validate();
 		    } else {
 			cdImageField.reset();
@@ -151,7 +151,7 @@ Ext.define('PVE.qemu.CDEdit', {
 
     width: 400,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;
@@ -168,13 +168,13 @@ Ext.define('PVE.qemu.CDEdit', {
 
 	Ext.applyIf(me, {
 	    subject: 'CD/DVD Drive',
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();
 
 	me.load({
-	    success:  function(response, options) {
+	    success: function(response, options) {
 		ipanel.setVMConfig(response.result.data);
 		if (me.confid) {
 		    var value = response.result.data[me.confid];

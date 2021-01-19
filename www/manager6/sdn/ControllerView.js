@@ -24,7 +24,7 @@ Ext.define('PVE.sdn.ControllerView', {
 	});
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var store = new Ext.data.Store({
@@ -81,7 +81,7 @@ Ext.define('PVE.sdn.ControllerView', {
 		continue;
 	    }
 	    addMenuItems.push({
-		text:  PVE.Utils.format_sdncontroller_type(type),
+		text: PVE.Utils.format_sdncontroller_type(type),
 		iconCls: 'fa fa-fw fa-' + controller.faIcon,
 		handler: addHandleGenerator(type),
 	    });

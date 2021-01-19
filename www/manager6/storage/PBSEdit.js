@@ -211,7 +211,7 @@ Ext.define('PVE.panel.PBSEncryptionKeyTab', {
 
 	let cryptKeyInfo = values['encryption-key'];
 	if (cryptKeyInfo) {
-	    let icon = '<span class="fa fa-lock good"></span> '
+	    let icon = '<span class="fa fa-lock good"></span> ';
 	    if (cryptKeyInfo.match(/^[a-fA-F0-9]{2}:/)) { // new style fingerprint
 		let shortKeyFP = PVE.Utils.render_pbs_fingerprint(cryptKeyInfo);
 		values['crypt-key-fp'] = icon + `${gettext('Active')} - ${gettext('Fingerprint')} ${shortKeyFP}`;

@@ -3,7 +3,7 @@ Ext.define('PVE.window.Backup', {
 
     resizable: false,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -75,7 +75,7 @@ Ext.define('PVE.window.Backup', {
 
 	var submitBtn = Ext.create('Ext.Button', {
 	    text: gettext('Backup'),
-	    handler: function(){
+	    handler: function() {
 		var storage = storagesel.getValue();
 		var values = form.getValues();
 		var params = {
@@ -85,7 +85,7 @@ Ext.define('PVE.window.Backup', {
 		    remove: 0,
 		};
 
-		if ( values.mailto ) {
+		if (values.mailto) {
 		    params.mailto = values.mailto;
 		}
 
@@ -97,7 +97,7 @@ Ext.define('PVE.window.Backup', {
 		    url: '/nodes/' + me.nodename + '/vzdump',
 		    params: params,
 		    method: 'POST',
-		    failure: function (response, opts) {
+		    failure: function(response, opts) {
 			Ext.Msg.alert('Error', response.htmlStatus);
 		    },
 		    success: function(response, options) {
@@ -137,8 +137,8 @@ Ext.define('PVE.window.Backup', {
 	    modal: true,
 	    layout: 'auto',
 	    border: false,
-	    items: [ me.formPanel ],
-	    buttons: [ helpBtn, '->', submitBtn ],
+	    items: [me.formPanel],
+	    buttons: [helpBtn, '->', submitBtn],
 	});
 
 	me.callParent();

@@ -79,7 +79,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 		callback: function() {
 		    me.reload();
 		},
-		failure: function (response, opts) {
+		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		},
 		success: function(response, options) {
@@ -260,7 +260,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 		let rec = view.getSelection()[0];
 		let vmid = view.getViewModel().get('vmid');
 		return Proxmox.Utils.format_task_description('qmrollback', vmid) +
-		    " '" +  rec.data.name + "'";
+		    " '" + rec.data.name + "'";
 	    },
 	    handler: 'rollback',
 	},

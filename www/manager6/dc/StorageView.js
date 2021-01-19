@@ -26,7 +26,7 @@ Ext.define('PVE.dc.StorageView', {
 	});
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var store = new Ext.data.Store({
@@ -82,7 +82,7 @@ Ext.define('PVE.dc.StorageView', {
 		continue;
 	    }
 	    addMenuItems.push({
-		text:  PVE.Utils.format_storage_type(type),
+		text: PVE.Utils.format_storage_type(type),
 		iconCls: 'fa fa-fw fa-' + storage.faIcon,
 		handler: addHandleGenerator(type),
 	    });
@@ -168,15 +168,13 @@ Ext.define('PVE.dc.StorageView', {
 	me.callParent();
     },
 }, function() {
-
     Ext.define('pve-storage', {
 	extend: 'Ext.data.Model',
 	fields: [
 	    'path', 'type', 'content', 'server', 'portal', 'target', 'export', 'storage',
-	    { name: 'shared', type: 'boolean'},
-	    { name: 'disable', type: 'boolean'},
+	    { name: 'shared', type: 'boolean' },
+	    { name: 'disable', type: 'boolean' },
 	],
 	idProperty: 'storage',
     });
-
 });

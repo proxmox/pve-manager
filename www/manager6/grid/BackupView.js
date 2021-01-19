@@ -8,7 +8,7 @@ Ext.define('PVE.grid.BackupView', {
     stateful: true,
     stateId: 'grid-guest-backup',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;
@@ -152,7 +152,7 @@ Ext.define('PVE.grid.BackupView', {
 		    vmid: vmid,
 		    vmtype: vmtype,
 		    storage: storagesel.getValue(),
-		    listeners : {
+		    listeners: {
 			close: function() {
 			    reload();
 			},

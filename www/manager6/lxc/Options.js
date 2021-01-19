@@ -4,7 +4,7 @@ Ext.define('PVE.lxc.Options', {
 
     onlineHelp: 'pct_options',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 	var i;
 
@@ -41,8 +41,8 @@ Ext.define('PVE.lxc.Options', {
 		header: gettext('Start/Shutdown order'),
 		defaultValue: '',
 		renderer: PVE.Utils.render_kvm_startup,
-		editor: caps.vms['VM.Config.Options'] && caps.nodes['Sys.Modify'] ?
-		    {
+		editor: caps.vms['VM.Config.Options'] && caps.nodes['Sys.Modify']
+		    ? {
 			xtype: 'pveWindowStartupEdit',
 			onlineHelp: 'pct_startup_and_shutdown',
 		    } : undefined,
@@ -137,8 +137,8 @@ Ext.define('PVE.lxc.Options', {
 	    features: {
 		header: gettext('Features'),
 		defaultValue: Proxmox.Utils.noneText,
-		editor: Proxmox.UserName === 'root@pam' ?
-		    'PVE.lxc.FeaturesEdit' : undefined,
+		editor: Proxmox.UserName === 'root@pam'
+		    ? 'PVE.lxc.FeaturesEdit' : undefined,
 	    },
 	    hookscript: {
 		header: gettext('Hookscript'),
@@ -184,7 +184,7 @@ Ext.define('PVE.lxc.Options', {
 	    url: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/pending",
 	    selModel: sm,
 	    interval: 5000,
-	    tbar: [ edit_btn, revert_btn ],
+	    tbar: [edit_btn, revert_btn],
 	    rows: rows,
 	    editorConfig: {
 		url: '/api2/extjs/' + baseurl,
@@ -204,7 +204,6 @@ Ext.define('PVE.lxc.Options', {
 	me.mon(me.getStore(), 'datachanged', function() {
 	    set_button_status();
 	});
-
     },
 });
 

@@ -43,7 +43,7 @@ Ext.define('PVE.form.USBSelector', {
 		url: `/api2/json/nodes/${nodename}/hardware/usb`,
 	    },
 	    filters: [
-		function (item) {
+		function(item) {
 		    return !!item.data.usbpath && !!item.data.prodid && item.data['class'] != 9;
 		},
 	    ],
@@ -86,10 +86,10 @@ Ext.define('PVE.form.USBSelector', {
 			dataIndex: 'speed',
 			renderer: function(value) {
 			    let speed_map = {
-				"10000"  : "USB 3.1",
-				 "5000"  : "USB 3.0",
-				  "480"  : "USB 2.0",
-				   "12"  : "USB 1.x",
+				"10000": "USB 3.1",
+				 "5000": "USB 3.0",
+				  "480": "USB 2.0",
+				   "12": "USB 1.x",
 				    "1.5": "USB 1.x",
 			    };
 			    return speed_map[value] || value + " Mbps";
@@ -105,7 +105,6 @@ Ext.define('PVE.form.USBSelector', {
     },
 
 }, function() {
-
     Ext.define('pve-usb-device', {
 	extend: 'Ext.data.Model',
 	fields: [

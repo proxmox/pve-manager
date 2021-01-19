@@ -4,7 +4,7 @@ Ext.define('PVE.dc.RoleEdit', {
 
     width: 400,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.isCreate = !me.roleid;

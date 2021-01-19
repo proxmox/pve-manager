@@ -8,8 +8,8 @@ Ext.define('PVE.ceph.Log', {
 	var me = this;
 	var msg = response.htmlStatus;
 	var windowShow = PVE.Utils.showCephInstallOrMask(me, msg, me.nodename,
-	    function(win){
-		me.mon(win, 'cephInstallWindowClosed', function(){
+	    function(win) {
+		me.mon(win, 'cephInstallWindowClosed', function() {
 		    me.loadTask.delay(200);
 		});
 	    },

@@ -8,7 +8,7 @@ Ext.define('PVE.node.CreateDirectory', {
 
     onlineHelp: 'chapter_storage',
 
-    initComponent : function() {
+    initComponent: function() {
         var me = this;
 
 	if (!me.nodename) {
@@ -140,7 +140,7 @@ Ext.define('PVE.node.Directorylist', {
 
 	Ext.apply(me, {
 	    store: {
-		fields: ['path', 'device', 'type', 'options', 'unitfile' ],
+		fields: ['path', 'device', 'type', 'options', 'unitfile'],
 		proxy: {
 		    type: 'proxmox',
 		    url: "/api2/json/nodes/" + me.nodename + '/disks/directory',

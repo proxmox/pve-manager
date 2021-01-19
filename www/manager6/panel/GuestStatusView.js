@@ -5,7 +5,7 @@ Ext.define('PVE.panel.GuestStatusView', {
 
     height: 300,
 
-    cbindData: function (initialConfig) {
+    cbindData: function(initialConfig) {
 	var me = this;
 	return {
 	    isQemu: me.pveSelNode.data.type === 'qemu',

@@ -42,7 +42,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 	},
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.items = [
@@ -67,7 +67,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 		reference: 'ostype',
 		fieldLabel: gettext('Version'),
 		value: 'l26',
-		allowBlank : false,
+		allowBlank: false,
 		editable: false,
 		queryMode: 'local',
 		valueField: 'val',
@@ -76,7 +76,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 		    fields: ['desc', 'val'],
 		    data: PVE.Utils.kvm_ostypes.Linux,
 		    listeners: {
-			datachanged: function (store) {
+			datachanged: function(store) {
 			    var ostype = me.lookup('ostype');
 			    var old_val = ostype.getValue();
 			    if (!me.insideWizard && old_val && store.find('val', old_val) != -1) {
@@ -101,7 +101,7 @@ Ext.define('PVE.qemu.OSTypeEdit', {
 
     items: [{ xtype: 'pveQemuOSTypePanel' }],
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.callParent();

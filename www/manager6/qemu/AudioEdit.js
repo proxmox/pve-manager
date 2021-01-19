@@ -50,7 +50,7 @@ Ext.define('PVE.qemu.AudioEdit', {
 	xtype: 'pveAudioInputPanel',
     }],
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.callParent();

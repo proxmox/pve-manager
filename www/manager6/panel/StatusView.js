@@ -40,7 +40,7 @@ Ext.define('PVE.panel.StatusView', {
     fieldCalculator: function(used, max) {
 	if (!Ext.isNumeric(max) && Ext.isNumeric(used)) {
 	    return used;
-	} else if(!Ext.isNumeric(used)) {
+	} else if (!Ext.isNumeric(used)) {
 	    /* we come here if the field is from a node
 	     * where the records are not mem and maxmem
 	     * but mem.used and mem.total
@@ -65,7 +65,7 @@ Ext.define('PVE.panel.StatusView', {
 	    field.updateValue(renderer.call(field, me.getStore().getRecord()));
 	} else if (field.textField !== undefined) {
 	    field.updateValue(renderer.call(field, me.getRecordValue(field.textField)));
-	} else if(field.valueField !== undefined) {
+	} else if (field.valueField !== undefined) {
 	    var used = me.getRecordValue(field.valueField);
 	    /* string and int */
 	    var max = field.maxField !== undefined ? me.getRecordValue(field.maxField) : 1;

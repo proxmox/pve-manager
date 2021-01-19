@@ -4,7 +4,7 @@ Ext.define('PVE.node.CertificateView', {
 
     onlineHelp: 'sysadmin_certificate_management',
 
-    mixins: ['Proxmox.Mixin.CBind' ],
+    mixins: ['Proxmox.Mixin.CBind'],
 
     items: [
 	{
@@ -230,7 +230,7 @@ Ext.define('PVE.node.CertUpload', {
 Ext.define('pve-certificate', {
     extend: 'Ext.data.Model',
 
-    fields: [ 'filename', 'fingerprint', 'issuer', 'notafter', 'notbefore', 'subject', 'san', 'public-key-bits', 'public-key-type' ],
+    fields: ['filename', 'fingerprint', 'issuer', 'notafter', 'notbefore', 'subject', 'san', 'public-key-bits', 'public-key-type'],
     idProperty: 'filename',
 });
 
@@ -365,7 +365,7 @@ Ext.define('PVE.node.Certificates', {
 	}
 	var win = Ext.create('PVE.node.CertificateViewer', {
 	    cert: selection[0].data.filename,
-	    nodename : me.nodename,
+	    nodename: me.nodename,
 	});
 	win.show();
     },

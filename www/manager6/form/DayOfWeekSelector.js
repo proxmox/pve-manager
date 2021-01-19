@@ -1,8 +1,8 @@
 Ext.define('PVE.form.DayOfWeekSelector', {
     extend: 'Proxmox.form.KVComboBox',
     alias: ['widget.pveDayOfWeekSelector'],
-    comboItems:[],
-    initComponent: function(){
+    comboItems: [],
+    initComponent: function() {
 	var me = this;
 	me.comboItems = [
 	    ['mon', Ext.util.Format.htmlDecode(Ext.Date.dayNames[1])],

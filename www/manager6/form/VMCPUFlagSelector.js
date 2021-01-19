@@ -98,7 +98,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 	{
 	    dataIndex: 'state',
 	    renderer: function(v) {
-		switch(v) {
+		switch (v) {
 		    case '=': return 'Default';
 		    case '-': return 'Off';
 		    case '+': return 'On';
@@ -111,7 +111,7 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 	    xtype: 'widgetcolumn',
 	    dataIndex: 'state',
 	    width: 95,
-	    onWidgetAttach: function (column, widget, record) {
+	    onWidgetAttach: function(column, widget, record) {
 		var val = record.get('state') || '=';
 		widget.down('[inputValue=' + val + ']').setValue(true);
 		// TODO: disable if selected CPU model and flag are incompatible

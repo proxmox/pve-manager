@@ -4,8 +4,7 @@ Ext.define('PVE.dc.ACLAdd', {
     url: '/access/acl',
     method: 'PUT',
     isAdd: true,
-    initComponent : function() {
-
+    initComponent: function() {
         var me = this;
 
 	me.isCreate = true;
@@ -68,7 +67,7 @@ Ext.define('PVE.dc.ACLAdd', {
 	});
 
 	Ext.apply(me, {
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();
@@ -88,7 +87,7 @@ Ext.define('PVE.dc.ACLView', {
     // use fixed path
     path: undefined,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var store = Ext.create('Ext.data.Store', {
@@ -187,7 +186,7 @@ Ext.define('PVE.dc.ACLView', {
 		    callback: function() {
 			reload();
 		    },
-		    failure: function (response, opts) {
+		    failure: function(response, opts) {
 			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		    },
 		});
@@ -258,7 +257,6 @@ Ext.define('PVE.dc.ACLView', {
 	me.callParent();
     },
 }, function() {
-
     Ext.define('pve-acl', {
 	extend: 'Ext.data.Model',
 	fields: [
@@ -269,5 +267,4 @@ Ext.define('PVE.dc.ACLView', {
 	    },
 	],
     });
-
 });

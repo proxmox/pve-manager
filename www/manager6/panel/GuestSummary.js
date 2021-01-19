@@ -50,7 +50,6 @@ Ext.define('PVE.qemu.Summary', {
 
 	var rrdstore;
 	if (!template) {
-
 	    // in non-template mode put the two panels always together
 	    items = [
 		{
@@ -100,11 +99,10 @@ Ext.define('PVE.qemu.Summary', {
 		    store: rrdstore,
 		},
 	    );
-
 	}
 
 	Ext.apply(me, {
-	    tbar: [ '->', { xtype: 'proxmoxRRDTypeSelector' } ],
+	    tbar: ['->', { xtype: 'proxmoxRRDTypeSelector' }],
 	    items: [
 		{
 		    xtype: 'container',

@@ -62,7 +62,7 @@ Ext.define('PVE.widget.RunningChart', {
 		colors: ['#cfcfcf'],
 		tooltip: {
 		    trackMouse: true,
-		    renderer: function( tooltip, record, ctx) {
+		    renderer: function(tooltip, record, ctx) {
 			let me = this.getChart();
 			if (!record || !record.data) return;
 			let date = new Date(record.data.time);
@@ -138,15 +138,15 @@ Ext.define('PVE.widget.RunningChart', {
     setTitle: function(title) {
 	this.title = title;
 	var me = this.getComponent('title');
-	me.update({title: title});
+	me.update({ title: title });
     },
 
-    initComponent: function(){
+    initComponent: function() {
 	var me = this;
 	me.callParent();
 
 	if (me.title) {
-	    me.getComponent('title').update({title: me.title});
+	    me.getComponent('title').update({ title: me.title });
 	}
 	me.chart = me.getComponent('chart');
 	me.chart.timeaxis = me.chart.getAxes()[1];

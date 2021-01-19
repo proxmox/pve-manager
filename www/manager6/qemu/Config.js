@@ -80,7 +80,8 @@ Ext.define('PVE.qemu.Config', {
 
 	var moreBtn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('More'),
-	    menu: { items: [
+	    menu: {
+ items: [
 		{
 		    text: gettext('Clone'),
 		    iconCls: 'fa fa-fw fa-clone',
@@ -131,7 +132,8 @@ Ext.define('PVE.qemu.Config', {
 		    },
 		    iconCls: 'fa fa-trash-o',
 		},
-	    ]},
+	    ]
+},
 	});
 
 	var shutdownBtn = Ext.create('PVE.button.Split', {
@@ -217,7 +219,7 @@ Ext.define('PVE.qemu.Config', {
 	    title: Ext.String.format(gettext("Virtual Machine {0} on node '{1}'"), vm.text, nodename),
 	    hstateid: 'kvmtab',
 	    tbarSpacing: false,
-	    tbar: [ statusTxt, '->', resumeBtn, startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn ],
+	    tbar: [statusTxt, '->', resumeBtn, startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
@@ -389,7 +391,6 @@ Ext.define('PVE.qemu.Config', {
 
 		spice = s.data.get('spice') ? true : false;
 		xtermjs = s.data.get('serial') ? true : false;
-
 	    }
 
 	    if (template) {

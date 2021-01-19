@@ -8,7 +8,7 @@ Ext.define('PVE.dc.UserView', {
     stateful: true,
     stateId: 'grid-users',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var caps = Ext.state.Manager.get('GuiCap');

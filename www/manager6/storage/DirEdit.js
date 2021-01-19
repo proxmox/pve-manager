@@ -3,7 +3,7 @@ Ext.define('PVE.storage.DirInputPanel', {
 
     onlineHelp: 'storage_directory',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.column1 = [

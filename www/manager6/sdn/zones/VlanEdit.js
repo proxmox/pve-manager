@@ -15,7 +15,7 @@ Ext.define('PVE.sdn.zones.VlanInputPanel', {
         return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
         me.items = [

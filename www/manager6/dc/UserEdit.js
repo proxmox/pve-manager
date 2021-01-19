@@ -4,7 +4,7 @@ Ext.define('PVE.dc.UserEdit', {
 
     isAdd: true,
 
-    initComponent : function() {
+    initComponent: function() {
         var me = this;
 
         me.isCreate = !me.userid;
@@ -63,7 +63,6 @@ Ext.define('PVE.dc.UserEdit', {
 		verifypw.setVisible(false);
 		verifypw.setDisabled(true);
 	    }
-
 	};
 
         var column1 = [
@@ -126,7 +125,7 @@ Ext.define('PVE.dc.UserEdit', {
 		matchFieldWidth: false,
 		listConfig: { width: 300 },
                 listeners: {
-                    change: function(combo, newValue){
+                    change: function(combo, newValue) {
                         realm = newValue;
 			update_passwd_field(realm);
                     },
@@ -172,7 +171,7 @@ Ext.define('PVE.dc.UserEdit', {
 	    fieldDefaults: {
 		labelWidth: 110, // for spanish translation
 	    },
-	    items: [ ipanel ],
+	    items: [ipanel],
         });
 
         me.callParent();
@@ -183,7 +182,7 @@ Ext.define('PVE.dc.UserEdit', {
 		    var data = response.result.data;
 		    me.setValues(data);
 		    if (data.keys) {
-			if ( data.keys === 'x!oath' || data.keys === 'x!u2f' ) {
+			if (data.keys === 'x!oath' || data.keys === 'x!u2f') {
 			    me.down('[name="keys"]').setDisabled(1);
 			}
 		    }

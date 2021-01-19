@@ -15,7 +15,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 	if (values.nameserver) {
 	    var list = values.nameserver.split(/[\ \,\;]+/);
 	    values.nameserver = list.join(' ');
-	} else if(!me.insideWizard) {
+	} else if (!me.insideWizard) {
 	    deletes.push('nameserver');
 	}
 
@@ -26,7 +26,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 	return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var items = [
@@ -62,14 +62,14 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 Ext.define('PVE.lxc.DNSEdit', {
     extend: 'Proxmox.window.Edit',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var ipanel = Ext.create('PVE.lxc.DNSInputPanel');
 
 	Ext.apply(me, {
 	    subject: gettext('Resources'),
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();
@@ -97,7 +97,7 @@ Ext.define('PVE.lxc.DNS', {
 
     onlineHelp: 'pct_container_network',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 	var i;
 
@@ -123,7 +123,7 @@ Ext.define('PVE.lxc.DNS', {
 		    subject: gettext('Hostname'),
 		    items: {
 			xtype: 'inputpanel',
-			items:{
+			items: {
 			    fieldLabel: gettext('Hostname'),
 			    xtype: 'textfield',
 			    name: 'hostname',
@@ -136,7 +136,7 @@ Ext.define('PVE.lxc.DNS', {
 			    if (values.hostname === undefined ||
 				values.hostname === null ||
 				values.hostname === '') {
-				params = { hostname: 'CT'+vmid.toString()};
+				params = { hostname: 'CT'+vmid.toString() };
 			    }
 			    return params;
 			},
@@ -237,7 +237,7 @@ Ext.define('PVE.lxc.DNS', {
 	    cwidth1: 150,
 	    interval: 5000,
 	    run_editor: run_editor,
-	    tbar: [ edit_btn, revert_btn ],
+	    tbar: [edit_btn, revert_btn],
 	    rows: rows,
 	    editorConfig: {
 		url: "/api2/extjs/" + baseurl,

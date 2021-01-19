@@ -7,7 +7,7 @@ Ext.define('PVE.dc.Log', {
 
     alias: ['widget.pveClusterLog'],
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var logstore = Ext.create('Proxmox.data.UpdateStore', {

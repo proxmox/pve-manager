@@ -32,7 +32,7 @@ Ext.define('PVE.storage.GlusterFsScan', {
 	me.glusterServer = server;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -40,7 +40,7 @@ Ext.define('PVE.storage.GlusterFsScan', {
 	}
 
 	var store = Ext.create('Ext.data.Store', {
-	    fields: [ 'volname' ],
+	    fields: ['volname'],
 	    proxy: {
 		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/glusterfs',
@@ -62,7 +62,7 @@ Ext.define('PVE.storage.GlusterFsInputPanel', {
 
     onlineHelp: 'storage_glusterfs',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.column1 = [

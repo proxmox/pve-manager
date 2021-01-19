@@ -40,10 +40,10 @@ Ext.define('PVE.qemu.PCIInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 	var ret = {};
-	if(!me.confid) {
+	if (!me.confid) {
 	    var i;
 	    for (i = 0; i < 5; i++) {
-		if (!me.vmconfig['hostpci' +  i.toString()]) {
+		if (!me.vmconfig['hostpci' + i.toString()]) {
 		    me.confid = 'hostpci' + i.toString();
 		    break;
 		}
@@ -125,8 +125,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 			    var count = 0;
 			    pcisel.getStore().each(function(record) {
 				if (record.data.iommugroup === iommu &&
-				    record.data.id.substring(0, 5) !== id)
-				{
+				    record.data.id.substring(0, 5) !== id) {
 				    count++;
 				    return false;
 				}
@@ -221,7 +220,7 @@ Ext.define('PVE.qemu.PCIEdit', {
     subject: gettext('PCI Device'),
 
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.isCreate = !me.confid;
@@ -232,7 +231,7 @@ Ext.define('PVE.qemu.PCIEdit', {
 	});
 
 	Ext.apply(me, {
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();

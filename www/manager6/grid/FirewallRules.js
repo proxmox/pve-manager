@@ -26,7 +26,7 @@ Ext.define('PVE.form.FWMacroSelector', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    autoLoad: true,
-	    fields: [ 'macro', 'descr' ],
+	    fields: ['macro', 'descr'],
 	    idProperty: 'macro',
 	    proxy: {
 		type: 'proxmox',
@@ -70,7 +70,7 @@ Ext.define('PVE.FirewallRulePanel', {
 	return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.list_refs_url) {
@@ -235,8 +235,7 @@ Ext.define('PVE.FirewallRuleEdit', {
 
     allow_iface: false,
 
-    initComponent : function() {
-
+    initComponent: function() {
 	var me = this;
 
 	if (!me.base_url) {
@@ -266,7 +265,7 @@ Ext.define('PVE.FirewallRuleEdit', {
 	Ext.apply(me, {
             subject: gettext('Rule'),
 	    isAdd: true,
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();
@@ -299,8 +298,7 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
 
     allow_iface: false,
 
-    initComponent : function() {
-
+    initComponent: function() {
 	var me = this;
 
 	me.isCreate = (me.rule_pos === undefined);
@@ -363,14 +361,14 @@ Ext.define('PVE.FirewallGroupRuleEdit', {
 	Ext.apply(me, {
             subject: gettext('Rule'),
 	    isAdd: true,
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();
 
 	if (!me.isCreate) {
 	    me.load({
-		success:  function(response, options) {
+		success: function(response, options) {
 		    var values = response.result.data;
 		    ipanel.setValues(values);
 		},
@@ -528,7 +526,7 @@ Ext.define('PVE.FirewallRules', {
 	    handler: run_editor,
 	});
 
-	me.addBtn =  Ext.create('Ext.Button', {
+	me.addBtn = Ext.create('Ext.Button', {
 	    text: gettext('Add'),
 	    disabled: true,
 	    handler: function() {
@@ -577,7 +575,7 @@ Ext.define('PVE.FirewallRules', {
 	});
 
 	if (me.allow_groups) {
-	    me.groupBtn =  Ext.create('Ext.Button', {
+	    me.groupBtn = Ext.create('Ext.Button', {
 		text: gettext('Insert') + ': ' +
 		    gettext('Security Group'),
 		disabled: true,
@@ -606,7 +604,7 @@ Ext.define('PVE.FirewallRules', {
 	    },
 	});
 
-	var tbar = me.tbar_prefix ? [ me.tbar_prefix ] : [];
+	var tbar = me.tbar_prefix ? [me.tbar_prefix] : [];
 	tbar.push(me.addBtn, me.copyBtn);
 	if (me.groupBtn) {
 	    tbar.push(me.groupBtn);
@@ -617,7 +615,7 @@ Ext.define('PVE.FirewallRules', {
 	    var errors = record.data.errors;
 	    if (errors && errors[name]) {
 		metaData.tdCls = 'proxmox-invalid-row';
-		var html = '<p>' +  Ext.htmlEncode(errors[name]) + '</p>';
+		var html = '<p>' + Ext.htmlEncode(errors[name]) + '</p>';
 		metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' +
 		    html.replace(/\"/g, '&quot;') + '"';
 	    }
@@ -797,13 +795,11 @@ Ext.define('PVE.FirewallRules', {
 	}
     },
 }, function() {
-
     Ext.define('pve-fw-rule', {
 	extend: 'Ext.data.Model',
-	fields: [ { name: 'enable', type: 'boolean' },
+	fields: [{ name: 'enable', type: 'boolean' },
 		  'type', 'action', 'macro', 'source', 'dest', 'proto', 'iface',
-		  'dport', 'sport', 'comment', 'pos', 'digest', 'errors' ],
+		  'dport', 'sport', 'comment', 'pos', 'digest', 'errors'],
 	idProperty: 'pos',
     });
-
 });

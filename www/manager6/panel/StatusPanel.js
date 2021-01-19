@@ -60,6 +60,5 @@ Ext.define('PVE.panel.StatusPanel', {
 	me.on('destroy', function() {
 	    sp.un('statechange', statechange);
 	});
-
     },
 });

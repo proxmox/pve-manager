@@ -5,7 +5,7 @@ Ext.define('PVE.qemu.Monitor', {
 
     maxLines: 500,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;
@@ -92,7 +92,7 @@ Ext.define('PVE.qemu.Monitor', {
 		textbox,
 		{
 		    region: 'south',
-		    margins:'0 5 5 5',
+		    margins: '0 5 5 5',
 		    border: false,
 		    xtype: 'textfield',
 		    name: 'cmd',

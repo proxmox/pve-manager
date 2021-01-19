@@ -11,7 +11,7 @@ Ext.define('PVE.window.SafeDestroy', {
     buttonAlign: 'center',
     bodyPadding: 10,
     width: 450,
-    layout: { type:'hbox' },
+    layout: { type: 'hbox' },
     defaultFocus: 'confirmField',
     showProgress: false,
 
@@ -51,7 +51,7 @@ Ext.define('PVE.window.SafeDestroy', {
 			removeButton.disable();
 		    }
 		},
-		specialkey: function (field, event) {
+		specialkey: function(field, event) {
 		    var removeButton = this.lookupReference('removeButton');
 		    if (!removeButton.isDisabled() && event.getKey() == event.ENTER) {
 			removeButton.fireEvent('click', removeButton, event);
@@ -82,7 +82,7 @@ Ext.define('PVE.window.SafeDestroy', {
 				var win = Ext.create('Proxmox.window.TaskProgress', {
 				    upid: upid,
 				    listeners: {
-					destroy: function () {
+					destroy: function() {
 					    view.close();
 					},
 				    },
@@ -101,7 +101,7 @@ Ext.define('PVE.window.SafeDestroy', {
     items: [
 	{
 	    xtype: 'component',
-	    cls: [ Ext.baseCSSPrefix + 'message-box-icon',
+	    cls: [Ext.baseCSSPrefix + 'message-box-icon',
 		   Ext.baseCSSPrefix + 'message-box-warning',
 		   Ext.baseCSSPrefix + 'dlg-icon'],
 	},
@@ -148,7 +148,7 @@ Ext.define('PVE.window.SafeDestroy', {
 	},
     ],
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.callParent();

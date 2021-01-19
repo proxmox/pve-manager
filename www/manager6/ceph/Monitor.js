@@ -2,7 +2,7 @@ Ext.define('PVE.node.CephMonMgrList', {
     extend: 'Ext.container.Container',
     xtype: 'pveNodeCephMonMgr',
 
-    mixins: ['Proxmox.Mixin.CBind' ],
+    mixins: ['Proxmox.Mixin.CBind'],
 
     onlineHelp: 'chapter_pveceph',
 

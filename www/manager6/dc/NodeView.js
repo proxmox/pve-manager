@@ -26,7 +26,7 @@ Ext.define('PVE.dc.NodeView', {
 	    dataIndex: 'online',
 	    renderer: function(value) {
 		var cls = (value)?'good':'critical';
-		return  '<i class="fa ' + PVE.Utils.get_health_icon(cls) + '"><i/>';
+		return '<i class="fa ' + PVE.Utils.get_health_icon(cls) + '"><i/>';
 	    },
 	},
 	{
@@ -78,7 +78,7 @@ Ext.define('PVE.dc.NodeView', {
     tools: [
 	{
 	    type: 'up',
-	    handler: function(){
+	    handler: function() {
 		var me = this.up('grid');
 		var height = Math.max(me.getHeight()-50, 250);
 		me.setHeight(height);
@@ -86,7 +86,7 @@ Ext.define('PVE.dc.NodeView', {
 	},
 	{
 	    type: 'down',
-	    handler: function(){
+	    handler: function() {
 		var me = this.up('grid');
 		var height = me.getHeight()+50;
 		me.setHeight(height);
@@ -94,13 +94,11 @@ Ext.define('PVE.dc.NodeView', {
 	},
     ],
 }, function() {
-
     Ext.define('pve-dc-nodes', {
 	extend: 'Ext.data.Model',
-	fields: [ 'id', 'type', 'name', 'nodeid', 'ip', 'level', 'local', 'online'],
+	fields: ['id', 'type', 'name', 'nodeid', 'ip', 'level', 'local', 'online'],
 	idProperty: 'id',
     });
-
 });
 
 Ext.define('PVE.widget.ProgressBar', {
@@ -112,7 +110,7 @@ Ext.define('PVE.widget.ProgressBar', {
 	'{percent}%',
     ],
 
-    setValue: function(value){
+    setValue: function(value) {
 	var me = this;
 	me.callParent([value]);
 

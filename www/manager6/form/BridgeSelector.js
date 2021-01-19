@@ -5,11 +5,11 @@ Ext.define('PVE.form.BridgeSelector', {
     bridgeType: 'any_bridge', // bridge, OVSBridge or any_bridge
 
     store: {
-	fields: [ 'iface', 'active', 'type' ],
+	fields: ['iface', 'active', 'type'],
 	filterOnLoad: true,
 	sorters: [
 	    {
-		property : 'iface',
+		property: 'iface',
 		direction: 'ASC',
 	    },
 	],

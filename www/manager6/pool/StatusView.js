@@ -7,7 +7,7 @@ Ext.define('PVE.pool.StatusView', {
     cwidth1: 150,
     interval: 30000,
     //height: 195,
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var pool = me.pveSelNode.data.pool;

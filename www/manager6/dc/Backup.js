@@ -4,7 +4,7 @@ Ext.define('PVE.dc.BackupEdit', {
 
     defaultFocus: undefined,
 
-    initComponent : function() {
+    initComponent: function() {
          var me = this;
 
         me.isCreate = !me.jobid;
@@ -25,7 +25,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	});
 
 	// 'value' can be assigned a string or an array
-	var selModeField =  Ext.create('Proxmox.form.KVComboBox', {
+	var selModeField = Ext.create('Proxmox.form.KVComboBox', {
 	    xtype: 'proxmoxKVComboBox',
 	    comboItems: [
 		['include', gettext('Include selected VMs')],
@@ -146,7 +146,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    allowBlank: true,
 	    name: 'pool',
 	    listeners: {
-		change: function( selpool, newValue, oldValue) {
+		change: function(selpool, newValue, oldValue) {
 		    selectPoolMembers(newValue);
 		},
 	    },
@@ -242,7 +242,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	    onlineHelp: 'chapter_vzdump',
 	    column1: column1,
-	    column2:  column2,
+	    column2: column2,
 	    onGetValues: function(values) {
 		if (!values.node) {
 		    if (!me.isCreate) {
@@ -315,7 +315,6 @@ Ext.define('PVE.dc.BackupEdit', {
 		selPool.setVisible(true);
 		selPool.allowBlank = false;
 		selectPoolMembers(selPool.value);
-
 	    } else {
 		selPool.setVisible(false);
 		selPool.allowBlank = true;
@@ -337,7 +336,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		    var mode = selModeField.getValue();
 		    if (mode === 'all') {
 			sm.selectAll(true);
-		    } else if (mode === 'pool'){
+		    } else if (mode === 'pool') {
 			selectPoolMembers(selPool.value);
 		    } else {
 			update_vmid_selection(list, mode);
@@ -350,7 +349,7 @@ Ext.define('PVE.dc.BackupEdit', {
             subject: gettext("Backup Job"),
             url: url,
             method: method,
-	    items: [ ipanel, vmgrid ],
+	    items: [ipanel, vmgrid],
         });
 
         me.callParent();
@@ -550,7 +549,8 @@ Ext.define('PVE.dc.BackupDiskTree', {
 			},
 		    },
 		},
-	    ]},
+	    ]
+},
 	});
 
 	me.callParent();
@@ -570,7 +570,7 @@ Ext.define('PVE.dc.BackupInfo', {
 	    name: 'node',
 	    fieldLabel: gettext('Node'),
 	    xtype: 'displayfield',
-	    renderer: function (value) {
+	    renderer: function(value) {
 		if (!value) {
 		    return '-- ' + gettext('All') + ' --';
 		} else {
@@ -615,7 +615,7 @@ Ext.define('PVE.dc.BackupInfo', {
 	    name: 'mailnotification',
 	    fieldLabel: gettext('Email notification'),
 	    xtype: 'displayfield',
-	    renderer: function (value) {
+	    renderer: function(value) {
 		let msg;
 		switch (value) {
 		    case 'always':
@@ -637,7 +637,7 @@ Ext.define('PVE.dc.BackupInfo', {
 	    name: 'mode',
 	    fieldLabel: gettext('Mode'),
 	    xtype: 'displayfield',
-	    renderer: function (value) {
+	    renderer: function(value) {
 		let msg;
 		switch (value) {
 		    case 'snapshot':
@@ -657,7 +657,7 @@ Ext.define('PVE.dc.BackupInfo', {
 	    name: 'enabled',
 	    fieldLabel: gettext('Enabled'),
 	    xtype: 'displayfield',
-	    renderer: function (value) {
+	    renderer: function(value) {
 		if (PVE.Parser.parseBoolean(value.toString())) {
 		    return gettext('Yes');
 		} else {
@@ -805,7 +805,7 @@ Ext.define('PVE.dc.BackupView', {
 
     allText: '-- ' + gettext('All') + ' --',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var store = new Ext.data.Store({
@@ -818,7 +818,7 @@ Ext.define('PVE.dc.BackupView', {
 
 	var not_backed_store = new Ext.data.Store({
 	    sorters: 'vmid',
-	    proxy:{
+	    proxy: {
 		type: 'proxmox',
 		url: 'api2/json/cluster/backupinfo/not_backed_up',
 	    },
@@ -856,7 +856,7 @@ Ext.define('PVE.dc.BackupView', {
 
 	var run_detail = function() {
 	    let me = this;
-	    let record = sm.getSelection()[0]
+	    let record = sm.getSelection()[0];
 	    if (!record) {
 		return;
 	    }
@@ -881,7 +881,7 @@ Ext.define('PVE.dc.BackupView', {
 		layout: 'fit',
 		title: gettext('Backup Details'),
 
-		items:[{
+		items: [{
 		    xtype: 'panel',
 		    region: 'center',
 		    layout: {
@@ -914,7 +914,7 @@ Ext.define('PVE.dc.BackupView', {
 		    Ext.Msg.alert('Error', "Node '"+ jobNode +"' from backup job isn't online!");
 		    return;
 		}
-		nodes = [ jobNode ];
+		nodes = [jobNode];
 	    } else {
 		let unkownNodes = allNodes.filter(node => node.status !== 'online');
 		if (unkownNodes.length > 0)
@@ -929,7 +929,7 @@ Ext.define('PVE.dc.BackupView', {
 		progressText: '0/' + jobTotalCount,
 	    });
 
-	    let postRequest = function () {
+	    let postRequest = function() {
 		jobsStarted++;
 		Ext.Msg.updateProgress(jobsStarted / jobTotalCount, jobsStarted + '/' + jobTotalCount);
 
@@ -945,7 +945,7 @@ Ext.define('PVE.dc.BackupView', {
 		url: '/nodes/' + node + '/vzdump',
 		method: 'POST',
 		params: job,
-		failure: function (response, opts) {
+		failure: function(response, opts) {
 		    errors.push(node + ': ' + response.htmlStatus);
 		    postRequest();
 		},
@@ -969,7 +969,7 @@ Ext.define('PVE.dc.BackupView', {
 		layout: 'fit',
 		title: gettext('Guests without backup job'),
 
-		items:[{
+		items: [{
 		    xtype: 'panel',
 		    region: 'center',
 		    layout: {
@@ -1128,7 +1128,6 @@ Ext.define('PVE.dc.BackupView', {
 	me.callParent();
     },
 }, function() {
-
     Ext.define('pve-cluster-backup', {
 	extend: 'Ext.data.Model',
 	fields: [

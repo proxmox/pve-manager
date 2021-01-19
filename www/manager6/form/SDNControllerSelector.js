@@ -38,15 +38,13 @@ Ext.define('PVE.form.SDNControllerSelector', {
     },
 
 }, function() {
-
     Ext.define('pve-sdn-controller', {
 	extend: 'Ext.data.Model',
-	fields: [ 'controller' ],
+	fields: ['controller'],
 	proxy: {
             type: 'proxmox',
 	    url: "/api2/json/cluster/sdn/controllers",
 	},
 	idProperty: 'controller',
     });
-
 });

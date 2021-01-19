@@ -32,7 +32,7 @@ Ext.define('PVE.qemu.EFIDiskInputPanel', {
 	me.down('#hdimage').setStorage(undefined, nodename);
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.drive = {};
@@ -64,7 +64,7 @@ Ext.define('PVE.qemu.EFIDiskEdit', {
     subject: gettext('EFI Disk'),
 
     width: 450,
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;

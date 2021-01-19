@@ -25,14 +25,14 @@ Ext.define('PVE.ceph.Install', {
 	      isInstalled: false,
 	},
 	formulas: {
-	    buttonText: function (get){
+	    buttonText: function(get) {
 		if (get('isInstalled')) {
 		    return gettext('Configure Ceph');
 		} else {
 		    return gettext('Install Ceph');
 		}
 	    },
-	    windowText: function (get) {
+	    windowText: function(get) {
 		if (get('isInstalled')) {
 		    return '<p class="install-mask">' +
 		    Ext.String.format(gettext('{0} is not initialized.'), 'Ceph') + ' '+
@@ -71,11 +71,10 @@ Ext.define('PVE.ceph.Install', {
 		});
 		win.getViewModel().set('isInstalled', this.getViewModel().get('isInstalled'));
 		win.show();
-		me.mon(win, 'beforeClose', function(){
+		me.mon(win, 'beforeClose', function() {
 		    me.fireEvent("cephInstallWindowClosed");
 		    me.close();
 		});
-
 	    },
 	},
     ],

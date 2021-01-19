@@ -5,7 +5,7 @@ Ext.define('PVE.storage.VgSelector', {
     displayField: 'vg',
     queryMode: 'local',
     editable: false,
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -14,7 +14,7 @@ Ext.define('PVE.storage.VgSelector', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    autoLoad: {}, // true,
-	    fields: [ 'vg', 'size', 'free' ],
+	    fields: ['vg', 'size', 'free'],
 	    proxy: {
 		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/lvm',
@@ -44,7 +44,7 @@ Ext.define('PVE.storage.BaseStorageSelector', {
     value: '',
     valueField: 'storage',
     displayField: 'text',
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var store = Ext.create('Ext.data.Store', {
@@ -54,7 +54,7 @@ Ext.define('PVE.storage.BaseStorageSelector', {
 		    type: 'iscsi',
 		},
 	    },
-	    fields: [ 'storage', 'type', 'content',
+	    fields: ['storage', 'type', 'content',
 		      {
 			  name: 'text',
 			  convert: function(value, record) {
@@ -88,7 +88,7 @@ Ext.define('PVE.storage.LVMInputPanel', {
 
     onlineHelp: 'storage_lvm',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.column1 = [];

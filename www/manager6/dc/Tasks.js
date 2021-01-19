@@ -7,7 +7,7 @@ Ext.define('PVE.dc.Tasks', {
 
     alias: ['widget.pveClusterTasks'],
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var taskstore = Ext.create('Proxmox.data.UpdateStore', {
@@ -25,11 +25,11 @@ Ext.define('PVE.dc.Tasks', {
 	    appendAtStart: true,
 	    sorters: [
 		{
-		    property : 'pid',
+		    property: 'pid',
 		    direction: 'DESC',
 		},
 		{
-		    property : 'starttime',
+		    property: 'starttime',
 		    direction: 'DESC',
 		},
 	    ],
@@ -85,9 +85,9 @@ Ext.define('PVE.dc.Tasks', {
 			    if (record.data.type == "vncproxy" ||
 				record.data.type == "vncshell" ||
 				record.data.type == "spiceproxy") {
-				metaData.tdCls =  "x-grid-row-console";
+				metaData.tdCls = "x-grid-row-console";
 			    } else {
-				metaData.tdCls =  "x-grid-row-loading";
+				metaData.tdCls = "x-grid-row-loading";
 			    }
 			    return "";
 			}
@@ -118,7 +118,7 @@ Ext.define('PVE.dc.Tasks', {
 		    renderer: function(value, metaData, record) {
 			if (record.data.pid) {
 			    if (record.data.type != "vncproxy") {
-				metaData.tdCls =  "x-grid-row-loading";
+				metaData.tdCls = "x-grid-row-loading";
 			    }
 			    return "";
 			}

@@ -55,7 +55,7 @@ Ext.define('PVE.qemu.IPConfigPanel', {
 	me.setValues(me.ipconfig);
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.ipconfig = {};
@@ -187,8 +187,7 @@ Ext.define('PVE.qemu.IPConfigEdit', {
 
     isAdd: true,
 
-    initComponent : function() {
-
+    initComponent: function() {
 	var me = this;
 
 	// convert confid from netX to ipconfigX

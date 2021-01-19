@@ -126,7 +126,7 @@ Ext.define('PVE.qemu.MemoryEdit', {
 	var me = this;
 
 	var memoryhotplug;
-	if(me.hotplug) {
+	if (me.hotplug) {
 	    Ext.each(me.hotplug.split(','), function(el) {
 		if (el === 'memory') {
 		    memoryhotplug = 1;
@@ -140,7 +140,7 @@ Ext.define('PVE.qemu.MemoryEdit', {
 
 	Ext.apply(me, {
 	    subject: gettext('Memory'),
-	    items: [ ipanel ],
+	    items: [ipanel],
 	    // uncomment the following to use the async configiguration API
 	    // backgroundDelay: 5,
 	    width: 400,

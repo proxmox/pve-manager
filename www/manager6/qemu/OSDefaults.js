@@ -27,9 +27,8 @@ Ext.define('PVE.qemu.OSDefaults', {
 		if (me.hasOwnProperty(settings.parent)) {
 		    var child = Ext.clone(me[settings.parent]);
 		    me[settings.pveOS] = Ext.apply(child, settings);
-
 		} else {
-		    throw("Could not find your genitor");
+		    throw ("Could not find your genitor");
 		}
 	    };
 
@@ -50,7 +49,7 @@ Ext.define('PVE.qemu.OSDefaults', {
        // virtio-scsi since 3.2 but backported in RHEL with 2.6 kernel
 	addOS({
 	    pveOS: 'l26',
-	    parent : 'generic',
+	    parent: 'generic',
 	    busType: 'scsi',
 	    busPriority: {
 		    scsi: 4,
@@ -64,14 +63,14 @@ Ext.define('PVE.qemu.OSDefaults', {
 	// recommandation from http://wiki.qemu.org/Windows2000
 	addOS({
 	    pveOS: 'w2k',
-	    parent : 'generic',
+	    parent: 'generic',
 	    networkCard: 'rtl8139',
 	    scsihw: '',
 	});
 	// https://pve.proxmox.com/wiki/Windows_XP_Guest_Notes
 	addOS({
 	    pveOS: 'wxp',
-	    parent : 'w2k',
+	    parent: 'w2k',
 	});
 
 	me.getDefaults = function(ostype) {

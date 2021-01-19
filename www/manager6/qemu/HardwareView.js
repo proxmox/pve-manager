@@ -43,7 +43,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	}
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 	var i, confid;
 
@@ -73,10 +73,10 @@ Ext.define('PVE.qemu.HardwareView', {
 		    var res = '';
 
 		    var max = me.getObjectValue('memory', 512, pending);
-		    var balloon =  me.getObjectValue('balloon', undefined, pending);
+		    var balloon = me.getObjectValue('balloon', undefined, pending);
 		    var shares = me.getObjectValue('shares', undefined, pending);
 
-		    res  = Proxmox.Utils.format_size(max*1024*1024);
+		    res = Proxmox.Utils.format_size(max*1024*1024);
 
 		    if (balloon !== undefined && balloon > 0) {
 			res = Proxmox.Utils.format_size(balloon*1024*1024) + "/" + res;
@@ -93,14 +93,13 @@ Ext.define('PVE.qemu.HardwareView', {
 	    sockets: {
 		header: gettext('Processors'),
 		never_delete: true,
-		editor: (caps.vms['VM.Config.CPU'] || caps.vms['VM.Config.HWType']) ?
-		    'PVE.qemu.ProcessorEdit' : undefined,
+		editor: (caps.vms['VM.Config.CPU'] || caps.vms['VM.Config.HWType'])
+		    ? 'PVE.qemu.ProcessorEdit' : undefined,
 		tdCls: 'pve-itype-icon-processor',
 		group: 3,
 		defaultValue: '1',
 		multiKey: ['sockets', 'cpu', 'cores', 'numa', 'vcpus', 'cpulimit', 'cpuunits'],
 		renderer: function(value, metaData, record, rowIndex, colIndex, store, pending) {
-
 		    var sockets = me.getObjectValue('sockets', 1, pending);
 		    var model = me.getObjectValue('cpu', undefined, pending);
 		    var cores = me.getObjectValue('cores', 1, pending);
@@ -149,13 +148,13 @@ Ext.define('PVE.qemu.HardwareView', {
 		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.DisplayEdit' : undefined,
 		never_delete: true,
 		iconCls: 'desktop',
-		group:5,
+		group: 5,
 		defaultValue: '',
 		renderer: PVE.Utils.render_kvm_vga_driver,
 	    },
 	    machine: {
 		header: gettext('Machine'),
-		editor: caps.vms['VM.Config.HWType'] ?  {
+		editor: caps.vms['VM.Config.HWType'] ? {
 		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Machine'),
 		    width: 350,
@@ -168,7 +167,8 @@ Ext.define('PVE.qemu.HardwareView', {
 			    ['__default__', PVE.Utils.render_qemu_machine('')],
 			    ['q35', 'q35'],
 			],
-		    }]} : undefined,
+		    }]
+} : undefined,
 		iconCls: 'cogs',
 		never_delete: true,
 		group: 6,
@@ -470,7 +470,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			'delete': rec.data.key,
 		    },
 		    callback: () => me.reload(),
-		    failure: function (response, opts) {
+		    failure: function(response, opts) {
 			Ext.Msg.alert('Error', response.htmlStatus);
 		    },
 		    success: function(response, options) {
@@ -537,7 +537,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    // en/disable hardwarebuttons
 	    counts = {};
 	    var hasCloudInit = false;
-	    me.rstore.getData().items.forEach(function(item){
+	    me.rstore.getData().items.forEach(function(item) {
 		if (!hasCloudInit && (
 		    /vm-.*-cloudinit/.test(item.data.value) ||
 		    /vm-.*-cloudinit/.test(item.data.pending)
@@ -604,7 +604,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    move_btn.setDisabled(pending || !(isUsedDisk || isEfi) || !diskCap);
 
 	    revert_btn.setDisabled(!pending);
-
 	};
 
 	Ext.apply(me, {

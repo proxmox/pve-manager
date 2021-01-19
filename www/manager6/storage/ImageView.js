@@ -24,7 +24,7 @@ Ext.define('PVE.storage.ImageView', {
 
 	var reload = function() {
 	    me.store.load();
-	}
+	};
 
 	me.tbar = [
 	    {

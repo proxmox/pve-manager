@@ -3,11 +3,11 @@ Ext.define('PVE.form.MDevSelector', {
     xtype: 'pveMDevSelector',
 
     store: {
-	fields: [ 'type', 'available', 'description' ],
+	fields: ['type', 'available', 'description'],
 	filterOnLoad: true,
 	sorters: [
 	    {
-		property : 'type',
+		property: 'type',
 		direction: 'ASC',
 	    },
 	],

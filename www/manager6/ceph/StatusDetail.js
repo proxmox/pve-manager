@@ -11,7 +11,7 @@ Ext.define('PVE.ceph.StatusDetail', {
     defaults: {
 	xtype: 'box',
 	style: {
-	    'text-align':'center',
+	    'text-align': 'center',
 	},
     },
 
@@ -215,7 +215,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	// update PGs sorted
 	var pgmap = status.pgmap || {};
 	var pgs_by_state = pgmap.pgs_by_state || [];
-	pgs_by_state.sort(function(a, b){
+	pgs_by_state.sort(function(a, b) {
 	    return (a.state_name < b.state_name)?-1:(a.state_name === b.state_name)?0:1;
 	});
 
@@ -241,7 +241,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	});
 
 	me.getComponent('pgchart').getStore().setData(me.statecategories);
-	me.getComponent('pgs').update({states: pgs_by_state});
+	me.getComponent('pgs').update({ states: pgs_by_state });
 
 	var downinregex = /(\d+) osds down/;
 	var downin_osds = 0;

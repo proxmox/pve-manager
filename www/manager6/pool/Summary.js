@@ -24,7 +24,7 @@ Ext.define('PVE.pool.Summary', {
 		style: 'padding-top:10px',
 		width: 800,
 	    },
-	    items: [ statusview ],
+	    items: [statusview],
 	});
 
 	me.on('activate', rstore.startUpdate);

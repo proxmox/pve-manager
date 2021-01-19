@@ -7,7 +7,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 	property: 'type',
 	direction: 'ASC',
     },
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var rstore = PVE.data.ResourceStore;
@@ -39,7 +39,6 @@ Ext.define('PVE.grid.ResourceGrid', {
 	};
 
 	var updateGrid = function() {
-
 	    var filterfn = me.viewFilter ? me.viewFilter.filterfn : null;
 
 	    //console.log("START GRID UPDATE " +  me.viewFilter);
@@ -137,7 +136,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 	    //console.log("END GRID UPDATE");
 	};
 
-	var filter_task = new Ext.util.DelayedTask(function(){
+	var filter_task = new Ext.util.DelayedTask(function() {
 	    updateGrid();
 	});
 

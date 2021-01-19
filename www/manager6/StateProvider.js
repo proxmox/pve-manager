@@ -59,7 +59,7 @@ Ext.define('PVE.StateProvider', {
 	'ha-groups': 47,
 	'ha-resources': 46,
 	'ceph-log': 45,
-	'ceph-crushmap':44,
+	'ceph-crushmap': 44,
 	'ceph-pools': 43,
 	'ceph-osdtree': 42,
 	'ceph-disklist': 41,
@@ -173,7 +173,7 @@ Ext.define('PVE.StateProvider', {
 	return ctoken;
     },
 
-    constructor: function(config){
+    constructor: function(config) {
 	var me = this;
 
 	me.callParent([config]);
@@ -184,7 +184,7 @@ Ext.define('PVE.StateProvider', {
 	    //console.log("HC " + token);
 	    if (!token) {
 		var res = window.confirm(gettext('Are you sure you want to navigate away from this page?'));
-		if (res){
+		if (res) {
 		    // process text value and close...
 		    Ext.History.back();
 		} else {
@@ -213,7 +213,7 @@ Ext.define('PVE.StateProvider', {
 	Ext.History.on('change', history_change_cb);
     },
 
-    get: function(name, defaultValue){
+    get: function(name, defaultValue) {
 	var me = this;
 	var data;
 
@@ -230,7 +230,7 @@ Ext.define('PVE.StateProvider', {
 	return data;
     },
 
-    clear: function(name){
+    clear: function(name) {
 	var me = this;
 
 	if (typeof me.UIState[name] != "undefined") {
@@ -240,7 +240,7 @@ Ext.define('PVE.StateProvider', {
 	me.callParent(arguments);
     },
 
-    set: function(name, value, fireevent){
+    set: function(name, value, fireevent) {
         var me = this;
 
 	//console.log("SET " + name + " " + Ext.encode(value));

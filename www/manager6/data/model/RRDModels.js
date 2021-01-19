@@ -2,14 +2,14 @@ Ext.define('pve-rrd-node', {
     extend: 'Ext.data.Model',
     fields: [
 	{
-	    name:'cpu',
+	    name: 'cpu',
 	    // percentage
 	    convert: function(value) {
 		return value*100;
 	    },
 	},
 	{
-	    name:'iowait',
+	    name: 'iowait',
 	    // percentage
 	    convert: function(value) {
 		return value*100;
@@ -33,7 +33,7 @@ Ext.define('pve-rrd-guest', {
     extend: 'Ext.data.Model',
     fields: [
 	{
-	    name:'cpu',
+	    name: 'cpu',
 	    // percentage
 	    convert: function(value) {
 		return value*100;

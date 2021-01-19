@@ -30,7 +30,7 @@ Ext.define('PVE.CephCreateService', {
 	},
     ],
 
-    initComponent : function() {
+    initComponent: function() {
         var me = this;
 
 	if (!me.nodename) {
@@ -159,8 +159,8 @@ Ext.define('PVE.node.CephServiceList', {
 		PVE.Utils.handleStoreErrorOrMask(view, view.rstore, regex, function(me, error) {
 		    view.rstore.stopUpdate();
 		    PVE.Utils.showCephInstallOrMask(view.ownerCt, error.statusText, view.nodename,
-			function(win){
-			    me.mon(win, 'cephInstallWindowClosed', function(){
+			function(win) {
+			    me.mon(win, 'cephInstallWindowClosed', function() {
 				view.rstore.startUpdate();
 			    });
 			},
@@ -206,7 +206,7 @@ Ext.define('PVE.node.CephServiceList', {
 	    var view = this.getView();
 	    var rec = view.getSelection()[0];
 	    var servicename = 'ceph-' + view.type + '@' + rec.data.name;
-	    var url = "/api2/extjs/nodes/" + rec.data.host + "/syslog?service=" +  encodeURIComponent(servicename);
+	    var url = "/api2/extjs/nodes/" + rec.data.host + "/syslog?service=" + encodeURIComponent(servicename);
 	    var win = Ext.create('Ext.window.Window', {
 		title: gettext('Syslog') + ': ' + servicename,
 		modal: true,
@@ -367,14 +367,15 @@ Ext.define('PVE.node.CephServiceList', {
     },
 
 }, function() {
-
     Ext.define('ceph-service-list', {
 	extend: 'Ext.data.Model',
-	fields: [ 'addr', 'name', 'rank', 'host', 'quorum', 'state',
+	fields: ['addr', 'name', 'rank', 'host', 'quorum', 'state',
 	    'ceph_version', 'ceph_version_short',
-	    { type: 'string', name: 'version', calculate: function(data) {
+	    {
+ type: 'string', name: 'version', calculate: function(data) {
 		return PVE.Utils.parse_ceph_version(data);
-	    } },
+	    }
+},
 	],
 	idProperty: 'name',
     });

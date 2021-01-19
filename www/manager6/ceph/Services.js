@@ -11,7 +11,7 @@ Ext.define('PVE.ceph.Services', {
     defaults: {
 	xtype: 'box',
 	style: {
-	    'text-align':'center',
+	    'text-align': 'center',
 	},
     },
 
@@ -242,12 +242,12 @@ Ext.define('PVE.ceph.ServiceList', {
     xtype: 'pveCephServiceList',
 
     style: {
-	'text-align':'center',
+	'text-align': 'center',
     },
     defaults: {
 	xtype: 'box',
 	style: {
-	    'text-align':'center',
+	    'text-align': 'center',
 	},
     },
 

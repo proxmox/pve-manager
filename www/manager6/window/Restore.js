@@ -3,7 +3,7 @@ Ext.define('PVE.window.Restore', {
 
     resizable: false,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -119,7 +119,7 @@ Ext.define('PVE.window.Restore', {
 		params: params,
 		method: 'POST',
 		waitMsgTarget: me,
-		failure: function (response, opts) {
+		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		},
 		success: function(response, options) {
@@ -136,7 +136,7 @@ Ext.define('PVE.window.Restore', {
 
 	var submitBtn = Ext.create('Ext.Button', {
 	    text: gettext('Restore'),
-	    handler: function(){
+	    handler: function() {
 		var values = form.getValues();
 
 		var params = {
@@ -185,7 +185,7 @@ Ext.define('PVE.window.Restore', {
 	    submitBtn.setDisabled(!valid);
 	});
 
-	var title =  gettext('Restore') + ": " + (
+	var title = gettext('Restore') + ": " + (
 	    (me.vmtype === 'lxc') ? 'CT' : 'VM');
 
 	if (me.vmid) {
@@ -198,8 +198,8 @@ Ext.define('PVE.window.Restore', {
 	    modal: true,
 	    layout: 'auto',
 	    border: false,
-	    items: [ me.formPanel ],
-	    buttons: [ submitBtn ],
+	    items: [me.formPanel],
+	    buttons: [submitBtn],
 	});
 
 	me.callParent();

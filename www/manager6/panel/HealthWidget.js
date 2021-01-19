@@ -9,7 +9,7 @@ Ext.define('PVE.widget.HealthWidget', {
     },
 
     style: {
-	'text-align':'center',
+	'text-align': 'center',
     },
 
     tpl: [
@@ -24,7 +24,7 @@ Ext.define('PVE.widget.HealthWidget', {
 	me.update(Ext.apply(me.data, data));
     },
 
-    initComponent: function(){
+    initComponent: function() {
 	var me = this;
 
 	if (me.title) {

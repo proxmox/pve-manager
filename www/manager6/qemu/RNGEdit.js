@@ -103,7 +103,7 @@ Ext.define('PVE.qemu.RNGEdit', {
 	xtype: 'pveRNGInputPanel',
     }],
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.callParent();

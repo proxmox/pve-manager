@@ -8,7 +8,7 @@ Ext.define('PVE.dc.RoleView', {
     stateful: true,
     stateId: 'grid-roles',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var store = new Ext.data.Store({
@@ -20,7 +20,6 @@ Ext.define('PVE.dc.RoleView', {
 	});
 
 	var render_privs = function(value, metaData) {
-
 	    if (!value) {
 		return '-';
 	    }

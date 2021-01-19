@@ -43,7 +43,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	this.callParent([values]);
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.column1 = [

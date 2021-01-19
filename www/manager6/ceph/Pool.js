@@ -73,7 +73,7 @@ Ext.define('PVE.CephCreatePool', {
 	    },
 	},
     ],
-    initComponent : function() {
+    initComponent: function() {
         var me = this;
 
 	if (!me.nodename) {
@@ -101,7 +101,7 @@ Ext.define('PVE.node.CephPoolList', {
     stateId: 'grid-ceph-pools',
     bufferedRenderer: false,
 
-    features: [ { ftype: 'summary'} ],
+    features: [{ ftype: 'summary' }],
 
     columns: [
 	{
@@ -201,11 +201,11 @@ Ext.define('PVE.node.CephPoolList', {
 	var store = Ext.create('Proxmox.data.DiffStore', { rstore: rstore });
 
 	var regex = new RegExp("not (installed|initialized)", "i");
-	PVE.Utils.handleStoreErrorOrMask(me, rstore, regex, function(me, error){
+	PVE.Utils.handleStoreErrorOrMask(me, rstore, regex, function(me, error) {
 	    me.store.rstore.stopUpdate();
 	    PVE.Utils.showCephInstallOrMask(me, error.statusText, nodename,
-		function(win){
-		    me.mon(win, 'cephInstallWindowClosed', function(){
+		function(win) {
+		    me.mon(win, 'cephInstallWindowClosed', function() {
 			me.store.rstore.startUpdate();
 		    });
 		},
@@ -255,7 +255,7 @@ Ext.define('PVE.node.CephPoolList', {
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    tbar: [ create_btn, destroy_btn ],
+	    tbar: [create_btn, destroy_btn],
 	    listeners: {
 		activate: () => rstore.startUpdate(),
 		destroy: () => rstore.stopUpdate(),
@@ -265,18 +265,17 @@ Ext.define('PVE.node.CephPoolList', {
 	me.callParent();
     },
 }, function() {
-
     Ext.define('ceph-pool-list', {
 	extend: 'Ext.data.Model',
-	fields: [ 'pool_name',
-		  { name: 'pool', type: 'integer'},
-		  { name: 'size', type: 'integer'},
-		  { name: 'min_size', type: 'integer'},
-		  { name: 'pg_num', type: 'integer'},
-		  { name: 'bytes_used', type: 'integer'},
-		  { name: 'percent_used', type: 'number'},
-		  { name: 'crush_rule', type: 'integer'},
-		  { name: 'crush_rule_name', type: 'string'},
+	fields: ['pool_name',
+		  { name: 'pool', type: 'integer' },
+		  { name: 'size', type: 'integer' },
+		  { name: 'min_size', type: 'integer' },
+		  { name: 'pg_num', type: 'integer' },
+		  { name: 'bytes_used', type: 'integer' },
+		  { name: 'percent_used', type: 'number' },
+		  { name: 'crush_rule', type: 'integer' },
+		  { name: 'crush_rule_name', type: 'string' },
 		],
 	idProperty: 'pool_name',
     });
@@ -315,7 +314,7 @@ Ext.define('PVE.form.CephRuleSelector', {
 	me.callParent();
 
 	store.load({
-	    callback: function(rec, op, success){
+	    callback: function(rec, op, success) {
 		if (success && rec.length > 0) {
 		    me.select(rec[0]);
 		}

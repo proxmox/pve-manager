@@ -47,7 +47,6 @@ Ext.define('PVE.tree.ResourceTree', {
 
 	if ((n1.groupbyid && n2.groupbyid) ||
 	    !(n1.groupbyid || n2.groupbyid)) {
-
 	    var tcmp;
 
 	    var v1 = n1.type;
@@ -198,7 +197,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		} else {
 		    groupinfo = {
 			type: groupby,
-			id : groupby + "/" + v,
+			id: groupby + "/" + v,
 		    };
 		    if (groupby !== 'type') {
 			groupinfo[groupby] = v;
@@ -219,7 +218,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	return me.addChildSorted(node, info);
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var rstore = PVE.data.ResourceStore;
@@ -419,13 +418,13 @@ Ext.define('PVE.tree.ResourceTree', {
 		destroy: function() {
 		    rstore.un("load", updateTree);
 		},
-		beforecellmousedown: function (tree, td, cellIndex, record, tr, rowIndex, ev) {
+		beforecellmousedown: function(tree, td, cellIndex, record, tr, rowIndex, ev) {
 		    var sm = me.getSelectionModel();
 		    // disable selection when right clicking
 		    // except the record is already selected
 		    me.allowSelection = (ev.button !== 2) || sm.isSelected(record);
 		},
-		beforeselect: function (tree, record, index, eopts) {
+		beforeselect: function(tree, record, index, eopts) {
 		    var allow = me.allowSelection;
 		    me.allowSelection = true;
 		    return allow;
@@ -484,7 +483,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		}
 		return node;
 	    },
-	    applyState : function(state) {
+	    applyState: function(state) {
 		var sm = me.getSelectionModel();
 		if (state && state.value) {
 		    me.selectById(state.value);
@@ -498,7 +497,7 @@ Ext.define('PVE.tree.ResourceTree', {
 
 	var sm = me.getSelectionModel();
 	sm.on('select', function(sm, n) {
-	    sp.set(stateid, { value: n.data.id});
+	    sp.set(stateid, { value: n.data.id });
 	});
 
 	rstore.on("load", updateTree);

@@ -8,7 +8,7 @@ Ext.define('PVE.dc.GroupView', {
     stateful: true,
     stateId: 'grid-groups',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var store = new Ext.data.Store({

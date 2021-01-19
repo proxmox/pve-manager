@@ -97,9 +97,9 @@ Ext.define('PVE.node.StatusView', {
 	    renderer: function(cpuinfo) {
 		return cpuinfo.cpus + " x " + cpuinfo.model + " (" +
 		cpuinfo.sockets.toString() + " " +
-		(cpuinfo.sockets > 1 ?
-		    gettext('Sockets') :
-		    gettext('Socket')
+		(cpuinfo.sockets > 1
+		    ? gettext('Sockets')
+		    : gettext('Socket')
 		) + ")";
 	    },
 	    value: '',

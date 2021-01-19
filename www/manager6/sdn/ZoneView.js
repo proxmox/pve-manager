@@ -24,7 +24,7 @@ Ext.define('PVE.sdn.ZoneView', {
 	});
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	let me = this;
 
 	let store = new Ext.data.Store({
@@ -81,7 +81,7 @@ Ext.define('PVE.sdn.ZoneView', {
 		continue;
 	    }
 	    addMenuItems.push({
-		text:  PVE.Utils.format_sdnzone_type(type),
+		text: PVE.Utils.format_sdnzone_type(type),
 		iconCls: 'fa fa-fw fa-' + zone.faIcon,
 		handler: addHandleGenerator(type),
 	    });

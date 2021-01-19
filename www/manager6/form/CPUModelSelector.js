@@ -1,10 +1,10 @@
 Ext.define('PVE.data.CPUModel', {
     extend: 'Ext.data.Model',
     fields: [
-	{name: 'name'},
-	{name: 'vendor'},
-	{name: 'custom'},
-	{name: 'displayname'},
+	{ name: 'name' },
+	{ name: 'vendor' },
+	{ name: 'custom' },
+	{ name: 'displayname' },
     ],
 });
 

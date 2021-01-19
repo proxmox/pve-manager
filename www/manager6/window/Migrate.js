@@ -34,7 +34,7 @@ Ext.define('PVE.window.Migrate', {
 
 	formulas: {
 	    setMigrationMode: function(get) {
-		if (get('running')){
+		if (get('running')) {
 		    if (get('vmtype') === 'qemu') {
 			return gettext('Online');
 		    } else {
@@ -101,10 +101,9 @@ Ext.define('PVE.window.Migrate', {
 	    });
 	    me.checkMigratePreconditions();
 	    me.lookup('formPanel').isValid();
-
 	},
 
-	onTargetChange: function (nodeSelector) {
+	onTargetChange: function(nodeSelector) {
 	    //Always display the storages of the currently seleceted migration target
 	    this.lookup('pveDiskStorageSelector').setNodename(nodeSelector.value);
 	    this.checkMigratePreconditions();
@@ -156,7 +155,6 @@ Ext.define('PVE.window.Migrate', {
 		    view.close();
 		},
 	    });
-
 	},
 
 	checkMigratePreconditions: function(resetMigrationPossible) {
@@ -181,7 +179,6 @@ Ext.define('PVE.window.Migrate', {
 	    me.lookup('pveNodeSelector').allowedNodes = vm.get('migration.allowedNodes');
 
 	    me.lookup('formPanel').isValid();
-
 	},
 
 	checkQemuPreconditions: function(resetMigrationPossible) {
@@ -228,7 +225,7 @@ Ext.define('PVE.window.Migrate', {
 
 		    if (migrateStats.local_resources.length) {
 			migration.hasLocalResources = true;
-			if(!migration.overwriteLocalResourceCheck || vm.get('running')){
+			if (!migration.overwriteLocalResourceCheck || vm.get('running')) {
 			    migration.possible = false;
 			    migration.preconditions.push({
 				text: Ext.String.format('Can\'t migrate VM with local resources: {0}',
@@ -246,8 +243,7 @@ Ext.define('PVE.window.Migrate', {
 		    }
 
 		    if (migrateStats.local_disks.length) {
-
-			migrateStats.local_disks.forEach(function (disk) {
+			migrateStats.local_disks.forEach(function(disk) {
 			    if (disk.cdrom && disk.cdrom === 1) {
 				if (disk.volid.includes('vm-'+vm.get('vmid')+'-cloudinit')) {
 				    if (migrateStats.running) {
@@ -276,11 +272,9 @@ Ext.define('PVE.window.Migrate', {
 				});
 			    }
 			});
-
 		    }
 
 		    vm.set('migration', migration);
-
 		},
 	    });
 	},
@@ -371,7 +365,7 @@ Ext.define('PVE.window.Migrate', {
 			    value: '{migration.overwriteLocalResourceCheck}',
 			},
 			listeners: {
-			    change: {fn: 'checkMigratePreconditions', extraArg: true},
+			    change: { fn: 'checkMigratePreconditions', extraArg: true },
 			},
 		}],
 		},

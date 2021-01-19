@@ -31,7 +31,7 @@ Ext.define('PVE.storage.IScsiScan', {
 	me.portal = portal;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -39,7 +39,7 @@ Ext.define('PVE.storage.IScsiScan', {
 	}
 
 	var store = Ext.create('Ext.data.Store', {
-	    fields: [ 'target', 'portal' ],
+	    fields: ['target', 'portal'],
 	    proxy: {
 		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/iscsi',
@@ -75,7 +75,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 	this.callParent([values]);
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.column1 = [

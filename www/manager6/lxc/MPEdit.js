@@ -97,7 +97,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	me.down('#diskstorage').setNodename(nodename);
     },
 
-    controller:  {
+    controller: {
 	xclass: 'Ext.app.ViewController',
 
 	control: {
@@ -231,7 +231,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    xtype: 'textfield',
 	    name: 'mp',
 	    value: '',
-	    emptyText:  gettext('/some/path'),
+	    emptyText: gettext('/some/path'),
 	    allowBlank: false,
 	    disabled: true,
 	    fieldLabel: gettext('Path'),
@@ -329,7 +329,7 @@ Ext.define('PVE.lxc.MountPointEdit', {
 
     unprivileged: false,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;

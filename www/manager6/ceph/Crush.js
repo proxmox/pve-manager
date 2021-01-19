@@ -17,8 +17,8 @@ Ext.define('PVE.node.CephCrushMap', {
 		me.update(gettext('Error') + " " + response.htmlStatus);
 		var msg = response.htmlStatus;
 		PVE.Utils.showCephInstallOrMask(me.ownerCt, msg, me.pveSelNode.data.node,
-		    function(win){
-			me.mon(win, 'cephInstallWindowClosed', function(){
+		    function(win) {
+			me.mon(win, 'cephInstallWindowClosed', function() {
 			    me.load();
 			});
 		    },

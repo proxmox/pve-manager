@@ -8,7 +8,7 @@ Ext.define('PVE.node.CreateLVMThin', {
 
     onlineHelp: 'chapter_lvm',
 
-    initComponent : function() {
+    initComponent: function() {
         var me = this;
 
 	if (!me.nodename) {

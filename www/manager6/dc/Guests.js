@@ -20,8 +20,8 @@ Ext.define('PVE.dc.Guests', {
 	xtype: 'box',
 	padding: '0 50 0 50',
 	style: {
-	    'text-align':'center',
-	    'line-height':'1.2',
+	    'text-align': 'center',
+	    'line-height': '1.2',
 	},
     },
     items: [{
@@ -117,6 +117,6 @@ Ext.define('PVE.dc.Guests', {
 	var me = this;
 	me.getComponent('qemu').update(qemu);
 	me.getComponent('lxc').update(lxc);
-	me.getComponent('error').update({num: error});
+	me.getComponent('error').update({ num: error });
     },
 });

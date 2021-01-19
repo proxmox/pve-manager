@@ -55,7 +55,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	me.bridgesel.setNodename(nodename);
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.network = {};
@@ -172,8 +172,7 @@ Ext.define('PVE.qemu.NetworkEdit', {
 
     isAdd: true,
 
-    initComponent : function() {
-
+    initComponent: function() {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;

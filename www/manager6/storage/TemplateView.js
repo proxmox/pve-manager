@@ -8,7 +8,7 @@ Ext.define('PVE.grid.TemplateSelector', {
     viewConfig: {
 	trackOver: false,
     },
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -53,14 +53,14 @@ Ext.define('PVE.grid.TemplateSelector', {
 			    var value = field.getValue().toLowerCase();
 			    store.clearFilter(true);
 			    store.filterBy(function(rec) {
-				return (rec.data['package'].toLowerCase().indexOf(value) !== -1)
-				|| (rec.data.headline.toLowerCase().indexOf(value) !== -1);
+				return (rec.data['package'].toLowerCase().indexOf(value) !== -1) ||
+				(rec.data.headline.toLowerCase().indexOf(value) !== -1);
 			    });
 			},
 		    },
 		},
 	    ],
-	    features: [ groupingFeature ],
+	    features: [groupingFeature],
 	    columns: [
 		{
 		    header: gettext('Type'),
@@ -93,7 +93,6 @@ Ext.define('PVE.grid.TemplateSelector', {
     },
 
 }, function() {
-
     Ext.define('pve-aplinfo', {
 	extend: 'Ext.data.Model',
 	fields: [
@@ -102,7 +101,6 @@ Ext.define('PVE.grid.TemplateSelector', {
 	],
 	idProperty: 'template',
     });
-
 });
 
 Ext.define('PVE.storage.TemplateDownload', {
@@ -114,7 +112,7 @@ Ext.define('PVE.storage.TemplateDownload', {
     layout: 'fit',
     width: 900,
     height: 600,
-    initComponent : function() {
+    initComponent: function() {
         var me = this;
 
 	var grid = Ext.create('PVE.grid.TemplateSelector', {
@@ -137,7 +135,7 @@ Ext.define('PVE.storage.TemplateDownload', {
 			template: rec.data.template,
 		    },
 		    method: 'POST',
-		    failure: function (response, opts) {
+		    failure: function(response, opts) {
 			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		    },
 		    success: function(response, options) {
@@ -158,7 +156,7 @@ Ext.define('PVE.storage.TemplateDownload', {
 
         Ext.apply(me, {
 	    items: grid,
-	    buttons: [ submitBtn ],
+	    buttons: [submitBtn],
 	});
 
 	me.callParent();
@@ -189,7 +187,7 @@ Ext.define('PVE.storage.TemplateView', {
 
 	var reload = function() {
 	    me.store.load();
-	}
+	};
 
 	var templateButton = Ext.create('Proxmox.button.Button', {
 	    itemId: 'tmpl-btn',
@@ -204,7 +202,7 @@ Ext.define('PVE.storage.TemplateView', {
 	    },
 	});
 
-	me.tbar = [ templateButton ];
+	me.tbar = [templateButton];
 	me.useUploadButton = true;
 
 	me.callParent();

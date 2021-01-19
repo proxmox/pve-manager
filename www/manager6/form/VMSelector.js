@@ -74,14 +74,14 @@ Ext.define('PVE.form.VMSelector', {
 		type: 'list',
 		store: {
 		    data: [
-			{id: 'qemu', text: gettext('Virtual Machine')},
-			{id: 'lxc', text: gettext('LXC Container')},
+			{ id: 'qemu', text: gettext('Virtual Machine') },
+			{ id: 'lxc', text: gettext('LXC Container') },
 		    ],
 		    // due to EXTJS-18711
 		    // we have to do a static list via a store
 		    // but to avoid creating an object,
 		    // we have to have a pseudo un function
-		    un: function(){},
+		    un: function() {},
 		},
 	    },
 	},
@@ -154,7 +154,7 @@ Ext.define('PVE.form.VMSelector', {
 
     getErrors: function(value) {
 	var me = this;
-	if (me.allowBlank ===  false &&
+	if (me.allowBlank === false &&
 	    me.getSelectionModel().getCount() === 0) {
 	    me.addBodyCls(['x-form-trigger-wrap-default', 'x-form-trigger-wrap-invalid']);
 	    return [gettext('No VM selected')];
@@ -205,7 +205,7 @@ Ext.define('PVE.form.VMSelector', {
 	var sm = me.getSelectionModel();
 
 	if (me.selectAll) {
-	    me.mon(store, 'load', function(){
+	    me.mon(store, 'load', function() {
 		me.getSelectionModel().selectAll(false);
 	    });
 	}
@@ -291,10 +291,10 @@ Ext.define('PVE.form.VMComboSelector', {
 		    type: 'list',
 		    store: {
 			data: [
-			    {id: 'qemu', text: gettext('Virtual Machine')},
-			    {id: 'lxc', text: gettext('LXC Container')},
+			    { id: 'qemu', text: gettext('Virtual Machine') },
+			    { id: 'lxc', text: gettext('LXC Container') },
 			],
-			un: function(){}, // due to EXTJS-18711
+			un: function() {}, // due to EXTJS-18711
 		    },
 		},
 	    },

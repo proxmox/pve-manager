@@ -8,7 +8,7 @@ Ext.define('PVE.dc.PoolView', {
     stateful: true,
     stateId: 'grid-pools',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var store = new Ext.data.Store({
@@ -28,7 +28,7 @@ Ext.define('PVE.dc.PoolView', {
 	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/pools/',
-	    callback: function () {
+	    callback: function() {
 		reload();
 	    },
 	});

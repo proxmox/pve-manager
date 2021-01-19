@@ -1,7 +1,7 @@
 Ext.define('PVE.qemu.KeyboardEdit', {
     extend: 'Proxmox.window.Edit',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	Ext.applyIf(me, {

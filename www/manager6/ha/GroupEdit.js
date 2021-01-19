@@ -14,7 +14,7 @@ Ext.define('PVE.ha.GroupInputPanel', {
 	return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var update_nodefield, update_node_selection;
@@ -32,15 +32,15 @@ Ext.define('PVE.ha.GroupInputPanel', {
 	var data = PVE.data.ResourceStore.getNodes();
 
 	var store = Ext.create('Ext.data.Store', {
-	    fields: [ 'node', 'mem', 'cpu', 'priority' ],
+	    fields: ['node', 'mem', 'cpu', 'priority'],
 	    data: data,
 	    proxy: {
 		type: 'memory',
-		reader: {type: 'json'},
+		reader: { type: 'json' },
 	    },
 	    sorters: [
 		{
-		    property : 'node',
+		    property: 'node',
 		    direction: 'ASC',
 		},
 	    ],
@@ -98,11 +98,11 @@ Ext.define('PVE.ha.GroupInputPanel', {
 	    name: 'nodes',
 	    value: '',
 	    listeners: {
-		change: function (nodefield, value) {
+		change: function(nodefield, value) {
 		    update_node_selection(value);
 		},
 	    },
-	    isValid: function () {
+	    isValid: function() {
 		var value = nodefield.getValue();
 		return (value && 0 !== value.length);
 	    },
@@ -111,7 +111,7 @@ Ext.define('PVE.ha.GroupInputPanel', {
 	update_node_selection = function(string) {
 	    sm.deselectAll(true);
 
-	    string.split(',').forEach(function (e, idx, array) {
+	    string.split(',').forEach(function(e, idx, array) {
 		var res = e.split(':');
 
 		store.each(function(record) {
@@ -125,7 +125,6 @@ Ext.define('PVE.ha.GroupInputPanel', {
 		});
 	    });
 	    nodegrid.reconfigure(store);
-
 	};
 
 	update_nodefield = function(selected) {
@@ -195,7 +194,7 @@ Ext.define('PVE.ha.GroupEdit', {
 
     groupId: undefined,
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.isCreate = !me.groupId;
@@ -215,14 +214,14 @@ Ext.define('PVE.ha.GroupEdit', {
 
 	Ext.apply(me, {
             subject: gettext('HA Group'),
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();
 
 	if (!me.isCreate) {
 	    me.load({
-		success:  function(response, options) {
+		success: function(response, options) {
 		    var values = response.result.data;
 
 		    ipanel.setValues(values);

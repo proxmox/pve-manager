@@ -19,18 +19,18 @@ Ext.define('PVE.form.NodeSelector', {
     valueField: 'node',
     displayField: 'node',
     store: {
-	    fields: [ 'node', 'cpu', 'maxcpu', 'mem', 'maxmem', 'uptime' ],
+	    fields: ['node', 'cpu', 'maxcpu', 'mem', 'maxmem', 'uptime'],
 	    proxy: {
 		type: 'proxmox',
 		url: '/api2/json/nodes',
 	    },
 	    sorters: [
 		{
-		    property : 'node',
+		    property: 'node',
 		    direction: 'ASC',
 		},
 		{
-		    property : 'mem',
+		    property: 'mem',
 		    direction: 'DESC',
 		},
 	    ],
@@ -111,7 +111,7 @@ Ext.define('PVE.form.NodeSelector', {
 	    },
 	}));
 
-	me.mon(me.getStore(), 'load', function(){
+	me.mon(me.getStore(), 'load', function() {
 	    me.isValid();
 	});
     },

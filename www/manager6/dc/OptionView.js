@@ -65,7 +65,7 @@ Ext.define('PVE.dc.OptionView', {
 	    .join(',');
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var caps = Ext.state.Manager.get('GuiCap');
@@ -130,7 +130,7 @@ Ext.define('PVE.dc.OptionView', {
 		deleteEmpty: false,
 		value: '__default__',
 		comboItems: [
-		    ['__default__', Proxmox.Utils.defaultText + ' (conditional)' ],
+		    ['__default__', Proxmox.Utils.defaultText + ' (conditional)'],
 		    ['freeze', 'freeze'],
 		    ['failover', 'failover'],
 		    ['migrate', 'migrate'],

@@ -24,7 +24,7 @@ Ext.define('PVE.window.Snapshot', {
 	return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 	var vm = me.getViewModel();
 
@@ -113,7 +113,7 @@ Ext.define('PVE.window.Snapshot', {
 		    model: 'KeyValue',
 		    sorters: [
 			{
-			    property : 'key',
+			    property: 'key',
 			    direction: 'ASC',
 			},
 		    ],

@@ -8,7 +8,7 @@ Ext.define('PVE.sdn.StatusView', {
 	status: 3,
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.rstore) {
@@ -79,10 +79,8 @@ Ext.define('PVE.sdn.StatusView', {
 
 	me.on('activate', me.rstore.startUpdate);
 	me.on('destroy', me.rstore.stopUpdate);
-
     },
 }, function() {
-
     Ext.define('pve-sdn-status', {
 	extend: 'Ext.data.Model',
 	fields: [
@@ -90,5 +88,4 @@ Ext.define('PVE.sdn.StatusView', {
 	],
 	idProperty: 'id',
     });
-
 });

@@ -91,7 +91,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	this.callParent([values]);
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -194,7 +194,7 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	    xtype: 'proxmoxcheckbox',
 	    name: 'pveceph',
 	    reference: 'pvecephRef',
-	    bind : {
+	    bind: {
 		disabled: '{!pvecephPossible}',
 		value: '{pveceph}',
 	    },

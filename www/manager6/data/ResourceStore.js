@@ -15,7 +15,7 @@ Ext.define('PVE.data.ResourceStore', {
 	var nodes = [];
 	me.each(function(record) {
 	    if (record.get('type') == "node") {
-		nodes.push( record.getData() );
+		nodes.push(record.getData());
 	    }
 	});
 
@@ -282,7 +282,7 @@ Ext.define('PVE.data.ResourceStore', {
 	var fields = [];
 	var fieldNames = [];
 	Ext.Object.each(field_defaults, function(key, value) {
-	    var field = {name: key, type: value.type};
+	    var field = { name: key, type: value.type };
 	    if (Ext.isDefined(value.convert)) {
 		field.convert = value.convert;
 	    }

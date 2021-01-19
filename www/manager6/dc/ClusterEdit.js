@@ -243,7 +243,6 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		linkEditor.setInfoText();
 		if (links.length == 1 && joinInfo.ring_addr !== undefined &&
 		    joinInfo.ring_addr[0] === joinInfo.ipAddress) {
-
 		    links[0].allowBlank = true;
 		    links[0].emptyText = gettext("IP resolved by node's hostname");
 		}

@@ -23,7 +23,7 @@ Ext.define('PVE.panel.StartupInputPanel', {
 	}
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.items = [
@@ -59,10 +59,9 @@ Ext.define('PVE.window.StartupEdit', {
     alias: 'widget.pveWindowStartupEdit',
     onlineHelp: undefined,
 
-    initComponent : function() {
-
+    initComponent: function() {
 	var me = this;
-	var ipanelConfig = me.onlineHelp ? {onlineHelp: me.onlineHelp} : {};
+	var ipanelConfig = me.onlineHelp ? { onlineHelp: me.onlineHelp } : {};
 	var ipanel = Ext.create('PVE.panel.StartupInputPanel', ipanelConfig);
 
 	Ext.applyIf(me, {
@@ -70,7 +69,7 @@ Ext.define('PVE.window.StartupEdit', {
 	    fieldDefaults: {
 		labelWidth: 120,
 	    },
-	    items: [ ipanel ],
+	    items: [ipanel],
 	});
 
 	me.callParent();

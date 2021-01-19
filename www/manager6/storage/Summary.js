@@ -29,13 +29,13 @@ Ext.define('PVE.storage.Summary', {
 	    throw "no storage ID specified";
 	}
 
-	var rstore  = Ext.create('Proxmox.data.ObjectStore', {
+	var rstore = Ext.create('Proxmox.data.ObjectStore', {
 	    url: "/api2/json/nodes/" + nodename + "/storage/" + storage + "/status",
 	    interval: 1000,
 	});
 
 	var rrdstore = Ext.create('Proxmox.data.RRDStore', {
-	    rrdurl:  "/api2/json/nodes/" + nodename + "/storage/" + storage + "/rrddata",
+	    rrdurl: "/api2/json/nodes/" + nodename + "/storage/" + storage + "/rrddata",
 	    model: 'pve-rrd-storage',
 	});
 

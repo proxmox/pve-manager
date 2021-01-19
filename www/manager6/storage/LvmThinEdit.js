@@ -28,7 +28,7 @@ Ext.define('PVE.storage.TPoolSelector', {
 	me.vg = myvg;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -36,7 +36,7 @@ Ext.define('PVE.storage.TPoolSelector', {
 	}
 
 	var store = Ext.create('Ext.data.Store', {
-	    fields: [ 'lv' ],
+	    fields: ['lv'],
 	    proxy: {
 		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/lvmthin',
@@ -64,7 +64,7 @@ Ext.define('PVE.storage.BaseVGSelector', {
     displayField: 'vg',
     queryMode: 'local',
     editable: false,
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -73,7 +73,7 @@ Ext.define('PVE.storage.BaseVGSelector', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    autoLoad: {},
-	    fields: [ 'vg', 'size', 'free'],
+	    fields: ['vg', 'size', 'free'],
 	    proxy: {
 		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/scan/lvm',
@@ -96,7 +96,7 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 
     onlineHelp: 'storage_lvmthin',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.column1 = [];

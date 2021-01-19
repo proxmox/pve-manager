@@ -1,6 +1,6 @@
 Ext.define('pve-groups', {
     extend: 'Ext.data.Model',
-    fields: [ 'groupid', 'comment', 'users' ],
+    fields: ['groupid', 'comment', 'users'],
     proxy: {
 	type: 'proxmox',
 	url: "/api2/json/access/groups",

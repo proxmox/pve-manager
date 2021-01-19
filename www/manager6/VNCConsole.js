@@ -29,7 +29,7 @@ Ext.define('PVE.noVncConsole', {
 
 	// always use same iframe, to avoid running several noVnc clients
 	// at same time (to avoid performance problems)
-	var box = Ext.create('Ext.ux.IFrame', { itemid : "vncconsole" });
+	var box = Ext.create('Ext.ux.IFrame', { itemid: "vncconsole" });
 
 	var type = me.xtermjs ? 'xtermjs' : 'novnc';
 	Ext.apply(me, {

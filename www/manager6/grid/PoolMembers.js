@@ -4,8 +4,7 @@ Ext.define('PVE.pool.AddVM', {
     height: 400,
     isAdd: true,
     isCreate: true,
-    initComponent : function() {
-
+    initComponent: function() {
 	var me = this;
 
 	if (!me.pool) {
@@ -88,7 +87,7 @@ Ext.define('PVE.pool.AddVM', {
 	});
 	Ext.apply(me, {
 	    subject: gettext('Virtual Machine'),
-	    items: [ vmsField, vmGrid ],
+	    items: [vmsField, vmGrid],
 	});
 
 	me.callParent();
@@ -99,8 +98,7 @@ Ext.define('PVE.pool.AddVM', {
 Ext.define('PVE.pool.AddStorage', {
     extend: 'Proxmox.window.Edit',
 
-    initComponent : function() {
-
+    initComponent: function() {
 	var me = this;
 
 	if (!me.pool) {
@@ -121,7 +119,7 @@ Ext.define('PVE.pool.AddStorage', {
 		    name: 'storage',
 		    nodename: 'localhost',
 		    autoSelect: false,
-		    value:  '',
+		    value: '',
 		    fieldLabel: gettext("Storage"),
 		},
 	    ],
@@ -140,7 +138,7 @@ Ext.define('PVE.grid.PoolMembers', {
     stateful: true,
     stateId: 'grid-pool-members',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.pool) {
@@ -151,7 +149,7 @@ Ext.define('PVE.grid.PoolMembers', {
 	    model: 'PVEResources',
 	    sorters: [
 		{
-		    property : 'type',
+		    property: 'type',
 		    direction: 'ASC',
 		},
 	    ],
@@ -174,7 +172,7 @@ Ext.define('PVE.grid.PoolMembers', {
 	    text: gettext('Remove'),
 	    disabled: true,
 	    selModel: sm,
-	    confirmMsg: function (rec) {
+	    confirmMsg: function(rec) {
 		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
 					 "'" + rec.data.id + "'");
 	    },
@@ -196,7 +194,7 @@ Ext.define('PVE.grid.PoolMembers', {
 		    callback: function() {
 			reload();
 		    },
-		    failure: function (response, opts) {
+		    failure: function(response, opts) {
 			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		    },
 		});

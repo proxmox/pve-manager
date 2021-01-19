@@ -30,10 +30,10 @@ Ext.define('PVE.window.LoginWindow', {
 	    sp.set(saveunField.getStateId(), saveunField.getValue());
 
 	    form.submit({
-		failure: function(f, resp){
+		failure: function(f, resp) {
 		    me.failure(resp);
 		},
-		success: function(f, resp){
+		success: function(f, resp) {
 		    view.el.unmask();
 
 		    var data = resp.result.data;
@@ -52,7 +52,6 @@ Ext.define('PVE.window.LoginWindow', {
 		    }
 		},
 	    });
-
 	},
 	failure: function(resp) {
 	    var me = this;
@@ -175,7 +174,7 @@ Ext.define('PVE.window.LoginWindow', {
 		    var checked = sp.get(checkboxField.getStateId());
 		    checkboxField.setValue(checked);
 
-		    if(checked === true) {
+		    if (checked === true) {
 			var username = sp.get(unField.getStateId());
 			unField.setValue(username);
 			var pwField = this.lookupReference('passwordField');

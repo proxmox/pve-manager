@@ -80,7 +80,7 @@ Ext.define('PVE.ClusterAdministration', {
 		    vm.set('isInCluster', !!data.totem.cluster_name);
 		    vm.set('nodelist', data.nodelist);
 
-		    var nodeinfo = Ext.Array.findBy(data.nodelist, function (el) {
+		    var nodeinfo = Ext.Array.findBy(data.nodelist, function(el) {
 			return el.name === data.preferred_node;
 		    });
 

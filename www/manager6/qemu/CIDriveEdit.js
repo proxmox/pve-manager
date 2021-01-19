@@ -28,7 +28,7 @@ Ext.define('PVE.qemu.CIDriveInputPanel', {
 	me.down('#drive').setVMConfig(config, 'cdrom');
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.drive = {};
@@ -60,7 +60,7 @@ Ext.define('PVE.qemu.CIDriveEdit', {
     isCreate: true,
     subject: gettext('CloudInit Drive'),
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;

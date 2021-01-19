@@ -29,12 +29,12 @@ Ext.define('PVE.form.IPProtocolSelector', {
 	],
     },
     store: {
-	    fields: [ 'p', 'd', 'n'],
+	    fields: ['p', 'd', 'n'],
 	    data: [
 		{ p: 'tcp', n: 6, d: 'Transmission Control Protocol' },
 		{ p: 'udp', n: 17, d: 'User Datagram Protocol' },
 		{ p: 'icmp', n: 1, d: 'Internet Control Message Protocol' },
-		{ p: 'igmp', n: 2,  d: 'Internet Group Management' },
+		{ p: 'igmp', n: 2, d: 'Internet Group Management' },
 		{ p: 'ggp', n: 3, d: 'gateway-gateway protocol' },
 		{ p: 'ipencap', n: 4, d: 'IP encapsulated in IP' },
 		{ p: 'st', n: 5, d: 'ST datagram mode' },

@@ -26,7 +26,7 @@ Ext.define('PVE.form.IPRefSelector', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    autoLoad: true,
-	    fields: [ 'type', 'name', 'ref', 'comment' ],
+	    fields: ['type', 'name', 'ref', 'comment'],
 	    idProperty: 'ref',
 	    proxy: {
 		type: 'proxmox',

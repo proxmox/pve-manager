@@ -55,7 +55,7 @@ Ext.define('PVE.Workspace', {
         me.login.show();
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	Ext.tip.QuickTipManager.init();
@@ -104,7 +104,6 @@ Ext.define('PVE.Workspace', {
 	    },
 	    interval: 15*60*1000,
 	});
-
     },
 });
 
@@ -129,13 +128,12 @@ Ext.define('PVE.StdWorkspace', {
 	    cont.add(comp);
 	    if (cur !== null && lay.getNext()) {
 		lay.next();
-		var task = Ext.create('Ext.util.DelayedTask', function(){
+		var task = Ext.create('Ext.util.DelayedTask', function() {
 		    cont.remove(cur);
 		});
 		task.delay(10);
 	    }
-	}
-	else {
+	} else {
 	    // helper for cleaning the content when logging out
 	    cont.removeAll();
 	}
@@ -202,7 +200,7 @@ Ext.define('PVE.StdWorkspace', {
 	ui.updateLayout();
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	Ext.History.init();
@@ -432,7 +430,7 @@ Ext.define('PVE.StdWorkspace', {
 		    margin: '0 0 0 5',
 		    split: true,
 		    width: 200,
-		    items: [ selview, rtree ],
+		    items: [selview, rtree],
 		    listeners: {
 			resize: function(panel, width, height) {
 			    var viewWidth = me.getSize().width;
@@ -448,12 +446,12 @@ Ext.define('PVE.StdWorkspace', {
 		    stateId: 'pvesouth',
 		    itemId: 'south',
 		    region: 'south',
-		    margin:'0 5 5 5',
+		    margin: '0 5 5 5',
 		    title: gettext('Logs'),
 		    collapsible: true,
 		    header: false,
 		    height: 200,
-		    split:true,
+		    split: true,
 		    listeners: {
 			resize: function(panel, width, height) {
 			    var viewHeight = me.getSize().height;
@@ -471,10 +469,10 @@ Ext.define('PVE.StdWorkspace', {
 	me.updateUserInfo();
 
 	// on resize, center all modal windows
-	Ext.on('resize', function(){
+	Ext.on('resize', function() {
 	    var wins = Ext.ComponentQuery.query('window[modal]');
 	    if (wins.length > 0) {
-		wins.forEach(function(win){
+		wins.forEach(function(win) {
 		    win.alignTo(me, 'c-c');
 		});
 	    }

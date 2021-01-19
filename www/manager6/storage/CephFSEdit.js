@@ -17,7 +17,7 @@ Ext.define('PVE.storage.CephFSInputPanel', {
 	this.callParent([values]);
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	if (!me.nodename) {
@@ -55,7 +55,7 @@ Ext.define('PVE.storage.CephFSInputPanel', {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'username',
 		value: 'admin',
-		bind:  {
+		bind: {
 		    disabled: '{pveceph}',
 		    submitValue: '{!pveceph}',
 		},
@@ -80,7 +80,7 @@ Ext.define('PVE.storage.CephFSInputPanel', {
 	    xtype: 'proxmoxcheckbox',
 	    name: 'pveceph',
 	    reference: 'pvecephRef',
-	    bind : {
+	    bind: {
 		disabled: '{!pvecephPossible}',
 		value: '{pveceph}',
 	    },
