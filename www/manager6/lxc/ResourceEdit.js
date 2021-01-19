@@ -140,7 +140,7 @@ Ext.define('PVE.lxc.MemoryInputPanel', {
 	} else {
 	    me.items = items;
 	}
- 
+
 	me.callParent();
     }
 });

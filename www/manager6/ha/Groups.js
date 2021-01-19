@@ -14,12 +14,12 @@ Ext.define('PVE.ha.GroupsView', {
 
 	var store = new Ext.data.Store({
 	    model: 'pve-ha-groups',
-	    sorters: { 
-		property: 'group', 
-		order: 'DESC' 
+	    sorters: {
+		property: 'group',
+		order: 'DESC'
 	    }
 	});
-	
+
 	var reload = function() {
 	    store.load();
 	};
@@ -43,7 +43,7 @@ Ext.define('PVE.ha.GroupsView', {
 		reload();
 	    }
 	});
-	
+
 	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,

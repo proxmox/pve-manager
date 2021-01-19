@@ -78,7 +78,7 @@ Ext.define('PVE.sdn.StatusView', {
 	me.callParent();
 
 	me.on('activate', me.rstore.startUpdate);
-	me.on('destroy', me.rstore.stopUpdate);	
+	me.on('destroy', me.rstore.stopUpdate);
 
     }
 }, function() {

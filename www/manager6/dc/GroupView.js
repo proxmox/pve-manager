@@ -13,9 +13,9 @@ Ext.define('PVE.dc.GroupView', {
 
 	var store = new Ext.data.Store({
 	    model: 'pve-groups',
-	    sorters: { 
-		property: 'groupid', 
-		order: 'DESC' 
+	    sorters: {
+		property: 'groupid',
+		order: 'DESC'
 	    }
 	});
 

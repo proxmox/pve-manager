@@ -48,7 +48,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	var i, confid;
 
 	var nodename = me.pveSelNode.data.node;
-	if (!nodename) { 
+	if (!nodename) {
 	    throw "no node name specified";
 	}
 
@@ -93,7 +93,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    sockets: {
 		header: gettext('Processors'),
 		never_delete: true,
-		editor: (caps.vms['VM.Config.CPU'] || caps.vms['VM.Config.HWType']) ? 
+		editor: (caps.vms['VM.Config.CPU'] || caps.vms['VM.Config.HWType']) ?
 		    'PVE.qemu.ProcessorEdit' : undefined,
 		tdCls: 'pve-itype-icon-processor',
 		group: 3,
@@ -151,7 +151,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		iconCls: 'desktop',
 		group:5,
 		defaultValue: '',
-		renderer: PVE.Utils.render_kvm_vga_driver		
+		renderer: PVE.Utils.render_kvm_vga_driver
 	    },
 	    machine: {
 		header: gettext('Machine'),
@@ -318,7 +318,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    if ((g1 - g2) !== 0) {
 		return g1 - g2;
 	    }
-	    
+
 	    if ((order1 - order2) !== 0) {
 		return order1 - order2;
 	    }
@@ -612,7 +612,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    interval: 5000,
 	    selModel: sm,
 	    run_editor: run_editor,
-	    tbar: [ 
+	    tbar: [
 		{
 		    text: gettext('Add'),
 		    menu: new Ext.menu.Menu({

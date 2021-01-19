@@ -7,11 +7,11 @@ Ext.define('PVE.tree.ResourceTree', {
 
     statics: {
 	typeDefaults: {
-	    node: { 
+	    node: {
 		iconCls: 'fa fa-building',
 		text: gettext('Nodes')
 	    },
-	    pool: { 
+	    pool: {
 		iconCls: 'fa fa-tags',
 		text: gettext('Resource Pool')
 	    },
@@ -205,7 +205,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		    }
 		}
 		groupinfo.leaf = false;
-		groupinfo.groupbyid = v; 
+		groupinfo.groupbyid = v;
 		group = me.addChildSorted(node, groupinfo);
 	    }
 	    if (info.type === groupby) {
@@ -275,7 +275,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		if (index.hasOwnProperty(key)) {
 		    var olditem = index[key];
 
-		    // getById() use find(), which is slow (ExtJS4 DP5) 
+		    // getById() use find(), which is slow (ExtJS4 DP5)
 		    //var item = rstore.getById(olditem.data.id);
 		    var item = rstore.data.get(olditem.data.id);
 
@@ -497,7 +497,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	me.callParent();
 
 	var sm = me.getSelectionModel();
-	sm.on('select', function(sm, n) {		    
+	sm.on('select', function(sm, n) {
 	    sp.set(stateid, { value: n.data.id});
 	});
 

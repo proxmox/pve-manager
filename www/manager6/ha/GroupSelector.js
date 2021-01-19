@@ -30,9 +30,9 @@ Ext.define('PVE.ha.GroupSelector', {
     },
     store: {
 	    model: 'pve-ha-groups',
-	    sorters: { 
-		property: 'group', 
-		order: 'DESC' 
+	    sorters: {
+		property: 'group',
+		order: 'DESC'
 	    }
     },
 
@@ -46,7 +46,7 @@ Ext.define('PVE.ha.GroupSelector', {
 
     Ext.define('pve-ha-groups', {
 	extend: 'Ext.data.Model',
-	fields: [ 
+	fields: [
 	    'group', 'type', 'digest', 'nodes', 'comment',
 	    {
 		name : 'restricted',

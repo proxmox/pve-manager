@@ -16,9 +16,9 @@ Ext.define('PVE.dc.UserView', {
 	var store = new Ext.data.Store({
             id: "users",
 	    model: 'pve-users',
-	    sorters: { 
-		property: 'userid', 
-		order: 'DESC' 
+	    sorters: {
+		property: 'userid',
+		order: 'DESC'
 	    }
 	});
 
@@ -41,7 +41,7 @@ Ext.define('PVE.dc.UserView', {
 		reload();
 	    }
         });
- 
+
 	var run_editor = function() {
 	    var rec = sm.getSelection()[0];
 	    if (!rec || !caps.access['User.Modify']) {
@@ -161,7 +161,7 @@ Ext.define('PVE.dc.UserView', {
 		    header: gettext('Expire'),
 		    width: 80,
 		    sortable: true,
-		    renderer: Proxmox.Utils.format_expire, 
+		    renderer: Proxmox.Utils.format_expire,
 		    dataIndex: 'expire'
 		},
 		{

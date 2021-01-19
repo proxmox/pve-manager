@@ -37,7 +37,7 @@ Ext.define('PVE.ha.ResourcesView', {
 		if (msg) {
 		    metaData.tdCls = 'proxmox-invalid-row';
 		    var html = '<p>' +  Ext.htmlEncode(msg) + '</p>';
-		    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' + 
+		    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' +
 			html.replace(/\"/g,'&quot;') + '"';
 		}
 	    }
@@ -49,7 +49,7 @@ Ext.define('PVE.ha.ResourcesView', {
 	var run_editor = function() {
 	    var rec = sm.getSelection()[0];
 	    var sid = rec.data.sid;
-	    
+
 	    var regex =  /^(\S+):(\S+)$/;
 	    var res = regex.exec(sid);
 
@@ -58,7 +58,7 @@ Ext.define('PVE.ha.ResourcesView', {
 	    }
 	    var guestType = res[1];
 	    var vmid = res[2];
-	    
+
             var win = Ext.create('PVE.ha.VMResourceEdit',{
                 guestType: guestType,
                 vmid: vmid
@@ -78,7 +78,7 @@ Ext.define('PVE.ha.ResourcesView', {
 		reload();
 	    }
 	});
-	
+
 	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,

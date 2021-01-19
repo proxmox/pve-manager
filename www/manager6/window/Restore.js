@@ -124,7 +124,7 @@ Ext.define('PVE.window.Restore', {
 		},
 		success: function(response, options) {
 		    var upid = response.result.data;
-		    
+
 		    var win = Ext.create('Proxmox.window.TaskViewer', {
 			upid: upid
 		    });

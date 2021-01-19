@@ -24,8 +24,8 @@ Ext.define('PVE.dc.Support', {
 
     updateActive: function(data) {
 	var me = this;
-	
-	var html = '<h1>' + data.productname + '</h1>' + me.activeHtml; 
+
+	var html = '<h1>' + data.productname + '</h1>' + me.activeHtml;
 	html += '<br><br>' + me.docuHtml();
 	html += '<br><br>' + me.bugzillaHtml;
 
@@ -35,13 +35,13 @@ Ext.define('PVE.dc.Support', {
     updateCommunity: function(data) {
 	var me = this;
 
-	var html = '<h1>' + data.productname + '</h1>' + me.communityHtml; 
+	var html = '<h1>' + data.productname + '</h1>' + me.communityHtml;
 	html += '<br><br>' + me.docuHtml();
 	html += '<br><br>' + me.bugzillaHtml;
 
 	me.update(html);
     },
-	 
+
     updateInactive: function(data) {
 	var me = this;
 	me.update(me.invalidHtml);

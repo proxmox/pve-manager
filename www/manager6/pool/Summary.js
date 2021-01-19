@@ -28,7 +28,7 @@ Ext.define('PVE.pool.Summary', {
 	});
 
 	me.on('activate', rstore.startUpdate);
-	me.on('destroy', rstore.stopUpdate);	
+	me.on('destroy', rstore.stopUpdate);
 
 	me.callParent();
     }

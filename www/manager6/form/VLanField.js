@@ -5,11 +5,11 @@ Ext.define('PVE.form.VlanField', {
     deleteEmpty: false,
 
     emptyText: 'no VLAN',
-    
+
     fieldLabel: gettext('VLAN Tag'),
 
     allowBlank: true,
-    
+
     getSubmitData: function() {
         var me = this,
             data = null,

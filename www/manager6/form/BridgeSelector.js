@@ -61,7 +61,7 @@ Ext.define('PVE.form.BridgeSelector', {
 	var me = this;
 
 	var nodename = me.nodename;
-	me.nodename = undefined; 
+	me.nodename = undefined;
 
         me.callParent();
 

@@ -21,7 +21,7 @@ Ext.define('PVE.dc.Log', {
 
 	var store = Ext.create('Proxmox.data.DiffStore', {
 	    rstore: logstore,
-	    appendAtStart: true 
+	    appendAtStart: true
 	});
 
 	Ext.apply(me, {
@@ -31,7 +31,7 @@ Ext.define('PVE.dc.Log', {
 	    viewConfig: {
 		trackOver: false,
 		stripeRows: true,
- 
+
 		getRowClass: function(record, index) {
 		    var pri = record.get('pri');
 
@@ -42,46 +42,46 @@ Ext.define('PVE.dc.Log', {
 	    },
 	    sortableColumns: false,
 	    columns: [
-		{ 
-		    header: gettext("Time"), 
+		{
+		    header: gettext("Time"),
 		    dataIndex: 'time',
 		    width: 150,
-		    renderer: function(value) { 
-			return Ext.Date.format(value, "M d H:i:s"); 
+		    renderer: function(value) {
+			return Ext.Date.format(value, "M d H:i:s");
 		    }
 		},
-		{ 
-		    header: gettext("Node"), 
+		{
+		    header: gettext("Node"),
 		    dataIndex: 'node',
 		    width: 150
 		},
-		{ 
-		    header: gettext("Service"), 
+		{
+		    header: gettext("Service"),
 		    dataIndex: 'tag',
 		    width: 100
 		},
-		{ 
-		    header: "PID", 
+		{
+		    header: "PID",
 		    dataIndex: 'pid',
-		    width: 100 
+		    width: 100
 		},
-		{ 
-		    header: gettext("User name"), 
+		{
+		    header: gettext("User name"),
 		    dataIndex: 'user',
 		    renderer: Ext.String.htmlEncode,
 		    width: 150
 		},
-		{ 
-		    header: gettext("Severity"), 
+		{
+		    header: gettext("Severity"),
 		    dataIndex: 'pri',
 		    renderer: PVE.Utils.render_serverity,
-		    width: 100 
+		    width: 100
 		},
-		{ 
-		    header: gettext("Message"), 
+		{
+		    header: gettext("Message"),
 		    dataIndex: 'msg',
 		    renderer: Ext.String.htmlEncode,
-		    flex: 1	  
+		    flex: 1
 		}
 	    ],
 	    listeners: {

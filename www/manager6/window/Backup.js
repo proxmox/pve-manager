@@ -106,7 +106,7 @@ Ext.define('PVE.window.Backup', {
 			me.hide();
 
 			var upid = response.result.data;
-			
+
 			var win = Ext.create('Proxmox.window.TaskViewer', {
 			    upid: upid,
 			    listeners: {
@@ -127,7 +127,7 @@ Ext.define('PVE.window.Backup', {
 	    hidden: false
 	});
 
-	var title = gettext('Backup') + " " + 
+	var title = gettext('Backup') + " " +
 	    ((me.vmtype === 'lxc') ? "CT" : "VM") +
 	    " " + me.vmid;
 

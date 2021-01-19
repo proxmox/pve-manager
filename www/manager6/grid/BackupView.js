@@ -54,9 +54,9 @@ Ext.define('PVE.grid.BackupView', {
 
 	me.store = Ext.create('Ext.data.Store', {
 	    model: 'pve-storage-content',
-	    sorters: { 
-		property: 'volid', 
-		order: 'DESC' 
+	    sorters: {
+		property: 'volid',
+		order: 'DESC'
 	    },
 	    filters: [
 	        vmtypeFilter,
@@ -147,7 +147,7 @@ Ext.define('PVE.grid.BackupView', {
 	var backup_btn = Ext.create('Ext.button.Button', {
 	    text: gettext('Backup now'),
 	    handler: function() {
-		var win = Ext.create('PVE.window.Backup', { 
+		var win = Ext.create('PVE.window.Backup', {
 		    nodename: nodename,
 		    vmid: vmid,
 		    vmtype: vmtype,

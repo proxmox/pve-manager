@@ -45,7 +45,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 	    data.networkmode = 'bridge';
 	}
 	me.network = data;
-	
+
 	me.setValues(me.network);
     },
 
@@ -177,8 +177,8 @@ Ext.define('PVE.qemu.NetworkEdit', {
 	var me = this;
 
 	var nodename = me.pveSelNode.data.node;
-	if (!nodename) { 
-	    throw "no node name specified";	    
+	if (!nodename) {
+	    throw "no node name specified";
 	}
 
 	me.isCreate = me.confid ? false : true;

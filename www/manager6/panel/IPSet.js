@@ -348,7 +348,7 @@ Ext.define('PVE.IPSetGrid', {
 		if (msg) {
 		    metaData.tdCls = 'proxmox-invalid-row';
 		    var html = '<p>' +  Ext.htmlEncode(msg) + '</p>';
-		    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' + 
+		    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' +
 			html.replace(/\"/g,'&quot;') + '"';
 		}
 	    }

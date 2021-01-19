@@ -40,8 +40,8 @@ Ext.define('PVE.window.Wizard', {
 
 	var tabs = me.items || [];
 	delete me.items;
-	
-	/* 
+
+	/*
 	 * Items may have the following functions:
 	 * validator(): per tab custom validation
 	 * onSubmit(): submit handler
@@ -90,14 +90,14 @@ Ext.define('PVE.window.Wizard', {
 	var tabchange = function(tp, newcard, oldcard) {
 	    if (newcard.onSubmit) {
 		me.down('#next').setVisible(false);
-		me.down('#submit').setVisible(true); 
+		me.down('#submit').setVisible(true);
 	    } else {
 		me.down('#next').setVisible(true);
-		me.down('#submit').setVisible(false); 
+		me.down('#submit').setVisible(false);
 	    }
 	    var valid = check_card(newcard);
-	    me.down('#next').setDisabled(!valid);    
-	    me.down('#submit').setDisabled(!valid);    
+	    me.down('#next').setDisabled(!valid);
+	    me.down('#submit').setDisabled(!valid);
 	    me.down('#back').setDisabled(tp.items.indexOf(newcard) == 0);
 
 	    var idx = tp.items.indexOf(newcard);

@@ -13,9 +13,9 @@ Ext.define('PVE.dc.PoolView', {
 
 	var store = new Ext.data.Store({
 	    model: 'pve-pools',
-	    sorters: { 
-		property: 'poolid', 
-		order: 'DESC' 
+	    sorters: {
+		property: 'poolid',
+		order: 'DESC'
 	    }
 	});
 

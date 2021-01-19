@@ -21,8 +21,8 @@ Ext.define('PVE.SecurityGroupEdit', {
 
         me.url = '/api2/extjs' + me.base_url;
         me.method = 'POST';
-	
-	var items = [	    
+
+	var items = [
 	    {
 		xtype: 'textfield',
 		name: 'group',
@@ -52,7 +52,7 @@ Ext.define('PVE.SecurityGroupEdit', {
 	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	// InputPanel does not have a 'create' property, does it need a 'isCreate'
 	    isCreate: me.isCreate,
-	    items: items 
+	    items: items
 	});
 
 

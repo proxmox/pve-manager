@@ -41,7 +41,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 	var updateGrid = function() {
 
 	    var filterfn = me.viewFilter ? me.viewFilter.filterfn : null;
-	    
+
 	    //console.log("START GRID UPDATE " +  me.viewFilter);
 
 	    store.suspendEvents();
@@ -91,8 +91,8 @@ Ext.define('PVE.grid.ResourceGrid', {
 	    for (key in nodeidx) {
 		if (nodeidx.hasOwnProperty(key)) {
 		    var item = nodeidx[key];
-		
-		    // getById() use find(), which is slow (ExtJS4 DP5) 
+
+		    // getById() use find(), which is slow (ExtJS4 DP5)
 		    //var olditem = store.getById(item.data.id);
 		    var olditem = store.data.get(item.data.id);
 
@@ -119,7 +119,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 		    }
 		    if (changes) {
 			olditem.endEdit(true);
-			olditem.commit(true); 
+			olditem.commit(true);
 		    }
 		}
 	    }
@@ -141,8 +141,8 @@ Ext.define('PVE.grid.ResourceGrid', {
 	    updateGrid();
 	});
 
-	var load_cb = function() { 
-	    updateGrid(); 
+	var load_cb = function() {
+	    updateGrid();
 	};
 
 	Ext.apply(me, {
@@ -150,7 +150,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 	    stateful: true,
 	    stateId: 'grid-resource',
 	    tbar: [
-		'->', 
+		'->',
 		gettext('Search') + ':', ' ',
 		{
 		    xtype: 'textfield',

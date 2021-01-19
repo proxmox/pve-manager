@@ -5,7 +5,7 @@ Ext.define('PVE.panel.StatusPanel', {
     extend: 'Ext.tab.Panel',
     alias: 'widget.pveStatusPanel',
 
-    
+
     //title: "Logs",
     //tabPosition: 'bottom',
 
@@ -58,7 +58,7 @@ Ext.define('PVE.panel.StatusPanel', {
 
 	sp.on('statechange', statechange);
 	me.on('destroy', function() {
-	    sp.un('statechange', statechange);		    
+	    sp.un('statechange', statechange);
 	});
 
     }

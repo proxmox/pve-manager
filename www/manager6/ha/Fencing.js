@@ -41,7 +41,7 @@ Ext.define('PVE.ha.FencingView', {
 
     Ext.define('pve-ha-fencing', {
 	extend: 'Ext.data.Model',
-	fields: [ 
+	fields: [
 	    'node', 'command', 'digest'
 	]
     });

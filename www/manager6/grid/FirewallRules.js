@@ -66,7 +66,7 @@ Ext.define('PVE.FirewallRulePanel', {
 	});
 
 	delete values.modified_marker;
- 
+
 	return values;
     },
 
@@ -80,7 +80,7 @@ Ext.define('PVE.FirewallRulePanel', {
 	me.column1 = [
 	    {
 		// hack: we use this field to mark the form 'dirty' when the
-		// record has errors- so that the user can safe the unmodified 
+		// record has errors- so that the user can safe the unmodified
 		// form again.
 		xtype: 'hiddenfield',
 		name: 'modified_marker',
@@ -148,7 +148,7 @@ Ext.define('PVE.FirewallRulePanel', {
 	    }
 	);
 
-	
+
 	me.column2 = [
 	    {
 		xtype: 'proxmoxcheckbox',
@@ -430,7 +430,7 @@ Ext.define('PVE.FirewallRules', {
     moveRule: function(from, to) {
         var me = this;
 
-	if (!me.base_url) { 
+	if (!me.base_url) {
 	    return;
 	}
 
@@ -451,7 +451,7 @@ Ext.define('PVE.FirewallRules', {
     updateRule: function(rule) {
         var me = this;
 
-	if (!me.base_url) { 
+	if (!me.base_url) {
 	    return;
 	}
 
@@ -578,7 +578,7 @@ Ext.define('PVE.FirewallRules', {
 
 	if (me.allow_groups) {
 	    me.groupBtn =  Ext.create('Ext.Button', {
-		text: gettext('Insert') + ': ' + 
+		text: gettext('Insert') + ': ' +
 		    gettext('Security Group'),
 		disabled: true,
 		handler: function() {
@@ -618,7 +618,7 @@ Ext.define('PVE.FirewallRules', {
 	    if (errors && errors[name]) {
 		metaData.tdCls = 'proxmox-invalid-row';
 		var html = '<p>' +  Ext.htmlEncode(errors[name]) + '</p>';
-		metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' + 
+		metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' +
 		    html.replace(/\"/g,'&quot;') + '"';
 	    }
 	    return value;

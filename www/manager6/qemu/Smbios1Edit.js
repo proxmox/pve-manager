@@ -20,7 +20,7 @@ Ext.define('PVE.qemu.Smbios1InputPanel', {
 	var me = this;
 
 	me.smbios1 = data;
-	
+
 	me.setValues(me.smbios1);
     },
 

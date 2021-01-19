@@ -41,7 +41,7 @@ Ext.define('PVE.lxc.Options', {
 		header: gettext('Start/Shutdown order'),
 		defaultValue: '',
 		renderer: PVE.Utils.render_kvm_startup,
-		editor: caps.vms['VM.Config.Options'] && caps.nodes['Sys.Modify'] ? 
+		editor: caps.vms['VM.Config.Options'] && caps.nodes['Sys.Modify'] ?
 		    {
 			xtype: 'pveWindowStartupEdit',
 			onlineHelp: 'pct_startup_and_shutdown'

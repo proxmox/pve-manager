@@ -2,7 +2,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     onlineHelp: 'ha_manager_resource_config',
     vmid: undefined,
-    
+
     onGetValues: function(values) {
 	var me = this;
 
@@ -146,7 +146,7 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 	    },
 	    fewVotesHint
 	];
-	
+
 	me.callParent();
     }
 });
@@ -160,7 +160,7 @@ Ext.define('PVE.ha.VMResourceEdit', {
 
     initComponent : function() {
 	var me = this;
- 
+
 	if (me.isCreate === undefined) {
 	    me.isCreate = !me.vmid;
 	}
@@ -185,7 +185,7 @@ Ext.define('PVE.ha.VMResourceEdit', {
 	    isAdd: true,
 	    items: [ ipanel ]
 	});
-	
+
 	me.callParent();
 
 	if (!me.isCreate) {
@@ -201,7 +201,7 @@ Ext.define('PVE.ha.VMResourceEdit', {
 		    }
 
 		    values.vmid = res[2];
-		    
+
 		    ipanel.setValues(values);
 		}
 	    });

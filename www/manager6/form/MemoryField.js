@@ -24,7 +24,7 @@ Ext.define('PVE.form.MemoryField', {
 	if (!me.hotplug) {
 	    return { up: value + me.step, down: value - me.step };
 	}
-	
+
 	var dimm_size = 512;
 	var prev_dimm_size = 0;
 	var min_size = 1024;
@@ -41,7 +41,7 @@ Ext.define('PVE.form.MemoryField', {
 		    value_up = current_size + dimm_size;
 		    value_down = current_size - ((i === 0) ? prev_dimm_size : dimm_size);
 		}
-		current_size += dimm_size;				
+		current_size += dimm_size;
 	    }
 	    prev_dimm_size = dimm_size;
 	    dimm_size = dimm_size*2;

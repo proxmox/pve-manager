@@ -167,7 +167,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    cdata.ip6 = '';
 	    cdata.gw6 = '';
 	}
-	
+
 	me.column2 = [
 	    {
 		layout: {

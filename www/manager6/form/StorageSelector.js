@@ -58,7 +58,7 @@ Ext.define('PVE.form.StorageSelector', {
 	});
 
 	me.store.load();
- 
+
     },
 
     setTargetNode: function(targetNode) {
@@ -89,13 +89,13 @@ Ext.define('PVE.form.StorageSelector', {
 	var me = this;
 
 	var nodename = me.nodename;
-	me.nodename = undefined; 
+	me.nodename = undefined;
 
 	var store = Ext.create('Ext.data.Store', {
 	    model: 'pve-storage-status',
 	    sorters: {
-		property: 'storage', 
-		order: 'DESC' 
+		property: 'storage',
+		order: 'DESC'
 	    }
 	});
 

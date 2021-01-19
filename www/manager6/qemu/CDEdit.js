@@ -8,7 +8,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	var me = this;
 
 	var confid = me.confid || (values.controller + values.deviceid);
-	
+
 	me.drive.media = 'cdrom';
 	if (values.mediaType === 'iso') {
 	    me.drive.file = values.cdimage;
@@ -19,10 +19,10 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	}
 
 	var params = {};
-		
+
 	params[confid] = PVE.Parser.printQemuDrive(me.drive);
-	
-	return params;	
+
+	return params;
     },
 
     setVMConfig: function(vmconfig) {
@@ -107,7 +107,7 @@ Ext.define('PVE.qemu.CDInputPanel', {
 	    labelAlign: 'right',
 	    allowBlank: false
 	});
-	
+
 	me.cdstoragesel = Ext.create('PVE.form.StorageSelector', {
 	    name: 'cdstorage',
 	    nodename: me.nodename,
@@ -172,7 +172,7 @@ Ext.define('PVE.qemu.CDEdit', {
 	});
 
 	me.callParent();
-	
+
 	me.load({
 	    success:  function(response, options) {
 		ipanel.setVMConfig(response.result.data);

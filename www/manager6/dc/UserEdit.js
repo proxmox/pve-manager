@@ -31,9 +31,9 @@ Ext.define('PVE.dc.UserEdit', {
 	    return true;
 	};
 
-	verifypw = Ext.createWidget('textfield', { 
+	verifypw = Ext.createWidget('textfield', {
 	    inputType: 'password',
-	    fieldLabel: gettext('Confirm password'), 
+	    fieldLabel: gettext('Confirm password'),
 	    name: 'verifypassword',
 	    submitValue: false,
 	    disabled: true,
@@ -41,9 +41,9 @@ Ext.define('PVE.dc.UserEdit', {
 	    validator: validate_pw
 	});
 
-	pwfield = Ext.createWidget('textfield', { 
+	pwfield = Ext.createWidget('textfield', {
 	    inputType: 'password',
-	    fieldLabel: gettext('Password'), 
+	    fieldLabel: gettext('Password'),
 	    minLength: 5,
 	    name: 'password',
 	    disabled: true,
@@ -170,7 +170,7 @@ Ext.define('PVE.dc.UserEdit', {
             url: url,
             method: method,
 	    fieldDefaults: {
-		labelWidth: 110 // for spanish translation 
+		labelWidth: 110 // for spanish translation
 	    },
 	    items: [ ipanel ]
         });

@@ -79,7 +79,7 @@ Ext.define('PVE.window.StartupEdit', {
 	    success: function(response, options) {
 		var i, confid;
 		me.vmconfig = response.result.data;
-		ipanel.setStartup(me.vmconfig.startup);		    
+		ipanel.setStartup(me.vmconfig.startup);
 	    }
 	});
     }

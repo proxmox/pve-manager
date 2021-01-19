@@ -153,7 +153,7 @@ Ext.define('PVE.storage.LVMInputPanel', {
 
 	me.column1.push(vgnameField);
 
-	// here value is an array, 
+	// here value is an array,
 	// while before it was a string
 	me.column1.push({
 	    xtype: 'pveContentTypeSelector',

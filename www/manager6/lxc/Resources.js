@@ -20,7 +20,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	var i, confid;
 
 	var nodename = me.pveSelNode.data.node;
-	if (!nodename) { 
+	if (!nodename) {
 	    throw "no node name specified";
 	}
 
@@ -249,7 +249,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    revert_btn.setDisabled(!pending);
 
 	};
-	
+
 	var sorterFn = function(rec1, rec2) {
 	    var v1 = rec1.data.key;
 	    var v2 = rec2.data.key;

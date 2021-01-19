@@ -73,7 +73,7 @@ Ext.define('PVE.qemu.Monitor', {
 		method: 'POST',
 		waitMsgTarget: me,
 		success: function(response, opts) {
-		    var res = response.result.data; 
+		    var res = response.result.data;
 		    Ext.Array.each(res.split('\n'), function(line) {
 			addLine(Ext.htmlEncode(line));
 		    });
@@ -144,7 +144,7 @@ Ext.define('PVE.qemu.Monitor', {
 		    field.focus(false, true);
 		}
 	    }
-	});		
+	});
 
 	me.callParent();
     }

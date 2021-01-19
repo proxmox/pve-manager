@@ -185,7 +185,7 @@ Ext.define('PVE.ha.GroupInputPanel', {
 	    },
 	    nodegrid
 	];
-	
+
 	me.callParent();
     }
 });
@@ -197,7 +197,7 @@ Ext.define('PVE.ha.GroupEdit', {
 
     initComponent : function() {
 	var me = this;
- 
+
 	me.isCreate = !me.groupId;
 
 	if (me.isCreate) {
@@ -217,7 +217,7 @@ Ext.define('PVE.ha.GroupEdit', {
             subject: gettext('HA Group'),
 	    items: [ ipanel ]
 	});
-	
+
 	me.callParent();
 
 	if (!me.isCreate) {
