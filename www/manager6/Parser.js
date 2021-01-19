@@ -595,7 +595,7 @@ Ext.define('PVE.Parser', {
 	    return undefined;
 	} else if (value === 'x!oath') {
 	    return 'totp';
-	} else if (!!(match = value.match(/^x!(.+)$/))) {
+	} else if (match = value.match(/^x!(.+)$/)) {
 	    return match[1];
 	} else {
 	    return 1;

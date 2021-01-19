@@ -44,7 +44,7 @@ Ext.define('PVE.dc.RoleView', {
 		return;
 	    }
 
-	    if (!!rec.data.special) {
+	    if (rec.data.special) {
 		return;
 	    }
 

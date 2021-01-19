@@ -169,7 +169,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 		listeners: {
 		    change: function(field, value) {
 			var mf = me.down('field[name=multifunction]');
-			if (!!value) {
+			if (value) {
 			    mf.setValue(false);
 			}
 			mf.setDisabled(!!value);

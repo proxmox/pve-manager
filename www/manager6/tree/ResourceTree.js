@@ -375,8 +375,8 @@ Ext.define('PVE.tree.ResourceTree', {
 	    // select parent node is selection vanished
 	    if (lastsel && !rootnode.findChild('id', lastsel.data.id, true)) {
 		lastsel = rootnode;
-		while (!!(p = parents.shift())) {
-		    if (!!(tmp = rootnode.findChild('id', p.data.id, true))) {
+		while (p = parents.shift()) {
+		    if (tmp = rootnode.findChild('id', p.data.id, true)) {
 			lastsel = tmp;
 			break;
 		    }
@@ -461,7 +461,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		if (!sm.isSelected(node)) {
 		    sm.select(node);
 		    var cn = node;
-		    while (!!(cn = cn.parentNode)) {
+		    while (cn = cn.parentNode) {
 			if (!cn.isExpanded()) {
 			    cn.expand();
 			}

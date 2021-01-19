@@ -191,7 +191,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 			listeners: {
 			    change: function(cb, value) {
 				me.down('field[name=ip]').setEmptyText(
-				    !!value ? Proxmox.Utils.NoneText : "",
+				    value ? Proxmox.Utils.NoneText : "",
 				);
 				me.down('field[name=ip]').setDisabled(!value);
 				me.down('field[name=gw]').setDisabled(!value);
@@ -253,7 +253,7 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 			listeners: {
 			    change: function(cb, value) {
 				me.down('field[name=ip6]').setEmptyText(
-				    !!value ? Proxmox.Utils.NoneText : "",
+				    value ? Proxmox.Utils.NoneText : "",
 				);
 				me.down('field[name=ip6]').setDisabled(!value);
 				me.down('field[name=gw6]').setDisabled(!value);
