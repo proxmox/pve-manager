@@ -278,6 +278,7 @@ Ext.define('PVE.qemu.Options', {
 		    xtype: 'proxmoxWindowEdit',
 		    subject: gettext('Qemu Agent'),
 		    width: 350,
+		    onlineHelp: 'qm_qemu_agent',
 		    items: {
 			xtype: 'pveAgentFeatureSelector',
 			name: 'agent',
