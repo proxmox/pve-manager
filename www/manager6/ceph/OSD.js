@@ -348,7 +348,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		    view.setRootNode(data.root);
 		    view.expandAll();
 		    if (name) {
-			let node = me.getRootNode().findChild('name', name, true);
+			let node = view.getRootNode().findChild('name', name, true);
 			if (node) {
 			    view.setSelection([node]);
 			}
