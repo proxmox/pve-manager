@@ -94,7 +94,7 @@ __PACKAGE__->register_method ({
 	    { name => 'crush' },
 	    { name => 'config' },
 	    { name => 'log' },
-	    { name => 'disks' },
+	    { name => 'disks' }, # FIXME: remove with 7.0
 	    { name => 'flags' }, # FIXME: remove with 7.0
 	    { name => 'rules' },
 	];
@@ -102,6 +102,7 @@ __PACKAGE__->register_method ({
 	return $result;
     }});
 
+# FIXME: Remove with PVE 7.0
 __PACKAGE__->register_method ({
     name => 'disks',
     path => 'disks',
