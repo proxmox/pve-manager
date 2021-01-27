@@ -22,6 +22,7 @@ my $init_report_cmds = sub {
 		'pvesubscription get',
 		'cat /etc/apt/sources.list',
 		sub { dir2text('/etc/apt/sources.list.d/', '.*list') },
+		sub { dir2text('/etc/apt/sources.list.d/', '.*sources') },
 		'lscpu',
 		'pvesh get /cluster/resources --type node --output-format=yaml',
 	    ],
