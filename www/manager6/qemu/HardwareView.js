@@ -561,6 +561,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    const noSysConsolePerm = !caps.nodes['Sys.Console'];
 	    const noVMConfigHWTypePerm = !caps.vms['VM.Config.HWType'];
 	    const noVMConfigNetPerm = !caps.vms['VM.Config.Network'];
+	    const noVMConfigDiskPerm = !caps.vms['VM.Config.Disk'];
 
 
 	    me.down('#addusb').setDisabled(noSysConsolePerm || isAtLimit('usb'));
@@ -569,7 +570,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    me.down('#addserial').setDisabled(noVMConfigHWTypePerm || isAtLimit('serial'));
 	    me.down('#addnet').setDisabled(noVMConfigNetPerm || isAtLimit('net'));
 	    me.down('#addrng').setDisabled(noSysConsolePerm || isAtLimit('rng'));
-	    efidisk_menuitem.setDisabled(isAtLimit('efidisk'));
+	    efidisk_menuitem.setDisabled(noVMConfigDiskPerm || isAtLimit('efidisk'));
 	    me.down('#addci').setDisabled(noSysConsolePerm || hasCloudInit);
 
 	    if (!rec) {
