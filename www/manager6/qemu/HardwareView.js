@@ -558,9 +558,9 @@ Ext.define('PVE.qemu.HardwareView', {
 	    });
 
 	    // heuristic only for disabling some stuff, the backend has the final word.
-	    var noSysConsolePerm = !caps.nodes['Sys.Console'];
-	    var noVMConfigHWTypePerm = !caps.vms['VM.Config.HWType'];
-	    var noVMConfigNetPerm = !caps.vms['VM.Config.Network'];
+	    const noSysConsolePerm = !caps.nodes['Sys.Console'];
+	    const noVMConfigHWTypePerm = !caps.vms['VM.Config.HWType'];
+	    const noVMConfigNetPerm = !caps.vms['VM.Config.Network'];
 
 
 	    me.down('#addusb').setDisabled(noSysConsolePerm || isAtLimit('usb'));
