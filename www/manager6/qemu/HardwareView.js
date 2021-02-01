@@ -593,11 +593,11 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    var isEfi = key === 'efidisk0';
 
-	    remove_btn.setDisabled(rec.data.delete || rowdef.never_delete === true || isUnusedDisk && !diskCap);
+	    remove_btn.setDisabled(rec.data.delete || rowdef.never_delete === true || (isUnusedDisk && !diskCap));
 	    remove_btn.setText(isUsedDisk && !isCloudInit ? remove_btn.altText : remove_btn.defaultText);
 	    remove_btn.RESTMethod = isUnusedDisk ? 'POST':'PUT';
 
-	    edit_btn.setDisabled(rec.data.delete || !rowdef.editor || isCloudInit || !isCDRom && !diskCap);
+	    edit_btn.setDisabled(rec.data.delete || !rowdef.editor || isCloudInit || (!isCDRom && !diskCap));
 
 	    resize_btn.setDisabled(pending || !isUsedDisk || !diskCap);
 
