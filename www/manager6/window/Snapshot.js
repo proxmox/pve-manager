@@ -139,7 +139,7 @@ Ext.define('PVE.window.Snapshot', {
 	if (me.isCreate) {
 	    subject = (me.type === 'qemu' ? 'VM' : 'CT') + me.vmid + ' ' + gettext('Snapshot');
 	    me.method = 'POST';
-	    me.showProgress = true;
+	    me.showTaskViewer = true;
 	} else {
 	    subject = `${gettext('Snapshot')} ${me.snapname}`;
 	    me.url += `/${me.snapname}/config`;
