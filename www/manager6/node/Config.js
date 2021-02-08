@@ -278,6 +278,7 @@ Ext.define('PVE.node.Config', {
 		    expandedOnInit: true,
 		    iconCls: 'fa fa-hdd-o',
 		    nodename: nodename,
+		    includePartitions: true,
 		},
 		{
 		    xtype: 'pveLVMList',
