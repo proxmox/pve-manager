@@ -610,7 +610,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	};
 
 	Ext.apply(me, {
-	    url: '/api2/json/' + 'nodes/' + nodename + '/qemu/' + vmid + '/pending',
+	    url: `/api2/json/nodes/${nodename}/qemu/${vmid}/pending`,
 	    interval: 5000,
 	    selModel: sm,
 	    run_editor: run_editor,
