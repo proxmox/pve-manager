@@ -225,7 +225,6 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 10,
 		iconCls: 'hdd-o',
 		editor: 'PVE.qemu.HDEdit',
-		never_delete: !caps.vms['VM.Config.Disk'],
 		isOnStorageBus: true,
 		header: gettext('Hard Disk') + ' (' + confid +')',
 		cdheader: gettext('CD/DVD Drive') + ' (' + confid +')',
@@ -596,12 +595,21 @@ Ext.define('PVE.qemu.HardwareView', {
 	    const isEfi = key === 'efidisk0';
 
 	    remove_btn.setDisabled(
-	        rec.data.delete || rowdef.never_delete === true || (isUnusedDisk && !diskCap),
+	        deleted ||
+	        row.never_delete ||
+	        (isCDRom && !cdromCap) ||
+	        (isDisk && !diskCap),
 	    );
 	    remove_btn.setText(isUsedDisk && !isCloudInit ? remove_btn.altText : remove_btn.defaultText);
 	    remove_btn.RESTMethod = isUnusedDisk ? 'POST':'PUT';
 
-	    edit_btn.setDisabled(rec.data.delete || !rowdef.editor || isCloudInit || (!isCDRom && !diskCap));
+	    edit_btn.setDisabled(
+	        deleted ||
+	        !row.editor ||
+	        isCloudInit ||
+	        (isCDRom && !cdromCap) ||
+	        (isDisk && !diskCap),
+	    );
 
 	    resize_btn.setDisabled(pending || !isUsedDisk || !diskCap);
 
@@ -637,7 +645,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    {
 				text: gettext('CD/DVD Drive'),
 				iconCls: 'pve-itype-icon-cdrom',
-				disabled: !caps.vms['VM.Config.Disk'],
+				disabled: !caps.vms['VM.Config.CDROM'],
 				handler: function() {
 				    let win = Ext.create('PVE.qemu.CDEdit', {
 					url: '/api2/extjs/' + baseurl,
