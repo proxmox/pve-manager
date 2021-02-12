@@ -45,7 +45,6 @@ Ext.define('PVE.qemu.HardwareView', {
 
     initComponent: function() {
 	var me = this;
-	var i, confid;
 
 	var nodename = me.pveSelNode.data.node;
 	if (!nodename) {
@@ -220,7 +219,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	};
 
 	PVE.Utils.forEachBus(undefined, function(type, id) {
-	    var confid = type + id;
+	    let confid = type + id;
 	    rows[confid] = {
 		group: 10,
 		iconCls: 'hdd-o',
@@ -232,8 +231,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		cloudheader: gettext('CloudInit Drive') + ' (' + confid + ')',
 	    };
 	});
-	for (i = 0; i < PVE.Utils.hardware_counts.net; i++) {
-	    confid = "net" + i.toString();
+	for (let i = 0; i < PVE.Utils.hardware_counts.net; i++) {
+	    let confid = "net" + i.toString();
 	    rows[confid] = {
 		group: 15,
 		order: i,
@@ -250,8 +249,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	    never_delete: !caps.vms['VM.Config.Disk'],
 	    header: gettext('EFI Disk'),
 	};
-	for (i = 0; i < PVE.Utils.hardware_counts.usb; i++) {
-	    confid = "usb" + i.toString();
+	for (let i = 0; i < PVE.Utils.hardware_counts.usb; i++) {
+	    let confid = "usb" + i.toString();
 	    rows[confid] = {
 		group: 25,
 		order: i,
@@ -261,8 +260,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('USB Device') + ' (' + confid + ')',
 	    };
 	}
-	for (i = 0; i < PVE.Utils.hardware_counts.hostpci; i++) {
-	    confid = "hostpci" + i.toString();
+	for (let i = 0; i < PVE.Utils.hardware_counts.hostpci; i++) {
+	    let confid = "hostpci" + i.toString();
 	    rows[confid] = {
 		group: 30,
 		order: i,
@@ -272,8 +271,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('PCI Device') + ' (' + confid + ')',
 	    };
 	}
-	for (i = 0; i < PVE.Utils.hardware_counts.serial; i++) {
-	    confid = "serial" + i.toString();
+	for (let i = 0; i < PVE.Utils.hardware_counts.serial; i++) {
+	    let confid = "serial" + i.toString();
 	    rows[confid] = {
 		group: 35,
 		order: i,
@@ -289,7 +288,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    never_delete: !caps.vms['VM.Config.HWType'],
 	    header: gettext('Audio Device'),
 	};
-	for (i = 0; i < 256; i++) {
+	for (let i = 0; i < 256; i++) {
 	    rows["unused" + i.toString()] = {
 		group: 99,
 		order: i,
@@ -531,8 +530,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	let isAtLimit = (type) => counts[type] >= PVE.Utils.hardware_counts[type];
 
 	var set_button_status = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
+	    var selection_model = me.getSelectionModel();
+	    var rec = selection_model.getSelection()[0];
 
 	    // en/disable hardwarebuttons
 	    counts = {};
