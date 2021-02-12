@@ -21,14 +21,12 @@ Ext.define('PVE.dc.TokenEdit', {
 	    let me = this;
 	    let win = me.up('pveDcTokenEdit');
 	    win.url = '/api2/extjs/access/users/';
-	    if (win.isCreate) {
-		let uid = encodeURIComponent(values.userid);
-		let tid = encodeURIComponent(values.tokenid);
-		delete values.userid;
-		delete values.tokenid;
+	    let uid = encodeURIComponent(values.userid);
+	    let tid = encodeURIComponent(values.tokenid);
+	    delete values.userid;
+	    delete values.tokenid;
 
-		win.url += `${uid}/token/${tid}`;
-	    }
+	    win.url += `${uid}/token/${tid}`;
 	    return values;
 	},
 	column1: [
@@ -36,8 +34,8 @@ Ext.define('PVE.dc.TokenEdit', {
 		xtype: 'pmxDisplayEditField',
 		cbind: {
 		    editable: (get) => get('isCreate') && !get('fixedUser'),
-		    submitValue: (get) => get('isCreate') || get('fixedUser'),
 		},
+		submitValue: true,
 		editConfig: {
 		    xtype: 'pveUserSelector',
 		    allowBlank: false,
@@ -54,6 +52,7 @@ Ext.define('PVE.dc.TokenEdit', {
 		},
 		name: 'tokenid',
 		fieldLabel: gettext('Token ID'),
+		submitValue: true,
 		minLength: 2,
 		allowBlank: false,
 	    },
