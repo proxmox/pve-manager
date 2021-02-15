@@ -1177,6 +1177,27 @@ sub option_exists {
     return defined($confdesc->{$key});
 }
 
+# NOTE it might make sense to merge this and verify_vzdump_parameters(), but one
+# needs to adapt command_line() in guest-common's PVE/VZDump/Common.pm and detect
+# a second parsing attempt, because verify_vzdump_parameters() is called twice
+# during the update_job API call.
+sub parse_mailto_exclude_path {
+    my ($param) = @_;
+
+    # exclude-path list need to be 0 separated
+    if (defined($param->{'exclude-path'})) {
+	my @expaths = split(/\0/, $param->{'exclude-path'} || '');
+	$param->{'exclude-path'} = [ @expaths ];
+    }
+
+    if (defined($param->{mailto})) {
+	my @mailto = PVE::Tools::split_list(extract_param($param, 'mailto'));
+	$param->{mailto} = [ @mailto ];
+    }
+
+    return;
+}
+
 sub verify_vzdump_parameters {
     my ($param, $check_missing) = @_;
 

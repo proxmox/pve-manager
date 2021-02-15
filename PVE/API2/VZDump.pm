@@ -88,16 +88,7 @@ __PACKAGE__->register_method ({
 	# silent exit if specified VMs run on other nodes
 	return "OK" if !scalar(@{$local_vmids}) && !$param->{all};
 
-	# exclude-path list need to be 0 separated
-	if (defined($param->{'exclude-path'})) {
-	    my @expaths = split(/\0/, $param->{'exclude-path'} || '');
-	    $param->{'exclude-path'} = [ @expaths ];
-	}
-
-	if (defined($param->{mailto})) {
-	    my @mailto = PVE::Tools::split_list(extract_param($param, 'mailto'));
-	    $param->{mailto} = [ @mailto ];
-	}
+	PVE::VZDump::parse_mailto_exclude_path($param);
 
 	die "you can only backup a single VM with option --stdout\n"
 	    if $param->{stdout} && scalar(@{$local_vmids}) != 1;
