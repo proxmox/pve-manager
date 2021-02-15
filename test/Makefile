@@ -18,14 +18,14 @@ replication%.t: replication_test%.pl
 test-mail:
 	./mail_test.pl
 
-test-vzdump: test-vzdump-guest-included test-vzdump-retention
+test-vzdump: test-vzdump-guest-included test-vzdump-new
 
-.PHONY: test-vzdump-guest-included test-vzdump-retention
+.PHONY: test-vzdump-guest-included test-vzdump-new
 test-vzdump-guest-included:
 	./vzdump_guest_included_test.pl
 
-test-vzdump-retention:
-	./vzdump_new_retention_test.pl
+test-vzdump-new:
+	./vzdump_new_test.pl
 
 .PHONY: install
 install:
