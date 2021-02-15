@@ -73,7 +73,7 @@ $pve_tools_module->mock(
     },
 );
 
-my @tested_options = qw(prune-backups remove);
+my $tested_options;
 
 # each test consists of the following:
 # name          - unique name for the test
@@ -81,7 +81,13 @@ my @tested_options = qw(prune-backups remove);
 # storage_param - parameters for the mocked storage configuration
 # vzdump_param  - parameters for the mocked /etc/vzdump.conf
 # expected      - expected options
+#
+# To begin testing for different options, use a fake test like the first one
 my @tests = (
+    {
+	description => 'BEGIN RETENTION TESTS',
+	tested_options => ['prune-backups', 'remove'],
+    },
     {
 	description => 'no params',
 	expected => {
@@ -464,11 +470,174 @@ my @tests = (
 	    remove => 0,
 	},
     },
+    {
+	description => 'BEGIN MAILTO TESTS',
+	tested_options => ['mailto'],
+    },
+    {
+	description => 'mailto vzdump 1',
+	vzdump_param => {
+	    'mailto' => 'developer@proxmox.com',
+	},
+	expected => {
+	    'mailto' => [
+		'developer@proxmox.com',
+	    ],
+	},
+    },
+    {
+	description => 'mailto vzdump 2',
+	vzdump_param => {
+	    'mailto' => 'developer@proxmox.com admin@proxmox.com',
+	},
+	expected => {
+	    'mailto' => [
+		'developer@proxmox.com',
+		'admin@proxmox.com',
+	    ],
+	},
+    },
+    {
+	description => 'mailto vzdump 3',
+	vzdump_param => {
+	    'mailto' => 'developer@proxmox.com,admin@proxmox.com',
+	},
+	expected => {
+	    'mailto' => [
+		'developer@proxmox.com',
+		'admin@proxmox.com',
+	    ],
+	},
+    },
+    {
+	description => 'mailto vzdump 4',
+	vzdump_param => {
+	    'mailto' => 'developer@proxmox.com, admin@proxmox.com',
+	},
+	expected => {
+	    'mailto' => [
+		'developer@proxmox.com',
+		'admin@proxmox.com',
+	    ],
+	},
+    },
+    {
+	description => 'mailto vzdump 5',
+	vzdump_param => {
+	    'mailto' => ' ,,; developer@proxmox.com, ; admin@proxmox.com ',
+	},
+	expected => {
+	    'mailto' => [
+		'developer@proxmox.com',
+		'admin@proxmox.com',
+	    ],
+	},
+    },
+    {
+	description => 'mailto vzdump 6',
+	vzdump_param => {
+	    'mailto' => '',
+	},
+	expected => {
+	    'mailto' => [],
+	},
+    },
+    {
+	description => 'mailto CLI 1',
+	cli_param => {
+	    'mailto' => 'developer@proxmox.com',
+	},
+	expected => {
+	    'mailto' => [
+		'developer@proxmox.com',
+	    ],
+	},
+    },
+    {
+	description => 'mailto CLI 2',
+	cli_param => {
+	    'mailto' => 'developer@proxmox.com admin@proxmox.com',
+	},
+	expected => {
+	    'mailto' => [
+		'developer@proxmox.com',
+		'admin@proxmox.com',
+	    ],
+	},
+    },
+    {
+	description => 'mailto CLI 3',
+	cli_param => {
+	    'mailto' => 'developer@proxmox.com,admin@proxmox.com',
+	},
+	expected => {
+	    'mailto' => [
+		'developer@proxmox.com',
+		'admin@proxmox.com',
+	    ],
+	},
+    },
+    {
+	description => 'mailto CLI 4',
+	cli_param => {
+	    'mailto' => 'developer@proxmox.com, admin@proxmox.com',
+	},
+	expected => {
+	    'mailto' => [
+		'developer@proxmox.com',
+		'admin@proxmox.com',
+	    ],
+	},
+    },
+    {
+	description => 'mailto CLI 5',
+	cli_param => {
+	    'mailto' => ' ,,; developer@proxmox.com, ; admin@proxmox.com ',
+	},
+	expected => {
+	    'mailto' => [
+		'developer@proxmox.com',
+		'admin@proxmox.com',
+	    ],
+	},
+    },
+    {
+	description => 'mailto both 1',
+	vzdump_param => {
+	    'mailto' => 'developer@proxmox.com',
+	},
+	cli_param => {
+	    'mailto' => 'admin@proxmox.com',
+	},
+	expected => {
+	    'mailto' => [
+		'admin@proxmox.com',
+	    ],
+	},
+    },
+    {
+	description => 'mailto both 2',
+	vzdump_param => {
+	    'mailto' => 'developer@proxmox.com',
+	},
+	cli_param => {
+	    'mailto' => '',
+	},
+	expected => {
+	    'mailto' => [],
+	},
+    },
 );
 
 plan tests => scalar @tests;
 
 foreach my $test (@tests) {
+    if (defined($test->{tested_options})) {
+	$tested_options = $test->{tested_options};
+	ok(1, $test->{description});
+	next;
+    }
+
     prepare_storage_config($test->{storage_param});
     prepare_vzdump_config($test->{vzdump_param});
 
@@ -477,6 +646,7 @@ foreach my $test (@tests) {
 
     my $got = eval {
 	PVE::VZDump::verify_vzdump_parameters($test->{cli_param}, 1);
+	PVE::VZDump::parse_mailto_exclude_path($test->{cli_param});
 
 	my $vzdump = PVE::VZDump->new('fake cmdline', $test->{cli_param}, undef);
 
@@ -484,7 +654,7 @@ foreach my $test (@tests) {
 	die "maxfiles is defined" if defined($opts->{maxfiles});
 
 	my $res = {};
-	foreach my $opt (@tested_options) {
+	foreach my $opt (@{$tested_options}) {
 	    next if !defined($opts->{$opt});
 	    $res->{$opt} = $opts->{$opt};
 	}
