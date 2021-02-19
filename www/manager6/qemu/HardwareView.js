@@ -46,20 +46,21 @@ Ext.define('PVE.qemu.HardwareView', {
     initComponent: function() {
 	var me = this;
 
-	var nodename = me.pveSelNode.data.node;
+	const nodename = me.pveSelNode.data.node;
 	if (!nodename) {
 	    throw "no node name specified";
 	}
 
-	var vmid = me.pveSelNode.data.vmid;
+	const vmid = me.pveSelNode.data.vmid;
 	if (!vmid) {
 	    throw "no VM ID specified";
 	}
 
-	var caps = Ext.state.Manager.get('GuiCap');
-	var diskCap = caps.vms['VM.Config.Disk'];
+	const caps = Ext.state.Manager.get('GuiCap');
+	const diskCap = caps.vms['VM.Config.Disk'];
+	const cdromCap = caps.vms['VM.Config.CDROM'];
 
-	var rows = {
+	let rows = {
 	    memory: {
 		header: gettext('Memory'),
 		editor: caps.vms['VM.Config.Memory'] ? 'PVE.qemu.MemoryEdit' : undefined,
@@ -562,7 +563,6 @@ Ext.define('PVE.qemu.HardwareView', {
 	    const noVMConfigNetPerm = !caps.vms['VM.Config.Network'];
 	    const noVMConfigDiskPerm = !caps.vms['VM.Config.Disk'];
 
-
 	    me.down('#addusb').setDisabled(noSysConsolePerm || isAtLimit('usb'));
 	    me.down('#addpci').setDisabled(noSysConsolePerm || isAtLimit('hostpci'));
 	    me.down('#addaudio').setDisabled(noVMConfigHWTypePerm || isAtLimit('audio'));
@@ -580,18 +580,20 @@ Ext.define('PVE.qemu.HardwareView', {
 		revert_btn.disable();
 		return;
 	    }
-	    var key = rec.data.key;
-	    var value = rec.data.value;
-	    var rowdef = rows[key];
+	    const key = rec.data.key;
+	    const value = rec.data.value;
+	    const row = rows[key];
 
-	    var pending = rec.data.delete || me.hasPendingChanges(key);
-	    var isCDRom = value && !!value.toString().match(/media=cdrom/);
-	    var isUnusedDisk = key.match(/^unused\d+/);
-	    var isUsedDisk = !isUnusedDisk && rowdef.isOnStorageBus && !isCDRom;
+	    const deleted = !!rec.data.delete;
+	    const pending = deleted || me.hasPendingChanges(key);
 
-	    var isCloudInit = value && value.toString().match(/vm-.*-cloudinit/);
+	    const isCloudInit = value && value.toString().match(/vm-.*-cloudinit/);
+	    const isCDRom = value && !!value.toString().match(/media=cdrom/) && !isCloudInit;
 
-	    var isEfi = key === 'efidisk0';
+	    const isUnusedDisk = key.match(/^unused\d+/);
+	    const isUsedDisk = !isUnusedDisk && row.isOnStorageBus && !isCDRom && !isCloudInit;
+	    const isDisk = isCloudInit || isUnusedDisk || isUsedDisk;
+	    const isEfi = key === 'efidisk0';
 
 	    remove_btn.setDisabled(
 	        rec.data.delete || rowdef.never_delete === true || (isUnusedDisk && !diskCap),
@@ -624,7 +626,7 @@ Ext.define('PVE.qemu.HardwareView', {
 				iconCls: 'fa fa-fw fa-hdd-o black',
 				disabled: !caps.vms['VM.Config.Disk'],
 				handler: function() {
-				    var win = Ext.create('PVE.qemu.HDEdit', {
+				    let win = Ext.create('PVE.qemu.HDEdit', {
 					url: '/api2/extjs/' + baseurl,
 					pveSelNode: me.pveSelNode,
 				    });
@@ -637,7 +639,7 @@ Ext.define('PVE.qemu.HardwareView', {
 				iconCls: 'pve-itype-icon-cdrom',
 				disabled: !caps.vms['VM.Config.Disk'],
 				handler: function() {
-				    var win = Ext.create('PVE.qemu.CDEdit', {
+				    let win = Ext.create('PVE.qemu.CDEdit', {
 					url: '/api2/extjs/' + baseurl,
 					pveSelNode: me.pveSelNode,
 				    });
