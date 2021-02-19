@@ -238,7 +238,7 @@ Ext.define('PVE.window.Settings', {
 		    {
 			xtype: 'displayfield',
 			fieldLabel: gettext('Saved User Name') + ':',
-			labelWidth: '150',
+			labelWidth: 150,
 			stateId: 'login-username',
 			reference: 'savedUserName',
 			flex: 1,
