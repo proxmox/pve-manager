@@ -1,3 +1,35 @@
+pve-manager (6.3-4) pve; urgency=medium
+
+  * pveceph: improve useability of 'status' command
+
+  * fix #3203: ui: VM hardware: use correct OS default model for network device
+    type
+
+  * ui: qemu: add the 'none' dummy audio driver as an option
+
+  * metric-status: InfluxDB: add support for InfluxDB 2.x HTTPs API
+
+  * metric-status plugin: do not test connection if disabled
+
+  * fix #3066: ui: Node summary: add hostcpu/hostmem ratio fields for guest
+    usage
+
+  * ui: disk list: include partitions
+
+  * ui: snapshot: show task viewer for progress log
+
+  * ui: window/Settings: fix labelWidth for saved user name
+
+  * ceph: extend error for wrong config-file link
+
+  * ui: safe destroy: Add HA to purge tooltip
+
+  * ui: dc/TokenEdit: fix editing existing tokens
+
+  * ui: qemu/HardwareView: fix CDRom permission checks
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 19 Feb 2021 17:53:32 +0100
+
 pve-manager (6.3-3) pve; urgency=medium
 
   * pvestatd: adapt to new CGRoup module path
