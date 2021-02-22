@@ -763,10 +763,12 @@ Ext.define('PVE.FirewallRules', {
 		dataIndex: 'comment',
 		flex: 6,
 		renderer: function(value, metaData, record) {
-		    let comment = render_errors('comment', Ext.util.Format.htmlEncode(value), metaData, record);
-		    return `<span data-qtip="${comment}">${comment}</span>`;
-},
-
+		    let comment = render_errors('comment', Ext.util.Format.htmlEncode(value), metaData, record) || '';
+		    if (comment.length * 12 > metaData.column.cellWidth) {
+			comment = `<span data-qtip="${comment}">${comment}</span>`;
+		    }
+		    return comment;
+		},
 	    },
 	);
 
