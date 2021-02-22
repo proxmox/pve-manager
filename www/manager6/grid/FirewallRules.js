@@ -643,7 +643,7 @@ Ext.define('PVE.FirewallRules', {
 	    },
 	    {
 		xtype: 'checkcolumn',
-		header: gettext('Enable'),
+		header: gettext('On'),
 		dataIndex: 'enable',
 		listeners: {
 		    checkchange: function(column, recordIndex, checked) {
@@ -659,8 +659,7 @@ Ext.define('PVE.FirewallRules', {
 			me.updateRule(data);
 		    },
 		},
-		minWidth: 50,
-		flex: 2,
+		width: 40,
 	    },
 	    {
 		header: gettext('Type'),
