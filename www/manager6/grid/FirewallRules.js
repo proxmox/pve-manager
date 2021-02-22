@@ -628,6 +628,7 @@ Ext.define('PVE.FirewallRules', {
 		dataIndex: 'pos',
 		resizable: false,
 		minWidth: 42,
+		maxWidth: 60,
 		flex: 1,
 		sortable: false,
 		align: 'right',
@@ -667,7 +668,8 @@ Ext.define('PVE.FirewallRules', {
 		renderer: function(value, metaData, record) {
 		    return render_errors('type', value, metaData, record);
 		},
-		minWidth: 50,
+		minWidth: 60,
+		maxWidth: 80,
 		flex: 2,
 	    },
 	    {
@@ -677,7 +679,8 @@ Ext.define('PVE.FirewallRules', {
 		    return render_errors('action', value, metaData, record);
 		},
 		minWidth: 80,
-		flex: 3,
+		maxWidth: 200,
+		flex: 2,
 	    },
 	    {
 		header: gettext('Macro'),
@@ -686,7 +689,7 @@ Ext.define('PVE.FirewallRules', {
 		    return render_errors('macro', value, metaData, record);
 		},
 		minWidth: 80,
-		flex: 3,
+		flex: 2,
 	    },
 	];
 
@@ -698,11 +701,19 @@ Ext.define('PVE.FirewallRules', {
 		    return render_errors('iface', value, metaData, record);
 		},
 		minWidth: 80,
-		flex: 3,
+		flex: 2,
 	    });
 	}
 
 	columns.push(
+	    {
+		header: gettext('Protocol'),
+		dataIndex: 'proto',
+		renderer: function(value, metaData, record) {
+		    return render_errors('proto', value, metaData, record);
+		},
+		width: 75,
+	    },
 	    {
 		header: gettext('Source'),
 		dataIndex: 'source',
@@ -710,7 +721,15 @@ Ext.define('PVE.FirewallRules', {
 		    return render_errors('source', value, metaData, record);
 		},
 		minWidth: 100,
-		flex: 4,
+		flex: 2,
+	    },
+	    {
+		header: gettext('S.Port'),
+		dataIndex: 'sport',
+		renderer: function(value, metaData, record) {
+		    return render_errors('sport', value, metaData, record);
+		},
+		width: 75,
 	    },
 	    {
 		header: gettext('Destination'),
@@ -719,34 +738,15 @@ Ext.define('PVE.FirewallRules', {
 		    return render_errors('dest', value, metaData, record);
 		},
 		minWidth: 100,
-		flex: 4,
+		flex: 2,
 	    },
 	    {
-		header: gettext('Protocol'),
-		dataIndex: 'proto',
-		renderer: function(value, metaData, record) {
-		    return render_errors('proto', value, metaData, record);
-		},
-		minWidth: 100,
-		flex: 3,
-	    },
-	    {
-		header: gettext('Dest. port'),
+		header: gettext('D.Port'),
 		dataIndex: 'dport',
 		renderer: function(value, metaData, record) {
 		    return render_errors('dport', value, metaData, record);
 		},
-		minWidth: 100,
-		flex: 4,
-	    },
-	    {
-		header: gettext('Source port'),
-		dataIndex: 'sport',
-		renderer: function(value, metaData, record) {
-		    return render_errors('sport', value, metaData, record);
-		},
-		minWidth: 100,
-		flex: 3,
+		width: 75,
 	    },
 	    {
 		header: gettext('Log level'),
@@ -754,13 +754,13 @@ Ext.define('PVE.FirewallRules', {
 		renderer: function(value, metaData, record) {
 		    return render_errors('log', value, metaData, record);
 		},
-		minWidth: 100,
-		flex: 3,
+		width: 100,
 	    },
 	    {
 		header: gettext('Comment'),
 		dataIndex: 'comment',
-		flex: 6,
+		flex: 10,
+		minWidth: 75,
 		renderer: function(value, metaData, record) {
 		    let comment = render_errors('comment', Ext.util.Format.htmlEncode(value), metaData, record) || '';
 		    if (comment.length * 12 > metaData.column.cellWidth) {
