@@ -460,7 +460,11 @@ sub new {
     $opts->{tmpdir} =~ s|/+$|| if ($opts->{tmpdir});
 
     $skiplist = [] if !$skiplist;
-    my $self = bless { cmdline => $cmdline, opts => $opts, skiplist => $skiplist };
+    my $self = bless {
+	cmdline => $cmdline,
+	opts => $opts,
+	skiplist => $skiplist,
+    }, $class;
 
     my $findexcl = $self->{findexcl} = [];
     if ($defaults->{'exclude-path'}) {
