@@ -339,24 +339,29 @@ sub sendmail {
     $html .= "<tr><td>VMID<td>NAME<td>STATUS<td>TIME<td>SIZE<td>FILENAME</tr>\n";
 
     my $ssize = 0;
-
     foreach my $task (@$tasklist) {
 	my $vmid = $task->{vmid};
 	my $name = $task->{hostname};
 
 	if  ($task->{state} eq 'ok') {
-
 	    $ssize += $task->{size};
 
-	    $html .= sprintf ("<tr><td>%s<td>%s<td>OK<td>%s<td align=right>%s<td>%s</tr>\n",
-				$vmid, $name,
-				format_time($task->{backuptime}),
-				format_size ($task->{size}),
-				escape_html ($task->{target}));
+	    $html .= sprintf (
+	        "<tr><td>%s<td>%s<td>OK<td>%s<td align=right>%s<td>%s</tr>\n",
+	        $vmid,
+	        $name,
+	        format_time($task->{backuptime}),
+	        format_size ($task->{size}),
+	        escape_html ($task->{target}),
+	    );
 	} else {
-	    $html .= sprintf ("<tr><td>%s<td>%s<td><font color=red>FAILED<td>%s<td colspan=2>%s</tr>\n",
-				$vmid, $name, format_time($task->{backuptime}),
-				escape_html ($task->{msg}));
+	    $html .= sprintf (
+	        "<tr><td>%s<td>%s<td><font color=red>FAILED<td>%s<td colspan=2>%s</tr>\n",
+	        $vmid,
+	        $name,
+	        format_time($task->{backuptime}),
+	        escape_html ($task->{msg}),
+	    );
 	}
     }
 
@@ -476,14 +481,15 @@ sub new {
     }
 
     if ($opts->{stdexcludes}) {
-	push @$findexcl, '/tmp/?*',
-	                 '/var/tmp/?*',
-	                 '/var/run/?*.pid';
+	push @$findexcl,
+	    '/tmp/?*',
+	    '/var/tmp/?*',
+	    '/var/run/?*.pid',
+	    ;
     }
 
     foreach my $p (@plugins) {
-
-	my $pd = $p->new ($self);
+	my $pd = $p->new($self);
 
 	push @{$self->{plugins}}, $pd;
     }
