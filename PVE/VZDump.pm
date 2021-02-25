@@ -319,15 +319,15 @@ sub sendmail {
 	    $text_log_part .= "$vmid: no log available\n\n";
 	    next;
 	}
-	if (open (TMP, "$log")) {
-	    while (my $line = <TMP>) {
+	if (open (my $TMP, '<', "$log")) {
+	    while (my $line = <$TMP>) {
 		next if $line =~ /^status: \d+/; # not useful in mails
 		$text_log_part .= encode8bit ("$vmid: $line");
 	    }
+	    close ($TMP);
 	} else {
 	    $text_log_part .= "$vmid: Could not open log file\n\n";
 	}
-	close (TMP);
 	$text_log_part .= "\n";
     }
     $text_log_part .= $detail_post if defined($detail_post);
@@ -377,8 +377,8 @@ sub sendmail {
 	    $html_log_part .= "$vmid: no log available\n\n";
 	    next;
 	}
-	if (open (TMP, "$log")) {
-	    while (my $line = <TMP>) {
+	if (open (my $TMP, '<', "$log")) {
+	    while (my $line = <$TMP>) {
 		next if $line =~ /^status: \d+/; # not useful in mails
 		if ($line =~ m/^\S+\s\d+\s+\d+:\d+:\d+\s+(ERROR|WARN):/) {
 		    $html_log_part .= encode8bit ("$vmid: <font color=red>".
@@ -387,10 +387,10 @@ sub sendmail {
 		    $html_log_part .= encode8bit ("$vmid: " . escape_html ($line));
 		}
 	    }
+	    close ($TMP);
 	} else {
 	    $html_log_part .= "$vmid: Could not open log file\n\n";
 	}
-	close (TMP);
 	$html_log_part .= "\n";
     }
     $html_log_part .= escape_html($detail_post) if defined($detail_post);
@@ -569,28 +569,27 @@ sub getlock {
 
     die "missing UPID" if !$upid; # should not happen
 
-    if (!open (SERVER_FLCK, ">>$lockfile")) {
+    my $SERVER_FLCK;
+    if (!open ($SERVER_FLCK, '>>', "$lockfile")) {
 	debugmsg ('err', "can't open lock on file '$lockfile' - $!", undef, 1);
 	die "can't open lock on file '$lockfile' - $!";
     }
 
-    if (!flock (SERVER_FLCK, LOCK_EX|LOCK_NB)) {
-
+    if (!flock ($SERVER_FLCK, LOCK_EX|LOCK_NB)) {
 	if (!$maxwait) {
 	    debugmsg ('err', "can't acquire lock '$lockfile' (wait = 0)", undef, 1);
 	    die "can't acquire lock '$lockfile' (wait = 0)";
 	}
 
 	debugmsg('info', "trying to get global lock - waiting...", undef, 1);
-
 	eval {
 	    alarm ($maxwait * 60);
 
 	    local $SIG{ALRM} = sub { alarm (0); die "got timeout\n"; };
 
-	    if (!flock (SERVER_FLCK, LOCK_EX)) {
+	    if (!flock ($SERVER_FLCK, LOCK_EX)) {
 		my $err = $!;
-		close (SERVER_FLCK);
+		close ($SERVER_FLCK);
 		alarm (0);
 		die "$err\n";
 	    }
