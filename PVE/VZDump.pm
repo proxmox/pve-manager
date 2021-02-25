@@ -1072,9 +1072,16 @@ sub exec_backup_task {
     if ($task->{tmplog}) {
 	if ($self->{opts}->{pbs}) {
 	    if ($task->{state} eq 'ok') {
-		my $param = [$pbs_snapshot_name, $task->{tmplog}];
-		PVE::Storage::PBSPlugin::run_raw_client_cmd(
-		    $opts->{scfg}, $opts->{storage}, 'upload-log', $param, errmsg => "upload log failed");
+		eval {
+		    PVE::Storage::PBSPlugin::run_raw_client_cmd(
+			$opts->{scfg},
+			$opts->{storage},
+			'upload-log',
+			[ $pbs_snapshot_name, $task->{tmplog} ],
+			errmsg => "uploading backup task log failed",
+		    );
+		};
+		debugmsg('warn', "$@") if $@; # $@ contains already error prefix
 	    }
 	} elsif ($task->{logfile}) {
 	    system {'cp'} 'cp', $task->{tmplog}, $task->{logfile};
