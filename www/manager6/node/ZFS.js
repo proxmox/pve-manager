@@ -294,7 +294,7 @@ Ext.define('PVE.node.ZFSStatus', {
 	me.rows = {
 	    scan: {
 		header: gettext('Scan'),
-		defaultValue: gettext('No information available (Pool has not been scrubbed yet?)'),
+		defaultValue: gettext('No Data'),
 	    },
 	    status: {
 		header: gettext('Status'),
