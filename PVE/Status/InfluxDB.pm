@@ -340,7 +340,7 @@ sub on_add_hook {
     if (defined($token)) {
 	set_credentials($id, $token);
     } else {
-	delete_credenetials($id);
+	delete_credentials($id);
     }
 
     return undef;
@@ -354,7 +354,7 @@ sub on_update_hook {
     if (defined($token)) {
 	set_credentials($id, $token);
     } else {
-	delete_credenetials($id);
+	delete_credentials($id);
     }
 
     return undef;
