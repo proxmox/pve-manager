@@ -74,6 +74,8 @@ Ext.define('PVE.storage.BackupView', {
 	    }
 	});
 
+	let isPBS = me.pluginType === 'pbs';
+
 	me.tbar = [
 	    {
 		xtype: 'proxmoxButton',
@@ -95,6 +97,7 @@ Ext.define('PVE.storage.BackupView', {
 			volid: rec.data.volid,
 			volidText: PVE.Utils.render_storage_content(rec.data.volid, {}, rec),
 			vmtype: vmtype,
+			isPBS: isPBS,
 		    });
 		    win.show();
 		    win.on('destroy', reload);
@@ -117,7 +120,7 @@ Ext.define('PVE.storage.BackupView', {
 	    pruneButton,
 	];
 
-	if (me.pluginType === 'pbs') {
+	if (isPBS) {
 	    me.extraColumns = {
 		encrypted: {
 		    header: gettext('Encrypted'),

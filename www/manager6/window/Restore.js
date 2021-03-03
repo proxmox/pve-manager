@@ -3,6 +3,20 @@ Ext.define('PVE.window.Restore', {
 
     resizable: false,
 
+    controller: {
+	xclass: 'Ext.app.ViewController',
+	control: {
+	    '#liveRestore': {
+		change: function(el, newVal) {
+		    let liveWarning = this.lookupReference('liveWarning');
+		    liveWarning.setHidden(!newVal);
+		    let start = this.lookupReference('start');
+		    start.setDisabled(newVal);
+		},
+	    },
+	},
+    },
+
     initComponent: function() {
 	var me = this;
 
@@ -85,6 +99,7 @@ Ext.define('PVE.window.Restore', {
 		{
 		    xtype: 'proxmoxcheckbox',
 		    name: 'start',
+		    reference: 'start',
 		    flex: 1,
 		    fieldLabel: gettext('Start after restore'),
 		    labelWidth: 105,
@@ -99,6 +114,26 @@ Ext.define('PVE.window.Restore', {
 		name: 'unprivileged',
 		value: true,
 		fieldLabel: gettext('Unprivileged container'),
+	    });
+	} else if (me.vmtype === 'qemu') {
+	    items.push({
+		xtype: 'proxmoxcheckbox',
+		name: 'live-restore',
+		itemId: 'liveRestore',
+		flex: 1,
+		fieldLabel: gettext('Live restore'),
+		checked: false,
+		hidden: !me.isPBS,
+		// align checkbox with 'start' if 'unique' is hidden
+		labelWidth: me.vmid ? 105 : 100,
+	    });
+	    items.push({
+		xtype: 'displayfield',
+		reference: 'liveWarning',
+		// TODO: Remove once more tested/stable?
+		value: gettext('Warning: Live-restore is experimental! The VM will start immediately (with a disk performance penalty) and restore will happen in the background. If anything goes wrong, data written by the VM during the restore will be lost.'),
+		userCls: 'pmx-hint',
+		hidden: true,
 	    });
 	}
 
@@ -145,7 +180,8 @@ Ext.define('PVE.window.Restore', {
 		    force: me.vmid ? 1 : 0,
 		};
 		if (values.unique) { params.unique = 1; }
-		if (values.start) { params.start = 1; }
+		if (values.start && !values['live-restore']) { params.start = 1; }
+		if (values['live-restore']) { params['live-restore'] = 1; }
 		if (values.storage) { params.storage = values.storage; }
 
 		if (values.bwlimit !== undefined) {

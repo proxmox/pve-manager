@@ -79,6 +79,7 @@ Ext.define('PVE.grid.BackupView', {
 	    }
 	}, 100);
 
+	let isPBS = false;
 	var setStorage = function(storage) {
 	    var url = '/api2/json/nodes/' + nodename + '/storage/' + storage + '/content';
 	    url += '?content=backup';
@@ -101,13 +102,15 @@ Ext.define('PVE.grid.BackupView', {
 		change: function(f, value) {
 		    let storage = f.getStore().findRecord('storage', value, 0, false, true, true);
 		    if (storage) {
-			let isPBS = storage.data.type === 'pbs';
+			isPBS = storage.data.type === 'pbs';
 			me.getColumns().forEach((column) => {
 			    let id = column.dataIndex;
 			    if (id === 'verification' || id === 'encrypted') {
 				column.setHidden(!isPBS);
 			    }
 			});
+		    } else {
+			isPBS = false;
 		    }
 		    setStorage(value);
 		},
@@ -176,6 +179,7 @@ Ext.define('PVE.grid.BackupView', {
 		    volid: rec.data.volid,
 		    volidText: PVE.Utils.render_storage_content(rec.data.volid, {}, rec),
 		    vmtype: vmtype,
+		    isPBS: isPBS,
 		});
 		win.show();
 		win.on('destroy', reload);
