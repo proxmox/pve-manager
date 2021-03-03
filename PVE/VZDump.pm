@@ -449,8 +449,6 @@ sub new {
 
     my $defaults = read_vzdump_defaults();
 
-    $opts->{remove} = 1 if !defined($opts->{remove});
-
     foreach my $k (keys %$defaults) {
 	next if $k eq 'exclude-path' || $k eq 'prune-backups'; # dealt with separately
 	if ($k eq 'dumpdir' || $k eq 'storage') {
