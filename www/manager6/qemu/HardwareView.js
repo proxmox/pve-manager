@@ -154,21 +154,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    },
 	    machine: {
 		header: gettext('Machine'),
-		editor: caps.vms['VM.Config.HWType'] ? {
-		    xtype: 'proxmoxWindowEdit',
-		    subject: gettext('Machine'),
-		    width: 350,
-		    items: [{
-			xtype: 'proxmoxKVComboBox',
-			name: 'machine',
-			value: '__default__',
-			fieldLabel: gettext('Machine'),
-			comboItems: [
-			    ['__default__', PVE.Utils.render_qemu_machine('')],
-			    ['q35', 'q35'],
-			],
-		    }],
-} : undefined,
+		editor: caps.vms['VM.Config.HWType'] ? 'PVE.qemu.MachineEdit' : undefined,
 		iconCls: 'cogs',
 		never_delete: true,
 		group: 6,

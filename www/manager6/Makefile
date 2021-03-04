@@ -204,6 +204,7 @@ JSSRC= 							\
 	qemu/HardwareView.js				\
 	qemu/IPConfigEdit.js				\
 	qemu/KeyboardEdit.js				\
+	qemu/MachineEdit.js				\
 	qemu/MemoryEdit.js				\
 	qemu/Monitor.js					\
 	qemu/NetworkEdit.js				\
