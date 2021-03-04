@@ -35,6 +35,7 @@ use PVE::API2::Storage::Scan;
 use PVE::API2::Storage::Status;
 use PVE::API2::Qemu;
 use PVE::API2::Qemu::CPU;
+use PVE::API2::Qemu::Machine;
 use PVE::API2::LXC;
 use PVE::API2::LXC::Status;
 use PVE::API2::VZDump;
@@ -69,6 +70,11 @@ __PACKAGE__->register_method ({
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Qemu::CPU",
     path => 'cpu',
+});
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Qemu::Machine",
+    path => 'machine-types',
 });
 
 __PACKAGE__->register_method ({
