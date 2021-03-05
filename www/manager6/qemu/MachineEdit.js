@@ -60,33 +60,40 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	],
     },
 
-    advancedItems: {
-	xtype: 'combobox',
-	name: 'version',
-	reference: 'version',
-	fieldLabel: gettext('Version'),
-	emptyText: gettext('Latest'),
-	value: 'latest',
-	editable: false,
-	valueField: 'id',
-	displayField: 'version',
-	queryParam: false,
-	store: {
-	    autoLoad: true,
-	    fields: ['id', 'type', 'version'],
-	    proxy: {
-		type: 'proxmox',
-		url: "/api2/json/nodes/localhost/capabilities/qemu/machines",
-	    },
-	    listeners: {
-		load: function(records) {
-		    if (!this.isWindows) {
-			this.insert(0, { id: 'latest', type: 'any', version: gettext('Latest') });
-		    }
+    advancedItems: [
+	{
+	    xtype: 'combobox',
+	    name: 'version',
+	    reference: 'version',
+	    fieldLabel: gettext('Version'),
+	    emptyText: gettext('Latest'),
+	    value: 'latest',
+	    editable: false,
+	    valueField: 'id',
+	    displayField: 'version',
+	    queryParam: false,
+	    store: {
+		autoLoad: true,
+		fields: ['id', 'type', 'version'],
+		proxy: {
+		    type: 'proxmox',
+		    url: "/api2/json/nodes/localhost/capabilities/qemu/machines",
+		},
+		listeners: {
+		    load: function(records) {
+			if (!this.isWindows) {
+			    this.insert(0, { id: 'latest', type: 'any', version: gettext('Latest') });
+			}
+		    },
 		},
 	    },
 	},
-    },
+	{
+	    xtype: 'displayfield',
+	    fieldLabel: gettext('Note'),
+	    value: gettext('Machine version change may affect hardware layout and settings in the guest OS.'),
+	},
+    ],
 });
 
 Ext.define('PVE.qemu.MachineEdit', {
@@ -97,6 +104,8 @@ Ext.define('PVE.qemu.MachineEdit', {
     items: {
 	xtype: 'pveMachineInputPanel',
     },
+
+    width: 400,
 
     initComponent: function() {
 	let me = this;
