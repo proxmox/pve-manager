@@ -16,7 +16,11 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	    let type = value === 'q35' ? 'q35' : 'i440fx';
 	    store.clearFilter();
 	    store.addFilter(val => (val.data.id === 'latest' || val.data.type === type));
-	    version.setValue('latest');
+	    if (!me.getView().isWindows) {
+		version.setValue('latest');
+	    } else {
+		store.isWindows = true;
+	    }
 	},
     },
 
@@ -31,6 +35,8 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 
     setValues: function(values) {
 	let me = this;
+
+	me.isWindows = values.isWindows;
 
 	if (values.machine !== '__default__' && values.machine !== 'q35') {
 	    values.version = values.machine;
@@ -74,7 +80,9 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	    },
 	    listeners: {
 		load: function(records) {
-		    this.insert(0, { id: 'latest', type: 'any', version: 'latest' });
+		    if (!this.isWindows) {
+			this.insert(0, { id: 'latest', type: 'any', version: 'latest' });
+		    }
 		},
 	    },
 	},
@@ -97,9 +105,14 @@ Ext.define('PVE.qemu.MachineEdit', {
 
 	me.load({
 	    success: function(response) {
-		let vmconfig = response.result.data;
-		let machine = vmconfig.machine || '__default__';
-		me.setValues({ machine: machine });
+		let conf = response.result.data;
+		let values = {
+		    machine: conf.machine || '__default__',
+		};
+		if (conf.ostype && conf.ostype.match(/^(win|wvista|wxp|w2k)/i)) {
+		    values.isWindows = true;
+		}
+		me.setValues(values);
 	    },
 	});
     },
