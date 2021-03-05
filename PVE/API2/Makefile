@@ -3,27 +3,27 @@ include ../../defines.mk
 SUBDIRS=Hardware Ceph Cluster
 
 PERLSOURCE = 			\
-	Replication.pm		\
-	ReplicationConfig.pm	\
-	Ceph.pm			\
-	APT.pm			\
-	Subscription.pm		\
-	VZDump.pm		\
-	Backup.pm		\
-	BackupInfo.pm		\
-	Cluster.pm		\
-	HAConfig.pm		\
-	Nodes.pm		\
-	Pool.pm			\
-	Tasks.pm		\
-	Network.pm		\
-	Certificates.pm		\
 	ACME.pm			\
 	ACMEAccount.pm		\
 	ACMEPlugin.pm		\
-	NodeConfig.pm		\
+	APT.pm			\
+	Backup.pm		\
+	BackupInfo.pm		\
+	Ceph.pm			\
+	Certificates.pm		\
+	Cluster.pm		\
+	HAConfig.pm		\
 	Hardware.pm		\
-	Services.pm
+	Network.pm		\
+	NodeConfig.pm		\
+	Nodes.pm		\
+	Pool.pm			\
+	Replication.pm		\
+	ReplicationConfig.pm	\
+	Services.pm		\
+	Subscription.pm		\
+	Tasks.pm		\
+	VZDump.pm		\
 
 all:
 
