@@ -15,8 +15,7 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	    let store = version.getStore();
 	    let type = value === 'q35' ? 'q35' : 'i440fx';
 	    store.clearFilter();
-	    store.addFilter(val =>
-		(val.data.name === 'latest' || val.data.name.indexOf(type) !== -1));
+	    store.addFilter(val => (val.data.id === 'latest' || val.data.type === type));
 	    version.setValue('latest');
 	},
     },
@@ -63,19 +62,19 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	value: 'latest',
 	allowBlank: false,
 	editable: false,
-	valueField: 'name',
-	displayField: 'name',
+	valueField: 'id',
+	displayField: 'version',
 	queryParam: false,
 	store: {
 	    autoLoad: true,
-	    fields: ['name'],
+	    fields: ['id', 'type', 'version'],
 	    proxy: {
 		type: 'proxmox',
-		url: "/api2/json/nodes/localhost/machine-types",
+		url: "/api2/json/nodes/localhost/capabilities/qemu/machines",
 	    },
 	    listeners: {
 		load: function(records) {
-		    this.insert(0, { name: 'latest' });
+		    this.insert(0, { id: 'latest', type: 'any', version: 'latest' });
 		},
 	    },
 	},
