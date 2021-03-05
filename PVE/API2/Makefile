@@ -9,6 +9,7 @@ PERLSOURCE = 			\
 	APT.pm			\
 	Backup.pm		\
 	BackupInfo.pm		\
+	Capabilities.pm		\
 	Ceph.pm			\
 	Certificates.pm		\
 	Cluster.pm		\

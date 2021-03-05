@@ -37,6 +37,7 @@ use PVE::Tools;
 use PVE::pvecfg;
 
 use PVE::API2::APT;
+use PVE::API2::Capabilities;
 use PVE::API2::Ceph;
 use PVE::API2::Certificates;
 use PVE::API2::Disks;
@@ -47,7 +48,6 @@ use PVE::API2::LXC;
 use PVE::API2::Network;
 use PVE::API2::NodeConfig;
 use PVE::API2::Qemu::CPU;
-use PVE::API2::Qemu::Machine;
 use PVE::API2::Qemu;
 use PVE::API2::Replication;
 use PVE::API2::Services;
@@ -70,14 +70,10 @@ __PACKAGE__->register_method ({
     path => 'qemu',
 });
 
+# FIXME: move into capabilities/qemu
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Qemu::CPU",
     path => 'cpu',
-});
-
-__PACKAGE__->register_method ({
-    subclass => "PVE::API2::Qemu::Machine",
-    path => 'machine-types',
 });
 
 __PACKAGE__->register_method ({
@@ -125,6 +121,10 @@ __PACKAGE__->register_method ({
     path => 'hardware',
 });
 
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Capabilities",
+    path => 'capabilities',
+});
 
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Storage::Status",
@@ -224,6 +224,7 @@ __PACKAGE__->register_method ({
 	my $result = [
 	    { name => 'aplinfo' },
 	    { name => 'apt' },
+	    { name => 'capabilities' },
 	    { name => 'ceph' },
 	    { name => 'certificates' },
 	    { name => 'config' },
