@@ -65,8 +65,8 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	name: 'version',
 	reference: 'version',
 	fieldLabel: gettext('Version'),
+	emptyText: gettext('Latest'),
 	value: 'latest',
-	allowBlank: false,
 	editable: false,
 	valueField: 'id',
 	displayField: 'version',
@@ -81,7 +81,7 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	    listeners: {
 		load: function(records) {
 		    if (!this.isWindows) {
-			this.insert(0, { id: 'latest', type: 'any', version: 'latest' });
+			this.insert(0, { id: 'latest', type: 'any', version: gettext('Latest') });
 		    }
 		},
 	    },
