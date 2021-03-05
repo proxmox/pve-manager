@@ -43,21 +43,21 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	this.callParent(arguments);
     },
 
-    items: [{
+    items: {
+	xtype: 'proxmoxKVComboBox',
 	name: 'machine',
 	reference: 'machine',
-	xtype: 'proxmoxKVComboBox',
 	fieldLabel: gettext('Machine'),
 	comboItems: [
 	    ['__default__', PVE.Utils.render_qemu_machine('')],
 	    ['q35', 'q35'],
 	],
-    }],
+    },
 
-    advancedItems: [{
+    advancedItems: {
+	xtype: 'combobox',
 	name: 'version',
 	reference: 'version',
-	xtype: 'combobox',
 	fieldLabel: gettext('Version'),
 	value: 'latest',
 	allowBlank: false,
@@ -78,7 +78,7 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 		},
 	    },
 	},
-    }],
+    },
 });
 
 Ext.define('PVE.qemu.MachineEdit', {
@@ -86,9 +86,9 @@ Ext.define('PVE.qemu.MachineEdit', {
 
     subject: gettext('Machine'),
 
-    items: [{
+    items: {
 	xtype: 'pveMachineInputPanel',
-    }],
+    },
 
     initComponent: function() {
 	let me = this;
