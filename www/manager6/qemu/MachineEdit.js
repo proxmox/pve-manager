@@ -43,7 +43,7 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	    values.machine = values.version.match(/q35/) ? 'q35' : '__default__';
 
 	    // avoid hiding a pinned version
-	    Ext.ComponentQuery.query("#advancedcb")[0].setValue(true);
+	    me.setAdvancedVisible(true);
 	}
 
 	this.callParent(arguments);
