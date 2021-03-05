@@ -1,3 +1,24 @@
+pve-manager (6.3-5) pve; urgency=medium
+
+  * ui: firewall rules: make columns more responsive (flexible) by default
+
+  * ui: firewall rules: for ellipsized comments
+
+  * vzdump: Proxmox Backup Server: make task log upload error non-fatal
+
+  * ui: zpool status detail: add default for scrub information
+
+  * external metrics/status: fix misspelled method call
+
+  * api: node: add new capabilities API endpoint, initially hosting the
+    available QEMU machine list endpoint of a node.
+
+  * ui: VM hardware: add option for version pinning in machine edit window
+
+  * partially fix #2745: vzdump: use default for remove parameter
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 05 Mar 2021 21:50:04 +0100
+
 pve-manager (6.3-4) pve; urgency=medium
 
   * pveceph: improve useability of 'status' command
