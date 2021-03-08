@@ -159,7 +159,14 @@ Ext.define('PVE.qemu.HardwareView', {
 		never_delete: true,
 		group: 6,
 		defaultValue: '',
-		renderer: PVE.Utils.render_qemu_machine,
+		renderer: function(value, metaData, record, rowIndex, colIndex, store, pending) {
+		    let ostype = me.getObjectValue('ostype', undefined, pending);
+		    if (PVE.Utils.is_windows(ostype) &&
+			(!value || value === 'pc' || value === 'q35')) {
+			return value === 'q35' ? 'pc-q35-5.1' : 'pc-i440fx-5.1';
+		    }
+		    return PVE.Utils.render_qemu_machine(value);
+		},
 	    },
 	    scsihw: {
 		header: gettext('SCSI Controller'),
@@ -201,6 +208,9 @@ Ext.define('PVE.qemu.HardwareView', {
 		visible: false,
 	    },
 	    shares: {
+		visible: false,
+	    },
+	    ostype: {
 		visible: false,
 	    },
 	};
