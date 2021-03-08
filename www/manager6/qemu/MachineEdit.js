@@ -138,9 +138,7 @@ Ext.define('PVE.qemu.MachineEdit', {
 		let values = {
 		    machine: conf.machine || '__default__',
 		};
-		if (conf.ostype && conf.ostype.match(/^(win|wvista|wxp|w2k)/i)) {
-		    values.isWindows = true;
-		}
+		values.isWindows = PVE.Utils.is_windows(conf.ostype);
 		me.setValues(values);
 	    },
 	});

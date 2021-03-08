@@ -69,6 +69,15 @@ Ext.define('PVE.Utils', {
 	],
     },
 
+    is_windows: function(ostype) {
+	for (let entry of PVE.Utils.kvm_ostypes['Microsoft Windows']) {
+	    if (entry.val === ostype) {
+		return true;
+	    }
+	}
+	return false;
+    },
+
     get_health_icon: function(state, circle) {
 	if (circle === undefined) {
 	    circle = false;
