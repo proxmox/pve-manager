@@ -47,20 +47,23 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	let me = this;
 
 	me.isWindows = values.isWindows;
+	if (values.machine === 'pc') {
+	    values.machine = '__default__';
+	}
 
+	if (me.isWindows) {
+	    if (values.machine === '__default__') {
+		values.version = 'pc-i440fx-5.1';
+	    } else if (values.machine === 'q35') {
+		values.version = 'pc-q35-5.1';
+	    }
+	}
 	if (values.machine !== '__default__' && values.machine !== 'q35') {
 	    values.version = values.machine;
 	    values.machine = values.version.match(/q35/) ? 'q35' : '__default__';
 
 	    // avoid hiding a pinned version
 	    me.setAdvancedVisible(true);
-	}
-	if (me.isWindows) {
-	    if (values.machine === '__default__' || values.machine === 'pc') {
-		values.version = 'pc-i440fx-5.1';
-	    } else if (values.machine === 'q35') {
-		values.version = 'pc-q35-5.1';
-	    }
 	}
 
 	this.callParent(arguments);
