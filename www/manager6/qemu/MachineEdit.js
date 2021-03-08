@@ -16,7 +16,7 @@ Ext.define('PVE.qemu.MachineInputPanel', {
 	    let oldRec = store.findRecord('id', version.getValue(), 0, false, false, true);
 	    let type = value === 'q35' ? 'q35' : 'i440fx';
 	    store.clearFilter();
-	    store.addFilter(val => (val.data.id === 'latest' || val.data.type === type));
+	    store.addFilter(val => val.data.id === 'latest' || val.data.type === type);
 	    if (!me.getView().isWindows) {
 		version.setValue('latest');
 	    } else {
