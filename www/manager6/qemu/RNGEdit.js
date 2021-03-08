@@ -2,8 +2,7 @@ Ext.define('PVE.qemu.RNGInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     xtype: 'pveRNGInputPanel',
 
-    // FIXME: enable once we bumped doc-gen so this ref is included
-    //onlineHelp: 'qm_virtio_rng',
+    onlineHelp: 'qm_virtio_rng',
 
     onGetValues: function(values) {
 	if (values.max_bytes === "") {
