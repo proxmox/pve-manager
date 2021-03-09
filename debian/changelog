@@ -1,3 +1,13 @@
+pve-manager (6.3-6) pve; urgency=medium
+
+  * ui: VM hardware: extend machine renderer to show pinned machine versions
+    for Windows VMs also in the Hardware overview.
+
+  * ui: VM hardware: add online-help references to random number generator edit
+    window
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 09 Mar 2021 08:22:47 +0100
+
 pve-manager (6.3-5) pve; urgency=medium
 
   * ui: firewall rules: make columns more responsive (flexible) by default
