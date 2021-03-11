@@ -385,7 +385,7 @@ Ext.define('PVE.qemu.Config', {
 		rec = s.data.get('qmpstatus');
 		qmpstatus = rec ? rec.data.value : 'unknown';
 		rec = s.data.get('template');
-		template = rec.data.value || false;
+		template = rec ? rec.data.value : false;
 		rec = s.data.get('lock');
 		lock = rec ? rec.data.value : undefined;
 
