@@ -106,8 +106,6 @@ sub storage_info {
     die "can't use storage '$storage' for backups - wrong content type\n"
 	if (!$scfg->{content}->{backup});
 
-    PVE::Storage::activate_storage($cfg, $storage);
-
     my $info = {
 	scfg => $scfg,
     };
@@ -505,6 +503,13 @@ sub new {
     my $errors = '';
 
     if ($opts->{storage}) {
+	my $storage_cfg = PVE::Storage::config();
+	eval { PVE::Storage::activate_storage($storage_cfg, $opts->{storage}) };
+	if (my $err = $@) {
+	    chomp($err);
+	    $errors .= "could not activate storage '$opts->{storage}': $err";
+	}
+
 	my $info = eval { storage_info ($opts->{storage}) };
 	if (my $err = $@) {
 	    chomp($err);
