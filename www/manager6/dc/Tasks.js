@@ -82,9 +82,9 @@ Ext.define('PVE.dc.Tasks', {
 		    width: 150,
 		    renderer: function(value, metaData, record) {
 			if (record.data.pid) {
-			    if (record.data.type == "vncproxy" ||
-				record.data.type == "vncshell" ||
-				record.data.type == "spiceproxy") {
+			    if (record.data.type === "vncproxy" ||
+				record.data.type === "vncshell" ||
+				record.data.type === "spiceproxy") {
 				metaData.tdCls = "x-grid-row-console";
 			    } else {
 				metaData.tdCls = "x-grid-row-loading";
@@ -117,7 +117,7 @@ Ext.define('PVE.dc.Tasks', {
 		    width: 200,
 		    renderer: function(value, metaData, record) {
 			if (record.data.pid) {
-			    if (record.data.type != "vncproxy") {
+			    if (record.data.type !== "vncproxy") {
 				metaData.tdCls = "x-grid-row-loading";
 			    }
 			    return "";
