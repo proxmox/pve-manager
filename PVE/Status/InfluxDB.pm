@@ -22,19 +22,19 @@ sub type {
 sub properties {
     return {
 	organization => {
-	    description => "The influxdb organization. Only necessary when using the http v2 api. ".
-			   "Has no meaning when using v2 compatibility api.",
+	    description => "The InfluxDB organization. Only necessary when using the http v2 api."
+	       ." Has no meaning when using v2 compatibility api.",
 	    type => 'string',
 	    optional => 1,
 	},
 	bucket => {
-	    description => "The influxdb bucket/db. Only necessary when using the http v2 api.",
+	    description => "The InfluxDB bucket/db. Only necessary when using the http v2 api.",
 	    type => 'string',
 	    optional => 1,
 	},
 	token => {
-	    description => "The influxdb access token. Only necessary when using the http v2 api. ".
-			   "If the v2 compatibility api is used, use 'user:password' instead.",
+	    description => "The InfluxDB access token. Only necessary when using the http v2 api."
+	        ." If the v2 compatibility api is used, use 'user:password' instead.",
 	    type => 'string',
 	    optional => 1,
 	},
@@ -45,7 +45,7 @@ sub properties {
 	    optional => 1,
 	},
 	'max-body-size' => {
-	    description => "Influxdb max-body-size. Requests are batched up to this size.",
+	    description => "InfluxDB max-body-size in bytes. Requests are batched up to this size.",
 	    type => 'integer',
 	    minimum => 1,
 	    default => 25_000_000,
