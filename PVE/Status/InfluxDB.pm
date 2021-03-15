@@ -175,7 +175,12 @@ sub _get_v2url {
     if ($api_prefix ne '' && $api_prefix =~ m!^/*(.+)/*$!) {
 	$api_prefix = "/$1/";
     }
-    return "${proto}://${host}:${port}${api_prefix}api/v2/${api_path}";
+
+    if ($api_path ne 'health') {
+	$api_path = "api/v2/${api_path}";
+    }
+
+    return "${proto}://${host}:${port}${api_prefix}${api_path}";
 }
 
 sub _connect {
