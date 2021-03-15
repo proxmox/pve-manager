@@ -38,6 +38,12 @@ sub properties {
 	    type => 'string',
 	    optional => 1,
 	},
+	'api-path-prefix' => {
+	    description => "An API path prefix inserted between '<host>:<port>/' and '/api2/'."
+	        ." Can be useful if the InfluxDB service runs behind a reverse proxy.",
+	    type => 'string',
+	    optional => 1,
+	},
 	influxdbproto => {
 	    type => 'string',
 	    enum => ['udp', 'http', 'https'],
@@ -64,6 +70,7 @@ sub options {
 	influxdbproto => { optional => 1},
 	timeout => { optional => 1},
 	'max-body-size' => { optional => 1 },
+	'api-path-prefix' => { optional => 1 },
    };
 }
 
@@ -161,6 +168,16 @@ sub _disconnect {
     return;
 }
 
+sub _get_v2url {
+    my ($cfg, $api_path) = @_;
+    my ($proto, $host, $port) = $cfg->@{qw(influxdbproto server port)};
+    my $api_prefix = $cfg->{'api-path-prefix'} // '/';
+    if ($api_prefix ne '' && $api_prefix =~ m!^/*(.+)/*$!) {
+	$api_prefix = "/$1/";
+    }
+    return "${proto}://${host}:${port}${api_prefix}api/v2/${api_path}";
+}
+
 sub _connect {
     my ($class, $cfg, $id) = @_;
 
@@ -182,7 +199,7 @@ sub _connect {
 	my $token = get_credentials($id);
 	my $org = $cfg->{organization} // 'proxmox';
 	my $bucket = $cfg->{bucket} // 'proxmox';
-	my $url = "${proto}://${host}:${port}/api/v2/write?org=${org}&bucket=${bucket}";
+	my $url = _get_v2url($cfg, "write?org=${org}&bucket=${bucket}");
 
 	my $req = HTTP::Request->new(POST => $url);
 	if (defined($token)) {
@@ -202,9 +219,7 @@ sub test_connection {
     if ($proto eq 'udp') {
 	return $class->SUPER::test_connection($cfg, $id);
     } elsif ($proto =~ m/^https?$/) {
-	my $host = $cfg->{server};
-	my $port = $cfg->{port};
-	my $url = "${proto}://${host}:${port}/health";
+	my $url = _get_v2url($cfg, "health");
 	my $ua = LWP::UserAgent->new();
 	$ua->timeout($cfg->{timeout} // 1);
 	# in the initial add connection test, the token may still be in $cfg
