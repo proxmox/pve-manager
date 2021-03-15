@@ -207,6 +207,11 @@ sub test_connection {
 	my $url = "${proto}://${host}:${port}/health";
 	my $ua = LWP::UserAgent->new();
 	$ua->timeout($cfg->{timeout} // 1);
+	# in the initial add connection test, the token may still be in $cfg
+	my $token = $cfg->{token} // get_credentials($id);
+	if (defined($token)) {
+	    $ua->default_header("Authorization" => "Token $token");
+	}
 	my $response = $ua->get($url);
 
 	if (!$response->is_success) {
