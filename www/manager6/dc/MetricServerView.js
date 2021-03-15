@@ -247,6 +247,7 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 			    me.up('inputpanel').down('field[name=organization]').setDisabled(isUdp);
 			    me.up('inputpanel').down('field[name=bucket]').setDisabled(isUdp);
 			    me.up('inputpanel').down('field[name=token]').setDisabled(isUdp);
+			    me.up('inputpanel').down('field[name=api-path-prefix]').setDisabled(isUdp);
 			    me.up('inputpanel').down('field[name=mtu]').setDisabled(!isUdp);
 			    me.up('inputpanel').down('field[name=timeout]').setDisabled(isUdp);
 			    me.up('inputpanel').down('field[name=max-body-size]').setDisabled(isUdp);
@@ -300,6 +301,16 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 	    ],
 
 	    advancedColumn1: [
+		{
+		    xtype: 'proxmoxtextfield',
+		    name: 'api-path-prefix',
+		    fieldLabel: gettext('API Path Prefix'),
+		    allowBlank: true,
+		    disabled: true,
+		    cbind: {
+			deleteEmpty: '{!isCreate}',
+		    },
+		},
 		{
 		    xtype: 'proxmoxintegerfield',
 		    name: 'timeout',
