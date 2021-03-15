@@ -172,7 +172,7 @@ sub _get_v2url {
     my ($cfg, $api_path) = @_;
     my ($proto, $host, $port) = $cfg->@{qw(influxdbproto server port)};
     my $api_prefix = $cfg->{'api-path-prefix'} // '/';
-    if ($api_prefix ne '' && $api_prefix =~ m!^/*(.+)/*$!) {
+    if ($api_prefix ne '/' && $api_prefix =~ m!^/*(.+)/*$!) {
 	$api_prefix = "/$1/";
     }
 
