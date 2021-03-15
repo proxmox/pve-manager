@@ -208,7 +208,7 @@ sub test_connection {
 	my $ua = LWP::UserAgent->new();
 	$ua->timeout($cfg->{timeout} // 1);
 	# in the initial add connection test, the token may still be in $cfg
-	my $token = $cfg->{token} // get_credentials($id);
+	my $token = $cfg->{token} // get_credentials($id, 1);
 	if (defined($token)) {
 	    $ua->default_header("Authorization" => "Token $token");
 	}
@@ -330,11 +330,14 @@ sub set_credentials {
 }
 
 sub get_credentials {
-    my ($id) = @_;
+    my ($id, $silent) = @_;
 
     my $cred_file = cred_file_name($id);
 
-    return PVE::Tools::file_get_contents($cred_file);
+    my $creds = eval { PVE::Tools::file_get_contents($cred_file) };
+    warn "could not load credentials for '$id': $@\n" if $@ && !$silent;
+
+    return $creds;
 }
 
 sub on_add_hook {
