@@ -36,12 +36,16 @@ Ext.define('PVE.form.BandwidthField', {
     // for KiB set it to 'KiB'
     backendUnit: undefined,
 
+    // allow setting 0 and using it as a submit value
+    allowZero: false,
+
     items: [
 	{
 	    xtype: 'numberfield',
 	    cbind: {
 		name: '{name}',
 		emptyText: '{emptyText}',
+		allowZero: '{allowZero}',
 	    },
 	    minValue: 0,
 	    step: 1,
@@ -61,7 +65,9 @@ Ext.define('PVE.form.BandwidthField', {
 		    this._transformed = true;
 		}
 
-		if (v == 0) v = undefined;
+		if (Number(v) === 0 && !this.allowZero) {
+		    v = undefined;
+		}
 
 		return Ext.form.field.Text.prototype.setValue.call(this, v);
 	    },
@@ -69,9 +75,13 @@ Ext.define('PVE.form.BandwidthField', {
 		let v = this.processRawValue(this.getRawValue());
 		v = v.replace(this.decimalSeparator, '.');
 
-		if (v === undefined) return null;
-		// FIXME: make it configurable, as this only works if 0 === default
-		if (v == 0 || v == 0.0) return null;
+		if (v === undefined || v === '') {
+		    return null;
+		}
+
+		if (Number(v) === 0) {
+		    return this.allowZero ? 0 : null;
+		}
 
 		let fieldct = this.up('pveBandwidthField');
 		let vm = fieldct.getViewModel();
