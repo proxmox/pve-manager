@@ -192,7 +192,7 @@ sub _connect {
 	return $req;
     }
 
-    die "cannot connect to influxdb: invalid protocol\n";
+    die "cannot connect to InfluxDB: invalid protocol '$proto'\n";
 }
 
 sub test_connection {
