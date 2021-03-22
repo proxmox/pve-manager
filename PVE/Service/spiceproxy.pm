@@ -39,8 +39,8 @@ sub init {
     my $lockfh = IO::File->new(">>${accept_lock_fn}") ||
 	die "unable to open lock file '${accept_lock_fn}' - $!\n";
 
-    my $family = PVE::Tools::get_host_address_family($self->{nodename});
-    my $socket = $self->create_reusable_socket(3128, undef, $family);
+    my $listen_ip = $proxyconf->{LISTEN_IP} // "::0";
+    my $socket = $self->create_reusable_socket(3128, $listen_ip);
 
     $self->{server_config} = {
 	keep_alive => 0,
