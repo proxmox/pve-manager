@@ -142,6 +142,8 @@ Ext.define('PVE.Parser', {
 		res.queues = match_res[1];
 	    } else if ((match_res = p.match(/^trunks=(\d+(?:-\d+)?(?:;\d+(?:-\d+)?)*)$/)) !== null) {
 		res.trunks = match_res[1];
+	    } else if ((match_res = p.match(/^mtu=(\d+)$/)) !== null) {
+		res.mtu = match_res[1];
 	    } else {
 		errors = true;
 		return false; // break
@@ -180,6 +182,9 @@ Ext.define('PVE.Parser', {
 	}
 	if (net.trunks) {
 	    netstr += ",trunks=" + net.trunks;
+	}
+	if (net.mtu) {
+	    netstr += ",mtu=" + net.mtu;
 	}
 	return netstr;
     },
