@@ -158,6 +158,14 @@ Ext.define('PVE.qemu.IPConfigPanel', {
 			checked: false,
 			margin: '0 0 0 10',
 		    },
+		    {
+			xtype: 'radiofield',
+			boxLabel: gettext('SLAAC'),
+			name: 'ipv6mode',
+			inputValue: 'auto',
+			checked: false,
+			margin: '0 0 0 10',
+		    },
 		],
 	    },
 	    {
