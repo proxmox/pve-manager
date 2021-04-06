@@ -149,6 +149,93 @@ __PACKAGE__->register_method ({
    }});
 
 __PACKAGE__->register_method ({
+    name => 'defaults',
+    path => 'defaults',
+    method => 'GET',
+    description => "Get the currently configured vzdump defaults.",
+    permissions => {
+	description => "The user needs 'Datastore.Audit' or 'Datastore.AllocateSpace' " .
+	    "permissions for the specified storage (or default storage if none specified). Some " .
+	    "properties are only returned when the user has 'Sys.Audit' permissions for the node.",
+	user => 'all',
+    },
+    proxyto => 'node',
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    storage => get_standard_option('pve-storage-id', { optional => 1 }),
+	},
+    },
+    returns => {
+	type => 'object',
+	additionalProperties => 0,
+	properties => PVE::VZDump::Common::json_config_properties(),
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $node = extract_param($param, 'node');
+	my $storage = extract_param($param, 'storage');
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+
+	my $res = PVE::VZDump::read_vzdump_defaults();
+
+	$res->{storage} = $storage if defined($storage);
+
+	if (!defined($res->{dumpdir}) && !defined($res->{storage})) {
+	    $res->{storage} = 'local';
+	}
+
+	if (defined($res->{storage})) {
+	    $rpcenv->check_any(
+		$authuser,
+		"/storage/$res->{storage}",
+		['Datastore.Audit', 'Datastore.AllocateSpace'],
+	    );
+
+	    my $info = PVE::VZDump::storage_info($res->{storage});
+	    for my $key (qw(dumpdir prune-backups)) {
+		$res->{$key} = $info->{$key} if defined($info->{$key});
+	    }
+	}
+
+	if (defined($res->{'prune-backups'})) {
+	    $res->{'prune-backups'} = PVE::JSONSchema::print_property_string(
+		$res->{'prune-backups'},
+		'prune-backups',
+	    );
+	}
+
+	$res->{mailto} = join(",", @{$res->{mailto}})
+	    if defined($res->{mailto});
+
+	$res->{'exclude-path'} = join(",", @{$res->{'exclude-path'}})
+	    if defined($res->{'exclude-path'});
+
+	# normal backup users don't need to know these
+	if (!$rpcenv->check($authuser, "/nodes/$node", ['Sys.Audit'], 1)) {
+	    delete $res->{mailto};
+	    delete $res->{tmpdir};
+	    delete $res->{dumpdir};
+	    delete $res->{script};
+	    delete $res->{ionice};
+	}
+
+	my $pool = $res->{pool};
+	if (defined($pool) &&
+	    !$rpcenv->check($authuser, "/pool/$pool", ['Pool.Allocate'], 1)) {
+	    delete $res->{pool};
+	}
+
+	delete $res->{size}; # deprecated, to be dropped with PVE 7.0
+
+	return $res;
+    }});
+
+__PACKAGE__->register_method ({
     name => 'extractconfig',
     path => 'extractconfig',
     method => 'GET',
