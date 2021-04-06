@@ -24,6 +24,20 @@ Ext.define('PVE.window.Backup', {
 	    fieldLabel: gettext('Compression'),
 	});
 
+	let modeSelector = Ext.create('PVE.form.BackupModeSelector', {
+	    fieldLabel: gettext('Mode'),
+	    value: 'snapshot',
+	    name: 'mode',
+	});
+
+	let mailtoField = Ext.create('Ext.form.field.Text', {
+	    fieldLabel: gettext('Send email to'),
+	    name: 'mailto',
+	    emptyText: Proxmox.Utils.noneText,
+	});
+
+	let initialDefaults = false;
+
 	var storagesel = Ext.create('PVE.form.StorageSelector', {
 	    nodename: me.nodename,
 	    name: 'storage',
@@ -41,6 +55,30 @@ Ext.define('PVE.window.Backup', {
 		    } else if (!compressionSelector.getEditable()) {
 			compressionSelector.setDisabled(false);
 		    }
+
+		    Proxmox.Utils.API2Request({
+			url: `/nodes/${me.nodename}/vzdump/defaults`,
+			method: 'GET',
+			params: {
+			    storage: v,
+			},
+			waitMsgTarget: me,
+			success: function(response, opts) {
+			    const data = response.result.data;
+
+			    if (!initialDefaults && data.mailto !== undefined) {
+				mailtoField.setValue(data.mailto);
+			    }
+			    if (!initialDefaults && data.mode !== undefined) {
+				modeSelector.setValue(data.mode);
+			    }
+
+			    initialDefaults = true;
+			},
+			failure: function(response, opts) {
+			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+			},
+		    });
 		},
 	    },
 	});
@@ -55,19 +93,9 @@ Ext.define('PVE.window.Backup', {
 	    },
 	    items: [
 		storagesel,
-		{
-		    xtype: 'pveBackupModeSelector',
-		    fieldLabel: gettext('Mode'),
-		    value: 'snapshot',
-		    name: 'mode',
-		},
+		modeSelector,
 		compressionSelector,
-		{
-		    xtype: 'textfield',
-		    fieldLabel: gettext('Send email to'),
-		    name: 'mailto',
-		    emptyText: Proxmox.Utils.noneText,
-		},
+		mailtoField,
 	    ],
 	});
 
