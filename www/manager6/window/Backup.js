@@ -36,6 +36,39 @@ Ext.define('PVE.window.Backup', {
 	    emptyText: Proxmox.Utils.noneText,
 	});
 
+	const keepNames = [
+	    'keep-last',
+	    'keep-hourly',
+	    'keep-daily',
+	    'keep-weekly',
+	    'keep-monthly',
+	    'keep-yearly',
+	];
+
+	let pruneSettings = keepNames.map(
+	    name => Ext.create('Ext.form.field.Display', {
+		name: name,
+		fieldLabel: gettext(name),
+		hidden: true,
+		disabled: true,
+	    }),
+	);
+
+	let removeCheckbox = Ext.create('Proxmox.form.Checkbox', {
+	    name: 'remove',
+	    checked: false,
+	    hidden: true,
+	    uncheckedValue: 0,
+	    fieldLabel: gettext('Prune'),
+	    autoEl: {
+		tag: 'div',
+		'data-qtip': gettext('Prune older backups afterwards'),
+	    },
+	    handler: function(checkbox, value) {
+		pruneSettings.forEach(field => field.setDisabled(!value));
+	    },
+	});
+
 	let initialDefaults = false;
 
 	var storagesel = Ext.create('PVE.form.StorageSelector', {
@@ -74,6 +107,35 @@ Ext.define('PVE.window.Backup', {
 			    }
 
 			    initialDefaults = true;
+
+			    // always update storage dependent properties
+			    if (data['prune-backups'] !== undefined) {
+				const keepParams = PVE.Parser.parsePropertyString(
+				    data["prune-backups"],
+				);
+				if (!keepParams['keep-all']) {
+				    removeCheckbox.setHidden(false);
+				    pruneSettings.forEach(function(field) {
+					const keep = keepParams[field.name];
+					if (keep) {
+					    field.setValue(keep);
+					    field.setHidden(false);
+					} else {
+					    field.reset();
+					    field.setHidden(true);
+					}
+				    });
+				    return;
+				}
+			    }
+
+			    // no defaults or keep-all=1
+			    removeCheckbox.setHidden(true);
+			    removeCheckbox.setValue(false);
+			    pruneSettings.forEach(function(field) {
+				field.reset();
+				field.setHidden(true);
+			    });
 			},
 			failure: function(response, opts) {
 			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
@@ -96,7 +158,8 @@ Ext.define('PVE.window.Backup', {
 		modeSelector,
 		compressionSelector,
 		mailtoField,
-	    ],
+		removeCheckbox,
+	    ].concat(pruneSettings),
 	});
 
 	var form = me.formPanel.getForm();
@@ -110,7 +173,7 @@ Ext.define('PVE.window.Backup', {
 		    storage: storage,
 		    vmid: me.vmid,
 		    mode: values.mode,
-		    remove: 0,
+		    remove: values.remove,
 		};
 
 		if (values.mailto) {
