@@ -621,6 +621,8 @@ sub getlock {
     }
 
     PVE::Tools::file_set_contents($pidfile, $upid);
+
+    return $SERVER_FLCK;
 }
 
 sub run_hook_script {

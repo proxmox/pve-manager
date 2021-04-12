@@ -106,7 +106,7 @@ __PACKAGE__->register_method ({
 	    $param->{vmids} = $local_vmids;
 	    my $vzdump = PVE::VZDump->new($cmdline, $param, $skiplist);
 
-	    eval {
+	    my $LOCK_FH = eval {
 		$vzdump->getlock($upid); # only one process allowed
 	    };
 	    if (my $err = $@) {
@@ -122,6 +122,8 @@ __PACKAGE__->register_method ({
 		}
 	    }
 	    $vzdump->exec_backup($rpcenv, $user);
+
+	    close($LOCK_FH);
 	};
 
 	open STDOUT, '>/dev/null' if $param->{quiet} && !$param->{stdout};
