@@ -1,3 +1,30 @@
+pve-manager (6.3-7) pve; urgency=medium
+
+  * ui: bandwidth limit selector: make it possible to allow zero, so users can
+    reset any default imposed bandwidth restriction to unlimited
+
+  * ui: avoid errors when 'template' property is not present in guest status
+
+  * external metrics: influx: send along auth token on connection test too
+
+  * external metrics: influx: allow one to add an API URL-path prefix,
+    especially useful if InfluxDB runs behind a reverse proxy
+
+  * ui: backups: enable editing notes for Proxmox Backup Server
+
+  * ui: cloud-init: re-add SLAAC option to IPv6 configuration
+
+  * vzdump: return backup job lock file handle and let the caller close it,
+    ensuring that it is held during the whole job in a more straight-forward
+    manner
+
+  * ui: restore: add initially live-restore checkbox for backup archives on a
+    Proxmox  Backup Server
+
+  * api: resources: return guest, pool and sdn info in a sorted manner
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 15 Apr 2021 19:56:12 +0200
+
 pve-manager (6.3-6) pve; urgency=medium
 
   * ui: VM hardware: extend machine renderer to show pinned machine versions
