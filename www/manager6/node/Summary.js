@@ -148,6 +148,8 @@ Ext.define('PVE.node.Summary', {
 			    title: gettext('Memory usage'),
 			    fields: ['memtotal', 'memused'],
 			    fieldTitles: [gettext('Total'), gettext('RAM usage')],
+			    unit: 'bytes',
+			    powerOfTwo: true,
 			    store: rrdstore,
 			},
 			{

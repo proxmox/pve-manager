@@ -82,6 +82,8 @@ Ext.define('PVE.qemu.Summary', {
 		    pveSelNode: me.pveSelNode,
 		    fields: ['maxmem', 'mem'],
 		    fieldTitles: [gettext('Total'), gettext('RAM usage')],
+		    unit: 'bytes',
+		    powerOfTwo: true,
 		    store: rrdstore,
 		},
 		{
