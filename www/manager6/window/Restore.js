@@ -131,7 +131,7 @@ Ext.define('PVE.window.Restore', {
 		xtype: 'displayfield',
 		reference: 'liveWarning',
 		// TODO: Remove once more tested/stable?
-		value: gettext('Warning: Live-restore is experimental! The VM will start immediately (with a disk performance penalty) and restore will happen in the background. If anything goes wrong, data written by the VM during the restore will be lost.'),
+		value: gettext('Note: If anything goes wrong during the live-restore, new data written by the VM will be lost.'),
 		userCls: 'pmx-hint',
 		hidden: true,
 	    });
