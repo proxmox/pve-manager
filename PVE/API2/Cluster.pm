@@ -355,10 +355,6 @@ __PACKAGE__->register_method({
 		my $data = $idlist->{$vmid};
 		my $entry = PVE::API2Tools::extract_vm_stats($vmid, $data, $rrd);
 
-		if (defined(my $lock = $locked_vms->{$vmid}->{lock})) {
-		    $entry->{lock} = $lock;
-		}
-
 		if (my $pool = $usercfg->{vms}->{$vmid}) {
 		    $entry->{pool} = $pool;
 		    if (my $pe = $pooldata->{$pool}) {
@@ -381,7 +377,12 @@ __PACKAGE__->register_method({
 		    }
 		}
 
+		# only skip now to next to ensure that the pool stats above are filled, if eligible
 		next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ], 1);
+
+		if (defined(my $lock = $locked_vms->{$vmid}->{lock})) {
+		    $entry->{lock} = $lock;
+		}
 
 		# get ha status
 		if (my $hatype = $hatypemap->{$entry->{type}}) {
