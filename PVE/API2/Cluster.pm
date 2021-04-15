@@ -329,7 +329,7 @@ __PACKAGE__->register_method({
 
 	my $pooldata = {};
 	if (!$param->{type} || $param->{type} eq 'pool') {
-	    foreach my $pool (keys %{$usercfg->{pools}}) {
+	    for my $pool (sort keys %{$usercfg->{pools}}) {
 		my $d = $usercfg->{pools}->{$pool};
 
 		next if !$rpcenv->check($authuser, "/pool/$pool", [ 'Pool.Allocate' ], 1);
@@ -350,7 +350,7 @@ __PACKAGE__->register_method({
 	if (!$param->{type} || $param->{type} eq 'vm') {
 	    my $locked_vms = PVE::Cluster::get_guest_config_property('lock');
 
-	    foreach my $vmid (keys %$idlist) {
+	    for my $vmid (sort keys %$idlist) {
 
 		my $data = $idlist->{$vmid};
 		my $entry = PVE::API2Tools::extract_vm_stats($vmid, $data, $rrd);
@@ -430,12 +430,12 @@ __PACKAGE__->register_method({
 
 		my $nodes = PVE::Cluster::get_node_kv("sdn");
 
-		foreach my $node (keys %{$nodes}) {
+		for my $node (sort keys %{$nodes}) {
 		    my $sdns = decode_json($nodes->{$node});
 
-		    foreach my $id (keys %{$sdns}) {
-			my $sdn = $sdns->{$id};
+		    for my $id (sort keys %{$sdns}) {
 			next if !$rpcenv->check($authuser, "/sdn/zones/$id", [ 'SDN.Audit' ], 1);
+			my $sdn = $sdns->{$id};
 			my $entry = {
 			    id => "sdn/$node/$id",
 			    sdn => $id,
