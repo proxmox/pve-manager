@@ -92,8 +92,12 @@ my $init_report_cmds = sub {
 	    ;
     }
 
-    push @{$report_def->{disks}}, 'multipath -ll', 'multipath -v3'
-	if cmd_exists('multipath');
+    if (cmd_exists('multipath')) {
+	push @{$report_def->{disks}},
+	    'cat /etc/multipath.conf',
+	    'cat /etc/multipath/wwids',
+	    'multipath -ll';
+    }
 
     return $report_def;
 };
