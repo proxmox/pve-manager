@@ -263,7 +263,7 @@ Ext.define('PVE.window.Migrate', {
 				    });
 				}
 			    } else {
-				var size_string = disk.size ? '(' + PVE.Utils.render_size(disk.size) + ')' : '';
+				var size_string = disk.size ? '(' + Proxmox.Utils.render_size(disk.size) + ')' : '';
 				migration['with-local-disks'] = 1;
 				migration.preconditions.push({
 				    text: Ext.String.format('Migration with local disk might take long: {0} {1}',

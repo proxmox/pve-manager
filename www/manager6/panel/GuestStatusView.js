@@ -71,7 +71,7 @@ Ext.define('PVE.panel.GuestStatusView', {
 	    title: gettext('CPU usage'),
 	    valueField: 'cpu',
 	    maxField: 'cpus',
-	    renderer: PVE.Utils.render_cpu_usage,
+	    renderer: Proxmox.Utils.render_cpu_usage,
 	    // in this specific api call
 	    // we already have the correct value for the usage
 	    calculate: Ext.identityFn,
@@ -106,9 +106,9 @@ Ext.define('PVE.panel.GuestStatusView', {
 		var me = this;
 		me.setPrintBar(used > 0);
 		if (used === 0) {
-		    return PVE.Utils.render_size(max);
+		    return Proxmox.Utils.render_size(max);
 		} else {
-		    return PVE.Utils.render_size_usage(used, max);
+		    return Proxmox.Utils.render_size_usage(used, max);
 		}
 	    },
 	},

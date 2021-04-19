@@ -139,7 +139,7 @@ Ext.define('PVE.node.CreateZFS', {
 				{
 				    text: gettext('Size'),
 				    dataIndex: 'size',
-				    renderer: PVE.Utils.render_size,
+				    renderer: Proxmox.Utils.render_size,
 				    flex: 1,
 				},
 				{

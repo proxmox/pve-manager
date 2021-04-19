@@ -54,7 +54,7 @@ Ext.define('PVE.form.NodeSelector', {
 	    },
 	    {
 		header: gettext('CPU usage'),
-		renderer: PVE.Utils.render_cpu,
+		renderer: Proxmox.Utils.render_cpu,
 		sortable: true,
 		width: 100,
 		dataIndex: 'cpu',

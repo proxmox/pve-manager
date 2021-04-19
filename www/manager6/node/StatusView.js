@@ -27,7 +27,7 @@ Ext.define('PVE.node.StatusView', {
 	    title: gettext('CPU usage'),
 	    valueField: 'cpu',
 	    maxField: 'cpuinfo',
-	    renderer: PVE.Utils.render_node_cpu_usage,
+	    renderer: Proxmox.Utils.render_node_cpu_usage,
 	},
 	{
 	    itemId: 'wait',
@@ -54,7 +54,7 @@ Ext.define('PVE.node.StatusView', {
 	    title: gettext('RAM usage'),
 	    valueField: 'memory',
 	    maxField: 'memory',
-	    renderer: PVE.Utils.render_node_size_usage,
+	    renderer: Proxmox.Utils.render_node_size_usage,
 	},
 	{
 	    itemId: 'ksm',
@@ -62,7 +62,7 @@ Ext.define('PVE.node.StatusView', {
 	    title: gettext('KSM sharing'),
 	    textField: 'ksm',
 	    renderer: function(record) {
-		return PVE.Utils.render_size(record.shared);
+		return Proxmox.Utils.render_size(record.shared);
 	    },
 	    padding: '0 15 10 15',
 	},
@@ -72,7 +72,7 @@ Ext.define('PVE.node.StatusView', {
 	    title: gettext('HD space') + '(root)',
 	    valueField: 'rootfs',
 	    maxField: 'rootfs',
-	    renderer: PVE.Utils.render_node_size_usage,
+	    renderer: Proxmox.Utils.render_node_size_usage,
 	},
 	{
 	    iconCls: 'fa fa-fw fa-refresh',
@@ -81,7 +81,7 @@ Ext.define('PVE.node.StatusView', {
 	    title: gettext('SWAP usage'),
 	    valueField: 'swap',
 	    maxField: 'swap',
-	    renderer: PVE.Utils.render_node_size_usage,
+	    renderer: Proxmox.Utils.render_node_size_usage,
 	},
 	{
 	    xtype: 'box',
@@ -94,14 +94,7 @@ Ext.define('PVE.node.StatusView', {
 	    printBar: false,
 	    title: gettext('CPU(s)'),
 	    textField: 'cpuinfo',
-	    renderer: function(cpuinfo) {
-		return cpuinfo.cpus + " x " + cpuinfo.model + " (" +
-		cpuinfo.sockets.toString() + " " +
-		(cpuinfo.sockets > 1
-		    ? gettext('Sockets')
-		    : gettext('Socket')
-		) + ")";
-	    },
+	    renderer: Proxmox.Utils.render_cpu_model,
 	    value: '',
 	},
 	{

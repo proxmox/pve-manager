@@ -66,7 +66,7 @@ Ext.define('PVE.ha.GroupInputPanel', {
 		},
 		{
 		    header: gettext('CPU usage'),
-		    renderer: PVE.Utils.render_cpu,
+		    renderer: Proxmox.Utils.render_cpu,
 		    sortable: true,
 		    width: 150,
 		    dataIndex: 'cpu',

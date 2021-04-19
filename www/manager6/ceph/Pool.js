@@ -232,9 +232,7 @@ Ext.define('PVE.node.CephPoolList', {
 	    minWidth: 100,
 	    flex: 1,
 	    align: 'right',
-	    renderer: function(v, meta, rec) {
-		return v + '/' + rec.data.min_size;
-	    },
+	    renderer: (v, meta, rec) => `${v}/${rec.data.min_size}`,
 	    dataIndex: 'size',
 	},
 	{
@@ -314,11 +312,11 @@ Ext.define('PVE.node.CephPoolList', {
 	    align: 'right',
 	    dataIndex: 'bytes_used',
 	    summaryType: 'sum',
-	    summaryRenderer: PVE.Utils.render_size,
+	    summaryRenderer: Proxmox.Utils.render_size,
 	    renderer: function(v, meta, rec) {
 		let percentage = Ext.util.Format.percent(rec.data.percent_used, '0.00');
-		let used = PVE.Utils.render_size(v);
-		return used + ' (' + percentage + ')';
+		let used = Proxmox.Utils.render_size(v);
+		return `${used} (${percentage})`;
 	    },
 	},
     ],

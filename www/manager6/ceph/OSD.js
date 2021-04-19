@@ -536,7 +536,7 @@ Ext.define('PVE.node.CephOsdTree', {
 	},
 
 	render_osd_size: function(value, metaData, rec) {
-	    return this.render_osd_val(PVE.Utils.render_size(value), metaData, rec);
+	    return this.render_osd_val(Proxmox.Utils.render_size(value), metaData, rec);
 	},
 
 	control: {

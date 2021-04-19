@@ -32,9 +32,9 @@ Ext.define('PVE.panel.StatusView', {
 	}
 
 	if (!Ext.isNumeric(max) || max === 1) {
-	    return PVE.Utils.render_usage(val);
+	    return Proxmox.Utils.render_usage(val);
 	}
-	return PVE.Utils.render_size_usage(val, max);
+	return Proxmox.Utils.render_size_usage(val, max);
     },
 
     fieldCalculator: function(used, max) {

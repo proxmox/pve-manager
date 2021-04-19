@@ -145,7 +145,7 @@ Ext.define('PVE.data.ResourceStore', {
 	    maxdisk: {
 		header: gettext('Disk size'),
 		type: 'integer',
-		renderer: PVE.Utils.render_size,
+		renderer: Proxmox.Utils.render_size,
 		sortable: true,
 		hidden: true,
 		width: 100,
@@ -170,7 +170,7 @@ Ext.define('PVE.data.ResourceStore', {
 	    maxmem: {
 		header: gettext('Memory size'),
 		type: 'integer',
-		renderer: PVE.Utils.render_size,
+		renderer: Proxmox.Utils.render_size,
 		hidden: true,
 		sortable: true,
 		width: 100,
@@ -178,7 +178,7 @@ Ext.define('PVE.data.ResourceStore', {
 	    cpu: {
 		header: gettext('CPU usage'),
 		type: 'float',
-		renderer: PVE.Utils.render_cpu,
+		renderer: Proxmox.Utils.render_cpu,
 		sortable: true,
 		width: 100,
 	    },

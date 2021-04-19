@@ -309,8 +309,8 @@ Ext.define('PVE.node.CephStatus', {
 	let total = pgmap.bytes_total;
 
 	var text = Ext.String.format(gettext('{0} of {1}'),
-	    PVE.Utils.render_size(used),
-	    PVE.Utils.render_size(total),
+	    Proxmox.Utils.render_size(used),
+	    Proxmox.Utils.render_size(total),
 	);
 
 	// update the usage widget

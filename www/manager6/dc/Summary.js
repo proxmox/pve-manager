@@ -209,10 +209,10 @@ Ext.define('PVE.dc.Summary', {
 	    var text = Ext.String.format(gettext('of {0} CPU(s)'), maxcpu);
 	    cpustat.updateValue(cpu/maxcpu, text);
 
-	    text = Ext.String.format(gettext('{0} of {1}'), PVE.Utils.render_size(memory), PVE.Utils.render_size(maxmem));
+	    text = Ext.String.format(gettext('{0} of {1}'), Proxmox.Utils.render_size(memory), Proxmox.Utils.render_size(maxmem));
 	    memorystat.updateValue(memory/maxmem, text);
 
-	    text = Ext.String.format(gettext('{0} of {1}'), PVE.Utils.render_size(used), PVE.Utils.render_size(total));
+	    text = Ext.String.format(gettext('{0} of {1}'), Proxmox.Utils.render_size(used), Proxmox.Utils.render_size(total));
 	    storagestat.updateValue(used/total, text);
 
 	    gueststatus.updateValues(qemu, lxc, error);

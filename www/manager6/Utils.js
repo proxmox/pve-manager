@@ -935,22 +935,6 @@ Ext.define('PVE.Utils', {
 	return PVE.Utils.log_severity_hash[value] || value;
     },
 
-    render_cpu: function(value, metaData, record, rowIndex, colIndex, store) {
-	if (!(record.data.uptime && Ext.isNumeric(value))) {
-	    return '';
-	}
-
-	var maxcpu = record.data.maxcpu || 1;
-
-	if (!Ext.isNumeric(maxcpu) && maxcpu >= 1) {
-	    return '';
-	}
-
-	var per = value * 100;
-
-	return per.toFixed(1) + '% of ' + maxcpu.toString() + (maxcpu > 1 ? 'CPUs' : 'CPU');
-    },
-
     calculate_hostcpu: function(data) {
 
 	if (!(data.uptime && Ext.isNumeric(data.cpu))) {
@@ -999,14 +983,6 @@ Ext.define('PVE.Utils', {
 	var per = (record.data.cpu/maxcpu) * record.data.maxcpu * 100;
 
 	return per.toFixed(1) + '% of ' + maxcpu.toString() + (maxcpu > 1 ? 'CPUs' : 'CPU');
-    },
-
-    render_size: function(value, metaData, record, rowIndex, colIndex, store) {
-	if (!Ext.isNumeric(value)) {
-	    return '';
-	}
-
-	return Proxmox.Utils.format_size(value);
     },
 
     render_bandwidth: function(value) {
@@ -1113,7 +1089,7 @@ Ext.define('PVE.Utils', {
 	    return '';
 	}
 
-	return PVE.Utils.render_size(value);
+	return Proxmox.Utils.render_size(value);
     },
 
     calculate_disk_usage: function(data) {
@@ -1147,7 +1123,7 @@ Ext.define('PVE.Utils', {
 	    return '';
 	}
 
-	return PVE.Utils.render_size(value);
+	return Proxmox.Utils.render_size(value);
     },
 
     get_object_icon_class: function(type, record) {
@@ -1195,36 +1171,6 @@ Ext.define('PVE.Utils', {
 	var id = record.data.id;
 
 	return Proxmox.Utils.format_task_description(type, id);
-    },
-
-    /* render functions for new status panel */
-
-    render_usage: function(val) {
-	return (val*100).toFixed(2) + '%';
-    },
-
-    render_cpu_usage: function(val, max) {
-	return Ext.String.format(gettext('{0}% of {1}') +
-	    ' ' + gettext('CPU(s)'), (val*100).toFixed(2), max);
-    },
-
-    render_size_usage: function(val, max) {
-	if (max === 0) {
-	    return gettext('N/A');
-	}
-	return (val*100/max).toFixed(2) + '% '+ '(' +
-	    Ext.String.format(gettext('{0} of {1}'),
-	    PVE.Utils.render_size(val), PVE.Utils.render_size(max)) + ')';
-    },
-
-    /* this is different for nodes */
-    render_node_cpu_usage: function(value, record) {
-	return PVE.Utils.render_cpu_usage(value, record.cpus);
-    },
-
-    /* this is different for nodes */
-    render_node_size_usage: function(record) {
-	return PVE.Utils.render_size_usage(record.used, record.total);
     },
 
     render_optional_url: function(value) {
