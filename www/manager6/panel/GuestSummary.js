@@ -120,7 +120,7 @@ Ext.define('PVE.qemu.Summary', {
 		    items: items,
 		    listeners: {
 			resize: function(container) {
-			    PVE.Utils.updateColumns(container);
+			    Proxmox.Utils.updateColumns(container);
 			},
 		    },
 		},
@@ -137,7 +137,7 @@ Ext.define('PVE.qemu.Summary', {
 	    if (key !== 'summarycolumns') {
 		return;
 	    }
-	    PVE.Utils.updateColumns(me.getComponent('itemcontainer'));
+	    Proxmox.Utils.updateColumns(me.getComponent('itemcontainer'));
 	});
     },
 });

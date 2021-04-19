@@ -75,7 +75,7 @@ Ext.define('PVE.dc.Summary', {
 
     listeners: {
 	resize: function(panel) {
-	    PVE.Utils.updateColumns(panel);
+	    Proxmox.Utils.updateColumns(panel);
 	},
     },
 
@@ -291,7 +291,7 @@ Ext.define('PVE.dc.Summary', {
 	    if (key !== 'summarycolumns') {
 		return;
 	    }
-	    PVE.Utils.updateColumns(me);
+	    Proxmox.Utils.updateColumns(me);
 	});
 
 	rstore.startUpdate();

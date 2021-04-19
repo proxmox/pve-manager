@@ -161,7 +161,7 @@ Ext.define('PVE.node.Summary', {
 		    ],
 		    listeners: {
 			resize: function(panel) {
-			    PVE.Utils.updateColumns(panel);
+			    Proxmox.Utils.updateColumns(panel);
 			},
 		    },
 		},
@@ -186,7 +186,7 @@ Ext.define('PVE.node.Summary', {
 	    if (key !== 'summarycolumns') {
 		return;
 	    }
-	    PVE.Utils.updateColumns(me.getComponent('itemcontainer'));
+	    Proxmox.Utils.updateColumns(me.getComponent('itemcontainer'));
 	});
     },
 });
