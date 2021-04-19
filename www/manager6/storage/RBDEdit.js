@@ -5,6 +5,7 @@ Ext.define('PVE.storage.Ceph.Model', {
     data: {
 	pveceph: true,
 	pvecephPossible: true,
+	namespacePresent: false,
     },
 });
 
@@ -26,9 +27,15 @@ Ext.define('PVE.storage.Ceph.Controller', {
 	    disable: 'resetField',
 	    enable: 'resetField',
 	},
+	'textfield[name=namespace]': {
+	    change: 'updateNamespaceHint',
+	},
     },
     resetField: function(field) {
 	field.reset();
+    },
+    updateNamespaceHint: function(field, newVal, oldVal) {
+	this.getViewModel().set('namespacePresent', newVal);
     },
     queryMonitors: function(field, newVal, oldVal) {
 	// we get called with two signatures, the above one for a field
@@ -87,6 +94,9 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	    this.viewModel.set('pveceph', false);
 	    this.lookupReference('pvecephRef').setValue(false);
 	    this.lookupReference('pvecephRef').resetOriginalValue();
+	}
+	if (values.namespace) {
+	    this.getViewModel().set('namespacePresent', true);
 	}
 	this.callParent([values]);
     },
@@ -170,6 +180,14 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		fieldLabel: gettext('User name'),
 		allowBlank: true,
 	    },
+	    {
+		xtype: 'pmxDisplayEditField',
+		editable: me.isCreate,
+		name: 'namespace',
+		value: '',
+		fieldLabel: gettext('Namespace'),
+		allowBlank: true,
+	    },
 	);
 
 	me.column2 = [
@@ -190,20 +208,31 @@ Ext.define('PVE.storage.RBDInputPanel', {
 	    },
 	];
 
-	me.columnB = [{
-	    xtype: 'proxmoxcheckbox',
-	    name: 'pveceph',
-	    reference: 'pvecephRef',
-	    bind: {
-		disabled: '{!pvecephPossible}',
-		value: '{pveceph}',
+	me.columnB = [
+	    {
+		xtype: 'proxmoxcheckbox',
+		name: 'pveceph',
+		reference: 'pvecephRef',
+		bind: {
+		    disabled: '{!pvecephPossible}',
+		    value: '{pveceph}',
+		},
+		checked: true,
+		uncheckedValue: 0,
+		submitValue: false,
+		hidden: !me.isCreate,
+		boxLabel: gettext('Use Proxmox VE managed hyper-converged ceph pool'),
 	    },
-	    checked: true,
-	    uncheckedValue: 0,
-	    submitValue: false,
-	    hidden: !me.isCreate,
-	    boxLabel: gettext('Use Proxmox VE managed hyper-converged ceph pool'),
-	}];
+	    {
+		xtype: 'displayfield',
+		name: 'namespace-hint',
+		userCls: 'pmx-hint',
+		value: gettext('RBD namespaces must be created manually!'),
+		bind: {
+		    hidden: '{!namespacePresent}',
+		},
+	    },
+	];
 
 	me.callParent();
     },
