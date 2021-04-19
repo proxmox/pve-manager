@@ -407,7 +407,7 @@ Ext.define('PVE.node.CephPoolList', {
 			    return;
 			}
 			let poolName = rec.data.pool_name;
-			Ext.create('PVE.window.SafeDestroy', {
+			Ext.create('Proxmox.window.SafeDestroy', {
 			    showProgress: true,
 			    url: `/nodes/${nodename}/ceph/pools/${poolName}`,
 			    params: {
@@ -417,6 +417,7 @@ Ext.define('PVE.node.CephPoolList', {
 				type: 'CephPool',
 				id: poolName,
 			    },
+			    taskName: 'cephdestroypool',
 			    autoShow: true,
 			    listeners: {
 				destroy: () => rstore.load(),

@@ -57,11 +57,12 @@ Ext.define('PVE.storage.ImageView', {
 			    return;
 			}
 		    }
-		    var win = Ext.create('PVE.window.SafeDestroy', {
+		    var win = Ext.create('Proxmox.window.SafeDestroy', {
 			title: Ext.String.format(gettext("Destroy '{0}'"), rec.data.volid),
 			showProgress: true,
 			url: url,
 			item: { type: 'Image', id: vmid },
+			taskName: 'unknownimgdel',
 		    }).show();
 		    win.on('destroy', reload);
 		},
