@@ -81,7 +81,6 @@ JSSRC= 							\
 	panel/NotesView.js				\
 	panel/RunningChart.js				\
 	panel/StatusPanel.js				\
-	panel/StatusView.js				\
 	panel/GuestStatusView.js			\
 	panel/GuestSummary.js				\
 	panel/TemplateStatusView.js			\

@@ -1,5 +1,5 @@
 Ext.define('PVE.panel.TemplateStatusView', {
-    extend: 'PVE.panel.StatusView',
+    extend: 'Proxmox.panel.StatusView',
     alias: 'widget.pveTemplateStatusView',
 
     layout: {

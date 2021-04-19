@@ -1,5 +1,5 @@
 Ext.define('PVE.panel.GuestStatusView', {
-    extend: 'PVE.panel.StatusView',
+    extend: 'Proxmox.panel.StatusView',
     alias: 'widget.pveGuestStatusView',
     mixins: ['Proxmox.Mixin.CBind'],
 

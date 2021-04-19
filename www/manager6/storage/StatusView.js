@@ -1,5 +1,5 @@
 Ext.define('PVE.storage.StatusView', {
-    extend: 'PVE.panel.StatusView',
+    extend: 'Proxmox.panel.StatusView',
     alias: 'widget.pveStorageStatusView',
 
     height: 230,

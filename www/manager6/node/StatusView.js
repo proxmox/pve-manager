@@ -1,5 +1,5 @@
 Ext.define('PVE.node.StatusView', {
-    extend: 'PVE.panel.StatusView',
+    extend: 'Proxmox.panel.StatusView',
     alias: 'widget.pveNodeStatus',
 
     height: 300,
