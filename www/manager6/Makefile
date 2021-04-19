@@ -99,7 +99,6 @@ JSSRC= 							\
 	window/NotesEdit.js				\
 	window/Prune.js					\
 	window/Restore.js				\
-	window/SafeDestroy.js				\
 	window/SafeDestroyGuest.js			\
 	window/Settings.js				\
 	window/Snapshot.js				\
