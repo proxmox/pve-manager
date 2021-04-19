@@ -301,6 +301,39 @@ my $check_duplicate_gateway6 = sub {
     return &$check_duplicate($config, $newiface, 'gateway6', 'Default ipv6 gateway');
 };
 
+my $check_duplicate_ports = sub {
+    my ($config, $newiface, $newparam) = @_;
+
+    my $param_name;
+    my $get_portlist = sub {
+	my ($param) = @_;
+	my $ports = '';
+	for my $k (qw(bridge_ports ovs_ports slaves ovs_bonds)) {
+	    if ($param->{$k}) {
+		$ports .= " $param->{$k}";
+		$param_name //= $k;
+	    }
+	}
+	return PVE::Tools::split_list($ports);
+    };
+
+    my $new_ports = {};
+    for my $p ($get_portlist->($newparam)) {
+	$new_ports->{$p} = 1;
+    }
+    return if !(keys %$new_ports);
+
+    for my $iface (keys %$config) {
+	next if $iface eq $newiface;
+
+	my $d = $config->{$iface};
+	for my $p ($get_portlist->($d)) {
+	    raise_param_exc({ $param_name => "$p is already used on interface '$iface'." })
+		if $new_ports->{$p};
+	}
+    }
+};
+
 sub ipv6_tobin {
     return Net::IP::ip_iptobin(Net::IP::ip_expand_address(shift, 6), 6);
 }
@@ -386,6 +419,8 @@ __PACKAGE__->register_method({
 		if $param->{gateway};
 	    &$check_duplicate_gateway6($ifaces, $iface)
 		if $param->{gateway6};
+
+	    $check_duplicate_ports->($ifaces, $iface, $param);
 
 	    $map_cidr_to_address_netmask->($param);
 
@@ -487,6 +522,8 @@ __PACKAGE__->register_method({
 		if $param->{gateway};
 	    &$check_duplicate_gateway6($ifaces, $iface)
 		if $param->{gateway6};
+
+	    $check_duplicate_ports->($ifaces, $iface, $param);
 
 	    if ($param->{address}) {
 		push @$families, 'inet' if !grep(/^inet$/, @$families);
