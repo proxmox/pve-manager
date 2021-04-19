@@ -125,9 +125,10 @@ Ext.define('PVE.qemu.Config', {
 		    itemId: 'removeBtn',
 		    disabled: !caps.vms['VM.Allocate'],
 		    handler: function() {
-			Ext.create('PVE.window.SafeDestroy', {
+			Ext.create('PVE.window.SafeDestroyGuest', {
 			    url: base_url,
 			    item: { type: 'VM', id: vmid },
+			    taskName: 'qmdestroy',
 			}).show();
 		    },
 		    iconCls: 'fa fa-trash-o',

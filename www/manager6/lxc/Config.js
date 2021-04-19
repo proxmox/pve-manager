@@ -150,9 +150,10 @@ Ext.define('PVE.lxc.Config', {
 		    disabled: !caps.vms['VM.Allocate'],
 		    itemId: 'removeBtn',
 		    handler: function() {
-			Ext.create('PVE.window.SafeDestroy', {
+			Ext.create('PVE.window.SafeDestroyGuest', {
 			    url: base_url,
 			    item: { type: 'CT', id: vmid },
+			    taskName: 'vzdestroy',
 			}).show();
 		    },
 		    iconCls: 'fa fa-trash-o',
