@@ -39,7 +39,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		header: gettext('Memory'),
 		editor: caps.vms['VM.Config.Memory'] ? 'PVE.lxc.MemoryEdit' : undefined,
 		defaultValue: 512,
-		tdCls: 'pve-itype-icon-memory',
+		tdCls: 'pmx-itype-icon-memory',
 		group: 1,
 		renderer: function(value) {
 		    return Proxmox.Utils.format_size(value*1024*1024);
@@ -59,7 +59,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		header: gettext('Cores'),
 		editor: caps.vms['VM.Config.CPU'] ? 'PVE.lxc.CPUEdit' : undefined,
 		defaultValue: '',
-		tdCls: 'pve-itype-icon-processor',
+		tdCls: 'pmx-itype-icon-processor',
 		group: 3,
 		renderer: function(value) {
 		    var cpulimit = me.getObjectValue('cpulimit');

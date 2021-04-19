@@ -14,7 +14,7 @@ all:
 # unchecked.png converted from extjs examples/ux/css/images/unchecked.gif
 # swap.png downloaded from https://www.iconfinder.com/icons/17009/arrows_exchange_interact_refresh_reload_swap_sync_update_icon#size=16
 
-# icon-ram, icon-cpu, icon-cd, icon-pci
+# icon-cd, icon-pci
 # are self made (sources as .xcf)
 # icon-swap, icon-display, icon-harddisk, icon-keyboard, icon-network, icon-usb, icon-cloud
 # come from fontawesome (respective fa-refresh, fa-desktop, fa-hdd-o, fa-keyboard-o, fa-exchange, fa-usb, fa-ellipsis-h, fa-cloud)
@@ -65,8 +65,6 @@ IMAGES = ${GNOME_IMAGES}	\
 	openvz-off.png		\
 	blank.gif		\
 	swap.png		\
-	icon-ram.png		\
-	icon-cpu.png		\
 	icon-swap.png		\
 	icon-cd.png		\
 	icon-network.png	\

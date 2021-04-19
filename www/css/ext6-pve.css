@@ -281,8 +281,6 @@
 .pve-itype-icon-novnc,
 .pve-itype-icon-xtermjs,
 .pve-itype-icon-display,
-.pve-itype-icon-memory,
-.pve-itype-icon-processor,
 .pve-itype-icon-network,
 .pve-itype-icon-network-server,
 .pve-itype-icon-keyboard,
@@ -387,16 +385,6 @@
 .pve-itype-icon-cdrom
 {
     background-image:url(../images/icon-cd.png);
-}
-
-.pve-itype-icon-memory
-{
-    background-image:url(../images/icon-ram.png);
-}
-
-.pve-itype-icon-processor
-{
-    background-image:url(../images/icon-cpu.png);
 }
 
 .pve-itype-icon-display

@@ -36,13 +36,13 @@ Ext.define('PVE.panel.TemplateStatusView', {
 	},
 	{
 	    itemId: 'cpus',
-	    iconCls: 'fa fa-fw pve-itype-icon-processor pve-icon',
+	    iconCls: 'fa fa-fw pmx-itype-icon-processor pmx-icon',
 	    title: gettext('Processors'),
 	    textField: 'cpus',
 	},
 	{
 	    itemId: 'memory',
-	    iconCls: 'fa fa-fw pve-itype-icon-memory pve-icon',
+	    iconCls: 'fa fa-fw pmx-itype-icon-memory pmx-icon',
 	    title: gettext('Memory'),
 	    textField: 'maxmem',
 	    renderer: Proxmox.Utils.render_size,

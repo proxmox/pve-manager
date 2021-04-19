@@ -66,7 +66,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		editor: caps.vms['VM.Config.Memory'] ? 'PVE.qemu.MemoryEdit' : undefined,
 		never_delete: true,
 		defaultValue: '512',
-		tdCls: 'pve-itype-icon-memory',
+		tdCls: 'pmx-itype-icon-memory',
 		group: 2,
 		multiKey: ['memory', 'balloon', 'shares'],
 		renderer: function(value, metaData, record, ri, ci, store, pending) {
@@ -95,7 +95,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		never_delete: true,
 		editor: caps.vms['VM.Config.CPU'] || caps.vms['VM.Config.HWType']
 		    ? 'PVE.qemu.ProcessorEdit' : undefined,
-		tdCls: 'pve-itype-icon-processor',
+		tdCls: 'pmx-itype-icon-processor',
 		group: 3,
 		defaultValue: '1',
 		multiKey: ['sockets', 'cpu', 'cores', 'numa', 'vcpus', 'cpulimit', 'cpuunits'],

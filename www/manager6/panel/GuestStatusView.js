@@ -67,7 +67,7 @@ Ext.define('PVE.panel.GuestStatusView', {
 	},
 	{
 	    itemId: 'cpu',
-	    iconCls: 'fa fa-fw pve-itype-icon-processor pve-icon',
+	    iconCls: 'fa fa-fw pmx-itype-icon-processor pmx-icon',
 	    title: gettext('CPU usage'),
 	    valueField: 'cpu',
 	    maxField: 'cpus',
@@ -78,7 +78,7 @@ Ext.define('PVE.panel.GuestStatusView', {
 	},
 	{
 	    itemId: 'memory',
-	    iconCls: 'fa fa-fw pve-itype-icon-memory pve-icon',
+	    iconCls: 'fa fa-fw pmx-itype-icon-memory pmx-icon',
 	    title: gettext('Memory usage'),
 	    valueField: 'mem',
 	    maxField: 'maxmem',

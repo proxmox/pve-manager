@@ -23,7 +23,7 @@ Ext.define('PVE.node.StatusView', {
     items: [
 	{
 	    itemId: 'cpu',
-	    iconCls: 'fa fa-fw pve-itype-icon-processor pve-icon',
+	    iconCls: 'fa fa-fw pmx-itype-icon-processor pmx-icon',
 	    title: gettext('CPU usage'),
 	    valueField: 'cpu',
 	    maxField: 'cpuinfo',
@@ -49,7 +49,7 @@ Ext.define('PVE.node.StatusView', {
 	    padding: '0 0 20 0',
 	},
 	{
-	    iconCls: 'fa fa-fw pve-itype-icon-memory pve-icon',
+	    iconCls: 'fa fa-fw pmx-itype-icon-memory pmx-icon',
 	    itemId: 'memory',
 	    title: gettext('RAM usage'),
 	    valueField: 'memory',
