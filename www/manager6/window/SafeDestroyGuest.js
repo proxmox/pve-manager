@@ -17,6 +17,17 @@ Ext.define('PVE.window.SafeDestroyGuest', {
 		'data-qtip': gettext('Remove from replication and backup jobs'),
 	    },
 	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    name: 'destroyUnreferenced',
+	    reference: 'destroyUnreferencedCheckbox',
+	    boxLabel: gettext('Destroy unreferenced disks'),
+	    checked: false,
+	    autoEl: {
+		tag: 'div',
+		'data-qtip': gettext('Scan all storages for unreferenced disks'),
+	    },
+	},
     ],
 
     getParams: function() {
@@ -24,6 +35,9 @@ Ext.define('PVE.window.SafeDestroyGuest', {
 
 	const purgeCheckbox = me.lookupReference('purgeCheckbox');
 	me.params.purge = purgeCheckbox.checked ? 1 : 0;
+
+	const destroyUnreferencedCheckbox = me.lookupReference('destroyUnreferencedCheckbox');
+	me.params["destroy-unreferenced-disks"] = destroyUnreferencedCheckbox.checked ? 1 : 0;
 
 	return me.callParent();
     },
