@@ -105,14 +105,16 @@ Ext.define('PVE.node.CephPoolList', {
 
     columns: [
 	{
-	    header: gettext('Name'),
-	    width: 120,
+	    text: gettext('Name'),
+	    minWidth: 120,
+	    flex: 2,
 	    sortable: true,
 	    dataIndex: 'pool_name',
 	},
 	{
-	    header: gettext('Size') + '/min',
-	    width: 100,
+	    text: gettext('Size') + '/min',
+	    minWidth: 100,
+	    flex: 1,
 	    align: 'right',
 	    renderer: function(v, meta, rec) {
 		return v + '/' + rec.data.min_size;
@@ -120,62 +122,82 @@ Ext.define('PVE.node.CephPoolList', {
 	    dataIndex: 'size',
 	},
 	{
-	    text: 'Placement Groups',
-	    columns: [
-		{
-		    text: '# of PGs', // pg_num',
-		    width: 150,
-		    align: 'right',
-		    dataIndex: 'pg_num',
-		},
-		{
-		    text: gettext('Autoscale'),
-		    width: 140,
-		    align: 'right',
-		    dataIndex: 'pg_autoscale_mode',
-		},
-	    ],
+	    text: '# of Placement Groups',
+	    flex: 1,
+	    minWidth: 150,
+	    align: 'right',
+	    dataIndex: 'pg_num',
 	},
 	{
-	    text: 'CRUSH Rule',
-	    columns: [
-		{
-		    text: 'ID',
-		    align: 'right',
-		    width: 50,
-		    dataIndex: 'crush_rule',
-		},
-		{
-		    text: gettext('Name'),
-		    width: 150,
-		    dataIndex: 'crush_rule_name',
-		},
-	    ],
+	    text: gettext('Optimal # of PGs'),
+	    flex: 1,
+	    minWidth: 140,
+	    align: 'right',
+	    dataIndex: 'pg_num_final',
+	    renderer: function(value, metaData) {
+		if (!value) {
+		    value = '<i class="fa fa-info-circle faded"></i> n/a';
+		    metaData.tdAttr = 'data-qtip="Needs pg_autoscaler module enabled."';
+		}
+		return value;
+	    },
 	},
 	{
-	    text: gettext('Used'),
-	    columns: [
-		{
-		    text: '%',
-		    width: 100,
-		    sortable: true,
-		    align: 'right',
-		    renderer: function(val) {
-			return Ext.util.Format.percent(val, '0.00');
-		    },
-		    dataIndex: 'percent_used',
-		},
-		{
-		    text: gettext('Total'),
-		    width: 100,
-		    sortable: true,
-		    renderer: PVE.Utils.render_size,
-		    align: 'right',
-		    dataIndex: 'bytes_used',
-		    summaryType: 'sum',
-		    summaryRenderer: PVE.Utils.render_size,
-		},
-	    ],
+	    text: gettext('Target Size Ratio'),
+	    flex: 1,
+	    minWidth: 140,
+	    align: 'right',
+	    dataIndex: 'target_size_ratio',
+	    renderer: Ext.util.Format.numberRenderer('0.0000'),
+	    hidden: true,
+	},
+	{
+	    text: gettext('Target Size'),
+	    flex: 1,
+	    minWidth: 140,
+	    align: 'right',
+	    dataIndex: 'target_size',
+	    hidden: true,
+	    renderer: function(v, metaData, rec) {
+		let value = PVE.Utils.render_size(v);
+		if (rec.data.target_size_ratio > 0) {
+		    value = '<i class="fa fa-info-circle faded"></i> ' + value;
+		    metaData.tdAttr = 'data-qtip="Target Size Ratio takes precedence over Target Size."';
+		}
+		return value;
+	    },
+	},
+	{
+	    text: gettext('Autoscale Mode'),
+	    flex: 1,
+	    minWidth: 140,
+	    align: 'right',
+	    dataIndex: 'pg_autoscale_mode',
+	},
+	{
+	    text: 'CRUSH Rule (ID)',
+	    flex: 1,
+	    align: 'right',
+	    minWidth: 150,
+	    renderer: function(v, meta, rec) {
+		return v + ' (' + rec.data.crush_rule + ')';
+	    },
+	    dataIndex: 'crush_rule_name',
+	},
+	{
+	    text: gettext('Used') + ' (%)',
+	    flex: 1,
+	    minWidth: 180,
+	    sortable: true,
+	    align: 'right',
+	    dataIndex: 'bytes_used',
+	    summaryType: 'sum',
+	    summaryRenderer: PVE.Utils.render_size,
+	    renderer: function(v, meta, rec) {
+		let percentage = Ext.util.Format.percent(rec.data.percent_used, '0.00');
+		let used = PVE.Utils.render_size(v);
+		return used + ' (' + percentage + ')';
+	    },
 	},
     ],
     initComponent: function() {
@@ -276,6 +298,10 @@ Ext.define('PVE.node.CephPoolList', {
 		  { name: 'percent_used', type: 'number' },
 		  { name: 'crush_rule', type: 'integer' },
 		  { name: 'crush_rule_name', type: 'string' },
+		  { name: 'pg_autoscale_mode', type: 'string'},
+		  { name: 'pg_num_final', type: 'integer'},
+		  { name: 'target_size_ratio', type: 'number'},
+		  { name: 'target_size_bytes', type: 'integer'},
 		],
 	idProperty: 'pool_name',
     });
