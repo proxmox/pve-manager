@@ -199,6 +199,8 @@ Ext.define('PVE.qemu.Config', {
 	    disabled: !caps.vms['VM.Console'],
 	    hidden: template,
 	    consoleType: 'kvm',
+	    enableSpice: false,
+	    enableXtermjs: false,
 	    consoleName: vm.name,
 	    nodename: nodename,
 	    vmid: vmid,
