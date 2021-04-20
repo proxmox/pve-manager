@@ -11,20 +11,26 @@ use PVE::API2::Ceph::OSD;
 
 use Data::Dumper;
 
+# NOTE: not exhausive, reduced to actually required fields!
 my $tree = {
     nodes => [
 	{
 	    id => -3,
 	    name => 'pveA',
 	    children => [ 0,1,2,3 ],
-	}, {
+	    type => 'host',
+	},
+	{
 	    id => -5,
 	    name => 'pveB',
 	    children => [ 4,5,6,7 ],
-	}, {
+	    type => 'host',
+	},
+	{
 	    id => -7,
 	    name => 'pveC',
 	    children => [ 8,9,10,11 ],
+	    type => 'host',
 	},
     ],
 };
@@ -53,20 +59,22 @@ my $double_nodes_tree = {
     nodes => [
 	{
 	    name => 'pveA',
+	    type => 'host',
 	},
 	{
 	    name => 'pveA',
+	    type => 'host',
 	}
     ]
 };
 eval { PVE::API2::Ceph::OSD::osd_belongs_to_node($double_nodes_tree, 'pveA') };
-like($@, qr/not be more than one/, "Die if node occurs too often");
+like($@, qr/duplicate host name found/, "Die if node occurs too often");
 
-my $tree_without_nodes = {
-    dummy => 'dummy',
-};
-eval { PVE::API2::Ceph::OSD::osd_belongs_to_node(undef) };
-like($@, qr/No tree nodes/, "Die if tree has no nodes");
+is (
+    PVE::API2::Ceph::OSD::osd_belongs_to_node(undef),
+    0,
+    "Early-return false if there's no/empty node tree",
+);
 
 
 done_testing(@belong_to_B + @not_belong_to_B + 2);

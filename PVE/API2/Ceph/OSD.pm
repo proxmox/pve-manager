@@ -482,15 +482,18 @@ __PACKAGE__->register_method ({
 # $tree ... rados osd tree (passing the tree makes it easy to test)
 sub osd_belongs_to_node {
     my ($tree, $nodename, $osdid) = @_;
+    return 0 if !($tree && $tree->{nodes});
 
-    die "No tree nodes found\n" if !($tree && $tree->{nodes});
-    my $allNodes = $tree->{nodes};
+    my $node_map = {};
+    for my $el (grep { defined($_->{type}) && $_->{type} eq 'host' } @{$tree->{nodes}}) {
+	my $name = $el->{name};
+	die "internal error: duplicate host name found '$name'\n" if $node_map->{$name};
+	$node_map->{$name} = $el;
+    }
 
-    my @match = grep($_->{name} eq $nodename, @$allNodes);
-    my $node = shift @match; # contains rados information about $nodename
-    die "There must not be more than one such node in the list" if @match;
+    my $osds = $node_map->{$nodename}->{children};
+    return 0 if !$osds;
 
-    my $osds = $node->{children};
     return grep($_ == $osdid, @$osds);
 }
 
