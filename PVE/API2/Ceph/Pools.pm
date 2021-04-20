@@ -175,7 +175,7 @@ my $ceph_pool_common_options = sub {
 	    type => 'integer',
 	    default => 128,
 	    optional => 1,
-	    minimum => 8,
+	    minimum => 1,
 	    maximum => 32768,
 	},
 	pg_num_min => {
