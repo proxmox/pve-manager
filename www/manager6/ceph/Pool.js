@@ -1,17 +1,21 @@
-Ext.define('PVE.CephCreatePool', {
-    extend: 'Proxmox.window.Edit',
-    alias: 'widget.pveCephCreatePool',
+Ext.define('PVE.CephPoolInputPanel', {
+    extend: 'Proxmox.panel.InputPanel',
+    xtype: 'pveCephPoolInputPanel',
+    mixins: ['Proxmox.Mixin.CBind'],
 
     showProgress: true,
     onlineHelp: 'pve_ceph_pools',
 
     subject: 'Ceph Pool',
-    isCreate: true,
-    method: 'POST',
-    items: [
+    column1: [
 	{
-	    xtype: 'textfield',
+	    xtype: 'pmxDisplayEditField',
 	    fieldLabel: gettext('Name'),
+	    cbind: {
+		editable: '{isCreate}',
+		value: '{pool_name}',
+		disabled: '{!isCreate}',
+	    },
 	    name: 'name',
 	    allowBlank: false,
 	},
@@ -20,28 +24,23 @@ Ext.define('PVE.CephCreatePool', {
 	    fieldLabel: gettext('Size'),
 	    name: 'size',
 	    value: 3,
-	    minValue: 1,
+	    minValue: 2,
 	    maxValue: 7,
 	    allowBlank: false,
+	    listeners: {
+		change: function(field, val) {
+		    let size = Math.round(val / 2);
+		    if (size > 1) {
+			field.up('inputpanel').down('field[name=min_size]').setValue(size);
+		    }
+		},
+	    },
 	},
-	{
-	    xtype: 'proxmoxintegerfield',
-	    fieldLabel: gettext('Min. Size'),
-	    name: 'min_size',
-	    value: 2,
-	    minValue: 1,
-	    maxValue: 7,
-	    allowBlank: false,
-	},
-	{
-	    xtype: 'pveCephRuleSelector',
-	    fieldLabel: 'Crush Rule', // do not localize
-	    name: 'crush_rule',
-	    allowBlank: false,
-	},
+    ],
+    column2: [
 	{
 	    xtype: 'proxmoxKVComboBox',
-	    fieldLabel: 'PG Autoscale Mode', // do not localize
+	    fieldLabel: 'PG Autoscale Mode',
 	    name: 'pg_autoscale_mode',
 	    comboItems: [
 		['warn', 'warn'],
@@ -51,44 +50,153 @@ Ext.define('PVE.CephCreatePool', {
 	    value: 'warn',
 	    allowBlank: false,
 	    autoSelect: false,
-	},
-	{
-	    xtype: 'proxmoxintegerfield',
-	    fieldLabel: 'pg_num',
-	    name: 'pg_num',
-	    value: 128,
-	    minValue: 8,
-	    maxValue: 32768,
-	    allowBlank: true,
-	    emptyText: gettext('Autoscale'),
+	    labelWidth: 140,
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
 	    fieldLabel: gettext('Add as Storage'),
-	    value: true,
+	    cbind: {
+		value: '{isCreate}',
+		hidden: '{!isCreate}',
+	    },
 	    name: 'add_storages',
+	    labelWidth: 140,
 	    autoEl: {
 		tag: 'div',
-		 'data-qtip': gettext('Add the new pool to the cluster storage configuration.'),
+		'data-qtip': gettext('Add the new pool to the cluster storage configuration.'),
 	    },
 	},
     ],
-    initComponent: function() {
-        var me = this;
+    advancedColumn1: [
+	{
+	    xtype: 'proxmoxintegerfield',
+	    fieldLabel: gettext('Min. Size'),
+	    name: 'min_size',
+	    value: 2,
+	    cbind: {
+		minValue: (get) => get('isCreate') ? 2 : 1,
+	    },
+	    maxValue: 7,
+	    allowBlank: false,
+	    listeners: {
+		change: function(field, val) {
+		    let warn = true;
+		    let warn_text = gettext('Min. Size');
 
-	if (!me.nodename) {
-	    throw "no node name specified";
+		    if (val < 2) {
+			warn = false;
+			warn_text = gettext('Min. Size') + ' <i class="fa fa-exclamation-triangle warning"></i>';
+		    }
+
+		    field.up().down('field[name=min_size-warning]').setHidden(warn);
+		    field.setFieldLabel(warn_text);
+		},
+	    },
+	},
+	{
+	    xtype: 'displayfield',
+	    name: 'min_size-warning',
+	    userCls: 'pmx-hint',
+	    value: 'A pool with min_size=1 could lead to data loss, incomplete PGs or unfound objects.',
+	    hidden: true,
+	},
+	{
+	    xtype: 'pveCephRuleSelector',
+	    fieldLabel: 'Crush Rule', // do not localize
+	    cbind: { nodename: '{nodename}' },
+	    name: 'crush_rule',
+	    allowBlank: false,
+	},
+	{
+	    xtype: 'proxmoxintegerfield',
+	    fieldLabel: '# of PGs',
+	    name: 'pg_num',
+	    value: 128,
+	    minValue: 1,
+	    maxValue: 32768,
+	    allowBlank: false,
+	    emptyText: 128,
+	},
+    ],
+    advancedColumn2: [
+	{
+	    xtype: 'numberfield',
+	    fieldLabel: gettext('Target Size Ratio'),
+	    name: 'target_size_ratio',
+	    labelWidth: 140,
+	    minValue: 0,
+	    decimalPrecision: 3,
+	    allowBlank: true,
+	    emptyText: '0.0',
+	},
+	{
+	    xtype: 'numberfield',
+	    fieldLabel: gettext('Target Size') + ' (GiB)',
+	    name: 'target_size',
+	    labelWidth: 140,
+	    minValue: 0,
+	    allowBlank: true,
+	    emptyText: '0',
+	},
+	{
+	    xtype: 'displayfield',
+	    userCls: 'pmx-hint',
+	    value: 'Target Size Ratio takes precedence.',
+	},
+    ],
+
+    onGetValues: function(values) {
+	Object.keys(values || {}).forEach(function(name) {
+	    if (values[name] === '') {
+		delete values[name];
+	    }
+	});
+
+	if (Ext.isNumber(values.target_size) && values.target_size !== 0) {
+	    values.target_size = values.target_size*1024*1024*1024;
+	}
+	return values;
+    },
+
+    setValues: function(values) {
+	if (Ext.isNumber(values.target_size) && values.target_size !== 0) {
+	    values.target_size = values.target_size/1024/1024/1024;
 	}
 
-        Ext.apply(me, {
-	    url: "/nodes/" + me.nodename + "/ceph/pools",
-	    defaults: {
-		nodename: me.nodename,
-	    },
-        });
-
-        me.callParent();
+	this.callParent([values]);
     },
+
+});
+
+Ext.define('PVE.CephPoolEdit', {
+    extend: 'Proxmox.window.Edit',
+    alias: 'widget.pveCephPoolEdit',
+    xtype: 'pveCephPoolEdit',
+    mixins: ['Proxmox.Mixin.CBind'],
+
+    cbindData: {
+	pool_name: '',
+	isCreate: (cfg) => !cfg.pool_name,
+    },
+
+    cbind: {
+	autoLoad: get => !get('isCreate'),
+	url: get => get('isCreate')
+	    ? `/nodes/${get('nodename')}/ceph/pools`
+	    : `/nodes/${get('nodename')}/ceph/pools/${get('pool_name')}`,
+	method: get => get('isCreate') ? 'POST' : 'PUT',
+    },
+
+    subject: gettext('Ceph Pool'),
+
+    items: [{
+	xtype: 'pveCephPoolInputPanel',
+	cbind: {
+	    nodename: '{nodename}',
+	    pool_name: '{pool_name}',
+	    isCreate: '{isCreate}',
+	},
+    }],
 });
 
 Ext.define('PVE.node.CephPoolList', {
@@ -221,6 +329,9 @@ Ext.define('PVE.node.CephPoolList', {
 	});
 
 	var store = Ext.create('Proxmox.data.DiffStore', { rstore: rstore });
+	var reload = function() {
+	    rstore.load();
+	};
 
 	var regex = new RegExp("not (installed|initialized)", "i");
 	PVE.Utils.handleStoreErrorOrMask(me, rstore, regex, function(me, error) {
@@ -237,14 +348,36 @@ Ext.define('PVE.node.CephPoolList', {
 	var create_btn = new Ext.Button({
 	    text: gettext('Create'),
 	    handler: function() {
-		var win = Ext.create('PVE.CephCreatePool', {
-                    nodename: nodename,
+		var win = Ext.create('PVE.CephPoolEdit', {
+		    title: gettext('Create') + ': Ceph Pool',
+		    isCreate: true,
+		    nodename: nodename,
 		});
 		win.show();
-		win.on('destroy', function() {
-		    rstore.load();
-		});
+		win.on('destroy', reload);
 	    },
+	});
+
+	var run_editor = function() {
+	    var rec = sm.getSelection()[0];
+	    if (!rec) {
+		return;
+	    }
+
+	    var win = Ext.create('PVE.CephPoolEdit', {
+		title: gettext('Edit') + ': Ceph Pool',
+		nodename: nodename,
+		pool_name: rec.data.pool_name,
+	    });
+            win.on('destroy', reload);
+            win.show();
+	};
+
+	var edit_btn = new Proxmox.button.Button({
+	    text: gettext('Edit'),
+	    disabled: true,
+	    selModel: sm,
+	    handler: run_editor,
 	});
 
 	var destroy_btn = Ext.create('Proxmox.button.Button', {
@@ -268,19 +401,18 @@ Ext.define('PVE.node.CephPoolList', {
 		    },
 		    item: { type: 'CephPool', id: rec.data.pool_name },
 		}).show();
-		win.on('destroy', function() {
-		    rstore.load();
-		});
+		win.on('destroy', reload);
 	    },
 	});
 
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    tbar: [create_btn, destroy_btn],
+	    tbar: [create_btn, edit_btn, destroy_btn],
 	    listeners: {
 		activate: () => rstore.startUpdate(),
 		destroy: () => rstore.stopUpdate(),
+		itemdblclick: run_editor,
 	    },
 	});
 
@@ -298,10 +430,10 @@ Ext.define('PVE.node.CephPoolList', {
 		  { name: 'percent_used', type: 'number' },
 		  { name: 'crush_rule', type: 'integer' },
 		  { name: 'crush_rule_name', type: 'string' },
-		  { name: 'pg_autoscale_mode', type: 'string'},
-		  { name: 'pg_num_final', type: 'integer'},
-		  { name: 'target_size_ratio', type: 'number'},
-		  { name: 'target_size_bytes', type: 'integer'},
+		  { name: 'pg_autoscale_mode', type: 'string' },
+		  { name: 'pg_num_final', type: 'integer' },
+		  { name: 'target_size_ratio', type: 'number' },
+		  { name: 'target_size', type: 'integer' },
 		],
 	idProperty: 'pool_name',
     });
