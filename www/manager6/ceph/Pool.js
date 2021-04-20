@@ -161,15 +161,20 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    }
 	});
 
-	if (Ext.isNumber(values.target_size) && values.target_size !== 0) {
-	    values.target_size = values.target_size*1024*1024*1024;
+	let target_size = Number.parseFloat(values.target_size);
+
+	if (Ext.isNumber(target_size) && target_size !== 0) {
+	    values.target_size = (target_size*1024*1024*1024).toFixed(0);
 	}
+
 	return values;
     },
 
     setValues: function(values) {
-	if (Ext.isNumber(values.target_size) && values.target_size !== 0) {
-	    values.target_size = values.target_size/1024/1024/1024;
+	let target_size = Number.parseFloat(values.target_size);
+
+	if (Ext.isNumber(target_size) && target_size !== 0) {
+	    values.target_size = target_size/1024/1024/1024;
 	}
 
 	this.callParent([values]);
