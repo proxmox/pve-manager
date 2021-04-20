@@ -200,33 +200,52 @@ sub check_ceph_enabled {
     return 1;
 }
 
+my $set_pool_setting = sub {
+    my ($pool, $setting, $value) = @_;
+
+    my $command;
+    if ($setting eq 'application') {
+	$command = {
+	    prefix => "osd pool application enable",
+	    pool   => "$pool",
+	    app    => "$value",
+	};
+    } else {
+	$command = {
+	    prefix => "osd pool set",
+	    pool   => "$pool",
+	    var    => "$setting",
+	    val    => "$value",
+	    format => 'plain',
+	};
+    }
+
+    my $rados = PVE::RADOS->new();
+    eval { $rados->mon_command($command); };
+    return $@ ? $@ : undef;
+};
+
 sub set_pool {
     my ($pool, $param) = @_;
 
+    # by default, pool size always sets min_size,
+    # set it and forget it, as first item
+    # https://tracker.ceph.com/issues/44862
+    if ($param->{size}) {
+	my $value = $param->{size};
+	if (my $err = $set_pool_setting->($pool, 'size', $value)) {
+	    print "$err";
+	} else {
+	    delete $param->{size};
+	}
+    }
+
     foreach my $setting (keys %$param) {
 	my $value = $param->{$setting};
+	next if $setting eq 'size';
 
-	my $command;
-	if ($setting eq 'application') {
-	    $command = {
-		prefix => "osd pool application enable",
-		pool   => "$pool",
-		app    => "$value",
-	    };
-	} else {
-	    $command = {
-		prefix => "osd pool set",
-		pool   => "$pool",
-		var    => "$setting",
-		val    => "$value",
-		format => 'plain',
-	    };
-	}
-
-	my $rados = PVE::RADOS->new();
-	eval { $rados->mon_command($command); };
-	if ($@) {
-	    print "$@";
+	if (my $err = $set_pool_setting->($pool, $setting, $value)) {
+	    print "$err";
 	} else {
 	    delete $param->{$setting};
 	}
