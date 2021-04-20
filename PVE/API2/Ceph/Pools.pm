@@ -16,6 +16,24 @@ use PVE::API2::Storage::Config;
 
 use base qw(PVE::RESTHandler);
 
+my $get_autoscale_status = sub {
+    my ($rados) = shift;
+
+    $rados = PVE::RADOS->new() if !defined($rados);
+
+    my $autoscale = $rados->mon_command({
+	    prefix => 'osd pool autoscale-status'});
+
+    my $data;
+    foreach my $p (@$autoscale) {
+	$p->{would_adjust} = "$p->{would_adjust}"; # boolean
+	$data->{$p->{pool_name}} = $p;
+    }
+
+    return $data;
+};
+
+
 __PACKAGE__->register_method ({
     name => 'lspools',
     path => '',
@@ -37,16 +55,21 @@ __PACKAGE__->register_method ({
 	items => {
 	    type => "object",
 	    properties => {
-		pool => { type => 'integer', title => 'ID' },
-		pool_name => { type => 'string', title => 'Name' },
-		size => { type => 'integer', title => 'Size' },
-		min_size => { type => 'integer', title => 'Min Size' },
-		pg_num => { type => 'integer', title => 'PG Num' },
-		pg_autoscale_mode => { type => 'string', optional => 1, title => 'PG Autoscale Mode' },
-		crush_rule => { type => 'integer', title => 'Crush Rule' },
-		crush_rule_name => { type => 'string', title => 'Crush Rule Name' },
-		percent_used => { type => 'number', title => '%-Used' },
-		bytes_used => { type => 'integer', title => 'Used' },
+		pool              => { type => 'integer', title => 'ID' },
+		pool_name         => { type => 'string',  title => 'Name' },
+		size              => { type => 'integer', title => 'Size' },
+		min_size          => { type => 'integer', title => 'Min Size' },
+		pg_num            => { type => 'integer', title => 'PG Num' },
+		pg_num_min        => { type => 'integer', title => 'min. PG Num', optional => 1, },
+		pg_num_final      => { type => 'integer', title => 'Optimal PG Num', optional => 1, },
+		pg_autoscale_mode => { type => 'string',  title => 'PG Autoscale Mode', optional => 1, },
+		crush_rule        => { type => 'integer', title => 'Crush Rule' },
+		crush_rule_name   => { type => 'string',  title => 'Crush Rule Name' },
+		percent_used      => { type => 'number',  title => '%-Used' },
+		bytes_used        => { type => 'integer', title => 'Used' },
+		target_size       => { type => 'integer', title => 'PG Autoscale Target Size', optional => 1 },
+		target_size_ratio => { type => 'number',  title => 'PG Autoscale Target Ratio',optional => 1, },
+		autoscale_status  => { type => 'object',  title => 'Autoscale Status', optional => 1 },
 	    },
 	},
 	links => [ { rel => 'child', href => "{pool_name}" } ],
@@ -86,10 +109,22 @@ __PACKAGE__->register_method ({
 	    'pg_autoscale_mode',
 	];
 
+	# pg_autoscaler module is not enabled in Nautilus
+	my $autoscale = eval { $get_autoscale_status->($rados) };
+
 	foreach my $e (@{$res->{pools}}) {
 	    my $d = {};
 	    foreach my $attr (@$attr_list) {
 		$d->{$attr} = $e->{$attr} if defined($e->{$attr});
+	    }
+
+	    if ($autoscale) {
+		$d->{autoscale_status} = $autoscale->{$d->{pool_name}};
+		$d->{pg_num_final} = $d->{autoscale_status}->{pg_num_final};
+		# some info is nested under options instead
+		$d->{pg_num_min} = $e->{options}->{pg_num_min};
+		$d->{target_size} = $e->{options}->{target_size_bytes};
+		$d->{target_size_ratio} = $e->{options}->{target_size_ratio};
 	    }
 
 	    if (defined($d->{crush_rule}) && defined($rules->{$d->{crush_rule}})) {
@@ -143,6 +178,13 @@ my $ceph_pool_common_options = sub {
 	    minimum => 8,
 	    maximum => 32768,
 	},
+	pg_num_min => {
+	    title => 'min. PG Num',
+	    description => "Minimal number of placement groups.",
+	    type => 'integer',
+	    optional => 1,
+	    maximum => 32768,
+	},
 	crush_rule => {
 	    title => 'Crush Rule Name',
 	    description => "The rule to use for mapping object placement in the cluster.",
@@ -163,6 +205,19 @@ my $ceph_pool_common_options = sub {
 	    type => 'string',
 	    enum => ['on', 'off', 'warn'],
 	    default => 'warn',
+	    optional => 1,
+	},
+	target_size => {
+	    description => "The estimated target size of the pool for the PG autoscaler.",
+	    title => 'PG Autoscale Target Size',
+	    type => 'string',
+	    pattern => '^(\d+(\.\d+)?)([KMGT])?$',
+	    optional => 1,
+	},
+	target_size_ratio => {
+	    description => "The estimated target ratio of the pool for the PG autoscaler.",
+	    title => 'PG Autoscale Target Ratio',
+	    type => 'number',
 	    optional => 1,
 	},
     };
@@ -240,6 +295,12 @@ __PACKAGE__->register_method ({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
+
+	# Ceph uses target_size_bytes
+	if (defined($param->{'target_size'})) {
+	    my $target_sizestr = extract_param($param, 'target_size');
+	    $param->{target_size_bytes} = PVE::JSONSchema::parse_size($target_sizestr);
+	}
 
 	if ($add_storages) {
 	    $rpcenv->check($user, '/storage', ['Datastore.Allocate']);
@@ -387,6 +448,12 @@ __PACKAGE__->register_method ({
 	my $pool = extract_param($param, 'name');
 	my $node = extract_param($param, 'node');
 
+	# Ceph uses target_size_bytes
+	if (defined($param->{'target_size'})) {
+	    my $target_sizestr = extract_param($param, 'target_size');
+	    $param->{target_size_bytes} = PVE::JSONSchema::parse_size($target_sizestr);
+	}
+
 	my $worker = sub {
 	    PVE::Ceph::Tools::set_pool($pool, $param);
 	};
@@ -438,6 +505,7 @@ __PACKAGE__->register_method ({
 	    fast_read              => { type => 'boolean', title => 'Fast Read' },
 	    application_list       => { type => 'array', title => 'Application', optional => 1 },
 	    statistics             => { type => 'object', title => 'Statistics', optional => 1 },
+	    autoscale_status       => { type => 'object',  title => 'Autoscale Status', optional => 1 },
 	    %{ $ceph_pool_common_options->() },
 	},
     },
@@ -462,6 +530,7 @@ __PACKAGE__->register_method ({
 	    size                   => $res->{size},
 	    min_size               => $res->{min_size},
 	    pg_num                 => $res->{pg_num},
+	    pg_num_min             => $res->{pg_num_min},
 	    pgp_num                => $res->{pgp_num},
 	    crush_rule             => $res->{crush_rule},
 	    pg_autoscale_mode      => $res->{pg_autoscale_mode},
@@ -474,11 +543,18 @@ __PACKAGE__->register_method ({
 	    hashpspool             => "$res->{hashpspool}",
 	    use_gmt_hitset         => "$res->{use_gmt_hitset}",
 	    fast_read              => "$res->{fast_read}",
+	    target_size            => $res->{target_size_bytes},
+	    target_size_ratio      => $res->{target_size_ratio},
 	};
 
 	if ($verbose) {
 	    my $stats;
 	    my $res = $rados->mon_command({ prefix => 'df' });
+
+	    # pg_autoscaler module is not enabled in Nautilus
+	    # avoid partial read further down, use new rados instance
+	    my $autoscale_status = eval { $get_autoscale_status->() };
+	    $data->{autoscale_status} = $autoscale_status->{$pool};
 
 	    foreach my $d (@{$res->{pools}}) {
 		next if !$d->{stats};
