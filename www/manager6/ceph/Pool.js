@@ -201,6 +201,8 @@ Ext.define('PVE.CephPoolEdit', {
 	method: get => get('isCreate') ? 'POST' : 'PUT',
     },
 
+    showProgress: true,
+
     subject: gettext('Ceph Pool'),
 
     items: [{
