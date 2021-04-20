@@ -26,7 +26,6 @@ my $get_autoscale_status = sub {
 
     my $data;
     foreach my $p (@$autoscale) {
-	$p->{would_adjust} = "$p->{would_adjust}"; # boolean
 	$data->{$p->{pool_name}} = $p;
     }
 
