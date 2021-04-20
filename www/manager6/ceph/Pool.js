@@ -143,6 +143,15 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    userCls: 'pmx-hint',
 	    value: 'Target Size Ratio takes precedence.',
 	},
+	{
+	    xtype: 'proxmoxintegerfield',
+	    fieldLabel: 'Min. # of PGs',
+	    name: 'pg_num_min',
+	    labelWidth: 140,
+	    minValue: 0,
+	    allowBlank: true,
+	    emptyText: '0',
+	},
     ],
 
     onGetValues: function(values) {
@@ -249,6 +258,14 @@ Ext.define('PVE.node.CephPoolList', {
 		}
 		return value;
 	    },
+	},
+	{
+	    text: gettext('Min. # of PGs'),
+	    flex: 1,
+	    minWidth: 140,
+	    align: 'right',
+	    dataIndex: 'pg_num_min',
+	    hidden: true,
 	},
 	{
 	    text: gettext('Target Size Ratio'),
@@ -426,6 +443,7 @@ Ext.define('PVE.node.CephPoolList', {
 		  { name: 'size', type: 'integer' },
 		  { name: 'min_size', type: 'integer' },
 		  { name: 'pg_num', type: 'integer' },
+		  { name: 'pg_num_min', type: 'integer' },
 		  { name: 'bytes_used', type: 'integer' },
 		  { name: 'percent_used', type: 'number' },
 		  { name: 'crush_rule', type: 'integer' },
