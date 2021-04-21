@@ -238,14 +238,14 @@ Ext.define('PVE.node.CephPoolList', {
 	{
 	    text: '# of Placement Groups',
 	    flex: 1,
-	    minWidth: 150,
+	    minWidth: 100,
 	    align: 'right',
 	    dataIndex: 'pg_num',
 	},
 	{
 	    text: gettext('Optimal # of PGs'),
 	    flex: 1,
-	    minWidth: 140,
+	    minWidth: 100,
 	    align: 'right',
 	    dataIndex: 'pg_num_final',
 	    renderer: function(value, metaData) {
@@ -259,15 +259,15 @@ Ext.define('PVE.node.CephPoolList', {
 	{
 	    text: gettext('Min. # of PGs'),
 	    flex: 1,
-	    minWidth: 140,
+	    minWidth: 100,
 	    align: 'right',
 	    dataIndex: 'pg_num_min',
 	    hidden: true,
 	},
 	{
-	    text: gettext('Target Size Ratio'),
+	    text: gettext('Target Ratio'),
 	    flex: 1,
-	    minWidth: 140,
+	    minWidth: 100,
 	    align: 'right',
 	    dataIndex: 'target_size_ratio',
 	    renderer: Ext.util.Format.numberRenderer('0.0000'),
@@ -276,7 +276,7 @@ Ext.define('PVE.node.CephPoolList', {
 	{
 	    text: gettext('Target Size'),
 	    flex: 1,
-	    minWidth: 140,
+	    minWidth: 100,
 	    align: 'right',
 	    dataIndex: 'target_size',
 	    hidden: true,
@@ -292,7 +292,7 @@ Ext.define('PVE.node.CephPoolList', {
 	{
 	    text: gettext('Autoscale Mode'),
 	    flex: 1,
-	    minWidth: 140,
+	    minWidth: 100,
 	    align: 'right',
 	    dataIndex: 'pg_autoscale_mode',
 	},
@@ -301,15 +301,13 @@ Ext.define('PVE.node.CephPoolList', {
 	    flex: 1,
 	    align: 'right',
 	    minWidth: 150,
-	    renderer: function(v, meta, rec) {
-		return v + ' (' + rec.data.crush_rule + ')';
-	    },
+	    renderer: (v, meta, rec) => `${v} (${rec.data.crush_rule})`,
 	    dataIndex: 'crush_rule_name',
 	},
 	{
 	    text: gettext('Used') + ' (%)',
 	    flex: 1,
-	    minWidth: 180,
+	    minWidth: 150,
 	    sortable: true,
 	    align: 'right',
 	    dataIndex: 'bytes_used',
