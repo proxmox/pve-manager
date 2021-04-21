@@ -55,6 +55,14 @@ Ext.define('PVE.sdn.controllers.BgpInputPanel', {
 		name: 'loopback',
 		fieldLabel: gettext('Loopback Interface'),
 	    },
+	    {
+		xtype: 'proxmoxintegerfield',
+		name: 'ebgp-multihop',
+		minValue: 1,
+		maxValue: 100,
+		fieldLabel: 'ebgp-multihop',
+		allowBlank: true
+	    },
 	];
 
 	me.callParent();
