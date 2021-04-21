@@ -3,16 +3,29 @@ Ext.define('PVE.sdn.controllers.BgpInputPanel', {
 
     onlineHelp: 'pvesdn_controller_plugin_evpn',
 
+    onGetValues: function(values) {
+        var me = this;
+
+        if (me.isCreate) {
+            values.type = me.type;
+	    values.controller = 'bgp' + values.node;
+        } else {
+            delete values.controller;
+        }
+
+        return values;
+    },
+
     initComponent : function() {
 	var me = this;
 
 	me.items = [
 	    {
-		xtype: me.isCreate ? 'textfield' : 'displayfield',
-		name: 'controller',
-		maxLength: 8,
-		value: me.controllerid || '',
-		fieldLabel: 'ID',
+		xtype: 'pveNodeSelector',
+		name: 'node',
+		fieldLabel: gettext('Node'),
+		multiSelect: false,
+		autoSelect: false,
 		allowBlank: false
 	    },
 	    {
@@ -36,14 +49,6 @@ Ext.define('PVE.sdn.controllers.BgpInputPanel', {
 		uncheckedValue: 0,
 		checked: false,
 		fieldLabel: 'EBGP'
-	    },
-	    {
-		xtype: 'pveNodeSelector',
-		name: 'node',
-		fieldLabel: gettext('Node'),
-		multiSelect: false,
-		autoSelect: false,
-		allowBlank: false
 	    },
 
 	];
