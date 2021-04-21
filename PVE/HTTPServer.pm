@@ -79,8 +79,8 @@ sub auth_handler {
 
     if ($require_auth) {
 	if ($api_token) {
+	    # returns tokenid actually
 	    $username = PVE::AccessControl::verify_token($api_token);
-	    $rpcenv->set_user($username); #actually tokenid in this case
 	} else {
 	    die "No ticket\n" if !$ticket;
 
@@ -94,25 +94,25 @@ sub auth_handler {
 		die "No ticket\n"
 		    if ($rel_uri ne '/access/tfa' || $method ne 'POST');
 	    }
-
-	    $rpcenv->set_user($username);
-
-	    if ($method eq 'POST' && $rel_uri =~ m|^/nodes/([^/]+)/storage/([^/]+)/upload$|) {
-		my ($node, $storeid) = ($1, $2);
-		# we disable CSRF checks if $isUpload is set,
-		# to improve security we check user upload permission here
-		my $perm = { check => ['perm', "/storage/$storeid", ['Datastore.AllocateTemplate']] };
-		$rpcenv->check_api2_permissions($perm, $username, {});
-		$isUpload = 1;
-	    }
-
-	    # we skip CSRF check for file upload, because it is
-	    # difficult to pass CSRF HTTP headers with native html forms,
-	    # and it should not be necessary at all.
-	    my $euid = $>;
-	    PVE::AccessControl::verify_csrf_prevention_token($username, $token)
-		if !$isUpload && ($euid != 0) && ($method ne 'GET');
 	}
+
+	$rpcenv->set_user($username);
+
+	if ($method eq 'POST' && $rel_uri =~ m|^/nodes/([^/]+)/storage/([^/]+)/upload$|) {
+	    my ($node, $storeid) = ($1, $2);
+	    # we disable CSRF checks if $isUpload is set,
+	    # to improve security we check user upload permission here
+	    my $perm = { check => ['perm', "/storage/$storeid", ['Datastore.AllocateTemplate']] };
+	    $rpcenv->check_api2_permissions($perm, $username, {});
+	    $isUpload = 1;
+	}
+
+	# we skip CSRF check for file upload, because it is
+	# difficult to pass CSRF HTTP headers with native html forms,
+	# and it should not be necessary at all.
+	my $euid = $>;
+	PVE::AccessControl::verify_csrf_prevention_token($username, $token)
+	    if !$isUpload && ($euid != 0) && ($method ne 'GET');
     }
 
     return {
