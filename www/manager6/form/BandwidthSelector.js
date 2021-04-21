@@ -1,13 +1,13 @@
-Ext.define('PVE.form.BandwidthField', {
+Ext.define('PVE.form.SizeField', {
     extend: 'Ext.form.FieldContainer',
-    alias: 'widget.pveBandwidthField',
+    alias: 'widget.pveSizeField',
 
     mixins: ['Proxmox.Mixin.CBind'],
 
     viewModel: {
 	data: {
 	    unit: 'MiB',
-	    unitPostfix: '/s',
+	    unitPostfix: '',
 	},
 	formulas: {
 	    unitlabel: (get) => get('unit') + get('unitPostfix'),
@@ -32,7 +32,7 @@ Ext.define('PVE.form.BandwidthField', {
 
     // display unit (TODO: make (optionally) selectable)
     unit: 'MiB',
-    unitPostfix: '/s',
+    unitPostfix: '',
 
     // use this if the backend saves values in another unit tha bytes, e.g.,
     // for KiB set it to 'KiB'
@@ -57,7 +57,7 @@ Ext.define('PVE.form.BandwidthField', {
 	    enableKeyEvents: true,
 	    setValue: function(v) {
 		if (!this._transformed) {
-		    let fieldContainer = this.up('pveBandwidthField');
+		    let fieldContainer = this.up('fieldcontainer');
 		    let vm = fieldContainer.getViewModel();
 		    let unit = vm.get('unit');
 
@@ -85,7 +85,7 @@ Ext.define('PVE.form.BandwidthField', {
 		    return this.allowZero ? 0 : null;
 		}
 
-		let fieldContainer = this.up('pveBandwidthField');
+		let fieldContainer = this.up('fieldcontainer');
 		let vm = fieldContainer.getViewModel();
 		let unit = vm.get('unit');
 
@@ -140,3 +140,9 @@ Ext.define('PVE.form.BandwidthField', {
     },
 });
 
+Ext.define('PVE.form.BandwidthField', {
+    extend: 'PVE.form.SizeField',
+    alias: 'widget.pveBandwidthField',
+
+    unitPostfix: '/s',
+});
