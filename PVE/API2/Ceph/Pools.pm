@@ -370,14 +370,8 @@ __PACKAGE__->register_method ({
 	    PVE::Ceph::Tools::create_pool($pool, $param);
 
 	    if ($add_storages) {
-		my $err;
-		eval { $add_storage->($pool, "${pool}"); };
-		if ($@) {
-		    warn "failed to add storage: $@";
-		    $err = 1;
-		}
-		die "adding storage for pool '$pool' failed, check log and add manually!\n"
-		    if $err;
+		eval { $add_storage->($pool, "${pool}") };
+		die "adding PVE storage for ceph pool '$pool' failed: $@\n" if $@;
 	    }
 	};
 
