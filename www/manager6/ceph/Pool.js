@@ -130,10 +130,11 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    emptyText: '0.0',
 	},
 	{
-	    xtype: 'numberfield',
+	    xtype: 'pveSizeField',
 	    fieldLabel: gettext('Target Size') + ' (GiB)',
 	    name: 'target_size',
 	    labelWidth: 140,
+	    unit: 'GiB',
 	    minValue: 0,
 	    allowBlank: true,
 	    emptyText: '0',
@@ -161,25 +162,8 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    }
 	});
 
-	let target_size = Number.parseFloat(values.target_size);
-
-	if (Ext.isNumber(target_size) && target_size !== 0) {
-	    values.target_size = (target_size*1024*1024*1024).toFixed(0);
-	}
-
 	return values;
     },
-
-    setValues: function(values) {
-	let target_size = Number.parseFloat(values.target_size);
-
-	if (Ext.isNumber(target_size) && target_size !== 0) {
-	    values.target_size = target_size/1024/1024/1024;
-	}
-
-	this.callParent([values]);
-    },
-
 });
 
 Ext.define('PVE.CephPoolEdit', {
