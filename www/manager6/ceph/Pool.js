@@ -121,34 +121,39 @@ Ext.define('PVE.CephPoolInputPanel', {
     advancedColumn2: [
 	{
 	    xtype: 'numberfield',
-	    fieldLabel: gettext('Target Size Ratio'),
+	    fieldLabel: gettext('Target Ratio'),
 	    name: 'target_size_ratio',
-	    labelWidth: 140,
 	    minValue: 0,
 	    decimalPrecision: 3,
 	    allowBlank: true,
 	    emptyText: '0.0',
+	    autoEl: {
+		tag: 'div',
+		'data-qtip': gettext('The ratio of storage amount this pool will consume compared to other pools with ratios. Used for auto-scaling.'),
+	    },
 	},
 	{
 	    xtype: 'pveSizeField',
-	    fieldLabel: gettext('Target Size') + ' (GiB)',
 	    name: 'target_size',
-	    labelWidth: 140,
+	    fieldLabel: gettext('Target Size'),
 	    unit: 'GiB',
 	    minValue: 0,
 	    allowBlank: true,
 	    emptyText: '0',
+	    autoEl: {
+		tag: 'div',
+		'data-qtip': gettext('The amount of data eventually stored in this pool. Used for auto-scaling.'),
+	    },
 	},
 	{
 	    xtype: 'displayfield',
 	    userCls: 'pmx-hint',
-	    value: 'Target Size Ratio takes precedence.',
+	    value: Ext.String.format(gettext('{0} takes precedence.'), gettext('Target Ratio')), // FIXME: tooltip?
 	},
 	{
 	    xtype: 'proxmoxintegerfield',
 	    fieldLabel: 'Min. # of PGs',
 	    name: 'pg_num_min',
-	    labelWidth: 140,
 	    minValue: 0,
 	    allowBlank: true,
 	    emptyText: '0',
