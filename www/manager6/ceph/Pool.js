@@ -351,88 +351,90 @@ Ext.define('PVE.node.CephPoolList', {
                 url: "/api2/json/nodes/" + nodename + "/ceph/pools",
 	    },
 	});
+	let store = Ext.create('Proxmox.data.DiffStore', { rstore: rstore });
 
-	var store = Ext.create('Proxmox.data.DiffStore', { rstore: rstore });
-	var reload = function() {
-	    rstore.load();
-	};
-
-	var regex = new RegExp("not (installed|initialized)", "i");
-	PVE.Utils.handleStoreErrorOrMask(me, rstore, regex, function(me, error) {
-	    me.store.rstore.stopUpdate();
-	    PVE.Utils.showCephInstallOrMask(me, error.statusText, nodename,
-		function(win) {
-		    me.mon(win, 'cephInstallWindowClosed', function() {
-			me.store.rstore.startUpdate();
-		    });
-		},
-	    );
-	});
-
-	var create_btn = new Ext.Button({
-	    text: gettext('Create'),
-	    handler: function() {
-		var win = Ext.create('PVE.CephPoolEdit', {
-		    title: gettext('Create') + ': Ceph Pool',
-		    isCreate: true,
-		    nodename: nodename,
+	PVE.Utils.handleStoreErrorOrMask(
+	    me,
+	    rstore,
+	    /not (installed|initialized)/i,
+	    (_, error) => {
+		rstore.stopUpdate();
+		PVE.Utils.showCephInstallOrMask(me, error.statusText, nodename, win => {
+		    me.mon(win, 'cephInstallWindowClosed', () => rstore.startUpdate());
 		});
-		win.show();
-		win.on('destroy', reload);
 	    },
-	});
+	);
 
 	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
+	    let rec = sm.getSelection()[0];
+	    if (!rec || !rec.data.pool_name) {
 		return;
 	    }
-
-	    var win = Ext.create('PVE.CephPoolEdit', {
+	    Ext.create('PVE.CephPoolEdit', {
 		title: gettext('Edit') + ': Ceph Pool',
 		nodename: nodename,
 		pool_name: rec.data.pool_name,
+		autoShow: true,
+		listeners: {
+		    destroy: () => rstore.load(),
+		},
 	    });
-            win.on('destroy', reload);
-            win.show();
 	};
-
-	var edit_btn = new Proxmox.button.Button({
-	    text: gettext('Edit'),
-	    disabled: true,
-	    selModel: sm,
-	    handler: run_editor,
-	});
-
-	var destroy_btn = Ext.create('Proxmox.button.Button', {
-	    text: gettext('Destroy'),
-	    selModel: sm,
-	    disabled: true,
-	    handler: function() {
-		var rec = sm.getSelection()[0];
-
-		if (!rec.data.pool_name) {
-		    return;
-		}
-		var base_url = '/nodes/' + nodename + '/ceph/pools/' +
-		    rec.data.pool_name;
-
-		var win = Ext.create('PVE.window.SafeDestroy', {
-		    showProgress: true,
-		    url: base_url,
-		    params: {
-			remove_storages: 1,
-		    },
-		    item: { type: 'CephPool', id: rec.data.pool_name },
-		}).show();
-		win.on('destroy', reload);
-	    },
-	});
 
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
-	    tbar: [create_btn, edit_btn, destroy_btn],
+	    tbar: [
+		{
+		    text: gettext('Create'),
+		    handler: function() {
+			Ext.create('PVE.CephPoolEdit', {
+			    title: gettext('Create') + ': Ceph Pool',
+			    isCreate: true,
+			    nodename: nodename,
+			    autoShow: true,
+			    listeners: {
+				destroy: () => rstore.load(),
+			    },
+			});
+		    },
+		},
+		{
+		    xtype: 'proxmoxButton',
+		    text: gettext('Edit'),
+		    selModel: sm,
+		    disabled: true,
+		    handler: run_editor,
+		},
+		{
+		    xtype: 'proxmoxButton',
+		    text: gettext('Destroy'),
+		    selModel: sm,
+		    disabled: true,
+		    handler: function() {
+			let rec = sm.getSelection()[0];
+			if (!rec || !rec.data.pool_name) {
+			    return;
+			}
+			let poolName = rec.data.pool_name;
+			Ext.create('PVE.window.SafeDestroy', {
+			    showProgress: true,
+			    url: `/nodes/${nodename}/ceph/pools/${poolName}`,
+			    params: {
+				remove_storages: 1,
+			    },
+			    item: {
+				type: 'CephPool',
+				id: poolName,
+			    },
+			    autoShow: true,
+			    listeners: {
+				destroy: () => rstore.load(),
+			    },
+			});
+		    },
+		},
+	    ],
 	    listeners: {
 		activate: () => rstore.startUpdate(),
 		destroy: () => rstore.stopUpdate(),
@@ -486,7 +488,7 @@ Ext.define('PVE.form.CephRuleSelector', {
 	    sorters: 'name',
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/ceph/rules',
+		url: `/api2/json/nodes/${me.nodename}/ceph/rules`,
 	    },
 	});
 
