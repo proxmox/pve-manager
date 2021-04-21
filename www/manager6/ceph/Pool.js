@@ -29,7 +29,7 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    allowBlank: false,
 	    listeners: {
 		change: function(field, val) {
-		    let size = Math.round(val / 2);
+		    let size = Math.round((val + 1) / 2);
 		    if (size > 1) {
 			field.up('inputpanel').down('field[name=min_size]').setValue(size);
 		    }
