@@ -9,12 +9,10 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	    values.type = 'vnet';
 	}
 
-	if (!values.ipv6) {
-	    delete values.ipv6;
+	if (!values.vlanaware) {
+	    delete values.vlanaware;
 	}
-	if (!values.ipv4) {
-	    delete values.ipv4;
-	}
+
 	if (!values.mac) {
 	    delete values.mac;
 	}
@@ -61,35 +59,16 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	    uncheckedValue: 0,
 	    checked: false,
 	    fieldLabel: gettext('VLAN Aware'),
-	},
-	{
-	    xtype: 'textfield',
-	    name: 'mac',
-	    fieldLabel: gettext('MAC Address'),
-	    vtype: 'MacAddress',
-	    skipEmptyText: true,
-	    allowBlank: true,
-	    emptyText: 'auto',
-	},
+	}
     ],
     advancedItems: [
 	{
 	    xtype: 'textfield',
-	    name: 'ipv4',
-	    vtype: 'IPCIDRAddress',
-	    fieldLabel: 'IPv4/CIDR', // do not localize
-	    emptyText: 'Optional anycast addr. for BGP',
-	    skipEmptyText: true,
+	    name: 'mac',
+	    fieldLabel: gettext('MAC address'),
+	    vtype: 'MacAddress',
 	    allowBlank: true,
-	},
-	{
-	    xtype: 'textfield',
-	    name: 'ipv6',
-	    vtype: 'IP6CIDRAddress',
-	    fieldLabel: 'IPv6/CIDR', // do not localize
-	    emptyText: 'Optional anycast addr. for BGP',
-	    skipEmptyText: true,
-	    allowBlank: true,
+	    emptyText: 'auto'
 	},
     ],
 });

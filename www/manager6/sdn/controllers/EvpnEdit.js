@@ -30,19 +30,6 @@ Ext.define('PVE.sdn.controllers.EvpnInputPanel', {
 		fieldLabel: gettext('Peers'),
 		allowBlank: false,
 	    },
-	    {
-		xtype: 'textfield',
-		name: 'gateway-external-peers',
-		fieldLabel: gettext('External Gateway Peers'),
-		allowBlank: true,
-	    },
-	    {
-		xtype: 'pveNodeSelector',
-		name: 'gateway-nodes',
-		fieldLabel: gettext('Gateway Nodes'),
-		multiSelect: true,
-		autoSelect: false,
-	    },
 	];
 
 	me.callParent();

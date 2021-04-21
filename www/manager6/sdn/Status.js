@@ -18,7 +18,7 @@ Ext.define('PVE.sdn.Status', {
 	    storeid: 'pve-store-' + ++Ext.idSeed,
 	    groupField: 'type',
 	    proxy: {
-                type: 'proxmox',
+		type: 'proxmox',
 		url: '/api2/json/cluster/resources',
 	    },
 	});

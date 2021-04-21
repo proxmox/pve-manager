@@ -154,14 +154,6 @@ Ext.define('PVE.dc.Config', {
 		    expandedOnInit: true,
 		},
 		{
-		    xtype: 'pveSDNControllerView',
-		    groups: ['sdn'],
-		    title: gettext('Controllers'),
-		    hidden: true,
-		    iconCls: 'fa fa-crosshairs',
-		    itemId: 'sdncontroller',
-		},
-		{
 		    xtype: 'pveSDNZoneView',
 		    groups: ['sdn'],
 		    title: gettext('Zones'),
@@ -170,12 +162,20 @@ Ext.define('PVE.dc.Config', {
 		    itemId: 'sdnzone',
 		},
 		{
-		    xtype: 'pveSDNVnetView',
+		    xtype: 'pveSDNVnet',
 		    groups: ['sdn'],
 		    title: gettext('Vnets'),
 		    hidden: true,
 		    iconCls: 'fa fa-network-wired',
 		    itemId: 'sdnvnet',
+		},
+		{
+		    xtype: 'pveSDNOptions',
+		    groups: ['sdn'],
+		    title: gettext('Options'),
+		    hidden: true,
+		    iconCls: 'fa fa-gear',
+		    itemId: 'sdnoptions'
 		});
 	    }
 

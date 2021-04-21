@@ -2,8 +2,10 @@ Ext.define('PVE.sdn.Browser', {
     extend: 'PVE.panel.Config',
     alias: 'widget.PVE.sdn.Browser',
 
+    onlineHelp: 'chapter_pvesdn',
+
     initComponent: function() {
-        var me = this;
+	var me = this;
 
 	var nodename = me.pveSelNode.data.node;
 	if (!nodename) {

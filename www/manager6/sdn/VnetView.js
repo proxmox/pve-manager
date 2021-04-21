@@ -7,6 +7,8 @@ Ext.define('PVE.sdn.VnetView', {
     stateful: true,
     stateId: 'grid-sdn-vnet',
 
+    subnetview_panel: undefined,
+
     initComponent: function() {
 	let me = this;
 
@@ -14,16 +16,27 @@ Ext.define('PVE.sdn.VnetView', {
 	    model: 'pve-sdn-vnet',
 	    proxy: {
                 type: 'proxmox',
-		url: "/api2/json/cluster/sdn/vnets",
+		url: "/api2/json/cluster/sdn/vnets?pending=1",
 	    },
 	    sorters: {
 		property: 'vnet',
 		order: 'DESC',
 	    },
 	});
+
 	let reload = () => store.load();
 
 	let sm = Ext.create('Ext.selection.RowModel', {});
+
+	var set_button_status = function() {
+	    var rec = me.selModel.getSelection()[0];
+
+	    if (!rec || rec.data.state === 'deleted') {
+		edit_btn.disable();
+		remove_btn.disable();
+		return;
+	    }
+	};
 
         let run_editor = function() {
 	    let rec = sm.getSelection()[0];
@@ -76,64 +89,66 @@ Ext.define('PVE.sdn.VnetView', {
 		    header: 'ID',
 		    flex: 2,
 		    dataIndex: 'vnet',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'vnet', 1);
+		    }
 		},
 		{
 		    header: gettext('Alias'),
 		    flex: 1,
 		    dataIndex: 'alias',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'alias');
+		    }
 		},
 		{
 		    header: gettext('Zone'),
 		    flex: 1,
 		    dataIndex: 'zone',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'zone');
+		    }
 		},
 		{
 		    header: gettext('Tag'),
 		    flex: 1,
 		    dataIndex: 'tag',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'tag');
+		    }
 		},
 		{
 		    header: gettext('VLAN Aware'),
 		    flex: 1,
 		    dataIndex: 'vlanaware',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'vlanaware');
+		    }
 		},
 		{
-		    header: 'IPv4/CIDR',
-		    flex: 1,
-		    dataIndex: 'ipv4',
-		},
-		{
-		    header: 'IPv6/CIDR',
-		    flex: 1,
-		    dataIndex: 'ipv6',
-		},
-		{
-		    header: 'MAC',
-		    flex: 1,
-		    dataIndex: 'mac',
-		},
+		    header: gettext('State'),
+		    width: 100,
+		    dataIndex: 'state',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending_state(rec, value);
+		    }
+		}
 	    ],
 	    listeners: {
 		activate: reload,
 		itemdblclick: run_editor,
+		selectionchange: set_button_status,
+		show: reload,
+		select: function(sm, rec) {
+		    var url = '/cluster/sdn/vnets/' + rec.data.vnet + '/subnets';
+		    me.subnetview_panel.setBaseUrl(url);
+		},
+		deselect: function() {
+		    me.subnetview_panel.setBaseUrl(undefined);
+		},
 	    },
 	});
-
+	store.load();
 	me.callParent();
     },
-}, function() {
-    Ext.define('pve-sdn-vnet', {
-	extend: 'Ext.data.Model',
-	fields: [
-	    'alias',
-	    'ipv4',
-	    'ipv6',
-	    'mac',
-	    'tag',
-	    'type',
-	    'vnet',
-	    'zone',
-	],
-	idProperty: 'vnet',
-    });
 });

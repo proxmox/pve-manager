@@ -2,7 +2,7 @@ Ext.define('PVE.sdn.ZoneView', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveSDNZoneView'],
 
-    onlineHelp: 'pvesdn_zone_plugins',
+    onlineHelp: 'pvesdn_config_zone',
 
     stateful: true,
     stateId: 'grid-sdn-zone',
@@ -31,7 +31,7 @@ Ext.define('PVE.sdn.ZoneView', {
 	    model: 'pve-sdn-zone',
 	    proxy: {
                 type: 'proxmox',
-		url: "/api2/json/cluster/sdn/zones",
+		url: "/api2/json/cluster/sdn/zones?pending=1",
 	    },
 	    sorters: {
 		property: 'zone',
@@ -45,13 +45,23 @@ Ext.define('PVE.sdn.ZoneView', {
 
 	let sm = Ext.create('Ext.selection.RowModel', {});
 
+	var set_button_status = function() {
+	    var rec = me.selModel.getSelection()[0];
+
+	    if (!rec || rec.data.state === 'deleted') {
+		edit_btn.disable();
+		remove_btn.disable();
+		return;
+	    }
+	};
+
 	let run_editor = function() {
 	    let rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
 	    }
 	    let type = rec.data.type,
-	        zone = rec.data.zone;
+		zone = rec.data.zone;
 
 	    me.createSDNEditWindow(type, zone);
 	};
@@ -107,29 +117,81 @@ Ext.define('PVE.sdn.ZoneView', {
 	    columns: [
 		{
 		    header: 'ID',
-		    flex: 2,
+		    width: 100,
 		    dataIndex: 'zone',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'zone', 1);
+		    }
 		},
 		{
 		    header: gettext('Type'),
-		    flex: 1,
+		    width: 100,
 		    dataIndex: 'type',
-		    renderer: PVE.Utils.format_sdnzone_type,
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'type', 1);
+		    }
 		},
 		{
 		    header: 'MTU',
-		    flex: 1,
+		    width: 50,
 		    dataIndex: 'mtu',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'mtu');
+		    }
+		},
+		{
+		    header: 'Ipam',
+		    flex: 3,
+		    dataIndex: 'ipam',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'ipam');
+		    }
+		},
+		{
+		    header: gettext('Domain'),
+		    flex: 3,
+		    dataIndex: 'dnszone',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'dnszone');
+		    }
+		},
+		{
+		    header: gettext('Dns'),
+		    flex: 3,
+		    dataIndex: 'dns',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'dns');
+		    }
+		},
+		{
+		    header: gettext('Reverse dns'),
+		    flex: 3,
+		    dataIndex: 'reversedns',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'reversedns');
+		    }
 		},
 		{
 		    header: gettext('Nodes'),
 		    flex: 3,
 		    dataIndex: 'nodes',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'nodes');
+		    }
 		},
+		{
+		    header: gettext('State'),
+		    width: 100,
+		    dataIndex: 'state',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending_state(rec, value);
+		    }
+		}
 	    ],
 	    listeners: {
 		activate: reload,
 		itemdblclick: run_editor,
+		selectionchange: set_button_status
 	    },
 	});
 

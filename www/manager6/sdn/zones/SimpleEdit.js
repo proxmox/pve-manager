@@ -1,18 +1,18 @@
 Ext.define('PVE.sdn.zones.SimpleInputPanel', {
     extend: 'PVE.panel.SDNZoneBase',
 
-    //onlineHelp: 'pvesdn_zone_plugin_simple', // FIXME uncomment once doc-gen is updated
+    onlineHelp: 'pvesdn_zone_plugin_simple',
 
     onGetValues: function(values) {
-        var me = this;
+	var me = this;
 
-        if (me.isCreate) {
-            values.type = me.type;
-        } else {
-            delete values.zone;
-        }
+	if (me.isCreate) {
+	    values.type = me.type;
+	} else {
+	    delete values.zone;
+	}
 
-        return values;
+	return values;
     },
 
     initComponent: function() {

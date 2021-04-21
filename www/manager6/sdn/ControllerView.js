@@ -2,7 +2,7 @@ Ext.define('PVE.sdn.ControllerView', {
     extend: 'Ext.grid.GridPanel',
     alias: ['widget.pveSDNControllerView'],
 
-    onlineHelp: 'pvesdn_controller_plugins',
+    onlineHelp: 'pvesdn_config_controllers',
 
     stateful: true,
     stateId: 'grid-sdn-controller',
@@ -30,8 +30,8 @@ Ext.define('PVE.sdn.ControllerView', {
 	var store = new Ext.data.Store({
 	    model: 'pve-sdn-controller',
 	    proxy: {
-                type: 'proxmox',
-		url: "/api2/json/cluster/sdn/controllers",
+		type: 'proxmox',
+		url: "/api2/json/cluster/sdn/controllers?pending=1",
 	    },
 	    sorters: {
 		property: 'controller',
@@ -44,6 +44,16 @@ Ext.define('PVE.sdn.ControllerView', {
 	};
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
+
+	var set_button_status = function() {
+	    var rec = me.selModel.getSelection()[0];
+
+	    if (!rec || rec.data.state === 'deleted') {
+		edit_btn.disable();
+		remove_btn.disable();
+		return;
+	    }
+	};
 
 	var run_editor = function() {
 	    var rec = sm.getSelection()[0];
@@ -110,21 +120,44 @@ Ext.define('PVE.sdn.ControllerView', {
 		    flex: 2,
 		    sortable: true,
 		    dataIndex: 'controller',
+		    dataIndex: 'controller',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'controller', 1);
+		    }
 		},
 		{
 		    header: gettext('Type'),
 		    flex: 1,
 		    sortable: true,
 		    dataIndex: 'type',
-		    renderer: PVE.Utils.format_sdncontroller_type,
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'type', 1);
+		    }
 		},
+		{
+		    header: gettext('Node'),
+		    flex: 1,
+		    sortable: true,
+		    dataIndex: 'node',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending(rec, value, 'node', 1);
+		    }
+		},
+		{
+		    header: gettext('State'),
+		    width: 100,
+		    dataIndex: 'state',
+		    renderer: function(value, metaData, rec) {
+			return PVE.Utils.render_sdn_pending_state(rec, value);
+		    }
+		}
 	    ],
 	    listeners: {
 		activate: reload,
 		itemdblclick: run_editor,
 	    },
 	});
-
+	store.load();
 	me.callParent();
     },
 });

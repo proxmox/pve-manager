@@ -32,7 +32,7 @@ Ext.define('PVE.sdn.ZoneContentView', {
 	    model: 'pve-sdnzone-content',
 	    groupField: 'content',
 	    proxy: {
-                type: 'proxmox',
+		type: 'proxmox',
 		url: '/api2/json' + baseurl,
 	    },
 	    sorters: {
@@ -57,18 +57,25 @@ Ext.define('PVE.sdn.ZoneContentView', {
 	    columns: [
 		{
 		    header: 'VNet',
-		    flex: 1,
+		    width: 100,
 		    sortable: true,
 		    dataIndex: 'vnet',
 		},
 		{
+		    header: 'Alias',
+		    width: 300,
+		    sortable: true,
+		    dataIndex: 'alias'
+		},
+		{
 		    header: gettext('Status'),
-		    width: 20,
+		    width: 100,
+		    sortable: true,
 		    dataIndex: 'status',
 		},
 		{
 		    header: gettext('Details'),
-		    width: 20,
+		    flex: 1,
 		    dataIndex: 'statusmsg',
 		},
 	    ],
