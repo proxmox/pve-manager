@@ -12,6 +12,10 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 	    delete values.zone;
 	}
 
+        if (!values.mac) {
+            delete values.mac;
+        }
+
 	return values;
     },
 
@@ -34,6 +38,14 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 		maxValue: 16000000,
 		fieldLabel: 'VRF-VXLAN Tag',
 		allowBlank: false,
+	    },
+	    {
+		xtype: 'textfield',
+		name: 'mac',
+		fieldLabel: gettext('Vnet MAC address'),
+		vtype: 'MacAddress',
+		allowBlank: true,
+		emptyText: 'auto'
 	    },
 	    {
 		xtype: 'pveNodeSelector',
