@@ -79,17 +79,18 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    maxValue: 7,
 	    allowBlank: false,
 	    listeners: {
-		change: function(field, val) {
-		    let warn = true;
-		    let warn_text = gettext('Min. Size');
+		change: function(field, minSize) {
+		    let panel = field.up('inputpanel');
+		    let size = panel.down('field[name=size]').getValue();
 
-		    if (val < 2) {
-			warn = false;
-			warn_text = gettext('Min. Size') + ' <i class="fa fa-exclamation-triangle warning"></i>';
+		    let showWarning = minSize <= size / 2 && minSize !== size;
+
+		    let fieldLabel = gettext('Min. Size');
+		    if (showWarning) {
+			fieldLabel = gettext('Min. Size') + ' <i class="fa fa-exclamation-triangle warning"></i>';
 		    }
-
-		    field.up().down('field[name=min_size-warning]').setHidden(warn);
-		    field.setFieldLabel(warn_text);
+		    panel.down('field[name=min_size-warning]').setHidden(!showWarning);
+		    field.setFieldLabel(fieldLabel);
 		},
 	    },
 	},
@@ -97,7 +98,7 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    xtype: 'displayfield',
 	    name: 'min_size-warning',
 	    userCls: 'pmx-hint',
-	    value: 'A pool with min_size=1 could lead to data loss, incomplete PGs or unfound objects.',
+	    value: gettext('min_size <= size/2 can lead to data loss, incomplete PGs or unfound objects.'),
 	    hidden: true,
 	},
 	{
