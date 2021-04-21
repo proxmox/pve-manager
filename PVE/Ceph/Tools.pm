@@ -236,6 +236,7 @@ sub set_pool {
     for my $setting (@$keys) {
 	my $value = $param->{$setting};
 
+	print "pool $pool: applying $setting = $value\n";
 	if (my $err = $set_pool_setting->($pool, $setting, $value)) {
 	    print "$err";
 	} else {
