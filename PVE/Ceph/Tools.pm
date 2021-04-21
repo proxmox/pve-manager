@@ -228,21 +228,13 @@ my $set_pool_setting = sub {
 sub set_pool {
     my ($pool, $param) = @_;
 
-    # by default, pool size always sets min_size,
-    # set it and forget it, as first item
+    # by default, pool size always resets min_size, so set it as first item
     # https://tracker.ceph.com/issues/44862
-    if ($param->{size}) {
-	my $value = $param->{size};
-	if (my $err = $set_pool_setting->($pool, 'size', $value)) {
-	    print "$err";
-	} else {
-	    delete $param->{size};
-	}
-    }
+    my $keys = [ grep { $_ ne 'size' } sort keys %$param ];
+    unshift @$keys, 'size' if exists $param->{size};
 
-    foreach my $setting (keys %$param) {
+    for my $setting (@$keys) {
 	my $value = $param->{$setting};
-	next if $setting eq 'size';
 
 	if (my $err = $set_pool_setting->($pool, $setting, $value)) {
 	    print "$err";
