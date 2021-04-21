@@ -7,9 +7,10 @@ Ext.define('PVE.form.BandwidthField', {
     viewModel: {
 	data: {
 	    unit: 'MiB',
+	    unitPostfix: '/s',
 	},
 	formulas: {
-	    unitlabel: (get) => get('unit') + '/s',
+	    unitlabel: (get) => get('unit') + get('unitPostfix'),
 	},
     },
 
@@ -31,6 +32,7 @@ Ext.define('PVE.form.BandwidthField', {
 
     // display unit (TODO: make (optionally) selectable)
     unit: 'MiB',
+    unitPostfix: '/s',
 
     // use this if the backend saves values in another unit tha bytes, e.g.,
     // for KiB set it to 'KiB'
@@ -131,10 +133,10 @@ Ext.define('PVE.form.BandwidthField', {
 	    me.backendFactor = me.units[me.backendUnit];
 	}
 
-
 	me.callParent(arguments);
 
 	me.getViewModel().set('unit', me.unit);
+	me.getViewModel().set('unitPostfix', me.unitPostfix);
     },
 });
 
