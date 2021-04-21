@@ -55,12 +55,12 @@ Ext.define('PVE.form.BandwidthField', {
 	    enableKeyEvents: true,
 	    setValue: function(v) {
 		if (!this._transformed) {
-		    let fieldct = this.up('pveBandwidthField');
-		    let vm = fieldct.getViewModel();
+		    let fieldContainer = this.up('pveBandwidthField');
+		    let vm = fieldContainer.getViewModel();
 		    let unit = vm.get('unit');
 
-		    v /= fieldct.units[unit];
-		    v *= fieldct.backendFactor;
+		    v /= fieldContainer.units[unit];
+		    v *= fieldContainer.backendFactor;
 
 		    this._transformed = true;
 		}
@@ -83,14 +83,14 @@ Ext.define('PVE.form.BandwidthField', {
 		    return this.allowZero ? 0 : null;
 		}
 
-		let fieldct = this.up('pveBandwidthField');
-		let vm = fieldct.getViewModel();
+		let fieldContainer = this.up('pveBandwidthField');
+		let vm = fieldContainer.getViewModel();
 		let unit = vm.get('unit');
 
-		v = parseFloat(v) * fieldct.units[unit];
-		v /= fieldct.backendFactor;
+		v = parseFloat(v) * fieldContainer.units[unit];
+		v /= fieldContainer.backendFactor;
 
-		return ''+ Math.floor(v);
+		return String(Math.floor(v));
 	    },
 	    listeners: {
 		// our setValue gets only called if we have a value, avoid
@@ -107,7 +107,9 @@ Ext.define('PVE.form.BandwidthField', {
 		value: '{unitlabel}',
 	    },
 	    listeners: {
-		change: (f, v) => f.originalValue = v,
+		change: (f, v) => {
+		    f.originalValue = v;
+		},
 	    },
 	    width: 40,
 	},
