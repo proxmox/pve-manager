@@ -244,9 +244,9 @@ sub set_pool {
 	}
     }
 
-    if ((keys %$param) > 0) {
-	my @missing = join(', ', keys %$param );
-	die "Could not set: @missing\n";
+    if (scalar(keys %$param) > 0) {
+	my $missing = join(', ', sort keys %$param );
+	die "Could not set: $missing\n";
     }
 
 }
