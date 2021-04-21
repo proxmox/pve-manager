@@ -54,21 +54,72 @@ __PACKAGE__->register_method ({
 	items => {
 	    type => "object",
 	    properties => {
-		pool              => { type => 'integer', title => 'ID' },
-		pool_name         => { type => 'string',  title => 'Name' },
-		size              => { type => 'integer', title => 'Size' },
-		min_size          => { type => 'integer', title => 'Min Size' },
-		pg_num            => { type => 'integer', title => 'PG Num' },
-		pg_num_min        => { type => 'integer', title => 'min. PG Num', optional => 1, },
-		pg_num_final      => { type => 'integer', title => 'Optimal PG Num', optional => 1, },
-		pg_autoscale_mode => { type => 'string',  title => 'PG Autoscale Mode', optional => 1, },
-		crush_rule        => { type => 'integer', title => 'Crush Rule' },
-		crush_rule_name   => { type => 'string',  title => 'Crush Rule Name' },
-		percent_used      => { type => 'number',  title => '%-Used' },
-		bytes_used        => { type => 'integer', title => 'Used' },
-		target_size       => { type => 'integer', title => 'PG Autoscale Target Size', optional => 1 },
-		target_size_ratio => { type => 'number',  title => 'PG Autoscale Target Ratio',optional => 1, },
-		autoscale_status  => { type => 'object',  title => 'Autoscale Status', optional => 1 },
+		pool => {
+		    type => 'integer',
+		    title => 'ID',
+		},
+		pool_name => {
+		    type => 'string',
+		    title => 'Name',
+		},
+		size => {
+		    type => 'integer',
+		    title => 'Size',
+		},
+		min_size => {
+		    type => 'integer',
+		    title => 'Min Size',
+		},
+		pg_num => {
+		    type => 'integer',
+		    title => 'PG Num',
+		},
+		pg_num_min => {
+		    type => 'integer',
+		    title => 'min. PG Num',
+		    optional => 1,
+		},
+		pg_num_final => {
+		    type => 'integer',
+		    title => 'Optimal PG Num',
+		    optional => 1,
+		},
+		pg_autoscale_mode => {
+		    type => 'string',
+		    title => 'PG Autoscale Mode',
+		    optional => 1,
+		},
+		crush_rule => {
+		    type => 'integer',
+		    title => 'Crush Rule',
+		},
+		crush_rule_name => {
+		    type => 'string',
+		    title => 'Crush Rule Name',
+		},
+		percent_used => {
+		    type => 'number',
+		    title => '%-Used',
+		},
+		bytes_used => {
+		    type => 'integer',
+		    title => 'Used',
+		},
+		target_size => {
+		    type => 'integer',
+		    title => 'PG Autoscale Target Size',
+		    optional => 1,
+		},
+		target_size_ratio => {
+		    type => 'number',
+		    title => 'PG Autoscale Target Ratio',
+		    optional => 1,
+		},
+		autoscale_status => {
+		    type => 'object',
+		    title => 'Autoscale Status',
+		    optional => 1,
+		},
 	    },
 	},
 	links => [ { rel => 'child', href => "{pool_name}" } ],
