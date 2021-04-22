@@ -228,6 +228,28 @@ Ext.define('PVE.grid.BackupView', {
 	    },
 	});
 
+	let file_restore_btn = Ext.create('Proxmox.button.Button', {
+	    text: gettext('File Restore'),
+	    disabled: true,
+	    selModel: sm,
+	    enableFn: function(rec) {
+		return !!rec && isPBS;
+	    },
+	    handler: function(b, e, rec) {
+		var storage = storagesel.getValue();
+		Ext.create('Proxmox.window.FileBrowser', {
+		    title: gettext('File Restore') + " - " + rec.data.text,
+		    listURL: `/api2/json/nodes/localhost/storage/${storage}/file-restore/list`,
+		    downloadURL: `/api2/json/nodes/localhost/storage/${storage}/file-restore/download`,
+		    extraParams: {
+			snapshot: rec.data.text,
+		    },
+		    archive: PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format) ?
+			'all' : undefined,
+		}).show();
+	    },
+	});
+
 	Ext.apply(me, {
 	    selModel: sm,
 	    tbar: {
@@ -238,6 +260,7 @@ Ext.define('PVE.grid.BackupView', {
 		    delete_btn,
 		    '-',
 		    config_btn,
+		    file_restore_btn,
 		    '-',
 		    {
 			xtype: 'proxmoxButton',

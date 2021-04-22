@@ -133,6 +133,25 @@ Ext.define('PVE.storage.BackupView', {
 		    renderer: PVE.Utils.render_backup_verification,
 		},
 	    };
+
+	    me.tbar.push({
+		xtype: 'proxmoxButton',
+		text: gettext('File Restore'),
+		disabled: true,
+		selModel: sm,
+		handler: function(b, e, rec) {
+		    Ext.create('Proxmox.window.FileBrowser', {
+			title: gettext('File Restore') + " - " + rec.data.text,
+			listURL: `/api2/json/nodes/localhost/storage/${me.storage}/file-restore/list`,
+			downloadURL: `/api2/json/nodes/localhost/storage/${me.storage}/file-restore/download`,
+			extraParams: {
+			    snapshot: rec.data.text,
+			},
+			archive: PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format) ?
+			    'all' : undefined,
+		    }).show();
+		},
+	    });
 	}
 
 	me.callParent();
