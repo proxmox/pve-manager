@@ -104,11 +104,13 @@ sub auth_handler {
 	    $isUpload = 1;
 	}
 
-	# we skip CSRF check for file upload, because it is difficult to pass CSRF HTTP headers
-	# with native html forms, and it should not be necessary at all.
-	my $euid = $>;
-	PVE::AccessControl::verify_csrf_prevention_token($username, $token)
-	    if !$isUpload && ($euid != 0) && ($method ne 'GET');
+	if (!$api_token) {
+	    # we skip CSRF check for file upload, because it is difficult to pass CSRF HTTP headers
+	    # with native html forms, and it should not be necessary at all.
+	    my $euid = $>;
+	    PVE::AccessControl::verify_csrf_prevention_token($username, $token)
+		if !$isUpload && ($euid != 0) && ($method ne 'GET');
+	}
     }
 
     return {
