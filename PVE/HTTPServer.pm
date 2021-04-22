@@ -25,11 +25,12 @@ sub new {
     my ($this, %args) = @_;
 
     my $class = ref($this) || $this;
-
     my $self = $class->SUPER::new(%args);
-    
+
     $self->{rpcenv} = PVE::RPCEnvironment->init(
-	$self->{trusted_env} ? 'priv' : 'pub', atfork =>  sub { $self-> atfork_handler() });
+	$self->{trusted_env} ? 'priv' : 'pub',
+	atfork => sub { $self->atfork_handler() },
+    );
 
     return $self;
 }
@@ -38,7 +39,6 @@ sub verify_spice_connect_url {
     my ($self, $connect_str) = @_;
 
     my $rpcenv = $self->{rpcenv};
-
     $rpcenv->init_request();
 
     my ($vmid, $node, $port) = PVE::AccessControl::verify_spice_connect_url($connect_str);
@@ -48,7 +48,6 @@ sub verify_spice_connect_url {
 
 sub generate_csrf_prevention_token {
     my ($username) = @_;
-
     return PVE::AccessControl::assemble_csrf_prevention_token($username);
 }
 
@@ -79,7 +78,7 @@ sub auth_handler {
 
     if ($require_auth) {
 	if ($api_token) {
-	    # returns tokenid actually
+	    # the token-ID `<user>@<realm>!<tokenname>` is the user for token based authentication
 	    $username = PVE::AccessControl::verify_token($api_token);
 	} else {
 	    die "No ticket\n" if !$ticket;
@@ -91,8 +90,7 @@ sub auth_handler {
 		if (defined(my $challenge = $tfa_info->{challenge})) {
 		    $rpcenv->set_u2f_challenge($challenge);
 		}
-		die "No ticket\n"
-		    if ($rel_uri ne '/access/tfa' || $method ne 'POST');
+		die "No ticket\n" if ($rel_uri ne '/access/tfa' || $method ne 'POST');
 	    }
 	}
 
@@ -100,16 +98,14 @@ sub auth_handler {
 
 	if ($method eq 'POST' && $rel_uri =~ m|^/nodes/([^/]+)/storage/([^/]+)/upload$|) {
 	    my ($node, $storeid) = ($1, $2);
-	    # we disable CSRF checks if $isUpload is set,
-	    # to improve security we check user upload permission here
+	    # CSRF check are omitted if $isUpload is set, so check user upload permission here
 	    my $perm = { check => ['perm', "/storage/$storeid", ['Datastore.AllocateTemplate']] };
 	    $rpcenv->check_api2_permissions($perm, $username, {});
 	    $isUpload = 1;
 	}
 
-	# we skip CSRF check for file upload, because it is
-	# difficult to pass CSRF HTTP headers with native html forms,
-	# and it should not be necessary at all.
+	# we skip CSRF check for file upload, because it is difficult to pass CSRF HTTP headers
+	# with native html forms, and it should not be necessary at all.
 	my $euid = $>;
 	PVE::AccessControl::verify_csrf_prevention_token($username, $token)
 	    if !$isUpload && ($euid != 0) && ($method ne 'GET');
@@ -142,7 +138,7 @@ sub rest_handler {
 	($handler, $info) = PVE::API2->find_handler($method, $rel_uri, $uri_param);
 	return if !$handler || !$info;
 
-	foreach my $p (sort keys %{$params}) {
+	for my $p (sort keys %{$params}) {
 	    if (defined($uri_param->{$p}) && $uri_param->{$p} ne $params->{$p}) {
 		raise_param_exc({
 		    $p => "duplicate parameter (already defined in URI) with conflicting values!"
@@ -210,13 +206,11 @@ sub rest_handler {
 
 sub check_cert_fingerprint {
     my ($self, $cert) = @_;
-
     return PVE::CertCache::check_cert_fingerprint($cert);
 }
 
 sub initialize_cert_cache {
     my ($self, $node) = @_;
-
     PVE::CertCache::initialize_cert_cache($node);
 }
 
@@ -224,7 +218,6 @@ sub remote_node_ip {
     my ($self, $node) = @_;
 
     my $remip = PVE::Cluster::remote_node_ip($node);
-
     die "unable to get remote IP address for node '$node'\n" if !$remip;
 
     return $remip;
