@@ -3,7 +3,7 @@
  */
 Ext.define('PVE.window.SafeDestroyGuest', {
     extend: 'Proxmox.window.SafeDestroy',
-    alias: 'proxmoxSafeDestroy',
+    alias: 'widget.pveSafeDestroyGuest',
 
     additionalItems: [
 	{
