@@ -135,7 +135,8 @@ Ext.define('PVE.FirewallRulePanel', {
 		base_url: me.list_refs_url,
 		value: '',
 		fieldLabel: gettext('Source'),
-
+		maxLength: 512,
+		maxLengthText: gettext('Too long, consider using IP sets.'),
 	    },
 	    {
 		xtype: 'pveIPRefSelector',
@@ -145,6 +146,8 @@ Ext.define('PVE.FirewallRulePanel', {
 		base_url: me.list_refs_url,
 		value: '',
 		fieldLabel: gettext('Destination'),
+		maxLength: 512,
+		maxLengthText: gettext('Too long, consider using IP sets.'),
 	    },
 	);
 
