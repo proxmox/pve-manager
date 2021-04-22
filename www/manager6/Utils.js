@@ -1271,7 +1271,7 @@ Ext.define('PVE.Utils', {
     },
 
     openDefaultConsoleWindow: function(consoles, consoleType, vmid, nodename, vmname, cmd) {
-	var dv = PVE.Utils.defaultViewer(consoles);
+	var dv = PVE.Utils.defaultViewer(consoles, consoleType);
 	PVE.Utils.openConsoleWindow(dv, consoleType, vmid, nodename, vmname, cmd);
     },
 
@@ -1309,7 +1309,7 @@ Ext.define('PVE.Utils', {
 	}
     },
 
-    defaultViewer: function(consoles) {
+    defaultViewer: function(consoles, type) {
 	var allowSpice, allowXtermjs;
 
 	if (consoles === true) {
@@ -1319,7 +1319,7 @@ Ext.define('PVE.Utils', {
 	    allowSpice = consoles.spice;
 	    allowXtermjs = !!consoles.xtermjs;
 	}
-	var dv = PVE.VersionInfo.console || 'xtermjs';
+	let dv = PVE.VersionInfo.console || (type === 'kvm' ? 'vv' : 'xtermjs');
 	if (dv === 'vv' && !allowSpice) {
 	    dv = allowXtermjs ? 'xtermjs' : 'html5';
 	} else if (dv === 'xtermjs' && !allowXtermjs) {
