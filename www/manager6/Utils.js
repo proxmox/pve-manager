@@ -1706,6 +1706,7 @@ Ext.define('PVE.Utils', {
 	    lvmthincreate: [gettext('LVM-Thin Storage'), gettext('Create')],
 	    migrateall: ['', gettext('Migrate all VMs and Containers')],
 	    'move_volume': ['CT', gettext('Move Volume')],
+	    'pbs-download': ['VM/CT', gettext('File Restore Download')],
 	    pull_file: ['CT', gettext('Pull file')],
 	    push_file: ['CT', gettext('Push file')],
 	    qmclone: ['VM', gettext('Clone')],
