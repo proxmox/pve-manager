@@ -1,3 +1,45 @@
+pve-manager (6.4-1) pve; urgency=medium
+
+  * backup views: add single-file restore button for VM and CT backup archives
+    located on a Proxmox Backup Server
+
+  * ui: ceph: allow one to edit existing ceph pools
+
+  * ui: ceph: reduce pool view complexity and add auto scale columns
+
+  * fix #2053: OSD destroy only if located on specified node
+
+  * ui: Utils: change default console order for VMs, prefer SPICE virt-viewer
+    if the VM has a SPICE display
+
+  * fix #3389: add special file-upload detection and handling also when API
+    tokens are used
+
+  * fix #417: proxy: allow one to configure a address where the pveproxy and
+    spiceproxy should listen and default to listening on both, IPv6 and IPv4.
+    This changes the log format for IPv4 addresses, as ::ffff: will be prefixed.
+    Either adpat any matching software (for example, fail2ban) or disable this
+    by setting the LISTEN_IP to 0.0.0.0, if this is not wanted.
+
+  * ui: safe destroy guest: add checkbox for removal of unreferenced disks
+
+  * report: add multipath.conf and wwids file
+
+  * fix #3385: api: network: check for duplicate use of network-device ports
+    before writing
+
+  * ui: firewall: rule: set 512 characters max-length for source and
+    destination fields, if more addresses are required it's recommended to use
+    IP-sets
+
+  * ui: backup views: unfiy button order in storage and guest backup view
+
+  * ui: set file name for spice console download in chrome
+
+  * ui: allow one to edit notes also in the storage backup content view
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 23 Apr 2021 17:17:29 +0200
+
 pve-manager (6.3-7) pve; urgency=medium
 
   * ui: bandwidth limit selector: make it possible to allow zero, so users can
