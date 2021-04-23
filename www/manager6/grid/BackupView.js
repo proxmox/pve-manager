@@ -92,6 +92,8 @@ Ext.define('PVE.grid.BackupView', {
 	    reload();
 	};
 
+	let file_restore_btn;
+
 	var storagesel = Ext.create('PVE.form.StorageSelector', {
 	    nodename: nodename,
 	    fieldLabel: gettext('Storage'),
@@ -113,6 +115,9 @@ Ext.define('PVE.grid.BackupView', {
 			isPBS = false;
 		    }
 		    setStorage(value);
+		    if (file_restore_btn) {
+			file_restore_btn.setHidden(!isPBS);
+		    }
 		},
 	    },
 	});
@@ -228,13 +233,15 @@ Ext.define('PVE.grid.BackupView', {
 	    },
 	});
 
-	let file_restore_btn = Ext.create('Proxmox.button.Button', {
+	// declared above so that the storage selector can change this buttons hidden state
+	file_restore_btn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('File Restore'),
 	    disabled: true,
 	    selModel: sm,
 	    enableFn: function(rec) {
 		return !!rec && isPBS;
 	    },
+	    hidden: !isPBS,
 	    handler: function(b, e, rec) {
 		var storage = storagesel.getValue();
 		Ext.create('Proxmox.window.FileBrowser', {
