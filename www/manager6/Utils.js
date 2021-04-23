@@ -1814,6 +1814,7 @@ Ext.define('PVE.Utils', {
 	    startall: ['', gettext('Start all VMs and Containers')],
 	    stopall: ['', gettext('Stop all VMs and Containers')],
 	    unknownimgdel: ['', gettext('Destroy image from unknown guest')],
+	    wipedisk: ['Device', gettext('Wipe Disk')],
 	    vncproxy: ['VM/CT', gettext('Console')],
 	    vncshell: ['', gettext('Shell')],
 	    vzclone: ['CT', gettext('Clone')],
