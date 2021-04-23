@@ -103,8 +103,11 @@ Ext.define('PVE.CephPoolInputPanel', {
 	{
 	    xtype: 'pveCephRuleSelector',
 	    fieldLabel: 'Crush Rule', // do not localize
-	    cbind: { nodename: '{nodename}' },
 	    name: 'crush_rule',
+	    cbind: {
+		nodename: '{nodename}',
+		isCreate: '{isCreate}',
+	    },
 	    allowBlank: false,
 	},
 	{
@@ -465,34 +468,32 @@ Ext.define('PVE.form.CephRuleSelector', {
     queryMode: 'local',
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	if (!me.nodename) {
 	    throw "no nodename given";
 	}
 
-	var store = Ext.create('Ext.data.Store', {
+	let store = Ext.create('Ext.data.Store', {
 	    fields: ['name'],
 	    sorters: 'name',
 	    proxy: {
 		type: 'proxmox',
 		url: `/api2/json/nodes/${me.nodename}/ceph/rules`,
 	    },
+	    autoLoad: me.isCreate ? {
+		callback: (records, op, success) => {
+		    if (success && records.length > 0) {
+			me.select(records[0]);
+		    }
+		},
+	    } : true,
 	});
-
 	Ext.apply(me, {
 	    store: store,
 	});
 
 	me.callParent();
-
-	store.load({
-	    callback: function(rec, op, success) {
-		if (success && rec.length > 0) {
-		    me.select(rec[0]);
-		}
-	    },
-	});
     },
 
 });
