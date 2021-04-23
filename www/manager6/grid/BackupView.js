@@ -244,6 +244,7 @@ Ext.define('PVE.grid.BackupView', {
 	    hidden: !isPBS,
 	    handler: function(b, e, rec) {
 		var storage = storagesel.getValue();
+		let isVMArchive = PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format);
 		Ext.create('Proxmox.window.FileBrowser', {
 		    title: gettext('File Restore') + " - " + rec.data.text,
 		    listURL: `/api2/json/nodes/localhost/storage/${storage}/file-restore/list`,
@@ -251,9 +252,9 @@ Ext.define('PVE.grid.BackupView', {
 		    extraParams: {
 			volume: rec.data.volid,
 		    },
-		    archive: PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format) ?
-			'all' : undefined,
-		}).show();
+		    archive: isVMArchive ? 'all' : undefined,
+		    autoShow: true,
+		});
 	    },
 	});
 
@@ -263,12 +264,10 @@ Ext.define('PVE.grid.BackupView', {
 		overflowHandler: 'scroller',
 		items: [
 		    backup_btn,
+		    '-',
 		    restore_btn,
-		    delete_btn,
-		    '-',
-		    config_btn,
 		    file_restore_btn,
-		    '-',
+		    config_btn,
 		    {
 			xtype: 'proxmoxButton',
 			text: gettext('Edit Notes'),
@@ -298,6 +297,8 @@ Ext.define('PVE.grid.BackupView', {
 			    }).show();
 			},
 		    },
+		    '-',
+		    delete_btn,
 		    '->',
 		    storagesel,
 		    '-',

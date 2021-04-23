@@ -103,6 +103,29 @@ Ext.define('PVE.storage.BackupView', {
 		    win.on('destroy', reload);
 		},
 	    },
+	];
+	if (isPBS) {
+	    me.tbar.push({
+		xtype: 'proxmoxButton',
+		text: gettext('File Restore'),
+		disabled: true,
+		selModel: sm,
+		handler: function(b, e, rec) {
+		    let isVMArchive = PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format);
+		    Ext.create('Proxmox.window.FileBrowser', {
+			title: gettext('File Restore') + " - " + rec.data.text,
+			listURL: `/api2/json/nodes/localhost/storage/${me.storage}/file-restore/list`,
+			downloadURL: `/api2/json/nodes/localhost/storage/${me.storage}/file-restore/download`,
+			extraParams: {
+			    volume: rec.data.volid,
+			},
+			archive: isVMArchive ? 'all' : undefined,
+			autoShow: true,
+		    });
+		},
+	    });
+	}
+	me.tbar.push(
 	    {
 		xtype: 'proxmoxButton',
 		text: gettext('Show Configuration'),
@@ -117,8 +140,9 @@ Ext.define('PVE.storage.BackupView', {
 		    win.show();
 		},
 	    },
+	    '-',
 	    pruneButton,
-	];
+	);
 
 	if (isPBS) {
 	    me.extraColumns = {
@@ -133,25 +157,6 @@ Ext.define('PVE.storage.BackupView', {
 		    renderer: PVE.Utils.render_backup_verification,
 		},
 	    };
-
-	    me.tbar.push({
-		xtype: 'proxmoxButton',
-		text: gettext('File Restore'),
-		disabled: true,
-		selModel: sm,
-		handler: function(b, e, rec) {
-		    Ext.create('Proxmox.window.FileBrowser', {
-			title: gettext('File Restore') + " - " + rec.data.text,
-			listURL: `/api2/json/nodes/localhost/storage/${me.storage}/file-restore/list`,
-			downloadURL: `/api2/json/nodes/localhost/storage/${me.storage}/file-restore/download`,
-			extraParams: {
-			    volume: rec.data.volid,
-			},
-			archive: PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format) ?
-			    'all' : undefined,
-		    }).show();
-		},
-	    });
 	}
 
 	me.callParent();
