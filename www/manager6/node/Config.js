@@ -279,6 +279,7 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-hdd-o',
 		    nodename: nodename,
 		    includePartitions: true,
+		    supportsWipeDisk: true,
 		},
 		{
 		    xtype: 'pveLVMList',
