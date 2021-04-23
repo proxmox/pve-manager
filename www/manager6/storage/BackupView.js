@@ -140,6 +140,35 @@ Ext.define('PVE.storage.BackupView', {
 		    win.show();
 		},
 	    },
+	    {
+		xtype: 'proxmoxButton',
+		text: gettext('Edit Notes'),
+		disabled: true,
+		selModel: sm,
+		handler: function(b, e, rec) {
+		    let volid = rec.data.volid;
+		    Ext.create('Proxmox.window.Edit', {
+			autoLoad: true,
+			width: 600,
+			height: 400,
+			resizable: true,
+			title: gettext('Notes'),
+			url: `/api2/extjs/nodes/${nodename}/storage/${me.storage}/content/${volid}`,
+			layout: 'fit',
+			items: [
+			    {
+				xtype: 'textarea',
+				layout: 'fit',
+				name: 'notes',
+				height: '100%',
+			    },
+			],
+			listeners: {
+			    destroy: () => reload(),
+			},
+		    }).show();
+		},
+	    },
 	    '-',
 	    pruneButton,
 	);
