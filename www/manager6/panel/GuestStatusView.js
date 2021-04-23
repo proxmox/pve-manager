@@ -19,7 +19,7 @@ Ext.define('PVE.panel.GuestStatusView', {
     },
 
     defaults: {
-	xtype: 'pveInfoWidget',
+	xtype: 'pmxInfoWidget',
 	padding: '2 25',
     },
     items: [
@@ -52,7 +52,6 @@ Ext.define('PVE.panel.GuestStatusView', {
 	    renderer: PVE.Utils.format_ha,
 	},
 	{
-	    xtype: 'pveInfoWidget',
 	    itemId: 'node',
 	    iconCls: 'fa fa-building fa-fw',
 	    title: gettext('Node'),
@@ -85,7 +84,6 @@ Ext.define('PVE.panel.GuestStatusView', {
 	},
 	{
 	    itemId: 'swap',
-	    xtype: 'pveInfoWidget',
 	    iconCls: 'fa fa-refresh fa-fw',
 	    title: gettext('SWAP usage'),
 	    valueField: 'swap',

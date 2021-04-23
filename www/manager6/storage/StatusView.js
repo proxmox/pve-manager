@@ -11,7 +11,7 @@ Ext.define('PVE.storage.StatusView', {
     },
 
     defaults: {
-	xtype: 'pveInfoWidget',
+	xtype: 'pmxInfoWidget',
 	padding: '0 30 5 30',
     },
     items: [

@@ -8,7 +8,7 @@ Ext.define('PVE.panel.TemplateStatusView', {
     },
 
     defaults: {
-	xtype: 'pveInfoWidget',
+	xtype: 'pmxInfoWidget',
 	printBar: false,
 	padding: '2 25',
     },

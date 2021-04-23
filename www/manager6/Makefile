@@ -77,7 +77,6 @@ JSSRC= 							\
 	panel/ConfigPanel.js				\
 	panel/HealthWidget.js				\
 	panel/IPSet.js					\
-	panel/InfoWidget.js				\
 	panel/NotesView.js				\
 	panel/RunningChart.js				\
 	panel/StatusPanel.js				\

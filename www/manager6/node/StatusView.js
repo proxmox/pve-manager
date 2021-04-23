@@ -16,7 +16,7 @@ Ext.define('PVE.node.StatusView', {
     },
 
     defaults: {
-	xtype: 'pveInfoWidget',
+	xtype: 'pmxInfoWidget',
 	padding: '0 15 5 15',
     },
 
