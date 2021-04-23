@@ -16,12 +16,11 @@ Ext.define('PVE.node.CephCrushMap', {
 	    failure: function(response, opts) {
 		me.update(gettext('Error') + " " + response.htmlStatus);
 		var msg = response.htmlStatus;
-		PVE.Utils.showCephInstallOrMask(me.ownerCt, msg, me.pveSelNode.data.node,
-		    function(win) {
-			me.mon(win, 'cephInstallWindowClosed', function() {
-			    me.load();
-			});
-		    },
+		PVE.Utils.showCephInstallOrMask(
+		    me.ownerCt,
+		    msg,
+		    me.pveSelNode.data.node,
+		    win => me.mon(win, 'cephInstallWindowClosed', () => me.load()),
 		);
 	    },
 	    success: function(response, opts) {
@@ -32,20 +31,17 @@ Ext.define('PVE.node.CephCrushMap', {
     },
 
     initComponent: function() {
-        var me = this;
+	let me = this;
 
-	var nodename = me.pveSelNode.data.node;
+	let nodename = me.pveSelNode.data.node;
 	if (!nodename) {
 	    throw "no node name specified";
 	}
 
 	Ext.apply(me, {
-	    url: '/nodes/' + nodename + '/ceph/crush',
-
+	    url: `/nodes/${nodename}/ceph/crush`,
 	    listeners: {
-		activate: function() {
-		    me.load();
-		},
+		activate: () => me.load(),
 	    },
 	});
 
