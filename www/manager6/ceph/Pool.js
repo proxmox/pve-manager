@@ -281,7 +281,7 @@ Ext.define('PVE.node.CephPoolList', {
 	    dataIndex: 'target_size',
 	    hidden: true,
 	    renderer: function(v, metaData, rec) {
-		let value = PVE.Utils.render_size(v);
+		let value = Proxmox.Utils.render_size(v);
 		if (rec.data.target_size_ratio > 0) {
 		    value = '<i class="fa fa-info-circle faded"></i> ' + value;
 		    metaData.tdAttr = 'data-qtip="Target Size Ratio takes precedence over Target Size."';
