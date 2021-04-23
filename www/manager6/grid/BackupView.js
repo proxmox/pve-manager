@@ -242,7 +242,7 @@ Ext.define('PVE.grid.BackupView', {
 		    listURL: `/api2/json/nodes/localhost/storage/${storage}/file-restore/list`,
 		    downloadURL: `/api2/json/nodes/localhost/storage/${storage}/file-restore/download`,
 		    extraParams: {
-			snapshot: rec.data.text,
+			volume: rec.data.volid,
 		    },
 		    archive: PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format) ?
 			'all' : undefined,

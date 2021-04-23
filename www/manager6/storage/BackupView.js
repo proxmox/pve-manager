@@ -145,7 +145,7 @@ Ext.define('PVE.storage.BackupView', {
 			listURL: `/api2/json/nodes/localhost/storage/${me.storage}/file-restore/list`,
 			downloadURL: `/api2/json/nodes/localhost/storage/${me.storage}/file-restore/download`,
 			extraParams: {
-			    snapshot: rec.data.text,
+			    volume: rec.data.volid,
 			},
 			archive: PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format) ?
 			    'all' : undefined,
