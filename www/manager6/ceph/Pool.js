@@ -14,7 +14,6 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    cbind: {
 		editable: '{isCreate}',
 		value: '{pool_name}',
-		disabled: '{!isCreate}',
 	    },
 	    name: 'name',
 	    allowBlank: false,
