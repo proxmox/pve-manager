@@ -319,12 +319,6 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-ceph',
 		},
 		{
-		    xtype: 'pveReplicaView',
-		    iconCls: 'fa fa-retweet',
-		    title: gettext('Replication'),
-		    itemId: 'replication',
-		},
-		{
 		    xtype: 'pveNodeCephConfigCrush',
 		    title: gettext('Configuration'),
 		    iconCls: 'fa fa-gear',
@@ -359,6 +353,12 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-sitemap',
 		    groups: ['ceph'],
 		    itemId: 'ceph-pools',
+		},
+		{
+		    xtype: 'pveReplicaView',
+		    iconCls: 'fa fa-retweet',
+		    title: gettext('Replication'),
+		    itemId: 'replication',
 		},
 	    );
 	}
