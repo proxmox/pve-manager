@@ -95,7 +95,7 @@ Ext.define('PVE.ceph.CephHighestVersionDisplay', {
 
 		let maxversion = [];
 		let maxversiontext = "";
-		for (const [nodename, data] of Object.entries(nodes)) {
+		for (const [_nodename, data] of Object.entries(nodes)) {
 		    let version = data.version.parts;
 		    if (PVE.Utils.compare_ceph_versions(version, maxversion) > 0) {
 			maxversion = version;
