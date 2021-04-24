@@ -46,7 +46,7 @@ Ext.define('PVE.CephPoolInputPanel', {
 		['on', 'on'],
 		['off', 'off'],
 	    ],
-	    value: 'warn',
+	    value: 'on', // FIXME: check ceph version and only default to on on octopus and newer
 	    allowBlank: false,
 	    autoSelect: false,
 	    labelWidth: 140,
