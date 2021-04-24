@@ -5,9 +5,7 @@ Ext.define('PVE.node.CephStatus', {
     onlineHelp: 'chapter_pveceph',
 
     scrollable: true,
-
     bodyPadding: 5,
-
     layout: {
 	type: 'column',
     },
@@ -73,8 +71,7 @@ Ext.define('PVE.node.CephStatus', {
 		    stateful: true,
 		    stateId: 'ceph-status-warnings',
 		    xtype: 'grid',
-		    // since we load the store manually to show the emptytext,
-		    // we have to specify an empty one here
+		    // we load the store manually, to show an emptyText specify an empty intermediate store
 		    store: {
 			trackRemoved: false,
 			data: [],
@@ -87,15 +84,14 @@ Ext.define('PVE.node.CephStatus', {
 			    align: 'center',
 			    width: 70,
 			    renderer: function(value) {
-				var health = PVE.Utils.map_ceph_health[value];
-				var classes = PVE.Utils.get_health_icon(health);
-
-				return '<i class="fa fa-fw ' + classes + '"></i>';
+				let health = PVE.Utils.map_ceph_health[value];
+				let icon = PVE.Utils.get_health_icon(health);
+				return `<i class="fa fa-fw ${icon}'"></i>`;
 			    },
 			    sorter: {
 				sorterFn: function(a, b) {
-				    var healthArr = ['HEALTH_ERR', 'HEALTH_WARN', 'HEALTH_OK'];
-				    return healthArr.indexOf(b.data.severity) - healthArr.indexOf(a.data.severity);
+				    let health = ['HEALTH_ERR', 'HEALTH_WARN', 'HEALTH_OK'];
+				    return health.indexOf(b.data.severity) - health.indexOf(a.data.severity);
 				},
 			    },
 			},
@@ -261,25 +257,17 @@ Ext.define('PVE.node.CephStatus', {
 
     generateCheckData: function(health) {
 	var result = [];
-	var checks = health.checks || {};
-	var keys = Ext.Object.getKeys(checks).sort();
+	let checks = health.checks || {};
 
-	Ext.Array.forEach(keys, function(key) {
-	    var details = checks[key].detail || [];
+	Object.keys(checks).sort().forEach(key => {
+	    let check = checks[key];
 	    result.push({
 		id: key,
-		summary: checks[key].summary.message,
-		detail: Ext.Array.reduce(
-			    checks[key].detail,
-			    function(first, second) {
-				return first + '\n' + second.message;
-			    },
-			    '',
-			),
-		severity: checks[key].severity,
+		summary: check.summary.message,
+		detail: check.detail.reduce((acc, v) => `${acc}\n${v.message}`, ''),
+		severity: check.severity,
 	    });
 	});
-
 	return result;
     },
 
@@ -333,22 +321,24 @@ Ext.define('PVE.node.CephStatus', {
 	let unhealthy = degraded + unfound + misplaced;
 	// update recovery
 	if (pgmap.recovering_objects_per_sec !== undefined || unhealthy > 0) {
-	    let total = pgmap.misplaced_total || pgmap.unfound_total || pgmap.degraded_total || 0;
-	    if (total === 0) return;
-	    let recovered = total - unhealthy || 0;
+	    let toRecover = pgmap.misplaced_total || pgmap.unfound_total || pgmap.degraded_total || 0;
+	    if (toRecover === 0) {
+		return; // FIXME: unexpected return and leaves things possible visible when it shouldn't?
+	    }
+	    let recovered = toRecover - unhealthy || 0;
 	    let speed = pgmap.recovering_bytes_per_sec || 0;
-	    let speedTxt = PVE.Utils.render_bandwidth(speed);
-	    let obj_per_sec = speed / (4*1024*1024); // 4MiB per Object
-	    let duration = Proxmox.Utils.format_duration_human(unhealthy/obj_per_sec);
 
-	    let percentage = recovered/total;
-	    let txt = `${(percentage*100).toFixed(2)}%`;
+	    let recoveryRatio = recovered / total;
+	    let txt = `${(recoveryRatio * 100).toFixed(2)}%`;
 	    if (speed > 0) {
+		let obj_per_sec = speed / (4 * 1024 * 1024); // 4 MiB per Object
+		let duration = Proxmox.Utils.format_duration_human(unhealthy/obj_per_sec);
+		let speedTxt = PVE.Utils.render_bandwidth(speed);
 		txt += ` (${speedTxt} - ${duration} left)`;
 	    }
 
 	    me.down('#recovery').setVisible(true);
-	    me.down('#recoveryprogress').updateValue(percentage);
+	    me.down('#recoveryprogress').updateValue(recoveryRatio);
 	    me.down('#recoveryprogress').updateText(txt);
 	    me.down('#recoverychart').addDataPoint(speed);
 	} else {
@@ -397,18 +387,17 @@ Ext.define('PVE.node.CephStatus', {
 	    if (!success || records.length < 1) {
 		return;
 	    }
-	    var rec = records[0];
-	    me.metadata = rec.data;
+	    me.metadata = records[0].data;
 
 	    // update services
-	    me.getComponent('services').updateAll(rec.data, me.status || {});
+	    me.getComponent('services').updateAll(me.metadata, me.status || {});
 
 	    // update detailstatus panel
-	    me.getComponent('statusdetail').updateAll(rec.data, me.status || {});
+	    me.getComponent('statusdetail').updateAll(me.metadata, me.status || {});
 
 	    let maxversion = [];
 	    let maxversiontext = "";
-	    for (const [nodename, data] of Object.entries(me.metadata.node)) {
+	    for (const [_nodename, data] of Object.entries(me.metadata.node)) {
 		let version = data.version.parts;
 		if (PVE.Utils.compare_ceph_versions(version, maxversion) > 0) {
 		    maxversion = version;
