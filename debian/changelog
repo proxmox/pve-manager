@@ -1,3 +1,19 @@
+pve-manager (6.4-2) pve; urgency=medium
+
+  * ui: ceph pools: fix target-size column renderer
+
+  * ui: ceph pools: do not grey-out name field when editing a pool
+
+  * ui: ceph pools: avoid resetting crush rule when editing a pool
+
+  * ui: container restore: make privilege level of restored CT a tri-state
+    radio group to allow keeping the old state (default), or enforcing either
+    privileged or unprivileged
+
+  * ui: ceph: pool creation: default auto-scale value to "on".
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 24 Apr 2021 19:28:55 +0200
+
 pve-manager (6.4-1) pve; urgency=medium
 
   * backup views: add single-file restore button for VM and CT backup archives
