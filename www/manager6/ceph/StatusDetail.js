@@ -30,7 +30,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    oldosds: [],
 	},
 	tpl: [
-	    '<h3>' + 'OSDs' + '</h3>',
+	    '<h3>OSDs</h3>',
 	    '<table class="osds">',
 	    '<tr><td></td>',
 	    '<td><i class="fa fa-fw good fa-circle"></i>',
@@ -119,7 +119,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    states: [],
 	},
 	tpl: [
-	    '<h3>' + 'PGs' + '</h3>',
+	    '<h3>PGs</h3>',
 	    '<tpl for="states">',
 	    '<div class="left-aligned"><i class ="fa fa-circle {cls}"></i> {state_name}:</div>',
 	    '<div class="right-aligned">{count}</div><br />',
@@ -188,10 +188,10 @@ Ext.define('PVE.ceph.StatusDetail', {
     ],
 
     updateAll: function(metadata, status) {
-	var me = this;
+	let me = this;
 	me.suspendLayout = true;
 
-	var maxversion = "0";
+	let maxversion = "0";
 	Object.values(metadata.version || {}).forEach(function(version) {
 	    if (PVE.Utils.compare_ceph_versions(version, maxversion) > 0) {
 		maxversion = version;
@@ -202,8 +202,8 @@ Ext.define('PVE.ceph.StatusDetail', {
 
 	if (metadata.osd) {
 	    metadata.osd.forEach(function(osd) {
-		var version = PVE.Utils.parse_ceph_version(osd);
-		if (version != maxversion) {
+		let version = PVE.Utils.parse_ceph_version(osd);
+		if (version !== maxversion) {
 		    oldosds.push({
 			id: osd.id,
 			version: version,
@@ -213,8 +213,8 @@ Ext.define('PVE.ceph.StatusDetail', {
 	}
 
 	// update PGs sorted
-	var pgmap = status.pgmap || {};
-	var pgs_by_state = pgmap.pgs_by_state || [];
+	let pgmap = status.pgmap || {};
+	let pgs_by_state = pgmap.pgs_by_state || [];
 	pgs_by_state.sort(function(a, b) {
 	    return a.state_name < b.state_name?-1:a.state_name === b.state_name?0:1;
 	});
@@ -225,10 +225,9 @@ Ext.define('PVE.ceph.StatusDetail', {
 	});
 
 	pgs_by_state.forEach(function(state) {
-	    var i;
-	    var states = state.state_name.split(/[^a-z]+/);
-	    var result = 0;
-	    for (i = 0; i < states.length; i++) {
+	    let states = state.state_name.split(/[^a-z]+/);
+	    let result = 0;
+	    for (let i = 0; i < states.length; i++) {
 		if (me.pgstates[states[i]] > result) {
 		    result = me.pgstates[states[i]];
 		}
@@ -243,11 +242,10 @@ Ext.define('PVE.ceph.StatusDetail', {
 	me.getComponent('pgchart').getStore().setData(me.statecategories);
 	me.getComponent('pgs').update({ states: pgs_by_state });
 
-	var downinregex = /(\d+) osds down/;
-	var downin_osds = 0;
-
-	var health = status.health || {};
+	let health = status.health || {};
 	// we collect monitor/osd information from the checks
+	const downinregex = /(\d+) osds down/;
+	let downin_osds = 0;
 	Ext.Object.each(health.checks, function(key, value, obj) {
 	    var found = null;
 	    if (key === 'OSD_DOWN') {
@@ -258,21 +256,21 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    }
 	});
 
-	var osdmap = status.osdmap || {};
-	if (typeof osdmap.osdmap != "undefined") {
+	let osdmap = status.osdmap || {};
+	if (typeof osdmap.osdmap !== "undefined") {
 	    osdmap = osdmap.osdmap;
 	}
-	// update osds counts
-	var total_osds = osdmap.num_osds || 0;
-	var in_osds = osdmap.num_in_osds || 0;
-	var up_osds = osdmap.num_up_osds || 0;
-	var out_osds = total_osds - in_osds;
-	var down_osds = total_osds - up_osds;
+	// update OSDs counts
+	let total_osds = osdmap.num_osds || 0;
+	let in_osds = osdmap.num_in_osds || 0;
+	let up_osds = osdmap.num_up_osds || 0;
+	let down_osds = total_osds - up_osds;
 
-	var downout_osds = down_osds - downin_osds;
-	var upin_osds = in_osds - downin_osds;
-	var upout_osds = up_osds - upin_osds;
-	var osds = {
+	let downout_osds = down_osds - downin_osds;
+	let upin_osds = in_osds - downin_osds;
+	let upout_osds = up_osds - upin_osds;
+
+	let osds = {
 	    total: total_osds,
 	    upin: upin_osds,
 	    upout: upout_osds,
@@ -280,7 +278,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    downout: downout_osds,
 	    oldosds: oldosds,
 	};
-	var osdcomponent = me.getComponent('osds');
+	let osdcomponent = me.getComponent('osds');
 	osdcomponent.update(Ext.apply(osdcomponent.data, osds));
 
 	me.suspendLayout = false;
