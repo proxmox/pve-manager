@@ -109,12 +109,48 @@ Ext.define('PVE.window.Restore', {
 	];
 
 	if (me.vmtype === 'lxc') {
-	    items.push({
-		xtype: 'proxmoxcheckbox',
-		name: 'unprivileged',
-		value: true,
-		fieldLabel: gettext('Unprivileged container'),
-	    });
+	    items.push(
+		{
+		    xtype: 'radiogroup',
+		    fieldLabel: gettext('Privilege Level'),
+		    reference: 'noVNCScalingGroup',
+		    height: '15px', // renders faster with value assigned
+		    layout: {
+			type: 'hbox',
+			algin: 'stretch',
+		    },
+		    autoEl: {
+			tag: 'div',
+			'data-qtip':
+			    gettext('Choose if you want to keep or override the privilege level of the restored Container.'),
+		    },
+		    items: [
+			{
+			    xtype: 'radiofield',
+			    name: 'unprivileged',
+			    inputValue: 'keep',
+			    boxLabel: gettext('From Backup'),
+			    flex: 1,
+			    checked: true,
+			},
+			{
+			    xtype: 'radiofield',
+			    name: 'unprivileged',
+			    inputValue: '1',
+			    boxLabel: gettext('Unprivileged'),
+			    flex: 1,
+			},
+			{
+			    xtype: 'radiofield',
+			    name: 'unprivileged',
+			    inputValue: '0',
+			    boxLabel: gettext('Privileged'),
+			    flex: 1,
+			    //margin: '0 0 0 10',
+			},
+		    ],
+		},
+	    );
 	} else if (me.vmtype === 'qemu') {
 	    items.push({
 		xtype: 'proxmoxcheckbox',
@@ -194,7 +230,9 @@ Ext.define('PVE.window.Restore', {
 		    url = '/nodes/' + me.nodename + '/lxc';
 		    params.ostemplate = me.volid;
 		    params.restore = 1;
-		    if (values.unprivileged) { params.unprivileged = 1; }
+		    if (values.unprivileged !== 'keep') {
+			params.unprivileged = values.unprivileged;
+		    }
 		    msg = Proxmox.Utils.format_task_description('vzrestore', params.vmid);
 		} else if (me.vmtype === 'qemu') {
 		    url = '/nodes/' + me.nodename + '/qemu';
