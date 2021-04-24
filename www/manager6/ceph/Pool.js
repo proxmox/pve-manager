@@ -337,8 +337,8 @@ Ext.define('PVE.node.CephPoolList', {
 	    storeid: 'ceph-pool-list' + nodename,
 	    model: 'ceph-pool-list',
 	    proxy: {
-                type: 'proxmox',
-                url: "/api2/json/nodes/" + nodename + "/ceph/pools",
+		type: 'proxmox',
+		url: `/api2/json/nodes/${nodename}/ceph/pools`,
 	    },
 	});
 	let store = Ext.create('Proxmox.data.DiffStore', { rstore: rstore });
@@ -464,24 +464,22 @@ Ext.define('PVE.form.CephRuleSelector', {
 	if (!me.nodename) {
 	    throw "no nodename given";
 	}
-
-	let store = Ext.create('Ext.data.Store', {
-	    fields: ['name'],
-	    sorters: 'name',
-	    proxy: {
-		type: 'proxmox',
-		url: `/api2/json/nodes/${me.nodename}/ceph/rules`,
-	    },
-	    autoLoad: me.isCreate ? {
-		callback: (records, op, success) => {
-		    if (success && records.length > 0) {
-			me.select(records[0]);
-		    }
-		},
-	    } : true,
-	});
 	Ext.apply(me, {
-	    store: store,
+	    store: {
+		fields: ['name'],
+		sorters: 'name',
+		proxy: {
+		    type: 'proxmox',
+		    url: `/api2/json/nodes/${me.nodename}/ceph/rules`,
+		},
+		autoLoad: me.isCreate ? {
+		    callback: (records, op, success) => {
+			if (success && records.length > 0) {
+			    me.select(records[0]);
+			}
+		    },
+		} : true,
+	    },
 	});
 
 	me.callParent();
