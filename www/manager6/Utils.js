@@ -1577,8 +1577,7 @@ Ext.define('PVE.Utils', {
     },
 
     showCephInstallOrMask: function(container, msg, nodename, callback) {
-	var regex = new RegExp("not (installed|initialized)", "i");
-	if (msg.match(regex)) {
+	if (msg.match(/not (installed|initialized)/i)) {
 	    if (Proxmox.UserName === 'root@pam') {
 		container.el.mask();
 		if (!container.down('pveCephInstallWindow')) {
@@ -1600,6 +1599,23 @@ Ext.define('PVE.Utils', {
 	    return false;
 	}
     },
+
+    monitor_ceph_installed: function(view, rstore, nodename, maskOwnerCt) {
+	PVE.Utils.handleStoreErrorOrMask(
+	    view,
+	    rstore,
+	    /not (installed|initialized)/i,
+	    (_, error) => {
+		nodename = nodename || 'localhost';
+		let maskTarget = maskOwnerCt ? view.ownerCt : view;
+		rstore.stopUpdate();
+		PVE.Utils.showCephInstallOrMask(maskTarget, error.statusText, nodename, win => {
+		    view.mon(win, 'cephInstallWindowClosed', () => rstore.startUpdate());
+		});
+	    },
+	);
+    },
+
 
     propertyStringSet: function(target, source, name, value) {
 	if (source) {

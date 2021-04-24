@@ -123,17 +123,8 @@ Ext.define('PVE.NodeCephFSPanel', {
 			    order: 'DESC',
 			},
 		    }));
-		    var regex = new RegExp("not (installed|initialized)", "i");
-		    PVE.Utils.handleStoreErrorOrMask(view, view.rstore, regex, function(me, error) {
-			me.rstore.stopUpdate();
-			PVE.Utils.showCephInstallOrMask(me.ownerCt, error.statusText, view.nodename,
-			    function(win) {
-				me.mon(win, 'cephInstallWindowClosed', function() {
-				    me.rstore.startUpdate();
-				});
-			    },
-			);
-		    });
+		    // manages the "install ceph?" overlay
+		    PVE.Utils.monitor_ceph_installed(view, view.rstore, view.nodename, true);
 		    view.rstore.on('load', this.onLoad, this);
 		    view.on('destroy', view.rstore.stopUpdate);
 		},

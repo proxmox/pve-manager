@@ -155,17 +155,7 @@ Ext.define('PVE.node.CephServiceList', {
 	    view.on('destroy', view.rstore.stopUpdate);
 
 	    if (view.showCephInstallMask) {
-		var regex = new RegExp("not (installed|initialized)", "i");
-		PVE.Utils.handleStoreErrorOrMask(view, view.rstore, regex, function(me, error) {
-		    view.rstore.stopUpdate();
-		    PVE.Utils.showCephInstallOrMask(view.ownerCt, error.statusText, view.nodename,
-			function(win) {
-			    me.mon(win, 'cephInstallWindowClosed', function() {
-				view.rstore.startUpdate();
-			    });
-			},
-		    );
-		});
+		PVE.Utils.monitor_ceph_installed(view, view.rstore, view.nodename, true);
 	    }
 	},
 

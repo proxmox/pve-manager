@@ -389,17 +389,8 @@ Ext.define('PVE.node.CephStatus', {
 	me.reads = me.down('#reads');
 	me.writes = me.down('#writes');
 
-	var regex = new RegExp("not (installed|initialized)", "i");
-	PVE.Utils.handleStoreErrorOrMask(me, me.store, regex, function(me, error) {
-	    me.store.stopUpdate();
-	    PVE.Utils.showCephInstallOrMask(me, error.statusText, nodename || 'localhost',
-		function(win) {
-		    me.mon(win, 'cephInstallWindowClosed', function() {
-			me.store.startUpdate();
-		    });
-		},
-	    );
-	});
+	// manages the "install ceph?" overlay
+	PVE.Utils.monitor_ceph_installed(me, me.store, nodename);
 
 	me.mon(me.store, 'load', me.updateAll, me);
 	me.mon(me.metadatastore, 'load', function(store, records, success) {

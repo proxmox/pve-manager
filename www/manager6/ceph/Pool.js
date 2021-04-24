@@ -343,17 +343,8 @@ Ext.define('PVE.node.CephPoolList', {
 	});
 	let store = Ext.create('Proxmox.data.DiffStore', { rstore: rstore });
 
-	PVE.Utils.handleStoreErrorOrMask(
-	    me,
-	    rstore,
-	    /not (installed|initialized)/i,
-	    (_, error) => {
-		rstore.stopUpdate();
-		PVE.Utils.showCephInstallOrMask(me, error.statusText, nodename, win => {
-		    me.mon(win, 'cephInstallWindowClosed', () => rstore.startUpdate());
-		});
-	    },
-	);
+	// manages the "install ceph?" overlay
+	PVE.Utils.monitor_ceph_installed(me, rstore, nodename);
 
 	var run_editor = function() {
 	    let rec = sm.getSelection()[0];
