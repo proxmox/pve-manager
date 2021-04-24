@@ -176,10 +176,9 @@ Ext.define('PVE.CephPoolInputPanel', {
     },
 });
 
-Ext.define('PVE.CephPoolEdit', {
+Ext.define('PVE.Ceph.PoolEdit', {
     extend: 'Proxmox.window.Edit',
     alias: 'widget.pveCephPoolEdit',
-    xtype: 'pveCephPoolEdit',
     mixins: ['Proxmox.Mixin.CBind'],
 
     cbindData: {
@@ -209,7 +208,7 @@ Ext.define('PVE.CephPoolEdit', {
     }],
 });
 
-Ext.define('PVE.node.CephPoolList', {
+Ext.define('PVE.node.Ceph.PoolList', {
     extend: 'Ext.grid.GridPanel',
     alias: 'widget.pveNodeCephPoolList',
 
@@ -351,7 +350,7 @@ Ext.define('PVE.node.CephPoolList', {
 	    if (!rec || !rec.data.pool_name) {
 		return;
 	    }
-	    Ext.create('PVE.CephPoolEdit', {
+	    Ext.create('PVE.Ceph.PoolEdit', {
 		title: gettext('Edit') + ': Ceph Pool',
 		nodename: nodename,
 		pool_name: rec.data.pool_name,
@@ -369,7 +368,7 @@ Ext.define('PVE.node.CephPoolList', {
 		{
 		    text: gettext('Create'),
 		    handler: function() {
-			Ext.create('PVE.CephPoolEdit', {
+			Ext.create('PVE.Ceph.PoolEdit', {
 			    title: gettext('Create') + ': Ceph Pool',
 			    isCreate: true,
 			    nodename: nodename,
