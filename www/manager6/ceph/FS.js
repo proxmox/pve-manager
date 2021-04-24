@@ -112,7 +112,7 @@ Ext.define('PVE.NodeCephFSPanel', {
 			storeid: 'pve-ceph-fs',
 			proxy: {
 			    type: 'proxmox',
-			    url: '/api2/json/nodes/' + view.nodename + '/ceph/fs',
+			    url: `/api2/json/nodes/${view.nodename}/ceph/fs`,
 			},
 			model: 'pve-ceph-fs',
 		    });
@@ -126,19 +126,17 @@ Ext.define('PVE.NodeCephFSPanel', {
 		    // manages the "install ceph?" overlay
 		    PVE.Utils.monitor_ceph_installed(view, view.rstore, view.nodename, true);
 		    view.rstore.on('load', this.onLoad, this);
-		    view.on('destroy', view.rstore.stopUpdate);
+		    view.on('destroy', () => view.rstore.stopUpdate());
 		},
 
 		onCreate: function() {
-		    var view = this.getView();
+		    let view = this.getView();
 		    view.rstore.stopUpdate();
-		    var win = Ext.create('PVE.CephCreateFS', {
+		    Ext.create('PVE.CephCreateFS', {
 			autoShow: true,
 			nodename: view.nodename,
 			listeners: {
-			    destroy: function() {
-				view.rstore.startUpdate();
-			    },
+			    destroy: () => view.rstore.startUpdate(),
 			},
 		    });
 		},
