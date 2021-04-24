@@ -5,10 +5,9 @@ Ext.define('PVE.CephCreateService', {
     showProgress: true,
 
     setNode: function(nodename) {
-        var me = this;
-
+	let me = this;
 	me.nodename = nodename;
-        me.url = "/nodes/" + nodename + "/ceph/" + me.type + "/" + nodename;
+	me.url = `/nodes/${nodename}/ceph/${me.type}/${nodename}`;
     },
 
     method: 'POST',
@@ -23,24 +22,22 @@ Ext.define('PVE.CephCreateService', {
 	    allowBlank: false,
 	    listeners: {
 		change: function(f, value) {
-		    var me = this.up('pveCephCreateService');
-		    me.setNode(value);
+		    let view = this.up('pveCephCreateService');
+		    view.setNode(value);
 		},
 	    },
 	},
     ],
 
     initComponent: function() {
-        var me = this;
+        let me = this;
 
 	if (!me.nodename) {
 	    throw "no node name specified";
 	}
-
 	if (!me.type) {
 	    throw "no type specified";
 	}
-
 	me.setNode(me.nodename);
 
         me.callParent();
@@ -66,25 +63,21 @@ Ext.define('PVE.node.CephServiceList', {
 	xclass: 'Ext.app.ViewController',
 
 	render_version: function(value, metadata, rec) {
-	    let me = this.getView();
-	    let host = rec.data.host;
-	    let icon = "";
-	    let v = value;
-	    let nodev = [0];
-	    if (me.nodeversions[host] !== undefined) {
-		nodev = me.nodeversions[host].version.parts;
+	    let view = this.getView();
+	    let host = rec.data.host, nodev = [0];
+	    if (view.nodeversions[host] !== undefined) {
+		nodev = view.nodeversions[host].version.parts;
 	    }
-	    let maxv = me.maxversion;
 
-	    if (PVE.Utils.compare_ceph_versions(maxv, nodev) > 0) {
+	    let icon = '';
+	    if (PVE.Utils.compare_ceph_versions(view.maxversion, nodev) > 0) {
 		icon = PVE.Utils.get_ceph_icon_html('HEALTH_UPGRADE');
-	    } else if (PVE.Utils.compare_ceph_versions(nodev, v) > 0) {
+	    } else if (PVE.Utils.compare_ceph_versions(nodev, value) > 0) {
 		icon = PVE.Utils.get_ceph_icon_html('HEALTH_OLD');
-	    } else if (me.mixedversions) {
+	    } else if (view.mixedversions) {
 		icon = PVE.Utils.get_ceph_icon_html('HEALTH_OK');
 	    }
-
-	    return icon + v;
+	    return icon + value;
 	},
 
 	getMaxVersions: function(store, records, success) {
@@ -97,7 +90,7 @@ Ext.define('PVE.node.CephServiceList', {
 	    view.nodeversions = records[0].data.node;
 	    view.maxversion = [];
 	    view.mixedversions = false;
-	    for (const [nodename, data] of Object.entries(view.nodeversions)) {
+	    for (const [_nodename, data] of Object.entries(view.nodeversions)) {
 		let res = PVE.Utils.compare_ceph_versions(data.version.parts, view.maxversion);
 		if (res !== 0 && view.maxversion.length > 0) {
 		    view.mixedversions = true;
@@ -123,24 +116,23 @@ Ext.define('PVE.node.CephServiceList', {
 	    view.versionsstore = Ext.create('Proxmox.data.UpdateStore', {
 		autoStart: true,
 		interval: 10000,
-		storeid: 'ceph-versions-' + view.type + '-list' + view.nodename,
+		storeid: `ceph-versions-${view.type}-list${view.nodename}`,
 		proxy: {
 		    type: 'proxmox',
 		    url: "/api2/json/cluster/ceph/metadata?scope=versions",
 		},
 	    });
-
 	    view.versionsstore.on('load', this.getMaxVersions, this);
 	    view.on('destroy', view.versionsstore.stopUpdate);
 
 	    view.rstore = Ext.create('Proxmox.data.UpdateStore', {
 		autoStart: true,
 		interval: 3000,
-		storeid: 'ceph-' + view.type + '-list' + view.nodename,
+		storeid: `ceph-${view.type}-list${view.nodename}`,
 		model: 'ceph-service-list',
 		proxy: {
 		    type: 'proxmox',
-		    url: "/api2/json/nodes/" + view.nodename + "/ceph/" + view.type,
+		    url: `/api2/json/nodes/${view.nodename}/ceph/${view.type}`,
 		},
 	    });
 
@@ -160,68 +152,58 @@ Ext.define('PVE.node.CephServiceList', {
 	},
 
 	service_cmd: function(rec, cmd) {
-	    var view = this.getView();
+	    let view = this.getView();
 	    if (!rec.data.host) {
 		Ext.Msg.alert(gettext('Error'), "entry has no host");
 		return;
 	    }
 	    Proxmox.Utils.API2Request({
-		url: "/nodes/" + rec.data.host + "/ceph/" + cmd,
+		url: `/nodes/${rec.data.host}/ceph/${cmd}`,
 		method: 'POST',
 		params: { service: view.type + '.' + rec.data.name },
 		success: function(response, options) {
-		    var upid = response.result.data;
-		    var win = Ext.create('Proxmox.window.TaskProgress', {
-			upid: upid,
-			taskDone: function() {
-			    view.rstore.load();
-			},
+		    Ext.create('Proxmox.window.TaskProgress', {
+			autoShow: true,
+			upid: response.result.data,
+			taskDone: () => view.rstore.load(),
 		    });
-		    win.show();
 		},
-		failure: function(response, opts) {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		},
+		failure: (response, _opts) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
 	    });
 	},
-	onChangeService: function(btn) {
-	    var me = this;
-	    var view = this.getView();
-	    var cmd = btn.action;
-	    var rec = view.getSelection()[0];
-	    me.service_cmd(rec, cmd);
+	onChangeService: function(button) {
+	    let me = this;
+	    let record = me.getView().getSelection()[0];
+	    me.service_cmd(record, button.action);
 	},
 
 	showSyslog: function() {
-	    var view = this.getView();
-	    var rec = view.getSelection()[0];
-	    var servicename = 'ceph-' + view.type + '@' + rec.data.name;
-	    var url = "/api2/extjs/nodes/" + rec.data.host + "/syslog?service=" + encodeURIComponent(servicename);
-	    var win = Ext.create('Ext.window.Window', {
-		title: gettext('Syslog') + ': ' + servicename,
+	    let view = this.getView();
+	    let rec = view.getSelection()[0];
+	    let service = `ceph-${view.type}@${rec.data.name}`;
+	    Ext.create('Ext.window.Window', {
+		title: `${gettext('Syslog')}: ${service}`,
+		autoShow: true,
 		modal: true,
 		width: 800,
 		height: 400,
 		layout: 'fit',
 		items: [{
 		    xtype: 'proxmoxLogView',
-		    url: url,
+		    url: `/api2/extjs/nodes/${rec.data.host}/syslog?service=${encodeURIComponent(service)}`,
 		    log_select_timespan: 1,
 		}],
 	    });
-	    win.show();
 	},
 
 	onCreate: function() {
-	    var view = this.getView();
-	    var win = Ext.create('PVE.CephCreateService', {
+	    let view = this.getView();
+	    Ext.create('PVE.CephCreateService', {
 		autoShow: true,
 		nodename: view.nodename,
 		subject: view.getTitle(),
 		type: view.type,
-		taskDone: function() {
-		    view.rstore.load();
-		},
+		taskDone: () => view.rstore.load(),
 	    });
 	},
     },
@@ -233,10 +215,7 @@ Ext.define('PVE.node.CephServiceList', {
 	    iconCls: 'fa fa-play',
 	    action: 'start',
 	    disabled: true,
-	    enableFn: function(rec) {
-		return rec.data.state === 'stopped' ||
-		  rec.data.state === 'unknown';
-	    },
+	    enableFn: rec => rec.data.state === 'stopped' || rec.data.state === 'unknown',
 	    handler: 'onChangeService',
 	},
 	{
@@ -244,9 +223,7 @@ Ext.define('PVE.node.CephServiceList', {
 	    text: gettext('Stop'),
 	    iconCls: 'fa fa-stop',
 	    action: 'stop',
-	    enableFn: function(rec) {
-		return rec.data.state !== 'stopped';
-	    },
+	    enableFn: rec => rec.data.state !== 'stopped',
 	    disabled: true,
 	    handler: 'onChangeService',
 	},
@@ -256,9 +233,7 @@ Ext.define('PVE.node.CephServiceList', {
 	    iconCls: 'fa fa-refresh',
 	    action: 'restart',
 	    disabled: true,
-	    enableFn: function(rec) {
-		return rec.data.state !== 'stopped';
-	    },
+	    enableFn: rec => rec.data.state !== 'stopped',
 	    handler: 'onChangeService',
 	},
 	'-',
@@ -271,27 +246,24 @@ Ext.define('PVE.node.CephServiceList', {
 	    text: gettext('Destroy'),
 	    xtype: 'proxmoxStdRemoveButton',
 	    getUrl: function(rec) {
-		var view = this.up('grid');
+		let view = this.up('grid');
 		if (!rec.data.host) {
-		    Ext.Msg.alert(gettext('Error'), "entry has no host");
-		    return;
+		    Ext.Msg.alert(gettext('Error'), "entry has no host, cannot build API url");
+		    return '';
 		}
-		return "/nodes/" + rec.data.host + "/ceph/" + view.type + "/" + rec.data.name;
+		return `/nodes/${rec.data.host}/ceph/${view.type}/${rec.data.name}`;
 	    },
 	    callback: function(options, success, response) {
-		var view = this.up('grid');
+		let view = this.up('grid');
 		if (!success) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		    return;
 		}
-		var upid = response.result.data;
-		var win = Ext.create('Proxmox.window.TaskProgress', {
-		    upid: upid,
-		    taskDone: function() {
-			view.rstore.load();
-		    },
+		Ext.create('Proxmox.window.TaskProgress', {
+		    autoShow: true,
+		    upid: response.result.data,
+		    taskDone: () => view.rstore.load(),
 		});
-		win.show();
 	    },
 	},
 	'-',
@@ -347,7 +319,7 @@ Ext.define('PVE.node.CephServiceList', {
     ],
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	if (me.additionalColumns) {
 	    me.columns = me.columns.concat(me.additionalColumns);
@@ -359,13 +331,20 @@ Ext.define('PVE.node.CephServiceList', {
 }, function() {
     Ext.define('ceph-service-list', {
 	extend: 'Ext.data.Model',
-	fields: ['addr', 'name', 'rank', 'host', 'quorum', 'state',
-	    'ceph_version', 'ceph_version_short',
+	fields: [
+	    'addr',
+	    'name',
+	    'rank',
+	    'host',
+	    'quorum',
+	    'state',
+	    'ceph_version',
+	    'ceph_version_short',
 	    {
- type: 'string', name: 'version', calculate: function(data) {
-		return PVE.Utils.parse_ceph_version(data);
+		type: 'string',
+		name: 'version',
+		calculate: data => PVE.Utils.parse_ceph_version(data),
 	    },
-},
 	],
 	idProperty: 'name',
     });
