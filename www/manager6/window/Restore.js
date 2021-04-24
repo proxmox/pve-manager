@@ -167,7 +167,7 @@ Ext.define('PVE.window.Restore', {
 		xtype: 'displayfield',
 		reference: 'liveWarning',
 		// TODO: Remove once more tested/stable?
-		value: gettext('Note: If anything goes wrong during the live-restore, new data written by the VM will be lost.'),
+		value: gettext('Note: If anything goes wrong during the live-restore, new data written by the VM may be lost.'),
 		userCls: 'pmx-hint',
 		hidden: true,
 	    });
