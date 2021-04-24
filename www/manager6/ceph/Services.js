@@ -39,7 +39,7 @@ Ext.define('PVE.ceph.Services', {
     updateAll: function(metadata, status) {
 	var me = this;
 
-	var healthstates = {
+	const healthstates = {
 	    'HEALTH_UNKNOWN': 0,
 	    'HEALTH_ERR': 1,
 	    'HEALTH_WARN': 2,
@@ -47,43 +47,28 @@ Ext.define('PVE.ceph.Services', {
 	    'HEALTH_OLD': 4,
 	    'HEALTH_OK': 5,
 	};
-	var healthmap = [
-	    'HEALTH_UNKNOWN',
-	    'HEALTH_ERR',
-	    'HEALTH_WARN',
-	    'HEALTH_UPGRADE',
-	    'HEALTH_OLD',
-	    'HEALTH_OK',
-	];
-	var reduceFn = function(first, second) {
-	    return first + '\n' + second.message;
-	};
-	var maxversion = "00.0.00";
+	// order guarantee since es2020, but browsers did so before. Note, integers would break it.
+	const healthmap = Object.keys(healthstates);
+	let maxversion = "00.0.00";
 	Object.values(metadata.version || {}).forEach(function(version) {
 	    if (PVE.Utils.compare_ceph_versions(version, maxversion) > 0) {
 		maxversion = version;
 	    }
 	});
-	var i;
 	var quorummap = status && status.quorum_names ? status.quorum_names : [];
-	var monmessages = {};
-	var mgrmessages = {};
-	var mdsmessages = {};
+	let monmessages = {}, mgrmessages = {}, mdsmessages = {};
 	if (status) {
 	    if (status.health) {
-		Ext.Object.each(status.health.checks, function(key, value, obj) {
+		Ext.Object.each(status.health.checks, function(key, value, _obj) {
 		    if (!Ext.String.startsWith(key, "MON_")) {
 			return;
 		    }
-
-		    var i;
-		    for (i = 0; i < value.detail.length; i++) {
-			var match = value.detail[i].message.match(/mon.([a-zA-Z0-9\-\.]+)/);
+		    for (let i = 0; i < value.detail.length; i++) {
+			let match = value.detail[i].message.match(/mon.([a-zA-Z0-9\-.]+)/);
 			if (!match) {
 			    continue;
 			}
-			var monid = match[1];
-
+			let monid = match[1];
 			if (!monmessages[monid]) {
 			    monmessages[monid] = {
 				worstSeverity: healthstates.HEALTH_OK,
@@ -91,11 +76,10 @@ Ext.define('PVE.ceph.Services', {
 			    };
 			}
 
+			let severityIcon = PVE.Utils.get_ceph_icon_html(value.severity, true);
+			let details = value.detail.reduce((acc, v) => `${acc}\n${v.message}`, '');
+			monmessages[monid].messages.push(severityIcon + details);
 
-			monmessages[monid].messages.push(
-							 PVE.Utils.get_ceph_icon_html(value.severity, true) +
-							 Ext.Array.reduce(value.detail, reduceFn, ''),
-			);
 			if (healthstates[value.severity] < monmessages[monid].worstSeverity) {
 			    monmessages[monid].worstSeverity = healthstates[value.severity];
 			}
@@ -117,7 +101,7 @@ Ext.define('PVE.ceph.Services', {
 	    }
 	}
 
-	var checks = {
+	let checks = {
 	    mon: function(mon) {
 		if (quorummap.indexOf(mon.name) !== -1) {
 		    mon.health = healthstates.HEALTH_OK;
@@ -161,10 +145,8 @@ Ext.define('PVE.ceph.Services', {
 	    me[type] = {};
 
 	    for (let id of ids) {
-		var tmp = id.split('@');
-		var name = tmp[0];
-		var host = tmp[1];
-		var result = {
+		const [name, host] = id.split('@');
+		let result = {
 		    id: id,
 		    health: healthstates.HEALTH_OK,
 		    statuses: [],
@@ -178,7 +160,7 @@ Ext.define('PVE.ceph.Services', {
 		};
 
 		result.statuses = [
-		    gettext('Host') + ": " + result.host,
+		    gettext('Host') + ": " + host,
 		    gettext('Address') + ": " + result.addr,
 		];
 
@@ -201,8 +183,8 @@ Ext.define('PVE.ceph.Services', {
 		if (result.version) {
 		    result.statuses.push(gettext('Version') + ": " + result.version);
 
-		    if (result.version != maxversion) {
-			if (metadata.version[result.host] === maxversion) {
+		    if (result.version !== maxversion) {
+			if (metadata.version[host] === maxversion) {
 			    if (result.health > healthstates.HEALTH_OLD) {
 				result.health = healthstates.HEALTH_OLD;
 			    }
@@ -265,35 +247,29 @@ Ext.define('PVE.ceph.ServiceList', {
 	var me = this;
 	me.suspendLayout = true;
 
-	var i;
 	list.sort((a, b) => a.id > b.id ? 1 : a.id < b.id ? -1 : 0);
-	var ids = {};
-	if (me.ids) {
-	    me.ids.forEach(id => ids[id] = true);
+	if (!me.ids) {
+	    me.ids = [];
 	}
-	for (i = 0; i < list.length; i++) {
-	    var service = me.getComponent(list[i].id);
+	let pendingRemoval = {};
+	me.ids.forEach(id => { pendingRemoval[id] = true; }); // mark all as to-remove first here
+
+	for (let i = 0; i < list.length; i++) {
+	    let service = me.getComponent(list[i].id);
 	    if (!service) {
-		// since services are already sorted, and
-		// we always have a sorted list
-		// we can add it at the service+1 position (because of the title)
-		service = me.insert(i+1, {
+		// services and list are sorted, so just insert at i + 1 (first el. is the title)
+		service = me.insert(i + 1, {
 		    xtype: 'pveCephServiceWidget',
 		    itemId: list[i].id,
 		});
-		if (!me.ids) {
-		    me.ids = [];
-		}
 		me.ids.push(list[i].id);
 	    } else {
-		delete ids[list[i].id];
+		delete pendingRemoval[list[i].id]; // drop exisiting from for-removal
 	    }
 	    service.updateService(list[i].title, list[i].text, list[i].health);
 	}
+	Object.keys(pendingRemoval).forEach(id => me.remove(id)); // GC
 
-	Object.keys(ids).forEach(function(id) {
-	    me.remove(id);
-	});
 	me.suspendLayout = false;
 	me.updateLayout();
     },
@@ -341,7 +317,7 @@ Ext.define('PVE.ceph.ServiceWidget', {
 
     listeners: {
 	destroy: function() {
-	    var me = this;
+	    let me = this;
 	    if (me.tooltip) {
 		me.tooltip.destroy();
 		delete me.tooltip;
@@ -350,29 +326,29 @@ Ext.define('PVE.ceph.ServiceWidget', {
 	mouseenter: {
 	    element: 'el',
 	    fn: function(events, element) {
-		var me = this.component;
-		if (!me) {
+		let view = this.component;
+		if (!view) {
 		    return;
 		}
-		if (!me.tooltip) {
-		    me.tooltip = Ext.create('Ext.tip.ToolTip', {
-			target: me.el,
+		if (!view.tooltip || view.data.text !== view.tooltip.html) {
+		    view.tooltip = Ext.create('Ext.tip.ToolTip', {
+			target: view.el,
 			trackMouse: true,
 			dismissDelay: 0,
 			renderTo: Ext.getBody(),
-			html: me.data.text,
+			html: view.data.text,
 		    });
 		}
-		me.tooltip.show();
+		view.tooltip.show();
 	    },
 	},
 	mouseleave: {
 	    element: 'el',
 	    fn: function(events, element) {
-		var me = this.component;
-		if (me.tooltip) {
-		    me.tooltip.destroy();
-		    delete me.tooltip;
+		let view = this.component;
+		if (view.tooltip) {
+		    view.tooltip.destroy();
+		    delete view.tooltip;
 		}
 	    },
 	},
