@@ -30,16 +30,29 @@ sha512sum: 623f024cdd181dd1202902acf0cf91a088a4173c0b4d69e213c8072869bedff41fa5b
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.12 (20200823)
 
+Package: alpine-3.13-default
+Version: 20210419
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.13-default_20210419_amd64.tar.xz
+md5sum: 0292afc6483109c6e4770c9cbecb649e
+sha512sum: b799553c595e30f82ca7820794914d881cbe7372bdd6e2c9cdd9d90d41698dfd5cbb3a8fec2a30393fbd28665bb42e889e53553ff54eda410d0e852b606110b5
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.13 (20210419)
+
 Package: archlinux-base
-Version: 20201116-1
+Version: 20210420-1
 Type: lxc
 OS: archlinux
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/archlinux-base_20201116-1_amd64.tar.gz
-md5sum: 82271bfc9daae3f7dcb98f155606dd5a
-sha512sum: 547fb6b9b1964a891d0aff8e2374b4ecead29509302e758506a60af8e8e418ae89ecbea6395b04b1478302f89e131cfbd503712ea993bf1230e107e5bc83add5
+Location: system/archlinux-base_20210420-1_amd64.tar.gz
+md5sum: dec64783b32f1bbc80c9b0e6d87d0322
+sha512sum: 911c52c84738694943d18d4ec44a71a4deb7ad7f7e82ca947a4690b6e01c7b233bdd9853fed3df146af2ca844b90c0f984f43e52c3378a3094201ba8fe2bc54f
 Infopage: https://www.archlinux.org
 Description: ArchLinux base image.
  ArchLinux template with the 'base' group and the 'openssh' package installed.
@@ -164,18 +177,18 @@ sha512sum: d4c057c236e81115c844cc1dc164b186b38e2f9d696bf24254401c0e8749a11582af7
 Infopage: https://linuxcontainers.org
 Description: LXC default image for opensuse 15.2 (20200824)
 
-Package: proxmox-mailgateway-6.3-standard
-Version: 6.3-1
+Package: proxmox-mailgateway-6.4-standard
+Version: 6.4-1
 Type: lxc
 OS: debian-10
 Section: mail
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: mail/proxmox-mailgateway-6.3-standard_6.3-1_amd64.tar.gz
-md5sum: d67d6da71df661e476128850d10f0375
-sha512sum: 60748cfc9fce68988d76f670a1cd1af939376b6f8567276d85eaac715bdd4f3bd99a28c7713df0025997202ad75305c4816d27fdb67089b27e6f4c522c7dbdcd
+Location: mail/proxmox-mailgateway-6.4-standard_6.4-1_amd64.tar.gz
+md5sum: 4fb2ec7c2bc6bc3ecc5f3d1c0cd26e76
+sha512sum: 0a9d48066aae7dbc60b3f421c134b6372a36165704a9e8170d7456d1f5e5ec7da9a9eaae932e3c3a2da004b8048bf5b0445370174ac3c7425d9015eb7fed7c0c
 Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
-Description: Proxmox Mailgateway 6.3
+Description: Proxmox Mailgateway 6.4
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
 Package: ubuntu-16.04-standard
@@ -233,3 +246,17 @@ sha512sum: 30fe89a4c5b5afa470240016fc588a4ea12de20d94804c8bd3999d618ef0f78348a9a
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Groovy_Standard
 Description: Ubuntu Groovy (standard)
  A small Ubuntu 20.10 Groovy Gorilla system including all standard packages.
+
+Package: ubuntu-21.04-standard
+Version: 21.04-1
+Type: lxc
+OS: ubuntu-21.04
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-21.04-standard_21.04-1_amd64.tar.gz
+md5sum: 3682438eafb8e288bc4df38ee7678710
+sha512sum: 53dc180f5b1c05e93d221fcbe8a334eb4afe2f591b575144f8d80242e8f9c3cca65da0abab19904d66900823f408700bad9a3ad1f94d86b9194e9932c8898a06
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Groovy_Standard
+Description: Ubuntu 21.04 Hirsute (standard)
+ A small Ubuntu 21.04 Hirsute Hippo system including all standard packages.
