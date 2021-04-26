@@ -21,11 +21,11 @@ Ext.define('PVE.node.CephStatus', {
 	    bodyPadding: 10,
 	    plugins: 'responsive',
 	    responsiveConfig: {
-		'width < 1900': {
+		'width < 1600': {
 		    minHeight: 230,
 		    columnWidth: 1,
 		},
-		'width >= 1900': {
+		'width >= 1600': {
 		    minHeight: 500,
 		    columnWidth: 0.5,
 		},
@@ -142,11 +142,11 @@ Ext.define('PVE.node.CephStatus', {
 	    itemId: 'statusdetail',
 	    plugins: 'responsive',
 	    responsiveConfig: {
-		'width < 1900': {
+		'width < 1600': {
 		    columnWidth: 1,
 		    minHeight: 250,
 		},
-		'width >= 1900': {
+		'width >= 1600': {
 		    columnWidth: 0.5,
 		    minHeight: 300,
 		},
@@ -163,11 +163,11 @@ Ext.define('PVE.node.CephStatus', {
 		align: 'stretch',
 	    },
 	    responsiveConfig: {
-		'width < 1900': {
+		'width < 1600': {
 		    columnWidth: 1,
 		    minHeight: 200,
 		},
-		'width >= 1900': {
+		'width >= 1600': {
 		    columnWidth: 0.5,
 		    minHeight: 200,
 		},
