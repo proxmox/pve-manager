@@ -1709,6 +1709,8 @@ Ext.define('PVE.Utils', {
 	    cephdestroyosd: ['Ceph OSD', gettext('Destroy')],
 	    cephdestroypool: ['Ceph Pool', gettext('Destroy')],
 	    cephfscreate: ['CephFS', gettext('Create')],
+	    cephsetpool: ['Ceph Pool', gettext('Edit')],
+	    cephsetflags: ['', gettext('Change global Ceph flags')],
 	    clustercreate: ['', gettext('Create Cluster')],
 	    clusterjoin: ['', gettext('Join Cluster')],
 	    dircreate: [gettext('Directory Storage'), gettext('Create')],
