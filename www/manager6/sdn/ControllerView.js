@@ -51,7 +51,6 @@ Ext.define('PVE.sdn.ControllerView', {
 	    if (!rec || rec.data.state === 'deleted') {
 		edit_btn.disable();
 		remove_btn.disable();
-		return;
 	    }
 	};
 
@@ -123,7 +122,7 @@ Ext.define('PVE.sdn.ControllerView', {
 		    dataIndex: 'controller',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'controller', 1);
-		    }
+		    },
 		},
 		{
 		    header: gettext('Type'),
@@ -132,7 +131,7 @@ Ext.define('PVE.sdn.ControllerView', {
 		    dataIndex: 'type',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'type', 1);
-		    }
+		    },
 		},
 		{
 		    header: gettext('Node'),
@@ -141,7 +140,7 @@ Ext.define('PVE.sdn.ControllerView', {
 		    dataIndex: 'node',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'node', 1);
-		    }
+		    },
 		},
 		{
 		    header: gettext('State'),
@@ -149,8 +148,8 @@ Ext.define('PVE.sdn.ControllerView', {
 		    dataIndex: 'state',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending_state(rec, value);
-		    }
-		}
+		    },
+		},
 	    ],
 	    listeners: {
 		activate: reload,

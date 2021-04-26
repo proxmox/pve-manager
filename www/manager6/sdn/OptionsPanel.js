@@ -6,7 +6,7 @@ Ext.define('PVE.sdn.Options', {
 
     layout: {
 	type: 'vbox',
-	align: 'stretch'
+	align: 'stretch',
     },
 
     onlineHelp: 'pvesdn_config_controllers',
@@ -20,15 +20,15 @@ Ext.define('PVE.sdn.Options', {
 	    title: gettext('Controllers'),
 	    border: 0,
 	    collapsible: true,
-	    padding: '0 0 20 0'
+	    padding: '0 0 20 0',
 	},
 	{
 	    xtype: 'pveSDNIpamView',
 	    title: gettext('Ipams'),
 	    border: 0,
 	    collapsible: true,
-	    padding: '0 0 20 0'
-	},{
+	    padding: '0 0 20 0',
+	}, {
 	    xtype: 'pveSDNDnsView',
 	    flex: 1,
 	    collapsible: true,
@@ -37,5 +37,5 @@ Ext.define('PVE.sdn.Options', {
 	}];
 
 	me.callParent();
-    }
+    },
 });

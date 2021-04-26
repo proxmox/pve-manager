@@ -45,18 +45,18 @@ Ext.define('PVE.panel.SDNZoneBase', {
 		name: 'dnszone',
 		skipEmptyText: true,
 		fieldLabel: gettext('DNS zone'),
-		allowBlank: true
+		allowBlank: true,
 	    },
 	];
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.sdn.zones.BaseEdit', {
     extend: 'Proxmox.window.Edit',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.isCreate = !me.zone;

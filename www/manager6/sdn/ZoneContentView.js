@@ -65,7 +65,7 @@ Ext.define('PVE.sdn.ZoneContentView', {
 		    header: 'Alias',
 		    width: 300,
 		    sortable: true,
-		    dataIndex: 'alias'
+		    dataIndex: 'alias',
 		},
 		{
 		    header: gettext('Status'),

@@ -45,14 +45,14 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 		fieldLabel: gettext('Vnet MAC address'),
 		vtype: 'MacAddress',
 		allowBlank: true,
-		emptyText: 'auto'
+		emptyText: 'auto',
 	    },
 	    {
 		xtype: 'pveNodeSelector',
 		name: 'exitnodes',
 		fieldLabel: gettext('Exit Nodes'),
 		multiSelect: true,
-		autoSelect: false
+		autoSelect: false,
 	    },
 	    {
 		xtype: 'pveSDNControllerSelector',

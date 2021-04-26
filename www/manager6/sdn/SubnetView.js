@@ -20,18 +20,18 @@ Ext.define('PVE.sdn.SubnetView', {
             me.remove_btn.baseurl = url + '/';
             me.store.setProxy({
                 type: 'proxmox',
-                url: '/api2/json/' + url + '?pending=1'
+                url: '/api2/json/' + url + '?pending=1',
             });
 
             me.store.load();
         }
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	let me = this;
 
         var store = new Ext.data.Store({
-            model: 'pve-sdn-subnet'
+            model: 'pve-sdn-subnet',
         });
 
         var reload = function() {
@@ -46,14 +46,13 @@ Ext.define('PVE.sdn.SubnetView', {
 	    if (!rec || rec.data.state === 'deleted') {
 		edit_btn.disable();
 		remove_btn.disable();
-		return;
 	    }
 	};
 
         let run_editor = function() {
 	    let rec = sm.getSelection()[0];
 
-	    let win = Ext.create('PVE.sdn.SubnetEdit',{
+	    let win = Ext.create('PVE.sdn.SubnetEdit', {
 		autoShow: true,
 		subnet: rec.data.subnet,
 		base_url: me.base_url,
@@ -81,7 +80,7 @@ Ext.define('PVE.sdn.SubnetView', {
 	    reloadStore: reload,
 	    selModel: sm,
 	    viewConfig: {
-		trackOver: false
+		trackOver: false,
 	    },
 	    tbar: [
 		{
@@ -93,7 +92,7 @@ Ext.define('PVE.sdn.SubnetView', {
 			    type: 'subnet',
 			});
 			win.on('destroy', reload);
-		    }
+		    },
 		},
 		me.remove_btn,
 		edit_btn,
@@ -105,7 +104,7 @@ Ext.define('PVE.sdn.SubnetView', {
 		    dataIndex: 'cidr',
                     renderer: function(value, metaData, rec) {
                         return PVE.Utils.render_sdn_pending(rec, value, 'cidr', 1);
-                    }
+                    },
 		},
 		{
 		    header: gettext('Gateway'),
@@ -113,7 +112,7 @@ Ext.define('PVE.sdn.SubnetView', {
 		    dataIndex: 'gateway',
                     renderer: function(value, metaData, rec) {
                         return PVE.Utils.render_sdn_pending(rec, value, 'gateway');
-                    }
+                    },
 		},
 		{
 		    header: 'SNAT',
@@ -121,7 +120,7 @@ Ext.define('PVE.sdn.SubnetView', {
 		    dataIndex: 'snat',
                     renderer: function(value, metaData, rec) {
                         return PVE.Utils.render_sdn_pending(rec, value, 'snat');
-                    }
+                    },
 		},
 		{
 		    header: gettext('Dns prefix'),
@@ -129,7 +128,7 @@ Ext.define('PVE.sdn.SubnetView', {
 		    dataIndex: 'dnszoneprefix',
                     renderer: function(value, metaData, rec) {
                         return PVE.Utils.render_sdn_pending(rec, value, 'dnszoneprefix');
-		    }
+		    },
                 },
 		{
 		    header: gettext('State'),
@@ -137,15 +136,15 @@ Ext.define('PVE.sdn.SubnetView', {
 		    dataIndex: 'state',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending_state(rec, value);
-		    }
-		}
+		    },
+		},
 
 	    ],
 	    listeners: {
 		activate: reload,
 		itemdblclick: run_editor,
-                selectionchange: set_button_status
-	    }
+                selectionchange: set_button_status,
+	    },
 	});
 
 	me.callParent();
@@ -153,9 +152,8 @@ Ext.define('PVE.sdn.SubnetView', {
         if (me.base_url) {
             me.setBaseUrl(me.base_url); // load
         }
-    }
+    },
 }, function() {
-
     Ext.define('pve-sdn-subnet', {
 	extend: 'Ext.data.Model',
 	fields: [
@@ -163,7 +161,6 @@ Ext.define('PVE.sdn.SubnetView', {
 	    'gateway',
 	    'snat',
 	],
-	idProperty: 'subnet'
+	idProperty: 'subnet',
     });
-
 });

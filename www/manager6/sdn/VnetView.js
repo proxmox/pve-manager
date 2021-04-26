@@ -34,7 +34,6 @@ Ext.define('PVE.sdn.VnetView', {
 	    if (!rec || rec.data.state === 'deleted') {
 		edit_btn.disable();
 		remove_btn.disable();
-		return;
 	    }
 	};
 
@@ -91,7 +90,7 @@ Ext.define('PVE.sdn.VnetView', {
 		    dataIndex: 'vnet',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'vnet', 1);
-		    }
+		    },
 		},
 		{
 		    header: gettext('Alias'),
@@ -99,7 +98,7 @@ Ext.define('PVE.sdn.VnetView', {
 		    dataIndex: 'alias',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'alias');
-		    }
+		    },
 		},
 		{
 		    header: gettext('Zone'),
@@ -107,7 +106,7 @@ Ext.define('PVE.sdn.VnetView', {
 		    dataIndex: 'zone',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'zone');
-		    }
+		    },
 		},
 		{
 		    header: gettext('Tag'),
@@ -115,7 +114,7 @@ Ext.define('PVE.sdn.VnetView', {
 		    dataIndex: 'tag',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'tag');
-		    }
+		    },
 		},
 		{
 		    header: gettext('VLAN Aware'),
@@ -123,7 +122,7 @@ Ext.define('PVE.sdn.VnetView', {
 		    dataIndex: 'vlanaware',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'vlanaware');
-		    }
+		    },
 		},
 		{
 		    header: gettext('State'),
@@ -131,8 +130,8 @@ Ext.define('PVE.sdn.VnetView', {
 		    dataIndex: 'state',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending_state(rec, value);
-		    }
-		}
+		    },
+		},
 	    ],
 	    listeners: {
 		activate: reload,

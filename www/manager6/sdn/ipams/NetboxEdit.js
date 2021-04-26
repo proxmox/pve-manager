@@ -15,7 +15,7 @@ Ext.define('PVE.sdn.ipams.NetboxInputPanel', {
 	return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.items = [
@@ -25,7 +25,7 @@ Ext.define('PVE.sdn.ipams.NetboxInputPanel', {
 		maxLength: 10,
 		value: me.zone || '',
 		fieldLabel: 'ID',
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'textfield',
@@ -42,5 +42,5 @@ Ext.define('PVE.sdn.ipams.NetboxInputPanel', {
 	];
 
 	me.callParent();
-    }
+    },
 });

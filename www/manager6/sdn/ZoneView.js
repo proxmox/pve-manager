@@ -51,7 +51,6 @@ Ext.define('PVE.sdn.ZoneView', {
 	    if (!rec || rec.data.state === 'deleted') {
 		edit_btn.disable();
 		remove_btn.disable();
-		return;
 	    }
 	};
 
@@ -121,7 +120,7 @@ Ext.define('PVE.sdn.ZoneView', {
 		    dataIndex: 'zone',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'zone', 1);
-		    }
+		    },
 		},
 		{
 		    header: gettext('Type'),
@@ -129,7 +128,7 @@ Ext.define('PVE.sdn.ZoneView', {
 		    dataIndex: 'type',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'type', 1);
-		    }
+		    },
 		},
 		{
 		    header: 'MTU',
@@ -137,7 +136,7 @@ Ext.define('PVE.sdn.ZoneView', {
 		    dataIndex: 'mtu',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'mtu');
-		    }
+		    },
 		},
 		{
 		    header: 'Ipam',
@@ -145,7 +144,7 @@ Ext.define('PVE.sdn.ZoneView', {
 		    dataIndex: 'ipam',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'ipam');
-		    }
+		    },
 		},
 		{
 		    header: gettext('Domain'),
@@ -153,7 +152,7 @@ Ext.define('PVE.sdn.ZoneView', {
 		    dataIndex: 'dnszone',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'dnszone');
-		    }
+		    },
 		},
 		{
 		    header: gettext('Dns'),
@@ -161,7 +160,7 @@ Ext.define('PVE.sdn.ZoneView', {
 		    dataIndex: 'dns',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'dns');
-		    }
+		    },
 		},
 		{
 		    header: gettext('Reverse dns'),
@@ -169,7 +168,7 @@ Ext.define('PVE.sdn.ZoneView', {
 		    dataIndex: 'reversedns',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'reversedns');
-		    }
+		    },
 		},
 		{
 		    header: gettext('Nodes'),
@@ -177,7 +176,7 @@ Ext.define('PVE.sdn.ZoneView', {
 		    dataIndex: 'nodes',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'nodes');
-		    }
+		    },
 		},
 		{
 		    header: gettext('State'),
@@ -185,13 +184,13 @@ Ext.define('PVE.sdn.ZoneView', {
 		    dataIndex: 'state',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending_state(rec, value);
-		    }
-		}
+		    },
+		},
 	    ],
 	    listeners: {
 		activate: reload,
 		itemdblclick: run_editor,
-		selectionchange: set_button_status
+		selectionchange: set_button_status,
 	    },
 	});
 

@@ -44,16 +44,16 @@ Ext.define('PVE.sdn.SubnetInputPanel', {
 	    name: 'snat',
 	    uncheckedValue: 0,
 	    checked: false,
-	    fieldLabel: 'SNAT'
+	    fieldLabel: 'SNAT',
 	},
 	{
 	    xtype: 'proxmoxtextfield',
 	    name: 'dnszoneprefix',
 	    skipEmptyText: true,
 	    fieldLabel: gettext('DNS zone prefix'),
-	    allowBlank: true
-	}
-    ]
+	    allowBlank: true,
+	},
+    ],
 });
 
 Ext.define('PVE.sdn.SubnetEdit', {

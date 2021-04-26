@@ -17,23 +17,23 @@ Ext.define('PVE.sdn.DnsView', {
 	    dns: sid,
 	    autoShow: true,
 	    listeners: {
-		destroy: this.reloadStore
-	    }
+		destroy: this.reloadStore,
+	    },
 	});
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	let me = this;
 
 	let store = new Ext.data.Store({
 	    model: 'pve-sdn-dns',
 	    proxy: {
 		type: 'proxmox',
-		url: "/api2/json/cluster/sdn/dns"
+		url: "/api2/json/cluster/sdn/dns",
 	    },
 		sorters: {
 		property: 'dns',
-		order: 'DESC'
+		order: 'DESC',
 	    },
 	});
 
@@ -58,13 +58,13 @@ Ext.define('PVE.sdn.DnsView', {
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    handler: run_editor
+	    handler: run_editor,
 	});
 
 	let remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/cluster/sdn/dns/',
-	    callback: reload
+	    callback: reload,
 	});
 
 	// else we cannot dynamically generate the add menu handlers
@@ -79,9 +79,9 @@ Ext.define('PVE.sdn.DnsView', {
 		continue;
 	    }
 	    addMenuItems.push({
-		text:  PVE.Utils.format_sdndns_type(type),
+		text: PVE.Utils.format_sdndns_type(type),
 		iconCls: 'fa fa-fw fa-' + dns.faIcon,
-		handler: addHandleGenerator(type)
+		handler: addHandleGenerator(type),
 	    });
 	}
 
@@ -90,14 +90,14 @@ Ext.define('PVE.sdn.DnsView', {
 	    reloadStore: reload,
 	    selModel: sm,
 	    viewConfig: {
-		trackOver: false
+		trackOver: false,
 	    },
 	    tbar: [
 		{
 		    text: gettext('Add'),
 		    menu: new Ext.menu.Menu({
-			items: addMenuItems
-		    })
+			items: addMenuItems,
+		    }),
 		},
 		remove_btn,
 		edit_btn,
@@ -106,13 +106,13 @@ Ext.define('PVE.sdn.DnsView', {
 		{
 		    header: 'ID',
 		    flex: 2,
-		    dataIndex: 'dns'
+		    dataIndex: 'dns',
 		},
 		{
 		    header: gettext('Type'),
 		    flex: 1,
 		    dataIndex: 'type',
-		    renderer: PVE.Utils.format_sdndns_type
+		    renderer: PVE.Utils.format_sdndns_type,
 		},
 		{
 		    header: 'url',
@@ -122,11 +122,11 @@ Ext.define('PVE.sdn.DnsView', {
 	    ],
 	    listeners: {
 		activate: reload,
-		itemdblclick: run_editor
-	    }
+		itemdblclick: run_editor,
+	    },
 	});
 
 	store.load();
 	me.callParent();
-    }
+    },
 });

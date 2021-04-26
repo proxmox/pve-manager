@@ -15,17 +15,17 @@ Ext.define('PVE.panel.SDNDnsBase', {
 	return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.sdn.dns.BaseEdit', {
     extend: 'Proxmox.window.Edit',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.isCreate = !me.dns;
@@ -41,20 +41,20 @@ Ext.define('PVE.sdn.dns.BaseEdit', {
 	var ipanel = Ext.create(me.paneltype, {
 	    type: me.type,
 	    isCreate: me.isCreate,
-	    dns: me.dns
+	    dns: me.dns,
 	});
 
 	Ext.apply(me, {
             subject: PVE.Utils.format_sdndns_type(me.type),
 	    isAdd: true,
-	    items: [ ipanel ]
+	    items: [ipanel],
 	});
 
 	me.callParent();
 
 	if (!me.isCreate) {
 	    me.load({
-		success:  function(response, options) {
+		success: function(response, options) {
 		    var values = response.result.data;
 		    var ctypes = values.content || '';
 
@@ -66,8 +66,8 @@ Ext.define('PVE.sdn.dns.BaseEdit', {
 		    values.enable = values.disable ? 0 : 1;
 
 		    ipanel.setValues(values);
-		}
+		},
 	    });
 	}
-    }
+    },
 });

@@ -15,7 +15,7 @@ Ext.define('PVE.sdn.ipams.PVEIpamInputPanel', {
 	return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.items = [
@@ -25,10 +25,10 @@ Ext.define('PVE.sdn.ipams.PVEIpamInputPanel', {
 		maxLength: 10,
 		value: me.zone || '',
 		fieldLabel: 'ID',
-		allowBlank: false
+		allowBlank: false,
 	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

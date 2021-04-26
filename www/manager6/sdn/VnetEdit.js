@@ -55,8 +55,8 @@ Ext.define('PVE.sdn.VnetInputPanel', {
 	    uncheckedValue: 0,
 	    checked: false,
 	    fieldLabel: gettext('VLAN Aware'),
-	}
-    ]
+	},
+    ],
 });
 
 Ext.define('PVE.sdn.VnetEdit', {

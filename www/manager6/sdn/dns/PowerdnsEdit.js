@@ -15,7 +15,7 @@ Ext.define('PVE.sdn.dns.PowerdnsInputPanel', {
 	return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.items = [
@@ -25,7 +25,7 @@ Ext.define('PVE.sdn.dns.PowerdnsInputPanel', {
 		maxLength: 10,
 		value: me.dns || '',
 		fieldLabel: 'ID',
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'textfield',
@@ -43,10 +43,10 @@ Ext.define('PVE.sdn.dns.PowerdnsInputPanel', {
 		xtype: 'proxmoxintegerfield',
 		name: 'ttl',
 		fieldLabel: 'ttl',
-		allowBlank: true
+		allowBlank: true,
 	    },
 	];
 
 	me.callParent();
-    }
+    },
 });

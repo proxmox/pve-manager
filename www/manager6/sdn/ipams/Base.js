@@ -15,17 +15,17 @@ Ext.define('PVE.panel.SDNIpamBase', {
 	return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.sdn.ipams.BaseEdit', {
     extend: 'Proxmox.window.Edit',
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.isCreate = !me.ipam;
@@ -41,20 +41,20 @@ Ext.define('PVE.sdn.ipams.BaseEdit', {
 	var ipanel = Ext.create(me.paneltype, {
 	    type: me.type,
 	    isCreate: me.isCreate,
-	    ipam: me.ipam
+	    ipam: me.ipam,
 	});
 
 	Ext.apply(me, {
 	    subject: PVE.Utils.format_sdnipam_type(me.type),
 	    isAdd: true,
-	    items: [ ipanel ]
+	    items: [ipanel],
 	});
 
 	me.callParent();
 
 	if (!me.isCreate) {
 	    me.load({
-		success:  function(response, options) {
+		success: function(response, options) {
 		    var values = response.result.data;
 		    var ctypes = values.content || '';
 
@@ -66,8 +66,8 @@ Ext.define('PVE.sdn.ipams.BaseEdit', {
 		    values.enable = values.disable ? 0 : 1;
 
 		    ipanel.setValues(values);
-		}
+		},
 	    });
 	}
-    }
+    },
 });

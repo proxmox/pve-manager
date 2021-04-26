@@ -16,7 +16,7 @@ Ext.define('PVE.sdn.controllers.BgpInputPanel', {
         return values;
     },
 
-    initComponent : function() {
+    initComponent: function() {
 	var me = this;
 
 	me.items = [
@@ -26,7 +26,7 @@ Ext.define('PVE.sdn.controllers.BgpInputPanel', {
 		fieldLabel: gettext('Node'),
 		multiSelect: false,
 		autoSelect: false,
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
@@ -35,20 +35,20 @@ Ext.define('PVE.sdn.controllers.BgpInputPanel', {
 		maxValue: 4294967295,
 		value: 65000,
 		fieldLabel: 'ASN #',
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'textfield',
 		name: 'peers',
 		fieldLabel: gettext('Peers'),
-		allowBlank: false
+		allowBlank: false,
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		name: 'ebgp',
 		uncheckedValue: 0,
 		checked: false,
-		fieldLabel: 'EBGP'
+		fieldLabel: 'EBGP',
 	    },
 
 	];
@@ -66,10 +66,10 @@ Ext.define('PVE.sdn.controllers.BgpInputPanel', {
 		minValue: 1,
 		maxValue: 100,
 		fieldLabel: 'ebgp-multihop',
-		allowBlank: true
+		allowBlank: true,
 	    },
 	];
 
 	me.callParent();
-    }
+    },
 });
