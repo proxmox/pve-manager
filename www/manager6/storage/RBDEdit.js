@@ -180,14 +180,6 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		fieldLabel: gettext('User name'),
 		allowBlank: true,
 	    },
-	    {
-		xtype: 'pmxDisplayEditField',
-		editable: me.isCreate,
-		name: 'namespace',
-		value: '',
-		fieldLabel: gettext('Namespace'),
-		allowBlank: true,
-	    },
 	);
 
 	me.column2 = [
@@ -223,6 +215,19 @@ Ext.define('PVE.storage.RBDInputPanel', {
 		hidden: !me.isCreate,
 		boxLabel: gettext('Use Proxmox VE managed hyper-converged ceph pool'),
 	    },
+	];
+
+	me.advancedColumn1 = [
+	    {
+		xtype: 'pmxDisplayEditField',
+		editable: me.isCreate,
+		name: 'namespace',
+		value: '',
+		fieldLabel: gettext('Namespace'),
+		allowBlank: true,
+	    },
+	];
+	me.advancedColumn2 = [
 	    {
 		xtype: 'displayfield',
 		name: 'namespace-hint',
