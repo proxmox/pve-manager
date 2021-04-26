@@ -144,6 +144,7 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    allowBlank: true,
 	    allowZero: true,
 	    emptyText: '0',
+	    emptyValue: 0,
 	    autoEl: {
 		tag: 'div',
 		'data-qtip': gettext('The amount of data eventually stored in this pool. Used for auto-scaling.'),
