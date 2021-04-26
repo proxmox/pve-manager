@@ -44,6 +44,8 @@ Ext.define('PVE.form.SizeField', {
     // allow setting 0 and using it as a submit value
     allowZero: false,
 
+    emptyValue: null,
+
     items: [
 	{
 	    xtype: 'numberfield',
@@ -51,6 +53,7 @@ Ext.define('PVE.form.SizeField', {
 		name: '{name}',
 		emptyText: '{emptyText}',
 		allowZero: '{allowZero}',
+		emptyValue: '{emptyValue}',
 	    },
 	    minValue: 0,
 	    step: 1,
@@ -81,7 +84,7 @@ Ext.define('PVE.form.SizeField', {
 		v = v.replace(this.decimalSeparator, '.');
 
 		if (v === undefined || v === '') {
-		    return null;
+		    return this.emptyValue;
 		}
 
 		if (Number(v) === 0) {
