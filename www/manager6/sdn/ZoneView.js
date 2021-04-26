@@ -45,15 +45,6 @@ Ext.define('PVE.sdn.ZoneView', {
 
 	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var set_button_status = function() {
-	    var rec = me.selModel.getSelection()[0];
-
-	    if (!rec || rec.data.state === 'deleted') {
-		edit_btn.disable();
-		remove_btn.disable();
-	    }
-	};
-
 	let run_editor = function() {
 	    let rec = sm.getSelection()[0];
 	    if (!rec) {
@@ -78,14 +69,21 @@ Ext.define('PVE.sdn.ZoneView', {
 	    callback: reload,
 	});
 
+	let set_button_status = function() {
+	    var rec = me.selModel.getSelection()[0];
+
+	    if (!rec || rec.data.state === 'deleted') {
+		edit_btn.disable();
+		remove_btn.disable();
+	    }
+	};
+
 	// else we cannot dynamically generate the add menu handlers
 	let addHandleGenerator = function(type) {
 	    return function() { me.createSDNEditWindow(type); };
 	};
-	let addMenuItems = [], type;
-
-	for (type in PVE.Utils.sdnzoneSchema) {
-	    let zone = PVE.Utils.sdnzoneSchema[type];
+	let addMenuItems = [];
+	for (const [type, zone] of Object.entries(PVE.Utils.sdnzoneSchema)) {
 	    if (zone.hideAdd) {
 		continue;
 	    }

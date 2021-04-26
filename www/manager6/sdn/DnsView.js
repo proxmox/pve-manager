@@ -37,10 +37,6 @@ Ext.define('PVE.sdn.DnsView', {
 	    },
 	});
 
-	let reload = function() {
-	    store.load();
-	};
-
 	let sm = Ext.create('Ext.selection.RowModel', {});
 
 	let run_editor = function() {
@@ -64,17 +60,15 @@ Ext.define('PVE.sdn.DnsView', {
 	let remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/cluster/sdn/dns/',
-	    callback: reload,
+	    callback: () => store.load(),
 	});
 
 	// else we cannot dynamically generate the add menu handlers
 	let addHandleGenerator = function(type) {
 	    return function() { me.createSDNEditWindow(type); };
 	};
-	let addMenuItems = [], type;
-
-	for (type in PVE.Utils.sdndnsSchema) {
-	    let dns = PVE.Utils.sdndnsSchema[type];
+	let addMenuItems = [];
+	for (const [type, dns] of Object.entries(PVE.Utils.sdndnsSchema)) {
 	    if (dns.hideAdd) {
 		continue;
 	    }
@@ -87,7 +81,7 @@ Ext.define('PVE.sdn.DnsView', {
 
 	Ext.apply(me, {
 	    store: store,
-	    reloadStore: reload,
+	    reloadStore: () => store.load(),
 	    selModel: sm,
 	    viewConfig: {
 		trackOver: false,
@@ -121,7 +115,7 @@ Ext.define('PVE.sdn.DnsView', {
 		},
 	    ],
 	    listeners: {
-		activate: reload,
+		activate: () => store.load(),
 		itemdblclick: run_editor,
 	    },
 	});

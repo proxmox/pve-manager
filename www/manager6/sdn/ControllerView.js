@@ -39,53 +39,36 @@ Ext.define('PVE.sdn.ControllerView', {
 	    },
 	});
 
-	var reload = function() {
-	    store.load();
-	};
+	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
-
-	var set_button_status = function() {
-	    var rec = me.selModel.getSelection()[0];
-
-	    if (!rec || rec.data.state === 'deleted') {
-		edit_btn.disable();
-		remove_btn.disable();
-	    }
-	};
-
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
+	let run_editor = function() {
+	    let rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
 	    }
-	    var type = rec.data.type,
-	        controller = rec.data.controller;
-
+	    let type = rec.data.type, controller = rec.data.controller;
 	    me.createSDNControllerEditWindow(type, controller);
 	};
 
-	var edit_btn = new Proxmox.button.Button({
+	let edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
 	    handler: run_editor,
 	});
 
-	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
+	let remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/cluster/sdn/controllers/',
-	    callback: reload,
+	    callback: () => store.load(),
 	});
 
 	// else we cannot dynamically generate the add menu handlers
-	var addHandleGenerator = function(type) {
+	let addHandleGenerator = function(type) {
 	    return function() { me.createSDNControllerEditWindow(type); };
 	};
-	var addMenuItems = [], type;
-
-	for (type in PVE.Utils.sdncontrollerSchema) {
-	    var controller = PVE.Utils.sdncontrollerSchema[type];
+	let addMenuItems = [];
+	for (const [type, controller] of Object.entries(PVE.Utils.sdncontrollerSchema)) {
 	    if (controller.hideAdd) {
 		continue;
 	    }
@@ -98,7 +81,7 @@ Ext.define('PVE.sdn.ControllerView', {
 
 	Ext.apply(me, {
 	    store: store,
-	    reloadStore: reload,
+	    reloadStore: () => store.load(),
 	    selModel: sm,
 	    viewConfig: {
 		trackOver: false,
@@ -118,7 +101,6 @@ Ext.define('PVE.sdn.ControllerView', {
 		    header: 'ID',
 		    flex: 2,
 		    sortable: true,
-		    dataIndex: 'controller',
 		    dataIndex: 'controller',
 		    renderer: function(value, metaData, rec) {
 			return PVE.Utils.render_sdn_pending(rec, value, 'controller', 1);
@@ -152,7 +134,7 @@ Ext.define('PVE.sdn.ControllerView', {
 		},
 	    ],
 	    listeners: {
-		activate: reload,
+		activate: () => store.load(),
 		itemdblclick: run_editor,
 	    },
 	});

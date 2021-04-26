@@ -28,15 +28,6 @@ Ext.define('PVE.sdn.VnetView', {
 
 	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var set_button_status = function() {
-	    var rec = me.selModel.getSelection()[0];
-
-	    if (!rec || rec.data.state === 'deleted') {
-		edit_btn.disable();
-		remove_btn.disable();
-	    }
-	};
-
         let run_editor = function() {
 	    let rec = sm.getSelection()[0];
 
@@ -60,6 +51,15 @@ Ext.define('PVE.sdn.VnetView', {
 	    baseurl: '/cluster/sdn/vnets/',
 	    callback: reload,
 	});
+
+	let set_button_status = function() {
+	    var rec = me.selModel.getSelection()[0];
+
+	    if (!rec || rec.data.state === 'deleted') {
+		edit_btn.disable();
+		remove_btn.disable();
+	    }
+	};
 
 	Ext.apply(me, {
 	    store: store,
@@ -138,8 +138,8 @@ Ext.define('PVE.sdn.VnetView', {
 		itemdblclick: run_editor,
 		selectionchange: set_button_status,
 		show: reload,
-		select: function(sm, rec) {
-		    var url = '/cluster/sdn/vnets/' + rec.data.vnet + '/subnets';
+		select: function(_sm, rec) {
+		    let url = `/cluster/sdn/vnets/${rec.data.vnet}/subnets`;
 		    me.subnetview_panel.setBaseUrl(url);
 		},
 		deselect: function() {

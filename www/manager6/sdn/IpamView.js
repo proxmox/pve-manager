@@ -37,10 +37,6 @@ Ext.define('PVE.sdn.IpamView', {
 	    },
 	});
 
-	let reload = function() {
-	    store.load();
-	};
-
 	let sm = Ext.create('Ext.selection.RowModel', {});
 
 	let run_editor = function() {
@@ -48,9 +44,7 @@ Ext.define('PVE.sdn.IpamView', {
 	    if (!rec) {
 		return;
 	    }
-	    let type = rec.data.type,
-	        ipam = rec.data.ipam;
-
+	    let type = rec.data.type, ipam = rec.data.ipam;
 	    me.createSDNEditWindow(type, ipam);
 	};
 
@@ -64,17 +58,15 @@ Ext.define('PVE.sdn.IpamView', {
 	let remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/cluster/sdn/ipams/',
-	    callback: reload,
+	    callback: () => store.load(),
 	});
 
 	// else we cannot dynamically generate the add menu handlers
 	let addHandleGenerator = function(type) {
 	    return function() { me.createSDNEditWindow(type); };
 	};
-	let addMenuItems = [], type;
-
-	for (type in PVE.Utils.sdnipamSchema) {
-	    let ipam = PVE.Utils.sdnipamSchema[type];
+	let addMenuItems = [];
+	for (const [type, ipam] of Object.entries(PVE.Utils.sdnipamSchema)) {
 	    if (ipam.hideAdd) {
 		continue;
 	    }
@@ -87,7 +79,7 @@ Ext.define('PVE.sdn.IpamView', {
 
 	Ext.apply(me, {
 	    store: store,
-	    reloadStore: reload,
+	    reloadStore: () => store.load(),
 	    selModel: sm,
 	    viewConfig: {
 		trackOver: false,
@@ -121,7 +113,7 @@ Ext.define('PVE.sdn.IpamView', {
 		},
 	    ],
 	    listeners: {
-		activate: reload,
+		activate: () => store.load(),
 		itemdblclick: run_editor,
 	    },
 	});
