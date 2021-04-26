@@ -1,3 +1,16 @@
+pve-manager (6.4-3) pve; urgency=medium
+
+  * ui: tasks: add ceph edit-pool and set-flags descriptions
+
+  * ui: ceph: pool edit: set emptyValue to 0 for target-size field
+
+  * ui: storage RBD: add field allowing one to configure accessing a specific,
+    already existing namespace of a RBD pool for a Proxmox VE storage.
+
+  * SDN tech preview: add subnet/ipam/sdn management
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 26 Apr 2021 20:19:56 +0200
+
 pve-manager (6.4-2) pve; urgency=medium
 
   * ui: ceph pools: fix target-size column renderer
