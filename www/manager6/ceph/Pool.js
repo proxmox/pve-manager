@@ -129,7 +129,6 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    minValue: 0,
 	    decimalPrecision: 3,
 	    allowBlank: true,
-	    allowZero: true,
 	    emptyText: '0.0',
 	    autoEl: {
 		tag: 'div',
