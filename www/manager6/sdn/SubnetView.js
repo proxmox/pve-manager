@@ -52,6 +52,19 @@ Ext.define('PVE.sdn.SubnetView', {
 	    win.on('destroy', reload);
         };
 
+	me.create_btn = new Proxmox.button.Button({
+	    text: gettext('Create'),
+	    disabled: true,
+	    handler: function() {
+		let win = Ext.create('PVE.sdn.SubnetEdit', {
+		    autoShow: true,
+		    base_url: me.base_url,
+		    type: 'subnet',
+		});
+		win.on('destroy', reload);
+	    },
+	});
+
 	let edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
@@ -82,17 +95,7 @@ Ext.define('PVE.sdn.SubnetView', {
 		trackOver: false,
 	    },
 	    tbar: [
-		{
-		    text: gettext('Create'),
-		    handler: function() {
-			let win = Ext.create('PVE.sdn.SubnetEdit', {
-			    autoShow: true,
-			    base_url: me.base_url,
-			    type: 'subnet',
-			});
-			win.on('destroy', reload);
-		    },
-		},
+		me.create_btn,
 		me.remove_btn,
 		edit_btn,
 	    ],

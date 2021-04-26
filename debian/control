@@ -19,7 +19,7 @@ Build-Depends: debhelper (>= 11~),
                lintian,
                pve-cluster,
                pve-container,
-               pve-doc-generator (>= 6.2-3),
+               pve-doc-generator (>= 6.4-1),
                qemu-server (>= 6.0-15),
                unzip,
 Maintainer: Proxmox Support Team <support@proxmox.com>
@@ -85,12 +85,13 @@ Depends: apt-transport-https | apt (>= 1.5~),
          ${misc:Depends},
          ${perl:Depends},
          ${shlibs:Depends},
+Suggests: libpve-network-perl (>= 0.5-1)
 Conflicts: vlan,
            vzdump,
 Replaces: vlan,
           vzdump,
 Provides: vlan,
           vzdump,
-Breaks: libpve-network-perl (<< 0.4-6)
+Breaks: libpve-network-perl (<< 0.5-1)
 Description: Proxmox Virtual Environment Management Tools
  This package contains the Proxmox Virtual Environment management tools.
