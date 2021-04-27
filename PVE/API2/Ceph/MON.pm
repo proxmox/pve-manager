@@ -199,7 +199,9 @@ __PACKAGE__->register_method ({
 	my $rados = eval { PVE::RADOS->new() }; # try a rados connection, fails for first monitor
 	my $monhash = PVE::Ceph::Services::get_services_info('mon', $cfg, $rados);
 
-	if (!defined($rados) && (scalar(keys %$monhash) || $cfg->{global}->{mon_host})) {
+	my $is_first_monitor = !(scalar(keys %$monhash) || $cfg->{global}->{mon_host});
+
+	if (!defined($rados) && !$is_first_monitor) {
 	    die "Could not connect to ceph cluster despite configured monitors\n";
 	}
 
@@ -226,6 +228,7 @@ __PACKAGE__->register_method ({
 		my $mon_keyring = PVE::Ceph::Tools::get_config('pve_mon_key_path');
 
 		if (! -f $mon_keyring) {
+		    print "creating new monitor keyring\n";
 		    run_command("ceph-authtool --create-keyring $mon_keyring ".
 			" --gen-key -n mon. --cap mon 'allow *'");
 		    run_command("ceph-authtool $mon_keyring --import-keyring $client_keyring");
@@ -281,6 +284,18 @@ __PACKAGE__->register_method ({
 		cfs_write_file('ceph.conf', $cfg);
 
 		PVE::Ceph::Services::ceph_service_cmd('start', $monsection);
+
+		if ($is_first_monitor) {
+		    print "created the first monitor, assume it's safe to disable insecure global"
+			." ID reclaim for new setup\n";
+		    eval {
+			run_command(
+			    ['ceph', 'config', 'set', 'mon', 'auth_allow_insecure_global_id_reclaim', 'false'],
+			    errfunc => sub { print STDERR "$_[0]\n" },
+			)
+		    };
+		    warn "$@" if $@;
+		}
 
 		eval { PVE::Ceph::Services::ceph_service_cmd('enable', $monsection) };
 		warn "Enable ceph-mon\@${monid}.service failed, do manually: $@\n" if $@;
