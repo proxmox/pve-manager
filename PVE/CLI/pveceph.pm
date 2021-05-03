@@ -177,7 +177,7 @@ __PACKAGE__->register_method ({
 	    die "apt failed during ceph installation ($?)\n";
 	}
 
-	print "\ninstalled ceph $cephver successfully!\n"
+	print "\ninstalled ceph $cephver successfully!\n";
 
 	print "\nreloading API to load new Ceph RADOS library...\n";
 	run_command([
