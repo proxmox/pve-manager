@@ -1,3 +1,10 @@
+pve-manager (6.4-5) pve; urgency=medium
+
+  * always reload API daemons after a new Ceph installation to ensure the
+    newest Ceph libraries are loaded.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 03 May 2021 15:06:43 +0200
+
 pve-manager (6.4-4) pve; urgency=medium
 
   * ceph monitor: automatically disable insecure global ID reclaim after
