@@ -304,8 +304,7 @@ __PACKAGE__->register_method ({
 	    });
 	    die $@ if $@;
 	    # automatically create manager after the first monitor is created
-	    if (scalar(keys %$monhash) <= 0) {
-
+	    if ($is_first_monitor) {
 		PVE::API2::Ceph::MGR->createmgr({
 		    node => $param->{node},
 		    id => $param->{node}

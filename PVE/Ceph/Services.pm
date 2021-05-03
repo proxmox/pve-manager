@@ -332,20 +332,21 @@ sub create_mgr {
     my $mgrkeyring = "$mgrdir/keyring";
     my $mgrname = "mgr.$id";
 
-    die "ceph manager directory '$mgrdir' already exists\n"
-	if -d $mgrdir;
+    die "ceph manager directory '$mgrdir' already exists\n" if -d $mgrdir;
 
     print "creating manager directory '$mgrdir'\n";
     mkdir $mgrdir;
     print "creating keys for '$mgrname'\n";
-    my $output = $rados->mon_command({ prefix => 'auth get-or-create',
-				       entity => $mgrname,
-				       caps => [
-					   mon => 'allow profile mgr',
-					   osd => 'allow *',
-					   mds => 'allow *',
-				       ],
-				       format => 'plain'});
+    my $output = $rados->mon_command({
+	prefix => 'auth get-or-create',
+	entity => $mgrname,
+	caps => [
+	    mon => 'allow profile mgr',
+	    osd => 'allow *',
+	    mds => 'allow *',
+	],
+	format => 'plain'
+    });
     PVE::Tools::file_set_contents($mgrkeyring, $output);
 
     print "setting owner for directory\n";
