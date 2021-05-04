@@ -205,7 +205,7 @@ __PACKAGE__->register_method ({
     permissions => { user => 'all' },
     description => "Node index.",
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -273,7 +273,7 @@ __PACKAGE__->register_method ({
     permissions => { user => 'all' },
     description => "API version details",
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -311,7 +311,7 @@ __PACKAGE__->register_method({
     description => "Read node status",
     proxyto => 'node',
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -514,7 +514,7 @@ __PACKAGE__->register_method({
     description => "Reboot or shutdown a node.",
     proxyto => 'node',
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    command => {
@@ -609,7 +609,7 @@ __PACKAGE__->register_method({
     },
     description => "Read node RRD statistics (returns PNG)",
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    timeframe => {
@@ -654,7 +654,7 @@ __PACKAGE__->register_method({
     },
     description => "Read node RRD statistics",
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    timeframe => {
@@ -695,7 +695,7 @@ __PACKAGE__->register_method({
     },
     protected => 1,
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    start => {
@@ -903,7 +903,7 @@ __PACKAGE__->register_method ({
     },
     description => "Creates a VNC Shell proxy.",
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    upgrade => {
@@ -948,7 +948,7 @@ __PACKAGE__->register_method ({
 	},
     },
     returns => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    user => { type => 'string' },
 	    ticket => { type => 'string' },
@@ -1141,7 +1141,7 @@ __PACKAGE__->register_method({
     },
     description => "Opens a weksocket for VNC traffic.",
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    vncticket => {
@@ -1193,7 +1193,7 @@ __PACKAGE__->register_method ({
     },
     description => "Creates a SPICE shell.",
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    proxy => get_standard_option('spice-proxy', { optional => 1 }),
@@ -1257,14 +1257,14 @@ __PACKAGE__->register_method({
     description => "Read DNS settings.",
     proxyto => 'node',
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
     },
     returns => {
 	type => "object",
-   	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    search => {
 		description => "Search domain for host-name lookup.",
@@ -1307,7 +1307,7 @@ __PACKAGE__->register_method({
     proxyto => 'node',
     protected => 1,
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    search => {
@@ -1357,7 +1357,7 @@ __PACKAGE__->register_method({
     },
     returns => {
 	type => "object",
-   	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    timezone => {
 		description => "Time zone",
@@ -1402,7 +1402,7 @@ __PACKAGE__->register_method({
     proxyto => 'node',
     protected => 1,
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    timezone => {
@@ -1430,7 +1430,7 @@ __PACKAGE__->register_method({
     description => "Get list of appliances.",
     proxyto => 'node',
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -1469,17 +1469,18 @@ __PACKAGE__->register_method({
     proxyto => 'node',
     protected => 1,
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    storage => get_standard_option('pve-storage-id', {
 		description => "The storage where the template will be stored",
 		completion => \&PVE::Storage::complete_storage_enabled,
 	    }),
-	    template => { type => 'string',
-			  description => "The template which will downloaded",
-			  maxLength => 255,
-			  completion => \&complete_templet_repo,
+	    template => {
+		type => 'string',
+		description => "The template which will downloaded",
+		maxLength => 255,
+		completion => \&complete_templet_repo,
 	    },
 	},
     },
@@ -1488,9 +1489,7 @@ __PACKAGE__->register_method({
 	my ($param) = @_;
 
 	my $rpcenv = PVE::RPCEnvironment::get();
-
 	my $user = $rpcenv->get_user();
-
 	my $node = $param->{node};
 
 	my $list = PVE::APLInfo::load_data();
@@ -1607,7 +1606,7 @@ __PACKAGE__->register_method({
     description => "Gather various systems information about a node",
     proxyto => 'node',
     parameters => {
-    additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -1727,7 +1726,7 @@ __PACKAGE__->register_method ({
     proxyto => 'node',
     description => "Start all VMs and containers located on this node (by default only those with onboot=1).",
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    force => {
@@ -1867,7 +1866,7 @@ __PACKAGE__->register_method ({
     proxyto => 'node',
     description => "Stop all VMs and Containers.",
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    vms => {
@@ -2224,7 +2223,7 @@ __PACKAGE__->register_method ({
     permissions => { user => 'all' },
     description => "Cluster node index.",
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {},
     },
     returns => {
