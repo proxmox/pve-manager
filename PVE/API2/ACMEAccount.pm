@@ -64,7 +64,7 @@ __PACKAGE__->register_method ({
 	    { name => 'tos' },
 	    { name => 'directories' },
 	    { name => 'plugins' },
-	    { name => 'challengeschema' },
+	    { name => 'challenge-schema' },
 	];
     }});
 
