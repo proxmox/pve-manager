@@ -39,7 +39,7 @@ sub init {
     my $lockfh = IO::File->new(">>${accept_lock_fn}") ||
 	die "unable to open lock file '${accept_lock_fn}' - $!\n";
 
-    my $listen_ip = $proxyconf->{LISTEN_IP} // "::0";
+    my $listen_ip = $proxyconf->{LISTEN_IP};
     my $socket = $self->create_reusable_socket(3128, $listen_ip);
 
     $self->{server_config} = {
