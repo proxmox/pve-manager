@@ -46,6 +46,10 @@ Ext.define('PVE.window.Backup', {
 	    allowBlank: false,
 	    listeners: {
 		change: function(f, v) {
+		    if (!initialDefaults) {
+			me.setLoading(false);
+		    }
+
 		    if (v === null || v === undefined || v === '') {
 			return;
 		    }
@@ -87,7 +91,6 @@ Ext.define('PVE.window.Backup', {
 		},
 	    },
 	});
-	storagesel.setValue(me.storage);
 
 	me.formPanel = Ext.create('Ext.form.Panel', {
 	    bodyPadding: 10,
@@ -172,6 +175,13 @@ Ext.define('PVE.window.Backup', {
 	    border: false,
 	    items: [me.formPanel],
 	    buttons: [helpBtn, '->', submitBtn],
+	    listeners: {
+		afterrender: function() {
+		    /// cleared within the storage selector's change listener
+		    me.setLoading(gettext('Please wait...'));
+		    storagesel.setValue(me.storage);
+		},
+	    },
 	});
 
 	me.callParent();
