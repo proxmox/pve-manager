@@ -95,9 +95,11 @@ Ext.define('PVE.window.Backup', {
 	me.formPanel = Ext.create('Proxmox.panel.InputPanel', {
 	    bodyPadding: 10,
 	    border: false,
-	    items: [
+	    column1: [
 		storagesel,
 		modeSelector,
+	    ],
+	    column2: [
 		compressionSelector,
 		mailtoField,
 	    ],
