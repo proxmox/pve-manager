@@ -92,13 +92,9 @@ Ext.define('PVE.window.Backup', {
 	    },
 	});
 
-	me.formPanel = Ext.create('Ext.form.Panel', {
+	me.formPanel = Ext.create('Proxmox.panel.InputPanel', {
 	    bodyPadding: 10,
 	    border: false,
-	    fieldDefaults: {
-		labelWidth: 100,
-		anchor: '100%',
-	    },
 	    items: [
 		storagesel,
 		modeSelector,
@@ -107,13 +103,11 @@ Ext.define('PVE.window.Backup', {
 	    ],
 	});
 
-	var form = me.formPanel.getForm();
-
 	var submitBtn = Ext.create('Ext.Button', {
 	    text: gettext('Backup'),
 	    handler: function() {
 		var storage = storagesel.getValue();
-		var values = form.getValues();
+		let values = me.formPanel.getValues();
 		var params = {
 		    storage: storage,
 		    vmid: me.vmid,
@@ -169,7 +163,6 @@ Ext.define('PVE.window.Backup', {
 
 	Ext.apply(me, {
 	    title: title,
-	    width: 350,
 	    modal: true,
 	    layout: 'auto',
 	    border: false,
