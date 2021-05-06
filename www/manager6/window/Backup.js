@@ -80,6 +80,7 @@ Ext.define('PVE.window.Backup', {
 			    initialDefaults = true;
 			},
 			failure: function(response, opts) {
+			    initialDefaults = true;
 			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 			},
 		    });
