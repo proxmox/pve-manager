@@ -46,6 +46,10 @@ Ext.define('PVE.window.Backup', {
 	    allowBlank: false,
 	    listeners: {
 		change: function(f, v) {
+		    if (v === null || v === undefined || v === '') {
+			return;
+		    }
+
 		    let store = f.getStore();
 		    let rec = store.findRecord('storage', v, 0, false, true, true);
 
