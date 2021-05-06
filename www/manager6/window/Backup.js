@@ -36,6 +36,38 @@ Ext.define('PVE.window.Backup', {
 	    emptyText: Proxmox.Utils.noneText,
 	});
 
+	const keepNames = [
+	    ['keep-last', gettext('Keep Last')],
+	    ['keep-hourly', gettext('Keep Hourly')],
+	    ['keep-daily', gettext('Keep Daily')],
+	    ['keep-weekly', gettext('Keep Weekly')],
+	    ['keep-monthly', gettext('Keep Monthly')],
+	    ['keep-yearly', gettext('Keep Yearly')],
+	];
+
+	let pruneSettings = keepNames.map(
+	    name => Ext.create('Ext.form.field.Display', {
+		name: name[0],
+		fieldLabel: name[1],
+		hidden: true,
+	    }),
+	);
+
+	let removeCheckbox = Ext.create('Proxmox.form.Checkbox', {
+	    name: 'remove',
+	    checked: false,
+	    hidden: true,
+	    uncheckedValue: 0,
+	    fieldLabel: gettext('Prune'),
+	    autoEl: {
+		tag: 'div',
+		'data-qtip': gettext('Prune older backups afterwards'),
+	    },
+	    handler: function(checkbox, value) {
+		pruneSettings.forEach(field => field.setHidden(!value));
+	    },
+	});
+
 	let initialDefaults = false;
 
 	var storagesel = Ext.create('PVE.form.StorageSelector', {
@@ -82,6 +114,30 @@ Ext.define('PVE.window.Backup', {
 			    }
 
 			    initialDefaults = true;
+
+			    // always update storage dependent properties
+			    if (data['prune-backups'] !== undefined) {
+				const keepParams = PVE.Parser.parsePropertyString(
+				    data["prune-backups"],
+				);
+				if (!keepParams['keep-all']) {
+				    removeCheckbox.setHidden(false);
+				    pruneSettings.forEach(function(field) {
+					const keep = keepParams[field.name];
+					if (keep) {
+					    field.setValue(keep);
+					} else {
+					    field.reset();
+					}
+				    });
+				    return;
+				}
+			    }
+
+			    // no defaults or keep-all=1
+			    removeCheckbox.setHidden(true);
+			    removeCheckbox.setValue(false);
+			    pruneSettings.forEach(field => field.reset());
 			},
 			failure: function(response, opts) {
 			    initialDefaults = true;
@@ -98,11 +154,45 @@ Ext.define('PVE.window.Backup', {
 	    column1: [
 		storagesel,
 		modeSelector,
+		removeCheckbox,
 	    ],
 	    column2: [
 		compressionSelector,
 		mailtoField,
 	    ],
+	    columnB: [{
+		layout: 'hbox',
+		border: false,
+		defaults: {
+		    border: false,
+		    layout: 'anchor',
+		    flex: 1,
+		},
+		items: [
+		    {
+			padding: '0 10 0 0',
+			defaults: {
+			    labelWidth: 110,
+			},
+			items: [
+			    pruneSettings[0],
+			    pruneSettings[2],
+			    pruneSettings[4],
+			],
+		    },
+		    {
+			padding: '0 0 0 10',
+			defaults: {
+			    labelWidth: 110,
+			},
+			items: [
+			    pruneSettings[1],
+			    pruneSettings[3],
+			    pruneSettings[5],
+			],
+		    },
+		],
+	    }],
 	});
 
 	var submitBtn = Ext.create('Ext.Button', {
@@ -114,7 +204,7 @@ Ext.define('PVE.window.Backup', {
 		    storage: storage,
 		    vmid: me.vmid,
 		    mode: values.mode,
-		    remove: 0,
+		    remove: values.remove,
 		};
 
 		if (values.mailto) {
