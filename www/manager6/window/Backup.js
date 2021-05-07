@@ -141,6 +141,11 @@ Ext.define('PVE.window.Backup', {
 			},
 			failure: function(response, opts) {
 			    initialDefaults = true;
+
+			    removeCheckbox.setHidden(true);
+			    removeCheckbox.setValue(false);
+			    pruneSettings.forEach(field => field.reset());
+
 			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 			},
 		    });
