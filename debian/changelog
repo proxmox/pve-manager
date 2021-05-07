@@ -1,3 +1,14 @@
+pve-manager (6.4-6) pve; urgency=medium
+
+  * proxy: improve use of wildcard listening-address for system which disable
+    the IPv6 network stack system-wide (which should be done by setting the
+    `net.ipv6.conf.all.disable_ipv6` sysctl, not over the kernel command line)
+
+  * ui: storage status: use SI (base ten) units for usage for consitency with
+    RRD chart
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 07 May 2021 18:17:25 +0200
+
 pve-manager (6.4-5) pve; urgency=medium
 
   * always reload API daemons after a new Ceph installation to ensure the
