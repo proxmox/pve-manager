@@ -151,6 +151,19 @@ sha512sum: 48787a928769627a05ccb9969e5419d97d2aa0fb17a6cffe1e281b95b5b4ab0d4a43a
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 33 (20201115)
 
+Package: fedora-34-default
+Version: 20210427
+Type: lxc
+OS: fedora
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/fedora-34-default_20210427_amd64.tar.xz
+md5sum: 76781b32ab28bfa982de39f1becfd735
+sha512sum: df517f33a8c8f2f624113237a64317e12adf245966309bb5af4c2b5fb9122ca9b173c3db247d18e60b374b2087c089ac9ba641141ecae143257c83d22d2ca1a0
+Infopage: https://linuxcontainers.org
+Description: LXC default image for fedora 34 (20210427)
+
 Package: gentoo-current-default
 Version: 20200310
 Type: lxc
