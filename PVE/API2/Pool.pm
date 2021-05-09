@@ -72,8 +72,14 @@ __PACKAGE__->register_method ({
     parameters => {
 	additionalProperties => 0,
 	properties => {
-	    poolid => { type => 'string', format => 'pve-poolid' },
-	    comment => { type => 'string', optional => 1 },
+	    poolid => {
+		type => 'string',
+		format => 'pve-poolid'.
+	    },
+	    comment => {
+		type => 'string',
+		optional => 1,
+	    },
 	},
     },
     returns => { type => 'null' },
@@ -330,7 +336,7 @@ __PACKAGE__->register_method ({
 	    die "pool '$pool' does not exist\n" if !$pool_config;
 
 	    for my $vmid (sort keys %{$pool_config->{vms}}) {
-		next if !$idlist->{$vmid};
+		next if !$idlist->{$vmid}; # ignore destroyed guests
 		die "pool '$pool' is not empty (contains VM $vmid)\n";
 	    }
 
