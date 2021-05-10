@@ -38,16 +38,20 @@ my $find_mon_ip = sub {
     }
 
     my $allowed_ips = PVE::Network::get_local_ip_from_cidr($pubnet);
+    $allowed_ips = PVE::Network::unique_ips($allowed_ips);
+
     die "No active IP found for the requested ceph public network '$pubnet' on node '$node'\n"
 	if scalar(@$allowed_ips) < 1;
 
     if (!$overwrite_ip) {
-	if (scalar(@$allowed_ips) == 1 || !grep { $_ ne $allowed_ips->[0] } @$allowed_ips) {
+	if (scalar(@$allowed_ips) == 1) {
 	    return $allowed_ips->[0];
 	}
 	die "Multiple IPs for ceph public network '$pubnet' detected on $node:\n".
 	    join("\n", @$allowed_ips) ."\nuse 'mon-address' to specify one of them.\n";
     } else {
+	$overwrite_ip = PVE::Network::canonical_ip($overwrite_ip);
+
 	if (grep { $_ eq $overwrite_ip } @$allowed_ips) {
 	    return $overwrite_ip;
 	}
