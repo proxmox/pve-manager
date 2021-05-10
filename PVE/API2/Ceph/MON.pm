@@ -229,9 +229,23 @@ __PACKAGE__->register_method ({
 
 		if (! -f $mon_keyring) {
 		    print "creating new monitor keyring\n";
-		    run_command("ceph-authtool --create-keyring $mon_keyring ".
-			" --gen-key -n mon. --cap mon 'allow *'");
-		    run_command("ceph-authtool $mon_keyring --import-keyring $client_keyring");
+		    run_command([
+			'ceph-authtool',
+			'--create-keyring',
+			$mon_keyring,
+			'--gen-key',
+			'-n',
+			'mon.',
+			'--cap',
+			'mon',
+			'allow *',
+		    ]);
+		    run_command([
+			'ceph-authtool',
+			$mon_keyring,
+			'--import-keyring',
+			$client_keyring,
+		    ]);
 		}
 
 		my $ccname = PVE::Ceph::Tools::get_config('ccname');
@@ -243,7 +257,7 @@ __PACKAGE__->register_method ({
 		eval {
 		    mkdir $mondir;
 
-		    run_command("chown ceph:ceph $mondir");
+		    run_command(['chown', 'ceph:ceph', $mondir]);
 
 		    if (defined($rados)) { # we can only have a RADOS object if we have a monitor
 			my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
@@ -255,11 +269,29 @@ __PACKAGE__->register_method ({
 			    $cfg->{global}->{ms_bind_ipv6} = 'true';
 			    $cfg->{global}->{ms_bind_ipv4} = 'false';
 			}
-			run_command("monmaptool --create --clobber --addv $monid '[v2:$monaddr:3300,v1:$monaddr:6789]' --print $monmap");
+			run_command([
+			    'monmaptool',
+			    '--create',
+			    '--clobber',
+			    '--addv',
+			    $monid,
+			    "[v2:$monaddr:3300,v1:$monaddr:6789]",
+			    '--print',
+			    $monmap,
+			]);
 		    }
 
-		    run_command("ceph-mon --mkfs -i $monid --monmap $monmap --keyring $mon_keyring");
-		    run_command("chown ceph:ceph -R $mondir");
+		    run_command([
+			'ceph-mon',
+			'--mkfs',
+			'-i',
+			$monid,
+			'--monmap',
+			$monmap,
+			'--keyring',
+			$mon_keyring,
+		    ]);
+		    run_command(['chown', 'ceph:ceph', '-R', $mondir]);
 		};
 		my $err = $@;
 		unlink $monmap;
