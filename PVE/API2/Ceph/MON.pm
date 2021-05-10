@@ -259,6 +259,15 @@ __PACKAGE__->register_method ({
 
 		    run_command(['chown', 'ceph:ceph', $mondir]);
 
+		    my $is_first_address = !defined($rados);
+		    if (Net::IP::ip_is_ipv6($ip)) {
+			$cfg->{global}->{ms_bind_ipv6} = 'true';
+			$cfg->{global}->{ms_bind_ipv4} = 'false' if $is_first_address;
+		    } else {
+			$cfg->{global}->{ms_bind_ipv4} = 'true';
+			$cfg->{global}->{ms_bind_ipv6} = 'false' if $is_first_address;
+		    }
+
 		    if (defined($rados)) { # we can only have a RADOS object if we have a monitor
 			my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
 			file_set_contents($monmap, $mapdata);
@@ -266,8 +275,6 @@ __PACKAGE__->register_method ({
 			my $monaddr = $ip;
 			if (Net::IP::ip_is_ipv6($ip)) {
 			    $monaddr = "[$ip]";
-			    $cfg->{global}->{ms_bind_ipv6} = 'true';
-			    $cfg->{global}->{ms_bind_ipv4} = 'false';
 			}
 			run_command([
 			    'monmaptool',
