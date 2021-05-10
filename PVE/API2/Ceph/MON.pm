@@ -20,8 +20,11 @@ use PVE::API2::Ceph::MGR;
 
 use base qw(PVE::RESTHandler);
 
-my $find_mon_ip = sub {
-    my ($cfg, $rados, $node, $overwrite_ip) = @_;
+my $find_mon_ips = sub {
+    my ($cfg, $rados, $node, $mon_address) = @_;
+
+    my $overwrite_ips = [ PVE::Tools::split_list($mon_address) ];
+    $overwrite_ips = PVE::Network::unique_ips($overwrite_ips);
 
     my $pubnet;
     if ($rados) {
@@ -34,32 +37,60 @@ my $find_mon_ip = sub {
     $pubnet //= $cfg->{global}->{public_network};
 
     if (!$pubnet) {
-	return $overwrite_ip // PVE::Cluster::remote_node_ip($node);
+	if (scalar(@{$overwrite_ips})) {
+	    return $overwrite_ips;
+	} else {
+	   # don't refactor into '[ PVE::Cluster::remote... ]' as it uses wantarray
+	   my $ip = PVE::Cluster::remote_node_ip($node);
+	   return [ $ip ];
+	}
     }
 
-    my $allowed_ips = PVE::Network::get_local_ip_from_cidr($pubnet);
-    $allowed_ips = PVE::Network::unique_ips($allowed_ips);
-
-    die "No active IP found for the requested ceph public network '$pubnet' on node '$node'\n"
-	if scalar(@$allowed_ips) < 1;
-
-    if (!$overwrite_ip) {
-	if (scalar(@$allowed_ips) == 1) {
-	    return $allowed_ips->[0];
-	}
-	die "Multiple IPs for ceph public network '$pubnet' detected on $node:\n".
-	    join("\n", @$allowed_ips) ."\nuse 'mon-address' to specify one of them.\n";
-    } else {
-	$overwrite_ip = PVE::Network::canonical_ip($overwrite_ip);
-
-	if (grep { $_ eq $overwrite_ip } @$allowed_ips) {
-	    return $overwrite_ip;
-	}
-	die "Monitor IP '$overwrite_ip' not in ceph public network '$pubnet'\n"
-	    if !PVE::Network::is_ip_in_cidr($overwrite_ip, $pubnet);
-
-	die "Specified monitor IP '$overwrite_ip' not configured or up on $node!\n";
+    my $public_nets = [ PVE::Tools::split_list($pubnet) ];
+    if (scalar(@{$public_nets}) > 1) {
+	warn "Multiple Ceph public networks detected on $node: $pubnet\n";
+	warn "Networks must be capable of routing to each other.\n";
     }
+
+    my $res = [];
+
+    if (!scalar(@{$overwrite_ips})) { # auto-select one address for each public network
+	for my $net (@{$public_nets}) {
+	    $net = PVE::JSONSchema::pve_verify_cidr($net);
+
+	    my $allowed_ips = PVE::Network::get_local_ip_from_cidr($net);
+	    $allowed_ips = PVE::Network::unique_ips($allowed_ips);
+
+	    die "No active IP found for the requested ceph public network '$net' on node '$node'\n"
+		if scalar(@$allowed_ips) < 1;
+
+	    if (scalar(@$allowed_ips) == 1) {
+		push @{$res}, $allowed_ips->[0];
+	    } else {
+		die "Multiple IPs for ceph public network '$net' detected on $node:\n".
+		    join("\n", @$allowed_ips) ."\nuse 'mon-address' to specify one of them.\n";
+	    }
+	}
+    } else { # check if overwrite IPs are active and in any of the public networks
+	my $allowed_list = [];
+
+	for my $net (@{$public_nets}) {
+	    $net = PVE::JSONSchema::pve_verify_cidr($net);
+
+	    push @{$allowed_list}, @{PVE::Network::get_local_ip_from_cidr($net)};
+	}
+
+	my $allowed_ips = PVE::Network::unique_ips($allowed_list);
+
+	for my $overwrite_ip (@{$overwrite_ips}) {
+	    die "Specified monitor IP '$overwrite_ip' not configured or up on $node!\n"
+		if !grep { $_ eq $overwrite_ip } @{$allowed_ips};
+
+	    push @{$res}, $overwrite_ip;
+	}
+    }
+
+    return $res;
 };
 
 my $ips_from_mon_host = sub {
@@ -87,9 +118,7 @@ my $ips_from_mon_host = sub {
 };
 
 my $assert_mon_prerequisites = sub {
-    my ($cfg, $monhash, $monid, $monip) = @_;
-
-    $monip = PVE::Network::canonical_ip($monip);
+    my ($cfg, $monhash, $monid, $monips) = @_;
 
     my $used_ips = {};
 
@@ -107,7 +136,10 @@ my $assert_mon_prerequisites = sub {
 	$used_ips->{$ip} = 1;
     }
 
-    die "monitor address '$monip' already in use\n" if $used_ips->{$monip};
+    for my $monip (@{$monips}) {
+	$monip = PVE::Network::canonical_ip($monip);
+	die "monitor address '$monip' already in use\n" if $used_ips->{$monip};
+    }
 
     if (defined($monhash->{$monid})) {
 	die "monitor '$monid' already exists\n";
@@ -246,9 +278,9 @@ __PACKAGE__->register_method ({
 		description => "The ID for the monitor, when omitted the same as the nodename",
 	    },
 	    'mon-address' => {
-		description => 'Overwrites autodetected monitor IP address. ' .
-		               'Must be in the public network of ceph.',
-		type => 'string', format => 'ip',
+		description => 'Overwrites autodetected monitor IP address(es). ' .
+		               'Must be in the public network(s) of Ceph.',
+		type => 'string', format => 'ip-list',
 		optional => 1,
 	    },
 	},
@@ -276,9 +308,9 @@ __PACKAGE__->register_method ({
 
 	my $monid = $param->{monid} // $param->{node};
 	my $monsection = "mon.$monid";
-	my $ip = $find_mon_ip->($cfg, $rados, $param->{node}, $param->{'mon-address'});
+	my $ips = $find_mon_ips->($cfg, $rados, $param->{node}, $param->{'mon-address'});
 
-	$assert_mon_prerequisites->($cfg, $monhash, $monid, $ip);
+	$assert_mon_prerequisites->($cfg, $monhash, $monid, $ips);
 
 	my $worker = sub  {
 	    my $upid = shift;
@@ -291,7 +323,7 @@ __PACKAGE__->register_method ({
 		    $rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
 		}
 		$monhash = PVE::Ceph::Services::get_services_info('mon', $cfg, $rados);
-		$assert_mon_prerequisites->($cfg, $monhash, $monid, $ip);
+		$assert_mon_prerequisites->($cfg, $monhash, $monid, $ips);
 
 		my $client_keyring = PVE::Ceph::Tools::get_or_create_admin_keyring();
 		my $mon_keyring = PVE::Ceph::Tools::get_config('pve_mon_key_path');
@@ -329,22 +361,31 @@ __PACKAGE__->register_method ({
 		    run_command(['chown', 'ceph:ceph', $mondir]);
 
 		    my $is_first_address = !defined($rados);
-		    if (Net::IP::ip_is_ipv6($ip)) {
-			$cfg->{global}->{ms_bind_ipv6} = 'true';
-			$cfg->{global}->{ms_bind_ipv4} = 'false' if $is_first_address;
-		    } else {
-			$cfg->{global}->{ms_bind_ipv4} = 'true';
-			$cfg->{global}->{ms_bind_ipv6} = 'false' if $is_first_address;
-		    }
 
-		    my $monaddr = Net::IP::ip_is_ipv6($ip) ? "[$ip]" : $ip;
+		    my $monaddrs = [];
+
+		    for my $ip (@{$ips}) {
+			if (Net::IP::ip_is_ipv6($ip)) {
+			    $cfg->{global}->{ms_bind_ipv6} = 'true';
+			    $cfg->{global}->{ms_bind_ipv4} = 'false' if $is_first_address;
+			} else {
+			    $cfg->{global}->{ms_bind_ipv4} = 'true';
+			    $cfg->{global}->{ms_bind_ipv6} = 'false' if $is_first_address;
+			}
+
+			my $monaddr = Net::IP::ip_is_ipv6($ip) ? "[$ip]" : $ip;
+			push @{$monaddrs}, "v2:$monaddr:3300";
+			push @{$monaddrs}, "v1:$monaddr:6789";
+
+			$is_first_address = 0;
+		    }
 
 		    my $monmaptool_cmd = [
 			'monmaptool',
 			'--clobber',
 			'--addv',
 			$monid,
-			"[v2:$monaddr:3300,v1:$monaddr:6789]",
+			"[" . join(',', @{$monaddrs}) . "]",
 			'--print',
 			$monmap,
 		    ];
@@ -385,10 +426,10 @@ __PACKAGE__->register_method ({
 			$monhost .= " " . $monhash->{$mon}->{addr};
 		    }
 		}
-		$monhost .= " $ip";
+		$monhost .= " " . join(' ', @{$ips});
 		$cfg->{global}->{mon_host} = $monhost;
 		# The IP is needed in the ceph.conf for the first boot
-		$cfg->{$monsection}->{public_addr} = $ip;
+		$cfg->{$monsection}->{public_addr} = $ips->[0];
 
 		cfs_write_file('ceph.conf', $cfg);
 
@@ -482,12 +523,27 @@ __PACKAGE__->register_method ({
 		$monstat = $rados->mon_command({ prefix => 'quorum_status' });
 		$monlist = $monstat->{monmap}->{mons};
 
-		my $addr;
+		my $addrs = [];
+
+		my $add_addr = sub {
+		    my ($addr) = @_;
+
+		    # extract the ip without port and nonce (if present)
+		    ($addr) = $addr =~ m|^(.*):\d+(/\d+)?$|;
+		    ($addr) = $addr =~ m|^\[?(.*?)\]?$|; # remove brackets
+		    push @{$addrs}, $addr;
+		};
+
 		for my $mon (@$monlist) {
 		    if ($mon->{name} eq $monid) {
-			$addr = $mon->{public_addr} // $mon->{addr};
-			($addr) = $addr =~ m|^(.*):\d+/\d+$|; # extract the ip without port/nonce
-			($addr) = $addr =~ m|^\[?(.*?)\]?$|; # remove brackets
+			if ($mon->{public_addrs} && $mon->{public_addrs}->{addrvec}) {
+			    my $addrvec = $mon->{public_addrs}->{addrvec};
+			    for my $addr (@{$addrvec}) {
+				$add_addr->($addr->{addr});
+			    }
+			} else {
+			    $add_addr->($mon->{public_addr} // $mon->{addr});
+			}
 			last;
 		    }
 		}
@@ -502,18 +558,20 @@ __PACKAGE__->register_method ({
 
 		# delete from mon_host
 		if (my $monhost = $cfg->{global}->{mon_host}) {
-		    $monhost = $remove_addr_from_mon_host->($monhost, $addr);
+		    my $mon_host_ips = $ips_from_mon_host->($cfg->{global}->{mon_host});
 
-		    # also remove matching IPs that differ syntactically
-		    if (PVE::JSONSchema::pve_verify_ip($addr, 1)) {
-			$addr = PVE::Network::canonical_ip($addr);
+		    for my $addr (@{$addrs}) {
+			$monhost = $remove_addr_from_mon_host->($monhost, $addr);
 
-			my $mon_host_ips = $ips_from_mon_host->($cfg->{global}->{mon_host});
+			# also remove matching IPs that differ syntactically
+			if (PVE::JSONSchema::pve_verify_ip($addr, 1)) {
+			    $addr = PVE::Network::canonical_ip($addr);
 
-			for my $mon_host_ip (@{$mon_host_ips}) {
-			    # match canonical addresses, but remove as present in mon_host
-			    if (PVE::Network::canonical_ip($mon_host_ip) eq $addr) {
-				$monhost = $remove_addr_from_mon_host->($monhost, $mon_host_ip);
+			    for my $mon_host_ip (@{$mon_host_ips}) {
+				# match canonical addresses, but remove as present in mon_host
+				if (PVE::Network::canonical_ip($mon_host_ip) eq $addr) {
+				    $monhost = $remove_addr_from_mon_host->($monhost, $mon_host_ip);
+				}
 			    }
 			}
 		    }
