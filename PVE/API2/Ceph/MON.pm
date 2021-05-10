@@ -89,14 +89,25 @@ my $ips_from_mon_host = sub {
 my $assert_mon_prerequisites = sub {
     my ($cfg, $monhash, $monid, $monip) = @_;
 
-    my $ip_regex = '(?:^|[^\d])' . # start or nondigit
-	       "\Q$monip\E" .  # the ip not interpreted as regex
-	       '(?:[^\d]|$)';  # end or nondigit
+    $monip = PVE::Network::canonical_ip($monip);
 
-    if (($cfg->{global}->{mon_host} && $cfg->{global}->{mon_host} =~ m/$ip_regex/) ||
-	grep { $_->{addr} && $_->{addr}  =~ m/$ip_regex/ } values %$monhash) {
-	die "monitor address '$monip' already in use\n";
+    my $used_ips = {};
+
+    my $mon_host_ips = $ips_from_mon_host->($cfg->{global}->{mon_host});
+
+    for my $mon_host_ip (@{$mon_host_ips}) {
+	my $ip = PVE::Network::canonical_ip($mon_host_ip);
+	$used_ips->{$ip} = 1;
     }
+
+    for my $mon (values %{$monhash}) {
+	next if !defined($mon->{addr});
+
+	my $ip = PVE::Network::canonical_ip($mon->{addr});
+	$used_ips->{$ip} = 1;
+    }
+
+    die "monitor address '$monip' already in use\n" if $used_ips->{$monip};
 
     if (defined($monhash->{$monid})) {
 	die "monitor '$monid' already exists\n";
