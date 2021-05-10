@@ -268,24 +268,24 @@ __PACKAGE__->register_method ({
 			$cfg->{global}->{ms_bind_ipv6} = 'false' if $is_first_address;
 		    }
 
+		    my $monaddr = Net::IP::ip_is_ipv6($ip) ? "[$ip]" : $ip;
+
+		    my $monmaptool_cmd = [
+			'monmaptool',
+			'--create',
+			'--clobber',
+			'--addv',
+			$monid,
+			"[v2:$monaddr:3300,v1:$monaddr:6789]",
+			'--print',
+			$monmap,
+		    ];
+
 		    if (defined($rados)) { # we can only have a RADOS object if we have a monitor
 			my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
 			file_set_contents($monmap, $mapdata);
 		    } else { # we need to create a monmap for the first monitor
-			my $monaddr = $ip;
-			if (Net::IP::ip_is_ipv6($ip)) {
-			    $monaddr = "[$ip]";
-			}
-			run_command([
-			    'monmaptool',
-			    '--create',
-			    '--clobber',
-			    '--addv',
-			    $monid,
-			    "[v2:$monaddr:3300,v1:$monaddr:6789]",
-			    '--print',
-			    $monmap,
-			]);
+			run_command($monmaptool_cmd);
 		    }
 
 		    run_command([
