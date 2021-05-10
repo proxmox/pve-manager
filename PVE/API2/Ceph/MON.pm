@@ -127,6 +127,34 @@ my $assert_mon_can_remove = sub {
     die "can't remove last monitor\n" if scalar(@$monlist) <= 1;
 };
 
+my $remove_addr_from_mon_host = sub {
+    my ($monhost, $addr) = @_;
+
+    # various replaces to remove the ip
+    # we always match the beginning or a separator (also at the end)
+    # so we do not accidentally remove a wrong ip
+    # e.g. removing 10.0.0.1 should not remove 10.0.0.101 or 110.0.0.1
+
+    # remove vector containing this ip
+    # format is [vX:ip:port/nonce,vY:ip:port/nonce]
+    my $vectorpart_re = "v\\d+:\Q$addr\E:\\d+\\/\\d+";
+    $monhost =~ s/(^|[ ,;]*)\[$vectorpart_re(?:,$vectorpart_re)*\](?:[ ,;]+|$)/$1/;
+
+    # ip (+ port)
+    $monhost =~ s/(^|[ ,;]+)\Q$addr\E(?::\d+)?(?:[ ,;]+|$)/$1/;
+
+    # ipv6 only without brackets
+    if ($addr =~ m/^\[?(.*?:.*?)\]?$/) {
+	$addr = $1;
+	$monhost =~ s/(^|[ ,;]+)\Q$addr\E(?:[ ,;]+|$)/$1/;
+    }
+
+    # remove trailing separators
+    $monhost =~ s/[ ,;]+$//;
+
+    return $monhost;
+};
+
 __PACKAGE__->register_method ({
     name => 'listmon',
     path => '',
@@ -471,29 +499,7 @@ __PACKAGE__->register_method ({
 
 		# delete from mon_host
 		if (my $monhost = $cfg->{global}->{mon_host}) {
-		    # various replaces to remove the ip
-		    # we always match the beginning or a separator (also at the end)
-		    # so we do not accidentally remove a wrong ip
-		    # e.g. removing 10.0.0.1 should not remove 10.0.0.101 or 110.0.0.1
-
-		    # remove vector containing this ip
-		    # format is [vX:ip:port/nonce,vY:ip:port/nonce]
-		    my $vectorpart_re = "v\\d+:\Q$addr\E:\\d+\\/\\d+";
-		    $monhost =~ s/(^|[ ,;]*)\[$vectorpart_re(?:,$vectorpart_re)*\](?:[ ,;]+|$)/$1/;
-
-		    # ip (+ port)
-		    $monhost =~ s/(^|[ ,;]+)\Q$addr\E(?::\d+)?(?:[ ,;]+|$)/$1/;
-
-		    # ipv6 only without brackets
-		    if ($addr =~ m/^\[?(.*?:.*?)\]?$/) {
-			$addr = $1;
-			$monhost =~ s/(^|[ ,;]+)\Q$addr\E(?:[ ,;]+|$)/$1/;
-		    }
-
-		    # remove trailing separators
-		    $monhost =~ s/[ ,;]+$//;
-
-		    $cfg->{global}->{mon_host} = $monhost;
+		    $cfg->{global}->{mon_host} = $remove_addr_from_mon_host->($monhost, $addr);
 		}
 
 		cfs_write_file('ceph.conf', $cfg);
