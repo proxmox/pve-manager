@@ -74,7 +74,7 @@ __PACKAGE__->register_method ({
 	properties => {
 	    poolid => {
 		type => 'string',
-		format => 'pve-poolid'.
+		format => 'pve-poolid',
 	    },
 	    comment => {
 		type => 'string',
