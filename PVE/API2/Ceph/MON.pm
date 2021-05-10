@@ -130,6 +130,8 @@ my $assert_mon_can_remove = sub {
 my $remove_addr_from_mon_host = sub {
     my ($monhost, $addr) = @_;
 
+    $addr = "[$addr]" if PVE::JSONSchema::pve_verify_ipv6($addr, 1);
+
     # various replaces to remove the ip
     # we always match the beginning or a separator (also at the end)
     # so we do not accidentally remove a wrong ip
@@ -485,6 +487,7 @@ __PACKAGE__->register_method ({
 		    if ($mon->{name} eq $monid) {
 			$addr = $mon->{public_addr} // $mon->{addr};
 			($addr) = $addr =~ m|^(.*):\d+/\d+$|; # extract the ip without port/nonce
+			($addr) = $addr =~ m|^\[?(.*?)\]?$|; # remove brackets
 			last;
 		    }
 		}
@@ -499,7 +502,22 @@ __PACKAGE__->register_method ({
 
 		# delete from mon_host
 		if (my $monhost = $cfg->{global}->{mon_host}) {
-		    $cfg->{global}->{mon_host} = $remove_addr_from_mon_host->($monhost, $addr);
+		    $monhost = $remove_addr_from_mon_host->($monhost, $addr);
+
+		    # also remove matching IPs that differ syntactically
+		    if (PVE::JSONSchema::pve_verify_ip($addr, 1)) {
+			$addr = PVE::Network::canonical_ip($addr);
+
+			my $mon_host_ips = $ips_from_mon_host->($cfg->{global}->{mon_host});
+
+			for my $mon_host_ip (@{$mon_host_ips}) {
+			    # match canonical addresses, but remove as present in mon_host
+			    if (PVE::Network::canonical_ip($mon_host_ip) eq $addr) {
+				$monhost = $remove_addr_from_mon_host->($monhost, $mon_host_ip);
+			    }
+			}
+		    }
+		    $cfg->{global}->{mon_host} = $monhost;
 		}
 
 		cfs_write_file('ceph.conf', $cfg);
