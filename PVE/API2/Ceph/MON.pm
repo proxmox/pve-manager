@@ -62,6 +62,30 @@ my $find_mon_ip = sub {
     }
 };
 
+my $ips_from_mon_host = sub {
+    my ($mon_host) = @_;
+
+    my $ips = [];
+
+    my @hosts = PVE::Tools::split_list($mon_host);
+
+    for my $host (@hosts) {
+	$host =~ s|^\[?v\d+\:||; # remove beginning of vector
+	$host =~ s|/\d+\]?||; # remove end of vector
+
+	($host) = PVE::Tools::parse_host_and_port($host);
+	next if !defined($host);
+
+	# filter out hostnames
+	my $ip = PVE::JSONSchema::pve_verify_ip($host, 1);
+	next if !defined($ip);
+
+	push @{$ips}, $ip;
+    }
+
+    return $ips;
+};
+
 my $assert_mon_prerequisites = sub {
     my ($cfg, $monhash, $monid, $monip) = @_;
 
