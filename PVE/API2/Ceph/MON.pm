@@ -272,7 +272,6 @@ __PACKAGE__->register_method ({
 
 		    my $monmaptool_cmd = [
 			'monmaptool',
-			'--create',
 			'--clobber',
 			'--addv',
 			$monid,
@@ -284,7 +283,9 @@ __PACKAGE__->register_method ({
 		    if (defined($rados)) { # we can only have a RADOS object if we have a monitor
 			my $mapdata = $rados->mon_command({ prefix => 'mon getmap', format => 'plain' });
 			file_set_contents($monmap, $mapdata);
+			run_command($monmaptool_cmd);
 		    } else { # we need to create a monmap for the first monitor
+			push @{$monmaptool_cmd}, '--create';
 			run_command($monmaptool_cmd);
 		    }
 
