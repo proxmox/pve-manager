@@ -24,6 +24,7 @@ my $init_report_cmds = sub {
 		sub { dir2text('/etc/apt/sources.list.d/', '.*list') },
 		sub { dir2text('/etc/apt/sources.list.d/', '.*sources') },
 		'lscpu',
+		'head /proc/pressure/*',
 		'pvesh get /cluster/resources --type node --output-format=yaml',
 	    ],
 	},
