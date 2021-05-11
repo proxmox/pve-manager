@@ -22,10 +22,10 @@ my sub dir2text {
 my sub cmd_exists { system("command -v '$_[0]' > /dev/null 2>&1") == 0 }
 
 my $init_report_cmds = sub {
-    # NOTE: always add new sections to the report_order array!
     my $report_def = {
 	general => {
 	    title => 'general system info',
+	    order => 10,
 	    cmds => [
 		'hostname',
 		'pveversion --verbose',
@@ -40,57 +40,84 @@ my $init_report_cmds = sub {
 		'pvesh get /cluster/resources --type node --output-format=yaml',
 	    ],
 	},
-	storage => [
-	    'cat /etc/pve/storage.cfg',
-	    'pvesm status',
-	    'cat /etc/fstab',
-	    'findmnt --ascii',
-	    'df --human',
-	],
-	'virtual guests' => [
-	   'qm list',
-	   sub { dir2text('/etc/pve/qemu-server/', '\d.*conf') },
-	   'pct list',
-	   sub { dir2text('/etc/pve/lxc/', '\d.*conf') },
-	],
-	network => [
-	    'ip -details -statistics address',
-	    'ip -details -4 route show',
-	    'ip -details -6 route show',
-	    'cat /etc/network/interfaces',
-	],
-	firewall => [
-	    sub { dir2text('/etc/pve/firewall/', '.*fw') },
-	    'cat /etc/pve/local/host.fw',
-	    'iptables-save',
-	],
-	cluster => [
-	    'pvecm nodes',
-	    'pvecm status',
-	    'cat /etc/pve/corosync.conf 2>/dev/null',
-	    'ha-manager status',
-	],
-	bios => [
-	    'dmidecode -t bios',
-	],
-	pci => [
-	    'lspci -nnk',
-	],
-	disks => [
-	    'lsblk --ascii',
-	    'ls -l /dev/disk/by-*/',
-	    'iscsiadm -m node',
-	    'iscsiadm -m session',
-	],
-	volumes => [
-	    'pvs',
-	    'lvs',
-	    'vgs',
-	],
+	storage => {
+	    order => 30,
+	    cmds => [
+		'cat /etc/pve/storage.cfg',
+		'pvesm status',
+		'cat /etc/fstab',
+		'findmnt --ascii',
+		'df --human',
+	    ],
+	},
+	'virtual guests' => {
+	    order => 40,
+	    cmds => [
+		'qm list',
+		sub { dir2text('/etc/pve/qemu-server/', '\d.*conf') },
+		'pct list',
+		sub { dir2text('/etc/pve/lxc/', '\d.*conf') },
+	    ],
+	},
+	network => {
+	    order => 40,
+	    cmds => [
+		'ip -details -statistics address',
+		'ip -details -4 route show',
+		'ip -details -6 route show',
+		'cat /etc/network/interfaces',
+	    ],
+	},
+	firewall => {
+	    order => 50,
+	    cmds => [
+		sub { dir2text('/etc/pve/firewall/', '.*fw') },
+		'cat /etc/pve/local/host.fw',
+		'iptables-save',
+	    ],
+	},
+	cluster => {
+	    order => 60,
+	    cmds => [
+		'pvecm nodes',
+		'pvecm status',
+		'cat /etc/pve/corosync.conf 2>/dev/null',
+		'ha-manager status',
+	    ],
+	},
+	bios => {
+	    order => 70,
+	    cmds => [
+		'dmidecode -t bios',
+	    ],
+	},
+	pci => {
+	    order => 75,
+	    cmds => [
+		'lspci -nnk',
+	    ],
+	},
+	disks => {
+	    order => 80,
+	    cmds => [
+		'lsblk --ascii',
+		'ls -l /dev/disk/by-*/',
+		'iscsiadm -m node',
+		'iscsiadm -m session',
+	    ],
+	},
+	volumes => {
+	    order => 90,
+	    cmds => [
+		'pvs',
+		'lvs',
+		'vgs',
+	    ],
+	},
     };
 
     if (cmd_exists('zfs')) {
-	push @{$report_def->{volumes}},
+	push @{$report_def->{volumes}->{cmds}},
 	    'zpool status',
 	    'zpool list -v',
 	    'zfs list',
@@ -98,7 +125,7 @@ my $init_report_cmds = sub {
     }
 
     if (-e '/etc/ceph/ceph.conf') {
-	push @{$report_def->{volumes}},
+	push @{$report_def->{volumes}->{cmds}},
 	    'pveceph status',
 	    'ceph osd status',
 	    'ceph df',
@@ -111,7 +138,7 @@ my $init_report_cmds = sub {
     }
 
     if (cmd_exists('multipath')) {
-	push @{$report_def->{disks}},
+	push @{$report_def->{disks}->{cmds}},
 	    'cat /etc/multipath.conf',
 	    'cat /etc/multipath/wwids',
 	    'multipath -ll',
@@ -122,10 +149,7 @@ my $init_report_cmds = sub {
 };
 
 sub generate {
-    my $report_def = $init_report_cmds->();
-
-    my @report_order = ('general', 'storage', 'virtual guests', 'network',
-    'firewall', 'cluster', 'bios', 'pci', 'disks', 'volumes');
+    my $def = $init_report_cmds->();
 
     my $report = '';
     my $record_output = sub {
@@ -142,21 +166,14 @@ sub generate {
 	noerr => 1, # avoid checking programs exit code
     };
 
-    foreach my $section (@report_order) {
-	my $s = $report_def->{$section};
+    my $sorter = sub { ($def->{$_[0]}->{order} // 1<<30) <=> ($def->{$_[1]}->{order} // 1<<30) };
 
-	my $title = "info about $section";
-	my $commands = $s;
-
-	if (ref($s) eq 'HASH') {
-	    $commands = $s->{cmds};
-	    $title = $s->{title} if defined($s->{title});
-	} elsif (ref($s) ne 'ARRAY') {
-	    die "unknown report definition in section '$section'!";
-	}
+    for my $section ( sort { $sorter->($a, $b) } keys %$def) {
+	my $s = $def->{$section};
+	my $title = $s->{title} // "info about $section";
 
 	$report .= "\n==== $title ====\n";
-	foreach my $command (@$commands) {
+	for my $command (@{$s->{cmds}}) {
 	    eval {
 		if (ref $command eq 'CODE') {
 		    $report .= PVE::Tools::run_with_timeout($cmd_timeout, $command);
