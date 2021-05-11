@@ -77,8 +77,13 @@ my $init_report_cmds = sub {
 	],
     };
 
-    push @{$report_def->{volumes}}, 'zpool status', 'zpool list -v', 'zfs list'
-	if cmd_exists('zfs');
+    if (cmd_exists('zfs')) {
+	push @{$report_def->{volumes}},
+	    'zpool status',
+	    'zpool list -v',
+	    'zfs list',
+	    ;
+    }
 
     if (-e '/etc/ceph/ceph.conf') {
 	push @{$report_def->{volumes}},
@@ -97,7 +102,8 @@ my $init_report_cmds = sub {
 	push @{$report_def->{disks}},
 	    'cat /etc/multipath.conf',
 	    'cat /etc/multipath/wwids',
-	    'multipath -ll';
+	    'multipath -ll',
+	    ;
     }
 
     return $report_def;
