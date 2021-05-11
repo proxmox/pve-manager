@@ -5,6 +5,21 @@ use warnings;
 
 use PVE::Tools;
 
+# output the content of all the files of a directory
+my sub dir2text {
+    my ($target_dir, $regexp) = @_;
+
+    my $text = '';
+    PVE::Tools::dir_glob_foreach($target_dir, $regexp, sub {
+	my ($file) = @_;
+	$text .=  "\n# cat $target_dir$file\n";
+	$text .= PVE::Tools::file_get_contents($target_dir.$file)."\n";
+    });
+    return $text;
+}
+
+# command -v is the posix equivalent of 'which'
+my sub cmd_exists { system("command -v '$_[0]' > /dev/null 2>&1") == 0 }
 
 my $init_report_cmds = sub {
     # NOTE: always add new sections to the report_order array!
@@ -106,29 +121,13 @@ my $init_report_cmds = sub {
     return $report_def;
 };
 
-my $report;
-# output the content of all the files of a directory
-sub dir2text {
-    my ($target_dir, $regexp) = @_;
-
-    PVE::Tools::dir_glob_foreach($target_dir, $regexp, sub {
-	my ($file) = @_;
-	$report .=  "\n# cat $target_dir$file\n";
-	$report .= PVE::Tools::file_get_contents($target_dir.$file)."\n";
-    });
-}
-
-# command -v is the posix equivalent of 'which'
-sub cmd_exists { system("command -v '$_[0]' > /dev/null 2>&1") == 0 }
-
 sub generate {
-
     my $report_def = $init_report_cmds->();
 
     my @report_order = ('general', 'storage', 'virtual guests', 'network',
     'firewall', 'cluster', 'bios', 'pci', 'disks', 'volumes');
 
-    $report = '';
+    my $report = '';
     my $record_output = sub {
 	$report .= shift . "\n";
     };
@@ -160,7 +159,7 @@ sub generate {
 	foreach my $command (@$commands) {
 	    eval {
 		if (ref $command eq 'CODE') {
-		    PVE::Tools::run_with_timeout($cmd_timeout, $command);
+		    $report .= PVE::Tools::run_with_timeout($cmd_timeout, $command);
 		} else {
 		    print STDERR "Process ".$command."...";
 		    $report .= "\n# $command\n";
