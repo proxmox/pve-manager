@@ -31,14 +31,20 @@ my $init_report_cmds = sub {
 		'hostname',
 		'pveversion --verbose',
 		'cat /etc/hosts',
-		'top -b -n 1  | head -n 15',
 		'pvesubscription get',
 		'cat /etc/apt/sources.list',
 		sub { dir2text('/etc/apt/sources.list.d/', '.*list') },
 		sub { dir2text('/etc/apt/sources.list.d/', '.*sources') },
 		'lscpu',
-		'head /proc/pressure/*',
 		'pvesh get /cluster/resources --type node --output-format=yaml',
+	    ],
+	},
+	'system-load' => {
+	    title => 'overall system load info',
+	    order => 20,
+	    cmds => [
+		'top -b -n 1  | head -n 15',
+		'head /proc/pressure/*',
 	    ],
 	},
 	storage => {
@@ -86,19 +92,14 @@ my $init_report_cmds = sub {
 		'ha-manager status',
 	    ],
 	},
-	bios => {
+	hardware => {
 	    order => 70,
 	    cmds => [
 		'dmidecode -t bios',
-	    ],
-	},
-	pci => {
-	    order => 75,
-	    cmds => [
 		'lspci -nnk',
 	    ],
 	},
-	disks => {
+	'block devices' => {
 	    order => 80,
 	    cmds => [
 		'lsblk --ascii',
