@@ -43,7 +43,7 @@ my $init_report_cmds = sub {
 	    title => 'overall system load info',
 	    order => 20,
 	    cmds => [
-		'top -b -n 1 -o TIME | head -n 30',
+		'top -b -c -w512 -n 1 -o TIME | head -n 30',
 		'head /proc/pressure/*',
 	    ],
 	},
