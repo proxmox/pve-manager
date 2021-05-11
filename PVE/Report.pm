@@ -5,9 +5,6 @@ use warnings;
 
 use PVE::Tools;
 
-$ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
-
-my $cmd_timeout = 10; # generous timeout
 
 my $init_report_cmds = sub {
     # NOTE: always add new sections to the report_order array!
@@ -135,6 +132,9 @@ sub generate {
     my $record_output = sub {
 	$report .= shift . "\n";
     };
+
+    local $ENV{'PATH'} = '/sbin:/bin:/usr/sbin:/usr/bin';
+    my $cmd_timeout = 10; # generous timeout
 
     my $run_cmd_params = {
 	outfunc => $record_output,
