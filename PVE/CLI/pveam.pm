@@ -20,12 +20,6 @@ use base qw(PVE::CLIHandler);
 
 my $nodename = PVE::INotify::nodename();
 
-my $upid_exit = sub {
-    my $upid = shift;
-    my $status = PVE::Tools::upid_read_status($upid);
-    exit($status eq 'OK' ? 0 : -1);
-};
-
 sub setup_environment {
     PVE::RPCEnvironment->setup_default_cli_env();
 }
