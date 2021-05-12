@@ -35,7 +35,7 @@ my $nodename = PVE::INotify::nodename();
 my $upid_exit = sub {
     my $upid = shift;
     my $status = PVE::Tools::upid_read_status($upid);
-    exit($status eq 'OK' ? 0 : -1);
+    exit(PVE::Tools::upid_status_is_error($status) ? -1 : 0);
 };
 
 sub setup_environment {

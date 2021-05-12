@@ -19,7 +19,7 @@ our $cmddef = [ 'PVE::API2::VZDump', 'vzdump', 'vmid', undef,
 		    my $upid = shift;
 		    exit(0) if $upid eq 'OK';
 		    my $status = PVE::Tools::upid_read_status($upid);
-		    exit($status eq 'OK' ? 0 : -1);
+		    exit(PVE::Tools::upid_status_is_error($status) ? -1 : 0);
 		}];
 
 1;
