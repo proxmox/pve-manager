@@ -1708,7 +1708,7 @@ __PACKAGE__->register_method ({
 			}
 
 			my $status = PVE::Tools::upid_read_status($upid);
-			if ($status eq 'OK') {
+			if (!PVE::Tools::upid_status_is_error($status)) {
 			    # use default delay to reduce load
 			    my $delay = defined($d->{up}) ? int($d->{up}) : $default_delay;
 			    if ($delay > 0) {
