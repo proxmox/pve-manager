@@ -264,13 +264,10 @@ Ext.define('PVE.qemu.CloudInit', {
 		    var text = [];
 		    keys.forEach(function(key) {
 			if (key.length) {
-			    // First erase all quoted strings (eg. command="foo"
-			    var v = key.replace(/"(?:\\.|[^"\\])*"/g, '');
-			    // Now try to detect the comment:
-			    var res = v.match(/^\s*(\S+\s+)?(?:ssh-(?:dss|rsa|ed25519)|ecdsa-sha2-nistp\d+)\s+\S+\s+(.*?)\s*$/, '');
+			    let res = PVE.Parser.parseSSHKey(key);
 			    if (res) {
-				key = Ext.String.htmlEncode(res[2]);
-				if (res[1]) {
+				key = Ext.String.htmlEncode(res.comment);
+				if (res.options) {
 				    key += ' <span style="color:gray">(' + gettext('with options') + ')</span>';
 				}
 				text.push(key);
