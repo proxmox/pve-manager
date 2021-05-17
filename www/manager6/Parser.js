@@ -18,22 +18,19 @@ Ext.define('PVE.Parser', {
 	    return {};
 	}
 
-	var res = {};
-	var error;
-
-	Ext.Array.each(value.split(','), function(p) {
-	    var kv = p.split('=', 2);
-	    if (Ext.isDefined(kv[1])) {
-		res[kv[0]] = kv[1];
-	    } else {
-		error = 'Failed to parse key-value pair: '+p;
-		return false;
-	    }
-	});
-
-	if (error !== undefined) {
-	    console.error(error);
-	    return;
+	let res = {};
+	try {
+	    value.split(',').forEach(property => {
+		let [k, v] = property.split('=', 2);
+		if (Ext.isDefined(v)) {
+		    res[k] = v;
+		} else {
+		    throw `Failed to parse key-value pair: ${property}`;
+		}
+	    });
+	} catch (err) {
+	    console.warn(err);
+	    return undefined;
 	}
 
 	if (res.domains !== undefined) {
@@ -55,32 +52,29 @@ Ext.define('PVE.Parser', {
     },
 
     parsePropertyString: function(value, defaultKey) {
-	var res = {},
-	    error;
+	let res = {};
 
 	if (typeof value !== 'string' || value === '') {
 	    return res;
 	}
 
-	Ext.Array.each(value.split(','), function(p) {
-	    var kv = p.split('=', 2);
-	    if (Ext.isDefined(kv[1])) {
-		res[kv[0]] = kv[1];
-	    } else if (Ext.isDefined(defaultKey)) {
-		if (Ext.isDefined(res[defaultKey])) {
-		    error = 'defaultKey may be only defined once in propertyString';
-		    return false; // break
+	try {
+	    value.split(',').forEach(property => {
+		let [k, v] = property.split('=', 2);
+		if (Ext.isDefined(v)) {
+		    res[k] = v;
+		} else if (Ext.isDefined(defaultKey)) {
+		    if (Ext.isDefined(res[defaultKey])) {
+			throw 'defaultKey may be only defined once in propertyString';
+		    }
+		    res[defaultKey] = k; // k ist the value in this case
+		} else {
+		    throw `Failed to parse key-value pair: ${property}`;
 		}
-		res[defaultKey] = kv[0];
-	    } else {
-		error = 'invalid propertyString, not a key=value pair and no defaultKey defined';
-		return false; // break
-	    }
-	});
-
-	if (error !== undefined) {
-	    console.error(error);
-	    return;
+	    });
+	} catch (err) {
+	    console.warn(err);
+	    return undefined;
 	}
 
 	return res;
@@ -110,18 +104,17 @@ Ext.define('PVE.Parser', {
 
     parseQemuNetwork: function(key, value) {
 	if (!(key && value)) {
-	    return;
+	    return undefined;
 	}
 
-	var res = {};
-
-	var errors = false;
+	let res = {},
+	    errors = false;
 	Ext.Array.each(value.split(','), function(p) {
 	    if (!p || p.match(/^\s*$/)) {
-		return; // continue
+		return undefined; // continue
 	    }
 
-	    var match_res;
+	    let match_res;
 
 	    if ((match_res = p.match(/^(ne2k_pci|e1000|e1000-82540em|e1000-82544gc|e1000-82545em|vmxnet3|rtl8139|pcnet|virtio|ne2k_isa|i82551|i82557b|i82559er)(=([0-9a-f]{2}(:[0-9a-f]{2}){5}))?$/i)) !== null) {
 		res.model = match_res[1].toLowerCase();
@@ -148,10 +141,11 @@ Ext.define('PVE.Parser', {
 		errors = true;
 		return false; // break
 	    }
+	    return undefined; // continue
 	});
 
 	if (errors || !res.model) {
-	    return;
+	    return undefined;
 	}
 
 	return res;
@@ -191,33 +185,33 @@ Ext.define('PVE.Parser', {
 
     parseQemuDrive: function(key, value) {
 	if (!(key && value)) {
-	    return;
+	    return undefined;
 	}
 
-	var res = {};
-
-	var match_res = key.match(/^([a-z]+)(\d+)$/);
-	if (!match_res) {
-	    return;
+	const [, bus, index] = key.match(/^([a-z]+)(\d+)$/);
+	if (!bus) {
+	    return undefined;
 	}
-	res.interface = match_res[1];
-	res.index = match_res[2];
+	let res = {
+	    'interface': bus,
+	    index,
+	};
 
 	var errors = false;
 	Ext.Array.each(value.split(','), function(p) {
 	    if (!p || p.match(/^\s*$/)) {
-		return; // continue
+		return undefined; // continue
 	    }
-	    var match_res = p.match(/^([a-z_]+)=(\S+)$/);
-	    if (!match_res) {
-		if (!p.match(/\=/)) {
+	    let match = p.match(/^([a-z_]+)=(\S+)$/);
+	    if (!match) {
+		if (!p.match(/[=]/)) {
 		    res.file = p;
-		    return; // continue
+		    return undefined; // continue
 		}
 		errors = true;
 		return false; // break
 	    }
-	    var k = match_res[1];
+	    let [, k, v] = match;
 	    if (k === 'volume') {
 		k = 'file';
 	    }
@@ -227,17 +221,17 @@ Ext.define('PVE.Parser', {
 		return false; // break
 	    }
 
-	    var v = match_res[2];
-
 	    if (k === 'cache' && v === 'off') {
 		v = 'none';
 	    }
 
 	    res[k] = v;
+
+	    return undefined; // continue
 	});
 
 	if (errors || !res.file) {
-	    return;
+	    return undefined;
 	}
 
 	return res;
@@ -259,123 +253,102 @@ Ext.define('PVE.Parser', {
 
     parseIPConfig: function(key, value) {
 	if (!(key && value)) {
-	    return;
+	    return undefined; // continue
 	}
 
-	var res = {};
+	let res = {};
+	try {
+	    value.split(',').forEach(p => {
+		if (!p || p.match(/^\s*$/)) {
+		    return; // continue
+		}
 
-	var errors = false;
-	Ext.Array.each(value.split(','), function(p) {
-	    if (!p || p.match(/^\s*$/)) {
-		return; // continue
-	    }
-
-	    var match_res;
-	    if ((match_res = p.match(/^ip=(\S+)$/)) !== null) {
-		res.ip = match_res[1];
-	    } else if ((match_res = p.match(/^gw=(\S+)$/)) !== null) {
-		res.gw = match_res[1];
-	    } else if ((match_res = p.match(/^ip6=(\S+)$/)) !== null) {
-		res.ip6 = match_res[1];
-	    } else if ((match_res = p.match(/^gw6=(\S+)$/)) !== null) {
-		res.gw6 = match_res[1];
-	    } else {
-		errors = true;
-		return false; // break
-	    }
-	});
-
-	if (errors) {
-	    return;
+		const match = p.match(/^(ip|gw|ip6|gw6)=(\S+)$/);
+		if (!match) {
+		    throw `could not parse as IP config: ${p}`;
+		}
+		let [, k, v] = match;
+		res[k] = v;
+	    });
+	} catch (err) {
+	    console.warn(err);
+	    return undefined; // continue
 	}
 
 	return res;
     },
 
     printIPConfig: function(cfg) {
-	var c = "";
-	var str = "";
-	if (cfg.ip) {
-	    str += "ip=" + cfg.ip;
-	    c = ",";
-	}
-	if (cfg.gw) {
-	    str += c + "gw=" + cfg.gw;
-	    c = ",";
-	}
-	if (cfg.ip6) {
-	    str += c + "ip6=" + cfg.ip6;
-	    c = ",";
-	}
-	if (cfg.gw6) {
-	    str += c + "gw6=" + cfg.gw6;
-	    c = ",";
-	}
-	return str;
+	return Object.entries(cfg)
+	    .filter(([k, v]) => v && k.match(/^(ip|gw|ip6|gw6)$/))
+	    .map(([k, v]) => `${k}=${v}`)
+	    .join(',');
     },
 
     parseLxcNetwork: function(value) {
 	if (!value) {
-	    return;
+	    return undefined;
 	}
 
-	var data = {};
-	Ext.Array.each(value.split(','), function(p) {
+	let data = {};
+	value.split(',').forEach(p => {
 	    if (!p || p.match(/^\s*$/)) {
 		return; // continue
 	    }
-	    var match_res = p.match(/^(bridge|hwaddr|mtu|name|ip|ip6|gw|gw6|tag|rate)=(\S+)$/);
+	    let match_res = p.match(/^(bridge|hwaddr|mtu|name|ip|ip6|gw|gw6|tag|rate)=(\S+)$/);
 	    if (match_res) {
 		data[match_res[1]] = match_res[2];
 	    } else if ((match_res = p.match(/^firewall=(\d+)$/)) !== null) {
 		data.firewall = PVE.Parser.parseBoolean(match_res[1]);
-	    } else {
-		// todo: simply ignore errors ?
-		return; // continue
+	    } else if (!p.match(/^type=\S+$/)) {
+		console.warn(`could not parse LXC network string ${p}`);
 	    }
 	});
 
 	return data;
     },
 
-    printLxcNetwork: function(data) {
-	var tmparray = [];
-	Ext.Array.each(['bridge', 'hwaddr', 'mtu', 'name', 'ip',
-			'gw', 'ip6', 'gw6', 'firewall', 'tag'], function(key) {
-		var value = data[key];
-		if (value) {
-		    tmparray.push(key + '=' + value);
-		}
-	});
-
-	if (data.rate > 0) {
-	    tmparray.push('rate=' + data.rate);
-	}
-	return tmparray.join(',');
+    printLxcNetwork: function(config) {
+	let knownKeys = {
+	    bridge: 1,
+	    firewall: 1,
+	    gw6: 1,
+	    gw: 1,
+	    hwaddr: 1,
+	    ip6: 1,
+	    ip: 1,
+	    mtu: 1,
+	    name: 1,
+	    rate: 1,
+	    tag: 1,
+	};
+	return Object.entries(config)
+	    .filter(([k, v]) => v !== undefined && knownKeys[k])
+	    .map(([k, v]) => `${k}=${v}`)
+	    .join(',');
     },
 
     parseLxcMountPoint: function(value) {
 	if (!value) {
-	    return;
+	    return undefined;
 	}
 
-	var res = {};
-
-	var errors = false;
+	let res = {};
+	let errors = false;
 	Ext.Array.each(value.split(','), function(p) {
 	    if (!p || p.match(/^\s*$/)) {
-		return; // continue
+		return undefined; // continue
 	    }
-	    var match_res = p.match(/^([a-z_]+)=(.+)$/);
-	    if (!match_res) {
-		if (!p.match(/\=/)) {
+	    let match = p.match(/^([a-z_]+)=(.+)$/);
+	    if (!match) {
+		if (!p.match(/[=]/)) {
 		    res.file = p;
-		    return; // continue
+		    return undefined; // continue
 		}
 		errors = true;
 		return false; // break
 	    }
-	    var k = match_res[1];
+	    let [, k, v] = match;
 	    if (k === 'volume') {
 		k = 'file';
 	    }
@@ -385,18 +358,18 @@ Ext.define('PVE.Parser', {
 		return false; // break
 	    }
 
-	    var v = match_res[2];
-
 	    res[k] = v;
+
+	    return undefined;
 	});
 
 	if (errors || !res.file) {
-	    return;
+	    return undefined;
 	}
 
-	var m = res.file.match(/^([a-z][a-z0-9\-\_\.]*[a-z0-9]):/i);
-	if (m) {
-	    res.storage = m[1];
+	const [, storage] = res.file.match(/^([a-z][a-z0-9\-_.]*[a-z0-9]):/i);
+	if (storage) {
+	    res.storage = storage;
 	    res.type = 'volume';
 	} else if (res.file.match(/^\/dev\//)) {
 	    res.type = 'device';
@@ -408,55 +381,49 @@ Ext.define('PVE.Parser', {
     },
 
     printLxcMountPoint: function(mp) {
-	var drivestr = mp.file;
-
-	Ext.Object.each(mp, function(key, value) {
-	    if (!Ext.isDefined(value) || key === 'file' ||
-		key === 'type' || key === 'storage') {
-		return; // continue
+	let drivestr = mp.file;
+	for (const [key, value] of Object.entrie(mp)) {
+	    if (!Ext.isDefined(value) || key === 'file' || key === 'type' || key === 'storage') {
+		continue;
 	    }
-	    drivestr += ',' + key + '=' + value;
-	});
-
+	    drivestr += `,${key}=${value}`;
+	}
 	return drivestr;
     },
 
     parseStartup: function(value) {
 	if (value === undefined) {
-	    return;
+	    return undefined;
 	}
 
-	var res = {};
+	let res = {};
+	try {
+	    value.split(',').forEach(p => {
+		if (!p || p.match(/^\s*$/)) {
+		    return; // continue
+		}
 
-	var errors = false;
-	Ext.Array.each(value.split(','), function(p) {
-	    if (!p || p.match(/^\s*$/)) {
-		return; // continue
-	    }
-
-	    var match_res;
-
-	    if ((match_res = p.match(/^(order)?=(\d+)$/)) !== null) {
-		res.order = match_res[2];
-	    } else if ((match_res = p.match(/^up=(\d+)$/)) !== null) {
-		res.up = match_res[1];
-	    } else if ((match_res = p.match(/^down=(\d+)$/)) !== null) {
-                res.down = match_res[1];
-	    } else {
-		errors = true;
-		return false; // break
-	    }
-	});
-
-	if (errors) {
-	    return;
+		let match_res;
+		if ((match_res = p.match(/^(order)?=(\d+)$/)) !== null) {
+		    res.order = match_res[2];
+		} else if ((match_res = p.match(/^up=(\d+)$/)) !== null) {
+		    res.up = match_res[1];
+		} else if ((match_res = p.match(/^down=(\d+)$/)) !== null) {
+		    res.down = match_res[1];
+		} else {
+		    throw `could not parse startup config ${p}`;
+		}
+	    });
+	} catch (err) {
+	    console.warn(err);
+	    return undefined;
 	}
 
 	return res;
     },
 
     printStartup: function(startup) {
-	var arr = [];
+	let arr = [];
 	if (startup.order !== undefined && startup.order !== '') {
 	    arr.push('order=' + startup.order);
 	}
@@ -471,60 +438,62 @@ Ext.define('PVE.Parser', {
     },
 
     parseQemuSmbios1: function(value) {
-	var res = value.split(',').reduce(function(accumulator, currentValue) {
-	    var splitted = currentValue.split(new RegExp("=(.+)"));
-	    accumulator[splitted[0]] = splitted[1];
-	    return accumulator;
+	let res = value.split(',').reduce((acc, currentValue) => {
+	    const [k, v] = currentValue.split(/[=](.+)/);
+	    acc[k] = v;
+	    return acc;
 	}, {});
 
 	if (PVE.Parser.parseBoolean(res.base64, false)) {
-	    Ext.Object.each(res, function(key, value) {
-		if (key === 'uuid') { return; }
-		res[key] = Ext.util.Base64.decode(value);
-	    });
+	    for (const [k, v] of Object.entries(res)) {
+		if (k !== 'uuid') {
+		    res[k] = Ext.util.Base64.decode(v);
+		}
+	    }
 	}
 
 	return res;
     },
 
     printQemuSmbios1: function(data) {
-	var datastr = '';
-	var base64 = false;
-	Ext.Object.each(data, function(key, value) {
-	    if (value === '') { return; }
-	    if (key === 'uuid') {
-		datastr += (datastr !== '' ? ',' : '') + key + '=' + value;
-	    } else {
-		// values should be base64 encoded from now on, mark config strings correspondingly
-		if (!base64) {
-		    base64 = true;
-		    datastr += (datastr !== '' ? ',' : '') + 'base64=1';
+	let base64 = false;
+	let datastr = Object.entries(data)
+	    .map(([key, value]) => {
+		if (value === '') {
+		    return undefined;
 		}
-		datastr += (datastr !== '' ? ',' : '') + key + '=' + Ext.util.Base64.encode(value);
-	    }
-	});
+		if (key !== 'uuid') {
+		    base64 = true; // smbios values can be arbitrary, so encode and mark config as such
+		    value = Ext.util.Base64.encode(value);
+		}
+		return `${key}=${value}`;
+	    })
+	    .filter(v => v !== undefined)
+	    .join(',');
 
+	if (base64) {
+	    datastr += ',base64=1';
+	}
 	return datastr;
     },
 
     parseTfaConfig: function(value) {
-	var res = {};
-
-	Ext.Array.each(value.split(','), function(p) {
-	    var kva = p.split('=', 2);
-	    res[kva[0]] = kva[1];
+	let res = {};
+	value.split(',').forEach(p => {
+	    const [k, v] = p.split('=', 2);
+	    res[k] = v;
 	});
 
 	return res;
     },
 
     parseTfaType: function(value) {
-	var match;
+	let match;
 	if (!value || !value.length) {
 	    return undefined;
 	} else if (value === 'x!oath') {
 	    return 'totp';
-	} else if (match = value.match(/^x!(.+)$/)) {
+	} else if ((match = value.match(/^x!(.+)$/)) !== null) {
 	    return match[1];
 	} else {
 	    return 1;
@@ -536,48 +505,44 @@ Ext.define('PVE.Parser', {
 	    return {};
 	}
 
-	var res = {};
-
-	var errors = false;
+	let res = {};
+	let errors = false;
 	Ext.Array.each(value.split(','), function(p) {
 	    if (!p || p.match(/^\s*$/)) {
-		return; // continue
+		return undefined; // continue
 	    }
 
-	    if (!p.match(/\=/)) {
+	    if (!p.match(/[=]/)) {
 		if (Ext.isDefined(res.cpu)) {
 		    errors = true;
 		    return false; // break
 		}
 		res.cputype = p;
-		return; // continue
+		return undefined; // continue
 	    }
 
-	    var match_res = p.match(/^([a-z_]+)=(\S+)$/);
-	    if (!match_res) {
+	    let match = p.match(/^([a-z_]+)=(\S+)$/);
+	    if (!match || Ext.isDefined(res[match[1]])) {
 		errors = true;
 		return false; // break
 	    }
 
-	    var k = match_res[1];
-	    if (Ext.isDefined(res[k])) {
-		errors = true;
-		return false; // break
-	    }
+	    let [, k, v] = match;
+	    res[k] = v;
 
-	    res[k] = match_res[2];
+	    return undefined;
 	});
 
 	if (errors || !res.cputype) {
-	    return;
+	    return undefined;
 	}
 
 	return res;
     },
 
     printQemuCpu: function(cpu) {
-	var cpustr = cpu.cputype;
-	var optstr = '';
+	let cpustr = cpu.cputype;
+	let optstr = '';
 
 	Ext.Object.each(cpu, function(key, value) {
 	    if (!Ext.isDefined(value) || key === 'cputype') {
@@ -589,8 +554,9 @@ Ext.define('PVE.Parser', {
 	if (!cpustr) {
 	    if (optstr) {
 		return 'kvm64' + optstr;
+	    } else {
+		return undefined;
 	    }
-	    return;
 	}
 
 	return cpustr + optstr;
@@ -598,14 +564,11 @@ Ext.define('PVE.Parser', {
 
     parseSSHKey: function(key) {
 	//                |--- options can have quotes--|     type    key        comment
-	var keyre = /^(?:((?:[^\s"]|\"(?:\\.|[^"\\])*")+)\s+)?(\S+)\s+(\S+)(?:\s+(.*))?$/;
-	var typere = /^(?:(?:sk-)?ssh-(?:dss|rsa|ed25519)|ecdsa-sha2-nistp\d+)$/;
+	let keyre = /^(?:((?:[^\s"]|"(?:\\.|[^"\\])*")+)\s+)?(\S+)\s+(\S+)(?:\s+(.*))?$/;
+	let typere = /^(?:(?:sk-)?ssh-(?:dss|rsa|ed25519)|ecdsa-sha2-nistp\d+)$/;
 
-	var m = key.match(keyre);
-	if (!m) {
-	    return null;
-	}
-	if (m.length < 3 || !m[2]) { // [2] is always either type or key
+	let m = key.match(keyre);
+	if (!m || m.length < 3 || !m[2]) { // [2] is always either type or key
 	    return null;
 	}
 	if (m[1] && m[1].match(typere)) {
@@ -631,7 +594,7 @@ Ext.define('PVE.Parser', {
 	let extradata = [];
 	data.split('\n').forEach((line) => {
 	    // capture everything after the first = as value
-	    let [key, value] = line.split(/=(.+)/);
+	    let [key, value] = line.split(/[=](.+)/);
 	    if (value !== undefined) {
 		res[key] = value;
 	    } else {
