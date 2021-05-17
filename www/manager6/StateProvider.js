@@ -14,16 +14,14 @@ Ext.define('PVE.StateProvider', {
 
     // private
     setHV: function(name, newvalue, fireEvents) {
-	var me = this;
+	let me = this;
 
-	var changes = false;
-	var oldtext = Ext.encode(me.UIState[name]);
-	var newtext = Ext.encode(newvalue);
-	if (newtext != oldtext) {
+	let changes = false;
+	let oldtext = Ext.encode(me.UIState[name]);
+	let newtext = Ext.encode(newvalue);
+	if (newtext !== oldtext) {
 	    changes = true;
 	    me.UIState[name] = newvalue;
-	    //console.log("changed old " + name + " " + oldtext);
-	    //console.log("changed new " + name + " " + newtext);
 	    if (fireEvents) {
 		me.fireEvent("statechange", me, name, { value: newvalue });
 	    }
@@ -107,37 +105,32 @@ Ext.define('PVE.StateProvider', {
     },
 
     decodeHToken: function(token) {
-	var me = this;
+	let me = this;
 
-	var state = {};
+	let state = {};
 	if (!token) {
-	    Ext.Array.each(me.hslist, function(rec) {
-		state[rec[0]] = rec[1];
-	    });
+	    me.hslist.forEach(([k, v]) => { state[k] = v; });
 	    return state;
 	}
 
-	// return Ext.urlDecode(token);
+	let [prefix, ...items] = token.split(':');
 
-	var items = token.split(':');
-	var prefix = items.shift();
-
-	if (prefix != me.hprefix) {
+	if (prefix !== me.hprefix) {
 	    return me.decodeHToken();
 	}
 
 	Ext.Array.each(me.hslist, function(rec) {
-	    var value = items.shift();
+	    let value = items.shift();
 	    if (value) {
 		if (value[0] === '=') {
 		    value = decodeURIComponent(value.slice(1));
 		} else {
-		    Ext.Object.each(me.compDict, function(key, cv) {
-			if (value == cv) {
+		    for (const [key, hash] of Object.entries(me.compDict)) {
+			if (value === hash) {
 			    value = key;
-			    return false;
+			    break;
 			}
-		    });
+		    }
 		}
 	    }
 	    state[rec[0]] = value;
@@ -147,26 +140,21 @@ Ext.define('PVE.StateProvider', {
     },
 
     encodeHToken: function(state) {
-	var me = this;
+	let me = this;
 
-	// return Ext.urlEncode(state);
-
-	var ctoken = me.hprefix;
+	let ctoken = me.hprefix;
 	Ext.Array.each(me.hslist, function(rec) {
-	    var value = state[rec[0]];
+	    let value = state[rec[0]];
 	    if (!Ext.isDefined(value)) {
 		value = rec[1];
 	    }
 	    value = encodeURIComponent(value);
 	    if (!value) {
 		ctoken += ':';
+	    } else if (Ext.isDefined(me.compDict[value])) {
+		ctoken += ":" + me.compDict[value];
 	    } else {
-		var comp = me.compDict[value];
-		if (Ext.isDefined(comp)) {
-		    ctoken += ":" + comp;
-		} else {
-		    ctoken += ":=" + value;
-		}
+		ctoken += ":=" + value;
 	    }
 	});
 
@@ -174,33 +162,32 @@ Ext.define('PVE.StateProvider', {
     },
 
     constructor: function(config) {
-	var me = this;
+	let me = this;
 
 	me.callParent([config]);
 
 	me.UIState = me.decodeHToken(); // set default
 
-	var history_change_cb = function(token) {
-	    //console.log("HC " + token);
+	let history_change_cb = function(token) {
 	    if (!token) {
 		Ext.History.back();
 		return;
 	    }
 
-	    var newstate = me.decodeHToken(token);
+	    let newstate = me.decodeHToken(token);
 	    Ext.Array.each(me.hslist, function(rec) {
-		if (typeof newstate[rec[0]] == "undefined") {
+		if (typeof newstate[rec[0]] === "undefined") {
 		    return;
 		}
 		me.setHV(rec[0], newstate[rec[0]], true);
 	    });
 	};
 
-	var start_token = Ext.History.getToken();
+	let start_token = Ext.History.getToken();
 	if (start_token) {
 	    history_change_cb(start_token);
 	} else {
-	    var htext = me.encodeHToken(me.UIState);
+	    let htext = me.encodeHToken(me.UIState);
 	    Ext.History.add(htext);
 	}
 
@@ -208,40 +195,43 @@ Ext.define('PVE.StateProvider', {
     },
 
     get: function(name, defaultValue) {
-	var me = this;
-	var data;
+	let me = this;
 
-	if (typeof me.UIState[name] != "undefined") {
+	let data;
+	if (typeof me.UIState[name] !== "undefined") {
 	    data = { value: me.UIState[name] };
 	} else {
 	    data = me.callParent(arguments);
 	    if (!data && name === 'GuiCap') {
-		data = { vms: {}, storage: {}, access: {}, nodes: {}, dc: {}, sdn: {} };
+		data = {
+		    vms: {},
+		    storage: {},
+		    access: {},
+		    nodes: {},
+		    dc: {},
+		    sdn: {},
+		};
 	    }
 	}
-
-	//console.log("GET " + name + " " + Ext.encode(data));
 	return data;
     },
 
     clear: function(name) {
-	var me = this;
+	let me = this;
 
-	if (typeof me.UIState[name] != "undefined") {
+	if (typeof me.UIState[name] !== "undefined") {
 	    me.UIState[name] = null;
 	}
-
 	me.callParent(arguments);
     },
 
     set: function(name, value, fireevent) {
-        var me = this;
+        let me = this;
 
-	//console.log("SET " + name + " " + Ext.encode(value));
-	if (typeof me.UIState[name] != "undefined") {
+	if (typeof me.UIState[name] !== "undefined") {
 	    var newvalue = value ? value.value : null;
 	    if (me.setHV(name, newvalue, fireevent)) {
-		var htext = me.encodeHToken(me.UIState);
+		let htext = me.encodeHToken(me.UIState);
 		Ext.History.add(htext);
 	    }
 	} else {
