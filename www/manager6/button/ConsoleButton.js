@@ -33,14 +33,31 @@ Ext.define('PVE.button.ConsoleButton', {
 	me.down('#xtermjs').setDisabled(!enable);
     },
 
-    handler: function() {
-	var me = this;
-	var consoles = {
-	    spice: me.enableSpice,
-	    xtermjs: me.enableXtermjs,
-	};
-	PVE.Utils.openDefaultConsoleWindow(consoles, me.consoleType, me.vmid,
-					   me.nodename, me.consoleName, me.cmd);
+    handler: function() { // main, general, handler
+	let me = this;
+	PVE.Utils.openDefaultConsoleWindow(
+	    {
+		spice: me.enableSpice,
+		xtermjs: me.enableXtermjs,
+	    },
+	    me.consoleType,
+	    me.vmid,
+	    me.nodename,
+	    me.consoleName,
+	    me.cmd,
+	);
+    },
+
+    openConsole: function(types) { // used by split-menu buttons
+	let me = this;
+	PVE.Utils.openConsoleWindow(
+	    types,
+	    me.consoleType,
+	    me.vmid,
+	    me.nodename,
+	    me.consoleName,
+	    me.cmd,
+	);
     },
 
     menu: [
@@ -50,8 +67,8 @@ Ext.define('PVE.button.ConsoleButton', {
 	    iconCls: 'pve-itype-icon-novnc',
 	    type: 'html5',
 	    handler: function(button) {
-		var me = this.up('button');
-		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName, me.cmd);
+		let view = this.up('button');
+		view.openConsole(button.type);
 	    },
 	},
 	{
@@ -61,8 +78,8 @@ Ext.define('PVE.button.ConsoleButton', {
 	    type: 'vv',
 	    iconCls: 'pve-itype-icon-virt-viewer',
 	    handler: function(button) {
-		var me = this.up('button');
-		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName, me.cmd);
+		let view = this.up('button');
+		view.openConsole(button.type);
 	    },
 	},
 	{
@@ -71,14 +88,14 @@ Ext.define('PVE.button.ConsoleButton', {
 	    iconCls: 'pve-itype-icon-xtermjs',
 	    type: 'xtermjs',
 	    handler: function(button) {
-		var me = this.up('button');
-		PVE.Utils.openConsoleWindow(button.type, me.consoleType, me.vmid, me.nodename, me.consoleName, me.cmd);
+		let view = this.up('button');
+		view.openConsole(button.type);
 	    },
 	},
     ],
 
     initComponent: function() {
-        var me = this;
+        let me = this;
 
 	if (!me.nodename) {
 	    throw "no node name specified";

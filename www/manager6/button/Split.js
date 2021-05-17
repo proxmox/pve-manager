@@ -12,7 +12,9 @@ Ext.define('PVE.button.Split', {
     selModel: undefined,
 
     // if 'false' handler will not be called (button disabled)
-    enableFn: function(record) { },
+    enableFn: function(record) {
+	// do nothing
+    },
 
     // function(record) or text
     confirmMsg: false,
