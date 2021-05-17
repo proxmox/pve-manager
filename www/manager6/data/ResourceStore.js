@@ -3,18 +3,17 @@ Ext.define('PVE.data.ResourceStore', {
     singleton: true,
 
     findVMID: function(vmid) {
-	var me = this, i;
-
+	let me = this;
 	return me.findExact('vmid', parseInt(vmid, 10)) >= 0;
     },
 
     // returns the cached data from all nodes
     getNodes: function() {
-	var me = this;
+	let me = this;
 
-	var nodes = [];
+	let nodes = [];
 	me.each(function(record) {
-	    if (record.get('type') == "node") {
+	    if (record.get('type') === "node") {
 		nodes.push(record.getData());
 	    }
 	});
@@ -23,17 +22,20 @@ Ext.define('PVE.data.ResourceStore', {
     },
 
     storageIsShared: function(storage_path) {
-	var me = this;
+	let me = this;
 
-	var index = me.findExact('id', storage_path);
-
-	return me.getAt(index).data.shared;
+	let index = me.findExact('id', storage_path);
+	if (index >= 0) {
+	    return me.getAt(index).data.shared;
+	} else {
+	    return undefined;
+	}
     },
 
     guestNode: function(vmid) {
-	var me = this;
+	let me = this;
 
-	var index = me.findExact('vmid', parseInt(vmid, 10));
+	let index = me.findExact('vmid', parseInt(vmid, 10));
 
 	return me.getAt(index).data.node;
     },
@@ -52,13 +54,11 @@ Ext.define('PVE.data.ResourceStore', {
     },
 
     constructor: function(config) {
-	// fixme: how to avoid those warnings
-
-	var me = this;
+	let me = this;
 
 	config = config || {};
 
-	var field_defaults = {
+	let field_defaults = {
 	    type: {
 		header: gettext('Type'),
 		type: 'string',
@@ -90,13 +90,11 @@ Ext.define('PVE.data.ResourceStore', {
 		sortable: true,
 		width: 200,
 		convert: function(value, record) {
-		    var info = record.data;
-		    var text;
-
 		    if (value) {
 			return value;
 		    }
 
+		    let info = record.data, text;
 		    if (Ext.isNumeric(info.vmid) && info.vmid > 0) {
 			text = String(info.vmid);
 			if (info.name) {
@@ -284,7 +282,7 @@ Ext.define('PVE.data.ResourceStore', {
 		calculate: PVE.Utils.calculate_hostcpu,
 		sortType: 'asFloat',
 		sortable: true,
-		width: 100
+		width: 100,
 	    },
 	    hostmemuse: {
 		header: gettext('Host Memory usage') + " %",
@@ -293,12 +291,12 @@ Ext.define('PVE.data.ResourceStore', {
 		calculate: PVE.Utils.calculate_hostmem_usage,
 		sortType: 'asFloat',
 		sortable: true,
-		width: 100
+		width: 100,
 	    },
 	};
 
-	var fields = [];
-	var fieldNames = [];
+	let fields = [];
+	let fieldNames = [];
 	Ext.Object.each(field_defaults, function(key, value) {
 	    var field = { name: key, type: value.type };
 	    if (Ext.isDefined(value.convert)) {
@@ -336,10 +334,10 @@ Ext.define('PVE.data.ResourceStore', {
 	    storeid: 'PVEResources',
 	    model: 'PVEResources',
 	    defaultColumns: function() {
-		var res = [];
+		let res = [];
 		Ext.Object.each(field_defaults, function(field, info) {
-		    var fi = Ext.apply({ dataIndex: field }, info);
-		    res.push(fi);
+		    let fieldInfo = Ext.apply({ dataIndex: field }, info);
+		    res.push(fieldInfo);
 		});
 		return res;
 	    },
