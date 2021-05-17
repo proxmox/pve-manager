@@ -13,15 +13,17 @@ Ext.define('PVE.Workspace', {
 
     loginData: null, // Data from last login call
 
-    onLogin: function(loginData) {},
+    onLogin: function(loginData) {
+	// override me
+    },
 
     // private
     updateLoginData: function(loginData) {
-	var me = this;
+	let me = this;
 	me.loginData = loginData;
 	Proxmox.Utils.setAuthData(loginData);
 
-	var rt = me.down('pveResourceTree');
+	let rt = me.down('pveResourceTree');
 	rt.setDatacenterText(loginData.clustername);
 	PVE.ClusterName = loginData.clustername;
 
@@ -35,7 +37,7 @@ Ext.define('PVE.Workspace', {
 
     // private
     showLogin: function() {
-	var me = this;
+	let me = this;
 
 	Proxmox.Utils.authClear();
 	Ext.state.Manager.clear('GuiCap');
@@ -47,7 +49,7 @@ Ext.define('PVE.Workspace', {
 		handler: function(data) {
 		    me.login = null;
 		    me.updateLoginData(data);
-		    Proxmox.Utils.checked_command(function() {}); // display subscription status
+		    Proxmox.Utils.checked_command(Ext.emptyFn); // display subscription status
 		},
 	    });
 	}
@@ -56,13 +58,13 @@ Ext.define('PVE.Workspace', {
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	Ext.tip.QuickTipManager.init();
 
 	// fixme: what about other errors
 	Ext.Ajax.on('requestexception', function(conn, response, options) {
-	    if (response.status == 401 && !PVE.Utils.silenceAuthFailures) { // auth failure
+	    if ((response.status === 401 || response.status === '401') && !PVE.Utils.silenceAuthFailures) { // auth failure
 		// don't immediately show as logged out to cope better with some big
 		// upgrades, which may temporarily produce a false positive 401 err
 		me.response401count++;
@@ -76,15 +78,13 @@ Ext.define('PVE.Workspace', {
 
         if (!Proxmox.Utils.authOK()) {
 	    me.showLogin();
-	} else {
-	    if (me.loginData) {
-		me.onLogin(me.loginData);
-	    }
+	} else if (me.loginData) {
+	    me.onLogin(me.loginData);
 	}
 
 	Ext.TaskManager.start({
 	    run: function() {
-		var ticket = Proxmox.Utils.authOK();
+		let ticket = Proxmox.Utils.authOK();
 		if (!ticket || !Proxmox.UserName) {
 		    return;
 		}
@@ -97,12 +97,12 @@ Ext.define('PVE.Workspace', {
 		    url: '/api2/json/access/ticket',
 		    method: 'POST',
 		    success: function(response, opts) {
-			var obj = Ext.decode(response.responseText);
+			let obj = Ext.decode(response.responseText);
 			me.updateLoginData(obj.data);
 		    },
 		});
 	    },
-	    interval: 15*60*1000,
+	    interval: 15 * 60 * 1000,
 	});
     },
 });
@@ -114,39 +114,35 @@ Ext.define('PVE.StdWorkspace', {
 
     // private
     setContent: function(comp) {
-	var me = this;
+	let me = this;
 
-	var cont = me.child('#content');
-
-	var lay = cont.getLayout();
-
-	var cur = lay.getActiveItem();
+	let view = me.child('#content');
+	let layout = view.getLayout();
+	let current = layout.getActiveItem();
 
 	if (comp) {
-	    Proxmox.Utils.setErrorMask(cont, false);
+	    Proxmox.Utils.setErrorMask(view, false);
 	    comp.border = false;
-	    cont.add(comp);
-	    if (cur !== null && lay.getNext()) {
-		lay.next();
-		var task = Ext.create('Ext.util.DelayedTask', function() {
-		    cont.remove(cur);
+	    view.add(comp);
+	    if (current !== null && layout.getNext()) {
+		layout.next();
+		let task = Ext.create('Ext.util.DelayedTask', function() {
+		    view.remove(current);
 		});
 		task.delay(10);
 	    }
 	} else {
-	    // helper for cleaning the content when logging out
-	    cont.removeAll();
+	    view.removeAll(); // helper for cleaning the content when logging out
 	}
     },
 
     selectById: function(nodeid) {
-	var me = this;
-	var tree = me.down('pveResourceTree');
-	tree.selectById(nodeid);
+	let me = this;
+	me.down('pveResourceTree').selectById(nodeid);
     },
 
     onLogin: function(loginData) {
-	var me = this;
+	let me = this;
 
 	me.updateUserInfo();
 
@@ -180,19 +176,19 @@ Ext.define('PVE.StdWorkspace', {
     },
 
     updateUserInfo: function() {
-	var me = this;
-	var ui = me.query('#userinfo')[0];
+	let me = this;
+	let ui = me.query('#userinfo')[0];
 	ui.setText(Ext.String.htmlEncode(Proxmox.UserName || ''));
 	ui.updateLayout();
     },
 
     updateVersionInfo: function() {
-	var me = this;
+	let me = this;
 
-	var ui = me.query('#versioninfo')[0];
+	let ui = me.query('#versioninfo')[0];
 
 	if (PVE.VersionInfo) {
-	    var version = PVE.VersionInfo.version;
+	    let version = PVE.VersionInfo.version;
 	    ui.update('Virtual Environment ' + version);
 	} else {
 	    ui.update('Virtual Environment');
@@ -201,45 +197,43 @@ Ext.define('PVE.StdWorkspace', {
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	Ext.History.init();
 
-	var sprovider = Ext.create('PVE.StateProvider');
-	Ext.state.Manager.setProvider(sprovider);
+	let appState = Ext.create('PVE.StateProvider');
+	Ext.state.Manager.setProvider(appState);
 
-	var selview = Ext.create('PVE.form.ViewSelector');
+	let selview = Ext.create('PVE.form.ViewSelector');
 
-	var rtree = Ext.createWidget('pveResourceTree', {
+	let rtree = Ext.createWidget('pveResourceTree', {
 	    viewFilter: selview.getViewFilter(),
 	    flex: 1,
 	    selModel: {
 		selType: 'treemodel',
 		listeners: {
 		    selectionchange: function(sm, selected) {
-			if (selected.length > 0) {
-			    var n = selected[0];
-			    var tlckup = {
-				root: 'PVE.dc.Config',
-				node: 'PVE.node.Config',
-				qemu: 'PVE.qemu.Config',
-				lxc: 'PVE.lxc.Config',
-				storage: 'PVE.storage.Browser',
-				sdn: 'PVE.sdn.Browser',
-				pool: 'pvePoolConfig',
-			    };
-			    var comp = {
-				xtype: tlckup[n.data.type || 'root'] ||
-				    'pvePanelConfig',
-				showSearch: n.data.id === 'root' ||
-				    Ext.isDefined(n.data.groupbyid),
-				pveSelNode: n,
-				workspace: me,
-				viewFilter: selview.getViewFilter(),
-			    };
-			    PVE.curSelectedNode = n;
-			    me.setContent(comp);
+			if (selected.length <= 0) {
+			    return;
 			}
+			let treeNode = selected[0];
+			let treeTypeToClass = {
+			    root: 'PVE.dc.Config',
+			    node: 'PVE.node.Config',
+			    qemu: 'PVE.qemu.Config',
+			    lxc: 'PVE.lxc.Config',
+			    storage: 'PVE.storage.Browser',
+			    sdn: 'PVE.sdn.Browser',
+			    pool: 'pvePoolConfig',
+			};
+			PVE.curSelectedNode = treeNode;
+			me.setContent({
+			    xtype: treeTypeToClass[treeNode.data.type || 'root'] || 'pvePanelConfig',
+			    showSearch: treeNode.data.id === 'root' || Ext.isDefined(treeNode.data.groupbyid),
+			    pveSelNode: treeNode,
+			    workspace: me,
+			    viewFilter: selview.getViewFilter(),
+			});
 		    },
 		},
 	    },
@@ -247,14 +241,14 @@ Ext.define('PVE.StdWorkspace', {
 
 	selview.on('select', function(combo, records) {
 	    if (records) {
-		var view = combo.getViewFilter();
+		let view = combo.getViewFilter();
 		rtree.setViewFilter(view);
 	    }
 	});
 
-	var caps = sprovider.get('GuiCap');
+	let caps = appState.get('GuiCap');
 
-	var createVM = Ext.createWidget('button', {
+	let createVM = Ext.createWidget('button', {
 	    pack: 'end',
 	    margin: '3 5 0 0',
 	    baseCls: 'x-btn',
@@ -262,12 +256,12 @@ Ext.define('PVE.StdWorkspace', {
 	    text: gettext("Create VM"),
 	    disabled: !caps.vms['VM.Allocate'],
 	    handler: function() {
-		var wiz = Ext.create('PVE.qemu.CreateWizard', {});
+		let wiz = Ext.create('PVE.qemu.CreateWizard', {});
 		wiz.show();
 	    },
 	});
 
-	var createCT = Ext.createWidget('button', {
+	let createCT = Ext.createWidget('button', {
 	    pack: 'end',
 	    margin: '3 5 0 0',
 	    baseCls: 'x-btn',
@@ -275,12 +269,12 @@ Ext.define('PVE.StdWorkspace', {
 	    text: gettext("Create CT"),
 	    disabled: !caps.vms['VM.Allocate'],
 	    handler: function() {
-		var wiz = Ext.create('PVE.lxc.CreateWizard', {});
+		let wiz = Ext.create('PVE.lxc.CreateWizard', {});
 		wiz.show();
 	    },
 	});
 
-	sprovider.on('statechange', function(sp, key, value) {
+	appState.on('statechange', function(sp, key, value) {
 	    if (key === 'GuiCap' && value) {
 		caps = value;
 		createVM.setDisabled(!caps.vms['VM.Allocate']);
@@ -470,11 +464,9 @@ Ext.define('PVE.StdWorkspace', {
 
 	// on resize, center all modal windows
 	Ext.on('resize', function() {
-	    var wins = Ext.ComponentQuery.query('window[modal]');
-	    if (wins.length > 0) {
-		wins.forEach(function(win) {
-		    win.alignTo(me, 'c-c');
-		});
+	    let modalWindows = Ext.ComponentQuery.query('window[modal]');
+	    if (modalWindows.length > 0) {
+		modalWindows.forEach(win => win.alignTo(me, 'c-c'));
 	    }
 	});
     },
