@@ -5,27 +5,25 @@ Ext.define('PVE.dc.BackupEdit', {
     defaultFocus: undefined,
 
     initComponent: function() {
-         var me = this;
+	let me = this;
 
-        me.isCreate = !me.jobid;
+	me.isCreate = !me.jobid;
 
-	var url;
-	var method;
-
+	let url, method;
 	if (me.isCreate) {
-            url = '/api2/extjs/cluster/backup';
-            method = 'POST';
-        } else {
-            url = '/api2/extjs/cluster/backup/' + me.jobid;
-            method = 'PUT';
-        }
+	    url = '/api2/extjs/cluster/backup';
+	    method = 'POST';
+	} else {
+	    url = '/api2/extjs/cluster/backup/' + me.jobid;
+	    method = 'PUT';
+	}
 
-	var vmidField = Ext.create('Ext.form.field.Hidden', {
+	let vmidField = Ext.create('Ext.form.field.Hidden', {
 	    name: 'vmid',
 	});
 
 	// 'value' can be assigned a string or an array
-	var selModeField = Ext.create('Proxmox.form.KVComboBox', {
+	let selModeField = Ext.create('Proxmox.form.KVComboBox', {
 	    xtype: 'proxmoxKVComboBox',
 	    comboItems: [
 		['include', gettext('Include selected VMs')],
@@ -38,7 +36,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    value: '',
 	});
 
-	var sm = Ext.create('Ext.selection.CheckboxModel', {
+	let sm = Ext.create('Ext.selection.CheckboxModel', {
 	    mode: 'SIMPLE',
 	    listeners: {
 		selectionchange: function(model, selected) {
@@ -56,7 +54,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    },
 	});
 
-	var storagesel = Ext.create('PVE.form.StorageSelector', {
+	let storagesel = Ext.create('PVE.form.StorageSelector', {
 	    fieldLabel: gettext('Storage'),
 	    nodename: 'localhost',
 	    storageContent: 'backup',
@@ -78,7 +76,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    },
 	});
 
-	var store = new Ext.data.Store({
+	let store = new Ext.data.Store({
 	    model: 'PVEResources',
 	    sorters: {
 		property: 'vmid',
@@ -86,7 +84,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    },
 	});
 
-	var vmgrid = Ext.createWidget('grid', {
+	let vmgrid = Ext.createWidget('grid', {
 	    store: store,
 	    border: true,
 	    height: 300,
@@ -125,7 +123,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    ],
 	});
 
-	var selectPoolMembers = function(poolid) {
+	let selectPoolMembers = function(poolid) {
 	    if (!poolid) {
 		return;
 	    }
@@ -140,7 +138,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    sm.selectAll(true);
 	};
 
-	var selPool = Ext.create('PVE.form.PoolSelector', {
+	let selPool = Ext.create('PVE.form.PoolSelector', {
 	    fieldLabel: gettext('Pool to backup'),
 	    hidden: true,
 	    allowBlank: true,
@@ -152,7 +150,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    },
 	});
 
-	var nodesel = Ext.create('PVE.form.NodeSelector', {
+	let nodesel = Ext.create('PVE.form.NodeSelector', {
 	    name: 'node',
 	    fieldLabel: gettext('Node'),
 	    allowBlank: true,
@@ -162,7 +160,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    listeners: {
 		change: function(f, value) {
 		    storagesel.setNodename(value || 'localhost');
-		    var mode = selModeField.getValue();
+		    let mode = selModeField.getValue();
 		    store.clearFilter();
 		    store.filterBy(function(rec) {
 			return !value || rec.get('node') === value;
@@ -170,7 +168,6 @@ Ext.define('PVE.dc.BackupEdit', {
 		    if (mode === 'all') {
 			sm.selectAll(true);
 		    }
-
 		    if (mode === 'pool') {
 			selectPoolMembers(selPool.value);
 		    }
@@ -178,7 +175,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    },
 	});
 
-	var column1 = [
+	let column1 = [
 	    nodesel,
 	    storagesel,
 	    {
@@ -202,7 +199,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    selPool,
 	];
 
-	var column2 = [
+	let column2 = [
 	    {
 		xtype: 'textfield',
 		fieldLabel: gettext('Send email to'),
@@ -239,7 +236,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    vmidField,
 	];
 
-	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
+	let ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	    onlineHelp: 'chapter_vzdump',
 	    column1: column1,
 	    column2: column2,
@@ -251,7 +248,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		    delete values.node;
 		}
 
-		var selMode = values.selMode;
+		let selMode = values.selMode;
 		delete values.selMode;
 
 		if (selMode === 'all') {
@@ -273,7 +270,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    },
 	});
 
-	var update_vmid_selection = function(list, mode) {
+	let update_vmid_selection = function(list, mode) {
 	    if (mode !== 'all' && mode !== 'pool') {
 		sm.deselectAll(true);
 		if (list) {
@@ -288,7 +285,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	};
 
 	vmidField.on('change', function(f, value) {
-	    var mode = selModeField.getValue();
+	    let mode = selModeField.getValue();
 	    update_vmid_selection(value, mode);
 	});
 
@@ -319,21 +316,21 @@ Ext.define('PVE.dc.BackupEdit', {
 		selPool.setVisible(false);
 		selPool.allowBlank = true;
 	    }
-	    var list = vmidField.getValue();
+	    let list = vmidField.getValue();
 	    update_vmid_selection(list, value);
 	});
 
-	var reload = function() {
+	let reload = function() {
 	    store.load({
-		params: { type: 'vm' },
+		params: {
+		    type: 'vm',
+		},
 		callback: function() {
-		    var node = nodesel.getValue();
+		    let node = nodesel.getValue();
 		    store.clearFilter();
-		    store.filterBy(function(rec) {
-			return !node || node.length === 0 || rec.get('node') === node;
-		    });
-		    var list = vmidField.getValue();
-		    var mode = selModeField.getValue();
+		    store.filterBy(rec => !node || node.length === 0 || rec.get('node') === node);
+		    let list = vmidField.getValue();
+		    let mode = selModeField.getValue();
 		    if (mode === 'all') {
 			sm.selectAll(true);
 		    } else if (mode === 'pool') {
@@ -345,21 +342,21 @@ Ext.define('PVE.dc.BackupEdit', {
 	    });
 	};
 
-        Ext.applyIf(me, {
-            subject: gettext("Backup Job"),
-            url: url,
-            method: method,
+	Ext.applyIf(me, {
+	    subject: gettext("Backup Job"),
+	    url: url,
+	    method: method,
 	    items: [ipanel, vmgrid],
-        });
+	});
 
-        me.callParent();
+	me.callParent();
 
-        if (me.isCreate) {
+	if (me.isCreate) {
 	    selModeField.setValue('include');
 	} else {
             me.load({
 		success: function(response, options) {
-		    var data = response.result.data;
+		    let data = response.result.data;
 
 		    data.dow = data.dow.split(',');
 
@@ -379,9 +376,9 @@ Ext.define('PVE.dc.BackupEdit', {
 		    }
 
 		    me.setValues(data);
-               },
-            });
-        }
+		},
+	    });
+	}
 
 	reload();
     },
@@ -404,18 +401,12 @@ Ext.define('PVE.dc.BackupDiskTree', {
 	{
 	    type: 'expand',
 	    tooltip: gettext('Expand All'),
-	    scope: this,
-	    callback: function(panel) {
-		panel.expandAll();
-	    },
+	    callback: panel => panel.expandAll(),
 	},
 	{
 	    type: 'collapse',
 	    tooltip: gettext('Collapse All'),
-	    scope: this,
-	    callback: function(panel) {
-		panel.collapseAll();
-	    },
+	    callback: panel => panel.collapseAll(),
 	},
     ],
 
@@ -432,9 +423,7 @@ Ext.define('PVE.dc.BackupDiskTree', {
 		    }
 		    return ret;
 		} else {
-		    // volume level
-		    // extJS needs unique IDs but we only want to show the
-		    // volumes key from "vmid:key"
+		    // extJS needs unique IDs but we only want to show the volumes key from "vmid:key"
 		    return value.split(':')[1] + " - " + record.data.name;
 		}
 	    },
@@ -455,11 +444,11 @@ Ext.define('PVE.dc.BackupDiskTree', {
     ],
 
     reload: function() {
-	var me = this;
-	var sm = me.getSelectionModel();
+	let me = this;
+	let sm = me.getSelectionModel();
 
 	Proxmox.Utils.API2Request({
-	    url: "/cluster/backup/" + me.jobid + "/included_volumes",
+	    url: `/cluster/backup/${me.jobid}/included_volumes`,
 	    waitMsgTarget: me,
 	    method: 'GET',
 	    failure: function(response, opts) {
@@ -514,43 +503,36 @@ Ext.define('PVE.dc.BackupDiskTree', {
 		    listeners: {
 			buffer: 500,
 			keyup: function(field) {
-			    let searchValue = field.getValue();
-			    searchValue = searchValue.toLowerCase();
-
+			    let searchValue = field.getValue().toLowerCase();
 			    me.store.clearFilter(true);
 			    me.store.filterBy(function(record) {
-				let match = false;
-
-				let data = '';
-				if (record.data.depth == 0) {
+				let data = {};
+				if (record.data.depth === 0) {
 				    return true;
-				} else if (record.data.depth == 1) {
+				} else if (record.data.depth === 1) {
 				    data = record.data;
-				} else if (record.data.depth == 2) {
+				} else if (record.data.depth === 2) {
 				    data = record.parentNode.data;
 				}
 
-				Ext.each(['name', 'id', 'type'], function(property) {
+				for (const property in ['name', 'id', 'type']) {
 				    if (data[property] === null) {
-					return;
+					continue;
 				    }
-
 				    let v = data[property].toString();
 				    if (v !== undefined) {
 					v = v.toLowerCase();
 					if (v.includes(searchValue)) {
-					    match = true;
-					    return;
+					    return true;
 					}
 				    }
-				});
-				return match;
+				}
+				return false;
 			    });
 			},
 		    },
-		},
-	    ],
-},
+		}],
+	    },
 	});
 
 	me.callParent();
@@ -760,28 +742,23 @@ Ext.define('PVE.dc.BackedGuests', {
 		    listeners: {
 			buffer: 500,
 			keyup: function(field) {
-			    let searchValue = field.getValue();
-			    searchValue = searchValue.toLowerCase();
-
+			    let searchValue = field.getValue().toLowerCase();
 			    me.store.clearFilter(true);
 			    me.store.filterBy(function(record) {
-				let match = false;
-
-				Ext.each(['name', 'vmid', 'type'], function(property) {
-				    if (record.data[property] == null) {
-					return;
+				let data = record.data;
+				for (const property in ['name', 'id', 'type']) {
+				    if (data[property] === null) {
+					continue;
 				    }
-
-				    let v = record.data[property].toString();
+				    let v = data[property].toString();
 				    if (v !== undefined) {
 					v = v.toLowerCase();
 					if (v.includes(searchValue)) {
-					    match = true;
-					    return;
+					    return true;
 					}
 				    }
-				});
-				return match;
+				}
+				return false;
 			    });
 			},
 		    },
@@ -806,17 +783,17 @@ Ext.define('PVE.dc.BackupView', {
     allText: '-- ' + gettext('All') + ' --',
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	var store = new Ext.data.Store({
+	let store = new Ext.data.Store({
 	    model: 'pve-cluster-backup',
 	    proxy: {
-                type: 'proxmox',
+		type: 'proxmox',
 		url: "/api2/json/cluster/backup",
 	    },
 	});
 
-	var not_backed_store = new Ext.data.Store({
+	let not_backed_store = new Ext.data.Store({
 	    sorters: 'vmid',
 	    proxy: {
 		type: 'proxmox',
@@ -824,53 +801,37 @@ Ext.define('PVE.dc.BackupView', {
 	    },
 	});
 
-	var reload = function() {
+	let noBackupJobWarning, noBackupJobInfoButton;
+	let reload = function() {
 	    store.load();
 	    not_backed_store.load({
 		callback: function(records, operation, success) {
-		    if (records.length) {
-			not_backed_warning.setVisible(true);
-			not_backed_btn.setVisible(true);
-		    } else {
-			not_backed_warning.setVisible(false);
-			not_backed_btn.setVisible(false);
-		    }
+		    noBackupJobWarning.setVisible(records.length > 0);
+		    noBackupJobInfoButton.setVisible(records.length > 0);
 		},
 	    });
 	};
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
+	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
+	let run_editor = function() {
+	    let rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
 	    }
 
-	    var win = Ext.create('PVE.dc.BackupEdit', {
+	    let win = Ext.create('PVE.dc.BackupEdit', {
 		jobid: rec.data.id,
 	    });
 	    win.on('destroy', reload);
 	    win.show();
 	};
 
-	var run_detail = function() {
-	    let me = this;
+	let run_detail = function() {
 	    let record = sm.getSelection()[0];
 	    if (!record) {
 		return;
 	    }
-	    let infoview = Ext.create('PVE.dc.BackupInfo', {
-		flex: 0,
-		layout: 'fit',
-		record: record.data,
-	    });
-	    let disktree = Ext.create('PVE.dc.BackupDiskTree', {
-		title: gettext('Included disks'),
-		flex: 1,
-		jobid: record.data.id,
-	    });
-
 	    Ext.create('Ext.window.Window', {
 		modal: true,
 		width: 800,
@@ -880,20 +841,34 @@ Ext.define('PVE.dc.BackupView', {
 		resizable: true,
 		layout: 'fit',
 		title: gettext('Backup Details'),
-
-		items: [{
-		    xtype: 'panel',
-		    region: 'center',
-		    layout: {
-			type: 'vbox',
-			align: 'stretch',
+		items: [
+		    {
+			xtype: 'panel',
+			region: 'center',
+			layout: {
+			    type: 'vbox',
+			    align: 'stretch',
+			},
+			items: [
+			    {
+				xtype: 'pveBackupInfo',
+				flex: 0,
+				layout: 'fit',
+				record: record.data,
+			    },
+			    {
+				xtype: 'pveBackupDiskTree',
+				title: gettext('Included disks'),
+				flex: 1,
+				jobid: record.data.id,
+			    },
+			],
 		    },
-		    items: [infoview, disktree],
-		}],
+		],
 	    }).show();
 	};
 
-	var run_backup_now = function(job) {
+	let run_backup_now = function(job) {
 	    job = Ext.clone(job);
 
 	    let jobNode = job.node;
@@ -917,8 +892,7 @@ Ext.define('PVE.dc.BackupView', {
 		nodes = [jobNode];
 	    } else {
 		let unkownNodes = allNodes.filter(node => node.status !== 'online');
-		if (unkownNodes.length > 0)
-		    errors.push(unkownNodes.map(node => node.node + ": " + gettext("Node is offline")));
+		if (unkownNodes.length > 0) {errors.push(unkownNodes.map(node => node.node + ": " + gettext("Node is offline")));}
 	    }
 	    let jobTotalCount = nodes.length, jobsStarted = 0;
 
@@ -933,7 +907,7 @@ Ext.define('PVE.dc.BackupView', {
 		jobsStarted++;
 		Ext.Msg.updateProgress(jobsStarted / jobTotalCount, jobsStarted + '/' + jobTotalCount);
 
-		if (jobsStarted == jobTotalCount) {
+		if (jobsStarted === jobTotalCount) {
 		    Ext.Msg.hide();
 		    if (errors.length > 0) {
 			Ext.Msg.alert('Error', 'Some errors have been encountered:<br />' + errors.join('<br />'));
@@ -953,31 +927,32 @@ Ext.define('PVE.dc.BackupView', {
 	    }));
 	};
 
-	var run_show_not_backed = function() {
-	    var me = this;
-	    var backedinfo = Ext.create('PVE.dc.BackedGuests', {
-		flex: 1,
-		layout: 'fit',
-		store: not_backed_store,
-	    });
-
-	    var win = Ext.create('Ext.window.Window', {
+	let run_show_not_backed = function() {
+	    Ext.create('Ext.window.Window', {
 		modal: true,
 		width: 600,
 		height: 500,
 		resizable: true,
 		layout: 'fit',
 		title: gettext('Guests without backup job'),
-
-		items: [{
-		    xtype: 'panel',
-		    region: 'center',
-		    layout: {
-			type: 'vbox',
-			align: 'stretch',
+		items: [
+		    {
+			xtype: 'panel',
+			region: 'center',
+			layout: {
+			    type: 'vbox',
+			    align: 'stretch',
+			},
+			items: [
+			    {
+				xtype: 'pveBackedGuests',
+				flex: 1,
+				layout: 'fit',
+				store: not_backed_store,
+			    },
+			],
 		    },
-		    items: [backedinfo],
-		}],
+		],
 	    }).show();
 	};
 
@@ -1029,12 +1004,12 @@ Ext.define('PVE.dc.BackupView', {
 	    handler: run_detail,
 	});
 
-	var not_backed_warning = Ext.create('Ext.toolbar.TextItem', {
+	noBackupJobWarning = Ext.create('Ext.toolbar.TextItem', {
 	    html: '<i class="fa fa-fw fa-exclamation-circle"></i>' + gettext('Some guests are not covered by any backup job.'),
 	    hidden: true,
 	});
 
-	var not_backed_btn = new Proxmox.button.Button({
+	noBackupJobInfoButton = new Proxmox.button.Button({
 	    text: gettext('Show'),
 	    hidden: true,
 	    handler: run_show_not_backed,
@@ -1066,8 +1041,8 @@ Ext.define('PVE.dc.BackupView', {
 		'-',
 		run_btn,
 		'->',
-		not_backed_warning,
-		not_backed_btn,
+		noBackupJobWarning,
+		noBackupJobInfoButton,
 	    ],
 	    columns: [
 		{
@@ -1131,9 +1106,17 @@ Ext.define('PVE.dc.BackupView', {
     Ext.define('pve-cluster-backup', {
 	extend: 'Ext.data.Model',
 	fields: [
-	    'id', 'starttime', 'dow',
-	    'storage', 'node', 'vmid', 'exclude',
-	    'mailto', 'pool', 'compress', 'mode',
+	    'id',
+	    'compress',
+	    'dow',
+	    'exclude',
+	    'mailto',
+	    'mode',
+	    'node',
+	    'pool',
+	    'starttime',
+	    'storage',
+	    'vmid',
 	    { name: 'enabled', type: 'boolean' },
 	    { name: 'all', type: 'boolean' },
 	],
