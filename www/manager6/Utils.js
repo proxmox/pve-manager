@@ -7,13 +7,7 @@ Ext.enableAria = false;
 Ext.enableAriaButtons = false;
 Ext.enableAriaPanels = false;
 
-// avoid errors when running without development tools
-if (!Ext.isDefined(Ext.global.console)) {
-    var console = {
-	log: function() {},
-    };
-}
-console.log("Starting PVE Manager");
+console.log("Starting Proxmox VE Manager");
 
 Ext.Ajax.defaultHeaders = {
     'Accept': 'application/json',
@@ -151,7 +145,7 @@ Ext.define('PVE.Utils', {
 	    bvers = b.toString().split('.');
 	}
 
-	while (true) {
+	for (;;) {
 	    let av = avers.shift();
 	    let bv = bvers.shift();
 
@@ -163,7 +157,7 @@ Ext.define('PVE.Utils', {
 		return 1;
 	    } else {
 		let diff = parseInt(av, 10) - parseInt(bv, 10);
-		if (diff != 0) return diff;
+		if (diff !== 0) return diff;
 		// else we need to look at the next parts
 	    }
 	}
@@ -186,7 +180,7 @@ Ext.define('PVE.Utils', {
 	'HEALTH_ERR': 'critical',
     },
 
-    render_sdn_pending: function(rec,value,key, index) {
+    render_sdn_pending: function(rec, value, key, index) {
 	if (rec.data.state === undefined || rec.data.state === null) {
 	    return value;
 	}
@@ -197,23 +191,17 @@ Ext.define('PVE.Utils', {
 	    } else {
 		return '<div style="text-decoration: line-through;">'+ value +'</div>';
 	    }
-	} else {
-
-	    if (rec.data.pending[key] !== undefined && rec.data.pending[key] !== null) {
-		if (rec.data.pending[key] === 'deleted') {
-		    return ' ';
-		} else {
-		    return rec.data.pending[key];
-		}
+	} else if (rec.data.pending[key] !== undefined && rec.data.pending[key] !== null) {
+	    if (rec.data.pending[key] === 'deleted') {
+		return ' ';
 	    } else {
-		return value;
+		return rec.data.pending[key];
 	    }
 	}
 	return value;
     },
 
-    render_sdn_pending_state: function(rec,value) {
-
+    render_sdn_pending_state: function(rec, value) {
 	if (value === undefined || value === null) {
 	    return ' ';
 	}
@@ -224,11 +212,13 @@ Ext.define('PVE.Utils', {
 	    return '<span>' + icon + value + '</span>';
 	}
 
-	let tip = 'Pending apply: <br>';
+	let tip = gettext('Pending Changes') + ': <br>';
 
 	for (const [key, keyvalue] of Object.entries(rec.data.pending)) {
-	    if (((rec.data[key] !== undefined && rec.data.pending[key] !== rec.data[key]) || rec.data[key] === undefined)) {
-		tip = tip + `${key}: ${keyvalue} <br>`;
+	    if ((rec.data[key] !== undefined && rec.data.pending[key] !== rec.data[key]) ||
+		rec.data[key] === undefined
+	    ) {
+		tip += `${key}: ${keyvalue} <br>`;
 	    }
 	}
 	return '<span data-qtip="' + tip + '">'+ icon + value + '</span>';
@@ -253,7 +243,7 @@ Ext.define('PVE.Utils', {
     },
 
     render_zfs_health: function(value) {
-	if (typeof value == 'undefined') {
+	if (typeof value === 'undefined') {
 	    return "";
 	}
 	var iconCls = 'question-circle';
@@ -316,7 +306,7 @@ Ext.define('PVE.Utils', {
     },
 
     render_backup_status: function(value, meta, record) {
-	if (typeof value == 'undefined') {
+	if (typeof value === 'undefined') {
 	    return "";
 	}
 
@@ -369,11 +359,11 @@ Ext.define('PVE.Utils', {
 	    if (item > 2) {
 		days.push(Ext.Date.dayNames[cur+1] + '-' + Ext.Date.dayNames[(cur+item)%7]);
 		cur += item-1;
-	    } else if (item == 2) {
+	    } else if (item === 2) {
 		days.push(Ext.Date.dayNames[cur+1]);
 		days.push(Ext.Date.dayNames[(cur+2)%7]);
 		cur++;
-	    } else if (item == 1) {
+	    } else if (item === 1) {
 		days.push(Ext.Date.dayNames[(cur+1)%7]);
 	    }
 	});
@@ -469,36 +459,31 @@ Ext.define('PVE.Utils', {
 	return Proxmox.Utils.format_boolean(value);
     },
 
-    render_qga_features: function(value) {
-	if (!value) {
+    render_qga_features: function(config) {
+	if (!config) {
 	    return Proxmox.Utils.defaultText + ' (' + Proxmox.Utils.disabledText + ')';
 	}
-	var props = PVE.Parser.parsePropertyString(value, 'enabled');
-	if (!PVE.Parser.parseBoolean(props.enabled)) {
+	let qga = PVE.Parser.parsePropertyString(config, 'enabled');
+	if (!PVE.Parser.parseBoolean(qga.enabled)) {
 	    return Proxmox.Utils.disabledText;
 	}
+	delete qga.enabled;
 
-	delete props.enabled;
-	var agentstring = Proxmox.Utils.enabledText;
+	let agentstring = Proxmox.Utils.enabledText;
 
-	Ext.Object.each(props, function(key, value) {
-	    var keystring = '';
-	    agentstring += ', ' + key + ': ';
-
+	for (const [key, value] of Object.entries(qga)) {
+	    let displayText = Proxmox.Utils.disabledText;
 	    if (key === 'type') {
 		let map = {
 		    isa: "ISA",
 		    virtio: "VirtIO",
 		};
-	        agentstring += map[value] || Proxmox.Utils.unknownText;
-	    } else {
-		if (PVE.Parser.parseBoolean(value)) {
-		    agentstring += Proxmox.Utils.enabledText;
-		} else {
-		    agentstring += Proxmox.Utils.disabledText;
-		}
+		displayText = map[value] || Proxmox.Utils.unknownText;
+	    } else if (PVE.Parser.parseBoolean(value)) {
+		displayText = Proxmox.Utils.enabledText;
 	    }
-	});
+	    agentstring += `, ${key}: ${displayText}`;
+	}
 
 	return agentstring;
     },
@@ -913,42 +898,42 @@ Ext.define('PVE.Utils', {
 	bgp: {
 	    name: 'bgp',
 	    ipanel: 'BgpInputPanel',
-	    faIcon: 'crosshairs'
+	    faIcon: 'crosshairs',
 	},
     },
 
     sdnipamSchema: {
 	ipam: {
 	     name: 'ipam',
-	     hideAdd: true
+	     hideAdd: true,
 	},
 	pve: {
 	    name: 'PVE',
 	    ipanel: 'PVEIpamInputPanel',
 	    faIcon: 'th',
-	    hideAdd: true
+	    hideAdd: true,
 	},
 	netbox: {
 	    name: 'Netbox',
 	    ipanel: 'NetboxInputPanel',
-	    faIcon: 'th'
+	    faIcon: 'th',
 	},
 	phpipam: {
 	    name: 'PhpIpam',
 	    ipanel: 'PhpIpamInputPanel',
-	    faIcon: 'th'
+	    faIcon: 'th',
 	},
     },
 
     sdndnsSchema: {
 	dns: {
 	     name: 'dns',
-	     hideAdd: true
+	     hideAdd: true,
 	},
 	powerdns: {
 	    name: 'powerdns',
 	    ipanel: 'PowerdnsInputPanel',
-	    faIcon: 'th'
+	    faIcon: 'th',
 	},
     },
 
@@ -1042,7 +1027,6 @@ Ext.define('PVE.Utils', {
     },
 
     calculate_hostcpu: function(data) {
-
 	if (!(data.uptime && Ext.isNumeric(data.cpu))) {
 	    return -1;
 	}
@@ -1062,11 +1046,10 @@ Ext.define('PVE.Utils', {
 	    return -1;
 	}
 
-	return ((data.cpu/maxcpu) * data.maxcpu);
+	return (data.cpu/maxcpu) * data.maxcpu;
     },
 
     render_hostcpu: function(value, metaData, record, rowIndex, colIndex, store) {
-
 	if (!(record.data.uptime && Ext.isNumeric(record.data.cpu))) {
 	    return '';
 	}
@@ -1114,7 +1097,6 @@ Ext.define('PVE.Utils', {
     },
 
     calculate_hostmem_usage: function(data) {
-
 	if (data.type !== 'qemu' && data.type !== 'lxc') {
 	    return -1;
 	}
@@ -1133,7 +1115,7 @@ Ext.define('PVE.Utils', {
 	    return -1;
 	}
 
-	return (data.mem / maxmem);
+	return data.mem / maxmem;
     },
 
     render_mem_usage_percent: function(value, metaData, record, rowIndex, colIndex, store) {
@@ -1156,7 +1138,6 @@ Ext.define('PVE.Utils', {
     },
 
     render_hostmem_usage_percent: function(value, metaData, record, rowIndex, colIndex, store) {
-
 	if (!Ext.isNumeric(record.data.mem) || value === -1) {
 	    return '';
 	}
@@ -1169,7 +1150,7 @@ Ext.define('PVE.Utils', {
 	var node = PVE.data.ResourceStore.getAt(index);
 	var maxmem = node.data.maxmem || 0;
 
-	if (record.data.mem > 1 ) {
+	if (record.data.mem > 1) {
 	    // we got no percentage but bytes
 	    var mem = record.data.mem;
 	    if (!record.data.uptime ||
@@ -1200,9 +1181,9 @@ Ext.define('PVE.Utils', {
 
     calculate_disk_usage: function(data) {
 	if (!Ext.isNumeric(data.disk) ||
-	    data.type === 'qemu' ||
-	    data.type === 'lxc' && data.uptime === 0 ||
-	    data.maxdisk === 0) {
+	    ((data.type === 'qemu' || data.type === 'lxc') && data.uptime === 0) ||
+	    data.maxdisk === 0
+	) {
 	    return -1;
 	}
 
@@ -1223,9 +1204,9 @@ Ext.define('PVE.Utils', {
 	var type = record.data.type;
 
 	if (!Ext.isNumeric(disk) ||
-	    type === 'qemu' ||
 	    maxdisk === 0 ||
-	    type === 'lxc' && record.data.uptime === 0) {
+	    ((type === 'qemu' || type === 'lxc') && record.data.uptime === 0)
+	) {
 	    return '';
 	}
 
@@ -1280,8 +1261,7 @@ Ext.define('PVE.Utils', {
     },
 
     render_optional_url: function(value) {
-	var match;
-	if (value && (match = value.match(/^https?:\/\//)) !== null) {
+	if (value && value.match(/^https?:\/\//)) {
 	    return '<a target="_blank" href="' + value + '">' + value + '</a>';
 	}
 	return value;
@@ -1328,7 +1308,7 @@ Ext.define('PVE.Utils', {
     },
 
     openConsoleWindow: function(viewer, consoleType, vmid, nodename, vmname, cmd) {
-	if (vmid == undefined && (consoleType === 'kvm' || consoleType === 'lxc')) {
+	if (vmid === undefined && (consoleType === 'kvm' || consoleType === 'lxc')) {
 	    throw "missing vmid";
 	}
 	if (!nodename) {
@@ -1434,32 +1414,26 @@ Ext.define('PVE.Utils', {
 		Ext.Msg.alert('Error', response.htmlStatus);
 	    },
 	    success: function(response, opts) {
-		var raw = "[virt-viewer]\n";
-		Ext.Object.each(response.result.data, function(k, v) {
-		    raw += k + "=" + v + "\n";
-		});
-		var url = 'data:application/x-virt-viewer;charset=UTF-8,' +
-		    encodeURIComponent(raw);
-
-		downloadWithName(url, "pve-spice.vv");
+		let cfg = response.result.data;
+		let raw = Object.entries(cfg).reduce((acc, [k, v]) => acc + `${k}=${v}\n`, "[virt-viewer]\n");
+		let spiceDownload = 'data:application/x-virt-viewer;charset=UTF-8,' + encodeURIComponent(raw);
+		downloadWithName(spiceDownload, "pve-spice.vv");
 	    },
 	});
     },
 
     openTreeConsole: function(tree, record, item, index, e) {
 	e.stopEvent();
-	var nodename = record.data.node;
-	var vmid = record.data.vmid;
-	var vmname = record.data.name;
+	let nodename = record.data.node;
+	let vmid = record.data.vmid;
+	let vmname = record.data.name;
 	if (record.data.type === 'qemu' && !record.data.template) {
 	    Proxmox.Utils.API2Request({
-		url: '/nodes/' + nodename + '/qemu/' + vmid + '/status/current',
-		failure: function(response, opts) {
-		    Ext.Msg.alert('Error', response.htmlStatus);
-		},
+		url: `/nodes/${nodename}/qemu/${vmid}/status/current`,
+		failure: response => Ext.Msg.alert('Error', response.htmlStatus),
 		success: function(response, opts) {
 		    let conf = response.result.data;
-		    var consoles = {
+		    let consoles = {
 			spice: !!conf.spice,
 			xtermjs: !!conf.serial,
 		    };
@@ -1473,18 +1447,10 @@ Ext.define('PVE.Utils', {
 
     // test automation helper
     call_menu_handler: function(menu, text) {
-	var list = menu.query('menuitem');
-
-	Ext.Array.each(list, function(item) {
-	    if (item.text === text) {
-		if (item.handler) {
-		    item.handler();
-		    return 1;
-		} else {
-		    return undefined;
-		}
-	    }
-	});
+	let item = menu.query('menuitem').find(el => el.text === text);
+	if (item && item.handler) {
+	    item.handler();
+	}
     },
 
     createCmdMenu: function(v, record, item, index, event) {
@@ -1492,25 +1458,22 @@ Ext.define('PVE.Utils', {
 	if (!(v instanceof Ext.tree.View)) {
 	    v.select(record);
 	}
-	var menu;
-	var template = !!record.data.template;
-	var type = record.data.type;
+	let menu;
+	let type = record.data.type;
 
-	if (template) {
-	    if (type === 'qemu' || type == 'lxc') {
+	if (record.data.template) {
+	    if (type === 'qemu' || type === 'lxc') {
 		menu = Ext.create('PVE.menu.TemplateMenu', {
 		    pveSelNode: record,
 		});
 	    }
-	} else if (type === 'qemu' ||
-		   type === 'lxc' ||
-		   type === 'node') {
+	} else if (type === 'qemu' || type === 'lxc' || type === 'node') {
 	    menu = Ext.create('PVE.' + type + '.CmdMenu', {
 		pveSelNode: record,
 		nodename: record.data.node,
 	    });
 	} else {
-	    return;
+	    return undefined;
 	}
 
 	menu.showAt(event.getXY());
@@ -1545,10 +1508,7 @@ Ext.define('PVE.Utils', {
 	    Ext.Msg.alert(gettext('Error'), gettext("Invalid file size: ") + file.size);
 	    return;
 	}
-	/*global
-	  FileReader
-	*/
-	var reader = new FileReader();
+	let reader = new FileReader();
 	reader.onload = function(evt) {
 	    callback(evt.target.result);
 	};
@@ -1561,9 +1521,6 @@ Ext.define('PVE.Utils', {
 	    Ext.Msg.alert(gettext('Error'), gettext("Invalid file size: ") + file.size);
 	    return;
 	}
-	/*global
-	  FileReader
-	*/
 	let reader = new FileReader();
 	reader.onload = evt => callback(evt.target.result);
 	reader.readAsText(file);
@@ -1578,8 +1535,7 @@ Ext.define('PVE.Utils', {
 
     // types is either undefined (all busses), an array of busses, or a single bus
     forEachBus: function(types, func) {
-	var busses = Object.keys(PVE.Utils.diskControllerMaxIDs);
-	var i, j, count, cont;
+	let busses = Object.keys(PVE.Utils.diskControllerMaxIDs);
 
 	if (Ext.isArray(types)) {
 	    busses = types;
@@ -1588,16 +1544,16 @@ Ext.define('PVE.Utils', {
 	}
 
 	// check if we only have valid busses
-	for (i = 0; i < busses.length; i++) {
+	for (let i = 0; i < busses.length; i++) {
 	    if (!PVE.Utils.diskControllerMaxIDs[busses[i]]) {
 		throw "invalid bus: '" + busses[i] + "'";
 	    }
 	}
 
-	for (i = 0; i < busses.length; i++) {
-	    count = PVE.Utils.diskControllerMaxIDs[busses[i]];
-	    for (j = 0; j < count; j++) {
-		cont = func(busses[i], j);
+	for (let i = 0; i < busses.length; i++) {
+	    let count = PVE.Utils.diskControllerMaxIDs[busses[i]];
+	    for (let j = 0; j < count; j++) {
+		let cont = func(busses[i], j);
 		if (!cont && cont !== undefined) {
 		    return;
 		}
@@ -1605,12 +1561,14 @@ Ext.define('PVE.Utils', {
 	}
     },
 
-    mp_counts: { mps: 256, unused: 256 },
+    mp_counts: {
+	mps: 256,
+	unused: 256,
+    },
 
     forEachMP: function(func, includeUnused) {
-	var i, cont;
-	for (i = 0; i < PVE.Utils.mp_counts.mps; i++) {
-	    cont = func('mp', i);
+	for (let i = 0; i < PVE.Utils.mp_counts.mps; i++) {
+	    let cont = func('mp', i);
 	    if (!cont && cont !== undefined) {
 		return;
 	    }
@@ -1620,8 +1578,8 @@ Ext.define('PVE.Utils', {
 	    return;
 	}
 
-	for (i = 0; i < PVE.Utils.mp_counts.unused; i++) {
-	    cont = func('unused', i);
+	for (let i = 0; i < PVE.Utils.mp_counts.unused; i++) {
+	    let cont = func('unused', i);
 	    if (!cont && cont !== undefined) {
 		return;
 	    }
@@ -1631,12 +1589,9 @@ Ext.define('PVE.Utils', {
     hardware_counts: { net: 32, usb: 5, hostpci: 16, audio: 1, efidisk: 1, serial: 4, rng: 1 },
 
     cleanEmptyObjectKeys: function(obj) {
-	var propName;
-	for (propName in obj) {
-	    if (obj.hasOwnProperty(propName)) {
-		if (obj[propName] === null || obj[propName] === undefined) {
-		    delete obj[propName];
-		}
+	for (const propName of Object.keys(obj)) {
+	    if (obj[propName] === null || obj[propName] === undefined) {
+		delete obj[propName];
 	    }
 	}
     },
@@ -1655,22 +1610,23 @@ Ext.define('PVE.Utils', {
 
     remove_domain_from_acme: function(acme, domain) {
 	if (acme.domains !== undefined) {
-	    acme.domains = acme.domains.filter((value, index, self) => self.indexOf(value) === index && value !== domain);
+	    acme.domains = acme
+		.domains
+		.filter((value, index, self) => self.indexOf(value) === index && value !== domain);
 	}
 	return acme;
     },
 
-    handleStoreErrorOrMask: function(me, store, regex, callback) {
-	me.mon(store, 'load', function(proxy, response, success, operation) {
+    handleStoreErrorOrMask: function(view, store, regex, callback) {
+	view.mon(store, 'load', function(proxy, response, success, operation) {
 	    if (success) {
-		Proxmox.Utils.setErrorMask(me, false);
+		Proxmox.Utils.setErrorMask(view, false);
 		return;
 	    }
-	    var msg;
-
+	    let msg;
 	    if (operation.error.statusText) {
 		if (operation.error.statusText.match(regex)) {
-		    callback(me, operation.error);
+		    callback(view, operation.error);
 		    return;
 		} else {
 		    msg = operation.error.statusText + ' (' + operation.error.status + ')';
@@ -1678,7 +1634,7 @@ Ext.define('PVE.Utils', {
 	    } else {
 		msg = gettext('Connection error');
 	    }
-	    Proxmox.Utils.setErrorMask(me, msg);
+	    Proxmox.Utils.setErrorMask(view, msg);
 	});
     },
 
