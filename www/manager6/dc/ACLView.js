@@ -1,15 +1,16 @@
 Ext.define('PVE.dc.ACLAdd', {
     extend: 'Proxmox.window.Edit',
     alias: ['widget.pveACLAdd'],
+
     url: '/access/acl',
     method: 'PUT',
     isAdd: true,
+    isCreate: true,
+
     initComponent: function() {
-        var me = this;
+        let me = this;
 
-	me.isCreate = true;
-
-	var items = [
+	let items = [
 	    {
 		xtype: me.path ? 'hiddenfield' : 'pvePermPathSelector',
 		name: 'path',
@@ -61,7 +62,7 @@ Ext.define('PVE.dc.ACLAdd', {
 	    });
 	}
 
-	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
+	let ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	    items: items,
 	    onlineHelp: 'pveum_permission_management',
 	});
@@ -88,9 +89,9 @@ Ext.define('PVE.dc.ACLView', {
     path: undefined,
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	var store = Ext.create('Ext.data.Store', {
+	let store = Ext.create('Ext.data.Store', {
 	    model: 'pve-acl',
 	    proxy: {
                 type: 'proxmox',
@@ -104,23 +105,19 @@ Ext.define('PVE.dc.ACLView', {
 
 	if (me.path) {
 	    store.addFilter(Ext.create('Ext.util.Filter', {
-		filterFn: function(item) {
-		    if (item.data.path === me.path) {
-			return true;
-		    }
-		},
+		filterFn: item => item.data.path === me.path,
 	    }));
 	}
 
-	var render_ugid = function(ugid, metaData, record) {
-	    if (record.data.type == 'group') {
+	let render_ugid = function(ugid, metaData, record) {
+	    if (record.data.type === 'group') {
 		return '@' + ugid;
 	    }
 
 	    return Ext.String.htmlEncode(ugid);
 	};
 
-	var columns = [
+	let columns = [
 	    {
 		header: gettext('User') + '/' + gettext('Group') + '/' + gettext('API Token'),
 		flex: 1,
@@ -151,13 +148,9 @@ Ext.define('PVE.dc.ACLView', {
 	    });
 	}
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
+	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var reload = function() {
-	    store.load();
-	};
-
-	var remove_btn = new Proxmox.button.Button({
+	let remove_btn = new Proxmox.button.Button({
 	    text: gettext('Remove'),
 	    disabled: true,
 	    selModel: sm,
@@ -183,12 +176,8 @@ Ext.define('PVE.dc.ACLView', {
 		    params: params,
 		    method: 'PUT',
 		    waitMsgTarget: me,
-		    callback: function() {
-			reload();
-		    },
-		    failure: function(response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    },
+		    callback: () => store.load(),
+		    failure: response => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
 		});
 	    },
 	});
@@ -212,7 +201,7 @@ Ext.define('PVE.dc.ACLView', {
 					aclType: 'group',
 					path: me.path,
 				    });
-				    win.on('destroy', reload);
+				    win.on('destroy', () => store.load());
 				    win.show();
 				},
 			    },
@@ -224,7 +213,7 @@ Ext.define('PVE.dc.ACLView', {
 					aclType: 'user',
 					path: me.path,
 				    });
-				    win.on('destroy', reload);
+				    win.on('destroy', () => store.load());
 				    win.show();
 				},
 			    },
@@ -232,11 +221,11 @@ Ext.define('PVE.dc.ACLView', {
 				text: gettext('API Token Permission'),
 				iconCls: 'fa fa-fw fa-user-o',
 				handler: function() {
-				    var win = Ext.create('PVE.dc.ACLAdd', {
+				    let win = Ext.create('PVE.dc.ACLAdd', {
 					aclType: 'token',
 					path: me.path,
 				    });
-				    win.on('destroy', reload);
+				    win.on('destroy', () => store.load());
 				    win.show();
 				},
 			    },
@@ -250,7 +239,7 @@ Ext.define('PVE.dc.ACLView', {
 	    },
 	    columns: columns,
 	    listeners: {
-		activate: reload,
+		activate: () => store.load(),
 	    },
 	});
 
