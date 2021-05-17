@@ -637,9 +637,12 @@ sub run_hook_script {
 	die "The hook script '$script' is not executable.\n";
     }
 
-    my $cmd = "$script $phase";
+    my $cmd = [$script, $phase];
 
-    $cmd .= " $task->{mode} $task->{vmid}" if ($task);
+    if ($task) {
+	push @$cmd, $task->{mode};
+	push @$cmd, $task->{vmid};
+    }
 
     local %ENV;
     # set immutable opts directly (so they are available in all phases)
