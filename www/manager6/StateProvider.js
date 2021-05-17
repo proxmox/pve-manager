@@ -183,13 +183,7 @@ Ext.define('PVE.StateProvider', {
 	var history_change_cb = function(token) {
 	    //console.log("HC " + token);
 	    if (!token) {
-		var res = window.confirm(gettext('Are you sure you want to navigate away from this page?'));
-		if (res) {
-		    // process text value and close...
-		    Ext.History.back();
-		} else {
-		    Ext.History.forward();
-		}
+		Ext.History.back();
 		return;
 	    }
 
