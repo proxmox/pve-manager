@@ -124,12 +124,11 @@ Ext.define('PVE.StateProvider', {
 	    if (value) {
 		if (value[0] === '=') {
 		    value = decodeURIComponent(value.slice(1));
-		} else {
-		    for (const [key, hash] of Object.entries(me.compDict)) {
-			if (value === hash) {
-			    value = key;
-			    break;
-			}
+		}
+		for (const [key, hash] of Object.entries(me.compDict)) {
+		    if (String(value) === String(hash)) {
+			value = key;
+			break;
 		    }
 		}
 	    }
