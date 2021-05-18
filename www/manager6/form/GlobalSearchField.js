@@ -99,13 +99,11 @@ Ext.define('PVE.form.GlobalSearchField', {
     },
 
     customFilter: function(item) {
-	var me = this;
-	var match = 0;
-	var fieldArr = [];
-	var i, j, fields;
+	let me = this;
+	let match = 0;
 
-	// different types of objects have different fields to search
-	// for example, a node will never have a pool and vice versa
+	// different types have different fields to search, e.g., a node will never have a pool
+	let fieldArr = [];
 	switch (item.data.type) {
 	    case 'pool': fieldArr = ['type', 'pool', 'text']; break;
 	    case 'node': fieldArr = ['type', 'node', 'text']; break;
@@ -117,37 +115,31 @@ Ext.define('PVE.form.GlobalSearchField', {
 	    return true;
 	}
 
-	// all text is case insensitive and each word is
-	// searched alone
-	// for every partial match, the row gets
-	// 1 match point, for every exact match
-	// it gets 2 points
-	//
-	// results gets sorted by points (descending)
-	fields = me.filterVal.split(/\s+/);
-	for (i = 0; i < fieldArr.length; i++) {
-	    var v = item.data[fieldArr[i]];
-	    if (v !== undefined) {
-		v = v.toString().toLowerCase();
-		for (j = 0; j < fields.length; j++) {
-		    if (v.indexOf(fields[j]) !== -1) {
+	// all text is case insensitive and each word is searched alone for every partial match,
+	// the row gets 1 match point, for every exact match it gets 2 points, then sort by points
+	let fields = me.filterVal.split(/\s+/);
+	for (let i = 0; i < fieldArr.length; i++) {
+	    let v = item.data[fieldArr[i]];
+	    if (v === undefined) {
+		continue;
+	    }
+	    v = v.toString().toLowerCase();
+	    for (let j = 0; j < fields.length; j++) {
+		if (v.indexOf(fields[j]) !== -1) {
+		    match++;
+		    if (v === fields[j]) {
 			match++;
-			if (v === fields[j]) {
-			    match++;
-			}
 		    }
 		}
 	    }
 	}
-	// give the row the 'relevance' value
-	item.data.relevance = match;
+	item.data.relevance = match; // give the row the 'relevance' value
 	return match > 0;
     },
 
     updateFilter: function(field, newValue, oldValue) {
-	var me = this;
-	// parse input and filter store,
-	// show grid
+	let me = this;
+	// parse input and filter store, show grid
 	me.grid.store.filterVal = newValue.toLowerCase().trim();
 	me.grid.store.clearFilter(true);
 	me.grid.store.filterBy(me.customFilter);
@@ -187,9 +179,7 @@ Ext.define('PVE.form.GlobalSearchField', {
     },
 
     loadValues: function(field) {
-	var me = this;
-	var records = [];
-
+	let me = this;
 	me.hasFocus = true;
 	me.grid.textfield = me;
 	me.grid.store.load();
@@ -197,8 +187,7 @@ Ext.define('PVE.form.GlobalSearchField', {
     },
 
     hideGrid: function() {
-	var me = this;
-
+	let me = this;
 	me.hasFocus = false;
 	if (!me.grid.hasFocus) {
 	    me.grid.hide();
@@ -219,7 +208,7 @@ Ext.define('PVE.form.GlobalSearchField', {
     },
 
     toggleFocus: function() {
-	var me = this;
+	let me = this;
 	if (!me.hasFocus) {
 	    me.focus();
 	} else {
@@ -228,7 +217,7 @@ Ext.define('PVE.form.GlobalSearchField', {
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	if (!me.tree) {
 	    throw "no tree given";
@@ -238,9 +227,7 @@ Ext.define('PVE.form.GlobalSearchField', {
 
 	me.callParent();
 
-	/*because shift is also a function*/
-	// bind ctrl+shift+f and ctrl+space
-	// to open/close the search
+	// bind CTRL + SHIFT + F and CTRL + SPACE to open/close the search
 	me.keymap = new Ext.KeyMap({
 	    target: Ext.get(document),
 	    binding: [{
@@ -257,8 +244,7 @@ Ext.define('PVE.form.GlobalSearchField', {
 	    }],
 	});
 
-	// always select first item and
-	// sort by relevance after load
+	// always select first item and sort by relevance after load
 	me.mon(me.grid.store, 'load', function() {
 	    me.grid.getSelectionModel().select(0);
 	    me.grid.store.sort({
@@ -267,5 +253,4 @@ Ext.define('PVE.form.GlobalSearchField', {
 	    });
 	});
     },
-
 });
