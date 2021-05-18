@@ -5,19 +5,15 @@ Ext.define('PVE.form.PrivilegesSelector', {
     multiSelect: true,
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	// So me.store is available.
 	me.callParent();
 
 	Proxmox.Utils.API2Request({
 	    url: '/access/roles/Administrator',
 	    method: 'GET',
 	    success: function(response, options) {
-		var data = [], key;
-		for (key in response.result.data) {
-		    data.push([key, key]);
-		}
+		let data = Object.keys(response.result.data).map(key => [key, key]);
 
 		me.store.setData(data);
 
@@ -26,10 +22,7 @@ Ext.define('PVE.form.PrivilegesSelector', {
 		    direction: 'ASC',
 		});
 	    },
-
-	    failure: function(response, opts) {
-		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-	    },
+	    failure: (response, opts) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
 	});
     },
 });
