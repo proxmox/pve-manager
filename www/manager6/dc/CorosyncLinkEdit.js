@@ -4,14 +4,13 @@ Ext.define('PVE.form.CorosyncLinkEditorController', {
 
     addLinkIfEmpty: function() {
 	let view = this.getView();
-	if (view.items || view.items.length == 0) {
+	if (view.items || view.items.length === 0) {
 	    this.addLink();
 	}
     },
 
     addEmptyLink: function() {
-	// discard parameters to allow being called from 'handler'
-	this.addLink();
+	this.addLink(); // discard parameters to allow being called from 'handler'
     },
 
     addLink: function(link) {
@@ -83,37 +82,29 @@ Ext.define('PVE.form.CorosyncLinkEditorController', {
     getNextFreeNetwork: function() {
 	let view = this.getView();
 	let vm = view.getViewModel();
-	let netsInUse = Ext.Array.map(
-	    view.query('proxmoxNetworkSelector'), selector => selector.value);
 
-	// default to empty field, user has to set up link manually
-	let retval = undefined;
+	let networksInUse = view.query('proxmoxNetworkSelector').map(selector => selector.value);
 
-	let nets = vm.get('networks');
-	Ext.Array.each(nets, net => {
-	    if (!Ext.Array.contains(netsInUse, net)) {
-		retval = net;
-		return false; // break
+	for (const network of vm.get('networks')) {
+	    if (!networksInUse.includes(network)) {
+		return network;
 	    }
-	});
-
-	return retval;
+	}
+	return undefined; // default to empty field, user has to set up link manually
     },
 
     getNextFreeNumber: function() {
 	let view = this.getView();
 	let vm = view.getViewModel();
-	let numbersInUse = Ext.Array.map(
-	    view.query('numberfield'), field => field.value);
+
+	let numbersInUse = view.query('numberfield').map(field => field.value);
 
 	for (let i = 0; i < vm.get('maxLinkCount'); i++) {
-	    if (!Ext.Array.contains(numbersInUse, i)) {
+	    if (!numbersInUse.includes(i)) {
 		return i;
 	    }
 	}
-
-	// all numbers in use, this should never happen since add button is
-	// disabled automatically
+	// all numbers in use, this should never happen since add button is disabled automatically
 	return 0;
     },
 });
@@ -180,11 +171,9 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 	    width: 220,
 	    margin: '0 5px 0 5px',
 	    getSubmitValue: function() {
-		// link number is encoded into key, so we need to set field
-		// name before value retrieval
 		let me = this;
-		let numSelect = me.prev('numberfield'); // always the correct one
-		let linkNumber = numSelect.getValue();
+		// link number is encoded into key, so we need to set field name before value retrieval
+		let linkNumber = me.prev('numberfield').getValue(); // always the correct one
 		me.name = 'link' + linkNumber;
 		return me.getValue();
 	    },
@@ -225,29 +214,28 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 	let numSelect = me.down('numberfield');
 	let netSelect = me.down('proxmoxNetworkSelector');
 
-	numSelect.validator = this.createNoDuplicatesValidator(
+	numSelect.validator = me.createNoDuplicatesValidator(
 		'numberfield',
 		gettext("Duplicate link number not allowed."),
 	);
 
-	netSelect.validator = this.createNoDuplicatesValidator(
+	netSelect.validator = me.createNoDuplicatesValidator(
 		'proxmoxNetworkSelector',
 		gettext("Duplicate link address not allowed."),
 	);
     },
 
-    createNoDuplicatesValidator: function(queryString, errorMsg) {
-	// linkSelector
-	let me = this;
-
+    createNoDuplicatesValidator: function(queryString, errorMsg) { // linkSelector generator
+	let view = this; // eslint-disable-line consistent-this
+	/** @this is the field itself, as the validator this is called from scopes it that way */
 	return function(val) {
-	    let curField = this;
-	    let form = me.up('form');
-	    let linkEditor = me.up('pveCorosyncLinkEditor');
+	    let me = this;
+	    let form = view.up('form');
+	    let linkEditor = view.up('pveCorosyncLinkEditor');
 
 	    if (!form.validating) {
 		// avoid recursion/double validation by setting temporary states
-		curField.validating = true;
+		me.validating = true;
 		form.validating = true;
 
 		// validate all other fields as well, to always mark both
@@ -255,28 +243,23 @@ Ext.define('PVE.form.CorosyncLinkSelector', {
 		form.isValid();
 
 		form.validating = false;
-		curField.validating = false;
-	    } else if (curField.validating) {
-		// we'll be validated by the original call in the other
-		// if-branch, avoid double work
+		me.validating = false;
+	    } else if (me.validating) {
+		// we'll be validated by the original call in the other if-branch, avoid double work
 		return true;
 	    }
 
-	    if (val === undefined || val instanceof String && val.length === 0) {
-		// let this be caught by allowBlank, if at all
-		return true;
+	    if (val === undefined || (val instanceof String && val.length === 0)) {
+		return true; // let this be caught by allowBlank, if at all
 	    }
 
 	    let allFields = linkEditor.query(queryString);
-	    let err = undefined;
-	    Ext.Array.each(allFields, field => {
-		if (field != curField && field.getValue() == val) {
-		    err = errorMsg;
-		    return false; // break
+	    for (const field of allFields) {
+		if (field !== me && String(field.getValue()) === String(val)) {
+		    return errorMsg;
 		}
-	    });
-
-	    return err || true;
+	    }
+	    return true;
 	};
     },
 });
