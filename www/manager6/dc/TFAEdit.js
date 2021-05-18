@@ -1,4 +1,4 @@
-/*global u2f,QRCode,Uint8Array*/
+/*global u2f,QRCode*/
 Ext.define('PVE.window.TFAEdit', {
     extend: 'Ext.window.Window',
     mixins: ['Proxmox.Mixin.CBind'],
@@ -48,23 +48,23 @@ Ext.define('PVE.window.TFAEdit', {
 	);
     },
 
-    doU2FChallenge: function(response) {
-	var me = this;
+    doU2FChallenge: function(res) {
+	let me = this;
 
-	var data = response.result.data;
+	let challenge = res.result.data;
 	me.lookup('password').setDisabled(true);
-	var msg = Ext.Msg.show({
-	    title: 'U2F: '+gettext('Setup'),
+	let msg = Ext.Msg.show({
+	    title: 'U2F: ' + gettext('Setup'),
 	    message: gettext('Please press the button on your U2F Device'),
 	    buttons: [],
 	});
 	Ext.Function.defer(function() {
-	    u2f.register(data.appId, [data], [], function(data) {
+	    u2f.register(challenge.appId, [challenge], [], function(response) {
 		msg.close();
-		if (data.errorCode) {
-		    me.showError(data.errorCode);
+		if (response.errorCode) {
+		    me.showError(response.errorCode);
 		} else {
-		    me.respondToU2FChallenge(data);
+		    me.respondToU2FChallenge(response);
 		}
 	    });
 	}, 500, me);
@@ -178,8 +178,7 @@ Ext.define('PVE.window.TFAEdit', {
 	control: {
 	    'field[qrupdate=true]': {
 		change: function() {
-		    var me = this.getView();
-		    me.updateQrCode();
+		    this.getView().updateQrCode();
 		},
 	    },
 	    'field': {
@@ -194,50 +193,47 @@ Ext.define('PVE.window.TFAEdit', {
 	    },
 	    '#': {
 		show: function() {
-		    var me = this.getView();
-		    var viewmodel = this.getViewModel();
+		    let view = this.getView();
 
-		    var loadMaskContainer = me.down('#tfatabs');
 		    Proxmox.Utils.API2Request({
-			url: '/access/users/' + encodeURIComponent(me.userid) + '/tfa',
-			waitMsgTarget: loadMaskContainer,
+			url: '/access/users/' + encodeURIComponent(view.userid) + '/tfa',
+			waitMsgTarget: view.down('#tfatabs'),
 			method: 'GET',
 			success: function(response, opts) {
-			    var data = response.result.data;
-			    me.afterLoading(data.realm, data.user);
+			    let data = response.result.data;
+			    view.afterLoading(data.realm, data.user);
 			},
 			failure: function(response, opts) {
-			    me.close();
+			    view.close();
 			    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 			},
 		    });
 
-		    me.qrdiv = document.createElement('center');
-		    me.qrcode = new QRCode(me.qrdiv, {
+		    view.qrdiv = document.createElement('center');
+		    view.qrcode = new QRCode(view.qrdiv, {
 			width: 256,
 			height: 256,
 			correctLevel: QRCode.CorrectLevel.M,
 		    });
-		    me.down('#qrbox').getEl().appendChild(me.qrdiv);
+		    view.down('#qrbox').getEl().appendChild(view.qrdiv);
 
 		    if (Proxmox.UserName === 'root@pam') {
-			me.lookup('password').setVisible(false);
-			me.lookup('password').setDisabled(true);
+			view.lookup('password').setVisible(false);
+			view.lookup('password').setDisabled(true);
 		    }
 		},
 	    },
 	    '#tfatabs': {
 		tabchange: function(panel, newcard) {
-		    var viewmodel = this.getViewModel();
-		    viewmodel.set('in_totp_tab', newcard.itemId === 'totp-panel');
+		    this.getViewModel().set('in_totp_tab', newcard.itemId === 'totp-panel');
 		},
 	    },
 	},
 
 	applySettings: function() {
-	    var me = this;
-	    var values = me.lookup('totp_form').getValues();
-	    var params = {
+	    let me = this;
+	    let values = me.lookup('totp_form').getValues();
+	    let params = {
 		userid: me.getView().userid,
 		action: 'new',
 		key: 'v2-' + values.secret,
@@ -269,9 +265,8 @@ Ext.define('PVE.window.TFAEdit', {
 	},
 
 	deleteTFA: function() {
-	    var me = this;
-	    var values = me.lookup('totp_form').getValues();
-	    var params = {
+	    let me = this;
+	    let params = {
 		userid: me.getView().userid,
 		action: 'delete',
 	    };
@@ -295,28 +290,26 @@ Ext.define('PVE.window.TFAEdit', {
 	},
 
 	randomizeSecret: function() {
-	    var me = this;
-	    var rnd = new Uint8Array(32);
+	    let me = this;
+	    let rnd = new Uint8Array(32);
 	    window.crypto.getRandomValues(rnd);
-	    var data = '';
+	    let data = '';
 	    rnd.forEach(function(b) {
 		// secret must be base32, so just use the first 5 bits
 		b = b & 0x1f;
 		if (b < 26) {
-		    // A..Z
-		    data += String.fromCharCode(b + 0x41);
+		    data += String.fromCharCode(b + 0x41); // A..Z
 		} else {
-		    // 2..7
-		    data += String.fromCharCode(b-26 + 0x32);
+		    data += String.fromCharCode(b-26 + 0x32); // 2..7
 		}
 	    });
 	    me.getViewModel().set('secret', data);
 	},
 
 	startU2FRegistration: function() {
-	    var me = this;
+	    let me = this;
 
-	    var params = {
+	    let params = {
 		userid: me.getView().userid,
 		action: 'new',
 	    };
