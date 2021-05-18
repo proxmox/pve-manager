@@ -253,7 +253,7 @@ Ext.define('PVE.window.Migrate', {
 					     severity: 'error',
 					});
 				    } else {
-					return;
+
 				    }
 				} else {
 				    migration.possible = false;

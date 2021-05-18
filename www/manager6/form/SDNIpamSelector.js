@@ -13,7 +13,7 @@ Ext.define('PVE.form.SDNIpamSelector', {
 	    model: 'pve-sdn-ipam',
             sorters: {
                 property: 'ipam',
-                order: 'DESC'
+                order: 'DESC',
             },
 	});
 
@@ -26,27 +26,25 @@ Ext.define('PVE.form.SDNIpamSelector', {
 			header: gettext('Ipam'),
 			sortable: true,
 			dataIndex: 'ipam',
-			flex: 1
+			flex: 1,
 		    },
-		]
-	    }
+		],
+	    },
 	});
 
         me.callParent();
 
 	store.load();
-    }
+    },
 
 }, function() {
-
     Ext.define('pve-sdn-ipam', {
 	extend: 'Ext.data.Model',
-	fields: [ 'ipam' ],
+	fields: ['ipam'],
 	proxy: {
             type: 'proxmox',
-	    url: "/api2/json/cluster/sdn/ipams"
+	    url: "/api2/json/cluster/sdn/ipams",
 	},
-	idProperty: 'ipam'
+	idProperty: 'ipam',
     });
-
 });

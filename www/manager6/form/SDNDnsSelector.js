@@ -13,7 +13,7 @@ Ext.define('PVE.form.SDNDnsSelector', {
 	    model: 'pve-sdn-dns',
             sorters: {
                 property: 'dns',
-                order: 'DESC'
+                order: 'DESC',
             },
 	});
 
@@ -26,27 +26,25 @@ Ext.define('PVE.form.SDNDnsSelector', {
 			header: gettext('dns'),
 			sortable: true,
 			dataIndex: 'dns',
-			flex: 1
+			flex: 1,
 		    },
-		]
-	    }
+		],
+	    },
 	});
 
         me.callParent();
 
 	store.load();
-    }
+    },
 
 }, function() {
-
     Ext.define('pve-sdn-dns', {
 	extend: 'Ext.data.Model',
-	fields: [ 'dns' ],
+	fields: ['dns'],
 	proxy: {
             type: 'proxmox',
-	    url: "/api2/json/cluster/sdn/dns"
+	    url: "/api2/json/cluster/sdn/dns",
 	},
-	idProperty: 'dns'
+	idProperty: 'dns',
     });
-
 });

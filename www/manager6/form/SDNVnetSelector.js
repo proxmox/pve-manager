@@ -13,7 +13,7 @@ Ext.define('PVE.form.SDNVnetSelector', {
 	    model: 'pve-sdn-vnet',
             sorters: {
                 property: 'vnet',
-                order: 'DESC'
+                order: 'DESC',
             },
 	});
 
@@ -26,7 +26,7 @@ Ext.define('PVE.form.SDNVnetSelector', {
 			header: gettext('Vnet'),
 			sortable: true,
 			dataIndex: 'vnet',
-			flex: 1
+			flex: 1,
 		    },
 		    {
 			header: gettext('Alias'),
@@ -37,18 +37,17 @@ Ext.define('PVE.form.SDNVnetSelector', {
 			header: gettext('Tag'),
 			flex: 1,
 			dataIndex: 'tag',
-		    }
-		]
-	    }
+		    },
+		],
+	    },
 	});
 
         me.callParent();
 
 	store.load();
-    }
+    },
 
 }, function() {
-
     Ext.define('pve-sdn-vnet', {
 	extend: 'Ext.data.Model',
 	fields: [
@@ -60,9 +59,8 @@ Ext.define('PVE.form.SDNVnetSelector', {
 	],
 	proxy: {
             type: 'proxmox',
-	    url: "/api2/json/cluster/sdn/vnets"
+	    url: "/api2/json/cluster/sdn/vnets",
 	},
-	idProperty: 'vnet'
+	idProperty: 'vnet',
     });
-
 });

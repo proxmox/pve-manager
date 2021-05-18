@@ -126,11 +126,9 @@ Ext.define('PVE.ha.VMResourceInputPanel', {
 		    'change': function(field, newValue) {
 			if (newValue === 'disabled') {
 			    disabledHint.setVisible(true);
-			} else {
-			    if (disabledHint.isVisible()) {
+			} else if (disabledHint.isVisible()) {
 				disabledHint.setVisible(false);
 			    }
-			}
 		    },
 		},
 	    },
