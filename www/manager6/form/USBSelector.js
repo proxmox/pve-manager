@@ -16,9 +16,9 @@ Ext.define('PVE.form.USBSelector', {
 	}
 	value = me.getValue(); // as the valueField is not the displayfield
 	if (me.type === 'device') {
-	    return (/^[a-f0-9]{4}\:[a-f0-9]{4}$/i).test(value);
+	    return (/^[a-f0-9]{4}:[a-f0-9]{4}$/i).test(value);
 	} else if (me.type === 'port') {
-	    return (/^[0-9]+\-[0-9]+(\.[0-9]+)*$/).test(value);
+	    return (/^[0-9]+-[0-9]+(\.[0-9]+)*$/).test(value);
 	}
 	return gettext("Invalid Value");
     },
@@ -36,16 +36,14 @@ Ext.define('PVE.form.USBSelector', {
 	    throw "no valid type specified";
 	}
 
-	var store = new Ext.data.Store({
-	    model: 'pve-usb-' + me.type,
+	let store = new Ext.data.Store({
+	    model: `pve-usb-${me.type}`,
 	    proxy: {
 		type: 'proxmox',
 		url: `/api2/json/nodes/${nodename}/hardware/usb`,
 	    },
 	    filters: [
-		function(item) {
-		    return !!item.data.usbpath && !!item.data.prodid && item.data.class != 9;
-		},
+		({ data }) => !!data.usbpath && !!data.prodid && String(data.class) !== "9",
 	    ],
 	});
 	let emptyText = '';
@@ -85,21 +83,21 @@ Ext.define('PVE.form.USBSelector', {
 			sortable: true,
 			dataIndex: 'speed',
 			renderer: function(value) {
-			    let speed_map = {
+			    let speed2Class = {
 				"10000": "USB 3.1",
-				 "5000": "USB 3.0",
-				  "480": "USB 2.0",
-				   "12": "USB 1.x",
-				    "1.5": "USB 1.x",
+				"5000": "USB 3.0",
+				"480": "USB 2.0",
+				"12": "USB 1.x",
+				"1.5": "USB 1.x",
 			    };
-			    return speed_map[value] || value + " Mbps";
+			    return speed2Class[value] || value + " Mbps";
 			},
 		    },
 		],
 	    },
 	});
 
-        me.callParent();
+	me.callParent();
 
 	store.load();
     },
