@@ -38,7 +38,7 @@ Ext.define('PVE.storage.ZFSInputPanel', {
 	return me.callParent([values]);
     },
 
-    setValues: function diff(values) {
+    setValues: function(values) {
 	values.writecache = values.nowritecache ? 0 : 1;
 	this.callParent([values]);
     },

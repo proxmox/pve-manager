@@ -92,9 +92,5 @@ Ext.define('PVE.window.HDResize', {
 
 
 	me.callParent();
-
-	if (!me.disk) {
-	    return;
-	}
     },
 });

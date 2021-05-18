@@ -24,7 +24,7 @@ Ext.define('PVE.qemu.OSDefaults', {
 	var me = this;
 
 	var addOS = function(settings) {
-		if (me.hasOwnProperty(settings.parent)) {
+		if (Object.prototype.hasOwnProperty.call(settings, 'parent')) {
 		    var child = Ext.clone(me[settings.parent]);
 		    me[settings.pveOS] = Ext.apply(child, settings);
 		} else {

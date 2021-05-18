@@ -33,8 +33,7 @@ Ext.define('PVE.storage.ImageView', {
 		text: gettext('Remove'),
 		disabled: true,
 		handler: function(btn, event, rec) {
-		    var url = "/nodes/" + nodename + "/storage/" + storage +
-			      "/content" + '/' + rec.data.volid;
+		    let url = `/nodes/${nodename}/storage/${storage}/content/${rec.data.volid}`;
 		    var vmid = rec.data.vmid;
 
 		    var store = PVE.data.ResourceStore;

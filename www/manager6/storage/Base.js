@@ -78,7 +78,7 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
 	    }
 	    // always delete old 'maxfiles' on edit, we map it to keep-last on window load
 	    return {
-		delete: ['prune-backups', 'maxfiles'],
+		'delete': ['prune-backups', 'maxfiles'],
 	    };
 	}
 	let options = { 'prune-backups': retention };

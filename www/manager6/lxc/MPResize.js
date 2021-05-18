@@ -91,11 +91,6 @@ Ext.define('PVE.window.MPResize', {
 	    items: [me.formPanel],
 	});
 
-
 	me.callParent();
-
-	if (!me.disk) {
-	    return;
-	}
     },
 });
