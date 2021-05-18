@@ -77,11 +77,10 @@ Ext.define('PVE.form.VMSelector', {
 			{ id: 'qemu', text: gettext('Virtual Machine') },
 			{ id: 'lxc', text: gettext('LXC Container') },
 		    ],
-		    // due to EXTJS-18711
-		    // we have to do a static list via a store
-		    // but to avoid creating an object,
-		    // we have to have a pseudo un function
-		    un: function() {},
+		    un: function() {
+			// Due to EXTJS-18711. we have to do a static list via a store but to avoid
+			// creating an object, we have to have an empty pseudo un function
+		    },
 		},
 	    },
 	},
@@ -128,32 +127,21 @@ Ext.define('PVE.form.VMSelector', {
     },
 
     setValue: function(value) {
-	console.log(value);
-	var me = this;
-	var sm = me.getSelectionModel();
+	let me = this;
 	if (!Ext.isArray(value)) {
 	    value = value.split(',');
 	}
-	var selection = [];
-	var store = me.getStore();
 
-	value.forEach(function(item) {
-	    var rec = store.findRecord('vmid', item, 0, false, true, true);
-	    console.log(store);
+	let store = me.getStore();
+	let selection = value.map(item => store.findRecord('vmid', item, 0, false, true, true)).filter(r => r);
 
-	    if (rec) {
-		console.log(rec);
-		selection.push(rec);
-	    }
-	});
-
-	sm.select(selection);
+	me.getSelectionModel().select(selection);
 
 	return me.mixins.field.setValue.call(me, value);
     },
 
     getErrors: function(value) {
-	var me = this;
+	let me = this;
 	if (me.allowBlank === false &&
 	    me.getSelectionModel().getCount() === 0) {
 	    me.addBodyCls(['x-form-trigger-wrap-default', 'x-form-trigger-wrap-invalid']);
@@ -165,7 +153,7 @@ Ext.define('PVE.form.VMSelector', {
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	me.callParent();
 
@@ -201,11 +189,8 @@ Ext.define('PVE.form.VMSelector', {
 	    }
 	}
 
-	var store = me.getStore();
-	var sm = me.getSelectionModel();
-
 	if (me.selectAll) {
-	    me.mon(store, 'load', function() {
+	    me.mon(me.getStore(), 'load', function() {
 		me.getSelectionModel().selectAll(false);
 	    });
 	}
@@ -294,7 +279,7 @@ Ext.define('PVE.form.VMComboSelector', {
 			    { id: 'qemu', text: gettext('Virtual Machine') },
 			    { id: 'lxc', text: gettext('LXC Container') },
 			],
-			un: function() {}, // due to EXTJS-18711
+			un: function() { /* due to EXTJS-18711 */ },
 		    },
 		},
 	    },
