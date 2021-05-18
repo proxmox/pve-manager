@@ -19,7 +19,7 @@ Ext.define('PVE.qemu.RNGInputPanel', {
     },
 
     setValues: function(values) {
-	if (values.max_bytes == 0) {
+	if (values.max_bytes === 0) {
 	    values.max_bytes = null;
 	}
 

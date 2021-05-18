@@ -83,7 +83,7 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 	}
 
 	var featuresstring = PVE.Parser.printPropertyString(values, undefined);
-	if (featuresstring == '') {
+	if (featuresstring === '') {
 	    return { 'delete': 'features' };
 	}
 	return { features: featuresstring };

@@ -16,7 +16,7 @@ Ext.define('PVE.storage.ImageView', {
 	    throw "no storage ID specified";
 	}
 
-	if (!me.content || me.content !== 'images' && me.content !== 'rootdir') {
+	if (!me.content || (me.content !== 'images' && me.content !== 'rootdir')) {
 	    throw "content needs to be either 'images' or 'rootdir'";
 	}
 
@@ -44,7 +44,7 @@ Ext.define('PVE.storage.ImageView', {
 			var storage_path = 'storage/' + nodename + '/' + storage;
 
 			// allow to delete local backed images if a VMID exists on another node.
-			if (store.storageIsShared(storage_path) || guest_node == nodename) {
+			if (store.storageIsShared(storage_path) || guest_node === nodename) {
 			    var msg = Ext.String.format(
 				gettext("Cannot remove image, a guest with VMID '{0}' exists!"), vmid);
 			    msg += '<br />' + gettext("You can delete the image from the guest's hardware pane");

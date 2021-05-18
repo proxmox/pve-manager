@@ -79,7 +79,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 			datachanged: function(store) {
 			    var ostype = me.lookup('ostype');
 			    var old_val = ostype.getValue();
-			    if (!me.insideWizard && old_val && store.find('val', old_val) != -1) {
+			    if (!me.insideWizard && old_val && store.find('val', old_val) !== -1) {
 				ostype.setValue(old_val);
 			    } else {
 				ostype.setValue(store.getAt(0));

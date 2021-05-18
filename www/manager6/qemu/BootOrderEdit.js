@@ -28,10 +28,10 @@ Ext.define('PVE.qemu.BootOrderPanel', {
     },
 
     isBootdev: function(dev, value) {
-	return this.isDisk(dev) && !this.isCloudinit(value) ||
+	return (this.isDisk(dev) && !this.isCloudinit(value)) ||
 	    (/^net\d+/).test(dev) ||
 	    (/^hostpci\d+/).test(dev) ||
-	    (/^usb\d+/).test(dev) && !(/spice/).test(value);
+	    ((/^usb\d+/).test(dev) && !(/spice/).test(value));
     },
 
     setVMConfig: function(vmconfig) {
