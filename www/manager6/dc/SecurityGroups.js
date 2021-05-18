@@ -72,7 +72,7 @@ Ext.define('PVE.SecurityGroupList', {
     stateful: true,
     stateId: 'grid-securitygroups',
 
-    rule_panel: undefined,
+    rulePanel: undefined,
 
     addBtn: undefined,
     removeBtn: undefined,
@@ -81,17 +81,12 @@ Ext.define('PVE.SecurityGroupList', {
     base_url: "/cluster/firewall/groups",
 
     initComponent: function() {
-        var me = this;
-
-	if (me.rule_panel == undefined) {
-	    throw "no rule panel specified";
-	}
-
-	if (me.base_url == undefined) {
+	let me = this;
+	if (!me.base_url) {
 	    throw "no base_url specified";
 	}
 
-	var store = new Ext.data.Store({
+	let store = new Ext.data.Store({
 	    model: 'pve-security-groups',
 	    proxy: {
 		type: 'proxmox',
@@ -103,13 +98,13 @@ Ext.define('PVE.SecurityGroupList', {
 	    },
 	});
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
+	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var reload = function() {
-	    var oldrec = sm.getSelection()[0];
-	    store.load(function(records, operation, success) {
+	let reload = function() {
+	    let oldrec = sm.getSelection()[0];
+	    store.load((records, operation, success) => {
 		if (oldrec) {
-		    var rec = store.findRecord('group', oldrec.data.group, 0, false, true, true);
+		    let rec = store.findRecord('group', oldrec.data.group, 0, false, true, true);
 		    if (rec) {
 			sm.select(rec);
 		    }
@@ -117,18 +112,20 @@ Ext.define('PVE.SecurityGroupList', {
 	    });
 	};
 
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
+	let run_editor = function() {
+	    let rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
 	    }
-	    var win = Ext.create('PVE.SecurityGroupEdit', {
+	    Ext.create('PVE.SecurityGroupEdit', {
 		digest: rec.data.digest,
 		group_name: rec.data.group,
 		group_comment: rec.data.comment,
+		listeners: {
+		    destroy: () => reload(),
+		},
+		autoShow: true,
 	    });
-	    win.show();
-	    win.on('destroy', reload);
 	};
 
 	me.editBtn = new Proxmox.button.Button({
@@ -137,7 +134,6 @@ Ext.define('PVE.SecurityGroupList', {
 	    selModel: sm,
 	    handler: run_editor,
 	});
-
 	me.addBtn = new Proxmox.button.Button({
 	    text: gettext('Create'),
 	    handler: function() {
@@ -154,9 +150,7 @@ Ext.define('PVE.SecurityGroupList', {
 	    enableFn: function(rec) {
 		return rec && me.base_url;
 	    },
-	    callback: function() {
-		reload();
-	    },
+	    callback: () => reload(),
 	});
 
 	Ext.apply(me, {
@@ -164,17 +158,31 @@ Ext.define('PVE.SecurityGroupList', {
 	    tbar: ['<b>' + gettext('Group') + ':</b>', me.addBtn, me.removeBtn, me.editBtn],
 	    selModel: sm,
 	    columns: [
-		{ header: gettext('Group'), dataIndex: 'group', width: '100' },
-		{ header: gettext('Comment'), dataIndex: 'comment', renderer: Ext.String.htmlEncode, flex: 1 },
+		{
+		    header: gettext('Group'),
+		    dataIndex: 'group',
+		    width: '100',
+		},
+		{
+		    header: gettext('Comment'),
+		    dataIndex: 'comment',
+		    renderer: Ext.String.htmlEncode,
+		    flex: 1,
+		},
 	    ],
 	    listeners: {
 		itemdblclick: run_editor,
-		select: function(sm, rec) {
-		    var url = '/cluster/firewall/groups/' + rec.data.group;
-		    me.rule_panel.setBaseUrl(url);
+		select: function(_sm, rec) {
+		    if (!me.rulePanel) {
+			me.rulePanel = me.up('panel').down('pveFirewallRules');
+		    }
+		    me.rulePanel.setBaseUrl(`/cluster/firewall/groups/${rec.data.group}`);
 		},
 		deselect: function() {
-		    me.rule_panel.setBaseUrl(undefined);
+		    if (!me.rulePanel) {
+			me.rulePanel = me.up('panel').down('pveFirewallRules');
+		    }
+		    me.rulePanel.setBaseUrl(undefined);
 		},
 		show: reload,
 	    },
@@ -192,36 +200,29 @@ Ext.define('PVE.SecurityGroups', {
 
     title: 'Security Groups',
 
-    initComponent: function() {
-	var me = this;
+    layout: 'border',
 
-	var rule_panel = Ext.createWidget('pveFirewallRules', {
+    items: [
+	{
+	    xtype: 'pveFirewallRules',
 	    region: 'center',
 	    allow_groups: false,
 	    list_refs_url: '/cluster/firewall/refs',
 	    tbar_prefix: '<b>' + gettext('Rules') + ':</b>',
 	    border: false,
-	});
-
-	var sglist = Ext.createWidget('pveSecurityGroupList', {
+	},
+	{
+	    xtype: 'pveSecurityGroupList',
 	    region: 'west',
-	    rule_panel: rule_panel,
 	    width: '25%',
 	    border: false,
 	    split: true,
-	});
-
-
-	Ext.apply(me, {
-            layout: 'border',
-            items: [sglist, rule_panel],
-	    listeners: {
-		show: function() {
-		    sglist.fireEvent('show', sglist);
-		},
-	    },
-	});
-
-	me.callParent();
+	},
+    ],
+    listeners: {
+	show: function() {
+	    let sglist = this.down('pveSecurityGroupList');
+	    sglist.fireEvent('show', sglist);
+	},
     },
 });
