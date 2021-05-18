@@ -9,7 +9,7 @@ Ext.define('PVE.dc.StorageView', {
     stateId: 'grid-dc-storage',
 
     createStorageEditWindow: function(type, sid) {
-	var schema = PVE.Utils.storageSchema[type];
+	let schema = PVE.Utils.storageSchema[type];
 	if (!schema || !schema.ipanel) {
 	    throw "no editor registered for storage type: " + type;
 	}
@@ -27,9 +27,9 @@ Ext.define('PVE.dc.StorageView', {
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	var store = new Ext.data.Store({
+	let store = new Ext.data.Store({
 	    model: 'pve-storage',
 	    proxy: {
                 type: 'proxmox',
@@ -41,43 +41,35 @@ Ext.define('PVE.dc.StorageView', {
 	    },
 	});
 
-	var reload = function() {
-	    store.load();
-	};
+	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
-
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
+	let run_editor = function() {
+	    let rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
 	    }
-	    var type = rec.data.type,
-	        sid = rec.data.storage;
-
-	    me.createStorageEditWindow(type, sid);
+	    let { type, storage } = rec.data;
+	    me.createStorageEditWindow(type, storage);
 	};
 
-	var edit_btn = new Proxmox.button.Button({
+	let edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
 	    handler: run_editor,
 	});
-
-	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
+	let remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/storage/',
-	    callback: reload,
+	    callback: () => store.load(),
 	});
 
 	// else we cannot dynamically generate the add menu handlers
-	var addHandleGenerator = function(type) {
+	let addHandleGenerator = function(type) {
 	    return function() { me.createStorageEditWindow(type); };
 	};
-	var addMenuItems = [], type;
-	for (type in PVE.Utils.storageSchema) {
-	    var storage = PVE.Utils.storageSchema[type];
+	let addMenuItems = [];
+	for (const [type, storage] of Object.entries(PVE.Utils.storageSchema)) {
 	    if (storage.hideAdd) {
 		continue;
 	    }
@@ -90,7 +82,7 @@ Ext.define('PVE.dc.StorageView', {
 
 	Ext.apply(me, {
 	    store: store,
-	    reloadStore: reload,
+	    reloadStore: () => store.load(),
 	    selModel: sm,
 	    viewConfig: {
 		trackOver: false,
@@ -160,7 +152,7 @@ Ext.define('PVE.dc.StorageView', {
 		},
 	    ],
 	    listeners: {
-		activate: reload,
+		activate: () => store.load(),
 		itemdblclick: run_editor,
 	    },
 	});
