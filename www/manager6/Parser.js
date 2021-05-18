@@ -323,7 +323,7 @@ Ext.define('PVE.Parser', {
 	    tag: 1,
 	};
 	return Object.entries(config)
-	    .filter(([k, v]) => v !== undefined && knownKeys[k])
+	    .filter(([k, v]) => v !== undefined && v !== '' && knownKeys[k])
 	    .map(([k, v]) => `${k}=${v}`)
 	    .join(',');
     },
