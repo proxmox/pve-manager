@@ -22,11 +22,11 @@ Ext.define('PVE.form.TokenSelector', {
 	listeners: {
 	    load: function(store, records, success) {
 		let tokens = [];
-		for (const rec of records) {
-		    let user = rec.data;
-		    if (!user.tokens || user.tokens.length === 0) continue;
-
-		    for (token of user.tokens) {
+		for (const { data: user } of records) {
+		    if (!user.tokens || user.tokens.length === 0) {
+			continue;
+		    }
+		    for (const token of user.tokens) {
 			tokens.push({
 			    id: `${user.userid}!${token.tokenid}`,
 			    comment: token.comment,
