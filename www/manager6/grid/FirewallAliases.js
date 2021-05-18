@@ -8,7 +8,7 @@ Ext.define('PVE.FirewallAliasEdit', {
     width: 400,
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	me.isCreate = me.alias_name === undefined;
 
@@ -20,33 +20,31 @@ Ext.define('PVE.FirewallAliasEdit', {
 	    me.method = 'PUT';
 	}
 
-	var items = [
-	    {
-		xtype: 'textfield',
-		name: me.isCreate ? 'name' : 'rename',
-		fieldLabel: gettext('Name'),
-		allowBlank: false,
-	    },
-	    {
-		xtype: 'textfield',
-		name: 'cidr',
-		fieldLabel: gettext('IP/CIDR'),
-		allowBlank: false,
-	    },
-	    {
-		xtype: 'textfield',
-		name: 'comment',
-		fieldLabel: gettext('Comment'),
-	    },
-	];
-
-	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
+	let ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	    isCreate: me.isCreate,
-	    items: items,
+	    items: [
+		{
+		    xtype: 'textfield',
+		    name: me.isCreate ? 'name' : 'rename',
+		    fieldLabel: gettext('Name'),
+		    allowBlank: false,
+		},
+		{
+		    xtype: 'textfield',
+		    name: 'cidr',
+		    fieldLabel: gettext('IP/CIDR'),
+		    allowBlank: false,
+		},
+		{
+		    xtype: 'textfield',
+		    name: 'comment',
+		    fieldLabel: gettext('Comment'),
+		},
+	    ],
 	});
 
 	Ext.apply(me, {
-            subject: gettext('Alias'),
+	    subject: gettext('Alias'),
 	    isAdd: true,
 	    items: [ipanel],
 	});
@@ -56,7 +54,7 @@ Ext.define('PVE.FirewallAliasEdit', {
 	if (!me.isCreate) {
 	    me.load({
 		success: function(response, options) {
-		    var values = response.result.data;
+		    let values = response.result.data;
 		    values.rename = values.name;
 		    ipanel.setValues(values);
 		},
@@ -86,13 +84,13 @@ Ext.define('PVE.FirewallAliases', {
     title: gettext('Alias'),
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	if (!me.base_url) {
 	    throw "missing base_url configuration";
 	}
 
-	var store = new Ext.data.Store({
+	let store = new Ext.data.Store({
 	    model: 'pve-fw-aliases',
 	    proxy: {
 		type: 'proxmox',
@@ -104,10 +102,10 @@ Ext.define('PVE.FirewallAliases', {
 	    },
 	});
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
+	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var reload = function() {
-	    var oldrec = sm.getSelection()[0];
+	let reload = function() {
+	    let oldrec = sm.getSelection()[0];
 	    store.load(function(records, operation, success) {
 		if (oldrec) {
 		    var rec = store.findRecord('name', oldrec.data.name, 0, false, true, true);
@@ -118,18 +116,15 @@ Ext.define('PVE.FirewallAliases', {
 	    });
 	};
 
-	var run_editor = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
+	let run_editor = function() {
+	    let rec = me.getSelectionModel().getSelection()[0];
 	    if (!rec) {
 		return;
 	    }
-
-	    var win = Ext.create('PVE.FirewallAliasEdit', {
+	    let win = Ext.create('PVE.FirewallAliasEdit', {
 		base_url: me.base_url,
 		alias_name: rec.data.name,
 	    });
-
 	    win.show();
 	    win.on('destroy', reload);
 	};

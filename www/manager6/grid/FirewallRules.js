@@ -544,25 +544,21 @@ Ext.define('PVE.FirewallRules', {
 	});
 
 	var run_copy_editor = function() {
-	    var rec = sm.getSelection()[0];
-
+	    let rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
 	    }
-	    var type = rec.data.type;
-
-
+	    let type = rec.data.type;
 	    if (!(type === 'in' || type === 'out')) {
 		return;
 	    }
 
-	    var win = Ext.create('PVE.FirewallRuleEdit', {
+	    let win = Ext.create('PVE.FirewallRuleEdit', {
 		allow_iface: me.allow_iface,
 		base_url: me.base_url,
 		list_refs_url: me.list_refs_url,
 		rec: rec,
 	    });
-
 	    win.show();
 	    win.on('destroy', reload);
 	};
@@ -570,9 +566,7 @@ Ext.define('PVE.FirewallRules', {
 	me.copyBtn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Copy'),
 	    selModel: sm,
-	    enableFn: function(rec) {
-		return rec.data.type === 'in' || rec.data.type === 'out';
-	    },
+	    enableFn: ({ data }) => data.type === 'in' || data.type === 'out',
 	    disabled: true,
 	    handler: run_copy_editor,
 	});
@@ -607,25 +601,24 @@ Ext.define('PVE.FirewallRules', {
 	    },
 	});
 
-	var tbar = me.tbar_prefix ? [me.tbar_prefix] : [];
+	let tbar = me.tbar_prefix ? [me.tbar_prefix] : [];
 	tbar.push(me.addBtn, me.copyBtn);
 	if (me.groupBtn) {
 	    tbar.push(me.groupBtn);
 	}
 	tbar.push(me.removeBtn, me.editBtn);
 
-	var render_errors = function(name, value, metaData, record) {
-	    var errors = record.data.errors;
+	let render_errors = function(name, value, metaData, record) {
+	    let errors = record.data.errors;
 	    if (errors && errors[name]) {
 		metaData.tdCls = 'proxmox-invalid-row';
-		var html = '<p>' + Ext.htmlEncode(errors[name]) + '</p>';
-		metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' +
-		    html.replace(/\"/g, '&quot;') + '"';
+		let html = '<p>' + Ext.htmlEncode(errors[name]) + '</p>';
+		metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' + html + '"';
 	    }
 	    return value;
 	};
 
-	var columns = [
+	let columns = [
 	    {
 		// similar to xtype: 'rownumberer',
 		dataIndex: 'pos',
@@ -637,7 +630,7 @@ Ext.define('PVE.FirewallRules', {
 		align: 'right',
 		hideable: false,
 		menuDisabled: true,
-		renderer: function(value, metaData, record, rowIdx, colIdx, store) {
+		renderer: function(value, metaData, record, rowIdx, colIdx) {
 		    metaData.tdCls = Ext.baseCSSPrefix + 'grid-cell-special';
 		    if (value >= 0) {
 			return value;
@@ -778,7 +771,7 @@ Ext.define('PVE.FirewallRules', {
 	    store: store,
 	    selModel: sm,
 	    tbar: tbar,
-            viewConfig: {
+	    viewConfig: {
 		plugins: [
 		    {
 			ptype: 'gridviewdragdrop',
@@ -787,15 +780,15 @@ Ext.define('PVE.FirewallRules', {
 		    },
 		],
 		listeners: {
-                    beforedrop: function(node, data, dropRec, dropPosition) {
+		    beforedrop: function(node, data, dropRec, dropPosition) {
 			if (!dropRec) {
 			    return false; // empty view
 			}
-			var moveto = dropRec.get('pos');
+			let moveto = dropRec.get('pos');
 			if (dropPosition === 'after') {
 			    moveto++;
 			}
-			var pos = data.records[0].get('pos');
+			let pos = data.records[0].get('pos');
 			me.moveRule(pos, moveto);
 			return 0;
                     },
@@ -815,9 +808,22 @@ Ext.define('PVE.FirewallRules', {
 }, function() {
     Ext.define('pve-fw-rule', {
 	extend: 'Ext.data.Model',
-	fields: [{ name: 'enable', type: 'boolean' },
-		  'type', 'action', 'macro', 'source', 'dest', 'proto', 'iface',
-		  'dport', 'sport', 'comment', 'pos', 'digest', 'errors'],
+	fields: [
+	    { name: 'enable', type: 'boolean' },
+	    'type',
+	    'action',
+	    'macro',
+	    'source',
+	    'dest',
+	    'proto',
+	    'iface',
+	    'dport',
+	    'sport',
+	    'comment',
+	    'pos',
+	    'digest',
+	    'errors',
+	],
 	idProperty: 'pos',
     });
 });
