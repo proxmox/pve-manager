@@ -9,51 +9,34 @@ Ext.define('PVE.dc.RoleView', {
     stateId: 'grid-roles',
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	var store = new Ext.data.Store({
+	let store = new Ext.data.Store({
 	    model: 'pmx-roles',
 	    sorters: {
 		property: 'roleid',
 		order: 'DESC',
 	    },
 	});
-
-	var render_privs = function(value, metaData) {
-	    if (!value) {
-		return '-';
-	    }
-
-	    // allow word wrap
-	    metaData.style = 'white-space:normal;';
-
-	    return value.replace(/\,/g, ' ');
-	};
-
 	Proxmox.Utils.monStoreErrors(me, store);
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
-
-	var reload = function() {
-		store.load();
-	};
-
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
+	let sm = Ext.create('Ext.selection.RowModel', {});
+	let run_editor = function() {
+	    let rec = sm.getSelection()[0];
 	    if (!rec) {
 		return;
 	    }
-
 	    if (rec.data.special) {
 		return;
 	    }
-
-	    var win = Ext.create('PVE.dc.RoleEdit', {
+	    Ext.create('PVE.dc.RoleEdit', {
 		roleid: rec.data.roleid,
 		privs: rec.data.privs,
+		listeners: {
+		    destroy: () => store.load(),
+		},
+		autoShow: true,
 	    });
-	    win.on('destroy', reload);
-	    win.show();
 	};
 
 	Ext.apply(me, {
@@ -81,7 +64,13 @@ Ext.define('PVE.dc.RoleView', {
 		    itemid: 'privs',
 		    header: gettext('Privileges'),
 		    sortable: false,
-		    renderer: render_privs,
+		    renderer: (value, metaData) => {
+			if (!value) {
+			    return '-';
+			}
+			metaData.style = 'white-space:normal;'; // allow word wrap
+			return value.replace(/,/g, ' ');
+		    },
 		    dataIndex: 'privs',
 		    flex: 1,
 		},
@@ -96,9 +85,12 @@ Ext.define('PVE.dc.RoleView', {
 		{
 		    text: gettext('Create'),
 		    handler: function() {
-			var win = Ext.create('PVE.dc.RoleEdit', {});
-			win.on('destroy', reload);
-			win.show();
+			Ext.create('PVE.dc.RoleEdit', {
+			    listeners: {
+				destroy: () => store.load(),
+			    },
+			    autoShow: true,
+			});
 		    },
 		},
 		{
@@ -112,9 +104,7 @@ Ext.define('PVE.dc.RoleView', {
 		{
 		    xtype: 'proxmoxStdRemoveButton',
 		    selModel: sm,
-		    callback: function() {
-			reload();
-		    },
+		    callback: () => store.load(),
 		    baseurl: '/access/roles/',
 		    enableFn: (rec) => !rec.data.special,
 		},
