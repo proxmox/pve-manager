@@ -241,8 +241,9 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 		});
 
 		linkEditor.setInfoText();
-		if (links.length == 1 && joinInfo.ring_addr !== undefined &&
-		    joinInfo.ring_addr[0] === joinInfo.ipAddress) {
+		if (links.length === 1 && joinInfo.ring_addr !== undefined &&
+		    joinInfo.ring_addr[0] === joinInfo.ipAddress
+		) {
 		    links[0].allowBlank = true;
 		    links[0].emptyText = gettext("IP resolved by node's hostname");
 		}
@@ -274,7 +275,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	    Ext.defer(function() {
 		window.location.reload(true);
 	    }, 5000);
-	    var txt = gettext('Cluster join task finished, node certificate may have changed, reload GUI!');
+	    let txt = gettext('Cluster join task finished, node certificate may have changed, reload GUI!');
 	    // ensure user cannot do harm
 	    Ext.getBody().mask(txt, ['pve-static-mask']);
 	    // TaskView may hide above mask, so tell him directly
@@ -307,8 +308,7 @@ Ext.define('PVE.ClusterJoinNodeWindow', {
 	fieldLabel: gettext('Information'),
 	emptyText: gettext('Paste encoded Cluster Information here'),
 	validator: function(val) {
-	    return val === '' || this.valid ||
-	       gettext('Does not seem like a valid encoded Cluster Information!');
+	    return val === '' || this.valid || gettext('Does not seem like a valid encoded Cluster Information!');
 	},
 	bind: {
 	    disabled: '{!assistedEntry.checked}',

@@ -63,7 +63,7 @@ Ext.define('PVE.ClusterAdministration', {
 		},
 
 		onLoad: function(store, records, success) {
-		    var vm = this.getViewModel();
+		    let vm = this.getViewModel();
 		    if (!success || !records || !records[0].data) {
 			vm.set('totem', {});
 			vm.set('isInCluster', false);
@@ -75,7 +75,7 @@ Ext.define('PVE.ClusterAdministration', {
 			});
 			return;
 		    }
-		    var data = records[0].data;
+		    let data = records[0].data;
 		    vm.set('totem', data.totem);
 		    vm.set('isInCluster', !!data.totem.cluster_name);
 		    vm.set('nodelist', data.nodelist);
@@ -101,9 +101,9 @@ Ext.define('PVE.ClusterAdministration', {
 		},
 
 		onCreate: function() {
-		    var view = this.getView();
+		    let view = this.getView();
 		    view.store.stopUpdate();
-		    var win = Ext.create('PVE.ClusterCreateWindow', {
+		    Ext.create('PVE.ClusterCreateWindow', {
 			autoShow: true,
 			listeners: {
 			    destroy: function() {
@@ -114,8 +114,9 @@ Ext.define('PVE.ClusterAdministration', {
 		},
 
 		onClusterInfo: function() {
-		    var vm = this.getViewModel();
-		    var win = Ext.create('PVE.ClusterInfoWindow', {
+		    let vm = this.getViewModel();
+		    Ext.create('PVE.ClusterInfoWindow', {
+			autoShow: true,
 			joinInfo: {
 			    ipAddress: vm.get('preferred_node.addr'),
 			    fingerprint: vm.get('preferred_node.fp'),
@@ -124,13 +125,12 @@ Ext.define('PVE.ClusterAdministration', {
 			    totem: vm.get('totem'),
 			},
 		    });
-		    win.show();
 		},
 
 		onJoin: function() {
-		    var view = this.getView();
+		    let view = this.getView();
 		    view.store.stopUpdate();
-		    var win = Ext.create('PVE.ClusterJoinNodeWindow', {
+		    Ext.create('PVE.ClusterJoinNodeWindow', {
 			autoShow: true,
 			listeners: {
 			    destroy: function() {
@@ -237,8 +237,8 @@ Ext.define('PVE.ClusterAdministration', {
 		},
 
 		onLoad: function(store, records, success) {
-		    var view = this.getView();
-		    var vm = this.getViewModel();
+		    let view = this.getView();
+		    let vm = this.getViewModel();
 
 		    if (!success || !records || !records.length) {
 			vm.set('nodecount', 0);
@@ -247,13 +247,11 @@ Ext.define('PVE.ClusterAdministration', {
 		    vm.set('nodecount', records.length);
 
 		    // show/hide columns according to used links
-		    var linkIndex = view.columns.length;
-		    var columns = Ext.each(view.columns, (col, i) => {
+		    let linkIndex = view.columns.length;
+		    Ext.each(view.columns, (col, i) => {
 			if (col.linkNumber !== undefined) {
 			    col.setHidden(true);
-
-			    // save offset at which link columns start, so we
-			    // can address them directly below
+			    // save offset at which link columns start, so we can address them directly below
 			    if (i < linkIndex) {
 				linkIndex = i;
 			    }
@@ -265,7 +263,7 @@ Ext.define('PVE.ClusterAdministration', {
 			    if (linknum > 7) {
 				return;
 			    }
-			    view.columns[linkIndex+linknum].setHidden(false);
+			    view.columns[linkIndex + linknum].setHidden(false);
 			},
 		    );
 		},
