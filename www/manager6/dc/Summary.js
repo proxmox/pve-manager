@@ -118,87 +118,72 @@ Ext.define('PVE.dc.Summary', {
 	me.mon(PVE.data.ResourceStore, 'load', function(curstore, results) {
 	    me.suspendLayout = true;
 
-	    var cpu = 0;
-	    var maxcpu = 0;
+	    let cpu = 0, maxcpu = 0;
+	    let memory = 0, maxmem = 0;
 
-	    var nodes = 0;
-
-	    var memory = 0;
-	    var maxmem = 0;
-
-	    var countedStorages = {};
-	    var used = 0;
-	    var total = 0;
-	    var usableStorages = {};
-	    var storages = sp.get('dash-storages') || '';
-	    storages.split(',').forEach(function(storage) {
-		if (storage !== '') {
-		    usableStorages[storage] = true;
-		}
+	    let used = 0, total = 0;
+	    let countedStorage = {}, usableStorages = {};
+	    let storages = sp.get('dash-storages') || '';
+	    storages.split(',').filter(v => v !== '').forEach(storage => {
+		usableStorages[storage] = true;
 	    });
 
-	    var qemu = {
+	    let qemu = {
 		running: 0,
 		paused: 0,
 		stopped: 0,
 		template: 0,
 	    };
-	    var lxc = {
+	    let lxc = {
 		running: 0,
 		paused: 0,
 		stopped: 0,
 		template: 0,
 	    };
-	    var error = 0;
+	    let error = 0;
 
-	    var i;
-
-	    for (i = 0; i < results.length; i++) {
-		var item = results[i];
-		switch (item.data.type) {
+	    for (const { data } of results) {
+		switch (data.type) {
 		    case 'node':
-			cpu += item.data.cpu * item.data.maxcpu;
-			maxcpu += item.data.maxcpu || 0;
-			memory += item.data.mem || 0;
-			maxmem += item.data.maxmem || 0;
-			nodes++;
+			cpu += data.cpu * data.maxcpu;
+			maxcpu += data.maxcpu || 0;
+			memory += data.mem || 0;
+			maxmem += data.maxmem || 0;
 
-			// update grid also
-			var griditem = gridstore.getById(item.data.id);
-			if (griditem) {
-			    griditem.set('cpuusage', item.data.cpu);
-			    var max = item.data.maxmem || 1;
-			    var val = item.data.mem || 0;
-			    griditem.set('memoryusage', val/max);
-			    griditem.set('uptime', item.data.uptime);
-			    griditem.commit(); //else it marks the fields as dirty
+			if (gridstore.getById(data.id)) {
+			    let griditem = gridstore.getById(data.id);
+			    griditem.set('cpuusage', data.cpu);
+			    let max = data.maxmem || 1;
+			    let val = data.mem || 0;
+			    griditem.set('memoryusage', val / max);
+			    griditem.set('uptime', data.uptime);
+			    griditem.commit(); // else the store marks the field as dirty
 			}
 			break;
-		    case 'storage':
+		    case 'storage': {
+			let sid = !data.shared || data.storage === 'local' ? data.id : data.storage;
 			if (!Ext.Object.isEmpty(usableStorages)) {
-			    if (usableStorages[item.data.id] === true) {
-				used += item.data.disk;
-				total += item.data.maxdisk;
+			    if (usableStorages[data.id] !== true) {
+				break;
 			    }
+			    sid = data.id;
+			} else if (countedStorage[sid]) {
 			    break;
 			}
-			if (!countedStorages[item.data.storage] ||
-			    !item.data.shared && !countedStorages[item.data.id]) {
-			    used += item.data.disk;
-			    total += item.data.maxdisk;
-
-			    countedStorages[item.data.storage === 'local'?item.data.id:item.data.storage] = true;
-			}
+			used += data.disk;
+			total += data.maxdisk;
+			countedStorage[sid] = true;
 			break;
+		    }
 		    case 'qemu':
-			qemu[item.data.template ? 'template' : item.data.status]++;
-			if (item.data.hastate === 'error') {
+			qemu[data.template ? 'template' : data.status]++;
+			if (data.hastate === 'error') {
 			    error++;
 			}
 			break;
 		    case 'lxc':
-			lxc[item.data.template ? 'template' : item.data.status]++;
-			if (item.data.hastate === 'error') {
+			lxc[data.template ? 'template' : data.status]++;
+			if (data.hastate === 'error') {
 			    error++;
 			}
 			break;
@@ -206,7 +191,7 @@ Ext.define('PVE.dc.Summary', {
 		}
 	    }
 
-	    var text = Ext.String.format(gettext('of {0} CPU(s)'), maxcpu);
+	    let text = Ext.String.format(gettext('of {0} CPU(s)'), maxcpu);
 	    cpustat.updateValue(cpu/maxcpu, text);
 
 	    text = Ext.String.format(gettext('{0} of {1}'), Proxmox.Utils.render_size(memory), Proxmox.Utils.render_size(maxmem));
@@ -221,26 +206,21 @@ Ext.define('PVE.dc.Summary', {
 	    me.updateLayout(true);
 	});
 
-	var dcHealth = me.getComponent('dcHealth');
+	let dcHealth = me.getComponent('dcHealth');
 	me.mon(rstore, 'load', dcHealth.updateStatus, dcHealth);
 
-	var subs = me.down('#subscriptions');
+	let subs = me.down('#subscriptions');
 	me.mon(rstore, 'load', function(store, records, success) {
-	    var i;
 	    var level;
 	    var mixed = false;
-	    for (i = 0; i < records.length; i++) {
-		if (records[i].get('type') !== 'node') {
-		    continue;
-		}
-		var node = records[i];
-		if (node.get('status') === 'offline') {
+	    for (let i = 0; i < records.length; i++) {
+		let node = records[i];
+		if (node.get('type') !== 'node' || node.get('status') === 'offline') {
 		    continue;
 		}
 
-		var curlevel = node.get('level');
-
-		if (curlevel === '') { // no subscription trumps all, set and break
+		let curlevel = node.get('level');
+		if (curlevel === '') { // no subscription beats all, set it and break the loop
 		    level = '';
 		    break;
 		}
@@ -252,7 +232,7 @@ Ext.define('PVE.dc.Summary', {
 		}
 	    }
 
-	    var data = {
+	    let data = {
 		title: Proxmox.Utils.unknownText,
 		text: Proxmox.Utils.unknownText,
 		iconCls: PVE.Utils.get_health_icon(undefined, true),
