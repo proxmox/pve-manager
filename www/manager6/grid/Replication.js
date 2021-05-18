@@ -67,22 +67,22 @@ Ext.define('PVE.window.ReplicaEdit', {
 		onlineHelp: 'pvesr_schedule_time_format',
 
 		onGetValues: function(values) {
-		    var me = this.up('window');
+		    let win = this.up('window');
 
 		    values.disable = values.enabled ? 0 : 1;
 		    delete values.enabled;
 
-		    PVE.Utils.delete_if_default(values, 'rate', '', me.isCreate);
-		    PVE.Utils.delete_if_default(values, 'disable', 0, me.isCreate);
-		    PVE.Utils.delete_if_default(values, 'schedule', '*/15', me.isCreate);
-		    PVE.Utils.delete_if_default(values, 'comment', '', me.isCreate);
+		    PVE.Utils.delete_if_default(values, 'rate', '', win.isCreate);
+		    PVE.Utils.delete_if_default(values, 'disable', 0, win.isCreate);
+		    PVE.Utils.delete_if_default(values, 'schedule', '*/15', win.isCreate);
+		    PVE.Utils.delete_if_default(values, 'comment', '', win.isCreate);
 
-		    if (me.isCreate) {
+		    if (win.isCreate) {
 			values.type = 'local';
-			var vm = vmid || values.guest;
-			var id = -1;
-			if (me.highestids[vm] !== undefined) {
-			    id = me.highestids[vm];
+			let vm = vmid || values.guest;
+			let id = -1;
+			if (win.highestids[vm] !== undefined) {
+			    id = win.highestids[vm];
 			}
 			id++;
 			values.id = vm + '-' + id.toString();
@@ -102,17 +102,15 @@ Ext.define('PVE.window.ReplicaEdit', {
 		    var jobs = response.result.data;
 		    var highestids = {};
 		    Ext.Array.forEach(jobs, function(job) {
-			var match = /^([0-9]+)\-([0-9]+)$/.exec(job.id);
+			var match = /^([0-9]+)-([0-9]+)$/.exec(job.id);
 			if (match) {
-			    var vmid = parseInt(match[1], 10);
-			    var id = parseInt(match[2], 10);
-			    if (highestids[vmid] < id ||
-				highestids[vmid] === undefined) {
-				highestids[vmid] = id;
+			    let jobVMID = parseInt(match[1], 10);
+			    let id = parseInt(match[2], 10);
+			    if (highestids[jobVMID] === undefined || highestids[jobVMID] < id) {
+				highestids[jobVMID] = id;
 			    }
 			}
 		    });
-
 		    me.highestids = highestids;
 		},
 	    });
@@ -142,91 +140,88 @@ Ext.define('PVE.grid.ReplicaView', {
 	xclass: 'Ext.app.ViewController',
 
 	addJob: function(button, event, rec) {
-	    var me = this.getView();
-	    var controller = this;
-	    var win = Ext.create('PVE.window.ReplicaEdit', {
+	    let me = this;
+	    let view = me.getView();
+	    Ext.create('PVE.window.ReplicaEdit', {
 		isCreate: true,
 		method: 'POST',
-		pveSelNode: me.pveSelNode,
+		pveSelNode: view.pveSelNode,
+		listeners: {
+		    destroy: () => me.reload(),
+		},
+		autoShow: true,
 	    });
-	    win.on('destroy', function() { controller.reload(); });
-	    win.show();
 	},
 
-	editJob: function(button, event, rec) {
-	    var me = this.getView();
-	    var controller = this;
-	    var data = rec.data;
-	    var win = Ext.create('PVE.window.ReplicaEdit', {
-		url: '/cluster/replication/' + data.id,
+	editJob: function(button, event, { data }) {
+	    let me = this;
+	    let view = me.getView();
+	    Ext.create('PVE.window.ReplicaEdit', {
+		url: `/cluster/replication/${data.id}`,
 		method: 'PUT',
-		pveSelNode: me.pveSelNode,
+		pveSelNode: view.pveSelNode,
+		listeners: {
+		    destroy: () => me.reload(),
+		},
+		autoShow: true,
 	    });
-	    win.on('destroy', function() { controller.reload(); });
-	    win.show();
 	},
 
 	scheduleJobNow: function(button, event, rec) {
-	    var me = this.getView();
-	    var controller = this;
-
+	    let me = this;
+	    let view = me.getView();
 	    Proxmox.Utils.API2Request({
-		url: "/api2/extjs/nodes/" + me.nodename + "/replication/" + rec.data.id + "/schedule_now",
+		url: `/api2/extjs/nodes/${view.nodename}/replication/${rec.data.id}/schedule_now`,
 		method: 'POST',
-		waitMsgTarget: me,
-		callback: function() { controller.reload(); },
-		failure: function(response, opts) {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		},
+		waitMsgTarget: view,
+		callback: () => me.reload(),
+		failure: (response, opts) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
 	    });
 	},
 
 	showLog: function(button, event, rec) {
-	    var me = this.getView();
-	    var controller = this;
-	    var logView = Ext.create('Proxmox.panel.LogView', {
+	    let me = this;
+	    let view = this.getView();
+
+	    let logView = Ext.create('Proxmox.panel.LogView', {
 		border: false,
-		url: "/api2/extjs/nodes/" + me.nodename + "/replication/" + rec.data.id + "/log",
+		url: `/api2/extjs/nodes/${view.nodename}/replication/${rec.data.id}/log`,
 	    });
-	    var win = Ext.create('Ext.window.Window', {
+	    let task = Ext.TaskManager.newTask({
+		run: () => logView.requestUpdate(),
+		interval: 1000,
+	    });
+	    let win = Ext.create('Ext.window.Window', {
 		items: [logView],
 		layout: 'fit',
 		width: 800,
 		height: 400,
 		modal: true,
 		title: gettext("Replication Log"),
-	    });
-	    var task = {
-		run: function() {
-		    logView.requestUpdate();
+		listeners: {
+		    destroy: function() {
+			task.stop();
+			me.reload();
+		    },
 		},
-		interval: 1000,
-	    };
-	    Ext.TaskManager.start(task);
-	    win.on('destroy', function() {
-		Ext.TaskManager.stop(task);
-		controller.reload();
 	    });
+	    task.start();
 	    win.show();
 	},
 
 	reload: function() {
-	    var me = this.getView();
-	    me.rstore.load();
+	    this.getView().rstore.load();
 	},
 
 	dblClick: function(grid, record, item) {
-	    var me = this;
-	    me.editJob(undefined, undefined, record);
+	    this.editJob(undefined, undefined, record);
 	},
 
-	// check for cluster
-	// currently replication is for cluster only, so we disable the whole
-	// component
+	// currently replication is for cluster only, so disable the whole component for non-cluster
 	checkPrerequisites: function() {
-	    var me = this.getView();
+	    let view = this.getView();
 	    if (PVE.data.ResourceStore.getNodes().length < 2) {
-		me.mask(gettext("Replication needs at least two nodes"), ['pve-static-mask']);
+		view.mask(gettext("Replication needs at least two nodes"), ['pve-static-mask']);
 	    }
 	},
 
@@ -317,10 +312,10 @@ Ext.define('PVE.grid.ReplicaView', {
 	    me.stateId = 'grid-pve-replication-dc';
 	} else if (!me.vmid) {
 	    mode = 'node';
-	    url = '/nodes/' + me.nodename + '/replication';
+	    url = `/nodes/${me.nodename}/replication`;
 	} else {
 	    mode = 'vm';
-	    url = '/nodes/' + me.nodename + '/replication' + '?guest=' + me.vmid;
+	    url = `/nodes/${me.nodename}/replication?guest=${me.vmid}`;
 	}
 
 	if (mode !== 'dc') {
@@ -336,22 +331,19 @@ Ext.define('PVE.grid.ReplicaView', {
 			    return '';
 			}
 
-			var icons = [];
-			var states = [];
+			let icons = [], states = [];
 
 			if (record.data.remove_job) {
 			    icons.push('<i class="fa fa-ban warning" title="'
 					+ gettext("Removal Scheduled") + '"></i>');
 			    states.push(gettext("Removal Scheduled"));
 			}
-
 			if (record.data.error) {
 			    icons.push('<i class="fa fa-times critical" title="'
 					+ gettext("Error") + '"></i>');
 			    states.push(record.data.error);
 			}
-
-			if (icons.length == 0) {
+			if (icons.length === 0) {
 			    icons.push('<i class="fa fa-check good"></i>');
 			    states.push(gettext('OK'));
 			}
@@ -367,11 +359,9 @@ Ext.define('PVE.grid.ReplicaView', {
 			if (!value) {
 			    return '-';
 			}
-
 			if (record.data.pid) {
 			    return gettext('syncing');
 			}
-
 			return Proxmox.Utils.render_timestamp(value);
 		    },
 		},
@@ -390,13 +380,10 @@ Ext.define('PVE.grid.ReplicaView', {
 			    return '-';
 			}
 
-			var now = new Date();
-			var next = new Date(value*1000);
-
+			let now = new Date(), next = new Date(value * 1000);
 			if (next < now) {
 			    return gettext('pending');
 			}
-
 			return Proxmox.Utils.render_timestamp(value);
 		    },
 		},
