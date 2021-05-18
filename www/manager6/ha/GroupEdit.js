@@ -123,19 +123,9 @@ Ext.define('PVE.ha.GroupInputPanel', {
 	};
 
 	update_nodefield = function(selected) {
-	    var nodes = '';
-	    var first_iteration = true;
-	    Ext.Array.each(selected, function(record) {
-		if (!first_iteration) {
-		    nodes += ',';
-		}
-		first_iteration = false;
-
-		nodes += record.data.node;
-		if (record.data.priority) {
-		    nodes += ':' + record.data.priority;
-		}
-	    });
+	    let nodes = selected
+		.map(({ data }) => data.node + (data.priority ? `:${data.priority}` : ''))
+		.join(',');
 
 	    // nodefield change listener calls us again, which results in a
 	    // endless recursion, suspend the event temporary to avoid this
