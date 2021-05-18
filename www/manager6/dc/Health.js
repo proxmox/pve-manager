@@ -23,39 +23,30 @@ Ext.define('PVE.dc.Health', {
     nodeIndex: 0,
 
     updateStatus: function(store, records, success) {
-	var me = this;
+	let me = this;
 	if (!success) {
 	    return;
 	}
 
-	var cluster = {
+	let cluster = {
 	    iconCls: PVE.Utils.get_health_icon('good', true),
 	    text: gettext("Standalone node - no cluster defined"),
 	};
-
-	var nodes = {
+	let nodes = {
 	    online: 0,
 	    offline: 0,
 	};
-
-	// by default we have one node
-	var numNodes = 1;
-	var i;
-
-	for (i = 0; i < records.length; i++) {
-	    var item = records[i];
-	    if (item.data.type === 'node') {
-		nodes[item.data.online === 1 ? 'online':'offline']++;
-	    } else if (item.data.type === 'cluster') {
-		cluster.text = gettext("Cluster") + ": ";
-		cluster.text += item.data.name + ", ";
-		cluster.text += gettext("Quorate") + ": ";
-		cluster.text += Proxmox.Utils.format_boolean(item.data.quorate);
-		if (item.data.quorate != 1) {
+	let numNodes = 1; // by default we have one node
+	for (const { data } of records) {
+	    if (data.type === 'node') {
+		nodes[data.online === 1 ? 'online':'offline']++;
+	    } else if (data.type === 'cluster') {
+		cluster.text = `${gettext("Cluster")}: ${data.name}, ${gettext("Quorate")}: `;
+		cluster.text += Proxmox.Utils.format_boolean(data.quorate);
+		if (data.quorate !== 1) {
 		    cluster.iconCls = PVE.Utils.get_health_icon('critical', true);
 		}
-
-		numNodes = item.data.nodes;
+		numNodes = data.nodes;
 	    }
 	}
 
@@ -68,34 +59,29 @@ Ext.define('PVE.dc.Health', {
     },
 
     updateCeph: function(store, records, success) {
-	var me = this;
-	var cephstatus = me.getComponent('ceph');
+	let me = this;
+	let cephstatus = me.getComponent('ceph');
 	if (!success || records.length < 1) {
-	    // if ceph status is already visible
-	    // don't stop to update
 	    if (cephstatus.isVisible()) {
-		return;
+		return; // if ceph status is already visible don't stop to update
 	    }
-
-	    // try all nodes until we either get a successful api call,
-	    // or we tried all nodes
+	    // try all nodes until we either get a successful api call, or we tried all nodes
 	    if (++me.nodeIndex >= me.nodeList.length) {
 		me.cephstore.stopUpdate();
 	    } else {
-		store.getProxy().setUrl('/api2/json/nodes/' + me.nodeList[me.nodeIndex].node + '/ceph/status');
+		store.getProxy().setUrl(`/api2/json/nodes/${me.nodeList[me.nodeIndex].node}/ceph/status`);
 	    }
-
 	    return;
 	}
 
-	var state = PVE.Utils.render_ceph_health(records[0].data.health || {});
+	let state = PVE.Utils.render_ceph_health(records[0].data.health || {});
 	cephstatus.updateHealth(state);
 	cephstatus.setVisible(true);
     },
 
     listeners: {
 	destroy: function() {
-	    var me = this;
+	    let me = this;
 	    me.cephstore.stopUpdate();
 	},
     },
@@ -140,15 +126,14 @@ Ext.define('PVE.dc.Health', {
 	    listeners: {
 		element: 'el',
 		click: function() {
-		    var sp = Ext.state.Manager.getProvider();
-		    sp.set('dctab', { value: 'ceph' }, true);
+		    Ext.state.Manager.getProvider().set('dctab', { value: 'ceph' }, true);
 		},
 	    },
 	},
     ],
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	me.nodeList = PVE.data.ResourceStore.getNodes();
 	me.nodeIndex = 0;
@@ -157,7 +142,7 @@ Ext.define('PVE.dc.Health', {
 	    storeid: 'pve-cluster-ceph',
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodeList[me.nodeIndex].node + '/ceph/status',
+		url: `/api2/json/nodes/${me.nodeList[me.nodeIndex].node}/ceph/status`,
 	    },
 	});
 	me.callParent();

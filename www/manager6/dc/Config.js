@@ -175,7 +175,7 @@ Ext.define('PVE.dc.Config', {
 		    title: gettext('Options'),
 		    hidden: true,
 		    iconCls: 'fa fa-gear',
-		    itemId: 'sdnoptions'
+		    itemId: 'sdnoptions',
 		});
 	    }
 
