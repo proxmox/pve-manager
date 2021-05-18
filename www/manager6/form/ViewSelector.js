@@ -15,9 +15,9 @@ Ext.define('PVE.form.ViewSelector', {
     queryMode: 'local',
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	var default_views = {
+	let default_views = {
 	    server: {
 		text: gettext('Server View'),
 		groups: ['node'],
@@ -36,25 +36,18 @@ Ext.define('PVE.form.ViewSelector', {
 	    pool: {
 		text: gettext('Pool View'),
 		groups: ['pool'],
-                // Pool View only lists VMs and Containers
-                filterfn: function(node) {
-                    return node.data.type === 'qemu' || node.data.type === 'lxc' || node.data.type === 'openvz' ||
-			node.data.type === 'pool';
-                },
+		// Pool View only lists VMs and Containers
+		filterfn: ({ data }) => data.type === 'qemu' || data.type === 'lxc' || data.type === 'pool',
 	    },
 	};
+	let groupdef = Object.entries(default_views).map(([name, config]) => [name, config.text]);
 
-	var groupdef = [];
-	Ext.Object.each(default_views, function(viewname, value) {
-	    groupdef.push([viewname, value.text]);
-	});
-
-	var store = Ext.create('Ext.data.Store', {
+	let store = Ext.create('Ext.data.Store', {
 	    model: 'KeyValue',
-            proxy: {
+	    proxy: {
 		type: 'memory',
 		reader: 'array',
-            },
+	    },
 	    data: groupdef,
 	    autoload: true,
 	});
@@ -63,18 +56,16 @@ Ext.define('PVE.form.ViewSelector', {
 	    store: store,
 	    value: groupdef[0][0],
 	    getViewFilter: function() {
-		var view = me.getValue();
+		let view = me.getValue();
 		return Ext.apply({ id: view }, default_views[view] || default_views.server);
 	    },
-
 	    getState: function() {
 		return { value: me.getValue() };
 	    },
-
 	    applyState: function(state, doSelect) {
-		var view = me.getValue();
-		if (state && state.value && view != state.value) {
-		    var record = store.findRecord('key', state.value, 0, false, true, true);
+		let view = me.getValue();
+		if (state && state.value && view !== state.value) {
+		    let record = store.findRecord('key', state.value, 0, false, true, true);
 		    if (record) {
 			me.setValue(state.value, true);
 			if (doSelect) {
@@ -91,13 +82,12 @@ Ext.define('PVE.form.ViewSelector', {
 
 	me.callParent();
 
-	var statechange = function(sp, key, value) {
+	let statechange = function(sp, key, value) {
 	    if (key === me.id) {
 		me.applyState(value, true);
 	    }
 	};
-
-	var sp = Ext.state.Manager.getProvider();
+	let sp = Ext.state.Manager.getProvider();
 	me.mon(sp, 'statechange', statechange, me);
     },
 });
