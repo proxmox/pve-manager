@@ -149,11 +149,11 @@ Ext.define('PVE.qemu.USBEdit', {
 		var type = 'spice';
 
 		for (let i = 0; i < data.length; i++) {
-		    if (/^(host=)?(0x)?[a-zA-Z0-9]{4}\:(0x)?[a-zA-Z0-9]{4}$/.test(data[i])) {
+		    if (/^(host=)?(0x)?[a-zA-Z0-9]{4}:(0x)?[a-zA-Z0-9]{4}$/.test(data[i])) {
 			hostdevice = data[i];
 			hostdevice = hostdevice.replace('host=', '').replace('0x', '');
 			type = 'hostdevice';
-		    } else if (/^(host=)?(\d+)\-(\d+(\.\d+)*)$/.test(data[i])) {
+		    } else if (/^(host=)?(\d+)-(\d+(\.\d+)*)$/.test(data[i])) {
 			port = data[i];
 			port = port.replace('host=', '');
 			type = 'port';

@@ -13,7 +13,7 @@ Ext.define('PVE.lxc.DNSInputPanel', {
 	}
 
 	if (values.nameserver) {
-	    var list = values.nameserver.split(/[\ \,\;]+/);
+	    let list = values.nameserver.split(/[ ,;]+/);
 	    values.nameserver = list.join(' ');
 	} else if (!me.insideWizard) {
 	    deletes.push('nameserver');

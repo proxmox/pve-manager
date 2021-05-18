@@ -86,7 +86,7 @@ Ext.define('PVE.qemu.CloudInit', {
 		var insert_params = {};
 		let disk = PVE.Parser.parseQemuDrive(view.ciDriveId, view.ciDrive);
 		var storage = '';
-		var stormatch = disk.file.match(/^([^\:]+)\:/);
+		var stormatch = disk.file.match(/^([^:]+):/);
 		if (stormatch) {
 		    storage = stormatch[1];
 		}
