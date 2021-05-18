@@ -5,32 +5,24 @@ Ext.define('PVE.dc.UserEdit', {
     isAdd: true,
 
     initComponent: function() {
-        var me = this;
+	let me = this;
 
-        me.isCreate = !me.userid;
+	me.isCreate = !me.userid;
 
-        var url;
-        var method;
-        var realm;
-
-        if (me.isCreate) {
-            url = '/api2/extjs/access/users';
-            method = 'POST';
-        } else {
-            url = '/api2/extjs/access/users/' + encodeURIComponent(me.userid);
-            method = 'PUT';
+	let url = '/api2/extjs/access/users';
+	let method = 'POST';
+	if (!me.isCreate) {
+	    url += '/' + encodeURIComponent(me.userid);
+	    method = 'PUT';
 	}
 
-	var verifypw;
-	var pwfield;
-
-	var validate_pw = function() {
+	let verifypw, pwfield;
+	let validate_pw = function() {
 	    if (verifypw.getValue() !== pwfield.getValue()) {
 		return gettext("Passwords do not match");
 	    }
 	    return true;
 	};
-
 	verifypw = Ext.createWidget('textfield', {
 	    inputType: 'password',
 	    fieldLabel: gettext('Confirm password'),
@@ -51,31 +43,18 @@ Ext.define('PVE.dc.UserEdit', {
 	    validator: validate_pw,
 	});
 
-	var update_passwd_field = function(realm) {
-	    if (realm === 'pve') {
-		pwfield.setVisible(true);
-		pwfield.setDisabled(false);
-		verifypw.setVisible(true);
-		verifypw.setDisabled(false);
-	    } else {
-		pwfield.setVisible(false);
-		pwfield.setDisabled(true);
-		verifypw.setVisible(false);
-		verifypw.setDisabled(true);
-	    }
-	};
-
-        var column1 = [
-            {
-                xtype: me.isCreate ? 'textfield' : 'displayfield',
-                name: 'userid',
-                fieldLabel: gettext('User name'),
-                value: me.userid,
+	let column1 = [
+	    {
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
+		name: 'userid',
+		fieldLabel: gettext('User name'),
+		value: me.userid,
 		renderer: Ext.String.htmlEncode,
-                allowBlank: false,
-                submitValue: !!me.isCreate,
-            },
-	    pwfield, verifypw,
+		allowBlank: false,
+		submitValue: !!me.isCreate,
+	    },
+	    pwfield,
+	    verifypw,
 	    {
 		xtype: 'pveGroupSelector',
 		name: 'groups',
@@ -83,10 +62,10 @@ Ext.define('PVE.dc.UserEdit', {
 		allowBlank: true,
 		fieldLabel: gettext('Group'),
 	    },
-            {
+	    {
 		xtype: 'pmxExpireDate',
 		name: 'expire',
-            },
+	    },
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Enabled'),
@@ -95,9 +74,9 @@ Ext.define('PVE.dc.UserEdit', {
 		defaultValue: 1,
 		checked: true,
 	    },
-        ];
+	];
 
-        var column2 = [
+	let column2 = [
 	    {
 		xtype: 'textfield',
 		name: 'firstname',
@@ -116,23 +95,26 @@ Ext.define('PVE.dc.UserEdit', {
 	    },
 	];
 
-        if (me.isCreate) {
-            column1.splice(1, 0, {
-                xtype: 'pmxRealmComboBox',
-                name: 'realm',
-                fieldLabel: gettext('Realm'),
-                allowBlank: false,
+	if (me.isCreate) {
+	    column1.splice(1, 0, {
+		xtype: 'pmxRealmComboBox',
+		name: 'realm',
+		fieldLabel: gettext('Realm'),
+		allowBlank: false,
 		matchFieldWidth: false,
 		listConfig: { width: 300 },
-                listeners: {
-                    change: function(combo, newValue) {
-                        realm = newValue;
-			update_passwd_field(realm);
-                    },
-                },
-                submitValue: false,
-            });
-        }
+		listeners: {
+		    change: function(combo, realm) {
+			me.realm = realm;
+			pwfield.setVisible(realm === 'pve');
+			pwfield.setDisabled(realm !== 'pve');
+			verifypw.setVisible(realm === 'pve');
+			verifypw.setDisabled(realm !== 'pve');
+		    },
+		},
+		submitValue: false,
+	    });
+	}
 
 	var ipanel = Ext.create('Proxmox.panel.InputPanel', {
 	    column1: column1,
@@ -152,32 +134,30 @@ Ext.define('PVE.dc.UserEdit', {
 		},
 	    ],
 	    onGetValues: function(values) {
-		if (realm) {
-		    values.userid = values.userid + '@' + realm;
+		if (me.realm) {
+		    values.userid = values.userid + '@' + me.realm;
 		}
-
 		if (!values.password) {
 		    delete values.password;
 		}
-
 		return values;
 	    },
 	});
 
 	Ext.applyIf(me, {
-            subject: gettext('User'),
-            url: url,
-            method: method,
+	    subject: gettext('User'),
+	    url: url,
+	    method: method,
 	    fieldDefaults: {
-		labelWidth: 110, // for spanish translation
+		labelWidth: 110, // some translation are quite long (e.g., Spanish)
 	    },
 	    items: [ipanel],
-        });
+	});
 
-        me.callParent();
+	me.callParent();
 
-        if (!me.isCreate) {
-            me.load({
+	if (!me.isCreate) {
+	    me.load({
 		success: function(response, options) {
 		    var data = response.result.data;
 		    me.setValues(data);
@@ -186,8 +166,8 @@ Ext.define('PVE.dc.UserEdit', {
 			    me.down('[name="keys"]').setDisabled(1);
 			}
 		    }
-                },
-            });
-        }
+		},
+	    });
+	}
     },
 });
