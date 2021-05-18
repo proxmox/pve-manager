@@ -37,8 +37,8 @@ Ext.define('PVE.qemu.SerialnputPanel', {
 		if (!this.rendered) {
 		    return true;
 		}
-		var me = this.up('panel');
-		if (me.vmconfig !== undefined && Ext.isDefined(me.vmconfig['serial' + id])) {
+		let view = this.up('panel');
+		if (view.vmconfig !== undefined && Ext.isDefined(view.vmconfig['serial' + id])) {
 			return "This device is already in use.";
 		}
 		return true;

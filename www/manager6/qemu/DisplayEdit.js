@@ -34,7 +34,7 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 	},
 	listeners: {
 	    change: function(cb, val) {
-		var me = this.up('panel');
+		let view = this.up('panel');
 		if (!val) {
 		    return;
 		}
@@ -70,7 +70,7 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 		    default:
 			break;
 		}
-		var memoryfield = me.down('field[name=memory]');
+		let memoryfield = view.down('field[name=memory]');
 		memoryfield.setEmptyText(emptyText);
 		memoryfield.setDisabled(disable);
 	    },

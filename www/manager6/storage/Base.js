@@ -89,15 +89,15 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
     },
 
     updateComponents: function() {
-	let panel = this;
+	let me = this;
 
-	let keepAll = panel.down('proxmoxcheckbox[name=keep-all]').getValue();
+	let keepAll = me.down('proxmoxcheckbox[name=keep-all]').getValue();
 	let anyValue = false;
-	panel.query('pmxPruneKeepField').forEach(field => {
+	me.query('pmxPruneKeepField').forEach(field => {
 	    anyValue = anyValue || field.getValue() !== null;
 	    field.setDisabled(keepAll);
 	});
-	panel.down('component[name=no-keeps-hint]').setHidden(anyValue || keepAll);
+	me.down('component[name=no-keeps-hint]').setHidden(anyValue || keepAll);
     },
 
     listeners: {

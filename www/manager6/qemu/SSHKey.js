@@ -34,11 +34,11 @@ Ext.define('PVE.qemu.SSHKeyInputPanel', {
 	    fieldLabel: 'test',
 	    listeners: {
 		change: function(btn, e, value) {
-		    var me = this.up('inputpanel');
+		    let view = this.up('inputpanel');
 		    e = e.event;
 		    Ext.Array.each(e.target.files, function(file) {
 			PVE.Utils.loadSSHKeyFromFile(file, function(res) {
-			    var keysField = me.down('#sshkeys');
+			    let keysField = view.down('#sshkeys');
 			    var old = keysField.getValue();
 			    keysField.setValue(old + res);
 			});

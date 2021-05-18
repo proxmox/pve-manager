@@ -87,10 +87,10 @@ Ext.define('PVE.qemu.AgentIPView', {
 		    hidden: true,
 		    ui: 'default-toolbar',
 		    handler: function(btn) {
-			var me = this.up('pveAgentIPView');
+			let view = this.up('pveAgentIPView');
 
 			var win = Ext.create('PVE.window.IPInfo');
-			win.down('grid').getStore().setData(me.nics);
+			win.down('grid').getStore().setData(view.nics);
 			win.show();
 		    },
 		    text: gettext('More'),

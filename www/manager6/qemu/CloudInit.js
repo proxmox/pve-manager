@@ -10,19 +10,19 @@ Ext.define('PVE.qemu.CloudInit', {
 	    disabled: true,
 	    dangerous: true,
 	    confirmMsg: function(rec) {
-		var me = this.up('grid');
+		let view = this.up('grid');
 		var warn = gettext('Are you sure you want to remove entry {0}');
 
 		var entry = rec.data.key;
 		var msg = Ext.String.format(warn, "'"
-		    + me.renderKey(entry, {}, rec) + "'");
+		    + view.renderKey(entry, {}, rec) + "'");
 
 		return msg;
 	    },
 	    enableFn: function(record) {
-		var me = this.up('grid');
+		let view = this.up('grid');
 		var caps = Ext.state.Manager.get('GuiCap');
-		if (me.rows[record.data.key].never_delete ||
+		if (view.rows[record.data.key].never_delete ||
 		    !caps.vms['VM.Config.Network']) {
 		    return false;
 		}
@@ -33,8 +33,8 @@ Ext.define('PVE.qemu.CloudInit', {
 		return true;
 	    },
 	    handler: function() {
-		var me = this.up('grid');
-		var records = me.getSelection();
+		let view = this.up('grid');
+		let records = view.getSelection();
 		if (!records || !records.length) {
 		    return;
 		}
@@ -48,15 +48,15 @@ Ext.define('PVE.qemu.CloudInit', {
 		var params = {};
 		params.delete = id;
 		Proxmox.Utils.API2Request({
-		    url: me.baseurl + '/config',
-		    waitMsgTarget: me,
+		    url: view.baseurl + '/config',
+		    waitMsgTarget: view,
 		    method: 'PUT',
 		    params: params,
 		    failure: function(response, opts) {
 			Ext.Msg.alert('Error', response.htmlStatus);
 		    },
 		    callback: function() {
-			me.reload();
+			view.reload();
 		    },
 		});
 	    },
@@ -66,12 +66,12 @@ Ext.define('PVE.qemu.CloudInit', {
 	    xtype: 'proxmoxButton',
 	    disabled: true,
 	    enableFn: function(rec) {
-		let me = this.up('pveCiPanel');
-		return !!me.rows[rec.data.key].editor;
+		let view = this.up('pveCiPanel');
+		return !!view.rows[rec.data.key].editor;
 	    },
 	    handler: function() {
-		var me = this.up('grid');
-		me.run_editor();
+		let view = this.up('grid');
+		view.run_editor();
 	    },
 	    text: gettext('Edit'),
 	},
@@ -81,37 +81,37 @@ Ext.define('PVE.qemu.CloudInit', {
 	    itemId: 'savebtn',
 	    text: gettext('Regenerate Image'),
 	    handler: function() {
-		var me = this.up('grid');
+		let view = this.up('grid');
 		var eject_params = {};
 		var insert_params = {};
-		var disk = PVE.Parser.parseQemuDrive(me.ciDriveId, me.ciDrive);
+		let disk = PVE.Parser.parseQemuDrive(view.ciDriveId, view.ciDrive);
 		var storage = '';
 		var stormatch = disk.file.match(/^([^\:]+)\:/);
 		if (stormatch) {
 		    storage = stormatch[1];
 		}
-		eject_params[me.ciDriveId] = 'none,media=cdrom';
-		insert_params[me.ciDriveId] = storage + ':cloudinit';
+		eject_params[view.ciDriveId] = 'none,media=cdrom';
+		insert_params[view.ciDriveId] = storage + ':cloudinit';
 
 		var failure = function(response, opts) {
 		    Ext.Msg.alert('Error', response.htmlStatus);
 		};
 
 		Proxmox.Utils.API2Request({
-		    url: me.baseurl + '/config',
-		    waitMsgTarget: me,
+		    url: view.baseurl + '/config',
+		    waitMsgTarget: view,
 		    method: 'PUT',
 		    params: eject_params,
 		    failure: failure,
 		    callback: function() {
 			Proxmox.Utils.API2Request({
-			    url: me.baseurl + '/config',
-			    waitMsgTarget: me,
+			    url: view.baseurl + '/config',
+			    waitMsgTarget: view,
 			    method: 'PUT',
 			    params: insert_params,
 			    failure: failure,
 			    callback: function() {
-				me.reload();
+				view.reload();
 			    },
 			});
 		    },

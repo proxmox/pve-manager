@@ -189,11 +189,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		disabled: '{hasMP}',
 	    },
 	    validator: function(value) {
-		var me = this.up('inputpanel');
-		if (!me.rendered) {
+		let view = this.up('inputpanel');
+		if (!view.rendered) {
 		    return;
 		}
-		if (Ext.isDefined(me.vmconfig["mp"+value])) {
+		if (Ext.isDefined(view.vmconfig["mp"+value])) {
 		    return "Mount point is already in use.";
 		}
 		/* returns a string above */
