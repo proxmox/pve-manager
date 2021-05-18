@@ -11,6 +11,7 @@ Ext.define('PVE.storage.IScsiScan', {
 	width: 350,
     },
     doRawQuery: function() {
+	// do nothing
     },
 
     onTriggerClick: function() {

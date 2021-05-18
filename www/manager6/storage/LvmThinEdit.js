@@ -8,6 +8,7 @@ Ext.define('PVE.storage.TPoolSelector', {
     editable: false,
 
     doRawQuery: function() {
+	// nothing
     },
 
     onTriggerClick: function() {

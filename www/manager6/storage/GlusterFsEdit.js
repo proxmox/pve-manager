@@ -12,6 +12,7 @@ Ext.define('PVE.storage.GlusterFsScan', {
 	width: 350,
     },
     doRawQuery: function() {
+	// nothing
     },
 
     onTriggerClick: function() {

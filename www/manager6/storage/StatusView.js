@@ -66,6 +66,6 @@ Ext.define('PVE.storage.StatusView', {
     ],
 
     updateTitle: function() {
-	return;
+	// nothing
     },
 });

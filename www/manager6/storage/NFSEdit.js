@@ -12,6 +12,7 @@ Ext.define('PVE.storage.NFSScan', {
 	width: 350,
     },
     doRawQuery: function() {
+	// do nothing
     },
 
     onTriggerClick: function() {
