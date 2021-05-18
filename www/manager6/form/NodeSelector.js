@@ -63,16 +63,14 @@ Ext.define('PVE.form.NodeSelector', {
     },
 
     validator: function(value) {
-	var me = this;
-	if (!me.onlineValidator || me.allowBlank && !value) {
+	let me = this;
+	if (!me.onlineValidator || (me.allowBlank && !value)) {
 	    return true;
 	}
 
-	var offline = [];
-	var notAllowed = [];
-
+	let offline = [], notAllowed = [];
 	Ext.Array.each(value.split(/\s*,\s*/), function(node) {
-	    var rec = me.store.findRecord(me.valueField, node, 0, false, true, true);
+	    let rec = me.store.findRecord(me.valueField, node, 0, false, true, true);
 	    if (!(rec && rec.data) || rec.data.status !== 'online') {
 		offline.push(node);
 	    } else if (me.allowedNodes && !Ext.Array.contains(me.allowedNodes, node)) {
@@ -83,7 +81,6 @@ Ext.define('PVE.form.NodeSelector', {
 	if (value && notAllowed.length !== 0) {
 	    return "Node " + notAllowed.join(', ') + " is not allowed for this action!";
 	}
-
 	if (value && offline.length !== 0) {
 	    return "Node " + offline.join(', ') + " seems to be offline!";
 	}
@@ -93,26 +90,17 @@ Ext.define('PVE.form.NodeSelector', {
     initComponent: function() {
 	var me = this;
 
-        if (me.selectCurNode && PVE.curSelectedNode && PVE.curSelectedNode.data.node) {
-            me.preferredValue = PVE.curSelectedNode.data.node;
-        }
+	if (me.selectCurNode && PVE.curSelectedNode && PVE.curSelectedNode.data.node) {
+	    me.preferredValue = PVE.curSelectedNode.data.node;
+	}
 
-        me.callParent();
-        me.getStore().load();
+	me.callParent();
+	me.getStore().load();
 
-	// filter out disallowed nodes
-	me.getStore().addFilter(new Ext.util.Filter({
-	    filterFn: function(item) {
-		if (Ext.isArray(me.disallowedNodes)) {
-		    return !Ext.Array.contains(me.disallowedNodes, item.data.node);
-		} else {
-		    return true;
-		}
-	    },
+	me.getStore().addFilter(new Ext.util.Filter({ // filter out disallowed nodes
+	    filterFn: (item) => !(me.disallowedNodes && me.disallowedNodes.includes(item.data.node)),
 	}));
 
-	me.mon(me.getStore(), 'load', function() {
-	    me.isValid();
-	});
+	me.mon(me.getStore(), 'load', () => me.isValid());
     },
 });
