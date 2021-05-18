@@ -117,7 +117,7 @@ Ext.define('PVE.widget.ProgressBar', {
 
 	if (value > 0.89) {
 	    me.addCls('critical');
-	} else if (value > 0.59) {
+	} else if (value > 0.75) {
 	    me.addCls('warning');
 	}
     },
