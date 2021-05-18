@@ -8,9 +8,9 @@ Ext.define('PVE.dc.Tasks', {
     alias: ['widget.pveClusterTasks'],
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	var taskstore = Ext.create('Proxmox.data.UpdateStore', {
+	let taskstore = Ext.create('Proxmox.data.UpdateStore', {
 	    storeid: 'pve-cluster-tasks',
 	    model: 'proxmox-tasks',
 	    proxy: {
@@ -18,8 +18,7 @@ Ext.define('PVE.dc.Tasks', {
 		url: '/api2/json/cluster/tasks',
 	    },
 	});
-
-	var store = Ext.create('Proxmox.data.DiffStore', {
+	let store = Ext.create('Proxmox.data.DiffStore', {
 	    rstore: taskstore,
 	    sortAfterUpdate: true,
 	    appendAtStart: true,
@@ -36,7 +35,7 @@ Ext.define('PVE.dc.Tasks', {
 
 	});
 
-	var run_task_viewer = function() {
+	let run_task_viewer = function() {
 	    var sm = me.getSelectionModel();
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
@@ -53,17 +52,20 @@ Ext.define('PVE.dc.Tasks', {
 	Ext.apply(me, {
 	    store: store,
 	    stateful: false,
-
 	    viewConfig: {
 		trackOver: false,
 		stripeRows: true, // does not work with getRowClass()
-
 		getRowClass: function(record, index) {
-		    var status = record.get('status');
-
-		    if (status && status != 'OK') {
-			return "proxmox-invalid-row";
+		    let taskState = record.get('status');
+		    if (taskState) {
+			let parsed = Proxmox.Utils.parse_task_status(taskState);
+			if (parsed === 'warning') {
+			    return "proxmox-warning-row";
+			} else if (parsed !== 'ok') {
+			    return "proxmox-invalid-row";
+			}
 		    }
+		    return '';
 		},
 	    },
 	    sortableColumns: false,
@@ -122,11 +124,7 @@ Ext.define('PVE.dc.Tasks', {
 			    }
 			    return "";
 			}
-			if (value == 'OK') {
-			    return 'OK';
-			}
-			// metaData.attr = 'style="color:red;"';
-			return Proxmox.Utils.errorText + ': ' + value;
+			return Proxmox.Utils.format_task_status(value);
 		    },
 		},
 	    ],
