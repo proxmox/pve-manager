@@ -19,11 +19,11 @@ Ext.define('PVE.form.ControllerSelector', {
 	    }
 	}
 
-	var sortPriority = PVE.qemu.OSDefaults.getDefaults(vmconfig.ostype).busPriority;
+	let sortPriority = PVE.qemu.OSDefaults.getDefaults(vmconfig.ostype).busPriority;
 
-	var sortedList = Ext.clone(controllerList);
+	let sortedList = Ext.clone(controllerList);
 	sortedList.sort(function(a, b) {
-	    if (usedControllers[b] == usedControllers[a]) {
+	    if (usedControllers[b] === usedControllers[a]) {
 		return sortPriority[b] - sortPriority[a];
 	    }
 	    return usedControllers[b] - usedControllers[a];
@@ -32,15 +32,29 @@ Ext.define('PVE.form.ControllerSelector', {
 	return sortedList;
     },
 
+    setToFree: function(controllers, busField, deviceIDField) {
+	let me = this;
+	for (const controller of controllers) {
+	    busField.setValue(controller);
+	    for (let i = 0; i < PVE.Utils.diskControllerMaxIDs[controller]; i++) {
+		let confid = controller + i.toString();
+		if (!Ext.isDefined(me.vmconfig[confid])) {
+		    deviceIDField.setValue(i);
+		    return;
+		}
+	    }
+	}
+    },
+
     setVMConfig: function(vmconfig, autoSelect) {
-	var me = this;
+	let me = this;
 
 	me.vmconfig = Ext.apply({}, vmconfig);
 
-	var clist = ['ide', 'virtio', 'scsi', 'sata'];
-	var bussel = me.down('field[name=controller]');
-	var deviceid = me.down('field[name=deviceid]');
+	let bussel = me.down('field[name=controller]');
+	let deviceid = me.down('field[name=deviceid]');
 
+	let clist = ['ide', 'virtio', 'scsi', 'sata'];
 	if (autoSelect === 'cdrom') {
 	    if (!Ext.isDefined(me.vmconfig.ide2)) {
 		bussel.setValue('ide');
@@ -49,22 +63,12 @@ Ext.define('PVE.form.ControllerSelector', {
 	    }
 	    clist = ['ide', 'scsi', 'sata'];
 	} else {
-	    // in most cases we want to add a disk to the same controller
-	    // we previously used
+	    // in most cases we want to add a disk to the same controller we previously used
 	    clist = me.sortByPreviousUsage(me.vmconfig, clist);
 	}
 
-clist_loop:
-	for (const controller of clist) {
-	    bussel.setValue(controller);
-	    for (let i = 0; i < PVE.Utils.diskControllerMaxIDs[controller]; i++) {
-		let confid = controller + i.toString();
-		if (!Ext.isDefined(me.vmconfig[confid])) {
-		    deviceid.setValue(i);
-		    break clist_loop; // we found the desired controller/id combo
-		}
-	    }
-	}
+	me.setToFree(clist, bussel, deviceid);
+
 	deviceid.validate();
     },
 
@@ -90,7 +94,7 @@ clist_loop:
 			    if (!value) {
 				return;
 			    }
-			    var field = me.down('field[name=deviceid]');
+			    let field = me.down('field[name=deviceid]');
 			    field.setMaxValue(PVE.Utils.diskControllerMaxIDs[value]);
 			    field.validate();
 			},
@@ -106,11 +110,10 @@ clist_loop:
 		    allowBlank: false,
 		    validator: function(value) {
 			if (!me.rendered) {
-			    return;
+			    return undefined;
 			}
-			var field = me.down('field[name=controller]');
-			var controller = field.getValue();
-			var confid = controller + value;
+			let controller = me.down('field[name=controller]').getValue();
+			let confid = controller + value;
 			if (Ext.isDefined(me.vmconfig[confid])) {
 			    return "This device is already in use.";
 			}
