@@ -8,9 +8,9 @@ Ext.define('PVE.dc.Log', {
     alias: ['widget.pveClusterLog'],
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	var logstore = Ext.create('Proxmox.data.UpdateStore', {
+	let logstore = Ext.create('Proxmox.data.UpdateStore', {
 	    storeid: 'pve-cluster-log',
 	    model: 'proxmox-cluster-log',
 	    proxy: {
@@ -18,8 +18,7 @@ Ext.define('PVE.dc.Log', {
 		url: '/api2/json/cluster/log',
 	    },
 	});
-
-	var store = Ext.create('Proxmox.data.DiffStore', {
+	let store = Ext.create('Proxmox.data.DiffStore', {
 	    rstore: logstore,
 	    appendAtStart: true,
 	});
@@ -31,13 +30,12 @@ Ext.define('PVE.dc.Log', {
 	    viewConfig: {
 		trackOver: false,
 		stripeRows: true,
-
 		getRowClass: function(record, index) {
-		    var pri = record.get('pri');
-
+		    let pri = record.get('pri');
 		    if (pri && pri <= 3) {
 			return "proxmox-invalid-row";
 		    }
+		    return undefined;
 		},
 	    },
 	    sortableColumns: false,

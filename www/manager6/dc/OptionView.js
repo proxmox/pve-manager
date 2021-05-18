@@ -12,7 +12,7 @@ Ext.define('PVE.dc.OptionView', {
 	opts = opts || {};
 	me.rows = me.rows || {};
 
-	let canEdit = !opts.hasOwnProperty('caps') || opts.caps;
+	let canEdit = !Object.prototype.hasOwnProperty.call(opts, 'caps') || opts.caps;
 	me.rows[name] = {
 	    required: true,
 	    defaultValue: opts.defaultValue,
@@ -67,8 +67,6 @@ Ext.define('PVE.dc.OptionView', {
 
     initComponent: function() {
 	var me = this;
-
-	var caps = Ext.state.Manager.get('GuiCap');
 
 	me.add_combobox_row('keyboard', gettext('Keyboard Layout'), {
 	    renderer: PVE.Utils.render_kvm_language,
@@ -150,10 +148,9 @@ Ext.define('PVE.dc.OptionView', {
 		fieldLabel: gettext('U2F AppID URL'),
 		emptyText: gettext('Defaults to origin'),
 		value: '',
-		skipEmptyText: true,
 		deleteEmpty: true,
-		submitEmptyText: false,
 		skipEmptyText: true,
+		submitEmptyText: false,
 	    }, {
 		xtype: 'textfield',
 		name: 'origin',

@@ -48,20 +48,19 @@ Ext.define('PVE.dc.Support', {
     },
 
     initComponent: function() {
-        var me = this;
+        let me = this;
 
-	var reload = function() {
+	let reload = function() {
 	    Proxmox.Utils.API2Request({
 		url: '/nodes/localhost/subscription',
 		method: 'GET',
 		waitMsgTarget: me,
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    me.update('Unable to load subscription status' + ": " + response.htmlStatus);
+		    me.update(`${gettext('Unable to load subscription status')}: ${response.htmlStatus}`);
 		},
 		success: function(response, opts) {
-		    var data = response.result.data;
-
+		    let data = response.result.data;
 		    if (data.status === 'Active') {
 			if (data.level === 'c') {
 			    me.updateCommunity(data);
