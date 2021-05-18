@@ -93,7 +93,6 @@ Ext.define('PVE.storage.NFSInputPanel', {
     setValues: function(values) {
 	var me = this;
 	if (values.options) {
-	    var res = values.options;
 	    me.options = values.options.split(',');
 	    me.options.forEach(function(item) {
 		var match = item.match(/^vers=(.*)$/);

@@ -269,7 +269,6 @@ Ext.define('PVE.lxc.CreateWizard', {
 			if (key === 'password') { // don't show pw
 			    return;
 			}
-			var html = Ext.htmlEncode(Ext.JSON.encode(value));
 			data.push({ key: key, value: value });
 		    });
 

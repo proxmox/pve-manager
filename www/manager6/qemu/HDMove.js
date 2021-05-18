@@ -44,8 +44,6 @@ Ext.define('PVE.window.HDMove', {
     initComponent: function() {
 	var me = this;
 
-	var diskarray = [];
-
 	if (!me.nodename) {
 	    throw "no node name specified";
 	}

@@ -6,7 +6,6 @@ Ext.define('PVE.lxc.Options', {
 
     initComponent: function() {
 	var me = this;
-	var i;
 
 	var nodename = me.pveSelNode.data.node;
 	if (!nodename) {
@@ -163,8 +162,8 @@ Ext.define('PVE.lxc.Options', {
 	var revert_btn = new PVE.button.PendingRevert();
 
 	var set_button_status = function() {
-	    var sm = me.getSelectionModel();
-	    var rec = sm.getSelection()[0];
+	    let button_sm = me.getSelectionModel();
+	    let rec = button_sm.getSelection()[0];
 
 	    if (!rec) {
 		edit_btn.disable();

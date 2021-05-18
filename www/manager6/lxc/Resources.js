@@ -17,7 +17,7 @@ Ext.define('PVE.lxc.RessourceView', {
 
     initComponent: function() {
 	var me = this;
-	var i, confid;
+	let confid;
 
 	var nodename = me.pveSelNode.data.node;
 	if (!nodename) {

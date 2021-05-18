@@ -106,7 +106,6 @@ Ext.define('PVE.qemu.Smbios1Edit', {
 
 	me.load({
 	    success: function(response, options) {
-		var i, confid;
 		me.vmconfig = response.result.data;
 		var value = me.vmconfig.smbios1;
 		if (value) {

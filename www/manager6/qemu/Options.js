@@ -6,7 +6,6 @@ Ext.define('PVE.qemu.Options', {
 
     initComponent: function() {
 	var me = this;
-	var i;
 
 	var nodename = me.pveSelNode.data.node;
 	if (!nodename) {
@@ -99,7 +98,6 @@ Ext.define('PVE.qemu.Options', {
 		    if (boot.order) {
 			let list = boot.order.split(';');
 			let ret = '';
-			let i = 1;
 			list.forEach(dev => {
 			    if (ret) {
 				ret += ', ';
@@ -110,7 +108,7 @@ Ext.define('PVE.qemu.Options', {
 		    }
 
 		    // legacy style and fallback
-		    var i;
+		    let i;
 		    var text = '';
 		    var bootdisk = me.getObjectValue('bootdisk', undefined, pending);
 		    order = boot.legacy || 'cdn';

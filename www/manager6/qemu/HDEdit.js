@@ -375,7 +375,6 @@ Ext.define('PVE.qemu.HDEdit', {
 	    isCreate: me.isCreate,
 	});
 
-	var subject;
 	if (unused) {
 	    me.subject = gettext('Unused Disk');
 	} else if (me.isCreate) {

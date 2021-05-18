@@ -183,8 +183,6 @@ Ext.define('PVE.storage.TemplateView', {
 
 	me.content = 'vztmpl';
 
-	var sm = me.sm = Ext.create('Ext.selection.RowModel', {});
-
 	var reload = function() {
 	    me.store.load();
 	};

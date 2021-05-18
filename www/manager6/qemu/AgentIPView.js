@@ -157,7 +157,6 @@ Ext.define('PVE.qemu.AgentIPView', {
 		    text = ips.join('<br>');
 		}
 	    } else if (me.nics && me.nics.error) {
-		var msg = gettext('Cannot get info from Guest Agent<br>Error: {0}');
 		text = Ext.String.format(text, me.nics.error.desc);
 	    }
 	} else if (me.agent) {
