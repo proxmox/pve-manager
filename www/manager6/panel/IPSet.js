@@ -22,11 +22,11 @@ Ext.define('PVE.IPSetList', {
     initComponent: function() {
         var me = this;
 
-	if (me.ipset_panel == undefined) {
+	if (typeof me.ipset_panel === 'undefined') {
 	    throw "no rule panel specified";
 	}
 
-	if (me.base_url == undefined) {
+	if (typeof me.ipset_panel === 'undefined') {
 	    throw "no base_url specified";
 	}
 
@@ -143,7 +143,7 @@ Ext.define('PVE.IPSetList', {
 	    ],
 	    listeners: {
 		itemdblclick: run_editor,
-		select: function(sm, rec) {
+		select: function(_, rec) {
 		    var url = me.base_url + '/' + rec.data.name;
 		    me.ipset_panel.setBaseUrl(url);
 		},
@@ -346,7 +346,7 @@ Ext.define('PVE.IPSetGrid', {
 		    metaData.tdCls = 'proxmox-invalid-row';
 		    var html = '<p>' + Ext.htmlEncode(msg) + '</p>';
 		    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' +
-			html.replace(/\"/g, '&quot;') + '"';
+			html.replace(/"/g, '&quot;') + '"';
 		}
 	    }
 	    return value;
