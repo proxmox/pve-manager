@@ -63,14 +63,13 @@ Ext.define('PVE.widget.RunningChart', {
 		tooltip: {
 		    trackMouse: true,
 		    renderer: function(tooltip, record, ctx) {
-			let me = this.getChart();
 			if (!record || !record.data) return;
-			let date = new Date(record.data.time);
-			let value = me.up().renderer(record.data.val);
-			tooltip.setHtml(
-			    me.up().title + ': ' + value + '<br />' +
-			    Ext.Date.format(date, 'H:i:s'),
-			);
+			const view = this.getChart();
+			const date = new Date(record.data.time);
+			const value = view.up().renderer(record.data.val);
+			const line1 = `${view.up().title}: ${value}`;
+			const line2 = Ext.Date.format(date, 'H:i:s');
+			tooltip.setHtml(`${line1}<br />${line2}`);
 		    },
 		},
 		style: {
@@ -100,12 +99,12 @@ Ext.define('PVE.widget.RunningChart', {
     timeFrame: 5*60,
 
     addDataPoint: function(value, time) {
-	let me = this.chart;
-	let panel = me.up();
+	let view = this.chart;
+	let panel = view.up();
 	let now = new Date().getTime();
 	let begin = new Date(now - 1000 * panel.timeFrame).getTime();
 
-	me.store.add({
+	view.store.add({
 	    time: time || now,
 	    val: value || 0,
 	});
@@ -117,28 +116,28 @@ Ext.define('PVE.widget.RunningChart', {
 	// records in the store do not take much space, but like this,
 	// we prevent a memory leak when someone has the site open for a long time
 	// with minimal graphical glitches
-	if (me.store.count() > panel.timeFrame * 20) {
-	    var oldData = me.store.getData().createFiltered(function(item) {
+	if (view.store.count() > panel.timeFrame * 20) {
+	    var oldData = view.store.getData().createFiltered(function(item) {
 		return item.data.time < begin;
 	    });
 
-	    me.store.remove(oldData.getRange());
+	    view.store.remove(oldData.getRange());
 	}
 
-	me.timeaxis.setMinimum(begin);
-	me.timeaxis.setMaximum(now);
-	me.valuesprite.setText(panel.renderer(value || 0).toString());
-	me.valuesprite.setAttributes({
-	    x: me.getWidth() - 15,
-	    y: me.getHeight()/2,
+	view.timeaxis.setMinimum(begin);
+	view.timeaxis.setMaximum(now);
+	view.valuesprite.setText(panel.renderer(value || 0).toString());
+	view.valuesprite.setAttributes({
+	    x: view.getWidth() - 15,
+	    y: view.getHeight()/2,
 	}, true);
-	me.redraw();
+	view.redraw();
     },
 
     setTitle: function(title) {
 	this.title = title;
-	var me = this.getComponent('title');
-	me.update({ title: title });
+	let titlebox = this.getComponent('title');
+	titlebox.update({ title: title });
     },
 
     initComponent: function() {
