@@ -161,7 +161,7 @@ Ext.define('PVE.node.CertUpload', {
 		change: function(btn, e, value) {
 		    let form = this.up('form');
 		    for (const file of e.event.target.files) {
-			PVE.Utils.loadSSHKeyFromFile(file, res => form.down('field[name=key]').setValue(res));
+			PVE.Utils.loadFile(file, res => form.down('field[name=key]').setValue(res));
 		    }
 		    btn.reset();
 		},
@@ -185,7 +185,7 @@ Ext.define('PVE.node.CertUpload', {
 		change: function(btn, e, value) {
 		    let form = this.up('form');
 		    for (const file of e.event.target.files) {
-			PVE.Utils.loadSSHKeyFromFile(file, res => form.down('field[name=certificates]').setValue(res));
+			PVE.Utils.loadFile(file, res => form.down('field[name=certificates]').setValue(res));
 		    }
 		    btn.reset();
 		},
