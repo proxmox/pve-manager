@@ -134,8 +134,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $default_vers = qr/^(?:nautilus|octopus)$/;
-	my $cephver = $param->{version} || $default_vers;
+	my $cephver = $param->{version} || 'nautilus';
 
 	my $repolist;
 	if ($cephver eq 'nautilus') {
@@ -151,7 +150,7 @@ __PACKAGE__->register_method ({
 	PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $repolist);
 
 	warn "WARNING: installing non-default ceph release '$cephver'!\n"
-	    if $cephver !~ $default_vers;
+	    if $cephver !~ qr/^(?:nautilus|octopus)$/;
 
 	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
 	print "update available package list\n";
