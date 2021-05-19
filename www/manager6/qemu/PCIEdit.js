@@ -38,24 +38,20 @@ Ext.define('PVE.qemu.PCIInputPanel', {
     },
 
     onGetValues: function(values) {
-	var me = this;
-	var ret = {};
+	let me = this;
 	if (!me.confid) {
-	    var i;
-	    for (i = 0; i < 5; i++) {
+	    for (let i = 0; i < 5; i++) {
 		if (!me.vmconfig['hostpci' + i.toString()]) {
 		    me.confid = 'hostpci' + i.toString();
 		    break;
 		}
 	    }
+	    // FIXME: what if no confid was found??
 	}
-	// remove optional '0000' domain
-	if (values.host.substring(0, 5) === '0000:') {
-	    values.host = values.host.substring(5);
-	}
+	values.host.replace(/^0000:/, ''); // remove optional '0000' domain
+
 	if (values.multifunction) {
-	    // modify host to skip the '.X'
-	    values.host = values.host.substring(0, values.host.indexOf('.'));
+	    values.host = values.host.substring(0, values.host.indexOf('.')); // skip the '.X'
 	    delete values.multifunction;
 	}
 
@@ -69,12 +65,13 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 	    delete values.romfile;
 	}
 
+	let ret = {};
 	ret[me.confid] = PVE.Parser.printPropertyString(values, 'host');
 	return ret;
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	me.nodename = me.pveSelNode.data.node;
 	if (!me.nodename) {
@@ -92,10 +89,8 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 		    if (!success || !records.length) {
 			return;
 		    }
-
-		    if (records.every((val) => val.data.iommugroup === -1)) {
-			// no iommu groups
-			var warning = Ext.create('Ext.form.field.Display', {
+		    if (records.every((val) => val.data.iommugroup === -1)) { // no IOMMU groups
+			let warning = Ext.create('Ext.form.field.Display', {
 			    columnWidth: 1,
 			    padding: '0 0 10 0',
 			    value: 'No IOMMU detected, please activate it.' +
@@ -111,46 +106,42 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 			if (!value) {
 			    return;
 			}
-			var pcidev = pcisel.getStore().getById(value);
-			var mdevfield = me.down('field[name=mdev]');
-			mdevfield.setDisabled(!pcidev || !pcidev.data.mdev);
-			if (!pcidev) {
+			let pciDev = pcisel.getStore().getById(value);
+			let mdevfield = me.down('field[name=mdev]');
+			mdevfield.setDisabled(!pciDev || !pciDev.data.mdev);
+			if (!pciDev) {
 			    return;
 			}
-			var id = pcidev.data.id.substring(0, 5); // 00:00
-			var iommu = pcidev.data.iommugroup;
-			// try to find out if there are more devices
-			// in that iommu group
-			if (iommu !== -1) {
-			    var count = 0;
-			    pcisel.getStore().each(function(record) {
-				if (
-				    record.data.iommugroup === iommu &&
-				    record.data.id.substring(0, 5) !== id
-				) {
-				    count++;
-				    return false;
-				}
-				return true;
-			    });
-			    var warning = me.down('#iommuwarning');
-			    if (count && !warning) {
-				warning = Ext.create('Ext.form.field.Display', {
-				    columnWidth: 1,
-				    padding: '0 0 10 0',
-				    itemId: 'iommuwarning',
-				    value: 'The selected Device is not in a seperate' +
-					   'IOMMU group, make sure this is intended.',
-				    userCls: 'pmx-hint',
-				});
-				me.items.insert(0, warning);
-				me.updateLayout(); // insert does not trigger that
-			    } else if (!count && warning) {
-				me.remove(warning);
-			    }
-			}
-			if (pcidev.data.mdev) {
+			if (pciDev.data.mdev) {
 			    mdevfield.setPciID(value);
+			}
+			let iommu = pciDev.data.iommugroup;
+			if (iommu === -1) {
+			    return;
+			}
+			// try to find out if there are more devices in that iommu group
+			let id = pciDev.data.id.substring(0, 5); // 00:00
+			let count = 0;
+			pcisel.getStore().each(({ data }) => {
+			    if (data.iommugroup === iommu && data.id.substring(0, 5) !== id) {
+				count++;
+				return false;
+			    }
+			    return true;
+			});
+			let warning = me.down('#iommuwarning');
+			if (count && !warning) {
+			    warning = Ext.create('Ext.form.field.Display', {
+				columnWidth: 1,
+				padding: '0 0 10 0',
+				itemId: 'iommuwarning',
+				value: 'The selected Device is not in a seperate IOMMU group, make sure this is intended.',
+				userCls: 'pmx-hint',
+			    });
+			    me.items.insert(0, warning);
+			    me.updateLayout(); // insert does not trigger that
+			} else if (!count && warning) {
+			    me.remove(warning);
 			}
 		    },
 		},
@@ -171,11 +162,11 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 		nodename: me.nodename,
 		listeners: {
 		    change: function(field, value) {
-			var mf = me.down('field[name=multifunction]');
+			let multiFunction = me.down('field[name=multifunction]');
 			if (value) {
-			    mf.setValue(false);
+			    multiFunction.setValue(false);
 			}
-			mf.setDisabled(!!value);
+			multiFunction.setDisabled(!!value);
 		    },
 		},
 	    },
@@ -216,19 +207,17 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 Ext.define('PVE.qemu.PCIEdit', {
     extend: 'Proxmox.window.Edit',
 
-    vmconfig: undefined,
-
-    isAdd: true,
-
     subject: gettext('PCI Device'),
 
+    vmconfig: undefined,
+    isAdd: true,
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	me.isCreate = !me.confid;
 
-	var ipanel = Ext.create('PVE.qemu.PCIInputPanel', {
+	let ipanel = Ext.create('PVE.qemu.PCIInputPanel', {
 	    confid: me.confid,
 	    pveSelNode: me.pveSelNode,
 	});
@@ -240,9 +229,7 @@ Ext.define('PVE.qemu.PCIEdit', {
 	me.callParent();
 
 	me.load({
-	    success: function(response) {
-		ipanel.setVMConfig(response.result.data);
-	    },
+	    success: ({ result }) => ipanel.setVMConfig(result.data),
 	});
     },
 });
