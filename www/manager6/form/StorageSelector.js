@@ -57,7 +57,7 @@ Ext.define('PVE.form.StorageSelector', {
 	    extraParams: params,
 	});
 
-	me.store.load();
+	me.store.load(() => me.validate());
     },
 
     setTargetNode: function(targetNode) {
@@ -87,7 +87,7 @@ Ext.define('PVE.form.StorageSelector', {
     initComponent: function() {
 	var me = this;
 
-	var nodename = me.nodename;
+	let nodename = me.nodename;
 	me.nodename = undefined;
 
 	var store = Ext.create('Ext.data.Store', {
@@ -102,7 +102,7 @@ Ext.define('PVE.form.StorageSelector', {
 	    store: store,
 	});
 
-        me.callParent();
+	me.callParent();
 
 	if (nodename) {
 	    me.setNodename(nodename);
