@@ -276,10 +276,16 @@ JSSRC= 							\
 
 all: pvemanagerlib.js
 
+.lint-incremental: ${JSSRC}
+	eslint $?
+	touch "$@"
+
+.PHONY: lint check
+check: lint
 lint: ${JSSRC}
 	eslint --strict ${JSSRC}
 
-pvemanagerlib.js: OnlineHelpInfo.js ${JSSRC}
+pvemanagerlib.js: .lint-incremental OnlineHelpInfo.js ${JSSRC}
 	cat OnlineHelpInfo.js ${JSSRC} >$@.tmp
 	mv $@.tmp $@
 
@@ -295,7 +301,7 @@ install: pvemanagerlib.js
 .PHONY: clean
 clean:
 	find . -name '*~' -exec rm {} ';'
-	rm -rf pvemanagerlib.js OnlineHelpInfo.js
+	rm -rf pvemanagerlib.js OnlineHelpInfo.js .lint-incremental
 
 
 

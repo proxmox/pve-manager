@@ -20,9 +20,10 @@ all: ${SUBDIRS}
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i; done
 
 .PHONY: check
-check: bin test
+check: bin test www
 	${MAKE} -C bin check
 	${MAKE} -C test check
+	${MAKE} -C www check
 
 .PHONY: dinstall
 dinstall: ${DEB}
