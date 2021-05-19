@@ -108,9 +108,9 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    fieldLabel: gettext('SSH public key'),
 		    allowBlank: true,
 		    validator: function(value) {
-			var pwfield = this.up().down('field[name=password]');
+			let pwfield = this.up().down('field[name=password]');
 			if (value.length) {
-			    var key = PVE.Parser.parseSSHKey(value);
+			    let key = PVE.Parser.parseSSHKey(value);
 			    if (!key) {
 				return "Failed to recognize ssh key";
 			    }
@@ -123,25 +123,20 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    },
 		    afterRender: function() {
 			if (!window.FileReader) {
-			    // No FileReader support in this browser
-			    return;
+			    return; // No FileReader support in this browser
 			}
-			var cancel = function(ev) {
+			let cancelEvent = ev => {
 			    ev = ev.event;
 			    if (ev.preventDefault) {
 				ev.preventDefault();
 			    }
 			};
-			var field = this;
-			field.inputEl.on('dragover', cancel);
-			field.inputEl.on('dragenter', cancel);
-			field.inputEl.on('drop', function(ev) {
-			    ev = ev.event;
-			    if (ev.preventDefault) {
-				ev.preventDefault();
-			    }
-			    let files = ev.dataTransfer.files;
-			    PVE.Utils.loadSSHKeyFromFile(files[0], v => field.setValue(v));
+			this.inputEl.on('dragover', cancelEvent);
+			this.inputEl.on('dragenter', cancelEvent);
+			this.inputEl.on('drop', ev => {
+			    cancelEvent(ev);
+			    let files = ev.event.dataTransfer.files;
+			    PVE.Utils.loadSSHKeyFromFile(files[0], v => this.setValue(v));
 			});
 		    },
 		},
@@ -153,10 +148,8 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    listeners: {
 			change: function(btn, e, value) {
 			    e = e.event;
-			    var field = this.up().down('proxmoxtextfield[name=ssh-public-keys]');
-			    PVE.Utils.loadSSHKeyFromFile(e.target.files[0], function(v) {
-				field.setValue(v);
-			    });
+			    let field = this.up().down('proxmoxtextfield[name=ssh-public-keys]');
+			    PVE.Utils.loadSSHKeyFromFile(e.target.files[0], v => field.setValue(v));
 			    btn.reset();
 			},
 		    },
@@ -259,9 +252,9 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    ],
 	    listeners: {
 		show: function(panel) {
-		    var wizard = this.up('window');
-		    var kv = wizard.getValues();
-		    var data = [];
+		    let wizard = this.up('window');
+		    let kv = wizard.getValues();
+		    let data = [];
 		    Ext.Object.each(kv, function(key, value) {
 			if (key === 'delete' || key === 'tmplstorage') { // ignore
 			    return;
@@ -272,53 +265,46 @@ Ext.define('PVE.lxc.CreateWizard', {
 			data.push({ key: key, value: value });
 		    });
 
-		    var summarystore = panel.down('grid').getStore();
-		    summarystore.suspendEvents();
-		    summarystore.removeAll();
-		    summarystore.add(data);
-		    summarystore.sort();
-		    summarystore.resumeEvents();
-		    summarystore.fireEvent('refresh');
+		    let summaryStore = panel.down('grid').getStore();
+		    summaryStore.suspendEvents();
+		    summaryStore.removeAll();
+		    summaryStore.add(data);
+		    summaryStore.sort();
+		    summaryStore.resumeEvents();
+		    summaryStore.fireEvent('refresh');
 		},
 	    },
 	    onSubmit: function() {
-		var wizard = this.up('window');
-		var kv = wizard.getValues();
+		let wizard = this.up('window');
+		let kv = wizard.getValues();
 		delete kv.delete;
 
-		var nodename = kv.nodename;
+		let nodename = kv.nodename;
 		delete kv.nodename;
 		delete kv.tmplstorage;
 
 		if (!kv.pool.length) {
 		    delete kv.pool;
 		}
-
 		if (!kv.password.length && kv['ssh-public-keys']) {
 		    delete kv.password;
 		}
 
 		Proxmox.Utils.API2Request({
-		    url: '/nodes/' + nodename + '/lxc',
+		    url: `/nodes/${nodename}/lxc`,
 		    waitMsgTarget: wizard,
 		    method: 'POST',
 		    params: kv,
 		    success: function(response, opts) {
-			var upid = response.result.data;
-
-			var win = Ext.create('Proxmox.window.TaskViewer', {
-			    upid: upid,
+			Ext.create('Proxmox.window.TaskViewer', {
+			    autoShow: true,
+			    upid: response.result.data,
 			});
-			win.show();
 			wizard.close();
 		    },
-		    failure: function(response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    },
+		    failure: (response, opts) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
 		});
 	    },
 	},
     ],
 });
-
-
