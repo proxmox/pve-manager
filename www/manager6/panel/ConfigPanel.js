@@ -68,11 +68,11 @@ Ext.define('PVE.panel.Config', {
 	    singleExpand: false,
 	    listeners: {
 		selectionchange: function(treeList, selection) {
-		    var me = this.up('panel');
-		    me.suspendLayout = true;
-		    me.activateCard(selection.data.id);
-		    me.suspendLayout = false;
-		    me.updateLayout();
+		    let view = this.up('panel');
+		    view.suspendLayout = true;
+		    view.activateCard(selection.data.id);
+		    view.suspendLayout = false;
+		    view.updateLayout();
 		},
 		itemclick: function(treelist, info) {
 		    var olditem = treelist.getSelection();
@@ -123,6 +123,7 @@ Ext.define('PVE.panel.Config', {
 	    menu.setSelection(selection);
 	    return cardid;
 	}
+	return '';
     },
 
     activateCard: function(cardid) {
@@ -160,7 +161,7 @@ Ext.define('PVE.panel.Config', {
 	var activeTab; // leaving this undefined means items[0] will be the default tab
 
 	if (stateid) {
-	    var state = me.sp.get(stateid);
+	    let state = me.sp.get(stateid);
 	    if (state && state.value) {
 		// if this tab does not exist, it chooses the first
 		activeTab = state.value;
@@ -259,7 +260,7 @@ Ext.define('PVE.panel.Config', {
 		var acard = me.getLayout().getActiveItem().itemId;
 		// get the itemid of the new value
 		var ncard = state.value || me.firstItem;
-		if (ncard && acard != ncard) {
+		if (ncard && acard !== ncard) {
 		    // select the chosen item
 		    menu.setSelection(root.findChild('id', ncard, true) || root.firstChild);
 		}
