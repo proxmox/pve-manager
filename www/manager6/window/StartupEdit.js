@@ -60,9 +60,10 @@ Ext.define('PVE.window.StartupEdit', {
     onlineHelp: undefined,
 
     initComponent: function() {
-	var me = this;
-	var ipanelConfig = me.onlineHelp ? { onlineHelp: me.onlineHelp } : {};
-	var ipanel = Ext.create('PVE.panel.StartupInputPanel', ipanelConfig);
+	let me = this;
+
+	let ipanelConfig = me.onlineHelp ? { onlineHelp: me.onlineHelp } : {};
+	let ipanel = Ext.create('PVE.panel.StartupInputPanel', ipanelConfig);
 
 	Ext.applyIf(me, {
 	    subject: gettext('Start/Shutdown order'),
@@ -76,7 +77,6 @@ Ext.define('PVE.window.StartupEdit', {
 
 	me.load({
 	    success: function(response, options) {
-		var i, confid;
 		me.vmconfig = response.result.data;
 		ipanel.setStartup(me.vmconfig.startup);
 	    },
