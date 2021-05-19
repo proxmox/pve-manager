@@ -101,37 +101,38 @@ Ext.define('PVE.node.Directorylist', {
 	    text: gettext('Reload'),
 	    iconCls: 'fa fa-refresh',
 	    handler: function() {
-		var me = this.up('panel');
-		me.reload();
+		this.up('panel').reload();
 	    },
 	},
 	{
 	    text: gettext('Create') + ': Directory',
 	    handler: function() {
-		var me = this.up('panel');
-		var win = Ext.create('PVE.node.CreateDirectory', {
-		    nodename: me.nodename,
-		}).show();
-		win.on('destroy', function() { me.reload(); });
+		let view = this.up('panel');
+		Ext.create('PVE.node.CreateDirectory', {
+		    nodename: view.nodename,
+		    listeners: {
+			destroy: () => view.reload(),
+		    },
+		    autoShow: true,
+		});
 	    },
 	},
     ],
 
     reload: function() {
-	var me = this;
+	let me = this;
 	me.store.load();
 	me.store.sort();
     },
 
     listeners: {
 	activate: function() {
-	    var me = this;
-	    me.reload();
+	    this.reload();
 	},
     },
 
     initComponent: function() {
-        var me = this;
+        let me = this;
 
 	me.nodename = me.pveSelNode.data.node;
 	if (!me.nodename) {
@@ -143,7 +144,7 @@ Ext.define('PVE.node.Directorylist', {
 		fields: ['path', 'device', 'type', 'options', 'unitfile'],
 		proxy: {
 		    type: 'proxmox',
-		    url: "/api2/json/nodes/" + me.nodename + '/disks/directory',
+		    url: `/api2/json/nodes/${me.nodename}/disks/directory`,
 		},
 		sorters: 'path',
 	    },
