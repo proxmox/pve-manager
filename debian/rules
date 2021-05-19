@@ -1,8 +1,10 @@
 #!/usr/bin/make -f
 
 include debian/rules.env
-
 export REPOID=${REPOID_GENERATED}
+
+%:
+	dh $@
 
 override_dh_compress:
 	dh_compress -Xaplinfo.dat
@@ -12,6 +14,3 @@ override_dh_strip_nondeterminism:
 
 override_dh_fixperms:
 	dh_fixperms -Xpvemailforward -Xvar/log/pveproxy
-
-%:
-	dh $@
