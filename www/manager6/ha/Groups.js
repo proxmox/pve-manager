@@ -26,25 +26,23 @@ Ext.define('PVE.ha.GroupsView', {
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
-
-            var win = Ext.create('PVE.ha.GroupEdit', {
+	let run_editor = function() {
+	    let rec = sm.getSelection()[0];
+            Ext.create('PVE.ha.GroupEdit', {
                 groupId: rec.data.group,
+		listeners: {
+		    destroy: () => store.load(),
+		},
+		autoShow: true,
             });
-            win.on('destroy', reload);
-            win.show();
 	};
 
-	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
+	let remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/cluster/ha/groups/',
-	    callback: function() {
-		reload();
-	    },
+	    callback: () => store.load(),
 	});
-
-	var edit_btn = new Proxmox.button.Button({
+	let edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
@@ -62,12 +60,16 @@ Ext.define('PVE.ha.GroupsView', {
 		    text: gettext('Create'),
 		    disabled: !caps.nodes['Sys.Console'],
 		    handler: function() {
-			var win = Ext.create('PVE.ha.GroupEdit', {});
-			win.on('destroy', reload);
-			win.show();
+			Ext.create('PVE.ha.GroupEdit', {
+			    listeners: {
+				destroy: () => store.load(),
+			    },
+			    autoShow: true,
+			});
 		    },
 		},
-		edit_btn, remove_btn,
+		edit_btn,
+		remove_btn,
 	    ],
 	    columns: [
 		{
@@ -105,11 +107,7 @@ Ext.define('PVE.ha.GroupsView', {
 	    ],
 	    listeners: {
 		activate: reload,
-		beforeselect: function(grid, record, index, eOpts) {
-		    if (!caps.nodes['Sys.Console']) {
-			return false;
-		    }
-		},
+		beforeselect: (grid, record, index, eOpts) => caps.nodes['Sys.Console'],
 		itemdblclick: run_editor,
 	    },
 	});
