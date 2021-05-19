@@ -286,11 +286,8 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    },
 	    confirmMsg: function() {
 		let view = this.up('treepanel');
-		let rec = view.getSelection()[0];
-		return Ext.String.format(
-		    gettext('Are you sure you want to remove entry {0}'),
-		    `'${rec.data.name}'`,
-		);
+		let { data } = view.getSelection()[0];
+		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'), `'${data.name}'`);
 	    },
 	    handler: 'remove',
 	},
@@ -307,7 +304,11 @@ Ext.define('PVE.guest.SnapshotTree', {
     columnLines: true,
 
     fields: [
-	'name', 'description', 'snapstate', 'vmstate', 'running',
+	'name',
+	'description',
+	'snapstate',
+	'vmstate',
+	'running',
 	{ name: 'snaptime', type: 'date', dateFormat: 'timestamp' },
 	{
 	    name: 'order',
@@ -323,13 +324,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    text: gettext('Name'),
 	    dataIndex: 'name',
 	    width: 200,
-	    renderer: function(value, metaData, record) {
-		if (value === 'current') {
-		    return gettext('NOW');
-		} else {
-		    return value;
-		}
-	    },
+	    renderer: (value, _, { data }) => data.name !== 'current' ? value : gettext('NOW'),
 	},
 	{
 	    text: gettext('RAM'),
@@ -341,11 +336,7 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    resizable: false,
 	    dataIndex: 'vmstate',
 	    width: 50,
-	    renderer: function(value, metaData, record) {
-		if (record.data.name !== 'current') {
-		    return Proxmox.Utils.format_boolean(value);
-		}
-	    },
+	    renderer: (value, _, { data }) => data.name !== 'current' ? Proxmox.Utils.format_boolean(value) : '',
 	},
 	{
 	    text: gettext('Date') + "/" + gettext("Status"),
@@ -354,10 +345,10 @@ Ext.define('PVE.guest.SnapshotTree', {
 	    renderer: function(value, metaData, record) {
 		if (record.data.snapstate) {
 		    return record.data.snapstate;
-		}
-		if (value) {
+		} else if (value) {
 		    return Ext.Date.format(value, 'Y-m-d H:i:s');
 		}
+		return '';
 	    },
 	},
 	{
