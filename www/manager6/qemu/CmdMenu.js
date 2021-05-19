@@ -85,7 +85,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		text: gettext('Shutdown'),
 		iconCls: 'fa fa-fw fa-power-off',
 		disabled: stopped || suspended,
-		handler: () =>  confirmedVMCommand('shutdown'),
+		handler: () => confirmedVMCommand('shutdown'),
 	    },
 	    {
 		text: gettext('Stop'),

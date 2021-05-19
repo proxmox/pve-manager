@@ -124,11 +124,14 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 			if (iommu !== -1) {
 			    var count = 0;
 			    pcisel.getStore().each(function(record) {
-				if (record.data.iommugroup === iommu &&
-				    record.data.id.substring(0, 5) !== id) {
+				if (
+				    record.data.iommugroup === iommu &&
+				    record.data.id.substring(0, 5) !== id
+				) {
 				    count++;
 				    return false;
 				}
+				return true;
 			    });
 			    var warning = me.down('#iommuwarning');
 			    if (count && !warning) {
