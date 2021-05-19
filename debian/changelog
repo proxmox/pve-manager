@@ -1,3 +1,16 @@
+pve-manager (6.4-7) pve; urgency=medium
+
+  * pvereport: log pressure stall information
+
+  * pvereport: re-organize: add systemd-load section abd unify bios/pci in HW
+    a single section
+
+  * fix #3430: handle hook script paths better
+
+  * fix #3426: ui: parser: adapt parseSSHKey to accept "sk-" prefix
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 19 May 2021 17:51:44 +0200
+
 pve-manager (6.4-6) pve; urgency=medium
 
   * proxy: improve use of wildcard listening-address for system which disable
