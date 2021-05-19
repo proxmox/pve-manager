@@ -32,7 +32,8 @@ Ext.define('PVE.form.PCISelector', {
 	    {
 		header: gettext('IOMMU Group'),
 		dataIndex: 'iommugroup',
-		width: 50,
+		renderer: v => v === -1 ? '-' : v,
+		width: 75,
 	    },
 	    {
 		header: gettext('Vendor'),
