@@ -53,41 +53,37 @@ Ext.define('PVE.window.Wizard', {
 	});
 	tabs[0].disabled = false;
 
-	var maxidx = 0;
-	var curidx = 0;
+	let maxidx = 0, curidx = 0;
 
-	var check_card = function(card) {
-	    var valid = true;
-	    var fields = card.query('field, fieldcontainer');
+	let check_card = function(card) {
+	    let fields = card.query('field, fieldcontainer');
 	    if (card.isXType('fieldcontainer')) {
 		fields.unshift(card);
 	    }
-	    Ext.Array.each(fields, function(field) {
+	    let valid = true;
+	    for (const field of fields) {
 		// Note: not all fielcontainer have isValid()
 		if (Ext.isFunction(field.isValid) && !field.isValid()) {
 		    valid = false;
 		}
-	    });
-
+	    }
 	    if (Ext.isFunction(card.validator)) {
 		return card.validator();
 	    }
-
 	    return valid;
 	};
 
-	var disable_at = function(card) {
-	    var tp = me.down('#wizcontent');
-	    var idx = tp.items.indexOf(card);
-	    for (;idx < tp.items.getCount(); idx++) {
-		var nc = tp.items.getAt(idx);
-		if (nc) {
-		    nc.disable();
+	let disableTab = function(card) {
+	    let tp = me.down('#wizcontent');
+	    for (let idx = tp.items.indexOf(card); idx < tp.items.getCount(); idx++) {
+		let tab = tp.items.getAt(idx);
+		if (tab) {
+		    tab.disable();
 		}
 	    }
 	};
 
-	var tabchange = function(tp, newcard, oldcard) {
+	let tabchange = function(tp, newcard, oldcard) {
 	    if (newcard.onSubmit) {
 		me.down('#next').setVisible(false);
 		me.down('#submit').setVisible(true);
@@ -95,19 +91,18 @@ Ext.define('PVE.window.Wizard', {
 		me.down('#next').setVisible(true);
 		me.down('#submit').setVisible(false);
 	    }
-	    var valid = check_card(newcard);
+	    let valid = check_card(newcard);
 	    me.down('#next').setDisabled(!valid);
 	    me.down('#submit').setDisabled(!valid);
-	    me.down('#back').setDisabled(tp.items.indexOf(newcard) == 0);
+	    me.down('#back').setDisabled(tp.items.indexOf(newcard) === 0);
 
-	    var idx = tp.items.indexOf(newcard);
+	    let idx = tp.items.indexOf(newcard);
 	    if (idx > maxidx) {
 		maxidx = idx;
 	    }
 	    curidx = idx;
 
-	    var next = idx + 1;
-	    var ntab = tp.items.getAt(next);
+	    let ntab = tp.items.getAt(idx + 1);
 	    if (valid && ntab && !newcard.onSubmit) {
 		ntab.enable();
 	    }
@@ -117,8 +112,8 @@ Ext.define('PVE.window.Wizard', {
 	    me.title = Proxmox.Utils.dialog_title(me.subject, true, false);
 	}
 
-	var sp = Ext.state.Manager.getProvider();
-	var advchecked = sp.get('proxmox-advanced-cb');
+	let sp = Ext.state.Manager.getProvider();
+	let advancedOn = sp.get('proxmox-advanced-cb');
 
 	Ext.apply(me, {
 	    items: [
@@ -139,8 +134,7 @@ Ext.define('PVE.window.Wizard', {
 			bodyPadding: 10,
 			listeners: {
 			    afterrender: function(tp) {
-				var atab = this.getActiveTab();
-				tabchange(tp, atab);
+				tabchange(tp, this.getActiveTab());
 			    },
 			    tabchange: function(tp, newcard, oldcard) {
 				tabchange(tp, newcard, oldcard);
@@ -160,15 +154,14 @@ Ext.define('PVE.window.Wizard', {
 		    xtype: 'proxmoxcheckbox',
 		    boxLabelAlign: 'before',
 		    boxLabel: gettext('Advanced'),
-		    value: advchecked,
+		    value: advancedOn,
 		    listeners: {
-			change: function(cb, val) {
-			    var tp = me.down('#wizcontent');
+			change: function(_, value) {
+			    let tp = me.down('#wizcontent');
 			    tp.query('inputpanel').forEach(function(ip) {
-				ip.setAdvancedVisible(val);
+				ip.setAdvancedVisible(value);
 			    });
-
-			    sp.set('proxmox-advanced-cb', val);
+			    sp.set('proxmox-advanced-cb', value);
 			},
 		    },
 		},
@@ -178,13 +171,12 @@ Ext.define('PVE.window.Wizard', {
 		    itemId: 'back',
 		    minWidth: 60,
 		    handler: function() {
-			var tp = me.down('#wizcontent');
-			var atab = tp.getActiveTab();
-			var prev = tp.items.indexOf(atab) - 1;
+			let tp = me.down('#wizcontent');
+			let prev = tp.items.indexOf(tp.getActiveTab()) - 1;
 			if (prev < 0) {
 			    return;
 			}
-			var ntab = tp.items.getAt(prev);
+			let ntab = tp.items.getAt(prev);
 			if (ntab) {
 			    tp.setActiveTab(ntab);
 			}
@@ -196,16 +188,13 @@ Ext.define('PVE.window.Wizard', {
 		    itemId: 'next',
 		    minWidth: 60,
 		    handler: function() {
-			var form = me.down('form').getForm();
-
-			var tp = me.down('#wizcontent');
-			var atab = tp.getActiveTab();
-			if (!check_card(atab)) {
+			let tp = me.down('#wizcontent');
+			let activeTab = tp.getActiveTab();
+			if (!check_card(activeTab)) {
 			    return;
 			}
-
-			var next = tp.items.indexOf(atab) + 1;
-			var ntab = tp.items.getAt(next);
+			let next = tp.items.indexOf(activeTab) + 1;
+			let ntab = tp.items.getAt(next);
 			if (ntab) {
 			    ntab.enable();
 			    tp.setActiveTab(ntab);
@@ -218,9 +207,8 @@ Ext.define('PVE.window.Wizard', {
 		    hidden: true,
 		    itemId: 'submit',
 		    handler: function() {
-			var tp = me.down('#wizcontent');
-			var atab = tp.getActiveTab();
-			atab.onSubmit();
+			let tp = me.down('#wizcontent');
+			tp.getActiveTab().onSubmit();
 		    },
 		},
 	    ],
@@ -228,34 +216,30 @@ Ext.define('PVE.window.Wizard', {
 	me.callParent();
 
 	Ext.Array.each(me.query('inputpanel'), function(panel) {
-	    panel.setAdvancedVisible(advchecked);
+	    panel.setAdvancedVisible(advancedOn);
 	});
 
 	Ext.Array.each(me.query('field'), function(field) {
-	    var validcheck = function() {
-		var tp = me.down('#wizcontent');
+	    let validcheck = function() {
+		let tp = me.down('#wizcontent');
 
-		// check tabs from current to the last enabled for validity
-		// since we might have changed a validity on a later one
-		var i;
-		for (i = curidx; i <= maxidx && i < tp.items.getCount(); i++) {
-		    var tab = tp.items.getAt(i);
-		    var valid = check_card(tab);
+		// check validity for current to last enabled tab, as local change may affect validity of a later one
+		for (let i = curidx; i <= maxidx && i < tp.items.getCount(); i++) {
+		    let tab = tp.items.getAt(i);
+		    let valid = check_card(tab);
 
 		    // only set the buttons on the current panel
 		    if (i === curidx) {
 			me.down('#next').setDisabled(!valid);
 			me.down('#submit').setDisabled(!valid);
 		    }
-
-		    // if a panel is invalid, then disable it and all following,
-		    // else enable it and go to the next
-		    var ntab = tp.items.getAt(i + 1);
+		    // if a panel is invalid, then disable all following, else enable the next tab
+		    let nextTab = tp.items.getAt(i + 1);
 		    if (!valid) {
-			disable_at(ntab);
+			disableTab(nextTab);
 			return;
-		    } else if (ntab && !tab.onSubmit) {
-			ntab.enable();
+		    } else if (nextTab && !tab.onSubmit) {
+			nextTab.enable();
 		    }
 		}
 	    };
