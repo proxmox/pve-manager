@@ -21,10 +21,14 @@ Ext.define('PVE.menu.TemplateMenu', {
 
 	me.title = (guestType === 'qemu' ? 'VM ' : 'CT ') + info.vmid;
 
+	let caps = Ext.state.Manager.get('GuiCap');
+	let standaloneNode = PVE.data.ResourceStore.getNodes().length < 2;
+
 	me.items = [
 	    {
 		text: gettext('Migrate'),
 		iconCls: 'fa fa-fw fa-send-o',
+		hidden: standaloneNode || !caps.vms['VM.Migrate'],
 		handler: function() {
 		    Ext.create('PVE.window.Migrate', {
 			vmtype: guestType,
@@ -37,6 +41,7 @@ Ext.define('PVE.menu.TemplateMenu', {
 	    {
 		text: gettext('Clone'),
 		iconCls: 'fa fa-fw fa-clone',
+		hidden: !caps.vms['VM.Clone'],
 		handler: function() {
 		    Ext.create('PVE.window.Clone', {
 			nodename: info.node,
