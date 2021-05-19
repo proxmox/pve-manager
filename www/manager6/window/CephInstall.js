@@ -65,15 +65,15 @@ Ext.define('PVE.ceph.Install', {
 		nodename: '{nodename}',
 	    },
 	    handler: function() {
-		var me = this.up('pveCephInstallWindow');
-		var win = Ext.create('PVE.ceph.CephInstallWizard', {
-		    nodename: me.nodename,
+		let view = this.up('pveCephInstallWindow');
+		let wizzard = Ext.create('PVE.ceph.CephInstallWizard', {
+		    nodename: view.nodename,
 		});
-		win.getViewModel().set('isInstalled', this.getViewModel().get('isInstalled'));
-		win.show();
-		me.mon(win, 'beforeClose', function() {
-		    me.fireEvent("cephInstallWindowClosed");
-		    me.close();
+		wizzard.getViewModel().set('isInstalled', this.getViewModel().get('isInstalled'));
+		wizzard.show();
+		view.mon(wizzard, 'beforeClose', function() {
+		    view.fireEvent("cephInstallWindowClosed");
+		    view.close();
 		});
 	    },
 	},
