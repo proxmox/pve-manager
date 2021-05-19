@@ -7,50 +7,44 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
     onlineHelp: 'pct_container_network',
 
     setNodename: function(nodename) {
-	var me = this;
+	let me = this;
 
 	if (!nodename || me.nodename === nodename) {
 	    return;
 	}
-
 	me.nodename = nodename;
 
-	var bridgesel = me.query("[isFormField][name=bridge]")[0];
-	bridgesel.setNodename(nodename);
+	let bridgeSelector = me.query("[isFormField][name=bridge]")[0];
+	bridgeSelector.setNodename(nodename);
     },
 
     onGetValues: function(values) {
-	var me = this;
+	let me = this;
 
-	var id;
+	let id;
 	if (me.isCreate) {
 	    id = values.id;
 	    delete values.id;
 	} else {
 	    id = me.ifname;
 	}
-
-	if (!id) {
-	    return {};
+	let newdata = {};
+	if (id) {
+	    if (values.ipv6mode !== 'static') {
+		values.ip6 = values.ipv6mode;
+	    }
+	    if (values.ipv4mode !== 'static') {
+		values.ip = values.ipv4mode;
+	    }
+	    newdata[id] = PVE.Parser.printLxcNetwork(values);
 	}
-
-	var newdata = {};
-
-	if (values.ipv6mode !== 'static') {
-	    values.ip6 = values.ipv6mode;
-	}
-	if (values.ipv4mode !== 'static') {
-	    values.ip = values.ipv4mode;
-	}
-	newdata[id] = PVE.Parser.printLxcNetwork(values);
 	return newdata;
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	var cdata = {};
-
+	let cdata = {};
 	if (me.insideWizard) {
 	    me.ifname = 'net0';
 	    cdata.name = 'eth0';
@@ -69,26 +63,23 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    if (!me.dataCache[me.ifname]) {
 		throw "no such interface '" + me.ifname + "'";
 	    }
-
 	    cdata = PVE.Parser.parseLxcNetwork(me.dataCache[me.ifname]);
 	}
 
-	var i;
-	for (i = 0; i < 32; i++) {
-	    if (me.isCreate && !me.dataCache['net'+i.toString()]) {
-		me.ifname = 'net' + i.toString();
+	for (let i = 0; i < 32; i++) {
+	    let ifname = 'net' + i.toString();
+	    if (me.isCreate && !me.dataCache[ifname]) {
+		me.ifname = ifname;
 		break;
 	    }
 	}
 
-	var idselector = {
-	    xtype: 'hidden',
-	    name: 'id',
-	    value: me.ifname,
-	};
-
 	me.column1 = [
-	    idselector,
+	    {
+		xtype: 'hidden',
+		name: 'id',
+		value: me.ifname,
+	    },
 	    {
 		xtype: 'textfield',
 		name: 'name',
@@ -97,21 +88,15 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 		allowBlank: false,
 		value: cdata.name,
 		validator: function(value) {
-		    var result = '';
-		    Ext.Object.each(me.dataCache, function(key, netstr) {
+		    for (const [key, netRaw] of Object.entries(me.dataCache)) {
 			if (!key.match(/^net\d+/) || key === me.ifname) {
-			    return; // continue
+			    continue;
 			}
-			var net = PVE.Parser.parseLxcNetwork(netstr);
+			let net = PVE.Parser.parseLxcNetwork(netRaw);
 			if (net.name === value) {
-			    result = "interface name already in use";
-			    return false;
+			    return "interface name already in use";
 			}
-		    });
-		    if (result !== '') {
-			return result;
 		    }
-		    // validator can return bool/string
 		    return true;
 		},
 	    },
@@ -155,14 +140,14 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    },
 	];
 
-	var dhcp4 = cdata.ip === 'dhcp';
+	let dhcp4 = cdata.ip === 'dhcp';
 	if (dhcp4) {
 	    cdata.ip = '';
 	    cdata.gw = '';
 	}
 
-	var auto6 = cdata.ip6 === 'auto';
-	var dhcp6 = cdata.ip6 === 'dhcp';
+	let auto6 = cdata.ip6 === 'auto';
+	let dhcp6 = cdata.ip6 === 'dhcp';
 	if (auto6 || dhcp6) {
 	    cdata.ip6 = '';
 	    cdata.gw6 = '';
@@ -307,27 +292,27 @@ Ext.define('PVE.lxc.NetworkEdit', {
     isAdd: true,
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	if (!me.dataCache) {
 	    throw "no dataCache specified";
 	}
-
 	if (!me.nodename) {
 	    throw "no node name specified";
 	}
 
-	var ipanel = Ext.create('PVE.lxc.NetworkInputPanel', {
-	    ifname: me.ifname,
-	    nodename: me.nodename,
-	    dataCache: me.dataCache,
-	    isCreate: me.isCreate,
-	});
-
 	Ext.apply(me, {
 	    subject: gettext('Network Device') + ' (veth)',
 	    digest: me.dataCache.digest,
-	    items: [ipanel],
+	    items: [
+		{
+		    xtype: 'pveLxcNetworkInputPanel',
+		    ifname: me.ifname,
+		    nodename: me.nodename,
+		    dataCache: me.dataCache,
+		    isCreate: me.isCreate,
+		},
+	    ],
 	});
 
 	me.callParent();
@@ -346,7 +331,7 @@ Ext.define('PVE.lxc.NetworkView', {
     stateId: 'grid-lxc-network',
 
     load: function() {
-	var me = this;
+	let me = this;
 
 	Proxmox.Utils.setErrorMask(me, true);
 
@@ -357,18 +342,16 @@ Ext.define('PVE.lxc.NetworkView', {
 	    },
 	    success: function(response, opts) {
 		Proxmox.Utils.setErrorMask(me, false);
-		var result = Ext.decode(response.responseText);
-		var data = result.data || {};
-		me.dataCache = data;
-		var records = [];
-		Ext.Object.each(data, function(key, value) {
-		    if (!key.match(/^net\d+/)) {
-			return; // continue
+		let result = Ext.decode(response.responseText);
+		me.dataCache = result.data || {};
+		let records = [];
+		for (const [key, value] of Object.entries(me.dataCache)) {
+		    if (key.match(/^net\d+/)) {
+			let net = PVE.Parser.parseLxcNetwork(value);
+			net.id = key;
+			records.push(net);
 		    }
-		    var net = PVE.Parser.parseLxcNetwork(value);
-		    net.id = key;
-		    records.push(net);
-		});
+		}
 		me.store.loadData(records);
 		me.down('button[name=addButton]').setDisabled(records.length >= 32);
 	    },
@@ -376,23 +359,23 @@ Ext.define('PVE.lxc.NetworkView', {
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	var nodename = me.pveSelNode.data.node;
+	let nodename = me.pveSelNode.data.node;
 	if (!nodename) {
 	    throw "no node name specified";
 	}
 
-	var vmid = me.pveSelNode.data.vmid;
+	let vmid = me.pveSelNode.data.vmid;
 	if (!vmid) {
 	    throw "no VM ID specified";
 	}
 
-	var caps = Ext.state.Manager.get('GuiCap');
+	let caps = Ext.state.Manager.get('GuiCap');
 
-	me.url = '/nodes/' + nodename + '/lxc/' + vmid + '/config';
+	me.url = `/nodes/${nodename}/lxc/${vmid}/config`;
 
-	var store = new Ext.data.Store({
+	let store = new Ext.data.Store({
 	    model: 'pve-lxc-network',
 	    sorters: [
 		{
@@ -402,67 +385,25 @@ Ext.define('PVE.lxc.NetworkView', {
 	    ],
 	});
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
+	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var remove_btn = new Proxmox.button.Button({
-	    text: gettext('Remove'),
-	    disabled: true,
-	    selModel: sm,
-	    enableFn: function(rec) {
-		return !!caps.vms['VM.Config.Network'];
-	    },
-	    confirmMsg: function(rec) {
-		return Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
-					 "'" + rec.data.id + "'");
-	    },
-	    handler: function(btn, event, rec) {
-		Proxmox.Utils.API2Request({
-		    url: me.url,
-		    waitMsgTarget: me,
-		    method: 'PUT',
-		    params: { 'delete': rec.data.id, digest: me.dataCache.digest },
-		    callback: function() {
-			me.load();
-		    },
-		    failure: function(response, opts) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    },
-		});
-	    },
-	});
-
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
-		return;
+	let run_editor = function() {
+	    let rec = sm.getSelection()[0];
+	    if (!rec || !caps.vms['VM.Config.Network']) {
+		return false; // disable default-propagation when triggered by grid dblclick
 	    }
-
-	    if (!caps.vms['VM.Config.Network']) {
-		return false;
-	    }
-
-	    var win = Ext.create('PVE.lxc.NetworkEdit', {
+	    Ext.create('PVE.lxc.NetworkEdit', {
 		url: me.url,
 		nodename: nodename,
 		dataCache: me.dataCache,
 		ifname: rec.data.id,
+		listeners: {
+		    destroy: () => me.load(),
+		},
+		autoShow: true,
 	    });
-	    win.on('destroy', me.load, me);
-	    win.show();
+	    return undefined; // make eslint happier
 	};
-
-	var edit_btn = new Proxmox.button.Button({
-	    text: gettext('Edit'),
-	    selModel: sm,
-	    disabled: true,
-	    enableFn: function(rec) {
-		if (!caps.vms['VM.Config.Network']) {
-		    return false;
-		}
-		return true;
-	    },
-	    handler: run_editor,
-	});
 
 	Ext.apply(me, {
 	    store: store,
@@ -473,18 +414,50 @@ Ext.define('PVE.lxc.NetworkView', {
 		    name: 'addButton',
 		    disabled: !caps.vms['VM.Config.Network'],
 		    handler: function() {
-			var win = Ext.create('PVE.lxc.NetworkEdit', {
+			Ext.create('PVE.lxc.NetworkEdit', {
 			    url: me.url,
 			    nodename: nodename,
 			    isCreate: true,
 			    dataCache: me.dataCache,
+			    listeners: {
+				destroy: () => me.load(),
+			    },
+			    autoShow: true,
 			});
-			win.on('destroy', me.load, me);
-			win.show();
 		    },
 		},
-		remove_btn,
-		edit_btn,
+		{
+		    xtype: 'proxmoxButton',
+		    text: gettext('Remove'),
+		    disabled: true,
+		    selModel: sm,
+		    enableFn: function(rec) {
+			return !!caps.vms['VM.Config.Network'];
+		    },
+		    confirmMsg: ({ data }) =>
+			Ext.String.format(gettext('Are you sure you want to remove entry {0}'), `'${data.id}'`),
+		    handler: function(btn, e, rec) {
+			Proxmox.Utils.API2Request({
+			    url: me.url,
+			    waitMsgTarget: me,
+			    method: 'PUT',
+			    params: {
+				'delete': rec.data.id,
+				digest: me.dataCache.digest,
+			    },
+			    callback: () => me.load(),
+			    failure: (response, opts) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+			});
+		    },
+		},
+		{
+		    xtype: 'proxmoxButton',
+		    text: gettext('Edit'),
+		    selModel: sm,
+		    disabled: true,
+		    enableFn: rec => !!caps.vms['VM.Config.Network'],
+		    handler: run_editor,
+		},
 	    ],
 	    columns: [
 		{
@@ -559,8 +532,18 @@ Ext.define('PVE.lxc.NetworkView', {
     Ext.define('pve-lxc-network', {
 	extend: "Ext.data.Model",
 	proxy: { type: 'memory' },
-	fields: ['id', 'name', 'hwaddr', 'bridge',
-		  'ip', 'gw', 'ip6', 'gw6', 'tag', 'firewall'],
+	fields: [
+	    'id',
+	    'name',
+	    'hwaddr',
+	    'bridge',
+	    'ip',
+	    'gw',
+	    'ip6',
+	    'gw6',
+	    'tag',
+	    'firewall',
+	],
     });
 });
 
