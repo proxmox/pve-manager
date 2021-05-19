@@ -161,7 +161,12 @@ sub check_pve_packages {
 	my $upgraded = 0;
 
 	if ($maj > $min_pve_major) {
-	    log_pass("already upgraded to Proxmox VE " . ($min_pve_major + 1));
+	    if ($maj > $min_pve_major + 1) {
+		log_warn("already upgraded at least two major versions of Proxmox VE, this script is probably not useful anymore");
+	    } else {
+		log_pass("already upgraded to Proxmox VE " . ($min_pve_major + 1));
+	    }
+	    log_pass("There's a newer major release available, maybe you wanted to call 'pve6to7'?") if 0; # TODO: enable once PVE 7 is out
 	    $upgraded = 1;
 	} elsif ($maj >= $min_pve_major && $min >= $min_pve_minor && $pkgrel >= $min_pve_pkgrel) {
 	    log_pass("proxmox-ve package has version >= $min_pve_ver");
