@@ -3,38 +3,30 @@ Ext.define('PVE.lxc.CmdMenu', {
 
     showSeparator: false,
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	var nodename = me.pveSelNode.data.node;
-	if (!nodename) {
+	let info = me.pveSelNode.data;
+	if (!info.node) {
 	    throw "no node name specified";
 	}
-
-	var vmid = me.pveSelNode.data.vmid;
-	if (!vmid) {
+	if (!info.vmid) {
 	    throw "no CT ID specified";
 	}
-	var vmname = me.pveSelNode.data.name;
 
-	var vm_command = function(cmd, params) {
+	let vm_command = function(cmd, params) {
 	    Proxmox.Utils.API2Request({
 		params: params,
-		url: '/nodes/' + nodename + '/lxc/' + vmid + "/status/" + cmd,
+		url: `/nodes/${info.node}/${info.type}/${info.vmid}/status/${cmd}`,
 		method: 'POST',
-		failure: function(response, opts) {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		},
+		failure: (response, opts) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
 	    });
 	};
 
-	var caps = Ext.state.Manager.get('GuiCap');
+	let caps = Ext.state.Manager.get('GuiCap');
+	let standalone = PVE.data.ResourceStore.getNodes().length < 2;
 
-	var running = false;
-	var stopped = true;
-	var suspended = false;
-	var standalone = PVE.data.ResourceStore.getNodes().length < 2;
-
-	switch (me.pveSelNode.data.status) {
+	let running = false, stopped = true, suspended = false;
+	switch (info.status) {
 	    case 'running':
 		running = true;
 		stopped = false;
@@ -46,47 +38,21 @@ Ext.define('PVE.lxc.CmdMenu', {
 	    default: break;
 	}
 
-	me.title = 'CT ' + vmid;
+	me.title = 'CT ' + info.vmid;
 
 	me.items = [
 	    {
 		text: gettext('Start'),
 		iconCls: 'fa fa-fw fa-play',
 		disabled: running,
-		handler: function() {
-		    vm_command('start');
-		},
+		handler: () => vm_command('start'),
 	    },
-//	    {
-//		text: gettext('Suspend'),
-//		iconCls: 'fa fa-fw fa-pause',
-//		hidde: suspended,
-//		disabled: stopped || suspended,
-//		handler: function() {
-//		    var msg = Proxmox.Utils.format_task_description('vzsuspend', vmid);
-//		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
-//			if (btn !== 'yes') {
-//			    return;
-//			}
-//
-//			vm_command('suspend');
-//		    });
-//		}
-//	    },
-//	    {
-//		text: gettext('Resume'),
-//		iconCls: 'fa fa-fw fa-play',
-//		hidden: !suspended,
-//		handler: function() {
-//		    vm_command('resume');
-//		}
-//	    },
 	    {
 		text: gettext('Shutdown'),
 		iconCls: 'fa fa-fw fa-power-off',
 		disabled: stopped || suspended,
 		handler: function() {
-		    var msg = Proxmox.Utils.format_task_description('vzshutdown', vmid);
+		    var msg = Proxmox.Utils.format_task_description('vzshutdown', info.vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -102,7 +68,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		disabled: stopped,
 		tooltip: Ext.String.format(gettext('Stop {0} immediately'), 'CT'),
 		handler: function() {
-		    var msg = Proxmox.Utils.format_task_description('vzstop', vmid);
+		    var msg = Proxmox.Utils.format_task_description('vzstop', info.vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -118,7 +84,7 @@ Ext.define('PVE.lxc.CmdMenu', {
 		disabled: stopped,
 		tooltip: Ext.String.format(gettext('Reboot {0}'), 'CT'),
 		handler: function() {
-		    var msg = Proxmox.Utils.format_task_description('vzreboot', vmid);
+		    var msg = Proxmox.Utils.format_task_description('vzreboot', info.vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
 			if (btn !== 'yes') {
 			    return;
@@ -136,40 +102,34 @@ Ext.define('PVE.lxc.CmdMenu', {
 		text: gettext('Clone'),
 		iconCls: 'fa fa-fw fa-clone',
 		hidden: !caps.vms['VM.Clone'],
-		handler: function() {
-		    PVE.window.Clone.wrap(nodename, vmid, me.isTemplate, 'lxc');
-		},
+		handler: () => PVE.window.Clone.wrap(info.node, info.vmid, me.isTemplate, 'lxc'),
 	    },
 	    {
 		text: gettext('Migrate'),
 		iconCls: 'fa fa-fw fa-send-o',
 		hidden: standalone || !caps.vms['VM.Migrate'],
 		handler: function() {
-		    var win = Ext.create('PVE.window.Migrate', {
+		    Ext.create('PVE.window.Migrate', {
 			vmtype: 'lxc',
-			nodename: nodename,
-			vmid: vmid,
+			nodename: info.node,
+			vmid: info.vmid,
+			autoShow: true,
 		    });
-		    win.show();
 		},
 	    },
 	    {
 		text: gettext('Convert to template'),
 		iconCls: 'fa fa-fw fa-file-o',
 		handler: function() {
-		    var msg = Proxmox.Utils.format_task_description('vztemplate', vmid);
+		    let msg = Proxmox.Utils.format_task_description('vztemplate', info.vmid);
 		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
-			if (btn !== 'yes') {
-			    return;
+			if (btn === 'yes') {
+			    Proxmox.Utils.API2Request({
+				url: `/nodes/${info.node}/lxc/${info.vmid}/template`,
+				method: 'POST',
+				failure: (response, opts) => Ext.Msg.alert('Error', response.htmlStatus),
+			    });
 			}
-
-			Proxmox.Utils.API2Request({
-			    url: '/nodes/' + nodename + '/lxc/' + vmid + '/template',
-			    method: 'POST',
-			    failure: function(response, opts) {
-				Ext.Msg.alert('Error', response.htmlStatus);
-			    },
-			});
 		    });
 		},
 	    },
@@ -177,9 +137,8 @@ Ext.define('PVE.lxc.CmdMenu', {
 	    {
 		text: gettext('Console'),
 		iconCls: 'fa fa-fw fa-terminal',
-		handler: function() {
-		    PVE.Utils.openDefaultConsoleWindow(true, 'lxc', vmid, nodename, vmname);
-		},
+		handler: () =>
+		    PVE.Utils.openDefaultConsoleWindow(true, 'lxc', info.vmid, info.node, info.vmname),
 	    },
 	];
 
