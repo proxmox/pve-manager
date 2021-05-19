@@ -2,50 +2,42 @@ Ext.define('PVE.node.CreateZFS', {
     extend: 'Proxmox.window.Edit',
     xtype: 'pveCreateZFS',
 
+    onlineHelp: 'chapter_zfs',
     subject: 'ZFS',
 
     showProgress: true,
-
-    onlineHelp: 'chapter_zfs',
-
+    isCreate: true,
     width: 800,
 
     initComponent: function() {
-        var me = this;
+	let me = this;
 
 	if (!me.nodename) {
 	    throw "no node name specified";
 	}
 
-	me.isCreate = true;
+	let update_disklist = function() {
+	    let grid = me.down('#disklist');
+	    let disks = grid.getSelection();
 
-	var update_disklist = function() {
-	    var grid = me.down('#disklist');
-	    var disks = grid.getSelection();
-
-	    var val = [];
 	    disks.sort(function(a, b) {
-		var aorder = a.get('order') || 0;
-		var border = b.get('order') || 0;
-		return aorder - border;
+		let aOrder = a.get('order') || 0;
+		let bOrder = b.get('order') || 0;
+		return aOrder - bOrder;
 	    });
 
-	    disks.forEach(function(disk) {
-		val.push(disk.get('devpath'));
-	    });
+	    let selectedDevices = disks.map(disk => disk.get('devpath')).join(';');
 
-	    me.down('field[name=devices]').setValue(val.join(','));
+	    me.down('field[name=devices]').setValue(selectedDevices);
 	};
 
 	Ext.apply(me, {
-	    url: '/nodes/' + me.nodename + '/disks/zfs',
+	    url: `/nodes/${me.nodename}/disks/zfs`,
 	    method: 'POST',
 	    items: [
 		{
 		    xtype: 'inputpanel',
-		    onGetValues: function(values) {
-			return values;
-		    },
+		    onGetValues: values => values, // FIXME leftover?
 		    column1: [
 			{
 			    xtype: 'textfield',
@@ -117,7 +109,7 @@ Ext.define('PVE.node.CreateZFS', {
 			    store: {
 				proxy: {
 				    type: 'proxmox',
-				    url: '/api2/json/nodes/' + me.nodename + '/disks/list?type=unused',
+				    url: `/api2/json/nodes/${me.nodename}/disks/list?type=unused`,
 				},
 			    },
 			    columns: [
@@ -154,7 +146,7 @@ Ext.define('PVE.node.CreateZFS', {
 					isFormField: false,
 					listeners: {
 					    change: function(numberfield, value, old_value) {
-						var record = numberfield.getWidgetRecord();
+						let record = numberfield.getWidgetRecord();
 						record.set('order', value);
 						update_disklist(record);
 					    },
@@ -170,8 +162,8 @@ Ext.define('PVE.node.CreateZFS', {
 		    padding: '5 0 0 0',
 		    userCls: 'pmx-hint',
 		    value: 'Note: ZFS is not compatible with disks backed by a hardware ' +
-			   'RAID controller. For details see ' +
-			   '<a target="_blank" href="' + Proxmox.Utils.get_help_link('chapter_zfs') + '">the reference documentation</a>.',
+		       'RAID controller. For details see <a target="_blank" href="' +
+		       Proxmox.Utils.get_help_link('chapter_zfs') + '">the reference documentation</a>.',
 		},
 	    ],
 	});
@@ -184,6 +176,7 @@ Ext.define('PVE.node.CreateZFS', {
 Ext.define('PVE.node.ZFSDevices', {
     extend: 'Ext.tree.Panel',
     xtype: 'pveZFSDevices',
+
     stateful: true,
     stateId: 'grid-node-zfsstatus',
     columns: [
@@ -216,18 +209,14 @@ Ext.define('PVE.node.ZFSDevices', {
 	},
     ],
 
-    rootVisible: true,
-
     reload: function() {
-	var me = this;
-	var sm = me.getSelectionModel();
+	let me = this;
+	let sm = me.getSelectionModel();
 	Proxmox.Utils.API2Request({
-	    url: "/nodes/" + me.nodename + "/disks/zfs/" + me.zpool,
+	    url: `/nodes/${me.nodename}/disks/zfs/${me.zpool}`,
 	    waitMsgTarget: me,
 	    method: 'GET',
-	    failure: function(response, opts) {
-		Proxmox.Utils.setErrorMask(me, response.htmlStatus);
-	    },
+	    failure: (response, opts) => Proxmox.Utils.setErrorMask(me, response.htmlStatus),
 	    success: function(response, opts) {
 		sm.deselectAll();
 		me.setRootNode(response.result.data);
@@ -236,35 +225,27 @@ Ext.define('PVE.node.ZFSDevices', {
 	});
     },
 
+    rootVisible: true,
+    selModel: 'treemodel',
+    fields: [
+	'name',
+	'status',
+	{
+	    type: 'string',
+	    name: 'iconCls',
+	    calculate: data => data.leaf ? `fa x-fa-tree fa-hdd-o` : undefined,
+	},
+    ],
+
     initComponent: function() {
-        var me = this;
+        let me = this;
 
 	if (!me.nodename) {
 	    throw "no node name specified";
 	}
-
 	if (!me.zpool) {
 	    throw "no zpool specified";
 	}
-
-	var sm = Ext.create('Ext.selection.TreeModel', {});
-
-	Ext.apply(me, {
-	    selModel: sm,
-	    fields: ['name', 'status',
-		{
-		    type: 'string',
-		    name: 'iconCls',
-		    calculate: function(data) {
-			var txt = 'fa x-fa-tree fa-';
-			if (data.leaf) {
-			    return txt + 'hdd-o';
-			}
-		    },
-		},
-	    ],
-	    sorters: 'name',
-	});
 
 	me.callParent();
 
@@ -279,17 +260,16 @@ Ext.define('PVE.node.ZFSStatus', {
     border: false,
 
     initComponent: function() {
-        var me = this;
+	let me = this;
 
 	if (!me.nodename) {
 	    throw "no node name specified";
 	}
-
 	if (!me.zpool) {
 	    throw "no zpool specified";
 	}
 
-	me.url = "/api2/extjs/nodes/" + me.nodename + "/disks/zfs/" + me.zpool;
+	me.url = `/api2/extjs/nodes/${me.nodename}/disks/zfs/${me.zpool}`;
 
 	me.rows = {
 	    scan: {
@@ -369,18 +349,20 @@ Ext.define('PVE.node.ZFSList', {
 	    text: gettext('Reload'),
 	    iconCls: 'fa fa-refresh',
 	    handler: function() {
-		var me = this.up('panel');
-		me.reload();
+		this.up('panel').reload();
 	    },
 	},
 	{
 	    text: gettext('Create') + ': ZFS',
 	    handler: function() {
-		var me = this.up('panel');
-		var win = Ext.create('PVE.node.CreateZFS', {
-		    nodename: me.nodename,
-		}).show();
-		win.on('destroy', function() { me.reload(); });
+		let view = this.up('panel');
+		Ext.create('PVE.node.CreateZFS', {
+		    nodename: view.nodename,
+		    listeners: {
+			destroy: () => view.reload(),
+		    },
+		    autoShow: true,
+		});
 	    },
 	},
 	{
@@ -388,65 +370,68 @@ Ext.define('PVE.node.ZFSList', {
 	    itemId: 'detailbtn',
 	    disabled: true,
 	    handler: function() {
-		var me = this.up('panel');
-		var selection = me.getSelection();
-		if (selection.length < 1) {
-		    return;
+		let view = this.up('panel');
+		let selection = view.getSelection();
+		if (selection.length) {
+		    view.show_detail(selection[0].get('name'));
 		}
-		me.show_detail(selection[0].get('name'));
 	    },
 	},
     ],
 
     show_detail: function(zpool) {
-	var me = this;
+	let me = this;
 
-	var detailsgrid = Ext.create('PVE.node.ZFSStatus', {
+	let detailsgrid = Ext.create('PVE.node.ZFSStatus', {
 	    layout: 'fit',
 	    nodename: me.nodename,
 	    flex: 0,
 	    zpool: zpool,
 	});
-
-	var devicetree = Ext.create('PVE.node.ZFSDevices', {
+	let devicetree = Ext.create('PVE.node.ZFSDevices', {
 	    title: gettext('Devices'),
 	    nodename: me.nodename,
 	    flex: 1,
 	    zpool: zpool,
 	});
 
-
-	var win = Ext.create('Ext.window.Window', {
+	Ext.create('Ext.window.Window', {
 	    modal: true,
 	    width: 800,
-	    height: 400,
+	    height: 600,
 	    resizable: true,
 	    layout: 'fit',
 	    title: gettext('Status') + ': ' + zpool,
-	    items: [{
-		xtype: 'panel',
-		region: 'center',
-		layout: {
-		    type: 'vbox',
-		    align: 'stretch',
-		},
-		items: [detailsgrid, devicetree],
-		tbar: [{
-		    text: gettext('Reload'),
-		    iconCls: 'fa fa-refresh',
-		    handler: function() {
-			devicetree.reload();
-			detailsgrid.reload();
+	    items: [
+		{
+		    xtype: 'panel',
+		    region: 'center',
+		    layout: {
+			type: 'vbox',
+			align: 'stretch',
 		    },
-		}],
-	    }],
-	}).show();
+		    items: [
+			detailsgrid,
+			devicetree,
+		    ],
+		    tbar: [
+			{
+			    text: gettext('Reload'),
+			    iconCls: 'fa fa-refresh',
+			    handler: function() {
+				devicetree.reload();
+				detailsgrid.reload();
+			    },
+			},
+		    ],
+		},
+	    ],
+	    autoShow: true,
+	});
     },
 
     set_button_status: function() {
 	var me = this;
-	var selection = me.getSelection();
-	me.down('#detailbtn').setDisabled(selection.length === 0);
     },
 
     reload: function() {
@@ -457,20 +442,18 @@ Ext.define('PVE.node.ZFSList', {
 
     listeners: {
 	activate: function() {
-	    var me = this;
-	    me.reload();
+	    this.reload();
 	},
 	selectionchange: function() {
-	    this.set_button_status();
+	    this.down('#detailbtn').setDisabled(this.getSelection().length === 0);
 	},
 	itemdblclick: function(grid, record) {
-	    var me = this;
-	    me.show_detail(record.get('name'));
+	    this.show_detail(record.get('name'));
 	},
     },
 
     initComponent: function() {
-        var me = this;
+	let me = this;
 
 	me.nodename = me.pveSelNode.data.node;
 	if (!me.nodename) {
@@ -482,7 +465,7 @@ Ext.define('PVE.node.ZFSList', {
 		fields: ['name', 'size', 'free', 'alloc', 'dedup', 'frag', 'health'],
 		proxy: {
 		    type: 'proxmox',
-		    url: "/api2/json/nodes/" + me.nodename + '/disks/zfs',
+		    url: `/api2/json/nodes/${me.nodename}/disks/zfs`,
 		},
 		sorters: 'name',
 	    },
