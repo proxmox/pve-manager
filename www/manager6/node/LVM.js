@@ -2,14 +2,14 @@ Ext.define('PVE.node.CreateLVM', {
     extend: 'Proxmox.window.Edit',
     xtype: 'pveCreateLVM',
 
+    onlineHelp: 'chapter_lvm',
     subject: 'LVM Volume Group',
 
     showProgress: true,
-
-    onlineHelp: 'chapter_lvm',
+    isCreate: true,
 
     initComponent: function() {
-        var me = this;
+        let me = this;
 
 	if (!me.nodename) {
 	    throw "no node name specified";
@@ -18,7 +18,7 @@ Ext.define('PVE.node.CreateLVM', {
 	me.isCreate = true;
 
         Ext.applyIf(me, {
-	    url: "/nodes/" + me.nodename + "/disks/lvm",
+	    url: `/nodes/${me.nodename}/disks/lvm`,
 	    method: 'POST',
 	    items: [
 		{
@@ -41,19 +41,25 @@ Ext.define('PVE.node.CreateLVM', {
 		    fieldLabel: gettext('Add Storage'),
 		    value: '1',
 		},
-            ],
-        });
+	    ],
+	});
 
-        me.callParent();
+	me.callParent();
     },
 });
 
 Ext.define('PVE.node.LVMList', {
     extend: 'Ext.tree.Panel',
     xtype: 'pveLVMList',
+
     emptyText: gettext('No Volume Groups found'),
+
     stateful: true,
     stateId: 'grid-node-lvm',
+
+    rootVisible: false,
+    useArrows: true,
+
     columns: [
 	{
 	    xtype: 'treecolumn',
@@ -95,42 +101,35 @@ Ext.define('PVE.node.LVMList', {
 	},
     ],
 
-    rootVisible: false,
-    useArrows: true,
-
     tbar: [
 	{
 	    text: gettext('Reload'),
 	    iconCls: 'fa fa-refresh',
 	    handler: function() {
-		var me = this.up('panel');
-		me.reload();
+		this.up('panel').reload();
 	    },
 	},
 	{
 	    text: gettext('Create') + ': Volume Group',
 	    handler: function() {
-		var me = this.up('panel');
-		var win = Ext.create('PVE.node.CreateLVM', {
-		    nodename: me.nodename,
-		    taskDone: function() {
-			me.reload();
-		    },
-		}).show();
+		let view = this.up('panel');
+		Ext.create('PVE.node.CreateLVM', {
+		    nodename: view.nodename,
+		    taskDone: () => view.reload(),
+		    autoShow: true,
+		});
 	    },
 	},
     ],
 
     reload: function() {
-	var me = this;
-	var sm = me.getSelectionModel();
+	let me = this;
+	let sm = me.getSelectionModel();
 	Proxmox.Utils.API2Request({
-	    url: "/nodes/" + me.nodename + "/disks/lvm",
+	    url: `/nodes/${me.nodename}/disks/lvm`,
 	    waitMsgTarget: me,
 	    method: 'GET',
-	    failure: function(response, opts) {
-		Proxmox.Utils.setErrorMask(me, response.htmlStatus);
-	    },
+	    failure: (response, opts) => Proxmox.Utils.setErrorMask(me, response.htmlStatus),
 	    success: function(response, opts) {
 		sm.deselectAll();
 		me.setRootNode(response.result.data);
@@ -141,44 +140,35 @@ Ext.define('PVE.node.LVMList', {
 
     listeners: {
 	activate: function() {
-	    var me = this;
-	    me.reload();
+	    this.reload();
 	},
     },
 
+    selModel: 'treemodel',
+    fields: [
+	'name',
+	'size',
+	'free',
+	{
+	    type: 'string',
+	    name: 'iconCls',
+	    calculate: data => `fa x-fa-tree fa-${data.leaf ? 'hdd-o' : 'object-group'}`,
+	},
+	{
+	    type: 'number',
+	    name: 'usage',
+	    calculate: data => (data.size - data.free) / data.size,
+	},
+    ],
+    sorters: 'name',
+
     initComponent: function() {
-        var me = this;
+	let me = this;
 
 	me.nodename = me.pveSelNode.data.node;
 	if (!me.nodename) {
 	    throw "no node name specified";
 	}
-
-	var sm = Ext.create('Ext.selection.TreeModel', {});
-
-	Ext.apply(me, {
-	    selModel: sm,
-	    fields: ['name', 'size', 'free',
-		{
-		    type: 'string',
-		    name: 'iconCls',
-		    calculate: function(data) {
-			var txt = 'fa x-fa-tree fa-';
-			txt += data.leaf ? 'hdd-o' : 'object-group';
-			return txt;
-		    },
-		},
-		{
-		    type: 'number',
-		    name: 'usage',
-		    calculate: function(data) {
-			return (data.size-data.free)/data.size;
-		    },
-		},
-	    ],
-	    sorters: 'name',
-	});
-
 	me.callParent();
 
 	me.reload();
