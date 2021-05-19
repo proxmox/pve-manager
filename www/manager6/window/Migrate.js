@@ -98,7 +98,6 @@ Ext.define('PVE.window.Migrate', {
 	    me.lookup('proxmoxHelpButton').setHelpConfig({
 		onlineHelp: vm.get(view.vmtype).onlineHelp,
 	    });
-	    me.checkMigratePreconditions();
 	    me.lookup('formPanel').isValid();
 	},
 
@@ -190,11 +189,16 @@ Ext.define('PVE.window.Migrate', {
 	    }
 
 	    try {
+		if (me.fetchingNodeMigrateInfo && me.fetchingNodeMigrateInfo === vm.get('nodename')) {
+		    return;
+		}
+		me.fetchingNodeMigrateInfo = vm.get('nodename');
 		let { result } = await Proxmox.Async.api2({
 		    url: `/nodes/${vm.get('nodename')}/${vm.get('vmtype')}/${vm.get('vmid')}/migrate`,
 		    method: 'GET',
 		});
 		migrateStats = result.data;
+		me.fetchingNodeMigrateInfo = false;
 	    } catch (error) {
 		Ext.Msg.alert(gettext('Error'), error.htmlStatus);
 		return;
