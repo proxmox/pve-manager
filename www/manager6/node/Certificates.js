@@ -252,26 +252,23 @@ Ext.define('PVE.node.Certificates', {
 	    },
 	},
 	{
-	    xtype: 'button',
+	    xtype: 'proxmoxStdRemoveButton',
 	    itemId: 'deletebtn',
 	    text: gettext('Delete Custom Certificate'),
-	    handler: function() {
-		var me = this.up('grid');
-		Proxmox.Utils.API2Request({
-		    url: '/nodes/' + me.nodename + '/certificates/custom?restart=1',
-		    method: 'DELETE',
-		    success: function(response, opt) {
-			var txt = gettext('pveproxy will be restarted with new certificates, please reload the GUI!');
-			Ext.getBody().mask(txt, ['pve-static-mask']);
-			// reload after 10 seconds automatically
-			Ext.defer(function() {
-			    window.location.reload(true);
-			}, 10000);
-		    },
-		    failure: function(response, opt) {
-			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		    },
-		});
+	    dangerous: true,
+	    selModel: false,
+	    getUrl: function(rec) {
+		let view = this.up('grid');
+		return `/nodes/${view.nodename}/certificates/custom?restart=1`;
+	    },
+	    confirmMsg: gettext('Delete custom certificate and switch to generated one?'),
+	    callback: function(options, success, response) {
+		if (success) {
+		    let txt = gettext('API server will be restarted to use new certificates, please reload web-interface!');
+		    Ext.getBody().mask(txt, ['pve-static-mask']);
+		    // reload after 10 seconds automatically
+		    Ext.defer(() => window.location.reload(true), 10000);
+		}
 	    },
 	},
 	'-',
