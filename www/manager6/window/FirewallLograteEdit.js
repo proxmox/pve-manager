@@ -33,8 +33,12 @@ Ext.define('PVE.FirewallLograteInputPanel', {
 		{
 		    xtype: 'proxmoxKVComboBox',
 		    name: 'unit',
-		    comboItems: [['second', 'second'], ['minute', 'minute'],
-			['hour', 'hour'], ['day', 'day']],
+		    comboItems: [
+			['second', 'second'],
+			['minute', 'minute'],
+			['hour', 'hour'],
+			['day', 'day'],
+		    ],
 		    allowBlank: false,
 		    flex: 1,
 		    value: 'second',
@@ -52,23 +56,24 @@ Ext.define('PVE.FirewallLograteInputPanel', {
     ],
 
     onGetValues: function(values) {
-	var me = this;
+	let me = this;
 
-	var vals = {};
-	vals.enable = values.enable !== undefined ? 1 : 0;
-	vals.rate = values.rate + '/' + values.unit;
-	vals.burst = values.burst;
-	var properties = PVE.Parser.printPropertyString(vals, undefined);
-	if (properties == '') {
+	let cfg = {
+	    enable: values.enable !== undefined ? 1 : 0,
+	    rate: values.rate + '/' + values.unit,
+	    burst: values.burst,
+	};
+	let properties = PVE.Parser.printPropertyString(cfg, undefined);
+	if (properties === '') {
 	    return { 'delete': 'log_ratelimit' };
 	}
 	return { log_ratelimit: properties };
     },
 
     setValues: function(values) {
-	var me = this;
+	let me = this;
 
-	var properties = {};
+	let properties = {};
 	if (values.log_ratelimit !== undefined) {
 	    properties = PVE.Parser.parsePropertyString(values.log_ratelimit, 'enable');
 	    if (properties.rate) {
