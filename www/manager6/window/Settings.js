@@ -56,23 +56,14 @@ Ext.define('PVE.window.Settings', {
 	},
 
 	set_button_status: function() {
-	    var me = this;
+	    let me = this;
+	    let form = me.lookup('xtermform');
 
-	    var form = me.lookup('xtermform');
-	    var valid = form.isValid();
-	    var dirty = form.isDirty();
-
-	    var hasvalues = false;
-	    var values = form.getValues();
-	    Ext.Object.eachValue(values, function(value) {
-		if (value) {
-		    hasvalues = true;
-		    return false;
-		}
-	    });
+	    let valid = form.isValid(), dirty = form.isDirty();
+	    let hasValues = Object.values(form.getValues()).some(v => !!v);
 
 	    me.lookup('xtermsave').setDisabled(!dirty || !valid);
-	    me.lookup('xtermreset').setDisabled(!hasvalues);
+	    me.lookup('xtermreset').setDisabled(!hasValues);
 	},
 
 	control: {
@@ -104,30 +95,21 @@ Ext.define('PVE.window.Settings', {
 	    },
 	    'button[name=reset]': {
 		click: function() {
-		    var blacklist = ['GuiCap', 'login-username', 'dash-storages'];
-		    var sp = Ext.state.Manager.getProvider();
-		    var state;
-		    for (state in sp.state) {
-			if (sp.state.hasOwnProperty(state)) {
-			    if (blacklist.indexOf(state) !== -1) {
-				continue;
-			    }
-
+		    let blacklist = ['GuiCap', 'login-username', 'dash-storages'];
+		    let sp = Ext.state.Manager.getProvider();
+		    for (const state of Object.keys(sp.state)) {
+			if (!blacklist.includes(state)) {
 			    sp.clear(state);
 			}
 		    }
-
 		    window.location.reload();
 		},
 	    },
 	    'button[name=clear-username]': {
 		click: function() {
-		    var me = this;
-		    var usernamefield = me.lookupReference('savedUserName');
-		    var sp = Ext.state.Manager.getProvider();
-
-		    usernamefield.setValue(Proxmox.Utils.noneText);
-		    sp.clear('login-username');
+		    let me = this;
+		    me.lookupReference('savedUserName').setValue(Proxmox.Utils.noneText);
+		    Ext.state.Manager.getProvider().clear('login-username');
 		},
 	    },
 	    'grid[reference=dashboard-storages]': {
@@ -135,47 +117,36 @@ Ext.define('PVE.window.Settings', {
 		    var me = this;
 		    var sp = Ext.state.Manager.getProvider();
 
-		    // saves the selected storageids as
-		    // "id1,id2,id3,..."
-		    // or clears the variable
+		    // saves the selected storageids as "id1,id2,id3,..." or clears the variable
 		    if (selected.length > 0) {
-			sp.set('dash-storages',
-			    Ext.Array.pluck(selected, 'id').join(','));
+			sp.set('dash-storages', Ext.Array.pluck(selected, 'id').join(','));
 		    } else {
 			sp.clear('dash-storages');
 		    }
 		},
 		afterrender: function(grid) {
-		    var me = grid;
-		    var sp = Ext.state.Manager.getProvider();
-		    var store = me.getStore();
-		    var items = [];
-		    me.suspendEvent('selectionchange');
-		    var storages = sp.get('dash-storages') || '';
-		    storages.split(',').forEach(function(storage) {
-			// we have to get the records
-			// to be able to select them
-			if (storage !== '') {
-			    var item = store.getById(storage);
+		    let store = grid.getStore();
+		    let storages = Ext.state.Manager.getProvider().get('dash-storages') || '';
+
+		    let items = [];
+		    storages.split(',').forEach(storage => {
+			if (storage !== '') { // we have to get the records to be able to select them
+			    let item = store.getById(storage);
 			    if (item) {
 				items.push(item);
 			    }
 			}
 		    });
-		    me.getSelectionModel().select(items);
-		    me.resumeEvent('selectionchange');
+		    grid.suspendEvent('selectionchange');
+		    grid.getSelectionModel().select(items);
+		    grid.resumeEvent('selectionchange');
 		},
 	    },
 	    'field[reference=summarycolumns]': {
-		change: function(el, newValue) {
-		    var sp = Ext.state.Manager.getProvider();
-		    sp.set('summarycolumns', newValue);
-		},
+		change: (el, newValue) => Ext.state.Manager.getProvider().set('summarycolumns', newValue),
 	    },
 	    'field[reference=guestNotesCollapse]': {
-		change: function(e, v) {
-		    Ext.state.Manager.getProvider().set('guest-notes-collapse', v);
-		},
+		change: (e, v) => Ext.state.Manager.getProvider().set('guest-notes-collapse', v),
 	    },
 	},
     },
@@ -418,9 +389,8 @@ Ext.define('PVE.window.Settings', {
 			    },
 			],
 			listeners: {
-			    change: function(el, newValue, undefined) {
-				var sp = Ext.state.Manager.getProvider();
-				sp.set('novnc-scaling', newValue.noVNCScalingField);
+			    change: function(el, { noVNCScalingField }) {
+				Ext.state.Manager.getProvider().set('novnc-scaling', noVNCScalingField);
 			    },
 			},
 		    },
