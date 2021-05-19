@@ -382,7 +382,7 @@ Ext.define('PVE.Parser', {
 
     printLxcMountPoint: function(mp) {
 	let drivestr = mp.file;
-	for (const [key, value] of Object.entrie(mp)) {
+	for (const [key, value] of Object.entries(mp)) {
 	    if (!Ext.isDefined(value) || key === 'file' || key === 'type' || key === 'storage') {
 		continue;
 	    }
