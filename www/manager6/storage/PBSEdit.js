@@ -372,7 +372,6 @@ Ext.define('PVE.panel.PBSEncryptionKeyTab', {
 			return true;
 		    },
 		    afterRender: function() {
-			let field = this;
 			if (!window.FileReader) {
 			    // No FileReader support in this browser
 			    return;
@@ -383,15 +382,12 @@ Ext.define('PVE.panel.PBSEncryptionKeyTab', {
 				ev.preventDefault();
 			    }
 			};
-			field.inputEl.on('dragover', cancel);
-			field.inputEl.on('dragenter', cancel);
-			field.inputEl.on('drop', function(ev) {
-			    ev = ev.event;
-			    if (ev.preventDefault) {
-				ev.preventDefault();
-			    }
-			    let files = ev.dataTransfer.files;
-			    PVE.Utils.loadTextFromFile(files[0], v => field.setValue(v));
+			this.inputEl.on('dragover', cancel);
+			this.inputEl.on('dragenter', cancel);
+			this.inputEl.on('drop', ev => {
+			    cancel(ev);
+			    let files = ev.event.dataTransfer.files;
+			    PVE.Utils.loadTextFromFile(files[0], v => this.setValue(v));
 			});
 		    },
 		},
