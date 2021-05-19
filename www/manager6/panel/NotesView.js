@@ -15,8 +15,8 @@ Ext.define('PVE.panel.NotesView', {
 	    {
 		text: gettext('Edit'),
 		handler: function() {
-		    var me = this.up('panel');
-		    me.run_editor();
+		    let view = this.up('panel');
+		    view.run_editor();
 		},
 	    },
 	],
@@ -70,8 +70,8 @@ Ext.define('PVE.panel.NotesView', {
     tools: [{
 	type: 'gear',
 	handler: function() {
-	    var me = this.up('panel');
-	    me.run_editor();
+	    let view = this.up('panel');
+	    view.run_editor();
 	},
     }],
 
