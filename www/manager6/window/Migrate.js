@@ -92,7 +92,6 @@ Ext.define('PVE.window.Migrate', {
 	    }
 	    vm.set('vmtype', view.vmtype);
 
-
 	    view.setTitle(
 		Ext.String.format('{0} {1} {2}', gettext('Migrate'), vm.get(view.vmtype).commonName, view.vmid),
 	    );
@@ -104,7 +103,7 @@ Ext.define('PVE.window.Migrate', {
 	},
 
 	onTargetChange: function(nodeSelector) {
-	    //Always display the storages of the currently seleceted migration target
+	    // Always display the storages of the currently seleceted migration target
 	    this.lookup('pveDiskStorageSelector').setNodename(nodeSelector.value);
 	    this.checkMigratePreconditions();
 	},
@@ -181,8 +180,8 @@ Ext.define('PVE.window.Migrate', {
 	    me.lookup('formPanel').isValid();
 	},
 
-	checkQemuPreconditions: function(resetMigrationPossible) {
-	    var me = this,
+	checkQemuPreconditions: async function(resetMigrationPossible) {
+	    let me = this,
 		vm = me.getViewModel(),
 		migrateStats;
 
@@ -190,103 +189,99 @@ Ext.define('PVE.window.Migrate', {
 		vm.set('migration.mode', 'online');
 	    }
 
-	    Proxmox.Utils.API2Request({
-		url: '/nodes/' + vm.get('nodename') + '/' + vm.get('vmtype') + '/' + vm.get('vmid') + '/migrate',
-		method: 'GET',
-		failure: function(response, opts) {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		},
-		success: function(response, options) {
-		    migrateStats = response.result.data;
-		    if (migrateStats.running) {
-			vm.set('running', true);
-		    }
-		    // Get migration object from viewmodel to prevent
-		    // to many bind callbacks
-		    var migration = vm.get('migration');
-		    if (resetMigrationPossible) migration.possible = true;
-		    migration.preconditions = [];
+	    try {
+		let { result } = await Proxmox.Async.api2({
+		    url: `/nodes/${vm.get('nodename')}/${vm.get('vmtype')}/${vm.get('vmid')}/migrate`,
+		    method: 'GET',
+		});
+		migrateStats = result.data;
+	    } catch (error) {
+		Ext.Msg.alert(gettext('Error'), error.htmlStatus);
+		return;
+	    }
 
-		    if (migrateStats.allowed_nodes) {
-			migration.allowedNodes = migrateStats.allowed_nodes;
-			var target = me.lookup('pveNodeSelector').value;
-			if (target.length && !migrateStats.allowed_nodes.includes(target)) {
-			    let disallowed = migrateStats.not_allowed_nodes[target];
-			    let missing_storages = disallowed.unavailable_storages.join(', ');
+	    if (migrateStats.running) {
+		vm.set('running', true);
+	    }
+	    // Get migration object from viewmodel to prevent to many bind callbacks
+	    let migration = vm.get('migration');
+	    if (resetMigrationPossible) {
+		migration.possible = true;
+	    }
+	    migration.preconditions = [];
 
-			    migration.possible = false;
-			    migration.preconditions.push({
-				text: 'Storage (' + missing_storages + ') not available on selected target. ' +
-				  'Start VM to use live storage migration or select other target node',
-				severity: 'error',
-			    });
-			}
-		    }
+	    if (migrateStats.allowed_nodes) {
+		migration.allowedNodes = migrateStats.allowed_nodes;
+		let target = me.lookup('pveNodeSelector').value;
+		if (target.length && !migrateStats.allowed_nodes.includes(target)) {
+		    let disallowed = migrateStats.not_allowed_nodes[target];
+		    let missingStorages = disallowed.unavailable_storages.join(', ');
 
-		    if (migrateStats.local_resources.length) {
-			migration.hasLocalResources = true;
-			if (!migration.overwriteLocalResourceCheck || vm.get('running')) {
-			    migration.possible = false;
-			    migration.preconditions.push({
-				text: Ext.String.format('Can\'t migrate VM with local resources: {0}',
-				migrateStats.local_resources.join(', ')),
-				severity: 'error',
-			    });
-			} else {
-			    migration.preconditions.push({
-				text: Ext.String.format('Migrate VM with local resources: {0}. ' +
-				'This might fail if resources aren\'t available on the target node.',
-				migrateStats.local_resources.join(', ')),
-				severity: 'warning',
-			    });
-			}
-		    }
+		    migration.possible = false;
+		    migration.preconditions.push({
+			text: 'Storage (' + missingStorages + ') not available on selected target. ' +
+			  'Start VM to use live storage migration or select other target node',
+			severity: 'error',
+		    });
+		}
+	    }
 
-		    if (migrateStats.local_disks.length) {
-			migrateStats.local_disks.forEach(function(disk) {
-			    if (disk.cdrom && disk.cdrom === 1) {
-				if (disk.volid.includes('vm-'+vm.get('vmid')+'-cloudinit')) {
-				    if (migrateStats.running) {
-					migration.possible = false;
-					migration.preconditions.push({
-					     text: "Can't live migrate VM with local cloudinit disk, use shared storage instead",
-					     severity: 'error',
-					});
-				    } else {
+	    if (migrateStats.local_resources.length) {
+		migration.hasLocalResources = true;
+		if (!migration.overwriteLocalResourceCheck || vm.get('running')) {
+		    migration.possible = false;
+		    migration.preconditions.push({
+			text: Ext.String.format('Can\'t migrate VM with local resources: {0}',
+			migrateStats.local_resources.join(', ')),
+			severity: 'error',
+		    });
+		} else {
+		    migration.preconditions.push({
+			text: Ext.String.format('Migrate VM with local resources: {0}. ' +
+			'This might fail if resources aren\'t available on the target node.',
+			migrateStats.local_resources.join(', ')),
+			severity: 'warning',
+		    });
+		}
+	    }
 
-				    }
-				} else {
-				    migration.possible = false;
-				    migration.preconditions.push({
-					text: "Can't migrate VM with local CD/DVD",
-					severity: 'error',
-				    });
-				}
-			    } else {
-				var size_string = disk.size ? '(' + Proxmox.Utils.render_size(disk.size) + ')' : '';
-				migration['with-local-disks'] = 1;
+	    if (migrateStats.local_disks.length) {
+		migrateStats.local_disks.forEach(function(disk) {
+		    if (disk.cdrom && disk.cdrom === 1) {
+			if (disk.volid.includes('vm-' + vm.get('vmid') + '-cloudinit')) {
+			    if (migrateStats.running) {
+				migration.possible = false;
 				migration.preconditions.push({
-				    text: Ext.String.format('Migration with local disk might take long: {0} {1}',
-				          disk.volid, size_string),
-				    severity: 'warning',
+				     text: "Can't live migrate VM with local cloudinit disk, use shared storage instead",
+				     severity: 'error',
 				});
 			    }
+			} else {
+			    migration.possible = false;
+			    migration.preconditions.push({
+				text: "Can't migrate VM with local CD/DVD",
+				severity: 'error',
+			    });
+			}
+		    } else {
+			let size = disk.size ? '(' + Proxmox.Utils.render_size(disk.size) + ')' : '';
+			migration['with-local-disks'] = 1;
+			migration.preconditions.push({
+			    text: Ext.String.format('Migration with local disk might take long: {0} {1}', disk.volid, size),
+			    severity: 'warning',
 			});
 		    }
+		});
+	    }
 
-		    vm.set('migration', migration);
-		},
-	    });
+	    vm.set('migration', migration);
 	},
 	checkLxcPreconditions: function(resetMigrationPossible) {
-	    var me = this,
-		vm = me.getViewModel();
+	    let vm = this.getViewModel();
 	    if (vm.get('running')) {
 		vm.set('migration.mode', 'restart');
 	    }
 	},
-
-
     },
 
     width: 600,
@@ -365,7 +360,10 @@ Ext.define('PVE.window.Migrate', {
 			    value: '{migration.overwriteLocalResourceCheck}',
 			},
 			listeners: {
-			    change: { fn: 'checkMigratePreconditions', extraArg: true },
+			    change: {
+				fn: 'checkMigratePreconditions',
+				extraArg: true,
+			    },
 			},
 		}],
 		},
