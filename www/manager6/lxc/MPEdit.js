@@ -1,17 +1,12 @@
-/* hidden: boolean and string
- * bind: function and object
- * disabled: boolean and string
- */
 Ext.define('PVE.lxc.MountPointInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     xtype: 'pveLxcMountPointInputPanel',
 
-    insideWizard: false,
-
     onlineHelp: 'pct_container_storage',
 
-    unused: false, // add unused disk imaged
+    insideWizard: false,
 
+    unused: false, // add unused disk imaged
     unprivileged: false,
 
     vmconfig: {}, // used to select unused disks
@@ -41,58 +36,64 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	delete values.disksize;
 	delete values.diskformat;
 
-	let mountopts = (values.mountoptions || []).join(';');
-	PVE.Utils.propertyStringSet(me.mp, values.mp, 'mp');
-	PVE.Utils.propertyStringSet(me.mp, values.mountoptions, 'mountoptions', mountopts);
-	PVE.Utils.propertyStringSet(me.mp, values.backup, 'backup');
-	PVE.Utils.propertyStringSet(me.mp, values.quota, 'quota');
-	PVE.Utils.propertyStringSet(me.mp, values.ro, 'ro');
-	PVE.Utils.propertyStringSet(me.mp, values.acl, 'acl');
-	PVE.Utils.propertyStringSet(me.mp, values.replicate, 'replicate');
+	let setMPOpt = (k, src, v) => PVE.Utils.propertyStringSet(me.mp, src, k, v);
 
-	var res = {};
+	setMPOpt('mp', values.mp);
+	let mountOpts = (values.mountoptions || []).join(';');
+	setMPOpt('mountoptions', values.mountoptions, mountOpts);
+	setMPOpt('mp', values.mp);
+	setMPOpt('backup', values.backup);
+	setMPOpt('quota', values.quota);
+	setMPOpt('ro', values.ro);
+	setMPOpt('acl', values.acl);
+	setMPOpt('replicate', values.replicate);
+
+	let res = {};
 	res[confid] = PVE.Parser.printLxcMountPoint(me.mp);
 	return res;
     },
 
-
     setMountPoint: function(mp) {
-	var me = this;
-	var vm = this.getViewModel();
+	let me = this;
+	let vm = me.getViewModel();
 	vm.set('mptype', mp.type);
 	if (mp.mountoptions) {
 	    mp.mountoptions = mp.mountoptions.split(';');
 	}
 	me.mp = mp;
-
-	if (this.confid === 'rootfs') {
-	    var field = me.down('field[name=mountoptions]');
-	    var forbidden = ['nodev', 'noexec'];
-	    var filtered = field.comboItems.filter(e => !forbidden.includes(e[0]));
-	    field.setComboItems(filtered);
-	}
-
+	me.filterMountOptions();
 	me.setValues(mp);
     },
 
+    filterMountOptions: function() {
+	let me = this;
+	if (me.confid === 'rootfs') {
+	    let field = me.down('field[name=mountoptions]');
+	    let exclude = ['nodev', 'noexec'];
+	    let filtered = field.comboItems.filter(v => !exclude.includes(v[0]));
+	    field.setComboItems(filtered);
+	}
+    },
+
     setVMConfig: function(vmconfig) {
-	var me = this;
-	var vm = me.getViewModel();
+	let me = this;
+	let vm = me.getViewModel();
 	me.vmconfig = vmconfig;
 	vm.set('unpriv', vmconfig.unprivileged);
 
-	PVE.Utils.forEachMP(function(bus, i) {
-	    var name = "mp" + i.toString();
+	PVE.Utils.forEachMP((bus, i) => {
+	    let name = "mp" + i.toString();
 	    if (!Ext.isDefined(vmconfig[name])) {
 		me.down('field[name=mpid]').setValue(i);
 		return false;
 	    }
+	    return undefined;
 	});
     },
 
     setNodename: function(nodename) {
-	var me = this;
-	var vm = me.getViewModel();
+	let me = this;
+	let vm = me.getViewModel();
 	vm.set('node', nodename);
 	me.down('#diskstorage').setNodename(nodename);
     },
@@ -108,25 +109,22 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    },
 	    '#hdstorage': {
 		change: function(field, newValue) {
-		    var me = this;
+		    let me = this;
 		    if (!newValue) {
 			return;
 		    }
 
-		    var rec = field.store.getById(newValue);
+		    let rec = field.store.getById(newValue);
 		    if (!rec) {
 			return;
 		    }
-
-		    var vm = me.getViewModel();
-		    vm.set('type', rec.data.type);
+		    me.getViewModel().set('type', rec.data.type);
 		},
 	    },
 	},
-
 	init: function(view) {
-	    var me = this;
-	    var vm = this.getViewModel();
+	    let me = this;
+	    let vm = this.getViewModel();
 	    view.mp = {};
 	    vm.set('confid', view.confid);
 	    vm.set('unused', view.unused);
@@ -134,9 +132,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    vm.set('unpriv', view.unprivileged);
 	    vm.set('hideStorSelector', view.unused || !view.isCreate);
 
-	    // can be array if created from unused disk
-	    if (view.isCreate) {
+	    if (view.isCreate) { // can be array if created from unused disk
 		vm.set('isIncludedInBackup', true);
+		if (view.insideWizard) {
+		    view.filterMountOptions();
+		}
 	    }
 	},
     },
@@ -191,12 +191,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    validator: function(value) {
 		let view = this.up('inputpanel');
 		if (!view.rendered) {
-		    return;
+		    return undefined;
 		}
 		if (Ext.isDefined(view.vmconfig["mp"+value])) {
 		    return "Mount point is already in use.";
 		}
-		/* returns a string above */
 		return true;
 	    },
 	},
@@ -330,18 +329,18 @@ Ext.define('PVE.lxc.MountPointEdit', {
     unprivileged: false,
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	var nodename = me.pveSelNode.data.node;
+	let nodename = me.pveSelNode.data.node;
 	if (!nodename) {
 	    throw "no node name specified";
 	}
 
-	var unused = me.confid && me.confid.match(/^unused\d+$/);
+	let unused = me.confid && me.confid.match(/^unused\d+$/);
 
 	me.isCreate = me.confid ? unused : true;
 
-	var ipanel = Ext.create('PVE.lxc.MountPointInputPanel', {
+	let ipanel = Ext.create('PVE.lxc.MountPointInputPanel', {
 	    confid: me.confid,
 	    nodename: nodename,
 	    unused: unused,
@@ -349,7 +348,7 @@ Ext.define('PVE.lxc.MountPointEdit', {
 	    isCreate: me.isCreate,
 	});
 
-	var subject;
+	let subject;
 	if (unused) {
 	    subject = gettext('Unused Disk');
 	} else if (me.isCreate) {
@@ -369,17 +368,15 @@ Ext.define('PVE.lxc.MountPointEdit', {
 	me.load({
 	    success: function(response, options) {
 		ipanel.setVMConfig(response.result.data);
-		if (me.confid) {
-		    /*data is defined as array above*/
-		    var value = response.result.data[me.confid];
-		    var mp = PVE.Parser.parseLxcMountPoint(value);
 
+		if (me.confid) {
+		    let value = response.result.data[me.confid];
+		    let mp = PVE.Parser.parseLxcMountPoint(value);
 		    if (!mp) {
 			Ext.Msg.alert(gettext('Error'), 'Unable to parse mount point options');
 			me.close();
 			return;
 		    }
-
 		    ipanel.setMountPoint(mp);
 		    me.isValid(); // trigger validation
 		}
