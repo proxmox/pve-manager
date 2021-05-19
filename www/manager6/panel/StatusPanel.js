@@ -24,8 +24,8 @@ Ext.define('PVE.panel.StatusPanel', {
 	    listeners: {
 		tabchange: function() {
 		    var atab = me.getActiveTab().itemId;
-		    var state = { value: atab };
-		    sp.set(stateid, state);
+		    let tabstate = { value: atab };
+		    sp.set(stateid, tabstate);
 		},
 	    },
 	    items: [
@@ -46,11 +46,11 @@ Ext.define('PVE.panel.StatusPanel', {
 
 	me.items.get(0).fireEvent('show', me.items.get(0));
 
-	var statechange = function(sp, key, state) {
+	var statechange = function(_, key, newstate) {
 	    if (key === stateid) {
 		var atab = me.getActiveTab().itemId;
-		var ntab = state.value;
-		if (state && ntab && atab != ntab) {
+		let ntab = newstate.value;
+		if (newstate && ntab && atab !== ntab) {
 		    me.setActiveTab(ntab);
 		}
 	    }
