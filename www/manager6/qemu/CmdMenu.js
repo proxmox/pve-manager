@@ -21,6 +21,14 @@ Ext.define('PVE.qemu.CmdMenu', {
 		failure: (response, opts) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
 	    });
 	};
+	let confirmedVMCommand = (cmd, params) => {
+	    let msg = Proxmox.Utils.format_task_description(`qm${cmd}`, info.vmid);
+	    Ext.Msg.confirm(gettext('Confirm'), msg, btn => {
+		if (btn === 'yes') {
+		    vm_command(cmd, params);
+		}
+	    });
+	};
 
 	let caps = Ext.state.Manager.get('GuiCap');
 
@@ -58,14 +66,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		iconCls: 'fa fa-fw fa-pause',
 		hidden: stopped || suspended,
 		disabled: stopped || suspended,
-		handler: function() {
-		    let msg = Proxmox.Utils.format_task_description('qmpause', info.vmid);
-		    Ext.Msg.confirm(gettext('Confirm'), msg, function(btn) {
-			if (btn === 'yes') {
-			    vm_command('suspend');
-			}
-		    });
-		},
+		handler: () => confirmedVMCommand('suspend'),
 	    },
 	    {
 		text: gettext('Hibernate'),
@@ -73,14 +74,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		hidden: stopped || suspended,
 		disabled: stopped || suspended,
 		tooltip: gettext('Suspend to disk'),
-		handler: function() {
-		    let msg = Proxmox.Utils.format_task_description('qmsuspend', info.vmid);
-		    Ext.Msg.confirm(gettext('Confirm'), msg, btn => {
-			if (btn === 'yes') {
-			    vm_command('suspend', { todisk: 1 });
-			}
-		    });
-		},
+		handler: () => confirmedVMCommand('suspend', { todisk: 1 }),
 	    },
 	    {
 		text: gettext('Resume'),
@@ -92,42 +86,21 @@ Ext.define('PVE.qemu.CmdMenu', {
 		text: gettext('Shutdown'),
 		iconCls: 'fa fa-fw fa-power-off',
 		disabled: stopped || suspended,
-		handler: function() {
-		    let msg = Proxmox.Utils.format_task_description('qmshutdown', info.vmid);
-		    Ext.Msg.confirm(gettext('Confirm'), msg, btn => {
-			if (btn === 'yes') {
-			    vm_command('shutdown');
-			}
-		    });
-		},
+		handler: () =>  confirmedVMCommand('shutdown'),
 	    },
 	    {
 		text: gettext('Stop'),
 		iconCls: 'fa fa-fw fa-stop',
 		disabled: stopped,
 		tooltip: Ext.String.format(gettext('Stop {0} immediately'), 'VM'),
-		handler: function() {
-		    let msg = Proxmox.Utils.format_task_description('qmstop', info.vmid);
-		    Ext.Msg.confirm(gettext('Confirm'), msg, btn => {
-			if (btn === 'yes') {
-			    vm_command("stop");
-			}
-		    });
-		},
+		handler: () => confirmedVMCommand('stop'),
 	    },
 	    {
 		text: gettext('Reboot'),
 		iconCls: 'fa fa-fw fa-refresh',
 		disabled: stopped,
 		tooltip: Ext.String.format(gettext('Reboot {0}'), 'VM'),
-		handler: function() {
-		    let msg = Proxmox.Utils.format_task_description('qmreboot', info.vmid);
-		    Ext.Msg.confirm(gettext('Confirm'), msg, (btn) => {
-			if (btn === 'yes') {
-			    vm_command("reboot");
-			}
-		    });
-		},
+		handler: () => confirmedVMCommand('reboot'),
 	    },
 	    {
 		xtype: 'menuseparator',
