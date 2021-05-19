@@ -8,17 +8,14 @@ Ext.define('PVE.ha.ResourcesView', {
     stateId: 'grid-ha-resources',
 
     initComponent: function() {
-	var me = this;
-
-	var caps = Ext.state.Manager.get('GuiCap');
+	let me = this;
 
 	if (!me.rstore) {
 	    throw "no store given";
 	}
 
 	Proxmox.Utils.monStoreErrors(me, me.rstore);
-
-	var store = Ext.create('Proxmox.data.DiffStore', {
+	let store = Ext.create('Proxmox.data.DiffStore', {
 	    rstore: me.rstore,
 	    filters: {
 		property: 'type',
@@ -26,65 +23,29 @@ Ext.define('PVE.ha.ResourcesView', {
 	    },
 	});
 
-	var reload = function() {
-	    me.rstore.load();
-	};
+	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var render_error = function(dataIndex, value, metaData, record) {
-	    var errors = record.data.errors;
-	    if (errors) {
-		var msg = errors[dataIndex];
-		if (msg) {
-		    metaData.tdCls = 'proxmox-invalid-row';
-		    var html = '<p>' + Ext.htmlEncode(msg) + '</p>';
-		    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' +
-			html.replace(/\"/g, '&quot;') + '"';
-		}
-	    }
-	    return value;
-	};
+	let run_editor = function() {
+	    let rec = sm.getSelection()[0];
+	    let sid = rec.data.sid;
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
-
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
-	    var sid = rec.data.sid;
-
-	    var regex = /^(\S+):(\S+)$/;
-	    var res = regex.exec(sid);
-
-	    if (res[1] !== 'vm' && res[1] !== 'ct') {
+	    let res = sid.match(/^(\S+):(\S+)$/);
+	    if (!res || (res[1] !== 'vm' && res[1] !== 'ct')) {
+		console.warn(`unknown HA service ID type ${sid}`);
 		return;
 	    }
-	    var guestType = res[1];
-	    var vmid = res[2];
-
-            var win = Ext.create('PVE.ha.VMResourceEdit', {
-                guestType: guestType,
-                vmid: vmid,
+	    let [, guestType, vmid] = res;
+	    Ext.create('PVE.ha.VMResourceEdit', {
+		guestType: guestType,
+		vmid: vmid,
+		listeners: {
+		    destroy: () => me.rstore.load(),
+		},
+		autoShow: true,
             });
-            win.on('destroy', reload);
-            win.show();
 	};
 
-	var remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
-	    selModel: sm,
-	    baseurl: '/cluster/ha/resources/',
-	    getUrl: function(rec) {
-		var me = this;
-		return me.baseurl + '/' + rec.get('sid');
-	    },
-	    callback: function() {
-		reload();
-	    },
-	});
-
-	var edit_btn = new Proxmox.button.Button({
-	    text: gettext('Edit'),
-	    disabled: true,
-	    selModel: sm,
-	    handler: run_editor,
-	});
+	let caps = Ext.state.Manager.get('GuiCap');
 
 	Ext.apply(me, {
 	    store: store,
@@ -97,14 +58,29 @@ Ext.define('PVE.ha.ResourcesView', {
 		    text: gettext('Add'),
 		    disabled: !caps.nodes['Sys.Console'],
 		    handler: function() {
-			var win = Ext.create('PVE.ha.VMResourceEdit', {});
-			win.on('destroy', reload);
-			win.show();
+			Ext.create('PVE.ha.VMResourceEdit', {
+			    listeners: {
+				destroy: () => me.rstore.load(),
+			    },
+			    autoShow: true,
+			});
 		    },
 		},
-		edit_btn, remove_btn,
+		{
+		    text: gettext('Edit'),
+		    disabled: true,
+		    selModel: sm,
+		    handler: run_editor,
+		},
+		{
+		    xtype: 'proxmoxStdRemoveButton',
+		    selModel: sm,
+		    getUrl: function(rec) {
+			return `/cluster/ha/resources/${rec.get('sid')}`;
+		    },
+		    callback: () => me.rstore.load(),
+		},
 	    ],
-
 	    columns: [
 		{
 		    header: 'ID',
@@ -129,9 +105,7 @@ Ext.define('PVE.ha.ResourcesView', {
 		    width: 100,
 		    hidden: true,
 		    sortable: true,
-		    renderer: function(v) {
-			return v || 'started';
-		    },
+		    renderer: v => v || 'started',
 		    dataIndex: 'request_state',
 		},
 		{
@@ -165,8 +139,13 @@ Ext.define('PVE.ha.ResourcesView', {
 		    header: gettext('Group'),
 		    width: 200,
 		    sortable: true,
-		    renderer: function(value, metaData, record) {
-			return render_error('group', value, metaData, record);
+		    renderer: function(value, metaData, { data }) {
+			if (data.errors && data.errors.group) {
+			    metaData.tdCls = 'proxmox-invalid-row';
+			    let html = `<p>${Ext.htmlEncode(data.errors.group)}</p>`;
+			    metaData.tdAttr = 'data-qwidth=600 data-qtitle="ERROR" data-qtip="' + html + '"';
+			}
+			return value;
 		    },
 		    dataIndex: 'group',
 		},
@@ -178,11 +157,7 @@ Ext.define('PVE.ha.ResourcesView', {
 		},
 	    ],
 	    listeners: {
-		beforeselect: function(grid, record, index, eOpts) {
-		    if (!caps.nodes['Sys.Console']) {
-			return false;
-		    }
-		},
+		beforeselect: (grid, record, index, eOpts) => caps.nodes['Sys.Console'],
 		itemdblclick: run_editor,
 	    },
 	});
