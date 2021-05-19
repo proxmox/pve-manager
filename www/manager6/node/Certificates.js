@@ -96,17 +96,16 @@ Ext.define('PVE.node.CertificateViewer', {
     ],
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	if (!me.cert) {
 	    throw "no cert given";
 	}
-
 	if (!me.nodename) {
 	    throw "no nodename given";
 	}
 
-	me.url = '/nodes/' + me.nodename + '/certificates/info';
+	me.url = `/nodes/${me.nodename}/certificates/info`;
 	me.callParent();
 
 	// hide OK/Reset button, because we just want to show data
@@ -115,12 +114,12 @@ Ext.define('PVE.node.CertificateViewer', {
 	me.load({
 	    success: function(response) {
 		if (Ext.isArray(response.result.data)) {
-		    Ext.Array.each(response.result.data, function(item) {
+		    for (const item of response.result.data) {
 			if (item.filename === me.cert) {
 			    me.setValues(item);
-			    return false;
+			    return;
 			}
-		    });
+		    }
 		}
 	    },
 	});
@@ -142,13 +141,9 @@ Ext.define('PVE.node.CertUpload', {
 	if (!success) {
 	    return;
 	}
-
-	var txt = gettext('pveproxy will be restarted with new certificates, please reload the GUI!');
+	let txt = gettext('API server will be restarted to use new certificates, please reload web-interface!');
 	Ext.getBody().mask(txt, ['pve-static-mask']);
-	// reload after 10 seconds automatically
-	Ext.defer(function() {
-	    window.location.reload(true);
-	}, 10000);
+	Ext.defer(() => window.location.reload(true), 10000); // reload after 10 seconds automatically
     },
 
     items: [
@@ -164,13 +159,10 @@ Ext.define('PVE.node.CertUpload', {
 	    text: gettext('From File'),
 	    listeners: {
 		change: function(btn, e, value) {
-		    var me = this.up('form');
-		    e = e.event;
-		    Ext.Array.each(e.target.files, function(file) {
-			PVE.Utils.loadSSHKeyFromFile(file, function(res) {
-			    me.down('field[name=key]').setValue(res);
-			});
-		    });
+		    let form = this.up('form');
+		    for (const file of e.event.target.files) {
+			PVE.Utils.loadSSHKeyFromFile(file, res => form.down('field[name=key]').setValue(res));
+		    }
 		    btn.reset();
 		},
 	    },
@@ -191,13 +183,10 @@ Ext.define('PVE.node.CertUpload', {
 	    text: gettext('From File'),
 	    listeners: {
 		change: function(btn, e, value) {
-		    var me = this.up('form');
-		    e = e.event;
-		    Ext.Array.each(e.target.files, function(file) {
-			PVE.Utils.loadSSHKeyFromFile(file, function(res) {
-			    me.down('field[name=certificates]').setValue(res);
-			});
-		    });
+		    let form = this.up('form');
+		    for (const file of e.event.target.files) {
+			PVE.Utils.loadSSHKeyFromFile(file, res => form.down('field[name=certificates]').setValue(res));
+		    }
 		    btn.reset();
 		},
 	    },
@@ -215,13 +204,11 @@ Ext.define('PVE.node.CertUpload', {
     ],
 
     initComponent: function() {
-	var me = this;
-
+	let me = this;
 	if (!me.nodename) {
 	    throw "no nodename given";
 	}
-
-	me.url = '/nodes/' + me.nodename + '/certificates/custom';
+	me.url = `/nodes/${me.nodename}/certificates/custom`;
 
 	me.callParent();
     },
@@ -229,7 +216,6 @@ Ext.define('PVE.node.CertUpload', {
 
 Ext.define('pve-certificate', {
     extend: 'Ext.data.Model',
-
     fields: ['filename', 'fingerprint', 'issuer', 'notafter', 'notbefore', 'subject', 'san', 'public-key-bits', 'public-key-type'],
     idProperty: 'filename',
 });
@@ -243,12 +229,14 @@ Ext.define('PVE.node.Certificates', {
 	    xtype: 'button',
 	    text: gettext('Upload Custom Certificate'),
 	    handler: function() {
-		var me = this.up('grid');
-		var win = Ext.create('PVE.node.CertUpload', {
-		    nodename: me.nodename,
+		let view = this.up('grid');
+		Ext.create('PVE.node.CertUpload', {
+		    nodename: view.nodename,
+		    listeners: {
+			destroy: () => view.reload(),
+		    },
+		    autoShow: true,
 		});
-		win.show();
-		win.on('destroy', me.reload, me);
 	    },
 	},
 	{
@@ -278,8 +266,7 @@ Ext.define('PVE.node.Certificates', {
 	    disabled: true,
 	    text: gettext('View Certificate'),
 	    handler: function() {
-		var me = this.up('grid');
-		me.view_certificate();
+		this.up('grid').viewCertificate();
 	    },
 	},
     ],
@@ -343,20 +330,12 @@ Ext.define('PVE.node.Certificates', {
     ],
 
     reload: function() {
-	var me = this;
-	me.rstore.load();
+	this.rstore.load();
     },
 
-    set_button_status: function() {
-	var me = this;
-	var rec = me.rstore.getById('pveproxy-ssl.pem');
-
-	me.down('#deletebtn').setDisabled(!rec);
-    },
-
-    view_certificate: function() {
-	var me = this;
-	var selection = me.getSelection();
+    viewCertificate: function() {
+	let me = this;
+	let selection = me.getSelection();
 	if (!selection || selection.length < 1) {
 	    return;
 	}
@@ -368,7 +347,7 @@ Ext.define('PVE.node.Certificates', {
     },
 
     listeners: {
-	itemdblclick: 'view_certificate',
+	itemdblclick: 'viewCertificate',
     },
 
     initComponent: function() {
@@ -394,7 +373,7 @@ Ext.define('PVE.node.Certificates', {
 
 	me.callParent();
 
-	me.mon(me.rstore, 'load', me.set_button_status, me);
+	me.mon(me.rstore, 'load', store => me.down('#deletebtn').setDisabled(!store.getById('pveproxy-ssl.pem')));
 	me.rstore.startUpdate();
 	me.on('destroy', me.rstore.stopUpdate, me.rstore);
     },
