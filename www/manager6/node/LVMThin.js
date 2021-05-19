@@ -2,23 +2,21 @@ Ext.define('PVE.node.CreateLVMThin', {
     extend: 'Proxmox.window.Edit',
     xtype: 'pveCreateLVMThin',
 
+    onlineHelp: 'chapter_lvm',
     subject: 'LVM Thinpool',
 
     showProgress: true,
-
-    onlineHelp: 'chapter_lvm',
+    isCreate: true,
 
     initComponent: function() {
-        var me = this;
+        let me = this;
 
 	if (!me.nodename) {
 	    throw "no node name specified";
 	}
 
-	me.isCreate = true;
-
         Ext.applyIf(me, {
-	    url: "/nodes/" + me.nodename + "/disks/lvmthin",
+	    url: `/nodes/${me.nodename}/disks/lvmthin`,
 	    method: 'POST',
 	    items: [
 		{
@@ -53,8 +51,13 @@ Ext.define('PVE.node.LVMThinList', {
     xtype: 'pveLVMThinList',
 
     emptyText: gettext('No thinpools found'),
+
     stateful: true,
     stateId: 'grid-node-lvmthin',
+
+    rootVisible: false,
+    useArrows: true,
+
     columns: [
 	{
 	    text: gettext('Name'),
@@ -115,47 +118,41 @@ Ext.define('PVE.node.LVMThinList', {
 	},
     ],
 
-    rootVisible: false,
-    useArrows: true,
-
     tbar: [
 	{
 	    text: gettext('Reload'),
 	    iconCls: 'fa fa-refresh',
 	    handler: function() {
-		var me = this.up('panel');
-		me.reload();
+		this.up('panel').reload();
 	    },
 	},
 	{
 	    text: gettext('Create') + ': Thinpool',
 	    handler: function() {
-		var me = this.up('panel');
-		var win = Ext.create('PVE.node.CreateLVMThin', {
-		    nodename: me.nodename,
-		    taskDone: function() {
-			me.reload();
-		    },
-		}).show();
+		var view = this.up('panel');
+		Ext.create('PVE.node.CreateLVMThin', {
+		    nodename: view.nodename,
+		    taskDone: () => view.reload(),
+		    autoShow: true,
+		});
 	    },
 	},
     ],
 
     reload: function() {
-	var me = this;
+	let me = this;
 	me.store.load();
 	me.store.sort();
     },
 
     listeners: {
 	activate: function() {
-	    var me = this;
-	    me.reload();
+	    this.reload();
 	},
     },
 
     initComponent: function() {
-        var me = this;
+	let me = this;
 
 	me.nodename = me.pveSelNode.data.node;
 	if (!me.nodename) {
@@ -164,25 +161,26 @@ Ext.define('PVE.node.LVMThinList', {
 
 	Ext.apply(me, {
 	    store: {
-		fields: ['lv', 'lv_size', 'used', 'metadata_size', 'metadata_used',
+		fields: [
+		    'lv',
+		    'lv_size',
+		    'used',
+		    'metadata_size',
+		    'metadata_used',
 		    {
 			type: 'number',
 			name: 'usage',
-			calculate: function(data) {
-			    return data.used/data.lv_size;
-			},
+			calculate: data => data.used / data.lv_size,
 		    },
 		    {
 			type: 'number',
 			name: 'metadata_usage',
-			calculate: function(data) {
-			    return data.metadata_used/data.metadata_size;
-			},
+			calculate: data => data.metadata_used / data.metadata_size,
 		    },
 		],
 		proxy: {
 		    type: 'proxmox',
-		    url: "/api2/json/nodes/" + me.nodename + '/disks/lvmthin',
+		    url: `/api2/json/nodes/${me.nodename}/disks/lvmthin`,
 		},
 		sorters: 'lv',
 	    },
