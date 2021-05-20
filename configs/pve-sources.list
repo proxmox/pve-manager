@@ -1,1 +1,1 @@
-deb https://enterprise.proxmox.com/debian/pve bullseye pve-enterprise
+deb https://enterprise.proxmox.com/debian/pve buster pve-enterprise

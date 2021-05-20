@@ -117,8 +117,8 @@ __PACKAGE__->register_method ({
 	    version => {
 		type => 'string',
 		# for buster, luminous kept for testing/upgrade purposes only! - FIXME: remove with 6.2?
-		enum => ['octopus', 'pacific'],
-		default => 'pacific',
+		enum => ['luminous', 'nautilus', 'octopus'],
+		default => 'nautilus',
 		description => "Ceph version to install.",
 		optional => 1,
 	    },
@@ -128,40 +128,29 @@ __PACKAGE__->register_method ({
 		optional => 1,
 		description => "Allow experimental versions. Use with care!",
 	    },
-	    'test-repository' => {
-		type => 'boolean',
-		default => 0,
-		optional => 1,
-		description => "Use the test, not the main repository. Use with care!",
-	    },
 	},
     },
     returns => { type => 'null' },
     code => sub {
 	my ($param) = @_;
 
-	my $cephver = $param->{version} || 'pacific'; # NOTE: always change default here too!
-
-	my $repo = $param->{'test-repository'} ? 'test' : 'main';
+	my $cephver = $param->{version} || 'nautilus';
 
 	my $repolist;
-	if ($cephver eq 'octopus') {
-	    $repolist = "deb http://download.proxmox.com/debian/ceph-octopus bullseye $repo\n";
-	    # FIXME: delete below for release!
-	    warn "NOTE: using internal test repository as public may not be available yet\n";
-	    $repolist = "deb http://repo.proxmox.com/staging/ceph-octopus bullseye ceph-15\n"; # TODO: for test only, delete
-	} elsif ($cephver eq 'pacific') {
-	    $repolist = "deb http://download.proxmox.com/debian/ceph-pacific bullseye $repo\n";
-	    # FIXME: delete below for release!
-	    warn "NOTE: using internal test repository as public may not be available yet\n";
-	    $repolist = "deb http://repo.proxmox.com/staging/ceph-pacific bullseye ceph-16\n"; # TODO: for test only, delete
+	if ($cephver eq 'nautilus') {
+	    $repolist = "deb http://download.proxmox.com/debian/ceph-nautilus buster main\n";
+	} elsif ($cephver eq 'luminous') {
+	    die "Not allowed to select version '$cephver'\n" if !$param->{'allow-experimental'};
+	    $repolist = "deb http://download.proxmox.com/debian/ceph-luminous buster main\n";
+	} elsif ($cephver eq 'octopus') {
+	    $repolist = "deb http://download.proxmox.com/debian/ceph-octopus buster main\n";
 	} else {
-	    die "unsupported ceph version: $cephver";
+	    die "not implemented ceph version: $cephver";
 	}
 	PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $repolist);
 
 	warn "WARNING: installing non-default ceph release '$cephver'!\n"
-	    if $cephver !~ qr/^(?:octopus|pacific)$/;
+	    if $cephver !~ qr/^(?:nautilus|octopus)$/;
 
 	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
 	print "update available package list\n";

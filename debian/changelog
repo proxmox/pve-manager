@@ -1,9 +1,3 @@
-pve-manager (7.0-1) bullseye; urgency=medium
-
-  * re-build for Proxmox VE 7 based on Debian Bullseye
-
- -- Proxmox Support Team <support@proxmox.com>  Wed, 19 May 2021 18:11:13 +0200
-
 pve-manager (6.4-7) pve; urgency=medium
 
   * pvereport: log pressure stall information
