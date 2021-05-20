@@ -332,7 +332,7 @@ __PACKAGE__->register_method({
 	    for my $pool (sort keys %{$usercfg->{pools}}) {
 		my $d = $usercfg->{pools}->{$pool};
 
-		next if !$rpcenv->check($authuser, "/pool/$pool", [ 'Pool.Allocate' ], 1);
+		next if !$rpcenv->check($authuser, "/pool/$pool", [ 'Pool.Audit' ], 1);
 
 		my $entry = {
 		    id => "/pool/$pool",
@@ -382,6 +382,11 @@ __PACKAGE__->register_method({
 
 		if (defined(my $lock = $locked_vms->{$vmid}->{lock})) {
 		    $entry->{lock} = $lock;
+		}
+
+		if (defined($entry->{pool}) &&
+		    !$rpcenv->check($authuser, "/pool/$entry->{pool}", ['Pool.Audit'], 1)) {
+		    delete $entry->{pool};
 		}
 
 		# get ha status

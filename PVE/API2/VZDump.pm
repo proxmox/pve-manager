@@ -226,7 +226,7 @@ __PACKAGE__->register_method ({
 
 	my $pool = $res->{pool};
 	if (defined($pool) &&
-	    !$rpcenv->check($authuser, "/pool/$pool", ['Pool.Allocate'], 1)) {
+	    !$rpcenv->check($authuser, "/pool/$pool", ['Pool.Audit'], 1)) {
 	    delete $res->{pool};
 	}
 

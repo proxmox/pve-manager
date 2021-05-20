@@ -22,7 +22,7 @@ __PACKAGE__->register_method ({
     method => 'GET',
     description => "Pool index.",
     permissions => {
-	description => "List all pools where you have Pool.Allocate or VM.Allocate permissions on /pool/<pool>.",
+	description => "List all pools where you have Pool.Audit permissions on /pool/<pool>.",
 	user => 'all',
     },
     parameters => {
@@ -47,9 +47,10 @@ __PACKAGE__->register_method ({
 
 	my $usercfg = $rpcenv->{user_cfg};
 
+
 	my $res = [];
 	for my $pool (sort keys %{$usercfg->{pools}}) {
-	    next if !$rpcenv->check_any($authuser, "/pool/$pool", [ 'Pool.Allocate', 'VM.Allocate' ], 1);
+	    next if !$rpcenv->check($authuser, "/pool/$pool", [ 'Pool.Audit' ], 1);
 
 	    my $entry = { poolid => $pool };
 	    my $pool_config = $usercfg->{pools}->{$pool};
@@ -200,7 +201,7 @@ __PACKAGE__->register_method ({
     path => '{poolid}',
     method => 'GET',
     permissions => {
-	check => ['perm', '/pool/{poolid}', ['Pool.Allocate']],
+	check => ['perm', '/pool/{poolid}', ['Pool.Audit']],
     },
     description => "Get pool configuration.",
     parameters => {
