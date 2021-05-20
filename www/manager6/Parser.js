@@ -367,9 +367,9 @@ Ext.define('PVE.Parser', {
 	    return undefined;
 	}
 
-	const [, storage] = res.file.match(/^([a-z][a-z0-9\-_.]*[a-z0-9]):/i);
-	if (storage) {
-	    res.storage = storage;
+	const match = res.file.match(/^([a-z][a-z0-9\-_.]*[a-z0-9]):/i);
+	if (match) {
+	    res.storage = match[1];
 	    res.type = 'volume';
 	} else if (res.file.match(/^\/dev\//)) {
 	    res.type = 'device';
