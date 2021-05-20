@@ -45,7 +45,7 @@ $(DEB):
 upload: ${DEB} check
 	# check if working directory is clean
 	git diff --exit-code --stat && git diff --exit-code --stat --staged
-	tar cf - ${DEB} | ssh -X repoman@repo.proxmox.com upload --product pve --dist buster
+	tar cf - ${DEB} | ssh -X repoman@repo.proxmox.com upload --product pve --dist bullseye
 
 .PHONY: install
 install: vzdump-hook-script.pl
