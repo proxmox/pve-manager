@@ -71,6 +71,7 @@ Ext.define('PVE.dc.RoleView', {
 			metaData.style = 'white-space:normal;'; // allow word wrap
 			return value.replace(/,/g, ' ');
 		    },
+		    variableRowHeight: true,
 		    dataIndex: 'privs',
 		    flex: 1,
 		},
