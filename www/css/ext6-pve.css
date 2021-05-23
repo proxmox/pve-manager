@@ -619,6 +619,10 @@ table.osds td:first-of-type {
     background-image: none;
 }
 
+.pve-toolbar-bg {
+    background-color: #f5f5f5;
+}
+
 .x-fa {
     diplay: inline-block;
     font: normal normal normal 14px/1 FontAwesome;

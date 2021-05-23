@@ -54,10 +54,10 @@ Ext.define('PVE.panel.Config', {
 	overflowHandler: 'scroller',
 	dock: 'left',
 	style: {
-	    backgroundColor: '#f5f5f5',
 	    padding: 0,
 	    margin: 0,
 	},
+	cls: 'pve-toolbar-bg',
 	items: {
 	    xtype: 'treelist',
 	    itemId: 'menu',
@@ -78,16 +78,12 @@ Ext.define('PVE.panel.Config', {
 		    var olditem = treelist.getSelection();
 		    var newitem = info.node;
 
-		    // when clicking on the expand arrow,
-		    // we don't select items, but still want
-		    // the original behaviour
+		    // when clicking on the expand arrow, we don't select items, but still want the original behaviour
 		    if (info.select === false) {
 			return;
 		    }
 
-		    // if you click on a different item which is open,
-		    // leave it open
-		    // else toggle the clicked item
+		    // click on a different, open item then leave it open, else toggle the clicked item
 		    if (olditem.data.id !== newitem.data.id &&
 			newitem.data.expanded === true) {
 			info.toggle = false;
