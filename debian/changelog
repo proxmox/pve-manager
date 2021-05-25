@@ -1,3 +1,15 @@
+pve-manager (7.0-1) bullseye; urgency=medium
+
+  * re-build for Proxmox VE 7 based on Debian Bullseye
+
+  * d/control: order ifupdown2 as first, prefered, dependency
+
+  * enable installation of ceph 16.2 pacific release
+
+  * pveceph: allow to select test repository on installation
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 25 May 2021 10:44:19 +0200
+
 pve-manager (6.4-7) pve; urgency=medium
 
   * pvereport: log pressure stall information
