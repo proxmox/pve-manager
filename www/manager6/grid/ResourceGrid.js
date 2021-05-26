@@ -125,11 +125,13 @@ Ext.define('PVE.grid.ResourceGrid', {
 		    var ws = me.up('pveStdWorkspace');
 		    ws.selectById(record.data.id);
 		},
+		afterrender: function() {
+		    updateGrid();
+		},
 	    },
             columns: rstore.defaultColumns(),
 	});
 	me.callParent();
-	updateGrid();
 	me.mon(rstore, 'load', () => updateGrid());
     },
 });
