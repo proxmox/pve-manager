@@ -138,14 +138,17 @@ Ext.define('PVE.form.VMCPUFlagSelector', {
 			boxLabel: '-',
 			boxLabelAlign: 'before',
 			inputValue: '-',
+			isFormField: false,
 		    },
 		    {
 			checked: true,
 			inputValue: '=',
+			isFormField: false,
 		    },
 		    {
 			boxLabel: '+',
 			inputValue: '+',
+			isFormField: false,
 		    },
 		],
 	    },
