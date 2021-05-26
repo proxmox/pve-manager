@@ -94,7 +94,7 @@ sub update_qemu_status {
     }
     $object =~ s/\s/\\ /g;
 
-    # Duplicate keys may result in unwanted behavior
+    # VMID is already added in base $object above, so exclude it from being re-added
     build_influxdb_payload($class, $txn, $data, $ctime, $object, { 'vmid' => 1 });
 }
 
@@ -109,7 +109,7 @@ sub update_lxc_status {
     }
     $object =~ s/\s/\\ /g;
 
-    # Duplicate keys may result in unwanted behavior
+    # VMID is already added in base $object above, so exclude it from being re-added
     build_influxdb_payload($class, $txn, $data, $ctime, $object, { 'vmid' => 1 });
 }
 
