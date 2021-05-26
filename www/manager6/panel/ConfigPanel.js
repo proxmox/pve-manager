@@ -68,6 +68,9 @@ Ext.define('PVE.panel.Config', {
 	    singleExpand: false,
 	    listeners: {
 		selectionchange: function(treeList, selection) {
+		    if (!selection) {
+			return;
+		    }
 		    let view = this.up('panel');
 		    view.suspendLayout = true;
 		    view.activateCard(selection.data.id);
