@@ -94,7 +94,8 @@ sub update_qemu_status {
     }
     $object =~ s/\s/\\ /g;
 
-    build_influxdb_payload($class, $txn, $data, $ctime, $object);
+    # Duplicate keys may result in unwanted behavior
+    build_influxdb_payload($class, $txn, $data, $ctime, $object, { 'vmid' => 1 });
 }
 
 sub update_lxc_status {
@@ -108,7 +109,8 @@ sub update_lxc_status {
     }
     $object =~ s/\s/\\ /g;
 
-    build_influxdb_payload($class, $txn, $data, $ctime, $object);
+    # Duplicate keys may result in unwanted behavior
+    build_influxdb_payload($class, $txn, $data, $ctime, $object, { 'vmid' => 1 });
 }
 
 sub update_storage_status {
@@ -246,11 +248,12 @@ sub test_connection {
 }
 
 sub build_influxdb_payload {
-    my ($class, $txn, $data, $ctime, $tags, $measurement, $instance) = @_;
+    my ($class, $txn, $data, $ctime, $tags, $excluded, $measurement, $instance) = @_;
 
     my @values = ();
 
     foreach my $key (sort keys %$data) {
+	next if defined($excluded) && $excluded->{$key};
 	my $value = $data->{$key};
 	next if !defined($value);
 
@@ -264,9 +267,9 @@ sub build_influxdb_payload {
 	    # value is a hash
 
 	    if (!defined($measurement)) {
-		build_influxdb_payload($class, $txn, $value, $ctime, $tags, $key);
+		build_influxdb_payload($class, $txn, $value, $ctime, $tags, $excluded, $key);
 	    } elsif(!defined($instance)) {
-		build_influxdb_payload($class, $txn, $value, $ctime, $tags, $measurement, $key);
+		build_influxdb_payload($class, $txn, $value, $ctime, $tags, $excluded, $measurement, $key);
 	    } else {
 		push @values, get_recursive_values($value);
 	    }
