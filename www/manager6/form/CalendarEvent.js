@@ -5,7 +5,6 @@ Ext.define('PVE.form.CalendarEvent', {
     editable: true,
 
     valueField: 'value',
-    displayField: 'text',
     queryMode: 'local',
 
     store: {
