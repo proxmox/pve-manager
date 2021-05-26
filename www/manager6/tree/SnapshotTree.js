@@ -229,7 +229,7 @@ Ext.define('PVE.guest.SnapshotTree', {
     listeners: {
 	selectionchange: 'select',
 	itemdblclick: 'editSnapshot',
-	destroy: 'cancel',
+	beforedestroy: 'cancel',
     },
 
     layout: 'fit',
