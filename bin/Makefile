@@ -7,7 +7,7 @@ PERL_DOC_INC_DIRS=..
 include /usr/share/pve-doc-generator/pve-doc-generator.mk
 
 SERVICES = pvestatd pveproxy pvedaemon spiceproxy
-CLITOOLS = vzdump pvesubscription pveceph pveam pvesr pvenode pvesh pve5to6
+CLITOOLS = vzdump pvesubscription pveceph pveam pvesr pvenode pvesh pve5to6 pve6to7
 
 SCRIPTS =  			\
 	${SERVICES}		\
@@ -50,6 +50,9 @@ all: ${SERVICE_MANS} ${CLI_MANS} pvemailforward
 
 pve5to6.1:
 	echo ".TH pve5to6 1" > $@
+
+pve6to7.1:
+	echo ".TH pve6to7 1" > $@
 
 pveversion.1.pod: pveversion
 pveupgrade.1.pod: pveupgrade
