@@ -1,3 +1,19 @@
+pve-manager (6.4-8) pve; urgency=medium
+
+  * pveceph install: fix fallback for default version
+
+  * ui: Parser: fix bind and dev mounts for lxc
+
+  * add initial pve6to7 helper script
+
+  * ui: dc/RoleView: improve handling variable row height
+
+  * fix #3440: external metrics: InfluxDB: remove duplicate 'vmid' tag
+
+  * various preparatory fixes for ExtJS 7
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 27 May 2021 14:28:35 +0200
+
 pve-manager (6.4-7) pve; urgency=medium
 
   * pvereport: log pressure stall information
