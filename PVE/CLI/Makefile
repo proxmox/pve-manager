@@ -1,6 +1,6 @@
 include ../../defines.mk
 
-SOURCES=vzdump.pm pvesubscription.pm pveceph.pm pveam.pm pvesr.pm pvenode.pm pvesh.pm pve5to6.pm
+SOURCES=vzdump.pm pvesubscription.pm pveceph.pm pveam.pm pvesr.pm pvenode.pm pvesh.pm pve5to6.pm pve6to7.pm
 
 all:
 
