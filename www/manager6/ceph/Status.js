@@ -86,7 +86,7 @@ Ext.define('PVE.node.CephStatus', {
 			    renderer: function(value) {
 				let health = PVE.Utils.map_ceph_health[value];
 				let icon = PVE.Utils.get_health_icon(health);
-				return `<i class="fa fa-fw ${icon}'"></i>`;
+				return `<i class="fa fa-fw ${icon}"></i>`;
 			    },
 			    sorter: {
 				sorterFn: function(a, b) {
