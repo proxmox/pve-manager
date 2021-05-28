@@ -280,10 +280,11 @@ all:
 	eslint $?
 	touch "$@"
 
-.PHONY: lint check
+.PHONY: lint
 check: lint
 lint: ${JSSRC}
 	eslint --strict ${JSSRC}
+	touch ".lint-incremental"
 
 pvemanagerlib.js: .lint-incremental OnlineHelpInfo.js ${JSSRC}
 	cat OnlineHelpInfo.js ${JSSRC} >$@.tmp
