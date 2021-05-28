@@ -274,7 +274,7 @@ JSSRC= 							\
 	Workspace.js					\
 # end of JSSRC list
 
-all: pvemanagerlib.js
+all:
 
 .lint-incremental: ${JSSRC}
 	eslint $?

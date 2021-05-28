@@ -25,7 +25,7 @@ JSSRC= 				                 	\
 	LXCSummary.js				\
 	app.js
 
-all: pvemanager-mobile.js
+all:
 
 pvemanager-mobile.js: ${JSSRC}
 	cat ${JSSRC} >$@.tmp
