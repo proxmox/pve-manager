@@ -1,3 +1,13 @@
+pve-manager (7.0-2) bullseye; urgency=medium
+
+  * fix #3402: add Pool.Audit permission
+
+  * ui: disk list: enable wipe-disk button
+
+  * compatibility patches for ExtJS 7.0
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 02 Jun 2021 16:31:28 +0200
+
 pve-manager (7.0-1) bullseye; urgency=medium
 
   * re-build for Proxmox VE 7 based on Debian Bullseye
