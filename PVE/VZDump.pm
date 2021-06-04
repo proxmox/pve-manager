@@ -1241,10 +1241,6 @@ sub verify_vzdump_parameters {
 
     $param->{all} = 1 if (defined($param->{exclude}) && !$param->{pool});
 
-    warn "option 'size' is deprecated and will be removed in a future " .
-	 "release, please update your script/configuration!\n"
-	if defined($param->{size});
-
     return if !$check_missing;
 
     raise_param_exc({ vmid => "property is missing"})

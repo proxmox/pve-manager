@@ -230,8 +230,6 @@ __PACKAGE__->register_method ({
 	    delete $res->{pool};
 	}
 
-	delete $res->{size}; # deprecated, to be dropped with PVE 7.0
-
 	return $res;
     }});
 
