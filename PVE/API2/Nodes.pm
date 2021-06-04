@@ -1053,12 +1053,6 @@ __PACKAGE__->register_method ({
 	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-	    upgrade => {
-		type => 'boolean',
-		description => "Deprecated, use the 'cmd' property instead! Run 'apt-get dist-upgrade' instead of normal shell.",
-		optional => 1,
-		default => 0,
-	    },
 	    cmd => {
 		type => 'string',
 		description => "Run specific command or default to login.",
@@ -1097,10 +1091,6 @@ __PACKAGE__->register_method ({
 
 	my ($port, $remcmd) = $get_vnc_connection_info->($node);
 
-	# FIXME: remove with 7.0
-	if ($param->{upgrade}) {
-	    $param->{cmd} = 'upgrade';
-	}
 	my $shcmd = get_shell_command($user, $param->{cmd}, $param->{'cmd-opts'});
 
 	my $realcmd = sub {
