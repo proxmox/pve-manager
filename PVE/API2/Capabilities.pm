@@ -11,6 +11,11 @@ use PVE::API2::Qemu::Machine;
 use base qw(PVE::RESTHandler);
 
 __PACKAGE__->register_method ({
+    subclass => "PVE::API2::Qemu::CPU",
+    path => 'qemu/cpu',
+});
+
+__PACKAGE__->register_method ({
     subclass => "PVE::API2::Qemu::Machine",
     path => 'qemu/machines',
 });
@@ -72,6 +77,7 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	my $result = [
+	    { name => 'cpu' },
 	    { name => 'machines' },
 	];
 

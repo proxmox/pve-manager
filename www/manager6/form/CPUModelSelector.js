@@ -50,7 +50,7 @@ Ext.define('PVE.form.CPUModelSelector', {
 	model: 'PVE.data.CPUModel',
 	proxy: {
 	    type: 'proxmox',
-	    url: '/api2/json/nodes/localhost/cpu',
+	    url: '/api2/json/nodes/localhost/capabilities/qemu/cpu',
 	},
 	sorters: [
 	    {

@@ -70,12 +70,6 @@ __PACKAGE__->register_method ({
     path => 'qemu',
 });
 
-# FIXME: move into capabilities/qemu
-__PACKAGE__->register_method ({
-    subclass => "PVE::API2::Qemu::CPU",
-    path => 'cpu',
-});
-
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::LXC",
     path => 'lxc',
@@ -228,7 +222,6 @@ __PACKAGE__->register_method ({
 	    { name => 'ceph' },
 	    { name => 'certificates' },
 	    { name => 'config' },
-	    { name => 'cpu' },
 	    { name => 'disks' },
 	    { name => 'dns' },
 	    { name => 'firewall' },
