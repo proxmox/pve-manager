@@ -100,7 +100,6 @@ __PACKAGE__->register_method ({
 	    { name => 'crush' },
 	    { name => 'config' },
 	    { name => 'log' },
-	    { name => 'flags' }, # FIXME: remove with 7.0
 	    { name => 'rules' },
 	];
 
@@ -492,114 +491,6 @@ __PACKAGE__->register_method ({
 	return PVE::Ceph::Tools::ceph_cluster_status();
     }});
 
-
-my $possible_flags = PVE::Ceph::Tools::get_possible_osd_flags();
-my $possible_flags_list = [ sort keys %$possible_flags ];
-
-# FIXME: Remove with PVE 7.0
-__PACKAGE__->register_method ({
-    name => 'get_flags',
-    path => 'flags',
-    method => 'GET',
-    description => "get all set ceph flags",
-    proxyto => 'node',
-    protected => 1,
-    permissions => {
-	check => ['perm', '/', [ 'Sys.Audit' ]],
-    },
-    parameters => {
-	additionalProperties => 0,
-	properties => {
-	    node => get_standard_option('pve-node'),
-	},
-    },
-    returns => { type => 'string' },
-    code => sub {
-	my ($param) = @_;
-
-	PVE::Ceph::Tools::check_ceph_configured();
-
-	my $rados = PVE::RADOS->new();
-
-	my $stat = $rados->mon_command({ prefix => 'osd dump' });
-
-	return $stat->{flags} // '';
-    }});
-
-# FIXME: Remove with PVE 7.0
-__PACKAGE__->register_method ({
-    name => 'set_flag',
-    path => 'flags/{flag}',
-    method => 'POST',
-    description => "Set a specific ceph flag",
-    proxyto => 'node',
-    protected => 1,
-    permissions => {
-	check => ['perm', '/', [ 'Sys.Modify' ]],
-    },
-    parameters => {
-	additionalProperties => 0,
-	properties => {
-	    node => get_standard_option('pve-node'),
-	    flag => {
-		description => 'The ceph flag to set',
-		type => 'string',
-		enum => $possible_flags_list,
-	    },
-	},
-    },
-    returns => { type => 'null' },
-    code => sub {
-	my ($param) = @_;
-
-	PVE::Ceph::Tools::check_ceph_configured();
-
-	my $rados = PVE::RADOS->new();
-
-	$rados->mon_command({
-	    prefix => "osd set",
-	    key => $param->{flag},
-	});
-
-	return undef;
-    }});
-
-__PACKAGE__->register_method ({
-    name => 'unset_flag',
-    path => 'flags/{flag}',
-    method => 'DELETE',
-    description => "Unset a ceph flag",
-    proxyto => 'node',
-    protected => 1,
-    permissions => {
-	check => ['perm', '/', [ 'Sys.Modify' ]],
-    },
-    parameters => {
-	additionalProperties => 0,
-	properties => {
-	    node => get_standard_option('pve-node'),
-	    flag => {
-		description => 'The ceph flag to unset',
-		type => 'string',
-		enum => $possible_flags_list,
-	    },
-	},
-    },
-    returns => { type => 'null' },
-    code => sub {
-	my ($param) = @_;
-
-	PVE::Ceph::Tools::check_ceph_configured();
-
-	my $rados = PVE::RADOS->new();
-
-	$rados->mon_command({
-	    prefix => "osd unset",
-	    key => $param->{flag},
-	});
-
-	return undef;
-    }});
 
 __PACKAGE__->register_method ({
     name => 'crush',
