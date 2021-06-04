@@ -223,7 +223,7 @@ __PACKAGE__->register_method ({
 		optional => 1,
 		type => 'string',
 	    },
-	    db_size => {
+	    db_dev_size => {
 		description => "Size in GiB for block.db.",
 		verbose_description => "If a block.db is requested but the size is not given, ".
 		    "will be automatically selected by: bluestore_block_db_size from the ".
@@ -241,7 +241,7 @@ __PACKAGE__->register_method ({
 		optional => 1,
 		type => 'string',
 	    },
-	    wal_size => {
+	    wal_dev_size => {
 		description => "Size in GiB for block.wal.",
 		verbose_description => "If a block.wal is requested but the size is not given, ".
 		    "will be automatically selected by: bluestore_block_wal_size from the ".
@@ -299,10 +299,6 @@ __PACKAGE__->register_method ({
 		    "Check your network config.\n";
 	    }
 	}
-
-	# FIXME: rename params on next API compatibillity change (7.0)
-	$param->{wal_dev_size} = delete $param->{wal_size};
-	$param->{db_dev_size} = delete $param->{db_size};
 
 	for my $type ( qw(dev db_dev wal_dev) ) {
 	    next if !$param->{$type};

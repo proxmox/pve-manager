@@ -55,13 +55,13 @@ Ext.define('PVE.CephCreateOsd', {
 			    emptyText: 'use OSD disk',
 			    listeners: {
 				change: function(field, val) {
-				    me.down('field[name=db_size]').setDisabled(!val);
+				    me.down('field[name=db_dev_size]').setDisabled(!val);
 				},
 			    },
 			},
 			{
 			    xtype: 'numberfield',
-			    name: 'db_size',
+			    name: 'db_dev_size',
 			    fieldLabel: gettext('DB size') + ' (GiB)',
 			    minValue: 1,
 			    maxValue: 128*1024,
@@ -108,13 +108,13 @@ Ext.define('PVE.CephCreateOsd', {
 			    emptyText: 'use OSD/DB disk',
 			    listeners: {
 				change: function(field, val) {
-				    me.down('field[name=wal_size]').setDisabled(!val);
+				    me.down('field[name=wal_dev_size]').setDisabled(!val);
 				},
 			    },
 			},
 			{
 			    xtype: 'numberfield',
-			    name: 'wal_size',
+			    name: 'wal_dev_size',
 			    fieldLabel: gettext('WAL size') + ' (GiB)',
 			    minValue: 0.5,
 			    maxValue: 128*1024,
