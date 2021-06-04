@@ -906,12 +906,6 @@ __PACKAGE__->register_method ({
 	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-	    upgrade => {
-		type => 'boolean',
-		description => "Deprecated, use the 'cmd' property instead! Run 'apt-get dist-upgrade' instead of normal shell.",
-		optional => 1,
-		default => 0,
-	    },
 	    cmd => {
 		type => 'string',
 		description => "Run specific command or default to login.",
@@ -964,7 +958,10 @@ __PACKAGE__->register_method ({
 	my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
 
 	raise_perm_exc("realm != pam") if $realm ne 'pam';
-	raise_perm_exc('user != root@pam') if $param->{upgrade} && $user ne 'root@pam';
+
+	if (defined($param->{cmd}) && $param->{cmd} eq 'upgrade' && $user ne 'root@pam') {
+	    raise_perm_exc('user != root@pam');
+	}
 
 	my $node = $param->{node};
 
@@ -976,10 +973,6 @@ __PACKAGE__->register_method ({
 
 	my ($port, $remcmd) = $get_vnc_connection_info->($node);
 
-	# FIXME: remove with 6.0
-	if ($param->{upgrade}) {
-	    $param->{cmd} = 'upgrade';
-	}
 	my $shcmd = get_shell_command($user, $param->{cmd}, $param->{'cmd-opts'});
 
 	my $timeout = 10;
