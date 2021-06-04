@@ -116,7 +116,6 @@ __PACKAGE__->register_method ({
 	properties => {
 	    version => {
 		type => 'string',
-		# for buster, luminous kept for testing/upgrade purposes only! - FIXME: remove with 6.2?
 		enum => ['octopus', 'pacific'],
 		default => 'pacific',
 		description => "Ceph version to install.",
