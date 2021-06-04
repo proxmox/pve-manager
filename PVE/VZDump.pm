@@ -652,8 +652,6 @@ sub run_hook_script {
     foreach my $ek (qw(vmtype hostname target logfile)) {
 	$ENV{uc($ek)} = $task->{$ek} if $task->{$ek};
     }
-    # FIXME: for backwards compatibility - drop with PVE 7.0
-    $ENV{TARFILE} = $task->{target} if $task->{target};
 
     run_command ($logfd, $cmd);
 }
