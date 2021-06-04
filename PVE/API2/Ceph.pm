@@ -100,80 +100,11 @@ __PACKAGE__->register_method ({
 	    { name => 'crush' },
 	    { name => 'config' },
 	    { name => 'log' },
-	    { name => 'disks' }, # FIXME: remove with 7.0
 	    { name => 'flags' }, # FIXME: remove with 7.0
 	    { name => 'rules' },
 	];
 
 	return $result;
-    }});
-
-# FIXME: Remove with PVE 7.0
-__PACKAGE__->register_method ({
-    name => 'disks',
-    path => 'disks',
-    method => 'GET',
-    description => "List local disks.",
-    proxyto => 'node',
-    protected => 1,
-    permissions => {
-	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
-    },
-    parameters => {
-	additionalProperties => 0,
-	properties => {
-	    node => get_standard_option('pve-node'),
-	    type => {
-		description => "Only list specific types of disks.",
-		type => 'string',
-		enum => ['unused', 'journal_disks'],
-		optional => 1,
-	    },
-	},
-    },
-    returns => {
-	type => 'array',
-	items => {
-	    type => "object",
-	    properties => {
-		dev => { type => 'string' },
-		used => { type => 'string', optional => 1 },
-		gpt => { type => 'boolean' },
-		size => { type => 'integer' },
-		osdid => { type => 'integer' },
-		vendor =>  { type => 'string', optional => 1 },
-		model =>  { type => 'string', optional => 1 },
-		serial =>  { type => 'string', optional => 1 },
-	    },
-	},
-	# links => [ { rel => 'child', href => "{}" } ],
-    },
-    code => sub {
-	my ($param) = @_;
-
-	PVE::Ceph::Tools::check_ceph_inited();
-
-	my $disks = PVE::Diskmanage::get_disks(undef, 1);
-
-	my $res = [];
-	foreach my $dev (keys %$disks) {
-	    my $d = $disks->{$dev};
-	    if ($param->{type}) {
-		if ($param->{type} eq 'journal_disks') {
-		    next if $d->{osdid} >= 0;
-		    next if !$d->{gpt};
-		} elsif ($param->{type} eq 'unused') {
-		    next if $d->{used};
-		} else {
-		    die "internal error"; # should not happen
-		}
-	    }
-
-	    $d->{dev} = "/dev/$dev";
-	    push @$res, $d;
-	}
-
-	return $res;
     }});
 
 __PACKAGE__->register_method ({
