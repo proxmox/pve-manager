@@ -92,9 +92,9 @@ my @tests = (
 	description => 'no params',
 	expected => {
 	    'prune-backups' => {
-		'keep-last' => 1,
+		'keep-all' => 1,
 	    },
-	    remove => 1,
+	    remove => 0,
 	},
     },
     # TODO make parse error critical?
@@ -105,9 +105,9 @@ my @tests = (
 	},
 	expected => {
 	    'prune-backups' => {
-		'keep-last' => 1,
+		'keep-all' => 1,
 	    },
-	    remove => 1,
+	    remove => 0,
 	},
     },
     {
