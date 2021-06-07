@@ -28,7 +28,7 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    allowBlank: false,
 	    listeners: {
 		change: function(field, val) {
-		    let size = Math.round((val + 1) / 2);
+		    let size = Math.round(val / 2);
 		    if (size > 1) {
 			field.up('inputpanel').down('field[name=min_size]').setValue(size);
 		    }
@@ -82,7 +82,7 @@ Ext.define('PVE.CephPoolInputPanel', {
 		    let panel = field.up('inputpanel');
 		    let size = panel.down('field[name=size]').getValue();
 
-		    let showWarning = minSize <= size / 2 && minSize !== size;
+		    let showWarning = minSize < (size / 2) && minSize !== size;
 
 		    let fieldLabel = gettext('Min. Size');
 		    if (showWarning) {
@@ -97,7 +97,7 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    xtype: 'displayfield',
 	    name: 'min_size-warning',
 	    userCls: 'pmx-hint',
-	    value: gettext('min_size <= size/2 can lead to data loss, incomplete PGs or unfound objects.'),
+	    value: gettext('min_size < size/2 can lead to data loss, incomplete PGs or unfound objects.'),
 	    hidden: true,
 	},
 	{
