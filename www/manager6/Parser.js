@@ -563,7 +563,7 @@ Ext.define('PVE.Parser', {
     parseSSHKey: function(key) {
 	//                |--- options can have quotes--|     type    key        comment
 	let keyre = /^(?:((?:[^\s"]|"(?:\\.|[^"\\])*")+)\s+)?(\S+)\s+(\S+)(?:\s+(.*))?$/;
-	let typere = /^(?:(?:sk-)?ssh-(?:dss|rsa|ed25519)|ecdsa-sha2-nistp\d+)$/;
+	let typere = /^(?:(?:sk-)?(?:ssh-(?:dss|rsa|ed25519)|ecdsa-sha2-nistp\d+)(?:@(?:[a-z0-9_-]+\.)+[a-z]{2,})?)$/;
 
 	let m = key.match(keyre);
 	if (!m || m.length < 3 || !m[2]) { // [2] is always either type or key
