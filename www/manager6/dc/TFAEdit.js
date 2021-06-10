@@ -29,7 +29,7 @@ Ext.define('PVE.window.TFAEdit', {
 	    'otpauth://totp/' +
 	    encodeURIComponent(values.issuer) +
 	    ':' +
-	    encodeURIComponent(values.userid) +
+	    encodeURIComponent(me.userid) +
 	    '?secret=' + values.secret +
 	    '&period=' + values.step +
 	    '&digits=' + values.digits +
