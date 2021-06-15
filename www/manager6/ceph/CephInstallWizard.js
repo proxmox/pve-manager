@@ -141,7 +141,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
     viewModel: {
 	data: {
 	    nodename: '',
-	    cephRelease: 'octopus',
+	    cephRelease: 'pacific',
 	    configuration: true,
 	    isInstalled: false,
 	},
