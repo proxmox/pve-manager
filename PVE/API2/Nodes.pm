@@ -1481,88 +1481,29 @@ __PACKAGE__->register_method({
 	my $src = $pd->{location};
 	my $tmpldir = PVE::Storage::get_vztmpl_dir($cfg, $param->{storage});
 	my $dest = "$tmpldir/$template";
-	my $tmpdest = "$tmpldir/${template}.tmp.$$";
 
-	my $worker = sub  {
-	    my $upid = shift;
-
-	    print "starting template download from: $src\n";
-	    print "target file: $dest\n";
-
-	    my $check_hash = sub {
-		my ($template_info, $filename, $noerr) = @_;
-
-		my $digest;
-		my $expected;
-
-		eval {
-		    open(my $fh, '<', $filename) or die "Can't open '$filename': $!";
-		    binmode($fh);
-		    if (defined($template_info->{sha512sum})) {
-			$expected = $template_info->{sha512sum};
-			$digest = Digest::SHA->new(512)->addfile($fh)->hexdigest;
-		    } elsif (defined($template_info->{md5sum})) {
-			#fallback to MD5
-			$expected = $template_info->{md5sum};
-			$digest = Digest::MD5->new->addfile($fh)->hexdigest;
-		    } else {
-			die "no expected checksum defined";
-		    }
-		    close($fh);
-		};
-
-		die "checking hash failed - $@\n" if $@ && !$noerr;
-
-		return ($digest, $digest ? lc($digest) eq lc($expected) : 0);
-	    };
-
-	    eval {
-		if (-f $dest) {
-		    my ($hash, $correct) = &$check_hash($pd, $dest, 1);
-
-		    if ($hash && $correct) {
-			print "file already exists $hash - no need to download\n";
-			return;
-		    }
-		}
-
-		local %ENV;
-		my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
-		if ($dccfg->{http_proxy}) {
-		    $ENV{http_proxy} = $dccfg->{http_proxy};
-		}
-
-		my @cmd = ('/usr/bin/wget', '--progress=dot:mega', '-O', $tmpdest, $src);
-		if (system (@cmd) != 0) {
-		    die "download failed - $!\n";
-		}
-
-		my ($hash, $correct) = &$check_hash($pd, $tmpdest);
-
-		die "could not calculate checksum\n" if !$hash;
-
-		if (!$correct) {
-		    my $expected = $pd->{sha512sum} // $pd->{md5sum};
-		    die "wrong checksum: $hash != $expected\n";
-		}
-
-		if (!rename($tmpdest, $dest)) {
-		    die "unable to save file - $!\n";
-		}
-	    };
-	    my $err = $@;
-
-	    unlink $tmpdest;
-
-	    if ($err) {
-		print "\n";
-		die $err if $err;
-	    }
-
-	    print "download finished\n";
+	my $opts = {
+	    hash_required => 1,
+	    sha512sum => $pd->{sha512sum},
+	    md5sum => $pd->{md5sum},
 	};
 
-	return $rpcenv->fork_worker('download', undef, $user, $worker);
+	my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
+	if ($dccfg->{http_proxy}) {
+	    $opts->{http_proxy} = $dccfg->{http_proxy};
+	}
+
+	my $worker = sub {
+	    my $upid = shift;
+	    PVE::Tools::download_file_from_url($dest, $src, $opts);
+	};
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $user = $rpcenv->get_user();
+
+	my $upid = $rpcenv->fork_worker('download', $template, $user, $worker);
+
+	return $upid;
     }});
 
 __PACKAGE__->register_method({
