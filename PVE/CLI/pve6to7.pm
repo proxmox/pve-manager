@@ -18,6 +18,7 @@ use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Tools qw(run_command);
 use PVE::QemuServer;
+use PVE::VZDump::Common;
 
 use Term::ANSIColor;
 
@@ -513,6 +514,66 @@ sub check_ceph {
     }
 }
 
+sub check_backup_retention_settings {
+    log_info("Checking backup retention settings..");
+
+    my $pass = 1;
+
+    my $node_has_retention;
+
+    my $maxfiles_msg = "parameter 'maxfiles' is deprecated with PVE 7.x and will be removed in a " .
+	"future version, use 'prune-backups' instead.";
+
+    eval {
+	my $confdesc = PVE::VZDump::Common::get_confdesc();
+
+	my $fn = "/etc/vzdump.conf";
+	my $raw = PVE::Tools::file_get_contents($fn);
+
+	my $conf_schema = { type => 'object', properties => $confdesc, };
+	my $param = PVE::JSONSchema::parse_config($conf_schema, $fn, $raw);
+
+	if (defined($param->{maxfiles})) {
+	    $pass = 0;
+	    log_warn("$fn - $maxfiles_msg");
+	}
+
+	$node_has_retention = defined($param->{maxfiles}) || defined($param->{'prune-backups'});
+    };
+    if (my $err = $@) {
+	$pass = 0;
+	log_warn("unable to parse node's VZDump configuration - $err");
+    }
+
+    my $storage_cfg = PVE::Storage::config();
+
+    for my $storeid (keys $storage_cfg->{ids}->%*) {
+	my $scfg = $storage_cfg->{ids}->{$storeid};
+
+	if (defined($scfg->{maxfiles})) {
+	    $pass = 0;
+	    log_warn("storage '$storeid' - $maxfiles_msg");
+	}
+
+	next if !$scfg->{content}->{backup};
+	next if defined($scfg->{maxfiles}) || defined($scfg->{'prune-backups'});
+	next if $node_has_retention;
+
+	log_info("storage '$storeid' - no backup retention settings defined - by default, PVE " .
+	    "7.x will no longer keep only the last backup, but all backups");
+    }
+
+    my $vzdump_cron = PVE::Cluster::cfs_read_file('vzdump.cron');
+
+    # only warn once, there might be many jobs...
+    if (scalar(grep { defined($_->{maxfiles}) } $vzdump_cron->{jobs}->@*)) {
+	$pass = 0;
+	log_warn("/etc/pve/vzdump_cron - $maxfiles_msg");
+    }
+
+    log_pass("no problems found.") if $pass;
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -602,6 +663,8 @@ sub check_misc {
 	    log_pass("Certificate '$fn' passed Debian Busters security level for TLS connections ($size >= 2048)");
 	}
     }
+
+    check_backup_retention_settings();
 }
 
 __PACKAGE__->register_method ({
