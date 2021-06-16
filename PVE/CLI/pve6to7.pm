@@ -580,6 +580,27 @@ sub check_backup_retention_settings {
     log_pass("no problems found.") if $pass;
 }
 
+sub check_cifs_credential_location {
+    log_info("checking CIFS credential location..");
+
+    my $regex = qr/^(.*)\.cred$/;
+
+    my $found;
+
+    PVE::Tools::dir_glob_foreach('/etc/pve/priv/', $regex, sub {
+	my ($filename) = @_;
+
+	my ($basename) = $filename =~ $regex;
+
+	log_warn("CIFS credentials '/etc/pve/priv/$filename' will be moved to " .
+	    "'/etc/pve/priv/storage/$basename.pw' during the update");
+
+	$found = 1;
+    });
+
+    log_pass("no CIFS credentials at outdated location found.") if !$found;
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -671,6 +692,7 @@ sub check_misc {
     }
 
     check_backup_retention_settings();
+    check_cifs_credential_location();
 }
 
 __PACKAGE__->register_method ({
