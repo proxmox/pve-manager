@@ -563,12 +563,18 @@ sub check_backup_retention_settings {
 	    "7.x will no longer keep only the last backup, but all backups");
     }
 
-    my $vzdump_cron = PVE::Cluster::cfs_read_file('vzdump.cron');
+    eval {
+	my $vzdump_cron = PVE::Cluster::cfs_read_file('vzdump.cron');
 
-    # only warn once, there might be many jobs...
-    if (scalar(grep { defined($_->{maxfiles}) } $vzdump_cron->{jobs}->@*)) {
+	# only warn once, there might be many jobs...
+	if (scalar(grep { defined($_->{maxfiles}) } $vzdump_cron->{jobs}->@*)) {
+	    $pass = 0;
+	    log_warn("/etc/pve/vzdump.cron - $maxfiles_msg");
+	}
+    };
+    if (my $err = $@) {
 	$pass = 0;
-	log_warn("/etc/pve/vzdump_cron - $maxfiles_msg");
+	log_warn("unable to parse node's VZDump configuration - $err");
     }
 
     log_pass("no problems found.") if $pass;
