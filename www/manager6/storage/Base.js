@@ -62,8 +62,6 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
 
     onlineHelp: 'vzdump_retention',
 
-    keepLastEmptyText: gettext('1'),
-
     onGetValues: function(formValues) {
 	if (this.needMask) { // isMasked() may not yet be true if not rendered once
 	    return {};
@@ -138,7 +136,7 @@ Ext.define('PVE.panel.StoragePruneInputPanel', {
 	    name: 'no-keeps-hint',
 	    hidden: true,
 	    padding: '5 1',
-	    html: gettext('Without any keep option, the nodes vzdump.conf or `keep-last 1` is used as fallback for backup jobs'),
+	    html: gettext('Without any keep option, the node\'s vzdump.conf or `keep-all` is used as fallback for backup jobs'),
 	},
 	{
 	    xtype: 'component',
