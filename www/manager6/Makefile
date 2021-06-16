@@ -38,6 +38,7 @@ JSSRC= 							\
 	form/GlobalSearchField.js			\
 	form/GroupSelector.js				\
 	form/GuestIDSelector.js				\
+	form/HashAlgorithmSelector.js			\
 	form/HotplugFeatureSelector.js			\
 	form/IPProtocolSelector.js			\
 	form/IPRefSelector.js				\
