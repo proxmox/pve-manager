@@ -21,8 +21,9 @@ Ext.define('PVE.qemu.CmdMenu', {
 		failure: (response, opts) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
 	    });
 	};
-	let confirmedVMCommand = (cmd, params) => {
-	    let msg = Proxmox.Utils.format_task_description(`qm${cmd}`, info.vmid);
+	let confirmedVMCommand = (cmd, params, confirmTask) => {
+	    let task = confirmTask || `qm${cmd}`;
+	    let msg = Proxmox.Utils.format_task_description(task, info.vmid);
 	    Ext.Msg.confirm(gettext('Confirm'), msg, btn => {
 		if (btn === 'yes') {
 		    vm_command(cmd, params);
@@ -65,7 +66,7 @@ Ext.define('PVE.qemu.CmdMenu', {
 		iconCls: 'fa fa-fw fa-pause',
 		hidden: stopped || suspended,
 		disabled: stopped || suspended,
-		handler: () => confirmedVMCommand('suspend'),
+		handler: () => confirmedVMCommand('suspend', undefined, 'qmpause'),
 	    },
 	    {
 		text: gettext('Hibernate'),
