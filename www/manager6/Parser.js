@@ -1,6 +1,4 @@
-// Some configuration values are complex strings -
-// so we need parsers/generators for them.
-
+// Some configuration values are complex strings - so we need parsers/generators for them.
 Ext.define('PVE.Parser', {
  statics: {
 
