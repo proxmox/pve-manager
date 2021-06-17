@@ -7,6 +7,8 @@ Ext.define('PVE.dc.ACLAdd', {
     isAdd: true,
     isCreate: true,
 
+    width: 400,
+
     initComponent: function() {
         let me = this;
 
