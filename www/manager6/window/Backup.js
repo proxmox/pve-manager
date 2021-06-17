@@ -65,6 +65,7 @@ Ext.define('PVE.window.Backup', {
 	    },
 	    handler: function(checkbox, value) {
 		pruneSettings.forEach(field => field.setHidden(!value));
+		me.down('label[name="pruneLabel"]').setHidden(!value);
 	    },
 	});
 
@@ -165,39 +166,47 @@ Ext.define('PVE.window.Backup', {
 		compressionSelector,
 		mailtoField,
 	    ],
-	    columnB: [{
-		layout: 'hbox',
-		border: false,
-		defaults: {
-		    border: false,
-		    layout: 'anchor',
-		    flex: 1,
+	    columnB: [
+		{
+		    xtype: 'label',
+		    name: 'pruneLabel',
+		    text: gettext('Storage Retention Configuration') + ':',
+		    hidden: true,
 		},
-		items: [
-		    {
-			padding: '0 10 0 0',
-			defaults: {
-			    labelWidth: 110,
-			},
-			items: [
-			    pruneSettings[0],
-			    pruneSettings[2],
-			    pruneSettings[4],
-			],
+		{
+		    layout: 'hbox',
+		    border: false,
+		    defaults: {
+			border: false,
+			layout: 'anchor',
+			flex: 1,
 		    },
-		    {
-			padding: '0 0 0 10',
-			defaults: {
-			    labelWidth: 110,
+		    items: [
+			{
+			    padding: '0 10 0 0',
+			    defaults: {
+				labelWidth: 110,
+			    },
+			    items: [
+				pruneSettings[0],
+				pruneSettings[2],
+				pruneSettings[4],
+			    ],
 			},
-			items: [
-			    pruneSettings[1],
-			    pruneSettings[3],
-			    pruneSettings[5],
-			],
-		    },
-		],
-	    }],
+			{
+			    padding: '0 0 0 10',
+			    defaults: {
+				labelWidth: 110,
+			    },
+			    items: [
+				pruneSettings[1],
+				pruneSettings[3],
+				pruneSettings[5],
+			    ],
+			},
+		    ],
+		},
+	    ],
 	});
 
 	var submitBtn = Ext.create('Ext.Button', {
