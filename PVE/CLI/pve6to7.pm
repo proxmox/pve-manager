@@ -9,6 +9,7 @@ use PVE::API2::LXC;
 use PVE::API2::Qemu;
 use PVE::API2::Certificates;
 
+use PVE::AccessControl;
 use PVE::Ceph::Tools;
 use PVE::Cluster;
 use PVE::Corosync;
@@ -16,10 +17,11 @@ use PVE::INotify;
 use PVE::JSONSchema;
 use PVE::RPCEnvironment;
 use PVE::Storage;
-use PVE::Tools qw(run_command);
+use PVE::Tools qw(run_command split_list);
 use PVE::QemuServer;
 use PVE::VZDump::Common;
 
+use File::Slurp;
 use Term::ANSIColor;
 
 use PVE::CLIHandler;
@@ -601,6 +603,49 @@ sub check_cifs_credential_location {
     log_pass("no CIFS credentials at outdated location found.") if !$found;
 }
 
+sub check_custom_pool_roles {
+    log_info("Checking custom roles for pool permissions..");
+
+    my $raw = read_file('/etc/pve/user.cfg');
+
+    my $roles = {};
+    while ($raw =~ /^\s*role:(.*?):(.*?):(.*?)\s*$/gm) {
+	my ($role, $privlist) = ($1, $2);
+
+	if (!PVE::AccessControl::verify_rolename($role, 1)) {
+	    warn "user config - ignore role '$role' - invalid characters in role name\n";
+	    next;
+	}
+
+	$roles->{$role} = {} if !$roles->{$role};
+	foreach my $priv (split_list($privlist)) {
+	    $roles->{$role}->{$priv} = 1;
+	}
+    }
+
+    foreach my $role (sort keys %{$roles}) {
+	if (PVE::AccessControl::role_is_special($role)) {
+	    next;
+	}
+
+	if ($role eq "PVEPoolUser") {
+	    # the user created a custom role named PVEPoolUser
+	    log_fail("Custom role '$role' has a restricted name - a built-in role 'PVEPoolUser' will be available with the upgrade");
+	} else {
+	    log_pass("Custom role '$role' has no restricted name");
+	}
+
+	my $perms = $roles->{$role};
+	if ($perms->{'Pool.Allocate'} && $perms->{'Pool.Audit'}) {
+	    log_pass("Custom role '$role' contains updated pool permissions");
+	} elsif ($perms->{'Pool.Allocate'}) {
+	    log_warn("Custom role '$role' contains permission 'Pool.Allocate' - to ensure same behavior add 'Pool.Audit' to this role");
+	} else {
+	    log_pass("Custom role '$role' contains no permissions that need to be updated");
+	}
+    }
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -693,6 +738,7 @@ sub check_misc {
 
     check_backup_retention_settings();
     check_cifs_credential_location();
+    check_custom_pool_roles();
 }
 
 __PACKAGE__->register_method ({
