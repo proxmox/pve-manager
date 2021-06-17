@@ -1115,7 +1115,7 @@ __PACKAGE__->register_method({
 	description => "Restricted to users on realm 'pam'. You also need to pass a valid ticket (vncticket).",
 	check => ['perm', '/nodes/{node}', [ 'Sys.Console' ]],
     },
-    description => "Opens a weksocket for VNC traffic.",
+    description => "Opens a websocket for VNC traffic.",
     parameters => {
 	additionalProperties => 0,
 	properties => {
