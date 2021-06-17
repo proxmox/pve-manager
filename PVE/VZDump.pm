@@ -995,8 +995,9 @@ sub exec_backup_task {
 	    debugmsg ('info', "archive file size: $cs", $logfd);
 	}
 
-	# purge older backup
 	if ($opts->{remove}) {
+	    my $keepstr = join(', ', map { "$_=$prune_options->{$_}" } sort keys %$prune_options);
+	    debugmsg ('info', "prune older backups with retention: $keepstr", $logfd);
 	    if (!defined($opts->{storage})) {
 		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname, $task->{target});
 		PVE::Storage::prune_mark_backup_group($bklist, $prune_options);
