@@ -885,14 +885,10 @@ sub exec_backup_task {
 	$task->{mode} = $mode;
 
    	debugmsg ('info', "backup mode: $mode", $logfd);
-
-	debugmsg ('info', "bandwidth limit: $opts->{bwlimit} KB/s", $logfd)
-	    if $opts->{bwlimit};
-
+	debugmsg ('info', "bandwidth limit: $opts->{bwlimit} KB/s", $logfd)  if $opts->{bwlimit};
 	debugmsg ('info', "ionice priority: $opts->{ionice}", $logfd);
 
 	if ($mode eq 'stop') {
-
 	    $plugin->prepare ($task, $vmid, $mode);
 
 	    $self->run_hook_script ('backup-start', $task, $logfd);
@@ -907,7 +903,6 @@ sub exec_backup_task {
 
 
 	} elsif ($mode eq 'suspend') {
-
 	    $plugin->prepare ($task, $vmid, $mode);
 
 	    $self->run_hook_script ('backup-start', $task, $logfd);
@@ -936,7 +931,6 @@ sub exec_backup_task {
 	    }
 
 	} elsif ($mode eq 'snapshot') {
-
 	    $self->run_hook_script ('backup-start', $task, $logfd);
 
 	    my $snapshot_count = $task->{snapshot_count} || 0;

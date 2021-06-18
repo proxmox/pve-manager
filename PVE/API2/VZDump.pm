@@ -25,13 +25,15 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => "Create backup.",
     permissions => {
-	description => "The user needs 'VM.Backup' permissions on any VM, and 'Datastore.AllocateSpace' on the backup storage. The 'maxfiles', 'prune-backups', 'tmpdir', 'dumpdir', 'script', 'bwlimit' and 'ionice' parameters are restricted to the 'root\@pam' user.",
+	description => "The user needs 'VM.Backup' permissions on any VM, and 'Datastore.AllocateSpace'"
+	    ." on the backup storage. The 'maxfiles', 'prune-backups', 'tmpdir', 'dumpdir', 'script',"
+	    ." 'bwlimit' and 'ionice' parameters are restricted to the 'root\@pam' user.",
 	user => 'all',
     },
     protected => 1,
     proxyto => 'node',
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => PVE::VZDump::Common::json_config_properties({
 	    stdout => {
 		type => 'boolean',
