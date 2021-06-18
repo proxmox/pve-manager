@@ -898,7 +898,7 @@ sub exec_backup_task {
 	    $self->run_hook_script ('backup-start', $task, $logfd);
 
 	    if ($running) {
-		debugmsg ('info', "stopping vm", $logfd);
+		debugmsg ('info', "stopping virtual guest", $logfd);
 		$task->{vmstoptime} = time();
 		$self->run_hook_script ('pre-stop', $task, $logfd);
 		$plugin->stop_vm ($task, $vmid);
