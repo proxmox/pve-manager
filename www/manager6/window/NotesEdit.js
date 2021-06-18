@@ -9,8 +9,17 @@ Ext.define('PVE.window.NotesEdit', {
     layout: 'fit',
 
     autoLoad: true,
-
     defaultButton: undefined,
+
+    setMaxLength: function(maxLength) {
+	let me = this;
+
+	let area = me.down('textarea[name="description"]');
+	area.maxLength = maxLength;
+	area.validate();
+
+	return me;
+    },
 
     items: {
 	xtype: 'textarea',

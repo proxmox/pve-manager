@@ -31,7 +31,7 @@ Ext.define('PVE.panel.NotesView', {
 		destroy: () => me.load(),
 	    },
 	    autoShow: true,
-	});
+	}).setMaxLength(me.maxLength);
     },
 
     load: function() {
@@ -100,6 +100,9 @@ Ext.define('PVE.panel.NotesView', {
 	// add the type specific path if qemu/lxc and set the backend's maxLen
 	if (type === 'qemu' || type === 'lxc') {
 	    me.url += `${type}/${vmid}/`;
+	    me.maxLength = 8 * 1024;
+	} else {
+	    me.maxLength = 64 * 1024;
 	}
 
 	me.url += 'config';
