@@ -1415,14 +1415,12 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	my $res = [];
-
 	my $list = PVE::APLInfo::load_data();
 
-	foreach my $template (keys %{$list->{all}}) {
-	    my $pd = $list->{all}->{$template};
-	    next if $pd->{'package'} eq 'pve-web-news';
-	    push @$res, $pd;
+	my $res = [];
+	for my $appliance (values %{$list->{all}}) {
+	    next if $appliance->{'package'} eq 'pve-web-news';
+	    push @$res, $appliance;
 	}
 
 	return $res;
