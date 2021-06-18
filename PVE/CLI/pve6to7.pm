@@ -676,8 +676,8 @@ sub check_misc {
     $log_systemd_unit_state->('pvestatd.service');
 
     my $root_free = PVE::Tools::df('/', 10);
-    log_warn("Less than 2G free space on root file system.")
-	if defined($root_free) && $root_free->{avail} < 2*1024*1024*1024;
+    log_warn("Less than 4 GiB free space on root file system.")
+	if defined($root_free) && $root_free->{avail} < 4*1024*1024*1024;
 
     log_info("Checking for running guests..");
     my $running_guests = 0;
