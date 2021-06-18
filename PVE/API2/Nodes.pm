@@ -1498,9 +1498,6 @@ __PACKAGE__->register_method({
 	    PVE::Tools::download_file_from_url($dest, $src, $opts);
 	};
 
-	my $rpcenv = PVE::RPCEnvironment::get();
-	my $user = $rpcenv->get_user();
-
 	my $upid = $rpcenv->fork_worker('download', $template, $user, $worker);
 
 	return $upid;
