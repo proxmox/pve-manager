@@ -80,7 +80,9 @@ sub lock_config {
 my $confdesc = {
     description => {
 	type => 'string',
-	description => 'Node description/comment.',
+	description => "Description for the Node. Shown in the web-interface node notes panel."
+	    ." This is saved as comment inside the configuration file.",
+	maxLength => 64 * 1024,
 	optional => 1,
     },
     wakeonlan => {
