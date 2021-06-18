@@ -3,7 +3,6 @@ Ext.define('PVE.panel.NotesView', {
     xtype: 'pveNotesView',
 
     title: gettext("Notes"),
-    bodyStyle: 'white-space:pre',
     bodyPadding: 10,
     scrollable: true,
     animCollapse: false,
@@ -46,7 +45,9 @@ Ext.define('PVE.panel.NotesView', {
 	    },
 	    success: function(response, opts) {
 		var data = response.result.data.description || '';
-		me.update(Ext.htmlEncode(data));
+
+		let mdHTML = Proxmox.Markdown.parse(data);
+		me.update(mdHTML);
 
 		if (me.collapsible && me.collapseMode === 'auto') {
 		    me.setCollapsed(data === '');
