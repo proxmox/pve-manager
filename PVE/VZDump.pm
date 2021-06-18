@@ -998,21 +998,32 @@ sub exec_backup_task {
 	if ($opts->{remove}) {
 	    my $keepstr = join(', ', map { "$_=$prune_options->{$_}" } sort keys %$prune_options);
 	    debugmsg ('info', "prune older backups with retention: $keepstr", $logfd);
+	    my $pruned = 0;
 	    if (!defined($opts->{storage})) {
 		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname, $task->{target});
 		PVE::Storage::prune_mark_backup_group($bklist, $prune_options);
 
 		foreach my $prune_entry (@{$bklist}) {
 		    next if $prune_entry->{mark} ne 'remove';
-
+		    $pruned++;
 		    my $archive_path = $prune_entry->{path};
 		    debugmsg ('info', "delete old backup '$archive_path'", $logfd);
 		    PVE::Storage::archive_remove($archive_path);
 		}
 	    } else {
-		my $logfunc = sub { debugmsg($_[0], $_[1], $logfd) };
-		PVE::Storage::prune_backups($cfg, $opts->{storage}, $prune_options, $vmid, $vmtype, 0, $logfunc);
+		my $pruned_list = PVE::Storage::prune_backups(
+		    $cfg,
+		    $opts->{storage},
+		    $prune_options,
+		    $vmid,
+		    $vmtype,
+		    0,
+		    sub { debugmsg($_[0], $_[1], $logfd) },
+		);
+		$pruned = scalar(grep { $_->{mark} eq 'remove' } $pruned_list->@*);
 	    }
+	    my $log_pruned_extra = $pruned > 0 ? " not covered by keep-retention policy" : "";
+	    debugmsg ('info', "pruned $pruned backup(s)${log_pruned_extra}", $logfd);
 	}
 
 	$self->run_hook_script ('backup-end', $task, $logfd);
