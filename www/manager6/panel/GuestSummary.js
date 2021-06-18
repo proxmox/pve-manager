@@ -54,6 +54,7 @@ Ext.define('PVE.qemu.Summary', {
 	    items = [
 		{
 		    xtype: 'container',
+		    height: 300,
 		    layout: {
 			type: 'hbox',
 			align: 'stretch',
