@@ -609,9 +609,20 @@ sub check_custom_pool_roles {
     my $raw = read_file('/etc/pve/user.cfg');
 
     my $roles = {};
-    while ($raw =~ /^\s*role:(.*?):(.*?):(.*?)\s*$/gm) {
-	my ($role, $privlist) = ($1, $2);
+    while ($raw =~ /^\s*(.+?)\s*$/gm) {
+	my $line = $1;
+	my @data;
 
+	foreach my $d (split (/:/, $line)) {
+	    $d =~ s/^\s+//;
+	    $d =~ s/\s+$//;
+	    push @data, $d
+	}
+
+	my $et = shift @data;
+	next if $et ne 'role';
+
+	my ($role, $privlist) = @data;
 	if (!PVE::AccessControl::verify_rolename($role, 1)) {
 	    warn "user config - ignore role '$role' - invalid characters in role name\n";
 	    next;
