@@ -3,8 +3,6 @@ Ext.define('PVE.panel.GuestStatusView', {
     alias: 'widget.pveGuestStatusView',
     mixins: ['Proxmox.Mixin.CBind'],
 
-    height: 300,
-
     cbindData: function(initialConfig) {
 	var me = this;
 	return {
