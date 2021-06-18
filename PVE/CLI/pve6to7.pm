@@ -21,7 +21,6 @@ use PVE::Tools qw(run_command split_list);
 use PVE::QemuServer;
 use PVE::VZDump::Common;
 
-use File::Slurp;
 use Term::ANSIColor;
 
 use PVE::CLIHandler;
@@ -606,7 +605,11 @@ sub check_cifs_credential_location {
 sub check_custom_pool_roles {
     log_info("Checking custom roles for pool permissions..");
 
-    my $raw = read_file('/etc/pve/user.cfg');
+    my $raw = eval { PVE::Tools::file_get_contents('/etc/pve/user.cfg'); };
+    if ($@) {
+	log_fail("Failed to read '/etc/pve/user.cfg' - $@");
+	return;
+    }
 
     my $roles = {};
     while ($raw =~ /^\s*(.+?)\s*$/gm) {
