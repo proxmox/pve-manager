@@ -23,13 +23,15 @@ Ext.define('PVE.panel.NotesView', {
     },
 
     run_editor: function() {
-	var me = this;
-	var win = Ext.create('PVE.window.NotesEdit', {
+	let me = this;
+	Ext.create('PVE.window.NotesEdit', {
 	    pveSelNode: me.pveSelNode,
 	    url: me.url,
+	    listeners: {
+		destroy: () => me.load(),
+	    },
+	    autoShow: true,
 	});
-	win.show();
-	win.on('destroy', me.load, me);
     },
 
     load: function() {
@@ -83,7 +85,7 @@ Ext.define('PVE.panel.NotesView', {
 	    throw "no node name specified";
 	}
 
-	var type = me.pveSelNode.data.type;
+	let type = me.pveSelNode.data.type;
 	if (!Ext.Array.contains(['node', 'qemu', 'lxc'], type)) {
 	    throw 'invalid type specified';
 	}
@@ -93,11 +95,11 @@ Ext.define('PVE.panel.NotesView', {
 	    throw "no VM ID specified";
 	}
 
-	me.url = '/api2/extjs/nodes/' + nodename + '/';
+	me.url = `/api2/extjs/nodes/${nodename}/`;
 
-	// add the type specific path if qemu/lxc
+	// add the type specific path if qemu/lxc and set the backend's maxLen
 	if (type === 'qemu' || type === 'lxc') {
-	    me.url += type + '/' + vmid + '/';
+	    me.url += `${type}/${vmid}/`;
 	}
 
 	me.url += 'config';
