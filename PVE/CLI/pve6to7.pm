@@ -15,9 +15,11 @@ use PVE::Cluster;
 use PVE::Corosync;
 use PVE::INotify;
 use PVE::JSONSchema;
+use PVE::NodeConfig;
 use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Tools qw(run_command split_list);
+use PVE::QemuConfig;
 use PVE::QemuServer;
 use PVE::VZDump::Common;
 
@@ -660,6 +662,40 @@ sub check_custom_pool_roles {
     }
 }
 
+sub check_description_lengths {
+    log_info("Checking node and guest description/note legnth..");
+
+    my $nodes = PVE::Cluster::get_nodelist();;
+    foreach my $node (@$nodes) {
+	my $conf = PVE::NodeConfig::load_config($node);
+	my $desc = $conf->{description};
+	next if !defined($desc);
+	if (length($desc) > 64 * 1024) {
+	    log_warn("Description of node $node is too long! - maximum will be 64k");
+	}
+    }
+
+    my $lxcs = PVE::LXC::config_list();
+    foreach my $vmid (keys %$lxcs) {
+	my $conf = PVE::LXC::Config->load_config($vmid);
+	my $desc = $conf->{description};
+	next if !defined($desc);
+	if (length($desc) > 8 * 1024) {
+	    log_warn("Description of guest $vmid is too long! - maximum will be 8k");
+	}
+    }
+
+    my $vms = PVE::QemuServer::config_list();
+    foreach my $vmid (keys %$vms) {
+	my $conf = PVE::QemuConfig->load_config($vmid);
+	my $desc = $conf->{description};
+	next if !defined($desc);
+	if (length($desc) > 8 * 1024) {
+	    log_warn("Description of guest $vmid is too long! - maximum will be 8k");
+	}
+    }
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -753,6 +789,7 @@ sub check_misc {
     check_backup_retention_settings();
     check_cifs_credential_location();
     check_custom_pool_roles();
+    check_description_lengths();
 }
 
 __PACKAGE__->register_method ({
