@@ -1,3 +1,42 @@
+pve-manager (7.0-3) bullseye; urgency=medium
+
+  * apply queued up breaking changes we already replaced in Proxmox VE 6.x or earlier:
+    + vzdump: remove deprecated 'size' parameter
+    + api: nodes: remove deprecated 'upgrade' parameter for the 'xtermjs',
+      'spiceshell' and 'vncshell' API enpoinds (use command=upgrade instead)
+    + api: move cpu path into qemu/capabilities
+    + api: ceph: remove obsoleted disks and remove moved 'flags' calls
+    + api: ceph: osd: create: rename size parameters
+
+  * ui: TFA: use correct user-id value when creating TOTP QR code
+
+  * ui: ceph: select Pacific as default release
+
+  * pve6to7: add checks for backup retention options
+
+  * fix #2745: ui: backup window: allow specifying remove parameter for manual
+    backup
+
+  * vdzump: log with what retention settings we prune and how many backup
+    snapshots got pruned
+
+  * node config: limit description/comment length to 64 KiB and check in
+    pve6to7 for overly long exisitng notes.
+
+  * ui: fix unlimited height of VM/CT Summary notes-view, noticeable on long text
+
+  * pve6to7: bump free-space on root filesystem requirement check to 4 GiB
+
+  * ui: ACL path selector: add missing realm and group paths
+
+  * fix #2422: allow multiple Ceph public networks and improve IPv6 handling
+
+  * fix #3470: ui: qemu/CmdMenu: fix confirm message for 'pause' cmd
+
+  * ui: notes view: render node and guest notes as Markdown
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 18 Jun 2021 19:33:54 +0200
+
 pve-manager (7.0-2) bullseye; urgency=medium
 
   * fix #3402: add Pool.Audit permission
