@@ -662,37 +662,43 @@ sub check_custom_pool_roles {
     }
 }
 
+my sub check_max_length {
+    my ($raw, $max_length, $warning) = @_;
+    log_warn($warning) if defined($raw) && length($raw) > $max_length; 
+}
+
 sub check_description_lengths {
     log_info("Checking node and guest description/note legnth..");
 
-    my $nodes = PVE::Cluster::get_nodelist();;
-    foreach my $node (@$nodes) {
-	my $conf = PVE::NodeConfig::load_config($node);
-	my $desc = $conf->{description};
-	next if !defined($desc);
-	if (length($desc) > 64 * 1024) {
-	    log_warn("Description of node $node is too long! - maximum will be 64k");
-	}
+    my @affected_nodes = grep {
+	my $desc = PVE::NodeConfig::load_config($_)->{desc};
+	defined($desc) && length($desc) > 64 * 1024
+    } PVE::Cluster::get_nodelist();
+
+    if (scalar(@affected_nodes) > 0) {
+	log_warn("Node config description of the following nodes too long for new limit of 64 KiB:\n    "
+	    . join(', ', @affected_nodes));
+    } else {
+	log_pass("All node config descriptions fit in the new limit of 64 KiB");
     }
 
-    my $lxcs = PVE::LXC::config_list();
-    foreach my $vmid (keys %$lxcs) {
-	my $conf = PVE::LXC::Config->load_config($vmid);
-	my $desc = $conf->{description};
-	next if !defined($desc);
-	if (length($desc) > 8 * 1024) {
-	    log_warn("Description of guest $vmid is too long! - maximum will be 8k");
-	}
-    }
+    my $affected_guests = [];
 
+    my $cts = PVE::LXC::config_list();
+    for my $vmid (sort { $a <=> $b } keys %$cts) {
+	my $desc = PVE::LXC::Config->load_config($vmid)->{description};
+	push @$affected_guests, "CT $vmid" if defined($desc) && length($desc) > 8 * 1024;
+    }
     my $vms = PVE::QemuServer::config_list();
-    foreach my $vmid (keys %$vms) {
-	my $conf = PVE::QemuConfig->load_config($vmid);
-	my $desc = $conf->{description};
-	next if !defined($desc);
-	if (length($desc) > 8 * 1024) {
-	    log_warn("Description of guest $vmid is too long! - maximum will be 8k");
-	}
+    for my $vmid (sort { $a <=> $b } keys %$vms) {
+	my $desc = PVE::QemuConfig->load_config($vmid)->{description};
+	push @$affected_guests, "VM $vmid" if defined($desc) && length($desc) > 8 * 1024;
+    }
+    if (scalar($affected_guests->@*) > 0) {
+	log_warn("Node config description of the following nodes too long for new limit of 64 KiB:\n"
+	    ."    * " . join("\n    * ", $affected_guests->@*));
+    } else {
+	log_pass("All guest config descriptions fit in the new limit of 8 KiB");
     }
 }
 
