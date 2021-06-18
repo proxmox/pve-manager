@@ -1460,42 +1460,34 @@ __PACKAGE__->register_method({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
+
 	my $node = $param->{node};
+	my $template = $param->{template};
 
 	my $list = PVE::APLInfo::load_data();
-
-	my $template = $param->{template};
-	my $pd = $list->{all}->{$template};
-
-	raise_param_exc({ template => "no such template"}) if !$pd;
+	my $appliance = $list->{all}->{$template};
+	raise_param_exc({ template => "no such template"}) if !$appliance;
 
 	my $cfg = PVE::Storage::config();
 	my $scfg = PVE::Storage::storage_check_enabled($cfg, $param->{storage}, $node);
 
-	die "unknown template type '$pd->{type}'\n"
-	    if !($pd->{type} eq 'openvz' || $pd->{type} eq 'lxc');
+	die "unknown template type '$appliance->{type}'\n"
+	    if !($appliance->{type} eq 'openvz' || $appliance->{type} eq 'lxc');
 
 	die "storage '$param->{storage}' does not support templates\n"
 	    if !$scfg->{content}->{vztmpl};
 
-	my $src = $pd->{location};
 	my $tmpldir = PVE::Storage::get_vztmpl_dir($cfg, $param->{storage});
-	my $dest = "$tmpldir/$template";
-
-	my $opts = {
-	    hash_required => 1,
-	    sha512sum => $pd->{sha512sum},
-	    md5sum => $pd->{md5sum},
-	};
-
-	my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
-	if ($dccfg->{http_proxy}) {
-	    $opts->{http_proxy} = $dccfg->{http_proxy};
-	}
 
 	my $worker = sub {
-	    my $upid = shift;
-	    PVE::Tools::download_file_from_url($dest, $src, $opts);
+	    my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
+
+	    PVE::Tools::download_file_from_url("$tmpldir/$template", $appliance->{location}, {
+		hash_required => 1,
+		sha512sum => $appliance->{sha512sum},
+		md5sum => $appliance->{md5sum},
+		http_proxy => $dccfg->{http_proxy},
+	    });
 	};
 
 	my $upid = $rpcenv->fork_worker('download', $template, $user, $worker);
