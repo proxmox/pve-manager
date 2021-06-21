@@ -3,8 +3,9 @@ Ext.define('PVE.window.NotesEdit', {
 
     title: gettext('Notes'),
 
-    width: 600,
-    height: '400px',
+    width: 800,
+    height: '600px',
+
     resizable: true,
     layout: 'fit',
 
