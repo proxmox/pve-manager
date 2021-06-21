@@ -738,8 +738,8 @@ sub check_storage_content {
 
 	if (scalar(@volumes) > 0) {
 	    $found = 1;
-	    log_warn("storage '$storeid' - neither content type 'images' nor 'rootdir' " .
-		"configured, but found guest volume(s) " . join(',', @volumes));
+	    log_warn("storage '$storeid' - neither content type 'images' nor 'rootdir' configured"
+		.", but found guest volume(s):\n    " . join("\n    ", @volumes));
 	}
     }
 
