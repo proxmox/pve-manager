@@ -33,6 +33,7 @@ my $service_name_list = [
     'postfix',
     'ksmtuned',
     'systemd-timesyncd',
+    'chrony',
 ];
 my $essential_services = {
     pveproxy => 1,
