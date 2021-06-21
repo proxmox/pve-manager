@@ -702,6 +702,47 @@ sub check_description_lengths {
     }
 }
 
+sub check_storage_content {
+    log_info("Scanning for guest images on storages without images/rootdir content type..");
+
+    my $found;
+
+    my $storage_cfg = PVE::Storage::config();
+
+    for my $storeid (keys $storage_cfg->{ids}->%*) {
+	my $scfg = $storage_cfg->{ids}->{$storeid};
+
+	next if !PVE::Storage::storage_check_enabled($storage_cfg, $storeid, undef, 1);
+
+	next if $scfg->{content}->{images};
+	next if $scfg->{content}->{rootdir};
+
+	# Skip 'iscsi(direct)' (and foreign plugins with potentially similiar behavior) with 'none',
+	# because that means "use LUNs directly" and vdisk_list() in PVE 6.x still lists those.
+	# It's enough to *not* skip 'dir', because it is the only other storage that supports 'none'
+	# and 'images' or 'rootdir', hence being potentially misconfigured.
+	next if $scfg->{type} ne 'dir' && $scfg->{content}->{none};
+
+	my $res = PVE::Storage::vdisk_list($storage_cfg, $storeid);
+	my $disk_list = $res->{$storeid};
+
+	my @volumes = map { $_->{volid} } $disk_list->@*;
+
+	if (scalar(@volumes) > 0) {
+	    $found = 1;
+	    log_warn("storage '$storeid' - neither content type 'images' nor 'rootdir' " .
+		"configured, but found guest volume(s) " . join(',', @volumes));
+	}
+    }
+
+    if ($found) {
+	log_warn("PVE 7.0 enforces stricter content type checks. Guests referencing the above " .
+	    "volumes will not work until the storage configuration is fixed.");
+    } else {
+	log_pass("none found");
+    }
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -796,6 +837,7 @@ sub check_misc {
     check_cifs_credential_location();
     check_custom_pool_roles();
     check_description_lengths();
+    check_storage_content();
 }
 
 __PACKAGE__->register_method ({
