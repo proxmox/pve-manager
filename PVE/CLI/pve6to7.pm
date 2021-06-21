@@ -18,6 +18,7 @@ use PVE::JSONSchema;
 use PVE::NodeConfig;
 use PVE::RPCEnvironment;
 use PVE::Storage;
+use PVE::Storage::Plugin;
 use PVE::Tools qw(run_command split_list);
 use PVE::QemuConfig;
 use PVE::QemuServer;
@@ -703,7 +704,7 @@ sub check_description_lengths {
 }
 
 sub check_storage_content {
-    log_info("Scanning for guest images on storages without images/rootdir content type..");
+    log_info("Checking storage content type configuration..");
 
     my $found;
 
@@ -713,6 +714,13 @@ sub check_storage_content {
 	my $scfg = $storage_cfg->{ids}->{$storeid};
 
 	next if !PVE::Storage::storage_check_enabled($storage_cfg, $storeid, undef, 1);
+
+	my $valid_content = PVE::Storage::Plugin::valid_content_types($scfg->{type});
+
+	if (scalar(keys $scfg->{content}->%*) == 0 && !$valid_content->{none}) {
+	    log_fail("storage '$storeid' does not support configured content type 'none'");
+	    delete $scfg->{content}->{none}; # scan for guest images below
+	}
 
 	next if $scfg->{content}->{images};
 	next if $scfg->{content}->{rootdir};
@@ -739,7 +747,7 @@ sub check_storage_content {
 	log_warn("PVE 7.0 enforces stricter content type checks. Guests referencing the above " .
 	    "volumes will not work until the storage configuration is fixed.");
     } else {
-	log_pass("none found");
+	log_pass("no problems found");
     }
 }
 
