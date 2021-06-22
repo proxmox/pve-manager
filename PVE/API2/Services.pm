@@ -109,15 +109,17 @@ my $service_cmd = sub {
 my $service_state = sub {
     my ($service) = @_;
 
-    my $ss;
-    eval { $ss = &$get_full_service_state($service); };
+    my $res = { state => 'unknown' };
+
+    my $ss = eval { $get_full_service_state->($service) };
     if (my $err = $@) {
-	return 'unknown';
+	return $res;
     }
+    $res->{state} = $ss->{SubState} || 'unknown';
+    $res->{'active-state'} = $ss->{ActiveState} || 'unknown';
+    $res->{'unit-state'} = $ss->{UnitFileState} || 'unknown';
 
-    return $ss->{SubState} if $ss->{SubState};
-
-    return 'unknown';
+    return $res;
 };
 
 __PACKAGE__->register_method ({
@@ -147,16 +149,16 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $res = [];
-
 	my $service_list = get_service_list();
 
-	foreach my $id (keys %{$service_list}) {
+	my $res = [];
+	for my $id (sort keys %{$service_list}) {
+	    my $state = $service_state->($id);
 	    push @$res, {
 		service => $id,
 		name => $service_list->{$id}->{name},
 		desc => $service_list->{$id}->{desc},
-		state => &$service_state($id),
+		%$state,
 	    };
 	}
 
@@ -226,14 +228,19 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
+	my $id = $param->{service};
+
 	my $service_list = get_service_list();
 
-	my $si = $service_list->{$param->{service}};
+	my $si = $service_list->{$id};
+
+	my $state = $service_state->($id);
+
 	return {
 	    service => $param->{service},
 	    name => $si->{name},
 	    desc => $si->{desc},
-	    state => &$service_state($param->{service}),
+	    %$state,
 	};
     }});
 
