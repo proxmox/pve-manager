@@ -8,6 +8,7 @@ use LWP::UserAgent;
 use POSIX qw(strftime);
 
 use PVE::SafeSyslog;
+use PVE::Storage;
 use PVE::Tools qw(run_command);
 use PVE::pvecfg;
 
@@ -83,7 +84,7 @@ sub read_aplinfo_from_fh {
 	    my $template;
 	    if ($res->{location}) {
 		$template = $res->{location};
-		$template =~ s|.*/([^/]+.tar.[gx]z)$|$1|;
+		$template =~ s|.*/([^/]+$PVE::Storage::vztmpl_extension_re)$|$1|;
 		if ($res->{location} !~ m|^([a-zA-Z]+)\://|) {
 		    # relative localtion (no http:// prefix)
 		    $res->{location} = "$source/$res->{location}";
