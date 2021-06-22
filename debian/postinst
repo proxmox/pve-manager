@@ -122,13 +122,6 @@ case "$1" in
 	    fi
 	done
     fi
-
-    # TODO: remove once PVE 7.0 is released
-    if test -n "$2"; then
-	if dpkg --compare-versions "$2" 'lt' '6.0-11'; then
-	    newaliases || true
-	fi
-    fi
     ;;
 
   abort-upgrade|abort-remove|abort-deconfigure)
@@ -137,8 +130,5 @@ case "$1" in
   *) echo "$0: didn't understand being called with \`$1'" 1>&2
      exit 0;;
 esac
-
-# FIXME: remove in 7.0
-dpkg-maintscript-helper rm_conffile /etc/apt/apt.conf.d/75pveconf 6.0-0\+3 pve-manager -- "$@"
 
 exit 0

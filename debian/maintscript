@@ -1,2 +1,0 @@
-# FIXME: remove in 7.0
-rm_conffile /etc/apt/apt.conf.d/75pveconf 6.0-0+3 pve-manager
