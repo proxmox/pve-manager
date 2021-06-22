@@ -515,8 +515,8 @@ Ext.define('PVE.dc.BackupDiskTree', {
 				    data = record.parentNode.data;
 				}
 
-				for (const property in ['name', 'id', 'type']) {
-				    if (data[property] === null) {
+				for (const property of ['name', 'id', 'type']) {
+				    if (!data[property]) {
 					continue;
 				    }
 				    let v = data[property].toString();
