@@ -29,6 +29,7 @@ my $service_name_list = [
     'pve-ha-lrm',
     'sshd',
     'syslog',
+    'systemd-journald',
     'cron',
     'postfix',
     'ksmtuned',
