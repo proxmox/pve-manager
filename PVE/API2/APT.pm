@@ -19,6 +19,7 @@ use PVE::INotify;
 use PVE::Exception;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
+use PVE::RS::APT::Repositories;
 use PVE::API2Tools;
 
 use JSON;
@@ -66,6 +67,7 @@ __PACKAGE__->register_method({
 
 	my $res = [
 	    { id => 'changelog' },
+	    { id => 'repositories' },
 	    { id => 'update' },
 	    { id => 'versions' },
 	];
@@ -472,6 +474,204 @@ __PACKAGE__->register_method({
         }
 
 	return $data;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'repositories',
+    path => 'repositories',
+    method => 'GET',
+    proxyto => 'node',
+    description => "Get APT repository information.",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	},
+    },
+    returns => {
+	type => "object",
+	description => "Result from parsing the APT repository files in /etc/apt/.",
+	properties => {
+	    files => {
+		type => "array",
+		description => "List of parsed repository files.",
+		items => {
+		    type => "object",
+		    properties => {
+			path => {
+			    type => "string",
+			    description => "Path to the problematic file.",
+			},
+			'file-type' => {
+			    type => "string",
+			    enum => [ 'list', 'sources' ],
+			    description => "Format of the file.",
+			},
+			repositories => {
+			    type => "array",
+			    description => "The parsed repositories.",
+			    items => {
+				type => "object",
+				properties => {
+				    Types => {
+					type => "array",
+					description => "List of package types.",
+					items => {
+					    type => "string",
+					    enum => [ 'deb', 'deb-src' ],
+					},
+				    },
+				    URIs => {
+					description => "List of repository URIs.",
+					type => "array",
+					items => {
+					    type => "string",
+					},
+				    },
+				    Suites => {
+					type => "array",
+					description => "List of package distribuitions",
+					items => {
+					    type => "string",
+					},
+				    },
+				    Components => {
+					type => "array",
+					description => "List of repository components",
+					optional => 1, # not present if suite is absolute
+					items => {
+					    type => "string",
+					},
+				    },
+				    Options => {
+					type => "array",
+					description => "Additional options",
+					optional => 1,
+					items => {
+					    type => "object",
+					    properties => {
+						Key => {
+						    type => "string",
+						},
+						Values => {
+						    type => "array",
+						    items => {
+							type => "string",
+						    },
+						},
+					    },
+					},
+				    },
+				    Comment => {
+					type => "string",
+					description => "Associated comment",
+					optional => 1,
+				    },
+				    FileType => {
+					type => "string",
+					enum => [ 'list', 'sources' ],
+					description => "Format of the defining file.",
+				    },
+				    Enabled => {
+					type => "boolean",
+					description => "Whether the repository is enabled or not",
+				    },
+				},
+			    },
+			},
+			digest => {
+			    type => "array",
+			    description => "Digest of the file as bytes.",
+			    items => {
+				type => "integer",
+			    },
+			},
+		    },
+		},
+	    },
+	    errors => {
+		type => "array",
+		description => "List of problematic repository files.",
+		items => {
+		    type => "object",
+		    properties => {
+			path => {
+			    type => "string",
+			    description => "Path to the problematic file.",
+			},
+			error => {
+			    type => "string",
+			    description => "The error message",
+			},
+		    },
+		},
+	    },
+	    digest => {
+		type => "string",
+		description => "Common digest of all files.",
+	    },
+	    infos => {
+		type => "array",
+		description => "Additional information/warnings for APT repositories.",
+		items => {
+		    type => "object",
+		    properties => {
+			path => {
+			    type => "string",
+			    description => "Path to the associated file.",
+			},
+			index => {
+			    type => "string",
+			    description => "Index of the associated repository within the file.",
+			},
+			property => {
+			    type => "string",
+			    description => "Property from which the info originates.",
+			    optional => 1,
+			},
+			kind => {
+			    type => "string",
+			    description => "Kind of the information (e.g. warning).",
+			},
+			message => {
+			    type => "string",
+			    description => "Information message.",
+			}
+		    },
+		},
+	    },
+	    'standard-repos' => {
+		type => "array",
+		description => "List of standard repositories and their configuration status",
+		items => {
+		    type => "object",
+		    properties => {
+			handle => {
+			    type => "string",
+			    description => "Handle to identify the repository.",
+			},
+			name => {
+			    type => "string",
+			    description => "Full name of the repository.",
+			},
+			status => {
+			    type => "boolean",
+			    optional => 1,
+			    description => "Indicating enabled/disabled status, if the " .
+				"repository is configured.",
+			},
+		    },
+		},
+	    },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	return PVE::RS::APT::Repositories::repositories();
     }});
 
 __PACKAGE__->register_method({
