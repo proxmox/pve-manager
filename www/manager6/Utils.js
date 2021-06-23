@@ -771,6 +771,12 @@ Ext.define('PVE.Utils', {
 	    faIcon: 'folder',
 	    backups: false,
 	},
+	btrfs: {
+	    name: 'BTRFS',
+	    ipanel: 'BTRFSInputPanel',
+	    faIcon: 'folder',
+	    backups: true,
+	},
 	nfs: {
 	    name: 'NFS',
 	    ipanel: 'NFSInputPanel',

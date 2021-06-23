@@ -264,6 +264,7 @@ JSSRC= 							\
 	storage/IScsiEdit.js				\
 	storage/LVMEdit.js				\
 	storage/LvmThinEdit.js				\
+	storage/BTRFSEdit.js				\
 	storage/NFSEdit.js				\
 	storage/PBSEdit.js				\
 	storage/RBDEdit.js				\
