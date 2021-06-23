@@ -242,6 +242,15 @@ Ext.define('PVE.node.Config', {
 		    },
 		    nodename: nodename,
 		});
+
+		me.items.push({
+		    xtype: 'proxmoxNodeAPTRepositories',
+		    title: gettext('APT Repositories'),
+		    iconCls: 'fa fa-files-o',
+		    itemId: 'aptrepositories',
+		    nodename: nodename,
+		    groups: ['apt'],
+		});
 	    }
 	}
 
