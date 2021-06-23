@@ -1,3 +1,24 @@
+pve-manager (6.4-9) pve; urgency=medium
+
+  * ui: TFA: use correct user-id value when creating TOTP QR code
+
+  * pve6to7: add checks for:
+    + backup retention options
+    + CIFS credentials
+    + pool permissions
+    + add check for guest and node description length
+    + add check for guest images on storages without a fitting content-type set
+
+  * ui: fix Guest Summary Notes height limit
+
+  * fix #3470: ui: qemu/CmdMenu: fix confirm message for 'pause' cmd
+
+  * ui: ceph/Status: fix icon in status grid
+
+  * ui: dc: backup: fix job detail search
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 23 Jun 2021 20:46:40 +0200
+
 pve-manager (6.4-8) pve; urgency=medium
 
   * pveceph install: fix fallback for default version
