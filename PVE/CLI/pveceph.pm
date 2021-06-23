@@ -146,14 +146,8 @@ __PACKAGE__->register_method ({
 	my $repolist;
 	if ($cephver eq 'octopus') {
 	    $repolist = "deb http://download.proxmox.com/debian/ceph-octopus bullseye $repo\n";
-	    # FIXME: delete below for release!
-	    warn "NOTE: using internal test repository as public may not be available yet\n";
-	    $repolist = "deb http://repo.proxmox.com/staging/ceph-octopus bullseye ceph-15\n"; # TODO: for test only, delete
 	} elsif ($cephver eq 'pacific') {
 	    $repolist = "deb http://download.proxmox.com/debian/ceph-pacific bullseye $repo\n";
-	    # FIXME: delete below for release!
-	    warn "NOTE: using internal test repository as public may not be available yet\n";
-	    $repolist = "deb http://repo.proxmox.com/staging/ceph-pacific bullseye ceph-16\n"; # TODO: for test only, delete
 	} else {
 	    die "unsupported ceph version: $cephver";
 	}
