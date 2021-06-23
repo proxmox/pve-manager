@@ -28,6 +28,7 @@ Ext.define('PVE.dc.UserView', {
 	let remove_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: '/access/users/',
+	    dangerous: true,
 	    enableFn: rec => caps.access['User.Modify'] && rec.data.userid !== 'root@pam',
 	    callback: () => reload(),
 	});
