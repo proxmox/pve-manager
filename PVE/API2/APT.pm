@@ -675,6 +675,94 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
+    name => 'add_repository',
+    path => 'repositories',
+    method => 'PUT',
+    description => "Add a standard repository to the configuration",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
+    protected => 1,
+    proxyto => 'node',
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    handle => {
+		type => 'string',
+		description => "Handle that identifies a repository.",
+	    },
+	    digest => {
+		type => "string",
+		description => "Digest to detect modifications.",
+		maxLength => 80,
+		optional => 1,
+	    },
+	},
+    },
+    returns => {
+	type => 'null',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::RS::APT::Repositories::add_repository($param->{handle}, $param->{digest});
+    }});
+
+__PACKAGE__->register_method({
+    name => 'change_repository',
+    path => 'repositories',
+    method => 'POST',
+    description => "Change the properties of a repository. Currently only allows enabling/disabling.",
+    permissions => {
+	check => ['perm', '/nodes/{node}', [ 'Sys.Modify' ]],
+    },
+    protected => 1,
+    proxyto => 'node',
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    path => {
+		type => 'string',
+		description => "Path to the containing file.",
+	    },
+	    index => {
+		type => 'integer',
+		description => "Index within the file (starting from 0).",
+	    },
+	    enabled => {
+		type => 'boolean',
+		description => "Whether the repository should be enabled or not.",
+		optional => 1,
+	    },
+	    digest => {
+		type => "string",
+		description => "Digest to detect modifications.",
+		maxLength => 80,
+		optional => 1,
+	    },
+	},
+    },
+    returns => {
+	type => 'null',
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $options = {
+	    enabled => $param->{enabled},
+	};
+
+	PVE::RS::APT::Repositories::change_repository(
+	    $param->{path},
+	    $param->{index},
+	    $options,
+	    $param->{digest}
+	);
+    }});
+
+__PACKAGE__->register_method({
     name => 'versions',
     path => 'versions',
     method => 'GET',
