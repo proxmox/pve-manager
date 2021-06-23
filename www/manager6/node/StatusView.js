@@ -2,6 +2,69 @@ Ext.define('PVE.node.StatusView', {
     extend: 'Proxmox.panel.StatusView',
     alias: 'widget.pveNodeStatus',
 
+    viewModel: {
+	data: {
+	    subscriptionActive: '',
+	    noSubscriptionRepo: '',
+	    enterpriseRepo: '',
+	    testRepo: '',
+	},
+	formulas: {
+	    repoStatus: function(get) {
+		if (get('subscriptionActive') === '' ||
+		    get('enterpriseRepo') === '') {
+		    return '';
+		}
+
+		if (!get('subscriptionActive') && get('enterpriseRepo')) {
+		    return 'no-sub';
+		}
+
+		if (get('noSubscriptionRepo') || get('testRepo')) {
+		    return 'non-production';
+		}
+
+		if (!get('enterpriseRepo') || !get('noSubscriptionRepo') || !get('testRepo')) {
+		    return 'no-repo';
+		}
+
+		return 'ok';
+	    },
+	    repoStatusMessage: function(get) {
+		const status = get('repoStatus');
+
+		if (status === 'ok') {
+		    return gettext('Enterprise repository and subscription active');
+		} else if (status === 'no-sub') {
+		    return gettext('Enterprise repository enabled, but no active subscription');
+		} else if (status === 'non-production') {
+		    return gettext('No-subscription or test repository in use');
+		} else if (status === 'no-repo') {
+		    return gettext('No PVE repository is enabled!');
+		}
+
+		return Proxmox.Utils.unknownText;
+	    },
+	    repoStatusIconCls: function(get) {
+		const status = get('repoStatus');
+
+		let iconCls = (cls) => `fa fa-fw ${cls}`;
+
+		if (status === 'ok') {
+		    return iconCls('fa-check good');
+		} else if (status === 'no-sub') {
+		    return iconCls('fa-exclamation-triangle critical');
+		} else if (status === 'non-production') {
+		    return iconCls('fa-exclamation-triangle warning');
+		} else if (status === 'no-repo') {
+		    return iconCls('fa-exclamation-triangle critical');
+		}
+
+		return iconCls('fa-question-circle-o');
+	    },
+	},
+    },
+
     height: 300,
     bodyPadding: '20 15 20 15',
 
@@ -113,6 +176,21 @@ Ext.define('PVE.node.StatusView', {
 	    textField: 'pveversion',
 	    value: '',
 	},
+	{
+	    itemId: 'repositoryStatus',
+	    colspan: 2,
+	    printBar: false,
+	    title: gettext('Repository Configuration Status'),
+	    // for bind
+	    setValue: function(value) {
+		let me = this;
+		me.updateValue(value);
+	    },
+	    bind: {
+		iconCls: '{repoStatusIconCls}',
+		value: '{repoStatusMessage}',
+	    },
+	},
     ],
 
     updateTitle: function() {
@@ -121,4 +199,28 @@ Ext.define('PVE.node.StatusView', {
 	me.setTitle(me.pveSelNode.data.node + ' (' + gettext('Uptime') + ': ' + uptime + ')');
     },
 
+    setRepositoryInfo: function(standardRepos) {
+	let me = this;
+	let vm = me.getViewModel();
+
+	for (const standardRepo of standardRepos) {
+	    const handle = standardRepo.handle;
+	    const status = standardRepo.status;
+
+	    if (handle === "enterprise") {
+		vm.set('enterpriseRepo', status);
+	    } else if (handle === "no-subscription") {
+		vm.set('noSubscriptionRepo', status);
+	    } else if (handle === "test") {
+		vm.set('testRepo', status);
+	    }
+	}
+    },
+
+    setSubscriptionStatus: function(status) {
+	let me = this;
+	let vm = me.getViewModel();
+
+	vm.set('subscriptionActive', status);
+    },
 });
