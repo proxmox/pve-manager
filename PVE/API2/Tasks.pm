@@ -100,6 +100,12 @@ __PACKAGE__->register_method({
 		description => "Only list tasks until this UNIX epoch.",
 		optional => 1,
 	    },
+	    statusfilter => {
+		type => 'string',
+		format => 'pve-task-status-type-list',
+		optional => 1,
+		description => 'List of Task States that should be returned.',
+	    },
 	},
     },
     returns => {
@@ -140,6 +146,26 @@ __PACKAGE__->register_method({
 	my $source = $param->{source} // 'archive';
 	my $since = $param->{since};
 	my $until = $param->{until};
+	my $statusfilter = {
+	    ok => 1,
+	    warning => 1,
+	    error => 1,
+	    unknown => 1,
+	};
+
+	if (defined($param->{statusfilter}) && !$errors) {
+	    $statusfilter = {
+		ok => 0,
+		warning => 0,
+		error => 0,
+		unknown => 0,
+	    };
+	    for my $filter (PVE::Tools::split_list($param->{statusfilter})) {
+		$statusfilter->{lc($filter)} = 1 ;
+	    }
+	} elsif ($errors) {
+	    $statusfilter->{ok} = 0;
+	}
 
 	my $count = 0;
 	my $line;
@@ -154,11 +180,13 @@ __PACKAGE__->register_method({
 
 	    return 1 if $typefilter && $task->{type} ne $typefilter;
 
-	    return 1 if $errors && $task->{status} && $task->{status} eq 'OK';
 	    return 1 if $param->{vmid} && (!$task->{id} || $task->{id} ne $param->{vmid});
 
 	    return 1 if defined($since) && $task->{starttime} < $since;
 	    return 1 if defined($until) && $task->{starttime} > $until;
+
+	    my $type = PVE::Tools::upid_normalize_status_type($task->{status});
+	    return 1 if !$statusfilter->{$type};
 
 	    return 1 if $count++ < $start;
 	    return 1 if $limit <= 0;
