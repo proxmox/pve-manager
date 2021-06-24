@@ -90,6 +90,16 @@ __PACKAGE__->register_method({
 		optional => 1,
 		description => 'List archived, active or all tasks.',
 	    },
+	    since => {
+		type => 'integer',
+		description => "Only list tasks since this UNIX epoch.",
+		optional => 1,
+	    },
+	    until => {
+		type => 'integer',
+		description => "Only list tasks until this UNIX epoch.",
+		optional => 1,
+	    },
 	},
     },
     returns => {
@@ -128,6 +138,8 @@ __PACKAGE__->register_method({
 	my $typefilter = $param->{typefilter};
 	my $errors = $param->{errors} // 0;
 	my $source = $param->{source} // 'archive';
+	my $since = $param->{since};
+	my $until = $param->{until};
 
 	my $count = 0;
 	my $line;
@@ -144,6 +156,9 @@ __PACKAGE__->register_method({
 
 	    return 1 if $errors && $task->{status} && $task->{status} eq 'OK';
 	    return 1 if $param->{vmid} && (!$task->{id} || $task->{id} ne $param->{vmid});
+
+	    return 1 if defined($since) && $task->{starttime} < $since;
+	    return 1 if defined($until) && $task->{starttime} > $until;
 
 	    return 1 if $count++ < $start;
 	    return 1 if $limit <= 0;
