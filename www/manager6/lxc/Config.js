@@ -246,7 +246,9 @@ Ext.define('PVE.lxc.Config', {
 		iconCls: 'fa fa-list',
 		xtype: 'proxmoxNodeTasks',
 		nodename: nodename,
-		vmidFilter: vmid,
+		preFilter: {
+		    vmid,
+		},
 	    },
 	);
 

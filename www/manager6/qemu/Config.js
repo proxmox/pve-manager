@@ -272,7 +272,9 @@ Ext.define('PVE.qemu.Config', {
 		xtype: 'proxmoxNodeTasks',
 		iconCls: 'fa fa-list',
 		nodename: nodename,
-		vmidFilter: vmid,
+		preFilter: {
+		    vmid,
+		},
 	    },
 	);
 
