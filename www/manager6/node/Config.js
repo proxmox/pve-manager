@@ -394,6 +394,14 @@ Ext.define('PVE.node.Config', {
 		itemId: 'tasks',
 		nodename: nodename,
 		xtype: 'proxmoxNodeTasks',
+		extraFilter: [
+		    {
+			xtype: 'pveGuestIDSelector',
+			fieldLabel: gettext('VMID'),
+			allowBlank: true,
+			name: 'vmid',
+		    },
+		],
 	    },
 	    {
 		title: gettext('Subscription'),
