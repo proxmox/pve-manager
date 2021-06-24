@@ -68,7 +68,9 @@ sub auth_handler {
 
     # explicitly allow some calls without auth
     if (($rel_uri eq '/access/domains' && $method eq 'GET') ||
-	($rel_uri eq '/access/ticket' && ($method eq 'GET' || $method eq 'POST'))) {
+	($rel_uri eq '/access/ticket' && ($method eq 'GET' || $method eq 'POST')) ||
+	($rel_uri eq '/access/openid/login' &&  $method eq 'POST') ||
+	($rel_uri eq '/access/openid/auth-url' &&  $method eq 'POST')) {
 	$require_auth = 0;
     }
 

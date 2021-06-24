@@ -2,6 +2,21 @@
 Ext.define('PVE.window.LoginWindow', {
     extend: 'Ext.window.Window',
 
+    viewModel: {
+	data: {
+	    openid: false,
+	},
+	formulas: {
+	    button_text: function(get) {
+		if (get("openid") === true) {
+		    return gettext("Login (OpenID redirect)");
+		} else {
+		    return gettext("Login");
+		}
+	    },
+	},
+    },
+
     controller: {
 
 	xclass: 'Ext.app.ViewController',
@@ -15,6 +30,32 @@ Ext.define('PVE.window.LoginWindow', {
 	    var view = this.getView();
 
 	    if (!form.isValid()) {
+		return;
+	    }
+
+	    let creds = form.getValues();
+
+	    if (this.getViewModel().data.openid === true) {
+		const redirectURL = location.origin;
+		Proxmox.Utils.API2Request({
+		    url: '/api2/extjs/access/openid/auth-url',
+		    params: {
+			realm: creds.realm,
+			"redirect-url": redirectURL,
+		    },
+		    method: 'POST',
+		    success: function(resp, opts) {
+			window.location = resp.result.data;
+		    },
+		    failure: function(resp, opts) {
+			Proxmox.Utils.authClear();
+			form.unmask();
+			Ext.MessageBox.alert(
+			    gettext('Error'),
+			    gettext('OpenId redirect failed. Please try again<br>Error: ' + resp.htmlStatus),
+			);
+		    },
+		});
 		return;
 	    }
 
@@ -162,11 +203,21 @@ Ext.define('PVE.window.LoginWindow', {
 		    window.location.reload();
 		},
 	    },
-            'button[reference=loginButton]': {
+	    'field[name=realm]': {
+		change: function(f, value) {
+		    let record = f.store.getById(value);
+		    if (record === undefined) return;
+		    let data = record.data;
+		    this.getViewModel().set("openid", data.type === "openid");
+		},
+	    },
+	   'button[reference=loginButton]': {
 		click: 'onLogon',
             },
 	    '#': {
 		show: function() {
+		    var me = this;
+
 		    var sp = Ext.state.Manager.getProvider();
 		    var checkboxField = this.lookupReference('saveunField');
 		    var unField = this.lookupReference('usernameField');
@@ -179,6 +230,41 @@ Ext.define('PVE.window.LoginWindow', {
 			unField.setValue(username);
 			var pwField = this.lookupReference('passwordField');
 			pwField.focus();
+		    }
+
+		    let auth = Proxmox.Utils.getOpenIDRedirectionAuthorization();
+		    if (auth !== undefined) {
+			Proxmox.Utils.authClear();
+
+			let loginForm = this.lookupReference('loginForm');
+			loginForm.mask(gettext('OpenID login - please wait...'), 'x-mask-loading');
+
+			const redirectURL = location.origin;
+
+			Proxmox.Utils.API2Request({
+			    url: '/api2/extjs/access/openid/login',
+			    params: {
+				state: auth.state,
+				code: auth.code,
+				"redirect-url": redirectURL,
+			    },
+			    method: 'POST',
+			    failure: function(response) {
+				loginForm.unmask();
+				let error = response.htmlStatus;
+				Ext.MessageBox.alert(
+				    gettext('Error'),
+				    gettext('OpenID login failed, please try again') + `<br>${error}`,
+				    () => { window.location = redirectURL; },
+				);
+			    },
+			    success: function(response, options) {
+				loginForm.unmask();
+				let data = response.result.data;
+				history.replaceState(null, '', redirectURL);
+				me.success(data);
+			    },
+			});
 		    }
 		},
 	    },
@@ -217,6 +303,10 @@ Ext.define('PVE.window.LoginWindow', {
 		itemId: 'usernameField',
 		reference: 'usernameField',
 		stateId: 'login-username',
+		bind: {
+		    visible: "{!openid}",
+		    disabled: "{openid}",
+		},
 	    },
 	    {
 		xtype: 'textfield',
@@ -224,6 +314,10 @@ Ext.define('PVE.window.LoginWindow', {
 		fieldLabel: gettext('Password'),
 		name: 'password',
 		reference: 'passwordField',
+		bind: {
+		    visible: "{!openid}",
+		    disabled: "{openid}",
+		},
 	    },
 	    {
 		xtype: 'pmxRealmComboBox',
@@ -248,9 +342,14 @@ Ext.define('PVE.window.LoginWindow', {
 		labelWidth: 250,
 		labelAlign: 'right',
 		submitValue: false,
+		bind: {
+		    visible: "{!openid}",
+		},
 	    },
 	    {
-		text: gettext('Login'),
+		bind: {
+		    text: "{button_text}",
+		},
 		reference: 'loginButton',
 	    },
 	],
