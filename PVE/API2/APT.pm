@@ -29,7 +29,7 @@ use AptPkg::PkgRecords;
 use AptPkg::System;
 
 my $get_apt_cache = sub {
-    
+
     my $apt_cache = AptPkg::Cache->new() || die "unable to initialize AptPkg::Cache\n";
 
     return $apt_cache;
@@ -38,15 +38,15 @@ my $get_apt_cache = sub {
 use base qw(PVE::RESTHandler);
 
 __PACKAGE__->register_method({
-    name => 'index', 
-    path => '', 
+    name => 'index',
+    path => '',
     method => 'GET',
     description => "Directory index for apt (Advanced Package Tool).",
     permissions => {
 	user => 'all',
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -64,7 +64,7 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	my $res = [ 
+	my $res = [
 	    { id => 'changelog' },
 	    { id => 'update' },
 	    { id => 'versions' },
@@ -96,15 +96,12 @@ my $get_changelog_url =sub {
 	my $srcpkg = $info->{SourcePkg} || $pkgname;
 	if ($origin eq 'Debian') {
 	    $base =~ s!pool/updates/!pool/!; # for security channel
-	    $changelog_url = "http://packages.debian.org/changelogs/$base/" . 
-		"${srcpkg}_${pkgver}/changelog";
+	    $changelog_url = "http://packages.debian.org/changelogs/$base/${srcpkg}_${pkgver}/changelog";
 	} elsif ($origin eq 'Proxmox') {
 	    if ($component eq 'pve-enterprise') {
-		$changelog_url = "https://enterprise.proxmox.com/debian/$base/" . 
-		    "${pkgname}_${pkgver}.changelog";
+		$changelog_url = "https://enterprise.proxmox.com/debian/$base/${pkgname}_${pkgver}.changelog";
 	    } else {
-		$changelog_url = "http://download.proxmox.com/debian/$base/" .
-		    "${pkgname}_${pkgver}.changelog";
+		$changelog_url = "http://download.proxmox.com/debian/$base/${pkgname}_${pkgver}.changelog";
 	    }
 	}
     }
@@ -115,7 +112,7 @@ my $get_changelog_url =sub {
 my $assemble_pkginfo = sub {
     my ($pkgname, $info, $current_ver, $candidate_ver)  = @_;
 
-    my $data = { 
+    my $data = {
 	Package => $info->{Name},
 	Title => $info->{ShortDesc},
 	Origin => 'unknown',
@@ -123,7 +120,7 @@ my $assemble_pkginfo = sub {
 
     if (my $pkgfile = &$get_pkgfile($candidate_ver)) {
 	$data->{Origin} = $pkgfile->{Origin};
-	if (my $changelog_url = &$get_changelog_url($pkgname, $info, $candidate_ver->{VerStr}, 
+	if (my $changelog_url = &$get_changelog_url($pkgname, $info, $candidate_ver->{VerStr},
 						    $pkgfile->{Origin}, $pkgfile->{Component})) {
 	    $data->{ChangeLogUrl} = $changelog_url;
 	}
@@ -134,7 +131,7 @@ my $assemble_pkginfo = sub {
 	$desc =~ s/\n / /g;
 	$data->{Description} = $desc;
     }
- 
+
     foreach my $k (qw(Section Arch Priority)) {
 	$data->{$k} = $candidate_ver->{$k};
     }
@@ -230,8 +227,8 @@ my $update_pve_pkgstatus = sub {
 };
 
 __PACKAGE__->register_method({
-    name => 'list_updates', 
-    path => 'update', 
+    name => 'list_updates',
+    path => 'update',
     method => 'GET',
     description => "List available updates.",
     permissions => {
@@ -240,7 +237,7 @@ __PACKAGE__->register_method({
     protected => 1,
     proxyto => 'node',
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -258,7 +255,7 @@ __PACKAGE__->register_method({
 	if (my $st1 = File::stat::stat($pve_pkgstatus_fn)) {
 	    my $st2 = File::stat::stat("/var/cache/apt/pkgcache.bin");
 	    my $st3 = File::stat::stat("/var/lib/dpkg/status");
-	
+
 	    if ($st2 && $st3 && $st2->mtime <= $st1->mtime && $st3->mtime <= $st1->mtime) {
 		if (my $data = &$read_cached_pkgstatus()) {
 		    return $data;
@@ -272,8 +269,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'update_database', 
-    path => 'update', 
+    name => 'update_database',
+    path => 'update',
     method => 'POST',
     description => "This is used to resynchronize the package index files from their sources (apt-get update).",
     permissions => {
@@ -282,7 +279,7 @@ __PACKAGE__->register_method({
     protected => 1,
     proxyto => 'node',
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    notify => {
@@ -325,7 +322,7 @@ __PACKAGE__->register_method({
 	    my $cmd = ['apt-get', 'update'];
 
 	    print "starting apt-get update\n" if !$param->{quiet};
-	    
+
 	    if ($param->{quiet}) {
 		PVE::Tools::run_command($cmd, outfunc => sub {}, errfunc => sub {});
 	    } else {
@@ -378,8 +375,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'changelog', 
-    path => 'changelog', 
+    name => 'changelog',
+    path => 'changelog',
     method => 'GET',
     description => "Get package changelogs.",
     permissions => {
@@ -387,7 +384,7 @@ __PACKAGE__->register_method({
     },
     proxyto => 'node',
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    name => {
@@ -398,7 +395,7 @@ __PACKAGE__->register_method({
 		description => "Package version.",
 		type => 'string',
 		optional => 1,
-	    },		
+	    },
 	},
     },
     returns => {
@@ -462,8 +459,7 @@ __PACKAGE__->register_method({
 	    if ($info->{status} eq 'Active') {
 		$username = $info->{key};
 		$pw = PVE::API2Tools::get_hwaddress();
-		$ua->credentials("enterprise.proxmox.com:443", 'pve-enterprise-repository', 
-				 $username, $pw);
+		$ua->credentials("enterprise.proxmox.com:443", 'pve-enterprise-repository',  $username, $pw);
 	    }
 	}
 
@@ -479,8 +475,8 @@ __PACKAGE__->register_method({
     }});
 
 __PACKAGE__->register_method({
-    name => 'versions', 
-    path => 'versions', 
+    name => 'versions',
+    path => 'versions',
     method => 'GET',
     proxyto => 'node',
     description => "Get package information for important Proxmox packages.",
@@ -488,7 +484,7 @@ __PACKAGE__->register_method({
 	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
 	},
@@ -569,7 +565,7 @@ __PACKAGE__->register_method({
 
 	# add the rest ordered by name, easier to find for humans
 	push @list, (sort @pkgs, @opt_pack);
-	
+
 	my (undef, undef, $kernel_release) = POSIX::uname();
 	my $pvever =  PVE::pvecfg::version_text();
 
@@ -580,11 +576,9 @@ __PACKAGE__->register_method({
 	    my $candidate_ver = defined($p) ? $policy->candidate($p) : undef;
 	    my $res;
 	    if (my $current_ver = $p->{CurrentVer}) {
-		$res = &$assemble_pkginfo($pkgname, $info, $current_ver, 
-					  $candidate_ver || $current_ver);
+		$res = $assemble_pkginfo->($pkgname, $info, $current_ver, $candidate_ver || $current_ver);
 	    } elsif ($candidate_ver) {
-		$res = &$assemble_pkginfo($pkgname, $info, $candidate_ver, 
-					  $candidate_ver);
+		$res = $assemble_pkginfo->($pkgname, $info, $candidate_ver, $candidate_ver);
 		delete $res->{OldVersion};
 	    } else {
 		next;
