@@ -225,6 +225,11 @@ __PACKAGE__->register_method({
 		    type => 'string',
 		    optional => 1,
 		},
+		name => {
+		    description => "Name of the resource.",
+		    type => 'string',
+		    optional => 1,
+		},
 		node => get_standard_option('pve-node', {
 		    description => "The cluster node name (when type in node,storage,qemu,lxc).",
 		    optional => 1,
