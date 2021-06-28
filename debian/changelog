@@ -1,3 +1,14 @@
+pve-manager (7.0-5) bullseye; urgency=medium
+
+  * api: tasks: add 'since', 'until' and 'statusfilter' filter for the task
+    list endpoint
+
+  * api: apt versions: track proxmox-backup-file-restore
+
+  * api: cluster/resources: add 'name' property to return schema
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 28 Jun 2021 20:00:36 +0200
+
 pve-manager (7.0-4) bullseye; urgency=medium
 
   * ui: notes editor: increase edit window size from 600x400 to 800x600
