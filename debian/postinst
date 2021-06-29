@@ -128,11 +128,15 @@ case "$1" in
     fi
 
     # FIXME: remove in PVE 8.0
-    if test ! -e /proxmox_install_mode && test -n "$2" && dpkg --compare-versions "$2" 'lt' '7.0-4~'; then
+    if test ! -e /proxmox_install_mode && test -n "$2" && dpkg --compare-versions "$2" 'lt' '7.0-6~'; then
 	# PVE 4.0 beta to 5.4 ISO had a bug and did not generated a unique machine-id. below is a
 	# very relaxed machine-id list from all ISOs (released, tests & internal) possibly affected
 	if grep -q \
+	    -e a0ee88c29b764c46a579dd89c86c2d84 \
+	    -e ecbf104295bd4f8b90bb82dc2fa5e9e5 \
+	    -e c8fa51cd0c254ea08b0e37c1e37afbb9 \
 	    -e 2ec24eda629a4c8d8c1f8dac50a9ee5f \
+	    -e ef8db290720047159b426bd322839d70 \
 	    -e bd94244c0da6419a82a383e62dc03b51 \
 	    -e 45d4e7046c3d4c26af8acd589f358ac6 \
 	    -e 8c445f96b3064ff79f825ea78a3eefde \
