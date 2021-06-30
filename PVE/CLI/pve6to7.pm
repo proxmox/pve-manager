@@ -707,6 +707,7 @@ sub check_storage_content {
     log_info("Checking storage content type configuration..");
 
     my $found;
+    my $pass = 1;
 
     my $storage_cfg = PVE::Storage::config();
 
@@ -718,6 +719,7 @@ sub check_storage_content {
 	my $valid_content = PVE::Storage::Plugin::valid_content_types($scfg->{type});
 
 	if (scalar(keys $scfg->{content}->%*) == 0 && !$valid_content->{none}) {
+	    $pass = 0;
 	    log_fail("storage '$storeid' does not support configured content type 'none'");
 	    delete $scfg->{content}->{none}; # scan for guest images below
 	}
@@ -738,6 +740,7 @@ sub check_storage_content {
 
 	if (scalar(@volumes) > 0) {
 	    $found = 1;
+	    $pass = 0;
 	    log_warn("storage '$storeid' - neither content type 'images' nor 'rootdir' configured"
 		.", but found guest volume(s):\n    " . join("\n    ", @volumes));
 	}
@@ -746,7 +749,9 @@ sub check_storage_content {
     if ($found) {
 	log_warn("PVE 7.0 enforces stricter content type checks. Guests referencing the above " .
 	    "volumes will not work until the storage configuration is fixed.");
-    } else {
+    }
+
+    if ($pass) {
 	log_pass("no problems found");
     }
 }
