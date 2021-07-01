@@ -191,6 +191,206 @@ Ext.define('PVE.storage.Upload', {
     },
 });
 
+Ext.define('PVE.storage.DownloadUrl', {
+    extend: 'Proxmox.window.Edit',
+    alias: 'widget.pveStorageDownloadUrl',
+    mixins: ['Proxmox.Mixin.CBind'],
+
+    isCreate: true,
+
+    method: 'POST',
+
+    showTaskViewer: true,
+
+    title: gettext('Download from URL'),
+    submitText: gettext('Download'),
+
+    cbindData: function(initialConfig) {
+	var me = this;
+	return {
+	    nodename: me.nodename,
+	    storage: me.storage,
+	    content: me.content,
+	};
+    },
+
+    cbind: {
+	url: '/nodes/{nodename}/storage/{storage}/download-url',
+    },
+
+    controller: {
+	xclass: 'Ext.app.ViewController',
+
+	urlChange: function(field) {
+	    let me = this;
+	    let view = me.getView();
+	    field = view.down('[name=url]');
+	    field.setValidation(gettext("Please check URL"));
+	    field.validate();
+	    view.setValues({
+		size: gettext("unknown"),
+		mimetype: gettext("unknown"),
+	    });
+	},
+
+	urlCheck: function(field) {
+	    let me = this;
+	    let view = me.getView();
+	    field = view.down('[name=url]');
+	    view.setValues({
+		size: gettext("unknown"),
+		mimetype: gettext("unknown"),
+	    });
+	    Proxmox.Utils.API2Request({
+		url: `/nodes/${view.nodename}/query-url-metadata`,
+		method: 'GET',
+		params: {
+		    url: field.getValue(),
+		    'verify-certificates': view.getValues()['verify-certificates'],
+		},
+		waitMsgTarget: view,
+		failure: function(res, opt) {
+		    field.setValidation(res.result.message);
+		    field.validate();
+		},
+		success: function(res, opt) {
+		    field.setValidation();
+		    field.validate();
+
+		    let data = res.result.data;
+		    view.setValues({
+			filename: data.filename || "",
+			size: (data.size && Proxmox.Utils.format_size(data.size)) || gettext("unknown"),
+			mimetype: data.mimetype || gettext("unknown"),
+		    });
+		},
+	    });
+	},
+
+	hashChange: function(field) {
+	    let checksum = Ext.getCmp('downloadUrlChecksum');
+	    if (field.getValue() === '__default__') {
+		checksum.setDisabled(true);
+		checksum.setValue("");
+		checksum.allowBlank = true;
+	    } else {
+		checksum.setDisabled(false);
+		checksum.allowBlank = false;
+	    }
+	},
+    },
+
+    items: [
+	{
+	    xtype: 'inputpanel',
+	    border: false,
+	    columnT: [
+		{
+		    xtype: 'fieldcontainer',
+		    layout: 'hbox',
+		    fieldLabel: gettext('URL'),
+		    items: [
+			{
+			    xtype: 'textfield',
+			    name: 'url',
+			    allowBlank: false,
+			    flex: 1,
+			    listeners: {
+				change: 'urlChange',
+			    },
+			},
+			{
+			    xtype: 'button',
+			    name: 'check',
+			    text: gettext('Check'),
+			    margin: '0 0 0 5',
+			    listeners: {
+				click: 'urlCheck',
+			    },
+			},
+		    ],
+		},
+		{
+		    xtype: 'textfield',
+		    name: 'filename',
+		    allowBlank: false,
+		    fieldLabel: gettext('File name'),
+		},
+	    ],
+	    column1: [
+		{
+		    xtype: 'displayfield',
+		    name: 'size',
+		    fieldLabel: gettext('File size'),
+		    value: gettext('unknown'),
+		},
+	    ],
+	    column2: [
+		{
+		    xtype: 'displayfield',
+		    name: 'mimetype',
+		    fieldLabel: gettext('MIME type'),
+		    value: gettext('unknown'),
+		},
+	    ],
+	    advancedColumn1: [
+		{
+		    xtype: 'pveHashAlgorithmSelector',
+		    name: 'checksum-algorithm',
+		    fieldLabel: gettext('Hash algorithm'),
+		    allowBlank: true,
+		    hasNoneOption: true,
+		    value: '__default__',
+		    listeners: {
+			change: 'hashChange',
+		    },
+		},
+		{
+		    xtype: 'textfield',
+		    name: 'checksum',
+		    fieldLabel: gettext('Checksum'),
+		    allowBlank: true,
+		    disabled: true,
+		    emptyText: gettext('none'),
+		    id: 'downloadUrlChecksum',
+		},
+	    ],
+	    advancedColumn2: [
+		{
+		    xtype: 'proxmoxcheckbox',
+		    name: 'verify-certificates',
+		    fieldLabel: gettext('Verify certificates'),
+		    uncheckedValue: 0,
+		    checked: true,
+		    listeners: {
+			change: 'urlChange',
+		    },
+		},
+	    ],
+	},
+	{
+	    xtype: 'hiddenfield',
+	    name: 'content',
+	    cbind: {
+		value: '{content}',
+	    },
+	},
+    ],
+
+    initComponent: function() {
+        var me = this;
+
+	if (!me.nodename) {
+	    throw "no node name specified";
+	}
+	if (!me.storage) {
+	    throw "no storage ID specified";
+	}
+
+        me.callParent();
+    },
+});
+
 Ext.define('PVE.storage.ContentView', {
     extend: 'Ext.grid.GridPanel',
 
@@ -249,36 +449,50 @@ Ext.define('PVE.storage.ContentView', {
 
 	Proxmox.Utils.monStoreErrors(me, store);
 
-	let uploadButton = Ext.create('Proxmox.button.Button', {
-	    text: gettext('Upload'),
-	    handler: function() {
-		let win = Ext.create('PVE.storage.Upload', {
-		    nodename: nodename,
-		    storage: storage,
-		    contents: [content],
-		});
-		win.show();
-		win.on('destroy', reload);
-	    },
-	});
-
-	let removeButton = Ext.create('Proxmox.button.StdRemoveButton', {
-	    selModel: sm,
-	    delay: 5,
-	    callback: function() {
-		reload();
-	    },
-	    baseurl: baseurl + '/',
-	});
-
 	if (!me.tbar) {
 	    me.tbar = [];
 	}
 	if (me.useUploadButton) {
-	    me.tbar.push(uploadButton);
+	    me.tbar.unshift(
+		{
+		    xtype: 'button',
+		    text: gettext('Upload'),
+		    disabled: !me.enableUploadButton,
+		    handler: function() {
+			Ext.create('PVE.storage.Upload', {
+			    nodename: nodename,
+			    storage: storage,
+			    contents: [content],
+			    autoShow: true,
+			    taskDone: () => reload(),
+			});
+		    },
+		},
+		{
+		    xtype: 'button',
+		    text: gettext('Download from URL'),
+		    disabled: !me.enableDownloadUrlButton,
+		    handler: function() {
+			Ext.create('PVE.storage.DownloadUrl', {
+			    nodename: nodename,
+			    storage: storage,
+			    content: content,
+			    autoShow: true,
+			    taskDone: () => reload(),
+			});
+		    },
+		},
+		'-',
+	    );
 	}
 	if (!me.useCustomRemoveButton) {
-	    me.tbar.push(removeButton);
+	    me.tbar.push({
+		xtype: 'proxmoxStdRemoveButton',
+		selModel: sm,
+		delay: 5,
+		callback: () => reload(),
+		baseurl: baseurl + '/',
+	    });
 	}
 	me.tbar.push(
 	    '->',

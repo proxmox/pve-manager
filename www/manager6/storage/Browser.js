@@ -53,6 +53,9 @@ Ext.define('PVE.storage.Browser', {
 	    let plugin = res.plugintype;
 	    let contents = res.content.split(',');
 
+	    let enableUpload = !!caps.storage['Datastore.AllocateTemplate'];
+	    let enableDownloadUrl = enableUpload && !!(caps.nodes['Sys.Audit'] && caps.nodes['Sys.Modify']);
+
 	    if (contents.includes('backup')) {
 		me.items.push({
 		    xtype: 'pveStorageBackupView',
@@ -91,6 +94,8 @@ Ext.define('PVE.storage.Browser', {
 		    itemId: 'contentIso',
 		    content: 'iso',
 		    pluginType: plugin,
+		    enableUploadButton: enableUpload,
+		    enableDownloadUrlButton: enableDownloadUrl,
 		    useUploadButton: true,
 		});
 	    }
@@ -101,6 +106,9 @@ Ext.define('PVE.storage.Browser', {
 		    iconCls: 'fa fa-file-o lxc',
 		    itemId: 'contentVztmpl',
 		    pluginType: plugin,
+		    enableUploadButton: enableUpload,
+		    enableDownloadUrlButton: enableDownloadUrl,
+		    useUploadButton: true,
 		});
 	    }
 	    if (contents.includes('snippets')) {
