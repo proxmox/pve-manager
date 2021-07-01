@@ -120,6 +120,7 @@ JSSRC= 							\
 	dc/AuthEditBase.js				\
 	dc/AuthEditAD.js				\
 	dc/AuthEditLDAP.js				\
+	dc/AuthEditOpenId.js				\
 	dc/AuthView.js					\
 	dc/Backup.js					\
 	dc/Cluster.js					\

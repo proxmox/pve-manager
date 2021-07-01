@@ -742,6 +742,12 @@ Ext.define('PVE.Utils', {
 	    add: true,
 	    tfa: true,
 	},
+	openid: {
+	    name: gettext('OpenID Server'),
+	    ipanel: 'pveAuthOpenIDPanel',
+	    add: true,
+	    tfa: false,
+	},
 	pam: {
 	    name: 'Linux PAM',
 	    ipanel: 'pveAuthBasePanel',
