@@ -734,6 +734,7 @@ Ext.define('PVE.Utils', {
 	    syncipanel: 'pveAuthLDAPSyncPanel',
 	    add: true,
 	    tfa: true,
+	    pwchange: true,
 	},
 	ldap: {
 	    name: gettext('LDAP Server'),
@@ -741,23 +742,27 @@ Ext.define('PVE.Utils', {
 	    syncipanel: 'pveAuthLDAPSyncPanel',
 	    add: true,
 	    tfa: true,
+	    pwchange: true,
 	},
 	openid: {
 	    name: gettext('OpenID Server'),
 	    ipanel: 'pveAuthOpenIDPanel',
 	    add: true,
 	    tfa: false,
+	    pwchange: false,
 	},
 	pam: {
 	    name: 'Linux PAM',
 	    ipanel: 'pveAuthBasePanel',
 	    add: false,
 	    tfa: true,
+	    pwchange: true,
 	},
 	pve: {
 	    name: 'Proxmox VE authentication server',
 	    ipanel: 'pveAuthBasePanel',
 	    add: false,
+	    pwchange: true,
 	},
     },
 

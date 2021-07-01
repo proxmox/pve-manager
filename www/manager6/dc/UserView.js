@@ -58,6 +58,15 @@ Ext.define('PVE.dc.UserView', {
 	    text: gettext('Password'),
 	    disabled: true,
 	    selModel: sm,
+	    enableFn: function(record) {
+		if (record.data.realmtype) {
+		    let type = record.data.realmtype;
+		    if (PVE.Utils.authSchema[type]) {
+			return !!PVE.Utils.authSchema[type].pwchange;
+		    }
+		}
+		return false;
+	    },
 	    handler: function(btn, event, rec) {
 		Ext.create('Proxmox.window.PasswordEdit', {
 		    userid: rec.data.userid,
