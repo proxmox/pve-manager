@@ -733,17 +733,20 @@ Ext.define('PVE.Utils', {
 	    ipanel: 'pveAuthADPanel',
 	    syncipanel: 'pveAuthLDAPSyncPanel',
 	    add: true,
+	    tfa: true,
 	},
 	ldap: {
 	    name: gettext('LDAP Server'),
 	    ipanel: 'pveAuthLDAPPanel',
 	    syncipanel: 'pveAuthLDAPSyncPanel',
 	    add: true,
+	    tfa: true,
 	},
 	pam: {
 	    name: 'Linux PAM',
 	    ipanel: 'pveAuthBasePanel',
 	    add: false,
+	    tfa: true,
 	},
 	pve: {
 	    name: 'Proxmox VE authentication server',

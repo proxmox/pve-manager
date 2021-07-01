@@ -24,6 +24,8 @@ Ext.define('PVE.panel.AuthBase', {
     initComponent: function() {
 	let me = this;
 
+	let options = PVE.Utils.authSchema[me.type];
+
 	if (!me.column1) { me.column1 = []; }
 	if (!me.column2) { me.column2 = []; }
 	if (!me.columnB) { me.columnB = []; }
@@ -45,11 +47,13 @@ Ext.define('PVE.panel.AuthBase', {
 	    uncheckedValue: 0,
 	});
 
-	// last field of column2is tfa
-	me.column2.push({
-	    xtype: 'pveTFASelector',
-	    deleteEmpty: !me.isCreate,
-	});
+	if (options.tfa) {
+	    // last field of column2is tfa
+	    me.column2.push({
+		xtype: 'pveTFASelector',
+		deleteEmpty: !me.isCreate,
+	    });
+	}
 
 	me.columnB.push({
 	    xtype: 'textfield',
