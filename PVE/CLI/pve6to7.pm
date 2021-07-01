@@ -302,17 +302,25 @@ sub check_cluster_corosync {
 	if $conf_nodelist_count != $cfs_nodelist_count;
 
     print "\nChecking nodelist entries..\n";
+    my $nodelist_pass = 1;
     for my $cs_node (sort keys %$conf_nodelist) {
 	my $entry = $conf_nodelist->{$cs_node};
-	log_fail("$cs_node: no name entry in corosync.conf.")
-	    if !defined($entry->{name});
-	log_fail("$cs_node: no nodeid configured in corosync.conf.")
-	    if !defined($entry->{nodeid});
+	if (!defined($entry->{name})) {
+	    $nodelist_pass = 0;
+	    log_fail("$cs_node: no name entry in corosync.conf.");
+	}
+	if (!defined($entry->{nodeid})) {
+	    $nodelist_pass = 0;
+	    log_fail("$cs_node: no nodeid configured in corosync.conf.");
+	}
 	my $gotLinks = 0;
 	for my $link (0..7) {
 	    $gotLinks++ if defined($entry->{"ring${link}_addr"});
 	}
-	log_fail("$cs_node: no ringX_addr (0 <= X <= 7) link defined in corosync.conf.") if $gotLinks <= 0;
+	if ($gotLinks <= 0) {
+	    $nodelist_pass = 0;
+	    log_fail("$cs_node: no ringX_addr (0 <= X <= 7) link defined in corosync.conf.");
+	}
 
 	my $verify_ring_ip = sub {
 	    my $key = shift;
@@ -320,11 +328,11 @@ sub check_cluster_corosync {
 		my ($resolved_ip, undef) = PVE::Corosync::resolve_hostname_like_corosync($ring, $conf);
 		if (defined($resolved_ip)) {
 		    if ($resolved_ip ne $ring) {
+			$nodelist_pass = 0;
 			log_warn("$cs_node: $key '$ring' resolves to '$resolved_ip'.\n Consider replacing it with the currently resolved IP address.");
-		    } else {
-			log_pass("$cs_node: $key is configured to use IP address '$ring'");
 		    }
 		} else {
+		    $nodelist_pass = 0;
 		    log_fail("$cs_node: unable to resolve $key '$ring' to an IP address according to Corosync's resolve strategy - cluster will potentially fail with Corosync 3.x/kronosnet!");
 		}
 	    }
@@ -333,42 +341,38 @@ sub check_cluster_corosync {
 	    $verify_ring_ip->("ring${link}_addr");
 	}
     }
+    log_pass("nodelist settings OK") if $nodelist_pass;
 
     print "\nChecking totem settings..\n";
     my $totem = $conf->{main}->{totem};
+    my $totem_pass = 1;
+
     my $transport = $totem->{transport};
     if (defined($transport)) {
 	if ($transport ne 'knet') {
+	    $totem_pass = 0;
 	    log_fail("Corosync transport explicitly set to '$transport' instead of implicit default!");
-	} else {
-	    log_pass("Corosync transport set to '$transport'.");
 	}
-    } else {
-	log_pass("Corosync transport set to implicit default.");
     }
 
     # TODO: are those values still up-to-date?
     if ((!defined($totem->{secauth}) || $totem->{secauth} ne 'on') && (!defined($totem->{crypto_cipher}) || $totem->{crypto_cipher} eq 'none')) {
+	$totem_pass = 0;
 	log_fail("Corosync authentication/encryption is not explicitly enabled (secauth / crypto_cipher / crypto_hash)!");
-    } else {
-	if (defined($totem->{crypto_cipher}) && $totem->{crypto_cipher} eq '3des') {
-	    log_fail("Corosync encryption cipher set to '3des', no longer supported in Corosync 3.x!"); # FIXME: can be removed?
-	} else {
-	    log_pass("Corosync encryption and authentication enabled.");
-	}
+    } elsif (defined($totem->{crypto_cipher}) && $totem->{crypto_cipher} eq '3des') {
+	$totem_pass = 0;
+	log_fail("Corosync encryption cipher set to '3des', no longer supported in Corosync 3.x!"); # FIXME: can be removed?
     }
 
+    log_pass("totem settings OK") if $totem_pass;
     print "\n";
     log_info("run 'pvecm status' to get detailed cluster status..");
 
-    print_header("CHECKING INSTALLED COROSYNC VERSION");
     if (defined(my $corosync = $get_pkg->('corosync'))) {
 	if ($corosync->{OldVersion} =~ m/^2\./) {
-	    log_fail("corosync 2.x installed, cluster-wide upgrade to 3.x needed!");
-	} elsif ($corosync->{OldVersion} =~ m/^3\./) {
-	    log_pass("corosync 3.x installed.");
-	} else {
-	    log_fail("unexpected corosync version installed: $corosync->{OldVersion}!");
+	    log_fail("\ncorosync 2.x installed, cluster-wide upgrade to 3.x needed!");
+	} elsif ($corosync->{OldVersion} !~ m/^3\./) {
+	    log_fail("\nunexpected corosync version installed: $corosync->{OldVersion}!");
 	}
     }
 }
