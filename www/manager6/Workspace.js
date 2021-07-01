@@ -172,6 +172,23 @@ Ext.define('PVE.StdWorkspace', {
 		    }
 		},
 	    });
+
+	    Proxmox.Utils.API2Request({
+		url: '/access/domains',
+		method: 'GET',
+		success: function(response) {
+		    let [_username, realm] = Proxmox.Utils.parse_userid(Proxmox.UserName);
+		    response.result.data.forEach((domain) => {
+			if (domain.realm === realm) {
+			    let schema = PVE.Utils.authSchema[domain.type];
+			    if (schema) {
+				me.query('#tfaitem')[0].setHidden(!schema.tfa);
+				me.query('#passworditem')[0].setHidden(!schema.pwchange);
+			    }
+			}
+		    });
+		},
+	    });
 	}
     },
 
@@ -353,6 +370,7 @@ Ext.define('PVE.StdWorkspace', {
 				},
 				{
 				    text: gettext('Password'),
+				    itemId: 'passworditem',
 				    iconCls: 'fa fa-fw fa-key',
 				    handler: function() {
 					var win = Ext.create('Proxmox.window.PasswordEdit', {
@@ -363,6 +381,7 @@ Ext.define('PVE.StdWorkspace', {
 				},
 				{
 				    text: 'TFA',
+				    itemId: 'tfaitem',
 				    iconCls: 'fa fa-fw fa-lock',
 				    handler: function(btn, event, rec) {
 					var win = Ext.create('PVE.window.TFAEdit', {
