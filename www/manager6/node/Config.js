@@ -230,6 +230,7 @@ Ext.define('PVE.node.Config', {
 		    xtype: 'proxmoxNodeAPT',
 		    title: gettext('Updates'),
 		    iconCls: 'fa fa-refresh',
+		    expandedOnInit: true,
 		    disabled: !caps.nodes['Sys.Console'],
 		    // do we want to link to system updates instead?
 		    itemId: 'apt',
@@ -245,7 +246,7 @@ Ext.define('PVE.node.Config', {
 
 		me.items.push({
 		    xtype: 'proxmoxNodeAPTRepositories',
-		    title: gettext('APT Repositories'),
+		    title: gettext('Repositories'),
 		    iconCls: 'fa fa-files-o',
 		    itemId: 'aptrepositories',
 		    nodename: nodename,
