@@ -72,6 +72,15 @@ Ext.define('PVE.dc.UserView', {
 	    text: 'TFA',
 	    disabled: true,
 	    selModel: sm,
+	    enableFn: function(record) {
+		if (record.data.realmtype) {
+		    let type = record.data.realmtype;
+		    if (PVE.Utils.authSchema[type]) {
+			return !!PVE.Utils.authSchema[type].tfa;
+		    }
+		}
+		return false;
+	    },
 	    handler: function(btn, event, rec) {
 		var d = rec.data;
 		var tfa_type = PVE.Parser.parseTfaType(d.keys);
