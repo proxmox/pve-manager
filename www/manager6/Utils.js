@@ -1797,7 +1797,7 @@ Ext.define('PVE.Utils', {
 	    clusterjoin: ['', gettext('Join Cluster')],
 	    dircreate: [gettext('Directory Storage'), gettext('Create')],
 	    dirremove: [gettext('Directory'), gettext('Remove')],
-	    download: ['', gettext('Download')],
+	    download: [gettext('File'), gettext('Download')],
 	    hamigrate: ['HA', gettext('Migrate')],
 	    hashutdown: ['HA', gettext('Shutdown')],
 	    hastart: ['HA', gettext('Start')],
