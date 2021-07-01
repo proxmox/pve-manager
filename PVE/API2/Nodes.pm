@@ -11,6 +11,7 @@ use JSON;
 use POSIX qw(LONG_MAX);
 use Time::Local qw(timegm_nocheck);
 use Socket;
+use IO::Socket::SSL;
 
 use PVE::API2Tools;
 use PVE::APLInfo;
@@ -231,6 +232,7 @@ __PACKAGE__->register_method ({
 	    { name => 'netstat' },
 	    { name => 'network' },
 	    { name => 'qemu' },
+	    { name => 'query-url-metadata' },
 	    { name => 'replication' },
 	    { name => 'report' },
 	    { name => 'rrd' }, # fixme: remove?
@@ -1491,6 +1493,100 @@ __PACKAGE__->register_method({
 	my $upid = $rpcenv->fork_worker('download', $template, $user, $worker);
 
 	return $upid;
+    }});
+
+__PACKAGE__->register_method({
+    name => 'query_url_metadata',
+    path => 'query-url-metadata',
+    method => 'GET',
+    description => "Query metadata of an URL: file size, file name and mime type.",
+    proxyto => 'node',
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Sys.Modify' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    url => {
+		description => "The URL to query the metadata from.",
+		type => 'string',
+		pattern => 'https?://.*',
+	    },
+	    'verify-certificates' => {
+		description => "If false, no SSL/TLS certificates will be verified.",
+		type => 'boolean',
+		optional => 1,
+		default => 1,
+	    }
+	},
+    },
+    returns => {
+	type => "object",
+	properties => {
+	    filename => {
+		type => 'string',
+		optional => 1,
+	    },
+	    size => {
+		type => 'integer',
+		renderer => 'bytes',
+		optional => 1,
+	    },
+	    mimetype => {
+		type => 'string',
+		optional => 1,
+	    },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $url = $param->{url};
+
+	my $ua = LWP::UserAgent->new();
+
+	my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
+	if ($dccfg->{http_proxy}) {
+	    $ua->proxy('http', $dccfg->{http_proxy});
+	}
+
+	my $verify = $param->{'verify-certificates'} // 1;
+	if (!$verify) {
+	    $ua->ssl_opts(
+		verify_hostname => 0,
+		SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
+	    );
+	}
+
+	my $req = HTTP::Request->new(HEAD => $url);
+	my $res = $ua->request($req);
+
+	die "invalid server response: '" . $res->status_line() . "'\n" if ($res->code() != 200);
+
+	my $size = $res->header("Content-Length");
+	my $disposition = $res->header("Content-Disposition");
+	my $type = $res->header("Content-Type");
+
+	my $filename;
+
+	if ($disposition && ($disposition =~ m/filename="([^"]*)"/ || $disposition =~ m/filename=([^;]*)/)) {
+	    $filename = $1;
+	} elsif ($url =~ m!^[^?]+/([^?/]*)(?:\?.*)?$!) {
+	    $filename = $1;
+	}
+
+	# Content-Type: text/html; charset=utf-8
+	if ($type && $type =~ m/^([^;]+);/) {
+	    $type = $1;
+	}
+
+	my $ret = {};
+	$ret->{filename} = $filename if $filename;
+	$ret->{size} = $size + 0 if $size;
+	$ret->{mimetype} = $type if $type;
+
+	return $ret;
     }});
 
 __PACKAGE__->register_method({
