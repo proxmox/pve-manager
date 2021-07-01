@@ -414,9 +414,7 @@ sub check_ceph {
 	if (!$osd_flags) {
 	    log_fail("unable to get Ceph OSD flags!");
 	} else {
-	    if ($osd_flags =~ m/recovery_deletes/ && $osd_flags =~ m/purged_snapdirs/) {
-		log_pass("all PGs have been scrubbed at least once while running Ceph Luminous."); # FIXME: remove?
-	    } else {
+	    if (!($osd_flags =~ m/recovery_deletes/ && $osd_flags =~ m/purged_snapdirs/)) {
 		log_fail("missing 'recovery_deletes' and/or 'purged_snapdirs' flag, scrub of all PGs required before upgrading to Nautilus!");
 	    }
 	}
