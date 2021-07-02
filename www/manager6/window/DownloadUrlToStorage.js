@@ -25,50 +25,54 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 	url: '/nodes/{nodename}/storage/{storage}/download-url',
     },
 
+    resetValues: function() {
+	this.setValues({
+	    size: '-',
+	    mimetype: '-',
+	});
+    },
+
     controller: {
 	xclass: 'Ext.app.ViewController',
 
 	urlChange: function(field) {
-	    let me = this;
-	    let view = me.getView();
-	    field = view.down('[name=url]');
-	    field.setValidation(gettext("Please check URL"));
-	    field.validate();
-	    view.setValues({
-		size: gettext("unknown"),
-		mimetype: gettext("unknown"),
-	    });
+	    let view = this.getView();
+	    view.down('[name=check]').setDisabled(false);
+	    view.resetValues();
 	},
 
 	urlCheck: function(field) {
 	    let me = this;
 	    let view = me.getView();
-	    field = view.down('[name=url]');
-	    view.setValues({
-		size: gettext("unknown"),
-		mimetype: gettext("unknown"),
-	    });
+
+	    const queryParam = view.getValues();
+
+	    view.down('[name=check]').setDisabled(true);
+	    view.resetValues();
+	    let urlField = view.down('[name=url]');
+
 	    Proxmox.Utils.API2Request({
 		url: `/nodes/${view.nodename}/query-url-metadata`,
 		method: 'GET',
 		params: {
-		    url: field.getValue(),
-		    'verify-certificates': view.getValues()['verify-certificates'],
+		    url: queryParam.url,
+		    'verify-certificates': queryParam['verify-certificates'],
 		},
 		waitMsgTarget: view,
-		failure: function(res, opt) {
-		    field.setValidation(res.result.message);
-		    field.validate();
+		failure: res => {
+		    urlField.setValidation(res.result.message);
+		    urlField.validate();
+		    Ext.MessageBox.alert(gettext('Error'), res.htmlStatus);
 		},
 		success: function(res, opt) {
-		    field.setValidation();
-		    field.validate();
+		    urlField.setValidation();
+		    urlField.validate();
 
 		    let data = res.result.data;
 		    view.setValues({
 			filename: data.filename || "",
-			size: (data.size && Proxmox.Utils.format_size(data.size)) || gettext("unknown"),
-			mimetype: data.mimetype || gettext("unknown"),
+			size: (data.size && Proxmox.Utils.format_size(data.size)) || gettext("Unknown"),
+			mimetype: data.mimetype || gettext("Unknown"),
 		    });
 		},
 	    });
@@ -100,6 +104,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 			{
 			    xtype: 'textfield',
 			    name: 'url',
+			    emptyText: gettext("Enter URL to download"),
 			    allowBlank: false,
 			    flex: 1,
 			    listeners: {
@@ -109,7 +114,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 			{
 			    xtype: 'button',
 			    name: 'check',
-			    text: gettext('Check'),
+			    text: gettext('Query URL'),
 			    margin: '0 0 0 5',
 			    listeners: {
 				click: 'urlCheck',
@@ -122,6 +127,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 		    name: 'filename',
 		    allowBlank: false,
 		    fieldLabel: gettext('File name'),
+		    emptyText: gettext("Please (re-)query URL to get meta information"),
 		},
 	    ],
 	    column1: [
@@ -129,7 +135,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 		    xtype: 'displayfield',
 		    name: 'size',
 		    fieldLabel: gettext('File size'),
-		    value: gettext('unknown'),
+		    value: '-',
 		},
 	    ],
 	    column2: [
@@ -137,7 +143,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 		    xtype: 'displayfield',
 		    name: 'mimetype',
 		    fieldLabel: gettext('MIME type'),
-		    value: gettext('unknown'),
+		    value: '-',
 		},
 	    ],
 	    advancedColumn1: [
