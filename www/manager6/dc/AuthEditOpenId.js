@@ -41,13 +41,14 @@ Ext.define('PVE.panel.OpenIDInputPanel', {
 		value: 0,
 		deleteEmpty: !me.isCreate,
 	    },
-	];
-
-	if (me.isCreate) {
-	    me.column2.push({
-		xtype: 'proxmoxKVComboBox',
+	    {
+		xtype: 'pmxDisplayEditField',
+		editConfig: {
+		    xtype: 'proxmoxKVComboBox',
+		},
+		editable: me.isCreate,
 		name: 'username-claim',
-		value: '__default__',
+		value: me.isCreate ? '__default__' : Proxmox.Utils.defaultText,
 		deleteEmpty: !me.isCreate,
 		fieldLabel: gettext('Username Claim'),
 		comboItems: [
@@ -56,8 +57,8 @@ Ext.define('PVE.panel.OpenIDInputPanel', {
 		    ['username', 'username'],
 		    ['email', 'email'],
 		],
-	    });
-	}
+	    },
+	];
 
 	me.callParent();
     },
