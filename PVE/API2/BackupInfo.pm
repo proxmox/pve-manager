@@ -32,21 +32,32 @@ sub get_included_vmids {
 }
 
 __PACKAGE__->register_method({
-    name => 'get_backupinfo',
+    name => 'index',
     path => '',
     method => 'GET',
-    protected => 1,
-    description => "Stub, waits for future use.",
+    description => "Index for backup info related endpoints",
     parameters => {
-       additionalProperties => 0,
-       properties => {},
+	additionalProperties => 0,
+	properties => {},
     },
     returns => {
-       type => 'string',
-       description => 'Shows stub message',
+	type => 'array',
+	description => 'Directory index.',
+	items => {
+	    type => "object",
+	    properties => {
+		subdir => {
+		    type => 'string',
+		    description => 'API sub-directory endpoint',
+		},
+	    },
+	},
+	links => [ { rel => 'child', href => "{subdir}" } ],
     },
     code => sub {
-       return "Stub endpoint. There is nothing here yet.";
+	return [
+	   { subdir => 'not_backed_up' },
+	];
     }});
 
 __PACKAGE__->register_method({
