@@ -105,6 +105,7 @@ JSSRC= 							\
 	window/Settings.js				\
 	window/Snapshot.js				\
 	window/StartupEdit.js				\
+	window/DownloadUrlToStorage.js 			\
 	window/Wizard.js				\
 	ha/Fencing.js					\
 	ha/GroupEdit.js					\
