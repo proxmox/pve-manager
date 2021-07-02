@@ -703,7 +703,7 @@ sub check_description_lengths {
 	push @$affected_guests, "VM $vmid" if defined($desc) && length($desc) > 8 * 1024;
     }
     if (scalar($affected_guests->@*) > 0) {
-	log_warn("Node config description of the following nodes too long for new limit of 64 KiB:\n"
+	log_warn("Guest config description of the following virtual-guests too long for new limit of 64 KiB:\n"
 	    ."    * " . join("\n    * ", $affected_guests->@*));
     } else {
 	log_pass("All guest config descriptions fit in the new limit of 8 KiB");
