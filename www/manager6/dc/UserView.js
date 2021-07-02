@@ -152,14 +152,14 @@ Ext.define('PVE.dc.UserView', {
 		    header: gettext('User name'),
 		    width: 200,
 		    sortable: true,
-		    renderer: userid => Ext.String.htmlEncode(userid.match(/^(.+)(@[^@]+)$/)[1]),
+		    renderer: Proxmox.Utils.render_username,
 		    dataIndex: 'userid',
 		},
 		{
 		    header: gettext('Realm'),
 		    width: 100,
 		    sortable: true,
-		    renderer: userid => Ext.String.htmlEncode(userid.match(/@([^@]+)$/)[1]),
+		    renderer: Proxmox.Utils.render_realm,
 		    dataIndex: 'userid',
 		},
 		{
