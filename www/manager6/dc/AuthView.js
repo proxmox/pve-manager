@@ -93,9 +93,9 @@ Ext.define('PVE.dc.AuthView', {
 	let items = [];
 	for (const [authType, config] of Object.entries(PVE.Utils.authSchema)) {
 	    if (!config.add) { continue; }
-
 	    items.push({
 		text: config.name,
+		iconCls: 'fa fa-fw ' + (config.iconCls || 'fa-id-card-o'),
 		handler: () => me.openEditWindow(authType),
 	    });
 	}

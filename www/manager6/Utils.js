@@ -750,6 +750,7 @@ Ext.define('PVE.Utils', {
 	    add: true,
 	    tfa: false,
 	    pwchange: false,
+	    iconCls: 'pmx-itype-icon-openid-logo',
 	},
 	pam: {
 	    name: 'Linux PAM',
