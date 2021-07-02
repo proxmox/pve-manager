@@ -162,10 +162,11 @@ Ext.define('PVE.window.LoginWindow', {
 	    var me = this;
 	    var view = me.getView();
 	    view.el.mask(gettext('Please wait...'), 'x-mask-loading');
-	    var params = { response: res };
 	    Proxmox.Utils.API2Request({
 		url: '/api2/extjs/access/tfa',
-		params: params,
+		params: {
+		    response: res,
+		},
 		method: 'POST',
 		timeout: 5000, // it'll delay both success & failure
 		success: function(resp, opts) {
@@ -213,7 +214,7 @@ Ext.define('PVE.window.LoginWindow', {
 	    },
 	   'button[reference=loginButton]': {
 		click: 'onLogon',
-            },
+	    },
 	    '#': {
 		show: function() {
 		    var me = this;
