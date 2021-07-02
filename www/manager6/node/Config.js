@@ -244,6 +244,7 @@ Ext.define('PVE.node.Config', {
 		    nodename: nodename,
 		});
 
+		if (false) { // eslint-disable-line no-constant-condition
 		me.items.push({
 		    xtype: 'proxmoxNodeAPTRepositories',
 		    title: gettext('Repositories'),
@@ -252,6 +253,7 @@ Ext.define('PVE.node.Config', {
 		    nodename: nodename,
 		    groups: ['apt'],
 		});
+		}
 	    }
 	}
 
