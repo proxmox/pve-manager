@@ -797,7 +797,7 @@ Ext.define('PVE.dc.BackupView', {
 	    sorters: 'vmid',
 	    proxy: {
 		type: 'proxmox',
-		url: 'api2/json/cluster/backupinfo/not_backed_up',
+		url: 'api2/json/cluster/backup-info/not-backed-up',
 	    },
 	});
 

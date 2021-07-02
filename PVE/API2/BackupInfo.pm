@@ -62,7 +62,7 @@ __PACKAGE__->register_method({
 
 __PACKAGE__->register_method({
     name => 'get_guests_not_in_backup',
-    path => 'not_backed_up',
+    path => 'not-backed-up',
     method => 'GET',
     protected => 1,
     description => "Shows all guests which are not covered by any backup job.",

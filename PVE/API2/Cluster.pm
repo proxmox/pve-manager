@@ -66,7 +66,7 @@ __PACKAGE__->register_method ({
 
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::BackupInfo",
-    path => 'backupinfo',
+    path => 'backup-info',
 });
 
 __PACKAGE__->register_method ({
@@ -131,7 +131,7 @@ __PACKAGE__->register_method ({
 	    { name => 'replication' },
 	    { name => 'tasks' },
 	    { name => 'backup' },
-	    { name => 'backupinfo' },
+	    { name => 'backup-info' },
 	    { name => 'ha' },
 	    { name => 'status' },
 	    { name => 'nextid' },
