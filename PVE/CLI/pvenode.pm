@@ -181,7 +181,10 @@ our $cmddef = {
 	    foreach my $task (@$data) {
 		if (!defined($task->{status})) {
 		    $task->{status} = 'UNKNOWN';
-		} elsif ($task->{status} ne 'OK' && $task->{status} ne 'RUNNING') {
+		# RUNNING is set by the API call and needs to be checked explicitly
+		} elsif (PVE::Tools::upid_status_is_error($task->{status}) &&
+		    $task->{status} ne 'RUNNING')
+		{
 		    $task->{status} = 'ERROR';
 		}
 	    }
