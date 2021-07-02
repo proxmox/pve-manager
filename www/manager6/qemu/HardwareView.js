@@ -484,9 +484,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	    },
 	    listeners: {
 		render: function(btn) {
-		    // hack: calculate an optimal button width on first display
-		    // to prevent the whole toolbar to move when we switch
-		    // between the "Remove" and "Detach" labels
+		    // hack: calculate the max button width on first display to prevent the whole
+		    // toolbar to move when we switch between the "Remove" and "Detach" labels
 		    var def = btn.getSize().width;
 
 		    btn.setText(btn.altText);
