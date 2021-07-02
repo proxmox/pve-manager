@@ -1,3 +1,20 @@
+pve-manager (6.4-10) pve; urgency=medium
+
+  * pve6to7: more fine-grained detection of misconfigured guest volumes
+
+  * pve6to7: skip user.cfg if it does not exist
+
+  * pve6to7: drop PASS for old Luminous -> Nautilus check
+
+  * api: cluster/backupinfo: rework index endpoint to actually return
+    sub-directories (endpoints)
+
+  * api: cluster: add backupinfo to subdirectories
+
+  * api: cluster/resources: add 'name' property to return schema
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 02 Jul 2021 11:55:49 +0200
+
 pve-manager (6.4-9) pve; urgency=medium
 
   * ui: TFA: use correct user-id value when creating TOTP QR code
