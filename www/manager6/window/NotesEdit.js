@@ -28,5 +28,9 @@ Ext.define('PVE.window.NotesEdit', {
 	height: '100%',
 	value: '',
 	hideLabel: true,
+	fieldStyle: {
+	    'white-space': 'pre-wrap',
+	    'font-family': 'monospace',
+	},
     },
 });
