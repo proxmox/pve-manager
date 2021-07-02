@@ -59,8 +59,8 @@ Ext.define('PVE.dc.UserView', {
 	    disabled: true,
 	    selModel: sm,
 	    enableFn: function(record) {
-		if (record.data.realmtype) {
-		    let type = record.data.realmtype;
+		let type = record.data['realm-type'];
+		if (type) {
 		    if (PVE.Utils.authSchema[type]) {
 			return !!PVE.Utils.authSchema[type].pwchange;
 		    }
@@ -82,8 +82,8 @@ Ext.define('PVE.dc.UserView', {
 	    disabled: true,
 	    selModel: sm,
 	    enableFn: function(record) {
-		if (record.data.realmtype) {
-		    let type = record.data.realmtype;
+		let type = record.data['realm-type'];
+		if (type) {
 		    if (PVE.Utils.authSchema[type]) {
 			return !!PVE.Utils.authSchema[type].tfa;
 		    }
