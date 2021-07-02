@@ -131,6 +131,7 @@ __PACKAGE__->register_method ({
 	    { name => 'replication' },
 	    { name => 'tasks' },
 	    { name => 'backup' },
+	    { name => 'backupinfo' },
 	    { name => 'ha' },
 	    { name => 'status' },
 	    { name => 'nextid' },
