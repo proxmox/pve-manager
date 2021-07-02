@@ -1,4 +1,4 @@
-package PVE::API2::BackupInfo;
+package PVE::API2::Cluster::BackupInfo;
 
 use strict;
 use warnings;
@@ -56,7 +56,7 @@ __PACKAGE__->register_method({
     },
     code => sub {
 	return [
-	   { subdir => 'not_backed_up' },
+	   { subdir => 'not-backed-up' },
 	];
     }});
 
