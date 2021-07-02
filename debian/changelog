@@ -1,3 +1,24 @@
+pve-manager (7.0-6) bullseye; urgency=medium
+
+  * pve6to7: sync checks with the ones from stable Proxmox VE 6.4 branch
+
+  * api: apt: add call for repository information, allow disabling and
+    enabling of repos, and adding repos from a pre-defined set
+
+  * api: cluster/backupinfo: rework API index endpoint to actually list
+    sub-directories
+
+  * implement OpenID (SSO) login
+
+  * ui: add add/edit window for OpenID based realms
+
+  * ui: realms: add icons to menu entries
+
+  * fix #1710: ui: storage: allow one to download a ISO or appliance URL
+    directly to a storage
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 03 Jul 2021 01:31:37 +0200
+
 pve-manager (7.0-5) bullseye; urgency=medium
 
   * api: tasks: add 'since', 'until' and 'statusfilter' filter for the task
