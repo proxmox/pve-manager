@@ -35,15 +35,14 @@ Ext.define('PVE.form.StorageSelector', {
     },
 
     reloadStorageList: function() {
-	var me = this;
+	let me = this;
 	if (!me.nodename) {
 	    return;
 	}
 
-	var params = {
+	let params = {
 	    format: 1,
 	};
-	var url = '/api2/json/nodes/' + me.nodename + '/storage';
 	if (me.storageContent) {
 	    params.content = me.storageContent;
 	}
@@ -53,7 +52,7 @@ Ext.define('PVE.form.StorageSelector', {
 	}
 	me.store.setProxy({
 	    type: 'proxmox',
-	    url: url,
+	    url: `/api2/json/nodes/${me.nodename}/storage`,
 	    extraParams: params,
 	});
 
