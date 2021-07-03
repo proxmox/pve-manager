@@ -745,7 +745,7 @@ Ext.define('PVE.Utils', {
 	    pwchange: true,
 	},
 	openid: {
-	    name: gettext('OpenID Server'),
+	    name: gettext('OpenID Connect Server'),
 	    ipanel: 'pveAuthOpenIDPanel',
 	    add: true,
 	    tfa: false,
