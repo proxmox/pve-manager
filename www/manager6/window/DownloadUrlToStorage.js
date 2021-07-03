@@ -25,20 +25,29 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 	url: '/nodes/{nodename}/storage/{storage}/download-url',
     },
 
-    resetValues: function() {
-	this.setValues({
+
+    viewModel: {
+	data: {
 	    size: '-',
 	    mimetype: '-',
-	});
+	    enableQuery: true,
+	},
     },
 
     controller: {
 	xclass: 'Ext.app.ViewController',
 
 	urlChange: function(field) {
-	    let view = this.getView();
-	    view.down('[name=check]').setDisabled(false);
-	    view.resetValues();
+	    this.resetMetaInfo();
+	    this.setQueryEnabled();
+	},
+	setQueryEnabled: function() {
+	    this.getViewModel().set('enableQuery', true);
+	},
+	resetMetaInfo: function() {
+	    let vm = this.getViewModel();
+	    vm.set('size', '-');
+	    vm.set('mimetype', '-');
 	},
 
 	urlCheck: function(field) {
@@ -47,8 +56,8 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 
 	    const queryParam = view.getValues();
 
-	    view.down('[name=check]').setDisabled(true);
-	    view.resetValues();
+	    me.getViewModel().set('enableQuery', false);
+	    me.resetMetaInfo();
 	    let urlField = view.down('[name=url]');
 
 	    Proxmox.Utils.API2Request({
@@ -63,6 +72,8 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 		    urlField.setValidation(res.result.message);
 		    urlField.validate();
 		    Ext.MessageBox.alert(gettext('Error'), res.htmlStatus);
+		    // re-enable so one can directly requery, e.g., if it was just a network hiccup
+		    me.setQueryEnabled();
 		},
 		success: function(res, opt) {
 		    urlField.setValidation();
@@ -116,6 +127,9 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 			    name: 'check',
 			    text: gettext('Query URL'),
 			    margin: '0 0 0 5',
+			    bind: {
+				disabled: '{!enableQuery}',
+			    },
 			    listeners: {
 				click: 'urlCheck',
 			    },
@@ -135,7 +149,9 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 		    xtype: 'displayfield',
 		    name: 'size',
 		    fieldLabel: gettext('File size'),
-		    value: '-',
+		    bind: {
+			value: '{size}',
+		    },
 		},
 	    ],
 	    column2: [
@@ -143,7 +159,9 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 		    xtype: 'displayfield',
 		    name: 'mimetype',
 		    fieldLabel: gettext('MIME type'),
-		    value: '-',
+		    bind: {
+			value: '{mimetype}',
+		    },
 		},
 	    ],
 	    advancedColumn1: [
