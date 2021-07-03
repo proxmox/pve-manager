@@ -194,7 +194,7 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 		    uncheckedValue: 0,
 		    checked: true,
 		    listeners: {
-			change: 'urlChange',
+			change: 'setQueryEnabled',
 		    },
 		},
 	    ],
