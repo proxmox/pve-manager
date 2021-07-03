@@ -323,6 +323,10 @@ Ext.define('PVE.StdWorkspace', {
 			    minWidth: 150,
 			    id: 'versioninfo',
 			    html: 'Virtual Environment',
+			    style: {
+				'font-size': '14px',
+				'line-height': '18px',
+			    },
 			},
 			{
 			    xtype: 'pveGlobalSearchField',
