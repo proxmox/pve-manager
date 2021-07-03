@@ -400,7 +400,7 @@ Ext.define('PVE.node.Config', {
 	me.items.push(
 	    {
 		title: gettext('Task History'),
-		iconCls: 'fa fa-list',
+		iconCls: 'fa fa-list-alt',
 		itemId: 'tasks',
 		nodename: nodename,
 		xtype: 'proxmoxNodeTasks',
