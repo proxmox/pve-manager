@@ -1,67 +1,8 @@
 Ext.define('PVE.panel.OpenIDInputPanel', {
     extend: 'PVE.panel.AuthBase',
     xtype: 'pveAuthOpenIDPanel',
+    mixins: ['Proxmox.Mixin.CBind'],
 
-    initComponent: function() {
-	let me = this;
-
-	if (me.type !== 'openid') {
-	    throw 'invalid type';
-	}
-
-	me.columnT = [
-	    {
-		xtype: 'textfield',
-		name: 'issuer-url',
-		fieldLabel: gettext('Issuer URL'),
-		allowBlank: false,
-	    },
-	];
-
-	me.column1 = [
-	    {
-		xtype: 'proxmoxtextfield',
-		fieldLabel: gettext('Client ID'),
-		name: 'client-id',
-		allowBlank: false,
-	    },
-	    {
-		xtype: 'proxmoxtextfield',
-		fieldLabel: gettext('Client Key'),
-		deleteEmpty: !me.isCreate,
-		name: 'client-key',
-	    },
-	];
-
-	me.column2 = [
-	    {
-		xtype: 'proxmoxcheckbox',
-		fieldLabel: gettext('Autocreate Users'),
-		name: 'autocreate',
-		value: 0,
-		deleteEmpty: !me.isCreate,
-	    },
-	    {
-		xtype: 'pmxDisplayEditField',
-		editConfig: {
-		    xtype: 'proxmoxKVComboBox',
-		},
-		editable: me.isCreate,
-		name: 'username-claim',
-		value: me.isCreate ? '__default__' : Proxmox.Utils.defaultText,
-		deleteEmpty: !me.isCreate,
-		fieldLabel: gettext('Username Claim'),
-		comboItems: [
-		    ['__default__', Proxmox.Utils.defaultText],
-		    ['subject', 'subject'],
-		    ['username', 'username'],
-		    ['email', 'email'],
-		],
-	    },
-	];
-
-	me.callParent();
-    },
     onGetValues: function(values) {
 	let me = this;
 
@@ -73,6 +14,73 @@ Ext.define('PVE.panel.OpenIDInputPanel', {
 	}
 
 	return me.callParent([values]);
+    },
+
+    columnT: [
+	{
+	    xtype: 'textfield',
+	    name: 'issuer-url',
+	    fieldLabel: gettext('Issuer URL'),
+	    allowBlank: false,
+	},
+    ],
+
+    column1: [
+	{
+	    xtype: 'proxmoxtextfield',
+	    fieldLabel: gettext('Client ID'),
+	    name: 'client-id',
+	    allowBlank: false,
+	},
+	{
+	    xtype: 'proxmoxtextfield',
+	    fieldLabel: gettext('Client Key'),
+	    cbind: {
+		deleteEmpty: '{!isCreate}',
+	    },
+	    name: 'client-key',
+	},
+    ],
+
+    column2: [
+	{
+	    xtype: 'proxmoxcheckbox',
+	    fieldLabel: gettext('Autocreate Users'),
+	    name: 'autocreate',
+	    value: 0,
+	    cbind: {
+		deleteEmpty: '{!isCreate}',
+	    },
+	},
+	{
+	    xtype: 'pmxDisplayEditField',
+	    name: 'username-claim',
+	    editConfig: {
+		xtype: 'proxmoxKVComboBox',
+	    },
+	    cbind: {
+		value: get => get('isCreate') ? '__default__' : Proxmox.Utils.defaultText,
+		deleteEmpty: '{!isCreate}',
+		editable: '{isCreate}',
+	    },
+	    fieldLabel: gettext('Username Claim'),
+	    comboItems: [
+		['__default__', Proxmox.Utils.defaultText],
+		['subject', 'subject'],
+		['username', 'username'],
+		['email', 'email'],
+	    ],
+	},
+    ],
+
+    initComponent: function() {
+	let me = this;
+
+	if (me.type !== 'openid') {
+	    throw 'invalid type';
+	}
+
+	me.callParent();
     },
 });
 
