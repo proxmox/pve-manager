@@ -108,7 +108,7 @@ Ext.define('PVE.node.StatusView', {
 	    renderer: function(record) {
 		return Proxmox.Utils.render_size(record.shared);
 	    },
-	    padding: '0 15 10 15',
+	    padding: '0 10 10 10',
 	},
 	{
 	    iconCls: 'fa fa-fw fa-hdd-o',
