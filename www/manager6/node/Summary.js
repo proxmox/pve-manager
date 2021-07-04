@@ -92,24 +92,17 @@ Ext.define('PVE.node.Summary', {
 	Proxmox.Utils.API2Request({
 	    url: `/nodes/${nodename}/apt/repositories`,
 	    method: 'GET',
-	    failure: function(response, opts) {
-		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-	    },
-	    success: function(response, opts) {
-		nodeStatus.setRepositoryInfo(response.result.data['standard-repos']);
-	    },
+	    failure: response => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+	    success: response => nodeStatus.setRepositoryInfo(response.result.data['standard-repos']),
 	});
 
 	Proxmox.Utils.API2Request({
 	    url: `/nodes/${nodename}/subscription`,
 	    method: 'GET',
-	    failure: function(response, opts) {
-		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-	    },
+	    failure: response => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
 	    success: function(response, opts) {
 		const res = response.result;
-		const subscription = !(res === null || res === undefined ||
-		    !res || res.data.status.toLowerCase() !== 'active');
+		const subscription = res?.data?.status.toLowerCase() === 'active';
 		nodeStatus.setSubscriptionStatus(subscription);
 	    },
 	});
