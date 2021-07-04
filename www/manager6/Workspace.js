@@ -305,6 +305,8 @@ Ext.define('PVE.StdWorkspace', {
 	    items: [
 		{
 		    region: 'north',
+		    title: gettext('Header'), // for ARIA
+		    header: false, // avoid rendering the title
 		    layout: {
 			type: 'hbox',
 			align: 'middle',
