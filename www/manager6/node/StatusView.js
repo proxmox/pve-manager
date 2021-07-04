@@ -47,7 +47,7 @@ Ext.define('PVE.node.StatusView', {
     },
 
     height: 300,
-    bodyPadding: '20 15 20 15',
+    bodyPadding: '15 5 15 5',
 
     layout: {
 	type: 'table',
@@ -61,7 +61,7 @@ Ext.define('PVE.node.StatusView', {
 
     defaults: {
 	xtype: 'pmxInfoWidget',
-	padding: '0 15 5 15',
+	padding: '0 10 5 10',
     },
 
     items: [
