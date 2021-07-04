@@ -11,56 +11,37 @@ Ext.define('PVE.node.StatusView', {
 	},
 	formulas: {
 	    repoStatus: function(get) {
-		if (get('subscriptionActive') === '' ||
-		    get('enterpriseRepo') === '') {
+		if (get('subscriptionActive') === '' || get('enterpriseRepo') === '') {
 		    return '';
 		}
 
 		if (!get('subscriptionActive') && get('enterpriseRepo')) {
 		    return 'no-sub';
-		}
-
-		if (get('noSubscriptionRepo') || get('testRepo')) {
+		} else if (get('noSubscriptionRepo') || get('testRepo')) {
 		    return 'non-production';
-		}
-
-		if (!get('enterpriseRepo') || !get('noSubscriptionRepo') || !get('testRepo')) {
+		} else if (!get('enterpriseRepo') || !get('noSubscriptionRepo') || !get('testRepo')) {
 		    return 'no-repo';
 		}
-
 		return 'ok';
 	    },
 	    repoStatusMessage: function(get) {
 		const status = get('repoStatus');
 
+		let fmt = (txt, cls) => `<i class="fa fa-fw fa-${cls}"></i> ${txt}`;
+
 		if (status === 'ok') {
-		    return gettext('Enterprise repository and subscription active');
+		    return fmt(gettext('Enterprise repository enabled'), 'check good') + ', ' +
+			    fmt(gettext('Active subscription'), 'check good');
 		} else if (status === 'no-sub') {
-		    return gettext('Enterprise repository enabled, but no active subscription');
+		    return fmt(gettext('Enterprise repository enabled'), 'check good') + ', ' +
+			    fmt(gettext('No active subscription'), 'exclamation-circle warning');
 		} else if (status === 'non-production') {
-		    return gettext('No-subscription or test repository in use');
+		    return fmt(gettext('No production-ready repository used'), 'exclamation-circle warning');
 		} else if (status === 'no-repo') {
-		    return gettext('No PVE repository is enabled!');
+		    return fmt(gettext('No Proxmox VE repository enabled!'), 'exclamation-circle critical');
 		}
 
 		return Proxmox.Utils.unknownText;
-	    },
-	    repoStatusIconCls: function(get) {
-		const status = get('repoStatus');
-
-		let iconCls = (cls) => `fa fa-fw ${cls}`;
-
-		if (status === 'ok') {
-		    return iconCls('fa-check good');
-		} else if (status === 'no-sub') {
-		    return iconCls('fa-exclamation-triangle critical');
-		} else if (status === 'non-production') {
-		    return iconCls('fa-exclamation-triangle warning');
-		} else if (status === 'no-repo') {
-		    return iconCls('fa-exclamation-triangle critical');
-		}
-
-		return iconCls('fa-question-circle-o');
 	    },
 	},
     },
@@ -180,14 +161,13 @@ Ext.define('PVE.node.StatusView', {
 	    itemId: 'repositoryStatus',
 	    colspan: 2,
 	    printBar: false,
-	    title: gettext('Repository Configuration Status'),
+	    title: gettext('Repository Status'),
 	    // for bind
 	    setValue: function(value) {
 		let me = this;
 		me.updateValue(value);
 	    },
 	    bind: {
-		iconCls: '{repoStatusIconCls}',
 		value: '{repoStatusMessage}',
 	    },
 	},
