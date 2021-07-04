@@ -113,7 +113,7 @@ Ext.define('PVE.node.StatusView', {
 	{
 	    iconCls: 'fa fa-fw fa-hdd-o',
 	    itemId: 'rootfs',
-	    title: gettext('HD space') + '(root)',
+	    title: '/ ' + gettext('HD space'),
 	    valueField: 'rootfs',
 	    maxField: 'rootfs',
 	    renderer: Proxmox.Utils.render_node_size_usage,
@@ -162,10 +162,8 @@ Ext.define('PVE.node.StatusView', {
 	    colspan: 2,
 	    printBar: false,
 	    title: gettext('Repository Status'),
-	    // for bind
-	    setValue: function(value) {
-		let me = this;
-		me.updateValue(value);
+	    setValue: function(value) { // for binding below
+		this.updateValue(value);
 	    },
 	    bind: {
 		value: '{repoStatusMessage}',
