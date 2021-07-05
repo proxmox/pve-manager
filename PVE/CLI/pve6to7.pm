@@ -903,7 +903,7 @@ sub check_containers_cgroup_compat {
     }
 
     my $supports_cgroupv2 = sub {
-	my ($conf, $rootdir) = @_;
+	my ($conf, $rootdir, $ctid) = @_;
 
 	my $get_systemd_version = sub {
 	    my ($self) = @_;
@@ -939,8 +939,10 @@ sub check_containers_cgroup_compat {
 	};
 
 	my $ostype = $conf->{ostype};
-	if ($ostype eq 'devuan' || $ostype eq 'alpine') {
-	    return 1;
+	if (!defined($ostype)) {
+	    log_warn("Found CT ($ctid) without 'ostype' set!");
+	} elsif ($ostype eq 'devuan' || $ostype eq 'alpine') {
+	    return 1; # no systemd, no cgroup problems
 	}
 
 	my $lxc_setup = PVE::LXC::Setup->new($conf, $rootdir);
@@ -979,7 +981,7 @@ sub check_containers_cgroup_compat {
 	my $rootdir = "/proc/$pid/root";
 	my $conf = PVE::LXC::Config->load_config($ctid);
 
-	my $ret = eval { $supports_cgroupv2->($conf, $rootdir) };
+	my $ret = eval { $supports_cgroupv2->($conf, $rootdir, $ctid) };
 	if (my $err = $@) {
 	    log_warn("Failed to get cgroup support status for CT $ctid - $err");
 	    next;
@@ -997,7 +999,7 @@ sub check_containers_cgroup_compat {
 	eval {
 	    $conf = PVE::LXC::Config->load_config($ctid);
 	    $rootdir = PVE::LXC::mount_all($ctid, $storage_cfg, $conf);
-	    $ret = $supports_cgroupv2->($conf, $rootdir);
+	    $ret = $supports_cgroupv2->($conf, $rootdir, $ctid);
 	};
 	if (my $err = $@) {
 	    log_warn("Failed to load config and mount CT $ctid - $err");
