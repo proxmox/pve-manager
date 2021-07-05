@@ -1,3 +1,12 @@
+pve-manager (6.4-11) pve; urgency=medium
+
+  * pve6to7: check best-effort for (systemd based) containers not supporting
+    pure cgroup v2
+
+  * ve6to7: make cert check only report on errors
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 05 Jul 2021 17:44:45 +0200
+
 pve-manager (6.4-10) pve; urgency=medium
 
   * pve6to7: more fine-grained detection of misconfigured guest volumes
