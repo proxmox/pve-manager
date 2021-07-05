@@ -28,6 +28,7 @@ Ext.define('PVE.window.NotesEdit', {
 	height: '100%',
 	value: '',
 	hideLabel: true,
+	emptyText: gettext('You can use Markdown for rich text formatting.'),
 	fieldStyle: {
 	    'white-space': 'pre-wrap',
 	    'font-family': 'monospace',
