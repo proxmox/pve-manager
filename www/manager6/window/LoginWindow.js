@@ -52,7 +52,7 @@ Ext.define('PVE.window.LoginWindow', {
 			form.unmask();
 			Ext.MessageBox.alert(
 			    gettext('Error'),
-			    gettext('OpenId redirect failed. Please try again<br>Error: ' + resp.htmlStatus),
+			    gettext('OpenID redirect failed.') + `<br>${resp.htmlStatus}`,
 			);
 		    },
 		});
