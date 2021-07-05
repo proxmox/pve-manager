@@ -118,8 +118,21 @@ Ext.define('PVE.dc.Guests', {
 
     updateValues: function(qemu, lxc, error) {
 	let me = this;
-	me.getComponent('qemu').update(qemu);
-	me.getComponent('lxc').update(lxc);
-	me.getComponent('error').update({ num: error });
+
+	let lazyUpdate = (query, newData) => {
+	    let el = me.getComponent(query);
+            let currentData = el.data;
+
+	    let keys = Object.keys(newData);
+	    if (keys.length === Object.keys(currentData).length) {
+		if (keys.every(k => newData[k] === currentData[k])) {
+		    return; // all stayed the same here, return early to avoid bogus regeneration
+		}
+	    }
+	    el.update(newData);
+	};
+	lazyUpdate('qemu', qemu);
+	lazyUpdate('lxc', lxc);
+	lazyUpdate('error', { num: error });
     },
 });
