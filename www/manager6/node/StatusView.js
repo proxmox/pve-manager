@@ -27,16 +27,19 @@ Ext.define('PVE.node.StatusView', {
 	    repoStatusMessage: function(get) {
 		const status = get('repoStatus');
 
-		let fmt = (txt, cls) => `<i class="fa fa-fw fa-${cls}"></i> ${txt}`;
+		let fmt = (txt, cls) => `<i class="fa fa-fw fa-lg fa-${cls}"></i>${txt}`;
+
+		let getUpdates = Ext.String.format(gettext('You get updates for {0}'), 'Proxmox VE');
 
 		if (status === 'ok') {
-		    return fmt(gettext('Enterprise repository enabled'), 'check good') + ', ' +
-			    fmt(gettext('Valid subscription'), 'check good');
+		    return fmt(getUpdates, 'check-circle good') + ' ' +
+		        fmt(gettext('Production-ready Enterprise repository enabled'), 'check-circle good');
 		} else if (status === 'no-sub') {
-		    return fmt(gettext('Enterprise repository enabled'), 'check good') + ', ' +
-			    fmt(gettext('No valid subscription'), 'exclamation-circle warning');
+		    return fmt(gettext('Production-ready Enterprise repository enabled'), 'check-circle good') + ' ' +
+			    fmt(gettext('Enterprise repository needs valid subscription'), 'exclamation-circle warning');
 		} else if (status === 'non-production') {
-		    return fmt(gettext('No production-ready repository used'), 'exclamation-circle warning');
+		    return fmt(getUpdates, 'check-circle good') + ' ' +
+			   fmt(gettext('Not a production-ready repository!'), 'exclamation-circle warning');
 		} else if (status === 'no-repo') {
 		    return fmt(gettext('No Proxmox VE repository enabled!'), 'exclamation-circle critical');
 		}
