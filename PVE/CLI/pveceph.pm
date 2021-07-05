@@ -173,6 +173,7 @@ __PACKAGE__->register_method ({
 	    ceph-mds
 	    ceph-fuse
 	    gdisk
+	    nvme-cli
 	);
 
 	print "start installation\n";
