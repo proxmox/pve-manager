@@ -1,3 +1,26 @@
+pve-manager (7.0-8) bullseye; urgency=medium
+
+  * ui: storage: download from URL: do not clear meta info on cert-validity
+    change
+
+  * utils: enable ARIA again
+
+  * ui: node summary: show repository configuration status
+
+  * ui: node/status view: reduce quite generous paddings
+
+  * ui: notes: add empty text with a hint that markdown is supported and set
+    online-help button to our basic Markdown primer in the docs
+
+  * pveceph: also install nvme-cli
+
+  * ui: dc/guests: change layouting to a flexbox, fixing render issues in
+    Firefox on somes systems
+
+  * pve6to7: sync new checks from stable-6 branch
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 05 Jul 2021 17:49:48 +0200
+
 pve-manager (7.0-7) bullseye; urgency=medium
 
   * ui: enable APT repository status view and management
