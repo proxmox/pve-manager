@@ -951,9 +951,9 @@ sub check_containers_cgroup_compat {
 
     my $log_problem = sub {
 	my ($ctid) = @_;
-	log_warn("Found at least one CT ($ctid) which does not support running in a unified " .
-	    "cgroup v2 layout - either upgrade it or set systemd.unified_cgroup_hierarchy=0 " .
-	    "in the kernel cmdline - skipping further checks"
+	log_warn("Found at least one CT ($ctid) which does not support running in a unified cgroup v2" .
+	    " layout.\n    Either upgrade the Container distro or set systemd.unified_cgroup_hierarchy=0 " .
+	    "in the Proxmox VE hosts' kernel cmdline! Skipping further CT compat checks."
 	);
     };
 
