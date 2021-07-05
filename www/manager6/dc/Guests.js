@@ -21,7 +21,6 @@ Ext.define('PVE.dc.Guests', {
 	padding: '0 50 0 50',
 	style: {
 	    'text-align': 'center',
-	    'line-height': '1.2',
 	},
     },
     items: [{
