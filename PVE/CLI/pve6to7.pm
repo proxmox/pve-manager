@@ -23,6 +23,9 @@ use PVE::Tools qw(run_command split_list);
 use PVE::QemuConfig;
 use PVE::QemuServer;
 use PVE::VZDump::Common;
+use PVE::LXC;
+use PVE::LXC::Config;
+use PVE::LXC::Setup;
 
 use Term::ANSIColor;
 
@@ -890,6 +893,126 @@ sub check_storage_content {
 	log_pass("no problems found");
     }
 }
+
+sub check_containers_cgroup_compat {
+
+    my $kernel_cli = PVE::Tools::file_get_contents('/proc/cmdline');
+    if ($kernel_cli =~ /systemd.unified_cgroup_hierarchy=0/){
+	log_skip("System explicitly configured for legacy hybrid cgroup hierarchy.");
+	return;
+    }
+
+    my $supports_cgroupv2 = sub {
+	my ($conf, $rootdir) = @_;
+
+	my $get_systemd_version = sub {
+	    my ($self) = @_;
+
+	    my $sd_lib_dir = -d "/lib/systemd" ? "/lib/systemd" : "/usr/lib/systemd";
+	    my $libsd = PVE::Tools::dir_glob_regex($sd_lib_dir, "libsystemd-shared-.+\.so");
+	    if (defined($libsd) && $libsd =~ /libsystemd-shared-(\d+)\.so/) {
+		return $1;
+	    }
+
+	    return undef;
+	};
+
+	my  $unified_cgroupv2_support = sub {
+	    my ($self) = @_;
+
+	    # https://www.freedesktop.org/software/systemd/man/systemd.html
+	    # systemd is installed as symlink to /sbin/init
+	    my $systemd = CORE::readlink('/sbin/init');
+
+	    # assume non-systemd init will run with unified cgroupv2
+	    if (!defined($systemd) || $systemd !~ m@/systemd$@) {
+		return 1;
+	    }
+
+	    # systemd version 232 (e.g. debian stretch) supports the unified hierarchy
+	    my $sdver = $get_systemd_version->();
+	    if (!defined($sdver) || $sdver < 232) {
+		return 0;
+	    }
+
+	    return 1;
+	};
+
+	my $ostype = $conf->{ostype};
+	if ($ostype eq 'devuan' || $ostype eq 'alpine') {
+	    return 1;
+	}
+
+	my $lxc_setup = PVE::LXC::Setup->new($conf, $rootdir);
+	return $lxc_setup->protected_call($unified_cgroupv2_support);
+    };
+
+    my $log_problem = sub {
+	my ($ctid) = @_;
+	log_warn("Found at least one CT ($ctid) which does not support running in a unified " .
+	    "cgroup v2 layout - either upgrade it or set systemd.unified_cgroup_hierarchy=0 " .
+	    "in the kernel cmdline - skipping further checks"
+	);
+    };
+
+    my $cts = eval { PVE::API2::LXC->vmlist({ node => $nodename }) };
+    if ($@) {
+	log_warn("Failed to retrieve information about this node's CTs - $@");
+	return;
+    }
+
+    if (!defined($cts) || !scalar(@$cts)) {
+	log_skip("No containers on node detected.");
+	return;
+    }
+
+    my @running_cts = grep { $_->{status} eq 'running' } @$cts;
+    my @offline_cts = grep { $_->{status} ne 'running' } @$cts;
+
+    for my $ct (@running_cts) {
+	my $ctid = $ct->{vmid};
+	my $pid = eval { PVE::LXC::find_lxc_pid($ctid) };
+	if (my $err = $@) {
+	    log_warn("Failed to get PID for running CT $ctid - $err");
+	    next;
+	}
+	my $rootdir = "/proc/$pid/root";
+	my $conf = PVE::LXC::Config->load_config($ctid);
+
+	my $ret = eval { $supports_cgroupv2->($conf, $rootdir) };
+	if (my $err = $@) {
+	    log_warn("Failed to get cgroup support status for CT $ctid - $err");
+	    next;
+	}
+	if (!$ret) {
+	    $log_problem->($ctid);
+	    return;
+	}
+    }
+
+    my $storage_cfg = PVE::Storage::config();
+    for my $ct (@offline_cts) {
+	my $ctid = $ct->{vmid};
+	my ($conf, $rootdir, $ret);
+	eval {
+	    $conf = PVE::LXC::Config->load_config($ctid);
+	    $rootdir = PVE::LXC::mount_all($ctid, $storage_cfg, $conf);
+	    $ret = $supports_cgroupv2->($conf, $rootdir);
+	};
+	if (my $err = $@) {
+	    log_warn("Failed to load config and mount CT $ctid - $err");
+	    eval { PVE::LXC::umount_all($ctid, $storage_cfg, $conf) };
+	    next;
+	}
+	if (!$ret) {
+	    $log_problem->($ctid);
+	    eval { PVE::LXC::umount_all($ctid, $storage_cfg, $conf) };
+	    last;
+	}
+
+	eval { PVE::LXC::umount_all($ctid, $storage_cfg, $conf) };
+    }
+};
 
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
