@@ -1142,7 +1142,7 @@ __PACKAGE__->register_method ({
 	if ($param->{full}) {
 	    check_containers_cgroup_compat();
 	} else {
-	    log_skip("Expensive checks not performed without 'full' parameter");
+	    log_skip("NOTE: Expensive checks, like CT cgroupv2 compat, not performed without '--full' parameter");
 	}
 
 	print_header("SUMMARY");
