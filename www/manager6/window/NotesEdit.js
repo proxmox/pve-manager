@@ -2,6 +2,7 @@ Ext.define('PVE.window.NotesEdit', {
     extend: 'Proxmox.window.Edit',
 
     title: gettext('Notes'),
+    onlineHelp: 'markdown_basics',
 
     width: 800,
     height: '600px',
