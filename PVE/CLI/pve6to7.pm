@@ -1119,6 +1119,12 @@ __PACKAGE__->register_method ({
     parameters => {
 	additionalProperties => 0,
 	properties => {
+	    full => {
+		description => 'perform additional, expensive checks.',
+		type => 'boolean',
+		optional => 1,
+		default => 0,
+	    },
 	},
     },
     returns => { type => 'null' },
@@ -1130,6 +1136,12 @@ __PACKAGE__->register_method ({
 	check_ceph();
 	check_storage_health();
 	check_misc();
+
+	if ($param->{full}) {
+	    check_containers_cgroup_compat();
+	} else {
+	    log_skip("Expensive checks not performed without 'full' parameter");
+	}
 
 	print_header("SUMMARY");
 
@@ -1152,8 +1164,5 @@ __PACKAGE__->register_method ({
     }});
 
 our $cmddef = [ __PACKAGE__, 'checklist', [], {}];
-
-# for now drop all unknown params and just check
-@ARGV = ();
 
 1;
