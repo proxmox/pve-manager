@@ -207,7 +207,7 @@ sub check_storage_health {
 
     my $info = PVE::Storage::storage_info($cfg);
 
-    foreach my $storeid (keys %$info) {
+    foreach my $storeid (sort keys %$info) {
 	my $d = $info->{$storeid};
 	if ($d->{enabled}) {
 	    if ($d->{type} eq 'sheepdog') {
@@ -725,7 +725,7 @@ sub check_storage_content {
     my $potentially_affected = {};
     my $referenced_volids = {};
 
-    for my $storeid (keys $storage_cfg->{ids}->%*) {
+    for my $storeid (sort keys $storage_cfg->{ids}->%*) {
 	my $scfg = $storage_cfg->{ids}->{$storeid};
 
 	next if !PVE::Storage::storage_check_enabled($storage_cfg, $storeid, undef, 1);
@@ -968,8 +968,8 @@ sub check_containers_cgroup_compat {
 	return;
     }
 
-    my @running_cts = grep { $_->{status} eq 'running' } @$cts;
-    my @offline_cts = grep { $_->{status} ne 'running' } @$cts;
+    my @running_cts = sort { $a <=> $b } grep { $_->{status} eq 'running' } @$cts;
+    my @offline_cts = sort { $a <=> $b } grep { $_->{status} ne 'running' } @$cts;
 
     for my $ct (@running_cts) {
 	my $ctid = $ct->{vmid};
