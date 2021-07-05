@@ -31,10 +31,10 @@ Ext.define('PVE.node.StatusView', {
 
 		if (status === 'ok') {
 		    return fmt(gettext('Enterprise repository enabled'), 'check good') + ', ' +
-			    fmt(gettext('Active subscription'), 'check good');
+			    fmt(gettext('Valid subscription'), 'check good');
 		} else if (status === 'no-sub') {
 		    return fmt(gettext('Enterprise repository enabled'), 'check good') + ', ' +
-			    fmt(gettext('No active subscription'), 'exclamation-circle warning');
+			    fmt(gettext('No valid subscription'), 'exclamation-circle warning');
 		} else if (status === 'non-production') {
 		    return fmt(gettext('No production-ready repository used'), 'exclamation-circle warning');
 		} else if (status === 'no-repo') {
