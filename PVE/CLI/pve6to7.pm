@@ -946,7 +946,6 @@ sub check_misc {
 	}
     }
 
-    log_info("Check node certificate's RSA key size");
     my $certs = PVE::API2::Certificates->info({ node => $nodename });
     my $certs_check = {
 	'rsaEncryption' => {
@@ -959,25 +958,33 @@ sub check_misc {
 	},
     };
 
+    my $log_cert_heading_called;
+    my $log_cert_heading_once = sub {
+	return if $log_cert_heading_called;
+	log_info("Check node certificate's RSA key size");
+	$log_cert_heading_called = 1;
+    };
+
     my $certs_check_failed = 0;
     foreach my $cert (@$certs) {
 	my ($type, $size, $fn) = $cert->@{qw(public-key-type public-key-bits filename)};
 
 	if (!defined($type) || !defined($size)) {
+	    $log_cert_heading_once->();
 	    log_warn("'$fn': cannot check certificate, failed to get it's type or size!");
 	}
 
 	my $check = $certs_check->{$type};
 	if (!defined($check)) {
+	    $log_cert_heading_once->();
 	    log_warn("'$fn': certificate's public key type '$type' unknown, check Debian Busters release notes");
 	    next;
 	}
 
 	if ($size < $check->{minsize}) {
+	    $log_cert_heading_once->();
 	    log_fail("'$fn', certificate's $check->{name} public key size is less than 2048 bit");
 	    $certs_check_failed = 1;
-	} else {
-	    log_pass("Certificate '$fn' passed Debian Busters security level for TLS connections ($size >= 2048)");
 	}
     }
 
