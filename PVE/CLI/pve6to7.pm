@@ -1015,6 +1015,76 @@ sub check_containers_cgroup_compat {
     }
 };
 
+sub check_security_repo {
+    log_info("Checking if the suite for the Debian security repository is correct..");
+
+    my $found = 0;
+
+    my $dir = '/etc/apt/sources.list.d';
+    my $in_dir = 0;
+
+    my $check_file = sub {
+	my ($file) = @_;
+
+	$file = "${dir}/${file}" if $in_dir;
+
+	my $raw = eval { PVE::Tools::file_get_contents($file) };
+	return if !defined($raw);
+	my @lines = split(/\n/, $raw);
+
+	my $number = 0;
+	for my $line (@lines) {
+	    $number++;
+
+	    next if length($line) == 0; # split would result in undef then...
+
+	    ($line) = split(/#/, $line);
+
+	    next if $line !~ m/^deb/; # is case sensitive
+
+	    my $suite;
+
+	    # catch any of
+	    # https://deb.debian.org/debian-security
+	    # http://security.debian.org/debian-security
+	    # http://security.debian.org/
+	    if ($line =~ m|https?://deb\.debian\.org/debian-security/?\s+(\S*)|i) {
+		$suite = $1;
+	    } elsif ($line =~ m|https?://security\.debian\.org(?:.*?)\s+(\S*)|i) {
+		$suite = $1;
+	    } else {
+		next;
+	    }
+
+	    $found = 1;
+
+	    my $where = "in ${file}:${number}";
+
+	    if ($suite eq 'buster/updates') {
+		log_info("Make sure to change the suite of the Debian security repository " .
+		    "from 'buster/updates' to 'bullseye-security' - $where");
+	    } elsif ($suite eq 'bullseye-security') {
+		log_pass("already using 'bullseye-security'");
+	    } else {
+		log_fail("The new suite of the Debian security repository should be " .
+		    "'bullseye-security' - $where");
+	    }
+	}
+    };
+
+    $check_file->("/etc/apt/sources.list");
+
+    $in_dir = 1;
+
+    PVE::Tools::dir_glob_foreach($dir, '^.*\.list$', $check_file);
+
+    if (!$found) {
+	# only warn, it might be defined in a .sources file or in a way not catched above
+	log_warn("No Debian security repository detected in /etc/apt/sources.list and " .
+	    "/etc/apt/sources.list.d/*.list");
+    }
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -1117,6 +1187,7 @@ sub check_misc {
     check_custom_pool_roles();
     check_node_and_guest_configurations();
     check_storage_content();
+    check_security_repo();
 }
 
 __PACKAGE__->register_method ({
