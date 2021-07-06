@@ -463,7 +463,7 @@ sub check_ceph {
 	    log_warn("'noout' flag set, Ceph cluster upgrade seems finished.");
 	}
     } elsif ($noout_wanted) {
-	log_warn("'noout' flag not set - recommended to prevent rebalancing during upgrades.");
+	log_warn("'noout' flag not set - recommended to prevent rebalancing during cluster-wide upgrades.");
     }
 
     log_info("checking Ceph config..");
