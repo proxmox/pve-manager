@@ -1,3 +1,14 @@
+pve-manager (6.4-12) buster; urgency=medium
+
+  * pve6to7: use new ceph flags API
+
+  * pve6to7: remove PASS noise for ceph checks that were relevant for luminous
+    to nautilus
+
+  * pve6to7: enable noout-warning before upgrade
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 06 Jul 2021 15:51:01 +0200
+
 pve-manager (6.4-11) pve; urgency=medium
 
   * pve6to7: check best-effort for (systemd based) containers not supporting
