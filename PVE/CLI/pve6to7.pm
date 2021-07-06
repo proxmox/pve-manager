@@ -450,9 +450,7 @@ sub check_ceph {
 	    log_warn("unable to determine overall Ceph daemon versions!");
 	} elsif (keys %$overall_versions == 1) {
 	    log_pass("single running overall version detected for all Ceph daemon types.");
-	    if ((keys %$overall_versions)[0] =~ /^ceph version 15\./) {
-		$noout_wanted = 0;
-	    }
+	    $noout_wanted = 0; # off post-upgrade, on pre-upgrade
 	} else {
 	    log_warn("overall version mismatch detected, check 'ceph versions' output for details!");
 	}
