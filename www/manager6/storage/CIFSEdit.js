@@ -120,6 +120,19 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 
     onlineHelp: 'storage_cifs',
 
+    onGetValues: function(values) {
+	let me = this;
+
+	if (values.password?.length === 0) {
+	    delete values.password;
+	}
+	if (values.username?.length === 0) {
+	    delete values.username;
+	}
+
+	return me.callParent([values]);
+    },
+
     initComponent: function() {
 	var me = this;
 
