@@ -22,7 +22,7 @@ Build-Depends: debhelper (>= 12~),
                pve-cluster,
                pve-container,
                pve-doc-generator (>= 7.0-4),
-               pve-eslint,
+               pve-eslint (>= 7.28.0-1),
                qemu-server (>= 6.0-15),
                unzip,
 Maintainer: Proxmox Support Team <support@proxmox.com>
