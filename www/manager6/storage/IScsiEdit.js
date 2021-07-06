@@ -15,7 +15,7 @@ Ext.define('PVE.storage.IScsiScan', {
     },
 
     onTriggerClick: function() {
-	var me = this;
+	let me = this;
 
 	if (!me.queryCaching || me.lastQuery !== me.portal) {
 	    me.store.removeAll();
@@ -27,26 +27,24 @@ Ext.define('PVE.storage.IScsiScan', {
     },
 
     setPortal: function(portal) {
-	var me = this;
-
+	let me = this;
 	me.portal = portal;
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	if (!me.nodename) {
 	    me.nodename = 'localhost';
 	}
 
-	var store = Ext.create('Ext.data.Store', {
+	let store = Ext.create('Ext.data.Store', {
 	    fields: ['target', 'portal'],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/iscsi',
+		url: `/api2/json/nodes/${me.nodename}/scan/iscsi`,
 	    },
 	});
-
 	store.sort('target', 'ASC');
 
 	Ext.apply(me, {
