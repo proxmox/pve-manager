@@ -496,12 +496,8 @@ sub check_ceph {
 
     my $local_ceph_ver = PVE::Ceph::Tools::get_local_version(1);
     if (defined($local_ceph_ver)) {
-	if ($local_ceph_ver == 14) {
-	    my $ceph_volume_osds = PVE::Ceph::Tools::ceph_volume_list();
-	    my $scanned_osds = PVE::Tools::dir_glob_regex('/etc/ceph/osd', '^.*\.json$');
-	    if (-e '/var/lib/ceph/osd/' && !defined($scanned_osds) && !(keys %$ceph_volume_osds)) {
-		log_warn("local Ceph version is Nautilus, local OSDs detected, but no conversion from ceph-disk to ceph-volume done (yet).");
-	    }
+	if ($local_ceph_ver <= 14) {
+	    log_fail("local Ceph version too low, at least Octopus required..");
 	}
     } else {
 	log_fail("unable to determine local Ceph version.");
