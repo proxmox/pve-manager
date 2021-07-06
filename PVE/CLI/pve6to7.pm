@@ -8,6 +8,7 @@ use PVE::API2::Ceph;
 use PVE::API2::LXC;
 use PVE::API2::Qemu;
 use PVE::API2::Certificates;
+use PVE::API2::Cluster::Ceph;
 
 use PVE::AccessControl;
 use PVE::Ceph::Tools;
@@ -392,9 +393,12 @@ sub check_ceph {
 
     log_info("getting Ceph status/health information..");
     my $ceph_status = eval { PVE::API2::Ceph->status({ node => $nodename }); };
-    my $osd_flags = eval { PVE::API2::Ceph->get_flags({ node => $nodename }); };
+    my $noout = eval { PVE::API2::Cluster::Ceph->get_flag({ flag => "noout" }); };
+    if ($@) {
+	log_fail("failed to get 'noout' flag status - $@");
+    }
+
     my $noout_wanted = 1;
-    my $noout = $osd_flags && $osd_flags =~ m/noout/;
 
     if (!$ceph_status || !$ceph_status->{health}) {
 	log_fail("unable to determine Ceph status!");
@@ -411,17 +415,6 @@ sub check_ceph {
 		  "dashboard or 'ceph -s' to determine the specific issues and try to resolve them.");
 	}
     }
-
-    log_info("getting Ceph OSD flags..");
-    eval {
-	if (!$osd_flags) {
-	    log_fail("unable to get Ceph OSD flags!");
-	} else {
-	    if (!($osd_flags =~ m/recovery_deletes/ && $osd_flags =~ m/purged_snapdirs/)) {
-		log_fail("missing 'recovery_deletes' and/or 'purged_snapdirs' flag, scrub of all PGs required before upgrading to Nautilus!");
-	    }
-	}
-    };
 
     # TODO: check OSD min-required version, if to low it breaks stuff!
 
