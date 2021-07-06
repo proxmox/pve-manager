@@ -7,7 +7,7 @@ export REPOID=${REPOID_GENERATED}
 	dh $@
 
 override_dh_compress:
-	dh_compress -Xaplinfo.dat
+	dh_compress -Xaplinfo.dat -Xtrustedkeys.gpg
 
 override_dh_strip_nondeterminism:
 	dh_strip_nondeterminism -X.png
