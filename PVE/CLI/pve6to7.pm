@@ -476,8 +476,6 @@ sub check_ceph {
 	my $global_monhost = $global->{mon_host} // $global->{"mon host"} // $global->{"mon-host"};
 	if (!defined($global_monhost)) {
 	    log_warn("No 'mon_host' entry found in ceph config.\n  It's recommended to add mon_host with all monitor addresses (without ports) to the global section.");
-	} else {
-	    log_pass("Found 'mon_host' entry.");
 	}
 
 	my $ipv6 = $global->{ms_bind_ipv6} // $global->{"ms bind ipv6"} // $global->{"ms-bind-ipv6"};
@@ -485,17 +483,11 @@ sub check_ceph {
 	    my $ipv4 = $global->{ms_bind_ipv4} // $global->{"ms bind ipv4"} // $global->{"ms-bind-ipv4"};
 	    if ($ipv6 eq 'true' && (!defined($ipv4) || $ipv4 ne 'false')) {
 		log_warn("'ms_bind_ipv6' is enabled but 'ms_bind_ipv4' is not disabled.\n  Make sure to disable 'ms_bind_ipv4' for ipv6 only clusters, or add an ipv4 network to public/cluster network.");
-	    } else {
-		log_pass("'ms_bind_ipv6' is enabled and 'ms_bind_ipv4' disabled");
 	    }
-	} else {
-	    log_pass("'ms_bind_ipv6' not enabled");
 	}
 
 	if (defined($global->{keyring})) {
 	    log_warn("[global] config section contains 'keyring' option, which will prevent services from starting with Nautilus.\n Move 'keyring' option to [client] section instead.");
-	} else {
-	    log_pass("no 'keyring' option in [global] section found.");
 	}
 
     } else {
