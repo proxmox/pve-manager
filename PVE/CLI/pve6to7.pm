@@ -729,6 +729,7 @@ sub check_storage_content {
     for my $storeid (sort keys $storage_cfg->{ids}->%*) {
 	my $scfg = $storage_cfg->{ids}->{$storeid};
 
+	next if $scfg->{shared};
 	next if !PVE::Storage::storage_check_enabled($storage_cfg, $storeid, undef, 1);
 
 	my $valid_content = PVE::Storage::Plugin::valid_content_types($scfg->{type});
