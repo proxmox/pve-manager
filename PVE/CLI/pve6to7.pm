@@ -659,7 +659,7 @@ my sub check_max_length {
     log_warn($warning) if defined($raw) && length($raw) > $max_length; 
 }
 
-sub check_description_lengths {
+sub check_node_and_guest_configurations {
     log_info("Checking node and guest description/note legnth..");
 
     my @affected_nodes = grep {
@@ -674,23 +674,43 @@ sub check_description_lengths {
 	log_pass("All node config descriptions fit in the new limit of 64 KiB");
     }
 
-    my $affected_guests = [];
+    my $affected_guests_long_desc = [];
+    my $affected_cts_cgroup_keys = [];
 
     my $cts = PVE::LXC::config_list();
     for my $vmid (sort { $a <=> $b } keys %$cts) {
-	my $desc = PVE::LXC::Config->load_config($vmid)->{description};
-	push @$affected_guests, "CT $vmid" if defined($desc) && length($desc) > 8 * 1024;
+	my $conf = PVE::LXC::Config->load_config($vmid);
+
+	my $desc = $conf->{description};
+	push @$affected_guests_long_desc, "CT $vmid" if defined($desc) && length($desc) > 8 * 1024;
+
+	my $lxc_raw_conf = $conf->{lxc};
+	push @$affected_cts_cgroup_keys, "CT $vmid"  if (grep (@$_[0] =~ /^lxc\.cgroup\./, @$lxc_raw_conf));
     }
     my $vms = PVE::QemuServer::config_list();
     for my $vmid (sort { $a <=> $b } keys %$vms) {
 	my $desc = PVE::QemuConfig->load_config($vmid)->{description};
-	push @$affected_guests, "VM $vmid" if defined($desc) && length($desc) > 8 * 1024;
+	push @$affected_guests_long_desc, "VM $vmid" if defined($desc) && length($desc) > 8 * 1024;
     }
-    if (scalar($affected_guests->@*) > 0) {
+    if (scalar($affected_guests_long_desc->@*) > 0) {
 	log_warn("Guest config description of the following virtual-guests too long for new limit of 64 KiB:\n"
-	    ."    * " . join("\n    * ", $affected_guests->@*));
+	    ."    " . join(", ", $affected_guests_long_desc->@*));
     } else {
 	log_pass("All guest config descriptions fit in the new limit of 8 KiB");
+    }
+
+    log_info("Checking container configs for deprecated lxc.cgroup entries");
+
+    if (scalar($affected_cts_cgroup_keys->@*) > 0) {
+	if ($forced_legacy_cgroup) {
+	    log_pass("Found legacy 'lxc.cgroup' keys, but system explicitly configured for legacy hybrid cgroup hierarchy.");
+	}  else {
+	    log_warn("The following CTs have 'lxc.cgroup' keys configured, which will be ignored in the new default unified cgroupv2:\n"
+		."    " . join(", ", $affected_cts_cgroup_keys->@*) ."\n"
+		."    Often it can be enough to change to the new 'lxc.cgroup2' prefix after the upgrade to Proxmox VE 7.x");
+	}
+    } else {
+	log_pass("No legacy 'lxc.cgroup' keys found.");
     }
 }
 
@@ -995,30 +1015,6 @@ sub check_containers_cgroup_compat {
     }
 };
 
-sub check_lxc_conf_keys {
-    my $kernel_cli = PVE::Tools::file_get_contents('/proc/cmdline');
-    if ($kernel_cli =~ /systemd.unified_cgroup_hierarchy=0/){
-	log_skip("System explicitly configured for legacy hybrid cgroup hierarchy.");
-	return;
-    }
-
-    log_info("Checking container configs for deprecated lxc.cgroup entries");
-
-    my $affected_ct = [];
-    my $cts = PVE::LXC::config_list();
-    for my $vmid (sort { $a <=> $b } keys %$cts) {
-	my $lxc_raw_conf = PVE::LXC::Config->load_config($vmid)->{lxc};
-	push @$affected_ct, "CT $vmid"  if (grep (@$_[0] =~ /^lxc\.cgroup\./, @$lxc_raw_conf));
-    }
-    if (scalar($affected_ct->@*) > 0) {
-	log_warn("Config of the following containers contains 'lxc.cgroup' keys, which will be ".
-	    "ignored in a unified cgroupv2 system:\n" .
-	    join(", ", $affected_ct->@*));
-    } else {
-	log_pass("No legacy 'lxc.cgroup' keys found.");
-    }
-}
-
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -1119,9 +1115,8 @@ sub check_misc {
     check_backup_retention_settings();
     check_cifs_credential_location();
     check_custom_pool_roles();
-    check_description_lengths();
+    check_node_and_guest_configurations();
     check_storage_content();
-    check_lxc_conf_keys();
 }
 
 __PACKAGE__->register_method ({
