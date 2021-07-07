@@ -44,6 +44,8 @@ my $min_pve_major = 6;
 my $min_pve_minor = 4;
 my $min_pve_pkgrel = 1;
 
+my $forced_legacy_cgroup = 0;
+
 my $counters = {
     pass => 0,
     skip => 0,
@@ -874,9 +876,7 @@ sub check_storage_content {
 }
 
 sub check_containers_cgroup_compat {
-
-    my $kernel_cli = PVE::Tools::file_get_contents('/proc/cmdline');
-    if ($kernel_cli =~ /systemd.unified_cgroup_hierarchy=0/){
+    if ($forced_legacy_cgroup) {
 	log_skip("System explicitly configured for legacy hybrid cgroup hierarchy.");
 	return;
     }
@@ -1136,6 +1136,11 @@ __PACKAGE__->register_method ({
     returns => { type => 'null' },
     code => sub {
 	my ($param) = @_;
+
+	my $kernel_cli = PVE::Tools::file_get_contents('/proc/cmdline');
+	if ($kernel_cli =~ /systemd.unified_cgroup_hierarchy=0/){
+	    $forced_legacy_cgroup = 1;
+	}
 
 	check_pve_packages();
 	check_cluster_corosync();
