@@ -1,3 +1,18 @@
+pve-manager (7.0-9) bullseye; urgency=medium
+
+  * pve6to7: sync new checks and adaptions from stable-6 branch for consitency
+
+  * fix #3490: do not filter out 'Generic System Peripheral' PCI(e) devices by
+    default
+
+  * ui: ceph status: fix recovery percentage display
+
+  * ui: HA resources: fix toggling edit button on selection
+
+  * apl: add bullseye pub key and switch over to new index
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 07 Jul 2021 18:51:10 +0200
+
 pve-manager (7.0-8) bullseye; urgency=medium
 
   * ui: storage: download from URL: do not clear meta info on cert-validity
