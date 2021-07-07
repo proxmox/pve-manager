@@ -321,14 +321,14 @@ Ext.define('PVE.node.CephStatus', {
 	let unhealthy = degraded + unfound + misplaced;
 	// update recovery
 	if (pgmap.recovering_objects_per_sec !== undefined || unhealthy > 0) {
-	    let toRecover = pgmap.misplaced_total || pgmap.unfound_total || pgmap.degraded_total || 0;
-	    if (toRecover === 0) {
+	    let toRecoverObjects = pgmap.misplaced_total || pgmap.unfound_total || pgmap.degraded_total || 0;
+	    if (toRecoverObjects === 0) {
 		return; // FIXME: unexpected return and leaves things possible visible when it shouldn't?
 	    }
-	    let recovered = toRecover - unhealthy || 0;
+	    let recovered = toRecoverObjects - unhealthy || 0;
 	    let speed = pgmap.recovering_bytes_per_sec || 0;
 
-	    let recoveryRatio = recovered / total;
+	    let recoveryRatio = recovered / toRecoverObjects;
 	    let txt = `${(recoveryRatio * 100).toFixed(2)}%`;
 	    if (speed > 0) {
 		let obj_per_sec = speed / (4 * 1024 * 1024); // 4 MiB per Object
