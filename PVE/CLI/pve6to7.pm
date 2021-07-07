@@ -717,14 +717,10 @@ sub check_node_and_guest_configurations {
 sub check_storage_content {
     log_info("Checking storage content type configuration..");
 
-    my $found_referenced;
-    my $found_unreferenced;
+    my $found;
     my $pass = 1;
 
     my $storage_cfg = PVE::Storage::config();
-
-    my $potentially_affected = {};
-    my $referenced_volids = {};
 
     for my $storeid (sort keys $storage_cfg->{ids}->%*) {
 	my $scfg = $storage_cfg->{ids}->{$storeid};
@@ -740,7 +736,8 @@ sub check_storage_content {
 	    delete $scfg->{content}->{none}; # scan for guest images below
 	}
 
-	next if $scfg->{content}->{images} && $scfg->{content}->{rootdir};
+	next if $scfg->{content}->{images};
+	next if $scfg->{content}->{rootdir};
 
 	# Skip 'iscsi(direct)' (and foreign plugins with potentially similiar behavior) with 'none',
 	# because that means "use LUNs directly" and vdisk_list() in PVE 6.x still lists those.
@@ -761,12 +758,8 @@ sub check_storage_content {
 	}
 	my @volids = map { $_->{volid} } $res->{$storeid}->@*;
 
-	for my $volid (@volids) {
-	    $potentially_affected->{$volid} = 1;
-	}
-
 	my $number = scalar(@volids);
-	if ($number > 0 && !$scfg->{content}->{images} && !$scfg->{content}->{rootdir}) {
+	if ($number > 0) {
 	    log_info("storage '$storeid' - neither content type 'images' nor 'rootdir' configured"
 		.", but found $number guest volume(s)");
 	}
@@ -774,8 +767,6 @@ sub check_storage_content {
 
     my $check_volid = sub {
 	my ($volid, $vmid, $vmtype, $reference) = @_;
-
-	$referenced_volids->{$volid} = 1 if $reference ne 'unreferenced';
 
 	my $guesttext = $vmtype eq 'qemu' ? 'VM' : 'CT';
 	my $prefix = "$guesttext $vmid - volume '$volid' ($reference)";
@@ -799,19 +790,14 @@ sub check_storage_content {
 	}
 
 	if (!$scfg->{content}->{$vtype}) {
-	    $found_referenced = 1 if $reference ne 'unreferenced';
-	    $found_unreferenced = 1 if $reference eq 'unreferenced';
+	    $found = 1;
 	    $pass = 0;
 	    log_warn("$prefix - storage does not have content type '$vtype' configured.");
 	}
     };
 
-    my $guests = {};
-
     my $cts = PVE::LXC::config_list();
     for my $vmid (sort { $a <=> $b } keys %$cts) {
-	$guests->{$vmid} = 'lxc';
-
 	my $conf = PVE::LXC::Config->load_config($vmid);
 
 	my $volhash = {};
@@ -839,8 +825,6 @@ sub check_storage_content {
 
     my $vms = PVE::QemuServer::config_list();
     for my $vmid (sort { $a <=> $b } keys %$vms) {
-	$guests->{$vmid} = 'qemu';
-
 	my $conf = PVE::QemuConfig->load_config($vmid);
 
 	my $volhash = {};
@@ -871,24 +855,9 @@ sub check_storage_content {
 	}
     }
 
-    if ($found_referenced) {
+    if ($found) {
 	log_warn("Proxmox VE 7.0 enforces stricter content type checks. The guests above " .
 	    "might not work until the storage configuration is fixed.");
-    }
-
-    for my $volid (sort keys $potentially_affected->%*) {
-	next if $referenced_volids->{$volid}; # already checked
-
-	my (undef, undef, $vmid) = PVE::Storage::parse_volname($storage_cfg, $volid);
-	my $vmtype = $guests->{$vmid};
-	next if !$vmtype;
-
-	$check_volid->($volid, $vmid, $vmtype, 'unreferenced');
-    }
-
-    if ($found_unreferenced) {
-	log_warn("When migrating, Proxmox VE 7.0 only scans storages with the appropriate " .
-	    "content types for unreferenced guest volumes.");
     }
 
     if ($pass) {
