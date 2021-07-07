@@ -67,6 +67,7 @@ Ext.define('PVE.ha.ResourcesView', {
 		    },
 		},
 		{
+		    xtype: 'proxmoxButton',
 		    text: gettext('Edit'),
 		    disabled: true,
 		    selModel: sm,
