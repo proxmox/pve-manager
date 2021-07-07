@@ -1,3 +1,17 @@
+pve-manager (6.4-13) buster; urgency=medium
+
+  * pve6to7: add check for 'lxc.cgroup.*' keys in container config
+
+  * pve6to7: storage content: ignore unreferenced volumes on misconfigured
+    storages, as that should not be an actual problem in praxis, and no
+    data-loss would happen by default anyway.
+
+  * pve6to7: add check for Debian security repository switch
+
+  * ui: HA ressources: fix toggling edit button on selection
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 07 Jul 2021 18:46:39 +0200
+
 pve-manager (6.4-12) buster; urgency=medium
 
   * pve6to7: use new ceph flags API
