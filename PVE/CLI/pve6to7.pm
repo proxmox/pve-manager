@@ -995,6 +995,30 @@ sub check_containers_cgroup_compat {
     }
 };
 
+sub check_lxc_conf_keys {
+    my $kernel_cli = PVE::Tools::file_get_contents('/proc/cmdline');
+    if ($kernel_cli =~ /systemd.unified_cgroup_hierarchy=0/){
+	log_skip("System explicitly configured for legacy hybrid cgroup hierarchy.");
+	return;
+    }
+
+    log_info("Checking container configs for deprecated lxc.cgroup entries");
+
+    my $affected_ct = [];
+    my $cts = PVE::LXC::config_list();
+    for my $vmid (sort { $a <=> $b } keys %$cts) {
+	my $lxc_raw_conf = PVE::LXC::Config->load_config($vmid)->{lxc};
+	push @$affected_ct, "CT $vmid"  if (grep (@$_[0] =~ /^lxc\.cgroup\./, @$lxc_raw_conf));
+    }
+    if (scalar($affected_ct->@*) > 0) {
+	log_warn("Config of the following containers contains 'lxc.cgroup' keys, which will be ".
+	    "ignored in a unified cgroupv2 system:\n" .
+	    join(", ", $affected_ct->@*));
+    } else {
+	log_pass("No legacy 'lxc.cgroup' keys found.");
+    }
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -1090,6 +1114,7 @@ sub check_misc {
     check_custom_pool_roles();
     check_description_lengths();
     check_storage_content();
+    check_lxc_conf_keys();
 }
 
 __PACKAGE__->register_method ({
