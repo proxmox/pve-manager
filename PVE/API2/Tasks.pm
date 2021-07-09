@@ -418,6 +418,28 @@ __PACKAGE__->register_method({
 	    status => {
 		type => 'string', enum => ['running', 'stopped'],
 	    },
+	    type => {
+		type => 'string',
+	    },
+	    id => {
+		type => 'string',
+	    },
+	    user => {
+		type => 'string',
+	    },
+	    exitstatus => {
+		type => 'string',
+		optional => 1,
+	    },
+	    upid => {
+		type => 'string',
+	    },
+	    starttime => {
+		type => 'number',
+	    },
+	    node => {
+		type => 'string',
+	    },
 	},
     },
     code => sub {
