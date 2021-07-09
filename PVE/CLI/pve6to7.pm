@@ -1010,7 +1010,7 @@ sub check_security_repo {
 
 	    ($line) = split(/#/, $line);
 
-	    next if $line !~ m/^deb/; # is case sensitive
+	    next if $line !~ m/^deb[[:space:]]/; # is case sensitive
 
 	    my $suite;
 
