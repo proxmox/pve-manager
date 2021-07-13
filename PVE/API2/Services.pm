@@ -116,7 +116,12 @@ my $service_state = sub {
     if (my $err = $@) {
 	return $res;
     }
-    $res->{state} = $ss->{SubState} || 'unknown';
+    my $state = $ss->{SubState} || 'unknown';
+    if ($state eq 'dead' && $ss->{Type} && $ss->{Type} eq 'oneshot' && $ss->{Result}) {
+	$res->{state} = $ss->{Result};
+    } else {
+	$res->{state} = $ss->{SubState} || 'unknown';
+    }
     $res->{'active-state'} = $ss->{ActiveState} || 'unknown';
     $res->{'unit-state'} = $ss->{UnitFileState} || 'unknown';
 
