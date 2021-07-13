@@ -122,8 +122,13 @@ my $service_state = sub {
     } else {
 	$res->{state} = $ss->{SubState} || 'unknown';
     }
+
+    if ($ss->{LoadState} eq 'not-found') {
+	$res->{'unit-state'} = 'not-found'; # not installed
+    } else {
+	$res->{'unit-state'} = $ss->{UnitFileState} || 'unknown';
+    }
     $res->{'active-state'} = $ss->{ActiveState} || 'unknown';
-    $res->{'unit-state'} = $ss->{UnitFileState} || 'unknown';
 
     return $res;
 };
