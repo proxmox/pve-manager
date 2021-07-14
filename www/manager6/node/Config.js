@@ -250,6 +250,7 @@ Ext.define('PVE.node.Config', {
 		    iconCls: 'fa fa-files-o',
 		    itemId: 'aptrepositories',
 		    nodename: nodename,
+		    onlineHelp: 'sysadmin_package_repositories',
 		    groups: ['apt'],
 		});
 	    }
