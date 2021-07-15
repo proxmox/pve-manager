@@ -599,7 +599,7 @@ sub ifupdown2_version {
     return if !defined($v) || $v !~ /^\s*ifupdown2:(\S+)\s*$/;
     $v = $1;
     my ($major, $minor, $extra, $pve) = split(/\.|-/, $v);
-    my $is_pve = defined($pve) && $pve =~ /pve/;
+    my $is_pve = defined($pve) && $pve =~ /(pve|pmx|proxmox)/;
 
     return ($major * 100000 + $minor * 1000 + $extra * 10, $is_pve, $v);
 }
