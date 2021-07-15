@@ -1,3 +1,22 @@
+pve-manager (7.0-10) bullseye; urgency=medium
+
+  * pve6to7: improve check for security repo change in bullseye to avoid false
+    positives
+
+  * api: node tasks: add more fields to return schema to improve experience
+    with the pvesh tool (auto-completion) and to document them for the
+    api-viewer
+
+  * api: services: improve state detection for one-shot units
+
+  * api: services: propagate "uninstalled" state for units
+
+  * api: network apply: fix check for ifupdown2 origin
+
+  * ui: node: repos: add online help
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 15 Jul 2021 14:43:27 +0200
+
 pve-manager (7.0-9) bullseye; urgency=medium
 
   * pve6to7: sync new checks and adaptions from stable-6 branch for consitency
