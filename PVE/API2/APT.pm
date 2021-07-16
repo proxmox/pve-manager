@@ -757,13 +757,14 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	my $options = {
-	    enabled => $param->{enabled},
-	};
+	my $options = {};
+
+	my $enabled = $param->{enabled};
+	$options->{enabled} = int($enabled) if defined($enabled);
 
 	PVE::RS::APT::Repositories::change_repository(
 	    $param->{path},
-	    $param->{index},
+	    int($param->{index}),
 	    $options,
 	    $param->{digest}
 	);
