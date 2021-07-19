@@ -100,9 +100,6 @@ sub storage_info {
     my $scfg = PVE::Storage::storage_config($cfg, $storage);
     my $type = $scfg->{type};
 
-    die "can't use storage type '$type' for backup\n"
-	if (!($type eq 'dir' || $type eq 'nfs' || $type eq 'glusterfs'
-	      || $type eq 'cifs' || $type eq 'cephfs' || $type eq 'pbs'));
     die "can't use storage '$storage' for backups - wrong content type\n"
 	if (!$scfg->{content}->{backup});
 
