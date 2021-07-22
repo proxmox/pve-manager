@@ -85,7 +85,7 @@ Ext.define('PVE.node.Summary', {
 
     updateRepositoryStatus: function() {
 	let me = this;
-	let nodeStatus = me.nodeStatus;
+	let repoStatus = me.nodeStatus.down('#repositoryStatus');
 
 	let nodename = me.pveSelNode.data.node;
 
@@ -93,7 +93,7 @@ Ext.define('PVE.node.Summary', {
 	    url: `/nodes/${nodename}/apt/repositories`,
 	    method: 'GET',
 	    failure: response => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
-	    success: response => nodeStatus.setRepositoryInfo(response.result.data['standard-repos']),
+	    success: response => repoStatus.setRepositoryInfo(response.result.data['standard-repos']),
 	});
 
 	Proxmox.Utils.API2Request({
@@ -103,7 +103,7 @@ Ext.define('PVE.node.Summary', {
 	    success: function(response, opts) {
 		const res = response.result;
 		const subscription = res?.data?.status.toLowerCase() === 'active';
-		nodeStatus.setSubscriptionStatus(subscription);
+		repoStatus.setSubscriptionStatus(subscription);
 	    },
 	});
     },

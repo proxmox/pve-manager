@@ -2,55 +2,6 @@ Ext.define('PVE.node.StatusView', {
     extend: 'Proxmox.panel.StatusView',
     alias: 'widget.pveNodeStatus',
 
-    viewModel: {
-	data: {
-	    subscriptionActive: '',
-	    noSubscriptionRepo: '',
-	    enterpriseRepo: '',
-	    testRepo: '',
-	},
-	formulas: {
-	    repoStatus: function(get) {
-		if (get('subscriptionActive') === '' || get('enterpriseRepo') === '') {
-		    return '';
-		}
-
-		if (get('noSubscriptionRepo') || get('testRepo')) {
-		    return 'non-production';
-		} else if (get('subscriptionActive') && get('enterpriseRepo')) {
-		    return 'ok';
-		} else if (!get('subscriptionActive') && get('enterpriseRepo')) {
-		    return 'no-sub';
-		} else if (!get('enterpriseRepo') || !get('noSubscriptionRepo') || !get('testRepo')) {
-		    return 'no-repo';
-		}
-		return 'unknown';
-	    },
-	    repoStatusMessage: function(get) {
-		const status = get('repoStatus');
-
-		let fmt = (txt, cls) => `<i class="fa fa-fw fa-lg fa-${cls}"></i>${txt}`;
-
-		let getUpdates = Ext.String.format(gettext('{0} updates'), 'Proxmox VE');
-
-		if (status === 'ok') {
-		    return fmt(getUpdates, 'check-circle good') + ' ' +
-		        fmt(gettext('Production-ready Enterprise repository enabled'), 'check-circle good');
-		} else if (status === 'no-sub') {
-		    return fmt(gettext('Production-ready Enterprise repository enabled'), 'check-circle good') + ' ' +
-			    fmt(gettext('Enterprise repository needs valid subscription'), 'exclamation-circle warning');
-		} else if (status === 'non-production') {
-		    return fmt(getUpdates, 'check-circle good') + ' ' +
-			   fmt(gettext('Non production-ready repository enabled!'), 'exclamation-circle warning');
-		} else if (status === 'no-repo') {
-		    return fmt(gettext('No Proxmox VE repository enabled!'), 'exclamation-circle critical');
-		}
-
-		return Proxmox.Utils.unknownText;
-	    },
-	},
-    },
-
     height: 300,
     bodyPadding: '15 5 15 5',
 
@@ -162,18 +113,6 @@ Ext.define('PVE.node.StatusView', {
 	    textField: 'pveversion',
 	    value: '',
 	},
-	{
-	    itemId: 'repositoryStatus',
-	    colspan: 2,
-	    printBar: false,
-	    title: gettext('Repository Status'),
-	    setValue: function(value) { // for binding below
-		this.updateValue(value);
-	    },
-	    bind: {
-		value: '{repoStatusMessage}',
-	    },
-	},
     ],
 
     updateTitle: function() {
@@ -182,28 +121,24 @@ Ext.define('PVE.node.StatusView', {
 	me.setTitle(me.pveSelNode.data.node + ' (' + gettext('Uptime') + ': ' + uptime + ')');
     },
 
-    setRepositoryInfo: function(standardRepos) {
+    initComponent: function() {
 	let me = this;
-	let vm = me.getViewModel();
 
-	for (const standardRepo of standardRepos) {
-	    const handle = standardRepo.handle;
-	    const status = standardRepo.status;
+	let stateProvider = Ext.state.Manager.getProvider();
+	let repoLink = stateProvider.encodeHToken({
+	    view: "server",
+	    rid: `node/${me.pveSelNode.data.node}`,
+	    ltab: "tasks",
+	    nodetab: "aptrepositories",
+	});
 
-	    if (handle === "enterprise") {
-		vm.set('enterpriseRepo', status);
-	    } else if (handle === "no-subscription") {
-		vm.set('noSubscriptionRepo', status);
-	    } else if (handle === "test") {
-		vm.set('testRepo', status);
-	    }
-	}
-    },
+	me.items.push({
+	    xtype: 'pmxNodeInfoRepoStatus',
+	    itemId: 'repositoryStatus',
+	    product: 'Proxmox VE',
+	    repoLink: `#${repoLink}`,
+	});
 
-    setSubscriptionStatus: function(status) {
-	let me = this;
-	let vm = me.getViewModel();
-
-	vm.set('subscriptionActive', status);
+	me.callParent();
     },
 });
