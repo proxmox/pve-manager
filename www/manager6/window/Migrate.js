@@ -252,15 +252,7 @@ Ext.define('PVE.window.Migrate', {
 	    if (migrateStats.local_disks.length) {
 		migrateStats.local_disks.forEach(function(disk) {
 		    if (disk.cdrom && disk.cdrom === 1) {
-			if (disk.volid.includes('vm-' + vm.get('vmid') + '-cloudinit')) {
-			    if (migrateStats.running) {
-				migration.possible = false;
-				migration.preconditions.push({
-				     text: "Can't live migrate VM with local cloudinit disk, use shared storage instead",
-				     severity: 'error',
-				});
-			    }
-			} else {
+			if (!disk.volid.includes('vm-' + vm.get('vmid') + '-cloudinit')) {
 			    migration.possible = false;
 			    migration.preconditions.push({
 				text: "Can't migrate VM with local CD/DVD",
