@@ -55,7 +55,13 @@ sub properties {
 	    type => 'integer',
 	    minimum => 1,
 	    default => 25_000_000,
-	}
+	},
+	'verify-certificate' => {
+	    description => "Set to 0 to disable certificate verification for https endpoints.",
+	    type => 'boolean',
+	    optional => 1,
+	    default => 1,
+	},
     };
 }
 sub options {
@@ -71,8 +77,23 @@ sub options {
 	timeout => { optional => 1},
 	'max-body-size' => { optional => 1 },
 	'api-path-prefix' => { optional => 1 },
+	'verify-certificate' => { optional => 1 },
    };
 }
+
+my $set_ssl_opts = sub {
+    my ($cfg, $ua) = @_;
+
+    my $cert_verify = $cfg->{'verify-certificate'} // 1;
+    if (!$cert_verify) {
+	$ua->ssl_opts(
+	    verify_hostname => 0,
+	    SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
+	);
+    }
+
+    return;
+};
 
 # Plugin implementation
 sub update_node_status {
@@ -145,6 +166,7 @@ sub send {
 	return $class->SUPER::send($connection, $data, $cfg);
     } elsif ($proto =~ m/^https?$/) {
 	my $ua = LWP::UserAgent->new();
+	$set_ssl_opts->($cfg, $ua);
 	$ua->timeout($cfg->{timeout} // 1);
 	$connection->content($data);
 	my $response = $ua->request($connection);
@@ -228,6 +250,7 @@ sub test_connection {
     } elsif ($proto =~ m/^https?$/) {
 	my $url = _get_v2url($cfg, "health");
 	my $ua = LWP::UserAgent->new();
+	$set_ssl_opts->($cfg, $ua);
 	$ua->timeout($cfg->{timeout} // 1);
 	# in the initial add connection test, the token may still be in $cfg
 	my $token = $cfg->{token} // get_credentials($id, 1);
