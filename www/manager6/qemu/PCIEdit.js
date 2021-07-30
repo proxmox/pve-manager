@@ -1,7 +1,7 @@
 Ext.define('PVE.qemu.PCIInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
 
-    onlineHelp: 'qm_pci_passthrough',
+    onlineHelp: 'qm_pci_passthrough_vm_config',
 
     setVMConfig: function(vmconfig) {
 	var me = this;
