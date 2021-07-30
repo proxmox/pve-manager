@@ -85,6 +85,7 @@ Ext.define('PVE.node.CreateZFS', {
 				['lz4', 'lz4'],
 				['lzjb', 'lzjb'],
 				['zle', 'zle'],
+				['zstd', 'zstd'],
 			    ],
 			},
 			{
