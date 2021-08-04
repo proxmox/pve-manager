@@ -136,7 +136,7 @@ Ext.define('PVE.lxc.Options', {
 	    features: {
 		header: gettext('Features'),
 		defaultValue: Proxmox.Utils.noneText,
-		editor: Proxmox.UserName === 'root@pam'
+		editor: Proxmox.UserName === 'root@pam' || caps.vms['VM.Allocate']
 		    ? 'PVE.lxc.FeaturesEdit' : undefined,
 	    },
 	    hookscript: {
