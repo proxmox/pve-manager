@@ -62,6 +62,16 @@ Ext.define('PVE.lxc.CreateWizard', {
 		    },
 		    fieldLabel: gettext('Unprivileged container'),
 		},
+		{
+		    xtype: 'proxmoxcheckbox',
+		    name: 'features',
+		    inputValue: 'nesting=1',
+		    value: true,
+		    bind: {
+			disabled: '{!unprivileged}',
+		    },
+		    fieldLabel: gettext('Nesting'),
+		},
 	    ],
 	    column2: [
 		{
