@@ -756,6 +756,7 @@ Ext.define('PVE.Utils', {
 	    name: 'Proxmox VE authentication server',
 	    ipanel: 'pveAuthBasePanel',
 	    add: false,
+	    tfa: true,
 	    pwchange: true,
 	},
     },
