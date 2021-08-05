@@ -1,3 +1,23 @@
+pve-manager (7.0-11) bullseye; urgency=medium
+
+  * fix #3426: ui: parser: adapt parseSSHKey to accept "@..." suffix
+
+  * Status/InfluxDB: add 'verify-certificate' option to disable ssl verification
+
+  * ui: remove local cloud-init live migration limitation
+
+  * ui: node status: use repo status widget from widget-toolkit
+
+  * ui: node/ZFS: add zstd to possible compression methods
+
+  * vzdump: use storage plugins to determine backup feasability
+
+  * ui: lxc/CreateWizard: add a 'nesting' checkbox and enable it by default
+
+  * utils: add missing 'tfa' for @pve realm
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 5 Aug 2021 16:14:03 +0200
+
 pve-manager (7.0-10) bullseye; urgency=medium
 
   * pve6to7: improve check for security repo change in bullseye to avoid false
