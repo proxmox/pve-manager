@@ -136,8 +136,7 @@ Ext.define('PVE.lxc.Options', {
 	    features: {
 		header: gettext('Features'),
 		defaultValue: Proxmox.Utils.noneText,
-		editor: Proxmox.UserName === 'root@pam' || caps.vms['VM.Allocate']
-		    ? 'PVE.lxc.FeaturesEdit' : undefined,
+		editor: 'PVE.lxc.FeaturesEdit',
 	    },
 	    hookscript: {
 		header: gettext('Hookscript'),
@@ -174,7 +173,15 @@ Ext.define('PVE.lxc.Options', {
 	    var pending = rec.data.delete || me.hasPendingChanges(key);
 	    var rowdef = rows[key];
 
-	    edit_btn.setDisabled(!rowdef.editor);
+	    if (key === 'features') {
+		let unprivileged = me.getStore().getById('unprivileged').data.value;
+		let root = Proxmox.UserName === 'root@pam';
+		let vmalloc = caps.vms['VM.Allocate'];
+		edit_btn.setDisabled(!(root || (vmalloc && unprivileged)));
+	    } else {
+		edit_btn.setDisabled(!rowdef.editor);
+	    }
+
 	    revert_btn.setDisabled(!pending);
 	};
 
