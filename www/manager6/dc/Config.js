@@ -144,6 +144,8 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveFencingView',
 		itemId: 'ha-fencing',
 	    });
+	    // always show on initial load, will be hiddea later if the SDN API calls don't exist,
+	    // else it won't be shown at first if the user initially loads with DC selected
 	    if (PVE.SDNInfo || PVE.SDNInfo === undefined) {
 		me.items.push({
 		    xtype: 'pveSDNStatus',
