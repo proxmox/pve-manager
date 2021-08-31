@@ -82,6 +82,7 @@ __PACKAGE__->register_method({
 		type => 'boolean',
 		default => 0,
 		optional => 1,
+		description => 'Only list tasks with a status of ERROR.',
 	    },
 	    source => {
 		type => 'string',
@@ -282,7 +283,7 @@ __PACKAGE__->register_method({
     method => 'DELETE',
     description => 'Stop a task.',
     permissions => {
-	description => "The user needs 'Sys.Modify' permissions on '/nodes/<node>' if the task does not belong to him.",
+	description => "The user needs 'Sys.Modify' permissions on '/nodes/<node>' if they aren't the owner of the task.",
 	user => 'all',
     },
     protected => 1,
@@ -322,7 +323,7 @@ __PACKAGE__->register_method({
     path => '{upid}/log',
     method => 'GET',
     permissions => {
-	description => "The user needs 'Sys.Audit' permissions on '/nodes/<node>' if the task does not belong to him.",
+	description => "The user needs 'Sys.Audit' permissions on '/nodes/<node>' if they aren't the owner of the task.",
 	user => 'all',
     },
     protected => 1,
@@ -332,18 +333,23 @@ __PACKAGE__->register_method({
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-	    upid => { type => 'string' },
+	    upid => {
+		type => 'string',
+		description => "The task's unique ID.",
+	    },
 	    start => {
 		type => 'integer',
 		minimum => 0,
 		default => 0,
 		optional => 1,
+		description => "The line number to start printing at.",
 	    },
 	    limit => {
 		type => 'integer',
 		minimum => 0,
 		default => 50,
 		optional => 1,
+		description => "The maximum amount of lines that should be printed.",
 	    },
 	},
     },
@@ -396,7 +402,7 @@ __PACKAGE__->register_method({
     path => '{upid}/status',
     method => 'GET',
     permissions => {
-	description => "The user needs 'Sys.Audit' permissions on '/nodes/<node>' if the task does not belong to him.",
+	description => "The user needs 'Sys.Audit' permissions on '/nodes/<node>' if they are not the owner of the task.",
 	user => 'all',
     },
     protected => 1,
@@ -406,7 +412,10 @@ __PACKAGE__->register_method({
     	additionalProperties => 0,
 	properties => {
 	    node => get_standard_option('pve-node'),
-	    upid => { type => 'string' },
+	    upid => {
+		type => 'string',
+		description => "The task's unique ID.",
+	    },
 	},
     },
     returns => {
