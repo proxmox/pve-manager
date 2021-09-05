@@ -56,6 +56,8 @@ Ext.define('PVE.panel.SDNZoneBase', {
 Ext.define('PVE.sdn.zones.BaseEdit', {
     extend: 'Proxmox.window.Edit',
 
+    width: 400,
+
     initComponent: function() {
 	var me = this;
 

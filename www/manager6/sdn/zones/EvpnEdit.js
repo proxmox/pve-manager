@@ -16,6 +16,14 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
             delete values.mac;
         }
 
+        if (values['advertise-subnets'] === 0) {
+            delete values['advertise-subnets'];
+        }
+
+        if (values['exitnodes-local-routing'] === 0) {
+            delete values['exitnodes-local-routing'];
+        }
+
 	return values;
     },
 
@@ -53,6 +61,20 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 		fieldLabel: gettext('Exit Nodes'),
 		multiSelect: true,
 		autoSelect: false,
+	    },
+	    {
+		xtype: 'proxmoxcheckbox',
+		name: 'exitnodes-local-routing',
+		uncheckedValue: 0,
+		checked: false,
+		fieldLabel: gettext('Exit Nodes local routing'),
+	    },
+	    {
+		xtype: 'proxmoxcheckbox',
+		name: 'advertise-subnets',
+		uncheckedValue: 0,
+		checked: false,
+		fieldLabel: gettext('Advertise subnets'),
 	    },
 	    {
 		xtype: 'pveSDNControllerSelector',
