@@ -13,7 +13,7 @@ Ext.define('PVE.panel.EditPruneInputPanel', {
 	if (this.needMask) { // isMasked() may not yet be true if not rendered once
 	    return {};
 	} else if (this.isCreate && !this.rendered) {
-	    return { 'prune-backups': 'keep-all=1' };
+	    return this.keepAllDefaultForCreate ? { 'prune-backups': 'keep-all=1' } : {};
 	}
 	delete formValues.delete;
 	let retention = PVE.Parser.printPropertyString(formValues);
@@ -52,10 +52,10 @@ Ext.define('PVE.panel.EditPruneInputPanel', {
 		panel.mask(
 		    gettext('Backup content type not available for this storage.'),
 		);
-	    } else if (panel.isCreate) {
+	    } else if (panel.isCreate && panel.keepAllDefaultForCreate) {
 		panel.down('proxmoxcheckbox[name=keep-all]').setValue(true);
 	    }
-	    panel.down('component[name=pbs-hint]').setHidden(!panel.isPBS);
+	    panel.down('component[name=pbs-hint]').setHidden(!panel.showPBSHint);
 
 	    panel.query('pmxPruneKeepField').forEach(field => {
 		field.on('change', panel.updateComponents, panel);
@@ -83,7 +83,9 @@ Ext.define('PVE.panel.EditPruneInputPanel', {
 	    name: 'no-keeps-hint',
 	    hidden: true,
 	    padding: '5 1',
-	    html: gettext('Without any keep option, the node\'s vzdump.conf or `keep-all` is used as fallback for backup jobs'),
+	    cbind: {
+		html: '{fallbackHintHtml}',
+	    },
 	},
 	{
 	    xtype: 'component',
