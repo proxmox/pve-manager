@@ -880,6 +880,10 @@ Ext.define('PVE.dc.BackupView', {
 	    delete job.node;
 	    job.all = job.all === true ? 1 : 0;
 
+	    if (job['prune-backups']) {
+		job['prune-backups'] = PVE.Parser.printPropertyString(job['prune-backups']);
+	    }
+
 	    let allNodes = PVE.data.ResourceStore.getNodes();
 	    let nodes = allNodes.filter(node => node.status === 'online').map(node => node.node);
 	    let errors = [];
