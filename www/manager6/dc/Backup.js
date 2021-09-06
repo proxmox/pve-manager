@@ -346,7 +346,39 @@ Ext.define('PVE.dc.BackupEdit', {
 	    subject: gettext("Backup Job"),
 	    url: url,
 	    method: method,
-	    items: [ipanel, vmgrid],
+	    bodyPadding: 0,
+	    items: [
+		{
+		    xtype: 'tabpanel',
+		    region: 'center',
+		    layout: 'fit',
+		    bodyPadding: 10,
+		    items: [
+			{
+			    xtype: 'container',
+			    title: gettext('General'),
+			    region: 'center',
+			    layout: {
+				type: 'vbox',
+				align: 'stretch',
+			    },
+			    items: [
+				ipanel,
+				vmgrid,
+			    ],
+			},
+			{
+			    xtype: 'pveEditPruneInputPanel',
+			    title: gettext('Retention'),
+			    isCreate: me.isCreate,
+			    keepAllDefaultForCreate: false,
+			    showPBSHint: false,
+			    fallbackHintHtml: gettext('Without any keep option, the storage\'s configuration or node\'s vzdump.conf is used as fallback'),
+			},
+		    ],
+		},
+	    ],
+
 	});
 
 	me.callParent();
@@ -373,6 +405,18 @@ Ext.define('PVE.dc.BackupEdit', {
 			data.selPool = data.pool;
 		    } else {
 			data.selMode = 'include';
+		    }
+
+		    if (data['prune-backups']) {
+			Object.assign(data, data['prune-backups']);
+			delete data['prune-backups'];
+		    } else if (data.maxfiles !== undefined) {
+			if (data.maxfiles > 0) {
+			    data['keep-last'] = data.maxfiles;
+			} else {
+			    data['keep-all'] = 1;
+			}
+			delete data.maxfiles;
 		    }
 
 		    me.setValues(data);
