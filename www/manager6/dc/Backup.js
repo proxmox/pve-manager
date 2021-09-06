@@ -589,6 +589,16 @@ Ext.define('PVE.dc.BackupInfo', {
     extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveBackupInfo',
 
+    viewModel: {
+	data: {
+	    retentionType: 'none',
+	},
+	formulas: {
+	    hasRetention: (get) => get('retentionType') !== 'none',
+	    retentionKeepAll: (get) => get('retentionType') === 'all',
+	},
+    },
+
     padding: '5 0 5 10',
 
     column1: [
@@ -694,8 +704,81 @@ Ext.define('PVE.dc.BackupInfo', {
 	},
     ],
 
+    columnB: [
+	{
+	    xtype: 'label',
+	    name: 'pruneLabel',
+	    text: gettext('Retention Configuration') + ':',
+	    bind: {
+		hidden: '{!hasRetention}',
+	    },
+	},
+	{
+	    layout: 'hbox',
+	    border: false,
+	    defaults: {
+		border: false,
+		layout: 'anchor',
+		flex: 1,
+	    },
+	    items: [
+		{
+		    padding: '0 10 0 0',
+		    defaults: {
+			labelWidth: 110,
+		    },
+		    items: [{
+			xtype: 'displayfield',
+			name: 'keep-all',
+			fieldLabel: gettext('Keep All'),
+			renderer: Proxmox.Utils.format_boolean,
+			bind: {
+			    hidden: '{!retentionKeepAll}',
+			},
+		    }].concat(
+			[
+			    ['keep-last', gettext('Keep Last')],
+			    ['keep-daily', gettext('Keep Daily')],
+			    ['keep-monthly', gettext('Keep Monthly')],
+			].map(
+			    name => ({
+				xtype: 'displayfield',
+				name: name[0],
+				fieldLabel: name[1],
+				bind: {
+				    hidden: '{!hasRetention || retentionKeepAll}',
+				},
+			    }),
+			),
+		    ),
+		},
+		{
+		    padding: '0 0 0 10',
+		    defaults: {
+			labelWidth: 110,
+		    },
+		    items: [
+			['keep-hourly', gettext('Keep Hourly')],
+			['keep-weekly', gettext('Keep Weekly')],
+			['keep-yearly', gettext('Keep Yearly')],
+		    ].map(
+			name => ({
+			    xtype: 'displayfield',
+			    name: name[0],
+			    fieldLabel: name[1],
+			    bind: {
+				hidden: '{!hasRetention || retentionKeepAll}',
+			    },
+			}),
+		    ),
+		},
+	    ],
+	},
+    ],
+
     setValues: function(values) {
 	var me = this;
+	let vm = me.getViewModel();
 
         Ext.iterate(values, function(fieldId, val) {
 	    let field = me.query('[isFormField][name=' + fieldId + ']')[0];
@@ -703,6 +786,38 @@ Ext.define('PVE.dc.BackupInfo', {
 		field.setValue(val);
             }
 	});
+
+	if (values['prune-backups'] || values.maxfiles !== undefined) {
+	    const keepNames = [
+		'keep-all',
+		'keep-last',
+		'keep-hourly',
+		'keep-daily',
+		'keep-weekly',
+		'keep-monthly',
+		'keep-yearly',
+	    ];
+
+	    let keepValues;
+	    if (values['prune-backups']) {
+		keepValues = values['prune-backups'];
+	    } else if (values.maxfiles > 0) {
+		keepValues = { 'keep-last': values.maxfiles };
+	    } else {
+		keepValues = { 'keep-all': 1 };
+	    }
+
+	    vm.set('retentionType', keepValues['keep-all'] ? 'all' : 'other');
+
+	    keepNames.forEach(function(name) {
+		let field = me.query('[isFormField][name=' + name + ']')[0];
+		if (field) {
+		    field.setValue(keepValues[name]);
+		}
+	    });
+	} else {
+	    vm.set('retentionType', 'none');
+	}
 
 	// selection Mode depends on the presence/absence of several keys
 	let selModeField = me.query('[isFormField][name=selMode]')[0];
