@@ -63,9 +63,7 @@ Ext.define('PVE.PruneInputPanel', {
 		];
 		let counter = {};
 
-		backups.sort(function(a, b) {
-		    return a.ctime < b.ctime;
-		});
+		backups.sort((a, b) => b.ctime - a.ctime);
 
 		let ruleIndex = -1;
 		let nextRule = function() {
