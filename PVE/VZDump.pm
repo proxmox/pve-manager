@@ -991,7 +991,7 @@ sub exec_backup_task {
 	    debugmsg ('info', "prune older backups with retention: $keepstr", $logfd);
 	    my $pruned = 0;
 	    if (!defined($opts->{storage})) {
-		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname, $task->{target});
+		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname);
 		PVE::Storage::prune_mark_backup_group($bklist, $prune_options);
 
 		foreach my $prune_entry (@{$bklist}) {
