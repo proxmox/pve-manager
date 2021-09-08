@@ -593,9 +593,9 @@ Ext.define('PVE.dc.BackupInfo', {
 
     column1: [
 	{
+	    xtype: 'displayfield',
 	    name: 'node',
 	    fieldLabel: gettext('Node'),
-	    xtype: 'displayfield',
 	    renderer: function(value) {
 		if (!value) {
 		    return '-- ' + gettext('All') + ' --';
@@ -605,42 +605,42 @@ Ext.define('PVE.dc.BackupInfo', {
 	    },
 	},
 	{
+	    xtype: 'displayfield',
 	    name: 'storage',
 	    fieldLabel: gettext('Storage'),
-	    xtype: 'displayfield',
 	},
 	{
+	    xtype: 'displayfield',
 	    name: 'dow',
 	    fieldLabel: gettext('Day of week'),
-	    xtype: 'displayfield',
 	    renderer: PVE.Utils.render_backup_days_of_week,
 	},
 	{
+	    xtype: 'displayfield',
 	    name: 'starttime',
 	    fieldLabel: gettext('Start Time'),
-	    xtype: 'displayfield',
 	},
 	{
+	    xtype: 'displayfield',
 	    name: 'selMode',
 	    fieldLabel: gettext('Selection mode'),
-	    xtype: 'displayfield',
 	},
 	{
+	    xtype: 'displayfield',
 	    name: 'pool',
 	    fieldLabel: gettext('Pool to backup'),
-	    xtype: 'displayfield',
 	},
     ],
     column2: [
 	{
+	    xtype: 'displayfield',
 	    name: 'mailto',
 	    fieldLabel: gettext('Send email to'),
-	    xtype: 'displayfield',
 	},
 	{
+	    xtype: 'displayfield',
 	    name: 'mailnotification',
 	    fieldLabel: gettext('Email notification'),
-	    xtype: 'displayfield',
 	    renderer: function(value) {
 		let msg;
 		switch (value) {
@@ -655,14 +655,14 @@ Ext.define('PVE.dc.BackupInfo', {
 	    },
 	},
 	{
+	    xtype: 'displayfield',
 	    name: 'compress',
 	    fieldLabel: gettext('Compression'),
-	    xtype: 'displayfield',
 	},
 	{
+	    xtype: 'displayfield',
 	    name: 'mode',
 	    fieldLabel: gettext('Mode'),
-	    xtype: 'displayfield',
 	    renderer: function(value) {
 		let msg;
 		switch (value) {
@@ -680,6 +680,7 @@ Ext.define('PVE.dc.BackupInfo', {
 	    },
 	},
 	{
+	    xtype: 'displayfield',
 	    name: 'enabled',
 	    fieldLabel: gettext('Enabled'),
 	    xtype: 'displayfield',
