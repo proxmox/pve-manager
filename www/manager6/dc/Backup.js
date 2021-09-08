@@ -693,14 +693,7 @@ Ext.define('PVE.dc.BackupInfo', {
 	    xtype: 'displayfield',
 	    name: 'enabled',
 	    fieldLabel: gettext('Enabled'),
-	    xtype: 'displayfield',
-	    renderer: function(value) {
-		if (PVE.Parser.parseBoolean(value.toString())) {
-		    return gettext('Yes');
-		} else {
-		    return gettext('No');
-		}
-	    },
+	    renderer: v => PVE.Parser.parseBoolean(v.toString()) ? gettext('Yes') : gettext('No'),
 	},
     ],
 
