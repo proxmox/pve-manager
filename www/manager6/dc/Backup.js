@@ -606,13 +606,7 @@ Ext.define('PVE.dc.BackupInfo', {
 	    xtype: 'displayfield',
 	    name: 'node',
 	    fieldLabel: gettext('Node'),
-	    renderer: function(value) {
-		if (!value) {
-		    return '-- ' + gettext('All') + ' --';
-		} else {
-		    return value;
-		}
-	    },
+	    renderer: value => value || `-- ${gettext('All')} --`,
 	},
 	{
 	    xtype: 'displayfield',
