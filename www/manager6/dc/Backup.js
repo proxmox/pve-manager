@@ -783,16 +783,6 @@ Ext.define('PVE.dc.BackupInfo', {
 	});
 
 	if (values['prune-backups'] || values.maxfiles !== undefined) {
-	    const keepNames = [
-		'keep-all',
-		'keep-last',
-		'keep-hourly',
-		'keep-daily',
-		'keep-weekly',
-		'keep-monthly',
-		'keep-yearly',
-	    ];
-
 	    let keepValues;
 	    if (values['prune-backups']) {
 		keepValues = values['prune-backups'];
@@ -804,11 +794,10 @@ Ext.define('PVE.dc.BackupInfo', {
 
 	    vm.set('retentionType', keepValues['keep-all'] ? 'all' : 'other');
 
-	    keepNames.forEach(function(name) {
-		let field = me.query('[isFormField][name=' + name + ']')[0];
-		if (field) {
-		    field.setValue(keepValues[name]);
-		}
+	    // set values of all keep-X fields
+	    ['all', 'last', 'hourly', 'daily', 'weekly', 'monthly', 'yearly'].forEach(time => {
+		let name = `keep-${time}`;
+		me.query(`[isFormField][name=${name}]`)[0]?.setValue(keepValues[name]);
 	    });
 	} else {
 	    vm.set('retentionType', 'none');
