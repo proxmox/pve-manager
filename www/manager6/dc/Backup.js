@@ -638,24 +638,15 @@ Ext.define('PVE.dc.BackupInfo', {
     column2: [
 	{
 	    xtype: 'displayfield',
-	    name: 'mailto',
-	    fieldLabel: gettext('Send email to'),
-	},
-	{
-	    xtype: 'displayfield',
 	    name: 'mailnotification',
 	    fieldLabel: gettext('Email notification'),
 	    renderer: function(value) {
-		let msg;
-		switch (value) {
-		    case 'always':
-			msg = gettext('Always');
-			break;
-		    case 'failure':
-			msg = gettext('On failure only');
-			break;
+		let mailto = this.up('pveBackupInfo')?.record?.mailto || 'root@localhost';
+		let when = gettext('Always');
+		if (value === 'failure') {
+		    when = gettext('On failure only');
 		}
-		return msg;
+		return `${when} (${mailto})`;
 	    },
 	},
 	{
