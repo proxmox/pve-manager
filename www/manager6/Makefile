@@ -79,7 +79,7 @@ JSSRC= 							\
 	grid/Replication.js				\
 	grid/ResourceGrid.js				\
 	panel/ConfigPanel.js				\
-	panel/EditPruneInputPanel.js			\
+	panel/BackupJobPrune.js				\
 	panel/HealthWidget.js				\
 	panel/IPSet.js					\
 	panel/NotesView.js				\

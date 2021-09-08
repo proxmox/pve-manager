@@ -2,9 +2,9 @@
  * Input panel for prune settings with a keep-all option intended to be used as
  * part of an edit/create window.
  */
-Ext.define('PVE.panel.EditPruneInputPanel', {
+Ext.define('PVE.panel.BackupJobPrune', {
     extend: 'Proxmox.panel.PruneInputPanel',
-    xtype: 'pveEditPruneInputPanel',
+    xtype: 'pveBackupJobPrunePanel',
     mixins: ['Proxmox.Mixin.CBind'],
 
     onlineHelp: 'vzdump_retention',
@@ -70,7 +70,7 @@ Ext.define('PVE.panel.EditPruneInputPanel', {
 	boxLabel: gettext('Keep all backups'),
 	listeners: {
 	    change: function(field, newValue) {
-		let panel = field.up('pveEditPruneInputPanel');
+		let panel = field.up('pveBackupJobPrunePanel');
 		panel.updateComponents();
 	    },
 	},

@@ -368,7 +368,7 @@ Ext.define('PVE.dc.BackupEdit', {
 			    ],
 			},
 			{
-			    xtype: 'pveEditPruneInputPanel',
+			    xtype: 'pveBackupJobPrunePanel',
 			    title: gettext('Retention'),
 			    isCreate: me.isCreate,
 			    keepAllDefaultForCreate: false,

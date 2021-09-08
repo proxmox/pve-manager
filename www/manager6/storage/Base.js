@@ -97,7 +97,7 @@ Ext.define('PVE.storage.BaseEdit', {
 		items: [
 		    me.ipanel,
 		    {
-			xtype: 'pveEditPruneInputPanel',
+			xtype: 'pveBackupJobPrunePanel',
 			title: gettext('Backup Retention'),
 			isCreate: me.isCreate,
 			keepAllDefaultForCreate: true,
