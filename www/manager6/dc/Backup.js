@@ -716,8 +716,7 @@ Ext.define('PVE.dc.BackupInfo', {
 		    }].concat(
 			[
 			    ['keep-last', gettext('Keep Last')],
-			    ['keep-daily', gettext('Keep Daily')],
-			    ['keep-monthly', gettext('Keep Monthly')],
+			    ['keep-hourly', gettext('Keep Hourly')],
 			].map(
 			    name => ({
 				xtype: 'displayfield',
@@ -736,8 +735,26 @@ Ext.define('PVE.dc.BackupInfo', {
 			labelWidth: 110,
 		    },
 		    items: [
-			['keep-hourly', gettext('Keep Hourly')],
+			['keep-daily', gettext('Keep Daily')],
 			['keep-weekly', gettext('Keep Weekly')],
+		    ].map(
+			name => ({
+			    xtype: 'displayfield',
+			    name: name[0],
+			    fieldLabel: name[1],
+			    bind: {
+				hidden: '{!hasRetention || retentionKeepAll}',
+			    },
+			}),
+		    ),
+		},
+		{
+		    padding: '0 0 0 10',
+		    defaults: {
+			labelWidth: 110,
+		    },
+		    items: [
+			['keep-monthly', gettext('Keep Monthly')],
 			['keep-yearly', gettext('Keep Yearly')],
 		    ].map(
 			name => ({
