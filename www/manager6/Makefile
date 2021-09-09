@@ -124,6 +124,7 @@ JSSRC= 							\
 	dc/AuthEditLDAP.js				\
 	dc/AuthEditOpenId.js				\
 	dc/AuthView.js					\
+	dc/BackupJobDetail.js				\
 	dc/Backup.js					\
 	dc/Cluster.js					\
 	dc/ClusterEdit.js				\
