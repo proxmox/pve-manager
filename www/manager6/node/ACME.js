@@ -365,6 +365,7 @@ Ext.define('PVE.node.ACME', {
 	formulas: {
 	    canOrder: (get) => !!get('account') && get('domaincount') > 0,
 	    editBtnIcon: (get) => 'fa black fa-' + (get('accountEditable') ? 'check' : 'pencil'),
+	    editBtnText: (get) => get('accountEditable') ? gettext('Apply') : gettext('Edit'),
 	    accountTextHidden: (get) => get('accountEditable') || !get('accountsAvailable'),
 	    accountValueHidden: (get) => !get('accountEditable') || !get('accountsAvailable'),
 	},
@@ -606,10 +607,9 @@ Ext.define('PVE.node.ACME', {
 	{
 	    xtype: 'button',
 	    iconCls: 'fa black fa-pencil',
-	    baseCls: 'x-plain',
-	    userCls: 'pointer',
 	    bind: {
 		iconCls: '{editBtnIcon}',
+		text: '{editBtnText}',
 		hidden: '{!accountsAvailable}',
 	    },
 	    handler: 'toggleEditAccount',
