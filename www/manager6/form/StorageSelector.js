@@ -1,11 +1,19 @@
 Ext.define('PVE.form.StorageSelector', {
     extend: 'Proxmox.form.ComboGrid',
     alias: 'widget.pveStorageSelector',
+    mixins: ['Proxmox.Mixin.CBind'],
+
+    cbindData: {
+	clusterView: false,
+    },
 
     allowBlank: false,
     valueField: 'storage',
     displayField: 'storage',
     listConfig: {
+	cbind: {
+	    clusterView: '{clusterView}',
+	},
 	width: 450,
 	columns: [
 	    {
@@ -24,37 +32,87 @@ Ext.define('PVE.form.StorageSelector', {
 		width: 90,
 		dataIndex: 'avail',
 		renderer: Proxmox.Utils.format_size,
+		cbind: {
+		    hidden: '{clusterView}',
+		},
 	    },
 	    {
 		header: gettext('Capacity'),
 		width: 90,
 		dataIndex: 'total',
 		renderer: Proxmox.Utils.format_size,
+		cbind: {
+		    hidden: '{clusterView}',
+		},
+	    },
+	    {
+		header: gettext('Nodes'),
+		width: 120,
+		dataIndex: 'nodes',
+		renderer: (value) => value ? value : '-- ' + gettext('All') + ' --',
+		cbind: {
+		    hidden: '{!clusterView}',
+		},
+	    },
+	    {
+		header: gettext('Shared'),
+		width: 70,
+		dataIndex: 'shared',
+		renderer: Proxmox.Utils.format_boolean,
+		cbind: {
+		    hidden: '{!clusterView}',
+		},
 	    },
 	],
     },
 
     reloadStorageList: function() {
 	let me = this;
-	if (!me.nodename) {
-	    return;
-	}
 
-	let params = {
-	    format: 1,
-	};
-	if (me.storageContent) {
-	    params.content = me.storageContent;
+	if (me.clusterView) {
+	    me.getStore().setProxy({
+		type: 'proxmox',
+		url: `/api2/json/storage`,
+	    });
+
+	    // filter here, back-end does not support it currently
+	    let filters = [(storage) => !storage.data.disable];
+
+	    if (me.storageContent) {
+		filters.push(
+		    (storage) => storage.data.content.split(',').includes(me.storageContent),
+		);
+	    }
+
+	    if (me.nodename) {
+		filters.push(
+		    (storage) => !storage.data.nodes || storage.data.nodes.includes(me.nodename),
+		);
+	    }
+
+	    me.getStore().clearFilter();
+	    me.getStore().setFilters(filters);
+	} else {
+	    if (!me.nodename) {
+		return;
+	    }
+
+	    let params = {
+		format: 1,
+	    };
+	    if (me.storageContent) {
+		params.content = me.storageContent;
+	    }
+	    if (me.targetNode) {
+		params.target = me.targetNode;
+		params.enabled = 1; // skip disabled storages
+	    }
+	    me.store.setProxy({
+		type: 'proxmox',
+		url: `/api2/json/nodes/${me.nodename}/storage`,
+		extraParams: params,
+	    });
 	}
-	if (me.targetNode) {
-	    params.target = me.targetNode;
-	    params.enabled = 1; // skip disabled storages
-	}
-	me.store.setProxy({
-	    type: 'proxmox',
-	    url: `/api2/json/nodes/${me.nodename}/storage`,
-	    extraParams: params,
-	});
 
 	me.store.load(() => me.validate());
     },
@@ -64,6 +122,10 @@ Ext.define('PVE.form.StorageSelector', {
 
 	if (!targetNode || me.targetNode === targetNode) {
 	    return;
+	}
+
+	if (me.clusterView) {
+	    throw "setting targetNode with clusterView is not implemented";
 	}
 
 	me.targetNode = targetNode;
@@ -110,7 +172,7 @@ Ext.define('PVE.form.StorageSelector', {
 }, function() {
     Ext.define('pve-storage-status', {
 	extend: 'Ext.data.Model',
-	fields: ['storage', 'active', 'type', 'avail', 'total'],
+	fields: ['storage', 'active', 'type', 'avail', 'total', 'nodes', 'shared'],
 	idProperty: 'storage',
     });
 });
