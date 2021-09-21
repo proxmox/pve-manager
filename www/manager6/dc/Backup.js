@@ -56,7 +56,7 @@ Ext.define('PVE.dc.BackupEdit', {
 
 	let storagesel = Ext.create('PVE.form.StorageSelector', {
 	    fieldLabel: gettext('Storage'),
-	    nodename: 'localhost',
+	    clusterView: true,
 	    storageContent: 'backup',
 	    allowBlank: false,
 	    name: 'storage',
@@ -159,7 +159,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    emptyText: '-- ' + gettext('All') + ' --',
 	    listeners: {
 		change: function(f, value) {
-		    storagesel.setNodename(value || 'localhost');
+		    storagesel.setNodename(value);
 		    let mode = selModeField.getValue();
 		    store.clearFilter();
 		    store.filterBy(function(rec) {
