@@ -74,7 +74,9 @@ Ext.define('PVE.form.StorageSelector', {
     setNodename: function(nodename) {
 	var me = this;
 
-	if (!nodename || me.nodename === nodename) {
+	nodename = nodename || '';
+
+	if (me.nodename === nodename) {
 	    return;
 	}
 
@@ -103,9 +105,7 @@ Ext.define('PVE.form.StorageSelector', {
 
 	me.callParent();
 
-	if (nodename) {
-	    me.setNodename(nodename);
-	}
+	me.setNodename(nodename);
     },
 }, function() {
     Ext.define('pve-storage-status', {
