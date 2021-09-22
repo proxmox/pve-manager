@@ -37,7 +37,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 	    if (widgets.length === 1) {
 		widgets[0].setValue(newValue);
 	    } else {
-		throw 'non unique widget :' + widget + ' in Wizard';
+		// ignore multiple disks, we only want to set the type if there is a single disk
 	    }
 	},
     },
