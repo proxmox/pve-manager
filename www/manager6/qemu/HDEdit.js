@@ -33,12 +33,22 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    }
 
 	    me.lookup('scsiController').setVisible(value.match(/^scsi/));
+
+	    me.fireIdChange();
+	},
+
+	fireIdChange: function() {
+	    let view = this.getView();
+	    view.fireEvent('diskidchange', view, view.bussel.getConfId());
 	},
 
 	control: {
 	    'field[name=controller]': {
 		change: 'onControllerChange',
 		afterrender: 'onControllerChange',
+	    },
+	    'field[name=deviceid]': {
+		change: 'fireIdChange',
 	    },
 	    'field[name=iothread]': {
 		change: function(f, value) {
