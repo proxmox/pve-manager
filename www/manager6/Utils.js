@@ -1757,6 +1757,52 @@ Ext.define('PVE.Utils', {
 
 	return true;
     },
+
+    sortByPreviousUsage: function(vmconfig, controllerList) {
+	if (!controllerList) {
+	    controllerList = ['ide', 'virtio', 'scsi', 'sata'];
+	}
+	let usedControllers = {};
+	for (const type of Object.keys(PVE.Utils.diskControllerMaxIDs)) {
+	    usedControllers[type] = 0;
+	}
+
+	for (const property of Object.keys(vmconfig)) {
+	    if (property.match(PVE.Utils.bus_match) && !vmconfig[property].match(/media=cdrom/)) {
+		const foundController = property.match(PVE.Utils.bus_match)[1];
+		usedControllers[foundController]++;
+	    }
+	}
+
+	let sortPriority = PVE.qemu.OSDefaults.getDefaults(vmconfig.ostype).busPriority;
+
+	let sortedList = Ext.clone(controllerList);
+	sortedList.sort(function(a, b) {
+	    if (usedControllers[b] === usedControllers[a]) {
+		return sortPriority[b] - sortPriority[a];
+	    }
+	    return usedControllers[b] - usedControllers[a];
+	});
+
+	return sortedList;
+    },
+
+    nextFreeDisk: function(controllers, config) {
+	for (const controller of controllers) {
+	    for (let i = 0; i < PVE.Utils.diskControllerMaxIDs[controller]; i++) {
+		let confid = controller + i.toString();
+		if (!Ext.isDefined(config[confid])) {
+		    return {
+			controller,
+			id: i,
+			confid,
+		    };
+		}
+	    }
+	}
+
+	return undefined;
+    },
 },
 
     singleton: true,
