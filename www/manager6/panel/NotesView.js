@@ -6,6 +6,7 @@ Ext.define('PVE.panel.NotesView', {
     bodyPadding: 10,
     scrollable: true,
     animCollapse: false,
+    maxLength: 64 * 1024,
 
     tbar: {
 	itemId: 'tbar',
@@ -79,37 +80,38 @@ Ext.define('PVE.panel.NotesView', {
     }],
 
     initComponent: function() {
-	var me = this;
+	const me = this;
+	const type = me.pveSelNode.data.type;
 
-	var nodename = me.pveSelNode.data.node;
-	if (!nodename) {
-	    throw "no node name specified";
-	}
-
-	let type = me.pveSelNode.data.type;
-	if (!Ext.Array.contains(['node', 'qemu', 'lxc'], type)) {
-	    throw 'invalid type specified';
-	}
-
-	var vmid = me.pveSelNode.data.vmid;
-	if (!vmid && type !== 'node') {
-	    throw "no VM ID specified";
-	}
-
-	me.url = `/api2/extjs/nodes/${nodename}/`;
-
-	// add the type specific path if qemu/lxc and set the backend's maxLen
-	if (type === 'qemu' || type === 'lxc') {
-	    me.url += `${type}/${vmid}/`;
-	    me.maxLength = 8 * 1024;
+	if (me.pveSelNode.data.id === 'root') {
+	    me.url = '/api2/extjs/cluster/options';
 	} else {
-	    me.maxLength = 64 * 1024;
-	}
+	    const nodename = me.pveSelNode.data.node;
+	    if (!nodename) {
+		throw "no node name specified";
+	    }
 
-	me.url += 'config';
+	    if (!Ext.Array.contains(['node', 'qemu', 'lxc'], type)) {
+		throw 'invalid type specified';
+	    }
+
+	    const vmid = me.pveSelNode.data.vmid;
+	    if (!vmid && type !== 'node') {
+		throw "no VM ID specified";
+	    }
+
+	    me.url = `/api2/extjs/nodes/${nodename}/`;
+
+	    // add the type specific path if qemu/lxc and set the backend's maxLen
+	    if (type === 'qemu' || type === 'lxc') {
+		me.url += `${type}/${vmid}/`;
+		me.maxLength = 8 * 1024;
+	    }
+	    me.url += 'config';
+	}
 
 	me.callParent();
-	if (type === 'node') {
+	if (type === 'node' || type === '') { // '' is for datacenter
 	    me.down('#tbar').setVisible(true);
 	} else if (me.pveSelNode.data.template !== 1) {
 	    me.setCollapsible(true);

@@ -28,6 +28,12 @@ Ext.define('PVE.dc.Config', {
 		itemId: 'summary',
 	    },
 	    {
+		xtype: 'pveNotesView',
+		title: gettext('Notes'),
+		iconCls: 'fa fa-sticky-note-o',
+		itemId: 'notes',
+	    },
+	    {
 		title: gettext('Cluster'),
 		xtype: 'pveClusterAdministration',
 		iconCls: 'fa fa-server',
