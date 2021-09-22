@@ -14,7 +14,13 @@ Ext.define('PVE.form.ControllerSelector', {
 	    busField.setValue(freeId.controller);
 	    deviceIDField.setValue(freeId.id);
 	}
+    },
 
+    updateVMConfig: function(vmconfig) {
+	let me = this;
+	me.vmconfig = Ext.apply({}, vmconfig);
+
+	me.down('field[name=deviceid]').validate();
     },
 
     setVMConfig: function(vmconfig, autoSelect) {
@@ -43,6 +49,14 @@ Ext.define('PVE.form.ControllerSelector', {
 	deviceid.validate();
     },
 
+    getConfId: function() {
+	let me = this;
+	let controller = me.getComponent('controller').getValue() || 'ide';
+	let id = me.getComponent('deviceid').getValue() || 0;
+
+	return `${controller}${id}`;
+    },
+
     initComponent: function() {
 	var me = this;
 
@@ -56,6 +70,7 @@ Ext.define('PVE.form.ControllerSelector', {
 		{
 		    xtype: 'pveBusSelector',
 		    name: 'controller',
+		    itemId: 'controller',
 		    value: PVE.qemu.OSDefaults.generic.busType,
 		    noVirtIO: me.noVirtIO,
 		    allowBlank: false,
@@ -74,6 +89,7 @@ Ext.define('PVE.form.ControllerSelector', {
 		{
 		    xtype: 'proxmoxintegerfield',
 		    name: 'deviceid',
+		    itemId: 'deviceid',
 		    minValue: 0,
 		    maxValue: PVE.Utils.diskControllerMaxIDs.ide - 1,
 		    value: '0',
