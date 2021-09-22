@@ -29,6 +29,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 	    me.setWidget('pveNetworkCardSelector', targetValues.networkCard);
 	    var scsihw = targetValues.scsihw || '__default__';
 	    this.getViewModel().set('current.scsihw', scsihw);
+	    this.getViewModel().set('current.ostype', ostype);
 	},
 	setWidget: function(widget, newValue) {
 	    // changing a widget is safe only if ComponentQuery.query returns us
