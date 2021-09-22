@@ -111,5 +111,9 @@ Ext.define('PVE.form.ControllerSelector', {
 	});
 
 	me.callParent();
+
+	if (me.selectFree) {
+	    me.setVMConfig(me.vmconfig);
+	}
     },
 });
