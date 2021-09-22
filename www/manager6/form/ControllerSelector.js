@@ -95,7 +95,7 @@ Ext.define('PVE.form.ControllerSelector', {
 				return;
 			    }
 			    let field = me.down('field[name=deviceid]');
-			    field.setMaxValue(PVE.Utils.diskControllerMaxIDs[value]);
+			    field.setMaxValue(PVE.Utils.diskControllerMaxIDs[value] - 1);
 			    field.validate();
 			},
 		    },
@@ -104,7 +104,7 @@ Ext.define('PVE.form.ControllerSelector', {
 		    xtype: 'proxmoxintegerfield',
 		    name: 'deviceid',
 		    minValue: 0,
-		    maxValue: PVE.Utils.diskControllerMaxIDs.ide,
+		    maxValue: PVE.Utils.diskControllerMaxIDs.ide - 1,
 		    value: '0',
 		    flex: 1,
 		    allowBlank: false,
