@@ -131,7 +131,7 @@ Ext.define('PVE.window.Wizard', {
 			itemId: 'wizcontent',
 			xtype: 'tabpanel',
 			activeItem: 0,
-			bodyPadding: 10,
+			bodyPadding: 0,
 			listeners: {
 			    afterrender: function(tp) {
 				tabchange(tp, this.getActiveTab());
@@ -139,6 +139,9 @@ Ext.define('PVE.window.Wizard', {
 			    tabchange: function(tp, newcard, oldcard) {
 				tabchange(tp, newcard, oldcard);
 			    },
+			},
+			defaults: {
+			    padding: 10,
 			},
 			items: tabs,
 		    }],

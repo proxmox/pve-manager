@@ -155,6 +155,7 @@ Ext.define('PVE.qemu.CreateWizard', {
 	},
 	{
 	    xtype: 'pveQemuHDInputPanel',
+	    padding: 0,
 	    bind: {
 		nodename: '{nodename}',
 	    },
