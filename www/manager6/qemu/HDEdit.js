@@ -17,21 +17,22 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	xclass: 'Ext.app.ViewController',
 
 	onControllerChange: function(field) {
+	    let me = this;
 	    var value = field.getValue();
 
 	    var allowIOthread = value.match(/^(virtio|scsi)/);
-	    this.lookup('iothread').setDisabled(!allowIOthread);
+	    me.lookup('iothread').setDisabled(!allowIOthread);
 	    if (!allowIOthread) {
-		this.lookup('iothread').setValue(false);
+		me.lookup('iothread').setValue(false);
 	    }
 
 	    var virtio = value.match(/^virtio/);
-	    this.lookup('ssd').setDisabled(virtio);
+	    me.lookup('ssd').setDisabled(virtio);
 	    if (virtio) {
-		this.lookup('ssd').setValue(false);
+		me.lookup('ssd').setValue(false);
 	    }
 
-	    this.lookup('scsiController').setVisible(value.match(/^scsi/));
+	    me.lookup('scsiController').setVisible(value.match(/^scsi/));
 	},
 
 	control: {
