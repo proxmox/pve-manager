@@ -371,6 +371,9 @@ __PACKAGE__->register_method ({
 	    file_set_contents($ceph_bootstrap_osd_keyring, $bindata);
 	};
 
+	# See FIXME below
+	my @udev_trigger_devs = ();
+
 	my $create_part_or_lv = sub {
 	    my ($dev, $size, $type) = @_;
 
@@ -392,6 +395,8 @@ __PACKAGE__->register_method ({
 
 		PVE::Storage::LVMPlugin::lvm_create_volume_group($dev->{devpath}, $vg);
 		PVE::Storage::LVMPlugin::lvcreate($vg, $lv, "${size}k");
+
+		push @udev_trigger_devs, $dev->{devpath};
 
 		return "$vg/$lv";
 
@@ -423,7 +428,9 @@ __PACKAGE__->register_method ({
 	    } elsif ($dev->{used} eq 'partitions' && $dev->{gpt}) {
 		# create new partition at the end
 
-		return PVE::Diskmanage::append_partition($dev->{devpath}, $size * 1024);
+		my $part = PVE::Diskmanage::append_partition($dev->{devpath}, $size * 1024);
+		push @udev_trigger_devs, $part;
+		return $part;
 	    }
 
 	    die "cannot use '$dev->{devpath}' for '$type'\n";
@@ -444,6 +451,8 @@ __PACKAGE__->register_method ({
 		my $devname = $devs->{dev}->{name};
 		my $devpath = $disklist->{$devname}->{devpath};
 		print "create OSD on $devpath (bluestore)\n";
+
+		push @udev_trigger_devs, $devpath;
 
 		my $osd_size = $disklist->{$devname}->{size};
 		my $size_map = {
@@ -476,6 +485,12 @@ __PACKAGE__->register_method ({
 		PVE::Diskmanage::wipe_blockdev($devpath);
 
 		run_command($cmd);
+
+		# FIXME: Remove once we depend on systemd >= v249.
+		# Work around udev bug https://github.com/systemd/systemd/issues/18525 to ensure the
+		# udev database is updated.
+		eval { run_command(['udevadm', 'trigger', @udev_trigger_devs]); };
+		warn $@ if $@;
 	    });
 	};
 
@@ -583,12 +598,17 @@ __PACKAGE__->register_method ({
 	    # try to unmount from standard mount point
 	    my $mountpoint = "/var/lib/ceph/osd/ceph-$osdid";
 
+	    # See FIXME below
+	    my $udev_trigger_devs = {};
+
 	    my $remove_partition = sub {
 		my ($part) = @_;
 
 		return if !$part || (! -b $part );
 		my $partnum = PVE::Diskmanage::get_partnum($part);
 		my $devpath = PVE::Diskmanage::get_blockdev($part);
+
+		$udev_trigger_devs->{$devpath} = 1;
 
 		PVE::Diskmanage::wipe_blockdev($part);
 		print "remove partition $part (disk '${devpath}', partnum $partnum)\n";
@@ -611,6 +631,8 @@ __PACKAGE__->register_method ({
 
 			    eval { run_command(['/sbin/pvremove', $dev], errfunc => sub {}) };
 			    warn $@ if $@;
+
+			    $udev_trigger_devs->{$dev} = 1;
 			}
 		    }
 		}
@@ -647,6 +669,14 @@ __PACKAGE__->register_method ({
 			$remove_partition->($part);
 		    }
 		}
+	    }
+
+	    # FIXME: Remove once we depend on systemd >= v249.
+	    # Work around udev bug https://github.com/systemd/systemd/issues/18525 to ensure the
+	    # udev database is updated.
+	    if ($cleanup) {
+		eval { run_command(['udevadm', 'trigger', keys $udev_trigger_devs->%*]); };
+		warn $@ if $@;
 	    }
 	};
 
