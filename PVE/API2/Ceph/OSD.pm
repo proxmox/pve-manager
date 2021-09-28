@@ -473,7 +473,7 @@ __PACKAGE__->register_method ({
 		push @$cmd, '--data', $devpath;
 		push @$cmd, '--dmcrypt' if $param->{encrypted};
 
-		PVE::Ceph::Tools::wipe_disks($devpath);
+		PVE::Diskmanage::wipe_blockdev($devpath);
 
 		run_command($cmd);
 	    });
@@ -590,7 +590,7 @@ __PACKAGE__->register_method ({
 		my $partnum = PVE::Diskmanage::get_partnum($part);
 		my $devpath = PVE::Diskmanage::get_blockdev($part);
 
-		PVE::Ceph::Tools::wipe_disks($part);
+		PVE::Diskmanage::wipe_blockdev($part);
 		print "remove partition $part (disk '${devpath}', partnum $partnum)\n";
 		eval { run_command(['/sbin/sgdisk', '-d', $partnum, "${devpath}"]); };
 		warn $@ if $@;
