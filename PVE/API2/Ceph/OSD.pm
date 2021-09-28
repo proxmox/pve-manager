@@ -319,29 +319,35 @@ __PACKAGE__->register_method ({
 	    }
 	}
 
-	# test osd requirements early
-	my $devlist = [ map { $_->{name} } values %$devs ];
-	my $disklist = PVE::Diskmanage::get_disks($devlist, 1);
-	my $dev = $devs->{dev}->{dev};
-	my $devname = $devs->{dev}->{name};
-	die "unable to get device info for '$dev'\n" if !$disklist->{$devname};
-	die "device '$dev' is already in use\n" if $disklist->{$devname}->{used};
+	my $test_disk_requirements = sub {
+	    my ($disklist) = @_;
 
-	# test db/wal requirements early
-	for my $type ( qw(db_dev wal_dev) ) {
-	    my $d = $devs->{$type};
-	    next if !$d;
-	    my $name = $d->{name};
-	    my $info = $disklist->{$name};
-	    die "unable to get device info for '$d->{dev}' for type $type\n" if !$disklist->{$name};
-	    if (my $usage = $info->{used}) {
-		if ($usage eq 'partitions') {
-		    die "device '$d->{dev}' is not GPT partitioned\n" if !$info->{gpt};
-		} elsif ($usage ne 'LVM') {
-		    die "device '$d->{dev}' is already in use and has no LVM on it\n";
+	    my $dev = $devs->{dev}->{dev};
+	    my $devname = $devs->{dev}->{name};
+	    die "unable to get device info for '$dev'\n" if !$disklist->{$devname};
+	    die "device '$dev' is already in use\n" if $disklist->{$devname}->{used};
+
+	    for my $type ( qw(db_dev wal_dev) ) {
+		my $d = $devs->{$type};
+		next if !$d;
+		my $name = $d->{name};
+		my $info = $disklist->{$name};
+		die "unable to get device info for '$d->{dev}' for type $type\n" if !$disklist->{$name};
+		if (my $usage = $info->{used}) {
+		    if ($usage eq 'partitions') {
+			die "device '$d->{dev}' is not GPT partitioned\n" if !$info->{gpt};
+		    } elsif ($usage ne 'LVM') {
+			die "device '$d->{dev}' is already in use and has no LVM on it\n";
+		    }
 		}
 	    }
-	}
+	};
+
+
+	# test disk requirements early
+	my $devlist = [ map { $_->{name} } values %$devs ];
+	my $disklist = PVE::Diskmanage::get_disks($devlist, 1);
+	$test_disk_requirements->($disklist);
 
 	# get necessary ceph infos
 	my $rados = PVE::RADOS->new();
@@ -427,13 +433,15 @@ __PACKAGE__->register_method ({
 	    my $upid = shift;
 
 	    PVE::Diskmanage::locked_disk_action(sub {
-		# update disklist
+		# update disklist and re-test requirements
 		$disklist = PVE::Diskmanage::get_disks($devlist, 1);
+		$test_disk_requirements->($disklist);
 
 		my $dev_class = $param->{'crush-device-class'};
 		my $cmd = ['ceph-volume', 'lvm', 'create', '--cluster-fsid', $fsid ];
 		push @$cmd, '--crush-device-class', $dev_class if $dev_class;
 
+		my $devname = $devs->{dev}->{name};
 		my $devpath = $disklist->{$devname}->{devpath};
 		print "create OSD on $devpath (bluestore)\n";
 
@@ -471,7 +479,7 @@ __PACKAGE__->register_method ({
 	    });
 	};
 
-	return $rpcenv->fork_worker('cephcreateosd', $devname,  $authuser, $worker);
+	return $rpcenv->fork_worker('cephcreateosd', $devs->{dev}->{name},  $authuser, $worker);
     }});
 
 # Check if $osdid belongs to $nodename
