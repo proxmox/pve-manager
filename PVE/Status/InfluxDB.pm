@@ -244,6 +244,9 @@ sub _connect {
 sub test_connection {
     my ($class, $cfg, $id) = @_;
 
+    # do not check connection for disabled plugins
+    return if $cfg->{disable};
+
     my $proto = $cfg->{influxdbproto} // 'udp';
     if ($proto eq 'udp') {
 	return $class->SUPER::test_connection($cfg, $id);
