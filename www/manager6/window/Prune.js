@@ -186,6 +186,8 @@ Ext.define('PVE.PruneInputPanel', {
 			    if (record.data.mark === 'keep') {
 				return 'true (' + record.data.keepReason + ')';
 			    } else if (record.data.mark === 'protected') {
+				return 'true (protected)';
+			    } else if (record.data.mark === 'renamed') {
 				return 'true (renamed)';
 			    } else {
 				return 'false';
