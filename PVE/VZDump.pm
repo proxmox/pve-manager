@@ -992,6 +992,13 @@ sub exec_backup_task {
 	    my $pruned = 0;
 	    if (!defined($opts->{storage})) {
 		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname);
+
+		for my $prune_entry ($bklist->@*) {
+		    if (-e PVE::Storage::protection_file_path($prune_entry->{path})) {
+			$prune_entry->{mark} = 'protected';
+		    }
+		}
+
 		PVE::Storage::prune_mark_backup_group($bklist, $prune_options);
 
 		foreach my $prune_entry (@{$bklist}) {
