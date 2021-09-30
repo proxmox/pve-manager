@@ -323,6 +323,12 @@ Ext.define('PVE.grid.BackupView', {
 		    renderer: Ext.htmlEncode,
 		},
 		{
+		    header: gettext('Protected'),
+		    width: 100,
+		    renderer: Proxmox.Utils.format_boolean,
+		    dataIndex: 'protected',
+		},
+		{
 		    header: gettext('Date'),
 		    width: 150,
 		    dataIndex: 'vdate',

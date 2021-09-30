@@ -353,6 +353,12 @@ Ext.define('PVE.storage.ContentView', {
 		renderer: Ext.htmlEncode,
 		dataIndex: 'notes',
 	    },
+	    'protected': {
+		header: gettext('Protected'),
+		width: 100,
+		renderer: Proxmox.Utils.format_boolean,
+		dataIndex: 'protected',
+	    },
 	    'date': {
 		header: gettext('Date'),
 		width: 150,
