@@ -63,7 +63,6 @@ Ext.define('PVE.storage.Browser', {
 		    iconCls: 'fa fa-floppy-o',
 		    itemId: 'contentBackup',
 		    pluginType: plugin,
-		    hasNotesColumn: true,
 		});
 	    }
 	    if (contents.includes('images')) {

@@ -3,6 +3,8 @@ Ext.define('PVE.storage.BackupView', {
 
     alias: 'widget.pveStorageBackupView',
 
+    showColumns: ['name', 'notes', 'date', 'format', 'size'],
+
     initComponent: function() {
 	var me = this;
 

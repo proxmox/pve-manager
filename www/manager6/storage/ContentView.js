@@ -371,12 +371,14 @@ Ext.define('PVE.storage.ContentView', {
 	    },
 	};
 
-	if (me.hideColumns) {
-	    me.hideColumns.forEach(key => delete availableColumns[key]);
-	}
-	if (!me.hasNotesColumn) {
-	    delete availableColumns.notes;
-	}
+	let showColumns = me.showColumns || ['name', 'date', 'format', 'size'];
+
+	Object.keys(availableColumns).forEach(function(key) {
+	    if (!showColumns.includes(key)) {
+		delete availableColumns[key];
+	    }
+	});
+
 	if (me.extraColumns && typeof me.extraColumns === 'object') {
 	    Object.assign(availableColumns, me.extraColumns);
 	}
