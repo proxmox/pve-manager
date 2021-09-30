@@ -299,6 +299,25 @@ Ext.define('PVE.grid.BackupView', {
 			    }).show();
 			},
 		    },
+		    {
+			xtype: 'proxmoxButton',
+			text: gettext('Change Protection'),
+			disabled: true,
+			handler: function(button, event, record) {
+			    const volid = record.data.volid;
+			    const storage = storagesel.getValue();
+			    const url =
+				`/api2/extjs/nodes/${nodename}/storage/${storage}/content/${volid}`;
+			    Proxmox.Utils.API2Request({
+				url: url,
+				method: 'PUT',
+				waitMsgTarget: me,
+				params: { 'protected': record.data.protected ? 0 : 1 },
+				failure: (response) => Ext.Msg.alert('Error', response.htmlStatus),
+				success: (response) => reload(),
+			    });
+			},
+		    },
 		    '-',
 		    delete_btn,
 		    '->',
