@@ -205,6 +205,7 @@ JSSRC= 							\
 	qemu/DisplayEdit.js				\
 	qemu/HDEdit.js					\
 	qemu/HDEfi.js					\
+	qemu/HDTPM.js					\
 	qemu/HDMove.js					\
 	qemu/HDResize.js				\
 	qemu/HardwareView.js				\

@@ -28,6 +28,9 @@ Ext.define('PVE.form.DiskStorageSelector', {
     // hides the size field (e.g, for the efi disk dialog)
     hideSize: false,
 
+    // hides the format field (e.g. for TPM state), always assumes 'raw'
+    hideFormat: false,
+
     // sets the initial size value
     // string because else we get a type confusion
     defaultSize: '32',
@@ -155,7 +158,7 @@ Ext.define('PVE.form.DiskStorageSelector', {
 		fieldLabel: gettext('Format'),
 		nodename: me.nodename,
 		disabled: true,
-		hidden: me.storageContent === 'rootdir',
+		hidden: me.hideFormat || me.storageContent === 'rootdir',
 		value: 'qcow2',
 		allowBlank: false,
 	    },

@@ -245,6 +245,13 @@ Ext.define('PVE.qemu.HardwareView', {
 	    never_delete: !caps.vms['VM.Config.Disk'],
 	    header: gettext('EFI Disk'),
 	};
+	rows.tpmstate0 = {
+	    group: 22,
+	    iconCls: 'hdd-o',
+	    editor: null,
+	    never_delete: !caps.vms['VM.Config.Disk'],
+	    header: gettext('TPM State'),
+	};
 	for (let i = 0; i < PVE.Utils.hardware_counts.usb; i++) {
 	    let confid = "usb" + i.toString();
 	    rows[confid] = {
@@ -564,6 +571,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    me.down('#addnet').setDisabled(noVMConfigNetPerm || isAtLimit('net'));
 	    me.down('#addrng').setDisabled(noSysConsolePerm || isAtLimit('rng'));
 	    efidisk_menuitem.setDisabled(noVMConfigDiskPerm || isAtLimit('efidisk'));
+	    me.down('#addtpmstate').setDisabled(noSysConsolePerm || isAtLimit('tpmstate'));
 	    me.down('#addci').setDisabled(noSysConsolePerm || hasCloudInit);
 
 	    if (!rec) {
@@ -588,6 +596,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    const isUsedDisk = !isUnusedDisk && row.isOnStorageBus && !isCDRom && !isCloudInit;
 	    const isDisk = isCloudInit || isUnusedDisk || isUsedDisk;
 	    const isEfi = key === 'efidisk0';
+	    const tpmMoveable = key === 'tpmstate0' && !me.pveSelNode.data.running;
 
 	    remove_btn.setDisabled(
 	        deleted ||
@@ -608,7 +617,7 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    resize_btn.setDisabled(pending || !isUsedDisk || !diskCap);
 
-	    move_btn.setDisabled(pending || !(isUsedDisk || isEfi) || !diskCap);
+	    move_btn.setDisabled(pending || !(isUsedDisk || isEfi || tpmMoveable) || !diskCap);
 
 	    revert_btn.setDisabled(!pending);
 	};
@@ -666,6 +675,20 @@ Ext.define('PVE.qemu.HardwareView', {
 				},
 			    },
 			    efidisk_menuitem,
+			    {
+				text: gettext('TPM State'),
+				itemId: 'addtpmstate',
+				iconCls: 'fa fa-fw fa-hdd-o black',
+				disabled: !caps.vms['VM.Config.Disk'],
+				handler: function() {
+				    var win = Ext.create('PVE.qemu.TPMDiskEdit', {
+					url: '/api2/extjs/' + baseurl,
+					pveSelNode: me.pveSelNode,
+				    });
+				    win.on('destroy', me.reload, me);
+				    win.show();
+				},
+			    },
 			    {
 				text: gettext('USB Device'),
 				itemId: 'addusb',
