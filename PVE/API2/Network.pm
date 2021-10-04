@@ -226,6 +226,7 @@ __PACKAGE__->register_method({
 	my ($param) = @_;
 
 	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
 
 	my $tmp = PVE::INotify::read_file('interfaces', 1);
 	my $config = $tmp->{data};
@@ -238,20 +239,26 @@ __PACKAGE__->register_method({
 	delete $ifaces->{lo}; # do not list the loopback device
 
 	if ($param->{type}) {
+	    my $vnets = {};
+	    my $filtered_sdn = undef;
+	    my $privs = [ 'SDN.Audit', 'SDN.Allocate' ];
+
+	    if ($have_sdn && $param->{type} eq 'any_bridge') {
+		$vnets = PVE::Network::SDN::get_local_vnets();
+		$filtered_sdn = 1 if $authuser ne 'root@pam' && keys %{$vnets} > 0;
+	    }
+
 	    foreach my $k (keys %$ifaces) {
 		my $type = $ifaces->{$k}->{type};
 		my $match =  ($param->{type} eq $type) || (
 		    ($param->{type} eq 'any_bridge') && 
 		    ($type eq 'bridge' || $type eq 'OVSBridge'));
-		delete $ifaces->{$k} if !$match;
+		delete $ifaces->{$k} if !$match || ($filtered_sdn && !$rpcenv->check_any($authuser, "/sdn/vnets/$k", $privs, 1));
 	    }
 
-	    if ($have_sdn && $param->{type} eq 'any_bridge') {
-		my $vnets = PVE::Network::SDN::get_local_vnets();
-		map {
-		    $ifaces->{$_} = $vnets->{$_};
-		} keys %$vnets;
-	    }
+	    map {
+	    	$ifaces->{$_} = $vnets->{$_};
+	    } keys %$vnets;
 	}
 
 	return PVE::RESTHandler::hash_to_array($ifaces, 'iface');
