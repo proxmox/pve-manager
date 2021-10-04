@@ -239,6 +239,8 @@ Ext.define('PVE.tree.ResourceTree', {
 	    }
 
 	    let groups = me.viewFilter.groups || [];
+	    // explicitly check for node/template, as those are not always grouping attributes
+	    let moveCheckAttrs = groups.concat(['node', 'template']);
 	    let filterfn = me.viewFilter.filterfn;
 
 	    let reselect = false; // for disappeared nodes
@@ -251,15 +253,11 @@ Ext.define('PVE.tree.ResourceTree', {
 		let changed = false, moved = false;
 		if (item) {
 		    // test if any grouping attributes changed, catches migrated tree-nodes in server view too
-		    for (const attr of groups) {
+		    for (const attr of moveCheckAttrs) {
 			if (item.data[attr] !== olditem.data[attr]) {
 			    moved = true;
 			    break;
 			}
-		    }
-		    // explicitly check for node, as node is not a grouping attribute in some views
-		    if (!moved && item.data.node !== olditem.data.node) {
-			moved = true;
 		    }
 
 		    // tree item has been updated
