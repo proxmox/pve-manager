@@ -10,6 +10,7 @@ Ext.define('PVE.data.PermPathStore', {
 	{ 'value': '/access/realm' },
 	{ 'value': '/nodes' },
 	{ 'value': '/pool' },
+	{ 'value': '/sdn/zones' },
 	{ 'value': '/storage' },
 	{ 'value': '/vms' },
     ],
@@ -31,6 +32,8 @@ Ext.define('PVE.data.PermPathStore', {
 		case 'qemu': path = '/vms/' + record.get('vmid');
 		    break;
 		case 'lxc': path = '/vms/' + record.get('vmid');
+		    break;
+		case 'sdn': path = '/sdn/zones/' + record.get('sdn');
 		    break;
 		case 'storage': path = '/storage/' + record.get('storage');
 		    break;
