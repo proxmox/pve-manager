@@ -793,7 +793,7 @@ Ext.define('PVE.Utils', {
 	    backups: true,
 	},
 	cifs: {
-	    name: 'CIFS',
+	    name: 'SMB/CIFS',
 	    ipanel: 'CIFSInputPanel',
 	    faIcon: 'building',
 	    backups: true,
