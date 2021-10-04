@@ -49,7 +49,7 @@ Ext.define('PVE.lxc.FeaturesInputPanel', {
 	{
 	    xtype: 'proxmoxcheckbox',
 	    name: 'cifs',
-	    fieldLabel: 'CIFS',
+	    fieldLabel: 'SMB/CIFS',
 	    bind: {
 		disabled: '{unprivileged}',
 		boxLabel: '{privilegedOnly}',
