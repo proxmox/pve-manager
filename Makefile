@@ -38,8 +38,7 @@ $(DEB):
 	echo "git clone git://git.proxmox.com/git/pve-manager.git\\ngit checkout ${GITVERSION}" >  dest/debian/SOURCE
 	echo "REPOID_GENERATED=${REPOID}" > dest/debian/rules.env
 	cd dest; dpkg-buildpackage -b -us -uc
-	# supress lintian error: statically-linked-binary usr/bin/pvemailforward
-	lintian -X binaries ${DEB}
+	lintian ${DEB}
 
 .PHONY: upload
 upload: ${DEB} check
