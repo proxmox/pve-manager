@@ -155,7 +155,9 @@ sub check_ceph_installed {
 
     $service = 'ceph_bin' if !defined($service);
 
-    if (! -x $ceph_service->{$service}) {
+    # the flag file is checked as on a new installation, the binary gets
+    # extracted by dpkg before the installation is finished
+    if (! -x $ceph_service->{$service} || -f '/run/ceph-install-flag') {
 	die "binary not installed: $ceph_service->{$service}\n" if !$noerr;
 	return undef;
     }
