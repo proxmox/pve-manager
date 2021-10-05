@@ -178,27 +178,24 @@ __PACKAGE__->register_method ({
 
 	print "start installation\n";
 
-	# the install flag helps to determine when apt is done installing
+	# this flag helps to determine when apt is actually done installing (vs. partial extracing)
 	my $install_flag_fn = PVE::Ceph::Tools::ceph_install_flag_file();
-	open(my $install_flag, '>', "${install_flag_file}") or
-	     die "could not open Ceph installation flag - $!\n";
+	open(my $install_flag, '>', $install_flag_fn) or die "could not create install flag - $!\n";
 	close $install_flag;
 
 	if (system(@apt_install, @ceph_packages) != 0) {
-	    unlink $install_flag_file or
-		warn "Could not remove Ceph installation flag - $!";
+	    unlink $install_flag_fn or warn "could not remove Ceph installation flag - $!";
 	    die "apt failed during ceph installation ($?)\n";
 	}
 
 	print "\ninstalled ceph $cephver successfully!\n";
+	# done: drop flag file so that the PVE::Ceph::Tools check returns Ok now.
+	unlink $install_flag_fn or warn "could not remove Ceph installation flag - $!";
 
 	print "\nreloading API to load new Ceph RADOS library...\n";
 	run_command([
 	    'systemctl', 'try-reload-or-restart', 'pvedaemon.service', 'pveproxy.service'
 	]);
-
-	unlink $install_flag_file or
-	    warn "Could not remove Ceph installation flag - $!";
 
 	return undef;
     }});
