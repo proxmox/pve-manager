@@ -179,7 +179,7 @@ __PACKAGE__->register_method ({
 	print "start installation\n";
 
 	# the install flag helps to determine when apt is done installing
-	my $install_flag_file = '/run/ceph-install-flag';
+	my $install_flag_fn = PVE::Ceph::Tools::ceph_install_flag_file();
 	open(my $install_flag, '>', "${install_flag_file}") or
 	     die "could not open Ceph installation flag - $!\n";
 	close $install_flag;

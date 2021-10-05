@@ -150,6 +150,8 @@ sub purge_all_ceph_services {
     }
 }
 
+sub ceph_install_flag_file { return '/run/pve-ceph-install-flag' };
+
 sub check_ceph_installed {
     my ($service, $noerr) = @_;
 
@@ -157,7 +159,7 @@ sub check_ceph_installed {
 
     # the flag file is checked as on a new installation, the binary gets
     # extracted by dpkg before the installation is finished
-    if (! -x $ceph_service->{$service} || -f '/run/ceph-install-flag') {
+    if (! -x $ceph_service->{$service} || -f ceph_install_flag_file()) {
 	die "binary not installed: $ceph_service->{$service}\n" if !$noerr;
 	return undef;
     }
