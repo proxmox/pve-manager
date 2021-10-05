@@ -167,6 +167,7 @@ JSSRC= 							\
 	lxc/Options.js					\
 	lxc/ResourceEdit.js				\
 	lxc/Resources.js				\
+	lxc/MultiMPEdit.js				\
 	menu/MenuItem.js				\
 	menu/TemplateMenu.js				\
 	ceph/CephInstallWizard.js			\

@@ -197,15 +197,11 @@ Ext.define('PVE.lxc.CreateWizard', {
 	    ],
 	},
 	{
-	    xtype: 'pveLxcMountPointInputPanel',
-	    title: gettext('Root Disk'),
+	    xtype: 'pveMultiMPPanel',
+	    title: gettext('Disks'),
 	    insideWizard: true,
 	    isCreate: true,
 	    unused: false,
-	    bind: {
-		nodename: '{nodename}',
-		unprivileged: '{unprivileged}',
-	    },
 	    confid: 'rootfs',
 	},
 	{
