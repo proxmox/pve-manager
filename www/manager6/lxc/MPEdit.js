@@ -110,6 +110,11 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	control: {
 	    'field[name=mpid]': {
 		change: function(field, value) {
+		    let me = this;
+		    let view = this.getView();
+		    if (view.confid !== 'rootfs') {
+			view.fireEvent('diskidchange', view, `mp${value}`);
+		    }
 		    field.validate();
 		},
 	    },
