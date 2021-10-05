@@ -16,19 +16,17 @@ Ext.define('PVE.window.Wizard', {
     layout: 'border',
 
     getValues: function(dirtyOnly) {
-	var me = this;
+	let me = this;
 
-        var values = {};
+	let values = {};
 
-	var form = me.down('form').getForm();
+	me.down('form').getForm().getFields().each(field => {
+	    if (!field.up('inputpanel') && (!dirtyOnly || field.isDirty())) {
+		Proxmox.Utils.assemble_field_data(values, field.getSubmitData());
+	    }
+	});
 
-        form.getFields().each(function(field) {
-            if (!field.up('inputpanel') && (!dirtyOnly || field.isDirty())) {
-                Proxmox.Utils.assemble_field_data(values, field.getSubmitData());
-            }
-        });
-
-	Ext.Array.each(me.query('inputpanel'), function(panel) {
+	me.query('inputpanel').forEach(panel => {
 	    Proxmox.Utils.assemble_field_data(values, panel.getValues(dirtyOnly));
 	});
 
