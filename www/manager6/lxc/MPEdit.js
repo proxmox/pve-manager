@@ -75,12 +75,18 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	}
     },
 
-    setVMConfig: function(vmconfig) {
+    updateVMConfig: function(vmconfig) {
 	let me = this;
 	let vm = me.getViewModel();
 	me.vmconfig = vmconfig;
 	vm.set('unpriv', vmconfig.unprivileged);
+	me.down('field[name=mpid]').validate();
+    },
 
+    setVMConfig: function(vmconfig) {
+	let me = this;
+
+	me.updateVMConfig(vmconfig);
 	PVE.Utils.forEachMP((bus, i) => {
 	    let name = "mp" + i.toString();
 	    if (!Ext.isDefined(vmconfig[name])) {
