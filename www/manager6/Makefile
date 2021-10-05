@@ -217,6 +217,7 @@ JSSRC= 							\
 	qemu/MachineEdit.js				\
 	qemu/MemoryEdit.js				\
 	qemu/Monitor.js					\
+	qemu/MultiHDEdit.js				\
 	qemu/NetworkEdit.js				\
 	qemu/OSDefaults.js				\
 	qemu/OSTypeEdit.js				\

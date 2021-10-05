@@ -154,14 +154,11 @@ Ext.define('PVE.qemu.CreateWizard', {
 	    insideWizard: true,
 	},
 	{
-	    xtype: 'pveQemuHDInputPanel',
-	    padding: 0,
+	    xtype: 'pveMultiHDPanel',
 	    bind: {
 		nodename: '{nodename}',
 	    },
-	    title: gettext('Hard Disk'),
-	    isCreate: true,
-	    insideWizard: true,
+	    title: gettext('Disks'),
 	},
 	{
 	    xtype: 'pveQemuProcessorPanel',

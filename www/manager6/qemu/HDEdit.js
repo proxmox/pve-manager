@@ -107,6 +107,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	return params;
     },
 
+    updateVMConfig: function(vmconfig) {
+	var me = this;
+	me.vmconfig = vmconfig;
+	me.bussel?.updateVMConfig(vmconfig);
+    },
+
     setVMConfig: function(vmconfig) {
 	var me = this;
 
@@ -183,7 +189,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
 	if (!me.confid || me.unused) {
 	    me.bussel = Ext.create('PVE.form.ControllerSelector', {
-		vmconfig: me.insideWizard ? { ide2: 'cdrom' } : {},
+		vmconfig: me.vmconfig,
+		selectFree: true,
 	    });
 	    column1.push(me.bussel);
 
