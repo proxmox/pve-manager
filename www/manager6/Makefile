@@ -89,6 +89,7 @@ JSSRC= 							\
 	panel/GuestStatusView.js			\
 	panel/GuestSummary.js				\
 	panel/TemplateStatusView.js			\
+	panel/MultiDiskEdit.js				\
 	tree/ResourceTree.js				\
 	tree/SnapshotTree.js				\
 	window/Backup.js				\
