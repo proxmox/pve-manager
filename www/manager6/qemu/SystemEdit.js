@@ -27,6 +27,7 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	delete values.diskformat;
 
 	delete values.preEnrolledKeys; // efidisk
+	delete values.version; // tpmstate
 
 	return values;
     },
@@ -135,6 +136,27 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 		['__default__', PVE.Utils.render_qemu_machine('')],
 		['q35', 'q35'],
 	    ],
+	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    reference: 'addtpmbox',
+	    bind: {
+		value: '{addtpm}',
+	    },
+	    submitValue: false,
+	    fieldLabel: gettext('Add TPM'),
+	},
+	{
+	    xtype: 'pveTPMDiskInputPanel',
+	    name: 'tpmstate0',
+	    storageContent: 'images',
+	    bind: {
+		nodename: '{nodename}',
+		hidden: '{!addtpm}',
+		disabled: '{!addtpm}',
+	    },
+	    disabled: true,
+	    hidden: true,
 	},
     ],
 
