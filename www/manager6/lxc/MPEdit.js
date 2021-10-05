@@ -149,6 +149,9 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 		    view.filterMountOptions();
 		}
 	    }
+	    if (view.selectFree) {
+		view.setVMConfig(view.vmconfig);
+	    }
 	},
     },
 
