@@ -8,6 +8,10 @@ Ext.define('PVE.qemu.TPMDiskInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
+	if (me.disabled) {
+	    return {};
+	}
+
 	var confid = 'tpmstate0';
 
 	if (values.hdimage) {
@@ -29,6 +33,13 @@ Ext.define('PVE.qemu.TPMDiskInputPanel', {
 	me.down('#hdimage').setStorage(undefined, nodename);
     },
 
+    setDisabled: function(disabled) {
+	let me = this;
+	me.down('pveDiskStorageSelector').setDisabled(disabled);
+	me.down('proxmoxKVComboBox[name=version]').setDisabled(disabled);
+	me.callParent(arguments);
+    },
+
     initComponent: function() {
 	var me = this;
 
@@ -40,6 +51,7 @@ Ext.define('PVE.qemu.TPMDiskInputPanel', {
 		name: me.disktype + '0',
 		storageContent: 'images',
 		nodename: me.nodename,
+		disabled: me.disabled,
 		hideSize: true,
 		hideFormat: true,
 	    },
@@ -47,8 +59,9 @@ Ext.define('PVE.qemu.TPMDiskInputPanel', {
 		xtype: 'proxmoxKVComboBox',
 		name: 'version',
 		value: 'v2.0',
-		deleteEmpty: false,
 		fieldLabel: gettext('Version'),
+		deleteEmpty: false,
+		disabled: me.disabled,
 		comboItems: [
 		    ['v1.2', 'v1.2'],
 		    ['v2.0', 'v2.0'],

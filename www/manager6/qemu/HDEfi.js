@@ -11,6 +11,10 @@ Ext.define('PVE.qemu.EFIDiskInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 
+	if (me.disabled) {
+	    return {};
+	}
+
 	var confid = 'efidisk0';
 
 	if (values.hdimage) {
@@ -32,17 +36,24 @@ Ext.define('PVE.qemu.EFIDiskInputPanel', {
 	me.down('#hdimage').setStorage(undefined, nodename);
     },
 
+    setDisabled: function(disabled) {
+	let me = this;
+	me.down('pveDiskStorageSelector').setDisabled(disabled);
+	me.callParent(arguments);
+    },
+
     initComponent: function() {
 	var me = this;
 
 	me.drive = {};
 
-	me.items= [
+	me.items = [
 	    {
 		xtype: 'pveDiskStorageSelector',
 		name: 'efidisk0',
 		storageContent: 'images',
 		nodename: me.nodename,
+		disabled: me.disabled,
 		hideSize: true,
 	    },
 	    {
