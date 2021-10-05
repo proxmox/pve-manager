@@ -1,3 +1,43 @@
+pve-manager (7.0-12) bullseye; urgency=medium
+
+  * ui: add version to extjs script urls
+
+  * ui: cluster backup: fix running backup with prune settings
+
+  * fix #1803: ui: cluster backup: handle job-specific retention options
+
+  * vzdump: include current backup when pruning dumpdir
+
+  * ui: backup job detail: also show retention settings
+
+  * ui: backup job detail view: merge mail notification when/to fields
+
+  * ui: improve ACME edit/apply button visibilty
+
+  * fix #3620: ui: dc/storage: delete empty pbs fingerprint on edit
+
+  * ui: cluster backup: only restrict storages to node when it's selected
+
+  * influxdb: do not test the connection when entry is (getting) disabled
+
+  * api: ceph: create osd: work around stale-information udev bug
+
+  * ui: qemu/HDEdit: move Bandwidth options to a different tab
+
+  * ui: form/ControllerSelector: set correct max value for the device-id
+
+  * drop pve5to6 checker tool, not relevant in 7.x release anymore
+
+  * ui: change CIFS to SMB/CIFS for clarification
+
+  * ceph install: improve ceph install checks during installation for when
+    dpkg already extracted ceph binaries but is not yet done with the
+    installation. This avoids activating the `Next` button to early.
+
+  * ui: add support for adding TPM devices
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 05 Oct 2021 08:07:44 +0200
+
 pve-manager (7.0-11) bullseye; urgency=medium
 
   * fix #3426: ui: parser: adapt parseSSHKey to accept "@..." suffix
