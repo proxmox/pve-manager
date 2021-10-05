@@ -22,24 +22,11 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    values['serial' + values.vga.substr(6, 1)] = 'socket';
 	}
 
-	var efidrive = {};
-	if (values.hdimage) {
-	    efidrive.file = values.hdimage;
-	} else if (values.hdstorage) {
-	    efidrive.file = values.hdstorage + ":1";
-	}
-
-	if (values.diskformat) {
-	    efidrive.format = values.diskformat;
-	}
-
 	delete values.hdimage;
 	delete values.hdstorage;
 	delete values.diskformat;
 
-	if (efidrive.file) {
-	    values.efidisk0 = PVE.Parser.printQemuDrive(efidrive);
-	}
+	delete values.preEnrolledKeys; // efidisk
 
 	return values;
     },
@@ -122,7 +109,7 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    fieldLabel: gettext('Add EFI Disk'),
 	},
 	{
-	    xtype: 'pveDiskStorageSelector',
+	    xtype: 'pveEFIDiskInputPanel',
 	    name: 'efidisk0',
 	    storageContent: 'images',
 	    bind: {
@@ -134,6 +121,7 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    disabled: true,
 	    hidden: true,
 	    hideSize: true,
+	    usesEFI: true,
 	},
     ],
 
