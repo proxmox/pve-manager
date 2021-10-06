@@ -395,6 +395,11 @@ __PACKAGE__->register_method ({
 		PVE::Storage::LVMPlugin::lvm_create_volume_group($dev->{devpath}, $vg);
 		PVE::Storage::LVMPlugin::lvcreate($vg, $lv, "${size}k");
 
+		if (PVE::Diskmanage::is_partition($dev->{devpath})) {
+		    eval { PVE::Diskmanage::change_parttype($dev->{devpath}, '8E00'); };
+		    warn $@ if $@;
+		}
+
 		push @udev_trigger_devs, $dev->{devpath};
 
 		return "$vg/$lv";
@@ -492,6 +497,11 @@ __PACKAGE__->register_method ({
 		push @$cmd, '--dmcrypt' if $param->{encrypted};
 
 		PVE::Diskmanage::wipe_blockdev($devpath);
+
+		if (PVE::Diskmanage::is_partition($devpath)) {
+		    eval { PVE::Diskmanage::change_parttype($devpath, '8E00'); };
+		    warn $@ if $@;
+		}
 
 		run_command($cmd);
 
