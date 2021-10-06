@@ -16,35 +16,13 @@ Ext.define('PVE.node.CreateZFS', {
 	    throw "no node name specified";
 	}
 
-	let update_disklist = function() {
-	    let grid = me.down('#disklist');
-	    let disks = grid.getSelection();
-
-	    disks.sort(function(a, b) {
-		let aOrder = a.get('order') || 0;
-		let bOrder = b.get('order') || 0;
-		return aOrder - bOrder;
-	    });
-
-	    let selectedDevices = disks.map(disk => disk.get('devpath')).join(';');
-
-	    me.down('field[name=devices]').setValue(selectedDevices);
-	};
-
 	Ext.apply(me, {
 	    url: `/nodes/${me.nodename}/disks/zfs`,
 	    method: 'POST',
 	    items: [
 		{
 		    xtype: 'inputpanel',
-		    onGetValues: values => values, // FIXME leftover?
 		    column1: [
-			{
-			    xtype: 'textfield',
-			    hidden: true,
-			    name: 'devices',
-			    allowBlank: false,
-			},
 			{
 			    xtype: 'proxmoxtextfield',
 			    name: 'name',
@@ -99,62 +77,13 @@ Ext.define('PVE.node.CreateZFS', {
 		    ],
 		    columnB: [
 			{
-			    xtype: 'grid',
+			    xtype: 'pmxMultiDiskSelector',
+			    name: 'devices',
+			    nodename: me.nodename,
+			    diskType: 'unused',
 			    height: 200,
 			    emptyText: gettext('No Disks unused'),
 			    itemId: 'disklist',
-			    selModel: 'checkboxmodel',
-			    listeners: {
-				selectionchange: update_disklist,
-			    },
-			    store: {
-				proxy: {
-				    type: 'proxmox',
-				    url: `/api2/json/nodes/${me.nodename}/disks/list?type=unused`,
-				},
-			    },
-			    columns: [
-				{
-				    text: gettext('Device'),
-				    dataIndex: 'devpath',
-				    flex: 2,
-				},
-				{
-				    text: gettext('Model'),
-				    dataIndex: 'model',
-				    flex: 2,
-				},
-				{
-				    text: gettext('Serial'),
-				    dataIndex: 'serial',
-				    flex: 2,
-				},
-				{
-				    text: gettext('Size'),
-				    dataIndex: 'size',
-				    renderer: Proxmox.Utils.render_size,
-				    flex: 1,
-				},
-				{
-				    header: gettext('Order'),
-				    xtype: 'widgetcolumn',
-				    dataIndex: 'order',
-				    sortable: true,
-				    flex: 1,
-				    widget: {
-					xtype: 'proxmoxintegerfield',
-					minValue: 1,
-					isFormField: false,
-					listeners: {
-					    change: function(numberfield, value, old_value) {
-						let record = numberfield.getWidgetRecord();
-						record.set('order', value);
-						update_disklist(record);
-					    },
-					},
-				    },
-				},
-			    ],
 			},
 		    ],
 		},
@@ -170,7 +99,6 @@ Ext.define('PVE.node.CreateZFS', {
 	});
 
         me.callParent();
-	me.down('#disklist').getStore().load();
     },
 });
 
