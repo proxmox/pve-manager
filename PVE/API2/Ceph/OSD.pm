@@ -426,8 +426,18 @@ __PACKAGE__->register_method ({
 
 	    } elsif ($dev->{used} eq 'partitions' && $dev->{gpt}) {
 		# create new partition at the end
+		my $parttypes = {
+		    'osd-db' => '30CD0809-C2B2-499C-8879-2D6B78529876',
+		    'osd-wal' => '5CE17FCE-4087-4169-B7FF-056CC58473F9',
+		};
 
 		my $part = PVE::Diskmanage::append_partition($dev->{devpath}, $size * 1024);
+
+		if (my $parttype = $parttypes->{$type}) {
+		    eval { PVE::Diskmanage::change_parttype($part, $parttype); };
+		    warn $@ if $@;
+		}
+
 		push @udev_trigger_devs, $part;
 		return $part;
 	    }
