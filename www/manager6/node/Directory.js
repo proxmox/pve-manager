@@ -26,6 +26,7 @@ Ext.define('PVE.node.CreateDirectory', {
 		    name: 'device',
 		    nodename: me.nodename,
 		    diskType: 'unused',
+		    includePartitions: true,
 		    fieldLabel: gettext('Disk'),
 		    allowBlank: false,
 		},

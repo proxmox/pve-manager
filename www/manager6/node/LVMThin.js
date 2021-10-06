@@ -24,6 +24,7 @@ Ext.define('PVE.node.CreateLVMThin', {
 		    name: 'device',
 		    nodename: me.nodename,
 		    diskType: 'unused',
+		    includePartitions: true,
 		    fieldLabel: gettext('Disk'),
 		    allowBlank: false,
 		},

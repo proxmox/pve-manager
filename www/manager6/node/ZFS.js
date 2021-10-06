@@ -81,6 +81,7 @@ Ext.define('PVE.node.CreateZFS', {
 			    name: 'devices',
 			    nodename: me.nodename,
 			    diskType: 'unused',
+			    includePartitions: true,
 			    height: 200,
 			    emptyText: gettext('No Disks unused'),
 			    itemId: 'disklist',
