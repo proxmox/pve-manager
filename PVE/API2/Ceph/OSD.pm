@@ -345,7 +345,7 @@ __PACKAGE__->register_method ({
 
 	# test disk requirements early
 	my $devlist = [ map { $_->{name} } values %$devs ];
-	my $disklist = PVE::Diskmanage::get_disks($devlist, 1);
+	my $disklist = PVE::Diskmanage::get_disks($devlist, 1, 1);
 	$test_disk_requirements->($disklist);
 
 	# get necessary ceph infos
@@ -450,7 +450,7 @@ __PACKAGE__->register_method ({
 
 	    PVE::Diskmanage::locked_disk_action(sub {
 		# update disklist and re-test requirements
-		$disklist = PVE::Diskmanage::get_disks($devlist, 1);
+		$disklist = PVE::Diskmanage::get_disks($devlist, 1, 1);
 		$test_disk_requirements->($disklist);
 
 		my $dev_class = $param->{'crush-device-class'};
