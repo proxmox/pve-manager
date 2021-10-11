@@ -1097,6 +1097,7 @@ sub exec_backup_task {
 			'upload-log',
 			[ $pbs_snapshot_name, $task->{tmplog} ],
 			errmsg => "uploading backup task log failed",
+			outfunc => sub {},
 		    );
 		};
 		debugmsg('warn', "$@") if $@; # $@ contains already error prefix
