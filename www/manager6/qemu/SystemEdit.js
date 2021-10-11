@@ -56,6 +56,20 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    'pveQemuBiosSelector': {
 		change: 'biosChange',
 	    },
+	    '#': {
+		afterrender: 'setMachine',
+	    },
+	},
+
+	setMachine: function() {
+	    let me = this;
+	    let vm = this.getViewModel();
+	    let ostype = vm.get('current.ostype');
+	    if (ostype === 'win11') {
+		me.lookup('machine').setValue('q35');
+		me.lookup('bios').setValue('ovmf');
+		me.lookup('addtpmbox').setValue(true);
+	    }
 	},
     },
 
@@ -71,6 +85,7 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	{
 	    xtype: 'proxmoxKVComboBox',
 	    name: 'machine',
+	    reference: 'machine',
 	    value: '__default__',
 	    fieldLabel: gettext('Machine'),
 	    comboItems: [
@@ -81,6 +96,7 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	{
 	    xtype: 'pveQemuBiosSelector',
 	    name: 'bios',
+	    reference: 'bios',
 	    value: '__default__',
 	    fieldLabel: 'BIOS',
 	},
