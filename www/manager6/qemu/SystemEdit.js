@@ -69,28 +69,15 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    comboItems: PVE.Utils.kvm_vga_driver_array(),
 	},
 	{
-	    xtype: 'proxmoxcheckbox',
-	    name: 'agent',
-	    uncheckedValue: 0,
-	    defaultValue: 0,
-	    deleteDefaultValue: true,
-	    fieldLabel: gettext('Qemu Agent'),
-	},
-    ],
-
-    column2: [
-	{
-	    xtype: 'pveScsiHwSelector',
-	    name: 'scsihw',
+	    xtype: 'proxmoxKVComboBox',
+	    name: 'machine',
 	    value: '__default__',
-	    bind: {
-		value: '{current.scsihw}',
-	    },
-	    fieldLabel: gettext('SCSI Controller'),
+	    fieldLabel: gettext('Machine'),
+	    comboItems: [
+		['__default__', PVE.Utils.render_qemu_machine('')],
+		['q35', 'q35'],
+	    ],
 	},
-    ],
-
-    advancedColumn1: [
 	{
 	    xtype: 'pveQemuBiosSelector',
 	    name: 'bios',
@@ -126,16 +113,23 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	},
     ],
 
-    advancedColumn2: [
+    column2: [
 	{
-	    xtype: 'proxmoxKVComboBox',
-	    name: 'machine',
+	    xtype: 'pveScsiHwSelector',
+	    name: 'scsihw',
 	    value: '__default__',
-	    fieldLabel: gettext('Machine'),
-	    comboItems: [
-		['__default__', PVE.Utils.render_qemu_machine('')],
-		['q35', 'q35'],
-	    ],
+	    bind: {
+		value: '{current.scsihw}',
+	    },
+	    fieldLabel: gettext('SCSI Controller'),
+	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    name: 'agent',
+	    uncheckedValue: 0,
+	    defaultValue: 0,
+	    deleteDefaultValue: true,
+	    fieldLabel: gettext('Qemu Agent'),
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
