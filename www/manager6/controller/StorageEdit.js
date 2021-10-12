@@ -4,6 +4,12 @@ Ext.define('PVE.controller.StorageEdit', {
     control: {
 	'field[name=content]': {
 	    change: function(field, value) {
+		const hasImages = Ext.Array.contains(value, 'images');
+		const prealloc = field.up('form').getForm().findField('preallocation');
+		if (prealloc) {
+		    prealloc.setDisabled(!hasImages);
+		}
+
 		var hasBackups = Ext.Array.contains(value, 'backup');
 		var maxfiles = this.lookupReference('maxfiles');
 		if (!maxfiles) {

@@ -51,6 +51,26 @@ Ext.define('PVE.panel.StorageBase', {
 	    },
 	);
 
+	const qemuImgStorageTypes = ['dir', 'btrfs', 'nfs', 'cifs', 'glusterfs'];
+
+	if (qemuImgStorageTypes.includes(me.type)) {
+	    const preallocSelector = {
+		xtype: 'pvePreallocationSelector',
+		name: 'preallocation',
+		fieldLabel: gettext('Preallocation'),
+		allowBlank: false,
+		value: '__default__',
+	    };
+
+	    me.advancedColumn1 = me.advancedColumn1 || [];
+	    me.advancedColumn2 = me.advancedColumn2 || [];
+	    if (me.advancedColumn2.length < me.advancedColumn1.length) {
+		me.advancedColumn2.unshift(preallocSelector);
+	    } else {
+		me.advancedColumn1.unshift(preallocSelector);
+	    }
+	}
+
 	me.callParent();
     },
 });

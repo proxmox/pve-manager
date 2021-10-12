@@ -143,7 +143,7 @@ Ext.define('PVE.storage.NFSInputPanel', {
 	    },
 	];
 
-	me.advancedColumn1 = [
+	me.advancedColumn2 = [
 	    {
 		xtype: 'proxmoxKVComboBox',
 		fieldLabel: gettext('NFS Version'),
