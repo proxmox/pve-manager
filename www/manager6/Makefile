@@ -49,6 +49,7 @@ JSSRC= 							\
 	form/PCISelector.js				\
 	form/PermPathSelector.js			\
 	form/PoolSelector.js				\
+	form/PreallocationSelector.js			\
 	form/PrivilegesSelector.js			\
 	form/QemuBiosSelector.js			\
 	form/SDNControllerSelector.js			\
