@@ -343,8 +343,9 @@ sub rebalance_lxc_containers {
 
 	my @cpuset_members = $cpuset->members();
 
-	if (!PVE::LXC::Config->has_lxc_entry($conf, 'lxc.cgroup.cpuset.cpus')) {
-
+	if (!PVE::LXC::Config->has_lxc_entry($conf, 'lxc.cgroup.cpuset.cpus')
+	    && !PVE::LXC::Config->has_lxc_entry($conf, 'lxc.cgroup2.cpuset.cpus')
+	) {
 	    my $cores = $conf->{cores} || $cpucount;
 	    $cores = $cpucount if $cores > $cpucount;
 
