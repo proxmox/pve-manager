@@ -187,6 +187,8 @@ my $mocked_volume_snapshot = sub {
     my $d = $mocked_storage_content->{$storeid}->{$volname};
     die "no such volid '$volid'\n" if !$d;
     $d->{$snap} = 1;
+
+    return;
 };
 
 my $mocked_volume_snapshot_delete = sub {
