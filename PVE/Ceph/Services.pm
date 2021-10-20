@@ -51,9 +51,6 @@ sub broadcast_ceph_versions {
     my ($version, $buildcommit, $vers_parts) = PVE::Ceph::Tools::get_local_version(1);
 
     if ($version) {
-	# FIXME: remove with 7.0 - for backward compat only
-	PVE::Cluster::broadcast_node_kv("ceph-version", $version);
-
 	my $node_versions = {
 	    version => {
 		str => $version,
