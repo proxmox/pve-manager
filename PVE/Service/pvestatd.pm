@@ -383,7 +383,7 @@ sub rebalance_lxc_containers {
 
 	foreach my $candidate (@$cpulist) {
 	    my $cost = $cpu_ctcount[$candidate];
-	    if ($cost < ($cur_cost -1)) {
+	    if ($cost < ($cur_cost - 1)) {
 		$cur_cost = $cost;
 		$cur_cpu = $candidate;
 	    }
@@ -395,17 +395,11 @@ sub rebalance_lxc_containers {
     foreach my $bct (@balanced_cts) {
 	my ($vmid, $cores, $cpuset) = @$bct;
 
+	my $rest = [ grep { !$cpuset->has($_) } @allowed_cpus ];
+
 	my $newset = PVE::CpuSet->new();
-
-	my $rest = [];
-	foreach my $cpu (@allowed_cpus) {
-	    next if $cpuset->has($cpu);
-	    push @$rest, $cpu;
-	}
-
-	my @members = $cpuset->members();
-	foreach my $cpu (@members) {
-	    my $best =  &$find_best_cpu($rest, $cpu);
+	for my $cpu ($cpuset->members()) {
+	    my $best = $find_best_cpu->($rest, $cpu);
 	    if ($best != $cpu) {
 		$cpu_ctcount[$best]++;
 		$cpu_ctcount[$cpu]--;
