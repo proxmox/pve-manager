@@ -85,11 +85,9 @@ sub get_cluster_service {
     my ($type) = @_;
 
     my $raw = PVE::Cluster::get_node_kv("ceph-$type");
-    my $res = {};
-
-    for my $host (keys %$raw) {
-	$res->{$host} = eval { decode_json($raw->{$host}) };
-    }
+    my $res = {
+	map { $_ => eval { decode_json($raw->{$_}) } } keys $raw->%*
+    };
 
     return $res;
 }
