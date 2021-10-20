@@ -6,12 +6,10 @@ Before=sysinit.target
 
 [Service]
 ExecStartPre=-/bin/rm -f /etc/openvswitch/conf.db
-ExecStartPre=-/bin/mv /etc/network/interfaces.new /etc/network/interfaces
-ExecStart=/bin/true
+Environment="FN=/etc/network/interfaces"
+ExecStart=sh -c 'if [ -f ${FN}.new ]; then mv ${FN}.new ${FN}; fi'
 Type=oneshot
 RemainAfterExit=yes
 
-
 [Install]
 WantedBy=sysinit.target
-
