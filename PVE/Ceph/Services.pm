@@ -51,6 +51,13 @@ sub broadcast_ceph_versions {
     my ($version, $buildcommit, $vers_parts) = PVE::Ceph::Tools::get_local_version(1);
 
     if ($version) {
+	if (my $old = PVE::Cluster::get_node_kv("ceph-versions")) {
+	    $old = eval { decode_json($old) };
+	    warn $@ if $@; # should not happen
+	    if (defined($old) && $old->{buildcommit} eq $buildcommit && $old->{str} eq $version) {
+		return; # up to date, nothing to do so avoid (not exactly cheap) broadcast
+	    }
+	}
 	my $node_versions = {
 	    version => {
 		str => $version,
