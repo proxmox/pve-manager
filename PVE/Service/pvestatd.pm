@@ -284,8 +284,7 @@ sub rebalance_lxc_containers {
 	my ($vmid, $cpuset, $newset) = @_;
 
 	if (!$rebalance_error_count->{$vmid}) {
-	    syslog('info', "modified cpu set for lxc/$vmid: " .
-		   $newset->short_string());
+	    syslog('info', "modified cpu set for lxc/$vmid: " . $newset->short_string());
 	}
 
 	eval {
@@ -321,21 +320,16 @@ sub rebalance_lxc_containers {
 
     foreach my $vmid (sort keys %$ctlist) {
 	my $cgpath = "$cpuset_base/lxc/$vmid";
-
 	if (-d "$cgpath/ns") {
 	    $ctinfo->{$vmid} = $cgpath;
 	} else {
-	    # old style container
-	    next;
+	    next; # old style container
 	}
 
-	my ($conf, $cpuset);
-	eval {
-
-	    $conf = PVE::LXC::Config->load_config($vmid);
-
-	    $cpuset = PVE::CpuSet->new_from_path($cgpath);
-	};
+	my ($conf, $cpuset) = eval {(
+	    PVE::LXC::Config->load_config($vmid),
+	    PVE::CpuSet->new_from_path($cgpath),
+	)};
 	if (my $err = $@) {
 	    warn $err;
 	    next;
@@ -349,8 +343,7 @@ sub rebalance_lxc_containers {
 	    my $cores = $conf->{cores} || $cpucount;
 	    $cores = $cpucount if $cores > $cpucount;
 
-	    # see if the number of cores was hot-reduced or
-	    # hasn't been enacted at all yet
+	    # see if the number of cores was hot-reduced or hasn't been enacted at all yet
 	    my $newset = PVE::CpuSet->new();
 	    if ($cores <  scalar(@cpuset_members)) {
 		for (my $i = 0; $i < $cores; $i++) {
