@@ -58,6 +58,7 @@ Ext.define('PVE.qemu.EFIDiskInputPanel', {
 	    {
 		xtype: 'pveDiskStorageSelector',
 		name: 'efidisk0',
+		storageLabel: gettext('EFI Storage'),
 		storageContent: 'images',
 		nodename: me.nodename,
 		disabled: me.disabled,
@@ -72,7 +73,7 @@ Ext.define('PVE.qemu.EFIDiskInputPanel', {
 		//boxLabel: '(e.g., Microsoft secure-boot keys')',
 		autoEl: {
 		    tag: 'div',
-		    'data-qtip': gettext('Enroll standard distribution and Microsoft secure boot keys.'),
+		    'data-qtip': gettext('Use EFIvars image with standard distribution and Microsoft secure boot keys enrolled.'),
 		},
 	    },
 	    {

@@ -49,6 +49,7 @@ Ext.define('PVE.qemu.TPMDiskInputPanel', {
 	    {
 		xtype: 'pveDiskStorageSelector',
 		name: me.disktype + '0',
+		storageLabel: gettext('TPM Storage'),
 		storageContent: 'images',
 		nodename: me.nodename,
 		disabled: me.disabled,
