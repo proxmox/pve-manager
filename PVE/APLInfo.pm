@@ -84,7 +84,7 @@ sub read_aplinfo_from_fh {
 	    my $template;
 	    if ($res->{location}) {
 		$template = $res->{location};
-		$template =~ s|.*/([^/]+$PVE::Storage::vztmpl_extension_re)$|$1|;
+		$template =~ s|.*/([^/]+$PVE::Storage::VZTMPL_EXT_RE_1)$|$1|;
 		if ($res->{location} !~ m|^([a-zA-Z]+)\://|) {
 		    # relative localtion (no http:// prefix)
 		    $res->{location} = "$source/$res->{location}";
