@@ -89,6 +89,8 @@ Ext.define('PVE.grid.BackupView', {
 		url: url,
 	    });
 
+	    Proxmox.Utils.monStoreErrors(me.view, me.store, true);
+
 	    reload();
 	};
 
