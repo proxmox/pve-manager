@@ -128,8 +128,14 @@ __PACKAGE__->register_method ({
 	die "ceph pools '$pool_data' and/or '$pool_metadata' already exist\n"
 	    if $existing_pools->{$pool_data} || $existing_pools->{$pool_metadata};
 
+	my $fs = PVE::Ceph::Tools::ls_fs($rados);
+	die "ceph fs '$fs_name' already exists\n"
+	    if (grep { $_->{name} eq $fs_name } @$fs);
+
 	my $running_mds = PVE::Ceph::Services::get_cluster_mds_state($rados);
 	die "no running Metadata Server (MDS) found!\n" if !scalar(keys %$running_mds);
+	die "no standby Metadata Server (MDS) found!\n"
+	    if !grep { $_->{state} eq 'up:standby' } values(%$running_mds);
 
 	PVE::Storage::assert_sid_unused($fs_name) if $param->{add_storage};
 
