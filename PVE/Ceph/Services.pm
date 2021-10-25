@@ -218,23 +218,26 @@ sub get_cluster_mds_state {
     return $mds_state;
 }
 
-sub is_any_mds_active {
-    my ($rados) = @_;
+sub is_mds_active {
+    my ($rados, $fs_name) = @_;
 
     if (!defined($rados)) {
 	$rados = PVE::RADOS->new();
     }
 
     my $mds_dump = $rados->mon_command({ prefix => 'mds stat' });
-    my $fs = $mds_dump->{fsmap}->{filesystems};
+    my $fsmap = $mds_dump->{fsmap}->{filesystems};
 
-    if (!($fs && scalar(@$fs) > 0)) {
+    if (!($fsmap && scalar(@$fsmap) > 0)) {
 	return undef;
     }
-    my $active_mds = $fs->[0]->{mdsmap}->{info};
+    for my $fs (@$fsmap) {
+	next if defined($fs_name) && $fs->{mdsmap}->{fs_name} ne $fs_name;
 
-    for my $mds (values %$active_mds) {
-	return 1 if $mds->{state} eq 'up:active';
+	my $active_mds = $fs->{mdsmap}->{info};
+	for my $mds (values %$active_mds) {
+	    return 1 if $mds->{state} eq 'up:active';
+	}
     }
 
     return 0;

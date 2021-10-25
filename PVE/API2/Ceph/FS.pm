@@ -187,7 +187,7 @@ __PACKAGE__->register_method ({
 		print "Adding '$fs_name' to storage configuration...\n";
 
 		my $waittime = 0;
-		while (!PVE::Ceph::Services::is_any_mds_active($rados)) {
+		while (!PVE::Ceph::Services::is_mds_active($rados, $fs_name)) {
 		    if ($waittime >= 10) {
 			die "Need MDS to add storage, but none got active!\n";
 		    }
