@@ -185,13 +185,14 @@ sub get_cluster_mds_state {
     }
 
     my $add_state = sub {
-	my ($mds) = @_;
+	my ($mds, $fsname) = @_;
 
 	my $state = {};
 	$state->{addr} = $mds->{addr};
 	$state->{rank} = $mds->{rank};
 	$state->{standby_replay} = $mds->{standby_replay} ? 1 : 0;
 	$state->{state} = $mds->{state};
+	$state->{fs_name} = $fsname;
 
 	$mds_state->{$mds->{name}} = $state;
     };
@@ -204,13 +205,14 @@ sub get_cluster_mds_state {
 	$add_state->($mds);
     }
 
-    my $fs_info = $fsmap->{filesystems}->[0];
-    my $active_mds = $fs_info->{mdsmap}->{info};
+    for my $fs_info (@{$fsmap->{filesystems}}) {
+	my $active_mds = $fs_info->{mdsmap}->{info};
 
-    # normally there's only one active MDS, but we can have multiple active for
-    # different ranks (e.g., different cephs path hierarchy). So just add all.
-    foreach my $mds (values %$active_mds) {
-	$add_state->($mds);
+	# normally there's only one active MDS, but we can have multiple active for
+	# different ranks (e.g., different cephs path hierarchy). So just add all.
+	foreach my $mds (values %$active_mds) {
+	    $add_state->($mds, $fs_info->{mdsmap}->{fs_name});
+	}
     }
 
     return $mds_state;
