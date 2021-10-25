@@ -202,6 +202,7 @@ __PACKAGE__->register_method ({
 			type => 'cephfs',
 			storage => $fs_name,
 			content => 'backup,iso,vztmpl',
+			'fs-name' => $fs_name,
 		    })
 		};
 		die "adding storage for CephFS '$fs_name' failed, check log ".
