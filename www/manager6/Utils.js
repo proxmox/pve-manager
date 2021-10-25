@@ -1846,7 +1846,9 @@ Ext.define('PVE.Utils', {
 	    imgcopy: ['', gettext('Copy data')],
 	    imgdel: ['', gettext('Erase data')],
 	    lvmcreate: [gettext('LVM Storage'), gettext('Create')],
+	    lvmremove: ['Volume Group', gettext('Remove')],
 	    lvmthincreate: [gettext('LVM-Thin Storage'), gettext('Create')],
+	    lvmthinremove: ['Thinpool', gettext('Remove')],
 	    migrateall: ['', gettext('Migrate all VMs and Containers')],
 	    'move_volume': ['CT', gettext('Move Volume')],
 	    'pbs-download': ['VM/CT', gettext('File Restore Download')],
@@ -1898,6 +1900,7 @@ Ext.define('PVE.Utils', {
 	    vztemplate: ['CT', gettext('Convert to template')],
 	    vzumount: ['CT', gettext('Unmount')],
 	    zfscreate: [gettext('ZFS Storage'), gettext('Create')],
+	    zfsremove: ['ZFS Pool', gettext('Remove')],
 	});
     },
 
