@@ -86,12 +86,11 @@ Ext.define('PVE.NodeCephFSPanel', {
     viewModel: {
 	parent: null,
 	data: {
-	    cephfsConfigured: false,
 	    mdsCount: 0,
 	},
 	formulas: {
 	    canCreateFS: function(get) {
-		return !get('cephfsConfigured') && get('mdsCount') > 0;
+		return get('mdsCount') > 0;
 	    },
 	},
     },
@@ -125,7 +124,6 @@ Ext.define('PVE.NodeCephFSPanel', {
 		    }));
 		    // manages the "install ceph?" overlay
 		    PVE.Utils.monitor_ceph_installed(view, view.rstore, view.nodename, true);
-		    view.rstore.on('load', this.onLoad, this);
 		    view.on('destroy', () => view.rstore.stopUpdate());
 		},
 
@@ -140,15 +138,6 @@ Ext.define('PVE.NodeCephFSPanel', {
 			},
 		    });
 		},
-
-		onLoad: function(store, records, success) {
-		    var vm = this.getViewModel();
-		    if (!(success && records && records.length > 0)) {
-			vm.set('cephfsConfigured', false);
-			return;
-		    }
-		    vm.set('cephfsConfigured', true);
-		},
 	    },
 	    tbar: [
 		{
@@ -156,7 +145,6 @@ Ext.define('PVE.NodeCephFSPanel', {
 		    reference: 'createButton',
 		    handler: 'onCreate',
 		    bind: {
-			// only one CephFS per Ceph cluster makes sense for now
 			disabled: '{!canCreateFS}',
 		    },
 		},
@@ -193,7 +181,13 @@ Ext.define('PVE.NodeCephFSPanel', {
 		    vm.set('mdsCount', 0);
 		    return;
 		}
-		vm.set('mdsCount', records.length);
+		let count = 0;
+		for (const mds of records) {
+		    if (mds.data.state === 'up:standby') {
+			count++;
+		    }
+		}
+		vm.set('mdsCount', count);
 	    },
 	    cbind: {
 		nodename: '{nodename}',
