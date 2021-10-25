@@ -59,15 +59,7 @@ __PACKAGE__->register_method ({
 
 	my $rados = PVE::RADOS->new();
 
-	my $cephfs_list = $rados->mon_command({ prefix => "fs ls" });
-	# we get something like:
-	#{
-	#   'metadata_pool_id' => 2,
-	#   'data_pool_ids' => [ 1 ],
-	#   'metadata_pool' => 'cephfs_metadata',
-	#   'data_pools' => [ 'cephfs_data' ],
-	#   'name' => 'cephfs',
-	#}
+	my $cephfs_list = PVE::Ceph::Tools::ls_fs($rados);
 
 	my $res = [
 	    map {{
@@ -161,13 +153,11 @@ __PACKAGE__->register_method ({
 		push @created_pools, $pool_metadata;
 
 		print "configuring new CephFS '$fs_name'\n";
-		$rados->mon_command({
-		    prefix => "fs new",
-		    fs_name => $fs_name,
-		    metadata => $pool_metadata,
-		    data => $pool_data,
-		    format => 'plain',
-		});
+		my $param = {
+		    pool_metadata => $pool_metadata,
+		    pool_data => $pool_data,
+		};
+		PVE::Ceph::Tools::create_fs($fs_name, $param, $rados);
 	    };
 	    if (my $err = $@) {
 		$@ = undef;

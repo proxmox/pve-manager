@@ -304,6 +304,42 @@ sub destroy_pool {
     });
 }
 
+# we get something like:
+#[{
+#   'metadata_pool_id' => 2,
+#   'data_pool_ids' => [ 1 ],
+#   'metadata_pool' => 'cephfs_metadata',
+#   'data_pools' => [ 'cephfs_data' ],
+#   'name' => 'cephfs',
+#}]
+sub ls_fs {
+    my ($rados) = @_;
+
+    if (!defined($rados)) {
+	$rados = PVE::RADOS->new();
+    }
+
+    my $res = $rados->mon_command({ prefix => "fs ls" });
+
+    return $res;
+}
+
+sub create_fs {
+    my ($fs, $param, $rados) = @_;
+
+    if (!defined($rados)) {
+	$rados = PVE::RADOS->new();
+    }
+
+    $rados->mon_command({
+	prefix => "fs new",
+	fs_name => $fs,
+	metadata => $param->{pool_metadata},
+	data => $param->{pool_data},
+	format => 'plain',
+    });
+}
+
 sub setup_pve_symlinks {
     # fail if we find a real file instead of a link
     if (-f $ceph_cfgpath) {
