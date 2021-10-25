@@ -76,10 +76,9 @@ Ext.define('PVE.node.LVMList', {
 		throw "no volume group specified";
 	    }
 
-	    Ext.create('Proxmox.window.SafeDestroy', {
+	    Ext.create('PVE.window.SafeDestroyStorage', {
 		url: `/nodes/${view.nodename}/disks/lvm/${volumeGroup}`,
 		item: { id: volumeGroup },
-		showProgress: true,
 		taskName: 'lvmremove',
 		taskDone: () => { view.reload(); },
 	    }).show();

@@ -80,11 +80,10 @@ Ext.define('PVE.node.LVMThinList', {
 		throw "no volume group specified";
 	    }
 
-	    Ext.create('Proxmox.window.SafeDestroy', {
+	    Ext.create('PVE.window.SafeDestroyStorage', {
 		url: `/nodes/${view.nodename}/disks/lvmthin/${thinPool}`,
 		params: { 'volume-group': volumeGroup },
 		item: { id: `${volumeGroup}/${thinPool}` },
-		showProgress: true,
 		taskName: 'lvmthinremove',
 		taskDone: () => { view.reload(); },
 	    }).show();

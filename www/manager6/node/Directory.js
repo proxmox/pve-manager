@@ -90,10 +90,9 @@ Ext.define('PVE.node.Directorylist', {
 		throw "no directory name specified";
 	    }
 
-	    Ext.create('Proxmox.window.SafeDestroy', {
+	    Ext.create('PVE.window.SafeDestroyStorage', {
 		url: `/nodes/${view.nodename}/disks/directory/${dirName}`,
 		item: { id: dirName },
-		showProgress: true,
 		taskName: 'dirremove',
 		taskDone: () => { view.reload(); },
 	    }).show();

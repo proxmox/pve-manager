@@ -321,10 +321,9 @@ Ext.define('PVE.node.ZFSList', {
 		throw "no pool specified";
 	    }
 
-	    Ext.create('Proxmox.window.SafeDestroy', {
+	    Ext.create('PVE.window.SafeDestroyStorage', {
 		url: `/nodes/${view.nodename}/disks/zfs/${pool}`,
 		item: { id: pool },
-		showProgress: true,
 		taskName: 'zfsremove',
 		taskDone: () => { view.reload(); },
 	    }).show();

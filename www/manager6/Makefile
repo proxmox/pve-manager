@@ -105,6 +105,7 @@ JSSRC= 							\
 	window/Prune.js					\
 	window/Restore.js				\
 	window/SafeDestroyGuest.js			\
+	window/SafeDestroyStorage.js			\
 	window/Settings.js				\
 	window/Snapshot.js				\
 	window/StartupEdit.js				\
