@@ -297,6 +297,40 @@ Ext.define('PVE.node.ZFSList', {
     extend: 'Ext.grid.Panel',
     xtype: 'pveZFSList',
 
+    viewModel: {
+	data: {
+	    pool: '',
+	},
+    },
+
+    controller: {
+	xclass: 'Ext.app.ViewController',
+
+	destroyPool: function() {
+	    let me = this;
+	    let vm = me.getViewModel();
+	    let view = me.getView();
+
+	    const pool = vm.get('pool');
+
+	    if (!view.nodename) {
+		throw "no node name specified";
+	    }
+
+	    if (!pool) {
+		throw "no pool specified";
+	    }
+
+	    Ext.create('Proxmox.window.SafeDestroy', {
+		url: `/nodes/${view.nodename}/disks/zfs/${pool}`,
+		item: { id: pool },
+		showProgress: true,
+		taskName: 'zfsremove',
+		taskDone: () => { view.reload(); },
+	    }).show();
+	},
+    },
+
     stateful: true,
     stateId: 'grid-node-zfs',
     columns: [
@@ -378,6 +412,45 @@ Ext.define('PVE.node.ZFSList', {
 		}
 	    },
 	},
+	'->',
+	{
+	    xtype: 'tbtext',
+	    data: {
+		pool: undefined,
+	    },
+	    bind: {
+		data: {
+		    pool: "{pool}",
+		},
+	    },
+	    tpl: [
+		'<tpl if="pool">',
+		'Pool {pool}:',
+		'<tpl else>',
+		Ext.String.format(gettext('No {0} selected'), 'pool'),
+		'</tpl>',
+	    ],
+	},
+	{
+	    text: gettext('More'),
+	    iconCls: 'fa fa-bars',
+	    disabled: true,
+	    bind: {
+		disabled: '{!pool}',
+	    },
+	    menu: [
+		{
+		    text: gettext('Destroy'),
+		    itemId: 'remove',
+		    iconCls: 'fa fa-fw fa-trash-o',
+		    handler: 'destroyPool',
+		    disabled: true,
+		    bind: {
+			disabled: '{!pool}',
+		    },
+		},
+	    ],
+	},
     ],
 
     show_detail: function(zpool) {
@@ -445,8 +518,12 @@ Ext.define('PVE.node.ZFSList', {
 	activate: function() {
 	    this.reload();
 	},
-	selectionchange: function() {
-	    this.down('#detailbtn').setDisabled(this.getSelection().length === 0);
+	selectionchange: function(model, selected) {
+	    let me = this;
+	    let vm = me.getViewModel();
+
+	    me.down('#detailbtn').setDisabled(selected.length === 0);
+	    vm.set('pool', selected[0]?.data.name || '');
 	},
 	itemdblclick: function(grid, record) {
 	    this.show_detail(record.get('name'));

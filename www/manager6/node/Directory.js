@@ -63,6 +63,43 @@ Ext.define('PVE.node.Directorylist', {
     extend: 'Ext.grid.Panel',
     xtype: 'pveDirectoryList',
 
+    viewModel: {
+	data: {
+	    path: '',
+	},
+	formulas: {
+	    dirName: (get) => get('path')?.replace('/mnt/pve/', '') || undefined,
+	},
+    },
+
+    controller: {
+	xclass: 'Ext.app.ViewController',
+
+	destroyDirectory: function() {
+	    let me = this;
+	    let vm = me.getViewModel();
+	    let view = me.getView();
+
+	    const dirName = vm.get('dirName');
+
+	    if (!view.nodename) {
+		throw "no node name specified";
+	    }
+
+	    if (!dirName) {
+		throw "no directory name specified";
+	    }
+
+	    Ext.create('Proxmox.window.SafeDestroy', {
+		url: `/nodes/${view.nodename}/disks/directory/${dirName}`,
+		item: { id: dirName },
+		showProgress: true,
+		taskName: 'dirremove',
+		taskDone: () => { view.reload(); },
+	    }).show();
+	},
+    },
+
     stateful: true,
     stateId: 'grid-node-directory',
     columns: [
@@ -117,6 +154,45 @@ Ext.define('PVE.node.Directorylist', {
 		});
 	    },
 	},
+	'->',
+	{
+	    xtype: 'tbtext',
+	    data: {
+		dirName: undefined,
+	    },
+	    bind: {
+		data: {
+		    dirName: "{dirName}",
+		},
+	    },
+	    tpl: [
+		'<tpl if="dirName">',
+		gettext('Directory') + ' {dirName}:',
+		'<tpl else>',
+		Ext.String.format(gettext('No {0} selected'), gettext('directory')),
+		'</tpl>',
+	    ],
+	},
+	{
+	    text: gettext('More'),
+	    iconCls: 'fa fa-bars',
+	    disabled: true,
+	    bind: {
+		disabled: '{!dirName}',
+	    },
+	    menu: [
+		{
+		    text: gettext('Destroy'),
+		    itemId: 'remove',
+		    iconCls: 'fa fa-fw fa-trash-o',
+		    handler: 'destroyDirectory',
+		    disabled: true,
+		    bind: {
+			disabled: '{!dirName}',
+		    },
+		},
+	    ],
+	},
     ],
 
     reload: function() {
@@ -128,6 +204,12 @@ Ext.define('PVE.node.Directorylist', {
     listeners: {
 	activate: function() {
 	    this.reload();
+	},
+	selectionchange: function(model, selected) {
+	    let me = this;
+	    let vm = me.getViewModel();
+
+	    vm.set('path', selected[0]?.data.path || '');
 	},
     },
 
