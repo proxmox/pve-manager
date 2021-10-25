@@ -105,7 +105,7 @@ Ext.define('PVE.node.Directorylist', {
 	    },
 	},
 	{
-	    text: gettext('Create') + ': Directory',
+	    text: `${gettext('Create')}: ${gettext('Directory')}`,
 	    handler: function() {
 		let view = this.up('panel');
 		Ext.create('PVE.node.CreateDirectory', {
