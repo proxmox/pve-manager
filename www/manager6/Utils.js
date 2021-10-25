@@ -1820,6 +1820,7 @@ Ext.define('PVE.Utils', {
 	    cephdestroymon: ['Ceph Monitor', gettext('Destroy')],
 	    cephdestroyosd: ['Ceph OSD', gettext('Destroy')],
 	    cephdestroypool: ['Ceph Pool', gettext('Destroy')],
+	    cephdestroyfs: ['CephFS', gettext('Destroy')],
 	    cephfscreate: ['CephFS', gettext('Create')],
 	    cephsetpool: ['Ceph Pool', gettext('Edit')],
 	    cephsetflags: ['', gettext('Change global Ceph flags')],

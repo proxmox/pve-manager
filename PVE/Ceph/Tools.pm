@@ -340,6 +340,21 @@ sub create_fs {
     });
 }
 
+sub destroy_fs {
+    my ($fs, $rados) = @_;
+
+    if (!defined($rados)) {
+	$rados = PVE::RADOS->new();
+    }
+
+    $rados->mon_command({
+	prefix => "fs rm",
+	fs_name => $fs,
+	'yes_i_really_mean_it' => JSON::true,
+	format => 'plain',
+    });
+}
+
 sub setup_pve_symlinks {
     # fail if we find a real file instead of a link
     if (-f $ceph_cfgpath) {
