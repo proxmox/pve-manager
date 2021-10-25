@@ -65,6 +65,11 @@ Ext.define('PVE.node.LVMThinList', {
 	    flex: 1,
 	},
 	{
+	    header: 'Volume Group',
+	    width: 110,
+	    dataIndex: 'vg',
+	},
+	{
 	    header: gettext('Usage'),
 	    width: 110,
 	    dataIndex: 'usage',
