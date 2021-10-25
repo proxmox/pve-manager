@@ -63,6 +63,9 @@ Ext.define('PVE.node.CephServiceList', {
 	xclass: 'Ext.app.ViewController',
 
 	render_version: function(value, metadata, rec) {
+	    if (value === undefined) {
+		return '';
+	    }
 	    let view = this.getView();
 	    let host = rec.data.host, nodev = [0];
 	    if (view.nodeversions[host] !== undefined) {
