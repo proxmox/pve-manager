@@ -183,7 +183,7 @@ Ext.define('PVE.NodeCephFSPanel', {
 	    },
 	},
 	{
-	    xtype: 'pveNodeCephServiceList',
+	    xtype: 'pveNodeCephMDSList',
 	    title: gettext('Metadata Servers'),
 	    stateId: 'grid-ceph-mds',
 	    type: 'mds',

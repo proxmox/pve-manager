@@ -48,6 +48,7 @@ Ext.define('PVE.node.CephServiceController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.CephServiceList',
 
+    render_status: (value, metadata, rec) => value,
 
     render_version: function(value, metadata, rec) {
 	if (value === undefined) {
@@ -305,6 +306,7 @@ Ext.define('PVE.node.CephServiceList', {
 	    header: gettext('Status'),
 	    flex: 1,
 	    sortable: false,
+	    renderer: 'render_status',
 	    dataIndex: 'state',
 	},
 	{
@@ -341,6 +343,7 @@ Ext.define('PVE.node.CephServiceList', {
 	fields: [
 	    'addr',
 	    'name',
+	    'fs_name',
 	    'rank',
 	    'host',
 	    'quorum',
@@ -356,3 +359,14 @@ Ext.define('PVE.node.CephServiceList', {
 	idProperty: 'name',
     });
 });
+
+Ext.define('PVE.node.CephMDSList', {
+    extend: 'PVE.node.CephServiceList',
+    xtype: 'pveNodeCephMDSList',
+
+    controller: {
+	type: 'CephServiceList',
+	render_status: (value, mD, rec) => rec.data.fs_name ? `${value} (${rec.data.fs_name})` : value,
+    },
+});
+
