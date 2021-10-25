@@ -26,6 +26,7 @@ JSSRC= 							\
 	form/CacheTypeSelector.js			\
 	form/CalendarEvent.js				\
 	form/CephPoolSelector.js			\
+	form/CephFSSelector.js				\
 	form/CompressionSelector.js			\
 	form/ContentTypeSelector.js			\
 	form/ControllerSelector.js			\

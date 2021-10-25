@@ -64,6 +64,31 @@ Ext.define('PVE.storage.CephFSInputPanel', {
 	    },
 	);
 
+	if (me.isCreate) {
+	    me.column1.push({
+		xtype: 'pveCephFSSelector',
+		nodename: me.nodename,
+		name: 'fs-name',
+		bind: {
+		    disabled: '{!pveceph}',
+		    submitValue: '{pveceph}',
+		    hidden: '{!pveceph}',
+		},
+		fieldLabel: gettext('FS Name'),
+		allowBlank: false,
+	    }, {
+		xtype: 'textfield',
+		nodename: me.nodename,
+		name: 'fs-name',
+		bind: {
+		    disabled: '{pveceph}',
+		    submitValue: '{!pveceph}',
+		    hidden: '{pveceph}',
+		},
+		fieldLabel: gettext('FS Name'),
+	    });
+	}
+
 	me.column2 = [
 	    {
 		xtype: 'pveContentTypeSelector',
