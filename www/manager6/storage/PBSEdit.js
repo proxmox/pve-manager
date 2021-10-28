@@ -508,6 +508,7 @@ Ext.define('PVE.storage.PBSInputPanel', {
 		xtype: 'proxmoxtextfield',
 		hidden: true,
 		name: 'server',
+		submitValue: me.isCreate, // it is fixed
 	    },
 	    {
 		xtype: 'proxmoxtextfield',
