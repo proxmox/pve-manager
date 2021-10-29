@@ -62,9 +62,15 @@ Ext.define('PVE.ClusterAdministration', {
 		    view.on('destroy', view.store.stopUpdate);
 		},
 
-		onLoad: function(store, records, success) {
+		onLoad: function(store, records, success, operation) {
 		    let vm = this.getViewModel();
 		    if (!success || !records || !records[0].data) {
+			let error = operation.getError();
+			let msg = Proxmox.Utils.getResponseErrorMessage(error);
+			if (msg !== 'node is not in a cluster, no join info available! (500)') {
+			    // show the real message
+			    Proxmox.Utils.setErrorMask(this.getView(), msg);
+			}
 			vm.set('totem', {});
 			vm.set('isInCluster', false);
 			vm.set('nodelist', []);
