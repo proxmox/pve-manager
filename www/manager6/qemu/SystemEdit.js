@@ -94,6 +94,10 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    ],
 	},
 	{
+	    xtype: 'displayfield',
+	    value: gettext('Firmware'),
+	},
+	{
 	    xtype: 'pveQemuBiosSelector',
 	    name: 'bios',
 	    reference: 'bios',
@@ -146,6 +150,11 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    defaultValue: 0,
 	    deleteDefaultValue: true,
 	    fieldLabel: gettext('Qemu Agent'),
+	},
+	{
+	    // fake for spacing
+	    xtype: 'displayfield',
+	    value: ' ',
 	},
 	{
 	    xtype: 'proxmoxcheckbox',
