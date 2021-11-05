@@ -52,9 +52,10 @@ sub broadcast_ceph_versions {
 
     if ($version) {
 	if (my $old = PVE::Cluster::get_node_kv("ceph-versions")) {
-	    $old = eval { decode_json($old) };
+	    my $nodename = PVE::INotify::nodename();
+	    $old = eval { decode_json($old->{$nodename}) };
 	    warn $@ if $@; # should not happen
-	    if (defined($old) && $old->{buildcommit} eq $buildcommit && $old->{str} eq $version) {
+	    if (defined($old) && $old->{buildcommit} eq $buildcommit && $old->{version}->{str} eq $version) {
 		return; # up to date, nothing to do so avoid (not exactly cheap) broadcast
 	    }
 	}
