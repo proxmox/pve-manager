@@ -64,7 +64,9 @@ Ext.define('PVE.ClusterAdministration', {
 
 		onLoad: function(store, records, success, operation) {
 		    let vm = this.getViewModel();
-		    if (!success || !records || !records[0].data) {
+
+		    let data = records?.[0]?.data;
+		    if (!success || !data || !data.nodelist?.length) {
 			let error = operation.getError();
 			let msg = Proxmox.Utils.getResponseErrorMessage(error);
 			if (msg !== 'node is not in a cluster, no join info available! (500)') {
@@ -81,14 +83,11 @@ Ext.define('PVE.ClusterAdministration', {
 			});
 			return;
 		    }
-		    let data = records[0].data;
 		    vm.set('totem', data.totem);
 		    vm.set('isInCluster', !!data.totem.cluster_name);
 		    vm.set('nodelist', data.nodelist);
 
-		    var nodeinfo = Ext.Array.findBy(data.nodelist, function(el) {
-			return el.name === data.preferred_node;
-		    });
+		    let nodeinfo = data.nodelist.find(el => el.name === data.preferred_node);
 
 		    let links = {};
 		    let ring_addr = [];
