@@ -1,12 +1,52 @@
+pve-manager (7.0-14) bullseye; urgency=medium
+
+  * ceph services: drop broadcasting legacy version through the pmxcfs
+    key-value storage
+
+  * pvestatd: fix rebalancing CPU sets for cgroupv2
+
+  * d/postinst: use reload-or-restart instead of try-reload-or-try-restart to
+    also start a (by accident) stopped service again
+
+  * drop unused and ancient 'pvenetcommit' shell (sysv) script, handled
+    directly by systemd service nowadays
+
+  * pvenetcommit: avoid unwarranted error message for the case where no
+    changes are pending on boot
+
+
+  * ui: resourcetree: move guest position on template creation
+
+  * fix #3850: ui: storage: allow one to specify how new images should be
+    allocated on file based storages
+
+  * ui: VM wizard: promote advanced firmware settings in system panel to
+    normal, always visible ones, as they are more frequently required nowadays
+    (EFI, TPM for Windows 11 or q35 machine for pass-through)
+
+  * ui: VM wizard: add 'win11' ostype and enable EFI and TPM by default if
+    selected
+
+  * ui: storage PBS: allow one to add a non-default port in server field
+
+  * ui: LXC/CT wizard: allow one to configure multiple mount-points when
+    creating a new container, similarly to VMs
+
+  * ui: guest backup grid: monitor store errors for better UX
+
+  * ui: dc/Cluster: show fatal errors of the 'join info' API call in the view
+
+ -- Proxmox Support Team <support@proxmox.com>  Sun, 07 Nov 2021 21:23:11 +0100
+
 pve-manager (7.0-13) bullseye; urgency=medium
 
-  * ui: efi: default to new 4MB format for new VMs or when re-adding EFI vars to
-    an exisitng VM
+  * ui: efi: default to the new, more feature rich, 4 MB build for new VMs or
+    when re-adding EFI vars to an existing VM
 
   * ui: ovmf: support provisioning an EFI vars template with secureboot by
     default on and distribution + Microsofts secure-boot key pre-enrolled
 
-  * ui: VM create: allow configuring a TPM in the advamced-options of the
+  * ui: VM create: allow configuring a TPM in the advanced-options of the
     wizard's system settings
 
  -- Proxmox Support Team <support@proxmox.com>  Tue, 05 Oct 2021 20:25:05 +0200
