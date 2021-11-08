@@ -69,7 +69,7 @@ Ext.define('PVE.storage.ContentView', {
 			Ext.create('PVE.window.UploadToStorage', {
 			    nodename: nodename,
 			    storage: storage,
-			    contents: [content],
+			    content: content,
 			    autoShow: true,
 			    taskDone: () => reload(),
 			});
