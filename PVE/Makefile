@@ -1,6 +1,6 @@
 include ../defines.mk
 
-SUBDIRS=API2 Status CLI Service Ceph
+SUBDIRS=API2 Status CLI Service Ceph Jobs
 
 PERLSOURCE = 			\
 	API2.pm			\
@@ -11,6 +11,7 @@ PERLSOURCE = 			\
 	CertHelpers.pm		\
 	ExtMetric.pm		\
 	HTTPServer.pm		\
+	Jobs.pm			\
 	NodeConfig.pm		\
 	Report.pm		\
 	VZDump.pm
