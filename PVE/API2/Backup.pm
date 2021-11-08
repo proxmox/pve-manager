@@ -17,6 +17,8 @@ use PVE::VZDump::Common;
 
 use base qw(PVE::RESTHandler);
 
+use constant ALL_DAYS => 'mon,tue,wed,thu,fri,sat,sun';
+
 PVE::JSONSchema::register_format('pve-day-of-week', \&verify_day_of_week);
 sub verify_day_of_week {
     my ($value, $noerr) = @_;
@@ -101,7 +103,7 @@ __PACKAGE__->register_method({
 		type => 'string', format => 'pve-day-of-week-list',
 		optional => 1,
 		description => "Day of week selection.",
-		default => 'mon,tue,wed,thu,fri,sat,sun',
+		default => ALL_DAYS,
 	    },
 	    enabled => {
 		type => 'boolean',
@@ -129,7 +131,7 @@ __PACKAGE__->register_method({
 	my $create_job = sub {
 	    my $data = cfs_read_file('vzdump.cron');
 
-	    $param->{dow} = 'mon,tue,wed,thu,fri,sat,sun' if !defined($param->{dow});
+	    $param->{dow} = ALL_DAYS if !defined($param->{dow});
 	    $param->{enabled} = 1 if !defined($param->{enabled});
 	    PVE::VZDump::verify_vzdump_parameters($param, 1);
 
