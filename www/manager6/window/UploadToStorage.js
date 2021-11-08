@@ -62,6 +62,16 @@ Ext.define('PVE.window.UploadToStorage', {
 	    const filename = filenameField.getValue();
 	    filenameField.setDisabled(true);
 
+	    const algorithmField = form.findField('checksum-algorithm');
+	    algorithmField.setDisabled(true);
+	    if (algorithmField.getValue() !== '__default__') {
+		fd.append("checksum-algorithm", algorithmField.getValue());
+
+		const checksumField = form.findField('checksum');
+		fd.append("checksum", checksumField.getValue());
+		checksumField.setDisabled(true);
+	    }
+
 	    fd.append("filename", file, filename);
 
 	    pbar.setVisible(true);
@@ -114,6 +124,16 @@ Ext.define('PVE.window.UploadToStorage', {
 	    vm.set('filename', name);
 	    vm.set('size', (fileInput.files[0] && Proxmox.Utils.format_size(fileInput.files[0].size)) || '-');
 	    vm.set('mimetype', (fileInput.files[0] && fileInput.files[0].type) || '-');
+	},
+
+	hashChange: function(field, value) {
+	    const checksum = this.lookup('downloadUrlChecksum');
+	    if (value === '__default__') {
+		checksum.setDisabled(true);
+		checksum.setValue("");
+	    } else {
+		checksum.setDisabled(false);
+	    }
 	},
     },
 
@@ -168,6 +188,26 @@ Ext.define('PVE.window.UploadToStorage', {
 		    bind: {
 			value: '{mimetype}',
 		    },
+		},
+		{
+		    xtype: 'pveHashAlgorithmSelector',
+		    name: 'checksum-algorithm',
+		    fieldLabel: gettext('Hash algorithm'),
+		    allowBlank: true,
+		    hasNoneOption: true,
+		    value: '__default__',
+		    listeners: {
+			change: 'hashChange',
+		    },
+		},
+		{
+		    xtype: 'textfield',
+		    name: 'checksum',
+		    fieldLabel: gettext('Checksum'),
+		    allowBlank: false,
+		    disabled: true,
+		    emptyText: gettext('none'),
+		    reference: 'downloadUrlChecksum',
 		},
 		{
 		    xtype: 'progressbar',
