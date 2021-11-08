@@ -176,24 +176,22 @@ Ext.define('PVE.dc.BackupEdit', {
 	});
 
 	let column1 = [
+	    {
+		xtype: 'pmxDisplayEditField',
+		name: 'id',
+		fieldLabel: gettext('ID'),
+		renderer: Ext.htmlEncode,
+		allowBlank: false,
+		minLength: 4,
+		editable: me.isCreate,
+	    },
 	    nodesel,
 	    storagesel,
 	    {
-		xtype: 'pveDayOfWeekSelector',
-		name: 'dow',
-		fieldLabel: gettext('Day of week'),
-		multiSelect: true,
-		value: ['sat'],
+		xtype: 'pveCalendarEvent',
+		fieldLabel: gettext('Schedule'),
 		allowBlank: false,
-	    },
-	    {
-		xtype: 'timefield',
-		fieldLabel: gettext('Start Time'),
-		name: 'starttime',
-		format: 'H:i',
-		formatText: 'HH:MM',
-		value: '00:00',
-		allowBlank: false,
+		name: 'schedule',
 	    },
 	    selModeField,
 	    selPool,
@@ -390,7 +388,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		success: function(response, options) {
 		    let data = response.result.data;
 
-		    data.dow = data.dow.split(',');
+		    data.dow = (data.dow || '').split(',');
 
 		    if (data.all || data.exclude) {
 			if (data.exclude) {
@@ -532,6 +530,8 @@ Ext.define('PVE.dc.BackupView', {
 	    delete job.starttime;
 	    delete job.dow;
 	    delete job.id;
+	    delete job.schedule;
+	    delete job.type;
 	    delete job.node;
 	    job.all = job.all === true ? 1 : 0;
 
@@ -715,6 +715,10 @@ Ext.define('PVE.dc.BackupView', {
 		    stopSelection: false,
 		},
 		{
+		    header: gettext('ID'),
+		    dataIndex: 'id',
+		},
+		{
 		    header: gettext('Node'),
 		    width: 100,
 		    sortable: true,
@@ -727,17 +731,9 @@ Ext.define('PVE.dc.BackupView', {
 		    },
 		},
 		{
-		    header: gettext('Day of week'),
-		    width: 200,
-		    sortable: false,
-		    dataIndex: 'dow',
-		    renderer: PVE.Utils.render_backup_days_of_week,
-		},
-		{
-		    header: gettext('Start Time'),
-		    width: 60,
-		    sortable: true,
-		    dataIndex: 'starttime',
+		    header: gettext('Schedule'),
+		    width: 150,
+		    dataIndex: 'schedule',
 		},
 		{
 		    header: gettext('Storage'),

@@ -184,14 +184,8 @@ Ext.define('PVE.dc.BackupInfo', {
 	},
 	{
 	    xtype: 'displayfield',
-	    name: 'dow',
-	    fieldLabel: gettext('Day of week'),
-	    renderer: PVE.Utils.render_backup_days_of_week,
-	},
-	{
-	    xtype: 'displayfield',
-	    name: 'starttime',
-	    fieldLabel: gettext('Start Time'),
+	    name: 'schedule',
+	    fieldLabel: gettext('Schedule'),
 	},
 	{
 	    xtype: 'displayfield',
