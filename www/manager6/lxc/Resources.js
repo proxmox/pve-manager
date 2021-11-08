@@ -191,12 +191,21 @@ Ext.define('PVE.lxc.RessourceView', {
 
 	var remove_btn = new Proxmox.button.Button({
 	    text: gettext('Remove'),
+	    defaultText: gettext('Remove'),
+	    altText: gettext('Detach'),
 	    selModel: me.selModel,
 	    disabled: true,
 	    dangerous: true,
 	    confirmMsg: function(rec) {
-		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
-					    "'" + me.renderKey(rec.data.key, {}, rec) + "'");
+		let warn = Ext.String.format(gettext('Are you sure you want to remove entry {0}'));
+		if (this.text === this.altText) {
+		    warn = gettext('Are you sure you want to detach entry {0}');
+		}
+
+		let key = rec.data.key;
+
+		let rendered = me.renderKey(key, {}, rec);
+		let msg = Ext.String.format(warn, "'" + rendered + "'");
 		if (rec.data.key.match(/^unused\d+$/)) {
 		    msg += " " + gettext('This will permanently erase all data.');
 		}
@@ -204,6 +213,21 @@ Ext.define('PVE.lxc.RessourceView', {
 		return msg;
 	    },
 	    handler: run_remove,
+	    listeners: {
+		render: function(btn) {
+		    // hack: calculate the max button width on first display to prevent the whole
+		    // toolbar to move when we switch between the "Remove" and "Detach" labels
+		    let def = btn.getSize().width;
+
+		    btn.setText(btn.altText);
+		    let alt = btn.getSize().width;
+
+		    btn.setText(btn.defaultText);
+
+		    let optimal = alt > def ? alt : def;
+		    btn.setSize({ width: optimal });
+		},
+	    },
 	});
 
 	var move_btn = new Proxmox.button.Button({
@@ -233,6 +257,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    var pending = rec.data.delete || me.hasPendingChanges(key);
 	    var isDisk = rowdef.tdCls === 'pve-itype-icon-storage';
 	    var isUnusedDisk = key.match(/^unused\d+/);
+	    var isUsedDisk = isDisk && !isUnusedDisk;
 
 	    var noedit = rec.data.delete || !rowdef.editor;
 	    if (!noedit && Proxmox.UserName !== 'root@pam' && key.match(/^mp\d+$/)) {
@@ -247,6 +272,8 @@ Ext.define('PVE.lxc.RessourceView', {
 	    resize_btn.setDisabled(!isDisk || !diskCap || isUnusedDisk);
 	    move_btn.setDisabled(!isDisk || !diskCap);
 	    revert_btn.setDisabled(!pending);
+
+	    remove_btn.setText(isUsedDisk ? remove_btn.altText : remove_btn.defaultText);
 	};
 
 	var sorterFn = function(rec1, rec2) {
