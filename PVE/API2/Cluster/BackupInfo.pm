@@ -28,6 +28,15 @@ sub get_included_vmids {
 	push @all_vmids, ( map { @{$_} } values %{$job_included_guests} );
     }
 
+    my $vzjobs = cfs_read_file('jobs.cfg');
+
+    for my $job (values %{$vzjobs->{ids}}) {
+	next if $job->{type} ne 'vzdump';
+
+	my $job_included_guests = PVE::VZDump::get_included_guests($job);
+	push @all_vmids, ( map { @{$_} } values %{$job_included_guests} );
+    }
+
     return { map { $_ => 1 } @all_vmids };
 }
 
