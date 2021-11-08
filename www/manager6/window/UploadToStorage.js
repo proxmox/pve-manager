@@ -82,7 +82,21 @@ Ext.define('PVE.window.UploadToStorage', {
 
 	    xhr.addEventListener("load", function(e) {
 		if (xhr.status === 200) {
-		    view.close();
+		    view.hide();
+
+		    const result = JSON.parse(xhr.response);
+		    const upid = result.data;
+		    Ext.create('Proxmox.window.TaskViewer', {
+			autoShow: true,
+			upid: upid,
+			taskDone: view.taskDone,
+			listeners: {
+			    destroy: function() {
+				view.close();
+			    },
+			},
+		    });
+
 		    return;
 		}
 		const err = Ext.htmlEncode(xhr.statusText);
