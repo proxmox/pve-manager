@@ -6,6 +6,7 @@ use warnings;
 use POSIX qw(WNOHANG);
 use PVE::SafeSyslog;
 use PVE::API2::Replication;
+use PVE::Jobs;
 
 use PVE::Daemon;
 use base qw(PVE::Daemon);
@@ -51,17 +52,29 @@ sub run {
 	$old_sig_chld->(@_) if $old_sig_chld;
     };
 
-    my $run_jobs = sub {
+    my $fork = sub {
+	my ($sub) = @_;
 	my $child = fork();
 	if (!defined($child)) {
 	    die "fork failed: $!\n";
 	} elsif ($child == 0) {
 	    $self->after_fork_cleanup();
-	    PVE::API2::Replication::run_jobs(undef, sub {}, 0, 1);
+	    $sub->();
 	    POSIX::_exit(0);
 	}
 
 	$jobs->{$child} = 1;
+    };
+
+    my $run_jobs = sub {
+
+	$fork->(sub {
+	    PVE::API2::Replication::run_jobs(undef, sub {}, 0, 1);
+	});
+
+	$fork->(sub {
+	    PVE::Jobs::run_jobs();
+	});
     };
 
     PVE::Jobs::setup_dirs();
