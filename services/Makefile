@@ -13,8 +13,7 @@ SERVICES=			\
 	pve-storage.target	\
 	pve-daily-update.service\
 	pve-daily-update.timer	\
-	pvesr.service		\
-	pvesr.timer
+	pvescheduler.service
 
 .PHONY: install
 install: ${SERVICES}

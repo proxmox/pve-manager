@@ -1,0 +1,16 @@
+[Unit]
+Description=Proxmox VE scheduler
+ConditionPathExists=/usr/bin/pvescheduler
+Wants=pve-cluster.service
+After=pve-cluster.service
+After=pve-storage.target
+
+[Service]
+ExecStart=/usr/bin/pvescheduler start
+ExecStop=/usr/bin/pvescheduler stop
+PIDFile=/var/run/pvescheduler.pid
+KillMode=process
+Type=forking
+
+[Install]
+WantedBy=multi-user.target

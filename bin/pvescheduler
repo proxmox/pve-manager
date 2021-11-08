@@ -1,0 +1,28 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use PVE::Service::pvescheduler;
+
+use PVE::RPCEnvironment;
+use PVE::SafeSyslog;
+
+$SIG{'__WARN__'} = sub {
+    my $err = $@;
+    my $t = $_[0];
+    chomp $t;
+    print STDERR "$t\n";
+    syslog('warning', "%s", $t);
+    $@ = $err;
+};
+
+my $prepare = sub {
+    my $rpcenv = PVE::RPCEnvironment->init('priv');
+
+    $rpcenv->init_request();
+    $rpcenv->set_language($ENV{LANG});
+    $rpcenv->set_user('root@pam');
+};
+
+PVE::Service::pvescheduler->run_cli_handler(prepare => $prepare);

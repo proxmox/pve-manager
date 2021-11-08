@@ -1,6 +1,6 @@
 include ../../defines.mk
 
-SOURCES=pvestatd.pm pveproxy.pm pvedaemon.pm spiceproxy.pm
+SOURCES=pvestatd.pm pveproxy.pm pvedaemon.pm spiceproxy.pm pvescheduler.pm
 
 all:
 

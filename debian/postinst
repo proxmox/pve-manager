@@ -79,6 +79,7 @@ case "$1" in
     deb-systemd-invoke reload-or-try-restart pvestatd.service
     deb-systemd-invoke reload-or-try-restart pveproxy.service
     deb-systemd-invoke reload-or-try-restart spiceproxy.service
+    deb-systemd-invoke reload-or-try-restart pvescheduler.service
 
     exit 0;;
 
@@ -102,7 +103,7 @@ case "$1" in
 
     # same as dh_systemd_enable (code copied)
 
-    UNITS="pvedaemon.service pveproxy.service spiceproxy.service pvestatd.service pvebanner.service pvesr.timer pve-daily-update.timer"
+    UNITS="pvedaemon.service pveproxy.service spiceproxy.service pvestatd.service pvebanner.service pvescheduler.service pve-daily-update.timer"
     NO_RESTART_UNITS="pvenetcommit.service pve-guests.service"
 
     for unit in ${UNITS} ${NO_RESTART_UNITS}; do
