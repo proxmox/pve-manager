@@ -21,6 +21,7 @@ Ext.define('PVE.window.UploadToStorage', {
 
 	return {
 	    extensions: ext.join(', '),
+	    filenameRegex: RegExp('^.*(?:' + ext.join('|').replaceAll('.', '\\.') + ')$', 'i'),
 	};
     },
 
@@ -186,6 +187,10 @@ Ext.define('PVE.window.UploadToStorage', {
 		    bind: {
 			value: '{filename}',
 		    },
+		    cbind: {
+			regex: '{filenameRegex}',
+		    },
+		    regexText: gettext('Wrong file extension'),
 		},
 		{
 		    xtype: 'displayfield',
