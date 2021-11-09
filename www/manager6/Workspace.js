@@ -386,10 +386,8 @@ Ext.define('PVE.StdWorkspace', {
 				    itemId: 'tfaitem',
 				    iconCls: 'fa fa-fw fa-lock',
 				    handler: function(btn, event, rec) {
-					var win = Ext.create('PVE.window.TFAEdit', {
-					    userid: Proxmox.UserName,
-					});
-					win.show();
+					Ext.state.Manager.getProvider().set('dctab', { value: 'tfa' }, true);
+					me.selectById('root');
 				    },
 				},
 				{

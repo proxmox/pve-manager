@@ -77,32 +77,6 @@ Ext.define('PVE.dc.UserView', {
 		});
 	    },
 	});
-	let tfachange_btn = new Proxmox.button.Button({
-	    text: 'TFA',
-	    disabled: true,
-	    selModel: sm,
-	    enableFn: function(record) {
-		let type = record.data['realm-type'];
-		if (type) {
-		    if (PVE.Utils.authSchema[type]) {
-			return !!PVE.Utils.authSchema[type].tfa;
-		    }
-		}
-		return false;
-	    },
-	    handler: function(btn, event, rec) {
-		var d = rec.data;
-		var tfa_type = PVE.Parser.parseTfaType(d.keys);
-		Ext.create('PVE.window.TFAEdit', {
-		    tfa_type: tfa_type,
-		    userid: d.userid,
-		    autoShow: true,
-		    listeners: {
-			destroy: () => reload(),
-		    },
-		});
-	    },
-	});
 
 	var perm_btn = new Proxmox.button.Button({
 	    text: gettext('Permissions'),
@@ -140,7 +114,6 @@ Ext.define('PVE.dc.UserView', {
 		remove_btn,
 		'-',
 		pwchange_btn,
-		tfachange_btn,
 		'-',
 		perm_btn,
 	    ],

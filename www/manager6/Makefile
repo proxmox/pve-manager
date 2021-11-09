@@ -151,7 +151,6 @@ JSSRC= 							\
 	dc/Summary.js					\
 	dc/Support.js					\
 	dc/SyncWindow.js				\
-	dc/TFAEdit.js					\
 	dc/Tasks.js					\
 	dc/TokenEdit.js					\
 	dc/TokenView.js					\
