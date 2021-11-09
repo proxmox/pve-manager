@@ -21,7 +21,7 @@ Ext.define('PVE.window.LoginWindow', {
 
 	xclass: 'Ext.app.ViewController',
 
-	onLogon: function() {
+	onLogon: async function() {
 	    var me = this;
 
 	    var form = this.lookupReference('loginForm');
@@ -70,30 +70,70 @@ Ext.define('PVE.window.LoginWindow', {
 	    }
 	    sp.set(saveunField.getStateId(), saveunField.getValue());
 
-	    form.submit({
-		failure: function(f, resp) {
-		    me.failure(resp);
-		},
-		success: function(f, resp) {
-		    view.el.unmask();
+	    try {
+		// Request updated authentication mechanism:
+		creds['new-format'] = 1;
 
-		    var data = resp.result.data;
-		    if (Ext.isDefined(data.NeedTFA)) {
-			// Store first factor login information first:
-			data.LoggedOut = true;
-			Proxmox.Utils.setAuthData(data);
+		let resp = await Proxmox.Async.api2({
+		    url: '/api2/extjs/access/ticket',
+		    params: creds,
+		    method: 'POST',
+		});
 
-			if (Ext.isDefined(data.U2FChallenge)) {
-			    me.perform_u2f(data);
-			} else {
-			    me.perform_otp();
-			}
+		let data = resp.result.data;
+		if (data.ticket.startsWith("PVE:!tfa!")) {
+		    // Store first factor login information first:
+		    data.LoggedOut = true;
+		    Proxmox.Utils.setAuthData(data);
+
+		    data = await me.performTFAChallenge(data);
+
+		    // Fill in what we copy over from the 1st factor:
+		    data.CSRFPreventionToken = Proxmox.CSRFPreventionToken;
+		    data.username = Proxmox.UserName;
+		    me.success(data);
+		} else if (Ext.isDefined(data.NeedTFA)) {
+		    // Store first factor login information first:
+		    data.LoggedOut = true;
+		    Proxmox.Utils.setAuthData(data);
+
+		    if (Ext.isDefined(data.U2FChallenge)) {
+			me.perform_u2f(data);
 		    } else {
-			me.success(data);
+			me.perform_otp();
 		    }
-		},
-	    });
+		} else {
+		    me.success(data);
+		}
+	    } catch (error) {
+		me.failure(error);
+	    }
 	},
+
+	/* START NEW TFA CODE (pbs copy) */
+	performTFAChallenge: async function(data) {
+	    let me = this;
+
+	    let userid = data.username;
+	    let ticket = data.ticket;
+	    let challenge = JSON.parse(decodeURIComponent(
+	        ticket.split(':')[1].slice("!tfa!".length),
+	    ));
+
+	    let resp = await new Promise((resolve, reject) => {
+		Ext.create('Proxmox.window.TfaLoginWindow', {
+		    userid,
+		    ticket,
+		    challenge,
+		    onResolve: value => resolve(value),
+		    onReject: reject,
+		}).show();
+	    });
+
+	    return resp.result.data;
+	},
+	/* END NEW TFA CODE (pbs copy) */
+
 	failure: function(resp) {
 	    var me = this;
 	    var view = me.getView();
@@ -151,7 +191,7 @@ Ext.define('PVE.window.LoginWindow', {
 		msg.close();
 		if (res.errorCode) {
 		    Proxmox.Utils.authClear();
-		    Ext.Msg.alert(gettext('Error'), Proxmox.Utils.render_u2f_error(res.errorCode));
+		    Ext.Msg.alert(gettext('Error'), PVE.Utils.render_u2f_error(res.errorCode));
 		    return;
 		}
 		delete res.errorCode;
@@ -356,52 +396,3 @@ Ext.define('PVE.window.LoginWindow', {
 	],
     }],
  });
-Ext.define('PVE.window.TFALoginWindow', {
-    extend: 'Ext.window.Window',
-
-    modal: true,
-    resizable: false,
-    title: 'Two-Factor Authentication',
-    layout: 'form',
-    defaultButton: 'loginButton',
-    defaultFocus: 'otpField',
-
-    controller: {
-	xclass: 'Ext.app.ViewController',
-	login: function() {
-	    var me = this;
-	    var view = me.getView();
-	    view.onLogin(me.lookup('otpField').getValue());
-	    view.close();
-	},
-	cancel: function() {
-	    var me = this;
-	    var view = me.getView();
-	    view.onCancel();
-	    view.close();
-	},
-    },
-
-    items: [
-	{
-	    xtype: 'textfield',
-	    fieldLabel: gettext('Please enter your OTP verification code:'),
-	    name: 'otp',
-	    itemId: 'otpField',
-	    reference: 'otpField',
-	    allowBlank: false,
-	},
-    ],
-
-    buttons: [
-	{
-	    text: gettext('Login'),
-	    reference: 'loginButton',
-	    handler: 'login',
-	},
-	{
-	    text: gettext('Cancel'),
-	    handler: 'cancel',
-	},
-    ],
-});
