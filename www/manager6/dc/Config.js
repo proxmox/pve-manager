@@ -127,7 +127,7 @@ Ext.define('PVE.dc.Config', {
 		xtype: 'pveAuthView',
 		title: gettext('Authentication'),
 		groups: ['permissions'],
-		iconCls: 'fa fa-key',
+		iconCls: 'fa fa-address-book-o',
 		itemId: 'domains',
 	    },
 	    {
