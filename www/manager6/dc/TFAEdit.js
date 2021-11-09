@@ -44,7 +44,7 @@ Ext.define('PVE.window.TFAEdit', {
     showError: function(error) {
 	Ext.Msg.alert(
 	    gettext('Error'),
-	    PVE.Utils.render_u2f_error(error),
+	    Proxmox.Utils.render_u2f_error(error),
 	);
     },
 

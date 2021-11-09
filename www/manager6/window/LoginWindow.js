@@ -151,7 +151,7 @@ Ext.define('PVE.window.LoginWindow', {
 		msg.close();
 		if (res.errorCode) {
 		    Proxmox.Utils.authClear();
-		    Ext.Msg.alert(gettext('Error'), PVE.Utils.render_u2f_error(res.errorCode));
+		    Ext.Msg.alert(gettext('Error'), Proxmox.Utils.render_u2f_error(res.errorCode));
 		    return;
 		}
 		delete res.errorCode;

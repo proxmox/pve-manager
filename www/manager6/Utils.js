@@ -1302,17 +1302,6 @@ Ext.define('PVE.Utils', {
 	return Ext.htmlEncode(first + " " + last);
     },
 
-    render_u2f_error: function(error) {
-	var ErrorNames = {
-	    '1': gettext('Other Error'),
-	    '2': gettext('Bad Request'),
-	    '3': gettext('Configuration Unsupported'),
-	    '4': gettext('Device Ineligible'),
-	    '5': gettext('Timeout'),
-	};
-	return "U2F Error: " + ErrorNames[error] || Proxmox.Utils.unknownText;
-    },
-
     windowHostname: function() {
 	return window.location.hostname.replace(Proxmox.Utils.IP6_bracket_match,
             function(m, addr, offset, original) { return addr; });
