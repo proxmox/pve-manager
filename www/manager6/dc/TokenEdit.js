@@ -37,7 +37,7 @@ Ext.define('PVE.dc.TokenEdit', {
 		},
 		submitValue: true,
 		editConfig: {
-		    xtype: 'pveUserSelector',
+		    xtype: 'pmxUserSelector',
 		    allowBlank: false,
 		},
 		name: 'userid',

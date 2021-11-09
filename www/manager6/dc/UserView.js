@@ -15,7 +15,7 @@ Ext.define('PVE.dc.UserView', {
 
 	var store = new Ext.data.Store({
             id: "users",
-	    model: 'pve-users',
+	    model: 'pmx-users',
 	    sorters: {
 		property: 'userid',
 		order: 'DESC',
