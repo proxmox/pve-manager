@@ -101,6 +101,16 @@ Ext.define('PVE.dc.Config', {
 	    itemId: 'apitokens',
 	});
 
+	me.items.push({
+	    xtype: 'pmxTfaView',
+	    title: gettext('Two Factor'),
+	    groups: ['permissions'],
+	    iconCls: 'fa fa-key',
+	    itemId: 'tfa',
+	    yubicoEnabled: true,
+	    issuerName: 'Proxmox VE',
+	});
+
 	if (caps.dc['Sys.Audit']) {
 	    me.items.push({
 		xtype: 'pveGroupView',
@@ -125,7 +135,7 @@ Ext.define('PVE.dc.Config', {
 	    },
 	    {
 		xtype: 'pveAuthView',
-		title: gettext('Authentication'),
+		title: gettext('Realms'),
 		groups: ['permissions'],
 		iconCls: 'fa fa-address-book-o',
 		itemId: 'domains',
