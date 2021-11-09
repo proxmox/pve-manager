@@ -447,20 +447,16 @@ Ext.define('PVE.qemu.HardwareView', {
 	    dangerous: true,
 	    RESTMethod: 'PUT',
 	    confirmMsg: function(rec) {
-		var warn = gettext('Are you sure you want to remove entry {0}');
+		let warn = gettext('Are you sure you want to remove entry {0}');
 		if (this.text === this.altText) {
 		    warn = gettext('Are you sure you want to detach entry {0}');
 		}
-		var key = rec.data.key;
-		var entry = rows[key];
+		let rendered = me.renderKey(rec.data.key, {}, rec);
+		let msg = Ext.String.format(warn, `'${rendered}'`);
 
-		var rendered = me.renderKey(key, {}, rec);
-		var msg = Ext.String.format(warn, "'" + rendered + "'");
-
-		if (entry.del_extra_msg) {
-		    msg += '<br>' + entry.del_extra_msg;
+		if (rows[rec.data.key].del_extra_msg) {
+		    msg += '<br>' + rows[rec.data.key].del_extra_msg;
 		}
-
 		return msg;
 	    },
 	    handler: function(b, e, rec) {

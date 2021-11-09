@@ -201,15 +201,12 @@ Ext.define('PVE.lxc.RessourceView', {
 		if (this.text === this.altText) {
 		    warn = gettext('Are you sure you want to detach entry {0}');
 		}
+		let rendered = me.renderKey(rec.data.key, {}, rec);
+		let msg = Ext.String.format(warn, `'${rendered}'`);
 
-		let key = rec.data.key;
-
-		let rendered = me.renderKey(key, {}, rec);
-		let msg = Ext.String.format(warn, "'" + rendered + "'");
 		if (rec.data.key.match(/^unused\d+$/)) {
 		    msg += " " + gettext('This will permanently erase all data.');
 		}
-
 		return msg;
 	    },
 	    handler: run_remove,
