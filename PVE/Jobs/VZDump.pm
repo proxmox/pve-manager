@@ -7,6 +7,7 @@ use PVE::INotify;
 use PVE::VZDump::Common;
 use PVE::API2::VZDump;
 use PVE::Cluster;
+use PVE::JSONSchema;
 
 use base qw(PVE::Jobs::Plugin);
 
@@ -34,6 +35,32 @@ sub options {
     }
 
     return $options;
+}
+
+sub decode_value {
+    my ($class, $type, $key, $value) = @_;
+
+    if ($key eq 'prune-backups' && !ref($value)) {
+	$value = PVE::JSONSchema::parse_property_string(
+	    'prune-backups',
+	    $value,
+	);
+    }
+
+    return $value;
+}
+
+sub encode_value {
+    my ($class, $type, $key, $value) = @_;
+
+    if ($key eq 'prune-backups' && ref($value) eq 'HASH') {
+	$value = PVE::JSONSchema::print_property_string(
+	    $value,
+	    'prune-backups',
+	);
+    }
+
+    return $value;
 }
 
 sub run {

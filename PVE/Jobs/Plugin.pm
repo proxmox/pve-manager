@@ -52,6 +52,21 @@ sub parse_config {
    return $cfg;
 }
 
+# call the plugin specific decode/encode code
+sub decode_value {
+    my ($class, $type, $key, $value) = @_;
+
+    my $plugin = __PACKAGE__->lookup($type);
+    return $plugin->decode_value($type, $key, $value);
+}
+
+sub encode_value {
+    my ($class, $type, $key, $value) = @_;
+
+    my $plugin = __PACKAGE__->lookup($type);
+    return $plugin->encode_value($type, $key, $value);
+}
+
 sub run {
     my ($class, $cfg) = @_;
     # implement in subclass
