@@ -59,6 +59,7 @@ Ext.define('PVE.panel.StorageBase', {
 		name: 'preallocation',
 		fieldLabel: gettext('Preallocation'),
 		allowBlank: false,
+		deleteEmpty: !me.isCreate,
 		value: '__default__',
 	    };
 
