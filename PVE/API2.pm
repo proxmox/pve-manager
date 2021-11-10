@@ -93,9 +93,24 @@ __PACKAGE__->register_method ({
     returns => {
 	type => "object",
 	properties => {
-	    version => { type => 'string' },
-	    release => { type => 'string' },
-	    repoid => { type => 'string' },
+	    version => {
+		type => 'string',
+		description => 'The full pve-manager package version of this node.',
+	    },
+	    release => {
+		type => 'string',
+		description => 'The current Proxmox VE point release in `x.y` format.',
+	    },
+	    repoid => {
+		type => 'string',
+		description => 'The short git revision from which this version was build.',
+	    },
+	    console => {
+		type => 'string',
+		enum => ['applet', 'vv', 'html5', 'xtermjs'],
+		optional => 1,
+		description => 'The default console viewer to use.',
+	    },
 	},
     },
     code => sub {
