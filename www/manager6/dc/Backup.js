@@ -186,6 +186,10 @@ Ext.define('PVE.dc.BackupEdit', {
 		    'overflow': 'hidden',
 		    'white-space': 'nowrap',
 		},
+		editConfig: {
+		    maxLength: 20, // easier to allow more than less in the future..
+		    enforceMaxLength: true,
+		},
 		vtype: 'ConfigId',
 		allowBlank: false,
 		editable: me.isCreate,
