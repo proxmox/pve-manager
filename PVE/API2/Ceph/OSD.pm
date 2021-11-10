@@ -106,7 +106,7 @@ __PACKAGE__->register_method ({
 	my $osdmetadata_res = $rados->mon_command({ prefix => 'osd metadata' });
 	my $osdmetadata = { map { $_->{id} => $_ } @$osdmetadata_res };
 
-	my $hostversions = PVE::Cluster::get_node_kv("ceph-version");
+	my $hostversions = PVE::Ceph::Services::get_ceph_versions();
 
 	my $nodes = {};
 	my $newnodes = {};
@@ -176,7 +176,7 @@ __PACKAGE__->register_method ({
 	    }
 
 	    if ($name && $e->{type} eq 'host') {
-		$new->{version} = $hostversions->{$name};
+		$new->{version} = $hostversions->{$name}->{version}->{str};
 	    }
 	}
 
@@ -195,7 +195,6 @@ __PACKAGE__->register_method ({
 		leaf =>  0,
 		children => $realroots
 	    },
-	    versions => $hostversions, # for compatibility
 	};
 
 	$data->{flags} = $flags if $flags; # we want this for the noout flag

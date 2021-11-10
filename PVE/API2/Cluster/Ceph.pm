@@ -74,10 +74,7 @@ __PACKAGE__->register_method ({
 
 	my $scope = $param->{scope} // 'all';
 
-	my $res = {
-	    # FIXME: remove with 7.0 depreacated by structured 'versions'
-	    version => PVE::Cluster::get_node_kv("ceph-version"),
-	};
+	my $res = {};
 
 	if (defined(my $versions = PVE::Ceph::Services::get_ceph_versions())) {
 	    $res->{node} = $versions;
