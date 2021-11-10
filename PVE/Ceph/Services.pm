@@ -59,6 +59,9 @@ sub broadcast_ceph_versions {
 		return; # up to date, nothing to do so avoid (not exactly cheap) broadcast
 	    }
 	}
+	# FIXME: remove with 8.0 (or 7.2, its not _that_ bad) - for backward compat only
+	PVE::Cluster::broadcast_node_kv("ceph-version", $version);
+
 	my $node_versions = {
 	    version => {
 		str => $version,
