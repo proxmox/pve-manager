@@ -30,6 +30,12 @@ my $defaultData = {
 	    type => 'string', format => 'pve-calendar-event',
 	    maxLength => 128,
 	},
+	comment => {
+	    optional => 1,
+	    type => 'string',
+	    description => "Description for the Job.",
+	    maxLength => 512,
+	},
     },
 };
 
@@ -47,6 +53,10 @@ sub parse_config {
 
 	$data->{id} = $id;
 	$data->{enabled}  //= 1;
+
+	if (defined($data->{comment})) {
+	    $data->{comment} = PVE::Tools::decode_text($data->{comment});
+	}
    }
 
    return $cfg;
@@ -65,6 +75,18 @@ sub encode_value {
 
     my $plugin = __PACKAGE__->lookup($type);
     return $plugin->encode_value($type, $key, $value);
+}
+
+sub write_config {
+    my ($class, $filename, $cfg) = @_;
+
+    for my $job (values $cfg->{ids}->%*) {
+	if (defined($job->{comment})) {
+	    $job->{comment} = PVE::Tools::encode_text($job->{comment});
+	}
+    }
+
+    $class->SUPER::write_config($filename, $cfg);
 }
 
 sub run {

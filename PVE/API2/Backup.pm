@@ -168,6 +168,12 @@ __PACKAGE__->register_method({
 		description => "Enable or disable the job.",
 		default => '1',
 	    },
+	    comment => {
+		optional => 1,
+		type => 'string',
+		description => "Description for the Job.",
+		maxLength => 512,
+	    },
        }),
     },
     returns => { type => 'null' },
@@ -363,6 +369,12 @@ __PACKAGE__->register_method({
 		description => "Enable or disable the job.",
 		default => '1',
 	    },
+	    comment => {
+		optional => 1,
+		type => 'string',
+		description => "Description for the Job.",
+		maxLength => 512,
+	    },
        }),
     },
     returns => { type => 'null' },
@@ -417,7 +429,7 @@ __PACKAGE__->register_method({
 	    }
 
 	    foreach my $k (@$delete) {
-		if (!PVE::VZDump::option_exists($k)) {
+		if (!PVE::VZDump::option_exists($k) && $k ne 'comment') {
 		    raise_param_exc({ delete => "unknown option '$k'" });
 		}
 

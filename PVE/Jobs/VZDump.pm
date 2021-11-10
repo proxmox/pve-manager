@@ -25,6 +25,7 @@ sub options {
     my $options = {
 	enabled => { optional => 1 },
 	schedule => {},
+	comment => { optional => 1 },
     };
     foreach my $opt (keys %$props) {
 	if ($props->{$opt}->{optional}) {
