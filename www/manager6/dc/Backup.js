@@ -205,7 +205,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    },
 	    {
 		xtype: 'pveEmailNotificationSelector',
-		fieldLabel: gettext('Email notification'),
+		fieldLabel: gettext('Email'),
 		name: 'mailnotification',
 		deleteEmpty: !me.isCreate,
 		value: me.isCreate ? 'always' : '',
