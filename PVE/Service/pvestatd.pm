@@ -28,6 +28,7 @@ use PVE::AutoBalloon;
 use PVE::AccessControl;
 use PVE::Ceph::Services;
 use PVE::Ceph::Tools;
+use PVE::pvecfg;
 
 use PVE::ExtMetric;
 use PVE::Status::Plugin;
@@ -490,6 +491,17 @@ sub update_sdn_status {
     }
 }
 
+my $broadcast_version_info_done = 0;
+my sub broadcast_version_info : prototype() {
+    if (!$broadcast_version_info_done) {
+	PVE::Cluster::broadcast_node_kv(
+	    'version-info',
+	    encode_json(PVE::pvecfg::version_info()),
+	);
+	$broadcast_version_info_done = 1;
+    }
+}
+
 sub update_status {
 
     # update worker list. This is not really required and
@@ -560,6 +572,11 @@ sub update_status {
     $err = $@;
     syslog('err', "sdn status update error: $err") if $err;
 
+    eval {
+	broadcast_version_info();
+    };
+    $err = $@;
+    syslog('err', "version info update error: $err") if $err;
 }
 
 my $next_update = 0;
