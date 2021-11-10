@@ -247,6 +247,11 @@ Ext.define('PVE.dc.BackupInfo', {
 
     columnB: [
 	{
+	    xtype: 'displayfield',
+	    name: 'comment',
+	    fieldLabel: gettext('Comment'),
+	},
+	{
 	    xtype: 'label',
 	    name: 'pruneLabel',
 	    text: gettext('Retention Configuration') + ':',

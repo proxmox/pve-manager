@@ -238,6 +238,14 @@ Ext.define('PVE.dc.BackupEdit', {
 	    onlineHelp: 'chapter_vzdump',
 	    column1: column1,
 	    column2: column2,
+	    columnB: [
+		{
+		    xtype: 'proxmoxtextfield',
+		    name: 'comment',
+		    fieldLabel: gettext('Comment'),
+		    deleteEmpty: !me.isCreate,
+		},
+	    ],
 	    onGetValues: function(values) {
 		if (!values.node) {
 		    if (!me.isCreate) {
@@ -717,6 +725,7 @@ Ext.define('PVE.dc.BackupView', {
 		{
 		    header: gettext('ID'),
 		    dataIndex: 'id',
+		    hidden: true,
 		},
 		{
 		    header: gettext('Node'),
@@ -742,8 +751,14 @@ Ext.define('PVE.dc.BackupView', {
 		    dataIndex: 'storage',
 		},
 		{
-		    header: gettext('Selection'),
+		    header: gettext('Comment'),
+		    dataIndex: 'comment',
+		    renderer: Ext.htmlEncode,
 		    flex: 1,
+		},
+		{
+		    header: gettext('Selection'),
+		    flex: 2,
 		    sortable: false,
 		    dataIndex: 'vmid',
 		    renderer: PVE.Utils.render_backup_selection,
