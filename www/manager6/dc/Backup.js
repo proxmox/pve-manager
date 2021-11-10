@@ -181,6 +181,11 @@ Ext.define('PVE.dc.BackupEdit', {
 		name: 'id',
 		fieldLabel: gettext('ID'),
 		renderer: Ext.htmlEncode,
+		fieldStyle: me.isCreate ? {} : {
+		    'text-overflow': 'ellipsis',
+		    'overflow': 'hidden',
+		    'white-space': 'nowrap',
+		},
 		vtype: 'ConfigId',
 		allowBlank: false,
 		editable: me.isCreate,
