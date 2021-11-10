@@ -334,7 +334,7 @@ Ext.define('PVE.node.CephOsdTree', {
 			    return;
 			}
 
-			if (node.version !== maxversion && maxversion !== "0") {
+			if (PVE.Utils.compare_ceph_versions(node.version, maxversion) !== 0 && maxversion !== "0") {
 			    mixedversions = true;
 			}
 
@@ -503,8 +503,8 @@ Ext.define('PVE.node.CephOsdTree', {
 	    let icon = "";
 	    let version = value || "";
 	    let maxversion = vm.get('maxversion');
-	    if (value && value !== maxversion) {
-		if (rec.data.type === 'host' || versions[rec.data.host] !== maxversion) {
+	    if (value && PVE.Utils.compare_ceph_versions(value, maxversion) !== 0) {
+		if (rec.data.type === 'host' || PVE.Utils.compare_ceph_versions(versions[rec.data.host] || "", maxversion) !== 0) {
 		    icon = PVE.Utils.get_ceph_icon_html('HEALTH_UPGRADE');
 		} else {
 		    icon = PVE.Utils.get_ceph_icon_html('HEALTH_OLD');

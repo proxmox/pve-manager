@@ -50,9 +50,9 @@ Ext.define('PVE.ceph.Services', {
 	// order guarantee since es2020, but browsers did so before. Note, integers would break it.
 	const healthmap = Object.keys(healthstates);
 	let maxversion = "00.0.00";
-	Object.values(metadata.version || {}).forEach(function(version) {
-	    if (PVE.Utils.compare_ceph_versions(version, maxversion) > 0) {
-		maxversion = version;
+	Object.values(metadata.node || {}).forEach(function(node) {
+	    if (PVE.Utils.compare_ceph_versions(node?.version?.parts, maxversion) > 0) {
+		maxversion = node?.version?.parts;
 	    }
 	});
 	var quorummap = status && status.quorum_names ? status.quorum_names : [];
@@ -183,7 +183,7 @@ Ext.define('PVE.ceph.Services', {
 		if (result.version) {
 		    result.statuses.push(gettext('Version') + ": " + result.version);
 
-		    if (result.version !== maxversion) {
+		    if (PVE.Utils.compare_ceph_versions(result.version, maxversion) !== 0) {
 			if (metadata.version[host] === maxversion) {
 			    if (result.health > healthstates.HEALTH_OLD) {
 				result.health = healthstates.HEALTH_OLD;

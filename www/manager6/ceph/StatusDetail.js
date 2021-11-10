@@ -192,9 +192,9 @@ Ext.define('PVE.ceph.StatusDetail', {
 	me.suspendLayout = true;
 
 	let maxversion = "0";
-	Object.values(metadata.version || {}).forEach(function(version) {
-	    if (PVE.Utils.compare_ceph_versions(version, maxversion) > 0) {
-		maxversion = version;
+	Object.values(metadata.node || {}).forEach(function(node) {
+	    if (PVE.Utils.compare_ceph_versions(node?.version?.parts, maxversion) > 0) {
+		maxversion = node?.version?.parts;
 	    }
 	});
 
@@ -203,7 +203,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	if (metadata.osd) {
 	    metadata.osd.forEach(function(osd) {
 		let version = PVE.Utils.parse_ceph_version(osd);
-		if (version !== maxversion) {
+		if (PVE.Utils.compare_ceph_versions(version, maxversion) !== 0) {
 		    oldosds.push({
 			id: osd.id,
 			version: version,
