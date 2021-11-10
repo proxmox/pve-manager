@@ -3,9 +3,15 @@ Ext.define('PVE.form.CalendarEvent', {
     xtype: 'pveCalendarEvent',
 
     editable: true,
+    emptyText: gettext('Editable'), // FIXME: better way to convey that to confused users?
 
     valueField: 'value',
     queryMode: 'local',
+
+    matchFieldWidth: false,
+    listConfig: {
+	maxWidth: 450,
+    },
 
     store: {
 	field: ['value', 'text'],
