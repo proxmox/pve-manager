@@ -112,6 +112,7 @@ JSSRC= 							\
 	window/StartupEdit.js				\
 	window/DownloadUrlToStorage.js 			\
 	window/UploadToStorage.js 			\
+	window/ScheduleSimulator.js			\
 	window/Wizard.js				\
 	ha/Fencing.js					\
 	ha/GroupEdit.js					\

@@ -701,6 +701,21 @@ Ext.define('PVE.dc.BackupView', {
 		edit_btn,
 		detail_btn,
 		'-',
+		{
+		    xtype: 'proxmoxButton',
+		    selModel: null,
+		    text: gettext('Simulate Schedule'),
+		    handler: () => {
+			let record = sm.getSelection()[0];
+			let schedule;
+			if (record) {
+			    schedule = record.data.schedule;
+			}
+			Ext.create('PVE.window.ScheduleSimulator', {
+			    schedule,
+			}).show();
+		    },
+		},
 		run_btn,
 		'->',
 		noBackupJobWarning,
