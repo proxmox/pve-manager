@@ -155,17 +155,18 @@ sub starting_job {
 }
 
 sub started_job {
-    my ($jobid, $type, $upid, $err) = @_;
+    my ($jobid, $type, $upid, $msg) = @_;
+
     lock_job_state($jobid, $type, sub {
 	my $state = read_job_state($jobid, $type);
 	return if !defined($state); # job was removed, do not update
 	die "unexpected state '$state->{state}'\n" if $state->{state} ne 'starting';
 
 	my $new_state;
-	if (defined($err)) {
+	if (defined($msg)) {
 	    $new_state = {
 		state => 'stopped',
-		msg => $err,
+		msg => $msg,
 		time => time(),
 	    };
 	} else {
