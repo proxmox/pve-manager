@@ -167,6 +167,69 @@ Ext.define('PVE.dc.OptionView', {
 		value: gettext('NOTE: Changing an AppID breaks existing U2F registrations!'),
 	    }],
 	});
+	me.add_inputpanel_row('webauthn', gettext('WebAuthn Settings'), {
+	    renderer: PVE.Utils.render_dc_ha_opts,
+	    width: 450,
+	    url: "/api2/extjs/cluster/options",
+	    //onlineHelp: 'pveum_configure_webauthn',
+	    items: [{
+		xtype: 'textfield',
+		fieldLabel: gettext('Relying Party'),
+		name: 'rp',
+		allowBlank: false,
+		listeners: {
+		    dirtychange: (f, isDirty) =>
+			f.up('panel').down('box[id=rpChangeWarning]').setHidden(!f.originalValue || !isDirty),
+		},
+	    },
+	    {
+		xtype: 'textfield',
+		fieldLabel: gettext('Origin'),
+		name: 'origin',
+		allowBlank: false,
+	    },
+	    {
+		xtype: 'textfield',
+		fieldLabel: 'ID',
+		name: 'id',
+		allowBlank: false,
+	    },
+	    {
+		xtype: 'container',
+		layout: 'hbox',
+		items: [
+		    {
+			xtype: 'box',
+			flex: 1,
+		    },
+		    {
+			xtype: 'button',
+			text: gettext('Auto-fill'),
+			iconCls: 'fa fa-fw fa-pencil-square-o',
+			handler: function(button, ev) {
+			    let panel = this.up('panel');
+			    panel.down('field[name=rp]').setValue(document.location.hostname);
+			    panel.down('field[name=origin]').setValue(document.location.origin);
+			    panel.down('field[name=id]').setValue(document.location.hostname);
+			},
+		    },
+		],
+	    },
+	    {
+		xtype: 'box',
+		height: 25,
+		html: `<span class='pmx-hint'>${gettext('Note:')}</span> `
+		    + gettext('WebAuthn requires using a trusted certificate.'),
+	    },
+	    {
+		xtype: 'box',
+		id: 'rpChangeWarning',
+		hidden: true,
+		padding: '5 0 0 0',
+	    html: '<i class="fa fa-exclamation-triangle warning"></i> '
+		+ gettext('Changing the Relying Party may break existing webAuthn TFA entries.'),
+	    }],
+	});
 	me.add_inputpanel_row('bwlimit', gettext('Bandwidth Limits'), {
 	    renderer: me.render_bwlimits,
 	    width: 450,
