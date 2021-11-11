@@ -24,11 +24,11 @@ Ext.define('PVE.form.CalendarEvent', {
 	    {
 		value: 'mon..fri 7..18:00/15',
 		text: gettext("Monday to Friday") + ', '
-		    + Ext.String.format(gettext('{0} to {1}'), '08:00', '18:45') + ': '
+		    + Ext.String.format(gettext('{0} to {1}'), '07:00', '18:45') + ': '
 		    + Ext.String.format(gettext("Every {0} minutes"), 15),
 	    },
 	    { value: 'sun 01:00', text: gettext("Sunday") + " 01:00" },
-	    { value: 'sat *-1..7 15:00', text: gettext("First Saturday each Month") + " 15:00" },
+	    { value: 'sat *-1..7 15:00', text: gettext("First Saturday each month") + " 15:00" },
 	],
     },
 
