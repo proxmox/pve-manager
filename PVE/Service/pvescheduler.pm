@@ -25,20 +25,6 @@ my $finish_jobs = sub {
     }
 };
 
-my $get_sleep_time = sub {
-    my ($calculate_offset) = @_;
-    my $time = 60;
-
-    if ($calculate_offset) {
-	# try to run near minute boundaries, makes more sense to the user as he
-	# configures jobs with minute precision
-	my ($current_seconds) = localtime;
-	$time = (60 - $current_seconds) if (60 - $current_seconds >= 5);
-    }
-
-    return $time;
-};
-
 sub run {
     my ($self) = @_;
 
@@ -84,12 +70,12 @@ sub run {
 
 	$run_jobs->();
 
-	my $sleep_time;
+	my $sleep_time = 60;
 	if ($count >= 1000) {
-	    $sleep_time = $get_sleep_time->(1);
+	    # Job schedule has minute precision, so try running near the minute boundary.
+	    my ($current_seconds) = localtime;
+	    $sleep_time = (60 - $current_seconds) if (60 - $current_seconds >= 5);
 	    $count = 0;
-	} else {
-	    $sleep_time = $get_sleep_time->(0);
 	}
 
 	my $slept = 0; # SIGCHLD interrupts sleep, so we need to keep track
