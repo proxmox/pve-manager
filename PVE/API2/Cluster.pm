@@ -130,21 +130,21 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	my $result = [
-	    { name => 'log' },
-	    { name => 'options' },
-	    { name => 'resources' },
-	    { name => 'replication' },
-	    { name => 'tasks' },
+	    { name => 'acme' },
 	    { name => 'backup' },
 	    { name => 'backup-info' },
-	    { name => 'ha' },
-	    { name => 'status' },
-	    { name => 'nextid' },
-	    { name => 'firewall' },
-	    { name => 'config' },
-	    { name => 'acme' },
 	    { name => 'ceph' },
+	    { name => 'config' },
+	    { name => 'firewall' },
+	    { name => 'ha' },
+	    { name => 'log' },
 	    { name => 'metrics' },
+	    { name => 'nextid' },
+	    { name => 'options' },
+	    { name => 'replication' },
+	    { name => 'resources' },
+	    { name => 'status' },
+	    { name => 'tasks' },
 	];
 
 	if ($have_sdn) {
