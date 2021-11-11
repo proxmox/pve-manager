@@ -12,13 +12,13 @@ Ext.define('PVE.window.ScheduleSimulator', {
 	    if (!schedule) {
 		return;
 	    }
-	    let number = me.lookup('number').getValue() || 10;
+	    let iterations = me.lookup('iterations').getValue() || 10;
 	    Proxmox.Utils.API2Request({
 		url: '/cluster/jobs/schedule-analyze',
 		method: 'GET',
 		params: {
 		    schedule,
-		    number,
+		    iterations,
 		},
 		failure: function(response, opts) {
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
@@ -71,8 +71,8 @@ Ext.define('PVE.window.ScheduleSimulator', {
 		    minValue: 1,
 		    maxValue: 100,
 		    value: 10,
-		    reference: 'number',
-		    fieldLabel: gettext('Number'),
+		    reference: 'iterations',
+		    fieldLabel: gettext('Iterations'),
 		},
 		{
 		    xtype: 'button',

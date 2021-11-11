@@ -47,7 +47,7 @@ __PACKAGE__->register_method({
 	additionalProperties => 0,
 	properties => {
 	    schedule => {
-		description => "Backup schedule. The format is a subset of `systemd` calendar events.",
+		description => "Job schedule. The format is a subset of `systemd` calendar events.",
 		type => 'string', format => 'pve-calendar-event',
 		maxLength => 128,
 	    },
@@ -56,8 +56,8 @@ __PACKAGE__->register_method({
 		optional => 1,
 		type => 'integer',
 	    },
-	    number => {
-		description => "Number of timestamps to return.",
+	    iterations => {
+		description => "Number of event-iteration to simulate and return.",
 		optional => 1,
 		type => 'integer',
 		minimum => 1,
@@ -68,7 +68,7 @@ __PACKAGE__->register_method({
     },
     returns => {
 	type => 'array',
-	description => 'Contains the guest objects.',
+	description => 'An array of the next <iterations> events since <starttime>.',
 	items => {
 	    type => 'object',
 	    properties => {
@@ -87,14 +87,14 @@ __PACKAGE__->register_method({
 	my ($param) = @_;
 
 	my $starttime = $param->{starttime} // time();
-	my $number = $param->{number} // 10;
+	my $iterations = $param->{iterations} // 10;
 	my $schedule = $param->{schedule};
 
 	my $result = [];
 
 	my $event = PVE::CalendarEvent::parse_calendar_event($schedule);
 
-	for (my $count = 0; $count < $number; $count++) {
+	for (my $count = 0; $count < $iterations; $count++) {
 	    my $next = PVE::CalendarEvent::compute_next_event($event, $starttime);
 	    push @$result, {
 		timestamp => $next,
