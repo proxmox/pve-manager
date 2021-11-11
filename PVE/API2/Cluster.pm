@@ -137,6 +137,7 @@ __PACKAGE__->register_method ({
 	    { name => 'config' },
 	    { name => 'firewall' },
 	    { name => 'ha' },
+	    { name => 'jobs' },
 	    { name => 'log' },
 	    { name => 'metrics' },
 	    { name => 'nextid' },

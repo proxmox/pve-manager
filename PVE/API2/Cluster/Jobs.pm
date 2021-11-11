@@ -13,6 +13,7 @@ __PACKAGE__->register_method({
     path => '',
     method => 'GET',
     description => "Index for jobs related endpoints.",
+    permissions => { user => 'all' },
     parameters => {
 	additionalProperties => 0,
 	properties => {},
