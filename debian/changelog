@@ -1,3 +1,66 @@
+pve-manager (7.0-15) bullseye; urgency=medium
+
+  * ui: lxc: resources: add Detach text for mountpoints
+
+  * vzdump: skip protected backups for dumpdir pruning
+
+  * ui: backup views: add protected column and allow one to change protection
+    status
+
+  * fix #3504: add datacenter notes panel for cluster wide comments, rendered
+    as markdown
+
+  * fix #3505: ui: upload to storage: add checksum and algorithm to
+    auto-verify intergrity of files after they have been uploaded, similar to
+    the URL downloader.
+
+  * ui: node: LVMThin: add volume group to columns
+
+  * ui: node: add destroy menu for directory, lvm, lvmthin, zfs
+
+  * ui: node: storage removal: add checkboxes for cleaning up disks and/or
+    storage config
+
+  * ui: ceph: make version handling actually future proof
+
+  * replication: replace systemd timer with pvescheduler daemon
+
+  * backups: use more flexible pvescheduler daemon over CRON file to run
+    backup jobs
+
+  * ui: dc/backup: show schedule instead of day-of-week and starttime
+
+  * fix #3658: api, ui: backup jobs: add comment field to jobs entries
+
+  * pvestatd: broadcast very basic, built-in version info
+
+  * ui: storage: avoid deleting preallocation setting on creation
+
+  * ui: more re-use of user and TFA related widgets from widget-toolkit
+
+  * fix #2841: implement multiple second factors for users
+
+  * tfa: support WebAuthn and recovery keys
+
+  * ui: redirect user TFA button to TFA view as we got multiple factors per
+    user now
+
+  * ui: dc/options: display WebAuthn and add editor
+
+  * api: ceph-mds: get mds state when multple ceph filesystems exist
+
+  * ceph fs: support creating multiple CephFS via UI/API
+
+  * ui: dc: backup jobs: add schedule simulator to allow admins easier
+    debugging and grasping of the calendar event derived schedule format
+
+  * ui: index: set Proxmox.NodeName variable
+
+  * ui: tfa: include cluster or node name in issuer for better recogintion in,
+    for example, TOTP apps
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 11 Nov 2021 21:37:07 +0100
+
 pve-manager (7.0-14) bullseye; urgency=medium
 
   * ceph services: drop broadcasting legacy version through the pmxcfs
