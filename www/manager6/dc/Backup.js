@@ -749,6 +749,7 @@ Ext.define('PVE.dc.BackupView', {
 		    header: gettext('Comment'),
 		    dataIndex: 'comment',
 		    renderer: Ext.htmlEncode,
+		    sorter: (a, b) => (a.data.comment || '').localeCompare(b.data.comment || ''),
 		    flex: 1,
 		},
 		{
