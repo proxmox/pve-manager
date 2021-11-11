@@ -52,10 +52,6 @@ pve6to7.1:
 	printf ".TH PVE6TO7 1\n.SH NAME\npve6to7 \- Proxmox VE upgrade checker script for 6.4 to 7.x\n" > $@
 	printf ".SH SYNOPSIS\npve6to7 [--full]\n" >> $@
 
-pvescheduler.8:
-	# FIXME: add to doc-generator
-	echo ".TH pvescheduler 8" > $@
-
 pveversion.1.pod: pveversion
 pveupgrade.1.pod: pveupgrade
 pvereport.1.pod: pvereport
