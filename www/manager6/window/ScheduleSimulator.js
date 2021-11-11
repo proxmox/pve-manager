@@ -1,7 +1,7 @@
 Ext.define('PVE.window.ScheduleSimulator', {
     extend: 'Ext.window.Window',
 
-    title: gettext('Simulate Schedule'),
+    title: gettext('Job Schedule Simulator'),
 
     controller: {
 	xclass: 'Ext.app.ViewController',
@@ -20,9 +20,7 @@ Ext.define('PVE.window.ScheduleSimulator', {
 		    schedule,
 		    iterations,
 		},
-		failure: function(response, opts) {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		},
+		failure: response => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
 		success: function(response) {
 		    let schedules = response.result.data;
 		    me.lookup('grid').getStore().setData(schedules);

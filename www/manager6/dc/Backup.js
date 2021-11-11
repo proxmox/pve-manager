@@ -704,7 +704,7 @@ Ext.define('PVE.dc.BackupView', {
 		{
 		    xtype: 'proxmoxButton',
 		    selModel: null,
-		    text: gettext('Simulate Schedule'),
+		    text: gettext('Schedule Simulator'),
 		    handler: () => {
 			let record = sm.getSelection()[0];
 			let schedule;
