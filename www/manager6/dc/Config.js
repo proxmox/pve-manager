@@ -108,7 +108,7 @@ Ext.define('PVE.dc.Config', {
 	    iconCls: 'fa fa-key',
 	    itemId: 'tfa',
 	    yubicoEnabled: true,
-	    issuerName: 'Proxmox VE',
+	    issuerName: `Proxmox VE - ${PVE.ClusterName || Proxmox.NodeName}`,
 	});
 
 	if (caps.dc['Sys.Audit']) {
