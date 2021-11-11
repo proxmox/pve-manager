@@ -701,6 +701,11 @@ Ext.define('PVE.dc.BackupView', {
 		edit_btn,
 		detail_btn,
 		'-',
+		run_btn,
+		'->',
+		noBackupJobWarning,
+		noBackupJobInfoButton,
+		'-',
 		{
 		    xtype: 'proxmoxButton',
 		    selModel: null,
@@ -716,10 +721,6 @@ Ext.define('PVE.dc.BackupView', {
 			}).show();
 		    },
 		},
-		run_btn,
-		'->',
-		noBackupJobWarning,
-		noBackupJobInfoButton,
 	    ],
 	    columns: [
 		{
