@@ -75,12 +75,21 @@ Ext.define('PVE.window.ScheduleSimulator', {
 		    fieldLabel: gettext('Iterations'),
 		},
 		{
-		    xtype: 'button',
-		    reference: 'simulateBtn',
-		    text: gettext('Simulate'),
-		    handler: 'simulate',
-		    align: 'right',
-		    disabled: true,
+		    xtype: 'container',
+		    layout: 'hbox',
+		    items: [
+			{
+			    xtype: 'box',
+			    flex: 1,
+			},
+			{
+			    xtype: 'button',
+			    reference: 'simulateBtn',
+			    text: gettext('Simulate'),
+			    handler: 'simulate',
+			    disabled: true,
+			},
+		    ],
 		},
 	    ],
 
