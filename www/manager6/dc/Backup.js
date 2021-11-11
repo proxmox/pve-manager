@@ -176,24 +176,6 @@ Ext.define('PVE.dc.BackupEdit', {
 	});
 
 	let column1 = [
-	    {
-		xtype: 'pmxDisplayEditField',
-		name: 'id',
-		fieldLabel: gettext('ID'),
-		renderer: Ext.htmlEncode,
-		fieldStyle: me.isCreate ? {} : {
-		    'text-overflow': 'ellipsis',
-		    'overflow': 'hidden',
-		    'white-space': 'nowrap',
-		},
-		editConfig: {
-		    maxLength: 20, // easier to allow more than less in the future..
-		    enforceMaxLength: true,
-		},
-		vtype: 'ConfigId',
-		allowBlank: false,
-		editable: me.isCreate,
-	    },
 	    nodesel,
 	    storagesel,
 	    {
@@ -261,6 +243,10 @@ Ext.define('PVE.dc.BackupEdit', {
 			Proxmox.Utils.assemble_field_data(values, { 'delete': 'node' });
 		    }
 		    delete values.node;
+		}
+
+		if (!values.id && me.isCreate) {
+		    values.id = 'backup-' + Ext.data.identifier.Uuid.Global.generate().slice(0, 13);
 		}
 
 		let selMode = values.selMode;
