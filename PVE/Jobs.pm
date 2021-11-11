@@ -54,7 +54,7 @@ sub lock_job_state {
     return $res;
 }
 
-my $get_job_status = sub {
+my $get_job_task_status = sub {
     my ($state) = @_;
 
     if (!defined($state->{upid})) {
@@ -82,17 +82,15 @@ sub update_job_stopped {
     my $state = read_job_state($jobid, $type);
     return if !defined($state) || $state->{state} ne 'started'; # removed or not started
 
-    if (defined($get_job_status->($state))) {
+    if (defined($get_job_task_status->($state))) {
 	lock_job_state($jobid, $type, sub {
 	    my $state = read_job_state($jobid, $type);
 	    return if !defined($state) || $state->{state} ne 'started'; # removed or not started
 
-	    my $status = $get_job_status->($state);
-
 	    my $new_state = {
 		state => 'stopped',
-		msg => $status,
-		upid => $state->{upid}
+		msg => $get_job_task_status->($state) // 'internal error',
+		upid => $state->{upid},
 	    };
 
 	    if ($state->{updated}) { # save updated time stamp
