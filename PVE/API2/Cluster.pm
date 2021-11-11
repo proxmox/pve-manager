@@ -25,6 +25,7 @@ use PVE::API2::ACMEPlugin;
 use PVE::API2::Backup;
 use PVE::API2::Cluster::BackupInfo;
 use PVE::API2::Cluster::Ceph;
+use PVE::API2::Cluster::Jobs;
 use PVE::API2::Cluster::MetricServer;
 use PVE::API2::ClusterConfig;
 use PVE::API2::Firewall::Cluster;
@@ -84,6 +85,10 @@ __PACKAGE__->register_method ({
     path => 'ceph',
 });
 
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Cluster::Jobs",
+    path => 'jobs',
+});
 if ($have_sdn) {
     __PACKAGE__->register_method ({
        subclass => "PVE::API2::Network::SDN",

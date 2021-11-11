@@ -5,6 +5,7 @@ include ../../../defines.mk
 PERLSOURCE= 			\
 	BackupInfo.pm		\
 	MetricServer.pm		\
+	Jobs.pm			\
 	Ceph.pm
 
 all:
