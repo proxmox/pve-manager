@@ -232,8 +232,8 @@ Ext.define('PVE.dc.OptionView', {
 		id: 'rpChangeWarning',
 		hidden: true,
 		padding: '5 0 0 0',
-	    html: '<i class="fa fa-exclamation-triangle warning"></i> '
-		+ gettext('Changing the Relying Party may break existing webAuthn TFA entries.'),
+		html: '<i class="fa fa-exclamation-triangle warning"></i> '
+		    + gettext('Changing the Relying Party may break existing webAuthn TFA entries.'),
 	    }],
 	});
 	me.add_inputpanel_row('bwlimit', gettext('Bandwidth Limits'), {
