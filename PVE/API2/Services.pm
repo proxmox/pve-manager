@@ -29,6 +29,7 @@ my $service_name_list = [
     'pvedaemon',
     'pvefw-logger',
     'pveproxy',
+    'pvescheduler',
     'pvestatd',
     'spiceproxy',
     'sshd',
