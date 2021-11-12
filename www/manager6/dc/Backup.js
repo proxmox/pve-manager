@@ -766,8 +766,14 @@ Ext.define('PVE.dc.BackupView', {
 		    flex: 1,
 		},
 		{
-		    header: gettext('Selection'),
+		    header: gettext('Retention'),
+		    dataIndex: 'prune-backups',
+		    renderer: v => v ? PVE.Parser.printPropertyString(v) : gettext('Fallback from storage config'),
 		    flex: 2,
+		},
+		{
+		    header: gettext('Selection'),
+		    flex: 4,
 		    sortable: false,
 		    dataIndex: 'vmid',
 		    renderer: PVE.Utils.render_backup_selection,
