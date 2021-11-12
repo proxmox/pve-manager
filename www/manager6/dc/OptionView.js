@@ -96,7 +96,7 @@ Ext.define('PVE.dc.OptionView', {
 	    defaultValue: Proxmox.Utils.noneText,
 	});
 	me.add_inputpanel_row('migration', gettext('Migration Settings'), {
-	    renderer: PVE.Utils.render_dc_ha_opts,
+	    renderer: PVE.Utils.render_as_property_string,
 	    labelWidth: 120,
 	    url: "/api2/extjs/cluster/options",
 	    defaultKey: 'type',
@@ -138,7 +138,7 @@ Ext.define('PVE.dc.OptionView', {
 	    }],
 	});
 	me.add_inputpanel_row('u2f', gettext('U2F Settings'), {
-	    renderer: PVE.Utils.render_dc_ha_opts,
+	    renderer: v => !v ? Proxmox.Utils.NoneText : PVE.Parser.printPropertyString(v),
 	    width: 450,
 	    url: "/api2/extjs/cluster/options",
 	    onlineHelp: 'pveum_configure_u2f',
@@ -174,7 +174,7 @@ Ext.define('PVE.dc.OptionView', {
 	    }],
 	});
 	me.add_inputpanel_row('webauthn', gettext('WebAuthn Settings'), {
-	    renderer: PVE.Utils.render_dc_ha_opts,
+	    renderer: v => !v ? Proxmox.Utils.NoneText : PVE.Parser.printPropertyString(v),
 	    width: 450,
 	    url: "/api2/extjs/cluster/options",
 	    //onlineHelp: 'pveum_configure_webauthn',
