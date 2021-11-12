@@ -3,6 +3,7 @@ Ext.define('PVE.form.BusTypeSelector', {
     alias: 'widget.pveBusSelector',
 
     noVirtIO: false,
+    withUnused: false,
 
     initComponent: function() {
 	var me = this;
@@ -14,6 +15,10 @@ Ext.define('PVE.form.BusTypeSelector', {
 	}
 
 	me.comboItems.push(['scsi', 'SCSI']);
+
+	if (me.withUnused) {
+	    me.comboItems.push(['unused', 'Unused']);
+	}
 
 	me.callParent();
     },

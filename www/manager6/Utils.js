@@ -1534,6 +1534,7 @@ Ext.define('PVE.Utils', {
 	sata: 6,
 	scsi: 31,
 	virtio: 16,
+	unused: 256,
     },
 
     // types is either undefined (all busses), an array of busses, or a single bus
