@@ -72,11 +72,10 @@ sub run {
 	delete $conf->{$opt} if !defined($props->{$opt});
     }
 
-    # fixup prune-backups, we get it decoded but want it as string parameter
-    $conf->{'prune-backups'} = PVE::JSONSchema::print_property_string(
-	$conf->{'prune-backups'},
-	'prune-backups',
-    ) if $conf->{'prune-backups'} && ref($conf->{'prune-backups'}) eq 'HASH';
+    my $retention = $conf->{'prune-backups'};
+    if ($retention && ref($retention) eq 'HASH') { # fixup, its required as string parameter
+	$conf->{'prune-backups'} = PVE::JSONSchema::print_property_string($retention, 'prune-backups');
+    }
 
     $conf->{quiet} = 1; # do not write to stdout/stderr
 
