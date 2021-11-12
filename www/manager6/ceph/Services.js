@@ -184,7 +184,7 @@ Ext.define('PVE.ceph.Services', {
 		    result.statuses.push(gettext('Version') + ": " + result.version);
 
 		    if (PVE.Utils.compare_ceph_versions(result.version, maxversion) !== 0) {
-			let host_version = metadata.node[host]?.version?.parts || metadata.version?[host] || "";
+			let host_version = metadata.node[host]?.version?.parts || metadata.version?.[host] || "";
 			if (PVE.Utils.compare_ceph_versions(host_version, maxversion) === 0) {
 			    if (result.health > healthstates.HEALTH_OLD) {
 				result.health = healthstates.HEALTH_OLD;

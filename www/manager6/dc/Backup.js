@@ -40,11 +40,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    mode: 'SIMPLE',
 	    listeners: {
 		selectionchange: function(model, selected) {
-		    var sel = [];
-		    Ext.Array.each(selected, function(record) {
-			sel.push(record.data.vmid);
-		    });
-
+		    let sel = selected.map(record => record.data.vmid);
 		    // to avoid endless recursion suspend the vmidField change
 		    // event temporary as it calls us again
 		    vmidField.suspendEvent('change');
@@ -797,6 +793,7 @@ Ext.define('PVE.dc.BackupView', {
 	    'mode',
 	    'node',
 	    'pool',
+	    'prune-backups',
 	    'starttime',
 	    'storage',
 	    'vmid',
