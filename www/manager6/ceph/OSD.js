@@ -316,7 +316,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		    if (selected.length) {
 			name = selected[0].data.name;
 		    }
-		    vm.set('versions', data.versions);
+		    vm.set('versions', data.versions || {});
 		    // extract max version
 		    let maxversion = "0";
 		    let mixedversions = false;
@@ -507,7 +507,8 @@ Ext.define('PVE.node.CephOsdTree', {
 	    let version = value || "";
 	    let maxversion = vm.get('maxversion');
 	    if (value && PVE.Utils.compare_ceph_versions(value, maxversion) !== 0) {
-		if (rec.data.type === 'host' || PVE.Utils.compare_ceph_versions(versions[rec.data.host] || "", maxversion) !== 0) {
+		let host_version = rec.parentNode?.data?.version || versions[rec.data.host] || "";
+		if (rec.data.type === 'host' || PVE.Utils.compare_ceph_versions(host_version, maxversion) !== 0) {
 		    icon = PVE.Utils.get_ceph_icon_html('HEALTH_UPGRADE');
 		} else {
 		    icon = PVE.Utils.get_ceph_icon_html('HEALTH_OLD');
