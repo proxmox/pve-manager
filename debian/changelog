@@ -1,3 +1,21 @@
+pve-manager (7.1-1) bullseye; urgency=medium
+
+  * api: ceph: create osd: set correct parttype for DB/WAL
+
+  * partially fix #2285: api: ceph: create osd: allow using partitions
+
+  * ui: zfs create: switch to using widget-toolkit's multiDiskSelector
+
+  * ui: dc/Backup: fix 'run now' button for jobs with comments
+
+  * api/services: add pvescheduler to the service list
+
+  * ui: ceph: add more compatibilty code for versions
+
+  * ui: backup: show retention settings in own column
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 12 Nov 2021 18:49:36 +0100
+
 pve-manager (7.0-15) bullseye; urgency=medium
 
   * ui: lxc: resources: add Detach text for mountpoints
