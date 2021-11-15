@@ -1,3 +1,14 @@
+pve-manager (7.1-2) bullseye; urgency=medium
+
+  * ui: qemu: disk edit: expose read-only flag as advanced option for disks
+    using either a SCSI or virtIO based controller
+
+  * fix #3725: api: metrics: use complete config for testing the connection
+
+  * api: apt/versions: track swtpm
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 15 Nov 2021 16:35:13 +0100
+
 pve-manager (7.1-1) bullseye; urgency=medium
 
   * api: ceph: create osd: set correct parttype for DB/WAL
