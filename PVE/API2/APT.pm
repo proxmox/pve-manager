@@ -848,6 +848,7 @@ __PACKAGE__->register_method({
 	    pve-xtermjs
 	    qemu-server
 	    smartmontools
+	    swtpm
 	    spiceterm
 	    vncterm
 	);
