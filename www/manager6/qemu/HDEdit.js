@@ -261,7 +261,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		name: 'ssd',
 		clearOnDisable: true,
 		bind: {
-		    disabled: '{!isVirtIO}',
+		    disabled: '{isVirtIO}',
 		},
 	    },
 	    {
