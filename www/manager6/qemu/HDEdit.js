@@ -10,29 +10,23 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
     vmconfig: {}, // used to select usused disks
 
-    viewModel: {},
+    viewModel: {
+	data: {
+	    isScsi: false,
+	    isVirtIO: false,
+	},
+    },
 
     controller: {
-
 	xclass: 'Ext.app.ViewController',
 
 	onControllerChange: function(field) {
 	    let me = this;
-	    var value = field.getValue();
+	    let vm = this.getViewModel();
 
-	    var allowIOthread = value.match(/^(virtio|scsi)/);
-	    me.lookup('iothread').setDisabled(!allowIOthread);
-	    if (!allowIOthread) {
-		me.lookup('iothread').setValue(false);
-	    }
-
-	    var virtio = value.match(/^virtio/);
-	    me.lookup('ssd').setDisabled(virtio);
-	    if (virtio) {
-		me.lookup('ssd').setValue(false);
-	    }
-
-	    me.lookup('scsiController').setVisible(value.match(/^scsi/));
+	    let value = field.getValue();
+	    vm.set('isSCSI', value.match(/^scsi/));
+	    vm.set('isVirtIO', value.match(/^virtio/));
 
 	    me.fireIdChange();
 	},
@@ -65,6 +59,10 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    var vm = this.getViewModel();
 	    if (view.isCreate) {
 		vm.set('isIncludedInBackup', true);
+	    }
+	    if (view.confid) {
+		vm.set('isSCSI', view.confid.match(/^scsi/));
+		vm.set('isVirtIO', view.confid.match(/^virtio/));
 	    }
 	},
     },
@@ -199,7 +197,10 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		reference: 'scsiController',
 		bind: me.insideWizard ? {
 		    value: '{current.scsihw}',
-		} : undefined,
+		    visible: '{isSCSI}',
+		} : {
+		    visible: '{isSCSI}',
+		},
 		renderer: PVE.Utils.render_scsihw,
 		submitValue: false,
 		hidden: true,
@@ -255,19 +256,23 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	advancedColumn1.push(
 	    {
 		xtype: 'proxmoxcheckbox',
-		disabled: me.confid && me.confid.match(/^virtio/),
 		fieldLabel: gettext('SSD emulation'),
 		labelWidth: labelWidth,
 		name: 'ssd',
-		reference: 'ssd',
+		clearOnDisable: true,
+		bind: {
+		    disabled: '{!isVirtIO}',
+		},
 	    },
 	    {
 		xtype: 'proxmoxcheckbox',
-		disabled: me.confid && !me.confid.match(/^(virtio|scsi)/),
+		name: 'iothread',
 		fieldLabel: 'IO thread',
 		labelWidth: labelWidth,
-		reference: 'iothread',
-		name: 'iothread',
+		clearOnDisable: true,
+		bind: {
+		    disabled: '{!isVirtIO && !isSCSI}',
+		},
 	    },
 	);
 
