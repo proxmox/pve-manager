@@ -7,9 +7,11 @@ use PVE::Cluster qw(cfs_register_file);
 
 use base qw(PVE::SectionConfig);
 
-cfs_register_file('jobs.cfg',
-		  sub { __PACKAGE__->parse_config(@_); },
-		  sub { __PACKAGE__->write_config(@_); });
+cfs_register_file(
+    'jobs.cfg',
+     sub { __PACKAGE__->parse_config(@_); },
+     sub { __PACKAGE__->write_config(@_); }
+);
 
 my $defaultData = {
     propertyList => {

@@ -222,33 +222,30 @@ sub run_jobs {
 	# only schedule local jobs
 	next if defined($cfg->{node}) && $cfg->{node} ne $nodename;
 
-	eval {
-	    update_job_stopped($id, $type);
-	};
+	eval { update_job_stopped($id, $type) };
 	if (my $err = $@) {
 	    warn "could not update job state, skipping - $err\n";
 	    next;
 	}
 
-	# only schedule enabled jobs
-	next if defined($cfg->{enabled}) && !$cfg->{enabled};
+	next if defined($cfg->{enabled}) && !$cfg->{enabled}; # only schedule actually enabled jobs
 
 	my $last_run = get_last_runtime($id, $type);
 	my $calspec = PVE::CalendarEvent::parse_calendar_event($schedule);
 	my $next_sync = PVE::CalendarEvent::compute_next_event($calspec, $last_run) // 0;
 
-	if (time() >= $next_sync) {
-	    my $plugin = PVE::Jobs::Plugin->lookup($type);
-	    if (starting_job($id, $type)) {
-		my $upid = eval { $plugin->run($cfg) };
-		if (my $err = $@) {
-		    warn $@ if $@;
-		    started_job($id, $type, undef, $err);
-		} elsif ($upid eq 'OK') { # some jobs return OK immediatly
-		    started_job($id, $type, undef, 'OK');
-		} else {
-		    started_job($id, $type, $upid);
-		}
+	next if time() < $next_sync; # not yet its (next) turn
+
+	my $plugin = PVE::Jobs::Plugin->lookup($type);
+	if (starting_job($id, $type)) {
+	    my $upid = eval { $plugin->run($cfg) };
+	    if (my $err = $@) {
+		warn $@ if $@;
+		started_job($id, $type, undef, $err);
+	    } elsif ($upid eq 'OK') { # some jobs return OK immediately
+		started_job($id, $type, undef, 'OK');
+	    } else {
+		started_job($id, $type, $upid);
 	    }
 	}
     }

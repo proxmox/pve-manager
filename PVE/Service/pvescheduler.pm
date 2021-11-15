@@ -4,9 +4,11 @@ use strict;
 use warnings;
 
 use POSIX qw(WNOHANG);
-use PVE::SafeSyslog;
-use PVE::API2::Replication;
+
 use PVE::Jobs;
+use PVE::SafeSyslog;
+
+use PVE::API2::Replication;
 
 use PVE::Daemon;
 use base qw(PVE::Daemon);
@@ -28,7 +30,7 @@ my $finish_jobs = sub {
 sub run {
     my ($self) = @_;
 
-    my $jobs= {};
+    my $jobs = {};
     $self->{jobs} = $jobs;
 
     my $old_sig_chld = $SIG{CHLD};
