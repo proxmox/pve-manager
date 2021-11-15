@@ -90,6 +90,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	PVE.Utils.propertyStringSet(me.drive, values.discard, 'discard', 'on');
 	PVE.Utils.propertyStringSet(me.drive, values.ssd, 'ssd', 'on');
 	PVE.Utils.propertyStringSet(me.drive, values.iothread, 'iothread', 'on');
+	PVE.Utils.propertyStringSet(me.drive, values.readOnly, 'ro', 'on');
 	PVE.Utils.propertyStringSet(me.drive, values.cache, 'cache');
 
         var names = ['mbps_rd', 'mbps_wr', 'iops_rd', 'iops_wr'];
@@ -151,6 +152,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.discard = drive.discard === 'on';
 	values.ssd = PVE.Parser.parseBoolean(drive.ssd);
 	values.iothread = PVE.Parser.parseBoolean(drive.iothread);
+	values.readOnly = PVE.Parser.parseBoolean(drive.ro);
 
 	values.mbps_rd = drive.mbps_rd;
 	values.mbps_wr = drive.mbps_wr;
@@ -268,6 +270,17 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		xtype: 'proxmoxcheckbox',
 		name: 'iothread',
 		fieldLabel: 'IO thread',
+		labelWidth: labelWidth,
+		clearOnDisable: true,
+		bind: {
+		    disabled: '{!isVirtIO && !isSCSI}',
+		},
+	    },
+	    {
+		xtype: 'proxmoxcheckbox',
+		name: 'readOnly', // `ro` in the config, we map in get/set values
+		defaultValue: 0,
+		fieldLabel: gettext('Read-only'),
 		labelWidth: labelWidth,
 		clearOnDisable: true,
 		bind: {
