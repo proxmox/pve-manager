@@ -93,13 +93,11 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	PVE.Utils.propertyStringSet(me.drive, values.readOnly, 'ro', 'on');
 	PVE.Utils.propertyStringSet(me.drive, values.cache, 'cache');
 
-        var names = ['mbps_rd', 'mbps_wr', 'iops_rd', 'iops_wr'];
-        Ext.Array.each(names, function(name) {
-            var burst_name = name + '_max';
+	['mbps_rd', 'mbps_wr', 'iops_rd', 'iops_wr'].forEach(name => {
+	    let burst_name = `${name}_max`;
 	    PVE.Utils.propertyStringSet(me.drive, values[name], name);
 	    PVE.Utils.propertyStringSet(me.drive, values[burst_name], burst_name);
-        });
-
+	});
 
 	params[confid] = PVE.Parser.printQemuDrive(me.drive);
 
