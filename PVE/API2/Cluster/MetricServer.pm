@@ -238,7 +238,7 @@ __PACKAGE__->register_method ({
 
 	    $plugin->on_update_hook($id, $data, $sensitive_params);
 
-	    $plugin->test_connection($opts, $id);
+	    $plugin->test_connection($data, $id);
 
 	    PVE::Cluster::cfs_write_file('status.cfg', $cfg);
 	});
