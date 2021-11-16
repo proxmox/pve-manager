@@ -330,9 +330,10 @@ Ext.define('PVE.grid.BackupView', {
 		    renderer: Ext.htmlEncode,
 		},
 		{
-		    header: gettext('Protected'),
-		    width: 100,
-		    renderer: (value) => value ? '<i class="fa fa-shield"></i>' : '',
+		    header: `<i class="fa fa-shield"></i>`,
+		    tooltip: gettext('Protected'),
+		    width: 30,
+		    renderer: v => v ? `<i data-qtip="${gettext('Protected')}" class="fa fa-shield"></i>` : '',
 		    sorter: (a, b) => (b.data.protected || 0) - (a.data.protected || 0),
 		    dataIndex: 'protected',
 		},
