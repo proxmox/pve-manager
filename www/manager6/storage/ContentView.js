@@ -163,7 +163,8 @@ Ext.define('PVE.storage.ContentView', {
 	    'protected': {
 		header: gettext('Protected'),
 		width: 100,
-		renderer: Proxmox.Utils.format_boolean,
+		renderer: (value) => value ? '<i class="fa fa-shield"></i>' : '',
+		sorter: (a, b) => (b.data.protected || 0) - (a.data.protected || 0),
 		dataIndex: 'protected',
 	    },
 	    'date': {
