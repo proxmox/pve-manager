@@ -96,6 +96,7 @@ Ext.define('PVE.storage.ContentView', {
 	    me.tbar.push({
 		xtype: 'proxmoxStdRemoveButton',
 		selModel: sm,
+		enableFn: rec => !rec?.data?.protected,
 		delay: 5,
 		callback: () => reload(),
 		baseurl: baseurl + '/',

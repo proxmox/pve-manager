@@ -197,6 +197,7 @@ Ext.define('PVE.grid.BackupView', {
 	    selModel: sm,
 	    dangerous: true,
 	    delay: 5,
+	    enableFn: rec => !rec?.data?.protected,
 	    confirmMsg: ({ data }) => {
 		let msg = Ext.String.format(
 		    gettext('Are you sure you want to remove entry {0}'), `'${data.volid}'`);
@@ -302,7 +303,12 @@ Ext.define('PVE.grid.BackupView', {
 				    'protected': newProtection,
 				},
 				failure: (response) => Ext.Msg.alert('Error', response.htmlStatus),
-				success: (response) => reload(),
+				success: (response) => {
+				    reload();
+				    // propagate to remove button, fake for event as reload is to slow
+				    record.data.protected = newProtection; // TODO: check if writing is OK!
+				    sm.fireEvent('selectionchange', sm, [record]);
+				},
 			    });
 			},
 		    },
