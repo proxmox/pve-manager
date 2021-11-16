@@ -177,8 +177,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
     initComponent: function() {
 	var me = this;
 
-	var labelWidth = 140;
-
 	me.drive = {};
 
 	let column1 = [];
@@ -259,7 +257,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('SSD emulation'),
-		labelWidth: labelWidth,
 		name: 'ssd',
 		clearOnDisable: true,
 		bind: {
@@ -270,7 +267,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		xtype: 'proxmoxcheckbox',
 		name: 'iothread',
 		fieldLabel: 'IO thread',
-		labelWidth: labelWidth,
 		clearOnDisable: true,
 		bind: {
 		    disabled: '{!isVirtIO && !isSCSI}',
@@ -281,7 +277,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		name: 'readOnly', // `ro` in the config, we map in get/set values
 		defaultValue: 0,
 		fieldLabel: gettext('Read-only'),
-		labelWidth: labelWidth,
 		clearOnDisable: true,
 		bind: {
 		    disabled: '{!isVirtIO && !isSCSI}',
@@ -297,7 +292,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		    tag: 'div',
 		    'data-qtip': gettext('Include volume in backup job'),
 		},
-		labelWidth: labelWidth,
 		name: 'backup',
 		bind: {
 		    value: '{isIncludedInBackup}',
@@ -306,7 +300,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: gettext('Skip replication'),
-		labelWidth: labelWidth,
 		name: 'noreplicate',
 	    },
 	    {
@@ -315,7 +308,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		fieldLabel: gettext('Async IO'),
 		allowBlank: false,
 		value: '__default__',
-		labelWidth: labelWidth,
 		comboItems: [
 		    ['__default__', Proxmox.Utils.defaultText + ' (io_uring)'],
 		    ['io_uring', 'io_uring'],
@@ -324,6 +316,8 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		],
 	    },
 	);
+
+	let labelWidth = 140;
 
 	let bwColumn1 = [
 	    {
