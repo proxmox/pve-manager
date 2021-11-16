@@ -1,3 +1,22 @@
+pve-manager (7.1-4) bullseye; urgency=medium
+
+  * container templates: update shipped aplinfo index
+
+  * ui: render protected column as icon and enable sorting
+
+  * ui: backup views: disable remove button on protected backups
+
+  * ui: qemu: disk edit: add an 'Async IO' selector to the advanced options,
+    making it easier to switch from the default `io_uring` driver to either
+    `AIO-native` or 'threads' due to issues or to compare performance.
+
+  * ui: qemu: disk edit: with the bandwidth-limits being in their own tab now
+    we can drop extra-wide label-widths for advanced form fields.
+
+  * ui: ceph: osd: handle edge case with dead node
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 16 Nov 2021 14:21:31 +0100
+
 pve-manager (7.1-3) bullseye; urgency=medium
 
   * ui: qemu: disk edit: expose read-only flag as advanced option for disks
