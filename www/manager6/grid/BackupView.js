@@ -193,45 +193,34 @@ Ext.define('PVE.grid.BackupView', {
 	    },
 	});
 
-	var delete_btn = Ext.create('Proxmox.button.StdRemoveButton', {
+	let delete_btn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    dangerous: true,
 	    delay: 5,
-	    confirmMsg: function(rec) {
-		var msg = Ext.String.format(gettext('Are you sure you want to remove entry {0}'),
-					    "'" + rec.data.volid + "'");
-		msg += " " + gettext('This will permanently erase all data.');
-
-		return msg;
+	    confirmMsg: ({ data }) => {
+		let msg = Ext.String.format(
+		    gettext('Are you sure you want to remove entry {0}'), `'${data.volid}'`);
+		return msg + " " + gettext('This will permanently erase all data.');
 	    },
-	    getUrl: function(rec) {
-		var storage = storagesel.getValue();
-		return '/nodes/' + nodename + '/storage/' + storage + '/content/' + rec.data.volid;
-	    },
-	    callback: function() {
-		reload();
-	    },
+	    getUrl: ({ data }) => `/nodes/${nodename}/storage/${storagesel.getValue()}/content/${data.volid}`,
+	    callback: () => reload(),
 	});
 
-	var config_btn = Ext.create('Proxmox.button.Button', {
+	let config_btn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Show Configuration'),
 	    disabled: true,
 	    selModel: sm,
-	    enableFn: function(rec) {
-		return !!rec;
-	    },
+	    enableFn: rec => !!rec,
 	    handler: function(b, e, rec) {
-		var storage = storagesel.getValue();
+		let storage = storagesel.getValue();
 		if (!storage) {
 		    return;
 		}
-
-		var win = Ext.create('PVE.window.BackupConfig', {
+		Ext.create('PVE.window.BackupConfig', {
 		    volume: rec.data.volid,
 		    pveSelNode: me.pveSelNode,
+		    autoShow: true,
 		});
-
-		win.show();
 	    },
 	});
 
@@ -240,12 +229,10 @@ Ext.define('PVE.grid.BackupView', {
 	    text: gettext('File Restore'),
 	    disabled: true,
 	    selModel: sm,
-	    enableFn: function(rec) {
-		return !!rec && isPBS;
-	    },
+	    enableFn: rec => !!rec && isPBS,
 	    hidden: !isPBS,
 	    handler: function(b, e, rec) {
-		var storage = storagesel.getValue();
+		let storage = storagesel.getValue();
 		let isVMArchive = PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format);
 		Ext.create('Proxmox.window.FileBrowser', {
 		    title: gettext('File Restore') + " - " + rec.data.text,
@@ -304,15 +291,16 @@ Ext.define('PVE.grid.BackupView', {
 			text: gettext('Change Protection'),
 			disabled: true,
 			handler: function(button, event, record) {
-			    const volid = record.data.volid;
-			    const storage = storagesel.getValue();
-			    const url =
-				`/api2/extjs/nodes/${nodename}/storage/${storage}/content/${volid}`;
+			    let volid = record.data.volid, storage = storagesel.getValue();
+			    let url = `/api2/extjs/nodes/${nodename}/storage/${storage}/content/${volid}`;
+			    let newProtection = record.data.protected ? 0 : 1;
 			    Proxmox.Utils.API2Request({
 				url: url,
 				method: 'PUT',
 				waitMsgTarget: me,
-				params: { 'protected': record.data.protected ? 0 : 1 },
+				params: {
+				    'protected': newProtection,
+				},
 				failure: (response) => Ext.Msg.alert('Error', response.htmlStatus),
 				success: (response) => reload(),
 			    });
