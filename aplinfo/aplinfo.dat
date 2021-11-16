@@ -4,18 +4,18 @@ Description: News displayed on the admin interface
   For more information please visit our homepage at
   <a href='http://www.proxmox.com' target='_blank'>www.proxmox.com</a>
 
-Package: alpine-3.11-default
-Version: 20200425
+Package: almalinux-8-default
+Version: 20210928
 Type: lxc
-OS: alpine
+OS: almalinux
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/alpine-3.11-default_20200425_amd64.tar.xz
-md5sum: 6a4e3b1d5654f233147257110f157049
-sha512sum: 150f926ecb3e75b00fc6e188590144dad7c8c0ef209d3f028bbfabf81fe6f8d0bb4c33034207573730c4bb668be1274aaf8e9e15cfc6c99eaf9d8cd3bf3be40c
+Location: system/almalinux-8-default_20210928_amd64.tar.xz
+md5sum: fc828e03030fda1d3be6b98cd875f701
+sha512sum: 000070076d6a2ce15c489cbf76e8445a412ce0bdf529064084a2046f2eef113630c3ed91784720cea185ec2ed5fe345dd1d9bc1eb8ad51ed296848c823d34f7e
 Infopage: https://linuxcontainers.org
-Description: LXC default image for alpine 3.11 (20200425)
+Description: LXC default image for almalinux 8 (20210928)
 
 Package: alpine-3.12-default
 Version: 20200823
@@ -110,19 +110,19 @@ Infopage: http://pve.proxmox.com/wiki/Debian_10.0_Standard
 Description: Debian 10 Buster (standard)
  A small Debian Buster system including all standard packages.
 
-Package: debian-9.0-standard
-Version: 9.7-1
+Package: debian-11-standard
+Version: 11.0-1
 Type: lxc
-OS: debian-9.0
+OS: debian-11
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/debian-9.0-standard_9.7-1_amd64.tar.gz
-md5sum: d882825f5c818d086d514d9b49a6682d
-sha512sum: 02609c1fc6685d1bd038409360a6343880059fdaf57a29d0a99169713156a650c18dd310dde2a17c6cb568280c669f56d051d8869b50863fa2527b5cf8a34fdb
-Infopage: http://pve.proxmox.com/wiki/Debian_9.0_Standard
-Description: Debian 9.7 (standard)
- A small Debian Stretch system including all standard packages.
+Location: system/debian-11-standard_11.0-1_amd64.tar.gz
+md5sum: 8f104ebe5be83aeff655905aacab2034
+sha512sum: 96487cc9ff7764e32f6dd87f8477f08ab4fd3f419950007a14e3d20128f6b384c69ad3fe6fa23106f1eb5d3d5cf17d5c010f0b79feaaf520bd45b0ef299c82f1
+Infopage: http://pve.proxmox.com/wiki/Debian_10.0_Standard
+Description: Debian 11 Bullseye (standard)
+ A small Debian Bullseye system including all standard packages.
 
 Package: devuan-3.0-standard
 Version: 3.0
@@ -138,19 +138,6 @@ Infopage: https://devuan.org
 Description: Devuan 3.0 (standard)
  A small Devuan Beowulf system including a minimal set of essential packages.
 
-Package: fedora-33-default
-Version: 20201115
-Type: lxc
-OS: fedora
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/fedora-33-default_20201115_amd64.tar.xz
-md5sum: 391e2a431179b24c474e225b61dd415d
-sha512sum: 48787a928769627a05ccb9969e5419d97d2aa0fb17a6cffe1e281b95b5b4ab0d4a43a3b903ffbcd79a3a5d06a9edf71c5bda583773423d018ed2a519a8b64afb
-Infopage: https://linuxcontainers.org
-Description: LXC default image for fedora 33 (20201115)
-
 Package: fedora-34-default
 Version: 20210427
 Type: lxc
@@ -163,6 +150,19 @@ md5sum: 76781b32ab28bfa982de39f1becfd735
 sha512sum: df517f33a8c8f2f624113237a64317e12adf245966309bb5af4c2b5fb9122ca9b173c3db247d18e60b374b2087c089ac9ba641141ecae143257c83d22d2ca1a0
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 34 (20210427)
+
+Package: fedora-35-default
+Version: 20211111
+Type: lxc
+OS: fedora
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/fedora-35-default_20211111_amd64.tar.xz
+md5sum: 11bb241828ebba4bef8a4f12ae4fe0d5
+sha512sum: ddc3e4fbedeefb75e15098feddc2132242921eae52ff39b196dca2adc2e056e6fa88b39e38ac63d63f0806b1c10f681ad75bcf17387aab903b6770e62addcd8d
+Infopage: https://linuxcontainers.org
+Description: LXC default image for fedora 35 (20211111)
 
 Package: gentoo-current-default
 Version: 20200310
@@ -177,18 +177,18 @@ sha512sum: dc12b2fe0917ab779f92e4632504280663fac2c05c12479f98db67a9a617d9c2ce2fa
 Infopage: https://linuxcontainers.org
 Description: LXC default image for gentoo current (20200310)
 
-Package: opensuse-15.2-default
-Version: 20200824
+Package: opensuse-15.3-default
+Version: 20210925
 Type: lxc
 OS: opensuse
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/opensuse-15.2-default_20200824_amd64.tar.xz
-md5sum: 727f9371bbf39515d2d1a328161036ec
-sha512sum: d4c057c236e81115c844cc1dc164b186b38e2f9d696bf24254401c0e8749a11582af79de9db2c01d5ca3b94a4048fe3a5c059ea5f3531b7f3f778986efe585a2
+Location: system/opensuse-15.3-default_20210925_amd64.tar.xz
+md5sum: 05aebdbc89a45c681ef134b323bcafc7
+sha512sum: 58a66aff91a01b28ff8491787ec7856dd3cdeb2e0b4faa058b8ddbf087c5dc8cf44cd0c6e83a3e09f07062d62cd05228a84a30ba06739a505c7135b57bf2146a
 Infopage: https://linuxcontainers.org
-Description: LXC default image for opensuse 15.2 (20200824)
+Description: LXC default image for opensuse 15.3 (20210925)
 
 Package: proxmox-mailgateway-6.4-standard
 Version: 6.4-1
@@ -203,6 +203,33 @@ sha512sum: 0a9d48066aae7dbc60b3f421c134b6372a36165704a9e8170d7456d1f5e5ec7da9a9e
 Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
 Description: Proxmox Mailgateway 6.4
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
+
+Package: proxmox-mailgateway-7.0-standard
+Version: 7.0-1
+Type: lxc
+OS: debian-11
+Section: mail
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: mail/proxmox-mailgateway-7.0-standard_7.0-1_amd64.tar.gz
+md5sum: bd6a86caee01aa21b012d8b27762dc17
+sha512sum: ad16d751b7ac24adf082f24d5ec3cb65b3ff4aa5428ba496d9d12f428429113012ce0429011f01531fcac0dae05a0e2c465e8a281c40b846beefd3277c87399e
+Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
+Description: Proxmox Mailgateway 7.0
+ A full featured mail proxy for spam and virus filtering, optimized for container environment.
+
+Package: rockylinux-8-default
+Version: 20210929
+Type: lxc
+OS: rockylinux
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/rockylinux-8-default_20210929_amd64.tar.xz
+md5sum: 7d327d28fa10eee199afe0366a3fdff6
+sha512sum: 6e20e4c6fc0aef4eba582d9cdcb44403449a97db0bf78ebaf2c78e5092cd307613654fb08ef7f54505d14f7f1946b476ff30e193bedd196c7118a1cd2134f23c
+Infopage: https://linuxcontainers.org
+Description: LXC default image for rockylinux 8 (20210929)
 
 Package: ubuntu-16.04-standard
 Version: 16.04.5-1
@@ -246,20 +273,6 @@ Infopage: http://pve.proxmox.com/wiki/Ubuntu_Disco_Standard
 Description: Ubuntu Focal (standard)
  A small Ubuntu 20.04 Focal Fossa system including all standard packages.
 
-Package: ubuntu-20.10-standard
-Version: 20.10-1
-Type: lxc
-OS: ubuntu-20.10
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-20.10-standard_20.10-1_amd64.tar.gz
-md5sum: 0a6452096cf8402895717005f44cca19
-sha512sum: 30fe89a4c5b5afa470240016fc588a4ea12de20d94804c8bd3999d618ef0f78348a9a6d383a7140b8677d6041d05d4f56f35c0e17cf9141139b200183ec69664
-Infopage: http://pve.proxmox.com/wiki/Ubuntu_Groovy_Standard
-Description: Ubuntu Groovy (standard)
- A small Ubuntu 20.10 Groovy Gorilla system including all standard packages.
-
 Package: ubuntu-21.04-standard
 Version: 21.04-1
 Type: lxc
@@ -273,3 +286,17 @@ sha512sum: 53dc180f5b1c05e93d221fcbe8a334eb4afe2f591b575144f8d80242e8f9c3cca65da
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Groovy_Standard
 Description: Ubuntu 21.04 Hirsute (standard)
  A small Ubuntu 21.04 Hirsute Hippo system including all standard packages.
+
+Package: ubuntu-21.10-standard
+Version: 21.10-1
+Type: lxc
+OS: ubuntu-21.10
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-21.10-standard_21.10-1_amd64.tar.zst
+md5sum: ef2f94efb1839fede31bf389623aa723
+sha512sum: 69d07a1d31a5a56a9a06677f7b160c737a68fb21e6324449556f8bf9d72abd423bdc2fb2658974c7791d6152211aa98b4b3d834f4fdb43f2c7859caaba702656
+Infopage: http://pve.proxmox.com/wiki/Ubuntu_Impish_Standard
+Description: Ubuntu 21.10 Impish (standard)
+ A small Ubuntu 21.10 Impish Indri system including all standard packages.
