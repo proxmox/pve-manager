@@ -92,6 +92,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	PVE.Utils.propertyStringSet(me.drive, values.iothread, 'iothread', 'on');
 	PVE.Utils.propertyStringSet(me.drive, values.readOnly, 'ro', 'on');
 	PVE.Utils.propertyStringSet(me.drive, values.cache, 'cache');
+	PVE.Utils.propertyStringSet(me.drive, values.aio, 'aio');
 
 	['mbps_rd', 'mbps_wr', 'iops_rd', 'iops_wr'].forEach(name => {
 	    let burst_name = `${name}_max`;
@@ -151,6 +152,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	values.ssd = PVE.Parser.parseBoolean(drive.ssd);
 	values.iothread = PVE.Parser.parseBoolean(drive.iothread);
 	values.readOnly = PVE.Parser.parseBoolean(drive.ro);
+	values.aio = drive.aio || '__default__';
 
 	values.mbps_rd = drive.mbps_rd;
 	values.mbps_wr = drive.mbps_wr;
@@ -306,6 +308,20 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		fieldLabel: gettext('Skip replication'),
 		labelWidth: labelWidth,
 		name: 'noreplicate',
+	    },
+	    {
+		xtype: 'proxmoxKVComboBox',
+		name: 'aio',
+		fieldLabel: gettext('Async IO'),
+		allowBlank: false,
+		value: '__default__',
+		labelWidth: labelWidth,
+		comboItems: [
+		    ['__default__', Proxmox.Utils.defaultText + ' (io_uring)'],
+		    ['io_uring', 'io_uring'],
+		    ['native', 'native'],
+		    ['threads', 'threads'],
+		],
 	    },
 	);
 
