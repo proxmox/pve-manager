@@ -316,7 +316,8 @@ Ext.define('PVE.node.CephOsdTree', {
 		    if (selected.length) {
 			name = selected[0].data.name;
 		    }
-		    vm.set('versions', data.versions || {});
+		    data.versions = data.versions || {};
+		    vm.set('versions', data.versions);
 		    // extract max version
 		    let maxversion = "0";
 		    let mixedversions = false;
