@@ -52,6 +52,7 @@ my $convert_to_schedule = sub {
 
     my $starttime = $job->{starttime};
     my $dow = $job->{dow};
+    $dow = join(',', PVE::Tools::split_list($dow)) if defined($dow);
 
     if (!$dow || $dow eq ALL_DAYS) {
 	return "$starttime";
