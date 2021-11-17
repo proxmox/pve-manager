@@ -3,7 +3,7 @@ package PVE::API2::Backup;
 use strict;
 use warnings;
 use Digest::SHA;
-use UUID;
+use UUID qw(uuid);
 
 use PVE::SafeSyslog;
 use PVE::Tools qw(extract_param);
