@@ -195,7 +195,7 @@ __PACKAGE__->register_method({
 	$param->{enabled} = 1 if !defined($param->{enabled});
 
 	# autogenerate id for api compatibility FIXME remove with 8.0
-	my $id = extract_param($param, 'id') // uuid();
+	my $id = extract_param($param, 'id') // UUID::uuid();
 
 	cfs_lock_file('jobs.cfg', undef, sub {
 	    my $data = cfs_read_file('jobs.cfg');
