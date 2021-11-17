@@ -52,15 +52,12 @@ my $convert_to_schedule = sub {
 
     my $starttime = $job->{starttime};
 
-    my $dow = $job->{dow};
+    return "$starttime" if !$job->{dow}; # dow is restrictive, so none means all days
+
     # normalize as it could be a null-separated list previously
-    $dow = join(',', PVE::Tools::split_list($dow)) if defined($dow);
+    my $dow = join(',', PVE::Tools::split_list($job->{dow}));
 
-    if (!$dow || $dow eq ALL_DAYS) {
-	return "$starttime";
-    }
-
-    return "$dow $starttime";
+    return $dow eq ALL_DAYS ? "$starttime" : "$dow $starttime";
 };
 
 my $schedule_param_check = sub {
