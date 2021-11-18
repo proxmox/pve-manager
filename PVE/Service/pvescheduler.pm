@@ -47,7 +47,12 @@ sub run {
 	    die "fork failed: $!\n";
 	} elsif ($child == 0) {
 	    $self->after_fork_cleanup();
-	    $sub->();
+	    eval {
+		$sub->();
+	    };
+	    if (my $err = $@) {
+		syslog('err', "ERROR: $err");
+	    }
 	    POSIX::_exit(0);
 	}
 
