@@ -17,12 +17,16 @@ my $cmdline = [$0, @ARGV];
 my %daemon_options = (stop_wait_time => 180, max_workers => 0);
 my $daemon = __PACKAGE__->new('pvescheduler', $cmdline, %daemon_options);
 
+my @types = qw(replication jobs);
+
 my $finish_jobs = sub {
     my ($self) = @_;
-    foreach my $cpid (keys %{$self->{jobs}}) {
-	my $waitpid = waitpid($cpid, WNOHANG);
-	if (defined($waitpid) && ($waitpid == $cpid)) {
-	    delete ($self->{jobs}->{$cpid});
+    for my $type (@types) {
+	if (my $cpid = $self->{jobs}->{$type}) {
+	    my $waitpid = waitpid($cpid, WNOHANG);
+	    if (defined($waitpid) && ($waitpid == $cpid)) {
+		$self->{jobs}->{$type} = undef;
+	    }
 	}
     }
 };
@@ -41,7 +45,11 @@ sub run {
     };
 
     my $fork = sub {
-	my ($sub) = @_;
+	my ($type, $sub) = @_;
+
+	# don't fork again if the previous iteration still runs
+	return if defined($self->{jobs}->{$type});
+
 	my $child = fork();
 	if (!defined($child)) {
 	    die "fork failed: $!\n";
@@ -56,16 +64,16 @@ sub run {
 	    POSIX::_exit(0);
 	}
 
-	$jobs->{$child} = 1;
+	$jobs->{$type} = $child;
     };
 
     my $run_jobs = sub {
 
-	$fork->(sub {
+	$fork->('replication', sub {
 	    PVE::API2::Replication::run_jobs(undef, sub {}, 0, 1);
 	});
 
-	$fork->(sub {
+	$fork->('jobs', sub {
 	    PVE::Jobs::run_jobs();
 	});
     };
@@ -92,14 +100,16 @@ sub run {
 	}
     }
 
-    # jobs have a lock timeout of 60s, wait a bit more for graceful termination
+    # replication jobs have a lock timeout of 60s, wait a bit more for graceful termination
     my $timeout = 0;
-    while (keys %$jobs > 0 && $timeout < 75) {
-	kill 'TERM', keys %$jobs;
-	$timeout += sleep(5);
+    for my $type (@types) {
+	while (defined($jobs->{$type}) && $timeout < 75) {
+	    kill 'TERM', $jobs->{$type};
+	    $timeout += sleep(5);
+	}
+	# ensure the rest gets stopped
+	kill 'KILL', $jobs->{$type} if defined($jobs->{$type});
     }
-    # ensure the rest gets stopped
-    kill 'KILL', keys %$jobs if (keys %$jobs > 0);
 }
 
 sub shutdown {
@@ -107,7 +117,9 @@ sub shutdown {
 
     syslog('info', 'got shutdown request, signal running jobs to stop');
 
-    kill 'TERM', keys %{$self->{jobs}};
+    for my $type (@types) {
+	kill 'TERM', $self->{jobs}->{$type} if $self->{jobs}->{$type};
+    }
     $self->{shutdown_request} = 1;
 }
 
