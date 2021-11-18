@@ -24,18 +24,34 @@ my $finish_jobs = sub {
     for my $type (@types) {
 	if (my $cpid = $self->{jobs}->{$type}) {
 	    my $waitpid = waitpid($cpid, WNOHANG);
-	    if (defined($waitpid) && ($waitpid == $cpid)) {
+	    if (defined($waitpid) && ($waitpid == $cpid) || $waitpid == -1) {
 		$self->{jobs}->{$type} = undef;
 	    }
 	}
     }
 };
 
+sub hup {
+    my ($self) = @_;
+
+    for my $type (@types) {
+	my $pid = $self->{jobs}->{$type};
+	next if !defined($pid);
+	$ENV{"PVE_DAEMON_${type}_PID"} = $pid;
+    }
+}
+
 sub run {
     my ($self) = @_;
 
     my $jobs = {};
     $self->{jobs} = $jobs;
+
+    for my $type (@types) {
+	$self->{jobs}->{$type} = delete $ENV{"PVE_DAEMON_${type}_PID"};
+	# check if children finished in the meantime
+	$finish_jobs->($self);
+    }
 
     my $old_sig_chld = $SIG{CHLD};
     local $SIG{CHLD} = sub {
@@ -82,6 +98,8 @@ sub run {
 
     for (my $count = 1000;;$count++) {
 	last if $self->{shutdown_request};
+	# we got a reload signal, return gracefully and leave the forks running
+	return if $self->{got_hup_signal};
 
 	$run_jobs->();
 
@@ -125,11 +143,13 @@ sub shutdown {
 
 $daemon->register_start_command();
 $daemon->register_stop_command();
+$daemon->register_restart_command(1);
 $daemon->register_status_command();
 
 our $cmddef = {
     start => [ __PACKAGE__, 'start', []],
     stop => [ __PACKAGE__, 'stop', []],
+    restart => [ __PACKAGE__, 'restart', []],
     status => [ __PACKAGE__, 'status', [], undef, sub { print shift . "\n";} ],
 };
 
