@@ -101,6 +101,18 @@ Ext.define('PVE.panel.OpenIDInputPanel', {
 	},
     ],
 
+    advancedColumnB: [
+	{
+	    xtype: 'proxmoxtextfield',
+	    name: 'acr-values',
+	    fieldLabel: gettext('ACR Values'),
+	    submitEmpty: false,
+	    cbind: {
+		deleteEmpty: '{!isCreate}',
+	    },
+	},
+    ],
+
     initComponent: function() {
 	let me = this;
 
