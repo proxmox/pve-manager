@@ -55,21 +55,22 @@ Ext.define('PVE.panel.OpenIDInputPanel', {
 	{
 	    xtype: 'pmxDisplayEditField',
 	    name: 'username-claim',
+	    fieldLabel: gettext('Username Claim'),
 	    editConfig: {
 		xtype: 'proxmoxKVComboBox',
+		editable: true,
+		comboItems: [
+		    ['__default__', Proxmox.Utils.defaultText],
+		    ['subject', 'subject'],
+		    ['username', 'username'],
+		    ['email', 'email'],
+		],
 	    },
 	    cbind: {
 		value: get => get('isCreate') ? '__default__' : Proxmox.Utils.defaultText,
 		deleteEmpty: '{!isCreate}',
 		editable: '{isCreate}',
 	    },
-	    fieldLabel: gettext('Username Claim'),
-	    comboItems: [
-		['__default__', Proxmox.Utils.defaultText],
-		['subject', 'subject'],
-		['username', 'username'],
-		['email', 'email'],
-	    ],
 	},
     ],
 
