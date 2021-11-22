@@ -113,7 +113,7 @@ sub run {
 
 	my $slept = 0; # SIGCHLD interrupts sleep, so we need to keep track
 	while ($slept < $sleep_time) {
-	    last if $self->{shutdown_request};
+	    last if $self->{shutdown_request} || $self->{got_hup_signal};
 	    $slept += sleep($sleep_time - $slept);
 	}
     }
