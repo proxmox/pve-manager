@@ -37,7 +37,6 @@ sub hup {
     for my $type (@JOB_TYPES) {
 	my $worker = $self->{jobs}->{$type} // next;
 	$old_workers .= "$type:$_;" for keys $worker->%*;
-	print "passing on still running workers to reloaded daemon\n";
     }
     $ENV{"PVE_DAEMON_WORKER_PIDS"} = $old_workers;
     $self->{got_hup_signal} = 1;
@@ -93,6 +92,11 @@ sub run {
     };
 
     my $run_jobs = sub {
+	# TODO: actually integrate replication in PVE::Jobs and do not always fork here, we could
+	# do the state lookup and check if there's new work scheduled before doing so, e.g., by
+	# extending the PVE::Jobs interfacae e.g.;
+	# my $scheduled_jobs = PVE::Jobs::get_pending() or return;
+	# forked { PVE::Jobs::run_jobs($scheduled_jobs) }
 
 	$fork->('replication', sub {
 	    PVE::API2::Replication::run_jobs(undef, sub {}, 0, 1);
@@ -106,9 +110,8 @@ sub run {
     PVE::Jobs::setup_dirs();
 
     for (my $count = 1000;;$count++) {
-	last if $self->{shutdown_request};
-	# we got a reload signal, return gracefully and leave the forks running
-	return if $self->{got_hup_signal};
+	return if $self->{got_hup_signal}; # keep workers running, PVE::Daemon re-execs us on return
+	last if $self->{shutdown_request}; # exit main-run loop for shutdown
 
 	$run_jobs->();
 
@@ -124,6 +127,8 @@ sub run {
 	while ($slept < $sleep_time) {
 	    last if $self->{shutdown_request} || $self->{got_hup_signal};
 	    $slept += sleep($sleep_time - $slept);
+	    # TODO: check if there's new work to do, e.g., if a job finished
+	    # that had a longer runtime than run period
 	}
     }
 
