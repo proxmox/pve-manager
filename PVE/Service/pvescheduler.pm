@@ -17,15 +17,14 @@ my $cmdline = [$0, @ARGV];
 my %daemon_options = (stop_wait_time => 180, max_workers => 0);
 my $daemon = __PACKAGE__->new('pvescheduler', $cmdline, %daemon_options);
 
-my @types = qw(replication jobs);
+my @JOB_TYPES = qw(replication jobs);
 
 my $finish_jobs = sub {
     my ($self) = @_;
-    for my $type (@types) {
-	if (my $cpid = $self->{jobs}->{$type}) {
-	    my $waitpid = waitpid($cpid, WNOHANG);
-	    if (defined($waitpid) && ($waitpid == $cpid) || $waitpid == -1) {
-		$self->{jobs}->{$type} = undef;
+    for my $type (@JOB_TYPES) {
+	for my $cpid (keys $self->{jobs}->{$type}->%*) {
+	    if (my $waitpid = waitpid($cpid, WNOHANG)) {
+		delete $self->{jobs}->{$type}->{$cpid} if $waitpid == $cpid || $waitpid == -1;
 	    }
 	}
     }
@@ -34,11 +33,14 @@ my $finish_jobs = sub {
 sub hup {
     my ($self) = @_;
 
-    for my $type (@types) {
-	my $pid = $self->{jobs}->{$type};
-	next if !defined($pid);
-	$ENV{"PVE_DAEMON_${type}_PID"} = $pid;
+    my $old_workers = "";
+    for my $type (@JOB_TYPES) {
+	my $worker = $self->{jobs}->{$type} // next;
+	$old_workers .= "$type:$_;" for keys $worker->%*;
+	print "passing on still running workers to reloaded daemon\n";
     }
+    $ENV{"PVE_DAEMON_WORKER_PIDS"} = $old_workers;
+    $self->{got_hup_signal} = 1;
 }
 
 sub run {
@@ -47,10 +49,16 @@ sub run {
     my $jobs = {};
     $self->{jobs} = $jobs;
 
-    for my $type (@types) {
-	$self->{jobs}->{$type} = delete $ENV{"PVE_DAEMON_${type}_PID"};
-	# check if children finished in the meantime
-	$finish_jobs->($self);
+    # modelled after PVE::Daemons logic, but with type added to PID
+    if (my $wpids = $ENV{PVE_DAEMON_WORKER_PIDS}) {
+	print STDERR "got workers from previous daemon run: $wpids\n"; # FIXME: only log on debug?
+	for my $pid (split(';', $wpids)) {
+	    if ($pid =~ m/^(\w+):(\d+)$/) { # check & untaint
+		$self->{jobs}->{$1}->{$2} = 1;
+	    } else {
+		warn "could not parse previous pid entry '$pid', ignoring\n";
+	    }
+	}
     }
 
     my $old_sig_chld = $SIG{CHLD};
@@ -64,7 +72,8 @@ sub run {
 	my ($type, $sub) = @_;
 
 	# don't fork again if the previous iteration still runs
-	return if defined($self->{jobs}->{$type});
+	# FIXME: some job types may handle this better themself or just not care - make configurable
+	return if scalar(keys $self->{jobs}->{$type}->%*);
 
 	my $child = fork();
 	if (!defined($child)) {
@@ -75,12 +84,12 @@ sub run {
 		$sub->();
 	    };
 	    if (my $err = $@) {
-		syslog('err', "ERROR: $err");
+		syslog('err', "$type: $err");
 	    }
 	    POSIX::_exit(0);
 	}
 
-	$jobs->{$type} = $child;
+	$jobs->{$type}->{$child} = 1;
     };
 
     my $run_jobs = sub {
@@ -118,15 +127,23 @@ sub run {
 	}
     }
 
-    # replication jobs have a lock timeout of 60s, wait a bit more for graceful termination
+    # NOTE: we only get here on shutdown_request, so we already sent a TERM to all job-types
     my $timeout = 0;
-    for my $type (@types) {
-	while (defined($jobs->{$type}) && $timeout < 75) {
-	    kill 'TERM', $jobs->{$type};
-	    $timeout += sleep(5);
+    while (scalar(keys $jobs->%*)) {
+	for my $type (keys $jobs->%*) {
+	    next if !scalar(keys $jobs->{$type}->%*);
+	    kill 'TERM', keys $jobs->{$type}->%*;
 	}
-	# ensure the rest gets stopped
-	kill 'KILL', $jobs->{$type} if defined($jobs->{$type});
+	$finish_jobs->($self); # doesn't hurt
+	# some jobs have a lock timeout of 60s, wait a bit more for graceful termination
+	last if $timeout > 75;
+	$timeout += sleep(3);
+    }
+
+    for my $type (keys $jobs->%*) { # ensure the rest gets stopped
+	my @pids = keys $jobs->{$type}->%*;
+	syslog('warn', "unresponsive job-worker, killing now: " . join(', ', @pids));
+	kill 'KILL', @pids;
     }
 }
 
@@ -135,8 +152,8 @@ sub shutdown {
 
     syslog('info', 'got shutdown request, signal running jobs to stop');
 
-    for my $type (@types) {
-	kill 'TERM', $self->{jobs}->{$type} if $self->{jobs}->{$type};
+    for my $jobs (values $self->{jobs}->%*) {
+	kill 'TERM', keys $jobs->%*;
     }
     $self->{shutdown_request} = 1;
 }
