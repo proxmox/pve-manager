@@ -1,3 +1,19 @@
+pve-manager (7.1-6) bullseye; urgency=medium
+
+  * ui: dc/OpenID Connect: make username-claim field editable for arbitrary
+    values
+
+  * ui: dc/OpenID Connect realm: allow to edit scopes and prompt
+
+  * pvescheduler: improve error handling with some forked worker
+
+  * pvescheduler: reworking child pid tracking and do not delay reload
+    artifically
+
+  * pvescheduler: implement graceful reloading
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 22 Nov 2021 20:32:21 +0100
+
 pve-manager (7.1-5) bullseye; urgency=medium
 
   * improve transitioning backup jobs when user has old web-interface/GUI
