@@ -19,6 +19,12 @@ my $daemon = __PACKAGE__->new('pvescheduler', $cmdline, %daemon_options);
 
 my @JOB_TYPES = qw(replication jobs);
 
+my sub running_job_pids : prototype($) {
+    my ($self) = @_;
+    my $pids = [ map { keys $_->%* } values $self->{jobs}->%* ];
+    return scalar($pids->@*) ? $pids : undef;
+}
+
 my $finish_jobs = sub {
     my ($self) = @_;
     for my $type (@JOB_TYPES) {
@@ -134,21 +140,19 @@ sub run {
 
     # NOTE: we only get here on shutdown_request, so we already sent a TERM to all job-types
     my $timeout = 0;
-    while (scalar(keys $jobs->%*)) {
-	for my $type (keys $jobs->%*) {
-	    next if !scalar(keys $jobs->{$type}->%*);
-	    kill 'TERM', keys $jobs->{$type}->%*;
-	}
-	$finish_jobs->($self); # doesn't hurt
+    while(my $pids = running_job_pids($self)) {
+	kill 'TERM', $pids->@*; # send TERM to all workers at once, possible thundering herd - FIXME?
+
+	$finish_jobs->($self);
+
 	# some jobs have a lock timeout of 60s, wait a bit more for graceful termination
 	last if $timeout > 75;
 	$timeout += sleep(3);
     }
 
-    for my $type (keys $jobs->%*) { # ensure the rest gets stopped
-	my @pids = keys $jobs->{$type}->%*;
-	syslog('warn', "unresponsive job-worker, killing now: " . join(', ', @pids));
-	kill 'KILL', @pids;
+    if (my $pids = running_job_pids($self)) {
+	syslog('warn', "unresponsive job-worker, killing now: " . join(', ', $pids->@*));
+	kill 'KILL', $pids->@*;
     }
 }
 
