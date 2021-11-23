@@ -25,7 +25,7 @@ my sub running_job_pids : prototype($) {
     return scalar($pids->@*) ? $pids : undef;
 }
 
-my $finish_jobs = sub {
+my sub finish_jobs : prototype($) {
     my ($self) = @_;
     for my $type (@JOB_TYPES) {
 	for my $cpid (keys $self->{jobs}->{$type}->%*) {
@@ -69,7 +69,7 @@ sub run {
     my $old_sig_chld = $SIG{CHLD};
     local $SIG{CHLD} = sub {
 	local ($@, $!, $?); # do not overwrite error vars
-	$finish_jobs->($self);
+	finish_jobs($self);
 	$old_sig_chld->(@_) if $old_sig_chld;
     };
 
@@ -143,7 +143,7 @@ sub run {
     while(my $pids = running_job_pids($self)) {
 	kill 'TERM', $pids->@*; # send TERM to all workers at once, possible thundering herd - FIXME?
 
-	$finish_jobs->($self);
+	finish_jobs($self);
 
 	# some jobs have a lock timeout of 60s, wait a bit more for graceful termination
 	last if $timeout > 75;
