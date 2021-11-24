@@ -819,19 +819,25 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	my $cmd = ["/usr/bin/mini-journalreader"];
+	my $cmd = ["/usr/bin/mini-journalreader", "-j"];
 	push @$cmd, '-n', $param->{lastentries} if $param->{lastentries};
 	push @$cmd, '-b', $param->{since} if $param->{since};
 	push @$cmd, '-e', $param->{until} if $param->{until};
-	push @$cmd, '-f', $param->{startcursor} if $param->{startcursor};
-	push @$cmd, '-t', $param->{endcursor} if $param->{endcursor};
+	push @$cmd, '-f', PVE::Tools::shellquote($param->{startcursor}) if $param->{startcursor};
+	push @$cmd, '-t', PVE::Tools::shellquote($param->{endcursor}) if $param->{endcursor};
+	push @$cmd, ' | gzip ';
 
-	my $lines = [];
-	my $parser = sub { push @$lines, shift };
+	open(my $fh, "-|", join(' ', @$cmd))
+	    or die "could not start mini-journalreader";
 
-	PVE::Tools::run_command($cmd, outfunc => $parser);
-
-	return $lines;
+	return {
+	    download => {
+		fh => $fh,
+		stream => 1,
+		'content-type' => 'application/json',
+		'content-encoding' => 'gzip',
+	    },
+	},
     }});
 
 my $sslcert;
