@@ -1,3 +1,12 @@
+pve-manager (7.1-7) bullseye; urgency=medium
+
+  * pvescheduler: fix potential stall on full shutdown
+
+  * api: journal: stream the syslog (journal) data directly to the client to
+    avoid loading a potentially big amount of text first in memory
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 24 Nov 2021 18:32:51 +0100
+
 pve-manager (7.1-6) bullseye; urgency=medium
 
   * ui: dc/OpenID Connect: make username-claim field editable for arbitrary
