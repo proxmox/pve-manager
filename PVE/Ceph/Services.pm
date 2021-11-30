@@ -51,8 +51,9 @@ sub broadcast_ceph_versions {
     my ($version, $buildcommit, $vers_parts) = PVE::Ceph::Tools::get_local_version(1);
 
     if ($version) {
-	if (my $old = PVE::Cluster::get_node_kv("ceph-versions")) {
-	    my $nodename = PVE::INotify::nodename();
+	my $nodename = PVE::INotify::nodename();
+	my $old = PVE::Cluster::get_node_kv("ceph-versions", $nodename);
+	if (defined($old->{$nodename})) {
 	    $old = eval { decode_json($old->{$nodename}) };
 	    warn $@ if $@; # should not happen
 	    if (defined($old) && $old->{buildcommit} eq $buildcommit && $old->{version}->{str} eq $version) {
