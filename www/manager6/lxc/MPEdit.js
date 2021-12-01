@@ -300,6 +300,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    fieldLabel: gettext('Mount options'),
 	    deleteEmpty: false,
 	    comboItems: [
+		['lazytime', 'lazytime'],
 		['noatime', 'noatime'],
 		['nodev', 'nodev'],
 		['noexec', 'noexec'],
