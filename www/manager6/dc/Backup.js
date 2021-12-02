@@ -766,6 +766,22 @@ Ext.define('PVE.dc.BackupView', {
 		    flex: 1,
 		},
 		{
+		    text: gettext('Next Run'),
+		    dataIndex: 'next-run',
+		    width: 150,
+		    renderer: function(value) {
+			if (!value) {
+			    return '-';
+			}
+
+			let now = new Date(), next = new Date(value * 1000);
+			if (next < now) {
+			    return gettext('pending');
+			}
+			return Proxmox.Utils.render_timestamp(value);
+		    },
+		},
+		{
 		    header: gettext('Retention'),
 		    dataIndex: 'prune-backups',
 		    renderer: v => v ? PVE.Parser.printPropertyString(v) : gettext('Fallback from storage config'),

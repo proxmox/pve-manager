@@ -16,6 +16,7 @@ use PVE::Exception qw(raise_param_exc);
 use PVE::VZDump;
 use PVE::VZDump::Common;
 use PVE::Jobs; # for VZDump Jobs
+use PVE::RS::CalendarEvent;
 
 use base qw(PVE::RESTHandler);
 
@@ -117,6 +118,16 @@ __PACKAGE__->register_method({
 	foreach my $jobid (sort { $order->{$a} <=> $order->{$b} } keys %$jobs) {
 	    my $job = $jobs->{$jobid};
 	    next if $job->{type} ne 'vzdump';
+
+	    if (my $schedule = $job->{schedule}) {
+		# vzdump jobs are cluster wide, there maybe was no local run
+		# so simply calculate from now
+		my $last_run = time();
+		my $calspec = PVE::RS::CalendarEvent->new($schedule);
+		my $next_run = $calspec->compute_next_event($last_run);
+		$job->{'next-run'} = $next_run if defined($next_run);
+	    }
+
 	    push @$res, $job;
 	}
 
