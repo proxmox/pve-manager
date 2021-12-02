@@ -623,19 +623,19 @@ Ext.define('PVE.FirewallRules', {
 		// similar to xtype: 'rownumberer',
 		dataIndex: 'pos',
 		resizable: false,
-		minWidth: 42,
-		maxWidth: 60,
+		minWidth: 65,
+		maxWidth: 83,
 		flex: 1,
 		sortable: false,
-		align: 'right',
 		hideable: false,
 		menuDisabled: true,
 		renderer: function(value, metaData, record, rowIdx, colIdx) {
 		    metaData.tdCls = Ext.baseCSSPrefix + 'grid-cell-special';
+		    let dragHandle = "<i class='pve-grid-fa fa fa-fw fa-reorder cursor-move'></i>";
 		    if (value >= 0) {
-			return value;
+			return dragHandle + value;
 		    }
-		    return '';
+		    return dragHandle;
 		},
 	    },
 	    {
