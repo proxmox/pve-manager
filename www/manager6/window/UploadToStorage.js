@@ -69,7 +69,7 @@ Ext.define('PVE.window.UploadToStorage', {
 		fd.append("checksum-algorithm", algorithmField.getValue());
 
 		const checksumField = form.findField('checksum');
-		fd.append("checksum", checksumField.getValue());
+		fd.append("checksum", checksumField.getValue()?.trim());
 		checksumField.setDisabled(true);
 	    }
 

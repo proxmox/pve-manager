@@ -106,6 +106,12 @@ Ext.define('PVE.window.DownloadUrlToStorage', {
 	{
 	    xtype: 'inputpanel',
 	    border: false,
+	    onGetValues: function(values) {
+		if (typeof values.checksum === 'string') {
+		    values.checksum = values.checksum.trim();
+		}
+		return values;
+	    },
 	    columnT: [
 		{
 		    xtype: 'fieldcontainer',
