@@ -20,6 +20,7 @@ my $defaultData = {
 	    description => "The ID of the VZDump job.",
 	    type => 'string',
 	    format => 'pve-configid',
+	    maxLength => 64,
 	},
 	enabled => {
 	    description => "Determines if the job is enabled.",
