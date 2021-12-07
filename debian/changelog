@@ -1,3 +1,18 @@
+pve-manager (7.1-8) bullseye; urgency=medium
+
+  * fix #3689: add gridhandle to firewall rules to indicate drag/drop
+
+  * jobs: limit ID to maximal 64 characters
+
+  * ui: upload/download image: trim whitespace from checksum value
+
+  * ui: calendar event: add an once-daily example and clarify workday at 00:00
+    one slighlty
+
+  * ui: container: allow one to set the 'lazytime' mount option
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 07 Dec 2021 18:55:42 +0100
+
 pve-manager (7.1-7) bullseye; urgency=medium
 
   * pvescheduler: fix potential stall on full shutdown
