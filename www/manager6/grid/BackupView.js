@@ -54,10 +54,16 @@ Ext.define('PVE.grid.BackupView', {
 
 	me.store = Ext.create('Ext.data.Store', {
 	    model: 'pve-storage-content',
-	    sorters: {
-		property: 'volid',
-		order: 'DESC',
-	    },
+	    sorters: [
+		{
+		    property: 'vmid',
+		    direction: 'ASC',
+		},
+		{
+		    property: 'vdate',
+		    direction: 'DESC',
+		},
+	    ],
 	    filters: [
 	        vmtypeFilter,
 		searchFilter,

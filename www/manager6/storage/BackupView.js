@@ -207,5 +207,17 @@ Ext.define('PVE.storage.BackupView', {
 	}
 
 	me.callParent();
+
+	me.store.getSorters().clear();
+	me.store.setSorters([
+	    {
+		property: 'vmid',
+		direction: 'ASC',
+	    },
+	    {
+		property: 'vdate',
+		direction: 'DESC',
+	    },
+	]);
     },
 });
