@@ -94,7 +94,7 @@ Ext.define('PVE.SecurityGroupList', {
 	    },
 	    sorters: {
 		property: 'group',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

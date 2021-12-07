@@ -37,7 +37,7 @@ Ext.define('PVE.dc.StorageView', {
 	    },
 	    sorters: {
 		property: 'storage',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

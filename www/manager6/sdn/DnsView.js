@@ -33,7 +33,7 @@ Ext.define('PVE.sdn.DnsView', {
 	    },
 		sorters: {
 		property: 'dns',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

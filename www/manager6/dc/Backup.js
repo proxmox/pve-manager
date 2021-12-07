@@ -76,7 +76,7 @@ Ext.define('PVE.dc.BackupEdit', {
 	    model: 'PVEResources',
 	    sorters: {
 		property: 'vmid',
-		order: 'ASC',
+		direction: 'ASC',
 	    },
 	});
 

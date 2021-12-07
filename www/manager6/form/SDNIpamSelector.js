@@ -13,7 +13,7 @@ Ext.define('PVE.form.SDNIpamSelector', {
 	    model: 'pve-sdn-ipam',
             sorters: {
                 property: 'ipam',
-                order: 'DESC',
+                direction: 'ASC',
             },
 	});
 

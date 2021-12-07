@@ -38,7 +38,7 @@ Ext.define('PVE.IPSetList', {
 	    },
 	    sorters: {
 		property: 'name',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

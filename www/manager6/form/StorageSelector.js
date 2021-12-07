@@ -157,7 +157,7 @@ Ext.define('PVE.form.StorageSelector', {
 	    model: 'pve-storage-status',
 	    sorters: {
 		property: 'storage',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

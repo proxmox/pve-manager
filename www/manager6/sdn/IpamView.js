@@ -33,7 +33,7 @@ Ext.define('PVE.sdn.IpamView', {
 	    },
 	    sorters: {
 		property: 'ipam',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

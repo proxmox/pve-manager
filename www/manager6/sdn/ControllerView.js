@@ -35,7 +35,7 @@ Ext.define('PVE.sdn.ControllerView', {
 	    },
 	    sorters: {
 		property: 'controller',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

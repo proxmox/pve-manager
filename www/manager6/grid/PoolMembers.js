@@ -25,7 +25,7 @@ Ext.define('PVE.pool.AddVM', {
 	    sorters: [
 		{
 		    property: 'vmid',
-		    order: 'ASC',
+		    direction: 'ASC',
 		},
 	    ],
 	    filters: [

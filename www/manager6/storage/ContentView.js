@@ -43,7 +43,7 @@ Ext.define('PVE.storage.ContentView', {
 	    },
 	    sorters: {
 		property: 'volid',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

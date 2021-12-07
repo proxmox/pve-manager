@@ -17,7 +17,7 @@ Ext.define('PVE.form.SecurityGroupsSelector', {
 	    },
 	    sorters: {
 		property: 'group',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

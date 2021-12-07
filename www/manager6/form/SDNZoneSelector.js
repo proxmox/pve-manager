@@ -13,7 +13,7 @@ Ext.define('PVE.form.SDNZoneSelector', {
 	    model: 'pve-sdn-zone',
             sorters: {
                 property: 'zone',
-                order: 'DESC',
+                direction: 'ASC',
             },
 	});
 

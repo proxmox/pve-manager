@@ -235,7 +235,7 @@ Ext.define('PVE.ClusterAdministration', {
 			rstore: view.rstore,
 			sorters: {
 			    property: 'nodeid',
-			    order: 'DESC',
+			    direction: 'ASC',
 			},
 		    }));
 		    Proxmox.Utils.monStoreErrors(view, view.rstore);

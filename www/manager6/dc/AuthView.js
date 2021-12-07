@@ -44,7 +44,7 @@ Ext.define('PVE.dc.AuthView', {
 	model: 'pmx-domains',
 	sorters: {
 	    property: 'realm',
-	    order: 'DESC',
+	    direction: 'ASC',
 	},
     },
 

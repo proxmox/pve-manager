@@ -13,7 +13,7 @@ Ext.define('PVE.form.SDNVnetSelector', {
 	    model: 'pve-sdn-vnet',
             sorters: {
                 property: 'vnet',
-                order: 'DESC',
+                direction: 'ASC',
             },
 	});
 

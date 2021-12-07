@@ -101,7 +101,7 @@ Ext.define('PVE.dc.ACLView', {
 	    },
 	    sorters: {
 		property: 'path',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

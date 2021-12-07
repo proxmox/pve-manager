@@ -34,7 +34,7 @@ Ext.define('PVE.form.FWMacroSelector', {
 	    },
 	    sorters: {
 		property: 'macro',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

@@ -16,7 +16,7 @@ Ext.define('PVE.ha.GroupsView', {
 	    model: 'pve-ha-groups',
 	    sorters: {
 		property: 'group',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

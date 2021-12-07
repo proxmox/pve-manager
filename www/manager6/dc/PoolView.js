@@ -15,7 +15,7 @@ Ext.define('PVE.dc.PoolView', {
 	    model: 'pve-pools',
 	    sorters: {
 		property: 'poolid',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

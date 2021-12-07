@@ -18,7 +18,7 @@ Ext.define('PVE.dc.UserView', {
 	    model: 'pmx-users',
 	    sorters: {
 		property: 'userid',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 	let reload = () => store.load();

@@ -13,7 +13,7 @@ Ext.define('PVE.form.SDNDnsSelector', {
 	    model: 'pve-sdn-dns',
             sorters: {
                 property: 'dns',
-                order: 'DESC',
+                direction: 'ASC',
             },
 	});
 

@@ -20,7 +20,7 @@ Ext.define('PVE.sdn.VnetView', {
 	    },
 	    sorters: {
 		property: 'vnet',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

@@ -37,7 +37,7 @@ Ext.define('PVE.sdn.ZoneContentView', {
 	    },
 	    sorters: {
 		property: 'vnet',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

@@ -35,7 +35,7 @@ Ext.define('PVE.sdn.ZoneView', {
 	    },
 	    sorters: {
 		property: 'zone',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

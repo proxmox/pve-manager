@@ -45,7 +45,7 @@ Ext.define('PVE.node.ACMEAccountCreate', {
 		},
 		sorters: {
 		    property: 'name',
-		    order: 'ASC',
+		    direction: 'ASC',
 		},
 	    },
 	    listConfig: {

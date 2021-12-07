@@ -119,7 +119,7 @@ Ext.define('PVE.NodeCephFSPanel', {
 			rstore: view.rstore,
 			sorters: {
 			    property: 'name',
-			    order: 'DESC',
+			    direction: 'ASC',
 			},
 		    }));
 		    // manages the "install ceph?" overlay

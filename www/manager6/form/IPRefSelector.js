@@ -34,7 +34,7 @@ Ext.define('PVE.form.IPRefSelector', {
 	    },
 	    sorters: {
 		property: 'ref',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

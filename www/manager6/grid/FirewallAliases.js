@@ -98,7 +98,7 @@ Ext.define('PVE.FirewallAliases', {
 	    },
 	    sorters: {
 		property: 'name',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

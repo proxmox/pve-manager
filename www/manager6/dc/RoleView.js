@@ -15,7 +15,7 @@ Ext.define('PVE.dc.RoleView', {
 	    model: 'pmx-roles',
 	    sorters: {
 		property: 'roleid',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 	Proxmox.Utils.monStoreErrors(me, store);

@@ -15,7 +15,7 @@ Ext.define('PVE.dc.GroupView', {
 	    model: 'pve-groups',
 	    sorters: {
 		property: 'groupid',
-		order: 'DESC',
+		direction: 'ASC',
 	    },
 	});
 

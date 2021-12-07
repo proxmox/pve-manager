@@ -13,7 +13,7 @@ Ext.define('PVE.form.SDNControllerSelector', {
 	    model: 'pve-sdn-controller',
             sorters: {
                 property: 'controller',
-                order: 'DESC',
+                direction: 'ASC',
             },
 	});
 
