@@ -56,6 +56,19 @@ sha512sum: 87709566840d4ef5fe7bba63afce183f12c27e7499315d1729886ab0ca0c14599093b
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.14 (20210623)
 
+Package: alpine-3.15-default
+Version: 20211202
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.15-default_20211202_amd64.tar.xz
+md5sum: 31fac55c59c899e71500e39ea4d868be
+sha512sum: 6fa966787de6f18fc502016cd3516bcac0a5de0dfa5e906aa08a1c0cc51b51b0df08d9efbe221e0914dbece295d1b32ccae14909a04fbfc263b8e0ecd4831491
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.15 (20211202)
+
 Package: archlinux-base
 Version: 20210420-1
 Type: lxc
@@ -66,6 +79,20 @@ Architecture: amd64
 Location: system/archlinux-base_20210420-1_amd64.tar.gz
 md5sum: dec64783b32f1bbc80c9b0e6d87d0322
 sha512sum: 911c52c84738694943d18d4ec44a71a4deb7ad7f7e82ca947a4690b6e01c7b233bdd9853fed3df146af2ca844b90c0f984f43e52c3378a3094201ba8fe2bc54f
+Infopage: https://www.archlinux.org
+Description: ArchLinux base image.
+ ArchLinux template with the 'base' group and the 'openssh' package installed.
+
+Package: archlinux-base
+Version: 20211202-1
+Type: lxc
+OS: archlinux
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/archlinux-base_20211202-1_amd64.tar.zst
+md5sum: cf2071dd794f0cbd444c84d22cc70a1a
+sha512sum: 586eb8f0751b39e70331afc6632b4488fd0703b4a21f17ab8dc9393e358f90240bf9eda1445854006de7a0ace15f2bca4c11cc8efb2b7e94bf84b49516ea94b6
 Infopage: https://www.archlinux.org
 Description: ArchLinux base image.
  ArchLinux template with the 'base' group and the 'openssh' package installed.
