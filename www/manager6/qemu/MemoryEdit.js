@@ -5,6 +5,32 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 
     insideWizard: false,
 
+    viewModel: {}, // inherit data from createWizard if insideWizard
+
+    controller: {
+	xclass: 'Ext.app.ViewController',
+
+	control: {
+	    '#': {
+		afterrender: 'setMemory',
+	    },
+	},
+
+	setMemory: function() {
+	    let me = this;
+	    let view = me.getView(), viewModel = me.getViewModel();
+	    if (view.insideWizard) {
+		let memory = view.down('pveMemoryField[name=memory]');
+		// NOTE: we only set memory but that then sets balloon in its change handler
+		if (viewModel.get('current.ostype') === 'win11') {
+		    memory.setValue('4096');
+		} else {
+		    memory.setValue('2048');
+		}
+	    }
+	},
+    },
+
     onGetValues: function(values) {
 	var me = this;
 
@@ -38,7 +64,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		labelWidth: labelWidth,
 		fieldLabel: gettext('Memory') + ' (MiB)',
 		name: 'memory',
-		value: me.insideWizard ? '2048' : '512',
+		value: '512', // better defaults get set via the view controllers afterrender
 		minValue: 1,
 		step: 32,
 		hotplug: me.hotplug,
@@ -62,7 +88,7 @@ Ext.define('PVE.qemu.MemoryInputPanel', {
 		name: 'balloon',
 		minValue: 1,
 		maxValue: me.insideWizard ? 2048 : 512,
-		value: me.insideWizard ? '2048' : '512',
+		value: '512', // better defaults get set (indirectly) via the view controllers afterrender
 		step: 32,
 		fieldLabel: gettext('Minimum memory') + ' (MiB)',
 		hotplug: me.hotplug,
