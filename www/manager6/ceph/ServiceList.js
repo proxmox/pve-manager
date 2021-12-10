@@ -360,13 +360,19 @@ Ext.define('PVE.node.CephServiceList', {
     });
 });
 
+Ext.define('PVE.node.CephMDSServiceController', {
+    extend: 'PVE.node.CephServiceController',
+    alias: 'controller.CephServiceMDSList',
+
+    render_status: (value, mD, rec) => rec.data.fs_name ? `${value} (${rec.data.fs_name})` : value,
+});
+
 Ext.define('PVE.node.CephMDSList', {
     extend: 'PVE.node.CephServiceList',
     xtype: 'pveNodeCephMDSList',
 
     controller: {
-	type: 'CephServiceList',
-	render_status: (value, mD, rec) => rec.data.fs_name ? `${value} (${rec.data.fs_name})` : value,
+	type: 'CephServiceMDSList',
     },
 });
 
