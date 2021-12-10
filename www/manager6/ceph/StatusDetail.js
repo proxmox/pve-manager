@@ -28,6 +28,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    downin: 0,
 	    downout: 0,
 	    oldOSD: [],
+	    ghostOSD: [],
 	},
 	tpl: [
 	    '<h3>OSDs</h3>',
@@ -65,6 +66,17 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    '<tpl for="oldOSD">',
 	    '<div class="left-aligned">osd.{id}:</div>',
 	    '<div class="right-aligned">{version}</div><br />',
+	    '<div style="clear:both"></div>',
+	    '</tpl>',
+	    '</div>',
+	    '</tpl>',
+	    '</div>',
+	    '<tpl if="ghostOSD.length &gt; 0">',
+	    '<br />',
+	    `<i class="fa fa-question-circle warning"></i> ${gettext('Ghost OSDs')}<br>`,
+	    `<div data-qtip="${gettext('OSDs with no metadata, possibly left over from removal')}" class="osds">`,
+	    '<tpl for="ghostOSD">',
+	    '<div class="left-aligned">osd.{id}</div>',
 	    '<div style="clear:both"></div>',
 	    '</tpl>',
 	    '</div>',
@@ -198,14 +210,23 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    }
 	});
 
-	let oldOSD = [];
+	let oldOSD = [], ghostOSD = [];
 	if (metadata.osd) {
 	    metadata.osd.forEach(function(osd) {
 		let version = PVE.Utils.parse_ceph_version(osd);
-		if (PVE.Utils.compare_ceph_versions(version, maxversion) !== 0) {
-		    oldOSD.push({
+		if (version !== undefined) {
+		    if (PVE.Utils.compare_ceph_versions(version, maxversion) !== 0) {
+			oldOSD.push({
+			    id: osd.id,
+			    version: version,
+			});
+		    }
+		} else {
+		    if (Object.keys(osd).length > 1) {
+			console.warn('got OSD entry with no valid version but other keys', osd);
+		    }
+		    ghostOSD.push({
 			id: osd.id,
-			version: version,
 		    });
 		}
 	    });
@@ -276,6 +297,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    downin: downin_osds,
 	    downout: downout_osds,
 	    oldOSD: oldOSD,
+	    ghostOSD,
 	};
 	let osdcomponent = me.getComponent('osds');
 	osdcomponent.update(Ext.apply(osdcomponent.data, osds));
