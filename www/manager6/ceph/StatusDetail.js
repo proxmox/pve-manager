@@ -27,7 +27,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    upout: 0,
 	    downin: 0,
 	    downout: 0,
-	    oldosds: [],
+	    oldOSD: [],
 	},
 	tpl: [
 	    '<h3>OSDs</h3>',
@@ -59,10 +59,10 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    gettext('Total'),
 	    ': {total}',
 	    '</div><br />',
-	    '<tpl if="oldosds.length &gt; 0">',
+	    '<tpl if="oldOSD.length &gt; 0">',
 	    '<i class="fa fa-refresh warning"></i> ' + gettext('Outdated OSDs') + "<br>",
 	    '<div class="osds">',
-	    '<tpl for="oldosds">',
+	    '<tpl for="oldOSD">',
 	    '<div class="left-aligned">osd.{id}:</div>',
 	    '<div class="right-aligned">{version}</div><br />',
 	    '<div style="clear:both"></div>',
@@ -198,13 +198,12 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    }
 	});
 
-	var oldosds = [];
-
+	let oldOSD = [];
 	if (metadata.osd) {
 	    metadata.osd.forEach(function(osd) {
 		let version = PVE.Utils.parse_ceph_version(osd);
 		if (PVE.Utils.compare_ceph_versions(version, maxversion) !== 0) {
-		    oldosds.push({
+		    oldOSD.push({
 			id: osd.id,
 			version: version,
 		    });
@@ -276,7 +275,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    upout: upout_osds,
 	    downin: downin_osds,
 	    downout: downout_osds,
-	    oldosds: oldosds,
+	    oldOSD: oldOSD,
 	};
 	let osdcomponent = me.getComponent('osds');
 	osdcomponent.update(Ext.apply(osdcomponent.data, osds));
