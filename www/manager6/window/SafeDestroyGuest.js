@@ -30,6 +30,8 @@ Ext.define('PVE.window.SafeDestroyGuest', {
 	},
     ],
 
+    note: gettext('Referenced disks will always be destroyed.'),
+
     getParams: function() {
 	let me = this;
 
