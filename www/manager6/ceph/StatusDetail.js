@@ -206,31 +206,29 @@ Ext.define('PVE.ceph.StatusDetail', {
 	let maxversion = "0";
 	Object.values(metadata.node || {}).forEach(function(node) {
 	    if (PVE.Utils.compare_ceph_versions(node?.version?.parts, maxversion) > 0) {
-		maxversion = node?.version?.parts;
+		maxversion = node.version.parts;
 	    }
 	});
 
 	let oldOSD = [], ghostOSD = [];
-	if (metadata.osd) {
-	    metadata.osd.forEach(function(osd) {
-		let version = PVE.Utils.parse_ceph_version(osd);
-		if (version !== undefined) {
-		    if (PVE.Utils.compare_ceph_versions(version, maxversion) !== 0) {
-			oldOSD.push({
-			    id: osd.id,
-			    version: version,
-			});
-		    }
-		} else {
-		    if (Object.keys(osd).length > 1) {
-			console.warn('got OSD entry with no valid version but other keys', osd);
-		    }
-		    ghostOSD.push({
+	metadata.osd?.forEach(osd => {
+	    let version = PVE.Utils.parse_ceph_version(osd);
+	    if (version !== undefined) {
+		if (PVE.Utils.compare_ceph_versions(version, maxversion) !== 0) {
+		    oldOSD.push({
 			id: osd.id,
+			version: version,
 		    });
 		}
-	    });
-	}
+	    } else {
+		if (Object.keys(osd).length > 1) {
+		    console.warn('got OSD entry with no valid version but other keys', osd);
+		}
+		ghostOSD.push({
+		    id: osd.id,
+		});
+	    }
+	});
 
 	// update PGs sorted
 	let pgmap = status.pgmap || {};
