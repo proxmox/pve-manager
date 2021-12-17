@@ -105,6 +105,7 @@ sub init {
 	policy => $proxyconf->{POLICY},
 	ssl => {
 	    cipher_list => $proxyconf->{CIPHERS},
+	    ciphersuites => $proxyconf->{CIPHERSUITES},
 	    key_file => '/etc/pve/local/pve-ssl.key',
 	    cert_file => '/etc/pve/local/pve-ssl.pem',
 	    honor_cipher_order => $proxyconf->{HONOR_CIPHER_ORDER},
