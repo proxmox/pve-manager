@@ -131,9 +131,13 @@ sub init {
     if (defined($proxyconf->{DHPARAMS})) {
 	$self->{server_config}->{ssl}->{dh_file} = $proxyconf->{DHPARAMS};
     }
-    if (-f '/etc/pve/local/pveproxy-ssl.pem' && -f '/etc/pve/local/pveproxy-ssl.key') {
+    my $custom_key_path = '/etc/pve/local/pveproxy-ssl.key';
+    if (defined($proxyconf->{TLS_KEY_FILE})) {
+	$custom_key_path = $proxyconf->{TLS_KEY_FILE};
+    }
+    if (-f '/etc/pve/local/pveproxy-ssl.pem' && -f $custom_key_path) {
 	$self->{server_config}->{ssl}->{cert_file} = '/etc/pve/local/pveproxy-ssl.pem';
-	$self->{server_config}->{ssl}->{key_file} = '/etc/pve/local/pveproxy-ssl.key';
+	$self->{server_config}->{ssl}->{key_file} = $custom_key_path;
 	syslog('info', 'Using \'/etc/pve/local/pveproxy-ssl.pem\' as certificate for the web interface.');
     }
 }
