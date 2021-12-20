@@ -225,7 +225,7 @@ sub _connect {
 
 	return $socket;
     } elsif ($proto =~ m/^https?$/) {
-	my $token = get_credentials($id);
+	my $token = get_credentials($id, 1);
 	my $org = $cfg->{organization} // 'proxmox';
 	my $bucket = $cfg->{bucket} // 'proxmox';
 	my $url = _get_v2url($cfg, "write?org=${org}&bucket=${bucket}");
