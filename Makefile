@@ -54,7 +54,6 @@ install: vzdump-hook-script.pl
 	install -d ${DESTDIR}/var/lib/vz/images
 	install -d ${DESTDIR}/var/lib/vz/template/cache
 	install -d ${DESTDIR}/var/lib/vz/template/iso
-	install -d ${DESTDIR}/var/lib/vz/template/qemu
 	install -m 0644 vzdump-hook-script.pl ${DOCDIR}/examples/vzdump-hook-script.pl
 	install -m 0644 spice-example-sh ${DOCDIR}/examples/spice-example-sh
 	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
