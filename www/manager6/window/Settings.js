@@ -34,10 +34,8 @@ Ext.define('PVE.window.Settings', {
 
 	    var username = sp.get('login-username') || Proxmox.Utils.noneText;
 	    me.lookupReference('savedUserName').setValue(Ext.String.htmlEncode(username));
-	    var vncMode = sp.get('novnc-scaling');
-	    if (vncMode !== undefined) {
-		me.lookupReference('noVNCScalingGroup').setValue({ noVNCScalingField: vncMode });
-	    }
+	    var vncMode = sp.get('novnc-scaling') || 'scale';
+	    me.lookupReference('noVNCScalingGroup').setValue({ noVNCScalingField: vncMode });
 
 	    let summarycolumns = sp.get('summarycolumns', 'auto');
 	    me.lookup('summarycolumns').setValue(summarycolumns);
@@ -379,7 +377,6 @@ Ext.define('PVE.window.Settings', {
 				name: 'noVNCScalingField',
 				inputValue: 'scale',
 				boxLabel: 'Local Scaling',
-				checked: true,
 			    }, {
 				xtype: 'radiofield',
 				name: 'noVNCScalingField',
