@@ -1,3 +1,35 @@
+pve-manager (7.1-9) bullseye; urgency=medium
+
+  * ui: vm create wizard: default to 4 GiB memory for Windows 11 OS-type
+
+  * ui: ceph fs: fix overriding renderer in controller
+
+  * ui: ceph dashboard: render ghost OSDs
+
+  * backup views: sort backups by vmid, then descending by date
+
+  * ui: grid default-sorters: use correct property 'direction' and keep
+    default 'ASC'
+
+  * external metrics: influxdb: suppress false-positive warning when no token
+    exists
+
+  * avoid creating unused `/var/lib/vz/template/qemu` directory
+
+  * ui: fix NoVNC scaling radio buttons
+
+  * ui: node: zfs: reuse the ZFSDetail window from the widget-toolkit
+
+  * fix #3790: pass TLS 1.3 ciphersuites configuration if set
+
+  * fix #3745: handle overridden TLS key location configuration
+
+  * fix #3789: pass disable TLS 1.2/1.3 options
+
+  * ui/api: vzdump: add new 'next-run' field for backup job listing
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 13 Jan 2022 16:37:30 +0100
+
 pve-manager (7.1-8) bullseye; urgency=medium
 
   * fix #3689: add gridhandle to firewall rules to indicate drag/drop
