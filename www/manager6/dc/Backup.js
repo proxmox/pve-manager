@@ -753,6 +753,12 @@ Ext.define('PVE.dc.BackupView', {
 		    dataIndex: 'schedule',
 		},
 		{
+		    text: gettext('Next Run'),
+		    dataIndex: 'next-run',
+		    width: 150,
+		    renderer: PVE.Utils.render_next_event,
+		},
+		{
 		    header: gettext('Storage'),
 		    width: 100,
 		    sortable: true,
@@ -764,22 +770,6 @@ Ext.define('PVE.dc.BackupView', {
 		    renderer: Ext.htmlEncode,
 		    sorter: (a, b) => (a.data.comment || '').localeCompare(b.data.comment || ''),
 		    flex: 1,
-		},
-		{
-		    text: gettext('Next Run'),
-		    dataIndex: 'next-run',
-		    width: 150,
-		    renderer: function(value) {
-			if (!value) {
-			    return '-';
-			}
-
-			let now = new Date(), next = new Date(value * 1000);
-			if (next < now) {
-			    return gettext('pending');
-			}
-			return Proxmox.Utils.render_timestamp(value);
-		    },
 		},
 		{
 		    header: gettext('Retention'),
