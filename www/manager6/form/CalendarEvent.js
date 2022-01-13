@@ -29,8 +29,7 @@ Ext.define('PVE.form.CalendarEvent', {
 		    + Ext.String.format(gettext("Every {0} minutes"), 15),
 	    },
 	    { value: 'sun 01:00', text: gettext("Sunday") + " 01:00" },
-	    // FIXME: support date based schedules in the backend (like PBS)
-	    //{ value: 'sat *-1..7 15:00', text: gettext("First Saturday each month") + " 15:00" },
+	    { value: 'sat *-1..7 15:00', text: gettext("First Saturday each month") + " 15:00" },
 	],
     },
 
