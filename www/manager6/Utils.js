@@ -1099,6 +1099,18 @@ Ext.define('PVE.Utils', {
 	return Ext.Date.format(new Date(value * 1000), 'l d F Y H:i:s');
     },
 
+    // render a timestamp or pending
+    render_next_event: function(value) {
+	if (!value) {
+	    return '-';
+	}
+	let now = new Date(), next = new Date(value * 1000);
+	if (next < now) {
+	    return gettext('pending');
+	}
+	return Proxmox.Utils.render_timestamp(value);
+    },
+
     calculate_mem_usage: function(data) {
 	if (!Ext.isNumeric(data.mem) ||
 	    data.maxmem === 0 ||
