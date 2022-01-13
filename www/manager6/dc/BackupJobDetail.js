@@ -189,6 +189,12 @@ Ext.define('PVE.dc.BackupInfo', {
 	},
 	{
 	    xtype: 'displayfield',
+	    name: 'next-run',
+	    fieldLabel: gettext('Next Run'),
+	    renderer: PVE.Utils.render_next_event,
+	},
+	{
+	    xtype: 'displayfield',
 	    name: 'selMode',
 	    fieldLabel: gettext('Selection mode'),
 	},
