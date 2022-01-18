@@ -497,6 +497,13 @@ sub new {
 	$opts->{storage} = 'local';
     }
 
+    $self->{job_init_log} = '';
+    open my $job_init_fd, '>', \$self->{job_init_log};
+    $self->run_hook_script('job-init', undef, $job_init_fd);
+    close $job_init_fd;
+
+    PVE::Cluster::cfs_update(); # Pick up possible changes made by the hook script.
+
     my $errors = '';
 
     if ($opts->{storage}) {
@@ -1194,7 +1201,15 @@ sub exec_backup {
 
     my $totaltime = time() - $starttime;
 
-    eval { $self->sendmail ($tasklist, $totaltime, undef, $job_start_log, $job_end_log); };
+    eval {
+	$self->sendmail(
+	    $tasklist,
+	    $totaltime,
+	    undef,
+	    $self->{job_init_log} . $job_start_log,
+	    $job_end_log,
+	);
+    };
     debugmsg ('err', $@) if $@;
 
     die $err if $err;
