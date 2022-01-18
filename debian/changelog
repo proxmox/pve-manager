@@ -1,3 +1,14 @@
+pve-manager (7.1-10) bullseye; urgency=medium
+
+  * ui: form/calendar event: add monthly, first X weekday of month, and yearly
+    examples
+
+  * ui: backup/run now: avoid passing "next-run" parameter to backend
+
+  * vzdump: example hook script: avoid undef warnings
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 18 Jan 2022 05:52:53 +0100
+
 pve-manager (7.1-9) bullseye; urgency=medium
 
   * ui: vm create wizard: default to 4 GiB memory for Windows 11 OS-type
