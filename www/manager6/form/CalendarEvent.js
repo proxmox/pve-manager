@@ -29,7 +29,9 @@ Ext.define('PVE.form.CalendarEvent', {
 		    + Ext.String.format(gettext("Every {0} minutes"), 15),
 	    },
 	    { value: 'sun 01:00', text: gettext("Sunday") + " 01:00" },
+	    { value: 'monthly', text: gettext("Every first day of the Month") + " 00:00" },
 	    { value: 'sat *-1..7 15:00', text: gettext("First Saturday each month") + " 15:00" },
+	    { value: 'yearly', text: gettext("First day of the year") + " 00:00" },
 	],
     },
 
