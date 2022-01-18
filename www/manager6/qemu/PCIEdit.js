@@ -190,6 +190,24 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 		fieldLabel: 'ROM-File',
 		name: 'romfile',
 	    },
+	    {
+		xtype: 'textfield',
+		name: 'vendor-id',
+		fieldLabel: gettext('Set vendor ID'),
+		vtype: 'PciId',
+		allowBlank: true,
+		emptyText: Proxmox.Utils.defaultText,
+		submitEmpty: false,
+	    },
+	    {
+		xtype: 'textfield',
+		name: 'device-id',
+		fieldLabel: gettext('Set device ID'),
+		vtype: 'PciId',
+		allowBlank: true,
+		emptyText: Proxmox.Utils.defaultText,
+		submitEmpty: false,
+	    },
 	];
 
 	me.advancedColumn2 = [
@@ -197,6 +215,24 @@ Ext.define('PVE.qemu.PCIInputPanel', {
 		xtype: 'proxmoxcheckbox',
 		fieldLabel: 'PCI-Express',
 		name: 'pcie',
+	    },
+	    {
+		xtype: 'textfield',
+		name: 'sub-vendor-id',
+		fieldLabel: gettext('Set sub-vendor ID'),
+		vtype: 'PciId',
+		allowBlank: true,
+		emptyText: Proxmox.Utils.defaultText,
+		submitEmpty: false,
+	    },
+	    {
+		xtype: 'textfield',
+		name: 'sub-device-id',
+		fieldLabel: gettext('Set sub-device ID'),
+		vtype: 'PciId',
+		allowBlank: true,
+		emptyText: Proxmox.Utils.defaultText,
+		submitEmpty: false,
 	    },
 	];
 

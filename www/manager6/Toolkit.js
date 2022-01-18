@@ -13,6 +13,8 @@ Ext.apply(Ext.form.field.VTypes, {
     IP64AddressWithSuffixList: v => PVE.Utils.verify_ip64_address_list(v, true),
     IP64AddressListText: gettext('Example') + ': 192.168.1.1,192.168.1.2',
     IP64AddressListMask: /[A-Fa-f0-9,:.; ]/,
+    PciIdText: gettext('Example') + ': 0x8086',
+    PciId: v => /^0x[0-9a-fA-F]{4}$/.test(v),
 });
 
 Ext.define('PVE.form.field.Display', {
