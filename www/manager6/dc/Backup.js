@@ -531,6 +531,7 @@ Ext.define('PVE.dc.BackupView', {
 	    delete job.type;
 	    delete job.node;
 	    delete job.comment;
+	    delete job['next-run'];
 	    job.all = job.all === true ? 1 : 0;
 
 	    if (job['prune-backups']) {
