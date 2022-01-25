@@ -17,6 +17,27 @@ Ext.define('PVE.CephCreateOsd', {
 
 	me.isCreate = true;
 
+	Proxmox.Utils.API2Request({
+	    url: `/nodes/${me.nodename}/ceph/crush`,
+	    method: 'GET',
+	    failure: response => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+	    success: function({ result: { data } }) {
+		let classes = [...new Set(
+		    Array.from(
+			data.matchAll(/^device\s[0-9]*\sosd\.[0-9]*\sclass\s(.*)$/gim),
+			m => m[1],
+		    ).filter(v => !['hdd', 'ssd', 'nvme'].includes(v)),
+		)].map(v => [v, v]);
+
+		if (classes.length) {
+		    let kvField = me.down('field[name=crush-device-class]');
+		    classes.unshift(...kvField.comboItems);
+
+		    kvField.setComboItems(classes);
+		}
+	    },
+	});
+
         Ext.applyIf(me, {
 	    url: "/nodes/" + me.nodename + "/ceph/osd",
 	    method: 'POST',
