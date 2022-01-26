@@ -108,8 +108,8 @@ Ext.define('PVE.node.LVMList', {
 	    align: 'right',
 	},
 	{
-	    header: gettext('Usage'),
-	    width: 110,
+	    header: gettext('Assigned to LVs'),
+	    width: 130,
 	    dataIndex: 'usage',
 	    tdCls: 'x-progressbar-default-cell',
 	    xtype: 'widgetcolumn',
