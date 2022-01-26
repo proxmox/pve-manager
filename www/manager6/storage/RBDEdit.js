@@ -202,6 +202,17 @@ Ext.define('PVE.storage.RBDInputPanel', {
 
 	me.columnB = [
 	    {
+		xtype: me.isCreate ? 'textarea' : 'displayfield',
+		name: 'keyring',
+		fieldLabel: 'Keyring',
+		value: me.isCreate ? '' : '***********',
+		allowBlank: false,
+		bind: {
+		    hidden: '{pveceph}',
+		    disabled: '{pveceph}',
+		},
+	    },
+	    {
 		xtype: 'proxmoxcheckbox',
 		name: 'pveceph',
 		reference: 'pvecephRef',
