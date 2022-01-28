@@ -31,9 +31,7 @@ Ext.define('PVE.CephCreateOsd', {
 
 		if (classes.length) {
 		    let kvField = me.down('field[name=crush-device-class]');
-		    classes.unshift(...kvField.comboItems);
-
-		    kvField.setComboItems(classes);
+		    kvField.setComboItems([...kvField.comboItems, ...classes]);
 		}
 	    },
 	});
