@@ -278,6 +278,7 @@ sub build_influxdb_payload {
 
     # 'abc' and '123' are both valid hostnames, that confuses influx's type detection
     my $to_quote = { name => 1 };
+
     my @values = ();
 
     foreach my $key (sort keys %$data) {
@@ -333,10 +334,10 @@ sub get_recursive_values {
 }
 
 sub prepare_value {
-    my ($value, $quote) = @_;
+    my ($value, $force_quote) = @_;
 
     # don't treat value like a number if quote is 1
-    if (looks_like_number($value) && !$quote) {
+    if (!$force_quote && looks_like_number($value)) {
 	if (isnan($value) || isinf($value)) {
 	    # we cannot send influxdb NaN or Inf
 	    return undef;
