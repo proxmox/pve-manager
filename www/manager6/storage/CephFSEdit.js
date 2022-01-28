@@ -105,7 +105,7 @@ Ext.define('PVE.storage.CephFSInputPanel', {
 	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'keyring',
-		fieldLabel: 'Secret',
+		fieldLabel: gettext('Secret Key'),
 		value: me.isCreate ? '' : '***********',
 		allowBlank: false,
 		bind: {
