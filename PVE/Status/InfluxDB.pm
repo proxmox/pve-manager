@@ -250,6 +250,8 @@ sub test_connection {
 sub build_influxdb_payload {
     my ($class, $txn, $data, $ctime, $tags, $excluded, $measurement, $instance) = @_;
 
+    # 'abc' and '123' are both valid hostnames, that confuses influx's type detection
+    my $to_quote = { name => 1 };
     my @values = ();
 
     foreach my $key (sort keys %$data) {
@@ -260,7 +262,7 @@ sub build_influxdb_payload {
 	if (!ref($value) && $value ne '') {
 	    # value is scalar
 
-	    if (defined(my $v = prepare_value($value))) {
+	    if (defined(my $v = prepare_value($value, $to_quote->{$key}))) {
 		push @values, "$key=$v";
 	    }
 	} elsif (ref($value) eq 'HASH') {
@@ -305,9 +307,10 @@ sub get_recursive_values {
 }
 
 sub prepare_value {
-    my ($value) = @_;
+    my ($value, $quote) = @_;
 
-    if (looks_like_number($value)) {
+    # don't treat value like a number if quote is 1
+    if (looks_like_number($value) && !$quote) {
 	if (isnan($value) || isinf($value)) {
 	    # we cannot send influxdb NaN or Inf
 	    return undef;
