@@ -61,6 +61,10 @@ $pve_cluster_module->mock(
 	die "unexpected filename '$filename'\n" if $filename ne 'storage.cfg';
 	return $storage_config;
     },
+    # never update during the tests
+    cfs_update => sub {
+	return;
+    },
 );
 
 my $pve_tools_module = Test::MockModule->new('PVE::Tools');
