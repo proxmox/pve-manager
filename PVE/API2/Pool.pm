@@ -211,6 +211,11 @@ __PACKAGE__->register_method ({
 		type => 'string',
 		format => 'pve-poolid',
 	    },
+	    type => {
+		type => 'string',
+		enum => [ 'qemu', 'lxc', 'storage' ],
+		optional => 1,
+	    },
 	},
     },
     returns => {
@@ -269,27 +274,29 @@ __PACKAGE__->register_method ({
 	my $members = [];
 	for my $vmid (sort keys %{$pool_config->{vms}}) {
 	    my $vmdata = $idlist->{$vmid};
-	    next if !$vmdata;
+	    next if !$vmdata || defined($param->{type}) && $param->{type} ne $vmdata->{type};
 	    my $entry = PVE::API2Tools::extract_vm_stats($vmid, $vmdata, $rrd);
 	    push @$members, $entry;
 	}
 
 	my $nodename = PVE::INotify::nodename();
 	my $cfg = PVE::Storage::config();
-	for my $storeid (sort keys %{$pool_config->{storage}}) {
-	    my $scfg = PVE::Storage::storage_config ($cfg, $storeid, 1);
-	    next if !$scfg;
+	if (!defined($param->{type}) || $param->{type} eq 'storage') {
+	    for my $storeid (sort keys %{$pool_config->{storage}}) {
+		my $scfg = PVE::Storage::storage_config ($cfg, $storeid, 1);
+		next if !$scfg;
 
-	    my $storage_node = $nodename; # prefer local node
-	    if ($scfg->{nodes} && !$scfg->{nodes}->{$storage_node}) {
-		for my $node (sort keys(%{$scfg->{nodes}})) {
-		    $storage_node = $node;
-		    last;
+		my $storage_node = $nodename; # prefer local node
+		if ($scfg->{nodes} && !$scfg->{nodes}->{$storage_node}) {
+		    for my $node (sort keys(%{$scfg->{nodes}})) {
+			$storage_node = $node;
+			last;
+		    }
 		}
-	    }
 
-	    my $entry = PVE::API2Tools::extract_storage_stats($storeid, $scfg, $storage_node, $rrd);
-	    push @$members, $entry;
+		my $entry = PVE::API2Tools::extract_storage_stats($storeid, $scfg, $storage_node, $rrd);
+		push @$members, $entry;
+	    }
 	}
 
 	my $res = {
