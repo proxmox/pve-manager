@@ -1551,6 +1551,7 @@ __PACKAGE__->register_method({
 	my $url = $param->{url};
 
 	my $ua = LWP::UserAgent->new();
+	$ua->agent("Proxmox VE");
 
 	my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
 	if ($dccfg->{http_proxy}) {
