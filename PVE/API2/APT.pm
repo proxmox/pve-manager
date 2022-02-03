@@ -195,6 +195,13 @@ my $update_pve_pkgstatus = sub {
 		for my $d (@$deps) {
 		    if ($d->{DepType} eq 'Depends') {
 			$found = $d->{TargetPkg}->{SelectedState} eq 'Install' if !$found;
+			# need to check ProvidesList for virtual packages
+			if (!$found && (my $provides = $d->{TargetPkg}->{ProvidesList})) {
+			    for my $provide ($provides->@*) {
+				$found = $provide->{OwnerPkg}->{SelectedState} eq 'Install';
+				last if $found;
+			    }
+			}
 			$req = $d->{TargetPkg} if !$req;
 
 			if (!($d->{CompType} & AptPkg::Dep::Or)) {
