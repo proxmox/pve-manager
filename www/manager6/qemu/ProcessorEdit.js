@@ -187,8 +187,9 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    xtype: 'proxmoxintegerfield',
 	    name: 'cpuunits',
 	    fieldLabel: gettext('CPU units'),
-	    minValue: 8,
-	    maxValue: 500000,
+	    // FIXME: change to [1, 1000] once cgroup v1 support gets removed (PVE 8 ?)
+	    minValue: 2,
+	    maxValue: 262144,
 	    value: '1024',
 	    deleteEmpty: true,
 	    allowBlank: true,
