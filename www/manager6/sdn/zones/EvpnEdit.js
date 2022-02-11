@@ -44,6 +44,13 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 		allowBlank: false,
 	    },
 	    {
+		xtype: 'pveSDNControllerSelector',
+		fieldLabel: gettext('Controller'),
+		name: 'controller',
+		value: '',
+		allowBlank: false,
+	    },
+	    {
 		xtype: 'proxmoxintegerfield',
 		name: 'vrf-vxlan',
 		minValue: 1,
@@ -93,13 +100,6 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 		uncheckedValue: 0,
 		checked: false,
 		fieldLabel: gettext('Disable arp-nd suppression'),
-	    },
-	    {
-		xtype: 'pveSDNControllerSelector',
-		fieldLabel: gettext('Controller'),
-		name: 'controller',
-		value: '',
-		allowBlank: false,
 	    },
 	    {
 		xtype: 'proxmoxintegerfield',
