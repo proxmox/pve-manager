@@ -24,6 +24,10 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
             delete values['exitnodes-local-routing'];
         }
 
+        if (values['disable-arp-nd-suppression'] === 0) {
+            delete values['disable-arp-nd-suppression'];
+        }
+
 	return values;
     },
 
@@ -75,6 +79,13 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 		uncheckedValue: 0,
 		checked: false,
 		fieldLabel: gettext('Advertise subnets'),
+	    },
+	    {
+		xtype: 'proxmoxcheckbox',
+		name: 'disable-arp-nd-suppression',
+		uncheckedValue: 0,
+		checked: false,
+		fieldLabel: gettext('Disable arp-nd suppression'),
 	    },
 	    {
 		xtype: 'pveSDNControllerSelector',
