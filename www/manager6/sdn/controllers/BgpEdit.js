@@ -68,6 +68,13 @@ Ext.define('PVE.sdn.controllers.BgpInputPanel', {
 		fieldLabel: 'ebgp-multihop',
 		allowBlank: true,
 	    },
+	    {
+		xtype: 'proxmoxcheckbox',
+		name: 'bgp-multipath-as-path-relax',
+		uncheckedValue: 0,
+		checked: false,
+		fieldLabel: 'bgp-multipath-as-path-relax',
+	    },
 	];
 
 	me.callParent();
