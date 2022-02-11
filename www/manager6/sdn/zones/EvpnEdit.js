@@ -67,6 +67,13 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 		autoSelect: false,
 	    },
 	    {
+		xtype: 'pveNodeSelector',
+		name: 'exitnodes-primary',
+		fieldLabel: gettext('Primary Exit Node'),
+		multiSelect: false,
+		autoSelect: false,
+	    },
+	    {
 		xtype: 'proxmoxcheckbox',
 		name: 'exitnodes-local-routing',
 		uncheckedValue: 0,
