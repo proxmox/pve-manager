@@ -102,6 +102,12 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 		fieldLabel: gettext('Disable arp-nd suppression'),
 	    },
 	    {
+		xtype: 'textfield',
+		name: 'rt-import',
+		fieldLabel: gettext('Route-target import'),
+		allowBlank: true,
+	    },
+	    {
 		xtype: 'proxmoxintegerfield',
 		name: 'mtu',
 		minValue: 100,
