@@ -180,7 +180,7 @@ sub check_pve_packages {
 	    log_fail("proxmox-ve package is too old, please upgrade to >= $min_pve_ver!");
 	}
 
-	my ($krunning, $kinstalled) = (qr/5\.11/, 'pve-kernel-5.11');
+	my ($krunning, $kinstalled) = (qr/5\.(?:13|15)/, 'pve-kernel-5.11');
 	if (!$upgraded) {
 	    ($krunning, $kinstalled) = (qr/5\.(?:4|11)/, 'pve-kernel-4.15');
 	}
