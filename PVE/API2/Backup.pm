@@ -16,7 +16,7 @@ use PVE::Exception qw(raise_param_exc);
 use PVE::VZDump;
 use PVE::VZDump::Common;
 use PVE::Jobs; # for VZDump Jobs
-use PVE::RS::CalendarEvent;
+use Proxmox::RS::CalendarEvent;
 
 use base qw(PVE::RESTHandler);
 
@@ -123,7 +123,7 @@ __PACKAGE__->register_method({
 		# vzdump jobs are cluster wide, there maybe was no local run
 		# so simply calculate from now
 		my $last_run = time();
-		my $calspec = PVE::RS::CalendarEvent->new($schedule);
+		my $calspec = Proxmox::RS::CalendarEvent->new($schedule);
 		my $next_run = $calspec->compute_next_event($last_run);
 		$job->{'next-run'} = $next_run if defined($next_run);
 	    }
