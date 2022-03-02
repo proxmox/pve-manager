@@ -391,8 +391,13 @@ Ext.define('PVE.node.CephOsdTree', {
 	    let osdid = vm.get('osdid');
 
 	    let doRequest = function() {
+		let targetnode = vm.get('osdhost');
+		// cmds not node specific and need to work if the OSD node is down
+		if (['in', 'out'].includes(cmd)) {
+		    targetnode = vm.get('nodename');
+		}
 		Proxmox.Utils.API2Request({
-		    url: "/nodes/" + vm.get('osdhost') + "/ceph/osd/" + osdid + '/' + cmd,
+		    url: `/nodes/${targetnode}/ceph/osd/${osdid}/${cmd}`,
 		    waitMsgTarget: me.getView(),
 		    method: 'POST',
 		    params: params,
