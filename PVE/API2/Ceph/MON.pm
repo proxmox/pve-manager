@@ -132,8 +132,10 @@ my $assert_mon_prerequisites = sub {
     for my $mon (values %{$monhash}) {
 	next if !defined($mon->{addr});
 
-	my $ip = PVE::Network::canonical_ip($mon->{addr});
-	$used_ips->{$ip} = 1;
+	for my $ip ($ips_from_mon_host->($mon->{addr})->@*) {
+	    $ip = PVE::Network::canonical_ip($ip);
+	    $used_ips->{$ip} = 1;
+	}
     }
 
     for my $monip (@{$monips}) {
