@@ -653,9 +653,9 @@ Ext.define('PVE.Utils', {
     },
 
     kvm_vga_driver_array: function() {
-	var data = [['__default__', PVE.Utils.render_kvm_vga_driver('')]];
+	var data = [['__default__', Proxmox.Utils.defaultText]];
 	Ext.Object.each(PVE.Utils.kvm_vga_drivers, function(key, value) {
-	    data.push([key, PVE.Utils.render_kvm_vga_driver(value)]);
+	    data.push([key, value]);
 	});
 
 	return data;
