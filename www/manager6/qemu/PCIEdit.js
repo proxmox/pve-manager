@@ -40,7 +40,7 @@ Ext.define('PVE.qemu.PCIInputPanel', {
     onGetValues: function(values) {
 	let me = this;
 	if (!me.confid) {
-	    for (let i = 0; i < 5; i++) {
+	    for (let i = 0; i < PVE.Utils.hardware_counts.hostpci; i++) {
 		if (!me.vmconfig['hostpci' + i.toString()]) {
 		    me.confid = 'hostpci' + i.toString();
 		    break;
