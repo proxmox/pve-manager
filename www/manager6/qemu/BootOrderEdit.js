@@ -19,6 +19,36 @@ Ext.define('PVE.qemu.BootOrderPanel', {
     inUpdate: false,
     controller: {
 	xclass: 'Ext.app.ViewController',
+
+	init: function(view) {
+	    let me = this;
+
+	    let grid = me.lookup('grid');
+	    let marker = me.lookup('marker');
+	    let emptyWarning = me.lookup('emptyWarning');
+
+	    marker.originalValue = undefined;
+
+	    view.store = Ext.create('Ext.data.Store', {
+		model: 'pve-boot-order-entry',
+		listeners: {
+		    update: function() {
+			this.commitChanges();
+			let val = view.calculateValue();
+			if (marker.originalValue === undefined) {
+			    marker.originalValue = val;
+			}
+			view.inUpdate = true;
+			marker.setValue(val);
+			view.inUpdate = false;
+			marker.checkDirty();
+			emptyWarning.setHidden(val !== '');
+			grid.getView().refresh();
+		    },
+		},
+	    });
+	    grid.setStore(view.store);
+	},
     },
 
     isCloudinit: (v) => v.match(/media=cdrom/) && v.match(/[:/]vm-\d+-cloudinit/),
@@ -220,40 +250,6 @@ Ext.define('PVE.qemu.BootOrderPanel', {
 	    },
 	},
     ],
-
-    initComponent: function() {
-	let me = this;
-
-	me.callParent();
-
-	let controller = me.getController();
-
-	let grid = controller.lookup('grid');
-	let marker = controller.lookup('marker');
-	let emptyWarning = controller.lookup('emptyWarning');
-
-	marker.originalValue = undefined;
-
-	me.store = Ext.create('Ext.data.Store', {
-	    model: 'pve-boot-order-entry',
-	    listeners: {
-		update: function() {
-		    this.commitChanges();
-		    let val = me.calculateValue();
-		    if (marker.originalValue === undefined) {
-			marker.originalValue = val;
-		    }
-		    me.inUpdate = true;
-		    marker.setValue(val);
-		    me.inUpdate = false;
-		    marker.checkDirty();
-		    emptyWarning.setHidden(val !== '');
-		    grid.getView().refresh();
-		},
-	    },
-	});
-	grid.setStore(me.store);
-    },
 });
 
 Ext.define('PVE.qemu.BootOrderEdit', {
@@ -271,9 +267,7 @@ Ext.define('PVE.qemu.BootOrderEdit', {
 	let me = this;
 	me.callParent();
 	me.load({
-	    success: function(response, options) {
-		me.down('#inputpanel').setVMConfig(response.result.data);
-	    },
+	    success: ({ result }) => me.down('#inputpanel').setVMConfig(result.data),
 	});
     },
 });
