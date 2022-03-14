@@ -1,3 +1,22 @@
+pve-manager (6.4-14) buster; urgency=medium
+
+  * pve6to7: ignore deb-src entries for security repo check
+
+  * pve6to7: update expected running kernel version to be either 5.13 or 5.15
+
+  * fix #3815: metrics: influxdb: coerce guest name always to string
+
+  * api: task: better document return schema
+
+  * vzdump: pbs: suppress output from upload-log command
+
+  * daily update timer: start randomized interval already on 01:00 to avoid
+    systemd-timer bug w.r.t. DST change
+
+  * fix #3620: ui: dc/storage: delete empty pbs fingerprint on edit
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 14 Mar 2022 10:48:22 +0100
+
 pve-manager (6.4-13) buster; urgency=medium
 
   * pve6to7: add check for 'lxc.cgroup.*' keys in container config
