@@ -2,8 +2,8 @@
 Description=Daily PVE download activities
 
 [Timer]
-OnCalendar=*-*-* 2:00
-RandomizedDelaySec=4h
+OnCalendar=*-*-* 1:00
+RandomizedDelaySec=5h
 Persistent=true
 
 [Install]
