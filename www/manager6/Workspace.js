@@ -322,7 +322,7 @@ Ext.define('PVE.StdWorkspace', {
 			    href: 'pve.proxmox.com/wiki/FAQ#faq-support-table',
 			},
 			{
-			    flex: 1
+			    flex: 1,
 			},
 			{
 			    xtype: 'proxmoxHelpButton',
