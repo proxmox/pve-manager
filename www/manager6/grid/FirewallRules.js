@@ -73,7 +73,7 @@ Ext.define('PVE.form.ICMPTypeSelector', {
     },
     setName: function(value) {
 	this.name = value;
-    }
+    },
 });
 
 let ICMP_TYPE_NAMES_STORE = Ext.create('Ext.data.Store', {
@@ -128,7 +128,7 @@ let ICMPV6_TYPE_NAMES_STORE = Ext.create('Ext.data.Store', {
 	{ type: '1/3', name: 'address-unreachable' },
 	{ type: '1/4', name: 'port-unreachable' },
 	{ type: '1/5', name: 'failed-policy' },
-	{ type: '1/6', name: 'reject-route', },
+	{ type: '1/6', name: 'reject-route' },
 	{ type: '2', name: 'packet-too-big' },
 	{ type: '3', name: 'time-exceeded' },
 	{ type: '3/0', name: 'ttl-zero-during-transit' },
@@ -315,7 +315,7 @@ Ext.define('PVE.FirewallRulePanel', {
 			    me.down('field[name=dport]').setHidden(false);
 			    me.down('field[name=dport]').setDisabled(false);
 			}
-		    }
+		    },
 		},
 	    },
 	    {
@@ -431,7 +431,7 @@ Ext.define('PVE.FirewallRuleEdit', {
 		    ipanel.setValues(values);
 		    // set icmp-type again after protocol has been set
 		    if (values["icmp-type"] !== undefined) {
-			ipanel.setValues({"icmp-type": values["icmp-type"]});
+			ipanel.setValues({ "icmp-type": values["icmp-type"] });
 		    }
 		    if (values.errors) {
 			var field = me.query('[isFormField][name=modified_marker]')[0];
