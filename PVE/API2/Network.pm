@@ -238,27 +238,26 @@ __PACKAGE__->register_method({
 
 	delete $ifaces->{lo}; # do not list the loopback device
 
-	if ($param->{type}) {
-	    my $vnets = {};
-	    my $filtered_sdn = undef;
-	    my $privs = [ 'SDN.Audit', 'SDN.Allocate' ];
+	if (my $tfilter = $param->{type}) {
+	    my $vnets;
+	    my $can_access_vnet = sub { # only matters for the $have_sdn case, checked implict
+		return 1 if $authuser eq 'root@pam' || !defined($vnets);
+		$rpcenv->check_any($authuser, "/sdn/vnets/$_[0]", ['SDN.Audit', 'SDN.Allocate'], 1)
+	    };
 
 	    if ($have_sdn && $param->{type} eq 'any_bridge') {
-		$vnets = PVE::Network::SDN::get_local_vnets();
-		$filtered_sdn = 1 if $authuser ne 'root@pam' && keys %{$vnets} > 0;
+		$vnets = PVE::Network::SDN::get_local_vnets(); # returns already access-filtered
 	    }
 
-	    foreach my $k (keys %$ifaces) {
+	    for my $k (sort keys $ifaces->%*) {
 		my $type = $ifaces->{$k}->{type};
-		my $match =  ($param->{type} eq $type) || (
-		    ($param->{type} eq 'any_bridge') && 
-		    ($type eq 'bridge' || $type eq 'OVSBridge'));
-		delete $ifaces->{$k} if !$match || ($filtered_sdn && !$rpcenv->check_any($authuser, "/sdn/vnets/$k", $privs, 1));
+		my $match = $tfilter eq $type || ($tfilter eq 'any_bridge' && ($type eq 'bridge' || $type eq 'OVSBridge'));
+		delete $ifaces->{$k} if !($match && $can_access_vnet->($k));
 	    }
 
-	    map {
-	    	$ifaces->{$_} = $vnets->{$_};
-	    } keys %$vnets;
+	    if (defined($vnets)) {
+		$ifaces->{$_} = $vnets->{$_} for keys $vnets->%*
+	    }
 	}
 
 	return PVE::RESTHandler::hash_to_array($ifaces, 'iface');
