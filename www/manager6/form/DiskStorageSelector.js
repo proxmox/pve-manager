@@ -28,7 +28,7 @@ Ext.define('PVE.form.DiskStorageSelector', {
     // hides the size field (e.g, for the efi disk dialog)
     hideSize: false,
 
-    // hides the format field (e.g. for TPM state), always assumes 'raw'
+    // hides the format field (e.g. for TPM state)
     hideFormat: false,
 
     // sets the initial size value
@@ -66,7 +66,7 @@ Ext.define('PVE.form.DiskStorageSelector', {
 
 	var select = !!rec.data.select_existing && !me.hideSelection;
 
-	formatsel.setDisabled(!selectformat);
+	formatsel.setDisabled(!selectformat || me.hideFormat);
 	formatsel.setValue(selectformat ? 'qcow2' : 'raw');
 
 	hdfilesel.setDisabled(!select);
