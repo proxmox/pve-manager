@@ -11,24 +11,24 @@ use base qw(PVE::RESTHandler);
 
 my $node_config_schema = PVE::NodeConfig::get_nodeconfig_schema();
 my $node_config_keys = [ sort keys %$node_config_schema ];
-my $node_config_properties = {
-    delete => {
-	type => 'string', format => 'pve-configid-list',
-	description => "A list of settings you want to delete.",
-	optional => 1,
-    },
+my $node_config_return_properties = {
     digest => {
 	type => 'string',
 	description => 'Prevent changes if current configuration file has different SHA1 digest. This can be used to prevent concurrent modifications.',
 	maxLength => 40,
 	optional => 1,
     },
-    node => get_standard_option('pve-node'),
+    %$node_config_schema,
 };
-
-foreach my $opt (keys %{$node_config_schema}) {
-    $node_config_properties->{$opt} = $node_config_schema->{$opt};
-}
+my $node_config_properties = {
+    delete => {
+	type => 'string', format => 'pve-configid-list',
+	description => "A list of settings you want to delete.",
+	optional => 1,
+    },
+    node => get_standard_option('pve-node'),
+    %$node_config_return_properties,
+};
 
 __PACKAGE__->register_method({
     name => 'get_config',
@@ -54,7 +54,7 @@ __PACKAGE__->register_method({
     },
     returns => {
 	type => "object",
-	properties => {},
+	properties => $node_config_return_properties,
     },
     code => sub {
 	my ($param) = @_;
