@@ -1,3 +1,42 @@
+pve-manager (7.1-11) bullseye; urgency=medium
+
+  * fix #3476: vzdump: add job-init hook
+
+  * ui: pci passthrough: editor for pci-id overrides
+
+  * pvescheduler service: order startup after pve-guests
+
+  * fix #3815: metrics: influxdb: coerce guest name always to string
+
+  * api: resource pool: add type parameter to GET endpoint
+
+  * ui: rbd: cephfs: add keyring/secret field for external clusters
+
+  * ui: disks/lvm: better convey space information
+
+  * api: query url metadata: change default user-agent to "Proxmox VE"
+
+  * ui: vm: improve validator for CPU share range
+
+  * pve6to7: update expected running kernel version to 5.13 or 5.15
+
+  * daily update timer: start already on 01:00 to avoid dst change issue
+
+  * ui: firwall: change icmp type selector to a combogrid
+
+  * ui: add help button to qm guest-agent window
+
+  * ui: sdn: zones: evpn : add exitnodes-local-routing && advertise-
+    subnets
+
+  * api: network: any-bridge filter: don't display bridges if user have
+    access to vnets.
+
+  * ui: lxc options: disable features edit as non-root when container is
+    privileged
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 17 Mar 2022 14:08:40 +0100
+
 pve-manager (7.1-10) bullseye; urgency=medium
 
   * ui: form/calendar event: add monthly, first X weekday of month, and yearly
