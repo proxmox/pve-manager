@@ -57,17 +57,24 @@ Ext.define('PVE.form.DiskStorageSelector', {
 	    return;
 	}
 
-	var selectformat = false;
+	let validFormats = {};
+	let selectFormat = 'raw';
 	if (rec.data.format) {
-	    var format = rec.data.format[0]; // 0 is the formats, 1 the default in the backend
-	    delete format.subvol; // we never need subvol in the gui
-	    selectformat = Ext.Object.getSize(format) > 1;
+	    validFormats = rec.data.format[0]; // 0 is the formats, 1 the default in the backend
+	    delete validFormats.subvol; // we never need subvol in the gui
+	    if (validFormats.qcow2) {
+		selectFormat = 'qcow2';
+	    } else if (validFormats.raw) {
+		selectFormat = 'raw';
+	    } else {
+		selectFormat = rec.data.format[1];
+	    }
 	}
 
 	var select = !!rec.data.select_existing && !me.hideSelection;
 
-	formatsel.setDisabled(!selectformat || me.hideFormat);
-	formatsel.setValue(selectformat ? 'qcow2' : 'raw');
+	formatsel.setDisabled(me.hideFormat || Ext.Object.getSize(validFormats) <= 1);
+	formatsel.setValue(selectFormat);
 
 	hdfilesel.setDisabled(!select);
 	hdfilesel.setVisible(select);
