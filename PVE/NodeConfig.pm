@@ -48,7 +48,7 @@ sub load_config {
     my $raw = eval { PVE::Tools::file_get_contents($filename); };
     return {} if !$raw;
 
-    return parse_node_config($raw);
+    return parse_node_config($raw, $filename);
 }
 
 sub write_config {
@@ -153,74 +153,19 @@ for my $i (0..$MAXDOMAINS) {
     };
 };
 
-sub check_type {
-    my ($key, $value) = @_;
+my $conf_schema = {
+    type => 'object',
+    properties => $confdesc,
+};
 
-    die "unknown setting '$key'\n" if !$confdesc->{$key};
-
-    my $type = $confdesc->{$key}->{type};
-
-    if (!defined($value)) {
-	die "got undefined value\n";
-    }
-
-    if ($value =~ m/[\n\r]/) {
-	die "property contains a line feed\n";
-    }
-
-    if ($type eq 'boolean') {
-	return 1 if ($value eq '1') || ($value =~ m/^(on|yes|true)$/i);
-	return 0 if ($value eq '0') || ($value =~ m/^(off|no|false)$/i);
-	die "type check ('boolean') failed - got '$value'\n";
-    } elsif ($type eq 'integer') {
-	return int($1) if $value =~ m/^(\d+)$/;
-	die "type check ('integer') failed - got '$value'\n";
-    } elsif ($type eq 'number') {
-	return $value if $value =~ m/^(\d+)(\.\d+)?$/;
-	die "type check ('number') failed - got '$value'\n";
-    } elsif ($type eq 'string') {
-	if (my $fmt = $confdesc->{$key}->{format}) {
-	    PVE::JSONSchema::check_format($fmt, $value);
-	    return $value;
-	} elsif (my $pattern = $confdesc->{$key}->{pattern}) {
-	    if ($value !~ m/^$pattern$/) {
-		die "value does not match the regex pattern\n";
-	    }
-	}
-	return $value;
-    } else {
-	die "internal error"
-    }
-}
-
-sub parse_node_config {
-    my ($content) = @_;
+sub parse_node_config : prototype($$) {
+    my ($content, $filename) = @_;
 
     return undef if !defined($content);
+    my $digest = Digest::SHA::sha1_hex($content);
 
-    my $conf = {
-	digest => Digest::SHA::sha1_hex($content),
-    };
-    my $descr = '';
-
-    my @lines = split(/\n/, $content);
-    foreach my $line (@lines) {
-	if ($line =~ /^\#(.*)\s*$/ || $line =~ /^description:\s*(.*\S)\s*$/) {
-	    $descr .= PVE::Tools::decode_text($1) . "\n";
-	    next;
-	}
-	if ($line =~ /^([a-z][a-z-_]*\d*):\s*(\S.*)\s*$/) {
-	    my $key = $1;
-	    my $value = $2;
-	    $value = eval { check_type($key, $value) };
-	    die "cannot parse value of '$key' in node config: $@" if $@;
-	    $conf->{$key} = $value;
-	} else {
-	    warn "cannot parse line '$line' in node config\n";
-	}
-    }
-
-    $conf->{description} = $descr if $descr;
+    my $conf = PVE::JSONSchema::parse_config($conf_schema, $filename, $content, 'description');
+    $conf->{digest} = $digest;
 
     return $conf;
 }
