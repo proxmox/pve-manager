@@ -552,26 +552,17 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	my $filename = 'datacenter.cfg';
-
 	my $delete = extract_param($param, 'delete');
 
-	my $code = sub {
+	cfs_lock_file('datacenter.cfg', undef, sub {
+	    my $conf = cfs_read_file('datacenter.cfg');
 
-	    my $conf = cfs_read_file($filename);
+	    $conf->{$_} = $param->{$_} for keys $param->%*;
 
-	    foreach my $opt (keys %$param) {
-		$conf->{$opt} = $param->{$opt};
-	    }
+	    delete $conf->{$_} for PVE::Tools::split_list($delete);
 
-	    foreach my $opt (PVE::Tools::split_list($delete)) {
-		delete $conf->{$opt};
-	    };
-
-	    cfs_write_file($filename, $conf);
-	};
-
-	cfs_lock_file($filename, undef, $code);
+	    cfs_write_file('datacenter.cfg', $conf);
+	});
 	die $@ if $@;
 
 	return undef;
@@ -721,12 +712,14 @@ __PACKAGE__->register_method({
     name => 'nextid',
     path => 'nextid',
     method => 'GET',
-    description => "Get next free VMID. If you pass an VMID it will raise an error if the ID is already used.",
+    description => "Get next free VMID. Pass a VMID to assert that its free (at time of check).",
     permissions => { user => 'all' },
     parameters => {
     	additionalProperties => 0,
 	properties => {
-	    vmid => get_standard_option('pve-vmid', {optional => 1}),
+	    vmid => get_standard_option('pve-vmid', {
+		    optional => 1,
+	    }),
 	},
     },
     returns => {
