@@ -100,7 +100,7 @@ Ext.define('PVE.panel.LDAPSyncInputPanel', {
     xtype: 'pveAuthLDAPSyncPanel',
 
     editableAttributes: ['email'],
-    editableDefaults: ['scope', 'full', 'enable-new', 'purge'],
+    editableDefaults: ['scope', 'enable-new'],
     default_opts: {},
     sync_attributes: {},
 
@@ -116,6 +116,15 @@ Ext.define('PVE.panel.LDAPSyncInputPanel', {
 		delete me.default_opts[attr];
 	    }
 	});
+	let vanished_opts = [];
+	['acl', 'entry', 'properties'].forEach((prop) => {
+	    if (values[`remove-vanished-${prop}`]) {
+		vanished_opts.push(prop);
+	    }
+	    delete values[`remove-vanished-${prop}`];
+	});
+	me.default_opts['remove-vanished'] = vanished_opts.join(';');
+
 	values['sync-defaults-options'] = PVE.Parser.printPropertyString(me.default_opts);
 	me.editableAttributes.forEach((attr) => {
 	    if (values[attr]) {
@@ -156,6 +165,13 @@ Ext.define('PVE.panel.LDAPSyncInputPanel', {
 		    values[attr] = me.default_opts[attr];
 		}
 	    });
+
+	    if (me.default_opts['remove-vanished']) {
+		let opts = me.default_opts['remove-vanished'].split(';');
+		for (const opt of opts) {
+		    values[`remove-vanished-${opt}`] = 1;
+		}
+	    }
 	}
 	return me.callParent([values]);
     },
@@ -203,18 +219,6 @@ Ext.define('PVE.panel.LDAPSyncInputPanel', {
 		['groups', gettext('Groups')],
 		['both', gettext('Users and Groups')],
 	    ],
-	},
-	{
-	    xtype: 'proxmoxKVComboBox',
-	    value: '__default__',
-	    deleteEmpty: false,
-	    comboItems: [
-		['__default__', Proxmox.Utils.NoneText],
-		['1', Proxmox.Utils.yesText],
-		['0', Proxmox.Utils.noText],
-	    ],
-	    name: 'full',
-	    fieldLabel: gettext('Full'),
 	},
     ],
 
@@ -269,17 +273,30 @@ Ext.define('PVE.panel.LDAPSyncInputPanel', {
 	    name: 'enable-new',
 	    fieldLabel: gettext('Enable new users'),
 	},
+    ],
+
+    columnB: [
 	{
-	    xtype: 'proxmoxKVComboBox',
-	    value: '__default__',
-	    deleteEmpty: false,
-	    comboItems: [
-		['__default__', Proxmox.Utils.NoneText],
-		['1', Proxmox.Utils.yesText],
-		['0', Proxmox.Utils.noText],
-	    ],
-	    name: 'purge',
-	    fieldLabel: gettext('Purge'),
+	    xtype: 'displayfield',
+	    fieldLabel: gettext('Remove Vanished'),
+	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    fieldLabel: gettext('ACL'),
+	    name: 'remove-vanished-acl',
+	    boxLabel: gettext('Remove ACLs of users and groups which are not in the sync response.'),
+	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    fieldLabel: gettext('Entry'),
+	    name: 'remove-vanished-entry',
+	    boxLabel: gettext('Remove users and groups that are not in the sync response.'),
+	},
+	{
+	    xtype: 'proxmoxcheckbox',
+	    fieldLabel: gettext('Properties'),
+	    name: 'remove-vanished-properties',
+	    boxLabel: gettext('Remove user-properties that are not in the sync response.'),
 	},
     ],
 });
