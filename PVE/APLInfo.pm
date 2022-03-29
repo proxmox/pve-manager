@@ -34,7 +34,7 @@ sub read_aplinfo_from_fh {
 
     while (my $rec = <$fh>) {
 	chomp $rec;
-	
+
 	my $res = {};
 
 	while ($rec) {
@@ -66,19 +66,19 @@ sub read_aplinfo_from_fh {
 		$res->{lc $1} = $2;
 	    } else {
 		my $msg = "unable to parse appliance record: $rec\n";
-		$update ? die $msg : warn $msg;		
+		$update ? die $msg : warn $msg;
 		$res = {};
 		last;
 	    }
 	}
-	
+
 	if ($res->{'package'} eq 'pve-web-news' && $res->{description}) {
-	    $list->{'all'}->{$res->{'package'}} = $res;	    
+	    $list->{'all'}->{$res->{'package'}} = $res;
 	    next;
 	}
 
 	$res->{section} = 'unknown' if !$res->{section};
-	
+
 	if ($res->{'package'} && $res->{type} && $res->{os} && $res->{version} &&
 	    $res->{infopage}) {
 	    my $template;
@@ -101,7 +101,7 @@ sub read_aplinfo_from_fh {
 	    $list->{'all'}->{$template} = $res;
 	} else {
 	    my $msg = "found incomplete appliance records\n";
-	    $update ? die $msg : warn $msg;		
+	    $update ? die $msg : warn $msg;
 	}
     }
 }
@@ -118,7 +118,7 @@ sub read_aplinfo {
     close($fh);
 
     die $err if $err;
-    
+
     return $list;
 }
 
@@ -160,7 +160,7 @@ sub download_aplinfo {
 	if (url_get($ua, $aplsrcurl, $tmpgz, $logfd) != 0) {
 	    die "update failed - no data file '$aplsrcurl'\n";
 	}
- 
+
        eval { run_command(["gunzip", "-f", $tmpgz]) };
        die "update failed: unable to unpack '$tmpgz'\n" if $@;
 
@@ -243,7 +243,7 @@ sub update {
 	    logmsg ($logfd, $err);
 	    push @dlerr, $info->{url};
 	}
-    } 
+    }
 
     close($logfd);
 
