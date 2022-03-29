@@ -120,6 +120,7 @@ Ext.define('PVE.storage.BaseEdit', {
 		    {
 			xtype: 'pveBackupJobPrunePanel',
 			title: gettext('Backup Retention'),
+			hasMaxProtected: true,
 			isCreate: me.isCreate,
 			keepAllDefaultForCreate: true,
 			showPBSHint: me.ipanel.isPBS,
