@@ -691,16 +691,17 @@ sub compressor_info {
     }
 }
 
-sub get_backup_file_list {
+sub get_unprotected_backup_file_list {
     my ($dir, $bkname) = @_;
 
     my $bklist = [];
     foreach my $fn (<$dir/${bkname}-*>) {
 	my $archive_info = eval { PVE::Storage::archive_info($fn) } // {};
 	if ($archive_info->{is_std_name}) {
-	    my $filename = $archive_info->{filename};
+	    my $path = "$dir/$archive_info->{filename}";
+	    next if -e PVE::Storage::protection_file_path($path);
 	    my $backup = {
-		'path' => "$dir/$filename",
+		'path' => $path,
 		'ctime' => $archive_info->{ctime},
 	    };
 	    push @{$bklist}, $backup;
@@ -780,13 +781,15 @@ sub exec_backup_task {
 
 	if ($backup_limit && !$opts->{remove}) {
 	    my $count;
-	    if ($self->{opts}->{pbs}) {
-		my $res = PVE::Storage::PBSPlugin::run_client_cmd($opts->{scfg}, $opts->{storage}, 'snapshots', $pbs_group_name);
-		$count = scalar(@$res);
+	    if (my $storeid = $opts->{storage}) {
+		my $backups = PVE::Storage::volume_list($cfg, $storeid, $vmid, 'backup');
+		$count = grep {
+		    !$_->{protected} && (!$_->{subtype} || $_->{subtype} eq $vmtype)
+		} $backups->@*;
 	    } else {
-		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname);
-		$count = scalar(@$bklist);
+		$count = scalar(get_unprotected_backup_file_list($opts->{dumpdir}, $bkname)->@*);
 	    }
+
 	    die "There is a max backup limit of $backup_limit enforced by the".
 		" target storage or the vzdump parameters.".
 		" Either increase the limit or delete old backup(s).\n"
@@ -996,13 +999,7 @@ sub exec_backup_task {
 	    debugmsg ('info', "prune older backups with retention: $keepstr", $logfd);
 	    my $pruned = 0;
 	    if (!defined($opts->{storage})) {
-		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname);
-
-		for my $prune_entry ($bklist->@*) {
-		    if (-e PVE::Storage::protection_file_path($prune_entry->{path})) {
-			$prune_entry->{mark} = 'protected';
-		    }
-		}
+		my $bklist = get_unprotected_backup_file_list($opts->{dumpdir}, $bkname);
 
 		PVE::Storage::prune_mark_backup_group($bklist, $prune_options);
 
