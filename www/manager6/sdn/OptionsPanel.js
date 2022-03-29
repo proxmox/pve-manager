@@ -11,31 +11,25 @@ Ext.define('PVE.sdn.Options', {
 
     onlineHelp: 'pvesdn_config_controllers',
 
-    initComponent: function() {
-	var me = this;
-
-	me.items = [
+    items: [
 	{
 	    xtype: 'pveSDNControllerView',
 	    title: gettext('Controllers'),
-	    border: 0,
-	    collapsible: true,
+	    flex: 1,
 	    padding: '0 0 20 0',
+	    border: 0,
 	},
 	{
 	    xtype: 'pveSDNIpamView',
 	    title: 'IPAMs',
-	    border: 0,
-	    collapsible: true,
+	    flex: 1,
 	    padding: '0 0 20 0',
+	    border: 0,
 	}, {
 	    xtype: 'pveSDNDnsView',
-	    flex: 1,
-	    collapsible: true,
 	    title: 'DNS',
+	    flex: 1,
 	    border: 0,
-	}];
-
-	me.callParent();
-    },
+	},
+    ],
 });
