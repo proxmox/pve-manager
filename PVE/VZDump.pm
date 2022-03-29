@@ -692,12 +692,10 @@ sub compressor_info {
 }
 
 sub get_backup_file_list {
-    my ($dir, $bkname, $exclude_fn) = @_;
+    my ($dir, $bkname) = @_;
 
     my $bklist = [];
     foreach my $fn (<$dir/${bkname}-*>) {
-	next if $exclude_fn && $fn eq $exclude_fn;
-
 	my $archive_info = eval { PVE::Storage::archive_info($fn) } // {};
 	if ($archive_info->{is_std_name}) {
 	    my $filename = $archive_info->{filename};
