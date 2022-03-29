@@ -1,3 +1,14 @@
+pve-manager (7.1-12) bullseye; urgency=medium
+
+  * node config: use common parser and fill in config schema for API endpoints
+
+  * ui: sdn: add disable-arp-nd-suppression, exitnodes-primary rt-import
+    bgp-multipath-as-path-relax evpn/bgp options
+
+  * apl info: update shipped index to current repository state
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 29 Mar 2022 17:30:13 +0200
+
 pve-manager (7.1-11) bullseye; urgency=medium
 
   * fix #3476: vzdump: add job-init hook
