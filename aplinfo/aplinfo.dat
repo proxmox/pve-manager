@@ -70,20 +70,6 @@ Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.15 (20211202)
 
 Package: archlinux-base
-Version: 20210420-1
-Type: lxc
-OS: archlinux
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/archlinux-base_20210420-1_amd64.tar.gz
-md5sum: dec64783b32f1bbc80c9b0e6d87d0322
-sha512sum: 911c52c84738694943d18d4ec44a71a4deb7ad7f7e82ca947a4690b6e01c7b233bdd9853fed3df146af2ca844b90c0f984f43e52c3378a3094201ba8fe2bc54f
-Infopage: https://www.archlinux.org
-Description: ArchLinux base image.
- ArchLinux template with the 'base' group and the 'openssh' package installed.
-
-Package: archlinux-base
 Version: 20211202-1
 Type: lxc
 OS: archlinux
@@ -123,6 +109,19 @@ sha512sum: 006e9aadcbd018d4b5db0b250acd39299ad4b8fcb5f6c4ceb6fc0e9323c504c3f763f
 Infopage: https://linuxcontainers.org
 Description: LXC default image for centos 8 (20201210)
 
+Package: centos-8-stream-default
+Version: 20220327
+Type: lxc
+OS: centos
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/centos-8-stream-default_20220327_amd64.tar.xz
+md5sum: 21841a4476c3ba0c14055857a923dc72
+sha512sum: 27003cde9128336f4e01e0c3ccbe93c527ad66645e169743d556beb9c7719248b394c85d6d3abb0a547815bbefacfb1159cce9c6003f3ab38cde716c5958e250
+Infopage: https://linuxcontainers.org
+Description: LXC default image for centos 8-stream (20220327)
+
 Package: debian-10-standard
 Version: 10.7-1
 Type: lxc
@@ -138,16 +137,16 @@ Description: Debian 10 Buster (standard)
  A small Debian Buster system including all standard packages.
 
 Package: debian-11-standard
-Version: 11.0-1
+Version: 11.3-1
 Type: lxc
 OS: debian-11
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/debian-11-standard_11.0-1_amd64.tar.gz
-md5sum: 8f104ebe5be83aeff655905aacab2034
-sha512sum: 96487cc9ff7764e32f6dd87f8477f08ab4fd3f419950007a14e3d20128f6b384c69ad3fe6fa23106f1eb5d3d5cf17d5c010f0b79feaaf520bd45b0ef299c82f1
-Infopage: http://pve.proxmox.com/wiki/Debian_10.0_Standard
+Location: system/debian-11-standard_11.3-1_amd64.tar.zst
+md5sum: 5a061ed422b8ef0a4de61abe56c6ce36
+sha512sum: da331993ba1a62a67ffff316dee361019491e48aa227ccb90db417095f7ff63c4c61ace3817573fc21567cd7a16f3dbd04c2966b21d1418864e037daec908143
+Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
 Description: Debian 11 Bullseye (standard)
  A small Debian Bullseye system including all standard packages.
 
@@ -164,6 +163,20 @@ sha512sum: 95319b369324482abc1fe67d5ced2561367b8f8a727797c4f75ee04b3047228199159
 Infopage: https://devuan.org
 Description: Devuan 3.0 (standard)
  A small Devuan Beowulf system including a minimal set of essential packages.
+
+Package: devuan-4.0-standard
+Version: 4.0
+Type: lxc
+OS: devuan-4.0
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/devuan-4.0-standard_4.0_amd64.tar.gz
+md5sum: 515a89407afd96c3128125b427366aa0
+sha512sum: af909d1c3af35a53d063bc273d7a9e7df08fb5a914432d7fba8cdd3271132cf8e7b2c53306d59ef01e53693081dd2127be2fb790d2ff5e98cb3e860f5d257d89
+Infopage: https://devuan.org
+Description: Devuan 4.0 (standard)
+ A small Devuan Chimaera system including a minimal set of essential packages.
 
 Package: fedora-34-default
 Version: 20210427
@@ -257,20 +270,6 @@ md5sum: 7d327d28fa10eee199afe0366a3fdff6
 sha512sum: 6e20e4c6fc0aef4eba582d9cdcb44403449a97db0bf78ebaf2c78e5092cd307613654fb08ef7f54505d14f7f1946b476ff30e193bedd196c7118a1cd2134f23c
 Infopage: https://linuxcontainers.org
 Description: LXC default image for rockylinux 8 (20210929)
-
-Package: ubuntu-16.04-standard
-Version: 16.04.5-1
-Type: lxc
-OS: ubuntu-16.04
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-16.04-standard_16.04.5-1_amd64.tar.gz
-md5sum: 0c55ed84d157cfd87d04f1115a61baa2
-sha512sum: b0b1e6969d749404b5a9f4718e5f8bd45a118a410f2d315fef46cadb1d8bdf60f9b6771d91a3b33cbe65207be63e2eca82e71e92e9ed4227f7a5866a45a78027
-Infopage: http://pve.proxmox.com/wiki/Ubuntu_Xenial_Standard
-Description: Ubuntu Xenial (standard)
- A small Ubuntu Xenial system including all standard packages.
 
 Package: ubuntu-18.04-standard
 Version: 18.04.1-1
