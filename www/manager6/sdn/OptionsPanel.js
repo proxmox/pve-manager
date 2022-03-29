@@ -24,7 +24,7 @@ Ext.define('PVE.sdn.Options', {
 	},
 	{
 	    xtype: 'pveSDNIpamView',
-	    title: gettext('Ipams'),
+	    title: 'IPAMs',
 	    border: 0,
 	    collapsible: true,
 	    padding: '0 0 20 0',
@@ -32,7 +32,7 @@ Ext.define('PVE.sdn.Options', {
 	    xtype: 'pveSDNDnsView',
 	    flex: 1,
 	    collapsible: true,
-	    title: gettext('Dns'),
+	    title: 'DNS',
 	    border: 0,
 	}];
 
