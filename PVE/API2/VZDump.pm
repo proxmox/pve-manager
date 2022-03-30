@@ -267,7 +267,14 @@ __PACKAGE__->register_method ({
 	my $authuser = $rpcenv->get_user();
 
 	my $storage_cfg = PVE::Storage::config();
-	PVE::Storage::check_volume_access($rpcenv, $authuser, $storage_cfg, undef, $volume);
+	PVE::Storage::check_volume_access(
+	    $rpcenv,
+	    $authuser,
+	    $storage_cfg,
+	    undef,
+	    $volume,
+	    'backup',
+	);
 
 	if (PVE::Storage::parse_volume_id($volume, 1)) {
 	    my (undef, undef, $ownervm) = PVE::Storage::parse_volname($storage_cfg, $volume);
