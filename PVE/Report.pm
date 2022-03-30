@@ -54,7 +54,7 @@ my $init_report_cmds = sub {
 		'pvesm status',
 		'cat /etc/fstab',
 		'findmnt --ascii',
-		'df --human',
+		'df --human -T',
 	    ],
 	},
 	'virtual guests' => {
