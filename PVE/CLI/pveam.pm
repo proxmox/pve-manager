@@ -170,7 +170,7 @@ __PACKAGE__->register_method ({
 
 	my $cfg = PVE::Storage::config();
 
-	PVE::Storage::check_volume_access($rpcenv, $authuser, $cfg, undef, $template);
+	PVE::Storage::check_volume_access($rpcenv, $authuser, $cfg, undef, $template, 'vztmpl');
 
 	my $abs_path = PVE::Storage::abs_filesystem_path($cfg, $template);
 
