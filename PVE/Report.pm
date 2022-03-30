@@ -102,7 +102,7 @@ my $init_report_cmds = sub {
 	'block devices' => {
 	    order => 80,
 	    cmds => [
-		'lsblk --ascii -o +HOTPLUG,ROTA,PHY-SEC,FSTYPE,MODEL,TRAN',
+		'lsblk --ascii -M -o +HOTPLUG,ROTA,PHY-SEC,FSTYPE,MODEL,TRAN',
 		'ls -l /dev/disk/by-*/',
 		'iscsiadm -m node',
 		'iscsiadm -m session',
