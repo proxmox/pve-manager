@@ -269,6 +269,11 @@ __PACKAGE__->register_method ({
 	my $storage_cfg = PVE::Storage::config();
 	PVE::Storage::check_volume_access($rpcenv, $authuser, $storage_cfg, undef, $volume);
 
+	if (PVE::Storage::parse_volume_id($volume, 1)) {
+	    my (undef, undef, $ownervm) = PVE::Storage::parse_volname($storage_cfg, $volume);
+	    $rpcenv->check($authuser, "/vms/$ownervm", ['VM.Backup']);
+	}
+
 	return PVE::Storage::extract_vzdump_config($storage_cfg, $volume);
     }});
 
