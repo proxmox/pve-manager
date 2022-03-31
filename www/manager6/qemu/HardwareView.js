@@ -95,7 +95,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		never_delete: true,
 		editor: caps.vms['VM.Config.CPU'] || caps.vms['VM.Config.HWType']
 		    ? 'PVE.qemu.ProcessorEdit' : undefined,
-		tdCls: 'pmx-itype-icon-processor',
+		tdCls: 'pve-itype-icon-cpu',
 		group: 3,
 		defaultValue: '1',
 		multiKey: ['sockets', 'cpu', 'cores', 'numa', 'vcpus', 'cpulimit', 'cpuunits'],
