@@ -301,8 +301,7 @@
 .pve-itype-icon-serial,
 .pve-itype-icon-cloud,
 .pve-itype-icon-pci,
-.pve-itype-icon-die
-{
+.pve-itype-icon-die {
     background-repeat: no-repeat;
     background-position:3px center;
     padding-left: 20px;
@@ -323,119 +322,98 @@
 
 .pve-itype-icon-qemu,
 .x-tree-node-computer,
-.x-grid-tree-node-expanded .x-tree-node-computer
-{
+.x-grid-tree-node-expanded .x-tree-node-computer {
     background-image:url(../images/icon-display.png);
 }
 
 .pve-itype-icon-lxc,
 .x-tree-node-lxc,
-.x-grid-tree-node-expanded .x-tree-node-lxc
-{
+.x-grid-tree-node-expanded .x-tree-node-lxc {
     background-image:url(../images/lxc-off.png);
 }
 
 .pve-itype-icon-swap,
 .x-tree-node-lxc-swap,
-.x-grid-tree-node-expanded .x-tree-lxc-swap
-{
+.x-grid-tree-node-expanded .x-tree-lxc-swap {
     background-image:url(../images/icon-swap.png);
 }
 
 .pve-itype-icon-lxc-running,
 .x-tree-node-lxc-running,
-.x-grid-tree-node-expanded .x-tree-node-lxc-running
-{
+.x-grid-tree-node-expanded .x-tree-node-lxc-running {
     background-image:url(../images/lxc-on.png);
 }
 
 .pve-itype-icon-storage,
 .x-tree-node-harddisk,
-.x-grid-tree-node-expanded .x-tree-node-harddisk
-{
+.x-grid-tree-node-expanded .x-tree-node-harddisk {
     background-image:url(../images/icon-harddisk.png);
 }
 
 .x-tree-node-snapshot,
-.x-grid-tree-node-expanded .x-tree-node-snapshot
-{
+.x-grid-tree-node-expanded .x-tree-node-snapshot {
     background-image:url(../images/snapshot.png);
 }
 
-.pve-itype-icon-itype
-{
+.pve-itype-icon-itype {
     background-image:url(../ext6/theme-classic/resources/images/tree/folder.gif);
 }
 
-.pve-itype-icon-network-server
-{
+.pve-itype-icon-network-server {
     background-image:url(../images/network-server.png);
 }
 
-.pve-itype-icon-network
-{
+.pve-itype-icon-network {
     background-image:url(../images/icon-network.png);
 }
 
-.pve-itype-icon-keyboard
-{
+.pve-itype-icon-keyboard {
     background-image:url(../images/icon-keyboard.png);
 }
 
-.pve-itype-icon-cdrom
-{
+.pve-itype-icon-cdrom {
     background-image:url(../images/icon-cd.png);
 }
 
-.pve-itype-icon-display
-{
+.pve-itype-icon-display {
     background-image:url(../images/icon-display.png);
 }
 
-.pve-itype-icon-tigervnc
-{
+.pve-itype-icon-tigervnc {
     background-image:url(../images/tigervnc.png);
 }
 
-.pve-itype-icon-novnc
-{
+.pve-itype-icon-novnc {
     background-image:url(../images/novnc.png);
 }
 
-.pve-itype-icon-virt-viewer
-{
+.pve-itype-icon-virt-viewer {
     background-image:url(../images/virt-viewer.png);
 }
 
-.pve-itype-icon-xtermjs
-{
+.pve-itype-icon-xtermjs {
     background-image:url(../images/xtermjs.png);
 }
 
-.pve-itype-icon-usb
-{
+.pve-itype-icon-usb {
     background-image:url(../images/icon-usb.png);
 }
 
-.pve-itype-icon-pci
-{
+.pve-itype-icon-pci {
     background-image:url(../images/icon-pci.png);
 }
 
-.pve-itype-icon-serial
-{
+.pve-itype-icon-serial {
     background-size: 16px;
     background-image:url(../images/icon-serial.svg);
 }
 
-.pve-itype-icon-cloud
-{
+.pve-itype-icon-cloud {
     background-size: 16px;
     background-image:url(../images/icon-cloud.svg);
 }
 
-.pve-itype-icon-die
-{
+.pve-itype-icon-die {
     background-size: 16px;
     background-image:url(../images/icon-die.svg);
 }
