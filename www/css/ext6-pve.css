@@ -374,7 +374,8 @@
 }
 
 .pve-itype-icon-cdrom {
-    background-image:url(../images/icon-cd.png);
+    background-size: 16px;
+    background-image:url(../images/icon-cd-drive.svg);
 }
 
 .pve-itype-icon-display {
