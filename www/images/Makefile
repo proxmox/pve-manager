@@ -81,6 +81,7 @@ IMAGES = ${GNOME_IMAGES}	\
 	icon-sdn.svg		\
 	icon-fa-network-wired.svg\
 	icon-cpu.svg		\
+	icon-memory.svg		\
 
 
 icon-sdn.svg: icon-sdn.dot

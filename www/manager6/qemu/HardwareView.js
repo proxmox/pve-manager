@@ -66,7 +66,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		editor: caps.vms['VM.Config.Memory'] ? 'PVE.qemu.MemoryEdit' : undefined,
 		never_delete: true,
 		defaultValue: '512',
-		tdCls: 'pmx-itype-icon-memory',
+		tdCls: 'pve-itype-icon-memory',
 		group: 2,
 		multiKey: ['memory', 'balloon', 'shares'],
 		renderer: function(value, metaData, record, ri, ci, store, pending) {

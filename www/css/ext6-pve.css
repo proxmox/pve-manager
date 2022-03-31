@@ -302,6 +302,7 @@
 .pve-itype-icon-cloud,
 .pve-itype-icon-pci,
 .pve-itype-icon-cpu,
+.pve-itype-icon-memory,
 .pve-itype-icon-die {
     background-repeat: no-repeat;
     background-position:3px center;
@@ -424,6 +425,11 @@
     background-image:url(../images/icon-cpu.svg);
 }
 
+
+.pve-itype-icon-memory {
+    background-size: 16px;
+    background-image:url(../images/icon-memory.svg);
+}
 
 .pve-icon {
     height: 16px;
