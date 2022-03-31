@@ -8,11 +8,11 @@
     version="1.1"
 >
 
-    <g fill="none" stroke="#000" stroke-width="3">
+    <g fill="none" stroke="#000" stroke-width="5" shape-rendering="crispEdges">
         <!-- base CPU -->
         <rect x="15" y="15" rx="0" ry="0" width="70" height="70" />
         <rect x="30" y="30" rx="0" ry="0" width="40" height="40" fill="black"/>
-        <g stroke-width="5"> <!-- pins -->
+        <g stroke-width="8"> <!-- pins -->
             <!-- left -->
             <path d="m14,24.5 h-12.5"/>
             <path d="m14,41.5 h-12.5"/>
