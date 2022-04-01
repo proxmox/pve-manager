@@ -618,6 +618,21 @@ Ext.define('PVE.qemu.HardwareView', {
 	    revert_btn.setDisabled(!pending);
 	};
 
+	let editorFactory = (classPath, extraOptions) => {
+	    extraOptions = extraOptions || {};
+	    return () => Ext.create(`PVE.qemu.${classPath}`, {
+		autoShow: true,
+		url: `/api2/extjs/${baseurl}`,
+		pveSelNode: me.pveSelNode,
+		listeners: {
+		    destroy: () => me.reload(),
+		},
+		isAdd: true,
+		isCreate: true,
+		...extraOptions,
+	    });
+	};
+
 	Ext.apply(me, {
 	    url: `/api2/json/nodes/${nodename}/qemu/${vmid}/pending`,
 	    interval: 5000,
@@ -633,42 +648,20 @@ Ext.define('PVE.qemu.HardwareView', {
 				text: gettext('Hard Disk'),
 				iconCls: 'fa fa-fw fa-hdd-o black',
 				disabled: !caps.vms['VM.Config.Disk'],
-				handler: function() {
-				    let win = Ext.create('PVE.qemu.HDEdit', {
-					url: '/api2/extjs/' + baseurl,
-					pveSelNode: me.pveSelNode,
-				    });
-				    win.on('destroy', me.reload, me);
-				    win.show();
-				},
+				handler: editorFactory('HDEdit'),
 			    },
 			    {
 				text: gettext('CD/DVD Drive'),
 				iconCls: 'pve-itype-icon-cdrom',
 				disabled: !caps.vms['VM.Config.CDROM'],
-				handler: function() {
-				    let win = Ext.create('PVE.qemu.CDEdit', {
-					url: '/api2/extjs/' + baseurl,
-					pveSelNode: me.pveSelNode,
-				    });
-				    win.on('destroy', me.reload, me);
-				    win.show();
-				},
+				handler: editorFactory('CDEdit'),
 			    },
 			    {
 				text: gettext('Network Device'),
 				itemId: 'addnet',
 				iconCls: 'fa fa-fw fa-exchange black',
 				disabled: !caps.vms['VM.Config.Network'],
-				handler: function() {
-				    var win = Ext.create('PVE.qemu.NetworkEdit', {
-					url: '/api2/extjs/' + baseurl,
-					pveSelNode: me.pveSelNode,
-					isCreate: true,
-				    });
-				    win.on('destroy', me.reload, me);
-				    win.show();
-				},
+				handler: editorFactory('NetworkEdit'),
 			    },
 			    efidisk_menuitem,
 			    {
@@ -676,99 +669,49 @@ Ext.define('PVE.qemu.HardwareView', {
 				itemId: 'addtpmstate',
 				iconCls: 'fa fa-fw fa-hdd-o black',
 				disabled: !caps.vms['VM.Config.Disk'],
-				handler: function() {
-				    var win = Ext.create('PVE.qemu.TPMDiskEdit', {
-					url: '/api2/extjs/' + baseurl,
-					pveSelNode: me.pveSelNode,
-				    });
-				    win.on('destroy', me.reload, me);
-				    win.show();
-				},
+				handler: editorFactory('TPMDiskEdit'),
 			    },
 			    {
 				text: gettext('USB Device'),
 				itemId: 'addusb',
 				iconCls: 'fa fa-fw fa-usb black',
 				disabled: !caps.nodes['Sys.Console'],
-				handler: function() {
-				    var win = Ext.create('PVE.qemu.USBEdit', {
-					url: '/api2/extjs/' + baseurl,
-					pveSelNode: me.pveSelNode,
-				    });
-				    win.on('destroy', me.reload, me);
-				    win.show();
-				},
+				handler: editorFactory('USBEdit'),
 			    },
 			    {
 				text: gettext('PCI Device'),
 				itemId: 'addpci',
 				iconCls: 'pve-itype-icon-pci',
 				disabled: !caps.nodes['Sys.Console'],
-				handler: function() {
-				    var win = Ext.create('PVE.qemu.PCIEdit', {
-					url: '/api2/extjs/' + baseurl,
-					pveSelNode: me.pveSelNode,
-				    });
-				    win.on('destroy', me.reload, me);
-				    win.show();
-				},
+				handler: editorFactory('PCIEdit'),
 			    },
 			    {
 				text: gettext('Serial Port'),
 				itemId: 'addserial',
 				iconCls: 'pve-itype-icon-serial',
 				disabled: !caps.vms['VM.Config.Options'],
-				handler: function() {
-				    var win = Ext.create('PVE.qemu.SerialEdit', {
-					url: '/api2/extjs/' + baseurl,
-				    });
-				    win.on('destroy', me.reload, me);
-				    win.show();
-				},
+				handler: editorFactory('SerialEdit'),
 			    },
 			    {
 				text: gettext('CloudInit Drive'),
 				itemId: 'addci',
 				iconCls: 'fa fa-fw fa-cloud black',
 				disabled: !caps.nodes['Sys.Console'],
-				handler: function() {
-				    var win = Ext.create('PVE.qemu.CIDriveEdit', {
-					url: '/api2/extjs/' + baseurl,
-					pveSelNode: me.pveSelNode,
-				    });
-				    win.on('destroy', me.reload, me);
-				    win.show();
-				},
+				handler: editorFactory('CIDriveEdit'),
 			    },
 			    {
 				text: gettext('Audio Device'),
 				itemId: 'addaudio',
 				iconCls: 'fa fa-fw fa-volume-up black',
 				disabled: !caps.vms['VM.Config.HWType'],
-				handler: function() {
-				    var win = Ext.create('PVE.qemu.AudioEdit', {
-					url: '/api2/extjs/' + baseurl,
-					isCreate: true,
-					isAdd: true,
-				    });
-				    win.on('destroy', me.reload, me);
-				    win.show();
-				},
+				handler: editorFactory('AudioEdit'),
 			    },
 			    {
 				text: gettext("VirtIO RNG"),
 				itemId: 'addrng',
 				iconCls: 'pve-itype-icon-die',
 				disabled: !caps.nodes['Sys.Console'],
-				handler: function() {
-				    var win = Ext.create('PVE.qemu.RNGEdit', {
-					url: '/api2/extjs/' + baseurl,
-					isCreate: true,
-					isAdd: true,
-				    });
-				    win.on('destroy', me.reload, me);
-				    win.show();
-				},
+				handler: editorFactory('RNGEdit'),
 			    },
 			],
 		    }),
