@@ -62,13 +62,14 @@ my $convert_to_schedule = sub {
 };
 
 my $schedule_param_check = sub {
-    my ($param) = @_;
+    my ($param, $required) = @_;
     if (defined($param->{schedule})) {
 	if (defined($param->{starttime})) {
 	    raise_param_exc({ starttime => "'starttime' and 'schedule' cannot both be set" });
 	}
     } elsif (!defined($param->{starttime})) {
-	raise_param_exc({ schedule => "neither 'starttime' nor 'schedule' were set" });
+	raise_param_exc({ schedule => "neither 'starttime' nor 'schedule' were set" })
+	    if $required;
     } else {
 	$param->{schedule} = $convert_to_schedule->($param);
     }
@@ -201,7 +202,7 @@ __PACKAGE__->register_method({
 	    $rpcenv->check($user, "/pool/$pool", ['VM.Backup']);
 	}
 
-	$schedule_param_check->($param);
+	$schedule_param_check->($param, 1);
 
 	$param->{enabled} = 1 if !defined($param->{enabled});
 
@@ -448,7 +449,7 @@ __PACKAGE__->register_method({
 	    }
 
 	    my $schedule_updated = 0;
-	    if ($param->{schedule} ne $job->{schedule}) {
+	    if (defined($param->{schedule}) && $param->{schedule} ne $job->{schedule}) {
 		$schedule_updated = 1;
 	    }
 
