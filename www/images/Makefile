@@ -75,7 +75,7 @@ IMAGES = ${GNOME_IMAGES}	\
 	logo-128.png		\
 	icon-serial.svg		\
 	icon-cloud.svg		\
-	icon-pci.png		\
+	icon-pci.svg		\
 	icon-usb.png 		\
 	icon-die.svg		\
 	icon-sdn.svg		\

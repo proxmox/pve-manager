@@ -404,7 +404,8 @@
 }
 
 .pve-itype-icon-pci {
-    background-image:url(../images/icon-pci.png);
+    background-size: 16px 16px;
+    background-image:url(../images/icon-pci.svg);
 }
 
 .pve-itype-icon-serial {
