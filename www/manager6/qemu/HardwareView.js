@@ -560,15 +560,15 @@ Ext.define('PVE.qemu.HardwareView', {
 	    const noVMConfigNetPerm = !caps.vms['VM.Config.Network'];
 	    const noVMConfigDiskPerm = !caps.vms['VM.Config.Disk'];
 
-	    me.down('#addusb').setDisabled(noSysConsolePerm || isAtLimit('usb'));
-	    me.down('#addpci').setDisabled(noSysConsolePerm || isAtLimit('hostpci'));
-	    me.down('#addaudio').setDisabled(noVMConfigHWTypePerm || isAtLimit('audio'));
-	    me.down('#addserial').setDisabled(noVMConfigHWTypePerm || isAtLimit('serial'));
-	    me.down('#addnet').setDisabled(noVMConfigNetPerm || isAtLimit('net'));
-	    me.down('#addrng').setDisabled(noSysConsolePerm || isAtLimit('rng'));
+	    me.down('#addUsb').setDisabled(noSysConsolePerm || isAtLimit('usb'));
+	    me.down('#addPci').setDisabled(noSysConsolePerm || isAtLimit('hostpci'));
+	    me.down('#addAudio').setDisabled(noVMConfigHWTypePerm || isAtLimit('audio'));
+	    me.down('#addSerial').setDisabled(noVMConfigHWTypePerm || isAtLimit('serial'));
+	    me.down('#addNet').setDisabled(noVMConfigNetPerm || isAtLimit('net'));
+	    me.down('#addRng').setDisabled(noSysConsolePerm || isAtLimit('rng'));
 	    efidisk_menuitem.setDisabled(noVMConfigDiskPerm || isAtLimit('efidisk'));
-	    me.down('#addtpmstate').setDisabled(noSysConsolePerm || isAtLimit('tpmstate'));
-	    me.down('#addci').setDisabled(noSysConsolePerm || hasCloudInit);
+	    me.down('#addTpmState').setDisabled(noSysConsolePerm || isAtLimit('tpmstate'));
+	    me.down('#addCloudinitDrive').setDisabled(noSysConsolePerm || hasCloudInit);
 
 	    if (!rec) {
 		remove_btn.disable();
@@ -658,7 +658,7 @@ Ext.define('PVE.qemu.HardwareView', {
 			    },
 			    {
 				text: gettext('Network Device'),
-				itemId: 'addnet',
+				itemId: 'addNet',
 				iconCls: 'fa fa-fw fa-exchange black',
 				disabled: !caps.vms['VM.Config.Network'],
 				handler: editorFactory('NetworkEdit'),
@@ -666,49 +666,49 @@ Ext.define('PVE.qemu.HardwareView', {
 			    efidisk_menuitem,
 			    {
 				text: gettext('TPM State'),
-				itemId: 'addtpmstate',
+				itemId: 'addTpmState',
 				iconCls: 'fa fa-fw fa-hdd-o black',
 				disabled: !caps.vms['VM.Config.Disk'],
 				handler: editorFactory('TPMDiskEdit'),
 			    },
 			    {
 				text: gettext('USB Device'),
-				itemId: 'addusb',
+				itemId: 'addUsb',
 				iconCls: 'fa fa-fw fa-usb black',
 				disabled: !caps.nodes['Sys.Console'],
 				handler: editorFactory('USBEdit'),
 			    },
 			    {
 				text: gettext('PCI Device'),
-				itemId: 'addpci',
+				itemId: 'addPci',
 				iconCls: 'pve-itype-icon-pci',
 				disabled: !caps.nodes['Sys.Console'],
 				handler: editorFactory('PCIEdit'),
 			    },
 			    {
 				text: gettext('Serial Port'),
-				itemId: 'addserial',
+				itemId: 'addSerial',
 				iconCls: 'pve-itype-icon-serial',
 				disabled: !caps.vms['VM.Config.Options'],
 				handler: editorFactory('SerialEdit'),
 			    },
 			    {
 				text: gettext('CloudInit Drive'),
-				itemId: 'addci',
+				itemId: 'addCloudinitDrive',
 				iconCls: 'fa fa-fw fa-cloud black',
 				disabled: !caps.nodes['Sys.Console'],
 				handler: editorFactory('CIDriveEdit'),
 			    },
 			    {
 				text: gettext('Audio Device'),
-				itemId: 'addaudio',
+				itemId: 'addAudio',
 				iconCls: 'fa fa-fw fa-volume-up black',
 				disabled: !caps.vms['VM.Config.HWType'],
 				handler: editorFactory('AudioEdit'),
 			    },
 			    {
 				text: gettext("VirtIO RNG"),
-				itemId: 'addrng',
+				itemId: 'addRng',
 				iconCls: 'pve-itype-icon-die',
 				disabled: !caps.nodes['Sys.Console'],
 				handler: editorFactory('RNGEdit'),
