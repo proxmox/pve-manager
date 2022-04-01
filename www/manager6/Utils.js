@@ -997,11 +997,8 @@ Ext.define('PVE.Utils', {
 	    value = !record || record.get('monhost') ? 'cephfs' : 'pvecephfs';
 	}
 
-	var schema = PVE.Utils.storageSchema[value];
-	if (schema) {
-	    return schema.name;
-	}
-	return Proxmox.Utils.unknownText;
+	let schema = PVE.Utils.storageSchema[value];
+	return schema?.name ?? value;
     },
 
     format_ha: function(value) {
