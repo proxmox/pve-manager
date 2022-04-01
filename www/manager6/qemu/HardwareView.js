@@ -46,19 +46,18 @@ Ext.define('PVE.qemu.HardwareView', {
     initComponent: function() {
 	var me = this;
 
-	const nodename = me.pveSelNode.data.node;
+	const { node: nodename, vmid } = me.pveSelNode.data;
 	if (!nodename) {
 	    throw "no node name specified";
-	}
-
-	const vmid = me.pveSelNode.data.vmid;
-	if (!vmid) {
+	} else if (!vmid) {
 	    throw "no VM ID specified";
 	}
 
 	const caps = Ext.state.Manager.get('GuiCap');
 	const diskCap = caps.vms['VM.Config.Disk'];
 	const cdromCap = caps.vms['VM.Config.CDROM'];
+
+	let isCloudInitKey = v => v && v.toString().match(/vm-.*-cloudinit/);
 
 	let rows = {
 	    memory: {
@@ -108,25 +107,21 @@ Ext.define('PVE.qemu.HardwareView', {
 		    var cpulimit = me.getObjectValue('cpulimit', undefined, pending);
 		    var cpuunits = me.getObjectValue('cpuunits', undefined, pending);
 
-		    var res = Ext.String.format('{0} ({1} sockets, {2} cores)',
-			sockets*cores, sockets, cores);
+		    let res = Ext.String.format(
+		        '{0} ({1} sockets, {2} cores)', sockets * cores, sockets, cores);
 
 		    if (model) {
 			res += ' [' + model + ']';
 		    }
-
 		    if (numa) {
 			res += ' [numa=' + numa +']';
 		    }
-
 		    if (vcpus) {
 			res += ' [vcpus=' + vcpus +']';
 		    }
-
 		    if (cpulimit) {
 			res += ' [cpulimit=' + cpulimit +']';
 		    }
-
 		    if (cpuunits) {
 			res += ' [cpuunits=' + cpuunits +']';
 		    }
@@ -334,25 +329,21 @@ Ext.define('PVE.qemu.HardwareView', {
 	    }
 	};
 
-	var baseurl = 'nodes/' + nodename + '/qemu/' + vmid + '/config';
+	let baseurl = `nodes/${nodename}/qemu/${vmid}/config`;
 
-	var sm = Ext.create('Ext.selection.RowModel', {});
+	let sm = Ext.create('Ext.selection.RowModel', {});
 
-	var run_editor = function() {
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
+	let run_editor = function() {
+	    let rec = sm.getSelection()[0];
+	    if (!rec || !rows[rec.data.key]?.editor) {
 		return;
 	    }
+	    let rowdef = rows[rec.data.key];
+	    let editor = rowdef.editor;
 
-	    var rowdef = rows[rec.data.key];
-	    if (!rowdef.editor) {
-		return;
-	    }
-
-	    var editor = rowdef.editor;
 	    if (rowdef.isOnStorageBus) {
-		var value = me.getObjectValue(rec.data.key, '', true);
-		if (value.match(/vm-.*-cloudinit/)) {
+		let value = me.getObjectValue(rec.data.key, '', true);
+		if (isCloudInitKey(value)) {
 		    return;
 		} else if (value.match(/media=cdrom/)) {
 		    editor = 'PVE.qemu.CDEdit';
@@ -361,84 +352,74 @@ Ext.define('PVE.qemu.HardwareView', {
 		}
 	    }
 
-	    var win;
+	    let commonOpts = {
+		autoShow: true,
+		pveSelNode: me.pveSelNode,
+		confid: rec.data.key,
+		url: `/api2/extjs/${baseurl}`,
+		listeners: {
+		    destroy: () => me.reload(),
+		},
+	    };
 
 	    if (Ext.isString(editor)) {
-		win = Ext.create(editor, {
-		    pveSelNode: me.pveSelNode,
-		    confid: rec.data.key,
-		    url: '/api2/extjs/' + baseurl,
-		});
+		Ext.create(editor, commonOpts);
 	    } else {
-		var config = Ext.apply({
-		    pveSelNode: me.pveSelNode,
-		    confid: rec.data.key,
-		    url: '/api2/extjs/' + baseurl,
-		}, rowdef.editor);
-		win = Ext.createWidget(rowdef.editor.xtype, config);
+		let win = Ext.createWidget(rowdef.editor.xtype, Ext.apply(commonOpts, rowdef.editor));
 		win.load();
 	    }
-
-	    win.show();
-	    win.on('destroy', me.reload, me);
 	};
 
-	var run_resize = function() {
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
-		return;
-	    }
-
-	    var win = Ext.create('PVE.window.HDResize', {
-		disk: rec.data.key,
-		nodename: nodename,
-		vmid: vmid,
-	    });
-
-	    win.show();
-
-	    win.on('destroy', me.reload, me);
-	};
-
-	var run_move = function() {
-	    var rec = sm.getSelection()[0];
-	    if (!rec) {
-		return;
-	    }
-
-	    var win = Ext.create('PVE.window.HDMove', {
-		disk: rec.data.key,
-		nodename: nodename,
-		vmid: vmid,
-	    });
-
-	    win.show();
-
-	    win.on('destroy', me.reload, me);
-	};
-
-	var edit_btn = new Proxmox.button.Button({
+	let edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    selModel: sm,
 	    disabled: true,
 	    handler: run_editor,
-        });
+	});
 
-	var resize_btn = new Proxmox.button.Button({
+	let resize_btn = new Proxmox.button.Button({
 	    text: gettext('Resize disk'),
 	    selModel: sm,
 	    disabled: true,
-	    handler: run_resize,
+	    handler: () => {
+		let rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+		Ext.create('PVE.window.HDResize', {
+		    autoShow: true,
+		    disk: rec.data.key,
+		    nodename: nodename,
+		    vmid: vmid,
+		    listeners: {
+			destroy: () => me.reload(),
+		    },
+		});
+	    },
 	});
 
-	var move_btn = new Proxmox.button.Button({
+	let move_btn = new Proxmox.button.Button({
 	    text: gettext('Move disk'),
 	    selModel: sm,
 	    disabled: true,
-	    handler: run_move,
+	    handler: () => {
+		var rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+		Ext.create('PVE.window.HDMove', {
+		    autoShow: true,
+		    disk: rec.data.key,
+		    nodename: nodename,
+		    vmid: vmid,
+		    listeners: {
+			destroy: () => me.reload(),
+		    },
+		});
+	    },
 	});
 
-	var remove_btn = new Proxmox.button.Button({
+	let remove_btn = new Proxmox.button.Button({
 	    text: gettext('Remove'),
 	    defaultText: gettext('Remove'),
 	    altText: gettext('Detach'),
@@ -459,28 +440,25 @@ Ext.define('PVE.qemu.HardwareView', {
 		}
 		return msg;
 	    },
-	    handler: function(b, e, rec) {
+	    handler: function(btn, e, rec) {
 		Proxmox.Utils.API2Request({
 		    url: '/api2/extjs/' + baseurl,
 		    waitMsgTarget: me,
-		    method: b.RESTMethod,
+		    method: btn.RESTMethod,
 		    params: {
 			'delete': rec.data.key,
 		    },
 		    callback: () => me.reload(),
-		    failure: function(response, opts) {
-			Ext.Msg.alert('Error', response.htmlStatus);
-		    },
+		    failure: response => Ext.Msg.alert('Error', response.htmlStatus),
 		    success: function(response, options) {
-			if (b.RESTMethod === 'POST') {
-			    var upid = response.result.data;
-			    var win = Ext.create('Proxmox.window.TaskProgress', {
-				upid: upid,
+			if (btn.RESTMethod === 'POST') {
+			    Ext.create('Proxmox.window.TaskProgress', {
+				autoShow: true,
+				upid: response.result.data,
 				listeners: {
 				    destroy: () => me.reload(),
 				},
 			    });
-			    win.show();
 			}
 		    },
 		});
@@ -502,56 +480,49 @@ Ext.define('PVE.qemu.HardwareView', {
 	    },
 	});
 
-	var revert_btn = new PVE.button.PendingRevert({
+	let revert_btn = new PVE.button.PendingRevert({
 	    apiurl: '/api2/extjs/' + baseurl,
 	});
 
-	var efidisk_menuitem = Ext.create('Ext.menu.Item', {
+	let efidisk_menuitem = Ext.create('Ext.menu.Item', {
 	    text: gettext('EFI Disk'),
 	    iconCls: 'fa fa-fw fa-hdd-o black',
 	    disabled: !caps.vms['VM.Config.Disk'],
 	    handler: function() {
-		let bios = me.rstore.getData().map.bios;
-		let usesEFI = bios && (bios.data.value === 'ovmf' || bios.data.pending === 'ovmf');
+		let { data: bios } = me.rstore.getData().map.bios || {};
 
-		var win = Ext.create('PVE.qemu.EFIDiskEdit', {
+		Ext.create('PVE.qemu.EFIDiskEdit', {
+		    autoShow: true,
 		    url: '/api2/extjs/' + baseurl,
 		    pveSelNode: me.pveSelNode,
-		    usesEFI: usesEFI,
+		    usesEFI: bios?.value === 'ovmf' || bios?.pending === 'ovmf',
+		    listeners: {
+			destroy: () => me.reload(),
+		    },
 		});
-		win.on('destroy', me.reload, me);
-		win.show();
 	    },
 	});
 
 	let counts = {};
 	let isAtLimit = (type) => counts[type] >= PVE.Utils.hardware_counts[type];
 
-	var set_button_status = function() {
-	    var selection_model = me.getSelectionModel();
-	    var rec = selection_model.getSelection()[0];
+	let set_button_status = function() {
+	    let selection_model = me.getSelectionModel();
+	    let rec = selection_model.getSelection()[0];
 
-	    // en/disable hardwarebuttons
-	    counts = {};
-	    var hasCloudInit = false;
-	    me.rstore.getData().items.forEach(function(item) {
-		if (!hasCloudInit && (
-		    /vm-.*-cloudinit/.test(item.data.value) ||
-		    /vm-.*-cloudinit/.test(item.data.pending)
-		)) {
+	    counts = {}; // en/disable hardwarebuttons
+	    let hasCloudInit = false;
+	    me.rstore.getData().items.forEach(function({ id, data }) {
+		if (!hasCloudInit && (isCloudInitKey(data.value) || isCloudInitKey(data.pending))) {
 		    hasCloudInit = true;
 		    return;
 		}
 
-		let match = item.id.match(/^([^\d]+)\d+$/);
-		let type;
+		let match = id.match(/^([^\d]+)\d+$/);
 		if (match && PVE.Utils.hardware_counts[match[1]] !== undefined) {
-		    type = match[1];
-		} else {
-		    return;
+		    let type = match[1];
+		    counts[type] = (counts[type] || 0) + 1;
 		}
-
-		counts[type] = (counts[type] || 0) + 1;
 	    });
 
 	    // heuristic only for disabling some stuff, the backend has the final word.
@@ -578,14 +549,13 @@ Ext.define('PVE.qemu.HardwareView', {
 		revert_btn.disable();
 		return;
 	    }
-	    const key = rec.data.key;
-	    const value = rec.data.value;
+	    const { key, value } = rec.data;
 	    const row = rows[key];
 
 	    const deleted = !!rec.data.delete;
 	    const pending = deleted || me.hasPendingChanges(key);
 
-	    const isCloudInit = value && value.toString().match(/vm-.*-cloudinit/);
+	    const isCloudInit = isCloudInitKey(value);
 	    const isCDRom = value && !!value.toString().match(/media=cdrom/) && !isCloudInit;
 
 	    const isUnusedDisk = key.match(/^unused\d+/);
@@ -595,21 +565,12 @@ Ext.define('PVE.qemu.HardwareView', {
 	    const tpmMoveable = key === 'tpmstate0' && !me.pveSelNode.data.running;
 
 	    remove_btn.setDisabled(
-	        deleted ||
-	        row.never_delete ||
-	        (isCDRom && !cdromCap) ||
-	        (isDisk && !diskCap),
-	    );
+	        deleted || row.never_delete || (isCDRom && !cdromCap) || (isDisk && !diskCap));
 	    remove_btn.setText(isUsedDisk && !isCloudInit ? remove_btn.altText : remove_btn.defaultText);
 	    remove_btn.RESTMethod = isUnusedDisk ? 'POST':'PUT';
 
 	    edit_btn.setDisabled(
-	        deleted ||
-	        !row.editor ||
-	        isCloudInit ||
-	        (isCDRom && !cdromCap) ||
-	        (isDisk && !diskCap),
-	    );
+	        deleted || !row.editor || isCloudInit || (isCDRom && !cdromCap) || (isDisk && !diskCap));
 
 	    resize_btn.setDisabled(pending || !isUsedDisk || !diskCap);
 
