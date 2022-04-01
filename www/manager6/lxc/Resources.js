@@ -324,13 +324,15 @@ Ext.define('PVE.lxc.RessourceView', {
 				iconCls: 'fa fa-fw fa-hdd-o black',
 				disabled: !caps.vms['VM.Config.Disk'],
 				handler: function() {
-				    var win = Ext.create('PVE.lxc.MountPointEdit', {
-					url: '/api2/extjs/' + baseurl,
+				    Ext.create('PVE.lxc.MountPointEdit', {
+					autoShow: true,
+					url: `/api2/extjs/${baseurl}`,
 					unprivileged: me.getObjectValue('unprivileged'),
 					pveSelNode: me.pveSelNode,
+					listeners: {
+					    destroy: () => me.reload(),
+					},
 				    });
-				    win.on('destroy', me.reload, me);
-				    win.show();
 				},
 			    },
 			],
