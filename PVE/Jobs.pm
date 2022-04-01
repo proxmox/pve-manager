@@ -232,9 +232,9 @@ sub run_jobs {
 
 	my $last_run = get_last_runtime($id, $type);
 	my $calspec = PVE::CalendarEvent::parse_calendar_event($schedule);
-	my $next_sync = PVE::CalendarEvent::compute_next_event($calspec, $last_run) // 0;
+	my $next_sync = PVE::CalendarEvent::compute_next_event($calspec, $last_run);
 
-	next if time() < $next_sync; # not yet its (next) turn
+	next if !defined($next_sync) || time() < $next_sync; # not yet its (next) turn
 
 	my $plugin = PVE::Jobs::Plugin->lookup($type);
 	if (starting_job($id, $type)) {
