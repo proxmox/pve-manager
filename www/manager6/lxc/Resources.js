@@ -5,14 +5,25 @@ Ext.define('PVE.lxc.RessourceView', {
     onlineHelp: 'pct_configuration',
 
     renderKey: function(key, metaData, rec, rowIndex, colIndex, store) {
-	var me = this;
-	var rowdef = me.rows[key] || {};
+	let me = this;
+	let rowdef = me.rows[key] || {};
+
+	let txt = rowdef.header || key;
+	let icon = '';
 
 	metaData.tdAttr = "valign=middle";
 	if (rowdef.tdCls) {
 	    metaData.tdCls = rowdef.tdCls;
+	} else if (rowdef.iconCls) {
+	    icon = `<i class='pve-grid-fa fa fa-fw fa-${rowdef.iconCls}'></i>`;
+	    metaData.tdCls += " pve-itype-fa";
 	}
-	return rowdef.header || key;
+	// only return icons in grid but not remove dialog
+	if (rowIndex !== undefined) {
+	    return icon + txt;
+	} else {
+	    return txt;
+	}
     },
 
     initComponent: function() {
