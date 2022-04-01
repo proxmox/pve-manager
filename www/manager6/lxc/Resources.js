@@ -60,7 +60,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		header: gettext('Swap'),
 		editor: caps.vms['VM.Config.Memory'] ? 'PVE.lxc.MemoryEdit' : undefined,
 		defaultValue: 512,
-		tdCls: 'pve-itype-icon-swap',
+		iconCls: 'refresh',
 		group: 2,
 		renderer: function(value) {
 		    return Proxmox.Utils.format_size(value*1024*1024);
@@ -96,7 +96,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		header: gettext('Root Disk'),
 		defaultValue: Proxmox.Utils.noneText,
 		editor: mpeditor,
-		tdCls: 'pve-itype-icon-storage',
+		iconCls: 'hdd-o',
 		group: 4,
 	    },
 	    cpulimit: {
@@ -321,7 +321,7 @@ Ext.define('PVE.lxc.RessourceView', {
 			items: [
 			    {
 				text: gettext('Mount Point'),
-				iconCls: 'pve-itype-icon-storage',
+				iconCls: 'fa fa-fw fa-hdd-o black',
 				disabled: !caps.vms['VM.Config.Disk'],
 				handler: function() {
 				    var win = Ext.create('PVE.lxc.MountPointEdit', {
