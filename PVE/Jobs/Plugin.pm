@@ -17,7 +17,7 @@ my $defaultData = {
     propertyList => {
 	type => { description => "Section type." },
 	id => {
-	    description => "The ID of the VZDump job.",
+	    description => "The ID of the job.",
 	    type => 'string',
 	    format => 'pve-configid',
 	    maxLength => 64,
