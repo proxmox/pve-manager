@@ -286,7 +286,7 @@ sub run_jobs {
 
 	my $plugin = PVE::Jobs::Plugin->lookup($type);
 	if (starting_job($id, $type)) {
-	    my $upid = eval { $plugin->run($cfg) };
+	    my $upid = eval { $plugin->run($cfg, $id, $schedule) };
 	    if (my $err = $@) {
 		warn $@ if $@;
 		started_job($id, $type, undef, $err);
