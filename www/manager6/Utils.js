@@ -1800,6 +1800,21 @@ Ext.define('PVE.Utils', {
 
 	return undefined;
     },
+
+    nextFreeMP: function(type, config) {
+	for (let i = 0; i < PVE.Utils.mp_counts[type]; i++) {
+	    let confid = `${type}${i}`;
+	    if (!Ext.isDefined(config[confid])) {
+		return {
+		    type,
+		    id: i,
+		    confid,
+		};
+	    }
+	}
+
+	return undefined;
+    },
 },
 
     singleton: true,
