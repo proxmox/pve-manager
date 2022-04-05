@@ -2,7 +2,7 @@ Ext.define('PVE.form.BusTypeSelector', {
     extend: 'Proxmox.form.KVComboBox',
     alias: 'widget.pveBusSelector',
 
-    noVirtIO: false,
+    withVirtIO: true,
     withUnused: false,
 
     initComponent: function() {
@@ -10,7 +10,7 @@ Ext.define('PVE.form.BusTypeSelector', {
 
 	me.comboItems = [['ide', 'IDE'], ['sata', 'SATA']];
 
-	if (!me.noVirtIO) {
+	if (me.withVirtIO) {
 	    me.comboItems.push(['virtio', 'VirtIO Block']);
 	}
 

@@ -36,7 +36,7 @@ Ext.define('PVE.qemu.CIDriveInputPanel', {
 	me.items = [
 	    {
 		xtype: 'pveControllerSelector',
-		noVirtIO: true,
+		withVirtIO: false,
 		itemId: 'drive',
 		fieldLabel: gettext('CloudInit Drive'),
 		name: 'drive',

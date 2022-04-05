@@ -2,7 +2,7 @@ Ext.define('PVE.form.ControllerSelector', {
     extend: 'Ext.form.FieldContainer',
     alias: 'widget.pveControllerSelector',
 
-    noVirtIO: false,
+    withVirtIO: true,
     withUnused: false,
 
     vmconfig: {}, // used to check for existing devices
@@ -73,7 +73,7 @@ Ext.define('PVE.form.ControllerSelector', {
 		    name: 'controller',
 		    itemId: 'controller',
 		    value: PVE.qemu.OSDefaults.generic.busType,
-		    noVirtIO: me.noVirtIO,
+		    withVirtIO: me.withVirtIO,
 		    withUnused: me.withUnused,
 		    allowBlank: false,
 		    flex: 2,
