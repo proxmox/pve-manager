@@ -213,6 +213,7 @@ JSSRC= 							\
 	qemu/HDEfi.js					\
 	qemu/HDTPM.js					\
 	qemu/HDMove.js					\
+	qemu/HDReassign.js				\
 	qemu/HDResize.js				\
 	qemu/HardwareView.js				\
 	qemu/IPConfigEdit.js				\

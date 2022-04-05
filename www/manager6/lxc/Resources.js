@@ -162,7 +162,8 @@ Ext.define('PVE.lxc.RessourceView', {
 	    });
 	};
 
-	var run_move = function(b, e, rec) {
+	let run_move = function() {
+	    let rec = me.selModel.getSelection()[0];
 	    if (!rec) {
 		return;
 	    }
@@ -179,6 +180,24 @@ Ext.define('PVE.lxc.RessourceView', {
 	    win.on('destroy', me.reload, me);
 	};
 
+	let run_reassign = function() {
+	    let rec = me.selModel.getSelection()[0];
+	    if (!rec) {
+		return;
+	    }
+
+	    Ext.create('PVE.window.HDReassign', {
+		disk: rec.data.key,
+		nodename: nodename,
+		autoShow: true,
+		vmid: vmid,
+		type: 'lxc',
+		listeners: {
+		    destroy: () => me.reload(),
+		},
+	    });
+	};
+
 	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    selModel: me.selModel,
@@ -191,13 +210,6 @@ Ext.define('PVE.lxc.RessourceView', {
 		return !!rowdef.editor;
 	    },
 	    handler: function() { me.run_editor(); },
-	});
-
-	var resize_btn = new Proxmox.button.Button({
-	    text: gettext('Resize disk'),
-	    selModel: me.selModel,
-	    disabled: true,
-	    handler: run_resize,
 	});
 
 	var remove_btn = new Proxmox.button.Button({
@@ -238,12 +250,39 @@ Ext.define('PVE.lxc.RessourceView', {
 	    },
 	});
 
-	var move_btn = new Proxmox.button.Button({
-	    text: gettext('Move Volume'),
+	let move_menuitem = new Ext.menu.Item({
+	    text: gettext('Move Storage'),
+	    tooltip: gettext('Move volume to another storage'),
+	    iconCls: 'fa fa-database',
 	    selModel: me.selModel,
-	    disabled: true,
-	    dangerous: true,
 	    handler: run_move,
+	});
+
+	let reassign_menuitem = new Ext.menu.Item({
+	    text: gettext('Reassign Owner'),
+	    tooltip: gettext('Reassign volume to another CT'),
+	    iconCls: 'fa fa-cube',
+	    handler: run_reassign,
+	    reference: 'reassing_item',
+	});
+
+	let resize_menuitem = new Ext.menu.Item({
+	    text: gettext('Resize'),
+	    iconCls: 'fa fa-plus',
+	    selModel: me.selModel,
+	    handler: run_resize,
+	});
+
+	let volumeaction_btn = new Proxmox.button.Button({
+	    text: gettext('Volume Action'),
+	    disabled: true,
+	    menu: {
+		items: [
+		    move_menuitem,
+		    reassign_menuitem,
+		    resize_menuitem,
+		],
+	    },
 	});
 
 	var revert_btn = new PVE.button.PendingRevert();
@@ -254,7 +293,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    if (!rec) {
 		edit_btn.disable();
 		remove_btn.disable();
-		resize_btn.disable();
+		volumeaction_btn.disable();
 		revert_btn.disable();
 		return;
 	    }
@@ -263,7 +302,8 @@ Ext.define('PVE.lxc.RessourceView', {
 	    var rowdef = rows[key];
 
 	    var pending = rec.data.delete || me.hasPendingChanges(key);
-	    let isDisk = key === 'rootfs' || key.match(/^(mp|unused)\d+/);
+	    let isRootFS = key === 'rootfs';
+	    let isDisk = isRootFS || key.match(/^(mp|unused)\d+/);
 	    var isUnusedDisk = key.match(/^unused\d+/);
 	    var isUsedDisk = isDisk && !isUnusedDisk;
 
@@ -276,9 +316,12 @@ Ext.define('PVE.lxc.RessourceView', {
 	    }
 	    edit_btn.setDisabled(noedit);
 
-	    remove_btn.setDisabled(!isDisk || rec.data.key === 'rootfs' || !diskCap || pending);
-	    resize_btn.setDisabled(!isDisk || !diskCap || isUnusedDisk);
-	    move_btn.setDisabled(!isDisk || !diskCap);
+	    volumeaction_btn.setDisabled(!isDisk || !diskCap);
+	    move_menuitem.setDisabled(isUnusedDisk);
+	    reassign_menuitem.setDisabled(isRootFS);
+	    resize_menuitem.setDisabled(isUnusedDisk);
+
+	    remove_btn.setDisabled(!isDisk || isRootFS || !diskCap || pending);
 	    revert_btn.setDisabled(!pending);
 
 	    remove_btn.setText(isUsedDisk ? remove_btn.altText : remove_btn.defaultText);
@@ -340,8 +383,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		},
 		edit_btn,
 		remove_btn,
-		resize_btn,
-		move_btn,
+		volumeaction_btn,
 		revert_btn,
 	    ],
 	    rows: rows,

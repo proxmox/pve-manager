@@ -377,10 +377,56 @@ Ext.define('PVE.qemu.HardwareView', {
 	    handler: run_editor,
 	});
 
-	let resize_btn = new Proxmox.button.Button({
-	    text: gettext('Resize disk'),
+	let move_menuitem = new Ext.menu.Item({
+	    text: gettext('Move Storage'),
+	    tooltip: gettext('Move disk to another storage'),
+	    iconCls: 'fa fa-database',
 	    selModel: sm,
-	    disabled: true,
+	    handler: () => {
+		let rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+		Ext.create('PVE.window.HDMove', {
+		    autoShow: true,
+		    disk: rec.data.key,
+		    nodename: nodename,
+		    vmid: vmid,
+		    listeners: {
+			destroy: () => me.reload(),
+		    },
+		});
+	    },
+	});
+
+	let reassign_menuitem = new Ext.menu.Item({
+	    text: gettext('Reassign Owner'),
+	    tooltip: gettext('Reassign disk to another VM'),
+	    iconCls: 'fa fa-desktop',
+	    selModel: sm,
+	    handler: () => {
+		let rec = sm.getSelection()[0];
+		if (!rec) {
+		    return;
+		}
+
+		Ext.create('PVE.window.HDReassign', {
+		    autoShow: true,
+		    disk: rec.data.key,
+		    nodename: nodename,
+		    vmid: vmid,
+		    type: 'qemu',
+		    listeners: {
+			destroy: () => me.reload(),
+		    },
+		});
+	    },
+	});
+
+	let resize_menuitem = new Ext.menu.Item({
+	    text: gettext('Resize'),
+	    iconCls: 'fa fa-plus',
+	    selModel: sm,
 	    handler: () => {
 		let rec = sm.getSelection()[0];
 		if (!rec) {
@@ -398,26 +444,18 @@ Ext.define('PVE.qemu.HardwareView', {
 	    },
 	});
 
-	let move_btn = new Proxmox.button.Button({
-	    text: gettext('Move disk'),
-	    selModel: sm,
+	let diskaction_btn = new Proxmox.button.Button({
+	    text: gettext('Disk Action'),
 	    disabled: true,
-	    handler: () => {
-		var rec = sm.getSelection()[0];
-		if (!rec) {
-		    return;
-		}
-		Ext.create('PVE.window.HDMove', {
-		    autoShow: true,
-		    disk: rec.data.key,
-		    nodename: nodename,
-		    vmid: vmid,
-		    listeners: {
-			destroy: () => me.reload(),
-		    },
-		});
+	    menu: {
+		items: [
+		    move_menuitem,
+		    reassign_menuitem,
+		    resize_menuitem,
+		],
 	    },
 	});
+
 
 	let remove_btn = new Proxmox.button.Button({
 	    text: gettext('Remove'),
@@ -544,8 +582,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    if (!rec) {
 		remove_btn.disable();
 		edit_btn.disable();
-		resize_btn.disable();
-		move_btn.disable();
+		diskaction_btn.disable();
 		revert_btn.disable();
 		return;
 	    }
@@ -572,9 +609,15 @@ Ext.define('PVE.qemu.HardwareView', {
 	    edit_btn.setDisabled(
 	        deleted || !row.editor || isCloudInit || (isCDRom && !cdromCap) || (isDisk && !diskCap));
 
-	    resize_btn.setDisabled(pending || !isUsedDisk || !diskCap);
-
-	    move_btn.setDisabled(pending || !(isUsedDisk || isEfi || tpmMoveable) || !diskCap);
+	    diskaction_btn.setDisabled(
+		pending ||
+		!diskCap ||
+		isCloudInit ||
+		!(isDisk || isEfi || tpmMoveable),
+	    );
+	    move_menuitem.setDisabled(isUnusedDisk);
+	    reassign_menuitem.setDisabled(pending || (isEfi || tpmMoveable));
+	    resize_menuitem.setDisabled(pending || !isUsedDisk);
 
 	    revert_btn.setDisabled(!pending);
 	};
@@ -679,8 +722,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		},
 		remove_btn,
 		edit_btn,
-		resize_btn,
-		move_btn,
+		diskaction_btn,
 		revert_btn,
 	    ],
 	    rows: rows,
