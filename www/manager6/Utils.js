@@ -1575,12 +1575,12 @@ Ext.define('PVE.Utils', {
     },
 
     mp_counts: {
-	mps: 256,
+	mp: 256,
 	unused: 256,
     },
 
     forEachMP: function(func, includeUnused) {
-	for (let i = 0; i < PVE.Utils.mp_counts.mps; i++) {
+	for (let i = 0; i < PVE.Utils.mp_counts.mp; i++) {
 	    let cont = func('mp', i);
 	    if (!cont && cont !== undefined) {
 		return;

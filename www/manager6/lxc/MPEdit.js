@@ -194,7 +194,7 @@ Ext.define('PVE.lxc.MountPointInputPanel', {
 	    name: 'mpid',
 	    fieldLabel: gettext('Mount Point ID'),
 	    minValue: 0,
-	    maxValue: PVE.Utils.mp_counts.mps - 1,
+	    maxValue: PVE.Utils.mp_counts.mp - 1,
 	    hidden: true,
 	    allowBlank: false,
 	    disabled: true,
