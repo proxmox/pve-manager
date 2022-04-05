@@ -392,6 +392,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		    disk: rec.data.key,
 		    nodename: nodename,
 		    vmid: vmid,
+		    type: 'qemu',
 		    listeners: {
 			destroy: () => me.reload(),
 		    },
