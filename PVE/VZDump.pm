@@ -691,7 +691,7 @@ sub compressor_info {
     }
 }
 
-sub get_unprotected_backup_file_list {
+sub get_backup_file_list {
     my ($dir, $bkname) = @_;
 
     my $bklist = [];
@@ -699,11 +699,12 @@ sub get_unprotected_backup_file_list {
 	my $archive_info = eval { PVE::Storage::archive_info($fn) } // {};
 	if ($archive_info->{is_std_name}) {
 	    my $path = "$dir/$archive_info->{filename}";
-	    next if -e PVE::Storage::protection_file_path($path);
 	    my $backup = {
 		'path' => $path,
 		'ctime' => $archive_info->{ctime},
 	    };
+	    $backup->{mark} = "protected"
+		if -e PVE::Storage::protection_file_path($path);
 	    push @{$bklist}, $backup;
 	}
     }
@@ -787,7 +788,7 @@ sub exec_backup_task {
 		    !$_->{protected} && (!$_->{subtype} || $_->{subtype} eq $vmtype)
 		} $backups->@*;
 	    } else {
-		$count = scalar(get_unprotected_backup_file_list($opts->{dumpdir}, $bkname)->@*);
+		$count = grep { !$_->{mark} || $_->{mark} ne "protected" } get_backup_file_list($opts->{dumpdir}, $bkname)->@*;
 	    }
 
 	    die "There is a max backup limit of $backup_limit enforced by the".
@@ -999,7 +1000,7 @@ sub exec_backup_task {
 	    debugmsg ('info', "prune older backups with retention: $keepstr", $logfd);
 	    my $pruned = 0;
 	    if (!defined($opts->{storage})) {
-		my $bklist = get_unprotected_backup_file_list($opts->{dumpdir}, $bkname);
+		my $bklist = get_backup_file_list($opts->{dumpdir}, $bkname);
 
 		PVE::Storage::prune_mark_backup_group($bklist, $prune_options);
 
