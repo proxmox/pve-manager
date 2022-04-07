@@ -263,7 +263,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    var rowdef = rows[key];
 
 	    var pending = rec.data.delete || me.hasPendingChanges(key);
-	    var isDisk = rowdef.tdCls === 'pve-itype-icon-storage';
+	    let isDisk = key === 'rootfs' || key.match(/^(mp|unused)\d+/);
 	    var isUnusedDisk = key.match(/^unused\d+/);
 	    var isUsedDisk = isDisk && !isUnusedDisk;
 
