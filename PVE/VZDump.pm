@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Fcntl ':flock';
+use File::Basename;
 use File::Path;
 use IO::File;
 use IO::Select;
@@ -784,21 +785,33 @@ sub exec_backup_task {
 	    }
 	}
 
-	if ($backup_limit && !$opts->{remove}) {
+	if (($backup_limit && !$opts->{remove}) || $opts->{protected}) {
 	    my $count;
+	    my $protected_count;
 	    if (my $storeid = $opts->{storage}) {
-		my $backups = PVE::Storage::volume_list($cfg, $storeid, $vmid, 'backup');
-		$count = grep {
-		    !$_->{protected} && (!$_->{subtype} || $_->{subtype} eq $vmtype)
-		} $backups->@*;
+		my @backups = grep {
+		    !$_->{subtype} || $_->{subtype} eq $vmtype
+		} PVE::Storage::volume_list($cfg, $storeid, $vmid, 'backup')->@*;
+
+		$count = grep { !$_->{protected} } @backups;
+		$protected_count = scalar(@backups) - $count;
 	    } else {
 		$count = grep { !$_->{mark} || $_->{mark} ne "protected" } get_backup_file_list($opts->{dumpdir}, $bkname)->@*;
 	    }
 
-	    die "There is a max backup limit of $backup_limit enforced by the".
-		" target storage or the vzdump parameters.".
-		" Either increase the limit or delete old backup(s).\n"
-		if $count >= $backup_limit;
+	    if ($opts->{protected}) {
+		my $max_protected = PVE::Storage::get_max_protected_backups(
+		    $opts->{scfg},
+		    $opts->{storage},
+		);
+		if ($max_protected > -1 && $protected_count >= $max_protected) {
+		    die "The number of protected backups per guest is limited to $max_protected ".
+			"on storage '$opts->{storage}'\n";
+		}
+	    } elsif ($count >= $backup_limit) {
+		die "There is a max backup limit of $backup_limit enforced by the target storage ".
+		    "or the vzdump parameters. Either increase the limit or delete old backups.\n";
+	    }
 	}
 
 	if (!$self->{opts}->{pbs}) {
@@ -997,6 +1010,18 @@ sub exec_backup_task {
 	    $task->{size} = (-s $task->{target}) || 0;
 	    my $cs = format_size ($task->{size});
 	    debugmsg ('info', "archive file size: $cs", $logfd);
+	}
+
+	# Mark as protected before pruning.
+	if (my $storeid = $opts->{storage}) {
+	    my $volname = $opts->{pbs} ? $task->{target} : basename($task->{target});
+	    my $volid = "${storeid}:backup/${volname}";
+
+	    if ($opts->{protected}) {
+		debugmsg('info', "marking backup as protected", $logfd);
+		eval { PVE::Storage::update_volume_attribute($cfg, $volid, 'protected', 1) };
+		die "unable to set protected flag - $@\n" if $@;
+	    }
 	}
 
 	if ($opts->{remove}) {
