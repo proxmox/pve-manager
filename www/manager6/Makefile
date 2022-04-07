@@ -114,6 +114,7 @@ JSSRC= 							\
 	window/UploadToStorage.js 			\
 	window/ScheduleSimulator.js			\
 	window/Wizard.js				\
+	window/GuestDiskReassign.js				\
 	ha/Fencing.js					\
 	ha/GroupEdit.js					\
 	ha/GroupSelector.js				\
@@ -213,7 +214,6 @@ JSSRC= 							\
 	qemu/HDEfi.js					\
 	qemu/HDTPM.js					\
 	qemu/HDMove.js					\
-	qemu/HDReassign.js				\
 	qemu/HDResize.js				\
 	qemu/HardwareView.js				\
 	qemu/IPConfigEdit.js				\

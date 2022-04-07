@@ -1,4 +1,4 @@
-Ext.define('PVE.window.HDReassign', {
+Ext.define('PVE.window.GuestDiskReassign', {
     extend: 'Proxmox.window.Edit',
     mixins: ['Proxmox.Mixin.CBind'],
 

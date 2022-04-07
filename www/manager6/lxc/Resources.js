@@ -186,7 +186,7 @@ Ext.define('PVE.lxc.RessourceView', {
 		return;
 	    }
 
-	    Ext.create('PVE.window.HDReassign', {
+	    Ext.create('PVE.window.GuestDiskReassign', {
 		disk: rec.data.key,
 		nodename: nodename,
 		autoShow: true,

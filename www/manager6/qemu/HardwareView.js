@@ -411,7 +411,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		    return;
 		}
 
-		Ext.create('PVE.window.HDReassign', {
+		Ext.create('PVE.window.GuestDiskReassign', {
 		    autoShow: true,
 		    disk: rec.data.key,
 		    nodename: nodename,
