@@ -37,7 +37,7 @@ Ext.define('PVE.window.GuestDiskReassign', {
     },
 
     cbind: {
-	title: get => get('isQemu') ? gettext('Reassign disk') : gettext('Reassign volume'),
+	title: get => get('isQemu') ? gettext('Reassign Disk') : gettext('Reassign Volume'),
 	submitText: get => get('title'),
 	qemu: '{isQemu}',
 	url: '{url}',
@@ -136,7 +136,7 @@ Ext.define('PVE.window.GuestDiskReassign', {
 	    reference: 'targetVMID',
 	    name: 'targetVmid',
 	    allowBlank: false,
-	    fieldLabel: gettext('Target'),
+	    fieldLabel: gettext('Target Guest'),
 	    bind: {
 		value: '{targetVMID}',
 	    },
