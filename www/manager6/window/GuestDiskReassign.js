@@ -122,132 +122,121 @@ Ext.define('PVE.window.GuestDiskReassign', {
     defaultFocus: 'sourceDisk',
     items: [
 	{
-	    xtype: 'form',
-	    reference: 'moveFormPanel',
-	    border: false,
-	    fieldDefaults: {
-		labelWidth: 100,
-		anchor: '100%',
+	    xtype: 'displayfield',
+	    name: 'sourceDisk',
+	    fieldLabel: gettext('Source'),
+	    cbind: {
+		name: get => get('isQemu') ? 'disk' : 'volume',
+		value: '{disk}',
+	    },
+	    allowBlank: false,
+	},
+	{
+	    xtype: 'vmComboSelector',
+	    reference: 'targetVMID',
+	    name: 'targetVmid',
+	    allowBlank: false,
+	    fieldLabel: gettext('Target'),
+	    bind: {
+		value: '{targetVMID}',
+	    },
+	    store: {
+		model: 'PVEResources',
+		autoLoad: true,
+		sorters: 'vmid',
+		cbind: {}, // for nested cbinds
+		filters: [
+		    {
+			property: 'type',
+			cbind: {
+			    value: get => get('isQemu') ? 'qemu' : 'lxc',
+			},
+		    },
+		    {
+			property: 'node',
+			cbind: {
+			    value: '{nodename}',
+			},
+		    },
+		    {
+			property: 'vmid',
+			operator: '!=',
+			cbind: {
+			    value: '{vmid}',
+			},
+		    },
+		    {
+			property: 'template',
+			value: 0,
+		    },
+		],
+	    },
+	    listeners: { change: 'onTargetVMChange' },
+	},
+	{
+	    xtype: 'pveControllerSelector',
+	    reference: 'diskSelector',
+	    withUnused: true,
+	    disabled: true,
+	    cbind: {
+		hidden: '{!isQemu}',
+	    },
+	},
+	{
+	    xtype: 'container',
+	    layout: 'hbox',
+	    cbind: {
+		hidden: '{isQemu}',
+		disabled: '{isQemu}',
 	    },
 	    items: [
 		{
-		    xtype: 'displayfield',
-		    name: 'sourceDisk',
-		    fieldLabel: gettext('Source'),
+		    xtype: 'pmxDisplayEditField',
 		    cbind: {
-			name: get => get('isQemu') ? 'disk' : 'volume',
-			value: '{disk}',
+			editable: get => !get('disk').match(/^unused\d+/),
+			value: get => get('disk').match(/^unused\d+/) ? 'unused' : 'mp',
 		    },
-		    allowBlank: false,
-		},
-		{
-		    xtype: 'vmComboSelector',
-		    reference: 'targetVMID',
-		    name: 'targetVmid',
-		    allowBlank: false,
-		    fieldLabel: gettext('Target'),
-		    bind: {
-			value: '{targetVMID}',
-		    },
-		    store: {
-			model: 'PVEResources',
-			autoLoad: true,
-			sorters: 'vmid',
-			cbind: {}, // for nested cbinds
-			filters: [
-			    {
-				property: 'type',
-				cbind: {
-				    value: get => get('isQemu') ? 'qemu' : 'lxc',
-				},
-			    },
-			    {
-				property: 'node',
-				cbind: {
-				    value: '{nodename}',
-				},
-			    },
-			    {
-				property: 'vmid',
-				operator: '!=',
-				cbind: {
-				    value: '{vmid}',
-				},
-			    },
-			    {
-				property: 'template',
-				value: 0,
-			    },
-			],
-		    },
-		    listeners: { change: 'onTargetVMChange' },
-		},
-		{
-		    xtype: 'pveControllerSelector',
-		    reference: 'diskSelector',
-		    withUnused: true,
 		    disabled: true,
-		    cbind: {
-			hidden: '{!isQemu}',
+		    name: 'mpType',
+		    reference: 'mpType',
+		    fieldLabel: gettext('Add as'),
+		    submitValue: true,
+		    flex: 4,
+		    editConfig: {
+			xtype: 'proxmoxKVComboBox',
+			name: 'mpTypeCombo',
+			reference: 'mpTypeCombo',
+			deleteEmpty: false,
+			cbind: {
+			    hidden: '{isQemu}',
+			},
+			comboItems: [
+			    ['mp', gettext('Mount Point')],
+			    ['unused', gettext('Unused')],
+			],
+			listeners: { change: 'onMpTypeChange' },
 		    },
 		},
 		{
-		    xtype: 'container',
-		    layout: 'hbox',
-		    cbind: {
-			hidden: '{isQemu}',
-			disabled: '{isQemu}',
+		    xtype: 'proxmoxintegerfield',
+		    name: 'mpId',
+		    reference: 'mpIdSelector',
+		    minValue: 0,
+		    flex: 1,
+		    allowBlank: false,
+		    validateOnChange: true,
+		    disabled: true,
+		    bind: {
+			maxValue: '{mpMaxCount}',
 		    },
-		    items: [
-			{
-			    xtype: 'pmxDisplayEditField',
-			    cbind: {
-				editable: get => !get('disk').match(/^unused\d+/),
-				value: get => get('disk').match(/^unused\d+/) ? 'unused' : 'mp',
-			    },
-			    disabled: true,
-			    name: 'mpType',
-			    reference: 'mpType',
-			    fieldLabel: gettext('Add as'),
-			    submitValue: true,
-			    flex: 4,
-			    editConfig: {
-				xtype: 'proxmoxKVComboBox',
-				name: 'mpTypeCombo',
-				reference: 'mpTypeCombo',
-				deleteEmpty: false,
-				cbind: {
-				    hidden: '{isQemu}',
-				},
-				comboItems: [
-				    ['mp', gettext('Mount Point')],
-				    ['unused', gettext('Unused')],
-				],
-				listeners: { change: 'onMpTypeChange' },
-			    },
-			},
-			{
-			    xtype: 'proxmoxintegerfield',
-			    name: 'mpId',
-			    reference: 'mpIdSelector',
-			    minValue: 0,
-			    flex: 1,
-			    allowBlank: false,
-			    validateOnChange: true,
-			    disabled: true,
-			    bind: {
-				maxValue: '{mpMaxCount}',
-			    },
-			    validator: function(value) {
-				let view = this.up('window');
-				let type = view.getViewModel().get('mpType');
-				if (Ext.isDefined(view.VMConfig[`${type}${value}`])) {
-				    return "Mount point is already in use.";
-				}
-				return true;
-			    },
-			},
-		    ],
+		    validator: function(value) {
+			let view = this.up('window');
+			let type = view.getViewModel().get('mpType');
+			if (Ext.isDefined(view.VMConfig[`${type}${value}`])) {
+			    return "Mount point is already in use.";
+			}
+			return true;
+		    },
 		},
 	    ],
 	},
