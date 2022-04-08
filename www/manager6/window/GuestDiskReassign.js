@@ -119,6 +119,7 @@ Ext.define('PVE.window.GuestDiskReassign', {
 	},
     },
 
+    defaultFocus: 'sourceDisk',
     items: [
 	{
 	    xtype: 'form',
