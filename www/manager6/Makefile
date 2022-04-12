@@ -84,7 +84,6 @@ JSSRC= 							\
 	panel/BackupJobPrune.js				\
 	panel/HealthWidget.js				\
 	panel/IPSet.js					\
-	panel/NotesView.js				\
 	panel/RunningChart.js				\
 	panel/StatusPanel.js				\
 	panel/GuestStatusView.js			\
@@ -102,7 +101,6 @@ JSSRC= 							\
 	window/FirewallLograteEdit.js			\
 	window/LoginWindow.js				\
 	window/Migrate.js				\
-	window/NotesEdit.js				\
 	window/Prune.js					\
 	window/Restore.js				\
 	window/SafeDestroyGuest.js			\

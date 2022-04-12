@@ -28,7 +28,7 @@ Ext.define('PVE.dc.Config', {
 		itemId: 'summary',
 	    },
 	    {
-		xtype: 'pveNotesView',
+		xtype: 'pmxNotesView',
 		title: gettext('Notes'),
 		iconCls: 'fa fa-sticky-note-o',
 		itemId: 'notes',

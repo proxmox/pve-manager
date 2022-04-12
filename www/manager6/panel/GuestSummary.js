@@ -40,7 +40,7 @@ Ext.define('PVE.qemu.Summary', {
 		rstore: rstore,
 	    },
 	    {
-		xtype: 'pveNotesView',
+		xtype: 'pmxNotesView',
 		flex: 1,
 		padding: template ? '5' : '0 0 0 5',
 		itemId: 'notesview',

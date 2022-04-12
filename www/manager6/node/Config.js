@@ -129,7 +129,7 @@ Ext.define('PVE.node.Config', {
 		    itemId: 'summary',
 		},
 		{
-		    xtype: 'pveNotesView',
+		    xtype: 'pmxNotesView',
 		    title: gettext('Notes'),
 		    iconCls: 'fa fa-sticky-note-o',
 		    itemId: 'notes',
