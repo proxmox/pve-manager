@@ -72,8 +72,9 @@ Ext.define('PVE.window.GuestDiskReassign', {
 	},
 
 	onMpTypeChange: function(value) {
-	    this.getView().getViewModel().set('mpType', value.getValue());
-	    this.getView().lookup('mpIdSelector').validate();
+	    let view = this.getView();
+	    view.getViewModel().set('mpType', value.getValue());
+	    view.lookup('mpIdSelector').validate();
 	},
 
 	onTargetVMChange: function(f, vmid) {
@@ -86,22 +87,20 @@ Ext.define('PVE.window.GuestDiskReassign', {
 		return;
 	    }
 
-	    let type = view.qemu ? 'qemu' : 'lxc';
-
-	    let url = `/nodes/${view.nodename}/${type}/${vmid}/config`;
+	    let url = `/nodes/${view.nodename}/${view.type}/${vmid}/config`;
 	    Proxmox.Utils.API2Request({
 		url: url,
 		method: 'GET',
 		failure: response => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
-		success: function(response, options) {
+		success: function({ result }, options) {
 		    if (view.qemu) {
-			diskSelector.setVMConfig(response.result.data);
+			diskSelector.setVMConfig(result.data);
 			diskSelector.setDisabled(false);
 		    } else {
 			let mpIdSelector = view.lookup('mpIdSelector');
 			let mpType = view.lookup('mpType');
 
-			view.VMConfig = response.result.data;
+			view.VMConfig = result.data;
 
 			mpIdSelector.setValue(
 			    PVE.Utils.nextFreeMP(
@@ -148,22 +147,17 @@ Ext.define('PVE.window.GuestDiskReassign', {
 		filters: [
 		    {
 			property: 'type',
-			cbind: {
-			    value: get => get('isQemu') ? 'qemu' : 'lxc',
-			},
+			cbind: { value: '{type}' },
 		    },
 		    {
 			property: 'node',
-			cbind: {
-			    value: '{nodename}',
-			},
+			cbind: { value: '{nodename}' },
 		    },
+		    // FIXME: remove, artificial restriction that doesn't gains us anything..
 		    {
 			property: 'vmid',
 			operator: '!=',
-			cbind: {
-			    value: '{vmid}',
-			},
+			cbind: { value: '{vmid}' },
 		    },
 		    {
 			property: 'template',
@@ -205,7 +199,6 @@ Ext.define('PVE.window.GuestDiskReassign', {
 		    editConfig: {
 			xtype: 'proxmoxKVComboBox',
 			name: 'mpTypeCombo',
-			reference: 'mpTypeCombo',
 			deleteEmpty: false,
 			cbind: {
 			    hidden: '{isQemu}',
