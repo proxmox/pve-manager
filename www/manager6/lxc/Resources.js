@@ -285,10 +285,10 @@ Ext.define('PVE.lxc.RessourceView', {
 	    },
 	});
 
-	var revert_btn = new PVE.button.PendingRevert();
+	let revert_btn = new PVE.button.PendingRevert();
 
-	var set_button_status = function() {
-	    var rec = me.selModel.getSelection()[0];
+	let set_button_status = function() {
+	    let rec = me.selModel.getSelection()[0];
 
 	    if (!rec) {
 		edit_btn.disable();
@@ -297,19 +297,18 @@ Ext.define('PVE.lxc.RessourceView', {
 		revert_btn.disable();
 		return;
 	    }
-	    var key = rec.data.key;
-	    var value = rec.data.value;
-	    var rowdef = rows[key];
+	    let { key, value, 'delete': isDelete } = rec.data;
+	    let rowdef = rows[key];
 
-	    var pending = rec.data.delete || me.hasPendingChanges(key);
+	    let pending = isDelete || me.hasPendingChanges(key);
 	    let isRootFS = key === 'rootfs';
 	    let isDisk = isRootFS || key.match(/^(mp|unused)\d+/);
-	    var isUnusedDisk = key.match(/^unused\d+/);
-	    var isUsedDisk = isDisk && !isUnusedDisk;
+	    let isUnusedDisk = key.match(/^unused\d+/);
+	    let isUsedDisk = isDisk && !isUnusedDisk;
 
-	    var noedit = rec.data.delete || !rowdef.editor;
+	    let noedit = isDelete || !rowdef.editor;
 	    if (!noedit && Proxmox.UserName !== 'root@pam' && key.match(/^mp\d+$/)) {
-		var mp = PVE.Parser.parseLxcMountPoint(value);
+		let mp = PVE.Parser.parseLxcMountPoint(value);
 		if (mp.type !== 'volume') {
 		    noedit = true;
 		}
@@ -327,18 +326,15 @@ Ext.define('PVE.lxc.RessourceView', {
 	    remove_btn.setText(isUsedDisk ? remove_btn.altText : remove_btn.defaultText);
 	};
 
-	var sorterFn = function(rec1, rec2) {
-	    var v1 = rec1.data.key;
-	    var v2 = rec2.data.key;
-	    var g1 = rows[v1].group || 0;
-	    var g2 = rows[v2].group || 0;
-	    var order1 = rows[v1].order || 0;
-	    var order2 = rows[v2].order || 0;
+	let sorterFn = function(rec1, rec2) {
+	    let v1 = rec1.data.key, v2 = rec2.data.key;
 
+	    let g1 = rows[v1].group || 0, g2 = rows[v2].group || 0;
 	    if (g1 - g2 !== 0) {
 		return g1 - g2;
 	    }
 
+	    let order1 = rows[v1].order || 0, order2 = rows[v2].order || 0;
 	    if (order1 - order2 !== 0) {
 		return order1 - order2;
 	    }
@@ -353,7 +349,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	};
 
 	Ext.apply(me, {
-	    url: "/api2/json/nodes/" + nodename + "/lxc/" + vmid + "/pending",
+	    url: `/api2/json/nodes/${nodename}/lxc/${vmid}/pending`,
 	    selModel: me.selModel,
 	    interval: 2000,
 	    cwidth1: 170,
