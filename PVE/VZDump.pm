@@ -497,13 +497,6 @@ sub new {
 	$opts->{storage} = 'local';
     }
 
-    $self->{job_init_log} = '';
-    open my $job_init_fd, '>', \$self->{job_init_log};
-    $self->run_hook_script('job-init', undef, $job_init_fd);
-    close $job_init_fd;
-
-    PVE::Cluster::cfs_update(); # Pick up possible changes made by the hook script.
-
     my $errors = '';
     my $add_error = sub {
 	my ($error) = @_;
@@ -511,6 +504,16 @@ sub new {
 	chomp($error);
 	$errors .= $error;
     };
+
+    eval {
+	$self->{job_init_log} = '';
+	open my $job_init_fd, '>', \$self->{job_init_log};
+	$self->run_hook_script('job-init', undef, $job_init_fd);
+	close $job_init_fd;
+
+	PVE::Cluster::cfs_update(); # Pick up possible changes made by the hook script.
+    };
+    $add_error->($@) if $@;
 
     if ($opts->{storage}) {
 	my $storage_cfg = PVE::Storage::config();
