@@ -505,19 +505,21 @@ sub new {
     PVE::Cluster::cfs_update(); # Pick up possible changes made by the hook script.
 
     my $errors = '';
+    my $add_error = sub {
+	my ($error) = @_;
+	$errors .= "\n" if $errors;
+	chomp($error);
+	$errors .= $error;
+    };
 
     if ($opts->{storage}) {
 	my $storage_cfg = PVE::Storage::config();
 	eval { PVE::Storage::activate_storage($storage_cfg, $opts->{storage}) };
-	if (my $err = $@) {
-	    chomp($err);
-	    $errors .= "could not activate storage '$opts->{storage}': $err";
-	}
+	$add_error->("could not activate storage '$opts->{storage}': $@") if $@;
 
 	my $info = eval { storage_info ($opts->{storage}) };
 	if (my $err = $@) {
-	    chomp($err);
-	    $errors .= "could not get storage information for '$opts->{storage}': $err";
+	    $add_error->("could not get storage information for '$opts->{storage}': $err");
 	} else {
 	    $opts->{dumpdir} = $info->{dumpdir};
 	    $opts->{scfg} = $info->{scfg};
@@ -525,7 +527,7 @@ sub new {
 	    $opts->{'prune-backups'} //= $info->{'prune-backups'};
 	}
     } elsif ($opts->{dumpdir}) {
-	$errors .= "dumpdir '$opts->{dumpdir}' does not exist"
+	$add_error->("dumpdir '$opts->{dumpdir}' does not exist")
 	    if ! -d $opts->{dumpdir};
     } else {
 	die "internal error";
@@ -537,8 +539,7 @@ sub new {
     $opts->{remove} = 0 if $opts->{'prune-backups'}->{'keep-all'};
 
     if ($opts->{tmpdir} && ! -d $opts->{tmpdir}) {
-	$errors .= "\n" if $errors;
-	$errors .= "tmpdir '$opts->{tmpdir}' does not exist";
+	$add_error->("tmpdir '$opts->{tmpdir}' does not exist");
     }
 
     if ($errors) {
