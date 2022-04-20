@@ -28,6 +28,10 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
             delete values['disable-arp-nd-suppression'];
         }
 
+        if (values['exitnodes-primary'] === '') {
+            delete values['exitnodes-primary'];
+        }
+
 	return values;
     },
 
