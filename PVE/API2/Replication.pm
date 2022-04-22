@@ -74,6 +74,19 @@ sub run_single_job {
 sub run_jobs {
     my ($now, $logfunc, $verbose, $mail) = @_;
 
+    my $mail_at_fail_count = sub {
+	my ($fail_count) = @_;
+
+	return 1 if $fail_count == 1;
+
+	# failing job is re-tried every half hour, try to send one mail after 1, 2, 4, 8, etc. days
+	my $i = 1;
+	while ($i * 48 < $fail_count) {
+	    $i = $i * 2;
+	}
+	return $i * 48 == $fail_count;
+    };
+
     my $iteration = $now // time();
 
     my $code = sub {
@@ -93,7 +106,7 @@ sub run_jobs {
 		my $jobstate = PVE::ReplicationState::extract_job_state($state, $jobcfg);
 		eval {
 		    PVE::Tools::sendmail('root', "Replication Job: $jobcfg->{id} failed", $err)
-			if $jobstate->{fail_count} == 1 && $mail;
+			if $mail && $mail_at_fail_count->($jobstate->{fail_count});
 		};
 		warn ": $@" if $@;
 	    }
