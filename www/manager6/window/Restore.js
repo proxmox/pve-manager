@@ -245,7 +245,7 @@ Ext.define('PVE.window.Restore', {
 
 	let title = gettext('Restore') + ": " + (me.vmtype === 'lxc' ? 'CT' : 'VM');
 	if (me.vmid) {
-	    title += " " + me.vmid;
+	    title = `${gettext('Overwrite')} ${title} ${me.vmid}`;
 	}
 
 	Ext.apply(me, {
