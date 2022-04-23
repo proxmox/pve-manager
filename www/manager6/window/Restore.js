@@ -122,22 +122,6 @@ Ext.define('PVE.window.Restore', {
 	    autoSelect: me.vmtype === 'lxc',
 	});
 
-	let IDfield;
-	if (me.vmid) {
-	    IDfield = Ext.create('Ext.form.field.Display', {
-		name: 'vmid',
-		value: me.vmid,
-		fieldLabel: me.vmtype === 'lxc' ? 'CT' : 'VM',
-	    });
-	} else {
-	    IDfield = Ext.create('PVE.form.GuestIDSelector', {
-		name: 'vmid',
-		guestType: me.vmtype,
-		loadNextFreeID: true,
-		validateExists: false,
-	    });
-	}
-
 	let items = [
 	    {
 		xtype: 'displayfield',
@@ -145,7 +129,19 @@ Ext.define('PVE.window.Restore', {
 		fieldLabel: gettext('Source'),
 	    },
 	    storagesel,
-	    IDfield,
+	    {
+		xtype: 'pmxDisplayEditField',
+		name: 'vmid',
+		fieldLabel: me.vmtype === 'lxc' ? 'CT' : 'VM',
+		value: me.vmid,
+		editable: !me.vmid,
+		editConfig: {
+		    xtype: 'pveGuestIDSelector',
+		    guestType: me.vmtype,
+		    loadNextFreeID: true,
+		    validateExists: false,
+		},
+	    },
 	    {
 		xtype: 'pveBandwidthField',
 		name: 'bwlimit',
