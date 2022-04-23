@@ -161,7 +161,6 @@ Ext.define('PVE.window.Restore', {
 		    xtype: 'proxmoxcheckbox',
 		    name: 'unique',
 		    fieldLabel: gettext('Unique'),
-		    hidden: !!me.vmid,
 		    flex: 1,
 		    autoEl: {
 			tag: 'div',
@@ -233,8 +232,6 @@ Ext.define('PVE.window.Restore', {
 		fieldLabel: gettext('Live restore'),
 		checked: false,
 		hidden: !me.isPBS,
-		// align checkbox with 'start' if 'unique' is hidden
-		labelWidth: me.vmid ? 105 : 100,
 	    },
 	    {
 		xtype: 'displayfield',
