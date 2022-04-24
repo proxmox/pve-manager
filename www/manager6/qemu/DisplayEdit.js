@@ -4,15 +4,11 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
     onlineHelp: 'qm_display',
 
     onGetValues: function(values) {
-	var ret = PVE.Parser.printPropertyString(values, 'type');
+	let ret = PVE.Parser.printPropertyString(values, 'type');
 	if (ret === '') {
-	    return {
-		'delete': 'vga',
-	    };
+	    return { 'delete': 'vga' };
 	}
-	return {
-	    vga: ret,
-	};
+	return { vga: ret };
     },
 
     items: [{
@@ -22,60 +18,41 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 	deleteEmpty: false,
 	fieldLabel: gettext('Graphic card'),
 	comboItems: PVE.Utils.kvm_vga_driver_array(),
-	validator: function() {
-	    var v = this.getValue();
-	    var cfg = this.up('proxmoxWindowEdit').vmconfig || {};
+	validator: function(v) {
+	    let cfg = this.up('proxmoxWindowEdit').vmconfig || {};
 
 	    if (v.match(/^serial\d+$/) && (!cfg[v] || cfg[v] !== 'socket')) {
-		var fmt = gettext("Serial interface '{0}' is not correctly configured.");
+		let fmt = gettext("Serial interface '{0}' is not correctly configured.");
 		return Ext.String.format(fmt, v);
 	    }
 	    return true;
 	},
 	listeners: {
 	    change: function(cb, val) {
-		let view = this.up('panel');
 		if (!val) {
 		    return;
 		}
-		var disable = false;
-		var emptyText = Proxmox.Utils.defaultText;
-		switch (val) {
-		    case "cirrus":
-			emptyText = "4";
-			break;
-		    case "std":
-			emptyText = "16";
-			break;
-		    case "qxl":
-		    case "qxl2":
-		    case "qxl3":
-		    case "qxl4":
-			emptyText = "16";
-			break;
-		    case "vmware":
-			emptyText = "16";
-			break;
-		    case "none":
-		    case "serial0":
-		    case "serial1":
-		    case "serial2":
-		    case "serial3":
-			emptyText = 'N/A';
-			disable = true;
-			break;
-		    case "virtio":
-			emptyText = "256";
-			break;
-		    default:
-			break;
+		let memoryfield = this.up('panel').down('field[name=memory]');
+		let disableMemoryField = false;
+
+		if (val === "cirrus") {
+		    memoryfield.setEmptyText("4");
+		} else if (val === "std" || val.match(/^qxl\d?$/) || val === "vmware") {
+		    memoryfield.setEmptyText("16");
+		} else if (val.match(/^virtio/)) {
+		    memoryfield.setEmptyText("256");
+		} else if (val.match(/^(serial\d|none)$/)) {
+		    memoryfield.setEmptyText("N/A");
+		    disableMemoryField = true;
+		} else {
+		    console.debug("unexpected display type", val);
+		    memoryfield.setEmptyText(Proxmox.Utils.defaultText);
 		}
-		let memoryfield = view.down('field[name=memory]');
-		memoryfield.setEmptyText(emptyText);
-		memoryfield.setDisabled(disable);
+		memoryfield.setDisabled(disableMemoryField);
 	    },
 	},
-    }, {
+    },
+    {
 	xtype: 'proxmoxintegerfield',
 	emptyText: Proxmox.Utils.defaultText,
 	fieldLabel: gettext('Memory') + ' (MiB)',
@@ -99,14 +76,14 @@ Ext.define('PVE.qemu.DisplayEdit', {
     }],
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	me.callParent();
 
 	me.load({
 	    success: function(response) {
 		me.vmconfig = response.result.data;
-		var vga = me.vmconfig.vga || '__default__';
+		let vga = me.vmconfig.vga || '__default__';
 		me.setValues(PVE.Parser.parsePropertyString(vga, 'type'));
 	    },
 	});
