@@ -94,6 +94,37 @@ Ext.define('PVE.window.Restore', {
 		executeRestore();
 	    }
 	},
+
+	afterRender: function() {
+	    let view = this.getView();
+
+	    Proxmox.Utils.API2Request({
+		url: `/nodes/${view.nodename}/vzdump/extractconfig`,
+		method: 'GET',
+		waitMsgTarget: view,
+		params: {
+		    volume: view.volid,
+		},
+		failure: response => Ext.Msg.alert('Error', response.htmlStatus),
+		success: function(response, options) {
+		    let allStoragesAvailable = response.result.data.split('\n').every(line => {
+			let match = line.match(/^#qmdump#map:(\S+):(\S+):(\S*):(\S*):$/);
+			if (!match) {
+			    return true;
+			}
+			// if a /dev/XYZ disk was backed up, ther is no storage hint
+			return !!match[3] && !!PVE.data.ResourceStore.getById(
+			    `storage/${view.nodename}/${match[3]}`);
+		    });
+
+		    if (!allStoragesAvailable) {
+			let storagesel = view.down('pveStorageSelector[name=storage]');
+			storagesel.allowBlank = false;
+			storagesel.setEmptyText('');
+		    }
+		},
+	    });
+	},
     },
 
     initComponent: function() {
