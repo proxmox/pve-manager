@@ -581,7 +581,6 @@ Ext.define('PVE.Utils', {
 	//th: 'Thai',
 	tr: 'Turkish',
     },
-    kvm_keymap_array: () => Object.entries(PVE.Utils.kvm_keymaps),
 
     kvm_vga_drivers: {
 	'__default__': Proxmox.Utils.defaultText,
@@ -598,7 +597,6 @@ Ext.define('PVE.Utils', {
 	virtio: 'VirtIO-GPU',
 	none: Proxmox.Utils.noneText,
     },
-    kvm_vga_driver_array: () => Object.entries(PVE.Utils.kvm_vga_drivers),
 
     render_kvm_language: function(value) {
 	if (!value) {
@@ -614,7 +612,6 @@ Ext.define('PVE.Utils', {
 	'html5': 'HTML5 (noVNC)',
 	'xtermjs': 'xterm.js',
     },
-    console_viewer_array: () => Object.entries(PVE.Utils.console_map),
 
     render_console_viewer: function(value) {
 	value = value || '__default__';

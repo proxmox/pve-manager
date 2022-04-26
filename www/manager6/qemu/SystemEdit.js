@@ -80,7 +80,7 @@ Ext.define('PVE.qemu.SystemInputPanel', {
 	    deleteEmpty: false,
 	    fieldLabel: gettext('Graphic card'),
 	    name: 'vga',
-	    comboItems: PVE.Utils.kvm_vga_driver_array(),
+	    comboItems: Object.entries(PVE.Utils.kvm_vga_drivers),
 	},
 	{
 	    xtype: 'proxmoxKVComboBox',

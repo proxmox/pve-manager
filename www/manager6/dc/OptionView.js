@@ -70,7 +70,7 @@ Ext.define('PVE.dc.OptionView', {
 
 	me.add_combobox_row('keyboard', gettext('Keyboard Layout'), {
 	    renderer: PVE.Utils.render_kvm_language,
-	    comboItems: PVE.Utils.kvm_keymap_array(),
+	    comboItems: Object.entries(PVE.Utils.kvm_keymaps),
 	    defaultValue: '__default__',
 	    deleteEmpty: true,
 	});
@@ -81,7 +81,7 @@ Ext.define('PVE.dc.OptionView', {
 	});
 	me.add_combobox_row('console', gettext('Console Viewer'), {
 	    renderer: PVE.Utils.render_console_viewer,
-	    comboItems: PVE.Utils.console_viewer_array(),
+	    comboItems: Object.entries(PVE.Utils.console_map),
 	    defaultValue: '__default__',
 	    deleteEmpty: true,
 	});

@@ -17,7 +17,7 @@ Ext.define('PVE.qemu.DisplayInputPanel', {
 	value: '__default__',
 	deleteEmpty: false,
 	fieldLabel: gettext('Graphic card'),
-	comboItems: PVE.Utils.kvm_vga_driver_array(),
+	comboItems: Object.entries(PVE.Utils.kvm_vga_drivers),
 	validator: function(v) {
 	    let cfg = this.up('proxmoxWindowEdit').vmconfig || {};
 
