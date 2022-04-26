@@ -546,6 +546,7 @@ Ext.define('PVE.Utils', {
     // fixme: auto-generate this
     // for now, please keep in sync with PVE::Tools::kvmkeymaps
     kvm_keymaps: {
+	'__default__': Proxmox.Utils.defaultText,
 	//ar: 'Arabic',
 	da: 'Danish',
 	de: 'German',
@@ -580,8 +581,10 @@ Ext.define('PVE.Utils', {
 	//th: 'Thai',
 	tr: 'Turkish',
     },
+    kvm_keymap_array: () => Object.entries(PVE.Utils.kvm_keymaps),
 
     kvm_vga_drivers: {
+	'__default__': Proxmox.Utils.defaultText,
 	std: gettext('Standard VGA'),
 	vmware: gettext('VMware compatible'),
 	qxl: 'SPICE',
@@ -595,25 +598,14 @@ Ext.define('PVE.Utils', {
 	virtio: 'VirtIO-GPU',
 	none: Proxmox.Utils.noneText,
     },
+    kvm_vga_driver_array: () => Object.entries(PVE.Utils.kvm_vga_drivers),
 
     render_kvm_language: function(value) {
-	if (!value || value === '__default__') {
+	if (!value) {
 	    return Proxmox.Utils.defaultText;
 	}
-	var text = PVE.Utils.kvm_keymaps[value];
-	if (text) {
-	    return text + ' (' + value + ')';
-	}
-	return value;
-    },
-
-    kvm_keymap_array: function() {
-	var data = [['__default__', PVE.Utils.render_kvm_language('')]];
-	Ext.Object.each(PVE.Utils.kvm_keymaps, function(key, value) {
-	    data.push([key, PVE.Utils.render_kvm_language(value)]);
-	});
-
-	return data;
+	let text = PVE.Utils.kvm_keymaps[value];
+	return text ? `${text} (${value})` : value;
     },
 
     console_map: {
@@ -622,43 +614,23 @@ Ext.define('PVE.Utils', {
 	'html5': 'HTML5 (noVNC)',
 	'xtermjs': 'xterm.js',
     },
+    console_viewer_array: () => Object.entries(PVE.Utils.console_map),
 
     render_console_viewer: function(value) {
 	value = value || '__default__';
-	if (PVE.Utils.console_map[value]) {
-	    return PVE.Utils.console_map[value];
-	}
-	return value;
-    },
-
-    console_viewer_array: function() {
-	return Ext.Array.map(Object.keys(PVE.Utils.console_map), function(v) {
-	    return [v, PVE.Utils.render_console_viewer(v)];
-	});
+	return PVE.Utils.console_map[value] || value;
     },
 
     render_kvm_vga_driver: function(value) {
 	if (!value) {
 	    return Proxmox.Utils.defaultText;
 	}
-	var vga = PVE.Parser.parsePropertyString(value, 'type');
-	var text = PVE.Utils.kvm_vga_drivers[vga.type];
+	let vga = PVE.Parser.parsePropertyString(value, 'type');
+	let text = PVE.Utils.kvm_vga_drivers[vga.type];
 	if (!vga.type) {
 	    text = Proxmox.Utils.defaultText;
 	}
-	if (text) {
-	    return text + ' (' + value + ')';
-	}
-	return value;
-    },
-
-    kvm_vga_driver_array: function() {
-	var data = [['__default__', Proxmox.Utils.defaultText]];
-	Ext.Object.each(PVE.Utils.kvm_vga_drivers, function(key, value) {
-	    data.push([key, value]);
-	});
-
-	return data;
+	return text ? `${text} (${value})` : value;
     },
 
     render_kvm_startup: function(value) {
