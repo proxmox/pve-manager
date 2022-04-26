@@ -599,7 +599,7 @@ Ext.define('PVE.Utils', {
     },
 
     render_kvm_language: function(value) {
-	if (!value) {
+	if (!value || value === '__default__') {
 	    return Proxmox.Utils.defaultText;
 	}
 	let text = PVE.Utils.kvm_keymaps[value];
