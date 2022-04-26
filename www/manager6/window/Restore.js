@@ -47,8 +47,16 @@ Ext.define('PVE.window.Restore', {
 	    if (values.storage) {
 		params.storage = values.storage;
 	    }
-	    if (values.bwlimit !== undefined) {
-		params.bwlimit = values.bwlimit;
+
+	    ['bwlimit', 'cores', 'name', 'memory', 'sockets'].forEach(opt => {
+		if ((values[opt] ?? '') !== '') {
+		    params[opt] = values[opt];
+		}
+	    });
+
+	    if (params.name && view.vmtype === 'lxc') {
+		params.hostname = params.name;
+		delete params.name;
 	    }
 
 	    let confirmMsg;
@@ -107,14 +115,25 @@ Ext.define('PVE.window.Restore', {
 		},
 		failure: response => Ext.Msg.alert('Error', response.htmlStatus),
 		success: function(response, options) {
-		    let allStoragesAvailable = response.result.data.split('\n').every(line => {
-			let match = line.match(/^#qmdump#map:(\S+):(\S+):(\S*):(\S*):$/);
-			if (!match) {
-			    return true;
+		    let allStoragesAvailable = true;
+
+		    response.result.data.split('\n').forEach(line => {
+			let [_, key, value] = line.match(/^([^:]+):\s*(\S+)\s*$/) ?? [];
+
+			if (!key) {
+			    return;
 			}
-			// if a /dev/XYZ disk was backed up, ther is no storage hint
-			return !!match[3] && !!PVE.data.ResourceStore.getById(
-			    `storage/${view.nodename}/${match[3]}`);
+
+			if (key === '#qmdump#map') {
+			    let match = value.match(/^(\S+):(\S+):(\S*):(\S*):$/) ?? [];
+			    // if a /dev/XYZ disk was backed up, ther is no storage hint
+			    allStoragesAvailable &&= !!match[3] && !!PVE.data.ResourceStore.getById(
+				`storage/${view.nodename}/${match[3]}`);
+			} else if (key === 'name' || key === 'hostname') {
+			    view.lookupReference('nameField').setEmptyText(value);
+			} else if (key === 'memory' || key === 'cores' || key === 'sockets') {
+			    view.lookupReference(`${key}Field`).setEmptyText(value);
+			}
 		    });
 
 		    if (!allStoragesAvailable) {
@@ -271,6 +290,49 @@ Ext.define('PVE.window.Restore', {
 		value: gettext('Note: If anything goes wrong during the live-restore, new data written by the VM may be lost.'),
 		userCls: 'pmx-hint',
 		hidden: true,
+	    });
+	}
+
+	items.push(
+	    {
+		xtype: 'displayfield',
+		value: `${gettext('Override Settings')}:`,
+	    },
+	    {
+		xtype: 'textfield',
+		fieldLabel: gettext('Name'),
+		name: 'name',
+		reference: 'nameField',
+		allowBlank: true,
+	    },
+	    {
+		xtype: 'pveMemoryField',
+		fieldLabel: gettext('Memory'),
+		name: 'memory',
+		reference: 'memoryField',
+		value: '',
+		allowBlank: true,
+	    },
+	    {
+		xtype: 'proxmoxintegerfield',
+		fieldLabel: gettext('Cores'),
+		name: 'cores',
+		reference: 'coresField',
+		minValue: 1,
+		maxValue: 128,
+		allowBlank: true,
+	    },
+	);
+
+	if (me.vmtype === 'qemu') {
+	    items.push({
+		xtype: 'proxmoxintegerfield',
+		fieldLabel: gettext('Sockets'),
+		name: 'sockets',
+		reference: 'socketsField',
+		minValue: 1,
+		maxValue: 4,
+		allowBlank: true,
 	    });
 	}
 
