@@ -70,6 +70,29 @@ sub run_command {
     PVE::Tools::run_command($cmdstr, %param, logfunc => $logfunc);
 }
 
+my $generate_notes = sub {
+    my ($notes_template, $task) = @_;
+
+    my $info = {
+	cluster => PVE::Cluster::get_clinfo()->{cluster}->{name},
+	guestname => $task->{hostname},
+	node => PVE::INotify::nodename(),
+	vmid => $task->{vmid},
+    };
+
+    my $unescape = {
+	'\\\\' => '\\', # replace \\ by \
+	'\n' => "\n", # turn literal \n into real newline
+    };
+
+    $notes_template =~ s/(\Q\\\E|\Q\n\E)/$unescape->{$1}/g;
+
+    my $vars = join('|', keys $info->%*);
+    $notes_template =~ s/\{\{($vars)\}\}/\Q$info->{$1}\E/g;
+
+    return $notes_template;
+};
+
 my $parse_prune_backups_maxfiles = sub {
     my ($param, $kind) = @_;
 
@@ -1016,6 +1039,13 @@ sub exec_backup_task {
 	if (my $storeid = $opts->{storage}) {
 	    my $volname = $opts->{pbs} ? $task->{target} : basename($task->{target});
 	    my $volid = "${storeid}:backup/${volname}";
+
+	    if ($opts->{'notes-template'} && $opts->{'notes-template'} ne '') {
+		debugmsg('info', "adding notes to backup", $logfd);
+		my $notes = $generate_notes->($opts->{'notes-template'}, $task);
+		eval { PVE::Storage::update_volume_attribute($cfg, $volid, 'notes', $notes) };
+		debugmsg('warn', "unable to add notes - $@", $logfd) if $@;
+	    }
 
 	    if ($opts->{protected}) {
 		debugmsg('info', "marking backup as protected", $logfd);
