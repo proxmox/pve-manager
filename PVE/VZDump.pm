@@ -80,15 +80,19 @@ my $generate_notes = sub {
 	vmid => $task->{vmid},
     };
 
-    my $unescape = {
-	'\\\\' => '\\', # replace \\ by \
-	'\n' => "\n", # turn literal \n into real newline
+    my $unescape = sub {
+	my ($char) = @_;
+	return '\\' if $char eq '\\';
+	return "\n" if $char eq 'n';
+	die "unexpected escape character '$char'\n";
     };
 
-    $notes_template =~ s/(\Q\\\E|\Q\n\E)/$unescape->{$1}/g;
+    $notes_template =~ s/\\(.)/$unescape->($1)/eg;
 
     my $vars = join('|', keys $info->%*);
     $notes_template =~ s/\{\{($vars)\}\}/\Q$info->{$1}\E/g;
+
+    die "unexpected variable name '$1'" if $notes_template =~ m/\{\{([^\s]+)\}\}/;
 
     return $notes_template;
 };
@@ -1042,9 +1046,13 @@ sub exec_backup_task {
 
 	    if ($opts->{'notes-template'} && $opts->{'notes-template'} ne '') {
 		debugmsg('info', "adding notes to backup", $logfd);
-		my $notes = $generate_notes->($opts->{'notes-template'}, $task);
-		eval { PVE::Storage::update_volume_attribute($cfg, $volid, 'notes', $notes) };
-		debugmsg('warn', "unable to add notes - $@", $logfd) if $@;
+		my $notes = eval { $generate_notes->($opts->{'notes-template'}, $task); };
+		if (my $err = $@) {
+		    debugmsg('warn', "unable to add notes - $err", $logfd);
+		} else {
+		    eval { PVE::Storage::update_volume_attribute($cfg, $volid, 'notes', $notes) };
+		    debugmsg('warn', "unable to add notes - $@", $logfd) if $@;
+		}
 	    }
 
 	    if ($opts->{protected}) {
