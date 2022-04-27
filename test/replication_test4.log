@@ -9,17 +9,17 @@
 1300 job_900_to_node2: changed state last_try => 1300, fail_count => 2
 1900 job_900_to_node2: start replication job
 1900 job_900_to_node2: end replication job with error: faked replication error
-1900 job_900_to_node2: changed config next_sync => 3700
+1900 job_900_to_node2: changed config next_sync => 2800
 1900 job_900_to_node2: changed state last_try => 1900, fail_count => 3
-3700 job_900_to_node2: start replication job
-3700 job_900_to_node2: end replication job with error: faked replication error
-3700 job_900_to_node2: changed config next_sync => 5500
-3700 job_900_to_node2: changed state last_try => 3700, fail_count => 4
-5500 job_900_to_node2: start replication job
-5500 job_900_to_node2: end replication job with error: faked replication error
-5500 job_900_to_node2: changed config next_sync => 7300
-5500 job_900_to_node2: changed state last_try => 5500, fail_count => 5
-7300 job_900_to_node2: start replication job
-7300 job_900_to_node2: end replication job with error: faked replication error
-7300 job_900_to_node2: changed config next_sync => 9100
-7300 job_900_to_node2: changed state last_try => 7300, fail_count => 6
+2800 job_900_to_node2: start replication job
+2800 job_900_to_node2: end replication job with error: faked replication error
+2800 job_900_to_node2: changed config next_sync => 4600
+2800 job_900_to_node2: changed state last_try => 2800, fail_count => 4
+4600 job_900_to_node2: start replication job
+4600 job_900_to_node2: end replication job with error: faked replication error
+4600 job_900_to_node2: changed config next_sync => 6400
+4600 job_900_to_node2: changed state last_try => 4600, fail_count => 5
+6400 job_900_to_node2: start replication job
+6400 job_900_to_node2: end replication job with error: faked replication error
+6400 job_900_to_node2: changed config next_sync => 8200
+6400 job_900_to_node2: changed state last_try => 6400, fail_count => 6
