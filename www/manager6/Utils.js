@@ -1784,6 +1784,22 @@ Ext.define('PVE.Utils', {
 
 	return undefined;
     },
+
+    escapeNotesTemplate: function(value) {
+	let replace = {
+	    '\\': '\\\\',
+	    '\n': '\\n',
+	};
+	return value.replace(/(\\|[\n])/g, match => replace[match]);
+    },
+
+    unEscapeNotesTemplate: function(value) {
+	let replace = {
+	    '\\\\': '\\',
+	    '\\n': '\n',
+	};
+	return value.replace(/(\\\\|\\n)/g, match => replace[match]);
+    },
 },
 
     singleton: true,
