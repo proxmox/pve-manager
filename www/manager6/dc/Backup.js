@@ -229,8 +229,12 @@ Ext.define('PVE.dc.BackupEdit', {
 		{
 		    xtype: 'proxmoxtextfield',
 		    name: 'comment',
-		    fieldLabel: gettext('Comment'),
+		    fieldLabel: gettext('Job Comment'),
 		    deleteEmpty: !me.isCreate,
+		    autoEl: {
+			tag: 'div',
+			'data-qtip': gettext('Description of the job'),
+		    },
 		},
 	    ],
 	    onGetValues: function(values) {
@@ -372,6 +376,46 @@ Ext.define('PVE.dc.BackupEdit', {
 			    showPBSHint: false,
 			    fallbackHintHtml: gettext('Without any keep option, the storage\'s configuration or node\'s vzdump.conf is used as fallback'),
 			},
+			{
+			    xtype: 'inputpanel',
+			    title: gettext('Note Template'),
+			    region: 'center',
+			    layout: {
+				type: 'vbox',
+				align: 'stretch',
+			    },
+			    onGetValues: function(values) {
+				if (values['notes-template']) {
+				    values['notes-template'] = PVE.Utils.escapeNotesTemplate(
+					values['notes-template']);
+				}
+				return values;
+			    },
+			    items: [
+				{
+				    xtype: 'textarea',
+				    name: 'notes-template',
+				    fieldLabel: gettext('Backup Notes'),
+                                    height: 100,
+				    maxLength: 512,
+				    deleteEmpty: !me.isCreate,
+				    value: me.isCreate ? '{{guestname}}' : undefined,
+				},
+				{
+				    xtype: 'box',
+				    style: {
+					margin: '8px 0px',
+					'line-height': '1.5em',
+				    },
+				    html: gettext('The notes are added to each backup created by this job.')
+				      + '<br>'
+				      + Ext.String.format(
+					gettext('Possible template variables are: {0}'),
+					['cluster', 'guestname', 'node', 'vmid'].map(v => `<code>{{${v}}}</code>`).join(', '),
+				    ),
+				},
+			    ],
+			},
 		    ],
 		},
 	    ],
@@ -414,6 +458,11 @@ Ext.define('PVE.dc.BackupEdit', {
 			    data['keep-all'] = 1;
 			}
 			delete data.maxfiles;
+		    }
+
+		    if (data['notes-template']) {
+			data['notes-template'] = PVE.Utils.unEscapeNotesTemplate(
+			    data['notes-template']);
 		    }
 
 		    me.setValues(data);
