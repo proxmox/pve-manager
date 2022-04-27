@@ -154,19 +154,41 @@ Ext.define('PVE.window.Backup', {
 	    },
 	});
 
+	let protectedCheckbox = Ext.create('Proxmox.form.Checkbox', {
+	    name: 'protected',
+	    checked: false,
+	    uncheckedValue: 0,
+	    fieldLabel: gettext('Protected'),
+	});
+
 	me.formPanel = Ext.create('Proxmox.panel.InputPanel', {
 	    bodyPadding: 10,
 	    border: false,
 	    column1: [
 		storagesel,
 		modeSelector,
-		removeCheckbox,
+		protectedCheckbox,
 	    ],
 	    column2: [
 		compressionSelector,
 		mailtoField,
+		removeCheckbox,
 	    ],
 	    columnB: [
+		{
+		    xtype: 'textareafield',
+		    name: 'notes-template',
+		    fieldLabel: gettext('Notes'),
+		    anchor: '100%',
+		    value: '{{guestname}}',
+		    autoEl: {
+			tag: 'div',
+			'data-qtip': Ext.String.format(
+			    gettext('Notes added to the backup. Possible variables are {0}'),
+			    '{{cluster}}, {{guestname}}, {{node}}, {{vmid}}',
+			),
+		    },
+		},
 		{
 		    xtype: 'label',
 		    name: 'pruneLabel',
@@ -229,6 +251,15 @@ Ext.define('PVE.window.Backup', {
 		    params.compress = values.compress;
 		}
 
+		if (values.protected) {
+		    params.protected = values.protected;
+		}
+
+		if (values['notes-template']) {
+		    params['notes-template'] = PVE.Utils.escapeNotesTemplate(
+			values['notes-template']);
+		}
+
 		Proxmox.Utils.API2Request({
 		    url: '/nodes/' + me.nodename + '/vzdump',
 		    params: params,
@@ -272,6 +303,7 @@ Ext.define('PVE.window.Backup', {
 	    modal: true,
 	    layout: 'auto',
 	    border: false,
+	    width: 600,
 	    items: [me.formPanel],
 	    buttons: [helpBtn, '->', submitBtn],
 	    listeners: {
