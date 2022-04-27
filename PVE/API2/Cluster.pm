@@ -737,11 +737,17 @@ __PACKAGE__->register_method({
 	    raise_param_exc({ vmid => "VM $vmid already exists" });
 	}
 
-	for (my $i = 100; $i < 10000; $i++) {
+	my $dc_conf = PVE::Cluster::cfs_read_file('datacenter.cfg');
+	my $next_id = $dc_conf->{'next-id'} // {};
+
+	my $lower = $next_id->{lower} // 100;
+	my $upper = $next_id->{upper} // (1000 * 1000); # note, lower than the schema-maximum
+
+	for (my $i = $lower; $i < $upper; $i++) {
 	    return $i if !defined($idlist->{$i});
 	}
 
-	die "unable to get any free VMID\n";
+	die "unable to get any free VMID in range [$lower, $upper]\n";
     }});
 
 1;
