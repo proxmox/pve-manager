@@ -284,6 +284,27 @@ Ext.define('PVE.dc.OptionView', {
 	    minValue: 1,
 	    maxValue: 64, // arbitrary but generous limit as limits are good
 	});
+	me.add_inputpanel_row('next-id', gettext('Next Free VMID Range'), {
+	    renderer: PVE.Utils.render_as_property_string,
+	    url: "/api2/extjs/cluster/options",
+	    items: [{
+		xtype: 'proxmoxintegerfield',
+		name: 'lower',
+		fieldLabel: gettext('Lower'),
+		emptyText: '100',
+		minValue: 100,
+		maxValue: 1000 * 1000 * 1000 - 1,
+		submitValue: true,
+	    }, {
+		xtype: 'proxmoxintegerfield',
+		name: 'upper',
+		fieldLabel: gettext('Upper'),
+		emptyText: '1.000.000',
+		minValue: 100,
+		maxValue: 1000 * 1000 * 1000 - 1,
+		submitValue: true,
+	    }],
+	});
 
 	me.selModel = Ext.create('Ext.selection.RowModel', {});
 
