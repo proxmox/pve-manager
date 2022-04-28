@@ -669,8 +669,12 @@ sub run_hook_script {
     my $script = $opts->{script};
     return if !$script;
 
+    if (!-f $script) {
+	die "Error: The hook script '$script' does not exist.\n";
+    }
+
     if (!-x $script) {
-	die "The hook script '$script' is not executable.\n";
+	die "Error: The hook script '$script' is not executable.\n";
     }
 
     my $cmd = [$script, $phase];
