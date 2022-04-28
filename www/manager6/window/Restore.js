@@ -293,48 +293,52 @@ Ext.define('PVE.window.Restore', {
 	    });
 	}
 
-	items.push(
-	    {
-		xtype: 'displayfield',
-		value: `${gettext('Override Settings')}:`,
+	items.push({
+	    xtype: 'fieldset',
+	    title: `${gettext('Override Settings')}:`,
+	    layout: 'column',
+	    defaults: {
+		width: '45%',
+		margin: '0 0 5 10',
 	    },
-	    {
-		xtype: 'textfield',
-		fieldLabel: gettext('Name'),
-		name: 'name',
-		reference: 'nameField',
-		allowBlank: true,
-	    },
-	    {
-		xtype: 'pveMemoryField',
-		fieldLabel: gettext('Memory'),
-		name: 'memory',
-		reference: 'memoryField',
-		value: '',
-		allowBlank: true,
-	    },
-	    {
-		xtype: 'proxmoxintegerfield',
-		fieldLabel: gettext('Cores'),
-		name: 'cores',
-		reference: 'coresField',
-		minValue: 1,
-		maxValue: 128,
-		allowBlank: true,
-	    },
-	);
-
-	if (me.vmtype === 'qemu') {
-	    items.push({
-		xtype: 'proxmoxintegerfield',
-		fieldLabel: gettext('Sockets'),
-		name: 'sockets',
-		reference: 'socketsField',
-		minValue: 1,
-		maxValue: 4,
-		allowBlank: true,
-	    });
-	}
+	    items: [
+		{
+		    xtype: 'textfield',
+		    fieldLabel: gettext('Name'),
+		    name: 'name',
+		    reference: 'nameField',
+		    allowBlank: true,
+		},
+		{
+		    xtype: 'pveMemoryField',
+		    fieldLabel: gettext('Memory'),
+		    name: 'memory',
+		    reference: 'memoryField',
+		    value: '',
+		    allowBlank: true,
+		},
+		{
+		    xtype: 'proxmoxintegerfield',
+		    fieldLabel: gettext('Cores'),
+		    name: 'cores',
+		    reference: 'coresField',
+		    minValue: 1,
+		    maxValue: 128,
+		    allowBlank: true,
+		},
+		{
+		    xtype: 'proxmoxintegerfield',
+		    fieldLabel: gettext('Sockets'),
+		    name: 'sockets',
+		    reference: 'socketsField',
+		    minValue: 1,
+		    maxValue: 4,
+		    allowBlank: true,
+		    hidden: me.vmtype !== 'qemu',
+		    disabled: me.vmtype !== 'qemu',
+		},
+	    ],
+	});
 
 	let title = gettext('Restore') + ": " + (me.vmtype === 'lxc' ? 'CT' : 'VM');
 	if (me.vmid) {
