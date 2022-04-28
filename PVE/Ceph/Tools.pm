@@ -255,6 +255,19 @@ sub set_pool {
 
 }
 
+sub get_pool_properties {
+    my ($pool) = @_;
+    my $command = {
+	prefix => "osd pool get",
+	pool   => "$pool",
+	var    => "all",
+	format => 'json',
+    };
+
+    my $rados = PVE::RADOS->new();
+    return $rados->mon_command($command);
+}
+
 sub create_pool {
     my ($pool, $param, $rados) = @_;
     $rados = PVE::RADOS->new() if !defined($rados);
@@ -514,6 +527,65 @@ sub ceph_cluster_status {
     }
 
     return $status;
+}
+
+sub ecprofile_exists {
+    my ($name) = @_;
+
+    my $rados = PVE::RADOS->new();
+    my $res = $rados->mon_command({ prefix => 'osd erasure-code-profile ls' });
+
+    my $profiles = { map { $_ => 1 } @$res };
+    return $profiles->{$name};
+}
+
+sub create_ecprofile {
+    my ($name, $k, $m, $failure_domain, $device_class) = @_;
+
+    $failure_domain = 'host' if !$failure_domain;
+
+    my $profile = [
+	"crush-failure-domain=${failure_domain}",
+	"k=${k}",
+	"m=${m}",
+    ];
+
+    push(@$profile, "crush-device-class=${device_class}") if $device_class;
+
+    my $rados = PVE::RADOS->new();
+    $rados->mon_command({
+	prefix => 'osd erasure-code-profile set',
+	name => $name,
+	profile => $profile,
+    });
+}
+
+sub destroy_ecprofile {
+    my ($profile) = @_;
+
+    my $rados = PVE::RADOS->new();
+    my $command = {
+	prefix => 'osd erasure-code-profile rm',
+	name => $profile,
+	format => 'plain',
+    };
+    return $rados->mon_command($command);
+}
+
+sub get_ecprofile_name {
+    my ($name) = @_;
+    return "pve_ec_${name}";
+}
+
+sub destroy_crush_rule {
+    my ($rule) = @_;
+    my $rados = PVE::RADOS->new();
+    my $command = {
+	prefix => 'osd crush rule rm',
+	name => $rule,
+	format => 'plain',
+    };
+    return $rados->mon_command($command);
 }
 
 1;
