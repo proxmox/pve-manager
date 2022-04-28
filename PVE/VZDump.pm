@@ -1326,6 +1326,9 @@ sub verify_vzdump_parameters {
 
     $parse_prune_backups_maxfiles->($param, 'CLI parameters');
 
+    raise_param_exc({'notes-template' => "contains a line feed"})
+	if $param->{'notes-template'} && $param->{'notes-template'} =~ m/\n/;
+
     $param->{all} = 1 if (defined($param->{exclude}) && !$param->{pool});
 
     return if !$check_missing;
