@@ -304,7 +304,7 @@ Ext.define('PVE.window.Restore', {
 	    items: [
 		{
 		    xtype: 'textfield',
-		    fieldLabel: gettext('Name'),
+		    fieldLabel: me.vmtype === 'lxc' ? gettext('Hostname') : gettext('Name'),
 		    name: 'name',
 		    reference: 'nameField',
 		    allowBlank: true,
