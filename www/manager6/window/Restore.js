@@ -296,49 +296,56 @@ Ext.define('PVE.window.Restore', {
 	items.push({
 	    xtype: 'fieldset',
 	    title: `${gettext('Override Settings')}:`,
-	    layout: 'column',
+	    layout: 'hbox',
 	    defaults: {
-		width: '45%',
-		margin: '0 0 5 10',
+		border: false,
+		layout: 'anchor',
+		flex: 1,
 	    },
 	    items: [
 		{
-		    xtype: 'textfield',
-		    fieldLabel: me.vmtype === 'lxc' ? gettext('Hostname') : gettext('Name'),
-		    name: 'name',
-		    reference: 'nameField',
-		    allowBlank: true,
+		    padding: '0 10 0 0',
+		    items: [{
+			xtype: 'textfield',
+			fieldLabel: me.vmtype === 'lxc' ? gettext('Hostname') : gettext('Name'),
+			name: 'name',
+			reference: 'nameField',
+			allowBlank: true,
+		    }, {
+			xtype: 'proxmoxintegerfield',
+			fieldLabel: gettext('Cores'),
+			name: 'cores',
+			reference: 'coresField',
+			minValue: 1,
+			maxValue: 128,
+			allowBlank: true,
+		    }],
 		},
 		{
-		    xtype: 'pveMemoryField',
-		    fieldLabel: gettext('Memory'),
-		    name: 'memory',
-		    reference: 'memoryField',
-		    value: '',
-		    allowBlank: true,
-		},
-		{
-		    xtype: 'proxmoxintegerfield',
-		    fieldLabel: gettext('Cores'),
-		    name: 'cores',
-		    reference: 'coresField',
-		    minValue: 1,
-		    maxValue: 128,
-		    allowBlank: true,
-		},
-		{
-		    xtype: 'proxmoxintegerfield',
-		    fieldLabel: gettext('Sockets'),
-		    name: 'sockets',
-		    reference: 'socketsField',
-		    minValue: 1,
-		    maxValue: 4,
-		    allowBlank: true,
-		    hidden: me.vmtype !== 'qemu',
-		    disabled: me.vmtype !== 'qemu',
+		    padding: '0 0 0 10',
+		    items: [
+		    {
+			xtype: 'pveMemoryField',
+			fieldLabel: gettext('Memory'),
+			name: 'memory',
+			reference: 'memoryField',
+			value: '',
+			allowBlank: true,
+		    },
+		    {
+			xtype: 'proxmoxintegerfield',
+			fieldLabel: gettext('Sockets'),
+			name: 'sockets',
+			reference: 'socketsField',
+			minValue: 1,
+			maxValue: 4,
+			allowBlank: true,
+			hidden: me.vmtype !== 'qemu',
+			disabled: me.vmtype !== 'qemu',
+		    }],
 		},
 	    ],
-	});
+	);
 
 	let title = gettext('Restore') + ": " + (me.vmtype === 'lxc' ? 'CT' : 'VM');
 	if (me.vmid) {
