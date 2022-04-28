@@ -1,3 +1,86 @@
+pve-manager (7.1-13) bullseye; urgency=medium
+
+  * ui: sdn: options: flex all and drop collapsible
+
+  * report: report FS type in df call
+
+  * report: lsblk: output more columns and merge/group parents of sub-trees
+
+  * ui: qemu: switch processor, memory, CD-drive, PCI icons to SVG
+
+  * ui: lxc resources: support font awesome icons directly and switch to
+    vector based ones
+
+  * add various storage content type check enforcements
+
+  * periodic jobs: don't schedule jobs with no computable next event
+
+  * ui: render storage type: improve fallback for external storage plugins
+
+  * fix #3976: api/backup: make schedule/starttime truly optional on update
+
+  * vzdump: backup limit: only count unprotected backups
+
+  * ui: storage edit: retention: add max-protected-backups setting
+
+  * ui: VM/CTs: collect all disk/volume related actions in a submenu
+
+  * ui: VM/CTs: add a reassign disk/volume button
+
+  * ui: disk storage selector: never send format when hideFormat is true,
+    as backend knows it better
+
+  * ui: fix adding more than five host PCI passthrough devices, the backend
+    allows 16 since a while.
+
+  * ceph: services: broadcast versions: improve requesting old version
+
+  * fix #3668: ui: realm ldap/ad sync: replace 'full' and 'purge' with
+    'remove-vanished'
+
+  * api: replication: don't send mails about failed replication only once,
+    rather sent first three consecutively failing replications and then switch
+    to a slower frequency to better convey that there may be an acute failing,
+    not just a flapping error like one mail could suggest.
+
+  * replication: include more info in mail like failure-count, last succesful
+    sync, next try and current target node.
+
+  * ui: sdn: zone evpn: delete exitnodes-primary if empty
+
+  * fix #3955: vzdump: new: also send mail for error during job-init hook
+
+  * vzdump: support setting protected status directly for just created
+    backups
+
+  * fix #439: api: next-id: honor new datacenter.cfg upper/lower range option
+
+  * ui: datacenter options: add next-id editor
+
+  * ui: backup restore: disallow empty storage selection if auto-selecting one
+    in the backend wouldn't work
+
+  * ui: backup restore: allow override of some settings
+
+
+  * partially fix #438: vzdump: support setting notes-template per single
+    backup
+
+  * ui: backup: allow setting protected and notes-template for manual backup
+
+  * fix #438: ui: backup job: allow setting a notes-template for a job to add
+    a new note (comment) to each created backup job, for example, to include
+    the VM/CT hostname or cluster the backup was created on
+
+  * ui: add VirGL GPU to possible VGA drivers
+
+  * vzdump: add error if passed in hook script doesn't exist to allow one to
+    differentiate that from the executable flag missing.
+
+  * ceph pools: allow to create erasure code pools
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 28 Apr 2022 21:00:36 +0200
+
 pve-manager (7.1-12) bullseye; urgency=medium
 
   * node config: use common parser and fill in config schema for API endpoints
