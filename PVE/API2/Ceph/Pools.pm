@@ -302,8 +302,13 @@ my $get_storages = sub {
     my $res = {};
     foreach my $storeid (keys %$storages) {
 	my $curr = $storages->{$storeid};
-	$res->{$storeid} = $storages->{$storeid}
-	    if $curr->{type} eq 'rbd' && $pool eq $curr->{pool};
+	next if $curr->{type} ne 'rbd';
+	if (
+	    $pool eq $curr->{pool} ||
+	    (defined $curr->{'data-pool'} && $pool eq $curr->{'data-pool'})
+	) {
+	    $res->{$storeid} = $storages->{$storeid};
+	}
     }
 
     return $res;
