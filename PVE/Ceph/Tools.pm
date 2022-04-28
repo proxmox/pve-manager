@@ -8,7 +8,7 @@ use File::Basename;
 use IO::File;
 use JSON;
 
-use PVE::Tools qw(run_command dir_glob_foreach);
+use PVE::Tools qw(run_command dir_glob_foreach extract_param);
 use PVE::Cluster qw(cfs_read_file);
 use PVE::RADOS;
 use PVE::Ceph::Services;
@@ -274,12 +274,17 @@ sub create_pool {
 
     my $pg_num = $param->{pg_num} || 128;
 
-    $rados->mon_command({
+    my $mon_params = {
 	prefix => "osd pool create",
 	pool => $pool,
 	pg_num => int($pg_num),
 	format => 'plain',
-    });
+    };
+    $mon_params->{pool_type} = extract_param($param, 'pool_type') if $param->{pool_type};
+    $mon_params->{erasure_code_profile} = extract_param($param, 'erasure_code_profile')
+	if $param->{erasure_code_profile};
+
+    $rados->mon_command($mon_params);
 
     set_pool($pool, $param);
 
