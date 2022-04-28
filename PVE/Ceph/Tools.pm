@@ -257,10 +257,7 @@ sub set_pool {
 
 sub create_pool {
     my ($pool, $param, $rados) = @_;
-
-    if (!defined($rados)) {
-	$rados = PVE::RADOS->new();
-    }
+    $rados = PVE::RADOS->new() if !defined($rados);
 
     my $pg_num = $param->{pg_num} || 128;
 
@@ -277,10 +274,7 @@ sub create_pool {
 
 sub ls_pools {
     my ($pool, $rados) = @_;
-
-    if (!defined($rados)) {
-	$rados = PVE::RADOS->new();
-    }
+    $rados = PVE::RADOS->new() if !defined($rados);
 
     my $res = $rados->mon_command({ prefix => "osd lspools" });
 
@@ -289,10 +283,7 @@ sub ls_pools {
 
 sub destroy_pool {
     my ($pool, $rados) = @_;
-
-    if (!defined($rados)) {
-	$rados = PVE::RADOS->new();
-    }
+    $rados = PVE::RADOS->new() if !defined($rados);
 
     # fixme: '--yes-i-really-really-mean-it'
     $rados->mon_command({
@@ -314,10 +305,7 @@ sub destroy_pool {
 #}]
 sub ls_fs {
     my ($rados) = @_;
-
-    if (!defined($rados)) {
-	$rados = PVE::RADOS->new();
-    }
+    $rados = PVE::RADOS->new() if !defined($rados);
 
     my $res = $rados->mon_command({ prefix => "fs ls" });
 
@@ -342,10 +330,7 @@ sub create_fs {
 
 sub destroy_fs {
     my ($fs, $rados) = @_;
-
-    if (!defined($rados)) {
-	$rados = PVE::RADOS->new();
-    }
+    $rados = PVE::RADOS->new() if !defined($rados);
 
     $rados->mon_command({
 	prefix => "fs rm",
