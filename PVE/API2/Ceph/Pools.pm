@@ -5,7 +5,7 @@ use warnings;
 
 use PVE::Ceph::Tools;
 use PVE::Ceph::Services;
-use PVE::JSONSchema qw(get_standard_option);
+use PVE::JSONSchema qw(get_standard_option parse_property_string);
 use PVE::RADOS;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
@@ -280,7 +280,7 @@ my $ceph_pool_common_options = sub {
 
 
 my $add_storage = sub {
-    my ($pool, $storeid, $data_pool) = @_;
+    my ($pool, $storeid, $ec_data_pool) = @_;
 
     my $storage_params = {
 	type => 'rbd',
@@ -290,7 +290,7 @@ my $add_storage = sub {
 	content => 'rootdir,images',
     };
 
-    $storage_params->{'data-pool'} = $data_pool if $data_pool;
+    $storage_params->{'data-pool'} = $ec_data_pool if $ec_data_pool;
 
     PVE::API2::Storage::Config->create($storage_params);
 };
@@ -316,12 +316,60 @@ my $get_storages = sub {
     return $res;
 };
 
+my $ec_format = {
+    k => {
+	type => 'integer',
+	description => "Number of data chunks. Will create an erasure coded pool plus a"
+	    ." replicated pool for metadata.",
+	minimum => 1,
+    },
+    m => {
+	type => 'integer',
+	description => "Number of coding chunks. Will create an erasure coded pool plus a"
+	    ." replicated pool for metadata.",
+	minimum => 1,
+    },
+    'failure-domain' => {
+	type => 'string',
+	description => "CRUSH failure domain. Default is 'host'. Will create an erasure"
+	    ." coded pool plus a replicated pool for metadata.",
+	format_description => 'domain',
+	optional => 1,
+    },
+    'device-class' => {
+	type => 'string',
+	description => "CRUSH device class. Will create an erasure coded pool plus a"
+	    ." replicated pool for metadata.",
+	format_description => 'class',
+	optional => 1,
+    },
+    profile => {
+	description => "Override the erasure code (EC) profile to use. Will create an"
+	    ." erasure coded pool plus a replicated pool for metadata.",
+	type => 'string',
+	format_description => 'profile',
+	optional => 1,
+    },
+};
+
+sub ec_parse_and_check {
+    my ($property, $rados) = @_;
+    return if !$property;
+
+    my $ec = parse_property_string($ec_format, $property);
+
+    die "Erasure code profile '$ec->{profile}' does not exist.\n"
+	if $ec->{profile} && !PVE::Ceph::Tools::ecprofile_exists($ec->{profile}, $rados);
+
+    return $ec;
+}
+
 
 __PACKAGE__->register_method ({
     name => 'createpool',
     path => '',
     method => 'POST',
-    description => "Create POOL",
+    description => "Create Ceph pool",
     proxyto => 'node',
     protected => 1,
     permissions => {
@@ -337,34 +385,9 @@ __PACKAGE__->register_method ({
 		type => 'boolean',
 		optional => 1,
 	    },
-	    k => {
-		type => 'integer',
-		description => "Number of data chunks. Will create an erasure coded pool plus a ".
-				"replicated pool for metadata.",
-		optional => 1,
-	    },
-	    m => {
-		type => 'integer',
-		description => "Number of coding chunks. Will create an erasure coded pool plus a ".
-				"replicated pool for metadata.",
-		optional => 1,
-	    },
-	    'failure-domain' => {
+	    'erasure-coding' => {
 		type => 'string',
-		description => "CRUSH failure domain. Default is 'host'. Will create an erasure ".
-				"coded pool plus a replicated pool for metadata.",
-		optional => 1,
-	    },
-	    'device-class' => {
-		type => 'string',
-		description => "CRUSH device class. Will create an erasure coded pool plus a ".
-				"replicated pool for metadata.",
-		optional => 1,
-	    },
-	    ecprofile => {
-		description => "Override the erasure code (EC) profile to use. Will create an ".
-				"erasure coded pool plus a replicated pool for metadata.",
-		type => 'string',
+		format => $ec_format,
 		optional => 1,
 	    },
 	    %{ $ceph_pool_common_options->() },
@@ -380,27 +403,6 @@ __PACKAGE__->register_method ({
 	my $pool = my $name = extract_param($param, 'name');
 	my $node = extract_param($param, 'node');
 	my $add_storages = extract_param($param, 'add_storages');
-
-	my $ec_k = extract_param($param, 'k');
-	my $ec_m = extract_param($param, 'm');
-	my $ec_failure_domain = extract_param($param, 'failure-domain');
-	my $ec_device_class = extract_param($param, 'device-class');
-
-	my $is_ec = 0;
-
-	my $ecprofile = extract_param($param, 'ecprofile');
-	die "Erasure code profile '$ecprofile' does not exist.\n"
-	    if $ecprofile && !PVE::Ceph::Tools::ecprofile_exists($ecprofile);
-
-	if ($ec_k || $ec_m || $ec_failure_domain || $ec_device_class) {
-	    die "'k' and 'm' parameters are needed for an erasure coded pool\n"
-		if !$ec_k || !$ec_m;
-
-	    $is_ec = 1;
-	}
-
-	$is_ec = 1 if $ecprofile;
-	$add_storages = 1 if $is_ec;
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
@@ -424,46 +426,50 @@ __PACKAGE__->register_method ({
 	$param->{application} //= 'rbd';
 	$param->{pg_autoscale_mode} //= 'warn';
 
-	my $data_param = {};
-	my $data_pool = '';
-	if (!$ecprofile) {
-	    $ecprofile = PVE::Ceph::Tools::get_ecprofile_name($pool);
-	    eval {
-		PVE::Ceph::Tools::create_ecprofile(
-		    $ecprofile,
-		    $ec_k,
-		    $ec_m,
-		    $ec_failure_domain,
-		    $ec_device_class,
-		);
-	    };
-	    die "could not create erasure code profile '$ecprofile': $@\n" if $@;
-	}
+	my $rados = PVE::RADOS->new();
 
-	if ($is_ec) {
-	    # copy all params, should be a flat hash
-	    $data_param = { map { $_ => $param->{$_} } keys %$param };
-
-	    $data_param->{pool_type} = 'erasure';
-	    $data_param->{allow_ec_overwrites} = 'true';
-	    $data_param->{erasure_code_profile} = $ecprofile;
-	    delete $data_param->{size};
-	    delete $data_param->{min_size};
-
-	    # metadata pool should be ok with 32 PGs
-	    $param->{pg_num} = 32;
-
-	    $pool = "${name}-metadata";
-	    $data_pool = "${name}-data";
-	}
+	my $ec = ec_parse_and_check(extract_param($param, 'erasure-coding'), $rados);
 
 	my $worker = sub {
-	    PVE::Ceph::Tools::create_pool($pool, $param);
+	    # reopen with longer timeout
+	    $rados = PVE::RADOS->new(timeout => PVE::Ceph::Tools::get_config('long_rados_timeout'));
 
-	    PVE::Ceph::Tools::create_pool($data_pool, $data_param) if $is_ec;
+	    if ($ec) {
+		if (!$ec->{profile}) {
+		    $ec->{profile} = PVE::Ceph::Tools::get_ecprofile_name($pool, $rados);
+		    eval {
+			PVE::Ceph::Tools::create_ecprofile(
+			    $ec->@{'profile', 'k', 'm', 'failure-domain', 'device-class'},
+			    $rados,
+			);
+		    };
+		    die "could not create erasure code profile '$ec->{profile}': $@\n" if $@;
+		    print "created new erasure code profile '$ec->{profile}'\n";
+		}
+
+		my $ec_data_param = {};
+		# copy all params, should be a flat hash
+		$ec_data_param = { map { $_ => $param->{$_} } keys %$param };
+
+		$ec_data_param->{pool_type} = 'erasure';
+		$ec_data_param->{allow_ec_overwrites} = 'true';
+		$ec_data_param->{erasure_code_profile} = $ec->{profile};
+		delete $ec_data_param->{size};
+		delete $ec_data_param->{min_size};
+
+		# metadata pool should be ok with 32 PGs
+		$param->{pg_num} = 32;
+
+		$pool = "${name}-metadata";
+		$ec->{data_pool} = "${name}-data";
+
+		PVE::Ceph::Tools::create_pool($ec->{data_pool}, $ec_data_param, $rados);
+	    }
+
+	    PVE::Ceph::Tools::create_pool($pool, $param, $rados);
 
 	    if ($add_storages) {
-		eval { $add_storage->($pool, "${name}", $data_pool) };
+		eval { $add_storage->($pool, "${name}", $ec->{data_pool}) };
 		die "adding PVE storage for ceph pool '$name' failed: $@\n" if $@;
 	    }
 	};
@@ -503,7 +509,7 @@ __PACKAGE__->register_method ({
 		default => 0,
 	    },
 	    remove_ecprofile => {
-		description => "Remove the erasure code profile. Used for erasure code pools. Default is true",
+		description => "Remove the erasure code profile. Defaults to true, if applicable.",
 		type => 'boolean',
 		optional => 1,
 		default => 1,
@@ -522,7 +528,6 @@ __PACKAGE__->register_method ({
 	    if $param->{remove_storages};
 
 	my $pool = $param->{name};
-	my $remove_ecprofile = $param->{remove_ecprofile} // 1;
 
 	my $worker = sub {
 	    my $storages = $get_storages->($pool);
@@ -541,18 +546,21 @@ __PACKAGE__->register_method ({
 			if @{$res->{$storeid}} != 0;
 		}
 	    }
+	    my $rados = PVE::RADOS->new();
 
-	    my $pool_properties = PVE::Ceph::Tools::get_pool_properties($pool);
+	    my $pool_properties = PVE::Ceph::Tools::get_pool_properties($pool, $rados);
 
-	    PVE::Ceph::Tools::destroy_pool($pool);
+	    PVE::Ceph::Tools::destroy_pool($pool, $rados);
 
 	    if (my $ecprofile = $pool_properties->{erasure_code_profile}) {
+		print "found erasure coded profile '$ecprofile', destroying its CRUSH rule\n";
 		my $crush_rule = $pool_properties->{crush_rule};
-		eval { PVE::Ceph::Tools::destroy_crush_rule($crush_rule); };
+		eval { PVE::Ceph::Tools::destroy_crush_rule($crush_rule, $rados); };
 		warn "removing crush rule '${crush_rule}' failed: $@\n" if $@;
 
-		if ($remove_ecprofile) {
-		    eval { PVE::Ceph::Tools::destroy_ecprofile($ecprofile) };
+		if ($param->{remove_ecprofile} // 1) {
+		    print "destroying erasure coded profile '$ecprofile'\n";
+		    eval { PVE::Ceph::Tools::destroy_ecprofile($ecprofile, $rados) };
 		    warn "removing EC profile '${ecprofile}' failed: $@\n" if $@;
 		}
 	    }
