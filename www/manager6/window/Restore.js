@@ -345,7 +345,7 @@ Ext.define('PVE.window.Restore', {
 		    }],
 		},
 	    ],
-	);
+	});
 
 	let title = gettext('Restore') + ": " + (me.vmtype === 'lxc' ? 'CT' : 'VM');
 	if (me.vmid) {
