@@ -409,16 +409,15 @@ __PACKAGE__->register_method ({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
-	my $rados = PVE::RADOS->new();
-
-	my $ec = ec_parse_and_check(extract_param($param, 'erasure-coding'), $rados);
-	$add_storages = 1 if $ec && !defined $add_storages;
-
 	# Ceph uses target_size_bytes
 	if (defined($param->{'target_size'})) {
 	    my $target_sizestr = extract_param($param, 'target_size');
 	    $param->{target_size_bytes} = PVE::JSONSchema::parse_size($target_sizestr);
 	}
+
+	my $rados = PVE::RADOS->new();
+	my $ec = ec_parse_and_check(extract_param($param, 'erasure-coding'), $rados);
+	$add_storages = 1 if $ec && !defined($add_storages);
 
 	if ($add_storages) {
 	    $rpcenv->check($user, '/storage', ['Datastore.Allocate']);
