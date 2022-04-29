@@ -321,7 +321,7 @@ my $ec_format = {
 	type => 'integer',
 	description => "Number of data chunks. Will create an erasure coded pool plus a"
 	    ." replicated pool for metadata.",
-	minimum => 1,
+	minimum => 2,
     },
     m => {
 	type => 'integer',
@@ -335,6 +335,7 @@ my $ec_format = {
 	    ." coded pool plus a replicated pool for metadata.",
 	format_description => 'domain',
 	optional => 1,
+	default => 'host',
     },
     'device-class' => {
 	type => 'string',
@@ -386,6 +387,8 @@ __PACKAGE__->register_method ({
 		optional => 1,
 	    },
 	    'erasure-coding' => {
+		description => "Create an erasure coded pool for RBD with an ".
+				"accompaning replicated pool for metadata storage.",
 		type => 'string',
 		format => $ec_format,
 		optional => 1,
