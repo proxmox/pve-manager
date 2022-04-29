@@ -381,10 +381,10 @@ __PACKAGE__->register_method ({
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    add_storages => {
-		description => "Configure VM and CT storage using the new pool. ".
-				"Always enabled for erasure coded pools.",
+		description => "Configure VM and CT storage using the new pool.",
 		type => 'boolean',
 		optional => 1,
+		default => "0; for erasure coded pools: 1",
 	    },
 	    'erasure-coding' => {
 		description => "Create an erasure coded pool for RBD with an ".
@@ -409,6 +409,10 @@ __PACKAGE__->register_method ({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
+	my $rados = PVE::RADOS->new();
+
+	my $ec = ec_parse_and_check(extract_param($param, 'erasure-coding'), $rados);
+	$add_storages = 1 if $ec && !defined $add_storages;
 
 	# Ceph uses target_size_bytes
 	if (defined($param->{'target_size'})) {
@@ -428,10 +432,6 @@ __PACKAGE__->register_method ({
 	$param->{min_size} //= 2;
 	$param->{application} //= 'rbd';
 	$param->{pg_autoscale_mode} //= 'warn';
-
-	my $rados = PVE::RADOS->new();
-
-	my $ec = ec_parse_and_check(extract_param($param, 'erasure-coding'), $rados);
 
 	my $worker = sub {
 	    # reopen with longer timeout
