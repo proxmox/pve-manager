@@ -1,3 +1,12 @@
+pve-manager (7.2-1) bullseye; urgency=medium
+
+  * ui: dc/SyncWindow: use field set like sync options now does too
+
+  *  api: ceph pools: default to add-pve-storage to true for erasure coded
+     pools, but still allow overriding it
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 29 Apr 2022 14:29:30 +0200
+
 pve-manager (7.1-13) bullseye; urgency=medium
 
   * ui: sdn: options: flex all and drop collapsible
