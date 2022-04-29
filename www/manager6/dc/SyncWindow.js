@@ -119,26 +119,28 @@ Ext.define('PVE.dc.SyncWindow', {
 
 		columnB: [
 		    {
-			xtype: 'displayfield',
-			fieldLabel: gettext('Remove Vanished'),
-		    },
-		    {
-			xtype: 'proxmoxcheckbox',
-			fieldLabel: gettext('ACL'),
-			name: 'remove-vanished-acl',
-			boxLabel: gettext('Remove ACLs of users and groups which are not in the sync response.'),
-		    },
-		    {
-			xtype: 'proxmoxcheckbox',
-			fieldLabel: gettext('Entry'),
-			name: 'remove-vanished-entry',
-			boxLabel: gettext('Remove users and groups that are not in the sync response.'),
-		    },
-		    {
-			xtype: 'proxmoxcheckbox',
-			fieldLabel: gettext('Properties'),
-			name: 'remove-vanished-properties',
-			boxLabel: gettext('Remove user-properties that are not in the sync response.'),
+			xtype: 'fieldset',
+			title: gettext('Remove Vanished Options'),
+			items: [
+			    {
+				xtype: 'proxmoxcheckbox',
+				fieldLabel: gettext('ACL'),
+				name: 'remove-vanished-acl',
+				boxLabel: gettext('Remove ACLs of vanished users and groups.'),
+			    },
+			    {
+				xtype: 'proxmoxcheckbox',
+				fieldLabel: gettext('Entry'),
+				name: 'remove-vanished-entry',
+				boxLabel: gettext('Remove vanished user and group entries.'),
+			    },
+			    {
+				xtype: 'proxmoxcheckbox',
+				fieldLabel: gettext('Properties'),
+				name: 'remove-vanished-properties',
+				boxLabel: gettext('Remove properties from vanished users.'),
+			    },
+			],
 		    },
 		    {
 			xtype: 'displayfield',
