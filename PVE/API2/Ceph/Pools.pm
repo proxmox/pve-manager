@@ -387,8 +387,8 @@ __PACKAGE__->register_method ({
 		default => "0; for erasure coded pools: 1",
 	    },
 	    'erasure-coding' => {
-		description => "Create an erasure coded pool for RBD with an ".
-				"accompaning replicated pool for metadata storage.",
+		description => "Create an erasure coded pool for RBD with an"
+		    ." accompaning replicated pool for metadata storage.",
 		type => 'string',
 		format => $ec_format,
 		optional => 1,
