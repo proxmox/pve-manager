@@ -66,6 +66,11 @@ __PACKAGE__->register_method ({
 		    type => 'integer',
 		    title => 'Size',
 		},
+		type => {
+		    type => 'string',
+		    title => 'Type',
+		    enum => ['replicated', 'erasure', 'unknown'],
+		},
 		min_size => {
 		    type => 'integer',
 		    title => 'Min Size',
@@ -184,6 +189,17 @@ __PACKAGE__->register_method ({
 	    if (my $s = $stats->{$d->{pool}}) {
 		$d->{bytes_used} = $s->{bytes_used};
 		$d->{percent_used} = $s->{percent_used};
+	    }
+
+	    # Cephs numerical pool types are barely documented. Found the following in the Ceph
+	    # codebase: https://github.com/ceph/ceph/blob/ff144995a849407c258bcb763daa3e03cfce5059/src/osd/osd_types.h#L1221-L1233
+	    if ($e->{type} == 1) {
+		$d->{type} = 'replicated';
+	    } elsif ($e->{type} == 3) {
+		$d->{type} = 'erasure';
+	    } else {
+		# we should never get here, but better be safe
+		$d->{type} = 'unknown';
 	    }
 	    push @$data, $d;
 	}
