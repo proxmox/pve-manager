@@ -205,7 +205,7 @@ sub check_ceph_enabled {
 }
 
 my $set_pool_setting = sub {
-    my ($pool, $setting, $value) = @_;
+    my ($pool, $setting, $value, $rados) = @_;
 
     my $command;
     if ($setting eq 'application') {
@@ -224,7 +224,7 @@ my $set_pool_setting = sub {
 	};
     }
 
-    my $rados = PVE::RADOS->new();
+    $rados = PVE::RADOS->new() if !$rados;
     eval { $rados->mon_command($command); };
     return $@ ? $@ : undef;
 };
@@ -232,6 +232,18 @@ my $set_pool_setting = sub {
 sub set_pool {
     my ($pool, $param) = @_;
 
+    my $rados = PVE::RADOS->new();
+
+    if (get_pool_type($pool, $rados) eq 'erasure') {
+	#remove parameters that cannot be changed for erasure coded pools
+	my $ignore_params = ['size', 'crush_rule'];
+	for my $setting (@$ignore_params) {
+	    if ($param->{$setting}) {
+		print "cannot set '${setting}' for erasure coded pool\n";
+		delete $param->{$setting};
+	    }
+	}
+    }
     # by default, pool size always resets min_size, so set it as first item
     # https://tracker.ceph.com/issues/44862
     my $keys = [ grep { $_ ne 'size' } sort keys %$param ];
@@ -241,7 +253,7 @@ sub set_pool {
 	my $value = $param->{$setting};
 
 	print "pool $pool: applying $setting = $value\n";
-	if (my $err = $set_pool_setting->($pool, $setting, $value)) {
+	if (my $err = $set_pool_setting->($pool, $setting, $value, $rados)) {
 	    print "$err";
 	} else {
 	    delete $param->{$setting};
@@ -265,6 +277,13 @@ sub get_pool_properties {
 	format => 'json',
     };
     return $rados->mon_command($command);
+}
+
+sub get_pool_type {
+    my ($pool, $rados) = @_;
+    $rados = PVE::RADOS->new() if !defined($rados);
+    return 'erasure' if get_pool_properties($pool, $rados)->{erasure_code_profile};
+    return 'replicated';
 }
 
 sub create_pool {
