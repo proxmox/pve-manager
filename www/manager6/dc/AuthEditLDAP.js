@@ -99,22 +99,6 @@ Ext.define('PVE.panel.LDAPSyncInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     xtype: 'pveAuthLDAPSyncPanel',
 
-    controller: {
-	xclass: 'Ext.app.ViewController',
-	control: {
-	    'proxmoxcheckbox[name=remove-vanished-entry]': {
-		change: function(_f, removeEntries) {
-		    let propertyField = this.getView()
-			.down('proxmoxcheckbox[name=remove-vanished-properties]');
-		    propertyField.setDisabled(removeEntries);
-		    if (removeEntries) {
-			propertyField.setValue(true);
-		    }
-		},
-	    },
-	},
-    },
-
     editableAttributes: ['email'],
     editableDefaults: ['scope', 'enable-new'],
     default_opts: {},
@@ -312,7 +296,7 @@ Ext.define('PVE.panel.LDAPSyncInputPanel', {
 		    xtype: 'proxmoxcheckbox',
 		    fieldLabel: gettext('Properties'),
 		    name: 'remove-vanished-properties',
-		    boxLabel: gettext('Remove properties from vanished users.'),
+		    boxLabel: gettext('Remove vanished properties from synced users.'),
 		},
 	    ],
 	},

@@ -138,7 +138,7 @@ Ext.define('PVE.dc.SyncWindow', {
 				xtype: 'proxmoxcheckbox',
 				fieldLabel: gettext('Properties'),
 				name: 'remove-vanished-properties',
-				boxLabel: gettext('Remove properties from vanished users.'),
+				boxLabel: gettext('Remove vanished properties from synced users.'),
 			    },
 			],
 		    },
