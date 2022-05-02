@@ -1,3 +1,18 @@
+pve-manager (7.2-2) bullseye; urgency=medium
+
+  * ui: storage content: support filtering by notes for backups
+
+  *  api: ceph pools: add type to returned properties
+
+  * ui: ceph pools: add pool type column, but hide by default
+
+  * ui: ceph pool edit: disable size and crush rule for erasure pools
+
+  * ui: snapshot tree: warn that current state is lost when confirming
+    rollback
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 02 May 2022 17:33:27 +0200
+
 pve-manager (7.2-1) bullseye; urgency=medium
 
   * ui: dc/SyncWindow: use field set like sync options now does too
