@@ -241,6 +241,13 @@ Ext.define('PVE.node.Ceph.PoolList', {
 	    dataIndex: 'pool_name',
 	},
 	{
+	    text: gettext('Type'),
+	    minWidth: 100,
+	    flex: 1,
+	    dataIndex: 'type',
+	    hidden: true,
+	},
+	{
 	    text: gettext('Size') + '/min',
 	    minWidth: 100,
 	    flex: 1,
