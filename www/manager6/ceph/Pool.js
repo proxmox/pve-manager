@@ -19,21 +19,28 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    allowBlank: false,
 	},
 	{
-	    xtype: 'proxmoxintegerfield',
+	    xtype: 'pmxDisplayEditField',
+	    cbind: {
+		editable: '{!isErasure}',
+	    },
 	    fieldLabel: gettext('Size'),
 	    name: 'size',
-	    value: 3,
-	    minValue: 2,
-	    maxValue: 7,
-	    allowBlank: false,
-	    listeners: {
-		change: function(field, val) {
-		    let size = Math.round(val / 2);
-		    if (size > 1) {
-			field.up('inputpanel').down('field[name=min_size]').setValue(size);
-		    }
+	    editConfig: {
+		xtype: 'proxmoxintegerfield',
+		value: 3,
+		minValue: 2,
+		maxValue: 7,
+		allowBlank: false,
+		listeners: {
+		    change: function(field, val) {
+			let size = Math.round(val / 2);
+			if (size > 1) {
+			    field.up('inputpanel').down('field[name=min_size]').setValue(size);
+			}
+		    },
 		},
 	    },
+
 	},
     ],
     column2: [
@@ -101,14 +108,18 @@ Ext.define('PVE.CephPoolInputPanel', {
 	    hidden: true,
 	},
 	{
-	    xtype: 'pveCephRuleSelector',
-	    fieldLabel: 'Crush Rule', // do not localize
-	    name: 'crush_rule',
+	    xtype: 'pmxDisplayEditField',
 	    cbind: {
+		editable: '{!isErasure}',
 		nodename: '{nodename}',
 		isCreate: '{isCreate}',
 	    },
-	    allowBlank: false,
+	    fieldLabel: 'Crush Rule', // do not localize
+	    name: 'crush_rule',
+	    editConfig: {
+		xtype: 'pveCephRuleSelector',
+		allowBlank: false,
+	    },
 	},
 	{
 	    xtype: 'proxmoxintegerfield',
@@ -203,6 +214,7 @@ Ext.define('PVE.Ceph.PoolEdit', {
 	cbind: {
 	    nodename: '{nodename}',
 	    pool_name: '{pool_name}',
+	    isErasure: '{isErasure}',
 	    isCreate: '{isCreate}',
 	},
     }],
@@ -354,6 +366,7 @@ Ext.define('PVE.node.Ceph.PoolList', {
 		title: gettext('Edit') + ': Ceph Pool',
 		nodename: nodename,
 		pool_name: rec.data.pool_name,
+		isErasure: rec.data.type === 'erasure',
 		autoShow: true,
 		listeners: {
 		    destroy: () => rstore.load(),
@@ -371,6 +384,7 @@ Ext.define('PVE.node.Ceph.PoolList', {
 			Ext.create('PVE.Ceph.PoolEdit', {
 			    title: gettext('Create') + ': Ceph Pool',
 			    isCreate: true,
+			    isErasure: false,
 			    nodename: nodename,
 			    autoShow: true,
 			    listeners: {
