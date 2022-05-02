@@ -372,6 +372,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    name: 'network',
 		    value: '',
 		    fieldLabel: 'Public Network IP/CIDR',
+		    autoSelect: false,
 		    bind: {
 			allowBlank: '{configuration}',
 		    },
