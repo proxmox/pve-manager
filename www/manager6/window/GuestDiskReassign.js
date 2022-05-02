@@ -132,13 +132,9 @@ Ext.define('PVE.window.GuestDiskReassign', {
 	},
 	{
 	    xtype: 'vmComboSelector',
-	    reference: 'targetVMID',
 	    name: 'targetVmid',
 	    allowBlank: false,
 	    fieldLabel: gettext('Target Guest'),
-	    bind: {
-		value: '{targetVMID}',
-	    },
 	    store: {
 		model: 'PVEResources',
 		autoLoad: true,
