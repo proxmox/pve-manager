@@ -110,18 +110,18 @@ Ext.define('PVE.storage.ContentView', {
 		xtype: 'textfield',
 		width: 200,
 		enableKeyEvents: true,
-		emptyText: gettext('Name, Format'),
+		emptyText: content === 'backup' ? gettext('Name, Format, Notes') : gettext('Name, Format'),
 		listeners: {
 		    keyup: {
 			buffer: 500,
 			fn: function(field) {
+			    let needle = field.getValue().toLocaleLowerCase();
 			    store.clearFilter(true);
 			    store.filter([
 				{
-				    property: 'text',
-				    value: field.getValue(),
-				    anyMatch: true,
-				    caseSensitive: false,
+				    filterFn: ({ data }) =>
+				        data.text?.toLocaleLowerCase().includes(needle) ||
+				        data.notes?.toLocaleLowerCase().includes(needle),
 				},
 			    ]);
 			},
