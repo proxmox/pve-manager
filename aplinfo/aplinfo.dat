@@ -299,20 +299,6 @@ Infopage: http://pve.proxmox.com/wiki/Ubuntu_Disco_Standard
 Description: Ubuntu Focal (standard)
  A small Ubuntu 20.04 Focal Fossa system including all standard packages.
 
-Package: ubuntu-21.04-standard
-Version: 21.04-1
-Type: lxc
-OS: ubuntu-21.04
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-21.04-standard_21.04-1_amd64.tar.gz
-md5sum: 3682438eafb8e288bc4df38ee7678710
-sha512sum: 53dc180f5b1c05e93d221fcbe8a334eb4afe2f591b575144f8d80242e8f9c3cca65da0abab19904d66900823f408700bad9a3ad1f94d86b9194e9932c8898a06
-Infopage: http://pve.proxmox.com/wiki/Ubuntu_Groovy_Standard
-Description: Ubuntu 21.04 Hirsute (standard)
- A small Ubuntu 21.04 Hirsute Hippo system including all standard packages.
-
 Package: ubuntu-21.10-standard
 Version: 21.10-1
 Type: lxc
@@ -326,3 +312,17 @@ sha512sum: 69d07a1d31a5a56a9a06677f7b160c737a68fb21e6324449556f8bf9d72abd423bdc2
 Infopage: http://pve.proxmox.com/wiki/Ubuntu_Impish_Standard
 Description: Ubuntu 21.10 Impish (standard)
  A small Ubuntu 21.10 Impish Indri system including all standard packages.
+
+Package: ubuntu-22.04-standard
+Version: 22.04-1
+Type: lxc
+OS: ubuntu-22.04
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-22.04-standard_22.04-1_amd64.tar.zst
+md5sum: a1f167ac98a931abc333154354d475fc
+sha512sum: cf617c11232c3fbce1ba9f7146ac194561411c292c445b2a5c9affe5f09729f5c38315619de4d649ff63e31dd5b536ea081fdde1b7792e6e521d1694ac7c9cb8
+Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
+Description: Ubuntu 22.04 Jammy (standard)
+ A small Ubuntu 22.04 Jammy Jellyfish system including all standard packages.
