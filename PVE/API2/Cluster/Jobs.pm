@@ -97,6 +97,7 @@ __PACKAGE__->register_method({
 
 	for (my $count = 0; $count < $iterations; $count++) {
 	    my $next = PVE::CalendarEvent::compute_next_event($event, $starttime);
+	    last if !defined($next);
 	    push @$result, {
 		timestamp => $next,
 		utc => scalar(gmtime($next)),
