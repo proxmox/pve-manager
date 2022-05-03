@@ -474,6 +474,7 @@ __PACKAGE__->register_method ({
 		$ec_data_param->{erasure_code_profile} = $ec->{profile};
 		delete $ec_data_param->{size};
 		delete $ec_data_param->{min_size};
+		delete $ec_data_param->{crush_rule};
 
 		# metadata pool should be ok with 32 PGs
 		$param->{pg_num} = 32;
