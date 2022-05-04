@@ -92,7 +92,7 @@ my $generate_notes = sub {
     my $vars = join('|', keys $info->%*);
     $notes_template =~ s/\{\{($vars)\}\}/$info->{$1}/g;
 
-    die "unexpected variable name '$1'" if $notes_template =~ m/\{\{([^\s}]+)\}\}/;
+    die "unexpected variable name '$1'\n" if $notes_template =~ m/\{\{([^\s}]+)\}\}/;
 
     return $notes_template;
 };
