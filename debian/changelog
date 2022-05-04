@@ -1,3 +1,19 @@
+pve-manager (7.2-3) bullseye; urgency=medium
+
+  * update shipped CT appliance info index
+
+  * schedule-analyze: fix schedules with limited runs smaller than
+    request runs
+
+  * ceph pools create: ignore 'crush_rule' for an EC data-pool, only
+    applicable for the meta-data pool. Enhance erasure-code description to
+    clarify such things.
+
+  * vzdump: notes-template: avoid escaping meta-characters upon replace
+    and improve check for unknown variable
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 04 May 2022 08:46:53 +0200
+
 pve-manager (7.2-2) bullseye; urgency=medium
 
   * ui: storage content: support filtering by notes for backups
