@@ -196,6 +196,15 @@ Ext.define('PVE.node.Config', {
 		    onlineHelp: 'sysadmin_network_configuration',
 		},
 		{
+		    xtype: 'proxmoxNodeOptionsView',
+		    title: gettext('Options'),
+		    iconCls: 'fa fa-gear',
+		    groups: ['services'],
+		    itemId: 'options',
+		    nodename: nodename,
+		    onlineHelp: 'proxmox_node_management',
+		},
+		{
 		    xtype: 'proxmoxNodeHostsView',
 		    title: gettext('Hosts'),
 		    iconCls: 'fa fa-globe',

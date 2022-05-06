@@ -195,6 +195,7 @@ JSSRC= 							\
 	node/Subscription.js				\
 	node/Summary.js					\
 	node/ZFS.js					\
+	node/NodeOptionsView.js				\
 	pool/Config.js					\
 	pool/StatusView.js				\
 	pool/Summary.js					\
