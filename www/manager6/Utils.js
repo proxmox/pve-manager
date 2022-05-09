@@ -1801,6 +1801,8 @@ Ext.define('PVE.Utils', {
 	};
 	return value.replace(/(\\\\|\\n)/g, match => replace[match]);
     },
+
+    notesTemplateVars: ['cluster', 'guestname', 'node', 'vmid'],
 },
 
     singleton: true,

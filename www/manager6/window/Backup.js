@@ -181,13 +181,17 @@ Ext.define('PVE.window.Backup', {
 		    fieldLabel: gettext('Notes'),
 		    anchor: '100%',
 		    value: '{{guestname}}',
-		    autoEl: {
-			tag: 'div',
-			'data-qtip': Ext.String.format(
-			    gettext('Notes added to the backup. Possible variables are {0}'),
-			    '{{cluster}}, {{guestname}}, {{node}}, {{vmid}}',
-			),
+		},
+		{
+		    xtype: 'box',
+		    style: {
+			margin: '8px 0px',
+			'line-height': '1.5em',
 		    },
+		    html: Ext.String.format(
+			gettext('Possible template variables are: {0}'),
+			PVE.Utils.notesTemplateVars.map(v => `<code>{{${v}}}</code>`).join(', '),
+		    ),
 		},
 		{
 		    xtype: 'label',

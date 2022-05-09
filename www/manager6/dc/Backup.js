@@ -411,7 +411,7 @@ Ext.define('PVE.dc.BackupEdit', {
 				      + '<br>'
 				      + Ext.String.format(
 					gettext('Possible template variables are: {0}'),
-					['cluster', 'guestname', 'node', 'vmid'].map(v => `<code>{{${v}}}</code>`).join(', '),
+					PVE.Utils.notesTemplateVars.map(v => `<code>{{${v}}}</code>`).join(', '),
 				    ),
 				},
 			    ],
