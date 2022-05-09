@@ -113,6 +113,10 @@ Ext.define('PVE.window.Backup', {
 			    if (!initialDefaults && data.mode !== undefined) {
 				modeSelector.setValue(data.mode);
 			    }
+			    if (!initialDefaults && (data['notes-template'] ?? false)) {
+				me.down('field[name=notes-template]')
+				    .setValue(data['notes-template']);
+			    }
 
 			    initialDefaults = true;
 
