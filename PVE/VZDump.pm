@@ -70,8 +70,31 @@ sub run_command {
     PVE::Tools::run_command($cmdstr, %param, logfunc => $logfunc);
 }
 
+my $verify_notes_template = sub {
+    my ($template) = @_;
+
+    die "contains a line feed\n" if $template =~ /\n/;
+
+    my @problematic = ();
+    while ($template =~ /\\(.)/g) {
+	my $char = $1;
+	push @problematic, "escape sequence '\\$char' at char " . (pos($template) - 2)
+	    if $char !~ /^[n\\]$/;
+    }
+
+    while ($template =~ /\{\{([^\s{}]+)\}\}/g) {
+	my $var = $1;
+	push @problematic, "variable '$var' at char " . (pos($template) - length($var))
+	    if $var !~ /^(cluster|guestname|node|vmid)$/;
+    }
+
+    die "found unknown: " . join(', ', @problematic) . "\n" if scalar(@problematic);
+};
+
 my $generate_notes = sub {
     my ($notes_template, $task) = @_;
+
+    $verify_notes_template->($notes_template);
 
     my $info = {
 	cluster => PVE::Cluster::get_clinfo()->{cluster}->{name},
@@ -91,8 +114,6 @@ my $generate_notes = sub {
 
     my $vars = join('|', keys $info->%*);
     $notes_template =~ s/\{\{($vars)\}\}/$info->{$1}/g;
-
-    die "unexpected variable name '$1'\n" if $notes_template =~ m/\{\{([^\s}]+)\}\}/;
 
     return $notes_template;
 };
@@ -1325,8 +1346,10 @@ sub verify_vzdump_parameters {
 
     $parse_prune_backups_maxfiles->($param, 'CLI parameters');
 
-    raise_param_exc({'notes-template' => "contains a line feed"})
-	if $param->{'notes-template'} && $param->{'notes-template'} =~ m/\n/;
+    if (my $template = $param->{'notes-template'}) {
+	eval { $verify_notes_template->($template); };
+	raise_param_exc({'notes-template' => $@}) if $@;
+    }
 
     $param->{all} = 1 if (defined($param->{exclude}) && !$param->{pool});
 
