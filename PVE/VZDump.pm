@@ -3,6 +3,7 @@ package PVE::VZDump;
 use strict;
 use warnings;
 
+use Clone;
 use Fcntl ':flock';
 use File::Basename;
 use File::Path;
@@ -34,6 +35,9 @@ my $logdir = '/var/log/vzdump';
 my @plugins = qw();
 
 my $confdesc = PVE::VZDump::Common::get_confdesc();
+
+my $confdesc_for_defaults = Clone::clone($confdesc);
+delete $confdesc_for_defaults->{$_}->{requires} for qw(notes-template protected);
 
 # Load available plugins
 my @pve_vzdump_classes = qw(PVE::VZDump::QemuServer PVE::VZDump::LXC);
@@ -254,7 +258,7 @@ sub read_vzdump_defaults {
 	map {
 	    my $default = $confdesc->{$_}->{default};
 	     defined($default) ? ($_ => $default) : ()
-	} keys %$confdesc
+	} keys %$confdesc_for_defaults
     };
     $parse_prune_backups_maxfiles->($defaults, "defaults in VZDump schema");
 
@@ -262,7 +266,7 @@ sub read_vzdump_defaults {
     eval { $raw = PVE::Tools::file_get_contents($fn); };
     return $defaults if $@;
 
-    my $conf_schema = { type => 'object', properties => $confdesc, };
+    my $conf_schema = { type => 'object', properties => $confdesc_for_defaults };
     my $res = PVE::JSONSchema::parse_config($conf_schema, $fn, $raw);
     if (my $excludes = $res->{'exclude-path'}) {
 	$res->{'exclude-path'} = PVE::Tools::split_args($excludes);
@@ -544,6 +548,11 @@ sub new {
 
     if (!$opts->{dumpdir} && !$opts->{storage}) {
 	$opts->{storage} = 'local';
+    }
+
+    # Enforced by the API too, but these options might come in via defaults. Drop them if necessary.
+    if (!$opts->{storage}) {
+	delete $opts->{$_} for qw(notes-template protected);
     }
 
     my $errors = '';
