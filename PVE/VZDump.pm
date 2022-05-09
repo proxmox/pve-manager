@@ -97,8 +97,8 @@ my $generate_notes = sub {
     $verify_notes_template->($notes_template);
 
     my $info = {
-	cluster => PVE::Cluster::get_clinfo()->{cluster}->{name},
-	guestname => $task->{hostname},
+	cluster => PVE::Cluster::get_clinfo()->{cluster}->{name} // 'standalone node',
+	guestname => $task->{hostname} // "VM $task->{vmid}", # is always set for CTs
 	node => PVE::INotify::nodename(),
 	vmid => $task->{vmid},
     };
