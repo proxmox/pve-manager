@@ -8,7 +8,7 @@ Ext.define('PVE.window.HDMove', {
     border: false,
     layout: 'fit',
     showReset: false,
-    showProgress: true,
+    showTaskViewer: true,
     method: 'POST',
 
     cbindData: function() {
