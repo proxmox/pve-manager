@@ -1,3 +1,26 @@
+pve-manager (7.2-4) bullseye; urgency=medium
+
+  * fix # 4044: ui: hd move: avoid bogus progress bar, show task viewer
+
+  * ui: storage: add namespace support when creating PBS storage
+
+  * ui: VM Create wizard - display default SCSI controller correctly in Disks
+    panel
+
+  * fix #3994: ui: add an Options panel in the node's system menu group,
+    support configuring the WakeOnLAN MAC addressed to be used for a node and
+    the initial start-all-delay for the auto boot of virtual guests.
+
+  * vzdump: generate notes: initialize potentially undef values and improve
+    verification
+
+  * ui: manual backup: list possible template variables directly, like we do
+    already for the datacenter backup job editor
+
+  * configs: vzdump: add notes-template default
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 12 May 2022 17:36:43 +0200
+
 pve-manager (7.2-3) bullseye; urgency=medium
 
   * update shipped CT appliance info index
