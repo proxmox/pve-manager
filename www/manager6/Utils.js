@@ -508,7 +508,7 @@ Ext.define('PVE.Utils', {
     render_as_property_string: v => !v ? Proxmox.Utils.defaultText : PVE.Parser.printPropertyString(v),
 
     render_scsihw: function(value) {
-	if (!value) {
+	if (!value || value === '__default__') {
 	    return Proxmox.Utils.defaultText + ' (LSI 53C895A)';
 	} else if (value === 'lsi') {
 	    return 'LSI 53C895A';
