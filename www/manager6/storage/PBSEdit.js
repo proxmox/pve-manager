@@ -552,6 +552,14 @@ Ext.define('PVE.storage.PBSInputPanel', {
 		fieldLabel: 'Datastore',
 		allowBlank: false,
 	    },
+	    {
+		xtype: me.isCreate ? 'textfield' : 'displayfield',
+		name: 'namespace',
+		value: '',
+		emptyText: gettext('Root'),
+		fieldLabel: gettext('Namespace'),
+		allowBlank: true,
+	    },
 	];
 
 	me.columnB = [
