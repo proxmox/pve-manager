@@ -12,7 +12,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 
     viewModel: {
 	data: {
-	    isScsi: false,
+	    isSCSI: false,
 	    isVirtIO: false,
 	},
     },
