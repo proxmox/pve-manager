@@ -496,13 +496,11 @@ __PACKAGE__->register_method({
 	my $authuser = $rpcenv->get_user();
 
 	my $tlist = PVE::Cluster::get_tasklist();
-
-	my $res = [];
-
-	return $res if !$tlist;
+	return [] if !$tlist;
 
 	my $all = $rpcenv->check($authuser, "/", [ 'Sys.Audit' ], 1);
 
+	my $res = [];
 	foreach my $task (@$tlist) {
 	    if (PVE::AccessControl::pve_verify_tokenid($task->{user}, 1)) {
 		($task->{user}, $task->{tokenid}) = PVE::AccessControl::split_tokenid($task->{user});

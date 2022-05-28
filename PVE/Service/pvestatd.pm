@@ -503,10 +503,8 @@ my sub broadcast_version_info : prototype() {
 }
 
 sub update_status {
-
-    # update worker list. This is not really required and
-    # we just call this to make sure that we have a correct
-    # list in case of an unexpected crash.
+    # update worker list. This is not really required, but we want to make sure that we also have a
+    # correct list in case of an unexpected crash.
     my $rpcenv = PVE::RPCEnvironment::get();
 
     eval {
