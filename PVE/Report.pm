@@ -132,6 +132,7 @@ my $init_report_cmds = sub {
 	    'ceph osd status',
 	    'ceph df',
 	    'ceph osd df tree',
+	    'ceph device ls',
 	    'cat /etc/ceph/ceph.conf',
 	    'ceph config dump',
 	    'pveceph pool ls',
