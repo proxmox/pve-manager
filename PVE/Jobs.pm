@@ -180,7 +180,7 @@ sub started_job {
 }
 
 # will be called when the job schedule is updated
-sub updated_job_schedule {
+sub update_last_runtime {
     my ($jobid, $type) = @_;
     lock_job_state($jobid, $type, sub {
 	my $old_state = read_job_state($jobid, $type) // $default_state;
@@ -209,6 +209,8 @@ sub get_last_runtime {
 }
 
 sub run_jobs {
+    my ($first_run) = @_;
+
     synchronize_job_states_with_config();
 
     my $jobs_cfg = cfs_read_file('jobs.cfg');
@@ -227,6 +229,10 @@ sub run_jobs {
 	    warn "could not update job state, skipping - $err\n";
 	    next;
 	}
+
+	# update last runtime on the first run when 'repeat-missed' is 0, so that a missed job
+	# will not start immediately after boot
+	update_last_runtime($id, $type) if $first_run && !$cfg->{'repeat-missed'};
 
 	next if defined($cfg->{enabled}) && !$cfg->{enabled}; # only schedule actually enabled jobs
 

@@ -97,6 +97,8 @@ sub run {
 	$jobs->{$type}->{$child} = 1;
     };
 
+    my $first_run = 1;
+
     my $run_jobs = sub {
 	# TODO: actually integrate replication in PVE::Jobs and do not always fork here, we could
 	# do the state lookup and check if there's new work scheduled before doing so, e.g., by
@@ -109,8 +111,10 @@ sub run {
 	});
 
 	$fork->('jobs', sub {
-	    PVE::Jobs::run_jobs();
+	    PVE::Jobs::run_jobs($first_run);
 	});
+
+	$first_run = 0;
     };
 
     PVE::Jobs::setup_dirs();

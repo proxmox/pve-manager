@@ -39,6 +39,13 @@ my $defaultData = {
 	    description => "Description for the Job.",
 	    maxLength => 512,
 	},
+	'repeat-missed' => {
+	    optional => 1,
+	    type => 'boolean',
+	    description => "If true, the job will be run as soon as possible if it was missed".
+		" while the scheduler was not running.",
+	    default => 0,
+	},
     },
 };
 

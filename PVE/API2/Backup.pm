@@ -180,6 +180,13 @@ __PACKAGE__->register_method({
 		description => "Enable or disable the job.",
 		default => '1',
 	    },
+	    'repeat-missed' => {
+		optional => 1,
+		type => 'boolean',
+		description => "If true, the job will be run as soon as possible if it was missed".
+		    " while the scheduler was not running.",
+		default => 0,
+	    },
 	    comment => {
 		optional => 1,
 		type => 'string',
@@ -381,6 +388,13 @@ __PACKAGE__->register_method({
 		description => "Enable or disable the job.",
 		default => '1',
 	    },
+	    'repeat-missed' => {
+		optional => 1,
+		type => 'boolean',
+		description => "If true, the job will be run as soon as possible if it was missed".
+		    " while the scheduler was not running.",
+		default => 0,
+	    },
 	    comment => {
 		optional => 1,
 		type => 'string',
@@ -440,8 +454,13 @@ __PACKAGE__->register_method({
 		die "no such vzdump job\n" if !$job || $job->{type} ne 'vzdump';
 	    }
 
+	    my $deletable = {
+		comment => 1,
+		'repeat-missed' => 1,
+	    };
+
 	    foreach my $k (@$delete) {
-		if (!PVE::VZDump::option_exists($k) && $k ne 'comment') {
+		if (!PVE::VZDump::option_exists($k) && !$deletable->{$k}) {
 		    raise_param_exc({ delete => "unknown option '$k'" });
 		}
 
@@ -475,7 +494,7 @@ __PACKAGE__->register_method({
 	    PVE::VZDump::verify_vzdump_parameters($job, 1);
 
 	    if ($schedule_updated) {
-		PVE::Jobs::updated_job_schedule($id, 'vzdump');
+		PVE::Jobs::update_last_runtime($id, 'vzdump');
 	    }
 
 	    if (defined($idx)) {
