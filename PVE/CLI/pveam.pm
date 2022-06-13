@@ -122,6 +122,8 @@ __PACKAGE__->register_method ({
 
 	my $cfg = PVE::Storage::config();
 
+	PVE::Storage::storage_check_enabled($cfg, $storeid);
+
 	die "Storage does not support templates!\n" if !$cfg->{ids}->{$storeid}->{content}->{vztmpl};
 
 	my $vollist = PVE::Storage::volume_list($cfg, $storeid, undef, 'vztmpl');
