@@ -454,6 +454,8 @@ __PACKAGE__->register_method({
 		die "no such vzdump job\n" if !$job || $job->{type} ne 'vzdump';
 	    }
 
+	    my $old_enabled = $job->{enabled} // 1;
+
 	    my $deletable = {
 		comment => 1,
 		'repeat-missed' => 1,
@@ -467,13 +469,19 @@ __PACKAGE__->register_method({
 		delete $job->{$k};
 	    }
 
-	    my $schedule_updated = 0;
+	    my $need_run_time_update = 0;
 	    if (defined($param->{schedule}) && $param->{schedule} ne $job->{schedule}) {
-		$schedule_updated = 1;
+		$need_run_time_update = 1;
 	    }
 
 	    foreach my $k (keys %$param) {
 		$job->{$k} = $param->{$k};
+	    }
+
+	    my $new_enabled = $job->{enabled} // 1;
+
+	    if ($new_enabled && !$old_enabled) {
+		$need_run_time_update = 1;
 	    }
 
 	    $job->{all} = 1 if (defined($job->{exclude}) && !defined($job->{pool}));
@@ -493,7 +501,7 @@ __PACKAGE__->register_method({
 
 	    PVE::VZDump::verify_vzdump_parameters($job, 1);
 
-	    if ($schedule_updated) {
+	    if ($need_run_time_update) {
 		PVE::Jobs::update_last_runtime($id, 'vzdump');
 	    }
 
