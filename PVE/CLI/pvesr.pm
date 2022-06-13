@@ -137,8 +137,18 @@ __PACKAGE__->register_method ({
 	    push @$volids, map { $_->{volid} } @$images;
 	}
 	my ($local_snapshots, $cleaned_replicated_volumes) = PVE::Replication::prepare($storecfg, $volids, $jobid, $last_sync, $parent_snapname, $logfunc);
-	foreach my $volid (keys %$cleaned_replicated_volumes) {
-	    if (!$wanted_volids->{$volid}) {
+	for my $volid ($volids->@*) {
+	    next if $wanted_volids->{$volid};
+
+	    my $stale = $cleaned_replicated_volumes->{$volid};
+	    # prepare() will not remove the last_sync snapshot, but if the volume was used by the
+	    # job and is not wanted anymore, it is stale too. And not removing it now might cause
+	    # it to be missed later, because the relevant storage might not get scanned anymore.
+	    $stale ||= grep {
+		PVE::Replication::is_replication_snapshot($_, $jobid)
+	    } keys %{$local_snapshots->{$volid} // {}};
+
+	    if ($stale) {
 		$logfunc->("$jobid: delete stale volume '$volid'");
 		PVE::Storage::vdisk_free($storecfg, $volid);
 		delete $local_snapshots->{$volid};
