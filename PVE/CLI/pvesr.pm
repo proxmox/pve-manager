@@ -136,16 +136,16 @@ __PACKAGE__->register_method ({
 	    my $images = $plugin->list_images($storeid, $scfg, $vmid, undef, $cache);
 	    push @$volids, map { $_->{volid} } @$images;
 	}
-	my ($last_snapshots, $cleaned_replicated_volumes) = PVE::Replication::prepare($storecfg, $volids, $jobid, $last_sync, $parent_snapname, $logfunc);
+	my ($local_snapshots, $cleaned_replicated_volumes) = PVE::Replication::prepare($storecfg, $volids, $jobid, $last_sync, $parent_snapname, $logfunc);
 	foreach my $volid (keys %$cleaned_replicated_volumes) {
 	    if (!$wanted_volids->{$volid}) {
 		$logfunc->("$jobid: delete stale volume '$volid'");
 		PVE::Storage::vdisk_free($storecfg, $volid);
-		delete $last_snapshots->{$volid};
+		delete $local_snapshots->{$volid};
 	    }
 	}
 
-	print to_json($last_snapshots) . "\n";
+	print to_json($local_snapshots) . "\n";
 
 	return undef;
     }});
@@ -200,8 +200,7 @@ __PACKAGE__->register_method ({
 	    print STDERR "$msg\n";
 	};
 
-	my $last_snapshots = PVE::Replication::prepare(
-	    $storecfg, $volids, $jobid, $last_sync, undef, $logfunc);
+	PVE::Replication::prepare($storecfg, $volids, $jobid, $last_sync, undef, $logfunc);
 
 	return undef;
     }});
