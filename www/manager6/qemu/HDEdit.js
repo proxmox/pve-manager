@@ -14,6 +14,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	data: {
 	    isSCSI: false,
 	    isVirtIO: false,
+	    isSCSISingle: false,
 	},
     },
 
@@ -44,13 +45,10 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    'field[name=deviceid]': {
 		change: 'fireIdChange',
 	    },
-	    'field[name=iothread]': {
+	    'field[name=scsiController]': {
 		change: function(f, value) {
-		    if (!this.getView().insideWizard) {
-			return;
-		    }
-		    var vmScsiType = value ? 'virtio-scsi-single': 'virtio-scsi-pci';
-		    this.lookupReference('scsiController').setValue(vmScsiType);
+		    let vm = this.getViewModel();
+		    vm.set('isSCSISingle', value === 'virtio-scsi-single');
 		},
 	    },
 	},
@@ -195,6 +193,7 @@ Ext.define('PVE.qemu.HDInputPanel', {
 	    me.scsiController = Ext.create('Ext.form.field.Display', {
 		fieldLabel: gettext('SCSI Controller'),
 		reference: 'scsiController',
+		name: 'scsiController',
 		bind: me.insideWizard ? {
 		    value: '{current.scsihw}',
 		    visible: '{isSCSI}',
@@ -251,6 +250,17 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		reference: 'discard',
 		name: 'discard',
 	    },
+	    {
+		xtype: 'proxmoxcheckbox',
+		name: 'iothread',
+		fieldLabel: 'IO thread',
+		clearOnDisable: true,
+		bind: {
+		    disabled: '{!isVirtIO && !isSCSI}',
+		    // Checkbox.setValue handles Arrays in a different way, therefore cast to bool
+		    value: '{!!isVirtIO || (isSCSI && isSCSISingle)}',
+		},
+	    },
 	);
 
 	advancedColumn1.push(
@@ -261,15 +271,6 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		clearOnDisable: true,
 		bind: {
 		    disabled: '{isVirtIO}',
-		},
-	    },
-	    {
-		xtype: 'proxmoxcheckbox',
-		name: 'iothread',
-		fieldLabel: 'IO thread',
-		clearOnDisable: true,
-		bind: {
-		    disabled: '{!isVirtIO && !isSCSI}',
 		},
 	    },
 	    {
