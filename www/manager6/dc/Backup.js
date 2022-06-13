@@ -236,6 +236,17 @@ Ext.define('PVE.dc.BackupEdit', {
 			'data-qtip': gettext('Description of the job'),
 		    },
 		},
+		vmgrid,
+	    ],
+	    advancedColumn1: [
+		{
+		    xtype: 'proxmoxcheckbox',
+		    fieldLabel: gettext('Repeat missed'),
+		    name: 'repeat-missed',
+		    uncheckedValue: 0,
+		    defaultValue: 0,
+		    deleteDefaultValue: !me.isCreate,
+		},
 	    ],
 	    onGetValues: function(values) {
 		if (!values.node) {
@@ -365,7 +376,6 @@ Ext.define('PVE.dc.BackupEdit', {
 			    },
 			    items: [
 				ipanel,
-				vmgrid,
 			    ],
 			},
 			{
@@ -581,6 +591,7 @@ Ext.define('PVE.dc.BackupView', {
 	    delete job.node;
 	    delete job.comment;
 	    delete job['next-run'];
+	    delete job['repeat-missed'];
 	    job.all = job.all === true ? 1 : 0;
 
 	    if (job['prune-backups']) {
