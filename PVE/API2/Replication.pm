@@ -77,6 +77,10 @@ sub run_single_job {
 my sub _should_mail_at_failcount {
     my ($fail_count) = @_;
 
+    # avoid spam during migration (bug #4111): when failing to obtain the guest's migration lock,
+    # fail_count will be 0
+    return 0 if $fail_count == 0;
+
     return 1 if $fail_count <= 3; # always send the first few for better visibility of the issue
 
     # failing job is re-tried every half hour, try to send one mail after 1, 2, 4, 8, etc. days
