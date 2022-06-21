@@ -159,8 +159,8 @@ __PACKAGE__->register_method ({
 	}
 	PVE::Tools::file_set_contents("/etc/apt/sources.list.d/ceph.list", $repolist);
 
-	warn "WARNING: installing non-default ceph release '$cephver'!\n"
-	    if $cephver !~ qr/^(?:octopus|pacific)$/;
+	my $supported_re = join('|', $supported_ceph_versions->@*);
+	warn "WARNING: installing non-default ceph release '$cephver'!\n" if $cephver !~ qr/^(?:$supported_re)$/;
 
 	local $ENV{DEBIAN_FRONTEND} = 'noninteractive';
 	print "update available package list\n";
