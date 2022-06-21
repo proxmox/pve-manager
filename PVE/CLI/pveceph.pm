@@ -116,7 +116,7 @@ __PACKAGE__->register_method ({
 	properties => {
 	    version => {
 		type => 'string',
-		enum => ['octopus', 'pacific'],
+		enum => ['octopus', 'pacific', 'quincy'],
 		default => 'pacific',
 		description => "Ceph version to install.",
 		optional => 1,
@@ -148,6 +148,8 @@ __PACKAGE__->register_method ({
 	    $repolist = "deb http://download.proxmox.com/debian/ceph-octopus bullseye $repo\n";
 	} elsif ($cephver eq 'pacific') {
 	    $repolist = "deb http://download.proxmox.com/debian/ceph-pacific bullseye $repo\n";
+	} elsif ($cephver eq 'quincy') {
+	    $repolist = "deb http://download.proxmox.com/debian/ceph-quincy bullseye $repo\n";
 	} else {
 	    die "unsupported ceph version: $cephver";
 	}
