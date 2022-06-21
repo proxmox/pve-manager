@@ -145,6 +145,7 @@ __PACKAGE__->register_method ({
 
 	my $repolist;
 	if ($cephver eq 'octopus') {
+	    warn "Ceph Octopus will go EOL after 2022-07\n";
 	    $repolist = "deb http://download.proxmox.com/debian/ceph-octopus bullseye $repo\n";
 	} elsif ($cephver eq 'pacific') {
 	    $repolist = "deb http://download.proxmox.com/debian/ceph-pacific bullseye $repo\n";
