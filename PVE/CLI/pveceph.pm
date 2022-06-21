@@ -106,6 +106,9 @@ __PACKAGE__->register_method ({
 	return undef;
     }});
 
+my $supported_ceph_versions = ['octopus', 'pacific', 'quincy'];
+my $default_ceph_version = 'pacific';
+
 __PACKAGE__->register_method ({
     name => 'install',
     path => 'install',
@@ -116,8 +119,8 @@ __PACKAGE__->register_method ({
 	properties => {
 	    version => {
 		type => 'string',
-		enum => ['octopus', 'pacific', 'quincy'],
-		default => 'pacific',
+		enum => $supported_ceph_versions,
+		default => $default_ceph_version,
 		description => "Ceph version to install.",
 		optional => 1,
 	    },
@@ -139,7 +142,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $cephver = $param->{version} || 'pacific'; # NOTE: always change default here too!
+	my $cephver = $param->{version} || $default_ceph_version;
 
 	my $repo = $param->{'test-repository'} ? 'test' : 'main';
 
