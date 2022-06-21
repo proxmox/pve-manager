@@ -1,3 +1,25 @@
+pve-manager (7.2-5) bullseye; urgency=medium
+
+  * report: add ceph device list info
+
+  * api: ceph monitors: make checking for duplicate addresses more robust
+
+  * fix #3597: ui: ceph setup: avoid autofill of monitor network
+
+  * fix #4111: replication: don't send mail when fail count is zero
+  j
+  * fix #4026: add repeat-missed option for scheduled jobs
+
+  * fix #4053: don't run vzdump jobs immediately when they change from
+    disabled -> enabled, only when the schedules next event actually
+    triggers
+
+  * ui: ui: backup jobs: add repeat-missed checkbox to advanced section
+
+  * pveceph & ui: add Ceph 17.2 Quincy installation support
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 21 Jun 2022 16:58:46 +0200
+
 pve-manager (7.2-4) bullseye; urgency=medium
 
   * fix # 4044: ui: hd move: avoid bogus progress bar, show task viewer
