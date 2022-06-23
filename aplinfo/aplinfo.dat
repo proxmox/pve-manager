@@ -17,19 +17,6 @@ sha512sum: 000070076d6a2ce15c489cbf76e8445a412ce0bdf529064084a2046f2eef113630c3e
 Infopage: https://linuxcontainers.org
 Description: LXC default image for almalinux 8 (20210928)
 
-Package: alpine-3.12-default
-Version: 20200823
-Type: lxc
-OS: alpine
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/alpine-3.12-default_20200823_amd64.tar.xz
-md5sum: 5fd699ef5297fba13ab2edb9ab9e3f3c
-sha512sum: 623f024cdd181dd1202902acf0cf91a088a4173c0b4d69e213c8072869bedff41fa5b5e1303c3c59ac665e65655af74d612b84b5c7173d9f1ea28f15e00c913b
-Infopage: https://linuxcontainers.org
-Description: LXC default image for alpine 3.12 (20200823)
-
 Package: alpine-3.13-default
 Version: 20210419
 Type: lxc
@@ -68,6 +55,19 @@ md5sum: 31fac55c59c899e71500e39ea4d868be
 sha512sum: 6fa966787de6f18fc502016cd3516bcac0a5de0dfa5e906aa08a1c0cc51b51b0df08d9efbe221e0914dbece295d1b32ccae14909a04fbfc263b8e0ecd4831491
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.15 (20211202)
+
+Package: alpine-3.16-default
+Version: 20220622
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.16-default_20220622_amd64.tar.xz
+md5sum: e64326c403f2f907c5b317a1c6cea28e
+sha512sum: 85ad913768fe79c6b171f64661ef463772b78c6fa22a6e4e297565823f9b17522c31516b3a9ea428280dc81d74e36888d0acc7ed5dec1a6ae400b88c33a80453
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.16 (20220622)
 
 Package: archlinux-base
 Version: 20211202-1
@@ -203,6 +203,19 @@ md5sum: 11bb241828ebba4bef8a4f12ae4fe0d5
 sha512sum: ddc3e4fbedeefb75e15098feddc2132242921eae52ff39b196dca2adc2e056e6fa88b39e38ac63d63f0806b1c10f681ad75bcf17387aab903b6770e62addcd8d
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 35 (20211111)
+
+Package: fedora-36-default
+Version: 20220622
+Type: lxc
+OS: fedora
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/fedora-36-default_20220622_amd64.tar.xz
+md5sum: f799a34c2bb3a9e5a39fa4b16f503dbd
+sha512sum: 0fe7d94bea81011aeacc13e820efa107feb6c11384335367d199d28f00e610010945569733873d31e11c0e32f6fb8384e09563c2f26b096d95d072d68fb68e9a
+Infopage: https://linuxcontainers.org
+Description: LXC default image for fedora 36 (20220622)
 
 Package: gentoo-current-default
 Version: 20200310
