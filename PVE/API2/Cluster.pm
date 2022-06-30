@@ -690,7 +690,7 @@ __PACKAGE__->register_method({
 	    # fake entry for local node if no cluster defined
 	    my $pmxcfs = ($clinfo && $clinfo->{version}) ? 1 : 0; # pmxcfs online ?
 
-	    my $subinfo = PVE::INotify::read_file('subscription');
+	    my $subinfo = PVE::API2::Subscription::read_etc_subscription();
 	    my $sublevel = $subinfo->{level} || '';
 
 	    return [{

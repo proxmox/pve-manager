@@ -135,7 +135,7 @@ sub update_node_status {
 
     update_supported_cpuflags();
 
-    my $subinfo = PVE::INotify::read_file('subscription');
+    my $subinfo = PVE::API2::Subscription::read_etc_subscription();
     my $sublevel = $subinfo->{level} || '';
 
     my $netdev = PVE::ProcFSTools::read_proc_net_dev();

@@ -8,6 +8,8 @@ use HTTP::Request;
 use LWP::UserAgent;
 use JSON;
 
+use Proxmox::RS::Subscription;
+
 use PVE::Tools;
 use PVE::ProcFSTools;
 use PVE::Exception qw(raise_param_exc);
@@ -19,18 +21,14 @@ use PVE::Storage;
 use PVE::JSONSchema qw(get_standard_option);
 
 use PVE::SafeSyslog;
-use PVE::Subscription;
 
 use PVE::API2Tools;
 use PVE::RESTHandler;
 
 use base qw(PVE::RESTHandler);
 
-PVE::INotify::register_file('subscription', "/etc/subscription",
-			    \&read_etc_pve_subscription,
-			    \&write_etc_pve_subscription);
-
 my $subscription_pattern = 'pve([1248])([cbsp])-[0-9a-f]{10}';
+my $filename = "/etc/subscription";
 
 sub get_sockets {
     my $info = PVE::ProcFSTools::read_cpuinfo();
@@ -58,21 +56,19 @@ sub check_key {
     return ($sockets, $level);
 }
 
-sub read_etc_pve_subscription {
-    my ($filename, $fh) = @_;
-
+sub read_etc_subscription {
     my $req_sockets = get_sockets();
     my $server_id = PVE::API2Tools::get_hwaddress();
 
-    my $info = PVE::Subscription::read_subscription($server_id, $filename, $fh);
+    my $info = Proxmox::RS::Subscription::read_subscription($filename);
 
-    return $info if $info->{status} ne 'Active';
+    return $info if $info->{status} ne 'active';
 
     my ($sockets, $level);
     eval { ($sockets, $level) = check_key($info->{key}, $req_sockets); };
     if (my $err = $@) {
 	chomp $err;
-	$info->{status} = 'Invalid';
+	$info->{status} = 'invalid';
 	$info->{message} = $err;
     } else {
 	$info->{level} = $level;
@@ -81,11 +77,12 @@ sub read_etc_pve_subscription {
     return $info;
 }
 
-sub write_etc_pve_subscription {
-    my ($filename, $fh, $info) = @_;
+sub write_etc_subscription {
+    my ($info) = @_;
 
     my $server_id = PVE::API2Tools::get_hwaddress();
-    PVE::Subscription::write_subscription($server_id, $filename, $fh, $info);
+    mkdir "/etc/apt/auth.conf.d";
+    Proxmox::RS::Subscription::write_subscription($filename, "/etc/apt/auth.conf.d/pve.conf", "enterprise.proxmox.com/debian/pve", $info);
 }
 
 __PACKAGE__->register_method ({
@@ -114,10 +111,10 @@ __PACKAGE__->register_method ({
 	my $server_id = PVE::API2Tools::get_hwaddress();
 	my $url = "https://www.proxmox.com/proxmox-ve/pricing";
 
-	my $info = PVE::INotify::read_file('subscription');
+	my $info = read_etc_subscription();
 	if (!$info) {
 	    my $no_subscription_info = {
-		status => "NotFound",
+		status => "notfound",
 		message => "There is no subscription key",
 		url => $url,
 	    };
@@ -166,20 +163,17 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	my $info = PVE::INotify::read_file('subscription');
+	my $info = read_etc_subscription();
 	return undef if !$info;
 
 	my $server_id = PVE::API2Tools::get_hwaddress();
 	my $key = $info->{key};
 
-	if ($key) {
-	    PVE::Subscription::update_apt_auth($key, $server_id);
-	}
-
-	if (!$param->{force} && $info->{status} eq 'Active') {
-	    my $age = time() -  $info->{checktime};
-	    return undef if $age < $PVE::Subscription::localkeydays*60*60*24;
-	}
+	# key has been recently checked or is a valid, signed offline key
+	return undef
+	    if !$param->{force}
+		&& $info->{status} eq 'active'
+		&& Proxmox::RS::Subscription::check_age($info, 1)->{status} eq 'active';
 
 	my $req_sockets = get_sockets();
 	check_key($key, $req_sockets);
@@ -187,9 +181,9 @@ __PACKAGE__->register_method ({
 	my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
 	my $proxy = $dccfg->{http_proxy};
 
-	$info = PVE::Subscription::check_subscription($key, $server_id, $proxy);
+	$info = Proxmox::RS::Subscription::check_subscription($key, $server_id, "", "Proxmox VE", $proxy);
 
-	PVE::INotify::write_file('subscription', $info);
+	write_etc_subscription($info);
 
 	return undef;
     }});
@@ -233,14 +227,14 @@ __PACKAGE__->register_method ({
 
 	check_key($key, $req_sockets);
 
-	PVE::INotify::write_file('subscription', $info);
+	write_etc_subscription($info);
 
 	my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
 	my $proxy = $dccfg->{http_proxy};
 
-	$info = PVE::Subscription::check_subscription($key, $server_id, $proxy);
+	$info = Proxmox::RS::Subscription::check_subscription($key, $server_id, "", "Proxmox VE", $proxy);
 
-	PVE::INotify::write_file('subscription', $info);
+	write_etc_subscription($info);
 
 	return undef;
     }});

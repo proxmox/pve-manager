@@ -465,8 +465,8 @@ __PACKAGE__->register_method({
 	my $pw;
 
 	if ($pkgfile->{Origin} eq 'Proxmox' && $pkgfile->{Component} eq 'pve-enterprise') {
-	    my $info = PVE::INotify::read_file('subscription');
-	    if ($info->{status} eq 'Active') {
+	    my $info = PVE::API2::Subscription::read_etc_subscription();
+	    if ($info->{status} eq 'active') {
 		$username = $info->{key};
 		$pw = PVE::API2Tools::get_hwaddress();
 		$ua->credentials("enterprise.proxmox.com:443", 'pve-enterprise-repository',  $username, $pw);
