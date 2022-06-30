@@ -143,6 +143,16 @@ Ext.define('PVE.node.Subscription', {
 	    nextduedate: {
 		header: gettext('Next due date'),
 	    },
+	    signature: {
+		header: gettext('Signed/Offline'),
+		renderer: (value) => {
+		    if (value) {
+			return gettext('Yes');
+		    } else {
+			return gettext('No');
+		    }
+		},
+	    },
 	};
 
 	Ext.apply(me, {
