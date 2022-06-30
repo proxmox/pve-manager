@@ -169,7 +169,10 @@ __PACKAGE__->register_method ({
 	my $server_id = PVE::API2Tools::get_hwaddress();
 	my $key = $info->{key};
 
-	# key has been recently checked or is a valid, signed offline key
+	die "Updating offline key not possible - please remove and re-add subscription key to switch to online key.\n"
+	    if $info->{signature};
+
+	# key has been recently checked
 	return undef
 	    if !$param->{force}
 		&& $info->{status} eq 'active'
