@@ -176,12 +176,16 @@ __PACKAGE__->register_method ({
 	my @ceph_packages = qw(
 	    ceph
 	    ceph-common
-	    ceph-volume
 	    ceph-mds
 	    ceph-fuse
 	    gdisk
 	    nvme-cli
 	);
+
+	# when installing versions older than quincy, 'ceph-volume' does not exists. don't include it
+	if ($cephver ne 'octopus' and $cephver ne 'pacific') {
+	    push @ceph_packages, 'ceph-volume';
+	}
 
 	print "start installation\n";
 
