@@ -176,6 +176,7 @@ __PACKAGE__->register_method ({
 	my @ceph_packages = qw(
 	    ceph
 	    ceph-common
+	    ceph-volume
 	    ceph-mds
 	    ceph-fuse
 	    gdisk
