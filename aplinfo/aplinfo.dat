@@ -178,19 +178,6 @@ Infopage: https://devuan.org
 Description: Devuan 4.0 (standard)
  A small Devuan Chimaera system including a minimal set of essential packages.
 
-Package: fedora-34-default
-Version: 20210427
-Type: lxc
-OS: fedora
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/fedora-34-default_20210427_amd64.tar.xz
-md5sum: 76781b32ab28bfa982de39f1becfd735
-sha512sum: df517f33a8c8f2f624113237a64317e12adf245966309bb5af4c2b5fb9122ca9b173c3db247d18e60b374b2087c089ac9ba641141ecae143257c83d22d2ca1a0
-Infopage: https://linuxcontainers.org
-Description: LXC default image for fedora 34 (20210427)
-
 Package: fedora-35-default
 Version: 20211111
 Type: lxc
@@ -217,18 +204,18 @@ sha512sum: 0fe7d94bea81011aeacc13e820efa107feb6c11384335367d199d28f00e6100109455
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 36 (20220622)
 
-Package: gentoo-current-default
-Version: 20200310
+Package: gentoo-current-openrc
+Version: 20220622
 Type: lxc
 OS: gentoo
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/gentoo-current-default_20200310_amd64.tar.xz
-md5sum: c5b500f065b25651b763865c547952f1
-sha512sum: dc12b2fe0917ab779f92e4632504280663fac2c05c12479f98db67a9a617d9c2ce2fa3114ebf0a255e4e3f0cfd4b109a1b30f0330ab2adbc3703c4f548dbdc4c
+Location: system/gentoo-current-openrc_20220622_amd64.tar.xz
+md5sum: 2fdde1b419bbe1cf1fc4b9944c691209
+sha512sum: 916217385f24f7eedbf406680de1c38767d24b42eba2b5267c67351892d3ecd7b8fb1d67b23974f43e44de2f4aafd1510cfe9261eab6e83c44af1f00708af5a2
 Infopage: https://linuxcontainers.org
-Description: LXC default image for gentoo current (20200310)
+Description: LXC openrc image for gentoo current (20220622)
 
 Package: opensuse-15.3-default
 Version: 20210925
