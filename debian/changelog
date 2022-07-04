@@ -1,3 +1,13 @@
+pve-manager (7.2-6) bullseye; urgency=medium
+
+  * update shipped aplinfo
+
+  * pveceph: install split-out ceph-volume package
+
+  * ui: manual backup: unescape notes template on load
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 04 Jul 2022 13:31:57 +0200
+
 pve-manager (7.2-5) bullseye; urgency=medium
 
   * report: add ceph device list info
