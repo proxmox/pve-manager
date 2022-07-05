@@ -182,7 +182,8 @@ __PACKAGE__->register_method ({
 	    nvme-cli
 	);
 
-	# when installing versions older than quincy, 'ceph-volume' does not exists. don't include it
+	# got split out with quincy and is required by PVE tooling, conditionally exclude it for older
+	# FIXME: remove condition with PVE 8.0, i.e., once we only support quincy+ new installations
 	if ($cephver ne 'octopus' and $cephver ne 'pacific') {
 	    push @ceph_packages, 'ceph-volume';
 	}
