@@ -1,3 +1,10 @@
+pve-manager (7.2-7) bullseye; urgency=medium
+
+  * pveceph: fix regression with new split-out ceph-volume package and older
+    ceph releases (pacific, octopus)
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 05 Jul 2022 08:52:46 +0200
+
 pve-manager (7.2-6) bullseye; urgency=medium
 
   * update shipped aplinfo
