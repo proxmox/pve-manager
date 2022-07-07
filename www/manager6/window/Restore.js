@@ -97,7 +97,7 @@ Ext.define('PVE.window.Restore', {
 		    view.vmtype === 'lxc' ? 'CT' : 'VM',
 		)}`;
 		if (view.vmtype === 'lxc') {
-		    confirmMsg += ` ${gettext('Mount point volumes are also erased.')}`;
+		    confirmMsg += `<br>${gettext('Mount point volumes are also erased.')}`;
 		}
 		Ext.Msg.confirm(gettext('Confirm'), confirmMsg, function(btn) {
 		    if (btn === 'yes') {
