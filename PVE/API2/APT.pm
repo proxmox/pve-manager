@@ -10,6 +10,8 @@ use File::Basename;
 
 use LWP::UserAgent;
 
+use Proxmox::RS::APT::Repositories;
+
 use PVE::pvecfg;
 use PVE::Tools qw(extract_param);
 use PVE::Cluster;
@@ -19,7 +21,6 @@ use PVE::INotify;
 use PVE::Exception;
 use PVE::RESTHandler;
 use PVE::RPCEnvironment;
-use PVE::RS::APT::Repositories;
 use PVE::API2Tools;
 
 use JSON;
@@ -678,7 +679,7 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	return PVE::RS::APT::Repositories::repositories();
+	return Proxmox::RS::APT::Repositories::repositories("pve");
     }});
 
 __PACKAGE__->register_method({
@@ -713,7 +714,7 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	PVE::RS::APT::Repositories::add_repository($param->{handle}, $param->{digest});
+	Proxmox::RS::APT::Repositories::add_repository($param->{handle}, "pve", $param->{digest});
     }});
 
 __PACKAGE__->register_method({
@@ -762,7 +763,7 @@ __PACKAGE__->register_method({
 	my $enabled = $param->{enabled};
 	$options->{enabled} = int($enabled) if defined($enabled);
 
-	PVE::RS::APT::Repositories::change_repository(
+	Proxmox::RS::APT::Repositories::change_repository(
 	    $param->{path},
 	    int($param->{index}),
 	    $options,
