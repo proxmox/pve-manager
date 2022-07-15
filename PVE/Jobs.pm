@@ -25,6 +25,40 @@ my $default_state = {
     time => 0,
 };
 
+my $saved_config_props = [qw(enabled schedule)];
+
+# saves some properties of the jobcfg into the jobstate so we can track
+# them on different nodes (where the update was not done)
+# and update the last runtime when they change
+sub detect_changed_runtime_props {
+    my ($jobid, $type, $cfg) = @_;
+
+    lock_job_state($jobid, $type, sub {
+	my $old_state = read_job_state($jobid, $type) // $default_state;
+
+	my $updated = 0;
+	for my $prop (@$saved_config_props) {
+	    my $old_prop = $old_state->{config}->{$prop} // '';
+	    my $new_prop = $cfg->{$prop} // '';
+	    next if "$old_prop" eq "$new_prop";
+
+	    if (defined($cfg->{$prop})) {
+		$old_state->{config}->{$prop} = $cfg->{$prop};
+	    } else {
+		delete $old_state->{config}->{$prop};
+	    }
+
+	    $updated = 1;
+	}
+
+	return if !$updated;
+	$old_state->{updated} = time();
+
+	my $path = $get_state_file->($jobid, $type);
+	PVE::Tools::file_set_contents($path, encode_json($old_state));
+    });
+}
+
 # lockless, since we use file_get_contents, which is atomic
 sub read_job_state {
     my ($jobid, $type) = @_;
@@ -91,6 +125,7 @@ sub update_job_stopped {
 		state => 'stopped',
 		msg => $get_job_task_status->($state) // 'internal error',
 		upid => $state->{upid},
+		config => $state->{config},
 	    };
 
 	    if ($state->{updated}) { # save updated time stamp
@@ -105,7 +140,7 @@ sub update_job_stopped {
 
 # must be called when the job is first created
 sub create_job {
-    my ($jobid, $type) = @_;
+    my ($jobid, $type, $cfg) = @_;
 
     lock_job_state($jobid, $type, sub {
 	my $state = read_job_state($jobid, $type) // $default_state;
@@ -115,6 +150,11 @@ sub create_job {
 	}
 
 	$state->{time} = time();
+	for my $prop (@$saved_config_props) {
+	    if (defined($cfg->{$prop})) {
+		$state->{config}->{$prop} = $cfg->{$prop};
+	    }
+	}
 
 	my $path = $get_state_file->($jobid, $type);
 	PVE::Tools::file_set_contents($path, encode_json($state));
@@ -144,6 +184,7 @@ sub starting_job {
 	my $new_state = {
 	    state => 'starting',
 	    time => time(),
+	    config => $state->{config},
 	};
 
 	my $path = $get_state_file->($jobid, $type);
@@ -173,6 +214,7 @@ sub started_job {
 		upid => $upid,
 	    };
 	}
+	$new_state->{config} = $state->{config};
 
 	my $path = $get_state_file->($jobid, $type);
 	PVE::Tools::file_set_contents($path, encode_json($new_state));
@@ -265,8 +307,13 @@ sub synchronize_job_states_with_config {
 	for my $id (keys $data->{ids}->%*) {
 	    my $job = $data->{ids}->{$id};
 	    my $type = $job->{type};
-	    my $jobstate = read_job_state($id, $type);
-	    create_job($id, $type) if !defined($jobstate);
+
+	    my $path = $get_state_file->($id, $type);
+	    if (-e $path) {
+		detect_changed_runtime_props($id, $type, $job);
+	    } else {
+		create_job($id, $type, $job);
+	    }
 	}
 
 	PVE::Tools::dir_glob_foreach($state_dir, '(.*?)-(.*).json', sub {

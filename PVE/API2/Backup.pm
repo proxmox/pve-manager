@@ -228,7 +228,7 @@ __PACKAGE__->register_method({
 
 	    $data->{ids}->{$id} = $opts;
 
-	    PVE::Jobs::create_job($id, 'vzdump');
+	    PVE::Jobs::create_job($id, 'vzdump', $opts);
 
 	    cfs_write_file('jobs.cfg', $data);
 	});
@@ -454,8 +454,6 @@ __PACKAGE__->register_method({
 		die "no such vzdump job\n" if !$job || $job->{type} ne 'vzdump';
 	    }
 
-	    my $old_enabled = $job->{enabled} // 1;
-
 	    my $deletable = {
 		comment => 1,
 		'repeat-missed' => 1,
@@ -469,19 +467,8 @@ __PACKAGE__->register_method({
 		delete $job->{$k};
 	    }
 
-	    my $need_run_time_update = 0;
-	    if (defined($param->{schedule}) && $param->{schedule} ne $job->{schedule}) {
-		$need_run_time_update = 1;
-	    }
-
 	    foreach my $k (keys %$param) {
 		$job->{$k} = $param->{$k};
-	    }
-
-	    my $new_enabled = $job->{enabled} // 1;
-
-	    if ($new_enabled && !$old_enabled) {
-		$need_run_time_update = 1;
 	    }
 
 	    $job->{all} = 1 if (defined($job->{exclude}) && !defined($job->{pool}));
@@ -501,14 +488,13 @@ __PACKAGE__->register_method({
 
 	    PVE::VZDump::verify_vzdump_parameters($job, 1);
 
-	    if ($need_run_time_update) {
-		PVE::Jobs::update_last_runtime($id, 'vzdump');
-	    }
-
 	    if (defined($idx)) {
 		cfs_write_file('vzdump.cron', $data);
 	    }
 	    cfs_write_file('jobs.cfg', $jobs_data);
+
+	    PVE::Jobs::detect_changed_runtime_props($id, 'vzdump', $job);
+
 	    return;
 	};
 	cfs_lock_file('vzdump.cron', undef, sub {
