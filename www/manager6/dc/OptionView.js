@@ -177,28 +177,29 @@ Ext.define('PVE.dc.OptionView', {
 	    renderer: v => !v ? Proxmox.Utils.NoneText : PVE.Parser.printPropertyString(v),
 	    width: 450,
 	    url: "/api2/extjs/cluster/options",
-	    //onlineHelp: 'pveum_configure_webauthn',
+	    onlineHelp: 'pveum_configure_webauthn',
 	    items: [{
 		xtype: 'textfield',
 		fieldLabel: gettext('Relying Party'),
 		name: 'rp',
 		allowBlank: false,
-		listeners: {
-		    dirtychange: (f, isDirty) =>
-			f.up('panel').down('box[id=rpChangeWarning]').setHidden(!f.originalValue || !isDirty),
-		},
 	    },
 	    {
 		xtype: 'textfield',
 		fieldLabel: gettext('Origin'),
+		emptyText: Ext.String.format(gettext("Domain Lockdown (e.g., {0})"), document.location.origin),
 		name: 'origin',
-		allowBlank: false,
+		allowBlank: true,
 	    },
 	    {
 		xtype: 'textfield',
 		fieldLabel: 'ID',
 		name: 'id',
 		allowBlank: false,
+		listeners: {
+		    dirtychange: (f, isDirty) =>
+			f.up('panel').down('box[id=idChangeWarning]').setHidden(!f.originalValue || !isDirty),
+		},
 	    },
 	    {
 		xtype: 'container',
@@ -214,9 +215,15 @@ Ext.define('PVE.dc.OptionView', {
 			iconCls: 'fa fa-fw fa-pencil-square-o',
 			handler: function(button, ev) {
 			    let panel = this.up('panel');
-			    panel.down('field[name=rp]').setValue(document.location.hostname);
-			    panel.down('field[name=origin]').setValue(document.location.origin);
-			    panel.down('field[name=id]').setValue(document.location.hostname);
+			    let fqdn = document.location.hostname;
+
+			    panel.down('field[name=rp]').setValue(fqdn);
+
+			    let idField = panel.down('field[name=id]');
+			    let currentID = idField.getValue();
+			    if (!currentID || currentID.length === 0) {
+				idField.setValue(fqdn);
+			    }
 			},
 		    },
 		],
@@ -229,11 +236,11 @@ Ext.define('PVE.dc.OptionView', {
 	    },
 	    {
 		xtype: 'box',
-		id: 'rpChangeWarning',
+		id: 'idChangeWarning',
 		hidden: true,
 		padding: '5 0 0 0',
 		html: '<i class="fa fa-exclamation-triangle warning"></i> '
-		    + gettext('Changing the Relying Party may break existing webAuthn TFA entries.'),
+		    + gettext('Changing the ID breaks existing WebAuthn TFA entries.'),
 	    }],
 	});
 	me.add_inputpanel_row('bwlimit', gettext('Bandwidth Limits'), {
