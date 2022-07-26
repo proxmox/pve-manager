@@ -180,8 +180,8 @@ Ext.define('PVE.dc.OptionView', {
 	    onlineHelp: 'pveum_configure_webauthn',
 	    items: [{
 		xtype: 'textfield',
-		fieldLabel: gettext('Relying Party'),
-		name: 'rp',
+		fieldLabel: gettext('Name'),
+		name: 'rp', // NOTE: relying party consists of name and id, this is the name
 		allowBlank: false,
 	    },
 	    {
