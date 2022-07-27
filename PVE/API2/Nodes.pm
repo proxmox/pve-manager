@@ -438,8 +438,9 @@ __PACKAGE__->register_method({
     },
     returns => {
 	type => 'array',
-	properties => {
-
+	items => {
+	    type => "object",
+	    properties => {},
 	},
     },
     code => sub {
