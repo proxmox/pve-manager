@@ -66,6 +66,49 @@ eval {
 
 use base qw(PVE::RESTHandler);
 
+PVE::JSONSchema::register_format('pve-command-batch', \&verify_command_batch);
+sub verify_command_batch {
+    my ($value, $noerr) = @_;
+    my $commands = eval { decode_json($value); };
+
+    return undef if $noerr && $@;
+    die "commands param did not contain valid JSON: $@" if $@;
+
+    eval {
+	PVE::JSONSchema::validate($commands, {
+	    description => "An array of objects describing endpoints, methods and arguments.",
+	    type => "array",
+	    items => {
+		type => "object",
+		properties => {
+		    path => {
+			description => "A relative path to an API endpoint on this node.",
+			type => "string",
+			optional => 0,
+		    },
+		    method => {
+			description => "A method related to the API endpoint (GET, POST etc.).",
+			type => "string",
+			pattern => "(GET|POST|PUT|DELETE)",
+			optional => 0,
+		    },
+		    args => {
+			description => "A set of parameter names and their values.",
+			type => "object",
+			optional => 1,
+		    },
+		},
+	    }
+	});
+   };
+
+   return $commands if !$@;
+
+   return undef if $noerr;
+
+   die "commands is not a valid array of commands: $@";
+}
+
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Qemu",
     path => 'qemu',
@@ -433,6 +476,7 @@ __PACKAGE__->register_method({
 	    commands => {
 		description => "JSON encoded array of commands.",
 		type => "string",
+		format => "pve-command-batch",
 	    }
 	},
     },
@@ -449,16 +493,11 @@ __PACKAGE__->register_method({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
-
+	# just parse the json again, it should already be validated
 	my $commands = eval { decode_json($param->{commands}); };
-
-	die "commands param did not contain valid JSON: $@" if $@;
-	die "commands is not an array" if ref($commands) ne "ARRAY";
 
         foreach my $cmd (@$commands) {
 	    eval {
-		die "$cmd is not a valid command" if (ref($cmd) ne "HASH" || !$cmd->{path} || !$cmd->{method});
-
 		$cmd->{args} //= {};
 
 		my $path = "nodes/$param->{node}/$cmd->{path}";
