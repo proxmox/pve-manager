@@ -66,6 +66,32 @@ eval {
 
 use base qw(PVE::RESTHandler);
 
+my $verify_command_item_desc = {
+    description => "An array of objects describing endpoints, methods and arguments.",
+    type => "array",
+    items => {
+	type => "object",
+	properties => {
+	    path => {
+		description => "A relative path to an API endpoint on this node.",
+		type => "string",
+		optional => 0,
+	    },
+	    method => {
+		description => "A method related to the API endpoint (GET, POST etc.).",
+		type => "string",
+		pattern => "(GET|POST|PUT|DELETE)",
+		optional => 0,
+	    },
+	    args => {
+		description => "A set of parameter names and their values.",
+		type => "object",
+		optional => 1,
+	    },
+	},
+    }
+};
+
 PVE::JSONSchema::register_format('pve-command-batch', \&verify_command_batch);
 sub verify_command_batch {
     my ($value, $noerr) = @_;
@@ -75,31 +101,7 @@ sub verify_command_batch {
     die "commands param did not contain valid JSON: $@" if $@;
 
     eval {
-	PVE::JSONSchema::validate($commands, {
-	    description => "An array of objects describing endpoints, methods and arguments.",
-	    type => "array",
-	    items => {
-		type => "object",
-		properties => {
-		    path => {
-			description => "A relative path to an API endpoint on this node.",
-			type => "string",
-			optional => 0,
-		    },
-		    method => {
-			description => "A method related to the API endpoint (GET, POST etc.).",
-			type => "string",
-			pattern => "(GET|POST|PUT|DELETE)",
-			optional => 0,
-		    },
-		    args => {
-			description => "A set of parameter names and their values.",
-			type => "object",
-			optional => 1,
-		    },
-		},
-	    }
-	});
+	PVE::JSONSchema::validate($commands, $verify_command_item_desc);
    };
 
    return $commands if !$@;
@@ -476,6 +478,8 @@ __PACKAGE__->register_method({
 	    commands => {
 		description => "JSON encoded array of commands.",
 		type => "string",
+		verbose_description => "JSON encoded array of commands, where each command is an object with the following properties:\n"
+		 . PVE::RESTHandler::dump_properties($verify_command_item_desc->{items}->{properties}, 'full'),
 		format => "pve-command-batch",
 	    }
 	},
