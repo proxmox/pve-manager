@@ -401,11 +401,11 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    value: gettext('First Ceph monitor') + ':',
 		},
 		{
-		    xtype: 'pveNodeSelector',
+		    xtype: 'displayfield',
 		    fieldLabel: gettext('Monitor node'),
-		    name: 'mon-node',
-		    selectCurNode: true,
-		    allowBlank: false,
+		    cbind: {
+			value: '{nodename}',
+		    },
 		},
 		{
 		    xtype: 'displayfield',
@@ -461,8 +461,6 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    var wizard = me.up('window');
 		    var kv = wizard.getValues();
 		    delete kv.delete;
-		    var monNode = kv['mon-node'];
-		    delete kv['mon-node'];
 		    var nodename = me.nodename;
 		    delete kv.nodename;
 		    Proxmox.Utils.API2Request({
@@ -472,7 +470,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			params: kv,
 			success: function() {
 			    Proxmox.Utils.API2Request({
-				url: `/nodes/${monNode}/ceph/mon/${monNode}`,
+				url: `/nodes/${nodename}/ceph/mon/${nodename}`,
 				waitMsgTarget: wizard,
 				method: 'POST',
 				success: function() {
