@@ -16,21 +16,29 @@ Ext.define('PVE.form.MDevSelector', {
     valueField: 'type',
     displayField: 'type',
     listConfig: {
+	width: 550,
 	columns: [
 	    {
 		header: gettext('Type'),
 		dataIndex: 'type',
+		renderer: function(value, md, rec) {
+		    if (rec.data.name !== undefined) {
+			return `${rec.data.name} (${value})`;
+		    }
+		    return value;
+		},
 		flex: 1,
 	    },
 	    {
-		header: gettext('Available'),
+		header: gettext('Avail.'),
 		dataIndex: 'available',
-		width: 80,
+		width: 60,
 	    },
 	    {
 		header: gettext('Description'),
 		dataIndex: 'description',
 		flex: 1,
+		cellWrap: true,
 		renderer: function(value) {
 		    if (!value) {
 			return '';
