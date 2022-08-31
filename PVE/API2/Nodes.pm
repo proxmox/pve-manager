@@ -97,18 +97,15 @@ sub verify_command_batch {
     my ($value, $noerr) = @_;
     my $commands = eval { decode_json($value); };
 
-    return undef if $noerr && $@;
+    return if $noerr && $@;
     die "commands param did not contain valid JSON: $@" if $@;
 
-    eval {
-	PVE::JSONSchema::validate($commands, $verify_command_item_desc);
-   };
+    eval { PVE::JSONSchema::validate($commands, $verify_command_item_desc) };
 
-   return $commands if !$@;
+    return $commands if !$@;
 
-   return undef if $noerr;
-
-   die "commands is not a valid array of commands: $@";
+    return if $noerr;
+    die "commands is not a valid array of commands: $@";
 }
 
 __PACKAGE__->register_method ({
@@ -573,7 +570,7 @@ __PACKAGE__->register_method({
 	    system ("(sleep 2;/sbin/poweroff)&");
 	}
 
-	return undef;
+	return;
     }});
 
 __PACKAGE__->register_method({
@@ -1359,7 +1356,7 @@ __PACKAGE__->register_method({
 
 	PVE::INotify::update_file('resolvconf', $param);
 
-	return undef;
+	return;
     }});
 
 __PACKAGE__->register_method({
@@ -1439,7 +1436,7 @@ __PACKAGE__->register_method({
 
 	PVE::INotify::write_file('timezone', $param->{timezone});
 
-	return undef;
+	return;
     }});
 
 __PACKAGE__->register_method({
@@ -1880,24 +1877,23 @@ __PACKAGE__->register_method ({
 my $create_stop_worker = sub {
     my ($nodename, $type, $vmid, $down_timeout) = @_;
 
-    my $upid;
     if ($type eq 'lxc') {
 	return if !PVE::LXC::check_running($vmid);
-	my $timeout =  defined($down_timeout) ? int($down_timeout) : 60;
+	my $timeout =  int($down_timeout // 60);
 	print STDERR "Stopping CT $vmid (timeout = $timeout seconds)\n";
-	$upid = PVE::API2::LXC::Status->vm_shutdown({node => $nodename, vmid => $vmid,
-					     timeout => $timeout, forceStop => 1 });
+	return PVE::API2::LXC::Status->vm_shutdown(
+	    { node => $nodename, vmid => $vmid, timeout => $timeout, forceStop => 1 }
+	);
     } elsif ($type eq 'qemu') {
 	return if !PVE::QemuServer::check_running($vmid, 1);
-	my $timeout =  defined($down_timeout) ? int($down_timeout) : 60*3;
+	my $timeout =  int($down_timeout // 3 * 60);
 	print STDERR "Stopping VM $vmid (timeout = $timeout seconds)\n";
-	$upid = PVE::API2::Qemu->vm_shutdown({node => $nodename, vmid => $vmid,
-					      timeout => $timeout, forceStop => 1 });
+	return PVE::API2::Qemu->vm_shutdown(
+	    { node => $nodename, vmid => $vmid, timeout => $timeout, forceStop => 1 }
+	);
     } else {
 	die "unknown VM type '$type'\n";
     }
-
-    return $upid;
 };
 
 __PACKAGE__->register_method ({
@@ -1959,8 +1955,7 @@ __PACKAGE__->register_method ({
 
 		foreach my $vmid (sort {$b <=> $a} keys %$vmlist) {
 		    my $d = $vmlist->{$vmid};
-		    my $upid;
-		    eval { $upid = &$create_stop_worker($nodename, $d->{type}, $vmid, $d->{down}); };
+		    my $upid = eval { $create_stop_worker->($nodename, $d->{type}, $vmid, $d->{down}) };
 		    warn $@ if $@;
 		    next if !$upid;
 
@@ -2215,7 +2210,7 @@ __PACKAGE__->register_method ({
     code => sub {
 	my ($param) = @_;
 
-	PVE::Tools::lock_file('/var/lock/pve-etchosts.lck', undef, sub{
+	PVE::Tools::lock_file('/var/lock/pve-etchosts.lck', undef, sub {
 	    if ($param->{digest}) {
 		my $hosts = PVE::INotify::read_file('etchosts');
 		PVE::Tools::assert_if_modified($hosts->{digest}, $param->{digest});
@@ -2224,7 +2219,7 @@ __PACKAGE__->register_method ({
 	});
 	die $@ if $@;
 
-	return undef;
+	return;
     }});
 
 # bash completion helper
