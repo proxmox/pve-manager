@@ -1670,16 +1670,14 @@ my $get_filtered_vmlist = sub {
 
     my $vmlist = PVE::Cluster::get_vmlist();
 
-    my $vms_allowed = {};
+    my $vms_allowed;
     if (defined($vmfilter)) {
-	foreach my $vmid (PVE::Tools::split_list($vmfilter)) {
-	    $vms_allowed->{$vmid} = 1;
-	}
+	$vms_allowed = { map { $_ => 1 } PVE::Tools::split_list($vmfilter) };
     }
 
     my $res = {};
     foreach my $vmid (keys %{$vmlist->{ids}}) {
-	next if %$vms_allowed && !$vms_allowed->{$vmid};
+	next if defined($vms_allowed) && !$vms_allowed->{$vmid};
 
 	my $d = $vmlist->{ids}->{$vmid};
 	next if $nodename && $d->{node} ne $nodename;
@@ -1691,7 +1689,7 @@ my $get_filtered_vmlist = sub {
 	    } elsif ($d->{type} eq 'qemu') {
 		$class = 'PVE::QemuConfig';
 	    } else {
-		die "unknown VM type '$d->{type}'\n";
+		die "unknown virtual guest type '$d->{type}'\n";
 	    }
 
 	    my $conf = $class->load_config($vmid);
@@ -1715,23 +1713,18 @@ my $get_start_stop_list = sub {
     # do not skip HA vms on force or if a specific VMID set is wanted
     my $include_ha_managed = defined($vmfilter) ? 1 : 0;
 
-    my $vmlist = &$get_filtered_vmlist($nodename, $vmfilter, undef, $include_ha_managed);
+    my $vmlist = $get_filtered_vmlist->($nodename, $vmfilter, undef, $include_ha_managed);
 
     my $resList = {};
     foreach my $vmid (keys %$vmlist) {
 	my $conf = $vmlist->{$vmid}->{conf};
-
 	next if $autostart && !$conf->{onboot};
 
-	my $startup = {};
-	if ($conf->{startup}) {
-	    $startup =  PVE::JSONSchema::pve_parse_startup_order($conf->{startup});
-	}
+	my $startup = $conf->{startup} ? PVE::JSONSchema::pve_parse_startup_order($conf->{startup}) : {};
+	my $order = $startup->{order} = $startup->{order} // LONG_MAX;
 
-	$startup->{order} = LONG_MAX if !defined($startup->{order});
-
-	$resList->{$startup->{order}}->{$vmid} = $startup;
-	$resList->{$startup->{order}}->{$vmid}->{type} = $vmlist->{$vmid}->{type};
+	$resList->{$order}->{$vmid} = $startup;
+	$resList->{$order}->{$vmid}->{type} = $vmlist->{$vmid}->{type};
     }
 
     return $resList;
