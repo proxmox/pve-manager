@@ -1,3 +1,33 @@
+pve-manager (7.2-8) bullseye; urgency=medium
+
+  * ui: restore: improve warning for restoring container with same ID
+
+  * ui: ct restore: put mountpoint-erasure note on new line
+
+  * api: apt: switch to common Proxmox::RS::APT::Repositories package
+
+  * ceph-after-pve-cluster: enable for ceph-volume, disable for ceph-disk
+
+  * ui: datacenter: rework webauthn settings UX
+
+  * pvesr: remove stale replicated volumes immediately
+
+  * api2: add return type to nodes/{node}/execute endpoint
+
+  * api2: use JSONSchema to validate commands for "nodes/{node}/execute"
+
+  * Jobs: fix scheduling after updating job from a different node
+
+  * ui: improve form/MDevSelector
+
+  * subscription: switch to Proxmox::RS::Subscription
+
+  * pvesubscription: add 'set-offline-key' command
+
+  * www: subscription: add Signed/Offline status
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 6 Sep 2022 10:38:26 +0200
+
 pve-manager (7.2-7) bullseye; urgency=medium
 
   * pveceph: fix regression with new split-out ceph-volume package and older
