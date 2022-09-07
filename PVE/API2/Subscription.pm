@@ -62,7 +62,7 @@ sub read_etc_subscription {
 
     my $info = Proxmox::RS::Subscription::read_subscription($filename);
 
-    return $info if $info->{status} ne 'active';
+    return $info if !$info || $info->{status} ne 'active';
 
     my ($sockets, $level);
     eval { ($sockets, $level) = check_key($info->{key}, $req_sockets); };
