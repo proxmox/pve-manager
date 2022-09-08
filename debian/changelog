@@ -1,3 +1,14 @@
+pve-manager (7.2-9) bullseye; urgency=medium
+
+  * subscription: handle missing subscription info
+
+  * api: nodes: code/style rework start/stop list generation
+
+  * ui: CephInstallWizard: make first monitor node static and always use
+    localhost to avoid using one where ceph isn't yet installed
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 08 Sep 2022 14:56:33 +0200
+
 pve-manager (7.2-8) bullseye; urgency=medium
 
   * ui: restore: improve warning for restoring container with same ID
