@@ -39,7 +39,6 @@ __PACKAGE__->register_method({
 	my ($param) = @_;
 
 	my $info = decode_json(decode_base64($param->{data}));
-	my $key = PVE::Tools::file_get_contents($PVE::API2::Subscription::signature_key_filename);
 
 	$info = Proxmox::RS::Subscription::check_signature($info);
 	$info = Proxmox::RS::Subscription::check_server_id($info);
