@@ -1,4 +1,4 @@
-Ext.define('PVE.qemu.Summary', {
+Ext.define('PVE.guest.Summary', {
     extend: 'Ext.panel.Panel',
     xtype: 'pveGuestSummary',
 
