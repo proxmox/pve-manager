@@ -92,6 +92,7 @@ Depends: apt-transport-https | apt (>= 1.5~),
          ${misc:Depends},
          ${perl:Depends},
          ${shlibs:Depends},
+Recommends: proxmox-offline-mirror-helper
 Suggests: libpve-network-perl (>= 0.5-1)
 Conflicts: vlan,
            vzdump,
