@@ -1,6 +1,6 @@
 Ext.define('PVE.lxc.Config', {
     extend: 'PVE.panel.Config',
-    alias: 'widget.PVE.lxc.Config',
+    alias: 'widget.pveLXCConfig',
 
     onlineHelp: 'chapter_pct',
 
