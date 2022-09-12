@@ -55,6 +55,7 @@ my $init_report_cmds = sub {
 		'cat /etc/fstab',
 		'findmnt --ascii',
 		'df --human -T',
+		'proxmox-boot-tool status',
 	    ],
 	},
 	'virtual guests' => {
