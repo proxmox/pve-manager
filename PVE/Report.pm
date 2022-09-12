@@ -68,7 +68,7 @@ my $init_report_cmds = sub {
 	    ],
 	},
 	network => {
-	    order => 40,
+	    order => 45,
 	    cmds => [
 		'ip -details -statistics address',
 		'ip -details -4 route show',
