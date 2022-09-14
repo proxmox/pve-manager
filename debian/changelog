@@ -1,3 +1,15 @@
+pve-manager (7.2-11) bullseye; urgency=medium
+
+  * d/control: recommend proxmox-offline-mirror-helper
+
+  * report: add proxmox-boot-tool status output
+
+  * report: stabilize order of guests and network
+
+  * postinst: migrate/update APT auth config
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 14 Sep 2022 13:15:22 +0200
+
 pve-manager (7.2-10) bullseye; urgency=medium
 
   * subscription: remove leftover key reference
