@@ -1,12 +1,12 @@
 #!/bin/sh
 
-# Abort if any command returns an error value 
+# Abort if any command returns an error value
 set -e
 
-# This script is called as the last step of the installation of the 
-# package.  All the package's files are in place, dpkg has already
-# done its automatic conffile handling, and all the packages we depend
-# of are already fully installed and configured.
+# This script is called as the last step of the installation of the package.
+# All the package's files are in place, dpkg has already done its automatic
+# conffile handling, and all the packages we depend of are already fully
+# installed and configured.
 
 set_lvm_conf() {
     LVM_CONF_MARKER="# added by pve-manager to avoid scanning"
@@ -14,51 +14,51 @@ set_lvm_conf() {
     # only do these changes once
     # keep user changes afterwards provided marker is still there..
     if ! grep -qLF "$LVM_CONF_MARKER" /etc/lvm/lvm.conf; then
-	OLD_VALUE="$(lvmconfig --typeconfig full devices/global_filter)"
-	NEW_VALUE='global_filter=["r|/dev/zd.*|"]'
+        OLD_VALUE="$(lvmconfig --typeconfig full devices/global_filter)"
+        NEW_VALUE='global_filter=["r|/dev/zd.*|"]'
 
-	export LVM_SUPPRESS_FD_WARNINGS=1
+        export LVM_SUPPRESS_FD_WARNINGS=1
 
-	# check global_filter
-	# keep previous setting from our custom packaging if it is still there
-	if echo "$OLD_VALUE" | grep -qvF 'r|/dev/zd.*|'; then
-	    SET_FILTER=1
-	    BACKUP=1
-	fi
-	# should be the default since bullseye
-	if lvmconfig --typeconfig full devices/scan_lvs | grep -qv 'scan_lvs=0'; then
-	    SET_SCAN_LVS=1
-	    BACKUP=1
-	fi
-	if test -n "$BACKUP"; then
-	    echo "Backing up lvm.conf before setting pve-manager specific settings.."
-	    cp -vb /etc/lvm/lvm.conf /etc/lvm/lvm.conf.bak
-	fi
-	if test -n "$SET_FILTER"; then
-	    echo "Setting 'global_filter' in /etc/lvm/lvm.conf to prevent zvols from being scanned:"
-	    echo "$OLD_VALUE => $NEW_VALUE"
-	    # comment out existing setting
-	    sed -i -e 's/^\([[:space:]]*global_filter[[:space:]]*=\)/#\1/' /etc/lvm/lvm.conf
-	    # add new section with our setting
-	    cat >> /etc/lvm/lvm.conf <<EOF
+        # check global_filter
+        # keep previous setting from our custom packaging if it is still there
+        if echo "$OLD_VALUE" | grep -qvF 'r|/dev/zd.*|'; then
+            SET_FILTER=1
+            BACKUP=1
+        fi
+        # should be the default since bullseye
+        if lvmconfig --typeconfig full devices/scan_lvs | grep -qv 'scan_lvs=0'; then
+            SET_SCAN_LVS=1
+            BACKUP=1
+        fi
+        if test -n "$BACKUP"; then
+            echo "Backing up lvm.conf before setting pve-manager specific settings.."
+            cp -vb /etc/lvm/lvm.conf /etc/lvm/lvm.conf.bak
+        fi
+        if test -n "$SET_FILTER"; then
+            echo "Setting 'global_filter' in /etc/lvm/lvm.conf to prevent zvols from being scanned:"
+            echo "$OLD_VALUE => $NEW_VALUE"
+            # comment out existing setting
+            sed -i -e 's/^\([[:space:]]*global_filter[[:space:]]*=\)/#\1/' /etc/lvm/lvm.conf
+            # add new section with our setting
+            cat >> /etc/lvm/lvm.conf <<EOF
 devices {
-	 $LVM_CONF_MARKER ZFS zvols
-	 $NEW_VALUE
-}
+     $LVM_CONF_MARKER ZFS zvols
+     $NEW_VALUE
+ }
 EOF
-	fi
-	if test -n "$SET_SCAN_LVS"; then
-	    echo "Adding scan_lvs=0 setting to /etc/lvm/lvm.conf to prevent LVs from being scanned."
-	    # comment out existing setting
-	    sed -i -e 's/^\([[:space:]]*scan_lvs[[:space:]]*=\)/#\1/' /etc/lvm/lvm.conf
-	    # add new section with our setting
-	    cat >> /etc/lvm/lvm.conf <<EOF
+        fi
+        if test -n "$SET_SCAN_LVS"; then
+            echo "Adding scan_lvs=0 setting to /etc/lvm/lvm.conf to prevent LVs from being scanned."
+            # comment out existing setting
+            sed -i -e 's/^\([[:space:]]*scan_lvs[[:space:]]*=\)/#\1/' /etc/lvm/lvm.conf
+            # add new section with our setting
+            cat >> /etc/lvm/lvm.conf <<EOF
 devices {
-	 $LVM_CONF_MARKER LVM volumes
-	 scan_lvs=0
-}
+     $LVM_CONF_MARKER LVM volumes
+     scan_lvs=0
+ }
 EOF
-	fi
+        fi
     fi
 }
 
@@ -68,27 +68,27 @@ migrate_apt_auth_conf() {
     match=0
 
     while read -r l; do
-	if echo "$l" | grep -q "^machine enterprise.proxmox.com/debian/pve"; then
-	    match=1
-	elif echo "$l" | grep -q "machine"; then
-	    match=0
-	fi
+        if echo "$l" | grep -q "^machine enterprise.proxmox.com/debian/pve"; then
+            match=1
+        elif echo "$l" | grep -q "machine"; then
+            match=0
+        fi
 
-	if test "$match" = "1"; then
-	    removed="$removed\n$l"
-	else
-	    output="$output\n$l"
-	fi
+        if test "$match" = "1"; then
+            removed="$removed\n$l"
+        else
+            output="$output\n$l"
+        fi
     done < /etc/apt/auth.conf
 
     if test -n "$removed"; then
-	if test ! -e /etc/apt/auth.conf.d/pve.conf; then
-	    echo "Migrating APT auth config for enterprise.proxmox.com to /etc/apt/auth.conf.d/pve.conf .."
-	    echo "$removed" > /etc/apt/auth.conf.d/pve.conf
-	else
-	    echo "Removing stale APT auth config from /etc/apt/auth.conf"
-	fi
-	echo "$output" > /etc/apt/auth.conf
+        if test ! -e /etc/apt/auth.conf.d/pve.conf; then
+            echo "Migrating APT auth config for enterprise.proxmox.com to /etc/apt/auth.conf.d/pve.conf .."
+            echo "$removed" > /etc/apt/auth.conf.d/pve.conf
+        else
+            echo "Removing stale APT auth config from /etc/apt/auth.conf"
+        fi
+        echo "$output" > /etc/apt/auth.conf
     fi
 }
 
@@ -120,13 +120,13 @@ case "$1" in
     mkdir /etc/pve 2>/dev/null || true
 
     if test ! -e /var/lib/pve-manager/apl-info/download.proxmox.com; then
-	mkdir -p /var/lib/pve-manager/apl-info
-	cp /usr/share/doc/pve-manager/aplinfo.dat /var/lib/pve-manager/apl-info/download.proxmox.com
-	pveam update || true
+        mkdir -p /var/lib/pve-manager/apl-info
+        cp /usr/share/doc/pve-manager/aplinfo.dat /var/lib/pve-manager/apl-info/download.proxmox.com
+        pveam update || true
     fi
 
     if ! test -f /root/.forward || ! grep -q '|/usr/bin/pvemailforward' /root/.forward; then
-	echo '|/usr/bin/pvemailforward' >>/root/.forward
+        echo '|/usr/bin/pvemailforward' >>/root/.forward
     fi
 
     systemctl --system daemon-reload >/dev/null || true
@@ -137,94 +137,94 @@ case "$1" in
     NO_RESTART_UNITS="pvenetcommit.service pve-guests.service"
 
     for unit in ${UNITS} ${NO_RESTART_UNITS}; do
-	deb-systemd-helper unmask "$unit" >/dev/null || true
+        deb-systemd-helper unmask "$unit" >/dev/null || true
 
-	# was-enabled defaults to true, so new installations run enable.
-	if deb-systemd-helper --quiet was-enabled "$unit"; then
-	    # Enables the unit on first installation, creates new
-	    # symlinks on upgrades if the unit file has changed.
-	    deb-systemd-helper enable "$unit" >/dev/null || true
-	else
-	    # Update the statefile to add new symlinks (if any), which need to be
-	    # cleaned up on purge. Also remove old symlinks.
-	    deb-systemd-helper update-state "$unit" >/dev/null || true
-	fi
+        # was-enabled defaults to true, so new installations run enable.
+        if deb-systemd-helper --quiet was-enabled "$unit"; then
+            # Enables the unit on first installation, creates new
+            # symlinks on upgrades if the unit file has changed.
+            deb-systemd-helper enable "$unit" >/dev/null || true
+        else
+            # Update the statefile to add new symlinks (if any), which need to be
+            # cleaned up on purge. Also remove old symlinks.
+            deb-systemd-helper update-state "$unit" >/dev/null || true
+        fi
     done
 
     # FIXME: remove after beta is over and add hunk to actively remove the repo
     BETA_SOURCES="/etc/apt/sources.list.d/pvetest-for-beta.list"
     if test -f "$BETA_SOURCES" && dpkg --compare-versions "$2" 'lt' '7.0-9~' && dpkg --compare-versions "$2" 'gt' '7.0~'; then
-	echo "Removing the during beta added pvetest repository file again"
-	rm -v "$BETA_SOURCES" || true
+        echo "Removing the during beta added pvetest repository file again"
+        rm -v "$BETA_SOURCES" || true
     fi
 
     # FIXME: remove in PVE 8.0
     if test ! -e /proxmox_install_mode && test -n "$2" && dpkg --compare-versions "$2" 'lt' '7.0-6~'; then
-	# PVE 4.0 beta to 5.4 ISO had a bug and did not generated a unique machine-id. below is a
-	# very relaxed machine-id list from all ISOs (released, tests & internal) possibly affected
-	if grep -q \
-	    -e a0ee88c29b764c46a579dd89c86c2d84 \
-	    -e ecbf104295bd4f8b90bb82dc2fa5e9e5 \
-	    -e c8fa51cd0c254ea08b0e37c1e37afbb9 \
-	    -e 2ec24eda629a4c8d8c1f8dac50a9ee5f \
-	    -e ef8db290720047159b426bd322839d70 \
-	    -e bd94244c0da6419a82a383e62dc03b51 \
-	    -e 45d4e7046c3d4c26af8acd589f358ac6 \
-	    -e 8c445f96b3064ff79f825ea78a3eefde \
-	    -e 6f9fae0f0a794fd4b89b3abecfd7f182 \
-	    -e 6f9fae0f0a794fd4b89b3abecfd7f182 \
-	    -e 285de85759894b3f9ad9844a89045af6 \
-	    -e 89971dede7b04c98b2b0bc8845f53320 \
-	    -e 4e3b6e9550f24d638bc26211a7b37df5 \
-	    -e bc2f684e31ee4daf95e45c62410a95b1 \
-	    -e 8cc7bc883fd048b78a4af7433c48e341 \
-	    -e 9b46d99712854566bb02a656a3ff9191 \
-	    -e e7fc055af47048ee884dcb88a7474336 \
-	    -e 13d879f75e6447a69ed85179bd93759a \
-	    -e 5b59e448c3e74029af2ac91f572d68a7 \
-	    -e 5a2bd0d11a6c41f9a33fd527751224ea \
-	    -e 516afc72013c4b9da85b309aad987df2 \
-	    -e b0ce8d24684845e8ac337c588a7715cb \
-	    -e e0af064c16e9463e9fa980eac66427c1 \
-	    -e 6e925d11b497446e8e7f2ff38e7cf891 \
-	    -e eec280213051474d8bfe7e089a86744a \
-	    -e 708ded6ee82a46c08b77fecda2284c6c \
-	    -e 615cb2b78b2240289fef74da610c146f \
-	    -e b965b329a7e246d5be66a8d367f5760d \
-	    -e 5472a49c6436426fbebd7881f7b7f13b \
-	    /etc/machine-id
-	then
-	    echo "found static machine-id bug from Proxmox VE ISO installer <= 5.4, regenerating machine-id"
-	    systemd-id128 new | tee /etc/machine-id.new /var/lib/dbus/machine-id.new
-	    # atomically replace
-	    mv /etc/machine-id.new /etc/machine-id
-	    mv /var/lib/dbus/machine-id.new /var/lib/dbus/machine-id
-	    echo "new machine-id generated, a reboot is recommended"
-	else
-	    echo "machine-id check OK"
-	fi
+        # PVE 4.0 beta to 5.4 ISO had a bug and did not generated a unique machine-id. below is a
+        # very relaxed machine-id list from all ISOs (released, tests & internal) possibly affected
+        if grep -q \
+            -e a0ee88c29b764c46a579dd89c86c2d84 \
+            -e ecbf104295bd4f8b90bb82dc2fa5e9e5 \
+            -e c8fa51cd0c254ea08b0e37c1e37afbb9 \
+            -e 2ec24eda629a4c8d8c1f8dac50a9ee5f \
+            -e ef8db290720047159b426bd322839d70 \
+            -e bd94244c0da6419a82a383e62dc03b51 \
+            -e 45d4e7046c3d4c26af8acd589f358ac6 \
+            -e 8c445f96b3064ff79f825ea78a3eefde \
+            -e 6f9fae0f0a794fd4b89b3abecfd7f182 \
+            -e 6f9fae0f0a794fd4b89b3abecfd7f182 \
+            -e 285de85759894b3f9ad9844a89045af6 \
+            -e 89971dede7b04c98b2b0bc8845f53320 \
+            -e 4e3b6e9550f24d638bc26211a7b37df5 \
+            -e bc2f684e31ee4daf95e45c62410a95b1 \
+            -e 8cc7bc883fd048b78a4af7433c48e341 \
+            -e 9b46d99712854566bb02a656a3ff9191 \
+            -e e7fc055af47048ee884dcb88a7474336 \
+            -e 13d879f75e6447a69ed85179bd93759a \
+            -e 5b59e448c3e74029af2ac91f572d68a7 \
+            -e 5a2bd0d11a6c41f9a33fd527751224ea \
+            -e 516afc72013c4b9da85b309aad987df2 \
+            -e b0ce8d24684845e8ac337c588a7715cb \
+            -e e0af064c16e9463e9fa980eac66427c1 \
+            -e 6e925d11b497446e8e7f2ff38e7cf891 \
+            -e eec280213051474d8bfe7e089a86744a \
+            -e 708ded6ee82a46c08b77fecda2284c6c \
+            -e 615cb2b78b2240289fef74da610c146f \
+            -e b965b329a7e246d5be66a8d367f5760d \
+            -e 5472a49c6436426fbebd7881f7b7f13b \
+            /etc/machine-id
+                then
+                    echo "found static machine-id bug from Proxmox VE ISO installer <= 5.4, regenerating machine-id"
+                    systemd-id128 new | tee /etc/machine-id.new /var/lib/dbus/machine-id.new
+                    # atomically replace
+                    mv /etc/machine-id.new /etc/machine-id
+                    mv /var/lib/dbus/machine-id.new /var/lib/dbus/machine-id
+                    echo "new machine-id generated, a reboot is recommended"
+                else
+                    echo "machine-id check OK"
+        fi
     fi
 
     set_lvm_conf
 
     if test ! -e /proxmox_install_mode; then
-	# modeled after code generated by dh_start
-	for unit in ${UNITS}; do
-	    if test -n "$2"; then
-		dh_action="reload-or-restart";
-	    else
-		dh_action="start"
-	    fi
-	    if systemctl -q is-enabled "$unit"; then
-		deb-systemd-invoke $dh_action "$unit"
-	    fi
-	done
+        # modeled after code generated by dh_start
+        for unit in ${UNITS}; do
+            if test -n "$2"; then
+                dh_action="reload-or-restart";
+            else
+                dh_action="start"
+            fi
+            if systemctl -q is-enabled "$unit"; then
+                deb-systemd-invoke $dh_action "$unit"
+            fi
+        done
     fi
 
     if test ! -e /proxmox_install_mode && test -n "$2" && dpkg --compare-versions "$2" 'lt' '7.2.11~'; then
-	if test -e /etc/apt/auth.conf ; then
-	    migrate_apt_auth_conf
-	fi
+        if test -e /etc/apt/auth.conf ; then
+            migrate_apt_auth_conf
+        fi
     fi
     ;;
 
