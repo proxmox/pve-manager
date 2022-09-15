@@ -819,6 +819,7 @@ __PACKAGE__->register_method({
 	    libpve-network-perl
 	    openvswitch-switch
 	    proxmox-backup-file-restore
+	    proxmox-offline-mirror-helper
 	    pve-zsync
 	    zfsutils-linux
 	);
