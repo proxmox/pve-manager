@@ -365,7 +365,7 @@ Ext.define('PVE.panel.PBSEncryptionKeyTab', {
 			    } catch (e) {
 				return "Failed to parse key - " + e;
 			    }
-			    if (typeof key.data === undefined) {
+			    if (key.data === undefined) {
 				return "Does not seems like a valid Proxmox Backup key!";
 			    }
 			}
