@@ -817,8 +817,8 @@ __PACKAGE__->register_method({
 	    ksmtuned
 	    libpve-apiclient-perl
 	    libpve-network-perl
-	    proxmox-backup-file-restore
 	    openvswitch-switch
+	    proxmox-backup-file-restore
 	    pve-zsync
 	    zfsutils-linux
 	);
