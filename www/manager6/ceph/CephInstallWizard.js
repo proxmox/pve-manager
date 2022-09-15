@@ -143,7 +143,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
     viewModel: {
 	data: {
 	    nodename: '',
-	    cephRelease: 'pacific',
+	    cephRelease: 'quincy',
 	    configuration: true,
 	    isInstalled: false,
 	},
