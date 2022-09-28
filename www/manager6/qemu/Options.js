@@ -121,7 +121,7 @@ Ext.define('PVE.qemu.Options', {
 			    if (bootdisk) {
 				text += bootdisk;
 			    } else {
-				text += gettext('(no bootdisk)');
+				text += gettext('first disk');
 			    }
 			} else if (sel === 'n') {
 			    text += gettext('any net');
