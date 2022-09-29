@@ -7,20 +7,21 @@ use IO::File;
 use File::Find;
 use File::stat;
 
+use PVE::APLInfo;
 use PVE::CertHelpers;
 use PVE::Certificate;
-use PVE::NodeConfig;
-use PVE::INotify;
-use PVE::Cluster;
 use PVE::Cluster::Setup;
+use PVE::Cluster;
 use PVE::DataCenterConfig;
-use PVE::APLInfo;
-use PVE::SafeSyslog;
+use PVE::INotify;
+use PVE::NodeConfig;
 use PVE::RPCEnvironment;
+use PVE::SafeSyslog;
 use PVE::Tools;
-use PVE::API2::Subscription;
-use PVE::API2::APT;
+
 use PVE::API2::ACME;
+use PVE::API2::APT;
+use PVE::API2::Subscription;
 
 initlog ('pveupdate', 'daemon');
 
