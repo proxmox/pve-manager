@@ -25,9 +25,10 @@ __PACKAGE__->register_method ({
     method => 'POST',
     description => "Create backup.",
     permissions => {
-	description => "The user needs 'VM.Backup' permissions on any VM, and 'Datastore.AllocateSpace'"
-	    ." on the backup storage. The 'maxfiles', 'prune-backups', 'tmpdir', 'dumpdir', 'script',"
-	    ." 'bwlimit' and 'ionice' parameters are restricted to the 'root\@pam' user.",
+	description => "The user needs 'VM.Backup' permissions on any VM, and "
+	    ."'Datastore.AllocateSpace' on the backup storage. The 'maxfiles', 'prune-backups', "
+	    ."'tmpdir', 'dumpdir', 'script', 'bwlimit', 'performance' and 'ionice' parameters are "
+	    ."restricted to the 'root\@pam' user.",
 	user => 'all',
     },
     protected => 1,
@@ -60,7 +61,7 @@ __PACKAGE__->register_method ({
 		if $param->{stdout};
 	}
 
-	foreach my $key (qw(maxfiles prune-backups tmpdir dumpdir script bwlimit ionice)) {
+	for my $key (qw(maxfiles prune-backups tmpdir dumpdir script bwlimit performance ionice)) {
 	    raise_param_exc({ $key => "Only root may set this option."})
 		if defined($param->{$key}) && ($user ne 'root@pam');
 	}

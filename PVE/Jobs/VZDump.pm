@@ -42,11 +42,8 @@ sub options {
 sub decode_value {
     my ($class, $type, $key, $value) = @_;
 
-    if ($key eq 'prune-backups' && !ref($value)) {
-	$value = PVE::JSONSchema::parse_property_string(
-	    'prune-backups',
-	    $value,
-	);
+    if ((my $format = $PVE::VZDump::Common::PROPERTY_STRINGS->{$key}) && !ref($value)) {
+	$value = PVE::JSONSchema::parse_property_string($format, $value);
     }
 
     return $value;
@@ -55,11 +52,8 @@ sub decode_value {
 sub encode_value {
     my ($class, $type, $key, $value) = @_;
 
-    if ($key eq 'prune-backups' && ref($value) eq 'HASH') {
-	$value = PVE::JSONSchema::print_property_string(
-	    $value,
-	    'prune-backups',
-	);
+    if ((my $format = $PVE::VZDump::Common::PROPERTY_STRINGS->{$key}) && ref($value) eq 'HASH') {
+	$value = PVE::JSONSchema::print_property_string($value, $format);
     }
 
     return $value;
@@ -73,9 +67,12 @@ sub run {
 	delete $conf->{$opt} if !defined($props->{$opt});
     }
 
-    my $retention = $conf->{'prune-backups'};
-    if ($retention && ref($retention) eq 'HASH') { # fixup, its required as string parameter
-	$conf->{'prune-backups'} = PVE::JSONSchema::print_property_string($retention, 'prune-backups');
+    # Required as string parameters
+    for my $key (keys $PVE::VZDump::Common::PROPERTY_STRINGS->%*) {
+	if ($conf->{$key} && ref($conf->{$key}) eq 'HASH') {
+	    my $format = $PVE::VZDump::Common::PROPERTY_STRINGS->{$key};
+	    $conf->{$key} = PVE::JSONSchema::print_property_string($conf->{$key}, $format);
+	}
     }
 
     $conf->{quiet} = 1; # do not write to stdout/stderr

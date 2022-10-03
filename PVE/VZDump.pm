@@ -122,6 +122,15 @@ my $generate_notes = sub {
     return $notes_template;
 };
 
+my sub parse_performance {
+    my ($param) = @_;
+
+    if (defined(my $perf = $param->{performance})) {
+	return if ref($perf) eq 'HASH'; # already parsed
+	$param->{performance} = PVE::JSONSchema::parse_property_string('backup-performance', $perf);
+    }
+}
+
 my $parse_prune_backups_maxfiles = sub {
     my ($param, $kind) = @_;
 
@@ -261,6 +270,7 @@ sub read_vzdump_defaults {
 	} keys %$confdesc_for_defaults
     };
     $parse_prune_backups_maxfiles->($defaults, "defaults in VZDump schema");
+    parse_performance($defaults);
 
     my $raw;
     eval { $raw = PVE::Tools::file_get_contents($fn); };
@@ -276,6 +286,7 @@ sub read_vzdump_defaults {
 	$res->{mailto} = [ @mailto ];
     }
     $parse_prune_backups_maxfiles->($res, "options in '$fn'");
+    parse_performance($res);
 
     foreach my $key (keys %$defaults) {
 	$res->{$key} = $defaults->{$key} if !defined($res->{$key});
@@ -1354,6 +1365,7 @@ sub verify_vzdump_parameters {
 	if defined($param->{'prune-backups'}) && defined($param->{maxfiles});
 
     $parse_prune_backups_maxfiles->($param, 'CLI parameters');
+    parse_performance($param);
 
     if (my $template = $param->{'notes-template'}) {
 	eval { $verify_notes_template->($template); };

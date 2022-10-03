@@ -594,9 +594,11 @@ Ext.define('PVE.dc.BackupView', {
 	    delete job['repeat-missed'];
 	    job.all = job.all === true ? 1 : 0;
 
-	    if (job['prune-backups']) {
-		job['prune-backups'] = PVE.Parser.printPropertyString(job['prune-backups']);
-	    }
+	    ['performance', 'prune-backups'].forEach(key => {
+		if (job[key]) {
+		    job[key] = PVE.Parser.printPropertyString(job[key]);
+		}
+	    });
 
 	    let allNodes = PVE.data.ResourceStore.getNodes();
 	    let nodes = allNodes.filter(node => node.status === 'online').map(node => node.node);
