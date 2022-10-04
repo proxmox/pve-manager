@@ -30,7 +30,7 @@ Ext.define('PVE.form.MDevSelector', {
 		flex: 1,
 	    },
 	    {
-		header: gettext('Avail.'),
+		header: gettext('Avail'),
 		dataIndex: 'available',
 		width: 60,
 	    },
