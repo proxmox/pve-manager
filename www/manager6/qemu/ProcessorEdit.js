@@ -27,8 +27,8 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    values.delete = values.delete.join(',');
 	}
 
-	PVE.Utils.delete_if_default(values, 'cpulimit', '0', 0);
-	PVE.Utils.delete_if_default(values, 'cpuunits', '1024', 0);
+	PVE.Utils.delete_if_default(values, 'cpulimit', '0', me.insideWizard);
+	PVE.Utils.delete_if_default(values, 'cpuunits', '1024', me.insideWizard);
 
 	// build the cpu options:
 	me.cpu.cputype = values.cputype;
