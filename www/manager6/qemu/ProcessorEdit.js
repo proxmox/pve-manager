@@ -190,7 +190,8 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    // FIXME: change to [1, 1000] once cgroup v1 support gets removed (PVE 8 ?)
 	    minValue: 2,
 	    maxValue: 262144,
-	    value: '1024',
+	    value: '',
+	    emptyText: '1024',
 	    deleteEmpty: true,
 	    allowBlank: true,
 	},
