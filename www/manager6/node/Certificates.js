@@ -5,7 +5,7 @@ Ext.define('PVE.node.CertificateView', {
     onlineHelp: 'sysadmin_certificate_management',
 
     mixins: ['Proxmox.Mixin.CBind'],
-    scrollable: true,
+    scrollable: 'y',
 
     items: [
 	{
