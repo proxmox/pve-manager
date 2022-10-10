@@ -59,7 +59,7 @@ Ext.define('PVE.form.ControllerSelector', {
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	Ext.apply(me, {
 	    fieldLabel: gettext('Bus/Device'),
