@@ -12,7 +12,7 @@ Ext.define('PVE.form.ControllerSelector', {
 	let freeId = PVE.Utils.nextFreeDisk(controllers, me.vmconfig);
 
 	if (freeId !== undefined) {
-	    busField.setValue(freeId.controller);
+	    busField?.setValue(freeId.controller);
 	    deviceIDField.setValue(freeId.id);
 	}
     },
@@ -83,6 +83,7 @@ Ext.define('PVE.form.ControllerSelector', {
 				return;
 			    }
 			    let field = me.down('field[name=deviceid]');
+			    me.setToFree([value], undefined, field);
 			    field.setMaxValue(PVE.Utils.diskControllerMaxIDs[value] - 1);
 			    field.validate();
 			},
