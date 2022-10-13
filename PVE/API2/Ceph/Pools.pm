@@ -321,6 +321,7 @@ my $get_storages = sub {
     foreach my $storeid (keys %$storages) {
 	my $curr = $storages->{$storeid};
 	next if $curr->{type} ne 'rbd';
+	$curr->{pool} = 'rbd' if !defined $curr->{pool}; # set default
 	if (
 	    $pool eq $curr->{pool} ||
 	    (defined $curr->{'data-pool'} && $pool eq $curr->{'data-pool'})
