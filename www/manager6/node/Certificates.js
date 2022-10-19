@@ -35,66 +35,85 @@ Ext.define('PVE.node.CertificateViewer', {
 	labelWidth: 120,
     },
     width: 800,
-    resizable: true,
 
-    items: [
-	{
-	    xtype: 'displayfield',
-	    fieldLabel: gettext('Name'),
-	    name: 'filename',
-	},
-	{
-	    xtype: 'displayfield',
-	    fieldLabel: gettext('Fingerprint'),
-	    name: 'fingerprint',
-	},
-	{
-	    xtype: 'displayfield',
-	    fieldLabel: gettext('Issuer'),
-	    name: 'issuer',
-	},
-	{
-	    xtype: 'displayfield',
-	    fieldLabel: gettext('Subject'),
-	    name: 'subject',
-	},
-	{
-	    xtype: 'displayfield',
-	    fieldLabel: gettext('Public Key Type'),
-	    name: 'public-key-type',
-	},
-	{
-	    xtype: 'displayfield',
-	    fieldLabel: gettext('Public Key Size'),
-	    name: 'public-key-bits',
-	},
-	{
-	    xtype: 'displayfield',
-	    fieldLabel: gettext('Valid Since'),
-	    renderer: Proxmox.Utils.render_timestamp,
-	    name: 'notbefore',
-	},
-	{
-	    xtype: 'displayfield',
-	    fieldLabel: gettext('Expires'),
-	    renderer: Proxmox.Utils.render_timestamp,
-	    name: 'notafter',
-	},
-	{
-	    xtype: 'displayfield',
-	    fieldLabel: gettext('Subject Alternative Names'),
-	    name: 'san',
-	    renderer: PVE.Utils.render_san,
-	},
-	{
-	    xtype: 'textarea',
-	    editable: false,
-	    grow: true,
-	    growMax: 200,
-	    fieldLabel: gettext('Certificate'),
-	    name: 'pem',
-	},
-    ],
+    items: {
+	xtype: 'inputpanel',
+	maxHeight: 900,
+	scrollable: 'y',
+	columnT: [
+	    {
+		xtype: 'displayfield',
+		fieldLabel: gettext('Name'),
+		name: 'filename',
+	    },
+	    {
+		xtype: 'displayfield',
+		fieldLabel: gettext('Fingerprint'),
+		name: 'fingerprint',
+	    },
+	    {
+		xtype: 'displayfield',
+		fieldLabel: gettext('Issuer'),
+		name: 'issuer',
+	    },
+	    {
+		xtype: 'displayfield',
+		fieldLabel: gettext('Subject'),
+		name: 'subject',
+	    },
+	],
+	column1: [
+	    {
+		xtype: 'displayfield',
+		fieldLabel: gettext('Public Key Type'),
+		name: 'public-key-type',
+	    },
+	    {
+		xtype: 'displayfield',
+		fieldLabel: gettext('Public Key Size'),
+		name: 'public-key-bits',
+	    },
+	],
+	column2: [
+	    {
+		xtype: 'displayfield',
+		fieldLabel: gettext('Valid Since'),
+		renderer: Proxmox.Utils.render_timestamp,
+		name: 'notbefore',
+	    },
+	    {
+		xtype: 'displayfield',
+		fieldLabel: gettext('Expires'),
+		renderer: Proxmox.Utils.render_timestamp,
+		name: 'notafter',
+	    },
+	],
+	columnB: [
+	    {
+		xtype: 'displayfield',
+		fieldLabel: gettext('Subject Alternative Names'),
+		name: 'san',
+		renderer: PVE.Utils.render_san,
+	    },
+	    {
+		xtype: 'fieldset',
+		title: gettext('Raw Certificate'),
+		collapsible: true,
+		collapsed: true,
+		items: [{
+		    xtype: 'textarea',
+		    name: 'pem',
+		    editable: false,
+		    grow: true,
+		    growMax: 350,
+		    fieldStyle: {
+			'white-space': 'pre-wrap',
+			'font-family': 'monospace',
+		    },
+		}],
+	    },
+	],
+    },
 
     initComponent: function() {
 	let me = this;
