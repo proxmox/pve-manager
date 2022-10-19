@@ -61,7 +61,7 @@ Ext.define('PVE.dc.Support', {
 		},
 		success: function(response, opts) {
 		    let data = response.result.data;
-		    if (data.status === 'Active') {
+		    if (data?.status.toLowerCase() === 'active') {
 			if (data.level === 'c') {
 			    me.updateCommunity(data);
 			} else {
