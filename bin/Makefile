@@ -14,7 +14,6 @@ SCRIPTS =  			\
 	${CLITOOLS}		\
 	pvebanner		\
 	pveversion		\
-	pvemailforward.pl	\
 	pveupgrade		\
 	pveupdate		\
 	pveperf			\
@@ -37,7 +36,7 @@ ZSH_COMPLETIONS =						\
 	$(addsuffix .service-zsh-completion, ${SERVICES}) 	\
 	$(addsuffix .zsh-completion, ${CLITOOLS})		\
 
-all: ${SERVICE_MANS} ${CLI_MANS} pvemailforward
+all: ${SERVICE_MANS} ${CLI_MANS}
 
 %.1: %.1.pod
 	rm -f $@
@@ -56,20 +55,16 @@ pveversion.1.pod: pveversion
 pveupgrade.1.pod: pveupgrade
 pvereport.1.pod: pvereport
 
-pvemailforward: pvemailforward.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Wall -g -O2 $< -o $@
-
 .PHONY: check
 check: $(addsuffix .service-api-verified, ${SERVICES}) $(addsuffix .api-verified, ${CLITOOLS})
 	rm -f *.service-api-verified *.api-verified
 
 .PHONY: install
-install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward ${BASH_COMPLETIONS} ${ZSH_COMPLETIONS}
+install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} ${BASH_COMPLETIONS} ${ZSH_COMPLETIONS}
 	install -d ${BINDIR}
 	install -m 0755 ${SCRIPTS} ${BINDIR}
 	install -d ${USRSHARE}/helpers
 	install -m 0755 pve-startall-delay ${USRSHARE}/helpers
-	install -s -m 2755 -g www-data pvemailforward ${BINDIR}
 	install -d ${MAN1DIR}
 	install -m 0644 ${CLI_MANS} ${MAN1DIR}
 	install -d ${MAN8DIR}
@@ -82,7 +77,7 @@ install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} pvemailforward ${BASH_COMPLETION
 .PHONY: clean
 clean:
 	make cleanup-docgen
-	rm -rf *~ *.tmp ${CLI_MANS} ${SERVICE_MANS} *.1.pod *.8.pod pvemailforward  \
+	rm -rf *~ *.tmp ${CLI_MANS} ${SERVICE_MANS} *.1.pod *.8.pod		    \
 	    *.bash-completion *.service-bash-completion				    \
 	    *.zsh-completion *.service-zsh-completion				    \
 	    *.api-verified *.service-api-verified

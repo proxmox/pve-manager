@@ -13,4 +13,4 @@ override_dh_strip_nondeterminism:
 	dh_strip_nondeterminism -X.png
 
 override_dh_fixperms:
-	dh_fixperms -Xpvemailforward -Xvar/log/pveproxy
+	dh_fixperms -Xvar/log/pveproxy
