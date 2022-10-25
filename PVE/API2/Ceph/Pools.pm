@@ -125,6 +125,11 @@ __PACKAGE__->register_method ({
 		    title => 'Autoscale Status',
 		    optional => 1,
 		},
+		application_metadata => {
+		    type => 'object',
+		    title => 'Associated Applications',
+		    optional => 1,
+		},
 	    },
 	},
 	links => [ { rel => 'child', href => "{pool_name}" } ],
@@ -162,6 +167,7 @@ __PACKAGE__->register_method ({
 	    'pg_num',
 	    'crush_rule',
 	    'pg_autoscale_mode',
+	    'application_metadata',
 	];
 
 	# pg_autoscaler module is not enabled in Nautilus
