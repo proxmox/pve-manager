@@ -15,9 +15,15 @@ Ext.define('PVE.form.CephPoolSelector', {
 	    throw "no nodename given";
 	}
 
+	let onlyRBDPools = ({ data }) =>
+	    !data?.application_metadata || !!data?.application_metadata?.rbd;
+
 	var store = Ext.create('Ext.data.Store', {
 	    fields: ['name'],
 	    sorters: 'name',
+	    filters: [
+		onlyRBDPools,
+	    ],
 	    proxy: {
 		type: 'proxmox',
 		url: '/api2/json/nodes/' + me.nodename + '/ceph/pools',
@@ -32,8 +38,10 @@ Ext.define('PVE.form.CephPoolSelector', {
 
 	store.load({
 	    callback: function(rec, op, success) {
-		if (success && rec.length > 0) {
-		    me.select(rec[0]);
+		let filteredRec = rec.filter(onlyRBDPools);
+
+		if (success && filteredRec.length > 0) {
+		    me.select(filteredRec[0]);
 		}
 	    },
 	});
