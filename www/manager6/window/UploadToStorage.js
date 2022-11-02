@@ -10,7 +10,7 @@ Ext.define('PVE.window.UploadToStorage', {
 
     acceptedExtensions: {
 	iso: ['.img', '.iso'],
-	vztmpl: ['.tar.gz', '.tar.xz'],
+	vztmpl: ['.tar.gz', '.tar.xz', '.tar.zst'],
     },
 
     cbindData: function(initialConfig) {
