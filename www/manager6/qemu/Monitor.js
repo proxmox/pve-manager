@@ -3,7 +3,10 @@ Ext.define('PVE.qemu.Monitor', {
 
     alias: 'widget.pveQemuMonitor',
 
-    maxLines: 500,
+    // ouput is trimmed when it's over both commandLimit and lineLimit
+    // by removing the first commands and their output
+    commandLimit: 10,
+    lineLimit: 5000,
 
     initComponent: function() {
 	var me = this;
@@ -20,7 +23,7 @@ Ext.define('PVE.qemu.Monitor', {
 
 	var history = [];
 	var histNum = -1;
-	var lines = [];
+	let commands = [];
 
 	var textbox = Ext.createWidget('panel', {
 	    region: 'center',
@@ -45,19 +48,23 @@ Ext.define('PVE.qemu.Monitor', {
 	};
 
 	var refresh = function() {
-	    textbox.update('<pre>' + lines.join('\n') + '</pre>');
+	    textbox.update(`<pre>${commands.flat(2).join('\n')}</pre>`);
 	    scrollToEnd();
 	};
 
-	var addLine = function(line) {
-	    lines.push(line);
-	    if (lines.length > me.maxLines) {
-		lines.shift();
+	let recordInput = line => {
+	    commands.push([line]);
+
+	    // drop oldest commands and their output until we're not over both limits anymore
+	    while (commands.length > me.commandLimit && commands.flat(2).length > me.lineLimit) {
+		commands.shift();
 	    }
 	};
 
+	let addResponse = lines => commands[commands.length - 1].push(lines);
+
 	var executeCmd = function(cmd) {
-	    addLine("# " + Ext.htmlEncode(cmd));
+	    recordInput("# " + Ext.htmlEncode(cmd), true);
 	    if (cmd) {
 		history.unshift(cmd);
 		if (history.length > 20) {
@@ -74,9 +81,7 @@ Ext.define('PVE.qemu.Monitor', {
 		waitMsgTarget: me,
 		success: function(response, opts) {
 		    var res = response.result.data;
-		    Ext.Array.each(res.split('\n'), function(line) {
-			addLine(Ext.htmlEncode(line));
-		    });
+		    addResponse(res.split('\n').map(line => Ext.htmlEncode(line)));
 		    refresh();
 		},
 		failure: function(response, opts) {
@@ -102,7 +107,7 @@ Ext.define('PVE.qemu.Monitor', {
 		    listeners: {
 			afterrender: function(f) {
 			    f.focus(false);
-			    addLine("Type 'help' for help.");
+			    recordInput("Type 'help' for help.");
 			    refresh();
 			},
 			specialkey: function(f, e) {
