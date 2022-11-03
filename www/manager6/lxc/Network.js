@@ -282,6 +282,18 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 	    },
 	];
 
+	me.advancedColumn1 = [
+	    {
+		xtype: 'proxmoxintegerfield',
+		fieldLabel: 'MTU',
+		emptyText: gettext('Same as bridge'),
+		name: 'mtu',
+		value: cdata.mtu,
+		minValue: 576,
+		maxValue: 65535,
+	    },
+	];
+
 	me.callParent();
     },
 });
@@ -519,6 +531,11 @@ Ext.define('PVE.lxc.NetworkView', {
 			}
 		    },
 		},
+		{
+		    header: gettext('MTU'),
+		    width: 80,
+		    dataIndex: 'mtu',
+		},
 	    ],
 	    listeners: {
 		activate: me.load,
@@ -543,6 +560,7 @@ Ext.define('PVE.lxc.NetworkView', {
 	    'gw6',
 	    'tag',
 	    'firewall',
+	    'mtu',
 	],
     });
 });
