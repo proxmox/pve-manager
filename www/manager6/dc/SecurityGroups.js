@@ -199,6 +199,7 @@ Ext.define('PVE.SecurityGroups', {
     alias: 'widget.pveSecurityGroups',
 
     title: 'Security Groups',
+    onlineHelp: 'pve_firewall_security_groups',
 
     layout: 'border',
 
