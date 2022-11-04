@@ -75,6 +75,7 @@ Ext.define('PVE.guest.Summary', {
 		    pveSelNode: me.pveSelNode,
 		    fields: ['cpu'],
 		    fieldTitles: [gettext('CPU usage')],
+		    unit: 'percent',
 		    store: rrdstore,
 		},
 		{

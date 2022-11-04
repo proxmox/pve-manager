@@ -162,6 +162,7 @@ Ext.define('PVE.node.Summary', {
 			    title: gettext('CPU usage'),
 			    fields: ['cpu', 'iowait'],
 			    fieldTitles: [gettext('CPU usage'), gettext('IO delay')],
+			    unit: 'percent',
 			    store: rrdstore,
 			},
 			{
