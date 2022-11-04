@@ -51,8 +51,7 @@ if (my $err = $@) {
 }
 
 my $info = eval { PVE::API2::Subscription::read_etc_subscription() };
-# We assume that users with subscriptions want informations
-# about new packages.
+# Assume that users with subscriptions want informations about new packages.
 my $notify = ($info && $info->{status} eq 'active') ? 1 : 0;
 eval { PVE::API2::APT->update_database({ node => $nodename, notify => $notify, quiet => 1 }); };
 if (my $err = $@) {
