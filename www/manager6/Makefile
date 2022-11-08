@@ -304,7 +304,7 @@ pvemanagerlib.js: .lint-incremental OnlineHelpInfo.js ${JSSRC}
 	cat OnlineHelpInfo.js ${JSSRC} >$@.tmp
 	mv $@.tmp $@
 
-OnlineHelpInfo.js: /usr/bin/asciidoc-pve
+OnlineHelpInfo.js: /usr/bin/asciidoc-pve ${JSSRC}
 	/usr/bin/asciidoc-pve scan-extjs ${JSSRC} >$@.tmp
 	mv $@.tmp $@
 
