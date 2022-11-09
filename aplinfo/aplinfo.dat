@@ -2,7 +2,7 @@ Package: pve-web-news
 Description: News displayed on the admin interface
   <b>Welcome</b> to the Proxmox Virtual Environment!<br><br>
   For more information please visit our homepage at
-  <a href='http://www.proxmox.com' target='_blank'>www.proxmox.com</a>
+  <a href='https://www.proxmox.com' target='_blank'>www.proxmox.com</a>
 
 Package: almalinux-8-default
 Version: 20210928
@@ -17,18 +17,18 @@ sha512sum: 000070076d6a2ce15c489cbf76e8445a412ce0bdf529064084a2046f2eef113630c3e
 Infopage: https://linuxcontainers.org
 Description: LXC default image for almalinux 8 (20210928)
 
-Package: alpine-3.13-default
-Version: 20210419
+Package: almalinux-9-default
+Version: 20221108
 Type: lxc
-OS: alpine
+OS: almalinux
 Section: system
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: system/alpine-3.13-default_20210419_amd64.tar.xz
-md5sum: 0292afc6483109c6e4770c9cbecb649e
-sha512sum: b799553c595e30f82ca7820794914d881cbe7372bdd6e2c9cdd9d90d41698dfd5cbb3a8fec2a30393fbd28665bb42e889e53553ff54eda410d0e852b606110b5
+Location: system/almalinux-9-default_20221108_amd64.tar.xz
+md5sum: 03e6d335c14b96501bc39e7852da9772
+sha512sum: 9b4561fad0de45943c0c46d9a075796533b0941c442cb70a5f9a323a601aba41f2e5e86d5e1600e5538b1470cf29f0cfd9f7f7c54ca9529cb9cbe234f2c6f440
 Infopage: https://linuxcontainers.org
-Description: LXC default image for alpine 3.13 (20210419)
+Description: LXC default image for almalinux 9 (20221108)
 
 Package: alpine-3.14-default
 Version: 20210623
@@ -271,6 +271,19 @@ sha512sum: 6e20e4c6fc0aef4eba582d9cdcb44403449a97db0bf78ebaf2c78e5092cd307613654
 Infopage: https://linuxcontainers.org
 Description: LXC default image for rockylinux 8 (20210929)
 
+Package: rockylinux-9-default
+Version: 20221109
+Type: lxc
+OS: rockylinux
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/rockylinux-9-default_20221109_amd64.tar.xz
+md5sum: e6aa40bb6a4e01c61fd27eb3da5446d1
+sha512sum: ddc2a29ee66598d4c3a4224a0fa9868882e80bbabb7a20ae9f53431bb0ff73e73d4bd48b86bb0e9d1330e0af2c500f461ea5dc3c500ef722b472257acdc4ab41
+Infopage: https://linuxcontainers.org
+Description: LXC default image for rockylinux 9 (20221109)
+
 Package: ubuntu-18.04-standard
 Version: 18.04.1-1
 Type: lxc
@@ -299,20 +312,6 @@ Infopage: http://pve.proxmox.com/wiki/Ubuntu_Disco_Standard
 Description: Ubuntu Focal (standard)
  A small Ubuntu 20.04 Focal Fossa system including all standard packages.
 
-Package: ubuntu-21.10-standard
-Version: 21.10-1
-Type: lxc
-OS: ubuntu-21.10
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/ubuntu-21.10-standard_21.10-1_amd64.tar.zst
-md5sum: ef2f94efb1839fede31bf389623aa723
-sha512sum: 69d07a1d31a5a56a9a06677f7b160c737a68fb21e6324449556f8bf9d72abd423bdc2fb2658974c7791d6152211aa98b4b3d834f4fdb43f2c7859caaba702656
-Infopage: http://pve.proxmox.com/wiki/Ubuntu_Impish_Standard
-Description: Ubuntu 21.10 Impish (standard)
- A small Ubuntu 21.10 Impish Indri system including all standard packages.
-
 Package: ubuntu-22.04-standard
 Version: 22.04-1
 Type: lxc
@@ -326,3 +325,17 @@ sha512sum: cf617c11232c3fbce1ba9f7146ac194561411c292c445b2a5c9affe5f09729f5c3831
 Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
 Description: Ubuntu 22.04 Jammy (standard)
  A small Ubuntu 22.04 Jammy Jellyfish system including all standard packages.
+
+Package: ubuntu-22.10-standard
+Version: 22.10-1
+Type: lxc
+OS: ubuntu-22.10
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/ubuntu-22.10-standard_22.10-1_amd64.tar.zst
+md5sum: 9d9c20132f479905398921638a285584
+sha512sum: be2a5f3e749e8958fa8487f47aa67638d18c29d26c218cea289afc44923eb3efb0ef11572c78752ef3d707db1c5fe123aef7ca3f33e3b10d9feed1a34eb5362a
+Infopage: https://pve.proxmox.com/wiki/Linux_Container#pct_supported_distributions
+Description: Ubuntu 22.10 Kinetic (standard)
+ A small Ubuntu 22.10 Kinetic Kudu system including all standard packages.
