@@ -122,6 +122,19 @@ sha512sum: 27003cde9128336f4e01e0c3ccbe93c527ad66645e169743d556beb9c7719248b394c
 Infopage: https://linuxcontainers.org
 Description: LXC default image for centos 8-stream (20220327)
 
+Package: centos-9-stream-default
+Version: 20221109
+Type: lxc
+OS: centos
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/centos-9-stream-default_20221109_amd64.tar.xz
+md5sum: 13fccdcc2358b795ee613501eb88c850
+sha512sum: 04bb902992f74edf2333d215837e9bb21258dfcdb7bf23bd659176641f6538aeb25bc44286c9caffb10ceb87288ce93668c9410f4a69b8a3b316e09032ead3a8
+Infopage: https://linuxcontainers.org
+Description: LXC default image for centos 9-stream (20221109)
+
 Package: debian-10-standard
 Version: 10.7-1
 Type: lxc
@@ -229,6 +242,19 @@ md5sum: 05aebdbc89a45c681ef134b323bcafc7
 sha512sum: 58a66aff91a01b28ff8491787ec7856dd3cdeb2e0b4faa058b8ddbf087c5dc8cf44cd0c6e83a3e09f07062d62cd05228a84a30ba06739a505c7135b57bf2146a
 Infopage: https://linuxcontainers.org
 Description: LXC default image for opensuse 15.3 (20210925)
+
+Package: opensuse-15.4-default
+Version: 20221109
+Type: lxc
+OS: opensuse
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/opensuse-15.4-default_20221109_amd64.tar.xz
+md5sum: 1c66c3549b0684e788c17aa94c384262
+sha512sum: 8089309652a0db23ddff826d1e343e79c6eccb7b615fb309e0a6f6f1983ea697aa94044a795f3cbe35156b1a1b2f60489eb20ecb54c786cec23c9fd89e0f29c5
+Infopage: https://linuxcontainers.org
+Description: LXC default image for opensuse 15.4 (20221109)
 
 Package: proxmox-mailgateway-6.4-standard
 Version: 6.4-1
