@@ -17,7 +17,7 @@ Ext.define('PVE.qemu.USBInputPanel', {
     onGetValues: function(values) {
 	var me = this;
 	if (!me.confid) {
-	    for (let i = 0; i < 6; i++) {
+	    for (let i = 0; i < PVE.Utils.hardware_counts.usb; i++) {
 		let id = 'usb' + i.toString();
 		if (!me.vmconfig[id]) {
 		    me.confid = id;
