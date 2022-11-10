@@ -12,12 +12,17 @@ Ext.define('PVE.qemu.USBInputPanel', {
     setVMConfig: function(vmconfig) {
 	var me = this;
 	me.vmconfig = vmconfig;
+	let max_usb = PVE.Utils.get_max_usb_count(me.vmconfig.ostype, me.vmconfig.machine);
+	if (max_usb > PVE.Utils.hardware_counts.usb_old) {
+	    me.down('field[name=usb3]').setDisabled(true);
+	}
     },
 
     onGetValues: function(values) {
 	var me = this;
 	if (!me.confid) {
-	    for (let i = 0; i < PVE.Utils.hardware_counts.usb; i++) {
+	    let max_usb = PVE.Utils.get_max_usb_count(me.vmconfig.ostype, me.vmconfig.machine);
+	    for (let i = 0; i < max_usb; i++) {
 		let id = 'usb' + i.toString();
 		if (!me.vmconfig[id]) {
 		    me.confid = id;

@@ -1569,7 +1569,58 @@ Ext.define('PVE.Utils', {
 	}
     },
 
-    hardware_counts: { net: 32, usb: 5, hostpci: 16, audio: 1, efidisk: 1, serial: 4, rng: 1, tpmstate: 1 },
+    hardware_counts: {
+	net: 32,
+	usb: 14,
+	usb_old: 5,
+	hostpci: 16,
+	audio: 1,
+	efidisk: 1,
+	serial: 4,
+	rng: 1,
+	tpmstate: 1,
+    },
+
+    // we can have usb6 and up only for specific machine/ostypes
+    get_max_usb_count: function(ostype, machine) {
+	if (!ostype) {
+	    return PVE.Utils.hardware_counts.usb_old;
+	}
+
+	let match = /-(\d+).(\d+)/.exec(machine ?? '');
+	if (!match || PVE.Utils.qemu_min_version([match[1], match[2]], [7, 1])) {
+	    if (ostype === 'l26') {
+		return PVE.Utils.hardware_counts.usb;
+	    }
+	    let os_match = /^win(\d+)$/.exec(ostype);
+	    if (os_match && os_match[1] > 7) {
+		return PVE.Utils.hardware_counts.usb;
+	    }
+	}
+
+	return PVE.Utils.hardware_counts.usb_old;
+    },
+
+    // parameters are expected to be arrays, e.g. [7,1], [4,0,1]
+    // returns true if toCheck is equal or greater than minVersion
+    qemu_min_version: function(toCheck, minVersion) {
+	let i;
+	for (i = 0; i < toCheck.length && i < minVersion.length; i++) {
+	    if (toCheck[i] < minVersion[i]) {
+		return false;
+	    }
+	}
+
+	if (minVersion.length > toCheck.length) {
+	    for (; i < minVersion.length; i++) {
+		if (minVersion[i] !== 0) {
+		    return false;
+		}
+	    }
+	}
+
+	return true;
+    },
 
     cleanEmptyObjectKeys: function(obj) {
 	for (const propName of Object.keys(obj)) {

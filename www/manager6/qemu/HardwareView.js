@@ -544,6 +544,11 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	let counts = {};
 	let isAtLimit = (type) => counts[type] >= PVE.Utils.hardware_counts[type];
+	let isAtUsbLimit = () => {
+	    let ostype = me.getObjectValue('ostype');
+	    let machine = me.getObjectValue('machine');
+	    return counts.usb >= PVE.Utils.get_max_usb_count(ostype, machine);
+	};
 
 	let set_button_status = function() {
 	    let selection_model = me.getSelectionModel();
@@ -570,7 +575,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    const noVMConfigNetPerm = !caps.vms['VM.Config.Network'];
 	    const noVMConfigDiskPerm = !caps.vms['VM.Config.Disk'];
 
-	    me.down('#addUsb').setDisabled(noSysConsolePerm || isAtLimit('usb'));
+	    me.down('#addUsb').setDisabled(noSysConsolePerm || isAtUsbLimit());
 	    me.down('#addPci').setDisabled(noSysConsolePerm || isAtLimit('hostpci'));
 	    me.down('#addAudio').setDisabled(noVMConfigHWTypePerm || isAtLimit('audio'));
 	    me.down('#addSerial').setDisabled(noVMConfigHWTypePerm || isAtLimit('serial'));
