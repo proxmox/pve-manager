@@ -10,6 +10,14 @@ Ext.define('PVE.qemu.CreateWizard', {
 		scsihw: '',
 	    },
 	},
+	formulas: {
+	    cgroupMode: function(get) {
+		const nodeInfo = PVE.data.ResourceStore.getNodes().find(
+		    node => node.node === get('nodename'),
+		);
+		return nodeInfo ? nodeInfo['cgroup-mode'] : 2;
+	    },
+	},
     },
 
     cbindData: {

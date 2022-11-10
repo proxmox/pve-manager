@@ -1,3 +1,4 @@
+// The view model of the parent shoul contain a 'cgroupMode' variable (or params for v2 are used).
 Ext.define('PVE.qemu.ProcessorInputPanel', {
     extend: 'Proxmox.panel.InputPanel',
     alias: 'widget.pveQemuProcessorPanel',
@@ -13,6 +14,9 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	},
 	formulas: {
 	    totalCoreCount: get => get('socketCount') * get('coreCount'),
+	    cpuunitsDefault: (get) => get('cgroupMode') === 1 ? 1024 : 100,
+	    cpuunitsMin: (get) => get('cgroupMode') === 1 ? 2 : 1,
+	    cpuunitsMax: (get) => get('cgroupMode') === 1 ? 262144 : 10000,
 	},
     },
 
@@ -21,7 +25,8 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
     },
 
     onGetValues: function(values) {
-	var me = this;
+	let me = this;
+	let cpuunitsDefault = me.getViewModel().get('cpuunitsDefault');
 
 	if (Array.isArray(values.delete)) {
 	    values.delete = values.delete.join(',');
@@ -39,7 +44,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	}
 
 	PVE.Utils.delete_if_default(values, 'cpulimit', '0', me.insideWizard);
-	PVE.Utils.delete_if_default(values, 'cpuunits', '1024', me.insideWizard);
+	PVE.Utils.delete_if_default(values, 'cpuunits', `${cpuunitsDefault}`, me.insideWizard);
 
 	// build the cpu options:
 	me.cpu.cputype = values.cputype;
@@ -210,11 +215,15 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    xtype: 'proxmoxintegerfield',
 	    name: 'cpuunits',
 	    fieldLabel: gettext('CPU units'),
-	    // FIXME: change to [1, 1000] once cgroup v1 support gets removed (PVE 8 ?)
-	    minValue: 2,
-	    maxValue: 262144,
+	    minValue: '1',
+	    maxValue: '10000',
 	    value: '',
-	    emptyText: '1024',
+	    emptyText: '100',
+	    bind: {
+		minValue: '{cpuunitsMin}',
+		maxValue: '{cpuunitsMax}',
+		emptyText: '{cpuunitsDefault}',
+	    },
 	    deleteEmpty: true,
 	    allowBlank: true,
 	},
@@ -239,11 +248,19 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 
 Ext.define('PVE.qemu.ProcessorEdit', {
     extend: 'Proxmox.window.Edit',
+    alias: 'widget.pveQemuProcessorEdit',
 
     width: 700,
 
+    viewModel: {
+	data: {
+	    cgroupMode: 2,
+	},
+    },
+
     initComponent: function() {
-	var me = this;
+	let me = this;
+	me.getViewModel().set('cgroupMode', me.cgroupMode);
 
 	var ipanel = Ext.create('PVE.qemu.ProcessorInputPanel');
 

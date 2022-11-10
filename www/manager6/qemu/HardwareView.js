@@ -59,6 +59,12 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	let isCloudInitKey = v => v && v.toString().match(/vm-.*-cloudinit/);
 
+	const nodeInfo = PVE.data.ResourceStore.getNodes().find(node => node.node === nodename);
+	let processorEditor = {
+	    xtype: 'pveQemuProcessorEdit',
+	    cgroupMode: nodeInfo['cgroup-mode'],
+	};
+
 	let rows = {
 	    memory: {
 		header: gettext('Memory'),
@@ -93,7 +99,7 @@ Ext.define('PVE.qemu.HardwareView', {
 		header: gettext('Processors'),
 		never_delete: true,
 		editor: caps.vms['VM.Config.CPU'] || caps.vms['VM.Config.HWType']
-		    ? 'PVE.qemu.ProcessorEdit' : undefined,
+		    ? processorEditor : undefined,
 		tdCls: 'pve-itype-icon-cpu',
 		group: 3,
 		defaultValue: '1',

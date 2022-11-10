@@ -45,6 +45,12 @@ Ext.define('PVE.lxc.RessourceView', {
 
 	var mpeditor = caps.vms['VM.Config.Disk'] ? 'PVE.lxc.MountPointEdit' : undefined;
 
+	const nodeInfo = PVE.data.ResourceStore.getNodes().find(node => node.node === nodename);
+	let cpuEditor = {
+	    xtype: 'pveLxcCPUEdit',
+	    cgroupMode: nodeInfo['cgroup-mode'],
+	};
+
 	var rows = {
 	    memory: {
 		header: gettext('Memory'),
@@ -68,7 +74,7 @@ Ext.define('PVE.lxc.RessourceView', {
 	    },
 	    cores: {
 		header: gettext('Cores'),
-		editor: caps.vms['VM.Config.CPU'] ? 'PVE.lxc.CPUEdit' : undefined,
+		editor: caps.vms['VM.Config.CPU'] ? cpuEditor : undefined,
 		defaultValue: '',
 		tdCls: 'pmx-itype-icon-processor',
 		group: 3,
