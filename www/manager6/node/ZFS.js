@@ -9,6 +9,27 @@ Ext.define('PVE.node.CreateZFS', {
     isCreate: true,
     width: 800,
 
+    viewModel: {
+	data: {
+	    raidLevel: 'single',
+	},
+	formulas: {
+	    isdraid: function(get) {
+		return get('raidLevel').startsWith("draid");
+	    },
+	    draidconfig: function(get) {
+		if (get('isdraid')) {
+		    var config = {};
+		    config.data = get('draiddata');
+		    config.spares = get('draidspares');
+		    return PVE.Parser.printPropertyString(config);
+		} else {
+		    return "";
+		}
+	    },
+	},
+    },
+
     initComponent: function() {
 	let me = this;
 
@@ -49,7 +70,54 @@ Ext.define('PVE.node.CreateZFS', {
 				['raidz', 'RAIDZ'],
 				['raidz2', 'RAIDZ2'],
 				['raidz3', 'RAIDZ3'],
+				['draid', 'dRAID'],
+				['draid2', 'dRAID2'],
+				['draid3', 'dRAID3'],
 			    ],
+			    bind: {
+				value: '{raidLevel}',
+			    },
+			},
+			{
+			    xtype: 'proxmoxtextfield',
+			    name: 'draid-config',
+			    hidden: true,
+			    submitValue: true,
+			    bind: {
+				value: '{draidconfig}',
+			    },
+			},
+			{
+			    xtype: 'proxmoxintegerfield',
+			    fieldLabel: gettext('DRAID data devices'),
+			    minValue: 1,
+			    allowBlank: false,
+			    disabled: true,
+			    hidden: true,
+			    submitValue: false,
+			    bind: {
+				disabled: '{!isdraid}',
+				hidden: '{!isdraid}',
+				value: '{draiddata}',
+			    },
+			    reference: 'draiddata',
+			    name: 'draiddata',
+			},
+			{
+			    xtype: 'proxmoxintegerfield',
+			    fieldLabel: gettext('DRAID spares'),
+			    minValue: 0,
+			    allowBlank: false,
+			    disabled: true,
+			    hidden: true,
+			    submitValue: false,
+			    bind: {
+				disabled: '{!isdraid}',
+				hidden: '{!isdraid}',
+				value: '{draidspares}',
+			    },
+			    reference: 'draidspares',
+			    name: 'draidspares',
 			},
 			{
 			    xtype: 'proxmoxKVComboBox',
@@ -101,6 +169,7 @@ Ext.define('PVE.node.CreateZFS', {
 
         me.callParent();
     },
+
 });
 
 Ext.define('PVE.node.ZFSList', {
