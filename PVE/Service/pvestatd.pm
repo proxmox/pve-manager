@@ -123,6 +123,24 @@ my $generate_rrd_string = sub {
     return join(':', map { $_ // 'U' } @$data);
 };
 
+my sub broadcast_static_node_info {
+    my ($cpus, $memory) = @_;
+
+    my $old = PVE::Cluster::get_node_kv('static-info', $nodename);
+    $old = eval { decode_json($old->{$nodename}) } if defined($old->{$nodename});
+
+    if (
+	!defined($old->{cpus}) || $old->{cpus} != $cpus
+	|| !defined($old->{memory}) || $old->{memory} != $memory
+    ) {
+	my $info = {
+	    cpus => $cpus,
+	    memory => $memory,
+	};
+	PVE::Cluster::broadcast_node_kv('static-info', encode_json($info));
+    }
+}
+
 sub update_node_status {
     my ($status_cfg) = @_;
 
@@ -175,6 +193,8 @@ sub update_node_status {
     my $transactions = PVE::ExtMetric::transactions_start($status_cfg);
     PVE::ExtMetric::update_all($transactions, 'node', $nodename, $node_metric, $ctime);
     PVE::ExtMetric::transactions_finish($transactions);
+
+    broadcast_static_node_info($maxcpu, $meminfo->{memtotal});
 }
 
 sub auto_balloning {
