@@ -323,6 +323,11 @@ __PACKAGE__->register_method({
 		    optional => 1,
 		    minimum => 1,
 		},
+		'cgroup-mode' => {
+		    description => "The cgroup mode the node operates under (when type == node).",
+		    type => 'integer',
+		    optional => 1,
+		},
 	    },
 	},
     },
@@ -427,10 +432,18 @@ __PACKAGE__->register_method({
 	    }
 	}
 
+	my $static_node_info = PVE::Cluster::get_node_kv("static-info");
+
 	if (!$param->{type} || $param->{type} eq 'node') {
 	    foreach my $node (@$nodelist) {
 		my $can_audit = $rpcenv->check($authuser, "/nodes/$node", [ 'Sys.Audit' ], 1);
 		my $entry = PVE::API2Tools::extract_node_stats($node, $members, $rrd, !$can_audit);
+
+		my $info = eval { decode_json($static_node_info->{$node}); };
+		if (defined(my $mode = $info->{'cgroup-mode'})) {
+		    $entry->{'cgroup-mode'} = int($mode);
+		}
+
 		push @$res, $entry;
 	    }
 	}

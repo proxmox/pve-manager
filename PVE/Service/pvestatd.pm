@@ -126,17 +126,22 @@ my $generate_rrd_string = sub {
 my sub broadcast_static_node_info {
     my ($cpus, $memory) = @_;
 
+    my $cgroup_mode = eval { PVE::CGroup::cgroup_mode(); };
+    syslog('err', "cgroup mode error: $@") if $@;
+
     my $old = PVE::Cluster::get_node_kv('static-info', $nodename);
     $old = eval { decode_json($old->{$nodename}) } if defined($old->{$nodename});
 
     if (
 	!defined($old->{cpus}) || $old->{cpus} != $cpus
 	|| !defined($old->{memory}) || $old->{memory} != $memory
+	|| ($old->{'cgroup-mode'} // -1) != ($cgroup_mode // -1)
     ) {
 	my $info = {
 	    cpus => $cpus,
 	    memory => $memory,
 	};
+	$info->{'cgroup-mode'} = $cgroup_mode if defined($cgroup_mode);
 	PVE::Cluster::broadcast_node_kv('static-info', encode_json($info));
     }
 }
