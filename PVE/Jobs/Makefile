@@ -1,8 +1,7 @@
 include ../../defines.mk
 
 PERLSOURCE =   \
-	Plugin.pm\
-	VZDump.pm
+	VZDump.pm \
 
 all:
 

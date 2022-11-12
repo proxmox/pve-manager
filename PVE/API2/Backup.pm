@@ -15,6 +15,7 @@ use PVE::Storage;
 use PVE::Exception qw(raise_param_exc);
 use PVE::VZDump;
 use PVE::VZDump::Common;
+use PVE::VZDump::JobBase;
 use PVE::Jobs; # for VZDump Jobs
 use Proxmox::RS::CalendarEvent;
 
@@ -223,8 +224,7 @@ __PACKAGE__->register_method({
 		if $data->{ids}->{$id};
 
 	    PVE::VZDump::verify_vzdump_parameters($param, 1);
-	    my $plugin = PVE::Jobs::Plugin->lookup('vzdump');
-	    my $opts = $plugin->check_config($id, $param, 1, 1);
+	    my $opts = PVE::VZDump::JobBase->check_config($id, $param, 1, 1);
 
 	    $data->{ids}->{$id} = $opts;
 
@@ -434,8 +434,7 @@ __PACKAGE__->register_method({
 	    die "no options specified\n" if !scalar(keys %$param);
 
 	    PVE::VZDump::verify_vzdump_parameters($param);
-	    my $plugin = PVE::Jobs::Plugin->lookup('vzdump');
-	    my $opts = $plugin->check_config($id, $param, 0, 1);
+	    my $opts = PVE::VZDump::JobBase->check_config($id, $param, 0, 1);
 
 	    # try to find it in old vzdump.cron and convert it to a job
 	    my ($idx) = grep { $jobs->[$_]->{id} eq $id } (0 .. scalar(@$jobs) - 1);

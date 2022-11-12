@@ -4,13 +4,19 @@ use strict;
 use warnings;
 use JSON;
 
-use PVE::Cluster qw(cfs_read_file cfs_lock_file);
-use PVE::Jobs::Plugin;
+use PVE::Cluster qw(cfs_lock_file cfs_read_file cfs_register_file);
+use PVE::Job::Registry;
 use PVE::Jobs::VZDump;
 use PVE::Tools;
 
 PVE::Jobs::VZDump->register();
-PVE::Jobs::Plugin->init();
+PVE::Job::Registry->init();
+
+cfs_register_file(
+    'jobs.cfg',
+    sub { PVE::Job::Registry->parse_config(@_); },
+    sub { PVE::Job::Registry->write_config(@_); },
+);
 
 my $state_dir = "/var/lib/pve-manager/jobs";
 my $lock_dir = "/var/lock/pve-manager";
@@ -284,7 +290,7 @@ sub run_jobs {
 
 	next if !defined($next_sync) || time() < $next_sync; # not yet its (next) turn
 
-	my $plugin = PVE::Jobs::Plugin->lookup($type);
+	my $plugin = PVE::Job::Registry->lookup($type);
 	if (starting_job($id, $type)) {
 	    my $upid = eval { $plugin->run($cfg, $id, $schedule) };
 	    if (my $err = $@) {
