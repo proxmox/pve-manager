@@ -1,3 +1,49 @@
+pve-manager (7.2-12) bullseye; urgency=medium
+
+  * ui: ceph: use quincy as new default for fresh installations
+
+  * ui: qemu: enable IO-threads by default in VM creation wizard and move it
+    out of the advanced section
+
+  * ui: OS defaults: use SCSI single as default controller
+
+  * apl info: update index to current repository state including new CentOS
+    Stream 9, Rocky Linux 9, AlmaLinux 9 and OpenSUSE Leap 15.4 images
+
+  * apt: sort list of optional packages and add proxmox-offline-mirror-helper
+    package
+
+  * vzdump: handle new 'performance' property string
+
+  * ui: node certificate: make parent panel scrollable to cope with long SAN
+    lists
+
+  * pvereport: add arcstat info
+
+  * ui: dc: subscription: fix subscription check
+
+  * fix #1981: get next free disk id on change of bus/device
+
+  * gui: fix firewall security group help button chapter link
+
+  * ui: {guest, node} summary: use correct percentage unit for CPU usage
+
+  * ui: qemu/lxc: cpu edit: fix delete-if-empty/default parameter for inside
+    wizard case
+
+  * ui: lxc/qemu: use an empty text for CPU units to better convey the default
+
+  * fix #3593: ui: qemu: add inputs for task set affinity
+
+  * replace pvemailforward with new rust based promox-wide proxmox-mail-forward
+
+  * d/control: depend on proxmox-mail-forward
+
+  * ui: qemu: increase available USB ports to 15, if QEMU machine version is
+    new enough (>= 7.1) and the OS type has support (Linux 2.6+ & Windows 8+)
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 12 Nov 2022 17:03:05 +0100
+
 pve-manager (7.2-11) bullseye; urgency=medium
 
   * d/control: recommend proxmox-offline-mirror-helper
@@ -83,7 +129,7 @@ pve-manager (7.2-5) bullseye; urgency=medium
   * fix #3597: ui: ceph setup: avoid autofill of monitor network
 
   * fix #4111: replication: don't send mail when fail count is zero
-  j
+
   * fix #4026: add repeat-missed option for scheduled jobs
 
   * fix #4053: don't run vzdump jobs immediately when they change from
