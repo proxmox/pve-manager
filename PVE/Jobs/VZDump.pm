@@ -3,7 +3,6 @@ package PVE::Jobs::VZDump;
 use strict;
 use warnings;
 
-use PVE::Cluster;
 use PVE::JSONSchema;
 
 use PVE::VZDump::Common;
@@ -30,8 +29,6 @@ sub run {
     }
 
     $conf->{quiet} = 1; # do not write to stdout/stderr
-
-    PVE::Cluster::cfs_update(); # refresh vmlist; FIXME: move this to the job run loop
 
     return PVE::API2::VZDump->vzdump($conf);
 }

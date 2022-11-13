@@ -292,6 +292,8 @@ sub run_jobs {
 
 	my $plugin = PVE::Job::Registry->lookup($type);
 	if (starting_job($id, $type)) {
+	    PVE::Cluster::cfs_update();
+
 	    my $upid = eval { $plugin->run($cfg, $id, $schedule) };
 	    if (my $err = $@) {
 		warn $@ if $@;
