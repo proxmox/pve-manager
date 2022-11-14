@@ -288,6 +288,8 @@ JSSRC= 							\
 	Workspace.js					\
 # end of JSSRC list
 
+WIDGETKIT=/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+
 all:
 
 .lint-incremental: ${JSSRC}
@@ -304,8 +306,8 @@ pvemanagerlib.js: .lint-incremental OnlineHelpInfo.js ${JSSRC}
 	cat OnlineHelpInfo.js ${JSSRC} >$@.tmp
 	mv $@.tmp $@
 
-OnlineHelpInfo.js: /usr/bin/asciidoc-pve ${JSSRC}
-	/usr/bin/asciidoc-pve scan-extjs ${JSSRC} >$@.tmp
+OnlineHelpInfo.js: ${JSSRC} ${WIDGETKIT}
+	/usr/bin/asciidoc-pve scan-extjs $^ >$@.tmp
 	mv $@.tmp $@
 
 .PHONY: install
