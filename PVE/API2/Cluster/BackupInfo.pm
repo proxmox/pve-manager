@@ -124,13 +124,16 @@ __PACKAGE__->register_method({
 		die "Unexpected error: unknown guest type for VMID $vmid, neither QEMU nor LXC\n";
 	    }
 
-	    push @{$result}, {
+	    my $entry = {
 		vmid => int($vmid),
-		name => $name,
 		type => $type,
 	    };
+	    $entry->{name} = $name if defined($name);
+
+	    push @{$result}, $entry;
 	}
 
 	return $result;
     }});
+
 1;
