@@ -322,10 +322,12 @@ Ext.define('PVE.dc.BackupEdit', {
 		vmgrid.setDisabled(true);
 		vmidField.setValue('');
 		selPool.setVisible(true);
+		selPool.setDisabled(false);
 		selPool.allowBlank = false;
 		selectPoolMembers(selPool.value);
 	    } else {
 		selPool.setVisible(false);
+		selPool.setDisabled(true);
 		selPool.allowBlank = true;
 	    }
 	    let list = vmidField.getValue();
