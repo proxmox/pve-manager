@@ -100,7 +100,7 @@ __PACKAGE__->register_method({
     code => sub {
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
-	my $rrd = PVE::Cluster::rrd_dump();
+
 	my $included_vmids = get_included_vmids();
 	my $vmlist = PVE::Cluster::get_vmlist();
 	my @vmids = ( keys %{$vmlist->{ids}} );
