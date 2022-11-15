@@ -130,6 +130,10 @@ __PACKAGE__->register_method({
 		$job->{'next-run'} = $next_run if defined($next_run);
 	    }
 
+	    # FIXME remove in PVE 8.0?
+	    # backwards compat: before moving the job registry to pve-common, id was auto-injected
+	    $job->{id} = $jobid;
+
 	    push @$res, $job;
 	}
 
@@ -273,7 +277,12 @@ __PACKAGE__->register_method({
 
 	my $jobs_data = cfs_read_file('jobs.cfg');
 	my $job = $jobs_data->{ids}->{$param->{id}};
-	return $job if $job && $job->{type} eq 'vzdump';
+	if ($job && $job->{type} eq 'vzdump') {
+	    # FIXME remove in PVE 8.0?
+	    # backwards compat: before moving the job registry to pve-common, id was auto-injected
+	    $job->{id} = $param->{id};
+	    return $job;
+	}
 
 	raise_param_exc({ id => "No such job '$param->{id}'" });
 
