@@ -18,26 +18,18 @@ use PVE::VZDump::Common;
 use base qw(PVE::RESTHandler);
 
 sub get_included_vmids {
-    my $vzconf = cfs_read_file('vzdump.cron');
+    my $legacy_vzdump_job_cfg = cfs_read_file('vzdump.cron');
+    my $legacy_jobs = $legacy_vzdump_job_cfg->{jobs} || [];
 
-    my $all_jobs = $vzconf->{jobs} || [];
-    my @all_vmids = ();
+    my $jobs = cfs_read_file('jobs.cfg');
 
-    for my $job (@$all_jobs) {
+    my $all_vmids = {};
+    for my $job ($legacy_jobs->@*, grep { $_->{type} eq 'vzdump' } values $jobs->{ids}->%*) {
 	my $job_included_guests = PVE::VZDump::get_included_guests($job);
-	push @all_vmids, ( map { @{$_} } values %{$job_included_guests} );
+	$all_vmids->{$_} = 1 for map { $_->@* } values %{$job_included_guests};
     }
 
-    my $vzjobs = cfs_read_file('jobs.cfg');
-
-    for my $job (values %{$vzjobs->{ids}}) {
-	next if $job->{type} ne 'vzdump';
-
-	my $job_included_guests = PVE::VZDump::get_included_guests($job);
-	push @all_vmids, ( map { @{$_} } values %{$job_included_guests} );
-    }
-
-    return { map { $_ => 1 } @all_vmids };
+    return $all_vmids;
 }
 
 __PACKAGE__->register_method({
