@@ -71,7 +71,7 @@ __PACKAGE__->register_method({
 	check => ['perm', '/', ['Sys.Audit']],
     },
     parameters => {
-    	additionalProperties => 0,
+	additionalProperties => 0,
 	properties => {},
     },
     returns => {
@@ -103,26 +103,17 @@ __PACKAGE__->register_method({
 
 	my $included_vmids = get_included_vmids();
 	my $vmlist = PVE::Cluster::get_vmlist();
-	my @vmids = ( keys %{$vmlist->{ids}} );
 
-	# remove VMIDs to which the user has no permission to not leak infos
-	# like the guest name
-	my @allowed_vmids = grep {
-		$rpcenv->check($user, "/vms/$_", [ 'VM.Audit' ], 1);
-	} @vmids;
+	# remove VMIDs to which the user has no permission to not leak infos like the guest name
+	my @allowed_vmids = grep { $rpcenv->check($user, "/vms/$_", [ 'VM.Audit' ], 1) } keys $vmlist->{ids}->%*;
 
 	my $result = [];
-
 	for my $vmid (@allowed_vmids) {
-
 	    next if $included_vmids->{$vmid};
 
-	    my $type = $vmlist->{ids}->{$vmid}->{type};
-	    my $node = $vmlist->{ids}->{$vmid}->{node};
+	    my ($type, $node) = $vmlist->{ids}->{$vmid}->@{'type', 'node'};
 
-	    my $conf;
-	    my $name = "";
-
+	    my ($conf, $name);
 	    if ($type eq 'qemu') {
 		$conf = PVE::QemuConfig->load_config($vmid, $node);
 		$name = $conf->{name};
@@ -130,7 +121,7 @@ __PACKAGE__->register_method({
 		$conf = PVE::LXC::Config->load_config($vmid, $node);
 		$name = $conf->{hostname};
 	    } else {
-		die "VMID $vmid is neither Qemu nor LXC guest\n";
+		die "Unexpected error: unknown guest type for VMID $vmid, neither QEMU nor LXC\n";
 	    }
 
 	    push @{$result}, {
