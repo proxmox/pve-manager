@@ -96,8 +96,9 @@ __PACKAGE__->register_method ({
 	die "you can only backup a single VM with option --stdout\n"
 	    if $param->{stdout} && scalar(@{$local_vmids}) != 1;
 
-	$rpcenv->check($user, "/storage/$param->{storage}", [ 'Datastore.AllocateSpace' ])
-	    if $param->{storage};
+	# If the root-only dumpdir is used rather than a storage, the check will succeed anyways.
+	my $storeid = $param->{storage} || 'local';
+	$rpcenv->check($user, "/storage/$storeid", [ 'Datastore.AllocateSpace' ]);
 
 	my $worker = sub {
 	    my $upid = shift;
