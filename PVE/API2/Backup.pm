@@ -54,6 +54,14 @@ sub assert_param_permission_common {
     }
 }
 
+my sub assert_param_permission_update {
+    my ($rpcenv, $user, $update, $delete) = @_;
+    return if $user eq 'root@pam'; # always OK
+
+    assert_param_permission_common($rpcenv, $user, $update);
+    assert_param_permission_common($rpcenv, $user, $delete);
+}
+
 my $convert_to_schedule = sub {
     my ($job) = @_;
 
@@ -424,8 +432,6 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	assert_param_permission_common($rpcenv, $user, $param);
-
 	if (my $pool = $param->{pool}) {
 	    $rpcenv->check_pool_exist($pool);
 	    $rpcenv->check($user, "/pool/$pool", ['VM.Backup']);
@@ -436,6 +442,8 @@ __PACKAGE__->register_method({
 	my $id = extract_param($param, 'id');
 	my $delete = extract_param($param, 'delete');
 	$delete = { map { $_ => 1 } PVE::Tools::split_list($delete) } if $delete;
+
+	assert_param_permission_update($rpcenv, $user, $param, $delete);
 
 	my $update_job = sub {
 	    my $data = cfs_read_file('vzdump.cron');
