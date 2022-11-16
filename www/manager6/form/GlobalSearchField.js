@@ -15,6 +15,7 @@ Ext.define('PVE.form.GlobalSearchField', {
 
     grid: {
 	xtype: 'gridpanel',
+	userCls: 'proxmox-tags-full',
 	focusOnToFront: false,
 	floating: true,
 	emptyText: Proxmox.Utils.noneText,
@@ -23,7 +24,7 @@ Ext.define('PVE.form.GlobalSearchField', {
 	scrollable: {
 	    xtype: 'scroller',
 	    y: true,
-	    x: false,
+	    x: true,
 	},
 	store: {
 	    model: 'PVEResources',
@@ -78,6 +79,11 @@ Ext.define('PVE.form.GlobalSearchField', {
 		text: gettext('Description'),
 		flex: 1,
 		dataIndex: 'text',
+		renderer: function(value, mD, rec) {
+		    let overrides = PVE.Utils.tagOverrides;
+		    let tags = PVE.Utils.renderTags(rec.data.tags, overrides);
+		    return `${value}${tags}`;
+		},
 	    },
 	    {
 		text: gettext('Node'),
@@ -104,16 +110,20 @@ Ext.define('PVE.form.GlobalSearchField', {
 	    'storage': ['type', 'pool', 'node', 'storage'],
 	    'default': ['name', 'type', 'node', 'pool', 'vmid'],
 	};
-	let fieldArr = fieldMap[item.data.type] || fieldMap.default;
+	let fields = fieldMap[item.data.type] || fieldMap.default;
+	let fieldArr = fields.map(field => item.data[field]?.toString().toLowerCase());
+	if (item.data.tags) {
+	    let tags = item.data.tags.split(/[;, ]/);
+	    fieldArr.push(...tags);
+	}
 
 	let filterWords = me.filterVal.split(/\s+/);
 
 	// all text is case insensitive and each split-out word is searched for separately.
 	// a row gets 1 point for every partial match, and and additional point for every exact match
 	let match = 0;
-	for (let field of fieldArr) {
-	    let fieldValue = item.data[field]?.toString().toLowerCase();
-	    if (fieldValue === undefined) {
+	for (let fieldValue of fieldArr) {
+	    if (fieldValue === undefined || fieldValue === "") {
 		continue;
 	    }
 	    for (let filterWord of filterWords) {

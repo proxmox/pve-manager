@@ -295,6 +295,7 @@ Ext.define('PVE.data.ResourceStore', {
 	    },
 	    tags: {
 		header: gettext('Tags'),
+		renderer: (value) => PVE.Utils.renderTags(value, PVE.Utils.tagOverrides),
 		type: 'string',
 		hidden: true,
 		sortable: true,

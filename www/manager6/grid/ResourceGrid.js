@@ -7,6 +7,7 @@ Ext.define('PVE.grid.ResourceGrid', {
 	property: 'type',
 	direction: 'ASC',
     },
+    userCls: 'proxmox-tags-full',
     initComponent: function() {
 	let me = this;
 
