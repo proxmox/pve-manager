@@ -1,3 +1,31 @@
+pve-manager (7.2-13) bullseye; urgency=medium
+
+  * fix #4328: ui: add widget toolkit to dependencies for scanning for online
+    help references
+
+  * api: backup: auto-inject job id where expected by the API
+
+  * api: vzdump: also check for default storage permission
+
+  * api: backup info: make "name" property truly optional in response struct
+
+  * pvestatd: broadcast static node information
+
+  * cluster resources: add cgroup-mode to node properties
+
+  * ui: lxc/qemu: cpu edit: make cpuunits depend on node's cgroup version
+
+  * ui: backup job edit: fix form reset tracking
+
+  * fix #4351: vzdump: send mail if job-end hook fails with
+    mailnotification=failure
+
+  * vzdump: send mail if job-abort hook fails
+
+  * d/control: bump qemu-server dependency to 7.2-8
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 16 Nov 2022 18:33:29 +0100
+
 pve-manager (7.2-12) bullseye; urgency=medium
 
   * ui: ceph: use quincy as new default for fresh installations
