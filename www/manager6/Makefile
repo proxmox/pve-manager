@@ -76,6 +76,7 @@ JSSRC= 							\
 	form/TagColorGrid.js				\
 	form/ListField.js				\
 	form/Tag.js					\
+	form/TagEdit.js					\
 	grid/BackupView.js				\
 	grid/FirewallAliases.js				\
 	grid/FirewallOptions.js				\
