@@ -54,12 +54,39 @@ sub assert_param_permission_common {
     }
 }
 
+my sub assert_param_permission_create {
+    my ($rpcenv, $user, $param) = @_;
+    return if $user eq 'root@pam'; # always OK
+
+    assert_param_permission_common($rpcenv, $user, $param);
+
+    if (!$param->{dumpdir}) {
+	my $storeid = $param->{storage} || 'local';
+	$rpcenv->check($user, "/storage/$storeid", [ 'Datastore.Allocate' ]);
+    } # no else branch, because dumpdir is root-only
+}
+
 my sub assert_param_permission_update {
-    my ($rpcenv, $user, $update, $delete) = @_;
+    my ($rpcenv, $user, $update, $delete, $current) = @_;
     return if $user eq 'root@pam'; # always OK
 
     assert_param_permission_common($rpcenv, $user, $update);
     assert_param_permission_common($rpcenv, $user, $delete);
+
+    if ($update->{storage}) {
+	$rpcenv->check($user, "/storage/$update->{storage}", [ 'Datastore.Allocate' ])
+    } elsif ($delete->{storage}) {
+	$rpcenv->check($user, "/storage/local", [ 'Datastore.Allocate' ]);
+    }
+
+    return if !$current; # early check done
+
+    if ($current->{dumpdir}) {
+	die "only root\@pam may edit jobs with a 'dumpdir' option.";
+    } else {
+	my $storeid = $current->{storage} || 'local';
+	$rpcenv->check($user, "/storage/$storeid", [ 'Datastore.Allocate' ]);
+    }
 }
 
 my $convert_to_schedule = sub {
@@ -220,7 +247,7 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	assert_param_permission_common($rpcenv, $user, $param);
+	assert_param_permission_create($rpcenv, $user, $param);
 
 	if (my $pool = $param->{pool}) {
 	    $rpcenv->check_pool_exist($pool);
@@ -472,6 +499,8 @@ __PACKAGE__->register_method({
 		$job = $jobs_data->{ids}->{$id};
 		die "no such vzdump job\n" if !$job || $job->{type} ne 'vzdump';
 	    }
+
+	    assert_param_permission_update($rpcenv, $user, $param, $delete, $job);
 
 	    my $deletable = {
 		comment => 1,
