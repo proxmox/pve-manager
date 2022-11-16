@@ -5,6 +5,7 @@ Ext.define('PVE.dc.OptionView', {
     onlineHelp: 'datacenter_configuration_file',
 
     monStoreErrors: true,
+    userCls: 'proxmox-tags-full',
 
     add_inputpanel_row: function(name, text, opts) {
 	var me = this;
@@ -312,6 +313,123 @@ Ext.define('PVE.dc.OptionView', {
 		submitValue: true,
 	    }],
 	});
+	me.rows['tag-style'] = {
+	    required: true,
+	    renderer: (value) => {
+		if (value === undefined) {
+		    return gettext('No Overrides');
+		}
+		let colors = PVE.Utils.parseTagOverrides(value?.['color-map']);
+		let shape = value.shape;
+		let shapeText = PVE.Utils.tagTreeStyles[shape ?? '__default__'];
+		let txt = Ext.String.format(gettext("Tree Shape: {0}"), shapeText);
+		if (Object.keys(colors).length > 0) {
+		    txt += ', ';
+		}
+		for (const tag of Object.keys(colors)) {
+		    txt += Proxmox.Utils.getTagElement(tag, colors);
+		}
+		return txt;
+	    },
+	    header: gettext('Tag Style Override'),
+	    editor: {
+		xtype: 'proxmoxWindowEdit',
+		width: 800,
+		subject: gettext('Tag Color Override'),
+		onlineHelp: 'datacenter_configuration_file',
+		fieldDefaults: {
+		    labelWidth: 100,
+		},
+		url: '/api2/extjs/cluster/options',
+		items: [
+		    {
+			xtype: 'inputpanel',
+			setValues: function(values) {
+			    if (values === undefined) {
+				return undefined;
+			    }
+			    values = values?.['tag-style'] ?? {};
+			    values.shape = values.shape || '__default__';
+			    values.colors = values['color-map'];
+			    return Proxmox.panel.InputPanel.prototype.setValues.call(this, values);
+			},
+			onGetValues: function(values) {
+			    let style = {};
+			    if (values.colors) {
+				style['color-map'] = values.colors;
+			    }
+			    if (values.shape) {
+				style.shape = values.shape;
+			    }
+			    let value = PVE.Parser.printPropertyString(style);
+			    if (value === '') {
+				return {
+				    'delete': 'tag-style',
+				};
+			    }
+			    return {
+				'tag-style': value,
+			    };
+			},
+			items: [
+			    {
+				name: 'shape',
+				xtype: 'proxmoxKVComboBox',
+				fieldLabel: gettext('Tree Shape'),
+				comboItems: Object.entries(PVE.Utils.tagTreeStyles),
+				defaultValue: '__default__',
+				deleteEmpty: true,
+			    },
+			    {
+				xtype: 'displayfield',
+				fieldLabel: gettext('Color Overrides'),
+			    },
+			    {
+				name: 'colors',
+				xtype: 'pveTagColorGrid',
+				deleteEmpty: true,
+				height: 300,
+			    },
+			],
+		    },
+		],
+	    },
+	};
+
+	me.rows['user-tag-access'] = {
+	    required: true,
+	    renderer: (value) => {
+		if (value === undefined) {
+		    return Ext.String.format(gettext('Mode: {0}'), 'free');
+		}
+		let mode = value?.['user-allow'] ?? 'free';
+		let list = value?.['user-allow-list'].join(',');
+		let modeTxt = Ext.String.format(gettext('Mode {0}'), mode);
+		let overrides = PVE.Utils.tagOverrides;
+		let tags = PVE.Utils.renderTags(list, overrides);
+
+		return `${modeTxt}, ${gettext('Pre-defined:')} ${tags}`;
+	    },
+	    header: gettext('User Tag Access'),
+	    editor: {
+		xtype: 'pveUserTagAccessEdit',
+	    },
+	};
+
+	me.rows['registered-tags'] = {
+	    required: true,
+	    renderer: (value) => {
+		if (value === undefined) {
+		    return gettext('No Registered Tags');
+		}
+		let overrides = PVE.Utils.tagOverrides;
+		return PVE.Utils.renderTags(value.join(','), overrides);
+	    },
+	    header: gettext('Registered Tags'),
+	    editor: {
+		xtype: 'pveRegisteredTagEdit',
+	    },
+	};
 
 	me.selModel = Ext.create('Ext.selection.RowModel', {});
 
@@ -347,6 +465,9 @@ Ext.define('PVE.dc.OptionView', {
 	    if (rec.data.value === '__default__') {
 		delete PVE.UIOptions.console;
 	    }
+
+	    PVE.UIOptions['tag-style'] = store.getById('tag-style')?.data?.value;
+	    PVE.Utils.updateTagSettings(PVE.UIOptions['tag-style']);
 	});
 
 	me.on('activate', me.rstore.startUpdate);

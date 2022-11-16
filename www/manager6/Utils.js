@@ -1922,6 +1922,26 @@ Ext.define('PVE.Utils', {
 	Ext.GlobalEvents.fireEvent('loadedUiOptions');
     },
 
+    tagTreeStyles: {
+	'__default__': `${Proxmox.Utils.defaultText} (${gettext('Cirlce')})`,
+	'full': gettext('Full'),
+	'circle': gettext('Circle'),
+	'dense': gettext('Dense'),
+	'none': Proxmox.Utils.NoneText,
+    },
+
+    renderTags: function(tagstext, overrides) {
+	let text = '';
+	if (tagstext) {
+	    let tags = (tagstext.split(/[,; ]/) || []).filter(t => !!t);
+	    text += ' ';
+	    tags.forEach((tag) => {
+		text += Proxmox.Utils.getTagElement(tag, overrides);
+	    });
+	}
+	return text;
+    },
+
     tagCharRegex: /^[a-z0-9+_.-]$/i,
 },
 

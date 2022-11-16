@@ -160,6 +160,8 @@ JSSRC= 							\
 	dc/UserEdit.js					\
 	dc/UserView.js					\
 	dc/MetricServerView.js				\
+	dc/UserTagAccessEdit.js				\
+	dc/RegisteredTagsEdit.js			\
 	lxc/CmdMenu.js					\
 	lxc/Config.js					\
 	lxc/CreateWizard.js				\
