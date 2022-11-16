@@ -443,7 +443,7 @@ __PACKAGE__->register_method({
 
 	    my $jobs = $data->{jobs} || [];
 
-	    die "no options specified\n" if !scalar(keys %$param);
+	    die "no options specified\n" if !scalar(keys $param->%*) && !scalar(keys $delete->%*);
 
 	    PVE::VZDump::verify_vzdump_parameters($param);
 	    my $opts = PVE::VZDump::JobBase->check_config($id, $param, 0, 1);
