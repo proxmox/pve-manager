@@ -376,7 +376,8 @@ __PACKAGE__->register_method({
 
 	# we try to generate 'numbers' by using "$X + 0"
 	if (!$param->{type} || $param->{type} eq 'vm') {
-	    my $locked_vms = PVE::Cluster::get_guest_config_property('lock');
+	    my $prop_list = [qw(lock tags)];
+	    my $props = PVE::Cluster::get_guest_config_properties($prop_list);
 
 	    for my $vmid (sort keys %$idlist) {
 
@@ -408,8 +409,10 @@ __PACKAGE__->register_method({
 		# only skip now to next to ensure that the pool stats above are filled, if eligible
 		next if !$rpcenv->check($authuser, "/vms/$vmid", [ 'VM.Audit' ], 1);
 
-		if (defined(my $lock = $locked_vms->{$vmid}->{lock})) {
-		    $entry->{lock} = $lock;
+		for my $prop (@$prop_list) {
+		    if (defined(my $value = $props->{$vmid}->{$prop})) {
+			$entry->{$prop} = $value;
+		    }
 		}
 
 		if (defined($entry->{pool}) &&
