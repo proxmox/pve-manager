@@ -343,9 +343,9 @@ Ext.define('PVE.dc.OptionView', {
 	    }
 
 	    var rec = store.getById('console');
-	    PVE.VersionInfo.console = rec.data.value;
+	    PVE.UIOptions.console = rec.data.value;
 	    if (rec.data.value === '__default__') {
-		delete PVE.VersionInfo.console;
+		delete PVE.UIOptions.console;
 	    }
 	});
 

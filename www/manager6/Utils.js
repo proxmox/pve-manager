@@ -1332,7 +1332,7 @@ Ext.define('PVE.Utils', {
 	    allowSpice = consoles.spice;
 	    allowXtermjs = !!consoles.xtermjs;
 	}
-	let dv = PVE.VersionInfo.console || (type === 'kvm' ? 'vv' : 'xtermjs');
+	let dv = PVE.UIOptions.console || (type === 'kvm' ? 'vv' : 'xtermjs');
 	if (dv === 'vv' && !allowSpice) {
 	    dv = allowXtermjs ? 'xtermjs' : 'html5';
 	} else if (dv === 'xtermjs' && !allowXtermjs) {
@@ -1854,6 +1854,17 @@ Ext.define('PVE.Utils', {
     },
 
     notesTemplateVars: ['cluster', 'guestname', 'node', 'vmid'],
+
+    updateUIOptions: function() {
+	Proxmox.Utils.API2Request({
+	    url: '/cluster/options',
+	    method: 'GET',
+	    success: function(response) {
+		PVE.UIOptions = {};
+		PVE.UIOptions.console = response?.result?.data?.console;
+	    },
+	});
+    },
 },
 
     singleton: true,
