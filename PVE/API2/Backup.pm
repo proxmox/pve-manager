@@ -60,10 +60,9 @@ my sub assert_param_permission_create {
 
     assert_param_permission_common($rpcenv, $user, $param);
 
-    if (!$param->{dumpdir}) {
-	my $storeid = $param->{storage} || 'local';
+    if (my $storeid = PVE::VZDump::get_storage_param($param)) {
 	$rpcenv->check($user, "/storage/$storeid", [ 'Datastore.Allocate' ]);
-    } # no else branch, because dumpdir is root-only
+    }
 }
 
 my sub assert_param_permission_update {
@@ -84,8 +83,9 @@ my sub assert_param_permission_update {
     if ($current->{dumpdir}) {
 	die "only root\@pam may edit jobs with a 'dumpdir' option.";
     } else {
-	my $storeid = $current->{storage} || 'local';
-	$rpcenv->check($user, "/storage/$storeid", [ 'Datastore.Allocate' ]);
+	if (my $storeid = PVE::VZDump::get_storage_param($current)) {
+	    $rpcenv->check($user, "/storage/$storeid", [ 'Datastore.Allocate' ]);
+	}
     }
 }
 

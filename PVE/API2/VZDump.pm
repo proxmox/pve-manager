@@ -27,10 +27,11 @@ my sub assert_param_permission_vzdump {
 
     PVE::API2::Backup::assert_param_permission_common($rpcenv, $user, $param);
 
-    if (!$param->{dumpdir} && (defined($param->{maxfiles}) || defined($param->{'prune-backups'}))) {
-	my $storeid = $param->{storage} || 'local';
-	$rpcenv->check($user, "/storage/$storeid", [ 'Datastore.Allocate' ]);
-    } # no else branch, because dumpdir is root-only
+    if (defined($param->{maxfiles}) || defined($param->{'prune-backups'})) {
+	if (my $storeid = PVE::VZDump::get_storage_param($param)) {
+	    $rpcenv->check($user, "/storage/$storeid", [ 'Datastore.Allocate' ]);
+	}
+    }
 }
 
 __PACKAGE__->register_method ({
@@ -108,9 +109,9 @@ __PACKAGE__->register_method ({
 	die "you can only backup a single VM with option --stdout\n"
 	    if $param->{stdout} && scalar(@{$local_vmids}) != 1;
 
-	# If the root-only dumpdir is used rather than a storage, the check will succeed anyways.
-	my $storeid = $param->{storage} || 'local';
-	$rpcenv->check($user, "/storage/$storeid", [ 'Datastore.AllocateSpace' ]);
+	if (my $storeid = PVE::VZDump::get_storage_param($param)) {
+	    $rpcenv->check($user, "/storage/$storeid", [ 'Datastore.AllocateSpace' ]);
+	}
 
 	my $worker = sub {
 	    my $upid = shift;

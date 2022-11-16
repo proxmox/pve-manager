@@ -55,6 +55,13 @@ foreach my $plug (@pve_vzdump_classes) {
     }
 }
 
+sub get_storage_param {
+    my ($param) = @_;
+
+    return if $param->{dumpdir};
+    return $param->{storage} || 'local';
+}
+
 # helper functions
 
 sub debugmsg {
@@ -567,8 +574,8 @@ sub new {
 	die "cannot use options 'storage' and 'dumpdir' at the same time\n";
     }
 
-    if (!$opts->{dumpdir} && !$opts->{storage}) {
-	$opts->{storage} = 'local';
+    if (my $storage = get_storage_param($opts)) {
+	$opts->{storage} = $storage;
     }
 
     # Enforced by the API too, but these options might come in via defaults. Drop them if necessary.
