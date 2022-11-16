@@ -3,6 +3,7 @@ Ext.define('PVE.qemu.Config', {
     alias: 'widget.PVE.qemu.Config',
 
     onlineHelp: 'chapter_virtual_machines',
+    userCls: 'proxmox-tags-full',
 
     initComponent: function() {
         var me = this;
@@ -219,11 +220,33 @@ Ext.define('PVE.qemu.Config', {
 	    ],
 	});
 
+	let tagsContainer = Ext.create('PVE.panel.TagEditContainer', {
+	    tags: vm.tags,
+	    listeners: {
+		change: function(tags) {
+		    Proxmox.Utils.API2Request({
+			url: base_url + '/config',
+			method: 'PUT',
+			params: {
+			    tags,
+			},
+			success: function() {
+			    me.statusStore.load();
+			},
+			failure: function(response) {
+			    Ext.Msg.alert('Error', response.htmlStatus);
+			    me.statusStore.load();
+			},
+		    });
+		},
+	    },
+	});
+
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Virtual Machine {0} on node '{1}'"), vm.text, nodename),
 	    hstateid: 'kvmtab',
 	    tbarSpacing: false,
-	    tbar: [statusTxt, '->', resumeBtn, startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn],
+	    tbar: [statusTxt, tagsContainer, '->', resumeBtn, startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
@@ -382,11 +405,12 @@ Ext.define('PVE.qemu.Config', {
 	    var spice = false;
 	    var xtermjs = false;
 	    var lock;
+	    var rec;
 
 	    if (!success) {
 		status = qmpstatus = 'unknown';
 	    } else {
-		var rec = s.data.get('status');
+		rec = s.data.get('status');
 		status = rec ? rec.data.value : 'unknown';
 		rec = s.data.get('qmpstatus');
 		qmpstatus = rec ? rec.data.value : 'unknown';
@@ -398,6 +422,9 @@ Ext.define('PVE.qemu.Config', {
 		spice = !!s.data.get('spice');
 		xtermjs = !!s.data.get('serial');
 	    }
+
+	    rec = s.data.get('tags');
+	    tagsContainer.loadTags(rec?.data?.value);
 
 	    if (template) {
 		return;

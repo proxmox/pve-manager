@@ -4,6 +4,8 @@ Ext.define('PVE.lxc.Config', {
 
     onlineHelp: 'chapter_pct',
 
+    userCls: 'proxmox-tags-full',
+
     initComponent: function() {
         var me = this;
 	var vm = me.pveSelNode.data;
@@ -182,12 +184,33 @@ Ext.define('PVE.lxc.Config', {
 	    ],
 	});
 
+	let tagsContainer = Ext.create('PVE.panel.TagEditContainer', {
+	    tags: vm.tags,
+	    listeners: {
+		change: function(tags) {
+		    Proxmox.Utils.API2Request({
+			url: base_url + '/config',
+			method: 'PUT',
+			params: {
+			    tags,
+			},
+			success: function() {
+			    me.statusStore.load();
+			},
+			failure: function(response) {
+			    Ext.Msg.alert('Error', response.htmlStatus);
+			    me.statusStore.load();
+			},
+		    });
+		},
+	    },
+	});
 
 	Ext.apply(me, {
 	    title: Ext.String.format(gettext("Container {0} on node '{1}'"), vm.text, nodename),
 	    hstateid: 'lxctab',
 	    tbarSpacing: false,
-	    tbar: [statusTxt, '->', startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn],
+	    tbar: [statusTxt, tagsContainer, '->', startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn],
 	    defaults: { statusStore: me.statusStore },
 	    items: [
 		{
@@ -344,10 +367,12 @@ Ext.define('PVE.lxc.Config', {
 	me.mon(me.statusStore, 'load', function(s, records, success) {
 	    var status;
 	    var lock;
+	    var rec;
+
 	    if (!success) {
 		status = 'unknown';
 	    } else {
-		var rec = s.data.get('status');
+		rec = s.data.get('status');
 		status = rec ? rec.data.value : 'unknown';
 		rec = s.data.get('template');
 		template = rec ? rec.data.value : false;
@@ -356,6 +381,9 @@ Ext.define('PVE.lxc.Config', {
 	    }
 
 	    statusTxt.update({ lock: lock });
+
+	    rec = s.data.get('tags');
+	    tagsContainer.loadTags(rec?.data?.value);
 
 	    startBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status === 'running' || template);
 	    shutdownBtn.setDisabled(!caps.vms['VM.PowerMgmt'] || status !== 'running');
