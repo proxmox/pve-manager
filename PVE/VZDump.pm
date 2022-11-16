@@ -1287,9 +1287,9 @@ sub exec_backup {
     };
     my $err = $@;
 
-    $self->run_hook_script ('job-abort', undef, $job_end_fd) if $err;
-
     if ($err) {
+	eval { $self->run_hook_script ('job-abort', undef, $job_end_fd); };
+	$err .= $@ if $@;
 	debugmsg ('err', "Backup job failed - $err", undef, 1);
     } else {
 	if ($errcount) {
