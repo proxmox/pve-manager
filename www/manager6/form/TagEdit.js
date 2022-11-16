@@ -37,6 +37,8 @@ Ext.define('PVE.panel.TagEditContainer', {
 	onRender: function(v) {
 	    let me = this;
 	    let view = me.getView();
+	    view.toggleCls('hide-handles', PVE.Utils.shouldSortTags());
+
 	    view.dragzone = Ext.create('Ext.dd.DragZone', v.getEl(), {
 		getDragData: function(e) {
 		    let source = e.getTarget('.handle');
@@ -168,6 +170,14 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    let view = me.getView();
 	    let vm = me.getViewModel();
 	    let index = view.items.indexOf(me.lookup('addTagBtn'));
+	    if (PVE.Utils.shouldSortTags()) {
+		index = view.items.findIndexBy(tagField => {
+		    if (tagField.reference === 'addTagBtn') {
+			return true;
+		    }
+		    return tagField.tag >= tag;
+		}, 1);
+	    }
 	    view.insert(index, {
 		xtype: 'pveTag',
 		tag,
@@ -226,7 +236,8 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    }
 
 	    me.mon(Ext.GlobalEvents, 'loadedUiOptions', () => {
-		me.loadTags(me.oldTags, true); // refresh tag colors
+		view.toggleCls('hide-handles', PVE.Utils.shouldSortTags());
+		me.loadTags(me.oldTags, true); // refresh tag colors and order
 	    });
 	},
     },

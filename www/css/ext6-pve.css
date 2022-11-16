@@ -668,6 +668,11 @@ table.osds td:first-of-type {
     cursor: grab;
 }
 
+.hide-handles .pve-edit-tag > i.handle {
+    display: none;
+    padding-right: 0px;
+}
+
 .pve-edit-tag > i.action,
 .pve-add-tag > i.action {
     padding-left: 5px;

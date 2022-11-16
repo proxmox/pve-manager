@@ -1930,16 +1930,29 @@ Ext.define('PVE.Utils', {
 	'none': Proxmox.Utils.NoneText,
     },
 
+    tagOrderOptions: {
+	'__default__': `${Proxmox.Utils.defaultText} (${gettext('Alphabetical')})`,
+	'config': gettext('Configuration'),
+	'alphabetical': gettext('Alphabetical'),
+    },
+
     renderTags: function(tagstext, overrides) {
 	let text = '';
 	if (tagstext) {
 	    let tags = (tagstext.split(/[,; ]/) || []).filter(t => !!t);
+	    if (PVE.Utils.shouldSortTags()) {
+		tags = tags.sort();
+	    }
 	    text += ' ';
 	    tags.forEach((tag) => {
 		text += Proxmox.Utils.getTagElement(tag, overrides);
 	    });
 	}
 	return text;
+    },
+
+    shouldSortTags: function() {
+	return !(PVE.UIOptions?.['tag-style']?.ordering === 'config');
     },
 
     tagCharRegex: /^[a-z0-9+_.-]$/i,

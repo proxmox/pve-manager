@@ -323,6 +323,8 @@ Ext.define('PVE.dc.OptionView', {
 		let shape = value.shape;
 		let shapeText = PVE.Utils.tagTreeStyles[shape ?? '__default__'];
 		let txt = Ext.String.format(gettext("Tree Shape: {0}"), shapeText);
+		let orderText = PVE.Utils.tagOrderOptions[value.ordering ?? '__default__'];
+		txt += `, ${Ext.String.format(gettext("Ordering: {0}"), orderText)}`;
 		if (Object.keys(colors).length > 0) {
 		    txt += ', ';
 		}
@@ -361,6 +363,9 @@ Ext.define('PVE.dc.OptionView', {
 			    if (values.shape) {
 				style.shape = values.shape;
 			    }
+			    if (values.ordering) {
+				style.ordering = values.ordering;
+			    }
 			    let value = PVE.Parser.printPropertyString(style);
 			    if (value === '') {
 				return {
@@ -378,6 +383,15 @@ Ext.define('PVE.dc.OptionView', {
 				fieldLabel: gettext('Tree Shape'),
 				comboItems: Object.entries(PVE.Utils.tagTreeStyles),
 				defaultValue: '__default__',
+				deleteEmpty: true,
+			    },
+			    {
+				name: 'ordering',
+				xtype: 'proxmoxKVComboBox',
+				fieldLabel: gettext('Ordering'),
+				comboItems: Object.entries(PVE.Utils.tagOrderOptions),
+				defaultValue: '__default__',
+				value: '__default__',
 				deleteEmpty: true,
 			    },
 			    {
