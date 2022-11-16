@@ -3,8 +3,9 @@ Ext.define('PVE.qemu.Monitor', {
 
     alias: 'widget.pveQemuMonitor',
 
-    // ouput is trimmed when it's over both commandLimit and lineLimit
-    // by removing the first commands and their output
+    // start to trim saved command output once there are *both*, more than `commandLimit` commands
+    // executed and the total of saved in+output is over `lineLimit` lines; repeat by dropping one
+    // full command output until either condition is false again
     commandLimit: 10,
     lineLimit: 5000,
 
