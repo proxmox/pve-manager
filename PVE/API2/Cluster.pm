@@ -10,6 +10,7 @@ use PVE::Cluster qw(cfs_register_file cfs_lock_file cfs_read_file cfs_write_file
 use PVE::DataCenterConfig;
 use PVE::Exception qw(raise_param_exc);
 use PVE::Firewall;
+use PVE::GuestHelpers;
 use PVE::HA::Config;
 use PVE::HA::Env::PVE2;
 use PVE::INotify;
@@ -542,8 +543,9 @@ __PACKAGE__->register_method({
     name => 'get_options',
     path => 'options',
     method => 'GET',
-    description => "Get datacenter options.",
+    description => "Get datacenter options. Without 'Sys.Audit' on '/' not all options are returned.",
     permissions => {
+	user => 'all',
 	check => ['perm', '/', [ 'Sys.Audit' ]],
     },
     parameters => {
@@ -557,7 +559,25 @@ __PACKAGE__->register_method({
     code => sub {
 	my ($param) = @_;
 
-	return PVE::Cluster::cfs_read_file('datacenter.cfg');
+	my $res = {};
+
+	my $rpcenv = PVE::RPCEnvironment::get();
+	my $authuser = $rpcenv->get_user();
+
+	my $datacenter_config = eval { PVE::Cluster::cfs_read_file('datacenter.cfg') } // {};
+
+	if ($rpcenv->check($authuser, '/', ['Sys.Audit'], 1)) {
+	    $res = $datacenter_config;
+	} else {
+	    for my $k (qw(console tag-style)) {
+		$res->{$k} = $datacenter_config->{$k} if exists $datacenter_config->{$k};
+	    }
+	}
+
+	my $tags = PVE::GuestHelpers::get_allowed_tags($rpcenv, $authuser);
+	$res->{'allowed-tags'} = [sort keys $tags->%*];
+
+	return $res;
     }});
 
 __PACKAGE__->register_method({

@@ -5,6 +5,7 @@ use warnings;
 
 use PVE::pvecfg;
 use PVE::DataCenterConfig;
+use PVE::GuestHelpers;
 use PVE::RESTHandler;
 use PVE::JSONSchema;
 
@@ -118,6 +119,7 @@ __PACKAGE__->register_method ({
 
 	my $res = {};
 
+	# TODO remove with next major release
 	my $datacenter_confg = eval { PVE::Cluster::cfs_read_file('datacenter.cfg') } // {};
 	for my $k (qw(console)) {
 	    $res->{$k} = $datacenter_confg->{$k} if exists $datacenter_confg->{$k};
@@ -129,5 +131,4 @@ __PACKAGE__->register_method ({
 
 	return $res;
     }});
-
 1;
