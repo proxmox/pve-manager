@@ -75,6 +75,7 @@ JSSRC= 							\
 	form/iScsiProviderSelector.js			\
 	form/TagColorGrid.js				\
 	form/ListField.js				\
+	form/Tag.js					\
 	grid/BackupView.js				\
 	grid/FirewallAliases.js				\
 	grid/FirewallOptions.js				\

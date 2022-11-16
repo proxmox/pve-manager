@@ -656,3 +656,35 @@ table.osds td:first-of-type {
     padding-top: 0px;
     padding-bottom: 0px;
 }
+
+.pve-edit-tag > i {
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.pve-edit-tag > i.handle {
+    padding-right: 5px;
+    cursor: grab;
+}
+
+.pve-edit-tag > i.action {
+    padding-left: 5px;
+}
+
+.pve-edit-tag.normal > i {
+    display: none;
+}
+
+.pve-edit-tag.editable span,
+.pve-edit-tag.inEdit span {
+    background-color: #ffffff;
+    border: 1px solid #a8a8a8;
+    color: #000;
+    padding-left: 2px;
+    padding-right: 2px;
+    min-width: 2em;
+}
+
+.pve-edit-tag.inEdit span {
+    border: 1px solid #000;
+}
