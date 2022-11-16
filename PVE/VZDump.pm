@@ -1305,10 +1305,14 @@ sub exec_backup {
     my $totaltime = time() - $starttime;
 
     eval {
+	# otherwise $self->sendmail() will interpret it as multiple problems
+	my $chomped_err = $err;
+	chomp($chomped_err) if $chomped_err;
+
 	$self->sendmail(
 	    $tasklist,
 	    $totaltime,
-	    undef,
+	    $chomped_err,
 	    $self->{job_init_log} . $job_start_log,
 	    $job_end_log,
 	);
