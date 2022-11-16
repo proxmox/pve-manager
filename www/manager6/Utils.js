@@ -1860,10 +1860,66 @@ Ext.define('PVE.Utils', {
 	    url: '/cluster/options',
 	    method: 'GET',
 	    success: function(response) {
-		PVE.UIOptions = {};
-		PVE.UIOptions.console = response?.result?.data?.console;
+		PVE.UIOptions = {
+		    'allowed-tags': [],
+		};
+		for (const option of ['allowed-tags', 'console', 'tag-style']) {
+		    PVE.UIOptions[option] = response?.result?.data?.[option];
+		}
+
+		PVE.Utils.updateTagList(PVE.UIOptions['allowed-tags']);
+		PVE.Utils.updateTagSettings(PVE.UIOptions?.['tag-style']);
 	    },
 	});
+    },
+
+    tagList: [],
+
+    updateTagList: function(tags) {
+	PVE.Utils.tagList = [...new Set([...tags])].sort();
+    },
+
+    parseTagOverrides: function(overrides) {
+	let colors = {};
+	(overrides || "").split(';').forEach(color => {
+	    if (!color) {
+		return;
+	    }
+	    let [tag, color_hex, font_hex] = color.split(':');
+	    let r = parseInt(color_hex.slice(0, 2), 16);
+	    let g = parseInt(color_hex.slice(2, 4), 16);
+	    let b = parseInt(color_hex.slice(4, 6), 16);
+	    colors[tag] = [r, g, b];
+	    if (font_hex) {
+		colors[tag].push(parseInt(font_hex.slice(0, 2), 16));
+		colors[tag].push(parseInt(font_hex.slice(2, 4), 16));
+		colors[tag].push(parseInt(font_hex.slice(4, 6), 16));
+	    }
+	});
+	return colors;
+    },
+
+    tagOverrides: {},
+
+    updateTagOverrides: function(colors) {
+	let sp = Ext.state.Manager.getProvider();
+	let color_state = sp.get('colors', '');
+	let browser_colors = PVE.Utils.parseTagOverrides(color_state);
+	PVE.Utils.tagOverrides = Ext.apply({}, browser_colors, colors);
+    },
+
+    updateTagSettings: function(style) {
+	let overrides = style?.['color-map'];
+	PVE.Utils.updateTagOverrides(PVE.Utils.parseTagOverrides(overrides ?? ""));
+
+	let shape = style?.shape ?? 'circle';
+	if (shape === '__default__') {
+	    style = 'circle';
+	}
+
+	Ext.ComponentQuery.query('pveResourceTree')[0].setUserCls(`proxmox-tags-${shape}`);
+	PVE.data.ResourceStore.fireEvent('load');
+	Ext.GlobalEvents.fireEvent('loadedUiOptions');
     },
 },
 
