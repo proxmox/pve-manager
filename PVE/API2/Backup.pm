@@ -435,9 +435,7 @@ __PACKAGE__->register_method({
 
 	my $id = extract_param($param, 'id');
 	my $delete = extract_param($param, 'delete');
-	if ($delete) {
-	    $delete = [PVE::Tools::split_list($delete)];
-	}
+	$delete = { map { $_ => 1 } PVE::Tools::split_list($delete) } if $delete;
 
 	my $update_job = sub {
 	    my $data = cfs_read_file('vzdump.cron');
@@ -472,7 +470,7 @@ __PACKAGE__->register_method({
 		'repeat-missed' => 1,
 	    };
 
-	    foreach my $k (@$delete) {
+	    for my $k (keys $delete->%*) {
 		if (!PVE::VZDump::option_exists($k) && !$deletable->{$k}) {
 		    raise_param_exc({ delete => "unknown option '$k'" });
 		}
