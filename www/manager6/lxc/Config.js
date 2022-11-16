@@ -206,8 +206,10 @@ Ext.define('PVE.lxc.Config', {
 	    },
 	});
 
+	let vm_text = `${vm.vmid} (${vm.name})`;
+
 	Ext.apply(me, {
-	    title: Ext.String.format(gettext("Container {0} on node '{1}'"), vm.text, nodename),
+	    title: Ext.String.format(gettext("Container {0} on node '{1}'"), vm_text, nodename),
 	    hstateid: 'lxctab',
 	    tbarSpacing: false,
 	    tbar: [statusTxt, tagsContainer, '->', startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn],

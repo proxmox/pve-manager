@@ -293,6 +293,12 @@ Ext.define('PVE.data.ResourceStore', {
 		sortable: true,
 		width: 100,
 	    },
+	    tags: {
+		header: gettext('Tags'),
+		type: 'string',
+		hidden: true,
+		sortable: true,
+	    },
 	};
 
 	let fields = [];

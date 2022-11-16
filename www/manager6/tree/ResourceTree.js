@@ -5,6 +5,8 @@ Ext.define('PVE.tree.ResourceTree', {
     extend: 'Ext.tree.TreePanel',
     alias: ['widget.pveResourceTree'],
 
+    userCls: 'proxmox-tags-circle',
+
     statics: {
 	typeDefaults: {
 	    node: {
@@ -113,6 +115,8 @@ Ext.define('PVE.tree.ResourceTree', {
 		status += '</div> ';
 	    }
 	}
+
+	info.text += PVE.Utils.renderTags(info.tags, PVE.Utils.tagOverrides);
 
 	info.text = status + info.text;
     },
@@ -226,6 +230,10 @@ Ext.define('PVE.tree.ResourceTree', {
 
 	let stateid = 'rid';
 
+	const changedFields = [
+	    'text', 'running', 'template', 'status', 'qmpstatus', 'hastate', 'lock', 'tags',
+	];
+
 	let updateTree = function() {
 	    store.suspendEvents();
 
@@ -261,7 +269,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		    }
 
 		    // tree item has been updated
-		    for (const field of ['text', 'running', 'template', 'status', 'qmpstatus', 'hastate', 'lock']) {
+		    for (const field of changedFields) {
 			if (item.data[field] !== olditem.data[field]) {
 			    changed = true;
 			    break;

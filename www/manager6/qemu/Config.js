@@ -242,8 +242,10 @@ Ext.define('PVE.qemu.Config', {
 	    },
 	});
 
+	let vm_text = `${vm.vmid} (${vm.name})`;
+
 	Ext.apply(me, {
-	    title: Ext.String.format(gettext("Virtual Machine {0} on node '{1}'"), vm.text, nodename),
+	    title: Ext.String.format(gettext("Virtual Machine {0} on node '{1}'"), vm_text, nodename),
 	    hstateid: 'kvmtab',
 	    tbarSpacing: false,
 	    tbar: [statusTxt, tagsContainer, '->', resumeBtn, startBtn, shutdownBtn, migrateBtn, consoleBtn, moreBtn],
