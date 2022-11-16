@@ -14,11 +14,24 @@ use PVE::Tools qw(extract_param);
 use PVE::VZDump::Common;
 use PVE::VZDump;
 
+use PVE::API2::Backup;
 use PVE::API2Tools;
 
 use Data::Dumper; # fixme: remove
 
 use base qw(PVE::RESTHandler);
+
+my sub assert_param_permission_vzdump {
+    my ($rpcenv, $user, $param) = @_;
+    return if $user eq 'root@pam'; # always OK
+
+    PVE::API2::Backup::assert_param_permission_common($rpcenv, $user, $param);
+
+    if (!$param->{dumpdir} && (defined($param->{maxfiles}) || defined($param->{'prune-backups'}))) {
+	my $storeid = $param->{storage} || 'local';
+	$rpcenv->check($user, "/storage/$storeid", [ 'Datastore.Allocate' ]);
+    } # no else branch, because dumpdir is root-only
+}
 
 __PACKAGE__->register_method ({
     name => 'vzdump',
@@ -27,9 +40,10 @@ __PACKAGE__->register_method ({
     description => "Create backup.",
     permissions => {
 	description => "The user needs 'VM.Backup' permissions on any VM, and "
-	    ."'Datastore.AllocateSpace' on the backup storage. The 'maxfiles', 'prune-backups', "
-	    ."'tmpdir', 'dumpdir', 'script', 'bwlimit', 'performance' and 'ionice' parameters are "
-	    ."restricted to the 'root\@pam' user.",
+	    ."'Datastore.AllocateSpace' on the backup storage. The 'tmpdir', 'dumpdir' and "
+	    ."'script' parameters are restricted to the 'root\@pam' user. The 'maxfiles' and "
+	    ."'prune-backups' settings require 'Datastore.Allocate' on the backup storage. The "
+	    ."'bwlimit', 'performance' and 'ionice' parameters require 'Sys.Modify' on '/'.",
 	user => 'all',
     },
     protected => 1,
@@ -62,10 +76,7 @@ __PACKAGE__->register_method ({
 		if $param->{stdout};
 	}
 
-	for my $key (qw(maxfiles prune-backups tmpdir dumpdir script bwlimit performance ionice)) {
-	    raise_param_exc({ $key => "Only root may set this option."})
-		if defined($param->{$key}) && ($user ne 'root@pam');
-	}
+	assert_param_permission_vzdump($rpcenv, $user, $param);
 
 	PVE::VZDump::verify_vzdump_parameters($param, 1);
 

@@ -40,14 +40,19 @@ my $vzdump_job_id_prop = {
     maxLength => 50
 };
 
-my $assert_param_permission = sub {
-    my ($param, $user) = @_;
+# NOTE: also used by the vzdump API call.
+sub assert_param_permission_common {
+    my ($rpcenv, $user, $param) = @_;
     return if $user eq 'root@pam'; # always OK
 
     for my $key (qw(tmpdir dumpdir script)) {
 	raise_param_exc({ $key => "Only root may set this option."}) if exists $param->{$key};
     }
-};
+
+    if (defined($param->{bwlimit}) || defined($param->{ionice}) || defined($param->{performance})) {
+	$rpcenv->check($user, "/", [ 'Sys.Modify' ]);
+    }
+}
 
 my $convert_to_schedule = sub {
     my ($job) = @_;
@@ -207,7 +212,7 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	$assert_param_permission->($param, $user);
+	assert_param_permission_common($rpcenv, $user, $param);
 
 	if (my $pool = $param->{pool}) {
 	    $rpcenv->check_pool_exist($pool);
@@ -419,7 +424,7 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 
-	$assert_param_permission->($param, $user);
+	assert_param_permission_common($rpcenv, $user, $param);
 
 	if (my $pool = $param->{pool}) {
 	    $rpcenv->check_pool_exist($pool);
