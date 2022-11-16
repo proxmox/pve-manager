@@ -580,6 +580,8 @@ Ext.define('PVE.qemu.HardwareView', {
 	    const noVMConfigHWTypePerm = !caps.vms['VM.Config.HWType'];
 	    const noVMConfigNetPerm = !caps.vms['VM.Config.Network'];
 	    const noVMConfigDiskPerm = !caps.vms['VM.Config.Disk'];
+	    const noVMConfigCDROMPerm = !caps.vms['VM.Config.CDROM'];
+	    const noVMConfigCloudinitPerm = !caps.vms['VM.Config.Cloudinit'];
 
 	    me.down('#addUsb').setDisabled(noSysConsolePerm || isAtUsbLimit());
 	    me.down('#addPci').setDisabled(noSysConsolePerm || isAtLimit('hostpci'));
@@ -589,7 +591,7 @@ Ext.define('PVE.qemu.HardwareView', {
 	    me.down('#addRng').setDisabled(noSysConsolePerm || isAtLimit('rng'));
 	    efidisk_menuitem.setDisabled(noVMConfigDiskPerm || isAtLimit('efidisk'));
 	    me.down('#addTpmState').setDisabled(noSysConsolePerm || isAtLimit('tpmstate'));
-	    me.down('#addCloudinitDrive').setDisabled(noSysConsolePerm || hasCloudInit);
+	    me.down('#addCloudinitDrive').setDisabled(noVMConfigCDROMPerm || noVMConfigCloudinitPerm || hasCloudInit);
 
 	    if (!rec) {
 		remove_btn.disable();
@@ -605,11 +607,11 @@ Ext.define('PVE.qemu.HardwareView', {
 	    const pending = deleted || me.hasPendingChanges(key);
 
 	    const isCloudInit = isCloudInitKey(value);
-	    const isCDRom = value && !!value.toString().match(/media=cdrom/) && !isCloudInit;
+	    const isCDRom = value && !!value.toString().match(/media=cdrom/);
 
 	    const isUnusedDisk = key.match(/^unused\d+/);
-	    const isUsedDisk = !isUnusedDisk && row.isOnStorageBus && !isCDRom && !isCloudInit;
-	    const isDisk = isCloudInit || isUnusedDisk || isUsedDisk;
+	    const isUsedDisk = !isUnusedDisk && row.isOnStorageBus && !isCDRom;
+	    const isDisk = isUnusedDisk || isUsedDisk;
 	    const isEfi = key === 'efidisk0';
 	    const tpmMoveable = key === 'tpmstate0' && !me.pveSelNode.data.running;
 
@@ -712,7 +714,7 @@ Ext.define('PVE.qemu.HardwareView', {
 				text: gettext('CloudInit Drive'),
 				itemId: 'addCloudinitDrive',
 				iconCls: 'fa fa-fw fa-cloud black',
-				disabled: !caps.nodes['Sys.Console'],
+				disabled: !caps.vms['VM.Config.CDROM'] || !caps.vms['VM.Config.Cloudinit'],
 				handler: editorFactory('CIDriveEdit'),
 			    },
 			    {
