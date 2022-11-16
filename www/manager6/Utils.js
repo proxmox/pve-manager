@@ -1921,6 +1921,8 @@ Ext.define('PVE.Utils', {
 	PVE.data.ResourceStore.fireEvent('load');
 	Ext.GlobalEvents.fireEvent('loadedUiOptions');
     },
+
+    tagCharRegex: /^[a-z0-9+_.-]$/i,
 },
 
     singleton: true,

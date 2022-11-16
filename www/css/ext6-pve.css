@@ -651,3 +651,8 @@ table.osds td:first-of-type {
     background-color: rgb(245, 245, 245);
     color: #000;
 }
+
+.x-pveColorPicker-default-cell > .x-grid-cell-inner {
+    padding-top: 0px;
+    padding-bottom: 0px;
+}

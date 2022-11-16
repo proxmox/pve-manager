@@ -73,6 +73,7 @@ JSSRC= 							\
 	form/VNCKeyboardSelector.js			\
 	form/ViewSelector.js				\
 	form/iScsiProviderSelector.js			\
+	form/TagColorGrid.js				\
 	grid/BackupView.js				\
 	grid/FirewallAliases.js				\
 	grid/FirewallOptions.js				\
