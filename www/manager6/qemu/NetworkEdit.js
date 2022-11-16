@@ -183,7 +183,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		name: 'queues',
 		fieldLabel: 'Multiqueue',
 		minValue: 1,
-		maxValue: 8,
+		maxValue: 64,
 		value: '',
 		allowBlank: true,
 	    },
