@@ -178,6 +178,20 @@ Ext.define('PVE.CephRemoveOsd', {
 	    labelWidth: 130,
 	    fieldLabel: gettext('Cleanup Disks'),
 	},
+	{
+	    xtype: 'displayfield',
+	    name: 'osd-flag-hint',
+	    userCls: 'pmx-hint',
+	    value: gettext('Global flags limiting the self healing of Ceph are enabled.'),
+	    hidden: true,
+	},
+	{
+	    xtype: 'displayfield',
+	    name: 'degraded-objects-hint',
+	    userCls: 'pmx-hint',
+	    value: gettext('Objects are degraded. Consider waiting until the cluster is healthy.'),
+	    hidden: true,
+	},
     ],
     initComponent: function() {
         let me = this;
@@ -198,6 +212,13 @@ Ext.define('PVE.CephRemoveOsd', {
         });
 
         me.callParent();
+
+	if (me.warnings.flags) {
+	    me.down('field[name=osd-flag-hint]').setHidden(false);
+	}
+	if (me.warnings.degraded) {
+	    me.down('field[name=degraded-objects-hint]').setHidden(false);
+	}
     },
 });
 
@@ -439,14 +460,58 @@ Ext.define('PVE.node.CephOsdTree', {
 	    }).show();
 	},
 
-	destroy_osd: function() {
+	destroy_osd: async function() {
 	    let me = this;
 	    let vm = this.getViewModel();
+
+	    let warnings = {
+		flags: false,
+		degraded: false,
+	    };
+
+	    let flagsPromise = Proxmox.Async.api2({
+		url: `/cluster/ceph/flags`,
+		method: 'GET',
+	    });
+
+	    let statusPromise = Proxmox.Async.api2({
+		url: `/cluster/ceph/status`,
+		method: 'GET',
+	    });
+
+	    me.getView().mask(gettext('Loading...'));
+
+	    try {
+		let result = await Promise.all([flagsPromise, statusPromise]);
+
+		let flagsData = result[0].result.data;
+		let statusData = result[1].result.data;
+
+		let flags = Array.from(
+		    flagsData.filter(v => v.value),
+		    v => v.name,
+		).filter(v => ['norebalance', 'norecover', 'noout'].includes(v));
+
+		if (flags.length) {
+		    warnings.flags = true;
+		}
+		if (Object.keys(statusData.pgmap).includes('degraded_objects')) {
+		    warnings.degraded = true;
+		}
+	    } catch (error) {
+		Ext.Msg.alert(gettext('Error'), error.htmlStatus);
+		me.getView().unmask();
+		return;
+	    }
+
+	    me.getView().unmask();
 	    Ext.create('PVE.CephRemoveOsd', {
 		nodename: vm.get('osdhost'),
 		osdid: vm.get('osdid'),
+		warnings: warnings,
 		taskDone: () => { me.reload(); },
-	    }).show();
+		autoShow: true,
+	    });
 	},
 
 	set_flags: function() {
