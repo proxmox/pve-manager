@@ -14,19 +14,7 @@ Ext.define('PVE.node.CreateZFS', {
 	    raidLevel: 'single',
 	},
 	formulas: {
-	    isdraid: function(get) {
-		return get('raidLevel').startsWith("draid");
-	    },
-	    draidconfig: function(get) {
-		if (get('isdraid')) {
-		    var config = {};
-		    config.data = get('draiddata');
-		    config.spares = get('draidspares');
-		    return PVE.Parser.printPropertyString(config);
-		} else {
-		    return "";
-		}
-	    },
+	    isDraid: get => get('raidLevel')?.startsWith("draid"),
 	},
     },
 
@@ -43,6 +31,15 @@ Ext.define('PVE.node.CreateZFS', {
 	    items: [
 		{
 		    xtype: 'inputpanel',
+		    onGetValues: function(values) {
+			if (values.draidData || values.draidSpares) {
+			    let opt = { data: values.draidData, spares: values.draidSpares };
+			    values['draid-config'] = PVE.Parser.printPropertyString(opt);
+			}
+			delete values.draidData;
+			delete values.draidSpares;
+			return values;
+		    },
 		    column1: [
 			{
 			    xtype: 'proxmoxtextfield',
@@ -79,45 +76,30 @@ Ext.define('PVE.node.CreateZFS', {
 			    },
 			},
 			{
-			    xtype: 'proxmoxtextfield',
-			    name: 'draid-config',
-			    hidden: true,
-			    submitValue: true,
-			    bind: {
-				value: '{draidconfig}',
-			    },
-			},
-			{
 			    xtype: 'proxmoxintegerfield',
-			    fieldLabel: gettext('DRAID data devices'),
+			    name: 'draidData',
+			    fieldLabel: gettext('dRAID Data Devs'),
 			    minValue: 1,
 			    allowBlank: false,
 			    disabled: true,
 			    hidden: true,
-			    submitValue: false,
 			    bind: {
-				disabled: '{!isdraid}',
-				hidden: '{!isdraid}',
-				value: '{draiddata}',
+				disabled: '{!isDraid}',
+				hidden: '{!isDraid}',
 			    },
-			    reference: 'draiddata',
-			    name: 'draiddata',
 			},
 			{
 			    xtype: 'proxmoxintegerfield',
-			    fieldLabel: gettext('DRAID spares'),
+			    name: 'draidSpares',
+			    fieldLabel: gettext('dRAID Spares'),
 			    minValue: 0,
 			    allowBlank: false,
 			    disabled: true,
 			    hidden: true,
-			    submitValue: false,
 			    bind: {
-				disabled: '{!isdraid}',
-				hidden: '{!isdraid}',
-				value: '{draidspares}',
+				disabled: '{!isDraid}',
+				hidden: '{!isDraid}',
 			    },
-			    reference: 'draidspares',
-			    name: 'draidspares',
 			},
 			{
 			    xtype: 'proxmoxKVComboBox',
