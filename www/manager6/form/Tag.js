@@ -76,7 +76,7 @@ Ext.define('Proxmox.form.Tag', {
 	    });
 	}
 	me.picker.getStore()?.clearFilter();
-	let taglist = PVE.Utils.tagList.map(v => ({ tag: v }));
+	let taglist = PVE.Utils.tagList.filter(v => !me.filter.includes(v)).map(v => ({ tag: v }));
 	if (taglist.length < 1) {
 	    return;
 	}

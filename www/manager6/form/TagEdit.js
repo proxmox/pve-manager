@@ -27,6 +27,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    newtags.forEach((tag) => {
 		me.addTag(tag);
 	    });
+	    me.updateFilter();
 	    view.suspendLayout = false;
 	    view.updateLayout();
 	    if (!force) {
@@ -168,6 +169,19 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    me.getView().updateLayout();
 	},
 
+	updateFilter: function() {
+	    let me = this;
+	    let tags = [];
+	    me.forEachTag(cmp => {
+		if (cmp.tag) {
+		    tags.push(cmp.tag);
+		}
+	    });
+	    me.forEachTag(cmp => {
+		cmp.updateFilter(tags);
+	    });
+	},
+
 	addTag: function(tag, isNew) {
 	    let me = this;
 	    let view = me.getView();
@@ -191,6 +205,9 @@ Ext.define('PVE.panel.TagEditContainer', {
 		tag,
 		mode: vm.get('editMode') ? 'editable' : 'normal',
 		listeners: {
+		    change: (field, newTag) => {
+			me.updateFilter();
+		    },
 		    destroy: function() {
 			vm.set('tagCount', vm.get('tagCount') - 1);
 		    },
@@ -198,6 +215,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    });
 
 	    if (isNew) {
+		me.updateFilter();
 		tagField.selectText();
 	    }
 
