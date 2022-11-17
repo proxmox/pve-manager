@@ -641,4 +641,100 @@ __PACKAGE__->register_method ({
 	return $res;
     }});
 
+__PACKAGE__->register_method ({
+    name => 'cmd_safety',
+    path => 'cmd-safety',
+    method => 'GET',
+    description => "Heuristical check if it is safe to perform an action.",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.audit' ]],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    service => {
+		description => 'Service type',
+		type => 'string',
+		enum => ['osd', 'mon', 'mds'],
+	    },
+	    id => {
+		description => 'ID of the service',
+		type => 'string',
+	    },
+	    action => {
+		description => 'Action to check',
+		type => 'string',
+		enum => ['stop', 'destroy'],
+	    },
+	},
+    },
+    returns => {
+	type => 'object',
+	properties => {
+	   safe  => {
+		type => 'boolean',
+		description => 'If it is safe to run the command.',
+	    },
+	    status => {
+		type => 'string',
+		optional => 1,
+		description => 'Status message given by Ceph.'
+	    },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::Ceph::Tools::check_ceph_inited();
+
+	my $id = $param->{id};
+	my $service = $param->{service};
+	my $action = $param->{action};
+
+	my $rados = PVE::RADOS->new();
+
+	my $supported_actions = {
+	    osd => {
+		stop => 'ok-to-stop',
+		destroy => 'safe-to-destroy',
+	    },
+	    mon => {
+		stop => 'ok-to-stop',
+		destroy => 'ok-to-rm',
+	    },
+	    mds => {
+		stop => 'ok-to-stop',
+	    },
+	};
+
+	die "Service does not support this action: ${service}: ${action}\n"
+	    if !$supported_actions->{$service}->{$action};
+
+	my $result = {
+	    safe => 0,
+	    status => '',
+	};
+
+	my $params = {
+	    prefix => "${service} $supported_actions->{$service}->{$action}",
+	    format => 'plain',
+	};
+	if ($service eq 'mon' && $action eq 'destroy') {
+	    $params->{id} = $id;
+	} else {
+	    $params->{ids} = [ $id ];
+	}
+
+	$result = $rados->mon_cmd($params, 1);
+	die $@ if $@;
+
+	$result->{safe} = $result->{return_code} == 0 ? 1 : 0;
+	$result->{status} = $result->{status_message};
+
+	return $result;
+    }});
+
 1;
