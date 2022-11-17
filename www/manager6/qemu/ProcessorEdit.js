@@ -11,6 +11,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    socketCount: 1,
 	    coreCount: 1,
 	    showCustomModelPermWarning: false,
+	    userIsRoot: false,
 	},
 	formulas: {
 	    totalCoreCount: get => get('socketCount') * get('coreCount'),
@@ -22,6 +23,12 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 
     controller: {
 	xclass: 'Ext.app.ViewController',
+	init: function() {
+	    let me = this;
+	    let viewModel = me.getViewModel();
+
+	    viewModel.set('userIsRoot', Proxmox.UserName === 'root@pam');
+	},
     },
 
     onGetValues: function(values) {
@@ -205,7 +212,7 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    allowBlank: true,
 	    emptyText: gettext("all cores"),
 	    bind: {
-		value: '{affinity}',
+		disabled: '{!userIsRoot}',
 	    },
 	},
     ],
