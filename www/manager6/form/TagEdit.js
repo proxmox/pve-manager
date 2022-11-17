@@ -195,7 +195,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 		    if (tagField.xtype !== 'pveTag') {
 			return true;
 		    }
-		    let a = tagField.tag.toLowerCase()
+		    let a = tagField.tag.toLowerCase();
 		    let b = tag.toLowerCase();
 		    return a > b ? true : a < b ? false : tagField.tag.localeCompare(tag) > 0;
 		}, 1);

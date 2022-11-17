@@ -383,7 +383,7 @@ Ext.define('PVE.dc.OptionView', {
 				xtype: 'proxmoxComboGrid',
 				fieldLabel: gettext('Tree Shape'),
 				valueField: 'value',
-				displayField:'display',
+				displayField: 'display',
 				listConfig: {
 				    columns: [
 					{
@@ -397,13 +397,13 @@ Ext.define('PVE.dc.OptionView', {
 					    renderer: function(value) {
 						let cls = value ?? '__default__';
 						if (value === '__default__') {
-						    cls = 'circle'
+						    cls = 'circle';
 						}
 						let tags = PVE.Utils.renderTags('preview');
 						return `<div class="proxmox-tags-${cls}">${tags}</div>`;
 					    },
 					    flex: 1,
-					}
+					},
 				    ],
 				},
 				store: {
