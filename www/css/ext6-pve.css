@@ -657,10 +657,11 @@ table.osds td:first-of-type {
     padding-bottom: 0px;
 }
 
-.pve-edit-tag > i,
-.pve-add-tag > i {
+.pve-edit-tag > i {
     cursor: pointer;
     font-size: 14px;
+    line-height: 15px;
+    height: 15px;
 }
 
 .pve-edit-tag > i.handle {
@@ -673,8 +674,7 @@ table.osds td:first-of-type {
     padding-right: 0px;
 }
 
-.pve-edit-tag > i.action,
-.pve-add-tag > i.action {
+.pve-edit-tag > i.action {
     padding-left: 5px;
 }
 
@@ -682,26 +682,18 @@ table.osds td:first-of-type {
     display: none;
 }
 
-.pve-edit-tag.editable span,
-.pve-edit-tag.inEdit span,
-.pve-add-tag.editable span,
-.pve-add-tag.inEdit span {
+.pve-edit-tag.editable span {
     background-color: #ffffff;
     border: 1px solid #a8a8a8;
     color: #000;
     padding-left: 2px;
     padding-right: 2px;
     min-width: 2em;
-}
-
-.pve-edit-tag.inEdit span,
-.pve-add-tag.inEdit span {
-    border: 1px solid #000;
-}
-
-.pve-add-tag {
-    background-color: #d5d5d5 ! important;
-    color: #000000 ! important;
+    display: inline-block;
+    line-height: 15px;
+    height: 15px;
+    vertical-align: top;
+    box-sizing: content-box;
 }
 
 .pve-tag-inline-button {

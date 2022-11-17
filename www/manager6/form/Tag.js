@@ -4,53 +4,44 @@ Ext.define('Proxmox.form.Tag', {
 
     mode: 'editable',
 
-    icons: {
-	editable: 'fa fa-minus-square',
-	normal: '',
-	inEdit: 'fa fa-check-square',
-    },
-
     tag: '',
     cls: 'pve-edit-tag',
 
     tpl: [
 	'<i class="handle fa fa-bars"></i>',
 	'<span>{tag}</span>',
-	'<i class="action {iconCls}"></i>',
+	'<i class="action fa fa-minus-square"></i>',
     ],
 
-    // we need to do this in mousedown, because that triggers before
-    // focusleave (which triggers before click)
-    onMouseDown: function(event) {
-	let me = this;
-	if (event.target.tagName !== 'I' || event.target.classList.contains('handle')) {
-	    return;
-	}
-	switch (me.mode) {
-	    case 'editable':
-		me.setVisible(false);
-		me.setTag('');
-		break;
-	    case 'inEdit':
-		me.setTag(me.tagEl().innerHTML);
-		me.setMode('editable');
-		break;
-	    default: break;
-	}
+    // contains tags not to show in the picker and not allowing to set
+    filter: [],
+
+    updateFilter: function(tags) {
+	this.filter = tags;
     },
 
     onClick: function(event) {
 	let me = this;
-	if (event.target.tagName !== 'SPAN' || me.mode !== 'editable') {
+	if (event.target.tagName === 'I' && !event.target.classList.contains('handle')) {
+	    if (me.mode === 'editable') {
+		me.destroy();
+		return;
+	    }
+	} else if (event.target.tagName !== 'SPAN' || me.mode !== 'editable') {
 	    return;
 	}
-	me.setMode('inEdit');
+	me.selectText();
+    },
 
-	// select text in the element
+    selectText: function(collapseToEnd) {
+	let me = this;
 	let tagEl = me.tagEl();
 	tagEl.contentEditable = true;
 	let range = document.createRange();
 	range.selectNodeContents(tagEl);
+	if (collapseToEnd) {
+	    range.collapse(false);
+	}
 	let sel = window.getSelection();
 	sel.removeAllRanges();
 	sel.addRange(range);
@@ -75,8 +66,10 @@ Ext.define('Proxmox.form.Tag', {
 		store: [],
 		listeners: {
 		    select: function(picker, rec) {
-			me.setTag(rec.data.tag);
-			me.setMode('editable');
+			me.tagEl().innerHTML = rec.data.tag;
+			me.setTag(rec.data.tag, true);
+			me.selectText(true);
+			me.setColor(rec.data.tag);
 			me.picker.hide();
 		    },
 		},
@@ -94,17 +87,16 @@ Ext.define('Proxmox.form.Tag', {
 
     setMode: function(mode) {
 	let me = this;
-	if (me.icons[mode] === undefined) {
-	    throw "invalid mode";
-	}
 	let tagEl = me.tagEl();
 	if (tagEl) {
-	    tagEl.contentEditable = mode === 'inEdit';
+	    tagEl.contentEditable = mode === 'editable';
 	}
 	me.removeCls(me.mode);
 	me.addCls(mode);
 	me.mode = mode;
-	me.updateData();
+	if (me.mode !== 'editable') {
+	    me.picker?.hide();
+	}
     },
 
     onKeyPress: function(event) {
@@ -112,15 +104,10 @@ Ext.define('Proxmox.form.Tag', {
 	let key = event.browserEvent.key;
 	switch (key) {
 	    case 'Enter':
-		if (me.tagEl().innerHTML !== '') {
-		    me.setTag(me.tagEl().innerHTML);
-		    me.setMode('editable');
-		    return;
-		}
 		break;
+	    case 'ArrowLeft':
+	    case 'ArrowRight':
 	    case 'Escape':
-		me.cancelEdit();
-		return;
 	    case 'Backspace':
 	    case 'Delete':
 		return;
@@ -128,11 +115,13 @@ Ext.define('Proxmox.form.Tag', {
 		if (key.match(PVE.Utils.tagCharRegex)) {
 		    return;
 		}
+		me.setTag(me.tagEl().innerHTML);
 	}
 	event.browserEvent.preventDefault();
 	event.browserEvent.stopPropagation();
     },
 
+    // for pasting text
     beforeInput: function(event) {
 	let me = this;
 	me.updateLayout();
@@ -153,22 +142,17 @@ Ext.define('Proxmox.form.Tag', {
 	    value: me.tagEl().innerHTML,
 	    anyMatch: true,
 	});
+	me.setTag(me.tagEl().innerHTML);
     },
 
-    cancelEdit: function(list, event) {
+    lostFocus: function(list, event) {
 	let me = this;
-	if (me.mode === 'inEdit') {
-	    me.setTag(me.tag);
-	    me.setMode('editable');
-	}
 	me.picker?.hide();
+	window.getSelection().removeAllRanges();
     },
 
-
-    setTag: function(tag) {
+    setColor: function(tag) {
 	let me = this;
-	let oldtag = me.tag;
-	me.tag = tag;
 	let rgb = PVE.Utils.tagOverrides[tag] ?? Proxmox.Utils.stringToRGB(tag);
 
 	let cls = Proxmox.Utils.getTextContrastClass(rgb);
@@ -182,21 +166,20 @@ Ext.define('Proxmox.form.Tag', {
 	} else {
 	    me.setStyle('color');
 	}
-	me.updateData();
+    },
+
+    setTag: function(tag) {
+	let me = this;
+	let oldtag = me.tag;
+	me.tag = tag;
+
+	clearTimeout(me.colorTimeout);
+	me.colorTimeout = setTimeout(() => me.setColor(tag), 200);
+
+	me.updateLayout();
 	if (oldtag !== tag) {
 	    me.fireEvent('change', me, tag, oldtag);
 	}
-    },
-
-    updateData: function() {
-	let me = this;
-	if (me.destroying || me.destroyed) {
-	    return;
-	}
-	me.update({
-	    tag: me.tag,
-	    iconCls: me.icons[me.mode],
-	});
     },
 
     tagEl: function() {
@@ -204,9 +187,8 @@ Ext.define('Proxmox.form.Tag', {
     },
 
     listeners: {
-	mousedown: 'onMouseDown',
 	click: 'onClick',
-	focusleave: 'cancelEdit',
+	focusleave: 'lostFocus',
 	keydown: 'onKeyPress',
 	beforeInput: 'beforeInput',
 	input: 'onInput',
@@ -217,7 +199,12 @@ Ext.define('Proxmox.form.Tag', {
     initComponent: function() {
 	let me = this;
 
+	me.data = {
+	    tag: me.tag,
+	};
+
 	me.setTag(me.tag);
+	me.setColor(me.tag);
 	me.setMode(me.mode ?? 'normal');
 	me.callParent();
     },
@@ -227,6 +214,7 @@ Ext.define('Proxmox.form.Tag', {
 	if (me.picker) {
 	    Ext.destroy(me.picker);
 	}
+	clearTimeout(me.colorTimeout);
 	me.callParent();
     },
 });

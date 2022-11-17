@@ -1955,7 +1955,7 @@ Ext.define('PVE.Utils', {
 	return !(PVE.UIOptions?.['tag-style']?.ordering === 'config');
     },
 
-    tagCharRegex: /^[a-z0-9+_.-]$/i,
+    tagCharRegex: /^[a-z0-9+_.-]+$/i,
 },
 
     singleton: true,

@@ -4,7 +4,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 
     layout: {
 	type: 'hbox',
-	align: 'stretch',
+	align: 'middle',
     },
 
     controller: {
@@ -120,9 +120,6 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    let me = this;
 	    let view = me.getView();
 	    view.items.each((field) => {
-		if (field.reference === 'addTagBtn') {
-		    return false;
-		}
 		if (field.getXType() === 'pveTag') {
 		    func(field);
 		}
@@ -133,6 +130,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	toggleEdit: function(cancel) {
 	    let me = this;
 	    let vm = me.getViewModel();
+	    let view = me.getView();
 	    let editMode = !vm.get('editMode');
 	    vm.set('editMode', editMode);
 
@@ -150,14 +148,19 @@ Ext.define('PVE.panel.TagEditContainer', {
 		if (cancel) {
 		    me.loadTags(me.oldTags, true);
 		} else {
+		    let toRemove = [];
 		    me.forEachTag((cmp) => {
 			if (cmp.isVisible() && cmp.tag) {
 			    tags.push(cmp.tag);
+			} else {
+			    toRemove.push(cmp);
 			}
 		    });
+		    toRemove.forEach(cmp => view.remove(cmp));
 		    tags = tags.join(',');
 		    if (me.oldTags !== tags) {
 			me.oldTags = tags;
+			me.loadTags(tags, true);
 			me.getView().fireEvent('change', tags);
 		    }
 		}
@@ -165,60 +168,44 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    me.getView().updateLayout();
 	},
 
-	addTag: function(tag) {
+	addTag: function(tag, isNew) {
 	    let me = this;
 	    let view = me.getView();
 	    let vm = me.getViewModel();
-	    let index = view.items.indexOf(me.lookup('addTagBtn'));
-	    if (PVE.Utils.shouldSortTags()) {
+	    let index = view.items.length - 5;
+	    if (PVE.Utils.shouldSortTags() && !isNew) {
 		index = view.items.findIndexBy(tagField => {
-		    if (tagField.reference === 'addTagBtn') {
+		    if (tagField.reference === 'noTagsField') {
+			return false;
+		    }
+		    if (tagField.xtype !== 'pveTag') {
 			return true;
 		    }
 		    return tagField.tag >= tag;
 		}, 1);
 	    }
-	    view.insert(index, {
+	    let tagField = view.insert(index, {
 		xtype: 'pveTag',
 		tag,
 		mode: vm.get('editMode') ? 'editable' : 'normal',
 		listeners: {
-		    change: (field, newTag) => {
-			if (newTag === '') {
-			    view.remove(field);
-			    vm.set('tagCount', vm.get('tagCount') - 1);
-			}
+		    destroy: function() {
+			vm.set('tagCount', vm.get('tagCount') - 1);
 		    },
 		},
 	    });
+
+	    if (isNew) {
+		tagField.selectText();
+	    }
 
 	    vm.set('tagCount', vm.get('tagCount') + 1);
 	},
 
 	addTagClick: function(event) {
 	    let me = this;
-	    if (event.target.tagName === 'SPAN') {
-		me.lookup('addTagBtn').tagEl().innerHTML = '';
-		me.lookup('addTagBtn').updateLayout();
-	    }
-	},
-
-	addTagMouseDown: function(event) {
-	    let me = this;
-	    if (event.target.tagName === 'I') {
-		let tag = me.lookup('addTagBtn').tagEl().innerHTML;
-		if (tag !== '') {
-		    me.addTag(tag, true);
-		}
-	    }
-	},
-
-	addTagChange: function(field, tag) {
-	    let me = this;
-	    if (tag !== '') {
-		me.addTag(tag, true);
-	    }
-	    field.tag = '';
+	    me.lookup('noTagsField').setVisible(false);
+	    me.addTag('', true);
 	},
 
 	cancelClick: function() {
@@ -250,12 +237,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 
 	formulas: {
 	    hideNoTags: function(get) {
-		return get('editMode') || get('tagCount') !== 0;
-	    },
-	    editBtnHtml: function(get) {
-		let cls = get('editMode') ? 'check' : 'pencil';
-		let qtip = get('editMode') ? gettext('Apply Changes') : gettext('Edit Tags');
-		return `<i data-qtip="${qtip}" class="fa fa-${cls}"></i>`;
+		return get('tagCount') !== 0;
 	    },
 	},
     },
@@ -267,53 +249,61 @@ Ext.define('PVE.panel.TagEditContainer', {
     items: [
 	{
 	    xtype: 'box',
+	    reference: 'noTagsField',
 	    bind: {
 		hidden: '{hideNoTags}',
 	    },
 	    html: gettext('No Tags'),
 	},
 	{
-	    xtype: 'pveTag',
-	    reference: 'addTagBtn',
-	    cls: 'pve-add-tag',
-	    mode: 'editable',
-	    tag: '',
-	    tpl: `<span>${gettext('Add Tag')}</span><i class="action fa fa-plus-square"></i>`,
+	    xtype: 'button',
+	    iconCls: 'fa fa-plus',
+	    tooltip: gettext('Add Tag'),
 	    bind: {
 		hidden: '{!editMode}',
 	    },
 	    hidden: true,
-	    onMouseDown: Ext.emptyFn, // prevent default behaviour
-	    listeners: {
-		click: {
-		    element: 'el',
-		    fn: 'addTagClick',
-		},
-		mousedown: {
-		    element: 'el',
-		    fn: 'addTagMouseDown',
-		},
-		change: 'addTagChange',
-	    },
+	    margin: '0 8 0 5',
+	    ui: 'default-toolbar',
+	    handler: 'addTagClick',
 	},
 	{
-	    xtype: 'box',
-	    html: `<i data-qtip="${gettext('Cancel')}" class="fa fa-times"></i>`,
-	    cls: 'pve-tag-inline-button',
-	    hidden: true,
+	    xtype: 'tbseparator',
+	    ui: 'horizontal',
 	    bind: {
 		hidden: '{!editMode}',
 	    },
-	    listeners: {
-		click: 'cancelClick',
-		element: 'el',
+	    hidden: true,
+	},
+	{
+	    xtype: 'button',
+	    iconCls: 'fa fa-times',
+	    tooltip: gettext('Cancel Edit'),
+	    bind: {
+		hidden: '{!editMode}',
 	    },
+	    hidden: true,
+	    margin: '0 5 0 0',
+	    ui: 'default-toolbar',
+	    handler: 'cancelClick',
+	},
+	{
+	    xtype: 'button',
+	    iconCls: 'fa fa-check',
+	    tooltip: gettext('Finish Edit'),
+	    bind: {
+		hidden: '{!editMode}',
+	    },
+	    hidden: true,
+	    ui: 'default-toolbar',
+	    handler: 'editClick',
 	},
 	{
 	    xtype: 'box',
 	    cls: 'pve-tag-inline-button',
+	    html: `<i data-qtip="${gettext('Edit Tags')}" class="fa fa-pencil"></i>`,
 	    bind: {
-		html: '{editBtnHtml}',
+		hidden: '{editMode}',
 	    },
 	    listeners: {
 		click: 'editClick',
