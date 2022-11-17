@@ -76,32 +76,6 @@ Ext.define('PVE.node.CreateZFS', {
 			    },
 			},
 			{
-			    xtype: 'proxmoxintegerfield',
-			    name: 'draidData',
-			    fieldLabel: gettext('dRAID Data Devs'),
-			    minValue: 1,
-			    allowBlank: false,
-			    disabled: true,
-			    hidden: true,
-			    bind: {
-				disabled: '{!isDraid}',
-				hidden: '{!isDraid}',
-			    },
-			},
-			{
-			    xtype: 'proxmoxintegerfield',
-			    name: 'draidSpares',
-			    fieldLabel: gettext('dRAID Spares'),
-			    minValue: 0,
-			    allowBlank: false,
-			    disabled: true,
-			    hidden: true,
-			    bind: {
-				disabled: '{!isDraid}',
-				hidden: '{!isDraid}',
-			    },
-			},
-			{
 			    xtype: 'proxmoxKVComboBox',
 			    fieldLabel: gettext('Compression'),
 			    name: 'compression',
@@ -126,6 +100,48 @@ Ext.define('PVE.node.CreateZFS', {
 			},
 		    ],
 		    columnB: [
+			{
+			    xtype: 'fieldset',
+			    title: gettext('dRAID Config'),
+			    collapsible: false,
+			    bind: {
+				hidden: '{!isDraid}',
+			    },
+			    layout: 'hbox',
+			    padding: '5px 10px',
+			    defaults: {
+				flex: 1,
+				layout: 'anchor',
+			    },
+			    items: [{
+				xtype: 'proxmoxintegerfield',
+				name: 'draidData',
+				fieldLabel: gettext('Data Devs'),
+				minValue: 1,
+				allowBlank: false,
+				disabled: true,
+				hidden: true,
+				bind: {
+				    disabled: '{!isDraid}',
+				    hidden: '{!isDraid}',
+				},
+				padding: '0 10 0 0',
+			    },
+			    {
+				xtype: 'proxmoxintegerfield',
+				name: 'draidSpares',
+				fieldLabel: gettext('Spares'),
+				minValue: 0,
+				allowBlank: false,
+				disabled: true,
+				hidden: true,
+				bind: {
+				    disabled: '{!isDraid}',
+				    hidden: '{!isDraid}',
+				},
+				padding: '0 0 0 10',
+			    }],
+			},
 			{
 			    xtype: 'pmxMultiDiskSelector',
 			    name: 'devices',
