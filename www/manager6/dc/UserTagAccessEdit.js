@@ -72,8 +72,10 @@ Ext.define('PVE.dc.UserTagAccessEdit', {
 		    emptyText: gettext('No Tags defined'),
 		    fieldTitle: gettext('Tag'),
 		    maskRe: PVE.Utils.tagCharRegex,
-		    height: 200,
-		    scrollable: true,
+		    gridConfig: {
+			height: 200,
+			scrollable: true,
+		    },
 		    listeners: {
 			change: 'tagChange',
 		    },

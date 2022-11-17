@@ -1,5 +1,5 @@
 Ext.define('PVE.form.ListField', {
-    extend: 'Ext.grid.Panel',
+    extend: 'Ext.container.Container',
     alias: 'widget.pveListField',
 
     mixins: [
@@ -16,23 +16,18 @@ Ext.define('PVE.form.ListField', {
     selectAll: false,
     isFormField: true,
     deleteEmpty: false,
-    selModel: 'checkboxmodel',
-
     config: {
 	deleteEmpty: false,
-    },
-
-    viewConfig: {
-	deferEmptyText: false,
     },
 
     setValue: function(list) {
 	let me = this;
 	list = Ext.isArray(list) ? list : (list ?? '').split(';');
+	let store = me.lookup('grid').getStore();
 	if (list.length > 0) {
-	    me.getStore().setData(list.map(item => ({ item })));
+	    store.setData(list.map(item => ({ item })));
 	} else {
-	    me.getStore().removeAll();
+	    store.removeAll();
 	}
 	me.checkChange();
 	return me;
@@ -41,7 +36,7 @@ Ext.define('PVE.form.ListField', {
     getValue: function() {
 	let me = this;
 	let values = [];
-	me.getStore().each((rec) => {
+	me.lookup('grid').getStore().each((rec) => {
 	    if (rec.data.item) {
 		values.push(rec.data.item);
 	    }
@@ -52,7 +47,7 @@ Ext.define('PVE.form.ListField', {
     getErrors: function(value) {
 	let me = this;
 	let empty = false;
-	me.getStore().each((rec) => {
+	me.lookup('grid').getStore().each((rec) => {
 	    if (!rec.data.item) {
 		empty = true;
 	    }
@@ -86,22 +81,23 @@ Ext.define('PVE.form.ListField', {
 
 	addLine: function() {
 	    let me = this;
-	    me.getView().getStore().add({
+	    me.lookup('grid').getStore().add({
 		item: '',
 	    });
 	},
 
-	removeSelection: function() {
+	removeSelection: function(field) {
 	    let me = this;
 	    let view = me.getView();
-	    let selection = view.getSelection();
-	    if (selection === undefined) {
+	    let grid = me.lookup('grid');
+
+	    let record = field.getWidgetRecord();
+	    if (record === undefined) {
+		// this is sometimes called before a record/column is initialized
 		return;
 	    }
 
-	    selection.forEach((sel) => {
-		view.getStore().remove(sel);
-	    });
+	    grid.getStore().remove(record);
 	    view.checkChange();
 	},
 
@@ -114,33 +110,47 @@ Ext.define('PVE.form.ListField', {
 	    rec.set(column.dataIndex, newValue);
 	    field.up('pveListField').checkChange();
 	},
-    },
 
-    tbar: [
-	{
-	    text: gettext('Add'),
-	    handler: 'addLine',
-	},
-	{
-	    xtype: 'proxmoxButton',
-	    text: gettext('Remove'),
-	    handler: 'removeSelection',
-	    disabled: true,
-	},
-    ],
-
-    store: {
-	listeners: {
-	    update: function() {
-		this.commitChanges();
+	control: {
+	    'grid button': {
+		click: 'removeSelection',
 	    },
 	},
     },
 
+    items: [
+	{
+	    xtype: 'grid',
+	    reference: 'grid',
+
+	    viewConfig: {
+		deferEmptyText: false,
+	    },
+
+	    store: {
+		listeners: {
+		    update: function() {
+			this.commitChanges();
+		    },
+		},
+	    },
+	},
+	{
+	    xtype: 'button',
+	    text: gettext('Add'),
+	    iconCls: 'fa fa-plus-circle',
+	    handler: 'addLine',
+	},
+    ],
+
     initComponent: function() {
 	let me = this;
 
-	me.columns = [
+	for (const [key, value] of Object.entries(me.gridConfig ?? {})) {
+	    me.items[0][key] = value;
+	}
+
+	me.items[0].columns = [
 	    {
 		header: me.fieldTtitle,
 		dataIndex: 'item',
@@ -156,6 +166,14 @@ Ext.define('PVE.form.ListField', {
 		    },
 		},
 		flex: 1,
+	    },
+	    {
+		xtype: 'widgetcolumn',
+		width: 40,
+		widget: {
+		    xtype: 'button',
+		    iconCls: 'fa fa-trash-o',
+		},
 	    },
 	];
 
