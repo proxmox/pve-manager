@@ -1,3 +1,48 @@
+pve-manager (7.2-14) bullseye; urgency=medium
+
+  * ui: vm network: allow one to override MTU for VirtIO devices
+
+  * fix #3719: ui: container network: add MTU to advanced option
+
+  * container network: move rate limit field to advanced section
+
+  * fix #4318: ui: qemu/Monitor: rework output retention mechanism
+
+  * api: ceph: add applications of each pool to the lspools endpoint
+
+  * ui: only allow pools of matching application to be added as RBD Proxmox VE
+    storage
+
+  * ui: qemu: options: use 'first disk' for legacy 'c' boot setting
+
+  * fix #4321: properly check cloud-init drive permissions
+
+  * ui: cloudinit: disable remove button without VM.Config.Cloudinit
+
+  * ui: qemu: network: increase max multi-queues to 64
+
+  * ui: qemu hardware: only enable affinity form field for root@pam
+
+  * api: /cluster/resources: add tags of all virtual guests an user can access
+    to returned properties
+
+  * api: open up /cluster/options call over injecting info into /version
+
+  * ui: save ui options from /cluster/options instead of version
+
+  * ui: add various components in preparation of adding tag view/edit
+    functionality
+
+  * api: ceph: add cmd-safety endpoint
+
+  * ui: osd: warn if removal could be problematic
+
+  * ui: osd, mon, mds: warn if stop/destroy actions are problematic
+
+  * fix #3967: disk manage ZFS: support creating dRAIDs
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 17 Nov 2022 19:46:01 +0100
+
 pve-manager (7.2-13) bullseye; urgency=medium
 
   * fix #4328: ui: add widget toolkit to dependencies for scanning for online
