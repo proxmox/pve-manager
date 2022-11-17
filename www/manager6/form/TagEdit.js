@@ -274,6 +274,9 @@ Ext.define('PVE.panel.TagEditContainer', {
 		hidden: '{hideNoTags}',
 	    },
 	    html: gettext('No Tags'),
+	    style: {
+		opacity: 0.5,
+	    },
 	},
 	{
 	    xtype: 'button',
