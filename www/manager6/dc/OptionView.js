@@ -360,7 +360,7 @@ Ext.define('PVE.dc.OptionView', {
 			    if (values.colors) {
 				style['color-map'] = values.colors;
 			    }
-			    if (values.shape) {
+			    if (values.shape && values.shape !== '__default__') {
 				style.shape = values.shape;
 			    }
 			    if (values.ordering) {
@@ -378,10 +378,41 @@ Ext.define('PVE.dc.OptionView', {
 			},
 			items: [
 			    {
+
 				name: 'shape',
-				xtype: 'proxmoxKVComboBox',
+				xtype: 'proxmoxComboGrid',
 				fieldLabel: gettext('Tree Shape'),
-				comboItems: Object.entries(PVE.Utils.tagTreeStyles),
+				valueField: 'value',
+				displayField:'display',
+				listConfig: {
+				    columns: [
+					{
+					    header: gettext('Option'),
+					    dataIndex: 'display',
+					    flex: 1,
+					},
+					{
+					    header: gettext('Preview'),
+					    dataIndex: 'value',
+					    renderer: function(value) {
+						let cls = value ?? '__default__';
+						if (value === '__default__') {
+						    cls = 'circle'
+						}
+						let tags = PVE.Utils.renderTags('preview');
+						return `<div class="proxmox-tags-${cls}">${tags}</div>`;
+					    },
+					    flex: 1,
+					}
+				    ],
+				},
+				store: {
+				    data: Object.entries(PVE.Utils.tagTreeStyles).map(v => ({
+					value: v[0],
+					display: v[1],
+				    })),
+				},
+				deleteDefault: true,
 				defaultValue: '__default__',
 				deleteEmpty: true,
 			    },
