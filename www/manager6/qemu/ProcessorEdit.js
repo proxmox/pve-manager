@@ -39,17 +39,6 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    values.delete = values.delete.join(',');
 	}
 
-	if (values.affinity === undefined ||
-	    values.affinity === null ||
-	    values.affinity === '') {
-		if (values.delete.length > 0) {
-		    values.delete = values.delete + ",affinity";
-		} else {
-		    values.delete = "affinity";
-		}
-		delete values.affinity;
-	}
-
 	PVE.Utils.delete_if_default(values, 'cpulimit', '0', me.insideWizard);
 	PVE.Utils.delete_if_default(values, 'cpuunits', `${cpuunitsDefault}`, me.insideWizard);
 
@@ -204,13 +193,14 @@ Ext.define('PVE.qemu.ProcessorInputPanel', {
 	    emptyText: gettext('unlimited'),
 	},
 	{
-	    xtype: 'textfield',
+	    xtype: 'proxmoxtextfield',
 	    name: 'affinity',
 	    vtype: 'CpuSet',
 	    value: '',
-	    fieldLabel: gettext('CPU affinity'),
+	    fieldLabel: gettext('CPU Affinity'),
 	    allowBlank: true,
-	    emptyText: gettext("all cores"),
+	    emptyText: gettext("All Cores"),
+	    deleteEmpty: true,
 	    bind: {
 		disabled: '{!userIsRoot}',
 	    },
