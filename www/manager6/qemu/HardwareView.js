@@ -615,13 +615,12 @@ Ext.define('PVE.qemu.HardwareView', {
 	    const isEfi = key === 'efidisk0';
 	    const tpmMoveable = key === 'tpmstate0' && !me.pveSelNode.data.running;
 
-	    remove_btn.setDisabled(
-	        deleted ||
-		row.never_delete ||
-		(isCDRom && !cdromCap) ||
-		(isDisk && !diskCap) ||
-		(isCloudInit && noVMConfigCloudinitPerm)
-	    );
+	    let cannotDelete = deleted || row.never_delete;
+	    cannotDelete ||= isCDRom && !cdromCap;
+	    cannotDelete ||= isDisk && !diskCap;
+	    cannotDelete ||= isCloudInit && noVMConfigCloudinitPerm;
+	    remove_btn.setDisabled(cannotDelete);
+
 	    remove_btn.setText(isUsedDisk && !isCloudInit ? remove_btn.altText : remove_btn.defaultText);
 	    remove_btn.RESTMethod = isUnusedDisk ? 'POST':'PUT';
 
