@@ -1941,7 +1941,11 @@ Ext.define('PVE.Utils', {
 	if (tagstext) {
 	    let tags = (tagstext.split(/[,; ]/) || []).filter(t => !!t);
 	    if (PVE.Utils.shouldSortTags()) {
-		tags = tags.sort();
+		tags = tags.sort((a,b) => {
+		    let alc = a.toLowerCase();
+		    let blc = b.toLowerCase();
+		    return alc < blc ? -1 : blc < alc ? 1 : a.localeCompare(b);
+		});
 	    }
 	    text += ' ';
 	    tags.forEach((tag) => {
