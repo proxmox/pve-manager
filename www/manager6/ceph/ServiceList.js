@@ -148,19 +148,57 @@ Ext.define('PVE.node.CephServiceController', {
 	    Ext.Msg.alert(gettext('Error'), "entry has no host");
 	    return;
 	}
-	Proxmox.Utils.API2Request({
-				  url: `/nodes/${rec.data.host}/ceph/${cmd}`,
-				  method: 'POST',
-				  params: { service: view.type + '.' + rec.data.name },
-				  success: function(response, options) {
-				      Ext.create('Proxmox.window.TaskProgress', {
-					  autoShow: true,
-					  upid: response.result.data,
-					  taskDone: () => view.rstore.load(),
-				      });
-				  },
-				  failure: (response, _opts) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
-	});
+	let doRequest = function() {
+	    Proxmox.Utils.API2Request({
+		url: `/nodes/${rec.data.host}/ceph/${cmd}`,
+		method: 'POST',
+		params: { service: view.type + '.' + rec.data.name },
+		success: function(response, options) {
+		    Ext.create('Proxmox.window.TaskProgress', {
+			autoShow: true,
+			upid: response.result.data,
+			taskDone: () => view.rstore.load(),
+		    });
+		},
+		failure: (response, _opts) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+	    });
+	};
+	if (cmd === "stop" && ['mon', 'mds'].includes(view.type)) {
+	    Proxmox.Utils.API2Request({
+		url: `/nodes/${rec.data.host}/ceph/cmd-safety`,
+		params: {
+		    service: view.type,
+		    id: rec.data.name,
+		    action: 'stop',
+		},
+		method: 'GET',
+		success: function({ result: { data } }) {
+		    let stopText = {
+			mon: gettext('Stop MON'),
+			mds: gettext('Stop MDS'),
+		    };
+		    if (!data.safe) {
+			Ext.Msg.show({
+			    title: gettext('Warning'),
+			    message: data.status,
+			    icon: Ext.Msg.WARNING,
+			    buttons: Ext.Msg.OKCANCEL,
+			    buttonText: { ok: stopText[view.type] },
+			    fn: function(selection) {
+				if (selection === 'ok') {
+				    doRequest();
+				}
+			    },
+			});
+		    } else {
+			doRequest();
+		    }
+		},
+		failure: (response, _opts) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+	    });
+	} else {
+	    doRequest();
+	}
     },
     onChangeService: function(button) {
 	let me = this;
@@ -273,6 +311,46 @@ Ext.define('PVE.node.CephServiceList', {
 		    taskDone: () => view.rstore.load(),
 		});
 	    },
+	    handler: function(btn, event, rec) {
+		let me = this;
+		let view = me.up('grid');
+		let doRequest = function() {
+		    Proxmox.button.StdRemoveButton.prototype.handler.call(me, btn, event, rec);
+		};
+		if (view.type === 'mon') {
+		    Proxmox.Utils.API2Request({
+			url: `/nodes/${rec.data.host}/ceph/cmd-safety`,
+			params: {
+			    service: view.type,
+			    id: rec.data.name,
+			    action: 'destroy',
+			},
+			method: 'GET',
+			success: function({ result: { data } }) {
+			    if (!data.safe) {
+				Ext.Msg.show({
+				    title: gettext('Warning'),
+				    message: data.status,
+				    icon: Ext.Msg.WARNING,
+				    buttons: Ext.Msg.OKCANCEL,
+				    buttonText: { ok: gettext('Destroy MON') },
+				    fn: function(selection) {
+					if (selection === 'ok') {
+					    doRequest();
+					}
+				    },
+				});
+			    } else {
+				doRequest();
+			    }
+			},
+			failure: (response, _opts) => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+		    });
+		} else {
+		    doRequest();
+		}
+	    },
+
 	},
 	'-',
 	{

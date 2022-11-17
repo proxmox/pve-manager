@@ -527,23 +527,60 @@ Ext.define('PVE.node.CephOsdTree', {
 	    let me = this;
 	    let vm = this.getViewModel();
 	    let cmd = comp.cmd || comp;
-	    Proxmox.Utils.API2Request({
-                url: "/nodes/" + vm.get('osdhost') + "/ceph/" + cmd,
-		params: { service: "osd." + vm.get('osdid') },
-		waitMsgTarget: me.getView(),
-		method: 'POST',
-		success: function(response, options) {
-		    let upid = response.result.data;
-		    let win = Ext.create('Proxmox.window.TaskProgress', {
-			upid: upid,
-			taskDone: () => { me.reload(); },
-		    });
-		    win.show();
-		},
-		failure: function(response, opts) {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
-		},
-	    });
+
+	    let doRequest = function() {
+		Proxmox.Utils.API2Request({
+		    url: `/nodes/${vm.get('osdhost')}/ceph/${cmd}`,
+		    params: { service: "osd." + vm.get('osdid') },
+		    waitMsgTarget: me.getView(),
+		    method: 'POST',
+		    success: function(response, options) {
+			let upid = response.result.data;
+			let win = Ext.create('Proxmox.window.TaskProgress', {
+			    upid: upid,
+			    taskDone: () => { me.reload(); },
+			});
+			win.show();
+		    },
+		    failure: function(response, opts) {
+			Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		    },
+		});
+	    };
+
+	    if (cmd === "stop") {
+		Proxmox.Utils.API2Request({
+		    url: `/nodes/${vm.get('osdhost')}/ceph/cmd-safety`,
+		    params: {
+			service: 'osd',
+			id: vm.get('osdid'),
+			action: 'stop',
+		    },
+		    waitMsgTarget: me.getView(),
+		    method: 'GET',
+		    success: function({ result: { data } }) {
+			if (!data.safe) {
+			    Ext.Msg.show({
+				title: gettext('Warning'),
+				message: data.status,
+				icon: Ext.Msg.WARNING,
+				buttons: Ext.Msg.OKCANCEL,
+				buttonText: { ok: gettext('Stop OSD') },
+				fn: function(selection) {
+				    if (selection === 'ok') {
+					doRequest();
+				    }
+				},
+			    });
+			} else {
+			    doRequest();
+			}
+		    },
+		    failure: response => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+		});
+	    } else {
+		doRequest();
+	    }
 	},
 
 	set_selection_status: function(tp, selection) {
