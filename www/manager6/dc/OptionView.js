@@ -138,6 +138,25 @@ Ext.define('PVE.dc.OptionView', {
 		defaultValue: '__default__',
 	    }],
 	});
+	me.add_inputpanel_row('crs', gettext('Cluster Resource Scheduling'), {
+	    renderer: PVE.Utils.render_as_property_string,
+	    labelWidth: 120,
+	    url: "/api2/extjs/cluster/options",
+	    onlineHelp: 'ha_manager_crs',
+	    items: [{
+		xtype: 'proxmoxKVComboBox',
+		name: 'ha',
+		fieldLabel: gettext('HA Scheduling'),
+		deleteEmpty: false,
+		value: '__default__',
+		comboItems: [
+		    ['__default__', Proxmox.Utils.defaultText + ' (basic)'],
+		    ['basic', 'Basic (Resource Count)'],
+		    ['static', 'Static Load'],
+		],
+		defaultValue: '__default__',
+	    }],
+	});
 	me.add_inputpanel_row('u2f', gettext('U2F Settings'), {
 	    renderer: v => !v ? Proxmox.Utils.NoneText : PVE.Parser.printPropertyString(v),
 	    width: 450,
