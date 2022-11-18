@@ -36,7 +36,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 
     viewModel: {
 	data: {
-	    networkModel: '',
+	    networkModel: undefined,
 	    mtu: '',
 	},
 	formulas: {
