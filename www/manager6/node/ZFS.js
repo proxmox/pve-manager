@@ -46,6 +46,10 @@ Ext.define('PVE.node.CreateZFS', {
 			    name: 'name',
 			    fieldLabel: gettext('Name'),
 			    allowBlank: false,
+			    // see zpool_name_valid function in libzfs_zpool.c
+			    validator: v => v.match(/^(mirror|raidz|draid|spare)/) || v === 'log'
+				? gettext('Cannot use reserved pool name')
+				: true,
 			},
 			{
 			    xtype: 'proxmoxcheckbox',
