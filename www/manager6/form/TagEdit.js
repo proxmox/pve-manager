@@ -336,7 +336,6 @@ Ext.define('PVE.panel.TagEditContainer', {
 		disabled: '{!isDirty}',
 	    },
 	    hidden: true,
-	    ui: 'default-toolbar',
 	    handler: 'editClick',
 	},
 	{
