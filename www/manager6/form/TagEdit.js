@@ -7,6 +7,9 @@ Ext.define('PVE.panel.TagEditContainer', {
 	align: 'middle',
     },
 
+    // set to false to hide the 'no tags' field and the edit button
+    canEdit: true,
+
     controller: {
 	xclass: 'Ext.app.ViewController',
 
@@ -241,6 +244,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    if (view.tags) {
 		me.loadTags(view.tags);
 	    }
+	    me.getViewModel().set('canEdit', view.canEdit);
 
 	    me.mon(Ext.GlobalEvents, 'loadedUiOptions', () => {
 		view.toggleCls('hide-handles', PVE.Utils.shouldSortTags());
@@ -253,11 +257,15 @@ Ext.define('PVE.panel.TagEditContainer', {
 	data: {
 	    tagCount: 0,
 	    editMode: false,
+	    canEdit: true,
 	},
 
 	formulas: {
 	    hideNoTags: function(get) {
-		return get('tagCount') !== 0;
+		return get('tagCount') !== 0 || !get('canEdit');
+	    },
+	    hideEditBtn: function(get) {
+		return get('editMode') || !get('canEdit');
 	    },
 	},
     },
@@ -326,7 +334,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    cls: 'pve-tag-inline-button',
 	    html: `<i data-qtip="${gettext('Edit Tags')}" class="fa fa-pencil"></i>`,
 	    bind: {
-		hidden: '{editMode}',
+		hidden: '{hideEditBtn}',
 	    },
 	    listeners: {
 		click: 'editClick',

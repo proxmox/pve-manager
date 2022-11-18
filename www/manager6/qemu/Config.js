@@ -222,6 +222,7 @@ Ext.define('PVE.qemu.Config', {
 
 	let tagsContainer = Ext.create('PVE.panel.TagEditContainer', {
 	    tags: vm.tags,
+	    canEdit: !!caps.vms['VM.Config.Options'],
 	    listeners: {
 		change: function(tags) {
 		    Proxmox.Utils.API2Request({
