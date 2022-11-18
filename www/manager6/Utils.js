@@ -1923,7 +1923,7 @@ Ext.define('PVE.Utils', {
     },
 
     tagTreeStyles: {
-	'__default__': `${Proxmox.Utils.defaultText} (${gettext('Cirlce')})`,
+	'__default__': `${Proxmox.Utils.defaultText} (${gettext('Circle')})`,
 	'full': gettext('Full'),
 	'circle': gettext('Circle'),
 	'dense': gettext('Dense'),
