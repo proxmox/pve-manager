@@ -113,6 +113,7 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		    disabled: '{!isVirtio}',
 		    value: '{mtu}',
 		},
+		emptyText: '1500 (1 = bridge MTU)',
 		minValue: 1,
 		maxValue: 65520,
 		allowBlank: true,
