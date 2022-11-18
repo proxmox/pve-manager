@@ -104,10 +104,11 @@ Ext.define('Proxmox.form.Tag', {
 	let key = event.browserEvent.key;
 	switch (key) {
 	    case 'Enter':
+	    case 'Escape':
+		me.fireEvent('keypress', key);
 		break;
 	    case 'ArrowLeft':
 	    case 'ArrowRight':
-	    case 'Escape':
 	    case 'Backspace':
 	    case 'Delete':
 		return;

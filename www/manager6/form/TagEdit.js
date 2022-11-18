@@ -214,6 +214,13 @@ Ext.define('PVE.panel.TagEditContainer', {
 		    destroy: function() {
 			vm.set('tagCount', vm.get('tagCount') - 1);
 		    },
+		    keypress: function(key) {
+			if (key === 'Enter') {
+			    me.editClick();
+			} else if (key === 'Escape') {
+			    me.cancelClick();
+			}
+		    },
 		},
 	    });
 
