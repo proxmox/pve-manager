@@ -30,12 +30,12 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    newtags.forEach((tag) => {
 		me.addTag(tag);
 	    });
-	    me.updateFilter();
 	    view.suspendLayout = false;
 	    view.updateLayout();
 	    if (!force) {
 		me.oldTags = tagstring;
 	    }
+	    me.tagsChanged();
 	},
 
 	onRender: function(v) {
@@ -116,6 +116,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 		    let targetCmp = Ext.getCmp(target.id);
 		    view.remove(sourceCmp, { destroy: false });
 		    view.insert(view.items.indexOf(targetCmp), sourceCmp);
+		    me.tagsChanged();
 		},
 	    });
 	},
@@ -172,7 +173,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    me.getView().updateLayout();
 	},
 
-	updateFilter: function() {
+	tagsChanged: function() {
 	    let me = this;
 	    let tags = [];
 	    me.forEachTag(cmp => {
@@ -180,6 +181,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 		    tags.push(cmp.tag);
 		}
 	    });
+	    me.getViewModel().set('isDirty', me.oldTags !== tags.join(','));
 	    me.forEachTag(cmp => {
 		cmp.updateFilter(tags);
 	    });
@@ -208,11 +210,10 @@ Ext.define('PVE.panel.TagEditContainer', {
 		tag,
 		mode: vm.get('editMode') ? 'editable' : 'normal',
 		listeners: {
-		    change: (field, newTag) => {
-			me.updateFilter();
-		    },
+		    change: 'tagsChanged',
 		    destroy: function() {
 			vm.set('tagCount', vm.get('tagCount') - 1);
+			me.tagsChanged();
 		    },
 		    keypress: function(key) {
 			if (key === 'Enter') {
@@ -225,7 +226,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    });
 
 	    if (isNew) {
-		me.updateFilter();
+		me.tagsChanged();
 		tagField.selectText();
 	    }
 
@@ -265,6 +266,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    tagCount: 0,
 	    editMode: false,
 	    canEdit: true,
+	    isDirty: false,
 	},
 
 	formulas: {
@@ -331,6 +333,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    tooltip: gettext('Finish Edit'),
 	    bind: {
 		hidden: '{!editMode}',
+		disabled: '{!isDirty}',
 	    },
 	    hidden: true,
 	    ui: 'default-toolbar',
