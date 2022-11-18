@@ -1,3 +1,26 @@
+pve-manager (7.2-15) bullseye; urgency=medium
+
+  * ui: qemu vNIC: add empty text for MTU field
+
+  * ui: qemu vNIC: make MTU validation more fine-grained for better UX
+
+  * ui: qemu network edit: use the correct default model
+
+  * ui: fix datacenter tags options inputs
+
+  * ui: hide 'no tags' field and edit icon without VM.Config.Options
+
+  * ui: tags: shortcut accept and cancel actions with <enter> and <esc>
+    keypresses
+
+  * ui: tags: implement dirty tracking for inline editing and highlight finish
+    inline editing button if there are uncomitted changes
+
+  * ui: datacenter options: add basic editor for Cluster Resource Scheduling
+    setting
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 18 Nov 2022 17:26:59 +0100
+
 pve-manager (7.2-14) bullseye; urgency=medium
 
   * ui: vm network: allow one to override MTU for VirtIO devices
