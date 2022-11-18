@@ -384,6 +384,7 @@ Ext.define('PVE.dc.OptionView', {
 				fieldLabel: gettext('Tree Shape'),
 				valueField: 'value',
 				displayField: 'display',
+				allowBlank: false,
 				listConfig: {
 				    columns: [
 					{
@@ -448,12 +449,12 @@ Ext.define('PVE.dc.OptionView', {
 		    return Ext.String.format(gettext('Mode: {0}'), 'free');
 		}
 		let mode = value?.['user-allow'] ?? 'free';
-		let list = value?.['user-allow-list'].join(',');
-		let modeTxt = Ext.String.format(gettext('Mode {0}'), mode);
+		let list = value?.['user-allow-list']?.join(',') ?? '';
+		let modeTxt = Ext.String.format(gettext('Mode: {0}'), mode);
 		let overrides = PVE.Utils.tagOverrides;
 		let tags = PVE.Utils.renderTags(list, overrides);
-
-		return `${modeTxt}, ${gettext('Pre-defined:')} ${tags}`;
+		let listTxt = tags !== '' ? `, ${gettext('Pre-defiend:')} ${tags}` : '';
+		return `${modeTxt}${listTxt}`;
 	    },
 	    header: gettext('User Tag Access'),
 	    editor: {

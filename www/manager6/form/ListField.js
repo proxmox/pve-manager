@@ -22,7 +22,8 @@ Ext.define('PVE.form.ListField', {
 
     setValue: function(list) {
 	let me = this;
-	list = Ext.isArray(list) ? list : (list ?? '').split(';');
+	list = Ext.isArray(list) ? list : (list ?? '').split(';').filter(t => t !== '');
+
 	let store = me.lookup('grid').getStore();
 	if (list.length > 0) {
 	    store.setData(list.map(item => ({ item })));
@@ -99,6 +100,7 @@ Ext.define('PVE.form.ListField', {
 
 	    grid.getStore().remove(record);
 	    view.checkChange();
+	    view.validate();
 	},
 
 	itemChange: function(field, newValue) {
@@ -108,7 +110,9 @@ Ext.define('PVE.form.ListField', {
 	    }
 	    let column = field.getWidgetColumn();
 	    rec.set(column.dataIndex, newValue);
-	    field.up('pveListField').checkChange();
+	    let list = field.up('pveListField');
+	    list.checkChange();
+	    list.validate();
 	},
 
 	control: {

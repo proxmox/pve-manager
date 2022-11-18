@@ -36,25 +36,29 @@ Ext.define('PVE.dc.RegisteredTagsEdit', {
 	    setValues: function(values) {
 		let allowed_tags = values?.['user-tag-access']?.['user-allow-list'] ?? [];
 		this.up('pveRegisteredTagEdit').allowed_tags = allowed_tags;
-
-		let tags = values?.['registered-tags'] ?? '';
+		let tags = values?.['registered-tags'];
 		return Proxmox.panel.InputPanel.prototype.setValues.call(this, { tags });
 	    },
 	    onGetValues: function(values) {
-		return {
-		    'registered-tags': values,
-		};
+		if (!values.tags) {
+		    return {
+			'delete': 'registered-tags',
+		    };
+		} else {
+		    return {
+			'registered-tags': values.tags,
+		    };
+		}
 	    },
 	    items: [
 		{
 		    name: 'tags',
 		    xtype: 'pveListField',
-		    emptyText: gettext('No Tags defined'),
-		    fieldTitle: gettext('Tag'),
 		    maskRe: PVE.Utils.tagCharRegex,
 		    gridConfig: {
 			height: 200,
 			scrollable: true,
+			emptyText: gettext('No Tags defined'),
 		    },
 		    listeners: {
 			change: 'tagChange',

@@ -40,7 +40,7 @@ Ext.define('PVE.dc.UserTagAccessEdit', {
 	    },
 	    onGetValues: function(values) {
 		if (values === undefined || Object.keys(values).length === 0) {
-		    return { 'delete': name };
+		    return { 'delete': 'user-tag-access' };
 		}
 		return {
 		    'user-tag-access': PVE.Parser.printPropertyString(values),
