@@ -117,6 +117,9 @@ Ext.define('PVE.qemu.NetworkInputPanel', {
 		minValue: 1,
 		maxValue: 65520,
 		allowBlank: true,
+		validator: val => val === '' || val >= 576 || val === '1'
+		    ? true
+		    : gettext('MTU needs to be >= 576 or 1 to inherit the MTU from the underlying bridge.'),
 	    },
 	];
 
