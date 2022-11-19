@@ -46,10 +46,17 @@ Ext.define('PVE.node.CreateZFS', {
 			    name: 'name',
 			    fieldLabel: gettext('Name'),
 			    allowBlank: false,
-			    // see zpool_name_valid function in libzfs_zpool.c
-			    validator: v => v.match(/^(mirror|raidz|draid|spare)/) || v === 'log'
-				? gettext('Cannot use reserved pool name')
-				: true,
+			    maxLength: 128, // ZFS_MAX_DATASET_NAME_LEN is (256 - some edge case)
+			    validator: v => {
+				// see zpool_name_valid function in libzfs_zpool.c
+				if (v.match(/^(mirror|raidz|draid|spare)/) || v === 'log') {
+				    return gettext('Cannot use reserved pool name');
+				} else if (!v.match(/^[a-zA-Z][a-zA-Z0-9\-_.]*$/)) {
+				    // note: zfs would support also : and whitespace, but we don't
+				    return gettext("Invalid characters in pool name");
+				}
+				return true;
+			    },
 			},
 			{
 			    xtype: 'proxmoxcheckbox',
