@@ -1,3 +1,12 @@
+pve-manager (7.3-1) bullseye; urgency=medium
+
+  * ui: utils fix typos in tag tree styles
+
+  * ui: node disk manage: mark using ZFS reserved pool names as invalid and
+    enforce some basic character validity checks for ZFS naming requirements
+
+ -- Proxmox Support Team <support@proxmox.com>  Sat, 19 Nov 2022 15:57:50 +0100
+
 pve-manager (7.2-15) bullseye; urgency=medium
 
   * ui: qemu vNIC: add empty text for MTU field
