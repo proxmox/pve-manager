@@ -20,7 +20,7 @@ __PACKAGE__->register_method ({
     protected => 1,
     proxyto => "node",
     permissions => {
-	check => ['perm', '/', ['Sys.Modify']],
+	check => ['perm', '/', ['Sys.Audit', 'Sys.Modify'], any => 1],
     },
     parameters => {
 	additionalProperties => 0,
@@ -177,7 +177,7 @@ __PACKAGE__->register_method ({
     protected => 1,
     proxyto => "node",
     permissions => {
-	check => ['perm', '/', ['Sys.Modify']],
+	check => ['perm', '/', ['Sys.Audit', 'Sys.Modify'], any => 1],
     },
     parameters => {
 	additionalProperties => 0,
