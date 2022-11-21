@@ -448,7 +448,7 @@ Ext.define('PVE.StdWorkspace', {
 		    layout: { type: 'vbox', align: 'stretch' },
 		    margin: '0 0 0 5',
 		    split: true,
-		    width: 200,
+		    width: 300,
 		    items: [selview, rtree],
 		    listeners: {
 			resize: function(panel, width, height) {
