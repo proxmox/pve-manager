@@ -217,6 +217,19 @@ sha512sum: 0fe7d94bea81011aeacc13e820efa107feb6c11384335367d199d28f00e6100109455
 Infopage: https://linuxcontainers.org
 Description: LXC default image for fedora 36 (20220622)
 
+Package: fedora-37-default
+Version: 20221119
+Type: lxc
+OS: fedora
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/fedora-37-default_20221119_amd64.tar.xz
+md5sum: c74e6d7004d2951ef9d17beaf06fcb85
+sha512sum: b12d0bfd6fcfbb33c3b896a5a9c2bc5547817f69df2e72c8ed7d318b56412b550a8b9876f4358f5c649cbbbe7a7e2ccf950c14e1cd9dfa86e7252ec06cd9f336
+Infopage: https://linuxcontainers.org
+Description: LXC default image for fedora 37 (20221119)
+
 Package: gentoo-current-openrc
 Version: 20220622
 Type: lxc
