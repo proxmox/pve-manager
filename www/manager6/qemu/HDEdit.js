@@ -255,10 +255,12 @@ Ext.define('PVE.qemu.HDInputPanel', {
 		name: 'iothread',
 		fieldLabel: 'IO thread',
 		clearOnDisable: true,
-		bind: {
+		bind: me.insideWizard || me.isCreate ? {
 		    disabled: '{!isVirtIO && !isSCSI}',
 		    // Checkbox.setValue handles Arrays in a different way, therefore cast to bool
 		    value: '{!!isVirtIO || (isSCSI && isSCSISingle)}',
+		} : {
+		    disabled: '{!isVirtIO && !isSCSI}',
 		},
 	    },
 	);
