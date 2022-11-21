@@ -1,3 +1,21 @@
+pve-manager (7.3-2) bullseye; urgency=medium
+
+  * fix #4245: api: node HW: allow one to get PCI info with Sys.Audit on `/`
+
+  * ui: dc options: add Color-Overrides text to render, if any
+
+  * ui: dc options: support setting case sensitive
+
+  * ui: workspace: increase initial resource tree width from 200px to 300px
+
+  * api: vzdump: soften parameter permission checks to allow sufficiently
+    privileged users to pass-in retention and performance parameters for
+    manual backup, but keeps tmpdir, dumpdir and script root-only. Such users
+    could already edit the job accordingly, so essentially not granting
+    anything new. Fixes the run-now web-interface function for non-root.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 21 Nov 2022 14:23:51 +0100
+
 pve-manager (7.3-1) bullseye; urgency=medium
 
   * ui: utils fix typos in tag tree styles
