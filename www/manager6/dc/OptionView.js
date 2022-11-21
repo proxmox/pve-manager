@@ -344,6 +344,9 @@ Ext.define('PVE.dc.OptionView', {
 		let txt = Ext.String.format(gettext("Tree Shape: {0}"), shapeText);
 		let orderText = PVE.Utils.tagOrderOptions[value.ordering ?? '__default__'];
 		txt += `, ${Ext.String.format(gettext("Ordering: {0}"), orderText)}`;
+		if (value['case-sensitive']) {
+		    txt += `, ${gettext('Case-Sensitive')}`;
+		}
 		if (Object.keys(colors).length > 0) {
 		    txt += `, ${gettext('Color Overrides')}: `;
 		    for (const tag of Object.keys(colors)) {
@@ -384,6 +387,9 @@ Ext.define('PVE.dc.OptionView', {
 			    }
 			    if (values.ordering) {
 				style.ordering = values.ordering;
+			    }
+			    if (values['case-sensitive']) {
+				style['case-sensitive'] = 1;
 			    }
 			    let value = PVE.Parser.printPropertyString(style);
 			    if (value === '') {
@@ -444,6 +450,13 @@ Ext.define('PVE.dc.OptionView', {
 				defaultValue: '__default__',
 				value: '__default__',
 				deleteEmpty: true,
+			    },
+			    {
+				name: 'case-sensitive',
+				xtype: 'proxmoxcheckbox',
+				fieldLabel: gettext('Case-Sensitive'),
+				boxLabel: gettext('Applies to new edits'),
+				value: 0,
 			    },
 			    {
 				xtype: 'displayfield',
