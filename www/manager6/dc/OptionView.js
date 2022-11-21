@@ -345,10 +345,10 @@ Ext.define('PVE.dc.OptionView', {
 		let orderText = PVE.Utils.tagOrderOptions[value.ordering ?? '__default__'];
 		txt += `, ${Ext.String.format(gettext("Ordering: {0}"), orderText)}`;
 		if (Object.keys(colors).length > 0) {
-		    txt += ', ';
-		}
-		for (const tag of Object.keys(colors)) {
-		    txt += Proxmox.Utils.getTagElement(tag, colors);
+		    txt += `, ${gettext('Color Overrides')}: `;
+		    for (const tag of Object.keys(colors)) {
+			txt += Proxmox.Utils.getTagElement(tag, colors);
+		    }
 		}
 		return txt;
 	    },
