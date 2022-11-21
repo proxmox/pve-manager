@@ -1,3 +1,9 @@
+pve-manager (7.3-3) bullseye; urgency=medium
+
+  * ui: qemu disk: honor iothread setting from config
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 21 Nov 2022 15:58:37 +0100
+
 pve-manager (7.3-2) bullseye; urgency=medium
 
   * fix #4245: api: node HW: allow one to get PCI info with Sys.Audit on `/`
