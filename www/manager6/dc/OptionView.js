@@ -505,7 +505,7 @@ Ext.define('PVE.dc.OptionView', {
 		let modeTxt = Ext.String.format(gettext('Mode: {0}'), mode);
 		let overrides = PVE.Utils.tagOverrides;
 		let tags = PVE.Utils.renderTags(list, overrides);
-		let listTxt = tags !== '' ? `, ${gettext('Pre-defiend:')} ${tags}` : '';
+		let listTxt = tags !== '' ? `, ${gettext('Pre-defined:')} ${tags}` : '';
 		return `${modeTxt}${listTxt}`;
 	    },
 	    header: gettext('User Tag Access'),
