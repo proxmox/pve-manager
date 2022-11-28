@@ -1918,7 +1918,10 @@ Ext.define('PVE.Utils', {
 	}
 
 	Ext.ComponentQuery.query('pveResourceTree')[0].setUserCls(`proxmox-tags-${shape}`);
-	PVE.data.ResourceStore.fireEvent('load');
+
+	if (!PVE.data.ResourceStore.isLoading() && PVE.data.ResourceStore.isLoaded()) {
+	    PVE.data.ResourceStore.fireEvent('load');
+	}
 	Ext.GlobalEvents.fireEvent('loadedUiOptions');
     },
 
