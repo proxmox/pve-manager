@@ -69,6 +69,19 @@ sha512sum: 85ad913768fe79c6b171f64661ef463772b78c6fa22a6e4e297565823f9b17522c315
 Infopage: https://linuxcontainers.org
 Description: LXC default image for alpine 3.16 (20220622)
 
+Package: alpine-3.17-default
+Version: 20221129
+Type: lxc
+OS: alpine
+Section: system
+Maintainer: Proxmox Support Team <support@proxmox.com>
+Architecture: amd64
+Location: system/alpine-3.17-default_20221129_amd64.tar.xz
+md5sum: 7eae3bc612d8eb8283cdbac209e056f6
+sha512sum: 446185a5472c18cb7b60cb808e60730fd8fd438b0b94182f5317cddc78e95852248359bd57067f8f288130684360b8bf77616b24e9738203f4a3087bdf1d8494
+Infopage: https://linuxcontainers.org
+Description: LXC default image for alpine 3.17 (20221129)
+
 Package: archlinux-base
 Version: 20221111-1
 Type: lxc
@@ -243,19 +256,6 @@ sha512sum: 916217385f24f7eedbf406680de1c38767d24b42eba2b5267c67351892d3ecd7b8fb1
 Infopage: https://linuxcontainers.org
 Description: LXC openrc image for gentoo current (20220622)
 
-Package: opensuse-15.3-default
-Version: 20210925
-Type: lxc
-OS: opensuse
-Section: system
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: system/opensuse-15.3-default_20210925_amd64.tar.xz
-md5sum: 05aebdbc89a45c681ef134b323bcafc7
-sha512sum: 58a66aff91a01b28ff8491787ec7856dd3cdeb2e0b4faa058b8ddbf087c5dc8cf44cd0c6e83a3e09f07062d62cd05228a84a30ba06739a505c7135b57bf2146a
-Infopage: https://linuxcontainers.org
-Description: LXC default image for opensuse 15.3 (20210925)
-
 Package: opensuse-15.4-default
 Version: 20221109
 Type: lxc
@@ -269,32 +269,18 @@ sha512sum: 8089309652a0db23ddff826d1e343e79c6eccb7b615fb309e0a6f6f1983ea697aa940
 Infopage: https://linuxcontainers.org
 Description: LXC default image for opensuse 15.4 (20221109)
 
-Package: proxmox-mailgateway-6.4-standard
-Version: 6.4-1
-Type: lxc
-OS: debian-10
-Section: mail
-Maintainer: Proxmox Support Team <support@proxmox.com>
-Architecture: amd64
-Location: mail/proxmox-mailgateway-6.4-standard_6.4-1_amd64.tar.gz
-md5sum: 4fb2ec7c2bc6bc3ecc5f3d1c0cd26e76
-sha512sum: 0a9d48066aae7dbc60b3f421c134b6372a36165704a9e8170d7456d1f5e5ec7da9a9eaae932e3c3a2da004b8048bf5b0445370174ac3c7425d9015eb7fed7c0c
-Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
-Description: Proxmox Mailgateway 6.4
- A full featured mail proxy for spam and virus filtering, optimized for container environment.
-
-Package: proxmox-mailgateway-7.0-standard
-Version: 7.0-1
+Package: proxmox-mailgateway-7.2-standard
+Version: 7.2-1
 Type: lxc
 OS: debian-11
 Section: mail
 Maintainer: Proxmox Support Team <support@proxmox.com>
 Architecture: amd64
-Location: mail/proxmox-mailgateway-7.0-standard_7.0-1_amd64.tar.gz
-md5sum: bd6a86caee01aa21b012d8b27762dc17
-sha512sum: ad16d751b7ac24adf082f24d5ec3cb65b3ff4aa5428ba496d9d12f428429113012ce0429011f01531fcac0dae05a0e2c465e8a281c40b846beefd3277c87399e
+Location: mail/proxmox-mailgateway-7.2-standard_7.2-1_amd64.tar.gz
+md5sum: a38d4284fc91d4d3cf2a324a702fd938
+sha512sum: d2ee3dba238d3b583e92f1b944cd7720fb4e79fcbf11902b1833700ebbe53b25093e100b66c240a5c55bbfb5e34187930455537dd400f7daa1c0ff26206995bf
 Infopage: https://www.proxmox.com/de/proxmox-mail-gateway
-Description: Proxmox Mailgateway 7.0
+Description: Proxmox Mailgateway 7.2
  A full featured mail proxy for spam and virus filtering, optimized for container environment.
 
 Package: rockylinux-8-default
