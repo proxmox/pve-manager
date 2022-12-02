@@ -833,6 +833,7 @@ __PACKAGE__->register_method({
 	    lxcfs
 	    novnc-pve
 	    proxmox-backup-client
+	    proxmox-mail-forward
 	    proxmox-mini-journalreader
 	    proxmox-widget-toolkit
 	    pve-cluster
