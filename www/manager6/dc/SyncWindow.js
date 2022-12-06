@@ -42,6 +42,8 @@ Ext.define('PVE.dc.SyncWindow', {
 	    });
 	    if (vanished_opts.length > 0) {
 		params['remove-vanished'] = vanished_opts.join(';');
+	    } else {
+		params['remove-vanished'] = 'none';
 	    }
 
 	    params['dry-run'] = is_preview ? 1 : 0;
