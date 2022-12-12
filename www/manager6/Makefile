@@ -188,6 +188,7 @@ JSSRC= 							\
 	ceph/Log.js					\
 	ceph/Monitor.js					\
 	ceph/OSD.js					\
+	ceph/OSDDetails.js				\
 	ceph/Pool.js					\
 	ceph/ServiceList.js				\
 	ceph/Services.js				\

@@ -583,6 +583,20 @@ Ext.define('PVE.node.CephOsdTree', {
 	    }
 	},
 
+	run_details: function(view, rec) {
+	    if (rec.data.host && rec.data.type === 'osd' && rec.data.id >= 0) {
+		this.details();
+	    }
+	},
+
+	details: function() {
+	    let vm = this.getViewModel();
+	    Ext.create('PVE.CephOsdDetails', {
+		nodename: vm.get('osdhost'),
+		osdid: vm.get('osdid'),
+	    }).show();
+	},
+
 	set_selection_status: function(tp, selection) {
 	    if (selection.length < 1) {
 		return;
@@ -695,6 +709,9 @@ Ext.define('PVE.node.CephOsdTree', {
     stateId: 'grid-ceph-osd',
     rootVisible: false,
     useArrows: true,
+    listeners: {
+	itemdblclick: 'run_details',
+    },
 
     columns: [
 	{
@@ -841,6 +858,15 @@ Ext.define('PVE.node.CephOsdTree', {
 		    gettext('No OSD selected'),
 		    '</tpl>',
 		],
+	    },
+	    {
+		text: gettext('Details'),
+		iconCls: 'fa fa-info-circle',
+		disabled: true,
+		bind: {
+		    disabled: '{!isOsd}',
+		},
+		handler: 'details',
 	    },
 	    {
 		text: gettext('Start'),
