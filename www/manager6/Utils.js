@@ -1280,6 +1280,21 @@ Ext.define('PVE.Utils', {
 	return Ext.htmlEncode(first + " " + last);
     },
 
+    // expecting the following format:
+    // [v2:10.10.10.1:6802/2008,v1:10.10.10.1:6803/2008]
+    render_ceph_osd_addr: function(value) {
+	value = value.trim();
+	if (value.startsWith('[') && value.endsWith(']')) {
+	    value = value.slice(1, -1); // remove []
+	}
+	value = value.replaceAll(',', '\n'); // split IPs in lines
+	let retVal = '';
+	for (const i of value.matchAll(/^(v[0-9]):(.*):([0-9]*)\/([0-9]*)$/gm)) {
+	    retVal += `${i[1]}: ${i[2]}:${i[3]}<br>`;
+	}
+	return retVal.length < 1 ? value : retVal;
+    },
+
     windowHostname: function() {
 	return window.location.hostname.replace(Proxmox.Utils.IP6_bracket_match,
             function(m, addr, offset, original) { return addr; });
