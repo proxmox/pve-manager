@@ -5,6 +5,7 @@ use warnings;
 
 use Cwd qw(abs_path);
 use IO::File;
+use JSON;
 use UUID;
 
 use PVE::Ceph::Tools;
@@ -524,6 +525,329 @@ __PACKAGE__->register_method ({
 	};
 
 	return $rpcenv->fork_worker('cephcreateosd', $devs->{dev}->{name},  $authuser, $worker);
+    }});
+
+my $OSD_DEV_RETURN_PROPS = {
+    device => {
+	type => 'string',
+	enum => ['block', 'db', 'wal'],
+	description => 'Kind of OSD device',
+    },
+    dev_node => {
+	type => 'string',
+	description => 'Device node',
+    },
+    devices => {
+	type => 'string',
+	description => 'Physical disks used',
+    },
+    size => {
+	type => 'integer',
+	description => 'Size in bytes',
+    },
+    support_discard => {
+	type => 'boolean',
+	description => 'Discard support of the physical device',
+    },
+    type => {
+	type => 'string',
+	description => 'Type of device. For example, hdd or ssd',
+    },
+};
+
+__PACKAGE__->register_method ({
+    name => 'osdindex',
+    path => '{osdid}',
+    method => 'GET',
+    permissions => { user => 'all' },
+    description => "OSD index.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    osdid => {
+		description => 'OSD ID',
+		type => 'integer',
+	    },
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {},
+	},
+	links => [ { rel => 'child', href => "{name}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $result = [
+	    { name => 'metadata' },
+	    { name => 'lv-info' },
+	];
+
+	return $result;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'osddetails',
+    path => '{osdid}/metadata',
+    method => 'GET',
+    description => "Get OSD details",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit' ], any => 1],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    osdid => {
+		description => 'OSD ID',
+		type => 'integer',
+	    },
+	},
+    },
+    returns => {
+	type => 'object',
+	properties => {
+	    osd => {
+		type => 'object',
+		description => 'General information about the OSD',
+		properties => {
+		    hostname => {
+			type => 'string',
+			description => 'Name of the host containing the OSD.',
+		    },
+		    id => {
+			type => 'integer',
+			description => 'ID of the OSD.',
+		    },
+		    mem_usage => {
+			type => 'integer',
+			description => 'Memory usage of the OSD service.',
+		    },
+		    osd_data => {
+			type => 'string',
+			description => "Path to the OSD's data directory.",
+		    },
+		    osd_objectstore => {
+			type => 'string',
+			description => 'The type of object store used.',
+		    },
+		    pid => {
+			type => 'integer',
+			description => 'OSD process ID.',
+		    },
+		    version => {
+			type => 'string',
+			description => 'Ceph version of the OSD service.',
+		    },
+		    front_addr => {
+			type => 'string',
+			description => 'Address and port used to talk to clients and monitors.',
+		    },
+		    back_addr => {
+			type => 'string',
+			description => 'Address and port used to talk to other OSDs.',
+		    },
+		    hb_front_addr => {
+			type => 'string',
+			description => 'Heartbeat address and port for clients and monitors.',
+		    },
+		    hb_back_addr => {
+			type => 'string',
+			description => 'Heartbeat address and port for other OSDs.',
+		    },
+		},
+	    },
+	    devices => {
+		type => 'array',
+		description => 'Array containing data about devices',
+		items => {
+		    type => "object",
+		    properties => $OSD_DEV_RETURN_PROPS,
+		},
+	    }
+	}
+    },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::Ceph::Tools::check_ceph_inited();
+
+	my $osdid = $param->{osdid};
+	my $rados = PVE::RADOS->new();
+	my $metadata = $rados->mon_command({ prefix => 'osd metadata', id => int($osdid) });
+
+	die "OSD '${osdid}' does not exists on host '${nodename}'\n"
+	    if $nodename ne $metadata->{hostname};
+
+	my $raw = '';
+	my $pid;
+	my $memory;
+	my $parser = sub {
+	    my $line = shift;
+	    if ($line =~ m/^MainPID=([0-9]*)$/) {
+		$pid = $1;
+	    } elsif ($line =~ m/^MemoryCurrent=([0-9]*|\[not set\])$/) {
+		$memory = $1 eq "[not set]" ? 0 : $1;
+	    }
+	};
+
+	my $cmd = [
+	    '/bin/systemctl',
+	    'show',
+	    "ceph-osd\@${osdid}.service",
+	    '--property',
+	    'MainPID,MemoryCurrent',
+	];
+	run_command($cmd, errmsg => 'fetching OSD PID and memory usage failed', outfunc => $parser);
+
+	$pid = defined($pid) ? int($pid) : undef;
+	$memory = defined($memory) ? int($memory) : undef;
+
+	my $data = {
+	    osd => {
+		hostname => $metadata->{hostname},
+		id => $metadata->{id},
+		mem_usage => $memory,
+		osd_data => $metadata->{osd_data},
+		osd_objectstore => $metadata->{osd_objectstore},
+		pid => $pid,
+		version => "$metadata->{ceph_version_short} ($metadata->{ceph_release})",
+		front_addr => $metadata->{front_addr},
+		back_addr => $metadata->{back_addr},
+		hb_front_addr => $metadata->{hb_front_addr},
+		hb_back_addr => $metadata->{hb_back_addr},
+	    },
+	};
+
+	$data->{devices} = [];
+
+	my $get_data = sub {
+	    my ($dev, $prefix, $device) = @_;
+	    push (
+		@{$data->{devices}},
+		{
+		    dev_node => $metadata->{"${prefix}_${dev}_dev_node"},
+		    physical_device => $metadata->{"${prefix}_${dev}_devices"},
+		    size => int($metadata->{"${prefix}_${dev}_size"}),
+		    support_discard => int($metadata->{"${prefix}_${dev}_support_discard"}),
+		    type => $metadata->{"${prefix}_${dev}_type"},
+		    device => $device,
+		}
+	    );
+	};
+
+	$get_data->("bdev", "bluestore", "block");
+	$get_data->("db", "bluefs", "db") if $metadata->{bluefs_dedicated_db};
+	$get_data->("wal", "bluefs", "wal") if $metadata->{bluefs_dedicated_wal};
+
+	return $data;
+    }});
+
+__PACKAGE__->register_method ({
+    name => 'osdvolume',
+    path => '{osdid}/lv-info',
+    method => 'GET',
+    description => "Get OSD volume details",
+    proxyto => 'node',
+    protected => 1,
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit' ], any => 1],
+    },
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    osdid => {
+		description => 'OSD ID',
+		type => 'integer',
+	    },
+	    type => {
+		description => 'OSD device type',
+		type => 'string',
+		enum => ['block', 'db', 'wal'],
+		default => 'block',
+		optional => 1,
+	    },
+	},
+    },
+    returns => {
+	type => 'object',
+	properties => {
+	    creation_time => {
+		type => 'string',
+		description => "Creation time as reported by `lvs`.",
+	    },
+	    lv_name => {
+		type => 'string',
+		description => 'Name of the logical volume (LV).',
+	    },
+	    lv_path => {
+		type => 'string',
+		description => 'Path to the logical volume (LV).',
+	    },
+	    lv_size => {
+		type => 'integer',
+		description => 'Size of the logical volume (LV).',
+	    },
+	    lv_uuid => {
+		type => 'string',
+		description => 'UUID of the logical volume (LV).',
+	    },
+	    vg_name => {
+		type => 'string',
+		description => 'Name of the volume group (VG).',
+	    },
+	},
+    },
+    code => sub {
+	my ($param) = @_;
+
+	PVE::Ceph::Tools::check_ceph_inited();
+
+	my $osdid = $param->{osdid};
+	my $type = $param->{type} // 'block';
+
+	my $raw = '';
+	my $parser = sub { $raw .= shift };
+	my $cmd = ['/usr/sbin/ceph-volume', 'lvm', 'list', $osdid, '--format', 'json'];
+	run_command($cmd, errmsg => 'listing Ceph LVM volumes failed', outfunc => $parser);
+
+	my $result;
+	if ($raw =~ m/^(\{.*\})$/s) { #untaint
+	    $result = JSON::decode_json($1);
+	} else {
+	    die "got unexpected data from ceph-volume: '${raw}'\n";
+	}
+	if (!$result->{$osdid}) {
+	    die "OSD '${osdid}' not found in 'ceph-volume lvm list' on node '${nodename}'.\n"
+		."Maybe it was created before LVM became the default?\n";
+	}
+
+	my $lv_data = { map { $_->{type} => $_ } @{$result->{$osdid}} };
+	my $volume = $lv_data->{$type} || die "volume type '${type}' not found for OSD ${osdid}\n";
+
+	$raw = '';
+	$cmd = ['/sbin/lvs', $volume->{lv_path}, '--reportformat', 'json', '-o', 'lv_time'];
+	run_command($cmd, errmsg => 'listing logical volumes failed', outfunc => $parser);
+
+	if ($raw =~ m/(\{.*\})$/s) { #untaint, lvs has whitespace at beginning
+	    $result = JSON::decode_json($1);
+	} else {
+	    die "got unexpected data from lvs: '${raw}'\n";
+	}
+
+	my $data = { map { $_ => $volume->{$_} } qw(lv_name lv_path lv_uuid vg_name) };
+	$data->{lv_size} = int($volume->{lv_size});
+
+	$data->{creation_time} = @{$result->{report}}[0]->{lv}[0]->{lv_time};
+
+	return $data;
     }});
 
 # Check if $osdid belongs to $nodename
