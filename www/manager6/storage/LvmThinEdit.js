@@ -16,7 +16,7 @@ Ext.define('PVE.storage.TPoolSelector', {
     },
 
     onTriggerClick: function() {
-	var me = this;
+	let me = this;
 
 	if (!me.queryCaching || me.lastQuery !== me.vg) {
 	    me.store.removeAll();
@@ -28,19 +28,19 @@ Ext.define('PVE.storage.TPoolSelector', {
     },
 
     setVG: function(myvg) {
-	var me = this;
+	let me = this;
 
 	me.vg = myvg;
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	if (!me.nodename) {
 	    me.nodename = 'localhost';
 	}
 
-	var store = Ext.create('Ext.data.Store', {
+	let store = Ext.create('Ext.data.Store', {
 	    fields: ['lv'],
 	    proxy: {
 		type: 'proxmox',
@@ -80,13 +80,13 @@ Ext.define('PVE.storage.BaseVGSelector', {
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	if (!me.nodename) {
 	    me.nodename = 'localhost';
 	}
 
-	var store = Ext.create('Ext.data.Store', {
+	let store = Ext.create('Ext.data.Store', {
 	    autoLoad: {},
 	    fields: ['vg', 'size', 'free'],
 	    proxy: {
@@ -112,11 +112,11 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
     onlineHelp: 'storage_lvmthin',
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	me.column1 = [];
 
-	var vgnameField = Ext.createWidget(me.isCreate ? 'textfield' : 'displayfield', {
+	let vgnameField = Ext.createWidget(me.isCreate ? 'textfield' : 'displayfield', {
 	    name: 'vgname',
 	    hidden: !!me.isCreate,
 	    disabled: !!me.isCreate,
@@ -125,7 +125,7 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 	    allowBlank: false,
 	});
 
-	var thinpoolField = Ext.createWidget(me.isCreate ? 'textfield' : 'displayfield', {
+	let thinpoolField = Ext.createWidget(me.isCreate ? 'textfield' : 'displayfield', {
 	    name: 'thinpool',
 	    hidden: !!me.isCreate,
 	    disabled: !!me.isCreate,

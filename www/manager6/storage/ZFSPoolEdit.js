@@ -19,13 +19,13 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	if (!me.nodename) {
 	    me.nodename = 'localhost';
 	}
 
-	var store = Ext.create('Ext.data.Store', {
+	let store = Ext.create('Ext.data.Store', {
 	    autoLoad: {}, // true,
 	    fields: ['pool', 'size', 'free'],
 	    proxy: {
@@ -49,7 +49,7 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
     onlineHelp: 'storage_zfspool',
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	me.column1 = [];
 
@@ -82,15 +82,14 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 
 	// value is an array,
 	// while before it was a string
-	me.column1.push(
-	    {
-xtype: 'pveContentTypeSelector',
-	     cts: ['images', 'rootdir'],
-	     fieldLabel: gettext('Content'),
-	     name: 'content',
-	     value: ['images', 'rootdir'],
-	     multiSelect: true,
-	     allowBlank: false,
+	me.column1.push({
+	    xtype: 'pveContentTypeSelector',
+	    cts: ['images', 'rootdir'],
+	    fieldLabel: gettext('Content'),
+	    name: 'content',
+	    value: ['images', 'rootdir'],
+	    multiSelect: true,
+	    allowBlank: false,
 	});
 	me.column2 = [
 	    {

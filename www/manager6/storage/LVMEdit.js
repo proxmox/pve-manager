@@ -16,13 +16,13 @@ Ext.define('PVE.storage.VgSelector', {
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	if (!me.nodename) {
 	    me.nodename = 'localhost';
 	}
 
-	var store = Ext.create('Ext.data.Store', {
+	let store = Ext.create('Ext.data.Store', {
 	    autoLoad: {}, // true,
 	    fields: ['vg', 'size', 'free'],
 	    proxy: {
@@ -55,9 +55,9 @@ Ext.define('PVE.storage.BaseStorageSelector', {
     valueField: 'storage',
     displayField: 'text',
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	var store = Ext.create('Ext.data.Store', {
+	let store = Ext.create('Ext.data.Store', {
 	    autoLoad: {
 		addRecords: true,
 		params: {
@@ -99,11 +99,11 @@ Ext.define('PVE.storage.LVMInputPanel', {
     onlineHelp: 'storage_lvm',
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	me.column1 = [];
 
-	var vgnameField = Ext.createWidget(me.isCreate ? 'textfield' : 'displayfield', {
+	let vgnameField = Ext.createWidget(me.isCreate ? 'textfield' : 'displayfield', {
 	    name: 'vgname',
 	    hidden: !!me.isCreate,
 	    disabled: !!me.isCreate,
@@ -131,7 +131,7 @@ Ext.define('PVE.storage.LVMInputPanel', {
 	        },
 	    });
 
-	    var baseField = Ext.createWidget('pveFileSelector', {
+	    let baseField = Ext.createWidget('pveFileSelector', {
 		name: 'base',
 		hidden: true,
 		disabled: true,

@@ -64,7 +64,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
     onlineHelp: 'storage_open_iscsi',
 
     onGetValues: function(values) {
-	var me = this;
+	let me = this;
 
 	values.content = values.luns ? 'images' : 'none';
 	delete values.luns;
@@ -78,7 +78,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	me.column1 = [
 	    {
@@ -103,7 +103,7 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		listeners: {
 		    change: function(f, value) {
 			if (me.isCreate) {
-			    var exportField = me.down('field[name=target]');
+			    let exportField = me.down('field[name=target]');
 			    exportField.setPortal(value);
 			    exportField.setValue('');
 			}

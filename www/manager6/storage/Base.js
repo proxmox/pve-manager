@@ -5,7 +5,7 @@ Ext.define('PVE.panel.StorageBase', {
     type: '',
 
     onGetValues: function(values) {
-	var me = this;
+	let me = this;
 
 	if (me.isCreate) {
 	    values.type = me.type;
@@ -20,7 +20,7 @@ Ext.define('PVE.panel.StorageBase', {
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	me.column1.unshift({
 	    xtype: me.isCreate ? 'textfield' : 'displayfield',
@@ -88,7 +88,7 @@ Ext.define('PVE.storage.BaseEdit', {
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	me.isCreate = !me.storageId;
 
@@ -148,8 +148,8 @@ Ext.define('PVE.storage.BaseEdit', {
 	if (!me.isCreate) {
 	    me.load({
 		success: function(response, options) {
-		    var values = response.result.data;
-		    var ctypes = values.content || '';
+		    let values = response.result.data;
+		    let ctypes = values.content || '';
 
 		    values.content = ctypes.split(',');
 
