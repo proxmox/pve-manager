@@ -1,5 +1,5 @@
 Ext.define('PVE.storage.ZFSPoolSelector', {
-    extend: 'Ext.form.field.ComboBox',
+    extend: 'PVE.form.ComboBoxSetStoreNode',
     alias: 'widget.pveZFSPoolSelector',
     valueField: 'pool',
     displayField: 'pool',
@@ -8,6 +8,16 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
     listConfig: {
 	loadingText: gettext('Scanning...'),
     },
+    config: {
+	apiSuffix: '/scan/zfs',
+    },
+
+    setNodeName: function(value) {
+	let me = this;
+	me.callParent([value]);
+	me.getStore().load();
+    },
+
     initComponent: function() {
 	var me = this;
 
@@ -20,10 +30,9 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
 	    fields: ['pool', 'size', 'free'],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/zfs',
+		url: `${me.apiBaseUrl}${me.nodename}${me.apiSuffix}`,
 	    },
 	});
-
 	store.sort('pool', 'ASC');
 
 	Ext.apply(me, {
@@ -45,9 +54,21 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	me.column1 = [];
 
 	if (me.isCreate) {
+	    me.column1.push({
+	        xtype: 'pveStorageScanNodeSelector',
+	        listeners: {
+		    change: {
+			fn: function(field, value) {
+			    me.lookup('zfsPoolSelector').setNodeName(value);
+			    me.lookup('storageNodeRestriction').setValue(value);
+			},
+		    },
+		},
+	    });
 	    me.column1.push(Ext.create('PVE.storage.ZFSPoolSelector', {
 		name: 'pool',
 		fieldLabel: gettext('ZFS Pool'),
+		reference: 'zfsPoolSelector',
 		allowBlank: false,
 	    }));
 	} else {

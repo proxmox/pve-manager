@@ -1,5 +1,5 @@
 Ext.define('PVE.storage.IScsiScan', {
-    extend: 'Ext.form.field.ComboBox',
+    extend: 'PVE.form.ComboBoxSetStoreNode',
     alias: 'widget.pveIScsiScan',
 
     queryParam: 'portal',
@@ -9,6 +9,9 @@ Ext.define('PVE.storage.IScsiScan', {
     listConfig: {
 	loadingText: gettext('Scanning...'),
 	width: 350,
+    },
+    config: {
+	apiSuffix: '/scan/iscsi',
     },
     doRawQuery: function() {
 	// do nothing
@@ -42,7 +45,7 @@ Ext.define('PVE.storage.IScsiScan', {
 	    fields: ['target', 'portal'],
 	    proxy: {
 		type: 'proxmox',
-		url: `/api2/json/nodes/${me.nodename}/scan/iscsi`,
+		url: `${me.apiBaseUrl}${me.nodename}${me.apiSuffix}`,
 	    },
 	});
 	store.sort('target', 'ASC');
@@ -79,6 +82,19 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 
 	me.column1 = [
 	    {
+		xtype: 'pveStorageScanNodeSelector',
+		disabled: !me.isCreate,
+		hidden: !me.isCreate,
+		listeners: {
+		    change: {
+			fn: function(field, value) {
+			    me.lookup('iScsiTargetScan').setNodeName(value);
+			    me.lookup('storageNodeRestriction').setValue(value);
+			},
+		    },
+		},
+	    },
+	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'portal',
 		value: '',
@@ -94,14 +110,14 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		    },
 		},
 	    },
-	    {
+	    Ext.createWidget(me.isCreate ? 'pveIScsiScan' : 'displayfield', {
 		readOnly: !me.isCreate,
-		xtype: me.isCreate ? 'pveIScsiScan' : 'displayfield',
 		name: 'target',
 		value: '',
-		fieldLabel: 'Target',
+		fieldLabel: gettext('Target'),
 		allowBlank: false,
-	    },
+		reference: 'iScsiTargetScan',
+	    }),
 	];
 
 	me.column2 = [

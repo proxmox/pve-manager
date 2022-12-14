@@ -1,10 +1,20 @@
 Ext.define('PVE.storage.VgSelector', {
-    extend: 'Ext.form.field.ComboBox',
+    extend: 'PVE.form.ComboBoxSetStoreNode',
     alias: 'widget.pveVgSelector',
     valueField: 'vg',
     displayField: 'vg',
     queryMode: 'local',
     editable: false,
+    config: {
+	apiSuffix: '/scan/lvm',
+    },
+
+    setNodeName: function(value) {
+	let me = this;
+	me.callParent([value]);
+	me.getStore().load();
+    },
+
     initComponent: function() {
 	var me = this;
 
@@ -17,7 +27,7 @@ Ext.define('PVE.storage.VgSelector', {
 	    fields: ['vg', 'size', 'free'],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/lvm',
+		url: `${me.apiBaseUrl}${me.nodename}${me.apiSuffix}`,
 	    },
 	});
 
@@ -103,10 +113,22 @@ Ext.define('PVE.storage.LVMInputPanel', {
 	});
 
 	if (me.isCreate) {
-	    var vgField = Ext.create('PVE.storage.VgSelector', {
+	    let vgField = Ext.create('PVE.storage.VgSelector', {
 		name: 'vgname',
 		fieldLabel: gettext('Volume group'),
+		reference: 'volumeGroupSelector',
 		allowBlank: false,
+	    });
+	    me.column1.push({
+	        xtype: 'pveStorageScanNodeSelector',
+	        listeners: {
+	            change: {
+			fn: function(field, value) {
+			    me.lookup('volumeGroupSelector').setNodeName(value);
+			    me.lookup('storageNodeRestriction').setValue(value);
+			},
+		    },
+	        },
 	    });
 
 	    var baseField = Ext.createWidget('pveFileSelector', {

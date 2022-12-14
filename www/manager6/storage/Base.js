@@ -36,6 +36,7 @@ Ext.define('PVE.panel.StorageBase', {
 	    {
 		xtype: 'pveNodeSelector',
 		name: 'nodes',
+		reference: 'storageNodeRestriction',
 		disabled: me.storageId === 'local',
 		fieldLabel: gettext('Nodes'),
 		emptyText: gettext('All') + ' (' + gettext('No restrictions') +')',

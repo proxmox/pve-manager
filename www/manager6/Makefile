@@ -27,6 +27,7 @@ JSSRC= 							\
 	form/CalendarEvent.js				\
 	form/CephPoolSelector.js			\
 	form/CephFSSelector.js				\
+	form/ComboBoxSetStoreNode.js			\
 	form/CompressionSelector.js			\
 	form/ContentTypeSelector.js			\
 	form/ControllerSelector.js			\
@@ -62,6 +63,7 @@ JSSRC= 							\
 	form/SecurityGroupSelector.js			\
 	form/SnapshotSelector.js			\
 	form/SpiceEnhancementSelector.js		\
+	form/StorageScanNodeSelector.js	    		\
 	form/StorageSelector.js				\
 	form/TFASelector.js				\
 	form/TokenSelector.js 				\

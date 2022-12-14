@@ -1,11 +1,15 @@
 Ext.define('PVE.storage.TPoolSelector', {
-    extend: 'Ext.form.field.ComboBox',
+    extend: 'PVE.form.ComboBoxSetStoreNode',
     alias: 'widget.pveTPSelector',
 
     queryParam: 'vg',
     valueField: 'lv',
     displayField: 'lv',
     editable: false,
+
+    config: {
+	apiSuffix: '/scan/lvmthin',
+    },
 
     doRawQuery: function() {
 	// nothing
@@ -40,7 +44,7 @@ Ext.define('PVE.storage.TPoolSelector', {
 	    fields: ['lv'],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/lvmthin',
+		url: `${me.apiBaseUrl}${me.nodename}${me.apiSuffix}`,
 	    },
 	});
 
@@ -58,13 +62,23 @@ Ext.define('PVE.storage.TPoolSelector', {
 });
 
 Ext.define('PVE.storage.BaseVGSelector', {
-    extend: 'Ext.form.field.ComboBox',
+    extend: 'PVE.form.ComboBoxSetStoreNode',
     alias: 'widget.pveBaseVGSelector',
 
     valueField: 'vg',
     displayField: 'vg',
     queryMode: 'local',
     editable: false,
+    config: {
+	apiSuffix: '/scan/lvm',
+    },
+
+    setNodeName: function(value) {
+	let me = this;
+	me.callParent([value]);
+	me.getStore().load();
+    },
+
     initComponent: function() {
 	var me = this;
 
@@ -77,7 +91,7 @@ Ext.define('PVE.storage.BaseVGSelector', {
 	    fields: ['vg', 'size', 'free'],
 	    proxy: {
 		type: 'proxmox',
-		url: '/api2/json/nodes/' + me.nodename + '/scan/lvm',
+		url: `${me.apiBaseUrl}${me.nodename}${me.apiSuffix}`,
 	    },
 	});
 
@@ -121,27 +135,40 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 	});
 
 	if (me.isCreate) {
-	    var vgField = Ext.create('PVE.storage.TPoolSelector', {
-		name: 'thinpool',
-		fieldLabel: gettext('Thin Pool'),
-		allowBlank: false,
+	    me.column1.push({
+	        xtype: 'pveStorageScanNodeSelector',
+	        listeners: {
+		    change: {
+			fn: function(field, value) {
+			    me.lookup('thinPoolSelector').setNodeName(value);
+			    me.lookup('volumeGroupSelector').setNodeName(value);
+			    me.lookup('storageNodeRestriction').setValue(value);
+			},
+		    },
+		},
 	    });
 
-	    me.column1.push({
-		xtype: 'pveBaseVGSelector',
+	    me.column1.push(Ext.create('PVE.storage.BaseVGSelector', {
 		name: 'vgname',
 		fieldLabel: gettext('Volume group'),
+		reference: 'volumeGroupSelector',
 		listeners: {
 		    change: function(f, value) {
 			if (me.isCreate) {
+			    let vgField = me.lookup('thinPoolSelector');
 			    vgField.setVG(value);
 			    vgField.setValue('');
 			}
 		    },
 		},
-	    });
+	    }));
 
-	    me.column1.push(vgField);
+	    me.column1.push(Ext.create('PVE.storage.TPoolSelector', {
+		name: 'thinpool',
+		fieldLabel: gettext('Thin Pool'),
+		reference: 'thinPoolSelector',
+		allowBlank: false,
+	    }));
 	}
 
 	me.column1.push(vgnameField);
