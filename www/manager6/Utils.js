@@ -1963,6 +1963,13 @@ Ext.define('PVE.Utils', {
     },
 
     tagCharRegex: /^[a-z0-9+_.-]+$/i,
+
+    verificationStateOrder: {
+	'failed': 0,
+	'none': 1,
+	'ok': 2,
+	'__default__': 3,
+    },
 },
 
     singleton: true,

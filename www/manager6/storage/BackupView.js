@@ -197,11 +197,23 @@ Ext.define('PVE.storage.BackupView', {
 		    header: gettext('Encrypted'),
 		    dataIndex: 'encrypted',
 		    renderer: PVE.Utils.render_backup_encryption,
+		    sorter: {
+			property: 'encrypted',
+			transform: (value) => value ? 1 : 0,
+		    },
 		},
 		verification: {
 		    header: gettext('Verify State'),
 		    dataIndex: 'verification',
 		    renderer: PVE.Utils.render_backup_verification,
+		    sorter: {
+			property: 'verification',
+			transform: (value) => {
+			    let state = value?.state ?? 'none';
+			    let order = PVE.Utils.verificationStateOrder;
+			    return order[state] ?? order.__default__;
+			},
+		    },
 		},
 	    };
 	}
