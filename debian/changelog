@@ -1,3 +1,15 @@
+pve-manager (7.3-4) bullseye; urgency=medium
+
+  * fix #4370: ui: fix regression on pre-selecting tree element on login
+
+  * appliance info: update shipped index
+
+  * ui: realm: sync: don't use realm defaults for remove-vanished
+
+  * ui: node/datacenter summary: show tags by default and flex that column
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 16 Dec 2022 13:11:22 +0100
+
 pve-manager (7.3-3) bullseye; urgency=medium
 
   * ui: qemu disk: honor iothread setting from config
