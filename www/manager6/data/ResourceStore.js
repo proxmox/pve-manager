@@ -297,9 +297,10 @@ Ext.define('PVE.data.ResourceStore', {
 		header: gettext('Tags'),
 		renderer: (value) => PVE.Utils.renderTags(value, PVE.Utils.tagOverrides),
 		type: 'string',
-		hidden: true,
 		sortable: true,
+		flex: 1,
 	    },
+	    // note: flex only last column to keep info closer together
 	};
 
 	let fields = [];
