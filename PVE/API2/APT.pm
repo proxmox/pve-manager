@@ -123,10 +123,10 @@ my $assemble_pkginfo = sub {
 
     if (my $pkgfile = &$get_pkgfile($candidate_ver)) {
 	$data->{Origin} = $pkgfile->{Origin};
-	if (my $changelog_url = &$get_changelog_url($pkgname, $info, $candidate_ver->{VerStr},
-						    $pkgfile->{Origin}, $pkgfile->{Component})) {
-	    $data->{ChangeLogUrl} = $changelog_url;
-	}
+	my $changelog_url = $get_changelog_url->(
+	        $pkgname, $info, $candidate_ver->{VerStr}, $pkgfile->{Origin}, $pkgfile->{Component});
+
+	$data->{ChangeLogUrl} = $changelog_url if $changelog_url;
     }
 
     if (my $desc = $info->{LongDesc}) {
@@ -147,28 +147,17 @@ my $assemble_pkginfo = sub {
 
 # we try to cache results
 my $pve_pkgstatus_fn = "/var/lib/pve-manager/pkgupdates";
-
 my $read_cached_pkgstatus = sub {
-    my $data = [];
-    eval {
-	my $jsonstr = PVE::Tools::file_get_contents($pve_pkgstatus_fn, 5*1024*1024);
-	$data = decode_json($jsonstr);
-    };
-    if (my $err = $@) {
-	warn "error reading cached package status in $pve_pkgstatus_fn\n";
-    }
+    my $data = eval { decode_json(PVE::Tools::file_get_contents($pve_pkgstatus_fn, 5*1024*1024)) } // [];
+    warn "error reading cached package status in '$pve_pkgstatus_fn' - $@\n" if $@;
     return $data;
 };
 
 my $update_pve_pkgstatus = sub {
-
     syslog('info', "update new package list: $pve_pkgstatus_fn");
 
-    my $notify_status = {};
     my $oldpkglist = &$read_cached_pkgstatus();
-    foreach my $pi (@$oldpkglist) {
-	$notify_status->{$pi->{Package}} = $pi->{NotifyStatus};
-    }
+    my $notify_status = { map { $_->{Package} => $_->{NotifyStatus} } $oldpkglist->@* };
 
     my $pkglist = [];
 
