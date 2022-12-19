@@ -366,6 +366,71 @@ __PACKAGE__->register_method ({
 	return $rpcenv->fork_worker('cephdestroyfs', $fs_name,  $user, $worker);
     }});
 
+__PACKAGE__->register_method ({
+    name => 'osddetails',
+    path => 'osddetails',
+    method => 'GET',
+    description => "Get OSD details.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    osdid => {
+		description => "ID of the OSD",
+		type => 'string',
+	    },
+	    verbose => {
+		description => "Print verbose information, same as json-pretty output format.",
+		type => 'boolean',
+		default => 0,
+		optional => 1,
+	    },
+	},
+    },
+    returns => { type => 'object' },
+    code => sub {
+	my ($param) = @_;
+	PVE::Ceph::Tools::check_ceph_inited();
+	my $res = PVE::API2::Ceph::OSD->osddetails({
+		osdid => $param->{osdid},
+		node => $param->{node},
+	    });
+
+	for my $dev (@{ $res->{devices} }) {
+	    $dev->{"lv-info"} = PVE::API2::Ceph::OSD->osdvolume({
+		    osdid => $param->{osdid},
+		    node => $param->{node},
+		    type => $dev->{device},
+		});
+	}
+	$res->{verbose} = 1 if $param->{verbose};
+	return $res;
+    }});
+
+my $format_osddetails = sub {
+    my ($data, $schema, $options) = @_;
+    $options->{"output-format"} //= "text";
+
+    if ($data->{verbose}) {
+	$options->{"output-format"} = "json-pretty";
+	delete $data->{verbose};
+    }
+
+    if ($options->{"output-format"} eq "text") {
+	for my $dev (@{ $data->{devices} }) {
+	    my $str = "Disk: $dev->{physical_device},"
+		." Type: $dev->{type},"
+		." LV Size: $dev->{'lv-info'}->{lv_size},"
+		." LV Creation Time: $dev->{'lv-info'}->{creation_time}";
+
+	    $data->{osd}->{$dev->{device}} = $str;
+	}
+	PVE::CLIFormatter::print_api_result($data->{osd}, $schema, undef, $options);
+    } else {
+	PVE::CLIFormatter::print_api_result($data, $schema, undef, $options);
+    }
+};
+
 our $cmddef = {
     init => [ 'PVE::API2::Ceph', 'init', [], { node => $nodename } ],
     pool => {
@@ -406,6 +471,7 @@ our $cmddef = {
     osd => {
 	create => [ 'PVE::API2::Ceph::OSD', 'createosd', ['dev'], { node => $nodename }, $upid_exit],
 	destroy => [ 'PVE::API2::Ceph::OSD', 'destroyosd', ['osdid'], { node => $nodename }, $upid_exit],
+	details => [ __PACKAGE__, 'osddetails', ['osdid'], { node => $nodename }, $format_osddetails, $PVE::RESTHandler::standard_output_options],
     },
     createosd => { alias => 'osd create' },
     destroyosd => { alias => 'osd destroy' },
