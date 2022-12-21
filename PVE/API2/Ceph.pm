@@ -114,7 +114,7 @@ __PACKAGE__->register_method ({
     permissions => {
 	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
     },
-    description => "Get Ceph configuration.",
+    description => "Get the Ceph configuration file.",
     parameters => {
 	additionalProperties => 0,
 	properties => {
@@ -141,7 +141,7 @@ __PACKAGE__->register_method ({
     permissions => {
 	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
     },
-    description => "Get Ceph configuration database.",
+    description => "Get the Ceph configuration database.",
     parameters => {
 	additionalProperties => 0,
 	properties => {
