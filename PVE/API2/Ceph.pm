@@ -87,20 +87,23 @@ __PACKAGE__->register_method ({
 	my ($param) = @_;
 
 	my $result = [
+	    { name => 'cmd-safety' },
+	    { name => 'config' },
+	    { name => 'configdb' },
+	    { name => 'crush' },
+	    { name => 'fs' },
 	    { name => 'init' },
+	    { name => 'log' },
+	    { name => 'mds' },
+	    { name => 'mgr' },
 	    { name => 'mon' },
 	    { name => 'osd' },
 	    { name => 'pools' },
-	    { name => 'fs' },
-	    { name => 'mds' },
-	    { name => 'stop' },
-	    { name => 'start' },
 	    { name => 'restart' },
-	    { name => 'status' },
-	    { name => 'crush' },
-	    { name => 'config' },
-	    { name => 'log' },
 	    { name => 'rules' },
+	    { name => 'start' },
+	    { name => 'status' },
+	    { name => 'stop' },
 	];
 
 	return $result;
