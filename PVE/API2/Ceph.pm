@@ -622,7 +622,12 @@ __PACKAGE__->register_method ({
 	type => 'array',
 	items => {
 	    type => "object",
-	    properties => {},
+	    properties => {
+		name => {
+		    description => "Name of the CRUSH rule.",
+		    type => "string",
+		}
+	    },
 	},
 	links => [ { rel => 'child', href => "{name}" } ],
     },

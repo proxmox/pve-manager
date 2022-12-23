@@ -212,9 +212,16 @@ __PACKAGE__->register_method ({
 	items => {
 	    type => "object",
 	    properties => {
-		name => { type => 'string' },
 		addr => { type => 'string', optional => 1 },
-		host => { type => 'string', optional => 1 },
+		ceph_version => { type => 'string', optional => 1 },
+		ceph_version_short => { type => 'string', optional => 1 },
+		direxists => { type => 'string', optional => 1 },
+		host => { type => 'boolean', optional => 1 },
+		name => { type => 'string' },
+		quorum => { type => 'boolean', optional => 1 },
+		rank => { type => 'integer', optional => 1 },
+		service => { type => 'integer', optional => 1 },
+		state => { type => 'string', optional => 1 },
 	    },
 	},
 	links => [ { rel => 'child', href => "{name}" } ],

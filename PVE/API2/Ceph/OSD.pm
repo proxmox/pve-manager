@@ -88,6 +88,16 @@ __PACKAGE__->register_method ({
     # fixme: return a list instead of extjs tree format ?
     returns => {
 	type => "object",
+	items => {
+	    type => "object",
+	    properties => {
+		flags => { type => "string" },
+		root => {
+		    type => "object",
+		    description => "Tree with OSDs in the CRUSH map structure.",
+		},
+	    },
+	},
     },
     code => sub {
 	my ($param) = @_;

@@ -181,6 +181,14 @@ __PACKAGE__->register_method ({
 		    description => "Flag name.",
 		    type => 'string', enum => $possible_flags_list,
 		},
+		description => {
+		    description => "Flag description.",
+		    type => 'string',
+		},
+		value => {
+		    description => "Flag value.",
+		    type => 'boolean',
+		},
 	    },
 	},
 	links => [ { rel => 'child', href => "{name}" } ],
