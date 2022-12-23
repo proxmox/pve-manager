@@ -48,6 +48,33 @@ __PACKAGE__->register_method ({
     }
 });
 
+my $metadata_common_props = {
+    hostname => {
+	type => "string",
+	description => "Hostname on which the service is running.",
+    },
+    ceph_release => {
+	type => "string",
+	description => "Ceph release codename currently used.",
+    },
+    ceph_version => {
+	type => "string",
+	description => "Version info currently used by the service.",
+    },
+    ceph_version_short => {
+	type => "string",
+	description => "Short version (numerical) info currently used by the service.",
+    },
+    mem_total_kb => {
+	type => "integer",
+	description => "Memory consumption of the service.",
+    },
+    mem_swap_kb => {
+	type => "integer",
+	description => "Memory of the service currently in swap.",
+    },
+};
+
 __PACKAGE__->register_method ({
     name => 'metadata',
     path => 'metadata',
@@ -68,7 +95,141 @@ __PACKAGE__->register_method ({
 	    },
 	},
     },
-    returns => { type => 'object' },
+    returns => {
+	type => 'object',
+	description => "Items for each type of service containing objects for each instance.",
+	properties => {
+	    mds => {
+		type => "object",
+		description => "Metadata servers configured in the cluster and their properties.",
+		properties => {
+		    "{instance}" => {
+			type => "object",
+			description => "Useful properties are listed, but not the full list.",
+			properties => {
+			    addr => {
+				type => "string",
+				description => "Bind addresses and ports.",
+			    },
+			    name => {
+				type => "string",
+				description => "Name of the service instance.",
+			    },
+			    %{$metadata_common_props},
+			},
+		    },
+		},
+	    },
+	    mgr => {
+		type => "object",
+		description => "Managers configured in the cluster and their properties.",
+		properties => {
+		    "{instance}" => {
+			type => "object",
+			description => "Useful properties are listed, but not the full list.",
+			properties => {
+			    addr => {
+				type => "string",
+				description => "Bind address",
+			    },
+			    name => {
+				type => "string",
+				description => "Name of the service instance.",
+			    },
+			    %{$metadata_common_props},
+			},
+		    },
+		},
+	    },
+	    mon => {
+		type => "object",
+		description => "Monitors configured in the cluster and their properties.",
+		properties => {
+		    "{instance}" => {
+			type => "object",
+			description => "Useful properties are listed, but not the full list.",
+			properties => {
+			    addrs => {
+				type => "string",
+				description => "Bind addresses and ports.",
+			    },
+			    name => {
+				type => "string",
+				description => "Name of the service instance.",
+			    },
+			    %{$metadata_common_props},
+			},
+		    },
+		},
+	    },
+	    node => {
+		type => "object",
+		description => "Ceph version installed on the nodes.",
+		properties => {
+		    "{node}" => {
+			type => "object",
+			properties => {
+			    buildcommit => {
+				type => "string",
+				description => "GIT commit used for the build.",
+			    },
+			    version => {
+				type => "object",
+				description => "Version info.",
+				properties => {
+				    str => {
+					type => "string",
+					description => "Version as single string.",
+				    },
+				    parts => {
+					type => "array",
+					description => "major, minor & patch",
+				    },
+				},
+			    },
+			},
+		    },
+		},
+	    },
+	    osd => {
+		type => "array",
+		description => "OSDs configured in the cluster and their properties.",
+		properties => {
+		    "{instance}" => {
+			type => "object",
+			description => "Useful properties are listed, but not the full list.",
+			properties => {
+			    id => {
+				type => "integer",
+				description => "OSD ID.",
+			    },
+			    front_addr => {
+				type => "string",
+				description => "Bind addresses and ports for frontend traffic to OSDs.",
+			    },
+			    back_addr => {
+				type => "string",
+				description => "Bind addresses and ports for backend inter OSD traffic.",
+			    },
+			    device_id => {
+				type => "string",
+				description => "Devices used by the OSD.",
+			    },
+			    osd_data => {
+				type => "string",
+				description => "Path to the OSD data directory.",
+			    },
+			    osd_objectstore => {
+				type => "string",
+				description => "OSD objectstore type.",
+			    },
+			    %{$metadata_common_props},
+			},
+		    },
+		},
+	    },
+	},
+    },
     code => sub {
 	my ($param) = @_;
 
