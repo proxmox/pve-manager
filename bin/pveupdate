@@ -51,8 +51,19 @@ if (my $err = $@) {
 }
 
 my $info = eval { PVE::API2::Subscription::read_etc_subscription() };
-# Assume that users with subscriptions want informations about new packages.
-my $notify = ($info && $info->{status} eq 'active') ? 1 : 0;
+
+my $notify_on = $dccfg->{notify}->{'package-updates'} // 'auto';
+my $notify = 0;
+if ($notify_on eq 'auto') {
+    # hosts with subscriptions are likely production system and thus want infos about new packages
+    $notify = ($info && $info->{status} eq 'active') ? 1 : 0;
+} elsif ($notify_on eq 'always') {
+    $notify = 1;
+} elsif ($notify_on eq 'never') {
+    $notify = 0;
+} else {
+    warn "unexpected package-updates  notify configuration value '$notify_on'\n";
+}
 eval { PVE::API2::APT->update_database({ node => $nodename, notify => $notify, quiet => 1 }); };
 if (my $err = $@) {
     syslog ('err', "update apt database failed: $err");
