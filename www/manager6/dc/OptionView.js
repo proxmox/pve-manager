@@ -91,6 +91,26 @@ Ext.define('PVE.dc.OptionView', {
 	    vtype: 'proxmoxMail',
 	    defaultValue: 'root@$hostname',
 	});
+	me.add_inputpanel_row('notify', gettext('Notify'), {
+	    renderer: v => !v ? 'package-updates=auto' : PVE.Parser.printPropertyString(v),
+	    labelWidth: 120,
+	    url: "/api2/extjs/cluster/options",
+	    //onlineHelp: 'ha_manager_shutdown_policy',
+	    items: [{
+		xtype: 'proxmoxKVComboBox',
+		name: 'package-updates',
+		fieldLabel: gettext('Package Updates'),
+		deleteEmpty: false,
+		value: '__default__',
+		comboItems: [
+		    ['__default__', Proxmox.Utils.defaultText + ' (auto)'],
+		    ['auto', gettext('Automatically')],
+		    ['always', gettext('Always')],
+		    ['never', gettext('Never')],
+		],
+		defaultValue: '__default__',
+	    }],
+	});
 	me.add_text_row('mac_prefix', gettext('MAC address prefix'), {
 	    deleteEmpty: true,
 	    vtype: 'MacPrefix',
