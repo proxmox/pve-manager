@@ -342,15 +342,20 @@ __PACKAGE__->register_method({
 		minimum => 0,
 		default => 0,
 		optional => 1,
-		description => "The line number to start printing at.",
+		description => "Start at this line when reading the tasklog",
 	    },
 	    limit => {
 		type => 'integer',
 		minimum => 0,
 		default => 50,
 		optional => 1,
-		description => "The maximum amount of lines that should be printed.",
+		description => "The amount of lines to read from the tasklog.",
 	    },
+	    download => {
+		type => 'boolean',
+		optional => 1,
+		description => "Whether the tasklog file should be downloaded. This parameter can't be used in conjunction with other parameters",
+	    }
 	},
     },
     returns => {
@@ -378,8 +383,6 @@ __PACKAGE__->register_method({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $user = $rpcenv->get_user();
 	my $node = $param->{node};
-	my $start = $param->{start} // 0;
-	my $limit = $param->{limit} // 50;
 
 	$convert_token_task->($task);
 
@@ -387,11 +390,43 @@ __PACKAGE__->register_method({
 	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ]);
 	}
 
-	my ($count, $lines) = PVE::Tools::dump_logfile($filename, $start, $limit);
+	my $download = $param->{download} // 0;
 
-	$rpcenv->set_result_attrib('total', $count);
+	if ($download) {
+	    if (defined($param->{start}) || defined($param->{limit})) {
+		die "Parameter 'download' can't be used with other parameters\n";
+	    }
 
-	return $lines;
+	    my $fh;
+	    my $use_compression = ( -s $filename ) > 1024;
+
+	    # 1024 is a practical cutoff for the size distribution of our log files.
+	    if ($use_compression) {
+		open($fh, "-|", "/usr/bin/gzip", "-c", "$filename")
+		    or die "Could not create compressed file stream for file '$filename' - $!\n";
+	    } else {
+		open($fh, '<', $filename) or die "Could not open file '$filename' - $!\n";
+	    }
+
+	    return {
+		download => {
+		    fh => $fh,
+		    stream => 1,
+		    'content-encoding' => $use_compression ? 'gzip' : undef,
+		    'content-type' => "text/plain",
+		    'content-disposition' => "attachment; filename=\"".$param->{upid}."\"",
+		},
+	    },
+	} else {
+	    my $start = $param->{start} // 0;
+	    my $limit = $param->{limit} // 50;
+
+	    my ($count, $lines) = PVE::Tools::dump_logfile($filename, $start, $limit);
+
+	    $rpcenv->set_result_attrib('total', $count);
+
+	    return $lines;
+	}
     }});
 
 
