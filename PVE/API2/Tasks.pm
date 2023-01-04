@@ -390,9 +390,7 @@ __PACKAGE__->register_method({
 	    $rpcenv->check($user, "/nodes/$node", [ 'Sys.Audit' ]);
 	}
 
-	my $download = $param->{download} // 0;
-
-	if ($download) {
+	if ($param->{download}) {
 	    if (defined($param->{start}) || defined($param->{limit})) {
 		die "Parameter 'download' can't be used with other parameters\n";
 	    }
