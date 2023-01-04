@@ -392,7 +392,7 @@ __PACKAGE__->register_method({
 
 	if ($param->{download}) {
 	    if (defined($param->{start}) || defined($param->{limit})) {
-		die "Parameter 'download' can't be used with other parameters\n";
+		die "'download' cannot be used together with 'start' or 'limit' parameters\n";
 	    }
 
 	    my $fh;
