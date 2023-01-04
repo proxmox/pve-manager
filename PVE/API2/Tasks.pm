@@ -394,11 +394,10 @@ __PACKAGE__->register_method({
 	    if (defined($param->{start}) || defined($param->{limit})) {
 		die "'download' cannot be used together with 'start' or 'limit' parameters\n";
 	    }
-
-	    my $fh;
+	    # 1024 is a practical cutoff for the size distribution of our log files.
 	    my $use_compression = ( -s $filename ) > 1024;
 
-	    # 1024 is a practical cutoff for the size distribution of our log files.
+	    my $fh;
 	    if ($use_compression) {
 		open($fh, "-|", "/usr/bin/gzip", "-c", "$filename")
 		    or die "Could not create compressed file stream for file '$filename' - $!\n";
