@@ -176,15 +176,16 @@ Ext.define('PVE.panel.Config', {
 	me.tbar = undefined;
 
 	if (!me.onlineHelp) {
+	    // use the onlineHelp property indirection to enforce checking reference validity
 	    let typeToOnlineHelp = {
-		'type/lxc': 'chapter_pct',
-		'type/node': 'chapter_system_administration',
-		'type/pool': 'pveum_pools',
-		'type/qemu': 'chapter_virtual_machines',
-		'type/sdn': 'chapter_pvesdn',
-		'type/storage': 'chapter_storage',
+		'type/lxc': { onlineHelp: 'chapter_pct' },
+		'type/node': { onlineHelp: 'chapter_system_administration' },
+		'type/pool': { onlineHelp: 'pveum_pools' },
+		'type/qemu': { onlineHelp: 'chapter_virtual_machines' },
+		'type/sdn': { onlineHelp: 'chapter_pvesdn' },
+		'type/storage': { onlineHelp: 'chapter_storage' },
 	    };
-	    me.onlineHelp = typeToOnlineHelp[me.pveSelNode.data.id];
+	    me.onlineHelp = typeToOnlineHelp[me.pveSelNode.data.id]?.onlineHelp;
 	}
 
 	if (me.tbarSpacing) {
