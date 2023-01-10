@@ -5,18 +5,17 @@ Ext.define('PVE.storage.Browser', {
     onlineHelp: 'chapter_storage',
 
     initComponent: function() {
-        var me = this;
+        let me = this;
 
-	var nodename = me.pveSelNode.data.node;
+	let nodename = me.pveSelNode.data.node;
 	if (!nodename) {
 	    throw "no node name specified";
 	}
 
-	var storeid = me.pveSelNode.data.storage;
+	let storeid = me.pveSelNode.data.storage;
 	if (!storeid) {
 	    throw "no storage ID specified";
 	}
-
 
 	me.items = [
 	    {
@@ -27,20 +26,18 @@ Ext.define('PVE.storage.Browser', {
 	    },
 	];
 
-	var caps = Ext.state.Manager.get('GuiCap');
+	let caps = Ext.state.Manager.get('GuiCap');
 
 	Ext.apply(me, {
-	    title: Ext.String.format(
-	        gettext("Storage {0} on node {1}"),
-	        `'${storeid}'`,
-	        `'${nodename}'`,
-	    ),
+	    title: Ext.String.format(gettext("Storage {0} on node {1}"), `'${storeid}'`, `'${nodename}'`),
 	    hstateid: 'storagetab',
 	});
 
-	if (caps.storage['Datastore.Allocate'] ||
+	if (
+	    caps.storage['Datastore.Allocate'] ||
 	    caps.storage['Datastore.AllocateSpace'] ||
-	    caps.storage['Datastore.Audit']) {
+	    caps.storage['Datastore.Audit']
+	) {
 	    let storageInfo = PVE.data.ResourceStore.findRecord(
 		'id',
 		`storage/${nodename}/${storeid}`,
@@ -128,7 +125,7 @@ Ext.define('PVE.storage.Browser', {
 		title: gettext('Permissions'),
 		iconCls: 'fa fa-unlock',
 		itemId: 'permissions',
-		path: '/storage/' + storeid,
+		path: `/storage/${storeid}`,
 	    });
 	}
 
