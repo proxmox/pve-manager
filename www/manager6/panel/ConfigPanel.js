@@ -211,10 +211,10 @@ Ext.define('PVE.panel.Config', {
 	me.items = me.items || [];
 	if (me.showSearch) {
 	    me.items.unshift({
+		xtype: 'pveResourceGrid',
 		itemId: 'search',
 		title: gettext('Search'),
 		iconCls: 'fa fa-search',
-		xtype: 'pveResourceGrid',
 		pveSelNode: me.pveSelNode,
 	    });
 	}
