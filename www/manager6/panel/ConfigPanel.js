@@ -177,12 +177,12 @@ Ext.define('PVE.panel.Config', {
 
 	if (!me.onlineHelp) {
 	    let typeToOnlineHelp = {
-		'type/lxc': 'chapter-pct.html',
-		'type/node': 'chapter-sysadmin.html',
-		'type/pool': 'chapter-pveum.html#_pools',
-		'type/qemu': 'chapter-qm.html',
-		'type/sdn': 'chapter-pvesdn.html',
-		'type/storage': 'chapter-pvesm.html',
+		'type/lxc': 'chapter_pct',
+		'type/node': 'chapter_system_administration',
+		'type/pool': 'pveum_pools',
+		'type/qemu': 'chapter_virtual_machines',
+		'type/sdn': 'chapter_pvesdn',
+		'type/storage': 'chapter_storage',
 	    };
 	    me.onlineHelp = typeToOnlineHelp[me.pveSelNode.data.id];
 	}
