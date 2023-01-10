@@ -181,6 +181,7 @@ Ext.define('PVE.panel.Config', {
 		'type/node': 'chapter-sysadmin.html',
 		'type/pool': 'chapter-pveum.html#_pools',
 		'type/qemu': 'chapter-qm.html',
+		'type/sdn': 'chapter-pvesdn.html',
 		'type/storage': 'chapter-pvesm.html',
 	    };
 	    me.onlineHelp = typeToOnlineHelp[me.pveSelNode.data.id];
