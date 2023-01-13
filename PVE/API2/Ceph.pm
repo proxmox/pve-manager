@@ -652,7 +652,7 @@ __PACKAGE__->register_method ({
     proxyto => 'node',
     protected => 1,
     permissions => {
-	check => ['perm', '/', [ 'Sys.audit' ]],
+	check => ['perm', '/', [ 'Sys.Audit' ]],
     },
     parameters => {
 	additionalProperties => 0,
