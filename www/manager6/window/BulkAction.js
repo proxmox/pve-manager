@@ -3,6 +3,7 @@ Ext.define('PVE.window.BulkAction', {
 
     resizable: true,
     width: 800,
+    height: 600,
     modal: true,
     layout: {
 	type: 'fit',
