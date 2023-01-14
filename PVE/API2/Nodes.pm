@@ -1911,12 +1911,13 @@ __PACKAGE__->register_method ({
 		optional => 1,
 	    },
 	    'timeout' => {
-		description => 'Timeout for each guest shutdown task.',
+		description => 'Timeout for each guest shutdown task. Depending on `force-stop`,'
+		    .' the shutdown gets then simply aborted or a hard-stop is forced.',
 		type => 'integer',
 		optional => 1,
 		default => 180,
-		min => 0,
-		max => 2 * 3600, # mostly arbitrary, but we do not want to high timeouts
+		minimum => 0,
+		maximum => 2 * 3600, # mostly arbitrary, but we do not want to high timeouts
 	    },
 	},
     },
