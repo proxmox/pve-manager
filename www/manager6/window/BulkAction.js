@@ -106,6 +106,26 @@ Ext.define('PVE.window.BulkAction', {
 		name: 'force',
 		value: 1,
 	    });
+	} else if (me.action === 'stopall') {
+	    items.push(
+		{
+		    xtype: 'proxmoxcheckbox',
+		    name: 'force-stop',
+		    fieldLabel: gettext('Force Stop'),
+		    boxLabel: gettext('Force stop guest if shutdown times out.'),
+		    checked: true,
+		    uncheckedValue: 0,
+		},
+		{
+		    xtype: 'proxmoxintegerfield',
+		    name: 'timeout',
+		    fieldLabel: gettext('Timeout (s)'),
+		    emptyText: '180',
+		    minValue: 0,
+		    maxValue: 7200,
+		    allowBlank: true,
+		},
+	    );
 	}
 
 	items.push({
@@ -138,7 +158,7 @@ Ext.define('PVE.window.BulkAction', {
 		align: 'stretch',
 	    },
 	    fieldDefaults: {
-		labelWidth: 300,
+		labelWidth: me.action === 'migrateall' ? 300 : 120,
 		anchor: '100%',
 	    },
 	    items: items,
