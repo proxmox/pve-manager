@@ -43,14 +43,14 @@ Ext.define('PVE.node.CmdMenu', {
 	    },
 	},
 	{
-	    text: gettext('Bulk Stop'),
+	    text: gettext('Bulk Shutdown'),
 	    itemId: 'bulkstop',
 	    iconCls: 'fa fa-fw fa-stop',
 	    handler: function() {
 		Ext.create('PVE.window.BulkAction', {
 		    nodename: this.up('menu').nodename,
-		    title: gettext('Bulk Stop'),
-		    btnText: gettext('Stop'),
+		    title: gettext('Bulk Shutdown'),
+		    btnText: gettext('Shutdown'),
 		    action: 'stopall',
 		    autoShow: true,
 		});

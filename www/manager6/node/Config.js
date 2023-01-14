@@ -51,13 +51,13 @@ Ext.define('PVE.node.Config', {
 			},
 		    },
 		    {
-			text: gettext('Bulk Stop'),
+			text: gettext('Bulk Shutdown'),
 			iconCls: 'fa fa-fw fa-stop',
 			handler: function() {
 			    var win = Ext.create('PVE.window.BulkAction', {
 				nodename: nodename,
-				title: gettext('Bulk Stop'),
-				btnText: gettext('Stop'),
+				title: gettext('Bulk Shutdown'),
+				btnText: gettext('Shutdown'),
 				action: 'stopall',
 			    });
 			    win.show();
