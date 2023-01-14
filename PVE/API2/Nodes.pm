@@ -1792,7 +1792,6 @@ __PACKAGE__->register_method ({
 	my $force = $param->{force};
 
 	my $code = sub {
-
 	    $rpcenv->{type} = 'priv'; # to start tasks in background
 
 	    if (!PVE::Cluster::check_cfs_quorum(1)) {
@@ -1805,16 +1804,17 @@ __PACKAGE__->register_method ({
 
 	    eval { # remove backup locks, but avoid running into a scheduled backup job
 		PVE::Tools::lock_file('/var/run/vzdump.lock', 10, $remove_locks_on_startup, $nodename);
-	    }; warn $@ if $@;
+	    };
+	    warn $@ if $@;
 
 	    my $autostart = $force ? undef : 1;
-	    my $startList = &$get_start_stop_list($nodename, $autostart, $param->{vms});
+	    my $startList = $get_start_stop_list->($nodename, $autostart, $param->{vms});
 
 	    # Note: use numeric sorting with <=>
-	    foreach my $order (sort {$a <=> $b} keys %$startList) {
+	    for my $order (sort {$a <=> $b} keys %$startList) {
 		my $vmlist = $startList->{$order};
 
-		foreach my $vmid (sort {$a <=> $b} keys %$vmlist) {
+		for my $vmid (sort {$a <=> $b} keys %$vmlist) {
 		    my $d = $vmlist->{$vmid};
 
 		    PVE::Cluster::check_cfs_quorum(); # abort when we loose quorum
@@ -1839,8 +1839,8 @@ __PACKAGE__->register_method ({
 			    die "unknown VM type '$d->{type}'\n";
 			}
 
-			my $res = PVE::Tools::upid_decode($upid);
-			while (PVE::ProcFSTools::check_process_running($res->{pid})) {
+			my $task = PVE::Tools::upid_decode($upid);
+			while (PVE::ProcFSTools::check_process_running($task->{pid})) {
 			    sleep(1);
 			}
 
@@ -1926,51 +1926,49 @@ __PACKAGE__->register_method ({
 
 	    $rpcenv->{type} = 'priv'; # to start tasks in background
 
-	    my $stopList = &$get_start_stop_list($nodename, undef, $param->{vms});
+	    my $stopList = $get_start_stop_list->($nodename, undef, $param->{vms});
 
 	    my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
 	    my $datacenterconfig = cfs_read_file('datacenter.cfg');
 	    # if not set by user spawn max cpu count number of workers
 	    my $maxWorkers =  $datacenterconfig->{max_workers} || $cpuinfo->{cpus};
 
-	    foreach my $order (sort {$b <=> $a} keys %$stopList) {
+	    for my $order (sort {$b <=> $a} keys %$stopList) {
 		my $vmlist = $stopList->{$order};
 		my $workers = {};
 
 		my $finish_worker = sub {
 		    my $pid = shift;
-		    my $d = $workers->{$pid};
-		    return if !$d;
-		    delete $workers->{$pid};
+		    my $worker = delete $workers->{$pid} || return;
 
-		    syslog('info', "end task $d->{upid}");
+		    syslog('info', "end task $worker->{upid}");
 		};
 
-		foreach my $vmid (sort {$b <=> $a} keys %$vmlist) {
+		for my $vmid (sort {$b <=> $a} keys %$vmlist) {
 		    my $d = $vmlist->{$vmid};
 		    my $upid = eval { $create_stop_worker->($nodename, $d->{type}, $vmid, $d->{down}) };
 		    warn $@ if $@;
 		    next if !$upid;
 
-		    my $res = PVE::Tools::upid_decode($upid, 1);
-		    next if !$res;
+		    my $task = PVE::Tools::upid_decode($upid, 1);
+		    next if !$task;
 
-		    my $pid = $res->{pid};
+		    my $pid = $task->{pid};
 
 		    $workers->{$pid} = { type => $d->{type}, upid => $upid, vmid => $vmid };
 		    while (scalar(keys %$workers) >= $maxWorkers) {
 			foreach my $p (keys %$workers) {
 			    if (!PVE::ProcFSTools::check_process_running($p)) {
-				&$finish_worker($p);
+				$finish_worker->($p);
 			    }
 			}
 			sleep(1);
 		    }
 		}
 		while (scalar(keys %$workers)) {
-		    foreach my $p (keys %$workers) {
+		    for my $p (keys %$workers) {
 			if (!PVE::ProcFSTools::check_process_running($p)) {
-			    &$finish_worker($p);
+			    $finish_worker->($p);
 			}
 		    }
 		    sleep(1);
@@ -1992,21 +1990,23 @@ my $create_migrate_worker = sub {
     if ($type eq 'lxc') {
 	my $online = PVE::LXC::check_running($vmid) ? 1 : 0;
 	print STDERR "Migrating CT $vmid\n";
-	$upid = PVE::API2::LXC->migrate_vm({node => $nodename, vmid => $vmid, target => $target,
-					    restart => $online });
+	$upid = PVE::API2::LXC->migrate_vm(
+	   { node => $nodename, vmid => $vmid, target => $target, restart => $online });
     } elsif ($type eq 'qemu') {
 	print STDERR "Check VM $vmid: ";
 	*STDERR->flush();
 	my $online = PVE::QemuServer::check_running($vmid, 1) ? 1 : 0;
-	my $preconditions = PVE::API2::Qemu->migrate_vm_precondition({node => $nodename, vmid => $vmid, target => $target});
+	my $preconditions = PVE::API2::Qemu->migrate_vm_precondition(
+	    {node => $nodename, vmid => $vmid, target => $target});
 	my $invalidConditions = '';
 	if ($online && !$with_local_disks && scalar @{$preconditions->{local_disks}}) {
-	    $invalidConditions .= "\n  Has local disks: " .
-	        join(', ', map { $_->{volid} } @{$preconditions->{local_disks}});
+	    $invalidConditions .= "\n  Has local disks: ";
+	    $invalidConditions .= join(', ', map { $_->{volid} } @{$preconditions->{local_disks}});
 	}
 
 	if (@{$preconditions->{local_resources}}) {
-	    $invalidConditions .= "\n  Has local resources: " . join(', ', @{$preconditions->{local_resources}});
+	    $invalidConditions .= "\n  Has local resources: ";
+	    $invalidConditions .= join(', ', @{$preconditions->{local_resources}});
 	}
 
 	if ($invalidConditions && $invalidConditions ne '') {
@@ -2029,9 +2029,9 @@ my $create_migrate_worker = sub {
 	die "unknown VM type '$type'\n";
     }
 
-    my $res = PVE::Tools::upid_decode($upid);
+    my $task = PVE::Tools::upid_decode($upid);
 
-    return $res->{pid};
+    return $task->{pid};
 };
 
 __PACKAGE__->register_method ({
@@ -2049,13 +2049,12 @@ __PACKAGE__->register_method ({
 	properties => {
 	    node => get_standard_option('pve-node'),
             target => get_standard_option('pve-node', { description => "Target node." }),
-            maxworkers => {
-                description => "Maximal number of parallel migration job." .
-		    " If not set use 'max_workers' from datacenter.cfg," .
-		    " one of both must be set!",
+	    maxworkers => {
+		description => "Maximal number of parallel migration job. If not set, uses"
+		    ."'max_workers' from datacenter.cfg. One of both must be set!",
 		optional => 1,
-                type => 'integer',
-                minimum => 1
+		type => 'integer',
+		minimum => 1
             },
 	    vms => {
 		description => "Only consider Guests with these IDs.",
