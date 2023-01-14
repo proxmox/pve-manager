@@ -1866,18 +1866,16 @@ __PACKAGE__->register_method ({
     }});
 
 my $create_stop_worker = sub {
-    my ($nodename, $type, $vmid, $down_timeout) = @_;
+    my ($nodename, $type, $vmid, $timeout) = @_;
 
     if ($type eq 'lxc') {
 	return if !PVE::LXC::check_running($vmid);
-	my $timeout =  int($down_timeout // 60);
 	print STDERR "Stopping CT $vmid (timeout = $timeout seconds)\n";
 	return PVE::API2::LXC::Status->vm_shutdown(
 	    { node => $nodename, vmid => $vmid, timeout => $timeout, forceStop => 1 }
 	);
     } elsif ($type eq 'qemu') {
 	return if !PVE::QemuServer::check_running($vmid, 1);
-	my $timeout =  int($down_timeout // 3 * 60);
 	print STDERR "Stopping VM $vmid (timeout = $timeout seconds)\n";
 	return PVE::API2::Qemu->vm_shutdown(
 	    { node => $nodename, vmid => $vmid, timeout => $timeout, forceStop => 1 }
@@ -1905,6 +1903,14 @@ __PACKAGE__->register_method ({
 		description => "Only consider Guests with these IDs.",
 		type => 'string',  format => 'pve-vmid-list',
 		optional => 1,
+	    },
+	    'timeout' => {
+		description => 'Timeout for each guest shutdown task.',
+		type => 'integer',
+		optional => 1,
+		default => 180,
+		min => 0,
+		max => 2 * 3600, # mostly arbitrary, but we do not want to high timeouts
 	    },
 	},
     },
@@ -1944,7 +1950,8 @@ __PACKAGE__->register_method ({
 
 		for my $vmid (sort {$b <=> $a} keys %$vmlist) {
 		    my $d = $vmlist->{$vmid};
-		    my $upid = eval { $create_stop_worker->($nodename, $d->{type}, $vmid, $d->{down}) };
+		    my $timeout = int($d->{down} // $param->{timeout} // 180);
+		    my $upid = eval { $create_stop_worker->($nodename, $d->{type}, $vmid, $timeout) };
 		    warn $@ if $@;
 		    next if !$upid;
 
