@@ -9,41 +9,33 @@ Ext.define('PVE.window.BulkAction', {
     },
     border: false,
 
-    // the action to be set
-    // currently there are
-    // startall
-    // migrateall
-    // stopall
+    // the action to set, currently there are: `startall`, `migrateall`, `stopall`
     action: undefined,
 
     submit: function(params) {
-	var me = this;
+	let me = this;
 
 	Proxmox.Utils.API2Request({
 	    params: params,
-	    url: '/nodes/' + me.nodename + '/' + me.action,
+	    url: `/nodes/${me.nodename}/${me.action}`,
 	    waitMsgTarget: me,
 	    method: 'POST',
-	    failure: function(response, opts) {
-		Ext.Msg.alert('Error', response.htmlStatus);
-	    },
-	    success: function(response, options) {
-		var upid = response.result.data;
-
-		var win = Ext.create('Proxmox.window.TaskViewer', {
-		    upid: upid,
+	    failure: response => Ext.Msg.alert('Error', response.htmlStatus),
+	    success: function({ result }, options) {
+		Ext.create('Proxmox.window.TaskViewer', {
+		    autoShow: true,
+		    upid: result.data,
+		    listeners: {
+			destroy: () => me.close(),
+		    },
 		});
-		win.show();
 		me.hide();
-		win.on('destroy', function() {
-		    me.close();
-		});
 	    },
 	});
     },
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
 	if (!me.nodename) {
 	    throw "no node name specified";
@@ -58,10 +50,8 @@ Ext.define('PVE.window.BulkAction', {
 	    throw "no title specified";
 	}
 
-	var items = [];
-
+	let items = [];
 	if (me.action === 'migrateall') {
-	    /*value is string and number*/
 	    items.push(
 		{
 		    xtype: 'pveNodeSelector',
@@ -92,7 +82,6 @@ Ext.define('PVE.window.BulkAction', {
 			listeners: {
 			    change: (cb, val) => me.down('#localdiskwarning').setVisible(val),
 			},
-
 		    },
 		    {
 			itemId: 'localdiskwarning',
@@ -155,9 +144,9 @@ Ext.define('PVE.window.BulkAction', {
 	    items: items,
 	});
 
-	var form = me.formPanel.getForm();
+	let form = me.formPanel.getForm();
 
-	var submitBtn = Ext.create('Ext.Button', {
+	let submitBtn = Ext.create('Ext.Button', {
 	    text: me.btnText,
 	    handler: function() {
 		form.isValid();
@@ -173,7 +162,7 @@ Ext.define('PVE.window.BulkAction', {
 	me.callParent();
 
 	form.on('validitychange', function() {
-	    var valid = form.isValid();
+	    let valid = form.isValid();
 	    submitBtn.setDisabled(!valid);
 	});
 	form.isValid();
