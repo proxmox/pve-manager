@@ -1866,19 +1866,19 @@ __PACKAGE__->register_method ({
     }});
 
 my $create_stop_worker = sub {
-    my ($nodename, $type, $vmid, $timeout) = @_;
+    my ($nodename, $type, $vmid, $timeout, $force_stop) = @_;
 
     if ($type eq 'lxc') {
 	return if !PVE::LXC::check_running($vmid);
 	print STDERR "Stopping CT $vmid (timeout = $timeout seconds)\n";
 	return PVE::API2::LXC::Status->vm_shutdown(
-	    { node => $nodename, vmid => $vmid, timeout => $timeout, forceStop => 1 }
+	    { node => $nodename, vmid => $vmid, timeout => $timeout, forceStop => $force_stop }
 	);
     } elsif ($type eq 'qemu') {
 	return if !PVE::QemuServer::check_running($vmid, 1);
 	print STDERR "Stopping VM $vmid (timeout = $timeout seconds)\n";
 	return PVE::API2::Qemu->vm_shutdown(
-	    { node => $nodename, vmid => $vmid, timeout => $timeout, forceStop => 1 }
+	    { node => $nodename, vmid => $vmid, timeout => $timeout, forceStop => $force_stop }
 	);
     } else {
 	die "unknown VM type '$type'\n";
@@ -1902,6 +1902,12 @@ __PACKAGE__->register_method ({
 	    vms => {
 		description => "Only consider Guests with these IDs.",
 		type => 'string',  format => 'pve-vmid-list',
+		optional => 1,
+	    },
+	    'force-stop' => {
+		description => 'Force a hard-stop after the timeout.',
+		type => 'boolean',
+		default => 1,
 		optional => 1,
 	    },
 	    'timeout' => {
@@ -1951,7 +1957,10 @@ __PACKAGE__->register_method ({
 		for my $vmid (sort {$b <=> $a} keys %$vmlist) {
 		    my $d = $vmlist->{$vmid};
 		    my $timeout = int($d->{down} // $param->{timeout} // 180);
-		    my $upid = eval { $create_stop_worker->($nodename, $d->{type}, $vmid, $timeout) };
+		    my $upid = eval {
+			$create_stop_worker->(
+			    $nodename, $d->{type}, $vmid, $timeout, $param->{'force-stop'} // 1)
+		    };
 		    warn $@ if $@;
 		    next if !$upid;
 
