@@ -103,7 +103,7 @@ __PACKAGE__->register_method ({
 		type => "object",
 		description => "Metadata servers configured in the cluster and their properties.",
 		properties => {
-		    "{instance}" => {
+		    "{id}" => {
 			type => "object",
 			description => "Useful properties are listed, but not the full list.",
 			properties => {
@@ -124,7 +124,7 @@ __PACKAGE__->register_method ({
 		type => "object",
 		description => "Managers configured in the cluster and their properties.",
 		properties => {
-		    "{instance}" => {
+		    "{id}" => {
 			type => "object",
 			description => "Useful properties are listed, but not the full list.",
 			properties => {
@@ -145,7 +145,7 @@ __PACKAGE__->register_method ({
 		type => "object",
 		description => "Monitors configured in the cluster and their properties.",
 		properties => {
-		    "{instance}" => {
+		    "{id}" => {
 			type => "object",
 			description => "Useful properties are listed, but not the full list.",
 			properties => {
@@ -195,7 +195,7 @@ __PACKAGE__->register_method ({
 		type => "array",
 		description => "OSDs configured in the cluster and their properties.",
 		properties => {
-		    "{instance}" => {
+		    "{id}" => {
 			type => "object",
 			description => "Useful properties are listed, but not the full list.",
 			properties => {
