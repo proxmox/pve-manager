@@ -6,25 +6,21 @@ Ext.define('PVE.storage.BackupView', {
     showColumns: ['name', 'notes', 'protected', 'date', 'format', 'size'],
 
     initComponent: function() {
-	var me = this;
+	let me = this;
 
-	var nodename = me.nodename = me.pveSelNode.data.node;
+	let nodename = me.nodename = me.pveSelNode.data.node;
 	if (!nodename) {
 	    throw "no node name specified";
 	}
 
-	var storage = me.storage = me.pveSelNode.data.storage;
+	let storage = me.storage = me.pveSelNode.data.storage;
 	if (!storage) {
 	    throw "no storage ID specified";
 	}
 
 	me.content = 'backup';
 
-	var sm = me.sm = Ext.create('Ext.selection.RowModel', {});
-
-	var reload = function() {
-	    me.store.load();
-	};
+	let sm = me.sm = Ext.create('Ext.selection.RowModel', {});
 
 	let pruneButton = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Prune group'),
@@ -57,14 +53,16 @@ Ext.define('PVE.storage.BackupView', {
 		this.setDisabled(true);
 	    },
 	    handler: function(b, e, rec) {
-		let win = Ext.create('PVE.window.Prune', {
-		    nodename: nodename,
-		    storage: storage,
+		Ext.create('PVE.window.Prune', {
+		    autoShow: true,
+		    nodename,
+		    storage,
 		    backup_id: this.vmid,
 		    backup_type: this.vmtype,
+		    listeners: {
+			destroy: () => me.store.load(),
+		    },
 		});
-		win.show();
-		win.on('destroy', reload);
 	    },
 	});
 
@@ -85,7 +83,7 @@ Ext.define('PVE.storage.BackupView', {
 		selModel: sm,
 		disabled: true,
 		handler: function(b, e, rec) {
-		    var vmtype;
+		    let vmtype;
 		    if (PVE.Utils.volume_is_qemu_backup(rec.data.volid, rec.data.format)) {
 			vmtype = 'qemu';
 		    } else if (PVE.Utils.volume_is_lxc_backup(rec.data.volid, rec.data.format)) {
@@ -94,15 +92,17 @@ Ext.define('PVE.storage.BackupView', {
 			return;
 		    }
 
-		    var win = Ext.create('PVE.window.Restore', {
-			nodename: nodename,
+		    Ext.create('PVE.window.Restore', {
+			autoShow: true,
+			nodename,
 			volid: rec.data.volid,
 			volidText: PVE.Utils.render_storage_content(rec.data.volid, {}, rec),
-			vmtype: vmtype,
-			isPBS: isPBS,
+			vmtype,
+			isPBS,
+			listeners: {
+			    destroy: () => me.store.load(),
+			},
 		    });
-		    win.show();
-		    win.on('destroy', reload);
 		},
 	    },
 	];
@@ -134,12 +134,11 @@ Ext.define('PVE.storage.BackupView', {
 		disabled: true,
 		selModel: sm,
 		handler: function(b, e, rec) {
-		    var win = Ext.create('PVE.window.BackupConfig', {
+		    Ext.create('PVE.window.BackupConfig', {
+			autoShow: true,
 			volume: rec.data.volid,
 			pveSelNode: me.pveSelNode,
 		    });
-
-		    win.show();
 		},
 	    },
 	    {
@@ -150,6 +149,7 @@ Ext.define('PVE.storage.BackupView', {
 		handler: function(b, e, rec) {
 		    let volid = rec.data.volid;
 		    Ext.create('Proxmox.window.Edit', {
+			autoShow: true,
 			autoLoad: true,
 			width: 600,
 			height: 400,
@@ -166,9 +166,9 @@ Ext.define('PVE.storage.BackupView', {
 			    },
 			],
 			listeners: {
-			    destroy: () => reload(),
+			    destroy: () => me.store.load(),
 			},
-		    }).show();
+		    });
 		},
 	    },
 	    {
@@ -182,8 +182,8 @@ Ext.define('PVE.storage.BackupView', {
 			method: 'PUT',
 			waitMsgTarget: me,
 			params: { 'protected': record.data.protected ? 0 : 1 },
-			failure: (response) => Ext.Msg.alert('Error', response.htmlStatus),
-			success: (response) => reload(),
+			failure: response => Ext.Msg.alert('Error', response.htmlStatus),
+			success: () => me.store.load(),
 		    });
 		},
 	    },
@@ -199,7 +199,7 @@ Ext.define('PVE.storage.BackupView', {
 		    renderer: PVE.Utils.render_backup_encryption,
 		    sorter: {
 			property: 'encrypted',
-			transform: (value) => value ? 1 : 0,
+			transform: encrypted => encrypted ? 1 : 0,
 		    },
 		},
 		verification: {
@@ -208,7 +208,7 @@ Ext.define('PVE.storage.BackupView', {
 		    renderer: PVE.Utils.render_backup_verification,
 		    sorter: {
 			property: 'verification',
-			transform: (value) => {
+			transform: value => {
 			    let state = value?.state ?? 'none';
 			    let order = PVE.Utils.verificationStateOrder;
 			    return order[state] ?? order.__default__;
