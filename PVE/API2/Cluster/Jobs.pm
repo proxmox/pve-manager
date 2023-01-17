@@ -6,7 +6,14 @@ use warnings;
 use PVE::RESTHandler;
 use PVE::CalendarEvent;
 
+use PVE::API2::Jobs::RealmSync;
+
 use base qw(PVE::RESTHandler);
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Jobs::RealmSync",
+    path => 'realm-sync',
+});
 
 __PACKAGE__->register_method({
     name => 'index',
@@ -35,6 +42,7 @@ __PACKAGE__->register_method({
     code => sub {
 	return [
 	   { subdir => 'schedule-analyze' },
+	   { subdir => 'realm-sync' },
 	];
     }});
 
