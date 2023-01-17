@@ -7,9 +7,11 @@ use JSON;
 use PVE::Cluster qw(cfs_lock_file cfs_read_file cfs_register_file);
 use PVE::Job::Registry;
 use PVE::Jobs::VZDump;
+use PVE::Jobs::RealmSync;
 use PVE::Tools;
 
 PVE::Jobs::VZDump->register();
+PVE::Jobs::RealmSync->register();
 PVE::Job::Registry->init();
 
 cfs_register_file(
