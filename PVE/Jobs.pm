@@ -324,7 +324,10 @@ sub synchronize_job_states_with_config {
 	    }
 	}
 
-	PVE::Tools::dir_glob_foreach($state_dir, '(.*?)-(.*).json', sub {
+	my $valid_types = PVE::Job::Registry->lookup_types();
+	my $type_regex = join("|", $valid_types->@*);
+
+	PVE::Tools::dir_glob_foreach($state_dir, "(${type_regex})-(.*).json", sub {
 	    my ($path, $type, $id) = @_;
 
 	    if (!defined($data->{ids}->{$id})) {
