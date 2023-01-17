@@ -167,6 +167,7 @@ JSSRC= 							\
 	dc/MetricServerView.js				\
 	dc/UserTagAccessEdit.js				\
 	dc/RegisteredTagsEdit.js			\
+	dc/RealmSyncJob.js				\
 	lxc/CmdMenu.js					\
 	lxc/Config.js					\
 	lxc/CreateWizard.js				\

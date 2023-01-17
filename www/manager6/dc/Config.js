@@ -141,6 +141,13 @@ Ext.define('PVE.dc.Config', {
 		itemId: 'domains',
 	    },
 	    {
+		xtype: 'pveRealmSyncJobView',
+		title: gettext('Realm Sync'),
+		groups: ['permissions'],
+		iconCls: 'fa fa-refresh',
+		itemId: 'realmsyncjobs',
+	    },
+	    {
 		xtype: 'pveHAStatus',
 		title: 'HA',
 		iconCls: 'fa fa-heartbeat',
