@@ -71,6 +71,7 @@ Ext.define('PVE.storage.IScsiScan', {
 
 Ext.define('PVE.storage.IScsiInputPanel', {
     extend: 'PVE.panel.StorageBase',
+    mixins: ['Proxmox.Mixin.CBind'],
 
     onlineHelp: 'storage_open_iscsi',
 
@@ -88,50 +89,61 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 	this.callParent([values]);
     },
 
-    initComponent: function() {
-	let me = this;
+    column1: [
+	{
+	    xtype: 'pmxDisplayEditField',
+	    cbind: {
+		editable: '{isCreate}',
+	    },
 
-	me.column1 = [
-	    {
-		xtype: me.isCreate ? 'textfield' : 'displayfield',
-		name: 'portal',
-		value: '',
-		fieldLabel: 'Portal',
-		allowBlank: false,
+	    name: 'portal',
+	    value: '',
+	    fieldLabel: 'Portal',
+	    allowBlank: false,
+
+	    editConfig: {
 		listeners: {
-		    change: function(f, value) {
-			if (me.isCreate) {
-			    let exportField = me.down('field[name=target]');
-			    exportField.setPortal(value);
-			    exportField.setValue('');
-			}
+		    change: {
+			fn: function(f, value) {
+			    let panel = this.up('inputpanel');
+			    let exportField = panel.lookup('iScsiTargetScan');
+			    if (exportField) {
+				exportField.setDisabled(!value);
+				exportField.setPortal(value);
+				exportField.setValue('');
+			    }
+			},
+			buffer: 500,
 		    },
 		},
 	    },
-	    Ext.createWidget(me.isCreate ? 'pveIScsiScan' : 'displayfield', {
-		readOnly: !me.isCreate,
-		name: 'target',
-		value: '',
-		fieldLabel: gettext('Target'),
-		allowBlank: false,
-		reference: 'iScsiTargetScan',
-		listeners: {
-		    nodechanged: function(value) {
-			me.lookup('storageNodeRestriction').setValue(value);
-		    },
-		},
-	    }),
-	];
-
-	me.column2 = [
-	    {
-		xtype: 'checkbox',
-		name: 'luns',
-		checked: true,
-		fieldLabel: gettext('Use LUNs directly'),
+	},
+	{
+	    cbind: {
+		xtype: (get) => get('isCreate') ? 'pveIScsiScan' : 'displayfield',
+		readOnly: '{!isCreate}',
+		disabled: '{isCreate}',
 	    },
-	];
 
-	me.callParent();
-    },
+	    name: 'target',
+	    value: '',
+	    fieldLabel: gettext('Target'),
+	    allowBlank: false,
+	    reference: 'iScsiTargetScan',
+	    listeners: {
+		nodechanged: function(value) {
+		    this.up('inputpanel').lookup('storageNodeRestriction').setValue(value);
+		},
+	    },
+	},
+    ],
+
+    column2: [
+	{
+	    xtype: 'checkbox',
+	    name: 'luns',
+	    checked: true,
+	    fieldLabel: gettext('Use LUNs directly'),
+	},
+    ],
 });
