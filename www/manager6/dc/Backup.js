@@ -548,7 +548,7 @@ Ext.define('PVE.dc.BackupView', {
 	    Ext.create('Ext.window.Window', {
 		modal: true,
 		width: 800,
-		height: 700,
+		height: 600,
 		resizable: true,
 		layout: 'fit',
 		title: gettext('Backup Details'),
