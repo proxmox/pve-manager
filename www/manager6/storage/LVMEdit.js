@@ -5,9 +5,22 @@ Ext.define('PVE.storage.VgSelector', {
     displayField: 'vg',
     queryMode: 'local',
     editable: false,
+
+    listConfig: {
+	columns: [
+	    {
+		dataIndex: 'vg',
+		flex: 1,
+	    },
+	],
+	emptyText: gettext('No volume groups found'),
+    },
+
     config: {
 	apiSuffix: '/scan/lvm',
     },
+
+    showNodeSelector: true,
 
     setNodeName: function(value) {
 	let me = this;
@@ -35,9 +48,6 @@ Ext.define('PVE.storage.VgSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    listConfig: {
-		loadingText: gettext('Scanning...'),
-	    },
 	});
 
 	me.callParent();
@@ -93,6 +103,42 @@ Ext.define('PVE.storage.BaseStorageSelector', {
     },
 });
 
+Ext.define('PVE.storage.LunSelector', {
+    extend: 'PVE.form.FileSelector',
+    alias: 'widget.pveStorageLunSelector',
+
+    nodename: 'localhost',
+    storageContent: 'images',
+    allowBlank: false,
+
+    initComponent: function() {
+	let me = this;
+
+	if (PVE.data.ResourceStore.getNodes().length > 1) {
+	    me.errorHeight = 140;
+	    Ext.apply(me.listConfig ?? {}, {
+		tbar: {
+		    xtype: 'toolbar',
+		    items: [
+			{
+			    xtype: "pveStorageScanNodeSelector",
+			    autoSelect: false,
+			    fieldLabel: gettext('Node to scan'),
+			    listeners: {
+				change: (_field, value) => me.setNodename(value),
+			    },
+			},
+		    ],
+		},
+		emptyText: me.listConfig?.emptyText ?? gettext('Nothing found'),
+	    });
+	}
+
+	me.callParent();
+    },
+
+});
+
 Ext.define('PVE.storage.LVMInputPanel', {
     extend: 'PVE.panel.StorageBase',
 
@@ -118,27 +164,16 @@ Ext.define('PVE.storage.LVMInputPanel', {
 		fieldLabel: gettext('Volume group'),
 		reference: 'volumeGroupSelector',
 		allowBlank: false,
-	    });
-	    me.column1.push({
-	        xtype: 'pveStorageScanNodeSelector',
-	        listeners: {
-	            change: {
-			fn: function(field, value) {
-			    me.lookup('volumeGroupSelector').setNodeName(value);
-			    me.lookup('storageNodeRestriction').setValue(value);
-			},
-		    },
-	        },
+		listeners: {
+		    nodechanged: (value) => me.lookup('storageNodeRestriction').setValue(value),
+		}
 	    });
 
-	    let baseField = Ext.createWidget('pveFileSelector', {
+	    let baseField = Ext.createWidget('pveStorageLunSelector', {
 		name: 'base',
 		hidden: true,
 		disabled: true,
-		nodename: 'localhost',
-		storageContent: 'images',
 		fieldLabel: gettext('Base volume'),
-		allowBlank: false,
 	    });
 
 	    me.column1.push({

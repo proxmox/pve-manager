@@ -6,31 +6,40 @@ Ext.define('PVE.storage.TPoolSelector', {
     valueField: 'lv',
     displayField: 'lv',
     editable: false,
+    allowBlank: false,
+
+    listConfig: {
+	emptyText: gettext("No thinpool found"),
+	columns: [
+	    {
+		dataIndex: 'lv',
+		flex: 1,
+	    },
+	],
+    },
 
     config: {
 	apiSuffix: '/scan/lvmthin',
     },
 
-    doRawQuery: function() {
-	// nothing
-    },
-
-    onTriggerClick: function() {
+    reload: function() {
 	let me = this;
-
-	if (!me.queryCaching || me.lastQuery !== me.vg) {
-	    me.store.removeAll();
+	if (!me.isDisabled()) {
+	    me.getStore().load();
 	}
-
-	me.allQuery = me.vg;
-
-	me.callParent();
     },
 
     setVG: function(myvg) {
 	let me = this;
-
 	me.vg = myvg;
+	me.getStore().getProxy().setExtraParams({ vg: myvg });
+	me.reload();
+    },
+
+    setNodeName: function(value) {
+	let me = this;
+	me.callParent([value]);
+	me.reload();
     },
 
     initComponent: function() {
@@ -52,9 +61,6 @@ Ext.define('PVE.storage.TPoolSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    listConfig: {
-		loadingText: gettext('Scanning...'),
-	    },
 	});
 
 	me.callParent();
@@ -69,6 +75,19 @@ Ext.define('PVE.storage.BaseVGSelector', {
     displayField: 'vg',
     queryMode: 'local',
     editable: false,
+    allowBlank: false,
+
+    listConfig: {
+	columns: [
+	    {
+		dataIndex: 'vg',
+		flex: 1,
+	    },
+	],
+    },
+
+    showNodeSelector: true,
+
     config: {
 	apiSuffix: '/scan/lvm',
     },
@@ -97,9 +116,6 @@ Ext.define('PVE.storage.BaseVGSelector', {
 
 	Ext.apply(me, {
 	    store: store,
-	    listConfig: {
-		loadingText: gettext('Scanning...'),
-	    },
 	});
 
 	me.callParent();
@@ -135,24 +151,15 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 	});
 
 	if (me.isCreate) {
-	    me.column1.push({
-	        xtype: 'pveStorageScanNodeSelector',
-	        listeners: {
-		    change: {
-			fn: function(field, value) {
-			    me.lookup('thinPoolSelector').setNodeName(value);
-			    me.lookup('volumeGroupSelector').setNodeName(value);
-			    me.lookup('storageNodeRestriction').setValue(value);
-			},
-		    },
-		},
-	    });
-
 	    me.column1.push(Ext.create('PVE.storage.BaseVGSelector', {
 		name: 'vgname',
 		fieldLabel: gettext('Volume group'),
 		reference: 'volumeGroupSelector',
 		listeners: {
+		    nodechanged: function(value) {
+			me.lookup('thinPoolSelector').setNodeName(value);
+			me.lookup('storageNodeRestriction').setValue(value);
+		    },
 		    change: function(f, value) {
 			if (me.isCreate) {
 			    let vgField = me.lookup('thinPoolSelector');

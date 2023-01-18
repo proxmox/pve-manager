@@ -6,32 +6,43 @@ Ext.define('PVE.storage.IScsiScan', {
     valueField: 'target',
     displayField: 'target',
     matchFieldWidth: false,
+    allowBlank: false,
+
     listConfig: {
-	loadingText: gettext('Scanning...'),
 	width: 350,
+	columns: [
+	    {
+		dataIndex: 'target',
+		flex: 1,
+	    },
+	],
+	emptyText: gettext('No iSCSI target found'),
     },
+
     config: {
 	apiSuffix: '/scan/iscsi',
     },
-    doRawQuery: function() {
-	// do nothing
-    },
 
-    onTriggerClick: function() {
+    showNodeSelector: true,
+
+    reload: function() {
 	let me = this;
-
-	if (!me.queryCaching || me.lastQuery !== me.portal) {
-	    me.store.removeAll();
+	if (!me.isDisabled()) {
+	    me.getStore().load();
 	}
-
-	me.allQuery = me.portal;
-
-	me.callParent();
     },
 
     setPortal: function(portal) {
 	let me = this;
 	me.portal = portal;
+	me.getStore().getProxy().setExtraParams({ portal });
+	me.reload();
+    },
+
+    setNodeName: function(value) {
+	let me = this;
+	me.callParent([value]);
+	me.reload();
     },
 
     initComponent: function() {
@@ -82,19 +93,6 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 
 	me.column1 = [
 	    {
-		xtype: 'pveStorageScanNodeSelector',
-		disabled: !me.isCreate,
-		hidden: !me.isCreate,
-		listeners: {
-		    change: {
-			fn: function(field, value) {
-			    me.lookup('iScsiTargetScan').setNodeName(value);
-			    me.lookup('storageNodeRestriction').setValue(value);
-			},
-		    },
-		},
-	    },
-	    {
 		xtype: me.isCreate ? 'textfield' : 'displayfield',
 		name: 'portal',
 		value: '',
@@ -117,6 +115,11 @@ Ext.define('PVE.storage.IScsiInputPanel', {
 		fieldLabel: gettext('Target'),
 		allowBlank: false,
 		reference: 'iScsiTargetScan',
+		listeners: {
+		    nodechanged: function(value) {
+			me.lookup('storageNodeRestriction').setValue(value);
+		    },
+		},
 	    }),
 	];
 

@@ -5,12 +5,23 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
     displayField: 'pool',
     queryMode: 'local',
     editable: false,
+    allowBlank: false,
+
     listConfig: {
-	loadingText: gettext('Scanning...'),
+	columns: [
+	    {
+		dataIndex: 'pool',
+		flex: 1,
+	    },
+	],
+	emptyText: gettext('No ZFS Pools found'),
     },
+
     config: {
 	apiSuffix: '/scan/zfs',
     },
+
+    showNodeSelector: true,
 
     setNodeName: function(value) {
 	let me = this;
@@ -54,22 +65,16 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	me.column1 = [];
 
 	if (me.isCreate) {
-	    me.column1.push({
-	        xtype: 'pveStorageScanNodeSelector',
-	        listeners: {
-		    change: {
-			fn: function(field, value) {
-			    me.lookup('zfsPoolSelector').setNodeName(value);
-			    me.lookup('storageNodeRestriction').setValue(value);
-			},
-		    },
-		},
-	    });
 	    me.column1.push(Ext.create('PVE.storage.ZFSPoolSelector', {
 		name: 'pool',
 		fieldLabel: gettext('ZFS Pool'),
 		reference: 'zfsPoolSelector',
 		allowBlank: false,
+		listeners: {
+		    nodechanged: function(value) {
+			me.lookup('storageNodeRestriction').setValue(value);
+		    },
+		},
 	    }));
 	} else {
 	    me.column1.push(Ext.createWidget('displayfield', {
