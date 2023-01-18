@@ -56,38 +56,32 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
 
 Ext.define('PVE.storage.ZFSPoolInputPanel', {
     extend: 'PVE.panel.StorageBase',
+    mixins: ['Proxmox.Mixin.CBind'],
 
     onlineHelp: 'storage_zfspool',
 
-    initComponent: function() {
-	let me = this;
+    column1: [
+	{
+	    xtype: 'pmxDisplayEditField',
+	    cbind: {
+		editable: '{isCreate}',
+	    },
 
-	me.column1 = [];
+	    name: 'pool',
+	    fieldLabel: gettext('ZFS Pool'),
+	    allowBlank: false,
 
-	if (me.isCreate) {
-	    me.column1.push(Ext.create('PVE.storage.ZFSPoolSelector', {
-		name: 'pool',
-		fieldLabel: gettext('ZFS Pool'),
+	    editConfig: {
+		xtype: 'pveZFSPoolSelector',
 		reference: 'zfsPoolSelector',
-		allowBlank: false,
 		listeners: {
 		    nodechanged: function(value) {
-			me.lookup('storageNodeRestriction').setValue(value);
+			this.up('inputpanel').lookup('storageNodeRestriction').setValue(value);
 		    },
 		},
-	    }));
-	} else {
-	    me.column1.push(Ext.createWidget('displayfield', {
-		name: 'pool',
-		value: '',
-		fieldLabel: gettext('ZFS Pool'),
-		allowBlank: false,
-	    }));
-	}
-
-	// value is an array,
-	// while before it was a string
-	me.column1.push({
+	    },
+	},
+	{
 	    xtype: 'pveContentTypeSelector',
 	    cts: ['images', 'rootdir'],
 	    fieldLabel: gettext('Content'),
@@ -95,24 +89,23 @@ Ext.define('PVE.storage.ZFSPoolInputPanel', {
 	    value: ['images', 'rootdir'],
 	    multiSelect: true,
 	    allowBlank: false,
-	});
-	me.column2 = [
-	    {
-		xtype: 'proxmoxcheckbox',
-		name: 'sparse',
-		checked: false,
-		uncheckedValue: 0,
-		fieldLabel: gettext('Thin provision'),
-	    },
-	    {
-		xtype: 'textfield',
-		name: 'blocksize',
-		emptyText: '8k',
-		fieldLabel: gettext('Block Size'),
-		allowBlank: true,
-	    },
-	];
+	},
+    ],
 
-	me.callParent();
-    },
+    column2: [
+	{
+	    xtype: 'proxmoxcheckbox',
+	    name: 'sparse',
+	    checked: false,
+	    uncheckedValue: 0,
+	    fieldLabel: gettext('Thin provision'),
+	},
+	{
+	    xtype: 'textfield',
+	    name: 'blocksize',
+	    emptyText: '8k',
+	    fieldLabel: gettext('Block Size'),
+	    allowBlank: true,
+	},
+    ],
 });
