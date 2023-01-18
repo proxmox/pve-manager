@@ -9,7 +9,7 @@ Ext.define('PVE.form.StorageScanNodeSelector', {
     disallowedNodes: undefined,
     autoSelect: false,
     submitValue: false,
-    value: "",
+    value: null,
     autoEl: {
 	tag: 'div',
 	'data-qtip': gettext('Scan for available storages on the selected node'),
@@ -18,14 +18,16 @@ Ext.define('PVE.form.StorageScanNodeSelector', {
 	clear: {
 	    handler: function() {
 		let me = this;
-		me.setValue("");
+		me.setValue(null);
 	    },
 	},
     },
 
+    emptyText: Proxmox.NodeName,
+
     setValue: function(value) {
 	let me = this;
 	me.callParent([value]);
-	me.triggers.clear.setVisible(value !== "");
+	me.triggers.clear.setVisible(!!value);
     },
 });
