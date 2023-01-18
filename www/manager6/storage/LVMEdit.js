@@ -141,78 +141,76 @@ Ext.define('PVE.storage.LunSelector', {
 
 Ext.define('PVE.storage.LVMInputPanel', {
     extend: 'PVE.panel.StorageBase',
+    mixins: ['Proxmox.Mixin.CBind'],
 
     onlineHelp: 'storage_lvm',
 
-    initComponent: function() {
-	let me = this;
+    column1: [
+	{
+	    xtype: 'pveBaseStorageSelector',
+	    name: 'basesel',
+	    fieldLabel: gettext('Base storage'),
+	    cbind: {
+		disabled: '{!isCreate}',
+		hidden: '{!isCreate}',
+	    },
+	    submitValue: false,
+	    listeners: {
+		change: function(f, value) {
+		    let me = this;
+		    let vgField = me.up('inputpanel').lookup('volumeGroupSelector');
+		    let vgNameField = me.up('inputpanel').lookup('vgName');
+		    let baseField = me.up('inputpanel').lookup('lunSelector');
 
-	me.column1 = [];
+		    vgField.setVisible(!value);
+		    vgField.setDisabled(!!value);
 
-	let vgnameField = Ext.createWidget(me.isCreate ? 'textfield' : 'displayfield', {
-	    name: 'vgname',
-	    hidden: !!me.isCreate,
-	    disabled: !!me.isCreate,
-	    value: '',
-	    fieldLabel: gettext('Volume group'),
-	    allowBlank: false,
-	});
+		    baseField.setVisible(!!value);
+		    baseField.setDisabled(!value);
+		    baseField.setStorage(value);
 
-	if (me.isCreate) {
-	    let vgField = Ext.create('PVE.storage.VgSelector', {
-		name: 'vgname',
-		fieldLabel: gettext('Volume group'),
-		reference: 'volumeGroupSelector',
-		allowBlank: false,
-		listeners: {
-		    nodechanged: (value) => me.lookup('storageNodeRestriction').setValue(value),
-		}
-	    });
-
-	    let baseField = Ext.createWidget('pveStorageLunSelector', {
-		name: 'base',
-		hidden: true,
-		disabled: true,
-		fieldLabel: gettext('Base volume'),
-	    });
-
-	    me.column1.push({
-		xtype: 'pveBaseStorageSelector',
-		name: 'basesel',
-		fieldLabel: gettext('Base storage'),
-		submitValue: false,
-		listeners: {
-		    change: function(f, value) {
-			if (value) {
-			    vgnameField.setVisible(true);
-			    vgnameField.setDisabled(false);
-			    vgField.setVisible(false);
-			    vgField.setDisabled(true);
-			    baseField.setVisible(true);
-			    baseField.setDisabled(false);
-			} else {
-			    vgnameField.setVisible(false);
-			    vgnameField.setDisabled(true);
-			    vgField.setVisible(true);
-			    vgField.setDisabled(false);
-			    baseField.setVisible(false);
-			    baseField.setDisabled(true);
-			}
-			baseField.setStorage(value);
-		    },
+		    vgNameField.setVisible(!!value);
+		    vgNameField.setDisabled(!value);
 		},
-	    });
-
-	    me.column1.push(baseField);
-
-	    me.column1.push(vgField);
-	}
-
-	me.column1.push(vgnameField);
-
-	// here value is an array,
-	// while before it was a string
-	me.column1.push({
+	    },
+	},
+	{
+	    xtype: 'pveStorageLunSelector',
+	    name: 'base',
+	    fieldLabel: gettext('Base volume'),
+	    reference: 'lunSelector',
+	    hidden: true,
+	    disabled: true,
+	},
+	{
+	    xtype: 'pveVgSelector',
+	    name: 'vgname',
+	    fieldLabel: gettext('Volume group'),
+	    reference: 'volumeGroupSelector',
+	    cbind: {
+		disabled: '{!isCreate}',
+		hidden: '{!isCreate}',
+	    },
+	    allowBlank: false,
+	    listeners: {
+		nodechanged: function(value) {
+		    this.up('inputpanel').lookup('storageNodeRestriction').setValue(value);
+		},
+	    },
+	},
+	{
+	    name: 'vgname',
+	    fieldLabel: gettext('Volume group'),
+	    reference: 'vgName',
+	    cbind: {
+		xtype: (get) => get('isCreate') ? 'textfield' : 'displayfield',
+		hidden: '{isCreate}',
+		disabled: '{isCreate}',
+	    },
+	    value: '',
+	    allowBlank: false,
+	},
+	{
 	    xtype: 'pveContentTypeSelector',
 	    cts: ['images', 'rootdir'],
 	    fieldLabel: gettext('Content'),
@@ -220,17 +218,15 @@ Ext.define('PVE.storage.LVMInputPanel', {
 	    value: ['images', 'rootdir'],
 	    multiSelect: true,
 	    allowBlank: false,
-	});
+	},
+    ],
 
-	me.column2 = [
-	    {
-		xtype: 'proxmoxcheckbox',
-		name: 'shared',
-		uncheckedValue: 0,
-		fieldLabel: gettext('Shared'),
-	    },
-	];
-
-	me.callParent();
-    },
+    column2: [
+	{
+	    xtype: 'proxmoxcheckbox',
+	    name: 'shared',
+	    uncheckedValue: 0,
+	    fieldLabel: gettext('Shared'),
+	},
+    ],
 });
