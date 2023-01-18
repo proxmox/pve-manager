@@ -740,41 +740,46 @@ Ext.define('PVE.dc.BackupView', {
 	    viewConfig: {
 		trackOver: false,
 	    },
-	    tbar: [
-		{
-		    text: gettext('Add'),
-		    handler: function() {
-			var win = Ext.create('PVE.dc.BackupEdit', {});
-			win.on('destroy', reload);
-			win.show();
+	    dockedItems: [{
+		xtype: 'toolbar',
+		overflowHandler: 'scroller',
+		dock: 'top',
+		items: [
+		    {
+			text: gettext('Add'),
+			handler: function() {
+			    var win = Ext.create('PVE.dc.BackupEdit', {});
+			    win.on('destroy', reload);
+			    win.show();
+			},
 		    },
-		},
-		'-',
-		remove_btn,
-		edit_btn,
-		detail_btn,
-		'-',
-		run_btn,
-		'->',
-		noBackupJobInfoButton,
-		'-',
-		{
-		    xtype: 'proxmoxButton',
-		    selModel: null,
-		    text: gettext('Schedule Simulator'),
-		    handler: () => {
-			let record = sm.getSelection()[0];
-			let schedule;
-			if (record) {
-			    schedule = record.data.schedule;
-			}
-			Ext.create('PVE.window.ScheduleSimulator', {
-			    autoShow: true,
-			    schedule,
-			});
+		    '-',
+		    remove_btn,
+		    edit_btn,
+		    detail_btn,
+		    '-',
+		    run_btn,
+		    '->',
+		    noBackupJobInfoButton,
+		    '-',
+		    {
+			xtype: 'proxmoxButton',
+			selModel: null,
+			text: gettext('Schedule Simulator'),
+			handler: () => {
+			    let record = sm.getSelection()[0];
+			    let schedule;
+			    if (record) {
+				schedule = record.data.schedule;
+			    }
+			    Ext.create('PVE.window.ScheduleSimulator', {
+				autoShow: true,
+				schedule,
+			    });
+			},
 		    },
-		},
-	    ],
+		],
+	    }],
 	    columns: [
 		{
 		    header: gettext('Enabled'),
