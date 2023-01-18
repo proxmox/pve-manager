@@ -32,9 +32,14 @@ Ext.define('PVE.window.ScheduleSimulator', {
 	    this.lookup('simulateBtn').setDisabled(!value);
 	},
 
-	renderTimestamp: function(value) {
+	renderDate: function(value) {
 	    let date = new Date(value*1000);
-	    return date.toLocaleString();
+	    return date.toLocaleDateString();
+	},
+
+	renderTime: function(value) {
+	    let date = new Date(value*1000);
+	    return date.toLocaleTimeString();
 	},
 
 	init: function(view) {
@@ -100,9 +105,16 @@ Ext.define('PVE.window.ScheduleSimulator', {
 		    height: 300,
 		    columns: [
 			{
-			    text: gettext('Local Time'),
-			    renderer: 'renderTimestamp',
+			    text: gettext('Date'),
+			    renderer: 'renderDate',
 			    dataIndex: 'timestamp',
+			    flex: 1,
+			},
+			{
+			    text: gettext('Time'),
+			    renderer: 'renderTime',
+			    dataIndex: 'timestamp',
+			    align: 'right',
 			    flex: 1,
 			},
 		    ],
