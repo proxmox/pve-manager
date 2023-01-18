@@ -124,67 +124,56 @@ Ext.define('PVE.storage.BaseVGSelector', {
 
 Ext.define('PVE.storage.LvmThinInputPanel', {
     extend: 'PVE.panel.StorageBase',
+    mixins: ['Proxmox.Mixin.CBind'],
 
     onlineHelp: 'storage_lvmthin',
 
-    initComponent: function() {
-	let me = this;
+    column1: [
+	{
+	    xtype: 'pmxDisplayEditField',
+	    cbind: {
+		editable: '{isCreate}',
+	    },
 
-	me.column1 = [];
-
-	let vgnameField = Ext.createWidget(me.isCreate ? 'textfield' : 'displayfield', {
 	    name: 'vgname',
-	    hidden: !!me.isCreate,
-	    disabled: !!me.isCreate,
-	    value: '',
 	    fieldLabel: gettext('Volume group'),
-	    allowBlank: false,
-	});
 
-	let thinpoolField = Ext.createWidget(me.isCreate ? 'textfield' : 'displayfield', {
-	    name: 'thinpool',
-	    hidden: !!me.isCreate,
-	    disabled: !!me.isCreate,
-	    value: '',
-	    fieldLabel: gettext('Thin Pool'),
-	    allowBlank: false,
-	});
-
-	if (me.isCreate) {
-	    me.column1.push(Ext.create('PVE.storage.BaseVGSelector', {
-		name: 'vgname',
-		fieldLabel: gettext('Volume group'),
-		reference: 'volumeGroupSelector',
+	    editConfig: {
+		xtype: 'pveBaseVGSelector',
 		listeners: {
 		    nodechanged: function(value) {
-			me.lookup('thinPoolSelector').setNodeName(value);
-			me.lookup('storageNodeRestriction').setValue(value);
+			let panel = this.up('inputpanel');
+			panel.lookup('thinPoolSelector').setNodeName(value);
+			panel.lookup('storageNodeRestriction').setValue(value);
 		    },
 		    change: function(f, value) {
-			if (me.isCreate) {
-			    let vgField = me.lookup('thinPoolSelector');
+			let vgField = this.up('inputpanel').lookup('thinPoolSelector');
+			if (vgField) {
+			    vgField.setDisabled(!value);
 			    vgField.setVG(value);
 			    vgField.setValue('');
 			}
 		    },
 		},
-	    }));
+	    },
+	},
+	{
+	    xtype: 'pmxDisplayEditField',
+	    cbind: {
+		editable: '{isCreate}',
+	    },
 
-	    me.column1.push(Ext.create('PVE.storage.TPoolSelector', {
-		name: 'thinpool',
-		fieldLabel: gettext('Thin Pool'),
+	    name: 'thinpool',
+	    fieldLabel: gettext('Thin Pool'),
+	    allowBlank: false,
+
+	    editConfig: {
+		xtype: 'pveTPSelector',
 		reference: 'thinPoolSelector',
-		allowBlank: false,
-	    }));
-	}
-
-	me.column1.push(vgnameField);
-
-	me.column1.push(thinpoolField);
-
-	// here value is an array,
-	// while before it was a string
-	me.column1.push({
+		disabled: true,
+	    },
+	},
+	{
 	    xtype: 'pveContentTypeSelector',
 	    cts: ['images', 'rootdir'],
 	    fieldLabel: gettext('Content'),
@@ -192,10 +181,8 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 	    value: ['images', 'rootdir'],
 	    multiSelect: true,
 	    allowBlank: false,
-	});
+	},
+    ],
 
-	me.column2 = [];
-
-	me.callParent();
-    },
+    column2: [],
 });
