@@ -646,35 +646,6 @@ Ext.define('PVE.dc.BackupView', {
 	    }));
 	};
 
-	let run_show_not_backed = function() {
-	    Ext.create('Ext.window.Window', {
-		modal: true,
-		width: 600,
-		height: 500,
-		resizable: true,
-		layout: 'fit',
-		title: gettext('Guests without backup job'),
-		items: [
-		    {
-			xtype: 'panel',
-			region: 'center',
-			layout: {
-			    type: 'vbox',
-			    align: 'stretch',
-			},
-			items: [
-			    {
-				xtype: 'pveBackedGuests',
-				flex: 1,
-				layout: 'fit',
-				store: not_backed_store,
-			    },
-			],
-		    },
-		],
-	    }).show();
-	};
-
 	var edit_btn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
@@ -728,7 +699,35 @@ Ext.define('PVE.dc.BackupView', {
 	    tooltip: gettext('Some guests are not covered by any backup job.'),
 	    iconCls: 'fa fa-fw fa-exclamation-circle',
 	    hidden: true,
-	    handler: run_show_not_backed,
+	    handler: () => {
+		Ext.create('Ext.window.Window', {
+		    autoShow: true,
+		    modal: true,
+		    width: 600,
+		    height: 500,
+		    resizable: true,
+		    layout: 'fit',
+		    title: gettext('Guests Without Backup Job'),
+		    items: [
+			{
+			    xtype: 'panel',
+			    region: 'center',
+			    layout: {
+				type: 'vbox',
+				align: 'stretch',
+			    },
+			    items: [
+				{
+				    xtype: 'pveBackedGuests',
+				    flex: 1,
+				    layout: 'fit',
+				    store: not_backed_store,
+				},
+			    ],
+			},
+		    ],
+		});
+	    },
 	});
 
 	Proxmox.Utils.monStoreErrors(me, store);
@@ -770,8 +769,9 @@ Ext.define('PVE.dc.BackupView', {
 			    schedule = record.data.schedule;
 			}
 			Ext.create('PVE.window.ScheduleSimulator', {
+			    autoShow: true,
 			    schedule,
-			}).show();
+			});
 		    },
 		},
 	    ],
