@@ -228,19 +228,12 @@ Ext.define('PVE.dc.BackupInfo', {
 	    name: 'mode',
 	    fieldLabel: gettext('Mode'),
 	    renderer: function(value) {
-		let msg;
-		switch (value) {
-		    case 'snapshot':
-			msg = gettext('Snapshot');
-			break;
-		    case 'suspend':
-			msg = gettext('Suspend');
-			break;
-		    case 'stop':
-			msg = gettext('Stop');
-			break;
-		}
-		return msg;
+		const modeToDisplay = {
+		    snapshot: gettext('Snapshot'),
+		    stop: gettext('Stop'),
+		    suspend: gettext('Snapshot'),
+		};
+		return modeToDisplay[value] ?? gettext('Unknown');
 	    },
 	},
 	{
