@@ -79,9 +79,9 @@ Ext.define('PVE.grid.BackupView', {
 	    ]);
 	};
 
-	var reload = Ext.Function.createBuffered(function() {
+	const reload = Ext.Function.createBuffered((options) => {
 	    if (me.store) {
-		me.store.load();
+		me.store.load(options);
 	    }
 	}, 100);
 
@@ -300,20 +300,18 @@ Ext.define('PVE.grid.BackupView', {
 			handler: function(button, event, record) {
 			    let volid = record.data.volid, storage = storagesel.getValue();
 			    let url = `/api2/extjs/nodes/${nodename}/storage/${storage}/content/${volid}`;
-			    let newProtection = record.data.protected ? 0 : 1;
 			    Proxmox.Utils.API2Request({
 				url: url,
 				method: 'PUT',
 				waitMsgTarget: me,
 				params: {
-				    'protected': newProtection,
+				    'protected': record.data.protected ? 0 : 1,
 				},
 				failure: (response) => Ext.Msg.alert('Error', response.htmlStatus),
-				success: (response) => {
-				    reload();
-				    // propagate to remove button, fake for event as reload is to slow
-				    record.data.protected = newProtection; // TODO: check if writing is OK!
-				    sm.fireEvent('selectionchange', sm, [record]);
+				success: () => {
+				    reload({
+					callback: () => sm.fireEvent('selectionchange', sm, [record]),
+				    });
 				},
 			    });
 			},

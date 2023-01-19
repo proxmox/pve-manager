@@ -183,7 +183,11 @@ Ext.define('PVE.storage.BackupView', {
 			waitMsgTarget: me,
 			params: { 'protected': record.data.protected ? 0 : 1 },
 			failure: response => Ext.Msg.alert('Error', response.htmlStatus),
-			success: () => me.store.load(),
+			success: () => {
+			    me.store.load({
+				callback: () => sm.fireEvent('selectionchange', sm, [record]),
+			    });
+			},
 		    });
 		},
 	    },
