@@ -198,11 +198,6 @@ Ext.define('PVE.dc.BackupInfo', {
 	    name: 'selMode',
 	    fieldLabel: gettext('Selection mode'),
 	},
-	{
-	    xtype: 'displayfield',
-	    name: 'pool',
-	    fieldLabel: gettext('Pool to backup'),
-	},
     ],
     column2: [
 	{
@@ -241,6 +236,11 @@ Ext.define('PVE.dc.BackupInfo', {
 	    name: 'enabled',
 	    fieldLabel: gettext('Enabled'),
 	    renderer: v => PVE.Parser.parseBoolean(v.toString()) ? gettext('Yes') : gettext('No'),
+	},
+	{
+	    xtype: 'displayfield',
+	    name: 'pool',
+	    fieldLabel: gettext('Pool to backup'),
 	},
     ],
 
