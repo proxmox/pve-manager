@@ -251,20 +251,17 @@ Ext.define('PVE.dc.BackupInfo', {
 	    fieldLabel: gettext('Comment'),
 	},
 	{
-	    xtype: 'label',
-	    name: 'pruneLabel',
-	    text: gettext('Retention Configuration') + ':',
-	    bind: {
-		hidden: '{!hasRetention}',
-	    },
-	},
-	{
+	    xtype: 'fieldset',
+	    title: gettext('Retention Configuration'),
 	    layout: 'hbox',
-	    border: false,
+	    collapsible: true,
 	    defaults: {
 		border: false,
 		layout: 'anchor',
 		flex: 1,
+	    },
+	    bind: {
+		hidden: '{!hasRetention}',
 	    },
 	    items: [
 		{
