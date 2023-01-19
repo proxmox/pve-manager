@@ -208,7 +208,7 @@ Ext.define('PVE.dc.BackupInfo', {
 	{
 	    xtype: 'displayfield',
 	    name: 'mailnotification',
-	    fieldLabel: gettext('Email notification'),
+	    fieldLabel: gettext('Notification'),
 	    renderer: function(value) {
 		let mailto = this.up('pveBackupInfo')?.record?.mailto || 'root@localhost';
 		let when = gettext('Always');
