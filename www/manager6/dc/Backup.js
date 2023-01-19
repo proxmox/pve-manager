@@ -514,14 +514,11 @@ Ext.define('PVE.dc.BackupView', {
 	    },
 	});
 
-	let noBackupJobWarning, noBackupJobInfoButton;
+	let noBackupJobInfoButton;
 	let reload = function() {
 	    store.load();
 	    not_backed_store.load({
-		callback: function(records, operation, success) {
-		    noBackupJobWarning.setVisible(records.length > 0);
-		    noBackupJobInfoButton.setVisible(records.length > 0);
-		},
+		callback: records => noBackupJobInfoButton.setVisible(records.length > 0),
 	    });
 	};
 
@@ -726,13 +723,10 @@ Ext.define('PVE.dc.BackupView', {
 	    handler: run_detail,
 	});
 
-	noBackupJobWarning = Ext.create('Ext.toolbar.TextItem', {
-	    html: '<i class="fa fa-fw fa-exclamation-circle"></i>' + gettext('Some guests are not covered by any backup job.'),
-	    hidden: true,
-	});
-
 	noBackupJobInfoButton = new Proxmox.button.Button({
-	    text: gettext('Show'),
+	    text: `${gettext('Show')}: ${gettext('Guests Without Backup Job')}`,
+	    tooltip: gettext('Some guests are not covered by any backup job.'),
+	    iconCls: 'fa fa-fw fa-exclamation-circle',
 	    hidden: true,
 	    handler: run_show_not_backed,
 	});
@@ -763,7 +757,6 @@ Ext.define('PVE.dc.BackupView', {
 		'-',
 		run_btn,
 		'->',
-		noBackupJobWarning,
 		noBackupJobInfoButton,
 		'-',
 		{
