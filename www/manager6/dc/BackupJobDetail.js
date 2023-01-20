@@ -460,7 +460,7 @@ Ext.define('PVE.dc.BackedGuests', {
 			    me.store.clearFilter(true);
 			    me.store.filterBy(function(record) {
 				let data = record.data;
-				for (const property in ['name', 'id', 'type']) {
+				for (const property of ['name', 'vmid', 'type']) {
 				    if (data[property] === null) {
 					continue;
 				    }
