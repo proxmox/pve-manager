@@ -22,7 +22,10 @@ Ext.define('PVE.window.ScheduleSimulator', {
 		    schedule,
 		    iterations,
 		},
-		failure: response => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
+		failure: response => {
+		    me.lookup('grid').getStore().setData([]);
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		},
 		success: function(response) {
 		    let schedules = response.result.data;
 		    me.lookup('grid').getStore().setData(schedules);
