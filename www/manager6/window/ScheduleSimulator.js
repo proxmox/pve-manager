@@ -132,7 +132,7 @@ Ext.define('PVE.window.ScheduleSimulator', {
 
     buttons: [
 	{
-	    text: gettext('OK'),
+	    text: gettext('Done'),
 	    handler: 'close',
 	},
     ],
