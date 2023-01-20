@@ -3,6 +3,15 @@ Ext.define('PVE.window.ScheduleSimulator', {
 
     title: gettext('Job Schedule Simulator'),
 
+    viewModel: {
+	data: {
+	    simulatedOnce: false,
+	},
+	formulas: {
+	    gridEmptyText: get => get('simulatedOnce') ? Proxmox.Utils.NoneText : gettext('No simulation done'),
+	},
+    },
+
     controller: {
 	xclass: 'Ext.app.ViewController',
 	close: function() {
@@ -23,12 +32,14 @@ Ext.define('PVE.window.ScheduleSimulator', {
 		    iterations,
 		},
 		failure: response => {
+		    me.getViewModel().set('simulatedOnce', true);
 		    me.lookup('grid').getStore().setData([]);
 		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		},
 		success: function(response) {
 		    let schedules = response.result.data;
 		    me.lookup('grid').getStore().setData(schedules);
+		    me.getViewModel().set('simulatedOnce', true);
 		},
 	    });
 	},
@@ -105,7 +116,9 @@ Ext.define('PVE.window.ScheduleSimulator', {
 		{
 		    xtype: 'grid',
 		    reference: 'grid',
-		    emptyText: Proxmox.Utils.NoneText,
+		    bind: {
+			emptyText: '{gridEmptyText}',
+		    },
 		    scrollable: true,
 		    height: 300,
 		    columns: [
