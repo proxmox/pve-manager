@@ -5,7 +5,9 @@ Ext.define('PVE.window.ScheduleSimulator', {
 
     controller: {
 	xclass: 'Ext.app.ViewController',
-	close: function() { this.getView().close(); },
+	close: function() {
+	    this.getView().close();
+	},
 	simulate: function() {
 	    let me = this;
 	    let schedule = me.lookup('schedule').getValue();
@@ -71,11 +73,11 @@ Ext.define('PVE.window.ScheduleSimulator', {
 		},
 		{
 		    xtype: 'proxmoxintegerfield',
+		    reference: 'iterations',
+		    fieldLabel: gettext('Iterations'),
 		    minValue: 1,
 		    maxValue: 100,
 		    value: 10,
-		    reference: 'iterations',
-		    fieldLabel: gettext('Iterations'),
 		},
 		{
 		    xtype: 'container',
