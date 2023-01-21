@@ -13,7 +13,7 @@ Ext.define('PVE.storage.VgSelector', {
 		flex: 1,
 	    },
 	],
-	emptyText: gettext('No volume groups found'),
+	emptyText: PVE.Utils.renderNotFound('VGs'),
     },
 
     config: {
@@ -130,7 +130,7 @@ Ext.define('PVE.storage.LunSelector', {
 			},
 		    ],
 		},
-		emptyText: me.listConfig?.emptyText ?? gettext('Nothing found'),
+		emptyText: me.listConfig?.emptyText ?? PVE.Utils.renderNotFound(gettext('Volume')),
 	    });
 	}
 

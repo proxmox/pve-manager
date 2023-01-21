@@ -9,7 +9,7 @@ Ext.define('PVE.storage.TPoolSelector', {
     allowBlank: false,
 
     listConfig: {
-	emptyText: gettext("No thinpool found"),
+	emptyText: PVE.Utils.renderNotFound('Thin-Pool'),
 	columns: [
 	    {
 		dataIndex: 'lv',

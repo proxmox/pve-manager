@@ -14,7 +14,7 @@ Ext.define('PVE.storage.ZFSPoolSelector', {
 		flex: 1,
 	    },
 	],
-	emptyText: gettext('No ZFS Pools found'),
+	emptyText: PVE.Utils.renderNotFound(gettext('ZFS Pool')),
     },
 
     config: {

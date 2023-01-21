@@ -91,7 +91,7 @@ Ext.define('PVE.node.LVMThinList', {
 	},
     },
 
-    emptyText: gettext('No thinpools found'),
+    emptyText: PVE.Utils.renderNotFound('Thin-Pool'),
 
     stateful: true,
     stateId: 'grid-node-lvmthin',

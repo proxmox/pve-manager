@@ -16,7 +16,7 @@ Ext.define('PVE.storage.IScsiScan', {
 		flex: 1,
 	    },
 	],
-	emptyText: gettext('No iSCSI target found'),
+	emptyText: PVE.Utils.renderNotFound(gettext('iSCSI Target')),
     },
 
     config: {

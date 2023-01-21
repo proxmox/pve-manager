@@ -86,7 +86,7 @@ Ext.define('PVE.node.LVMList', {
 	},
     },
 
-    emptyText: gettext('No Volume Groups found'),
+    emptyText: PVE.Utils.renderNotFound('VGs'),
 
     stateful: true,
     stateId: 'grid-node-lvm',

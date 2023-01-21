@@ -393,6 +393,8 @@ Ext.define('PVE.Utils', {
 	'efidisk but no OMVF BIOS': gettext('EFI Disk without OMVF BIOS'),
     },
 
+    renderNotFound: what => Ext.String.format(gettext("No {0} found"), what),
+
     get_kvm_osinfo: function(value) {
 	var info = { base: 'Other' }; // default
 	if (value) {
