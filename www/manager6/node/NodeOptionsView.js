@@ -52,8 +52,9 @@ Ext.define('Proxmox.node.NodeOptionsView', {
 	{
 	    xtype: 'text',
 	    name: 'wakeonlan',
-	    text: gettext('Wake on LAN'),
+	    text: gettext('MAC address for Wake on LAN'),
 	    vtype: 'MacAddress',
+	    labelWidth: 150,
 	    deleteEmpty: true,
 	    renderer: function(value) {
 		if (value === undefined) {
