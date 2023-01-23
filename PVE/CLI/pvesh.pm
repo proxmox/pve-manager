@@ -106,7 +106,7 @@ sub proxy_handler {
     my $args = [];
     foreach my $key (keys %$param) {
 	next if $key eq 'quiet' || $key eq 'output-format'; # just to  be sure
-	push @$args, "--$key", $param->{$key};
+	push @$args, "--$key", $_ for split(/\0/, $param->{$key});
     }
 
     my $remcmd = ['ssh', '-o', 'BatchMode=yes', "root\@$remip",
