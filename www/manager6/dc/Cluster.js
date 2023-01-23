@@ -72,7 +72,7 @@ Ext.define('PVE.ClusterAdministration', {
 			    let msg = Proxmox.Utils.getResponseErrorMessage(error);
 			    if (error.status !== 424 && !msg.match(/node is not in a cluster/i)) {
 				// an actual error, not just the "not in a cluster one", so show it!
-				Proxmox.Utils.setErrorMask(this.getView(), error);
+				Proxmox.Utils.setErrorMask(this.getView(), msg);
 			    }
 			}
 			vm.set('totem', {});
