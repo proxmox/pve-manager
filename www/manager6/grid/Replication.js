@@ -279,11 +279,12 @@ Ext.define('PVE.grid.ReplicaView', {
 
 	me.columns = [
 	    {
-		text: gettext('Enabled'),
+		header: gettext('Enabled'),
+		width: 80,
 		dataIndex: 'enabled',
-		xtype: 'checkcolumn',
+		align: 'center',
+		renderer: Proxmox.Utils.renderEnabledIcon,
 		sortable: true,
-		disabled: true,
 	    },
 	    {
 		text: 'ID',

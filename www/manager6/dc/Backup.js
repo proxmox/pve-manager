@@ -715,11 +715,9 @@ Ext.define('PVE.dc.BackupView', {
 		    header: gettext('Enabled'),
 		    width: 80,
 		    dataIndex: 'enabled',
-		    xtype: 'checkcolumn',
+		    align: 'center',
+		    renderer: Proxmox.Utils.renderEnabledIcon,
 		    sortable: true,
-		    disabled: true,
-		    disabledCls: 'x-item-enabled',
-		    stopSelection: false,
 		},
 		{
 		    header: gettext('ID'),
