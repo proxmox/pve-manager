@@ -29,6 +29,30 @@ Ext.define('PVE.form.ComboBoxSetStoreNode', {
 	me.fireEvent('nodechanged', value);
     },
 
+    tbarMouseDown: function() {
+	this.mousePressed = true;
+    },
+
+    tbarMouseUp: function() {
+	let me = this;
+	delete this.mousePressed;
+	if (me.focusLeft) {
+	    me.focus();
+	    delete me.focusLeft;
+	}
+    },
+
+    // conditionally prevent the focusLeave handler to continue, preventing collapsing of the picker
+    onFocusLeave: function() {
+	let me = this;
+	me.focusLeft = true;
+	if (!me.mousePressed) {
+	    me.callParent(arguments);
+	}
+
+	return undefined;
+    },
+
     initComponent: function() {
 	let me = this;
 
@@ -37,6 +61,12 @@ Ext.define('PVE.form.ComboBoxSetStoreNode', {
 	    Ext.apply(me.listConfig ?? {}, {
 		tbar: {
 		    xtype: 'toolbar',
+		    listeners: {
+			mousedown: me.tbarMouseDown,
+			mouseup: me.tbarMouseUp,
+			element: 'el',
+			scope: me,
+		    },
 		    items: [
 			{
 			    xtype: "pveStorageScanNodeSelector",
