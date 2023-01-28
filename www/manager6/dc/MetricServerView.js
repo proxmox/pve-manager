@@ -186,10 +186,14 @@ Ext.define('PVE.dc.InfluxDBEdit', {
     items: [
 	{
 	    xtype: 'inputpanel',
-
+	    cbind: {
+		isCreate: '{isCreate}',
+	    },
 	    onGetValues: function(values) {
+		let me = this;
 		values.disable = values.enable ? 0 : 1;
 		delete values.enable;
+		PVE.Utils.delete_if_default(values, 'verify-certificate', '1', me.isCreate);
 		return values;
 	    },
 
@@ -252,6 +256,7 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 			    view.down('field[name=mtu]').setDisabled(!isUdp);
 			    view.down('field[name=timeout]').setDisabled(isUdp);
 			    view.down('field[name=max-body-size]').setDisabled(isUdp);
+			    view.down('field[name=verify-certificate]').setDisabled(value !== 'https');
 			},
 		    },
 		},
@@ -322,6 +327,14 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 		    },
 		    minValue: 1,
 		    emptyText: 1,
+		},
+		{
+		    xtype: 'proxmoxcheckbox',
+		    name: 'verify-certificate',
+		    fieldLabel: gettext('Verify Certificate'),
+		    value: 1,
+		    uncheckedValue: 0,
+		    disabled: true,
 		},
 	    ],
 
