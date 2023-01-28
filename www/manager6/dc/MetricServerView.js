@@ -243,14 +243,15 @@ Ext.define('PVE.dc.InfluxDBEdit', {
 		    listeners: {
 			change: function(field, value) {
 			    let me = this;
+			    let view = me.up('inputpanel');
 			    let isUdp = value !== 'http' && value !== 'https';
-			    me.up('inputpanel').down('field[name=organization]').setDisabled(isUdp);
-			    me.up('inputpanel').down('field[name=bucket]').setDisabled(isUdp);
-			    me.up('inputpanel').down('field[name=token]').setDisabled(isUdp);
-			    me.up('inputpanel').down('field[name=api-path-prefix]').setDisabled(isUdp);
-			    me.up('inputpanel').down('field[name=mtu]').setDisabled(!isUdp);
-			    me.up('inputpanel').down('field[name=timeout]').setDisabled(isUdp);
-			    me.up('inputpanel').down('field[name=max-body-size]').setDisabled(isUdp);
+			    view.down('field[name=organization]').setDisabled(isUdp);
+			    view.down('field[name=bucket]').setDisabled(isUdp);
+			    view.down('field[name=token]').setDisabled(isUdp);
+			    view.down('field[name=api-path-prefix]').setDisabled(isUdp);
+			    view.down('field[name=mtu]').setDisabled(!isUdp);
+			    view.down('field[name=timeout]').setDisabled(isUdp);
+			    view.down('field[name=max-body-size]').setDisabled(isUdp);
 			},
 		    },
 		},
