@@ -89,11 +89,16 @@ my $get_pkgfile = sub {
 };
 
 my $get_changelog_url =sub {
-    my ($pkgname, $info, $pkgver, $origin, $component) = @_;
+    my ($pkgname, $info, $pkgver, $pkgfile) = @_;
 
     my $changelog_url;
     my $base;
     $base = dirname($info->{FileName}) if defined($info->{FileName});
+
+    my $origin = $pkgfile->{Origin};
+    my $component = $pkgfile->{Component};
+    my $site = $pkgfile->{Site};
+
     if ($origin && $base) {
 	$pkgver =~ s/^\d+://; # strip epoch
 	my $srcpkg = $info->{SourcePkg} || $pkgname;
@@ -101,10 +106,19 @@ my $get_changelog_url =sub {
 	    $base =~ s!pool/updates/!pool/!; # for security channel
 	    $changelog_url = "http://packages.debian.org/changelogs/$base/${srcpkg}_${pkgver}/changelog";
 	} elsif ($origin eq 'Proxmox') {
-	    if ($component eq 'pve-enterprise') {
-		$changelog_url = "https://enterprise.proxmox.com/debian/$base/${pkgname}_${pkgver}.changelog";
-	    } else {
-		$changelog_url = "http://download.proxmox.com/debian/$base/${pkgname}_${pkgver}.changelog";
+	    my $data = Proxmox::RS::APT::Repositories::repositories("pve");
+
+	    for my $file ($data->{files}->@*) {
+		for my $repo ($file->{repositories}->@*) {
+		    if (
+			$repo->{Enabled}
+		        && grep(/$component/, $repo->{Components}->@*)
+		        && $repo->{URIs}[0] =~ m/$site/
+		    ) {
+		        $changelog_url = $repo->{URIs}[0] . "/$base/${pkgname}_${pkgver}.changelog";
+		        last;
+		    }
+		}
 	    }
 	}
     }
@@ -124,7 +138,7 @@ my $assemble_pkginfo = sub {
     if (my $pkgfile = &$get_pkgfile($candidate_ver)) {
 	$data->{Origin} = $pkgfile->{Origin};
 	my $changelog_url = $get_changelog_url->(
-	        $pkgname, $info, $candidate_ver->{VerStr}, $pkgfile->{Origin}, $pkgfile->{Component});
+	        $pkgname, $info, $candidate_ver->{VerStr}, $pkgfile);
 
 	$data->{ChangeLogUrl} = $changelog_url if $changelog_url;
     }
@@ -431,7 +445,7 @@ __PACKAGE__->register_method({
 	my $url;
 
 	die "changelog for '${pkgname}_$ver->{VerStr}' not available\n"
-	    if !($pkgfile && ($url = &$get_changelog_url($pkgname, $info, $ver->{VerStr}, $pkgfile->{Origin}, $pkgfile->{Component})));
+	    if !($pkgfile && ($url = &$get_changelog_url($pkgname, $info, $ver->{VerStr}, $pkgfile)));
 
 	my $data = "";
 
