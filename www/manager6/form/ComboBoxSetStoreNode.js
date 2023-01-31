@@ -61,6 +61,7 @@ Ext.define('PVE.form.ComboBoxSetStoreNode', {
 	    Ext.apply(me.listConfig ?? {}, {
 		tbar: {
 		    xtype: 'toolbar',
+		    minHeight: 40,
 		    listeners: {
 			mousedown: me.tbarMouseDown,
 			mouseup: me.tbarMouseUp,
