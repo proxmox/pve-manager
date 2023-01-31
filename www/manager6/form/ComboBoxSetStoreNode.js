@@ -30,12 +30,12 @@ Ext.define('PVE.form.ComboBoxSetStoreNode', {
     },
 
     tbarMouseDown: function() {
-	this.mousePressed = true;
+	this.topBarMousePress = true;
     },
 
     tbarMouseUp: function() {
 	let me = this;
-	delete this.mousePressed;
+	delete this.topBarMousePress;
 	if (me.focusLeft) {
 	    me.focus();
 	    delete me.focusLeft;
@@ -46,7 +46,7 @@ Ext.define('PVE.form.ComboBoxSetStoreNode', {
     onFocusLeave: function() {
 	let me = this;
 	me.focusLeft = true;
-	if (!me.mousePressed) {
+	if (!me.topBarMousePress) {
 	    me.callParent(arguments);
 	}
 
