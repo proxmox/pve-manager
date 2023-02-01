@@ -1,3 +1,69 @@
+pve-manager (7.3-5) bullseye; urgency=medium
+
+  * fix #2822: allow to override the cluster node to scan for available
+    storages for iSCSI, LVM, LVM-Thin and ZFS storage types.
+
+  * fix #1295:
+    - pve daily update: honor new package-notification config
+    - ui: allow one to configure new notification settings
+
+  * api: task log: add flag for downloading a finished log file as stream
+
+  * fix #4455: ui: config panel: add missing online-help mapping for SDN type
+
+  * ui: config panel: fix online-help mapping targets and better ensure that
+    mappings are valid
+
+  * api: node stop-all: expose setting the task timeout as endpoint parameter
+
+  * api: node stop-all: expose setting force-stop behavior
+
+  * ui: bulk shutdown: expose new timeout and force-stop to user
+
+  * fix #4194: ui: clarify that it's actually a bulk shutdown, not a stop
+
+  * fix #4393: ui: storage backup view: make PBS-specific columns sortable
+
+  * api: ceph: update and add various return schemas
+
+  * api: apt versions: add proxmox-mail-forward to package list
+
+  * ui: storage: move node scan selector inside combobox picker
+
+  * ui: reduce default size of Backup detail window to improve accessibility
+    for our minimum supported display resolution (720p)
+
+  * ui: backup info: rework layout for better space usage
+
+  * ui: backup job view: add scrolling overflow handler for the toolbar
+
+  * ui: schedule simulator: split date and time into two columns for better
+    visibility and polish UX
+
+  * ui: storage content view: update if remove button is enabled on backup
+    protection change
+
+  * ui: fix search for 'Guests without Backup' window
+
+  * ui: node options: make text for `wakeonlan` option a bit more descriptive
+
+  * ui: cluster info: fix displaying an error message from the API response
+
+  * fix #3037: pvesh: correctly handle null-spearated argument lists when
+    relaying request to another cluster node
+
+  * ui: fix typo in user tag access text field
+
+  * ui: metrics: expose setting the `verify-certificate` option for InfluxDB
+    as advanced setting
+
+  * fix #4502: ui: VM OS type: the l26 type is also compatible with Linux 6.x
+
+  * fix #4481: fetch changelogs for any Proxmox repository and also support
+    changelogs for packages coming from a Debian Backports repository.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 01 Feb 2023 12:58:14 +0100
+
 pve-manager (7.3-4) bullseye; urgency=medium
 
   * fix #4370: ui: fix regression on pre-selecting tree element on login
