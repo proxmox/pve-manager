@@ -131,8 +131,7 @@ my $assemble_pkginfo = sub {
 
     if (my $pkgfile = &$get_pkgfile($candidate_ver)) {
 	$data->{Origin} = $pkgfile->{Origin};
-	my $changelog_url = $get_changelog_url->(
-	        $pkgname, $info, $candidate_ver->{VerStr}, $pkgfile);
+	my $changelog_url = $get_changelog_url->($pkgname, $info, $candidate_ver->{VerStr}, $pkgfile);
 
 	$data->{ChangeLogUrl} = $changelog_url if $changelog_url;
     }
@@ -178,44 +177,42 @@ my $update_pve_pkgstatus = sub {
 	next if !$p->{SelectedState} || ($p->{SelectedState} ne 'Install');
 	my $current_ver = $p->{CurrentVer} || next;
 	my $candidate_ver = $policy->candidate($p) || next;
+	next if $current_ver->{VerStr} eq $candidate_ver->{VerStr};
 
-	if ($current_ver->{VerStr} ne $candidate_ver->{VerStr}) {
-	    my $info = $pkgrecords->lookup($pkgname);
-	    my $res = &$assemble_pkginfo($pkgname, $info, $current_ver, $candidate_ver);
-	    push @$pkglist, $res;
+	my $info = $pkgrecords->lookup($pkgname);
+	my $res = &$assemble_pkginfo($pkgname, $info, $current_ver, $candidate_ver);
+	push @$pkglist, $res;
 
-	    # also check if we need any new package
-	    # Note: this is just a quick hack (not recursive as it should be), because
-	    # I found no way to get that info from AptPkg
-	    if (my $deps = $candidate_ver->{DependsList}) {
-		my $found;
-		my $req;
-		for my $d (@$deps) {
-		    if ($d->{DepType} eq 'Depends') {
-			$found = $d->{TargetPkg}->{SelectedState} eq 'Install' if !$found;
-			# need to check ProvidesList for virtual packages
-			if (!$found && (my $provides = $d->{TargetPkg}->{ProvidesList})) {
-			    for my $provide ($provides->@*) {
-				$found = $provide->{OwnerPkg}->{SelectedState} eq 'Install';
-				last if $found;
-			    }
-			}
-			$req = $d->{TargetPkg} if !$req;
+	# also check if we need any new package
+	# Note: this is just a quick hack (not recursive as it should be), because
+	# I found no way to get that info from AptPkg
+	my $deps = $candidate_ver->{DependsList} || next;
 
-			if (!($d->{CompType} & AptPkg::Dep::Or)) {
-			    if (!$found && $req) { # New required Package
-				my $tpname = $req->{Name};
-				my $tpinfo = $pkgrecords->lookup($tpname);
-				my $tpcv = $policy->candidate($req);
-				if ($tpinfo && $tpcv) {
-				    my $res = &$assemble_pkginfo($tpname, $tpinfo, undef, $tpcv);
-				    push @$pkglist, $res;
-				}
-			    }
-			    undef $found;
-			    undef $req;
+	my ($found, $req);
+	for my $d (@$deps) {
+	    if ($d->{DepType} eq 'Depends') {
+		$found = $d->{TargetPkg}->{SelectedState} eq 'Install' if !$found;
+		# need to check ProvidesList for virtual packages
+		if (!$found && (my $provides = $d->{TargetPkg}->{ProvidesList})) {
+		    for my $provide ($provides->@*) {
+			$found = $provide->{OwnerPkg}->{SelectedState} eq 'Install';
+			last if $found;
+		    }
+		}
+		$req = $d->{TargetPkg} if !$req;
+
+		if (!($d->{CompType} & AptPkg::Dep::Or)) {
+		    if (!$found && $req) { # New required Package
+			my $tpname = $req->{Name};
+			my $tpinfo = $pkgrecords->lookup($tpname);
+			my $tpcv = $policy->candidate($req);
+			if ($tpinfo && $tpcv) {
+			    my $res = &$assemble_pkginfo($tpname, $tpinfo, undef, $tpcv);
+			    push @$pkglist, $res;
 			}
 		    }
+		    undef $found;
+		    undef $req;
 		}
 	    }
 	}
