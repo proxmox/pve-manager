@@ -91,39 +91,33 @@ my $get_pkgfile = sub {
 my $get_changelog_url =sub {
     my ($pkgname, $info, $pkgver, $pkgfile) = @_;
 
-    my $changelog_url;
     my $base;
     $base = dirname($info->{FileName}) if defined($info->{FileName});
 
     my $origin = $pkgfile->{Origin};
-    my $component = $pkgfile->{Component};
-    my $site = $pkgfile->{Site};
 
     if ($origin && $base) {
 	$pkgver =~ s/^\d+://; # strip epoch
 	my $srcpkg = $info->{SourcePkg} || $pkgname;
 	if ($origin eq 'Debian') {
 	    $base =~ s!pool/updates/!pool/!; # for security channel
-	    $changelog_url = "http://packages.debian.org/changelogs/$base/${srcpkg}_${pkgver}/changelog";
+	    return "http://packages.debian.org/changelogs/$base/${srcpkg}_${pkgver}/changelog";
 	} elsif ($origin eq 'Proxmox') {
+	    # the product is just for getting the standard repos and is currently a required param,
+	    # but we actually only care about `files`, which includes _all_ configured repos
 	    my $data = Proxmox::RS::APT::Repositories::repositories("pve");
 
 	    for my $file ($data->{files}->@*) {
-		for my $repo ($file->{repositories}->@*) {
-		    if (
-			$repo->{Enabled}
-		        && grep(/$component/, $repo->{Components}->@*)
-		        && $repo->{URIs}[0] =~ m/$site/
-		    ) {
-		        $changelog_url = $repo->{URIs}[0] . "/$base/${pkgname}_${pkgver}.changelog";
-		        last;
-		    }
+		for my $repo (grep { $_->{Enabled} } $file->{repositories}->@*) {
+		    next if !grep(/$pkgfile->{component}/, $repo->{Components}->@*);
+		    next if !$repo->{URIs}[0] =~ m/$pkgfile->{Site}/;
+
+		    return $repo->{URIs}[0] . "/$base/${pkgname}_${pkgver}.changelog";
 		}
 	    }
 	}
     }
-
-    return $changelog_url;
+    return; # none found, with our heuristic that is..
 };
 
 my $assemble_pkginfo = sub {
