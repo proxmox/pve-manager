@@ -432,50 +432,40 @@ __PACKAGE__->register_method({
 
 	my $info = $pkgrecords->lookup($pkgname);
 
-	my $pkgfile = &$get_pkgfile($ver);
-	my $url;
+	my $pkgfile = $get_pkgfile->($ver) or die "couldn't find package info file for ${pkgname}=$ver->{VerStr}\n";
 
-	die "changelog for '${pkgname}_$ver->{VerStr}' not available\n"
-	    if !($pkgfile && ($url = &$get_changelog_url($pkgname, $info, $ver->{VerStr}, $pkgfile)));
+	my $url = $get_changelog_url->($pkgname, $info, $ver->{VerStr}, $pkgfile)
+	    or die "changelog for '${pkgname}_$ver->{VerStr}' not available\n";
 
-	my $data = "";
-
-	my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
-	my $proxy = $dccfg->{http_proxy};
-
-	my $ua = LWP::UserAgent->new;
+	my $ua = LWP::UserAgent->new();
 	$ua->agent("PVE/1.0");
 	$ua->timeout(10);
-	$ua->max_size(1024*1024);
+	$ua->max_size(1024 * 1024);
 	$ua->ssl_opts(verify_hostname => 0); # don't care for changelogs
 
-	if ($proxy) {
+	my $datacenter_cfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
+	if (my $proxy = $datacenter_cfg->{http_proxy}) {
 	    $ua->proxy(['http', 'https'], $proxy);
 	} else {
 	    $ua->env_proxy;
 	}
 
-	my $username;
-	my $pw;
-
 	if ($pkgfile->{Origin} eq 'Proxmox' && $pkgfile->{Component} eq 'pve-enterprise') {
 	    my $info = PVE::API2::Subscription::read_etc_subscription();
 	    if ($info->{status} eq 'active') {
-		$username = $info->{key};
-		$pw = PVE::API2Tools::get_hwaddress();
-		$ua->credentials("enterprise.proxmox.com:443", 'pve-enterprise-repository',  $username, $pw);
+		my $pw = PVE::API2Tools::get_hwaddress();
+		$ua->credentials("enterprise.proxmox.com:443", 'pve-enterprise-repository', $info->{key}, $pw);
 	    }
 	}
 
 	my $response = $ua->get($url);
 
-        if ($response->is_success) {
-            $data = $response->decoded_content;
-        } else {
+	if ($response->is_success) {
+	    return $response->decoded_content;
+	} else {
 	    PVE::Exception::raise($response->message, code => $response->code);
-        }
-
-	return $data;
+	}
+	return '';
     }});
 
 __PACKAGE__->register_method({
