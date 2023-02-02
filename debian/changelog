@@ -1,3 +1,10 @@
+pve-manager (7.3-6) bullseye; urgency=medium
+
+  * api: avoid dumping warnings due to casing typo in pveversion or other
+    apt related endpointd
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 02 Feb 2023 08:42:40 +0100
+
 pve-manager (7.3-5) bullseye; urgency=medium
 
   * fix #2822: allow to override the cluster node to scan for available
