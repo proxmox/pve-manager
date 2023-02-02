@@ -109,7 +109,7 @@ my $get_changelog_url =sub {
 
 	    for my $file ($data->{files}->@*) {
 		for my $repo (grep { $_->{Enabled} } $file->{repositories}->@*) {
-		    next if !grep(/$pkgfile->{component}/, $repo->{Components}->@*);
+		    next if !grep(/$pkgfile->{Component}/, $repo->{Components}->@*);
 		    next if !$repo->{URIs}[0] =~ m/$pkgfile->{Site}/;
 
 		    return $repo->{URIs}[0] . "/$base/${pkgname}_${pkgver}.changelog";
