@@ -129,6 +129,9 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 	if (values.username?.length === 0) {
 	    delete values.username;
 	}
+	if (values.subdir?.length === 0) {
+	    delete values.subdir;
+	}
 
 	return me.callParent([values]);
     },
@@ -215,6 +218,14 @@ Ext.define('PVE.storage.CIFSInputPanel', {
 			}
 		    },
 		},
+	    },
+	    {
+		xtype: 'pmxDisplayEditField',
+		editable: me.isCreate,
+		name: 'subdir',
+		fieldLabel: gettext('Subdirectory'),
+		allowBlank: true,
+		emptyText: gettext('/some/path'),
 	    },
 	];
 
