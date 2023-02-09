@@ -405,13 +405,16 @@ __PACKAGE__->register_method({
 		open($fh, '<', $filename) or die "Could not open file '$filename' - $!\n";
 	    }
 
+	    my $task_time = strftime('%FT%TZ', gmtime($task->{starttime}));
+	    my $download_name = 'task-'.$task->{node}.'-'.$task->{type}.'-'.$task_time.'.log';
+
 	    return {
 		download => {
 		    fh => $fh,
 		    stream => 1,
 		    'content-encoding' => $use_compression ? 'gzip' : undef,
 		    'content-type' => "text/plain",
-		    'content-disposition' => "attachment; filename=\"".$param->{upid}."\"",
+		    'content-disposition' => "attachment; filename=\"".$download_name."\"",
 		},
 	    },
 	} else {
