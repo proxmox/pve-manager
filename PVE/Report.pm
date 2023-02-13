@@ -91,6 +91,7 @@ my $init_report_cmds = sub {
 		'pvecm status',
 		'cat /etc/pve/corosync.conf 2>/dev/null',
 		'ha-manager status',
+		'cat /etc/pve/datacenter.cfg',
 	    ],
 	},
 	hardware => {
