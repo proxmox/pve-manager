@@ -139,6 +139,11 @@ Ext.define('PVE.panel.LDAPSyncInputPanel', {
 	PVE.Utils.delete_if_default(values, 'sync-defaults-options');
 	PVE.Utils.delete_if_default(values, 'sync_attributes');
 
+	// Force values.delete to be an array
+	if (typeof values.delete === 'string') {
+	   values.delete = values.delete.split(',');
+	}
+
 	if (me.isCreate) {
 	    delete values.delete; // on create we cannot delete values
 	}
