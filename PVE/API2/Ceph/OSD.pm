@@ -105,7 +105,7 @@ __PACKAGE__->register_method ({
 	PVE::Ceph::Tools::check_ceph_inited();
 
 	my $rados = PVE::RADOS->new();
-	my $res = $rados->mon_command({ prefix => 'osd tree' });
+	my $res = $rados->mon_command({ prefix => 'osd df', output_method => 'tree', });
 
         die "no tree nodes found\n" if !($res && $res->{nodes});
 
@@ -131,7 +131,7 @@ __PACKAGE__->register_method ({
 		type => $e->{type}
 	    };
 
-	    foreach my $opt (qw(status crush_weight reweight device_class)) {
+	    foreach my $opt (qw(status crush_weight reweight device_class pgs)) {
 		$new->{$opt} = $e->{$opt} if defined($e->{$opt});
 	    }
 

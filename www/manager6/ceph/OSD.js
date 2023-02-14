@@ -797,6 +797,13 @@ Ext.define('PVE.node.CephOsdTree', {
 	    renderer: 'render_osd_latency',
 	    width: 120,
 	},
+	{
+	    text: 'PGs',
+	    dataIndex: 'pgs',
+	    align: 'right',
+	    renderer: 'render_osd_val',
+	    width: 90,
+	},
     ],
 
 
