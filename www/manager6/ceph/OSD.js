@@ -956,8 +956,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		osd: 'fa-hdd-o',
 		root: 'fa-server',
 	    };
-	    let icon = iconMap[data.type] ?? 'fa-folder-o';
-	    return `fa x-fa-tree ${icon}`;
+	    return `fa x-fa-tree ${iconMap[data.type] ?? 'fa-folder-o'}`;
 	},
 },
 	{ type: 'number', name: 'crush_weight' },
