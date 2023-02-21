@@ -140,6 +140,7 @@ my $init_report_cmds = sub {
 	    'ceph config dump',
 	    'pveceph pool ls',
 	    'ceph versions',
+	    'ceph health detail',
 	    ;
     }
 
