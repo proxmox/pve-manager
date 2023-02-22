@@ -19,7 +19,6 @@ JSSRC= 							\
 	form/AgentFeatureSelector.js			\
 	form/BackupModeSelector.js			\
 	form/BandwidthSelector.js			\
-	form/Boolean.js					\
 	form/BridgeSelector.js				\
 	form/BusTypeSelector.js				\
 	form/CPUModelSelector.js			\
