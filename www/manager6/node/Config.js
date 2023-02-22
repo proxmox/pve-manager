@@ -42,13 +42,13 @@ Ext.define('PVE.node.Config', {
 			iconCls: 'fa fa-fw fa-play',
 			disabled: !caps.nodes['Sys.PowerMgmt'],
 			handler: function() {
-			    var win = Ext.create('PVE.window.BulkAction', {
+			    Ext.create('PVE.window.BulkAction', {
+				autoShow: true,
 				nodename: nodename,
 				title: gettext('Bulk Start'),
 				btnText: gettext('Start'),
 				action: 'startall',
 			    });
-			    win.show();
 			},
 		    },
 		    {
@@ -56,13 +56,13 @@ Ext.define('PVE.node.Config', {
 			iconCls: 'fa fa-fw fa-stop',
 			disabled: !caps.nodes['Sys.PowerMgmt'],
 			handler: function() {
-			    var win = Ext.create('PVE.window.BulkAction', {
+			    Ext.create('PVE.window.BulkAction', {
+				autoShow: true,
 				nodename: nodename,
 				title: gettext('Bulk Shutdown'),
 				btnText: gettext('Shutdown'),
 				action: 'stopall',
 			    });
-			    win.show();
 			},
 		    },
 		    {
@@ -70,13 +70,13 @@ Ext.define('PVE.node.Config', {
 			iconCls: 'fa fa-fw fa-send-o',
 			disabled: !caps.vms['VM.Migrate'],
 			handler: function() {
-			    var win = Ext.create('PVE.window.BulkAction', {
+			    Ext.create('PVE.window.BulkAction', {
+				autoShow: true,
 				nodename: nodename,
 				title: gettext('Bulk Migrate'),
 				btnText: gettext('Migrate'),
 				action: 'migrateall',
 			    });
-			    win.show();
 			},
 		    },
 		],
