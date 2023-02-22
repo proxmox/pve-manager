@@ -34,12 +34,13 @@ Ext.define('PVE.node.Config', {
 	var actionBtn = Ext.create('Ext.Button', {
 	    text: gettext('Bulk Actions'),
 	    iconCls: 'fa fa-fw fa-ellipsis-v',
-	    disabled: !caps.nodes['Sys.PowerMgmt'],
+	    disabled: !caps.nodes['Sys.PowerMgmt'] && !caps.vms['VM.Migrate'],
 	    menu: new Ext.menu.Menu({
 		items: [
 		    {
 			text: gettext('Bulk Start'),
 			iconCls: 'fa fa-fw fa-play',
+			disabled: !caps.nodes['Sys.PowerMgmt'],
 			handler: function() {
 			    var win = Ext.create('PVE.window.BulkAction', {
 				nodename: nodename,
@@ -53,6 +54,7 @@ Ext.define('PVE.node.Config', {
 		    {
 			text: gettext('Bulk Shutdown'),
 			iconCls: 'fa fa-fw fa-stop',
+			disabled: !caps.nodes['Sys.PowerMgmt'],
 			handler: function() {
 			    var win = Ext.create('PVE.window.BulkAction', {
 				nodename: nodename,
@@ -66,6 +68,7 @@ Ext.define('PVE.node.Config', {
 		    {
 			text: gettext('Bulk Migrate'),
 			iconCls: 'fa fa-fw fa-send-o',
+			disabled: !caps.vms['VM.Migrate'],
 			handler: function() {
 			    var win = Ext.create('PVE.window.BulkAction', {
 				nodename: nodename,
