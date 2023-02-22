@@ -16,6 +16,7 @@ Ext.define('PVE.UIOptions', {
 
 		PVE.UIOptions.updateTagList(PVE.UIOptions.options['allowed-tags']);
 		PVE.UIOptions.updateTagSettings(PVE.UIOptions.options['tag-style']);
+		PVE.UIOptions.fireUIConfigChanged();
 	    },
 	});
     },
@@ -65,11 +66,6 @@ Ext.define('PVE.UIOptions', {
 	}
 
 	Ext.ComponentQuery.query('pveResourceTree')[0].setUserCls(`proxmox-tags-${shape}`);
-
-	if (!PVE.data.ResourceStore.isLoading() && PVE.data.ResourceStore.isLoaded()) {
-	    PVE.data.ResourceStore.fireEvent('load');
-	}
-	Ext.GlobalEvents.fireEvent('loadedUiOptions');
     },
 
     tagTreeStyles: {
@@ -88,5 +84,12 @@ Ext.define('PVE.UIOptions', {
 
     shouldSortTags: function() {
 	return !(PVE.UIOptions.options['tag-style']?.ordering === 'config');
+    },
+
+    fireUIConfigChanged: function() {
+	if (!PVE.data.ResourceStore.isLoading() && PVE.data.ResourceStore.isLoaded()) {
+	    PVE.data.ResourceStore.fireEvent('load');
+	}
+	Ext.GlobalEvents.fireEvent('loadedUiOptions');
     },
 });
