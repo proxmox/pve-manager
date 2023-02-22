@@ -274,6 +274,12 @@ Ext.define('PVE.lxc.NetworkInputPanel', {
 
 	me.advancedColumn1 = [
 	    {
+		xtype: 'proxmoxcheckbox',
+		fieldLabel: gettext('Disconnect'),
+		name: 'link_down',
+		value: cdata.link_down,
+	    },
+	    {
 		xtype: 'proxmoxintegerfield',
 		fieldLabel: 'MTU',
 		emptyText: gettext('Same as bridge'),
@@ -539,6 +545,12 @@ Ext.define('PVE.lxc.NetworkView', {
 		    width: 80,
 		    dataIndex: 'mtu',
 		},
+		{
+		    header: gettext('Disconnected'),
+		    width: 100,
+		    dataIndex: 'link_down',
+		    renderer: Proxmox.Utils.format_boolean,
+		},
 	    ],
 	    listeners: {
 		activate: me.load,
@@ -564,6 +576,7 @@ Ext.define('PVE.lxc.NetworkView', {
 	    'tag',
 	    'firewall',
 	    'mtu',
+	    'link_down',
 	],
     });
 });

@@ -298,6 +298,8 @@ Ext.define('PVE.Parser', {
 		data[match_res[1]] = match_res[2];
 	    } else if ((match_res = p.match(/^firewall=(\d+)$/)) !== null) {
 		data.firewall = PVE.Parser.parseBoolean(match_res[1]);
+	    } else if ((match_res = p.match(/^link_down=(\d+)$/)) !== null) {
+		data.link_down = PVE.Parser.parseBoolean(match_res[1]);
 	    } else if (!p.match(/^type=\S+$/)) {
 		console.warn(`could not parse LXC network string ${p}`);
 	    }
@@ -319,6 +321,7 @@ Ext.define('PVE.Parser', {
 	    name: 1,
 	    rate: 1,
 	    tag: 1,
+	    link_down: 1,
 	};
 	return Object.entries(config)
 	    .filter(([k, v]) => v !== undefined && v !== '' && knownKeys[k])
