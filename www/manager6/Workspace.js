@@ -223,7 +223,10 @@ Ext.define('PVE.StdWorkspace', {
 	let appState = Ext.create('PVE.StateProvider');
 	Ext.state.Manager.setProvider(appState);
 
-	let selview = Ext.create('PVE.form.ViewSelector');
+	let selview = Ext.create('PVE.form.ViewSelector', {
+	    flex: 1,
+	    padding: '0 5 0 0',
+	});
 
 	let rtree = Ext.createWidget('pveResourceTree', {
 	    viewFilter: selview.getViewFilter(),
@@ -449,7 +452,27 @@ Ext.define('PVE.StdWorkspace', {
 		    margin: '0 0 0 5',
 		    split: true,
 		    width: 300,
-		    items: [selview, rtree],
+		    items: [
+			{
+			    xtype: 'container',
+			    layout: 'hbox',
+			    padding: '0 0 5 0',
+			    items: [
+				selview,
+				{
+				    xtype: 'button',
+				    iconCls: 'fa fa-fw fa-gear',
+				    handler: () => {
+					Ext.create('PVE.window.TreeSettingsEdit', {
+					    autoShow: true,
+					    apiCallDone: () => PVE.UIOptions.fireUIConfigChanged(),
+					});
+				    },
+				},
+			    ],
+			},
+			rtree,
+		    ],
 		    listeners: {
 			resize: function(panel, width, height) {
 			    var viewWidth = me.getSize().width;

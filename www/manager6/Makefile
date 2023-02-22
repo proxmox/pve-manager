@@ -119,6 +119,7 @@ JSSRC= 							\
 	window/ScheduleSimulator.js			\
 	window/Wizard.js				\
 	window/GuestDiskReassign.js				\
+	window/TreeSettingsEdit.js			\
 	ha/Fencing.js					\
 	ha/GroupEdit.js					\
 	ha/GroupSelector.js				\
