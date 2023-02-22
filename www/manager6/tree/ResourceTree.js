@@ -44,24 +44,34 @@ Ext.define('PVE.tree.ResourceTree', {
 
     // private
     nodeSortFn: function(node1, node2) {
+	let me = this;
 	let n1 = node1.data, n2 = node2.data;
 
 	if (!n1.groupbyid === !n2.groupbyid) {
-	    // first sort (group) by type
-	    if (n1.type > n2.type) {
-		return 1;
-	    } else if (n1.type < n2.type) {
-		return -1;
+	    let n1IsGuest = n1.type === 'qemu' || n1.type === 'lxc';
+	    let n2IsGuest = n2.type === 'qemu' || n2.type === 'lxc';
+	    if (me['group-guest-types'] || !n1IsGuest || !n2IsGuest) {
+		// first sort (group) by type
+		if (n1.type > n2.type) {
+		    return 1;
+		} else if (n1.type < n2.type) {
+		    return -1;
+		}
 	    }
+
 	    // then sort (group) by ID
-	    if (n1.type === 'qemu' || n2.type === 'lxc') {
-		if (!n1.template !== !n2.template) {
+	    if (n1IsGuest) {
+		if (me['group-templates'] && (!n1.template !== !n2.template)) {
 		    return n1.template ? 1 : -1; // sort templates after regular VMs
 		}
-		if (n1.vmid > n2.vmid) { // prefer VMID as metric for guests
-		    return 1;
-		} else if (n1.vmid < n2.vmid) {
-		    return -1;
+		if (me['sort-field'] === 'vmid') {
+		    if (n1.vmid > n2.vmid) { // prefer VMID as metric for guests
+			return 1;
+		    } else if (n1.vmid < n2.vmid) {
+			return -1;
+		    }
+		} else {
+		    return n1.name.localeCompare(n2.name);
 		}
 	    }
 	    // same types but not a guest
@@ -113,6 +123,11 @@ Ext.define('PVE.tree.ResourceTree', {
 		status += `<div class="usage-negative" style="height: ${remainingHeight}%"></div>`;
 		status += `<div class="usage" style="height: ${barHeight}%"></div>`;
 		status += '</div> ';
+	    }
+	}
+	if (Ext.isNumeric(info.vmid) && info.vmid > 0) {
+	    if (PVE.UIOptions.getTreeSortingValue('sort-field') !== 'vmid') {
+		info.text = `${info.name} (${String(info.vmid)})`;
 	    }
 	}
 
@@ -203,8 +218,22 @@ Ext.define('PVE.tree.ResourceTree', {
 	return me.addChildSorted(node, info);
     },
 
+    saveSortingOptions: function() {
+	let me = this;
+	let changed = false;
+	for (const key of ['sort-field', 'group-templates', 'group-guest-types']) {
+	    let newValue = PVE.UIOptions.getTreeSortingValue(key);
+	    if (me[key] !== newValue) {
+		me[key] = newValue;
+		changed = true;
+	    }
+	}
+	return changed;
+    },
+
     initComponent: function() {
 	let me = this;
+	me.saveSortingOptions();
 
 	let rstore = PVE.data.ResourceStore;
 	let sp = Ext.state.Manager.getProvider();
@@ -242,6 +271,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	    let sm = me.getSelectionModel();
 	    let lastsel = sm.getSelection()[0];
 	    let parents = [];
+	    let sorting_changed = me.saveSortingOptions();
 	    for (let node = lastsel; node; node = node.parentNode) {
 		parents.push(node);
 	    }
@@ -258,7 +288,7 @@ Ext.define('PVE.tree.ResourceTree', {
 		// getById() use find(), which is slow (ExtJS4 DP5)
 		let item = rstore.data.get(olditem.data.id);
 
-		let changed = false, moved = false;
+		let changed = sorting_changed, moved = sorting_changed;
 		if (item) {
 		    // test if any grouping attributes changed, catches migrated tree-nodes in server view too
 		    for (const attr of moveCheckAttrs) {

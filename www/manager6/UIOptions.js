@@ -86,6 +86,18 @@ Ext.define('PVE.UIOptions', {
 	return !(PVE.UIOptions.options['tag-style']?.ordering === 'config');
     },
 
+    getTreeSortingValue: function(key) {
+	let localStorage = Ext.state.Manager.getProvider();
+	let browserValues = localStorage.get('pve-tree-sorting');
+	let defaults = {
+	    'sort-field': 'vmid',
+	    'group-templates': true,
+	    'group-guest-types': true,
+	};
+
+	return browserValues?.[key] ?? defaults[key];
+    },
+
     fireUIConfigChanged: function() {
 	if (!PVE.data.ResourceStore.isLoading() && PVE.data.ResourceStore.isLoaded()) {
 	    PVE.data.ResourceStore.fireEvent('load');
