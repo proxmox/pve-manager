@@ -158,7 +158,7 @@ Ext.define('PVE.StdWorkspace', {
 		},
 	    });
 
-	    PVE.Utils.updateUIOptions();
+	    PVE.UIOptions.update();
 
 	    Proxmox.Utils.API2Request({
 		url: '/cluster/sdn',

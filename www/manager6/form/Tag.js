@@ -61,7 +61,7 @@ Ext.define('Proxmox.form.Tag', {
 		userCls: 'proxmox-tags-full',
 		displayField: 'tag',
 		itemTpl: [
-		    '{[Proxmox.Utils.getTagElement(values.tag, PVE.Utils.tagOverrides)]}',
+		    '{[Proxmox.Utils.getTagElement(values.tag, PVE.UIOptions.tagOverrides)]}',
 		],
 		store: [],
 		listeners: {
@@ -76,7 +76,7 @@ Ext.define('Proxmox.form.Tag', {
 	    });
 	}
 	me.picker.getStore()?.clearFilter();
-	let taglist = PVE.Utils.tagList.filter(v => !me.filter.includes(v)).map(v => ({ tag: v }));
+	let taglist = PVE.UIOptions.tagList.filter(v => !me.filter.includes(v)).map(v => ({ tag: v }));
 	if (taglist.length < 1) {
 	    return;
 	}
@@ -154,7 +154,7 @@ Ext.define('Proxmox.form.Tag', {
 
     setColor: function(tag) {
 	let me = this;
-	let rgb = PVE.Utils.tagOverrides[tag] ?? Proxmox.Utils.stringToRGB(tag);
+	let rgb = PVE.UIOptions.tagOverrides[tag] ?? Proxmox.Utils.stringToRGB(tag);
 
 	let cls = Proxmox.Utils.getTextContrastClass(rgb);
 	let color = Proxmox.Utils.rgbToCss(rgb);

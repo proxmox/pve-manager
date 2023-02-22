@@ -358,11 +358,11 @@ Ext.define('PVE.dc.OptionView', {
 		if (value === undefined) {
 		    return gettext('No Overrides');
 		}
-		let colors = PVE.Utils.parseTagOverrides(value?.['color-map']);
+		let colors = PVE.UIOptions.parseTagOverrides(value?.['color-map']);
 		let shape = value.shape;
-		let shapeText = PVE.Utils.tagTreeStyles[shape ?? '__default__'];
+		let shapeText = PVE.UIOptions.tagTreeStyles[shape ?? '__default__'];
 		let txt = Ext.String.format(gettext("Tree Shape: {0}"), shapeText);
-		let orderText = PVE.Utils.tagOrderOptions[value.ordering ?? '__default__'];
+		let orderText = PVE.UIOptions.tagOrderOptions[value.ordering ?? '__default__'];
 		txt += `, ${Ext.String.format(gettext("Ordering: {0}"), orderText)}`;
 		if (value['case-sensitive']) {
 		    txt += `, ${gettext('Case-Sensitive')}`;
@@ -453,7 +453,7 @@ Ext.define('PVE.dc.OptionView', {
 				    ],
 				},
 				store: {
-				    data: Object.entries(PVE.Utils.tagTreeStyles).map(v => ({
+				    data: Object.entries(PVE.UIOptions.tagTreeStyles).map(v => ({
 					value: v[0],
 					display: v[1],
 				    })),
@@ -466,7 +466,7 @@ Ext.define('PVE.dc.OptionView', {
 				name: 'ordering',
 				xtype: 'proxmoxKVComboBox',
 				fieldLabel: gettext('Ordering'),
-				comboItems: Object.entries(PVE.Utils.tagOrderOptions),
+				comboItems: Object.entries(PVE.UIOptions.tagOrderOptions),
 				defaultValue: '__default__',
 				value: '__default__',
 				deleteEmpty: true,
@@ -503,7 +503,7 @@ Ext.define('PVE.dc.OptionView', {
 		let mode = value?.['user-allow'] ?? 'free';
 		let list = value?.['user-allow-list']?.join(',') ?? '';
 		let modeTxt = Ext.String.format(gettext('Mode: {0}'), mode);
-		let overrides = PVE.Utils.tagOverrides;
+		let overrides = PVE.UIOptions.tagOverrides;
 		let tags = PVE.Utils.renderTags(list, overrides);
 		let listTxt = tags !== '' ? `, ${gettext('Pre-defined:')} ${tags}` : '';
 		return `${modeTxt}${listTxt}`;
@@ -520,7 +520,7 @@ Ext.define('PVE.dc.OptionView', {
 		if (value === undefined) {
 		    return gettext('No Registered Tags');
 		}
-		let overrides = PVE.Utils.tagOverrides;
+		let overrides = PVE.UIOptions.tagOverrides;
 		return PVE.Utils.renderTags(value.join(','), overrides);
 	    },
 	    header: gettext('Registered Tags'),
@@ -559,13 +559,13 @@ Ext.define('PVE.dc.OptionView', {
 	    }
 
 	    var rec = store.getById('console');
-	    PVE.UIOptions.console = rec.data.value;
+	    PVE.UIOptions.options.console = rec.data.value;
 	    if (rec.data.value === '__default__') {
-		delete PVE.UIOptions.console;
+		delete PVE.UIOptions.options.console;
 	    }
 
-	    PVE.UIOptions['tag-style'] = store.getById('tag-style')?.data?.value;
-	    PVE.Utils.updateTagSettings(PVE.UIOptions['tag-style']);
+	    PVE.UIOptions.options['tag-style'] = store.getById('tag-style')?.data?.value;
+	    PVE.UIOptions.updateTagSettings(PVE.UIOptions.options['tag-style']);
 	});
 
 	me.on('activate', me.rstore.startUpdate);

@@ -80,7 +80,7 @@ Ext.define('PVE.form.GlobalSearchField', {
 		flex: 1,
 		dataIndex: 'text',
 		renderer: function(value, mD, rec) {
-		    let overrides = PVE.Utils.tagOverrides;
+		    let overrides = PVE.UIOptions.tagOverrides;
 		    let tags = PVE.Utils.renderTags(rec.data.tags, overrides);
 		    return `${value}${tags}`;
 		},

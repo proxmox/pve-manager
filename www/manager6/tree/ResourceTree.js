@@ -116,7 +116,7 @@ Ext.define('PVE.tree.ResourceTree', {
 	    }
 	}
 
-	info.text += PVE.Utils.renderTags(info.tags, PVE.Utils.tagOverrides);
+	info.text += PVE.Utils.renderTags(info.tags, PVE.UIOptions.tagOverrides);
 
 	info.text = status + info.text;
     },

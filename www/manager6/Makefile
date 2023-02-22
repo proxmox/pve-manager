@@ -4,6 +4,7 @@ JSSRC= 							\
 	Parser.js					\
 	StateProvider.js				\
 	Utils.js					\
+	UIOptions.js					\
 	Toolkit.js					\
 	VNCConsole.js					\
 	button/ConsoleButton.js				\

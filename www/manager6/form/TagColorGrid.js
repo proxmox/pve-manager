@@ -295,7 +295,7 @@ Ext.define('PVE.form.TagColorGrid', {
 	    dataIndex: 'tag',
 	    xtype: 'widgetcolumn',
 	    onWidgetAttach: function(col, widget, rec) {
-		widget.getStore().setData(PVE.Utils.tagList.map(v => ({ tag: v })));
+		widget.getStore().setData(PVE.UIOptions.tagList.map(v => ({ tag: v })));
 	    },
 	    widget: {
 		xtype: 'combobox',

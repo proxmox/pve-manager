@@ -41,7 +41,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	onRender: function(v) {
 	    let me = this;
 	    let view = me.getView();
-	    view.toggleCls('hide-handles', PVE.Utils.shouldSortTags());
+	    view.toggleCls('hide-handles', PVE.UIOptions.shouldSortTags());
 
 	    view.dragzone = Ext.create('Ext.dd.DragZone', v.getEl(), {
 		getDragData: function(e) {
@@ -53,7 +53,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 		    let cmp = Ext.getCmp(sourceId);
 		    let ddel = document.createElement('div');
 		    ddel.classList.add('proxmox-tags-full');
-		    ddel.innerHTML = Proxmox.Utils.getTagElement(cmp.tag, PVE.Utils.tagOverrides);
+		    ddel.innerHTML = Proxmox.Utils.getTagElement(cmp.tag, PVE.UIOptions.tagOverrides);
 		    let repairXY = Ext.fly(source).getXY();
 		    cmp.setDisabled(true);
 		    ddel.id = Ext.id();
@@ -141,7 +141,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 
 	    // get a current tag list for editing
 	    if (editMode) {
-		PVE.Utils.updateUIOptions();
+		PVE.UIOptions.update();
 	    }
 
 	    me.forEachTag((tag) => {
@@ -192,7 +192,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    let view = me.getView();
 	    let vm = me.getViewModel();
 	    let index = view.items.length - 5;
-	    if (PVE.Utils.shouldSortTags() && !isNew) {
+	    if (PVE.UIOptions.shouldSortTags() && !isNew) {
 		index = view.items.findIndexBy(tagField => {
 		    if (tagField.reference === 'noTagsField') {
 			return false;
@@ -255,7 +255,7 @@ Ext.define('PVE.panel.TagEditContainer', {
 	    me.getViewModel().set('canEdit', view.canEdit);
 
 	    me.mon(Ext.GlobalEvents, 'loadedUiOptions', () => {
-		view.toggleCls('hide-handles', PVE.Utils.shouldSortTags());
+		view.toggleCls('hide-handles', PVE.UIOptions.shouldSortTags());
 		me.loadTags(me.oldTags, true); // refresh tag colors and order
 	    });
 	},

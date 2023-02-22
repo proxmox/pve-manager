@@ -1334,7 +1334,7 @@ Ext.define('PVE.Utils', {
 	    allowSpice = consoles.spice;
 	    allowXtermjs = !!consoles.xtermjs;
 	}
-	let dv = PVE.UIOptions.console || (type === 'kvm' ? 'vv' : 'xtermjs');
+	let dv = PVE.UIOptions.options.console || (type === 'kvm' ? 'vv' : 'xtermjs');
 	if (dv === 'vv' && !allowSpice) {
 	    dv = allowXtermjs ? 'xtermjs' : 'html5';
 	} else if (dv === 'xtermjs' && !allowXtermjs) {
@@ -1857,95 +1857,11 @@ Ext.define('PVE.Utils', {
 
     notesTemplateVars: ['cluster', 'guestname', 'node', 'vmid'],
 
-    updateUIOptions: function() {
-	Proxmox.Utils.API2Request({
-	    url: '/cluster/options',
-	    method: 'GET',
-	    success: function(response) {
-		PVE.UIOptions = {
-		    'allowed-tags': [],
-		};
-		for (const option of ['allowed-tags', 'console', 'tag-style']) {
-		    PVE.UIOptions[option] = response?.result?.data?.[option];
-		}
-
-		PVE.Utils.updateTagList(PVE.UIOptions['allowed-tags']);
-		PVE.Utils.updateTagSettings(PVE.UIOptions?.['tag-style']);
-	    },
-	});
-    },
-
-    tagList: [],
-
-    updateTagList: function(tags) {
-	PVE.Utils.tagList = [...new Set([...tags])].sort();
-    },
-
-    parseTagOverrides: function(overrides) {
-	let colors = {};
-	(overrides || "").split(';').forEach(color => {
-	    if (!color) {
-		return;
-	    }
-	    let [tag, color_hex, font_hex] = color.split(':');
-	    let r = parseInt(color_hex.slice(0, 2), 16);
-	    let g = parseInt(color_hex.slice(2, 4), 16);
-	    let b = parseInt(color_hex.slice(4, 6), 16);
-	    colors[tag] = [r, g, b];
-	    if (font_hex) {
-		colors[tag].push(parseInt(font_hex.slice(0, 2), 16));
-		colors[tag].push(parseInt(font_hex.slice(2, 4), 16));
-		colors[tag].push(parseInt(font_hex.slice(4, 6), 16));
-	    }
-	});
-	return colors;
-    },
-
-    tagOverrides: {},
-
-    updateTagOverrides: function(colors) {
-	let sp = Ext.state.Manager.getProvider();
-	let color_state = sp.get('colors', '');
-	let browser_colors = PVE.Utils.parseTagOverrides(color_state);
-	PVE.Utils.tagOverrides = Ext.apply({}, browser_colors, colors);
-    },
-
-    updateTagSettings: function(style) {
-	let overrides = style?.['color-map'];
-	PVE.Utils.updateTagOverrides(PVE.Utils.parseTagOverrides(overrides ?? ""));
-
-	let shape = style?.shape ?? 'circle';
-	if (shape === '__default__') {
-	    style = 'circle';
-	}
-
-	Ext.ComponentQuery.query('pveResourceTree')[0].setUserCls(`proxmox-tags-${shape}`);
-
-	if (!PVE.data.ResourceStore.isLoading() && PVE.data.ResourceStore.isLoaded()) {
-	    PVE.data.ResourceStore.fireEvent('load');
-	}
-	Ext.GlobalEvents.fireEvent('loadedUiOptions');
-    },
-
-    tagTreeStyles: {
-	'__default__': `${Proxmox.Utils.defaultText} (${gettext('Circle')})`,
-	'full': gettext('Full'),
-	'circle': gettext('Circle'),
-	'dense': gettext('Dense'),
-	'none': Proxmox.Utils.NoneText,
-    },
-
-    tagOrderOptions: {
-	'__default__': `${Proxmox.Utils.defaultText} (${gettext('Alphabetical')})`,
-	'config': gettext('Configuration'),
-	'alphabetical': gettext('Alphabetical'),
-    },
-
     renderTags: function(tagstext, overrides) {
 	let text = '';
 	if (tagstext) {
 	    let tags = (tagstext.split(/[,; ]/) || []).filter(t => !!t);
-	    if (PVE.Utils.shouldSortTags()) {
+	    if (PVE.UIOptions.shouldSortTags()) {
 		tags = tags.sort((a, b) => {
 		    let alc = a.toLowerCase();
 		    let blc = b.toLowerCase();
@@ -1958,10 +1874,6 @@ Ext.define('PVE.Utils', {
 	    });
 	}
 	return text;
-    },
-
-    shouldSortTags: function() {
-	return !(PVE.UIOptions?.['tag-style']?.ordering === 'config');
     },
 
     tagCharRegex: /^[a-z0-9+_.-]+$/i,
