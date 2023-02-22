@@ -461,7 +461,8 @@ Ext.define('PVE.StdWorkspace', {
 				selview,
 				{
 				    xtype: 'button',
-				    iconCls: 'fa fa-fw fa-gear',
+				    cls: 'x-btn-default-toolbar-small proxmox-inline-button',
+				    iconCls: 'fa fa-fw fa-gear x-btn-icon-el-default-toolbar-small ',
 				    handler: () => {
 					Ext.create('PVE.window.TreeSettingsEdit', {
 					    autoShow: true,
