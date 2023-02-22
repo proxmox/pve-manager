@@ -3,11 +3,9 @@ Ext.define('PVE.window.TreeSettingsEdit', {
     alias: 'widget.pveTreeSettingsEdit',
 
     title: gettext('Tree Settings'),
-
     isCreate: false,
 
-    // we don't want an url, we override submit(), but it is needed by the parent class
-    url: 'bogus',
+    url: '#', // ignored as submit() gets overriden here, but the parent class requires it
 
     fieldDefaults: {
 	labelWidth: 120,
