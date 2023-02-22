@@ -7,8 +7,9 @@ Ext.define('PVE.window.TreeSettingsEdit', {
 
     url: '#', // ignored as submit() gets overriden here, but the parent class requires it
 
+    width: 450,
     fieldDefaults: {
-	labelWidth: 120,
+	labelWidth: 150,
     },
 
     items: [
@@ -18,7 +19,7 @@ Ext.define('PVE.window.TreeSettingsEdit', {
 		{
 		    xtype: 'proxmoxKVComboBox',
 		    name: 'sort-field',
-		    fieldLabel: gettext('Sort Field'),
+		    fieldLabel: gettext('Sort Key'),
 		    comboItems: [
 			['__default__', `${Proxmox.Utils.defaultText} (VMID)`],
 			['vmid', 'VMID'],
@@ -44,7 +45,7 @@ Ext.define('PVE.window.TreeSettingsEdit', {
 		{
 		    xtype: 'proxmoxKVComboBox',
 		    name: 'group-guest-types',
-		    fieldLabel: gettext('Group Types'),
+		    fieldLabel: gettext('Group Guest Types'),
 		    comboItems: [
 			['__default__', `${Proxmox.Utils.defaultText} (${gettext("Yes")})`],
 			[1, gettext('Yes')],
