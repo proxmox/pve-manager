@@ -29,6 +29,7 @@ my $init_report_cmds = sub {
 	    order => 10,
 	    cmds => [
 		'hostname',
+		'date -R',
 		'pveversion --verbose',
 		'cat /etc/hosts',
 		'pvesubscription get',
