@@ -1757,7 +1757,9 @@ __PACKAGE__->register_method ({
     method => 'POST',
     protected => 1,
     permissions => {
-	check => ['perm', '/', [ 'VM.PowerMgmt' ]],
+	description => "The 'VM.PowerMgmt' permission is required on '/' or on '/vms/<ID>' for "
+	    ."each ID passed via the 'vms' parameter.",
+	user => 'all',
     },
     proxyto => 'node',
     description => "Start all VMs and containers located on this node (by default only those with onboot=1).",
@@ -1786,6 +1788,15 @@ __PACKAGE__->register_method ({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $authuser = $rpcenv->get_user();
+
+	if (!$rpcenv->check($authuser, "/", [ 'VM.PowerMgmt' ], 1)) {
+	    my @vms = PVE::Tools::split_list($param->{vms});
+	    if (scalar(@vms) > 0) {
+		$rpcenv->check($authuser, "/vms/$_", [ 'VM.PowerMgmt' ]) for @vms;
+	    } else {
+		raise_perm_exc("/, VM.PowerMgmt");
+	    }
+	}
 
 	my $nodename = $param->{node};
 	$nodename = PVE::INotify::nodename() if $nodename eq 'localhost';
@@ -1892,7 +1903,9 @@ __PACKAGE__->register_method ({
     method => 'POST',
     protected => 1,
     permissions => {
-	check => ['perm', '/', [ 'VM.PowerMgmt' ]],
+	description => "The 'VM.PowerMgmt' permission is required on '/' or on '/vms/<ID>' for "
+	    ."each ID passed via the 'vms' parameter.",
+	user => 'all',
     },
     proxyto => 'node',
     description => "Stop all VMs and Containers.",
@@ -1930,6 +1943,15 @@ __PACKAGE__->register_method ({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $authuser = $rpcenv->get_user();
+
+	if (!$rpcenv->check($authuser, "/", [ 'VM.PowerMgmt' ], 1)) {
+	    my @vms = PVE::Tools::split_list($param->{vms});
+	    if (scalar(@vms) > 0) {
+		$rpcenv->check($authuser, "/vms/$_", [ 'VM.PowerMgmt' ]) for @vms;
+	    } else {
+		raise_perm_exc("/, VM.PowerMgmt");
+	    }
+	}
 
 	my $nodename = $param->{node};
 	$nodename = PVE::INotify::nodename() if $nodename eq 'localhost';
@@ -2057,7 +2079,9 @@ __PACKAGE__->register_method ({
     proxyto => 'node',
     protected => 1,
     permissions => {
-	check => ['perm', '/', [ 'VM.Migrate' ]],
+	description => "The 'VM.Migrate' permission is required on '/' or on '/vms/<ID>' for each "
+	    ."ID passed via the 'vms' parameter.",
+	user => 'all',
     },
     description => "Migrate all VMs and Containers.",
     parameters => {
@@ -2092,6 +2116,15 @@ __PACKAGE__->register_method ({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $authuser = $rpcenv->get_user();
+
+	if (!$rpcenv->check($authuser, "/", [ 'VM.Migrate' ], 1)) {
+	    my @vms = PVE::Tools::split_list($param->{vms});
+	    if (scalar(@vms) > 0) {
+		$rpcenv->check($authuser, "/vms/$_", [ 'VM.Migrate' ]) for @vms;
+	    } else {
+		raise_perm_exc("/, VM.Migrate");
+	    }
+	}
 
 	my $nodename = $param->{node};
 	$nodename = PVE::INotify::nodename() if $nodename eq 'localhost';
