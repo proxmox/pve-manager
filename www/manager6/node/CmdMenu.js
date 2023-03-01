@@ -126,9 +126,11 @@ Ext.define('PVE.node.CmdMenu', {
 	if (!caps.vms['VM.Migrate']) {
 	    me.getComponent('bulkmigrate').setDisabled(true);
 	}
-	if (!caps.nodes['Sys.PowerMgmt']) {
+	if (!caps.vms['VM.PowerMgmt']) {
 	    me.getComponent('bulkstart').setDisabled(true);
 	    me.getComponent('bulkstop').setDisabled(true);
+	}
+	if (!caps.nodes['Sys.PowerMgmt']) {
 	    me.getComponent('wakeonlan').setDisabled(true);
 	}
 	if (!caps.nodes['Sys.Console']) {
