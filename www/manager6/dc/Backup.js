@@ -2,72 +2,107 @@ Ext.define('PVE.dc.BackupEdit', {
     extend: 'Proxmox.window.Edit',
     alias: ['widget.pveDcBackupEdit'],
 
+    mixins: ['Proxmox.Mixin.CBind'],
+
     defaultFocus: undefined,
 
-    initComponent: function() {
+    subject: gettext("Backup Job"),
+    bodyPadding: 0,
+
+    url: '/api2/extjs/cluster/backup',
+    method: 'POST',
+    isCreate: true,
+
+    cbindData: function() {
 	let me = this;
-
-	me.isCreate = !me.jobid;
-
-	let url, method;
-	if (me.isCreate) {
-	    url = '/api2/extjs/cluster/backup';
-	    method = 'POST';
-	} else {
-	    url = '/api2/extjs/cluster/backup/' + me.jobid;
-	    method = 'PUT';
+	if (me.jobid) {
+	    me.isCreate = false;
+	    me.method = 'PUT';
+	    me.url += `/${me.jobid}`;
 	}
+	return {};
+    },
 
-	// 'value' can be assigned a string or an array
-	let selModeField = Ext.create('Proxmox.form.KVComboBox', {
-	    xtype: 'proxmoxKVComboBox',
-	    comboItems: [
-		['include', gettext('Include selected VMs')],
-		['all', gettext('All')],
-		['exclude', gettext('Exclude selected VMs')],
-		['pool', gettext('Pool based')],
-	    ],
-	    fieldLabel: gettext('Selection mode'),
-	    name: 'selMode',
-	    value: '',
-	});
+    controller: {
+	xclass: 'Ext.app.ViewController',
 
+	onGetValues: function(values) {
+	    let me = this;
+	    let isCreate = me.getView().isCreate;
+	    if (!values.node) {
+		if (!isCreate) {
+		    Proxmox.Utils.assemble_field_data(values, { 'delete': 'node' });
+		}
+		delete values.node;
+	    }
 
-	let storagesel = Ext.create('PVE.form.StorageSelector', {
-	    fieldLabel: gettext('Storage'),
-	    clusterView: true,
-	    storageContent: 'backup',
-	    allowBlank: false,
-	    name: 'storage',
-	    listeners: {
-		change: function(f, v) {
-		    let store = f.getStore();
-		    let rec = store.findRecord('storage', v, 0, false, true, true);
-		    let compressionSelector = me.down('pveCompressionSelector');
+	    if (!values.id && isCreate) {
+		values.id = 'backup-' + Ext.data.identifier.Uuid.Global.generate().slice(0, 13);
+	    }
 
-		    if (rec && rec.data && rec.data.type === 'pbs') {
-			compressionSelector.setValue('zstd');
-			compressionSelector.setDisabled(true);
-		    } else if (!compressionSelector.getEditable()) {
-			compressionSelector.setDisabled(false);
-		    }
-		},
-	    },
-	});
+	    let selMode = values.selMode;
+	    delete values.selMode;
 
-	let vmgrid = Ext.createWidget('vmselector', {
-	    height: 300,
-	    name: 'vmid',
-	    disabled: true,
-	    allowBlank: false,
-	    columnSelection: ['vmid', 'node', 'status', 'name', 'type'],
-	});
+	    if (selMode === 'all') {
+		values.all = 1;
+		values.exclude = '';
+		delete values.vmid;
+	    } else if (selMode === 'exclude') {
+		values.all = 1;
+		values.exclude = values.vmid;
+		delete values.vmid;
+	    } else if (selMode === 'pool') {
+		delete values.vmid;
+	    }
 
-	let selectPoolMembers = function(poolid) {
+	    if (selMode !== 'pool') {
+		delete values.pool;
+	    }
+	    return values;
+	},
+
+	nodeChange: function(f, value) {
+	    let me = this;
+	    me.lookup('storageSelector').setNodename(value);
+	    let vmgrid = me.lookup('vmgrid');
+	    let store = vmgrid.getStore();
+
+	    store.clearFilter();
+	    store.filterBy(function(rec) {
+		return !value || rec.get('node') === value;
+	    });
+
+	    let mode = me.lookup('modeSelector').getValue();
+	    if (mode === 'all') {
+		vmgrid.selModel.selectAll(true);
+	    }
+	    if (mode === 'pool') {
+		me.selectPoolMembers();
+	    }
+	},
+
+	storageChange: function(f, v) {
+	    let me = this;
+	    let rec = f.getStore().findRecord('storage', v, 0, false, true, true);
+	    let compressionSelector = me.lookup('compressionSelector');
+
+	    if (rec?.data?.type === 'pbs') {
+		compressionSelector.setValue('zstd');
+		compressionSelector.setDisabled(true);
+	    } else if (!compressionSelector.getEditable()) {
+		compressionSelector.setDisabled(false);
+	    }
+	},
+
+	selectPoolMembers: function() {
+	    let me = this;
+	    let vmgrid = me.lookup('vmgrid');
+	    let poolid = me.lookup('poolSelector').getValue();
+
+	    vmgrid.getSelectionModel().deselectAll(true);
 	    if (!poolid) {
 		return;
 	    }
-	    vmgrid.selModel.deselectAll(true);
 	    vmgrid.getStore().filter([
 		{
 		    id: 'poolFilter',
@@ -76,312 +111,309 @@ Ext.define('PVE.dc.BackupEdit', {
 		},
 	    ]);
 	    vmgrid.selModel.selectAll(true);
-	};
+	},
 
-	let selPool = Ext.create('PVE.form.PoolSelector', {
-	    fieldLabel: gettext('Pool to backup'),
-	    hidden: true,
-	    allowBlank: true,
-	    name: 'pool',
-	    listeners: {
-		change: function(selpool, newValue, oldValue) {
-		    selectPoolMembers(newValue);
-		},
-	    },
-	});
+	modeChange: function(f, value, oldValue) {
+	    let me = this;
+	    let vmgrid = me.lookup('vmgrid');
+	    vmgrid.getStore().removeFilter('poolFilter');
 
-	let nodesel = Ext.create('PVE.form.NodeSelector', {
-	    name: 'node',
-	    fieldLabel: gettext('Node'),
-	    allowBlank: true,
-	    editable: true,
-	    autoSelect: false,
-	    emptyText: '-- ' + gettext('All') + ' --',
-	    listeners: {
-		change: function(f, value) {
-		    storagesel.setNodename(value);
-		    let mode = selModeField.getValue();
-		    let store = vmgrid.getStore();
-		    store.clearFilter();
-		    store.filterBy(function(rec) {
-			return !value || rec.get('node') === value;
-		    });
-		    if (mode === 'all') {
-			vmgrid.selModel.selectAll(true);
-		    }
-		    if (mode === 'pool') {
-			selectPoolMembers(selPool.value);
-		    }
-		},
-	    },
-	});
-
-	let column1 = [
-	    nodesel,
-	    storagesel,
-	    {
-		xtype: 'pveCalendarEvent',
-		fieldLabel: gettext('Schedule'),
-		allowBlank: false,
-		name: 'schedule',
-	    },
-	    selModeField,
-	    selPool,
-	];
-
-	let column2 = [
-	    {
-		xtype: 'textfield',
-		fieldLabel: gettext('Send email to'),
-		name: 'mailto',
-	    },
-	    {
-		xtype: 'pveEmailNotificationSelector',
-		fieldLabel: gettext('Email'),
-		name: 'mailnotification',
-		deleteEmpty: !me.isCreate,
-		value: me.isCreate ? 'always' : '',
-	    },
-	    {
-		xtype: 'pveCompressionSelector',
-		fieldLabel: gettext('Compression'),
-		name: 'compress',
-		deleteEmpty: !me.isCreate,
-		value: 'zstd',
-	    },
-	    {
-		xtype: 'pveBackupModeSelector',
-		fieldLabel: gettext('Mode'),
-		value: 'snapshot',
-		name: 'mode',
-	    },
-	    {
-		xtype: 'proxmoxcheckbox',
-		fieldLabel: gettext('Enable'),
-		name: 'enabled',
-		uncheckedValue: 0,
-		defaultValue: 1,
-		checked: true,
-	    },
-	];
-
-	let ipanel = Ext.create('Proxmox.panel.InputPanel', {
-	    onlineHelp: 'chapter_vzdump',
-	    column1: column1,
-	    column2: column2,
-	    columnB: [
-		{
-		    xtype: 'proxmoxtextfield',
-		    name: 'comment',
-		    fieldLabel: gettext('Job Comment'),
-		    deleteEmpty: !me.isCreate,
-		    autoEl: {
-			tag: 'div',
-			'data-qtip': gettext('Description of the job'),
-		    },
-		},
-		vmgrid,
-	    ],
-	    advancedColumn1: [
-		{
-		    xtype: 'proxmoxcheckbox',
-		    fieldLabel: gettext('Repeat missed'),
-		    name: 'repeat-missed',
-		    uncheckedValue: 0,
-		    defaultValue: 0,
-		    deleteDefaultValue: !me.isCreate,
-		},
-	    ],
-	    onGetValues: function(values) {
-		if (!values.node) {
-		    if (!me.isCreate) {
-			Proxmox.Utils.assemble_field_data(values, { 'delete': 'node' });
-		    }
-		    delete values.node;
-		}
-
-		if (!values.id && me.isCreate) {
-		    values.id = 'backup-' + Ext.data.identifier.Uuid.Global.generate().slice(0, 13);
-		}
-
-		let selMode = values.selMode;
-		delete values.selMode;
-
-		if (selMode === 'all') {
-		    values.all = 1;
-		    values.exclude = '';
-		    delete values.vmid;
-		} else if (selMode === 'exclude') {
-		    values.all = 1;
-		    values.exclude = values.vmid;
-		    delete values.vmid;
-		} else if (selMode === 'pool') {
-		    delete values.vmid;
-		}
-
-		if (selMode !== 'pool') {
-		    delete values.pool;
-		}
-		return values;
-	    },
-	});
-
-	selModeField.on('change', function(f, value, oldValue) {
-	    if (oldValue === 'pool') {
-		vmgrid.getStore().removeFilter('poolFilter');
-	    }
-
-	    if (oldValue === 'all' || oldValue === 'pool') {
-		vmgrid.selModel.deselectAll(true);
+	    if (oldValue === 'all' && value !== 'all') {
+		vmgrid.getSelectionModel().deselectAll(true);
 	    }
 
 	    if (value === 'all') {
-		vmgrid.selModel.selectAll(true);
-		vmgrid.setDisabled(true);
-	    } else {
-		vmgrid.setDisabled(false);
+		vmgrid.getSelectionModel().selectAll(true);
 	    }
 
 	    if (value === 'pool') {
-		vmgrid.setDisabled(true);
-		vmgrid.selModel.deselectAll(true);
-		selPool.setVisible(true);
-		selPool.setDisabled(false);
-		selPool.allowBlank = false;
-		selectPoolMembers(selPool.value);
-	    } else {
-		selPool.setVisible(false);
-		selPool.setDisabled(true);
-		selPool.allowBlank = true;
+		me.selectPoolMembers();
 	    }
-	});
+	},
 
-	Ext.applyIf(me, {
-	    subject: gettext("Backup Job"),
-	    url: url,
-	    method: method,
-	    bodyPadding: 0,
+	init: function(view) {
+	    let me = this;
+	    if (view.isCreate) {
+		me.lookup('modeSelector').setValue('include');
+	    } else {
+		view.load({
+		    success: function(response, _options) {
+			let data = response.result.data;
+
+			if (data.exclude) {
+			    data.vmid = data.exclude;
+			    data.selMode = 'exclude';
+			} else if (data.all) {
+			    data.vmid = '';
+			    data.selMode = 'all';
+			} else if (data.pool) {
+			    data.selMode = 'pool';
+			    data.selPool = data.pool;
+			} else {
+			    data.selMode = 'include';
+			}
+
+			me.getViewModel().set('selMode', data.selMode);
+
+			if (data['prune-backups']) {
+			    Object.assign(data, data['prune-backups']);
+			    delete data['prune-backups'];
+			} else if (data.maxfiles !== undefined) {
+			    if (data.maxfiles > 0) {
+				data['keep-last'] = data.maxfiles;
+			    } else {
+				data['keep-all'] = 1;
+			    }
+			    delete data.maxfiles;
+			}
+
+			if (data['notes-template']) {
+			    data['notes-template'] =
+				PVE.Utils.unEscapeNotesTemplate(data['notes-template']);
+			}
+
+			view.setValues(data);
+		    },
+		});
+	    }
+	},
+    },
+
+    viewModel: {
+	data: {
+	    selMode: 'include',
+	},
+
+	formulas: {
+	    poolMode: (get) => get('selMode') === 'pool',
+	    disableVMSelection: (get) => get('selMode') !== 'include' && get('selMode') !== 'exclude',
+	},
+    },
+
+    items: [
+	{
+	    xtype: 'tabpanel',
+	    region: 'center',
+	    layout: 'fit',
+	    bodyPadding: 10,
 	    items: [
 		{
-		    xtype: 'tabpanel',
+		    xtype: 'container',
+		    title: gettext('General'),
 		    region: 'center',
-		    layout: 'fit',
-		    bodyPadding: 10,
+		    layout: {
+			type: 'vbox',
+			align: 'stretch',
+		    },
 		    items: [
 			{
-			    xtype: 'container',
-			    title: gettext('General'),
-			    region: 'center',
-			    layout: {
-				type: 'vbox',
-				align: 'stretch',
-			    },
-			    items: [
-				ipanel,
-			    ],
-			},
-			{
-			    xtype: 'pveBackupJobPrunePanel',
-			    title: gettext('Retention'),
-			    isCreate: me.isCreate,
-			    keepAllDefaultForCreate: false,
-			    showPBSHint: false,
-			    fallbackHintHtml: gettext('Without any keep option, the storage\'s configuration or node\'s vzdump.conf is used as fallback'),
-			},
-			{
 			    xtype: 'inputpanel',
-			    title: gettext('Note Template'),
-			    region: 'center',
-			    layout: {
-				type: 'vbox',
-				align: 'stretch',
-			    },
-			    onGetValues: function(values) {
-				if (values['notes-template']) {
-				    values['notes-template'] = PVE.Utils.escapeNotesTemplate(
-					values['notes-template']);
-				}
-				return values;
-			    },
-			    items: [
+			    onlineHelp: 'chapter_vzdump',
+			    column1: [
 				{
-				    xtype: 'textarea',
-				    name: 'notes-template',
-				    fieldLabel: gettext('Backup Notes'),
-                                    height: 100,
-				    maxLength: 512,
-				    deleteEmpty: !me.isCreate,
-				    value: me.isCreate ? '{{guestname}}' : undefined,
+				    xtype: 'pveNodeSelector',
+				    name: 'node',
+				    fieldLabel: gettext('Node'),
+				    allowBlank: true,
+				    editable: true,
+				    autoSelect: false,
+				    emptyText: '-- ' + gettext('All') + ' --',
+				    listeners: {
+					change: 'nodeChange',
+				    },
 				},
 				{
-				    xtype: 'box',
-				    style: {
-					margin: '8px 0px',
-					'line-height': '1.5em',
+				    xtype: 'pveStorageSelector',
+				    reference: 'storageSelector',
+				    fieldLabel: gettext('Storage'),
+				    clusterView: true,
+				    storageContent: 'backup',
+				    allowBlank: false,
+				    name: 'storage',
+				    listeners: {
+					change: 'storageChange',
 				    },
-				    html: gettext('The notes are added to each backup created by this job.')
-				      + '<br>'
-				      + Ext.String.format(
-					gettext('Possible template variables are: {0}'),
-					PVE.Utils.notesTemplateVars.map(v => `<code>{{${v}}}</code>`).join(', '),
-				    ),
+				},
+				{
+				    xtype: 'pveCalendarEvent',
+				    fieldLabel: gettext('Schedule'),
+				    allowBlank: false,
+				    name: 'schedule',
+				},
+				{
+				    xtype: 'proxmoxKVComboBox',
+				    reference: 'modeSelector',
+				    comboItems: [
+					['include', gettext('Include selected VMs')],
+					['all', gettext('All')],
+					['exclude', gettext('Exclude selected VMs')],
+					['pool', gettext('Pool based')],
+				    ],
+				    fieldLabel: gettext('Selection mode'),
+				    name: 'selMode',
+				    value: '',
+				    bind: {
+					value: '{selMode}',
+				    },
+				    listeners: {
+					change: 'modeChange',
+				    },
+				},
+				{
+				    xtype: 'pvePoolSelector',
+				    reference: 'poolSelector',
+				    fieldLabel: gettext('Pool to backup'),
+				    hidden: true,
+				    allowBlank: false,
+				    name: 'pool',
+				    listeners: {
+					change: 'selectPoolMembers',
+				    },
+				    bind: {
+					hidden: '{!poolMode}',
+					disabled: '{!poolMode}',
+				    },
 				},
 			    ],
+			    column2: [
+				{
+				    xtype: 'textfield',
+				    fieldLabel: gettext('Send email to'),
+				    name: 'mailto',
+				},
+				{
+				    xtype: 'pveEmailNotificationSelector',
+				    fieldLabel: gettext('Email'),
+				    name: 'mailnotification',
+				    cbind: {
+					value: (get) => get('isCreate') ? 'always' : '',
+					deleteEmpty: '{!isCreate}',
+				    },
+				},
+				{
+				    xtype: 'pveCompressionSelector',
+				    reference: 'compressionSelector',
+				    fieldLabel: gettext('Compression'),
+				    name: 'compress',
+				    cbind: {
+					deleteEmpty: '{!isCreate}',
+				    },
+				    value: 'zstd',
+				},
+				{
+				    xtype: 'pveBackupModeSelector',
+				    fieldLabel: gettext('Mode'),
+				    value: 'snapshot',
+				    name: 'mode',
+				},
+				{
+				    xtype: 'proxmoxcheckbox',
+				    fieldLabel: gettext('Enable'),
+				    name: 'enabled',
+				    uncheckedValue: 0,
+				    defaultValue: 1,
+				    checked: true,
+				},
+			    ],
+			    columnB: [
+				{
+				    xtype: 'proxmoxtextfield',
+				    name: 'comment',
+				    fieldLabel: gettext('Job Comment'),
+				    cbind: {
+					deleteEmpty: '{!isCreate}',
+				    },
+				    autoEl: {
+					tag: 'div',
+					'data-qtip': gettext('Description of the job'),
+				    },
+				},
+				{
+				    xtype: 'vmselector',
+				    reference: 'vmgrid',
+				    height: 300,
+				    name: 'vmid',
+				    disabled: true,
+				    allowBlank: false,
+				    columnSelection: ['vmid', 'node', 'status', 'name', 'type'],
+				    bind: {
+					disabled: '{disableVMSelection}',
+				    },
+				},
+			    ],
+			    advancedColumn1: [
+				{
+				    xtype: 'proxmoxcheckbox',
+				    fieldLabel: gettext('Repeat missed'),
+				    name: 'repeat-missed',
+				    uncheckedValue: 0,
+				    defaultValue: 0,
+				    cbind: {
+					deleteDefaultValue: '{!isCreate}',
+				    },
+				},
+			    ],
+			    onGetValues: function(values) {
+				return this.up('window').getController().onGetValues(values);
+			    },
+			},
+		    ],
+		},
+		{
+		    xtype: 'pveBackupJobPrunePanel',
+		    title: gettext('Retention'),
+		    cbind: {
+			isCreate: '{isCreate}',
+		    },
+		    keepAllDefaultForCreate: false,
+		    showPBSHint: false,
+		    fallbackHintHtml: gettext('Without any keep option, the storage\'s configuration or node\'s vzdump.conf is used as fallback'),
+		},
+		{
+		    xtype: 'inputpanel',
+		    title: gettext('Note Template'),
+		    region: 'center',
+		    layout: {
+			type: 'vbox',
+			align: 'stretch',
+		    },
+		    onGetValues: function(values) {
+			if (values['notes-template']) {
+			    values['notes-template'] =
+				PVE.Utils.escapeNotesTemplate(values['notes-template']);
+			}
+			return values;
+		    },
+		    items: [
+			{
+			    xtype: 'textarea',
+			    name: 'notes-template',
+			    fieldLabel: gettext('Backup Notes'),
+			    height: 100,
+			    maxLength: 512,
+			    cbind: {
+				deleteEmpty: '{!isCreate}',
+				value: (get) => get('isCreate') ? '{{guestname}}' : undefined,
+			    },
+			},
+			{
+			    xtype: 'box',
+			    style: {
+				margin: '8px 0px',
+				'line-height': '1.5em',
+			    },
+			    html: gettext('The notes are added to each backup created by this job.')
+				+ '<br>'
+				+ Ext.String.format(
+				    gettext('Possible template variables are: {0}'),
+				    PVE.Utils.notesTemplateVars.map(v => `<code>{{${v}}}</code>`).join(', '),
+				),
 			},
 		    ],
 		},
 	    ],
-
-	});
-
-	me.callParent();
-
-	if (me.isCreate) {
-	    selModeField.setValue('include');
-	} else {
-            me.load({
-		success: function(response, options) {
-		    let data = response.result.data;
-
-		    data.dow = (data.dow || '').split(',');
-
-		    if (data.all || data.exclude) {
-			if (data.exclude) {
-			    data.vmid = data.exclude;
-			    data.selMode = 'exclude';
-			} else {
-			    data.vmid = '';
-			    data.selMode = 'all';
-			}
-		    } else if (data.pool) {
-			data.selMode = 'pool';
-			data.selPool = data.pool;
-		    } else {
-			data.selMode = 'include';
-		    }
-
-		    if (data['prune-backups']) {
-			Object.assign(data, data['prune-backups']);
-			delete data['prune-backups'];
-		    } else if (data.maxfiles !== undefined) {
-			if (data.maxfiles > 0) {
-			    data['keep-last'] = data.maxfiles;
-			} else {
-			    data['keep-all'] = 1;
-			}
-			delete data.maxfiles;
-		    }
-
-		    if (data['notes-template']) {
-			data['notes-template'] = PVE.Utils.unEscapeNotesTemplate(
-			    data['notes-template']);
-		    }
-
-		    me.setValues(data);
-		},
-	    });
-	}
-    },
+	},
+    ],
 });
 
 Ext.define('PVE.dc.BackupView', {
