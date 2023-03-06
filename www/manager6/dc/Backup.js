@@ -18,10 +18,6 @@ Ext.define('PVE.dc.BackupEdit', {
 	    method = 'PUT';
 	}
 
-	let vmidField = Ext.create('Ext.form.field.Hidden', {
-	    name: 'vmid',
-	});
-
 	// 'value' can be assigned a string or an array
 	let selModeField = Ext.create('Proxmox.form.KVComboBox', {
 	    xtype: 'proxmoxKVComboBox',
@@ -36,19 +32,6 @@ Ext.define('PVE.dc.BackupEdit', {
 	    value: '',
 	});
 
-	let sm = Ext.create('Ext.selection.CheckboxModel', {
-	    mode: 'SIMPLE',
-	    listeners: {
-		selectionchange: function(model, selected) {
-		    let sel = selected.map(record => record.data.vmid);
-		    // to avoid endless recursion suspend the vmidField change
-		    // event temporary as it calls us again
-		    vmidField.suspendEvent('change');
-		    vmidField.setValue(sel);
-		    vmidField.resumeEvent('change');
-		},
-	    },
-	});
 
 	let storagesel = Ext.create('PVE.form.StorageSelector', {
 	    fieldLabel: gettext('Storage'),
@@ -72,66 +55,27 @@ Ext.define('PVE.dc.BackupEdit', {
 	    },
 	});
 
-	let store = new Ext.data.Store({
-	    model: 'PVEResources',
-	    sorters: {
-		property: 'vmid',
-		direction: 'ASC',
-	    },
-	});
-
-	let vmgrid = Ext.createWidget('grid', {
-	    store: store,
-	    border: true,
+	let vmgrid = Ext.createWidget('vmselector', {
 	    height: 300,
-	    selModel: sm,
+	    name: 'vmid',
 	    disabled: true,
-	    columns: [
-		{
-		    header: 'ID',
-		    dataIndex: 'vmid',
-		    width: 60,
-		},
-		{
-		    header: gettext('Node'),
-		    dataIndex: 'node',
-		},
-		{
-		    header: gettext('Status'),
-		    dataIndex: 'uptime',
-		    renderer: function(value) {
-			if (value) {
-			    return Proxmox.Utils.runningText;
-			} else {
-			    return Proxmox.Utils.stoppedText;
-			}
-		    },
-		},
-		{
-		    header: gettext('Name'),
-		    dataIndex: 'name',
-		    flex: 1,
-		},
-		{
-		    header: gettext('Type'),
-		    dataIndex: 'type',
-		},
-	    ],
+	    allowBlank: false,
+	    columnSelection: ['vmid', 'node', 'status', 'name', 'type'],
 	});
 
 	let selectPoolMembers = function(poolid) {
 	    if (!poolid) {
 		return;
 	    }
-	    sm.deselectAll(true);
-	    store.filter([
+	    vmgrid.selModel.deselectAll(true);
+	    vmgrid.getStore().filter([
 		{
 		    id: 'poolFilter',
 		    property: 'pool',
 		    value: poolid,
 		},
 	    ]);
-	    sm.selectAll(true);
+	    vmgrid.selModel.selectAll(true);
 	};
 
 	let selPool = Ext.create('PVE.form.PoolSelector', {
@@ -157,12 +101,13 @@ Ext.define('PVE.dc.BackupEdit', {
 		change: function(f, value) {
 		    storagesel.setNodename(value);
 		    let mode = selModeField.getValue();
+		    let store = vmgrid.getStore();
 		    store.clearFilter();
 		    store.filterBy(function(rec) {
 			return !value || rec.get('node') === value;
 		    });
 		    if (mode === 'all') {
-			sm.selectAll(true);
+			vmgrid.selModel.selectAll(true);
 		    }
 		    if (mode === 'pool') {
 			selectPoolMembers(selPool.value);
@@ -218,7 +163,6 @@ Ext.define('PVE.dc.BackupEdit', {
 		defaultValue: 1,
 		checked: true,
 	    },
-	    vmidField,
 	];
 
 	let ipanel = Ext.create('Proxmox.panel.InputPanel', {
@@ -282,37 +226,17 @@ Ext.define('PVE.dc.BackupEdit', {
 	    },
 	});
 
-	let update_vmid_selection = function(list, mode) {
-	    if (mode !== 'all' && mode !== 'pool') {
-		sm.deselectAll(true);
-		if (list) {
-		    Ext.Array.each(list.split(','), function(vmid) {
-			var rec = store.findRecord('vmid', vmid, 0, false, true, true);
-			if (rec) {
-			    sm.select(rec, true);
-			}
-		    });
-		}
-	    }
-	};
-
-	vmidField.on('change', function(f, value) {
-	    let mode = selModeField.getValue();
-	    update_vmid_selection(value, mode);
-	});
-
 	selModeField.on('change', function(f, value, oldValue) {
 	    if (oldValue === 'pool') {
-		store.removeFilter('poolFilter');
+		vmgrid.getStore().removeFilter('poolFilter');
 	    }
 
-	    if (oldValue === 'all') {
-		sm.deselectAll(true);
-		vmidField.setValue('');
+	    if (oldValue === 'all' || oldValue === 'pool') {
+		vmgrid.selModel.deselectAll(true);
 	    }
 
 	    if (value === 'all') {
-		sm.selectAll(true);
+		vmgrid.selModel.selectAll(true);
 		vmgrid.setDisabled(true);
 	    } else {
 		vmgrid.setDisabled(false);
@@ -320,7 +244,7 @@ Ext.define('PVE.dc.BackupEdit', {
 
 	    if (value === 'pool') {
 		vmgrid.setDisabled(true);
-		vmidField.setValue('');
+		vmgrid.selModel.deselectAll(true);
 		selPool.setVisible(true);
 		selPool.setDisabled(false);
 		selPool.allowBlank = false;
@@ -330,31 +254,7 @@ Ext.define('PVE.dc.BackupEdit', {
 		selPool.setDisabled(true);
 		selPool.allowBlank = true;
 	    }
-	    let list = vmidField.getValue();
-	    update_vmid_selection(list, value);
 	});
-
-	let reload = function() {
-	    store.load({
-		params: {
-		    type: 'vm',
-		},
-		callback: function() {
-		    let node = nodesel.getValue();
-		    store.clearFilter();
-		    store.filterBy(rec => !node || node.length === 0 || rec.get('node') === node);
-		    let list = vmidField.getValue();
-		    let mode = selModeField.getValue();
-		    if (mode === 'all') {
-			sm.selectAll(true);
-		    } else if (mode === 'pool') {
-			selectPoolMembers(selPool.value);
-		    } else {
-			update_vmid_selection(list, mode);
-		    }
-		},
-	    });
-	};
 
 	Ext.applyIf(me, {
 	    subject: gettext("Backup Job"),
@@ -481,8 +381,6 @@ Ext.define('PVE.dc.BackupEdit', {
 		},
 	    });
 	}
-
-	reload();
     },
 });
 
