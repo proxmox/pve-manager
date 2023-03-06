@@ -132,7 +132,22 @@ Ext.define('PVE.form.VMSelector', {
 	let me = this;
 
 	let store = me.getStore();
-	let selection = value.map(item => store.findRecord('vmid', item, 0, false, true, true)).filter(r => r);
+	let notFound = [];
+	let selection = value.map(item => {
+	    let found = store.findRecord('vmid', item, 0, false, true, true);
+	    if (!found) {
+		notFound.push(item);
+	    }
+	    return found;
+	}).filter(r => r);
+
+	for (const vmid of notFound) {
+	    let rec = store.add({
+		vmid,
+		node: 'unknown',
+	    });
+	    selection.push(rec[0]);
+	}
 
 	let sm = me.getSelectionModel();
 	if (selection.length) {
