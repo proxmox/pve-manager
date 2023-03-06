@@ -117,6 +117,9 @@ Ext.define('PVE.form.VMSelector', {
 
     getValue: function() {
 	var me = this;
+	if (me.savedValue !== undefined) {
+	    return me.savedValue;
+	}
 	var sm = me.getSelectionModel();
 	var selection = sm.getSelection();
 	var values = [];
@@ -130,6 +133,20 @@ Ext.define('PVE.form.VMSelector', {
 	return values;
     },
 
+    setValueSelection: function(value) {
+	let me = this;
+
+	let store = me.getStore();
+	let selection = value.map(item => store.findRecord('vmid', item, 0, false, true, true)).filter(r => r);
+
+	let sm = me.getSelectionModel();
+	if (selection.length) {
+	    sm.select(selection);
+	} else {
+	    sm.deselectAll();
+	}
+    },
+
     setValue: function(value) {
 	let me = this;
 	if (!Ext.isArray(value)) {
@@ -137,10 +154,15 @@ Ext.define('PVE.form.VMSelector', {
 	}
 
 	let store = me.getStore();
-	let selection = value.map(item => store.findRecord('vmid', item, 0, false, true, true)).filter(r => r);
-
-	me.getSelectionModel().select(selection);
-
+	if (!store.isLoaded()) {
+	    me.savedValue = value;
+	    store.on('load', function() {
+		me.setValueSelection(value);
+		delete me.savedValue;
+	    }, { single: true });
+	} else {
+	    me.setValueSelection(value);
+	}
 	return me.mixins.field.setValue.call(me, value);
     },
 
