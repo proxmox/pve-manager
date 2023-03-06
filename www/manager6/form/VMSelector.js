@@ -15,12 +15,7 @@ Ext.define('PVE.form.VMSelector', {
 
     store: {
 	model: 'PVEResources',
-	autoLoad: true,
 	sorters: 'vmid',
-	filters: [{
-	    property: 'type',
-	    value: /lxc|qemu/,
-	}],
     },
 
     columnsDeclaration: [
@@ -188,6 +183,8 @@ Ext.define('PVE.form.VMSelector', {
 	me.columns = columns;
 
 	me.callParent();
+
+	me.getStore().load({ params: { type: 'vm' } });
 
 	if (me.nodename) {
 	    me.store.filters.add({
