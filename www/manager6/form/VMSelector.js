@@ -22,7 +22,8 @@ Ext.define('PVE.form.VMSelector', {
 	    value: /lxc|qemu/,
 	}],
     },
-    columns: [
+
+    columnsDeclaration: [
 	{
 	    header: 'ID',
 	    dataIndex: 'vmid',
@@ -94,6 +95,9 @@ Ext.define('PVE.form.VMSelector', {
 	},
     ],
 
+    // should be a list of 'dataIndex' values, if 'undefined' all declared columns will be included
+    columnSelection: undefined,
+
     selModel: {
 	selType: 'checkboxmodel',
 	mode: 'SIMPLE',
@@ -154,6 +158,12 @@ Ext.define('PVE.form.VMSelector', {
 
     initComponent: function() {
 	let me = this;
+
+	let columns = me.columnsDeclaration.filter((column) =>
+	    me.columnSelection ? me.columnSelection.indexOf(column.dataIndex) !== -1 : true,
+	).map((x) => x);
+
+	me.columns = columns;
 
 	me.callParent();
 
