@@ -140,6 +140,8 @@ Ext.define('PVE.form.VMSelector', {
 	} else {
 	    sm.deselectAll();
 	}
+	// to correctly trigger invalid class
+	me.getErrors();
     },
 
     setValue: function(value) {
@@ -163,7 +165,7 @@ Ext.define('PVE.form.VMSelector', {
 
     getErrors: function(value) {
 	let me = this;
-	if (me.allowBlank === false &&
+	if (!me.isDisabled() && me.allowBlank === false &&
 	    me.getSelectionModel().getCount() === 0) {
 	    me.addBodyCls(['x-form-trigger-wrap-default', 'x-form-trigger-wrap-invalid']);
 	    return [gettext('No VM selected')];
@@ -171,6 +173,13 @@ Ext.define('PVE.form.VMSelector', {
 
 	me.removeBodyCls(['x-form-trigger-wrap-default', 'x-form-trigger-wrap-invalid']);
 	return [];
+    },
+
+    setDisabled: function(disabled) {
+	let me = this;
+	let res = me.callParent([disabled]);
+	me.getErrors();
+	return res;
     },
 
     initComponent: function() {
