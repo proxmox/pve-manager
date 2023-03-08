@@ -77,6 +77,21 @@ Ext.define('PVE.node.CephStatus', {
 			trackRemoved: false,
 			data: [],
 		    },
+		    updateHealth: function(health) {
+			let checks = health.checks || {};
+
+			let checkRecords = Object.keys(checks).sort().map(key => {
+			    let check = checks[key];
+			    return {
+				id: key,
+				summary: check.summary.message,
+				detail: check.detail.reduce((acc, v) => `${acc}\n${v.message}`, ''),
+				severity: check.severity,
+			    };
+			});
+
+			this.getStore().loadRawData(checkRecords, false);
+		    },
 		    emptyText: gettext('No Warnings/Errors'),
 		    columns: [
 			{
@@ -256,22 +271,6 @@ Ext.define('PVE.node.CephStatus', {
 	},
     ],
 
-    generateCheckData: function(health) {
-	var result = [];
-	let checks = health.checks || {};
-
-	Object.keys(checks).sort().forEach(key => {
-	    let check = checks[key];
-	    result.push({
-		id: key,
-		summary: check.summary.message,
-		detail: check.detail.reduce((acc, v) => `${acc}\n${v.message}`, ''),
-		severity: check.severity,
-	    });
-	});
-	return result;
-    },
-
     updateAll: function(store, records, success) {
 	if (!success || records.length === 0) {
 	    return;
@@ -283,13 +282,10 @@ Ext.define('PVE.node.CephStatus', {
 
 	// add health panel
 	me.down('#overallhealth').updateHealth(PVE.Utils.render_ceph_health(rec.data.health || {}));
-	// add errors to gridstore
-	me.down('#warnings').getStore().loadRawData(me.generateCheckData(rec.data.health || {}), false);
+	me.down('#warnings').updateHealth(rec.data.health || {}); // add errors to gridstore
 
-	// update services
 	me.getComponent('services').updateAll(me.metadata || {}, rec.data);
 
-	// update detailstatus panel
 	me.getComponent('statusdetail').updateAll(me.metadata || {}, rec.data);
 
 	// add performance data
