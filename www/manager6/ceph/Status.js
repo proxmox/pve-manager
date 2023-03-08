@@ -44,14 +44,15 @@ Ext.define('PVE.node.CephStatus', {
 		    flex: 1,
 		    items: [
 			{
-			    flex: 1,
-			    itemId: 'overallhealth',
+
 			    xtype: 'pveHealthWidget',
+			    itemId: 'overallhealth',
+			    flex: 1,
 			    title: gettext('Status'),
 			},
 			{
-			    itemId: 'versioninfo',
 			    xtype: 'displayfield',
+			    itemId: 'versioninfo',
 			    fieldLabel: gettext('Ceph Version'),
 			    value: "",
 			    autoEl: {
@@ -66,11 +67,11 @@ Ext.define('PVE.node.CephStatus', {
 		    ],
 		},
 		{
-		    flex: 2,
+		    xtype: 'grid',
 		    itemId: 'warnings',
+		    flex: 2,
 		    stateful: true,
 		    stateId: 'ceph-status-warnings',
-		    xtype: 'grid',
 		    // we load the store manually, to show an emptyText specify an empty intermediate store
 		    store: {
 			trackRemoved: false,
@@ -154,8 +155,8 @@ Ext.define('PVE.node.CephStatus', {
 	    title: gettext('Status'),
 	},
 	{
-	    title: gettext('Services'),
 	    xtype: 'pveCephServices',
+	    title: gettext('Services'),
 	    itemId: 'services',
 	    plugins: 'responsive',
 	    layout: {
@@ -184,8 +185,8 @@ Ext.define('PVE.node.CephStatus', {
 	    },
 	    items: [
 		{
-		    flex: 1,
 		    xtype: 'container',
+		    flex: 1,
 		    items: [
 			{
 			    xtype: 'proxmoxGauge',
@@ -203,8 +204,8 @@ Ext.define('PVE.node.CephStatus', {
 			    padding: 25,
 			    items: [
 				{
-				    itemId: 'recoverychart',
 				    xtype: 'pveRunningChart',
+				    itemId: 'recoverychart',
 				    title: gettext('Recovery') +'/ '+ gettext('Rebalance'),
 				    renderer: PVE.Utils.render_bandwidth,
 				    height: 100,
@@ -218,34 +219,34 @@ Ext.define('PVE.node.CephStatus', {
 		    ],
 		},
 		{
-		    flex: 2,
 		    xtype: 'container',
+		    flex: 2,
 		    defaults: {
 			padding: 0,
 			height: 100,
 		    },
 		    items: [
 			{
-			    itemId: 'reads',
 			    xtype: 'pveRunningChart',
+			    itemId: 'reads',
 			    title: gettext('Reads'),
 			    renderer: PVE.Utils.render_bandwidth,
 			},
 			{
-			    itemId: 'writes',
 			    xtype: 'pveRunningChart',
+			    itemId: 'writes',
 			    title: gettext('Writes'),
 			    renderer: PVE.Utils.render_bandwidth,
 			},
 			{
-			    itemId: 'readiops',
 			    xtype: 'pveRunningChart',
+			    itemId: 'readiops',
 			    title: 'IOPS: ' + gettext('Reads'),
 			    renderer: Ext.util.Format.numberRenderer('0,000'),
 			},
 			{
-			    itemId: 'writeiops',
 			    xtype: 'pveRunningChart',
+			    itemId: 'writeiops',
 			    title: 'IOPS: ' + gettext('Writes'),
 			    renderer: Ext.util.Format.numberRenderer('0,000'),
 			},
