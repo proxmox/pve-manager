@@ -10,7 +10,6 @@ Ext.define('PVE.window.BackupConfig', {
 	itemId: 'configtext',
 	autoScroll: true,
 	style: {
-	    'background-color': 'white',
 	    'white-space': 'pre',
 	    'font-family': 'monospace',
 	    padding: '5px',

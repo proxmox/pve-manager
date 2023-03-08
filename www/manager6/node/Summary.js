@@ -18,7 +18,6 @@ Ext.define('PVE.node.Summary', {
 	    id: 'pkgversions',
 	    padding: 5,
 	    style: {
-		'background-color': 'white',
 		'white-space': 'pre',
 		'font-family': 'monospace',
 	    },
