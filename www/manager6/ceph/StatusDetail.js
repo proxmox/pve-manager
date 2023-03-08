@@ -199,6 +199,18 @@ Ext.define('PVE.ceph.StatusDetail', {
 	},
     ],
 
+    checkThemeColors: function() {
+	let me = this;
+	let rootStyle = getComputedStyle(document.documentElement);
+
+	// get color
+	let background = rootStyle.getPropertyValue("--pwt-panel-background").trim() || "#ffffff";
+
+	// set the colors
+	me.chart.setBackground(background);
+	me.chart.redraw();
+    },
+
     updateAll: function(metadata, status) {
 	let me = this;
 	me.suspendLayout = true;
@@ -257,7 +269,7 @@ Ext.define('PVE.ceph.StatusDetail', {
 	    me.statecategories[result].states.push(state);
 	});
 
-	me.getComponent('pgchart').getStore().setData(me.statecategories);
+	me.chart.getStore().setData(me.statecategories);
 	me.getComponent('pgs').update({ states: pgs_by_state });
 
 	let health = status.health || {};
@@ -302,6 +314,27 @@ Ext.define('PVE.ceph.StatusDetail', {
 
 	me.suspendLayout = false;
 	me.updateLayout();
+    },
+
+     initComponent: function() {
+	var me = this;
+	me.callParent();
+
+	me.chart = me.getComponent('pgchart');
+	me.checkThemeColors();
+
+	// switch colors on media query changes
+	me.mediaQueryList = window.matchMedia("(prefers-color-scheme: dark)");
+	me.themeListener = (e) => { me.checkThemeColors(); };
+	me.mediaQueryList.addEventListener("change", me.themeListener);
+    },
+
+    doDestroy: function() {
+	let me = this;
+
+	me.mediaQueryList.removeEventListener("change", me.themeListener);
+
+	me.callParent();
     },
 });
 

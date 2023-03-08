@@ -98,6 +98,20 @@ Ext.define('PVE.widget.RunningChart', {
     // show the last x seconds default is 5 minutes
     timeFrame: 5*60,
 
+    checkThemeColors: function() {
+	let me = this;
+	let rootStyle = getComputedStyle(document.documentElement);
+
+	// get color
+	let background = rootStyle.getPropertyValue("--pwt-panel-background").trim() || "#ffffff";
+	let text = rootStyle.getPropertyValue("--pwt-text-color").trim() || "#000000";
+
+	// set the colors
+	me.chart.setBackground(background);
+	me.chart.valuesprite.setAttributes({ fillStyle: text }, true);
+	me.chart.redraw();
+    },
+
     addDataPoint: function(value, time) {
 	let view = this.chart;
 	let panel = view.up();
@@ -156,5 +170,20 @@ Ext.define('PVE.widget.RunningChart', {
 		stroke: me.color,
 	    });
 	}
+
+	me.checkThemeColors();
+
+	// switch colors on media query changes
+	me.mediaQueryList = window.matchMedia("(prefers-color-scheme: dark)");
+	me.themeListener = (e) => { me.checkThemeColors(); };
+	me.mediaQueryList.addEventListener("change", me.themeListener);
+    },
+
+    doDestroy: function() {
+	let me = this;
+
+	me.mediaQueryList.removeEventListener("change", me.themeListener);
+
+	me.callParent();
     },
 });
