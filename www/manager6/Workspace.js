@@ -396,6 +396,14 @@ Ext.define('PVE.StdWorkspace', {
 				    },
 				},
 				{
+				    iconCls: 'fa fa-paint-brush',
+				    text: gettext('Theme'),
+				    handler: function() {
+					Ext.create('Proxmox.window.ThemeEditWindow')
+					    .show();
+				    },
+				},
+				{
 				    iconCls: 'fa fa-language',
 				    text: gettext('Language'),
 				    handler: function() {
