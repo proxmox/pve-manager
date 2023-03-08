@@ -12,6 +12,14 @@
     <link rel="stylesheet" type="text/css" href="/pve2/fa/css/font-awesome.css" />
     <link rel="stylesheet" type="text/css" href="/pve2/css/ext6-pve.css?ver=[% version %]" />
     <link rel="stylesheet" type="text/css" href="/pwt/css/ext6-pmx.css?ver=[% wtversion %]" />
+    [%- IF theme %]
+      [%- IF theme == 'auto' %]
+    <link rel="stylesheet" type="text/css" media="(prefers-color-scheme: dark)" href="/pwt/themes/theme-proxmox-dark.css?ver=[% wtversion %]" />
+      [%- ELSE %]
+    <link rel="stylesheet" type="text/css" href="/pwt/themes/theme-[% theme %].css?ver=[% wtversion %]" />
+      [%- END -%]
+    [%- END -%]
+
     [% IF langfile %]
     <script type='text/javascript' src='/pve2/locale/pve-lang-[% lang %].js?ver=[% version %]'></script>
     [%- ELSE %]

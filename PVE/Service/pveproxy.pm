@@ -88,6 +88,7 @@ sub init {
     add_dirs($dirs, '/xtermjs/' => "$basedirs->{xtermjs}/");
     add_dirs($dirs, '/pwt/images/' => "$basedirs->{widgettoolkit}/images/");
     add_dirs($dirs, '/pwt/css/' => "$basedirs->{widgettoolkit}/css/");
+    add_dirs($dirs, '/pwt/themes/' => "$basedirs->{widgettoolkit}/themes/");
 
     $self->{server_config} = {
 	title => 'Proxmox VE API',
@@ -191,6 +192,7 @@ sub get_index {
     my $lang;
     my $username;
     my $token = 'null';
+    my $theme = "";
 
     if (my $cookie = $r->header('Cookie')) {
 	if (my $newlang = ($cookie =~ /(?:^|\s)PVELangCookie=([^;]*)/)[0]) {
@@ -198,6 +200,15 @@ sub get_index {
 		$lang = $newlang;
 	    }
 	}
+
+	if (my $newtheme = ($cookie =~ /(?:^|\s)PVEThemeCookie=([^;]*)/)[0]) {
+	    # theme names need to be kebab case, with each segment a maximum of 10 characters long
+	    # and at most 6 segments
+	    if ($newtheme =~ m/^[a-z]{1,10}(-[a-z]{1,10}){0,5}$/) {
+		$theme = $newtheme;
+	    }
+	}
+
 	my $ticket = PVE::APIServer::Formatter::extract_auth_value($cookie, $server->{cookie_name});
 	if (($username = PVE::AccessControl::verify_ticket($ticket, 1))) {
 	    $token = PVE::AccessControl::assemble_csrf_prevention_token($username);
@@ -252,6 +263,8 @@ sub get_index {
 	debug => $debug,
 	version => "$version",
 	wtversion => $wtversion,
+	theme => $theme,
+	auto => $theme == "auto",
     };
 
     # by default, load the normal index
