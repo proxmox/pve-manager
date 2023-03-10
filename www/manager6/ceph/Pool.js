@@ -484,6 +484,10 @@ Ext.define('PVE.form.CephRuleSelector', {
 	if (!me.nodename) {
 	    throw "no nodename given";
 	}
+
+	me.originalAllowBlank = me.allowBlank;
+	me.allowBlank = true;
+
 	Ext.apply(me, {
 	    store: {
 		fields: ['name'],
@@ -492,13 +496,17 @@ Ext.define('PVE.form.CephRuleSelector', {
 		    type: 'proxmox',
 		    url: `/api2/json/nodes/${me.nodename}/ceph/rules`,
 		},
-		autoLoad: me.isCreate ? {
+		autoLoad: {
 		    callback: (records, op, success) => {
-			if (success && records.length > 0) {
+			if (me.isCreate && success && records.length > 0) {
 			    me.select(records[0]);
 			}
+
+			me.allowBlank = me.originalAllowBlank;
+			delete me.originalAllowBlank;
+			me.validate();
 		    },
-		} : true,
+		},
 	    },
 	});
 
