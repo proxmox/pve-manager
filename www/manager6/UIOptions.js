@@ -99,9 +99,7 @@ Ext.define('PVE.UIOptions', {
     },
 
     fireUIConfigChanged: function() {
-	if (!PVE.data.ResourceStore.isLoading() && PVE.data.ResourceStore.isLoaded()) {
-	    PVE.data.ResourceStore.fireEvent('load');
-	}
+	PVE.data.ResourceStore.refresh();
 	Ext.GlobalEvents.fireEvent('loadedUiOptions');
     },
 });

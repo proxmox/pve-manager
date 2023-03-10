@@ -53,6 +53,15 @@ Ext.define('PVE.data.ResourceStore', {
 	return '';
     },
 
+    refresh: function() {
+	let me = this;
+	// can only refresh if we're loaded at least once and are not currently loading
+	if (!me.isLoading() && me.isLoaded()) {
+	    let records = (me.getData().getSource() || me.getData()).getRange()
+	    me.fireEvent('load', me, records);
+	}
+    },
+
     constructor: function(config) {
 	let me = this;
 
