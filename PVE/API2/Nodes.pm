@@ -268,6 +268,7 @@ __PACKAGE__->register_method ({
 	    { name => 'disks' },
 	    { name => 'dns' },
 	    { name => 'firewall' },
+	    { name => 'hardware' },
 	    { name => 'hosts' },
 	    { name => 'journal' },
 	    { name => 'lxc' },
