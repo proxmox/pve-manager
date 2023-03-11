@@ -310,8 +310,7 @@ sub call_api_method {
 	}
 
 	do {
-	    # redirect stray output to STDERR
-	    # only the returned $data should go to STDOUT
+	    # redirect stray output to STDERR; only the returned $data should go to STDOUT
 	    local *STDOUT;
 	    open(STDOUT, '>&', STDERR);
 	    $data = $handler->handle($info, $param);
