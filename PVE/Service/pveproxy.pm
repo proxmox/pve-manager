@@ -215,6 +215,10 @@ sub get_index {
 	}
     }
 
+    if ($theme eq "") {
+	$theme = "auto"
+    }
+
     if (!$lang) {
 	my $dc_conf = PVE::Cluster::cfs_read_file('datacenter.cfg');
 	$lang = $dc_conf->{language} // 'en';
@@ -264,7 +268,6 @@ sub get_index {
 	version => "$version",
 	wtversion => $wtversion,
 	theme => $theme,
-	auto => $theme == "auto",
     };
 
     # by default, load the normal index
