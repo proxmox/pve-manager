@@ -166,62 +166,56 @@ Ext.define('PVE.node.CertUpload', {
 	Ext.defer(() => window.location.reload(true), 10000); // reload after 10 seconds automatically
     },
 
-    items: [
-	{
-	    fieldLabel: gettext('Private Key (Optional)'),
-	    labelAlign: 'top',
-	    emptyText: gettext('No change'),
-	    name: 'key',
-	    xtype: 'textarea',
+    items: {
+	xtype: 'inputpanel',
+	onGetValues: function(values) {
+	    values.restart = 1;
+	    values.force = 1;
+	    return values;
 	},
-	{
-	    xtype: 'filebutton',
-	    text: gettext('From File'),
-	    listeners: {
-		change: function(btn, e, value) {
-		    let form = this.up('form');
-		    for (const file of e.event.target.files) {
-			PVE.Utils.loadFile(file, res => form.down('field[name=key]').setValue(res));
-		    }
-		    btn.reset();
+	items: [
+	    {
+		fieldLabel: gettext('Private Key (Optional)'),
+		labelAlign: 'top',
+		emptyText: gettext('No change'),
+		name: 'key',
+		xtype: 'textarea',
+	    },
+	    {
+		xtype: 'filebutton',
+		text: gettext('From File'),
+		listeners: {
+		    change: function(btn, e, value) {
+			let form = this.up('form');
+			for (const file of e.event.target.files) {
+			    PVE.Utils.loadFile(file, res => form.down('field[name=key]').setValue(res));
+			}
+			btn.reset();
+		    },
 		},
 	    },
-	},
-	{
-	    xtype: 'box',
-	    autoEl: 'hr',
-	},
-	{
-	    fieldLabel: gettext('Certificate Chain'),
-	    labelAlign: 'top',
-	    allowBlank: false,
-	    name: 'certificates',
-	    xtype: 'textarea',
-	},
-	{
-	    xtype: 'filebutton',
-	    text: gettext('From File'),
-	    listeners: {
-		change: function(btn, e, value) {
-		    let form = this.up('form');
-		    for (const file of e.event.target.files) {
-			PVE.Utils.loadFile(file, res => form.down('field[name=certificates]').setValue(res));
-		    }
-		    btn.reset();
+	    {
+		fieldLabel: gettext('Certificate Chain'),
+		labelAlign: 'top',
+		allowBlank: false,
+		name: 'certificates',
+		xtype: 'textarea',
+	    },
+	    {
+		xtype: 'filebutton',
+		text: gettext('From File'),
+		listeners: {
+		    change: function(btn, e, value) {
+			let form = this.up('form');
+			for (const file of e.event.target.files) {
+			    PVE.Utils.loadFile(file, res => form.down('field[name=certificates]').setValue(res));
+			}
+			btn.reset();
+		    },
 		},
 	    },
-	},
-	{
-	    xtype: 'hidden',
-	    name: 'restart',
-	    value: '1',
-	},
-	{
-	    xtype: 'hidden',
-	    name: 'force',
-	    value: '1',
-	},
-    ],
+	],
+    },
 
     initComponent: function() {
 	let me = this;
