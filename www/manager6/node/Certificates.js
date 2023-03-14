@@ -171,6 +171,9 @@ Ext.define('PVE.node.CertUpload', {
 	onGetValues: function(values) {
 	    values.restart = 1;
 	    values.force = 1;
+	    if (!values.key) {
+		delete values.key;
+	    }
 	    return values;
 	},
 	items: [
