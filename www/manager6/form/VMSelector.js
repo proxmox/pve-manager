@@ -211,7 +211,7 @@ Ext.define('PVE.form.VMSelector', {
 	me.getStore().load({ params: { type: 'vm' } });
 
 	if (me.nodename) {
-	    me.store.filters.add({
+	    me.getStore().addFilter({
 		property: 'node',
 		exactMatch: true,
 		value: me.nodename,
@@ -230,7 +230,7 @@ Ext.define('PVE.form.VMSelector', {
 		    break;
 	    }
 	    if (statusfilter !== '') {
-		me.store.filters.add({
+		me.getStore().addFilter([{
 		    property: 'template',
 		    value: 0,
 		}, {
@@ -238,7 +238,7 @@ Ext.define('PVE.form.VMSelector', {
 		    operator: 'in',
 		    property: 'status',
 		    value: [statusfilter],
-		});
+		}]);
 	    }
 	}
 
