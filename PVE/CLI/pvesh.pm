@@ -309,12 +309,7 @@ sub call_api_method {
 	    $param->{$p} = $uri_param->{$p};
 	}
 
-	do {
-	    # redirect stray output to STDERR; only the returned $data should go to STDOUT
-	    local *STDOUT;
-	    open(STDOUT, '>&', STDERR);
-	    $data = $handler->handle($info, $param);
-	};
+	$data = $handler->handle($info, $param);
     }
 
     return if $opt_nooutput || $stdopts->{quiet};
