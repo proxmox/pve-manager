@@ -160,7 +160,9 @@ Ext.define('PVE.grid.PoolMembers', {
 	    },
 	});
 
-	var coldef = PVE.data.ResourceStore.defaultColumns();
+	var coldef = PVE.data.ResourceStore.defaultColumns().filter((c) =>
+	    c.dataIndex !== 'tags' && c.dataIndex !== 'lock',
+	);
 
 	var reload = function() {
 	    store.load();
