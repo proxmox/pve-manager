@@ -1,3 +1,59 @@
+pve-manager (7.3-7) bullseye; urgency=medium
+
+  * fix #4521: api/tasks: replace upid as filename for task log downloads
+
+  * fix #4335: pvereport: add datacenter.cfg to output
+
+  * ui: ldap: fix `Parameter verification error`
+
+  * ceph osd: return PGs per OSD and show in UI
+
+  * ui: ceph: osd: set default icon for other crush types
+
+  * pvereport: add ceph health detail
+
+  * ui: remove 'Storage View' from the resource tree modes, it was basically
+    useless compared to the other modes
+
+  * ui: add window for changing tree related options
+
+  * fix #1408: ui: ResourceTree: sort the tree according to the new
+    tree-sorting options (by VMID or by Name)
+
+  * ui: fix capability check for when to disable bulk migrate
+
+  * api: node: bulk actions: allow when user has permission for each guest
+
+  * ui: bulk start/stop: align capability checks with backend
+
+  * ui: create user-menu entry for selecting the theme
+
+  * pveproxy/template: add support for switching themes
+
+  * ui: various fixes for hard-coded colors to prepare for dark-theme support
+
+  * pveproxy/template: switch to using the "auto" theme per default, which
+    uses the prefered-color-scheme media query feature to detect if a user has
+    requested light or dark color themes
+
+  * ui: create ceph pool: fix false-positive trigger showing advanced fields
+
+  * fix #4490: ui: add column filters in Backup Job edit window
+
+  * fix #4239: ui: show selected, but non-existing guests in backup edit
+
+  * ui: pbs paperkey: cleanup iframe for printing after window close
+
+  * ui: don't show tags/lock column in the resource pool member grid, we don't
+    have the info there
+
+  * api ceph osd: add OSD index, metadata and lv-info
+
+  * ui: osd: add details window for infos like OSD process ID, memory usage,
+    list of physical disks used for OSD, DB or WAL and other metadata
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 15 Mar 2023 18:36:57 +0100
+
 pve-manager (7.3-6) bullseye; urgency=medium
 
   * api: avoid dumping warnings due to casing typo in pveversion or other
