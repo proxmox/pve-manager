@@ -278,7 +278,8 @@ Ext.define('PVE.tree.ResourceTree', {
 
 	    let groups = me.viewFilter.groups || [];
 	    // explicitly check for node/template, as those are not always grouping attributes
-	    let moveCheckAttrs = groups.concat(['node', 'template']);
+	    // also check for name for when the tree is sorted by name
+	    let moveCheckAttrs = groups.concat(['node', 'template', 'name']);
 	    let filterfn = me.viewFilter.filterfn;
 
 	    let reselect = false; // for disappeared nodes
