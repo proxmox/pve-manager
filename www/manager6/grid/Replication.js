@@ -283,7 +283,8 @@ Ext.define('PVE.grid.ReplicaView', {
 		width: 80,
 		dataIndex: 'enabled',
 		align: 'center',
-		renderer: Proxmox.Utils.renderEnabledIcon,
+		// TODO: switch to Proxmox.Utils.renderEnabledIcon once available
+		renderer: enabled => `<i class="fa fa-${enabled ? 'check' : 'minus'}"></i>`,
 		sortable: true,
 	    },
 	    {
