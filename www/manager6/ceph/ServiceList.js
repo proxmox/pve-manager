@@ -1,31 +1,79 @@
 Ext.define('PVE.CephCreateService', {
     extend: 'Proxmox.window.Edit',
+    mixins: ['Proxmox.Mixin.CBind'],
     xtype: 'pveCephCreateService',
-
-    showProgress: true,
-
-    setNode: function(nodename) {
-	let me = this;
-	me.nodename = nodename;
-	me.url = `/nodes/${nodename}/ceph/${me.type}/${nodename}`;
-    },
 
     method: 'POST',
     isCreate: true,
+    showProgress: true,
+    width: 450,
 
+    setNode: function(node) {
+	let me = this;
+	me.nodename = node;
+	me.updateUrl();
+    },
+    setExtraID: function(extraID) {
+	let me = this;
+	me.extraID = me.type === 'mds' ? `-${extraID}` : '';
+	me.updateUrl();
+    },
+    updateUrl: function() {
+	let me = this;
+
+	let extraID = me.extraID ?? '';
+	let node = me.nodename;
+
+	me.url = `/nodes/${node}/ceph/${me.type}/${node}${extraID}`;
+    },
+
+    defaults: {
+	labelWidth: 75,
+    },
     items: [
 	{
 	    xtype: 'pveNodeSelector',
-	    submitValue: false,
 	    fieldLabel: gettext('Host'),
 	    selectCurNode: true,
 	    allowBlank: false,
+	    submitValue: false,
 	    listeners: {
 		change: function(f, value) {
 		    let view = this.up('pveCephCreateService');
 		    view.setNode(value);
 		},
 	    },
+	},
+	{
+	    xtype: 'textfield',
+	    fieldLabel: gettext('Extra ID'),
+	    regex: /[a-zA-Z0-9]+/,
+	    regexText: gettext('ID may only consist of alphanumeric characters'),
+	    submitValue: false,
+	    emptyText: Proxmox.Utils.NoneText,
+	    cbind: {
+		disabled: get => get('type') !== 'mds',
+		hidden: get => get('type') !== 'mds',
+	    },
+	    listeners: {
+		change: function(f, value) {
+		    let view = this.up('pveCephCreateService');
+		    view.setExtraID(value);
+		},
+	    },
+	},
+	{
+	    xtype: 'component',
+	    border: false,
+	    padding: '5 2',
+	    style: {
+		fontSize: '12px',
+	    },
+	    userCls: 'pmx-hint',
+	    cbind: {
+		hidden: get => get('type') !== 'mds',
+	    },
+	    html: gettext('The Extra ID allows creating multiple MDS per node, which increases redundancy with more than one CephFS.'),
 	},
     ],
 
