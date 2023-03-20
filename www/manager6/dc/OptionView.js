@@ -160,6 +160,7 @@ Ext.define('PVE.dc.OptionView', {
 	});
 	me.add_inputpanel_row('crs', gettext('Cluster Resource Scheduling'), {
 	    renderer: PVE.Utils.render_as_property_string,
+	    width: 450,
 	    labelWidth: 120,
 	    url: "/api2/extjs/cluster/options",
 	    onlineHelp: 'ha_manager_crs',
@@ -175,6 +176,12 @@ Ext.define('PVE.dc.OptionView', {
 		    ['static', 'Static Load'],
 		],
 		defaultValue: '__default__',
+	    }, {
+		xtype: 'proxmoxcheckbox',
+		name: 'ha-rebalance-on-start',
+		fieldLabel: gettext('Rebalance on Start'),
+		boxLabel: gettext('Use CRS to select the least loaded node when starting an HA service'),
+		value: 0,
 	    }],
 	});
 	me.add_inputpanel_row('u2f', gettext('U2F Settings'), {
