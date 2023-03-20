@@ -355,7 +355,7 @@ __PACKAGE__->register_method ({
 our $cmddef = {
     init => [ 'PVE::API2::Ceph', 'init', [], { node => $nodename } ],
     pool => {
-	ls => [ 'PVE::API2::Ceph::Pools', 'lspools', [], { node => $nodename }, sub {
+	ls => [ 'PVE::API2::Ceph::Pool', 'lspools', [], { node => $nodename }, sub {
 	    my ($data, $schema, $options) = @_;
 	    PVE::CLIFormatter::print_api_result($data, $schema,
 		[
@@ -374,10 +374,10 @@ our $cmddef = {
 		],
 		$options);
 	}, $PVE::RESTHandler::standard_output_options],
-	create => [ 'PVE::API2::Ceph::Pools', 'createpool', ['name'], { node => $nodename }],
-	destroy => [ 'PVE::API2::Ceph::Pools', 'destroypool', ['name'], { node => $nodename } ],
-	set => [ 'PVE::API2::Ceph::Pools', 'setpool', ['name'], { node => $nodename } ],
-	get => [ 'PVE::API2::Ceph::Pools', 'getpool', ['name'], { node => $nodename }, sub {
+	create => [ 'PVE::API2::Ceph::Pool', 'createpool', ['name'], { node => $nodename }],
+	destroy => [ 'PVE::API2::Ceph::Pool', 'destroypool', ['name'], { node => $nodename } ],
+	set => [ 'PVE::API2::Ceph::Pool', 'setpool', ['name'], { node => $nodename } ],
+	get => [ 'PVE::API2::Ceph::Pool', 'getpool', ['name'], { node => $nodename }, sub {
 	    my ($data, $schema, $options) = @_;
 	    PVE::CLIFormatter::print_api_result($data, $schema, undef, $options);
 	}, $PVE::RESTHandler::standard_output_options],
