@@ -1,4 +1,4 @@
-Copyright (C) 2010-2022 Proxmox Server Solutions GmbH
+Copyright (C) 2010-2023 Proxmox Server Solutions GmbH
 
 This software is written by Proxmox Server Solutions GmbH <support@proxmox.com>
 
@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -------------
 
 Ext JS - JavaScript Library
-Copyright (c) 2006-2011, Sencha Inc.
+Copyright (c) 2006-2021, Sencha Inc.
 All rights reserved.
 licensing@sencha.com
 
