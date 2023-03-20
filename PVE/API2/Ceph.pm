@@ -18,6 +18,7 @@ use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Tools qw(run_command file_get_contents file_set_contents extract_param);
 
+use PVE::API2::Ceph::Cfg;
 use PVE::API2::Ceph::OSD;
 use PVE::API2::Ceph::FS;
 use PVE::API2::Ceph::MDS;
@@ -30,6 +31,11 @@ use PVE::API2::Storage::Config;
 use base qw(PVE::RESTHandler);
 
 my $pve_osd_default_journal_size = 1024*5;
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Ceph::Cfg",
+    path => 'cfg',
+});
 
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Ceph::OSD",
@@ -95,6 +101,7 @@ __PACKAGE__->register_method ({
 
 	my $result = [
 	    { name => 'cmd-safety' },
+	    { name => 'cfg' },
 	    { name => 'config' },
 	    { name => 'configdb' },
 	    { name => 'crush' },
@@ -116,6 +123,8 @@ __PACKAGE__->register_method ({
 	return $result;
     }});
 
+
+# TODO: deprecrated, remove with PVE 8
 __PACKAGE__->register_method ({
     name => 'config',
     path => 'config',
@@ -124,7 +133,7 @@ __PACKAGE__->register_method ({
     permissions => {
 	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
     },
-    description => "Get the Ceph configuration file.",
+    description => "Get the Ceph configuration file. Deprecated, please use `/nodes/{node}/ceph/cfg/raw.",
     parameters => {
 	additionalProperties => 0,
 	properties => {
@@ -142,6 +151,7 @@ __PACKAGE__->register_method ({
 
     }});
 
+# TODO: deprecrated, remove with PVE 8
 __PACKAGE__->register_method ({
     name => 'configdb',
     path => 'configdb',
@@ -151,7 +161,7 @@ __PACKAGE__->register_method ({
     permissions => {
 	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
     },
-    description => "Get the Ceph configuration database.",
+    description => "Get the Ceph configuration database. Deprecated, please use `/nodes/{node}/ceph/cfg/db.",
     parameters => {
 	additionalProperties => 0,
 	properties => {
@@ -185,7 +195,6 @@ __PACKAGE__->register_method ({
 
 	return $res;
     }});
-
 
 __PACKAGE__->register_method ({
     name => 'init',
