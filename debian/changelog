@@ -1,3 +1,34 @@
+pve-manager (7.4-1) UNRELEASED; urgency=medium
+
+  * ui: resource tree: correctly reinsert item when name changes
+
+  * ui: container: add `Disconnect` option for network interfaces
+
+  * ui: cert upload: fix private key field sending empty string if left out
+
+  * ui: replace non-clickable checkbox with icons for backup and replication
+    panel
+
+  * fix #4571: ui: ceph: allow adding extra-ID for multiple MDS per node to
+    allow users improving redundancy for multi-cephFS setups without leaving
+    the web UI
+
+  * api: ceph: deprecate the `pools` endpoint in favor of a more future proof
+    `pool` one
+
+  * ui: ceph: adapt urls to new ceph/pool endpoint
+
+  * pveceph: adapt to new Pool module
+
+  * api: ceph: add `ceph/cfg` API directory path, deprecating the
+    `ceph/config` and `ceph/configdb` endpoints
+
+  * ui: ceph config: use new ceph/cfg/ API endpoints
+
+  * ui: datacenter options: add HA 'Rebalance on Start' to CRS options
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 20 Mar 2023 20:51:26 +0100
+
 pve-manager (7.3-7) bullseye; urgency=medium
 
   * fix #4521: api/tasks: replace upid as filename for task log downloads
