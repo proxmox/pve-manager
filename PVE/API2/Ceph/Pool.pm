@@ -1,5 +1,4 @@
-package PVE::API2::Ceph::Pools;
-# TODO: Deprecated, drop with PVE 8.0! PVE::API2::Ceph::Pool is the replacement
+package PVE::API2::Ceph::Pool;
 
 use strict;
 use warnings;
@@ -38,7 +37,7 @@ __PACKAGE__->register_method ({
     name => 'lspools',
     path => '',
     method => 'GET',
-    description => "List all pools. Deprecated, please use `/nodes/{node}/ceph/pool`.",
+    description => "List all pools and their settings (which are settable by the POST/PUT endpoints).",
     proxyto => 'node',
     protected => 1,
     permissions => {
@@ -394,7 +393,7 @@ __PACKAGE__->register_method ({
     name => 'createpool',
     path => '',
     method => 'POST',
-    description => "Create Ceph pool. Deprecated, please use `/nodes/{node}/ceph/pool`.",
+    description => "Create Ceph pool",
     proxyto => 'node',
     protected => 1,
     permissions => {
@@ -510,7 +509,7 @@ __PACKAGE__->register_method ({
     name => 'destroypool',
     path => '{name}',
     method => 'DELETE',
-    description => "Destroy pool. Deprecated, please use `/nodes/{node}/ceph/pool/{name}`.",
+    description => "Destroy pool",
     proxyto => 'node',
     protected => 1,
     permissions => {
@@ -616,7 +615,7 @@ __PACKAGE__->register_method ({
     name => 'setpool',
     path => '{name}',
     method => 'PUT',
-    description => "Change POOL settings. Deprecated, please use `/nodes/{node}/ceph/pool/{name}`.",
+    description => "Change POOL settings",
     proxyto => 'node',
     protected => 1,
     permissions => {
@@ -654,12 +653,48 @@ __PACKAGE__->register_method ({
 	return $rpcenv->fork_worker('cephsetpool', $pool,  $authuser, $worker);
     }});
 
+__PACKAGE__->register_method ({
+    name => 'poolindex',
+    path => '{name}',
+    method => 'GET',
+    permissions => {
+	check => ['perm', '/', [ 'Sys.Audit', 'Datastore.Audit' ], any => 1],
+    },
+    description => "Pool index.",
+    parameters => {
+	additionalProperties => 0,
+	properties => {
+	    node => get_standard_option('pve-node'),
+	    name => {
+		description => 'The name of the pool.',
+		type => 'string',
+	    },
+	},
+    },
+    returns => {
+	type => 'array',
+	items => {
+	    type => "object",
+	    properties => {},
+	},
+	links => [ { rel => 'child', href => "{name}" } ],
+    },
+    code => sub {
+	my ($param) = @_;
+
+	my $result = [
+	    { name => 'status' },
+	];
+
+	return $result;
+    }});
+
 
 __PACKAGE__->register_method ({
     name => 'getpool',
-    path => '{name}',
+    path => '{name}/status',
     method => 'GET',
-    description => "List pool settings. Deprecated, please use `/nodes/{node}/ceph/pool/{pool}/status`.",
+    description => "Show the current pool status.",
     proxyto => 'node',
     protected => 1,
     permissions => {
