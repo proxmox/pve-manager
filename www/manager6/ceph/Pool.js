@@ -200,8 +200,9 @@ Ext.define('PVE.Ceph.PoolEdit', {
     cbind: {
 	autoLoad: get => !get('isCreate'),
 	url: get => get('isCreate')
-	    ? `/nodes/${get('nodename')}/ceph/pools`
-	    : `/nodes/${get('nodename')}/ceph/pools/${get('pool_name')}`,
+	    ? `/nodes/${get('nodename')}/ceph/pool`
+	    : `/nodes/${get('nodename')}/ceph/pool/${get('pool_name')}`,
+	loadUrl: get => `/nodes/${get('nodename')}/ceph/pool/${get('pool_name')}/status`,
 	method: get => get('isCreate') ? 'POST' : 'PUT',
     },
 
@@ -356,7 +357,7 @@ Ext.define('PVE.node.Ceph.PoolList', {
 	    model: 'ceph-pool-list',
 	    proxy: {
 		type: 'proxmox',
-		url: `/api2/json/nodes/${nodename}/ceph/pools`,
+		url: `/api2/json/nodes/${nodename}/ceph/pool`,
 	    },
 	});
 	let store = Ext.create('Proxmox.data.DiffStore', { rstore: rstore });
@@ -420,7 +421,7 @@ Ext.define('PVE.node.Ceph.PoolList', {
 			let poolName = rec.data.pool_name;
 			Ext.create('Proxmox.window.SafeDestroy', {
 			    showProgress: true,
-			    url: `/nodes/${nodename}/ceph/pools/${poolName}`,
+			    url: `/nodes/${nodename}/ceph/pool/${poolName}`,
 			    params: {
 				remove_storages: 1,
 			    },
