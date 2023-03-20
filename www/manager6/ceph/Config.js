@@ -53,7 +53,7 @@ Ext.define('PVE.node.CephConfigDb', {
 	    throw "no node name specified";
 	}
 
-	me.store.proxy.url = '/api2/json/nodes/' + nodename + '/ceph/configdb';
+	me.store.proxy.url = '/api2/json/nodes/' + nodename + '/ceph/cfg/db';
 
 	me.callParent();
 
@@ -102,7 +102,7 @@ Ext.define('PVE.node.CephConfig', {
 	}
 
 	Ext.apply(me, {
-	    url: '/nodes/' + nodename + '/ceph/config',
+	    url: '/nodes/' + nodename + '/ceph/cfg/raw',
 	    listeners: {
 		activate: function() {
 		    me.load();
