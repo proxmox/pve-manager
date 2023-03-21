@@ -817,10 +817,12 @@ __PACKAGE__->register_method({
 	    libknet1
 	    libproxmox-acme-perl
 	    libproxmox-backup-qemu0
+	    libproxmox-rs-perl
 	    libpve-access-control
 	    libpve-common-perl
 	    libpve-guest-common-perl
 	    libpve-http-server-perl
+	    libpve-rs-perl
 	    libpve-storage-perl
 	    libqb0
 	    libspice-server1
