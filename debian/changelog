@@ -1,3 +1,22 @@
+pve-manager (7.4-2) bullseye; urgency=medium
+
+  * ui: lvm-thin: don't add nodeselector/enable multiple times in edit
+    window
+
+  * ui: lvm-thin: fix not being able to edit the storage
+
+  * replication: fix uninitalized warning
+
+  * api: apt: versions: also list Proxmox libraries for interfacing with
+    Rust
+
+  * api: apt versions: report the version of the proxmox-kernel-helper
+    too
+
+  * ui: rename "Theme" selector to "Color Theme"
+
+ -- Proxmox Support Team <support@proxmox.com>  Tue, 21 Mar 2023 16:47:34 +0100
+
 pve-manager (7.4-1) bullseye; urgency=medium
 
   * ui: resource tree: correctly reinsert item when name changes
