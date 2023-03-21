@@ -183,6 +183,4 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 	    allowBlank: false,
 	},
     ],
-
-    column2: [],
 });
