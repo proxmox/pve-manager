@@ -811,16 +811,16 @@ __PACKAGE__->register_method({
 	my @pkgs = qw(
 	    ceph-fuse
 	    corosync
-	    libjs-extjs
 	    glusterfs-client
+	    libjs-extjs
 	    libknet1
+	    libproxmox-acme-perl
+	    libproxmox-backup-qemu0
 	    libpve-access-control
 	    libpve-common-perl
 	    libpve-guest-common-perl
 	    libpve-http-server-perl
 	    libpve-storage-perl
-	    libproxmox-acme-perl
-	    libproxmox-backup-qemu0
 	    libqb0
 	    libspice-server1
 	    lvm2
@@ -843,8 +843,8 @@ __PACKAGE__->register_method({
 	    pve-xtermjs
 	    qemu-server
 	    smartmontools
-	    swtpm
 	    spiceterm
+	    swtpm
 	    vncterm
 	);
 
