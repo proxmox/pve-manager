@@ -103,8 +103,10 @@ my sub _handle_job_err {
 
     return if !_should_mail_at_failcount($fail_count);
 
+    my $schedule = $job->{schedule} // '*/15';
+
     my $msg = "Replication job $job->{id} with target '$job->{target}' and schedule";
-    $msg .= " '$job->{schedule}' failed!\n";
+    $msg .= " '$schedule' failed!\n";
 
     $msg .= "  Last successful sync: ";
     if (my $last_sync = $jobstate->{last_sync}) {
