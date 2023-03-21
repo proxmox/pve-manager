@@ -1,4 +1,4 @@
-pve-manager (7.4-1) UNRELEASED; urgency=medium
+pve-manager (7.4-1) bullseye; urgency=medium
 
   * ui: resource tree: correctly reinsert item when name changes
 
