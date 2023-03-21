@@ -397,7 +397,7 @@ Ext.define('PVE.StdWorkspace', {
 				},
 				{
 				    iconCls: 'fa fa-paint-brush',
-				    text: gettext('Theme'),
+				    text: gettext('Color Theme'),
 				    handler: function() {
 					Ext.create('Proxmox.window.ThemeEditWindow')
 					    .show();
