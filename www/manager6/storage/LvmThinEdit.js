@@ -148,7 +148,7 @@ Ext.define('PVE.storage.LvmThinInputPanel', {
 		    },
 		    change: function(f, value) {
 			let vgField = this.up('inputpanel').lookup('thinPoolSelector');
-			if (vgField) {
+			if (vgField && !f.isDisabled()) {
 			    vgField.setDisabled(!value);
 			    vgField.setVG(value);
 			    vgField.setValue('');
