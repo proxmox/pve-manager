@@ -118,7 +118,6 @@ Ext.define('PVE.form.DiskStorageSelector', {
 		xtype: 'pveStorageSelector',
 		itemId: 'hdstorage',
 		name: 'hdstorage',
-		reference: 'hdstorage',
 		fieldLabel: me.storageLabel,
 		nodename: me.nodename,
 		storageContent: me.storageContent,
@@ -136,7 +135,6 @@ Ext.define('PVE.form.DiskStorageSelector', {
 	    {
 		xtype: 'pveFileSelector',
 		name: 'hdimage',
-		reference: 'hdimage',
 		itemId: 'hdimage',
 		fieldLabel: gettext('Disk image'),
 		nodename: me.nodename,
@@ -146,7 +144,6 @@ Ext.define('PVE.form.DiskStorageSelector', {
 	    {
 		xtype: 'numberfield',
 		itemId: 'disksize',
-		reference: 'disksize',
 		name: 'disksize',
 		fieldLabel: gettext('Disk size') + ' (GiB)',
 		hidden: me.hideSize,
@@ -160,7 +157,6 @@ Ext.define('PVE.form.DiskStorageSelector', {
 	    {
 		xtype: 'pveDiskFormatSelector',
 		itemId: 'diskformat',
-		reference: 'diskformat',
 		name: 'diskformat',
 		fieldLabel: gettext('Format'),
 		nodename: me.nodename,

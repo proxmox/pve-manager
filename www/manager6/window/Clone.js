@@ -170,7 +170,7 @@ Ext.define('PVE.window.Clone', {
 	    onlineValidator: true,
 	    listeners: {
 		change: function(f, value) {
-		    me.lookupReference('hdstorage').setTargetNode(value);
+		    me.lookup('diskselector').getComponent('hdstorage').setTargetNode(value);
 		},
 	    },
 	});
