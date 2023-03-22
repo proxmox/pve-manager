@@ -346,7 +346,7 @@ Ext.define('PVE.node.CephOsdTree', {
 		failure: function(response, opts) {
 		    let msg = response.htmlStatus;
 		    PVE.Utils.showCephInstallOrMask(view, msg, nodename, win =>
-			view.mon(win, 'cephInstallWindowClosed', me.reload),
+			view.mon(win, 'cephInstallWindowClosed', () => { me.reload(); }),
 		    );
 		},
 		success: function(response, opts) {
