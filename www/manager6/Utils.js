@@ -1700,6 +1700,9 @@ Ext.define('PVE.Utils', {
 		    });
 		    win.getViewModel().set('isInstalled', isInstalled);
 		    container.add(win);
+		    win.on('close', () => {
+			container.el.unmask();
+		    });
 		    win.show();
 		    callback(win);
 		}
