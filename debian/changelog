@@ -1,3 +1,12 @@
+pve-manager (7.4-3) bullseye; urgency=medium
+
+  * ui: ceph osd: fix call to reload in wrong this context causing a potential
+    exception when closing the ceph install wizard
+
+  * ui: ceph: unmask container after we finished the ceph install
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 22 Mar 2023 15:33:38 +0100
+
 pve-manager (7.4-2) bullseye; urgency=medium
 
   * ui: lvm-thin: don't add nodeselector/enable multiple times in edit
