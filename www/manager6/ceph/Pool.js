@@ -235,6 +235,14 @@ Ext.define('PVE.node.Ceph.PoolList', {
 
     columns: [
 	{
+	    text: gettext('Pool #'),
+	    minWidth: 70,
+	    flex: 1,
+	    align: 'right',
+	    sortable: true,
+	    dataIndex: 'pool',
+	},
+	{
 	    text: gettext('Name'),
 	    minWidth: 120,
 	    flex: 2,
