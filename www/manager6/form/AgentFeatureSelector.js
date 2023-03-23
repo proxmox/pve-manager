@@ -22,6 +22,26 @@ Ext.define('PVE.form.AgentFeatureSelector', {
 	    disabled: true,
 	},
 	{
+	    xtype: 'proxmoxcheckbox',
+	    boxLabel: gettext('Freeze/thaw guest filesystems on backup for consistency'),
+	    name: 'freeze-fs-on-backup',
+	    reference: 'freeze_fs_on_backup',
+	    bind: {
+		disabled: '{!enabled.checked}',
+	    },
+	    disabled: true,
+	    uncheckedValue: '0',
+	    defaultValue: '1',
+	},
+	{
+	    xtype: 'displayfield',
+	    userCls: 'pmx-hint',
+	    value: gettext('Freeze/thaw for guest filesystems disabled. This can lead to inconsistent disk backups.'),
+	    bind: {
+		hidden: '{freeze_fs_on_backup.checked}',
+	    },
+	},
+	{
 	    xtype: 'displayfield',
 	    userCls: 'pmx-hint',
 	    value: gettext('Make sure the QEMU Guest Agent is installed in the VM'),
@@ -47,12 +67,20 @@ Ext.define('PVE.form.AgentFeatureSelector', {
     ],
 
     onGetValues: function(values) {
-	var agentstr = PVE.Parser.printPropertyString(values, 'enabled');
+	if (PVE.Parser.parseBoolean(values['freeze-fs-on-backup'])) {
+	    delete values['freeze-fs-on-backup'];
+	}
+
+	const agentstr = PVE.Parser.printPropertyString(values, 'enabled');
 	return { agent: agentstr };
     },
 
     setValues: function(values) {
 	let res = PVE.Parser.parsePropertyString(values.agent, 'enabled');
+	if (!Ext.isDefined(res['freeze-fs-on-backup'])) {
+	    res['freeze-fs-on-backup'] = 1;
+	}
+
 	this.callParent([res]);
     },
 });

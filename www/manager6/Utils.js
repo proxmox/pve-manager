@@ -483,6 +483,8 @@ Ext.define('PVE.Utils', {
 		    virtio: "VirtIO",
 		};
 		displayText = map[value] || Proxmox.Utils.unknownText;
+	    } else if (key === 'freeze-fs-on-backup' && PVE.Parser.parseBoolean(value)) {
+		continue;
 	    } else if (PVE.Parser.parseBoolean(value)) {
 		displayText = Proxmox.Utils.enabledText;
 	    }
