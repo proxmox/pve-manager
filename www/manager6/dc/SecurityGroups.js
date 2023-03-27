@@ -100,6 +100,8 @@ Ext.define('PVE.SecurityGroupList', {
 
 	let sm = Ext.create('Ext.selection.RowModel', {});
 
+	let caps = Ext.state.Manager.get('GuiCap');
+
 	let reload = function() {
 	    let oldrec = sm.getSelection()[0];
 	    store.load((records, operation, success) => {
@@ -130,12 +132,14 @@ Ext.define('PVE.SecurityGroupList', {
 
 	me.editBtn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
+	    enableFn: rec => !!caps.dc['Sys.Modify'],
 	    disabled: true,
 	    selModel: sm,
 	    handler: run_editor,
 	});
 	me.addBtn = new Proxmox.button.Button({
 	    text: gettext('Create'),
+	    disabled: !caps.dc['Sys.Modify'],
 	    handler: function() {
 		sm.deselectAll();
 		var win = Ext.create('PVE.SecurityGroupEdit', {});
@@ -148,6 +152,9 @@ Ext.define('PVE.SecurityGroupList', {
 	    selModel: sm,
 	    baseurl: me.base_url + '/',
 	    enableFn: function(rec) {
+		if (!caps.dc['Sys.Modify']) {
+		    return false;
+		}
 		return rec && me.base_url;
 	    },
 	    callback: () => reload(),

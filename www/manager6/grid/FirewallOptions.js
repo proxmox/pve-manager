@@ -21,6 +21,8 @@ Ext.define('PVE.FirewallOptions', {
 	    throw "unknown firewall option type";
 	}
 
+	let caps = Ext.state.Manager.get('GuiCap');
+
 	me.rows = {};
 
 	var add_boolean_row = function(name, text, defaultValue) {
@@ -161,7 +163,9 @@ Ext.define('PVE.FirewallOptions', {
 		return;
 	    }
 	    var rowdef = me.rows[rec.data.key];
-	    edit_btn.setDisabled(!rowdef.editor);
+	    if (caps.vms['VM.Config.Network'] || caps.dc['Sys.Modify'] || caps.nodes['Sys.Modify']) {
+		edit_btn.setDisabled(!rowdef.editor);
+	    }
 	};
 
 	Ext.apply(me, {

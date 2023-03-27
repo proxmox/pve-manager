@@ -104,6 +104,8 @@ Ext.define('PVE.FirewallAliases', {
 
 	let sm = Ext.create('Ext.selection.RowModel', {});
 
+	let caps = Ext.state.Manager.get('GuiCap');
+
 	let reload = function() {
 	    let oldrec = sm.getSelection()[0];
 	    store.load(function(records, operation, success) {
@@ -133,11 +135,13 @@ Ext.define('PVE.FirewallAliases', {
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
+	    enableFn: rec => !!caps.vms['VM.Config.Network'] || !!caps.dc['Sys.Modify'] || !!caps.nodes['Sys.Modify'],
 	    handler: run_editor,
 	});
 
 	me.addBtn = Ext.create('Ext.Button', {
 	    text: gettext('Add'),
+	    disabled: !caps.vms['VM.Config.Network'] && !caps.dc['Sys.Modify'] && !caps.nodes['Sys.Modify'],
 	    handler: function() {
 		var win = Ext.create('PVE.FirewallAliasEdit', {
 		    base_url: me.base_url,
@@ -148,7 +152,9 @@ Ext.define('PVE.FirewallAliases', {
 	});
 
 	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
+	    disabled: true,
 	    selModel: sm,
+	    enableFn: rec => !!caps.vms['VM.Config.Network'] || !!caps.dc['Sys.Modify'] || !!caps.nodes['Sys.Modify'],
 	    baseurl: me.base_url + '/',
 	    callback: reload,
 	});

@@ -42,6 +42,8 @@ Ext.define('PVE.IPSetList', {
 	    },
 	});
 
+	var caps = Ext.state.Manager.get('GuiCap');
+
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
 	var reload = function() {
@@ -94,6 +96,7 @@ Ext.define('PVE.IPSetList', {
 	me.editBtn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
+	    enableFn: rec => !!caps.vms['VM.Config.Network'] || !!caps.dc['Sys.Modify'] || !!caps.nodes['Sys.Modify'],
 	    selModel: sm,
 	    handler: run_editor,
 	});
@@ -128,6 +131,7 @@ Ext.define('PVE.IPSetList', {
 	});
 
 	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
+	    enableFn: rec => !!caps.vms['VM.Config.Network'] || !!caps.dc['Sys.Modify'] || !!caps.nodes['Sys.Modify'],
 	    selModel: sm,
 	    baseurl: me.base_url + '/',
 	    callback: reload,
@@ -153,6 +157,10 @@ Ext.define('PVE.IPSetList', {
 		show: reload,
 	    },
 	});
+
+	if (!caps.vms['VM.Config.Network'] && !caps.dc['Sys.Modify'] && !caps.nodes['Sys.Modify']) {
+	    me.addBtn.setDisabled(true);
+	}
 
 	me.callParent();
 
@@ -268,7 +276,9 @@ Ext.define('PVE.IPSetGrid', {
 	    me.addBtn.setDisabled(true);
 	    me.store.removeAll();
 	} else {
-	    me.addBtn.setDisabled(false);
+	    if (me.caps.vms['VM.Config.Network'] || me.caps.dc['Sys.Modify'] || me.caps.nodes['Sys.Modify']) {
+		me.addBtn.setDisabled(false);
+	    }
 	    me.removeBtn.baseurl = url + '/';
 	    me.store.setProxy({
 		type: 'proxmox',
@@ -296,6 +306,8 @@ Ext.define('PVE.IPSetGrid', {
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
+	me.caps = Ext.state.Manager.get('GuiCap');
+
 	var run_editor = function() {
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
@@ -312,6 +324,7 @@ Ext.define('PVE.IPSetGrid', {
 	me.editBtn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
+	    enableFn: rec => !!me.caps.vms['VM.Config.Network'] || !!me.caps.dc['Sys.Modify'] || !!me.caps.nodes['Sys.Modify'],
 	    selModel: sm,
 	    handler: run_editor,
 	});
@@ -319,6 +332,7 @@ Ext.define('PVE.IPSetGrid', {
 	me.addBtn = new Proxmox.button.Button({
 	    text: gettext('Add'),
 	    disabled: true,
+	    enableFn: rec => !!me.caps.vms['VM.Config.Network'] || !!me.caps.dc['Sys.Modify'] || !!me.caps.nodes['Sys.Modify'],
 	    handler: function() {
 		if (!me.base_url) {
 		    return;
@@ -333,6 +347,8 @@ Ext.define('PVE.IPSetGrid', {
 	});
 
 	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
+	    disabled: true,
+	    enableFn: rec => !!me.caps.vms['VM.Config.Network'] || !!me.caps.dc['Sys.Modify'] || !!me.caps.nodes['Sys.Modify'],
 	    selModel: sm,
 	    baseurl: me.base_url + '/',
 	    callback: reload,

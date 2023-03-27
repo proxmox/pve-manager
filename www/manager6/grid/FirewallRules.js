@@ -569,11 +569,14 @@ Ext.define('PVE.FirewallRules', {
 	    }
 	    me.store.removeAll();
 	} else {
-	    me.addBtn.setDisabled(false);
-	    me.removeBtn.baseurl = url + '/';
-	    if (me.groupBtn) {
-		me.groupBtn.setDisabled(false);
+	    if (me.caps.vms['VM.Config.Network'] || me.caps.dc['Sys.Modify'] || me.caps.nodes['Sys.Modify']) {
+		me.addBtn.setDisabled(false);
+		if (me.groupBtn) {
+		    me.groupBtn.setDisabled(false);
+		}
 	    }
+	    me.removeBtn.baseurl = url + '/';
+
 	    me.store.setProxy({
 		type: 'proxmox',
 		url: '/api2/json' + url,
@@ -649,6 +652,8 @@ Ext.define('PVE.FirewallRules', {
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
+	me.caps = Ext.state.Manager.get('GuiCap');
+
 	var run_editor = function() {
 	    var rec = sm.getSelection()[0];
 	    if (!rec) {
@@ -680,6 +685,7 @@ Ext.define('PVE.FirewallRules', {
 	me.editBtn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Edit'),
 	    disabled: true,
+	    enableFn: rec => !!me.caps.vms['VM.Config.Network'] || !!me.caps.dc['Sys.Modify'] || !!me.caps.nodes['Sys.Modify'],
 	    selModel: sm,
 	    handler: run_editor,
 	});
@@ -721,7 +727,7 @@ Ext.define('PVE.FirewallRules', {
 	me.copyBtn = Ext.create('Proxmox.button.Button', {
 	    text: gettext('Copy'),
 	    selModel: sm,
-	    enableFn: ({ data }) => data.type === 'in' || data.type === 'out',
+	    enableFn: ({ data }) => (data.type === 'in' || data.type === 'out') && (!!me.caps.vms['VM.Config.Network'] || !!me.caps.dc['Sys.Modify'] || !!me.caps.nodes['Sys.Modify']),
 	    disabled: true,
 	    handler: run_copy_editor,
 	});
@@ -743,6 +749,7 @@ Ext.define('PVE.FirewallRules', {
 	}
 
 	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
+	    enableFn: rec => !!me.caps.vms['VM.Config.Network'] || !!me.caps.dc['Sys.Modify'] || !!me.caps.nodes['Sys.Modify'],
 	    selModel: sm,
 	    baseurl: me.base_url + '/',
 	    confirmMsg: false,
