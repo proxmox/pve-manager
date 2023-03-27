@@ -304,7 +304,7 @@ Ext.define('PVE.lxc.Config', {
 	    });
 	}
 
-	if (caps.vms['VM.Console']) {
+	if (caps.vms['VM.Audit']) {
 	    me.items.push(
 		{
 		    xtype: 'pveFirewallRules',
@@ -342,6 +342,11 @@ Ext.define('PVE.lxc.Config', {
 		    list_refs_url: base_url + '/firewall/refs',
 		    itemId: 'firewall-ipset',
 		},
+	    );
+	}
+
+	if (caps.vms['VM.Console']) {
+	    me.items.push(
 		{
 		    title: gettext('Log'),
 		    groups: ['firewall'],
