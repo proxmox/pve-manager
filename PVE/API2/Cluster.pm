@@ -222,7 +222,10 @@ __PACKAGE__->register_method({
 	items => {
 	    type => "object",
 	    properties => {
-		id => { type => 'string' },
+		id => {
+		    description => "Resource id.",
+		    type => 'string',
+		},
 		type => {
 		    description => "Resource type.",
 		    type => 'string',
