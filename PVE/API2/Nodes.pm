@@ -272,6 +272,7 @@ __PACKAGE__->register_method ({
 	    { name => 'hosts' },
 	    { name => 'journal' },
 	    { name => 'lxc' },
+	    { name => 'migrateall' },
 	    { name => 'netstat' },
 	    { name => 'network' },
 	    { name => 'qemu' },
