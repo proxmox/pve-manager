@@ -96,6 +96,12 @@ Ext.define('PVE.dc.BackupEdit', {
 
 	selectPoolMembers: function() {
 	    let me = this;
+	    let mode = me.lookup('modeSelector').getValue();
+
+	    if (mode !== 'pool') {
+		return;
+	    }
+
 	    let vmgrid = me.lookup('vmgrid');
 	    let poolid = me.lookup('poolSelector').getValue();
 
