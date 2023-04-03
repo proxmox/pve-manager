@@ -56,8 +56,6 @@ my $find_mon_ips = sub {
 
     if (!scalar(@{$overwrite_ips})) { # auto-select one address for each public network
 	for my $net (@{$public_nets}) {
-	    $net = PVE::JSONSchema::pve_verify_cidr($net);
-
 	    my $allowed_ips = PVE::Network::get_local_ip_from_cidr($net);
 	    $allowed_ips = PVE::Network::unique_ips($allowed_ips);
 
@@ -75,8 +73,6 @@ my $find_mon_ips = sub {
 	my $allowed_list = [];
 
 	for my $net (@{$public_nets}) {
-	    $net = PVE::JSONSchema::pve_verify_cidr($net);
-
 	    push @{$allowed_list}, @{PVE::Network::get_local_ip_from_cidr($net)};
 	}
 
