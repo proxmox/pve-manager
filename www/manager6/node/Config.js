@@ -373,7 +373,7 @@ Ext.define('PVE.node.Config', {
 		},
 		{
 		    xtype: 'pveNodeCephPoolList',
-		    title: 'Pools',
+		    title: gettext('Pools'),
 		    iconCls: 'fa fa-sitemap',
 		    groups: ['ceph'],
 		    itemId: 'ceph-pools',

@@ -196,7 +196,7 @@ Ext.define('PVE.CephOsdDetails', {
 			},
 			{
 			    xtype: 'panel',
-			    title: 'Devices',
+			    title: gettext('Devices'),
 			    tooltip: gettext('Physical devices used by the OSD'),
 			    items: [
 				{

@@ -69,7 +69,7 @@ Ext.define('PVE.ha.GroupInputPanel', {
 		    dataIndex: 'cpu',
 		},
 		{
-		    header: 'Priority',
+		    header: gettext('Priority'),
 		    xtype: 'widgetcolumn',
 		    dataIndex: 'priority',
 		    sortable: true,

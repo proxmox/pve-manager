@@ -156,12 +156,12 @@ Ext.define('PVE.NodeCephFSPanel', {
 		    dataIndex: 'name',
 		},
 		{
-		    header: 'Data Pool',
+		    header: gettext('Data Pool'),
 		    flex: 1,
 		    dataIndex: 'data_pool',
 		},
 		{
-		    header: 'Metadata Pool',
+		    header: gettext('Metadata Pool'),
 		    flex: 1,
 		    dataIndex: 'metadata_pool',
 		},

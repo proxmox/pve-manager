@@ -4,7 +4,7 @@ Ext.define('PVE.form.VlanField', {
 
     deleteEmpty: false,
 
-    emptyText: 'no VLAN',
+    emptyText: gettext('no VLAN'),
 
     fieldLabel: gettext('VLAN Tag'),
 

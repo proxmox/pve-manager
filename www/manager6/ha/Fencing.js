@@ -18,11 +18,11 @@ Ext.define('PVE.ha.FencingView', {
 	    viewConfig: {
 		trackOver: false,
 		deferEmptyText: false,
-		emptyText: 'Use watchdog based fencing.',
+		emptyText: gettext('Use watchdog based fencing.'),
 	    },
 	    columns: [
 		{
-		    header: 'Node',
+		    header: gettext('Node'),
 		    width: 100,
 		    sortable: true,
 		    dataIndex: 'node',

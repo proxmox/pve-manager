@@ -73,7 +73,7 @@ Ext.define('PVE.CephCreateOsd', {
 			    value: '',
 			    autoSelect: false,
 			    allowBlank: true,
-			    emptyText: 'use OSD disk',
+			    emptyText: gettext('use OSD disk'),
 			    listeners: {
 				change: function(field, val) {
 				    me.down('field[name=db_dev_size]').setDisabled(!val);
@@ -112,7 +112,7 @@ Ext.define('PVE.CephCreateOsd', {
 			    autoSelect: false,
 			    allowBlank: true,
 			    editable: true,
-			    emptyText: 'auto detect',
+			    emptyText: gettext('auto detect'),
 			    deleteEmpty: !me.isCreate,
 			},
 		    ],
@@ -127,7 +127,7 @@ Ext.define('PVE.CephCreateOsd', {
 			    value: '',
 			    autoSelect: false,
 			    allowBlank: true,
-			    emptyText: 'use OSD/DB disk',
+			    emptyText: gettext('use OSD/DB disk'),
 			    listeners: {
 				change: function(field, val) {
 				    me.down('field[name=wal_dev_size]').setDisabled(!val);
