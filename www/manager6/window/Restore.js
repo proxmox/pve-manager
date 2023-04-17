@@ -315,6 +315,7 @@ Ext.define('PVE.window.Restore', {
 			xtype: 'textfield',
 			fieldLabel: me.vmtype === 'lxc' ? gettext('Hostname') : gettext('Name'),
 			name: 'name',
+			vtype: 'DnsName',
 			reference: 'nameField',
 			allowBlank: true,
 		    }, {
