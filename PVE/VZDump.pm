@@ -767,7 +767,7 @@ sub compressor_info {
 	    my $cpuinfo = PVE::ProcFSTools::read_cpuinfo();
 	    $zstd_threads = int(($cpuinfo->{cpus} + 1)/2);
 	}
-	return ("zstd --rsyncable --threads=${zstd_threads}", 'zst');
+	return ("zstd --threads=${zstd_threads}", 'zst');
     } else {
 	die "internal error - unknown compression option '$opt_compress'";
     }
