@@ -191,6 +191,7 @@ Ext.define('PVE.window.Clone', {
 	{
 	    xtype: 'textfield',
 	    name: 'name',
+	    vtype: 'DnsName',
 	    allowBlank: true,
 	    fieldLabel: me.guestType === 'lxc' ? gettext('Hostname') : gettext('Name'),
 	},
