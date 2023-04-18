@@ -73,21 +73,21 @@ sub init {
 
     my $dirs = {};
 
-    add_dirs($dirs, '/pve2/locale/', "$basedirs->{i18n}/");
-    add_dirs($dirs, '/pve2/touch/', "$basedirs->{manager}/touch/");
-    add_dirs($dirs, '/pve2/ext6/', "$basedirs->{extjs}/");
-    add_dirs($dirs, '/pve2/images/' =>  "$basedirs->{manager}/images/");
-    add_dirs($dirs, '/pve2/css/' =>  "$basedirs->{manager}/css/");
-    add_dirs($dirs, '/pve2/js/' =>  "$basedirs->{manager}/js/");
-    add_dirs($dirs, '/pve2/fa/fonts/' =>  "$basedirs->{fontawesome}/fonts/");
-    add_dirs($dirs, '/pve2/fa/css/' =>  "$basedirs->{fontawesome}/css/");
+    add_dirs($dirs, '/novnc/' => "$basedirs->{novnc}/");
     add_dirs($dirs, '/pve-docs/' => "$basedirs->{docs}/");
     add_dirs($dirs, '/pve-docs/api-viewer/extjs/' => "$basedirs->{extjs}/");
-    add_dirs($dirs, '/novnc/' => "$basedirs->{novnc}/");
-    add_dirs($dirs, '/xtermjs/' => "$basedirs->{xtermjs}/");
-    add_dirs($dirs, '/pwt/images/' => "$basedirs->{widgettoolkit}/images/");
+    add_dirs($dirs, '/pve2/css/' =>  "$basedirs->{manager}/css/");
+    add_dirs($dirs, '/pve2/ext6/', "$basedirs->{extjs}/");
+    add_dirs($dirs, '/pve2/fa/css/' =>  "$basedirs->{fontawesome}/css/");
+    add_dirs($dirs, '/pve2/fa/fonts/' =>  "$basedirs->{fontawesome}/fonts/");
+    add_dirs($dirs, '/pve2/images/' =>  "$basedirs->{manager}/images/");
+    add_dirs($dirs, '/pve2/js/' =>  "$basedirs->{manager}/js/");
+    add_dirs($dirs, '/pve2/locale/', "$basedirs->{i18n}/");
+    add_dirs($dirs, '/pve2/touch/', "$basedirs->{manager}/touch/");
     add_dirs($dirs, '/pwt/css/' => "$basedirs->{widgettoolkit}/css/");
+    add_dirs($dirs, '/pwt/images/' => "$basedirs->{widgettoolkit}/images/");
     add_dirs($dirs, '/pwt/themes/' => "$basedirs->{widgettoolkit}/themes/");
+    add_dirs($dirs, '/xtermjs/' => "$basedirs->{xtermjs}/");
 
     $self->{server_config} = {
 	title => 'Proxmox VE API',
