@@ -3,26 +3,25 @@ package PVE::Service::pveproxy;
 use strict;
 use warnings;
 
-use PVE::SafeSyslog;
-use PVE::Daemon;
-use HTTP::Response;
-use Encode;
-use URI;
-use URI::QueryParam;
 use Data::Dumper;
-use PVE::Cluster;
-use PVE::DataCenterConfig;
-use PVE::APIServer::Utils;
-use PVE::API2;
-use PVE::APIServer::Formatter;
-use PVE::APIServer::Formatter::Standard;
-use PVE::APIServer::Formatter::HTML;
-use PVE::APIServer::AnyEvent;
-use PVE::HTTPServer;
-use PVE::pvecfg;
-
+use Encode;
+use HTTP::Response;
 use Template;
+use URI::QueryParam;
+use URI;
 
+use PVE::API2;
+use PVE::APIServer::AnyEvent;
+use PVE::APIServer::Formatter::HTML;
+use PVE::APIServer::Formatter::Standard;
+use PVE::APIServer::Formatter;
+use PVE::APIServer::Utils;
+use PVE::Cluster;
+use PVE::Daemon;
+use PVE::DataCenterConfig;
+use PVE::HTTPServer;
+use PVE::SafeSyslog;
+use PVE::pvecfg;
 use PVE::Tools;
 
 use base qw(PVE::Daemon);
