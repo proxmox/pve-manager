@@ -1722,7 +1722,7 @@ Ext.define('PVE.Utils', {
 	    rstore,
 	    /not (installed|initialized)/i,
 	    (_, error) => {
-		nodename = nodename || 'localhost';
+		nodename = nodename || Proxmox.NodeName;
 		let maskTarget = maskOwnerCt ? view.ownerCt : view;
 		rstore.stopUpdate();
 		PVE.Utils.showCephInstallOrMask(maskTarget, error.statusText, nodename, win => {
