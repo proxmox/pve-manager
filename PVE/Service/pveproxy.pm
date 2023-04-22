@@ -191,7 +191,7 @@ sub get_index {
     my $lang;
     my $username;
     my $token = 'null';
-    my $theme = "";
+    my $theme = "auto";
 
     if (my $cookie = $r->header('Cookie')) {
 	if (my $newlang = ($cookie =~ /(?:^|\s)PVELangCookie=([^;]*)/)[0]) {
@@ -214,42 +214,22 @@ sub get_index {
 	}
     }
 
-    if ($theme eq "") {
-	$theme = "auto"
-    }
-
     if (!$lang) {
 	my $dc_conf = PVE::Cluster::cfs_read_file('datacenter.cfg');
 	$lang = $dc_conf->{language} // 'en';
     }
 
-    $username = '' if !$username;
-
-    my $mobile = is_phone($r->header('User-Agent')) ? 1 : 0;
-
-    if (defined($args->{mobile})) {
-	$mobile = $args->{mobile} ? 1 : 0;
-    }
+    my $mobile = is_phone($r->header('User-Agent')) && (!defined($args->{mobile}) || $args->{mobile});
 
     my $novnc = defined($args->{console}) && $args->{novnc};
     my $xtermjs = defined($args->{console}) && $args->{xtermjs};
 
-    my $page = '';
-    my $template = Template->new({ABSOLUTE => 1});
-
-    my $langfile = 0;
-
-    if (-f  "$basedirs->{i18n}/pve-lang-$lang.js") {
-	$langfile = 1;
-    }
+    my $langfile = -f "$basedirs->{i18n}/pve-lang-$lang.js" ? 1 : 0;
 
     my $version = PVE::pvecfg::version();
 
     my $wtversionraw = PVE::Tools::file_read_firstline("$basedirs->{widgettoolkit}/proxmoxlib.js");
-    my $wtversion;
-    if ($wtversionraw =~ m|^// (.*)$|) {
-	$wtversion = $1;
-    };
+    my $wtversion = $wtversionraw =~ m|^// (.*)$| ? $1 : '';
 
     my $debug = $server->{debug};
     if (exists $args->{debug}) {
@@ -259,7 +239,7 @@ sub get_index {
     my $vars = {
 	lang => $lang,
 	langfile => $langfile,
-	username => $username,
+	username => $username || '',
 	token => $token,
 	console => $args->{console},
 	nodename => $nodename,
@@ -280,8 +260,11 @@ sub get_index {
 	$dir = "$basedirs->{manager}/touch";
     }
 
-    $template->process("$dir/index.html.tpl", $vars, \$page)
-	|| die $template->error(), "\n";
+    my $page = '';
+    my $template = Template->new({ABSOLUTE => 1});
+
+    $template->process("$dir/index.html.tpl", $vars, \$page) || die $template->error(), "\n";
+
     my $headers = HTTP::Headers->new(Content_Type => "text/html; charset=utf-8");
     my $resp = HTTP::Response->new(200, "OK", $headers, $page);
 
