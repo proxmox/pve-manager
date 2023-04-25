@@ -222,14 +222,17 @@ Ext.define('PVE.storage.BackupView', {
 	    };
 	}
 
+	me.extraColumns.vmid = {
+	    header: gettext('VMID'),
+	    dataIndex: 'vmid',
+	    hidden: true,
+	    sorter: (a, b) => (a.data.vmid ?? 0) - (b.data.vmid ?? 0),
+	};
+
 	me.callParent();
 
 	me.store.getSorters().clear();
 	me.store.setSorters([
-	    {
-		property: 'vmid',
-		direction: 'ASC',
-	    },
 	    {
 		property: 'vdate',
 		direction: 'DESC',
