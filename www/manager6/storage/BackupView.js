@@ -195,28 +195,28 @@ Ext.define('PVE.storage.BackupView', {
 	    pruneButton,
 	);
 
+	me.extraColumns = {};
+
 	if (isPBS) {
-	    me.extraColumns = {
-		encrypted: {
-		    header: gettext('Encrypted'),
-		    dataIndex: 'encrypted',
-		    renderer: PVE.Utils.render_backup_encryption,
-		    sorter: {
-			property: 'encrypted',
-			transform: encrypted => encrypted ? 1 : 0,
-		    },
+	    me.extraColumns.encrypted = {
+		header: gettext('Encrypted'),
+		dataIndex: 'encrypted',
+		renderer: PVE.Utils.render_backup_encryption,
+		sorter: {
+		    property: 'encrypted',
+		    transform: encrypted => encrypted ? 1 : 0,
 		},
-		verification: {
-		    header: gettext('Verify State'),
-		    dataIndex: 'verification',
-		    renderer: PVE.Utils.render_backup_verification,
-		    sorter: {
-			property: 'verification',
-			transform: value => {
-			    let state = value?.state ?? 'none';
-			    let order = PVE.Utils.verificationStateOrder;
-			    return order[state] ?? order.__default__;
-			},
+	    };
+	    me.extraColumns.verification = {
+		header: gettext('Verify State'),
+		dataIndex: 'verification',
+		renderer: PVE.Utils.render_backup_verification,
+		sorter: {
+		    property: 'verification',
+		    transform: value => {
+			let state = value?.state ?? 'none';
+			let order = PVE.Utils.verificationStateOrder;
+			return order[state] ?? order.__default__;
 		    },
 		},
 	    };
