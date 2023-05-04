@@ -286,6 +286,24 @@ Ext.define('PVE.qemu.CloudInit', {
 		},
 		defaultValue: '',
 	    },
+	    ciupgrade: {
+		header: gettext('Upgrade packages'),
+		iconCls: 'fa fa-archive',
+		renderer: Proxmox.Utils.format_boolean,
+		defaultValue: '',
+		editor: {
+		    xtype: 'proxmoxWindowEdit',
+		    subject: gettext('Upgrade packages on boot'),
+		    items: {
+			xtype: 'proxmoxcheckbox',
+			name: 'ciupgrade',
+			uncheckedValue: 0,
+			defaultValue: 0,
+			fieldLabel: gettext('Upgrade packages'),
+			labelWidth: 140,
+		    },
+		},
+	    },
 	};
 	var i;
 	var ipconfig_renderer = function(value, md, record, ri, ci, store, pending) {
