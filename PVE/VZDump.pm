@@ -279,7 +279,15 @@ sub read_vzdump_defaults {
     my $conf_schema = { type => 'object', properties => $confdesc_for_defaults };
     my $res = PVE::JSONSchema::parse_config($conf_schema, $fn, $raw);
     if (my $excludes = $res->{'exclude-path'}) {
-	$res->{'exclude-path'} = PVE::Tools::split_args($excludes);
+	if (ref($excludes) eq 'ARRAY') {
+	    my $list = [];
+	    for my $path ($excludes->@*) {
+		push $list->@*, PVE::Tools::split_args($path)->@*;
+	    }
+	    $res->{'exclude-path'} = $list;
+	} else {
+	    $res->{'exclude-path'} = PVE::Tools::split_args($excludes);
+	}
     }
     if (defined($res->{mailto})) {
 	my @mailto = split_list($res->{mailto});
@@ -1339,10 +1347,15 @@ sub option_exists {
 sub parse_mailto_exclude_path {
     my ($param) = @_;
 
-    # exclude-path list need to be 0 separated
+    # exclude-path list need to be 0 separated or be an array
     if (defined($param->{'exclude-path'})) {
-	my @expaths = split(/\0/, $param->{'exclude-path'} || '');
-	$param->{'exclude-path'} = [ @expaths ];
+	my $expaths;
+	if (ref($param->{'exclude-path'}) eq 'ARRAY') {
+	    $expaths = $param->{'exclude-path'};
+	} else {
+	    $expaths = [split(/\0/, $param->{'exclude-path'} || '')];
+	}
+	$param->{'exclude-path'} = $expaths;
     }
 
     if (defined($param->{mailto})) {
