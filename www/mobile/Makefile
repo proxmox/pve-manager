@@ -32,8 +32,10 @@ pvemanager-mobile.js: ${JSSRC}
 	mv $@.tmp $@
 
 .PHONY: install 
-install: pvemanager-mobile.js
+install: pvemanager-mobile.js index.html.tpl pve.css
 	install -d ${WWWTOUCHDIR}
+	install -m 0644 index.html.tpl ${WWWTOUCHDIR}
+	install -m 0644 pve.css ${WWWTOUCHDIR}
 	install -m 0644 pvemanager-mobile.js ${WWWTOUCHDIR}
 
 .PHONY: clean

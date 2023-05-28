@@ -1,5 +1,5 @@
 include ../defines.mk
-SUBDIRS = images css manager6 touch mobile
+SUBDIRS = images css manager6 mobile
 
 all:
 
