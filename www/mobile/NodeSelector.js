@@ -7,19 +7,19 @@ Ext.define('PVE.form.NodeSelector', {
 	valueField: 'node',
 	displayField: 'node',
 	store: {
-	    fields: [ 'node', 'cpu', 'maxcpu', 'mem', 'maxmem', 'uptime' ],
+	    fields: ['node', 'cpu', 'maxcpu', 'mem', 'maxmem', 'uptime'],
 	    autoLoad: true,
 	    proxy: {
 		type: 'pve',
-		url: '/api2/json/nodes'
+		url: '/api2/json/nodes',
 	    },
 	    sorters: [
 		{
-		    property : 'node',
-		    direction: 'ASC'
-		}
-	    ]
+		    property: 'node',
+		    direction: 'ASC',
+		},
+	    ],
 	},
- 	value: ''
-    }
+	value: '',
+    },
 });

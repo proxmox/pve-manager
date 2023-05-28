@@ -9,9 +9,9 @@ Ext.define('PVE.MigrateBase', {
 	items: [
 	    {
 		xtype: 'pveTitleBar',
-		pveReloadButton: false
+		pveReloadButton: false,
 	    },
-	    { 
+	    {
 		xtype: 'formpanel',
 		flex: 1,
 		padding: 10,
@@ -27,21 +27,21 @@ Ext.define('PVE.MigrateBase', {
 			    },
 			    {
 				xtype: 'checkboxfield',
-				name : 'online',
+				name: 'online',
 				checked: true,
-				label: gettext('Online')
-			    }
-			]
+				label: gettext('Online'),
+			    },
+			],
 		    },
 		    {
 			xtype: 'button',
 			itemId: 'migrate',
 			ui: 'action',
-			text: gettext('Migrate')
-		    }
-		]
-	    }
-	]
+			text: gettext('Migrate'),
+		    },
+		],
+	    },
+	],
     },
 
     initialize: function() {
@@ -52,7 +52,7 @@ Ext.define('PVE.MigrateBase', {
 	btn.setHandler(function() {
 	    var form = this.up('formpanel');
 	    var values = form.getValues();
-	    
+
 	    if (!values.target) {
 		Ext.Msg.alert('Error', 'Please select a target node');
 		return;
@@ -67,12 +67,12 @@ Ext.define('PVE.MigrateBase', {
 		},
 		success: function(response, options) {
 		    var upid = response.result.data;
-		    var page = 'nodes/'  + me.nodename + '/tasks/' + upid;
+		    var page = 'nodes/' + me.nodename + '/tasks/' + upid;
 		    PVE.Workspace.gotoPage(page);
-		}
+		},
 	    });
 	});
-    }
+    },
 });
 
 Ext.define('PVE.QemuMigrate', {
@@ -82,8 +82,8 @@ Ext.define('PVE.QemuMigrate', {
 
     statics: {
 	pathMatch: function(loc) {
-	    return loc.match(/^nodes\/([^\s\/]+)\/qemu\/(\d+)\/migrate$/);
-	}
+	    return loc.match(/^nodes\/([^\s/]+)\/qemu\/(\d+)\/migrate$/);
+	},
     },
 
     initialize: function() {
@@ -100,7 +100,7 @@ Ext.define('PVE.QemuMigrate', {
 	me.down('titlebar').setTitle(gettext('Migrate') + ': VM ' + me.vmid);
 
 	this.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.LXCMigrate', {
@@ -110,8 +110,8 @@ Ext.define('PVE.LXCMigrate', {
 
     statics: {
 	pathMatch: function(loc) {
-	    return loc.match(/^nodes\/([^\s\/]+)\/lxc\/(\d+)\/migrate$/);
-	}
+	    return loc.match(/^nodes\/([^\s/]+)\/lxc\/(\d+)\/migrate$/);
+	},
     },
 
     initialize: function() {
@@ -128,5 +128,5 @@ Ext.define('PVE.LXCMigrate', {
 	me.down('titlebar').setTitle(gettext('Migrate') + ': CT ' + me.vmid);
 
 	this.callParent();
-    }
+    },
 });

@@ -27,9 +27,9 @@ Ext.define('PVE.NodeInfo', {
 		    }
 		    var per = values.cpu * 100;
 		    return per.toFixed(2) + "% (" + values.cpuinfo.cpus + " CPUs)";
-		}
-	    }
-	]
+		},
+	    },
+	],
     },
 });
 
@@ -39,25 +39,25 @@ Ext.define('PVE.NodeSummary', {
 
     statics: {
 	pathMatch: function(loc) {
-	    return loc.match(/^nodes\/([^\s\/]+)$/);
-	}
+	    return loc.match(/^nodes\/([^\s/]+)$/);
+	},
     },
 
     nodename: undefined,
 
     config: {
 	items: [
-	    { 
-		xtype: 'pveTitleBar'
+	    {
+		xtype: 'pveTitleBar',
 	    },
 	    {
-		xtype: 'pveNodeInfo'
+		xtype: 'pveNodeInfo',
 	    },
             {
                 xtype: 'component',
                 cls: 'dark',
 		padding: 5,
- 		html: gettext('Virtual machines')
+		html: gettext('Virtual machines'),
             },
 	    {
 		xtype: 'list',
@@ -65,9 +65,9 @@ Ext.define('PVE.NodeSummary', {
 		disableSelection: true,
 		listeners: {
 		    itemsingletap: function(list, index, target, record) {
-			PVE.Workspace.gotoPage('nodes/' + record.get('nodename') + '/' + 
+			PVE.Workspace.gotoPage('nodes/' + record.get('nodename') + '/' +
 					       record.get('type') + '/' + record.get('vmid'));
-		    } 
+		    },
 		},
 		grouped: true,
 		itemTpl: [
@@ -91,15 +91,15 @@ Ext.define('PVE.NodeSummary', {
 				return '-';
 			    }
 			    return (values.cpu*100).toFixed(1) + '%';
-			}
-		    }
-		]
-	    }
-	]
+			},
+		    },
+		],
+	    },
+	],
     },
 
     reload: function() {
- 	var me = this;
+	var me = this;
 
 	var ni = me.down('pveNodeInfo');
 
@@ -109,10 +109,10 @@ Ext.define('PVE.NodeSummary', {
 	    success: function(response) {
 		var d = response.result.data;
 		if (d.pveversion) {
-		    d.pveversion = d.pveversion.replace(/pve\-manager\//, '');
+		    d.pveversion = d.pveversion.replace(/pve-manager\//, '');
 		}
 		ni.setData(d);
-	    }
+	    },
 	});
 
 
@@ -121,7 +121,7 @@ Ext.define('PVE.NodeSummary', {
 	list.setMasked(false);
 
 	var error_handler = function(response) {
-	    list.setMasked({ xtype: 'loadmask', message: response.htmlStatus} );
+	    list.setMasked({ xtype: 'loadmask', message: response.htmlStatus });
 	};
 
 	Proxmox.Utils.API2Request({
@@ -130,7 +130,7 @@ Ext.define('PVE.NodeSummary', {
 	    success: function(response) {
 		var d = response.result.data;
 		d.nodename = me.nodename;
-		d.forEach(function(el) { el.type = 'lxc'; el.nodename = me.nodename });
+		d.forEach(function(el) { el.type = 'lxc'; el.nodename = me.nodename; });
 		me.store.each(function(rec) {
 		    if (rec.get('type') === 'lxc') {
 			rec.destroy();
@@ -138,7 +138,7 @@ Ext.define('PVE.NodeSummary', {
 		});
 		me.store.add(d);
 	    },
-	    failure: error_handler
+	    failure: error_handler,
 	});
 
 	Proxmox.Utils.API2Request({
@@ -146,7 +146,7 @@ Ext.define('PVE.NodeSummary', {
 	    method: 'GET',
 	    success: function(response) {
 		var d = response.result.data;
-		d.forEach(function(el) { el.type = 'qemu'; el.nodename = me.nodename });
+		d.forEach(function(el) { el.type = 'qemu'; el.nodename = me.nodename; });
 		me.store.each(function(rec) {
 		    if (rec.get('type') === 'qemu') {
 			rec.destroy();
@@ -154,9 +154,8 @@ Ext.define('PVE.NodeSummary', {
 		});
 		me.store.add(d);
 	    },
-	    failure: error_handler
+	    failure: error_handler,
 	});
-
     },
 
     initialize: function() {
@@ -176,17 +175,17 @@ Ext.define('PVE.NodeSummary', {
 		text: gettext('Tasks'),
 		handler: function() {
 		    PVE.Workspace.gotoPage('nodes/' + me.nodename + '/tasks');
-		}
+		},
 	    },
 	]);
 
 	me.store = Ext.create('Ext.data.Store', {
-	    fields: [ 'name', 'vmid', 'nodename', 'type', 'memory', 'uptime', 'mem', 'maxmem', 'cpu', 'cpus'],
+	    fields: ['name', 'vmid', 'nodename', 'type', 'memory', 'uptime', 'mem', 'maxmem', 'cpu', 'cpus'],
 	    sorters: ['vmid'],
 	    grouper: {
 		groupFn: function(record) {
 		    return record.get('type');
-		}
+		},
 	    },
 	});
 
@@ -196,5 +195,5 @@ Ext.define('PVE.NodeSummary', {
 	me.reload();
 
 	this.callParent();
-    }
+    },
 });

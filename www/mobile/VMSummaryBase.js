@@ -23,14 +23,14 @@ Ext.define('PVE.VMSummaryBase', {
 	    },
 	    failure: function(response, opts) {
 		Ext.Msg.alert('Error', response.htmlStatus);
-	    }
+	    },
 	});
     },
 
     config: {
 	items: [
 	    {
-		xtype: 'pveTitleBar'
+		xtype: 'pveTitleBar',
 	    },
 	    {
 		xtype: 'component',
@@ -61,17 +61,17 @@ Ext.define('PVE.VMSummaryBase', {
 			    return per.toFixed(2) + "% (" + values.cpus + " CPUs)";
 			},
 			status: function(values) {
-			    return values.qmpstatus ? values.qmpstatus :
-				values.status;
-			}
-		    }
-		]
+			    return values.qmpstatus ? values.qmpstatus
+				: values.status;
+			},
+		    },
+		],
 	    },
 	    {
 		xtype: 'component',
 		cls: 'dark',
 		padding: 5,
-		html: gettext('Configuration')
+		html: gettext('Configuration'),
 	    },
 	    {
 		xtype: 'container',
@@ -85,10 +85,10 @@ Ext.define('PVE.VMSummaryBase', {
 		    '<tpl for=".">',
 		    '<tr><td>{key}</td><td>{value}</td></tr>',
 		    '</tpl>',
-		    '</table>'
-		]
-	    }
-	]
+		    '</table>',
+		],
+	    },
+	],
     },
 
     reload: function() {
@@ -111,7 +111,7 @@ Ext.define('PVE.VMSummaryBase', {
 
 		vm_stat.setData(d);
 	    },
-	    failure: error_handler
+	    failure: error_handler,
 	});
 
 	var vm_cfg = me.down('#vmconfig');
@@ -125,7 +125,7 @@ Ext.define('PVE.VMSummaryBase', {
 		var kv = PVE.Workspace.obj_to_kv(d, me.config_keys);
 		vm_cfg.setData(kv);
 	    },
-	    failure: error_handler
+	    failure: error_handler,
 	});
     },
 
@@ -139,14 +139,14 @@ Ext.define('PVE.VMSummaryBase', {
 		text: gettext('Start'),
 		handler: function() {
 		    me.vm_command("start", {});
-		}
+		},
 	    },
 	    {
 		text: gettext('Stop'),
 		handler: function() {
 		    me.vm_command("stop", {});
-		}
-	    }
+		},
+	    },
 	];
 
 	var bottom_items = [{
@@ -154,27 +154,26 @@ Ext.define('PVE.VMSummaryBase', {
 	    handler: function() {
 		PVE.Workspace.gotoPage('nodes/' + me.nodename + '/' + me.vmtype +
 				       '/' + me.vmid +'/migrate');
-	    }
+	    },
 	}];
 
 	// use qmpstatus with qemu, as it's exacter
-	var vm_status = (me.vmtype === 'qemu') ? data.qmpstatus : data.status;
+	var vm_status = me.vmtype === 'qemu' ? data.qmpstatus : data.status;
 
-	if(vm_status === 'running') {
-
+	if (vm_status === 'running') {
 	    top_items.push(
 		{
 		    text: gettext('Shutdown'),
 		    handler: function() {
 			me.vm_command("shutdown", {});
-		    }
+		    },
 		},
 		{
 		    text: gettext('Suspend'),
 		    handler: function() {
 			me.vm_command("suspend", {});
-		    }
-		}
+		    },
+		},
 	    );
 
 	    bottom_items.push({
@@ -183,32 +182,30 @@ Ext.define('PVE.VMSummaryBase', {
 		    var vmtype = me.vmtype === 'qemu' ? 'kvm' : me.vmtype;
 		    PVE.Utils.openConsoleWindow('html5', vmtype, me.vmid,
 						me.nodename);
-		}
+		},
 	    });
 
-	    if(data.spice || me.vmtype==='lxc') {
+	    if (data.spice || me.vmtype==='lxc') {
 		bottom_items.push({
 		    text: gettext('Spice'),
 		    handler: function() {
 			var vmtype = me.vmtype === 'qemu' ? 'kvm' : me.vmtype;
 			PVE.Utils.openConsoleWindow('vv', vmtype, me.vmid,
 						    me.nodename);
-		    }
+		    },
 		});
 	    }
-
-	} else if(vm_status === 'paused') {
+	} else if (vm_status === 'paused') {
 	    top_items.push({
 		text: gettext('Resume'),
 		handler: function() {
 		    me.vm_command("resume", {});
-		}
+		},
 	    });
 	}
 
 	// concat our item arrays and add them to the menu
 	me.down('pveMenuButton').setMenuItems(top_items.concat(bottom_items));
-
     },
 
     initialize: function() {
@@ -217,5 +214,5 @@ Ext.define('PVE.VMSummaryBase', {
 	me.reload();
 
 	this.callParent();
-    }
+    },
 });

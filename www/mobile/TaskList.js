@@ -5,7 +5,7 @@ Ext.define('PVE.TaskListBase', {
 	baseUrl: undefined,
 	items: [
 	    {
-		xtype: 'pveTitleBar'
+		xtype: 'pveTitleBar',
 	    },
 	    {
 		xtype: 'list',
@@ -13,9 +13,9 @@ Ext.define('PVE.TaskListBase', {
 		disableSelection: true,
 		listeners: {
 		    itemsingletap: function(list, index, target, record) {
-			PVE.Workspace.gotoPage('nodes/' + record.get('node') + '/tasks/' + 
+			PVE.Workspace.gotoPage('nodes/' + record.get('node') + '/tasks/' +
 					       record.get('upid'));
-		    }
+		    },
 		},
 		itemTpl: [
 		    '<div style="vertical-align: middle;">' +
@@ -30,11 +30,11 @@ Ext.define('PVE.TaskListBase', {
 			},
 			status: function(values) {
 			    return Ext.String.ellipsis(values.status, 160);
-			}
-		    }
-		]
-	    }
-	]
+			},
+		    },
+		],
+	    },
+	],
     },
 
     reload: function() {
@@ -50,23 +50,23 @@ Ext.define('PVE.TaskListBase', {
 	    model: 'pve-tasks',
 	    proxy: {
                 type: 'pve',
-		url: '/api2/json' + me.getBaseUrl()
+		url: '/api2/json' + me.getBaseUrl(),
 	    },
 	    sorters: [
 		{
-		    property : 'starttime',
-		    direction: 'DESC'
-		}
-	    ]
+		    property: 'starttime',
+		    direction: 'DESC',
+		},
+	    ],
 	});
 
 	var list = me.down('list');
 	list.setStore(me.store);
 
 	me.reload();
-	
+
 	this.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.ClusterTaskList', {
@@ -75,11 +75,11 @@ Ext.define('PVE.ClusterTaskList', {
     statics: {
 	pathMatch: function(loc) {
 	    return loc.match(/^tasks$/);
-	}
+	},
     },
 
     config: {
-	baseUrl: '/cluster/tasks'
+	baseUrl: '/cluster/tasks',
     },
 
     initialize: function() {
@@ -93,7 +93,7 @@ Ext.define('PVE.ClusterTaskList', {
 	}
 
 	this.callParent();
-    }
+    },
 });
 
 Ext.define('PVE.NodeTaskList', {
@@ -101,8 +101,8 @@ Ext.define('PVE.NodeTaskList', {
 
     statics: {
 	pathMatch: function(loc) {
-	    return loc.match(/^nodes\/([^\s\/]+)\/tasks$/);
-	}
+	    return loc.match(/^nodes\/([^\s/]+)\/tasks$/);
+	},
     },
 
     nodename: undefined,
@@ -122,7 +122,7 @@ Ext.define('PVE.NodeTaskList', {
 	me.down('titlebar').setTitle(gettext('Tasks') + ': ' + me.nodename);
 
 	this.callParent();
-    }
+    },
 });
 
 

@@ -1,6 +1,6 @@
 Ext.define('PVE.RestProxy', {
     extend: 'Ext.data.RestProxy',
-    alias : 'proxy.pve',
+    alias: 'proxy.pve',
 
     constructor: function(config) {
 	var me = this;
@@ -8,33 +8,32 @@ Ext.define('PVE.RestProxy', {
 	config = config || {};
 
 	Ext.applyIf(config, {
-	    pageParam : null,
+	    pageParam: null,
 	    startParam: null,
 	    limitParam: null,
 	    groupParam: null,
 	    sortParam: null,
 	    filterParam: null,
-	    noCache : false,
+	    noCache: false,
 	    reader: {
 		type: 'json',
-		rootProperty: config.root || 'data'
+		rootProperty: config.root || 'data',
 	    },
 	    afterRequest: function(request, success) {
 		me.fireEvent('afterload', me, request, success);
-		return;
-	    }
+	    },
 	});
 
-	me.callParent([config]); 
-    }
+	me.callParent([config]);
+    },
 });
 
 Ext.define('pve-domains', {
     extend: "Ext.data.Model",
 
     config: {
-	fields: [ 'realm', 'type', 'comment', 'default', 'tfa',
-		  { 
+	fields: ['realm', 'type', 'comment', 'default', 'tfa',
+		  {
 		      name: 'descr',
 		      // Note: We use this in the RealmComboBox.js
 		      // (see Bug #125)
@@ -53,25 +52,25 @@ Ext.define('pve-domains', {
 			  }
 
 			  return text;
-		      }
-		  }
+		      },
+		  },
 		],
 	proxy: {
 	    type: 'pve',
-	    url: "/api2/json/access/domains"
-	}
-    }
+	    url: "/api2/json/access/domains",
+	},
+    },
 });
 
 Ext.define('pve-tasks', {
     extend: 'Ext.data.Model',
     config: {
-	fields:  [ 
-	    { name: 'starttime', type : 'date', dateFormat: 'timestamp' }, 
-	    { name: 'endtime', type : 'date', dateFormat: 'timestamp' }, 
+	fields: [
+	    { name: 'starttime', type: 'date', dateFormat: 'timestamp' },
+	    { name: 'endtime', type: 'date', dateFormat: 'timestamp' },
 	    { name: 'pid', type: 'int' },
-	    'node', 'upid', 'user', 'status', 'type', 'id'
+	    'node', 'upid', 'user', 'status', 'type', 'id',
 	],
-	idProperty: 'upid'
-    }
+	idProperty: 'upid',
+    },
 });

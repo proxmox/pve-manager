@@ -4,15 +4,15 @@ Ext.define('PVE.LXCSummary', {
 
     statics: {
 	pathMatch: function(loc) {
-	    return loc.match(/^nodes\/([^\s\/]+)\/lxc\/(\d+)$/);
-	}
+	    return loc.match(/^nodes\/([^\s/]+)\/lxc\/(\d+)$/);
+	},
     },
 
     vmtype: 'lxc',
 
     config_keys: [
-	'hostname','ostype', , 'memory', 'swap', 'cpulimit', 'cpuunits',
-	/^net\d+/, 'rootfs', /^mp\d+/, 'nameserver', 'searchdomain','description'
+	'hostname', 'ostype', 'memory', 'swap', 'cpulimit', 'cpuunits',
+	/^net\d+/, 'rootfs', /^mp\d+/, 'nameserver', 'searchdomain', 'description',
     ],
 
     initialize: function() {
@@ -29,5 +29,5 @@ Ext.define('PVE.LXCSummary', {
 	me.down('titlebar').setTitle('CT: ' + me.vmid);
 
 	this.callParent();
-    }
+    },
 });

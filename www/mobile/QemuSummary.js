@@ -4,15 +4,15 @@ Ext.define('PVE.QemuSummary', {
 
     statics: {
 	pathMatch: function(loc) {
-	    return loc.match(/^nodes\/([^\s\/]+)\/qemu\/(\d+)$/);
-	}
+	    return loc.match(/^nodes\/([^\s/]+)\/qemu\/(\d+)$/);
+	},
     },
 
     vmtype: 'qemu',
 
     config_keys: [
 	'name', 'memory', 'sockets', 'cores', 'ostype', 'bootdisk', /^net\d+/,
-	/^ide\d+/, /^virtio\d+/, /^sata\d+/, /^scsi\d+/, /^unused\d+/
+	/^ide\d+/, /^virtio\d+/, /^sata\d+/, /^scsi\d+/, /^unused\d+/,
     ],
 
     initialize: function() {
@@ -29,5 +29,5 @@ Ext.define('PVE.QemuSummary', {
 	me.down('titlebar').setTitle('VM: ' + me.vmid);
 
 	this.callParent();
-    }
+    },
 });

@@ -6,7 +6,7 @@ Ext.define('PVE.ATitleBar', {
 	docked: 'top',
 	pveReloadButton: true,
 	pveBackButton: true,
-	pveStdMenu: true // add 'Login' and 'Datacenter' to menu by default
+	pveStdMenu: true, // add 'Login' and 'Datacenter' to menu by default
     },
 
     initialize: function() {
@@ -22,7 +22,7 @@ Ext.define('PVE.ATitleBar', {
 		iconCls: 'arrow_left',
 		handler: function() {
 		    PVE.Workspace.goBack();
-		}
+		},
 	    });
 	}
 
@@ -32,18 +32,18 @@ Ext.define('PVE.ATitleBar', {
 		iconCls: 'refresh',
 		handler: function() {
 		    this.up('pvePage').reload();
-		}
+		},
 	    });
 	}
 
 	items.push({
 	    xtype: 'pveMenuButton',
 	    align: 'right',
-	    pveStdMenu: me.getPveStdMenu()
+	    pveStdMenu: me.getPveStdMenu(),
 	});
 
 	me.setItems(items);
-    }
+    },
 
 
 });

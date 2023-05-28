@@ -7,7 +7,7 @@ Ext.define('PVE.form.RealmSelector', {
 	valueField: 'realm',
 	displayField: 'descr',
 	store: { model: 'pve-domains' },
- 	value: 'pam'
+	value: 'pam',
     },
 
     needOTP: function(realm) {
@@ -24,7 +24,7 @@ Ext.define('PVE.form.RealmSelector', {
 	var me = this;
 
 	me.callParent();
-	
+
 	var realmstore = me.getStore();
 
 	realmstore.load({
@@ -34,7 +34,7 @@ Ext.define('PVE.form.RealmSelector', {
 		    if (!def || !realmstore.findRecord('realm', def)) {
 			def = 'pam';
 			Ext.each(r, function(record) {
-			    if (record.get('default')) { 
+			    if (record.get('default')) {
 				def = record.get('realm');
 			    }
 			});
@@ -43,7 +43,7 @@ Ext.define('PVE.form.RealmSelector', {
 			me.setValue(def);
 		    }
 		}
-	    }
+	    },
 	});
-    }
+    },
 });

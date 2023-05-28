@@ -15,7 +15,7 @@ Ext.define('PVE.ClusterInfo', {
 	    '</tpl>',
 	    '<tr><td>Version:</td><td>{version}</td></tr>',
 	    '</table>',
-	]
+	],
     },
 });
 
@@ -28,7 +28,7 @@ Ext.define('PVE.Datacenter', {
 	    if (loc === '') {
 		return [''];
 	    }
-	}
+	},
     },
 
     config: {
@@ -37,16 +37,16 @@ Ext.define('PVE.Datacenter', {
 	    {
 		xtype: 'pveTitleBar',
 		title: gettext('Datacenter'),
-		pveBackButton: false
+		pveBackButton: false,
 	    },
 	    {
- 		xtype: 'pveClusterInfo'
+		xtype: 'pveClusterInfo',
 	    },
             {
                 xtype: 'component',
                 cls: 'dark',
 		padding: 5,
- 		html: gettext('Nodes')
+		html: gettext('Nodes'),
             },
 	    {
 		xtype: 'list',
@@ -56,13 +56,13 @@ Ext.define('PVE.Datacenter', {
 		listeners: {
 		    itemsingletap: function(list, index, target, record) {
 			PVE.Workspace.gotoPage('nodes/' + record.get('name'));
-		    } 
+		    },
 		},
 		itemTpl: '{name}' +
 		    '<br><small>Online: {[Proxmox.Utils.format_boolean(values.online)]}</small>' +
-		    '<br><small>Support: {[PVE.Utils.render_support_level(values.level)]}</small>'
-	    }
-	]	
+		    '<br><small>Support: {[PVE.Utils.render_support_level(values.level)]}</small>',
+	    },
+	],
     },
 
     reload: function() {
@@ -81,7 +81,7 @@ Ext.define('PVE.Datacenter', {
 		var d = response.result.data;
 		me.summary.version = d.version;
 		ci.setData(me.summary);
-	    }
+	    },
 	});
 
 	var list = me.down('list');
@@ -91,7 +91,7 @@ Ext.define('PVE.Datacenter', {
 	    method: 'GET',
 	    success: function(response) {
 		var d = response.result.data;
-		list.setData(d.filter(function(el) { return (el.type === "node"); }));
+		list.setData(d.filter(function(el) { return el.type === "node"; }));
 
 		d.forEach(function(el) {
 		    if (el.type === "node") {
@@ -108,8 +108,8 @@ Ext.define('PVE.Datacenter', {
 		ci.setData(me.summary);
 	    },
 	    failure: function(response) {
-		me.setMasked({ xtype: 'loadmask', message: response.htmlStatus} );
-	    }
+		me.setMasked({ xtype: 'loadmask', message: response.htmlStatus });
+	    },
 	});
     },
 
@@ -121,12 +121,12 @@ Ext.define('PVE.Datacenter', {
 		text: gettext('Tasks'),
 		handler: function() {
 		    PVE.Workspace.gotoPage('tasks');
-		}
-	    }
+		},
+	    },
 	]);
 
 	me.reload();
-    }
+    },
 
 });
 

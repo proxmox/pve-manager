@@ -5,13 +5,13 @@ Ext.define('PVE.Page', {
     statics: {
 	pathMatch: function(loc) {
 	    throw "implement this in subclass";
-	}
+	},
     },
 
    config: {
 	layout: 'vbox',
-	appUrl: undefined
-   }
+	appUrl: undefined,
+   },
 });
 
 Ext.define('PVE.ErrorPage', {
@@ -23,19 +23,20 @@ Ext.define('PVE.ErrorPage', {
 	layout: {
 	    type: 'vbox',
 	    pack: 'center',
-	    align: 'stretch'
+	    align: 'stretch',
 	},
 	items: [
 	    {
 		xtype: 'pveTitleBar',
 		pveReloadButton: false,
-		title: gettext('Error')
-	    }
-	]
-    }
+		title: gettext('Error'),
+	    },
+	],
+    },
 });
 
-Ext.define('PVE.Workspace', { statics: {
+Ext.define('PVE.Workspace', {
+ statics: {
     // this class only contains static functions
 
     loginData: null, // Data from last login call
@@ -44,16 +45,16 @@ Ext.define('PVE.Workspace', { statics: {
 
     history: null,
 
-    pages: [ 
+    pages: [
 	'PVE.LXCMigrate',
 	'PVE.LXCSummary',
 	'PVE.QemuMigrate',
 	'PVE.QemuSummary',
-	'PVE.NodeSummary', 
+	'PVE.NodeSummary',
 	'PVE.ClusterTaskList',
 	'PVE.NodeTaskList',
 	'PVE.TaskViewer',
-	'PVE.Datacenter'
+	'PVE.Datacenter',
     ],
 
     setHistory: function(h) {
@@ -72,7 +73,7 @@ Ext.define('PVE.Workspace', { statics: {
 	    lastAction = actions[actions.length - 2];
 
 	var url = '';
-	if(lastAction) {
+	if (lastAction) {
 	    actions.pop();
 	    url = lastAction.getUrl();
 	}
@@ -82,7 +83,6 @@ Ext.define('PVE.Workspace', { statics: {
     },
 
     __setAppWindow: function(comp, dir) {
-
 	var old = PVE.Workspace.appWindow;
 
 	PVE.Workspace.appWindow = comp;
@@ -95,7 +95,7 @@ Ext.define('PVE.Workspace', { statics: {
 		Ext.Viewport.animateActiveItem(PVE.Workspace.appWindow, anim);
 	    }
 	    // remove old after anim (hack, because anim.after does not work in 2.3.1a)
-	    Ext.Function.defer(function(){
+	    Ext.Function.defer(function() {
 		if (comp !== old) {
 		    Ext.Viewport.remove(old);
 		}
@@ -123,8 +123,6 @@ Ext.define('PVE.Workspace', { statics: {
     },
 
     gotoPage: function(loc) {
-	var match;
-
 	var old = PVE.Workspace.appWindow;
 
 	if (old.getAppUrl) {
@@ -159,7 +157,7 @@ Ext.define('PVE.Workspace', { statics: {
 		comp = Ext.create('PVE.ErrorPage', {});
 	    }
 	}
-	
+
 	PVE.Workspace.__setAppWindow(comp, 'noanim');
     },
 
@@ -170,18 +168,17 @@ Ext.define('PVE.Workspace', { statics: {
 	    if (done[item.key]) return;
 	    done[item.key] = 1;
 	    if (item.value) kv.push(item);
-	}
+	};
 
 	var keys = Ext.Array.sort(Ext.Object.getKeys(d));
 	Ext.Array.each(names, function(k) {
-	    if (typeof(k) === 'object') {
+	    if (typeof k === 'object') {
 		Ext.Array.each(keys, function(n) {
 		    if (k.test(n)) {
 			pushItem({ key: n, value: d[n] });
 		    }
 		});
 	    } else {
-
 		pushItem({ key: k, value: d[k] });
 	    }
 	});
@@ -189,6 +186,7 @@ Ext.define('PVE.Workspace', { statics: {
 	    pushItem({ key: k, value: d[k] });
 	});
 	return kv;
-    }
+    },
 
-}});
+},
+});

@@ -18,7 +18,6 @@ Ext.define('PVE.Login', {
 	    });
 	    errlabel.show();
 	} else {
-
 	    Ext.Msg.show({
 		title: 'Two-Factor Authentication',
 		message: 'Please enter your OTP verification code:',
@@ -33,7 +32,7 @@ Ext.define('PVE.Login', {
 		    } else {
 			me.mask({
 			    xtype: 'loadmask',
-			    message: 'Loading...'
+			    message: 'Loading...',
 			});
 			Proxmox.Utils.API2Request({
 			    url: '/api2/extjs/access/tfa',
@@ -53,13 +52,12 @@ Ext.define('PVE.Login', {
 				me.unmask();
 				Proxmox.Utils.authClear();
 				errlabel.show();
-			    }
+			    },
 			});
 		    }
 		},
 	    });
 	}
-
     },
 
     config: {
@@ -71,7 +69,7 @@ Ext.define('PVE.Login', {
 		xtype: 'image',
 		src: '/pve2/images/proxmox_logo.png',
 		height: 30,
-		width: 209
+		width: 209,
 	    },
 	    {
 	        xtype: 'fieldset',
@@ -82,21 +80,21 @@ Ext.define('PVE.Login', {
 	                placeHolder: gettext('User name'),
 	                itemId: 'userNameTextField',
 	                name: 'username',
-	                required: true
+	                required: true,
 	            },
 	            {
 	                xtype: 'passwordfield',
 	                placeHolder: gettext('Password'),
 	                itemId: 'passwordTextField',
 	                name: 'password',
-	                required: true
+	                required: true,
 	            },
 		    {
 			xtype: 'pveRealmSelector',
 	                itemId: 'realmSelectorField',
 			name: 'realm',
-		    }
-	        ]
+		    },
+	        ],
 	    },
 	    {
 	        xtype: 'label',
@@ -105,7 +103,7 @@ Ext.define('PVE.Login', {
 	        hidden: true,
 	        hideAnimation: 'fadeOut',
 	        showAnimation: 'fadeIn',
-	        style: 'color:#990000;margin:5px 0px;'
+	        style: 'color:#990000;margin:5px 0px;',
 	    },
 	    {
 	        xtype: 'button',
@@ -143,12 +141,12 @@ Ext.define('PVE.Login', {
 			    } else {
 				PVE.Workspace.updateLoginData(data);
 			    }
-			}
+			},
 		    });
-		}
-	    }
-	]
-    }
+		},
+	    },
+	],
+    },
 });
 
 Ext.define('PVE.field.TFACode', {
@@ -157,7 +155,7 @@ Ext.define('PVE.field.TFACode', {
 
     config: {
 	component: {
-	    type: 'number'
+	    type: 'number',
 	},
 	maxLength: 6,
 	required: true,

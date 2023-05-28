@@ -9,8 +9,8 @@ Ext.define('PVE.MenuButton', {
 
 	var data = me.getMenuItems() || [];
 
-	var addHide = function (fn) {
-	    return function () {
+	var addHide = function(fn) {
+	    return function() {
 		if (me.menuPanel) {
 		    me.menuPanel.hide();
 		    Ext.Viewport.remove(me.menuPanel);
@@ -30,7 +30,7 @@ Ext.define('PVE.MenuButton', {
 		text: gettext('Datacenter'),
 		handler: addHide(function() {
 		    PVE.Workspace.gotoPage('');
-		})
+		}),
 	    });
 	}
 
@@ -38,18 +38,18 @@ Ext.define('PVE.MenuButton', {
 	    items.push(Ext.apply(el, {
 		xtype: 'button',
 		ui: 'plain',
-		handler: addHide(el.handler)
+		handler: addHide(el.handler),
 	    }));
 	});
 
 	if (me.getPveStdMenu()) {
-	    items.push({ 
+	    items.push({
 		xtype: 'button',
 		ui: 'plain',
 		text: gettext('Logout'),
 		handler: addHide(function() {
 		    PVE.Workspace.showLogin();
-		})
+		}),
 	    });
 	}
 
@@ -59,10 +59,10 @@ Ext.define('PVE.MenuButton', {
 	    visible: false,
 	    minWidth: 200,
 	    layout: {
-		type:'vbox',
-		align: 'stretch'
+		type: 'vbox',
+		align: 'stretch',
 	    },
-	    items: items
+	    items: items,
 	});
 
 	PVE.Workspace.history.on('change', function() {
@@ -77,14 +77,14 @@ Ext.define('PVE.MenuButton', {
     config: {
 	menuItems: undefined,
 	pveStdMenu: false, // add LOGOUT
-	handler:  function() {
+	handler: function() {
 	    var me = this;
 
 	    if (!me.menuPanel) {
 		me.createMenuPanel();
 	    }
 	    me.menuPanel.showBy(me, 'tr-bc?');
-	}
+	},
     },
 
     initialize: function() {
@@ -95,6 +95,5 @@ Ext.define('PVE.MenuButton', {
 	if (me.getPveStdMenu()) {
 	    me.setIconCls('more');
 	}
-
-    }
+    },
 });

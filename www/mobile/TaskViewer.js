@@ -4,8 +4,8 @@ Ext.define('PVE.TaskViewer', {
 
     statics: {
 	pathMatch: function(loc) {
-	    return loc.match(/^nodes\/([^\s\/]+)\/tasks\/([^\s\/]+)$/);
-	}
+	    return loc.match(/^nodes\/([^\s/]+)\/tasks\/([^\s/]+)$/);
+	},
     },
 
     nodename: undefined,
@@ -15,8 +15,8 @@ Ext.define('PVE.TaskViewer', {
 
     config: {
 	items: [
-	    { 
-		xtype: 'pveTitleBar'
+	    {
+		xtype: 'pveTitleBar',
 	    },
 	    {
 		itemId: 'taskStatus',
@@ -29,14 +29,14 @@ Ext.define('PVE.TaskViewer', {
 		    '<tpl for=".">',
 		    '<tr><td>{key}</td><td>{value}</td></tr>',
 		    '</tpl>',
-		    '</table>'
-		]
- 	    },
+		    '</table>',
+		],
+	    },
 	    {
 		xtype: 'component',
 		cls: 'dark',
- 		padding: 5,
-		html: gettext('Log')
+		padding: 5,
+		html: gettext('Log'),
 	    },
 	    {
 		itemId: 'taskLog',
@@ -46,9 +46,9 @@ Ext.define('PVE.TaskViewer', {
 		styleHtmlContent: true,
 		style: 'background-color:white;white-space: pre;font-family: Monospace;',
 		data: {},
-		tpl: '{text}'
-	    }
-	]
+		tpl: '{text}',
+	    },
+	],
     },
 
     reloadLog: function() {
@@ -69,8 +69,8 @@ Ext.define('PVE.TaskViewer', {
 		logCmp.setData({ text: text });
 	    },
 	    failure: function(response) {
-		logCmp.setData({ text: response.htmlStatus } );
-	    }
+		logCmp.setData({ text: response.htmlStatus });
+	    },
 	});
     },
 
@@ -78,7 +78,6 @@ Ext.define('PVE.TaskViewer', {
 	var me = this;
 
 	var statusCmp = me.down('#taskStatus');
-	var logCmp = me.down('#taskLog');
 
 	Proxmox.Utils.API2Request({
 	    url: "/nodes/" + me.nodename + "/tasks/" + me.upid + "/status",
@@ -101,8 +100,8 @@ Ext.define('PVE.TaskViewer', {
 		}
 	    },
 	    failure: function(response) {
-		me.setMasked({ xtype: 'loadmask', message: response.htmlStatus} );
-	    }
+		me.setMasked({ xtype: 'loadmask', message: response.htmlStatus });
+	    },
 	});
     },
 
@@ -124,5 +123,5 @@ Ext.define('PVE.TaskViewer', {
        me.reload();
 
 	this.callParent();
-    }
+    },
 });
