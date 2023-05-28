@@ -4,6 +4,7 @@ include ../../defines.mk
 # extjs/classic/classic/src/util/Cookies.js
 
 JSSRC= 				                 	\
+	WidgetToolkitUtils.js				\
 	Cookies.js 					\
 	../manager6/Utils.js				\
 	../manager6/Parser.js				\

@@ -25,7 +25,6 @@
     [%- ELSE %]
     <script type="text/javascript" src="/pve2/sencha-touch/sencha-touch-all.js"></script>
     [% END %]
-    <script type="text/javascript" src="/proxmoxlib.js?ver=[% wtversion %]"></script>
     <script type="text/javascript" src="/pve2/touch/pvemanager-mobile.js?ver=[% version %]"></script>
     <script type="text/javascript">
 if (typeof(PVE) === 'undefined') PVE = {};
