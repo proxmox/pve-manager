@@ -47,14 +47,14 @@ sub add_dirs {
 }
 
 my $basedirs = {
-    novnc => '/usr/share/novnc-pve',
-    extjs => '/usr/share/javascript/extjs',
-    manager => '/usr/share/pve-manager',
-    i18n => '/usr/share/pve-i18n',
     docs => '/usr/share/pve-docs',
+    extjs => '/usr/share/javascript/extjs',
     fontawesome => '/usr/share/fonts-font-awesome',
-    xtermjs => '/usr/share/pve-xtermjs',
+    i18n => '/usr/share/pve-i18n',
+    manager => '/usr/share/pve-manager',
+    novnc => '/usr/share/novnc-pve',
     widgettoolkit => '/usr/share/javascript/proxmox-widget-toolkit',
+    xtermjs => '/usr/share/pve-xtermjs',
 };
 
 sub init {
