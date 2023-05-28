@@ -219,7 +219,7 @@ sub get_index {
 	$lang = $dc_conf->{language} // 'en';
     }
 
-    my $mobile = is_phone($r->header('User-Agent')) && (!defined($args->{mobile}) || $args->{mobile});
+    my $mobile = (is_phone($r->header('User-Agent')) && (!defined($args->{mobile}) || $args->{mobile})) || $args->{mobile};
 
     my $novnc = defined($args->{console}) && $args->{novnc};
     my $xtermjs = defined($args->{console}) && $args->{xtermjs};
