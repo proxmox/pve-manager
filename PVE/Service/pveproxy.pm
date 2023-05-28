@@ -53,6 +53,7 @@ my $basedirs = {
     i18n => '/usr/share/pve-i18n',
     manager => '/usr/share/pve-manager',
     novnc => '/usr/share/novnc-pve',
+    sencha_touch => '/usr/share/javascript/sencha-touch',
     widgettoolkit => '/usr/share/javascript/proxmox-widget-toolkit',
     xtermjs => '/usr/share/pve-xtermjs',
 };
@@ -83,6 +84,7 @@ sub init {
     add_dirs($dirs, '/pve2/images/' =>  "$basedirs->{manager}/images/");
     add_dirs($dirs, '/pve2/js/' =>  "$basedirs->{manager}/js/");
     add_dirs($dirs, '/pve2/locale/', "$basedirs->{i18n}/");
+    add_dirs($dirs, '/pve2/sencha-touch/', "$basedirs->{sencha_touch}/");
     add_dirs($dirs, '/pve2/touch/', "$basedirs->{manager}/touch/");
     add_dirs($dirs, '/pwt/css/' => "$basedirs->{widgettoolkit}/css/");
     add_dirs($dirs, '/pwt/images/' => "$basedirs->{widgettoolkit}/images/");
