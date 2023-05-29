@@ -43,7 +43,6 @@ Depends: apt (>= 1.5~),
          hdparm,
          ifupdown2 (>= 2.0.1-1+pve8) | ifenslave (>= 2.6),
          libapt-pkg-perl,
-         libc6 (>= 2.14),
          libcrypt-ssleay-perl,
          libfile-readbackwards-perl,
          libfilesys-df-perl,
@@ -96,6 +95,7 @@ Depends: apt (>= 1.5~),
          wget,
          ${misc:Depends},
          ${perl:Depends},
+         ${shlibs:Depends}
 Recommends: proxmox-offline-mirror-helper
 Suggests: libpve-network-perl (>= 0.5-1)
 Conflicts: vlan,
