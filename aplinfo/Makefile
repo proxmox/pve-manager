@@ -11,8 +11,8 @@ all:
 
 .PHONY: install
 install: aplinfo.dat trustedkeys.gpg
-	install -D -m 0644 aplinfo.dat ${DESTDIR}${DOCDIR}/aplinfo.dat
-	install -D -m 0644 trustedkeys.gpg ${DESTDIR}${DOCDIR}/trustedkeys.gpg
+	install -D -m 0644 aplinfo.dat $(DESTDIR)$(DOCDIR)/aplinfo.dat
+	install -D -m 0644 trustedkeys.gpg $(DESTDIR)$(DOCDIR)/trustedkeys.gpg
 
 .PHONY: update
 update:
@@ -20,7 +20,7 @@ update:
 	wget http://download.proxmox.com/images/aplinfo-pve-7.dat -O aplinfo.dat.tmp
 	mv aplinfo.dat.tmp aplinfo.dat
 
-trustedkeys.gpg: ${TRUSTED_KEYS}
+trustedkeys.gpg: $(TRUSTED_KEYS)
 	sq keyring join -o $@.tmp *.pubkey proxmox-release-bookworm.gpg
 	mv $@.tmp $@
 

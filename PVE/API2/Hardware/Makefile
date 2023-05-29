@@ -12,5 +12,5 @@ clean:
 
 .PHONY: install
 install:
-	install -d ${PERLLIBDIR}/PVE/API2/Hardware
-	install -m 0644 ${PERLSOURCE} ${PERLLIBDIR}/PVE/API2/Hardware
+	install -d $(PERLLIBDIR)/PVE/API2/Hardware
+	install -m 0644 $(PERLSOURCE) $(PERLLIBDIR)/PVE/API2/Hardware

@@ -46,7 +46,7 @@ GNOME_IMAGES = 			\
 	computer-template.png   \
 	computer.png
 
-IMAGES = ${GNOME_IMAGES}	\
+IMAGES = $(GNOME_IMAGES)	\
 	virt-viewer.png		\
 	tigervnc.png		\
 	novnc.png		\
@@ -89,9 +89,9 @@ icon-sdn.svg: icon-sdn.dot
 	fdp -Tsvg $< > $@
 
 .PHONY: install 
-install: ${IMAGES}
-	install -d ${WWWIMAGEDIR}
-	install -m 0644 ${IMAGES} ${WWWIMAGEDIR}
+install: $(IMAGES)
+	install -d $(WWWIMAGEDIR)
+	install -m 0644 $(IMAGES) $(WWWIMAGEDIR)
 
 .PHONY: clean
 clean:

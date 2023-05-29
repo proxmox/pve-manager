@@ -302,32 +302,31 @@ WIDGETKIT=/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
 
 all:
 
-.lint-incremental: ${JSSRC}
+.lint-incremental: $(JSSRC)
 	eslint $?
 	touch "$@"
 
 .PHONY: lint
 check: lint
-lint: ${JSSRC}
-	eslint --strict ${JSSRC}
+lint: $(JSSRC)
+	eslint --strict $(JSSRC)
 	touch ".lint-incremental"
 
-pvemanagerlib.js: .lint-incremental OnlineHelpInfo.js ${JSSRC}
-	cat OnlineHelpInfo.js ${JSSRC} >$@.tmp
+pvemanagerlib.js: .lint-incremental OnlineHelpInfo.js $(JSSRC)
+	cat OnlineHelpInfo.js $(JSSRC) >$@.tmp
 	mv $@.tmp $@
 
-OnlineHelpInfo.js: ${JSSRC} ${WIDGETKIT}
+OnlineHelpInfo.js: $(JSSRC) $(WIDGETKIT)
 	/usr/bin/asciidoc-pve scan-extjs $^ >$@.tmp
 	mv $@.tmp $@
 
 .PHONY: install
 install: pvemanagerlib.js
-	install -d ${WWWJSDIR}
-	install -m 0644 pvemanagerlib.js ${WWWJSDIR}
+	install -d $(WWWJSDIR)
+	install -m 0644 pvemanagerlib.js $(WWWJSDIR)
 
 .PHONY: clean
 clean:
-	find . -name '*~' -exec rm {} ';'
 	rm -rf pvemanagerlib.js OnlineHelpInfo.js .lint-incremental
 
 

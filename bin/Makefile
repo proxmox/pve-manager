@@ -10,8 +10,8 @@ SERVICES = pvestatd pveproxy pvedaemon spiceproxy pvescheduler
 CLITOOLS = vzdump pvesubscription pveceph pveam pvesr pvenode pvesh pve6to7
 
 SCRIPTS =  			\
-	${SERVICES}		\
-	${CLITOOLS}		\
+	$(SERVICES)		\
+	$(CLITOOLS)		\
 	pvebanner		\
 	pveversion		\
 	pveupgrade		\
@@ -19,28 +19,28 @@ SCRIPTS =  			\
 	pveperf			\
 	pvereport
 
-SERVICE_MANS = $(addsuffix .8, ${SERVICES})
+SERVICE_MANS = $(addsuffix .8, $(SERVICES))
 
 CLI_MANS = 				\
-	$(addsuffix .1, ${CLITOOLS})	\
+	$(addsuffix .1, $(CLITOOLS))	\
 	pveversion.1			\
 	pveupgrade.1			\
 	pveperf.1			\
 	pvereport.1			\
 
 BASH_COMPLETIONS = 						\
-	$(addsuffix .service-bash-completion, ${SERVICES}) 	\
-	$(addsuffix .bash-completion, ${CLITOOLS}) 		\
+	$(addsuffix .service-bash-completion, $(SERVICES)) 	\
+	$(addsuffix .bash-completion, $(CLITOOLS)) 		\
 
 ZSH_COMPLETIONS =						\
-	$(addsuffix .service-zsh-completion, ${SERVICES}) 	\
-	$(addsuffix .zsh-completion, ${CLITOOLS})		\
+	$(addsuffix .service-zsh-completion, $(SERVICES)) 	\
+	$(addsuffix .zsh-completion, $(CLITOOLS))		\
 
-all: ${SERVICE_MANS} ${CLI_MANS}
+all: $(SERVICE_MANS) $(CLI_MANS)
 
 %.1: %.1.pod
 	rm -f $@
-	cat $<|pod2man -n $* -s 1 -r ${VERSION} -c"Proxmox Documentation" - >$@.tmp
+	cat $<|pod2man -n $* -s 1 -r $(VERSION) -c"Proxmox Documentation" - >$@.tmp
 	mv $@.tmp $@
 
 %.1.pod:
@@ -56,28 +56,28 @@ pveupgrade.1.pod: pveupgrade
 pvereport.1.pod: pvereport
 
 .PHONY: check
-check: $(addsuffix .service-api-verified, ${SERVICES}) $(addsuffix .api-verified, ${CLITOOLS})
+check: $(addsuffix .service-api-verified, $(SERVICES)) $(addsuffix .api-verified, $(CLITOOLS))
 	rm -f *.service-api-verified *.api-verified
 
 .PHONY: install
-install: ${SCRIPTS} ${CLI_MANS} ${SERVICE_MANS} ${BASH_COMPLETIONS} ${ZSH_COMPLETIONS}
-	install -d ${BINDIR}
-	install -m 0755 ${SCRIPTS} ${BINDIR}
-	install -d ${USRSHARE}/helpers
-	install -m 0755 pve-startall-delay ${USRSHARE}/helpers
-	install -d ${MAN1DIR}
-	install -m 0644 ${CLI_MANS} ${MAN1DIR}
-	install -d ${MAN8DIR}
-	install -m 0644 ${SERVICE_MANS} ${MAN8DIR}
-	for i in ${CLITOOLS}; do install -m 0644 -D $$i.bash-completion ${BASHCOMPLDIR}/$$i; done
-	for i in ${SERVICES}; do install -m 0644 -D $$i.service-bash-completion ${BASHCOMPLDIR}/$$i; done
-	for i in ${CLITOOLS}; do install -m 0644 -D $$i.zsh-completion ${ZSHCOMPLDIR}/_$$i; done
-	for i in ${SERVICES}; do install -m 0644 -D $$i.service-zsh-completion ${ZSHCOMPLDIR}/_$$i; done
+install: $(SCRIPTS) $(CLI_MANS) $(SERVICE_MANS) $(BASH_COMPLETIONS) $(ZSH_COMPLETIONS)
+	install -d $(BINDIR)
+	install -m 0755 $(SCRIPTS) $(BINDIR)
+	install -d $(USRSHARE)/helpers
+	install -m 0755 pve-startall-delay $(USRSHARE)/helpers
+	install -d $(MAN1DIR)
+	install -m 0644 $(CLI_MANS) $(MAN1DIR)
+	install -d $(MAN8DIR)
+	install -m 0644 $(SERVICE_MANS) $(MAN8DIR)
+	for i in $(CLITOOLS); do install -m 0644 -D $$i.bash-completion $(BASHCOMPLDIR)/$$i; done
+	for i in $(SERVICES); do install -m 0644 -D $$i.service-bash-completion $(BASHCOMPLDIR)/$$i; done
+	for i in $(CLITOOLS); do install -m 0644 -D $$i.zsh-completion $(ZSHCOMPLDIR)/_$$i; done
+	for i in $(SERVICES); do install -m 0644 -D $$i.service-zsh-completion $(ZSHCOMPLDIR)/_$$i; done
 
 .PHONY: clean
 clean:
 	make cleanup-docgen
-	rm -rf *~ *.tmp ${CLI_MANS} ${SERVICE_MANS} *.1.pod *.8.pod		    \
+	rm -rf *~ *.tmp $(CLI_MANS) $(SERVICE_MANS) *.1.pod *.8.pod		    \
 	    *.bash-completion *.service-bash-completion				    \
 	    *.zsh-completion *.service-zsh-completion				    \
 	    *.api-verified *.service-api-verified

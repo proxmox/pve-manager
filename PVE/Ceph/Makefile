@@ -11,6 +11,6 @@ clean:
 	rm -rf *~
 
 .PHONY: install
-install: ${PERLSOURCE}
-	install -d ${PERLLIBDIR}/PVE/Ceph
-	install -m 0644 ${PERLSOURCE} ${PERLLIBDIR}/PVE/Ceph
+install: $(PERLSOURCE)
+	install -d $(PERLLIBDIR)/PVE/Ceph
+	install -m 0644 $(PERLSOURCE) $(PERLLIBDIR)/PVE/Ceph

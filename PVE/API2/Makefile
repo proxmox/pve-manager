@@ -30,10 +30,10 @@ all:
 .PHONY: clean
 clean:
 	rm -rf *~
-	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
+	set -e && for i in $(SUBDIRS); do $(MAKE) -C $$i $@; done
 
 .PHONY: install 
-install: ${PERLSOURCE}
-	install -d ${PERLLIBDIR}/PVE/API2
-	install -m 0644 ${PERLSOURCE} ${PERLLIBDIR}/PVE/API2
-	set -e && for i in ${SUBDIRS}; do ${MAKE} -C $$i $@; done
+install: $(PERLSOURCE)
+	install -d $(PERLLIBDIR)/PVE/API2
+	install -m 0644 $(PERLSOURCE) $(PERLLIBDIR)/PVE/API2
+	set -e && for i in $(SUBDIRS); do $(MAKE) -C $$i $@; done

@@ -12,6 +12,6 @@ clean:
 	rm -rf *~
 
 .PHONY: install 
-install: ${PERLSOURCE}
-	install -d ${PERLLIBDIR}/PVE/Status
-	install -m 0644 ${PERLSOURCE} ${PERLLIBDIR}/PVE/Status
+install: $(PERLSOURCE)
+	install -d $(PERLLIBDIR)/PVE/Status
+	install -m 0644 $(PERLSOURCE) $(PERLLIBDIR)/PVE/Status
