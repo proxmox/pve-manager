@@ -1,0 +1,4 @@
+# for now we manage those ourselves, with modern dh_system it might be possible to avoid that though
+pve-manager source: maintainer-script-lacks-debhelper-token [debian/postinst]
+pve-manager source: maintainer-script-lacks-debhelper-token [debian/prerm]
+
