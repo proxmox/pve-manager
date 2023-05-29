@@ -27,6 +27,7 @@ Build-Depends: debhelper (>= 12~),
                qemu-server (>= 6.0-15),
                sq,
                unzip,
+Standards-Version: 4.6.1
 Maintainer: Proxmox Support Team <support@proxmox.com>
 
 Package: pve-manager
