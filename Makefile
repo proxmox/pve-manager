@@ -55,10 +55,9 @@ sbuild: $(DSC)
 	sbuild $<
 
 .PHONY: upload
-upload: $(DEB) check
-	# check if working directory is clean
-	git diff --exit-code --stat && git diff --exit-code --stat --staged
-	tar cf - $(DEB) | ssh -X repoman@repo.proxmox.com upload --product pve --dist bullseye
+upload: UPLOAD_DIST ?= $(DEB_DISTRIBUTION)
+upload: $(DEB)
+	tar cf - $(DEB) | ssh -X repoman@repo.proxmox.com upload --product pve --dist $(UPLOAD_DIST)
 
 .PHONY: install
 install: vzdump-hook-script.pl
