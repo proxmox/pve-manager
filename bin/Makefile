@@ -1,10 +1,7 @@
 include ../defines.mk
 
-# this requires package pve-doc-generator
-export NOVIEW=1
-
 PERL_DOC_INC_DIRS=..
-include /usr/share/pve-doc-generator/pve-doc-generator.mk
+-include /usr/share/pve-doc-generator/pve-doc-generator.mk
 
 SERVICES = pvestatd pveproxy pvedaemon spiceproxy pvescheduler
 CLITOOLS = vzdump pvesubscription pveceph pveam pvesr pvenode pvesh pve6to7
@@ -76,8 +73,7 @@ install: $(SCRIPTS) $(CLI_MANS) $(SERVICE_MANS) $(BASH_COMPLETIONS) $(ZSH_COMPLE
 
 .PHONY: clean
 clean:
-	make cleanup-docgen
-	rm -rf *~ *.tmp $(CLI_MANS) $(SERVICE_MANS) *.1.pod *.8.pod		    \
-	    *.bash-completion *.service-bash-completion				    \
-	    *.zsh-completion *.service-zsh-completion				    \
-	    *.api-verified *.service-api-verified
+	rm -f *.xml.tmp *.1 *.5 *.8 *{synopsis,opts}.adoc docinfo.xml
+	rm -f *~ *.tmp $(CLI_MANS) $(SERVICE_MANS) *.1.pod *.8.pod
+	rm -f *.bash-completion *.service-bash-completion *.zsh-completion *.service-zsh-completion
+	rm -f *.api-verified *.service-api-verified
