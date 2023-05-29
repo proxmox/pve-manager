@@ -4,6 +4,7 @@ DOCDIR=/usr/share/doc/pve-manager/
 TRUSTED_KEYS=				\
 	proxmox-release-6.x.pubkey 	\
 	proxmox-release-bullseye.pubkey	\
+	proxmox-release-bookworm.gpg	\
 	release@turnkeylinux.com.pubkey
 
 all:
