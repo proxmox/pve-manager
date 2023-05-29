@@ -2,8 +2,8 @@ include /usr/share/dpkg/pkg-info.mk
 include /usr/share/dpkg/architecture.mk
 include defines.mk
 
-export PVERELEASE=$(DEB_VERSION_UPSTREAM)
-export VERSION=$(DEB_VERSION_UPSTREAM_REVISION)
+export PVERELEASE = $(shell echo $(DEB_VERSION_UPSTREAM) | cut -c 1-3)
+export VERSION = $(DEB_VERSION_UPSTREAM_REVISION)
 
 DESTDIR=
 
