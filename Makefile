@@ -9,10 +9,7 @@ DESTDIR=
 
 SUBDIRS = aplinfo PVE bin www services configs network-hooks test
 
-GITVERSION:=$(shell git rev-parse HEAD)
-
-# possibly set via debian/rules(.env)
-REPOID?=$(shell git rev-parse --short=8 HEAD)
+GITVERSION:=$(shell git rev-parse --short=16 HEAD)
 
 DEB=$(PACKAGE)_$(VERSION)_$(DEB_BUILD_ARCH).deb
 
@@ -36,7 +33,7 @@ $(DEB):
 	mkdir dest
 	rsync -a * dest
 	echo "git clone git://git.proxmox.com/git/pve-manager.git\\ngit checkout $(GITVERSION)" >  dest/debian/SOURCE
-	echo "REPOID_GENERATED=$(REPOID)" > dest/debian/rules.env
+	echo "REPOID_GENERATED=$(GITVERSION)" > dest/debian/rules.env
 	cd dest; dpkg-buildpackage -b -us -uc
 	lintian $(DEB)
 

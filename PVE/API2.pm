@@ -104,6 +104,8 @@ __PACKAGE__->register_method ({
 	    },
 	    repoid => {
 		type => 'string',
+		# length 8 is old (< 8.0) short-id, 16 is new short id, 40 is sha1 and 64 is sha256
+		pattern => '[0-9a-fA-F]{8,64}',
 		description => 'The short git revision from which this version was build.',
 	    },
 	    console => {
