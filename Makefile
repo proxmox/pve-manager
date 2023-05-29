@@ -14,6 +14,7 @@ GITVERSION:=$(shell git rev-parse --short=16 HEAD)
 
 BUILDDIR = $(PACKAGE)-$(DEB_VERSION_UPSTREAM)
 
+DSC=$(PACKAGE)_$(DEB_VERSION).dsc
 DEB=$(PACKAGE)_$(DEB_VERSION)_$(DEB_HOST_ARCH).deb
 
 all: $(SUBDIRS)
@@ -37,11 +38,21 @@ $(BUILDDIR):
 	echo "REPOID_GENERATED=$(GITVERSION)" > $@.tmp/debian/rules.env
 	mv $@.tmp $@
 
-.PHONY: deb
+.PHONY: deb dsc
 deb: $(DEB)
 $(DEB): $(BUILDDIR)
 	cd $(BUILDDIR); dpkg-buildpackage -b -us -uc
 	lintian $(DEB)
+
+dsc:
+	rm -rf $(BUILDDIR) $(DSC)
+	$(MAKE) $(DSC)
+	lintian $(DSC)
+$(DSC): $(BUILDDIR)
+	cd $(BUILDDIR); dpkg-buildpackage -S -us -uc -d
+
+sbuild: $(DSC)
+	sbuild $<
 
 .PHONY: upload
 upload: $(DEB) check
@@ -67,5 +78,5 @@ distclean: clean
 .PHONY: clean
 clean:
 	set -e && for i in $(SUBDIRS); do $(MAKE) -C $$i $@; done
-	rm -f country.dat *.deb *.buildinfo *.changes
+	rm -f $(PACKAGE)*.tar* country.dat *.deb *.dsc *.build *.buildinfo *.changes
 	rm -rf dest $(PACKAGE)-[0-9]*/
