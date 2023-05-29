@@ -9,7 +9,7 @@ pve-manager (7.4-4) bullseye; urgency=medium
   * fix #4627: ui: backup edit: don't deselect all guests on load
 
   * ui: ceph install check: avoid setting nodename to localhost so that the
-    check actualy goes to the currently selected node, not the one we loaded
+    check actually goes to the currently selected node, not the one we loaded
     the Proxmox VE Web UI from.
 
   * ui: enable gettext localisation for more user exposed strings
@@ -18,7 +18,7 @@ pve-manager (7.4-4) bullseye; urgency=medium
 
   * drop local hosted sencha-touch source, depend on new libjs-sencha-touch
 
-  * mobile ui: adhere debug flag when loading sencha touch, making the intial
+  * mobile ui: adhere debug flag when loading sencha touch, making the initial
     load much more efficient by default
 
   * mobile ui: statically import widget toolkit t o avoid breakage of code
