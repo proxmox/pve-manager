@@ -228,7 +228,7 @@ case "$1" in
         done
     fi
 
-    if test ! -e /proxmox_install_mode && test -n "$2" && dpkg --compare-versions "$2" 'lt' '7.2.11~'; then
+    if test ! -e /proxmox_install_mode && test -n "$2" && dpkg --compare-versions "$2" 'lt' '7.2-11~'; then
         if test -e /etc/apt/auth.conf ; then
             migrate_apt_auth_conf
         fi
