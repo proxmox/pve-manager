@@ -19,12 +19,10 @@ update:
 	wget http://download.proxmox.com/images/aplinfo-pve-7.dat -O aplinfo.dat.tmp
 	mv aplinfo.dat.tmp aplinfo.dat
 
-%.gpg: %.pubkey
-	gpg --dearmor -o $@ $<
-
-trustedkeys.gpg: ${TRUSTED_KEYS:.pubkey=.gpg}
-	cat $^ > $@
+trustedkeys.gpg: ${TRUSTED_KEYS}
+	sq keyring join -o $@.tmp *.pubkey proxmox-release-bookworm.gpg
+	mv $@.tmp $@
 
 .PHONY: clean
 clean:
-	rm -rf *~ aplinfo.dat.gz aplinfo.dat.asc tempgpg *.gpg
+	rm -rf *~ aplinfo.dat.gz aplinfo.dat.asc trustedkeys.gpg
