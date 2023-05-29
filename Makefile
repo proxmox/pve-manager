@@ -11,7 +11,10 @@ SUBDIRS = aplinfo PVE bin www services configs network-hooks test
 
 GITVERSION:=$(shell git rev-parse --short=16 HEAD)
 
-DEB=$(PACKAGE)_$(VERSION)_$(DEB_HOST_ARCH).deb
+
+BUILDDIR = $(PACKAGE)-$(DEB_VERSION_UPSTREAM)
+
+DEB=$(PACKAGE)_$(DEB_VERSION)_$(DEB_HOST_ARCH).deb
 
 all: $(SUBDIRS)
 	set -e && for i in $(SUBDIRS); do $(MAKE) -C $$i; done
@@ -26,15 +29,18 @@ check: bin test www
 dinstall: $(DEB)
 	dpkg -i $(DEB)
 
+$(BUILDDIR):
+	rm -rf $@ $@.tmp
+	mkdir $@.tmp
+	rsync -a * $@.tmp
+	echo "git clone git://git.proxmox.com/git/pve-manager.git\\ngit checkout $(GITVERSION)" >  $@.tmp/debian/SOURCE
+	echo "REPOID_GENERATED=$(GITVERSION)" > $@.tmp/debian/rules.env
+	mv $@.tmp $@
+
 .PHONY: deb
 deb: $(DEB)
-$(DEB):
-	rm -rf dest
-	mkdir dest
-	rsync -a * dest
-	echo "git clone git://git.proxmox.com/git/pve-manager.git\\ngit checkout $(GITVERSION)" >  dest/debian/SOURCE
-	echo "REPOID_GENERATED=$(GITVERSION)" > dest/debian/rules.env
-	cd dest; dpkg-buildpackage -b -us -uc
+$(DEB): $(BUILDDIR)
+	cd $(BUILDDIR); dpkg-buildpackage -b -us -uc
 	lintian $(DEB)
 
 .PHONY: upload
@@ -61,4 +67,5 @@ distclean: clean
 .PHONY: clean
 clean:
 	set -e && for i in $(SUBDIRS); do $(MAKE) -C $$i $@; done
-	rm -rf dest country.dat *.deb *.buildinfo *.changes ca-tmp
+	rm -f country.dat *.deb *.buildinfo *.changes
+	rm -rf dest $(PACKAGE)-[0-9]*/
