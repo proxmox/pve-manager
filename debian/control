@@ -34,7 +34,7 @@ Package: pve-manager
 Section: admin
 Priority: optional
 Architecture: any
-Depends: apt-transport-https | apt (>= 1.5~),
+Depends: apt (>= 1.5~),
          ca-certificates,
          cstream,
          dtach,
