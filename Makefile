@@ -11,7 +11,7 @@ SUBDIRS = aplinfo PVE bin www services configs network-hooks test
 
 GITVERSION:=$(shell git rev-parse --short=16 HEAD)
 
-DEB=$(PACKAGE)_$(VERSION)_$(DEB_BUILD_ARCH).deb
+DEB=$(PACKAGE)_$(VERSION)_$(DEB_HOST_ARCH).deb
 
 all: $(SUBDIRS)
 	set -e && for i in $(SUBDIRS); do $(MAKE) -C $$i; done
