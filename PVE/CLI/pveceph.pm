@@ -106,8 +106,8 @@ __PACKAGE__->register_method ({
 	return undef;
     }});
 
-my $supported_ceph_versions = ['octopus', 'pacific', 'quincy'];
-my $default_ceph_version = 'pacific';
+my $supported_ceph_versions = ['quincy'];
+my $default_ceph_version = 'quincy';
 
 __PACKAGE__->register_method ({
     name => 'install',
@@ -147,13 +147,8 @@ __PACKAGE__->register_method ({
 	my $repo = $param->{'test-repository'} ? 'test' : 'main';
 
 	my $repolist;
-	if ($cephver eq 'octopus') {
-	    warn "Ceph Octopus will go EOL after 2022-07\n";
-	    $repolist = "deb http://download.proxmox.com/debian/ceph-octopus bullseye $repo\n";
-	} elsif ($cephver eq 'pacific') {
-	    $repolist = "deb http://download.proxmox.com/debian/ceph-pacific bullseye $repo\n";
-	} elsif ($cephver eq 'quincy') {
-	    $repolist = "deb http://download.proxmox.com/debian/ceph-quincy bullseye $repo\n";
+	if ($cephver eq 'quincy') {
+	    $repolist = "deb http://download.proxmox.com/debian/ceph-quincy bookworm $repo\n";
 	} else {
 	    die "unsupported ceph version: $cephver";
 	}
