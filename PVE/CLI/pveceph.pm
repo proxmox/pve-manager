@@ -171,17 +171,12 @@ __PACKAGE__->register_method ({
 	my @ceph_packages = qw(
 	    ceph
 	    ceph-common
-	    ceph-mds
 	    ceph-fuse
+	    ceph-mds
+	    ceph-volume
 	    gdisk
 	    nvme-cli
 	);
-
-	# got split out with quincy and is required by PVE tooling, conditionally exclude it for older
-	# FIXME: remove condition with PVE 8.0, i.e., once we only support quincy+ new installations
-	if ($cephver ne 'octopus' and $cephver ne 'pacific') {
-	    push @ceph_packages, 'ceph-volume';
-	}
 
 	print "start installation\n";
 
