@@ -1982,6 +1982,7 @@ Ext.define('PVE.Utils', {
 	    qmstop: ['VM', gettext('Stop')],
 	    qmsuspend: ['VM', gettext('Hibernate')],
 	    qmtemplate: ['VM', gettext('Convert to template')],
+	    resize: ['VM/CT', gettext('Resize')],
 	    spiceproxy: ['VM/CT', gettext('Console') + ' (Spice)'],
 	    spiceshell: ['', gettext('Shell') + ' (Spice)'],
 	    startall: ['', gettext('Start all VMs and Containers')],
