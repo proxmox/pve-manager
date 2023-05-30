@@ -296,7 +296,7 @@ __PACKAGE__->register_method ({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my $authuser = $rpcenv->get_user();
 
-	my $jobs = PVE::ReplicationState::job_status();
+	my $jobs = PVE::ReplicationState::job_status(1);
 	my $jobid = $param->{id};
 	my $jobcfg = $jobs->{$jobid};
 
