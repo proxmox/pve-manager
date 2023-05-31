@@ -13,6 +13,7 @@ CLITOOLS = \
 	pvenode \
 	pvesh \
 	pve6to7 \
+	pve7to8 \
 
 
 SCRIPTS =  			\
