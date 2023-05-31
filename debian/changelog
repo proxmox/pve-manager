@@ -1,3 +1,23 @@
+pve-manager (7.4-5) bullseye; urgency=medium
+
+  * aplinfo: add bookworm release key to trusted ones
+
+  * build system improvements
+
+  * do not depend on obsolete lsb-base package
+
+  * copy over pve6to7 for new pve7to8 upgrade checker script
+
+  * pve7to8:
+    - ensure pvescheduler.service is running OK
+    - update check for free space to >= 5 GB
+    - avoid scary colors for warn and fail if their counters are zero
+    - check for active and known-OK time-daemon (NTP) unit
+
+  * pve6to7: add hint that there's a newer upgrade possible
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 31 May 2023 11:26:23 +0200
+
 pve-manager (7.4-4) bullseye; urgency=medium
 
   * pvereport: add `date -R` to general system info section
