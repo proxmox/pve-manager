@@ -204,6 +204,23 @@ sub check_pve_packages {
 	} else {
 	    log_warn("unexpected running and installed kernel '$kernel_ver'.");
 	}
+
+	if ($upgraded && $kernel_ver =~ /^$krunning/) {
+	    my $outdated_kernel_meta_pkgs = [];
+	    for my $kernel_meta_version ('5.4', '5.11', '5.13', '5.15') {
+		my $pkg = "pve-kernel-${kernel_meta_version}";
+		if ($get_pkg->($pkg)) {
+		    push @$outdated_kernel_meta_pkgs, $pkg;
+		}
+	    }
+	    if (scalar(@$outdated_kernel_meta_pkgs) > 0) {
+		log_info(
+		    "Found outdated kernel meta-packages, taking up extra space on boot partitions.\n"
+		    ."      After a successful upgrade, you can remove them using this command:\n"
+		    ."      apt remove " . join(' ', $outdated_kernel_meta_pkgs->@*)
+		);
+	    }
+	}
     } else {
 	log_fail("proxmox-ve package not found!");
     }
