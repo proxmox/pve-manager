@@ -180,9 +180,10 @@ sub check_pve_packages {
 
     print "\nChecking proxmox-ve package version..\n";
     if (defined(my $proxmox_ve = $get_pkg->('proxmox-ve'))) {
+	# TODO: update to native version for pve8to9
 	my $min_pve_ver = "$min_pve_major.$min_pve_minor-$min_pve_pkgrel";
 
-	my ($maj, $min, $pkgrel) = $proxmox_ve->{OldVersion} =~ m/^(\d+)\.(\d+)-(\d+)/;
+	my ($maj, $min, $pkgrel) = $proxmox_ve->{OldVersion} =~ m/^(\d+)\.(\d+)[.-](\d+)/;
 
 	my $upgraded = 0;
 
