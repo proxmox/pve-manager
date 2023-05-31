@@ -195,7 +195,8 @@ sub check_pve_packages {
 	} elsif ($kernel_ver =~ /^$krunning/) {
 	    log_pass("running kernel '$kernel_ver' is considered suitable for upgrade.");
 	} elsif ($get_pkg->($kinstalled)) {
-	    log_warn("expected kernel '$kinstalled' intalled but not yet rebooted!");
+	    # with 6.2 kernel being available in both we might want to fine-tune the check?
+	    log_warn("a suitable kernel ($kinstalled) is intalled, but an unsuitable ($kernel_ver) is booted, missing reboot?!");
 	} else {
 	    log_warn("unexpected running and installed kernel '$kernel_ver'.");
 	}
