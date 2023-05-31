@@ -40,9 +40,7 @@ sub setup_environment {
     PVE::RPCEnvironment->setup_default_cli_env();
 }
 
-my $min_pve_major = 6;
-my $min_pve_minor = 4;
-my $min_pve_pkgrel = 1;
+my ($min_pve_major, $min_pve_minor, $min_pve_pkgrel) = (7, 4, 1);
 
 my $forced_legacy_cgroup = 0;
 
@@ -180,9 +178,10 @@ sub check_pve_packages {
 	    log_fail("proxmox-ve package is too old, please upgrade to >= $min_pve_ver!");
 	}
 
-	my ($krunning, $kinstalled) = (qr/5\.(?:13|15)/, 'pve-kernel-5.11');
+	my ($krunning, $kinstalled) = (qr/6\.(?:2|5)/, 'pve-kernel-6.2');
 	if (!$upgraded) {
-	    ($krunning, $kinstalled) = (qr/5\.(?:4|11)/, 'pve-kernel-4.15');
+	    # we got a few that avoided 5.15 in cluster with mixed CPUs, so allow older too
+	    ($krunning, $kinstalled) = (qr/(?:5\.(?:13|15)|6\.2)/, 'pve-kernel-5.15');
 	}
 
 	print "\nChecking running kernel version..\n";
@@ -190,7 +189,7 @@ sub check_pve_packages {
 	if (!defined($kernel_ver)) {
 	    log_fail("unable to determine running kernel version.");
 	} elsif ($kernel_ver =~ /^$krunning/) {
-	    log_pass("expected running kernel '$kernel_ver'.");
+	    log_pass("running kernel '$kernel_ver' is considered suitable for upgrade.");
 	} elsif ($get_pkg->($kinstalled)) {
 	    log_warn("expected kernel '$kinstalled' intalled but not yet rebooted!");
 	} else {
@@ -213,9 +212,7 @@ sub check_storage_health {
     foreach my $storeid (sort keys %$info) {
 	my $d = $info->{$storeid};
 	if ($d->{enabled}) {
-	    if ($d->{type} eq 'sheepdog') {
-		log_fail("storage '$storeid' of type 'sheepdog' is enabled - experimental sheepdog support dropped in PVE 6")
-	    } elsif ($d->{active}) {
+	    if ($d->{active}) {
 		log_pass("storage '$storeid' enabled and active.");
 	    } else {
 		log_warn("storage '$storeid' enabled but not active!");
@@ -270,11 +267,11 @@ sub check_cluster_corosync {
     };
 
     if (!defined($expected_votes)) {
-	log_fail("unable to get expected number of votes, setting to 0.");
+	log_fail("unable to get expected number of votes, assuming 0.");
 	$expected_votes = 0;
     }
     if (!defined($total_votes)) {
-	log_fail("unable to get expected number of votes, setting to 0.");
+	log_fail("unable to get expected number of votes, assuming 0.");
 	$total_votes = 0;
     }
 
@@ -335,11 +332,17 @@ sub check_cluster_corosync {
 		if (defined($resolved_ip)) {
 		    if ($resolved_ip ne $ring) {
 			$nodelist_pass = 0;
-			log_warn("$cs_node: $key '$ring' resolves to '$resolved_ip'.\n Consider replacing it with the currently resolved IP address.");
+			log_warn(
+			    "$cs_node: $key '$ring' resolves to '$resolved_ip'.\n"
+			    ." Consider replacing it with the currently resolved IP address."
+			);
 		    }
 		} else {
 		    $nodelist_pass = 0;
-		    log_fail("$cs_node: unable to resolve $key '$ring' to an IP address according to Corosync's resolve strategy - cluster will potentially fail with Corosync 3.x/kronosnet!");
+		    log_fail(
+			"$cs_node: unable to resolve $key '$ring' to an IP address according to Corosync's"
+			." resolve strategy - cluster will potentially fail with Corosync 3.x/kronosnet!"
+		    );
 		}
 	    }
 	};
@@ -475,19 +478,28 @@ sub check_ceph {
 
 	my $global_monhost = $global->{mon_host} // $global->{"mon host"} // $global->{"mon-host"};
 	if (!defined($global_monhost)) {
-	    log_warn("No 'mon_host' entry found in ceph config.\n  It's recommended to add mon_host with all monitor addresses (without ports) to the global section.");
+	    log_warn(
+		"No 'mon_host' entry found in ceph config.\n  It's recommended to add mon_host with"
+		." all monitor addresses (without ports) to the global section."
+	    );
 	}
 
 	my $ipv6 = $global->{ms_bind_ipv6} // $global->{"ms bind ipv6"} // $global->{"ms-bind-ipv6"};
 	if ($ipv6) {
 	    my $ipv4 = $global->{ms_bind_ipv4} // $global->{"ms bind ipv4"} // $global->{"ms-bind-ipv4"};
 	    if ($ipv6 eq 'true' && (!defined($ipv4) || $ipv4 ne 'false')) {
-		log_warn("'ms_bind_ipv6' is enabled but 'ms_bind_ipv4' is not disabled.\n  Make sure to disable 'ms_bind_ipv4' for ipv6 only clusters, or add an ipv4 network to public/cluster network.");
+		log_warn(
+		    "'ms_bind_ipv6' is enabled but 'ms_bind_ipv4' is not disabled.\n  Make sure to"
+		    ." disable 'ms_bind_ipv4' for ipv6 only clusters, or add an ipv4 network to public/cluster network."
+		);
 	    }
 	}
 
 	if (defined($global->{keyring})) {
-	    log_warn("[global] config section contains 'keyring' option, which will prevent services from starting with Nautilus.\n Move 'keyring' option to [client] section instead.");
+	    log_warn(
+		"[global] config section contains 'keyring' option, which will prevent services from"
+		." starting with Nautilus.\n Move 'keyring' option to [client] section instead."
+	    );
 	}
 
     } else {
@@ -549,8 +561,10 @@ sub check_backup_retention_settings {
 	next if defined($scfg->{maxfiles}) || defined($scfg->{'prune-backups'});
 	next if $node_has_retention;
 
-	log_info("storage '$storeid' - no backup retention settings defined - by default, PVE " .
-	    "7.x will no longer keep only the last backup, but all backups");
+	log_info(
+	    "storage '$storeid' - no backup retention settings defined - by default, since PVE 7.0"
+	    ." it will no longer keep only the last backup, but all backups"
+	);
     }
 
     eval {
@@ -582,8 +596,10 @@ sub check_cifs_credential_location {
 
 	my ($basename) = $filename =~ $regex;
 
-	log_warn("CIFS credentials '/etc/pve/priv/$filename' will be moved to " .
-	    "'/etc/pve/priv/storage/$basename.pw' during the update");
+	log_warn(
+	    "CIFS credentials '/etc/pve/priv/$filename' will be moved to"
+	    ." '/etc/pve/priv/storage/$basename.pw' during the update"
+	);
 
 	$found = 1;
     });
@@ -632,25 +648,9 @@ sub check_custom_pool_roles {
     }
 
     foreach my $role (sort keys %{$roles}) {
-	if (PVE::AccessControl::role_is_special($role)) {
-	    next;
-	}
+	next if PVE::AccessControl::role_is_special($role);
 
-	if ($role eq "PVEPoolUser") {
-	    # the user created a custom role named PVEPoolUser
-	    log_fail("Custom role '$role' has a restricted name - a built-in role 'PVEPoolUser' will be available with the upgrade");
-	} else {
-	    log_pass("Custom role '$role' has no restricted name");
-	}
-
-	my $perms = $roles->{$role};
-	if ($perms->{'Pool.Allocate'} && $perms->{'Pool.Audit'}) {
-	    log_pass("Custom role '$role' contains updated pool permissions");
-	} elsif ($perms->{'Pool.Allocate'}) {
-	    log_warn("Custom role '$role' contains permission 'Pool.Allocate' - to ensure same behavior add 'Pool.Audit' to this role");
-	} else {
-	    log_pass("Custom role '$role' contains no permissions that need to be updated");
-	}
+	# TODO: any role updates?
     }
 }
 
@@ -760,8 +760,10 @@ sub check_storage_content {
 
 	my $number = scalar(@volids);
 	if ($number > 0) {
-	    log_info("storage '$storeid' - neither content type 'images' nor 'rootdir' configured"
-		.", but found $number guest volume(s)");
+	    log_info(
+		"storage '$storeid' - neither content type 'images' nor 'rootdir' configured, but"
+		."found $number guest volume(s)"
+	    );
 	}
     }
 
@@ -834,11 +836,9 @@ sub check_storage_content {
 
 	    my $volid = $drive->{file};
 	    return if $volid =~ m|^/|;
-
 	    return if $volhash->{$volid}; # volume might be referenced multiple times
 
 	    $volhash->{$volid} = 1;
-
 	    $check_volid->($volid, $vmid, 'qemu', $reference);
 	};
 
@@ -856,7 +856,7 @@ sub check_storage_content {
     }
 
     if ($found) {
-	log_warn("Proxmox VE 7.0 enforces stricter content type checks. The guests above " .
+	log_warn("Proxmox VE enforces stricter content type checks since 7.0. The guests above " .
 	    "might not work until the storage configuration is fixed.");
     }
 
@@ -867,8 +867,9 @@ sub check_storage_content {
 
 sub check_containers_cgroup_compat {
     if ($forced_legacy_cgroup) {
-	log_skip("System explicitly configured for legacy hybrid cgroup hierarchy.");
-	return;
+	log_warn("System explicitly configured for legacy hybrid cgroup hierarchy.\n"
+	    ."     NOTE: support for the hybrid cgroup hierachy will be removed in future Proxmox VE 9 (~ 2025)."
+	);
     }
 
     my $supports_cgroupv2 = sub {
@@ -920,9 +921,10 @@ sub check_containers_cgroup_compat {
 
     my $log_problem = sub {
 	my ($ctid) = @_;
-	log_warn("Found at least one CT ($ctid) which does not support running in a unified cgroup v2" .
-	    " layout.\n    Either upgrade the Container distro or set systemd.unified_cgroup_hierarchy=0 " .
-	    "in the Proxmox VE hosts' kernel cmdline! Skipping further CT compat checks."
+	my $extra = $forced_legacy_cgroup ? '' : " or set systemd.unified_cgroup_hierarchy=0 in the Proxmox VE hosts' kernel cmdline";
+	log_warn(
+	    "Found at least one CT ($ctid) which does not support running in a unified cgroup v2 layout\n"
+	    ."    Consider upgrading the Containers distro${extra}! Skipping further CT compat checks."
 	);
     };
 
@@ -1133,7 +1135,7 @@ sub check_misc {
 
 	my $check = $certs_check->{$type};
 	if (!defined($check)) {
-	    log_warn("'$fn': certificate's public key type '$type' unknown, check Debian Busters release notes");
+	    log_warn("'$fn': certificate's public key type '$type' unknown!");
 	    next;
 	}
 
@@ -1141,7 +1143,7 @@ sub check_misc {
 	    log_fail("'$fn', certificate's $check->{name} public key size is less than 2048 bit");
 	    $certs_check_failed = 1;
 	} else {
-	    log_pass("Certificate '$fn' passed Debian Busters security level for TLS connections ($size >= 2048)");
+	    log_pass("Certificate '$fn' passed Debian Busters (and newer) security level for TLS connections ($size >= 2048)");
 	}
     }
 
