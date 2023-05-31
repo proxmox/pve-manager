@@ -1159,6 +1159,11 @@ sub check_misc {
     check_apt_repos();
 }
 
+my sub colored_if {
+    my ($str, $color, $condition) = @_;
+    return "". ($condition ? colored($str, $color) : $str);
+}
+
 __PACKAGE__->register_method ({
     name => 'checklist',
     path => 'checklist',
@@ -1204,8 +1209,8 @@ __PACKAGE__->register_method ({
 	print "TOTAL:    $total\n";
 	print colored("PASSED:   $counters->{pass}\n", 'green');
 	print "SKIPPED:  $counters->{skip}\n";
-	print colored("WARNINGS: $counters->{warn}\n", 'yellow');
-	print colored("FAILURES: $counters->{fail}\n", 'red');
+	print colored_if("WARNINGS: $counters->{warn}\n", 'yellow', $counters->{warn} > 0);
+	print colored_if("FAILURES: $counters->{fail}\n", 'red', $counters->{fail} > 0);
 
 	if ($counters->{warn} > 0 || $counters->{fail} > 0) {
 	    my $color = $counters->{fail} > 0 ? 'red' : 'yellow';
