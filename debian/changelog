@@ -1,4 +1,4 @@
-pve-manager (7.4-5) bullseye; urgency=medium
+pve-manager (7.4-6) bullseye; urgency=medium
 
   * aplinfo: add bookworm release key to trusted ones
 
@@ -16,7 +16,7 @@ pve-manager (7.4-5) bullseye; urgency=medium
 
   * pve6to7: add hint that there's a newer upgrade possible
 
- -- Proxmox Support Team <support@proxmox.com>  Wed, 31 May 2023 11:26:23 +0200
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 31 May 2023 11:46:10 +0200
 
 pve-manager (7.4-4) bullseye; urgency=medium
 
