@@ -1,3 +1,11 @@
+pve-manager (8.0.0~4) bookworm; urgency=medium
+
+  * update source of pve7to8 upgrade helper script for post-upgrade checks
+
+  * drop outdated pve6to7 upgrade checker script for bookworm
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 31 May 2023 18:10:16 +0200
+
 pve-manager (8.0.0~3) bookworm; urgency=medium
 
   * update shipped apt sources list for Debian Bookworm
