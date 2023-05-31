@@ -172,7 +172,12 @@ sub check_pve_packages {
 	my $upgraded = 0;
 
 	if ($maj > $min_pve_major) {
-	    log_pass("already upgraded to Proxmox VE " . ($min_pve_major + 1));
+	    my $pve_now = "". ($min_pve_major + 1);
+	    my $pve_next = "". ($min_pve_major + 2);
+	    log_pass("already upgraded to Proxmox VE ${pve_now}");
+	    log_warn("Proxmox VE ${pve_now} got superseeded by Proxmox VE ${pve_next}.\n"
+		."      Did you mean to use the pve${pve_now}to${pve_next} checker script?"
+	    );
 	    $upgraded = 1;
 	} elsif ($maj >= $min_pve_major && $min >= $min_pve_minor && $pkgrel >= $min_pve_pkgrel) {
 	    log_pass("proxmox-ve package has version >= $min_pve_ver");
