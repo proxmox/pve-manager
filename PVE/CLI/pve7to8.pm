@@ -78,7 +78,7 @@ sub log_warn {
     print color('reset');
 }
 sub log_fail {
-    print color('red');
+    print color('bold red');
     $log_line->('fail', @_);
     print color('reset');
 }
@@ -1261,10 +1261,10 @@ __PACKAGE__->register_method ({
 	print colored("PASSED:   $counters->{pass}\n", 'green');
 	print "SKIPPED:  $counters->{skip}\n";
 	print colored_if("WARNINGS: $counters->{warn}\n", 'yellow', $counters->{warn} > 0);
-	print colored_if("FAILURES: $counters->{fail}\n", 'red', $counters->{fail} > 0);
+	print colored_if("FAILURES: $counters->{fail}\n", 'bold red', $counters->{fail} > 0);
 
 	if ($counters->{warn} > 0 || $counters->{fail} > 0) {
-	    my $color = $counters->{fail} > 0 ? 'red' : 'yellow';
+	    my $color = $counters->{fail} > 0 ? 'bold red' : 'yellow';
 	    print colored("\nATTENTION: Please check the output for detailed information!\n", $color);
 	    print colored("Try to solve the problems one at a time and then run this checklist tool again.\n", $color) if $counters->{fail} > 0;
 	}
