@@ -1097,16 +1097,7 @@ sub check_apt_repos {
 	    $found = 1;
 
 	    my $where = "in ${file}:${number}";
-
-	    if ($suite eq 'buster/updates') {
-		log_info("Make sure to change the suite of the Debian security repository " .
-		    "from 'buster/updates' to 'bullseye-security' - $where");
-	    } elsif ($suite eq 'bullseye-security') {
-		log_pass("already using 'bullseye-security'");
-	    } else {
-		log_fail("The new suite of the Debian security repository should be " .
-		    "'bullseye-security' - $where");
-	    }
+	    # TODO: is this useful (for some other checks)?
 	}
     };
 
