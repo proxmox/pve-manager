@@ -9,7 +9,7 @@ DESTDIR=
 
 SUBDIRS = aplinfo PVE bin www services configs network-hooks test
 
-GITVERSION:=$(shell git rev-parse --short=16 HEAD)
+GITVERSION:=$(shell git rev-parse --short=8 HEAD)
 
 
 BUILDDIR = $(PACKAGE)-$(DEB_VERSION_UPSTREAM)
