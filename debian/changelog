@@ -1,4 +1,4 @@
-pve-manager (7.4-7) bullseye; urgency=medium
+pve-manager (7.4-8) bullseye; urgency=medium
 
   * pve7to8:
     - improve log message for missing kernel reboot
@@ -6,8 +6,9 @@ pve-manager (7.4-7) bullseye; urgency=medium
       post upgrade
     - output failures in bold
     - add minimal ceph version check for hyper-converged setups
+    - drop outdated apt security repo format change check
 
- -- Proxmox Support Team <support@proxmox.com>  Wed, 31 May 2023 16:35:22 +0200
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 31 May 2023 17:51:46 +0200
 
 pve-manager (7.4-6) bullseye; urgency=medium
 
