@@ -1,3 +1,14 @@
+pve-manager (7.4-7) bullseye; urgency=medium
+
+  * pve7to8:
+    - improve log message for missing kernel reboot
+    - differ running kernel message depending on being at pre and
+      post upgrade
+    - output failures in bold
+    - add minimal ceph version check for hyper-converged setups
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 31 May 2023 16:35:22 +0200
+
 pve-manager (7.4-6) bullseye; urgency=medium
 
   * aplinfo: add bookworm release key to trusted ones
