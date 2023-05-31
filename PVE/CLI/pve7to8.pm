@@ -989,13 +989,15 @@ sub check_containers_cgroup_compat {
     }
 };
 
-sub check_security_repo {
+sub check_apt_repos {
     log_info("Checking if the suite for the Debian security repository is correct..");
 
     my $found = 0;
 
     my $dir = '/etc/apt/sources.list.d';
     my $in_dir = 0;
+
+    # TODO: check that (original) debian and Proxmox VE mirrors are present.
 
     my $check_file = sub {
 	my ($file) = @_;
@@ -1154,7 +1156,7 @@ sub check_misc {
     check_cifs_credential_location();
     check_custom_pool_roles();
     check_node_and_guest_configurations();
-    check_security_repo();
+    check_apt_repos();
 }
 
 __PACKAGE__->register_method ({
