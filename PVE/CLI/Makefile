@@ -9,6 +9,7 @@ SOURCES = \
 	pvenode.pm \
 	pvesh.pm \
 	pve6to7.pm \
+	pve7to8.pm \
 
 all:
 

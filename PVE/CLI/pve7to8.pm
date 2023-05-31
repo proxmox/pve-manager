@@ -1,4 +1,4 @@
-package PVE::CLI::pve6to7;
+package PVE::CLI::pve7to8;
 
 use strict;
 use warnings;
@@ -40,9 +40,20 @@ sub setup_environment {
     PVE::RPCEnvironment->setup_default_cli_env();
 }
 
-my $min_pve_major = 6;
-my $min_pve_minor = 4;
-my $min_pve_pkgrel = 1;
+my ($min_pve_major, $min_pve_minor, $min_pve_pkgrel) = (7, 4, 1);
+
+my $ceph_release2code = {
+    '12' => 'Luminous',
+    '13' => 'Mimic',
+    '14' => 'Nautilus',
+    '15' => 'Octopus',
+    '16' => 'Pacific',
+    '17' => 'Quincy',
+    '18' => 'Reef',
+};
+my $ceph_supported_release = 17; # the version we support for upgrading (i.e., available on both)
+my $ceph_supported_code_name = $ceph_release2code->{"$ceph_supported_release"}
+    or die "inconsistent source code, could not map expected ceph version to code name!";
 
 my $forced_legacy_cgroup = 0;
 
@@ -80,7 +91,7 @@ sub log_warn {
     print color('reset');
 }
 sub log_fail {
-    print color('red');
+    print color('bold red');
     $log_line->('fail', @_);
     print color('reset');
 }
@@ -94,17 +105,21 @@ sub print_header {
 }
 
 my $get_systemd_unit_state = sub {
-    my ($unit) = @_;
+    my ($unit, $surpress_stderr) = @_;
 
     my $state;
     my $filter_output = sub {
 	$state = shift;
 	chomp $state;
     };
+
+    my %extra = (outfunc => $filter_output, noerr => 1);
+    $extra{errfunc} = sub {  } if $surpress_stderr;
+
     eval {
-	run_command(['systemctl', 'is-enabled', "$unit"], outfunc => $filter_output, noerr => 1);
+	run_command(['systemctl', 'is-enabled', "$unit"], %extra);
 	return if !defined($state);
-	run_command(['systemctl', 'is-active', "$unit"], outfunc => $filter_output, noerr => 1);
+	run_command(['systemctl', 'is-active', "$unit"], %extra);
     };
 
     return $state // 'unknown';
@@ -172,12 +187,7 @@ sub check_pve_packages {
 	my $upgraded = 0;
 
 	if ($maj > $min_pve_major) {
-	    my $pve_now = "". ($min_pve_major + 1);
-	    my $pve_next = "". ($min_pve_major + 2);
-	    log_pass("already upgraded to Proxmox VE ${pve_now}");
-	    log_warn("Proxmox VE ${pve_now} got superseeded by Proxmox VE ${pve_next}.\n"
-		."      Did you mean to use the pve${pve_now}to${pve_next} checker script?"
-	    );
+	    log_pass("already upgraded to Proxmox VE " . ($min_pve_major + 1));
 	    $upgraded = 1;
 	} elsif ($maj >= $min_pve_major && $min >= $min_pve_minor && $pkgrel >= $min_pve_pkgrel) {
 	    log_pass("proxmox-ve package has version >= $min_pve_ver");
@@ -185,9 +195,10 @@ sub check_pve_packages {
 	    log_fail("proxmox-ve package is too old, please upgrade to >= $min_pve_ver!");
 	}
 
-	my ($krunning, $kinstalled) = (qr/5\.(?:13|15)/, 'pve-kernel-5.11');
+	my ($krunning, $kinstalled) = (qr/6\.(?:2|5)/, 'pve-kernel-6.2');
 	if (!$upgraded) {
-	    ($krunning, $kinstalled) = (qr/5\.(?:4|11)/, 'pve-kernel-4.15');
+	    # we got a few that avoided 5.15 in cluster with mixed CPUs, so allow older too
+	    ($krunning, $kinstalled) = (qr/(?:5\.(?:13|15)|6\.2)/, 'pve-kernel-5.15');
 	}
 
 	print "\nChecking running kernel version..\n";
@@ -195,11 +206,33 @@ sub check_pve_packages {
 	if (!defined($kernel_ver)) {
 	    log_fail("unable to determine running kernel version.");
 	} elsif ($kernel_ver =~ /^$krunning/) {
-	    log_pass("expected running kernel '$kernel_ver'.");
+	    if ($upgraded) {
+		log_pass("running new kernel '$kernel_ver' after upgrade.");
+	    } else {
+		log_pass("running kernel '$kernel_ver' is considered suitable for upgrade.");
+	    }
 	} elsif ($get_pkg->($kinstalled)) {
-	    log_warn("expected kernel '$kinstalled' intalled but not yet rebooted!");
+	    # with 6.2 kernel being available in both we might want to fine-tune the check?
+	    log_warn("a suitable kernel ($kinstalled) is intalled, but an unsuitable ($kernel_ver) is booted, missing reboot?!");
 	} else {
 	    log_warn("unexpected running and installed kernel '$kernel_ver'.");
+	}
+
+	if ($upgraded && $kernel_ver =~ /^$krunning/) {
+	    my $outdated_kernel_meta_pkgs = [];
+	    for my $kernel_meta_version ('5.4', '5.11', '5.13', '5.15') {
+		my $pkg = "pve-kernel-${kernel_meta_version}";
+		if ($get_pkg->($pkg)) {
+		    push @$outdated_kernel_meta_pkgs, $pkg;
+		}
+	    }
+	    if (scalar(@$outdated_kernel_meta_pkgs) > 0) {
+		log_info(
+		    "Found outdated kernel meta-packages, taking up extra space on boot partitions.\n"
+		    ."      After a successful upgrade, you can remove them using this command:\n"
+		    ."      apt remove " . join(' ', $outdated_kernel_meta_pkgs->@*)
+		);
+	    }
 	}
     } else {
 	log_fail("proxmox-ve package not found!");
@@ -218,9 +251,7 @@ sub check_storage_health {
     foreach my $storeid (sort keys %$info) {
 	my $d = $info->{$storeid};
 	if ($d->{enabled}) {
-	    if ($d->{type} eq 'sheepdog') {
-		log_fail("storage '$storeid' of type 'sheepdog' is enabled - experimental sheepdog support dropped in PVE 6")
-	    } elsif ($d->{active}) {
+	    if ($d->{active}) {
 		log_pass("storage '$storeid' enabled and active.");
 	    } else {
 		log_warn("storage '$storeid' enabled but not active!");
@@ -229,6 +260,8 @@ sub check_storage_health {
 	    log_skip("storage '$storeid' disabled.");
 	}
     }
+
+    check_storage_content();
 }
 
 sub check_cluster_corosync {
@@ -275,11 +308,11 @@ sub check_cluster_corosync {
     };
 
     if (!defined($expected_votes)) {
-	log_fail("unable to get expected number of votes, setting to 0.");
+	log_fail("unable to get expected number of votes, assuming 0.");
 	$expected_votes = 0;
     }
     if (!defined($total_votes)) {
-	log_fail("unable to get expected number of votes, setting to 0.");
+	log_fail("unable to get expected number of votes, assuming 0.");
 	$total_votes = 0;
     }
 
@@ -340,11 +373,17 @@ sub check_cluster_corosync {
 		if (defined($resolved_ip)) {
 		    if ($resolved_ip ne $ring) {
 			$nodelist_pass = 0;
-			log_warn("$cs_node: $key '$ring' resolves to '$resolved_ip'.\n Consider replacing it with the currently resolved IP address.");
+			log_warn(
+			    "$cs_node: $key '$ring' resolves to '$resolved_ip'.\n"
+			    ." Consider replacing it with the currently resolved IP address."
+			);
 		    }
 		} else {
 		    $nodelist_pass = 0;
-		    log_fail("$cs_node: unable to resolve $key '$ring' to an IP address according to Corosync's resolve strategy - cluster will potentially fail with Corosync 3.x/kronosnet!");
+		    log_fail(
+			"$cs_node: unable to resolve $key '$ring' to an IP address according to Corosync's"
+			." resolve strategy - cluster will potentially fail with Corosync 3.x/kronosnet!"
+		    );
 		}
 	    }
 	};
@@ -418,12 +457,35 @@ sub check_ceph {
 	} elsif ($ceph_health eq 'HEALTH_WARN' && $noout && (keys %{$ceph_status->{health}->{checks}} == 1)) {
 		log_pass("Ceph health reported as 'HEALTH_WARN' with a single failing check and 'noout' flag set.");
 	} else {
-		log_warn("Ceph health reported as '$ceph_health'.\n      Use the PVE ".
-		  "dashboard or 'ceph -s' to determine the specific issues and try to resolve them.");
+		log_warn(
+		    "Ceph health reported as '$ceph_health'.\n      Use the PVE dashboard or 'ceph -s'"
+		    ." to determine the specific issues and try to resolve them."
+		);
 	}
     }
 
     # TODO: check OSD min-required version, if to low it breaks stuff!
+
+    log_info("cehcking local Ceph version..");
+    if (my $release = eval { PVE::Ceph::Tools::get_local_version(1) }) {
+	my $code_name = $ceph_release2code->{"$release"} || 'unknown';
+	if ($release == $ceph_supported_release) {
+	    log_pass("found expected Ceph $ceph_supported_release $ceph_supported_code_name release.")
+	} elsif ($release > $ceph_supported_release) {
+	    log_warn(
+		"found newer Ceph release $release $code_name as the expected $ceph_supported_release"
+		." $ceph_supported_code_name, installed third party repos?!"
+	    )
+	} else {
+	    log_fail(
+		"Hyper-converged Ceph $release $code_name is to old for upgrade!\n"
+		."      Upgrade Ceph first to $ceph_supported_code_name following our how-to:\n"
+		."      <https://pve.proxmox.com/wiki/Category:Ceph_Upgrade>"
+	    );
+	}
+    } else {
+	log_fail("unable to determine local Ceph version!");
+    }
 
     log_info("getting Ceph daemon versions..");
     my $ceph_versions = eval { PVE::Ceph::Tools::get_cluster_versions(undef, 1); };
@@ -438,8 +500,8 @@ sub check_ceph {
 	];
 
 	foreach my $service (@$services) {
-	    my $name = $service->{name};
-	    if (my $service_versions = $ceph_versions->{$service->{key}}) {
+	    my ($name, $key) = $service->@{'name', 'key'};
+	    if (my $service_versions = $ceph_versions->{$key}) {
 		if (keys %$service_versions == 0) {
 		    log_skip("no running instances detected for daemon type $name.");
 		} elsif (keys %$service_versions == 1) {
@@ -480,19 +542,28 @@ sub check_ceph {
 
 	my $global_monhost = $global->{mon_host} // $global->{"mon host"} // $global->{"mon-host"};
 	if (!defined($global_monhost)) {
-	    log_warn("No 'mon_host' entry found in ceph config.\n  It's recommended to add mon_host with all monitor addresses (without ports) to the global section.");
+	    log_warn(
+		"No 'mon_host' entry found in ceph config.\n  It's recommended to add mon_host with"
+		." all monitor addresses (without ports) to the global section."
+	    );
 	}
 
 	my $ipv6 = $global->{ms_bind_ipv6} // $global->{"ms bind ipv6"} // $global->{"ms-bind-ipv6"};
 	if ($ipv6) {
 	    my $ipv4 = $global->{ms_bind_ipv4} // $global->{"ms bind ipv4"} // $global->{"ms-bind-ipv4"};
 	    if ($ipv6 eq 'true' && (!defined($ipv4) || $ipv4 ne 'false')) {
-		log_warn("'ms_bind_ipv6' is enabled but 'ms_bind_ipv4' is not disabled.\n  Make sure to disable 'ms_bind_ipv4' for ipv6 only clusters, or add an ipv4 network to public/cluster network.");
+		log_warn(
+		    "'ms_bind_ipv6' is enabled but 'ms_bind_ipv4' is not disabled.\n  Make sure to"
+		    ." disable 'ms_bind_ipv4' for ipv6 only clusters, or add an ipv4 network to public/cluster network."
+		);
 	    }
 	}
 
 	if (defined($global->{keyring})) {
-	    log_warn("[global] config section contains 'keyring' option, which will prevent services from starting with Nautilus.\n Move 'keyring' option to [client] section instead.");
+	    log_warn(
+		"[global] config section contains 'keyring' option, which will prevent services from"
+		." starting with Nautilus.\n Move 'keyring' option to [client] section instead."
+	    );
 	}
 
     } else {
@@ -554,8 +625,10 @@ sub check_backup_retention_settings {
 	next if defined($scfg->{maxfiles}) || defined($scfg->{'prune-backups'});
 	next if $node_has_retention;
 
-	log_info("storage '$storeid' - no backup retention settings defined - by default, PVE " .
-	    "7.x will no longer keep only the last backup, but all backups");
+	log_info(
+	    "storage '$storeid' - no backup retention settings defined - by default, since PVE 7.0"
+	    ." it will no longer keep only the last backup, but all backups"
+	);
     }
 
     eval {
@@ -587,8 +660,10 @@ sub check_cifs_credential_location {
 
 	my ($basename) = $filename =~ $regex;
 
-	log_warn("CIFS credentials '/etc/pve/priv/$filename' will be moved to " .
-	    "'/etc/pve/priv/storage/$basename.pw' during the update");
+	log_warn(
+	    "CIFS credentials '/etc/pve/priv/$filename' will be moved to"
+	    ." '/etc/pve/priv/storage/$basename.pw' during the update"
+	);
 
 	$found = 1;
     });
@@ -637,25 +712,9 @@ sub check_custom_pool_roles {
     }
 
     foreach my $role (sort keys %{$roles}) {
-	if (PVE::AccessControl::role_is_special($role)) {
-	    next;
-	}
+	next if PVE::AccessControl::role_is_special($role);
 
-	if ($role eq "PVEPoolUser") {
-	    # the user created a custom role named PVEPoolUser
-	    log_fail("Custom role '$role' has a restricted name - a built-in role 'PVEPoolUser' will be available with the upgrade");
-	} else {
-	    log_pass("Custom role '$role' has no restricted name");
-	}
-
-	my $perms = $roles->{$role};
-	if ($perms->{'Pool.Allocate'} && $perms->{'Pool.Audit'}) {
-	    log_pass("Custom role '$role' contains updated pool permissions");
-	} elsif ($perms->{'Pool.Allocate'}) {
-	    log_warn("Custom role '$role' contains permission 'Pool.Allocate' - to ensure same behavior add 'Pool.Audit' to this role");
-	} else {
-	    log_pass("Custom role '$role' contains no permissions that need to be updated");
-	}
+	# TODO: any role updates?
     }
 }
 
@@ -765,8 +824,10 @@ sub check_storage_content {
 
 	my $number = scalar(@volids);
 	if ($number > 0) {
-	    log_info("storage '$storeid' - neither content type 'images' nor 'rootdir' configured"
-		.", but found $number guest volume(s)");
+	    log_info(
+		"storage '$storeid' - neither content type 'images' nor 'rootdir' configured, but"
+		."found $number guest volume(s)"
+	    );
 	}
     }
 
@@ -839,11 +900,9 @@ sub check_storage_content {
 
 	    my $volid = $drive->{file};
 	    return if $volid =~ m|^/|;
-
 	    return if $volhash->{$volid}; # volume might be referenced multiple times
 
 	    $volhash->{$volid} = 1;
-
 	    $check_volid->($volid, $vmid, 'qemu', $reference);
 	};
 
@@ -861,7 +920,7 @@ sub check_storage_content {
     }
 
     if ($found) {
-	log_warn("Proxmox VE 7.0 enforces stricter content type checks. The guests above " .
+	log_warn("Proxmox VE enforces stricter content type checks since 7.0. The guests above " .
 	    "might not work until the storage configuration is fixed.");
     }
 
@@ -872,8 +931,9 @@ sub check_storage_content {
 
 sub check_containers_cgroup_compat {
     if ($forced_legacy_cgroup) {
-	log_skip("System explicitly configured for legacy hybrid cgroup hierarchy.");
-	return;
+	log_warn("System explicitly configured for legacy hybrid cgroup hierarchy.\n"
+	    ."     NOTE: support for the hybrid cgroup hierachy will be removed in future Proxmox VE 9 (~ 2025)."
+	);
     }
 
     my $supports_cgroupv2 = sub {
@@ -925,9 +985,10 @@ sub check_containers_cgroup_compat {
 
     my $log_problem = sub {
 	my ($ctid) = @_;
-	log_warn("Found at least one CT ($ctid) which does not support running in a unified cgroup v2" .
-	    " layout.\n    Either upgrade the Container distro or set systemd.unified_cgroup_hierarchy=0 " .
-	    "in the Proxmox VE hosts' kernel cmdline! Skipping further CT compat checks."
+	my $extra = $forced_legacy_cgroup ? '' : " or set systemd.unified_cgroup_hierarchy=0 in the Proxmox VE hosts' kernel cmdline";
+	log_warn(
+	    "Found at least one CT ($ctid) which does not support running in a unified cgroup v2 layout\n"
+	    ."    Consider upgrading the Containers distro${extra}! Skipping further CT compat checks."
 	);
     };
 
@@ -990,13 +1051,15 @@ sub check_containers_cgroup_compat {
     }
 };
 
-sub check_security_repo {
+sub check_apt_repos {
     log_info("Checking if the suite for the Debian security repository is correct..");
 
     my $found = 0;
 
     my $dir = '/etc/apt/sources.list.d';
     my $in_dir = 0;
+
+    # TODO: check that (original) debian and Proxmox VE mirrors are present.
 
     my $check_file = sub {
 	my ($file) = @_;
@@ -1034,16 +1097,7 @@ sub check_security_repo {
 	    $found = 1;
 
 	    my $where = "in ${file}:${number}";
-
-	    if ($suite eq 'buster/updates') {
-		log_info("Make sure to change the suite of the Debian security repository " .
-		    "from 'buster/updates' to 'bullseye-security' - $where");
-	    } elsif ($suite eq 'bullseye-security') {
-		log_pass("already using 'bullseye-security'");
-	    } else {
-		log_fail("The new suite of the Debian security repository should be " .
-		    "'bullseye-security' - $where");
-	    }
+	    # TODO: is this useful (for some other checks)?
 	}
     };
 
@@ -1060,6 +1114,29 @@ sub check_security_repo {
     }
 }
 
+sub check_time_sync {
+    my $unit_active = sub { return $get_systemd_unit_state->($_[0], 1) eq 'active' ? $_[0] : undef };
+
+    log_info("Checking for supported & active NTP service..");
+    if ($unit_active->('systemd-timesyncd.service')) {
+	log_warn(
+	    "systemd-timesyncd is not the best choice for time-keeping on servers, due to only applying"
+	    ." updates on boot.\n  While not necesarry for the upgrade it's recommended to use one of:\n"
+	    ."    * chrony (Default in new Proxmox VE installations)\n    * ntpsec\n    * openntpd\n"
+	);
+    } elsif ($unit_active->('ntp.service')) {
+	log_info("Debian deprecated and removed the ntp package for Bookworm, but the system"
+	    ." will automatically migrate to the 'ntpsec' replacement package on upgrade.");
+    } elsif (my $active_ntp = ($unit_active->('chrony.service') || $unit_active->('openntpd.service') || $unit_active->('ntpsec.service'))) {
+	log_pass("Detected active time synchronisation unit '$active_ntp'");
+    } else {
+	log_warn(
+	    "No (active) time synchronisation daemon (NTP) detected, but synchronized systems are important,"
+	    ." especially for cluster and/or ceph!"
+	);
+    }
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -1073,11 +1150,14 @@ sub check_misc {
     log_info("Checking common daemon services..");
     $log_systemd_unit_state->('pveproxy.service');
     $log_systemd_unit_state->('pvedaemon.service');
+    $log_systemd_unit_state->('pvescheduler.service');
     $log_systemd_unit_state->('pvestatd.service');
 
+    check_time_sync();
+
     my $root_free = PVE::Tools::df('/', 10);
-    log_warn("Less than 4 GiB free space on root file system.")
-	if defined($root_free) && $root_free->{avail} < 4*1024*1024*1024;
+    log_warn("Less than 5 GB free space on root file system.")
+	if defined($root_free) && $root_free->{avail} < 5 * 1000*1000*1000;
 
     log_info("Checking for running guests..");
     my $running_guests = 0;
@@ -1138,7 +1218,7 @@ sub check_misc {
 
 	my $check = $certs_check->{$type};
 	if (!defined($check)) {
-	    log_warn("'$fn': certificate's public key type '$type' unknown, check Debian Busters release notes");
+	    log_warn("'$fn': certificate's public key type '$type' unknown!");
 	    next;
 	}
 
@@ -1146,7 +1226,7 @@ sub check_misc {
 	    log_fail("'$fn', certificate's $check->{name} public key size is less than 2048 bit");
 	    $certs_check_failed = 1;
 	} else {
-	    log_pass("Certificate '$fn' passed Debian Busters security level for TLS connections ($size >= 2048)");
+	    log_pass("Certificate '$fn' passed Debian Busters (and newer) security level for TLS connections ($size >= 2048)");
 	}
     }
 
@@ -1154,8 +1234,12 @@ sub check_misc {
     check_cifs_credential_location();
     check_custom_pool_roles();
     check_node_and_guest_configurations();
-    check_storage_content();
-    check_security_repo();
+    check_apt_repos();
+}
+
+my sub colored_if {
+    my ($str, $color, $condition) = @_;
+    return "". ($condition ? colored($str, $color) : $str);
 }
 
 __PACKAGE__->register_method ({
@@ -1203,11 +1287,11 @@ __PACKAGE__->register_method ({
 	print "TOTAL:    $total\n";
 	print colored("PASSED:   $counters->{pass}\n", 'green');
 	print "SKIPPED:  $counters->{skip}\n";
-	print colored("WARNINGS: $counters->{warn}\n", 'yellow');
-	print colored("FAILURES: $counters->{fail}\n", 'red');
+	print colored_if("WARNINGS: $counters->{warn}\n", 'yellow', $counters->{warn} > 0);
+	print colored_if("FAILURES: $counters->{fail}\n", 'bold red', $counters->{fail} > 0);
 
 	if ($counters->{warn} > 0 || $counters->{fail} > 0) {
-	    my $color = $counters->{fail} > 0 ? 'red' : 'yellow';
+	    my $color = $counters->{fail} > 0 ? 'bold red' : 'yellow';
 	    print colored("\nATTENTION: Please check the output for detailed information!\n", $color);
 	    print colored("Try to solve the problems one at a time and then run this checklist tool again.\n", $color) if $counters->{fail} > 0;
 	}
