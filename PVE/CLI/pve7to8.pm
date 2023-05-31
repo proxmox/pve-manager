@@ -221,6 +221,8 @@ sub check_storage_health {
 	    log_skip("storage '$storeid' disabled.");
 	}
     }
+
+    check_storage_content();
 }
 
 sub check_cluster_corosync {
@@ -1151,7 +1153,6 @@ sub check_misc {
     check_cifs_credential_location();
     check_custom_pool_roles();
     check_node_and_guest_configurations();
-    check_storage_content();
     check_security_repo();
 }
 
