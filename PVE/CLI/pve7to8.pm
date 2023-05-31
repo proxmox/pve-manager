@@ -1072,6 +1072,7 @@ sub check_misc {
     log_info("Checking common daemon services..");
     $log_systemd_unit_state->('pveproxy.service');
     $log_systemd_unit_state->('pvedaemon.service');
+    $log_systemd_unit_state->('pvescheduler.service');
     $log_systemd_unit_state->('pvestatd.service');
 
     my $root_free = PVE::Tools::df('/', 10);
