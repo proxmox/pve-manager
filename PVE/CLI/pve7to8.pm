@@ -1065,6 +1065,29 @@ sub check_apt_repos {
     }
 }
 
+sub check_time_sync {
+    my $unit_active = sub { return $get_systemd_unit_state->($_[0], 1) eq 'active' ? $_[0] : undef };
+
+    log_info("Checking for supported & active NTP service..");
+    if ($unit_active->('systemd-timesyncd.service')) {
+	log_warn(
+	    "systemd-timesyncd is not the best choice for time-keeping on servers, due to only applying"
+	    ." updates on boot.\n  While not necesarry for the upgrade it's recommended to use one of:\n"
+	    ."    * chrony (Default in new Proxmox VE installations)\n    * ntpsec\n    * openntpd\n"
+	);
+    } elsif ($unit_active->('ntp.service')) {
+	log_info("Debian deprecated and removed the ntp package for Bookworm, but the system"
+	    ." will automatically migrate to the 'ntpsec' replacement package on upgrade.");
+    } elsif (my $active_ntp = ($unit_active->('chrony.service') || $unit_active->('openntpd.service') || $unit_active->('ntpsec.service'))) {
+	log_pass("Detected active time synchronisation unit '$active_ntp'");
+    } else {
+	log_warn(
+	    "No (active) time synchronisation daemon (NTP) detected, but synchronized systems are important,"
+	    ." especially for cluster and/or ceph!"
+	);
+    }
+}
+
 sub check_misc {
     print_header("MISCELLANEOUS CHECKS");
     my $ssh_config = eval { PVE::Tools::file_get_contents('/root/.ssh/config') };
@@ -1080,6 +1103,8 @@ sub check_misc {
     $log_systemd_unit_state->('pvedaemon.service');
     $log_systemd_unit_state->('pvescheduler.service');
     $log_systemd_unit_state->('pvestatd.service');
+
+    check_time_sync();
 
     my $root_free = PVE::Tools::df('/', 10);
     log_warn("Less than 5 GB free space on root file system.")
