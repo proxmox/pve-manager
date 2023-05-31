@@ -12,7 +12,6 @@ CLITOOLS = \
 	pvesr \
 	pvenode \
 	pvesh \
-	pve6to7 \
 	pve7to8 \
 
 
