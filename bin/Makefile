@@ -54,8 +54,20 @@ all: $(SERVICE_MANS) $(CLI_MANS)
 	mv $@.tmp $@
 
 pve6to7.1:
-	printf ".TH PVE6TO7 1\n.SH NAME\npve6to7 \- Proxmox VE upgrade checker script for 6.4 to 7.x\n" > $@
-	printf ".SH SYNOPSIS\npve6to7 [--full]\n" >> $@
+	printf ".TH PVE6TO7 1\n.SH NAME\npve6to7 \- Proxmox VE upgrade checker script for 6.4 to 7.x\n" > $@.tmp
+	printf ".SH NOTE\npve6to7 is for the previous upgrade, from Proxmox VE 6 to 7, but there's a\
+	 new Proxmox VE 8 available, see the 'pve7to8' tool.\n" >> $@.tmp
+	printf ".SH SYNOPSIS\npve6to7 [--full]\n" >> $@.tmp
+	mv $@.tmp $@
+
+pve7to8.1:
+	printf ".TH PVE7TO8 1\n.SH NAME\npve7to8 \- Proxmox VE upgrade checker script for 7.4+ to current 8.x\n" > $@.tmp
+	printf ".SH DESCRIPTION\nThis tool will help you to detect common pitfalls and misconfguration\
+	 before, and during the upgrade of a Proxmox VE system\n" >> $@.tmp
+	printf "Any failure must be addressed before the upgrade, and any waring must be addressed, \
+	 or at least carefully evaluated, if a false-positive is suspected\n" >> $@.tmp
+	printf ".SH SYNOPSIS\npve7to8 [--full]\n" >> $@.tmp
+	mv $@.tmp $@
 
 pveversion.1.pod: pveversion
 pveupgrade.1.pod: pveupgrade
@@ -82,7 +94,7 @@ install: $(SCRIPTS) $(CLI_MANS) $(SERVICE_MANS) $(BASH_COMPLETIONS) $(ZSH_COMPLE
 
 .PHONY: clean
 clean:
-	rm -f *.xml.tmp *.1 *.5 *.8 *{synopsis,opts}.adoc docinfo.xml
+	rm -f *.xml.tmp *.1 *.5 *.8 *{synopsis,opts}.adoc docinfo.xml *.tmp
 	rm -f *~ *.tmp $(CLI_MANS) $(SERVICE_MANS) *.1.pod *.8.pod
 	rm -f *.bash-completion *.service-bash-completion *.zsh-completion *.service-zsh-completion
 	rm -f *.api-verified *.service-api-verified
