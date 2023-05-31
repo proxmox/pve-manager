@@ -92,17 +92,21 @@ sub print_header {
 }
 
 my $get_systemd_unit_state = sub {
-    my ($unit) = @_;
+    my ($unit, $surpress_stderr) = @_;
 
     my $state;
     my $filter_output = sub {
 	$state = shift;
 	chomp $state;
     };
+
+    my %extra = (outfunc => $filter_output, noerr => 1);
+    $extra{errfunc} = sub {  } if $surpress_stderr;
+
     eval {
-	run_command(['systemctl', 'is-enabled', "$unit"], outfunc => $filter_output, noerr => 1);
+	run_command(['systemctl', 'is-enabled', "$unit"], %extra);
 	return if !defined($state);
-	run_command(['systemctl', 'is-active', "$unit"], outfunc => $filter_output, noerr => 1);
+	run_command(['systemctl', 'is-active', "$unit"], %extra);
     };
 
     return $state // 'unknown';
