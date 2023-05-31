@@ -42,6 +42,19 @@ sub setup_environment {
 
 my ($min_pve_major, $min_pve_minor, $min_pve_pkgrel) = (7, 4, 1);
 
+my $ceph_release2code = {
+    '12' => 'Luminous',
+    '13' => 'Mimic',
+    '14' => 'Nautilus',
+    '15' => 'Octopus',
+    '16' => 'Pacific',
+    '17' => 'Quincy',
+    '18' => 'Reef',
+};
+my $ceph_supported_release = 17; # the version we support for upgrading (i.e., available on both)
+my $ceph_supported_code_name = $ceph_release2code->{"$ceph_supported_release"}
+    or die "inconsistent source code, could not map expected ceph version to code name!";
+
 my $forced_legacy_cgroup = 0;
 
 my $counters = {
@@ -444,12 +457,35 @@ sub check_ceph {
 	} elsif ($ceph_health eq 'HEALTH_WARN' && $noout && (keys %{$ceph_status->{health}->{checks}} == 1)) {
 		log_pass("Ceph health reported as 'HEALTH_WARN' with a single failing check and 'noout' flag set.");
 	} else {
-		log_warn("Ceph health reported as '$ceph_health'.\n      Use the PVE ".
-		  "dashboard or 'ceph -s' to determine the specific issues and try to resolve them.");
+		log_warn(
+		    "Ceph health reported as '$ceph_health'.\n      Use the PVE dashboard or 'ceph -s'"
+		    ." to determine the specific issues and try to resolve them."
+		);
 	}
     }
 
     # TODO: check OSD min-required version, if to low it breaks stuff!
+
+    log_info("cehcking local Ceph version..");
+    if (my $release = eval { PVE::Ceph::Tools::get_local_version(1) }) {
+	my $code_name = $ceph_release2code->{"$release"} || 'unknown';
+	if ($release == $ceph_supported_release) {
+	    log_pass("found expected Ceph $ceph_supported_release $ceph_supported_code_name release.")
+	} elsif ($release > $ceph_supported_release) {
+	    log_warn(
+		"found newer Ceph release $release $code_name as the expected $ceph_supported_release"
+		." $ceph_supported_code_name, installed third party repos?!"
+	    )
+	} else {
+	    log_fail(
+		"Hyper-converged Ceph $release $code_name is to old for upgrade!\n"
+		."      Upgrade Ceph first to $ceph_supported_code_name following our how-to:\n"
+		."      <https://pve.proxmox.com/wiki/Category:Ceph_Upgrade>"
+	    );
+	}
+    } else {
+	log_fail("unable to determine local Ceph version!");
+    }
 
     log_info("getting Ceph daemon versions..");
     my $ceph_versions = eval { PVE::Ceph::Tools::get_cluster_versions(undef, 1); };
@@ -464,8 +500,8 @@ sub check_ceph {
 	];
 
 	foreach my $service (@$services) {
-	    my $name = $service->{name};
-	    if (my $service_versions = $ceph_versions->{$service->{key}}) {
+	    my ($name, $key) = $service->@{'name', 'key'};
+	    if (my $service_versions = $ceph_versions->{$key}) {
 		if (keys %$service_versions == 0) {
 		    log_skip("no running instances detected for daemon type $name.");
 		} elsif (keys %$service_versions == 1) {
