@@ -4,7 +4,16 @@ PERL_DOC_INC_DIRS=..
 -include /usr/share/pve-doc-generator/pve-doc-generator.mk
 
 SERVICES = pvestatd pveproxy pvedaemon spiceproxy pvescheduler
-CLITOOLS = vzdump pvesubscription pveceph pveam pvesr pvenode pvesh pve6to7
+CLITOOLS = \
+	vzdump \
+	pvesubscription \
+	pveceph \
+	pveam \
+	pvesr \
+	pvenode \
+	pvesh \
+	pve6to7 \
+
 
 SCRIPTS =  			\
 	$(SERVICES)		\
