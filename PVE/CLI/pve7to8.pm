@@ -500,9 +500,24 @@ sub check_ceph {
 	    { 'key' => 'osd', 'name' => 'OSD' },
 	];
 
+	my $ceph_versions_simple = {};
+	my $ceph_versions_commits = {};
+	for my $type (keys %$ceph_versions) {
+	    for my $full_version (keys $ceph_versions->{$type}->%*) {
+		if ($full_version =~ m/^(.*) \((.*)\).*\(.*\)$/) {
+		    # String is in the form of
+		    # ceph version 17.2.6 (810db68029296377607028a6c6da1ec06f5a2b27) quincy (stable)
+		    # only check the first part, e.g. 'ceph version 17.2.6', the commit hash can
+		    # be different
+		    $ceph_versions_simple->{$type}->{$1} = 1;
+		    $ceph_versions_commits->{$type}->{$2} = 1;
+		}
+	    }
+	}
+
 	foreach my $service (@$services) {
 	    my ($name, $key) = $service->@{'name', 'key'};
-	    if (my $service_versions = $ceph_versions->{$key}) {
+	    if (my $service_versions = $ceph_versions_simple->{$key}) {
 		if (keys %$service_versions == 0) {
 		    log_skip("no running instances detected for daemon type $name.");
 		} elsif (keys %$service_versions == 1) {
@@ -513,6 +528,12 @@ sub check_ceph {
 	    } else {
 		log_skip("unable to determine versions of running Ceph $name instances.");
 	    }
+	    if (my $service_commits = $ceph_versions_commits->{$key}) {
+		if (keys %$service_commits > 1) {
+		    log_info("multiple version commits detected for daemon type $name. ".
+			"Are you in the middle of the upgrade?");
+		}
+	    }
 	}
 
 	my $overall_versions = $ceph_versions->{overall};
@@ -521,7 +542,7 @@ sub check_ceph {
 	} elsif (keys %$overall_versions == 1) {
 	    log_pass("single running overall version detected for all Ceph daemon types.");
 	    $noout_wanted = 0; # off post-upgrade, on pre-upgrade
-	} else {
+	} elsif (keys $ceph_versions_simple->{overall}->%* != 1) {
 	    log_warn("overall version mismatch detected, check 'ceph versions' output for details!");
 	}
     }
