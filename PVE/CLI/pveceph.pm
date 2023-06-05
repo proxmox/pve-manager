@@ -124,17 +124,18 @@ __PACKAGE__->register_method ({
 		description => "Ceph version to install.",
 		optional => 1,
 	    },
+	    repository => {
+		type => 'string',
+		enum => ['enterprise', 'no-subscription', 'test'],
+		default => 'enterprise',
+		description => "Ceph repository to use.",
+		optional => 1,
+	    },
 	    'allow-experimental' => {
 		type => 'boolean',
 		default => 0,
 		optional => 1,
 		description => "Allow experimental versions. Use with care!",
-	    },
-	    'test-repository' => {
-		type => 'boolean',
-		default => 0,
-		optional => 1,
-		description => "Use the test, not the main repository. Use with care!",
 	    },
 	},
     },
@@ -144,11 +145,13 @@ __PACKAGE__->register_method ({
 
 	my $cephver = $param->{version} || $default_ceph_version;
 
-	my $repo = $param->{'test-repository'} ? 'test' : 'main';
+	my $repo = $param->{'repository'} // 'enterprise';
+	my $enterprise_repo = $repo eq 'enterprise';
+	my $cdn = $enterprise_repo ? 'https://enterprise.proxmox.com' : 'http://download.proxmox.com';
 
 	my $repolist;
 	if ($cephver eq 'quincy') {
-	    $repolist = "deb http://download.proxmox.com/debian/ceph-quincy bookworm $repo\n";
+	    $repolist = "deb ${cdn}/debian/ceph-quincy bookworm $repo\n";
 	} else {
 	    die "unsupported ceph version: $cephver";
 	}
