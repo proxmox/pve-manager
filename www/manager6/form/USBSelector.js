@@ -125,7 +125,7 @@ Ext.define('PVE.form.USBSelector', {
 		name: 'product_and_id',
 		type: 'string',
 		convert: (v, rec) => {
-		    let res = rec.data.product || gettext('Unkown');
+		    let res = rec.data.product || gettext('Unknown');
 		    res += " (" + rec.data.usbid + ")";
 		    return res;
 		},
