@@ -139,6 +139,9 @@ Ext.define('PVE.ceph.CephInstallWizard', {
     resizable: false,
     nodename: undefined,
 
+    width: 760, // 4:3
+    height: 570,
+
     viewModel: {
 	data: {
 	    nodename: '',
