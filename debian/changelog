@@ -1,3 +1,14 @@
+pve-manager (7.4-9) bullseye; urgency=medium
+
+  * pve7to8:
+    - cope with native version of proxmox-ve package
+    - ceph version check: ignore commit hash
+
+  * api subscription: ensure apt-auth access to new ceph enterprise repo, if
+    one wants to switch directly to that on (future) upgrade to Proxmox VE 8.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 05 Jun 2023 19:22:38 +0200
+
 pve-manager (7.4-8) bullseye; urgency=medium
 
   * pve7to8:
