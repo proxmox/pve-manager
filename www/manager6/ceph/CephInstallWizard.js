@@ -170,12 +170,12 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 	tp.setActiveTab(initialTab);
     },
     onShow: function() {
-	    this.callParent(arguments);
-	    var isInstalled = this.getViewModel().get('isInstalled');
-	    if (isInstalled) {
-		this.getViewModel().set('configuration', false);
-		this.setInitialTab(2);
-	    }
+	this.callParent(arguments);
+	var isInstalled = this.getViewModel().get('isInstalled');
+	if (isInstalled) {
+	    this.getViewModel().set('configuration', false);
+	    this.setInitialTab(2);
+	}
     },
     items: [
 	{
