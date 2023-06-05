@@ -149,6 +149,31 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 	    cephRepo: 'enterprise',
 	    configuration: true,
 	    isInstalled: false,
+	    nodeHasSubscription: true, // avoid warning hint until fully loaded
+	    allHaveSubscription: true, // avoid warning hint until fully loaded
+	},
+	formulas: {
+	    repoHintHidden: get => get('allHaveSubscription') && get('cephRepo') === 'enterprise',
+	    repoHint: function(get) {
+		let repo = get('cephRepo');
+		let nodeSub = get('nodeHasSubscription'), allSub = get('allHaveSubscription');
+
+		if (repo === 'enterprise') {
+                    if (!nodeSub) {
+			return gettext('The enterprise repository is enabled, but there is no active subscription!');
+		    } else if (!allSub) {
+			//return gettext('Not all nodes in the cluster have an active subscription, so not all have access to the enterprise repository and therefore may receive upgrades sooner!');
+			return gettext('Not all nodes have an active subscription, which is required for cluster-wide enterprise repo access');
+		    }
+		    return ''; // should be hidden
+		} else if (repo === 'no-subscription') {
+		    return allSub
+		        ? gettext("Cluster has active subscriptions and would be elligible for using the enterprise repository.")
+		        : gettext("The no-subscription repository is not the best choice for production setups.");
+		} else {
+		    return gettext('The test repository should only be used for test setups or after consulting the official Proxmox support!');
+		}
+	    },
 	},
     },
     cbindData: {
@@ -175,11 +200,19 @@ Ext.define('PVE.ceph.CephInstallWizard', {
     },
     onShow: function() {
 	this.callParent(arguments);
+	let viewModel = this.getViewModel();
 	var isInstalled = this.getViewModel().get('isInstalled');
 	if (isInstalled) {
-	    this.getViewModel().set('configuration', false);
+	    viewModel.set('configuration', false);
 	    this.setInitialTab(2);
 	}
+
+	PVE.Utils.getClusterSubscriptionLevel().then(subcriptionMap => {
+	    viewModel.set('nodeHasSubscription', !!subcriptionMap[this.nodename]);
+
+	    let allHaveSubscription = Object.values(subcriptionMap).every(level => !!level);
+	    viewModel.set('allHaveSubscription', allHaveSubscription);
+	});
     },
     items: [
 	{
@@ -203,6 +236,16 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		},
 		{
 		    flex: 1,
+		},
+		{
+		    xtype: 'displayfield',
+		    fieldLabel: gettext('Hint'),
+		    submitValue: false,
+		    labelWidth: 50,
+		    bind: {
+			value: '{repoHint}',
+			hidden: '{repoHintHidden}',
+		    },
 		},
 		{
 		    xtype: 'pveCephHighestVersionDisplay',

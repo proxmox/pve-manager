@@ -37,6 +37,14 @@ Ext.define('PVE.Utils', {
       +'<a target="_blank" href="https://www.proxmox.com/products/proxmox-ve/subscription-service-plans">'
       +'www.proxmox.com</a> to get a list of available options.',
 
+    getClusterSubscriptionLevel: async function() {
+	let { result } = await Proxmox.Async.api2({ url: '/cluster/status' });
+	let levelMap = Object.fromEntries(
+	  result.data.filter(v => v.type === 'node').map(v => [v.name, v.level]),
+	);
+	return levelMap;
+    },
+
     kvm_ostypes: {
 	'Linux': [
 	    { desc: '6.x - 2.6 Kernel', val: 'l26' },
