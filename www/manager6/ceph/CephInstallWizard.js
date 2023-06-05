@@ -240,6 +240,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		{
 		    xtype: 'displayfield',
 		    fieldLabel: gettext('Hint'),
+		    labelClsExtra: 'pmx-hint',
 		    submitValue: false,
 		    labelWidth: 50,
 		    bind: {
