@@ -282,6 +282,8 @@ sub read_vzdump_defaults {
 	if (ref($excludes) eq 'ARRAY') {
 	    my $list = [];
 	    for my $path ($excludes->@*) {
+		# We still use `split_args` here to be compatible with old configs where one line
+		# still has multiple space separated entries.
 		push $list->@*, PVE::Tools::split_args($path)->@*;
 	    }
 	    $res->{'exclude-path'} = $list;
