@@ -77,6 +77,15 @@ sub read_etc_subscription {
     return $info;
 }
 
+my sub cache_is_valid {
+    my ($info) = @_;
+
+    return if !$info || $info->{status} ne 'active';
+
+    my $checked_info = Proxmox::RS::Subscription::check_age($info, 1);
+    return $checked_info->{status} eq 'active'
+}
+
 sub write_etc_subscription {
     my ($info) = @_;
 
@@ -173,11 +182,7 @@ __PACKAGE__->register_method ({
 	die "Updating offline key not possible - please remove and re-add subscription key to switch to online key.\n"
 	    if $info->{signature};
 
-	# key has been recently checked
-	return undef
-	    if !$param->{force}
-		&& $info->{status} eq 'active'
-		&& Proxmox::RS::Subscription::check_age($info, 1)->{status} eq 'active';
+	return undef if !$param->{force} && cache_is_valid($info); # key has been recently checked
 
 	my $req_sockets = get_sockets();
 	check_key($key, $req_sockets);
