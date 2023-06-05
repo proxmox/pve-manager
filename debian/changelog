@@ -1,3 +1,23 @@
+pve-manager (8.0.0~7) bookworm; urgency=medium
+
+  * pveceph: support new enterprise repository, new in Proxmox VE 8, which can
+    be accessed through Proxmox VE subscriptions, to provide more broadly
+    tested ceph updates for production setups.
+
+  * ceph install: output some hints depending repo choice and subscription
+
+  * ui: ceph install: increase dimension of window with 4:3 ratio
+
+  * ui: ceph install wizard: allow selecting repository
+
+  * ui: ceph install: add hints depending on selected repo and subscriptions
+
+  * ui: USB selector: fix typo
+
+  * cli: subscription: simplify printing output in get command
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 05 Jun 2023 18:54:08 +0200
+
 pve-manager (8.0.0~6) bookworm; urgency=medium
 
   * vzdump: prepare to support 'exclude-path' as arry (multiple lines in the
