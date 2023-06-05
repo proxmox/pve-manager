@@ -57,8 +57,8 @@ Ext.define('PVE.dc.Summary', {
 	    height: 220,
 	    items: [
 		{
-		    itemId: 'subscriptions',
 		    xtype: 'pveHealthWidget',
+		    itemId: 'subscriptions',
 		    userCls: 'pointer',
 		    listeners: {
 			element: 'el',
