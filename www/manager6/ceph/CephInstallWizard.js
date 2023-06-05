@@ -146,6 +146,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 	data: {
 	    nodename: '',
 	    cephRelease: 'quincy',
+	    cephRepo: 'enterprise',
 	    configuration: true,
 	    isInstalled: false,
 	},
@@ -205,7 +206,7 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		},
 		{
 		    xtype: 'pveCephHighestVersionDisplay',
-		    labelWidth: 180,
+		    labelWidth: 150,
 		    cbind: {
 			nodename: '{nodename}',
 		    },
@@ -218,20 +219,46 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 		    },
 		},
 		{
-		    xtype: 'pveCephVersionSelector',
-		    labelWidth: 180,
-		    submitValue: false,
-		    bind: {
-			value: '{cephRelease}',
+		    xtype: 'container',
+		    layout: 'hbox',
+		    defaults: {
+			border: false,
+			layout: 'anchor',
+			flex: 1,
 		    },
-		    listeners: {
-			change: function(field, release) {
-			    let wizard = this.up('pveCephInstallWizard');
-			    wizard.down('#next').setText(
-				Ext.String.format(gettext('Start {0} installation'), release),
-			    );
+		    items: [{
+			xtype: 'pveCephVersionSelector',
+			labelWidth: 150,
+			padding: '0 10 0 0',
+			submitValue: false,
+			bind: {
+			    value: '{cephRelease}',
+			},
+			listeners: {
+			    change: function(field, release) {
+				let wizard = this.up('pveCephInstallWizard');
+				wizard.down('#next').setText(
+				    Ext.String.format(gettext('Start {0} installation'), release),
+				);
+			    },
 			},
 		    },
+		    {
+			xtype: 'proxmoxKVComboBox',
+			fieldLabel: gettext('Repository'),
+			padding: '0 0 0 10',
+			comboItems: [
+			    ['enterprise', gettext('Enterprise (recommended)')],
+			    ['no-subscription', gettext('No-Subscription')],
+			    ['test', gettext('Test')],
+			],
+			labelWidth: 150,
+			submitValue: false,
+			value: 'enterprise',
+			bind: {
+			    value: '{cephRepo}',
+			},
+		    }],
 		},
 	    ],
 	    listeners: {
@@ -323,7 +350,8 @@ Ext.define('PVE.ceph.CephInstallWizard', {
 			let me = this;
 			let wizard = me.up('pveCephInstallWizard');
 			let release = wizard.getViewModel().get('cephRelease');
-			me.cmdOpts = `--version\0${release}`;
+			let repo = wizard.getViewModel().get('cephRepo');
+			me.cmdOpts = `--version\0${release}\0--repository\0${repo}`;
 		    },
 		    cmd: 'ceph_install',
 		},
