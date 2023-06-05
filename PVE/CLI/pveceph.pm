@@ -10,6 +10,8 @@ use JSON;
 use Data::Dumper;
 use LWP::UserAgent;
 
+use Proxmox::RS::Subscription;
+
 use PVE::SafeSyslog;
 use PVE::Cluster;
 use PVE::INotify;
@@ -106,6 +108,12 @@ __PACKAGE__->register_method ({
 	return undef;
     }});
 
+my sub has_valid_subscription {
+    my $info = eval { Proxmox::RS::Subscription::read_subscription('/etc/subscription') } // {};
+    warn "couldn't check subscription info - $@" if $@;
+    return $info->{status} && $info->{status} eq 'active'; # age check?
+}
+
 my $supported_ceph_versions = ['quincy'];
 my $default_ceph_version = 'quincy';
 
@@ -148,6 +156,19 @@ __PACKAGE__->register_method ({
 	my $repo = $param->{'repository'} // 'enterprise';
 	my $enterprise_repo = $repo eq 'enterprise';
 	my $cdn = $enterprise_repo ? 'https://enterprise.proxmox.com' : 'http://download.proxmox.com';
+
+	if (has_valid_subscription()) {
+	    warn "\nNOTE: The node has an active subscription but a non-production Ceph repository selected.\n\n"
+	        if !$enterprise_repo;
+	} elsif ($enterprise_repo) {
+	    warn "\nWARN: Enterprise repository selected, but no active subscription!\n\n";
+	} elsif ($repo eq 'no-subscription') {
+	    warn "\nHINT: The no-subscription repository is not the best choice for production setups.\n"
+	        ."Proxmox recommends using the enterprise repository with a valid subscription.\n";
+	} else {
+	    warn "\nWARN: The test repository should only be used for test setups or after consulting"
+		." the official Proxmox support!\n\n"
+	}
 
 	my $repolist;
 	if ($cephver eq 'quincy') {
