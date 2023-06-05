@@ -528,12 +528,9 @@ sub check_ceph {
 	    } else {
 		log_skip("unable to determine versions of running Ceph $name instances.");
 	    }
-	    if (my $service_commits = $ceph_versions_commits->{$key}) {
-		if (keys %$service_commits > 1) {
-		    log_info("multiple version commits detected for daemon type $name. ".
-			"Are you in the middle of the upgrade?");
-		}
-	    }
+	    my $service_commits = $ceph_versions_commits->{$key};
+	    log_info("different builds of same version detected for an $name. Are you in the middle of the upgrade?")
+		if $service_commits && keys %$service_commits > 1;
 	}
 
 	my $overall_versions = $ceph_versions->{overall};
