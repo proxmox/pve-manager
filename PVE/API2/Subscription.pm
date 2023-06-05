@@ -82,7 +82,8 @@ sub write_etc_subscription {
 
     my $server_id = PVE::API2Tools::get_hwaddress();
     mkdir "/etc/apt/auth.conf.d";
-    Proxmox::RS::Subscription::write_subscription($filename, "/etc/apt/auth.conf.d/pve.conf", "enterprise.proxmox.com/debian/pve", $info);
+    Proxmox::RS::Subscription::write_subscription(
+        $filename, "/etc/apt/auth.conf.d/pve.conf", "enterprise.proxmox.com/debian/pve", $info);
 }
 
 __PACKAGE__->register_method ({
@@ -152,7 +153,7 @@ __PACKAGE__->register_method ({
 	properties => {
 	    node => get_standard_option('pve-node'),
 	    force => {
-		description => "Always connect to server, even if we have up to date info inside local cache.",
+		description => "Always connect to server, even if local cache is still valid.",
 		type => 'boolean',
 		optional => 1,
 		default => 0
@@ -219,7 +220,7 @@ __PACKAGE__->register_method ({
 
 	my $key = PVE::Tools::trim($param->{key});
 
-	my $info = {
+	my $new_info = {
 	    status => 'New',
 	    key => $key,
 	    checktime => time(),
@@ -230,14 +231,15 @@ __PACKAGE__->register_method ({
 
 	check_key($key, $req_sockets);
 
-	write_etc_subscription($info);
+	write_etc_subscription($new_info);
 
 	my $dccfg = PVE::Cluster::cfs_read_file('datacenter.cfg');
 	my $proxy = $dccfg->{http_proxy};
 
-	$info = Proxmox::RS::Subscription::check_subscription($key, $server_id, "", "Proxmox VE", $proxy);
+	my $checked_info = Proxmox::RS::Subscription::check_subscription(
+	    $key, $server_id, "", "Proxmox VE", $proxy);
 
-	write_etc_subscription($info);
+	write_etc_subscription($checked_info);
 
 	return undef;
     }});
