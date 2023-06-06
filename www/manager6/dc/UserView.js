@@ -158,17 +158,31 @@ Ext.define('PVE.dc.UserView', {
 		},
 		{
 		    header: 'TFA',
-		    width: 50,
+		    width: 120,
 		    sortable: true,
-		    renderer: function(v) {
+		    renderer: function(v, metaData, record) {
 			let tfa_type = PVE.Parser.parseTfaType(v);
 			if (tfa_type === undefined) {
 			    return Proxmox.Utils.noText;
-			} else if (tfa_type === 1) {
-			    return Proxmox.Utils.yesText;
-			} else {
+			}
+
+			if (tfa_type !== 1) {
 			    return tfa_type;
 			}
+
+			let locked_until = record.data['tfa-locked-until'];
+			if (locked_until !== undefined) {
+			    let now = new Date().getTime() / 1000;
+			    if (locked_until > now) {
+				return gettext('Locked');
+			    }
+			}
+
+			if (record.data['totp-locked']) {
+			    return gettext('TOTP Locked');
+			}
+
+			return Proxmox.Utils.yesText;
 		    },
 		    dataIndex: 'keys',
 		},
