@@ -93,6 +93,35 @@ Ext.define('PVE.dc.UserView', {
 	    },
 	});
 
+	let unlock_btn = new Proxmox.button.Button({
+	    text: gettext('Unlock TFA'),
+	    disabled: true,
+	    selModel: sm,
+	    enableFn: rec => !!(caps.access['User.Modify'] &&
+	        (rec.data['totp-locked'] || rec.data['tfa-locked-until'])),
+	    handler: function(btn, event, rec) {
+		Ext.Msg.confirm(
+		    gettext(Ext.String.format('Unlock TFA authentication for {0}', rec.data.userid)),
+		    gettext("Locked 2nd factors can happen if the user's password was leaked. Are you sure you want to unlock the user?"),
+		    function(btn_response) {
+			if (btn_response === 'yes') {
+			    Proxmox.Utils.API2Request({
+				url: `/access/users/${rec.data.userid}/unlock-tfa`,
+				waitMsgTarget: me,
+				method: 'PUT',
+				failure: function(response, options) {
+				    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+				},
+				success: function(response, options) {
+				    reload();
+				},
+			    });
+			}
+		    },
+		);
+	    },
+	});
+
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
@@ -116,6 +145,8 @@ Ext.define('PVE.dc.UserView', {
 		pwchange_btn,
 		'-',
 		perm_btn,
+		'-',
+		unlock_btn,
 	    ],
 	    viewConfig: {
 		trackOver: false,
