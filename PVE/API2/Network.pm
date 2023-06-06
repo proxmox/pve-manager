@@ -209,7 +209,7 @@ __PACKAGE__->register_method({
 	    type => {
 		description => "Only list specific interface types.",
 		type => 'string',
-		enum => [ @$network_type_enum, 'any_bridge' ],
+		enum => [ @$network_type_enum, 'any_bridge', 'any_local_bridge' ],
 		optional => 1,
 	    },
 	},
@@ -240,27 +240,32 @@ __PACKAGE__->register_method({
 
 	if (my $tfilter = $param->{type}) {
 	    my $vnets;
-	    my $vnet_cfg;
-	    my $can_access_vnet = sub { # only matters for the $have_sdn case, checked implict
-		return 1 if $authuser eq 'root@pam' || !defined($vnets);
-		return 1 if !defined(PVE::Network::SDN::Vnets::sdn_vnets_config($vnet_cfg, $_[0], 1)); # not a vnet
-		$rpcenv->check_any($authuser, "/sdn/vnets/$_[0]", ['SDN.Audit', 'SDN.Allocate'], 1)
-	    };
 
 	    if ($have_sdn && $param->{type} eq 'any_bridge') {
 		$vnets = PVE::Network::SDN::get_local_vnets(); # returns already access-filtered
-		$vnet_cfg = PVE::Network::SDN::Vnets::config();
 	    }
 
 	    for my $k (sort keys $ifaces->%*) {
 		my $type = $ifaces->{$k}->{type};
-		my $match = $tfilter eq $type || ($tfilter eq 'any_bridge' && ($type eq 'bridge' || $type eq 'OVSBridge'));
-		delete $ifaces->{$k} if !($match && $can_access_vnet->($k));
+		my $match = ($param->{type} eq $type) || (
+		    ($param->{type} =~ /^any(_local)?_bridge$/) &&
+		    ($type eq 'bridge' || $type eq 'OVSBridge'));
+		delete $ifaces->{$k} if !$match;
 	    }
 
 	    if (defined($vnets)) {
 		$ifaces->{$_} = $vnets->{$_} for keys $vnets->%*
 	    }
+	}
+
+	#always check bridge access
+	my $can_access_vnet = sub {
+	    return 1 if $authuser eq 'root@pam';
+	    return 1 if $rpcenv->check_sdn_bridge($authuser, "localnetwork", $_[0], ['SDN.Audit', 'SDN.Use'], 1);
+	};
+	for my $k (sort keys $ifaces->%*) {
+	    my $type = $ifaces->{$k}->{type};
+	    delete $ifaces->{$k} if ($type eq 'bridge' || $type eq 'OVSBridge') && !$can_access_vnet->($k);
 	}
 
 	return PVE::RESTHandler::hash_to_array($ifaces, 'iface');
