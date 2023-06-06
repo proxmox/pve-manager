@@ -367,8 +367,8 @@ __PACKAGE__->register_method ({
     }});
 
 __PACKAGE__->register_method ({
-    name => 'osddetails',
-    path => 'osddetails',
+    name => 'osd-details',
+    path => 'osd-details',
     method => 'GET',
     description => "Get OSD details.",
     parameters => {
@@ -390,18 +390,20 @@ __PACKAGE__->register_method ({
     returns => { type => 'object' },
     code => sub {
 	my ($param) = @_;
+
 	PVE::Ceph::Tools::check_ceph_inited();
+
 	my $res = PVE::API2::Ceph::OSD->osddetails({
+	    osdid => $param->{osdid},
+	    node => $param->{node},
+	});
+
+	for my $dev ($res->{devices}->@*) {
+	    $dev->{"lv-info"} = PVE::API2::Ceph::OSD->osdvolume({
 		osdid => $param->{osdid},
 		node => $param->{node},
+		type => $dev->{device},
 	    });
-
-	for my $dev (@{ $res->{devices} }) {
-	    $dev->{"lv-info"} = PVE::API2::Ceph::OSD->osdvolume({
-		    osdid => $param->{osdid},
-		    node => $param->{node},
-		    type => $dev->{device},
-		});
 	}
 	$res->{verbose} = 1 if $param->{verbose};
 	return $res;
@@ -409,6 +411,7 @@ __PACKAGE__->register_method ({
 
 my $format_osddetails = sub {
     my ($data, $schema, $options) = @_;
+
     $options->{"output-format"} //= "text";
 
     if ($data->{verbose}) {
@@ -417,13 +420,11 @@ my $format_osddetails = sub {
     }
 
     if ($options->{"output-format"} eq "text") {
-	for my $dev (@{ $data->{devices} }) {
-	    my $str = "Disk: $dev->{physical_device},"
-		." Type: $dev->{type},"
-		." LV Size: $dev->{'lv-info'}->{lv_size},"
-		." LV Creation Time: $dev->{'lv-info'}->{creation_time}";
+	for my $dev ($data->{devices}->@*) {
+	    my ($disk, $type, $device) = $dev->@{'physical_device', 'type', 'device'};
+	    my ($lv_size, $lv_ctime) = $dev->{'lv-info'}->@{'lv_size', 'creation_time'};
 
-	    $data->{osd}->{$dev->{device}} = $str;
+	    $data->{osd}->{$device} = "Disk: $disk, Type: $type, LV Size: $lv_size, LV Creation Time: $lv_ctime";
 	}
 	PVE::CLIFormatter::print_api_result($data->{osd}, $schema, undef, $options);
     } else {
@@ -471,7 +472,10 @@ our $cmddef = {
     osd => {
 	create => [ 'PVE::API2::Ceph::OSD', 'createosd', ['dev'], { node => $nodename }, $upid_exit],
 	destroy => [ 'PVE::API2::Ceph::OSD', 'destroyosd', ['osdid'], { node => $nodename }, $upid_exit],
-	details => [ __PACKAGE__, 'osddetails', ['osdid'], { node => $nodename }, $format_osddetails, $PVE::RESTHandler::standard_output_options],
+	details => [
+	    __PACKAGE__, 'osd-details', ['osdid'], { node => $nodename }, $format_osddetails,
+	    $PVE::RESTHandler::standard_output_options,
+	],
     },
     createosd => { alias => 'osd create' },
     destroyosd => { alias => 'osd destroy' },
