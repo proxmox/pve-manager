@@ -43,6 +43,7 @@ Ext.define('PVE.IPSetList', {
 	});
 
 	var caps = Ext.state.Manager.get('GuiCap');
+	let canEdit = !!caps.vms['VM.Config.Network'] || !!caps.dc['Sys.Modify'] || !!caps.nodes['Sys.Modify'];
 
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
@@ -60,7 +61,7 @@ Ext.define('PVE.IPSetList', {
 
 	var run_editor = function() {
 	    var rec = sm.getSelection()[0];
-	    if (!rec) {
+	    if (!rec || !canEdit) {
 		return;
 	    }
 	    var win = Ext.create('Proxmox.window.Edit', {
@@ -96,7 +97,7 @@ Ext.define('PVE.IPSetList', {
 	me.editBtn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
-	    enableFn: rec => !!caps.vms['VM.Config.Network'] || !!caps.dc['Sys.Modify'] || !!caps.nodes['Sys.Modify'],
+	    enableFn: rec => canEdit,
 	    selModel: sm,
 	    handler: run_editor,
 	});
@@ -131,7 +132,7 @@ Ext.define('PVE.IPSetList', {
 	});
 
 	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
-	    enableFn: rec => !!caps.vms['VM.Config.Network'] || !!caps.dc['Sys.Modify'] || !!caps.nodes['Sys.Modify'],
+	    enableFn: rec => canEdit,
 	    selModel: sm,
 	    baseurl: me.base_url + '/',
 	    callback: reload,
@@ -158,7 +159,7 @@ Ext.define('PVE.IPSetList', {
 	    },
 	});
 
-	if (!caps.vms['VM.Config.Network'] && !caps.dc['Sys.Modify'] && !caps.nodes['Sys.Modify']) {
+	if (!canEdit) {
 	    me.addBtn.setDisabled(true);
 	}
 
@@ -276,7 +277,7 @@ Ext.define('PVE.IPSetGrid', {
 	    me.addBtn.setDisabled(true);
 	    me.store.removeAll();
 	} else {
-	    if (me.caps.vms['VM.Config.Network'] || me.caps.dc['Sys.Modify'] || me.caps.nodes['Sys.Modify']) {
+	    if (me.canEdit) {
 		me.addBtn.setDisabled(false);
 	    }
 	    me.removeBtn.baseurl = url + '/';
@@ -307,10 +308,11 @@ Ext.define('PVE.IPSetGrid', {
 	var sm = Ext.create('Ext.selection.RowModel', {});
 
 	me.caps = Ext.state.Manager.get('GuiCap');
+	me.canEdit = !!me.caps.vms['VM.Config.Network'] || !!me.caps.dc['Sys.Modify'] || !!me.caps.nodes['Sys.Modify'];
 
 	var run_editor = function() {
 	    var rec = sm.getSelection()[0];
-	    if (!rec) {
+	    if (!rec || !me.canEdit) {
 		return;
 	    }
 	    var win = Ext.create('PVE.IPSetCidrEdit', {
@@ -324,7 +326,7 @@ Ext.define('PVE.IPSetGrid', {
 	me.editBtn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
 	    disabled: true,
-	    enableFn: rec => !!me.caps.vms['VM.Config.Network'] || !!me.caps.dc['Sys.Modify'] || !!me.caps.nodes['Sys.Modify'],
+	    enableFn: rec => me.canEdit,
 	    selModel: sm,
 	    handler: run_editor,
 	});
@@ -332,7 +334,7 @@ Ext.define('PVE.IPSetGrid', {
 	me.addBtn = new Proxmox.button.Button({
 	    text: gettext('Add'),
 	    disabled: true,
-	    enableFn: rec => !!me.caps.vms['VM.Config.Network'] || !!me.caps.dc['Sys.Modify'] || !!me.caps.nodes['Sys.Modify'],
+	    enableFn: rec => me.canEdit,
 	    handler: function() {
 		if (!me.base_url) {
 		    return;
@@ -348,7 +350,7 @@ Ext.define('PVE.IPSetGrid', {
 
 	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    disabled: true,
-	    enableFn: rec => !!me.caps.vms['VM.Config.Network'] || !!me.caps.dc['Sys.Modify'] || !!me.caps.nodes['Sys.Modify'],
+	    enableFn: rec => me.canEdit,
 	    selModel: sm,
 	    baseurl: me.base_url + '/',
 	    callback: reload,

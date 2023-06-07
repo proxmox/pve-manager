@@ -105,6 +105,7 @@ Ext.define('PVE.FirewallAliases', {
 	let sm = Ext.create('Ext.selection.RowModel', {});
 
 	let caps = Ext.state.Manager.get('GuiCap');
+	let canEdit = !!caps.vms['VM.Config.Network'] || !!caps.dc['Sys.Modify'] || !!caps.nodes['Sys.Modify'];
 
 	let reload = function() {
 	    let oldrec = sm.getSelection()[0];
@@ -120,7 +121,7 @@ Ext.define('PVE.FirewallAliases', {
 
 	let run_editor = function() {
 	    let rec = me.getSelectionModel().getSelection()[0];
-	    if (!rec) {
+	    if (!rec || !canEdit) {
 		return;
 	    }
 	    let win = Ext.create('PVE.FirewallAliasEdit', {
@@ -135,7 +136,7 @@ Ext.define('PVE.FirewallAliases', {
 	    text: gettext('Edit'),
 	    disabled: true,
 	    selModel: sm,
-	    enableFn: rec => !!caps.vms['VM.Config.Network'] || !!caps.dc['Sys.Modify'] || !!caps.nodes['Sys.Modify'],
+	    enableFn: rec => canEdit,
 	    handler: run_editor,
 	});
 

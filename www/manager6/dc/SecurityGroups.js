@@ -101,6 +101,7 @@ Ext.define('PVE.SecurityGroupList', {
 	let sm = Ext.create('Ext.selection.RowModel', {});
 
 	let caps = Ext.state.Manager.get('GuiCap');
+	let canEdit = !!caps.dc['Sys.Modify'];
 
 	let reload = function() {
 	    let oldrec = sm.getSelection()[0];
@@ -116,7 +117,7 @@ Ext.define('PVE.SecurityGroupList', {
 
 	let run_editor = function() {
 	    let rec = sm.getSelection()[0];
-	    if (!rec) {
+	    if (!rec || !canEdit) {
 		return;
 	    }
 	    Ext.create('PVE.SecurityGroupEdit', {
@@ -132,14 +133,14 @@ Ext.define('PVE.SecurityGroupList', {
 
 	me.editBtn = new Proxmox.button.Button({
 	    text: gettext('Edit'),
-	    enableFn: rec => !!caps.dc['Sys.Modify'],
+	    enableFn: rec => canEdit,
 	    disabled: true,
 	    selModel: sm,
 	    handler: run_editor,
 	});
 	me.addBtn = new Proxmox.button.Button({
 	    text: gettext('Create'),
-	    disabled: !caps.dc['Sys.Modify'],
+	    disabled: !canEdit,
 	    handler: function() {
 		sm.deselectAll();
 		var win = Ext.create('PVE.SecurityGroupEdit', {});
@@ -151,12 +152,7 @@ Ext.define('PVE.SecurityGroupList', {
 	me.removeBtn = Ext.create('Proxmox.button.StdRemoveButton', {
 	    selModel: sm,
 	    baseurl: me.base_url + '/',
-	    enableFn: function(rec) {
-		if (!caps.dc['Sys.Modify']) {
-		    return false;
-		}
-		return rec && me.base_url;
-	    },
+	    enableFn: (rec) => canEdit && rec && me.base_url,
 	    callback: () => reload(),
 	});
 

@@ -22,6 +22,7 @@ Ext.define('PVE.FirewallOptions', {
 	}
 
 	let caps = Ext.state.Manager.get('GuiCap');
+	let canEdit = caps.vms['VM.Config.Network'] || caps.dc['Sys.Modify'] || caps.nodes['Sys.Modify'];
 
 	me.rows = {};
 
@@ -163,7 +164,7 @@ Ext.define('PVE.FirewallOptions', {
 		return;
 	    }
 	    var rowdef = me.rows[rec.data.key];
-	    if (caps.vms['VM.Config.Network'] || caps.dc['Sys.Modify'] || caps.nodes['Sys.Modify']) {
+	    if (canEdit) {
 		edit_btn.setDisabled(!rowdef.editor);
 	    }
 	};
@@ -175,7 +176,7 @@ Ext.define('PVE.FirewallOptions', {
 		url: '/api2/extjs/' + me.base_url,
 	    },
 	    listeners: {
-		itemdblclick: me.run_editor,
+		itemdblclick: () => { if (canEdit) { me.run_editor(); } },
 		selectionchange: set_button_status,
 	    },
 	});
