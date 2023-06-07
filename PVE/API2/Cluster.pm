@@ -474,6 +474,20 @@ __PACKAGE__->register_method({
 	    }
 	}
 
+	#add default "localnetwork" zone
+	if ($rpcenv->check($authuser, "/sdn/zones/localnetwork", [ 'SDN.Audit' ], 1)) {
+	    foreach my $node (@$nodelist) {
+		my $local_sdn = {
+		    id => "sdn/$node/localnetwork",
+		    sdn => 'localnetwork',
+		    node => $node,
+		    type => 'sdn',
+		    status => 'ok',
+	        };
+	        push @$res, $local_sdn;
+	    }
+	}
+
 	if ($have_sdn) {
 	    if (!$param->{type} || $param->{type} eq 'sdn') {
 
