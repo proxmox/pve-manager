@@ -3,6 +3,8 @@ package PVE::CLI::pve7to8;
 use strict;
 use warnings;
 
+use Cwd;
+
 use PVE::API2::APT;
 use PVE::API2::Ceph;
 use PVE::API2::LXC;
@@ -263,6 +265,10 @@ sub check_storage_health {
     }
 
     check_storage_content();
+    eval {
+        check_storage_content_dirs();
+    };
+    log_fail("failed to check storage content directories - $@") if $@;
 }
 
 sub check_cluster_corosync {
@@ -945,6 +951,39 @@ sub check_storage_content {
 
     if ($pass) {
 	log_pass("no problems found");
+    }
+}
+
+sub check_storage_content_dirs {
+    my $storage_cfg = PVE::Storage::config();
+
+    # check that content dirs are pairwise inequal
+    for my $storeid (sort keys $storage_cfg->{ids}->%*) {
+	my $scfg = $storage_cfg->{ids}->{$storeid};
+
+	next if !PVE::Storage::storage_check_enabled($storage_cfg, $storeid, undef, 1);
+	next if !$scfg->{path};
+	next if !$scfg->{content};
+
+	eval { PVE::Storage::activate_storage($storage_cfg, $storeid) };
+	if (my $err = $@) {
+	    log_warn("activating '$storeid' failed - $err");
+	    next;
+	}
+
+	my $resolved_subdirs = {};
+	my $plugin = PVE::Storage::Plugin->lookup($scfg->{type});
+	foreach my $vtype (keys $scfg->{content}->%*) {
+	    my $abs_subdir = Cwd::abs_path($plugin->get_subdir($scfg, $vtype));
+	    push $resolved_subdirs->{$abs_subdir}->@*, $vtype;
+	}
+	foreach my $subdir (keys $resolved_subdirs->%*) {
+	    if (scalar($resolved_subdirs->{$subdir}->@*) > 1) {
+		log_warn("storage '$storeid' uses directory $subdir for multiple content types"
+			 . " (" . join(", ", $resolved_subdirs->{$subdir}->@*) . "). "
+			 . "This is no longer supported in PVE 8.x!");
+	     }
+	}
     }
 }
 
