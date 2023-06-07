@@ -247,9 +247,9 @@ __PACKAGE__->register_method({
 
 	    for my $k (sort keys $ifaces->%*) {
 		my $type = $ifaces->{$k}->{type};
-		my $match = ($tfilter eq $type) || (
-		    ($tfilter =~ /^any(_local)?_bridge$/) &&
-		    ($type eq 'bridge' || $type eq 'OVSBridge'));
+		my $is_bridge = $type eq 'bridge' || $type eq 'OVSBridge';
+		my $bridge_match = $is_bridge && $tfilter =~ /^any(_local)?_bridge$/;
+		my $match = $tfilter eq $type || $bridge_match;
 		delete $ifaces->{$k} if !$match;
 	    }
 
