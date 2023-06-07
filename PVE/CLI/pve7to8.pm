@@ -668,7 +668,7 @@ sub check_backup_retention_settings {
 	log_warn("unable to parse node's VZDump configuration - $err");
     }
 
-    log_pass("no problems found.") if $pass;
+    log_pass("no backup retention problems found.") if $pass;
 }
 
 sub check_cifs_credential_location {
@@ -948,7 +948,7 @@ sub check_storage_content {
     }
 
     if ($pass) {
-	log_pass("no problems found");
+	log_pass("no storage content problems found");
     }
 }
 
