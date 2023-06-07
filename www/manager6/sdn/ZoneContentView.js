@@ -17,17 +17,15 @@ Ext.define('PVE.sdn.ZoneContentView', {
     initComponent: function() {
 	var me = this;
 
-	var nodename = me.pveSelNode.data.node;
-	if (!nodename) {
+	if (!me.nodename) {
 	    throw "no node name specified";
 	}
 
-	var zone = me.pveSelNode.data.sdn;
-	if (!zone) {
+	if (!me.zone) {
 	    throw "no zone ID specified";
 	}
 
-	var baseurl = "/nodes/" + nodename + "/sdn/zones/" + zone + "/content";
+	var baseurl = "/nodes/" + me.nodename + "/sdn/zones/" + me.zone + "/content";
 	var store = Ext.create('Ext.data.Store', {
 	    model: 'pve-sdnzone-content',
 	    groupField: 'content',
@@ -48,7 +46,6 @@ Ext.define('PVE.sdn.ZoneContentView', {
 	};
 
 	Proxmox.Utils.monStoreErrors(me, store);
-
 	Ext.apply(me, {
 	    store: store,
 	    selModel: sm,
@@ -79,11 +76,19 @@ Ext.define('PVE.sdn.ZoneContentView', {
 		    dataIndex: 'statusmsg',
 		},
 	    ],
-	    listeners: {
-		activate: reload,
-	    },
+            listeners: {
+                activate: reload,
+                show: reload,
+                select: function(_sm, rec) {
+                    let path = `/sdn/zones/${me.zone}/${rec.data.vnet}`;
+                    me.permissions_panel.setPath(path);
+                },
+                deselect: function() {
+                    me.permissions_panel.setPath(undefined);
+                },
+            },
 	});
-
+	store.load();
 	me.callParent();
     },
 }, function() {

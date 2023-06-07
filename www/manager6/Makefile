@@ -252,10 +252,12 @@ JSSRC= 							\
 	sdn/StatusView.js				\
 	sdn/VnetEdit.js					\
 	sdn/VnetView.js					\
+	sdn/VnetACLView.js					\
 	sdn/VnetPanel.js				\
 	sdn/SubnetEdit.js				\
 	sdn/SubnetView.js				\
 	sdn/ZoneContentView.js				\
+	sdn/ZoneContentPanel.js				\
 	sdn/ZoneView.js					\
 	sdn/OptionsPanel.js				\
 	sdn/controllers/Base.js				\

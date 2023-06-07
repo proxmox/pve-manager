@@ -25,14 +25,15 @@ Ext.define('PVE.sdn.Browser', {
 
 	const caps = Ext.state.Manager.get('GuiCap');
 
-	if (caps.sdn['SDN.Audit']) {
-	    me.items.push({
-		xtype: 'pveSDNZoneContentView',
-		title: gettext('Content'),
-		iconCls: 'fa fa-th',
-		itemId: 'content',
-	    });
-	}
+	me.items.push({
+	    nodename: nodename,
+	    zone: sdnId,
+	    xtype: 'pveSDNZoneContentPanel',
+	    title: gettext('Content'),
+	    iconCls: 'fa fa-th',
+	    itemId: 'content',
+	});
+
 	if (caps.sdn['Permissions.Modify']) {
 	    me.items.push({
 		xtype: 'pveACLView',
