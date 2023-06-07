@@ -241,14 +241,14 @@ __PACKAGE__->register_method({
 	if (my $tfilter = $param->{type}) {
 	    my $vnets;
 
-	    if ($have_sdn && $param->{type} eq 'any_bridge') {
+	    if ($have_sdn && $tfilter eq 'any_bridge') {
 		$vnets = PVE::Network::SDN::get_local_vnets(); # returns already access-filtered
 	    }
 
 	    for my $k (sort keys $ifaces->%*) {
 		my $type = $ifaces->{$k}->{type};
-		my $match = ($param->{type} eq $type) || (
-		    ($param->{type} =~ /^any(_local)?_bridge$/) &&
+		my $match = ($tfilter eq $type) || (
+		    ($tfilter =~ /^any(_local)?_bridge$/) &&
 		    ($type eq 'bridge' || $type eq 'OVSBridge'));
 		delete $ifaces->{$k} if !$match;
 	    }
