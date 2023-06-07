@@ -15,6 +15,7 @@ use PVE::CLIHandler;
 use PVE::API2Tools;
 use PVE::API2;
 use JSON;
+use IO::Uncompress::Gunzip qw(gunzip);
 
 use base qw(PVE::CLIHandler);
 
@@ -283,6 +284,41 @@ my $cond_add_standard_output_properties = sub {
     return PVE::RESTHandler::add_standard_output_properties($props, $keys);
 };
 
+my $handle_streamed_response = sub {
+    my ($download) = @_;
+    my ($fh, $path, $encoding, $type) =
+	$download->@{'fh', 'path', 'content-encoding', 'content-type'};
+
+    die "{download} returned but neither fh nor path given\n"
+	if !defined($fh) && !defined($path);
+
+    die "unknown 'content-encoding' $encoding\n"
+	if defined($encoding) && $encoding ne 'gzip';
+
+    die "unknown 'content-type' $type\n"
+	if defined($type) && $type !~ qw!^(text/plain)|(application/json)$!;
+
+    if (defined($path)) {
+	open($fh, '<', $path)
+	    or die "open stream path '$path' for reading failed: $!\n";
+    }
+
+    local $/;
+    my $data = <$fh>;
+
+    if (defined($encoding)) {
+	my $out;
+	gunzip(\$data => \$out);
+	$data = $out;
+    }
+
+    if (defined($type) && $type eq 'application/json') {
+	$data = decode_json($data)->{data};
+    }
+
+    return $data;
+};
+
 sub call_api_method {
     my ($cmd, $param) = @_;
 
@@ -312,6 +348,9 @@ sub call_api_method {
 	}
 
 	$data = $handler->handle($info, $param);
+
+	$data = &$handle_streamed_response($data->{download})
+	    if ref($data) eq 'HASH' && ref($data->{download}) eq 'HASH';
     }
 
     return if $opt_nooutput || $stdopts->{quiet};
