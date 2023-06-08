@@ -695,7 +695,7 @@ sub check_cifs_credential_location {
 }
 
 sub check_custom_pool_roles {
-    log_info("Checking custom roles for pool permissions..");
+    log_info("Checking custom role IDs for clashes with new 'PVE' namespace..");
 
     if (! -f "/etc/pve/user.cfg") {
 	log_skip("user.cfg does not exist");
@@ -734,10 +734,22 @@ sub check_custom_pool_roles {
 	}
     }
 
-    foreach my $role (sort keys %{$roles}) {
+    my ($custom_roles, $pve_namespace_clashes) = (0, 0);
+    for my $role (sort keys %{$roles}) {
 	next if PVE::AccessControl::role_is_special($role);
+	$custom_roles++;
 
-	# TODO: any role updates?
+	if ($role =~ /^PVE/i) {
+	    log_warn("custom role '$role' clashes with 'PVE' namespace for built-in roles");
+	    $pve_namespace_clashes++;
+	}
+    }
+    if ($pve_namespace_clashes > 0) {
+	log_fail("$pve_namespace_clashes custom role(s) will clash with 'PVE' namespace for built-in roles enforced in Proxmox VE 8");
+    } elsif ($custom_roles > 0) {
+	log_pass("none of the $custom_roles custom roles will clash with newly enforced 'PVE' namespace")
+    } else {
+	log_pass("no custom roles defined, so no clash with 'PVE' role ID namespace enforced in Proxmox VE 8")
     }
 }
 
