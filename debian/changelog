@@ -1,3 +1,9 @@
+pve-manager (7.4-12) bullseye; urgency=medium
+
+  * pve7to8: check if LXCFS is running with FUSE3 after upgrade
+
+ -- Proxmox Support Team <support@proxmox.com>  Thu, 08 Jun 2023 13:00:23 +0200
+
 pve-manager (7.4-11) bullseye; urgency=medium
 
   * pve7to8:
