@@ -3,6 +3,8 @@ package PVE::CLI::pve7to8;
 use strict;
 use warnings;
 
+use Cwd ();
+
 use PVE::API2::APT;
 use PVE::API2::Ceph;
 use PVE::API2::LXC;
@@ -20,7 +22,7 @@ use PVE::NodeConfig;
 use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Storage::Plugin;
-use PVE::Tools qw(run_command split_list);
+use PVE::Tools qw(run_command split_list file_get_contents);
 use PVE::QemuConfig;
 use PVE::QemuServer;
 use PVE::VZDump::Common;
@@ -35,6 +37,8 @@ use PVE::CLIHandler;
 use base qw(PVE::CLIHandler);
 
 my $nodename = PVE::INotify::nodename();
+
+my $upgraded = 0; # set in check_pve_packages
 
 sub setup_environment {
     PVE::RPCEnvironment->setup_default_cli_env();
@@ -175,7 +179,7 @@ sub check_pve_packages {
 	my $pkgs = join(', ', map { $_->{Package} } @$updates);
 	log_warn("updates for the following packages are available:\n  $pkgs");
     } else {
-	log_pass("all packages uptodate");
+	log_pass("all packages up-to-date");
     }
 
     print "\nChecking proxmox-ve package version..\n";
@@ -184,8 +188,6 @@ sub check_pve_packages {
 	my $min_pve_ver = "$min_pve_major.$min_pve_minor-$min_pve_pkgrel";
 
 	my ($maj, $min, $pkgrel) = $proxmox_ve->{OldVersion} =~ m/^(\d+)\.(\d+)[.-](\d+)/;
-
-	my $upgraded = 0;
 
 	if ($maj > $min_pve_major) {
 	    log_pass("already upgraded to Proxmox VE " . ($min_pve_major + 1));
@@ -263,6 +265,8 @@ sub check_storage_health {
     }
 
     check_storage_content();
+    eval { check_storage_content_dirs() };
+    log_fail("failed to check storage content directories - $@") if $@;
 }
 
 sub check_cluster_corosync {
@@ -467,7 +471,7 @@ sub check_ceph {
 
     # TODO: check OSD min-required version, if to low it breaks stuff!
 
-    log_info("cehcking local Ceph version..");
+    log_info("checking local Ceph version..");
     if (my $release = eval { PVE::Ceph::Tools::get_local_version(1) }) {
 	my $code_name = $ceph_release2code->{"$release"} || 'unknown';
 	if ($release == $ceph_supported_release) {
@@ -500,9 +504,24 @@ sub check_ceph {
 	    { 'key' => 'osd', 'name' => 'OSD' },
 	];
 
+	my $ceph_versions_simple = {};
+	my $ceph_versions_commits = {};
+	for my $type (keys %$ceph_versions) {
+	    for my $full_version (keys $ceph_versions->{$type}->%*) {
+		if ($full_version =~ m/^(.*) \((.*)\).*\(.*\)$/) {
+		    # String is in the form of
+		    # ceph version 17.2.6 (810db68029296377607028a6c6da1ec06f5a2b27) quincy (stable)
+		    # only check the first part, e.g. 'ceph version 17.2.6', the commit hash can
+		    # be different
+		    $ceph_versions_simple->{$type}->{$1} = 1;
+		    $ceph_versions_commits->{$type}->{$2} = 1;
+		}
+	    }
+	}
+
 	foreach my $service (@$services) {
 	    my ($name, $key) = $service->@{'name', 'key'};
-	    if (my $service_versions = $ceph_versions->{$key}) {
+	    if (my $service_versions = $ceph_versions_simple->{$key}) {
 		if (keys %$service_versions == 0) {
 		    log_skip("no running instances detected for daemon type $name.");
 		} elsif (keys %$service_versions == 1) {
@@ -513,6 +532,9 @@ sub check_ceph {
 	    } else {
 		log_skip("unable to determine versions of running Ceph $name instances.");
 	    }
+	    my $service_commits = $ceph_versions_commits->{$key};
+	    log_info("different builds of same version detected for an $name. Are you in the middle of the upgrade?")
+		if $service_commits && keys %$service_commits > 1;
 	}
 
 	my $overall_versions = $ceph_versions->{overall};
@@ -521,7 +543,7 @@ sub check_ceph {
 	} elsif (keys %$overall_versions == 1) {
 	    log_pass("single running overall version detected for all Ceph daemon types.");
 	    $noout_wanted = 0; # off post-upgrade, on pre-upgrade
-	} else {
+	} elsif (keys $ceph_versions_simple->{overall}->%* != 1) {
 	    log_warn("overall version mismatch detected, check 'ceph versions' output for details!");
 	}
     }
@@ -646,7 +668,7 @@ sub check_backup_retention_settings {
 	log_warn("unable to parse node's VZDump configuration - $err");
     }
 
-    log_pass("no problems found.") if $pass;
+    log_pass("no backup retention problems found.") if $pass;
 }
 
 sub check_cifs_credential_location {
@@ -673,7 +695,7 @@ sub check_cifs_credential_location {
 }
 
 sub check_custom_pool_roles {
-    log_info("Checking custom roles for pool permissions..");
+    log_info("Checking custom role IDs for clashes with new 'PVE' namespace..");
 
     if (! -f "/etc/pve/user.cfg") {
 	log_skip("user.cfg does not exist");
@@ -712,10 +734,22 @@ sub check_custom_pool_roles {
 	}
     }
 
-    foreach my $role (sort keys %{$roles}) {
+    my ($custom_roles, $pve_namespace_clashes) = (0, 0);
+    for my $role (sort keys %{$roles}) {
 	next if PVE::AccessControl::role_is_special($role);
+	$custom_roles++;
 
-	# TODO: any role updates?
+	if ($role =~ /^PVE/i) {
+	    log_warn("custom role '$role' clashes with 'PVE' namespace for built-in roles");
+	    $pve_namespace_clashes++;
+	}
+    }
+    if ($pve_namespace_clashes > 0) {
+	log_fail("$pve_namespace_clashes custom role(s) will clash with 'PVE' namespace for built-in roles enforced in Proxmox VE 8");
+    } elsif ($custom_roles > 0) {
+	log_pass("none of the $custom_roles custom roles will clash with newly enforced 'PVE' namespace")
+    } else {
+	log_pass("no custom roles defined, so no clash with 'PVE' role ID namespace enforced in Proxmox VE 8")
     }
 }
 
@@ -725,7 +759,7 @@ my sub check_max_length {
 }
 
 sub check_node_and_guest_configurations {
-    log_info("Checking node and guest description/note legnth..");
+    log_info("Checking node and guest description/note length..");
 
     my @affected_nodes = grep {
 	my $desc = PVE::NodeConfig::load_config($_)->{desc};
@@ -804,7 +838,7 @@ sub check_storage_content {
 	next if $scfg->{content}->{images};
 	next if $scfg->{content}->{rootdir};
 
-	# Skip 'iscsi(direct)' (and foreign plugins with potentially similiar behavior) with 'none',
+	# Skip 'iscsi(direct)' (and foreign plugins with potentially similar behavior) with 'none',
 	# because that means "use LUNs directly" and vdisk_list() in PVE 6.x still lists those.
 	# It's enough to *not* skip 'dir', because it is the only other storage that supports 'none'
 	# and 'images' or 'rootdir', hence being potentially misconfigured.
@@ -926,14 +960,52 @@ sub check_storage_content {
     }
 
     if ($pass) {
-	log_pass("no problems found");
+	log_pass("no storage content problems found");
+    }
+}
+
+sub check_storage_content_dirs {
+    my $storage_cfg = PVE::Storage::config();
+
+    # check that content dirs are pairwise inequal
+    my $any_problematic = 0;
+    for my $storeid (sort keys $storage_cfg->{ids}->%*) {
+	my $scfg = $storage_cfg->{ids}->{$storeid};
+
+	next if !PVE::Storage::storage_check_enabled($storage_cfg, $storeid, undef, 1);
+	next if !$scfg->{path} || !$scfg->{content};
+
+	eval { PVE::Storage::activate_storage($storage_cfg, $storeid) };
+	if (my $err = $@) {
+	    log_warn("activating '$storeid' failed - $err");
+	    next;
+	}
+
+	my $resolved_subdirs = {};
+	my $plugin = PVE::Storage::Plugin->lookup($scfg->{type});
+	for my $vtype (keys $scfg->{content}->%*) {
+	    my $abs_subdir = Cwd::abs_path($plugin->get_subdir($scfg, $vtype));
+	    push $resolved_subdirs->{$abs_subdir}->@*, $vtype;
+	}
+	for my $subdir (keys $resolved_subdirs->%*) {
+	    if (scalar($resolved_subdirs->{$subdir}->@*) > 1) {
+		my $types = join(", ", $resolved_subdirs->{$subdir}->@*);
+		log_warn("storage '$storeid' uses directory $subdir for multiple content types ($types).");
+		$any_problematic = 1;
+	     }
+	}
+    }
+    if ($any_problematic) {
+	log_fail("re-using directory for multiple content types (see above) is no longer supported in Proxmox VE 8!")
+    } else {
+	log_pass("no storage re-uses a directory for multiple content types.")
     }
 }
 
 sub check_containers_cgroup_compat {
     if ($forced_legacy_cgroup) {
 	log_warn("System explicitly configured for legacy hybrid cgroup hierarchy.\n"
-	    ."     NOTE: support for the hybrid cgroup hierachy will be removed in future Proxmox VE 9 (~ 2025)."
+	    ."     NOTE: support for the hybrid cgroup hierarchy will be removed in future Proxmox VE 9 (~ 2025)."
 	);
     }
 
@@ -1052,6 +1124,34 @@ sub check_containers_cgroup_compat {
     }
 };
 
+sub check_lxcfs_fuse_version {
+    log_info("Checking if LXCFS is running with FUSE3 library, if already upgraded..");
+    if (!$upgraded) {
+	log_skip("not yet upgraded, no need to check the FUSE library version LXCFS uses");
+	return;
+    }
+
+    my $lxcfs_pid = eval { file_get_contents('/run/lxcfs.pid') };
+    if (my $err = $@) {
+	log_fail("failed to get LXCFS pid - $err");
+	return;
+    }
+    chomp $lxcfs_pid;
+
+    my $lxcfs_maps = eval { file_get_contents("/proc/${lxcfs_pid}/maps") };
+    if (my $err = $@) {
+	log_fail("failed to get LXCFS maps - $err");
+	return;
+    }
+
+    if ($lxcfs_maps =~ /\/libfuse.so.2/s) {
+	log_warn("systems seems to be upgraded but LXCFS is still running with FUSE 2 library, not yet rebooted?")
+    } elsif ($lxcfs_maps =~ /\/libfuse3.so.3/s) {
+	log_pass("systems seems to be upgraded and LXCFS is running with FUSE 3 library")
+    }
+    return;
+}
+
 sub check_apt_repos {
     log_info("Checking if the suite for the Debian security repository is correct..");
 
@@ -1109,7 +1209,7 @@ sub check_apt_repos {
     PVE::Tools::dir_glob_foreach($dir, '^.*\.list$', $check_file);
 
     if (!$found) {
-	# only warn, it might be defined in a .sources file or in a way not catched above
+	# only warn, it might be defined in a .sources file or in a way not caaught above
 	log_warn("No Debian security repository detected in /etc/apt/sources.list and " .
 	    "/etc/apt/sources.list.d/*.list");
     }
@@ -1122,7 +1222,7 @@ sub check_time_sync {
     if ($unit_active->('systemd-timesyncd.service')) {
 	log_warn(
 	    "systemd-timesyncd is not the best choice for time-keeping on servers, due to only applying"
-	    ." updates on boot.\n  While not necesarry for the upgrade it's recommended to use one of:\n"
+	    ." updates on boot.\n  While not necessary for the upgrade it's recommended to use one of:\n"
 	    ."    * chrony (Default in new Proxmox VE installations)\n    * ntpsec\n    * openntpd\n"
 	);
     } elsif ($unit_active->('ntp.service')) {
@@ -1234,6 +1334,7 @@ sub check_misc {
     check_backup_retention_settings();
     check_cifs_credential_location();
     check_custom_pool_roles();
+    check_lxcfs_fuse_version();
     check_node_and_guest_configurations();
     check_apt_repos();
 }
