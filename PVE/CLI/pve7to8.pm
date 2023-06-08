@@ -22,7 +22,7 @@ use PVE::NodeConfig;
 use PVE::RPCEnvironment;
 use PVE::Storage;
 use PVE::Storage::Plugin;
-use PVE::Tools qw(run_command split_list);
+use PVE::Tools qw(run_command split_list file_get_contents);
 use PVE::QemuConfig;
 use PVE::QemuServer;
 use PVE::VZDump::Common;
@@ -37,6 +37,8 @@ use PVE::CLIHandler;
 use base qw(PVE::CLIHandler);
 
 my $nodename = PVE::INotify::nodename();
+
+my $upgraded = 0; # set in check_pve_packages
 
 sub setup_environment {
     PVE::RPCEnvironment->setup_default_cli_env();
@@ -186,8 +188,6 @@ sub check_pve_packages {
 	my $min_pve_ver = "$min_pve_major.$min_pve_minor-$min_pve_pkgrel";
 
 	my ($maj, $min, $pkgrel) = $proxmox_ve->{OldVersion} =~ m/^(\d+)\.(\d+)[.-](\d+)/;
-
-	my $upgraded = 0;
 
 	if ($maj > $min_pve_major) {
 	    log_pass("already upgraded to Proxmox VE " . ($min_pve_major + 1));
@@ -1124,6 +1124,34 @@ sub check_containers_cgroup_compat {
     }
 };
 
+sub check_lxcfs_fuse_version {
+    log_info("Checking if LXCFS is running with FUSE3 library, if already upgraded..");
+    if (!$upgraded) {
+	log_skip("not yet upgraded, no need to check the FUSE library version LXCFS uses");
+	return;
+    }
+
+    my $lxcfs_pid = eval { file_get_contents('/run/lxcfs.pid') };
+    if (my $err = $@) {
+	log_fail("failed to get LXCFS pid - $err");
+	return;
+    }
+    chomp $lxcfs_pid;
+
+    my $lxcfs_maps = eval { file_get_contents("/proc/${lxcfs_pid}/maps") };
+    if (my $err = $@) {
+	log_fail("failed to get LXCFS maps - $err");
+	return;
+    }
+
+    if ($lxcfs_maps =~ /\/libfuse.so.2/s) {
+	log_warn("systems seems to be upgraded but LXCFS is still running with FUSE 2 library, not yet rebooted?")
+    } elsif ($lxcfs_maps =~ /\/libfuse3.so.3/s) {
+	log_pass("systems seems to be upgraded and LXCFS is running with FUSE 3 library")
+    }
+    return;
+}
+
 sub check_apt_repos {
     log_info("Checking if the suite for the Debian security repository is correct..");
 
@@ -1306,6 +1334,7 @@ sub check_misc {
     check_backup_retention_settings();
     check_cifs_credential_location();
     check_custom_pool_roles();
+    check_lxcfs_fuse_version();
     check_node_and_guest_configurations();
     check_apt_repos();
 }
