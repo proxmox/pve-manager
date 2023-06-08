@@ -177,7 +177,7 @@ sub check_pve_packages {
 	my $pkgs = join(', ', map { $_->{Package} } @$updates);
 	log_warn("updates for the following packages are available:\n  $pkgs");
     } else {
-	log_pass("all packages uptodate");
+	log_pass("all packages up-to-date");
     }
 
     print "\nChecking proxmox-ve package version..\n";
@@ -471,7 +471,7 @@ sub check_ceph {
 
     # TODO: check OSD min-required version, if to low it breaks stuff!
 
-    log_info("cehcking local Ceph version..");
+    log_info("checking local Ceph version..");
     if (my $release = eval { PVE::Ceph::Tools::get_local_version(1) }) {
 	my $code_name = $ceph_release2code->{"$release"} || 'unknown';
 	if ($release == $ceph_supported_release) {
@@ -747,7 +747,7 @@ my sub check_max_length {
 }
 
 sub check_node_and_guest_configurations {
-    log_info("Checking node and guest description/note legnth..");
+    log_info("Checking node and guest description/note length..");
 
     my @affected_nodes = grep {
 	my $desc = PVE::NodeConfig::load_config($_)->{desc};
@@ -826,7 +826,7 @@ sub check_storage_content {
 	next if $scfg->{content}->{images};
 	next if $scfg->{content}->{rootdir};
 
-	# Skip 'iscsi(direct)' (and foreign plugins with potentially similiar behavior) with 'none',
+	# Skip 'iscsi(direct)' (and foreign plugins with potentially similar behavior) with 'none',
 	# because that means "use LUNs directly" and vdisk_list() in PVE 6.x still lists those.
 	# It's enough to *not* skip 'dir', because it is the only other storage that supports 'none'
 	# and 'images' or 'rootdir', hence being potentially misconfigured.
@@ -993,7 +993,7 @@ sub check_storage_content_dirs {
 sub check_containers_cgroup_compat {
     if ($forced_legacy_cgroup) {
 	log_warn("System explicitly configured for legacy hybrid cgroup hierarchy.\n"
-	    ."     NOTE: support for the hybrid cgroup hierachy will be removed in future Proxmox VE 9 (~ 2025)."
+	    ."     NOTE: support for the hybrid cgroup hierarchy will be removed in future Proxmox VE 9 (~ 2025)."
 	);
     }
 
@@ -1169,7 +1169,7 @@ sub check_apt_repos {
     PVE::Tools::dir_glob_foreach($dir, '^.*\.list$', $check_file);
 
     if (!$found) {
-	# only warn, it might be defined in a .sources file or in a way not catched above
+	# only warn, it might be defined in a .sources file or in a way not caaught above
 	log_warn("No Debian security repository detected in /etc/apt/sources.list and " .
 	    "/etc/apt/sources.list.d/*.list");
     }
@@ -1182,7 +1182,7 @@ sub check_time_sync {
     if ($unit_active->('systemd-timesyncd.service')) {
 	log_warn(
 	    "systemd-timesyncd is not the best choice for time-keeping on servers, due to only applying"
-	    ." updates on boot.\n  While not necesarry for the upgrade it's recommended to use one of:\n"
+	    ." updates on boot.\n  While not necessary for the upgrade it's recommended to use one of:\n"
 	    ."    * chrony (Default in new Proxmox VE installations)\n    * ntpsec\n    * openntpd\n"
 	);
     } elsif ($unit_active->('ntp.service')) {
