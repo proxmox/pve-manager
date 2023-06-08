@@ -27,6 +27,7 @@ Ext.define('PVE.qemu.OSTypeInputPanel', {
 
 	    me.setWidget('pveBusSelector', targetValues.busType);
 	    me.setWidget('pveNetworkCardSelector', targetValues.networkCard);
+	    me.setWidget('CPUModelSelector', targetValues.cputype);
 	    var scsihw = targetValues.scsihw || '__default__';
 	    this.getViewModel().set('current.scsihw', scsihw);
 	    this.getViewModel().set('current.ostype', ostype);
