@@ -1,3 +1,57 @@
+pve-manager (8.0.0~8) bookworm; urgency=medium
+
+  * ui: add beta text with link to bugtracker
+
+  * api: nodes: add 'migrateall' to index
+
+  * fix #2641: ui: storage: expose CIFS subdir parameter on add
+
+  * ui: fix duplicate references when using multiple disk storage selectors
+
+  * pveceph: add osd details command
+
+  * fix #4605: drop rsyncable from zstd invocation
+
+  * fix #4678: ui: don't sort storage backup content by vmid by default
+
+  * jobs: add RealmSync Plugin and register it
+
+  * ui: add Realm Sync panel
+
+  * appliances: switch over to Proxmox VE 8 index
+
+  * ui: qemu, lxc : fix firewall menu caps
+
+  * ui: firewall: refactor privilege checks and prevent double click
+
+  * api: backup: require Datastore.Allocate on storage
+
+  * api: network: check permissions for local bridges
+
+  * ui: user view: show tfa lock status
+
+  * ui: user view: add 'Unlock TFA' button
+
+  * fix #3428: cloud-init: add toggle for automatic upgrades
+
+  * ui: qga: Add option to turn off QGA fs-freeze/-thaw on backup
+
+  * api: replication job status: allow querying disabled jobs too
+
+  * ui: ceph: pool: add pool number as column
+
+  * pve7to8: sync over from stable-7 branch
+
+  * update shipped  container appliances info index
+
+  * d/postinst: setup pvetest repo for beta
+
+  * api: mark batch-execute api call as root-only
+
+  * ui: qemu: show progress bar for resize task
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 09 Jun 2023 11:11:45 +0200
+
 pve-manager (8.0.0~7) bookworm; urgency=medium
 
   * pveceph: support new enterprise repository, new in Proxmox VE 8, which can
