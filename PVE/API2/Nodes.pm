@@ -464,10 +464,7 @@ __PACKAGE__->register_method({
     name => 'execute',
     path => 'execute',
     method => 'POST',
-    permissions => {
-	check => ['perm', '/nodes/{node}', [ 'Sys.Audit' ]],
-    },
-    description => "Execute multiple commands in order.",
+    description => "Execute multiple commands in order, root only.",
     proxyto => 'node',
     protected => 1, # avoid problems with proxy code
     parameters => {
