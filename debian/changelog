@@ -1,3 +1,9 @@
+pve-manager (7.4-13) bullseye; urgency=medium
+
+  * aplinfo: ensure keyring is in binary format for GPG compat
+
+ -- Proxmox Support Team <support@proxmox.com>  Fri, 09 Jun 2023 11:42:05 +0200
+
 pve-manager (7.4-12) bullseye; urgency=medium
 
   * pve7to8: check if LXCFS is running with FUSE3 after upgrade
