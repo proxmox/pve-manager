@@ -160,9 +160,9 @@ case "$1" in
 
     # FIXME: remove after beta is over and add hunk to actively remove the repo
     BETA_SOURCES="/etc/apt/sources.list.d/pvetest-for-beta.list"
-    if test -f "$BETA_SOURCES" && dpkg --compare-versions "$2" 'lt' '7.0-9~' && dpkg --compare-versions "$2" 'gt' '7.0~'; then
-        echo "Removing the during beta added pvetest repository file again"
-        rm -v "$BETA_SOURCES" || true
+    if ! test -f "$BETA_SOURCES"; then
+        echo "Adding pvetest repo to '$BETA_SOURCES' to enable updates during Proxmox VE 8.0 BETA"
+        echo "deb http://download.proxmox.com/debian/pve bookworm pvetest" | tee "$BETA_SOURCES"
     fi
 
     # FIXME: remove in PVE 8.0
