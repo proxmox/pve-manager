@@ -101,7 +101,7 @@ Ext.define('PVE.dc.UserView', {
 	        (rec.data['totp-locked'] || rec.data['tfa-locked-until'])),
 	    handler: function(btn, event, rec) {
 		Ext.Msg.confirm(
-		    gettext(Ext.String.format('Unlock TFA authentication for {0}', rec.data.userid)),
+		    Ext.String.format(gettext('Unlock TFA authentication for {0}'), rec.data.userid)),
 		    gettext("Locked 2nd factors can happen if the user's password was leaked. Are you sure you want to unlock the user?"),
 		    function(btn_response) {
 			if (btn_response === 'yes') {
