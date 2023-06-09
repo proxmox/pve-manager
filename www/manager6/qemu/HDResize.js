@@ -16,6 +16,10 @@ Ext.define('PVE.window.HDResize', {
 		Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 	    },
 	    success: function(response, options) {
+		Ext.create('Proxmox.window.TaskProgress', {
+		    autoShow: true,
+		    upid: response.result.data,
+		});
 		me.close();
 	    },
 	});
