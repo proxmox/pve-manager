@@ -165,53 +165,6 @@ case "$1" in
         echo "deb http://download.proxmox.com/debian/pve bookworm pvetest" | tee "$BETA_SOURCES"
     fi
 
-    # FIXME: remove in PVE 8.0
-    if test ! -e /proxmox_install_mode && test -n "$2" && dpkg --compare-versions "$2" 'lt' '7.0-6~'; then
-        # PVE 4.0 beta to 5.4 ISO had a bug and did not generated a unique machine-id. below is a
-        # very relaxed machine-id list from all ISOs (released, tests & internal) possibly affected
-        if grep -q \
-            -e a0ee88c29b764c46a579dd89c86c2d84 \
-            -e ecbf104295bd4f8b90bb82dc2fa5e9e5 \
-            -e c8fa51cd0c254ea08b0e37c1e37afbb9 \
-            -e 2ec24eda629a4c8d8c1f8dac50a9ee5f \
-            -e ef8db290720047159b426bd322839d70 \
-            -e bd94244c0da6419a82a383e62dc03b51 \
-            -e 45d4e7046c3d4c26af8acd589f358ac6 \
-            -e 8c445f96b3064ff79f825ea78a3eefde \
-            -e 6f9fae0f0a794fd4b89b3abecfd7f182 \
-            -e 6f9fae0f0a794fd4b89b3abecfd7f182 \
-            -e 285de85759894b3f9ad9844a89045af6 \
-            -e 89971dede7b04c98b2b0bc8845f53320 \
-            -e 4e3b6e9550f24d638bc26211a7b37df5 \
-            -e bc2f684e31ee4daf95e45c62410a95b1 \
-            -e 8cc7bc883fd048b78a4af7433c48e341 \
-            -e 9b46d99712854566bb02a656a3ff9191 \
-            -e e7fc055af47048ee884dcb88a7474336 \
-            -e 13d879f75e6447a69ed85179bd93759a \
-            -e 5b59e448c3e74029af2ac91f572d68a7 \
-            -e 5a2bd0d11a6c41f9a33fd527751224ea \
-            -e 516afc72013c4b9da85b309aad987df2 \
-            -e b0ce8d24684845e8ac337c588a7715cb \
-            -e e0af064c16e9463e9fa980eac66427c1 \
-            -e 6e925d11b497446e8e7f2ff38e7cf891 \
-            -e eec280213051474d8bfe7e089a86744a \
-            -e 708ded6ee82a46c08b77fecda2284c6c \
-            -e 615cb2b78b2240289fef74da610c146f \
-            -e b965b329a7e246d5be66a8d367f5760d \
-            -e 5472a49c6436426fbebd7881f7b7f13b \
-            /etc/machine-id
-                then
-                    echo "found static machine-id bug from Proxmox VE ISO installer <= 5.4, regenerating machine-id"
-                    systemd-id128 new | tee /etc/machine-id.new /var/lib/dbus/machine-id.new
-                    # atomically replace
-                    mv /etc/machine-id.new /etc/machine-id
-                    mv /var/lib/dbus/machine-id.new /var/lib/dbus/machine-id
-                    echo "new machine-id generated, a reboot is recommended"
-                else
-                    echo "machine-id check OK"
-        fi
-    fi
-
     set_lvm_conf
 
     if test ! -e /proxmox_install_mode; then
