@@ -109,7 +109,7 @@ sub print_header {
 }
 
 my $get_systemd_unit_state = sub {
-    my ($unit, $surpress_stderr) = @_;
+    my ($unit, $suppress_stderr) = @_;
 
     my $state;
     my $filter_output = sub {
@@ -118,7 +118,7 @@ my $get_systemd_unit_state = sub {
     };
 
     my %extra = (outfunc => $filter_output, noerr => 1);
-    $extra{errfunc} = sub {  } if $surpress_stderr;
+    $extra{errfunc} = sub {  } if $suppress_stderr;
 
     eval {
 	run_command(['systemctl', 'is-enabled', "$unit"], %extra);
