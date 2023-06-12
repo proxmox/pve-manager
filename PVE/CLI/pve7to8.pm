@@ -1220,21 +1220,16 @@ sub check_apt_repos {
 }
 
 sub check_nvidia_vgpu_service {
-    log_info("Checking for existance of NVIDIA vGPU Manager..");
+    log_info("Checking for existence of NVIDIA vGPU Manager..");
+
+    my $msg = "NVIDIA vGPU Service found, possibly not compatible with newer kernel versions, check"
+        ." with their documentation and https://pve.proxmox.com/wiki/Upgrade_from_7_to_8#Known_upgrade_issues.";
 
     my $state = $get_systemd_unit_state->("nvidia-vgpu-mgr.service");
     if ($state && $state eq 'active') {
-	log_fail(
-	    "Running NVIDIA vGPU Service found, possibly not compatible with newer kernel versions,"
-	    ." check with their documentation and"
-	    ." https://pve.proxmox.com/wiki/Upgrade_from_7_to_8#Known_upgrade_issues."
-	);
+	log_fail("Running $msg");
     } elsif ($state && $state ne 'unknown') {
-	log_warn(
-	    "NVIDIA vGPU Service found, possibly not compatible with newer kernel versions,"
-	    ." check with their documentation and"
-	    ." https://pve.proxmox.com/wiki/Upgrade_from_7_to_8#Known_upgrade_issues."
-	);
+	log_warn($msg);
     } else {
 	log_pass("No NVIDIA vGPU Service found.");
     }
