@@ -1225,7 +1225,7 @@ sub check_nvidia_vgpu_service {
     my $msg = "NVIDIA vGPU Service found, possibly not compatible with newer kernel versions, check"
         ." with their documentation and https://pve.proxmox.com/wiki/Upgrade_from_7_to_8#Known_upgrade_issues.";
 
-    my $state = $get_systemd_unit_state->("nvidia-vgpu-mgr.service");
+    my $state = $get_systemd_unit_state->("nvidia-vgpu-mgr.service", 1);
     if ($state && $state eq 'active') {
 	log_fail("Running $msg");
     } elsif ($state && $state ne 'unknown') {
