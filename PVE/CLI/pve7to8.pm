@@ -1227,7 +1227,7 @@ sub check_nvidia_vgpu_service {
 
     my $state = $get_systemd_unit_state->("nvidia-vgpu-mgr.service", 1);
     if ($state && $state eq 'active') {
-	log_fail("Running $msg");
+	log_warn("Running $msg");
     } elsif ($state && $state ne 'unknown') {
 	log_warn($msg);
     } else {
