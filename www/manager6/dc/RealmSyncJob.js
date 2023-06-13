@@ -154,6 +154,11 @@ Ext.define('PVE.dc.RealmSyncJobEdit', {
 
 	updateDefaults: function(_field, newValue) {
 	    let me = this;
+
+	    ['scope', 'enable-new', 'schedule'].forEach((reference) => {
+		me.lookup(reference)?.setDisabled(false);
+	    });
+
 	    // only update on create
 	    if (!me.getView().isCreate) {
 		return;
@@ -232,6 +237,9 @@ Ext.define('PVE.dc.RealmSyncJobEdit', {
 			xtype: 'pmxRealmComboBox',
 			storeFilter: rec => rec.data.type === 'ldap' || rec.data.type === 'ad',
 		    },
+		    listConfig: {
+			emptyText: `<div class="x-grid-empty">${gettext('No LDAP/AD Realm found')}</div>`,
+		    },
 		    cbind: {
 			editable: '{isCreate}',
 		    },
@@ -245,6 +253,7 @@ Ext.define('PVE.dc.RealmSyncJobEdit', {
 		{
 		    xtype: 'pveCalendarEvent',
 		    fieldLabel: gettext('Schedule'),
+		    disabled: true,
 		    allowBlank: false,
 		    name: 'schedule',
 		    reference: 'schedule',
@@ -265,6 +274,7 @@ Ext.define('PVE.dc.RealmSyncJobEdit', {
 		    xtype: 'proxmoxKVComboBox',
 		    name: 'scope',
 		    reference: 'scope',
+		    disabled: true,
 		    fieldLabel: gettext('Scope'),
 		    value: '',
 		    emptyText: gettext('No default available'),
@@ -280,6 +290,7 @@ Ext.define('PVE.dc.RealmSyncJobEdit', {
 		    xtype: 'proxmoxKVComboBox',
 		    value: '1',
 		    deleteEmpty: false,
+		    disabled: true,
 		    allowBlank: false,
 		    comboItems: [
 			['1', Proxmox.Utils.yesText],
