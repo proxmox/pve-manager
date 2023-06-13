@@ -49,16 +49,19 @@ Ext.define('PVE.dc.RealmSyncJobView', {
 	},
     },
 
+    viewConfig: {
+	getRowClass: (record, _index) => record.get('enabled') ? '' : 'proxmox-disabled-row',
+    },
+
     columns: [
 	{
 	    header: gettext('Enabled'),
 	    width: 80,
 	    dataIndex: 'enabled',
-	    xtype: 'checkcolumn',
 	    sortable: true,
-	    disabled: true,
-	    disabledCls: 'x-item-enabled',
+	    align: 'center',
 	    stopSelection: false,
+	    renderer: Proxmox.Utils.renderEnabledIcon,
 	},
 	{
 	    text: gettext('Name'),
