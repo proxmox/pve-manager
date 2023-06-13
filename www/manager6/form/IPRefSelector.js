@@ -8,7 +8,7 @@ Ext.define('PVE.form.IPRefSelector', {
 
     ref_type: undefined, // undefined = any [undefined, 'ipset' or 'alias']
 
-    valueField: 'ref',
+    valueField: 'scopedref',
     displayField: 'ref',
     notFoundIsValid: true,
 
@@ -26,7 +26,23 @@ Ext.define('PVE.form.IPRefSelector', {
 
 	var store = Ext.create('Ext.data.Store', {
 	    autoLoad: true,
-	    fields: ['type', 'name', 'ref', 'comment'],
+	    fields: [
+		'type',
+		'name',
+		'ref',
+		'comment',
+		'scope',
+		{
+		    name: 'scopedref',
+		    calculate: function(v) {
+			if (v.type === 'alias') {
+			    return `${v.scope}/${v.name}`;
+			} else {
+			    return `+${v.scope}/${v.name}`;
+			}
+		    },
+		},
+	    ],
 	    idProperty: 'ref',
 	    proxy: {
 		type: 'proxmox',
@@ -66,16 +82,29 @@ Ext.define('PVE.form.IPRefSelector', {
 		width: 140,
 	    },
 	    {
+		header: gettext('Scope'),
+		dataIndex: 'scope',
+		hideable: false,
+		width: 140,
+		renderer: function(value) {
+		    return value === 'dc' ? gettext("Datacenter") : gettext("Guest");
+		},
+	    },
+	    {
 		header: gettext('Comment'),
 		dataIndex: 'comment',
 		renderer: Ext.String.htmlEncode,
+		minWidth: 60,
 		flex: 1,
 	    },
 	);
 
 	Ext.apply(me, {
 	    store: store,
-            listConfig: { columns: columns },
+            listConfig: {
+		columns: columns,
+		width: 500,
+	    },
 	});
 
 	me.on('change', disable_query_for_ips);
