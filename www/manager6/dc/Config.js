@@ -134,18 +134,30 @@ Ext.define('PVE.dc.Config', {
 		itemId: 'roles',
 	    },
 	    {
-		xtype: 'pveAuthView',
 		title: gettext('Realms'),
+		xtype: 'panel',
+		layout: {
+		    type: 'border',
+		},
 		groups: ['permissions'],
 		iconCls: 'fa fa-address-book-o',
 		itemId: 'domains',
-	    },
-	    {
-		xtype: 'pveRealmSyncJobView',
-		title: gettext('Realm Sync'),
-		groups: ['permissions'],
-		iconCls: 'fa fa-refresh',
-		itemId: 'realmsyncjobs',
+		items: [
+		    {
+			xtype: 'pveAuthView',
+			region: 'center',
+			border: false,
+		    },
+		    {
+			xtype: 'pveRealmSyncJobView',
+			title: gettext('Sync Jobs'),
+			region: 'south',
+			collapsible: true,
+			animCollapse: false,
+			border: false,
+			height: '50%',
+		    },
+		],
 	    },
 	    {
 		xtype: 'pveHAStatus',
