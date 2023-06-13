@@ -35,6 +35,41 @@ Ext.define('PVE.dc.RealmSyncJobView', {
 	    });
 	},
 
+	runNow: function() {
+	    let me = this;
+	    let view = me.getView();
+	    let selection = view.getSelection();
+	    if (!selection || selection.length < 1) {
+		return;
+	    }
+
+	    let params = selection[0].data;
+	    let realm = params.realm;
+
+	    let propertiesToDelete = ['comment', 'realm', 'id', 'type', 'schedule', 'last-run', 'next-run', 'enabled'];
+	    for (const prop of propertiesToDelete) {
+		delete params[prop];
+	    }
+
+	    Proxmox.Utils.API2Request({
+		url: `/access/domains/${realm}/sync`,
+		params,
+		waitMsgTarget: view,
+		method: 'POST',
+		success: function(response, options) {
+		    let upid = response.result.data;
+		    let win = Ext.create('Proxmox.window.TaskProgress', {
+			upid: upid,
+			taskDone: () => { me.reload(); },
+		    });
+		    win.show();
+		},
+		failure: function(response, opts) {
+		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
+		},
+	    });
+	},
+
 	reload: function() {
 	    this.getView().getStore().load();
 	},
@@ -109,6 +144,12 @@ Ext.define('PVE.dc.RealmSyncJobView', {
 	    xtype: 'proxmoxStdRemoveButton',
 	    baseurl: `/api2/extjs/cluster/jobs/realm-sync`,
 	    callback: 'reload',
+	},
+	{
+	    xtype: 'proxmoxButton',
+	    handler: 'runNow',
+	    disabled: true,
+	    text: gettext('Run Now'),
 	},
     ],
 
