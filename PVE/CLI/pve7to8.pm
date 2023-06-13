@@ -721,17 +721,17 @@ sub check_custom_pool_roles {
 	}
 
 	my $et = shift @data;
-	next if $et ne 'role';
+	if ($et eq 'role') {
+	    my ($role, $privlist) = @data;
+	    if (!PVE::AccessControl::verify_rolename($role, 1)) {
+		warn "user config - ignore role '$role' - invalid characters in role name\n";
+		next;
+	    }
 
-	my ($role, $privlist) = @data;
-	if (!PVE::AccessControl::verify_rolename($role, 1)) {
-	    warn "user config - ignore role '$role' - invalid characters in role name\n";
-	    next;
-	}
-
-	$roles->{$role} = {} if !$roles->{$role};
-	foreach my $priv (split_list($privlist)) {
-	    $roles->{$role}->{$priv} = 1;
+	    $roles->{$role} = {} if !$roles->{$role};
+	    foreach my $priv (split_list($privlist)) {
+		$roles->{$role}->{$priv} = 1;
+	    }
 	}
     }
 
