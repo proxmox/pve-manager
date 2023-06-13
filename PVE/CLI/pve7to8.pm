@@ -696,7 +696,7 @@ sub check_cifs_credential_location {
 }
 
 sub check_custom_pool_roles {
-    log_info("Checking custom role IDs for clashes with new 'PVE' namespace..");
+    log_info("Checking permission system changes..");
 
     if (! -f "/etc/pve/user.cfg") {
 	log_skip("user.cfg does not exist");
@@ -732,9 +732,17 @@ sub check_custom_pool_roles {
 	    foreach my $priv (split_list($privlist)) {
 		$roles->{$role}->{$priv} = 1;
 	    }
+	} elsif ($et eq 'acl') {
+	    my ($propagate, $pathtxt, $uglist, $rolelist) = @data;
+	    foreach my $role (split_list($rolelist)) {
+		if ($role eq 'PVESysAdmin' || $role eq 'PVEAdmin') {
+		    log_warn("found ACL entry on '$pathtxt' for '$uglist' with role '$role' - this role will no longer have 'Permissions.Modify' after the upgrade!");
+		}
+	    }
 	}
     }
 
+    log_info("Checking custom role IDs for clashes with new 'PVE' namespace..");
     my ($custom_roles, $pve_namespace_clashes) = (0, 0);
     for my $role (sort keys %{$roles}) {
 	next if PVE::AccessControl::role_is_special($role);
