@@ -221,14 +221,14 @@ Ext.define('PVE.dc.UserView', {
 		    header: gettext('Groups'),
 		    dataIndex: 'groups',
 		    renderer: Ext.htmlEncode,
-		    flex: 1,
+		    flex: 2,
 		},
 		{
 		    header: gettext('Comment'),
 		    sortable: false,
 		    renderer: Ext.String.htmlEncode,
 		    dataIndex: 'comment',
-		    flex: 1,
+		    flex: 3,
 		},
 	    ],
 	    listeners: {
