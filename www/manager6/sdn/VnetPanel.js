@@ -2,7 +2,7 @@ Ext.define('PVE.sdn.Vnet', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveSDNVnet',
 
-    title: 'Vnet',
+    title: 'VNet',
 
     onlineHelp: 'pvesdn_config_vnet',
 
@@ -16,7 +16,7 @@ Ext.define('PVE.sdn.Vnet', {
 	});
 
 	var vnetview_panel = Ext.createWidget('pveSDNVnetView', {
-	    title: 'Vnets',
+	    title: 'VNets',
 	    region: 'west',
 	    subnetview_panel: subnetview_panel,
 	    width: '50%',

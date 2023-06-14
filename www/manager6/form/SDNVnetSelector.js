@@ -23,7 +23,7 @@ Ext.define('PVE.form.SDNVnetSelector', {
             listConfig: {
 		columns: [
 		    {
-			header: gettext('Vnet'),
+			header: gettext('VNet'),
 			sortable: true,
 			dataIndex: 'vnet',
 			flex: 1,

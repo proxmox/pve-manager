@@ -2,7 +2,7 @@ Ext.define('PVE.sdn.ZoneContentPanel', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.pveSDNZoneContentPanel',
 
-    title: 'Vnet',
+    title: 'VNet',
 
     onlineHelp: 'pvesdn_config_vnet',
 
@@ -10,13 +10,13 @@ Ext.define('PVE.sdn.ZoneContentPanel', {
 	var me = this;
 
 	var permissions_panel = Ext.createWidget('pveSDNVnetACLView', {
-	    title: gettext('Vnet Permissions'),
+	    title: gettext('VNet Permissions'),
 	    region: 'center',
 	    border: false,
 	});
 
 	var vnetview_panel = Ext.createWidget('pveSDNZoneContentView', {
-	    title: 'Vnets',
+	    title: 'VNets',
 	    region: 'west',
 	    permissions_panel: permissions_panel,
 	    nodename: me.nodename,

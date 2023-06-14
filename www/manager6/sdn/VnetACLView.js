@@ -59,7 +59,7 @@ Ext.define('PVE.sdn.VnetACLAdd', {
 	    minValue: 1,
 	    maxValue: 4096,
             allowBlank: true,
-	    fieldLabel: 'Vlan',
+	    fieldLabel: 'VLAN',
 	    emptyText: gettext('All'),
 	});
 
@@ -164,7 +164,7 @@ Ext.define('PVE.sdn.VnetACLView', {
 		dataIndex: 'roleid',
 	    },
 	    {
-		header: gettext('Vlan'),
+		header: gettext('VLAN'),
 		flex: 1,
 		sortable: true,
 		renderer: render_vlan,

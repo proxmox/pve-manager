@@ -189,7 +189,7 @@ Ext.define('PVE.dc.Config', {
 		{
 		    xtype: 'pveSDNVnet',
 		    groups: ['sdn'],
-		    title: gettext('Vnets'),
+		    title: 'VNets',
 		    hidden: true,
 		    iconCls: 'fa fa-network-wired',
 		    itemId: 'sdnvnet',
