@@ -82,13 +82,15 @@ my $method_map = {
 };
 
 sub check_proxyto {
-    my ($info, $uri_param) = @_;
+    my ($info, $uri_param, $params) = @_;
 
     my $rpcenv = PVE::RPCEnvironment->get();
 
+    my $all_params = { %$uri_param, %$params };
+
     if ($info->{proxyto} || $info->{proxyto_callback}) {
 	my $node = PVE::API2Tools::resolve_proxyto(
-	    $rpcenv, $info->{proxyto_callback}, $info->{proxyto}, $uri_param);
+	    $rpcenv, $info->{proxyto_callback}, $info->{proxyto}, $all_params);
 
 	if ($node ne 'localhost' && ($node ne PVE::INotify::nodename())) {
 	    die "proxy loop detected - aborting\n" if $disable_proxy;
@@ -301,7 +303,7 @@ sub call_api_method {
     }
 
     my $data;
-    my ($node, $remip) = check_proxyto($info, $uri_param);
+    my ($node, $remip) = check_proxyto($info, $uri_param, $param);
     if ($node) {
 	$data = proxy_handler($node, $remip, $path, $cmd, $param);
     } else {
@@ -345,7 +347,7 @@ __PACKAGE__->register_method ({
 
 	my $res;
 
-	my ($node, $remip) = check_proxyto($info, $uri_param);
+	my ($node, $remip) = check_proxyto($info, $uri_param, $param);
 	if ($node) {
 	    $res = proxy_handler($node, $remip, $path, 'ls', $param);
 	} else {
