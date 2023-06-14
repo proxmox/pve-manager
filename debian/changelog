@@ -1,6 +1,21 @@
+pve-manager (7.4-14) bullseye; urgency=medium
+
+  * pve7to8:
+    - make check for correct running kernel more resilient
+    - improve systemd unified cgroupv2 support check
+    - add check for nvidia-vgpu-mgr, currently not compatible with the 6.2
+      kernel
+    - add check for permissions that are affected of dropping the
+      'Permissions.Modify' privilege from 'PVEAdmin' and 'PVESysAdmin'
+      built-in roles. Only 'Administrator', the most powerful built-in role
+      after `root@pam`, will have the 'Permissions.Modify' privilege in the
+      next major release, Proxmox VE 8.
+
+ -- Proxmox Support Team <support@proxmox.com>  Wed, 14 Jun 2023 10:54:33 +0200
+
 pve-manager (7.4-13) bullseye; urgency=medium
 
-  * aplinfo: ensure keyring is in binary format for GPG compat
+  * aplinfo: ensure keyring is in binary format for GPG t compatibility
 
  -- Proxmox Support Team <support@proxmox.com>  Fri, 09 Jun 2023 11:42:05 +0200
 
