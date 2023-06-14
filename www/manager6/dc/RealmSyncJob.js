@@ -58,16 +58,13 @@ Ext.define('PVE.dc.RealmSyncJobView', {
 		params,
 		waitMsgTarget: view,
 		method: 'POST',
+		failure: response => Ext.Msg.alert(gettext('Error'), response.htmlStatus),
 		success: function(response, options) {
-		    let upid = response.result.data;
-		    let win = Ext.create('Proxmox.window.TaskProgress', {
-			upid: upid,
+		    Ext.create('Proxmox.window.TaskProgress', {
+			autoShow: true,
+			upid: response.result.data,
 			taskDone: () => { me.reload(); },
 		    });
-		    win.show();
-		},
-		failure: function(response, opts) {
-		    Ext.Msg.alert(gettext('Error'), response.htmlStatus);
 		},
 	    });
 	},
