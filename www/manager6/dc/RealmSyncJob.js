@@ -306,7 +306,7 @@ Ext.define('PVE.dc.RealmSyncJobEdit', {
 		},
 		{
 		    xtype: 'proxmoxcheckbox',
-		    fieldLabel: gettext('Enable'),
+		    fieldLabel: gettext('Enable Job'),
 		    name: 'enabled',
 		    reference: 'enabled',
 		    uncheckedValue: 0,
@@ -344,7 +344,7 @@ Ext.define('PVE.dc.RealmSyncJobEdit', {
 		    ],
 		    name: 'enable-new',
 		    reference: 'enable-new',
-		    fieldLabel: gettext('Enable new'),
+		    fieldLabel: gettext('Enable New'),
 		},
 	    ],
 
