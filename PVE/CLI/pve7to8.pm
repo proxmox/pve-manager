@@ -252,7 +252,7 @@ sub check_storage_health {
 
     my $info = PVE::Storage::storage_info($cfg);
 
-    foreach my $storeid (sort keys %$info) {
+    for my $storeid (sort keys %$info) {
 	my $d = $info->{$storeid};
 	if ($d->{enabled}) {
 	    if ($d->{active}) {
@@ -520,7 +520,7 @@ sub check_ceph {
 	    }
 	}
 
-	foreach my $service (@$services) {
+	for my $service (@$services) {
 	    my ($name, $key) = $service->@{'name', 'key'};
 	    if (my $service_versions = $ceph_versions_simple->{$key}) {
 		if (keys %$service_versions == 0) {
@@ -714,7 +714,7 @@ sub check_custom_pool_roles {
 	my $line = $1;
 	my @data;
 
-	foreach my $d (split (/:/, $line)) {
+	for my $d (split (/:/, $line)) {
 	    $d =~ s/^\s+//;
 	    $d =~ s/\s+$//;
 	    push @data, $d
@@ -729,14 +729,17 @@ sub check_custom_pool_roles {
 	    }
 
 	    $roles->{$role} = {} if !$roles->{$role};
-	    foreach my $priv (split_list($privlist)) {
+	    for my $priv (split_list($privlist)) {
 		$roles->{$role}->{$priv} = 1;
 	    }
 	} elsif ($et eq 'acl') {
 	    my ($propagate, $pathtxt, $uglist, $rolelist) = @data;
-	    foreach my $role (split_list($rolelist)) {
+	    for my $role (split_list($rolelist)) {
 		if ($role eq 'PVESysAdmin' || $role eq 'PVEAdmin') {
-		    log_warn("found ACL entry on '$pathtxt' for '$uglist' with role '$role' - this role will no longer have 'Permissions.Modify' after the upgrade!");
+		    log_warn(
+		        "found ACL entry on '$pathtxt' for '$uglist' with role '$role' - this role"
+		        ." will no longer have 'Permissions.Modify' after the upgrade!"
+		    );
 		}
 	    }
 	}
@@ -1338,7 +1341,7 @@ sub check_misc {
     };
 
     my $certs_check_failed = 0;
-    foreach my $cert (@$certs) {
+    for my $cert (@$certs) {
 	my ($type, $size, $fn) = $cert->@{qw(public-key-type public-key-bits filename)};
 
 	if (!defined($type) || !defined($size)) {
