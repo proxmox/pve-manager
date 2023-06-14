@@ -150,7 +150,7 @@ Ext.define('PVE.dc.Config', {
 		    },
 		    {
 			xtype: 'pveRealmSyncJobView',
-			title: gettext('Sync Jobs'),
+			title: gettext('Realm Sync Jobs'),
 			region: 'south',
 			collapsible: true,
 			animCollapse: false,

@@ -5,6 +5,8 @@ Ext.define('PVE.dc.RealmSyncJobView', {
     stateful: true,
     stateId: 'grid-realmsyncjobs',
 
+    emptyText: Ext.String.format(gettext('No {0} configured'), gettext('Realm Sync Job')),
+
     controller: {
 	xclass: 'Ext.app.ViewController',
 
