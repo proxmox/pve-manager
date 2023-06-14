@@ -939,7 +939,6 @@ __PACKAGE__->register_method ({
     method => 'POST',
     protected => 1,
     permissions => {
-	description => "Restricted to users on realm 'pam'",
 	check => ['perm', '/nodes/{node}', [ 'Sys.Console' ]],
     },
     description => "Creates a VNC Shell proxy.",
@@ -998,7 +997,6 @@ __PACKAGE__->register_method ({
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
 
-	raise_perm_exc("realm != pam") if $realm ne 'pam';
 
 	if (defined($param->{cmd}) && $param->{cmd} ne 'login' && $user ne 'root@pam') {
 	    raise_perm_exc('user != root@pam');
@@ -1079,7 +1077,6 @@ __PACKAGE__->register_method ({
     method => 'POST',
     protected => 1,
     permissions => {
-	description => "Restricted to users on realm 'pam'",
 	check => ['perm', '/nodes/{node}', [ 'Sys.Console' ]],
     },
     description => "Creates a VNC Shell proxy.",
@@ -1117,7 +1114,6 @@ __PACKAGE__->register_method ({
 
 	my $rpcenv = PVE::RPCEnvironment::get();
 	my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
-	raise_perm_exc("realm $realm != pam") if $realm ne 'pam';
 
 	my $node = $param->{node};
 	my $authpath = "/nodes/$node";
@@ -1160,7 +1156,7 @@ __PACKAGE__->register_method({
     path => 'vncwebsocket',
     method => 'GET',
     permissions => {
-	description => "Restricted to users on realm 'pam'. You also need to pass a valid ticket (vncticket).",
+	description => "You also need to pass a valid ticket (vncticket).",
 	check => ['perm', '/nodes/{node}', [ 'Sys.Console' ]],
     },
     description => "Opens a websocket for VNC traffic.",
@@ -1194,8 +1190,6 @@ __PACKAGE__->register_method({
 
 	my ($user, undef, $realm) = PVE::AccessControl::verify_username($rpcenv->get_user());
 
-	raise_perm_exc("realm != pam") if $realm ne 'pam';
-
 	my $authpath = "/nodes/$param->{node}";
 
 	PVE::AccessControl::verify_vnc_ticket($param->{vncticket}, $user, $authpath);
@@ -1212,7 +1206,6 @@ __PACKAGE__->register_method ({
     protected => 1,
     proxyto => 'node',
     permissions => {
-	description => "Restricted to users on realm 'pam'",
 	check => ['perm', '/nodes/{node}', [ 'Sys.Console' ]],
     },
     description => "Creates a SPICE shell.",
@@ -1246,7 +1239,6 @@ __PACKAGE__->register_method ({
 
 	my ($user, undef, $realm) = PVE::AccessControl::verify_username($authuser);
 
-	raise_perm_exc("realm != pam") if $realm ne 'pam';
 
 	if (defined($param->{cmd}) && $param->{cmd} ne 'login' && $user ne 'root@pam') {
 	    raise_perm_exc('user != root@pam');
