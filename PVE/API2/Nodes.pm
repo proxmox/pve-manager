@@ -949,7 +949,7 @@ __PACKAGE__->register_method ({
 	    node => get_standard_option('pve-node'),
 	    cmd => {
 		type => 'string',
-		description => "Run specific command or default to login.",
+		description => "Run specific command or default to login (requires 'root\@pam')",
 		enum => [keys %$shell_cmd_map],
 		optional => 1,
 		default => 'login',
@@ -1000,7 +1000,7 @@ __PACKAGE__->register_method ({
 
 	raise_perm_exc("realm != pam") if $realm ne 'pam';
 
-	if (defined($param->{cmd}) && $param->{cmd} eq 'upgrade' && $user ne 'root@pam') {
+	if (defined($param->{cmd}) && $param->{cmd} ne 'login' && $user ne 'root@pam') {
 	    raise_perm_exc('user != root@pam');
 	}
 
@@ -1089,7 +1089,7 @@ __PACKAGE__->register_method ({
 	    node => get_standard_option('pve-node'),
 	    cmd => {
 		type => 'string',
-		description => "Run specific command or default to login.",
+		description => "Run specific command or default to login (requires 'root\@pam')",
 		enum => [keys %$shell_cmd_map],
 		optional => 1,
 		default => 'login',
@@ -1223,7 +1223,7 @@ __PACKAGE__->register_method ({
 	    proxy => get_standard_option('spice-proxy', { optional => 1 }),
 	    cmd => {
 		type => 'string',
-		description => "Run specific command or default to login.",
+		description => "Run specific command or default to login (requires 'root\@pam')",
 		enum => [keys %$shell_cmd_map],
 		optional => 1,
 		default => 'login',
@@ -1248,7 +1248,7 @@ __PACKAGE__->register_method ({
 
 	raise_perm_exc("realm != pam") if $realm ne 'pam';
 
-	if (defined($param->{cmd}) && $param->{cmd} eq 'upgrade' && $user ne 'root@pam') {
+	if (defined($param->{cmd}) && $param->{cmd} ne 'login' && $user ne 'root@pam') {
 	    raise_perm_exc('user != root@pam');
 	}
 
