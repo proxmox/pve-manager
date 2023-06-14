@@ -7,7 +7,7 @@ Ext.define('pmx-users', {
     ],
     proxy: {
 	type: 'proxmox',
-	url: "/api2/json/access/users",
+	url: "/api2/json/access/users?full=1",
     },
     idProperty: 'userid',
 });
