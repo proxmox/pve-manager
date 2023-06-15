@@ -49,7 +49,7 @@ sub assert_param_permission_common {
 	raise_param_exc({ $key => "Only root may set this option."}) if exists $param->{$key};
     }
 
-    if (defined($param->{bwlimit}) || defined($param->{ionice}) || defined($param->{performance})) {
+    if (grep { defined($param->{$_}) } qw(bwlimit ionice performance)) {
 	$rpcenv->check($user, "/", [ 'Sys.Modify' ]);
     }
 }
