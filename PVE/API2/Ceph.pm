@@ -25,7 +25,6 @@ use PVE::API2::Ceph::MDS;
 use PVE::API2::Ceph::MGR;
 use PVE::API2::Ceph::MON;
 use PVE::API2::Ceph::Pool;
-use PVE::API2::Ceph::Pools;
 use PVE::API2::Storage::Config;
 
 use base qw(PVE::RESTHandler);
@@ -65,12 +64,6 @@ __PACKAGE__->register_method ({
 __PACKAGE__->register_method ({
     subclass => "PVE::API2::Ceph::Pool",
     path => 'pool',
-});
-
-# TODO: deprecrated, remove with PVE 8
-__PACKAGE__->register_method ({
-    subclass => "PVE::API2::Ceph::Pools",
-    path => 'pools',
 });
 
 __PACKAGE__->register_method ({

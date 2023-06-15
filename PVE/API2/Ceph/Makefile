@@ -7,7 +7,6 @@ PERLSOURCE= 			\
 	OSD.pm			\
 	FS.pm			\
 	Pool.pm			\
-	Pools.pm		\
 	MDS.pm
 
 all:
