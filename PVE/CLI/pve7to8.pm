@@ -997,6 +997,7 @@ sub check_storage_content_dirs {
 	my $plugin = PVE::Storage::Plugin->lookup($scfg->{type});
 	for my $vtype (keys $scfg->{content}->%*) {
 	    my $abs_subdir = Cwd::abs_path($plugin->get_subdir($scfg, $vtype));
+	    next if !defined($abs_subdir);
 	    push $resolved_subdirs->{$abs_subdir}->@*, $vtype;
 	}
 	for my $subdir (keys $resolved_subdirs->%*) {
