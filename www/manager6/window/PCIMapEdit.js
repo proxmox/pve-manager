@@ -1,0 +1,215 @@
+Ext.define('PVE.window.PCIMapEditWindow', {
+    extend: 'Proxmox.window.Edit',
+
+    mixins: ['Proxmox.Mixin.CBind'],
+
+    width: 800,
+
+    subject: gettext('PCI mapping'),
+
+    onlineHelp: 'resource_mapping',
+
+    method: 'POST',
+
+    cbindData: function(initialConfig) {
+	let me = this;
+	me.isCreate = !me.name;
+	me.method = me.isCreate ? 'POST' : 'PUT';
+	return {
+	    name: me.name,
+	    nodename: me.nodename,
+	};
+    },
+
+    submitUrl: function(_url, data) {
+	let me = this;
+	let name = me.isCreate ? '' : me.name;
+	return `/cluster/mapping/pci/${name}`;
+    },
+
+    controller: {
+	xclass: 'Ext.app.ViewController',
+
+	onGetValues: function(values) {
+	    let me = this;
+	    let view = me.getView();
+	    if (view.method === "POST") {
+		delete me.digest;
+	    }
+
+	    if (values.iommugroup === -1) {
+		delete values.iommugroup;
+	    }
+
+	    let nodename = values.node ?? view.nodename;
+	    delete values.node;
+	    if (me.originalMap) {
+		let otherMaps = PVE.Parser
+		    .filterPropertyStringList(me.originalMap, (e) => e.node !== nodename);
+		if (otherMaps.length) {
+		    values.map = values.map.concat(otherMaps);
+		}
+	    }
+
+	    return values;
+	},
+
+	onSetValues: function(values) {
+	    let me = this;
+	    let view = me.getView();
+	    me.originalMap = [...values.map];
+	    values.map = PVE.Parser.filterPropertyStringList(values.map, (e) => e.node === view.nodename);
+	    return values;
+	},
+
+	checkIommu: function(store, records, success) {
+	    let me = this;
+	    if (!success || !records.length) {
+		return;
+	    }
+	    me.lookup('iommu_warning').setVisible(
+		records.every((val) => val.data.iommugroup === -1),
+	    );
+	},
+
+	mdevChange: function(mdevField, value) {
+	    this.lookup('pciselector').setMdev(value);
+	},
+
+	nodeChange: function(_field, value) {
+	    this.lookup('pciselector').setNodename(value);
+	},
+
+	pciChange: function(_field, value) {
+	    let me = this;
+	    me.lookup('multiple_warning').setVisible(Ext.isArray(value) && value.length > 1);
+	},
+
+	control: {
+	    'field[name=mdev]': {
+		change: 'mdevChange',
+	    },
+	    'pveNodeSelector': {
+		change: 'nodeChange',
+	    },
+	    'pveMultiPCISelector': {
+		change: 'pciChange',
+	    },
+	},
+    },
+
+    items: [
+	{
+	    xtype: 'inputpanel',
+	    onGetValues: function(values) {
+		return this.up('window').getController().onGetValues(values);
+	    },
+
+	    onSetValues: function(values) {
+		return this.up('window').getController().onSetValues(values);
+	    },
+
+	    columnT: [
+		{
+		    xtype: 'displayfield',
+		    reference: 'iommu_warning',
+		    hidden: true,
+		    columnWidth: 1,
+		    padding: '0 0 10 0',
+		    value: 'No IOMMU detected, please activate it.' +
+		    'See Documentation for further information.',
+		    userCls: 'pmx-hint',
+		},
+		{
+		    xtype: 'displayfield',
+		    reference: 'multiple_warning',
+		    hidden: true,
+		    columnWidth: 1,
+		    padding: '0 0 10 0',
+		    value: 'When multiple devices are selected, the first free one will be chosen' +
+			' on guest start.',
+		    userCls: 'pmx-hint',
+		},
+		{
+		    xtype: 'displayfield',
+		    reference: 'group_warning',
+		    hidden: true,
+		    columnWidth: 1,
+		    padding: '0 0 10 0',
+		    itemId: 'iommuwarning',
+		    value: 'The selected Device is not in a seperate IOMMU group, make sure this is intended.',
+		    userCls: 'pmx-hint',
+		},
+	    ],
+
+	    column1: [
+		{
+		    xtype: 'pmxDisplayEditField',
+		    fieldLabel: gettext('Name'),
+		    labelWidth: 120,
+		    cbind: {
+			editable: '{!name}',
+			value: '{name}',
+			submitValue: '{isCreate}',
+		    },
+		    name: 'id',
+		    allowBlank: false,
+		},
+		{
+		    xtype: 'proxmoxcheckbox',
+		    fieldLabel: gettext('Mediated Devices'),
+		    labelWidth: 120,
+		    reference: 'mdev',
+		    name: 'mdev',
+		    cbind: {
+			deleteEmpty: '{!isCreate}',
+		    },
+		},
+	    ],
+
+	    column2: [
+		{
+		    xtype: 'pmxDisplayEditField',
+		    fieldLabel: gettext('Node'),
+		    labelWidth: 120,
+		    name: 'node',
+		    editConfig: {
+			xtype: 'pveNodeSelector',
+		    },
+		    cbind: {
+			editable: '{!nodename}',
+			value: '{nodename}',
+		    },
+		    allowBlank: false,
+		},
+	    ],
+
+	    columnB: [
+		{
+		    xtype: 'pveMultiPCISelector',
+		    fieldLabel: gettext('Device'),
+		    labelWidth: 120,
+		    height: 300,
+		    reference: 'pciselector',
+		    name: 'map',
+		    cbind: {
+			nodename: '{nodename}',
+		    },
+		    allowBlank: false,
+		    onLoadCallBack: 'checkIommu',
+		    margin: '0 0 10 0',
+		},
+		{
+		    xtype: 'proxmoxtextfield',
+		    fieldLabel: gettext('Comment'),
+		    labelWidth: 120,
+		    submitValue: true,
+		    name: 'description',
+		    cbind: {
+			deleteEmpty: '{!isCreate}',
+		    },
+		},
+	    ],
+	},
+    ],
+});

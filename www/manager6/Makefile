@@ -123,6 +123,7 @@ JSSRC= 							\
 	window/Wizard.js				\
 	window/GuestDiskReassign.js				\
 	window/TreeSettingsEdit.js			\
+	window/PCIEdit.js				\
 	ha/Fencing.js					\
 	ha/GroupEdit.js					\
 	ha/GroupSelector.js				\
