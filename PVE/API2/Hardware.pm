@@ -21,7 +21,6 @@ __PACKAGE__->register_method ({
     path => 'usb',
 });
 
-
 __PACKAGE__->register_method ({
     name => 'index',
     path => '',

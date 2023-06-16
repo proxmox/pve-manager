@@ -26,6 +26,7 @@ use PVE::API2::ACMEPlugin;
 use PVE::API2::Backup;
 use PVE::API2::Cluster::BackupInfo;
 use PVE::API2::Cluster::Ceph;
+use PVE::API2::Cluster::Mapping;
 use PVE::API2::Cluster::Jobs;
 use PVE::API2::Cluster::MetricServer;
 use PVE::API2::ClusterConfig;
@@ -90,6 +91,12 @@ __PACKAGE__->register_method ({
     subclass => "PVE::API2::Cluster::Jobs",
     path => 'jobs',
 });
+
+__PACKAGE__->register_method ({
+    subclass => "PVE::API2::Cluster::Mapping",
+    path => 'mapping',
+});
+
 if ($have_sdn) {
     __PACKAGE__->register_method ({
        subclass => "PVE::API2::Network::SDN",
@@ -140,6 +147,7 @@ __PACKAGE__->register_method ({
 	    { name => 'ha' },
 	    { name => 'jobs' },
 	    { name => 'log' },
+	    { name => 'mapping' },
 	    { name => 'metrics' },
 	    { name => 'nextid' },
 	    { name => 'options' },
