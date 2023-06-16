@@ -49,6 +49,7 @@ JSSRC= 							\
 	form/NetworkCardSelector.js			\
 	form/NodeSelector.js				\
 	form/PCISelector.js				\
+	form/PCIMapSelector.js				\
 	form/PermPathSelector.js			\
 	form/PoolSelector.js				\
 	form/PreallocationSelector.js			\
