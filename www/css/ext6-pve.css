@@ -700,3 +700,7 @@ table.osds td:first-of-type {
     cursor: pointer;
     padding-left: 2px;
 }
+
+.x-grid-item .x-item-disabled {
+    opacity: 0.3;
+}

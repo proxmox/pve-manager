@@ -46,6 +46,7 @@ JSSRC= 							\
 	form/IPRefSelector.js				\
 	form/MDevSelector.js				\
 	form/MemoryField.js				\
+	form/MultiPCISelector.js			\
 	form/NetworkCardSelector.js			\
 	form/NodeSelector.js				\
 	form/PCISelector.js				\
