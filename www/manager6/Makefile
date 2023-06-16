@@ -69,6 +69,7 @@ JSSRC= 							\
 	form/TFASelector.js				\
 	form/TokenSelector.js 				\
 	form/USBSelector.js				\
+	form/USBMapSelector.js				\
 	form/UserSelector.js				\
 	form/VLanField.js				\
 	form/VMCPUFlagSelector.js			\
