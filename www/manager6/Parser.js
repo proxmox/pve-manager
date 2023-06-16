@@ -604,5 +604,9 @@ Ext.define('PVE.Parser', {
 	});
 	return [res, extradata];
     },
+
+    filterPropertyStringList: function(list, filterFn, defaultKey) {
+	return list.filter((entry) => filterFn(PVE.Parser.parsePropertyString(entry, defaultKey)));
+    },
 },
 });
