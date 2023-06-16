@@ -23,14 +23,32 @@ Ext.define('PVE.form.USBSelector', {
 	return gettext("Invalid Value");
     },
 
+    setNodename: function(nodename) {
+	var me = this;
+
+	if (!nodename || me.nodename === nodename) {
+	    return;
+	}
+
+	me.nodename = nodename;
+
+	me.store.setProxy({
+	    type: 'proxmox',
+	    url: `/api2/json/nodes/${me.nodename}/hardware/usb`,
+	});
+
+	me.store.load();
+    },
+
     initComponent: function() {
 	var me = this;
 
-	var nodename = me.pveSelNode.data.node;
-
-	if (!nodename) {
-	    throw "no nodename specified";
+	if (me.pveSelNode) {
+	    me.nodename = me.pveSelNode.data.node;
 	}
+
+	var nodename = me.nodename;
+	me.nodename = undefined;
 
 	if (me.type !== 'device' && me.type !== 'port') {
 	    throw "no valid type specified";
@@ -38,10 +56,6 @@ Ext.define('PVE.form.USBSelector', {
 
 	let store = new Ext.data.Store({
 	    model: `pve-usb-${me.type}`,
-	    proxy: {
-		type: 'proxmox',
-		url: `/api2/json/nodes/${nodename}/hardware/usb`,
-	    },
 	    filters: [
 		({ data }) => !!data.usbpath && !!data.prodid && String(data.class) !== "9",
 	    ],
@@ -99,7 +113,7 @@ Ext.define('PVE.form.USBSelector', {
 
 	me.callParent();
 
-	store.load();
+	me.setNodename(nodename);
     },
 
 }, function() {
