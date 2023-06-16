@@ -71,6 +71,7 @@ Ext.define('PVE.form.USBSelector', {
 	    store: store,
 	    emptyText: emptyText,
 	    listConfig: {
+		minHeight: 80,
 		width: 520,
 		columns: [
 		    {

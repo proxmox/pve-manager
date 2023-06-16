@@ -22,6 +22,7 @@ Ext.define('PVE.form.PCISelector', {
     onLoadCallBack: undefined,
 
     listConfig: {
+	minHeight: 80,
 	width: 800,
 	columns: [
 	    {

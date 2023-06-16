@@ -259,8 +259,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 25,
 		order: i,
 		iconCls: 'usb',
-		editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.USBEdit' : undefined,
-		never_delete: !caps.nodes['Sys.Console'],
+		editor: caps.nodes['Sys.Console'] || caps.mapping['Mapping.Use'] ? 'PVE.qemu.USBEdit' : undefined,
+		never_delete: !caps.nodes['Sys.Console'] && !caps.mapping['Mapping.Use'],
 		header: gettext('USB Device') + ' (' + confid + ')',
 	    };
 	}
@@ -270,8 +270,8 @@ Ext.define('PVE.qemu.HardwareView', {
 		group: 30,
 		order: i,
 		tdCls: 'pve-itype-icon-pci',
-		never_delete: !caps.nodes['Sys.Console'],
-		editor: caps.nodes['Sys.Console'] ? 'PVE.qemu.PCIEdit' : undefined,
+		never_delete: !caps.nodes['Sys.Console'] && !caps.mapping['Mapping.Use'],
+		editor: caps.nodes['Sys.Console'] || caps.mapping['Mapping.Use'] ? 'PVE.qemu.PCIEdit' : undefined,
 		header: gettext('PCI Device') + ' (' + confid + ')',
 	    };
 	}
@@ -577,14 +577,15 @@ Ext.define('PVE.qemu.HardwareView', {
 
 	    // heuristic only for disabling some stuff, the backend has the final word.
 	    const noSysConsolePerm = !caps.nodes['Sys.Console'];
+	    const noHWPerm = !caps.nodes['Sys.Console'] && !caps.mapping['Mapping.Use'];
 	    const noVMConfigHWTypePerm = !caps.vms['VM.Config.HWType'];
 	    const noVMConfigNetPerm = !caps.vms['VM.Config.Network'];
 	    const noVMConfigDiskPerm = !caps.vms['VM.Config.Disk'];
 	    const noVMConfigCDROMPerm = !caps.vms['VM.Config.CDROM'];
 	    const noVMConfigCloudinitPerm = !caps.vms['VM.Config.Cloudinit'];
 
-	    me.down('#addUsb').setDisabled(noSysConsolePerm || isAtUsbLimit());
-	    me.down('#addPci').setDisabled(noSysConsolePerm || isAtLimit('hostpci'));
+	    me.down('#addUsb').setDisabled(noHWPerm || isAtUsbLimit());
+	    me.down('#addPci').setDisabled(noHWPerm || isAtLimit('hostpci'));
 	    me.down('#addAudio').setDisabled(noVMConfigHWTypePerm || isAtLimit('audio'));
 	    me.down('#addSerial').setDisabled(noVMConfigHWTypePerm || isAtLimit('serial'));
 	    me.down('#addNet').setDisabled(noVMConfigNetPerm || isAtLimit('net'));
@@ -697,14 +698,14 @@ Ext.define('PVE.qemu.HardwareView', {
 				text: gettext('USB Device'),
 				itemId: 'addUsb',
 				iconCls: 'fa fa-fw fa-usb black',
-				disabled: !caps.nodes['Sys.Console'],
+				disabled: !caps.nodes['Sys.Console'] && !caps.mapping['Mapping.Use'],
 				handler: editorFactory('USBEdit'),
 			    },
 			    {
 				text: gettext('PCI Device'),
 				itemId: 'addPci',
 				iconCls: 'pve-itype-icon-pci',
-				disabled: !caps.nodes['Sys.Console'],
+				disabled: !caps.nodes['Sys.Console'] && !caps.mapping['Mapping.Use'],
 				handler: editorFactory('PCIEdit'),
 			    },
 			    {

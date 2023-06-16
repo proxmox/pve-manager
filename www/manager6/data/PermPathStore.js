@@ -8,6 +8,7 @@ Ext.define('PVE.data.PermPathStore', {
 	{ 'value': '/access' },
 	{ 'value': '/access/groups' },
 	{ 'value': '/access/realm' },
+	{ 'value': '/mapping' },
 	{ 'value': '/nodes' },
 	{ 'value': '/pool' },
 	{ 'value': '/sdn/zones' },
