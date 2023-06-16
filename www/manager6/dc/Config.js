@@ -274,8 +274,50 @@ Ext.define('PVE.dc.Config', {
 		iconCls: 'fa fa-bar-chart',
 		itemId: 'metricservers',
 		onlineHelp: 'external_metric_server',
-	    },
-	    {
+	    });
+	}
+
+	if (caps.mapping['Mapping.Audit'] ||
+	    caps.mapping['Mapping.Use'] ||
+	    caps.mapping['Mapping.Modify']) {
+	    me.items.push(
+		{
+		    xtype: 'container',
+		    onlineHelp: 'resource_mapping',
+		    title: gettext('Resource Mappings'),
+		    itemId: 'resources',
+		    iconCls: 'fa fa-folder-o',
+		    layout: {
+			type: 'vbox',
+			align: 'stretch',
+			multi: true,
+		    },
+		    scrollable: true,
+		    defaults: {
+			collapsible: true,
+			animCollapse: false,
+			margin: '7 10 3 10',
+		    },
+		    items: [
+			{
+			    collapsible: true,
+			    xtype: 'pveDcPCIMapView',
+			    title: gettext('PCI Devices'),
+			    flex: 1,
+			},
+			{
+			    collapsible: true,
+			    xtype: 'pveDcUSBMapView',
+			    title: gettext('USB Devices'),
+			    flex: 1,
+			},
+		    ],
+		},
+	    );
+	}
+
+	if (caps.dc['Sys.Audit']) {
+	    me.items.push({
 		xtype: 'pveDcSupport',
 		title: gettext('Support'),
 		itemId: 'support',

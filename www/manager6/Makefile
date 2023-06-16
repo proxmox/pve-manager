@@ -174,6 +174,8 @@ JSSRC= 							\
 	dc/UserTagAccessEdit.js				\
 	dc/RegisteredTagsEdit.js			\
 	dc/RealmSyncJob.js				\
+	dc/PCIMapView.js				\
+	dc/USBMapView.js				\
 	lxc/CmdMenu.js					\
 	lxc/Config.js					\
 	lxc/CreateWizard.js				\
