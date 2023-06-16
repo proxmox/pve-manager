@@ -101,6 +101,7 @@ JSSRC= 							\
 	panel/MultiDiskEdit.js				\
 	tree/ResourceTree.js				\
 	tree/SnapshotTree.js				\
+	tree/ResourceMapTree.js				\
 	window/Backup.js				\
 	window/BackupConfig.js				\
 	window/BulkAction.js				\
