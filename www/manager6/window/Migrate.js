@@ -219,32 +219,64 @@ Ext.define('PVE.window.Migrate', {
 		let target = me.lookup('pveNodeSelector').value;
 		if (target.length && !migrateStats.allowed_nodes.includes(target)) {
 		    let disallowed = migrateStats.not_allowed_nodes[target];
-		    let missingStorages = disallowed.unavailable_storages.join(', ');
+		    if (disallowed.unavailable_storages !== undefined) {
+			let missingStorages = disallowed.unavailable_storages.join(', ');
 
-		    migration.possible = false;
-		    migration.preconditions.push({
-			text: 'Storage (' + missingStorages + ') not available on selected target. ' +
-			  'Start VM to use live storage migration or select other target node',
-			severity: 'error',
-		    });
+			migration.possible = false;
+			migration.preconditions.push({
+			    text: 'Storage (' + missingStorages + ') not available on selected target. ' +
+			      'Start VM to use live storage migration or select other target node',
+			    severity: 'error',
+			});
+		    }
+
+		    if (disallowed['unavailable-resources'] !== undefined) {
+			let unavailableResources = disallowed['unavailable-resources'].join(', ');
+
+			migration.possible = false;
+			migration.preconditions.push({
+			    text: 'Mapped Resources (' + unavailableResources + ') not available on selected target. ',
+			    severity: 'error',
+			});
+		    }
 		}
 	    }
 
-	    if (migrateStats.local_resources.length) {
+	    let blockingResources = [];
+	    let mappedResources = migrateStats['mapped-resources'] ?? [];
+
+	    for (const res of migrateStats.local_resources) {
+		if (mappedResources.indexOf(res) === -1) {
+		    blockingResources.push(res);
+		}
+	    }
+
+	    if (blockingResources.length) {
 		migration.hasLocalResources = true;
 		if (!migration.overwriteLocalResourceCheck || vm.get('running')) {
 		    migration.possible = false;
 		    migration.preconditions.push({
 			text: Ext.String.format('Can\'t migrate VM with local resources: {0}',
-			migrateStats.local_resources.join(', ')),
+			blockingResources.join(', ')),
 			severity: 'error',
 		    });
 		} else {
 		    migration.preconditions.push({
 			text: Ext.String.format('Migrate VM with local resources: {0}. ' +
 			'This might fail if resources aren\'t available on the target node.',
-			migrateStats.local_resources.join(', ')),
+			blockingResources.join(', ')),
 			severity: 'warning',
+		    });
+		}
+	    }
+
+	    if (mappedResources && mappedResources.length) {
+		if (vm.get('running')) {
+		    migration.possible = false;
+		    migration.preconditions.push({
+			text: Ext.String.format('Can\'t migrate running VM with mapped resources: {0}',
+			mappedResources.join(', ')),
+			severity: 'error',
 		    });
 		}
 	    }
