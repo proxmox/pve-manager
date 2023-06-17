@@ -40,14 +40,6 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 
 	me.items = [
 	    {
-		xtype: me.isCreate ? 'textfield' : 'displayfield',
-		name: 'zone',
-		maxLength: 8,
-		value: me.zone || '',
-		fieldLabel: 'ID',
-		allowBlank: false,
-	    },
-	    {
 		xtype: 'pveSDNControllerSelector',
 		fieldLabel: gettext('Controller'),
 		name: 'controller',
@@ -111,25 +103,6 @@ Ext.define('PVE.sdn.zones.EvpnInputPanel', {
 		fieldLabel: gettext('Route-target import'),
 		allowBlank: true,
 	    },
-	    {
-		xtype: 'proxmoxintegerfield',
-		name: 'mtu',
-		minValue: 100,
-		maxValue: 65000,
-		fieldLabel: 'MTU',
-		skipEmptyText: true,
-		allowBlank: true,
-		emptyText: 'auto',
-	    },
-	    {
-		xtype: 'pveNodeSelector',
-		name: 'nodes',
-		fieldLabel: gettext('Nodes'),
-		emptyText: gettext('All') + ' (' + gettext('No restrictions') +')',
-		multiSelect: true,
-		autoSelect: false,
-	    },
-
 	];
 
 	me.callParent();

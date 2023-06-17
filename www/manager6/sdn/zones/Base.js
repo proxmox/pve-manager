@@ -18,14 +18,44 @@ Ext.define('PVE.panel.SDNZoneBase', {
     initComponent: function() {
 	var me = this;
 
-	me.advancedItems = [
+	me.items.unshift({
+	    xtype: me.isCreate ? 'textfield' : 'displayfield',
+	    name: 'zone',
+	    maxLength: 8,
+	    value: me.zone || '',
+	    fieldLabel: 'ID',
+	    allowBlank: false,
+	});
+
+        me.items.push(
+            {
+                xtype: 'proxmoxintegerfield',
+                name: 'mtu',
+                minValue: 100,
+                maxValue: 65000,
+                fieldLabel: 'MTU',
+                skipEmptyText: true,
+                allowBlank: true,
+                emptyText: 'auto',
+            },
+            {
+                xtype: 'pveNodeSelector',
+                name: 'nodes',
+                fieldLabel: gettext('Nodes'),
+                emptyText: gettext('All') + ' (' + gettext('No restrictions') +')',
+                multiSelect: true,
+                autoSelect: false,
+            },
 	    {
 		xtype: 'pveSDNIpamSelector',
 		fieldLabel: gettext('Ipam'),
 		name: 'ipam',
-		value: 'pve',
+		value: me.ipam || 'pve',
 		allowBlank: false,
 	    },
+	);
+
+	me.advancedItems = [
 	    {
 		xtype: 'pveSDNDnsSelector',
 		fieldLabel: gettext('Dns server'),
