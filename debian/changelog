@@ -1,3 +1,42 @@
+pve-manager (8.0.0~9) bookworm; urgency=medium
+
+  * api: cluster resources: add 'localnetwork' referring to local network
+    interfaces
+
+  * ui: add vNet permissions panel
+
+  * ui: create VM: use new x86-64-v2-AES as new default vCPU type.
+    The x86-64-v2-aes is compatible with Intel Westmere, launched in 2010 and
+    Opteron 6200-series "Interlagos" launched in 2011.
+    This model provides a few important extra fetures over the qemu64/kvm64
+    model (which are basically v1 minus the -vme,-cx16 CPU flags) like SSE4.1
+    and additionally also AES, while not supported by all v2 models it is by
+    all recent ones, improving performance of many computing operations
+    drastically.
+
+  * fix #4739: ui: user list: add column for group memberships
+
+  * ui: realm sync: change enabled column rendering
+
+  * ui: realm sync: add 'run now' button
+
+  * ui: realm: move sync job panel into realm panel
+
+  * api: add resource map api endpoints for PCI and USB
+
+  * ui: add overview panel and edit window for PCI resource mappings
+
+  * ui: add overview panel and edit window for USB resource mappings
+
+  * ui: allow using PCI and USB mappings for virtual machines
+
+  * ui: improve permission handling for hardware and resource mappings
+
+  * ui: guest migrate: allow mapped devices for offline migrations if target
+    node has a valid mapping for all devices used by VM.
+
+ -- Proxmox Support Team <support@proxmox.com>  Mon, 19 Jun 2023 08:32:38 +0200
+
 pve-manager (8.0.0~8) bookworm; urgency=medium
 
   * ui: add beta text with link to bugtracker
