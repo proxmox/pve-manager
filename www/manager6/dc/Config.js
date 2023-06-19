@@ -294,19 +294,20 @@ Ext.define('PVE.dc.Config', {
 		    },
 		    scrollable: true,
 		    defaults: {
-			collapsible: true,
-			animCollapse: false,
-			margin: '7 10 3 10',
+			border: false,
 		    },
 		    items: [
 			{
-			    collapsible: true,
 			    xtype: 'pveDcPCIMapView',
 			    title: gettext('PCI Devices'),
 			    flex: 1,
 			},
 			{
-			    collapsible: true,
+			    xtype: 'splitter',
+			    collapsible: false,
+			    performCollapse: false,
+			},
+			{
 			    xtype: 'pveDcUSBMapView',
 			    title: gettext('USB Devices'),
 			    flex: 1,
