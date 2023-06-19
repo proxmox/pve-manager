@@ -43,7 +43,7 @@ Ext.define('PVE.form.PCIMapSelector', {
 	    },
 	    {
 		header: gettext('Status'),
-		dataIndex: 'errors',
+		dataIndex: 'checks',
 		renderer: function(value) {
 		    let me = this;
 
@@ -51,11 +51,11 @@ Ext.define('PVE.form.PCIMapSelector', {
 			return `<i class="fa fa-check-circle good"></i> ${gettext('Mapping OK')}`;
 		    }
 
-		    let errors = [];
+		    let checks = [];
 
-		    value.forEach((error) => {
+		    value.forEach((check) => {
 			let iconCls;
-			switch (error?.severity) {
+			switch (check?.severity) {
 			    case 'warning':
 				iconCls = 'fa-exclamation-circle warning';
 				break;
@@ -64,14 +64,14 @@ Ext.define('PVE.form.PCIMapSelector', {
 				break;
 			}
 
-			let message = error?.message;
+			let message = check?.message;
 			let icon = `<i class="fa ${iconCls}"></i>`;
 			if (iconCls !== undefined) {
-			    errors.push(`${icon} ${message}`);
+			    checks.push(`${icon} ${message}`);
 			}
 		    });
 
-		    return errors.join('<br>');
+		    return checks.join('<br>');
 		},
 		flex: 3,
 	    },
