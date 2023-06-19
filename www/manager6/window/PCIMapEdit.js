@@ -13,8 +13,8 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 
     cbindData: function(initialConfig) {
 	let me = this;
-	me.isCreate = !me.name;
-	me.method = me.isCreate ? 'POST' : 'PUT';
+	me.isCreate = !me.name || !me.nodename;
+	me.method = me.name ? 'PUT' : 'POST';
 	return {
 	    name: me.name,
 	    nodename: me.nodename,
@@ -23,7 +23,7 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 
     submitUrl: function(_url, data) {
 	let me = this;
-	let name = me.isCreate ? '' : me.name;
+	let name = me.method === 'PUT' ? me.name : '';
 	return `/cluster/mapping/pci/${name}`;
     },
 
@@ -156,21 +156,8 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 		    allowBlank: false,
 		},
 		{
-		    xtype: 'proxmoxcheckbox',
-		    fieldLabel: gettext('Mediated Devices'),
-		    labelWidth: 120,
-		    reference: 'mdev',
-		    name: 'mdev',
-		    cbind: {
-			deleteEmpty: '{!isCreate}',
-		    },
-		},
-	    ],
-
-	    column2: [
-		{
 		    xtype: 'pmxDisplayEditField',
-		    fieldLabel: gettext('Node'),
+		    fieldLabel: gettext('Mapping on Node'),
 		    labelWidth: 120,
 		    name: 'node',
 		    editConfig: {
@@ -181,6 +168,23 @@ Ext.define('PVE.window.PCIMapEditWindow', {
 			value: '{nodename}',
 		    },
 		    allowBlank: false,
+		},
+	    ],
+
+	    column2: [
+		{
+		    // as spacer
+		    xtype: 'displayfield',
+		},
+		{
+		    xtype: 'proxmoxcheckbox',
+		    fieldLabel: gettext('Mediated Devices'),
+		    labelWidth: 120,
+		    reference: 'mdev',
+		    name: 'mdev',
+		    cbind: {
+			deleteEmpty: '{!isCreate}',
+		    },
 		},
 	    ],
 
