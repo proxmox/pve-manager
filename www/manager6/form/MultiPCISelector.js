@@ -77,7 +77,7 @@ Ext.define('PVE.form.MultiPCISelector', {
 	}
 
 	me.suspendEvent('change');
-	me.setSelection([]);
+	me.setSelection();
 	me.setSelection(recs);
 	me.resumeEvent('change');
     },
@@ -96,7 +96,7 @@ Ext.define('PVE.form.MultiPCISelector', {
 	    url: '/api2/json/nodes/' + me.nodename + '/hardware/pci?pci-class-blacklist=',
 	});
 
-	me.setSelection([]);
+	me.setSelection();
 
 	me.getStore().load({
 	    callback: (recs, op, success) => me.addSlotRecords(recs, op, success),
@@ -115,6 +115,7 @@ Ext.define('PVE.form.MultiPCISelector', {
 	} else {
 	    me.getStore().removeFilter('mdev-filter');
 	}
+	me.setSelection();
     },
 
     // adds the virtual 'slot' records (e.g. '0000:01:00') to the store
