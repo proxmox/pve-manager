@@ -5,12 +5,9 @@ use warnings;
 
 use Storable qw(dclone);
 
-use PVE::Cluster qw(cfs_lock_file);
-use PVE::Mapping::USB;
+use PVE::Mapping::USB ();
 use PVE::JSONSchema qw(get_standard_option);
 use PVE::Tools qw(extract_param);
-
-use PVE::RESTHandler;
 
 use base qw(PVE::RESTHandler);
 

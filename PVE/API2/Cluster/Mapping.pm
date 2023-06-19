@@ -3,8 +3,6 @@ package PVE::API2::Cluster::Mapping;
 use strict;
 use warnings;
 
-use PVE::RESTHandler;
-
 use PVE::API2::Cluster::Mapping::PCI;
 use PVE::API2::Cluster::Mapping::USB;
 
