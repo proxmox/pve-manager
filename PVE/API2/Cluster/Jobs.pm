@@ -115,3 +115,5 @@ __PACKAGE__->register_method({
 
 	return $result;
     }});
+
+1;
