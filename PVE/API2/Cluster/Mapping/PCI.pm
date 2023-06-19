@@ -61,12 +61,15 @@ __PACKAGE__->register_method ({
 		    description => "A description of the logical mapping.",
 		},
 		error => {
+		    type => "array",
+		    optional => 1,
 		    description => "A list of errors when 'check_node' is given.",
 		    items => {
 			type => 'object',
 			properties => {
 			    severity => {
 				type => "string",
+				enum => ['warning', 'error'],
 				description => "The severity of the error",
 			    },
 			    message => {
